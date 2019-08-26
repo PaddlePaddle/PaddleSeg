@@ -23,8 +23,6 @@ AUG:
         CONTRAST_JITTER_RATIO: 0.5
         SATURATION_JITTER_RATIO: 0.5
 BATCH_SIZE: 4
-MEAN: [0.5, 0.5, 0.5]
-STD: [0.5, 0.5, 0.5]
 DATASET:
     DATA_DIR: "./dataset/cityscapes/"
     IMAGE_TYPE: "rgb"  # choice rgb or rgba

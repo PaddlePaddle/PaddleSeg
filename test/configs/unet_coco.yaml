@@ -23,10 +23,6 @@ AUG:
         CONTRAST_JITTER_RATIO: 0.5
         SATURATION_JITTER_RATIO: 0.5
 BATCH_SIZE: 10
-#MEAN: [104.008, 116.669, 122.675]
-#STD: [1.0, 1.0, 1.0]
-MEAN: [127.5, 127.5, 127.5]
-STD: [127.5, 127.5, 127.5]
 DATASET:
     DATA_DIR: "./data/COCO2014/"
     IMAGE_TYPE: "rgb"  # choice rgb or rgba
