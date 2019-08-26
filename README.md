@@ -23,9 +23,7 @@ PaddleSeg是基于[PaddlePaddle](https://www.paddlepaddle.org.cn)开发的语义
   
 - **工业级部署**
 
-  - 基于[Paddle Serving](https://github.com/PaddlePaddle/Serving)和PaddlePaddle高性能预测引擎, 结合百度开放的AI能力，轻松搭建人像分割和车道线分割服务。
-
-
+  - 基于[Paddle Serving](https://github.com/PaddlePaddle/Serving)和PaddlePaddle高性能预测引擎，结合百度开放的AI能力，轻松搭建人像分割和车道线分割服务。
 
 
 更多模型信息与技术细节请查看[模型介绍](./docs/models.md)和[预训练模型](./docs/model_zoo.md)
