@@ -112,7 +112,7 @@ D:\PaddleDeploy\inference\build> msbuild /m /p:Configuration=Release cpp_inferen
 
 ```
 cd Release
-D:\PaddleDeploy\inference\build\Release> demo.ext --conf=D:\\PaddleDeploy\\inference\\conf\\humanseg.yaml --input_dir=D:\\PaddleDeploy\\inference\\images\humanseg\\
+D:\PaddleDeploy\inference\build\Release> demo.exe --conf=D:\\PaddleDeploy\\inference\\conf\\humanseg.yaml --input_dir=D:\\PaddleDeploy\\inference\\images\humanseg\\
 ```
 
 预测使用的两个命令参数说明如下：
@@ -126,10 +126,10 @@ D:\PaddleDeploy\inference\build\Release> demo.ext --conf=D:\\PaddleDeploy\\infer
 
 样例程序会扫描input_dir目录下的所有图片，并生成对应的预测结果图片。
 
-文件`14.jpg`预测的结果存储在`14_jpg.png`中，可视化结果在`14_jpg_scoremap.png`中， 原始尺寸的预测结果在`14_jpg_recover.png`中。
+文件`demo.jpg`预测的结果存储在`demo_jpg.png`中，可视化结果在`demo_jpg_scoremap.png`中， 原始尺寸的预测结果在`demo_jpg_recover.png`中。
 
 输入原图  
-![avatar](inference/images/humanseg/demo.jpg)
+![avatar](images/humanseg/demo.jpg)
 
 输出预测结果   
-![avatar](inference/images/humanseg/demo_jpg_recover.png)
+![avatar](images/humanseg/demo_jpg_recover.png)
