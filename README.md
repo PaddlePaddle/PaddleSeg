@@ -46,7 +46,7 @@ PaddleSeg是基于[PaddlePaddle](https://www.paddlepaddle.org.cn)开发的语义
 
 ### 垂类模型
 
-更多特色垂类分割模型如LIP人体部件分割、人像分割、车道线分割模型可以参考[contrib](./contrib/README.md)
+更多特色垂类分割模型如LIP人体部件分割、人像分割、车道线分割模型可以参考[contrib](./contrib)
 
 ## 使用文档
 
