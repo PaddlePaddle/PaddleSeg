@@ -1,0 +1,10 @@
+pre-commit
+yapf == 0.26.0
+flake8
+pyyaml
+tb-paddle
+tb-nightly == 1.15.0a20190818
+Pillow
+numpy
+six
+opencv-python

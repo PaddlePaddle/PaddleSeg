@@ -1,0 +1,57 @@
+TRAIN_CROP_SIZE: (513, 513) # (width, height), for unpadding rangescaling and stepscaling
+EVAL_CROP_SIZE: (513, 513) # (width, height), for unpadding rangescaling and stepscaling
+AUG:
+    AUG_METHOD: u"unpadding" # choice unpadding rangescaling and stepscaling
+    FIX_RESIZE_SIZE: (513, 513) # (width, height), for unpadding
+    INF_RESIZE_VALUE: 513  # for rangescaling
+    MAX_RESIZE_VALUE: 400  # for rangescaling
+    MIN_RESIZE_VALUE: 513  # for rangescaling
+    MAX_SCALE_FACTOR: 2.0  # for stepscaling
+    MIN_SCALE_FACTOR: 0.5  # for stepscaling
+    SCALE_STEP_SIZE: 0.25  # for stepscaling
+    MIRROR: True
+    RICH_CROP:
+        ENABLE: True
+        ASPECT_RATIO: 0
+        BLUR: True
+        BLUR_RATIO: 0.1
+        FLIP: True
+        FLIP_RATIO: 0.2
+        MAX_ROTATION: 45
+        MIN_AREA_RATIO: 0
+        BRIGHTNESS_JITTER_RATIO: 0.5
+        CONTRAST_JITTER_RATIO: 0.5
+        SATURATION_JITTER_RATIO: 0.5
+BATCH_SIZE: 24
+MEAN: [104.008, 116.669, 122.675]
+STD: [1.0, 1.0, 1.0]
+DATASET:
+    DATA_DIR: u"./data/humanseg/"
+    IMAGE_TYPE: "rgb"  # choice rgb or rgba
+    NUM_CLASSES: 2
+    TEST_FILE_LIST: u"data/humanseg/list/val.txt"
+    TRAIN_FILE_LIST: u"data/humanseg/list/train.txt"
+    VAL_FILE_LIST: u"data/humanseg/list/val.txt"
+    IGNORE_INDEX: 255
+    SEPARATOR: "|"
+FREEZE:
+    MODEL_FILENAME: "__model__"
+    PARAMS_FILENAME: "__params__"
+    SAVE_DIR: "human_freeze_model"
+MODEL:
+    DEFAULT_NORM_TYPE: u"bn"
+    MODEL_NAME: "deeplabv3p"
+    DEEPLAB:
+        BACKBONE: "xception_65"
+TEST:
+    TEST_MODEL: "snapshots/humanseg/aic_v2/final/"
+TRAIN:
+    MODEL_SAVE_DIR: "snapshots/humanseg/aic_v2/"
+    PRETRAINED_MODEL: "pretrain/xception65_pretrained/"
+    RESUME: False
+    SNAPSHOT_EPOCH: 5
+SOLVER:
+    LR: 0.1
+    NUM_EPOCHS: 40
+    LR_POLICY: "poly"
+    OPTIMIZER: "sgd"
