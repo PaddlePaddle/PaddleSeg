@@ -1,5 +1,7 @@
 # PaddleSeg 语义分割库
 
+[![License](https://img.shields.io/badge/license-Apache%202-blue.svg)](LICENSE)
+
 ## 简介
 
 PaddleSeg是基于[PaddlePaddle](https://www.paddlepaddle.org.cn)开发的语义分割库，覆盖了DeepLabv3+, U-Net, ICNet三类主流的分割模型。通过统一的配置，帮助用户更便捷地完成从训练到部署的全流程图像分割应用。
@@ -60,9 +62,9 @@ PaddleSeg是基于[PaddlePaddle](https://www.paddlepaddle.org.cn)开发的语义
 
 ## FAQ
 
-#### Q:图像分割的数据增强如何配置，unpadding, step scaling, range scaling的原理是什么？
+#### Q:图像分割的数据增强如何配置，unpadding, step-scaling, range-scaling的原理是什么？
 
-A:数据增强的配置可以参考文档[数据增强](./docs/data_aug.md)
+A: 数据增强的配置可以参考文档[数据增强](./docs/data_aug.md)
 
 #### Q: 预测时图片过大，导致显存不足如何处理？
 
@@ -70,7 +72,7 @@ A: 降低Batch size，使用Group Norm策略等。
 
 ## 更新日志
 
-### 2019.08.25
+### 2019.08.26
 
 #### v0.1.0
 
