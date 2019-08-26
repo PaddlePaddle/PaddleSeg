@@ -28,7 +28,7 @@ PaddleSeg是基于[PaddlePaddle](https://www.paddlepaddle.org.cn)开发的语义
 
 
 
-更多模型信息与技术细节请查看[模型介绍](./docs/models.md)和[预训练模型](./docs/mode_zoo.md)
+更多模型信息与技术细节请查看[模型介绍](./docs/models.md)和[预训练模型](./docs/model_zoo.md)
 
 ## AI Studio教程
 
