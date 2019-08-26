@@ -27,10 +27,10 @@ python pdseg/export_model.py ${FLAGS} ${OPTIONS}
 |--cfg|ALL|配置文件路径|None||
 |--use_gpu|train/eval/vis|是否使用GPU进行训练|False||
 |--use_mpio|train/eval|是否使用多线程进行IO处理|False|打开该开关会占用一定量的CPU内存，但是可以提高训练速度。</br> NOTE：windows平台下不支持该功能, 建议使用自定义数据初次训练时不打开，打开会导致数据读取异常不可见。 </br> |
-|--use_tbx|train|是否使用tensorboardX记录训练数据|False||
+|--use_tb|train|是否使用TensorBoard记录训练数据|False||
 |--log_steps|train|训练日志的打印周期（单位为step）|10||
 |--debug|train|是否打印debug信息|False|IOU等指标涉及到混淆矩阵的计算，会降低训练速度|
-|--tbx_log_dir|train|tensorboardX的日志路径|None||
+|--tb_log_dir|train|TensorBoard的日志路径|None||
 |--do_eval|train|是否在保存模型时进行效果评估|False||
 |--vis_dir|vis|保存可视化图片的路径|"visual"||
 |--also_save_raw_results|vis|是否保存原始的预测图片|False||
@@ -76,8 +76,8 @@ unzip mini_pet.zip
 export CUDA_VISIBLE_DEVICES=0,1
 python pdseg/train.py --use_gpu \
                       --do_eval \
-                      --use_tbx \
-                      --tbx_log_dir train_log \
+                      --use_tb \
+                      --tb_log_dir train_log \
                       --cfg configs/unet_pet.yaml \
                       BATCH_SIZE 4 \
                       TRAIN.PRETRAINED_MODEL unet_coco_init \
@@ -85,8 +85,8 @@ python pdseg/train.py --use_gpu \
                       DATASET.TEST_FILE_LIST mini_pet/file_list/test_list.txt \
                       DATASET.TRAIN_FILE_LIST mini_pet/file_list/train_list.txt \
                       DATASET.VAL_FILE_LIST mini_pet/file_list/val_list.txt \
-                      DATASET.VIS_FILE_LIST mini_pet/file_list/val_list.txt
-                      TRAIN.SYNC_BATCH_NORM True
+                      DATASET.VIS_FILE_LIST mini_pet/file_list/val_list.txt \
+                      TRAIN.SYNC_BATCH_NORM True \
                       SOLVER.LR 5e-5
 ```
 
@@ -100,7 +100,7 @@ python pdseg/train.py --use_gpu \
 
 ### 训练过程可视化
 
-当打开do_eval和use_tbx两个开关后，我们可以通过TensorBoard查看训练的效果
+当打开do_eval和use_tb两个开关后，我们可以通过TensorBoard查看训练的效果
 ```shell
 tensorboard --logdir train_log --host {$HOST_IP} --port {$PORT}
 ```
