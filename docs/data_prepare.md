@@ -55,7 +55,8 @@ PaddleSeg采用通用的文件列表方式组织训练集、验证集和测试�
 * 文件列表请使用**UTF-8**格式保存, PaddleSeg默认使用UTF-8编码读取file_list文件
 
 如下图所示，左边为原图的图片路径，右边为图片对应的标注路径。
-![cityscapes_filelist](./docs/imgs/file_list.png)
+
+![cityscapes_filelist](./imgs/file_list.png)
 
 完整的配置信息可以参考[`./dataset/cityscapes_demo`](../dataset/cityscapes_demo/)目录下的yaml和文件列表。
 
