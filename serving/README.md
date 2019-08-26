@@ -1,4 +1,4 @@
-# PaddleSegServing 
+# PaddleSeg Serving 
 ## 1.简介
 PaddleSegServing是基于PaddleSeg开发的实时图像分割服务的企业级解决方案。用户仅需关注模型本身，无需理解模型模型的加载、预测以及GPU/CPU资源的并发调度等细节操作，通过设置不同的参数配置，即可根据自身的业务需求定制化不同图像分割服务。目前，PaddleSegServing支持人脸分割、城市道路分割、宠物外形分割模型。本文将通过一个人脸分割服务的搭建示例，展示PaddleSeg服务通用的搭建流程。
 
