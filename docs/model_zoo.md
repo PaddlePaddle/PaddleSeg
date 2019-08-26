@@ -37,7 +37,7 @@ train数据集为coco instance分割数据集合转换成的语义分割数据�
 train数据集合为Cityscapes 训练集合，测试为Cityscapes的验证集合
 
 | 模型 | 数据集合 | 模型加载config设置 | 下载地址 |Output Stride| mutli-scale test| mIoU on val|
-|---|---|---|---|---|---|---|---|
+|---|---|---|---|---|---|---|
 | DeepLabv3+/MobileNetv2/bn | Cityscapes |MODEL.MODEL_NAME: deeplabv3p <br> MODEL.DEEPLAB.BACKBONE: mobilenet <br> MODEL.DEEPLAB.DEPTH_MULTIPLIER: 1.0 <br> MODEL.DEEPLAB.ENCODER_WITH_ASPP: False <br> MODEL.DEEPLAB.ENABLE_DECODER: False <br> MODEL.DEFAULT_NORM_TYPE: bn|[mobilenet_cityscapes.tgz] (https://paddleseg.bj.bcebos.com/models/mobilenet_cityscapes.tgz) |16|false| 0.698|
 | DeepLabv3+/Xception65/gn  | Cityscapes |MODEL.MODEL_NAME: deeplabv3p <br> MODEL.DEEPLAB.BACKBONE: xception_65 <br> MODEL.DEFAULT_NORM_TYPE: gn | [deeplabv3p_xception65_cityscapes.tgz](https://paddleseg.bj.bcebos.com/models/deeplabv3p_xception65_cityscapes.tgz) |16|false| 0.7804 |
 | DeepLabv3+/Xception65/bn | Cityscapes | MODEL.MODEL_NAME: deeplabv3p <br>  MODEL.DEEPLAB.BACKBONE: xception_65 <br> MODEL.DEFAULT_NORM_TYPE: bn| [Xception65_deeplab_cityscapes.tgz](https://paddleseg.bj.bcebos.com/models/Xception65_deeplab_cityscapes.tgz) | 16 | false | 0.7715 |
