@@ -122,7 +122,7 @@ D:\PaddleDeploy\inference\build\Release> demo.exe --conf=D:\\PaddleDeploy\\infer
 | conf | 模型配置的yaml文件路径 |
 | input_dir | 需要预测的图片目录 |
 
-**配置文件**的样例以及字段注释说明请参考: [conf/humanseg.yaml](inference/conf/humanseg.yaml)
+**配置文件**的样例以及字段注释说明请参考: [conf/humanseg.yaml](./conf/humanseg.yaml)
 
 样例程序会扫描input_dir目录下的所有图片，并生成对应的预测结果图片。
 
