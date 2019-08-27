@@ -50,7 +50,7 @@ int WriteJsonOp::inference() {
   std::string err_string;
   uint32_t batch_size = seg_out->item_size();
   LOG(INFO) << "batch_size = " << batch_size;  
-  LOG(INFO) << seg_out->ShortDebugString();
+//  LOG(INFO) << seg_out->ShortDebugString();
   for (uint32_t si = 0; si < batch_size; si++) {
     ResponseItem* ins = res->add_prediction();
     //LOG(INFO) << "Original image width = " << seg_out->width(si) << ", height = " << seg_out->height(si);
@@ -59,6 +59,7 @@ int WriteJsonOp::inference() {
       return -1;
     }
     std::string* text = ins->mutable_info();
+    LOG(INFO) << seg_out->item(si).ShortDebugString();
     if (!ProtoMessageToJson(seg_out->item(si), text, &err_string)) {
       LOG(ERROR) << "Failed convert message["
                  << seg_out->item(si).ShortDebugString()
