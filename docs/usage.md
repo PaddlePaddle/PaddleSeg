@@ -147,4 +147,4 @@ python pdseg/export_model.py --cfg configs/unet_pet.yaml \
                                    TEST.TEST_MODEL test/saved_models/unet_pet/final
 ```
 
-模型会导出到freeze_model目录，接下来就是进行模型的部署，相关步骤，请查看[模型部署](./inference/README.md)
+模型会导出到freeze_model目录，接下来就是进行模型的部署，相关步骤，请查看[模型部署](../inference/README.md)
