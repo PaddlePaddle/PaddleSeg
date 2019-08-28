@@ -16,10 +16,10 @@ ln -s /usr/lib/x86_64-linux-gnu/libcurl.so.4.4.0 /usr/lib/x86_64-linux-gnu/libcu
 ```
 
 ## 3. 安装GPU依赖项（如果需要使用GPU预测，必须执行此步骤）
-### 3.1. 安装配置CUDA9.2以及cuDNN 7.1.4
+### 3.1. 安装配置CUDA 9.2以及cuDNN 7.1.4
 方法与[预编译安装流程](README.md) 2.2.2.1节一样。
 
-### 3.2. 安装nccl库
+### 3.2. 安装nccl库（如果已安装nccl 2.4.7请忽略该步骤）
 
 ```bash
 # 下载nccl相关的deb包
