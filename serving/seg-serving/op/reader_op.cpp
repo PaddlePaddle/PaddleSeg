@@ -103,7 +103,8 @@ int ReaderOp::inference() {
     const ImageSegReqItem& ins = req->instances(si);
     // read dense image from request bytes
     const char* binary = ins.image_binary().c_str();
-    size_t length = ins.image_length();
+    //size_t length = ins.image_length();
+    size_t length = ins.image_binary().length();
     if (length == 0) {
       LOG(ERROR) << "Empty image, length is 0";
       return -1;

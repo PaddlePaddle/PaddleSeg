@@ -128,16 +128,30 @@ int ImageSegOp::inference() {
         mask_raw[di] = label;
     }
 
+    //cv::Mat mask_mat = cv::Mat(height, width, CV_32FC1);
     cv::Mat mask_mat = cv::Mat(height, width, CV_8UC1);
-    mask_mat.data = mask_raw.data();
+    //scoremap
+   // mask_mat.data = reinterpret_cast<uchar *>(data + out_size);
+    //mask_mat.data = mask_raw.data();
+    std::vector<uchar> temp_mat(out_size, 0);
+    for(int i = 0; i < out_size; ++i){
+        temp_mat[i] = 255 * data[i + out_size];
+    }
+    mask_mat.data = temp_mat.data(); 
+
     cv::Mat mask_temp_mat((*height_vec)[si], (*width_vec)[si], mask_mat.type());
     //Size(cols, rows)
     cv::resize(mask_mat, mask_temp_mat, mask_temp_mat.size());
-   // cv::resize(mask_mat, mask_temp_mat, cv::Size((*width_vec)[si], (*height_vec)[si]));
-    
+//debug
+    //for(int i = 0; i < (*height_vec)[si]; ++i){
+    //    for(int j = 0; j < (*width_vec)[si]; ++j) {
+    //      std::cout << mask_temp_mat.at<float>(i, j) << " ";
+    //    }
+    //    std::cout << std::endl;
+    //}
     std::vector<uchar> mat_buff;
     cv::imencode(".png", mask_temp_mat, mat_buff);
-    ins->set_mask(mat_buff.data(), mat_buff.size());
+    ins->set_mask(reinterpret_cast<char *>(mat_buff.data()), mat_buff.size());
   }
 
   // release out tensor object resource
