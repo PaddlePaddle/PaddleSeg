@@ -20,7 +20,7 @@ def init_global_variable():
     """
     初始化全局变量
     """
-    global png_format_right_num  # 格式错误的标注图数量
+    global png_format_right_num  # 格式正确的标注图数量
     global png_format_wrong_num  # 格式错误的标注图数量
     global total_grt_classes  # 总的标注类别
     global total_num_of_each_class  # 每个类别总的像素数
