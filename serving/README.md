@@ -33,22 +33,16 @@ nccl  | 2.4.7
 yum -y install openssl openssl-devel golang bzip2-libs bzip2-devel
 ```
 #### 2.2.2. 安装GPU预测的依赖项（如果需要使用GPU预测，必须执行此步骤）
-#### 2.2.2.1. 安装配置CUDA9.2以及cuDNN 7.1.4
-该百度云机器已经安装CUDA以及cuDNN，仅需复制相关头文件与链接库(具体目录以自己测试的机器为准)。
+#### 2.2.2.1. 安装配置CUDA 9.2以及cuDNN 7.1.4
+请确保正确安装CUDA 9.2以及cuDNN 7.1.4. 以下为安装CUDA和cuDNN的官方教程。
 
 ```bash
-# 看情况确定是否需要安装 cudnn
-# 进入 cudnn 根目录
-cd /home/work/cudnn/cudnn7.1.4
-# 拷贝头文件
-cp include/cudnn.h /usr/local/cuda/include/
-# 拷贝链接库
-cp lib64/libcudnn* /usr/local/cuda/lib64/
-# 修改头文件、链接库访问权限
-chmod a+r /usr/local/cuda/include/cudnn.h /usr/local/cuda/lib64/libcudnn*
+安装CUDA教程: https://developer.nvidia.com/cuda-90-download-archive?target_os=Linux&target_arch=x86_64&target_distro=CentOS&target_version=7&target_type=rpmnetwork
+
+安装cuDNN教程: https://docs.nvidia.com/deeplearning/sdk/cudnn-install/index.html
 ```
 
-#### 2.2.2.2. 安装nccl库
+#### 2.2.2.2. 安装nccl库（如果已安装nccl 2.4.7请忽略该步骤）
 
 ```bash
 # 下载文件 nccl-repo-rhel7-2.4.7-ga-cuda9.2-1-1.x86_64.rpm
