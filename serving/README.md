@@ -137,7 +137,7 @@ cp libiomp5.so libmklml_gnu.so libmklml_intel.so /usr/lib
 #### 2.5.1. 搭建人脸分割服务
 搭建人脸分割服务只需完成一些配置文件的编写即可，其他分割服务的搭建流程类似。
 
-##### 2.5.1.1. 下载人脸分割模型文件，并将其复制到相应目录。
+#### 2.5.1.1. 下载人脸分割模型文件，并将其复制到相应目录。
 ```bash
 # 下载人脸分割模型
 wget -c https://paddleseg.bj.bcebos.com/inference_model/deeplabv3p_xception65_humanseg.tgz
@@ -147,7 +147,7 @@ cp -r deeplabv3p_xception65_humanseg seg-serving/bin/data/model/paddle/fluid
 ```
 
 
-##### 2.5.1.2. 配置参数文件。参数文件如下。PaddleSegServing仅新增一个配置文件seg_conf.yaml,用来指定具体分割模型的一些参数，如均值、方差、图像尺寸等。该配置文件可在gflags.conf中通过--seg_conf_file指定。其他配置文件的字段解释可参考以下链接：https://github.com/PaddlePaddle/Serving/blob/develop/doc/SERVING_CONFIGURE.md 
+#### 2.5.1.2. 配置参数文件。参数文件如下。PaddleSegServing仅新增一个配置文件seg_conf.yaml,用来指定具体分割模型的一些参数，如均值、方差、图像尺寸等。该配置文件可在gflags.conf中通过--seg_conf_file指定。其他配置文件的字段解释可参考以下链接：https://github.com/PaddlePaddle/Serving/blob/develop/doc/SERVING_CONFIGURE.md 
 
 ```bash
 conf/
@@ -177,9 +177,6 @@ CLASS_NUM: 2
 MODEL_NAME: "human_segmentation"
 ```
 
-
-
-
 #### 2.5.2 运行服务端程序
 
 ```bash
@@ -189,9 +186,10 @@ export LD_LIBRARY_PATH=/usr/local/cuda/lib64:/usr/lib64:$LD_LIBRARY_PATH
 cd ~/serving/build/output/demo/seg-serving/bin/
 ./seg-serving
 ```
-#### 2.5.3.运行客户端程序进行测试 (建议在windows、mac测试，可直接查看分割后的图像)
-```bash
+#### 2.5.3.运行客户端程序
 以下为PaddleSeg的目录结构，客户端在PaddleSeg/serving/tools目录。
+
+```bash
 PaddleSeg
 ├── configs
 ├── contrib
@@ -206,7 +204,7 @@ PaddleSeg
 │   ├── COMPILE_GUIDE.md
 │   ├── imgs
 │   ├── README.md
-│   ├── requirements.txt
+│   ├── requirements.txt        # 客户端程序依赖的包
 │   ├── seg-serving
 │   ├── tools                   # 客户端目录
 │   │   ├── images              # 测试的图像目录，可放置jpg格式或其他三通道格式的图像，以jpg或jpeg作为文件后缀名
@@ -218,14 +216,13 @@ PaddleSeg
 ├── test
 └── test.md
 ```
-客户端程序是用Python3编写的，代码简洁易懂，可以通过运行客户端验证服务的正确性以及性能表现。测试的图像放在images目录下，
+客户端程序使用Python3编写，通过下载requirements.txt中的python依赖包(`pip3 install -r requirements.txt`），用户可以在Windows、Mac、Linux等平台上正常运行该客户端，测试的图像放在PaddleSeg/serving/tools/images目录，用户可以根据自己需要把其他三通道格式的图片放置到该目录下进行测试。从服务端返回的结果图像保存在PaddleSeg/serving/tools目录下。
 
 ```bash
-# 使用Python3.6，需要安装opencv-python、requests、numpy包（建议安装anaconda）
 cd tools
 vim image_seg_client.py (修改IMAGE_SEG_URL变量，改成服务端的ip地址)
 python3.6 image_seg_client.py
-# 当前目录下可以看到生成出分割结果的图片。
+# 当前目录可以看到生成出分割结果的图片。
 ```
 
 ## 3. 源码编译安装及搭建服务流程 (可选)
