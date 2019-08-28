@@ -84,7 +84,7 @@ def infer():
     test_dataset = TestDataSet()
     data_num = test_dataset.data_num
 
-    for idx in range(data_num):
+    for idx in range(1, data_num + 1):
         # 数据获取
         ori_img, image, im_name, im_shape = test_dataset.get_data(idx)
         if image is None:
