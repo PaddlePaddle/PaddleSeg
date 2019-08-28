@@ -34,7 +34,7 @@ yum -y install openssl openssl-devel golang bzip2-libs bzip2-devel
 ```
 #### 2.2.2. 安装GPU预测的依赖项（如果需要使用GPU预测，必须执行此步骤）
 #### 2.2.2.1. 安装配置CUDA9.2以及cuDNN 7.1.4
-该百度云机器已经安装CUDA以及cuDNN，仅需复制相关头文件与链接库(具体目录以自己测试的机器为准) 。
+该百度云机器已经安装CUDA以及cuDNN，仅需复制相关头文件与链接库(具体目录以自己测试的机器为准)。
 
 ```bash
 # 看情况确定是否需要安装 cudnn
@@ -95,18 +95,16 @@ ln -s /usr/lib64/libcurl.so.4.3.0 /usr/lib64/libcurl.so
 #### 2.3.1. 下载并解压GPU版本PaddleSegServing
 
 ```bash
-# TODO:修改链接
 cd ~
-wget -c XXXX/PaddleSegServing.centos7.6_cuda9.2_gpu.tar.gz
+wget -c https://paddleseg.bj.bcebos.com/serving%2Fpaddle_seg_serving_centos7.6_gpu_cuda9.2.tar.gz
 tar xvfz PaddleSegServing.centos7.6_cuda9.2_gpu.tar.gz seg-serving
 ```
 
 #### 2.3.2. 下载并解压CPU版本PaddleSegServing
 
 ```bash
-# TODO:修改链接
 cd ~
-wget -c XXXX/PaddleSegServing.centos7.6_cuda9.2_cpu.tar.gz
+wget -c https://paddleseg.bj.bcebos.com/serving%2Fpaddle_seg_serving_centos7.6_cpu.tar.gz
 tar xvfz PaddleSegServing.centos7.6_cuda9.2_gpu.tar.gz seg-serving
 ```
 
