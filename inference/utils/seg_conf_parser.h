@@ -57,7 +57,7 @@ namespace PaddleSolution {
         }
 
         bool load_config(const std::string& conf_file) {
-            
+
             reset();
 
             YAML::Node config = YAML::LoadFile(conf_file);
@@ -79,8 +79,6 @@ namespace PaddleSolution {
             _img_type = config["DEPLOY"]["IMAGE_TYPE"].as<std::string>();
             // 5. get class number
             _class_num = config["DEPLOY"]["NUM_CLASSES"].as<int>();
-            // 6. get model_name
-            _model_name = config["DEPLOY"]["MODEL_NAME"].as<std::string>();
             // 7. set model path
             _model_path = config["DEPLOY"]["MODEL_PATH"].as<std::string>();
             // 8. get model file_name
@@ -101,7 +99,7 @@ namespace PaddleSolution {
         }
 
         void debug() const {
-            
+
             std::cout << "EVAL_CROP_SIZE: (" << _resize[0] << ", " << _resize[1] << ")" << std::endl;
 
             std::cout << "MEAN: [";
@@ -129,7 +127,6 @@ namespace PaddleSolution {
             std::cout << "DEPLOY.NUM_CLASSES: " << _class_num << std::endl;
             std::cout << "DEPLOY.CHANNELS: " << _channels << std::endl;
             std::cout << "DEPLOY.MODEL_PATH: " << _model_path << std::endl;
-            std::cout << "DEPLOY.MODEL_NAME: " << _model_name << std::endl;
             std::cout << "DEPLOY.MODEL_FILENAME: " << _model_file_name << std::endl;
             std::cout << "DEPLOY.PARAMS_FILENAME: " << _param_file_name << std::endl;
             std::cout << "DEPLOY.PRE_PROCESSOR: " << _pre_processor << std::endl;
@@ -152,8 +149,6 @@ namespace PaddleSolution {
         int _channels;
         // DEPLOY.MODEL_PATH
         std::string _model_path;
-        // DEPLOY.MODEL_NAME
-        std::string _model_name;
         // DEPLOY.MODEL_FILENAME
         std::string _model_file_name;
         // DEPLOY.PARAMS_FILENAME
