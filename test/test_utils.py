@@ -20,6 +20,7 @@ import sys
 import tarfile
 import zipfile
 import platform
+import functools
 
 lasttime = time.time()
 FLUSH_INTERVAL = 0.1
@@ -78,8 +79,10 @@ def _uncompress_file(filepath, extrapath, delete_file, print_progress):
 
     if filepath.endswith("zip"):
         handler = _uncompress_file_zip
-    else:
+    elif filepath.endswith("tgz"):
         handler = _uncompress_file_tar
+    else:
+        handler = functools.partial(_uncompress_file_tar, mode="r")
 
     for total_num, index in handler(filepath, extrapath):
         if print_progress:
@@ -104,8 +107,8 @@ def _uncompress_file_zip(filepath, extrapath):
     yield total_num, index
 
 
-def _uncompress_file_tar(filepath, extrapath):
-    files = tarfile.open(filepath, "r:gz")
+def _uncompress_file_tar(filepath, extrapath, mode="r:gz"):
+    files = tarfile.open(filepath, mode)
     filelist = files.getnames()
     total_num = len(filelist)
     for index, file in enumerate(filelist):
