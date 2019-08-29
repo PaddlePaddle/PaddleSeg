@@ -192,12 +192,10 @@ def train(cfg):
 
     def data_generator():
         if args.use_mpio:
-            print("Use multiprocess reader")
             data_gen = dataset.multiprocess_generator(
                 num_processes=cfg.DATALOADER.NUM_WORKERS,
                 max_queue_size=cfg.DATALOADER.BUF_SIZE)
         else:
-            print("Use multi-thread reader")
             data_gen = dataset.generator()
 
         batch_data = []
@@ -331,6 +329,11 @@ def train(cfg):
         raise ValueError(
             ("begin epoch[{}] is larger than cfg.SOLVER.NUM_EPOCHS[{}]").format(
                 begin_epoch, cfg.SOLVER.NUM_EPOCHS))
+
+    if args.use_mpio:
+        print("Use multiprocess reader")
+    else:
+        print("Use multi-thread reader")
 
     for epoch in range(begin_epoch, cfg.SOLVER.NUM_EPOCHS + 1):
         py_reader.start()

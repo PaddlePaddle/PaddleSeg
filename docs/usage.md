@@ -48,7 +48,7 @@ python pdseg/export_model.py ${FLAGS} ${OPTIONS}
 1. 下载合适版本的paddlepaddle
 2. PaddleSeg相关依赖已经安装
 
-如果有不确认的地方，请参考[安装说明](./docs/installation.md)
+如果有不确认的地方，请参考[安装说明](./installation.md)
 
 ### 下载预训练模型
 ```shell
@@ -111,10 +111,10 @@ NOTE:
 
 启动TensorBoard命令后，我们可以在浏览器中查看对应的训练数据
 在`SCALAR`这个tab中，查看训练loss、iou、acc的变化趋势
-![](docs/imgs/tensorboard_scalar.JPG)
+![](./imgs/tensorboard_scalar.JPG)
 
 在`IMAGE`这个tab中，查看样本的预测情况
-![](docs/imgs/tensorboard_image.JPG)
+![](./imgs/tensorboard_image.JPG)
 
 ### 模型评估
 训练完成后，我们可以通过eval.py来评估模型效果。由于我们设置的训练EPOCH数量为500，保存间隔为10，因此一共会产生50个定期保存的模型，加上最终保存的final模型，一共有51个模型。我们选择最后保存的模型进行效果的评估：
@@ -147,4 +147,4 @@ python pdseg/export_model.py --cfg configs/unet_pet.yaml \
                                    TEST.TEST_MODEL test/saved_models/unet_pet/final
 ```
 
-模型会导出到freeze_model目录，接下来就是进行模型的部署，相关步骤，请查看[模型部署](./inference/README.md)
+模型会导出到freeze_model目录，接下来就是进行模型的部署，相关步骤，请查看[模型部署](../inference/README.md)

@@ -7,7 +7,7 @@
 
 ### 1. 模型概述
 
-CVPR 19 Look into Person (LIP) 单人人像分割比赛冠军模型，详见[ACE2P/README](http://gitlab.baidu.com/Paddle/PaddleSeg/tree/master/contrib/ACE2P)
+CVPR 19 Look into Person (LIP) 单人人像分割比赛冠军模型，详见[ACE2P](./ACE2P)
 
 ### 2. 模型下载
 
