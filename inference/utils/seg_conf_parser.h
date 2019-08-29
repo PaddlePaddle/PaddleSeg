@@ -28,7 +28,6 @@ namespace PaddleSolution {
             _channels = 0;
             _use_gpu = 0;
             _batch_size = 1;
-            _model_name.clear();
             _model_file_name.clear();
             _model_path.clear();
             _param_file_name.clear();

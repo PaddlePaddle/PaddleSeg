@@ -33,13 +33,11 @@ namespace PaddleSolution {
             }
 
             while ((entry = readdir(dir)) != NULL) {
-                printf("%s\n", entry->d_name);
                 std::string item = entry->d_name;
                 auto ext = strrchr(entry->d_name, '.');
                 if (!ext || std::string(ext) == "." || std::string(ext) == "..") {
                     continue;
                 }
-                printf("%s\n", entry->d_name);
                 if (exts.find(ext) != std::string::npos) {
                     imgs.push_back(path_join(path, entry->d_name));
                 }
