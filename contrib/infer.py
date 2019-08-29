@@ -84,7 +84,7 @@ def infer():
     test_dataset = TestDataSet()
     data_num = test_dataset.data_num
 
-    for idx in range(1, data_num + 1):
+    for idx in range(data_num):
         # 数据获取
         ori_img, image, im_name, im_shape = test_dataset.get_data(idx)
         if image is None:
@@ -118,10 +118,10 @@ def infer():
             output_im.putpalette(palette)
             output_im.save(result_path)
 
-        if idx % 100 == 0:
-            print('%d  processd' % (idx))
+        if (idx + 1) % 100 == 0:
+            print('%d  processd' % (idx + 1))
             
-    print('%d  processd done' % (idx))   
+    print('%d  processd done' % (idx + 1))   
     
     return 0
 
