@@ -26,7 +26,7 @@ PaddlePaddle最新版本1.5支持Conda安装，可以减少相关依赖安装成
 conda install -c paddle paddlepaddle-gpu cudatoolkit=9.0
 ```
  
-更多安装方式详情可以查看 [PaddlePaddle快速开始](https://www.paddlepaddle.org.cn/start)
+更多安装方式详情可以查看 [PaddlePaddle安装说明](https://www.paddlepaddle.org.cn/documentation/docs/zh/beginners_guide/install/index_cn.html)
  
 
 ## 2. 下载PaddleSeg代码
@@ -39,6 +39,7 @@ git clone https://github.com/PaddlePaddle/PaddleSeg
 ## 3. 安装PaddleSeg依赖
  
 ```
+cd PaddleSeg
 pip install -r requirements.txt
 ```
  
