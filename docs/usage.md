@@ -45,7 +45,7 @@ python pdseg/export_model.py ${FLAGS} ${OPTIONS}
 
 ### 准备工作
 在开始教程前，请先确认准备工作已经完成：
-1. 下载合适版本的paddlepaddle
+1. 正确安装了PaddlePaddle
 2. PaddleSeg相关依赖已经安装
 
 如果有不确认的地方，请参考[安装说明](./installation.md)
@@ -65,15 +65,16 @@ wget https://paddleseg.bj.bcebos.com/dataset/mini_pet.zip --no-check-certificate
 unzip mini_pet.zip
 ```
 
-### Finetune
-接着开始Finetune，为了方便体验，我们在configs目录下放置了Oxford-IIIT Pet所对应的配置文件`unet_pet.yaml`，可以通过`--cfg`指向该文件来设置训练配置。
+### 模型训练
+
+为了方便体验，我们在configs目录下放置了Oxford-IIIT Pet所对应的配置文件`unet_pet.yaml`，可以通过`--cfg`指向该文件来设置训练配置。
 
 我们选择两张GPU进行训练，这可以通过环境变量`CUDA_VISIBLE_DEVICES`来指定。
 
-除此之外，我们指定总BATCH_SIZE为4，PaddleSeg会根据可用的GPU数量，将数据平分到每张卡上，务必确保BATCH_SIZE为GPU数量的整数倍（在本例中，每张卡的BATCH_SIZE为2）。
+**NOTE**: PaddleSeg会根据可用的GPU数量，将Batch内的数据平分到每张卡上，务必确保BATCH_SIZE为训练GPU数量的整数倍
 
 ```
-export CUDA_VISIBLE_DEVICES=0,1
+export CUDA_VISIBLE_DEVICES=0
 python pdseg/train.py --use_gpu \
                       --do_eval \
                       --use_tb \
@@ -101,6 +102,7 @@ python pdseg/train.py --use_gpu \
 ### 训练过程可视化
 
 当打开do_eval和use_tb两个开关后，我们可以通过TensorBoard查看训练的效果
+
 ```shell
 tensorboard --logdir train_log --host {$HOST_IP} --port {$PORT}
 ```
