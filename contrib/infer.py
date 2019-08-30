@@ -118,10 +118,10 @@ def infer():
             output_im.putpalette(palette)
             output_im.save(result_path)
 
-        if idx % 100 == 0:
-            print('%d  processd' % (idx))
+        if (idx + 1) % 100 == 0:
+            print('%d  processd' % (idx + 1))
             
-    print('%d  processd done' % (idx))   
+    print('%d  processd done' % (idx + 1))   
     
     return 0
 

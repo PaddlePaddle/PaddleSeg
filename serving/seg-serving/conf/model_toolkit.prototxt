@@ -1,6 +1,6 @@
 engines {
   name: "human_segmentation"
-  type: "FLUID_GPU_NATIVE"
+  type: "FLUID_GPU_ANALYSIS"
   reloadable_meta: "./data/model/paddle/fluid_time_file"
   reloadable_type: "timestamp_ne"
   model_data_path: "./data/model/paddle/fluid/deeplabv3p_xception65_humanseg"

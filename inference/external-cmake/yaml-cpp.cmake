@@ -6,7 +6,7 @@ include(ExternalProject)
 message("${CMAKE_BUILD_TYPE}")
 
 ExternalProject_Add(
-        yaml-cpp
+        ext-yaml-cpp
         GIT_REPOSITORY https://github.com/jbeder/yaml-cpp.git
         GIT_TAG e0e01d53c27ffee6c86153fa41e7f5e57d3e5c90
         CMAKE_ARGS
