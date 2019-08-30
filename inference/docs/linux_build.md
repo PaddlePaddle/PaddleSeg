@@ -67,7 +67,7 @@ make install
 ```shell
 cd /root/projects/PaddleSeg/inference
 mkdir build && cd build
-cmake .. -DWITH_GPU=ON  -DPADDLE_DIR=/root/projects/fluid_inference -DCUDA_LIB=/usr/local/cuda/lib64/ -DOPENCV_DIR=/usr/local/opencv3/ -DCUDNN_LIB=/usr/local/cuda/lib64/
+cmake .. -DWITH_GPU=ON  -DPADDLE_DIR=/root/projects/fluid_inference -DCUDA_LIB=/usr/local/cuda/lib64/ -DOPENCV_DIR=/root/projects/opencv3/ -DCUDNN_LIB=/usr/local/cuda/lib64/
 make
 ```
 
