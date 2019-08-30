@@ -90,7 +90,7 @@ ln -s /usr/lib64/libcurl.so.4.3.0 /usr/lib64/libcurl.so
 
 ```bash
 cd ~
-wget -c https://paddleseg.bj.bcebos.com/serving%2Fpaddle_seg_serving_centos7.6_gpu_cuda9.2.tar.gz
+wget -c --no-check-certificate https://paddleseg.bj.bcebos.com/serving/paddle_seg_serving_centos7.6_gpu_cuda9.2.tar.gz
 tar xvfz PaddleSegServing.centos7.6_cuda9.2_gpu.tar.gz seg-serving
 ```
 
@@ -98,7 +98,7 @@ tar xvfz PaddleSegServing.centos7.6_cuda9.2_gpu.tar.gz seg-serving
 
 ```bash
 cd ~
-wget -c https://paddleseg.bj.bcebos.com/serving%2Fpaddle_seg_serving_centos7.6_cpu.tar.gz
+wget -c --no-check-certificate https://paddleseg.bj.bcebos.com/serving/paddle_seg_serving_centos7.6_cpu.tar.gz
 tar xvfz PaddleSegServing.centos7.6_cuda9.2_gpu.tar.gz seg-serving
 ```
 
