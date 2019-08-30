@@ -56,7 +56,9 @@ fluid_inference
 ![step2](https://paddleseg.bj.bcebos.com/inference/vs2019_step1.png)
 2. 点击： `文件`->`打开`->`CMake`
 ![step2.1](https://paddleseg.bj.bcebos.com/inference/vs2019_step2.png)
+
 选择项目代码所在路径，并打开`CMakeList.txt`：
+
 ![step2.2](https://paddleseg.bj.bcebos.com/inference/vs2019_step3.png)
 3. 点击：`项目`->`cpp_inference_demo的CMake设置`
 ![step3](https://paddleseg.bj.bcebos.com/inference/vs2019_step4.png)
