@@ -60,12 +60,17 @@ fluid_inference
 选择项目代码所在路径，并打开`CMakeList.txt`：
 
 ![step2.2](https://paddleseg.bj.bcebos.com/inference/vs2019_step3.png)
+
 3. 点击：`项目`->`cpp_inference_demo的CMake设置`
+
 ![step3](https://paddleseg.bj.bcebos.com/inference/vs2019_step4.png)
+
 4. 点击`浏览`，分别设置编译选项指定`CUDA`、`OpenCV`、`Paddle预测库`的路径
+
 ![step4](https://paddleseg.bj.bcebos.com/inference/vs2019_step5.png)
 
 三个编译参数的含义说明如下：
+
 |  参数名   | 含义  |
 |  ----  | ----  |
 | CUDA_LIB  | cuda的库路径 |
@@ -75,6 +80,7 @@ fluid_inference
 **设置完成后**, 点击上图中`保存并生成CMake缓存以加载变量`。
 
 5. 点击`生成`->`全部生成`
+
 ![step6](https://paddleseg.bj.bcebos.com/inference/vs2019_step6.png)
 
 
