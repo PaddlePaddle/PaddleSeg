@@ -76,7 +76,7 @@ A: 降低Batch size，使用Group Norm策略等。
 
 * PaddleSeg分割库初始版本发布，包含DeepLabv3+, U-Net, ICNet三类分割模型, 其中DeepLabv3+支持Xception, MobileNet两种可调节的骨干网络。
 * CVPR 19' LIP人体部件分割比赛冠军预测模型发布[ACE2P](./contrib/ACE2P)
-* 预置基于DeepLabv3+网络的[人像分割](./contrib/HumanSeg/)和[车道线分割](./contrib/RoadLine)预测模型发布
+* 预置基于DeepLabv3+网络的人像分割和车道线分割预测模型发布
 
 ## 如何贡献代码
 
