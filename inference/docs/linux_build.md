@@ -13,7 +13,7 @@
 ### Step1: 下载代码
 
 1. `mkdir -p /root/projects/ && cd /root/projects`
-2. `git clone http://gitlab.baidu.com/Paddle/PaddleSeg.git`
+2. `git clone https://github.com/PaddlePaddle/PaddleSeg.git`
 
 `C++`预测代码在`/root/projects/projects/PaddleSeg/inference` 目录，该目录不依赖任何`PaddleSeg`下其他目录。
 
