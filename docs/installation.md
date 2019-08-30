@@ -42,12 +42,3 @@ git clone https://github.com/PaddlePaddle/PaddleSeg
 cd PaddleSeg
 pip install -r requirements.txt
 ```
- 
-
-## 4. 本地流程测试
- 
-通过执行以下命令，会完整执行数据下载，训练，可视化，预测模型导出四个环节，用于验证PaddleSeg安装和依赖是否正常。
- 
-```
-python test/local_test_cityscapes.py
-```
