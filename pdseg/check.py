@@ -200,7 +200,7 @@ def gt_check():
 
 
     total_nc = sorted(zip(total_grt_classes, total_num_of_each_class))
-    logger.info("\nDoing label pixel statistics...\nTotal label calsses "
+    logger.info("\nDoing label pixel statistics...\nTotal label classes "
                 "and their corresponding numbers:\n{} ".format(total_nc))
 
     if len(label_wrong) == 0 and not total_nc[0][0]:
@@ -340,7 +340,8 @@ def label_gray_check():
         logger.info("All label images are gray")
     else:
         logger.info(error_print("label gray check"))
-        logger.info("{} label images are not gray".format(len(label_gray_wrong)))
+        logger.info("{} label images are not gray\nLabel pixel statistics may "
+                "be insignificant".format(len(label_gray_wrong)))
         for i in label_gray_wrong:
             logger.debug(i)
 
@@ -367,10 +368,10 @@ def check_train_dataset():
                 imread_failed.append((line, str(e)))
                 continue
 
-            is_label_gray = label_gray_check(grt)
-            if not is_label_gray:
+            is_gray = is_label_gray(grt)
+            if not is_gray:
                 label_gray_wrong.append(line)
-            grt = cv2.cvtColor(grt, cv2.COLOR_BGR2GRAY)
+                grt = cv2.cvtColor(grt, cv2.COLOR_BGR2GRAY)
             get_image_dim(img)
             is_equal_img_grt_shape = image_label_shape_check(img, grt)
             if not is_equal_img_grt_shape:
@@ -385,6 +386,7 @@ def check_train_dataset():
 
         file_list_check(list_file)
         imread_check()
+        label_gray_check()
         gt_check()
         image_type_check(img_dim)
         shape_check()
@@ -413,10 +415,10 @@ def check_val_dataset():
             except Exception as e:
                 imread_failed.append((line, e.message))
 
-            is_label_gray = label_gray_check(grt)
-            if not is_label_gray:
+            is_gray = is_label_gray(grt)
+            if not is_gray:
                 label_gray_wrong.append(line)
-            grt = cv2.cvtColor(grt, cv2.COLOR_BGR2GRAY)
+                grt = cv2.cvtColor(grt, cv2.COLOR_BGR2GRAY)
             get_image_max_height_width(img)
             get_image_min_max_aspectratio(img)
             get_image_dim(img)
@@ -432,6 +434,7 @@ def check_val_dataset():
 
         file_list_check(list_file)
         imread_check()
+        label_gray_check()
         gt_check()
         image_type_check(img_dim)
         shape_check()
@@ -466,10 +469,10 @@ def check_test_dataset():
                     imread_failed.append((line, e.message))
                     continue
 
-                is_label_gray = label_gray_check(grt)
-                if not is_label_gray:
+                is_gray = is_label_gray(grt)
+                if not is_gray:
                     label_gray_wrong.append(line)
-                grt = cv2.cvtColor(grt, cv2.COLOR_BGR2GRAY)
+                    grt = cv2.cvtColor(grt, cv2.COLOR_BGR2GRAY)
                 is_equal_img_grt_shape = image_label_shape_check(img, grt)
                 if not is_equal_img_grt_shape:
                     shape_unequal_image.append(line)
@@ -488,6 +491,8 @@ def check_test_dataset():
 
         file_list_check(list_file)
         imread_check()
+        if has_label:
+            label_gray_check()
         if has_label:
             gt_check()
         image_type_check(img_dim)
