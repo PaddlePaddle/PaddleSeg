@@ -1,3 +1,5 @@
+# 训练/评估/预测(可视化)
+
 PaddleSeg提供了 `训练`/`评估`/`预测(可视化)`/`模型导出` 等四个功能的使用脚本。四个脚本都支持通过不同的Flags来开启特定功能，也支持通过Options来修改默认的[训练配置](./config.md)。四者的使用方式非常接近，如下：
 
 ```shell
@@ -40,7 +42,7 @@ python pdseg/export_model.py ${FLAGS} ${OPTIONS}
 详见[训练配置](./config.md)
 
 ## 使用示例
-下面通过一个简单的示例，说明如何使用PaddleSeg提供的预训练模型进行finetune。我们选择基于COCO数据集预训练的unet模型作为pretrained模型，在一个Oxford-IIIT Pet数据集上进行finetune。
+下面通过一个简单的示例，说明如何基于PaddleSeg提供的预训练模型启动训练。我们选择基于COCO数据集预训练的unet模型作为预训练模型，在一个Oxford-IIIT Pet数据集上进行训练。
 **Note:** 为了快速体验，我们使用Oxford-IIIT Pet做了一个小型数据集，后续数据都使用该小型数据集。
 
 ### 准备工作
@@ -143,10 +145,10 @@ python pdseg/vis.py --use_gpu \
 2. 训练过程中会使用DATASET.VIS_FILE_LIST中的图片进行可视化显示，而vis.py则会使用DATASET.TEST_FILE_LIST
 
 ### 模型导出
-当确定模型效果满足预期后，我们需要通过export_model.py来导出一个可用于部署到服务端预测的模型：
+当确定模型效果满足预期后，我们需要通过export_model.py来导出可用于C++预测库部署的模型：
 ```shell
 python pdseg/export_model.py --cfg configs/unet_pet.yaml \
                                    TEST.TEST_MODEL test/saved_models/unet_pet/final
 ```
 
-模型会导出到freeze_model目录，接下来就是进行模型的部署，相关步骤，请查看[模型部署](../inference/README.md)
+模型会导出到freeze_model目录，接下来就是进行模型的部署，相关步骤请查看[模型部署](../inference/README.md)
