@@ -19,7 +19,7 @@ PaddleSeg是基于[PaddlePaddle](https://www.paddlepaddle.org.cn)开发的语义
 
 - **高性能**
 
-  - PaddleSeg支持多进程IO、多卡并行、多卡Batch Norm同步等训练加速策略，通过飞桨核心框架的显存优化算法，可以大幅度节约分割模型的显存开销，更快完成分割模型训练。
+  - PaddleSeg支持多进程IO、多卡并行、多卡Batch Norm同步等训练加速策略，结合飞桨核心框架的显存优化算法，可以大幅度减少分割模型的显存开销，更快完成分割模型训练。
   
 - **工业级部署**
 
