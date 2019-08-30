@@ -71,9 +71,7 @@ unzip mini_pet.zip
 
 为了方便体验，我们在configs目录下放置了Oxford-IIIT Pet所对应的配置文件`unet_pet.yaml`，可以通过`--cfg`指向该文件来设置训练配置。
 
-我们选择两张GPU进行训练，这可以通过环境变量`CUDA_VISIBLE_DEVICES`来指定。
-
-**NOTE**: PaddleSeg会根据可用的GPU数量，将Batch内的数据平分到每张卡上，务必确保BATCH_SIZE为训练GPU数量的整数倍
+我们选择GPU 0号卡进行训练，这可以通过环境变量`CUDA_VISIBLE_DEVICES`来指定。
 
 ```
 export CUDA_VISIBLE_DEVICES=0
@@ -98,8 +96,6 @@ python pdseg/train.py --use_gpu \
 > * 上述示例中，一共存在三套配置方案: PaddleSeg默认配置/unet_pet.yaml/OPTIONS，三者的优先级顺序为 OPTIONS > yaml > 默认配置。这个原则对于train.py/eval.py/vis.py/export_model.py都适用
 >
 > * 如果发现因为内存不足而Crash。请适当调低BATCH_SIZE。如果本机GPU内存充足，则可以调高BATCH_SIZE的大小以获得更快的训练速度
->
-> * windows并不支持多卡训练
 
 ### 训练过程可视化
 
