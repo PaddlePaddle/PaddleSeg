@@ -8,3 +8,4 @@ Pillow
 numpy
 six
 opencv-python
+tqdm
