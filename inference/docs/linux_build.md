@@ -13,9 +13,9 @@
 ### Step1: 下载代码
 
 1. `mkdir -p /root/projects/ && cd /root/projects`
-2. `git clone http://gitlab.baidu.com/Paddle/PaddleSeg.git`
+2. `git clone https://github.com/PaddlePaddle/PaddleSeg.git`
 
-`C++`预测代码在`/root/projects/projects/PaddleSeg/inference` 目录，该目录不依赖任何`PaddleSeg`下其他目录。
+`C++`预测代码在`/root/projects/PaddleSeg/inference` 目录，该目录不依赖任何`PaddleSeg`下其他目录。
 
 
 ### Step2: 下载PaddlePaddle C++ 预测库 fluid_inference
@@ -34,6 +34,7 @@ fluid_inference
 ```
 
 ### Step3: 安装配置OpenCV
+
 ```shell
 # 0. 切换到/root/projects目录
 cd /root/projects
@@ -43,18 +44,33 @@ wget -c https://paddleseg.bj.bcebos.com/inference/opencv-3.4.6.zip
 unzip opencv-3.4.6.zip && cd opencv-3.4.6
 # 3. 创建build目录并编译, 这里安装到/usr/local/opencv3目录
 mkdir build && cd build
-cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/local/opencv3
+cmake .. -DCMAKE_INSTALL_PREFIX=/root/projects/opencv3 -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF -DWITH_ZLIB=ON -DBUILD_ZLIB=ON -DWITH_JPEG=ON -DBUILD_JPEG=ON -DWITH_PNG=ON -DBUILD_PNG=ON -DWITH_TIFF=ON -DBUILD_TIFF=ON
 make -j4
 make install
 ```
 
+**注意：** 上述操作完成后，`opencv` 被安装在 `/root/projects/opencv3` 目录。
+
 ### Step4: 编译
+
+`CMake`编译时，涉及到四个编译参数用于指定核心依赖库的路径, 他们的定义如下:
+
+|  参数名   | 含义  |
+|  ----  | ----  |
+| CUDA_LIB  | cuda的库路径 |
+| CUDNN_LIB | cuDnn的库路径|
+| OPENCV_DIR  | OpenCV的安装路径， |
+| PADDLE_DIR | Paddle预测库的路径 |
+
+执行下列操作时，**注意**把对应的参数改为你的上述依赖库实际路径：
+
 ```shell
 cd /root/projects/PaddleSeg/inference
 mkdir build && cd build
-cmake .. -DWITH_GPU=ON  -DPADDLE_DIR=/root/projects/fluid_inference -DCUDA_LIB=/usr/local/cuda/lib64/ -DOPENCV_DIR=/usr/local/opencv3/ -DCUDNN_LIB=/usr/local/cuda/lib64/
+cmake .. -DWITH_GPU=ON  -DPADDLE_DIR=/root/projects/fluid_inference -DCUDA_LIB=/usr/local/cuda/lib64/ -DOPENCV_DIR=/root/projects/opencv3/ -DCUDNN_LIB=/usr/local/cuda/lib64/
 make
 ```
+
 
 ### Step5: 预测及可视化
 
@@ -64,6 +80,6 @@ make
 ./demo --conf=/path/to/your/conf --input_dir=/path/to/your/input/data/directory
 ```
 
-更详细说明请参考ReadMe文档： [预测和可视化部分](../ReadMe.md)
+更详细说明请参考ReadMe文档： [预测和可视化部分](../README.md)
 
 

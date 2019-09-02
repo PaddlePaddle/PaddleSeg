@@ -1,3 +1,5 @@
+# 训练/评估/预测(可视化)
+
 PaddleSeg提供了 `训练`/`评估`/`预测(可视化)`/`模型导出` 等四个功能的使用脚本。四个脚本都支持通过不同的Flags来开启特定功能，也支持通过Options来修改默认的[训练配置](./config.md)。四者的使用方式非常接近，如下：
 
 ```shell
@@ -40,12 +42,12 @@ python pdseg/export_model.py ${FLAGS} ${OPTIONS}
 详见[训练配置](./config.md)
 
 ## 使用示例
-下面通过一个简单的示例，说明如何使用PaddleSeg提供的预训练模型进行finetune。我们选择基于COCO数据集预训练的unet模型作为pretrained模型，在一个Oxford-IIIT Pet数据集上进行finetune。
+下面通过一个简单的示例，说明如何基于PaddleSeg提供的预训练模型启动训练。我们选择基于COCO数据集预训练的unet模型作为预训练模型，在一个Oxford-IIIT Pet数据集上进行训练。
 **Note:** 为了快速体验，我们使用Oxford-IIIT Pet做了一个小型数据集，后续数据都使用该小型数据集。
 
 ### 准备工作
 在开始教程前，请先确认准备工作已经完成：
-1. 下载合适版本的paddlepaddle
+1. 正确安装了PaddlePaddle
 2. PaddleSeg相关依赖已经安装
 
 如果有不确认的地方，请参考[安装说明](./installation.md)
@@ -65,15 +67,14 @@ wget https://paddleseg.bj.bcebos.com/dataset/mini_pet.zip --no-check-certificate
 unzip mini_pet.zip
 ```
 
-### Finetune
-接着开始Finetune，为了方便体验，我们在configs目录下放置了Oxford-IIIT Pet所对应的配置文件`unet_pet.yaml`，可以通过`--cfg`指向该文件来设置训练配置。
+### 模型训练
 
-我们选择两张GPU进行训练，这可以通过环境变量`CUDA_VISIBLE_DEVICES`来指定。
+为了方便体验，我们在configs目录下放置了Oxford-IIIT Pet所对应的配置文件`unet_pet.yaml`，可以通过`--cfg`指向该文件来设置训练配置。
 
-除此之外，我们指定总BATCH_SIZE为4，PaddleSeg会根据可用的GPU数量，将数据平分到每张卡上，务必确保BATCH_SIZE为GPU数量的整数倍（在本例中，每张卡的BATCH_SIZE为2）。
+我们选择GPU 0号卡进行训练，这可以通过环境变量`CUDA_VISIBLE_DEVICES`来指定。
 
 ```
-export CUDA_VISIBLE_DEVICES=0,1
+export CUDA_VISIBLE_DEVICES=0
 python pdseg/train.py --use_gpu \
                       --do_eval \
                       --use_tb \
@@ -95,12 +96,11 @@ python pdseg/train.py --use_gpu \
 > * 上述示例中，一共存在三套配置方案: PaddleSeg默认配置/unet_pet.yaml/OPTIONS，三者的优先级顺序为 OPTIONS > yaml > 默认配置。这个原则对于train.py/eval.py/vis.py/export_model.py都适用
 >
 > * 如果发现因为内存不足而Crash。请适当调低BATCH_SIZE。如果本机GPU内存充足，则可以调高BATCH_SIZE的大小以获得更快的训练速度
->
-> * windows并不支持多卡训练
 
 ### 训练过程可视化
 
 当打开do_eval和use_tb两个开关后，我们可以通过TensorBoard查看训练的效果
+
 ```shell
 tensorboard --logdir train_log --host {$HOST_IP} --port {$PORT}
 ```
@@ -141,10 +141,10 @@ python pdseg/vis.py --use_gpu \
 2. 训练过程中会使用DATASET.VIS_FILE_LIST中的图片进行可视化显示，而vis.py则会使用DATASET.TEST_FILE_LIST
 
 ### 模型导出
-当确定模型效果满足预期后，我们需要通过export_model.py来导出一个可用于部署到服务端预测的模型：
+当确定模型效果满足预期后，我们需要通过export_model.py来导出可用于C++预测库部署的模型：
 ```shell
 python pdseg/export_model.py --cfg configs/unet_pet.yaml \
                                    TEST.TEST_MODEL test/saved_models/unet_pet/final
 ```
 
-模型会导出到freeze_model目录，接下来就是进行模型的部署，相关步骤，请查看[模型部署](../inference/README.md)
+模型会导出到freeze_model目录，接下来就是进行模型的部署，相关步骤请查看[模型部署](../inference/README.md)

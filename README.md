@@ -19,7 +19,7 @@ PaddleSeg是基于[PaddlePaddle](https://www.paddlepaddle.org.cn)开发的语义
 
 - **高性能**
 
-  - PaddleSeg支持多进程IO、多卡并行、多卡Batch Norm同步等训练加速策略，通过飞桨核心框架的显存优化算法，可以大幅度节约分割模型的显存开销，更快完成分割模型训练。
+  - PaddleSeg支持多进程IO、多卡并行、多卡Batch Norm同步等训练加速策略，结合飞桨核心框架的显存优化算法，可以大幅度减少分割模型的显存开销，更快完成分割模型训练。
   
 - **工业级部署**
 
@@ -76,7 +76,7 @@ A: 降低Batch size，使用Group Norm策略等。
 
 * PaddleSeg分割库初始版本发布，包含DeepLabv3+, U-Net, ICNet三类分割模型, 其中DeepLabv3+支持Xception, MobileNet两种可调节的骨干网络。
 * CVPR 19' LIP人体部件分割比赛冠军预测模型发布[ACE2P](./contrib/ACE2P)
-* 预置基于DeepLabv3+网络的[人像分割](./contrib/HumanSeg/)和[车道线分割](./contrib/RoadLine)预测模型发布
+* 预置基于DeepLabv3+网络的人像分割和车道线分割预测模型发布
 
 ## 如何贡献代码
 
