@@ -44,7 +44,7 @@ wget -c https://paddleseg.bj.bcebos.com/inference/opencv-3.4.6.zip
 unzip opencv-3.4.6.zip && cd opencv-3.4.6
 # 3. 创建build目录并编译, 这里安装到/usr/local/opencv3目录
 mkdir build && cd build
-cmake .. -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF -DCMAKE_INSTALL_PREFIX=/root/projects/opencv3
+cmake .. -DCMAKE_INSTALL_PREFIX=/root/projects/opencv3 -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF -DWITH_JPEG=ON -DBUILD_JPEG=ON -DWITH_PNG=ON -DBUILD_PNG=ON -DWITH_TIFF=ON -DBUILD_TIFF=ON
 make -j4
 make install
 ```
