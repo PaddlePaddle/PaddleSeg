@@ -42,7 +42,7 @@ namespace PaddleSolution {
                 for (int c = 0; c < channels; ++c) {
                     int top_index = (c * rh + h) * rw + w;
                     float pixel = static_cast<float>(ptr[im_index++]);
-                    pixel = (pixel - pmean[c]) / pscale[c];
+                    pixel = (pixel / 255 - pmean[c]) / pscale[c];
                     data[top_index] = pixel;
                 }
             }
