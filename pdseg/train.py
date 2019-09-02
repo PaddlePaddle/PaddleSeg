@@ -226,6 +226,12 @@ def train(cfg):
     batch_size_per_dev = cfg.BATCH_SIZE // dev_count
     print("batch_size_per_dev: {}".format(batch_size_per_dev))
 
+    document_type = '_'.join([cfg.SOLVER.OPTIMIZER,cfg.SOLVER.LR_POLICY, \
+            "batch_size", str(cfg.BATCH_SIZE), "GPUs", str(dev_count),\
+            "epochs",str(cfg.SOLVER.NUM_EPOCHS), "lr", str(cfg.SOLVER.LR)])
+    cfg.TRAIN.MODEL_SAVE_DIR = os.path.join( cfg.TRAIN.MODEL_SAVE_DIR, document_type)
+
+    print(cfg.TRAIN.MODEL_SAVE_DIR)
     py_reader, avg_loss, lr, pred, grts, masks = build_model(
         train_prog, startup_prog, phase=ModelPhase.TRAIN)
     py_reader.decorate_sample_generator(
