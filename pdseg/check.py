@@ -225,7 +225,7 @@ def eval_crop_size_check(max_height, max_width, min_aspectratio, max_aspectratio
     """
 
     if cfg.AUG.AUG_METHOD == "stepscaling":
-        if max_width <= cfg.EVAL_CROP_SIZE[0] or max_height <= cfg.EVAL_CROP_SIZE[1]:
+        if max_width <= cfg.EVAL_CROP_SIZE[0] and max_height <= cfg.EVAL_CROP_SIZE[1]:
             logger.info(correct_print("EVAL_CROP_SIZE check"))
         else:
             logger.info(error_print("EVAL_CROP_SIZE check"))
