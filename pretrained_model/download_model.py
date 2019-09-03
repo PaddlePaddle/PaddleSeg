@@ -21,13 +21,28 @@ sys.path.append(TEST_PATH)
 
 from test_utils import download_file_and_uncompress
 
-
-def download_pet_dataset(savepath, extrapath):
-    url = "https://paddleseg.bj.bcebos.com/dataset/mini_pet.zip"
-    download_file_and_uncompress(
-        url=url, savepath=savepath, extrapath=extrapath)
-
+model_urls = {
+    "deeplabv3plus_mobilenetv2-1-0_bn_cityscapes":
+    "https://paddleseg.bj.bcebos.com/models/mobilenet_cityscapes.tgz",
+    "unet_bn_coco": "https://paddleseg.bj.bcebos.com/models/unet_coco_v3.tgz"
+}
 
 if __name__ == "__main__":
-    download_pet_dataset(LOCAL_PATH, LOCAL_PATH)
-    print("Dataset download finish!")
+    if len(sys.argv) != 2:
+        print("usage:\n  python download_model.py ${MODEL_NAME}")
+        exit(1)
+
+    model_name = sys.argv[1]
+    if not model_name in model_urls.keys():
+        print("Only support: \n  {}".format("\n  ".join(
+            list(model_urls.keys()))))
+        exit(1)
+
+    url = model_urls[model_name]
+    download_file_and_uncompress(
+        url=url,
+        savepath=LOCAL_PATH,
+        extrapath=LOCAL_PATH,
+        extraname=model_name)
+
+    print("Pretrained Model download success!")
