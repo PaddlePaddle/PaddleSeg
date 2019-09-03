@@ -1,0 +1,15 @@
+language: python
+
+python:
+  - '2.7'
+  - '3.5'
+  - '3.6'
+
+script:
+  - if [[ $TRAVIS_PYTHON_VERSION != 2.7 ]]; then /bin/bash ./test/ci/check_code_style.sh; fi
+  - /bin/bash ./test/ci/test_download.sh
+
+notifications:
+  email:
+    on_success: change
+    on_failure: always
