@@ -5,7 +5,8 @@
 * Python2.7 or 3.5+
 * CUDA 9.2
 * cudnn v7.1
-
+* paddlepaddle >= 1.5.2
+* nccl >= 2.4.7
 
 
 ## 1. 安装PaddlePaddle
