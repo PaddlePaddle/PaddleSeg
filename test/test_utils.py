@@ -68,7 +68,7 @@ def _download_file(url, savepath, print_progress):
                 if print_progress:
                     done = int(50 * dl / total_length)
                     progress("[%-50s] %.2f%%" %
-                             ('=' * done, float(dl / total_length * 100)))
+                             ('=' * done, float(100 * dl) / total_length))
         if print_progress:
             progress("[%-50s] %.2f%%" % ('=' * 50, 100), end=True)
 
@@ -88,7 +88,7 @@ def _uncompress_file(filepath, extrapath, delete_file, print_progress):
         if print_progress:
             done = int(50 * float(index) / total_num)
             progress(
-                "[%-50s] %.2f%%" % ('=' * done, float(index / total_num * 100)))
+                "[%-50s] %.2f%%" % ('=' * done, float(100 * index) / total_num))
     if print_progress:
         progress("[%-50s] %.2f%%" % ('=' * 50, 100), end=True)
 
