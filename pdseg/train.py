@@ -216,7 +216,7 @@ def train(cfg):
     place = places[0]
     # Get number of GPU
     dev_count = len(places)
-    print("#GPU-Devices: {}".format(dev_count))
+    print("#Device count: {}".format(dev_count))
 
     # Make sure BATCH_SIZE can divided by GPU cards
     assert cfg.BATCH_SIZE % dev_count == 0, (
