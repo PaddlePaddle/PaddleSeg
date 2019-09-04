@@ -311,9 +311,6 @@ def train(cfg):
             exit(1)
 
         from tb_paddle import SummaryWriter
-
-        if os.path.exists(args.tb_log_dir):
-            shutil.rmtree(args.tb_log_dir)
         log_writer = SummaryWriter(args.tb_log_dir)
 
     global_step = 0
