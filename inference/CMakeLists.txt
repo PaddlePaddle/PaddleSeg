@@ -36,7 +36,7 @@ if (NOT DEFINED OPENCV_DIR OR ${OPENCV_DIR} STREQUAL "")
 endif()
 
 include_directories("${CMAKE_SOURCE_DIR}/")
-include_directories("${CMAKE_CURRENT_BINARY_DIR}/ext/yaml-cpp/src/yaml-cpp/include")
+include_directories("${CMAKE_CURRENT_BINARY_DIR}/ext/yaml-cpp/src/ext-yaml-cpp/include")
 include_directories("${PADDLE_DIR}/")
 include_directories("${PADDLE_DIR}/third_party/install/protobuf/include")
 include_directories("${PADDLE_DIR}/third_party/install/glog/include")
@@ -82,7 +82,7 @@ if (WIN32)
         add_definitions(-DSTATIC_LIB)
     endif()
 else()
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -o2 -std=c++11")
     set(CMAKE_STATIC_LIBRARY_PREFIX "")
 endif()
 
@@ -160,14 +160,13 @@ if (NOT WIN32)
     set(EXTERNAL_LIB "-lrt -ldl -lpthread")
     set(DEPS ${DEPS}
         ${MATH_LIB} ${MKLDNN_LIB}
-        glog gflags protobuf snappystream snappy z xxhash
+        glog gflags protobuf yaml-cpp snappystream snappy z xxhash
         ${EXTERNAL_LIB})
 else()
     set(DEPS ${DEPS}
         ${MATH_LIB} ${MKLDNN_LIB}
         opencv_world346 glog libyaml-cppmt gflags_static libprotobuf snappy zlibstatic xxhash snappystream ${EXTERNAL_LIB})
     set(DEPS ${DEPS} libcmt shlwapi)
-	set(DEPS ${DEPS}  ${YAML_CPP_LIBRARY})
 endif(NOT WIN32)
 
 if(WITH_GPU)
@@ -206,13 +205,17 @@ ADD_LIBRARY(libpaddleseg_inference STATIC ${PADDLESEG_INFERENCE_SRCS})
 target_link_libraries(libpaddleseg_inference ${DEPS})
 
 add_executable(demo demo.cpp)
-ADD_DEPENDENCIES(libpaddleseg_inference yaml-cpp)
-ADD_DEPENDENCIES(demo yaml-cpp libpaddleseg_inference)
+ADD_DEPENDENCIES(libpaddleseg_inference ext-yaml-cpp)
+ADD_DEPENDENCIES(demo ext-yaml-cpp libpaddleseg_inference)
 target_link_libraries(demo ${DEPS} libpaddleseg_inference)
 
-
-add_custom_command(TARGET demo POST_BUILD
+if (WIN32)
+    add_custom_command(TARGET demo POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_if_different ${PADDLE_DIR}/third_party/install/mklml/lib/mklml.dll ./mklml.dll
         COMMAND ${CMAKE_COMMAND} -E copy_if_different ${PADDLE_DIR}/third_party/install/mklml/lib/libiomp5md.dll ./libiomp5md.dll
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different ${PADDLE_DIR}/third_party/install/mkldnn/bin/mkldnn.dll ./mkldnn.dll
-        )
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different ${PADDLE_DIR}/third_party/install/mkldnn/lib/mkldnn.dll ./mkldnn.dll
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different ${PADDLE_DIR}/third_party/install/mklml/lib/mklml.dll ./release/mklml.dll
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different ${PADDLE_DIR}/third_party/install/mklml/lib/libiomp5md.dll ./release/libiomp5md.dll
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different ${PADDLE_DIR}/third_party/install/mkldnn/lib/mkldnn.dll ./mkldnn.dll
+    )
+endif()

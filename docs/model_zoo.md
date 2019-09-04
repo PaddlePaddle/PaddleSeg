@@ -30,7 +30,7 @@ train数据集为coco instance分割数据集合转换成的语义分割数据�
 |---|---|---|---|---|---|---|
 | DeepLabv3+/MobileNetv2/bn | COCO | MODEL.MODEL_NAME: deeplabv3p <br> MODEL.DEEPLAB.BACKBONE: mobilenet <br> MODEL.DEEPLAB.DEPTH_MULTIPLIER: 1.0 <br> MODEL.DEFAULT_NORM_TYPE: bn|[deeplabv3plus_coco_bn_init.tgz](https://bj.bcebos.com/v1/paddleseg/deeplabv3plus_coco_bn_init.tgz) | 16 | --| -- |
 | DeeplabV3+/Xception65/bn | COCO | MODEL.MODEL_NAME: deeplabv3p <br> MODEL.DEEPLAB.BACKBONE: xception_65 <br> MODEL.DEFAULT_NORM_TYPE: bn | [xception65_coco.tgz](https://paddleseg.bj.bcebos.com/models/xception65_coco.tgz)| 16 | -- | -- |
-| UNet/bn | COCO | MODEL.MODEL_NEME: unet  <br> MODEL.DEFAULT_NORM_TYPE: bn | [unet](https://paddleseg.bj.bcebos.com/models/unet_coco_v2.tgz) | 16 | -- | -- |
+| UNet/bn | COCO | MODEL.MODEL_NEME: unet  <br> MODEL.DEFAULT_NORM_TYPE: bn | [unet](https://paddleseg.bj.bcebos.com/models/unet_coco_v3.tgz) | 16 | -- | -- |
 
 ## Cityscapes预训练模型
 
@@ -40,5 +40,5 @@ train数据集合为Cityscapes 训练集合，测试为Cityscapes的验证集合
 |---|---|---|---|---|---|---|
 | DeepLabv3+/MobileNetv2/bn | Cityscapes |MODEL.MODEL_NAME: deeplabv3p <br> MODEL.DEEPLAB.BACKBONE: mobilenet <br> MODEL.DEEPLAB.DEPTH_MULTIPLIER: 1.0 <br> MODEL.DEEPLAB.ENCODER_WITH_ASPP: False <br> MODEL.DEEPLAB.ENABLE_DECODER: False <br> MODEL.DEFAULT_NORM_TYPE: bn|[mobilenet_cityscapes.tgz](https://paddleseg.bj.bcebos.com/models/mobilenet_cityscapes.tgz) |16|false| 0.698|
 | DeepLabv3+/Xception65/gn  | Cityscapes |MODEL.MODEL_NAME: deeplabv3p <br> MODEL.DEEPLAB.BACKBONE: xception_65 <br> MODEL.DEFAULT_NORM_TYPE: gn | [deeplabv3p_xception65_cityscapes.tgz](https://paddleseg.bj.bcebos.com/models/deeplabv3p_xception65_cityscapes.tgz) |16|false| 0.7804 |
-| DeepLabv3+/Xception65/bn | Cityscapes | MODEL.MODEL_NAME: deeplabv3p <br>  MODEL.DEEPLAB.BACKBONE: xception_65 <br> MODEL.DEFAULT_NORM_TYPE: bn| [Xception65_deeplab_cityscapes.tgz](https://paddleseg.bj.bcebos.com/models/Xception65_deeplab_cityscapes.tgz) | 16 | false | 0.7715 |
-| ICNet/bn | Cityscapes | MODEL.MODEL_NAME: icnet <br> MODEL.DEFAULT_NORM_TYPE: bn |  [icnet_cityscapes.tgz](https://paddleseg.bj.bcebos.com/models/icnet_cityscapes.tgz) |16|false| 0.6854 |
+| DeepLabv3+/Xception65/bn | Cityscapes | MODEL.MODEL_NAME: deeplabv3p <br>  MODEL.DEEPLAB.BACKBONE: xception_65 <br> MODEL.DEFAULT_NORM_TYPE: bn| [Xception65_deeplab_cityscapes.tgz](https://paddleseg.bj.bcebos.com/models/xception65_bn_cityscapes.tgz) | 16 | false | 0.7715 |
+| ICNet/bn | Cityscapes | MODEL.MODEL_NAME: icnet <br> MODEL.DEFAULT_NORM_TYPE: bn |  [icnet_cityscapes.tgz](https://paddleseg.bj.bcebos.com/models/icnet6831.tar.gz) |16|false| 0.6831 |

@@ -1,10 +1,5 @@
 # Augmented Context Embedding with Edge Perceiving(ACE2P)
 
-
-- 类别:  图像-语义分割
-- 网络:  ACE2P
-- 数据集:  LIP
-
 ## 模型概述
 人体解析(Human Parsing)是细粒度的语义分割任务，旨在识别像素级别的人类图像的组成部分（例如，身体部位和服装）。ACE2P通过融合底层特征、全局上下文信息和边缘细节，
 端到端训练学习人体解析任务。以ACE2P单人人体解析网络为基础的解决方案在CVPR2019第三届LIP挑战赛中赢得了全部三个人体解析任务的第一名
