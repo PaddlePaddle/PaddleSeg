@@ -67,7 +67,7 @@ MODEL:
     DEEPLAB:
         BACKBONE: "xception_65"
 TRAIN:
-    PRETRAINED_MODEL: "./pretrained_model/deeplabv3p_xception65_bn_pet/"
+    PRETRAINED_MODEL_DIR: "./pretrained_model/deeplabv3p_xception65_bn_pet/"
 
 
 # 其他配置
@@ -79,7 +79,6 @@ AUG:
 BATCH_SIZE: 4
 TRAIN:
     MODEL_SAVE_DIR: "./finetune/deeplabv3p_xception65_bn_pet/"
-    RESUME: False
     SNAPSHOT_EPOCH: 10
 TEST:
     TEST_MODEL: "./finetune/deeplabv3p_xception65_bn_pet/final"

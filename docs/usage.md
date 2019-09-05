@@ -76,7 +76,7 @@ python pdseg/train.py --use_gpu \
                       --tb_log_dir train_log \
                       --cfg configs/unet_pet.yaml \
                       BATCH_SIZE 4 \
-                      TRAIN.PRETRAINED_MODEL pretrained_model/unet_bn_coco \
+                      TRAIN.PRETRAINED_MODEL_DIR pretrained_model/unet_bn_coco \
                       TRAIN.SYNC_BATCH_NORM True \
                       SOLVER.LR 5e-5
 ```

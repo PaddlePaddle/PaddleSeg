@@ -66,7 +66,7 @@ MODEL:
     DEFAULT_NORM_TYPE: "bn"
     MULTI_LOSS_WEIGHT: "[1.0, 0.4, 0.16]"
 TRAIN:
-    PRETRAINED_MODEL: "./pretrained_model/icnet_bn_cityscapes/"
+    PRETRAINED_MODEL_DIR: "./pretrained_model/icnet_bn_cityscapes/"
 
 
 # 其他配置
@@ -78,7 +78,6 @@ AUG:
 BATCH_SIZE: 4
 TRAIN:
     MODEL_SAVE_DIR: "./finetune/icnet_pet/"
-    RESUME: False
     SNAPSHOT_EPOCH: 10
 TEST:
     TEST_MODEL: "./finetune/icnet_pet/final"
@@ -118,4 +117,4 @@ python pdseg/eval.py --use_gpu --cfg ./configs/test_pet.yaml
 
 |预训练模型名称|BackBone|Norm|数据集|配置|
 |-|-|-|-|-|
-|icnet_bn_cityscapes|-|bn|Cityscapes|MODEL.MODEL_NAME: icnet <br> MODEL.DEFAULT_NORM_TYPE: bn|
+|icnet_bn_cityscapes|-|bn|Cityscapes|MODEL.MODEL_NAME: icnet <br> MODEL.DEFAULT_NORM_TYPE: bn <br> MULTI_LOSS_WEIGHT: [1.0, 0.4, 0.16]|
