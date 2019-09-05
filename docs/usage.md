@@ -53,7 +53,7 @@ python pdseg/vis.py ${FLAGS} ${OPTIONS}
 ### 下载预训练模型
 ```shell
 # 下载预训练模型并进行解压
-python pretrained_model/download_model unet_bn_coco
+python pretrained_model/download_model.py unet_bn_coco
 ```
 ### 下载mini_pet数据集
 我们使用了Oxford-IIIT中的猫和狗两个类别数据制作了一个小数据集mini_pet，用于快速体验
