@@ -89,7 +89,7 @@ def resnet(input):
     # PSPNET backbone: resnet, 默认resnet50
     # end_points: resnet终止层数
     # dilation_dict: resnet block数及对应的膨胀卷积尺度
-    scale = cfg.MODEL.ICNET.DEPTH_MULTIPLIER
+    scale = cfg.MODEL.PSPNET.DEPTH_MULTIPLIER
     layers = cfg.MODEL.PSPNET.LAYERS
     end_points = layers - 1
     dilation_dict = {2:2, 3:4}
