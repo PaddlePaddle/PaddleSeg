@@ -139,14 +139,15 @@ class ResNet():
                         else:
                             conv_name = "res" + str(block + 2) + "b" + str(i)
                     else:
-                        conv_name = "conv" + str(block + 2) + '_' + str(1 + i)
+                        conv_name = "res" + str(block + 2) + chr(97 + i)
                     dilation_rate = get_dilated_rate(dilation_dict, block)
+                    
                     conv = self.bottleneck_block(
                         input=conv,
                         num_filters=int(num_filters[block] * self.scale),
                         stride=2
                         if i == 0 and block != 0 and dilation_rate == 1 else 1,
-                        name=conv_name, 
+                        name=conv_name,
                         dilation=dilation_rate)
                     layer_count += 3
 
@@ -216,7 +217,7 @@ class ResNet():
                       name=None):
    
         if self.stem == 'pspnet':
-            bias_attr=ParamAttr(name=name + "/biases")
+            bias_attr=ParamAttr(name=name + "_biases")
         else:
             bias_attr=False
 
@@ -229,20 +230,21 @@ class ResNet():
             dilation=dilation,
             groups=groups,
             act=None,
-            param_attr=ParamAttr(name=name + "/weights"),
+            param_attr=ParamAttr(name=name + "_weights"),
             bias_attr=bias_attr,
             name=name + '.conv2d.output.1')
 
-        bn_name = name + '/BatchNorm/'
-        return fluid.layers.batch_norm(
-            input=conv,
-            act=act,
-            name=bn_name + '.output.1',
-            param_attr=ParamAttr(name=bn_name + 'gamma'),
-            bias_attr=ParamAttr(bn_name + 'beta'),
-            moving_mean_name=bn_name + 'moving_mean',
-            moving_variance_name=bn_name + 'moving_variance',
-        )
+        if name == "conv1":
+            bn_name = "bn_" + name
+        else:
+            bn_name = "bn" + name[3:]
+        return fluid.layers.batch_norm(input=conv,
+                                       act=act,
+                                       name=bn_name + '.output.1',
+                                       param_attr=ParamAttr(name=bn_name + '_scale'),
+                                       bias_attr=ParamAttr(bn_name + '_offset'),
+                                       moving_mean_name=bn_name + '_mean',
+                                       moving_variance_name=bn_name + '_variance', )
 
     def shortcut(self, input, ch_out, stride, is_first, name):
         ch_in = input.shape[1]
