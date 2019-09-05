@@ -83,6 +83,7 @@ PaddleSeg提供了多种预训练模型，并且以NoteBook的方式提供了在
 |U-Net宠物分割|[点击体验](https://aistudio.baidu.com/aistudio/projectDetail/102889)|
 |PaddleSeg人像分割|[点击体验](https://aistudio.baidu.com/aistudio/projectDetail/100798)|
 |DeepLabv3+图像分割|[点击体验](https://aistudio.baidu.com/aistudio/projectDetail/101696)|
+|PaddleSeg特色垂类模型|[点击体验](https://aistudio.baidu.com/aistudio/projectdetail/115541)|
 
 </br>
 
@@ -92,10 +93,9 @@ PaddleSeg提供了多种预训练模型，并且以NoteBook的方式提供了在
 
   **`v0.1.0`**
   * PaddleSeg分割库初始版本发布，包含DeepLabv3+, U-Net, ICNet三类分割模型, 其中DeepLabv3+支持Xception, MobileNet两种可调节的骨干网络。
-  * CVPR 19' LIP人体部件分割比赛冠军预测模型发布[ACE2P](./contrib/ACE2P)
+  * CVPR19 LIP人体部件分割比赛冠军预测模型发布[ACE2P](./contrib/ACE2P)
   * 预置基于DeepLabv3+网络的[人像分割](./contrib/HumanSeg/)和[车道线分割](./contrib/RoadLine)预测模型发布
 
-</br>
 </br>
 
 ## 如何贡献代码
