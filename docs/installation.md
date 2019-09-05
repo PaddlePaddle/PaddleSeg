@@ -2,11 +2,11 @@
 
 ## 推荐开发环境
 
-* Python2.7 or 3.5+
+* Python 2.7 or 3.5+
 * CUDA 9.2
-* cuDNN v7.1
+* NVIDIA cuDNN v7.1
 * PaddlePaddle >= 1.5.2
-* 如果有多卡训练需求，请安装 NCCL >= 2.4.7
+* 如果有多卡训练需求，请安装 NVIDIA NCCL >= 2.4.7, 并在Linux环境下运行
 
 
 ## 1. 安装PaddlePaddle
