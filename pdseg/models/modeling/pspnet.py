@@ -29,7 +29,7 @@ def get_logit_interp(input, num_classes, out_shape, name="logit"):
         logit_interp = fluid.layers.resize_bilinear(
                     logit, 
                     out_shape=out_shape,
-                    name='logit_interp') 
+                    name=name+'_interp') 
     return logit_interp
 
 
@@ -42,7 +42,7 @@ def psp_module(input, out_features):
     cat_layers = []
     sizes = (1,2,3,6)
     for size in sizes:
-        psp_name = "psp_conv" + str(size)
+        psp_name = "psp" + str(size)
         with scope(psp_name):
             pool = fluid.layers.adaptive_pool2d(input, 
                     pool_size=[size, size], 
@@ -60,7 +60,7 @@ def psp_module(input, out_features):
     cat_layers = [input] + cat_layers[::-1]
     cat = fluid.layers.concat(cat_layers, axis=1, name='psp_cat')
 
-    psp_end_name = "psp_conv_end"
+    psp_end_name = "psp_end"
     with scope(psp_end_name):
         data = conv(cat, 
                     out_features, 
