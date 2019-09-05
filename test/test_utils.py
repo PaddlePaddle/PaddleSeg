@@ -84,7 +84,7 @@ def _uncompress_file(filepath, extrapath, delete_file, print_progress):
     else:
         handler = functools.partial(_uncompress_file_tar, mode="r")
 
-    for total_num, index in handler(filepath, extrapath):
+    for total_num, index, rootpath in handler(filepath, extrapath):
         if print_progress:
             done = int(50 * float(index) / total_num)
             progress(
@@ -95,27 +95,31 @@ def _uncompress_file(filepath, extrapath, delete_file, print_progress):
     if delete_file:
         os.remove(filepath)
 
+    return rootpath
+
 
 def _uncompress_file_zip(filepath, extrapath):
     files = zipfile.ZipFile(filepath, 'r')
     filelist = files.namelist()
+    rootpath = filelist[0]
     total_num = len(filelist)
     for index, file in enumerate(filelist):
         files.extract(file, extrapath)
-        yield total_num, index
+        yield total_num, index, rootpath
     files.close()
-    yield total_num, index
+    yield total_num, index, rootpath
 
 
 def _uncompress_file_tar(filepath, extrapath, mode="r:gz"):
     files = tarfile.open(filepath, mode)
     filelist = files.getnames()
     total_num = len(filelist)
+    rootpath = filelist[0]
     for index, file in enumerate(filelist):
         files.extract(file, extrapath)
-        yield total_num, index
+        yield total_num, index, rootpath
     files.close()
-    yield total_num, index
+    yield total_num, index, rootpath
 
 
 def download_file_and_uncompress(url,
@@ -150,7 +154,9 @@ def download_file_and_uncompress(url,
         if not os.path.exists(savename):
             if not os.path.exists(savepath):
                 _download_file(url, savepath, print_progress)
-            _uncompress_file(savepath, extrapath, delete_file, print_progress)
+            savename = _uncompress_file(savepath, extrapath, delete_file,
+                                        print_progress)
+            savename = os.path.join(extrapath, savename)
         shutil.move(savename, extraname)
 
 
