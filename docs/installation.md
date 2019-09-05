@@ -6,7 +6,7 @@
 * CUDA 9.2
 * NVIDIA cuDNN v7.1
 * PaddlePaddle >= 1.5.2
-* 如果有多卡训练需求，请安装 NVIDIA NCCL >= 2.4.7, 并在Linux环境下运行
+* 如果有多卡训练需求，请安装 NVIDIA NCCL >= 2.4.7，并在Linux环境下运行
 
 
 ## 1. 安装PaddlePaddle
