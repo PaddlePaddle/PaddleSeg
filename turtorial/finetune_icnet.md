@@ -64,6 +64,7 @@ DATASET:
 MODEL:
     MODEL_NAME: "icnet"
     DEFAULT_NORM_TYPE: "bn"
+    MULTI_LOSS_WEIGHT: "[1.0, 0.4, 0.16]"
 TRAIN:
     PRETRAINED_MODEL: "./pretrained_model/icnet_bn_cityscapes/"
 
