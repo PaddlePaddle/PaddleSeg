@@ -29,7 +29,7 @@ def get_logit_interp(input, num_classes, out_shape, name="logit"):
         logit_interp = fluid.layers.resize_bilinear(
                     logit, 
                     out_shape=out_shape,
-                    name='logit_interp') 
+                    name=name+'_interp') 
     return logit_interp
 
 
@@ -42,7 +42,7 @@ def psp_module(input, out_features):
     cat_layers = []
     sizes = (1,2,3,6)
     for size in sizes:
-        psp_name = "psp_conv" + str(size)
+        psp_name = "psp" + str(size)
         with scope(psp_name):
             pool = fluid.layers.adaptive_pool2d(input, 
                     pool_size=[size, size], 
@@ -60,7 +60,7 @@ def psp_module(input, out_features):
     cat_layers = [input] + cat_layers[::-1]
     cat = fluid.layers.concat(cat_layers, axis=1, name='psp_cat')
 
-    psp_end_name = "psp_conv_end"
+    psp_end_name = "psp_end"
     with scope(psp_end_name):
         data = conv(cat, 
                     out_features, 
@@ -77,7 +77,6 @@ def resnet(input):
     # end_points: resnet终止层数
     # dilation_dict: resnet block数及对应的膨胀卷积尺度
     scale = cfg.MODEL.ICNET.DEPTH_MULTIPLIER
-    scale = cfg.MODEL.PSPNET.DEPTH_MULTIPLIER
     layers = cfg.MODEL.PSPNET.LAYERS
     end_points = layers - 1
     dilation_dict = {2:2, 3:4}
