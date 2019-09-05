@@ -20,6 +20,7 @@ import sys
 import tarfile
 import zipfile
 import platform
+import functools
 
 lasttime = time.time()
 FLUSH_INTERVAL = 0.1
@@ -67,7 +68,7 @@ def _download_file(url, savepath, print_progress):
                 if print_progress:
                     done = int(50 * dl / total_length)
                     progress("[%-50s] %.2f%%" %
-                             ('=' * done, float(dl / total_length * 100)))
+                             ('=' * done, float(100 * dl) / total_length))
         if print_progress:
             progress("[%-50s] %.2f%%" % ('=' * 50, 100), end=True)
 
@@ -78,14 +79,16 @@ def _uncompress_file(filepath, extrapath, delete_file, print_progress):
 
     if filepath.endswith("zip"):
         handler = _uncompress_file_zip
-    else:
+    elif filepath.endswith("tgz"):
         handler = _uncompress_file_tar
+    else:
+        handler = functools.partial(_uncompress_file_tar, mode="r")
 
     for total_num, index in handler(filepath, extrapath):
         if print_progress:
             done = int(50 * float(index) / total_num)
             progress(
-                "[%-50s] %.2f%%" % ('=' * done, float(index / total_num * 100)))
+                "[%-50s] %.2f%%" % ('=' * done, float(100 * index) / total_num))
     if print_progress:
         progress("[%-50s] %.2f%%" % ('=' * 50, 100), end=True)
 
@@ -104,8 +107,8 @@ def _uncompress_file_zip(filepath, extrapath):
     yield total_num, index
 
 
-def _uncompress_file_tar(filepath, extrapath):
-    files = tarfile.open(filepath, "r:gz")
+def _uncompress_file_tar(filepath, extrapath, mode="r:gz"):
+    files = tarfile.open(filepath, mode)
     filelist = files.getnames()
     total_num = len(filelist)
     for index, file in enumerate(filelist):
@@ -118,6 +121,7 @@ def _uncompress_file_tar(filepath, extrapath):
 def download_file_and_uncompress(url,
                                  savepath=None,
                                  extrapath=None,
+                                 extraname=None,
                                  print_progress=True,
                                  cover=False,
                                  delete_file=True):
@@ -129,19 +133,25 @@ def download_file_and_uncompress(url,
 
     savename = url.split("/")[-1]
     savepath = os.path.join(savepath, savename)
-    extraname = ".".join(savename.split(".")[:-1])
-    extraname = os.path.join(extrapath, extraname)
+    savename = ".".join(savename.split(".")[:-1])
+    savename = os.path.join(extrapath, savename)
+    extraname = savename if extraname is None else os.path.join(
+        extrapath, extraname)
 
     if cover:
         if os.path.exists(savepath):
             shutil.rmtree(savepath)
+        if os.path.exists(savename):
+            shutil.rmtree(savename)
         if os.path.exists(extraname):
             shutil.rmtree(extraname)
 
     if not os.path.exists(extraname):
-        if not os.path.exists(savepath):
-            _download_file(url, savepath, print_progress)
-        _uncompress_file(savepath, extrapath, delete_file, print_progress)
+        if not os.path.exists(savename):
+            if not os.path.exists(savepath):
+                _download_file(url, savepath, print_progress)
+            _uncompress_file(savepath, extrapath, delete_file, print_progress)
+        shutil.move(savename, extraname)
 
 
 def _pdseg(command, flags, options, devices):

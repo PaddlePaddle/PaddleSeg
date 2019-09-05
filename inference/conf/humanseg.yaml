@@ -1,6 +1,6 @@
 DEPLOY:
     USE_GPU: 1
-    MODEL_PATH: "C:\\PaddleDeploy\\models\\deeplabv3p_xception65_humanseg"
+    MODEL_PATH: "/root/projects/models/deeplabv3p_xception65_humanseg"
     MODEL_NAME: "unet"
     MODEL_FILENAME: "__model__"
     PARAMS_FILENAME: "__params__"
@@ -11,5 +11,5 @@ DEPLOY:
     NUM_CLASSES: 2
     CHANNELS : 3
     PRE_PROCESSOR: "SegPreProcessor"
-    PREDICTOR_MODE: "ANALYSIS"
+    PREDICTOR_MODE: "NATIVE"
     BATCH_SIZE : 3

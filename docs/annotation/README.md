@@ -11,7 +11,7 @@
 打开终端输入`labelme`会出现LableMe的交互界面，可以先预览`LabelMe`给出的已标注好的图片，再开始标注自定义数据集。
 
 <div align="center">
-    <img src="./docs/imgs/annotation/image-1.png" width="600px"/>
+    <img src="../imgs/annotation/image-1.png" width="600px"/>
     <p>图1 LableMe交互界面的示意图</p>
  </div>
 
@@ -24,7 +24,7 @@ git clone https://github.com/wkentaro/labelme
 终端输入`labelme`会出现LableMe的交互界面，点击`OpenDir`打开`<path/to/labelme>/examples/semantic_segmentation/data_annotated`，其中`<path/to/labelme>`为克隆下来的`labelme`的路径，打开后示意的是语义分割的真值标注。
 
 <div align="center">
-    <img src="./docs/imgs/annotation/image-2.png" width="600px"/>
+    <img src="../imgs/annotation/image-2.png" width="600px"/>
     <p>图2 已标注图片的示意图</p>
  </div>
 
@@ -35,15 +35,15 @@ git clone https://github.com/wkentaro/labelme
 ​		(1)   点击`OpenDir`打开待标注图片所在目录，点击`Create Polygons`，沿着目标的边缘画多边形，完成后输入目标的类别。在标注过程中，如果某个点画错了，可以按撤销快捷键可撤销该点。Mac下的撤销快捷键为`command+Z`。
 
 <div align="center">
-    <img src="./docs/imgs/annotation/image-3.png" width="600px"/>
+    <img src="../imgs/annotation/image-3.png" width="600px"/>
     <p>图3 标注单个目标的示意图</p>
  </div>
 
 ​		(2)   右击选择`Edit Polygons`可以整体移动多边形的位置，也可以移动某个点的位置；右击选择`Edit Label`可以修改每个目标的类别。请根据自己的需要执行这一步骤，若不需要修改，可跳过。
 
 <div align="center">
-    <img src="./docs/imgs/annotation/image-4-1.png" width="00px" />
-  	<img src="./docs/imgs/annotation/image-4-2.png" width="600px"/>
+    <img src="../imgs/annotation/image-4-1.png" width="00px" />
+  	<img src="../imgs/annotation/image-4-2.png" width="600px"/>
     <p>图4 修改标注的示意图</p>
  </div>
 
@@ -52,7 +52,7 @@ git clone https://github.com/wkentaro/labelme
 LableMe产出的真值文件可参考我们给出的文件夹`data_annotated`。
 
 <div align="center">
-    <img src="./docs/imgs/annotation/image-5.png" width="600px"/>
+    <img src="../imgs/annotation/image-5.png" width="600px"/>
     <p>图5 LableMe产出的真值文件的示意图</p>
  </div>
 
@@ -71,7 +71,7 @@ LableMe产出的真值文件可参考我们给出的文件夹`data_annotated`。
  ```
 
 <div align="center">
-    <img src="./docs/imgs/annotation/image-6.png" width="600px"/>
+    <img src="../imgs/annotation/image-6.png" width="600px"/>
     <p>图6 训练所需的数据集目录的结构示意图</p>
  </div>
 
@@ -92,6 +92,6 @@ pip install pillow
 转换得到的数据集可参考我们给出的文件夹`my_dataset`。其中，文件`class_names.txt`是数据集中所有标注类别的名称，包含背景类；文件夹`JPEGImages`保存的是数据集的图片；文件夹`SegmentationClassPNG`保存的是各图片的像素级别的真值信息，背景类`_background_`对应为0，其它目标类别从1开始递增，至多为255。
 
 <div align="center">
-    <img src="./docs/imgs/annotation/image-7.png" width="600px"/>
+    <img src="../imgs/annotation/image-7.png" width="600px"/>
     <p>图7 训练所需的数据集各目录的内容示意图</p>
  </div>	

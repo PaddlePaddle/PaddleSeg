@@ -36,7 +36,7 @@ rich crop是指对图像进行多种变换，保证在训练过程中数据的�
 图像加模糊，使用开关`AUG.RICH_CROP.BLUR`，为False时该项功能关闭。`AUG.RICH_CROP.BLUR_RATIO`控制加入模糊的概率。
 
 - flip
-图像上下翻转，使用开关`AUG.RICH_CROP.FLIP`，为False时该项功能关闭。`AUG.RICH_CROP.FLIP_RATIO`控制加入模糊的概率。
+图像上下翻转，使用开关`AUG.RICH_CROP.FLIP`，为False时该项功能关闭。`AUG.RICH_CROP.FLIP_RATIO`控制上下翻转的概率。
 
 - rotation
 图像旋转，`AUG.RICH_CROP.MAX_ROTATION`控制最大旋转角度。旋转产生的多余的区域的填充值为均值。
@@ -55,7 +55,7 @@ rich crop是指对图像进行多种变换，保证在训练过程中数据的�
 
 - 输入图片格式
     - 原图
-        - 图片格式：rgb三通道图片和rgba四通道图片两种类型的图片进行训练，但是在一次训练过程只能存在一种格式。
+        - 图片格式：RGB三通道图片和RGBA四通道图片两种类型的图片进行训练，但是在一次训练过程只能存在一种格式。
         - 图片转换：灰度图片经过预处理后之后会转变成三通道图片
         - 图片参数设置：当图片为三通道图片时IMAGE_TYPE设置为rgb， 对应MEAN和STD也必须是一个长度为3的list，当图片为四通道图片时IMAGE_TYPE设置为rgba，对应的MEAN和STD必须是一个长度为4的list。
     - 标注图
