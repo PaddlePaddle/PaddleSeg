@@ -133,20 +133,21 @@ class ResNet():
         if layers >= 50:
             for block in range(len(depth)):
                 for i in range(depth[block]):
-                    conv_name = "conv" + str(block + 2) + '_' + str(1 + i)
-                    dilation_rate = get_dilated_rate(dilation_dict, block)
-                    
-                    if self.stem == 'pspnet':
-                        stride = 2 if i == 0 and block == 1 else 1
+                    if layers in [101, 152] and block == 2:
+                        if i == 0:
+                            conv_name = "res" + str(block + 2) + "a"
+                        else:
+                            conv_name = "res" + str(block + 2) + "b" + str(i)
                     else:
-                        stride= 2 if i == 0 and block != 0 and dilation_rate == 1 else 1
-                    
+                        conv_name = "conv" + str(block + 2) + '_' + str(1 + i)
+                    dilation_rate = get_dilated_rate(dilation_dict, block)
                     conv = self.bottleneck_block(
-                            input=conv,
-                            num_filters=int(num_filters[block] * self.scale),
-                            stride=stride,
-                            name=conv_name, 
-                            dilation=dilation_rate)
+                        input=conv,
+                        num_filters=int(num_filters[block] * self.scale),
+                        stride=2
+                        if i == 0 and block != 0 and dilation_rate == 1 else 1,
+                        name=conv_name, 
+                        dilation=dilation_rate)
                     layer_count += 3
 
                     if check_points(layer_count, decode_points):
@@ -172,7 +173,7 @@ class ResNet():
         else:
             for block in range(len(depth)):
                 for i in range(depth[block]):
-                    conv_name = "conv" + str(block + 2) + chr(97 + i)
+                    conv_name = "res" + str(block + 2) + chr(97 + i)
                     conv = self.basic_block(
                         input=conv,
                         num_filters=num_filters[block],
