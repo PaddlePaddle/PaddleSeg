@@ -6,7 +6,7 @@
 * CUDA 9.2
 * cudnn v7.1
 * paddlepaddle >= 1.5.2
-* nccl >= 2.4.7
+* 如果有多卡训练需求，请安装 nccl >= 2.4.7
 
 
 ## 1. 安装PaddlePaddle
