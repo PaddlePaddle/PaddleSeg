@@ -109,7 +109,7 @@ cfg.AUG.RICH_CROP.BLUR = False
 cfg.AUG.RICH_CROP.BLUR_RATIO = 0.1
 # 图像上下翻转开关，True/False
 cfg.AUG.RICH_CROP.FLIP = False
-# 图像启动上下翻转百分比，0-1
+# 图像启动上下翻转的概率，0-1
 cfg.AUG.RICH_CROP.FLIP_RATIO = 0.2
 
 ########################### 训练配置 ##########################################
