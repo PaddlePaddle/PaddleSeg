@@ -1,6 +1,6 @@
 #!/bin/bash
 function abort(){
-    echo "Your change doesn't follow PaddleHub's code style." 1>&2
+    echo "Your change doesn't follow PaddleSeg's code style." 1>&2
     echo "Please use pre-commit to check what is wrong." 1>&2
     exit 1
 }
