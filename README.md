@@ -27,7 +27,6 @@ PaddleSeg具备高性能、丰富的数据增强、工业级部署、全流程�
   - 基于[Paddle Serving](https://github.com/PaddlePaddle/Serving)和PaddlePaddle高性能预测引擎，结合百度开放的AI能力，轻松搭建人像分割和车道线分割服务。
 
 </br>
-</br>
 
 ## 在线体验
 
@@ -39,7 +38,6 @@ PaddleSeg提供了多种预训练模型，并且以NoteBook的方式提供了在
 |PaddleSeg人像分割|[点击体验](https://aistudio.baidu.com/aistudio/projectDetail/100798)|
 |DeepLabv3+图像分割|[点击体验](https://aistudio.baidu.com/aistudio/projectDetail/101696)|
 
-</br>
 </br>
 
 ## 使用教程
