@@ -1,0 +1,51 @@
+EVAL_CROP_SIZE: (2049, 1025) # (width, height), for unpadding rangescaling and stepscaling
+TRAIN_CROP_SIZE: (713, 713) # (width, height), for unpadding rangescaling and stepscaling
+AUG:
+    AUG_METHOD: "stepscaling" # choice unpadding rangescaling and stepscaling
+    FIX_RESIZE_SIZE: (640, 640) # (width, height), for unpadding
+    INF_RESIZE_VALUE: 500  # for rangescaling
+    MAX_RESIZE_VALUE: 600  # for rangescaling
+    MIN_RESIZE_VALUE: 400  # for rangescaling
+    MAX_SCALE_FACTOR: 2.0  # for stepscaling
+    MIN_SCALE_FACTOR: 0.5  # for stepscaling
+    SCALE_STEP_SIZE: 0.25  # for stepscaling
+    MIRROR: True
+    RICH_CROP:
+        ENABLE: False
+        ASPECT_RATIO: 0.33
+        BLUR: True
+        BLUR_RATIO: 0.1
+        FLIP: True
+        FLIP_RATIO: 0.2
+        MAX_ROTATION: 15
+        MIN_AREA_RATIO: 0.5
+        BRIGHTNESS_JITTER_RATIO: 0.5
+        CONTRAST_JITTER_RATIO: 0.5
+        SATURATION_JITTER_RATIO: 0.5
+BATCH_SIZE: 4
+DATASET:
+    DATA_DIR: "./dataset/cityscapes/"
+    IMAGE_TYPE: "rgb"  # choice rgb or rgba
+    NUM_CLASSES: 19
+    TEST_FILE_LIST: "dataset/cityscapes/val.list"
+    TRAIN_FILE_LIST: "dataset/cityscapes/train.list"
+    VAL_FILE_LIST: "dataset/cityscapes/val.list"
+    IGNORE_INDEX: 255
+FREEZE:
+    MODEL_FILENAME: "model"
+    PARAMS_FILENAME: "params"
+MODEL:
+    MODEL_NAME: "pspnet"
+    DEFAULT_NORM_TYPE: "bn"
+TEST:
+    TEST_MODEL: "pretrained_model/pspnet50_ADE20K/" #pspnet101_cityscapes
+TRAIN:
+    MODEL_SAVE_DIR: "snapshots/cityscape_pspnet50/"
+    PRETRAINED_MODEL: u"pretrained_model/pspnet50_ADE20K/"
+    RESUME: False
+    SNAPSHOT_EPOCH: 10
+SOLVER:
+    LR: 0.001
+    LR_POLICY: "poly"
+    OPTIMIZER: "sgd"
+    NUM_EPOCHS: 700

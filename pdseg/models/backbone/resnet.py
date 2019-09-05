@@ -85,7 +85,7 @@ class ResNet():
             depth = [3, 8, 36, 3]
         num_filters = [64, 128, 256, 512]
 
-        if self.stem == 'icnet':
+        if self.stem == 'icnet' or self.stem == 'pspnet':
             conv = self.conv_bn_layer(
                 input=input,
                 num_filters=int(64 * self.scale),
@@ -133,22 +133,20 @@ class ResNet():
         if layers >= 50:
             for block in range(len(depth)):
                 for i in range(depth[block]):
-                    if layers in [101, 152] and block == 2:
-                        if i == 0:
-                            conv_name = "res" + str(block + 2) + "a"
-                        else:
-                            conv_name = "res" + str(block + 2) + "b" + str(i)
-                    else:
-                        conv_name = "conv" + str(block + 2) + '_' + str(1 + i)
+                    conv_name = "conv" + str(block + 2) + '_' + str(1 + i)
                     dilation_rate = get_dilated_rate(dilation_dict, block)
-
+                    
+                    if self.stem == 'pspnet':
+                        stride = 2 if i == 0 and block == 1 else 1
+                    else:
+                        stride= 2 if i == 0 and block != 0 and dilation_rate == 1 else 1
+                    
                     conv = self.bottleneck_block(
-                        input=conv,
-                        num_filters=int(num_filters[block] * self.scale),
-                        stride=2
-                        if i == 0 and block != 0 and dilation_rate == 1 else 1,
-                        name=conv_name,
-                        dilation=dilation_rate)
+                            input=conv,
+                            num_filters=int(num_filters[block] * self.scale),
+                            stride=stride,
+                            name=conv_name, 
+                            dilation=dilation_rate)
                     layer_count += 3
 
                     if check_points(layer_count, decode_points):
@@ -174,7 +172,7 @@ class ResNet():
         else:
             for block in range(len(depth)):
                 for i in range(depth[block]):
-                    conv_name = "res" + str(block + 2) + chr(97 + i)
+                    conv_name = "conv" + str(block + 2) + chr(97 + i)
                     conv = self.basic_block(
                         input=conv,
                         num_filters=num_filters[block],
@@ -215,6 +213,12 @@ class ResNet():
                       groups=1,
                       act=None,
                       name=None):
+   
+        if self.stem == 'pspnet':
+            bias_attr=ParamAttr(name=name + "/biases")
+        else:
+            bias_attr=False
+
         conv = fluid.layers.conv2d(
             input=input,
             num_filters=num_filters,
@@ -225,7 +229,7 @@ class ResNet():
             groups=groups,
             act=None,
             param_attr=ParamAttr(name=name + "/weights"),
-            bias_attr=False,
+            bias_attr=bias_attr,
             name=name + '.conv2d.output.1')
 
         bn_name = name + '/BatchNorm/'
@@ -247,12 +251,17 @@ class ResNet():
             return input
 
     def bottleneck_block(self, input, num_filters, stride, name, dilation=1):
+        if self.stem == 'pspnet' and self.layers == 101:
+            strides = [1, stride]
+        else:
+            strides = [stride, 1]
+        
         conv0 = self.conv_bn_layer(
             input=input,
             num_filters=num_filters,
             filter_size=1,
             dilation=1,
-            stride=stride,
+            stride=strides[0],
             act='relu',
             name=name + "_branch2a")
         if dilation > 1:
@@ -262,6 +271,7 @@ class ResNet():
             num_filters=num_filters,
             filter_size=3,
             dilation=dilation,
+            stride=strides[1],
             act='relu',
             name=name + "_branch2b")
         conv2 = self.conv_bn_layer(
