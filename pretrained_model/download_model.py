@@ -46,7 +46,7 @@ model_urls = {
     "unet_bn_coco": "https://paddleseg.bj.bcebos.com/models/unet_coco_v3.tgz",
 
     # Cityscapes pretrained
-    "deeplabv3plus_mobilenetv2-1-0_bn_cityscapes":
+    "deeplabv3p_mobilenetv2-1-0_bn_cityscapes":
     "https://paddleseg.bj.bcebos.com/models/mobilenet_cityscapes.tgz",
     "deeplabv3p_xception65_gn_cityscapes":
     "https://paddleseg.bj.bcebos.com/models/deeplabv3p_xception65_cityscapes.tgz",

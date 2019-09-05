@@ -4,7 +4,7 @@ PaddleSeg对所有内置的分割模型都提供了公开数据集下的预训�
 
 ## ImageNet预训练模型
 
-所有Imagenet预训练模型来自于PaddlePaddle图像分类库，想获取更多细节请点击[这里](https://github.com/PaddlePaddle/models/tree/develop/PaddleCV/image_classification))
+所有Imagenet预训练模型来自于PaddlePaddle图像分类库，想获取更多细节请点击[这里](https://github.com/PaddlePaddle/models/tree/develop/PaddleCV/image_classification)
 
 | 模型 | 数据集合 | Depth multiplier | 下载地址 | Accuray Top1/5 Error|
 |---|---|---|---|---|

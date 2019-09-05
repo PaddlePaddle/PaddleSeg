@@ -152,15 +152,15 @@ def load_checkpoint(exe, program):
     Load checkpoiont from pretrained model directory for resume training
     """
 
-    print('Resume model training from:', cfg.TRAIN.PRETRAINED_MODEL)
-    if not os.path.exists(cfg.TRAIN.PRETRAINED_MODEL):
+    print('Resume model training from:', cfg.TRAIN.RESUME_MODEL_DIR)
+    if not os.path.exists(cfg.TRAIN.RESUME_MODEL_DIR):
         raise ValueError("TRAIN.PRETRAIN_MODEL {} not exist!".format(
-            cfg.TRAIN.PRETRAINED_MODEL))
+            cfg.TRAIN.RESUME_MODEL_DIR))
 
     fluid.io.load_persistables(
-        exe, cfg.TRAIN.PRETRAINED_MODEL, main_program=program)
+        exe, cfg.TRAIN.RESUME_MODEL_DIR, main_program=program)
 
-    model_path = cfg.TRAIN.PRETRAINED_MODEL
+    model_path = cfg.TRAIN.RESUME_MODEL_DIR
     # Check is path ended by path spearator
     if model_path[-1] == os.sep:
         model_path = model_path[0:-1]
@@ -255,11 +255,11 @@ def train(cfg):
 
     # Resume training
     begin_epoch = cfg.SOLVER.BEGIN_EPOCH
-    if cfg.TRAIN.RESUME:
+    if cfg.TRAIN.RESUME_MODEL_DIR:
         begin_epoch = load_checkpoint(exe, train_prog)
     # Load pretrained model
-    elif os.path.exists(cfg.TRAIN.PRETRAINED_MODEL):
-        print('Pretrained model dir:', cfg.TRAIN.PRETRAINED_MODEL)
+    elif os.path.exists(cfg.TRAIN.PRETRAINED_MODEL_DIR):
+        print('Pretrained model dir:', cfg.TRAIN.PRETRAINED_MODEL_DIR)
         load_vars = []
         load_fail_vars = []
 
@@ -268,10 +268,10 @@ def train(cfg):
             Check whehter persitable variable shape is match with current network
             """
             var_exist = os.path.exists(
-                os.path.join(cfg.TRAIN.PRETRAINED_MODEL, var.name))
+                os.path.join(cfg.TRAIN.PRETRAINED_MODEL_DIR, var.name))
             if var_exist:
                 var_shape = parse_shape_from_file(
-                    os.path.join(cfg.TRAIN.PRETRAINED_MODEL, var.name))
+                    os.path.join(cfg.TRAIN.PRETRAINED_MODEL_DIR, var.name))
                 return var_shape == shape
             return False
 
@@ -285,10 +285,10 @@ def train(cfg):
                     load_fail_vars.append(x)
         if cfg.MODEL.FP16:
             # If open FP16 training mode, load FP16 var separate
-            load_fp16_vars(exe, cfg.TRAIN.PRETRAINED_MODEL, train_prog)
+            load_fp16_vars(exe, cfg.TRAIN.PRETRAINED_MODEL_DIR, train_prog)
         else:
             fluid.io.load_vars(
-                exe, dirname=cfg.TRAIN.PRETRAINED_MODEL, vars=load_vars)
+                exe, dirname=cfg.TRAIN.PRETRAINED_MODEL_DIR, vars=load_vars)
         for var in load_vars:
             print("Parameter[{}] loaded sucessfully!".format(var.name))
         for var in load_fail_vars:
@@ -299,7 +299,7 @@ def train(cfg):
             len(load_vars) + len(load_fail_vars)))
     else:
         print('Pretrained model dir {} not exists, training from scratch...'.
-              format(cfg.TRAIN.PRETRAINED_MODEL))
+              format(cfg.TRAIN.PRETRAINED_MODEL_DIR))
 
     fetch_list = [avg_loss.name, lr.name]
     if args.debug:

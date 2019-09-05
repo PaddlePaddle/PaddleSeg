@@ -98,6 +98,16 @@ class SegConfig(dict):
                 'DATASET.IMAGE_TYPE config error, only support `rgb`, `gray` and `rgba`'
             )
 
+        if not self.TRAIN_CROP_SIZE:
+            raise ValueError(
+                'TRAIN_CROP_SIZE is empty! Please set a pair of values in format (width, height)'
+            )
+
+        if not self.EVAL_CROP_SIZE:
+            raise ValueError(
+                'EVAL_CROP_SIZE is empty! Please set a pair of values in format (width, height)'
+            )
+
         if reset_dataset:
             # Ensure file list is use UTF-8 encoding
             train_sets = codecs.open(self.DATASET.TRAIN_FILE_LIST, 'r',

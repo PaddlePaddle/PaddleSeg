@@ -35,9 +35,6 @@ rich crop是指对图像进行多种变换，保证在训练过程中数据的�
 - blur
 图像加模糊，使用开关`AUG.RICH_CROP.BLUR`，为False时该项功能关闭。`AUG.RICH_CROP.BLUR_RATIO`控制加入模糊的概率。
 
-- flip
-图像上下翻转，使用开关`AUG.RICH_CROP.FLIP`，为False时该项功能关闭。`AUG.RICH_CROP.FLIP_RATIO`控制上下翻转的概率。
-
 - rotation
 图像旋转，`AUG.RICH_CROP.MAX_ROTATION`控制最大旋转角度。旋转产生的多余的区域的填充值为均值。
 

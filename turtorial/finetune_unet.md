@@ -65,7 +65,7 @@ MODEL:
     MODEL_NAME: "unet"
     DEFAULT_NORM_TYPE: "bn"
 TRAIN:
-    PRETRAINED_MODEL: "./pretrained_model/unet_bn_coco/"
+    PRETRAINED_MODEL_DIR: "./pretrained_model/unet_bn_coco/"
 
 
 # 其他配置
@@ -77,7 +77,6 @@ AUG:
 BATCH_SIZE: 4
 TRAIN:
     MODEL_SAVE_DIR: "./finetune/unet_pet/"
-    RESUME: False
     SNAPSHOT_EPOCH: 10
 TEST:
     TEST_MODEL: "./finetune/unet_pet/final"
