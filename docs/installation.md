@@ -4,16 +4,16 @@
 
 * Python2.7 or 3.5+
 * CUDA 9.2
-* cudnn v7.1
-* paddlepaddle >= 1.5.2
-* 如果有多卡训练需求，请安装 nccl >= 2.4.7
+* cuDNN v7.1
+* PaddlePaddle >= 1.5.2
+* 如果有多卡训练需求，请安装 NCCL >= 2.4.7
 
 
 ## 1. 安装PaddlePaddle
 
 ### pip安装
  
-由于图像分割任务模型计算量大，强烈推荐在GPU版本的paddlepaddle下使用PaddleSeg.
+由于图像分割模型计算开销大，推荐在GPU版本的PaddlePaddle下使用PaddleSeg.
  
 ```
 pip install paddlepaddle-gpu
