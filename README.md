@@ -45,9 +45,9 @@ PaddleSeg支持多进程IO、多卡并行、跨卡Batch Norm同步等训练加�
 * [预训练模型列表](./docs/model_zoo.md)
 * [自定义数据的准备与标注](./docs/data_prepare.md)
 * [数据和配置校验](./docs/check.md)
-* [使用DeepLabv3+预训练模型](./turtorial/finetune_deeplabv3plus.md)
-* [使用UNet预训练模型](./turtorial/finetune_unet.md)
-* [使用ICNet预训练模型](./turtorial/finetune_icnet.md)
+* [如何训练DeepLabv3+](./turtorial/finetune_deeplabv3plus.md)
+* [如何训练U-Net](./turtorial/finetune_unet.md)
+* [如何训练ICNet](./turtorial/finetune_icnet.md)
 
 ### 预测部署
 
