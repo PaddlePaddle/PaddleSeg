@@ -11,7 +11,7 @@ TRAIN Group存放所有和训练相关的配置
 <br/>
 <br/>
 
-## `PRETRAINED_MODEL`
+## `PRETRAINED_MODEL_DIR`
 预训练模型路径
 
 ## 默认值
@@ -28,19 +28,15 @@ TRAIN Group存放所有和训练相关的配置
 <br/>
 <br/>
 
-## `RESUME`
-是否从预训练模型中恢复参数并继续训练
+## `RESUME_MODEL_DIR`
+从指定路径中恢复参数并继续训练
 
 ## 默认值
-False
+无
 
 ## 注意事项
 
-* 当该字段被置为True且`PRETRAINED_MODEL`不存在时，该选项不生效
-
-* 当该字段被置为True且`PRETRAINED_MODEL`存在时，PaddleSeg会恢复到上一次训练的最近一个epoch，并且恢复训练过程中的临时变量（如已经衰减过的学习率，Optimizer的动量数据等）
-
-* 当该字段被置为True且`PRETRAINED_MODEL`存在时，`PRETRAINED_MODEL`路径的最后一个目录必须为int数值或者字符串final，PaddleSeg会将int数值作为当前起始EPOCH继续训练，若目录为final，则不会继续训练。若目录不满足上述条件，PaddleSeg会抛出错误。
+* 当`RESUME_MODEL_DIR`存在时，PaddleSeg会恢复到上一次训练的最近一个epoch，并且恢复训练过程中的临时变量（如已经衰减过的学习率，Optimizer的动量数据等），`PRETRAINED_MODEL`路径的最后一个目录必须为int数值或者字符串final，PaddleSeg会将int数值作为当前起始EPOCH继续训练，若目录为final，则不会继续训练。若目录不满足上述条件，PaddleSeg会抛出错误。
 
 <br/>
 <br/>

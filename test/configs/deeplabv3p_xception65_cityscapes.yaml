@@ -10,18 +10,6 @@ AUG:
     MIN_SCALE_FACTOR: 0.5  # for stepscaling
     SCALE_STEP_SIZE: 0.25  # for stepscaling
     MIRROR: True
-    RICH_CROP:
-        ENABLE: False
-        ASPECT_RATIO: 0.33
-        BLUR: True
-        BLUR_RATIO: 0.1
-        FLIP: True
-        FLIP_RATIO: 0.2
-        MAX_ROTATION: 15
-        MIN_AREA_RATIO: 0.5
-        BRIGHTNESS_JITTER_RATIO: 0.5
-        CONTRAST_JITTER_RATIO: 0.5
-        SATURATION_JITTER_RATIO: 0.5
 BATCH_SIZE: 4
 DATASET:
     DATA_DIR: "./dataset/cityscapes/"
@@ -46,8 +34,7 @@ TEST:
     TEST_MODEL: "snapshots/cityscape_v5/final/"
 TRAIN:
     MODEL_SAVE_DIR: "snapshots/cityscape_v5/"
-    PRETRAINED_MODEL: "pretrain/deeplabv3plus_gn_init"
-    RESUME: False
+    PRETRAINED_MODEL_DIR: "pretrain/deeplabv3plus_gn_init"
     SNAPSHOT_EPOCH: 10
 SOLVER:
     LR: 0.001

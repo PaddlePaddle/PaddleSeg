@@ -46,7 +46,8 @@ if __name__ == "__main__":
     saved_model = os.path.join(LOCAL_PATH, "saved_model", model_name)
 
     parser = argparse.ArgumentParser(description="PaddleSeg loacl test")
-    parser.add_argument("--devices",
+    parser.add_argument(
+        "--devices",
         dest="devices",
         help="GPU id of running. if more than one, use spacing to separate.",
         nargs="+",
@@ -59,7 +60,7 @@ if __name__ == "__main__":
     train(
         flags=["--cfg", cfg, "--use_gpu", "--log_steps", "10"],
         options=[
-            "SOLVER.NUM_EPOCHS", "1", "TRAIN.PRETRAINED_MODEL", test_model,
+            "SOLVER.NUM_EPOCHS", "1", "TRAIN.PRETRAINED_MODEL_DIR", test_model,
             "TRAIN.MODEL_SAVE_DIR", saved_model, "DATASET.TRAIN_FILE_LIST",
             os.path.join(DATASET_PATH, "mini_pet", "file_list",
                          "train_list.txt"), "DATASET.VAL_FILE_LIST",
