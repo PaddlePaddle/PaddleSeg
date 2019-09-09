@@ -66,9 +66,6 @@ MODEL:
     DEFAULT_NORM_TYPE: "bn"
     DEEPLAB:
         BACKBONE: "xception_65"
-TRAIN:
-    PRETRAINED_MODEL_DIR: "./pretrained_model/deeplabv3p_xception65_bn_pet/"
-
 
 # 其他配置
 TRAIN_CROP_SIZE: (512, 512)
@@ -78,6 +75,7 @@ AUG:
     FIX_RESIZE_SIZE: (512, 512)
 BATCH_SIZE: 4
 TRAIN:
+    PRETRAINED_MODEL_DIR: "./pretrained_model/deeplabv3p_xception65_bn_pet/"
     MODEL_SAVE_DIR: "./finetune/deeplabv3p_xception65_bn_pet/"
     SNAPSHOT_EPOCH: 10
 TEST:
