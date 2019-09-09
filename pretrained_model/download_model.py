@@ -23,15 +23,15 @@ from test_utils import download_file_and_uncompress
 
 model_urls = {
     # ImageNet Pretrained
-    "mobilnetv2-2-0_bn_imagenet":
+    "mobilenetv2-2-0_bn_imagenet":
     "https://paddle-imagenet-models-name.bj.bcebos.com/MobileNetV2_x2_0_pretrained.tar",
-    "mobilnetv2-1-5_bn_imagenet":
+    "mobilenetv2-1-5_bn_imagenet":
     "https://paddle-imagenet-models-name.bj.bcebos.com/MobileNetV2_x1_5_pretrained.tar",
-    "mobilnetv2-1-0_bn_imagenet":
+    "mobilenetv2-1-0_bn_imagenet":
     "https://paddle-imagenet-models-name.bj.bcebos.com/MobileNetV2_pretrained.tar",
-    "mobilnetv2-0-5_bn_imagenet":
+    "mobilenetv2-0-5_bn_imagenet":
     "https://paddle-imagenet-models-name.bj.bcebos.com/MobileNetV2_x0_5_pretrained.tar",
-    "mobilnetv2-0-25_bn_imagenet":
+    "mobilenetv2-0-25_bn_imagenet":
     "https://paddle-imagenet-models-name.bj.bcebos.com/MobileNetV2_x0_25_pretrained.tar",
     "xception41_imagenet":
     "https://paddleseg.bj.bcebos.com/models/Xception41_pretrained.tgz",
@@ -39,7 +39,7 @@ model_urls = {
     "https://paddleseg.bj.bcebos.com/models/Xception65_pretrained.tgz",
 
     # COCO pretrained
-    "deeplabv3p_mobilnetv2-1-0_bn_coco":
+    "deeplabv3p_mobilenetv2-1-0_bn_coco":
     "https://bj.bcebos.com/v1/paddleseg/deeplabv3plus_coco_bn_init.tgz",
     "deeplabv3p_xception65_bn_coco":
     "https://paddleseg.bj.bcebos.com/models/xception65_coco.tgz",
