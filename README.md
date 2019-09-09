@@ -84,8 +84,8 @@ PaddleSeg提供了多种预训练模型，并且以NoteBook的方式提供了在
 
 |教程|链接|
 |-|-|
+|快速开始：人像分割|[点击体验](https://aistudio.baidu.com/aistudio/projectDetail/100798)|
 |U-Net宠物分割|[点击体验](https://aistudio.baidu.com/aistudio/projectDetail/102889)|
-|PaddleSeg人像分割|[点击体验](https://aistudio.baidu.com/aistudio/projectDetail/100798)|
 |DeepLabv3+图像分割|[点击体验](https://aistudio.baidu.com/aistudio/projectDetail/101696)|
 |PaddleSeg特色垂类模型|[点击体验](https://aistudio.baidu.com/aistudio/projectdetail/115541)|
 
