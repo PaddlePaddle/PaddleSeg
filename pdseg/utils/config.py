@@ -196,6 +196,12 @@ cfg.MODEL.ICNET.DEPTH_MULTIPLIER = 0.5
 # RESNET 层数 设置
 cfg.MODEL.ICNET.LAYERS = 50
 
+########################## PSPNET模型配置 ######################################
+# RESNET backbone scale 设置
+cfg.MODEL.PSPNET.DEPTH_MULTIPLIER = 1
+# RESNET 层数 设置 50或101
+cfg.MODEL.PSPNET.LAYERS = 50
+
 ########################## 预测部署模型配置 ###################################
 # 预测保存的模型名称
 cfg.FREEZE.MODEL_FILENAME = '__model__'
