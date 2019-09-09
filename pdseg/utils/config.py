@@ -69,6 +69,10 @@ cfg.DATASET.IGNORE_INDEX = 255
 ########################### 数据增强配置 ######################################
 # 图像镜像左右翻转
 cfg.AUG.MIRROR = True
+# 图像上下翻转开关，True/False
+cfg.AUG.FLIP = False
+# 图像启动上下翻转的概率，0-1
+cfg.AUG.FLIP_RATIO = 0.5
 # 图像resize的固定尺寸（宽，高），非负
 cfg.AUG.FIX_RESIZE_SIZE = tuple()
 # 图像resize的方式有三种：
@@ -116,9 +120,9 @@ cfg.AUG.RICH_CROP.FLIP_RATIO = 0.2
 # 模型保存路径
 cfg.TRAIN.MODEL_SAVE_DIR = ''
 # 预训练模型路径
-cfg.TRAIN.PRETRAINED_MODEL = ''
+cfg.TRAIN.PRETRAINED_MODEL_DIR = ''
 # 是否resume，继续训练
-cfg.TRAIN.RESUME = False
+cfg.TRAIN.RESUME_MODEL_DIR = ''
 # 是否使用多卡间同步BatchNorm均值和方差
 cfg.TRAIN.SYNC_BATCH_NORM = False
 # 模型参数保存的epoch间隔数，可用来继续训练中断的模型

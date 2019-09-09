@@ -23,7 +23,7 @@ ln -s /usr/lib/x86_64-linux-gnu/libcurl.so.4.4.0 /usr/lib/x86_64-linux-gnu/libcu
 
 ```bash
 # 下载nccl相关的deb包
-wget -c https://paddleseg.bj.bcebos.com/serving%2Fnccl-repo-ubuntu1604-2.4.8-ga-cuda9.2_1-1_amd64.deb
+wget -c --no-check-certificate https://paddleseg.bj.bcebos.com/serving/nccl-repo-ubuntu1604-2.4.8-ga-cuda9.2_1-1_amd64.deb
 sudo apt-key add /var/nccl-repo-2.4.8-ga-cuda9.2/7fa2af80.pub
 # 安装deb包
 sudo dpkg -i nccl-repo-ubuntu1604-2.4.8-ga-cuda9.2_1-1_amd64.deb
@@ -47,7 +47,7 @@ sudo apt-get autoremove cmake
 
 ```bash
 cd ~
-wget -c https://paddleseg.bj.bcebos.com/serving%2Fpaddle_seg_serving_ubuntu16.07_gpu_cuda9.2.tar.gz
+wget -c --no-check-certificate https://paddleseg.bj.bcebos.com/serving/paddle_seg_serving_ubuntu16.07_gpu_cuda9.2.tar.gz
 tar xvfz PaddleSegServing.ubuntu16.07_cuda9.2_gpu.tar.gz seg-serving
 ```
 
@@ -55,7 +55,7 @@ tar xvfz PaddleSegServing.ubuntu16.07_cuda9.2_gpu.tar.gz seg-serving
 
 ```bash
 cd ~
-wget -c https://paddleseg.bj.bcebos.com/serving%2Fpaddle_seg_serving_ubuntu16.07_cpu.tar.gz
+wget -c --no-check-certificate https://paddleseg.bj.bcebos.com/serving%2Fpaddle_seg_serving_ubuntu16.07_cpu.tar.gz
 tar xvfz PaddleSegServing.ubuntu16.07_cuda9.2_gpu.tar.gz seg-serving
 ```
 
