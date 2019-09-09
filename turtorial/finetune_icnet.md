@@ -83,9 +83,9 @@ TEST:
     TEST_MODEL: "./saved_model/icnet_pet/final"
 SOLVER:
     NUM_EPOCHS: 100
-    LR: 0.005
+    LR: 0.01
     LR_POLICY: "poly"
-    OPTIMIZER: "adam"
+    OPTIMIZER: "sgd"
 ```
 
 ## 四. 配置/数据校验
