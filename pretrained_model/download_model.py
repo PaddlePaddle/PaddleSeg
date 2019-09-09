@@ -40,7 +40,7 @@ model_urls = {
 
     # COCO pretrained
     "deeplabv3p_mobilenetv2-1-0_bn_coco":
-    "https://bj.bcebos.com/v1/paddleseg/deeplabv3plus_coco_bn_init.tgz",
+    "https://paddleseg.bj.bcebos.com/deeplab_mobilenet_x1_0_coco.tgz",
     "deeplabv3p_xception65_bn_coco":
     "https://paddleseg.bj.bcebos.com/models/xception65_coco.tgz",
     "unet_bn_coco": "https://paddleseg.bj.bcebos.com/models/unet_coco_v3.tgz",
