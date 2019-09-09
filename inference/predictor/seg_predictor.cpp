@@ -125,6 +125,10 @@ namespace PaddleSolution {
 
         int Predictor::native_predict(const std::vector<std::string>& imgs)
         {
+            if (imgs.size() == 0) {
+                LOG(ERROR) << "No image found";
+                return -1;
+            }
             int config_batch_size = _model_config._batch_size;
 
             int channels = _model_config._channels;
@@ -204,6 +208,11 @@ namespace PaddleSolution {
         }
 
         int Predictor::analysis_predict(const std::vector<std::string>& imgs) {
+
+            if (imgs.size() == 0) {
+                LOG(ERROR) << "No image found";
+                return -1;
+            }
 
             int config_batch_size = _model_config._batch_size;
             int channels = _model_config._channels;

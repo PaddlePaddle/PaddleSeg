@@ -171,7 +171,7 @@ def visualize(cfg,
     fetch_list = [pred.name]
     test_reader = dataset.batch(dataset.generator, batch_size=1, is_test=True)
     img_cnt = 0
-    for imgs, img_names, valid_shapes, org_shapes in test_reader:
+    for imgs, grts, img_names, valid_shapes, org_shapes in test_reader:
         pred_shape = (imgs.shape[2], imgs.shape[3])
         pred, = exe.run(
             program=test_prog,
@@ -185,6 +185,7 @@ def visualize(cfg,
             # Add more comments
             res_map = np.squeeze(pred[i, :, :, :]).astype(np.uint8)
             img_name = img_names[i]
+            grt = grts[i]
             res_shape = (res_map.shape[0], res_map.shape[1])
             if res_shape[0] != pred_shape[0] or res_shape[1] != pred_shape[1]:
                 res_map = cv2.resize(
@@ -195,6 +196,12 @@ def visualize(cfg,
             res_map = cv2.resize(
                 res_map, (org_shape[1], org_shape[0]),
                 interpolation=cv2.INTER_NEAREST)
+
+            if grt is not None:
+                grt = grt[0:valid_shape[0], 0:valid_shape[1]]
+                grt = cv2.resize(
+                    grt, (org_shape[1], org_shape[0]),
+                    interpolation=cv2.INTER_NEAREST)
 
             png_fn = to_png_fn(img_names[i])
             if also_save_raw_results:
@@ -209,6 +216,8 @@ def visualize(cfg,
             makedirs(dirname)
 
             pred_mask = colorize(res_map, org_shapes[i], color_map)
+            if grt is not None:
+                grt = colorize(grt, org_shapes[i], color_map)
             cv2.imwrite(vis_fn, pred_mask)
 
             img_cnt += 1
@@ -233,7 +242,13 @@ def visualize(cfg,
                     img,
                     epoch,
                     dataformats='HWC')
-                #TODO: add ground truth (label) images
+                #add ground truth (label) images
+                if grt is not None:
+                    log_writer.add_image(
+                        "Label/{}".format(img_names[i]),
+                        grt[..., ::-1],
+                        epoch,
+                        dataformats='HWC')
 
         # If in local_test mode, only visualize 5 images just for testing
         # procedure
