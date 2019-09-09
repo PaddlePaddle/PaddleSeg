@@ -47,7 +47,7 @@ python pretrained_model/download_model.py unet_bn_coco
 
 数据集的配置和数据路径有关，在本教程中，数据存放在`dataset/mini_pet`中
 
-其他配置则根据数据集和机器环境的情况进行调节，最终我们保存一个如下内容的yaml配置文件，存放路径为`configs/test_pet.yaml`
+其他配置则根据数据集和机器环境的情况进行调节，最终我们保存一个如下内容的yaml配置文件，存放路径为`configs/test_unet_pet.yaml`
 
 ```yaml
 # 数据集配置
@@ -76,12 +76,12 @@ AUG:
     FIX_RESIZE_SIZE: (512, 512)
 BATCH_SIZE: 4
 TRAIN:
-    MODEL_SAVE_DIR: "./finetune/unet_pet/"
+    MODEL_SAVE_DIR: "./saved_model/unet_pet/"
     SNAPSHOT_EPOCH: 10
 TEST:
-    TEST_MODEL: "./finetune/unet_pet/final"
+    TEST_MODEL: "./saved_model/unet_pet/final"
 SOLVER:
-    NUM_EPOCHS: 500
+    NUM_EPOCHS: 100
     LR: 0.005
     LR_POLICY: "poly"
     OPTIMIZER: "adam"
@@ -92,7 +92,7 @@ SOLVER:
 在开始训练和评估之前，我们还需要对配置和数据进行一次校验，确保数据和配置是正确的。使用下述命令启动校验流程
 
 ```shell
-python pdseg/check.py --cfg ./configs/test_pet.yaml
+python pdseg/check.py --cfg ./configs/test_unet_pet.yaml
 ```
 
 
@@ -101,7 +101,7 @@ python pdseg/check.py --cfg ./configs/test_pet.yaml
 校验通过后，使用下述命令启动训练
 
 ```shell
-python pdseg/train.py --use_gpu --cfg ./configs/test_pet.yaml
+python pdseg/train.py --use_gpu --cfg ./configs/test_unet_pet.yaml
 ```
 
 ## 六. 进行评估
@@ -109,7 +109,7 @@ python pdseg/train.py --use_gpu --cfg ./configs/test_pet.yaml
 模型训练完成，使用下述命令启动评估
 
 ```shell
-python pdseg/eval.py --use_gpu --cfg ./configs/test_pet.yaml
+python pdseg/eval.py --use_gpu --cfg ./configs/test_unet_pet.yaml
 ```
 
 ## 模型组合
