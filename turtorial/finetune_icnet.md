@@ -77,12 +77,12 @@ AUG:
     FIX_RESIZE_SIZE: (512, 512)
 BATCH_SIZE: 4
 TRAIN:
-    MODEL_SAVE_DIR: "./finetune/icnet_pet/"
+    MODEL_SAVE_DIR: "./saved_model/icnet_pet/"
     SNAPSHOT_EPOCH: 10
 TEST:
-    TEST_MODEL: "./finetune/icnet_pet/final"
+    TEST_MODEL: "./saved_model/icnet_pet/final"
 SOLVER:
-    NUM_EPOCHS: 500
+    NUM_EPOCHS: 100
     LR: 0.005
     LR_POLICY: "poly"
     OPTIMIZER: "adam"
