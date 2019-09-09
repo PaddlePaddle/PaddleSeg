@@ -198,6 +198,7 @@ def visualize(cfg,
                 interpolation=cv2.INTER_NEAREST)
 
             if grt is not None:
+                grt = grt[0:valid_shape[0], 0:valid_shape[1]]
                 grt = cv2.resize(
                     grt, (org_shape[1], org_shape[0]),
                     interpolation=cv2.INTER_NEAREST)
