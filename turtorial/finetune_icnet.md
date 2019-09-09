@@ -38,12 +38,12 @@ python pretrained_model/download_model.py icnet_bn_cityscapes
   * 预训练模型的backbone网络
   * 预训练模型的Normalization类型
   * 预训练模型路径
-* 其他
+* 优化策略
   * 学习率
-  * Batch大小
+  * Batch Size
   * ...
 
-在三者中，预训练模型的配置尤为重要，如果模型或者BACKBONE配置错误，会导致预训练的参数没有加载，进而影响收敛速度。预训练模型相关的配置如第二步所展示。
+在三者中，预训练模型的配置尤为重要，如果模型或者BACKBONE配置错误，会导致预训练的参数没有加载，进而影响收敛速度。预训练模型相关的配置如第二步所示。
 
 数据集的配置和数据路径有关，在本教程中，数据存放在`dataset/mini_pet`中
 
