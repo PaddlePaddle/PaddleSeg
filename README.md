@@ -1,82 +1,106 @@
 # PaddleSeg 语义分割库
 
+[![Build Status](https://travis-ci.org/PaddlePaddle/PaddleSeg.svg?branch=master)](https://travis-ci.org/PaddlePaddle/PaddleSeg)
 [![License](https://img.shields.io/badge/license-Apache%202-blue.svg)](LICENSE)
 
 ## 简介
 
 PaddleSeg是基于[PaddlePaddle](https://www.paddlepaddle.org.cn)开发的语义分割库，覆盖了DeepLabv3+, U-Net, ICNet三类主流的分割模型。通过统一的配置，帮助用户更便捷地完成从训练到部署的全流程图像分割应用。
-具备高性能、丰富的数据增强、工业级部署、全流程应用的特点。
 
+PaddleSeg具备高性能、丰富的数据增强、工业级部署、全流程应用的特点:
 
 
 - **丰富的数据增强**
 
-  - 基于百度视觉技术部的实际业务经验，内置10+种数据增强策略，可结合实际业务场景进行定制组合，提升模型泛化能力和鲁棒性。
-  
+基于百度视觉技术部的实际业务经验，内置10+种数据增强策略，可结合实际业务场景进行定制组合，提升模型泛化能力和鲁棒性。
+
 - **主流模型覆盖**
 
-  - 支持U-Net, DeepLabv3+, ICNet三类主流分割网络，结合预训练模型和可调节的骨干网络，满足不同性能和精度的要求。
+支持U-Net, DeepLabv3+, ICNet三类主流分割网络，结合预训练模型和可调节的骨干网络，满足不同性能和精度的要求。
 
 - **高性能**
 
-  - PaddleSeg支持多进程IO、多卡并行、多卡Batch Norm同步等训练加速策略，结合飞桨核心框架的显存优化算法，可以大幅度减少分割模型的显存开销，更快完成分割模型训练。
-  
+PaddleSeg支持多进程IO、多卡并行、跨卡Batch Norm同步等训练加速策略，结合飞桨核心框架的显存优化功能，可以大幅度减少分割模型的显存开销，更快完成分割模型训练。
+
 - **工业级部署**
 
-  - 基于[Paddle Serving](https://github.com/PaddlePaddle/Serving)和PaddlePaddle高性能预测引擎，结合百度开放的AI能力，轻松搭建人像分割和车道线分割服务。
+基于[Paddle Serving](https://github.com/PaddlePaddle/Serving)和PaddlePaddle高性能预测引擎，结合百度开放的AI能力，轻松搭建人像分割和车道线分割服务。
 
+</br>
 
-更多模型信息与技术细节请查看[模型介绍](./docs/models.md)和[预训练模型](./docs/model_zoo.md)
+## 使用教程
 
-## AI Studio教程
+我们提供了一系列的使用教程，来说明如何使用PaddleSeg完成一个语义分割模型的训练、评估、部署。
 
-### 快速开始
+这一系列的文档被分为`快速入门`、`基础功能`、`预测部署`、`高级功能`四个部分，四个教程由浅至深地介绍PaddleSeg的设计思路和使用方法。
 
-通过 [PaddleSeg人像分割](https://aistudio.baidu.com/aistudio/projectDetail/100798) 教程可快速体验PaddleSeg人像分割模型的效果。
-
-### 入门教程
-
-入门教程以经典的U-Net模型为例, 结合Oxford-IIIT宠物数据集，快速熟悉PaddleSeg使用流程, 详情请点击[U-Net宠物分割](https://aistudio.baidu.com/aistudio/projectDetail/102889)。
-
-### 高级教程
-
-高级教程以DeepLabv3+模型为例，结合Cityscapes数据集，快速了解ASPP, Backbone网络切换，多卡Batch Norm同步等策略，详情请点击[DeepLabv3+图像分割](https://aistudio.baidu.com/aistudio/projectDetail/101696)。
-
-### 垂类模型
-
-更多特色垂类分割模型如LIP人体部件分割、人像分割、车道线分割模型可以参考[contrib](./contrib)
-
-## 使用文档
+### 快速入门
 
 * [安装说明](./docs/installation.md)
-* [数据准备](./docs/data_prepare.md)
-* [数据增强](./docs/data_aug.md)
-* [预训练模型](./docs/model_zoo.md)
-* [训练/评估/预测(可视化)](./docs/usage.md)
-* [预测库集成](./inference/README.md)
-* [服务端部署](./serving/README.md)
-* [垂类分割模型](./contrib/README.md)
+* [训练/评估/可视化](./docs/usage.md)
 
+### 基础功能
+
+* [模型列表与简介](./docs/models.md)
+* [预训练模型列表](./docs/model_zoo.md)
+* [自定义数据的准备与标注](./docs/data_prepare.md)
+* [数据和配置校验](./docs/check.md)
+* [使用DeepLabv3+预训练模型](./turtorial/finetune_deeplabv3plus.md)
+* [使用UNet预训练模型](./turtorial/finetune_unet.md)
+* [使用ICNet预训练模型](./turtorial/finetune_icnet.md)
+
+### 预测部署
+
+* [模型导出](./docs/model_export.md)
+* [C++预测库使用](./inference)
+* [PaddleSeg Serving服务化部署](./serving)
+
+### 高级功能
+
+* [PaddleSeg的数据增强](./docs/data_aug.md)
+* [特色垂类模型使用](./contrib)
+
+</br>
 
 ## FAQ
 
+#### Q: 安装requirements.txt指定的依赖包时，部分包提示找不到？
+
+A: 可能是pip源的问题，这种情况下建议切换为官方源
+
 #### Q:图像分割的数据增强如何配置，unpadding, step-scaling, range-scaling的原理是什么？
 
-A: 数据增强的配置可以参考文档[数据增强](./docs/data_aug.md)
+A: 更详细数据增强文档可以参考[数据增强](./docs/data_aug.md)
 
 #### Q: 预测时图片过大，导致显存不足如何处理？
 
 A: 降低Batch size，使用Group Norm策略等。
 
+</br>
+
+## 在线体验
+
+PaddleSeg提供了多种预训练模型，并且以NoteBook的方式提供了在线体验的教程，欢迎体验：
+
+|教程|链接|
+|-|-|
+|U-Net宠物分割|[点击体验](https://aistudio.baidu.com/aistudio/projectDetail/102889)|
+|PaddleSeg人像分割|[点击体验](https://aistudio.baidu.com/aistudio/projectDetail/100798)|
+|DeepLabv3+图像分割|[点击体验](https://aistudio.baidu.com/aistudio/projectDetail/101696)|
+|PaddleSeg特色垂类模型|[点击体验](https://aistudio.baidu.com/aistudio/projectdetail/115541)|
+
+</br>
+
 ## 更新日志
 
-### 2019.08.26
+* 2019.08.26
 
-#### v0.1.0
+  **`v0.1.0`**
+  * PaddleSeg分割库初始版本发布，包含DeepLabv3+, U-Net, ICNet三类分割模型, 其中DeepLabv3+支持Xception, MobileNet两种可调节的骨干网络。
+  * CVPR19 LIP人体部件分割比赛冠军预测模型发布[ACE2P](./contrib/ACE2P)
+  * 预置基于DeepLabv3+网络的[人像分割](./contrib/HumanSeg/)和[车道线分割](./contrib/RoadLine)预测模型发布
 
-* PaddleSeg分割库初始版本发布，包含DeepLabv3+, U-Net, ICNet三类分割模型, 其中DeepLabv3+支持Xception, MobileNet两种可调节的骨干网络。
-* CVPR 19' LIP人体部件分割比赛冠军预测模型发布[ACE2P](./contrib/ACE2P)
-* 预置基于DeepLabv3+网络的人像分割和车道线分割预测模型发布
+</br>
 
 ## 如何贡献代码
 

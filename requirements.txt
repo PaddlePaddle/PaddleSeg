@@ -9,3 +9,4 @@ numpy
 six
 opencv-python
 tqdm
+requests

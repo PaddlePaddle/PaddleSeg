@@ -102,7 +102,7 @@ def evaluate(cfg, ckpt_dir=None, use_gpu=False, use_mpio=False, **kwargs):
     places = fluid.cuda_places() if use_gpu else fluid.cpu_places()
     place = places[0]
     dev_count = len(places)
-    print("Device count = {}".format(dev_count))
+    print("#Device count: {}".format(dev_count))
 
     exe = fluid.Executor(place)
     exe.run(startup_prog)

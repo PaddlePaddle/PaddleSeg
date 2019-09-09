@@ -261,17 +261,18 @@ class SegDataset(object):
                     SATURATION_JITTER_RATIO,
                     contrast_jitter_ratio=cfg.AUG.RICH_CROP.
                     CONTRAST_JITTER_RATIO)
-                if cfg.AUG.RICH_CROP.FLIP:
-                    if cfg.AUG.RICH_CROP.FLIP_RATIO <= 0:
-                        n = 0
-                    elif cfg.AUG.RICH_CROP.FLIP_RATIO >= 1:
-                        n = 1
-                    else:
-                        n = int(1.0 / cfg.AUG.RICH_CROP.FLIP_RATIO)
-                    if n > 0:
-                        if np.random.randint(0, n) == 0:
-                            img = img[::-1, :, :]
-                            grt = grt[::-1, :]
+
+            if cfg.AUG.FLIP:
+                if cfg.AUG.FLIP_RATIO <= 0:
+                    n = 0
+                elif cfg.AUG.FLIP_RATIO >= 1:
+                    n = 1
+                else:
+                    n = int(1.0 / cfg.AUG.FLIP_RATIO)
+                if n > 0:
+                    if np.random.randint(0, n) == 0:
+                        img = img[::-1, :, :]
+                        grt = grt[::-1, :]
 
             if cfg.AUG.MIRROR:
                 if np.random.randint(0, 2) == 1:

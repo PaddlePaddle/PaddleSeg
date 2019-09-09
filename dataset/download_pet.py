@@ -12,10 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from download_util import download_file_and_uncompress
+import sys
 import os
 
 LOCAL_PATH = os.path.dirname(os.path.abspath(__file__))
+TEST_PATH = os.path.join(LOCAL_PATH, "..", "test")
+sys.path.append(TEST_PATH)
+
+from test_utils import download_file_and_uncompress
 
 
 def download_pet_dataset(savepath, extrapath):
