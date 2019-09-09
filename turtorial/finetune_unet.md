@@ -64,9 +64,6 @@ DATASET:
 MODEL:
     MODEL_NAME: "unet"
     DEFAULT_NORM_TYPE: "bn"
-TRAIN:
-    PRETRAINED_MODEL_DIR: "./pretrained_model/unet_bn_coco/"
-
 
 # 其他配置
 TRAIN_CROP_SIZE: (512, 512)
@@ -76,6 +73,7 @@ AUG:
     FIX_RESIZE_SIZE: (512, 512)
 BATCH_SIZE: 4
 TRAIN:
+    PRETRAINED_MODEL_DIR: "./pretrained_model/unet_bn_coco/"
     MODEL_SAVE_DIR: "./saved_model/unet_pet/"
     SNAPSHOT_EPOCH: 10
 TEST:
