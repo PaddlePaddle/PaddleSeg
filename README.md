@@ -80,11 +80,10 @@ A: 降低Batch size，使用Group Norm策略等。
 
 ## 在线体验
 
-PaddleSeg提供了多种预训练模型，并且以NoteBook的方式提供了在线体验的教程，欢迎体验：
+PaddleSeg在AI Studio平台上提供了在线体验的教程，欢迎体验：
 
 |教程|链接|
 |-|-|
-|快速开始：人像分割|[点击体验](https://aistudio.baidu.com/aistudio/projectDetail/100798)|
 |U-Net宠物分割|[点击体验](https://aistudio.baidu.com/aistudio/projectDetail/102889)|
 |DeepLabv3+图像分割|[点击体验](https://aistudio.baidu.com/aistudio/projectDetail/101696)|
 |PaddleSeg特色垂类模型|[点击体验](https://aistudio.baidu.com/aistudio/projectdetail/115541)|
