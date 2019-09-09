@@ -24,6 +24,20 @@ rangescaling示意图如下：
 
 ![](imgs/rangescale.png)
 
+## 图像翻转
+
+PaddleSeg支持以下2种翻转方式：
+
+- 左右翻转（Mirror）
+使用开关`AUG.MIRROR`，为True时该项功能开启，为False时该项功能关闭。
+
+- 上下翻转（Flip）
+使用开关`AUG.FLIP`，为True时该项功能开启，`AUG.FLIP_RATIO`控制是否上下翻转的概率。为False时该项功能关闭。
+
+以上2种开关独立运作，可组合使用。故图像翻转一共有如下4种可能的情况：
+
+<img src="imgs/data_aug_flip_mirror.png" width="60%" height="60%" />
+
 ## rich crop  
 
 Rich Crop是PaddleSeg结合实际业务经验开放的一套数据增强策略，面向标注数据少，测试数据情况繁杂的分割业务场景使用的数据增强策略。流程如下图所示:
@@ -35,18 +49,13 @@ rich crop是指对图像进行多种变换，保证在训练过程中数据的�
 - blur
 图像加模糊，使用开关`AUG.RICH_CROP.BLUR`，为False时该项功能关闭。`AUG.RICH_CROP.BLUR_RATIO`控制加入模糊的概率。
 
-- flip
-图像上下翻转，使用开关`AUG.RICH_CROP.FLIP`，为False时该项功能关闭。`AUG.RICH_CROP.FLIP_RATIO`控制上下翻转的概率。
-
 - rotation
 图像旋转，`AUG.RICH_CROP.MAX_ROTATION`控制最大旋转角度。旋转产生的多余的区域的填充值为均值。
 
 - aspect
-
 图像长宽比调整，从图像中crop一定区域出来之后在某一长宽比内进行resize。控制参数`AUG.RICH_CROP.MIN_AREA_RATIO`和`AUG.RICH_CROP.ASPECT_RATIO`。
 
 - color jitter
-
 图像颜色调整，控制参数`AUG.RICH_CROP.BRIGHTNESS_JITTER_RATIO`、`AUG.RICH_CROP.SATURATION_JITTER_RATIO`、`AUG.RICH_CROP.CONTRAST_JITTER_RATIO`。
 
 ## random crop  
