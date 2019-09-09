@@ -93,7 +93,7 @@ PaddleSeg提供了多种预训练模型，并且以NoteBook的方式提供了在
 
 ## 更新日志
 
-* 2019.08.26
+* 2019.09.10
 
   **`v0.1.0`**
   * PaddleSeg分割库初始版本发布，包含DeepLabv3+, U-Net, ICNet三类分割模型, 其中DeepLabv3+支持Xception, MobileNet两种可调节的骨干网络。
