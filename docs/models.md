@@ -1,4 +1,4 @@
-# PaddleSeg 模型列表
+# PaddleSeg 分割模型介绍
 
 ### U-Net
 U-Net 起源于医疗图像分割，整个网络是标准的encoder-decoder网络，特点是参数少，计算快，应用性强，对于一般场景适应度很高。
