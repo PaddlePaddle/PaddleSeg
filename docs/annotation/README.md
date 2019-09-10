@@ -1,8 +1,8 @@
 # PaddleSeg 数据标注
 
 用户需预先采集好用于训练、评估和测试的图片，并使用数据标注工具完成数据标注，PaddleSeg支持2种标注工具：
-- [LabelMe](https://github.com/wkentaro/labelme)  
-- [精灵数据标注工具](http://www.jinglingbiaozhu.com/)
+- LabelMe
+- 精灵数据标注工具
 
 标注教程如下：
 - [LabelMe标注教程](https://github.com/LutaoChu/PaddleSeg/blob/master/docs/annotation/labelme2seg.md)
