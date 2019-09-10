@@ -374,7 +374,7 @@ def rand_crop(crop_img, crop_seg, mode=ModelPhase.TRAIN):
     Args:
         crop_img(numpy.ndarray): 输入图像
         crop_seg(numpy.ndarray): 标签图
-        mode(string): 模式, 默认训练模式，验证或预测模式时crop尺寸需大于原始图片尺寸, 其他模式无限制
+        mode(string): 模式, 默认训练模式，验证或预测、可视化模式时crop尺寸需大于原始图片尺寸
 
     Returns：
         裁剪后的图片和标签图
@@ -391,7 +391,7 @@ def rand_crop(crop_img, crop_seg, mode=ModelPhase.TRAIN):
         crop_width = cfg.EVAL_CROP_SIZE[0]
         crop_height = cfg.EVAL_CROP_SIZE[1]
 
-    if ModelPhase.is_eval(mode) or ModelPhase.is_predict(mode):
+    if not ModelPhase.is_train(mode): 
         if (crop_height < img_height or crop_width < img_width):
             raise Exception(
                 "Crop size({},{}) must large than img size({},{}) when in EvalPhase."

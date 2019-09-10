@@ -1,5 +1,5 @@
 EVAL_CROP_SIZE: (2049, 1025) # (width, height), for unpadding rangescaling and stepscaling
-TRAIN_CROP_SIZE: (769, 769) # (width, height), for unpadding rangescaling and stepscaling
+TRAIN_CROP_SIZE: (713, 713) # (width, height), for unpadding rangescaling and stepscaling
 AUG:
     AUG_METHOD: "stepscaling" # choice unpadding rangescaling and stepscaling
     FIX_RESIZE_SIZE: (640, 640) # (width, height), for unpadding
@@ -18,23 +18,18 @@ DATASET:
     TEST_FILE_LIST: "dataset/cityscapes/val.list"
     TRAIN_FILE_LIST: "dataset/cityscapes/train.list"
     VAL_FILE_LIST: "dataset/cityscapes/val.list"
-    VIS_FILE_LIST: "dataset/cityscapes/vis.list"
-    SEPARATOR: " "
     IGNORE_INDEX: 255
 FREEZE:
-    MODEL_FILENAME: "__model__"
-    PARAMS_FILENAME: "__params__"
+    MODEL_FILENAME: "model"
+    PARAMS_FILENAME: "params"
 MODEL:
-    DEFAULT_NORM_TYPE: "gn"
-    MODEL_NAME: "deeplabv3p"
-    DEEPLAB:
-        ASPP_WITH_SEP_CONV: True
-        DECODER_USE_SEP_CONV: True
+    MODEL_NAME: "pspnet"
+    DEFAULT_NORM_TYPE: "bn"
 TEST:
-    TEST_MODEL: "snapshots/cityscape_v5/final/"
+    TEST_MODEL: "pretrained_model/pspnet50_ADE20K/"
 TRAIN:
-    MODEL_SAVE_DIR: "snapshots/cityscape_v5/"
-    PRETRAINED_MODEL_DIR: "pretrain/deeplabv3plus_gn_init"
+    MODEL_SAVE_DIR: "snapshots/cityscape_pspnet50/"
+    PRETRAINED_MODEL_DIR: u"pretrained_model/pspnet50_ADE20K/"
     SNAPSHOT_EPOCH: 10
 SOLVER:
     LR: 0.001

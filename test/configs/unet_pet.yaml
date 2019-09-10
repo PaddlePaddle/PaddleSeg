@@ -12,18 +12,6 @@ AUG:
     MIN_SCALE_FACTOR: 0.75  # for stepscaling
     SCALE_STEP_SIZE: 0.25  # for stepscaling
     MIRROR: True
-    RICH_CROP:
-        ENABLE: False
-        ASPECT_RATIO: 0.33
-        BLUR: True
-        BLUR_RATIO: 0.1
-        FLIP: True
-        FLIP_RATIO: 0.2
-        MAX_ROTATION: 15
-        MIN_AREA_RATIO: 0.5
-        BRIGHTNESS_JITTER_RATIO: 0.5
-        CONTRAST_JITTER_RATIO: 0.5
-        SATURATION_JITTER_RATIO: 0.5
 BATCH_SIZE: 6
 DATASET:
     DATA_DIR: "./dataset/pet/"
@@ -45,8 +33,7 @@ TEST:
     TEST_MODEL: "./test/saved_model/unet_pet/final/"
 TRAIN:
     MODEL_SAVE_DIR: "./test/saved_models/unet_pet/"
-    PRETRAINED_MODEL: "./test/models/unet_coco/"
-    RESUME: False
+    PRETRAINED_MODEL_DIR: "./test/models/unet_coco/"
     SNAPSHOT_EPOCH: 10
 SOLVER:
     NUM_EPOCHS: 500
