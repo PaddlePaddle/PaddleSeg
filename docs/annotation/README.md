@@ -1,8 +1,12 @@
 # PaddleSeg 数据标注
 
 用户需预先采集好用于训练、评估和测试的图片，并使用数据标注工具完成数据标注，PaddleSeg支持2种标注工具：
-- [LabelMe](https://github.com/wkentaro/labelme)
+- [LabelMe](https://github.com/wkentaro/labelme)  
 - [精灵数据标注工具](http://www.jinglingbiaozhu.com/)
+
+标注教程如下：
+- [LabelMe标注教程](https://github.com/LutaoChu/PaddleSeg/blob/master/docs/annotation/labelme2seg.md)
+- [精灵数据标注工具教程](https://github.com/LutaoChu/PaddleSeg/blob/master/docs/annotation/jingling2seg.md)
 
 最后用我们提供的数据转换脚本将上述标注工具产出的数据格式转换为模型训练时所需的数据格式。
 
