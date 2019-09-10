@@ -26,7 +26,7 @@ python pdseg/train.py BATCH_SIZE 1 --cfg configs/cityscapes.yaml
 |-|-|-|-|-|
 |--cfg|ALL|配置文件路径|None||
 |--use_gpu|ALL|是否使用GPU进行训练|False||
-|--use_mpio|train/eval|是否使用多线程进行IO处理|False|打开该开关会占用一定量的CPU内存，但是可以提高训练速度。</br> NOTE：windows平台下不支持该功能, 建议使用自定义数据初次训练时不打开，打开会导致数据读取异常不可见。 </br> |
+|--use_mpio|train/eval|是否使用多线程进行IO处理|False|打开该开关会占用一定量的CPU内存，但是可以提高训练速度。</br> **NOTE：** windows平台下不支持该功能, 建议使用自定义数据初次训练时不打开，打开会导致数据读取异常不可见。 </br> |
 |--use_tb|train|是否使用TensorBoard记录训练数据|False||
 |--log_steps|train|训练日志的打印周期（单位为step）|10||
 |--debug|train|是否打印debug信息|False|IOU等指标涉及到混淆矩阵的计算，会降低训练速度|
@@ -82,11 +82,15 @@ python pdseg/train.py --use_gpu \
                       SOLVER.LR 5e-5
 ```
 
+
 **NOTE:**
 
-> * 上述示例中，一共存在三套配置方案: PaddleSeg默认配置/unet_pet.yaml/OPTIONS，三者的优先级顺序为 OPTIONS > yaml > 默认配置。这个原则对于train.py/eval.py/vis.py都适用
->
-> * 如果发现因为内存不足而Crash。请适当调低BATCH_SIZE。如果本机GPU内存充足，则可以调高BATCH_SIZE的大小以获得更快的训练速度，BATCH_SIZE增大时，可以适当调高学习率。
+* 上述示例中，一共存在三套配置方案: PaddleSeg默认配置/unet_pet.yaml/OPTIONS，三者的优先级顺序为 OPTIONS > yaml > 默认配置。这个原则对于train.py/eval.py/vis.py都适用
+
+* 如果发现因为内存不足而Crash。请适当调低BATCH_SIZE。如果本机GPU内存充足，则可以调高BATCH_SIZE的大小以获得更快的训练速度，BATCH_SIZE增大时，可以适当调高学习率。
+
+* 如果在Linux系统下训练，可以使用`--use_mpio`使用多进程I/O，通过提升数据增强的处理速度进而大幅度提升GPU利用率。
+
 
 ### 训练过程可视化
 
@@ -115,7 +119,6 @@ python pdseg/eval.py --use_gpu \
                      --cfg configs/unet_pet.yaml \
                      TEST.TEST_MODEL test/saved_models/unet_pet/final
 ```
-
 
 ### 模型可视化
 通过vis.py来评估模型效果，我们选择最后保存的模型进行效果的评估：
