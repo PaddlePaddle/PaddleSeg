@@ -278,19 +278,24 @@ def train(cfg):
                         "Variable[{}] shape does not match current network, skip"
                         " to load it.".format(var.name))
                     return False
-
+            else:
+                print(var.name, 'is not exist!')
+        var_names = []
         for x in train_prog.list_vars():
             if isinstance(x, fluid.framework.Parameter):
                 shape = tuple(fluid.global_scope().find_var(
                     x.name).get_tensor().shape())
                 if var_shape_matched(x, shape):
                     load_vars.append(x)
-        if cfg.MODEL.FP16:
-            # If open FP16 training mode, load FP16 var separate
-            load_fp16_vars(exe, cfg.TRAIN.PRETRAINED_MODEL, train_prog)
-        else:
-            fluid.io.load_vars(
-                exe, dirname=cfg.TRAIN.PRETRAINED_MODEL, vars=load_vars)
+                var_names.append(x.name)
+        # import pickle
+        # pickle.dump(var_names, open('var_names.pkl', 'wb'))
+        # if cfg.MODEL.FP16:
+        #     # If open FP16 training mode, load FP16 var separate
+        #     load_fp16_vars(exe, cfg.TRAIN.PRETRAINED_MODEL, train_prog)
+        # else:
+        fluid.io.load_vars(
+            exe, dirname=cfg.TRAIN.PRETRAINED_MODEL, vars=load_vars)
         print("Pretrained model loaded successfully!")
     else:
         print('Pretrained model dir {} not exists, training from scratch...'.
@@ -449,7 +454,10 @@ def main(args):
         cfg.update_from_list(args.opts)
     cfg.check_and_infer(reset_dataset=True)
     print(pprint.pformat(cfg))
+    import time
+    start_train_time = time.time()
     train(cfg)
+    print('train time:', time.time() - start_train_time)
 
 
 if __name__ == '__main__':

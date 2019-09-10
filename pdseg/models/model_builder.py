@@ -24,7 +24,7 @@ from paddle.fluid.proto.framework_pb2 import VarType
 import solver
 from utils.config import cfg
 from loss import multi_softmax_with_loss
-
+from utils.fp16_utils import mixed_precision_context
 
 class ModelPhase(object):
     """
@@ -143,43 +143,48 @@ def build_model(main_prog, start_prog, phase=ModelPhase.TRAIN):
                 image = fluid.layers.cast(image, "float16")
             model_name = map_model_name(cfg.MODEL.MODEL_NAME)
             model_func = get_func("modeling." + model_name)
-            logits = model_func(image, class_num)
+            with mixed_precision_context(cfg.MODEL.SCALE_LOSS, cfg.MODEL.FP16) as ctx:
+                logits = model_func(image, class_num)
 
-            if ModelPhase.is_train(phase) or ModelPhase.is_eval(phase):
-                avg_loss = multi_softmax_with_loss(logits, label, mask,
-                                                   class_num)
+                if ModelPhase.is_train(phase) or ModelPhase.is_eval(phase):
+                    avg_loss = multi_softmax_with_loss(logits, label, mask,
+                                                       class_num)
 
-            #get pred result in original size
-            if isinstance(logits, tuple):
-                logit = logits[0]
-            else:
-                logit = logits
+                #get pred result in original size
+                if isinstance(logits, tuple):
+                    logit = logits[0]
+                else:
+                    logit = logits
 
-            if logit.shape[2:] != label.shape[2:]:
-                logit = fluid.layers.resize_bilinear(logit, label.shape[2:])
+                if logit.shape[2:] != label.shape[2:]:
+                    logit = fluid.layers.resize_bilinear(logit, label.shape[2:])
 
-            # return image input and logit output for inference graph prune
-            if ModelPhase.is_predict(phase):
-                logit = softmax(logit)
-                return image, logit
+                # return image input and logit output for inference graph prune
+                if ModelPhase.is_predict(phase):
+                    logit = softmax(logit)
+                    return image, logit
 
-            out = fluid.layers.transpose(x=logit, perm=[0, 2, 3, 1])
-            if cfg.MODEL.FP16:
-                out = fluid.layers.cast(out, 'float32')
-            pred = fluid.layers.argmax(out, axis=3)
-            pred = fluid.layers.unsqueeze(pred, axes=[3])
+                out = fluid.layers.transpose(x=logit, perm=[0, 2, 3, 1])
+                if cfg.MODEL.FP16:
+                    out = fluid.layers.cast(out, 'float32')
+                pred = fluid.layers.argmax(out, axis=3)
+                pred = fluid.layers.unsqueeze(pred, axes=[3])
 
-            if ModelPhase.is_visual(phase):
-                logit = softmax(logit)
-                return pred, logit
+                if ModelPhase.is_visual(phase):
+                    logit = softmax(logit)
+                    return pred, logit
 
-            if ModelPhase.is_eval(phase):
-                return py_reader, avg_loss, pred, label, mask
+                if ModelPhase.is_eval(phase):
+                    return py_reader, avg_loss, pred, label, mask
 
-            if ModelPhase.is_train(phase):
-                optimizer = solver.Solver(main_prog, start_prog)
-                decayed_lr = optimizer.optimise(avg_loss)
-                return py_reader, avg_loss, decayed_lr, pred, label, mask
+                if ModelPhase.is_train(phase):
+                    optimizer = solver.Solver(main_prog, start_prog)
+                    if cfg.MODEL.FP16:
+                        avg_loss *= ctx.get_loss_scale_var()
+                    decayed_lr = optimizer.optimise(avg_loss)
+                    if cfg.MODEL.FP16:
+                        avg_loss /= ctx.get_loss_scale_var()
+                    return py_reader, avg_loss, decayed_lr, pred, label, mask
 
 
 def to_int(string, dest="I"):
