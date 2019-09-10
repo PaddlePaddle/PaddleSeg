@@ -57,7 +57,7 @@ python pretrained_model/download_model.py unet_bn_coco
 ```
 ### 下载Oxford-IIIT Pet数据集
 我们使用了Oxford-IIIT中的猫和狗两个类别数据制作了一个小数据集mini_pet，用于快速体验。
-更多关于数据集的介绍情参考[Oxford-IIIT Pet)(https://www.robots.ox.ac.uk/~vgg/data/pets/)
+更多关于数据集的介绍情参考[Oxford-IIIT Pet](https://www.robots.ox.ac.uk/~vgg/data/pets/)
 
 ```shell
 # 下载预训练模型并进行解压
@@ -82,15 +82,15 @@ python pdseg/train.py --use_gpu \
                       SOLVER.LR 5e-5
 ```
 
-`NOTE`:
+**NOTE:**
 
 > * 上述示例中，一共存在三套配置方案: PaddleSeg默认配置/unet_pet.yaml/OPTIONS，三者的优先级顺序为 OPTIONS > yaml > 默认配置。这个原则对于train.py/eval.py/vis.py都适用
 >
-> * 如果发现因为内存不足而Crash。请适当调低BATCH_SIZE。如果本机GPU内存充足，则可以调高BATCH_SIZE的大小以获得更快的训练速度
+> * 如果发现因为内存不足而Crash。请适当调低BATCH_SIZE。如果本机GPU内存充足，则可以调高BATCH_SIZE的大小以获得更快的训练速度，BATCH_SIZE增大时，可以适当调高学习率。
 
 ### 训练过程可视化
 
-当打开do_eval和use_tb两个开关后，我们可以通过TensorBoard查看训练的效果
+当打开do_eval和use_tb两个开关后，我们可以通过TensorBoard查看边训练边评估的效果。
 
 ```shell
 tensorboard --logdir train_log --host {$HOST_IP} --port {$PORT}
