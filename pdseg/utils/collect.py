@@ -97,6 +97,8 @@ class SegConfig(dict):
             raise KeyError(
                 'DATASET.IMAGE_TYPE config error, only support `rgb`, `gray` and `rgba`'
             )
+        if self.MEAN is not None:
+            self.DATASET.PADDING_VALUE = [x*255.0 for x in self.MEAN]
 
         if not self.TRAIN_CROP_SIZE:
             raise ValueError(

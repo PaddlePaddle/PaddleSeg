@@ -246,7 +246,7 @@ class SegDataset(object):
                     img,
                     grt,
                     rich_crop_max_rotation=cfg.AUG.RICH_CROP.MAX_ROTATION,
-                    mean_value=cfg.MEAN)
+                    mean_value=cfg.DATASET.PADDING_VALUE)
 
                 img, grt = aug.rand_scale_aspect(
                     img,
