@@ -1,7 +1,5 @@
 # PaddleSeg 数据标注
 
-用户需预先采集好用于训练、评估和测试的图片，并使用[精灵数据标注工具](http://www.jinglingbiaozhu.com/)完成数据标注，最后用我们提供的数据转换脚本将精灵标注工具产出的数据格式转换为模型训练时所需的数据格式。
-
 ## 1 精灵标注工具的安装
 
 用户在采集完用于训练、评估和预测的图片之后，可使用[精灵数据标注工具](http://www.jinglingbiaozhu.com/)完成数据标注。精灵标注支持在Windows/macOS/Linux三个系统上使用，Mac的话可以到MacStore中搜索colabeler下载即可。
