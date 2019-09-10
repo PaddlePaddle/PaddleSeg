@@ -16,7 +16,7 @@
 打开精灵标注工具。
 
 <div align="center">
-    <img src="../imgs/annotation/jingling-1.png" width="600px"/>
+    <img src="../imgs/annotation/jingling-1.png" width="800px"/>
     <p>图1 精灵标注交互界面的示意图</p>
  </div>
 
@@ -31,16 +31,15 @@
 然后可以点击左边的前一个后一个或者直接使用键盘的向左按钮和向右按钮来切换图片。
 
 <div align="center">
-    <img src="../imgs/annotation/image-3.png" width="600px"/>
-    <p>图3 标注单个目标的示意图</p>
+    <img src="../imgs/annotation/jingling-2.png" width="800px"/>
+    <p>图2 标注单个目标的示意图</p>
  </div>
 
 (2)   单击目标框，鼠标拖动可以整体移动多边形的位置；点击左侧的`删除选框`可以删除画错的目标框；点击右侧的`标注信息`可修改目标类别。请根据自己的需要执行这一步骤，若不需要修改，可跳过。
 
 <div align="center">
-    <img src="../imgs/annotation/image-4-1.png" width="00px" />
-  	<img src="../imgs/annotation/image-4-2.png" width="600px"/>
-    <p>图4 修改标注的示意图</p>
+  	<img src="../imgs/annotation/jingling-3.png" width="800px"/>
+    <p>图3 修改标注的示意图</p>
  </div>
 
 (3)   当所有图片的标注都完成后，点击左侧的`导出`，输出方式选择`JSON`，指定`保存位置`，点击`确定导出`保存所有图片的标注文件。
@@ -50,8 +49,8 @@
 精灵标注产出的真值文件可参考我们给出的文件夹`data_annotated`。
 
 <div align="center">
-    <img src="../imgs/annotation/image-5.png" width="600px"/>
-    <p>图5 LableMe产出的真值文件的示意图</p>
+    <img src="../imgs/annotation/jingling-4.png" width="300px"/>
+    <p>图4 精灵标注产出的真值文件的示意图</p>
  </div>
 
  ## 3 数据格式转换
@@ -70,7 +69,7 @@
 
 <div align="center">
     <img src="../imgs/annotation/image-6.png" width="600px"/>
-    <p>图6 训练所需的数据集目录的结构示意图</p>
+    <p>图5 训练所需的数据集目录的结构示意图</p>
  </div>
 
 * 运行转换脚本需要依赖labelme和pillow，如未安装，请先安装。Labelme的具体安装流程请参见[官方安装指南](https://github.com/wkentaro/labelme)。Pillow的安装：
@@ -92,6 +91,6 @@ pip install pillow
 转换得到的数据集可参考我们给出的文件夹`my_dataset`。其中，文件`class_names.txt`是数据集中所有标注类别的名称，包含背景类；文件夹`JPEGImages`保存的是数据集的图片；文件夹`SegmentationClassPNG`保存的是各图片的像素级别的真值信息，背景类`_background_`对应为0，其它目标类别从1开始递增，至多为255。
 
 <div align="center">
-    <img src="../imgs/annotation/image-7.png" width="600px"/>
-    <p>图7 训练所需的数据集各目录的内容示意图</p>
+    <img src="../imgs/annotation/jingling-5.png" width="600px"/>
+    <p>图6 训练所需的数据集各目录的内容示意图</p>
  </div>	
