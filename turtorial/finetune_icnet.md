@@ -1,4 +1,4 @@
-# 关于本教程
+# ICNet模型训练教程
 
 * 本教程旨在介绍如何通过使用PaddleSeg提供的 ***`ICNet`*** 预训练模型在自定义数据集上进行训练
 
@@ -38,12 +38,12 @@ python pretrained_model/download_model.py icnet_bn_cityscapes
   * 预训练模型的backbone网络
   * 预训练模型的Normalization类型
   * 预训练模型路径
-* 其他
+* 优化策略
   * 学习率
-  * Batch大小
+  * Batch Size
   * ...
 
-在三者中，预训练模型的配置尤为重要，如果模型或者BACKBONE配置错误，会导致预训练的参数没有加载，进而影响收敛速度。预训练模型相关的配置如第二步所展示。
+在三者中，预训练模型的配置尤为重要，如果模型或者BACKBONE配置错误，会导致预训练的参数没有加载，进而影响收敛速度。预训练模型相关的配置如第二步所示。
 
 数据集的配置和数据路径有关，在本教程中，数据存放在`dataset/mini_pet`中
 
@@ -65,9 +65,8 @@ MODEL:
     MODEL_NAME: "icnet"
     DEFAULT_NORM_TYPE: "bn"
     MULTI_LOSS_WEIGHT: "[1.0, 0.4, 0.16]"
-TRAIN:
-    PRETRAINED_MODEL_DIR: "./pretrained_model/icnet_bn_cityscapes/"
-
+    ICNET:
+        DEPTH_MULTIPLIER: 0.5
 
 # 其他配置
 TRAIN_CROP_SIZE: (512, 512)
@@ -77,15 +76,16 @@ AUG:
     FIX_RESIZE_SIZE: (512, 512)
 BATCH_SIZE: 4
 TRAIN:
-    MODEL_SAVE_DIR: "./finetune/icnet_pet/"
+    PRETRAINED_MODEL_DIR: "./pretrained_model/icnet_bn_cityscapes/"
+    MODEL_SAVE_DIR: "./saved_model/icnet_pet/"
     SNAPSHOT_EPOCH: 10
 TEST:
-    TEST_MODEL: "./finetune/icnet_pet/final"
+    TEST_MODEL: "./saved_model/icnet_pet/final"
 SOLVER:
-    NUM_EPOCHS: 500
+    NUM_EPOCHS: 100
     LR: 0.005
     LR_POLICY: "poly"
-    OPTIMIZER: "adam"
+    OPTIMIZER: "sgd"
 ```
 
 ## 四. 配置/数据校验

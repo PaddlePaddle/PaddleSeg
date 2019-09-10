@@ -1,4 +1,4 @@
-# 关于本教程
+# DeepLabv3+模型训练教程
 
 * 本教程旨在介绍如何通过使用PaddleSeg提供的 ***`DeeplabV3+/Xception65/BatchNorm`*** 预训练模型在自定义数据集上进行训练。除了该配置之外，DeeplabV3+还支持以下不同[模型组合](#模型组合)的预训练模型，如果需要使用对应模型作为预训练模型，将下述内容中的Xception Backbone中的内容进行替换即可
 
@@ -47,7 +47,7 @@ python pretrained_model/download_model.py deeplabv3p_xception65_bn_cityscapes
 
 数据集的配置和数据路径有关，在本教程中，数据存放在`dataset/mini_pet`中
 
-其他配置则根据数据集和机器环境的情况进行调节，最终我们保存一个如下内容的yaml配置文件，存放路径为`configs/test_pet.yaml`
+其他配置则根据数据集和机器环境的情况进行调节，最终我们保存一个如下内容的yaml配置文件，存放路径为`configs/test_deeplabv3p_pet.yaml`
 
 ```yaml
 # 数据集配置
@@ -59,16 +59,12 @@ DATASET:
     VAL_FILE_LIST: "./dataset/mini_pet/file_list/val_list.txt"
     VIS_FILE_LIST: "./dataset/mini_pet/file_list/test_list.txt"
 
-
 # 预训练模型配置
 MODEL:
     MODEL_NAME: "deeplabv3p"
     DEFAULT_NORM_TYPE: "bn"
     DEEPLAB:
         BACKBONE: "xception_65"
-TRAIN:
-    PRETRAINED_MODEL_DIR: "./pretrained_model/deeplabv3p_xception65_bn_pet/"
-
 
 # 其他配置
 TRAIN_CROP_SIZE: (512, 512)
@@ -78,15 +74,16 @@ AUG:
     FIX_RESIZE_SIZE: (512, 512)
 BATCH_SIZE: 4
 TRAIN:
-    MODEL_SAVE_DIR: "./finetune/deeplabv3p_xception65_bn_pet/"
+    PRETRAINED_MODEL_DIR: "./pretrained_model/deeplabv3p_xception65_bn_coco/"
+    MODEL_SAVE_DIR: "./saved_model/deeplabv3p_xception65_bn_pet/"
     SNAPSHOT_EPOCH: 10
 TEST:
-    TEST_MODEL: "./finetune/deeplabv3p_xception65_bn_pet/final"
+    TEST_MODEL: "./saved_model/deeplabv3p_xception65_bn_pet/final"
 SOLVER:
-    NUM_EPOCHS: 500
+    NUM_EPOCHS: 100
     LR: 0.005
     LR_POLICY: "poly"
-    OPTIMIZER: "adam"
+    OPTIMIZER: "sgd"
 ```
 
 ## 四. 配置/数据校验
@@ -94,7 +91,7 @@ SOLVER:
 在开始训练和评估之前，我们还需要对配置和数据进行一次校验，确保数据和配置是正确的。使用下述命令启动校验流程
 
 ```shell
-python pdseg/check.py --cfg ./configs/test_pet.yaml
+python pdseg/check.py --cfg ./configs/test_deeplabv3p_pet.yaml
 ```
 
 
@@ -103,7 +100,7 @@ python pdseg/check.py --cfg ./configs/test_pet.yaml
 校验通过后，使用下述命令启动训练
 
 ```shell
-python pdseg/train.py --use_gpu --cfg ./configs/test_pet.yaml
+python pdseg/train.py --use_gpu --cfg ./configs/test_deeplabv3p_pet.yaml
 ```
 
 ## 六. 进行评估
@@ -111,22 +108,22 @@ python pdseg/train.py --use_gpu --cfg ./configs/test_pet.yaml
 模型训练完成，使用下述命令启动评估
 
 ```shell
-python pdseg/eval.py --use_gpu --cfg ./configs/test_pet.yaml
+python pdseg/eval.py --use_gpu --cfg ./configs/test_deeplabv3p_pet.yaml
 ```
 
 ## 模型组合
 
 |预训练模型名称|BackBone|Norm|数据集|配置|
 |-|-|-|-|-|
-|mobilnetv2-2-0_bn_imagenet|-|bn|ImageNet|MODEL.MODEL_NAME: deeplabv3p <br> MODEL.DEEPLAB.BACKBONE: mobilenet <br> MODEL.DEEPLAB.DEPTH_MULTIPLIER: 2.0 <br> MODEL.DEFAULT_NORM_TYPE: bn|
-|mobilnetv2-1-5_bn_imagenet|-|bn|ImageNet|MODEL.MODEL_NAME: deeplabv3p <br> MODEL.DEEPLAB.BACKBONE: mobilenet <br> MODEL.DEEPLAB.DEPTH_MULTIPLIER: 1.5 <br> MODEL.DEFAULT_NORM_TYPE: bn|
-|mobilnetv2-1-0_bn_imagenet|-|bn|ImageNet|MODEL.MODEL_NAME: deeplabv3p <br> MODEL.DEEPLAB.BACKBONE: mobilenet <br> MODEL.DEEPLAB.DEPTH_MULTIPLIER: 1.0 <br> MODEL.DEFAULT_NORM_TYPE: bn|
-|mobilnetv2-0-5_bn_imagenet|-|bn|ImageNet|MODEL.MODEL_NAME: deeplabv3p <br> MODEL.DEEPLAB.BACKBONE: mobilenet <br> MODEL.DEEPLAB.DEPTH_MULTIPLIER: 0.5 <br> MODEL.DEFAULT_NORM_TYPE: bn|
-|mobilnetv2-0-25_bn_imagenet|-|bn|ImageNet|MODEL.MODEL_NAME: deeplabv3p <br> MODEL.DEEPLAB.BACKBONE: mobilenet <br> MODEL.DEEPLAB.DEPTH_MULTIPLIER: 0.25 <br> MODEL.DEFAULT_NORM_TYPE: bn|
+|mobilenetv2-2-0_bn_imagenet|-|bn|ImageNet|MODEL.MODEL_NAME: deeplabv3p <br> MODEL.DEEPLAB.BACKBONE: mobilenet <br> MODEL.DEEPLAB.DEPTH_MULTIPLIER: 2.0 <br> MODEL.DEFAULT_NORM_TYPE: bn|
+|mobilenetv2-1-5_bn_imagenet|-|bn|ImageNet|MODEL.MODEL_NAME: deeplabv3p <br> MODEL.DEEPLAB.BACKBONE: mobilenet <br> MODEL.DEEPLAB.DEPTH_MULTIPLIER: 1.5 <br> MODEL.DEFAULT_NORM_TYPE: bn|
+|mobilenetv2-1-0_bn_imagenet|-|bn|ImageNet|MODEL.MODEL_NAME: deeplabv3p <br> MODEL.DEEPLAB.BACKBONE: mobilenet <br> MODEL.DEEPLAB.DEPTH_MULTIPLIER: 1.0 <br> MODEL.DEFAULT_NORM_TYPE: bn|
+|mobilenetv2-0-5_bn_imagenet|-|bn|ImageNet|MODEL.MODEL_NAME: deeplabv3p <br> MODEL.DEEPLAB.BACKBONE: mobilenet <br> MODEL.DEEPLAB.DEPTH_MULTIPLIER: 0.5 <br> MODEL.DEFAULT_NORM_TYPE: bn|
+|mobilenetv2-0-25_bn_imagenet|-|bn|ImageNet|MODEL.MODEL_NAME: deeplabv3p <br> MODEL.DEEPLAB.BACKBONE: mobilenet <br> MODEL.DEEPLAB.DEPTH_MULTIPLIER: 0.25 <br> MODEL.DEFAULT_NORM_TYPE: bn|
 |xception41_imagenet|-|bn|ImageNet|MODEL.MODEL_NAME: deeplabv3p <br> MODEL.DEEPLAB.BACKBONE: xception_41 <br> MODEL.DEFAULT_NORM_TYPE: bn|
 |xception65_imagenet|-|bn|ImageNet|MODEL.MODEL_NAME: deeplabv3p <br> MODEL.DEEPLAB.BACKBONE: xception_65 <br> MODEL.DEFAULT_NORM_TYPE: bn|
-|deeplabv3p_mobilnetv2-1-0_bn_coco|MobileNet V2|bn|COCO|MODEL.MODEL_NAME: deeplabv3p <br> MODEL.DEEPLAB.BACKBONE: mobilenet <br> MODEL.DEEPLAB.DEPTH_MULTIPLIER: 1.0 <br> MODEL.DEEPLAB.ENCODER_WITH_ASPP: False <br> MODEL.DEEPLAB.ENABLE_DECODER: False <br> MODEL.DEFAULT_NORM_TYPE: bn|
+|deeplabv3p_mobilenetv2-1-0_bn_coco|MobileNet V2|bn|COCO|MODEL.MODEL_NAME: deeplabv3p <br> MODEL.DEEPLAB.BACKBONE: mobilenet <br> MODEL.DEEPLAB.DEPTH_MULTIPLIER: 1.0 <br> MODEL.DEEPLAB.ENCODER_WITH_ASPP: False <br> MODEL.DEEPLAB.ENABLE_DECODER: False <br> MODEL.DEFAULT_NORM_TYPE: bn|
 |deeplabv3p_xception65_bn_coco|Xception|bn|COCO|MODEL.MODEL_NAME: deeplabv3p <br> MODEL.DEEPLAB.BACKBONE: xception_65 <br> MODEL.DEFAULT_NORM_TYPE: bn |
-|deeplabv3p_mobilnetv2-1-0_bn_cityscapes|MobileNet V2|bn|Cityscapes|MODEL.MODEL_NAME: deeplabv3p <br> MODEL.DEEPLAB.BACKBONE: mobilenet <br> MODEL.DEEPLAB.DEPTH_MULTIPLIER: 1.0 <br> MODEL.DEEPLAB.ENCODER_WITH_ASPP: False <br> MODEL.DEEPLAB.ENABLE_DECODER: False <br> MODEL.DEFAULT_NORM_TYPE: bn|
+|deeplabv3p_mobilenetv2-1-0_bn_cityscapes|MobileNet V2|bn|Cityscapes|MODEL.MODEL_NAME: deeplabv3p <br> MODEL.DEEPLAB.BACKBONE: mobilenet <br> MODEL.DEEPLAB.DEPTH_MULTIPLIER: 1.0 <br> MODEL.DEEPLAB.ENCODER_WITH_ASPP: False <br> MODEL.DEEPLAB.ENABLE_DECODER: False <br> MODEL.DEFAULT_NORM_TYPE: bn|
 |deeplabv3p_xception65_gn_cityscapes|Xception|gn|Cityscapes|MODEL.MODEL_NAME: deeplabv3p <br>  MODEL.DEEPLAB.BACKBONE: xception_65 <br> MODEL.DEFAULT_NORM_TYPE: gn|
 |**deeplabv3p_xception65_bn_cityscapes**|Xception|bn|Cityscapes|MODEL.MODEL_NAME: deeplabv3p <br> MODEL.DEEPLAB.BACKBONE: xception_65 <br> MODEL.DEFAULT_NORM_TYPE: bn|

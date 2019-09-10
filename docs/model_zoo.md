@@ -24,17 +24,17 @@ PaddleSeg对所有内置的分割模型都提供了公开数据集下的预训�
 
 ## COCO预训练模型
 
-train数据集为coco instance分割数据集合转换成的语义分割数据集合
+数据集为COCO实例分割数据集合转换成的语义分割数据集合
 
 | 模型 | 数据集合 | 下载地址 |Output Strid|multi-scale test| mIoU |
 |---|---|---|---|---|---|
 | DeepLabv3+/MobileNetv2/bn | COCO |[deeplabv3plus_coco_bn_init.tgz](https://bj.bcebos.com/v1/paddleseg/deeplabv3plus_coco_bn_init.tgz) | 16 | --| -- |
 | DeeplabV3+/Xception65/bn | COCO | [xception65_coco.tgz](https://paddleseg.bj.bcebos.com/models/xception65_coco.tgz)| 16 | -- | -- |
-| UNet/bn | COCO | [unet](https://paddleseg.bj.bcebos.com/models/unet_coco_v3.tgz) | 16 | -- | -- |
+| U-Net/bn | COCO | [unet_coco.tgz](https://paddleseg.bj.bcebos.com/models/unet_coco_v3.tgz) | 16 | -- | -- |
 
 ## Cityscapes预训练模型
 
-train数据集合为Cityscapes 训练集合，测试为Cityscapes的验证集合
+train数据集合为Cityscapes训练集合，测试为Cityscapes的验证集合
 
 | 模型 | 数据集合 | 下载地址 |Output Stride| mutli-scale test| mIoU on val|
 |---|---|---|---|---|---|
