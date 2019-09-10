@@ -65,6 +65,8 @@ MODEL:
     MODEL_NAME: "icnet"
     DEFAULT_NORM_TYPE: "bn"
     MULTI_LOSS_WEIGHT: "[1.0, 0.4, 0.16]"
+    ICNET:
+        DEPTH_MULTIPLIER: 0.5
 
 # 其他配置
 TRAIN_CROP_SIZE: (512, 512)
