@@ -66,7 +66,7 @@ PaddleSeg支持多进程IO、多卡并行、跨卡Batch Norm同步等训练加�
 
 #### Q: 安装requirements.txt指定的依赖包时，部分包提示找不到？
 
-A: 可能是pip源的问题，这种情况下建议切换为官方源
+A: 可能是pip源的问题，这种情况下建议切换为官方源，或者通过`pip install -r requirements.txt -i `指定其他源地址。
 
 #### Q:图像分割的数据增强如何配置，Unpadding, StepScaling, RangeScaling的原理是什么？
 
