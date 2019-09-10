@@ -74,7 +74,7 @@ AUG:
     FIX_RESIZE_SIZE: (512, 512)
 BATCH_SIZE: 4
 TRAIN:
-    PRETRAINED_MODEL_DIR: "./pretrained_model/deeplabv3p_xception65_bn_pet/"
+    PRETRAINED_MODEL_DIR: "./pretrained_model/deeplabv3p_xception65_bn_coco/"
     MODEL_SAVE_DIR: "./saved_model/deeplabv3p_xception65_bn_pet/"
     SNAPSHOT_EPOCH: 10
 TEST:
