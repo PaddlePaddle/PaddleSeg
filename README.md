@@ -32,7 +32,7 @@ PaddleSeg支持多进程IO、多卡并行、跨卡Batch Norm同步等训练加�
 
 我们提供了一系列的使用教程，来说明如何使用PaddleSeg完成一个语义分割模型的训练、评估、部署。
 
-这一系列的文档被分为`快速入门`、`基础功能`、`预测部署`、`高级功能`四个部分，四个教程由浅至深地介绍PaddleSeg的设计思路和使用方法。
+这一系列的文档被分为**快速入门**、**基础功能**、**预测部署**、**高级功能**四个部分，四个教程由浅至深地介绍PaddleSeg的设计思路和使用方法。
 
 ### 快速入门
 
@@ -74,7 +74,7 @@ A: 更详细数据增强文档可以参考[数据增强](./docs/data_aug.md)
 
 #### Q: 训练时因为某些原因中断了，如何恢复训练？
 
-A: 启动训练脚本时通过命令行覆盖TRAIN.RESUME_MODEL_DIR配置为模型checkpoint目录即可, 以下代码示例第100轮重新恢复训练。
+A: 启动训练脚本时通过命令行覆盖TRAIN.RESUME_MODEL_DIR配置为模型checkpoint目录即可, 以下代码示例第100轮重新恢复训练：
 ```
 python pdseg/train.py --cfg xxx.yaml TRAIN.RESUME_MODEL_DIR /PATH/TO/MODEL_CKPT/100
 ```
