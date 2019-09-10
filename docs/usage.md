@@ -11,16 +11,16 @@ python pdseg/eval.py ${FLAGS} ${OPTIONS}
 python pdseg/vis.py ${FLAGS} ${OPTIONS}
 ```
 
-`Note`:
+**Note:**
 
-> * FLAGS必须位于OPTIONS之前，否会将会遇到报错，例如如下的例子:
->
-> ```shell
-> # FLAGS "--cfg configs/cityscapes.yaml" 必须在 OPTIONS "BATCH_SIZE 1" 之前
-> python pdseg/train.py BATCH_SIZE 1 --cfg configs/cityscapes.yaml
-> ```
+* FLAGS必须位于OPTIONS之前，否会将会遇到报错，例如如下的例子:
 
-## FLAGS
+```shell
+# FLAGS "--cfg configs/cityscapes.yaml" 必须在 OPTIONS "BATCH_SIZE 1" 之前
+python pdseg/train.py BATCH_SIZE 1 --cfg configs/cityscapes.yaml
+```
+
+## 命令行FLAGS列表
 
 |FLAG|支持脚本|用途|默认值|备注|
 |-|-|-|-|-|
@@ -57,7 +57,7 @@ python pretrained_model/download_model.py unet_bn_coco
 ```
 ### 下载Oxford-IIIT Pet数据集
 我们使用了Oxford-IIIT中的猫和狗两个类别数据制作了一个小数据集mini_pet，用于快速体验。
-更多关于数据集的介绍情参考(https://www.robots.ox.ac.uk/~vgg/data/pets/)[https://www.robots.ox.ac.uk/~vgg/data/pets/)
+更多关于数据集的介绍情参考[Oxford-IIIT Pet)(https://www.robots.ox.ac.uk/~vgg/data/pets/)
 
 ```shell
 # 下载预训练模型并进行解压
