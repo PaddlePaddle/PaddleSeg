@@ -41,13 +41,13 @@ PaddleSeg支持多进程IO、多卡并行、跨卡Batch Norm同步等训练加�
 
 ### 基础功能
 
-* [模型列表与简介](./docs/models.md)
+* [分割模型介绍](./docs/models.md)
 * [预训练模型列表](./docs/model_zoo.md)
 * [自定义数据的准备与标注](./docs/data_prepare.md)
 * [数据和配置校验](./docs/check.md)
-* [使用DeepLabv3+预训练模型](./turtorial/finetune_deeplabv3plus.md)
-* [使用UNet预训练模型](./turtorial/finetune_unet.md)
-* [使用ICNet预训练模型](./turtorial/finetune_icnet.md)
+* [如何训练DeepLabv3+](./turtorial/finetune_deeplabv3plus.md)
+* [如何训练U-Net](./turtorial/finetune_unet.md)
+* [如何训练ICNet](./turtorial/finetune_icnet.md)
 
 ### 预测部署
 
@@ -80,12 +80,11 @@ A: 降低Batch size，使用Group Norm策略等。
 
 ## 在线体验
 
-PaddleSeg提供了多种预训练模型，并且以NoteBook的方式提供了在线体验的教程，欢迎体验：
+PaddleSeg在AI Studio平台上提供了在线体验的教程，欢迎体验：
 
 |教程|链接|
 |-|-|
 |U-Net宠物分割|[点击体验](https://aistudio.baidu.com/aistudio/projectDetail/102889)|
-|PaddleSeg人像分割|[点击体验](https://aistudio.baidu.com/aistudio/projectDetail/100798)|
 |DeepLabv3+图像分割|[点击体验](https://aistudio.baidu.com/aistudio/projectDetail/101696)|
 |PaddleSeg特色垂类模型|[点击体验](https://aistudio.baidu.com/aistudio/projectdetail/115541)|
 
@@ -93,7 +92,7 @@ PaddleSeg提供了多种预训练模型，并且以NoteBook的方式提供了在
 
 ## 更新日志
 
-* 2019.08.26
+* 2019.09.10
 
   **`v0.1.0`**
   * PaddleSeg分割库初始版本发布，包含DeepLabv3+, U-Net, ICNet三类分割模型, 其中DeepLabv3+支持Xception, MobileNet两种可调节的骨干网络。
