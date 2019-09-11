@@ -2,6 +2,7 @@
 
 [![Build Status](https://travis-ci.org/PaddlePaddle/PaddleSeg.svg?branch=master)](https://travis-ci.org/PaddlePaddle/PaddleSeg)
 [![License](https://img.shields.io/badge/license-Apache%202-blue.svg)](LICENSE)
+[![Version](https://img.shields.io/github/release/PaddlePaddle/PaddleSeg.svg)](https://github.com/PaddlePaddle/PaddleSeg/releases)
 
 ## 简介
 
