@@ -23,15 +23,15 @@ from test_utils import download_file_and_uncompress
 
 model_urls = {
     # ImageNet Pretrained
-    "mobilnetv2-2-0_bn_imagenet":
+    "mobilenetv2-2-0_bn_imagenet":
     "https://paddle-imagenet-models-name.bj.bcebos.com/MobileNetV2_x2_0_pretrained.tar",
-    "mobilnetv2-1-5_bn_imagenet":
+    "mobilenetv2-1-5_bn_imagenet":
     "https://paddle-imagenet-models-name.bj.bcebos.com/MobileNetV2_x1_5_pretrained.tar",
-    "mobilnetv2-1-0_bn_imagenet":
+    "mobilenetv2-1-0_bn_imagenet":
     "https://paddle-imagenet-models-name.bj.bcebos.com/MobileNetV2_pretrained.tar",
-    "mobilnetv2-0-5_bn_imagenet":
+    "mobilenetv2-0-5_bn_imagenet":
     "https://paddle-imagenet-models-name.bj.bcebos.com/MobileNetV2_x0_5_pretrained.tar",
-    "mobilnetv2-0-25_bn_imagenet":
+    "mobilenetv2-0-25_bn_imagenet":
     "https://paddle-imagenet-models-name.bj.bcebos.com/MobileNetV2_x0_25_pretrained.tar",
     "xception41_imagenet":
     "https://paddleseg.bj.bcebos.com/models/Xception41_pretrained.tgz",
@@ -39,11 +39,12 @@ model_urls = {
     "https://paddleseg.bj.bcebos.com/models/Xception65_pretrained.tgz",
 
     # COCO pretrained
-    "deeplabv3p_mobilnetv2-1-0_bn_coco":
-    "https://bj.bcebos.com/v1/paddleseg/deeplabv3plus_coco_bn_init.tgz",
+    "deeplabv3p_mobilenetv2-1-0_bn_coco":
+    "https://paddleseg.bj.bcebos.com/deeplab_mobilenet_x1_0_coco.tgz",
     "deeplabv3p_xception65_bn_coco":
     "https://paddleseg.bj.bcebos.com/models/xception65_coco.tgz",
-    "unet_bn_coco": "https://paddleseg.bj.bcebos.com/models/unet_coco_v3.tgz",
+    "unet_bn_coco":
+    "https://paddleseg.bj.bcebos.com/models/unet_coco_v3.tgz",
 
     # Cityscapes pretrained
     "deeplabv3p_mobilenetv2-1-0_bn_cityscapes":
@@ -52,9 +53,10 @@ model_urls = {
     "https://paddleseg.bj.bcebos.com/models/deeplabv3p_xception65_cityscapes.tgz",
     "deeplabv3p_xception65_bn_cityscapes":
     "https://paddleseg.bj.bcebos.com/models/xception65_bn_cityscapes.tgz",
-    "unet_bn_coco": "https://paddleseg.bj.bcebos.com/models/unet_coco_v3.tgz",
+    "unet_bn_coco":
+    "https://paddleseg.bj.bcebos.com/models/unet_coco_v3.tgz",
     "icnet_bn_cityscapes":
-    "https://paddleseg.bj.bcebos.com/models/icnet6831.tar.gz"
+    "https://paddleseg.bj.bcebos.com/models/icnet_cityscapes.tar.gz"
 }
 
 if __name__ == "__main__":

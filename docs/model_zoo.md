@@ -39,6 +39,6 @@ train数据集合为Cityscapes训练集合，测试为Cityscapes的验证集合
 | 模型 | 数据集合 | 下载地址 |Output Stride| mutli-scale test| mIoU on val|
 |---|---|---|---|---|---|
 | DeepLabv3+/MobileNetv2/bn | Cityscapes |[mobilenet_cityscapes.tgz](https://paddleseg.bj.bcebos.com/models/mobilenet_cityscapes.tgz) |16|false| 0.698|
-| DeepLabv3+/Xception65/gn  | Cityscapes |[deeplabv3p_xception65_cityscapes.tgz](https://paddleseg.bj.bcebos.com/models/deeplabv3p_xception65_cityscapes.tgz) |16|false| 0.7804 |
-| DeepLabv3+/Xception65/bn | Cityscapes |[Xception65_deeplab_cityscapes.tgz](https://paddleseg.bj.bcebos.com/models/xception65_bn_cityscapes.tgz) | 16 | false | 0.7715 |
+| DeepLabv3+/Xception65/gn  | Cityscapes |[deeplabv3p_xception65_cityscapes.tgz](https://paddleseg.bj.bcebos.com/models/deeplabv3p_xception65_cityscapes.tgz) |16|false| 0.7824 |
+| DeepLabv3+/Xception65/bn | Cityscapes |[Xception65_deeplab_cityscapes.tgz](https://paddleseg.bj.bcebos.com/models/xception65_bn_cityscapes.tgz) | 16 | false | 0.7930 |
 | ICNet/bn | Cityscapes |[icnet_cityscapes.tgz](https://paddleseg.bj.bcebos.com/models/icnet6831.tar.gz) |16|false| 0.6831 |

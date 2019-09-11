@@ -1,6 +1,6 @@
-# 关于本教程
+# U-Net模型训练教程
 
-* 本教程旨在介绍如何通过使用PaddleSeg提供的 ***`UNet`*** 预训练模型在自定义数据集上进行训练
+* 本教程旨在介绍如何通过使用PaddleSeg提供的 ***`U-Net`*** 预训练模型在自定义数据集上进行训练
 
 * 在阅读本教程前，请确保您已经了解过PaddleSeg的[快速入门](../README.md#快速入门)和[基础功能](../README.md#基础功能)等章节，以便对PaddleSeg有一定的了解
 
@@ -64,9 +64,6 @@ DATASET:
 MODEL:
     MODEL_NAME: "unet"
     DEFAULT_NORM_TYPE: "bn"
-TRAIN:
-    PRETRAINED_MODEL_DIR: "./pretrained_model/unet_bn_coco/"
-
 
 # 其他配置
 TRAIN_CROP_SIZE: (512, 512)
@@ -76,6 +73,7 @@ AUG:
     FIX_RESIZE_SIZE: (512, 512)
 BATCH_SIZE: 4
 TRAIN:
+    PRETRAINED_MODEL_DIR: "./pretrained_model/unet_bn_coco/"
     MODEL_SAVE_DIR: "./saved_model/unet_pet/"
     SNAPSHOT_EPOCH: 10
 TEST:

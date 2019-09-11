@@ -1,4 +1,4 @@
-# 关于本教程
+# ICNet模型训练教程
 
 * 本教程旨在介绍如何通过使用PaddleSeg提供的 ***`ICNet`*** 预训练模型在自定义数据集上进行训练
 
@@ -65,9 +65,8 @@ MODEL:
     MODEL_NAME: "icnet"
     DEFAULT_NORM_TYPE: "bn"
     MULTI_LOSS_WEIGHT: "[1.0, 0.4, 0.16]"
-TRAIN:
-    PRETRAINED_MODEL_DIR: "./pretrained_model/icnet_bn_cityscapes/"
-
+    ICNET:
+        DEPTH_MULTIPLIER: 0.5
 
 # 其他配置
 TRAIN_CROP_SIZE: (512, 512)
@@ -77,13 +76,14 @@ AUG:
     FIX_RESIZE_SIZE: (512, 512)
 BATCH_SIZE: 4
 TRAIN:
+    PRETRAINED_MODEL_DIR: "./pretrained_model/icnet_bn_cityscapes/"
     MODEL_SAVE_DIR: "./saved_model/icnet_pet/"
     SNAPSHOT_EPOCH: 10
 TEST:
     TEST_MODEL: "./saved_model/icnet_pet/final"
 SOLVER:
     NUM_EPOCHS: 100
-    LR: 0.01
+    LR: 0.005
     LR_POLICY: "poly"
     OPTIMIZER: "sgd"
 ```

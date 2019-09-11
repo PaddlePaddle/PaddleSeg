@@ -7,20 +7,20 @@
 
 ## Resize  
 
-resize 步骤是指将输入图像按照某种规则先进行resize，PaddleSeg支持以下3种resize方式:
+resize步骤是指将输入图像按照某种规则讲图片重新缩放到某一个尺寸，PaddleSeg支持以下3种resize方式:
 
 ![](imgs/aug_method.png)
 
-- unpadding
+- Un-padding
 将输入图像直接resize到某一个固定大小下，送入到网络中间训练，对应参数为AUG.FIX_RESIZE_SIZE。预测时同样操作。
 
-- stepscaling
+- Step-Scaling
 将输入图像按照某一个比例resize，这个比例以某一个步长在一定范围内随机变动。设定最小比例参数为`AUG.MIN_SCALE_FACTOR`, 最大比例参数`AUG.MAX_SCALE_FACTOR`，步长参数为`AUG.SCALE_STEP_SIZE`。预测时不对输入图像做处理。
 
-- rangescaling
+- Range-Scaling
 固定长宽比resize，即图像长边对齐到某一个固定大小，短边随同样的比例变化。设定最小大小参数为`AUG.MIN_RESIZE_VALUE`，设定最大大小参数为`AUG.MAX_RESIZE_VALUE`。预测时需要将长边对齐到`AUG.INF_RESIZE_VALUE`所指定的大小，其中`AUG.INF_RESIZE_VALUE`在`AUG.MIN_RESIZE_VALUE`和`AUG.MAX_RESIZE_VALUE`范围内。
 
-rangescaling示意图如下：
+Range-Scaling示意图如下：
 
 ![](imgs/rangescale.png)
 

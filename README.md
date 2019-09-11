@@ -1,7 +1,8 @@
-# PaddleSeg 语义分割库
+# PaddleSeg 图像分割库
 
 [![Build Status](https://travis-ci.org/PaddlePaddle/PaddleSeg.svg?branch=master)](https://travis-ci.org/PaddlePaddle/PaddleSeg)
 [![License](https://img.shields.io/badge/license-Apache%202-blue.svg)](LICENSE)
+[![Version](https://img.shields.io/github/release/PaddlePaddle/PaddleSeg.svg)](https://github.com/PaddlePaddle/PaddleSeg/releases)
 
 ## 简介
 
@@ -32,7 +33,7 @@ PaddleSeg支持多进程IO、多卡并行、跨卡Batch Norm同步等训练加�
 
 我们提供了一系列的使用教程，来说明如何使用PaddleSeg完成一个语义分割模型的训练、评估、部署。
 
-这一系列的文档被分为`快速入门`、`基础功能`、`预测部署`、`高级功能`四个部分，四个教程由浅至深地介绍PaddleSeg的设计思路和使用方法。
+这一系列的文档被分为**快速入门**、**基础功能**、**预测部署**、**高级功能**四个部分，四个教程由浅至深地介绍PaddleSeg的设计思路和使用方法。
 
 ### 快速入门
 
@@ -45,9 +46,9 @@ PaddleSeg支持多进程IO、多卡并行、跨卡Batch Norm同步等训练加�
 * [预训练模型列表](./docs/model_zoo.md)
 * [自定义数据的准备与标注](./docs/data_prepare.md)
 * [数据和配置校验](./docs/check.md)
-* [使用DeepLabv3+预训练模型](./turtorial/finetune_deeplabv3plus.md)
-* [使用UNet预训练模型](./turtorial/finetune_unet.md)
-* [使用ICNet预训练模型](./turtorial/finetune_icnet.md)
+* [如何训练DeepLabv3+](./turtorial/finetune_deeplabv3plus.md)
+* [如何训练U-Net](./turtorial/finetune_unet.md)
+* [如何训练ICNet](./turtorial/finetune_icnet.md)
 
 ### 预测部署
 
@@ -66,34 +67,50 @@ PaddleSeg支持多进程IO、多卡并行、跨卡Batch Norm同步等训练加�
 
 #### Q: 安装requirements.txt指定的依赖包时，部分包提示找不到？
 
-A: 可能是pip源的问题，这种情况下建议切换为官方源
+A: 可能是pip源的问题，这种情况下建议切换为官方源，或者通过`pip install -r requirements.txt -i `指定其他源地址。
 
-#### Q:图像分割的数据增强如何配置，unpadding, step-scaling, range-scaling的原理是什么？
+#### Q:图像分割的数据增强如何配置，Unpadding, StepScaling, RangeScaling的原理是什么？
 
 A: 更详细数据增强文档可以参考[数据增强](./docs/data_aug.md)
 
+#### Q: 训练时因为某些原因中断了，如何恢复训练？
+
+A: 启动训练脚本时通过命令行覆盖TRAIN.RESUME_MODEL_DIR配置为模型checkpoint目录即可, 以下代码示例第100轮重新恢复训练：
+```
+python pdseg/train.py --cfg xxx.yaml TRAIN.RESUME_MODEL_DIR /PATH/TO/MODEL_CKPT/100
+```
+
 #### Q: 预测时图片过大，导致显存不足如何处理？
 
-A: 降低Batch size，使用Group Norm策略等。
+A: 降低Batch size，使用Group Norm策略；请注意训练过程中当`DEFAULT_NORM_TYPE`选择`bn`时，为了Batch Norm计算稳定性，batch size需要满足>=2
 
 </br>
 
 ## 在线体验
 
-PaddleSeg提供了多种预训练模型，并且以NoteBook的方式提供了在线体验的教程，欢迎体验：
+PaddleSeg在AI Studio平台上提供了在线体验的教程，欢迎体验：
 
 |教程|链接|
 |-|-|
-|快速开始：人像分割|[点击体验](https://aistudio.baidu.com/aistudio/projectDetail/100798)|
 |U-Net宠物分割|[点击体验](https://aistudio.baidu.com/aistudio/projectDetail/102889)|
 |DeepLabv3+图像分割|[点击体验](https://aistudio.baidu.com/aistudio/projectDetail/101696)|
 |PaddleSeg特色垂类模型|[点击体验](https://aistudio.baidu.com/aistudio/projectdetail/115541)|
 
 </br>
 
+##  交流与反馈
+* 欢迎您通过Github Issues来提交问题、报告与建议
+* 微信公众号：飞桨PaddlePaddle
+* QQ群: 796771754 
+
+<p align="center"><img width="200" height="200"  src="https://user-images.githubusercontent.com/45189361/64117959-1969de80-cdc9-11e9-84f7-e1c2849a004c.jpeg"/>&#8194;&#8194;&#8194;&#8194;&#8194;<img width="200" height="200" margin="500" src="./docs/imgs/qq_group2.png"/></p>
+<p align="center">  &#8194;&#8194;&#8194;微信公众号&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;官方技术交流QQ群</p>
+
+* 论坛: 欢迎大家在[PaddlePaddle论坛](https://ai.baidu.com/forum/topic/list/168)分享在使用PaddlePaddle中遇到的问题和经验, 营造良好的论坛氛围
+
 ## 更新日志
 
-* 2019.08.26
+* 2019.09.10
 
   **`v0.1.0`**
   * PaddleSeg分割库初始版本发布，包含DeepLabv3+, U-Net, ICNet三类分割模型, 其中DeepLabv3+支持Xception, MobileNet两种可调节的骨干网络。
