@@ -201,7 +201,7 @@ cfg.MODEL.ICNET.LAYERS = 50
 ########################## PSPNET模型配置 ######################################
 # RESNET backbone scale 设置
 cfg.MODEL.PSPNET.DEPTH_MULTIPLIER = 1
-# RESNET 层数 设置 50或101
+# RESNET backbone 层数 设置
 cfg.MODEL.PSPNET.LAYERS = 50
 
 ########################## 预测部署模型配置 ###################################
