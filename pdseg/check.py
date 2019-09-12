@@ -266,7 +266,11 @@ def eval_crop_size_check(max_height, max_width, min_aspectratio, max_aspectratio
                     .format(cfg.EVAL_CROP_SIZE[0], cfg.EVAL_CROP_SIZE[1],
                             max_width_rangscaling, cfg.AUG.INF_RESIZE_VALUE))
     elif cfg.AUG.AUG_METHOD == "unpadding":
-        if cfg.EVAL_CROP_SIZE[0] >= cfg.AUG.FIX_RESIZE_SIZE[0] and cfg.EVAL_CROP_SIZE[1] >= cfg.AUG.FIX_RESIZE_SIZE[1]:
+        if len(cfg.AUG.FIX_RESIZE_SIZE) != 2:
+            logger.info(error_print("EVAL_CROP_SIZE check"))
+            logger.info("you set AUG.AUG_METHOD = 'unpadding', but AUG.FIX_RESIZE_SIZE is wrong. "
+                    "AUG.FIX_RESIZE_SIZE should be a tuple of length 2")
+        elif cfg.EVAL_CROP_SIZE[0] >= cfg.AUG.FIX_RESIZE_SIZE[0] and cfg.EVAL_CROP_SIZE[1] >= cfg.AUG.FIX_RESIZE_SIZE[1]:
             logger.info(correct_print("EVAL_CROP_SIZE check"))
         else:
             logger.info(error_print("EVAL_CROP_SIZE check"))
