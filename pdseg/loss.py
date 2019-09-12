@@ -78,4 +78,6 @@ def dice_loss(logit, label, ignore_mask=None, num_classes=2):
     label = fluid.layers.cast(label, 'int64')
     ignore_mask = fluid.layers.reshape(ignore_mask, [-1, 1])
     loss = fluid.layers.dice_loss(logit, label)
+    label.stop_gradient = True
+    ignore_mask.stop_gradient = True
     return loss
