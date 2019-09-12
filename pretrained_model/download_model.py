@@ -57,7 +57,7 @@ model_urls = {
     "https://paddleseg.bj.bcebos.com/models/unet_coco_v3.tgz",
     "icnet_bn_cityscapes":
     "https://paddleseg.bj.bcebos.com/models/icnet_cityscapes.tar.gz",
-    "pspnet50_cityscapes":
+    "pspnet50_bn_cityscapes":
     "https://paddleseg.bj.bcebos.com/models/pspnet50_cityscapes.tgz"
 }
 

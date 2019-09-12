@@ -21,7 +21,7 @@ python dataset/download_pet.py
 接着下载对应的预训练模型
 
 ```shell
-python pretrained_model/download_model.py pspnet50_cityscapes
+python pretrained_model/download_model.py pspnet50_bn_cityscapes
 ```
 
 ## 三. 准备配置
@@ -117,5 +117,5 @@ python pdseg/eval.py --use_gpu --cfg ./configs/test_pet.yaml
 
 |预训练模型名称|BackBone|Norm|数据集|配置|
 |-|-|-|-|-|
-|pspnet50_cityscapes|ResNet50|bn|Cityscapes|MODEL.MODEL_NAME: pspnet <br> MODEL.DEFAULT_NORM_TYPE: bn <br> MODEL.PSPNET.LAYERS: 50|
-|pspnet101_cityscapes|ResNet101|bn|Cityscapes|MODEL.MODEL_NAME: pspnet <br> MODEL.DEFAULT_NORM_TYPE: bn <br> MODEL.PSPNET.LAYERS: 101|
+|pspnet50_bn_cityscapes|ResNet50|bn|Cityscapes|MODEL.MODEL_NAME: pspnet <br> MODEL.DEFAULT_NORM_TYPE: bn <br> MODEL.PSPNET.LAYERS: 50|
+|pspnet101_bn_cityscapes|ResNet101|bn|Cityscapes|MODEL.MODEL_NAME: pspnet <br> MODEL.DEFAULT_NORM_TYPE: bn <br> MODEL.PSPNET.LAYERS: 101|
