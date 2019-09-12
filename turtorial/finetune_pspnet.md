@@ -64,6 +64,9 @@ DATASET:
 MODEL:
     MODEL_NAME: "pspnet"
     DEFAULT_NORM_TYPE: "bn"
+    PSPNET:
+        DEPTH_MULTIPLIER: 1
+        LAYERS: 50
 
 # 其他配置
 TRAIN_CROP_SIZE: (512, 512)
@@ -114,4 +117,5 @@ python pdseg/eval.py --use_gpu --cfg ./configs/test_pet.yaml
 
 |预训练模型名称|BackBone|Norm|数据集|配置|
 |-|-|-|-|-|
-|pspnet50_cityscapes|-|bn|Cityscapes|MODEL.MODEL_NAME: pspnet <br> MODEL.DEFAULT_NORM_TYPE: bn|
+|pspnet50_cityscapes|-|bn|Cityscapes|MODEL.MODEL_NAME: pspnet <br> MODEL.DEFAULT_NORM_TYPE: bn <br> MODEL.PSPNET.LAYERS: 50|
+|pspnet101_cityscapes|-|bn|Cityscapes|MODEL.MODEL_NAME: pspnet <br> MODEL.DEFAULT_NORM_TYPE: bn <br> MODEL.PSPNET.LAYERS: 101|

@@ -42,3 +42,4 @@ train数据集合为Cityscapes训练集合，测试为Cityscapes的验证集合
 | DeepLabv3+/Xception65/gn  | Cityscapes |[deeplabv3p_xception65_cityscapes.tgz](https://paddleseg.bj.bcebos.com/models/deeplabv3p_xception65_cityscapes.tgz) |16|false| 0.7804 |
 | DeepLabv3+/Xception65/bn | Cityscapes |[Xception65_deeplab_cityscapes.tgz](https://paddleseg.bj.bcebos.com/models/xception65_bn_cityscapes.tgz) | 16 | false | 0.7715 |
 | ICNet/bn | Cityscapes |[icnet_cityscapes.tgz](https://paddleseg.bj.bcebos.com/models/icnet6831.tar.gz) |16|false| 0.6831 |
+| PSPNet/bn | Cityscapes |[pspnet50_cityscapes.tgz](https://paddleseg.bj.bcebos.com/models/pspnet50_cityscapes.tgz) |16|false| 0.6968 |
