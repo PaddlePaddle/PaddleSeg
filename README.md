@@ -1,4 +1,4 @@
-# PaddleSeg 语义分割库
+# PaddleSeg 图像分割库
 
 [![Build Status](https://travis-ci.org/PaddlePaddle/PaddleSeg.svg?branch=master)](https://travis-ci.org/PaddlePaddle/PaddleSeg)
 [![License](https://img.shields.io/badge/license-Apache%202-blue.svg)](LICENSE)
@@ -31,7 +31,7 @@ PaddleSeg支持多进程IO、多卡并行、跨卡Batch Norm同步等训练加�
 
 ## 使用教程
 
-我们提供了一系列的使用教程，来说明如何使用PaddleSeg完成一个语义分割模型的训练、评估、部署。
+我们提供了一系列的使用教程，来说明如何使用PaddleSeg完成语义分割模型的训练、评估、部署。
 
 这一系列的文档被分为**快速入门**、**基础功能**、**预测部署**、**高级功能**四个部分，四个教程由浅至深地介绍PaddleSeg的设计思路和使用方法。
 
@@ -102,7 +102,7 @@ PaddleSeg在AI Studio平台上提供了在线体验的教程，欢迎体验：
 ##  交流与反馈
 * 欢迎您通过Github Issues来提交问题、报告与建议
 * 微信公众号：飞桨PaddlePaddle
-* QQ群: 796771754 
+* QQ群: 796771754
 
 <p align="center"><img width="200" height="200"  src="https://user-images.githubusercontent.com/45189361/64117959-1969de80-cdc9-11e9-84f7-e1c2849a004c.jpeg"/>&#8194;&#8194;&#8194;&#8194;&#8194;<img width="200" height="200" margin="500" src="./docs/imgs/qq_group2.png"/></p>
 <p align="center">  &#8194;&#8194;&#8194;微信公众号&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;官方技术交流QQ群</p>
