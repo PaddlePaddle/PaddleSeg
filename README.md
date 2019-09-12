@@ -86,6 +86,10 @@ A: 降低Batch size，使用Group Norm策略；请注意训练过程中当`DEFAU
 
 </br>
 
+#### Q: 出现错误 ModuleNotFoundError: No module named 'paddle.fluid.contrib.mixed_precision'
+
+A: 请将PaddlePaddle升级至1.5.2版本或以上。
+
 ## 在线体验
 
 PaddleSeg在AI Studio平台上提供了在线体验的教程，欢迎体验：
