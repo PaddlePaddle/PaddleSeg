@@ -32,7 +32,7 @@ TEST:
     TEST_MODEL: "snapshots/cityscapes_pspnet50/final"
 TRAIN:
     MODEL_SAVE_DIR: "snapshots/cityscapes_pspnet50/"
-    PRETRAINED_MODEL_DIR: u"pretrained_model/pspnet50_cityscapes/"
+    PRETRAINED_MODEL_DIR: u"pretrained_model/pspnet50_bn_cityscapes/"
     SNAPSHOT_EPOCH: 10
 SOLVER:
     LR: 0.001
