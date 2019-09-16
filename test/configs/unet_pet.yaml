@@ -14,13 +14,13 @@ AUG:
     MIRROR: True
 BATCH_SIZE: 6
 DATASET:
-    DATA_DIR: "./dataset/pet/"
+    DATA_DIR: "./dataset/mini_pet/"
     IMAGE_TYPE: "rgb"  # choice rgb or rgba
     NUM_CLASSES: 4 # including ignore
-    TEST_FILE_LIST: "./dataset/pet/test_list.txt"
-    TRAIN_FILE_LIST: "./dataset/pet/train_list.txt"
-    VAL_FILE_LIST: "./dataset/pet/val_list.txt"
-    VIS_FILE_LIST: "./dataset/pet/val_list.txt"
+    TEST_FILE_LIST: "./dataset/mini_pet/file_list/test_list.txt"
+    TRAIN_FILE_LIST: "./dataset/mini_pet/file_list/train_list.txt"
+    VAL_FILE_LIST: "./dataset/mini_pet/file_list/val_list.txt"
+    VIS_FILE_LIST: "./dataset/mini_pet/file_list/val_list.txt"
     IGNORE_INDEX: 255
     SEPARATOR: " "
 FREEZE:
