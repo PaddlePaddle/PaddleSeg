@@ -51,7 +51,7 @@ if __name__ == "__main__":
         dest="devices",
         help="GPU id of running. if more than one, use spacing to separate.",
         nargs="+",
-        default=0,
+        default=[0],
         type=int)
     args = parser.parse_args()
 
