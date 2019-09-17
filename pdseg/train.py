@@ -449,7 +449,7 @@ def main(args):
         cfg.update_from_file(args.cfg_file)
     if args.opts is not None:
         cfg.update_from_list(args.opts)
-    cfg.check_and_infer(reset_dataset=True)
+    cfg.check_and_infer()
     print(pprint.pformat(cfg))
     train(cfg)
 
