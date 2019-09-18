@@ -90,7 +90,7 @@ SOLVER:
 在开始训练和评估之前，我们还需要对配置和数据进行一次校验，确保数据和配置是正确的。使用下述命令启动校验流程
 
 ```shell
-python pdseg/check.py --cfg ./configs/test_unet_pet.yaml
+python pdseg/check.py --cfg ./configs/unet_pet.yaml
 ```
 
 
@@ -99,7 +99,7 @@ python pdseg/check.py --cfg ./configs/test_unet_pet.yaml
 校验通过后，使用下述命令启动训练
 
 ```shell
-python pdseg/train.py --use_gpu --cfg ./configs/test_unet_pet.yaml
+python pdseg/train.py --use_gpu --cfg ./configs/unet_pet.yaml
 ```
 
 ## 六. 进行评估
@@ -107,7 +107,7 @@ python pdseg/train.py --use_gpu --cfg ./configs/test_unet_pet.yaml
 模型训练完成，使用下述命令启动评估
 
 ```shell
-python pdseg/eval.py --use_gpu --cfg ./configs/test_unet_pet.yaml
+python pdseg/eval.py --use_gpu --cfg ./configs/unet_pet.yaml
 ```
 
 ## 模型组合
