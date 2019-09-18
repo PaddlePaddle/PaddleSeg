@@ -88,7 +88,7 @@ class SegConfig(dict):
                 except KeyError:
                     raise KeyError('Non-existent config key: {}'.format(key))
 
-    def check_and_infer(self, reset_dataset=False):
+    def check_and_infer(self):
         if self.DATASET.IMAGE_TYPE in ['rgb', 'gray']:
             self.DATASET.DATA_DIM = 3
         elif self.DATASET.IMAGE_TYPE in ['rgba']:
@@ -110,17 +110,13 @@ class SegConfig(dict):
                 'EVAL_CROP_SIZE is empty! Please set a pair of values in format (width, height)'
             )
 
-        if reset_dataset:
-            # Ensure file list is use UTF-8 encoding
-            train_sets = codecs.open(self.DATASET.TRAIN_FILE_LIST, 'r',
-                                     'utf-8').readlines()
-            val_sets = codecs.open(self.DATASET.VAL_FILE_LIST, 'r',
-                                   'utf-8').readlines()
-            test_sets = codecs.open(self.DATASET.TEST_FILE_LIST, 'r',
-                                    'utf-8').readlines()
-            self.DATASET.TRAIN_TOTAL_IMAGES = len(train_sets)
-            self.DATASET.VAL_TOTAL_IMAGES = len(val_sets)
-            self.DATASET.TEST_TOTAL_IMAGES = len(test_sets)
+        # Ensure file list is use UTF-8 encoding
+        train_sets = codecs.open(self.DATASET.TRAIN_FILE_LIST, 'r', 'utf-8').readlines()
+        val_sets = codecs.open(self.DATASET.VAL_FILE_LIST, 'r', 'utf-8').readlines()
+        test_sets = codecs.open(self.DATASET.TEST_FILE_LIST, 'r', 'utf-8').readlines()
+        self.DATASET.TRAIN_TOTAL_IMAGES = len(train_sets)
+        self.DATASET.VAL_TOTAL_IMAGES = len(val_sets)
+        self.DATASET.TEST_TOTAL_IMAGES = len(test_sets)
 
         if self.MODEL.MODEL_NAME == 'icnet' and \
                 len(self.MODEL.MULTI_LOSS_WEIGHT) != 3:

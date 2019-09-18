@@ -507,7 +507,7 @@ def check_test_dataset():
 def main(args):
     if args.cfg_file is not None:
         cfg.update_from_file(args.cfg_file)
-    cfg.check_and_infer(reset_dataset=True)
+    cfg.check_and_infer()
     logger.info(pprint.pformat(cfg))
 
     init_global_variable()
