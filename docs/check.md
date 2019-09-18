@@ -51,7 +51,5 @@ python pdseg/check.py --cfg ${YAML_FILE_PATH}
 
 - 当`AUG.AUG_METHOD`为rangscaling时，`EVAL_CROP_SIZE`的宽高应不小于缩放后图像中最大的宽高。
 
-我们将计算并给出`EVAL_CROP_SIZE`的建议值。
-
 ### 10 数据增强参数`AUG.INF_RESIZE_VALUE`校验
 验证`AUG.INF_RESIZE_VALUE`是否在[`AUG.MIN_RESIZE_VALUE`~`AUG.MAX_RESIZE_VALUE`]范围内。若在范围内，则通过校验。
