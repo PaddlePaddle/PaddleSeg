@@ -25,11 +25,14 @@ FREEZE:
 MODEL:
     MODEL_NAME: "pspnet"
     DEFAULT_NORM_TYPE: "bn"
+    PSPNET:
+        DEPTH_MULTIPLIER: 1
+        LAYERS: 50
 TEST:
-    TEST_MODEL: "pretrained_model/pspnet50_ADE20K/"
+    TEST_MODEL: "snapshots/cityscapes_pspnet50/final"
 TRAIN:
-    MODEL_SAVE_DIR: "snapshots/cityscape_pspnet50/"
-    PRETRAINED_MODEL_DIR: u"pretrained_model/pspnet50_ADE20K/"
+    MODEL_SAVE_DIR: "snapshots/cityscapes_pspnet50/"
+    PRETRAINED_MODEL_DIR: u"pretrained_model/pspnet50_bn_cityscapes/"
     SNAPSHOT_EPOCH: 10
 SOLVER:
     LR: 0.001
