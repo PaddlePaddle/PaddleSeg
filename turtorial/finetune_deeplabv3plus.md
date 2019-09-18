@@ -47,7 +47,7 @@ python pretrained_model/download_model.py deeplabv3p_xception65_bn_coco
 
 数据集的配置和数据路径有关，在本教程中，数据存放在`dataset/mini_pet`中
 
-其他配置则根据数据集和机器环境的情况进行调节，最终我们保存一个如下内容的yaml配置文件，存放路径为<font color="#dd0000">configs/test_deeplabv3p_pet.yaml</font><br /> 
+其他配置则根据数据集和机器环境的情况进行调节，最终我们保存一个如下内容的yaml配置文件，存放路径为**configs/test_deeplabv3p_pet.yaml**
 
 ```yaml
 # 数据集配置
