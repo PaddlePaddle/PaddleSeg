@@ -33,7 +33,7 @@ TEST:
     TEST_MODEL: "./test/saved_model/unet_pet/final/"
 TRAIN:
     MODEL_SAVE_DIR: "./test/saved_model/unet_pet/"
-    PRETRAINED_MODEL_DIR: "./test/model/unet_coco/"
+    PRETRAINED_MODEL_DIR: "./test/models/unet_coco/"
     SNAPSHOT_EPOCH: 10
 SOLVER:
     NUM_EPOCHS: 500
