@@ -417,7 +417,7 @@ def check_val_dataset():
                 img = cv2_imread(img_path, cv2.IMREAD_UNCHANGED)
                 grt = cv2_imread(grt_path, cv2.IMREAD_UNCHANGED)
             except Exception as e:
-                imread_failed.append((line, e.message))
+                imread_failed.append((line, str(e)))
 
             is_gray = is_label_gray(grt)
             if not is_gray:
