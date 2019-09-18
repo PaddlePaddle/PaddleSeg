@@ -93,7 +93,7 @@ SOLVER:
 在开始训练和评估之前，我们还需要对配置和数据进行一次校验，确保数据和配置是正确的。使用下述命令启动校验流程
 
 ```shell
-python pdseg/check.py --cfg ./configs/test_pet.yaml
+python pdseg/check.py --cfg ./configs/icnet_pet.yaml
 ```
 
 
