@@ -9,11 +9,11 @@ color_map = [[128, 64, 128], [244, 35, 231], [69, 69, 69], [102, 102, 156],
              [0, 0, 230], [119, 10, 32]]
 
 im = cv2.imread(sys.argv[1])
-
+shape = im.shape
 print("visualizing...")
-for i in range(0, im.rows):
-    for j in range(0, im.cols):
+for i in range(0, shape[0]):
+    for j in range(0, shape[1]):
         im[i, j] = color_map[im[i, j, 0]]
 
-cv2.imwrite(sys.argv[1], im)
+cv2.imwrite(sys.argv[2], im)
 print("visualizing done!")
