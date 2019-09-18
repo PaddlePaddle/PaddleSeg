@@ -30,10 +30,10 @@ MODEL:
     MODEL_NAME: "unet"
     DEFAULT_NORM_TYPE: "bn"
 TEST:
-    TEST_MODEL: "./test/saved_model/unet_pet/final/"
+    TEST_MODEL: "./saved_model/unet_pet/final/"
 TRAIN:
-    MODEL_SAVE_DIR: "./test/saved_models/unet_pet/"
-    PRETRAINED_MODEL_DIR: "./test/models/unet_coco/"
+    MODEL_SAVE_DIR: "./saved_model/unet_pet/"
+    PRETRAINED_MODEL_DIR: "./pretrained_model/unet_bn_coco/"
     SNAPSHOT_EPOCH: 10
 SOLVER:
     NUM_EPOCHS: 500
