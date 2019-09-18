@@ -114,4 +114,4 @@ python pdseg/eval.py --use_gpu --cfg ./configs/test_unet_pet.yaml
 
 |预训练模型名称|BackBone|Norm|数据集|配置|
 |-|-|-|-|-|
-|unet_bn_coco|-|bn|Cityscapes|MODEL.MODEL_NAME: unet <br> MODEL.DEFAULT_NORM_TYPE: bn|
+|unet_bn_coco|-|bn|COCO|MODEL.MODEL_NAME: unet <br> MODEL.DEFAULT_NORM_TYPE: bn|
