@@ -403,21 +403,25 @@ def rand_crop(crop_img, crop_seg, mode=ModelPhase.TRAIN):
         pad_height = max(crop_height - img_height, 0)
         pad_width = max(crop_width - img_width, 0)
         if (pad_height > 0 or pad_width > 0):
+            top = pad_height // 2
+            bottom = pad_height - top
+            left = pad_width // 2
+            right = pad_width - left
             crop_img = cv2.copyMakeBorder(
                 crop_img,
-                0,
-                pad_height,
-                0,
-                pad_width,
+                top,
+                bottom,
+                left,
+                right,
                 cv2.BORDER_CONSTANT,
                 value=cfg.DATASET.PADDING_VALUE)
             if crop_seg is not None:
                 crop_seg = cv2.copyMakeBorder(
                     crop_seg,
-                    0,
-                    pad_height,
-                    0,
-                    pad_width,
+                    top,
+                    bottom,
+                    left,
+                    right,
                     cv2.BORDER_CONSTANT,
                     value=cfg.DATASET.IGNORE_INDEX)
             img_height = crop_img.shape[0]
