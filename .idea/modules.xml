@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/.idea/PaddleSeg.iml" filepath="$PROJECT_DIR$/.idea/PaddleSeg.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../oxford_pet2paddleseg_format/.idea/oxford_pet2paddleseg_format.iml" filepath="$PROJECT_DIR$/../oxford_pet2paddleseg_format/.idea/oxford_pet2paddleseg_format.iml" />
+    </modules>
+  </component>
+</project>
