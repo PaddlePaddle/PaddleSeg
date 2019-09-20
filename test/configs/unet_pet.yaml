@@ -12,15 +12,15 @@ AUG:
     MIN_SCALE_FACTOR: 0.75  # for stepscaling
     SCALE_STEP_SIZE: 0.25  # for stepscaling
     MIRROR: True
-BATCH_SIZE: 6
+BATCH_SIZE: 4
 DATASET:
     DATA_DIR: "./dataset/mini_pet/"
     IMAGE_TYPE: "rgb"  # choice rgb or rgba
-    NUM_CLASSES: 4 # including ignore
+    NUM_CLASSES: 3
     TEST_FILE_LIST: "./dataset/mini_pet/file_list/test_list.txt"
     TRAIN_FILE_LIST: "./dataset/mini_pet/file_list/train_list.txt"
     VAL_FILE_LIST: "./dataset/mini_pet/file_list/val_list.txt"
-    VIS_FILE_LIST: "./dataset/mini_pet/file_list/val_list.txt"
+    VIS_FILE_LIST: "./dataset/mini_pet/file_list/test_list.txt"
     IGNORE_INDEX: 255
     SEPARATOR: " "
 FREEZE:

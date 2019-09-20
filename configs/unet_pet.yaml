@@ -32,7 +32,7 @@ MODEL:
 TEST:
     TEST_MODEL: "./test/saved_model/unet_pet/final/"
 TRAIN:
-    MODEL_SAVE_DIR: "./test/saved_models/unet_pet/"
+    MODEL_SAVE_DIR: "./test/saved_model/unet_pet/"
     PRETRAINED_MODEL_DIR: "./test/models/unet_coco/"
     SNAPSHOT_EPOCH: 10
 SOLVER:
