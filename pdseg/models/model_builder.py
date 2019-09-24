@@ -157,6 +157,9 @@ def build_model(main_prog, start_prog, phase=ModelPhase.TRAIN):
                 else:
                     logit = logits
 
+                if cfg.MODEL.FP16:
+                    logit = fluid.layers.cast(logit, 'float32')
+
                 if logit.shape[2:] != label.shape[2:]:
                     logit = fluid.layers.resize_bilinear(logit, label.shape[2:])
 

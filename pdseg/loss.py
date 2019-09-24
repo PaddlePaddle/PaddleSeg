@@ -55,7 +55,7 @@ def multi_softmax_with_loss(logits, label, ignore_mask=None, num_classes=2):
     if isinstance(logits, tuple):
         avg_loss = 0
         for i, logit in enumerate(logits):
-            logit_label = fluid.layers.resize_nearest(label, logit.shape[2:])
+            logit_label = fluid.layers.resize_nearest(label.astype('float32'), logit.shape[2:]).astype('int32')
             logit_mask = (logit_label.astype('int32') !=
                           cfg.DATASET.IGNORE_INDEX).astype('int32')
             loss = softmax_with_loss(logit, logit_label, logit_mask,

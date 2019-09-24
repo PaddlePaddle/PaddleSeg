@@ -58,7 +58,11 @@ def up(data, short_cut, out_ch):
     )
     with scope("up"):
         if cfg.MODEL.UNET.UPSAMPLE_MODE == 'bilinear':
+            if cfg.MODEL.FP16:
+                data = fluid.layers.cast(data, 'float32')
             data = fluid.layers.resize_bilinear(data, short_cut.shape[2:])
+            if cfg.MODEL.FP16:
+                data = fluid.layers.cast(data, 'float16')
         else:
             data = deconv(
                 data,

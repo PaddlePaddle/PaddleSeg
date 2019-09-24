@@ -39,10 +39,14 @@ def get_logit_interp(input, num_classes, out_shape, name="logit"):
                     param_attr=param_attr,
                     bias_attr=True,
                     name=name+'_conv')
+        if cfg.MODEL.FP16:
+            logit = fluid.layers.cast(logit, 'float32')
         logit_interp = fluid.layers.resize_bilinear(
                     logit, 
                     out_shape=out_shape,
-                    name=name+'_interp') 
+                    name=name+'_interp')
+        if cfg.MODEL.FP16:
+            logit_interp = fluid.layers.cast(logit_interp, 'float16')
     return logit_interp
 
 
@@ -57,18 +61,26 @@ def psp_module(input, out_features):
     for size in sizes:
         psp_name = "psp" + str(size)
         with scope(psp_name):
-            pool = fluid.layers.adaptive_pool2d(input, 
+            if cfg.MODEL.FP16:
+                input = fluid.layers.cast(input, 'float32')
+            pool = fluid.layers.adaptive_pool2d(input,
                     pool_size=[size, size], 
-                    pool_type='avg', 
+                    pool_type='avg',
                     name=psp_name+'_adapool')
+            if cfg.MODEL.FP16:
+                pool = fluid.layers.cast(pool, 'float16')
             data = conv(pool, out_features, 
                     filter_size=1,
                     bias_attr=True, 
                     name= psp_name + '_conv')
             data_bn = bn(data, act='relu')
+            if cfg.MODEL.FP16:
+                data_bn = fluid.layers.cast(data_bn, 'float32')
             interp = fluid.layers.resize_bilinear(data_bn, 
                     out_shape=input.shape[2:], 
-                    name=psp_name+'_interp') 
+                    name=psp_name+'_interp')
+            if cfg.MODEL.FP16:
+                interp = fluid.layers.cast(interp, 'float16')
         cat_layers.append(interp)
     cat_layers = [input] + cat_layers[::-1]
     cat = fluid.layers.concat(cat_layers, axis=1, name='psp_cat')

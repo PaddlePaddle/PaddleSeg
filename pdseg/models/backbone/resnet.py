@@ -21,6 +21,7 @@ import math
 import numpy as np
 import paddle.fluid as fluid
 from paddle.fluid.param_attr import ParamAttr
+from utils.config import cfg
 
 __all__ = [
     "ResNet", "ResNet18", "ResNet34", "ResNet50", "ResNet101", "ResNet152"
@@ -204,7 +205,13 @@ class ResNet():
 
     def interp(self, input, out_shape):
         out_shape = list(out_shape.astype("int32"))
-        return fluid.layers.resize_bilinear(input, out_shape=out_shape)
+        if cfg.MODEL.FP16:
+            input = fluid.layers.cast(input, 'float32')
+            input = fluid.layers.resize_bilinear(input, out_shape=out_shape)
+            input = fluid.layers.cast(input, 'float16')
+            return input
+        else:
+            return fluid.layers.resize_bilinear(input, out_shape=out_shape)
 
     def conv_bn_layer(self,
                       input,
@@ -221,12 +228,17 @@ class ResNet():
         else:
             bias_attr=False
 
+        if dilation > 1:
+            addition_padding = dilation
+        else:
+            addition_padding = 0
+
         conv = fluid.layers.conv2d(
             input=input,
             num_filters=num_filters,
             filter_size=filter_size,
             stride=stride,
-            padding=(filter_size - 1) // 2 if dilation == 1 else 0,
+            padding=((filter_size - 1) // 2 if dilation == 1 else 0) + addition_padding,
             dilation=dilation,
             groups=groups,
             act=None,
@@ -267,8 +279,6 @@ class ResNet():
             stride=strides[0],
             act='relu',
             name=name + "_branch2a")
-        if dilation > 1:
-            conv0 = self.zero_padding(conv0, dilation)
         conv1 = self.conv_bn_layer(
             input=conv0,
             num_filters=num_filters,
@@ -277,6 +287,7 @@ class ResNet():
             stride=strides[1],
             act='relu',
             name=name + "_branch2b")
+
         conv2 = self.conv_bn_layer(
             input=conv1,
             num_filters=num_filters * 4,

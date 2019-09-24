@@ -18,7 +18,7 @@ import paddle.fluid as fluid
 import numpy as np
 import importlib
 from utils.config import cfg
-from paddle.fluid.contrib.mixed_precision.fp16_utils import create_master_params_grads, master_param_to_train_param
+#from paddle.fluid.contrib.mixed_precision.fp16_utils import create_master_params_grads, master_param_to_train_param
 
 
 class Solver(object):

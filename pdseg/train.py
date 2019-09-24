@@ -271,7 +271,7 @@ def train(cfg):
                 os.path.join(cfg.TRAIN.PRETRAINED_MODEL_DIR, var.name))
             if var_exist:
                 var_shape = parse_shape_from_file(
-                    os.path.join(cfg.TRAIN.PRETRAINED_MODEL, var.name))
+                    os.path.join(cfg.TRAIN.PRETRAINED_MODEL_DIR, var.name))
                 if var_shape == shape:
                     return True
                 else:
@@ -290,10 +290,7 @@ def train(cfg):
                     load_vars.append(x)
                 else:
                     load_fail_vars.append(x)
-        # if cfg.MODEL.FP16:
-        #     # If open FP16 training mode, load FP16 var separate
-        #     load_fp16_vars(exe, cfg.TRAIN.PRETRAINED_MODEL_DIR, train_prog)
-        # else:
+
         fluid.io.load_vars(
             exe, dirname=cfg.TRAIN.PRETRAINED_MODEL_DIR, vars=load_vars)
         for var in load_vars:

@@ -27,7 +27,13 @@ import numpy as np
 
 def interp(input, out_shape):
     out_shape = list(out_shape.astype("int32"))
-    return fluid.layers.resize_bilinear(input, out_shape=out_shape)
+    if cfg.MODEL.FP16:
+        input = fluid.layers.cast(input, 'float32')
+        input = fluid.layers.resize_bilinear(input, out_shape=out_shape)
+        input = fluid.layers.cast(input, 'float16')
+        return input
+    else:
+        return fluid.layers.resize_bilinear(input, out_shape=out_shape)
 
 
 def pyramis_pooling(input, input_shape):
@@ -97,9 +103,9 @@ def CCF24(sub2_out, sub4_out, input_shape):
 
 
 def CCF124(sub1_out, sub24_out, input_shape):
-    tmp = zero_padding(sub24_out, padding=2)
+    #tmp = zero_padding(sub24_out, padding=2)
     with scope("conv_sub2"):
-        tmp = conv(tmp, 128, 3, dilation=2)
+        tmp = conv(sub24_out, 128, 3, dilation=2, padding=2)
         tmp = bn(tmp)
     tmp = tmp + sub1_out
     tmp = fluid.layers.relu(tmp)
