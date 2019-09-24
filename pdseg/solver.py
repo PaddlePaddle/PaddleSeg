@@ -18,7 +18,6 @@ import paddle.fluid as fluid
 import numpy as np
 import importlib
 from utils.config import cfg
-#from paddle.fluid.contrib.mixed_precision.fp16_utils import create_master_params_grads, master_param_to_train_param
 
 
 class Solver(object):
@@ -73,15 +72,6 @@ class Solver(object):
             regularization=fluid.regularizer.L2Decay(
                 regularization_coeff=self.weight_decay),
         )
-        # if cfg.MODEL.FP16:
-        #     params_grads = optimizer.backward(loss, self.start_prog)
-        #     master_params_grads = create_master_params_grads(
-        #         params_grads, self.main_prog, self.start_prog,
-        #         cfg.MODEL.SCALE_LOSS)
-        #     optimizer.apply_gradients(master_params_grads)
-        #     master_param_to_train_param(master_params_grads, params_grads,
-        #                                 self.main_prog)
-        # else:
         optimizer.minimize(loss)
         return decayed_lr
 

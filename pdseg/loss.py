@@ -38,14 +38,8 @@ def softmax_with_loss(logit, label, ignore_mask=None, num_classes=2):
         return_softmax=True)
 
     loss = loss * ignore_mask
-    # if cfg.MODEL.FP16:
-    #     loss = fluid.layers.cast(loss, 'float32')
-    #     avg_loss = fluid.layers.mean(loss) / fluid.layers.mean(ignore_mask)
-    #     avg_loss = fluid.layers.cast(avg_loss, 'float16')
-    # else:
     avg_loss = fluid.layers.mean(loss) / fluid.layers.mean(ignore_mask)
-    # if cfg.MODEL.SCALE_LOSS > 1.0:
-    #     avg_loss = avg_loss * cfg.MODEL.SCALE_LOSS
+
     label.stop_gradient = True
     ignore_mask.stop_gradient = True
     return avg_loss
