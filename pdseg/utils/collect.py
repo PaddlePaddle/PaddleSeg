@@ -139,7 +139,7 @@ class SegConfig(dict):
 
     def update_from_file(self, config_file):
         with codecs.open(config_file, 'r', 'utf-8') as file:
-            dic = yaml.load(file)
+            dic = yaml.load(file, Loader=yaml.FullLoader)
         self.update_from_segconfig(dic)
 
     def set_immutable(self, immutable):
