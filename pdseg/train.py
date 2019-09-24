@@ -40,7 +40,6 @@ from models.model_builder import ModelPhase
 from models.model_builder import parse_shape_from_file
 from eval import evaluate
 from vis import visualize
-from utils.fp16_utils import load_fp16_vars
 
 
 def parse_args():
@@ -455,10 +454,8 @@ def main(args):
         cfg.update_from_list(args.opts)
     cfg.check_and_infer(reset_dataset=True)
     print(pprint.pformat(cfg))
-    import time
-    start_train_time = time.time()
+
     train(cfg)
-    print('train time:', time.time() - start_train_time)
 
 
 if __name__ == '__main__':
