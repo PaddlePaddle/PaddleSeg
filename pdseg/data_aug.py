@@ -410,7 +410,7 @@ def rand_crop(crop_img, crop_seg, mode=ModelPhase.TRAIN):
                 0,
                 pad_width,
                 cv2.BORDER_CONSTANT,
-                value=cfg.MEAN)
+                value=cfg.DATASET.PADDING_VALUE)
             if crop_seg is not None:
                 crop_seg = cv2.copyMakeBorder(
                     crop_seg,

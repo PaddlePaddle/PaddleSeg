@@ -296,7 +296,7 @@ def train(cfg):
         for var in load_vars:
             print("Parameter[{}] loaded sucessfully!".format(var.name))
         for var in load_fail_vars:
-            print("Parameter[{}] shape does not match current network, skip"
+            print("Parameter[{}] don't exist or shape does not match current network, skip"
                   " to load it.".format(var.name))
         print("{}/{} pretrained parameters loaded successfully!".format(
             len(load_vars),

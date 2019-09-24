@@ -74,7 +74,7 @@ AUG:
     FIX_RESIZE_SIZE: (512, 512)
 BATCH_SIZE: 4
 TRAIN:
-    PRETRAINED_MODEL_DIR: "./pretrained_model/deeplabv3p_xception65_bn_pet/"
+    PRETRAINED_MODEL_DIR: "./pretrained_model/deeplabv3p_xception65_bn_coco/"
     MODEL_SAVE_DIR: "./saved_model/deeplabv3p_xception65_bn_pet/"
     SNAPSHOT_EPOCH: 10
 TEST:
@@ -113,7 +113,7 @@ python pdseg/eval.py --use_gpu --cfg ./configs/test_deeplabv3p_pet.yaml
 
 ## 模型组合
 
-|预训练模型名称|BackBone|Norm|数据集|配置|
+|预训练模型名称|BackBone|Norm Type|数据集|配置|
 |-|-|-|-|-|
 |mobilenetv2-2-0_bn_imagenet|-|bn|ImageNet|MODEL.MODEL_NAME: deeplabv3p <br> MODEL.DEEPLAB.BACKBONE: mobilenet <br> MODEL.DEEPLAB.DEPTH_MULTIPLIER: 2.0 <br> MODEL.DEFAULT_NORM_TYPE: bn|
 |mobilenetv2-1-5_bn_imagenet|-|bn|ImageNet|MODEL.MODEL_NAME: deeplabv3p <br> MODEL.DEEPLAB.BACKBONE: mobilenet <br> MODEL.DEEPLAB.DEPTH_MULTIPLIER: 1.5 <br> MODEL.DEFAULT_NORM_TYPE: bn|

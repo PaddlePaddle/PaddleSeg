@@ -65,6 +65,8 @@ cfg.DATASET.DATA_DIM = 3
 cfg.DATASET.SEPARATOR = ' '
 # 忽略的像素标签值, 默认为255，一般无需改动
 cfg.DATASET.IGNORE_INDEX = 255
+# 数据增强是图像的padding值 
+cfg.DATASET.PADDING_VALUE = [127.5,127.5,127.5]
 
 ########################### 数据增强配置 ######################################
 # 图像镜像左右翻转
@@ -199,7 +201,7 @@ cfg.MODEL.ICNET.LAYERS = 50
 ########################## PSPNET模型配置 ######################################
 # RESNET backbone scale 设置
 cfg.MODEL.PSPNET.DEPTH_MULTIPLIER = 1
-# RESNET 层数 设置 50或101
+# RESNET backbone 层数 设置
 cfg.MODEL.PSPNET.LAYERS = 50
 
 ########################## 预测部署模型配置 ###################################

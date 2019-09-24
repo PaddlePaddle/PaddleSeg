@@ -1,6 +1,6 @@
-# ICNet模型训练教程
+# PSPNET模型训练教程
 
-* 本教程旨在介绍如何通过使用PaddleSeg提供的 ***`ICNet`*** 预训练模型在自定义数据集上进行训练
+* 本教程旨在介绍如何通过使用PaddleSeg提供的 ***`PSPNET`*** 预训练模型在自定义数据集上进行训练
 
 * 在阅读本教程前，请确保您已经了解过PaddleSeg的[快速入门](../README.md#快速入门)和[基础功能](../README.md#基础功能)等章节，以便对PaddleSeg有一定的了解
 
@@ -21,7 +21,7 @@ python dataset/download_pet.py
 接着下载对应的预训练模型
 
 ```shell
-python pretrained_model/download_model.py icnet_bn_cityscapes
+python pretrained_model/download_model.py pspnet50_bn_cityscapes
 ```
 
 ## 三. 准备配置
@@ -62,11 +62,11 @@ DATASET:
 
 # 预训练模型配置
 MODEL:
-    MODEL_NAME: "icnet"
+    MODEL_NAME: "pspnet"
     DEFAULT_NORM_TYPE: "bn"
-    MULTI_LOSS_WEIGHT: "[1.0, 0.4, 0.16]"
-    ICNET:
-        DEPTH_MULTIPLIER: 0.5
+    PSPNET:
+        DEPTH_MULTIPLIER: 1
+        LAYERS: 50
 
 # 其他配置
 TRAIN_CROP_SIZE: (512, 512)
@@ -76,11 +76,11 @@ AUG:
     FIX_RESIZE_SIZE: (512, 512)
 BATCH_SIZE: 4
 TRAIN:
-    PRETRAINED_MODEL_DIR: "./pretrained_model/icnet_bn_cityscapes/"
-    MODEL_SAVE_DIR: "./saved_model/icnet_pet/"
+    PRETRAINED_MODEL_DIR: "./pretrained_model/pspnet50_bn_cityscapes/"
+    MODEL_SAVE_DIR: "./saved_model/pspnet_pet/"
     SNAPSHOT_EPOCH: 10
 TEST:
-    TEST_MODEL: "./saved_model/icnet_pet/final"
+    TEST_MODEL: "./saved_model/pspnet_pet/final"
 SOLVER:
     NUM_EPOCHS: 100
     LR: 0.005
@@ -117,4 +117,5 @@ python pdseg/eval.py --use_gpu --cfg ./configs/test_pet.yaml
 
 |预训练模型名称|BackBone|Norm|数据集|配置|
 |-|-|-|-|-|
-|icnet_bn_cityscapes|-|bn|Cityscapes|MODEL.MODEL_NAME: icnet <br> MODEL.DEFAULT_NORM_TYPE: bn <br> MULTI_LOSS_WEIGHT: [1.0, 0.4, 0.16]|
+|pspnet50_bn_cityscapes|ResNet50|bn|Cityscapes|MODEL.MODEL_NAME: pspnet <br> MODEL.DEFAULT_NORM_TYPE: bn <br> MODEL.PSPNET.LAYERS: 50|
+|pspnet101_bn_cityscapes|ResNet101|bn|Cityscapes|MODEL.MODEL_NAME: pspnet <br> MODEL.DEFAULT_NORM_TYPE: bn <br> MODEL.PSPNET.LAYERS: 101|
