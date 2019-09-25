@@ -2,8 +2,14 @@
 
 ## 数据标注
 
-数据标注推荐使用LabelMe工具，具体可参考文档[PaddleSeg 数据标注](./annotation/README.md)
+用户需预先采集好用于训练、评估和测试的图片，然后使用数据标注工具完成数据标注。
 
+PddleSeg已支持2种标注工具：LabelMe、精灵数据标注工具。标注教程如下：
+
+- [LabelMe标注教程](annotation/labelme2seg.md)
+- [精灵数据标注工具教程](annotation/jingling2seg.md)
+
+最后用我们提供的数据转换脚本将上述标注工具产出的数据格式转换为模型训练时所需的数据格式。
 
 ## 语义分割标注规范
 
