@@ -20,7 +20,9 @@
 
 ### Step2: 下载PaddlePaddle C++ 预测库 fluid_inference
 
-目前仅支持`CUDA 8` 和 `CUDA 9`，请点击 [PaddlePaddle预测库下载地址](https://www.paddlepaddle.org.cn/documentation/docs/zh/develop/advanced_usage/deploy/inference/build_and_install_lib_cn.html)下载对应的版本。
+目前仅支持`CUDA 8` 和 `CUDA 9`，建议使用`cuda9`, 请 [点击下载CUDA9预测库](https://paddle-inference-lib.bj.bcebos.com/latest-gpu-cuda9-cudnn7-avx-mkl/fluid_inference.tgz)
+
+更多可用版本，请参考:[C++预测库列表](https://www.paddlepaddle.org.cn/documentation/docs/zh/develop/advanced_usage/deploy/inference/build_and_install_lib_cn.html)
 
 
 下载并解压后`/root/projects/fluid_inference`目录包含内容为：
