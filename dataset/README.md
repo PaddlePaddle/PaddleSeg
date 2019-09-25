@@ -22,7 +22,7 @@ python convert_voc2012.py
 python dataset/download_pet.py
 ```
 
-##Cityscapes数据集
+## Cityscapes数据集
 运行下述命令下载并解压Cityscapes数据集。
 
 ```shell
