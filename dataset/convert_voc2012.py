@@ -21,23 +21,14 @@ import glob
 
 LOCAL_PATH = os.path.dirname(os.path.abspath(__file__))
 def remove_colormap(filename):
-    """Removes the color map from the annotation.
-    Args:
-        filename: Ground truth annotation filename.
-    Returns:
-        Annotation without color map.
-    """
-    return np.array(Image.open(filename))
+    gray_anno = np.array(Image.open(filename))
+    return gray_anno
 
 
 def save_annotation(annotation, filename):
-    """Saves the annotation as png file.
-    Args:
-        annotation: Segmentation annotation.
-        filename: Output filename.
-    """
-    pil_image = Image.fromarray(annotation.astype(dtype=np.uint8))
-    pil_image.save(filename)
+    annotation = annotation.astype(dtype=np.uint8)
+    annotation = Image.fromarray(annotation)
+    annotation.save(filename)
 
 def convert_list(origin_file, seg_file, output_folder):
     with open(seg_file, 'w') as fid_seg:
@@ -51,6 +42,7 @@ def convert_list(origin_file, seg_file, output_folder):
                 anno_name = os.path.join(output_folder.split(os.sep)[-1], line)
                 new_line = ' '.join([img_name, anno_name])
                 fid_seg.write(new_line + "\n")
+
 if __name__ == "__main__":
     pascal_root = "./VOCtrainval_11-May-2012/VOC2012"
     pascal_root = os.path.join(LOCAL_PATH, pascal_root)
