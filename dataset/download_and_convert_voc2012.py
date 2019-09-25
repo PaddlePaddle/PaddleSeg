@@ -29,13 +29,13 @@ from convert_voc2012 import save_annotation
 
 
 
-def download_pet_dataset(savepath, extrapath):
+def download_VOC_dataset(savepath, extrapath):
     url = "https://paddleseg.bj.bcebos.com/dataset/VOCtrainval_11-May-2012.tar"
     download_file_and_uncompress(
         url=url, savepath=savepath, extrapath=extrapath)
 
 if __name__ == "__main__":
-    download_pet_dataset(LOCAL_PATH, LOCAL_PATH)
+    download_VOC_dataset(LOCAL_PATH, LOCAL_PATH)
     print("Dataset download finish!")
 
     pascal_root = "./VOCtrainval_11-May-2012/VOC2012"
