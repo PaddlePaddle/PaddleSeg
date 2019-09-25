@@ -7,7 +7,7 @@
 python download_and_convert_voc2012.py
 ```
 
-如果已经下载好PASCAL VOC 2012数据集，使用下述命令直接进行转换即可。
+如果已经下载好PASCAL VOC 2012数据集，将数据集移至dataset目录后使用下述命令直接进行转换即可。
 
 ```shell
 # 数据集转换
