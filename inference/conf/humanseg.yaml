@@ -5,7 +5,7 @@ DEPLOY:
     MODEL_FILENAME: "__model__"
     PARAMS_FILENAME: "__params__"
     EVAL_CROP_SIZE: (513, 513)
-    MEAN: [104.008, 116.669, 122.675]
+    MEAN: [0.5, 0.5, 0.5]
     STD: [1.0, 1.0, 1.0]
     IMAGE_TYPE: "rgb"
     NUM_CLASSES: 2

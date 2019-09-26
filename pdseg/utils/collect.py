@@ -97,6 +97,18 @@ class SegConfig(dict):
             raise KeyError(
                 'DATASET.IMAGE_TYPE config error, only support `rgb`, `gray` and `rgba`'
             )
+        if self.MEAN is not None:
+            self.DATASET.PADDING_VALUE = [x*255.0 for x in self.MEAN]
+
+        if not self.TRAIN_CROP_SIZE:
+            raise ValueError(
+                'TRAIN_CROP_SIZE is empty! Please set a pair of values in format (width, height)'
+            )
+
+        if not self.EVAL_CROP_SIZE:
+            raise ValueError(
+                'EVAL_CROP_SIZE is empty! Please set a pair of values in format (width, height)'
+            )
 
         if reset_dataset:
             # Ensure file list is use UTF-8 encoding

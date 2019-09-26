@@ -70,7 +70,11 @@ deeplabv3p_xception65_humanseg
 
 
 ### 2. 修改配置
-源代码的`conf`目录下提供了示例人像分割模型的配置文件`humanseg.yaml`, 相关的字段含义和说明如下：
+
+基于`PaddleSeg`训练的模型导出时，会自动生成对应的预测模型配置文件，请参考文档：[模型导出](../docs/export_model.md)。
+
+`inference`源代码(即本目录)的`conf`目录下提供了示例人像分割模型的配置文件`humanseg.yaml`, 相关的字段含义和说明如下：
+
 ```yaml
 DEPLOY:
     # 是否使用GPU预测
@@ -101,7 +105,6 @@ DEPLOY:
     BATCH_SIZE : 3
 ```
 修改字段`MODEL_PATH`的值为你在**上一步**下载并解压的模型文件所放置的目录即可。
-
 
 ### 3. 执行预测
 

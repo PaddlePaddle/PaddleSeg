@@ -1,5 +1,5 @@
 EVAL_CROP_SIZE: (2049, 1025) # (width, height), for unpadding rangescaling and stepscaling
-TRAIN_CROP_SIZE: (769, 769) # (width, height), for unpadding rangescaling and stepscaling
+TRAIN_CROP_SIZE: (713, 713) # (width, height), for unpadding rangescaling and stepscaling
 AUG:
     AUG_METHOD: "stepscaling" # choice unpadding rangescaling and stepscaling
     FIX_RESIZE_SIZE: (640, 640) # (width, height), for unpadding
@@ -10,18 +10,6 @@ AUG:
     MIN_SCALE_FACTOR: 0.5  # for stepscaling
     SCALE_STEP_SIZE: 0.25  # for stepscaling
     MIRROR: True
-    RICH_CROP:
-        ENABLE: False
-        ASPECT_RATIO: 0.33
-        BLUR: True
-        BLUR_RATIO: 0.1
-        FLIP: True
-        FLIP_RATIO: 0.2
-        MAX_ROTATION: 15
-        MIN_AREA_RATIO: 0.5
-        BRIGHTNESS_JITTER_RATIO: 0.5
-        CONTRAST_JITTER_RATIO: 0.5
-        SATURATION_JITTER_RATIO: 0.5
 BATCH_SIZE: 4
 DATASET:
     DATA_DIR: "./dataset/cityscapes/"
@@ -35,17 +23,16 @@ FREEZE:
     MODEL_FILENAME: "model"
     PARAMS_FILENAME: "params"
 MODEL:
-    DEFAULT_NORM_TYPE: "gn"
-    MODEL_NAME: "deeplabv3p"
-    DEEPLAB:
-        ASPP_WITH_SEP_CONV: True
-        DECODER_USE_SEP_CONV: True
+    MODEL_NAME: "pspnet"
+    DEFAULT_NORM_TYPE: "bn"
+    PSPNET:
+        DEPTH_MULTIPLIER: 1
+        LAYERS: 50
 TEST:
-    TEST_MODEL: "snapshots/cityscape_v5/final/"
+    TEST_MODEL: "snapshots/cityscapes_pspnet50/final"
 TRAIN:
-    MODEL_SAVE_DIR: "snapshots/cityscape_v7/"
-    PRETRAINED_MODEL: u"pretrain/deeplabv3plus_gn_init"
-    RESUME: False
+    MODEL_SAVE_DIR: "snapshots/cityscapes_pspnet50/"
+    PRETRAINED_MODEL_DIR: u"pretrained_model/pspnet50_bn_cityscapes/"
     SNAPSHOT_EPOCH: 10
 SOLVER:
     LR: 0.001
