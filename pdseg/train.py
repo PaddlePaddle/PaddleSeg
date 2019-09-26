@@ -240,6 +240,8 @@ def train(cfg):
         exec_strategy.num_threads = fluid.core.get_cuda_device_count()
     exec_strategy.num_iteration_per_drop_scope = 100
     build_strategy = fluid.BuildStrategy()
+    build_strategy.fuse_all_optimizer_ops = False
+    build_strategy.fuse_all_reduce_ops = False
     if cfg.TRAIN.SYNC_BATCH_NORM and args.use_gpu:
         if dev_count > 1:
             # Apply sync batch norm strategy
@@ -283,12 +285,12 @@ def train(cfg):
                     load_vars.append(x)
                 else:
                     load_fail_vars.append(x)
-        if cfg.MODEL.FP16:
-            # If open FP16 training mode, load FP16 var separate
-            load_fp16_vars(exe, cfg.TRAIN.PRETRAINED_MODEL_DIR, train_prog)
-        else:
-            fluid.io.load_vars(
-                exe, dirname=cfg.TRAIN.PRETRAINED_MODEL_DIR, vars=load_vars)
+        # if cfg.MODEL.FP16:
+        #     # If open FP16 training mode, load FP16 var separate
+        #     load_fp16_vars(exe, cfg.TRAIN.PRETRAINED_MODEL_DIR, train_prog)
+        # else:
+        fluid.io.load_vars(
+            exe, dirname=cfg.TRAIN.PRETRAINED_MODEL_DIR, vars=load_vars)
         for var in load_vars:
             print("Parameter[{}] loaded sucessfully!".format(var.name))
         for var in load_fail_vars:
