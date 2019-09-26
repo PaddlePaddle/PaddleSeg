@@ -6,7 +6,7 @@
 # YAML_FILE_PATH为yaml配置文件路径
 python pdseg/check.py --cfg ${YAML_FILE_PATH}
 ```
-运行后，命令行将显示校验结果的概览信息，详细信息可到detail.log文件中查看。
+运行后，命令行将显示校验结果的概览信息，详细的错误信息可到detail.log文件中查看。
 
 ### 1 列表分割符校验
 判断在`TRAIN_FILE_LIST`，`VAL_FILE_LIST`和`TEST_FILE_LIST`列表文件中的分隔符`DATASET.SEPARATOR`设置是否正确。
@@ -39,10 +39,13 @@ python pdseg/check.py --cfg ${YAML_FILE_PATH}
 **NOTE:** 当数据集包含三通道图片时`DATASET.IMAGE_TYPE`设置为rgb；
 当数据集全部为四通道图片时`DATASET.IMAGE_TYPE`设置为rgba；
 
-### 8 图像与标注图尺寸一致性校验
+### 8 图像最大尺寸统计
+统计数据集中图片的最大高和最大宽，显示以供参考。
+
+### 9 图像与标注图尺寸一致性校验
 验证图像尺寸和对应标注图尺寸是否一致。
 
-### 9 模型验证参数`EVAL_CROP_SIZE`校验
+### 10 模型验证参数`EVAL_CROP_SIZE`校验
 验证`EVAL_CROP_SIZE`是否设置正确，共有3种情形：
 
 - 当`AUG.AUG_METHOD`为unpadding时，`EVAL_CROP_SIZE`的宽高应不小于`AUG.FIX_RESIZE_SIZE`的宽高。
@@ -51,5 +54,5 @@ python pdseg/check.py --cfg ${YAML_FILE_PATH}
 
 - 当`AUG.AUG_METHOD`为rangscaling时，`EVAL_CROP_SIZE`的宽高应不小于缩放后图像中最大的宽高。
 
-### 10 数据增强参数`AUG.INF_RESIZE_VALUE`校验
+### 11 数据增强参数`AUG.INF_RESIZE_VALUE`校验
 验证`AUG.INF_RESIZE_VALUE`是否在[`AUG.MIN_RESIZE_VALUE`~`AUG.MAX_RESIZE_VALUE`]范围内。若在范围内，则通过校验。
