@@ -24,6 +24,8 @@ from paddle.fluid.proto.framework_pb2 import VarType
 import solver
 from utils.config import cfg
 from loss import multi_softmax_with_loss
+from loss import dice_loss
+from loss import bce_loss
 
 
 class ModelPhase(object):
@@ -109,6 +111,17 @@ def softmax(logit):
     logit = fluid.layers.transpose(logit, [0, 3, 1, 2])
     return logit
 
+def sigmoid_to_softmax(logit):
+    """
+    one channel to two channel
+    """
+    logit = fluid.layers.transpose(logit, [0, 2, 3, 1])
+    logit = fluid.layers.sigmoid(logit)
+    logit_back = 1 - logit
+    logit = fluid.layers.concat([logit_back, logit], axis=-1)
+    logit = fluid.layers.transpose(logit, [0, 3, 1, 2])
+    return logit
+
 
 def build_model(main_prog, start_prog, phase=ModelPhase.TRAIN):
     if not ModelPhase.is_valid_phase(phase):
@@ -144,11 +157,34 @@ def build_model(main_prog, start_prog, phase=ModelPhase.TRAIN):
                 image = fluid.layers.cast(image, "float16")
             model_name = map_model_name(cfg.MODEL.MODEL_NAME)
             model_func = get_func("modeling." + model_name)
+            
+            loss_type = cfg.SOLVER.LOSS
+            if ("dice" in loss_type) or ("bce" in loss_type):
+                class_num = 1
+                if "softmax" in loss_type:
+                    raise Exception("softmax loss can not combine with dice loss or bce loss")
+            
             logits = model_func(image, class_num)
 
             if ModelPhase.is_train(phase) or ModelPhase.is_eval(phase):
-                avg_loss = multi_softmax_with_loss(logits, label, mask,
-                                                   class_num)
+                loss_valid = False
+                avg_loss_list = []
+                if "softmax" in loss_type: 
+                    avg_loss_list.append(multi_softmax_with_loss(logits,
+                        label, mask,class_num))
+                    loss_valid = True
+                if "dice" in loss_type:
+                    avg_loss_list.append(dice_loss(logits, label, mask))
+                    loss_valid = True
+                if "bce" in loss_type:
+                    avg_loss_list.append(bce_loss(logits, label, mask))
+                    loss_valid = True
+                if not loss_valid:
+                    raise Exception("SOLVER.LOSS: {} is set wrong. it should "
+                            "include one of (softmax_loss, bce_loss, dice_loss) at least")
+                avg_loss = avg_loss_list[0]
+                for i in range(1, len(avg_loss_list)):
+                    avg_loss += avg_loss_list[i]
 
             #get pred result in original size
             if isinstance(logits, tuple):
@@ -161,17 +197,25 @@ def build_model(main_prog, start_prog, phase=ModelPhase.TRAIN):
 
             # return image input and logit output for inference graph prune
             if ModelPhase.is_predict(phase):
-                logit = softmax(logit)
+                if class_num == 1:
+                    logit = sigmoid_to_softmax(logit)
+                else:
+                    logit = softmax(logit)
                 return image, logit
-
-            out = fluid.layers.transpose(x=logit, perm=[0, 2, 3, 1])
+            if class_num == 1:
+                out = sigmoid_to_softmax(logit)
+                out = fluid.layers.transpose(out, [0, 2, 3, 1])
+            else:
+                out = fluid.layers.transpose(logit, [0, 2, 3, 1])
             if cfg.MODEL.FP16:
                 out = fluid.layers.cast(out, 'float32')
             pred = fluid.layers.argmax(out, axis=3)
             pred = fluid.layers.unsqueeze(pred, axes=[3])
-
             if ModelPhase.is_visual(phase):
-                logit = softmax(logit)
+                if class_num == 1:
+                    logit = sigmoid_to_softmax(logit)
+                else:
+                    logit = softmax(logit)
                 return pred, logit
 
             if ModelPhase.is_eval(phase):

@@ -65,17 +65,39 @@ def multi_softmax_with_loss(logits, label, ignore_mask=None, num_classes=2):
 
 
 # to change, how to appicate ignore index and ignore mask
-def dice_loss(logit, label, ignore_mask=None, num_classes=2):
-    if num_classes != 2:
-        raise Exception("dice loss is only applicable to binary classfication")
+def dice_loss(logit, label, ignore_mask=None, epsilon=0.00001):
+    if logit.shape[1] != 1 or label.shape[1] != 1 or ignore_mask.shape[1] != 1:
+        raise Exception("dice loss is only applicable to one channel classfication")
     ignore_mask = fluid.layers.cast(ignore_mask, 'float32')
-    label = fluid.layers.elementwise_min(
-        label, fluid.layers.assign(np.array([num_classes - 1], dtype=np.int32)))
     logit = fluid.layers.transpose(logit, [0, 2, 3, 1])
-    logit = fluid.layers.reshape(logit, [-1, num_classes])
-    logit = fluid.layers.softmax(logit)
-    label = fluid.layers.reshape(label, [-1, 1])
+    label  = fluid.layers.transpose(label, [0, 2, 3, 1])
     label = fluid.layers.cast(label, 'int64')
-    ignore_mask = fluid.layers.reshape(ignore_mask, [-1, 1])
-    loss = fluid.layers.dice_loss(logit, label)
+    ignore_mask = fluid.layers.transpose(ignore_mask, [0, 2, 3, 1])
+    logit = fluid.layers.sigmoid(logit)
+    logit = logit * ignore_mask
+    label = label * ignore_mask
+    reduce_dim = list(range(1, len(logit.shape)))
+    inse = fluid.layers.reduce_sum(logit * label, dim=reduce_dim)
+    dice_denominator = fluid.layers.reduce_sum(
+        logit, dim=reduce_dim) + fluid.layers.reduce_sum(
+        label, dim=reduce_dim)
+    dice_score = 1 - inse * 2 / (dice_denominator + epsilon)
+    label.stop_gradient = True
+    ignore_mask.stop_gradient = True
+    return fluid.layers.reduce_mean(dice_score)
+
+def bce_loss(logit, label, ignore_mask=None):
+    if logit.shape[1] != 1 or label.shape[1] != 1 or ignore_mask.shape[1] != 1:
+        raise Exception("dice loss is only applicable to binary classfication")
+    label = fluid.layers.cast(label, 'float32')
+    loss = fluid.layers.sigmoid_cross_entropy_with_logits(
+        x=logit,
+        label=label,
+        ignore_index=cfg.DATASET.IGNORE_INDEX,
+        normalize=True) # or False
+    loss = fluid.layers.reduce_sum(loss)
+    label.stop_gradient = True
+    ignore_mask.stop_gradient = True
     return loss
+
+
