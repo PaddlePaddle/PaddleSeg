@@ -211,9 +211,13 @@ def gt_check():
         for i in png_format_wrong_image:
             logger.debug(i)
 
-    total_nc = sorted(zip(total_grt_classes, total_num_of_each_class))
-    logger.info("\nDoing label pixel statistics:\nTotal label classes "
-                "and their corresponding numbers:\n{} ".format(total_nc))
+    total_ratio = total_num_of_each_class / sum(total_num_of_each_class)
+    total_ratio = np.around(total_ratio, decimals=4)
+    total_nc = sorted(
+        zip(total_grt_classes, total_num_of_each_class, total_ratio))
+    logger.info(
+        "\nDoing label pixel statistics:\n"
+        "(label class, total pixel number, percentage) = {} ".format(total_nc))
 
     if len(label_wrong) == 0 and not total_nc[0][0]:
         logger.info(correct_print("label class check!"))
