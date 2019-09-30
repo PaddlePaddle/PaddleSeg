@@ -24,8 +24,8 @@ from paddle.fluid.proto.framework_pb2 import VarType
 import solver
 from utils.config import cfg
 from loss import multi_softmax_with_loss
-from loss import dice_loss
-from loss import bce_loss
+from loss import multi_dice_loss
+from loss import multi_bce_loss
 
 
 class ModelPhase(object):
@@ -174,16 +174,17 @@ def build_model(main_prog, start_prog, phase=ModelPhase.TRAIN):
                         label, mask,class_num))
                     loss_valid = True
                 if "dice" in loss_type:
-                    avg_loss_list.append(dice_loss(logits, label, mask))
+                    avg_loss_list.append(multi_dice_loss(logits, label, mask))
                     loss_valid = True
                 if "bce" in loss_type:
-                    avg_loss_list.append(bce_loss(logits, label, mask))
+                    avg_loss_list.append(multi_bce_loss(logits, label, mask))
                     loss_valid = True
                 if not loss_valid:
                     raise Exception("SOLVER.LOSS: {} is set wrong. it should "
-                            "include one of (softmax_loss, bce_loss, dice_loss) at least")
-                avg_loss = avg_loss_list[0]
-                for i in range(1, len(avg_loss_list)):
+                            "include one of (softmax_loss, bce_loss, dice_loss) at least"
+                            " example: 'softmax_loss', 'dice_loss', bce_loss,dice_loss'")
+                avg_loss = 0
+                for i in range(0, len(avg_loss_list)):
                     avg_loss += avg_loss_list[i]
 
             #get pred result in original size
