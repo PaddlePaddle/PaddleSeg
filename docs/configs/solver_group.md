@@ -132,7 +132,7 @@ L2正则化系数
 
 ### 默认值
 
-"softmat_loss"
+"softmax_loss"
 
 <br/>
 <br/>
