@@ -46,9 +46,9 @@ model_urls = {
     "unet_bn_coco":
     "https://paddleseg.bj.bcebos.com/models/unet_coco_v3.tgz",
     "pspnet50_bn_coco":
-    "https://paddleseg.bj.bcebos.com/models%2Fpspnet50_coco.tgz",
+    "https://paddleseg.bj.bcebos.com/models/pspnet50_coco.tgz",
     "pspnet101_bn_coco":
-    "https://paddleseg.bj.bcebos.com/models%2Fpspnet101_coco.tgz"
+    "https://paddleseg.bj.bcebos.com/models/pspnet101_coco.tgz"
 
     # Cityscapes pretrained
     "deeplabv3p_mobilenetv2-1-0_bn_cityscapes":
@@ -64,7 +64,7 @@ model_urls = {
     "pspnet50_bn_cityscapes":
     "https://paddleseg.bj.bcebos.com/models/pspnet50_cityscapes.tgz",
     "pspnet101_bn_cityscapes":
-    "https://paddleseg.bj.bcebos.com/models%2Fpspnet101_cityscapes.tgz",
+    "https://paddleseg.bj.bcebos.com/models/pspnet101_cityscapes.tgz",
 }
 
 if __name__ == "__main__":
