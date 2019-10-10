@@ -48,7 +48,7 @@ model_urls = {
     "pspnet50_bn_coco":
     "https://paddleseg.bj.bcebos.com/models/pspnet50_coco.tgz",
     "pspnet101_bn_coco":
-    "https://paddleseg.bj.bcebos.com/models/pspnet101_coco.tgz"
+    "https://paddleseg.bj.bcebos.com/models/pspnet101_coco.tgz",
 
     # Cityscapes pretrained
     "deeplabv3p_mobilenetv2-1-0_bn_cityscapes":
