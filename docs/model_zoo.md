@@ -28,7 +28,7 @@ PaddleSeg对所有内置的分割模型都提供了公开数据集下的预训�
 
 | 模型 | 数据集合 | 下载地址 |Output Strid|multi-scale test| mIoU |
 |---|---|---|---|---|---|
-| DeepLabv3+/MobileNetv2/bn | COCO |[deeplabv3plus_coco_bn_init.tgz](https://bj.bcebos.com/v1/paddleseg/deeplabv3plus_coco_bn_init.tgz) | 16 | --| -- |
+| DeepLabv3+/MobileNetv2/bn | COCO |[deeplab_mobilenet_x1_0_coco.tgz](https://bj.bcebos.com/v1/paddleseg/deeplab_mobilenet_x1_0_coco.tgz) | 16 | --| -- |
 | DeeplabV3+/Xception65/bn | COCO | [xception65_coco.tgz](https://paddleseg.bj.bcebos.com/models/xception65_coco.tgz)| 16 | -- | -- |
 | U-Net/bn | COCO | [unet_coco.tgz](https://paddleseg.bj.bcebos.com/models/unet_coco_v3.tgz) | 16 | -- | -- |
 
@@ -39,7 +39,7 @@ train数据集合为Cityscapes训练集合，测试为Cityscapes的验证集合
 | 模型 | 数据集合 | 下载地址 |Output Stride| mutli-scale test| mIoU on val|
 |---|---|---|---|---|---|
 | DeepLabv3+/MobileNetv2/bn | Cityscapes |[mobilenet_cityscapes.tgz](https://paddleseg.bj.bcebos.com/models/mobilenet_cityscapes.tgz) |16|false| 0.698|
-| DeepLabv3+/Xception65/gn  | Cityscapes |[deeplabv3p_xception65_cityscapes.tgz](https://paddleseg.bj.bcebos.com/models/deeplabv3p_xception65_cityscapes.tgz) |16|false| 0.7804 |
-| DeepLabv3+/Xception65/bn | Cityscapes |[Xception65_deeplab_cityscapes.tgz](https://paddleseg.bj.bcebos.com/models/xception65_bn_cityscapes.tgz) | 16 | false | 0.7715 |
+| DeepLabv3+/Xception65/gn  | Cityscapes |[deeplabv3p_xception65_gn_cityscapes.tgz](https://paddleseg.bj.bcebos.com/models/deeplabv3p_xception65_cityscapes.tgz) |16|false| 0.7824 |
+| DeepLabv3+/Xception65/bn | Cityscapes |[deeplabv3p_xception65_bn_cityscapes_.tgz](https://paddleseg.bj.bcebos.com/models/xception65_bn_cityscapes.tgz) | 16 | false | 0.7930 |
 | ICNet/bn | Cityscapes |[icnet_cityscapes.tgz](https://paddleseg.bj.bcebos.com/models/icnet6831.tar.gz) |16|false| 0.6831 |
 | PSPNet/bn | Cityscapes |[pspnet50_cityscapes.tgz](https://paddleseg.bj.bcebos.com/models/pspnet50_cityscapes.tgz) |16|false| 0.6968 |
