@@ -72,7 +72,7 @@ def dice_loss(logit, label, ignore_mask=None, epsilon=0.00001):
 
 def bce_loss(logit, label, ignore_mask=None):
     if logit.shape[1] != 1 or label.shape[1] != 1 or ignore_mask.shape[1] != 1:
-        raise Exception("dice loss is only applicable to binary classfication")
+        raise Exception("bce loss is only applicable to binary classfication")
     label = fluid.layers.cast(label, 'float32')
     loss = fluid.layers.sigmoid_cross_entropy_with_logits(
         x=logit,

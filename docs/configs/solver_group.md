@@ -125,7 +125,11 @@ L2正则化系数
 
 ## `loss`
 
-训练时选择的损失函数， 支持`softmax_loss`, `dice_loss`, `bce_loss`三种损失函数。其中`dice_loss`和`bce_loss`仅在两类分割问题中适用，`softmax_loss`不能与`dice_loss`
+训练时选择的损失函数， 支持`softmax_loss(sotfmax with cross entroy loss)`, `dice_loss(dice coefficient loss)`, `bce_loss(binary cross entroy loss)`三种损失函数。
+
+![equation](http://latex.codecogs.com/gif.latex?softmax\\_loss=\sum_{i=1}^Ny_i\times{log(p_i)}) 
+
+其中`dice_loss`和`bce_loss`仅在两类分割问题中适用，`softmax_loss`不能与`dice_loss`
 或`bce_loss`组合，`dice_loss`可以和`bce_loss`组合使用。使用示例如下：
 
 `"softmax_loss"`或`"dice_loss,bce_loss"`

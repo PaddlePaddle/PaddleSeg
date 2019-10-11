@@ -159,9 +159,9 @@ def build_model(main_prog, start_prog, phase=ModelPhase.TRAIN):
             model_func = get_func("modeling." + model_name)
             
             loss_type = cfg.SOLVER.LOSS
-            if ("dice" in loss_type) or ("bce" in loss_type):
+            if ("dice_loss" in loss_type) or ("bce_loss" in loss_type):
                 class_num = 1
-                if "softmax" in loss_type:
+                if "softmax_loss" in loss_type:
                     raise Exception("softmax loss can not combine with dice loss or bce loss")
             
             logits = model_func(image, class_num)
@@ -169,20 +169,20 @@ def build_model(main_prog, start_prog, phase=ModelPhase.TRAIN):
             if ModelPhase.is_train(phase) or ModelPhase.is_eval(phase):
                 loss_valid = False
                 avg_loss_list = []
-                if "softmax" in loss_type: 
+                if "softmax_loss" in loss_type: 
                     avg_loss_list.append(multi_softmax_with_loss(logits,
                         label, mask,class_num))
                     loss_valid = True
-                if "dice" in loss_type:
+                if "dice_loss" in loss_type:
                     avg_loss_list.append(multi_dice_loss(logits, label, mask))
                     loss_valid = True
-                if "bce" in loss_type:
+                if "bce_loss" in loss_type:
                     avg_loss_list.append(multi_bce_loss(logits, label, mask))
                     loss_valid = True
                 if not loss_valid:
                     raise Exception("SOLVER.LOSS: {} is set wrong. it should "
                             "include one of (softmax_loss, bce_loss, dice_loss) at least"
-                            " example: 'softmax_loss', 'dice_loss', bce_loss,dice_loss'")
+                            " example: ['softmax_loss'], ['dice_loss'], ['bce_loss', 'dice_loss']".format(cfg.SOLVER.LOSS))
                 avg_loss = 0
                 for i in range(0, len(avg_loss_list)):
                     avg_loss += avg_loss_list[i]
