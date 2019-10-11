@@ -132,7 +132,6 @@ L2正则化系数
 
 `['softmax_loss']`或`['dice_loss','bce_loss']`
 
-### 损失函数说明
 * softmax_loss
 
 ![equation](http://latex.codecogs.com/gif.latex?softmax\\_loss=\sum_{i=1}^Ny_i{log(p_i)}) 
