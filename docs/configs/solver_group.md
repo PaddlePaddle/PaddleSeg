@@ -137,11 +137,15 @@ L2正则化系数
 
 ![equation](http://latex.codecogs.com/gif.latex?softmax\\_loss=\sum_{i=1}^Ny_i{log(p_i)}) 
 
+<br/>
+
 * dice_loss
 
-![equation](http://latex.codecogs.com/gif.latex?dice\\_loss=1-\frac{2|Y\bigcap P|}{|Y|\bigcup|P|}) 
+![equation](http://latex.codecogs.com/gif.latex?dice\\_loss=1-\frac{2|Y\bigcap{P}|}{|Y|\bigcup|P|}) 
 
 [dice系数](https://zh.wikipedia.org/wiki/Dice%E7%B3%BB%E6%95%B0)
+
+<br/>
 
 * bce_loss
 
