@@ -129,7 +129,7 @@ python pdseg/vis.py --use_gpu \
                      --cfg configs/unet_pet.yaml \
                      TEST.TEST_MODEL saved_model/unet_pet/final
 ```
-执行上述脚本后，会在主目录下产生一个visual/visual_results文件夹，里面存放着测试集图片的预测结果，我们选择其中几张图片进行查看，可以看到，在大部分测试集中的预测效果已经很不错：
+执行上述脚本后，会在主目录下产生一个visual/visual_results文件夹，里面存放着测试集图片的预测结果，我们选择其中几张图片进行查看，可以看到，在测试集中的图片上的预测效果已经很不错：
 
 ![](./imgs/usage_vis_demo.jpg)
 ![](./imgs/usage_vis_demo2.jpg)
