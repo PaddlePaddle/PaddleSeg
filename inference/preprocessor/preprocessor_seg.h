@@ -1,6 +1,7 @@
 #pragma once
 
 #include "preprocessor.h"
+#include "utils/utils.h"
 
 namespace PaddleSolution {
 
