@@ -11,7 +11,9 @@ PddleSeg已支持2种标注工具：LabelMe、精灵数据标注工具。标注�
 
 最后用我们提供的数据转换脚本将上述标注工具产出的数据格式转换为模型训练时所需的数据格式。
 
-## 语义分割标注规范
+## 文件列表
+
+### 文件列表规范
 
 PaddleSeg采用通用的文件列表方式组织训练集、验证集和测试集。像素标注类别需要从0开始递增。
 
@@ -64,3 +66,81 @@ PaddleSeg采用通用的文件列表方式组织训练集、验证集和测试�
 ![cityscapes_filelist](./imgs/file_list.png)
 
 完整的配置信息可以参考[`./dataset/cityscapes_demo`](../dataset/cityscapes_demo/)目录下的yaml和文件列表。
+
+### 文件列表生成
+PaddleSeg提供了生成文件列表的使用脚本，可适用于自定义数据集或cityscapes数据集，并支持通过不同的Flags来开启特定功能。
+```
+python pdseg/tools/create_dataset_list.py <your/dataset/dir> ${FLAGS}
+```
+运行后将在数据集根目录下生成训练/验证/测试集的文件列表（文件主名与`--second_folder`一致，扩展名为`.list`）。
+
+#### 命令行FLAGS列表
+
+|FLAG|用途|默认值|参数数目|
+|-|-|-|-|
+|--type|指定数据集类型，`cityscapes`或`自定义`|`自定义`|1|
+|--separator|文件列表分隔符|'&#124;'|1|
+|--folder|图片和标签集的文件夹名|'images' 'annotations'|2|
+|--second_folder|训练/验证/测试集的文件夹名|'train' 'val' 'test'|若干|
+|--format|图片和标签集的数据格式|'jpg'  'png'|2|
+|--postfix|按文件主名（无扩展名）是否包含指定后缀对图片和标签集进行筛选|''   ''（2个空字符）|2|
+
+#### 使用示例
+- **对于自定义数据集**
+
+如果用户想要生成自己数据集的文件列表，需要整理成如下的目录结构：
+```
+./dataset/   # 数据集根目录
+├── annotations      # 标注目录
+│   ├── test
+│   │   ├── ...
+│   │   └── ...
+│   ├── train
+│   │   ├── ...
+│   │   └── ...
+│   └── val
+│       ├── ...
+│       └── ...
+└── images       # 原图目录
+    ├── test
+    │   ├── ...
+    │   └── ...
+    ├── train
+    │   ├── ...
+    │   └── ...
+    └── val
+        ├── ...
+        └── ...
+Note：以上目录名可任意
+```
+必须指定自定义数据集目录，可以按需要设定FLAG。
+
+**Note:** 无需指定`--type`。
+```
+# 生成文件列表，其分隔符为空格，图片和标签集的数据格式都为png
+python pdseg/tools/create_dataset_list.py <your/dataset/dir> --separator " " --format png png
+```
+```
+# 生成文件列表，其图片和标签集的文件夹名为img和gt，训练和验证集的文件夹名为training和validation，不生成测试集列表
+python pdseg/tools/create_dataset_list.py <your/dataset/dir> \
+        --folder img gt --second_folder training validation
+```
+
+
+- **对于cityscapes数据集**
+
+必须指定cityscapes数据集目录，`--type`必须为`cityscapes`。
+
+在cityscapes类型下，部分FLAG将被重新设定，无需手动指定，具体如下：
+
+|FLAG|固定值|
+|-|-|
+|--folder|'leftImg8bit' 'gtFine'|
+|--format|'png' 'png'|
+|--postfix|'_leftImg8bit' '_gtFine_labelTrainIds'|
+
+其余FLAG可以按需要设定。
+```
+# 生成cityscapes文件列表，其分隔符为逗号
+python pdseg/tools/create_dataset_list.py <your/dataset/dir> --type cityscapes --separator ","
+```

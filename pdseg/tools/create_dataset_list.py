@@ -1,73 +1,144 @@
-#!/usr/bin/python
-# -*- coding: UTF-8 -*-
+# coding: utf8
+# copyright (c) 2019 PaddlePaddle Authors. All Rights Reserve.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 import glob
 import os.path
 import argparse
 
-folder_name = {
-    'image': 'leftImg8bit',
-    'label': 'gtFine',
-}
-
-postfix = {
-    'image': '_leftImg8bit',
-    'label': '_gtFine_labelTrainIds',
-}
-
-data_format = {
-    'image': 'png',
-    'label': 'png',
-}
-
 
 def parse_args():
-    parser = argparse.ArgumentParser(description='PaddleSeg generate file list on cityscapes')
+    parser = argparse.ArgumentParser(
+        description='PaddleSeg generate file list on cityscapes or your customized dataset.')
     parser.add_argument(
-        '--dataset_root',
-        dest='dataset_root',
+        'dataset_root',
         help='dataset root directory',
-        default=None,
-        type=str)
-    parser.add_argument('--file_splitor',
-                        dest='file_splitor',
-                        help='file list splitor',
-                        default=None,
-                        type=str)
+        type=str
+    )
+    parser.add_argument(
+        '--type',
+        help='dataset type: \n'
+             '- cityscapes \n'
+             '- custom(default)',
+        default="custom",
+        type=str
+    )
+    parser.add_argument(
+        '--separator',
+        dest='separator',
+        help='file list separator',
+        default="|",
+        type=str
+    )
+    parser.add_argument(
+        '--folder',
+        help='the folder names of images and labels',
+        type=str,
+        nargs=2,
+        default=['images', 'annotations']
+    )
+    parser.add_argument(
+        '--second_folder',
+        help='the second-level folder names of train set, validation set, test set',
+        type=str,
+        nargs='*',
+        default=['train', 'val', 'test']
+    )
+    parser.add_argument(
+        '--format',
+        help='data format of images and labels, e.g. jpg or png.',
+        type=str,
+        nargs=2,
+        default=['jpg', 'png']
+    )
+    parser.add_argument(
+        '--postfix',
+        help='postfix of images or labels',
+        type=str,
+        nargs=2,
+        default=['', '']
+    )
+
     return parser.parse_args()
+
+
+def cityscape_cfg(args):
+    args.postfix = ['_leftImg8bit', '_gtFine_labelTrainIds']
+
+    args.folder = ['leftImg8bit', 'gtFine']
+
+    args.format = ['png', 'png']
 
 
 def get_files(image_or_label, dataset_split, args):
     dataset_root = args.dataset_root
-    pattern = '*%s.%s' % (postfix[image_or_label], data_format[image_or_label])
-    search_files = os.path.join(
-        dataset_root, folder_name[image_or_label], dataset_split, '*', pattern)
+    postfix = args.postfix
+    format = args.format
+    folder = args.folder
+
+    pattern = '*%s.%s' % (postfix[image_or_label], format[image_or_label])
+
+    search_files = os.path.join(dataset_root, folder[image_or_label],
+                                dataset_split, pattern)
+    search_files2 = os.path.join(dataset_root, folder[image_or_label],
+                                 dataset_split, "*", pattern)  # 包含子目录
+    search_files3 = os.path.join(dataset_root, folder[image_or_label],
+                                 dataset_split, "*", "*", pattern)  # 包含三级目录
+
     filenames = glob.glob(search_files)
+    filenames2 = glob.glob(search_files2)
+    filenames3 = glob.glob(search_files3)
+
+    filenames = filenames + filenames2 + filenames3
+
     return sorted(filenames)
 
 
-def generate_list(dataset_split, args):
+def generate_list(args):
     dataset_root = args.dataset_root
-    file_splitor = args.file_splitor
+    separator = args.separator
 
-    image_files = get_files('image', dataset_split, args)
-    label_files = get_files('label', dataset_split, args)
+    for dataset_split in args.second_folder:
+        print("Creating {}.list...".format(dataset_split))
+        image_files = get_files(0, dataset_split, args)
+        label_files = get_files(1, dataset_split, args)
+        if not image_files:
+            img_dir = os.path.join(dataset_root, args.folder[0], dataset_split)
+            print("No files in {}".format(img_dir))
+            continue
+        elif not label_files:
+            label_dir = os.path.join(dataset_root, args.folder[1], dataset_split)
+            print("No files in {}".format(label_dir))
+            continue
 
-    num_images = len(image_files)
-
-    file_list = os.path.join(dataset_root, dataset_split + '.list')
-    with open(file_list, "w") as f:
-        for item in range(num_images):
-            left = image_files[item].replace(dataset_root, '')
-            if left[0] == os.path.sep:
-                left = left.lstrip(os.path.sep)
-            right = label_files[item].replace(dataset_root, '')
-            if right[0] == os.path.sep:
-                right = right.lstrip(os.path.sep)
-            line = left + file_splitor + right + '\n'
-            f.write(line)
+        num_images = len(image_files)
+        file_list = os.path.join(dataset_root, dataset_split + '.list')
+        with open(file_list, "w") as f:
+            for item in range(num_images):
+                left = image_files[item].replace(dataset_root, '')
+                if left[0] == os.path.sep:
+                    left = left.lstrip(os.path.sep)
+                right = label_files[item].replace(dataset_root, '')
+                if right[0] == os.path.sep:
+                    right = right.lstrip(os.path.sep)
+                line = left + separator + right + '\n'
+                f.write(line)
+                print(line)
 
 
 if __name__ == '__main__':
     args = parse_args()
-    for dataset_split in ['train', 'val', 'test']:
-        generate_list(dataset_split, args)
+    if args.type == 'cityscapes':
+        cityscape_cfg(args)
+    generate_list(args)
