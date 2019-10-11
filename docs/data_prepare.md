@@ -83,7 +83,7 @@ python pdseg/tools/create_dataset_list.py <your/dataset/dir> ${FLAGS}
 |--folder|图片和标签集的文件夹名|'images' 'annotations'|2|
 |--second_folder|训练/验证/测试集的文件夹名|'train' 'val' 'test'|若干|
 |--format|图片和标签集的数据格式|'jpg'  'png'|2|
-|--postfix|按文件主名是否符合指定后缀对图片和标签集进行筛选|''   ''（2个空字符）|2|
+|--postfix|按文件主名（无扩展名）是否包含指定后缀对图片和标签集进行筛选|''   ''（2个空字符）|2|
 
 #### 使用示例
 - **对于自定义数据集**
@@ -113,7 +113,9 @@ python pdseg/tools/create_dataset_list.py <your/dataset/dir> ${FLAGS}
         └── ...
 Note：以上目录名可任意
 ```
-必须指定自定义数据集目录，按需要使用FLAG。**Note:** 无需指定`--type`。
+必须指定自定义数据集目录，可以按需要设定FLAG。
+
+**Note:** 无需指定`--type`。
 ```
 # 生成文件列表，其分隔符为空格，图片和标签集的数据格式都为png
 python pdseg/tools/create_dataset_list.py <your/dataset/dir> --separator " " --format png png
@@ -127,15 +129,17 @@ python pdseg/tools/create_dataset_list.py <your/dataset/dir> \
 
 - **对于cityscapes数据集**
 
-必须指定cityscapes数据集目录和`--type`为`cityscapes`，在cityscapes类型下，部分FLAG的值被重新设定，具体如下：
+必须指定cityscapes数据集目录，`--type`必须为`cityscapes`。
 
-|FLAG|值|
+在cityscapes类型下，部分FLAG将被重新设定，无需手动指定，具体如下：
+
+|FLAG|固定值|
 |-|-|
 |--folder|'leftImg8bit' 'gtFine'|
 |--format|'png' 'png'|
 |--postfix|'_leftImg8bit' '_gtFine_labelTrainIds'|
 
-其余FLAG按需要使用。
+其余FLAG可以按需要设定。
 ```
 # 生成cityscapes文件列表，其分隔符为逗号
 python pdseg/tools/create_dataset_list.py <your/dataset/dir> --type cityscapes --separator ","
