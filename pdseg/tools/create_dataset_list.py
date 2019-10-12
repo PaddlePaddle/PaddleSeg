@@ -110,28 +110,47 @@ def generate_list(args):
     separator = args.separator
 
     for dataset_split in args.second_folder:
-        print("Creating {}.list...".format(dataset_split))
+        print("Creating {}.txt...".format(dataset_split))
         image_files = get_files(0, dataset_split, args)
         label_files = get_files(1, dataset_split, args)
         if not image_files:
             img_dir = os.path.join(dataset_root, args.folder[0], dataset_split)
+            num_images = 0
             print("No files in {}".format(img_dir))
-            continue
-        elif not label_files:
-            label_dir = os.path.join(dataset_root, args.folder[1], dataset_split)
-            print("No files in {}".format(label_dir))
-            continue
+        else:
+            num_images = len(image_files)
 
-        num_images = len(image_files)
-        file_list = os.path.join(dataset_root, dataset_split + '.list')
+        if not label_files:
+            label_dir = os.path.join(dataset_root, args.folder[1], dataset_split)
+            num_label = 0
+            print("No files in {}".format(label_dir))
+        else:
+            num_label = len(label_files)
+
+        if num_images == num_label:
+            num = num_images
+        else:
+            print("number of images = {} and number of labels = {} are not equal."
+                  .format(num_images, num_label))
+            num = max(num_images, num_label)
+
+        file_list = os.path.join(dataset_root, dataset_split + '.txt')
         with open(file_list, "w") as f:
-            for item in range(num_images):
-                left = image_files[item].replace(dataset_root, '')
-                if left[0] == os.path.sep:
-                    left = left.lstrip(os.path.sep)
-                right = label_files[item].replace(dataset_root, '')
-                if right[0] == os.path.sep:
-                    right = right.lstrip(os.path.sep)
+            for item in range(num):
+                try:
+                    left = image_files[item].replace(dataset_root, '')
+                    if left[0] == os.path.sep:
+                        left = left.lstrip(os.path.sep)
+                except:
+                    left = ''
+
+                try:
+                    right = label_files[item].replace(dataset_root, '')
+                    if right[0] == os.path.sep:
+                        right = right.lstrip(os.path.sep)
+                except:
+                    right = ''
+
                 line = left + separator + right + '\n'
                 f.write(line)
                 print(line)
