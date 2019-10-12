@@ -149,6 +149,8 @@ cfg.SOLVER.WEIGHT_DECAY = 0.00004
 cfg.SOLVER.BEGIN_EPOCH = 1
 # 训练epoch数，正整数
 cfg.SOLVER.NUM_EPOCHS = 30
+# loss的选择，支持softmax_loss, bce_loss, dice_loss
+cfg.SOLVER.LOSS = ["softmax_loss"]
 
 ########################## 测试配置 ###########################################
 # 测试模型路径
