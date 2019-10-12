@@ -65,6 +65,15 @@ PaddleSeg采用通用的文件列表方式组织训练集、验证集和测试�
 
 ![cityscapes_filelist](./imgs/file_list.png)
 
+若数据集缺少标注图片，则文件列表不用包含分隔符和标注图片路径，如下图所示。
+
+**注意事项**
+
+此时的文件列表仅可在调用`pdseg/vis.py`进行可视化展示时使用，
+即仅可在`DATASET.TEST_FILE_LIST`和`DATASET.VIS_FILE_LIST`配置项中使用。
+不可在`DATASET.TRAIN_FILE_LIST`和`DATASET.VAL_FILE_LIST`配置项中使用。
+![cityscapes_filelist](./imgs/file_list2.png)
+
 完整的配置信息可以参考[`./dataset/cityscapes_demo`](../dataset/cityscapes_demo/)目录下的yaml和文件列表。
 
 ### 文件列表生成
@@ -72,7 +81,9 @@ PaddleSeg提供了生成文件列表的使用脚本，可适用于自定义数�
 ```
 python pdseg/tools/create_dataset_list.py <your/dataset/dir> ${FLAGS}
 ```
-运行后将在数据集根目录下生成训练/验证/测试集的文件列表（文件主名与`--second_folder`一致，扩展名为`.list`）。
+运行后将在数据集根目录下生成训练/验证/测试集的文件列表（文件主名与`--second_folder`一致，扩展名为`.txt`）。
+
+**Note:** 若训练/验证/测试集缺少标注图片，仍可自动生成不含分隔符和标注图片路径的文件列表。
 
 #### 命令行FLAGS列表
 
