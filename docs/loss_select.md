@@ -22,10 +22,11 @@ dice loss是对分割评价指标优化的损失函数，是一种二分类的�
 
 ![equation](http://latex.codecogs.com/gif.latex?dice\\_loss=1-\frac{2|Y\bigcap{P}|}{|Y|+|P|}) 
 
-其中 ![equation](http://latex.codecogs.com/gif.latex?|Y\bigcap P|) 表示*Y*和*P*的共有元素数，
+其中 ![equation](http://latex.codecogs.com/gif.latex?|Y\bigcap{P}|) 表示*Y*和*P*的共有元素数，
 实际计算通过求两者的乘积之和进行计算。如下所示：
+
 <p align="center">
-  <img src="../imgs/dice1.png" hspace='10' height="68" width="513"/> <br />
+  <img src="./imgs/dice1.png" hspace='10' height="68" width="513"/> <br />
  </p>
 
 [dice系数](https://zh.wikipedia.org/wiki/Dice%E7%B3%BB%E6%95%B0)
