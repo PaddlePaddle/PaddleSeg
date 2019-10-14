@@ -66,13 +66,14 @@ PaddleSeg采用通用的文件列表方式组织训练集、验证集和测试�
 ![cityscapes_filelist](./imgs/file_list.png)
 
 若数据集缺少标注图片，则文件列表不用包含分隔符和标注图片路径，如下图所示。
+![cityscapes_filelist](./imgs/file_list2.png)
 
 **注意事项**
 
 此时的文件列表仅可在调用`pdseg/vis.py`进行可视化展示时使用，
 即仅可在`DATASET.TEST_FILE_LIST`和`DATASET.VIS_FILE_LIST`配置项中使用。
 不可在`DATASET.TRAIN_FILE_LIST`和`DATASET.VAL_FILE_LIST`配置项中使用。
-![cityscapes_filelist](./imgs/file_list2.png)
+
 
 完整的配置信息可以参考[`./dataset/cityscapes_demo`](../dataset/cityscapes_demo/)目录下的yaml和文件列表。
 
