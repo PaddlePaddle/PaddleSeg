@@ -157,8 +157,12 @@ def build_model(main_prog, start_prog, phase=ModelPhase.TRAIN):
                 image = fluid.layers.cast(image, "float16")
             model_name = map_model_name(cfg.MODEL.MODEL_NAME)
             model_func = get_func("modeling." + model_name)
-            
+
             loss_type = cfg.SOLVER.LOSS
+
+            if class_num > 2 and (("dice_loss" in loss_type) or ("bce_loss" in loss_type)):
+                raise Exception("dice loss and bce loss is only applicable to binary classfication")
+            
             if ("dice_loss" in loss_type) or ("bce_loss" in loss_type):
                 class_num = 1
                 if "softmax_loss" in loss_type:
