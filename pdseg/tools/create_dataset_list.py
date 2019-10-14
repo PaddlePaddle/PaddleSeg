@@ -16,6 +16,7 @@
 import glob
 import os.path
 import argparse
+import warnings
 
 
 def parse_args():
@@ -110,29 +111,39 @@ def generate_list(args):
     separator = args.separator
 
     for dataset_split in args.second_folder:
-        print("Creating {}.list...".format(dataset_split))
+        print("Creating {}.txt...".format(dataset_split))
         image_files = get_files(0, dataset_split, args)
         label_files = get_files(1, dataset_split, args)
         if not image_files:
             img_dir = os.path.join(dataset_root, args.folder[0], dataset_split)
             print("No files in {}".format(img_dir))
-            continue
-        elif not label_files:
+        num_images = len(image_files)
+
+        if not label_files:
             label_dir = os.path.join(dataset_root, args.folder[1], dataset_split)
             print("No files in {}".format(label_dir))
+        num_label = len(label_files)
+
+        if num_images < num_label:
+            warnings.warn("number of images = {}  <  number of labels = {}."
+                          .format(num_images, num_label))
             continue
 
-        num_images = len(image_files)
-        file_list = os.path.join(dataset_root, dataset_split + '.list')
+        file_list = os.path.join(dataset_root, dataset_split + '.txt')
         with open(file_list, "w") as f:
             for item in range(num_images):
                 left = image_files[item].replace(dataset_root, '')
                 if left[0] == os.path.sep:
                     left = left.lstrip(os.path.sep)
-                right = label_files[item].replace(dataset_root, '')
-                if right[0] == os.path.sep:
-                    right = right.lstrip(os.path.sep)
-                line = left + separator + right + '\n'
+
+                try:
+                    right = label_files[item].replace(dataset_root, '')
+                    if right[0] == os.path.sep:
+                        right = right.lstrip(os.path.sep)
+                    line = left + separator + right + '\n'
+                except:
+                    line = left + '\n'
+
                 f.write(line)
                 print(line)
 
