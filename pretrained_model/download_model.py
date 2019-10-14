@@ -45,6 +45,10 @@ model_urls = {
     "https://paddleseg.bj.bcebos.com/models/xception65_coco.tgz",
     "unet_bn_coco":
     "https://paddleseg.bj.bcebos.com/models/unet_coco_v3.tgz",
+    "pspnet50_bn_coco":
+    "https://paddleseg.bj.bcebos.com/models/pspnet50_coco.tgz",
+    "pspnet101_bn_coco":
+    "https://paddleseg.bj.bcebos.com/models/pspnet101_coco.tgz",
 
     # Cityscapes pretrained
     "deeplabv3p_mobilenetv2-1-0_bn_cityscapes":
@@ -58,7 +62,9 @@ model_urls = {
     "icnet_bn_cityscapes":
     "https://paddleseg.bj.bcebos.com/models/icnet_cityscapes.tar.gz",
     "pspnet50_bn_cityscapes":
-    "https://paddleseg.bj.bcebos.com/models/pspnet50_cityscapes.tgz"
+    "https://paddleseg.bj.bcebos.com/models/pspnet50_cityscapes.tgz",
+    "pspnet101_bn_cityscapes":
+    "https://paddleseg.bj.bcebos.com/models/pspnet101_cityscapes.tgz",
 }
 
 if __name__ == "__main__":
