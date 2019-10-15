@@ -49,8 +49,6 @@ class SegDataset(object):
         self.shuffle = shuffle
         self.data_dir = data_dir
 
-        # self.trainer_id = int(os.getenv("PADDLE_TRAINER_ID", 0))
-        # self.num_trainers = int(os.environ.get('PADDLE_TRAINERS_NUM', 1))
         self.shuffle_seed = 0
         # NOTE: Please ensure file list was save in UTF-8 coding format
         with codecs.open(file_list, 'r', 'utf-8') as flist:
@@ -64,8 +62,6 @@ class SegDataset(object):
     def generator(self):
         if self.shuffle and cfg.NUM_TRAINERS > 1:
             np.random.RandomState(self.shuffle_seed).shuffle(self.all_lines)
-            # print('shuffled lines')
-            # print(self.all_lines[:5])
             num_lines = len(self.all_lines) // cfg.NUM_TRAINERS
             self.lines = self.all_lines[num_lines * cfg.TRAINER_ID: num_lines * (cfg.TRAINER_ID + 1)]
             self.shuffle_seed += 1
@@ -94,15 +90,12 @@ class SegDataset(object):
         # Re-shuffle file list
         if self.shuffle and cfg.NUM_TRAINERS > 1:
             np.random.RandomState(self.shuffle_seed).shuffle(self.all_lines)
-            # print('shuffled lines')
-            # print(self.all_lines[:5])
             num_lines = len(self.all_lines) // self.num_trainers
             self.lines = self.all_lines[num_lines * self.trainer_id: num_lines * (self.trainer_id + 1)]
             self.shuffle_seed += 1
         elif self.shuffle:
             np.random.shuffle(self.lines)
-        # if self.shuffle:
-        #     np.random.shuffle(self.lines)
+
         # Create multiple sharding generators according to num_processes for multiple processes
         generators = []
         for pid in range(num_processes):

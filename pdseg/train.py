@@ -270,7 +270,7 @@ def train(cfg):
         begin_epoch = load_checkpoint(exe, train_prog)
     # Load pretrained model
     elif os.path.exists(cfg.TRAIN.PRETRAINED_MODEL_DIR):
-        print_info('Pretrained model dir: ' + cfg.TRAIN.PRETRAINED_MODEL_DIR)
+        print_info('Pretrained model dir: ', cfg.TRAIN.PRETRAINED_MODEL_DIR)
         load_vars = []
         load_fail_vars = []
 
