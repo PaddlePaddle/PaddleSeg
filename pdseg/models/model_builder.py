@@ -140,8 +140,7 @@ def build_model(main_prog, start_prog, phase=ModelPhase.TRAIN):
                     capacity=cfg.DATALOADER.BUF_SIZE,
                     iterable=False,
                     use_double_buffer=True)
-            if cfg.MODEL.FP16:
-                image = fluid.layers.cast(image, "float16")
+
             model_name = map_model_name(cfg.MODEL.MODEL_NAME)
             model_func = get_func("modeling." + model_name)
             logits = model_func(image, class_num)
@@ -165,8 +164,8 @@ def build_model(main_prog, start_prog, phase=ModelPhase.TRAIN):
                 return image, logit
 
             out = fluid.layers.transpose(x=logit, perm=[0, 2, 3, 1])
-            if cfg.MODEL.FP16:
-                out = fluid.layers.cast(out, 'float32')
+            # if cfg.MODEL.FP16:
+            #     out = fluid.layers.cast(out, 'float32')
             pred = fluid.layers.argmax(out, axis=3)
             pred = fluid.layers.unsqueeze(pred, axes=[3])
 

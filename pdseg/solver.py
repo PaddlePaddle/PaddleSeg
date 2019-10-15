@@ -18,7 +18,7 @@ import paddle.fluid as fluid
 import numpy as np
 import importlib
 from utils.config import cfg
-from paddle.fluid.contrib.mixed_precision.decorator import OptimizerWithMixedPrecison, decorate
+from paddle.fluid.contrib.mixed_precision.decorator import OptimizerWithMixedPrecison, decorate, AutoMixedPrecisionLists
 
 
 class Solver(object):
@@ -74,15 +74,22 @@ class Solver(object):
                 regularization_coeff=self.weight_decay),
         )
         if cfg.MODEL.FP16:
+            if cfg.MODEL.MODEL_NAME in ["pspnet"]:
+                custom_black_list = {"pool2d"}
+            else:
+                custom_black_list = {}
+            amp_lists = AutoMixedPrecisionLists(custom_black_list=custom_black_list)
+            assert isinstance(cfg.MODEL.SCALE_LOSS, float) or isinstance(cfg.MODEL.SCALE_LOSS, str), \
+                "data type of MODEL.SCALE_LOSS must be float or str"
             if isinstance(cfg.MODEL.SCALE_LOSS, float):
-                mp_optimizer = decorate(optimizer, init_loss_scaling=cfg.MODEL.SCALE_LOSS,
+                optimizer = decorate(optimizer, amp_lists=amp_lists, init_loss_scaling=cfg.MODEL.SCALE_LOSS,
                                         use_dynamic_loss_scaling=False)
             else:
-                mp_optimizer = decorate(optimizer, use_dynamic_loss_scaling=True)
-            mp_optimizer.minimize(loss)
-            #scaled_loss = mp_optimizer.get_loss_scaling()
-        else:
-            optimizer.minimize(loss)
+                assert cfg.MODEL.SCALE_LOSS.lower() in ['dynamic'], "if MODEL.SCALE_LOSS is a string,\
+                 must be set as 'DYNAMIC'!"
+                optimizer = decorate(optimizer, amp_lists=amp_lists, use_dynamic_loss_scaling=True)
+
+        optimizer.minimize(loss)
         return decayed_lr
 
     def adam_optimizer(self, lr_policy, loss):

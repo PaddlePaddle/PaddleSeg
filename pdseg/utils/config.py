@@ -31,7 +31,10 @@ cfg.BATCH_SIZE = 1
 cfg.EVAL_CROP_SIZE = tuple()
 # 训练时图像裁剪尺寸（宽，高）
 cfg.TRAIN_CROP_SIZE = tuple()
-
+# 多进程训练总进程数
+cfg.NUM_TRAINERS = 1
+# 多进程训练进程ID
+cfg.TRAINER_ID = 0
 ########################## 数据载入配置 #######################################
 # 数据载入时的并发数, 建议值8
 cfg.DATALOADER.NUM_WORKERS = 8
@@ -169,8 +172,8 @@ cfg.MODEL.DEFAULT_EPSILON = 1e-5
 cfg.MODEL.BN_MOMENTUM = 0.99
 # 是否使用FP16训练
 cfg.MODEL.FP16 = False
-# FP16需对LOSS进行scale, 一般训练FP16设置为8.0
-cfg.MODEL.SCALE_LOSS = 1.0
+# 混合精度训练需对LOSS进行scale, 默认为动态scale，静态scale可以设置为512.0
+cfg.MODEL.SCALE_LOSS = "DYNAMIC"
 
 ########################## DeepLab模型配置 ####################################
 # DeepLab backbone 配置, 可选项xception_65, mobilenetv2
