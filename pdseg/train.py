@@ -249,9 +249,8 @@ def train(cfg):
 
     if cfg.NUM_TRAINERS > 1 and args.use_gpu:
         dist_utils.prepare_for_multi_process(exe, build_strategy, train_prog)
-        # NOTE: the process is fast when num_threads is 1
-        # for multi-process training.
         exec_strategy.num_threads = 1
+
     if cfg.TRAIN.SYNC_BATCH_NORM and args.use_gpu:
         if dev_count > 1:
             # Apply sync batch norm strategy
