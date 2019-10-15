@@ -29,6 +29,7 @@ def softmax_with_loss(logit, label, ignore_mask=None, num_classes=2):
     label = fluid.layers.reshape(label, [-1, 1])
     label = fluid.layers.cast(label, 'int64')
     ignore_mask = fluid.layers.reshape(ignore_mask, [-1, 1])
+
     loss, probs = fluid.layers.softmax_with_cross_entropy(
         logit,
         label,
@@ -36,14 +37,8 @@ def softmax_with_loss(logit, label, ignore_mask=None, num_classes=2):
         return_softmax=True)
 
     loss = loss * ignore_mask
-    if cfg.MODEL.FP16:
-        loss = fluid.layers.cast(loss, 'float32')
-        avg_loss = fluid.layers.mean(loss) / fluid.layers.mean(ignore_mask)
-        avg_loss = fluid.layers.cast(avg_loss, 'float16')
-    else:
-        avg_loss = fluid.layers.mean(loss) / fluid.layers.mean(ignore_mask)
-    if cfg.MODEL.SCALE_LOSS > 1.0:
-        avg_loss = avg_loss * cfg.MODEL.SCALE_LOSS
+    avg_loss = fluid.layers.mean(loss) / fluid.layers.mean(ignore_mask)
+
     label.stop_gradient = True
     ignore_mask.stop_gradient = True
     return avg_loss
