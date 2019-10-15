@@ -61,7 +61,7 @@ PaddleSeg支持多进程IO、多卡并行、跨卡Batch Norm同步等训练加�
 
 * [PaddleSeg的数据增强](./docs/data_aug.md)
 * [特色垂类模型使用](./contrib)
-* [多进程训练和半精度训练](./docs/multiple_gpus_train_and_mixed_precision_train.md)
+* [多进程训练和混合精度训练](./docs/multiple_gpus_train_and_mixed_precision_train.md)
 
 </br>
 
