@@ -5,13 +5,13 @@
 根据数据集的情况选择合适的损失函数能够明显的改善分割结果。例如对于DeepGlobe Road Extraction数据集，
 道路占比仅为4.5%，类别严重不平衡，这时候使用softmax_loss，背景将会占据主导地位，使得模型偏向于背景。
 而dice_loss通过计算预测与标注之间的重叠部分计算损失函数，避免了类别不均衡带来的影响，能够取得更好的效果。
-在实际应用中dice loss往往与bce loss结合使用，提高模型训练的稳定性。
+在实际应用中dice_loss往往与bce_loss结合使用，提高模型训练的稳定性。
 DeepGlobe Road Extraction的训练集中，随机选取800张图片作为训练数据，选取200张作为评估数据，对softmax_loss
-和dice_loss + bce loss进行实验比较，如下图所示:
+和dice_loss + bce_loss进行实验比较，如下图所示:
 <p align="center">
   <img src="./imgs/loss_comparison.png" hspace='10' height="208" width="516"/> <br />
  </p>
-图中橙色曲线为dice_loss + bce loss，最高mIoU为76.02%，蓝色曲线为softmax_loss， 最高mIoU为73.62%。
+图中橙色曲线为dice_loss + bce_loss，最高mIoU为76.02%，蓝色曲线为softmax_loss， 最高mIoU为73.62%。
 
 ## loss的指定
 通过cfg.SOLVER.LOSS参数可以选择训练时的损失函数，目前支持`softmax_loss(sotfmax with cross entroy loss)`, 
