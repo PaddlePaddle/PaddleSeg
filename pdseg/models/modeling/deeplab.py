@@ -26,7 +26,6 @@ from models.libs.model_libs import conv
 from models.libs.model_libs import separate_conv
 from models.backbone.mobilenet_v2 import MobileNetV2 as mobilenet_backbone
 from models.backbone.xception import Xception as xception_backbone
-from models.backbone.resnet import ResNet as resnet_backbone
 
 def encoder(input):
     # 编码器配置，采用ASPP架构，pooling + 1x1_conv + 三个不同尺度的空洞卷积并行, concat后1x1conv
