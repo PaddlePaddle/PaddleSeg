@@ -50,8 +50,6 @@ def encoder(input):
         with scope("image_pool"):
             image_avg = fluid.layers.reduce_mean(
                 input, [2, 3], keep_dim=True)
-            # image_avg = fluid.layers.pool2d(
-            #     input, pool_type='avg', global_pooling=True)
             image_avg = bn_relu(
                 conv(
                     image_avg,
