@@ -1,40 +1,23 @@
-# loss的选择
+# dice loss解决二分类中样本不均衡问题
 
-在PaddleSeg中，目前支持`softmax_loss(sotfmax with cross entroy loss)`, 
-`dice_loss(dice coefficient loss)`, `bce_loss(binary cross entroy loss)`三种损失函数。
-根据数据集的情况选择合适的损失函数能够明显的改善分割结果。例如对于DeepGlobe Road Extraction数据集，
-道路占比仅为4.5%，类别严重不平衡，这时候使用softmax_loss，背景将会占据主导地位，使得模型偏向于背景。
-而dice_loss通过计算预测与标注之间的重叠部分计算损失函数，避免了类别不均衡带来的影响，能够取得更好的效果。
-在实际应用中dice_loss往往与bce_loss结合使用，提高模型训练的稳定性。
-DeepGlobe Road Extraction的训练集中，随机选取800张图片作为训练数据，选取200张作为评估数据，对softmax_loss
-和dice_loss + bce_loss进行实验比较，如下图所示:
+对于二类图像分割任务中，往往存在类别分布不均的情况，如：瑕疵检测，道路提取及病变区域提取等等。
+在DeepGlobe比赛的Road Extraction中，训练数据道路占比为：%4.5。如下为其图片样例：
 <p align="center">
-  <img src="./imgs/loss_comparison.png" hspace='10' height="208" width="516"/> <br />
+  <img src="./imgs/deepglobe.png" hspace='10'/> <br />
  </p>
-图中橙色曲线为dice_loss + bce_loss，最高mIoU为76.02%，蓝色曲线为softmax_loss， 最高mIoU为73.62%。
+可以看出道路在整张图片中的比例很小。
+ 
+## 数据集下载
+我们从DeepGlobe比赛的Road Extraction的训练集中随机抽取了800张图片作为训练集，200张图片作为验证集，
+制作了一个小型的道路提取数据集[MiniDeepGlobeRoadExtraction](https://paddleseg.bj.bcebos.com/dataset/MiniDeepGlobeRoadExtraction.zip)
 
-## loss的指定
-通过cfg.SOLVER.LOSS参数可以选择训练时的损失函数，目前支持`softmax_loss(sotfmax with cross entroy loss)`, 
-`dice_loss(dice coefficient loss)`, `bce_loss(binary cross entroy loss)`三种损失函数。
-其中`dice_loss`和`bce_loss`仅在两类分割问题中适用，`softmax_loss`不能与`dice_loss`
-或`bce_loss`组合，`dice_loss`可以和`bce_loss`组合使用。使用示例如下：
+## softmax loss与dice loss
 
-`['softmax_loss']`或`['dice_loss','bce_loss']`
+在图像分割中，softmax loss(sotfmax with cross entroy loss)同等的对待每一像素，因此当背景占据绝大部分的情况下，
+网络将偏向于背景的学习，使网络对目标的提取能力变差。`dice loss(dice coefficient loss)`通过计算预测与标注之间的重叠部分计算损失函数，避免了类别不均衡带来的影响，能够取得更好的效果。
+在实际应用中`dice loss`往往与`bce loss(binary cross entroy loss)`结合使用，提高模型训练的稳定性。
 
-## loss的定义
-
-* softmax_loss
-
-多分类交叉熵损失函数，公式如下所示：
-
-![equation](http://latex.codecogs.com/gif.latex?softmax\\_loss=\sum_{i=1}^Ny_i{log(p_i)}) 
-
-<br/>
-
-* dice_loss
-
-dice loss是对分割评价指标优化的损失函数，是一种二分类的损失函数，在前景背景比例严重不平衡的情况下往往能取到较好的效果。
-在实际应用中dice loss往往与bce loss结合使用，提高模型训练的稳定性
+dice loss的定义如下：
 
 ![equation](http://latex.codecogs.com/gif.latex?dice\\_loss=1-\frac{2|Y\bigcap{P}|}{|Y|+|P|}) 
 
@@ -45,20 +28,50 @@ dice loss是对分割评价指标优化的损失函数，是一种二分类的�
   <img src="./imgs/dice1.png" hspace='10' height="68" width="513"/> <br />
  </p>
 
-[dice系数](https://zh.wikipedia.org/wiki/Dice%E7%B3%BB%E6%95%B0)
+[dice系数详解](https://zh.wikipedia.org/wiki/Dice%E7%B3%BB%E6%95%B0)
 
-<br/>
-<br/>
+## PaddleSeg指定训练loss
 
-* bce_loss
+PaddleSeg通过`cfg.SOLVER.LOSS`参数可以选择训练时的损失函数，
+如`cfg.SOLVER.LOSS=['dice_loss','bce_loss']`将指定训练loss为`dice loss`与`bce loss`的组合
 
-二分类用的交叉熵损失函数，公式如下所示：
+## 实验比较
 
-![equation](http://latex.codecogs.com/gif.latex?bce\\_loss=y_i{log(p_i)}+(1-y_i)log(1-p_i))
+在MiniDeepGlobeRoadExtraction数据集进行了实验比较。
 
-其中![equation](http://latex.codecogs.com/gif.latex?y_i)和*Y*为标签，
- ![equation](http://latex.codecogs.com/gif.latex?p_i)和*P*为预测结果
+* 数据集下载
+```shell
+python dataset/download_mini_deepglobe_road_extraction.py
+```
 
-## 默认值
+* 预训练模型下载
+```shell
+python pretrained_model/download_model.py deeplabv3p_mobilenetv2-1-0_bn_coco
+```
+* 配置/数据校验
+```shell
+python pdseg/check.py --cfg ./configs/deepglobe_road_extraction.yaml
+```
 
-['softmax_loss']
+* 训练
+```shell
+python pdseg/train.py --cfg ./configs/deepglobe_road_extraction.yaml --use_gpu SOLVER.LOSS ['dice_loss','bce_loss']
+
+```
+
+* 评估
+```
+python pdseg/eval.py --cfg ./configs/deepglobe_road_extraction.yaml --use_gpu SOLVER.LOSS ['dice_loss','bce_loss']
+
+```
+
+* 结果比较
+
+softmax loss和dice loss + bce loss实验结果如下图所示。
+图中橙色曲线为dice loss + bce loss，最高mIoU为76.02%，蓝色曲线为softmax loss， 最高mIoU为73.62%。
+<p align="center">
+  <img src="./imgs/loss_comparison.png" hspace='10' height="208" width="516"/> <br />
+ </p>
+
+ 
+
