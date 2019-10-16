@@ -132,27 +132,6 @@ L2正则化系数
 
 `['softmax_loss']`或`['dice_loss','bce_loss']`
 
-* softmax_loss
-
-![equation](http://latex.codecogs.com/gif.latex?softmax\\_loss=\sum_{i=1}^Ny_i{log(p_i)}) 
-
-<br/>
-
-* dice_loss
-
-![equation](http://latex.codecogs.com/gif.latex?dice\\_loss=1-\frac{2|Y\bigcap{P}|}{|Y|\bigcup|P|}) 
-
-[dice系数](https://zh.wikipedia.org/wiki/Dice%E7%B3%BB%E6%95%B0)
-
-<br/>
-
-* bce_loss
-
-![equation](http://latex.codecogs.com/gif.latex?bce\\_loss=y_i{log(p_i)}+(1-y_i)log(1-p_i))
-
-其中![equation](http://latex.codecogs.com/gif.latex?y_i)和*Y*为标签，
- ![equation](http://latex.codecogs.com/gif.latex?p_i)和*P*为预测结果
-
 ### 默认值
 
 ['softmax_loss']
