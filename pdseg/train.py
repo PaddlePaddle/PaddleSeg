@@ -462,7 +462,7 @@ def main(args):
     cfg.TRAINER_ID = int(os.getenv("PADDLE_TRAINER_ID", 0))
     cfg.NUM_TRAINERS = int(os.environ.get('PADDLE_TRAINERS_NUM', 1))
 
-    cfg.check_and_infer(reset_dataset=True)
+    cfg.check_and_infer()
     print_info(pprint.pformat(cfg))
     train(cfg)
 
