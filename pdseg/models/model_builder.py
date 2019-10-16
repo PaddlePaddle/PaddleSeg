@@ -173,20 +173,29 @@ def build_model(main_prog, start_prog, phase=ModelPhase.TRAIN):
             if ModelPhase.is_train(phase) or ModelPhase.is_eval(phase):
                 loss_valid = False
                 avg_loss_list = []
+                valid_loss = []
                 if "softmax_loss" in loss_type: 
                     avg_loss_list.append(multi_softmax_with_loss(logits,
                         label, mask,class_num))
                     loss_valid = True
+                    valid_loss.append("softmax_loss")
                 if "dice_loss" in loss_type:
                     avg_loss_list.append(multi_dice_loss(logits, label, mask))
                     loss_valid = True
+                    valid_loss.append("dice_loss")
                 if "bce_loss" in loss_type:
                     avg_loss_list.append(multi_bce_loss(logits, label, mask))
                     loss_valid = True
+                    valid_loss.append("bce_loss")
                 if not loss_valid:
                     raise Exception("SOLVER.LOSS: {} is set wrong. it should "
                             "include one of (softmax_loss, bce_loss, dice_loss) at least"
                             " example: ['softmax_loss'], ['dice_loss'], ['bce_loss', 'dice_loss']".format(cfg.SOLVER.LOSS))
+                
+                invalid_loss = [x for x in loss_type if x not in valid_loss]
+                if len(invalid_loss) > 0:
+                    print("Warning: the loss {} you set is invalid. it will not be included in loss computed.".format(invalid_loss))
+
                 avg_loss = 0
                 for i in range(0, len(avg_loss_list)):
                     avg_loss += avg_loss_list[i]
