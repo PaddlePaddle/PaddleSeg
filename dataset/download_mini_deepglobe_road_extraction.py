@@ -22,12 +22,12 @@ sys.path.append(TEST_PATH)
 from test_utils import download_file_and_uncompress
 
 
-def download_cityscapes_dataset(savepath, extrapath):
+def download_deepglobe_road_dataset(savepath, extrapath):
     url = "https://paddleseg.bj.bcebos.com/dataset/MiniDeepGlobeRoadExtraction.zip"
     download_file_and_uncompress(
         url=url, savepath=savepath, extrapath=extrapath)
 
 
 if __name__ == "__main__":
-    download_cityscapes_dataset(LOCAL_PATH, LOCAL_PATH)
+    download_deepglobe_road_dataset(LOCAL_PATH, LOCAL_PATH)
     print("Dataset download finish!")
