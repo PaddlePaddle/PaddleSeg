@@ -59,7 +59,7 @@ LableMe产出的真值文件可参考我们给出的文件夹`data_annotated`。
  对于中间有空洞的目标的标注方法：在标注完目标轮廓后，再沿空洞区域边缘画多边形，并将其指定为其他类别，如果是背景则指定为`_background_`。如下：
  
  <div align="center">
-    <img src="../imgs/annotation/image-10.png" width="600px"/>
+    <img src="../imgs/annotation/image-10.jpg" width="600px"/>
     <p>图6 带空洞目标的标注示意图</p>
  </div>
 
