@@ -53,6 +53,15 @@ LableMe产出的真值文件可参考我们给出的文件夹`data_annotated`。
     <img src="../imgs/annotation/image-5.png" width="600px"/>
     <p>图5 LableMe产出的真值文件的示意图</p>
  </div>
+ 
+ **Note：**
+ 
+ 对于中间有空洞的目标的标注方法：在标注完目标轮廓后，再沿空洞区域边缘画多边形，并将其指定为其他类别，如果是背景则指定为`_background_`。如下：
+ 
+ <div align="center">
+    <img src="../imgs/annotation/image-10.png" width="600px"/>
+    <p>图6 带空洞目标的标注示意图</p>
+ </div>
 
  ## 3 数据格式转换
 
@@ -70,7 +79,7 @@ LableMe产出的真值文件可参考我们给出的文件夹`data_annotated`。
 
 <div align="center">
     <img src="../imgs/annotation/image-6.png" width="600px"/>
-    <p>图6 训练所需的数据集目录的结构示意图</p>
+    <p>图7 训练所需的数据集目录的结构示意图</p>
  </div>
 
 * 运行转换脚本需要依赖labelme和pillow，如未安装，请先安装。Labelme的具体安装流程请参见[官方安装指南](https://github.com/wkentaro/labelme)。Pillow的安装：
@@ -91,5 +100,5 @@ pip install pillow
 
 <div align="center">
     <img src="../imgs/annotation/image-7.png" width="600px"/>
-    <p>图7 训练所需的数据集各目录的内容示意图</p>
+    <p>图8 训练所需的数据集各目录的内容示意图</p>
  </div>	
