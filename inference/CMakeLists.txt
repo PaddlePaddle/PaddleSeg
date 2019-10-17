@@ -240,3 +240,5 @@ if (WIN32)
         COMMAND ${CMAKE_COMMAND} -E copy_if_different ${PADDLE_DIR}/third_party/install/mkldnn/lib/mkldnn.dll ./mkldnn.dll
     )
 endif()
+
+execute_process(COMMAND cp -r ${CMAKE_SOURCE_DIR}/images ${CMAKE_SOURCE_DIR}/conf ${CMAKE_CURRENT_BINARY_DIR})
