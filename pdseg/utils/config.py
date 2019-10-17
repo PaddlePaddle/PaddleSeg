@@ -149,6 +149,8 @@ cfg.SOLVER.WEIGHT_DECAY = 0.00004
 cfg.SOLVER.BEGIN_EPOCH = 1
 # 训练epoch数，正整数
 cfg.SOLVER.NUM_EPOCHS = 30
+# loss的选择，支持softmax_loss, bce_loss, dice_loss
+cfg.SOLVER.LOSS = ["softmax_loss"]
 
 ########################## 测试配置 ###########################################
 # 测试模型路径
@@ -201,7 +203,7 @@ cfg.MODEL.ICNET.LAYERS = 50
 ########################## PSPNET模型配置 ######################################
 # RESNET backbone scale 设置
 cfg.MODEL.PSPNET.DEPTH_MULTIPLIER = 1
-# RESNET 层数 设置 50或101
+# RESNET backbone 层数 设置
 cfg.MODEL.PSPNET.LAYERS = 50
 
 ########################## 预测部署模型配置 ###################################
