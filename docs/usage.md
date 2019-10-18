@@ -26,7 +26,7 @@ python pdseg/train.py BATCH_SIZE 1 --cfg configs/cityscapes.yaml
 |-|-|-|-|-|
 |--cfg|ALL|配置文件路径|None||
 |--use_gpu|ALL|是否使用GPU进行训练|False||
-|--use_mpio|train/eval|是否使用多线程进行IO处理|False|打开该开关会占用一定量的CPU内存，但是可以提高训练速度。</br> **NOTE：** windows平台下不支持该功能, 建议使用自定义数据初次训练时不打开，打开会导致数据读取异常不可见。 </br> |
+|--use_mpio|train/eval|是否使用多进程进行IO处理|False|打开该开关会占用一定量的CPU内存，但是可以提高训练速度。</br> **NOTE：** windows平台下不支持该功能, 建议使用自定义数据初次训练时不打开，打开会导致数据读取异常不可见。 </br> |
 |--use_tb|train|是否使用TensorBoard记录训练数据|False||
 |--log_steps|train|训练日志的打印周期（单位为step）|10||
 |--debug|train|是否打印debug信息|False|IOU等指标涉及到混淆矩阵的计算，会降低训练速度|
