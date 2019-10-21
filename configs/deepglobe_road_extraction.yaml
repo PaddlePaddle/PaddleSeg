@@ -32,7 +32,7 @@ MODEL:
         ENCODER_WITH_ASPP: False
         ENABLE_DECODER: False
 TEST: 
-    TEST_MODEL: "./saved_model/deeplabv3p_mobilenetv2-1-0_bn_deepglobe_road_extraction/"
+    TEST_MODEL: "./saved_model/deeplabv3p_mobilenetv2-1-0_bn_deepglobe_road_extraction/final"
 TRAIN:
     MODEL_SAVE_DIR: "./saved_model/deeplabv3p_mobilenetv2-1-0_bn_deepglobe_road_extraction/"
     PRETRAINED_MODEL_DIR: "./pretrained_model/deeplabv3p_mobilenetv2-1-0_bn_coco/"
