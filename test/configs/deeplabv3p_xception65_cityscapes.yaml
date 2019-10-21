@@ -31,10 +31,10 @@ MODEL:
         ASPP_WITH_SEP_CONV: True
         DECODER_USE_SEP_CONV: True
 TEST:
-    TEST_MODEL: "snapshots/cityscape_v5/final/"
+    TEST_MODEL: "./saved_model/cityscape_v5/final/"
 TRAIN:
-    MODEL_SAVE_DIR: "snapshots/cityscape_v5/"
-    PRETRAINED_MODEL_DIR: "pretrain/deeplabv3plus_gn_init"
+    MODEL_SAVE_DIR: "./saved_model/cityscape_v5/"
+    PRETRAINED_MODEL_DIR: "pretrained_model/deeplabv3plus_gn_init"
     SNAPSHOT_EPOCH: 10
 SOLVER:
     LR: 0.001

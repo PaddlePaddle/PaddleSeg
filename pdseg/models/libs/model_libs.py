@@ -149,7 +149,7 @@ def separate_conv(input, channel, stride, filter, dilation=1, act=None):
             groups=input.shape[1],
             padding=(filter // 2) * dilation,
             dilation=dilation,
-            use_cudnn=True if cfg.MODEL.FP16 else False,
+            use_cudnn=False,
             param_attr=param_attr)
         input = bn(input)
         if act: input = act(input)

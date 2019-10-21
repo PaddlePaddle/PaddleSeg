@@ -32,21 +32,7 @@ namespace PaddleSolution {
         if (*ori_h != rh || *ori_w != rw) {
             cv::resize(im, im, resize_size, 0, 0, cv::INTER_LINEAR);
         }
-
-        float* pmean = _config->_mean.data();
-        float* pscale = _config->_std.data();
-        for (int h = 0; h < rh; ++h) {
-            const uchar* ptr = im.ptr<uchar>(h);
-            int im_index = 0;
-            for (int w = 0; w < rw; ++w) {
-                for (int c = 0; c < channels; ++c) {
-                    int top_index = (c * rh + h) * rw + w;
-                    float pixel = static_cast<float>(ptr[im_index++]);
-                    pixel = (pixel / 255 - pmean[c]) / pscale[c];
-                    data[top_index] = pixel;
-                }
-            }
-        }
+        utils::normalize(im, data, _config->_mean, _config->_std);
         return true;
     }
 

@@ -26,7 +26,7 @@ python pdseg/train.py BATCH_SIZE 1 --cfg configs/cityscapes.yaml
 |-|-|-|-|-|
 |--cfg|ALL|配置文件路径|None||
 |--use_gpu|ALL|是否使用GPU进行训练|False||
-|--use_mpio|train/eval|是否使用多线程进行IO处理|False|打开该开关会占用一定量的CPU内存，但是可以提高训练速度。</br> **NOTE：** windows平台下不支持该功能, 建议使用自定义数据初次训练时不打开，打开会导致数据读取异常不可见。 </br> |
+|--use_mpio|train/eval|是否使用多进程进行IO处理|False|打开该开关会占用一定量的CPU内存，但是可以提高训练速度。</br> **NOTE：** windows平台下不支持该功能, 建议使用自定义数据初次训练时不打开，打开会导致数据读取异常不可见。 </br> |
 |--use_tb|train|是否使用TensorBoard记录训练数据|False||
 |--log_steps|train|训练日志的打印周期（单位为step）|10||
 |--debug|train|是否打印debug信息|False|IOU等指标涉及到混淆矩阵的计算，会降低训练速度|
@@ -117,16 +117,24 @@ NOTE:
 ```shell
 python pdseg/eval.py --use_gpu \
                      --cfg configs/unet_pet.yaml \
-                     TEST.TEST_MODEL test/saved_models/unet_pet/final
+                     TEST.TEST_MODEL saved_model/unet_pet/final
 ```
+
+可以看到，在经过训练后，模型在验证集上的mIoU指标达到了0.70+（由于随机种子等因素的影响，效果会有小范围波动，属于正常情况）。
 
 ### 模型可视化
 通过vis.py来评估模型效果，我们选择最后保存的模型进行效果的评估：
 ```shell
 python pdseg/vis.py --use_gpu \
                      --cfg configs/unet_pet.yaml \
-                     TEST.TEST_MODEL test/saved_models/unet_pet/final
+                     TEST.TEST_MODEL saved_model/unet_pet/final
 ```
+执行上述脚本后，会在主目录下产生一个visual/visual_results文件夹，里面存放着测试集图片的预测结果，我们选择其中几张图片进行查看，可以看到，在测试集中的图片上的预测效果已经很不错：
+
+![](./imgs/usage_vis_demo.jpg)
+![](./imgs/usage_vis_demo2.jpg)
+![](./imgs/usage_vis_demo3.jpg)
+
 `NOTE`
 1. 可视化的图片会默认保存在visual/visual_results目录下，可以通过`--vis_dir`来指定输出目录
 2. 训练过程中会使用DATASET.VIS_FILE_LIST中的图片进行可视化显示，而vis.py则会使用DATASET.TEST_FILE_LIST
