@@ -158,6 +158,8 @@ def build_model(main_prog, start_prog, phase=ModelPhase.TRAIN):
             model_func = get_func("modeling." + model_name)
 
             loss_type = cfg.SOLVER.LOSS
+            if not isinstance(loss_type, list):
+                loss_type = list(loss_type)
 
             if class_num > 2 and (("dice_loss" in loss_type) or ("bce_loss" in loss_type)):
                 raise Exception("dice loss and bce loss is only applicable to binary classfication")
