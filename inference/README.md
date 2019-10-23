@@ -22,7 +22,7 @@ inference
 ├── images
 │   └── humanseg # 示例人像分割模型测试图片目录
 ├── tools
-│   └── visualize.py # 示例人像分割模型结果可视化脚本
+│   └── visualize.py # 示例分割模型结果可视化脚本
 ├── docs
 |   ├── linux_build.md # Linux 编译指南
 |   ├── windows_vs2015_build.md # windows VS2015编译指南
@@ -128,9 +128,7 @@ D:\projects\PaddleSeg\inference\build\Release>demo.exe --conf=D:\\projects\\Padd
 | input_dir | 需要预测的图片目录 |
 
 
-配置文件说明请参考上一步，样例程序会扫描input_dir目录下的所有图片，并生成对应的预测结果图片：
-
-文件`demo.jpg`预测的结果存储在`demo_jpg.png`中，可视化结果在`demo_jpg_scoremap.png`中， 原始尺寸的预测结果在`demo_jpg_recover.png`中。
+配置文件说明请参考上一步，样例程序会扫描input_dir目录下的所有图片，并生成对应的预测结果。图像分割会对`demo.jpg`的每个像素进行分类，其预测的结果保存在`demo_jpg.png`中。分类预测结果的图不能直接看到效果，必须经过可视化处理。对于二分类的图像分割模型，样例程序自动将预测结果转换成可视化结果，保存在`demo_jpg_scoremap.png`中， 原始尺寸的预测结果在`demo_jpg_recover.png`中，如下图。对于**多分类**的图像分割模型，请参考[可视化脚本使用方法](./docs/vis.md)。
 
 输入原图  
 ![avatar](images/humanseg/demo2.jpeg)
