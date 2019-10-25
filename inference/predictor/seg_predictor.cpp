@@ -1,6 +1,6 @@
 #include "seg_predictor.h"
 #include <unsupported/Eigen/CXX11/Tensor>
-
+#undef min
 namespace PaddleSolution {
 
         int Predictor::init(const std::string& conf) {
@@ -237,7 +237,7 @@ namespace PaddleSolution {
                     imgs_batch.push_back(imgs[idx]);
                 }
 
-                if (!_preprocessor->batch_process(imgs_batch, input_buffer.data(), org_height.data(), org_width.data())) {
+                if (!_preprocessor->batch_process(imgs_batch, input_buffer.data(), org_width.data(), org_height.data())) {
                     return -1;
                 }
                 auto im_tensor = _main_predictor->GetInputTensor("image");

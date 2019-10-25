@@ -5,7 +5,7 @@
 
 ## 前置条件
 * G++ 4.8.2 ~ 4.9.4
-* CUDA 8.0/ CUDA 9.0
+* CUDA 8.0 / CUDA 9.0 / CUDA 10.0
 * CMake 3.0+
 
 请确保系统已经安装好上述基本软件，**下面所有示例以工作目录为 `/root/projects/`演示**。
@@ -20,7 +20,7 @@
 
 ### Step2: 下载PaddlePaddle C++ 预测库 fluid_inference
 
-目前仅支持`CUDA 8` 和 `CUDA 9`，建议使用`cuda9`, 请 [点击下载CUDA9预测库](https://paddle-inference-lib.bj.bcebos.com/latest-gpu-cuda9-cudnn7-avx-mkl/fluid_inference.tgz)
+目前支持`CUDA 8` ,`CUDA 9` 和 `CUDA10`，建议使用`CUDA 9`, 请 [点击下载CUDA 9预测库](https://paddle-inference-lib.bj.bcebos.com/latest-gpu-cuda9-cudnn7-avx-mkl/fluid_inference.tgz)
 
 更多可用版本，请参考:[C++预测库列表](https://www.paddlepaddle.org.cn/documentation/docs/zh/develop/advanced_usage/deploy/inference/build_and_install_lib_cn.html)
 
@@ -46,7 +46,7 @@ wget -c https://paddleseg.bj.bcebos.com/inference/opencv-3.4.6.zip
 unzip opencv-3.4.6.zip && cd opencv-3.4.6
 # 3. 创建build目录并编译, 这里安装到/usr/local/opencv3目录
 mkdir build && cd build
-cmake .. -DCMAKE_INSTALL_PREFIX=/root/projects/opencv3 -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF -DWITH_ZLIB=ON -DBUILD_ZLIB=ON -DWITH_JPEG=ON -DBUILD_JPEG=ON -DWITH_PNG=ON -DBUILD_PNG=ON -DWITH_TIFF=ON -DBUILD_TIFF=ON -DWITH_IPP=OFF -DBUILD_IPP_IW=OFF -DWITH_LAPACK=OFF -DWITH_EIGEN=OFF -DCMAKE_INSTALL_LIBDIR=lib64
+cmake .. -DCMAKE_INSTALL_PREFIX=/root/projects/opencv3 -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF -DWITH_IPP=OFF -DBUILD_IPP_IW=OFF -DWITH_LAPACK=OFF -DWITH_EIGEN=OFF -DCMAKE_INSTALL_LIBDIR=lib64 -DWITH_ZLIB=ON -DBUILD_ZLIB=ON -DWITH_JPEG=ON -DBUILD_JPEG=ON -DWITH_PNG=ON -DBUILD_PNG=ON -DWITH_TIFF=ON -DBUILD_TIFF=ON
 make -j4
 make install
 ```
@@ -82,6 +82,4 @@ make
 ./demo --conf=/path/to/your/conf --input_dir=/path/to/your/input/data/directory
 ```
 
-更详细说明请参考ReadMe文档： [预测和可视化部分](../README.md)
-
-
+更详细说明请参考README文档： [预测和可视化部分](../README.md)
