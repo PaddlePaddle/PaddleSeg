@@ -27,7 +27,6 @@ from models.libs.model_libs import separate_conv
 from models.backbone.mobilenet_v2 import MobileNetV2 as mobilenet_backbone
 from models.backbone.xception import Xception as xception_backbone
 
-
 def encoder(input):
     # 编码器配置，采用ASPP架构，pooling + 1x1_conv + 三个不同尺度的空洞卷积并行, concat后1x1conv
     # ASPP_WITH_SEP_CONV：默认为真，使用depthwise可分离卷积，否则使用普通卷积
@@ -48,13 +47,8 @@ def encoder(input):
     with scope('encoder'):
         channel = 256
         with scope("image_pool"):
-            if cfg.MODEL.FP16:
-                image_avg = fluid.layers.reduce_mean(
-                    fluid.layers.cast(input, 'float32'), [2, 3], keep_dim=True)
-                image_avg = fluid.layers.cast(image_avg, 'float16')
-            else:
-                image_avg = fluid.layers.reduce_mean(
-                    input, [2, 3], keep_dim=True)
+            image_avg = fluid.layers.reduce_mean(
+                input, [2, 3], keep_dim=True)
             image_avg = bn_relu(
                 conv(
                     image_avg,
@@ -64,11 +58,8 @@ def encoder(input):
                     groups=1,
                     padding=0,
                     param_attr=param_attr))
-            if cfg.MODEL.FP16:
-                image_avg = fluid.layers.cast(image_avg, 'float32')
             image_avg = fluid.layers.resize_bilinear(image_avg, input.shape[2:])
-            if cfg.MODEL.FP16:
-                image_avg = fluid.layers.cast(image_avg, 'float16')
+
         with scope("aspp0"):
             aspp0 = bn_relu(
                 conv(
@@ -157,12 +148,9 @@ def decoder(encode_data, decode_shortcut):
                     groups=1,
                     padding=0,
                     param_attr=param_attr))
-            if cfg.MODEL.FP16:
-                encode_data = fluid.layers.cast(encode_data, 'float32')
+
             encode_data = fluid.layers.resize_bilinear(
                 encode_data, decode_shortcut.shape[2:])
-            if cfg.MODEL.FP16:
-                encode_data = fluid.layers.cast(encode_data, 'float16')
             encode_data = fluid.layers.concat([encode_data, decode_shortcut],
                                               axis=1)
         if cfg.MODEL.DEEPLAB.DECODER_USE_SEP_CONV:
@@ -270,9 +258,6 @@ def deeplabv3p(img, num_classes):
             padding=0,
             bias_attr=True,
             param_attr=param_attr)
-        if cfg.MODEL.FP16:
-            logit = fluid.layers.cast(logit, 'float32')
         logit = fluid.layers.resize_bilinear(logit, img.shape[2:])
-        if cfg.MODEL.FP16:
-            logit = fluid.layers.cast(logit, 'float16')
+
     return logit

@@ -55,13 +55,13 @@ python pdseg/check.py --cfg ./configs/deepglobe_road_extraction.yaml
 
 * 训练
 ```shell
-python pdseg/train.py --cfg ./configs/deepglobe_road_extraction.yaml --use_gpu SOLVER.LOSS ['dice_loss','bce_loss']
+python pdseg/train.py --cfg ./configs/deepglobe_road_extraction.yaml --use_gpu SOLVER.LOSS "['dice_loss','bce_loss']"
 
 ```
 
 * 评估
 ```
-python pdseg/eval.py --cfg ./configs/deepglobe_road_extraction.yaml --use_gpu SOLVER.LOSS ['dice_loss','bce_loss']
+python pdseg/eval.py --cfg ./configs/deepglobe_road_extraction.yaml --use_gpu SOLVER.LOSS "['dice_loss','bce_loss']"
 
 ```
 

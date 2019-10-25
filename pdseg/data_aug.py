@@ -361,7 +361,7 @@ def hsv_color_jitter(crop_img,
     if brightness_jitter_ratio > 0 or \
         saturation_jitter_ratio > 0 or \
         contrast_jitter_ratio > 0:
-        random_jitter(crop_img, saturation_jitter_ratio,
+        crop_img = random_jitter(crop_img, saturation_jitter_ratio,
                       brightness_jitter_ratio, contrast_jitter_ratio)
     return crop_img
 

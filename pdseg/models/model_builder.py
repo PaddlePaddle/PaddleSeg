@@ -153,12 +153,13 @@ def build_model(main_prog, start_prog, phase=ModelPhase.TRAIN):
                     capacity=cfg.DATALOADER.BUF_SIZE,
                     iterable=False,
                     use_double_buffer=True)
-            if cfg.MODEL.FP16:
-                image = fluid.layers.cast(image, "float16")
+
             model_name = map_model_name(cfg.MODEL.MODEL_NAME)
             model_func = get_func("modeling." + model_name)
 
             loss_type = cfg.SOLVER.LOSS
+            if not isinstance(loss_type, list):
+                loss_type = list(loss_type)
 
             if class_num > 2 and (("dice_loss" in loss_type) or ("bce_loss" in loss_type)):
                 raise Exception("dice loss and bce loss is only applicable to binary classfication")
@@ -216,13 +217,13 @@ def build_model(main_prog, start_prog, phase=ModelPhase.TRAIN):
                 else:
                     logit = softmax(logit)
                 return image, logit
+
             if class_num == 1:
                 out = sigmoid_to_softmax(logit)
                 out = fluid.layers.transpose(out, [0, 2, 3, 1])
             else:
                 out = fluid.layers.transpose(logit, [0, 2, 3, 1])
-            if cfg.MODEL.FP16:
-                out = fluid.layers.cast(out, 'float32')
+
             pred = fluid.layers.argmax(out, axis=3)
             pred = fluid.layers.unsqueeze(pred, axes=[3])
             if ModelPhase.is_visual(phase):
