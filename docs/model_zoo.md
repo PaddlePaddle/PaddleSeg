@@ -8,11 +8,11 @@ PaddleSeg对所有内置的分割模型都提供了公开数据集下的预训�
 
 | 模型 | 数据集合 | Depth multiplier | 下载地址 | Accuray Top1/5 Error|
 |---|---|---|---|---|
-| MobieNetV2_1.0x  | ImageNet | 1.0x | [MobileNetV2_1.0x](https://paddle-imagenet-models-name.bj.bcebos.com/MobileNetV2_pretrained.tar) | 72.15%/90.65% |
-| MobieNetV2_0.25x | ImageNet | 0.25x |[MobileNetV2_0.25x](https://paddle-imagenet-models-name.bj.bcebos.com/MobileNetV2_x0_25_pretrained.tar) | 53.21%/76.52% |
-| MobieNetV2_0.5x  | ImageNet | 0.5x | [MobileNetV2_0.5x](https://paddle-imagenet-models-name.bj.bcebos.com/MobileNetV2_x0_5_pretrained.tar) | 65.03%/85.72% |
-| MobieNetV2_1.5x  | ImageNet | 1.5x | [MobileNetV2_1.5x](https://paddle-imagenet-models-name.bj.bcebos.com/MobileNetV2_x1_5_pretrained.tar) | 74.12%/91.67% |
-| MobieNetV2_2.0x  | ImageNet | 2.0x | [MobileNetV2_2.0x](https://paddle-imagenet-models-name.bj.bcebos.com/MobileNetV2_x2_0_pretrained.tar) | 75.23%/92.58% |
+| MobileNetV2_1.0x  | ImageNet | 1.0x | [MobileNetV2_1.0x](https://paddle-imagenet-models-name.bj.bcebos.com/MobileNetV2_pretrained.tar) | 72.15%/90.65% |
+| MobileNetV2_0.25x | ImageNet | 0.25x |[MobileNetV2_0.25x](https://paddle-imagenet-models-name.bj.bcebos.com/MobileNetV2_x0_25_pretrained.tar) | 53.21%/76.52% |
+| MobileNetV2_0.5x  | ImageNet | 0.5x | [MobileNetV2_0.5x](https://paddle-imagenet-models-name.bj.bcebos.com/MobileNetV2_x0_5_pretrained.tar) | 65.03%/85.72% |
+| MobileNetV2_1.5x  | ImageNet | 1.5x | [MobileNetV2_1.5x](https://paddle-imagenet-models-name.bj.bcebos.com/MobileNetV2_x1_5_pretrained.tar) | 74.12%/91.67% |
+| MobileNetV2_2.0x  | ImageNet | 2.0x | [MobileNetV2_2.0x](https://paddle-imagenet-models-name.bj.bcebos.com/MobileNetV2_x2_0_pretrained.tar) | 75.23%/92.58% |
 
 用户可以结合实际场景的精度和预测性能要求，选取不同`Depth multiplier`参数的MobileNet模型。
 
