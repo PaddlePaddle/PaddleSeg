@@ -60,7 +60,9 @@ PaddleSeg支持多进程IO、多卡并行、跨卡Batch Norm同步等训练加�
 ### 高级功能
 
 * [PaddleSeg的数据增强](./docs/data_aug.md)
+* [PaddleSeg的loss选择](./docs/loss_select.md)
 * [特色垂类模型使用](./contrib)
+* [多进程训练和混合精度训练](./docs/multiple_gpus_train_and_mixed_precision_train.md)
 
 </br>
 
@@ -87,6 +89,10 @@ A: 降低Batch size，使用Group Norm策略；请注意训练过程中当`DEFAU
 
 </br>
 
+#### Q: 出现错误 ModuleNotFoundError: No module named 'paddle.fluid.contrib.mixed_precision'
+
+A: 请将PaddlePaddle升级至1.5.2版本或以上。
+
 ## 在线体验
 
 PaddleSeg在AI Studio平台上提供了在线体验的教程，欢迎体验：
@@ -100,14 +106,12 @@ PaddleSeg在AI Studio平台上提供了在线体验的教程，欢迎体验：
 </br>
 
 ##  交流与反馈
-* 欢迎您通过Github Issues来提交问题、报告与建议
+* 欢迎您通过[Github Issues](https://github.com/PaddlePaddle/PaddleSeg/issues)来提交问题、报告与建议
 * 微信公众号：飞桨PaddlePaddle
 * QQ群: 796771754
 
 <p align="center"><img width="200" height="200"  src="https://user-images.githubusercontent.com/45189361/64117959-1969de80-cdc9-11e9-84f7-e1c2849a004c.jpeg"/>&#8194;&#8194;&#8194;&#8194;&#8194;<img width="200" height="200" margin="500" src="./docs/imgs/qq_group2.png"/></p>
 <p align="center">  &#8194;&#8194;&#8194;微信公众号&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;官方技术交流QQ群</p>
-
-* 论坛: 欢迎大家在[PaddlePaddle论坛](https://ai.baidu.com/forum/topic/list/168)分享在使用PaddlePaddle中遇到的问题和经验, 营造良好的论坛氛围
 
 ## 更新日志
 

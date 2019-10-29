@@ -228,7 +228,7 @@ class MobileNetV2():
             num_groups=num_expfilter,
             if_act=True,
             name=name + '_dwise',
-            use_cudnn=True if cfg.MODEL.FP16 else False)
+            use_cudnn=False)
 
         depthwise_output = bottleneck_conv
 
