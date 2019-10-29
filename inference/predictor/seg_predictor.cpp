@@ -1,4 +1,5 @@
 #include "seg_predictor.h"
+#include <unsupported/Eigen/CXX11/Tensor>
 
 namespace PaddleSolution {
 
@@ -78,26 +79,8 @@ namespace PaddleSolution {
             //post process
             _mask.clear();
             _scoremap.clear();
-            int out_img_len = eval_height * eval_width;
-            for (int i = 0; i < out_img_len; ++i) {
-                float max_value = -1;
-                int label = 0;
-                for (int j = 0; j < eval_num_class; ++j) {
-                    int index = i + j * out_img_len;
-                    if (index >= blob_out_len) {
-                        break;
-                    }
-                    float value = p_out[index];
-                    if (value > max_value) {
-                        max_value = value;
-                        label = j;
-                    }
-                }
-                if (label == 0) max_value = 0;
-                _mask[i] = uchar(label);
-                _scoremap[i] = uchar(max_value * 255);
-            }
-
+            std::vector<int> out_shape{eval_num_class, eval_height, eval_width};
+            utils::argmax(p_out, out_shape, _mask, _scoremap);
             cv::Mat mask_png = cv::Mat(eval_height, eval_width, CV_8UC1);
             mask_png.data = _mask.data();
             std::string nname(fname);
@@ -251,6 +234,7 @@ namespace PaddleSolution {
                     int idx = u * default_batch_size + i;
                     imgs_batch.push_back(imgs[idx]);
                 }
+
                 if (!_preprocessor->batch_process(imgs_batch, input_buffer.data(), org_height.data(), org_width.data())) {
                     return -1;
                 }

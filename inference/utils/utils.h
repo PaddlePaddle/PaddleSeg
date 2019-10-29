@@ -4,6 +4,10 @@
 #include <vector>
 #include <string>
 
+#include <opencv2/core/core.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
+#include <opencv2/highgui/highgui.hpp>
+
 #ifdef _WIN32
 #include <filesystem>
 #else
@@ -59,5 +63,58 @@ namespace PaddleSolution {
             return imgs;
         }
         #endif
+
+        // normalize and HWC_BGR -> CHW_RGB
+        inline void normalize(cv::Mat& im, float* data, std::vector<float>& fmean, std::vector<float>& fstd) {
+            int rh = im.rows;
+            int rw = im.cols;
+            int rc = im.channels();
+            double normf = (double)1.0 / 255.0;
+            #pragma omp parallel for
+            for (int h = 0; h < rh; ++h) {
+                const uchar* ptr = im.ptr<uchar>(h);
+                int im_index = 0;
+                for (int w = 0; w < rw; ++w) {
+                    for (int c = 0; c < rc; ++c) {
+                        int top_index = (c * rh + h) * rw + w;
+                        float pixel = static_cast<float>(ptr[im_index++]);
+                        pixel = (pixel * normf - fmean[c]) / fstd[c];
+                        data[top_index] = pixel;
+                    }
+                }
+            }
+        }
+
+        // argmax
+        inline void argmax(float* out, std::vector<int>& shape, std::vector<uchar>& mask, std::vector<uchar>& scoremap) {
+            int out_img_len = shape[1] * shape[2];
+            int blob_out_len = out_img_len * shape[0];
+            /*
+            Eigen::TensorMap<Eigen::Tensor<float, 3>> out_3d(out, shape[0], shape[1], shape[2]);
+            Eigen::Tensor<Eigen::DenseIndex, 2> argmax = out_3d.argmax(0);
+            */
+            float max_value = -1;
+            int label = 0;
+            #pragma omp parallel private(label)
+            for (int i = 0; i < out_img_len; ++i) {
+                max_value = -1;
+                label = 0;
+                #pragma omp for reduction(max : max_value)
+                for (int j = 0; j < shape[0]; ++j) {
+                    int index = i + j * out_img_len;
+                    if (index >= blob_out_len) {
+                        continue;
+                    }
+                    float value = out[index];
+                    if (value > max_value) {
+                        max_value = value;
+                        label = j;
+                    }
+                }
+                if (label == 0) max_value = 0;
+                mask[i] = uchar(label);
+                scoremap[i] = uchar(max_value * 255);
+            }
+        }
     }
 }

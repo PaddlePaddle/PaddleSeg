@@ -40,8 +40,7 @@ from models.model_builder import ModelPhase
 from models.model_builder import parse_shape_from_file
 from eval import evaluate
 from vis import visualize
-from utils.fp16_utils import load_fp16_vars
-
+from utils import dist_utils
 
 def parse_args():
     parser = argparse.ArgumentParser(description='PaddleSeg training')
@@ -178,6 +177,9 @@ def load_checkpoint(exe, program):
 
     return begin_epoch
 
+def print_info(*msg):
+    if cfg.TRAINER_ID == 0:
+        print(*msg)
 
 def train(cfg):
     startup_prog = fluid.Program()
@@ -201,7 +203,7 @@ def train(cfg):
         batch_data = []
         for b in data_gen:
             batch_data.append(b)
-            if len(batch_data) == cfg.BATCH_SIZE:
+            if len(batch_data) == (cfg.BATCH_SIZE // cfg.NUM_TRAINERS):
                 for item in batch_data:
                     yield item[0], item[1], item[2]
                 batch_data = []
@@ -212,11 +214,15 @@ def train(cfg):
                 yield item[0], item[1], item[2]
 
     # Get device environment
+    # places = fluid.cuda_places() if args.use_gpu else fluid.cpu_places()
+    # place = places[0]
+    gpu_id = int(os.environ.get('FLAGS_selected_gpus', 0))
+    place = fluid.CUDAPlace(gpu_id) if args.use_gpu else fluid.CPUPlace()
     places = fluid.cuda_places() if args.use_gpu else fluid.cpu_places()
-    place = places[0]
+
     # Get number of GPU
-    dev_count = len(places)
-    print("#Device count: {}".format(dev_count))
+    dev_count = cfg.NUM_TRAINERS if cfg.NUM_TRAINERS > 1 else len(places)
+    print_info("#Device count: {}".format(dev_count))
 
     # Make sure BATCH_SIZE can divided by GPU cards
     assert cfg.BATCH_SIZE % dev_count == 0, (
@@ -224,7 +230,7 @@ def train(cfg):
             cfg.BATCH_SIZE, dev_count))
     # If use multi-gpu training mode, batch data will allocated to each GPU evenly
     batch_size_per_dev = cfg.BATCH_SIZE // dev_count
-    print("batch_size_per_dev: {}".format(batch_size_per_dev))
+    print_info("batch_size_per_dev: {}".format(batch_size_per_dev))
 
     py_reader, avg_loss, lr, pred, grts, masks = build_model(
         train_prog, startup_prog, phase=ModelPhase.TRAIN)
@@ -240,13 +246,18 @@ def train(cfg):
         exec_strategy.num_threads = fluid.core.get_cuda_device_count()
     exec_strategy.num_iteration_per_drop_scope = 100
     build_strategy = fluid.BuildStrategy()
+
+    if cfg.NUM_TRAINERS > 1 and args.use_gpu:
+        dist_utils.prepare_for_multi_process(exe, build_strategy, train_prog)
+        exec_strategy.num_threads = 1
+
     if cfg.TRAIN.SYNC_BATCH_NORM and args.use_gpu:
         if dev_count > 1:
             # Apply sync batch norm strategy
-            print("Sync BatchNorm strategy is effective.")
+            print_info("Sync BatchNorm strategy is effective.")
             build_strategy.sync_batch_norm = True
         else:
-            print("Sync BatchNorm strategy will not be effective if GPU device"
+            print_info("Sync BatchNorm strategy will not be effective if GPU device"
                   " count <= 1")
     compiled_train_prog = fluid.CompiledProgram(train_prog).with_data_parallel(
         loss_name=avg_loss.name,
@@ -259,7 +270,7 @@ def train(cfg):
         begin_epoch = load_checkpoint(exe, train_prog)
     # Load pretrained model
     elif os.path.exists(cfg.TRAIN.PRETRAINED_MODEL_DIR):
-        print('Pretrained model dir:', cfg.TRAIN.PRETRAINED_MODEL_DIR)
+        print_info('Pretrained model dir: ', cfg.TRAIN.PRETRAINED_MODEL_DIR)
         load_vars = []
         load_fail_vars = []
 
@@ -283,22 +294,19 @@ def train(cfg):
                     load_vars.append(x)
                 else:
                     load_fail_vars.append(x)
-        if cfg.MODEL.FP16:
-            # If open FP16 training mode, load FP16 var separate
-            load_fp16_vars(exe, cfg.TRAIN.PRETRAINED_MODEL_DIR, train_prog)
-        else:
-            fluid.io.load_vars(
-                exe, dirname=cfg.TRAIN.PRETRAINED_MODEL_DIR, vars=load_vars)
+
+        fluid.io.load_vars(
+            exe, dirname=cfg.TRAIN.PRETRAINED_MODEL_DIR, vars=load_vars)
         for var in load_vars:
-            print("Parameter[{}] loaded sucessfully!".format(var.name))
+            print_info("Parameter[{}] loaded sucessfully!".format(var.name))
         for var in load_fail_vars:
-            print("Parameter[{}] don't exist or shape does not match current network, skip"
+            print_info("Parameter[{}] don't exist or shape does not match current network, skip"
                   " to load it.".format(var.name))
-        print("{}/{} pretrained parameters loaded successfully!".format(
+        print_info("{}/{} pretrained parameters loaded successfully!".format(
             len(load_vars),
             len(load_vars) + len(load_fail_vars)))
     else:
-        print('Pretrained model dir {} not exists, training from scratch...'.
+        print_info('Pretrained model dir {} not exists, training from scratch...'.
               format(cfg.TRAIN.PRETRAINED_MODEL_DIR))
 
     fetch_list = [avg_loss.name, lr.name]
@@ -312,12 +320,14 @@ def train(cfg):
 
     if args.use_tb:
         if not args.tb_log_dir:
-            print("Please specify the log directory by --tb_log_dir.")
+            print_info("Please specify the log directory by --tb_log_dir.")
             exit(1)
 
         from tb_paddle import SummaryWriter
         log_writer = SummaryWriter(args.tb_log_dir)
 
+    # trainer_id = int(os.getenv("PADDLE_TRAINER_ID", 0))
+    # num_trainers = int(os.environ.get('PADDLE_TRAINERS_NUM', 1))
     global_step = 0
     all_step = cfg.DATASET.TRAIN_TOTAL_IMAGES // cfg.BATCH_SIZE
     if cfg.DATASET.TRAIN_TOTAL_IMAGES % cfg.BATCH_SIZE and drop_last != True:
@@ -333,9 +343,9 @@ def train(cfg):
                 begin_epoch, cfg.SOLVER.NUM_EPOCHS))
 
     if args.use_mpio:
-        print("Use multiprocess reader")
+        print_info("Use multiprocess reader")
     else:
-        print("Use multi-thread reader")
+        print_info("Use multi-thread reader")
 
     for epoch in range(begin_epoch, cfg.SOLVER.NUM_EPOCHS + 1):
         py_reader.start()
@@ -348,7 +358,6 @@ def train(cfg):
                         program=compiled_train_prog,
                         fetch_list=fetch_list,
                         return_numpy=True)
-
                     cm.calculate(pred, grts, masks)
                     avg_loss += np.mean(np.array(loss))
                     global_step += 1
@@ -359,13 +368,13 @@ def train(cfg):
                         category_acc, mean_acc = cm.accuracy()
                         category_iou, mean_iou = cm.mean_iou()
 
-                        print((
+                        print_info((
                             "epoch={} step={} lr={:.5f} loss={:.4f} acc={:.5f} mIoU={:.5f} step/sec={:.3f} | ETA {}"
                         ).format(epoch, global_step, lr[0], avg_loss, mean_acc,
                                  mean_iou, speed,
                                  calculate_eta(all_step - global_step, speed)))
-                        print("Category IoU:", category_iou)
-                        print("Category Acc:", category_acc)
+                        print_info("Category IoU: ", category_iou)
+                        print_info("Category Acc: ", category_acc)
                         if args.use_tb:
                             log_writer.add_scalar('Train/mean_iou', mean_iou,
                                                   global_step)
@@ -390,7 +399,7 @@ def train(cfg):
                     avg_loss += np.mean(np.array(loss))
                     global_step += 1
 
-                    if global_step % args.log_steps == 0:
+                    if global_step % args.log_steps == 0 and cfg.TRAINER_ID == 0:
                         avg_loss /= args.log_steps
                         speed = args.log_steps / timer.elapsed_time()
                         print((
@@ -414,7 +423,7 @@ def train(cfg):
             except Exception as e:
                 print(e)
 
-        if epoch % cfg.TRAIN.SNAPSHOT_EPOCH == 0:
+        if epoch % cfg.TRAIN.SNAPSHOT_EPOCH == 0 and cfg.TRAINER_ID == 0:
             ckpt_dir = save_checkpoint(exe, train_prog, epoch)
 
             if args.do_eval:
@@ -441,16 +450,20 @@ def train(cfg):
                     log_writer=log_writer)
 
     # save final model
-    save_checkpoint(exe, train_prog, 'final')
-
+    if cfg.TRAINER_ID == 0:
+        save_checkpoint(exe, train_prog, 'final')
 
 def main(args):
     if args.cfg_file is not None:
         cfg.update_from_file(args.cfg_file)
     if args.opts is not None:
         cfg.update_from_list(args.opts)
-    cfg.check_and_infer(reset_dataset=True)
-    print(pprint.pformat(cfg))
+
+    cfg.TRAINER_ID = int(os.getenv("PADDLE_TRAINER_ID", 0))
+    cfg.NUM_TRAINERS = int(os.environ.get('PADDLE_TRAINERS_NUM', 1))
+
+    cfg.check_and_infer()
+    print_info(pprint.pformat(cfg))
     train(cfg)
 
 

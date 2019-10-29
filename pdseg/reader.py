@@ -32,7 +32,7 @@ import data_aug as aug
 from utils.config import cfg
 from data_utils import GeneratorEnqueuer
 from models.model_builder import ModelPhase
-
+import copy
 
 def cv2_imread(file_path, flag=cv2.IMREAD_COLOR):
     # resolve cv2.imread open Chinese file path issues on Windows Platform.
@@ -49,15 +49,25 @@ class SegDataset(object):
         self.shuffle = shuffle
         self.data_dir = data_dir
 
+        self.shuffle_seed = 0
         # NOTE: Please ensure file list was save in UTF-8 coding format
         with codecs.open(file_list, 'r', 'utf-8') as flist:
             self.lines = [line.strip() for line in flist]
-            if shuffle:
+            self.all_lines = copy.deepcopy(self.lines)
+            if shuffle and cfg.NUM_TRAINERS > 1:
+                np.random.RandomState(self.shuffle_seed).shuffle(self.all_lines)
+            elif shuffle:
                 np.random.shuffle(self.lines)
 
     def generator(self):
-        if self.shuffle:
+        if self.shuffle and cfg.NUM_TRAINERS > 1:
+            np.random.RandomState(self.shuffle_seed).shuffle(self.all_lines)
+            num_lines = len(self.all_lines) // cfg.NUM_TRAINERS
+            self.lines = self.all_lines[num_lines * cfg.TRAINER_ID: num_lines * (cfg.TRAINER_ID + 1)]
+            self.shuffle_seed += 1
+        elif self.shuffle:
             np.random.shuffle(self.lines)
+
         for line in self.lines:
             yield self.process_image(line, self.data_dir, self.mode)
 
@@ -78,8 +88,14 @@ class SegDataset(object):
 
     def multiprocess_generator(self, max_queue_size=32, num_processes=8):
         # Re-shuffle file list
-        if self.shuffle:
+        if self.shuffle and cfg.NUM_TRAINERS > 1:
+            np.random.RandomState(self.shuffle_seed).shuffle(self.all_lines)
+            num_lines = len(self.all_lines) // self.num_trainers
+            self.lines = self.all_lines[num_lines * self.trainer_id: num_lines * (self.trainer_id + 1)]
+            self.shuffle_seed += 1
+        elif self.shuffle:
             np.random.shuffle(self.lines)
+
         # Create multiple sharding generators according to num_processes for multiple processes
         generators = []
         for pid in range(num_processes):
