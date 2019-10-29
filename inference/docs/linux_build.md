@@ -21,6 +21,7 @@
 ### Step2: 下载PaddlePaddle C++ 预测库 fluid_inference
 
 PaddlePaddle C++ 预测库主要分为CPU版本和GPU版本。其中，针对不同的CUDA版本，GPU版本预测库又分为三个版本预测库：CUDA 8、CUDA 9和CUDA 10版本预测库。以下为各版本C++预测库的下载链接：
+
 |  版本   | 链接  |
 |  ----  | ----  |
 | CPU版本  | [fluid_inference.tgz](https://paddle-inference-lib.bj.bcebos.com/latest-cpu-avx-mkl/fluid_inference.tgz) |
