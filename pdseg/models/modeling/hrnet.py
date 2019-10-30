@@ -209,7 +209,7 @@ def make_stage(input, layer_config):
 
 
 
-def highResolutionNet(input):
+def highResolutionNet(input, num_classes):
     param_attr = ParamAttr(
         name=model_libs.name_scope + 'weights',
         regularizer=None,
@@ -319,7 +319,7 @@ def highResolutionNet(input):
     with scope('last_conv1'):
         logit = conv(
             logit,
-            cfg.DATASET.NUM_CLASSES,
+            num_classes,
             filter_size=1,
             stride=1,
             padding=0
@@ -330,7 +330,7 @@ def highResolutionNet(input):
 
 
 def hrnet(input, num_classes):
-    logit = highResolutionNet(input)
+    logit = highResolutionNet(input, num_classes)
     return logit
 
 if __name__ == '__main__':
