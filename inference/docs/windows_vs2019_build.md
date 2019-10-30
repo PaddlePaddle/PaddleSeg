@@ -68,11 +68,11 @@ fluid_inference
 
 4. 点击`浏览`，分别设置编译选项指定`CUDA`、`OpenCV`、`Paddle预测库`的路径
 
-三个编译参数的含义说明如下：
+三个编译参数的含义说明如下（带*表示仅在使用**GPU版本**预测库时指定）：
 
 |  参数名   | 含义  |
 |  ----  | ----  |
-| CUDA_LIB  | cuda的库路径 |
+| *CUDA_LIB  | cuda的库路径 |
 | OPENCV_DIR  | OpenCV的安装路径， |
 | PADDLE_DIR | Paddle预测库的路径 |
 **注意**在使用CPU版本预测库时，需要把CUDA_LIB的勾去掉。
