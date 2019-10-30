@@ -134,6 +134,7 @@ if(WITH_MKL)
   else ()
     set(MATH_LIB ${PADDLE_DIR}/third_party/install/mklml/lib/libmklml_intel${CMAKE_SHARED_LIBRARY_SUFFIX}
             ${PADDLE_DIR}/third_party/install/mklml/lib/libiomp5${CMAKE_SHARED_LIBRARY_SUFFIX})
+    execute_process(COMMAND cp -r ${PADDLE_DIR}/third_party/install/mklml/lib/libmklml_intel${CMAKE_SHARED_LIBRARY_SUFFIX} /usr/lib)
   endif ()
   set(MKLDNN_PATH "${PADDLE_DIR}/third_party/install/mkldnn")
   if(EXISTS ${MKLDNN_PATH})
