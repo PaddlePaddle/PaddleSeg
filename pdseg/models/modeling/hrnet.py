@@ -75,11 +75,14 @@ def fuse_layers(x, channels, multi_scale_output=True, name=None):
     out = []
     for i in range(len(channels) if multi_scale_output else 1):
         residual = x[i]
+        shape = residual.shape
+        width = shape[-1]
+        height = shape[-2]
         for j in range(len(channels)):
             if j > i:
                 y = conv_bn_layer(x[j], filter_size=1, num_filters=channels[i], if_act=False,
                                        name=name + '_layer_' + str(i + 1) + '_' + str(j + 1))
-                y = fluid.layers.resize_bilinear(input=y, scale=2 ** (j - i))
+                y = fluid.layers.resize_bilinear(input=y, out_shape=[height, width])
                 residual = fluid.layers.elementwise_add(x=residual, y=y, act=None)
             elif j < i:
                 y = x[j]
@@ -202,7 +205,7 @@ def hrnet(input, num_classes):
     return logit
 
 if __name__ == '__main__':
-    image_shape = [3, 512, 1024]
+    image_shape = [3, 769, 769]
     image = fluid.layers.data(name='image', shape=image_shape, dtype='float32')
     logit = hrnet(image, 4)
     print("logit:", logit.shape)
