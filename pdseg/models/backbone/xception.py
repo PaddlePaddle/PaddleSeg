@@ -150,13 +150,11 @@ class Xception():
         chns = self.bottleneck_params["entry_flow"][2]
         strides = check_data(strides, block_num)
         chns = check_data(chns, block_num)
-        #print("entry:", block_num, strides, chns)
 
         # params to control your flow
         s = self.stride
         block_point = self.block_point
         output_stride = self.output_stride
-        #print("entry:", s, block_point, output_stride)
         with scope("entry_flow"):
             for i in range(block_num):
                 block_point = block_point + 1
@@ -167,13 +165,10 @@ class Xception():
                         data, chns[i], [1, 1, stride])
                     s = s * stride
                     if check_points(block_point, self.decode_points):
-                        #print("decode shortcut:", block_point)
                         self.short_cuts[block_point] = short_cuts[1]
-                    #print("entry:", i, data.shape)
 
         self.stride = s
         self.block_point = block_point
-        #print("entry:", s, block_point, output_stride)
         return data
 
     def middle_flow(self, data):
@@ -183,12 +178,10 @@ class Xception():
         strides = check_data(strides, block_num)
         chns = check_data(chns, block_num)
 
-        #print("middle:", block_num, strides, chns)
         # params to control your flow
         s = self.stride
         block_point = self.block_point
         output_stride = self.output_stride
-        #print("middle:", s, block_point, output_stride)
         with scope("middle_flow"):
             for i in range(block_num):
                 block_point = block_point + 1
@@ -199,13 +192,10 @@ class Xception():
                         data, chns[i], [1, 1, strides[i]], skip_conv=False)
                     s = s * stride
                     if check_points(block_point, self.decode_points):
-                        #print("decode shortcut:", block_point)
                         self.short_cuts[block_point] = short_cuts[1]
-                    #print("middle:", i, data.shape)
 
         self.stride = s
         self.block_point = block_point
-        #print("middle:", s, block_point, output_stride)
         return data
 
     def exit_flow(self, data):
@@ -214,14 +204,12 @@ class Xception():
         chns = self.bottleneck_params["exit_flow"][2]
         strides = check_data(strides, block_num)
         chns = check_data(chns, block_num)
-        #print("exit:", block_num, strides, chns)
 
         assert (block_num == 2)
         # params to control your flow
         s = self.stride
         block_point = self.block_point
         output_stride = self.output_stride
-        #print("exit:", s, block_point, output_stride)
         with scope("exit_flow"):
             with scope('block1'):
                 block_point += 1
@@ -231,9 +219,7 @@ class Xception():
                                                        [1, 1, stride])
                 s = s * stride
                 if check_points(block_point, self.decode_points):
-                    #print("decode shortcut:", block_point)
                     self.short_cuts[block_point] = short_cuts[1]
-                #print("exit:", 0, data.shape)
             with scope('block2'):
                 block_point += 1
                 stride = strides[1] if check_stride(s * strides[1],
@@ -246,13 +232,10 @@ class Xception():
                     activation_fn_in_separable_conv=True)
                 s = s * stride
                 if check_points(block_point, self.decode_points):
-                    #print("decode shortcut:", block_point)
                     self.short_cuts[block_point] = short_cuts[1]
-                #print("exit:", 1, data.shape)
 
         self.stride = s
         self.block_point = block_point
-        #print("exit:", s, block_point, output_stride)
         return data
 
     def xception_block(self,
@@ -332,4 +315,3 @@ if __name__ == '__main__':
     image = fluid.layers.data(name='image', shape=image_shape, dtype='float32')
     model = xception_65()
     logit = model.net(image)
-    #print("logit:", logit.shape)
