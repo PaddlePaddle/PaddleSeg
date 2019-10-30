@@ -324,6 +324,7 @@ def highResolutionNet(input):
             stride=1,
             padding=0
         )
+        logit = fluid.layers.resize_bilinear(logit, input.shape[2:])
 
     return logit
 
@@ -342,4 +343,4 @@ if __name__ == '__main__':
     image_shape = [3, 512, 1024]
     image = fluid.layers.data(name='image', shape=image_shape, dtype='float32')
     logit = hrnet(image, 4)
-    logger.info("logit:", logit.shape)
+    print("logit:", logit.shape)
