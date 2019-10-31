@@ -55,7 +55,6 @@ PaddleSeg支持多进程IO、多卡并行、跨卡Batch Norm同步等训练加�
 
 * [模型导出](./docs/model_export.md)
 * [C++预测库使用](./inference)
-* [PaddleSeg Serving服务化部署](./serving)
 
 ### 高级功能
 
