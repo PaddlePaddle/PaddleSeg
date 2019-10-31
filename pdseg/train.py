@@ -42,6 +42,7 @@ from eval import evaluate
 from vis import visualize
 from utils import dist_utils
 
+
 def parse_args():
     parser = argparse.ArgumentParser(description='PaddleSeg training')
     parser.add_argument(
@@ -177,9 +178,11 @@ def load_checkpoint(exe, program):
 
     return begin_epoch
 
+
 def print_info(*msg):
     if cfg.TRAINER_ID == 0:
         print(*msg)
+
 
 def train(cfg):
     startup_prog = fluid.Program()
@@ -257,8 +260,9 @@ def train(cfg):
             print_info("Sync BatchNorm strategy is effective.")
             build_strategy.sync_batch_norm = True
         else:
-            print_info("Sync BatchNorm strategy will not be effective if GPU device"
-                  " count <= 1")
+            print_info(
+                "Sync BatchNorm strategy will not be effective if GPU device"
+                " count <= 1")
     compiled_train_prog = fluid.CompiledProgram(train_prog).with_data_parallel(
         loss_name=avg_loss.name,
         exec_strategy=exec_strategy,
@@ -300,14 +304,16 @@ def train(cfg):
         for var in load_vars:
             print_info("Parameter[{}] loaded sucessfully!".format(var.name))
         for var in load_fail_vars:
-            print_info("Parameter[{}] don't exist or shape does not match current network, skip"
-                  " to load it.".format(var.name))
+            print_info(
+                "Parameter[{}] don't exist or shape does not match current network, skip"
+                " to load it.".format(var.name))
         print_info("{}/{} pretrained parameters loaded successfully!".format(
             len(load_vars),
             len(load_vars) + len(load_fail_vars)))
     else:
-        print_info('Pretrained model dir {} not exists, training from scratch...'.
-              format(cfg.TRAIN.PRETRAINED_MODEL_DIR))
+        print_info(
+            'Pretrained model dir {} not exists, training from scratch...'.
+            format(cfg.TRAIN.PRETRAINED_MODEL_DIR))
 
     fetch_list = [avg_loss.name, lr.name]
     if args.debug:
@@ -453,10 +459,11 @@ def train(cfg):
     if cfg.TRAINER_ID == 0:
         save_checkpoint(exe, train_prog, 'final')
 
+
 def main(args):
     if args.cfg_file is not None:
         cfg.update_from_file(args.cfg_file)
-    if args.opts is not None:
+    if args.opts:
         cfg.update_from_list(args.opts)
 
     cfg.TRAINER_ID = int(os.getenv("PADDLE_TRAINER_ID", 0))
