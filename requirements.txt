@@ -1,9 +1,9 @@
 pre-commit
 yapf == 0.26.0
 flake8
-pyyaml
+pyyaml >= 5.1
 tb-paddle
-tb-nightly == 1.15.0a20190818
+tensorboard >= 1.15.0
 Pillow
 numpy
 six
