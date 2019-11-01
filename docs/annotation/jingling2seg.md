@@ -81,7 +81,7 @@ pip install pillow
 * 运行以下代码，将标注后的数据转换成满足以上格式的数据集：
 
 ```
-  python jingling2seg.py <path/to/label_json_file> <path/to/output_dataset>
+  python docs/annotation/jingling2seg.py <path/to/label_json_file> <path/to/output_dataset>
 ```
 
 其中，`<path/to/label_json_files>`为精灵标注产出的json文件所在文件夹的目录，一般为精灵工具使用（3）中`保存位置`下的`outputs`目录。`<path/to/output_dataset>`为转换后的数据集所在文件夹的目录。
