@@ -99,6 +99,37 @@ python -u infer.py --example RoadLine
   
   预测结果：![](imgs/RoadLine.png)
 
+## 工业用表分割
+
+### 1. 模型结构
+
+unet
+
+### 2. 数据准备
+ 
+cd到PaddleSeg/dataset文件夹下，执行download_mini_mechanical_industry_meter.py
+
+
+### 3. 训练与评估
+
+```
+CUDA_VISIBLE_DEVICES=0 python ./pdseg/train.py --log_steps 10 --cfg configs/unet_mechanical_meter.yaml --use_gpu --do_eval --use_mpio 
+```
+
+### 4. 可视化
+我们提供了一个训练好的模型，点击[链接](https://paddleseg.bj.bcebos.com/models/unet_mechanical_industry_meter.tar)，下载后放在PaddleSeg/pretrained_model下
+```
+CUDA_VISIBLE_DEVICES=0 python ./pdseg/vis.py --cfg configs/unet_mechanical_meter.yaml --use_gpu --vis_dir vis_meter \
+TEST.TEST_MODEL "./pretrained_model/unet_gongyeyongbiao/" 
+```
+可视化结果会保存在vis_meter文件夹下
+
+### 5. 可视化结果示例：
+
+  原图：![](imgs/1560143028.5_IMG_3091.JPG)
+  
+  预测结果：![](imgs/1560143028.5_IMG_3091.png)
+  
 # 备注
 
 1. 数据及模型路径等详细配置见ACE2P/HumanSeg/RoadLine下的config.py文件
