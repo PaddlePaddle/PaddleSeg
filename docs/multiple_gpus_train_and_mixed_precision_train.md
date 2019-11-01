@@ -50,7 +50,7 @@ python -m paddle.distributed.launch pdseg/train.py --use_gpu \
 ### benchmark
 
 | 模型 | 数据集合 | batch size | number gpu cards | 多进程训练 | 混合精度训练 | 速度(image/s) | mIoU on val |
-|---|---|---|---|---|---|---|---|
+|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
 | DeepLabv3+/Xception65/bn | Cityscapes | 16 | 4 | False | False | 17.27 | 79.20 |
 | DeepLabv3+/Xception65/bn | Cityscapes | 16 | 4 | True | False  | 19.80 | 78.90 |
 | DeepLabv3+/Xception65/bn | Cityscapes | 16 | 4 | True | True  | 25.84 |79.06|
