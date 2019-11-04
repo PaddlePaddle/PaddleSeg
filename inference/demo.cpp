@@ -23,7 +23,8 @@ int main(int argc, char** argv) {
     // 0. parse args
     google::ParseCommandLineFlags(&argc, &argv, true);
     if (FLAGS_conf.empty() || FLAGS_input_dir.empty()) {
-        std::cout << "Usage: ./predictor --conf=/config/path/to/your/model --input_dir=/directory/of/your/input/images";
+        std::cout << "Usage: ./predictor --conf=/config/path/to/your/model "
+                  << "--input_dir=/directory/of/your/input/images";
         return -1;
     }
     // 1. create a predictor and init it with conf

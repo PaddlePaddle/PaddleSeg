@@ -21,9 +21,10 @@
 
 namespace PaddleSolution {
 
-    std::shared_ptr<ImagePreProcessor> create_processor(const std::string& conf_file) {
-
-        auto config = std::make_shared<PaddleSolution::PaddleSegModelConfigPaser>();
+    std::shared_ptr<ImagePreProcessor> create_processor(
+                           const std::string& conf_file) {
+        auto config = std::make_shared<PaddleSolution::
+                        PaddleSegModelConfigPaser>();
         if (!config->load_config(conf_file)) {
             LOG(FATAL) << "fail to laod conf file [" << conf_file << "]";
             return nullptr;
@@ -37,9 +38,9 @@ namespace PaddleSolution {
             return p;
         }
 
-        LOG(FATAL) << "unknown processor_name [" << config->_pre_processor << "]";
+        LOG(FATAL) << "unknown processor_name [" << config->_pre_processor
+                   << "]";
 
         return nullptr;
     }
-}
-
+}  // namespace PaddleSolution

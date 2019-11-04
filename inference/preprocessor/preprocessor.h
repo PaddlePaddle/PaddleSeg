@@ -26,18 +26,19 @@
 namespace  PaddleSolution {
 
 class ImagePreProcessor {
-protected:
-    ImagePreProcessor() {};
-    
-public:
+ protected:
+    ImagePreProcessor() {}
+ public:
     virtual ~ImagePreProcessor() {}
 
-    virtual bool single_process(const std::string& fname, float* data, int* ori_w, int* ori_h) = 0;
+    virtual bool single_process(const std::string& fname, float* data,
+                                int* ori_w, int* ori_h) = 0;
 
-    virtual bool batch_process(const std::vector<std::string>& imgs, float* data, int* ori_w, int* ori_h) = 0;
+    virtual bool batch_process(const std::vector<std::string>& imgs,
+                               float* data, int* ori_w, int* ori_h) = 0;
+};  // end of class ImagePreProcessor
 
-}; // end of class ImagePreProcessor
+std::shared_ptr<ImagePreProcessor> create_processor(
+                                   const std::string &config_file);
 
-std::shared_ptr<ImagePreProcessor> create_processor(const std::string &config_file);
-
-} // end of namespace paddle_solution
+}  // namespace PaddleSolution

@@ -12,21 +12,22 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <thread>
+#include "preprocessor_seg.h"
 
 #include <glog/logging.h>
 
-#include "preprocessor_seg.h"
+#include <thread>
+
 
 namespace PaddleSolution {
 
-    bool SegPreProcessor::single_process(const std::string& fname, float* data, int* ori_w, int* ori_h) {
+    bool SegPreProcessor::single_process(const std::string& fname,
+                                         float* data, int* ori_w, int* ori_h) {
         cv::Mat im = cv::imread(fname, -1);
         if (im.data == nullptr || im.empty()) {
             LOG(ERROR) << "Failed to open image: " << fname;
             return false;
         }
-        
         int channels = im.channels();
         *ori_w = im.cols;
         *ori_h = im.rows;
@@ -50,7 +51,8 @@ namespace PaddleSolution {
         return true;
     }
 
-    bool SegPreProcessor::batch_process(const std::vector<std::string>& imgs, float* data, int* ori_w, int* ori_h) {
+    bool SegPreProcessor::batch_process(const std::vector<std::string>& imgs,
+                                        float* data, int* ori_w, int* ori_h) {
         auto ic = _config->_channels;
         auto iw = _config->_resize[0];
         auto ih = _config->_resize[1];
@@ -72,9 +74,9 @@ namespace PaddleSolution {
         return true;
     }
 
-    bool SegPreProcessor::init(std::shared_ptr<PaddleSolution::PaddleSegModelConfigPaser> config) {
+    bool SegPreProcessor::init(
+        std::shared_ptr<PaddleSolution::PaddleSegModelConfigPaser> config) {
         _config = config;
         return true;
     }
-
-}
+}  // namespace PaddleSolution
