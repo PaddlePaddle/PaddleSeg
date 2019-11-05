@@ -114,6 +114,15 @@ PaddleSeg在AI Studio平台上提供了在线体验的教程，欢迎体验：
 
 ## 更新日志
 
+* 2019.11.04
+
+  **`v0.2.0`**
+  * 新增PSPNet分割网络，提供基于COCO和cityscapes数据集的[预训练模型](https://github.com/PaddlePaddle/PaddleSeg/blob/release/v0.2.0/docs/model_zoo.md)4个
+  * 新增Dice Loss、BCE Loss以及组合Loss配置
+  * 支持FP16混合精度训练
+  * 支持PaddlePaddle多卡多进程训练
+  * 发布基于UNet的[工业标记表盘分割模型](https://github.com/PaddlePaddle/PaddleSeg/tree/release/v0.2.0/contrib#%E5%B7%A5%E4%B8%9A%E7%94%A8%E8%A1%A8%E5%88%86%E5%89%B2)
+
 * 2019.09.10
 
   **`v0.1.0`**
