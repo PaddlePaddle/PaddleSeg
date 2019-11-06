@@ -5,7 +5,7 @@
 
 ## 前置条件
 * Visual Studio 2015
-* CUDA 8.0/ CUDA 9.0/ CUDA 10.0，cudnn 7+ （仅在使用GPU版本的预测库时需要）
+* CUDA 9.0 / CUDA 10.0，cudnn 7+ （仅在使用GPU版本的预测库时需要）
 * CMake 3.0+
 
 请确保系统已经安装好上述基本软件，**下面所有示例以工作目录为 `D:\projects`演示**。
@@ -20,14 +20,13 @@
 
 ### Step2: 下载PaddlePaddle C++ 预测库 fluid_inference
 
-PaddlePaddle C++ 预测库主要分为两大版本：CPU版本和GPU版本。其中，针对不同的CUDA版本，GPU版本预测库又分为三个版本预测库：CUDA 8、CUDA 9和CUDA 10版本预测库。根据Windows环境，下载相应版本的PaddlePaddle预测库，并解压到`D:\projects\`目录。以下为各版本C++预测库（CUDA 8版本基于1.5版本的预测库，其余均基于1.6版本的预测库）的下载链接：
+PaddlePaddle C++ 预测库主要分为两大版本：CPU版本和GPU版本。其中，针对不同的CUDA版本，GPU版本预测库又分为两个版本预测库：CUDA 9.0和CUDA 10.0版本预测库。根据Windows环境，下载相应版本的PaddlePaddle预测库，并解压到`D:\projects\`目录。以下为各版本C++预测库的下载链接：
 
 |  版本   | 链接  |
 |  ----  | ----  |
-| CPU版本  | [fluid_inference_install_dir.zip](https://paddle-wheel.bj.bcebos.com/1.6.0/win-infer/mkl/cpu/fluid_inference_install_dir.zip) |
-| CUDA 8版本  | [fluid_inference_install_dir.zip](https://paddle-inference-lib.bj.bcebos.com/1.5.1-win/gpu_mkl_avx_8.0/fluid_inference_install_dir.zip) |
-| CUDA 9版本  | [fluid_inference_install_dir.zip](https://paddle-wheel.bj.bcebos.com/1.6.0/win-infer/mkl/post97/fluid_inference_install_dir.zip) |
-| CUDA 10版本  | [fluid_inference_install_dir.zip](https://paddle-wheel.bj.bcebos.com/1.6.0/win-infer/mkl/post107/fluid_inference_install_dir.zip) |
+| CPU版本  | [fluid_inference_install_dir.zip](https://bj.bcebos.com/paddlehub/paddle_inference_lib/fluid_install_dir_win_cpu_1.6.zip) |
+| CUDA 9.0版本  | [fluid_inference_install_dir.zip](https://bj.bcebos.com/paddlehub/paddle_inference_lib/fluid_inference_install_dir_win_cuda9_1.6.1.zip) |
+| CUDA 10.0版本  | [fluid_inference_install_dir.zip](https://bj.bcebos.com/paddlehub/paddle_inference_lib/fluid_inference_install_dir_win_cuda10_1.6.1.zip) |
 
 解压后`D:\projects\fluid_inference`目录包含内容为：
 ```
@@ -59,31 +58,36 @@ fluid_inference
 call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" amd64
 ```
     
-* CMAKE编译工程 （带*表示仅在使用**GPU版本**预测库时指定）
-    * PADDLE_DIR: fluid_inference预测库路径
-    * *CUDA_LIB: CUDA动态库目录, 请根据实际安装情况调整
-    * OPENCV_DIR: OpenCV解压目录
+三个编译参数的含义说明如下（带*表示仅在使用**GPU版本**预测库时指定, 其中CUDA库版本尽量对齐，**使用9.0、10.0版本，不使用9.2、10.1等版本CUDA库**）：
 
-在使用**GPU版本**预测库进行编译时，可执行下列操作。
-```
+|  参数名   | 含义  |
+|  ----  | ----  |
+| *CUDA_LIB  | CUDA的库路径 |
+| OPENCV_DIR  | OpenCV的安装路径， |
+| PADDLE_DIR | Paddle预测库的路径 |
+
+在使用**GPU版本**预测库进行编译时，可执行下列操作。**注意**把对应的参数改为你的上述依赖库实际路径：
+
+```bash
 # 切换到预测库所在目录
 cd /d D:\projects\PaddleSeg\inference\
 # 创建构建目录, 重新构建只需要删除该目录即可
 mkdir build
 cd build
 # cmake构建VS项目
-D:\projects\PaddleSeg\inference\build> cmake .. -G "Visual Studio 14 2015 Win64" -DWITH_GPU=ON -DPADDLE_DIR=D:\projects\fluid_inference -DCUDA_LIB=D:\projects\cudalib\v8.0\lib\x64 -DOPENCV_DIR=D:\projects\opencv -T host=x64
+D:\projects\PaddleSeg\inference\build> cmake .. -G "Visual Studio 14 2015 Win64" -DWITH_GPU=ON -DPADDLE_DIR=D:\projects\fluid_inference -DCUDA_LIB=D:\projects\cudalib\v9.0\lib\x64 -DOPENCV_DIR=D:\projects\opencv -T host=x64
 ```
 
 在使用**CPU版本**预测库进行编译时，可执行下列操作。
-```
+
+```bash
 # 切换到预测库所在目录
 cd /d D:\projects\PaddleSeg\inference\
 # 创建构建目录, 重新构建只需要删除该目录即可
 mkdir build
 cd build
 # cmake构建VS项目
-D:\projects\PaddleSeg\inference\build> cmake .. -G "Visual Studio 14 2015 Win64" -DWITH_GPU=ON -DPADDLE_DIR=D:\projects\fluid_inference -DOPENCV_DIR=D:\projects\opencv -T host=x64
+D:\projects\PaddleSeg\inference\build> cmake .. -G "Visual Studio 14 2015 Win64" -DWITH_GPU=OFF -DPADDLE_DIR=D:\projects\fluid_inference -DOPENCV_DIR=D:\projects\opencv -T host=x64
 ```
 
 这里的`cmake`参数`-G`, 表示生成对应的VS版本的工程，可以根据自己的`VS`版本调整，具体请参考[cmake文档](https://cmake.org/cmake/help/v3.15/manual/cmake-generators.7.html)
