@@ -63,7 +63,7 @@ call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" amd6
 |  参数名   | 含义  |
 |  ----  | ----  |
 | *CUDA_LIB  | CUDA的库路径 |
-| OPENCV_DIR  | OpenCV的安装路径， |
+| OPENCV_DIR  | OpenCV的安装路径 |
 | PADDLE_DIR | Paddle预测库的路径 |
 
 在使用**GPU版本**预测库进行编译时，可执行下列操作。**注意**把对应的参数改为你的上述依赖库实际路径：
