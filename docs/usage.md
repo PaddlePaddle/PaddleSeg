@@ -101,7 +101,7 @@ tensorboard --logdir train_log --host {$HOST_IP} --port {$PORT}
 ```
 
 NOTE:
-1. 上述示例中，$HOST_IP为机器IP地址，请替换为实际IP，$PORT请替换为可访问的端口
+1. 上述示例中，$HOST\_IP为机器IP地址，请替换为实际IP，$PORT请替换为可访问的端口
 2. 数据量较大时，前端加载速度会比较慢，请耐心等待
 
 启动TensorBoard命令后，我们可以在浏览器中查看对应的训练数据
