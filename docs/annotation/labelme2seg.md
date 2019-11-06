@@ -91,7 +91,7 @@ pip install pillow
 * 运行以下代码，将标注后的数据转换成满足以上格式的数据集：
 
 ```
-  python labelme2seg.py <path/to/label_json_file> <path/to/output_dataset>
+  python docs/annotation/labelme2seg.py <path/to/label_json_file> <path/to/output_dataset>
 ```
 
 其中，`<path/to/label_json_files>`为图片以及LabelMe产出的json文件所在文件夹的目录，`<path/to/output_dataset>`为转换后的数据集所在文件夹的目录。**需注意的是：`<path/to/output_dataset>`不用预先创建，脚本运行时会自动创建，否则会报错。**
