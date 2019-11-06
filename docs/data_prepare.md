@@ -75,7 +75,7 @@ PaddleSeg采用通用的文件列表方式组织训练集、验证集和测试�
 不可在`DATASET.TRAIN_FILE_LIST`和`DATASET.VAL_FILE_LIST`配置项中使用。
 
 
-完整的配置信息可以参考[`./pdseg/utils/config.py`](../pdseg/utils/config.py)。
+完整的配置信息可以参考[`./dataset/cityscapes_demo`](../dataset/cityscapes_demo/)目录下的yaml和文件列表。
 
 ### 文件列表生成
 PaddleSeg提供了生成文件列表的使用脚本，可适用于自定义数据集或cityscapes数据集，并支持通过不同的Flags来开启特定功能。
