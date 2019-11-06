@@ -159,7 +159,7 @@ def highResolutionNet(input, num_classes):
     num_modules_3 = cfg.MODEL.HRNET.STAGE3.NUM_MODULES
     num_modules_4 = cfg.MODEL.HRNET.STAGE4.NUM_MODULES
 
-    x = conv_bn_layer(input=input, filter_size=3, num_filters=64, stride=2, if_act=True, name='layer1_1')
+    x = conv_bn_layer(input=input, filter_size=3, num_filters=64, stride=2, if_act=False, name='layer1_1')
     x = conv_bn_layer(input=x, filter_size=3, num_filters=64, stride=2, if_act=True, name='layer1_2')
 
     la1 = layer1(x, name='layer2')
