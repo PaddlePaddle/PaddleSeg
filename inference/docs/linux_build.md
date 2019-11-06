@@ -6,7 +6,7 @@
 ## 前置条件
 * G++ 4.8.2 ~ 4.9.4
 * CMake 3.0+
-* CUDA 8.0 / CUDA 9.0 / CUDA 10.0, cudnn 7+ （仅在使用GPU版本的预测库时需要）
+* CUDA 9.0 / CUDA 10.0, cudnn 7+ （仅在使用GPU版本的预测库时需要）
 
 请确保系统已经安装好上述基本软件，**下面所有示例以工作目录为 `/root/projects/`演示**。
 
@@ -20,17 +20,16 @@
 
 ### Step2: 下载PaddlePaddle C++ 预测库 fluid_inference
 
-PaddlePaddle C++ 预测库主要分为CPU版本和GPU版本。其中，针对不同的CUDA版本，GPU版本预测库又分为三个版本预测库：CUDA 8、CUDA 9和CUDA 10版本预测库。以下为各版本C++预测库的下载链接：
+PaddlePaddle C++ 预测库主要分为CPU版本和GPU版本。其中，针对不同的CUDA版本，GPU版本预测库又分为两个版本预测库：CUDA 9.0和CUDA 10.0版本预测库。以下为各版本C++预测库的下载链接：
 
 |  版本   | 链接  |
 |  ----  | ----  |
-| CPU版本  | [fluid_inference.tgz](https://paddle-inference-lib.bj.bcebos.com/latest-cpu-avx-mkl/fluid_inference.tgz) |
-| CUDA 8版本  | [fluid_inference.tgz](https://paddle-inference-lib.bj.bcebos.com/latest-gpu-cuda8-cudnn7-avx-mkl/fluid_inference.tgz) |
-| CUDA 9版本  | [fluid_inference.tgz](https://paddle-inference-lib.bj.bcebos.com/latest-gpu-cuda9-cudnn7-avx-mkl/fluid_inference.tgz) |
-| CUDA 10版本  | [fluid_inference.tgz](https://paddle-inference-lib.bj.bcebos.com/latest-gpu-cuda10-cudnn7-avx-mkl/fluid_inference.tgz) |
+| CPU版本  | [fluid_inference.tgz](https://bj.bcebos.com/paddlehub/paddle_inference_lib/fluid_inference_linux_cpu_1.6.1.tgz) |
+| CUDA 9.0版本  | [fluid_inference.tgz](https://bj.bcebos.com/paddlehub/paddle_inference_lib/fluid_inference_linux_cuda97_1.6.1.tgz) |
+| CUDA 10.0版本  | [fluid_inference.tgz](https://bj.bcebos.com/paddlehub/paddle_inference_lib/fluid_inference_linux_cuda10_1.6.1.tgz) |
 
 
-针对不同的CPU类型、不同的指令集，官方提供更多可用的预测库版本，目前已经推出1.6版本的预测库，具体请参考以下链接:[C++预测库下载列表](https://www.paddlepaddle.org.cn/documentation/docs/zh/develop/advanced_usage/deploy/inference/build_and_install_lib_cn.html)
+针对不同的CPU类型、不同的指令集，官方提供更多可用的预测库版本，目前已经推出1.6版本的预测库。其余版本具体请参考以下链接:[C++预测库下载列表](https://www.paddlepaddle.org.cn/documentation/docs/zh/develop/advanced_usage/deploy/inference/build_and_install_lib_cn.html)
 
 
 下载并解压后`/root/projects/fluid_inference`目录包含内容为：
@@ -63,7 +62,7 @@ make install
 
 ### Step4: 编译
 
-`CMake`编译时，涉及到四个编译参数用于指定核心依赖库的路径, 他们的定义如下:（带*表示仅在使用**GPU版本**预测库时指定）
+`CMake`编译时，涉及到四个编译参数用于指定核心依赖库的路径, 他们的定义如下:（带*表示仅在使用**GPU版本**预测库时指定，其中CUDA库版本尽量对齐，**使用9.0、10.0版本，不使用9.2、10.1版本CUDA库**）
 
 |  参数名   | 含义  |
 |  ----  | ----  |
@@ -84,6 +83,7 @@ make
 在使用**CPU版本**预测库进行编译时，可执行下列操作。
 ```shell
 cd /root/projects/PaddleSeg/inference
+
 mkdir build && cd build
 cmake .. -DWITH_GPU=OFF  -DPADDLE_DIR=/root/projects/fluid_inference -DOPENCV_DIR=/root/projects/opencv3/ -DWITH_STATIC_LIB=OFF
 make
