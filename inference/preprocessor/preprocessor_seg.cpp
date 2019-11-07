@@ -25,7 +25,11 @@ namespace PaddleSolution {
                                          float* data, int* ori_w, int* ori_h) {
         cv::Mat im = cv::imread(fname, -1);
         if (im.data == nullptr || im.empty()) {
+        #ifdef _WIN32
+            std::cerr << "Failed to open image: " << fname << std::endl;
+        #else
             LOG(ERROR) << "Failed to open image: " << fname;
+        #endif
             return false;
         }
         int channels = im.channels();
@@ -37,7 +41,11 @@ namespace PaddleSolution {
         }
         channels = im.channels();
         if (channels != 3 && channels != 4) {
+        #ifdef _WIN32
+            std::cerr << "Only support rgb(gray) and rgba image." << std::endl;
+        #else
             LOG(ERROR) << "Only support rgb(gray) and rgba image.";
+        #endif
             return false;
         }
 

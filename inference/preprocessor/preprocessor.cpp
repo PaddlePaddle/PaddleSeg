@@ -26,7 +26,11 @@ namespace PaddleSolution {
         auto config = std::make_shared<PaddleSolution::
                         PaddleSegModelConfigPaser>();
         if (!config->load_config(conf_file)) {
+        #ifdef _WIN32
+            std::cerr << "fail to laod conf file [" << conf_file << "]" << std::endl;
+        #else
             LOG(FATAL) << "fail to laod conf file [" << conf_file << "]";
+        #endif
             return nullptr;
         }
 
@@ -37,10 +41,13 @@ namespace PaddleSolution {
             }
             return p;
         }
-
+        #ifdef _WIN32
+        std::cerr << "unknown processor_name [" << config->_pre_processor << "],"
+                  << "please check whether PRE_PROCESSOR is set correctly" << std::endl;
+        #else
         LOG(FATAL) << "unknown processor_name [" << config->_pre_processor
-                   << "]";
-
+                   << "], please check whether PRE_PROCESSOR is set correctly" << std::endl;
+        #endif
         return nullptr;
     }
 }  // namespace PaddleSolution

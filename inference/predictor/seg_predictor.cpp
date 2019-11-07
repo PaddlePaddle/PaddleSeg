@@ -124,7 +124,15 @@ namespace PaddleSolution {
 
     int Predictor::native_predict(const std::vector<std::string>& imgs) {
         if (imgs.size() == 0) {
-            LOG(ERROR) << "No image found";
+        #ifdef _WIN32
+            std::cerr << "No image found! Please check whether the images path"
+                      << " is correct or the format of images is correct\n"
+                      << "Supporting format: [.jpeg|.jpg|.JPEG|.JPG|.bmp|.BMP|.png|.PNG]" << std::endl;
+        #else
+            LOG(ERROR) << "No image found! Please check whether the images path"
+                       << " is correct or the format of images is correct\n"
+                       << "Supporting format: [.jpeg|.jpg|.JPEG|.JPG|.bmp|.BMP|.png|.PNG]";
+        #endif 
             return -1;
         }
         int config_batch_size = _model_config._batch_size;
@@ -185,9 +193,15 @@ namespace PaddleSolution {
             _outputs.clear();
             auto t1 = std::chrono::high_resolution_clock::now();
             if (!_main_predictor->Run(feeds, &_outputs, batch_size)) {
+			#ifdef _WIN32
+				std::cerr <<
+				   "Failed: NativePredictor->Run() return false at batch: "
+				<< u << std::endl;
+			#else
                 LOG(ERROR) <<
                    "Failed: NativePredictor->Run() return false at batch: "
                  << u;
+			#endif
                 continue;
             }
             auto t2 = std::chrono::high_resolution_clock::now();
@@ -205,7 +219,11 @@ namespace PaddleSolution {
             const size_t nums = _outputs.front().data.length()
                               / sizeof(float);
             if (out_num % batch_size != 0 || out_num != nums) {
+            #ifdef _WIN32
+				std::cerr << "outputs data size mismatch with shape size.";
+            #else
                 LOG(ERROR) << "outputs data size mismatch with shape size.";
+			#endif
                 return -1;
             }
 
@@ -225,7 +243,15 @@ namespace PaddleSolution {
 
     int Predictor::analysis_predict(const std::vector<std::string>& imgs) {
         if (imgs.size() == 0) {
-            LOG(ERROR) << "No image found";
+        #ifdef _WIN32
+            std::cerr << "No image found! Please check whether the images path"
+                      << " is correct or the format of images is correct\n"
+                      << "Supporting format: [.jpeg|.jpg|.JPEG|.JPG|.bmp|.BMP|.png|.PNG]" << std::endl;
+        #else
+            LOG(ERROR) << "No image found! Please check whether the images path"
+                       << " is correct or the format of images is correct\n"
+                       << "Supporting format: [.jpeg|.jpg|.JPEG|.JPG|.bmp|.BMP|.png|.PNG]";
+        #endif 
             return -1;
         }
 

@@ -74,7 +74,9 @@ fluid_inference
 | *CUDA_LIB  | CUDA的库路径 |
 | OPENCV_DIR  | OpenCV的安装路径 |
 | PADDLE_DIR | Paddle预测库的路径 |
+
 **注意**在使用CPU版本预测库时，需要把CUDA_LIB的勾去掉。
+
 ![step4](https://paddleseg.bj.bcebos.com/inference/vs2019_step5.png)
 
 **设置完成后**, 点击上图中`保存并生成CMake缓存以加载变量`。
