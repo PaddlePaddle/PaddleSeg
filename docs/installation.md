@@ -3,8 +3,10 @@
 ## 1. 安装PaddlePaddle
 
 版本要求
-* PaddlePaddle >= 1.5.2
+* PaddlePaddle >= 1.6.1
 * Python 2.7 or 3.5+
+
+更多详细安装信息如CUDA版本、cuDNN版本等兼容信息请查看[PaddlePaddle安装](https://www.paddlepaddle.org.cn/install/doc/index)
 
 ### pip安装
  
