@@ -226,7 +226,7 @@ def visualize(cfg,
             # Use Tensorboard to visualize image
             if log_writer is not None:
                 # Calulate epoch from ckpt_dir folder name
-                epoch = int(ckpt_dir.split(os.path.sep)[-1])
+                epoch = int(os.path.split(ckpt_dir)[-1])
                 print("Tensorboard visualization epoch", epoch)
                 log_writer.add_image(
                     "Predict/{}".format(img_names[i]),
