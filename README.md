@@ -29,6 +29,20 @@ PaddleSeg支持多进程IO、多卡并行、跨卡Batch Norm同步等训练加�
 
 </br>
 
+## 环境依赖
+
+* PaddlePaddle >= 1.6.1
+* Python 2.7 or 3.5+
+
+通过以下命令安装python包依赖，请确保在该分支上至少执行过一次以下命令
+```shell
+$ pip install -r requirements.txt
+```
+
+其他如CUDA版本、cuDNN版本等兼容信息请查看[PaddlePaddle安装](https://www.paddlepaddle.org.cn/install/doc/index)
+
+</br>
+
 ## 使用教程
 
 我们提供了一系列的使用教程，来说明如何使用PaddleSeg完成语义分割模型的训练、评估、部署。
