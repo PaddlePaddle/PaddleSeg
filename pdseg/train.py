@@ -426,7 +426,7 @@ def train(cfg):
         if epoch % cfg.TRAIN.SNAPSHOT_EPOCH == 0 and cfg.TRAINER_ID == 0:
             ckpt_dir = save_checkpoint(exe, train_prog, epoch)
 
-            if args.do_eval and epoch >= cfg.SOLVER.NUM_EPOCHS / 5 * 1:
+            if args.do_eval:
                 print("Evaluation start")
                 _, mean_iou, _, mean_acc = evaluate(
                     cfg=cfg,
@@ -440,7 +440,7 @@ def train(cfg):
                                           global_step)
 
             # Use Tensorboard to visualize results
-            if args.use_tb and cfg.DATASET.VIS_FILE_LIST is not None and epoch >= cfg.SOLVER.NUM_EPOCHS / 5 * 1:
+            if args.use_tb and cfg.DATASET.VIS_FILE_LIST is not None:
                 visualize(
                     cfg=cfg,
                     use_gpu=args.use_gpu,
