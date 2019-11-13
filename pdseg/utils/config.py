@@ -154,6 +154,10 @@ cfg.SOLVER.BEGIN_EPOCH = 1
 cfg.SOLVER.NUM_EPOCHS = 30
 # loss的选择，支持softmax_loss, bce_loss, dice_loss
 cfg.SOLVER.LOSS = ["softmax_loss"]
+# 是否开启warmup学习策略 
+cfg.SOLVER.LR_WARMUP = False 
+# warmup的迭代次数
+cfg.SOLVER.LR_WARMUP_STEPS = 2000 
 
 ########################## 测试配置 ###########################################
 # 测试模型路径
