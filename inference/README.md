@@ -1,6 +1,15 @@
 # PaddleSeg C++预测部署方案
 
-## 说明
+
+[1.说明](#1说明)
+
+[2.主要目录和文件](#2主要目录和文件)
+
+[3.编译](#3编译)
+
+[4.预测并可视化结果](#4预测并可视化结果)
+
+## 1.说明
 
 本目录提供一个跨平台的图像分割模型的C++预测部署方案，用户通过一定的配置，加上少量的代码，即可把模型集成到自己的服务中，完成图像分割的任务。
 
@@ -11,7 +20,7 @@
 - 高性能，除了`PaddlePaddle`自身带来的性能优势，我们还针对图像分割的特点对关键步骤进行了性能优化
 
 
-## 主要目录和文件
+## 2.主要目录和文件
 
 ```
 inference
@@ -22,7 +31,7 @@ inference
 ├── images
 │   └── humanseg # 示例人像分割模型测试图片目录
 ├── tools
-│   └── visualize.py # 示例人像分割模型结果可视化脚本
+│   └── visualize.py # 示例分割模型结果可视化脚本
 ├── docs
 |   ├── linux_build.md # Linux 编译指南
 |   ├── windows_vs2015_build.md # windows VS2015编译指南
@@ -40,7 +49,7 @@ inference
 
 ```
 
-## 编译
+## 3.编译
 支持在`Windows`和`Linux`平台编译和使用：
 - [Linux 编译指南](./docs/linux_build.md)
 - [Windows 使用 Visual Studio 2019 Community 编译指南](./docs/windows_vs2019_build.md)
@@ -48,11 +57,11 @@ inference
 
 `Windows`上推荐使用最新的`Visual Studio 2019 Community`直接编译`CMake`项目。
 
-## 预测并可视化结果
+## 4.预测并可视化结果
 
 完成编译后，便生成了需要的可执行文件和链接库，然后执行以下步骤：
 
-### 1. 下载模型文件
+### 4.1. 下载模型文件
 我们提供了一个人像分割模型示例用于测试，点击右侧地址下载：[示例模型下载地址](https://paddleseg.bj.bcebos.com/inference_model/deeplabv3p_xception65_humanseg.tgz)
 
 下载并解压，解压后目录结构如下：
@@ -69,7 +78,7 @@ deeplabv3p_xception65_humanseg
 **假设**`Linux`上对应的路径则为`/root/projects/models/deeplabv3p_xception65_humanseg`。
 
 
-### 2. 修改配置
+### 4.2. 修改配置
 
 基于`PaddleSeg`训练的模型导出时，会自动生成对应的预测模型配置文件，请参考文档：[模型导出](../docs/model_export.md)。
 
@@ -90,7 +99,7 @@ DEPLOY:
     # 均值
     MEAN: [0.40787450980392154, 0.4575254901960784, 0.481078431372549]
     # 方差
-    STD: [1.0, 1.0, 1.0]
+    STD: [0.00392156862745098, 0.00392156862745098, 0.00392156862745098]
     # 图片类型, rgb 或者 rgba
     IMAGE_TYPE: "rgb"
     # 分类类型数
@@ -106,7 +115,9 @@ DEPLOY:
 ```
 修改字段`MODEL_PATH`的值为你在**上一步**下载并解压的模型文件所放置的目录即可。
 
-### 3. 执行预测
+**注意**在使用CPU版本预测库时，`USE_GPU`的值必须设为0，否则无法正常预测。
+
+### 4.3. 执行预测
 
 在终端中切换到生成的可执行文件所在目录为当前目录(Windows系统为`cmd`)。
 
@@ -128,9 +139,7 @@ D:\projects\PaddleSeg\inference\build\Release>demo.exe --conf=D:\\projects\\Padd
 | input_dir | 需要预测的图片目录 |
 
 
-配置文件说明请参考上一步，样例程序会扫描input_dir目录下的所有图片，并生成对应的预测结果图片：
-
-文件`demo.jpg`预测的结果存储在`demo_jpg.png`中，可视化结果在`demo_jpg_scoremap.png`中， 原始尺寸的预测结果在`demo_jpg_recover.png`中。
+配置文件说明请参考上一步，样例程序会扫描input_dir目录下的所有以**jpg或jpeg**为后缀的图片，并生成对应的预测结果（若input_dir目录下没有以**jpg或jpeg**为后缀的图片，程序会报错）。图像分割会对`demo.jpg`的每个像素进行分类，其预测的结果保存在`demo_jpg.png`中。分割预测结果的图不能直接看到效果，必须经过可视化处理。对于二分类的图像分割模型，样例程序自动将预测结果转换成可视化结果，保存在`demo_jpg_scoremap.png`中， 原始尺寸的预测结果在`demo_jpg_recover.png`中，如下图。对于**多分类**的图像分割模型，请参考[可视化脚本使用方法](./docs/vis.md)。
 
 输入原图  
 ![avatar](images/humanseg/demo2.jpeg)

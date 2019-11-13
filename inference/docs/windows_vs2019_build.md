@@ -5,8 +5,8 @@ Windows 平台下，我们使用`Visual Studio 2015` 和 `Visual Studio 2019 Com
 你也可以使用和`VS2015`一样，通过把`CMake`项目转化成`VS`项目来编译，其中**有差别的部分**在文档中我们有说明，请参考：[使用Visual Studio 2015 编译指南](./windows_vs2015_build.md)
 
 ## 前置条件
-* Visual Studio 2019
-* CUDA 8.0/ CUDA 9.0
+* Visual Studio 2019 
+* CUDA 8.0/ CUDA 9.0/ CUDA 10.0，cudnn 7+ （仅在使用GPU版本的预测库时需要）
 * CMake 3.0+
 
 请确保系统已经安装好上述基本软件，我们使用的是`VS2019`的社区版。
@@ -23,12 +23,14 @@ Windows 平台下，我们使用`Visual Studio 2015` 和 `Visual Studio 2019 Com
 
 ### Step2: 下载PaddlePaddle C++ 预测库 fluid_inference
 
-根据Windows环境，下载相应版本的PaddlePaddle预测库，并解压到`D:\projects\`目录
+PaddlePaddle C++ 预测库主要分为两大版本：CPU版本和GPU版本。其中，针对不同的CUDA版本，GPU版本预测库又分为三个版本预测库：CUDA 8、CUDA 9和CUDA 10版本预测库。根据Windows环境，下载相应版本的PaddlePaddle预测库，并解压到`D:\projects\`目录。以下为各版本C++预测库（CUDA 8版本基于1.5版本的预测库，其余均基于1.6版本的预测库）的下载链接：
 
-| CUDA | GPU | 下载地址 |
-|------|------|--------|
-| 8.0 | Yes | [fluid_inference.zip](https://bj.bcebos.com/v1/paddleseg/fluid_inference_win.zip) |
-| 9.0 | Yes | [fluid_inference_cuda90.zip](https://paddleseg.bj.bcebos.com/fluid_inference_cuda9_cudnn7.zip) |
+|  版本   | 链接  |
+|  ----  | ----  |
+| CPU版本  | [fluid_inference_install_dir.zip](https://paddle-wheel.bj.bcebos.com/1.6.0/win-infer/mkl/cpu/fluid_inference_install_dir.zip) |
+| CUDA 8版本  | [fluid_inference_install_dir.zip](https://paddle-inference-lib.bj.bcebos.com/1.5.1-win/gpu_mkl_avx_8.0/fluid_inference_install_dir.zip) |
+| CUDA 9版本  | [fluid_inference_install_dir.zip](https://paddle-wheel.bj.bcebos.com/1.6.0/win-infer/mkl/post97/fluid_inference_install_dir.zip) |
+| CUDA 10版本  | [fluid_inference_install_dir.zip](https://paddle-wheel.bj.bcebos.com/1.6.0/win-infer/mkl/post107/fluid_inference_install_dir.zip) |
 
 解压后`D:\projects\fluid_inference`目录包含内容为：
 ```
@@ -39,7 +41,6 @@ fluid_inference
 |
 └── version.txt # 版本和编译信息
 ```
-**注意：** `CUDA90`版本解压后目录名称为`fluid_inference_cuda90`。
 
 ### Step3: 安装配置OpenCV
 
@@ -67,15 +68,15 @@ fluid_inference
 
 4. 点击`浏览`，分别设置编译选项指定`CUDA`、`OpenCV`、`Paddle预测库`的路径
 
-![step4](https://paddleseg.bj.bcebos.com/inference/vs2019_step5.png)
-
-三个编译参数的含义说明如下：
+三个编译参数的含义说明如下（带*表示仅在使用**GPU版本**预测库时指定）：
 
 |  参数名   | 含义  |
 |  ----  | ----  |
-| CUDA_LIB  | cuda的库路径 |
+| *CUDA_LIB  | cuda的库路径 |
 | OPENCV_DIR  | OpenCV的安装路径， |
 | PADDLE_DIR | Paddle预测库的路径 |
+**注意**在使用CPU版本预测库时，需要把CUDA_LIB的勾去掉。
+![step4](https://paddleseg.bj.bcebos.com/inference/vs2019_step5.png)
 
 **设置完成后**, 点击上图中`保存并生成CMake缓存以加载变量`。
 

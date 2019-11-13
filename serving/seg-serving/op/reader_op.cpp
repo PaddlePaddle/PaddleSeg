@@ -123,31 +123,21 @@ int ReaderOp::inference() {
     const int HH = _image_8u_tmp.rows;
     const int WW = _image_8u_tmp.cols;
     const int CC = _image_8u_tmp.channels();
+
    //HH: cols WW:rows 
     in_width_vec->push_back(HH);
     in_height_vec->push_back(WW);
 
-    // resize/crop
+    // resize
     if (_image_8u_tmp.cols != resize.width ||
         _image_8u_tmp.rows != resize.height) {
-//      int short_egde = std::min<int>(_image_8u_tmp.cols, _image_8u_tmp.rows);
-//      int yy = static_cast<int>((_image_8u_tmp.rows - short_egde) / 2);
-//      int xx = static_cast<int>((_image_8u_tmp.cols - short_egde) / 2);
-//      _image_8u_tmp =
-//          cv::Mat(_image_8u_tmp, cv::Rect(xx, yy, short_egde, short_egde));
-//      if (_image_8u_tmp.cols != resize.width ||
-//          _image_8u_tmp.rows != resize.height) {
           cv::Mat resize_image;
-//        cv::resize(_image_8u_tmp, resize_image, resize);
-//        _image_8u_tmp = resize_image;
-//      }
-//
-      cv::resize(_image_8u_tmp, resize_image, resize);
-      _image_8u_tmp = resize_image;
-      LOG(INFO) << "Succ crop one image[CHW=" << _image_8u_tmp.channels()
-                << ", " << _image_8u_tmp.cols << ", " << _image_8u_tmp.rows
-                << "]"
-                << " from image[CHW=" << CC << ", " << HH << ", " << WW << "]";
+          cv::resize(_image_8u_tmp, resize_image, resize);
+          _image_8u_tmp = resize_image;
+          LOG(INFO) << "Succ crop one image[CHW=" << _image_8u_tmp.channels()
+                    << ", " << _image_8u_tmp.cols << ", " << _image_8u_tmp.rows
+                    << "]"
+                    << " from image[CHW=" << CC << ", " << HH << ", " << WW << "]";
     }
 
     // BGR->RGB transformer
