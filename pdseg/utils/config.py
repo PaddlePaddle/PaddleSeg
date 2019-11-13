@@ -213,6 +213,18 @@ cfg.MODEL.PSPNET.DEPTH_MULTIPLIER = 1
 # RESNET backbone 层数 设置
 cfg.MODEL.PSPNET.LAYERS = 50
 
+########################## HRNET模型配置 ######################################
+# HRNET STAGE2 设置
+cfg.MODEL.HRNET.STAGE2.NUM_MODULES = 1
+cfg.MODEL.HRNET.STAGE2.NUM_CHANNELS = [40, 80]
+# HRNET STAGE3 设置
+cfg.MODEL.HRNET.STAGE3.NUM_MODULES = 4
+cfg.MODEL.HRNET.STAGE3.NUM_CHANNELS = [40, 80, 160]
+# HRNET STAGE4 设置
+cfg.MODEL.HRNET.STAGE4.NUM_MODULES = 3
+cfg.MODEL.HRNET.STAGE4.NUM_CHANNELS = [40, 80, 160, 320]
+
+
 ########################## 预测部署模型配置 ###################################
 # 预测保存的模型名称
 cfg.FREEZE.MODEL_FILENAME = '__model__'
