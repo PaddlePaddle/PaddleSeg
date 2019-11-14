@@ -165,7 +165,7 @@ def main():
     args = parse_args()
     if args.cfg_file is not None:
         cfg.update_from_file(args.cfg_file)
-    if args.opts is not None:
+    if args.opts:
         cfg.update_from_list(args.opts)
     cfg.check_and_infer()
     print(pprint.pformat(cfg))

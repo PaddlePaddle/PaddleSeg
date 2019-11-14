@@ -154,6 +154,10 @@ cfg.SOLVER.BEGIN_EPOCH = 1
 cfg.SOLVER.NUM_EPOCHS = 30
 # loss的选择，支持softmax_loss, bce_loss, dice_loss
 cfg.SOLVER.LOSS = ["softmax_loss"]
+# 是否开启warmup学习策略 
+cfg.SOLVER.LR_WARMUP = False 
+# warmup的迭代次数
+cfg.SOLVER.LR_WARMUP_STEPS = 2000 
 
 ########################## 测试配置 ###########################################
 # 测试模型路径
@@ -208,6 +212,18 @@ cfg.MODEL.ICNET.LAYERS = 50
 cfg.MODEL.PSPNET.DEPTH_MULTIPLIER = 1
 # RESNET backbone 层数 设置
 cfg.MODEL.PSPNET.LAYERS = 50
+
+########################## HRNET模型配置 ######################################
+# HRNET STAGE2 设置
+cfg.MODEL.HRNET.STAGE2.NUM_MODULES = 1
+cfg.MODEL.HRNET.STAGE2.NUM_CHANNELS = [40, 80]
+# HRNET STAGE3 设置
+cfg.MODEL.HRNET.STAGE3.NUM_MODULES = 4
+cfg.MODEL.HRNET.STAGE3.NUM_CHANNELS = [40, 80, 160]
+# HRNET STAGE4 设置
+cfg.MODEL.HRNET.STAGE4.NUM_MODULES = 3
+cfg.MODEL.HRNET.STAGE4.NUM_CHANNELS = [40, 80, 160, 320]
+
 
 ########################## 预测部署模型配置 ###################################
 # 预测保存的模型名称

@@ -69,6 +69,7 @@ link_directories("${CMAKE_CURRENT_BINARY_DIR}/ext/yaml-cpp/lib")
 link_directories("${CMAKE_CURRENT_BINARY_DIR}")
 if (WIN32)
   include_directories("${PADDLE_DIR}/paddle/fluid/inference")
+  include_directories("${PADDLE_DIR}/paddle/include")
   link_directories("${PADDLE_DIR}/paddle/fluid/inference")
   include_directories("${OPENCV_DIR}/build/include")
   include_directories("${OPENCV_DIR}/opencv/build/include")
@@ -133,6 +134,7 @@ if(WITH_MKL)
   else ()
     set(MATH_LIB ${PADDLE_DIR}/third_party/install/mklml/lib/libmklml_intel${CMAKE_SHARED_LIBRARY_SUFFIX}
             ${PADDLE_DIR}/third_party/install/mklml/lib/libiomp5${CMAKE_SHARED_LIBRARY_SUFFIX})
+    execute_process(COMMAND cp -r ${PADDLE_DIR}/third_party/install/mklml/lib/libmklml_intel${CMAKE_SHARED_LIBRARY_SUFFIX} /usr/lib)
   endif ()
   set(MKLDNN_PATH "${PADDLE_DIR}/third_party/install/mkldnn")
   if(EXISTS ${MKLDNN_PATH})
@@ -147,22 +149,22 @@ else()
   set(MATH_LIB ${PADDLE_DIR}/third_party/install/openblas/lib/libopenblas${CMAKE_STATIC_LIBRARY_SUFFIX})
 endif()
 
+if (WIN32)
+    if(EXISTS "${PADDLE_DIR}/paddle/fluid/inference/libpaddle_fluid${CMAKE_STATIC_LIBRARY_SUFFIX}")
+        set(DEPS
+            ${PADDLE_DIR}/paddle/fluid/inference/libpaddle_fluid${CMAKE_STATIC_LIBRARY_SUFFIX})
+    else()
+	    set(DEPS
+            ${PADDLE_DIR}/paddle/lib/libpaddle_fluid${CMAKE_STATIC_LIBRARY_SUFFIX})
+    endif()
+endif()
+
 if(WITH_STATIC_LIB)
-  if (WIN32)
-    set(DEPS
-        ${PADDLE_DIR}/paddle/fluid/inference/libpaddle_fluid${CMAKE_STATIC_LIBRARY_SUFFIX})
-  else ()
     set(DEPS
         ${PADDLE_DIR}/paddle/lib/libpaddle_fluid${CMAKE_STATIC_LIBRARY_SUFFIX})
-  endif()
 else()
-  if (WIN32)
-    set(DEPS
-        ${PADDLE_DIR}/paddle/fluid/inference/libpaddle_fluid${CMAKE_STATIC_LIBRARY_SUFFIX})
-  else ()
     set(DEPS
         ${PADDLE_DIR}/paddle/lib/libpaddle_fluid${CMAKE_SHARED_LIBRARY_SUFFIX})
-  endif()
 endif()
 
 if (NOT WIN32)
@@ -237,6 +239,8 @@ if (WIN32)
         COMMAND ${CMAKE_COMMAND} -E copy_if_different ${PADDLE_DIR}/third_party/install/mkldnn/lib/mkldnn.dll ./mkldnn.dll
         COMMAND ${CMAKE_COMMAND} -E copy_if_different ${PADDLE_DIR}/third_party/install/mklml/lib/mklml.dll ./release/mklml.dll
         COMMAND ${CMAKE_COMMAND} -E copy_if_different ${PADDLE_DIR}/third_party/install/mklml/lib/libiomp5md.dll ./release/libiomp5md.dll
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different ${PADDLE_DIR}/third_party/install/mkldnn/lib/mkldnn.dll ./mkldnn.dll
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different ${PADDLE_DIR}/third_party/install/mkldnn/lib/mkldnn.dll ./release/mkldnn.dll
     )
 endif()
+
+execute_process(COMMAND cp -r ${CMAKE_SOURCE_DIR}/images ${CMAKE_SOURCE_DIR}/conf ${CMAKE_CURRENT_BINARY_DIR})

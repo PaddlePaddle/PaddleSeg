@@ -76,6 +76,7 @@ def map_model_name(model_name):
         "deeplabv3p": "deeplab.deeplabv3p",
         "icnet": "icnet.icnet",
         "pspnet": "pspnet.pspnet",
+        "hrnet": "hrnet.hrnet"
     }
     if model_name in name_dict.keys():
         return name_dict[model_name]
