@@ -15,21 +15,47 @@ import PIL.Image
 import labelme
 
 
-def main():
+def get_color_map_list(num_classes):
+    """ Returns the color map for visualizing the segmentation mask,
+        which can support arbitrary number of classes.
+    Args:
+        num_classes: Number of classes
+    Returns:
+        The color map
+    """
+    #color_map = num_classes * 3 *  [0]
+    color_map = num_classes * [0, 0, 0]
+    for i in range(0, num_classes):
+        j = 0
+        lab = i
+        while lab:
+            color_map[i*3] |= (((lab >> 0) & 1) << (7 - j))
+            color_map[i*3+1] |= (((lab >> 1) & 1) << (7 - j))
+            color_map[i*3+2] |= (((lab >> 2) & 1) << (7 - j))
+            j += 1
+            lab >>= 3
+
+    return color_map
+
+def parse_args():
     parser = argparse.ArgumentParser(
         formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
-    parser.add_argument('input_dir', help='input annotated directory')
-    parser.add_argument('output_dir', help='output dataset directory')
-    args = parser.parse_args()
+    parser.add_argument('input_dir',
+                        help='input annotated directory')
+    parser.add_argument('output_dir',
+                        help='output dataset directory')
+    return parser.parse_args()
 
-    if osp.exists(args.output_dir):
-        print('Output directory already exists:', args.output_dir)
-        sys.exit(1)
-    os.makedirs(args.output_dir)
-    os.makedirs(osp.join(args.output_dir, 'JPEGImages'))
-    os.makedirs(osp.join(args.output_dir, 'SegmentationClassPNG'))
-    print('Creating dataset:', args.output_dir)
+
+def main(args):
+    if not osp.exists(args.output_dir):
+        # print('Output directory already exists:', args.output_dir)
+        # sys.exit(1)
+        os.makedirs(args.output_dir)
+        os.makedirs(osp.join(args.output_dir, 'JPEGImages'))
+        os.makedirs(osp.join(args.output_dir, 'SegmentationClassPNG'))
+        print('Creating dataset:', args.output_dir)
 
     # get the all class names for the given dataset
     class_names = ['_background_']
@@ -57,6 +83,8 @@ def main():
         f.writelines('\n'.join(class_names))
     print('Saved class_names:', out_class_names_file)
 
+    color_map = get_color_map_list(256)
+
     for label_file in glob.glob(osp.join(args.input_dir, '*.json')):
         print('Generating dataset from:', label_file)
         with open(label_file) as f:
@@ -82,7 +110,9 @@ def main():
                 out_png_file += '.png'
             # Assume label ranses [0, 255] for uint8,
             if lbl.min() >= 0 and lbl.max() <= 255:
-                lbl_pil = PIL.Image.fromarray(lbl.astype(np.uint8), mode='L')
+                # lbl_pil = PIL.Image.fromarray(lbl.astype(np.uint8), mode='L')
+                lbl_pil = PIL.Image.fromarray(lbl.astype(np.uint8), mode='P')
+                lbl_pil.putpalette(color_map)
                 lbl_pil.save(out_png_file)
             else:
                 raise ValueError(
@@ -91,4 +121,12 @@ def main():
                 )
 
 if __name__ == '__main__':
-    main()
+    args = parse_args()
+
+    # args = argparse.ArgumentParser(
+    #     formatter_class=argparse.ArgumentDefaultsHelpFormatter
+    # )
+    # args.input_dir = '../../dataset/humanseg_labelme/'
+    # args.output_dir = '../../dataset/humanseg_labelme/LMode'
+
+    main(args)
