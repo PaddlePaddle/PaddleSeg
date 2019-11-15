@@ -15,9 +15,9 @@ PaddleSeg具备高性能、丰富的数据增强、工业级部署、全流程�
 
 基于百度视觉技术部的实际业务经验，内置10+种数据增强策略，可结合实际业务场景进行定制组合，提升模型泛化能力和鲁棒性。
 
-- **主流模型覆盖**
+- **模块化设计**
 
-支持U-Net, DeepLabv3+, ICNet三类主流分割网络，结合预训练模型和可调节的骨干网络，满足不同性能和精度的要求。
+支持U-Net, DeepLabv3+, ICNet, PSPNet四种主流分割网络，结合预训练模型和可调节的骨干网络，满足不同性能和精度的要求；选择不同的损失函数如Dice Loss, BCE Loss等方式可以强化小目标和不均衡样本场景下的分割精度。
 
 - **高性能**
 
@@ -26,6 +26,20 @@ PaddleSeg支持多进程IO、多卡并行、跨卡Batch Norm同步等训练加�
 - **工业级部署**
 
 基于[Paddle Serving](https://github.com/PaddlePaddle/Serving)和PaddlePaddle高性能预测引擎，结合百度开放的AI能力，轻松搭建人像分割和车道线分割服务。
+
+</br>
+
+## 环境依赖
+
+* PaddlePaddle >= 1.6.1
+* Python 2.7 or 3.5+
+
+通过以下命令安装python包依赖，请确保在该分支上至少执行过一次以下命令
+```shell
+$ pip install -r requirements.txt
+```
+
+其他如CUDA版本、cuDNN版本等兼容信息请查看[PaddlePaddle安装](https://www.paddlepaddle.org.cn/install/doc/index)
 
 </br>
 
@@ -126,7 +140,7 @@ PaddleSeg在AI Studio平台上提供了在线体验的教程，欢迎体验：
 * 2019.09.10
 
   **`v0.1.0`**
-  * PaddleSeg分割库初始版本发布，包含DeepLabv3+, U-Net, ICNet三类分割模型, 其中DeepLabv3+支持Xception, MobileNet两种可调节的骨干网络。
+  * PaddleSeg分割库初始版本发布，包含DeepLabv3+, U-Net, ICNet三类分割模型, 其中DeepLabv3+支持Xception, MobileNet v2两种可调节的骨干网络。
   * CVPR19 LIP人体部件分割比赛冠军预测模型发布[ACE2P](./contrib/ACE2P)
   * 预置基于DeepLabv3+网络的[人像分割](./contrib/HumanSeg/)和[车道线分割](./contrib/RoadLine)预测模型发布
 

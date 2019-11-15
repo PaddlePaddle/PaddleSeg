@@ -30,7 +30,7 @@ MODEL:
     MODEL_NAME: "deeplabv3p"
     DEFAULT_NORM_TYPE: "bn"
     DEEPLAB:
-        BACKBONE: "mobilenet"
+        BACKBONE: "mobilenetv2"
         DEPTH_MULTIPLIER: 1.0
         ENCODER_WITH_ASPP: False
         ENABLE_DECODER: False
