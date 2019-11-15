@@ -59,11 +59,13 @@
 
  ```
  my_dataset                 # 根目录 
- |-- annotations            # 数据集真值 
- |   |-- xxx.png            # 像素级别的真值信息 
- |   |... 
- |-- class_names.txt        # 数据集的类别名称
- |-- xxx.json               # 标注json文件
+ |-- outputs                # 标注工具导出目录
+ |   |-- annotations            # 数据集真值 
+ |       |-- xxx.png            # 像素级别的真值信息 
+ |       |... 
+ |   |-- class_names.txt        # 数据集的类别名称
+ |   |-- xxx.json               # 标注json文件
+ |-- xxx.jpg(png or other)  # 数据集原图
  |-- ...
  
  ```
