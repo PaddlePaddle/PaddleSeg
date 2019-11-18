@@ -86,7 +86,7 @@ class PaddleSegModelConfigPaser {
         }
 
         // 2. get mean
-		if (config["DEPLOY"]["MEAN"].IsDefined()) {
+        if (config["DEPLOY"]["MEAN"].IsDefined()) {
             for (const auto& item : config["DEPLOY"]["MEAN"]) {
                 _mean.push_back(item.as<float>());
             }

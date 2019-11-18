@@ -1,4 +1,4 @@
-# PaddleSeg C++预测部署方案
+# PaddleSeg 预测部署方案
 
 
 [1.说明](#1说明)
@@ -11,7 +11,7 @@
 
 ## 1.说明
 
-本目录提供一个跨平台的图像分割模型的C++预测部署方案，用户通过一定的配置，加上少量的代码，即可把模型集成到自己的服务中，完成图像分割的任务。
+本目录提供一个跨平台的图像分割模型的C++、Python预测部署方案，用户通过一定的配置，加上少量的代码，即可把模型集成到自己的服务中，完成图像分割的任务。
 
 主要设计的目标包括以下四点：
 - 跨平台，支持在 windows 和 Linux 完成编译、开发和部署
@@ -56,6 +56,8 @@ inference
 - [Windows 使用 Visual Studio 2015 编译指南](./docs/windows_vs2015_build.md)
 
 `Windows`上推荐使用最新的`Visual Studio 2019 Community`直接编译`CMake`项目。
+
+针对Python的预测部署方法，可参考以下链接：[Python预测部署方法](python_inference.md)
 
 ## 4.预测并可视化结果
 
