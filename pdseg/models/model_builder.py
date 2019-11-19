@@ -26,6 +26,8 @@ from utils.config import cfg
 from loss import multi_softmax_with_loss
 from loss import multi_dice_loss
 from loss import multi_bce_loss
+from lovasz_losses import lovasz_hinge
+from lovasz_losses import lovasz_softmax
 
 
 class ModelPhase(object):
@@ -189,6 +191,14 @@ def build_model(main_prog, start_prog, phase=ModelPhase.TRAIN):
                     avg_loss_list.append(multi_bce_loss(logits, label, mask))
                     loss_valid = True
                     valid_loss.append("bce_loss")
+                if "lovasz_hinge_loss" in loss_type:
+                    avg_loss_list.append(lovasz_hinge(logits, label, per_image=False))
+                    loss_valid = True
+                    valid_loss.append("lovasz_hinge_loss")
+                if "lovasz_softmax_loss" in loss_type:
+                    avg_loss_list.append(lovasz_softmax(logits, label, ignore=mask))
+                    loss_valid = True
+                    valid_loss.append("lovasz_softmax_loss")
                 if not loss_valid:
                     raise Exception("SOLVER.LOSS: {} is set wrong. it should "
                             "include one of (softmax_loss, bce_loss, dice_loss) at least"
