@@ -1,4 +1,7 @@
-ddleLite v2.0.0实现的人像分割Android示例`模型链接`，基于`数据`训练。以下第二节介绍如何使用demo，后面几章节介绍如何将PaddleSeg的Model部署到安卓等移动设备。
+# 安卓端人像分割
+
+## 1.介绍
+基于addleLite v2.0.0实现的人像分割Android示例`模型链接`，基于`数据`训练。以下第二节介绍如何使用demo，后面几章节介绍如何将PaddleSeg的Model部署到安卓等移动设备。
 ## 2.
 ### 2.1 要求
 - Android Studio 3.4
@@ -12,7 +15,6 @@ ddleLite v2.0.0实现的人像分割Android示例`模型链接`，基于`数据`
 - 在垃圾分类Demo中，默认会载入一张一次性餐盒图像，并会在图像下方给出CPU的预测结果；
 - 在垃圾分类Demo中，你还可以通过上方的"Gallery"和"Take Photo"按钮从相册或相机中加载测试图像；
 ### 2.3 效果展示
-Screenshot_2019-11-19-20-44-10-562_com.baidu.padd.png![图片](https://agroup-bos.cdn.bcebos.com/8cbda49a7588ddc8b7f90e6fa92e1a01c8d06243)
 ## 3.模型导出
 [模型导出](https://github.com/PaddlePaddle/PaddleSeg/blob/release/v0.2.0/docs/model_export.md)
 ## 开发环境准备
