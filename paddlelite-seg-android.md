@@ -2,7 +2,7 @@
 
 ## 1.介绍
 基于addleLite v2.0.0实现的人像分割Android示例`模型链接`，基于`数据`训练。以下第二节介绍如何使用demo，后面几章节介绍如何将PaddleSeg的Model部署到安卓等移动设备。
-## 2.
+## 2.安卓端Demo使用
 ### 2.1 要求
 - Android Studio 3.4
 - Android手机或开发版；
@@ -17,7 +17,6 @@
 ### 2.3 效果展示
 ## 3.模型导出
 [模型导出](https://github.com/PaddlePaddle/PaddleSeg/blob/release/v0.2.0/docs/model_export.md)
-## 开发环境准备
 
 ## 4.模型转换
 为了支持PaddleSeg模型在移动端的部署，首先需要准备PaddleLite使用的开发环境，在该开发环境中编译PaddleLite的预测库和模型转换工具，并对模型进行优化和转换。
