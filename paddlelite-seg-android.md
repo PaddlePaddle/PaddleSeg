@@ -31,9 +31,6 @@ PaddleLite目前支持Docker，Linux和Mac OS开发环境，建议使用Docker�
 注意：请在上一节准备好的开发环境中使用model_optimize_tool
 
 1. 使用预编译版本的model_optimize_tool，最新的预编译文件参考[release](https://github.com/PaddlePaddle/Paddle-Lite/releases/)，此demo使用的版本为[model_optimize_tool v2.0.0](https://github.com/PaddlePaddle/Paddle-Lite/releases/download/v2.0.0/model_optimize_tool) 
-
-2此demo使用的版本为[model_optimize_tool v2.0.0](https://github.com/PaddlePaddle/Paddle-Lite/releases/download/v2.0.0/model_optimize_tool) 
-
 2. 手动编译model_optimize_tool
 
 详细的模型转换方法参考paddlelite提供的官方文档：[模型转化方法](https://paddlepaddle.github.io/Paddle-Lite/v2.0.0/model_optimize_tool/https://paddlepaddle.github.io/Paddle-Lite/v2.0.0/model_optimize_tool/)，从PaddleSeg里面导出来的模型使用如下指令即可导出model.nb和param.nb文件。
