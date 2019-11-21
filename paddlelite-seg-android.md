@@ -27,7 +27,7 @@
 为了支持PaddleSeg模型在移动端的部署，需要准备Paddle-Lite预测库和模型转换工具。
 
 ### 4.1预测库
-Paddle-Lite的编译目前支持Docker，Linux和Mac OS开发环境，建议使用Docker开发环境，以免存在各种依赖问题，具体环境的准备和编译方法参考[PaddLite源码编译](https://paddlepaddle.github.io/Paddle-Lite/v2.0.0/source_compile/)，同时[release](https://github.com/PaddlePaddle/Paddle-Lite/releases/)也提供了预编译版本的预测库和模型转换工具。
+Paddle-Lite的编译目前支持Docker，Linux和Mac OS开发环境，建议使用Docker开发环境，以免存在各种依赖问题，同时也提供了预编译版本的预测库，下面分别介绍两种方法的使用：
 准备Paddle-Lite在安卓端的预测库，主要包括三个文件：
 
 - PaddlePredictor.jar<br>
@@ -49,7 +49,7 @@ Paddle-Lite的编译目前支持Docker，Linux和Mac OS开发环境，建议使�
 解压上述inference_lite_lib.android.armv7文件，armeabi-v7a/libpaddle_lite_jni.so位于：inference_lite_lib.android.armv7/java/so/libpaddle_lite_jni.so
 
 2.手动编译Paddle-Lite预测库
-具体环境的准备和编译方法参考：[Paddle-Lite源码编译](https://paddlepaddle.github.io/Paddle-Lite/v2.0.0/source_compile/)。
+开发环境的准备和编译方法参考：[Paddle-Lite源码编译](https://paddlepaddle.github.io/Paddle-Lite/v2.0.0/source_compile/)。
 
 准备好上述文件，即可参考[java_api](https://paddlepaddle.github.io/Paddle-Lite/v2.0.0/java_api_doc/)在安卓端进行推理。具体使用预测库的方法可参考[Paddle-Lite-Demo](https://github.com/PaddlePaddle/Paddle-Lite-Demo)。
 
