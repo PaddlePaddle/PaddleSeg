@@ -38,21 +38,21 @@ PaddleLite目前支持Docker，Linux和Mac OS开发环境，建议使用Docker�
 
 1. 使用预编译版本的预测库，最新的预编译文件参考：[release](https://github.com/PaddlePaddle/Paddle-Lite/releases/)，
 
-      此demo使用的版本为:
-    arm64-v8a: [inference_lite_lib.android.armv8](https://github.com/PaddlePaddle/Paddle-Lite/releases/download/v2.0.0/inference_lite_lib.android.armv8.gcc.c++_shared.with_extra.full_publish.tar.gz) 
+ 此demo使用的版本：
+    - arm64-v8a: [inference_lite_lib.android.armv8](https://github.com/PaddlePaddle/Paddle-Lite/releases/download/v2.0.0/inference_lite_lib.android.armv8.gcc.c++_shared.with_extra.full_publish.tar.gz) 
 
-    armeabi-v7a: [inference_lite_lib.android.armv7](https://github.com/PaddlePaddle/Paddle-Lite/releases/download/v2.0.0/inference_lite_lib.android.armv7.gcc.c++_shared.with_extra.full_publish.tar.gz) 
-
-    PaddlePredictor.jar位于:
+    - armeabi-v7a: [inference_lite_lib.android.armv7](https://github.com/PaddlePaddle/Paddle-Lite/releases/download/v2.0.0/inference_lite_lib.android.armv7.gcc.c++_shared.with_extra.full_publish.tar.gz) 
+    
+    解压上面两个文件，PaddlePredictor.jar位于任一文件夹:
     inference_lite_lib.android.xxx/java/jar/PaddlePredictor.jar
     
-    arm64-v8a/libpaddle_lite_jni.so位于:
+     解压上述inference_lite_lib.android.armv8文件，arm64-v8a/libpaddle_lite_jni.so位于:
     inference_lite_lib.android.armv8/java/so/libpaddle_lite_jni.so
 
-    armeabi-v7a/libpaddle_lite_jni.so位于:
+     解压上述inference_lite_lib.android.armv7文件，armeabi-v7a/libpaddle_lite_jni.so位于:
     inference_lite_lib.android.armv7/java/so/libpaddle_lite_jni.so
 
-2. 手动编译model_optimize_tool
+2. 手动编译Paddle-Lite预测库
 具体环境的准备和编译方法参考：[PaddLite源码编译](https://paddlepaddle.github.io/Paddle-Lite/v2.0.0/source_compile/)。
 
 准备好上述文件，即可使用[Paddle-Lite java_api](https://paddlepaddle.github.io/Paddle-Lite/v2.0.0/java_api_doc/)在安卓端进行推理。具体使用预测库的方法可以参考[Paddle-Lite-Demo](https://github.com/PaddlePaddle/Paddle-Lite-Demo)。
