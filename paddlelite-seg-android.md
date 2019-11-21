@@ -13,9 +13,9 @@
 - 手机上会出现Demo的主界面，选择"Image Classification"图标，进入基于MobileNetV2的垃圾分类示例程序；
 - 在垃圾分类Demo中，默认会载入一张一次人像图像，并会在图像下方给出CPU的预测结果；
 - 在垃圾分类Demo中，你还可以通过上方的"Gallery"和"Take Photo"按钮从相册或相机中加载测试图像；
-#### 2.3 更新model
+### 2.3 更新model
 将第4.2节优化好的model.nb和param.nb文件，替换掉app/src/main/assets/image_segmentation/models/deeplab_mobilenet_for_cpu下面的文件即可。
-#### 2.4 其他
+### 2.4 其他
 此安卓demo基于[Paddle-Lite-Demo](https://github.com/PaddlePaddle/Paddle-Lite-Demo)开发，更多的细节请参考该repo。
 
 ### 2.3 效果展示
@@ -28,6 +28,7 @@
 
 ### 4.1预测库
 Paddle-Lite的编译目前支持Docker，Linux和Mac OS开发环境，建议使用Docker开发环境，以免存在各种依赖问题，同时也提供了预编译版本的预测库，下面分别介绍两种方法的使用：
+
 准备Paddle-Lite在安卓端的预测库，主要包括三个文件：
 
 - PaddlePredictor.jar<br>
@@ -57,9 +58,11 @@ Paddle-Lite的编译目前支持Docker，Linux和Mac OS开发环境，建议使�
 
 准备好预测库，以及PaddleSeg导出来的模型和参数文件后，需要使用Paddle-Lite提供的model_optimize_tool对模型进行优化，并转换成Paddle-Lite支持的文件格式，这里有两种方式来实现：
 
-1. 使用预编译版本的model_optimize_tool，最新的预编译文件参考[release](https://github.com/PaddlePaddle/Paddle-Lite/releases/)，此demo使用的版本为[model_optimize_tool](https://github.com/PaddlePaddle/Paddle-Lite/releases/download/v2.0.0/model_optimize_tool) 
+1.使用预编译版本的model_optimize_tool，最新的预编译文件参考[release](https://github.com/PaddlePaddle/Paddle-Lite/releases/)，此demo使用的版本为[model_optimize_tool](https://github.com/PaddlePaddle/Paddle-Lite/releases/download/v2.0.0/model_optimize_tool) 
+
 *注意：如果运行失败，请在上一节准备好的开发环境中使用model_optimize_tool*
-2. 手动编译model_optimize_tool
+
+2.手动编译model_optimize_tool
 详细的模型转换方法参考paddlelite提供的官方文档：[模型转化方法](https://paddlepaddle.github.io/Paddle-Lite/v2.0.0/model_optimize_tool/)，从PaddleSeg里面导出来的模型使用如下指令即可导出model.nb和param.nb文件。
 ```
 ./model_optimize_tool \
