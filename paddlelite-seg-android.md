@@ -33,7 +33,7 @@
 为了支持PaddleSeg模型在移动端的部署，需要准备Paddle-Lite预测库和模型转换工具。
 
 ### 4.1预测库
-Paddle-Lite的编译目前支持Docker，Linux和Mac OS开发环境，建议使用Docker开发环境，以免存在各种依赖问题，同时也提供了预编译版本的预测库，准备Paddle-Lite在安卓端的预测库，主要包括三个文件：
+Paddle-Lite的编译目前支持Docker，Linux和Mac OS开发环境，建议使用Docker开发环境，以免存在各种依赖问题，同时也提供了预编译版本的预测库。准备Paddle-Lite在安卓端的预测库，主要包括三个文件：
 
 * PaddlePredictor.jar
 * arm64-v8a/libpaddle_lite_jni.so
