@@ -45,7 +45,7 @@ PaddleLite目前支持Docker，Linux和Mac OS开发环境，建议使用Docker�
 
     PaddlePredictor.jar位于:
     inference_lite_lib.android.xxx/java/jar/PaddlePredictor.jar
-
+    
     arm64-v8a/libpaddle_lite_jni.so位于:
     inference_lite_lib.android.armv8/java/so/libpaddle_lite_jni.so
 
@@ -55,17 +55,16 @@ PaddleLite目前支持Docker，Linux和Mac OS开发环境，建议使用Docker�
 2. 手动编译model_optimize_tool
 具体环境的准备和编译方法参考：[PaddLite源码编译](https://paddlepaddle.github.io/Paddle-Lite/v2.0.0/source_compile/)。
 
-准备好上述文件，即可使用[Paddle-Lite java_api](https://paddlepaddle.github.io/Paddle-Lite/v2.0.0/java_api_doc/)在安卓端进行推理。
-
+准备好上述文件，即可使用[Paddle-Lite java_api](https://paddlepaddle.github.io/Paddle-Lite/v2.0.0/java_api_doc/)在安卓端进行推理。具体使用预测库的方法可以参考[Paddle-Lite-Demo](https://github.com/PaddlePaddle/Paddle-Lite-Demo)。
 
 ### 4.2模型转换
 
 准备好开发环境，以及PaddleSeg导出来的模型和参数文件后，需要使用paddlelite提供的model_optimize_tool对模型进行优化，并转换成PaddleLite支持的文件格式，这里有两种方式来实现：
 
-1. 使用预编译版本的model_optimize_tool，最新的预编译文件参考[release](https://github.com/PaddlePaddle/Paddle-Lite/releases/)，此demo使用的版本为[model_optimize_tool v2.0.0](https://github.com/PaddlePaddle/Paddle-Lite/releases/download/v2.0.0/model_optimize_tool) 
+1. 使用预编译版本的model_optimize_tool，最新的预编译文件参考[release](https://github.com/PaddlePaddle/Paddle-Lite/releases/)，此demo使用的版本为[model_optimize_tool](https://github.com/PaddlePaddle/Paddle-Lite/releases/download/v2.0.0/model_optimize_tool) 
 *注意：如果运行失败，请在上一节准备好的开发环境中使用model_optimize_tool*
 2. 手动编译model_optimize_tool
-详细的模型转换方法参考paddlelite提供的官方文档：[模型转化方法](https://paddlepaddle.github.io/Paddle-Lite/v2.0.0/model_optimize_tool/https://paddlepaddle.github.io/Paddle-Lite/v2.0.0/model_optimize_tool/)，从PaddleSeg里面导出来的模型使用如下指令即可导出model.nb和param.nb文件。
+详细的模型转换方法参考paddlelite提供的官方文档：[模型转化方法](https://paddlepaddle.github.io/Paddle-Lite/v2.0.0/model_optimize_tool/)，从PaddleSeg里面导出来的模型使用如下指令即可导出model.nb和param.nb文件。
 ```
 ./model_optimize_tool \
     --model_dir=<model_param_dir> \
