@@ -111,11 +111,4 @@ def main(args):
 
 if __name__ == '__main__':
     args = parse_args()
-
-    # args = argparse.ArgumentParser(
-    #     formatter_class=argparse.ArgumentDefaultsHelpFormatter
-    # )
-    # args.input_dir = '../../dataset/humanseg_labelme/'
-    # args.output_dir = '../../dataset/humanseg_labelme/LMode'
-
     main(args)

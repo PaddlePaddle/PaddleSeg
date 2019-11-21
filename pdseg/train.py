@@ -41,7 +41,6 @@ from models.model_builder import parse_shape_from_file
 from eval import evaluate
 from vis import visualize
 from utils import dist_utils
-# from equibatch import equibatch
 
 
 def parse_args():
@@ -195,8 +194,6 @@ def train(cfg):
         mode=ModelPhase.TRAIN,
         shuffle=True,
         data_dir=cfg.DATASET.DATA_DIR)
-
-    # dataset = equibatch(dataset)
 
     def data_generator():
         if args.use_mpio:
@@ -479,11 +476,6 @@ def main(args):
 
 if __name__ == '__main__':
     args = parse_args()
-
-    # args.cfg_file = 'configs/mac_road_extraction.yaml'
-    # args.cfg_file = 'configs/cpu_puzhou2100.yaml'
-
-
     if fluid.core.is_compiled_with_cuda() != True and args.use_gpu == True:
         print(
             "You can not set use_gpu = True in the model because you are using paddlepaddle-cpu."
