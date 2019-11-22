@@ -140,8 +140,23 @@ def build_model(main_prog, start_prog, phase=ModelPhase.TRAIN):
 
     with fluid.program_guard(main_prog, start_prog):
         with fluid.unique_name.guard():
-            image = fluid.layers.data(
-                name='image', shape=image_shape, dtype='float32')
+            if ModelPhase.is_predict(phase):
+                origin_image = fluid.layers.data(name='image', 
+                        shape=[ -1, 1, 1, cfg.DATASET.DATA_DIM], 
+                        dtype='float32', 
+                        append_batch_size=False)
+                image = fluid.layers.transpose(origin_image, [0, 3, 1, 2])
+                origin_shape = fluid.layers.shape(image)[-2:]
+                mean = np.array(cfg.MEAN).reshape(1, len(cfg.MEAN), 1, 1)
+                mean = fluid.layers.assign(mean.astype('float32'))
+                std = np.array(cfg.STD).reshape(1, len(cfg.STD), 1, 1)
+                std = fluid.layers.assign(std.astype('float32'))
+                image = (image/255 - mean)/std
+                image = fluid.layers.resize_bilinear(image, 
+                        out_shape=[height, width], align_corners=False, align_mode=0)
+            else:
+                image = fluid.layers.data(
+                    name='image', shape=image_shape, dtype='float32')
             label = fluid.layers.data(
                 name='label', shape=grt_shape, dtype='int32')
             mask = fluid.layers.data(
@@ -217,7 +232,10 @@ def build_model(main_prog, start_prog, phase=ModelPhase.TRAIN):
                     logit = sigmoid_to_softmax(logit)
                 else:
                     logit = softmax(logit)
-                return image, logit
+                logit = fluid.layers.resize_bilinear(logit, out_shape=origin_shape, align_corners=False, align_mode=0)
+                logit = fluid.layers.transpose(logit, [0, 2, 3, 1])
+                logit = fluid.layers.argmax(logit, axis=3)
+                return origin_image, logit
 
             if class_num == 1:
                 out = sigmoid_to_softmax(logit)
