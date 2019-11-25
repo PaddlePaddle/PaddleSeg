@@ -140,6 +140,8 @@ def build_model(main_prog, start_prog, phase=ModelPhase.TRAIN):
 
     with fluid.program_guard(main_prog, start_prog):
         with fluid.unique_name.guard():
+            # 在导出模型的时候，增加图像标准化预处理,减小预测部署时图像的处理流程
+            # 预测部署时只须对输入图像增加batch_size维度即可
             if ModelPhase.is_predict(phase):
                 origin_image = fluid.layers.data(name='image', 
                         shape=[ -1, 1, 1, cfg.DATASET.DATA_DIM], 
@@ -177,9 +179,11 @@ def build_model(main_prog, start_prog, phase=ModelPhase.TRAIN):
             if not isinstance(loss_type, list):
                 loss_type = list(loss_type)
 
+            # dice_loss或bce_loss只适用两类分割中
             if class_num > 2 and (("dice_loss" in loss_type) or ("bce_loss" in loss_type)):
                 raise Exception("dice loss and bce loss is only applicable to binary classfication")
             
+            # 在两类分割情况下，当loss函数选择dice_loss或bce_loss的时候，最后logit输出通道数设置为1
             if ("dice_loss" in loss_type) or ("bce_loss" in loss_type):
                 class_num = 1
                 if "softmax_loss" in loss_type:
@@ -187,6 +191,7 @@ def build_model(main_prog, start_prog, phase=ModelPhase.TRAIN):
             
             logits = model_func(image, class_num)
 
+            # 根据选择的loss函数计算相应的损失函数
             if ModelPhase.is_train(phase) or ModelPhase.is_eval(phase):
                 loss_valid = False
                 avg_loss_list = []
@@ -228,6 +233,7 @@ def build_model(main_prog, start_prog, phase=ModelPhase.TRAIN):
 
             # return image input and logit output for inference graph prune
             if ModelPhase.is_predict(phase):
+                # 两类分割中，使用dice_loss或bce_loss返回的logit为单通道，进行到两通道的变换
                 if class_num == 1:
                     logit = sigmoid_to_softmax(logit)
                 else:
