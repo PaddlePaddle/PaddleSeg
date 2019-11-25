@@ -188,9 +188,11 @@ def visualize(cfg,
                 # Calulate epoch from ckpt_dir folder name
                 epoch = int(os.path.split(ckpt_dir)[-1])
                 print("Tensorboard visualization epoch", epoch)
+
+                pred_mask_np = np.array(pred_mask.convert("RGB"))
                 log_writer.add_image(
                     "Predict/{}".format(img_name),
-                    pred_mask[..., ::-1],
+                    pred_mask_np,
                     epoch,
                     dataformats='HWC')
                 # Original image
@@ -206,12 +208,13 @@ def visualize(cfg,
                 grt = grts[i]
                 if grt is not None:
                     grt = grt[0:valid_shape[0], 0:valid_shape[1]]
-                    grt = cv2.resize(
-                        grt, (org_shape[1], org_shape[0]),
-                        interpolation=cv2.INTER_NEAREST)
+                    grt_pil = PILImage.fromarray(grt.astype(np.uint8), mode='P')
+                    grt_pil.putpalette(color_map)
+                    grt_pil = grt_pil.resize((org_shape[1], org_shape[0]))
+                    grt = np.array(grt_pil.convert("RGB"))
                     log_writer.add_image(
                         "Label/{}".format(img_name),
-                        grt[..., ::-1],
+                        grt,
                         epoch,
                         dataformats='HWC')
 
