@@ -69,7 +69,7 @@ $ pip install -r requirements.txt
 
 * [模型导出](./docs/model_export.md)
 * [C++预测库使用](./inference)
-* [人像分割在安卓端的部署](./lite/)
+* [人像分割在安卓端的部署](./lite/humanseg-android-demo)
 
 ### 高级功能
 
