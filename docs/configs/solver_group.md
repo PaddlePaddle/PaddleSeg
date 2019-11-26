@@ -13,6 +13,28 @@ SOLVER Group定义所有和训练优化相关的配置
 <br/>
 <br/>
 
+## `LR_WARMUP`
+
+学习率是否经过warmup过程，如果设置为True，则学习率会从0开始，经过`LR_WARMUP_STEPS`步后线性增长到指定的初始学习率
+
+### 默认值
+
+False
+
+<br/>
+<br/>
+
+## `LR_WARMUP_STEPS`
+
+学习率warmup步数
+
+### 默认值
+
+2000
+
+<br/>
+<br/>
+
 ## `LR_POLICY`
 
 学习率的衰减策略，支持`poly` `piecewise` `cosine`三种策略
@@ -22,7 +44,7 @@ SOLVER Group定义所有和训练优化相关的配置
 `poly`
 
 ### 示例
-* 当使用`poly`衰减时，假设初始学习率为0.1，训练总步数为10000，则在power分别为`0.4``0.8``1``1.2``1.6`时，衰减曲线如下图：
+* 当使用`poly`衰减时，假设初始学习率为0.1，训练总步数为10000，则在power分别为`0.4` `0.8` `1` `1.2` `1.6`时，衰减曲线如下图：
   * power = 1 衰减曲线为直线
   * power > 1 衰减曲线内凹
   * power < 1 衰减曲线外凸
@@ -30,15 +52,21 @@ SOLVER Group定义所有和训练优化相关的配置
   <p align="center">
   <img src="../imgs/poly_decay_example.png" hspace='10' height="400" width="800"/> <br />
   </p>
-  
+
+* 当使用`poly`衰减时，假设初始学习率为0.1，训练总步数为10000，power为`1`，开启了LR_WARMUP，且LR_WARMUP_STEP为2000时，衰减曲线如下图：
+
+  <p align="center">
+  <img src="../imgs/warmup_with_poly_decay_example.png" hspace='10' height="400" width="800"/> <br />
+  </p>
+
 * 当使用`piecewise`衰减时，假设初始学习率为0.1，GAMMA为0.9，总EPOCH数量为100，DECAY_EPOCH为[10, 20]，衰减曲线如下图：
-  
+
   <p align="center">
   <img src="../imgs/piecewise_decay_example.png" hspace='10' height="400" width="800"/> <br />
   </p>
 
 * 当使用`cosine`衰减时，假设初始学习率为0.1，总EPOCH数量为100，衰减曲线如下图：
-  
+
   <p align="center">
   <img src="../imgs/cosine_decay_example.png" hspace='10' height="400" width="800"/> <br />
   </p>
@@ -125,7 +153,7 @@ L2正则化系数
 
 ## `loss`
 
-训练时选择的损失函数， 支持`softmax_loss(sotfmax with cross entroy loss)`, 
+训练时选择的损失函数， 支持`softmax_loss(sotfmax with cross entroy loss)`,
 `dice_loss(dice coefficient loss)`, `bce_loss(binary cross entroy loss)`三种损失函数。
 其中`dice_loss`和`bce_loss`仅在两类分割问题中适用，`softmax_loss`不能与`dice_loss`
 或`bce_loss`组合，`dice_loss`可以和`bce_loss`组合使用。使用示例如下：
