@@ -20,7 +20,7 @@
 
 ### 2.3 其他
 此安卓demo基于[Paddle-Lite-Demo](https://github.com/PaddlePaddle/Paddle-Lite-Demo)开发，更多的细节请参考该repo。<br>
-*注意：demo中拍照时照片会自动压缩，想测试拍照原图效果的可使用手机自带的相机拍照后从相册中打开进行预测。*
+*注意：demo中拍照时照片会自动压缩，想测试拍照原图效果，可使用手机相机拍照后从相册中打开进行预测。*
 
 ### 2.4 效果展示
 <img src="example/human_1.png"  width="20%" ><img src="example/human_2.png"  width="20%" ><img src="example/human_3.png"  width="20%" >
