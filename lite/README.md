@@ -1,12 +1,12 @@
-# 人像分割在安卓端的部署
+# 人像分割在移动端的部署
 
 ## 1.介绍
-基于[Paddle-Lite](https://github.com/PaddlePaddle/Paddle-Lite)v2.0.0实现的人像分割Android示例。文档第二节介绍如何使用demo，后面几章节介绍如何将PaddleSeg的Model部署到安卓设备。
+以人像分割在安卓端的部署为例，介绍如何使用[Paddle-Lite](https://github.com/PaddlePaddle/Paddle-Lite)对分割模型进行移动端的部署。文档第二节介绍如何使用人像分割安卓端的demo，后面几章节介绍如何将PaddleSeg的Model部署到安卓设备。
 
-## 2.安卓端Demo使用
+## 2.安卓Demo使用
 
 ### 2.1 要求
-*  Android Studio 3.4；
+* Android Studio 3.4；
 * Android手机或开发板；
 
 ### 2.2 安装
