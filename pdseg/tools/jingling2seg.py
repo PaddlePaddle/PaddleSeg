@@ -10,8 +10,9 @@ import os.path as osp
 
 import numpy as np
 import PIL.Image
-
 import labelme
+
+from pdseg.vis import get_color_map_list
 
 
 def parse_args():
@@ -55,6 +56,8 @@ def main(args):
         f.writelines('\n'.join(class_names))
     print('Saved class_names:', out_class_names_file)
 
+    color_map = get_color_map_list(256)
+
     for label_file in glob.glob(osp.join(args.input_dir, '*.json')):
         print('Generating dataset from:', label_file)
         with open(label_file) as f:
@@ -78,6 +81,8 @@ def main(args):
                         shape = {'label': name, 'points': points, 'shape_type': 'polygon'}
                         data_shapes.append(shape)
 
+            if 'size' not in data:
+                continue
             data_size = data['size']
             img_shape = (data_size['height'], data_size['width'], data_size['depth'])
 
@@ -91,7 +96,8 @@ def main(args):
                 out_png_file += '.png'
             # Assume label ranges [0, 255] for uint8,
             if lbl.min() >= 0 and lbl.max() <= 255:
-                lbl_pil = PIL.Image.fromarray(lbl.astype(np.uint8), mode='L')
+                lbl_pil = PIL.Image.fromarray(lbl.astype(np.uint8), mode='P')
+                lbl_pil.putpalette(color_map)
                 lbl_pil.save(out_png_file)
             else:
                 raise ValueError(
