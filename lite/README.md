@@ -23,9 +23,9 @@
 *注意：demo中拍照时照片会自动压缩，想测试拍照原图效果的可使用手机自带的相机拍照后从相册中打开进行预测。*
 
 ### 2.4 效果展示
-![](example/human_1.jpg)
-![](example/human_2.jpg)
-![](example/human_3.jpg)
+![](example/human_1.png)
+![](example/human_2.png)
+![](example/human_3.png)
 ## 3.模型导出
 此demo的人像分割模型为[下载链接](https://paddleseg.bj.bcebos.com/models/humanseg_mobilenetv2_1_0_bn_freeze_model_pr_po.zip)，是基于Deeplab_v3+mobileNet_v2的humanseg模型，关于humanseg的介绍移步[PaddleSeg 特色垂类分割模型](./contrib)，更多的分割模型导出可参考：[模型导出](https://github.com/PaddlePaddle/PaddleSeg/blob/release/v0.2.0/docs/model_export.md)
 
