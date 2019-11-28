@@ -68,8 +68,8 @@ cfg.DATASET.DATA_DIM = 3
 cfg.DATASET.SEPARATOR = ' '
 # 忽略的像素标签值, 默认为255，一般无需改动
 cfg.DATASET.IGNORE_INDEX = 255
-# 数据增强是图像的padding值 
-cfg.DATASET.PADDING_VALUE = [127.5,127.5,127.5]
+# 数据增强是图像的padding值
+cfg.DATASET.PADDING_VALUE = [127.5, 127.5, 127.5]
 
 ########################### 数据增强配置 ######################################
 # 图像镜像左右翻转
@@ -186,11 +186,11 @@ cfg.MODEL.SCALE_LOSS = "DYNAMIC"
 cfg.MODEL.DEEPLAB.BACKBONE = "xception_65"
 # DeepLab output stride
 cfg.MODEL.DEEPLAB.OUTPUT_STRIDE = 16
-# MobileNet backbone scale 设置
+# MobileNet v2 backbone scale 设置
 cfg.MODEL.DEEPLAB.DEPTH_MULTIPLIER = 1.0
-# MobileNet backbone scale 设置
+# MobileNet v2 backbone scale 设置
 cfg.MODEL.DEEPLAB.ENCODER_WITH_ASPP = True
-# MobileNet backbone scale 设置
+# MobileNet v2 backbone scale 设置
 cfg.MODEL.DEEPLAB.ENABLE_DECODER = True
 # ASPP是否使用可分离卷积
 cfg.MODEL.DEEPLAB.ASPP_WITH_SEP_CONV = True

@@ -7,34 +7,32 @@ import glob
 import json
 import os
 import os.path as osp
-import sys
 
 import numpy as np
 import PIL.Image
-
 import labelme
 
+from pdseg.vis import get_color_map_list
 
-def main():
+
+def parse_args():
     parser = argparse.ArgumentParser(
         formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
-    parser.add_argument('label_dir', help='input annotated directory')
-    parser.add_argument('output_dir', help='output dataset directory')
-    args = parser.parse_args()
+    parser.add_argument('input_dir',
+                        help='input annotated directory')
+    return parser.parse_args()
 
-    if osp.exists(args.output_dir):
-        print('Output directory already exists:', args.output_dir)
-        sys.exit(1)
 
-    os.makedirs(args.output_dir)
-    os.makedirs(osp.join(args.output_dir, 'JPEGImages'))
-    os.makedirs(osp.join(args.output_dir, 'SegmentationClassPNG'))
-    print('Creating dataset:', args.output_dir)
+def main(args):
+    output_dir = osp.join(args.input_dir, 'annotations')
+    if not osp.exists(output_dir):
+        os.makedirs(output_dir)
+        print('Creating annotations directory:', output_dir)
 
     # get the all class names for the given dataset
     class_names = ['_background_']
-    for label_file in glob.glob(osp.join(args.label_dir, '*.json')):
+    for label_file in glob.glob(osp.join(args.input_dir, '*.json')):
         with open(label_file) as f:
             data = json.load(f)
             if data['outputs']:
@@ -53,19 +51,19 @@ def main():
     class_names = tuple(class_names)
     print('class_names:', class_names)
 
-    out_class_names_file = osp.join(args.output_dir, 'class_names.txt')
+    out_class_names_file = osp.join(args.input_dir, 'class_names.txt')
     with open(out_class_names_file, 'w') as f:
         f.writelines('\n'.join(class_names))
     print('Saved class_names:', out_class_names_file)
 
-    for label_file in glob.glob(osp.join(args.label_dir, '*.json')):
+    color_map = get_color_map_list(256)
+
+    for label_file in glob.glob(osp.join(args.input_dir, '*.json')):
         print('Generating dataset from:', label_file)
         with open(label_file) as f:
             base = osp.splitext(osp.basename(label_file))[0]
-            out_img_file = osp.join(
-                args.output_dir, 'JPEGImages', base + '.jpg')
             out_png_file = osp.join(
-                args.output_dir, 'SegmentationClassPNG', base + '.png')
+                output_dir, base + '.png')
 
             data = json.load(f)
 
@@ -83,21 +81,23 @@ def main():
                         shape = {'label': name, 'points': points, 'shape_type': 'polygon'}
                         data_shapes.append(shape)
 
-            img_file = osp.join(osp.dirname(label_file), data['path'])
-            img = np.asarray(PIL.Image.open(img_file))
-            PIL.Image.fromarray(img).save(out_img_file)
+            if 'size' not in data:
+                continue
+            data_size = data['size']
+            img_shape = (data_size['height'], data_size['width'], data_size['depth'])
 
             lbl = labelme.utils.shapes_to_label(
-                img_shape=img.shape,
+                img_shape=img_shape,
                 shapes=data_shapes,
                 label_name_to_value=class_name_to_id,
             )
 
             if osp.splitext(out_png_file)[1] != '.png':
                 out_png_file += '.png'
-            # Assume label ranses [0, 255] for uint8,
+            # Assume label ranges [0, 255] for uint8,
             if lbl.min() >= 0 and lbl.max() <= 255:
-                lbl_pil = PIL.Image.fromarray(lbl.astype(np.uint8), mode='L')
+                lbl_pil = PIL.Image.fromarray(lbl.astype(np.uint8), mode='P')
+                lbl_pil.putpalette(color_map)
                 lbl_pil.save(out_png_file)
             else:
                 raise ValueError(
@@ -107,4 +107,5 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    args = parse_args()
+    main(args)
