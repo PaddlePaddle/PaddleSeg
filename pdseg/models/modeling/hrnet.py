@@ -146,7 +146,7 @@ def layer1(input, name=None):
                                      name=name + '_' + str(i + 1))
     return conv
 
-def highResolutionNet(input, num_classes):
+def high_resolution_net(input, num_classes):
     
     channels_2 = cfg.MODEL.HRNET.STAGE2.NUM_CHANNELS
     channels_3 = cfg.MODEL.HRNET.STAGE3.NUM_CHANNELS
@@ -198,7 +198,7 @@ def highResolutionNet(input, num_classes):
 
 
 def hrnet(input, num_classes):
-    logit = highResolutionNet(input, num_classes)
+    logit = high_resolution_net(input, num_classes)
     return logit
 
 if __name__ == '__main__':

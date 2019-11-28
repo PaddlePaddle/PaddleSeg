@@ -64,6 +64,7 @@ $ pip install -r requirements.txt
 * [如何训练U-Net](./turtorial/finetune_unet.md)
 * [如何训练ICNet](./turtorial/finetune_icnet.md)
 * [如何训练PSPNet](./turtorial/finetune_pspnet.md)
+* [如何训练HRNet](./turtorial/finetune_hrnet.md)
 
 ### 预测部署
 

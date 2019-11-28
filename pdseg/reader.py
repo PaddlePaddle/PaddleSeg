@@ -27,12 +27,20 @@ import numpy as np
 import paddle
 import paddle.fluid as fluid
 import cv2
+from PIL import Image
 
 import data_aug as aug
 from utils.config import cfg
 from data_utils import GeneratorEnqueuer
 from models.model_builder import ModelPhase
 import copy
+
+
+def pil_imread(file_path):
+    """read pseudo-color label"""
+    im = Image.open(file_path)
+    return np.asarray(im)
+
 
 def cv2_imread(file_path, flag=cv2.IMREAD_COLOR):
     # resolve cv2.imread open Chinese file path issues on Windows Platform.
@@ -179,7 +187,7 @@ class SegDataset(object):
 
         if grt_name is not None:
             grt_path = os.path.join(src_dir, grt_name)
-            grt = cv2_imread(grt_path, cv2.IMREAD_GRAYSCALE)
+            grt = pil_imread(grt_path)
         else:
             grt = None
 
