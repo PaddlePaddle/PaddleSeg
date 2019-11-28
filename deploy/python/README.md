@@ -20,7 +20,7 @@
 
 如何选择合适版本的`PaddlePaddle`版本进行安装，可参考: [PaddlePaddle安装教程](https://www.paddlepaddle.org.cn/install/doc/)
 
-**注意**: 如硬件支持且需要使用`TensorRT`支持`FP16`半精度优化等， 则**本步骤**需要自行安装`TensorRT`并编译`PaddlePaddle`, 点击查看[编译安装参考文档](docs/tensorrt.md)
+**注意**: 如硬件支持且需要使用`TensorRT`支持`FP16`半精度优化等， 则**本步骤**需要自行安装`TensorRT`并编译`PaddlePaddle`, 点击查看[编译安装参考文档](docs/compile_paddle_with_tensorrt.md)
 
 ### 4.2:安装Python依赖包
 在**当前**目录下, 使用`pip`安装`Python`依赖包
@@ -90,6 +90,8 @@ python infer.py --conf=/path/to/deploy.yaml --input_dir/path/to/images_directory
 | use_pr |No|是否使用优化模型，默认为False|
 
 * 优化模型：使用`PaddleSeg 0.3.0`版导出的为优化模型, 此前版本导出的模型即为未优化版本。优化模型把图像的预处理以及后处理部分融入到模型网络中使用`GPU` 完成，相比原来`CPU` 中的处理提升了计算性能。
+
+**注意**: 如果硬件支持且安装的是从源码编译集成`TensorRT`的`PaddlePaddle`, 则可以使用参数`--trt_mode=fp16` 表示开启`FP16` 精度优化, 使用`trt_mode=fp32` 表示使用`FP32` 精度。
 
 运行后程序会扫描`input_dir` 目录下所有指定格式图片，并生成`预测mask`和`可视化的结果`。
 
