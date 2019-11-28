@@ -68,7 +68,8 @@ $ pip install -r requirements.txt
 ### 预测部署
 
 * [模型导出](./docs/model_export.md)
-* [C++预测库使用](./inference)
+* [使用Python预测](./deploy/python/)
+* [使用C++预测](./deploy/cpp/)
 
 ### 高级功能
 
