@@ -70,43 +70,108 @@ class PaddleSegModelConfigPaser {
 
     bool load_config(const std::string& conf_file) {
         reset();
-
-        YAML::Node config = YAML::LoadFile(conf_file);
+        YAML::Node config;
+        try {
+            config = YAML::LoadFile(conf_file);
+        } catch(...) {
+            return false;
+        }
         // 1. get resize
-        auto str = config["DEPLOY"]["EVAL_CROP_SIZE"].as<std::string>();
-        _resize = parse_str_to_vec<int>(process_parenthesis(str));
+        if (config["DEPLOY"]["EVAL_CROP_SIZE"].IsDefined()) {
+            auto str = config["DEPLOY"]["EVAL_CROP_SIZE"].as<std::string>();
+            _resize = parse_str_to_vec<int>(process_parenthesis(str));
+        } else {
+            std::cerr << "Please set EVAL_CROP_SIZE: (xx, xx)" << std::endl;
+            return false;
+        }
 
         // 2. get mean
-        for (const auto& item : config["DEPLOY"]["MEAN"]) {
-            _mean.push_back(item.as<float>());
+        if (config["DEPLOY"]["MEAN"].IsDefined()) {
+            for (const auto& item : config["DEPLOY"]["MEAN"]) {
+                _mean.push_back(item.as<float>());
+            }
+        } else {
+            std::cerr << "Please set MEAN: [xx, xx, xx]" << std::endl;
+            return false;
         }
 
         // 3. get std
-        for (const auto& item : config["DEPLOY"]["STD"]) {
-            _std.push_back(item.as<float>());
+        if(config["DEPLOY"]["STD"].IsDefined()) {
+            for (const auto& item : config["DEPLOY"]["STD"]) {
+                _std.push_back(item.as<float>());
+            }
+        } else {
+            std::cerr << "Please set STD: [xx, xx, xx]" << std::endl;
+            return false;
         }
 
         // 4. get image type
-        _img_type = config["DEPLOY"]["IMAGE_TYPE"].as<std::string>();
+		if (config["DEPLOY"]["IMAGE_TYPE"].IsDefined()) {
+            _img_type = config["DEPLOY"]["IMAGE_TYPE"].as<std::string>();
+        } else {
+            std::cerr << "Please set IMAGE_TYPE: \"rgb\" or \"rgba\"" << std::endl;
+            return false;
+        }
         // 5. get class number
-        _class_num = config["DEPLOY"]["NUM_CLASSES"].as<int>();
+        if (config["DEPLOY"]["NUM_CLASSES"].IsDefined()) {
+            _class_num = config["DEPLOY"]["NUM_CLASSES"].as<int>();
+        } else {
+            std::cerr << "Please set NUM_CLASSES: x" << std::endl;
+            return false;
+        }
         // 7. set model path
-        _model_path = config["DEPLOY"]["MODEL_PATH"].as<std::string>();
+        if (config["DEPLOY"]["MODEL_PATH"].IsDefined()) {
+            _model_path = config["DEPLOY"]["MODEL_PATH"].as<std::string>();
+        } else {
+            std::cerr << "Please set MODEL_PATH: \"/path/to/model_dir\"" << std::endl;
+            return false;
+        }
         // 8. get model file_name
-        _model_file_name = config["DEPLOY"]["MODEL_FILENAME"].as<std::string>();
+        if (config["DEPLOY"]["MODEL_FILENAME"].IsDefined()) {
+            _model_file_name = config["DEPLOY"]["MODEL_FILENAME"].as<std::string>();
+        } else {
+            _model_file_name = "__model__";
+        }
         // 9. get model param file name
-        _param_file_name =
-                        config["DEPLOY"]["PARAMS_FILENAME"].as<std::string>();
+        if (config["DEPLOY"]["PARAMS_FILENAME"].IsDefined()) {
+            _param_file_name
+                = config["DEPLOY"]["PARAMS_FILENAME"].as<std::string>();
+        } else {
+            _param_file_name = "__params__";
+        }
         // 10. get pre_processor
-        _pre_processor = config["DEPLOY"]["PRE_PROCESSOR"].as<std::string>();
+        if (config["DEPLOY"]["PRE_PROCESSOR"].IsDefined()) {
+            _pre_processor = config["DEPLOY"]["PRE_PROCESSOR"].as<std::string>();
+        } else {
+            std::cerr << "Please set PRE_PROCESSOR: \"DetectionPreProcessor\"" << std::endl;
+            return false;
+        }
         // 11. use_gpu
-        _use_gpu = config["DEPLOY"]["USE_GPU"].as<int>();
+        if (config["DEPLOY"]["USE_GPU"].IsDefined()) { 
+            _use_gpu = config["DEPLOY"]["USE_GPU"].as<int>();
+        } else {
+            _use_gpu = 0;
+        }
         // 12. predictor_mode
-        _predictor_mode = config["DEPLOY"]["PREDICTOR_MODE"].as<std::string>();
+        if (config["DEPLOY"]["PREDICTOR_MODE"].IsDefined()) {
+            _predictor_mode = config["DEPLOY"]["PREDICTOR_MODE"].as<std::string>();
+        } else {
+            std::cerr << "Please set PREDICTOR_MODE: \"NATIVE\" or \"ANALYSIS\""  << std::endl;
+            return false;
+        }
         // 13. batch_size
-        _batch_size = config["DEPLOY"]["BATCH_SIZE"].as<int>();
+        if (config["DEPLOY"]["BATCH_SIZE"].IsDefined()) {
+            _batch_size = config["DEPLOY"]["BATCH_SIZE"].as<int>();
+        } else {
+            _batch_size = 1;
+        }
         // 14. channels
-        _channels = config["DEPLOY"]["CHANNELS"].as<int>();
+        if (config["DEPLOY"]["CHANNELS"].IsDefined()) {
+            _channels = config["DEPLOY"]["CHANNELS"].as<int>();
+        } else {
+            std::cerr << "Please set CHANNELS: x"  << std::endl;
+            return false;
+        }
         return true;
     }
 

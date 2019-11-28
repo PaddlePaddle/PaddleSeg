@@ -22,6 +22,16 @@ PaddleSeg对所有内置的分割模型都提供了公开数据集下的预训�
 | Xception65 | ImageNet | [Xception65_pretrained.tgz](https://paddleseg.bj.bcebos.com/models/Xception65_pretrained.tgz) | 80.32%/94.47% |
 | Xception71 | ImageNet | coming soon | -- |
 
+| 模型 | 数据集合 | 下载地址 | Accuray Top1/5 Error |
+|---|---|---|---|
+| HRNet_W18 | ImageNet | [hrnet_w18_imagenet.tar](https://paddleseg.bj.bcebos.com/models/hrnet_w18_imagenet.tar) | 76.92%/93.39% |
+| HRNet_W30 | ImageNet | [hrnet_w30_imagenet.tar](https://paddleseg.bj.bcebos.com/models/hrnet_w30_imagenet.tar) | 78.04%/94.02% |
+| HRNet_W32 | ImageNet | [hrnet_w32_imagenet.tar](https://paddleseg.bj.bcebos.com/models/hrnet_w32_imagenet.tar) | 78.28%/94.24% |
+| HRNet_W40 | ImageNet | [hrnet_w40_imagenet.tar](https://paddleseg.bj.bcebos.com/models/hrnet_w40_imagenet.tar) | 78.77%/94.47% |
+| HRNet_W44 | ImageNet | [hrnet_w44_imagenet.tar](https://paddleseg.bj.bcebos.com/models/hrnet_w44_imagenet.tar) | 79.00%/94.51% |
+| HRNet_W48 | ImageNet | [hrnet_w48_imagenet.tar](https://paddleseg.bj.bcebos.com/models/hrnet_w48_imagenet.tar) | 78.95%/94.42% |
+| HRNet_W64 | ImageNet | [hrnet_w64_imagenet.tar](https://paddleseg.bj.bcebos.com/models/hrnet_w64_imagenet.tar) | 79.30%/94.61% |
+
 ## COCO预训练模型
 
 数据集为COCO实例分割数据集合转换成的语义分割数据集合
@@ -46,3 +56,4 @@ train数据集合为Cityscapes训练集合，测试为Cityscapes的验证集合
 | ICNet/bn | Cityscapes |[icnet_cityscapes.tgz](https://paddleseg.bj.bcebos.com/models/icnet_cityscapes.tar.gz) |16|false| 0.6831 |
 | PSPNet/bn | Cityscapes |[pspnet50_cityscapes.tgz](https://paddleseg.bj.bcebos.com/models/pspnet50_cityscapes.tgz) |16|false| 0.7013 |
 | PSPNet/bn | Cityscapes |[pspnet101_cityscapes.tgz](https://paddleseg.bj.bcebos.com/models/pspnet101_cityscapes.tgz) |16|false| 0.7734 |
+| HRNet_W18/bn | Cityscapes |[hrnet_w18_bn_cityscapes.tgz](https://paddleseg.bj.bcebos.com/models/hrnet_w18_bn_cityscapes.tgz) | 4 | false | 0.7936 |
