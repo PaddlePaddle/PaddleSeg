@@ -64,11 +64,15 @@ $ pip install -r requirements.txt
 * [如何训练U-Net](./turtorial/finetune_unet.md)
 * [如何训练ICNet](./turtorial/finetune_icnet.md)
 * [如何训练PSPNet](./turtorial/finetune_pspnet.md)
+* [如何训练HRNet](./turtorial/finetune_hrnet.md)
 
 ### 预测部署
 
 * [模型导出](./docs/model_export.md)
-* [C++预测库使用](./inference)
+* [使用Python预测](./deploy/python/)
+* [使用C++预测](./deploy/cpp/)
+* [人像分割在移动端的部署](./lite)
+
 
 ### 高级功能
 

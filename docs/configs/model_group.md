@@ -5,10 +5,11 @@ MODEL Group存放所有和模型相关的配置，该Group还包含三个子Grou
 * [DeepLabv3p](./model_deeplabv3p_group.md)
 * [UNet](./model_unet_group.md)
 * [ICNet](./model_icnet_group.md)
+* [HRNet](./model_hrnet_group.md)
 
 ## `MODEL_NAME`
 
-所选模型，支持`deeplabv3p` `unet` `icnet`三种模型
+所选模型，支持`deeplabv3p` `unet` `icnet` `hrnet`四种模型
 
 ### 默认值
 
