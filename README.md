@@ -71,6 +71,8 @@ $ pip install -r requirements.txt
 * [模型导出](./docs/model_export.md)
 * [使用Python预测](./deploy/python/)
 * [使用C++预测](./deploy/cpp/)
+* [人像分割在移动端的部署](./lite)
+
 
 ### 高级功能
 
