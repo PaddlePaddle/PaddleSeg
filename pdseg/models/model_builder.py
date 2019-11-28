@@ -112,6 +112,7 @@ def softmax(logit):
     logit = fluid.layers.transpose(logit, [0, 3, 1, 2])
     return logit
 
+
 def sigmoid_to_softmax(logit):
     """
     one channel to two channel
@@ -143,19 +144,23 @@ def build_model(main_prog, start_prog, phase=ModelPhase.TRAIN):
             # 在导出模型的时候，增加图像标准化预处理,减小预测部署时图像的处理流程
             # 预测部署时只须对输入图像增加batch_size维度即可
             if ModelPhase.is_predict(phase):
-                origin_image = fluid.layers.data(name='image', 
-                        shape=[ -1, 1, 1, cfg.DATASET.DATA_DIM], 
-                        dtype='float32', 
-                        append_batch_size=False)
+                origin_image = fluid.layers.data(
+                    name='image',
+                    shape=[-1, 1, 1, cfg.DATASET.DATA_DIM],
+                    dtype='float32',
+                    append_batch_size=False)
                 image = fluid.layers.transpose(origin_image, [0, 3, 1, 2])
                 origin_shape = fluid.layers.shape(image)[-2:]
                 mean = np.array(cfg.MEAN).reshape(1, len(cfg.MEAN), 1, 1)
                 mean = fluid.layers.assign(mean.astype('float32'))
                 std = np.array(cfg.STD).reshape(1, len(cfg.STD), 1, 1)
                 std = fluid.layers.assign(std.astype('float32'))
-                image = (image/255 - mean)/std
-                image = fluid.layers.resize_bilinear(image, 
-                        out_shape=[height, width], align_corners=False, align_mode=0)
+                image = fluid.layers.resize_bilinear(
+                    image,
+                    out_shape=[height, width],
+                    align_corners=False,
+                    align_mode=0)
+                image = (image / 255 - mean) / std
             else:
                 image = fluid.layers.data(
                     name='image', shape=image_shape, dtype='float32')
@@ -180,15 +185,20 @@ def build_model(main_prog, start_prog, phase=ModelPhase.TRAIN):
                 loss_type = list(loss_type)
 
             # dice_loss或bce_loss只适用两类分割中
-            if class_num > 2 and (("dice_loss" in loss_type) or ("bce_loss" in loss_type)):
-                raise Exception("dice loss and bce loss is only applicable to binary classfication")
-            
+            if class_num > 2 and (("dice_loss" in loss_type) or
+                                  ("bce_loss" in loss_type)):
+                raise Exception(
+                    "dice loss and bce loss is only applicable to binary classfication"
+                )
+
             # 在两类分割情况下，当loss函数选择dice_loss或bce_loss的时候，最后logit输出通道数设置为1
             if ("dice_loss" in loss_type) or ("bce_loss" in loss_type):
                 class_num = 1
                 if "softmax_loss" in loss_type:
-                    raise Exception("softmax loss can not combine with dice loss or bce loss")
-            
+                    raise Exception(
+                        "softmax loss can not combine with dice loss or bce loss"
+                    )
+
             logits = model_func(image, class_num)
 
             # 根据选择的loss函数计算相应的损失函数
@@ -196,9 +206,9 @@ def build_model(main_prog, start_prog, phase=ModelPhase.TRAIN):
                 loss_valid = False
                 avg_loss_list = []
                 valid_loss = []
-                if "softmax_loss" in loss_type: 
-                    avg_loss_list.append(multi_softmax_with_loss(logits,
-                        label, mask,class_num))
+                if "softmax_loss" in loss_type:
+                    avg_loss_list.append(
+                        multi_softmax_with_loss(logits, label, mask, class_num))
                     loss_valid = True
                     valid_loss.append("softmax_loss")
                 if "dice_loss" in loss_type:
@@ -210,13 +220,17 @@ def build_model(main_prog, start_prog, phase=ModelPhase.TRAIN):
                     loss_valid = True
                     valid_loss.append("bce_loss")
                 if not loss_valid:
-                    raise Exception("SOLVER.LOSS: {} is set wrong. it should "
-                            "include one of (softmax_loss, bce_loss, dice_loss) at least"
-                            " example: ['softmax_loss'], ['dice_loss'], ['bce_loss', 'dice_loss']".format(cfg.SOLVER.LOSS))
-                
+                    raise Exception(
+                        "SOLVER.LOSS: {} is set wrong. it should "
+                        "include one of (softmax_loss, bce_loss, dice_loss) at least"
+                        " example: ['softmax_loss'], ['dice_loss'], ['bce_loss', 'dice_loss']"
+                        .format(cfg.SOLVER.LOSS))
+
                 invalid_loss = [x for x in loss_type if x not in valid_loss]
                 if len(invalid_loss) > 0:
-                    print("Warning: the loss {} you set is invalid. it will not be included in loss computed.".format(invalid_loss))
+                    print(
+                        "Warning: the loss {} you set is invalid. it will not be included in loss computed."
+                        .format(invalid_loss))
 
                 avg_loss = 0
                 for i in range(0, len(avg_loss_list)):
@@ -238,7 +252,11 @@ def build_model(main_prog, start_prog, phase=ModelPhase.TRAIN):
                     logit = sigmoid_to_softmax(logit)
                 else:
                     logit = softmax(logit)
-                logit = fluid.layers.resize_bilinear(logit, out_shape=origin_shape, align_corners=False, align_mode=0)
+                logit = fluid.layers.resize_bilinear(
+                    logit,
+                    out_shape=origin_shape,
+                    align_corners=False,
+                    align_mode=0)
                 logit = fluid.layers.transpose(logit, [0, 2, 3, 1])
                 logit = fluid.layers.argmax(logit, axis=3)
                 return origin_image, logit
