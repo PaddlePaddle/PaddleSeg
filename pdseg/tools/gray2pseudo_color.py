@@ -8,7 +8,6 @@ import os.path as osp
 import sys
 import numpy as np
 from PIL import Image
-from pdseg.vis import get_color_map_list
 
 
 def parse_args():
@@ -24,6 +23,28 @@ def parse_args():
     parser.add_argument('--file_separator',
                         help='file list separator')
     return parser.parse_args()
+
+
+def get_color_map_list(num_classes):
+    """ Returns the color map for visualizing the segmentation mask,
+        which can support arbitrary number of classes.
+    Args:
+        num_classes: Number of classes
+    Returns:
+        The color map
+    """
+    color_map = num_classes * [0, 0, 0]
+    for i in range(0, num_classes):
+        j = 0
+        lab = i
+        while lab:
+            color_map[i * 3] |= (((lab >> 0) & 1) << (7 - j))
+            color_map[i * 3 + 1] |= (((lab >> 1) & 1) << (7 - j))
+            color_map[i * 3 + 2] |= (((lab >> 2) & 1) << (7 - j))
+            j += 1
+            lab >>= 3
+
+    return color_map
 
 
 def gray2pseudo_color(args):

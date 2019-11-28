@@ -2,6 +2,42 @@
 
 ## 数据标注
 
+### 标注协议
+PaddleSeg采用单通道的标注图片，每一种像素值代表一种类别，类别从0开始，例如0，1，2，3表示有4种类别。
+
+一般的分割库使用单通道灰度图作为标注图片，往往显示出来是全黑的效果。灰度标注图的弊端：
+1. 对图像标注后，无法直接观察标注是否正确。
+2. 模型测试过程无法直接判断分割的实际效果。
+
+**PaddleSeg支持伪彩色图作为标注图片，在原来的单通道图片基础上，注入调色板。在基本不增加图片大小的基础上，却可以显示出彩色的效果。** 
+
+同时PaddleSeg也兼容灰度图标注，用户原来的灰度数据集可以不做修改，直接使用。
+![](./imgs/annotation/image-11.png)
+
+### 灰度标注转换为伪彩色标注
+如果用户需要转换成伪彩色标注图，可使用我们的转换工具。适用于以下两种常见的情况：
+1. 从指定灰度标注所在的目录读取标注图片
+```buildoutcfg
+python pdseg/tools/gray2pseudo_color.py <dir_or_file> <output_dir>
+```
+
+|参数|用途|
+|-|-|
+|dir_or_file|指定灰度标注所在目录|
+|output_dir|彩色标注图片的输出目录|
+
+2. 从已有文件列表中读取标注图片
+```buildoutcfg
+python pdseg/tools/gray2pseudo_color.py <dir_or_file> <output_dir> --dataset_dir <dataset directory> --file_separator <file list separator>
+```
+|参数|用途|
+|-|-|
+|dir_or_file|指定文件列表路径|
+|output_dir|彩色标注图片的输出目录|
+|--dataset_dir|数据集所在根目录|
+|--file_separator|文件列表分隔符|
+
+### 标注教程
 用户需预先采集好用于训练、评估和测试的图片，然后使用数据标注工具完成数据标注。
 
 PddleSeg已支持2种标注工具：LabelMe、精灵数据标注工具。标注教程如下：
