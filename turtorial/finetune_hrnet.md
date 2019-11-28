@@ -120,7 +120,7 @@ python pdseg/eval.py --use_gpu --cfg ./configs/hrnet_w18_pet.yaml
 
 |预训练模型名称|BackBone|Norm Type|数据集|配置|
 |-|-|-|-|-|
-|hrnet_w18_bn_cityscapes|-|bn| ImageNet | MODEL.MODEL_NAME: hrnet <br> MODEL.HRNET.STAGE2.NUM_CHANNELS: [18, 36] <br> MODEL.HRNET.STAGE3.NUM_CHANNELS: [18, 36, 72] <br> MODEL.HRNET.STAGE4.NUM_CHANNELS: [18, 36, 72, 144] <br> MODEL.DEFAULT_NORM_TYPE: bn|
+|hrnet_w18_bn_cityscapes|-|bn| Cityscapes | MODEL.MODEL_NAME: hrnet <br> MODEL.HRNET.STAGE2.NUM_CHANNELS: [18, 36] <br> MODEL.HRNET.STAGE3.NUM_CHANNELS: [18, 36, 72] <br> MODEL.HRNET.STAGE4.NUM_CHANNELS: [18, 36, 72, 144] <br> MODEL.DEFAULT_NORM_TYPE: bn|
 | hrnet_w18_bn_imagenet |-|bn| ImageNet | MODEL.MODEL_NAME: hrnet <br> MODEL.HRNET.STAGE2.NUM_CHANNELS: [18, 36] <br> MODEL.HRNET.STAGE3.NUM_CHANNELS: [18, 36, 72] <br> MODEL.HRNET.STAGE4.NUM_CHANNELS: [18, 36, 72, 144] <br> MODEL.DEFAULT_NORM_TYPE: bn |
 | hrnet_w30_bn_imagenet |-|bn| ImageNet | MODEL.MODEL_NAME: hrnet <br> MODEL.HRNET.STAGE2.NUM_CHANNELS: [30, 60] <br> MODEL.HRNET.STAGE3.NUM_CHANNELS: [30, 60, 120] <br> MODEL.HRNET.STAGE4.NUM_CHANNELS: [30, 60, 120, 240] <br> MODEL.DEFAULT_NORM_TYPE: bn |
 | hrnet_w32_bn_imagenet |-|bn| ImageNet | MODEL.MODEL_NAME: hrnet <br> MODEL.HRNET.STAGE2.NUM_CHANNELS: [32, 64] <br> MODEL.HRNET.STAGE3.NUM_CHANNELS: [32, 64, 128] <br> MODEL.HRNET.STAGE4.NUM_CHANNELS: [32, 64, 128, 256] <br> MODEL.DEFAULT_NORM_TYPE: bn |
