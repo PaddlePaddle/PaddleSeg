@@ -56,4 +56,4 @@ train数据集合为Cityscapes训练集合，测试为Cityscapes的验证集合
 | ICNet/bn | Cityscapes |[icnet_cityscapes.tgz](https://paddleseg.bj.bcebos.com/models/icnet_cityscapes.tar.gz) |16|false| 0.6831 |
 | PSPNet/bn | Cityscapes |[pspnet50_cityscapes.tgz](https://paddleseg.bj.bcebos.com/models/pspnet50_cityscapes.tgz) |16|false| 0.7013 |
 | PSPNet/bn | Cityscapes |[pspnet101_cityscapes.tgz](https://paddleseg.bj.bcebos.com/models/pspnet101_cityscapes.tgz) |16|false| 0.7734 |
-| HRNet_W18/bn | Cityscapes |[hrnet_w18_bn_cityscapes.tgz](https://paddleseg.bj.bcebos.com/models/hrnet_w18_bn_cityscapes.tgz) | 4 | false | 0.936 |
+| HRNet_W18/bn | Cityscapes |[hrnet_w18_bn_cityscapes.tgz](https://paddleseg.bj.bcebos.com/models/hrnet_w18_bn_cityscapes.tgz) | 4 | false | 0.7936 |
