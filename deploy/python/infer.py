@@ -33,12 +33,19 @@ gflags.DEFINE_boolean("use_pr", default=False, help="Use optimized model")
 gflags.DEFINE_string("trt_mode", default="", help="Use optimized model")
 gflags.FLAGS = gflags.FLAGS
 
-# ColorMap for visualization
-color_map = [[128, 64, 128], [244, 35, 231], [69, 69, 69], [102, 102, 156],
-             [190, 153, 153], [153, 153, 153], [250, 170, 29], [219, 219, 0],
-             [106, 142, 35], [152, 250, 152], [69, 129, 180], [219, 19, 60],
-             [255, 0, 0], [0, 0, 142], [0, 0, 69], [0, 60, 100], [0, 79, 100],
-             [0, 0, 230], [119, 10, 32]]
+# Generate ColorMap for visualization
+def generate_colormap(num_classes):
+    color_map = num_classes * [0, 0, 0]
+    for i in range(0, num_classes):
+        j = 0
+        lab = i
+        while lab:
+            color_map[i * 3] |= (((lab >> 0) & 1) << (7 - j))
+            color_map[i * 3 + 1] |= (((lab >> 1) & 1) << (7 - j))
+            color_map[i * 3 + 2] |= (((lab >> 2) & 1) << (7 - j))
+            j += 1
+            lab >>= 3
+    return color_map
 
 # Paddle-TRT Precision Map
 trt_precision_map = {
@@ -202,6 +209,7 @@ class Predictor:
             score_png = mask_png[:, :, np.newaxis]
             score_png = np.concatenate([score_png] * 3, axis=2)
             # visualization score png
+            color_map = generate_colormap(self.config.class_num)
             for i in range(score_png.shape[0]):
                 for j in range(score_png.shape[1]):
                     score_png[i, j] = color_map[score_png[i, j, 0]]
@@ -247,12 +255,12 @@ class Predictor:
             infer_start = time.time()
             output_data = self.predictor.run(input_data)[0]
             infer_end = time.time()
-            reader_time += (reader_end - reader_start)
-            infer_time += (infer_end - infer_start)
             output_data = output_data.as_ndarray()
             post_start = time.time()
             self.output_result(img_datas, output_data, gflags.FLAGS.use_pr)
             post_end = time.time()
+            reader_time += (reader_end - reader_start)
+            infer_time += (infer_end - infer_start)
             post_time += (post_end - post_start)
 
         # finishing process all images
