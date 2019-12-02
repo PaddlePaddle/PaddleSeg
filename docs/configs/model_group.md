@@ -5,11 +5,12 @@ MODEL Group存放所有和模型相关的配置，该Group还包含三个子Grou
 * [DeepLabv3p](./model_deeplabv3p_group.md)
 * [UNet](./model_unet_group.md)
 * [ICNet](./model_icnet_group.md)
+* [PSPNet](./model_pspnet_group.md)
 * [HRNet](./model_hrnet_group.md)
 
 ## `MODEL_NAME`
 
-所选模型，支持`deeplabv3p` `unet` `icnet` `hrnet`四种模型
+所选模型，支持`deeplabv3p` `unet` `icnet` `pspnet` `hrnet`五种模型
 
 ### 默认值
 
@@ -20,7 +21,7 @@ MODEL Group存放所有和模型相关的配置，该Group还包含三个子Grou
 
 ## `DEFAULT_NORM_TYPE`
 
-模型所用norm类型，支持`bn` [`gn`]()
+模型所用norm类型，支持`bn` `gn`
 
 ### 默认值
 
@@ -111,4 +112,3 @@ loss = 1.0 * loss1 + 0.4 * loss2 + 0.16 * loss3
 
 <br/>
 <br/>
-
