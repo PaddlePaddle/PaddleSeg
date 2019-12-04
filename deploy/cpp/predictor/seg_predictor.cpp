@@ -97,7 +97,7 @@ namespace PaddleSolution {
         cv::Mat mask_png = cv::Mat(eval_height, eval_width, CV_8UC1);
         mask_png.data = _mask.data();
         std::string nname(fname);
-        auto pos = fname.find(".");
+        auto pos = fname.rfind(".");
         nname[pos] = '_';
         std::string mask_save_name = nname + ".png";
         cv::imwrite(mask_save_name, mask_png);
