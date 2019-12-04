@@ -87,7 +87,7 @@ def to_png_fn(fn):
 def visualize(cfg,
               vis_file_list=None,
               use_gpu=False,
-              vis_dir="visual_predict",
+              vis_dir="visual",
               ckpt_dir=None,
               log_writer=None,
               local_test=False,
@@ -117,7 +117,7 @@ def visualize(cfg,
 
     fluid.io.load_params(exe, ckpt_dir, main_program=test_prog)
 
-    save_dir = os.path.join('visual', vis_dir)
+    save_dir = vis_dir
     makedirs(save_dir)
 
     fetch_list = [pred.name]
