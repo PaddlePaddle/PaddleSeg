@@ -18,7 +18,10 @@ import paddle.fluid as fluid
 import numpy as np
 import importlib
 from utils.config import cfg
-from paddle.fluid.contrib.mixed_precision.decorator import OptimizerWithMixedPrecision, decorate, AutoMixedPrecisionLists
+try:
+    from paddle.fluid.contrib.mixed_precision.decorator import OptimizerWithMixedPrecison, decorate, AutoMixedPrecisionLists
+except:
+    from paddle.fluid.contrib.mixed_precision.decorator import OptimizerWithMixedPrecision, decorate, AutoMixedPrecisionLists
 
 
 class Solver(object):
