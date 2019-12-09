@@ -486,9 +486,11 @@
 ### 2. 使用 TensorRT 开启 FP16 和 FP32 优化效果分析
 
 在原始模型上的加速效果：
+
 ![优化模型](https://paddleseg.bj.bcebos.com/inference/benchmark/trt_opt_origin_512x512.png)
 
 在优化模型上的加速效果：
+
 ![原始模型](https://paddleseg.bj.bcebos.com/inference/benchmark/trt_opt_new_512x512.png)
 
 
