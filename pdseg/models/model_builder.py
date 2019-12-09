@@ -146,7 +146,7 @@ def build_model(main_prog, start_prog, phase=ModelPhase.TRAIN):
             if ModelPhase.is_predict(phase):
                 origin_image = fluid.layers.data(
                     name='image',
-                    shape=[-1, 1, 1, cfg.DATASET.DATA_DIM],
+                    shape=[-1, -1, -1, cfg.DATASET.DATA_DIM],
                     dtype='float32',
                     append_batch_size=False)
                 image = fluid.layers.transpose(origin_image, [0, 3, 1, 2])
