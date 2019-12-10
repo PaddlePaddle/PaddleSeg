@@ -154,7 +154,7 @@ class Predictor:
             predictor_config = fluid.core.NativeConfig()
             predictor_config.prog_file = self.config.model_file
             predictor_config.param_file = self.config.param_file
-            predictor_config.use_gpu = config.use_gpu
+            predictor_config.use_gpu = self.config.use_gpu
             predictor_config.device = 0
             predictor_config.fraction_of_gpu_memory = 0
         elif self.config.predictor_mode == "ANALYSIS":
