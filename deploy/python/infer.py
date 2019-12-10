@@ -45,6 +45,7 @@ def generate_colormap(num_classes):
             color_map[i * 3 + 2] |= (((lab >> 2) & 1) << (7 - j))
             j += 1
             lab >>= 3
+    color_map = [color_map[i:i+3] for i in range(0, len(color_map), 3)]
     return color_map
 
 # Paddle-TRT Precision Map
