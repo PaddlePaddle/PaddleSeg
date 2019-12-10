@@ -15,7 +15,7 @@
 dice loss的定义如下：
 
 <p align="center">
-  <img src="./imgs/dice loss.png" hspace='10' height="68" width="513"/> <br />
+  <img src="./imgs/dice.png" hspace='10' height="68" width="513"/> <br />
  </p>
 
 
