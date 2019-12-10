@@ -15,7 +15,7 @@
 dice loss的定义如下：
 
 <p align="center">
-  <img src="./imgs/dice.png" hspace='10' height="68" width="513"/> <br />
+  <img src="./imgs/dice.png" hspace='10' height="46" width="200"/> <br />
  </p>
 
 
@@ -23,7 +23,7 @@ dice loss的定义如下：
 实际通过求两者的逐像素乘积之和进行计算。例如：
 
 <p align="center">
-  <img src="./imgs/dice3.png" hspace='10' height="68" width="513"/> <br />
+  <img src="./imgs/dice3.png" hspace='10' /> <br />
  </p>
 
 其中 1 表示前景，0 表示背景。
