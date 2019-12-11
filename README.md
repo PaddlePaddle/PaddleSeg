@@ -6,7 +6,7 @@
 
 ## 简介
 
-PaddleSeg是基于[PaddlePaddle](https://www.paddlepaddle.org.cn)开发的语义分割库，覆盖了DeepLabv3+, U-Net, ICNet三类主流的分割模型。通过统一的配置，帮助用户更便捷地完成从训练到部署的全流程图像分割应用。
+PaddleSeg是基于[PaddlePaddle](https://www.paddlepaddle.org.cn)开发的语义分割库，覆盖了DeepLabv3+, U-Net, ICNet, PSPNet, HRNet等主流分割模型。通过统一的配置，帮助用户更便捷地完成从训练到部署的全流程图像分割应用。
 
 PaddleSeg具备高性能、丰富的数据增强、工业级部署、全流程应用的特点:
 
@@ -17,7 +17,7 @@ PaddleSeg具备高性能、丰富的数据增强、工业级部署、全流程�
 
 - **模块化设计**
 
-支持U-Net, DeepLabv3+, ICNet, PSPNet四种主流分割网络，结合预训练模型和可调节的骨干网络，满足不同性能和精度的要求；选择不同的损失函数如Dice Loss, BCE Loss等方式可以强化小目标和不均衡样本场景下的分割精度。
+支持U-Net, DeepLabv3+, ICNet, PSPNet, HRNet五种主流分割网络，结合预训练模型和可调节的骨干网络，满足不同性能和精度的要求；选择不同的损失函数如Dice Loss, BCE Loss等方式可以强化小目标和不均衡样本场景下的分割精度。
 
 - **高性能**
 
@@ -131,22 +131,30 @@ PaddleSeg在AI Studio平台上提供了在线体验的教程，欢迎体验：
 <p align="center">  &#8194;&#8194;&#8194;微信公众号&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;官方技术交流QQ群</p>
 
 ## 更新日志
+* 2019.12.15
 
+  **`v0.3.0`**
+  * 新增HRNet分割网络，提供基于cityscapes数据集的[预训练模型](./docs/model_zoo.md)
+  * 新增图像归一化操作的GPU化功能，进一步提升预测速度。
+  * 新增Python部署方案，更低成本完成工业级部署。
+  * 新增Paddle-Lite移动端部署方案，支持人像分割模型的移动端部署。
+
+  
 * 2019.11.04
 
   **`v0.2.0`**
-  * 新增PSPNet分割网络，提供基于COCO和cityscapes数据集的[预训练模型](./docs/model_zoo.md)4个
-  * 新增Dice Loss、BCE Loss以及组合Loss配置，支持样本不均衡场景下的[模型优化](./docs/loss_select.md)
-  * 支持[FP16混合精度训练](./docs/multiple_gpus_train_and_mixed_precision_train.md)以及动态Loss Scaling，在不损耗精度的情况下，训练速度提升30%+
-  * 支持[PaddlePaddle多卡多进程训练](./docs/multiple_gpus_train_and_mixed_precision_train.md)，多卡训练时训练速度提升15%+
-  * 发布基于UNet的[工业标记表盘分割模型](./contrib#%E5%B7%A5%E4%B8%9A%E7%94%A8%E8%A1%A8%E5%88%86%E5%89%B2)
+  * 新增PSPNet分割网络，提供基于COCO和cityscapes数据集的[预训练模型](./docs/model_zoo.md)4个。
+  * 新增Dice Loss、BCE Loss以及组合Loss配置，支持样本不均衡场景下的[模型优化](./docs/loss_select.md)。
+  * 支持[FP16混合精度训练](./docs/multiple_gpus_train_and_mixed_precision_train.md)以及动态Loss Scaling，在不损耗精度的情况下，训练速度提升30%+。
+  * 支持[PaddlePaddle多卡多进程训练](./docs/multiple_gpus_train_and_mixed_precision_train.md)，多卡训练时训练速度提升15%+。
+  * 发布基于UNet的[工业标记表盘分割模型](./contrib#%E5%B7%A5%E4%B8%9A%E7%94%A8%E8%A1%A8%E5%88%86%E5%89%B2)。
 
 * 2019.09.10
 
   **`v0.1.0`**
   * PaddleSeg分割库初始版本发布，包含DeepLabv3+, U-Net, ICNet三类分割模型, 其中DeepLabv3+支持Xception, MobileNet v2两种可调节的骨干网络。
-  * CVPR19 LIP人体部件分割比赛冠军预测模型发布[ACE2P](./contrib/ACE2P)
-  * 预置基于DeepLabv3+网络的[人像分割](./contrib/HumanSeg/)和[车道线分割](./contrib/RoadLine)预测模型发布
+  * CVPR19 LIP人体部件分割比赛冠军预测模型发布[ACE2P](./contrib/ACE2P)。
+  * 预置基于DeepLabv3+网络的[人像分割](./contrib/HumanSeg/)和[车道线分割](./contrib/RoadLine)预测模型发布。
 
 </br>
 
