@@ -61,8 +61,7 @@ def gray2pseudo_color(args):
                 try:
                     grt_path = osp.join(fpath, f)
                     _output_dir = fpath.replace(input, '')
-                    if len(_output_dir) > 0 and _output_dir[0] == os.path.sep:
-                        _output_dir = _output_dir.lstrip(os.path.sep)
+                    _output_dir = _output_dir.lstrip(os.path.sep)
 
                     im = Image.open(grt_path)
                     lbl = np.asarray(im)
