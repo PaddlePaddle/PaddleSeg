@@ -94,7 +94,7 @@ PaddleSeg采用通用的文件列表方式组织训练集、验证集和测试�
 
 **注意事项**
 
-* 务必保证分隔符在文件列表中每行只存在一次, 如文件名中存在空格，请使用'|'等文件名不可用字符进行切分
+* 务必保证分隔符在文件列表中每行只存在一次, 如文件名中存在空格，请使用"|"等文件名不可用字符进行切分
 
 * 文件列表请使用**UTF-8**格式保存, PaddleSeg默认使用UTF-8编码读取file_list文件
 
@@ -128,11 +128,11 @@ python pdseg/tools/create_dataset_list.py <your/dataset/dir> ${FLAGS}
 |FLAG|用途|默认值|参数数目|
 |-|-|-|-|
 |--type|指定数据集类型，`cityscapes`或`自定义`|`自定义`|1|
-|--separator|文件列表分隔符|'&#124;'|1|
-|--folder|图片和标签集的文件夹名|'images' 'annotations'|2|
-|--second_folder|训练/验证/测试集的文件夹名|'train' 'val' 'test'|若干|
-|--format|图片和标签集的数据格式|'jpg'  'png'|2|
-|--postfix|按文件主名（无扩展名）是否包含指定后缀对图片和标签集进行筛选|''   ''（2个空字符）|2|
+|--separator|文件列表分隔符|"&#124;"|1|
+|--folder|图片和标签集的文件夹名|"images" "annotations"|2|
+|--second_folder|训练/验证/测试集的文件夹名|"train" "val" "test"|若干|
+|--format|图片和标签集的数据格式|"jpg"  "png"|2|
+|--postfix|按文件主名（无扩展名）是否包含指定后缀对图片和标签集进行筛选|""   ""（2个空字符）|2|
 
 #### 使用示例
 - **对于自定义数据集**
@@ -184,9 +184,9 @@ python pdseg/tools/create_dataset_list.py <your/dataset/dir> \
 
 |FLAG|固定值|
 |-|-|
-|--folder|'leftImg8bit' 'gtFine'|
-|--format|'png' 'png'|
-|--postfix|'_leftImg8bit' '_gtFine_labelTrainIds'|
+|--folder|"leftImg8bit" "gtFine"|
+|--format|"png" "png"|
+|--postfix|"_leftImg8bit" "_gtFine_labelTrainIds"|
 
 其余FLAG可以按需要设定。
 ```

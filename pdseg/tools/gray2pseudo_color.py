@@ -2,7 +2,6 @@
 from __future__ import print_function
 
 import argparse
-import glob
 import os
 import os.path as osp
 import sys
@@ -57,18 +56,29 @@ def gray2pseudo_color(args):
 
     color_map = get_color_map_list(256)
     if os.path.isdir(input):
-        for grt_path in glob.glob(osp.join(input, '*.png')):
-            print('Converting original label:', grt_path)
-            basename = osp.basename(grt_path)
+        for fpath, dirs, fs in os.walk(input):
+            for f in fs:
+                try:
+                    grt_path = osp.join(fpath, f)
+                    _output_dir = fpath.replace(input, '')
+                    if _output_dir[0] == os.path.sep:
+                        _output_dir = _output_dir.lstrip(os.path.sep)
 
-            im = Image.open(grt_path)
-            lbl = np.asarray(im)
+                    im = Image.open(grt_path)
+                    lbl = np.asarray(im)
 
-            lbl_pil = Image.fromarray(lbl.astype(np.uint8), mode='P')
-            lbl_pil.putpalette(color_map)
+                    lbl_pil = Image.fromarray(lbl.astype(np.uint8), mode='P')
+                    lbl_pil.putpalette(color_map)
 
-            new_file = osp.join(output_dir, basename)
-            lbl_pil.save(new_file)
+                    real_dir = osp.join(output_dir, _output_dir)
+                    if not osp.exists(real_dir):
+                        os.makedirs(real_dir)
+                    new_grt_path = osp.join(real_dir, f)
+
+                    lbl_pil.save(new_grt_path)
+                    print('New label path:', new_grt_path)
+                except:
+                    continue
     elif os.path.isfile(input):
         if args.dataset_dir is None or args.file_separator is None:
             print('No dataset_dir or file_separator input!')
@@ -79,17 +89,20 @@ def gray2pseudo_color(args):
                 grt_name = parts[1]
                 grt_path = os.path.join(args.dataset_dir, grt_name)
 
-                print('Converting original label:', grt_path)
-                basename = osp.basename(grt_path)
-
                 im = Image.open(grt_path)
                 lbl = np.asarray(im)
 
                 lbl_pil = Image.fromarray(lbl.astype(np.uint8), mode='P')
                 lbl_pil.putpalette(color_map)
 
-                new_file = osp.join(output_dir, basename)
-                lbl_pil.save(new_file)
+                grt_dir, _ = osp.split(grt_name)
+                new_dir = osp.join(output_dir, grt_dir)
+                if not osp.exists(new_dir):
+                    os.makedirs(new_dir)
+                new_grt_path = osp.join(output_dir, grt_name)
+
+                lbl_pil.save(new_grt_path)
+                print('New label path:', new_grt_path)
     else:
         print('It\'s neither a dir nor a file')
 
