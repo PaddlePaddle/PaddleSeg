@@ -166,7 +166,7 @@ def build_model(main_prog, start_prog, phase=ModelPhase.TRAIN):
                 if cfg.AUG.AUG_METHOD == 'rangescaling':
                     size = cfg.AUG.INF_RESIZE_VALUE
                     value = fluid.layers.reduce_max(origin_shape)
-                    scale = size / value
+                    scale = float(size) / value.astype('float32')
                     image = fluid.layers.resize_bilinear(
                         image, scale=scale, align_corners=False, align_mode=0)
 
@@ -191,6 +191,9 @@ def build_model(main_prog, start_prog, phase=ModelPhase.TRAIN):
                 std = np.array(cfg.STD).reshape(1, len(cfg.STD), 1, 1)
                 std = fluid.layers.assign(std.astype('float32'))
                 image = (image / 255 - mean) / std
+                # 很有必要，使后面的网络能通过image.shape获取特征图的shape
+                image = fluid.layers.reshape(
+                    image, shape=[-1, cfg.DATASET.DATA_DIM, height, width])
 
             else:
                 image = fluid.layers.data(
@@ -229,7 +232,6 @@ def build_model(main_prog, start_prog, phase=ModelPhase.TRAIN):
                     raise Exception(
                         "softmax loss can not combine with dice loss or bce loss"
                     )
-
             logits = model_func(image, class_num)
 
             # 根据选择的loss函数计算相应的损失函数
