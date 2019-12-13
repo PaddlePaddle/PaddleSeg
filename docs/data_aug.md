@@ -62,7 +62,7 @@ Rich Crop是PaddleSeg结合实际业务经验开放的一套数据增强策略�
 
 ![RichCrop示意图](imgs/data_aug_example.png)
 
-rich crop是指对图像进行多种变换，保证在训练过程中数据的丰富多样性，包含以下4种变换。`AUG.RICH_CROP.ENABLE`为False时会直接跳过该步骤。
+Rich Crop是指对图像进行多种变换，保证在训练过程中数据的丰富多样性，包含以下4种变换:
 
 - blur
 使用高斯模糊对图像进行平滑。
@@ -78,6 +78,7 @@ rich crop是指对图像进行多种变换，保证在训练过程中数据的�
 
 |rich crop方式|配置参数|含义|备注|
 |-|-|-|-|
+|rich crop|AUG.RICH_CROP.ENABLE|rich crop总开关|为True时开启，为False时关闭所有变换|
 |blur|AUG.RICH_CROP.BLUR|图像模糊开关|为True时开启，为False时关闭|
 ||AUG.RICH_CROP.BLUR_RATIO|控制进行模糊的概率|当AUG.RICH_CROP.BLUR为False时无效|
 |rotation|AUG.RICH_CROP.MAX_ROTATION|图像正向旋转的最大角度|取值0~90°，实际旋转角度在\[-AUG.RICH_CROP.MAX_ROTATION, AUG.RICH_CROP.MAX_ROTATION]范围内随机选取|
