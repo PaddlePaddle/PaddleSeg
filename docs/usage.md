@@ -17,7 +17,7 @@ python pdseg/vis.py ${FLAGS} ${OPTIONS}
 
 ```shell
 # FLAGS "--cfg configs/cityscapes.yaml" 必须在 OPTIONS "BATCH_SIZE 1" 之前
-python pdseg/train.py BATCH_SIZE 1 --cfg configs/cityscapes.yaml
+python pdseg/train.py BATCH_SIZE 1 --cfg configs/unet_pet.yaml
 ```
 
 ## 命令行FLAGS列表
