@@ -368,7 +368,7 @@ def hsv_color_jitter(crop_img,
 
 def rand_crop(crop_img, crop_seg, mode=ModelPhase.TRAIN):
     """
-    随机裁剪图片和标签图, 若crop尺寸大于原始尺寸，分别使用均值和ignore值填充再进行crop，
+    随机裁剪图片和标签图, 若crop尺寸大于原始尺寸，分别使用DATASET.PADDING_VALUE值和ignore值填充再进行crop，
     crop尺寸与原始尺寸一致，返回原图，crop尺寸小于原始尺寸直接crop
 
     Args:
