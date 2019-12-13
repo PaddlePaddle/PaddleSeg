@@ -16,7 +16,7 @@ python pdseg/vis.py ${FLAGS} ${OPTIONS}
 * FLAGS必须位于OPTIONS之前，否会将会遇到报错，例如如下的例子:
 
 ```shell
-# FLAGS "--cfg configs/cityscapes.yaml" 必须在 OPTIONS "BATCH_SIZE 1" 之前
+# FLAGS "--cfg configs/unet_pet.yaml" 必须在 OPTIONS "BATCH_SIZE 1" 之前
 python pdseg/train.py BATCH_SIZE 1 --cfg configs/unet_pet.yaml
 ```
 
