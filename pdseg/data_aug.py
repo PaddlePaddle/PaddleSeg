@@ -327,7 +327,7 @@ def random_jitter(cv_img, saturation_range, brightness_range, contrast_range):
     brightness_ratio = np.random.uniform(-brightness_range, brightness_range)
     contrast_ratio = np.random.uniform(-contrast_range, contrast_range)
 
-    order = [1, 2, 3]
+    order = [0, 1, 2]
     np.random.shuffle(order)
 
     for i in range(3):
