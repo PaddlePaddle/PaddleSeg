@@ -7,11 +7,11 @@
 
 ## Resize  
 
-resize步骤是指将输入图像按照某种规则讲图片重新缩放到某一个尺寸，PaddleSeg支持以下3种resize方式:
+Resize步骤是指将输入图像按照某种规则讲图片重新缩放到某一个尺寸，PaddleSeg支持以下3种resize方式:
 
 ![](imgs/aug_method.png)
 
-- Un-Padding
+- UnPadding
 将输入图像直接resize到某一个固定大小下，送入到网络中间训练。预测时同样操作。
 
 - Step-Scaling
@@ -27,13 +27,13 @@ Range-Scaling示意图如下：
 
 |Resize方式|配置参数|含义|备注|
 |-|-|-|-|
-|Un-padding|AUG.FIX_RESIZE_SIZE|resize的固定尺寸|
-|Step-Scaling|AUG.MIN_SCALE_FACTOR|resize最小比例|
-||AUG.MAX_SCALE_FACTOR|resize最大比例|
-||AUG.SCALE_STEP_SIZE|resize比例选取的步长|
+|Un-padding|AUG.FIX_RESIZE_SIZE|Resize的固定尺寸|
+|Step-Scaling|AUG.MIN_SCALE_FACTOR|Resize最小比例|
+||AUG.MAX_SCALE_FACTOR|Resize最大比例|
+||AUG.SCALE_STEP_SIZE|Resize比例选取的步长|
 |Range-Scaling|AUG.MIN_RESIZE_VALUE|图像长边变动范围的最小值|
 ||AUG.MAX_RESIZE_VALUE|图像长边变动范围的最大值|
-||AUG.INF_RESIZE_VALUE|预测时长边对齐时所指定的固定长度|取值必须在\[AUG.MIN_RESIZE_VALUE, AUG.MAX_RESIZE_VALUE]范围内。|
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|AUG.INF_RESIZE_VALUE|预测时长边对齐时所指定的固定长度|取值必须在<br>[AUG.MIN_RESIZE_VALUE,<br> AUG.MAX_RESIZE_VALUE]<br>范围内。|
 
 ## 图像翻转
 
@@ -64,44 +64,44 @@ Rich Crop是PaddleSeg结合实际业务经验开放的一套数据增强策略�
 
 Rich Crop是指对图像进行多种变换，保证在训练过程中数据的丰富多样性，包含以下4种变换:
 
-- blur
+- Blur
 使用高斯模糊对图像进行平滑。
 
-- rotation
+- Rotation
 图像旋转，旋转角度在一定范围内随机选取，旋转产生的多余的区域使用`DATASET.PADDING_VALUE`值进行填充。
 
-- aspect
+- Aspect
 图像长宽比调整，从图像中按一定大小和宽高比裁取一定区域出来之后进行resize。
 
-- color jitter
+- Color jitter
 图像颜色抖动，共进行亮度、饱和度和对比度三种颜色属性的调节。
 
-|rich crop方式|配置参数|含义|备注|
+|Rich crop方式|配置参数|含义|备注|
 |-|-|-|-|
-|rich crop|AUG.RICH_CROP.ENABLE|rich crop总开关|为True时开启，为False时关闭所有变换|
-|blur|AUG.RICH_CROP.BLUR|图像模糊开关|为True时开启，为False时关闭|
+|Rich crop|AUG.RICH_CROP.ENABLE|Rich crop总开关|为True时开启，为False时关闭所有变换|
+|Blur|AUG.RICH_CROP.BLUR|图像模糊开关|为True时开启，为False时关闭|
 ||AUG.RICH_CROP.BLUR_RATIO|控制进行模糊的概率|当AUG.RICH_CROP.BLUR为False时无效|
-|rotation|AUG.RICH_CROP.MAX_ROTATION|图像正向旋转的最大角度|取值0~90°，实际旋转角度在\[-AUG.RICH_CROP.MAX_ROTATION, AUG.RICH_CROP.MAX_ROTATION]范围内随机选取|
-|aspect|AUG.RICH_CROP.MIN_AREA_RATIO|裁取图像与原始图像面积比最小值|取值0~1，取值越小则变化范围越大，若为0则不进行调节|
+|Rotation|AUG.RICH_CROP.MAX_ROTATION|图像正向旋转的最大角度|取值0~90°，实际旋转角度在\[-AUG.RICH_CROP.MAX_ROTATION, AUG.RICH_CROP.MAX_ROTATION]范围内随机选取|
+|Aspect|AUG.RICH_CROP.MIN_AREA_RATIO|裁取图像与原始图像面积比最小值|取值0~1，取值越小则变化范围越大，若为0则不进行调节|
 ||AUG.RICH_CROP.ASPECT_RATIO|裁取图像宽高比范围|取值非负，越小则变化范围越大，若为0则不进行调节|
-|color jitter|AUG.RICH_CROP.BRIGHTNESS_JITTER_RATIO|亮度调节因子|取值0~1，取值越大则变化范围越大，若为0则不进行调节|
+|Color jitter|AUG.RICH_CROP.BRIGHTNESS_JITTER_RATIO|亮度调节因子|取值0~1，取值越大则变化范围越大，若为0则不进行调节|
 ||AUG.RICH_CROP.SATURATION_JITTER_RATIO|饱和度调节因子|取值0~1，取值越大则变化范围越大，若为0则不进行调节|
-||AUG.RICH_CROP.CONTRAST_JITTER_RATIO|对比度调节因子|取值0~1，取值越大则变化范围越大，若为0则不进行调节|
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|AUG.RICH_CROP.CONTRAST_JITTER_RATIO|对比度调节因子&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|取值0~1，取值越大则变化范围越大，若为0则不进行调节|
 
 
 ## Random Crop  
 
-随机裁剪图片和标签图，该步骤主要是通过crop的方式使得输入到网络中的图像在某一个固定大小。
+随机裁剪图片和标签图，该步骤主要是通过裁剪的方式使得输入到网络中的图像在某一个固定大小。
 
 Random crop过程分为3种情形：
 - 当输入图像尺寸等于CROP_SIZE时，返回原图。
-- 当输入图像尺寸大于CROP_SIZE时，直接crop
-- 当输入图像尺寸小于CROP_SIZE时，分别使用`DATASET.PADDING_VALUE`值和`DATASET.IGNORE_INDEX`值对图像和标签图进行填充，再进行crop。
+- 当输入图像尺寸大于CROP_SIZE时，直接裁剪。
+- 当输入图像尺寸小于CROP_SIZE时，分别使用`DATASET.PADDING_VALUE`值和`DATASET.IGNORE_INDEX`值对图像和标签图进行填充，再进行裁剪。
 
-|random crop方式|配置参数|含义|备注|
+|Random crop方式|配置参数|含义|备注|
 |-|-|-|-|
-|train crop|TRAIN_CROP_SIZE|训练过程进行random crop后的图像尺寸|类型为tuple，格式为(width, height)
-|eval crop|EVAL_CROP_SIZE|除训练外的过程进行random crop后的图像尺寸|类型为tuple，格式为(width, height)
+|Train crop|TRAIN_CROP_SIZE|训练过程进行random crop后的图像尺寸|类型为tuple，格式为(width, height)
+|Eval crop &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|EVAL_CROP_SIZE|除训练外的过程进行random crop后的图像尺寸|类型为tuple，格式为(width, height)
 
 `TRAIN_CROP_SIZE`可以设置任意大小，具体如何设置根据数据集而定。
 
