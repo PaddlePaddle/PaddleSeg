@@ -66,8 +66,8 @@ rich crop是指对图像进行多种变换，保证在训练过程中数据的�
     - 原图
         - 图片格式：RGB三通道图片和RGBA四通道图片两种类型的图片进行训练，但是在一次训练过程只能存在一种格式。
         - 图片转换：灰度图片经过预处理后之后会转变成三通道图片
-        - 图片参数设置：当图片为三通道图片时IMAGE_TYPE设置为rgb， 对应MEAN和STD也必须是一个长度为3的list，当图片为四通道图片时IMAGE_TYPE设置为rgba，对应的MEAN和STD必须是一个长度为4的list。
+        - 图片参数设置：当图片为三通道图片时`DATASET.IMAGE_TYPE`设置为rgb， 对应MEAN和STD也必须是一个长度为3的list，当图片为四通道图片时`DATASET.IMAGE_TYPE`设置为rgba，对应的MEAN和STD必须是一个长度为4的list。
     - 标注图
         - 图片格式：标注图片必须为png格式的单通道多值图，元素值代表的是这个元素所属于的类别。
         - 图片转换：在datalayer层对label图片进行的任何resize，以及旋转的操作，都必须采用最近邻的插值方式。
-        - 图片ignore：设置TRAIN.IGNORE_INDEX 参数可以选择性忽略掉属于某一个类别的所有像素点。这个参数一般设置为255
+        - 图片ignore：设置`DATASET.IGNORE_INDEX` 参数可以选择性忽略掉属于某一个类别的所有像素点。这个参数一般设置为255.
