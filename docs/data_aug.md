@@ -11,7 +11,7 @@ Resize步骤是指将输入图像按照某种规则讲图片重新缩放到某�
 
 ![](imgs/aug_method.png)
 
-- UnPadding
+- Unpadding
 将输入图像直接resize到某一个固定大小下，送入到网络中间训练。预测时同样操作。
 
 - Step-Scaling
@@ -27,7 +27,7 @@ Range-Scaling示意图如下：
 
 |Resize方式|配置参数|含义|备注|
 |-|-|-|-|
-|Un-padding|AUG.FIX_RESIZE_SIZE|Resize的固定尺寸|
+|Unpadding|AUG.FIX_RESIZE_SIZE|Resize的固定尺寸|
 |Step-Scaling|AUG.MIN_SCALE_FACTOR|Resize最小比例|
 ||AUG.MAX_SCALE_FACTOR|Resize最大比例|
 ||AUG.SCALE_STEP_SIZE|Resize比例选取的步长|
