@@ -103,6 +103,24 @@ namespace utils {
         }
     }
 
+    // flatten a cv::mat
+    inline void flatten_mat(cv::Mat& im, float* data) {
+        int rh = im.rows;
+        int rw = im.cols;
+        int rc = im.channels();
+        int top_index = 0;
+        for (int h = 0; h < rh; ++h) {
+            const uchar* ptr = im.ptr<uchar>(h);
+            int im_index = 0;
+            for (int w = 0; w < rw; ++w) {
+                for (int c = 0; c < rc; ++c) {
+                    float pixel = static_cast<float>(ptr[im_index++]);
+                    data[top_index++] = pixel;
+                }
+            }
+        }
+    }
+
     // argmax
     inline void argmax(float* out, std::vector<int>& shape,
                        std::vector<uchar>& mask, std::vector<uchar>& scoremap) {
