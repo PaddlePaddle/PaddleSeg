@@ -108,10 +108,11 @@ namespace utils {
         int rh = im.rows;
         int rw = im.cols;
         int rc = im.channels();
-        int top_index = 0;
+        #pragma omp parallel for
         for (int h = 0; h < rh; ++h) {
             const uchar* ptr = im.ptr<uchar>(h);
             int im_index = 0;
+            int top_index = h * rw * rc;
             for (int w = 0; w < rw; ++w) {
                 for (int c = 0; c < rc; ++c) {
                     float pixel = static_cast<float>(ptr[im_index++]);
