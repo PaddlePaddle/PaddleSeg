@@ -52,7 +52,7 @@ $ pip install -r requirements.txt
 ### 快速入门
 
 * [安装说明](./docs/installation.md)
-* [训练/评估/可视化](./docs/usage.md)
+* [如何训练/评估/可视化](./docs/usage.md)
 
 ### 基础功能
 
