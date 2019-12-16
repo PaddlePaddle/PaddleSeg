@@ -25,7 +25,7 @@
 ## 2.主要目录和文件
 
 ```
-inference
+cpp
 ├── demo.cpp # 演示加载模型、读入数据、完成预测任务C++代码
 |
 ├── conf
@@ -90,6 +90,8 @@ deeplabv3p_xception65_humanseg
 DEPLOY:
     # 是否使用GPU预测
     USE_GPU: 1
+    # 是否是PaddleSeg 0.3.0新版本模型
+    USE_PR : 1
     # 模型和参数文件所在目录路径
     MODEL_PATH: "/root/projects/models/deeplabv3p_xception65_humanseg"
     # 模型文件名
@@ -125,11 +127,11 @@ DEPLOY:
 
 `Linux` 系统中执行以下命令：
 ```shell
-./demo --conf=/root/projects/PaddleSeg/inference/conf/humanseg.yaml --input_dir=/root/projects/PaddleSeg/inference/images/humanseg/
+./demo --conf=/root/projects/PaddleSeg/deploy/cpp/conf/humanseg.yaml --input_dir=/root/projects/PaddleSeg/deploy/cpp/images/humanseg/
 ```
 `Windows` 中执行以下命令:
 ```shell
-D:\projects\PaddleSeg\inference\build\Release>demo.exe --conf=D:\\projects\\PaddleSeg\\inference\\conf\\humanseg.yaml --input_dir=D:\\projects\\PaddleSeg\\inference\\images\humanseg\\
+D:\projects\PaddleSeg\deploy\cpp\build\Release>demo.exe --conf=D:\\projects\\PaddleSeg\\deploy\\cpp\\conf\\humanseg.yaml --input_dir=D:\\projects\\PaddleSeg\\deploy\\cpp\\images\humanseg\\
 ```
 
 
@@ -141,7 +143,7 @@ D:\projects\PaddleSeg\inference\build\Release>demo.exe --conf=D:\\projects\\Padd
 | input_dir | 需要预测的图片目录 |
 
 
-配置文件说明请参考上一步，样例程序会扫描input_dir目录下的所有以**jpg或jpeg**为后缀的图片，并生成对应的预测结果（若input_dir目录下没有以**jpg或jpeg**为后缀的图片，程序会报错）。图像分割会对`demo.jpg`的每个像素进行分类，其预测的结果保存在`demo_jpg.png`中。分割预测结果的图不能直接看到效果，必须经过可视化处理。对于二分类的图像分割模型，样例程序自动将预测结果转换成可视化结果，保存在`demo_jpg_scoremap.png`中， 原始尺寸的预测结果在`demo_jpg_recover.png`中，如下图。对于**多分类**的图像分割模型，请参考[可视化脚本使用方法](./docs/vis.md)。
+配置文件说明请参考上一步，样例程序会扫描input_dir目录下的所有以**jpg或jpeg**为后缀的图片，并生成对应的预测结果（若input_dir目录下没有以**jpg或jpeg**为后缀的图片，程序会报错）。图像分割会对`demo.jpg`的每个像素进行分类，其预测的结果保存在`demo_jpg_mask.png`中。分割预测结果的图不能直接看到效果，必须经过可视化处理。对于二分类的图像分割模型。如果需要对预测结果进行**可视化**，请参考[可视化脚本使用方法](./docs/vis.md)。
 
 输入原图  
 ![avatar](images/humanseg/demo2.jpeg)
