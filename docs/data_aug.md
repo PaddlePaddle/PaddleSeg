@@ -35,6 +35,8 @@ Range-Scaling示意图如下：
 ||AUG.MAX_RESIZE_VALUE|图像长边变动范围的最大值|
 |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|AUG.INF_RESIZE_VALUE|预测时长边对齐时所指定的固定长度|取值必须在<br>[AUG.MIN_RESIZE_VALUE,<br> AUG.MAX_RESIZE_VALUE]<br>范围内。|
 
+**注：本文所有配置参数可在configs目录下您的yaml文件中进行设置。**
+
 ## 图像翻转
 
 PaddleSeg支持以下2种翻转方式：
