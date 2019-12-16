@@ -16,7 +16,7 @@
 1. `mkdir -p /root/projects/ && cd /root/projects`
 2. `git clone https://github.com/PaddlePaddle/PaddleSeg.git`
 
-`C++`预测代码在`/root/projects/PaddleSeg/inference` 目录，该目录不依赖任何`PaddleSeg`下其他目录。
+`C++`预测代码在`/root/projects/PaddleSeg/deploy/cpp` 目录，该目录不依赖任何`PaddleSeg`下其他目录。
 
 
 ### Step2: 下载PaddlePaddle C++ 预测库 fluid_inference
@@ -25,9 +25,9 @@ PaddlePaddle C++ 预测库主要分为CPU版本和GPU版本。其中，针对不
 
 |  版本   | 链接  |
 |  ----  | ----  |
-| CPU版本  | [fluid_inference.tgz](https://bj.bcebos.com/paddlehub/paddle_inference_lib/fluid_inference_linux_cpu_1.6.1.tgz) |
-| CUDA 9.0版本  | [fluid_inference.tgz](https://bj.bcebos.com/paddlehub/paddle_inference_lib/fluid_inference_linux_cuda97_1.6.1.tgz) |
-| CUDA 10.0版本  | [fluid_inference.tgz](https://bj.bcebos.com/paddlehub/paddle_inference_lib/fluid_inference_linux_cuda10_1.6.1.tgz) |
+| CPU版本  | [fluid_inference.tgz](https://paddle-inference-lib.bj.bcebos.com/1.6.1-cpu-avx-mkl/fluid_inference.tgz) |
+| CUDA 9.0版本  | [fluid_inference.tgz](https://paddle-inference-lib.bj.bcebos.com/1.6.1-gpu-cuda9-cudnn7-avx-mkl/fluid_inference.tgz) |
+| CUDA 10.0版本  | [fluid_inference.tgz](https://paddle-inference-lib.bj.bcebos.com/1.6.1-gpu-cuda10-cudnn7-avx-mkl/fluid_inference.tgz) |
 
 
 针对不同的CPU类型、不同的指令集，官方提供更多可用的预测库版本，目前已经推出1.6版本的预测库。其余版本具体请参考以下链接:[C++预测库下载列表](https://www.paddlepaddle.org.cn/documentation/docs/zh/develop/advanced_usage/deploy/inference/build_and_install_lib_cn.html)
@@ -75,7 +75,7 @@ make install
 在使用**GPU版本**预测库进行编译时，可执行下列操作。**注意**把对应的参数改为你的上述依赖库实际路径：
 
 ```shell
-cd /root/projects/PaddleSeg/inference
+cd /root/projects/PaddleSeg/deploy/cpp
 mkdir build && cd build
 cmake .. -DWITH_GPU=ON  -DPADDLE_DIR=/root/projects/fluid_inference -DCUDA_LIB=/usr/local/cuda/lib64/ -DOPENCV_DIR=/root/projects/opencv3/ -DCUDNN_LIB=/usr/local/cuda/lib64/ -DWITH_STATIC_LIB=OFF
 make
@@ -83,7 +83,7 @@ make
 
 在使用**CPU版本**预测库进行编译时，可执行下列操作。
 ```shell
-cd /root/projects/PaddleSeg/inference
+cd /root/projects/PaddleSeg/cpp
 
 mkdir build && cd build
 cmake .. -DWITH_GPU=OFF  -DPADDLE_DIR=/root/projects/fluid_inference -DOPENCV_DIR=/root/projects/opencv3/ -DWITH_STATIC_LIB=OFF
