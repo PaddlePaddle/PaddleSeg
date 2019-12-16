@@ -124,6 +124,56 @@ def sigmoid_to_softmax(logit):
     logit = fluid.layers.transpose(logit, [0, 3, 1, 2])
     return logit
 
+def export_preprocess(image):
+    """导出模型的预处理流程"""
+
+    image = fluid.layers.transpose(image, [0, 3, 1, 2])
+    origin_shape = fluid.layers.shape(image)[-2:]
+
+    # 不同AUG_METHOD方法的resize
+    if cfg.AUG.AUG_METHOD == 'unpadding':
+        h_fix = cfg.AUG.FIX_RESIZE_SIZE[1]
+        w_fix = cfg.AUG.FIX_RESIZE_SIZE[0]
+        image = fluid.layers.resize_bilinear(
+            image,
+            out_shape=[h_fix, w_fix],
+            align_corners=False,
+            align_mode=0)
+    elif cfg.AUG.AUG_METHOD == 'rangescaling':
+        size = cfg.AUG.INF_RESIZE_VALUE
+        value = fluid.layers.reduce_max(origin_shape)
+        scale = float(size) / value.astype('float32')
+        image = fluid.layers.resize_bilinear(
+            image, scale=scale, align_corners=False, align_mode=0)
+
+    # 存储resize后图像shape
+    valid_shape = fluid.layers.shape(image)[-2:]
+
+    # padding到eval_crop_size大小
+    width = cfg.EVAL_CROP_SIZE[0]
+    height = cfg.EVAL_CROP_SIZE[1]
+    pad_target = fluid.layers.assign(
+        np.array([height, width]).astype('float32'))
+    up = fluid.layers.assign(np.array([0]).astype('float32'))
+    down = pad_target[0] - valid_shape[0]
+    left = up
+    right = pad_target[1] - valid_shape[1]
+    paddings = fluid.layers.concat([up, down, left, right])
+    paddings = fluid.layers.cast(paddings, 'int32')
+    image = fluid.layers.pad2d(
+        image, paddings=paddings, pad_value=127.5)
+
+    # normalize
+    mean = np.array(cfg.MEAN).reshape(1, len(cfg.MEAN), 1, 1)
+    mean = fluid.layers.assign(mean.astype('float32'))
+    std = np.array(cfg.STD).reshape(1, len(cfg.STD), 1, 1)
+    std = fluid.layers.assign(std.astype('float32'))
+    image = (image / 255 - mean) / std
+    # 使后面的网络能通过类似image.shape获取特征图的shape
+    image = fluid.layers.reshape(
+        image, shape=[-1, cfg.DATASET.DATA_DIM, height, width])
+    return image, valid_shape, origin_shape
+
 
 def build_model(main_prog, start_prog, phase=ModelPhase.TRAIN):
     if not ModelPhase.is_valid_phase(phase):
@@ -146,21 +196,11 @@ def build_model(main_prog, start_prog, phase=ModelPhase.TRAIN):
             if ModelPhase.is_predict(phase):
                 origin_image = fluid.layers.data(
                     name='image',
-                    shape=[-1, 1, 1, cfg.DATASET.DATA_DIM],
+                    shape=[-1, -1, -1, cfg.DATASET.DATA_DIM],
                     dtype='float32',
                     append_batch_size=False)
-                image = fluid.layers.transpose(origin_image, [0, 3, 1, 2])
-                origin_shape = fluid.layers.shape(image)[-2:]
-                mean = np.array(cfg.MEAN).reshape(1, len(cfg.MEAN), 1, 1)
-                mean = fluid.layers.assign(mean.astype('float32'))
-                std = np.array(cfg.STD).reshape(1, len(cfg.STD), 1, 1)
-                std = fluid.layers.assign(std.astype('float32'))
-                image = fluid.layers.resize_bilinear(
-                    image,
-                    out_shape=[height, width],
-                    align_corners=False,
-                    align_mode=0)
-                image = (image / 255 - mean) / std
+                image, valid_shape, origin_shape = export_preprocess(origin_image)
+
             else:
                 image = fluid.layers.data(
                     name='image', shape=image_shape, dtype='float32')
@@ -198,7 +238,6 @@ def build_model(main_prog, start_prog, phase=ModelPhase.TRAIN):
                     raise Exception(
                         "softmax loss can not combine with dice loss or bce loss"
                     )
-
             logits = model_func(image, class_num)
 
             # 根据选择的loss函数计算相应的损失函数
@@ -252,13 +291,17 @@ def build_model(main_prog, start_prog, phase=ModelPhase.TRAIN):
                     logit = sigmoid_to_softmax(logit)
                 else:
                     logit = softmax(logit)
+
+                # 获取有效部分
+                logit = fluid.layers.slice(
+                    logit, axes=[2, 3], starts=[0, 0], ends=valid_shape)
+
                 logit = fluid.layers.resize_bilinear(
                     logit,
                     out_shape=origin_shape,
                     align_corners=False,
                     align_mode=0)
-                logit = fluid.layers.transpose(logit, [0, 2, 3, 1])
-                logit = fluid.layers.argmax(logit, axis=3)
+                logit = fluid.layers.argmax(logit, axis=1)
                 return origin_image, logit
 
             if class_num == 1:
