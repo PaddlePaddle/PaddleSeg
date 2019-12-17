@@ -1,4 +1,4 @@
-# PaddleSeg 分割模型预测性能测试
+# PaddleSeg 分割模型预测Benchmark
 
 ## 测试软件环境
 - CUDA 9.0
@@ -10,12 +10,11 @@
 - CPU：Intel(R) Xeon(R) Gold 6148 CPU @ 2.40GHz
 
 ## 测试方法
-- 输入采用 1000张RGB图片，batch_size 统一为 1。
+- 输入采用1000张RGB图片，batch_size为1。
 - 重复跑多轮，去掉第一轮预热时间，计后续几轮的平均时间：包括数据拷贝到GPU，预测引擎计算时间，预测结果拷贝回CPU 时间。
-- 采用Fluid C++预测引擎
+- 采用Paddle C++预测引擎
 - 测试时开启了 FLAGS_cudnn_exhaustive_search=True，使用exhaustive方式搜索卷积计算算法。
-- 对于每个模型，同事测试了`OP`优化模型和原生模型的推理速度, 并分别就是否开启`FP16`和`FP32`的进行了测试
-
+- 对于每个模型，测试了`OP`优化模型和原生模型的推理速度, 并分别就是否开启`FP16`和`FP32`的进行了测试
 
 
 ## 推理速度测试数据
@@ -501,7 +500,7 @@
 
  
 
-### 3. 不同的EVAL_CROP_SIZE对图片想能的影响
+### 3. 不同的EVAL_CROP_SIZE对图片性能的影响
 
 在 `deeplabv3p_xception`上的数据对比图：
 ![xception](https://paddleseg.bj.bcebos.com/inference/benchmark/xception.png)
