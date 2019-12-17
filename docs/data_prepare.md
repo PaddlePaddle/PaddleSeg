@@ -139,7 +139,6 @@ python pdseg/tools/create_dataset_list.py <your/dataset/dir> ${FLAGS}
 
 若您已经按上述说明整理好了数据集目录结构，可以运行下面的命令生成文件列表。
 
-**Note:** 必须指定自定义数据集目录，可以按需要设定FLAG。无需指定`--type`。
 ```
 # 生成文件列表，其分隔符为空格，图片和标签集的数据格式都为png
 python pdseg/tools/create_dataset_list.py <your/dataset/dir> --separator " " --format png png
@@ -149,11 +148,17 @@ python pdseg/tools/create_dataset_list.py <your/dataset/dir> --separator " " --f
 python pdseg/tools/create_dataset_list.py <your/dataset/dir> \
         --folder img gt --second_folder training validation
 ```
-
+**Note:** 必须指定自定义数据集目录，可以按需要设定FLAG。无需指定`--type`。
 
 - **对于cityscapes数据集**
 
 若您使用的是cityscapes数据集，可以运行下面的命令生成文件列表。
+
+```
+# 生成cityscapes文件列表，其分隔符为逗号
+python pdseg/tools/create_dataset_list.py <your/dataset/dir> --type cityscapes --separator ","
+```
+**Note:** 
 
 必须指定cityscapes数据集目录，`--type`必须为`cityscapes`。
 
@@ -166,7 +171,3 @@ python pdseg/tools/create_dataset_list.py <your/dataset/dir> \
 |--postfix|"_leftImg8bit" "_gtFine_labelTrainIds"|
 
 其余FLAG可以按需要设定。
-```
-# 生成cityscapes文件列表，其分隔符为逗号
-python pdseg/tools/create_dataset_list.py <your/dataset/dir> --type cityscapes --separator ","
-```
