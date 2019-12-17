@@ -140,6 +140,7 @@ PaddleSeg在AI Studio平台上提供了在线体验的教程，欢迎体验：
   * 新增图像归一化操作的GPU化功能，进一步提升预测速度。
   * 新增Python部署方案，更低成本完成工业级部署。
   * 新增Paddle-Lite移动端部署方案，支持人像分割模型的移动端部署。
+  * 新增不同分割模型的预测[性能数据](./deploy/python/docs/PaddleSeg_Infer_Benchmark.md), 为选择合适的模型提供性能数据参考。
 
   
 * 2019.11.04
