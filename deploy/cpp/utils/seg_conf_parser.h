@@ -25,6 +25,7 @@ class PaddleSegModelConfigPaser {
         :_class_num(0),
         _channels(0),
         _use_gpu(0),
+        _use_pr(0),
         _batch_size(1),
         _model_file_name("__model__"),
         _param_file_name("__params__") {
@@ -40,6 +41,7 @@ class PaddleSegModelConfigPaser {
         _class_num = 0;
         _channels = 0;
         _use_gpu = 0;
+        _use_pr = 0;
         _batch_size = 1;
         _model_file_name.clear();
         _model_path.clear();
@@ -172,6 +174,12 @@ class PaddleSegModelConfigPaser {
             std::cerr << "Please set CHANNELS: x"  << std::endl;
             return false;
         }
+        // 15. use_pr
+        if (config["DEPLOY"]["USE_PR"].IsDefined()) {
+            _use_pr = config["DEPLOY"]["USE_PR"].as<int>();
+        } else {
+            _use_pr = 0;
+        }
         return true;
     }
 
@@ -238,6 +246,8 @@ class PaddleSegModelConfigPaser {
     std::string _predictor_mode;
     // DEPLOY.BATCH_SIZE
     int _batch_size;
+    // USE_PR: OP Optimized model
+    int _use_pr;
 };
 
 }  // namespace PaddleSolution

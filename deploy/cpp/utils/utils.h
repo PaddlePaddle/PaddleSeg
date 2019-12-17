@@ -23,7 +23,8 @@
 #include <opencv2/highgui/highgui.hpp>
 
 #ifdef _WIN32
-#include <filesystem>
+#define GLOG_NO_ABBREVIATED_SEVERITIES
+#include <windows.h>
 #else
 #include <dirent.h>
 #include <sys/types.h>
@@ -67,15 +68,21 @@ namespace utils {
     // scan a directory and get all files with input extensions
     inline std::vector<std::string> get_directory_images(
                     const std::string& path, const std::string& exts) {
+        std::string pattern(path);
+        pattern.append("\\*");
         std::vector<std::string> imgs;
-        for (const auto& item :
-                    std::experimental::filesystem::directory_iterator(path)) {
-            auto suffix = item.path().extension().string();
-            if (exts.find(suffix) != std::string::npos && suffix.size() > 0) {
-                auto fullname = path_join(path,
-                                          item.path().filename().string());
-                imgs.push_back(item.path().string());
-            }
+        WIN32_FIND_DATA data;
+        HANDLE hFind;
+        if ((hFind = FindFirstFile(pattern.c_str(), &data)) != INVALID_HANDLE_VALUE) {
+            do {
+                auto fname = std::string(data.cFileName);
+                auto pos = fname.rfind(".");
+                auto ext = fname.substr(pos + 1);
+                if (ext.size() > 1 && exts.find(ext) != std::string::npos) {
+                    imgs.push_back(path + "\\" + data.cFileName);
+                }
+            } while (FindNextFile(hFind, &data) != 0);
+            FindClose(hFind);
         }
         return imgs;
     }
@@ -98,6 +105,25 @@ namespace utils {
                     float pixel = static_cast<float>(ptr[im_index++]);
                     pixel = (pixel * normf - fmean[c]) / fstd[c];
                     data[top_index] = pixel;
+                }
+            }
+        }
+    }
+
+    // flatten a cv::mat
+    inline void flatten_mat(cv::Mat& im, float* data) {
+        int rh = im.rows;
+        int rw = im.cols;
+        int rc = im.channels();
+        #pragma omp parallel for
+        for (int h = 0; h < rh; ++h) {
+            const uchar* ptr = im.ptr<uchar>(h);
+            int im_index = 0;
+            int top_index = h * rw * rc;
+            for (int w = 0; w < rw; ++w) {
+                for (int c = 0; c < rc; ++c) {
+                    float pixel = static_cast<float>(ptr[im_index++]);
+                    data[top_index++] = pixel;
                 }
             }
         }

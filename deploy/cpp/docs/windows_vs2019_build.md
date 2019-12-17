@@ -15,7 +15,7 @@ Windows 平台下，我们使用`Visual Studio 2015` 和 `Visual Studio 2019 Com
 
 ### Step1: 下载代码
 
-1. 点击下载源代码：[下载地址](https://github.com/PaddlePaddle/PaddleSeg/archive/release/v0.2.0.zip)
+1. 点击下载源代码：[下载地址](https://github.com/PaddlePaddle/PaddleSeg/archive/release/v0.3.0.zip)
 2. 解压，解压后目录重命名为`PaddleSeg`
 
 以下代码目录路径为`D:\projects\PaddleSeg` 为例。
@@ -27,9 +27,9 @@ PaddlePaddle C++ 预测库主要分为两大版本：CPU版本和GPU版本。其
 
 |  版本   | 链接  |
 |  ----  | ----  |
-| CPU版本  | [fluid_inference_install_dir.zip](https://bj.bcebos.com/paddlehub/paddle_inference_lib/fluid_install_dir_win_cpu_1.6.zip) |
-| CUDA 9.0版本  | [fluid_inference_install_dir.zip](https://bj.bcebos.com/paddlehub/paddle_inference_lib/fluid_inference_install_dir_win_cuda9_1.6.1.zip) |
-| CUDA 10.0版本  | [fluid_inference_install_dir.zip](https://bj.bcebos.com/paddlehub/paddle_inference_lib/fluid_inference_install_dir_win_cuda10_1.6.1.zip) |
+| CPU版本  | [fluid_inference_install_dir.zip](https://paddle-wheel.bj.bcebos.com/1.6.1/win-infer/mkl/cpu/fluid_inference_install_dir.zip) |
+| CUDA 9.0版本  | [fluid_inference_install_dir.zip](https://paddle-wheel.bj.bcebos.com/1.6.1/win-infer/mkl/post97/fluid_inference_install_dir.zip) |
+| CUDA 10.0版本  | [fluid_inference_install_dir.zip](https://paddle-wheel.bj.bcebos.com/1.6.1/win-infer/mkl/post107/fluid_inference_install_dir.zip) |
 
 解压后`D:\projects\fluid_inference`目录包含内容为：
 ```
@@ -74,6 +74,7 @@ fluid_inference
 | *CUDA_LIB  | CUDA的库路径 |
 | OPENCV_DIR  | OpenCV的安装路径 |
 | PADDLE_DIR | Paddle预测库的路径 |
+
 **注意**在使用CPU版本预测库时，需要把CUDA_LIB的勾去掉。
 ![step4](https://paddleseg.bj.bcebos.com/inference/vs2019_step5.png)
 
@@ -89,7 +90,7 @@ fluid_inference
 上述`Visual Studio 2019`编译产出的可执行文件在`out\build\x64-Release`目录下，打开`cmd`，并切换到该目录：
 
 ```
-cd /d D:\projects\PaddleSeg\inference\out\build\x64-Release
+cd /d D:\projects\PaddleSeg\deploy\cpp\out\build\x64-Release
 ```
 
 之后执行命令：
