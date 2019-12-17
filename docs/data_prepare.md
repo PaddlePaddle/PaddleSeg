@@ -48,7 +48,6 @@ PddleSeg已支持2种标注工具：LabelMe、精灵数据标注工具。标注�
 - [LabelMe标注教程](annotation/labelme2seg.md)
 - [精灵数据标注工具教程](annotation/jingling2seg.md)
 
-最后用我们提供的数据转换脚本将上述标注工具产出的数据格式转换为模型训练时所需的数据格式。
 
 ## 文件列表
 
