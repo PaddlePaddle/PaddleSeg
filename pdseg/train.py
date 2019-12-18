@@ -179,6 +179,13 @@ def load_checkpoint(exe, program):
     return begin_epoch
 
 
+def update_best_model(ckpt_dir):
+    best_model_dir = os.path.join(cfg.TRAIN.MODEL_SAVE_DIR, 'best_model')
+    if os.path.exists(best_model_dir):
+        shutil.rmtree(best_model_dir)
+    shutil.copytree(ckpt_dir, best_model_dir)
+
+
 def print_info(*msg):
     if cfg.TRAINER_ID == 0:
         print(*msg)
@@ -341,6 +348,8 @@ def train(cfg):
     all_step *= (cfg.SOLVER.NUM_EPOCHS - begin_epoch + 1)
 
     avg_loss = 0.0
+    best_mIoU = 0.0
+
     timer = Timer()
     timer.start()
     if begin_epoch > cfg.SOLVER.NUM_EPOCHS:
@@ -444,6 +453,14 @@ def train(cfg):
                                           global_step)
                     log_writer.add_scalar('Evaluate/mean_acc', mean_acc,
                                           global_step)
+
+                if mean_iou > best_mIoU:
+                    best_mIoU = mean_iou
+                    update_best_model(ckpt_dir)
+                    print_info("Save best model {} to {}, mIoU = {:.4f}".format(
+                        ckpt_dir,
+                        os.path.join(cfg.TRAIN.MODEL_SAVE_DIR, 'best_model'),
+                        mean_iou))
 
             # Use Tensorboard to visualize results
             if args.use_tb and cfg.DATASET.VIS_FILE_LIST is not None:
