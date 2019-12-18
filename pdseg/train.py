@@ -457,9 +457,10 @@ def train(cfg):
                 if mean_iou > best_mIoU:
                     best_mIoU = mean_iou
                     update_best_model(ckpt_dir)
-                    print_info("Model {} has best mIoU, save it in {}".format(
+                    print_info("Save best model {} to {}, mIoU = {:.4f}".format(
                         ckpt_dir,
-                        os.path.join(cfg.TRAIN.MODEL_SAVE_DIR, 'best_model')))
+                        os.path.join(cfg.TRAIN.MODEL_SAVE_DIR, 'best_model'),
+                        mean_iou))
 
             # Use Tensorboard to visualize results
             if args.use_tb and cfg.DATASET.VIS_FILE_LIST is not None:
