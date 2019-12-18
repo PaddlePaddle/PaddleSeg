@@ -178,11 +178,13 @@ def load_checkpoint(exe, program):
 
     return begin_epoch
 
+
 def update_best_model(ckpt_dir):
     best_model_dir = os.path.join(cfg.TRAIN.MODEL_SAVE_DIR, 'best_model')
     if os.path.exists(best_model_dir):
         shutil.rmtree(best_model_dir)
     shutil.copytree(ckpt_dir, best_model_dir)
+
 
 def print_info(*msg):
     if cfg.TRAINER_ID == 0:
@@ -455,7 +457,8 @@ def train(cfg):
                 if mean_iou > best_mIoU:
                     best_mIoU = mean_iou
                     update_best_model(ckpt_dir)
-                    print_info("Model {} has best mIoU, save it in {}".format(ckpt_dir,
+                    print_info("Model {} has best mIoU, save it in {}".format(
+                        ckpt_dir,
                         os.path.join(cfg.TRAIN.MODEL_SAVE_DIR, 'best_model')))
 
             # Use Tensorboard to visualize results
