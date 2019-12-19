@@ -110,6 +110,10 @@ python pdseg/train.py --use_gpu --cfg ./configs/deeplabv3p_xception65_pet.yaml
 ```shell
 python pdseg/eval.py --use_gpu --cfg ./configs/deeplabv3p_xception65_pet.yaml
 ```
+## 在线体验
+
+PaddleSeg在AI Studio平台上提供了在线体验的DeepLabv3+图像分割教程，欢迎[点击体验](https://aistudio.baidu.com/aistudio/projectDetail/101696)。
+
 
 ## 模型组合
 
