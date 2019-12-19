@@ -83,7 +83,6 @@ namespace PaddleSolution {
 
         int blob_out_len = length;
         int seg_out_len = eval_height * eval_width * eval_num_class;
-
         if (blob_out_len != seg_out_len) {
             LOG(ERROR) << " [FATAL] unequal: input vs output [" <<
                 seg_out_len << "|" << blob_out_len << "]" << std::endl;
@@ -97,25 +96,22 @@ namespace PaddleSolution {
         cv::Mat mask_png = cv::Mat(eval_height, eval_width, CV_8UC1);
         mask_png.data = _mask.data();
         std::string nname(fname);
-        auto pos = fname.find(".");
+        auto pos = fname.rfind(".");
         nname[pos] = '_';
-        std::string mask_save_name = nname + ".png";
+        std::string mask_save_name = nname + "_mask.png";
         cv::imwrite(mask_save_name, mask_png);
         cv::Mat scoremap_png = cv::Mat(eval_height, eval_width, CV_8UC1);
         scoremap_png.data = _scoremap.data();
-        std::string scoremap_save_name = nname
-                                       + std::string("_scoremap.png");
+        std::string scoremap_save_name = nname + std::string("_scoremap.png");
         cv::imwrite(scoremap_save_name, scoremap_png);
         std::cout << "save mask of [" << fname << "] done" << std::endl;
 
         if (height && width) {
             int recover_height = *height;
             int recover_width = *width;
-            cv::Mat recover_png = cv::Mat(recover_height,
-                                          recover_width, CV_8UC1);
+            cv::Mat recover_png = cv::Mat(recover_height, recover_width, CV_8UC1);
             cv::resize(scoremap_png, recover_png,
-                       cv::Size(recover_width, recover_height),
-                       0, 0, cv::INTER_CUBIC);
+                cv::Size(recover_width, recover_height), 0, 0, cv::INTER_CUBIC);
             std::string recover_name = nname + std::string("_recover.png");
             cv::imwrite(recover_name, recover_png);
         }
@@ -176,8 +172,13 @@ namespace PaddleSolution {
             }
             paddle::PaddleTensor im_tensor;
             im_tensor.name = "image";
-            im_tensor.shape = std::vector<int>{ batch_size, channels,
-                                                 eval_height, eval_width };
+            if (!_model_config._use_pr) {
+                im_tensor.shape = std::vector<int>{ batch_size, channels,
+                                                eval_height, eval_width };
+            } else {
+                im_tensor.shape = std::vector<int>{ batch_size, eval_height,
+                                                eval_width, channels};
+            }
             im_tensor.data.Reset(input_buffer.data(),
                                  real_buffer_size * sizeof(float));
             im_tensor.dtype = paddle::PaddleDType::FLOAT32;
@@ -202,19 +203,45 @@ namespace PaddleSolution {
                 std::cout << _outputs[0].shape[j] << ",";
             }
             std::cout << ")" << std::endl;
-            const size_t nums = _outputs.front().data.length()
-                              / sizeof(float);
-            if (out_num % batch_size != 0 || out_num != nums) {
-                LOG(ERROR) << "outputs data size mismatch with shape size.";
+
+            size_t nums = _outputs.front().data.length() / sizeof(float);
+            if (_model_config._use_pr) {
+                nums = _outputs.front().data.length() / sizeof(int64_t);
+            }
+            // size mismatch checking
+            bool size_mismatch = out_num % batch_size;
+            size_mismatch |= (!_model_config._use_pr) && (nums != out_num);
+            size_mismatch |= _model_config._use_pr && (nums != eval_height * eval_width);
+            if (size_mismatch) {
+                LOG(ERROR) << "output with a unexpected size";
                 return -1;
+            }
+
+            if (_model_config._use_pr) {
+                std::vector<uchar> out_data;
+                out_data.resize(out_num);
+                auto addr = reinterpret_cast<int64_t*>(_outputs[0].data.data());
+                for (int r = 0; r < out_num; ++r) {
+                    out_data[r] = (int)(addr[r]);
+                }
+                for (int r = 0; r < batch_size; ++r) {
+                    cv::Mat mask_png = cv::Mat(eval_height, eval_width, CV_8UC1);
+                    mask_png.data = out_data.data() + eval_height*eval_width*r;
+                    auto name = imgs_batch[r];
+                    auto pos = name.rfind(".");
+                    name[pos] = '_';
+                    std::string mask_save_name = name + "_mask.png";
+                    cv::imwrite(mask_save_name, mask_png);
+                }
+                continue;
             }
 
             for (int i = 0; i < batch_size; ++i) {
                 float* output_addr = reinterpret_cast<float*>(
                                     _outputs[0].data.data())
-                                   + i * (out_num / batch_size);
+                                   + i * (nums / batch_size);
                 output_mask(imgs_batch[i], output_addr,
-                            out_num / batch_size,
+                            nums / batch_size,
                             &org_height[i],
                             &org_width[i]);
             }
@@ -278,8 +305,14 @@ namespace PaddleSolution {
                 return -1;
             }
             auto im_tensor = _main_predictor->GetInputTensor("image");
-            im_tensor->Reshape({ batch_size, channels,
+            if (!_model_config._use_pr) {
+                im_tensor->Reshape({ batch_size, channels,
                                  eval_height, eval_width });
+            } else {
+                im_tensor->Reshape({ batch_size, eval_height,
+                                eval_width, channels});
+            }
+
             im_tensor->copy_from_cpu(input_buffer.data());
 
             auto t1 = std::chrono::high_resolution_clock::now();
@@ -292,7 +325,6 @@ namespace PaddleSolution {
             auto output_names = _main_predictor->GetOutputNames();
             auto output_t = _main_predictor->GetOutputTensor(
                                               output_names[0]);
-            std::vector<float> out_data;
             std::vector<int> output_shape = output_t->shape();
 
             int out_num = 1;
@@ -303,6 +335,30 @@ namespace PaddleSolution {
             }
             std::cout << ")" << std::endl;
 
+            if (_model_config._use_pr) {
+                    std::vector<int64_t> out_data;
+                    out_data.resize(out_num);
+                    output_t->copy_to_cpu(out_data.data());
+
+                    std::vector<uchar> mask_data;
+                    mask_data.resize(out_num);
+                    auto addr = reinterpret_cast<int64_t*>(out_data.data());
+                    for (int r = 0; r < out_num; ++r) {
+                        mask_data[r] = (int)(addr[r]);
+                    }
+                    for (int r = 0; r < batch_size; ++r) {
+                        cv::Mat mask_png = cv::Mat(eval_height, eval_width, CV_8UC1);
+                        mask_png.data = mask_data.data() + eval_height*eval_width*r;
+                        auto name = imgs_batch[r];
+                        auto pos = name.rfind(".");
+                        name[pos] = '_';
+                        std::string mask_save_name = name + "_mask.png";
+                        cv::imwrite(mask_save_name, mask_png);
+                    }
+                    continue;
+            }
+
+            std::vector<float> out_data;
             out_data.resize(out_num);
             output_t->copy_to_cpu(out_data.data());
             for (int i = 0; i < batch_size; ++i) {

@@ -15,7 +15,7 @@
 1. 打开`cmd`, 执行 `cd /d D:\projects`
 2. `git clone http://gitlab.baidu.com/Paddle/PaddleSeg.git`
 
-`C++`预测库代码在`D:\projects\PaddleSeg\inference` 目录，该目录不依赖任何`PaddleSeg`下其他目录。
+`C++`预测库代码在`D:\projects\PaddleSeg\deploy\cpp` 目录，该目录不依赖任何`PaddleSeg`下其他目录。
 
 
 ### Step2: 下载PaddlePaddle C++ 预测库 fluid_inference
@@ -24,9 +24,9 @@ PaddlePaddle C++ 预测库主要分为两大版本：CPU版本和GPU版本。其
 
 |  版本   | 链接  |
 |  ----  | ----  |
-| CPU版本  | [fluid_inference_install_dir.zip](https://bj.bcebos.com/paddlehub/paddle_inference_lib/fluid_install_dir_win_cpu_1.6.zip) |
-| CUDA 9.0版本  | [fluid_inference_install_dir.zip](https://bj.bcebos.com/paddlehub/paddle_inference_lib/fluid_inference_install_dir_win_cuda9_1.6.1.zip) |
-| CUDA 10.0版本  | [fluid_inference_install_dir.zip](https://bj.bcebos.com/paddlehub/paddle_inference_lib/fluid_inference_install_dir_win_cuda10_1.6.1.zip) |
+| CPU版本  | [fluid_inference_install_dir.zip](https://paddle-wheel.bj.bcebos.com/1.6.2/win-infer/mkl/cpu/fluid_inference_install_dir.zip) |
+| CUDA 9.0版本  | [fluid_inference_install_dir.zip](https://paddle-wheel.bj.bcebos.com/1.6.2/win-infer/mkl/post97/fluid_inference_install_dir.zip) |
+| CUDA 10.0版本  | [fluid_inference_install_dir.zip](https://paddle-wheel.bj.bcebos.com/1.6.2/win-infer/mkl/post107/fluid_inference_install_dir.zip) |
 
 解压后`D:\projects\fluid_inference`目录包含内容为：
 ```
@@ -70,19 +70,19 @@ call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" amd6
 
 ```bash
 # 切换到预测库所在目录
-cd /d D:\projects\PaddleSeg\inference\
+cd /d D:\projects\PaddleSeg\deply\cpp\
 # 创建构建目录, 重新构建只需要删除该目录即可
 mkdir build
 cd build
 # cmake构建VS项目
-D:\projects\PaddleSeg\inference\build> cmake .. -G "Visual Studio 14 2015 Win64" -DWITH_GPU=ON -DPADDLE_DIR=D:\projects\fluid_inference -DCUDA_LIB=D:\projects\cudalib\v9.0\lib\x64 -DOPENCV_DIR=D:\projects\opencv -T host=x64
+D:\projects\PaddleSeg\deploy\cpp\build> cmake .. -G "Visual Studio 14 2015 Win64" -DWITH_GPU=ON -DPADDLE_DIR=D:\projects\fluid_inference -DCUDA_LIB=D:\projects\cudalib\v9.0\lib\x64 -DOPENCV_DIR=D:\projects\opencv -T host=x64
 ```
 
 在使用**CPU版本**预测库进行编译时，可执行下列操作。
 
 ```bash
 # 切换到预测库所在目录
-cd /d D:\projects\PaddleSeg\inference\
+cd /d D:\projects\PaddleSeg\deploy\cpp\
 # 创建构建目录, 重新构建只需要删除该目录即可
 mkdir build
 cd build
@@ -102,7 +102,7 @@ D:\projects\PaddleSeg\inference\build> msbuild /m /p:Configuration=Release cpp_i
 
 上述`Visual Studio 2015`编译产出的可执行文件在`build\release`目录下，切换到该目录：
 ```
-cd /d D:\projects\PaddleSeg\inference\build\release
+cd /d D:\projects\PaddleSeg\deploy\cpp\build\release
 ```
 
 之后执行命令：

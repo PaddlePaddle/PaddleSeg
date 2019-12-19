@@ -122,6 +122,12 @@ class SegConfig(dict):
                 len(self.MODEL.MULTI_LOSS_WEIGHT) != 3:
             self.MODEL.MULTI_LOSS_WEIGHT = [1.0, 0.4, 0.16]
 
+        if self.AUG.AUG_METHOD not in ['unpadding', 'stepscaling', 'rangescaling']:
+            raise ValueError(
+                'AUG.AUG_METHOD config error, only support `unpadding`, `unpadding` and `rangescaling`'
+            )
+
+
     def update_from_list(self, config_list):
         if len(config_list) % 2 != 0:
             raise ValueError(

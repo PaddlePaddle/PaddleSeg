@@ -71,7 +71,7 @@ $ pip install -r requirements.txt
 * [模型导出](./docs/model_export.md)
 * [使用Python预测](./deploy/python/)
 * [使用C++预测](./deploy/cpp/)
-* [人像分割在移动端的部署](./lite)
+* [移动端预测部署](./deploy/lite/)
 
 
 ### 高级功能
@@ -134,10 +134,13 @@ PaddleSeg在AI Studio平台上提供了在线体验的教程，欢迎体验：
 * 2019.12.15
 
   **`v0.3.0`**
-  * 新增HRNet分割网络，提供基于cityscapes数据集的[预训练模型](./docs/model_zoo.md)
+  * 新增HRNet分割网络，提供基于cityscapes和ImageNet的[预训练模型](./docs/model_zoo.md)8个
+  * 支持使用[伪彩色标签](./docs/data_prepare.md#%E7%81%B0%E5%BA%A6%E6%A0%87%E6%B3%A8vs%E4%BC%AA%E5%BD%A9%E8%89%B2%E6%A0%87%E6%B3%A8)进行训练/评估/预测，提升训练体验，并提供将灰度标注图转为伪彩色标注图的脚本
+  * 新增[学习率warmup](./docs/configs/solver_group.md#lr_warmup)功能，支持与不同的学习率Decay策略配合使用
   * 新增图像归一化操作的GPU化功能，进一步提升预测速度。
   * 新增Python部署方案，更低成本完成工业级部署。
   * 新增Paddle-Lite移动端部署方案，支持人像分割模型的移动端部署。
+  * 新增不同分割模型的预测[性能数据](./deploy/python/docs/PaddleSeg_Infer_Benchmark.md), 为选择合适的模型提供性能数据参考。
 
   
 * 2019.11.04

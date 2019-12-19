@@ -40,14 +40,18 @@ namespace PaddleSolution {
             LOG(ERROR) << "Only support rgb(gray) and rgba image.";
             return false;
         }
-
         cv::Size resize_size(_config->_resize[0], _config->_resize[1]);
         int rw = resize_size.width;
         int rh = resize_size.height;
         if (*ori_h != rh || *ori_w != rw) {
             cv::resize(im, im, resize_size, 0, 0, cv::INTER_LINEAR);
         }
-        utils::normalize(im, data, _config->_mean, _config->_std);
+
+        if (!_config->_use_pr) {
+            utils::normalize(im, data, _config->_mean, _config->_std);
+        } else {
+            utils::flatten_mat(im, data);
+        }
         return true;
     }
 
