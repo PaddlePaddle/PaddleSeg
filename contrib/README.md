@@ -129,7 +129,12 @@ TEST.TEST_MODEL "./pretrained_model/unet_gongyeyongbiao/"
   原图：![](imgs/1560143028.5_IMG_3091.JPG)
   
   预测结果：![](imgs/1560143028.5_IMG_3091.png)
-  
+
+## 在线体验
+
+PaddleSeg在AI Studio平台上提供了在线体验的特色垂类模型教程，欢迎[点击体验](https://aistudio.baidu.com/aistudio/projectdetail/115541)。
+
+
 # 备注
 
 1. 数据及模型路径等详细配置见ACE2P/HumanSeg/RoadLine下的config.py文件
