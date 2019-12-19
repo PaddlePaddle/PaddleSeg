@@ -109,6 +109,9 @@ python pdseg/train.py --use_gpu --cfg ./configs/unet_pet.yaml
 ```shell
 python pdseg/eval.py --use_gpu --cfg ./configs/unet_pet.yaml
 ```
+## 在线体验
+
+PaddleSeg在AI Studio平台上提供了在线体验的U-Net宠物分割教程，欢迎[点击体验](https://aistudio.baidu.com/aistudio/projectDetail/102889)。
 
 ## 模型组合
 
