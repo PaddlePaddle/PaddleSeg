@@ -56,10 +56,11 @@ $ pip install -r requirements.txt
 
 ### 基础功能
 
-* [分割模型介绍](./docs/models.md)
-* [预训练模型列表](./docs/model_zoo.md)
-* [自定义数据的准备与标注](./docs/data_prepare.md)
+* [配置说明与准备](./docs/config.md)
+* [自定义数据的标注与准备](./docs/data_prepare.md)
 * [数据和配置校验](./docs/check.md)
+* [分割模型介绍](./docs/models.md)
+* [预训练模型下载](./docs/model_zoo.md)
 * [如何训练DeepLabv3+](./turtorial/finetune_deeplabv3plus.md)
 * [如何训练U-Net](./turtorial/finetune_unet.md)
 * [如何训练ICNet](./turtorial/finetune_icnet.md)
@@ -109,16 +110,6 @@ A: 降低Batch size，使用Group Norm策略；请注意训练过程中当`DEFAU
 #### Q: 出现错误 ModuleNotFoundError: No module named 'paddle.fluid.contrib.mixed_precision'
 
 A: 请将PaddlePaddle升级至1.5.2版本或以上。
-
-## 在线体验
-
-PaddleSeg在AI Studio平台上提供了在线体验的教程，欢迎体验：
-
-|教程|链接|
-|-|-|
-|U-Net宠物分割|[点击体验](https://aistudio.baidu.com/aistudio/projectDetail/102889)|
-|DeepLabv3+图像分割|[点击体验](https://aistudio.baidu.com/aistudio/projectDetail/101696)|
-|PaddleSeg特色垂类模型|[点击体验](https://aistudio.baidu.com/aistudio/projectdetail/115541)|
 
 </br>
 
