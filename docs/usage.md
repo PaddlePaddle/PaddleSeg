@@ -135,3 +135,7 @@ python pdseg/vis.py --use_gpu \
 `NOTE`
 1. 可视化的图片会默认保存在visual目录下，可以通过`--vis_dir`来指定输出目录
 2. 训练过程中会使用DATASET.VIS_FILE_LIST中的图片进行可视化显示，而vis.py则会使用DATASET.TEST_FILE_LIST
+
+## 在线体验
+
+PaddleSeg在AI Studio平台上提供了在线体验的快速入门教程，欢迎[点击体验](https://aistudio.baidu.com/aistudio/projectdetail/100798)

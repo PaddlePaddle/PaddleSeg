@@ -12,7 +12,7 @@ cd inference/tools/
 # 拷贝保存分割预测结果的图片到本目录
 cp XXX/demo_jpg.png .
 # 运行可视化脚本
-python visualize.py demo.jpg demo_jpg.png vis_result.png
+python visualize.py demo.jpg demo_jpg_mask.png vis_result.png
 ```
 
 以下为上述运行可视化脚本例子中每个参数的含义，请根据测试机器中图片的**实际路径**修改对应参数。

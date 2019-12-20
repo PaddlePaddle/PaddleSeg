@@ -129,8 +129,18 @@ TEST.TEST_MODEL "./pretrained_model/unet_gongyeyongbiao/"
   原图：![](imgs/1560143028.5_IMG_3091.JPG)
   
   预测结果：![](imgs/1560143028.5_IMG_3091.png)
-  
-# 备注
+
+## 在线体验
+
+PaddleSeg在AI Studio平台上提供了在线体验的教程，欢迎体验：
+
+|教程|链接|
+|-|-|
+|工业质检|[点击体验](https://aistudio.baidu.com/aistudio/projectdetail/184392)|
+|人像分割|[点击体验](https://aistudio.baidu.com/aistudio/projectdetail/188833)|
+|特色垂类模型|[点击体验](https://aistudio.baidu.com/aistudio/projectdetail/115541)|
+
+## 备注
 
 1. 数据及模型路径等详细配置见ACE2P/HumanSeg/RoadLine下的config.py文件
 2. ACE2P模型需预留2G显存，若显存超可调小FLAGS_fraction_of_gpu_memory_to_use
