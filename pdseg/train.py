@@ -438,7 +438,8 @@ def train(cfg):
             except Exception as e:
                 print(e)
 
-        if epoch % cfg.TRAIN.SNAPSHOT_EPOCH == 0 and cfg.TRAINER_ID == 0:
+        if (epoch % cfg.TRAIN.SNAPSHOT_EPOCH == 0
+                or epoch == cfg.SOLVER.NUM_EPOCHS) and cfg.TRAINER_ID == 0:
             ckpt_dir = save_checkpoint(exe, train_prog, epoch)
 
             if args.do_eval:
