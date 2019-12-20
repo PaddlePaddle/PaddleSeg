@@ -140,7 +140,7 @@ PaddleSeg在AI Studio平台上提供了在线体验的教程，欢迎体验：
 |人像分割|[点击体验](https://aistudio.baidu.com/aistudio/projectdetail/188833)|
 |特色垂类模型|[点击体验](https://aistudio.baidu.com/aistudio/projectdetail/115541)|
 
-# 备注
+## 备注
 
 1. 数据及模型路径等详细配置见ACE2P/HumanSeg/RoadLine下的config.py文件
 2. ACE2P模型需预留2G显存，若显存超可调小FLAGS_fraction_of_gpu_memory_to_use
