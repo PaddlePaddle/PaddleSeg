@@ -47,7 +47,7 @@ git clone https://github.com/wkentaro/labelme
 
 ​		(3)   图片中所有目标的标注都完成后，点击`Save`保存json文件，**请将json文件和图片放在同一个文件夹里**，点击`Next Image`标注下一张图片。
 
-LableMe产出的真值文件可参考我们给出的文件夹`docs/annotation/labelme_demo`。
+LableMe产出的真值文件可参考我们给出的文件夹[docs/annotation/labelme_demo](labelme_demo)。
 
 <div align="center">
     <img src="../imgs/annotation/image-5.png" width="600px"/>
@@ -95,12 +95,18 @@ pip install pillow
 * 运行以下代码，将标注后的数据转换成满足以上格式的数据集：
 
 ```
-  python pdseg/tools/labelme2seg.py <path/to/label_json_file>
+  python pdseg/tools/labelme2seg.py <PATH/TO/LABEL_JSON_FILE> 
 ```
 
-其中，`<path/to/label_json_files>`为图片以及LabelMe产出的json文件所在文件夹的目录，同时也是转换后的标注集所在文件夹的目录。
+其中，`<PATH/TO/LABEL_JSON_FILE>`为图片以及LabelMe产出的json文件所在文件夹的目录，同时也是转换后的标注集所在文件夹的目录。
 
-转换得到的数据集可参考我们给出的文件夹`docs/annotation/labelme_demo`。其中，文件`class_names.txt`是数据集中所有标注类别的名称，包含背景类；文件夹`annotations`保存的是各图片的像素级别的真值信息，背景类`_background_`对应为0，其它目标类别从1开始递增，至多为255。
+我们已内置了一个标注的示例，可运行以下代码进行体验：
+
+```
+python pdseg/tools/labelme2seg.py docs/annotation/labelme_demo/
+```
+
+转换得到的数据集可参考我们给出的文件夹[docs/annotation/labelme_demo](labelme_demo)。其中，文件`class_names.txt`是数据集中所有标注类别的名称，包含背景类；文件夹`annotations`保存的是各图片的像素级别的真值信息，背景类`_background_`对应为0，其它目标类别从1开始递增，至多为255。
 
 <div align="center">
     <img src="../imgs/annotation/image-7.png" width="600px"/>
