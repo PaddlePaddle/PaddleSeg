@@ -44,7 +44,7 @@
 
 **注意：导出的标注文件位于`保存位置`下的`outputs`目录。**
 
-精灵标注产出的真值文件可参考我们给出的文件夹`docs/annotation/jingling_demo`。
+精灵标注产出的真值文件可参考我们给出的文件夹[docs/annotation/jingling_demo](jingling_demo)
 
 <div align="center">
     <img src="../imgs/annotation/jingling-4.png" width="300px"/>
@@ -85,7 +85,7 @@ pip install pillow
 * 运行以下代码，将标注后的数据转换成满足以上格式的数据集：
 
 ```
-  python pdseg/tools/jingling2seg.py <PATH/TO/LABEL_JSON_FILE> 
+python pdseg/tools/jingling2seg.py <PATH/TO/LABEL_JSON_FILE> 
 ```
 
 其中，`<PATH/TO/LABEL_JSON_FILE>`为精灵标注产出的json文件所在文件夹的目录，一般为精灵工具使用（3）中`保存位置`下的`outputs`目录。
@@ -93,10 +93,10 @@ pip install pillow
 我们已内置了一个标注的示例，可运行以下代码进行体验：
 
 ```
- python pdseg/tools/jingling2seg.py docs/annotation/jingling_demo/outputs/
+python pdseg/tools/jingling2seg.py docs/annotation/jingling_demo/outputs/
 ```
 
-转换得到的数据集可参考我们给出的文件夹`docs/annotation/jingling_demo`。其中，文件`class_names.txt`是数据集中所有标注类别的名称，包含背景类；文件夹`annotations`保存的是各图片的像素级别的真值信息，背景类`_background_`对应为0，其它目标类别从1开始递增，至多为255。
+转换得到的数据集可参考我们给出的文件夹[docs/annotation/jingling_demo](jingling_demo)。其中，文件`class_names.txt`是数据集中所有标注类别的名称，包含背景类；文件夹`annotations`保存的是各图片的像素级别的真值信息，背景类`_background_`对应为0，其它目标类别从1开始递增，至多为255。
 
 <div align="center">
     <img src="../imgs/annotation/jingling-5.png" width="600px"/>
