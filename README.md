@@ -61,7 +61,7 @@ pip install paddlepaddle-gpu
 git clone https://github.com/PaddlePaddle/PaddleSeg
 ```
 
-## 3. 安装PaddleSeg依赖
+### 3. 安装PaddleSeg依赖
  
 ```
 cd PaddleSeg
