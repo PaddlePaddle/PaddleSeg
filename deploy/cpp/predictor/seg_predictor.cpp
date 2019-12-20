@@ -36,7 +36,6 @@ namespace PaddleSolution {
         const auto& model_dir = _model_config._model_path;
         const auto& model_filename = _model_config._model_file_name;
         const auto& params_filename = _model_config._param_file_name;
-
         // load paddle model file
         if (_model_config._predictor_mode == "NATIVE") {
             paddle::NativeConfig config;
@@ -52,6 +51,12 @@ namespace PaddleSolution {
             paddle::AnalysisConfig config;
             if (use_gpu) {
                 config.EnableUseGpu(100, 0);
+                if (TRT_MAP.find(_model_config._trt_mode) != TRT_MAP.end()) {
+                    auto precision = TRT_MAP[_model_config._trt_mode];
+                    bool use_cab = (precision == paddle::AnalysisConfig::Precision::kInt8);
+                    config.EnableTensorRtEngine(1 << 30, _model_config._batch_size, 40,
+                        precision, false, use_cab);
+                }
             }
             auto prog_file = utils::path_join(model_dir, model_filename);
             auto param_file = utils::path_join(model_dir, params_filename);
