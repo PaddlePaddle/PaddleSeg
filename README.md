@@ -29,17 +29,48 @@ PaddleSeg支持多进程IO、多卡并行、跨卡Batch Norm同步等训练加�
 
 </br>
 
-## 环境依赖
+- [安装](#安装)
+- [使用教程](#使用教程)
+  - [快速入门](#快速入门)
+  - [基础功能](#基础功能)
+  - [预测部署](#预测部署)
+  - [高级功能](#高级功能)
+- [在线体验](#在线体验)
+- [FAQ](#FAQ)
+- [交流与反馈](#交流与反馈)
+- [更新日志](#更新日志)
 
+</br>
+
+## 安装
+
+### 1. 安装PaddlePaddle
+
+版本要求
 * PaddlePaddle >= 1.6.1
 * Python 2.7 or 3.5+
 
-通过以下命令安装python包依赖，请确保在该分支上至少执行过一次以下命令
-```shell
-$ pip install -r requirements.txt
+由于图像分割模型计算开销大，推荐在GPU版本的PaddlePaddle下使用PaddleSeg.
+```
+pip install paddlepaddle-gpu
+```
+更多PaddlePaddle的详细安装信息请查看[PaddlePaddle安装](https://www.paddlepaddle.org.cn/install/doc/index)。
+
+### 2. 下载PaddleSeg代码
+
+```
+git clone https://github.com/PaddlePaddle/PaddleSeg
 ```
 
-其他如CUDA版本、cuDNN版本等兼容信息请查看[PaddlePaddle安装](https://www.paddlepaddle.org.cn/install/doc/index)
+### 3. 安装PaddleSeg依赖
+ 
+```
+cd PaddleSeg
+pip install -r requirements.txt
+```
+通过以下命令安装python包依赖，请确保在该分支上至少执行过一次以下命令。
+
+
 
 </br>
 
@@ -51,15 +82,15 @@ $ pip install -r requirements.txt
 
 ### 快速入门
 
-* [安装说明](./docs/installation.md)
-* [如何训练/评估/可视化](./docs/usage.md)
+* [训练/评估/可视化](./docs/usage.md)
 
 ### 基础功能
 
-* [分割模型介绍](./docs/models.md)
-* [预训练模型列表](./docs/model_zoo.md)
-* [自定义数据的准备与标注](./docs/data_prepare.md)
+* [配置说明与准备](./docs/config.md)
+* [自定义数据的标注与准备](./docs/data_prepare.md)
 * [数据和配置校验](./docs/check.md)
+* [分割模型介绍](./docs/models.md)
+* [预训练模型下载](./docs/model_zoo.md)
 * [如何训练DeepLabv3+](./turtorial/finetune_deeplabv3plus.md)
 * [如何训练U-Net](./turtorial/finetune_unet.md)
 * [如何训练ICNet](./turtorial/finetune_icnet.md)
@@ -80,6 +111,19 @@ $ pip install -r requirements.txt
 * [PaddleSeg的loss选择](./docs/loss_select.md)
 * [特色垂类模型使用](./contrib)
 * [多进程训练和混合精度训练](./docs/multiple_gpus_train_and_mixed_precision_train.md)
+
+## 在线体验
+
+我们在AI Studio平台上提供了在线体验的教程，欢迎体验：
+
+|在线教程|链接|
+|-|-|
+|快速开始|[点击体验](https://aistudio.baidu.com/aistudio/projectdetail/100798)|
+|U-Net宠物分割|[点击体验](https://aistudio.baidu.com/aistudio/projectDetail/102889)|
+|DeepLabv3+图像分割|[点击体验](https://aistudio.baidu.com/aistudio/projectDetail/101696)|
+|工业质检（零件瑕疵检测）|[点击体验](https://aistudio.baidu.com/aistudio/projectdetail/184392)|
+|人像分割|[点击体验](https://aistudio.baidu.com/aistudio/projectdetail/188833)|
+|PaddleSeg特色垂类模型|[点击体验](https://aistudio.baidu.com/aistudio/projectdetail/115541)|
 
 </br>
 
@@ -104,25 +148,14 @@ python pdseg/train.py --cfg xxx.yaml TRAIN.RESUME_MODEL_DIR /PATH/TO/MODEL_CKPT/
 
 A: 降低Batch size，使用Group Norm策略；请注意训练过程中当`DEFAULT_NORM_TYPE`选择`bn`时，为了Batch Norm计算稳定性，batch size需要满足>=2
 
-</br>
 
 #### Q: 出现错误 ModuleNotFoundError: No module named 'paddle.fluid.contrib.mixed_precision'
 
 A: 请将PaddlePaddle升级至1.5.2版本或以上。
 
-## 在线体验
-
-PaddleSeg在AI Studio平台上提供了在线体验的教程，欢迎体验：
-
-|教程|链接|
-|-|-|
-|U-Net宠物分割|[点击体验](https://aistudio.baidu.com/aistudio/projectDetail/102889)|
-|DeepLabv3+图像分割|[点击体验](https://aistudio.baidu.com/aistudio/projectDetail/101696)|
-|PaddleSeg特色垂类模型|[点击体验](https://aistudio.baidu.com/aistudio/projectdetail/115541)|
-
 </br>
 
-##  交流与反馈
+## 交流与反馈
 * 欢迎您通过[Github Issues](https://github.com/PaddlePaddle/PaddleSeg/issues)来提交问题、报告与建议
 * 微信公众号：飞桨PaddlePaddle
 * QQ群: 796771754
@@ -161,6 +194,6 @@ PaddleSeg在AI Studio平台上提供了在线体验的教程，欢迎体验：
 
 </br>
 
-## 如何贡献代码
+## 贡献代码
 
 我们非常欢迎您为PaddleSeg贡献代码或者提供使用建议。
