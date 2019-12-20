@@ -85,10 +85,10 @@ pip install pillow
 * 运行以下代码，将标注后的数据转换成满足以上格式的数据集：
 
 ```
-  python pdseg/tools/jingling2seg.py <path/to/label_json_file> 
+  python pdseg/tools/jingling2seg.py <PATH/TO/LABEL_JSON_FILE> 
 ```
 
-其中，`<path/to/label_json_files>`为精灵标注产出的json文件所在文件夹的目录，一般为精灵工具使用（3）中`保存位置`下的`outputs`目录。
+其中，`<PATH/TO/LABEL_JSON_FILE>`为精灵标注产出的json文件所在文件夹的目录，一般为精灵工具使用（3）中`保存位置`下的`outputs`目录。
 
 我们已内置了一个标注的示例，可运行以下代码进行体验：
 
