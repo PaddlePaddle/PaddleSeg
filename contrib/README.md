@@ -132,8 +132,13 @@ TEST.TEST_MODEL "./pretrained_model/unet_gongyeyongbiao/"
 
 ## 在线体验
 
-PaddleSeg在AI Studio平台上提供了在线体验的特色垂类模型教程，欢迎[点击体验](https://aistudio.baidu.com/aistudio/projectdetail/115541)。
+PaddleSeg在AI Studio平台上提供了在线体验的教程，欢迎体验：
 
+|教程|链接|
+|-|-|
+|工业质检|[点击体验](https://aistudio.baidu.com/aistudio/projectdetail/184392)|
+|人像分割|[点击体验](https://aistudio.baidu.com/aistudio/projectdetail/188833)|
+|特色垂类模型|[点击体验](https://aistudio.baidu.com/aistudio/projectdetail/115541)|
 
 # 备注
 
