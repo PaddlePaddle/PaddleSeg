@@ -50,13 +50,14 @@ PaddleSeg支持多进程IO、多卡并行、跨卡Batch Norm同步等训练加�
 * PaddlePaddle >= 1.6.1
 * Python 2.7 or 3.5+
 
+由于图像分割模型计算开销大，推荐在GPU版本的PaddlePaddle下使用PaddleSeg.
 ```
 pip install paddlepaddle-gpu
 ```
-更多PaddlePaddle的详细安装信息请查看[PaddlePaddle安装](./docs/installation.md)。
+更多PaddlePaddle的详细安装信息请查看[PaddlePaddle安装](https://www.paddlepaddle.org.cn/install/doc/index)。
 
 ### 2. 下载PaddleSeg代码
- 
+
 ```
 git clone https://github.com/PaddlePaddle/PaddleSeg
 ```
@@ -120,7 +121,7 @@ pip install -r requirements.txt
 |快速开始|[点击体验](https://aistudio.baidu.com/aistudio/projectdetail/100798)|
 |U-Net宠物分割|[点击体验](https://aistudio.baidu.com/aistudio/projectDetail/102889)|
 |DeepLabv3+图像分割|[点击体验](https://aistudio.baidu.com/aistudio/projectDetail/101696)|
-|工业质检|[点击体验](https://aistudio.baidu.com/aistudio/projectdetail/184392)|
+|工业质检（零件瑕疵检测）|[点击体验](https://aistudio.baidu.com/aistudio/projectdetail/184392)|
 |人像分割|[点击体验](https://aistudio.baidu.com/aistudio/projectdetail/188833)|
 |PaddleSeg特色垂类模型|[点击体验](https://aistudio.baidu.com/aistudio/projectdetail/115541)|
 
