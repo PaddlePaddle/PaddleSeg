@@ -117,7 +117,7 @@ python pdseg/eval.py --use_gpu --cfg ./configs/test_pet.yaml
 
 |模型|BackBone|数据集|配置|
 |-|-|-|-|
-|[pspnet50_cityscapes](https://paddleseg.bj.bcebos.com/models/pspnet50_cityscapes.tgz)|ResNet50|Cityscapes |MODEL: <br>  &nbsp;&nbsp;&nbsp;&nbsp; MODEL_NAME: pspnet <br>&nbsp;&nbsp;&nbsp;&nbsp; DEFAULT_NORM_TYPE: bn <br>&nbsp;&nbsp;&nbsp;&nbsp; LAYERS: 50|
-|[pspnet101_cityscapes](https://paddleseg.bj.bcebos.com/models/pspnet101_cityscapes.tgz)|ResNet101|Cityscapes |MODEL: <br>&nbsp;&nbsp;&nbsp;&nbsp; MODEL_NAME: pspnet <br>&nbsp;&nbsp;&nbsp;&nbsp; DEFAULT_NORM_TYPE: bn <br>&nbsp;&nbsp;&nbsp;&nbsp; LAYERS: 101|
-| [pspnet50_coco](https://paddleseg.bj.bcebos.com/models/pspnet50_coco.tgz)|ResNet50|COCO  |MODEL: <br>  &nbsp;&nbsp;&nbsp;&nbsp; MODEL_NAME: pspnet <br>&nbsp;&nbsp;&nbsp;&nbsp; DEFAULT_NORM_TYPE: bn <br>&nbsp;&nbsp;&nbsp;&nbsp; LAYERS: 50|
-| [pspnet101_coco](https://paddleseg.bj.bcebos.com/models/pspnet101_coco.tgz) |ResNet101| COCO |MODEL: <br>&nbsp;&nbsp;&nbsp;&nbsp; MODEL_NAME: pspnet <br>&nbsp;&nbsp;&nbsp;&nbsp; DEFAULT_NORM_TYPE: bn <br>&nbsp;&nbsp;&nbsp;&nbsp; LAYERS: 101|
+|[pspnet50_cityscapes](https://paddleseg.bj.bcebos.com/models/pspnet50_cityscapes.tgz)|ResNet50|Cityscapes |MODEL.MODEL_NAME: pspnet <br> MODEL.DEFAULT_NORM_TYPE: bn <br> MODEL.PSPNET.LAYERS: 50|
+|[pspnet101_cityscapes](https://paddleseg.bj.bcebos.com/models/pspnet101_cityscapes.tgz)|ResNet101|Cityscapes |MODEL.MODEL_NAME: pspnet <br> MODEL.DEFAULT_NORM_TYPE: bn <br> MODEL.PSPNET.LAYERS: 101|
+| [pspnet50_coco](https://paddleseg.bj.bcebos.com/models/pspnet50_coco.tgz)|ResNet50|COCO  |MODEL.MODEL_NAME: pspnet <br> MODEL.DEFAULT_NORM_TYPE: bn <br> MODEL.PSPNET.LAYERS: 50|
+| [pspnet101_coco](https://paddleseg.bj.bcebos.com/models/pspnet101_coco.tgz) |ResNet101| COCO |MODEL.MODEL_NAME: pspnet <br> MODEL.DEFAULT_NORM_TYPE: bn <br> MODEL.PSPNET.LAYERS: 101|
