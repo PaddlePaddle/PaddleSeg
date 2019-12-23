@@ -115,9 +115,9 @@ python pdseg/eval.py --use_gpu --cfg ./configs/test_pet.yaml
 
 ## PSPNet预训练模型组合
 
-|BackBone|数据集|下载地址|配置|
+|模型|BackBone|数据集|配置|
 |-|-|-|-|
-|ResNet50|Cityscapes|[pspnet50_cityscapes.tgz](https://paddleseg.bj.bcebos.com/models/pspnet50_cityscapes.tgz) |MODEL: <br>  &nbsp;&nbsp;&nbsp;&nbsp; MODEL_NAME: pspnet <br>&nbsp;&nbsp;&nbsp;&nbsp; DEFAULT_NORM_TYPE: bn <br>&nbsp;&nbsp;&nbsp;&nbsp; LAYERS: 50|
-|ResNet101|Cityscapes|[pspnet101_cityscapes.tgz](https://paddleseg.bj.bcebos.com/models/pspnet101_cityscapes.tgz) |MODEL: <br>&nbsp;&nbsp;&nbsp;&nbsp; MODEL_NAME: pspnet <br>&nbsp;&nbsp;&nbsp;&nbsp; DEFAULT_NORM_TYPE: bn <br>&nbsp;&nbsp;&nbsp;&nbsp; LAYERS: 101|
-|ResNet50|COCO | [pspnet50_coco.tgz](https://paddleseg.bj.bcebos.com/models/pspnet50_coco.tgz) |MODEL: <br>  &nbsp;&nbsp;&nbsp;&nbsp; MODEL_NAME: pspnet <br>&nbsp;&nbsp;&nbsp;&nbsp; DEFAULT_NORM_TYPE: bn <br>&nbsp;&nbsp;&nbsp;&nbsp; LAYERS: 50|
-|ResNet101| COCO | [pspnet101_coco.tgz](https://paddleseg.bj.bcebos.com/models/pspnet101_coco.tgz) |MODEL: <br>&nbsp;&nbsp;&nbsp;&nbsp; MODEL_NAME: pspnet <br>&nbsp;&nbsp;&nbsp;&nbsp; DEFAULT_NORM_TYPE: bn <br>&nbsp;&nbsp;&nbsp;&nbsp; LAYERS: 101|
+|[pspnet50_cityscapes](https://paddleseg.bj.bcebos.com/models/pspnet50_cityscapes.tgz)|ResNet50|Cityscapes |MODEL: <br>  &nbsp;&nbsp;&nbsp;&nbsp; MODEL_NAME: pspnet <br>&nbsp;&nbsp;&nbsp;&nbsp; DEFAULT_NORM_TYPE: bn <br>&nbsp;&nbsp;&nbsp;&nbsp; LAYERS: 50|
+|[pspnet101_cityscapes](https://paddleseg.bj.bcebos.com/models/pspnet101_cityscapes.tgz)|ResNet101|Cityscapes |MODEL: <br>&nbsp;&nbsp;&nbsp;&nbsp; MODEL_NAME: pspnet <br>&nbsp;&nbsp;&nbsp;&nbsp; DEFAULT_NORM_TYPE: bn <br>&nbsp;&nbsp;&nbsp;&nbsp; LAYERS: 101|
+| [pspnet50_coco](https://paddleseg.bj.bcebos.com/models/pspnet50_coco.tgz)|ResNet50|COCO  |MODEL: <br>  &nbsp;&nbsp;&nbsp;&nbsp; MODEL_NAME: pspnet <br>&nbsp;&nbsp;&nbsp;&nbsp; DEFAULT_NORM_TYPE: bn <br>&nbsp;&nbsp;&nbsp;&nbsp; LAYERS: 50|
+| [pspnet101_coco](https://paddleseg.bj.bcebos.com/models/pspnet101_coco.tgz) |ResNet101| COCO |MODEL: <br>&nbsp;&nbsp;&nbsp;&nbsp; MODEL_NAME: pspnet <br>&nbsp;&nbsp;&nbsp;&nbsp; DEFAULT_NORM_TYPE: bn <br>&nbsp;&nbsp;&nbsp;&nbsp; LAYERS: 101|
