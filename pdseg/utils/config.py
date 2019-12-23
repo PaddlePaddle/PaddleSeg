@@ -164,7 +164,7 @@ cfg.SOLVER.LR_WARMUP_STEPS = 2000
 cfg.TEST.TEST_MODEL = ''
 
 ########################## 模型通用配置 #######################################
-# 模型名称, 支持deeplab, unet, icnet三种
+# 模型名称, 目前支持deeplabv3p, unet, icnet，pspnet，hrnet五种
 cfg.MODEL.MODEL_NAME = ''
 # BatchNorm类型: bn、gn(group_norm)
 cfg.MODEL.DEFAULT_NORM_TYPE = 'bn'
