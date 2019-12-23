@@ -16,7 +16,7 @@ python dataset/download_pet.py
 
 ## 二. 下载预训练模型
 
-关于PaddleSeg支持的所有预训练模型的列表，我们可以从[模型组合](#模型组合)中查看我们所需模型的名字和配置。
+关于PaddleSeg支持的所有预训练模型的列表，我们可以从[PSPNet预训练模型组合](#PSPNet预训练模型组合)中查看我们所需模型的配置和下载链接。
 
 接着下载对应的预训练模型
 
@@ -113,9 +113,11 @@ python pdseg/train.py --use_gpu --cfg ./configs/test_pet.yaml
 python pdseg/eval.py --use_gpu --cfg ./configs/test_pet.yaml
 ```
 
-## 模型组合
+## PSPNet预训练模型组合
 
-|预训练模型名称|BackBone|Norm|数据集|配置|
-|-|-|-|-|-|
-|pspnet50_bn_cityscapes|ResNet50|bn|Cityscapes|MODEL.MODEL_NAME: pspnet <br> MODEL.DEFAULT_NORM_TYPE: bn <br> MODEL.PSPNET.LAYERS: 50|
-|pspnet101_bn_cityscapes|ResNet101|bn|Cityscapes|MODEL.MODEL_NAME: pspnet <br> MODEL.DEFAULT_NORM_TYPE: bn <br> MODEL.PSPNET.LAYERS: 101|
+|BackBone|数据集|下载地址|配置|
+|-|-|-|-|
+|ResNet50|Cityscapes|[pspnet50_cityscapes.tgz](https://paddleseg.bj.bcebos.com/models/pspnet50_cityscapes.tgz) |MODEL: <br>  &nbsp;&nbsp;&nbsp;&nbsp; MODEL_NAME: pspnet <br>&nbsp;&nbsp;&nbsp;&nbsp; DEFAULT_NORM_TYPE: bn <br>&nbsp;&nbsp;&nbsp;&nbsp; LAYERS: 50|
+|ResNet101|Cityscapes|[pspnet101_cityscapes.tgz](https://paddleseg.bj.bcebos.com/models/pspnet101_cityscapes.tgz) |MODEL: <br>&nbsp;&nbsp;&nbsp;&nbsp; MODEL_NAME: pspnet <br>&nbsp;&nbsp;&nbsp;&nbsp; DEFAULT_NORM_TYPE: bn <br>&nbsp;&nbsp;&nbsp;&nbsp; LAYERS: 101|
+|ResNet50|COCO | [pspnet50_coco.tgz](https://paddleseg.bj.bcebos.com/models/pspnet50_coco.tgz) |MODEL: <br>  &nbsp;&nbsp;&nbsp;&nbsp; MODEL_NAME: pspnet <br>&nbsp;&nbsp;&nbsp;&nbsp; DEFAULT_NORM_TYPE: bn <br>&nbsp;&nbsp;&nbsp;&nbsp; LAYERS: 50|
+|ResNet101| COCO | [pspnet101_coco.tgz](https://paddleseg.bj.bcebos.com/models/pspnet101_coco.tgz) |MODEL: <br>&nbsp;&nbsp;&nbsp;&nbsp; MODEL_NAME: pspnet <br>&nbsp;&nbsp;&nbsp;&nbsp; DEFAULT_NORM_TYPE: bn <br>&nbsp;&nbsp;&nbsp;&nbsp; LAYERS: 101|
