@@ -1,6 +1,6 @@
 # PaddleSeg 分割库配置说明
 
-PaddleSeg提供了提供了统一的配置用于 训练/评估/可视化/导出模型。一共存在三套配置方案:
+PaddleSeg提供了统一的配置用于 训练/评估/可视化/导出模型。一共存在三套配置方案:
 * 命令行窗口传递的参数。
 * configs目录下的yaml文件。
 * 默认参数，位于pdseg/utils/config.py。
@@ -21,7 +21,7 @@ PaddleSeg提供了提供了统一的配置用于 训练/评估/可视化/导出�
 [FREEZE](./configs/freeze_group.md)|模型导出相关|export_model|
 |[DATALOADER](./configs/dataloader_group.md)|数据加载相关|ALL|
 
-在进行分割之前，您需要准备一份yaml文件，可以参照如下的默认配置或configs目录下的示例yaml进行自定义设置：
+在进行自定义的分割任务之前，您需要准备一份yaml文件，可以参照如下的默认配置或configs目录下的示例yaml进行设置：
 
 ```yaml
 ########################## 基本配置 ###########################################
