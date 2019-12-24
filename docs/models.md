@@ -37,20 +37,7 @@ Image Cascade Network（ICNet)主要用于图像实时语义分割。相较于�
 
 - [ICNet for Real-Time Semantic Segmentation on High-Resolution Images](https://arxiv.org/abs/1704.08545)
 
-# PaddleSeg特殊网络结构介绍
-
-### Group Norm
-
-![](./imgs/gn.png)
-关于Group Norm的介绍可以参考论文：https://arxiv.org/abs/1803.08494
-
-GN 把通道分为组，并计算每一组之内的均值和方差，以进行归一化。GN 的计算与批量大小无关，其精度也在各种批量大小下保持稳定。适应于网络参数很重的模型，比如deeplabv3+这种，可以在一个小batch下取得一个较好的训练效果。
 
 
-### Synchronized Batch Norm
 
-Synchronized Batch Norm跨GPU批归一化策略最早在[MegDet: A Large Mini-Batch Object Detector](https://arxiv.org/abs/1711.07240)
-论文中提出，在[Bag of Freebies for Training Object Detection Neural Networks](https://arxiv.org/pdf/1902.04103.pdf)论文中以Yolov3验证了这一策略的有效性，[PaddleCV/yolov3](https://github.com/PaddlePaddle/models/tree/develop/PaddleCV/yolov3)实现了这一系列策略并比Darknet框架版本在COCO17数据上mAP高5.9.
-
-PaddleSeg基于PaddlePaddle框架的sync_batch_norm策略，可以支持通过多卡实现大batch size的分割模型训练，可以得到更高的mIoU精度。
 
