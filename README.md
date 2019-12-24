@@ -21,6 +21,7 @@ PaddleSeg是基于[PaddlePaddle](https://www.paddlepaddle.org.cn)开发的语义
 - [FAQ](#FAQ)
 - [交流与反馈](#交流与反馈)
 - [更新日志](#更新日志)
+- [贡献代码](#贡献代码)
 
 </br>
 
@@ -197,4 +198,4 @@ A: 请将PaddlePaddle升级至1.5.2版本或以上。
 
 ## 贡献代码
 
-我们非常欢迎您为PaddleSeg贡献代码或者提供使用建议。如果您可以修复某个issue或者增加一个新功能，欢迎给我们提交PR。
+我们非常欢迎您为PaddleSeg贡献代码或者提供使用建议。如果您可以修复某个issue或者增加一个新功能，欢迎给我们提交pull requests.
