@@ -31,7 +31,7 @@ Image Cascade Network（ICNet) [3] 主要用于图像实时语义分割。相较
 
 ### PSPNet
 
-Pyramid Scene Parsing Network (PSPNet) [4] 起源于场景解析(Scene Parsing)领域。如下图所示，普通FCN[5]面向复杂场景分析出现三种误分割现象：（1）关系不匹配（2）类别混淆（3）类别不显著。
+Pyramid Scene Parsing Network (PSPNet) [4] 起源于场景解析(Scene Parsing)领域。如下图所示，普通FCN [5] 面向复杂场景出现三种误分割现象：（1）关系不匹配。将船误分类成车，显然车一般不会出现在水面上。（2）类别混淆。摩天大厦和建筑物这两个类别相近，误将摩天大厦分类成建筑物。（3）类别不显著。枕头区域较小且纹理与床相近，误将枕头分类成床。
 
 ![](./imgs/pspnet2.png)
 
