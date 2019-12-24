@@ -42,16 +42,15 @@ TRAIN Group存放所有和训练相关的配置
 <br/>
 
 ## `SYNC_BATCH_NORM`
-是否在多卡间同步BN的均值和方差
+是否在多卡间同步BN的均值和方差。
 
-### 默认值
-False
-
-### 介绍
 Synchronized Batch Norm跨GPU批归一化策略最早在[MegDet: A Large Mini-Batch Object Detector](https://arxiv.org/abs/1711.07240)
 论文中提出，在[Bag of Freebies for Training Object Detection Neural Networks](https://arxiv.org/pdf/1902.04103.pdf)论文中以Yolov3验证了这一策略的有效性，[PaddleCV/yolov3](https://github.com/PaddlePaddle/models/tree/develop/PaddleCV/yolov3)实现了这一系列策略并比Darknet框架版本在COCO17数据上mAP高5.9.
 
 PaddleSeg基于PaddlePaddle框架的sync_batch_norm策略，可以支持通过多卡实现大batch size的分割模型训练，可以得到更高的mIoU精度。
+
+### 默认值
+False
 
 ### 注意事项
 
