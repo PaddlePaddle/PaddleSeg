@@ -27,10 +27,11 @@ MODEL Group存放所有和模型相关的配置，该Group还包含三个子Grou
 
 `bn`
 
-### `gn`介绍
-#### Group Norm
+### 介绍
+`bn`: Batch Norm
 
-![](./imgs/gn.png)
+`gn`: Group Norm
+![](../imgs/gn.png)
 关于Group Norm的介绍可以参考论文：https://arxiv.org/abs/1803.08494
 
 GN 把通道分为组，并计算每一组之内的均值和方差，以进行归一化。GN 的计算与批量大小无关，其精度也在各种批量大小下保持稳定。适应于网络参数很重的模型，比如deeplabv3+这种，可以在一个小batch下取得一个较好的训练效果。
