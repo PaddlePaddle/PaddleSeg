@@ -109,6 +109,6 @@ Random crop过程分为3种情形：
 
 `EVAL_CROP_SIZE`的设置需要满足以下条件，共有3种情形：
 - 当`AUG.AUG_METHOD`为unpadding时，`EVAL_CROP_SIZE`的宽高应不小于`AUG.FIX_RESIZE_SIZE`的宽高。
-- 当`AUG.AUG_METHOD`为stepscaling时，`EVAL_CROP_SIZE`的宽高应不小于原图中最大的宽高。
-- 当`AUG.AUG_METHOD`为rangescaling时，`EVAL_CROP_SIZE`的宽高应不小于缩放后图像中最大的宽高。
+- 当`AUG.AUG_METHOD`为stepscaling时，`EVAL_CROP_SIZE`的宽高应不小于原图中最长的宽高。
+- 当`AUG.AUG_METHOD`为rangescaling时，`EVAL_CROP_SIZE`的宽高应不小于缩放后图像中最长的宽高。
 

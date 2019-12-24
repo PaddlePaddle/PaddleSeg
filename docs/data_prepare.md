@@ -83,7 +83,9 @@ PaddleSeg采用通用的文件列表方式组织训练集、验证集和测试�
 不可在`DATASET.TRAIN_FILE_LIST`和`DATASET.VAL_FILE_LIST`配置项中使用。
 
 
-完整的配置信息可以参考[`./docs/annotation/cityscapes_demo`](../docs/annotation/cityscapes_demo/)目录下的yaml和文件列表。
+**符合规范的文件列表是什么样的呢？**
+
+请参考目录[`./docs/annotation/cityscapes_demo`](../docs/annotation/cityscapes_demo/)。
 
 ### 数据集目录结构整理
 

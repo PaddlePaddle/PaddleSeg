@@ -8,8 +8,25 @@
 
 PaddleSeg是基于[PaddlePaddle](https://www.paddlepaddle.org.cn)开发的语义分割库，覆盖了DeepLabv3+, U-Net, ICNet, PSPNet, HRNet等主流分割模型。通过统一的配置，帮助用户更便捷地完成从训练到部署的全流程图像分割应用。
 
-PaddleSeg具备高性能、丰富的数据增强、工业级部署、全流程应用的特点:
+</br>
 
+- [特点](#特点) 
+- [安装](#安装)
+- [使用教程](#使用教程)
+  - [快速入门](#快速入门)
+  - [基础功能](#基础功能)
+  - [预测部署](#预测部署)
+  - [高级功能](#高级功能)
+- [在线体验](#在线体验)
+- [FAQ](#FAQ)
+- [交流与反馈](#交流与反馈)
+- [更新日志](#更新日志)
+- [贡献代码](#贡献代码)
+
+</br>
+
+## 特点
+PaddleSeg具备高性能、丰富的数据增强、工业级部署、全流程应用的特点:
 
 - **丰富的数据增强**
 
@@ -26,21 +43,6 @@ PaddleSeg支持多进程IO、多卡并行、跨卡Batch Norm同步等训练加�
 - **工业级部署**
 
 基于[Paddle Serving](https://github.com/PaddlePaddle/Serving)和PaddlePaddle高性能预测引擎，结合百度开放的AI能力，轻松搭建人像分割和车道线分割服务。
-
-</br>
-
-- [安装](#安装)
-- [使用教程](#使用教程)
-  - [快速入门](#快速入门)
-  - [基础功能](#基础功能)
-  - [预测部署](#预测部署)
-  - [高级功能](#高级功能)
-- [在线体验](#在线体验)
-- [FAQ](#FAQ)
-- [交流与反馈](#交流与反馈)
-- [更新日志](#更新日志)
-
-</br>
 
 ## 安装
 
@@ -63,12 +65,12 @@ git clone https://github.com/PaddlePaddle/PaddleSeg
 ```
 
 ### 3. 安装PaddleSeg依赖
- 
+通过以下命令安装python包依赖，请确保在该分支上至少执行过一次以下命令：
 ```
 cd PaddleSeg
 pip install -r requirements.txt
 ```
-通过以下命令安装python包依赖，请确保在该分支上至少执行过一次以下命令。
+
 
 
 
@@ -86,8 +88,8 @@ pip install -r requirements.txt
 
 ### 基础功能
 
-* [配置说明与准备](./docs/config.md)
 * [自定义数据的标注与准备](./docs/data_prepare.md)
+* [配置说明与准备](./docs/config.md)
 * [数据和配置校验](./docs/check.md)
 * [分割模型介绍](./docs/models.md)
 * [预训练模型下载](./docs/model_zoo.md)
@@ -196,4 +198,4 @@ A: 请将PaddlePaddle升级至1.5.2版本或以上。
 
 ## 贡献代码
 
-我们非常欢迎您为PaddleSeg贡献代码或者提供使用建议。
+我们非常欢迎您为PaddleSeg贡献代码或者提供使用建议。如果您可以修复某个issue或者增加一个新功能，欢迎给我们提交pull requests.
