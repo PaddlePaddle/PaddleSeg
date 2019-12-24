@@ -21,7 +21,9 @@ PaddleSeg提供了统一的配置用于 训练/评估/可视化/导出模型。�
 [FREEZE](./configs/freeze_group.md)|模型导出相关|export_model|
 |[DATALOADER](./configs/dataloader_group.md)|数据加载相关|ALL|
 
-在进行自定义的分割任务之前，您需要准备一份yaml文件，可以参照如下的默认配置或configs目录下的示例yaml进行设置：
+在进行自定义的分割任务之前，您需要准备一份yaml文件，建议参照[configs目录下的示例yaml](../configs)进行修改。
+
+以下是PaddleSeg的默认配置，供查询使用。
 
 ```yaml
 ########################## 基本配置 ###########################################
