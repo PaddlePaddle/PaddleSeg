@@ -88,8 +88,8 @@ pip install -r requirements.txt
 
 ### 基础功能
 
-* [配置说明与准备](./docs/config.md)
 * [自定义数据的标注与准备](./docs/data_prepare.md)
+* [配置说明与准备](./docs/config.md)
 * [数据和配置校验](./docs/check.md)
 * [分割模型介绍](./docs/models.md)
 * [预训练模型下载](./docs/model_zoo.md)
