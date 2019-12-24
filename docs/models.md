@@ -31,17 +31,23 @@ Image Cascade Network（ICNet) [3] 主要用于图像实时语义分割。相较
 
 ### PSPNet
 
-Pyramid Scene Parsing Network (PSPNet) [4] 
+Pyramid Scene Parsing Network (PSPNet) [4] 起源于场景解析(Scene Parsing)领域。如下图所示，普通FCN[5]面向复杂场景分析出现三种误分割现象：（1）关系不匹配（2）类别混淆（3）类别不显著。
+
+![](./imgs/pspnet2.png)
+
+PSPNet的出发点是在算法中引入更多的上下文信息来解决上述问题。为了融合了图像中不同区域的上下文信息，PSPNet通过特殊设计的全局均值池化操作（global average pooling）和特征融合构造金字塔池化模块 (Pyramid Pooling Module)。PSPNet最终获得了2016年ImageNet场景解析挑战赛的冠军，并在PASCAL VOC 2012 和 Cityscapes 数据集上取得当时的最佳效果。整个网络结构如下：
+
+![](./imgs/pspnet.png)
 
 ## 参考文献
 
-1. [Encoder-Decoder with Atrous Separable Convolution for Semantic Image Segmentation](https://arxiv.org/abs/1802.02611)
+[1] [U-Net: Convolutional Networks for Biomedical Image Segmentation](https://arxiv.org/abs/1505.04597)
 
-2. [U-Net: Convolutional Networks for Biomedical Image Segmentation](https://arxiv.org/abs/1505.04597)
+[2] [Encoder-Decoder with Atrous Separable Convolution for Semantic Image Segmentation](https://arxiv.org/abs/1802.02611)
 
-3. [ICNet for Real-Time Semantic Segmentation on High-Resolution Images](https://arxiv.org/abs/1704.08545)
+[3] [ICNet for Real-Time Semantic Segmentation on High-Resolution Images](https://arxiv.org/abs/1704.08545)
 
+[4] [Pyramid Scene Parsing Network](https://arxiv.org/abs/1612.01105)
 
-
-
+[5] [Fully Convolutional Networks for Semantic Segmentation](https://people.eecs.berkeley.edu/~jonlong/long_shelhamer_fcn.pdf)
 
