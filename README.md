@@ -65,12 +65,12 @@ git clone https://github.com/PaddlePaddle/PaddleSeg
 ```
 
 ### 3. 安装PaddleSeg依赖
- 
+通过以下命令安装python包依赖，请确保在该分支上至少执行过一次以下命令：
 ```
 cd PaddleSeg
 pip install -r requirements.txt
 ```
-通过以下命令安装python包依赖，请确保在该分支上至少执行过一次以下命令。
+
 
 
 
