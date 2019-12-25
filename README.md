@@ -41,7 +41,7 @@ PaddleSeg支持多进程I/O、多卡并行、跨卡Batch Norm同步等训练加�
 
 - **工业级部署**
 
-全面支持**服务端**和**移动端**的工业级部署能力，依托飞桨高性能推理引擎，通过[Paddle Serving](https://github.com/PaddlePaddle/Serving)开发者在服务端轻松搭建人像分割服务；通过[Paddle-Lite](https://github.com/PaddlePaddle/Paddle-Lite)，开发者可以在移动设备或者嵌入式设备上快速部署轻量级、高性能的人像分割模型。
+全面提供**服务端**和**移动端**的工业级部署能力，依托飞桨高性能推理引擎和高性能图像处理实现，开发者可以轻松完成高性能的分割模型部署和集成。通过[Paddle-Lite](https://github.com/PaddlePaddle/Paddle-Lite)，可以在移动设备或者嵌入式设备上完成轻量级、高性能的人像分割模型部署。
 
 ## 安装
 
@@ -101,9 +101,9 @@ pip install -r requirements.txt
 ### 预测部署
 
 * [模型导出](./docs/model_export.md)
-* [使用Python预测](./deploy/python/)
-* [使用C++预测](./deploy/cpp/)
-* [移动端预测部署](./deploy/lite/)
+* [Python预测](./deploy/python/)
+* [C++预测](./deploy/cpp/)
+* [Paddle-Lite移动端预测部署](./deploy/lite/)
 
 
 ### 高级功能
