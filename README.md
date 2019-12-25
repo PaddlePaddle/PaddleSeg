@@ -55,7 +55,7 @@ PaddleSeg支持多进程I/O、多卡并行、跨卡Batch Norm同步等训练加�
 ```
 pip install paddlepaddle-gpu
 ```
-更多PaddlePaddle的详细安装信息请查看[PaddlePaddle安装](https://www.paddlepaddle.org.cn/install/doc/index)。
+更多PaddlePaddle的详细安装信息请查看[PaddlePaddle安装说明](https://www.paddlepaddle.org.cn/install/doc/index)。
 
 ### 2. 下载PaddleSeg代码
 
@@ -69,9 +69,6 @@ git clone https://github.com/PaddlePaddle/PaddleSeg
 cd PaddleSeg
 pip install -r requirements.txt
 ```
-
-
-
 
 </br>
 
@@ -171,10 +168,10 @@ A: 请将PaddlePaddle升级至1.5.2版本或以上。
   * 新增HRNet分割网络，提供基于cityscapes和ImageNet的[预训练模型](./docs/model_zoo.md)8个
   * 支持使用[伪彩色标签](./docs/data_prepare.md#%E7%81%B0%E5%BA%A6%E6%A0%87%E6%B3%A8vs%E4%BC%AA%E5%BD%A9%E8%89%B2%E6%A0%87%E6%B3%A8)进行训练/评估/预测，提升训练体验，并提供将灰度标注图转为伪彩色标注图的脚本
   * 新增[学习率warmup](./docs/configs/solver_group.md#lr_warmup)功能，支持与不同的学习率Decay策略配合使用
-  * 新增图像归一化操作的GPU化功能，进一步提升预测速度。
+  * 新增图像归一化操作的GPU化实现，进一步提升预测速度。
   * 新增Python部署方案，更低成本完成工业级部署。
   * 新增Paddle-Lite移动端部署方案，支持人像分割模型的移动端部署。
-  * 新增不同分割模型的预测[性能数据](./deploy/python/docs/PaddleSeg_Infer_Benchmark.md), 为选择合适的模型提供性能数据参考。
+  * 新增不同分割模型的预测[性能数据Benchmark](./deploy/python/docs/PaddleSeg_Infer_Benchmark.md), 便于开发者提供模型选型性能参考。
 
   
 * 2019.11.04
