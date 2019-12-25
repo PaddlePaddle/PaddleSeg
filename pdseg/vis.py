@@ -18,24 +18,23 @@ from __future__ import division
 from __future__ import print_function
 
 import os
+
 # GPU memory garbage collection optimization flags
 os.environ['FLAGS_eager_delete_tensor_gb'] = "0.0"
 
 import sys
-import time
 import argparse
 import pprint
 import cv2
 import numpy as np
-import paddle
 import paddle.fluid as fluid
 
 from PIL import Image as PILImage
 from utils.config import cfg
-from metrics import ConfusionMatrix
 from reader import SegDataset
 from models.model_builder import build_model
 from models.model_builder import ModelPhase
+from tools.gray2pseudo_color import get_color_map_list
 
 
 def parse_args():
@@ -54,11 +53,6 @@ def parse_args():
         help='visual save dir',
         type=str,
         default='visual')
-    parser.add_argument(
-        '--also_save_raw_results',
-        dest='also_save_raw_results',
-        help='whether to save raw result',
-        action='store_true')
     parser.add_argument(
         '--local_test',
         dest='local_test',
@@ -80,44 +74,6 @@ def makedirs(directory):
         os.makedirs(directory)
 
 
-def get_color_map(num_classes):
-    """ Returns the color map for visualizing the segmentation mask,
-        which can support arbitrary number of classes.
-    Args:
-        num_classes: Number of classes
-    Returns:
-        The color map
-    """
-    #color_map = num_classes * 3 *  [0]
-    color_map = num_classes * [[0, 0, 0]]
-    for i in range(0, num_classes):
-        j = 0
-        color_map[i] = [0, 0, 0]
-        lab = i
-        while lab:
-            color_map[i][0] |= (((lab >> 0) & 1) << (7 - j))
-            color_map[i][1] |= (((lab >> 1) & 1) << (7 - j))
-            color_map[i][2] |= (((lab >> 2) & 1) << (7 - j))
-            j += 1
-            lab >>= 3
-
-    return color_map
-
-
-def colorize(image, shape, color_map):
-    """
-    Convert segment result to color image.
-    """
-    color_map = np.array(color_map).astype("uint8")
-    # Use OpenCV LUT for color mapping
-    c1 = cv2.LUT(image, color_map[:, 0])
-    c2 = cv2.LUT(image, color_map[:, 1])
-    c3 = cv2.LUT(image, color_map[:, 2])
-    color_res = np.dstack((c1, c2, c3))
-
-    return color_res
-
-
 def to_png_fn(fn):
     """
     Append png as filename postfix
@@ -132,7 +88,6 @@ def visualize(cfg,
               vis_file_list=None,
               use_gpu=False,
               vis_dir="visual",
-              also_save_raw_results=False,
               ckpt_dir=None,
               log_writer=None,
               local_test=False,
@@ -151,7 +106,7 @@ def visualize(cfg,
     test_prog = test_prog.clone(for_test=True)
 
     # Generator full colormap for maximum 256 classes
-    color_map = get_color_map(256)
+    color_map = get_color_map_list(256)
 
     # Get device environment
     place = fluid.CUDAPlace(0) if use_gpu else fluid.CPUPlace()
@@ -162,11 +117,8 @@ def visualize(cfg,
 
     fluid.io.load_params(exe, ckpt_dir, main_program=test_prog)
 
-    save_dir = os.path.join(vis_dir, 'visual_results')
+    save_dir = vis_dir
     makedirs(save_dir)
-    if also_save_raw_results:
-        raw_save_dir = os.path.join(vis_dir, 'raw_results')
-        makedirs(raw_save_dir)
 
     fetch_list = [pred.name]
     test_reader = dataset.batch(dataset.generator, batch_size=1, is_test=True)
@@ -185,7 +137,6 @@ def visualize(cfg,
             # Add more comments
             res_map = np.squeeze(pred[i, :, :, :]).astype(np.uint8)
             img_name = img_names[i]
-            grt = grts[i]
             res_shape = (res_map.shape[0], res_map.shape[1])
             if res_shape[0] != pred_shape[0] or res_shape[1] != pred_shape[1]:
                 res_map = cv2.resize(
@@ -197,28 +148,16 @@ def visualize(cfg,
                 res_map, (org_shape[1], org_shape[0]),
                 interpolation=cv2.INTER_NEAREST)
 
-            if grt is not None:
-                grt = grt[0:valid_shape[0], 0:valid_shape[1]]
-                grt = cv2.resize(
-                    grt, (org_shape[1], org_shape[0]),
-                    interpolation=cv2.INTER_NEAREST)
-
-            png_fn = to_png_fn(img_names[i])
-            if also_save_raw_results:
-                raw_fn = os.path.join(raw_save_dir, png_fn)
-                dirname = os.path.dirname(raw_save_dir)
-                makedirs(dirname)
-                cv2.imwrite(raw_fn, res_map)
+            png_fn = to_png_fn(img_name)
 
             # colorful segment result visualization
             vis_fn = os.path.join(save_dir, png_fn)
             dirname = os.path.dirname(vis_fn)
             makedirs(dirname)
 
-            pred_mask = colorize(res_map, org_shapes[i], color_map)
-            if grt is not None:
-                grt = colorize(grt, org_shapes[i], color_map)
-            cv2.imwrite(vis_fn, pred_mask)
+            pred_mask = PILImage.fromarray(res_map.astype(np.uint8), mode='P')
+            pred_mask.putpalette(color_map)
+            pred_mask.save(vis_fn)
 
             img_cnt += 1
             print("#{} visualize image path: {}".format(img_cnt, vis_fn))
@@ -228,25 +167,33 @@ def visualize(cfg,
                 # Calulate epoch from ckpt_dir folder name
                 epoch = int(os.path.split(ckpt_dir)[-1])
                 print("Tensorboard visualization epoch", epoch)
+
+                pred_mask_np = np.array(pred_mask.convert("RGB"))
                 log_writer.add_image(
-                    "Predict/{}".format(img_names[i]),
-                    pred_mask[..., ::-1],
+                    "Predict/{}".format(img_name),
+                    pred_mask_np,
                     epoch,
                     dataformats='HWC')
                 # Original image
                 # BGR->RGB
                 img = cv2.imread(
-                    os.path.join(cfg.DATASET.DATA_DIR, img_names[i]))[..., ::-1]
+                    os.path.join(cfg.DATASET.DATA_DIR, img_name))[..., ::-1]
                 log_writer.add_image(
-                    "Images/{}".format(img_names[i]),
+                    "Images/{}".format(img_name),
                     img,
                     epoch,
                     dataformats='HWC')
-                #add ground truth (label) images
+                # add ground truth (label) images
+                grt = grts[i]
                 if grt is not None:
+                    grt = grt[0:valid_shape[0], 0:valid_shape[1]]
+                    grt_pil = PILImage.fromarray(grt.astype(np.uint8), mode='P')
+                    grt_pil.putpalette(color_map)
+                    grt_pil = grt_pil.resize((org_shape[1], org_shape[0]))
+                    grt = np.array(grt_pil.convert("RGB"))
                     log_writer.add_image(
-                        "Label/{}".format(img_names[i]),
-                        grt[..., ::-1],
+                        "Label/{}".format(img_name),
+                        grt,
                         epoch,
                         dataformats='HWC')
 

@@ -10,8 +10,9 @@ import os.path as osp
 
 import numpy as np
 import PIL.Image
-
 import labelme
+
+from gray2pseudo_color import get_color_map_list
 
 
 def get_color_map_list(num_classes):

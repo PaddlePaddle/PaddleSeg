@@ -16,8 +16,8 @@ python pdseg/vis.py ${FLAGS} ${OPTIONS}
 * FLAGS必须位于OPTIONS之前，否会将会遇到报错，例如如下的例子:
 
 ```shell
-# FLAGS "--cfg configs/cityscapes.yaml" 必须在 OPTIONS "BATCH_SIZE 1" 之前
-python pdseg/train.py BATCH_SIZE 1 --cfg configs/cityscapes.yaml
+# FLAGS "--cfg configs/unet_pet.yaml" 必须在 OPTIONS "BATCH_SIZE 1" 之前
+python pdseg/train.py BATCH_SIZE 1 --cfg configs/unet_pet.yaml
 ```
 
 ## 命令行FLAGS列表
@@ -33,7 +33,6 @@ python pdseg/train.py BATCH_SIZE 1 --cfg configs/cityscapes.yaml
 |--tb_log_dir|train|TensorBoard的日志路径|None||
 |--do_eval|train|是否在保存模型时进行效果评估|False||
 |--vis_dir|vis|保存可视化图片的路径|"visual"||
-|--also_save_raw_results|vis|是否保存原始的预测图片|False||
 
 ## OPTIONS
 
@@ -129,12 +128,14 @@ python pdseg/vis.py --use_gpu \
                      --cfg configs/unet_pet.yaml \
                      TEST.TEST_MODEL saved_model/unet_pet/final
 ```
-执行上述脚本后，会在主目录下产生一个visual/visual_results文件夹，里面存放着测试集图片的预测结果，我们选择其中几张图片进行查看，可以看到，在测试集中的图片上的预测效果已经很不错：
+执行上述脚本后，会在主目录下产生一个visual文件夹，里面存放着测试集图片的预测结果，我们选择其中几张图片进行查看，可以看到，在测试集中的图片上的预测效果已经很不错：
 
 ![](./imgs/usage_vis_demo.jpg)
-![](./imgs/usage_vis_demo2.jpg)
-![](./imgs/usage_vis_demo3.jpg)
 
 `NOTE`
-1. 可视化的图片会默认保存在visual/visual_results目录下，可以通过`--vis_dir`来指定输出目录
+1. 可视化的图片会默认保存在visual目录下，可以通过`--vis_dir`来指定输出目录
 2. 训练过程中会使用DATASET.VIS_FILE_LIST中的图片进行可视化显示，而vis.py则会使用DATASET.TEST_FILE_LIST
+
+## 在线体验
+
+PaddleSeg在AI Studio平台上提供了在线体验的快速入门教程，欢迎[点击体验](https://aistudio.baidu.com/aistudio/projectdetail/100798)

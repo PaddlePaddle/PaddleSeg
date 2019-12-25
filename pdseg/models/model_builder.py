@@ -114,6 +114,7 @@ def softmax(logit):
     logit = fluid.layers.transpose(logit, [0, 3, 1, 2])
     return logit
 
+
 def sigmoid_to_softmax(logit):
     """
     one channel to two channel
@@ -124,6 +125,56 @@ def sigmoid_to_softmax(logit):
     logit = fluid.layers.concat([logit_back, logit], axis=-1)
     logit = fluid.layers.transpose(logit, [0, 3, 1, 2])
     return logit
+
+def export_preprocess(image):
+    """导出模型的预处理流程"""
+
+    image = fluid.layers.transpose(image, [0, 3, 1, 2])
+    origin_shape = fluid.layers.shape(image)[-2:]
+
+    # 不同AUG_METHOD方法的resize
+    if cfg.AUG.AUG_METHOD == 'unpadding':
+        h_fix = cfg.AUG.FIX_RESIZE_SIZE[1]
+        w_fix = cfg.AUG.FIX_RESIZE_SIZE[0]
+        image = fluid.layers.resize_bilinear(
+            image,
+            out_shape=[h_fix, w_fix],
+            align_corners=False,
+            align_mode=0)
+    elif cfg.AUG.AUG_METHOD == 'rangescaling':
+        size = cfg.AUG.INF_RESIZE_VALUE
+        value = fluid.layers.reduce_max(origin_shape)
+        scale = float(size) / value.astype('float32')
+        image = fluid.layers.resize_bilinear(
+            image, scale=scale, align_corners=False, align_mode=0)
+
+    # 存储resize后图像shape
+    valid_shape = fluid.layers.shape(image)[-2:]
+
+    # padding到eval_crop_size大小
+    width = cfg.EVAL_CROP_SIZE[0]
+    height = cfg.EVAL_CROP_SIZE[1]
+    pad_target = fluid.layers.assign(
+        np.array([height, width]).astype('float32'))
+    up = fluid.layers.assign(np.array([0]).astype('float32'))
+    down = pad_target[0] - valid_shape[0]
+    left = up
+    right = pad_target[1] - valid_shape[1]
+    paddings = fluid.layers.concat([up, down, left, right])
+    paddings = fluid.layers.cast(paddings, 'int32')
+    image = fluid.layers.pad2d(
+        image, paddings=paddings, pad_value=127.5)
+
+    # normalize
+    mean = np.array(cfg.MEAN).reshape(1, len(cfg.MEAN), 1, 1)
+    mean = fluid.layers.assign(mean.astype('float32'))
+    std = np.array(cfg.STD).reshape(1, len(cfg.STD), 1, 1)
+    std = fluid.layers.assign(std.astype('float32'))
+    image = (image / 255 - mean) / std
+    # 使后面的网络能通过类似image.shape获取特征图的shape
+    image = fluid.layers.reshape(
+        image, shape=[-1, cfg.DATASET.DATA_DIM, height, width])
+    return image, valid_shape, origin_shape
 
 
 def build_model(main_prog, start_prog, phase=ModelPhase.TRAIN):
@@ -142,8 +193,19 @@ def build_model(main_prog, start_prog, phase=ModelPhase.TRAIN):
 
     with fluid.program_guard(main_prog, start_prog):
         with fluid.unique_name.guard():
-            image = fluid.layers.data(
-                name='image', shape=image_shape, dtype='float32')
+            # 在导出模型的时候，增加图像标准化预处理,减小预测部署时图像的处理流程
+            # 预测部署时只须对输入图像增加batch_size维度即可
+            if ModelPhase.is_predict(phase):
+                origin_image = fluid.layers.data(
+                    name='image',
+                    shape=[-1, -1, -1, cfg.DATASET.DATA_DIM],
+                    dtype='float32',
+                    append_batch_size=False)
+                image, valid_shape, origin_shape = export_preprocess(origin_image)
+
+            else:
+                image = fluid.layers.data(
+                    name='image', shape=image_shape, dtype='float32')
             label = fluid.layers.data(
                 name='label', shape=grt_shape, dtype='int32')
             mask = fluid.layers.data(
@@ -164,23 +226,30 @@ def build_model(main_prog, start_prog, phase=ModelPhase.TRAIN):
             if not isinstance(loss_type, list):
                 loss_type = list(loss_type)
 
-            if class_num > 2 and (("dice_loss" in loss_type) or ("bce_loss" in loss_type)):
-                raise Exception("dice loss and bce loss is only applicable to binary classfication")
-            
+            # dice_loss或bce_loss只适用两类分割中
+            if class_num > 2 and (("dice_loss" in loss_type) or
+                                  ("bce_loss" in loss_type)):
+                raise Exception(
+                    "dice loss and bce loss is only applicable to binary classfication"
+                )
+
+            # 在两类分割情况下，当loss函数选择dice_loss或bce_loss的时候，最后logit输出通道数设置为1
             if ("dice_loss" in loss_type) or ("bce_loss" in loss_type):
                 class_num = 1
                 if "softmax_loss" in loss_type:
-                    raise Exception("softmax loss can not combine with dice loss or bce loss")
-            
+                    raise Exception(
+                        "softmax loss can not combine with dice loss or bce loss"
+                    )
             logits = model_func(image, class_num)
 
+            # 根据选择的loss函数计算相应的损失函数
             if ModelPhase.is_train(phase) or ModelPhase.is_eval(phase):
                 loss_valid = False
                 avg_loss_list = []
                 valid_loss = []
-                if "softmax_loss" in loss_type: 
-                    avg_loss_list.append(multi_softmax_with_loss(logits,
-                        label, mask,class_num))
+                if "softmax_loss" in loss_type:
+                    avg_loss_list.append(
+                        multi_softmax_with_loss(logits, label, mask, class_num))
                     loss_valid = True
                     valid_loss.append("softmax_loss")
                 if "dice_loss" in loss_type:
@@ -200,13 +269,17 @@ def build_model(main_prog, start_prog, phase=ModelPhase.TRAIN):
                     loss_valid = True
                     valid_loss.append("lovasz_softmax_loss")
                 if not loss_valid:
-                    raise Exception("SOLVER.LOSS: {} is set wrong. it should "
-                            "include one of (softmax_loss, bce_loss, dice_loss) at least"
-                            " example: ['softmax_loss'], ['dice_loss'], ['bce_loss', 'dice_loss']".format(cfg.SOLVER.LOSS))
-                
+                    raise Exception(
+                        "SOLVER.LOSS: {} is set wrong. it should "
+                        "include one of (softmax_loss, bce_loss, dice_loss) at least"
+                        " example: ['softmax_loss'], ['dice_loss'], ['bce_loss', 'dice_loss']"
+                        .format(cfg.SOLVER.LOSS))
+
                 invalid_loss = [x for x in loss_type if x not in valid_loss]
                 if len(invalid_loss) > 0:
-                    print("Warning: the loss {} you set is invalid. it will not be included in loss computed.".format(invalid_loss))
+                    print(
+                        "Warning: the loss {} you set is invalid. it will not be included in loss computed."
+                        .format(invalid_loss))
 
                 avg_loss = 0
                 for i in range(0, len(avg_loss_list)):
@@ -223,11 +296,23 @@ def build_model(main_prog, start_prog, phase=ModelPhase.TRAIN):
 
             # return image input and logit output for inference graph prune
             if ModelPhase.is_predict(phase):
+                # 两类分割中，使用dice_loss或bce_loss返回的logit为单通道，进行到两通道的变换
                 if class_num == 1:
                     logit = sigmoid_to_softmax(logit)
                 else:
                     logit = softmax(logit)
-                return image, logit
+
+                # 获取有效部分
+                logit = fluid.layers.slice(
+                    logit, axes=[2, 3], starts=[0, 0], ends=valid_shape)
+
+                logit = fluid.layers.resize_bilinear(
+                    logit,
+                    out_shape=origin_shape,
+                    align_corners=False,
+                    align_mode=0)
+                logit = fluid.layers.argmax(logit, axis=1)
+                return origin_image, logit
 
             if class_num == 1:
                 out = sigmoid_to_softmax(logit)
