@@ -50,7 +50,7 @@ PSPNet的出发点是在算法中引入更多的上下文信息来解决上述�
 
 ### HRNet
 
-Deep High-Resolution Representation Learning for Visual Recognition (HRNet) [6] 在整个训练过程中始终维持高分辨率表示。
+High-Resolution Network (HRNet) [6] 在整个训练过程中始终维持高分辨率表示。
 HRNet具有两个特点：（1）从高分辨率到低分辨率并行连接各子网络，（2）反复交换跨分辨率子网络信息。这两个特点使HRNet网络能够学习到更丰富的语义信息和细节信息。
 HRNet在人体姿态估计、语义分割和目标检测领域都取得了显著的性能提升。
 
