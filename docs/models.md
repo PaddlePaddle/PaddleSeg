@@ -1,7 +1,7 @@
 # PaddleSeg 分割模型介绍
 
 - [U-Net](#U-Net)
-- [DeepLabv3+](#DeepLabv3+)
+- [DeepLabv3+](#DeepLabv3)
 - [ICNet](#ICNet)
 - [PSPNet](#PSPNet)
 
@@ -12,7 +12,7 @@ U-Net [1] 起源于医疗图像分割，整个网络是标准的encoder-decoder�
 
 ![](./imgs/unet.png)
 
-## DeepLabv3+
+## DeepLabv3
 
 DeepLabv3+ [2] 是DeepLab系列的最后一篇文章，其前作有 DeepLabv1，DeepLabv2, DeepLabv3,
 在最新作中，DeepLab的作者通过encoder-decoder进行多尺度信息的融合，同时保留了原来的空洞卷积和ASSP层，
@@ -59,3 +59,4 @@ PSPNet的出发点是在算法中引入更多的上下文信息来解决上述�
 
 [5] [Fully Convolutional Networks for Semantic Segmentation](https://people.eecs.berkeley.edu/~jonlong/long_shelhamer_fcn.pdf)
 
+- [回到开始](#PaddleSeg 分割模型介绍)
