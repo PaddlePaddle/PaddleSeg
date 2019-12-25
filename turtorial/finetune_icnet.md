@@ -118,6 +118,6 @@ python pdseg/eval.py --use_gpu --cfg ./configs/icnet_pet.yaml
 
 ## 模型组合
 
-|预训练模型名称|BackBone|Norm|数据集|配置|
-|-|-|-|-|-|
-|icnet_bn_cityscapes|-|bn|Cityscapes|MODEL.MODEL_NAME: icnet <br> MODEL.DEFAULT_NORM_TYPE: bn <br> MODEL.MULTI_LOSS_WEIGHT: [1.0, 0.4, 0.16]|
+|预训练模型名称|Backbone|数据集|配置|
+|-|-|-|-|
+|icnet_bn_cityscapes|ResNet50|Cityscapes|MODEL.MODEL_NAME: icnet <br> MODEL.DEFAULT_NORM_TYPE: bn <br> MODEL.MULTI_LOSS_WEIGHT: [1.0, 0.4, 0.16]|

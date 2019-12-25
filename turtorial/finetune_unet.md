@@ -115,6 +115,6 @@ PaddleSeg在AI Studio平台上提供了在线体验的U-Net宠物分割教程，
 
 ## 模型组合
 
-|预训练模型名称|BackBone|Norm|数据集|配置|
-|-|-|-|-|-|
-|unet_bn_coco|-|bn|COCO|MODEL.MODEL_NAME: unet <br> MODEL.DEFAULT_NORM_TYPE: bn|
+|预训练模型名称|Backbone|数据集|配置|
+|-|-|-|-|
+|unet_bn_coco|VGG16|COCO|MODEL.MODEL_NAME: unet <br> MODEL.DEFAULT_NORM_TYPE: bn|
