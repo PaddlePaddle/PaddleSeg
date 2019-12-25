@@ -4,6 +4,7 @@
 - [DeepLabv3+](#DeepLabv3)	
 - [ICNet](#ICNet)	
 - [PSPNet](#PSPNet)
+- [HRNet](#HRNet)
 
 ## U-Net
 U-Net [1] 起源于医疗图像分割，整个网络是标准的encoder-decoder网络，特点是参数少，计算快，应用性强，对于一般场景适应度很高。U-Net最早于2015年提出，并在ISBI 2015 Cell Tracking Challenge取得了第一。经过发展，目前有多个变形和应用。
@@ -47,6 +48,14 @@ PSPNet的出发点是在算法中引入更多的上下文信息来解决上述�
 
 ![](./imgs/pspnet.png)
 
+### HRNet
+
+Deep High-Resolution Representation Learning for Visual Recognition (HRNet) [6] 在整个训练过程中始终维持高分辨率表示。
+HRNet具有两个特点：（1）从高分辨率到低分辨率并行连接各子网络，（2）反复交换跨分辨率子网络信息。这两个特点使HRNet网络能够学习到更丰富的语义信息和细节信息。
+HRNet在人体姿态估计、语义分割和目标检测领域都取得了显著的性能提升。
+
+![](./imgs/hrnet.png)
+
 ## 参考文献
 
 [1] [U-Net: Convolutional Networks for Biomedical Image Segmentation](https://arxiv.org/abs/1505.04597)
@@ -58,4 +67,6 @@ PSPNet的出发点是在算法中引入更多的上下文信息来解决上述�
 [4] [Pyramid Scene Parsing Network](https://arxiv.org/abs/1612.01105)
 
 [5] [Fully Convolutional Networks for Semantic Segmentation](https://people.eecs.berkeley.edu/~jonlong/long_shelhamer_fcn.pdf)
+
+[6] [Deep High-Resolution Representation Learning for Visual Recognition](https://arxiv.org/abs/1908.07919)
 
