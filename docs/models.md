@@ -54,6 +54,8 @@ Deep High-Resolution Representation Learning for Visual Recognition (HRNet) [6] 
 HRNet具有两个特点：（1）从高分辨率到低分辨率并行连接各子网络，（2）反复交换跨分辨率子网络信息。这两个特点使HRNet网络能够学习到更丰富的语义信息和细节信息。
 HRNet在人体姿态估计、语义分割和目标检测领域都取得了显著的性能提升。
 
+整个网络结构如下：
+
 ![](./imgs/hrnet.png)
 
 ## 参考文献
