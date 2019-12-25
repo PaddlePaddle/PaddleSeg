@@ -26,7 +26,6 @@ PaddleSeg是基于[PaddlePaddle](https://www.paddlepaddle.org.cn)开发的语义
 </br>
 
 ## 特点
-PaddleSeg具备高性能、丰富的数据增强、工业级部署、全流程应用的特点:
 
 - **丰富的数据增强**
 
