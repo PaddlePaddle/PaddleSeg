@@ -1,8 +1,7 @@
-<a name="top"></a>
 # PaddleSeg 分割模型介绍
 
 - [U-Net](#U-Net)	
-- [DeepLabv3+](#DeepLab)	
+- [DeepLabv3+](#DeepLabv3)	
 - [ICNet](#ICNet)	
 - [PSPNet](#PSPNet)
 
@@ -60,4 +59,3 @@ PSPNet的出发点是在算法中引入更多的上下文信息来解决上述�
 
 [5] [Fully Convolutional Networks for Semantic Segmentation](https://people.eecs.berkeley.edu/~jonlong/long_shelhamer_fcn.pdf)
 
-[回到开始](#top)
