@@ -37,11 +37,11 @@ PaddleSeg是基于[PaddlePaddle](https://www.paddlepaddle.org.cn)开发的语义
 
 - **高性能**
 
-PaddleSeg支持多进程IO、多卡并行、跨卡Batch Norm同步等训练加速策略，结合飞桨核心框架的显存优化功能，可以大幅度减少分割模型的显存开销，更快完成分割模型训练。
+PaddleSeg支持多进程I/O、多卡并行、跨卡Batch Norm同步等训练加速策略，结合飞桨核心框架的显存优化功能，可大幅度减少分割模型的显存开销，让开发者更低成本、更高效地完成图像分割训练。
 
 - **工业级部署**
 
-基于[Paddle Serving](https://github.com/PaddlePaddle/Serving)和PaddlePaddle高性能预测引擎，结合百度开放的AI能力，轻松搭建人像分割和车道线分割服务。
+全面支持**服务端**和**移动端**的工业级部署能力，依托飞桨高性能推理引擎，通过[Paddle Serving](https://github.com/PaddlePaddle/Serving)开发者在服务端轻松搭建人像分割服务；通过[Paddle-Lite](https://github.com/PaddlePaddle/Paddle-Lite)，开发者可以在移动设备或者嵌入式设备上快速部署轻量级、高性能的人像分割模型。
 
 ## 安装
 
