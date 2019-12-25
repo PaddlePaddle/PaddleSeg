@@ -1,9 +1,8 @@
+[TOC]
+
 # PaddleSeg 分割模型介绍
 
-- [U-Net](#U-Net)
-- [DeepLabv3+](#DeepLabv3\+)
-- [ICNet](#ICNet)
-- [PSPNet](#PSPNet)
+
 
 ## U-Net
 U-Net [1] 起源于医疗图像分割，整个网络是标准的encoder-decoder网络，特点是参数少，计算快，应用性强，对于一般场景适应度很高。U-Net最早于2015年提出，并在ISBI 2015 Cell Tracking Challenge取得了第一。经过发展，目前有多个变形和应用。
