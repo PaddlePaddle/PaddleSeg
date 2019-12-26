@@ -55,5 +55,10 @@ class Predictor {
     PaddleSolution::PaddleSegModelConfigPaser _model_config;
     std::shared_ptr<PaddleSolution::ImagePreProcessor> _preprocessor;
     std::unique_ptr<paddle::PaddlePredictor> _main_predictor;
+    std::map<std::string, paddle::AnalysisConfig::Precision> TRT_MAP = {
+        {"FP32", paddle::AnalysisConfig::Precision::kFloat32},
+        {"FP16", paddle::AnalysisConfig::Precision::kHalf},
+        {"INT8", paddle::AnalysisConfig::Precision::kInt8}
+    };
 };
 }  // namespace PaddleSolution
