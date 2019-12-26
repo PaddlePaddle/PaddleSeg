@@ -98,22 +98,15 @@ pip install -r requirements.txt
 ### 预测部署
 
 * [模型导出](./docs/model_export.md)
-<<<<<<< HEAD
-<<<<<<< HEAD
 * [使用Python预测](./deploy/python/)
 * [使用C++预测](./deploy/cpp/)
 * [人像分割在移动端的部署](./lite)
-=======
 * [Python预测](./deploy/python/)
 * [C++预测](./deploy/cpp/)
 * [Paddle-Lite移动端预测部署](./deploy/lite/)
->>>>>>> 366aae78814b5a0ba3eb3e9c686c215e85b2b61e
-=======
 * [Python预测](./deploy/python/)
 * [C++预测](./deploy/cpp/)
 * [Paddle-Lite移动端预测部署](./deploy/lite/)
->>>>>>> 366aae78814b5a0ba3eb3e9c686c215e85b2b61e
-
 
 ### 高级功能
 
