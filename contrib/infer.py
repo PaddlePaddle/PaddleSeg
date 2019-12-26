@@ -121,8 +121,8 @@ def infer():
         if (idx + 1) % 100 == 0:
             print('%d  processd' % (idx + 1))
             
-    print('%d  processd done' % (data_num))   
-    
+    print('%d  processd done' % (idx + 1)) 
+
     return 0
 
 
