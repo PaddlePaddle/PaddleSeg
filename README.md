@@ -106,7 +106,7 @@ pip install -r requirements.txt
 ### 高级功能
 
 * [PaddleSeg的数据增强](./docs/data_aug.md)
-* [PaddleSeg的loss选择](./docs/loss_select.md)
+* [如何解决二分类中类别不均衡问题](./docs/loss_select.md)
 * [特色垂类模型使用](./contrib)
 * [多进程训练和混合精度训练](./docs/multiple_gpus_train_and_mixed_precision_train.md)
 
@@ -118,10 +118,10 @@ pip install -r requirements.txt
 |-|-|
 |快速开始|[点击体验](https://aistudio.baidu.com/aistudio/projectdetail/100798)|
 |U-Net宠物分割|[点击体验](https://aistudio.baidu.com/aistudio/projectDetail/102889)|
-|DeepLabv3+图像分割|[点击体验](https://aistudio.baidu.com/aistudio/projectDetail/101696)|
+|DeepLabv3+图像分割|[点击体验](https://aistudio.baidu.com/aistudio/projectDetail/226703)|
 |工业质检（零件瑕疵检测）|[点击体验](https://aistudio.baidu.com/aistudio/projectdetail/184392)|
 |人像分割|[点击体验](https://aistudio.baidu.com/aistudio/projectdetail/188833)|
-|PaddleSeg特色垂类模型|[点击体验](https://aistudio.baidu.com/aistudio/projectdetail/115541)|
+|PaddleSeg特色垂类模型|[点击体验](https://aistudio.baidu.com/aistudio/projectdetail/226710)|
 
 </br>
 
