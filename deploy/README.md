@@ -8,3 +8,5 @@
 
 [3. 服务化部署(仅支持 Linux)](./serving)
 
+[4. 移动端部署(仅支持Android)](./lite)
+

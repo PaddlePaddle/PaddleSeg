@@ -11,11 +11,11 @@
 
 ## 2. 安装 TensorRT 5.1
 
-请参考`Nvidia`的[官方安装教程](https://docs.nvidia.com/deeplearning/sdk/tensorrt-install-guide/index.html)
+请参考Nvidia的[官方安装教程](https://docs.nvidia.com/deeplearning/sdk/tensorrt-install-guide/index.html)
 
 ## 3. 编译 PaddlePaddle
 
- 这里假设`Python`版本为`3.7`以及`cuda` `cudnn` `tensorRT`安装路径如下：
+ 这里假设`Python`版本为`3.7`以及`CUDA` `cuDNN` `TensorRT`安装路径如下：
 ```bash
 # 假设 cuda 安装路径
 /usr/local/cuda-9.0/
