@@ -195,4 +195,3 @@ A: 请将PaddlePaddle升级至1.5.2版本或以上。
 ## 贡献代码
 
 我们非常欢迎您为PaddleSeg贡献代码或者提供使用建议。如果您可以修复某个issue或者增加一个新功能，欢迎给我们提交pull requests.
-
