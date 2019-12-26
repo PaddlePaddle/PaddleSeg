@@ -110,7 +110,7 @@ pip install -r requirements.txt
 ### 高级功能
 
 * [PaddleSeg的数据增强](./docs/data_aug.md)
-* [PaddleSeg的loss选择](./docs/loss_select.md)
+* [如何解决二分类中样本不均衡问题](./docs/loss_select.md)
 * [特色垂类模型使用](./contrib)
 * [多进程训练和混合精度训练](./docs/multiple_gpus_train_and_mixed_precision_train.md)
 
