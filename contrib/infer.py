@@ -121,10 +121,11 @@ def infer():
         if (idx + 1) % 100 == 0:
             print('%d  processd' % (idx + 1))
             
-    print('%d  processd done' % (idx + 1)) 
-
+    print('%d  processd done' % (idx + 1))   
+    
     return 0
 
 
 if __name__ == "__main__":
     infer()
+
