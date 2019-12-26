@@ -31,7 +31,7 @@ Dice系数请参见[维基百科](https://zh.wikipedia.org/wiki/Dice%E7%B3%BB%E6
 首先来看softmax loss的定义：
 
 <p align="center">
-  <img src="./imgs/softmax_loss.png" hspace='10' /> <br />
+  <img src="./imgs/softmax_loss.png"  height="130" /> <br />
  </p>
  
 其中 y 表示ground truth，p 表示网络输出。
