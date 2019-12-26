@@ -1,0 +1,119 @@
+import java.security.MessageDigest
+
+apply plugin: 'com.android.application'
+
+android {
+    compileSdkVersion 28
+    defaultConfig {
+        applicationId "com.baidu.paddle.lite.demo.human_segmentation"
+        minSdkVersion 15
+        targetSdkVersion 28
+        versionCode 1
+        versionName "1.0"
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+
+dependencies {
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
+    implementation 'com.android.support:appcompat-v7:28.0.0'
+    implementation 'com.android.support.constraint:constraint-layout:1.1.3'
+    implementation 'com.android.support:design:28.0.0'
+    testImplementation 'junit:junit:4.12'
+    androidTestImplementation 'com.android.support.test:runner:1.0.2'
+    androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
+    implementation files('libs/PaddlePredictor.jar')
+}
+
+def paddleLiteLibs = 'https://paddlelite-demo.bj.bcebos.com/libs/android/paddle_lite_libs_v2_1_0_bug_fixed.tar.gz'
+task downloadAndExtractPaddleLiteLibs(type: DefaultTask) {
+    doFirst {
+        println "Downloading and extracting Paddle Lite libs"
+    }
+    doLast {
+        // Prepare cache folder for libs
+        if (!file("cache").exists()) {
+            mkdir "cache"
+        }
+        // Generate cache name for libs
+        MessageDigest messageDigest = MessageDigest.getInstance('MD5')
+        messageDigest.update(paddleLiteLibs.bytes)
+        String cacheName = new BigInteger(1, messageDigest.digest()).toString(32)
+        // Download libs
+        if (!file("cache/${cacheName}.tar.gz").exists()) {
+            ant.get(src: paddleLiteLibs, dest: file("cache/${cacheName}.tar.gz"))
+        }
+        // Unpack libs
+        copy {
+            from tarTree("cache/${cacheName}.tar.gz")
+            into "cache/${cacheName}"
+        }
+        // Copy PaddlePredictor.jar
+        if (!file("libs/PaddlePredictor.jar").exists()) {
+            copy {
+                from "cache/${cacheName}/java/PaddlePredictor.jar"
+                into "libs"
+            }
+        }
+        // Copy libpaddle_lite_jni.so for armeabi-v7a and arm64-v8a
+        if (!file("src/main/jniLibs/armeabi-v7a/libpaddle_lite_jni.so").exists()) {
+            copy {
+                from "cache/${cacheName}/java/libs/armeabi-v7a/"
+                into "src/main/jniLibs/armeabi-v7a"
+            }
+        }
+        if (!file("src/main/jniLibs/arm64-v8a/libpaddle_lite_jni.so").exists()) {
+            copy {
+                from "cache/${cacheName}/java/libs/arm64-v8a/"
+                into "src/main/jniLibs/arm64-v8a"
+            }
+        }
+    }
+}
+preBuild.dependsOn downloadAndExtractPaddleLiteLibs
+
+def paddleLiteModels = [
+        [
+                'src' : 'https://paddlelite-demo.bj.bcebos.com/models/deeplab_mobilenet_fp32_for_cpu_v2_1_0.tar.gz',
+                'dest' : 'src/main/assets/image_segmentation/models/deeplab_mobilenet_for_cpu'
+        ],
+]
+task downloadAndExtractPaddleLiteModels(type: DefaultTask) {
+    doFirst {
+        println "Downloading and extracting Paddle Lite models"
+    }
+    doLast {
+        // Prepare cache folder for models
+        if (!file("cache").exists()) {
+            mkdir "cache"
+        }
+        paddleLiteModels.eachWithIndex { model, index ->
+            MessageDigest messageDigest = MessageDigest.getInstance('MD5')
+            messageDigest.update(model.src.bytes)
+            String cacheName = new BigInteger(1, messageDigest.digest()).toString(32)
+            // Download model file
+            if (!file("cache/${cacheName}.tar.gz").exists()) {
+                ant.get(src: model.src, dest: file("cache/${cacheName}.tar.gz"))
+            }
+            // Unpack model file
+            copy {
+                from tarTree("cache/${cacheName}.tar.gz")
+                into "cache/${cacheName}"
+            }
+            // Copy model file
+            if (!file("${model.dest}/__model__.nb").exists() || !file("${model.dest}/param.nb").exists()) {
+                copy {
+                    from "cache/${cacheName}"
+                    into "${model.dest}"
+                }
+            }
+        }
+    }
+}
+preBuild.dependsOn downloadAndExtractPaddleLiteModels
