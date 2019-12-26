@@ -98,12 +98,10 @@ pip install -r requirements.txt
 ### 预测部署
 
 * [模型导出](./docs/model_export.md)
-* [使用Python预测](./deploy/python/)
-* [使用C++预测](./deploy/cpp/)
-* [人像分割在移动端的部署](./lite)
 * [Python预测](./deploy/python/)
 * [C++预测](./deploy/cpp/)
 * [Paddle-Lite移动端预测部署](./deploy/lite/)
+
 
 ### 高级功能
 
@@ -197,3 +195,4 @@ A: 请将PaddlePaddle升级至1.5.2版本或以上。
 ## 贡献代码
 
 我们非常欢迎您为PaddleSeg贡献代码或者提供使用建议。如果您可以修复某个issue或者增加一个新功能，欢迎给我们提交pull requests.
+
