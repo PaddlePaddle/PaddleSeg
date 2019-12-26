@@ -1,7 +1,7 @@
 # dice loss解决二分类中样本不均衡问题
 
 对于二类图像分割任务中，往往存在类别分布不均的情况，如：瑕疵检测，道路提取及病变区域提取等等。
-在DeepGlobe比赛的Road Extraction中，训练数据道路占比为：%4.5。如下为其图片样例：
+在DeepGlobe比赛的Road Extraction中，训练数据道路占比为：4.5%. 如下为其图片样例：
 <p align="center">
   <img src="./imgs/deepglobe.png" hspace='10'/> <br />
  </p>
