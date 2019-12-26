@@ -37,6 +37,20 @@ model_urls = {
     "https://paddleseg.bj.bcebos.com/models/Xception41_pretrained.tgz",
     "xception65_imagenet":
     "https://paddleseg.bj.bcebos.com/models/Xception65_pretrained.tgz",
+    "hrnet_w18_bn_imagenet":
+    "https://paddleseg.bj.bcebos.com/models/hrnet_w18_imagenet.tar",
+    "hrnet_w30_bn_imagenet":
+    "https://paddleseg.bj.bcebos.com/models/hrnet_w30_imagenet.tar",
+    "hrnet_w32_bn_imagenet":
+    "https://paddleseg.bj.bcebos.com/models/hrnet_w32_imagenet.tar" ,
+    "hrnet_w40_bn_imagenet":
+    "https://paddleseg.bj.bcebos.com/models/hrnet_w40_imagenet.tar",
+    "hrnet_w44_bn_imagenet":
+    "https://paddleseg.bj.bcebos.com/models/hrnet_w44_imagenet.tar",
+    "hrnet_w48_bn_imagenet":
+    "https://paddleseg.bj.bcebos.com/models/hrnet_w48_imagenet.tar",
+    "hrnet_w64_bn_imagenet":
+    "https://paddleseg.bj.bcebos.com/models/hrnet_w64_imagenet.tar",
 
     # COCO pretrained
     "deeplabv3p_mobilenetv2-1-0_bn_coco":
@@ -65,6 +79,8 @@ model_urls = {
     "https://paddleseg.bj.bcebos.com/models/pspnet50_cityscapes.tgz",
     "pspnet101_bn_cityscapes":
     "https://paddleseg.bj.bcebos.com/models/pspnet101_cityscapes.tgz",
+    "hrnet_w18_bn_cityscapes":
+    "https://paddleseg.bj.bcebos.com/models/hrnet_w18_bn_cityscapes.tgz",
 }
 
 if __name__ == "__main__":

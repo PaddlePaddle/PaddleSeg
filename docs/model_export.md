@@ -18,4 +18,4 @@
 python pdseg/export_model.py --cfg configs/unet_pet.yaml TEST.TEST_MODEL test/saved_models/unet_pet/final
 ```
 
-预测模型会导出到`freeze_model`目录，用于C++预测的模型配置会导出到`freeze_model/deploy.yaml`下
+预测模型会导出到`freeze_model`目录，用于`C++`或者`Python`预测的模型配置会导出到`freeze_model/deploy.yaml`下
