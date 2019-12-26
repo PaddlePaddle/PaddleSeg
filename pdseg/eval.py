@@ -112,7 +112,7 @@ def evaluate(cfg, ckpt_dir=None, use_gpu=False, use_mpio=False, **kwargs):
     ckpt_dir = cfg.TEST.TEST_MODEL if not ckpt_dir else ckpt_dir
 
     if not os.path.exists(ckpt_dir):
-        raise ValueError('The ckpt_dir {} is not found'.format(ckpt_dir))
+        raise ValueError('The TEST.TEST_MODEL {} is not found'.format(ckpt_dir))
 
     if ckpt_dir is not None:
         print('load test model:', ckpt_dir)
