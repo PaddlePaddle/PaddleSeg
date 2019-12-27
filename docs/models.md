@@ -15,18 +15,18 @@ U-Net [1] 起源于医疗图像分割，整个网络是标准的encoder-decoder�
 
 ## DeepLabv3+
 
-DeepLabv3+ [2] 是DeepLab系列的最后一篇文章，其前作有 DeepLabv1，DeepLabv2, DeepLabv3,
-在最新作中，DeepLab的作者通过encoder-decoder进行多尺度信息的融合，同时保留了原来的空洞卷积和ASSP层，
-其骨干网络使用了Xception模型，提高了语义分割的健壮性和运行速率，在 PASCAL VOC 2012 dataset取得新的state-of-art performance，89.0mIOU。
+DeepLabv3+ [2] 是DeepLab系列的最后一篇文章，其前作有 DeepLabv1, DeepLabv2, DeepLabv3.
+在最新作中，作者通过encoder-decoder进行多尺度信息的融合，以优化分割效果，尤其是目标边缘的效果。
+并且其使用了Xception模型作为骨干网络，并将深度可分离卷积(depthwise separable convolution)应用到atrous spatial pyramid pooling(ASPP)中和decoder模块，提高了语义分割的健壮性和运行速率，在 PASCAL VOC 2012 和 Cityscapes 数据集上取得新的state-of-art performance.
 
 ![](./imgs/deeplabv3p.png)
 
-在PaddleSeg当前实现中，支持两种分类Backbone网络的切换
+在PaddleSeg当前实现中，支持两种分类Backbone网络的切换:
 
-- MobileNetv2:
+- MobileNetv2
 适用于移动设备的快速网络，如果对分割性能有较高的要求，请使用这一backbone网络。
 
-- Xception:
+- Xception
 DeepLabv3+原始实现的backbone网络，兼顾了精度和性能，适用于服务端部署。
 
 
