@@ -1,9 +1,9 @@
 # PaddleSeg 分割模型介绍
 
 - [U-Net](#U-Net)	
-- [DeepLabv3+](#DeepLabv3)	
-- [ICNet](#ICNet)	
+- [DeepLabv3+](#DeepLabv3)		
 - [PSPNet](#PSPNet)
+- [ICNet](#ICNet)
 - [HRNet](#HRNet)
 
 ## U-Net
