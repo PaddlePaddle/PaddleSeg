@@ -1,4 +1,40 @@
-# PaddleSeg 分割库配置说明
+# 脚本使用和配置说明
+
+PaddleSeg提供了 **训练**/**评估**/**可视化**/**模型导出** 等4个功能的使用脚本。所有脚本都支持通过不同的Flags来开启特定功能，也支持通过Options来修改默认的训练配置。它们的使用方式非常接近，如下：
+
+```shell
+# 训练
+python pdseg/train.py ${FLAGS} ${OPTIONS}
+# 评估
+python pdseg/eval.py ${FLAGS} ${OPTIONS}
+# 可视化
+python pdseg/vis.py ${FLAGS} ${OPTIONS}
+# 模型导出
+python pdseg/export_model.py ${FLAGS} ${OPTIONS}
+```
+
+**Note:** FLAGS必须位于OPTIONS之前，否会将会遇到报错，例如如下的例子:
+
+```shell
+# FLAGS "--cfg configs/unet_optic.yaml" 必须在 OPTIONS "BATCH_SIZE 1" 之前
+python pdseg/train.py BATCH_SIZE 1 --cfg configs/unet_optic.yaml
+```
+
+## 命令行FLAGS
+
+|FLAG|用途|支持脚本|默认值|备注|
+|-|-|-|-|-|
+|--cfg|配置文件路径|ALL|None||
+|--use_gpu|是否使用GPU进行训练|train/eval/vis|False||
+|--use_mpio|是否使用多进程进行IO处理|train/eval|False|打开该开关会占用一定量的CPU内存，但是可以提高训练速度。</br> **NOTE：** windows平台下不支持该功能, 建议使用自定义数据初次训练时不打开，打开会导致数据读取异常不可见。 </br> |
+|--use_tb|是否使用TensorBoard记录训练数据|train|False||
+|--log_steps|训练日志的打印周期（单位为step）|train|10||
+|--debug|是否打印debug信息|train|False|IOU等指标涉及到混淆矩阵的计算，会降低训练速度|
+|--tb_log_dir &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|TensorBoard的日志路径|train|None||
+|--do_eval|是否在保存模型时进行效果评估|train|False||
+|--vis_dir|保存可视化图片的路径|vis|"visual"||
+
+## OPTIONS
 
 PaddleSeg提供了统一的配置用于 训练/评估/可视化/导出模型。一共存在三套配置方案:
 * 命令行窗口传递的参数。
