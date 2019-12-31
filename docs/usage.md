@@ -53,6 +53,7 @@ python pdseg/train.py --cfg configs/unet_optic.yaml \
                       --tb_log_dir train_log \
                       BATCH_SIZE 4 \
                       SOLVER.LR 0.001
+                      
 ```
 若需要使用多块GPU，以0、1、2号卡为例，可输入
 ```
