@@ -38,7 +38,7 @@ python pretrained_model/download_model.py unet_bn_coco
 
 ## 4.模型训练
 
-为了方便体验，我们在configs目录下放置了mini_pet所对应的配置文件`unet_optic.yaml`，可以通过`--cfg`指向该文件来设置训练配置。
+为了方便体验，我们在configs目录下放置了配置文件`unet_optic.yaml`，可以通过`--cfg`指向该文件来设置训练配置。
 
 可以通过环境变量`CUDA_VISIBLE_DEVICES`来指定GPU卡号。
 
