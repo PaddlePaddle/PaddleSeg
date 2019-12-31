@@ -80,20 +80,20 @@ pip install -r requirements.txt
 
 ### 快速入门
 
-* [训练/评估/可视化](./docs/usage.md)
+* [PaddleSeg快速入门](./docs/usage.md)
 
 ### 基础功能
 
 * [自定义数据的标注与准备](./docs/data_prepare.md)
-* [配置说明与准备](./docs/config.md)
+* [脚本使用和配置说明](./docs/config.md)
 * [数据和配置校验](./docs/check.md)
 * [分割模型介绍](./docs/models.md)
 * [预训练模型下载](./docs/model_zoo.md)
-* [如何训练DeepLabv3+](./turtorial/finetune_deeplabv3plus.md)
-* [如何训练U-Net](./turtorial/finetune_unet.md)
-* [如何训练ICNet](./turtorial/finetune_icnet.md)
-* [如何训练PSPNet](./turtorial/finetune_pspnet.md)
-* [如何训练HRNet](./turtorial/finetune_hrnet.md)
+* [DeepLabv3+模型使用教程](./turtorial/finetune_deeplabv3plus.md)
+* [U-Net模型使用教程](./turtorial/finetune_unet.md)
+* [ICNet模型使用教程](./turtorial/finetune_icnet.md)
+* [PSPNet模型使用教程](./turtorial/finetune_pspnet.md)
+* [HRNet模型使用教程](./turtorial/finetune_hrnet.md)
 
 ### 预测部署
 
@@ -117,7 +117,7 @@ pip install -r requirements.txt
 |在线教程|链接|
 |-|-|
 |快速开始|[点击体验](https://aistudio.baidu.com/aistudio/projectdetail/100798)|
-|U-Net宠物分割|[点击体验](https://aistudio.baidu.com/aistudio/projectDetail/102889)|
+|U-Net图像分割|[点击体验](https://aistudio.baidu.com/aistudio/projectDetail/102889)|
 |DeepLabv3+图像分割|[点击体验](https://aistudio.baidu.com/aistudio/projectDetail/226703)|
 |工业质检（零件瑕疵检测）|[点击体验](https://aistudio.baidu.com/aistudio/projectdetail/184392)|
 |人像分割|[点击体验](https://aistudio.baidu.com/aistudio/projectdetail/188833)|

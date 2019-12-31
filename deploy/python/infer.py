@@ -31,6 +31,7 @@ gflags.DEFINE_string("conf", default="", help="Configuration File Path")
 gflags.DEFINE_string("input_dir", default="", help="Directory of Input Images")
 gflags.DEFINE_boolean("use_pr", default=False, help="Use optimized model")
 gflags.DEFINE_string("trt_mode", default="", help="Use optimized model")
+gflags.DEFINE_string("ext", default=".jpeg|.jpg", help="Input Image File Extensions")
 gflags.FLAGS = gflags.FLAGS
 
 
@@ -315,4 +316,4 @@ if __name__ == "__main__":
             "Invalid trt_mode [%s], only support[int8, fp16, fp32]" % trt_mode)
         exit(-1)
     # run inference
-    run(gflags.FLAGS.conf, gflags.FLAGS.input_dir)
+    run(gflags.FLAGS.conf, gflags.FLAGS.input_dir, gflags.FLAGS.ext)
