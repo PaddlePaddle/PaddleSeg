@@ -23,9 +23,10 @@
 
 ![](./imgs/optic.png)
 
-我们提前准备好了一份眼底医疗分割数据集，包含267张训练图片、76张验证图片、38张测试图片。通过以下命令进行下载：
+我们提前准备好了一份眼底医疗分割数据集--视盘分割（optic disc segmentation），包含267张训练图片、76张验证图片、38张测试图片。通过以下命令进行下载：
 
 ```shell
+# 下载待训练数据集
 python dataset/download_optic.py
 ```
 
@@ -50,7 +51,8 @@ python pdseg/train.py --cfg configs/unet_optic.yaml \
                       --do_eval \
                       --use_tb \
                       --tb_log_dir train_log \
-                      BATCH_SIZE 4
+                      BATCH_SIZE 4 \
+                      SOLVER.LR 0.001
                       
 ```
 若需要使用多块GPU，以0、1、2号卡为例，可输入
@@ -61,7 +63,7 @@ export CUDA_VISIBLE_DEVICES=0,1,2
 
 **NOTE:**
 
-* 如果发现因为内存不足而Crash。请适当调低`BATCH_SIZE`。如果本机GPU内存充足，则可以调高`BATCH_SIZE`的大小以获得更快的训练速度，`BATCH_SIZE`增大时，可以适当调高学习率。
+* 如果发现因为内存不足而Crash。请适当调低`BATCH_SIZE`。如果本机GPU内存充足，则可以调高`BATCH_SIZE`的大小以获得更快的训练速度，`BATCH_SIZE`增大时，可以适当调高学习率`SOLVER.LR`.
 
 * 如果在Linux系统下训练，可以使用`--use_mpio`使用多进程I/O，通过提升数据增强的处理速度进而大幅度提升GPU利用率。
 
@@ -94,10 +96,10 @@ python pdseg/eval.py --use_gpu \
                      TEST.TEST_MODEL saved_model/unet_optic/final
 ```
 
-可以看到，在经过训练后，模型在验证集上的mIoU指标达到了0.90+（由于随机种子等因素的影响，效果会有小范围波动，属于正常情况）。
+可以看到，在经过训练后，模型在验证集上的mIoU指标达到了0.85+（由于随机种子等因素的影响，效果会有小范围波动，属于正常情况）。
 
 ## 7.模型可视化
-通过vis.py来评估模型效果，我们选择最后保存的模型进行效果的评估：
+通过vis.py进行测试和可视化，以选择最后保存的模型进行测试为例：
 ```shell
 python pdseg/vis.py --use_gpu \
                      --cfg configs/unet_optic.yaml \
