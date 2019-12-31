@@ -84,7 +84,7 @@ NOTE:
 在`SCALAR`这个tab中，查看训练loss、iou、acc的变化趋势。
 ![](./imgs/tensorboard_scalar.JPG)
 
-在`IMAGE`这个tab中，查看样本的预测情况。
+在`IMAGE`这个tab中，查看样本图片。
 ![](./imgs/tensorboard_image.JPG)
 
 ## 6.模型评估
