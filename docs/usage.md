@@ -21,7 +21,7 @@
 
 ## 2.下载待训练数据
 
-![](./imgs/optic.png)
+![](../turtorial/imgs/optic.png)
 
 我们提前准备好了一份眼底医疗分割数据集--视盘分割（optic disc segmentation），包含267张训练图片、76张验证图片、38张测试图片。通过以下命令进行下载：
 
