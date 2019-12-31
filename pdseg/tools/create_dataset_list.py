@@ -126,8 +126,7 @@ def generate_list(args):
 
         if num_images != num_label and num_label > 0:
             raise Exception("Number of images = {}    number of labels = {} \n"
-                            "For train/eval list, number of images must be equal to number of labels.\n"
-                            "For test list, either number of images is equal to number of labels, "
+                            "Either number of images is equal to number of labels, "
                             "or number of labels is equal to 0.\n"
                             "Please check your dataset!".format(num_images, num_label))
 
