@@ -34,8 +34,8 @@ PaddleSeg对所有内置的分割模型都提供了公开数据集下的预训�
 
 | 模型 | 数据集合 | 下载地址 | Accuray Top1/5 Error |
 |---|---|---|---|
-| ResNet50(适配PSPNet) | ImageNet | [resnet50_v2_pspnet](https://paddleseg.bj.bcebos.com/resnet50_v2_pspnet.tgz)| -- |
-| ResNet101(适配PSPNet) | ImageNet | [resnet101_v2_pspnet](https://paddleseg.bj.bcebos.com/resnet101_v2_pspnet.tgz)| -- |
+| ResNet50（适配PSPNet） | ImageNet | [resnet50_v2_pspnet](https://paddleseg.bj.bcebos.com/resnet50_v2_pspnet.tgz)| -- |
+| ResNet101（适配PSPNet） | ImageNet | [resnet101_v2_pspnet](https://paddleseg.bj.bcebos.com/resnet101_v2_pspnet.tgz)| -- |
 
 ## COCO预训练模型
 
