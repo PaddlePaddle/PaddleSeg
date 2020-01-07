@@ -124,7 +124,7 @@ CUDA_VISIBLE_DEVICES=0 python -u ./vis.py --cfg configs/lanenet.yaml --use_gpu -
   预测结果：<br/>
   ![](imgs/0005_pred_lane.png)
   分割结果：<br/>
-  ![](imgs/0005_pred_binary.png)
+  ![](imgs/0005_pred_binary.png)<br/>
   车道线实例预测结果：<br/>
   ![](imgs/0005_pred_instance.png)
 
