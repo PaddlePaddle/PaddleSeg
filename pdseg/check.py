@@ -15,6 +15,7 @@ import imghdr
 import logging
 
 from utils.config import cfg
+from reader import pil_imread
 
 
 def init_global_variable():
@@ -452,7 +453,7 @@ def check_train_dataset():
             grt_path = os.path.join(cfg.DATASET.DATA_DIR, grt_name)
             try:
                 img = cv2_imread(img_path, cv2.IMREAD_UNCHANGED)
-                grt = cv2_imread(grt_path, cv2.IMREAD_UNCHANGED)
+                grt = pil_imread(grt_path)
             except Exception as e:
                 imread_failed.append((line, str(e)))
                 continue
@@ -502,7 +503,7 @@ def check_val_dataset():
             grt_path = os.path.join(cfg.DATASET.DATA_DIR, grt_name)
             try:
                 img = cv2_imread(img_path, cv2.IMREAD_UNCHANGED)
-                grt = cv2_imread(grt_path, cv2.IMREAD_UNCHANGED)
+                grt = pil_imread(grt_path)
             except Exception as e:
                 imread_failed.append((line, str(e)))
                 continue
@@ -561,7 +562,7 @@ def check_test_dataset():
                 grt_path = os.path.join(cfg.DATASET.DATA_DIR, grt_name)
                 try:
                     img = cv2_imread(img_path, cv2.IMREAD_UNCHANGED)
-                    grt = cv2_imread(grt_path, cv2.IMREAD_UNCHANGED)
+                    grt = pil_imread(grt_path)
                 except Exception as e:
                     imread_failed.append((line, str(e)))
                     continue

@@ -1,0 +1,20 @@
+<resources>
+<string name="app_name">Segmentation-demo</string>
+<!-- image segmentation settings -->
+<string name="ISG_CHOOSE_PRE_INSTALLED_MODEL_KEY">ISG_CHOOSE_PRE_INSTALLED_MODEL_KEY</string>
+<string name="ISG_ENABLE_CUSTOM_SETTINGS_KEY">ISG_ENABLE_CUSTOM_SETTINGS_KEY</string>
+<string name="ISG_MODEL_PATH_KEY">ISG_MODEL_PATH_KEY</string>
+<string name="ISG_LABEL_PATH_KEY">ISG_LABEL_PATH_KEY</string>
+<string name="ISG_IMAGE_PATH_KEY">ISG_IMAGE_PATH_KEY</string>
+<string name="ISG_CPU_THREAD_NUM_KEY">ISG_CPU_THREAD_NUM_KEY</string>
+<string name="ISG_CPU_POWER_MODE_KEY">ISG_CPU_POWER_MODE_KEY</string>
+<string name="ISG_INPUT_COLOR_FORMAT_KEY">ISG_INPUT_COLOR_FORMAT_KEY</string>
+<string name="ISG_INPUT_SHAPE_KEY">ISG_INPUT_SHAPE_KEY</string>
+<string name="ISG_MODEL_PATH_DEFAULT">image_segmentation/models/deeplab_mobilenet_for_cpu</string>
+<string name="ISG_LABEL_PATH_DEFAULT">image_segmentation/labels/label_list</string>
+<string name="ISG_IMAGE_PATH_DEFAULT">image_segmentation/images/human.jpg</string>
+<string name="ISG_CPU_THREAD_NUM_DEFAULT">1</string>
+<string name="ISG_CPU_POWER_MODE_DEFAULT">LITE_POWER_HIGH</string>
+<string name="ISG_INPUT_COLOR_FORMAT_DEFAULT">RGB</string>
+<string name="ISG_INPUT_SHAPE_DEFAULT">1,3,513,513</string>
+</resources>
