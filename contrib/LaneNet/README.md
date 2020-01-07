@@ -14,6 +14,7 @@ python dataset/download_tusimple.py
 ```
 
 数据目录结构
+```
 LaneNet
 |-- dataset
     |-- tusimple_lane_detection
@@ -23,7 +24,7 @@ LaneNet
             |-- gt_instance_image
             |-- train_part.txt
             |-- val_part.txt
-    
+```
 ## 二. 下载预训练模型
 
 下载[vgg预训练模型](https://paddle-imagenet-models-name.bj.bcebos.com/VGG16_pretrained.tar)，放在```pretrained_models```文件夹下。
@@ -120,8 +121,11 @@ CUDA_VISIBLE_DEVICES=0 python -u ./vis.py --cfg configs/lanenet.yaml --use_gpu -
 
 可视化结果示例：
   
-  预测结果：![](imgs/0005_pred_lane.png)
-  分割结果：![](imgs/0005_pred_binary.png)
-  车道线实预测结果：![](imgs/0005_pred_instance.png)
+  预测结果：<br/>
+  ![](imgs/0005_pred_lane.png)
+  分割结果：<br/>
+  ![](imgs/0005_pred_binary.png)
+  车道线实例预测结果：<br/>
+  ![](imgs/0005_pred_instance.png)
 
 
