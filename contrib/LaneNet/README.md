@@ -7,7 +7,7 @@
 ## 环境依赖
 
 * PaddlePaddle >= 1.7.0 或develop版本
-* Python 2.7 or 3.5+
+* Python 3.5+
 
 通过以下命令安装python包依赖，请确保在该分支上至少执行过一次以下命令
 ```shell
