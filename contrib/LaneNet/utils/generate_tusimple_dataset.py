@@ -137,14 +137,6 @@ def process_tusimple_dataset(src_dir):
 
         shutil.copyfile(json_label_path, ops.join(testing_folder_path, json_label_name))
 
-    # train_gt_image_dir = ops.join(traing_folder_path, 'gt_image')
-    # train_gt_binary_dir = ops.join(traing_folder_path, 'gt_binary_image')
-    # train_gt_instance_dir = ops.join(traing_folder_path, 'gt_instance_image')
-    #
-    # test_gt_image_dir = ops.join(testing_folder_path, 'gt_image')
-    # test_gt_binary_dir = ops.join(testing_folder_path, 'gt_binary_image')
-    # test_gt_instance_dir = ops.join(testing_folder_path, 'gt_instance_image')
-
     train_gt_image_dir = ops.join('training', 'gt_image')
     train_gt_binary_dir = ops.join('training', 'gt_binary_image')
     train_gt_instance_dir = ops.join('training', 'gt_instance_image')
@@ -165,13 +157,6 @@ def process_tusimple_dataset(src_dir):
         process_json_file(json_label_path, src_dir, train_gt_image_dir, train_gt_binary_dir, train_gt_instance_dir)
 
     gen_sample(src_dir, train_gt_binary_dir, train_gt_instance_dir, train_gt_image_dir, 'train', True)
-
-    for json_label_path in glob.glob('{:s}/*.json'.format(testing_folder_path)):
-        process_json_file(json_label_path, src_dir, test_gt_image_dir, test_gt_binary_dir, test_gt_instance_dir)
-
-    gen_sample(src_dir, test_gt_binary_dir, test_gt_instance_dir, test_gt_image_dir, 'test')
-
-    return
 
 
 if __name__ == '__main__':

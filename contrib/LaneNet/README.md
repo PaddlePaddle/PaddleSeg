@@ -4,6 +4,15 @@
 
 * 在阅读本教程前，请确保您已经了解过PaddleSeg的[快速入门](../README.md#快速入门)和[基础功能](../README.md#基础功能)等章节，以便对PaddleSeg有一定的了解
 
+## 环境依赖
+
+* PaddlePaddle >= 1.7.0 或develop版本
+* Python 2.7 or 3.5+
+
+通过以下命令安装python包依赖，请确保在该分支上至少执行过一次以下命令
+```shell
+$ pip install -r requirements.txt
+```
 
 ## 一. 准备待训练数据
 
@@ -114,9 +123,10 @@ CUDA_VISIBLE_DEVICES=0 python -u eval.py --use_gpu --cfg configs/lanenet.yaml
 ```
 
 ## 七. 可视化
-我们提供了一个训练好的模型，点击[链接](https://paddleseg.bj.bcebos.com/models/LaneNet_vgg_tusimple.tar)，下载后放在```./pretrained_model/```下，使用如下命令进行可视化
+我们提供了一个训练好的模型，点击[链接](https://paddleseg.bj.bcebos.com/models/lanenet_vgg_tusimple.tar)，下载后放在```./pretrained_models/```下，使用如下命令进行可视化
 ```shell
-CUDA_VISIBLE_DEVICES=0 python -u ./vis.py --cfg configs/lanenet.yaml --use_gpu --vis_dir vis_result
+CUDA_VISIBLE_DEVICES=0 python -u ./vis.py --cfg configs/lanenet.yaml --use_gpu --vis_dir vis_result \
+TEST.TEST_MODEL pretrained_models/LaneNet_vgg_tusimple/ \
 ```
 
 可视化结果示例：
