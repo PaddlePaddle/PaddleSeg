@@ -88,8 +88,6 @@ AUG:
     RICH_CROP: 
         ENABLE: False 
 BATCH_SIZE: 4
-MEAN: [0.5, 0.5, 0.5]
-STD: [0.5, 0.5, 0.5]
 TEST:
     TEST_MODEL: "./saved_model/lanenet/final/"
 TRAIN:
@@ -123,10 +121,10 @@ CUDA_VISIBLE_DEVICES=0 python -u eval.py --use_gpu --cfg configs/lanenet.yaml
 ```
 
 ## 七. 可视化
-我们提供了一个训练好的模型，点击[链接](https://paddleseg.bj.bcebos.com/models/lanenet_vgg_tusimple.tar)，下载后放在```./pretrained_models/```下，使用如下命令进行可视化
+需要先下载一个车前视角和鸟瞰图视角转换所需文件，点击[链接](https://paddleseg.bj.bcebos.com/resources/tusimple_ipm_remap.tar)，下载后放在```./utils```下。同时我们提供了一个训练好的模型，点击[链接](https://paddleseg.bj.bcebos.com/models/lanenet_vgg_tusimple.tar)，下载后放在```./pretrained_models/```下，使用如下命令进行可视化
 ```shell
 CUDA_VISIBLE_DEVICES=0 python -u ./vis.py --cfg configs/lanenet.yaml --use_gpu --vis_dir vis_result \
-TEST.TEST_MODEL pretrained_models/LaneNet_vgg_tusimple/ \
+TEST.TEST_MODEL pretrained_models/LaneNet_vgg_tusimple/
 ```
 
 可视化结果示例：

@@ -20,10 +20,11 @@ import paddle.fluid as fluid
 
 
 from utils.config import cfg
-from models.libs.model_libs import scope, name_scope
-from models.libs.model_libs import bn, bn_relu, relu
-from models.libs.model_libs import conv, max_pool, deconv
-from models.backbone.vgg import VGGNet as vgg_backbone
+from pdseg.models.libs.model_libs import scope, name_scope
+from pdseg.models.libs.model_libs import bn, bn_relu, relu
+from pdseg.models.libs.model_libs import conv, max_pool, deconv
+from pdseg.models.backbone.vgg import VGGNet as vgg_backbone
+#from models.backbone.vgg import VGGNet as vgg_backbone
 
 # Bottleneck type
 REGULAR = 1
@@ -412,7 +413,13 @@ def decoder(input, num_classes):
 def encoder(input):
     if 'vgg' in cfg.MODEL.LANENET.BACKBONE:
         model = vgg_backbone(layers=16)
-        output = model.net(input)
+        #output = model.net(input)
+
+        _, encode_feature_dict = model.net(input, end_points=13, decode_points=[7, 10, 13])
+        output = {}
+        output['pool3'] = encode_feature_dict[7]
+        output['pool4'] = encode_feature_dict[10]
+        output['pool5'] = encode_feature_dict[13]
     elif 'enet' in cfg.MODEL.LANET.BACKBONE:
         with scope('LaneNetBase'):
             initial = iniatial_block(input)

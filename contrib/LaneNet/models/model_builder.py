@@ -15,15 +15,15 @@
 import sys
 sys.path.append("..")
 import struct
-import importlib
 
 import paddle.fluid as fluid
 from paddle.fluid.proto.framework_pb2 import VarType
 
-import solver
+from pdseg import solver
 from utils.config import cfg
-from loss import multi_softmax_with_loss
+from pdseg.loss import multi_softmax_with_loss
 from loss import discriminative_loss
+from models.modeling import lanenet
 
 class ModelPhase(object):
     """
@@ -67,36 +67,15 @@ class ModelPhase(object):
         return False
 
 
-def map_model_name(model_name):
-    name_dict = {
-        "lanenet": "lanenet.lanenet"
-    }
-    if model_name in name_dict.keys():
-        return name_dict[model_name]
+def seg_model(image, class_num):
+    model_name = cfg.MODEL.MODEL_NAME
+    if model_name == 'lanenet':
+        logits = lanenet.lanenet(image, class_num)
     else:
         raise Exception(
-            "unknow model name, only support unet, deeplabv3p, icnet")
-
-
-def get_func(func_name):
-    """Helper to return a function object by name. func_name must identify a
-    function in this module or the path to a function relative to the base
-    'modeling' module.
-    """
-    if func_name == '':
-        return None
-    try:
-        parts = func_name.split('.')
-        # Refers to a function in this module
-        if len(parts) == 1:
-            return globals()[parts[0]]
-        # Otherwise, assume we're referencing a module under modeling
-        module_name = 'models.' + '.'.join(parts[:-1])
-        module = importlib.import_module(module_name)
-        return getattr(module, parts[-1])
-    except Exception:
-        print('Failed to find function: {}'.format(func_name))
-    return module
+            "unknow model name, only support unet, deeplabv3p, icnet, pspnet, hrnet"
+        )
+    return logits
 
 
 def softmax(logit):
@@ -104,6 +83,7 @@ def softmax(logit):
     logit = fluid.layers.softmax(logit)
     logit = fluid.layers.transpose(logit, [0, 3, 1, 2])
     return logit
+
 
 def sigmoid_to_softmax(logit):
     """
@@ -151,14 +131,12 @@ def build_model(main_prog, start_prog, phase=ModelPhase.TRAIN):
                     iterable=False,
                     use_double_buffer=True)
 
-            model_name = map_model_name(cfg.MODEL.MODEL_NAME)
-            model_func = get_func("modeling." + model_name)
 
             loss_type = cfg.SOLVER.LOSS
             if not isinstance(loss_type, list):
                 loss_type = list(loss_type)
             
-            logits = model_func(image, class_num)
+            logits = seg_model(image, class_num)
 
             if ModelPhase.is_train(phase):
                 loss_valid = False
@@ -170,11 +148,9 @@ def build_model(main_prog, start_prog, phase=ModelPhase.TRAIN):
                                                              image_shape[1:], 0.5, 3.0, 1.0, 1.0, 0.001)
 
                 if "softmax_loss" in loss_type:
-                    if isinstance(cfg.SOLVER.CROSS_ENTROPY_WEIGHT, str) and \
-                            cfg.SOLVER.CROSS_ENTROPY_WEIGHT == 'lanenet':
+                    weight = None
+                    if cfg.MODEL.MODEL_NAME == 'lanenet':
                         weight = get_dynamic_weight(label)
-                    else:
-                        weight = cfg.SOLVER.CROSS_ENTROPY_WEIGHT
                     seg_loss = multi_softmax_with_loss(logits, label, mask, class_num, weight)
                     loss_valid = True
                     valid_loss.append("softmax_loss")

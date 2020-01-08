@@ -25,7 +25,10 @@ import sys
 
 cur_path = os.path.abspath(os.path.dirname(__file__))
 root_path = os.path.split(os.path.split(cur_path)[0])[0]
+SEG_PATH = os.path.join(cur_path, "../../../")
+sys.path.append(SEG_PATH)
 sys.path.append(root_path)
+
 import matplotlib
 matplotlib.use('Agg')
 import time
@@ -82,44 +85,6 @@ def parse_args():
 def makedirs(directory):
     if not os.path.exists(directory):
         os.makedirs(directory)
-
-
-def get_color_map(num_classes):
-    """ Returns the color map for visualizing the segmentation mask,
-        which can support arbitrary number of classes.
-    Args:
-        num_classes: Number of classes
-    Returns:
-        The color map
-    """
-    #color_map = num_classes * 3 *  [0]
-    color_map = num_classes * [[0, 0, 0]]
-    for i in range(0, num_classes):
-        j = 0
-        color_map[i] = [0, 0, 0]
-        lab = i
-        while lab:
-            color_map[i][0] |= (((lab >> 0) & 1) << (7 - j))
-            color_map[i][1] |= (((lab >> 1) & 1) << (7 - j))
-            color_map[i][2] |= (((lab >> 2) & 1) << (7 - j))
-            j += 1
-            lab >>= 3
-
-    return color_map
-
-
-def colorize(image, shape, color_map):
-    """
-    Convert segment result to color image.
-    """
-    color_map = np.array(color_map).astype("uint8")
-    # Use OpenCV LUT for color mapping
-    c1 = cv2.LUT(image, color_map[:, 0])
-    c2 = cv2.LUT(image, color_map[:, 1])
-    c3 = cv2.LUT(image, color_map[:, 2])
-    color_res = np.dstack((c1, c2, c3))
-
-    return color_res
 
 
 def to_png_fn(fn, name=""):
@@ -224,7 +189,6 @@ def visualize(cfg,
             plt.imshow(binary_seg_image * 255, cmap='gray')
             plt.show()
 
-            # from collections import
             cv2.imwrite(pred_binary_fn, np.array(binary_seg_image * 255).astype(np.uint8))
             cv2.imwrite(pred_lane_fn, postprocess_result['source_image'])
             cv2.imwrite(pred_instance_fn, mask_image)

@@ -15,7 +15,17 @@
 
 from __future__ import print_function
 from __future__ import unicode_literals
-from utils.collect import SegConfig
+
+import os
+import sys
+
+# LOCAL_PATH = os.path.dirname(os.path.abspath(__file__))
+# PDSEG_PATH = os.path.join(LOCAL_PATH, "../../../", "pdseg")
+# print(PDSEG_PATH)
+# sys.path.insert(0, PDSEG_PATH)
+# print(sys.path)
+
+from pdseg.utils.collect import SegConfig
 import numpy as np
 
 cfg = SegConfig()

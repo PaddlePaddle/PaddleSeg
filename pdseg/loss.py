@@ -40,9 +40,8 @@ def softmax_with_loss(logit, label, ignore_mask=None, num_classes=2, weight=None
         if isinstance(weight, list):
             assert len(weight) == num_classes, "weight length must equal num of classes"
             weight = fluid.layers.assign(np.array([weight], dtype='float32'))
-        elif isinstance(weight, fluid.layers.Variable):
-            pass
-        else:
+        elif isinstance(weight, str):
+            assert weight.lower() == 'dynamic', 'if weight is string, must be dynamic!'
             tmp = []
             total_num = fluid.layers.cast(fluid.layers.shape(label)[0], 'float32')
             for i in range(num_classes):
@@ -51,6 +50,10 @@ def softmax_with_loss(logit, label, ignore_mask=None, num_classes=2, weight=None
                 tmp.append(ratio)
             weight = fluid.layers.concat(tmp)
             weight = weight / fluid.layers.reduce_sum(weight) * num_classes
+        elif isinstance(weight, fluid.layers.Variable):
+            pass
+        else:
+            raise ValueError('Expect weight is a list, string or Variable, but receive {}'.format(type(weight)))
         weight = fluid.layers.reshape(weight, [1, num_classes])
         weighted_label_one_hot = fluid.layers.elementwise_mul(label_one_hot, weight)
         probs = fluid.layers.softmax(logit)

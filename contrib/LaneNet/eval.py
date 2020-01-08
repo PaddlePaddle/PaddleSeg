@@ -25,6 +25,9 @@ import sys
 
 cur_path = os.path.abspath(os.path.dirname(__file__))
 root_path = os.path.split(os.path.split(cur_path)[0])[0]
+LOCAL_PATH = os.path.dirname(os.path.abspath(__file__))
+SEG_PATH = os.path.join(LOCAL_PATH, "../../../")
+sys.path.append(SEG_PATH)
 sys.path.append(root_path)
 
 import time
@@ -37,7 +40,7 @@ import paddle
 import paddle.fluid as fluid
 
 from utils.config import cfg
-from utils.timer import Timer, calculate_eta
+from pdseg.utils.timer import Timer, calculate_eta
 from models.model_builder import build_model
 from models.model_builder import ModelPhase
 from reader import LaneNetDataset

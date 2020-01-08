@@ -14,8 +14,6 @@ AUG:
         ENABLE: False 
 
 BATCH_SIZE: 4
-MEAN: [0.5, 0.5, 0.5]
-STD: [0.5, 0.5, 0.5]
 
 DATALOADER: 
     BUF_SIZE: 256
@@ -51,5 +49,4 @@ SOLVER:
     LR_POLICY: "poly"
     OPTIMIZER: "sgd"
     WEIGHT_DECAY: 0.001
-    CROSS_ENTROPY_WEIGHT: 'lanenet'
 
