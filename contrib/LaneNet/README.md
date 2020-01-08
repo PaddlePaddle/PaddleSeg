@@ -100,7 +100,6 @@ SOLVER:
     LR_POLICY: "poly"
     OPTIMIZER: "sgd"
     WEIGHT_DECAY: 0.001
-    CROSS_ENTROPY_WEIGHT: 'lanenet'
 ```
 
 
