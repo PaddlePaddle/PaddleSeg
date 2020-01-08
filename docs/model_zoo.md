@@ -32,6 +32,11 @@ PaddleSeg对所有内置的分割模型都提供了公开数据集下的预训�
 | HRNet_W48 | ImageNet | [hrnet_w48_imagenet.tar](https://paddleseg.bj.bcebos.com/models/hrnet_w48_imagenet.tar) | 78.95%/94.42% |
 | HRNet_W64 | ImageNet | [hrnet_w64_imagenet.tar](https://paddleseg.bj.bcebos.com/models/hrnet_w64_imagenet.tar) | 79.30%/94.61% |
 
+| 模型 | 数据集合 | 下载地址 | Accuray Top1/5 Error |
+|---|---|---|---|
+| ResNet50（适配PSPNet） | ImageNet | [resnet50_v2_pspnet](https://paddleseg.bj.bcebos.com/resnet50_v2_pspnet.tgz)| -- |
+| ResNet101（适配PSPNet） | ImageNet | [resnet101_v2_pspnet](https://paddleseg.bj.bcebos.com/resnet101_v2_pspnet.tgz)| -- |
+
 ## COCO预训练模型
 
 数据集为COCO实例分割数据集合转换成的语义分割数据集合
