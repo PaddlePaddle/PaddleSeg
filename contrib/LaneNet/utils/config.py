@@ -166,8 +166,9 @@ cfg.SOLVER.BEGIN_EPOCH = 1
 cfg.SOLVER.NUM_EPOCHS = 30
 # loss的选择，支持softmax_loss, bce_loss, dice_loss
 cfg.SOLVER.LOSS = ["softmax_loss"]
-# cross entropy weight, 如果不为None，会根据每个batch中各个类别的数目，动态调整类别权重。
-# 也可以设置一个静态权重，比如有3类，每个类别权重可以设置为[0.1, 2.0, 0.9]
+# cross entropy weight, 默认为None，如果设置为'dynamic'，会根据每个batch中各个类别的数目，
+# 动态调整类别权重。
+# 也可以设置一个静态权重(list的方式)，比如有3类，每个类别权重可以设置为[0.1, 2.0, 0.9]
 cfg.SOLVER.CROSS_ENTROPY_WEIGHT = None
 ########################## 测试配置 ###########################################
 # 测试模型路径
