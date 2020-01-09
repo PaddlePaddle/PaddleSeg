@@ -219,6 +219,8 @@ def build_model(main_prog, start_prog, phase=ModelPhase.TRAIN):
                     iterable=False,
                     use_double_buffer=True)
 
+#             print(main_prog.to_string(True))
+#             exit()
             model_name = map_model_name(cfg.MODEL.MODEL_NAME)
             model_func = get_func("modeling." + model_name)
 
@@ -261,11 +263,50 @@ def build_model(main_prog, start_prog, phase=ModelPhase.TRAIN):
                     loss_valid = True
                     valid_loss.append("bce_loss")
                 if "lovasz_hinge_loss" in loss_type:
-                    avg_loss_list.append(lovasz_hinge(logits, label, per_image=False))
+                    avg_loss_list.append(lovasz_hinge(logits, label, per_image=True))
                     loss_valid = True
                     valid_loss.append("lovasz_hinge_loss")
                 if "lovasz_softmax_loss" in loss_type:
-                    avg_loss_list.append(lovasz_softmax(logits, label, ignore=mask))
+                    ops = main_prog.global_block().ops
+                    
+                    avg_loss_list.append(lovasz_softmax(logits, label, per_image=True, ignore=mask))
+                    
+                    ops = main_prog.global_block().ops
+                    
+                    
+#                     ops = main_prog.global_block().ops
+#                     lovasz_ops = ops[aaa:bbb]
+#                     with open('lovasz.dot', 'w') as f:
+#                         f.write('digraph G{\n')
+#                         for i, op_output in enumerate(lovasz_ops):
+#                             for j, op_input in enumerate(lovasz_ops):
+#                                 for output_name in op_output.output_arg_names:
+#                                     if output_name in op_input.input_arg_names:
+                                        
+#                                         line = '    {} -> {};\n'.format(op_output.type+str(i), op_input.type+str(j))
+#                                         f.write(line)
+#                         f.write('}')
+#                     count = 0
+#                     for i, op in enumerate(lovasz_ops):
+# #                         print(op.input_arg_names)
+# #                         print(i, ' ', op.type)
+# #                         print(op.output_arg_names, '\n')
+
+#                         for name in op.output_arg_names:
+#                             var = main_prog.global_block().var(name)
+#                             if var.stop_gradient and op.type != 'fill_constant':
+#                                 print(var.name, op.type, i)
+# #                                 var.stop_gradient = False
+# #                             print(var.stop_gradient)
+#                             count += 1
+#                     print(count)
+# #                             for var in varss:
+# #                                 print(var, item)
+                    
+                    
+# #                     exit()
+                    
+                    
                     loss_valid = True
                     valid_loss.append("lovasz_softmax_loss")
                 if not loss_valid:
@@ -333,8 +374,16 @@ def build_model(main_prog, start_prog, phase=ModelPhase.TRAIN):
                 return py_reader, avg_loss, pred, label, mask
 
             if ModelPhase.is_train(phase):
+#                 ops = main_prog.global_block().ops
+#                 print(len(ops))
+                 
                 optimizer = solver.Solver(main_prog, start_prog)
                 decayed_lr = optimizer.optimise(avg_loss)
+                
+#                 ops = main_prog.global_block().ops
+#                 print(len(ops))
+#                 exit()
+                
                 return py_reader, avg_loss, decayed_lr, pred, label, mask
 
 
@@ -354,3 +403,4 @@ def parse_shape_from_file(filename):
         tensor_desc = VarType.TensorDesc()
         tensor_desc.ParseFromString(file.read(tensor_desc_size))
     return tuple(tensor_desc.dims)
+

@@ -262,7 +262,7 @@ def train(cfg):
         else:
             print_info(
                 "Sync BatchNorm strategy will not be effective if GPU device"
-                " count <= 1")
+                " count <= 1") 
     compiled_train_prog = fluid.CompiledProgram(train_prog).with_data_parallel(
         loss_name=avg_loss.name,
         exec_strategy=exec_strategy,

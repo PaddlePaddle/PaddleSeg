@@ -116,19 +116,19 @@ def generate_list(args):
         label_files = get_files(1, dataset_split, args)
         if not image_files:
             img_dir = os.path.join(dataset_root, args.folder[0], dataset_split)
-            print("No files in {}".format(img_dir))
+            warnings.warn("No files in {}".format(img_dir))
         num_images = len(image_files)
 
         if not label_files:
             label_dir = os.path.join(dataset_root, args.folder[1], dataset_split)
-            print("No files in {}".format(label_dir))
+            warnings.warn("No files in {}".format(label_dir))
         num_label = len(label_files)
 
-        if num_images < num_label:
-            warnings.warn("number of images = {}  <  number of labels = {}."
-                          .format(num_images, num_label))
-            continue
-
+        if num_images != num_label and num_label > 0:
+            raise Exception("For train/eval list, number of images {} must be equal to number of labels {}.\n"
+                            "For test list, number of images must be equal to number of labels, or number of labels is equal to 0.\n"
+                            "Please check your dataset!".format(num_images, num_label))
+            
         file_list = os.path.join(dataset_root, dataset_split + '.txt')
         with open(file_list, "w") as f:
             for item in range(num_images):
