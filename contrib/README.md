@@ -8,7 +8,7 @@
 - [工业用表分割 (MechanicalIndustryMeter)](#工业用表分割(MechanicalIndustryMeter))
 - [在线体验](#在线体验)
 
-## 人像分割 (HumanSeg)
+## 人像分割(HumanSeg)
 
 **Note:** 本章节所有命令均在`contrib/HumanSeg`目录下执行。
 
@@ -118,7 +118,7 @@ python -u infer.py --example ACE2P
 
 
 
-## 车道线分割 (RoadLine)
+## 车道线分割(RoadLine)
 
 **Note:** 本章节所有命令均在`contrib/RoadLine`目录下执行。
 
@@ -168,7 +168,7 @@ python -u infer.py --example RoadLine
 
 
 
-## 工业用表分割 (MechanicalIndustryMeter)
+## 工业用表分割(MechanicalIndustryMeter)
 
 
 **Note:** 本章节所有命令均在`PaddleSeg`目录下执行。
