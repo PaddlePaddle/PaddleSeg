@@ -49,9 +49,13 @@ python -u infer.py --example HumanSeg
 
 ### 4. 预测结果示例：
 
-  原图：![](imgs/Human.jpg)
+  原图：
   
-  预测结果：![](imgs/HumanSeg.jpg)
+  ![](HumanSeg/imgs/Human.jpg)
+  
+  预测结果：
+  
+  ![](HumanSeg/imgs/HumanSeg.jpg)
 
 
 
@@ -107,9 +111,13 @@ python -u infer.py --example ACE2P
 
 #### 5. 预测结果示例：
   
-  原图：![](ACE2P/imgs/117676_2149260.jpg)
+  原图：
   
-  预测结果：![](ACE2P/imgs/117676_2149260.png)
+  ![](ACE2P/imgs/117676_2149260.jpg)
+  
+  预测结果：
+  
+  ![](ACE2P/imgs/117676_2149260.png)
   
 ### 备注
 
@@ -163,9 +171,13 @@ python -u infer.py --example RoadLine
 
 #### 4. 预测结果示例：
   
-  原图：![](imgs/RoadLine.jpg)
+  原图：
   
-  预测结果：![](imgs/RoadLine.png)
+  ![](RoadLine/imgs/RoadLine.jpg)
+  
+  预测结果：
+  
+  ![](RoadLine/imgs/RoadLine.png)
 
 
 
@@ -217,9 +229,13 @@ TEST.TEST_MODEL "./contrib/MechanicalIndustryMeter/unet_mechanical_industry_mete
 
 ### 6. 可视化结果示例：
 
-  原图：![](imgs/1560143028.5_IMG_3091.JPG)
+  原图：
   
-  预测结果：![](imgs/1560143028.5_IMG_3091.png)
+  ![](MechanicalIndustryMeter/imgs/1560143028.5_IMG_3091.JPG)
+  
+  预测结果：
+  
+  ![](MechanicalIndustryMeter/imgs/1560143028.5_IMG_3091.png)
 
 ## 在线体验
 
