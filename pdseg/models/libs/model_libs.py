@@ -164,3 +164,37 @@ def separate_conv(input, channel, stride, filter, dilation=1, act=None):
         input = bn(input)
         if act: input = act(input)
     return input
+
+
+def conv_bn_layer(input,
+                  filter_size,
+                  num_filters,
+                  stride,
+                  padding,
+                  channels=None,
+                  num_groups=1,
+                  if_act=True,
+                  name=None,
+                  use_cudnn=True):
+    conv = fluid.layers.conv2d(
+        input=input,
+        num_filters=num_filters,
+        filter_size=filter_size,
+        stride=stride,
+        padding=padding,
+        groups=num_groups,
+        act=None,
+        use_cudnn=use_cudnn,
+        param_attr=fluid.ParamAttr(name=name + '_weights'),
+        bias_attr=False)
+    bn_name = name + '_bn'
+    bn = fluid.layers.batch_norm(
+        input=conv,
+        param_attr=fluid.ParamAttr(name=bn_name + "_scale"),
+        bias_attr=fluid.ParamAttr(name=bn_name + "_offset"),
+        moving_mean_name=bn_name + '_mean',
+        moving_variance_name=bn_name + '_variance')
+    if if_act:
+        return fluid.layers.relu6(bn)
+    else:
+        return bn
