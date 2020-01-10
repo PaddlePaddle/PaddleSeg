@@ -21,14 +21,14 @@ DATALOADER:
     BUF_SIZE: 256
     NUM_WORKERS: 4
 DATASET: 
-    DATA_DIR: "./dataset/mini_mechanical_industry_meter_data/"
+    DATA_DIR: "./contrib/MechanicalIndustryMeter/mini_mechanical_industry_meter_data/"
     IMAGE_TYPE: "rgb"  # choice rgb or rgba
     NUM_CLASSES: 5
-    TEST_FILE_LIST: "./dataset/mini_mechanical_industry_meter_data/val_mini.txt"
+    TEST_FILE_LIST: "./contrib/MechanicalIndustryMeter/mini_mechanical_industry_meter_data/val_mini.txt"
     TEST_TOTAL_IMAGES: 8
-    TRAIN_FILE_LIST: "./dataset/mini_mechanical_industry_meter_data/train_mini.txt"
+    TRAIN_FILE_LIST: "./contrib/MechanicalIndustryMeter/mini_mechanical_industry_meter_data/train_mini.txt"
     TRAIN_TOTAL_IMAGES: 64
-    VAL_FILE_LIST: "./dataset/mini_mechanical_industry_meter_data/val_mini.txt"
+    VAL_FILE_LIST: "./contrib/MechanicalIndustryMeter/mini_mechanical_industry_meter_data/val_mini.txt"
     VAL_TOTAL_IMAGES: 8
     SEPARATOR: "|"
     IGNORE_INDEX: 255

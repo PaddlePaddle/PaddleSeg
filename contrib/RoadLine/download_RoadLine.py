@@ -16,18 +16,16 @@ import sys
 import os
 
 LOCAL_PATH = os.path.dirname(os.path.abspath(__file__))
-TEST_PATH = os.path.join(LOCAL_PATH, "..", "test")
+TEST_PATH = os.path.join(LOCAL_PATH, "..", "..", "test")
 sys.path.append(TEST_PATH)
 
 from test_utils import download_file_and_uncompress
 
-
-def download_deepglobe_road_dataset(savepath, extrapath):
-    url = "https://paddleseg.bj.bcebos.com/dataset/mini_mechanical_industry_meter_data.zip"
-    download_file_and_uncompress(
-        url=url, savepath=savepath, extrapath=extrapath)
-
-
 if __name__ == "__main__":
-    download_deepglobe_road_dataset(LOCAL_PATH, LOCAL_PATH)
-    print("Dataset download finish!")
+    download_file_and_uncompress(
+        url='https://paddleseg.bj.bcebos.com/inference_model/RoadLine.tgz',
+        savepath=LOCAL_PATH,
+        extrapath=LOCAL_PATH,
+        extraname='RoadLine')
+
+    print("Pretrained Model download success!")
