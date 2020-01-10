@@ -2,13 +2,13 @@
 
 提供基于PaddlePaddle最新的分割特色模型:
 
-- [人像分割HumanSeg](#人像分割HumanSeg)
-- [人体解析模型 Augmented Context Embedding with Edge Perceiving (ACE2P)](#人体解析模型)
-- [车道线分割RoadLine](#车道线分割RoadLine)
-- [工业用表分割MechanicalIndustryMeter](#工业用表分割MechanicalIndustryMeter)
+- [人像分割](#人像分割)
+- [人体解析](#人体解析)
+- [车道线分割](#车道线分割)
+- [工业用表分割](#工业用表分割)
 - [在线体验](#在线体验)
 
-## 人像分割HumanSeg
+## 人像分割
 
 **Note:** 本章节所有命令均在`contrib/HumanSeg`目录下执行。
 
@@ -55,7 +55,7 @@ python -u infer.py --example HumanSeg
 
 
 
-## 人体解析模型 Augmented Context Embedding with Edge Perceiving (ACE2P)
+## 人体解析模型
 
 人体解析(Human Parsing)是细粒度的语义分割任务，旨在识别像素级别的人类图像的组成部分（例如，身体部位和服装）。
 
@@ -118,7 +118,7 @@ python -u infer.py --example ACE2P
 
 
 
-## 车道线分割RoadLine
+## 车道线分割
 
 **Note:** 本章节所有命令均在`contrib/RoadLine`目录下执行。
 
@@ -168,7 +168,7 @@ python -u infer.py --example RoadLine
 
 
 
-## 工业用表分割MechanicalIndustryMeter
+## 工业用表分割
 
 
 **Note:** 本章节所有命令均在`PaddleSeg`目录下执行。
