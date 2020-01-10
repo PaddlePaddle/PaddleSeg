@@ -4,8 +4,8 @@
 
 - [人像分割HumanSeg](#人像分割HumanSeg)
 - [人体解析模型 Augmented Context Embedding with Edge Perceiving (ACE2P)](#人体解析模型)
-- [车道线分割 (RoadLine)](#车道线分割(RoadLine))
-- [工业用表分割 (MechanicalIndustryMeter)](#工业用表分割(MechanicalIndustryMeter))
+- [车道线分割RoadLine](#车道线分割RoadLine)
+- [工业用表分割MechanicalIndustryMeter](#工业用表分割MechanicalIndustryMeter)
 - [在线体验](#在线体验)
 
 ## 人像分割HumanSeg
@@ -118,7 +118,7 @@ python -u infer.py --example ACE2P
 
 
 
-## 车道线分割(RoadLine)
+## 车道线分割RoadLine
 
 **Note:** 本章节所有命令均在`contrib/RoadLine`目录下执行。
 
@@ -168,7 +168,7 @@ python -u infer.py --example RoadLine
 
 
 
-## 工业用表分割(MechanicalIndustryMeter)
+## 工业用表分割MechanicalIndustryMeter
 
 
 **Note:** 本章节所有命令均在`PaddleSeg`目录下执行。
