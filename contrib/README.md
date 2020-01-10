@@ -55,11 +55,12 @@ python -u infer.py --example HumanSeg
 
 
 
-## 人体解析模型
-
-人体解析(Human Parsing)是细粒度的语义分割任务，旨在识别像素级别的人类图像的组成部分（例如，身体部位和服装）。
+## 人体解析
 
 ![](ACE2P/imgs/result.jpg)
+
+人体解析(Human Parsing)是细粒度的语义分割任务，旨在识别像素级别的人类图像的组成部分（例如，身体部位和服装）。本章节使用冠军模型Augmented Context Embedding with Edge Perceiving (ACE2P)进行预测分割。
+
 
 **Note:** 本章节所有命令均在`contrib/ACE2P`目录下执行。
 
