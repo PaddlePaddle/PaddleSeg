@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*- 
 import numpy as np
 import paddle.fluid as fluid
-from ACE2P.config import cfg
+from config import cfg
 import cv2
 
 def get_affine_points(src_shape, dst_shape, rot_grad=0):

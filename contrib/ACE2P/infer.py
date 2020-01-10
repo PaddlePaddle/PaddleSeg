@@ -8,7 +8,7 @@ from PIL import Image as PILImage
 import importlib
 
 args = get_arguments()
-config = importlib.import_module(args.example+'.config')
+config = importlib.import_module('config')
 cfg = getattr(config, 'cfg')
 
 # paddle垃圾回收策略FLAG，ACE2P模型较大，当显存不够时建议开启
@@ -40,7 +40,7 @@ class TestDataSet():
     def preprocess(self, img):
         # 图像预处理
         if cfg.example == 'ACE2P':
-            reader = importlib.import_module(args.example+'.reader')
+            reader = importlib.import_module('reader')
             ACE2P_preprocess = getattr(reader, 'preprocess')
             img = ACE2P_preprocess(img)
         else:
@@ -94,7 +94,7 @@ def infer():
         # 预测
         if cfg.example == 'ACE2P':
             # ACE2P模型使用多尺度预测
-            reader = importlib.import_module(args.example+'.reader')
+            reader = importlib.import_module('reader')
             multi_scale_test = getattr(reader, 'multi_scale_test')
             parsing, logits = multi_scale_test(exe, test_prog, feed_name, fetch_list, image, im_shape)
         else:
