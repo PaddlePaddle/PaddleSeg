@@ -2,13 +2,13 @@
 
 提供基于PaddlePaddle最新的分割特色模型:
 
-- [人像分割 (HumanSeg)](#人像分割 HumanSeg)
+- [人像分割HumanSeg](#人像分割HumanSeg)
 - [人体解析模型 Augmented Context Embedding with Edge Perceiving (ACE2P)](#人体解析模型)
 - [车道线分割 (RoadLine)](#车道线分割(RoadLine))
 - [工业用表分割 (MechanicalIndustryMeter)](#工业用表分割(MechanicalIndustryMeter))
 - [在线体验](#在线体验)
 
-## 人像分割 HumanSeg
+## 人像分割HumanSeg
 
 **Note:** 本章节所有命令均在`contrib/HumanSeg`目录下执行。
 
