@@ -20,7 +20,7 @@ import importlib
 from utils.config import cfg
 
 
-def softmax_with_loss(logit, label, ignore_mask=None, num_classes=2):
+def softmax_with_loss(logit, label, ignore_mask=None, num_classes=2, weight=None):
     ignore_mask = fluid.layers.cast(ignore_mask, 'float32')
     label = fluid.layers.elementwise_min(
         label, fluid.layers.assign(np.array([num_classes - 1], dtype=np.int32)))
@@ -29,12 +29,40 @@ def softmax_with_loss(logit, label, ignore_mask=None, num_classes=2):
     label = fluid.layers.reshape(label, [-1, 1])
     label = fluid.layers.cast(label, 'int64')
     ignore_mask = fluid.layers.reshape(ignore_mask, [-1, 1])
-
-    loss, probs = fluid.layers.softmax_with_cross_entropy(
-        logit,
-        label,
-        ignore_index=cfg.DATASET.IGNORE_INDEX,
-        return_softmax=True)
+    if weight is None:
+        loss, probs = fluid.layers.softmax_with_cross_entropy(
+            logit,
+            label,
+            ignore_index=cfg.DATASET.IGNORE_INDEX,
+            return_softmax=True)
+    else:
+        label_one_hot = fluid.layers.one_hot(input=label, depth=num_classes)
+        if isinstance(weight, list):
+            assert len(weight) == num_classes, "weight length must equal num of classes"
+            weight = fluid.layers.assign(np.array([weight], dtype='float32'))
+        elif isinstance(weight, str):
+            assert weight.lower() == 'dynamic', 'if weight is string, must be dynamic!'
+            tmp = []
+            total_num = fluid.layers.cast(fluid.layers.shape(label)[0], 'float32')
+            for i in range(num_classes):
+                cls_pixel_num = fluid.layers.reduce_sum(label_one_hot[:, i])
+                ratio = total_num / (cls_pixel_num + 1)
+                tmp.append(ratio)
+            weight = fluid.layers.concat(tmp)
+            weight = weight / fluid.layers.reduce_sum(weight) * num_classes
+        elif isinstance(weight, fluid.layers.Variable):
+            pass
+        else:
+            raise ValueError('Expect weight is a list, string or Variable, but receive {}'.format(type(weight)))
+        weight = fluid.layers.reshape(weight, [1, num_classes])
+        weighted_label_one_hot = fluid.layers.elementwise_mul(label_one_hot, weight)
+        probs = fluid.layers.softmax(logit)
+        loss = fluid.layers.cross_entropy(
+            probs,
+            weighted_label_one_hot,
+            soft_label=True,
+            ignore_index=cfg.DATASET.IGNORE_INDEX)
+        weighted_label_one_hot.stop_gradient = True
 
     loss = loss * ignore_mask
     avg_loss = fluid.layers.mean(loss) / fluid.layers.mean(ignore_mask)
@@ -82,7 +110,7 @@ def bce_loss(logit, label, ignore_mask=None):
     return loss
 
 
-def multi_softmax_with_loss(logits, label, ignore_mask=None, num_classes=2):
+def multi_softmax_with_loss(logits, label, ignore_mask=None, num_classes=2, weight=None):
     if isinstance(logits, tuple):
         avg_loss = 0
         for i, logit in enumerate(logits):
@@ -94,7 +122,7 @@ def multi_softmax_with_loss(logits, label, ignore_mask=None, num_classes=2):
                                      num_classes)
             avg_loss += cfg.MODEL.MULTI_LOSS_WEIGHT[i] * loss
     else:
-        avg_loss = softmax_with_loss(logits, label, ignore_mask, num_classes)
+        avg_loss = softmax_with_loss(logits, label, ignore_mask, num_classes, weight=weight)
     return avg_loss
 
 

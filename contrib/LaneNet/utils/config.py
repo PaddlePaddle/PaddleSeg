@@ -15,7 +15,17 @@
 
 from __future__ import print_function
 from __future__ import unicode_literals
-from utils.collect import SegConfig
+
+import os
+import sys
+
+# LOCAL_PATH = os.path.dirname(os.path.abspath(__file__))
+# PDSEG_PATH = os.path.join(LOCAL_PATH, "../../../", "pdseg")
+# print(PDSEG_PATH)
+# sys.path.insert(0, PDSEG_PATH)
+# print(sys.path)
+
+from pdseg.utils.collect import SegConfig
 import numpy as np
 
 cfg = SegConfig()
@@ -35,6 +45,8 @@ cfg.TRAIN_CROP_SIZE = tuple()
 cfg.NUM_TRAINERS = 1
 # 多进程训练进程ID
 cfg.TRAINER_ID = 0
+# 每张gpu上的批大小，无需设置，程序会自动根据batch调整
+cfg.BATCH_SIZE_PER_DEV = 1
 ########################## 数据载入配置 #######################################
 # 数据载入时的并发数, 建议值8
 cfg.DATALOADER.NUM_WORKERS = 8
@@ -68,8 +80,8 @@ cfg.DATASET.DATA_DIM = 3
 cfg.DATASET.SEPARATOR = ' '
 # 忽略的像素标签值, 默认为255，一般无需改动
 cfg.DATASET.IGNORE_INDEX = 255
-# 数据增强是图像的padding值
-cfg.DATASET.PADDING_VALUE = [127.5, 127.5, 127.5]
+# 数据增强是图像的padding值 
+cfg.DATASET.PADDING_VALUE = [127.5,127.5,127.5]
 
 ########################### 数据增强配置 ######################################
 # 图像镜像左右翻转
@@ -154,10 +166,6 @@ cfg.SOLVER.BEGIN_EPOCH = 1
 cfg.SOLVER.NUM_EPOCHS = 30
 # loss的选择，支持softmax_loss, bce_loss, dice_loss
 cfg.SOLVER.LOSS = ["softmax_loss"]
-# 是否开启warmup学习策略 
-cfg.SOLVER.LR_WARMUP = False 
-# warmup的迭代次数
-cfg.SOLVER.LR_WARMUP_STEPS = 2000 
 # cross entropy weight, 默认为None，如果设置为'dynamic'，会根据每个batch中各个类别的数目，
 # 动态调整类别权重。
 # 也可以设置一个静态权重(list的方式)，比如有3类，每个类别权重可以设置为[0.1, 2.0, 0.9]
@@ -189,11 +197,11 @@ cfg.MODEL.SCALE_LOSS = "DYNAMIC"
 cfg.MODEL.DEEPLAB.BACKBONE = "xception_65"
 # DeepLab output stride
 cfg.MODEL.DEEPLAB.OUTPUT_STRIDE = 16
-# MobileNet v2 backbone scale 设置
+# MobileNet backbone scale 设置
 cfg.MODEL.DEEPLAB.DEPTH_MULTIPLIER = 1.0
-# MobileNet v2 backbone scale 设置
+# MobileNet backbone scale 设置
 cfg.MODEL.DEEPLAB.ENCODER_WITH_ASPP = True
-# MobileNet v2 backbone scale 设置
+# MobileNet backbone scale 设置
 cfg.MODEL.DEEPLAB.ENABLE_DECODER = True
 # ASPP是否使用可分离卷积
 cfg.MODEL.DEEPLAB.ASPP_WITH_SEP_CONV = True
@@ -211,22 +219,10 @@ cfg.MODEL.ICNET.DEPTH_MULTIPLIER = 0.5
 cfg.MODEL.ICNET.LAYERS = 50
 
 ########################## PSPNET模型配置 ######################################
-# RESNET backbone scale 设置
-cfg.MODEL.PSPNET.DEPTH_MULTIPLIER = 1
-# RESNET backbone 层数 设置
-cfg.MODEL.PSPNET.LAYERS = 50
+# Lannet backbone name
+cfg.MODEL.LANENET.BACKBONE = "vgg"
 
-########################## HRNET模型配置 ######################################
-# HRNET STAGE2 设置
-cfg.MODEL.HRNET.STAGE2.NUM_MODULES = 1
-cfg.MODEL.HRNET.STAGE2.NUM_CHANNELS = [40, 80]
-# HRNET STAGE3 设置
-cfg.MODEL.HRNET.STAGE3.NUM_MODULES = 4
-cfg.MODEL.HRNET.STAGE3.NUM_CHANNELS = [40, 80, 160]
-# HRNET STAGE4 设置
-cfg.MODEL.HRNET.STAGE4.NUM_MODULES = 3
-cfg.MODEL.HRNET.STAGE4.NUM_CHANNELS = [40, 80, 160, 320]
-
+########################## LaneNet模型配置 ######################################
 
 ########################## 预测部署模型配置 ###################################
 # 预测保存的模型名称

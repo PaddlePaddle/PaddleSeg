@@ -225,8 +225,9 @@ def build_model(main_prog, start_prog, phase=ModelPhase.TRAIN):
                 avg_loss_list = []
                 valid_loss = []
                 if "softmax_loss" in loss_type:
+                    weight = cfg.SOLVER.CROSS_ENTROPY_WEIGHT
                     avg_loss_list.append(
-                        multi_softmax_with_loss(logits, label, mask, class_num))
+                        multi_softmax_with_loss(logits, label, mask, class_num, weight))
                     loss_valid = True
                     valid_loss.append("softmax_loss")
                 if "dice_loss" in loss_type:
