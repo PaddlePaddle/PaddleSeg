@@ -269,7 +269,7 @@ def build_model(main_prog, start_prog, phase=ModelPhase.TRAIN):
                 if "lovasz_softmax_loss" in loss_type:
                     ops = main_prog.global_block().ops
                     
-                    avg_loss_list.append(lovasz_softmax(logits, label, per_image=True, ignore=mask))
+                    avg_loss_list.append(lovasz_softmax(logits, label, per_image=False, ignore=mask))
                     
                     
                     loss_valid = True
@@ -339,44 +339,44 @@ def build_model(main_prog, start_prog, phase=ModelPhase.TRAIN):
                 return py_reader, avg_loss, pred, label, mask
 
             if ModelPhase.is_train(phase):
-                ops = main_prog.global_block().ops
-                aaa = len(ops)-1
-                print(len(ops))
+#                 ops = main_prog.global_block().ops
+#                 aaa = len(ops)-1
+#                 print(len(ops))
                  
                 optimizer = solver.Solver(main_prog, start_prog)
                 decayed_lr = optimizer.optimise(avg_loss)
                 
-                ops = main_prog.global_block().ops
-                bbb = len(ops)
-                print(len(ops))
+#                 ops = main_prog.global_block().ops
+#                 bbb = len(ops)
+#                 print(len(ops))
                 
-                ops = main_prog.global_block().ops
-                lovasz_ops = ops[aaa:]
-                with open('lovasz_backward.dot', 'w') as f:
-                    f.write('digraph G{\n')
-                    for i, op_output in enumerate(lovasz_ops):
-                        for j, op_input in enumerate(lovasz_ops):
-                            for output_name in op_output.output_arg_names:
-                                if output_name in op_input.input_arg_names:
+#                 ops = main_prog.global_block().ops
+#                 lovasz_ops = ops[aaa:]
+#                 with open('lovasz_backward.dot', 'w') as f:
+#                     f.write('digraph G{\n')
+#                     for i, op_output in enumerate(lovasz_ops):
+#                         for j, op_input in enumerate(lovasz_ops):
+#                             for output_name in op_output.output_arg_names:
+#                                 if output_name in op_input.input_arg_names:
 
-                                    line = '    {} -> {};\n'.format(op_output.type+str(i), op_input.type+str(j))
-                                    f.write(line)
-                    f.write('}')
-                count = 0
-                for i, op in enumerate(lovasz_ops):
-#                         print(op.input_arg_names)
-#                         print(i, ' ', op.type)
-#                         print(op.output_arg_names, '\n')
+#                                     line = '    {} -> {};\n'.format(op_output.type+str(i), op_input.type+str(j))
+#                                     f.write(line)
+#                     f.write('}')
+#                 count = 0
+#                 for i, op in enumerate(lovasz_ops):
+# #                         print(op.input_arg_names)
+# #                         print(i, ' ', op.type)
+# #                         print(op.output_arg_names, '\n')
 
-                    for name in op.output_arg_names:
-                        var = main_prog.global_block().var(name)
-                        if var.stop_gradient and op.type != 'fill_constant':
-                            print(var.name, op.type, i)
-#                                 var.stop_gradient = False
-#                             print(var.stop_gradient)
-                        count += 1
-                print(count)
-                exit()
+#                     for name in op.output_arg_names:
+#                         var = main_prog.global_block().var(name)
+#                         if var.stop_gradient and op.type != 'fill_constant':
+#                             print(var.name, op.type, i)
+# #                                 var.stop_gradient = False
+# #                             print(var.stop_gradient)
+#                         count += 1
+#                 print(count)
+# #                 exit()
                 
                 return py_reader, avg_loss, decayed_lr, pred, label, mask
 
