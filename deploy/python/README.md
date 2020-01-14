@@ -79,7 +79,7 @@ DEPLOY:
 ### 5.2 执行预测程序
 在终端输入以下命令进行预测:
 ```bash
-python infer.py --conf=/path/to/deploy.yaml --input_dir/path/to/images_directory --use_pr=False
+python infer.py --conf=/path/to/deploy.yaml --input_dir/path/to/images_directory
 ```
 参数说明如下:
 
@@ -87,9 +87,9 @@ python infer.py --conf=/path/to/deploy.yaml --input_dir/path/to/images_directory
 |-------|-------|----------|
 | conf | Yes|模型配置的Yaml文件路径 |
 | input_dir |Yes| 需要预测的图片目录 |
-| use_pr |No|是否使用优化模型，默认为False|
+| use_pr |No|是否使用新版优化模型，默认为True|
 
-* 优化模型：使用`PaddleSeg 0.3.0`版导出的为优化模型, 此前版本导出的模型即为未优化版本。优化模型把图像的预处理以及后处理部分融入到模型网络中使用`GPU` 完成，相比原来`CPU` 中的处理提升了计算性能。
+* 优化模型：使用`PaddleSeg 0.3.0`版导出的为优化模型, 此前版本导出的模型即为未优化版本需要设置`--use_pr=False`。优化模型把图像的预处理以及后处理部分融入到模型网络中使用`GPU` 完成，相比原来`CPU` 中的处理提升了计算性能。
 
 **注意**: 如果硬件支持且安装的是从源码编译集成`TensorRT`的`PaddlePaddle`, 则可以使用参数`--trt_mode=fp16` 表示开启`FP16` 精度优化, 使用`trt_mode=fp32` 表示使用`FP32` 精度。
 
