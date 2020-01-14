@@ -39,12 +39,15 @@ from reader import SegDataset
 from models.model_builder import build_model
 from models.model_builder import ModelPhase
 from models.model_builder import parse_shape_from_file
-from eval import evaluate
+from eval_quant import evaluate
 from vis import visualize
 from utils import dist_utils
+from train import save_vars, save_checkpoint, load_checkpoint, update_best_model, print_info
+
 sys.path.append("/cv/workspace/PaddleSlim")
 from paddleslim.quant import quant_aware
-from train import save_vars, save_checkpoint, load_checkpoint, update_best_model, print_info
+
+
 def parse_args():
     parser = argparse.ArgumentParser(description='PaddleSeg training')
     parser.add_argument(
@@ -77,17 +80,6 @@ def parse_args():
         help='debug mode, display detail information of training',
         action='store_true')
     parser.add_argument(
-        '--use_tb',
-        dest='use_tb',
-        help='whether to record the data during training to Tensorboard',
-        action='store_true')
-    parser.add_argument(
-        '--tb_log_dir',
-        dest='tb_log_dir',
-        help='Tensorboard logging directory',
-        default=None,
-        type=str)
-    parser.add_argument(
         '--do_eval',
         dest='do_eval',
         help='Evaluation models result on every new checkpoint',
@@ -107,13 +99,14 @@ def parse_args():
         "--not_quant_pattern",
         nargs='+',
         type=str,
-        help="Layers which name_scope contains string in not_quant_pattern will not be quantized"
+        help=
+        "Layers which name_scope contains string in not_quant_pattern will not be quantized"
     )
 
     return parser.parse_args()
 
 
-def train(cfg):
+def train_quant(cfg):
     startup_prog = fluid.Program()
     train_prog = fluid.Program()
     if args.enable_ce:
@@ -171,7 +164,6 @@ def train(cfg):
         train_prog, startup_prog, phase=ModelPhase.TRAIN)
     py_reader.decorate_sample_generator(
         data_generator, batch_size=batch_size_per_dev, drop_last=drop_last)
-    eval_prog = train_prog.clone(for_test=True)
 
     exe = fluid.Executor(place)
     exe.run(startup_prog)
@@ -186,29 +178,11 @@ def train(cfg):
     if cfg.NUM_TRAINERS > 1 and args.use_gpu:
         dist_utils.prepare_for_multi_process(exe, build_strategy, train_prog)
         exec_strategy.num_threads = 1
-    
-    not_quant_pattern = []
-    if args.not_quant_pattern:
-        not_quant_pattern = args.not_quant_pattern
-    config = {
-        'weight_quantize_type': 'channel_wise_abs_max',
-        'activation_quantize_type': 'moving_average_abs_max',
-        'quantize_op_types': ['depthwise_conv2d', 'mul', 'conv2d'],
-        'not_quant_pattern': not_quant_pattern
-    }
-
-
-    compiled_train_prog = quant_aware(train_prog, place, config, for_test=False)
-    eval_prog = quant_aware(eval_prog, place, config, for_test=True)
-    compiled_train_prog = compiled_train_prog.with_data_parallel(
-        loss_name=avg_loss.name,
-        exec_strategy=exec_strategy,
-        build_strategy=build_strategy)
 
     # Resume training
     begin_epoch = cfg.SOLVER.BEGIN_EPOCH
     if cfg.TRAIN.RESUME_MODEL_DIR:
-        begin_epoch = load_checkpoint(exe, eval_prog)
+        begin_epoch = load_checkpoint(exe, train_prog)
     # Load pretrained model
     elif os.path.exists(cfg.TRAIN.PRETRAINED_MODEL_DIR):
         print_info('Pretrained model dir: ', cfg.TRAIN.PRETRAINED_MODEL_DIR)
@@ -227,7 +201,7 @@ def train(cfg):
                 return var_shape == shape
             return False
 
-        for x in eval_prog.list_vars():
+        for x in train_prog.list_vars():
             if isinstance(x, fluid.framework.Parameter):
                 shape = tuple(fluid.global_scope().find_var(
                     x.name).get_tensor().shape())
@@ -261,13 +235,23 @@ def train(cfg):
         fetch_list.extend([pred.name, grts.name, masks.name])
         cm = ConfusionMatrix(cfg.DATASET.NUM_CLASSES, streaming=True)
 
-    if args.use_tb:
-        if not args.tb_log_dir:
-            print_info("Please specify the log directory by --tb_log_dir.")
-            exit(1)
-
-        from tb_paddle import SummaryWriter
-        log_writer = SummaryWriter(args.tb_log_dir)
+    not_quant_pattern = []
+    if args.not_quant_pattern:
+        not_quant_pattern = args.not_quant_pattern
+    config = {
+        'weight_quantize_type': 'channel_wise_abs_max',
+        'activation_quantize_type': 'moving_average_abs_max',
+        'quantize_op_types': ['depthwise_conv2d', 'mul', 'conv2d'],
+        'not_quant_pattern': not_quant_pattern
+    }
+    compiled_train_prog = quant_aware(train_prog, place, config, for_test=False)
+    eval_prog = quant_aware(train_prog, place, config, for_test=True)
+    build_strategy.fuse_all_reduce_ops = False
+    build_strategy.sync_batch_norm = False
+    compiled_train_prog = compiled_train_prog.with_data_parallel(
+        loss_name=avg_loss.name,
+        exec_strategy=exec_strategy,
+        build_strategy=build_strategy)
 
     # trainer_id = int(os.getenv("PADDLE_TRAINER_ID", 0))
     # num_trainers = int(os.environ.get('PADDLE_TRAINERS_NUM', 1))
@@ -320,17 +304,6 @@ def train(cfg):
                                  calculate_eta(all_step - global_step, speed)))
                         print_info("Category IoU: ", category_iou)
                         print_info("Category Acc: ", category_acc)
-                        if args.use_tb:
-                            log_writer.add_scalar('Train/mean_iou', mean_iou,
-                                                  global_step)
-                            log_writer.add_scalar('Train/mean_acc', mean_acc,
-                                                  global_step)
-                            log_writer.add_scalar('Train/loss', avg_loss,
-                                                  global_step)
-                            log_writer.add_scalar('Train/lr', lr[0],
-                                                  global_step)
-                            log_writer.add_scalar('Train/step/sec', speed,
-                                                  global_step)
                         sys.stdout.flush()
                         avg_loss = 0.0
                         cm.zero_matrix()
@@ -351,13 +324,6 @@ def train(cfg):
                             "epoch={} step={} lr={:.5f} loss={:.4f} step/sec={:.3f} | ETA {}"
                         ).format(epoch, global_step, lr[0], avg_loss, speed,
                                  calculate_eta(all_step - global_step, speed)))
-                        if args.use_tb:
-                            log_writer.add_scalar('Train/loss', avg_loss,
-                                                  global_step)
-                            log_writer.add_scalar('Train/lr', lr[0],
-                                                  global_step)
-                            log_writer.add_scalar('Train/speed', speed,
-                                                  global_step)
                         sys.stdout.flush()
                         avg_loss = 0.0
                         timer.restart()
@@ -378,12 +344,9 @@ def train(cfg):
                     cfg=cfg,
                     ckpt_dir=ckpt_dir,
                     use_gpu=args.use_gpu,
-                    use_mpio=args.use_mpio)
-                if args.use_tb:
-                    log_writer.add_scalar('Evaluate/mean_iou', mean_iou,
-                                          global_step)
-                    log_writer.add_scalar('Evaluate/mean_acc', mean_acc,
-                                          global_step)
+                    use_mpio=args.use_mpio,
+                    not_quant_pattern=args.not_quant_pattern,
+                    convert=False)
 
                 if mean_iou > best_mIoU:
                     best_mIoU = mean_iou
@@ -392,16 +355,6 @@ def train(cfg):
                         ckpt_dir,
                         os.path.join(cfg.TRAIN.MODEL_SAVE_DIR, 'best_model'),
                         mean_iou))
-
-            # Use Tensorboard to visualize results
-            if args.use_tb and cfg.DATASET.VIS_FILE_LIST is not None:
-                visualize(
-                    cfg=cfg,
-                    use_gpu=args.use_gpu,
-                    vis_file_list=cfg.DATASET.VIS_FILE_LIST,
-                    vis_dir="visual",
-                    ckpt_dir=ckpt_dir,
-                    log_writer=log_writer)
 
     # save final model
     if cfg.TRAINER_ID == 0:
@@ -422,7 +375,7 @@ def main(args):
 
     cfg.check_and_infer()
     print_info(pprint.pformat(cfg))
-    train(cfg)
+    train_quant(cfg)
 
 
 if __name__ == '__main__':
