@@ -37,7 +37,6 @@ from models.model_builder import build_model
 from models.model_builder import ModelPhase
 from reader import SegDataset
 from metrics import ConfusionMatrix
-sys.path.append("/cv/workspace/PaddleSlim")
 from paddleslim.quant import quant_aware, convert
 
 

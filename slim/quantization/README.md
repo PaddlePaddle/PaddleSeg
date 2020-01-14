@@ -44,7 +44,7 @@ config = {
 ### 插入量化反量化OP
 使用[PaddleSlim quant_aware API](https://paddlepaddle.github.io/PaddleSlim/api/quantization_api/#quant_aware)在Program中插入量化和反量化OP。
 ```
-train_prog = quant_aware(train_prog, place, config, for_test=False)
+compiled_train_prog = quant_aware(train_prog, place, config, for_test=False)
 ```
 
 ### 关闭一些训练策略

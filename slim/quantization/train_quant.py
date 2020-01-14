@@ -44,7 +44,6 @@ from vis import visualize
 from utils import dist_utils
 from train import save_vars, save_checkpoint, load_checkpoint, update_best_model, print_info
 
-sys.path.append("/cv/workspace/PaddleSlim")
 from paddleslim.quant import quant_aware
 
 
