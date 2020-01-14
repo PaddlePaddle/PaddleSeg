@@ -1,12 +1,9 @@
 #!/bin/sh
-#export CUDA_VISIBLE_DEVICES=3
 export FLAGS_eager_delete_tensor_gb=0.0
 export FLAGS_fraction_of_gpu_memory_to_use=0.98
-#export GLOG_vmodule=operator=5
-#export GLOG_v=10
 
 
-python -u ./slim/quantization/eval_quant.py  --cfg configs/cityscape.yaml --use_gpu --not_quant_pattern last_conv  --use_mpio --convert \
+python -u ./slim/quantization/eval_quant.py  --cfg configs/deeplabv3p_mobilenetv2_cityscapes.yaml  --use_gpu --not_quant_pattern last_conv  --use_mpio --convert \
 DATASET.SEPARATOR " " \
 TEST.TEST_MODEL "./snapshots/mobilenetv2_quant/best_model" \
 MODEL.DEEPLAB.BACKBONE "mobilenet" \
