@@ -7,7 +7,7 @@
 该示例使用PaddleSlim提供的[量化压缩API](https://paddlepaddle.github.io/PaddleSlim/api/quantization_api/)对分割模型进行压缩。
 在阅读该示例前，建议您先了解以下内容：
 
-- [分割模型的常规训练方法(../../docs/usage.doc)
+- [分割模型的常规训练方法](../../docs/usage.doc)
 - [PaddleSlim使用文档](https://paddlepaddle.github.io/PaddleSlim/)
 
 
