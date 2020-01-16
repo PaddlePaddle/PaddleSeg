@@ -1,4 +1,4 @@
-# Fast_scnn模型训练教程
+# Fast-SCNN模型训练教程
 
 * 本教程旨在介绍如何通过使用PaddleSeg提供的 ***`Fast_scnn_cityscape`*** 预训练模型在自定义数据集上进行训练。
 
@@ -108,3 +108,14 @@ python pdseg/train.py --use_gpu --cfg ./configs/fast_scnn_pet.yaml
 ```shell
 python pdseg/eval.py --use_gpu --cfg ./configs/fast_scnn_pet.yaml
 ```
+
+
+## 七. 实时分割模型推理时间比较
+
+| 模型 | eval size | inference time | mIoU on cityscape val|
+|---|---|---|---|
+| DeepLabv3+/MobileNetv2/bn | (1024, 2048) |24.12ms| 0.698|
+| ICNet/bn |(1024, 2048) |25.24ms| 0.6831 |
+| Fast-SCNN/bn | (1024, 2048) |17.24ms| 0.6964 |
+
+
