@@ -49,7 +49,7 @@ compiled_train_prog = quant_aware(train_prog, place, config, for_test=False)
 
 ### 关闭一些训练策略
 
-因为量化要对Program做修改，所以一些会修改Program的训练策略需要关闭。``sync_batch_norm`` 和量化多卡训练同时使用时会出错，原因暂不知，因此也需要将其关闭。
+因为量化要对Program做修改，所以一些会修改Program的训练策略需要关闭。``sync_batch_norm`` 和量化多卡训练同时使用时会出错, 需要将其关闭。
 ```
 build_strategy.fuse_all_reduce_ops = False
 build_strategy.sync_batch_norm = False
@@ -72,7 +72,19 @@ export PYTHONPATH=$PYTHONPATH:./pdseg
 step2: 开始训练
 
 
-在分割库根目录下运行脚本[slim/quantization/train.sh](./train.sh)进行训练。
+在分割库根目录下运行以下命令进行训练。
+```
+python -u ./slim/quantization/train_quant.py --log_steps 10 --not_quant_pattern last_conv --cfg configs/deeplabv3p_mobilenetv2_cityscapes.yaml --use_gpu --use_mpio --do_eval \
+TRAIN.PRETRAINED_MODEL_DIR "./pretrain/mobilenet_cityscapes/" \
+TRAIN.MODEL_SAVE_DIR "./snapshots/mobilenetv2_quant" \
+MODEL.DEEPLAB.ENCODER_WITH_ASPP False \
+MODEL.DEEPLAB.ENABLE_DECODER False \
+TRAIN.SYNC_BATCH_NORM False \
+SOLVER.LR 0.0001 \
+TRAIN.SNAPSHOT_EPOCH 1 \
+SOLVER.NUM_EPOCHS 30 \
+BATCH_SIZE 16 \
+```
 
 
 ### 训练时的模型结构
@@ -113,7 +125,12 @@ step2: 开始训练
 
 分割库根目录下运行
 ```
-sh slim/quantization/eval.sh
+python -u ./slim/quantization/eval_quant.py  --cfg configs/deeplabv3p_mobilenetv2_cityscapes.yaml  --use_gpu --not_quant_pattern last_conv  --use_mpio --convert \
+TEST.TEST_MODEL "./snapshots/mobilenetv2_quant/best_model" \
+MODEL.DEEPLAB.ENCODER_WITH_ASPP False \
+MODEL.DEEPLAB.ENABLE_DECODER False \
+TRAIN.SYNC_BATCH_NORM False \
+BATCH_SIZE 16 \
 ```
 
 

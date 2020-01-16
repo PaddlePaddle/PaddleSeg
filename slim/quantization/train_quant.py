@@ -18,8 +18,6 @@ from __future__ import division
 from __future__ import print_function
 
 import os
-# GPU memory garbage collection optimization flags
-os.environ['FLAGS_eager_delete_tensor_gb'] = "0.0"
 
 import sys
 import argparse
