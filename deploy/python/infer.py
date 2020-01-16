@@ -147,9 +147,9 @@ class ImageReader:
     # process multiple images with multithreading
     def process(self, imgs, use_pr=False):
         imgs_data = []
-        with ThreadPoolExecutor(max_workers=self.config.batch_size) as exec:
+        with ThreadPoolExecutor(max_workers=self.config.batch_size) as exe_pool:
             tasks = [
-                exec.submit(self.process_worker, imgs, idx, use_pr)
+                exe_pool.submit(self.process_worker, imgs, idx, use_pr)
                 for idx in range(len(imgs))
             ]
         for task in as_completed(tasks):

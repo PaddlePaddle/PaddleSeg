@@ -1,6 +1,7 @@
 # PaddleSeg 预训练模型
 
-PaddleSeg对所有内置的分割模型都提供了公开数据集下的预训练模型，通过加载预训练模型后训练可以在自定义数据集中得到更稳定地效果。
+PaddleSeg对所有内置的分割模型都提供了公开数据集下的预训练模型。因为对于自定
+义数据集的场景，使用预训练模型进行训练可以得到更稳定地效果。用户可以根据模型类型、自己的数据集和预训练数据集的相似程度，选择并下载预训练模型。
 
 ## ImageNet预训练模型
 
@@ -31,6 +32,11 @@ PaddleSeg对所有内置的分割模型都提供了公开数据集下的预训�
 | HRNet_W44 | ImageNet | [hrnet_w44_imagenet.tar](https://paddleseg.bj.bcebos.com/models/hrnet_w44_imagenet.tar) | 79.00%/94.51% |
 | HRNet_W48 | ImageNet | [hrnet_w48_imagenet.tar](https://paddleseg.bj.bcebos.com/models/hrnet_w48_imagenet.tar) | 78.95%/94.42% |
 | HRNet_W64 | ImageNet | [hrnet_w64_imagenet.tar](https://paddleseg.bj.bcebos.com/models/hrnet_w64_imagenet.tar) | 79.30%/94.61% |
+
+| 模型 | 数据集合 | 下载地址 | Accuray Top1/5 Error |
+|---|---|---|---|
+| ResNet50（适配PSPNet） | ImageNet | [resnet50_v2_pspnet](https://paddleseg.bj.bcebos.com/resnet50_v2_pspnet.tgz)| -- |
+| ResNet101（适配PSPNet） | ImageNet | [resnet101_v2_pspnet](https://paddleseg.bj.bcebos.com/resnet101_v2_pspnet.tgz)| -- |
 
 ## COCO预训练模型
 
