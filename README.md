@@ -94,7 +94,7 @@ pip install -r requirements.txt
 * [ICNet模型使用教程](./turtorial/finetune_icnet.md)
 * [PSPNet模型使用教程](./turtorial/finetune_pspnet.md)
 * [HRNet模型使用教程](./turtorial/finetune_hrnet.md)
-* [如何训练Fast-SCNN](./turtorial/finetune_fast_scnn.md)
+* [Fast-SCNN模型使用教程](./turtorial/finetune_fast_scnn.md)
 
 ### 预测部署
 
