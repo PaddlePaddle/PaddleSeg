@@ -71,6 +71,7 @@ def softmax_with_loss(logit, label, ignore_mask=None, num_classes=2, weight=None
     ignore_mask.stop_gradient = True
     return avg_loss
 
+
 # to change, how to appicate ignore index and ignore mask
 def dice_loss(logit, label, ignore_mask=None, epsilon=0.00001):
     if logit.shape[1] != 1 or label.shape[1] != 1 or ignore_mask.shape[1] != 1:
@@ -93,6 +94,7 @@ def dice_loss(logit, label, ignore_mask=None, epsilon=0.00001):
     ignore_mask.stop_gradient = True
     return fluid.layers.reduce_mean(dice_score)
 
+
 def bce_loss(logit, label, ignore_mask=None):
     if logit.shape[1] != 1 or label.shape[1] != 1 or ignore_mask.shape[1] != 1:
         raise Exception("bce loss is only applicable to binary classfication")
@@ -112,15 +114,17 @@ def multi_softmax_with_loss(logits, label, ignore_mask=None, num_classes=2, weig
     if isinstance(logits, tuple):
         avg_loss = 0
         for i, logit in enumerate(logits):
-            logit_label = fluid.layers.resize_nearest(label, logit.shape[2:])
-            logit_mask = (logit_label.astype('int32') !=
+            if label.shape[2] != logit.shape[2] or label.shape[3] != logit.shape[3]:
+                label = fluid.layers.resize_nearest(label, logit.shape[2:])
+            logit_mask = (label.astype('int32') !=
                           cfg.DATASET.IGNORE_INDEX).astype('int32')
-            loss = softmax_with_loss(logit, logit_label, logit_mask,
+            loss = softmax_with_loss(logit, label, logit_mask,
                                      num_classes)
             avg_loss += cfg.MODEL.MULTI_LOSS_WEIGHT[i] * loss
     else:
         avg_loss = softmax_with_loss(logits, label, ignore_mask, num_classes, weight=weight)
     return avg_loss
+
 
 def multi_dice_loss(logits, label, ignore_mask=None):
     if isinstance(logits, tuple):
@@ -134,6 +138,7 @@ def multi_dice_loss(logits, label, ignore_mask=None):
     else:
         avg_loss = dice_loss(logits, label, ignore_mask)
     return avg_loss
+
 
 def multi_bce_loss(logits, label, ignore_mask=None):
     if isinstance(logits, tuple):
