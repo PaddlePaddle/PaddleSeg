@@ -1,56 +1,74 @@
 # PaddleSeg 分割模型介绍
 
-### U-Net
-U-Net 起源于医疗图像分割，整个网络是标准的encoder-decoder网络，特点是参数少，计算快，应用性强，对于一般场景适应度很高。
+- [U-Net](#U-Net)	
+- [DeepLabv3+](#DeepLabv3)		
+- [PSPNet](#PSPNet)
+- [ICNet](#ICNet)
+- [HRNet](#HRNet)
+
+## U-Net
+U-Net [1] 起源于医疗图像分割，整个网络是标准的encoder-decoder网络，特点是参数少，计算快，应用性强，对于一般场景适应度很高。U-Net最早于2015年提出，并在ISBI 2015 Cell Tracking Challenge取得了第一。经过发展，目前有多个变形和应用。
+
+原始U-Net的结构如下图所示，由于网络整体结构类似于大写的英文字母U，故得名U-net。左侧可视为一个编码器，右侧可视为一个解码器。编码器有四个子模块，每个子模块包含两个卷积层，每个子模块之后通过max pool进行下采样。由于卷积使用的是valid模式，故实际输出比输入图像小一些。具体来说，后一个子模块的分辨率=(前一个子模块的分辨率-4)/2。U-Net使用了Overlap-tile 策略用于补全输入图像的上下信息，使得任意大小的输入图像都可获得无缝分割。同样解码器也包含四个子模块，分辨率通过上采样操作依次上升，直到与输入图像的分辨率基本一致。该网络还使用了跳跃连接，以拼接的方式将解码器和编码器中相同分辨率的feature map进行特征融合，帮助解码器更好地恢复目标的细节。
+
 ![](./imgs/unet.png)
 
-### DeepLabv3+
+## DeepLabv3+
 
-DeepLabv3+ 是DeepLab系列的最后一篇文章，其前作有 DeepLabv1，DeepLabv2, DeepLabv3,
-在最新作中，DeepLab的作者通过encoder-decoder进行多尺度信息的融合，同时保留了原来的空洞卷积和ASSP层，
-其骨干网络使用了Xception模型，提高了语义分割的健壮性和运行速率，在 PASCAL VOC 2012 dataset取得新的state-of-art performance，89.0mIOU。
+DeepLabv3+ [2] 是DeepLab系列的最后一篇文章，其前作有 DeepLabv1, DeepLabv2, DeepLabv3.
+在最新作中，作者通过encoder-decoder进行多尺度信息的融合，以优化分割效果，尤其是目标边缘的效果。
+并且其使用了Xception模型作为骨干网络，并将深度可分离卷积(depthwise separable convolution)应用到atrous spatial pyramid pooling(ASPP)中和decoder模块，提高了语义分割的健壮性和运行速率，在 PASCAL VOC 2012 和 Cityscapes 数据集上取得新的state-of-art performance.
 
 ![](./imgs/deeplabv3p.png)
 
-在PaddleSeg当前实现中，支持两种分类Backbone网络的切换
+在PaddleSeg当前实现中，支持两种分类Backbone网络的切换:
 
-- MobileNetv2:
+- MobileNetv2
 适用于移动设备的快速网络，如果对分割性能有较高的要求，请使用这一backbone网络。
 
-- Xception:
+- Xception
 DeepLabv3+原始实现的backbone网络，兼顾了精度和性能，适用于服务端部署。
 
+## PSPNet
 
-### ICNet
+Pyramid Scene Parsing Network (PSPNet) [3] 起源于场景解析(Scene Parsing)领域。如下图所示，普通FCN [4] 面向复杂场景出现三种误分割现象：（1）关系不匹配。将船误分类成车，显然车一般不会出现在水面上。（2）类别混淆。摩天大厦和建筑物这两个类别相近，误将摩天大厦分类成建筑物。（3）类别不显著。枕头区域较小且纹理与床相近，误将枕头分类成床。
 
-Image Cascade Network（ICNet)主要用于图像实时语义分割。相较于其它压缩计算的方法，ICNet即考虑了速度，也考虑了准确性。 ICNet的主要思想是将输入图像变换为不同的分辨率，然后用不同计算复杂度的子网络计算不同分辨率的输入，然后将结果合并。ICNet由三个子网络组成，计算复杂度高的网络处理低分辨率输入，计算复杂度低的网络处理分辨率高的网络，通过这种方式在高分辨率图像的准确性和低复杂度网络的效率之间获得平衡。
+![](./imgs/pspnet2.png)
+
+PSPNet的出发点是在算法中引入更多的上下文信息来解决上述问题。为了融合了图像中不同区域的上下文信息，PSPNet通过特殊设计的全局均值池化操作（global average pooling）和特征融合构造金字塔池化模块 (Pyramid Pooling Module)。PSPNet最终获得了2016年ImageNet场景解析挑战赛的冠军，并在PASCAL VOC 2012 和 Cityscapes 数据集上取得当时的最佳效果。整个网络结构如下：
+
+![](./imgs/pspnet.png)
+
+
+## ICNet
+
+Image Cascade Network（ICNet) [5] 是一个基于PSPNet的语义分割网络，设计目的是减少PSPNet推断时期的耗时。ICNet主要用于图像实时语义分割。ICNet由三个不同分辨率的子网络组成，将输入图像变换为不同的分辨率，随后使用计算复杂度高的网络处理低分辨率输入，计算复杂度低的网络处理分辨率高的网络，通过这种方式在高分辨率图像的准确性和低复杂度网络的效率之间获得平衡。并在PSPNet的基础上引入级联特征融合单元(cascade feature fusion unit)，实现快速且高质量的分割模型。
 
 整个网络结构如下：
 
 ![](./imgs/icnet.png)
 
-## 参考
+### HRNet
 
-- [Encoder-Decoder with Atrous Separable Convolution for Semantic Image Segmentation](https://arxiv.org/abs/1802.02611)
+High-Resolution Network (HRNet) [6] 在整个训练过程中始终维持高分辨率表示。
+HRNet具有两个特点：（1）从高分辨率到低分辨率并行连接各子网络，（2）反复交换跨分辨率子网络信息。这两个特点使HRNet网络能够学习到更丰富的语义信息和细节信息。
+HRNet在人体姿态估计、语义分割和目标检测领域都取得了显著的性能提升。
 
-- [U-Net: Convolutional Networks for Biomedical Image Segmentation](https://arxiv.org/abs/1505.04597)
+整个网络结构如下：
 
-- [ICNet for Real-Time Semantic Segmentation on High-Resolution Images](https://arxiv.org/abs/1704.08545)
+![](./imgs/hrnet.png)
 
-# PaddleSeg特殊网络结构介绍
+## 参考文献
 
-### Group Norm
+[1] [U-Net: Convolutional Networks for Biomedical Image Segmentation](https://arxiv.org/abs/1505.04597)
 
-![](./imgs/gn.png)
-关于Group Norm的介绍可以参考论文：https://arxiv.org/abs/1803.08494
+[2] [Encoder-Decoder with Atrous Separable Convolution for Semantic Image Segmentation](https://arxiv.org/abs/1802.02611)
 
-GN 把通道分为组，并计算每一组之内的均值和方差，以进行归一化。GN 的计算与批量大小无关，其精度也在各种批量大小下保持稳定。适应于网络参数很重的模型，比如deeplabv3+这种，可以在一个小batch下取得一个较好的训练效果。
+[3] [Pyramid Scene Parsing Network](https://arxiv.org/abs/1612.01105)
 
+[4] [Fully Convolutional Networks for Semantic Segmentation](https://people.eecs.berkeley.edu/~jonlong/long_shelhamer_fcn.pdf)
 
-### Synchronized Batch Norm
+[5] [ICNet for Real-Time Semantic Segmentation on High-Resolution Images](https://arxiv.org/abs/1704.08545)
 
-Synchronized Batch Norm跨GPU批归一化策略最早在[MegDet: A Large Mini-Batch Object Detector](https://arxiv.org/abs/1711.07240)
-论文中提出，在[Bag of Freebies for Training Object Detection Neural Networks](https://arxiv.org/pdf/1902.04103.pdf)论文中以Yolov3验证了这一策略的有效性，[PaddleCV/yolov3](https://github.com/PaddlePaddle/models/tree/develop/PaddleCV/yolov3)实现了这一系列策略并比Darknet框架版本在COCO17数据上mAP高5.9.
-
-PaddleSeg基于PaddlePaddle框架的sync_batch_norm策略，可以支持通过多卡实现大batch size的分割模型训练，可以得到更高的mIoU精度。
+[6] [Deep High-Resolution Representation Learning for Visual Recognition](https://arxiv.org/abs/1908.07919)
 

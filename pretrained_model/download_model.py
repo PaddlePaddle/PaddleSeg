@@ -81,6 +81,8 @@ model_urls = {
     "https://paddleseg.bj.bcebos.com/models/pspnet101_cityscapes.tgz",
     "hrnet_w18_bn_cityscapes":
     "https://paddleseg.bj.bcebos.com/models/hrnet_w18_bn_cityscapes.tgz",
+    "fast_scnn_cityscapes":
+    "https://paddleseg.bj.bcebos.com/models/fast_scnn_cityscape.tar",
 }
 
 if __name__ == "__main__":

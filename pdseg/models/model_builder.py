@@ -24,7 +24,7 @@ from utils.config import cfg
 from loss import multi_softmax_with_loss
 from loss import multi_dice_loss
 from loss import multi_bce_loss
-from models.modeling import deeplab, unet, icnet, pspnet, hrnet
+from models.modeling import deeplab, unet, icnet, pspnet, hrnet, fast_scnn
 
 
 class ModelPhase(object):
@@ -81,6 +81,8 @@ def seg_model(image, class_num):
         logits = pspnet.pspnet(image, class_num)
     elif model_name == 'hrnet':
         logits = hrnet.hrnet(image, class_num)
+    elif model_name == 'fast_scnn':
+        logits = fast_scnn.fast_scnn(image, class_num)
     else:
         raise Exception(
             "unknow model name, only support unet, deeplabv3p, icnet, pspnet, hrnet"

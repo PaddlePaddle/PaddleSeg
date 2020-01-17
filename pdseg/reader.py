@@ -98,8 +98,8 @@ class SegDataset(object):
         # Re-shuffle file list
         if self.shuffle and cfg.NUM_TRAINERS > 1:
             np.random.RandomState(self.shuffle_seed).shuffle(self.all_lines)
-            num_lines = len(self.all_lines) // self.num_trainers
-            self.lines = self.all_lines[num_lines * self.trainer_id: num_lines * (self.trainer_id + 1)]
+            num_lines = len(self.all_lines) // cfg.NUM_TRAINERS
+            self.lines = self.all_lines[num_lines * cfg.TRAINER_ID: num_lines * (cfg.TRAINER_ID + 1)]
             self.shuffle_seed += 1
         elif self.shuffle:
             np.random.shuffle(self.lines)
