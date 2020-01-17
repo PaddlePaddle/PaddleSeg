@@ -235,3 +235,19 @@ cfg.FREEZE.MODEL_FILENAME = '__model__'
 cfg.FREEZE.PARAMS_FILENAME = '__params__'
 # 预测模型参数保存的路径
 cfg.FREEZE.SAVE_DIR = 'freeze_model'
+
+########################## paddle-slim ######################################
+cfg.SLIM.KNOWLEDGE_DISTILL_IS_TEACHER = False
+cfg.SLIM.KNOWLEDGE_DISTILL = False
+cfg.SLIM.KNOWLEDGE_DISTILL_TEACHER_MODEL_DIR = ""
+
+cfg.SLIM.NAS_PORT = 23333
+cfg.SLIM.NAS_ADDRESS = ""
+cfg.SLIM.NAS_SEARCH_STEPS = 100
+cfg.SLIM.NAS_START_EVAL_EPOCH = 0
+cfg.SLIM.NAS_IS_SERVER = True
+cfg.SLIM.NAS_SPACE_NAME = ""
+
+cfg.SLIM.PRUNE_PARAMS = ''
+cfg.SLIM.PRUNE_RATIOS = []
+
