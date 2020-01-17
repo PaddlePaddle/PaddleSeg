@@ -4,7 +4,7 @@
 
 在阅读本教程前，请确保您已经了解过PaddleSeg的[快速入门](../README.md#快速入门)和[基础功能](../README.md#基础功能)等章节，以便对PaddleSeg有一定的了解
 
-该文档介绍如何使用[PaddleSlim](https://paddlepaddle.github.io/PaddleSlim)的卷积通道剪裁接口对检测库中的模型的卷积层的通道数进行剪裁。
+该文档介绍如何使用[PaddleSlim](https://paddlepaddle.github.io/PaddleSlim)对分割库中的模型进行搜索。
 
 该教程中所示操作，如无特殊说明，均在`PaddleSeg/`路径下执行。
 
@@ -19,8 +19,8 @@
 所以我们定义了如下搜索空间：
 - head通道模块`head_num`：定义了MobilenetV2 head模块中通道数变化区间；
 - inverse_res_block1-6`filter_num1-6`: 定义了inverse_res_block模块中通道数变化区间；
-- 过渡blaze模块`repeat`：定义了MobilenetV2 inverse_res_block模块中unit的个数；
-- 双blaze模块`multiply`：定义了MobilenetV2 inverse_res_block模块中expansion_factor变化区间；
+- inverse_res_block`repeat`：定义了MobilenetV2 inverse_res_block模块中unit的个数；
+- inverse_res_block`multiply`：定义了MobilenetV2 inverse_res_block模块中expansion_factor变化区间；
 - 卷积核尺寸`k_size`：定义了MobilenetV2中卷积和尺寸大小是3x3或者5x5。
 
 根据定义的搜索空间各个区间，我们的搜索空间tokens共9位，变化区间在([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [7, 5, 8, 6, 2, 5, 8, 6, 2, 5, 8, 6, 2, 5, 10, 6, 2, 5, 10, 6, 2, 5, 12, 6, 2])范围内。  
@@ -59,8 +59,5 @@ SLIM.NAS_SPACE_NAME "MobileNetV2SpaceSeg" \
 ## FAQ
 - 运行报错：`socket.error: [Errno 98] Address already in use`。
 
-解决方法：当前端口被占用，请修改blazeface.yml中的`server_port`端口。
+解决方法：当前端口被占用，请修改`SLIM.NAS_PORT`端口。
 
-- 运行报错：`not enough space for reason[failed to malloc 601 pages...`
-
-解决方法：当前reader的共享存储队列空间不足，请增大blazeface.yml中的`memsize`。

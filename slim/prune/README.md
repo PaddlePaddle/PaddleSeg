@@ -40,6 +40,7 @@ python -u ./slim/prune/train_prune.py --log_steps 10 --cfg configs/cityscape_fas
 SLIM.PRUNE_PARAMS 'learning_to_downsample/weights,learning_to_downsample/dsconv1/pointwise/weights,learning_to_downsample/dsconv2/pointwise/weights' \
 SLIM.PRUNE_RATIOS '[0.1,0.1,0.1]'
 ```
+这里我们选取三个参数，按0.1的比例剪裁。
 
 ## 4. 评估
 
