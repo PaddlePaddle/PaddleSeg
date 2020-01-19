@@ -23,7 +23,6 @@ import sys
 LOCAL_PATH = os.path.dirname(os.path.abspath(__file__))
 SEG_PATH = os.path.join(LOCAL_PATH, "../../", "pdseg")
 sys.path.append(SEG_PATH)
-sys.path.append('/workspace/codes/PaddleSlim1')
 
 import argparse
 import pprint
