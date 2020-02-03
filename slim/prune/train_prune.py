@@ -146,11 +146,6 @@ def save_prune_checkpoint(exe, program, ckpt_name):
     if not os.path.isdir(ckpt_dir):
         os.makedirs(ckpt_dir)
 
-    # save_vars(
-    #     exe,
-    #     ckpt_dir,
-    #     program,
-    #     vars=list(filter(fluid.io.is_persistable, program.list_vars())))
     save_model(exe, program, ckpt_dir)
 
     return ckpt_dir
@@ -270,26 +265,9 @@ def train(cfg):
             print_info("Sync BatchNorm strategy will not be effective if GPU device"
                   " count <= 1")
 
-    ####get mobilenetV1 prune parameters####
-    # pruned_params = []
-    # exclude_names = ['aux_layer_lower/logit/weights', 'aux_layer_lower/logit/biases',
-    #                  'aux_layer_higher/logit/weights', 'aux_layer_higher/logit/biases',
-    #                  'classifier/weights', 'classifier/biases']
-    # for x in train_prog.list_vars():
-    #     if isinstance(x, fluid.framework.Parameter):
-    #         # if x.name not in exclude_names:
-    #         if x.name not in exclude_names and "weights" in x.name and "depthwise" not in x.name and "dwise" not in x.name and x.name not in [
-    #             "classifier/dsconv2/pointwise/weights", "classifier/weights", "fc_weights"]:
-    #             pruned_params.append(x.name)
-    #             print(x.name)
-    # print('to prune paramter number:', len(pruned_params))
-    # print('listtttt:', ','.join(pruned_params))
-    # pruned_ratios = [0.1] * len(pruned_params)
-    ########################################
     pruned_params = cfg.SLIM.PRUNE_PARAMS.strip().split(',')
-    #pruned_params = [str(x) for x in pruned_params]
-    print('paramssss:', pruned_params)
     pruned_ratios = cfg.SLIM.PRUNE_RATIOS
+
     if isinstance(pruned_ratios, float):
         pruned_ratios = [pruned_ratios] * len(pruned_params)
     elif isinstance(pruned_ratios, (list, tuple)):
