@@ -26,7 +26,6 @@ import sys
 LOCAL_PATH = os.path.dirname(os.path.abspath(__file__))
 SEG_PATH = os.path.join(LOCAL_PATH, "../../", "pdseg")
 sys.path.append(SEG_PATH)
-sys.path.append('/workspace/codes/PaddleSlim1')
 
 import time
 import argparse
@@ -124,7 +123,6 @@ def evaluate(cfg, ckpt_dir=None, use_gpu=False, use_mpio=False, **kwargs):
     if ckpt_dir is not None:
         print('load test model:', ckpt_dir)
         load_model(exe, test_prog, ckpt_dir)
-        #fluid.io.load_params(exe, ckpt_dir, main_program=test_prog)
 
     # Use streaming confusion matrix to calculate mean_iou
     np.set_printoptions(

@@ -49,3 +49,10 @@ CUDA_VISIBLE_DEVICES=0
 python -u ./slim/prune/eval_prune.py --cfg configs/cityscape_fast_scnn.yaml --use_gpu --use_mpio \
 TEST.TEST_MODEL your_trained_model \
 ```
+
+## 5. 模型
+
+| 模型 | 数据集合 | 下载地址 |剪裁方法| flops | mIoU on val|
+|---|---|---|---|---|---|
+| Fast-SCNN/bn | Cityscapes |[fast_scnn_cityscapes.tar](https://paddleseg.bj.bcebos.com/models/fast_scnn_cityscape.tar) | 无 | 7.21g | 0.6964 |
+| Fast-SCNN/bn | Cityscapes |[fast_scnn_cityscapes-uniform-51.tar](https://paddleseg.bj.bcebos.com/models/fast_scnn_cityscape-uniform-51.tar) | uniform | 3.54g | 0.6990 |
