@@ -71,10 +71,10 @@ distill_loss = l2_loss('teacher_bilinear_interp_2.tmp_0', 'bilinear_interp_1.tmp
 ### 执行示例
 如下命令启动训练，每间隔```cfg.TRAIN.SNAPSHOT_EPOCH```会进行一次评估。
 ```shell
-CUDA_VISIBLE_DEVICES=0,1
-python -m paddle.distributed.launch ./slim/distill/train.py \
---log_steps 10 --cfg ./slim/distill/cityscape_fast_scnn.yaml \
---teacher_cfg ./slim/distill/cityscape_teacher.yaml \
+CUDA_VISIBLE_DEVICES=0,1 
+python -m paddle.distributed.launch ./slim/distillation/train_distill.py \
+--log_steps 10 --cfg ./slim/distillation/cityscape.yaml \
+--teacher_cfg ./slim/distillation/cityscape_teacher.yaml \
 --use_gpu \
 --use_mpio \
 --do_eval

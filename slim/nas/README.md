@@ -46,7 +46,7 @@ SLIM:
 ## 训练与评估
 执行以下命令，边训练边评估
 ```shell
-python -u ./slim/nas/train.py --log_steps 10 --cfg configs/cityscape.yaml --use_gpu --use_mpio \
+python -u ./slim/nas/train_nas.py --log_steps 10 --cfg configs/deeplabv3p_mobilenetv2_cityscapes.yaml --use_gpu --use_mpio \
 SLIM.NAS_PORT 23333 \
 SLIM.NAS_ADDRESS "" \
 SLIM.NAS_SEARCH_STEPS 2 \

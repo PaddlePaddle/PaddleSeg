@@ -23,7 +23,7 @@ import sys
 LOCAL_PATH = os.path.dirname(os.path.abspath(__file__))
 SEG_PATH = os.path.join(LOCAL_PATH, "../../", "pdseg")
 sys.path.append(SEG_PATH)
-
+sys.path.append('/workspace/codes/PaddleSlim1')
 import argparse
 import pprint
 import random
@@ -278,8 +278,6 @@ def train(cfg):
                 label=grts, mask=masks)
 
     exe.run(teacher_startup_program)
-    # assert FLAGS.teacher_pretrained, "teacher_pretrained should be set"
-    # checkpoint.load_params(exe, teacher_program, FLAGS.teacher_pretrained)
 
     teacher_program = teacher_program.clone(for_test=True)
     ckpt_dir = cfg.SLIM.KNOWLEDGE_DISTILL_TEACHER_MODEL_DIR
@@ -295,14 +293,14 @@ def train(cfg):
         'mask': 'mask',
     }
     merge(teacher_program, fluid.default_main_program(), data_name_map, place)
-    distill_pairs = [['teacher_bilinear_interp_2.tmp_0', 'bilinear_interp_1.tmp_0']]
+    distill_pairs = [['teacher_bilinear_interp_2.tmp_0', 'bilinear_interp_0.tmp_0']]
 
     def distill(pairs, weight):
         """
         Add 3 pairs of distillation losses, each pair of feature maps is the
         input of teacher and student's yolov3_loss respectively
         """
-        loss = l2_loss(pairs[0][0], pairs[0][1], masks)
+        loss = l2_loss(pairs[0][0], pairs[0][1])
         weighted_loss = loss * weight
         return weighted_loss
 
