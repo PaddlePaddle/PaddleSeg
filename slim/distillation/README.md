@@ -49,7 +49,7 @@ print(teacher_vars)
 
 ```bash
 # student model
-bilinear_interp_1.tmp_0
+bilinear_interp_0.tmp_0
 # teacher model
 bilinear_interp_2.tmp_0
 ```
@@ -58,7 +58,7 @@ bilinear_interp_2.tmp_0
 它们形状两两相同，且分别处于两个网络的输出部分。所以，我们用`l2_loss`对这几个特征图两两对应添加蒸馏loss。需要注意的是，teacher的Variable在merge过程中被自动添加了一个`name_prefix`，所以这里也需要加上这个前缀`"teacher_"`，merge过程请参考[蒸馏API文档](https://paddlepaddle.github.io/PaddleSlim/api/single_distiller_api/#merge)
 
 ```python
-distill_loss = l2_loss('teacher_bilinear_interp_2.tmp_0', 'bilinear_interp_1.tmp_0')
+distill_loss = l2_loss('teacher_bilinear_interp_2.tmp_0', 'bilinear_interp_0.tmp_0')
 ```
 
 我们也可以根据上述操作为蒸馏策略选择其他loss，PaddleSlim支持的有`FSP_loss`, `L2_loss`, `softmax_with_cross_entropy_loss` 以及自定义的任何loss。
