@@ -157,7 +157,7 @@ def export_preprocess(image):
 
 
 def build_model(main_prog=None, start_prog=None, phase=ModelPhase.TRAIN, **kwargs):
-    print('debugggggggggg')
+
     if not ModelPhase.is_valid_phase(phase):
         raise ValueError("ModelPhase {} is not valid!".format(phase))
     if ModelPhase.is_train(phase):
@@ -176,7 +176,6 @@ def build_model(main_prog=None, start_prog=None, phase=ModelPhase.TRAIN, **kwarg
     # 在导出模型的时候，增加图像标准化预处理,减小预测部署时图像的处理流程
     # 预测部署时只须对输入图像增加batch_size维度即可
     if cfg.SLIM.KNOWLEDGE_DISTILL_IS_TEACHER:
-        print('teacher input:')
         image = main_prog.global_block()._clone_variable(kwargs['image'],
                                                          force_persistable=False)
         label = main_prog.global_block()._clone_variable(kwargs['label'],
