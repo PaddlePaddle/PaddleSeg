@@ -49,7 +49,7 @@ TEST:
     TEST_MODEL: "snapshots/cityscape_v5/final/"
 TRAIN:
     MODEL_SAVE_DIR: "snapshots/cityscape_mbv2_kd_e100_1/"
-    PRETRAINED_MODEL_DIR: u"/workspace/pretrained_models/mobilenet_cityscapes"
+    PRETRAINED_MODEL_DIR: u"pretrained_model/mobilenet_cityscapes"
     SNAPSHOT_EPOCH: 5
     SYNC_BATCH_NORM: True
 SOLVER:
