@@ -31,6 +31,7 @@ gflags.DEFINE_string("conf", default="", help="Configuration File Path")
 gflags.DEFINE_string("input_dir", default="", help="Directory of Input Images")
 gflags.DEFINE_boolean("use_pr", default=False, help="Use optimized model")
 gflags.DEFINE_string("trt_mode", default="", help="Use optimized model")
+gflags.DEFINE_string("ext", default=".jpeg|.jpg", help="Input Image File Extensions")
 gflags.FLAGS = gflags.FLAGS
 
 
@@ -146,9 +147,9 @@ class ImageReader:
     # process multiple images with multithreading
     def process(self, imgs, use_pr=False):
         imgs_data = []
-        with ThreadPoolExecutor(max_workers=self.config.batch_size) as exec:
+        with ThreadPoolExecutor(max_workers=self.config.batch_size) as exe_pool:
             tasks = [
-                exec.submit(self.process_worker, imgs, idx, use_pr)
+                exe_pool.submit(self.process_worker, imgs, idx, use_pr)
                 for idx in range(len(imgs))
             ]
         for task in as_completed(tasks):
@@ -315,4 +316,4 @@ if __name__ == "__main__":
             "Invalid trt_mode [%s], only support[int8, fp16, fp32]" % trt_mode)
         exit(-1)
     # run inference
-    run(gflags.FLAGS.conf, gflags.FLAGS.input_dir)
+    run(gflags.FLAGS.conf, gflags.FLAGS.input_dir, gflags.FLAGS.ext)

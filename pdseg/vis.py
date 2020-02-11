@@ -34,6 +34,7 @@ from utils.config import cfg
 from reader import SegDataset
 from models.model_builder import build_model
 from models.model_builder import ModelPhase
+from tools.gray2pseudo_color import get_color_map_list
 
 
 def parse_args():
@@ -73,28 +74,6 @@ def makedirs(directory):
         os.makedirs(directory)
 
 
-def get_color_map_list(num_classes):
-    """ Returns the color map for visualizing the segmentation mask,
-        which can support arbitrary number of classes.
-    Args:
-        num_classes: Number of classes
-    Returns:
-        The color map
-    """
-    color_map = num_classes * [0, 0, 0]
-    for i in range(0, num_classes):
-        j = 0
-        lab = i
-        while lab:
-            color_map[i * 3] |= (((lab >> 0) & 1) << (7 - j))
-            color_map[i * 3 + 1] |= (((lab >> 1) & 1) << (7 - j))
-            color_map[i * 3 + 2] |= (((lab >> 2) & 1) << (7 - j))
-            j += 1
-            lab >>= 3
-
-    return color_map
-
-
 def to_png_fn(fn):
     """
     Append png as filename postfix
@@ -108,7 +87,7 @@ def to_png_fn(fn):
 def visualize(cfg,
               vis_file_list=None,
               use_gpu=False,
-              vis_dir="visual_predict",
+              vis_dir="visual",
               ckpt_dir=None,
               log_writer=None,
               local_test=False,
@@ -138,7 +117,7 @@ def visualize(cfg,
 
     fluid.io.load_params(exe, ckpt_dir, main_program=test_prog)
 
-    save_dir = os.path.join('visual', vis_dir)
+    save_dir = vis_dir
     makedirs(save_dir)
 
     fetch_list = [pred.name]
