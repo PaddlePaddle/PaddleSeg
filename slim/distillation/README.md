@@ -69,7 +69,10 @@ distill_loss = l2_loss('teacher_bilinear_interp_2.tmp_0', 'bilinear_interp_0.tmp
 在该脚本中定义了teacher_model和student_model，用teacher_model的输出指导student_model的训练
 
 ### 执行示例
-如下命令启动训练，每间隔```cfg.TRAIN.SNAPSHOT_EPOCH```会进行一次评估。
+
+下载teacher的预训练模型和student的预训练模型, 替换如下命令中的```your_tearcher_pretrained_model_path```和```your_student_pretrained_model```
+
+执行如下命令启动训练，每间隔```cfg.TRAIN.SNAPSHOT_EPOCH```会进行一次评估。
 ```shell
 CUDA_VISIBLE_DEVICES=0,1 
 python -m paddle.distributed.launch ./slim/distillation/train_distill.py \
@@ -77,7 +80,9 @@ python -m paddle.distributed.launch ./slim/distillation/train_distill.py \
 --teacher_cfg ./slim/distillation/cityscape_teacher.yaml \
 --use_gpu \
 --use_mpio \
---do_eval
+--do_eval \
+SLIM.KNOWLEDGE_DISTILL_TEACHER_MODEL_DIR your_tearcher_pretrained_model_path \
+TRAIN.PRETRAINED_MODEL_DIR your_student_pretrained_model
 ```
 
 ## 评估预测
