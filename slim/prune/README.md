@@ -1,6 +1,6 @@
 # PaddleSeg剪裁教程
 
-在阅读本教程前，请确保您已经了解过PaddleSeg的[快速入门](../README.md#快速入门)和[基础功能](../README.md#基础功能)等章节，以便对PaddleSeg有一定的了解
+在阅读本教程前，请确保您已经了解过[PaddleSeg使用说明](../../docs/usage.md)等章节，以便对PaddleSeg有一定的了解
 
 该文档介绍如何使用[PaddleSlim](https://paddlepaddle.github.io/PaddleSlim)的卷积通道剪裁接口对检测库中的模型的卷积层的通道数进行剪裁。
 
