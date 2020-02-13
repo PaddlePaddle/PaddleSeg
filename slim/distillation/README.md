@@ -70,7 +70,17 @@ distill_loss = l2_loss('teacher_bilinear_interp_2.tmp_0', 'bilinear_interp_0.tmp
 
 ### 执行示例
 
-下载teacher的预训练模型([deeplabv3p_xception65_bn_cityscapes.tgz](https://paddleseg.bj.bcebos.com/models/xception65_bn_cityscapes.tgz))和student的预训练模型([mobilenet_cityscapes.tgz](https://paddleseg.bj.bcebos.com/models/mobilenet_cityscapes.tgz)), 替换如下命令中的```your_tearcher_pretrained_model_path```和```your_student_pretrained_model```
+下载teacher的预训练模型([deeplabv3p_xception65_bn_cityscapes.tgz](https://paddleseg.bj.bcebos.com/models/xception65_bn_cityscapes.tgz))和student的预训练模型([mobilenet_cityscapes.tgz](https://paddleseg.bj.bcebos.com/models/mobilenet_cityscapes.tgz)), 
+修改student config file(./slim/distillation/cityscape.yaml)中预训练模型的路径:
+```
+TRAIN:
+    PRETRAINED_MODEL_DIR: your_student_pretrained_model_dir
+```
+修改teacher config file(./slim/distillation/cityscape_teacher.yaml)中预训练模型的路径:
+```
+SLIM:
+    KNOWLEDGE_DISTILL_TEACHER_MODEL_DIR: your_teacher_pretrained_model_dir
+```
 
 执行如下命令启动训练，每间隔```cfg.TRAIN.SNAPSHOT_EPOCH```会进行一次评估。
 ```shell
@@ -80,9 +90,7 @@ python -m paddle.distributed.launch ./slim/distillation/train_distill.py \
 --teacher_cfg ./slim/distillation/cityscape_teacher.yaml \
 --use_gpu \
 --use_mpio \
---do_eval \
-SLIM.KNOWLEDGE_DISTILL_TEACHER_MODEL_DIR your_tearcher_pretrained_model_path \
-TRAIN.PRETRAINED_MODEL_DIR your_student_pretrained_model
+--do_eval 
 ```
 
 ## 评估预测
