@@ -17,6 +17,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import numpy as np
 import sys, os
 sys.path.append(os.path.abspath('../../'))
 import paddle.fluid as fluid
@@ -24,9 +25,49 @@ from utils.config import cfg
 from models.libs.model_libs import scope, name_scope
 from models.libs.model_libs import bn, avg_pool, conv, bn_relu, relu
 from models.libs.model_libs import separate_conv
-from models.model_builder import ModelPhase
 from models.backbone.resnet import ResNet as resnet_backbone
-import numpy as np
+
+
+class ModelPhase(object):
+    """
+    Standard name for model phase in PaddleSeg
+
+    The following standard keys are defined:
+    * `TRAIN`: training mode.
+    * `EVAL`: testing/evaluation mode.
+    * `PREDICT`: prediction/inference mode.
+    * `VISUAL` : visualization mode
+    """
+
+    TRAIN = 'train'
+    EVAL = 'eval'
+    PREDICT = 'predict'
+    VISUAL = 'visual'
+
+    @staticmethod
+    def is_train(phase):
+        return phase == ModelPhase.TRAIN
+
+    @staticmethod
+    def is_predict(phase):
+        return phase == ModelPhase.PREDICT
+
+    @staticmethod
+    def is_eval(phase):
+        return phase == ModelPhase.EVAL
+
+    @staticmethod
+    def is_visual(phase):
+        return phase == ModelPhase.VISUAL
+
+    @staticmethod
+    def is_valid_phase(phase):
+        """ Check valid phase """
+        if ModelPhase.is_train(phase) or ModelPhase.is_predict(phase) \
+                or ModelPhase.is_eval(phase) or ModelPhase.is_visual(phase):
+            return True
+
+        return False
 
 
 def resnet(input):
@@ -262,11 +303,7 @@ def get_points(prediction,
             important_points_i = fluid.layers.unsqueeze(
                 important_points_i, axes=[0])
             important_points.append(important_points_i)
-            # points_i = fluid.layers.Print(points_i)
-            # fea_points_i = fluid.layers.Print(fea_points_i)
-            # important_points_i = fluid.layers.Print(important_points_i)
         important_points = fluid.layers.concat(important_points, axis=0)
-        important_points = fluid.layers.Print(important_points)
 
         # 随机点获取（1-beta*N)
         rand_tensor = fluid.layers.uniform_random(
@@ -302,6 +339,7 @@ def get_point_wise_features(fine_features, prediction, points):
         pwf_pred_i = fluid.layers.unsqueeze(pwf_pred_i, axes=0)
         pwf_fine.append(pwf_fine_i)
         pwf_pred.append(pwf_pred_i)
+        points_i.stop_gradient = True
     pwf_fine = fluid.layers.concat(pwf_fine, axis=0)
     pwf_pred = fluid.layers.concat(pwf_pred, axis=0)
     pwf = fluid.layers.concat([pwf_fine, pwf_pred], axis=-1)
@@ -320,10 +358,8 @@ def render(fine_feature,
            phase=ModelPhase.TRAIN):
     inter_coarse_prediction = fluid.layers.resize_bilinear(coarse_pred, size)
     inter_fine_feature = fluid.layers.resize_bilinear(fine_feature, size)
-    print(inter_coarse_prediction.shape)
-    print(inter_fine_feature.shape)
-    if label is not None:
-        label = fluid.layers.resize_nearest(label, size)
+    # if label is not None:
+    #     label = fluid.layers.resize_nearest(label, size)
     points = get_points(
         inter_coarse_prediction,
         N=N,
@@ -331,7 +367,6 @@ def render(fine_feature,
         beta=cfg.MODEL.POINTREND.BETA,
         label=label,
         phase=phase)
-    print('points\n', points.shape)
     point_wise_features = get_point_wise_features(
         inter_fine_feature, inter_coarse_prediction, points)
     render_mlp = mlp(point_wise_features, num_classes)
@@ -357,9 +392,6 @@ def render(fine_feature,
             # 渲染点置零
             mask = fluid.layers.ones_like(inter_coarse_prediction_i)
             updates_mask = -fluid.layers.ones(shape=(N, c), dtype='float32')
-            print(mask.shape)
-            print(points_i.shape)
-            print(updates_mask.shape)
             mask = fluid.layers.scatter_nd_add(mask, points_i, updates_mask)
             # 渲染点替换
             inter_coarse_prediction_i = fluid.layers.elementwise_mul(
@@ -385,6 +417,7 @@ def pointrend(img, num_classes, label=None, phase=ModelPhase.TRAIN):
     N = coarse_size[-1] * coarse_size[-2]
     # 计算渲染的次数
     if ModelPhase.is_train(phase):
+        coarse_pred = fluid.layers.resize_bilinear(coarse_pred, input_size[-2:])
         outs = [(coarse_pred, )]
         _, render_mlp, points = render(
             fine_feature,
@@ -394,13 +427,11 @@ def pointrend(img, num_classes, label=None, phase=ModelPhase.TRAIN):
             num_classes=num_classes,
             label=label,
             phase=phase)
-        outs.append((render_mlp, points, input_size[-2:]))
+        outs.append((render_mlp, points))
         return outs
 
     else:
         num_render = int(np.log2(input_size[-1] / coarse_size[-1]) + 0.5)
-        print(input_size, coarse_size)
-        print(num_render)
         for k in range(num_render - 1):
             size = [2**(k + 1) * i for i in coarse_size[-2:]]
             coarse_pred, _, _ = render(
@@ -425,8 +456,8 @@ if __name__ == '__main__':
     os.environ['GLOG_vmodule'] = '4'
     os.environ['GLOG_logtostderr'] = '1'
 
-    image_shape = [2, 3, 769, 769]
-    label_shape = [2, 1, 769, 769]
+    image_shape = [2, 3, 64, 64]
+    label_shape = [2, 1, 64, 64]
     cfg.BATCH_SIZE = 2
     image = fluid.layers.data(
         name='image',
@@ -437,31 +468,7 @@ if __name__ == '__main__':
         name='label', shape=label_shape, dtype='int64', append_batch_size=False)
     # points = get_points(image, N=3, phase=ModelPhase.TRAIN, label=label)
     # pwf = get_point_wise_features(image, image, points)
-    out = pointrend(image, 2, label, ModelPhase.EVAL)
-    # for i in out:
-    #     for j in i:
-    #         print(j)
-
-    train_prog = fluid.default_main_program()
-    startup_prog = fluid.default_startup_program()
-
-    places = fluid.cpu_places()
-    place = places[0]
-
-    exe = fluid.Executor(place)
-    exe.run(startup_prog)
-
-    print('out', out.shape)
-    a = np.random.randint(0, 256, size=image_shape).astype("float32")
-    b = np.random.randint(0, 2, size=label_shape).astype("int64")
-    out = exe.run(
-        program=train_prog,
-        feed={
-            image.name: a,
-            label.name: b
-        },
-        fetch_list=[out.name])
-    print(out[0])
-    # print('input', a.transpose([0, 2, 3, 1]))
-    # print('uncertaion_points\n', out[0])
-    # print('pwf\n', out[1])
+    out = pointrend(image, 2, label, ModelPhase.TRAIN)
+    for i in out:
+        for j in i:
+            print(j)
