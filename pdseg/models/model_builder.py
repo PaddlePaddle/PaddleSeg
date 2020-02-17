@@ -24,7 +24,7 @@ from utils.config import cfg
 from loss import multi_softmax_with_loss
 from loss import multi_dice_loss
 from loss import multi_bce_loss
-from models.modeling import deeplab, unet, icnet, pspnet, hrnet, fast_scnn
+from models.modeling import deeplab, unet, icnet, pspnet, hrnet, fast_scnn, pointrend
 
 
 class ModelPhase(object):
@@ -69,7 +69,7 @@ class ModelPhase(object):
         return False
 
 
-def seg_model(image, class_num):
+def seg_model(image, class_num, label=None, phase=ModelPhase.TRAIN):
     model_name = cfg.MODEL.MODEL_NAME
     if model_name == 'unet':
         logits = unet.unet(image, class_num)
@@ -83,6 +83,8 @@ def seg_model(image, class_num):
         logits = hrnet.hrnet(image, class_num)
     elif model_name == 'fast_scnn':
         logits = fast_scnn.fast_scnn(image, class_num)
+    elif model_name == 'pointrend':
+        logits = pointrend.pointrend(image, class_num, label=label, phase=phase)
     else:
         raise Exception(
             "unknow model name, only support unet, deeplabv3p, icnet, pspnet, hrnet"
@@ -217,7 +219,7 @@ def build_model(main_prog, start_prog, phase=ModelPhase.TRAIN):
                     raise Exception(
                         "softmax loss can not combine with dice loss or bce loss"
                     )
-            logits = seg_model(image, class_num)
+            logits = seg_model(image, class_num, label=label, phase=phase)
 
             # 根据选择的loss函数计算相应的损失函数
             if ModelPhase.is_train(phase) or ModelPhase.is_eval(phase):
@@ -227,7 +229,8 @@ def build_model(main_prog, start_prog, phase=ModelPhase.TRAIN):
                 if "softmax_loss" in loss_type:
                     weight = cfg.SOLVER.CROSS_ENTROPY_WEIGHT
                     avg_loss_list.append(
-                        multi_softmax_with_loss(logits, label, mask, class_num, weight))
+                        multi_softmax_with_loss(logits, label, mask, class_num,
+                                                weight))
                     loss_valid = True
                     valid_loss.append("softmax_loss")
                 if "dice_loss" in loss_type:
@@ -256,10 +259,16 @@ def build_model(main_prog, start_prog, phase=ModelPhase.TRAIN):
                     avg_loss += avg_loss_list[i]
 
             #get pred result in original size
-            if isinstance(logits, tuple):
-                logit = logits[0]
+            if cfg.MODEL.MODEL_NAME == 'pointrend':
+                if ModelPhase.is_train(phase):
+                    logit = logits[0][0]
+                else:
+                    logit = logits
             else:
-                logit = logits
+                if isinstance(logits, tuple):
+                    logit = logits[0]
+                else:
+                    logit = logits
 
             if logit.shape[2:] != label.shape[2:]:
                 logit = fluid.layers.resize_bilinear(logit, label.shape[2:])
