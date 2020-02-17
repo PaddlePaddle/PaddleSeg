@@ -16,11 +16,14 @@
 import sys
 import paddle.fluid as fluid
 import numpy as np
-import importlib
 from utils.config import cfg
 
 
-def softmax_with_loss(logit, label, ignore_mask=None, num_classes=2, weight=None):
+def softmax_with_loss(logit,
+                      label,
+                      ignore_mask=None,
+                      num_classes=2,
+                      weight=None):
     ignore_mask = fluid.layers.cast(ignore_mask, 'float32')
     label = fluid.layers.elementwise_min(
         label, fluid.layers.assign(np.array([num_classes - 1], dtype=np.int32)))
@@ -38,12 +41,16 @@ def softmax_with_loss(logit, label, ignore_mask=None, num_classes=2, weight=None
     else:
         label_one_hot = fluid.layers.one_hot(input=label, depth=num_classes)
         if isinstance(weight, list):
-            assert len(weight) == num_classes, "weight length must equal num of classes"
+            assert len(
+                weight
+            ) == num_classes, "weight length must equal num of classes"
             weight = fluid.layers.assign(np.array([weight], dtype='float32'))
         elif isinstance(weight, str):
-            assert weight.lower() == 'dynamic', 'if weight is string, must be dynamic!'
+            assert weight.lower(
+            ) == 'dynamic', 'if weight is string, must be dynamic!'
             tmp = []
-            total_num = fluid.layers.cast(fluid.layers.shape(label)[0], 'float32')
+            total_num = fluid.layers.cast(
+                fluid.layers.shape(label)[0], 'float32')
             for i in range(num_classes):
                 cls_pixel_num = fluid.layers.reduce_sum(label_one_hot[:, i])
                 ratio = total_num / (cls_pixel_num + 1)
@@ -53,9 +60,12 @@ def softmax_with_loss(logit, label, ignore_mask=None, num_classes=2, weight=None
         elif isinstance(weight, fluid.layers.Variable):
             pass
         else:
-            raise ValueError('Expect weight is a list, string or Variable, but receive {}'.format(type(weight)))
+            raise ValueError(
+                'Expect weight is a list, string or Variable, but receive {}'.
+                format(type(weight)))
         weight = fluid.layers.reshape(weight, [1, num_classes])
-        weighted_label_one_hot = fluid.layers.elementwise_mul(label_one_hot, weight)
+        weighted_label_one_hot = fluid.layers.elementwise_mul(
+            label_one_hot, weight)
         probs = fluid.layers.softmax(logit)
         loss = fluid.layers.cross_entropy(
             probs,
@@ -75,10 +85,11 @@ def softmax_with_loss(logit, label, ignore_mask=None, num_classes=2, weight=None
 # to change, how to appicate ignore index and ignore mask
 def dice_loss(logit, label, ignore_mask=None, epsilon=0.00001):
     if logit.shape[1] != 1 or label.shape[1] != 1 or ignore_mask.shape[1] != 1:
-        raise Exception("dice loss is only applicable to one channel classfication")
+        raise Exception(
+            "dice loss is only applicable to one channel classfication")
     ignore_mask = fluid.layers.cast(ignore_mask, 'float32')
     logit = fluid.layers.transpose(logit, [0, 2, 3, 1])
-    label  = fluid.layers.transpose(label, [0, 2, 3, 1])
+    label = fluid.layers.transpose(label, [0, 2, 3, 1])
     label = fluid.layers.cast(label, 'int64')
     ignore_mask = fluid.layers.transpose(ignore_mask, [0, 2, 3, 1])
     logit = fluid.layers.sigmoid(logit)
@@ -88,7 +99,7 @@ def dice_loss(logit, label, ignore_mask=None, epsilon=0.00001):
     inse = fluid.layers.reduce_sum(logit * label, dim=reduce_dim)
     dice_denominator = fluid.layers.reduce_sum(
         logit, dim=reduce_dim) + fluid.layers.reduce_sum(
-        label, dim=reduce_dim)
+            label, dim=reduce_dim)
     dice_score = 1 - inse * 2 / (dice_denominator + epsilon)
     label.stop_gradient = True
     ignore_mask.stop_gradient = True
@@ -103,26 +114,59 @@ def bce_loss(logit, label, ignore_mask=None):
         x=logit,
         label=label,
         ignore_index=cfg.DATASET.IGNORE_INDEX,
-        normalize=True) # or False
+        normalize=True)  # or False
     loss = fluid.layers.reduce_sum(loss)
     label.stop_gradient = True
     ignore_mask.stop_gradient = True
     return loss
 
 
-def multi_softmax_with_loss(logits, label, ignore_mask=None, num_classes=2, weight=None):
+def multi_softmax_with_loss(logits,
+                            label,
+                            ignore_mask=None,
+                            num_classes=2,
+                            weight=None):
+    avg_loss = 0
+    if cfg.MODEL.MODEL_NAME == 'pointrend':
+        for logit in logits:
+            if len(logit) == 1:
+                avg_loss += softmax_with_loss(logit[0], label, ignore_mask,
+                                              num_classes)
+            else:
+                render_mlp, points = logit
+                label = fluid.layers.transpose(label, [0, 2, 3, 1])
+                label_shape = label.shape
+                label = fluid.layers.reshape(
+                    label, (cfg.BATCH_SIZE, label_shape[1] * label_shape[2],
+                            label_shape[-1]))
+                label_mlp = []
+                for i in range(cfg.BATCH_SIZE):
+                    points_i = points[i]
+                    points_i = fluid.layers.unsqueeze(points_i, axes=[-1])
+                    label_mlp_i = fluid.layers.gather_nd(label[i], points_i)
+                    label_mlp_i = fluid.layers.unsqueeze(label_mlp_i, axes=0)
+                    label_mlp.append(label_mlp_i)
+                label_mlp = fluid.layers.concat(label_mlp, axis=0)
+                label_mlp = fluid.layers.transpose(label_mlp, [0, 2, 1])
+                label_mlp = fluid.layers.unsqueeze(label_mlp, axes=-1)
+                avg_loss += softmax_with_loss(render_mlp, label_mlp,
+                                              label_mlp == 255, num_classes)
+        return avg_loss
+
     if isinstance(logits, tuple):
         avg_loss = 0
         for i, logit in enumerate(logits):
-            if label.shape[2] != logit.shape[2] or label.shape[3] != logit.shape[3]:
+            if label.shape[2] != logit.shape[2] or label.shape[
+                    3] != logit.shape[3]:
                 label = fluid.layers.resize_nearest(label, logit.shape[2:])
             logit_mask = (label.astype('int32') !=
                           cfg.DATASET.IGNORE_INDEX).astype('int32')
-            loss = softmax_with_loss(logit, label, logit_mask,
-                                     num_classes)
+            loss = softmax_with_loss(logit, label, logit_mask, num_classes)
             avg_loss += cfg.MODEL.MULTI_LOSS_WEIGHT[i] * loss
+
     else:
-        avg_loss = softmax_with_loss(logits, label, ignore_mask, num_classes, weight=weight)
+        avg_loss = softmax_with_loss(
+            logits, label, ignore_mask, num_classes, weight=weight)
     return avg_loss
 
 
