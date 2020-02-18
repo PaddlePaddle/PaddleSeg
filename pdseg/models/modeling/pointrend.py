@@ -269,7 +269,7 @@ def get_points(prediction,
     top2, _ = fluid.layers.topk(prediction_softmax, k=2)
     uncertain_features = fluid.layers.abs(top2[:, :, :, 0] - top2[:, :, :, 1])
     fea_shape = uncertain_features.shape
-    bs = cfg.BATCH_SIZE
+    bs = cfg.batch_size_per_dev
     num_fea_points = fea_shape[-1] * fea_shape[-2]
     uncertain_features = fluid.layers.reshape(
         uncertain_features, shape=(bs, num_fea_points))
@@ -318,7 +318,7 @@ def get_points(prediction,
 
 def get_point_wise_features(fine_features, prediction, points):
     '''获取point wise features，shape为（bs, c, N, 1)'''
-    bs = cfg.BATCH_SIZE
+    bs = cfg.batch_size_per_dev
     c_fine, h, w = fine_features.shape[1:]
     num_fea_points = h * w
     c_pred = prediction.shape[1]
@@ -374,7 +374,7 @@ def render(fine_feature,
         return inter_coarse_prediction, render_mlp, points
     else:
         # 渲染点概率替换
-        bs = cfg.BATCH_SIZE
+        bs = cfg.batch_size_per_dev
         c, h, w = inter_coarse_prediction.shape[1:]
         inter_coarse_prediction = fluid.layers.transpose(
             inter_coarse_prediction, [0, 2, 3, 1])
@@ -391,7 +391,7 @@ def render(fine_feature,
             points_i = fluid.layers.unsqueeze(points_i, axes=[-1])
             # 渲染点置零
             mask = fluid.layers.ones_like(inter_coarse_prediction_i)
-            updates_mask = -fluid.layers.ones(shape=(N, c), dtype='float32')
+            updates_mask = 0 - fluid.layers.ones(shape=(N, c), dtype='float32')
             mask = fluid.layers.scatter_nd_add(mask, points_i, updates_mask)
             # 渲染点替换
             inter_coarse_prediction_i = fluid.layers.elementwise_mul(
@@ -417,6 +417,7 @@ def pointrend(img, num_classes, label=None, phase=ModelPhase.TRAIN):
     N = coarse_size[-1] * coarse_size[-2]
     # 计算渲染的次数
     if ModelPhase.is_train(phase):
+        print(coarse_pred.shape)
         coarse_pred = fluid.layers.resize_bilinear(coarse_pred, input_size[-2:])
         outs = [(coarse_pred, )]
         _, render_mlp, points = render(
