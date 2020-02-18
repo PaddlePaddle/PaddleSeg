@@ -128,29 +128,35 @@ def multi_softmax_with_loss(logits,
                             weight=None):
     avg_loss = 0
     if cfg.MODEL.MODEL_NAME == 'pointrend':
-        for logit in logits:
-            if len(logit) == 1:
-                avg_loss += softmax_with_loss(logit[0], label, ignore_mask,
-                                              num_classes)
-            else:
-                render_mlp, points = logit
-                label = fluid.layers.transpose(label, [0, 2, 3, 1])
-                label_shape = label.shape
-                label = fluid.layers.reshape(
-                    label, (cfg.BATCH_SIZE, label_shape[1] * label_shape[2],
-                            label_shape[-1]))
-                label_mlp = []
-                for i in range(cfg.BATCH_SIZE):
-                    points_i = points[i]
-                    points_i = fluid.layers.unsqueeze(points_i, axes=[-1])
-                    label_mlp_i = fluid.layers.gather_nd(label[i], points_i)
-                    label_mlp_i = fluid.layers.unsqueeze(label_mlp_i, axes=0)
-                    label_mlp.append(label_mlp_i)
-                label_mlp = fluid.layers.concat(label_mlp, axis=0)
-                label_mlp = fluid.layers.transpose(label_mlp, [0, 2, 1])
-                label_mlp = fluid.layers.unsqueeze(label_mlp, axes=-1)
-                avg_loss += softmax_with_loss(render_mlp, label_mlp,
-                                              label_mlp == 255, num_classes)
+        if isinstance(logits, list):
+            for logit in logits:
+                if len(logit) == 1:
+                    avg_loss += softmax_with_loss(logit[0], label, ignore_mask,
+                                                  num_classes)
+                else:
+                    render_mlp, points = logit
+                    label = fluid.layers.transpose(label, [0, 2, 3, 1])
+                    label_shape = label.shape
+                    label = fluid.layers.reshape(
+                        label,
+                        (cfg.batch_size_per_dev,
+                         label_shape[1] * label_shape[2], label_shape[-1]))
+                    label_mlp = []
+                    for i in range(cfg.batch_size_per_dev):
+                        points_i = points[i]
+                        points_i = fluid.layers.unsqueeze(points_i, axes=[-1])
+                        label_mlp_i = fluid.layers.gather_nd(label[i], points_i)
+                        label_mlp_i = fluid.layers.unsqueeze(
+                            label_mlp_i, axes=0)
+                        label_mlp.append(label_mlp_i)
+                    label_mlp = fluid.layers.concat(label_mlp, axis=0)
+                    label_mlp = fluid.layers.transpose(label_mlp, [0, 2, 1])
+                    label_mlp = fluid.layers.unsqueeze(label_mlp, axes=-1)
+                    avg_loss += softmax_with_loss(render_mlp, label_mlp,
+                                                  label_mlp != 255, num_classes)
+        else:
+            avg_loss = softmax_with_loss(logits, label, ignore_mask,
+                                         num_classes)
         return avg_loss
 
     if isinstance(logits, tuple):
