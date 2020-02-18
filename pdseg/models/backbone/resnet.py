@@ -84,6 +84,9 @@ class ResNet():
         elif layers == 152:
             depth = [3, 8, 36, 3]
         num_filters = [64, 128, 256, 512]
+        stride = [1, 2, 2, 2]
+        if self.stem == 'pointrend':
+            stride = [1, 2, 2, 1]
 
         if self.stem == 'icnet' or self.stem == 'pspnet' or self.stem == 'pointrend':
             conv = self.conv_bn_layer(
@@ -145,7 +148,7 @@ class ResNet():
                     conv = self.bottleneck_block(
                         input=conv,
                         num_filters=int(num_filters[block] * self.scale),
-                        stride=2
+                        stride=stride[block]
                         if i == 0 and block != 0 and dilation_rate == 1 else 1,
                         name=conv_name,
                         dilation=dilation_rate)
