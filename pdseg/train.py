@@ -250,6 +250,7 @@ def train(cfg):
             cfg.BATCH_SIZE, dev_count))
     # If use multi-gpu training mode, batch data will allocated to each GPU evenly
     batch_size_per_dev = cfg.BATCH_SIZE // dev_count
+    cfg.batch_size_per_dev = batch_size_per_dev
     print_info("batch_size_per_dev: {}".format(batch_size_per_dev))
 
     py_reader, avg_loss, lr, pred, grts, masks = build_model(
@@ -454,6 +455,8 @@ def train(cfg):
 
             if args.do_eval:
                 print("Evaluation start")
+                temp = cfg.BATCH_SIZE
+                cfg.BATCH_SIZE = cfg.batch_size_per_dev
                 _, mean_iou, _, mean_acc = evaluate(
                     cfg=cfg,
                     ckpt_dir=ckpt_dir,
@@ -472,6 +475,7 @@ def train(cfg):
                         ckpt_dir,
                         os.path.join(cfg.TRAIN.MODEL_SAVE_DIR, 'best_model'),
                         mean_iou))
+                cfg.BATCH_SIZE = temp
 
             # Use Tensorboard to visualize results
             if args.use_tb and cfg.DATASET.VIS_FILE_LIST is not None:
