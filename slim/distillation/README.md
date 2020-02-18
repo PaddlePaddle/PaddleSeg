@@ -93,6 +93,8 @@ python -m paddle.distributed.launch ./slim/distillation/train_distill.py \
 --do_eval 
 ```
 
+注意：如需修改配置文件中的参数，请在对应的配置文件中直接修改，暂不支持命令行输入覆盖。
+
 ## 评估预测
 
 训练完成后的评估和预测请参考PaddleSeg的[快速入门](../../README.md#快速入门)和[基础功能](../../README.md#基础功能)等章节
