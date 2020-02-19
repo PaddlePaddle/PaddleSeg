@@ -1,6 +1,6 @@
 # Fast-SCNN模型训练教程
 
-* 本教程旨在介绍如何通过使用PaddleSeg提供的 ***`Fast_scnn_cityscape`*** 预训练模型在自定义数据集上进行训练。
+* 本教程旨在介绍如何通过使用PaddleSeg提供的 ***`Fast_scnn_cityscapes`*** 预训练模型在自定义数据集上进行训练。
 
 * 在阅读本教程前，请确保您已经了解过PaddleSeg的[快速入门](../README.md#快速入门)和[基础功能](../README.md#基础功能)等章节，以便对PaddleSeg有一定的了解
 
@@ -15,10 +15,6 @@ python dataset/download_pet.py
 ```
 
 ## 二. 下载预训练模型
-
-关于PaddleSeg支持的所有预训练模型的列表，我们可以从[模型组合](#模型组合)中查看我们所需模型的名字和配置
-
-接着下载对应的预训练模型
 
 ```shell
 python pretrained_model/download_model.py fast_scnn_cityscapes
@@ -114,8 +110,10 @@ python pdseg/eval.py --use_gpu --cfg ./configs/fast_scnn_pet.yaml
 
 | 模型 | eval size | inference time | mIoU on cityscape val|
 |---|---|---|---|
-| DeepLabv3+/MobileNetv2/bn | (1024, 2048) |24.12ms| 0.698|
-| ICNet/bn |(1024, 2048) |25.24ms| 0.6831 |
-| Fast-SCNN/bn | (1024, 2048) |17.24ms| 0.6964 |
+| DeepLabv3+/MobileNetv2/bn | (1024, 2048) |16.14ms| 0.698|
+| ICNet/bn |(1024, 2048) |8.76ms| 0.6831 |
+| Fast-SCNN/bn | (1024, 2048) |6.28ms| 0.6964 |
+
+上述测试环境为v100.
 
 

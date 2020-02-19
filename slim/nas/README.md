@@ -11,7 +11,7 @@
 ## 概述
 
 我们选取Deeplab+mobilenetv2模型作为神经网络搜索示例，该示例使用[PaddleSlim](https://github.com/PaddlePaddle/PaddleSlim)
-辅助完成神经网络搜索实验，具体技术细节，请您参考[神经网络搜索策略](https://github.com/PaddlePaddle/PaddleSlim/blob/develop/docs/docs/tutorials/nas_demo.md)。
+辅助完成神经网络搜索实验，具体技术细节，请您参考[神经网络搜索策略](https://github.com/PaddlePaddle/PaddleSlim/blob/4670a79343c191b61a78e416826d122eea52a7ab/docs/zh_cn/tutorials/image_classification_nas_quick_start.ipynb)。
 
 
 ## 定义搜索空间
