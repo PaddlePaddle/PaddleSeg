@@ -455,7 +455,8 @@ def train(cfg):
 
             if args.do_eval:
                 print("Evaluation start")
-                temp = cfg.BATCH_SIZE
+                temp = cfg.batch_size_per_dev
+                cfg.batch_size_per_dev = 1
                 cfg.BATCH_SIZE = cfg.batch_size_per_dev
                 _, mean_iou, _, mean_acc = evaluate(
                     cfg=cfg,
@@ -475,7 +476,7 @@ def train(cfg):
                         ckpt_dir,
                         os.path.join(cfg.TRAIN.MODEL_SAVE_DIR, 'best_model'),
                         mean_iou))
-                cfg.BATCH_SIZE = temp
+                cfg.batch_size_per_dev = temp
 
             # Use Tensorboard to visualize results
             if args.use_tb and cfg.DATASET.VIS_FILE_LIST is not None:
