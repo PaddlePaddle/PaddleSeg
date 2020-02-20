@@ -79,8 +79,12 @@ def resnet(input):
     model = resnet_backbone(scale=scale, layers=layers, stem='pointrend')
     end_points = 100
     decode_point = 22
+    dilation_dict = {0: 1, 1: 1, 2: 1, 3: 2}
     data, decode_shortcuts = model.net(
-        input, end_points=end_points, decode_points=decode_point)
+        input,
+        end_points=end_points,
+        decode_points=decode_point,
+        dilation_dict=dilation_dict)
     return data, decode_shortcuts[decode_point]
 
 
