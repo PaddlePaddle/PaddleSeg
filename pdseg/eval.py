@@ -92,6 +92,7 @@ def evaluate(cfg, ckpt_dir=None, use_gpu=False, use_mpio=False, **kwargs):
         for b in data_gen:
             yield b[0], b[1], b[2]
 
+    cfg.batch_size_per_dev = cfg.BATCH_SIZE
     py_reader, avg_loss, pred, grts, masks = build_model(
         test_prog, startup_prog, phase=ModelPhase.EVAL)
 
