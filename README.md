@@ -6,7 +6,7 @@
 
 ## 简介
 
-PaddleSeg是基于[PaddlePaddle](https://www.paddlepaddle.org.cn)开发的语义分割库，覆盖了DeepLabv3+, U-Net, ICNet, PSPNet, HRNet等主流分割模型。通过统一的配置，帮助用户更便捷地完成从训练到部署的全流程图像分割应用。
+PaddleSeg是基于[PaddlePaddle](https://www.paddlepaddle.org.cn)开发的语义分割库，覆盖了DeepLabv3+, U-Net, ICNet, PSPNet, HRNet, Fast-SCNN等主流分割模型。通过统一的配置，帮助用户更便捷地完成从训练到部署的全流程图像分割应用。
 
 </br>
 
