@@ -29,7 +29,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 
 gflags.DEFINE_string("conf", default="", help="Configuration File Path")
 gflags.DEFINE_string("input_dir", default="", help="Directory of Input Images")
-gflags.DEFINE_boolean("use_pr", default=False, help="Use optimized model")
+gflags.DEFINE_boolean("use_pr", default=True, help="Use optimized model")
 gflags.DEFINE_string("trt_mode", default="", help="Use optimized model")
 gflags.DEFINE_string("ext", default=".jpeg|.jpg", help="Input Image File Extensions")
 gflags.FLAGS = gflags.FLAGS
@@ -307,7 +307,7 @@ if __name__ == "__main__":
     gflags.FLAGS(sys.argv)
     if (gflags.FLAGS.conf == "" or gflags.FLAGS.input_dir == ""):
         print("Usage: python infer.py --conf=/config/path/to/your/model " +
-              "--input_dir=/directory/of/your/input/images [--use_pr=True]")
+              "--input_dir=/directory/of/your/input/images")
         exit(-1)
     # set empty to turn off as default
     trt_mode = gflags.FLAGS.trt_mode
