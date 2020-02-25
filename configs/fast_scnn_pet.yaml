@@ -31,7 +31,7 @@ MODEL:
     DEFAULT_NORM_TYPE: "bn"
 
 TRAIN:
-    PRETRAINED_MODEL_DIR: "./pretrained_model/fast_scnn_cityscape/"
+    PRETRAINED_MODEL_DIR: "./pretrained_model/fast_scnn_cityscapes/"
     MODEL_SAVE_DIR: "./saved_model/fast_scnn_pet/"
     SNAPSHOT_EPOCH: 10
 TEST:
