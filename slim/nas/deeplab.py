@@ -27,7 +27,6 @@ from models.libs.model_libs import separate_conv
 from models.backbone.mobilenet_v2 import MobileNetV2 as mobilenet_backbone
 from models.backbone.xception import Xception as xception_backbone
 
-
 def encoder(input):
     # 编码器配置，采用ASPP架构，pooling + 1x1_conv + 三个不同尺度的空洞卷积并行, concat后1x1conv
     # ASPP_WITH_SEP_CONV：默认为真，使用depthwise可分离卷积，否则使用普通卷积
@@ -48,7 +47,8 @@ def encoder(input):
     with scope('encoder'):
         channel = 256
         with scope("image_pool"):
-            image_avg = fluid.layers.reduce_mean(input, [2, 3], keep_dim=True)
+            image_avg = fluid.layers.reduce_mean(
+                input, [2, 3], keep_dim=True)
             image_avg = bn_relu(
                 conv(
                     image_avg,
@@ -184,58 +184,20 @@ def decoder(encode_data, decode_shortcut):
         return encode_data
 
 
-def mobilenetv2(input):
-    # Backbone: mobilenetv2结构配置
-    # DEPTH_MULTIPLIER: mobilenetv2的scale设置，默认1.0
-    # OUTPUT_STRIDE：下采样倍数
-    # end_points: mobilenetv2的block数
-    # decode_point: 从mobilenetv2中引出分支所在block数, 作为decoder输入
-    scale = cfg.MODEL.DEEPLAB.DEPTH_MULTIPLIER
-    output_stride = cfg.MODEL.DEEPLAB.OUTPUT_STRIDE
-    model = mobilenet_backbone(scale=scale, output_stride=output_stride)
-    end_points = 18
-    decode_point = 4
-    data, decode_shortcuts = model.net(
-        input, end_points=end_points, decode_points=decode_point)
+def nas_backbone(input, arch):
+    # scale = cfg.MODEL.DEEPLAB.DEPTH_MULTIPLIER
+    # output_stride = cfg.MODEL.DEEPLAB.OUTPUT_STRIDE
+    # model = mobilenet_backbone(scale=scale, output_stride=output_stride)
+    end_points = 8
+    decode_point = 3
+    data, decode_shortcuts = arch(
+        input, end_points=end_points, return_block=decode_point, output_stride=16)
     decode_shortcut = decode_shortcuts[decode_point]
     return data, decode_shortcut
 
 
-def xception(input):
-    # Backbone: Xception结构配置, xception_65, xception_41, xception_71三种可选
-    # decode_point: 从Xception中引出分支所在block数，作为decoder输入
-    # end_point：Xception的block数
-    cfg.MODEL.DEFAULT_EPSILON = 1e-3
-    model = xception_backbone(cfg.MODEL.DEEPLAB.BACKBONE)
-    backbone = cfg.MODEL.DEEPLAB.BACKBONE
-    output_stride = cfg.MODEL.DEEPLAB.OUTPUT_STRIDE
-    if '65' in backbone:
-        decode_point = 2
-        end_points = 21
-    if '41' in backbone:
-        decode_point = 2
-        end_points = 13
-    if '71' in backbone:
-        decode_point = 3
-        end_points = 23
-    data, decode_shortcuts = model.net(
-        input,
-        output_stride=output_stride,
-        end_points=end_points,
-        decode_points=decode_point)
-    decode_shortcut = decode_shortcuts[decode_point]
-    return data, decode_shortcut
-
-
-def deeplabv3p(img, num_classes):
-    # Backbone设置：xception 或 mobilenetv2
-    if 'xception' in cfg.MODEL.DEEPLAB.BACKBONE:
-        data, decode_shortcut = xception(img)
-    elif 'mobilenet' in cfg.MODEL.DEEPLAB.BACKBONE:
-        data, decode_shortcut = mobilenetv2(img)
-    else:
-        raise Exception("deeplab only support xception and mobilenet backbone")
-
+def deeplabv3p_nas(img, num_classes, arch=None):
+    data, decode_shortcut = nas_backbone(img, arch)
     # 编码器解码器设置
     cfg.MODEL.DEFAULT_EPSILON = 1e-5
     if cfg.MODEL.DEEPLAB.ENCODER_WITH_ASPP:
@@ -250,15 +212,14 @@ def deeplabv3p(img, num_classes):
             regularization_coeff=0.0),
         initializer=fluid.initializer.TruncatedNormal(loc=0.0, scale=0.01))
     with scope('logit'):
-        with fluid.name_scope('last_conv'):
-            logit = conv(
-                data,
-                num_classes,
-                1,
-                stride=1,
-                padding=0,
-                bias_attr=True,
-                param_attr=param_attr)
+        logit = conv(
+            data,
+            num_classes,
+            1,
+            stride=1,
+            padding=0,
+            bias_attr=True,
+            param_attr=param_attr)
         logit = fluid.layers.resize_bilinear(logit, img.shape[2:])
 
     return logit
