@@ -131,7 +131,7 @@ python pdseg/vis.py --use_gpu --cfg ./configs/deeplabv3p_xception65_optic.yaml
 
 ## 在线体验
 
-PaddleSeg在AI Studio平台上提供了在线体验的DeepLabv3+图像分割教程，欢迎[点击体验](https://aistudio.baidu.com/aistudio/projectDetail/101696)。
+PaddleSeg在AI Studio平台上提供了在线体验的DeepLabv3+图像分割教程，欢迎[点击体验](https://aistudio.baidu.com/aistudio/projectDetail/226703)。
 
 
 ## 模型组合
