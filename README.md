@@ -166,7 +166,7 @@ A: 请将PaddlePaddle升级至1.5.2版本或以上。
 * 2020.02.25
 
   **`v0.4.0`**
-  * 新增Fast-SCNN分割网络，提供基于cityscapes的[预训练模型](./docs/model_zoo.md)1个。Fast-SCNN不需要imagenet的预训练模型，精度与deeplab-mobilenet，ICNet持平，性能优于两者。
+  * 新增Fast-SCNN分割网络，提供基于cityscapes的[预训练模型](./docs/model_zoo.md)1个。Fast-SCNN不需要imagenet的预训练模型，精度与Deeplabv3p-mobilenetV2，ICNet持平，性能优于两者。
   * 新增LaneNet车道线检测网络，提供[预训练模型](https://github.com/PaddlePaddle/PaddleSeg/tree/release/v0.4.0/contrib/LaneNet#%E4%B8%83-%E5%8F%AF%E8%A7%86%E5%8C%96)一个。
   * 新增基于PaddleSlim的分割库压缩策略([量化](./slim/quantization/README.md), [蒸馏](./slim/distillation/README.md), [剪枝](./slim/prune/README.md), [搜索](./slim/nas/README.md))
   
