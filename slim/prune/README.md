@@ -46,7 +46,7 @@ SLIM.PRUNE_RATIOS '[0.1,0.1,0.1]'
 
 ```shell
 CUDA_VISIBLE_DEVICES=0 
-python -u ./slim/prune/eval_prune.py --cfg configs/cityscape_fast_scnn.yaml --use_gpu --use_mpio \
+python -u ./slim/prune/eval_prune.py --cfg configs/cityscape_fast_scnn.yaml --use_gpu \
 TEST.TEST_MODEL your_trained_model \
 ```
 
