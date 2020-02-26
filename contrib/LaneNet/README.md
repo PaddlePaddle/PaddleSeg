@@ -108,7 +108,7 @@ SOLVER:
 使用下述命令启动训练
 
 ```shell
-CUDA_VISIBLE_DEVICES=0 python -u train.py --cfg configs/lanenet.yaml --use_gpu --use_mpio --do_eval
+CUDA_VISIBLE_DEVICES=0 python -u train.py --cfg configs/lanenet.yaml --use_gpu --do_eval
 ```
 
 ## 六. 进行评估

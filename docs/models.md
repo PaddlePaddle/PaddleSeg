@@ -5,6 +5,7 @@
 - [PSPNet](#PSPNet)
 - [ICNet](#ICNet)
 - [HRNet](#HRNet)
+- [Fast-SCNN](#Fast-SCNN)
 
 ## U-Net
 U-Net [1] 起源于医疗图像分割，整个网络是标准的encoder-decoder网络，特点是参数少，计算快，应用性强，对于一般场景适应度很高。U-Net最早于2015年提出，并在ISBI 2015 Cell Tracking Challenge取得了第一。经过发展，目前有多个变形和应用。
@@ -58,6 +59,14 @@ HRNet在人体姿态估计、语义分割和目标检测领域都取得了显著
 
 ![](./imgs/hrnet.png)
 
+### Fast-SCNN
+
+Fast-SCNN [6] 是一个面向实时的语义分割网络。在双分支的结构基础上，大量使用了深度可分离卷积和逆残差（inverted-residual）模块，并且使用特征融合构造金字塔池化模块 (Pyramid Pooling Module)来融合上下文信息。这使得Fast-SCNN在保持高效的情况下能学习到丰富的细节信息。
+
+整个网络结构如下：
+
+![](./imgs/fast-scnn.png)
+
 ## 参考文献
 
 [1] [U-Net: Convolutional Networks for Biomedical Image Segmentation](https://arxiv.org/abs/1505.04597)
@@ -71,4 +80,7 @@ HRNet在人体姿态估计、语义分割和目标检测领域都取得了显著
 [5] [ICNet for Real-Time Semantic Segmentation on High-Resolution Images](https://arxiv.org/abs/1704.08545)
 
 [6] [Deep High-Resolution Representation Learning for Visual Recognition](https://arxiv.org/abs/1908.07919)
+
+[7] [Fast-SCNN: Fast Semantic Segmentation Network](https://arxiv.org/abs/1902.04502)
+
 
