@@ -101,6 +101,7 @@ def visualize(cfg,
 
     startup_prog = fluid.Program()
     test_prog = fluid.Program()
+    cfg.batch_size_per_dev = cfg.BATCH_SIZE
     pred, logit = build_model(test_prog, startup_prog, phase=ModelPhase.VISUAL)
     # Clone forward graph
     test_prog = test_prog.clone(for_test=True)
@@ -176,13 +177,10 @@ def visualize(cfg,
                     dataformats='HWC')
                 # Original image
                 # BGR->RGB
-                img = cv2.imread(
-                    os.path.join(cfg.DATASET.DATA_DIR, img_name))[..., ::-1]
+                img = cv2.imread(os.path.join(cfg.DATASET.DATA_DIR,
+                                              img_name))[..., ::-1]
                 log_writer.add_image(
-                    "Images/{}".format(img_name),
-                    img,
-                    epoch,
-                    dataformats='HWC')
+                    "Images/{}".format(img_name), img, epoch, dataformats='HWC')
                 # add ground truth (label) images
                 grt = grts[i]
                 if grt is not None:
