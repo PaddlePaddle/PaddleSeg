@@ -229,10 +229,8 @@ cfg.MODEL.HRNET.STAGE4.NUM_MODULES = 3
 cfg.MODEL.HRNET.STAGE4.NUM_CHANNELS = [40, 80, 160, 320]
 
 ########################## POINTREND模型配置 ######################################
-# POINTREND backbone scale 设置
-cfg.MODEL.POINTREND.DEPTH_MULTIPLIER = 1
-# POINTREND backbone 层数 设置
-cfg.MODEL.POINTREND.LAYERS = 101
+# 是否进行POINTREND
+cfg.MODEL.WITH_POINTREND = False
 # POINTREND 选点时过采样的倍数
 cfg.MODEL.POINTREND.K = 3
 # POINTREND 选点时重要点的系数
