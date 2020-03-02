@@ -280,7 +280,6 @@ def get_points(prediction,
     if not ModelPhase.is_train(phase):
         _, index = fluid.layers.argsort(uncertain_features, axis=-1)
         uncertain_points = index[:, :N]
-        #_, uncertain_points = fluid.layers.topk(-1 * uncertain_features, k=N)
         return uncertain_points
     else:
         # 获取过采样点, 并排除ignore
