@@ -414,9 +414,12 @@ def render(fine_feature,
         return inter_coarse_prediction_mlp, render_mlp, points
 
 
-def pointrend(img, num_classes, label=None, phase=ModelPhase.TRAIN):
-    coarse_pred, fine_feature = deeplabv3(img, num_classes)
-    input_size = img.shape
+def pointrend(coarse_pred,
+              fine_feature,
+              num_classes,
+              input_size,
+              label=None,
+              phase=ModelPhase.TRAIN):
     coarse_size = coarse_pred.shape
     N = coarse_size[-1] * coarse_size[-2]
     # 计算渲染的次数

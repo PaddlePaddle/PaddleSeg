@@ -26,6 +26,7 @@ from models.libs.model_libs import conv
 from models.libs.model_libs import separate_conv
 from models.backbone.mobilenet_v2 import MobileNetV2 as mobilenet_backbone
 from models.backbone.xception import Xception as xception_backbone
+from models.backbone.resnet import ResNet as resnet_backbone
 
 
 def encoder(input):
@@ -227,12 +228,33 @@ def xception(input):
     return data, decode_shortcut
 
 
+def resnet(input):
+    # PointRend backbone: resnet, 默认resnet101
+    # end_points: resnet终止层数
+    # decode_point: backbone引出分支所在层数
+    scale = 1
+    layers = 101
+    model = resnet_backbone(scale=scale, layers=layers, stem='deeplabv3p')
+    end_points = 100
+    decode_point = 22
+    dilation_dict = {0: 1, 1: 1, 2: 1, 3: 2}
+    data, decode_shortcuts = model.net(
+        input,
+        end_points=end_points,
+        decode_points=decode_point,
+        dilation_dict=dilation_dict)
+    decode_shortcut = decode_shortcuts[decode_point]
+    return data, decode_shortcut
+
+
 def deeplabv3p(img, num_classes):
     # Backbone设置：xception 或 mobilenetv2
     if 'xception' in cfg.MODEL.DEEPLAB.BACKBONE:
         data, decode_shortcut = xception(img)
     elif 'mobilenet' in cfg.MODEL.DEEPLAB.BACKBONE:
         data, decode_shortcut = mobilenetv2(img)
+    elif 'resnet' in cfg.MODEL.DEEPLAB.BACKBONE:
+        data, decode_shortcut = resnet(img)
     else:
         raise Exception("deeplab only support xception and mobilenet backbone")
 
@@ -249,6 +271,7 @@ def deeplabv3p(img, num_classes):
         regularizer=fluid.regularizer.L2DecayRegularizer(
             regularization_coeff=0.0),
         initializer=fluid.initializer.TruncatedNormal(loc=0.0, scale=0.01))
+    print('data shape', data.shape)
     with scope('logit'):
         with fluid.name_scope('last_conv'):
             logit = conv(
@@ -259,6 +282,8 @@ def deeplabv3p(img, num_classes):
                 padding=0,
                 bias_attr=True,
                 param_attr=param_attr)
-        logit = fluid.layers.resize_bilinear(logit, img.shape[2:])
+    if cfg.MODEL.WITH_POINTREND:
+        return logit, decode_shortcut
+    logit = fluid.layers.resize_bilinear(logit, img.shape[2:])
 
     return logit

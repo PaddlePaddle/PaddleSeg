@@ -69,7 +69,7 @@ class ModelPhase(object):
         return False
 
 
-def seg_model(image, class_num, label=None, phase=ModelPhase.TRAIN):
+def seg_model(image, class_num):
     model_name = cfg.MODEL.MODEL_NAME
     if model_name == 'unet':
         logits = unet.unet(image, class_num)
@@ -83,8 +83,6 @@ def seg_model(image, class_num, label=None, phase=ModelPhase.TRAIN):
         logits = hrnet.hrnet(image, class_num)
     elif model_name == 'fast_scnn':
         logits = fast_scnn.fast_scnn(image, class_num)
-    elif model_name == 'pointrend':
-        logits = pointrend.pointrend(image, class_num, label=label, phase=phase)
     else:
         raise Exception(
             "unknow model name, only support unet, deeplabv3p, icnet, pspnet, hrnet"
@@ -219,7 +217,15 @@ def build_model(main_prog, start_prog, phase=ModelPhase.TRAIN):
                     raise Exception(
                         "softmax loss can not combine with dice loss or bce loss"
                     )
-            logits = seg_model(image, class_num, label=label, phase=phase)
+            logits = seg_model(image, class_num)
+            if cfg.MODEL.WITH_POINTREND:
+                logits = pointrend.pointrend(
+                    logits[0],
+                    logits[1],
+                    class_num,
+                    image_shape,
+                    label=label,
+                    phase=phase)
 
             # 根据选择的loss函数计算相应的损失函数
             if ModelPhase.is_train(phase) or ModelPhase.is_eval(phase):
@@ -259,7 +265,7 @@ def build_model(main_prog, start_prog, phase=ModelPhase.TRAIN):
                     avg_loss += avg_loss_list[i]
 
             #get pred result in original size
-            if cfg.MODEL.MODEL_NAME == 'pointrend':
+            if cfg.MODEL.WITH_POINTREND:
                 if ModelPhase.is_train(phase):
                     logit = logits[0][0]
                 else:

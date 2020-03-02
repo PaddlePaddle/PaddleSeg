@@ -88,7 +88,7 @@ class ResNet():
         if self.stem == 'pointrend':
             stride = [1, 2, 2, 1]
 
-        if self.stem == 'icnet' or self.stem == 'pspnet' or self.stem == 'pointrend':
+        if self.stem == 'icnet' or self.stem == 'pspnet' or self.stem == 'deeplabv3p':
             conv = self.conv_bn_layer(
                 input=input,
                 num_filters=int(64 * self.scale),

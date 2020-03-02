@@ -128,7 +128,7 @@ def multi_softmax_with_loss(logits,
                             num_classes=2,
                             weight=None):
     avg_loss = 0
-    if cfg.MODEL.MODEL_NAME == 'pointrend':
+    if cfg.MODEL.WITH_POINTREND:
         if isinstance(logits, list):
             for logit in logits:
                 if len(logit) == 1:
@@ -179,7 +179,7 @@ def multi_softmax_with_loss(logits,
 
 def multi_dice_loss(logits, label, ignore_mask=None):
     avg_loss = 0
-    if cfg.MODEL.MODEL_NAME == 'pointrend':
+    if cfg.MODEL.WITH_POINTREND:
         if isinstance(logits, list):
             for logit in logits:
                 if len(logit) == 1:
@@ -224,7 +224,7 @@ def multi_dice_loss(logits, label, ignore_mask=None):
 
 def multi_bce_loss(logits, label, ignore_mask=None):
     avg_loss = 0
-    if cfg.MODEL.MODEL_NAME == 'pointrend':
+    if cfg.MODEL.WITH_POINTREND:
         if isinstance(logits, list):
             for logit in logits:
                 if len(logit) == 1:
