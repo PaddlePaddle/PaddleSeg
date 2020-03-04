@@ -9,15 +9,20 @@ DATASET:
 
 # 预训练模型配置
 MODEL:
-    MODEL_NAME: "pointrend"
+    MODEL_NAME: "deeplabv3p"
     DEFAULT_NORM_TYPE: "bn"
+    WITH_POINTREND: True
+    DEEPLAB:
+        BACKBONE: "resnet"
+        ENCODER_WITH_ASPP: True
+        ENABLE_DECODER: False
 
 # 其他配置
-TRAIN_CROP_SIZE: (512, 512)
-EVAL_CROP_SIZE: (512, 512)
+TRAIN_CROP_SIZE: (769, 769)
+EVAL_CROP_SIZE: (2048, 1024)
 AUG:
     AUG_METHOD: "unpadding"
-    FIX_RESIZE_SIZE: (512, 512)
+    FIX_RESIZE_SIZE: (2048, 1024)
 BATCH_SIZE: 2
 TRAIN:
     PRETRAINED_MODEL_DIR: "./pretrained_model/pointrend_bn_coco/"

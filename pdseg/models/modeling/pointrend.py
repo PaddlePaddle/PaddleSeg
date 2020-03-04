@@ -18,14 +18,11 @@ from __future__ import division
 from __future__ import print_function
 
 import numpy as np
-import sys, os
-sys.path.append(os.path.abspath('../../'))
 import paddle.fluid as fluid
 from utils.config import cfg
 from models.libs.model_libs import scope, name_scope
 from models.libs.model_libs import bn, avg_pool, conv, bn_relu, relu
 from models.libs.model_libs import separate_conv
-from models.backbone.resnet import ResNet as resnet_backbone
 
 
 class ModelPhase(object):
@@ -68,149 +65,6 @@ class ModelPhase(object):
             return True
 
         return False
-
-
-def resnet(input):
-    # PointRend backbone: resnet, 默认resnet101
-    # end_points: resnet终止层数
-    # decode_point: backbone引出分支所在层数
-    scale = cfg.MODEL.POINTREND.DEPTH_MULTIPLIER
-    layers = cfg.MODEL.POINTREND.LAYERS
-    model = resnet_backbone(scale=scale, layers=layers, stem='pointrend')
-    end_points = 100
-    decode_point = 22
-    dilation_dict = {0: 1, 1: 1, 2: 1, 3: 2}
-    data, decode_shortcuts = model.net(
-        input,
-        end_points=end_points,
-        decode_points=decode_point,
-        dilation_dict=dilation_dict)
-    return data, decode_shortcuts[decode_point]
-
-
-def encoder(input):
-    # 编码器配置，采用ASPP架构，pooling + 1x1_conv + 三个不同尺度的空洞卷积并行, concat后1x1conv
-    # ASPP_WITH_SEP_CONV：默认为真，使用depthwise可分离卷积，否则使用普通卷积
-    # OUTPUT_STRIDE: 下采样倍数，8或16，决定aspp_ratios大小
-    # aspp_ratios：ASPP模块空洞卷积的采样率
-
-    if cfg.MODEL.DEEPLAB.OUTPUT_STRIDE == 16:
-        aspp_ratios = [6, 12, 18]
-    elif cfg.MODEL.DEEPLAB.OUTPUT_STRIDE == 8:
-        aspp_ratios = [12, 24, 36]
-    else:
-        raise Exception("deeplab only support stride 8 or 16")
-
-    param_attr = fluid.ParamAttr(
-        name=name_scope + 'weights',
-        regularizer=None,
-        initializer=fluid.initializer.TruncatedNormal(loc=0.0, scale=0.06))
-    with scope('encoder'):
-        channel = 256
-        with scope("image_pool"):
-            image_avg = fluid.layers.reduce_mean(input, [2, 3], keep_dim=True)
-            image_avg = bn_relu(
-                conv(
-                    image_avg,
-                    channel,
-                    1,
-                    1,
-                    groups=1,
-                    padding=0,
-                    param_attr=param_attr))
-            image_avg = fluid.layers.resize_bilinear(image_avg, input.shape[2:])
-
-        with scope("aspp0"):
-            aspp0 = bn_relu(
-                conv(
-                    input,
-                    channel,
-                    1,
-                    1,
-                    groups=1,
-                    padding=0,
-                    param_attr=param_attr))
-        with scope("aspp1"):
-            if cfg.MODEL.DEEPLAB.ASPP_WITH_SEP_CONV:
-                aspp1 = separate_conv(
-                    input, channel, 1, 3, dilation=aspp_ratios[0], act=relu)
-            else:
-                aspp1 = bn_relu(
-                    conv(
-                        input,
-                        channel,
-                        stride=1,
-                        filter_size=3,
-                        dilation=aspp_ratios[0],
-                        padding=aspp_ratios[0],
-                        param_attr=param_attr))
-        with scope("aspp2"):
-            if cfg.MODEL.DEEPLAB.ASPP_WITH_SEP_CONV:
-                aspp2 = separate_conv(
-                    input, channel, 1, 3, dilation=aspp_ratios[1], act=relu)
-            else:
-                aspp2 = bn_relu(
-                    conv(
-                        input,
-                        channel,
-                        stride=1,
-                        filter_size=3,
-                        dilation=aspp_ratios[1],
-                        padding=aspp_ratios[1],
-                        param_attr=param_attr))
-        with scope("aspp3"):
-            if cfg.MODEL.DEEPLAB.ASPP_WITH_SEP_CONV:
-                aspp3 = separate_conv(
-                    input, channel, 1, 3, dilation=aspp_ratios[2], act=relu)
-            else:
-                aspp3 = bn_relu(
-                    conv(
-                        input,
-                        channel,
-                        stride=1,
-                        filter_size=3,
-                        dilation=aspp_ratios[2],
-                        padding=aspp_ratios[2],
-                        param_attr=param_attr))
-        with scope("concat"):
-            data = fluid.layers.concat([image_avg, aspp0, aspp1, aspp2, aspp3],
-                                       axis=1)
-            data = bn_relu(
-                conv(
-                    data,
-                    channel,
-                    1,
-                    1,
-                    groups=1,
-                    padding=0,
-                    param_attr=param_attr))
-            data = fluid.layers.dropout(data, 0.9)
-        return data
-
-
-def deeplabv3(img, num_classes):
-    data, decode_shortcut = resnet(img)
-    data = encoder(data)
-
-    # 根据类别数设置最后一个卷积层输出，并resize到图片原始尺寸
-    param_attr = fluid.ParamAttr(
-        name=name_scope + 'weights',
-        regularizer=fluid.regularizer.L2DecayRegularizer(
-            regularization_coeff=0.0),
-        initializer=fluid.initializer.TruncatedNormal(loc=0.0, scale=0.01))
-    with scope('logit'):
-        with fluid.name_scope('last_conv'):
-            logit = conv(
-                data,
-                num_classes,
-                1,
-                stride=1,
-                padding=0,
-                bias_attr=True,
-                param_attr=param_attr)
-        # logit = fluid.layers.resize_bilinear(logit, img.shape[2:])
-
-    return logit, decode_shortcut
 
 
 def mlp(input, num_classes):
@@ -259,8 +113,8 @@ def get_points(prediction,
                label=None,
                phase=ModelPhase.TRAIN):
     '''
-    根据depelabv3预测结果的不确定性选取渲染的点
-    :param prediction: depelabv3预测结果，已经经过插值处理
+    根据分割部分预测结果的不确定性选取渲染的点
+    :param prediction: 分割预测结果，已经经过插值处理
     :param N: 渲染的点数
     :param k: 过采样的倍数
     :param beta: 重要点的比例
@@ -332,6 +186,7 @@ def get_point_wise_features(fine_features, prediction, points):
                                          (bs, num_fea_points, c_fine))
     prediction = fluid.layers.reshape(prediction, (bs, num_fea_points, c_pred))
 
+    # pwf为point wise features的缩写
     pwf_fine = []
     pwf_pred = []
     for i in range(bs):
@@ -360,58 +215,61 @@ def render(fine_feature,
            num_classes,
            label=None,
            phase=ModelPhase.TRAIN):
-    inter_coarse_prediction = fluid.layers.resize_bilinear(coarse_pred, size)
-    inter_fine_feature = fluid.layers.resize_bilinear(fine_feature, size)
-    # if label is not None:
-    #     label = fluid.layers.resize_nearest(label, size)
+    # 插值到需要渲染的大小
+    interpolation_coarse_prediction = fluid.layers.resize_bilinear(
+        coarse_pred, size)
+    interpolation_fine_feature = fluid.layers.resize_bilinear(
+        fine_feature, size)
     points = get_points(
-        inter_coarse_prediction,
+        interpolation_coarse_prediction,
         N=N,
         k=cfg.MODEL.POINTREND.K,
         beta=cfg.MODEL.POINTREND.BETA,
         label=label,
         phase=phase)
     point_wise_features = get_point_wise_features(
-        inter_fine_feature, inter_coarse_prediction, points)
+        interpolation_fine_feature, interpolation_coarse_prediction, points)
     render_mlp = mlp(point_wise_features, num_classes)
     if ModelPhase.is_train(phase):
-        return inter_coarse_prediction, render_mlp, points
+        return interpolation_coarse_prediction, render_mlp, points
     else:
         # 渲染点概率替换
         bs = cfg.batch_size_per_dev
-        c, h, w = inter_coarse_prediction.shape[1:]
-        inter_coarse_prediction = fluid.layers.transpose(
-            inter_coarse_prediction, [0, 2, 3, 1])
-        inter_coarse_prediction = fluid.layers.reshape(inter_coarse_prediction,
-                                                       (bs, h * w, c))
+        c, h, w = interpolation_coarse_prediction.shape[1:]
+        interpolation_coarse_prediction = fluid.layers.transpose(
+            interpolation_coarse_prediction, [0, 2, 3, 1])
+        interpolation_coarse_prediction = fluid.layers.reshape(
+            interpolation_coarse_prediction, (bs, h * w, c))
 
         render_mlp = fluid.layers.squeeze(render_mlp, axes=[-1])
         render_mlp = fluid.layers.transpose(render_mlp, [0, 2, 1])
-        inter_coarse_prediction_mlp = []
+        interpolation_coarse_prediction_mlp = []
         for i in range(bs):
-            inter_coarse_prediction_i = inter_coarse_prediction[i]
+            interpolation_coarse_prediction_i = interpolation_coarse_prediction[
+                i]
             points_i = points[i]
             render_mlp_i = render_mlp[i]
             points_i = fluid.layers.unsqueeze(points_i, axes=[-1])
             # 渲染点置零
-            mask = fluid.layers.ones_like(inter_coarse_prediction_i)
+            mask = fluid.layers.ones_like(interpolation_coarse_prediction_i)
             updates_mask = 0 - fluid.layers.ones(shape=(N, c), dtype='float32')
             mask = fluid.layers.scatter_nd_add(mask, points_i, updates_mask)
             # 渲染点替换
-            inter_coarse_prediction_i = fluid.layers.elementwise_mul(
-                inter_coarse_prediction_i, mask)
-            inter_coarse_prediction_i = fluid.layers.scatter_nd_add(
-                inter_coarse_prediction_i, points_i, render_mlp_i)
-            inter_coarse_prediction_i = fluid.layers.unsqueeze(
-                inter_coarse_prediction_i, axes=0)
-            inter_coarse_prediction_mlp.append(inter_coarse_prediction_i)
-        inter_coarse_prediction_mlp = fluid.layers.concat(
-            inter_coarse_prediction_mlp, axis=0)
-        inter_coarse_prediction_mlp = fluid.layers.reshape(
-            inter_coarse_prediction_mlp, (bs, h, w, c))
-        inter_coarse_prediction_mlp = fluid.layers.transpose(
-            inter_coarse_prediction_mlp, [0, 3, 1, 2])
-        return inter_coarse_prediction_mlp, render_mlp, points
+            interpolation_coarse_prediction_i = fluid.layers.elementwise_mul(
+                interpolation_coarse_prediction_i, mask)
+            interpolation_coarse_prediction_i = fluid.layers.scatter_nd_add(
+                interpolation_coarse_prediction_i, points_i, render_mlp_i)
+            interpolation_coarse_prediction_i = fluid.layers.unsqueeze(
+                interpolation_coarse_prediction_i, axes=0)
+            interpolation_coarse_prediction_mlp.append(
+                interpolation_coarse_prediction_i)
+        interpolation_coarse_prediction_mlp = fluid.layers.concat(
+            interpolation_coarse_prediction_mlp, axis=0)
+        interpolation_coarse_prediction_mlp = fluid.layers.reshape(
+            interpolation_coarse_prediction_mlp, (bs, h, w, c))
+        interpolation_coarse_prediction_mlp = fluid.layers.transpose(
+            interpolation_coarse_prediction_mlp, [0, 3, 1, 2])
+        return interpolation_coarse_prediction_mlp, render_mlp, points
 
 
 def pointrend(coarse_pred,
@@ -424,7 +282,6 @@ def pointrend(coarse_pred,
     N = coarse_size[-1] * coarse_size[-2]
     # 计算渲染的次数
     if ModelPhase.is_train(phase):
-        print(coarse_pred.shape)
         coarse_pred = fluid.layers.resize_bilinear(coarse_pred, input_size[-2:])
         outs = [(coarse_pred, )]
         _, render_mlp, points = render(
@@ -457,26 +314,3 @@ def pointrend(coarse_pred,
             num_classes=num_classes,
             phase=phase)
         return prediction
-
-
-if __name__ == '__main__':
-    import os
-    os.environ['GLOG_vmodule'] = '4'
-    os.environ['GLOG_logtostderr'] = '1'
-
-    image_shape = [2, 3, 64, 64]
-    label_shape = [2, 1, 64, 64]
-    cfg.BATCH_SIZE = 2
-    image = fluid.layers.data(
-        name='image',
-        shape=image_shape,
-        dtype='float32',
-        append_batch_size=False)
-    label = fluid.layers.data(
-        name='label', shape=label_shape, dtype='int64', append_batch_size=False)
-    # points = get_points(image, N=3, phase=ModelPhase.TRAIN, label=label)
-    # pwf = get_point_wise_features(image, image, points)
-    out = pointrend(image, 2, label, ModelPhase.TRAIN)
-    for i in out:
-        for j in i:
-            print(j)

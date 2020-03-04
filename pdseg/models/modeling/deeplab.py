@@ -236,7 +236,10 @@ def resnet(input):
     layers = 101
     model = resnet_backbone(scale=scale, layers=layers, stem='deeplabv3p')
     end_points = 100
-    decode_point = 22
+    if cfg.MODEL.WITH_POINTREND:
+        decode_point = 22
+    else:
+        decode_point = 10
     dilation_dict = {0: 1, 1: 1, 2: 1, 3: 2}
     data, decode_shortcuts = model.net(
         input,
@@ -271,7 +274,6 @@ def deeplabv3p(img, num_classes):
         regularizer=fluid.regularizer.L2DecayRegularizer(
             regularization_coeff=0.0),
         initializer=fluid.initializer.TruncatedNormal(loc=0.0, scale=0.01))
-    print('data shape', data.shape)
     with scope('logit'):
         with fluid.name_scope('last_conv'):
             logit = conv(
