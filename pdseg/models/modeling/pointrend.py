@@ -134,6 +134,16 @@ def get_points(prediction,
     if not ModelPhase.is_train(phase):
         _, index = fluid.layers.argsort(uncertain_features, axis=-1)
         uncertain_points = index[:, :N]
+        temp = np.array(range(0, bs, 1))
+        temp = temp.astype('int32')
+        temp = temp.reshape(bs, 1)
+        temp = np.repeat(temp, N, axis=-1)
+        temp = temp[:, :, np.newaxis]
+        bs_tensor = fluid.layers.assign(temp).astype('int64')
+        uncertain_points = fluid.layers.unsqueeze(uncertain_points, axes=[-1])
+        uncertain_points = fluid.layers.concat([bs_tensor, uncertain_points],
+                                               axis=-1)
+
         return uncertain_points
     else:
         # 获取过采样点, 并排除ignore
@@ -146,31 +156,37 @@ def get_points(prediction,
         _, points = fluid.layers.topk(rand_tensor, k=k * N)
 
         # 获取重要点
-        important_points = []
-        for i in range(bs):
-            points_i = points[i]
-            points_i = fluid.layers.unsqueeze(points_i, axes=[-1])
-            fea_points_i = fluid.layers.gather_nd(uncertain_features[i],
-                                                  points_i)
-            _, importance_index = fluid.layers.topk(
-                -1 * fea_points_i, k=int(beta * N))
-            importance_index = fluid.layers.unsqueeze(
-                importance_index, axes=[-1])
-            important_points_i = fluid.layers.gather_nd(points[i],
-                                                        importance_index)
-            important_points_i = fluid.layers.unsqueeze(
-                important_points_i, axes=[0])
-            important_points.append(important_points_i)
-        important_points = fluid.layers.concat(important_points, axis=0)
+        temp = np.array(range(0, bs, 1))
+        temp = temp.astype('int32')
+        temp = temp.reshape(bs, 1)
+        temp = np.repeat(temp, k * N, axis=-1)
+        temp = temp[:, :, np.newaxis]
+        bs_tensor_points = fluid.layers.assign(temp).astype('int64')
+        points = fluid.layers.unsqueeze(points, axes=[-1])
+        points = fluid.layers.concat([bs_tensor_points, points], axis=-1)
+        fea_points = fluid.layers.gather_nd(uncertain_features, points)
+        _, importance_index = fluid.layers.topk(
+            -1 * fea_points, k=int(beta * N))
+        importance_index = fluid.layers.unsqueeze(importance_index, axes=[-1])
+        bs_tensor_importance_index = fluid.layers.assign(
+            temp[:, 0:int(beta * N), :]).astype('int64')
+        importance_index = fluid.layers.concat(
+            [bs_tensor_importance_index, importance_index], axis=-1)
+        important_points = fluid.layers.gather_nd(points, importance_index)
 
         # 随机点获取（1-beta*N)
         rand_tensor = fluid.layers.uniform_random(
             shape=(bs, num_fea_points), min=0, max=1)
         rand_tensor = rand_tensor - ignore_mask
         _, rand_points = fluid.layers.topk(rand_tensor, k=N - int(beta * N))
+        rand_points = fluid.layers.unsqueeze(rand_points, axes=[-1])
+        bs_tensor_rand_points = fluid.layers.assign(
+            temp[:, 0:N - int(beta * N), :]).astype('int64')
+        rand_points = fluid.layers.concat([bs_tensor_rand_points, rand_points],
+                                          axis=-1)
 
         uncertain_points = fluid.layers.concat([important_points, rand_points],
-                                               axis=-1)
+                                               axis=-2)
         return uncertain_points
 
 
@@ -187,20 +203,9 @@ def get_point_wise_features(fine_features, prediction, points):
     prediction = fluid.layers.reshape(prediction, (bs, num_fea_points, c_pred))
 
     # pwf为point wise features的缩写
-    pwf_fine = []
-    pwf_pred = []
-    for i in range(bs):
-        points_i = points[i]
-        points_i = fluid.layers.unsqueeze(points_i, axes=[-1])
-        pwf_fine_i = fluid.layers.gather_nd(fine_features[i], points_i)
-        pwf_pred_i = fluid.layers.gather_nd(prediction[i], points_i)
-        pwf_fine_i = fluid.layers.unsqueeze(pwf_fine_i, axes=0)
-        pwf_pred_i = fluid.layers.unsqueeze(pwf_pred_i, axes=0)
-        pwf_fine.append(pwf_fine_i)
-        pwf_pred.append(pwf_pred_i)
-        points_i.stop_gradient = True
-    pwf_fine = fluid.layers.concat(pwf_fine, axis=0)
-    pwf_pred = fluid.layers.concat(pwf_pred, axis=0)
+    pwf_fine = fluid.layers.gather_nd(fine_features, points)
+    pwf_pred = fluid.layers.gather_nd(prediction, points)
+    points.stop_gradient = True
     pwf = fluid.layers.concat([pwf_fine, pwf_pred], axis=-1)
     pwf = fluid.layers.transpose(pwf, [0, 2, 1])
     pwf = fluid.layers.unsqueeze(pwf, axes=-1)
@@ -243,28 +248,15 @@ def render(fine_feature,
 
         render_mlp = fluid.layers.squeeze(render_mlp, axes=[-1])
         render_mlp = fluid.layers.transpose(render_mlp, [0, 2, 1])
-        interpolation_coarse_prediction_mlp = []
-        for i in range(bs):
-            interpolation_coarse_prediction_i = interpolation_coarse_prediction[
-                i]
-            points_i = points[i]
-            render_mlp_i = render_mlp[i]
-            points_i = fluid.layers.unsqueeze(points_i, axes=[-1])
-            # 渲染点置零
-            mask = fluid.layers.ones_like(interpolation_coarse_prediction_i)
-            updates_mask = 0 - fluid.layers.ones(shape=(N, c), dtype='float32')
-            mask = fluid.layers.scatter_nd_add(mask, points_i, updates_mask)
-            # 渲染点替换
-            interpolation_coarse_prediction_i = fluid.layers.elementwise_mul(
-                interpolation_coarse_prediction_i, mask)
-            interpolation_coarse_prediction_i = fluid.layers.scatter_nd_add(
-                interpolation_coarse_prediction_i, points_i, render_mlp_i)
-            interpolation_coarse_prediction_i = fluid.layers.unsqueeze(
-                interpolation_coarse_prediction_i, axes=0)
-            interpolation_coarse_prediction_mlp.append(
-                interpolation_coarse_prediction_i)
-        interpolation_coarse_prediction_mlp = fluid.layers.concat(
-            interpolation_coarse_prediction_mlp, axis=0)
+        # 渲染点置零
+        mask = fluid.layers.ones_like(interpolation_coarse_prediction)
+        updates_mask = 0 - fluid.layers.ones(shape=(bs, N, c), dtype='float32')
+        mask = fluid.layers.scatter_nd_add(mask, points, updates_mask)
+        # 渲染点替换
+        interpolation_coarse_prediction = fluid.layers.elementwise_mul(
+            interpolation_coarse_prediction, mask)
+        interpolation_coarse_prediction_mlp = fluid.layers.scatter_nd_add(
+            interpolation_coarse_prediction, points, render_mlp)
         interpolation_coarse_prediction_mlp = fluid.layers.reshape(
             interpolation_coarse_prediction_mlp, (bs, h, w, c))
         interpolation_coarse_prediction_mlp = fluid.layers.transpose(
