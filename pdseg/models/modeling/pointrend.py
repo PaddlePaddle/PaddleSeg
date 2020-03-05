@@ -271,7 +271,7 @@ def pointrend(coarse_pred,
               label=None,
               phase=ModelPhase.TRAIN):
     coarse_size = coarse_pred.shape
-    N = coarse_size[-1] * coarse_size[-2]
+    N = (input_size[-1] // 16) * (input_size[-2] // 16)
     # 计算渲染的次数
     if ModelPhase.is_train(phase):
         coarse_pred = fluid.layers.resize_bilinear(coarse_pred, input_size[-2:])
