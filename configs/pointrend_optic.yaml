@@ -18,11 +18,11 @@ MODEL:
         ENABLE_DECODER: False
 
 # 其他配置
-TRAIN_CROP_SIZE: (769, 769)
-EVAL_CROP_SIZE: (2048, 1024)
+TRAIN_CROP_SIZE: (512, 512)
+EVAL_CROP_SIZE: (512, 512)
 AUG:
     AUG_METHOD: "unpadding"
-    FIX_RESIZE_SIZE: (2048, 1024)
+    FIX_RESIZE_SIZE: (512, 512)
 BATCH_SIZE: 2
 TRAIN:
     PRETRAINED_MODEL_DIR: "./pretrained_model/pointrend_bn_coco/"
