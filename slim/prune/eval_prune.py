@@ -43,7 +43,7 @@ from models.model_builder import ModelPhase
 from reader import SegDataset
 from metrics import ConfusionMatrix
 
-from paddleslim.prune.io import *
+from paddleslim.prune import load_model
 
 def parse_args():
     parser = argparse.ArgumentParser(description='PaddleSeg model evalution')
