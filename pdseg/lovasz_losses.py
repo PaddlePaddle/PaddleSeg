@@ -5,47 +5,62 @@ import os
 import sys
 import time
 import paddle.fluid as fluid
+import numpy as np
 
 
-def argsort(input, axis=0, type="descend"):
-    if type == "increase":
-        input_sorted, perm = fluid.layers.argsort(input, axis=axis)
-    elif type == 'descend':
-        input_sorted = input * (-1)
-        input_sorted, perm = fluid.layers.argsort(input_sorted, axis=axis)
-        input_sorted = input_sorted * (-1)
-    else:
-        raise Exception("only support increase and descend")
-    return input_sorted, perm
+def _cumsum(x):
+    y = np.array(x)
+    return np.cumsum(y, axis=0)
+
+def create_tmp_var(name, dtype, shape):
+    return fluid.default_main_program().current_block().create_var(
+                    name=name, dtype=dtype, shape=shape
+            )
 
 def lovasz_grad(gt_sorted):
     gts = fluid.layers.reduce_sum(gt_sorted)
-    intersection = (fluid.layers.cumsum(gt_sorted, axis=0) - gts) * (-1)
-    union = fluid.layers.cumsum((1.0 - gt_sorted), axis=0) + gts
-    jaccard = (intersection / union - 1.0) * (-1)
-    jaccard = fluid.layers.concat([jaccard[0:1, :], jaccard[1:, :] - jaccard[:-1, :]], axis=0)
+    with fluid.device_guard("cpu"):
+        intersection = gts - fluid.layers.cumsum(gt_sorted, axis=0)
+        union = fluid.layers.cumsum((1.0 - gt_sorted), axis=0) + gts
+#    tmp1 = create_tmp_var(name='tmp1_', dtype=gt_sorted.dtype, shape=gt_sorted.shape)
+#    tmp2 = create_tmp_var(name='tmp2_', dtype=gt_sorted.dtype, shape=gt_sorted.shape)
+#    intersection = gts - fluid.layers.py_func(func=_cumsum, x=gt_sorted, out=tmp1)
+#    union = fluid.layers.py_func(func=_cumsum, x=1.0 - gt_sorted, out=tmp2) + gts
+#    intersection = gts - fluid.layers.cumsum(gt_sorted, axis=0)
+#    union = fluid.layers.cumsum((1.0 - gt_sorted), axis=0) + gts
+    jaccard = 1.0 - intersection / union
+    len_jaccard = fluid.layers.shape(jaccard)[0]
+    jaccard0 = fluid.layers.slice(jaccard, axes=[0], starts=[0], ends=[1])
+    jaccard1 = fluid.layers.slice(jaccard, axes=[0], starts=[1], ends=[len_jaccard])
+    jaccard2 = fluid.layers.slice(jaccard, axes=[0], starts=[0], ends=[-1])
+    jaccard = fluid.layers.concat([jaccard0, jaccard1 - jaccard2], axis=0)
+#    jaccard = fluid.layers.concat([jaccard[0:1, :], jaccard[1:, :] - jaccard[:-1, :]], axis=0)
     return jaccard
 
 def lovasz_hinge(logits, labels, per_image=True, ignore=None):
     if per_image:
-        def treat_image(log, lab):
+        def treat_image(log, lab, igno):
             log, lab = fluid.layers.unsqueeze(log, 0), fluid.layers.unsqueeze(lab, 0)
-            log, lab = flatten_binary_scores(log, lab, ignore)
+            log, lab = flatten_binary_scores(log, lab, igno)
             return lovasz_hinge_flat(log, lab)
         losses = []
         i = fluid.layers.fill_constant(shape=[1], dtype='int32', value=0)
-        loop_len = fluid.layers.shape(logits)[0]
-        cond = fluid.layers.less_than(x=i, y=loop_len)
+        batch_size = fluid.layers.shape(logits)[0]
+        cond = fluid.layers.less_than(x=i, y=batch_size)
         while_op = fluid.layers.While(cond=cond)
         one = fluid.layers.fill_constant(shape=[1], dtype='int32', value=1)
         with while_op.block():
-            end = fluid.layers.elementwise_add(i, one)
-            log = fluid.layers.slice(logits, axes=[0], starts=[i], ends=[end])
-            lab = fluid.layers.slice(labels, axes=[0], starts=[i], ends=[end])
-            loss = treat_image(log, lab)
+            log = fluid.layers.slice(input=logits, axes=[0], starts=[0], ends=[batch_size])[i]
+            lab = fluid.layers.slice(input=labels, axes=[0], starts=[0], ends=[batch_size])[i]
+            igno = fluid.layers.slice(input=ignore, axes=[0], starts=[0], ends=[batch_size])[i]
+            loss = treat_image(log, lab, igno)
+#             end = fluid.layers.elementwise_add(i, one)
+#             log = fluid.layers.slice(logits, axes=[0], starts=[i], ends=[end])
+#             lab = fluid.layers.slice(labels, axes=[0], starts=[i], ends=[end])
+#             loss = treat_image(log, lab)
             losses.append(loss)
             i = fluid.layers.increment(x=i, value=1, in_place=True)
-            fluid.layers.less_than(x=i, y=loop_len, cond=cond)
+            fluid.layers.less_than(x=i, y=batch_size, cond=cond)
         losses_tensor = fluid.layers.stack(losses)
         loss = fluid.layers.reduce_mean(losses_tensor)   
     else:
@@ -65,8 +80,9 @@ def lovasz_hinge_flat(logits, labels):
             labelsf = fluid.layers.cast(labels, logits.dtype) 
             signs = labelsf * 2 - 1. 
             signs.stop_gradient = True
-            errors = (fluid.layers.elementwise_mul(logits, signs) - 1.0) * (-1)
-            errors_sorted, perm = argsort(errors)
+            errors = 1.0 - fluid.layers.elementwise_mul(logits, signs)
+            errors_sorted, perm = fluid.layers.argsort(errors, axis=0, descending=True)
+            errors_sorted.stop_gradient = False
             gt_sorted = fluid.layers.gather(labelsf, perm) 
 
             grad = lovasz_grad(gt_sorted)
@@ -83,8 +99,8 @@ def lovasz_hinge_flat_v2(logits, labels):
         labelsf = fluid.layers.cast(labels, logits.dtype)
         signs = labelsf * 2 - 1
         signs.stop_gradient = True
-        errors = (fluid.layers.elementwise_mul(logits, signs) - 1.0) * (-1)
-        errors_sorted, perm = argsort(errors)
+        errors = 1.0 - fluid.layers.elementwise_mul(logits, signs)
+        errors_sorted, perm = fluid.layers.argsort(errors, axis=0, descending=True)
         gt_sorted = fluid.layers.gather(labelsf, perm) 
         grad = lovasz_grad(gt_sorted)
         grad.stop_gradient = True
@@ -102,6 +118,7 @@ def lovasz_hinge_flat_v2(logits, labels):
 def flatten_binary_scores(scores, labels, ignore=None): 
     scores = fluid.layers.reshape(scores, [-1,1])
     labels = fluid.layers.reshape(labels, [-1,1])
+    labels.stop_gradient = True
     if ignore is None:
         return scores, labels
     ignore = fluid.layers.cast(ignore, 'int32')
@@ -114,35 +131,62 @@ def flatten_binary_scores(scores, labels, ignore=None):
 
 def lovasz_softmax(probas, labels, classes='present', per_image=False,
         ignore=None):
+    """
+    ignore: [N, 1, H, W] Tensor. Void class labels, ignore pixels which value=0
+    """
     if per_image:
-        def treat_image(prob, lab):
+        def treat_image(prob, lab, igno):
             prob, lab = fluid.layers.unsqueeze(prob, 0), fluid.layers.unsqueeze(lab, 0)
-            prob, lab = flatten_probas(prob, lab, ignore)
+            prob, lab = flatten_probas(prob, lab, igno)
             return lovasz_softmax_flat(prob, lab, classes=classes)
-        losses = []
-        # to do: debug
         batch_size = fluid.layers.shape(probas)[0] 
         sum_loss = fluid.layers.fill_constant(shape=[1], dtype='float32', value=0)
+        sum_loss.stop_gradient = False
         
         i = fluid.layers.fill_constant(shape=[1], dtype='int32', value=0)  
         cond = fluid.layers.less_than(x=i, y=batch_size)
         while_op = fluid.layers.While(cond=cond)
-        
         with while_op.block():
-            prob = probas[i,:,:,:]
-            lab = labels[i,:,:,:]
-            loss = treat_image(prob, lab)
-            sum_loss = fluid.layers.sum_inplace([sum_loss, loss])
-            
+            prob = fluid.layers.slice(input=probas, axes=[0], starts=[0], ends=[batch_size])[i]
+            lab = fluid.layers.slice(input=labels, axes=[0], starts=[0], ends=[batch_size])[i]
+#            prob = probas[i,:,:,:]
+#            lab = labels[i,:,:,:]
+            igno = fluid.layers.slice(input=ignore, axes=[0], starts=[0], ends=[batch_size])[i]
+            single_loss = treat_image(prob, lab, igno)
+#             temp = fluid.layers.elementwise_add(x=sum_loss, y=single_loss)
+#             fluid.layers.assign(temp, sum_loss)
+            sum_loss = fluid.layers.sum([sum_loss, single_loss])
+#             b = fluid.layers.sum([sum_loss, single_loss])
+#             fluid.layers.assign(b, sum_loss)
             i = fluid.layers.increment(x=i, value=1, in_place=True)
             fluid.layers.less_than(x=i, y=batch_size, cond=cond)
+        
           
+        
+#         prob = probas[i,:,:,:]
+#         lab = labels[i,:,:,:]
+#         igno = ignore[i,:,:,:]
+#         single_loss = treat_image(prob, lab, igno)
+#         sum_loss = fluid.layers.sum([sum_loss, single_loss])
+    
+        
+#         i = fluid.layers.fill_constant(shape=[1], dtype='int32', value=1)  
+#         prob = probas[i,:,:,:]
+#         lab = labels[i,:,:,:]
+#         igno = ignore[i,:,:,:]
+#         single_loss = treat_image(prob, lab, igno)
+#         sum_loss = fluid.layers.sum([sum_loss, single_loss])
+        
+        
         batch_size = fluid.layers.cast(batch_size, dtype='float32')
         batch_size.stop_gradient = True
-        
         loss = fluid.layers.elementwise_div(sum_loss, batch_size)
-#         loss = sum_loss / batch_size
-#         loss = fluid.layers.reduce_mean(lossesa)   
+#        loss = sum_loss / batch_size
+#        loss = fluid.layers.cast(loss, dtype='float32')
+#        loss = fluid.layers.mean(loss)
+        print(sum_loss)
+        print(batch_size)
+        print(loss)
     else:
         vprobas, vlabels = flatten_probas(probas, labels, ignore)
         loss = lovasz_softmax_flat(vprobas, vlabels,classes=classes)
@@ -165,8 +209,8 @@ def lovasz_softmax_flat(probas, labels, classes='present'):
         else:
             class_pred = probas[:, c]
         errors = fluid.layers.abs(fg - class_pred)
-        
-        errors_sorted, perm = argsort(errors)
+        errors_sorted, perm = fluid.layers.argsort(errors, axis=0, descending=True)
+        errors_sorted.stop_gradient = False
         fg_sorted = fluid.layers.gather(fg, perm)
 
         grad = lovasz_grad(fg_sorted)
@@ -176,15 +220,6 @@ def lovasz_softmax_flat(probas, labels, classes='present'):
                     x = errors_sorted,
                     y = grad,
                     transpose_x = True))
-        
-#         fg.stop_gradient = True
-#         grad = lovasz_grad(fg)
-#         grad.stop_gradient = True
-#         loss = fluid.layers.reduce_sum(
-#             fluid.layers.matmul(
-#                     x = errors,
-#                     y = grad,
-#                     transpose_x = True))
         
         losses.append(loss)
     
