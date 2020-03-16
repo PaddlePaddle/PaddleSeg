@@ -85,7 +85,7 @@ def seg_model(image, class_num):
         logits = fast_scnn.fast_scnn(image, class_num)
     else:
         raise Exception(
-            "unknow model name, only support unet, deeplabv3p, icnet, pspnet, hrnet"
+            "unknow model name, only support unet, deeplabv3p, icnet, pspnet, hrnet, fast_scnn"
         )
     return logits
 
