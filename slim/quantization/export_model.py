@@ -99,10 +99,15 @@ def export_inference_model(args):
     exe = fluid.Executor(place)
     exe.run(startup_prog)
     infer_prog = infer_prog.clone(for_test=True)
+
+    not_quant_pattern = []
+    if args.not_quant_pattern:
+        not_quant_pattern = args.not_quant_pattern
     config = {
         'weight_quantize_type': 'channel_wise_abs_max',
         'activation_quantize_type': 'moving_average_abs_max',
-        'quantize_op_types': ['depthwise_conv2d', 'mul', 'conv2d']
+        'quantize_op_types': ['depthwise_conv2d', 'mul', 'conv2d'],
+        'not_quant_pattern': not_quant_pattern
     }
 
     infer_prog = quant_aware(infer_prog, place, config, for_test=True)
