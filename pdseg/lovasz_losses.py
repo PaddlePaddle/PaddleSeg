@@ -5,36 +5,64 @@ import os
 import sys
 import time
 import paddle.fluid as fluid
-import numpy as np
+# import numpy as np
 
 
-def _cumsum(x):
-    y = np.array(x)
-    return np.cumsum(y, axis=0)
+# def _cumsum(x):
+#     y = np.array(x)
+#     return np.cumsum(y, axis=0)
 
-def create_tmp_var(name, dtype, shape):
-    return fluid.default_main_program().current_block().create_var(
-                    name=name, dtype=dtype, shape=shape
-            )
+# def create_tmp_var(name, dtype, shape):
+#     return fluid.default_main_program().current_block().create_var(
+#                     name=name, dtype=dtype, shape=shape
+#             )
 
 def lovasz_grad(gt_sorted):
+    gt_sorted = fluid.layers.squeeze(gt_sorted, axes=[1])
     gts = fluid.layers.reduce_sum(gt_sorted)
+    len_gt = fluid.layers.shape(gt_sorted)
+    
+    var_one = fluid.layers.fill_constant(shape=[1], value=1, dtype='int32')
+    x_shape = len_gt + var_one    
+    tmp1 = fluid.layers.range(1, x_shape, 1, 'int32')
+    #tmp1 = fluid.layers.range(1, len_gt+1, 1, 'int32')
     with fluid.device_guard("cpu"):
-        intersection = gts - fluid.layers.cumsum(gt_sorted, axis=0)
-        union = fluid.layers.cumsum((1.0 - gt_sorted), axis=0) + gts
-#    tmp1 = create_tmp_var(name='tmp1_', dtype=gt_sorted.dtype, shape=gt_sorted.shape)
-#    tmp2 = create_tmp_var(name='tmp2_', dtype=gt_sorted.dtype, shape=gt_sorted.shape)
-#    intersection = gts - fluid.layers.py_func(func=_cumsum, x=gt_sorted, out=tmp1)
-#    union = fluid.layers.py_func(func=_cumsum, x=1.0 - gt_sorted, out=tmp2) + gts
-#    intersection = gts - fluid.layers.cumsum(gt_sorted, axis=0)
-#    union = fluid.layers.cumsum((1.0 - gt_sorted), axis=0) + gts
+        tmp2 = fluid.layers.cumsum(gt_sorted, axis=0)
+    intersection = gts - tmp2
+    union = intersection + tmp1
+
+#     tmp = 1.0 - gt_sorted
+#     with fluid.device_guard("cpu"):
+#         intersection_ = fluid.layers.cumsum(gt_sorted, axis=0)
+#         union_ = fluid.layers.cumsum(tmp, axis=0)
+#     intersection = gts - intersection_
+#     union = union_ + gts
+
+#     tmp1 = create_tmp_var(name='tmp1_', dtype=gt_sorted.dtype, shape=gt_sorted.shape)
+#     tmp2 = create_tmp_var(name='tmp2_', dtype=gt_sorted.dtype, shape=gt_sorted.shape)
+#     intersection = gts - fluid.layers.py_func(func=_cumsum, x=gt_sorted, out=tmp1)
+#     union = fluid.layers.py_func(func=_cumsum, x=1.0 - gt_sorted, out=tmp2) + gts
+
+#     tmp1 = create_tmp_var(name='tmp1_', dtype=gt_sorted.dtype, shape=gt_sorted.shape)
+#     tmp2 = create_tmp_var(name='tmp2_', dtype=gt_sorted.dtype, shape=gt_sorted.shape)
+#     intersection_ = fluid.layers.py_func(func=_cumsum, x=gt_sorted, out=tmp1)
+#     union_ = fluid.layers.py_func(func=_cumsum, x=1.0 - gt_sorted, out=tmp2)
+#     with fluid.device_guard("gpu"):
+#         intersection = gts - intersection_
+#         union = union_ + gts
+
+#     intersection = gts - fluid.layers.cumsum(gt_sorted, axis=0)
+#     union = fluid.layers.cumsum((1.0 - gt_sorted), axis=0) + gts
+
     jaccard = 1.0 - intersection / union
-    len_jaccard = fluid.layers.shape(jaccard)[0]
-    jaccard0 = fluid.layers.slice(jaccard, axes=[0], starts=[0], ends=[1])
-    jaccard1 = fluid.layers.slice(jaccard, axes=[0], starts=[1], ends=[len_jaccard])
-    jaccard2 = fluid.layers.slice(jaccard, axes=[0], starts=[0], ends=[-1])
+#     len_jaccard = fluid.layers.shape(jaccard)[0]
+    with fluid.device_guard("gpu"):
+        jaccard0 = fluid.layers.slice(jaccard, axes=[0], starts=[0], ends=[1])
+        jaccard1 = fluid.layers.slice(jaccard, axes=[0], starts=[1], ends=[len_gt])
+        jaccard2 = fluid.layers.slice(jaccard, axes=[0], starts=[0], ends=[-1])
     jaccard = fluid.layers.concat([jaccard0, jaccard1 - jaccard2], axis=0)
 #    jaccard = fluid.layers.concat([jaccard[0:1, :], jaccard[1:, :] - jaccard[:-1, :]], axis=0)
+    jaccard = fluid.layers.unsqueeze(jaccard, axes=[1])
     return jaccard
 
 def lovasz_hinge(logits, labels, per_image=True, ignore=None):
@@ -161,7 +189,6 @@ def lovasz_softmax(probas, labels, classes='present', per_image=False,
             i = fluid.layers.increment(x=i, value=1, in_place=True)
             fluid.layers.less_than(x=i, y=batch_size, cond=cond)
         
-          
         
 #         prob = probas[i,:,:,:]
 #         lab = labels[i,:,:,:]
@@ -182,11 +209,8 @@ def lovasz_softmax(probas, labels, classes='present', per_image=False,
         batch_size.stop_gradient = True
         loss = fluid.layers.elementwise_div(sum_loss, batch_size)
 #        loss = sum_loss / batch_size
-#        loss = fluid.layers.cast(loss, dtype='float32')
-#        loss = fluid.layers.mean(loss)
-        print(sum_loss)
-        print(batch_size)
-        print(loss)
+        loss = fluid.layers.cast(loss, dtype='float32')
+        loss = fluid.layers.mean(loss)
     else:
         vprobas, vlabels = flatten_probas(probas, labels, ignore)
         loss = lovasz_softmax_flat(vprobas, vlabels,classes=classes)
@@ -198,7 +222,12 @@ def lovasz_softmax_flat(probas, labels, classes='present'):
     present = []
     classes_to_sum = list(range(C)) if classes in ['all', 'present'] else classes
     for c in classes_to_sum:
-        fg = fluid.layers.cast(labels == c, probas.dtype)
+#     for class_ in classes_to_sum:
+#         c = fluid.layers.assign(np.array([class_], dtype='int32'))
+
+        with fluid.device_guard("gpu"):
+            fg = fluid.layers.cast(labels == c, probas.dtype)
+        fg.stop_gradient = True
         if classes == 'present':
             present.append(fluid.layers.cast(
                 fluid.layers.reduce_sum(fg) > 0, "int64"))
@@ -211,7 +240,10 @@ def lovasz_softmax_flat(probas, labels, classes='present'):
         errors = fluid.layers.abs(fg - class_pred)
         errors_sorted, perm = fluid.layers.argsort(errors, axis=0, descending=True)
         errors_sorted.stop_gradient = False
-        fg_sorted = fluid.layers.gather(fg, perm)
+
+        with fluid.device_guard("gpu"):
+            fg_sorted = fluid.layers.gather(fg, perm)
+        fg_sorted.stop_gradient = True
 
         grad = lovasz_grad(fg_sorted)
         grad.stop_gradient = True
@@ -220,12 +252,12 @@ def lovasz_softmax_flat(probas, labels, classes='present'):
                     x = errors_sorted,
                     y = grad,
                     transpose_x = True))
-        
+
         losses.append(loss)
-    
+
     if len(classes_to_sum) == 1:
         return losses[0]
-    
+
     # fluid.layers.where 
     losses_tensor = fluid.layers.stack(losses)
     if classes == 'present':
