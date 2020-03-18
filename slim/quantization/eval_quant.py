@@ -35,6 +35,7 @@ from models.model_builder import build_model
 from models.model_builder import ModelPhase
 from reader import SegDataset
 from metrics import ConfusionMatrix
+sys.path.append('/cv/workspace/PaddleSlim')
 from paddleslim.quant import quant_aware, convert
 
 
@@ -76,6 +77,11 @@ def parse_args():
         help=
         "Layers which name_scope contains string in not_quant_pattern will not be quantized"
     )
+    parser.add_argument(
+        "--output_dir",
+        type=str,
+        help="Output dir for inferende model",
+        default="./output/inference_model")
 
     if len(sys.argv) == 1:
         parser.print_help()
@@ -105,7 +111,7 @@ def evaluate(cfg, ckpt_dir=None, use_gpu=False, use_mpio=False, **kwargs):
         for b in data_gen:
             yield b[0], b[1], b[2]
 
-    py_reader, avg_loss, pred, grts, masks = build_model(
+    py_reader, avg_loss, pred_var, grts, masks = build_model(
         test_prog, startup_prog, phase=ModelPhase.EVAL)
 
     py_reader.decorate_sample_generator(
@@ -121,6 +127,9 @@ def evaluate(cfg, ckpt_dir=None, use_gpu=False, use_mpio=False, **kwargs):
     exe.run(startup_prog)
 
     test_prog = test_prog.clone(for_test=True)
+    for var in test_prog.list_vars():
+        if 'reshape' in var.name:
+            print(var.name)
     not_quant_pattern_list = []
     if kwargs['not_quant_pattern'] is not None:
         not_quant_pattern_list = kwargs['not_quant_pattern']
@@ -146,7 +155,7 @@ def evaluate(cfg, ckpt_dir=None, use_gpu=False, use_mpio=False, **kwargs):
     np.set_printoptions(
         precision=4, suppress=True, linewidth=160, floatmode="fixed")
     conf_mat = ConfusionMatrix(cfg.DATASET.NUM_CLASSES, streaming=True)
-    fetch_list = [avg_loss.name, pred.name, grts.name, masks.name]
+    fetch_list = [avg_loss.name, pred_var.name, grts.name, masks.name]
     num_images = 0
     step = 0
     all_step = cfg.DATASET.TEST_TOTAL_IMAGES // cfg.BATCH_SIZE + 1
@@ -184,6 +193,17 @@ def evaluate(cfg, ckpt_dir=None, use_gpu=False, use_mpio=False, **kwargs):
     print("[EVAL]Category IoU:", category_iou)
     print("[EVAL]Category Acc:", category_acc)
     print("[EVAL]Kappa:{:.4f}".format(conf_mat.kappa()))
+
+    print("save_inference_model")
+    if not kwargs['convert']:
+        test_prog = convert(test_prog, place, config)
+
+    fluid.io.save_inference_model(
+        dirname=kwargs['output_dir'],
+        feeded_var_names=['image'],
+        target_vars=[pred_var],
+        executor=exe,
+        main_program=test_prog)
 
     return category_iou, avg_iou, category_acc, avg_acc
 
