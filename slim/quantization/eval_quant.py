@@ -36,6 +36,7 @@ from models.model_builder import ModelPhase
 from reader import SegDataset
 from metrics import ConfusionMatrix
 from paddleslim.quant import quant_aware, convert
+from export_model import export_inference_config
 
 
 def parse_args():
@@ -76,11 +77,6 @@ def parse_args():
         help=
         "Layers which name_scope contains string in not_quant_pattern will not be quantized"
     )
-    parser.add_argument(
-        "--output_dir",
-        type=str,
-        help="Output dir for inferende model",
-        default="./output/inference_model")
 
     if len(sys.argv) == 1:
         parser.print_help()
@@ -192,17 +188,6 @@ def evaluate(cfg, ckpt_dir=None, use_gpu=False, use_mpio=False, **kwargs):
     print("[EVAL]Category IoU:", category_iou)
     print("[EVAL]Category Acc:", category_acc)
     print("[EVAL]Kappa:{:.4f}".format(conf_mat.kappa()))
-
-    print("save_inference_model")
-    if not kwargs['convert']:
-        test_prog = convert(test_prog, place, config)
-
-    fluid.io.save_inference_model(
-        dirname=kwargs['output_dir'],
-        feeded_var_names=['image'],
-        target_vars=[pred_var],
-        executor=exe,
-        main_program=test_prog)
 
     return category_iou, avg_iou, category_acc, avg_acc
 
