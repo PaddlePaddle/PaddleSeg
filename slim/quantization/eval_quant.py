@@ -36,7 +36,6 @@ from models.model_builder import ModelPhase
 from reader import SegDataset
 from metrics import ConfusionMatrix
 from paddleslim.quant import quant_aware, convert
-from export_model import export_inference_config
 
 
 def parse_args():
@@ -106,7 +105,7 @@ def evaluate(cfg, ckpt_dir=None, use_gpu=False, use_mpio=False, **kwargs):
         for b in data_gen:
             yield b[0], b[1], b[2]
 
-    py_reader, avg_loss, pred_var, grts, masks = build_model(
+    py_reader, avg_loss, pred, grts, masks = build_model(
         test_prog, startup_prog, phase=ModelPhase.EVAL)
 
     py_reader.decorate_sample_generator(
@@ -150,7 +149,7 @@ def evaluate(cfg, ckpt_dir=None, use_gpu=False, use_mpio=False, **kwargs):
     np.set_printoptions(
         precision=4, suppress=True, linewidth=160, floatmode="fixed")
     conf_mat = ConfusionMatrix(cfg.DATASET.NUM_CLASSES, streaming=True)
-    fetch_list = [avg_loss.name, pred_var.name, grts.name, masks.name]
+    fetch_list = [avg_loss.name, pred.name, grts.name, masks.name]
     num_images = 0
     step = 0
     all_step = cfg.DATASET.TEST_TOTAL_IMAGES // cfg.BATCH_SIZE + 1
