@@ -121,9 +121,6 @@ def evaluate(cfg, ckpt_dir=None, use_gpu=False, use_mpio=False, **kwargs):
     exe.run(startup_prog)
 
     test_prog = test_prog.clone(for_test=True)
-    for var in test_prog.list_vars():
-        if 'reshape' in var.name:
-            print(var.name)
     not_quant_pattern_list = []
     if kwargs['not_quant_pattern'] is not None:
         not_quant_pattern_list = kwargs['not_quant_pattern']
