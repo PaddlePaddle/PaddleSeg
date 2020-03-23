@@ -31,8 +31,8 @@ import functools
 import paddle
 import numpy as np
 import paddle.fluid as fluid
-
 from paddle.fluid import profiler
+
 from utils.config import cfg
 from utils.timer import Timer, calculate_eta
 from metrics import ConfusionMatrix
@@ -113,7 +113,7 @@ def parse_args():
     parser.add_argument(
         '--profiler_path',
         help='the profiler output file path.(used for benchmark)',
-        default='./deeplabv3.profiler',
+        default='./seg.profiler',
         type=str) 
     return parser.parse_args()
 
