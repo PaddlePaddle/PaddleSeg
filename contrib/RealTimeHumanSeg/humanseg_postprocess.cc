@@ -254,7 +254,7 @@ cv::Mat MergeSegMat(const cv::Mat& seg_mat,
 int ThresholdMask(const cv::Mat &fg_cfd,
                   const float fg_thres,
                   const float bg_thres,
-                  cv::Mat fg_mask) {
+                  cv::Mat& fg_mask) {
   if (fg_cfd.type() != CV_32FC1) {
     printf("ThresholdMask: type is not CV_32FC1.\n");
     return -1;

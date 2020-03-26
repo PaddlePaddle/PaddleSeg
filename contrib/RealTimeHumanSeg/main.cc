@@ -41,13 +41,16 @@ int VideoPredict(const std::string& video_path, HumanSeg& seg)
     printf("create video writer failed!\n");
     return -1;
   }
-
   cv::Mat frame;
   while (capture.read(frame)) {
+    if (frame.empty()) {
+      break;
+    }
     cv::Mat out_im = seg.Predict(frame);
     video_out.write(out_im);
   }
   capture.release();
+  video_out.release();
   return 0;
 }
 
@@ -79,10 +82,10 @@ int main(int argc, char* argv[]) {
 
   // Call ImagePredict while input_path is a image file path
   // The output will be saved as result.jpeg
-  ImagePredict(input_path, seg);
+  // ImagePredict(input_path, seg);
   
   // Call VideoPredict while input_path is a video file path
   // The output will be saved as result.avi
-  // VideoPredict(input_path, seg);
+  VideoPredict(input_path, seg);
   return 0;
 }

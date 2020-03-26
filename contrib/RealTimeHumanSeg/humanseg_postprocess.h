@@ -22,7 +22,7 @@
 int ThresholdMask(const cv::Mat &fg_cfd,
                   const float fg_thres,
                   const float bg_thres,
-                  cv::Mat fg_mask);
+                  cv::Mat& fg_mask);
 
 cv::Mat MergeSegMat(const cv::Mat& seg_mat,
                     const cv::Mat& ori_frame);
