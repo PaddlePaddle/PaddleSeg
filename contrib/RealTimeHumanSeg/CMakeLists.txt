@@ -70,10 +70,10 @@ if (WIN32)
   include_directories("${OPENCV_DIR}/opencv/build/include")
   link_directories("${OPENCV_DIR}/build/x64/vc14/lib")
 else ()
+  find_package(OpenCV REQUIRED PATHS ${OPENCV_DIR}/share/OpenCV NO_DEFAULT_PATH)
   include_directories("${PADDLE_DIR}/paddle/include")
   link_directories("${PADDLE_DIR}/paddle/lib")
-  include_directories("${OPENCV_DIR}/include")
-  link_directories("${OPENCV_DIR}/lib")
+  include_directories(${OpenCV_INCLUDE_DIRS})
 endif ()
 
 if (WIN32)
@@ -202,12 +202,8 @@ if(WITH_GPU)
 endif()
 
 if (NOT WIN32)
-    set(EXTERNAL_LIB "-ldl -lrt -lgomp -lz -lm -lpthread"
-                      "-lopencv_world -lopencv_img_hash"
-                      "-lIlmImf -llibpng -lippiw -lippicv"
-                      "-llibtiff -llibwebp -littnotify -llibjasper"
-                      "-llibjpeg -lzlib")
-    set(DEPS ${DEPS} ${EXTERNAL_LIB})
+    set(EXTERNAL_LIB "-ldl -lrt -lgomp -lz -lm -lpthread")
+    set(DEPS ${DEPS} ${EXTERNAL_LIB} ${OpenCV_LIBS})
 endif()
 
 add_executable(main main.cc humanseg.cc humanseg_postprocess.cc)

@@ -1,10 +1,10 @@
-OPENCV_URL=https://paddleseg.bj.bcebos.com/deploy/deps/opencv341.tar.bz2
-if [ ! -d "./deps/opencv341" ]; then
+OPENCV_URL=https://paddleseg.bj.bcebos.com/deploy/deps/opencv346.tar.bz2
+if [ ! -d "./deps/opencv346" ]; then
     mkdir -p deps
     cd deps
     wget -c ${OPENCV_URL}
-    tar xvfj opencv341.tar.bz2
-    rm -rf opencv341.tar.bz2
+    tar xvfj opencv346.tar.bz2
+    rm -rf opencv346.tar.bz2
     cd ..
 fi
 
@@ -12,7 +12,8 @@ WITH_GPU=OFF
 PADDLE_DIR=/root/projects/deps/fluid_inference/
 CUDA_LIB=/usr/local/cuda-10.0/lib64/
 CUDNN_LIB=/usr/local/cuda-10.0/lib64/
-OPENCV_DIR=$(pwd)/deps/opencv341/
+OPENCV_DIR=$(pwd)/deps/opencv346/
+echo ${OPENCV_DIR}
 
 rm -rf build
 mkdir -p build
