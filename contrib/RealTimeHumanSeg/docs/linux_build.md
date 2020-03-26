@@ -80,3 +80,5 @@ sh linux_build.sh
 ```shell
 ./build/main ./models /PATH/TO/TEST_VIDEO
 ```
+
+预测的结果保存在视频文件`result.avi`中。
