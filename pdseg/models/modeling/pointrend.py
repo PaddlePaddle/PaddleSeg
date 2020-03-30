@@ -121,11 +121,16 @@ def get_points(prediction,
     :param label: 标注图
     :return: 返回待渲染的点
     '''
-    prediction_softmax = fluid.layers.softmax(prediction, axis=1)
-    prediction_softmax = fluid.layers.transpose(prediction_softmax,
-                                                [0, 2, 3, 1])
-    top2, _ = fluid.layers.topk(prediction_softmax, k=2)
-    uncertain_features = fluid.layers.abs(top2[:, :, :, 0] - top2[:, :, :, 1])
+    if prediction.shape[1] == 1:
+        prediction_sigmoid = fluid.layers.sigmoid(prediction, axis=1)
+        uncertain_features = fluid.layers.abs(prediction_sigmoid - 0.5)
+    else:
+        prediction_softmax = fluid.layers.softmax(prediction, axis=1)
+        prediction_softmax = fluid.layers.transpose(prediction_softmax,
+                                                    [0, 2, 3, 1])
+        top2, _ = fluid.layers.topk(prediction_softmax, k=2)
+        uncertain_features = fluid.layers.abs(top2[:, :, :, 0] -
+                                              top2[:, :, :, 1])
     fea_shape = uncertain_features.shape
     bs = cfg.batch_size_per_dev
     num_fea_points = fea_shape[-1] * fea_shape[-2]
