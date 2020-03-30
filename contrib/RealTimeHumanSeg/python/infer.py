@@ -15,10 +15,6 @@
 
 import os
 import sys
-import ast
-import time
-import json
-import argparse
 
 import numpy as np
 import cv2
@@ -27,6 +23,9 @@ import paddle.fluid as fluid
 
 
 def LoadModel(model_dir, use_gpu=False):
+    """
+    Load model files and init paddle predictor
+    """
     prog_file = os.path.join(model_dir, '__model__')
     params_file = os.path.join(model_dir, '__params__')
     config = fluid.core.AnalysisConfig(prog_file, params_file)
@@ -53,7 +52,7 @@ class HumanSeg:
                         self.eval_size,
                         fx=0,
                         fy=0,
-                        interpolation=cv2.INTER_CUBIC)
+                        interpolation=cv2.INTER_LINEAR)
         # HWC -> CHW
         im = im.swapaxes(1, 2)
         im = im.swapaxes(0, 1)
@@ -98,51 +97,57 @@ def PredictVideo(seg, video_path):
     fps = cap.get(cv2.CAP_PROP_FPS)
     # Result Video Writer
     out = cv2.VideoWriter('result.avi',
-                          cv2.VideoWriter_fourcc('M','J','P','G'),
+                          cv2.VideoWriter_fourcc('M', 'J', 'P', 'G'),
                           fps,
                           (int(w), int(h)))
     # Start capturing from video
-    while(cap.isOpened()):
+    while cap.isOpened():
         ret, frame = cap.read()
         if ret == True:
             im = seg.Predict(frame)
-            out.write(im);
-        else: 
+            out.write(im)
+        else:
             break
     cap.release()
     out.release()
 
-# Do Predicting on a camera video stream 
+# Do Predicting on a camera video stream
 def PredictCamera(seg):
     cap = cv2.VideoCapture(0)
-    if cap.isOpened() == False:
+    if not cap.isOpened():
         print("Error opening video stream or file")
         return
     # Start capturing from video
-    while(cap.isOpened()):
+    while cap.isOpened():
         ret, frame = cap.read()
-        if ret == True:
+        if ret:
             im = seg.Predict(frame)
             cv2.imshow('Frame', im)
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
-        else: 
+        else:
             break
     cap.release()
 
-
-if __name__ == "__main__":
-    if len(sys.argv) < 3:
+def main(argv):
+    """
+    Entrypoint of the script
+    """
+    if len(argv) < 3:
         print('Usage: python infer.py /path/to/model/ /path/to/video')
-        exit(0)
+        return
 
-    model_dir = sys.argv[1]
-    input_path = sys.argv[2]
-    use_gpu = int(sys.argv[3]) if len(sys.argv) >= 4 else 0
-    # Init model 
+    model_dir = argv[1]
+    input_path = argv[2]
+    use_gpu = int(argv[3]) if len(argv) >= 4 else 0
+    # Init model
     mean = [104.008, 116.669, 122.675]
     scale = [1.0, 1.0, 1.0]
     eval_size = (192, 192)
     seg = HumanSeg(model_dir, mean, scale, eval_size, use_gpu)
     # Run Predicting on a video and result will be saved as result.avi
     PredictVideo(seg, input_path)
+
+
+if __name__ == "__main__":
+    main(sys.argv)
