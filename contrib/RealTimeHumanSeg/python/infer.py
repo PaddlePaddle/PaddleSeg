@@ -93,7 +93,7 @@ def PredictVideo(seg, video_path):
     if cap.isOpened() == False:
         print("Error opening video stream or file")
         return
-    w  = cap.get(cv2.CAP_PROP_FRAME_WIDTH)
+    w = cap.get(cv2.CAP_PROP_FRAME_WIDTH)
     h = cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
     fps = cap.get(cv2.CAP_PROP_FPS)
     # Result Video Writer
@@ -112,6 +112,25 @@ def PredictVideo(seg, video_path):
     cap.release()
     out.release()
 
+# Do Predicting on a camera video stream 
+def PredictCamera(seg):
+    cap = cv2.VideoCapture(0)
+    if cap.isOpened() == False:
+        print("Error opening video stream or file")
+        return
+    # Start capturing from video
+    while(cap.isOpened()):
+        ret, frame = cap.read()
+        if ret == True:
+            im = seg.Predict(frame)
+            cv2.imshow('Frame', im)
+            if cv2.waitKey(1) & 0xFF == ord('q'):
+                break
+        else: 
+            break
+    cap.release()
+
+
 if __name__ == "__main__":
     if len(sys.argv) < 3:
         print('Usage: python infer.py /path/to/model/ /path/to/video')
@@ -125,4 +144,5 @@ if __name__ == "__main__":
     scale = [1.0, 1.0, 1.0]
     eval_size = (192, 192)
     seg = HumanSeg(model_dir, mean, scale, eval_size, use_gpu)
+    # Run Predicting on a video and result will be saved as result.avi
     PredictVideo(seg, input_path)
