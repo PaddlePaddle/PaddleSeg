@@ -10,11 +10,10 @@
 * Android手机或开发板；
 
 ### 2.2 安装
-* git clone https://github.com/PaddlePaddle/PaddleSeg.git  ；
-* 打开Android Studio，在"Welcome to Android Studio"窗口点击"Open an existing Android Studio project"，在弹出的路径选择窗口中进入"/PaddleSeg/lite/humanseg-android-demo/"目录，然后点击右下角的"Open"按钮即可导入工程
+* git clone https://github.com/PaddlePaddle/PaddleSeg.git ;
+* 打开Android Studio，在"Welcome to Android Studio"窗口点击"Open an existing Android Studio project"，在弹出的路径选择窗口中进入"/PaddleSeg/lite/humanseg_android_demo/"目录，然后点击右下角的"Open"按钮即可导入工程，构建工程的过程中会下载demo需要的模型和Lite预测库；
 * 通过USB连接Android手机或开发板；
 * 载入工程后，点击菜单栏的Run->Run 'App'按钮，在弹出的"Select Deployment Target"窗口选择已经连接的Android设备，然后点击"OK"按钮；
-* 手机上会出现Demo的主界面，选择"Image Segmentation"图标，进入的人像分割示例程序；
 * 在人像分割Demo中，默认会载入一张人像图像，并会在图像下方给出CPU的预测结果；
 * 在人像分割Demo中，你还可以通过上方的"Gallery"和"Take Photo"按钮从相册或相机中加载测试图像；
 
@@ -48,7 +47,7 @@ Paddle-Lite的编译目前支持Docker，Linux和Mac OS开发环境，建议使�
 
 * PaddlePredictor.jar；
 * arm64-v8a/libpaddle_lite_jni.so；
-*  armeabi-v7a/libpaddle_lite_jni.so；
+* armeabi-v7a/libpaddle_lite_jni.so；
 
 下面分别介绍两种方法：
 

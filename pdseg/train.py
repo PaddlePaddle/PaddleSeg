@@ -24,12 +24,14 @@ os.environ['FLAGS_eager_delete_tensor_gb'] = "0.0"
 import sys
 import argparse
 import pprint
+import random
 import shutil
 import functools
 
 import paddle
 import numpy as np
 import paddle.fluid as fluid
+from paddle.fluid import profiler
 
 from utils.config import cfg
 from utils.timer import Timer, calculate_eta
@@ -95,6 +97,24 @@ def parse_args():
         help='See utils/config.py for all options',
         default=None,
         nargs=argparse.REMAINDER)
+    parser.add_argument(
+        '--enable_ce',
+        dest='enable_ce',
+        help='If set True, enable continuous evaluation job.'
+        'This flag is only used for internal test.',
+        action='store_true')
+    
+    # NOTE: This for benchmark
+    parser.add_argument(
+        '--is_profiler',
+        help='the profiler switch.(used for benchmark)',
+        default=0,
+        type=int)
+    parser.add_argument(
+        '--profiler_path',
+        help='the profiler output file path.(used for benchmark)',
+        default='./seg.profiler',
+        type=str) 
     return parser.parse_args()
 
 
@@ -194,6 +214,9 @@ def print_info(*msg):
 def train(cfg):
     startup_prog = fluid.Program()
     train_prog = fluid.Program()
+    if args.enable_ce:
+        startup_prog.random_seed = 1000
+        train_prog.random_seed = 1000
     drop_last = True
 
     dataset = SegDataset(
@@ -431,6 +454,13 @@ def train(cfg):
                         sys.stdout.flush()
                         avg_loss = 0.0
                         timer.restart()
+                     
+                    # NOTE : used for benchmark, profiler tools
+                    if args.is_profiler and epoch == 1 and global_step == args.log_steps: 
+                        profiler.start_profiler("All")
+                    elif args.is_profiler and epoch == 1 and global_step == args.log_steps + 5:
+                        profiler.stop_profiler("total", args.profiler_path)
+                        return
 
             except fluid.core.EOFException:
                 py_reader.reset()
@@ -483,6 +513,9 @@ def main(args):
         cfg.update_from_file(args.cfg_file)
     if args.opts:
         cfg.update_from_list(args.opts)
+    if args.enable_ce:
+        random.seed(0)
+        np.random.seed(0)
 
     cfg.TRAINER_ID = int(os.getenv("PADDLE_TRAINER_ID", 0))
     cfg.NUM_TRAINERS = int(os.environ.get('PADDLE_TRAINERS_NUM', 1))

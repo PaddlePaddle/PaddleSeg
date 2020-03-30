@@ -327,7 +327,7 @@ def random_jitter(cv_img, saturation_range, brightness_range, contrast_range):
     brightness_ratio = np.random.uniform(-brightness_range, brightness_range)
     contrast_ratio = np.random.uniform(-contrast_range, contrast_range)
 
-    order = [1, 2, 3]
+    order = [0, 1, 2]
     np.random.shuffle(order)
 
     for i in range(3):
@@ -368,7 +368,7 @@ def hsv_color_jitter(crop_img,
 
 def rand_crop(crop_img, crop_seg, mode=ModelPhase.TRAIN):
     """
-    随机裁剪图片和标签图, 若crop尺寸大于原始尺寸，分别使用均值和ignore值填充再进行crop，
+    随机裁剪图片和标签图, 若crop尺寸大于原始尺寸，分别使用DATASET.PADDING_VALUE值和DATASET.IGNORE_INDEX值填充再进行crop，
     crop尺寸与原始尺寸一致，返回原图，crop尺寸小于原始尺寸直接crop
 
     Args:

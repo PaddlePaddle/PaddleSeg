@@ -1,6 +1,7 @@
 # PaddleSeg 预训练模型
 
-PaddleSeg对所有内置的分割模型都提供了公开数据集下的预训练模型，通过加载预训练模型后训练可以在自定义数据集中得到更稳定地效果。
+PaddleSeg对所有内置的分割模型都提供了公开数据集下的预训练模型。因为对于自定
+义数据集的场景，使用预训练模型进行训练可以得到更稳定地效果。用户可以根据模型类型、自己的数据集和预训练数据集的相似程度，选择并下载预训练模型。
 
 ## ImageNet预训练模型
 
@@ -32,6 +33,11 @@ PaddleSeg对所有内置的分割模型都提供了公开数据集下的预训�
 | HRNet_W48 | ImageNet | [hrnet_w48_imagenet.tar](https://paddleseg.bj.bcebos.com/models/hrnet_w48_imagenet.tar) | 78.95%/94.42% |
 | HRNet_W64 | ImageNet | [hrnet_w64_imagenet.tar](https://paddleseg.bj.bcebos.com/models/hrnet_w64_imagenet.tar) | 79.30%/94.61% |
 
+| 模型 | 数据集合 | 下载地址 | Accuray Top1/5 Error |
+|---|---|---|---|
+| ResNet50（适配PSPNet） | ImageNet | [resnet50_v2_pspnet](https://paddleseg.bj.bcebos.com/resnet50_v2_pspnet.tgz)| -- |
+| ResNet101（适配PSPNet） | ImageNet | [resnet101_v2_pspnet](https://paddleseg.bj.bcebos.com/resnet101_v2_pspnet.tgz)| -- |
+
 ## COCO预训练模型
 
 数据集为COCO实例分割数据集合转换成的语义分割数据集合
@@ -57,3 +63,6 @@ train数据集合为Cityscapes训练集合，测试为Cityscapes的验证集合
 | PSPNet/bn | Cityscapes |[pspnet50_cityscapes.tgz](https://paddleseg.bj.bcebos.com/models/pspnet50_cityscapes.tgz) |16|false| 0.7013 |
 | PSPNet/bn | Cityscapes |[pspnet101_cityscapes.tgz](https://paddleseg.bj.bcebos.com/models/pspnet101_cityscapes.tgz) |16|false| 0.7734 |
 | HRNet_W18/bn | Cityscapes |[hrnet_w18_bn_cityscapes.tgz](https://paddleseg.bj.bcebos.com/models/hrnet_w18_bn_cityscapes.tgz) | 4 | false | 0.7936 |
+| Fast-SCNN/bn | Cityscapes |[fast_scnn_cityscapes.tar](https://paddleseg.bj.bcebos.com/models/fast_scnn_cityscape.tar) | 32 | false | 0.6964 |
+
+测试环境为python 3.7.3，v100，cudnn 7.6.2。

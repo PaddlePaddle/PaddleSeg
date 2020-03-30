@@ -27,6 +27,7 @@ from models.libs.model_libs import separate_conv
 from models.backbone.mobilenet_v2 import MobileNetV2 as mobilenet_backbone
 from models.backbone.xception import Xception as xception_backbone
 
+
 def encoder(input):
     # 编码器配置，采用ASPP架构，pooling + 1x1_conv + 三个不同尺度的空洞卷积并行, concat后1x1conv
     # ASPP_WITH_SEP_CONV：默认为真，使用depthwise可分离卷积，否则使用普通卷积
@@ -47,8 +48,7 @@ def encoder(input):
     with scope('encoder'):
         channel = 256
         with scope("image_pool"):
-            image_avg = fluid.layers.reduce_mean(
-                input, [2, 3], keep_dim=True)
+            image_avg = fluid.layers.reduce_mean(input, [2, 3], keep_dim=True)
             image_avg = bn_relu(
                 conv(
                     image_avg,
@@ -250,14 +250,15 @@ def deeplabv3p(img, num_classes):
             regularization_coeff=0.0),
         initializer=fluid.initializer.TruncatedNormal(loc=0.0, scale=0.01))
     with scope('logit'):
-        logit = conv(
-            data,
-            num_classes,
-            1,
-            stride=1,
-            padding=0,
-            bias_attr=True,
-            param_attr=param_attr)
+        with fluid.name_scope('last_conv'):
+            logit = conv(
+                data,
+                num_classes,
+                1,
+                stride=1,
+                padding=0,
+                bias_attr=True,
+                param_attr=param_attr)
         logit = fluid.layers.resize_bilinear(logit, img.shape[2:])
 
     return logit

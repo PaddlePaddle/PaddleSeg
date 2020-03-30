@@ -6,13 +6,13 @@ args = get_arguments()
 cfg = AttrDict()
 
 # 待预测图像所在路径
-cfg.data_dir = os.path.join(args.example , "data", "testing_images")
+cfg.data_dir = os.path.join("data", "testing_images")
 # 待预测图像名称列表
-cfg.data_list_file = os.path.join(args.example , "data", "test_id.txt")
+cfg.data_list_file = os.path.join("data", "test_id.txt")
 # 模型加载路径
-cfg.model_path = os.path.join(args.example , "ACE2P")
+cfg.model_path = args.example
 # 预测结果保存路径
-cfg.vis_dir = os.path.join(args.example , "result")
+cfg.vis_dir = "result"
 
 # 预测类别数
 cfg.class_num = 20
