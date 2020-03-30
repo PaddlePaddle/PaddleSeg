@@ -37,9 +37,11 @@ class HumanSeg {
   explicit HumanSeg(const std::string& model_dir,
                         const std::vector<float>& mean,
                         const std::vector<float>& scale,
+                        const std::vector<int>& eval_size,
                         bool use_gpu = false) :
       mean_(mean),
-      scale_(scale) {
+      scale_(scale),
+      eval_size_(eval_size) {
     LoadModel(model_dir, use_gpu, &predictor_);
   }
 
@@ -60,4 +62,5 @@ class HumanSeg {
   std::vector<uchar> segout_data_;
   std::vector<float> mean_;
   std::vector<float> scale_;
+  std::vector<int> eval_size_;
 };

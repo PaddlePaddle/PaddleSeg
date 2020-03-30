@@ -78,7 +78,8 @@ int main(int argc, char* argv[]) {
   // Init Model
   std::vector<float> means = {104.008, 116.669, 122.675};
   std::vector<float> scale = {1.000, 1.000, 1.000};
-  HumanSeg seg(model_dir, means, scale, use_gpu);
+  std::vector<int> eval_sz = {192, 192};
+  HumanSeg seg(model_dir, means, scale, eval_sz, use_gpu);
 
   // Call ImagePredict while input_path is a image file path
   // The output will be saved as result.jpeg
