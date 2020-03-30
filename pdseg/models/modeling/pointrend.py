@@ -122,7 +122,7 @@ def get_points(prediction,
     :return: 返回待渲染的点
     '''
     if prediction.shape[1] == 1:
-        prediction_sigmoid = fluid.layers.sigmoid(prediction, axis=1)
+        prediction_sigmoid = fluid.layers.sigmoid(prediction)
         uncertain_features = fluid.layers.abs(prediction_sigmoid - 0.5)
     else:
         prediction_softmax = fluid.layers.softmax(prediction, axis=1)
