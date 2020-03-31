@@ -120,11 +120,15 @@ def threshold_mask(img, thresh_bg, thresh_fg):
     return dst.astype(np.float32)
 
 
-def optflow_handle(cur_gray, scoremap, prev_gray, pre_cfd, disflow, is_init):
+def optflow_handle(cur_gray, scoremap, is_init):
     """
     optical flow handling
     """
     width, height = scoremap.shape[0], scoremap.shape[1]
+    disflow = cv2.DISOpticalFlow_create(
+        cv2.DISOPTICAL_FLOW_PRESET_ULTRAFAST)
+    prev_gray = np.zeros((height, width), np.uint8)
+    prev_cfd = np.zeros((height, width), np.float32)
     cur_cfd = scoremap.copy()
     if is_init:
         is_init = False
@@ -138,7 +142,7 @@ def optflow_handle(cur_gray, scoremap, prev_gray, pre_cfd, disflow, is_init):
     else:
         weights = np.ones((width, height), np.float32) * 0.3
         track_cfd, is_track, weights = human_seg_tracking(
-            prev_gray, cur_gray, pre_cfd, weights, disflow)
+            prev_gray, cur_gray, prev_cfd, weights, disflow)
         fusion_cfd = human_seg_track_fuse(track_cfd, cur_cfd, weights, is_track)
     fusion_cfd = cv2.GaussianBlur(fusion_cfd, (3, 3), 0)
     return fusion_cfd
@@ -197,13 +201,9 @@ class HumanSeg:
         ori_h, ori_w = image.shape[0], image.shape[1]
         evl_h, evl_w = self.eval_size[0], self.eval_size[1]
         # optical flow processing
-        disflow = cv2.DISOpticalFlow_create(
-            cv2.DISOPTICAL_FLOW_PRESET_ULTRAFAST)
-        prev_gray = np.zeros((evl_h, evl_w), np.uint8)
-        prev_cfd = np.zeros((evl_h, evl_w), np.float32)
         cur_gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         cur_gray = cv2.resize(cur_gray, (evl_w, evl_h))
-        optflow_map = optflow_handle(cur_gray, scoremap, prev_gray, prev_cfd, disflow, False)
+        optflow_map = optflow_handle(cur_gray, scoremap, False)
         optflow_map = cv2.GaussianBlur(optflow_map, (3, 3), 0)
         optflow_map = threshold_mask(optflow_map, thresh_bg=0.2, thresh_fg=0.8)
         optflow_map = cv2.resize(optflow_map, (ori_w, ori_h))
