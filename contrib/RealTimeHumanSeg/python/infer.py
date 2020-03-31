@@ -167,6 +167,7 @@ class HumanSeg:
         scoremap = (scoremap * 255).astype(np.uint8)
         ori_h, ori_w = image.shape[0], image.shape[1]
         evl_h, evl_w = self.eval_size[0], self.eval_size[1]
+        # optical flow processing
         disflow = cv2.DISOpticalFlow_create(
             cv2.DISOPTICAL_FLOW_PRESET_ULTRAFAST)
         prev_gray = np.zeros((evl_h, evl_w), np.uint8)
@@ -186,8 +187,7 @@ class HumanSeg:
         """
         run predict: return segmentation image mat
         """
-        ori_im = image.copy()
-        im_mat = self.preprocess(ori_im)
+        im_mat = self.preprocess(image)
         im_tensor = fluid.core.PaddleTensor(im_mat.copy().astype('float32'))
         output_data = self.predictor.run([im_tensor])[0]
         output_data = output_data.as_ndarray()
@@ -272,8 +272,8 @@ def main(argv):
     eval_size = (192, 192)
     seg = HumanSeg(model_dir, mean, scale, eval_size, use_gpu)
     # Run Predicting on a video and result will be saved as result.avi
-    predict_camera(seg)
-    #predict_video(seg, input_path)
+    #predict_camera(seg)
+    predict_video(seg, input_path)
     #predict_image(seg, input_path)
 
 
