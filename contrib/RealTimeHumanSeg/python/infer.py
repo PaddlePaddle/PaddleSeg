@@ -49,11 +49,8 @@ class HumanSeg:
         self.predictor = LoadModel(model_dir, use_gpu)
 
     def Preprocess(self, image):
-        im = cv2.resize(image,
-                        self.eval_size,
-                        fx=0,
-                        fy=0,
-                        interpolation=cv2.INTER_CUBIC)
+        im = cv2.resize(
+            image, self.eval_size, fx=0, fy=0, interpolation=cv2.INTER_CUBIC)
         # HWC -> CHW
         im = im.swapaxes(1, 2)
         im = im.swapaxes(0, 1)
@@ -81,11 +78,13 @@ class HumanSeg:
         output_data = output_data.as_ndarray()
         return self.Postprocess(image, output_data)
 
+
 # Do Predicting on a image
 def PredictImage(seg, image_path):
     im = cv2.imread(input_path)
     im = seg.Predict(im)
     cv2.imwrite('result.jpeg', im)
+
 
 # Do Predicting on a video
 def PredictVideo(seg, video_path):
@@ -98,35 +97,35 @@ def PredictVideo(seg, video_path):
     fps = cap.get(cv2.CAP_PROP_FPS)
     # Result Video Writer
     out = cv2.VideoWriter('result.avi',
-                          cv2.VideoWriter_fourcc('M','J','P','G'),
-                          fps,
+                          cv2.VideoWriter_fourcc('M', 'J', 'P', 'G'), fps,
                           (int(w), int(h)))
     # Start capturing from video
-    while(cap.isOpened()):
+    while (cap.isOpened()):
         ret, frame = cap.read()
         if ret == True:
             im = seg.Predict(frame)
-            out.write(im);
-        else: 
+            out.write(im)
+        else:
             break
     cap.release()
     out.release()
 
-# Do Predicting on a camera video stream 
+
+# Do Predicting on a camera video stream
 def PredictCamera(seg):
     cap = cv2.VideoCapture(0)
     if cap.isOpened() == False:
         print("Error opening video stream or file")
         return
     # Start capturing from video
-    while(cap.isOpened()):
+    while (cap.isOpened()):
         ret, frame = cap.read()
         if ret == True:
             im = seg.Predict(frame)
             cv2.imshow('Frame', im)
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
-        else: 
+        else:
             break
     cap.release()
 
@@ -139,10 +138,11 @@ if __name__ == "__main__":
     model_dir = sys.argv[1]
     input_path = sys.argv[2]
     use_gpu = int(sys.argv[3]) if len(sys.argv) >= 4 else 0
-    # Init model 
+    # Init model
     mean = [104.008, 116.669, 122.675]
     scale = [1.0, 1.0, 1.0]
-    eval_size = (192, 192)
+    eval_size = (513, 513)
     seg = HumanSeg(model_dir, mean, scale, eval_size, use_gpu)
     # Run Predicting on a video and result will be saved as result.avi
-    PredictVideo(seg, input_path)
+    PredictCamera(seg)
+    #PredictVideo(seg, input_path)
