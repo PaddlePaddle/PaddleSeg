@@ -280,7 +280,7 @@ def predict_camera(seg):
     cap.release()
 
 
-def main(argv):
+def main(args):
     """
     Entrypoint of the script
     """
@@ -304,5 +304,5 @@ def main(argv):
 
 
 if __name__ == "__main__":
-    argv = parse_args()
-    main(argv)
+    args = parse_args()
+    main(args)
