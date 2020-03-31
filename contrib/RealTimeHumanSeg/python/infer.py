@@ -146,7 +146,7 @@ def main(argv):
     eval_size = (192, 192)
     seg = HumanSeg(model_dir, mean, scale, eval_size, use_gpu)
     # Run Predicting on a video and result will be saved as result.avi
-    PredictVideo(seg, input_path)
+    PredictCamera(seg)
 
 
 if __name__ == "__main__":
