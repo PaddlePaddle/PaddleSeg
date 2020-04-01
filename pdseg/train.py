@@ -456,8 +456,7 @@ def train(cfg):
             if args.do_eval:
                 print("Evaluation start")
                 temp = cfg.batch_size_per_dev
-                cfg.batch_size_per_dev = 1
-                cfg.BATCH_SIZE = cfg.batch_size_per_dev
+                cfg.BATCH_SIZE = 1
                 _, mean_iou, _, mean_acc = evaluate(
                     cfg=cfg,
                     ckpt_dir=ckpt_dir,
