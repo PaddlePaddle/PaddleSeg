@@ -44,7 +44,9 @@ void LoadModel(
     std::unique_ptr<paddle::PaddlePredictor>* predictor) {
   // Config the model info
   paddle::AnalysisConfig config;
-  config.SetModel(model_dir);
+  auto prog_file = model_dir + "/__model__";
+  auto params_file = model_dir + "/__params__";
+  config.SetModel(prog_file, params_file);
   if (use_gpu) {
       config.EnableUseGpu(100, 0);
   } else {
@@ -60,7 +62,8 @@ void LoadModel(
 void HumanSeg::Preprocess(const cv::Mat& image_mat) {
   // Clone the image : keep the original mat for postprocess
   cv::Mat im = image_mat.clone();
-  cv::resize(im, im, cv::Size(192, 192), 0.f, 0.f, cv::INTER_LINEAR);
+  auto eval_wh = cv::Size(eval_size_[0], eval_size_[1]);
+  cv::resize(im, im, eval_wh, 0.f, 0.f, cv::INTER_LINEAR);
 
   im.convertTo(im, CV_32FC3, 1.0);
   int rc = im.channels();

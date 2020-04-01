@@ -78,4 +78,6 @@ main.exe ./models/ ./data/test.avi
 ```
 第一个参数即人像分割预测模型的路径，第二个参数即要预测的视频。
 
+点击下载[测试视频](https://paddleseg.bj.bcebos.com/deploy/data/test.avi)
+
 运行后，预测结果保存在文件`result.avi`中。

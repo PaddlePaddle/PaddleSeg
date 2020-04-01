@@ -80,3 +80,7 @@ sh linux_build.sh
 ```shell
 ./build/main ./models /PATH/TO/TEST_VIDEO
 ```
+
+点击下载[测试视频](https://paddleseg.bj.bcebos.com/deploy/data/test.avi)
+
+预测的结果保存在视频文件`result.avi`中。
