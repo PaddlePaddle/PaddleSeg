@@ -455,6 +455,7 @@ def train(cfg):
 
             if args.do_eval:
                 print("Evaluation start")
+                # 防止预测时显存不足，临时减小batch_size, 评估完后恢复。
                 temp = cfg.batch_size_per_dev
                 cfg.BATCH_SIZE = 1
                 _, mean_iou, _, mean_acc = evaluate(
