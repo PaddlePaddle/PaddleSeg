@@ -1,7 +1,7 @@
 # PaddleSeg 分割模型介绍
 
-- [U-Net](#U-Net)	
-- [DeepLabv3+](#DeepLabv3)		
+- [U-Net](#U-Net)
+- [DeepLabv3+](#DeepLabv3)
 - [PSPNet](#PSPNet)
 - [ICNet](#ICNet)
 - [HRNet](#HRNet)
@@ -48,7 +48,7 @@ Image Cascade Network（ICNet) [5] 是一个基于PSPNet的语义分割网络，
 
 ![](./imgs/icnet.png)
 
-### HRNet
+## HRNet
 
 High-Resolution Network (HRNet) [6] 在整个训练过程中始终维持高分辨率表示。
 HRNet具有两个特点：（1）从高分辨率到低分辨率并行连接各子网络，（2）反复交换跨分辨率子网络信息。这两个特点使HRNet网络能够学习到更丰富的语义信息和细节信息。
@@ -71,4 +71,3 @@ HRNet在人体姿态估计、语义分割和目标检测领域都取得了显著
 [5] [ICNet for Real-Time Semantic Segmentation on High-Resolution Images](https://arxiv.org/abs/1704.08545)
 
 [6] [Deep High-Resolution Representation Learning for Visual Recognition](https://arxiv.org/abs/1908.07919)
-

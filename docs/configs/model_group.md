@@ -118,3 +118,13 @@ loss = 1.0 * loss1 + 0.4 * loss2 + 0.16 * loss3
 
 <br/>
 <br/>
+
+## `WITH_POINTREND`
+是否使用PointRend模块
+### 默认值
+False
+### 注意事项
+目前PointRend模块只适用于DeepLabv3+网络，其他网络的支持将在后期实现
+
+<br/>
+<br/>

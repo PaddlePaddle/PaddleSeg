@@ -10,7 +10,7 @@ PaddleSeg是基于[PaddlePaddle](https://www.paddlepaddle.org.cn)开发的语义
 
 </br>
 
-- [特点](#特点) 
+- [特点](#特点)
 - [安装](#安装)
 - [使用教程](#使用教程)
   - [快速入门](#快速入门)
@@ -110,6 +110,7 @@ pip install -r requirements.txt
 * [如何解决二分类中类别不均衡问题](./docs/loss_select.md)
 * [特色垂类模型使用](./contrib)
 * [多进程训练和混合精度训练](./docs/multiple_gpus_train_and_mixed_precision_train.md)
+* [PointRend的使用](.docs/pointrend.md)
 * 使用PaddleSlim进行分割模型压缩([量化](./slim/quantization/README.md), [蒸馏](./slim/distillation/README.md), [剪枝](./slim/prune/README.md), [搜索](./slim/nas/README.md))
 ## 在线体验
 
@@ -174,7 +175,7 @@ A: 请将PaddlePaddle升级至1.5.2版本或以上。
   * 新增Paddle-Lite移动端部署方案，支持人像分割模型的移动端部署。
   * 新增不同分割模型的预测[性能数据Benchmark](./deploy/python/docs/PaddleSeg_Infer_Benchmark.md), 便于开发者提供模型选型性能参考。
 
-  
+
 * 2019.11.04
 
   **`v0.2.0`**
