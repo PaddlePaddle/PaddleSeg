@@ -110,7 +110,7 @@ pip install -r requirements.txt
 * [如何解决二分类中类别不均衡问题](./docs/loss_select.md)
 * [特色垂类模型使用](./contrib)
 * [多进程训练和混合精度训练](./docs/multiple_gpus_train_and_mixed_precision_train.md)
-* [PointRend的使用](.docs/pointrend.md)
+* [PointRend的使用](./docs/pointrend.md)
 * 使用PaddleSlim进行分割模型压缩([量化](./slim/quantization/README.md), [蒸馏](./slim/distillation/README.md), [剪枝](./slim/prune/README.md), [搜索](./slim/nas/README.md))
 ## 在线体验
 
