@@ -53,9 +53,9 @@ PaddleSeg支持多进程I/O、多卡并行、跨卡Batch Norm同步等训练加�
 
 由于图像分割模型计算开销大，推荐在GPU版本的PaddlePaddle下使用PaddleSeg.
 ```
-pip install paddlepaddle-gpu
+pip install -U paddlepaddle-gpu
 ```
-更多PaddlePaddle的详细安装信息请查看[PaddlePaddle安装说明](https://www.paddlepaddle.org.cn/install/doc/index)。
+同时请保证您参考NVIDIA官网，已经正确配置和安装了显卡驱动，CUDA 9，cuDNN 7.3，NCCL2等依赖，其他更加详细的安装信息请参考：[PaddlePaddle安装说明](https://www.paddlepaddle.org.cn/install/doc/index)。
 
 ### 2. 下载PaddleSeg代码
 

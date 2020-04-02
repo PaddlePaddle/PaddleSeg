@@ -47,8 +47,7 @@ from eval_prune import evaluate
 from vis import visualize
 from utils import dist_utils
 
-from paddleslim.prune import Pruner
-from paddleslim.prune.io import *
+from paddleslim.prune import Pruner, save_model
 from paddleslim.analysis import flops
 
 def parse_args():

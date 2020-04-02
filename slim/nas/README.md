@@ -2,7 +2,7 @@
 
 # PaddleSeg神经网络搜索(NAS)示例
 
-在阅读本教程前，请确保您已经了解过PaddleSeg的[快速入门](../README.md#快速入门)和[基础功能](../README.md#基础功能)等章节，以便对PaddleSeg有一定的了解
+在阅读本教程前，请确保您已经了解过[PaddleSeg使用说明](../../docs/usage.md)等章节，以便对PaddleSeg有一定的了解
 
 该文档介绍如何使用[PaddleSlim](https://paddlepaddle.github.io/PaddleSlim)对分割库中的模型进行搜索。
 
@@ -11,7 +11,7 @@
 ## 概述
 
 我们选取Deeplab+mobilenetv2模型作为神经网络搜索示例，该示例使用[PaddleSlim](https://github.com/PaddlePaddle/PaddleSlim)
-辅助完成神经网络搜索实验，具体技术细节，请您参考[神经网络搜索策略](https://github.com/PaddlePaddle/PaddleSlim/blob/develop/docs/docs/tutorials/nas_demo.md)。
+辅助完成神经网络搜索实验，具体技术细节，请您参考[神经网络搜索策略](https://github.com/PaddlePaddle/PaddleSlim/blob/4670a79343c191b61a78e416826d122eea52a7ab/docs/zh_cn/tutorials/image_classification_nas_quick_start.ipynb)。
 
 
 ## 定义搜索空间
@@ -46,7 +46,7 @@ SLIM:
 ## 训练与评估
 执行以下命令，边训练边评估
 ```shell
-python -u ./slim/nas/train_nas.py --log_steps 10 --cfg configs/deeplabv3p_mobilenetv2_cityscapes.yaml --use_gpu --use_mpio \
+CUDA_VISIBLE_DEVICES=0 python -u ./slim/nas/train_nas.py --log_steps 10 --cfg configs/deeplabv3p_mobilenetv2_cityscapes.yaml --use_gpu --use_mpio \
 SLIM.NAS_PORT 23333 \
 SLIM.NAS_ADDRESS "" \
 SLIM.NAS_SEARCH_STEPS 2 \

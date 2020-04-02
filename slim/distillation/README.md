@@ -2,7 +2,7 @@
 
 # PaddleSeg蒸馏教程
 
-在阅读本教程前，请确保您已经了解过PaddleSeg的[快速入门](../README.md#快速入门)和[基础功能](../README.md#基础功能)等章节，以便对PaddleSeg有一定的了解
+在阅读本教程前，请确保您已经了解过[PaddleSeg使用说明](../../docs/usage.md)等章节，以便对PaddleSeg有一定的了解
 
 该文档介绍如何使用[PaddleSlim](https://paddlepaddle.github.io/PaddleSlim)对分割库中的模型进行蒸馏。
 
@@ -69,7 +69,20 @@ distill_loss = l2_loss('teacher_bilinear_interp_2.tmp_0', 'bilinear_interp_0.tmp
 在该脚本中定义了teacher_model和student_model，用teacher_model的输出指导student_model的训练
 
 ### 执行示例
-如下命令启动训练，每间隔```cfg.TRAIN.SNAPSHOT_EPOCH```会进行一次评估。
+
+下载teacher的预训练模型([deeplabv3p_xception65_bn_cityscapes.tgz](https://paddleseg.bj.bcebos.com/models/xception65_bn_cityscapes.tgz))和student的预训练模型([mobilenet_cityscapes.tgz](https://paddleseg.bj.bcebos.com/models/mobilenet_cityscapes.tgz)), 
+修改student config file(./slim/distillation/cityscape.yaml)中预训练模型的路径:
+```
+TRAIN:
+    PRETRAINED_MODEL_DIR: your_student_pretrained_model_dir
+```
+修改teacher config file(./slim/distillation/cityscape_teacher.yaml)中预训练模型的路径:
+```
+SLIM:
+    KNOWLEDGE_DISTILL_TEACHER_MODEL_DIR: your_teacher_pretrained_model_dir
+```
+
+执行如下命令启动训练，每间隔```cfg.TRAIN.SNAPSHOT_EPOCH```会进行一次评估。
 ```shell
 CUDA_VISIBLE_DEVICES=0,1 
 python -m paddle.distributed.launch ./slim/distillation/train_distill.py \
@@ -77,8 +90,10 @@ python -m paddle.distributed.launch ./slim/distillation/train_distill.py \
 --teacher_cfg ./slim/distillation/cityscape_teacher.yaml \
 --use_gpu \
 --use_mpio \
---do_eval
+--do_eval 
 ```
+
+注意：如需修改配置文件中的参数，请在对应的配置文件中直接修改，暂不支持命令行输入覆盖。
 
 ## 评估预测
 

@@ -4,7 +4,7 @@
 * PaddlePaddle >= 1.6.1
 * NVIDIA NCCL >= 2.4.7
 
-环境配置，数据，预训练模型准备等工作请参考[安装说明](./installation.md)，[PaddleSeg使用说明](./usage.md)
+环境配置，数据，预训练模型准备等工作请参考[PaddleSeg使用说明](./usage.md)
 
 ### 多进程训练示例
 

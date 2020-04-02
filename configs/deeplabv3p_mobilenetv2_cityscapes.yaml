@@ -30,6 +30,8 @@ MODEL:
         BACKBONE: "mobilenetv2"
         ASPP_WITH_SEP_CONV: True
         DECODER_USE_SEP_CONV: True
+        ENCODER_WITH_ASPP: False
+        ENABLE_DECODER: False
 TRAIN:
     PRETRAINED_MODEL_DIR: u"pretrained_model/deeplabv3p_mobilenetv2-1-0_bn_coco"
     MODEL_SAVE_DIR: "saved_model/deeplabv3p_mobilenetv2_cityscapes"

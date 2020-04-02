@@ -31,6 +31,7 @@ import functools
 import paddle
 import numpy as np
 import paddle.fluid as fluid
+from paddle.fluid import profiler
 
 from utils.config import cfg
 from utils.timer import Timer, calculate_eta
@@ -102,6 +103,18 @@ def parse_args():
         help='If set True, enable continuous evaluation job.'
         'This flag is only used for internal test.',
         action='store_true')
+    
+    # NOTE: This for benchmark
+    parser.add_argument(
+        '--is_profiler',
+        help='the profiler switch.(used for benchmark)',
+        default=0,
+        type=int)
+    parser.add_argument(
+        '--profiler_path',
+        help='the profiler output file path.(used for benchmark)',
+        default='./seg.profiler',
+        type=str) 
     return parser.parse_args()
 
 
@@ -442,6 +455,13 @@ def train(cfg):
                         sys.stdout.flush()
                         avg_loss = 0.0
                         timer.restart()
+                     
+                    # NOTE : used for benchmark, profiler tools
+                    if args.is_profiler and epoch == 1 and global_step == args.log_steps: 
+                        profiler.start_profiler("All")
+                    elif args.is_profiler and epoch == 1 and global_step == args.log_steps + 5:
+                        profiler.stop_profiler("total", args.profiler_path)
+                        return
 
             except fluid.core.EOFException:
                 py_reader.reset()
