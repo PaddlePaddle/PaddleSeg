@@ -219,8 +219,6 @@ def build_model(main_prog, start_prog, phase=ModelPhase.TRAIN):
                     iterable=False,
                     use_double_buffer=True)
 
-#             print(main_prog.to_string(True))
-#             exit()
             model_name = map_model_name(cfg.MODEL.MODEL_NAME)
             model_func = get_func("modeling." + model_name)
 
@@ -228,19 +226,20 @@ def build_model(main_prog, start_prog, phase=ModelPhase.TRAIN):
             if not isinstance(loss_type, list):
                 loss_type = list(loss_type)
 
-            # dice_loss或bce_loss只适用两类分割中
-            if class_num > 2 and (("dice_loss" in loss_type) or
+            # lovasz_hinge_loss或dice_loss或bce_loss只适用两类分割中
+            if class_num > 2 and (("lovasz_hinge_loss" in loss_type) or 
+                                  ("dice_loss" in loss_type) or
                                   ("bce_loss" in loss_type)):
                 raise Exception(
-                    "dice loss and bce loss is only applicable to binary classfication"
+                    "lovasz hinge loss, dice loss and bce loss are only applicable to binary classfication."
                 )
 
-            # 在两类分割情况下，当loss函数选择dice_loss或bce_loss的时候，最后logit输出通道数设置为1
+            # 在两类分割情况下，当loss函数选择lovasz_hinge_loss或dice_loss或bce_loss的时候，最后logit输出通道数设置为1
             if ("dice_loss" in loss_type) or ("bce_loss" in loss_type) or ("lovasz_hinge_loss" in loss_type):
                 class_num = 1
-                if "softmax_loss" in loss_type:
+                if "softmax_loss" or "lovasz_softmax_loss" in loss_type:
                     raise Exception(
-                        "softmax loss can not combine with dice loss or bce loss"
+                        "softmax loss or lovasz softmax loss can not combine with bce loss or dice loss or lovasz hinge loss."
                     )
             logits = model_func(image, class_num)
 
@@ -263,56 +262,19 @@ def build_model(main_prog, start_prog, phase=ModelPhase.TRAIN):
                     loss_valid = True
                     valid_loss.append("bce_loss")
                 if "lovasz_hinge_loss" in loss_type:
-#                     probas = fluid.layers.softmax(logits,axis=1)
-#                     logits = fluid.layers.Print(logits, message='logits')
-#                     label = fluid.layers.Print(label, message='label')
-                    avg_loss_list.append(lovasz_hinge(logits, label, per_image=cfg.SOLVER.LOVASZ_LOSS_PER_IMAGE, ignore=mask))
+                    avg_loss_list.append(lovasz_hinge(logits, label, ignore=mask))
                     loss_valid = True
                     valid_loss.append("lovasz_hinge_loss")
                 if "lovasz_softmax_loss" in loss_type:
-                    #ops = main_prog.global_block().ops
-                    #aaa = len(ops)
-                    probas = fluid.layers.softmax(logits,axis=1)
-                    avg_loss_list.append(lovasz_softmax(probas, label, per_image=cfg.SOLVER.LOVASZ_LOSS_PER_IMAGE, ignore=mask))
-                    
-#                    ops = main_prog.global_block().ops
-#                    bbb = len(ops)
-#                    print(len(ops))
-#    
-#                    ops = main_prog.global_block().ops
-#                    lovasz_ops = ops[aaa:]
-#                    with open('lovasz_false.dot', 'w') as f:
-#                        f.write('digraph G{\n')
-#                        for i, op_output in enumerate(lovasz_ops):
-#                            for j, op_input in enumerate(lovasz_ops):
-#                                for output_name in op_output.output_arg_names:
-#                                    if output_name in op_input.input_arg_names:
-#    
-#                                        line = '    {} -> {};\n'.format(op_output.type+str(i), op_input.type+str(j))
-#                                        f.write(line)
-#                        f.write('}')
-#                    count = 0
-#                    for i, op in enumerate(lovasz_ops):
-#    #                         print(op.input_arg_names)
-#    #                         print(i, ' ', op.type)
-#    #                         print(op.output_arg_names, '\n')
-#    
-#                        for name in op.output_arg_names:
-#                            var = main_prog.global_block().var(name)
-#                            if var.stop_gradient and op.type != 'fill_constant':
-#                                print(var.name, op.type, i)
-#    #                                 var.stop_gradient = False
-#    #                             print(var.stop_gradient)
-#                            count += 1
-#                    print(count)
-
+                    probas = fluid.layers.softmax(logits, axis=1)
+                    avg_loss_list.append(lovasz_softmax(probas, label, ignore=mask))
                     loss_valid = True
                     valid_loss.append("lovasz_softmax_loss")
                 if not loss_valid:
                     raise Exception(
                         "SOLVER.LOSS: {} is set wrong. it should "
-                        "include one of (softmax_loss, bce_loss, dice_loss) at least"
-                        " example: ['softmax_loss'], ['dice_loss'], ['bce_loss', 'dice_loss']"
+                        "include one of (softmax_loss, bce_loss, dice_loss, lovasz_hinge_loss, lovasz_softmax_loss) at least"
+                        " example: ['softmax_loss'], ['dice_loss'], ['bce_loss', 'dice_loss'], ['lovasz_hinge_loss','bce_loss'], ['lovasz_softmax_loss','softmax_loss']"
                         .format(cfg.SOLVER.LOSS))
 
                 invalid_loss = [x for x in loss_type if x not in valid_loss]
@@ -336,7 +298,7 @@ def build_model(main_prog, start_prog, phase=ModelPhase.TRAIN):
 
             # return image input and logit output for inference graph prune
             if ModelPhase.is_predict(phase):
-                # 两类分割中，使用dice_loss或bce_loss返回的logit为单通道，进行到两通道的变换
+                # 两类分割中，使用lovasz_hinge_loss或dice_loss或bce_loss返回的logit为单通道，进行到两通道的变换
                 if class_num == 1:
                     logit = sigmoid_to_softmax(logit)
                 else:
@@ -373,44 +335,8 @@ def build_model(main_prog, start_prog, phase=ModelPhase.TRAIN):
                 return py_reader, avg_loss, pred, label, mask
 
             if ModelPhase.is_train(phase):
-#                ops = main_prog.global_block().ops
-#                aaa = len(ops)-1
-#                print(len(ops))
-                 
                 optimizer = solver.Solver(main_prog, start_prog)
                 decayed_lr = optimizer.optimise(avg_loss)
-                
-#                ops = main_prog.global_block().ops
-#                bbb = len(ops)
-#                print(len(ops))
-#              
-#                ops = main_prog.global_block().ops
-#                lovasz_ops = ops[aaa:]
-#                with open('lovasz_backward.dot', 'w') as f:
-#                    f.write('digraph G{\n')
-#                    for i, op_output in enumerate(lovasz_ops):
-#                        for j, op_input in enumerate(lovasz_ops):
-#                            for output_name in op_output.output_arg_names:
-#                                if output_name in op_input.input_arg_names:
-#
-#                                    line = '    {} -> {};\n'.format(op_output.type+str(i), op_input.type+str(j))
-#                                    f.write(line)
-#                    f.write('}')
-#                count = 0
-#                for i, op in enumerate(lovasz_ops):
-##                         print(op.input_arg_names)
-##                         print(i, ' ', op.type)
-##                         print(op.output_arg_names, '\n')
-#
-#                    for name in op.output_arg_names:
-#                        var = main_prog.global_block().var(name)
-#                        if var.stop_gradient and op.type != 'fill_constant':
-#                            print(var.name, op.type, i)
-##                                 var.stop_gradient = False
-##                             print(var.stop_gradient)
-#                        count += 1
-#                print(count)
-#                 exit()
                 
                 return py_reader, avg_loss, decayed_lr, pred, label, mask
 
