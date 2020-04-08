@@ -156,7 +156,10 @@ def export_preprocess(image):
     return image, valid_shape, origin_shape
 
 
-def build_model(main_prog=None, start_prog=None, phase=ModelPhase.TRAIN, **kwargs):
+def build_model(main_prog=None,
+                start_prog=None,
+                phase=ModelPhase.TRAIN,
+                **kwargs):
 
     if not ModelPhase.is_valid_phase(phase):
         raise ValueError("ModelPhase {} is not valid!".format(phase))
@@ -167,8 +170,8 @@ def build_model(main_prog=None, start_prog=None, phase=ModelPhase.TRAIN, **kwarg
         width = cfg.EVAL_CROP_SIZE[0]
         height = cfg.EVAL_CROP_SIZE[1]
 
-    image_shape = [cfg.DATASET.DATA_DIM, height, width]
-    grt_shape = [1, height, width]
+    image_shape = [-1, cfg.DATASET.DATA_DIM, height, width]
+    grt_shape = [-1, 1, height, width]
     class_num = cfg.DATASET.NUM_CLASSES
 
     #with fluid.program_guard(main_prog, start_prog):
@@ -176,36 +179,30 @@ def build_model(main_prog=None, start_prog=None, phase=ModelPhase.TRAIN, **kwarg
     # 在导出模型的时候，增加图像标准化预处理,减小预测部署时图像的处理流程
     # 预测部署时只须对输入图像增加batch_size维度即可
     if cfg.SLIM.KNOWLEDGE_DISTILL_IS_TEACHER:
-        image = main_prog.global_block()._clone_variable(kwargs['image'],
-                                                         force_persistable=False)
-        label = main_prog.global_block()._clone_variable(kwargs['label'],
-                                                         force_persistable=False)
-        mask = main_prog.global_block()._clone_variable(kwargs['mask'],
-                                                        force_persistable=False)
+        image = main_prog.global_block()._clone_variable(
+            kwargs['image'], force_persistable=False)
+        label = main_prog.global_block()._clone_variable(
+            kwargs['label'], force_persistable=False)
+        mask = main_prog.global_block()._clone_variable(
+            kwargs['mask'], force_persistable=False)
     else:
         if ModelPhase.is_predict(phase):
-            origin_image = fluid.layers.data(
+            origin_image = fluid.data(
                 name='image',
                 shape=[-1, -1, -1, cfg.DATASET.DATA_DIM],
-                dtype='float32',
-                append_batch_size=False)
-            image, valid_shape, origin_shape = export_preprocess(
-                origin_image)
+                dtype='float32')
+            image, valid_shape, origin_shape = export_preprocess(origin_image)
 
         else:
-            image = fluid.layers.data(
-                name='image', shape=image_shape, dtype='float32')
-        label = fluid.layers.data(
-            name='label', shape=grt_shape, dtype='int32')
-        mask = fluid.layers.data(
-            name='mask', shape=grt_shape, dtype='int32')
+            image = fluid.data(name='image', shape=image_shape, dtype='float32')
+        label = fluid.data(name='label', shape=grt_shape, dtype='int32')
+        mask = fluid.data(name='mask', shape=grt_shape, dtype='int32')
 
-
-    # use PyReader when doing traning and evaluation
+    # use DataLoader.from_generator when doing traning and evaluation
     if ModelPhase.is_train(phase) or ModelPhase.is_eval(phase):
-        py_reader = None
+        data_loader = None
         if not cfg.SLIM.KNOWLEDGE_DISTILL_IS_TEACHER:
-            py_reader = fluid.io.PyReader(
+            data_loader = fluid.io.DataLoader.from_generator(
                 feed_list=[image, label, mask],
                 capacity=cfg.DATALOADER.BUF_SIZE,
                 iterable=False,
@@ -219,16 +216,14 @@ def build_model(main_prog=None, start_prog=None, phase=ModelPhase.TRAIN, **kwarg
     if class_num > 2 and (("dice_loss" in loss_type) or
                           ("bce_loss" in loss_type)):
         raise Exception(
-            "dice loss and bce loss is only applicable to binary classfication"
-        )
+            "dice loss and bce loss is only applicable to binary classfication")
 
     # 在两类分割情况下，当loss函数选择dice_loss或bce_loss的时候，最后logit输出通道数设置为1
     if ("dice_loss" in loss_type) or ("bce_loss" in loss_type):
         class_num = 1
         if "softmax_loss" in loss_type:
             raise Exception(
-                "softmax loss can not combine with dice loss or bce loss"
-            )
+                "softmax loss can not combine with dice loss or bce loss")
     logits = seg_model(image, class_num)
 
     # 根据选择的loss函数计算相应的损失函数
@@ -289,10 +284,7 @@ def build_model(main_prog=None, start_prog=None, phase=ModelPhase.TRAIN, **kwarg
             logit, axes=[2, 3], starts=[0, 0], ends=valid_shape)
 
         logit = fluid.layers.resize_bilinear(
-            logit,
-            out_shape=origin_shape,
-            align_corners=False,
-            align_mode=0)
+            logit, out_shape=origin_shape, align_corners=False, align_mode=0)
         logit = fluid.layers.argmax(logit, axis=1)
         return origin_image, logit
 
@@ -312,7 +304,7 @@ def build_model(main_prog=None, start_prog=None, phase=ModelPhase.TRAIN, **kwarg
         return pred, logit
 
     if ModelPhase.is_eval(phase):
-        return py_reader, avg_loss, pred, label, mask
+        return data_loader, avg_loss, pred, label, mask
 
     if ModelPhase.is_train(phase):
         decayed_lr = None
@@ -321,7 +313,7 @@ def build_model(main_prog=None, start_prog=None, phase=ModelPhase.TRAIN, **kwarg
             decayed_lr = optimizer.optimise(avg_loss)
         # optimizer = solver.Solver(main_prog, start_prog)
         # decayed_lr = optimizer.optimise(avg_loss)
-        return py_reader, avg_loss, decayed_lr, pred, label, mask, image
+        return data_loader, avg_loss, decayed_lr, pred, label, mask, image
 
 
 def to_int(string, dest="I"):

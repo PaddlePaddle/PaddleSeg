@@ -74,9 +74,7 @@ def seg_model(image, class_num, arch):
     if model_name == 'deeplabv3p':
         logits = deeplab.deeplabv3p_nas(image, class_num, arch)
     else:
-        raise Exception(
-            "unknow model name, only support deeplabv3p"
-        )
+        raise Exception("unknow model name, only support deeplabv3p")
     return logits
 
 
@@ -156,8 +154,8 @@ def build_model(main_prog, start_prog, phase=ModelPhase.TRAIN, arch=None):
         width = cfg.EVAL_CROP_SIZE[0]
         height = cfg.EVAL_CROP_SIZE[1]
 
-    image_shape = [cfg.DATASET.DATA_DIM, height, width]
-    grt_shape = [1, height, width]
+    image_shape = [-1, cfg.DATASET.DATA_DIM, height, width]
+    grt_shape = [-1, 1, height, width]
     class_num = cfg.DATASET.NUM_CLASSES
 
     with fluid.program_guard(main_prog, start_prog):
@@ -165,25 +163,22 @@ def build_model(main_prog, start_prog, phase=ModelPhase.TRAIN, arch=None):
             # 在导出模型的时候，增加图像标准化预处理,减小预测部署时图像的处理流程
             # 预测部署时只须对输入图像增加batch_size维度即可
             if ModelPhase.is_predict(phase):
-                origin_image = fluid.layers.data(
+                origin_image = fluid.data(
                     name='image',
                     shape=[-1, -1, -1, cfg.DATASET.DATA_DIM],
-                    dtype='float32',
-                    append_batch_size=False)
+                    dtype='float32')
                 image, valid_shape, origin_shape = export_preprocess(
                     origin_image)
 
             else:
-                image = fluid.layers.data(
+                image = fluid.data(
                     name='image', shape=image_shape, dtype='float32')
-            label = fluid.layers.data(
-                name='label', shape=grt_shape, dtype='int32')
-            mask = fluid.layers.data(
-                name='mask', shape=grt_shape, dtype='int32')
+            label = fluid.data(name='label', shape=grt_shape, dtype='int32')
+            mask = fluid.data(name='mask', shape=grt_shape, dtype='int32')
 
-            # use PyReader when doing traning and evaluation
+            # use DataLoader.from_generator when doing traning and evaluation
             if ModelPhase.is_train(phase) or ModelPhase.is_eval(phase):
-                py_reader = fluid.io.PyReader(
+                data_loader = fluid.io.DataLoader.from_generator(
                     feed_list=[image, label, mask],
                     capacity=cfg.DATALOADER.BUF_SIZE,
                     iterable=False,
@@ -217,7 +212,8 @@ def build_model(main_prog, start_prog, phase=ModelPhase.TRAIN, arch=None):
                 if "softmax_loss" in loss_type:
                     weight = cfg.SOLVER.CROSS_ENTROPY_WEIGHT
                     avg_loss_list.append(
-                        multi_softmax_with_loss(logits, label, mask, class_num, weight))
+                        multi_softmax_with_loss(logits, label, mask, class_num,
+                                                weight))
                     loss_valid = True
                     valid_loss.append("softmax_loss")
                 if "dice_loss" in loss_type:
@@ -290,12 +286,12 @@ def build_model(main_prog, start_prog, phase=ModelPhase.TRAIN, arch=None):
                 return pred, logit
 
             if ModelPhase.is_eval(phase):
-                return py_reader, avg_loss, pred, label, mask
+                return data_loader, avg_loss, pred, label, mask
 
             if ModelPhase.is_train(phase):
                 optimizer = solver.Solver(main_prog, start_prog)
                 decayed_lr = optimizer.optimise(avg_loss)
-                return py_reader, avg_loss, decayed_lr, pred, label, mask
+                return data_loader, avg_loss, decayed_lr, pred, label, mask
 
 
 def to_int(string, dest="I"):

@@ -25,6 +25,7 @@ from pdseg.loss import multi_softmax_with_loss
 from loss import discriminative_loss
 from models.modeling import lanenet
 
+
 class ModelPhase(object):
     """
     Standard name for model phase in PaddleSeg
@@ -107,35 +108,31 @@ def build_model(main_prog, start_prog, phase=ModelPhase.TRAIN):
         width = cfg.EVAL_CROP_SIZE[0]
         height = cfg.EVAL_CROP_SIZE[1]
 
-    image_shape = [cfg.DATASET.DATA_DIM, height, width]
-    grt_shape = [1, height, width]
+    image_shape = [-1, cfg.DATASET.DATA_DIM, height, width]
+    grt_shape = [-1, 1, height, width]
     class_num = cfg.DATASET.NUM_CLASSES
 
     with fluid.program_guard(main_prog, start_prog):
         with fluid.unique_name.guard():
-            image = fluid.layers.data(
-                name='image', shape=image_shape, dtype='float32')
-            label = fluid.layers.data(
-                name='label', shape=grt_shape, dtype='int32')
+            image = fluid.data(name='image', shape=image_shape, dtype='float32')
+            label = fluid.data(name='label', shape=grt_shape, dtype='int32')
             if cfg.MODEL.MODEL_NAME == 'lanenet':
-                label_instance = fluid.layers.data(
+                label_instance = fluid.data(
                     name='label_instance', shape=grt_shape, dtype='int32')
-            mask = fluid.layers.data(
-                name='mask', shape=grt_shape, dtype='int32')
+            mask = fluid.data(name='mask', shape=grt_shape, dtype='int32')
 
-            # use PyReader when doing traning and evaluation
+            # use DataLoader.from_generator when doing traning and evaluation
             if ModelPhase.is_train(phase) or ModelPhase.is_eval(phase):
-                py_reader = fluid.io.PyReader(
+                data_loader = fluid.io.DataLoader.from_generator(
                     feed_list=[image, label, label_instance, mask],
                     capacity=cfg.DATALOADER.BUF_SIZE,
                     iterable=False,
                     use_double_buffer=True)
 
-
             loss_type = cfg.SOLVER.LOSS
             if not isinstance(loss_type, list):
                 loss_type = list(loss_type)
-            
+
             logits = seg_model(image, class_num)
 
             if ModelPhase.is_train(phase):
@@ -144,25 +141,30 @@ def build_model(main_prog, start_prog, phase=ModelPhase.TRAIN):
                 if cfg.MODEL.MODEL_NAME == 'lanenet':
                     embeding_logit = logits[1]
                     logits = logits[0]
-                    disc_loss, _, _, l_reg = discriminative_loss(embeding_logit, label_instance, 4,
-                                                             image_shape[1:], 0.5, 3.0, 1.0, 1.0, 0.001)
+                    disc_loss, _, _, l_reg = discriminative_loss(
+                        embeding_logit, label_instance, 4, image_shape[2:], 0.5,
+                        3.0, 1.0, 1.0, 0.001)
 
                 if "softmax_loss" in loss_type:
                     weight = None
                     if cfg.MODEL.MODEL_NAME == 'lanenet':
                         weight = get_dynamic_weight(label)
-                    seg_loss = multi_softmax_with_loss(logits, label, mask, class_num, weight)
+                    seg_loss = multi_softmax_with_loss(logits, label, mask,
+                                                       class_num, weight)
                     loss_valid = True
                     valid_loss.append("softmax_loss")
 
                 if not loss_valid:
-                    raise Exception("SOLVER.LOSS: {} is set wrong. it should "
-                            "include one of (softmax_loss, bce_loss, dice_loss) at least"
-                            " example: ['softmax_loss']".format(cfg.SOLVER.LOSS))
+                    raise Exception(
+                        "SOLVER.LOSS: {} is set wrong. it should "
+                        "include one of (softmax_loss, bce_loss, dice_loss) at least"
+                        " example: ['softmax_loss']".format(cfg.SOLVER.LOSS))
 
                 invalid_loss = [x for x in loss_type if x not in valid_loss]
                 if len(invalid_loss) > 0:
-                    print("Warning: the loss {} you set is invalid. it will not be included in loss computed.".format(invalid_loss))
+                    print(
+                        "Warning: the loss {} you set is invalid. it will not be included in loss computed."
+                        .format(invalid_loss))
 
                 avg_loss = disc_loss + 0.00001 * l_reg + seg_loss
 
@@ -202,12 +204,12 @@ def build_model(main_prog, start_prog, phase=ModelPhase.TRAIN):
 
             accuracy, fp, fn = compute_metric(pred, label)
             if ModelPhase.is_eval(phase):
-                return py_reader, pred, label, mask, accuracy, fp, fn
+                return data_loader, pred, label, mask, accuracy, fp, fn
 
             if ModelPhase.is_train(phase):
                 optimizer = solver.Solver(main_prog, start_prog)
                 decayed_lr = optimizer.optimise(avg_loss)
-                return py_reader, avg_loss, decayed_lr, pred, label, mask, disc_loss, seg_loss, accuracy, fp, fn
+                return data_loader, avg_loss, decayed_lr, pred, label, mask, disc_loss, seg_loss, accuracy, fp, fn
 
 
 def compute_metric(pred, label):
@@ -216,19 +218,27 @@ def compute_metric(pred, label):
     idx = fluid.layers.where(pred == 1)
     pix_cls_ret = fluid.layers.gather_nd(label, idx)
 
-    correct_num = fluid.layers.reduce_sum(fluid.layers.cast(pix_cls_ret, 'float32'))
+    correct_num = fluid.layers.reduce_sum(
+        fluid.layers.cast(pix_cls_ret, 'float32'))
 
-    gt_num = fluid.layers.cast(fluid.layers.shape(fluid.layers.gather_nd(label,
-                                                                         fluid.layers.where(label == 1)))[0], 'int64')
-    pred_num = fluid.layers.cast(fluid.layers.shape(fluid.layers.gather_nd(pred, idx))[0], 'int64')
+    gt_num = fluid.layers.cast(
+        fluid.layers.shape(
+            fluid.layers.gather_nd(label, fluid.layers.where(label == 1)))[0],
+        'int64')
+    pred_num = fluid.layers.cast(
+        fluid.layers.shape(fluid.layers.gather_nd(pred, idx))[0], 'int64')
     accuracy = correct_num / gt_num
 
     false_pred = pred_num - correct_num
-    fp = fluid.layers.cast(false_pred, 'float32') / fluid.layers.cast(fluid.layers.shape(pix_cls_ret)[0], 'int64')
+    fp = fluid.layers.cast(false_pred, 'float32') / fluid.layers.cast(
+        fluid.layers.shape(pix_cls_ret)[0], 'int64')
 
-    label_cls_ret = fluid.layers.gather_nd(label, fluid.layers.where(label == 1))
-    mis_pred = fluid.layers.cast(fluid.layers.shape(label_cls_ret)[0], 'int64') - correct_num
-    fn = fluid.layers.cast(mis_pred, 'float32') / fluid.layers.cast(fluid.layers.shape(label_cls_ret)[0], 'int64')
+    label_cls_ret = fluid.layers.gather_nd(label,
+                                           fluid.layers.where(label == 1))
+    mis_pred = fluid.layers.cast(fluid.layers.shape(label_cls_ret)[0],
+                                 'int64') - correct_num
+    fn = fluid.layers.cast(mis_pred, 'float32') / fluid.layers.cast(
+        fluid.layers.shape(label_cls_ret)[0], 'int64')
     accuracy.stop_gradient = True
     fp.stop_gradient = True
     fn.stop_gradient = True
@@ -239,7 +249,8 @@ def get_dynamic_weight(label):
     label = fluid.layers.reshape(label, [-1])
     unique_labels, unique_id, counts = fluid.layers.unique_with_counts(label)
     counts = fluid.layers.cast(counts, 'float32')
-    weight = 1.0 / fluid.layers.log((counts / fluid.layers.reduce_sum(counts) + 1.02))
+    weight = 1.0 / fluid.layers.log(
+        (counts / fluid.layers.reduce_sum(counts) + 1.02))
     return weight
 
 
