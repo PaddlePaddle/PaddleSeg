@@ -1,8 +1,8 @@
-# LaneNet 模型训练教程
+# LaneNet 模型使用教程
 
-* 本教程旨在介绍如何通过使用PaddleSeg进行车道线检测
+本教程旨在介绍如何通过使用LaneNet进行车道线检测。
 
-* 在阅读本教程前，请确保您已经了解过PaddleSeg的[快速入门](../README.md#快速入门)和[基础功能](../README.md#基础功能)等章节，以便对PaddleSeg有一定的了解
+Note: 本教程所有命令都基于当前目录`PaddleSeg/contrib/LaneNet/`下执行。
 
 ## 环境依赖
 
@@ -116,13 +116,13 @@ CUDA_VISIBLE_DEVICES=0 python -u train.py --cfg configs/lanenet.yaml --use_gpu -
 模型训练完成，使用下述命令启动评估
 
 ```shell
-CUDA_VISIBLE_DEVICES=0 python -u eval.py --use_gpu --cfg configs/lanenet.yaml
+CUDA_VISIBLE_DEVICES=0 python -u eval.py --cfg configs/lanenet.yaml --use_gpu 
 ```
 
 ## 七. 可视化
 需要先下载一个车前视角和鸟瞰图视角转换所需文件，点击[链接](https://paddleseg.bj.bcebos.com/resources/tusimple_ipm_remap.tar)，下载后放在```./utils```下。同时我们提供了一个训练好的模型，点击[链接](https://paddleseg.bj.bcebos.com/models/lanenet_vgg_tusimple.tar)，下载后放在```./pretrained_models/```下，使用如下命令进行可视化
 ```shell
-CUDA_VISIBLE_DEVICES=0 python -u ./vis.py --cfg configs/lanenet.yaml --use_gpu --vis_dir vis_result \
+CUDA_VISIBLE_DEVICES=0 python -u vis.py --cfg configs/lanenet.yaml --use_gpu --vis_dir vis_result \
 TEST.TEST_MODEL pretrained_models/LaneNet_vgg_tusimple/
 ```
 
