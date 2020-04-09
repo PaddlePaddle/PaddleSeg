@@ -114,6 +114,6 @@ python pdseg/eval.py --use_gpu --cfg ./configs/fast_scnn_pet.yaml
 | ICNet/bn |(1024, 2048) |8.76ms| 0.6831 |
 | Fast-SCNN/bn | (1024, 2048) |6.28ms| 0.6964 |
 
-上述测试环境为v100. 测试使用paddle的推理接口[zero_copy](https://www.paddlepaddle.org.cn/documentation/docs/zh/develop/advanced_usage/deploy/inference/python_infer_cn.html#id8)的方式，模型输出是类别，即argmax后的值。
+上述测试环境为v100. 测试使用paddle的推理接口[zero_copy](https://www.paddlepaddle.org.cn/documentation/docs/zh/develop/advanced_guide/inference_deployment/inference/python_infer_cn.html#id8)的方式，模型输出是类别，即argmax后的值。
 
 

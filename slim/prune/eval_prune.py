@@ -45,6 +45,7 @@ from metrics import ConfusionMatrix
 
 from paddleslim.prune import load_model
 
+
 def parse_args():
     parser = argparse.ArgumentParser(description='PaddleSeg model evalution')
     parser.add_argument(
@@ -98,10 +99,10 @@ def evaluate(cfg, ckpt_dir=None, use_gpu=False, use_mpio=False, **kwargs):
         for b in data_gen:
             yield b[0], b[1], b[2]
 
-    py_reader, avg_loss, pred, grts, masks = build_model(
+    data_loader, avg_loss, pred, grts, masks = build_model(
         test_prog, startup_prog, phase=ModelPhase.EVAL)
 
-    py_reader.decorate_sample_generator(
+    data_loader.set_sample_generator(
         data_generator, drop_last=False, batch_size=cfg.BATCH_SIZE)
 
     # Get device environment
@@ -134,7 +135,7 @@ def evaluate(cfg, ckpt_dir=None, use_gpu=False, use_mpio=False, **kwargs):
     all_step = cfg.DATASET.TEST_TOTAL_IMAGES // cfg.BATCH_SIZE + 1
     timer = Timer()
     timer.start()
-    py_reader.start()
+    data_loader.start()
     while True:
         try:
             step += 1

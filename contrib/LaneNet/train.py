@@ -232,9 +232,9 @@ def train(cfg):
     cfg.BATCH_SIZE_PER_DEV = batch_size_per_dev
     print_info("batch_size_per_dev: {}".format(batch_size_per_dev))
 
-    py_reader, avg_loss, lr, pred, grts, masks, emb_loss, seg_loss, accuracy, fp, fn = build_model(
+    data_loader, avg_loss, lr, pred, grts, masks, emb_loss, seg_loss, accuracy, fp, fn = build_model(
         train_prog, startup_prog, phase=ModelPhase.TRAIN)
-    py_reader.decorate_sample_generator(
+    data_loader.set_sample_generator(
         data_generator, batch_size=batch_size_per_dev, drop_last=drop_last)
 
     exe = fluid.Executor(place)
@@ -315,7 +315,10 @@ def train(cfg):
             format(cfg.TRAIN.PRETRAINED_MODEL_DIR))
 
     # fetch_list = [avg_loss.name, lr.name, accuracy.name, precision.name, recall.name]
-    fetch_list = [avg_loss.name, lr.name, seg_loss.name, emb_loss.name, accuracy.name, fp.name, fn.name]
+    fetch_list = [
+        avg_loss.name, lr.name, seg_loss.name, emb_loss.name, accuracy.name,
+        fp.name, fn.name
+    ]
     if args.debug:
         # Fetch more variable info and use streaming confusion matrix to
         # calculate IoU results if in debug mode
@@ -359,7 +362,7 @@ def train(cfg):
         print_info("Use multi-thread reader")
 
     for epoch in range(begin_epoch, cfg.SOLVER.NUM_EPOCHS + 1):
-        py_reader.start()
+        data_loader.start()
         while True:
             try:
                 # If not in debug mode, avoid unnessary log and calculate
@@ -385,16 +388,15 @@ def train(cfg):
                     avg_fn /= args.log_steps
                     speed = args.log_steps / timer.elapsed_time()
                     print((
-                              "epoch={} step={} lr={:.5f} loss={:.4f} seg_loss={:.4f} emb_loss={:.4f} accuracy={:.4} fp={:.4} fn={:.4} step/sec={:.3f} | ETA {}"
-                          ).format(epoch, global_step, lr[0], avg_loss, avg_seg_loss, avg_emb_loss, avg_acc, avg_fp, avg_fn, speed,
-                                   calculate_eta(all_step - global_step, speed)))
+                        "epoch={} step={} lr={:.5f} loss={:.4f} seg_loss={:.4f} emb_loss={:.4f} accuracy={:.4} fp={:.4} fn={:.4} step/sec={:.3f} | ETA {}"
+                    ).format(epoch, global_step, lr[0], avg_loss, avg_seg_loss,
+                             avg_emb_loss, avg_acc, avg_fp, avg_fn, speed,
+                             calculate_eta(all_step - global_step, speed)))
                     if args.use_tb:
                         log_writer.add_scalar('Train/loss', avg_loss,
                                               global_step)
-                        log_writer.add_scalar('Train/lr', lr[0],
-                                              global_step)
-                        log_writer.add_scalar('Train/speed', speed,
-                                              global_step)
+                        log_writer.add_scalar('Train/lr', lr[0], global_step)
+                        log_writer.add_scalar('Train/speed', speed, global_step)
                     sys.stdout.flush()
                     avg_loss = 0.0
                     avg_seg_loss = 0.0
@@ -405,7 +407,7 @@ def train(cfg):
                     timer.restart()
 
             except fluid.core.EOFException:
-                py_reader.reset()
+                data_loader.reset()
                 break
             except Exception as e:
                 print(e)
@@ -423,10 +425,8 @@ def train(cfg):
                 if args.use_tb:
                     log_writer.add_scalar('Evaluate/accuracy', accuracy,
                                           global_step)
-                    log_writer.add_scalar('Evaluate/fp', fp,
-                                          global_step)
-                    log_writer.add_scalar('Evaluate/fn', fn,
-                                          global_step)
+                    log_writer.add_scalar('Evaluate/fp', fp, global_step)
+                    log_writer.add_scalar('Evaluate/fn', fn, global_step)
 
             # Use Tensorboard to visualize results
             if args.use_tb and cfg.DATASET.VIS_FILE_LIST is not None:

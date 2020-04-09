@@ -101,10 +101,10 @@ def evaluate(cfg, ckpt_dir=None, use_gpu=False, use_mpio=False, **kwargs):
         for b in data_gen:
             yield b
 
-    py_reader, pred, grts, masks, accuracy, fp, fn = build_model(
+    data_loader, pred, grts, masks, accuracy, fp, fn = build_model(
         test_prog, startup_prog, phase=ModelPhase.EVAL)
 
-    py_reader.decorate_sample_generator(
+    data_loader.set_sample_generator(
         data_generator, drop_last=False, batch_size=cfg.BATCH_SIZE)
 
     # Get device environment
@@ -127,7 +127,9 @@ def evaluate(cfg, ckpt_dir=None, use_gpu=False, use_mpio=False, **kwargs):
     # Use streaming confusion matrix to calculate mean_iou
     np.set_printoptions(
         precision=4, suppress=True, linewidth=160, floatmode="fixed")
-    fetch_list = [pred.name, grts.name, masks.name, accuracy.name, fp.name, fn.name]
+    fetch_list = [
+        pred.name, grts.name, masks.name, accuracy.name, fp.name, fn.name
+    ]
     num_images = 0
     step = 0
     avg_acc = 0.0
@@ -137,7 +139,7 @@ def evaluate(cfg, ckpt_dir=None, use_gpu=False, use_mpio=False, **kwargs):
     all_step = cfg.DATASET.TEST_TOTAL_IMAGES // cfg.BATCH_SIZE + 1
     timer = Timer()
     timer.start()
-    py_reader.start()
+    data_loader.start()
     while True:
         try:
             step += 1
@@ -153,7 +155,8 @@ def evaluate(cfg, ckpt_dir=None, use_gpu=False, use_mpio=False, **kwargs):
 
             print(
                 "[EVAL]step={} accuracy={:.4f} fp={:.4f} fn={:.4f} step/sec={:.2f} | ETA {}"
-                .format(step, avg_acc / num_images, avg_fp / num_images, avg_fn / num_images, speed,
+                .format(step, avg_acc / num_images, avg_fp / num_images,
+                        avg_fn / num_images, speed,
                         calculate_eta(all_step - step, speed)))
 
             timer.restart()
@@ -162,7 +165,8 @@ def evaluate(cfg, ckpt_dir=None, use_gpu=False, use_mpio=False, **kwargs):
             break
 
     print("[EVAL]#image={} accuracy={:.4f} fp={:.4f} fn={:.4f}".format(
-        num_images, avg_acc / num_images, avg_fp / num_images, avg_fn / num_images))
+        num_images, avg_acc / num_images, avg_fp / num_images,
+        avg_fn / num_images))
 
     return avg_acc / num_images, avg_fp / num_images, avg_fn / num_images
 

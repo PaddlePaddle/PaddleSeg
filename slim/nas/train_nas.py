@@ -54,6 +54,7 @@ from paddleslim.analysis import flops
 from paddleslim.nas.sa_nas import SANAS
 from paddleslim.nas import search_space
 
+
 def parse_args():
     parser = argparse.ArgumentParser(description='PaddleSeg training')
     parser.add_argument(
@@ -269,21 +270,24 @@ def train(cfg):
 
     port = cfg.SLIM.NAS_PORT
     server_address = (cfg.SLIM.NAS_ADDRESS, port)
-    sa_nas = SANAS(config, server_addr=server_address, search_steps=cfg.SLIM.NAS_SEARCH_STEPS,
-                   is_server=cfg.SLIM.NAS_IS_SERVER)
+    sa_nas = SANAS(
+        config,
+        server_addr=server_address,
+        search_steps=cfg.SLIM.NAS_SEARCH_STEPS,
+        is_server=cfg.SLIM.NAS_IS_SERVER)
     for step in range(cfg.SLIM.NAS_SEARCH_STEPS):
         arch = sa_nas.next_archs()[0]
 
         start_prog = fluid.Program()
         train_prog = fluid.Program()
 
-        py_reader, avg_loss, lr, pred, grts, masks = build_model(
+        data_loader, avg_loss, lr, pred, grts, masks = build_model(
             train_prog, start_prog, arch=arch, phase=ModelPhase.TRAIN)
 
         cur_flops = flops(train_prog)
         print('current step:', step, 'flops:', cur_flops)
 
-        py_reader.decorate_sample_generator(
+        data_loader.set_sample_generator(
             data_generator, batch_size=batch_size_per_dev, drop_last=drop_last)
 
         exe = fluid.Executor(place)
@@ -297,7 +301,8 @@ def train(cfg):
         build_strategy = fluid.BuildStrategy()
 
         if cfg.NUM_TRAINERS > 1 and args.use_gpu:
-            dist_utils.prepare_for_multi_process(exe, build_strategy, train_prog)
+            dist_utils.prepare_for_multi_process(exe, build_strategy,
+                                                 train_prog)
             exec_strategy.num_threads = 1
 
         if cfg.TRAIN.SYNC_BATCH_NORM and args.use_gpu:
@@ -309,10 +314,11 @@ def train(cfg):
                 print_info(
                     "Sync BatchNorm strategy will not be effective if GPU device"
                     " count <= 1")
-        compiled_train_prog = fluid.CompiledProgram(train_prog).with_data_parallel(
-            loss_name=avg_loss.name,
-            exec_strategy=exec_strategy,
-            build_strategy=build_strategy)
+        compiled_train_prog = fluid.CompiledProgram(
+            train_prog).with_data_parallel(
+                loss_name=avg_loss.name,
+                exec_strategy=exec_strategy,
+                build_strategy=build_strategy)
 
         # Resume training
         begin_epoch = cfg.SOLVER.BEGIN_EPOCH
@@ -353,13 +359,14 @@ def train(cfg):
                 print_info(
                     "Parameter[{}] don't exist or shape does not match current network, skip"
                     " to load it.".format(var.name))
-            print_info("{}/{} pretrained parameters loaded successfully!".format(
-                len(load_vars),
-                len(load_vars) + len(load_fail_vars)))
+            print_info(
+                "{}/{} pretrained parameters loaded successfully!".format(
+                    len(load_vars),
+                    len(load_vars) + len(load_fail_vars)))
         else:
             print_info(
                 'Pretrained model dir {} not exists, training from scratch...'.
-                    format(cfg.TRAIN.PRETRAINED_MODEL_DIR))
+                format(cfg.TRAIN.PRETRAINED_MODEL_DIR))
 
         fetch_list = [avg_loss.name, lr.name]
 
@@ -374,8 +381,8 @@ def train(cfg):
         timer.start()
         if begin_epoch > cfg.SOLVER.NUM_EPOCHS:
             raise ValueError(
-                ("begin epoch[{}] is larger than cfg.SOLVER.NUM_EPOCHS[{}]").format(
-                    begin_epoch, cfg.SOLVER.NUM_EPOCHS))
+                ("begin epoch[{}] is larger than cfg.SOLVER.NUM_EPOCHS[{}]"
+                 ).format(begin_epoch, cfg.SOLVER.NUM_EPOCHS))
 
         if args.use_mpio:
             print_info("Use multiprocess reader")
@@ -384,7 +391,7 @@ def train(cfg):
 
         best_miou = 0.0
         for epoch in range(begin_epoch, cfg.SOLVER.NUM_EPOCHS + 1):
-            py_reader.start()
+            data_loader.start()
             while True:
                 try:
                     loss, lr = exe.run(
@@ -398,21 +405,22 @@ def train(cfg):
                         avg_loss /= args.log_steps
                         speed = args.log_steps / timer.elapsed_time()
                         print((
-                                  "epoch={} step={} lr={:.5f} loss={:.4f} step/sec={:.3f} | ETA {}"
-                              ).format(epoch, global_step, lr[0], avg_loss, speed,
-                                       calculate_eta(all_step - global_step, speed)))
+                            "epoch={} step={} lr={:.5f} loss={:.4f} step/sec={:.3f} | ETA {}"
+                        ).format(epoch, global_step, lr[0], avg_loss, speed,
+                                 calculate_eta(all_step - global_step, speed)))
 
                         sys.stdout.flush()
                         avg_loss = 0.0
                         timer.restart()
 
                 except fluid.core.EOFException:
-                    py_reader.reset()
+                    data_loader.reset()
                     break
                 except Exception as e:
                     print(e)
             if epoch > cfg.SLIM.NAS_START_EVAL_EPOCH:
-                ckpt_dir = save_checkpoint(exe, train_prog, '{}_tmp'.format(port))
+                ckpt_dir = save_checkpoint(exe, train_prog,
+                                           '{}_tmp'.format(port))
                 _, mean_iou, _, mean_acc = evaluate(
                     cfg=cfg,
                     arch=arch,
@@ -420,7 +428,8 @@ def train(cfg):
                     use_gpu=args.use_gpu,
                     use_mpio=args.use_mpio)
                 if best_miou < mean_iou:
-                    print('search step {}, epoch {} best iou {}'.format(step, epoch, mean_iou))
+                    print('search step {}, epoch {} best iou {}'.format(
+                        step, epoch, mean_iou))
                     best_miou = mean_iou
 
         sa_nas.reward(float(best_miou))

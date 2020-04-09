@@ -166,8 +166,8 @@ def build_model(main_prog, start_prog, phase=ModelPhase.TRAIN):
         width = cfg.EVAL_CROP_SIZE[0]
         height = cfg.EVAL_CROP_SIZE[1]
 
-    image_shape = [cfg.DATASET.DATA_DIM, height, width]
-    grt_shape = [1, height, width]
+    image_shape = [-1, cfg.DATASET.DATA_DIM, height, width]
+    grt_shape = [-1, 1, height, width]
     class_num = cfg.DATASET.NUM_CLASSES
 
     with fluid.program_guard(main_prog, start_prog):
@@ -182,22 +182,19 @@ def build_model(main_prog, start_prog, phase=ModelPhase.TRAIN):
                     origin_image = fluid.layers.data(
                         name='image',
                         shape=[-1, -1, -1, cfg.DATASET.DATA_DIM],
-                        dtype='float32',
-                        append_batch_size=False)
+                        dtype='float32')
                     image, valid_shape, origin_shape = export_preprocess(
                         origin_image)
 
             else:
-                image = fluid.layers.data(
+                image = fluid.data(
                     name='image', shape=image_shape, dtype='float32')
-            label = fluid.layers.data(
-                name='label', shape=grt_shape, dtype='int32')
-            mask = fluid.layers.data(
-                name='mask', shape=grt_shape, dtype='int32')
+            label = fluid.data(name='label', shape=grt_shape, dtype='int32')
+            mask = fluid.data(name='mask', shape=grt_shape, dtype='int32')
 
-            # use PyReader when doing traning and evaluation
+            # use DataLoader when doing traning and evaluation
             if ModelPhase.is_train(phase) or ModelPhase.is_eval(phase):
-                py_reader = fluid.io.PyReader(
+                data_loader = fluid.io.DataLoader.from_generator(
                     feed_list=[image, label, mask],
                     capacity=cfg.DATALOADER.BUF_SIZE,
                     iterable=False,
@@ -309,12 +306,12 @@ def build_model(main_prog, start_prog, phase=ModelPhase.TRAIN):
                 return pred, logit
 
             if ModelPhase.is_eval(phase):
-                return py_reader, avg_loss, pred, label, mask
+                return data_loader, avg_loss, pred, label, mask
 
             if ModelPhase.is_train(phase):
                 optimizer = solver.Solver(main_prog, start_prog)
                 decayed_lr = optimizer.optimise(avg_loss)
-                return py_reader, avg_loss, decayed_lr, pred, label, mask
+                return data_loader, avg_loss, decayed_lr, pred, label, mask
 
 
 def to_int(string, dest="I"):

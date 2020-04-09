@@ -89,7 +89,6 @@ python -m paddle.distributed.launch ./slim/distillation/train_distill.py \
 --log_steps 10 --cfg ./slim/distillation/cityscape.yaml \
 --teacher_cfg ./slim/distillation/cityscape_teacher.yaml \
 --use_gpu \
---use_mpio \
 --do_eval 
 ```
 
