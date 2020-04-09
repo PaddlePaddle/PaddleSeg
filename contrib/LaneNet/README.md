@@ -36,7 +36,7 @@ LaneNet
 ```
 ## 二. 下载预训练模型
 
-下载[vgg预训练模型](https://paddle-imagenet-models-name.bj.bcebos.com/VGG16_pretrained.tar)，放在```pretrained_models```文件夹下。
+下载[vgg预训练模型](https://paddle-imagenet-models-name.bj.bcebos.com/VGG16_pretrained.tar)，放在```pretrained_models```文件夹下并解压。
 
 
 ## 三. 准备配置
@@ -120,7 +120,7 @@ CUDA_VISIBLE_DEVICES=0 python -u eval.py --cfg configs/lanenet.yaml --use_gpu
 ```
 
 ## 七. 可视化
-需要先下载一个车前视角和鸟瞰图视角转换所需文件，点击[链接](https://paddleseg.bj.bcebos.com/resources/tusimple_ipm_remap.tar)，下载后放在```./utils```下。同时我们提供了一个训练好的模型，点击[链接](https://paddleseg.bj.bcebos.com/models/lanenet_vgg_tusimple.tar)，下载后放在```./pretrained_models/```下，使用如下命令进行可视化
+需要先下载一个车前视角和鸟瞰图视角转换所需文件，点击[链接](https://paddleseg.bj.bcebos.com/resources/tusimple_ipm_remap.tar)，下载后放在```./utils```下。同时我们提供了一个训练好的模型，点击[链接](https://paddleseg.bj.bcebos.com/models/lanenet_vgg_tusimple.tar)，下载后放在```./pretrained_models/```下并解压，使用如下命令进行可视化
 ```shell
 CUDA_VISIBLE_DEVICES=0 python -u vis.py --cfg configs/lanenet.yaml --use_gpu --vis_dir vis_result \
 TEST.TEST_MODEL pretrained_models/LaneNet_vgg_tusimple/
@@ -128,11 +128,11 @@ TEST.TEST_MODEL pretrained_models/LaneNet_vgg_tusimple/
 
 可视化结果示例：
   
-  预测结果：<br/>
+ （1）预测结果：<br/>
   ![](imgs/0005_pred_lane.png)
-  分割结果：<br/>
+ （2）语义分割结果：<br/>
   ![](imgs/0005_pred_binary.png)<br/>
-  车道线实例预测结果：<br/>
+ （3）实例分割结果：<br/>
   ![](imgs/0005_pred_instance.png)
 
 
