@@ -48,6 +48,7 @@ from utils import dist_utils
 import solver
 from paddleslim.dist.single_distiller import merge, l2_loss
 
+
 def parse_args():
     parser = argparse.ArgumentParser(description='PaddleSeg training')
     parser.add_argument(
@@ -260,8 +261,9 @@ def train(cfg):
     batch_size_per_dev = cfg.BATCH_SIZE // dev_count
     print_info("batch_size_per_dev: {}".format(batch_size_per_dev))
 
-    py_reader, loss, lr, pred, grts, masks, image = build_model(phase=ModelPhase.TRAIN)
-    py_reader.decorate_sample_generator(
+    data_loader, loss, lr, pred, grts, masks, image = build_model(
+        phase=ModelPhase.TRAIN)
+    data_loader.set_sample_generator(
         data_generator, batch_size=batch_size_per_dev, drop_last=drop_last)
 
     exe = fluid.Executor(place)
@@ -274,8 +276,12 @@ def train(cfg):
     with fluid.program_guard(teacher_program, teacher_startup_program):
         with fluid.unique_name.guard():
             _, teacher_loss, _, _, _, _, _ = build_model(
-                teacher_program, teacher_startup_program, phase=ModelPhase.TRAIN, image=image,
-                label=grts, mask=masks)
+                teacher_program,
+                teacher_startup_program,
+                phase=ModelPhase.TRAIN,
+                image=image,
+                label=grts,
+                mask=masks)
 
     exe.run(teacher_startup_program)
 
@@ -293,7 +299,9 @@ def train(cfg):
         'mask': 'mask',
     }
     merge(teacher_program, fluid.default_main_program(), data_name_map, place)
-    distill_pairs = [['teacher_bilinear_interp_2.tmp_0', 'bilinear_interp_0.tmp_0']]
+    distill_pairs = [[
+        'teacher_bilinear_interp_2.tmp_0', 'bilinear_interp_0.tmp_0'
+    ]]
 
     def distill(pairs, weight):
         """
@@ -322,7 +330,8 @@ def train(cfg):
     build_strategy.fuse_all_optimizer_ops = False
     build_strategy.fuse_elewise_add_act_ops = True
     if cfg.NUM_TRAINERS > 1 and args.use_gpu:
-        dist_utils.prepare_for_multi_process(exe, build_strategy, fluid.default_main_program())
+        dist_utils.prepare_for_multi_process(exe, build_strategy,
+                                             fluid.default_main_program())
         exec_strategy.num_threads = 1
 
     if cfg.TRAIN.SYNC_BATCH_NORM and args.use_gpu:
@@ -334,10 +343,11 @@ def train(cfg):
             print_info(
                 "Sync BatchNorm strategy will not be effective if GPU device"
                 " count <= 1")
-    compiled_train_prog = fluid.CompiledProgram(fluid.default_main_program()).with_data_parallel(
-        loss_name=all_loss.name,
-        exec_strategy=exec_strategy,
-        build_strategy=build_strategy)
+    compiled_train_prog = fluid.CompiledProgram(
+        fluid.default_main_program()).with_data_parallel(
+            loss_name=all_loss.name,
+            exec_strategy=exec_strategy,
+            build_strategy=build_strategy)
 
     # Resume training
     begin_epoch = cfg.SOLVER.BEGIN_EPOCH
@@ -387,7 +397,9 @@ def train(cfg):
             format(cfg.TRAIN.PRETRAINED_MODEL_DIR))
 
     #fetch_list = [avg_loss.name, lr.name]
-    fetch_list = [loss.name, 'teacher_' + teacher_loss.name, distill_loss.name, lr.name]
+    fetch_list = [
+        loss.name, 'teacher_' + teacher_loss.name, distill_loss.name, lr.name
+    ]
 
     if args.debug:
         # Fetch more variable info and use streaming confusion matrix to
@@ -431,7 +443,7 @@ def train(cfg):
         print_info("Use multi-thread reader")
 
     for epoch in range(begin_epoch, cfg.SOLVER.NUM_EPOCHS + 1):
-        py_reader.start()
+        data_loader.start()
         while True:
             try:
                 if args.debug:
@@ -491,7 +503,8 @@ def train(cfg):
                         speed = args.log_steps / timer.elapsed_time()
                         print((
                             "epoch={} step={} lr={:.5f} loss={:.4f} teacher loss={:.4f} distill loss={:.4f} step/sec={:.3f} | ETA {}"
-                        ).format(epoch, global_step, lr[0], avg_loss, avg_t_loss, avg_d_loss, speed,
+                        ).format(epoch, global_step, lr[0], avg_loss,
+                                 avg_t_loss, avg_d_loss, speed,
                                  calculate_eta(all_step - global_step, speed)))
                         if args.use_tb:
                             log_writer.add_scalar('Train/loss', avg_loss,
@@ -507,7 +520,7 @@ def train(cfg):
                         timer.restart()
 
             except fluid.core.EOFException:
-                py_reader.reset()
+                data_loader.reset()
                 break
             except Exception as e:
                 print(e)

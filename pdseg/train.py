@@ -103,7 +103,7 @@ def parse_args():
         help='If set True, enable continuous evaluation job.'
         'This flag is only used for internal test.',
         action='store_true')
-    
+
     # NOTE: This for benchmark
     parser.add_argument(
         '--is_profiler',
@@ -114,7 +114,7 @@ def parse_args():
         '--profiler_path',
         help='the profiler output file path.(used for benchmark)',
         default='./seg.profiler',
-        type=str) 
+        type=str)
     return parser.parse_args()
 
 
@@ -265,9 +265,9 @@ def train(cfg):
     batch_size_per_dev = cfg.BATCH_SIZE // dev_count
     print_info("batch_size_per_dev: {}".format(batch_size_per_dev))
 
-    py_reader, avg_loss, lr, pred, grts, masks = build_model(
+    data_loader, avg_loss, lr, pred, grts, masks = build_model(
         train_prog, startup_prog, phase=ModelPhase.TRAIN)
-    py_reader.decorate_sample_generator(
+    data_loader.set_sample_generator(
         data_generator, batch_size=batch_size_per_dev, drop_last=drop_last)
 
     exe = fluid.Executor(place)
@@ -386,7 +386,7 @@ def train(cfg):
         print_info("Use multi-thread reader")
 
     for epoch in range(begin_epoch, cfg.SOLVER.NUM_EPOCHS + 1):
-        py_reader.start()
+        data_loader.start()
         while True:
             try:
                 if args.debug:
@@ -454,16 +454,16 @@ def train(cfg):
                         sys.stdout.flush()
                         avg_loss = 0.0
                         timer.restart()
-                     
+
                     # NOTE : used for benchmark, profiler tools
-                    if args.is_profiler and epoch == 1 and global_step == args.log_steps: 
+                    if args.is_profiler and epoch == 1 and global_step == args.log_steps:
                         profiler.start_profiler("All")
                     elif args.is_profiler and epoch == 1 and global_step == args.log_steps + 5:
                         profiler.stop_profiler("total", args.profiler_path)
                         return
 
             except fluid.core.EOFException:
-                py_reader.reset()
+                data_loader.reset()
                 break
             except Exception as e:
                 print(e)

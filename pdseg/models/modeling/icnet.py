@@ -191,7 +191,7 @@ def icnet(input, num_classes):
 
 
 if __name__ == '__main__':
-    image_shape = [3, 320, 320]
-    image = fluid.layers.data(name='image', shape=image_shape, dtype='float32')
+    image_shape = [-1, 3, 320, 320]
+    image = fluid.data(name='image', shape=image_shape, dtype='float32')
     logit = icnet(image, 4)
     print("logit:", logit.shape)
