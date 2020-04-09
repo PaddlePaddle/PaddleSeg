@@ -6,7 +6,7 @@
 
 ## 简介
 
-PaddleSeg是基于[PaddlePaddle](https://www.paddlepaddle.org.cn)开发的语义分割库，覆盖了DeepLabv3+, U-Net, ICNet, PSPNet, HRNet等主流分割模型。通过统一的配置，帮助用户更便捷地完成从训练到部署的全流程图像分割应用。
+PaddleSeg是基于[PaddlePaddle](https://www.paddlepaddle.org.cn)开发的语义分割库，覆盖了DeepLabv3+, U-Net, ICNet, PSPNet, HRNet, Fast-SCNN等主流分割模型。通过统一的配置，帮助用户更便捷地完成从训练到部署的全流程图像分割应用。
 
 </br>
 
@@ -26,7 +26,6 @@ PaddleSeg是基于[PaddlePaddle](https://www.paddlepaddle.org.cn)开发的语义
 </br>
 
 ## 特点
-PaddleSeg具备高性能、丰富的数据增强、工业级部署、全流程应用的特点:
 
 - **丰富的数据增强**
 
@@ -34,15 +33,15 @@ PaddleSeg具备高性能、丰富的数据增强、工业级部署、全流程�
 
 - **模块化设计**
 
-支持U-Net, DeepLabv3+, ICNet, PSPNet, HRNet五种主流分割网络，结合预训练模型和可调节的骨干网络，满足不同性能和精度的要求；选择不同的损失函数如Dice Loss, BCE Loss等方式可以强化小目标和不均衡样本场景下的分割精度。
+支持U-Net, DeepLabv3+, ICNet, PSPNet, HRNet, Fast-SCNN六种主流分割网络，结合预训练模型和可调节的骨干网络，满足不同性能和精度的要求；选择不同的损失函数如Dice Loss, BCE Loss等方式可以强化小目标和不均衡样本场景下的分割精度。
 
 - **高性能**
 
-PaddleSeg支持多进程IO、多卡并行、跨卡Batch Norm同步等训练加速策略，结合飞桨核心框架的显存优化功能，可以大幅度减少分割模型的显存开销，更快完成分割模型训练。
+PaddleSeg支持多进程I/O、多卡并行、跨卡Batch Norm同步等训练加速策略，结合飞桨核心框架的显存优化功能，可大幅度减少分割模型的显存开销，让开发者更低成本、更高效地完成图像分割训练。
 
 - **工业级部署**
 
-基于[Paddle Serving](https://github.com/PaddlePaddle/Serving)和PaddlePaddle高性能预测引擎，结合百度开放的AI能力，轻松搭建人像分割和车道线分割服务。
+全面提供**服务端**和**移动端**的工业级部署能力，依托飞桨高性能推理引擎和高性能图像处理实现，开发者可以轻松完成高性能的分割模型部署和集成。通过[Paddle-Lite](https://github.com/PaddlePaddle/Paddle-Lite)，可以在移动设备或者嵌入式设备上完成轻量级、高性能的人像分割模型部署。
 
 ## 安装
 
@@ -54,9 +53,9 @@ PaddleSeg支持多进程IO、多卡并行、跨卡Batch Norm同步等训练加�
 
 由于图像分割模型计算开销大，推荐在GPU版本的PaddlePaddle下使用PaddleSeg.
 ```
-pip install paddlepaddle-gpu
+pip install -U paddlepaddle-gpu
 ```
-更多PaddlePaddle的详细安装信息请查看[PaddlePaddle安装](https://www.paddlepaddle.org.cn/install/doc/index)。
+同时请保证您参考NVIDIA官网，已经正确配置和安装了显卡驱动，CUDA 9，cuDNN 7.3，NCCL2等依赖，其他更加详细的安装信息请参考：[PaddlePaddle安装说明](https://www.paddlepaddle.org.cn/install/doc/index)。
 
 ### 2. 下载PaddleSeg代码
 
@@ -71,9 +70,6 @@ cd PaddleSeg
 pip install -r requirements.txt
 ```
 
-
-
-
 </br>
 
 ## 使用教程
@@ -84,36 +80,37 @@ pip install -r requirements.txt
 
 ### 快速入门
 
-* [训练/评估/可视化](./docs/usage.md)
+* [PaddleSeg快速入门](./docs/usage.md)
 
 ### 基础功能
 
 * [自定义数据的标注与准备](./docs/data_prepare.md)
-* [配置说明与准备](./docs/config.md)
+* [脚本使用和配置说明](./docs/config.md)
 * [数据和配置校验](./docs/check.md)
 * [分割模型介绍](./docs/models.md)
 * [预训练模型下载](./docs/model_zoo.md)
-* [如何训练DeepLabv3+](./turtorial/finetune_deeplabv3plus.md)
-* [如何训练U-Net](./turtorial/finetune_unet.md)
-* [如何训练ICNet](./turtorial/finetune_icnet.md)
-* [如何训练PSPNet](./turtorial/finetune_pspnet.md)
-* [如何训练HRNet](./turtorial/finetune_hrnet.md)
+* [DeepLabv3+模型使用教程](./turtorial/finetune_deeplabv3plus.md)
+* [U-Net模型使用教程](./turtorial/finetune_unet.md)
+* [ICNet模型使用教程](./turtorial/finetune_icnet.md)
+* [PSPNet模型使用教程](./turtorial/finetune_pspnet.md)
+* [HRNet模型使用教程](./turtorial/finetune_hrnet.md)
+* [Fast-SCNN模型使用教程](./turtorial/finetune_fast_scnn.md)
 
 ### 预测部署
 
 * [模型导出](./docs/model_export.md)
-* [使用Python预测](./deploy/python/)
-* [使用C++预测](./deploy/cpp/)
-* [移动端预测部署](./deploy/lite/)
+* [Python预测](./deploy/python/)
+* [C++预测](./deploy/cpp/)
+* [Paddle-Lite移动端预测部署](./deploy/lite/)
 
 
 ### 高级功能
 
 * [PaddleSeg的数据增强](./docs/data_aug.md)
-* [PaddleSeg的loss选择](./docs/loss_select.md)
+* [如何解决二分类中类别不均衡问题](./docs/loss_select.md)
 * [特色垂类模型使用](./contrib)
 * [多进程训练和混合精度训练](./docs/multiple_gpus_train_and_mixed_precision_train.md)
-
+* 使用PaddleSlim进行分割模型压缩([量化](./slim/quantization/README.md), [蒸馏](./slim/distillation/README.md), [剪枝](./slim/prune/README.md), [搜索](./slim/nas/README.md))
 ## 在线体验
 
 我们在AI Studio平台上提供了在线体验的教程，欢迎体验：
@@ -121,11 +118,11 @@ pip install -r requirements.txt
 |在线教程|链接|
 |-|-|
 |快速开始|[点击体验](https://aistudio.baidu.com/aistudio/projectdetail/100798)|
-|U-Net宠物分割|[点击体验](https://aistudio.baidu.com/aistudio/projectDetail/102889)|
-|DeepLabv3+图像分割|[点击体验](https://aistudio.baidu.com/aistudio/projectDetail/101696)|
+|U-Net图像分割|[点击体验](https://aistudio.baidu.com/aistudio/projectDetail/102889)|
+|DeepLabv3+图像分割|[点击体验](https://aistudio.baidu.com/aistudio/projectDetail/226703)|
 |工业质检（零件瑕疵检测）|[点击体验](https://aistudio.baidu.com/aistudio/projectdetail/184392)|
 |人像分割|[点击体验](https://aistudio.baidu.com/aistudio/projectdetail/188833)|
-|PaddleSeg特色垂类模型|[点击体验](https://aistudio.baidu.com/aistudio/projectdetail/115541)|
+|PaddleSeg特色垂类模型|[点击体验](https://aistudio.baidu.com/aistudio/projectdetail/226710)|
 
 </br>
 
@@ -166,16 +163,24 @@ A: 请将PaddlePaddle升级至1.5.2版本或以上。
 <p align="center">  &#8194;&#8194;&#8194;微信公众号&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;官方技术交流QQ群</p>
 
 ## 更新日志
+* 2020.02.25
+
+  **`v0.4.0`**
+  * 新增适用于实时场景且不需要预训练模型的分割网络Fast-SCNN，提供基于Cityscapes的[预训练模型](./docs/model_zoo.md)1个。
+  * 新增LaneNet车道线检测网络，提供[预训练模型](https://github.com/PaddlePaddle/PaddleSeg/tree/release/v0.4.0/contrib/LaneNet#%E4%B8%83-%E5%8F%AF%E8%A7%86%E5%8C%96)一个。
+  * 新增基于PaddleSlim的分割库压缩策略([量化](./slim/quantization/README.md), [蒸馏](./slim/distillation/README.md), [剪枝](./slim/prune/README.md), [搜索](./slim/nas/README.md))
+  
+  
 * 2019.12.15
 
   **`v0.3.0`**
   * 新增HRNet分割网络，提供基于cityscapes和ImageNet的[预训练模型](./docs/model_zoo.md)8个
   * 支持使用[伪彩色标签](./docs/data_prepare.md#%E7%81%B0%E5%BA%A6%E6%A0%87%E6%B3%A8vs%E4%BC%AA%E5%BD%A9%E8%89%B2%E6%A0%87%E6%B3%A8)进行训练/评估/预测，提升训练体验，并提供将灰度标注图转为伪彩色标注图的脚本
   * 新增[学习率warmup](./docs/configs/solver_group.md#lr_warmup)功能，支持与不同的学习率Decay策略配合使用
-  * 新增图像归一化操作的GPU化功能，进一步提升预测速度。
+  * 新增图像归一化操作的GPU化实现，进一步提升预测速度。
   * 新增Python部署方案，更低成本完成工业级部署。
   * 新增Paddle-Lite移动端部署方案，支持人像分割模型的移动端部署。
-  * 新增不同分割模型的预测[性能数据](./deploy/python/docs/PaddleSeg_Infer_Benchmark.md), 为选择合适的模型提供性能数据参考。
+  * 新增不同分割模型的预测[性能数据Benchmark](./deploy/python/docs/PaddleSeg_Infer_Benchmark.md), 便于开发者提供模型选型性能参考。
 
   
 * 2019.11.04

@@ -13,9 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import sys
 import struct
-import importlib
 
 import paddle.fluid as fluid
 import numpy as np
@@ -28,6 +26,7 @@ from loss import multi_dice_loss
 from loss import multi_bce_loss
 from lovasz_losses import lovasz_hinge
 from lovasz_losses import lovasz_softmax
+from models.modeling import deeplab, unet, icnet, pspnet, hrnet, fast_scnn
 
 
 class ModelPhase(object):
@@ -72,40 +71,25 @@ class ModelPhase(object):
         return False
 
 
-def map_model_name(model_name):
-    name_dict = {
-        "unet": "unet.unet",
-        "deeplabv3p": "deeplab.deeplabv3p",
-        "icnet": "icnet.icnet",
-        "pspnet": "pspnet.pspnet",
-        "hrnet": "hrnet.hrnet"
-    }
-    if model_name in name_dict.keys():
-        return name_dict[model_name]
+def seg_model(image, class_num):
+    model_name = cfg.MODEL.MODEL_NAME
+    if model_name == 'unet':
+        logits = unet.unet(image, class_num)
+    elif model_name == 'deeplabv3p':
+        logits = deeplab.deeplabv3p(image, class_num)
+    elif model_name == 'icnet':
+        logits = icnet.icnet(image, class_num)
+    elif model_name == 'pspnet':
+        logits = pspnet.pspnet(image, class_num)
+    elif model_name == 'hrnet':
+        logits = hrnet.hrnet(image, class_num)
+    elif model_name == 'fast_scnn':
+        logits = fast_scnn.fast_scnn(image, class_num)
     else:
         raise Exception(
-            "unknow model name, only support unet, deeplabv3p, icnet")
-
-
-def get_func(func_name):
-    """Helper to return a function object by name. func_name must identify a
-    function in this module or the path to a function relative to the base
-    'modeling' module.
-    """
-    if func_name == '':
-        return None
-    try:
-        parts = func_name.split('.')
-        # Refers to a function in this module
-        if len(parts) == 1:
-            return globals()[parts[0]]
-        # Otherwise, assume we're referencing a module under modeling
-        module_name = 'models.' + '.'.join(parts[:-1])
-        module = importlib.import_module(module_name)
-        return getattr(module, parts[-1])
-    except Exception:
-        print('Failed to find function: {}'.format(func_name))
-    return module
+            "unknow model name, only support unet, deeplabv3p, icnet, pspnet, hrnet, fast_scnn"
+        )
+    return logits
 
 
 def softmax(logit):
@@ -126,6 +110,7 @@ def sigmoid_to_softmax(logit):
     logit = fluid.layers.transpose(logit, [0, 3, 1, 2])
     return logit
 
+
 def export_preprocess(image):
     """导出模型的预处理流程"""
 
@@ -137,10 +122,7 @@ def export_preprocess(image):
         h_fix = cfg.AUG.FIX_RESIZE_SIZE[1]
         w_fix = cfg.AUG.FIX_RESIZE_SIZE[0]
         image = fluid.layers.resize_bilinear(
-            image,
-            out_shape=[h_fix, w_fix],
-            align_corners=False,
-            align_mode=0)
+            image, out_shape=[h_fix, w_fix], align_corners=False, align_mode=0)
     elif cfg.AUG.AUG_METHOD == 'rangescaling':
         size = cfg.AUG.INF_RESIZE_VALUE
         value = fluid.layers.reduce_max(origin_shape)
@@ -162,8 +144,7 @@ def export_preprocess(image):
     right = pad_target[1] - valid_shape[1]
     paddings = fluid.layers.concat([up, down, left, right])
     paddings = fluid.layers.cast(paddings, 'int32')
-    image = fluid.layers.pad2d(
-        image, paddings=paddings, pad_value=127.5)
+    image = fluid.layers.pad2d(image, paddings=paddings, pad_value=127.5)
 
     # normalize
     mean = np.array(cfg.MEAN).reshape(1, len(cfg.MEAN), 1, 1)
@@ -187,8 +168,8 @@ def build_model(main_prog, start_prog, phase=ModelPhase.TRAIN):
         width = cfg.EVAL_CROP_SIZE[0]
         height = cfg.EVAL_CROP_SIZE[1]
 
-    image_shape = [cfg.DATASET.DATA_DIM, height, width]
-    grt_shape = [1, height, width]
+    image_shape = [-1, cfg.DATASET.DATA_DIM, height, width]
+    grt_shape = [-1, 1, height, width]
     class_num = cfg.DATASET.NUM_CLASSES
 
     with fluid.program_guard(main_prog, start_prog):
@@ -196,38 +177,33 @@ def build_model(main_prog, start_prog, phase=ModelPhase.TRAIN):
             # 在导出模型的时候，增加图像标准化预处理,减小预测部署时图像的处理流程
             # 预测部署时只须对输入图像增加batch_size维度即可
             if ModelPhase.is_predict(phase):
-                origin_image = fluid.layers.data(
+                origin_image = fluid.data(
                     name='image',
                     shape=[-1, -1, -1, cfg.DATASET.DATA_DIM],
-                    dtype='float32',
-                    append_batch_size=False)
-                image, valid_shape, origin_shape = export_preprocess(origin_image)
+                    dtype='float32')
+                image, valid_shape, origin_shape = export_preprocess(
+                    origin_image)
 
             else:
-                image = fluid.layers.data(
+                image = fluid.data(
                     name='image', shape=image_shape, dtype='float32')
-            label = fluid.layers.data(
-                name='label', shape=grt_shape, dtype='int32')
-            mask = fluid.layers.data(
-                name='mask', shape=grt_shape, dtype='int32')
+            label = fluid.data(name='label', shape=grt_shape, dtype='int32')
+            mask = fluid.data(name='mask', shape=grt_shape, dtype='int32')
 
-            # use PyReader when doing traning and evaluation
+            # use DataLoader when doing traning and evaluation
             if ModelPhase.is_train(phase) or ModelPhase.is_eval(phase):
-                py_reader = fluid.io.PyReader(
+                data_loader = fluid.io.DataLoader.from_generator(
                     feed_list=[image, label, mask],
                     capacity=cfg.DATALOADER.BUF_SIZE,
                     iterable=False,
                     use_double_buffer=True)
-
-            model_name = map_model_name(cfg.MODEL.MODEL_NAME)
-            model_func = get_func("modeling." + model_name)
 
             loss_type = cfg.SOLVER.LOSS
             if not isinstance(loss_type, list):
                 loss_type = list(loss_type)
 
             # lovasz_hinge_loss或dice_loss或bce_loss只适用两类分割中
-            if class_num > 2 and (("lovasz_hinge_loss" in loss_type) or 
+            if class_num > 2 and (("lovasz_hinge_loss" in loss_type) or
                                   ("dice_loss" in loss_type) or
                                   ("bce_loss" in loss_type)):
                 raise Exception(
@@ -235,13 +211,14 @@ def build_model(main_prog, start_prog, phase=ModelPhase.TRAIN):
                 )
 
             # 在两类分割情况下，当loss函数选择lovasz_hinge_loss或dice_loss或bce_loss的时候，最后logit输出通道数设置为1
-            if ("dice_loss" in loss_type) or ("bce_loss" in loss_type) or ("lovasz_hinge_loss" in loss_type):
+            if ("dice_loss" in loss_type) or ("bce_loss" in loss_type) or (
+                    "lovasz_hinge_loss" in loss_type):
                 class_num = 1
                 if "softmax_loss" or "lovasz_softmax_loss" in loss_type:
                     raise Exception(
                         "softmax loss or lovasz softmax loss can not combine with bce loss or dice loss or lovasz hinge loss."
                     )
-            logits = model_func(image, class_num)
+            logits = seg_model(image, class_num)
 
             # 根据选择的loss函数计算相应的损失函数
             if ModelPhase.is_train(phase) or ModelPhase.is_eval(phase):
@@ -249,8 +226,10 @@ def build_model(main_prog, start_prog, phase=ModelPhase.TRAIN):
                 avg_loss_list = []
                 valid_loss = []
                 if "softmax_loss" in loss_type:
+                    weight = cfg.SOLVER.CROSS_ENTROPY_WEIGHT
                     avg_loss_list.append(
-                        multi_softmax_with_loss(logits, label, mask, class_num))
+                        multi_softmax_with_loss(logits, label, mask, class_num,
+                                                weight))
                     loss_valid = True
                     valid_loss.append("softmax_loss")
                 if "dice_loss" in loss_type:
@@ -262,12 +241,14 @@ def build_model(main_prog, start_prog, phase=ModelPhase.TRAIN):
                     loss_valid = True
                     valid_loss.append("bce_loss")
                 if "lovasz_hinge_loss" in loss_type:
-                    avg_loss_list.append(lovasz_hinge(logits, label, ignore=mask))
+                    avg_loss_list.append(
+                        lovasz_hinge(logits, label, ignore=mask))
                     loss_valid = True
                     valid_loss.append("lovasz_hinge_loss")
                 if "lovasz_softmax_loss" in loss_type:
                     probas = fluid.layers.softmax(logits, axis=1)
-                    avg_loss_list.append(lovasz_softmax(probas, label, ignore=mask))
+                    avg_loss_list.append(
+                        lovasz_softmax(probas, label, ignore=mask))
                     loss_valid = True
                     valid_loss.append("lovasz_softmax_loss")
                 if not loss_valid:
@@ -332,13 +313,12 @@ def build_model(main_prog, start_prog, phase=ModelPhase.TRAIN):
                 return pred, logit
 
             if ModelPhase.is_eval(phase):
-                return py_reader, avg_loss, pred, label, mask
+                return data_loader, avg_loss, pred, label, mask
 
             if ModelPhase.is_train(phase):
                 optimizer = solver.Solver(main_prog, start_prog)
                 decayed_lr = optimizer.optimise(avg_loss)
-                
-                return py_reader, avg_loss, decayed_lr, pred, label, mask
+                return data_loader, avg_loss, decayed_lr, pred, label, mask
 
 
 def to_int(string, dest="I"):
@@ -357,4 +337,3 @@ def parse_shape_from_file(filename):
         tensor_desc = VarType.TensorDesc()
         tensor_desc.ParseFromString(file.read(tensor_desc_size))
     return tuple(tensor_desc.dims)
-

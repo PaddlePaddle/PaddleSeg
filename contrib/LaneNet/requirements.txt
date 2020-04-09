@@ -1,0 +1,13 @@
+pre-commit
+yapf == 0.26.0
+flake8
+pyyaml >= 5.1
+tb-paddle
+tensorboard >= 1.15.0
+Pillow
+numpy
+six
+opencv-python
+tqdm
+requests
+sklearn

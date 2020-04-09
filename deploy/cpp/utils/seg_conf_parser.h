@@ -46,6 +46,7 @@ class PaddleSegModelConfigPaser {
         _model_file_name.clear();
         _model_path.clear();
         _param_file_name.clear();
+        _trt_mode.clear();
     }
 
     std::string process_parenthesis(const std::string& str) {
@@ -180,6 +181,12 @@ class PaddleSegModelConfigPaser {
         } else {
             _use_pr = 0;
         }
+        // 16. trt_mode
+	if (config["DEPLOY"]["TRT_MODE"].IsDefined()) {
+            _trt_mode = config["DEPLOY"]["TRT_MODE"].as<std::string>();
+        } else {
+            _trt_mode = "";
+        }
         return true;
     }
 
@@ -246,8 +253,10 @@ class PaddleSegModelConfigPaser {
     std::string _predictor_mode;
     // DEPLOY.BATCH_SIZE
     int _batch_size;
-    // USE_PR: OP Optimized model
+    // DEPLOY.USE_PR: OP Optimized model
     int _use_pr;
+    // DEPLOY.TRT_MODE: TRT Precesion
+    std::string _trt_mode;
 };
 
 }  // namespace PaddleSolution

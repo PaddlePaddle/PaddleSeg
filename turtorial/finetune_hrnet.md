@@ -1,28 +1,31 @@
-# HRNet模型训练教程
+# HRNet模型使用教程
 
-* 本教程旨在介绍如何通过使用PaddleSeg提供的 ***`HRNet`*** 预训练模型在自定义数据集上进行训练。
+本教程旨在介绍如何通过使用PaddleSeg提供的 ***`HRNet`*** 预训练模型在自定义数据集上进行训练、评估和可视化。
 
-* 在阅读本教程前，请确保您已经了解过PaddleSeg的[快速入门](../README.md#快速入门)和[基础功能](../README.md#基础功能)等章节，以便对PaddleSeg有一定的了解
+* 在阅读本教程前，请确保您已经了解过PaddleSeg的[快速入门](../README.md#快速入门)和[基础功能](../README.md#基础功能)等章节，以便对PaddleSeg有一定的了解。
 
-* 本教程的所有命令都基于PaddleSeg主目录进行执行
+* 本教程的所有命令都基于PaddleSeg主目录进行执行。
 
 ## 一. 准备待训练数据
 
-我们提前准备好了一份数据集，通过以下代码进行下载
+![](./imgs/optic.png)
+
+我们提前准备好了一份眼底医疗分割数据集，包含267张训练图片、76张验证图片、38张测试图片。通过以下命令进行下载：
 
 ```shell
-python dataset/download_pet.py
+python dataset/download_optic.py
 ```
 
-## 二. 下载预训练模型
 
-关于PaddleSeg支持的所有预训练模型的列表，我们可以从[模型组合](#模型组合)中查看我们所需模型的名字和配置
+## 二. 下载预训练模型
 
 接着下载对应的预训练模型
 
 ```shell
 python pretrained_model/download_model.py hrnet_w18_bn_cityscapes
 ```
+
+关于已有的HRNet预训练模型的列表，请参见[模型组合](#模型组合)。如果需要使用其他预训练模型，下载该模型并将配置中的BACKBONE、NORM_TYPE等进行替换即可。
 
 ## 三. 准备配置
 
@@ -45,19 +48,19 @@ python pretrained_model/download_model.py hrnet_w18_bn_cityscapes
 
 在三者中，预训练模型的配置尤为重要，如果模型配置错误，会导致预训练的参数没有加载，进而影响收敛速度。预训练模型相关的配置如第二步所展示。
 
-数据集的配置和数据路径有关，在本教程中，数据存放在`dataset/mini_pet`中
+数据集的配置和数据路径有关，在本教程中，数据存放在`dataset/optic_disc_seg`中
 
-其他配置则根据数据集和机器环境的情况进行调节，最终我们保存一个如下内容的yaml配置文件，存放路径为**configs/hrnet_w18_pet.yaml**
+其他配置则根据数据集和机器环境的情况进行调节，最终我们保存一个如下内容的yaml配置文件，存放路径为**configs/hrnet_optic.yaml**
 
 ```yaml
 # 数据集配置
 DATASET:
-    DATA_DIR: "./dataset/mini_pet/"
-    NUM_CLASSES: 3
-    TEST_FILE_LIST: "./dataset/mini_pet/file_list/test_list.txt"
-    TRAIN_FILE_LIST: "./dataset/mini_pet/file_list/train_list.txt"
-    VAL_FILE_LIST: "./dataset/mini_pet/file_list/val_list.txt"
-    VIS_FILE_LIST: "./dataset/mini_pet/file_list/test_list.txt"
+    DATA_DIR: "./dataset/optic_disc_seg/"
+    NUM_CLASSES: 2
+    TEST_FILE_LIST: "./dataset/optic_disc_seg/test_list.txt"
+    TRAIN_FILE_LIST: "./dataset/optic_disc_seg/train_list.txt"
+    VAL_FILE_LIST: "./dataset/optic_disc_seg/val_list.txt"
+    VIS_FILE_LIST: "./dataset/optic_disc_seg/test_list.txt"
 
 # 预训练模型配置
 MODEL:
@@ -80,15 +83,15 @@ AUG:
 BATCH_SIZE: 4
 TRAIN:
     PRETRAINED_MODEL_DIR: "./pretrained_model/hrnet_w18_bn_cityscapes/"
-    MODEL_SAVE_DIR: "./saved_model/hrnet_w18_bn_pet/"
-    SNAPSHOT_EPOCH: 10
+    MODEL_SAVE_DIR: "./saved_model/hrnet_optic/"
+    SNAPSHOT_EPOCH: 5
 TEST:
-    TEST_MODEL: "./saved_model/hrnet_w18_bn_pet/final"
+    TEST_MODEL: "./saved_model/hrnet_optic/final"
 SOLVER:
-    NUM_EPOCHS: 100
-    LR: 0.005
+    NUM_EPOCHS: 10
+    LR: 0.001
     LR_POLICY: "poly"
-    OPTIMIZER: "sgd"
+    OPTIMIZER: "adam"
 ```
 
 ## 四. 配置/数据校验
@@ -96,7 +99,7 @@ SOLVER:
 在开始训练和评估之前，我们还需要对配置和数据进行一次校验，确保数据和配置是正确的。使用下述命令启动校验流程
 
 ```shell
-python pdseg/check.py --cfg ./configs/hrnet_w18_pet.yaml
+python pdseg/check.py --cfg ./configs/hrnet_optic.yaml
 ```
 
 
@@ -105,7 +108,10 @@ python pdseg/check.py --cfg ./configs/hrnet_w18_pet.yaml
 校验通过后，使用下述命令启动训练
 
 ```shell
-python pdseg/train.py --use_gpu --cfg ./configs/hrnet_w18_pet.yaml
+# 指定GPU卡号（以0号卡为例）
+export CUDA_VISIBLE_DEVICES=0
+# 训练
+python pdseg/train.py --use_gpu --cfg ./configs/hrnet_optic.yaml
 ```
 
 ## 六. 进行评估
@@ -113,8 +119,19 @@ python pdseg/train.py --use_gpu --cfg ./configs/hrnet_w18_pet.yaml
 模型训练完成，使用下述命令启动评估
 
 ```shell
-python pdseg/eval.py --use_gpu --cfg ./configs/hrnet_w18_pet.yaml
+python pdseg/eval.py --use_gpu --cfg ./configs/hrnet_optic.yaml
 ```
+
+## 七. 进行可视化
+使用下述命令启动预测和可视化
+
+```shell
+python pdseg/vis.py --use_gpu --cfg ./configs/hrnet_optic.yaml
+```
+
+预测结果将保存在visual目录下，以下展示其中1张图片的预测效果：
+
+![](imgs/optic_hrnet.png)
 
 ## 模型组合
 

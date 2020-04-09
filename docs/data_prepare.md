@@ -19,7 +19,7 @@ PaddleSeg采用单通道的标注图片，每一种像素值代表一种类别�
 
 ### 灰度标注转换为伪彩色标注
 如果用户需要转换成伪彩色标注图，可使用我们的转换工具。适用于以下两种常见的情况：
-1. 从指定灰度标注所在的目录读取标注图片
+1. 如果您希望将指定目录下的所有灰度标注图转换为伪彩色标注图，则执行以下命令，指定灰度标注所在的目录即可。
 ```buildoutcfg
 python pdseg/tools/gray2pseudo_color.py <dir_or_file> <output_dir>
 ```
@@ -29,7 +29,7 @@ python pdseg/tools/gray2pseudo_color.py <dir_or_file> <output_dir>
 |dir_or_file|指定灰度标注所在目录|
 |output_dir|彩色标注图片的输出目录|
 
-2. 从已有文件列表中读取标注图片
+2. 如果您仅希望将指定数据集中的部分灰度标注图转换为伪彩色标注图，则执行以下命令，需要已有文件列表，按列表读取指定图片。
 ```buildoutcfg
 python pdseg/tools/gray2pseudo_color.py <dir_or_file> <output_dir> --dataset_dir <dataset directory> --file_separator <file list separator>
 ```
@@ -123,7 +123,7 @@ python pdseg/tools/create_dataset_list.py <your/dataset/dir> ${FLAGS}
 ```
 运行后将在数据集根目录下生成训练/验证/测试集的文件列表（文件主名与`--second_folder`一致，扩展名为`.txt`）。
 
-**Note:** 若训练/验证/测试集缺少标注图片，仍可自动生成不含分隔符和标注图片路径的文件列表。
+**Note:** 生成文件列表要求：要么原图和标注图片数量一致，要么只有原图，没有标注图片。若数据集缺少标注图片，仍可自动生成不含分隔符和标注图片路径的文件列表。
 
 #### 命令行FLAGS列表
 

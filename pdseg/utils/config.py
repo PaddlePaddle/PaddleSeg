@@ -157,11 +157,14 @@ cfg.SOLVER.NUM_EPOCHS = 30
 cfg.SOLVER.LOSS = ["softmax_loss"]
 cfg.SOLVER.LOSS_WEIGHT = [1]
 cfg.SOLVER.LOVASZ_LOSS_PER_IMAGE = False
-# 是否开启warmup学习策略 
-cfg.SOLVER.LR_WARMUP = False 
+# 是否开启warmup学习策略
+cfg.SOLVER.LR_WARMUP = False
 # warmup的迭代次数
-cfg.SOLVER.LR_WARMUP_STEPS = 2000 
-
+cfg.SOLVER.LR_WARMUP_STEPS = 2000
+# cross entropy weight, 默认为None，如果设置为'dynamic'，会根据每个batch中各个类别的数目，
+# 动态调整类别权重。
+# 也可以设置一个静态权重(list的方式)，比如有3类，每个类别权重可以设置为[0.1, 2.0, 0.9]
+cfg.SOLVER.CROSS_ENTROPY_WEIGHT = None
 ########################## 测试配置 ###########################################
 # 测试模型路径
 cfg.TEST.TEST_MODEL = ''
@@ -227,7 +230,6 @@ cfg.MODEL.HRNET.STAGE3.NUM_CHANNELS = [40, 80, 160]
 cfg.MODEL.HRNET.STAGE4.NUM_MODULES = 3
 cfg.MODEL.HRNET.STAGE4.NUM_CHANNELS = [40, 80, 160, 320]
 
-
 ########################## 预测部署模型配置 ###################################
 # 预测保存的模型名称
 cfg.FREEZE.MODEL_FILENAME = '__model__'
@@ -235,3 +237,18 @@ cfg.FREEZE.MODEL_FILENAME = '__model__'
 cfg.FREEZE.PARAMS_FILENAME = '__params__'
 # 预测模型参数保存的路径
 cfg.FREEZE.SAVE_DIR = 'freeze_model'
+
+########################## paddle-slim ######################################
+cfg.SLIM.KNOWLEDGE_DISTILL_IS_TEACHER = False
+cfg.SLIM.KNOWLEDGE_DISTILL = False
+cfg.SLIM.KNOWLEDGE_DISTILL_TEACHER_MODEL_DIR = ""
+
+cfg.SLIM.NAS_PORT = 23333
+cfg.SLIM.NAS_ADDRESS = ""
+cfg.SLIM.NAS_SEARCH_STEPS = 100
+cfg.SLIM.NAS_START_EVAL_EPOCH = 0
+cfg.SLIM.NAS_IS_SERVER = True
+cfg.SLIM.NAS_SPACE_NAME = ""
+
+cfg.SLIM.PRUNE_PARAMS = ''
+cfg.SLIM.PRUNE_RATIOS = []
