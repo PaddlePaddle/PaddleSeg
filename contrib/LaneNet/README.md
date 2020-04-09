@@ -120,7 +120,7 @@ CUDA_VISIBLE_DEVICES=0 python -u eval.py --cfg configs/lanenet.yaml --use_gpu
 ```
 
 ## 七. 可视化
-需要先下载一个车前视角和鸟瞰图视角转换所需文件，点击[链接](https://paddleseg.bj.bcebos.com/resources/tusimple_ipm_remap.tar)，下载后放在```./utils```下。同时我们提供了一个训练好的模型，点击[链接](https://paddleseg.bj.bcebos.com/models/lanenet_vgg_tusimple.tar)，下载后放在```./pretrained_models/```下并解压，使用如下命令进行可视化
+需要先下载一个车前视角和鸟瞰图视角转换所需文件，点击[链接](https://paddleseg.bj.bcebos.com/resources/tusimple_ipm_remap.tar)，下载后放在```./utils```下并解压。同时我们提供了一个训练好的模型，点击[链接](https://paddleseg.bj.bcebos.com/models/lanenet_vgg_tusimple.tar)，下载后放在```./pretrained_models/```下并解压，使用如下命令进行可视化
 ```shell
 CUDA_VISIBLE_DEVICES=0 python -u vis.py --cfg configs/lanenet.yaml --use_gpu --vis_dir vis_result \
 TEST.TEST_MODEL pretrained_models/LaneNet_vgg_tusimple/
