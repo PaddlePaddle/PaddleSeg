@@ -13,8 +13,7 @@
 ```
 python dataset/download_cityscapes.py
 ```
-（2）参照[预训练模型列表](../../docs/model_zoo.md)获取所需预训练模型，并在配置文件中设置预训练模型路径。
-以fast scnn模型为例，从[预训练模型列表](../../docs/model_zoo.md)获取fast scnn的预训练模型，并在`configs/cityscape_fast_scnn.yaml`文件中将配置项`TRAIN.PRETRAINED_MODEL_DIR`设置为预训练模型所在路径。
+（2）预训练模型以fast scnn为例，点击获取fast scnn的预训练模型[fast_scnn_cityscapes.tar](#模型)，并在`configs/cityscape_fast_scnn.yaml`文件中将配置项`TRAIN.PRETRAINED_MODEL_DIR`设置为预训练模型所在路径。其他所需模型可参照[预训练模型列表](../../docs/model_zoo.md)获取。
 
 ## 2. 确定待分析参数
 
