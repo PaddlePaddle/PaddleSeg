@@ -214,7 +214,8 @@ def build_model(main_prog, start_prog, phase=ModelPhase.TRAIN):
             if ("dice_loss" in loss_type) or ("bce_loss" in loss_type) or (
                     "lovasz_hinge_loss" in loss_type):
                 class_num = 1
-                if "softmax_loss" or "lovasz_softmax_loss" in loss_type:
+                if ("softmax_loss" in loss_type) or (
+                        "lovasz_softmax_loss" in loss_type):
                     raise Exception(
                         "softmax loss or lovasz softmax loss can not combine with bce loss or dice loss or lovasz hinge loss."
                     )
@@ -266,7 +267,9 @@ def build_model(main_prog, start_prog, phase=ModelPhase.TRAIN):
 
                 avg_loss = 0
                 for i in range(0, len(avg_loss_list)):
-                    avg_loss += avg_loss_list[i] * cfg.SOLVER.LOSS_WEIGHT[i]
+                    loss_name = valid_loss[i].upper()
+                    loss_weight = eval('cfg.SOLVER.LOSS_WEIGHT.' + loss_name)
+                    avg_loss += loss_weight * avg_loss_list[i]
 
             #get pred result in original size
             if isinstance(logits, tuple):
