@@ -35,7 +35,7 @@ for x in train_prog.list_vars():
 使用`train_prune.py`启动裁剪任务时，通过`SLIM.PRUNE_PARAMS`选项指定待裁剪的参数名称列表，参数名之间用逗号分隔，通过`SLIM.PRUNE_RATIOS`选项指定各个参数被裁掉的比例。
 
 ```shell
-CUDA_VISIBLE_DEVICES=0 
+CUDA_VISIBLE_DEVICES=0 \
 python -u ./slim/prune/train_prune.py --log_steps 10 --cfg configs/cityscape_fast_scnn.yaml --use_gpu --use_mpio \
 SLIM.PRUNE_PARAMS 'learning_to_downsample/weights,learning_to_downsample/dsconv1/pointwise/weights,learning_to_downsample/dsconv2/pointwise/weights' \
 SLIM.PRUNE_RATIOS '[0.1,0.1,0.1]'
@@ -45,7 +45,7 @@ SLIM.PRUNE_RATIOS '[0.1,0.1,0.1]'
 ## 4. 评估
 
 ```shell
-CUDA_VISIBLE_DEVICES=0 
+CUDA_VISIBLE_DEVICES=0 \
 python -u ./slim/prune/eval_prune.py --cfg configs/cityscape_fast_scnn.yaml --use_gpu \
 TEST.TEST_MODEL your_trained_model \
 ```
