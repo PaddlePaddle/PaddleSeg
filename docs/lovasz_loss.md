@@ -106,7 +106,7 @@ python pdseg/eval.py --cfg ./configs/lovasz_softmax_deeplabv3p_mobilenet_pascal.
 
 lovasz softmax loss + softmax loss和softmax loss的对比结果如下图所示。
 <p align="center">
-  <img src="./imgs/lovasz-softmax.png" hspace='10' height="208" width="516"/> <br />
+  <img src="./imgs/lovasz-softmax.png" hspace='10' /> <br />
  </p>
 
 图中橙色曲线代表lovasz softmax loss + softmax loss，最高mIoU为64.63%，蓝色曲线代表softmax loss， 最高mIoU为63.55%，相比提升1.08个百分点。
