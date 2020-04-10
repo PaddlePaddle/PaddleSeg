@@ -176,10 +176,10 @@ def build_model(main_prog, start_prog, phase=ModelPhase.TRAIN):
             # 预测部署时只须对输入图像增加batch_size维度即可
             if ModelPhase.is_predict(phase):
                 if cfg.SLIM.PREPROCESS:
-                    image = fluid.layers.data(
+                    image = fluid.data(
                         name='image', shape=image_shape, dtype='float32')
                 else:
-                    origin_image = fluid.layers.data(
+                    origin_image = fluid.data(
                         name='image',
                         shape=[-1, -1, -1, cfg.DATASET.DATA_DIM],
                         dtype='float32')
