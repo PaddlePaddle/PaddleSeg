@@ -54,7 +54,7 @@ python pdseg/eval.py --cfg ./configs/lovasz_hinge_deeplabv3p_mobilenet_road.yaml
 
 lovasz hinge loss + bce loss和softmax loss的对比结果如下图所示。
 <p align="center">
-  <img src="./imgs/lovasz-hinge.png" hspace='10' height="208" width="516"/> <br />
+  <img src="./imgs/lovasz-hinge.png" hspace='10'/> <br />
  </p>
 
 图中蓝色曲线为lovasz hinge loss + bce loss，最高mIoU为76.2%，橙色曲线为softmax loss， 最高mIoU为73.44%，相比提升2.76个百分点。
