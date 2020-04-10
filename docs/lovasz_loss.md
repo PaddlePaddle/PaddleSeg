@@ -12,7 +12,7 @@ PaddleSeg通过`cfg.SOLVER.LOSS`参数可以选择训练时的损失函数，
 
 Lovasz hinge loss有3种使用方式：（1）直接训练使用。（2）bce loss结合使用。（3）先使用bec loss进行训练，再使用lovasz hinge loss进行finetuning. 第1种方式不一定达到理想效果，推荐使用后两种方式。本文以第2种方式为例。
 
-### Lovasz hinge loss使用示例
+### 使用示例
 
 我们以道路提取任务为例应用lovasz hinge loss.
 在DeepGlobe比赛的Road Extraction中，训练数据道路占比为：4.5%. 如下为其图片样例：
@@ -71,7 +71,7 @@ PaddleSeg通过`cfg.SOLVER.LOSS`参数可以选择训练时的损失函数，
 
 Lovasz softmax loss有3种使用方式：（1）直接训练使用。（2）softmax loss结合使用。（3）先使用softmax loss进行训练，再使用lovasz softmax loss进行finetuning. 第1种方式不一定达到理想效果，推荐使用后两种方式。本文以第2种方式为例。
 
-### Lovasz softmax loss使用示例
+### 使用示例
 
 我们以Pascal voc为例应用lovasz softmax loss.
 
