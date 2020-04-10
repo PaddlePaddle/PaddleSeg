@@ -44,12 +44,12 @@ python pdseg/check.py --cfg ./configs/lovasz_hinge_deeplabv3p_mobilenet_road.yam
 
 * 训练
 ```shell
-python pdseg/train.py --cfg ./configs/lovasz_hinge_deeplabv3p_mobilenet_road.yaml --use_gpu SOLVER.LOSS "['lovasz_hinge_loss','bce_loss']"
+python pdseg/train.py --cfg ./configs/lovasz_hinge_deeplabv3p_mobilenet_road.yaml --use_gpu --use_mpio SOLVER.LOSS "['lovasz_hinge_loss','bce_loss']"
 ```
 
 * 评估
 ```shell
-python pdseg/eval.py --cfg ./configs/lovasz_hinge_deeplabv3p_mobilenet_road.yaml --use_gpu SOLVER.LOSS "['lovasz_hinge_loss','bce_loss']"
+python pdseg/eval.py --cfg ./configs/lovasz_hinge_deeplabv3p_mobilenet_road.yaml --use_gpu --use_mpio SOLVER.LOSS "['lovasz_hinge_loss','bce_loss']"
 ```
 
 * 结果比较
@@ -96,13 +96,13 @@ python pdseg/check.py --cfg ./configs/lovasz_softmax_deeplabv3p_mobilenet_pascal
 
 * 训练
 ```shell
-python pdseg/train.py --cfg ./configs/lovasz_softmax_deeplabv3p_mobilenet_pascal.yaml --use_gpu SOLVER.LOSS "['lovasz_softmax_loss','softmax_loss']"
+python pdseg/train.py --cfg ./configs/lovasz_softmax_deeplabv3p_mobilenet_pascal.yaml --use_gpu --use_mpio SOLVER.LOSS "['lovasz_softmax_loss','softmax_loss']"
 
 ```
 
 * 评估
 ```shell
-python pdseg/eval.py --cfg ./configs/lovasz_softmax_deeplabv3p_mobilenet_pascal.yaml --use_gpu SOLVER.LOSS "['lovasz_softmax_loss','softmax_loss']"
+python pdseg/eval.py --cfg ./configs/lovasz_softmax_deeplabv3p_mobilenet_pascal.yaml --use_gpu --use_mpio SOLVER.LOSS "['lovasz_softmax_loss','softmax_loss']"
 
 ```
 
