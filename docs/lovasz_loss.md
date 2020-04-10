@@ -5,10 +5,12 @@
 
 
 ## Lovasz hinge loss
-### PaddleSeg指定训练loss
+### 使用方式
 
 PaddleSeg通过`cfg.SOLVER.LOSS`参数可以选择训练时的损失函数，
 如`cfg.SOLVER.LOSS=['lovasz_hinge_loss','bce_loss']`将指定训练loss为`lovasz hinge loss`与`bce loss`的组合。
+
+Lovasz hinge loss有3种使用方式：（1）直接训练使用。（2）bce loss结合使用。（3）先使用bec loss进行训练，再使用lovasz hinge loss进行finetuning. 第1种方式不一定达到理想效果，推荐使用后两种方式。本文以第2种方式为例。
 
 ### Lovasz hinge loss使用示例
 
@@ -62,10 +64,12 @@ lovasz hinge loss + bce loss和softmax loss的对比结果如下图所示。
 
 
 ## Lovasz softmax loss
-### PaddleSeg指定训练loss
+### 使用方式
 
 PaddleSeg通过`cfg.SOLVER.LOSS`参数可以选择训练时的损失函数，
 如`cfg.SOLVER.LOSS=['lovasz_softmax_loss','softmax_loss']`将指定训练loss为`lovasz softmax loss`与`softmax loss`的组合。
+
+Lovasz softmax loss有3种使用方式：（1）直接训练使用。（2）softmax loss结合使用。（3）先使用softmax loss进行训练，再使用lovasz softmax loss进行finetuning. 第1种方式不一定达到理想效果，推荐使用后两种方式。本文以第2种方式为例。
 
 ### Lovasz softmax loss使用示例
 
