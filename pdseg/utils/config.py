@@ -155,10 +155,10 @@ cfg.SOLVER.BEGIN_EPOCH = 1
 cfg.SOLVER.NUM_EPOCHS = 30
 # loss的选择，支持softmax_loss, bce_loss, dice_loss
 cfg.SOLVER.LOSS = ["softmax_loss"]
-# 是否开启warmup学习策略 
-cfg.SOLVER.LR_WARMUP = False 
+# 是否开启warmup学习策略
+cfg.SOLVER.LR_WARMUP = False
 # warmup的迭代次数
-cfg.SOLVER.LR_WARMUP_STEPS = 2000 
+cfg.SOLVER.LR_WARMUP_STEPS = 2000
 # cross entropy weight, 默认为None，如果设置为'dynamic'，会根据每个batch中各个类别的数目，
 # 动态调整类别权重。
 # 也可以设置一个静态权重(list的方式)，比如有3类，每个类别权重可以设置为[0.1, 2.0, 0.9]
@@ -228,7 +228,6 @@ cfg.MODEL.HRNET.STAGE3.NUM_CHANNELS = [40, 80, 160]
 cfg.MODEL.HRNET.STAGE4.NUM_MODULES = 3
 cfg.MODEL.HRNET.STAGE4.NUM_CHANNELS = [40, 80, 160, 320]
 
-
 ########################## 预测部署模型配置 ###################################
 # 预测保存的模型名称
 cfg.FREEZE.MODEL_FILENAME = '__model__'
@@ -251,4 +250,4 @@ cfg.SLIM.NAS_SPACE_NAME = ""
 
 cfg.SLIM.PRUNE_PARAMS = ''
 cfg.SLIM.PRUNE_RATIOS = []
-
+cfg.SLIM.PREPROCESS = False
