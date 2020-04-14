@@ -155,6 +155,12 @@ cfg.SOLVER.BEGIN_EPOCH = 1
 cfg.SOLVER.NUM_EPOCHS = 30
 # loss的选择，支持softmax_loss, bce_loss, dice_loss
 cfg.SOLVER.LOSS = ["softmax_loss"]
+# loss的权重，用于多loss组合加权使用，仅对SOLVER.LOSS内包含的loss生效
+cfg.SOLVER.LOSS_WEIGHT.SOFTMAX_LOSS = 1
+cfg.SOLVER.LOSS_WEIGHT.DICE_LOSS = 1
+cfg.SOLVER.LOSS_WEIGHT.BCE_LOSS = 1
+cfg.SOLVER.LOSS_WEIGHT.LOVASZ_HINGE_LOSS = 1
+cfg.SOLVER.LOSS_WEIGHT.LOVASZ_SOFTMAX_LOSS = 1
 # 是否开启warmup学习策略
 cfg.SOLVER.LR_WARMUP = False
 # warmup的迭代次数
