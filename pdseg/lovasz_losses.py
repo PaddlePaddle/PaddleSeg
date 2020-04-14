@@ -96,10 +96,7 @@ def lovasz_hinge_flat(logits, labels):
             grad = lovasz_grad(gt_sorted)
             grad.stop_gradient = True
             loss = fluid.layers.reduce_sum(
-                fluid.layers.matmul(
-                    x=fluid.layers.relu(errors_sorted),
-                    y=grad,
-                    transpose_x=True))
+                fluid.layers.relu(errors_sorted) * grad)
             fluid.layers.assign(input=loss, output=out_var)
     return out_var
 
@@ -170,8 +167,7 @@ def lovasz_softmax_flat(probas, labels, classes='present'):
 
         grad = lovasz_grad(fg_sorted)
         grad.stop_gradient = True
-        loss = fluid.layers.reduce_sum(
-            fluid.layers.matmul(x=errors_sorted, y=grad, transpose_x=True))
+        loss = fluid.layers.reduce_sum(errors_sorted * grad)
 
         losses.append(loss)
 
