@@ -177,12 +177,16 @@ def build_model(main_prog, start_prog, phase=ModelPhase.TRAIN):
             # 在导出模型的时候，增加图像标准化预处理,减小预测部署时图像的处理流程
             # 预测部署时只须对输入图像增加batch_size维度即可
             if ModelPhase.is_predict(phase):
-                origin_image = fluid.data(
-                    name='image',
-                    shape=[-1, -1, -1, cfg.DATASET.DATA_DIM],
-                    dtype='float32')
-                image, valid_shape, origin_shape = export_preprocess(
-                    origin_image)
+                if cfg.SLIM.PREPROCESS:
+                    image = fluid.data(
+                        name='image', shape=image_shape, dtype='float32')
+                else:
+                    origin_image = fluid.data(
+                        name='image',
+                        shape=[-1, -1, -1, cfg.DATASET.DATA_DIM],
+                        dtype='float32')
+                    image, valid_shape, origin_shape = export_preprocess(
+                        origin_image)
 
             else:
                 image = fluid.data(
@@ -289,15 +293,19 @@ def build_model(main_prog, start_prog, phase=ModelPhase.TRAIN):
                     logit = softmax(logit)
 
                 # 获取有效部分
-                logit = fluid.layers.slice(
-                    logit, axes=[2, 3], starts=[0, 0], ends=valid_shape)
+                if cfg.SLIM.PREPROCESS:
+                    return image, logit
 
-                logit = fluid.layers.resize_bilinear(
-                    logit,
-                    out_shape=origin_shape,
-                    align_corners=False,
-                    align_mode=0)
-                logit = fluid.layers.argmax(logit, axis=1)
+                else:
+                    logit = fluid.layers.slice(
+                        logit, axes=[2, 3], starts=[0, 0], ends=valid_shape)
+
+                    logit = fluid.layers.resize_bilinear(
+                        logit,
+                        out_shape=origin_shape,
+                        align_corners=False,
+                        align_mode=0)
+                    logit = fluid.layers.argmax(logit, axis=1)
                 return origin_image, logit
 
             if class_num == 1:
