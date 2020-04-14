@@ -92,10 +92,10 @@ def evaluate(cfg, ckpt_dir=None, use_gpu=False, use_mpio=False, **kwargs):
         for b in data_gen:
             yield b[0], b[1], b[2]
 
-    py_reader, avg_loss, pred, grts, masks = build_model(
+    data_loader, avg_loss, pred, grts, masks = build_model(
         test_prog, startup_prog, phase=ModelPhase.EVAL)
 
-    py_reader.decorate_sample_generator(
+    data_loader.set_sample_generator(
         data_generator, drop_last=False, batch_size=cfg.BATCH_SIZE)
 
     # Get device environment
@@ -111,6 +111,9 @@ def evaluate(cfg, ckpt_dir=None, use_gpu=False, use_mpio=False, **kwargs):
 
     ckpt_dir = cfg.TEST.TEST_MODEL if not ckpt_dir else ckpt_dir
 
+    if not os.path.exists(ckpt_dir):
+        raise ValueError('The TEST.TEST_MODEL {} is not found'.format(ckpt_dir))
+
     if ckpt_dir is not None:
         print('load test model:', ckpt_dir)
         fluid.io.load_params(exe, ckpt_dir, main_program=test_prog)
@@ -125,7 +128,7 @@ def evaluate(cfg, ckpt_dir=None, use_gpu=False, use_mpio=False, **kwargs):
     all_step = cfg.DATASET.TEST_TOTAL_IMAGES // cfg.BATCH_SIZE + 1
     timer = Timer()
     timer.start()
-    py_reader.start()
+    data_loader.start()
     while True:
         try:
             step += 1

@@ -146,7 +146,7 @@ def layer1(input, name=None):
                                      name=name + '_' + str(i + 1))
     return conv
 
-def highResolutionNet(input, num_classes):
+def high_resolution_net(input, num_classes):
     
     channels_2 = cfg.MODEL.HRNET.STAGE2.NUM_CHANNELS
     channels_3 = cfg.MODEL.HRNET.STAGE3.NUM_CHANNELS
@@ -198,11 +198,11 @@ def highResolutionNet(input, num_classes):
 
 
 def hrnet(input, num_classes):
-    logit = highResolutionNet(input, num_classes)
+    logit = high_resolution_net(input, num_classes)
     return logit
 
 if __name__ == '__main__':
-    image_shape = [3, 769, 769]
-    image = fluid.layers.data(name='image', shape=image_shape, dtype='float32')
+    image_shape = [-1, 3, 769, 769]
+    image = fluid.data(name='image', shape=image_shape, dtype='float32')
     logit = hrnet(image, 4)
     print("logit:", logit.shape)

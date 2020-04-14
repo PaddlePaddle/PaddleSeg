@@ -72,17 +72,11 @@ cfg.DATASET.IGNORE_INDEX = 255
 cfg.DATASET.PADDING_VALUE = [127.5, 127.5, 127.5]
 
 ########################### 数据增强配置 ######################################
-# 图像镜像左右翻转
-cfg.AUG.MIRROR = True
-# 图像上下翻转开关，True/False
-cfg.AUG.FLIP = False
-# 图像启动上下翻转的概率，0-1
-cfg.AUG.FLIP_RATIO = 0.5
-# 图像resize的固定尺寸（宽，高），非负
-cfg.AUG.FIX_RESIZE_SIZE = tuple()
 # 图像resize的方式有三种：
 # unpadding（固定尺寸），stepscaling（按比例resize），rangescaling（长边对齐）
-cfg.AUG.AUG_METHOD = 'rangescaling'
+cfg.AUG.AUG_METHOD = 'unpadding'
+# 图像resize的固定尺寸（宽，高），非负
+cfg.AUG.FIX_RESIZE_SIZE = (512, 512)
 # 图像resize方式为stepscaling，resize最小尺度，非负
 cfg.AUG.MIN_SCALE_FACTOR = 0.5
 # 图像resize方式为stepscaling，resize最大尺度，不小于MIN_SCALE_FACTOR
@@ -97,6 +91,13 @@ cfg.AUG.MAX_RESIZE_VALUE = 600
 # 图像resize方式为rangescaling, 测试验证可视化模式下长边resize的长度，
 # 在MIN_RESIZE_VALUE到MAX_RESIZE_VALUE范围内
 cfg.AUG.INF_RESIZE_VALUE = 500
+
+# 图像镜像左右翻转
+cfg.AUG.MIRROR = True
+# 图像上下翻转开关，True/False
+cfg.AUG.FLIP = False
+# 图像启动上下翻转的概率，0-1
+cfg.AUG.FLIP_RATIO = 0.5
 
 # RichCrop数据增广开关，用于提升模型鲁棒性
 cfg.AUG.RICH_CROP.ENABLE = False
@@ -154,17 +155,26 @@ cfg.SOLVER.BEGIN_EPOCH = 1
 cfg.SOLVER.NUM_EPOCHS = 30
 # loss的选择，支持softmax_loss, bce_loss, dice_loss
 cfg.SOLVER.LOSS = ["softmax_loss"]
-# 是否开启warmup学习策略 
-cfg.SOLVER.LR_WARMUP = False 
+# loss的权重，用于多loss组合加权使用，仅对SOLVER.LOSS内包含的loss生效
+cfg.SOLVER.LOSS_WEIGHT.SOFTMAX_LOSS = 1
+cfg.SOLVER.LOSS_WEIGHT.DICE_LOSS = 1
+cfg.SOLVER.LOSS_WEIGHT.BCE_LOSS = 1
+cfg.SOLVER.LOSS_WEIGHT.LOVASZ_HINGE_LOSS = 1
+cfg.SOLVER.LOSS_WEIGHT.LOVASZ_SOFTMAX_LOSS = 1
+# 是否开启warmup学习策略
+cfg.SOLVER.LR_WARMUP = False
 # warmup的迭代次数
-cfg.SOLVER.LR_WARMUP_STEPS = 2000 
-
+cfg.SOLVER.LR_WARMUP_STEPS = 2000
+# cross entropy weight, 默认为None，如果设置为'dynamic'，会根据每个batch中各个类别的数目，
+# 动态调整类别权重。
+# 也可以设置一个静态权重(list的方式)，比如有3类，每个类别权重可以设置为[0.1, 2.0, 0.9]
+cfg.SOLVER.CROSS_ENTROPY_WEIGHT = None
 ########################## 测试配置 ###########################################
 # 测试模型路径
 cfg.TEST.TEST_MODEL = ''
 
 ########################## 模型通用配置 #######################################
-# 模型名称, 支持deeplab, unet, icnet三种
+# 模型名称, 已支持deeplabv3p, unet, icnet，pspnet，hrnet
 cfg.MODEL.MODEL_NAME = ''
 # BatchNorm类型: bn、gn(group_norm)
 cfg.MODEL.DEFAULT_NORM_TYPE = 'bn'
@@ -224,7 +234,6 @@ cfg.MODEL.HRNET.STAGE3.NUM_CHANNELS = [40, 80, 160]
 cfg.MODEL.HRNET.STAGE4.NUM_MODULES = 3
 cfg.MODEL.HRNET.STAGE4.NUM_CHANNELS = [40, 80, 160, 320]
 
-
 ########################## 预测部署模型配置 ###################################
 # 预测保存的模型名称
 cfg.FREEZE.MODEL_FILENAME = '__model__'
@@ -232,3 +241,19 @@ cfg.FREEZE.MODEL_FILENAME = '__model__'
 cfg.FREEZE.PARAMS_FILENAME = '__params__'
 # 预测模型参数保存的路径
 cfg.FREEZE.SAVE_DIR = 'freeze_model'
+
+########################## paddle-slim ######################################
+cfg.SLIM.KNOWLEDGE_DISTILL_IS_TEACHER = False
+cfg.SLIM.KNOWLEDGE_DISTILL = False
+cfg.SLIM.KNOWLEDGE_DISTILL_TEACHER_MODEL_DIR = ""
+
+cfg.SLIM.NAS_PORT = 23333
+cfg.SLIM.NAS_ADDRESS = ""
+cfg.SLIM.NAS_SEARCH_STEPS = 100
+cfg.SLIM.NAS_START_EVAL_EPOCH = 0
+cfg.SLIM.NAS_IS_SERVER = True
+cfg.SLIM.NAS_SPACE_NAME = ""
+
+cfg.SLIM.PRUNE_PARAMS = ''
+cfg.SLIM.PRUNE_RATIOS = []
+cfg.SLIM.PREPROCESS = False

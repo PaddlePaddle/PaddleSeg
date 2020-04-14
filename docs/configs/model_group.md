@@ -5,10 +5,12 @@ MODEL Group存放所有和模型相关的配置，该Group还包含三个子Grou
 * [DeepLabv3p](./model_deeplabv3p_group.md)
 * [UNet](./model_unet_group.md)
 * [ICNet](./model_icnet_group.md)
+* [PSPNet](./model_pspnet_group.md)
+* [HRNet](./model_hrnet_group.md)
 
 ## `MODEL_NAME`
 
-所选模型，支持`deeplabv3p` `unet` `icnet`三种模型
+所选模型，支持`deeplabv3p` `unet` `icnet` `pspnet` `hrnet`五种模型
 
 ### 默认值
 
@@ -19,7 +21,13 @@ MODEL Group存放所有和模型相关的配置，该Group还包含三个子Grou
 
 ## `DEFAULT_NORM_TYPE`
 
-模型所用norm类型，支持`bn` [`gn`]()
+模型所用norm类型，支持`bn`(Batch Norm)、`gn`(Group Norm)
+
+![](../imgs/gn.png)
+
+关于Group Norm的介绍可以参考论文：https://arxiv.org/abs/1803.08494
+
+GN 把通道分为组，并计算每一组之内的均值和方差，以进行归一化。GN 的计算与批量大小无关，其精度也在各种批量大小下保持稳定。适应于网络参数很重的模型，比如deeplabv3+这种，可以在一个小batch下取得一个较好的训练效果。
 
 ### 默认值
 
@@ -110,4 +118,3 @@ loss = 1.0 * loss1 + 0.4 * loss2 + 0.16 * loss3
 
 <br/>
 <br/>
-

@@ -24,12 +24,14 @@ os.environ['FLAGS_eager_delete_tensor_gb'] = "0.0"
 import sys
 import argparse
 import pprint
+import random
 import shutil
 import functools
 
 import paddle
 import numpy as np
 import paddle.fluid as fluid
+from paddle.fluid import profiler
 
 from utils.config import cfg
 from utils.timer import Timer, calculate_eta
@@ -95,6 +97,24 @@ def parse_args():
         help='See utils/config.py for all options',
         default=None,
         nargs=argparse.REMAINDER)
+    parser.add_argument(
+        '--enable_ce',
+        dest='enable_ce',
+        help='If set True, enable continuous evaluation job.'
+        'This flag is only used for internal test.',
+        action='store_true')
+
+    # NOTE: This for benchmark
+    parser.add_argument(
+        '--is_profiler',
+        help='the profiler switch.(used for benchmark)',
+        default=0,
+        type=int)
+    parser.add_argument(
+        '--profiler_path',
+        help='the profiler output file path.(used for benchmark)',
+        default='./seg.profiler',
+        type=str)
     return parser.parse_args()
 
 
@@ -179,6 +199,13 @@ def load_checkpoint(exe, program):
     return begin_epoch
 
 
+def update_best_model(ckpt_dir):
+    best_model_dir = os.path.join(cfg.TRAIN.MODEL_SAVE_DIR, 'best_model')
+    if os.path.exists(best_model_dir):
+        shutil.rmtree(best_model_dir)
+    shutil.copytree(ckpt_dir, best_model_dir)
+
+
 def print_info(*msg):
     if cfg.TRAINER_ID == 0:
         print(*msg)
@@ -187,6 +214,9 @@ def print_info(*msg):
 def train(cfg):
     startup_prog = fluid.Program()
     train_prog = fluid.Program()
+    if args.enable_ce:
+        startup_prog.random_seed = 1000
+        train_prog.random_seed = 1000
     drop_last = True
 
     dataset = SegDataset(
@@ -235,9 +265,9 @@ def train(cfg):
     batch_size_per_dev = cfg.BATCH_SIZE // dev_count
     print_info("batch_size_per_dev: {}".format(batch_size_per_dev))
 
-    py_reader, avg_loss, lr, pred, grts, masks = build_model(
+    data_loader, avg_loss, lr, pred, grts, masks = build_model(
         train_prog, startup_prog, phase=ModelPhase.TRAIN)
-    py_reader.decorate_sample_generator(
+    data_loader.set_sample_generator(
         data_generator, batch_size=batch_size_per_dev, drop_last=drop_last)
 
     exe = fluid.Executor(place)
@@ -341,6 +371,8 @@ def train(cfg):
     all_step *= (cfg.SOLVER.NUM_EPOCHS - begin_epoch + 1)
 
     avg_loss = 0.0
+    best_mIoU = 0.0
+
     timer = Timer()
     timer.start()
     if begin_epoch > cfg.SOLVER.NUM_EPOCHS:
@@ -354,7 +386,7 @@ def train(cfg):
         print_info("Use multi-thread reader")
 
     for epoch in range(begin_epoch, cfg.SOLVER.NUM_EPOCHS + 1):
-        py_reader.start()
+        data_loader.start()
         while True:
             try:
                 if args.debug:
@@ -423,13 +455,21 @@ def train(cfg):
                         avg_loss = 0.0
                         timer.restart()
 
+                    # NOTE : used for benchmark, profiler tools
+                    if args.is_profiler and epoch == 1 and global_step == args.log_steps:
+                        profiler.start_profiler("All")
+                    elif args.is_profiler and epoch == 1 and global_step == args.log_steps + 5:
+                        profiler.stop_profiler("total", args.profiler_path)
+                        return
+
             except fluid.core.EOFException:
-                py_reader.reset()
+                data_loader.reset()
                 break
             except Exception as e:
                 print(e)
 
-        if epoch % cfg.TRAIN.SNAPSHOT_EPOCH == 0 and cfg.TRAINER_ID == 0:
+        if (epoch % cfg.TRAIN.SNAPSHOT_EPOCH == 0
+                or epoch == cfg.SOLVER.NUM_EPOCHS) and cfg.TRAINER_ID == 0:
             ckpt_dir = save_checkpoint(exe, train_prog, epoch)
 
             if args.do_eval:
@@ -444,6 +484,14 @@ def train(cfg):
                                           global_step)
                     log_writer.add_scalar('Evaluate/mean_acc', mean_acc,
                                           global_step)
+
+                if mean_iou > best_mIoU:
+                    best_mIoU = mean_iou
+                    update_best_model(ckpt_dir)
+                    print_info("Save best model {} to {}, mIoU = {:.4f}".format(
+                        ckpt_dir,
+                        os.path.join(cfg.TRAIN.MODEL_SAVE_DIR, 'best_model'),
+                        mean_iou))
 
             # Use Tensorboard to visualize results
             if args.use_tb and cfg.DATASET.VIS_FILE_LIST is not None:
@@ -465,6 +513,9 @@ def main(args):
         cfg.update_from_file(args.cfg_file)
     if args.opts:
         cfg.update_from_list(args.opts)
+    if args.enable_ce:
+        random.seed(0)
+        np.random.seed(0)
 
     cfg.TRAINER_ID = int(os.getenv("PADDLE_TRAINER_ID", 0))
     cfg.NUM_TRAINERS = int(os.environ.get('PADDLE_TRAINERS_NUM', 1))
