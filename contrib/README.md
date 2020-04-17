@@ -4,7 +4,7 @@
 
 - [人像分割](#人像分割)
 - [人体解析--ACE2P](#人体解析--ACE2P)
-- [车道线分割--LaneNet](#车道线分割--LaneNet)
+- [车道线分割--LaneNet](LaneNet/README.md)
 - [车道线分割--DeepLabv3+](#车道线分割--DeepLabv3)
 - [工业用表分割](#工业用表分割)
 - [在线体验](#在线体验)
@@ -125,9 +125,6 @@ python -u infer.py --example ACE2P
 1. 数据及模型路径等详细配置见ACE2P/HumanSeg/RoadLine下的config.py文件
 2. ACE2P模型需预留2G显存，若显存超可调小FLAGS_fraction_of_gpu_memory_to_use
 
-
-
-## 车道线分割--LaneNet
 
 
 ## 车道线分割--DeepLabv3+
