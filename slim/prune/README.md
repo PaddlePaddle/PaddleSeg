@@ -9,11 +9,11 @@
 该教程中所示操作，如无特殊说明，均在`PaddleSeg/`路径下执行。
 
 ## 1. 数据与预训练模型准备
-执行如下命令，下载cityscapes数据集
+（1）执行如下命令，下载cityscapes数据集
 ```
 python dataset/download_cityscapes.py
 ```
-参照[预训练模型列表](../../docs/model_zoo.md)获取所需预训练模型
+（2）预训练模型以fast scnn为例，点击获取fast scnn的预训练模型[fast_scnn_cityscapes.tar](#5-模型)，并在`configs/cityscape_fast_scnn.yaml`文件中将配置项`TRAIN.PRETRAINED_MODEL_DIR`设置为预训练模型所在路径。其他所需模型可参照[预训练模型列表](../../docs/model_zoo.md)获取。
 
 ## 2. 确定待分析参数
 
@@ -35,7 +35,7 @@ for x in train_prog.list_vars():
 使用`train_prune.py`启动裁剪任务时，通过`SLIM.PRUNE_PARAMS`选项指定待裁剪的参数名称列表，参数名之间用逗号分隔，通过`SLIM.PRUNE_RATIOS`选项指定各个参数被裁掉的比例。
 
 ```shell
-CUDA_VISIBLE_DEVICES=0 
+CUDA_VISIBLE_DEVICES=0 \
 python -u ./slim/prune/train_prune.py --log_steps 10 --cfg configs/cityscape_fast_scnn.yaml --use_gpu --use_mpio \
 SLIM.PRUNE_PARAMS 'learning_to_downsample/weights,learning_to_downsample/dsconv1/pointwise/weights,learning_to_downsample/dsconv2/pointwise/weights' \
 SLIM.PRUNE_RATIOS '[0.1,0.1,0.1]'
@@ -45,7 +45,7 @@ SLIM.PRUNE_RATIOS '[0.1,0.1,0.1]'
 ## 4. 评估
 
 ```shell
-CUDA_VISIBLE_DEVICES=0 
+CUDA_VISIBLE_DEVICES=0 \
 python -u ./slim/prune/eval_prune.py --cfg configs/cityscape_fast_scnn.yaml --use_gpu \
 TEST.TEST_MODEL your_trained_model \
 ```

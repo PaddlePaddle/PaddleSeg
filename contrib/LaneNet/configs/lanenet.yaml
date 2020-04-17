@@ -42,7 +42,7 @@ TEST:
 TRAIN:
     MODEL_SAVE_DIR: "./saved_model/lanenet/"
     PRETRAINED_MODEL_DIR: "./pretrained_models/VGG16_pretrained"
-    SNAPSHOT_EPOCH: 1
+    SNAPSHOT_EPOCH: 5 
 SOLVER:
     NUM_EPOCHS: 100
     LR: 0.0005

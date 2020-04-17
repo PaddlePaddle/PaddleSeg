@@ -2,9 +2,9 @@
 
 # PaddleSeg蒸馏教程
 
-在阅读本教程前，请确保您已经了解过[PaddleSeg使用说明](../../docs/usage.md)等章节，以便对PaddleSeg有一定的了解
-
 该文档介绍如何使用[PaddleSlim](https://paddlepaddle.github.io/PaddleSlim)对分割库中的模型进行蒸馏。
+
+在阅读本教程前，请确保您已经了解过[PaddleSeg使用说明](../../docs/usage.md)等章节，以便对PaddleSeg有一定的了解。
 
 该教程中所示操作，如无特殊说明，均在`PaddleSeg/`路径下执行。
 
@@ -16,11 +16,11 @@
 - [PaddleSlim蒸馏API文档](https://paddlepaddle.github.io/PaddleSlim/api/single_distiller_api/)
 
 ## 安装PaddleSlim
-可按照[PaddleSlim使用文档](https://paddlepaddle.github.io/PaddleSlim/)中的步骤安装PaddleSlim
+可按照[PaddleSlim使用文档](https://paddlepaddle.github.io/PaddleSlim/)中的步骤安装PaddleSlim.
 
 ## 蒸馏策略说明
 
-关于蒸馏API如何使用您可以参考PaddleSlim蒸馏API文档
+关于蒸馏API如何使用您可以参考PaddleSlim蒸馏API文档。
 
 这里以Deeplabv3-xception蒸馏训练Deeplabv3-mobilenet模型为例，首先，为了对`student model`和`teacher model`有个总体的认识，进一步确认蒸馏的对象，我们通过以下命令分别观察两个网络变量（Variables）的名称和形状：
 
@@ -55,7 +55,7 @@ bilinear_interp_2.tmp_0
 ```
 
 
-它们形状两两相同，且分别处于两个网络的输出部分。所以，我们用`l2_loss`对这几个特征图两两对应添加蒸馏loss。需要注意的是，teacher的Variable在merge过程中被自动添加了一个`name_prefix`，所以这里也需要加上这个前缀`"teacher_"`，merge过程请参考[蒸馏API文档](https://paddlepaddle.github.io/PaddleSlim/api/single_distiller_api/#merge)
+它们形状两两相同，且分别处于两个网络的输出部分。所以，我们用`l2_loss`对这几个特征图两两对应添加蒸馏loss。需要注意的是，teacher的Variable在merge过程中被自动添加了一个`name_prefix`，所以这里也需要加上这个前缀`"teacher_"`，merge过程请参考[蒸馏API文档](https://paddlepaddle.github.io/PaddleSlim/api/single_distiller_api/#merge)。
 
 ```python
 distill_loss = l2_loss('teacher_bilinear_interp_2.tmp_0', 'bilinear_interp_0.tmp_0')
@@ -66,11 +66,11 @@ distill_loss = l2_loss('teacher_bilinear_interp_2.tmp_0', 'bilinear_interp_0.tmp
 ## 训练
 
 根据[PaddleSeg/pdseg/train.py](../../pdseg/train.py)编写压缩脚本`train_distill.py`。
-在该脚本中定义了teacher_model和student_model，用teacher_model的输出指导student_model的训练
+在该脚本中定义了teacher_model和student_model，用teacher_model的输出指导student_model的训练。
 
 ### 执行示例
 
-下载teacher的预训练模型([deeplabv3p_xception65_bn_cityscapes.tgz](https://paddleseg.bj.bcebos.com/models/xception65_bn_cityscapes.tgz))和student的预训练模型([mobilenet_cityscapes.tgz](https://paddleseg.bj.bcebos.com/models/mobilenet_cityscapes.tgz)), 
+下载并解压teacher的预训练模型([deeplabv3p_xception65_bn_cityscapes.tgz](https://paddleseg.bj.bcebos.com/models/xception65_bn_cityscapes.tgz))和student的预训练模型([mobilenet_cityscapes.tgz](https://paddleseg.bj.bcebos.com/models/mobilenet_cityscapes.tgz)), 
 修改student config file(./slim/distillation/cityscape.yaml)中预训练模型的路径:
 ```
 TRAIN:
@@ -84,7 +84,7 @@ SLIM:
 
 执行如下命令启动训练，每间隔```cfg.TRAIN.SNAPSHOT_EPOCH```会进行一次评估。
 ```shell
-CUDA_VISIBLE_DEVICES=0,1 
+CUDA_VISIBLE_DEVICES=0,1 \
 python -m paddle.distributed.launch ./slim/distillation/train_distill.py \
 --log_steps 10 --cfg ./slim/distillation/cityscape.yaml \
 --teacher_cfg ./slim/distillation/cityscape_teacher.yaml \
@@ -96,4 +96,4 @@ python -m paddle.distributed.launch ./slim/distillation/train_distill.py \
 
 ## 评估预测
 
-训练完成后的评估和预测请参考PaddleSeg的[快速入门](../../README.md#快速入门)和[基础功能](../../README.md#基础功能)等章节
+训练完成后的评估和预测请参考PaddleSeg的[快速入门](../../README.md#快速入门)和[基础功能](../../README.md#基础功能)等章节。
