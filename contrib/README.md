@@ -3,9 +3,9 @@
 提供基于PaddlePaddle最新的分割特色模型:
 
 - [人像分割](#人像分割)
-- [人体解析](#人体解析)
+- [人体解析--ACE2P](#人体解析--ACE2P)
 - [车道线分割--LaneNet](#车道线分割--LaneNet)
-- [车道线分割--DeepLabv3+](#车道线分割--DeepLabv3+)
+- [车道线分割--DeepLabv3+](#车道线分割--DeepLabv3)
 - [工业用表分割](#工业用表分割)
 - [在线体验](#在线体验)
 
@@ -60,7 +60,7 @@ python -u infer.py --example HumanSeg
 
 
 
-## 人体解析
+## 人体解析--ACE2P
 
 ![](ACE2P/imgs/result.jpg)
 
