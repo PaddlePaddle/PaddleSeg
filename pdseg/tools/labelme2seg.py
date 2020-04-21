@@ -28,20 +28,19 @@ def get_color_map_list(num_classes):
         j = 0
         lab = i
         while lab:
-            color_map[i*3] |= (((lab >> 0) & 1) << (7 - j))
-            color_map[i*3+1] |= (((lab >> 1) & 1) << (7 - j))
-            color_map[i*3+2] |= (((lab >> 2) & 1) << (7 - j))
+            color_map[i * 3] |= (((lab >> 0) & 1) << (7 - j))
+            color_map[i * 3 + 1] |= (((lab >> 1) & 1) << (7 - j))
+            color_map[i * 3 + 2] |= (((lab >> 2) & 1) << (7 - j))
             j += 1
             lab >>= 3
 
     return color_map
 
+
 def parse_args():
     parser = argparse.ArgumentParser(
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter
-    )
-    parser.add_argument('input_dir',
-                        help='input annotated directory')
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser.add_argument('input_dir', help='input annotated directory')
     return parser.parse_args()
 
 
@@ -82,15 +81,14 @@ def main(args):
         print('Generating dataset from:', label_file)
         with open(label_file) as f:
             base = osp.splitext(osp.basename(label_file))[0]
-            out_png_file = osp.join(
-                output_dir, base + '.png')
+            out_png_file = osp.join(output_dir, base + '.png')
 
             data = json.load(f)
 
             img_file = osp.join(osp.dirname(label_file), data['imagePath'])
             img = np.asarray(PIL.Image.open(img_file))
 
-            lbl = labelme.utils.shapes_to_label(
+            lbl, _ = labelme.utils.shapes_to_label(
                 img_shape=img.shape,
                 shapes=data['shapes'],
                 label_name_to_value=class_name_to_id,
@@ -106,17 +104,16 @@ def main(args):
             else:
                 raise ValueError(
                     '[%s] Cannot save the pixel-wise class label as PNG. '
-                    'Please consider using the .npy format.' % out_png_file
-                )
+                    'Please consider using the .npy format.' % out_png_file)
 
 
 if __name__ == '__main__':
     args = parse_args()
+    main(args)
 
+    # debug code
     # args = argparse.ArgumentParser(
     #     formatter_class=argparse.ArgumentDefaultsHelpFormatter
     # )
-    # args.input_dir = '../../dataset/humanseg_labelme/'
-    # args.output_dir = '../../dataset/humanseg_labelme/LMode'
-
-    main(args)
+    # args.input_dir = '../../docs/annotation/labelme_demo/'
+    # main(args)
