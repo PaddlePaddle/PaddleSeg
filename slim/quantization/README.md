@@ -133,7 +133,20 @@ TRAIN.SYNC_BATCH_NORM False \
 BATCH_SIZE 16 \
 ```
 
+## 导出模型
+使用脚本[slim/quantization/export_model.py](./export_model.py)导出模型。
 
+导出命令：
+
+分割库根目录下运行
+```
+python -u ./slim/quantization/export_model.py --not_quant_pattern last_conv  --cfg configs/deeplabv3p_mobilenetv2_cityscapes.yaml  \
+TEST.TEST_MODEL "./snapshots/mobilenetv2_quant/best_model" \
+MODEL.DEEPLAB.ENCODER_WITH_ASPP False \
+MODEL.DEEPLAB.ENABLE_DECODER False \
+TRAIN.SYNC_BATCH_NORM False \
+SLIM.PREPROCESS True \
+```
 
 ## 量化结果
 

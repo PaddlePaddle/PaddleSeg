@@ -50,6 +50,7 @@ from utils import dist_utils
 from paddleslim.prune import Pruner, save_model
 from paddleslim.analysis import flops
 
+
 def parse_args():
     parser = argparse.ArgumentParser(description='PaddleSeg training')
     parser.add_argument(
@@ -181,9 +182,11 @@ def load_checkpoint(exe, program):
 
     return begin_epoch
 
+
 def print_info(*msg):
     if cfg.TRAINER_ID == 0:
         print(*msg)
+
 
 def train(cfg):
     startup_prog = fluid.Program()
@@ -236,9 +239,9 @@ def train(cfg):
     batch_size_per_dev = cfg.BATCH_SIZE // dev_count
     print_info("batch_size_per_dev: {}".format(batch_size_per_dev))
 
-    py_reader, avg_loss, lr, pred, grts, masks = build_model(
+    data_loader, avg_loss, lr, pred, grts, masks = build_model(
         train_prog, startup_prog, phase=ModelPhase.TRAIN)
-    py_reader.decorate_sample_generator(
+    data_loader.set_sample_generator(
         data_generator, batch_size=batch_size_per_dev, drop_last=drop_last)
 
     exe = fluid.Executor(place)
@@ -261,8 +264,9 @@ def train(cfg):
             print_info("Sync BatchNorm strategy is effective.")
             build_strategy.sync_batch_norm = True
         else:
-            print_info("Sync BatchNorm strategy will not be effective if GPU device"
-                  " count <= 1")
+            print_info(
+                "Sync BatchNorm strategy will not be effective if GPU device"
+                " count <= 1")
 
     pruned_params = cfg.SLIM.PRUNE_PARAMS.strip().split(',')
     pruned_ratios = cfg.SLIM.PRUNE_RATIOS
@@ -311,14 +315,16 @@ def train(cfg):
         for var in load_vars:
             print_info("Parameter[{}] loaded sucessfully!".format(var.name))
         for var in load_fail_vars:
-            print_info("Parameter[{}] don't exist or shape does not match current network, skip"
-                  " to load it.".format(var.name))
+            print_info(
+                "Parameter[{}] don't exist or shape does not match current network, skip"
+                " to load it.".format(var.name))
         print_info("{}/{} pretrained parameters loaded successfully!".format(
             len(load_vars),
             len(load_vars) + len(load_fail_vars)))
     else:
-        print_info('Pretrained model dir {} not exists, training from scratch...'.
-              format(cfg.TRAIN.PRETRAINED_MODEL_DIR))
+        print_info(
+            'Pretrained model dir {} not exists, training from scratch...'.
+            format(cfg.TRAIN.PRETRAINED_MODEL_DIR))
 
     fetch_list = [avg_loss.name, lr.name]
     if args.debug:
@@ -371,7 +377,7 @@ def train(cfg):
         print_info("Use multi-thread reader")
 
     for epoch in range(begin_epoch, cfg.SOLVER.NUM_EPOCHS + 1):
-        py_reader.start()
+        data_loader.start()
         while True:
             try:
                 if args.debug:
@@ -441,7 +447,7 @@ def train(cfg):
                         timer.restart()
 
             except fluid.core.EOFException:
-                py_reader.reset()
+                data_loader.reset()
                 break
             except Exception as e:
                 print(e)
@@ -476,6 +482,7 @@ def train(cfg):
     # save final model
     if cfg.TRAINER_ID == 0:
         save_prune_checkpoint(exe, train_prog, 'final')
+
 
 def main(args):
     if args.cfg_file is not None:

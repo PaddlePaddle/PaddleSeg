@@ -24,6 +24,8 @@ from utils.config import cfg
 from loss import multi_softmax_with_loss
 from loss import multi_dice_loss
 from loss import multi_bce_loss
+from lovasz_losses import lovasz_hinge
+from lovasz_losses import lovasz_softmax
 from models.modeling import deeplab, unet, icnet, pspnet, hrnet, fast_scnn
 
 
@@ -166,8 +168,8 @@ def build_model(main_prog, start_prog, phase=ModelPhase.TRAIN):
         width = cfg.EVAL_CROP_SIZE[0]
         height = cfg.EVAL_CROP_SIZE[1]
 
-    image_shape = [cfg.DATASET.DATA_DIM, height, width]
-    grt_shape = [1, height, width]
+    image_shape = [-1, cfg.DATASET.DATA_DIM, height, width]
+    grt_shape = [-1, 1, height, width]
     class_num = cfg.DATASET.NUM_CLASSES
 
     with fluid.program_guard(main_prog, start_prog):
@@ -175,25 +177,26 @@ def build_model(main_prog, start_prog, phase=ModelPhase.TRAIN):
             # 在导出模型的时候，增加图像标准化预处理,减小预测部署时图像的处理流程
             # 预测部署时只须对输入图像增加batch_size维度即可
             if ModelPhase.is_predict(phase):
-                origin_image = fluid.layers.data(
-                    name='image',
-                    shape=[-1, -1, -1, cfg.DATASET.DATA_DIM],
-                    dtype='float32',
-                    append_batch_size=False)
-                image, valid_shape, origin_shape = export_preprocess(
-                    origin_image)
+                if cfg.SLIM.PREPROCESS:
+                    image = fluid.data(
+                        name='image', shape=image_shape, dtype='float32')
+                else:
+                    origin_image = fluid.data(
+                        name='image',
+                        shape=[-1, -1, -1, cfg.DATASET.DATA_DIM],
+                        dtype='float32')
+                    image, valid_shape, origin_shape = export_preprocess(
+                        origin_image)
 
             else:
-                image = fluid.layers.data(
+                image = fluid.data(
                     name='image', shape=image_shape, dtype='float32')
-            label = fluid.layers.data(
-                name='label', shape=grt_shape, dtype='int32')
-            mask = fluid.layers.data(
-                name='mask', shape=grt_shape, dtype='int32')
+            label = fluid.data(name='label', shape=grt_shape, dtype='int32')
+            mask = fluid.data(name='mask', shape=grt_shape, dtype='int32')
 
-            # use PyReader when doing traning and evaluation
+            # use DataLoader when doing traning and evaluation
             if ModelPhase.is_train(phase) or ModelPhase.is_eval(phase):
-                py_reader = fluid.io.PyReader(
+                data_loader = fluid.io.DataLoader.from_generator(
                     feed_list=[image, label, mask],
                     capacity=cfg.DATALOADER.BUF_SIZE,
                     iterable=False,
@@ -203,19 +206,22 @@ def build_model(main_prog, start_prog, phase=ModelPhase.TRAIN):
             if not isinstance(loss_type, list):
                 loss_type = list(loss_type)
 
-            # dice_loss或bce_loss只适用两类分割中
-            if class_num > 2 and (("dice_loss" in loss_type) or
+            # lovasz_hinge_loss或dice_loss或bce_loss只适用两类分割中
+            if class_num > 2 and (("lovasz_hinge_loss" in loss_type) or
+                                  ("dice_loss" in loss_type) or
                                   ("bce_loss" in loss_type)):
                 raise Exception(
-                    "dice loss and bce loss is only applicable to binary classfication"
+                    "lovasz hinge loss, dice loss and bce loss are only applicable to binary classfication."
                 )
 
-            # 在两类分割情况下，当loss函数选择dice_loss或bce_loss的时候，最后logit输出通道数设置为1
-            if ("dice_loss" in loss_type) or ("bce_loss" in loss_type):
+            # 在两类分割情况下，当loss函数选择lovasz_hinge_loss或dice_loss或bce_loss的时候，最后logit输出通道数设置为1
+            if ("dice_loss" in loss_type) or ("bce_loss" in loss_type) or (
+                    "lovasz_hinge_loss" in loss_type):
                 class_num = 1
-                if "softmax_loss" in loss_type:
+                if ("softmax_loss" in loss_type) or (
+                        "lovasz_softmax_loss" in loss_type):
                     raise Exception(
-                        "softmax loss can not combine with dice loss or bce loss"
+                        "softmax loss or lovasz softmax loss can not combine with bce loss or dice loss or lovasz hinge loss."
                     )
             logits = seg_model(image, class_num)
 
@@ -227,7 +233,8 @@ def build_model(main_prog, start_prog, phase=ModelPhase.TRAIN):
                 if "softmax_loss" in loss_type:
                     weight = cfg.SOLVER.CROSS_ENTROPY_WEIGHT
                     avg_loss_list.append(
-                        multi_softmax_with_loss(logits, label, mask, class_num, weight))
+                        multi_softmax_with_loss(logits, label, mask, class_num,
+                                                weight))
                     loss_valid = True
                     valid_loss.append("softmax_loss")
                 if "dice_loss" in loss_type:
@@ -238,11 +245,22 @@ def build_model(main_prog, start_prog, phase=ModelPhase.TRAIN):
                     avg_loss_list.append(multi_bce_loss(logits, label, mask))
                     loss_valid = True
                     valid_loss.append("bce_loss")
+                if "lovasz_hinge_loss" in loss_type:
+                    avg_loss_list.append(
+                        lovasz_hinge(logits, label, ignore=mask))
+                    loss_valid = True
+                    valid_loss.append("lovasz_hinge_loss")
+                if "lovasz_softmax_loss" in loss_type:
+                    probas = fluid.layers.softmax(logits, axis=1)
+                    avg_loss_list.append(
+                        lovasz_softmax(probas, label, ignore=mask))
+                    loss_valid = True
+                    valid_loss.append("lovasz_softmax_loss")
                 if not loss_valid:
                     raise Exception(
                         "SOLVER.LOSS: {} is set wrong. it should "
-                        "include one of (softmax_loss, bce_loss, dice_loss) at least"
-                        " example: ['softmax_loss'], ['dice_loss'], ['bce_loss', 'dice_loss']"
+                        "include one of (softmax_loss, bce_loss, dice_loss, lovasz_hinge_loss, lovasz_softmax_loss) at least"
+                        " example: ['softmax_loss'], ['dice_loss'], ['bce_loss', 'dice_loss'], ['lovasz_hinge_loss','bce_loss'], ['lovasz_softmax_loss','softmax_loss']"
                         .format(cfg.SOLVER.LOSS))
 
                 invalid_loss = [x for x in loss_type if x not in valid_loss]
@@ -253,7 +271,9 @@ def build_model(main_prog, start_prog, phase=ModelPhase.TRAIN):
 
                 avg_loss = 0
                 for i in range(0, len(avg_loss_list)):
-                    avg_loss += avg_loss_list[i]
+                    loss_name = valid_loss[i].upper()
+                    loss_weight = eval('cfg.SOLVER.LOSS_WEIGHT.' + loss_name)
+                    avg_loss += loss_weight * avg_loss_list[i]
 
             #get pred result in original size
             if isinstance(logits, tuple):
@@ -266,22 +286,26 @@ def build_model(main_prog, start_prog, phase=ModelPhase.TRAIN):
 
             # return image input and logit output for inference graph prune
             if ModelPhase.is_predict(phase):
-                # 两类分割中，使用dice_loss或bce_loss返回的logit为单通道，进行到两通道的变换
+                # 两类分割中，使用lovasz_hinge_loss或dice_loss或bce_loss返回的logit为单通道，进行到两通道的变换
                 if class_num == 1:
                     logit = sigmoid_to_softmax(logit)
                 else:
                     logit = softmax(logit)
 
                 # 获取有效部分
-                logit = fluid.layers.slice(
-                    logit, axes=[2, 3], starts=[0, 0], ends=valid_shape)
+                if cfg.SLIM.PREPROCESS:
+                    return image, logit
 
-                logit = fluid.layers.resize_bilinear(
-                    logit,
-                    out_shape=origin_shape,
-                    align_corners=False,
-                    align_mode=0)
-                logit = fluid.layers.argmax(logit, axis=1)
+                else:
+                    logit = fluid.layers.slice(
+                        logit, axes=[2, 3], starts=[0, 0], ends=valid_shape)
+
+                    logit = fluid.layers.resize_bilinear(
+                        logit,
+                        out_shape=origin_shape,
+                        align_corners=False,
+                        align_mode=0)
+                    logit = fluid.layers.argmax(logit, axis=1)
                 return origin_image, logit
 
             if class_num == 1:
@@ -300,12 +324,12 @@ def build_model(main_prog, start_prog, phase=ModelPhase.TRAIN):
                 return pred, logit
 
             if ModelPhase.is_eval(phase):
-                return py_reader, avg_loss, pred, label, mask
+                return data_loader, avg_loss, pred, label, mask
 
             if ModelPhase.is_train(phase):
                 optimizer = solver.Solver(main_prog, start_prog)
                 decayed_lr = optimizer.optimise(avg_loss)
-                return py_reader, avg_loss, decayed_lr, pred, label, mask
+                return data_loader, avg_loss, decayed_lr, pred, label, mask
 
 
 def to_int(string, dest="I"):
