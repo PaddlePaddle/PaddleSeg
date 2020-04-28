@@ -12,14 +12,5 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from . import utils
-from . import nets
-from . import models
-from . import datasets
 from . import transforms
-from .utils.utils import get_environ_info
-
-env_info = get_environ_info()
-
-log_level = 2
-__version__ = '1.0.0.github'
+from . import functional
