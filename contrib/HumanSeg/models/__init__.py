@@ -1,0 +1,1 @@
+from .humanseg import HumanSegMobile
