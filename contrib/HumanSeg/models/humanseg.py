@@ -108,7 +108,7 @@ class HumanSegMobile(object):
         if HumanSeg.env_info['place'] == 'cpu':
             self.places = fluid.cpu_places()
         else:
-            self.places = fluid.cada_places()
+            self.places = fluid.cuda_places()
         self.exe = fluid.Executor(self.places[0])
         self.train_prog = None
         self.test_prog = None
@@ -211,8 +211,7 @@ class HumanSegMobile(object):
                 self.begin_epoch = int(epoch)
             else:
                 raise ValueError("Resume model path is not valid!")
-            print("Model checkpoint loaded successfully!")
-            print(self.train_prog)
+            logging.info("Model checkpoint loaded successfully!")
 
         elif pretrain_weights is not None:
             logging.info(
@@ -244,8 +243,6 @@ class HumanSegMobile(object):
                     v = float(v)
                 info['_Attributes']['eval_metric'][k] = v
         except:
-            import traceback
-            traceback.print_exc()
             pass
 
         if hasattr(self, 'test_transforms'):
@@ -369,7 +366,6 @@ class HumanSegMobile(object):
         lr.persistable = True
         if isinstance(lr, fluid.framework.Variable):
             self.train_outputs['lr'] = lr
-        print('lr', lr.persistable)
 
         # 多卡训练
         if self.parallel_train_prog is None:
@@ -408,7 +404,6 @@ class HumanSegMobile(object):
 
         best_miou = -1.0
         best_model_epoch = 1
-        print(self.begin_epoch)
         for i in range(self.begin_epoch, num_epochs):
             records = list()
             step_start_time = time.time()
