@@ -118,6 +118,9 @@ class HumanSegMobile(object):
         self.train_outputs = None
         self.test_outputs = None
         self.train_data_loader = None
+        self.eval_metrics = None
+        # 当前模型状态
+        self.status = 'Normal'
 
     def _get_single_car_bs(self, batch_size):
         if batch_size % len(self.places) == 0:
@@ -279,15 +282,46 @@ class HumanSegMobile(object):
 
         fluid.save(self.train_prog, osp.join(save_dir, 'model'))
         model_info = self.get_model_info()
+        model_info['status'] = self.status
         with open(
                 osp.join(save_dir, 'model.yml'), encoding='utf-8',
                 mode='w') as f:
             yaml.dump(model_info, f)
+
+        # The flag of model for saving successfully
         open(osp.join(save_dir, '.success'), 'w').close()
         logging.info("Model saved in {}.".format(save_dir))
 
     def export_inference_model(self, save_dir):
-        pass
+        test_input_names = [var.name for var in list(self.test_inputs.values())]
+        test_outputs = list(self.test_outputs.values())
+        fluid.io.save_inference_model(
+            dirname=save_dir,
+            executor=self.exe,
+            params_filename='__params__',
+            feeded_var_names=test_input_names,
+            target_vars=test_outputs,
+            main_program=self.test_prog)
+        model_info = self.get_model_info()
+        model_info['status'] = 'Infer'
+
+        # Save input and output descrition of model
+        model_info['_ModelInputsOutputs'] = dict()
+        model_info['_ModelInputsOutputs']['test_inputs'] = [
+            [k, v.name] for k, v in self.test_inputs.items()
+        ]
+        model_info['_ModelInputsOutputs']['test_output'] = [
+            [k, v.name] for k, v in self.test_outputs.items()
+        ]
+
+        with open(
+                osp.join(save_dir, 'model.yml'), encoding='utf-8',
+                mode='w') as f:
+            yaml.dump(model_info, f)
+
+        # The flag of model for saving successfully
+        open(osp.join(save_dir, '.success'), 'w').close()
+        logging.info("Model for inference deploy saved in {}.".format(save_dir))
 
     def export_quant_model(self):
         pass
@@ -478,8 +512,6 @@ class HumanSegMobile(object):
                         eval_dataset=eval_dataset,
                         batch_size=eval_batch_size,
                         epoch_id=i + 1)
-                    logging.info('[EVAL] Finished, Epoch={}, {} .'.format(
-                        i + 1, dict2str(self.eval_metrics)))
                     # 保存最优模型
                     current_miou = self.eval_metrics['miou']
                     if current_miou > best_miou:
@@ -567,6 +599,9 @@ class HumanSegMobile(object):
             zip(['miou', 'category_iou', 'macc', 'category_acc', 'kappa'],
                 [miou, category_iou, macc, category_acc,
                  conf_mat.kappa()]))
+
+        logging.info('[EVAL] Finished, Epoch={}, {} .'.format(
+            epoch_id, dict2str(metrics)))
         return metrics
 
     def predict(self, im_file, transforms=None):
@@ -612,18 +647,159 @@ class HumanSegMobile(object):
         return {'label_map': pred, 'score_map': logit}
 
 
-class HumanSegLite(object):
+class HumanSegLite(HumanSegMobile):
     # DeepLab ShuffleNet
-    def train(self):
-        pass
+    def __init__(self,
+                 num_classes=2,
+                 use_bce_loss=False,
+                 use_dice_loss=False,
+                 class_weight=None,
+                 ignore_index=255,
+                 sync_bn=True):
+        self.init_params = locals()
+        if num_classes > 2 and (use_bce_loss or use_dice_loss):
+            raise ValueError(
+                "dice loss and bce loss is only applicable to binary classfication"
+            )
 
-    def evaluate(self):
-        pass
+        if class_weight is not None:
+            if isinstance(class_weight, list):
+                if len(class_weight) != num_classes:
+                    raise ValueError(
+                        "Length of class_weight should be equal to number of classes"
+                    )
+            elif isinstance(class_weight, str):
+                if class_weight.lower() != 'dynamic':
+                    raise ValueError(
+                        "if class_weight is string, must be dynamic!")
+            else:
+                raise TypeError(
+                    'Expect class_weight is a list or string but receive {}'.
+                    format(type(class_weight)))
 
-    def predict(self):
-        pass
+        self.num_classes = num_classes
+        self.use_bce_loss = use_bce_loss
+        self.use_dice_loss = use_dice_loss
+        self.class_weight = class_weight
+        self.ignore_index = ignore_index
+        self.sync_bn = sync_bn
+
+        self.labels = None
+        self.version = HumanSeg.__version__
+        if HumanSeg.env_info['place'] == 'cpu':
+            self.places = fluid.cpu_places()
+        else:
+            self.places = fluid.cuda_places()
+        self.exe = fluid.Executor(self.places[0])
+        self.train_prog = None
+        self.test_prog = None
+        self.parallel_train_prog = None
+        self.train_inputs = None
+        self.test_inputs = None
+        self.train_outputs = None
+        self.test_outputs = None
+        self.train_data_loader = None
+        self.eval_metrics = None
+        # 当前模型状态
+        self.status = 'Normal'
+
+    def build_net(self, mode='train'):
+        """应根据不同的情况进行构建"""
+        model = HumanSeg.nets.ShuffleSeg(
+            self.num_classes,
+            mode=mode,
+            use_bce_loss=self.use_bce_loss,
+            use_dice_loss=self.use_dice_loss,
+            class_weight=self.class_weight,
+            ignore_index=self.ignore_index)
+        inputs = model.generate_inputs()
+        model_out = model.build_net(inputs)
+        outputs = OrderedDict()
+        if mode == 'train':
+            self.optimizer.minimize(model_out)
+            outputs['loss'] = model_out
+        else:
+            outputs['pred'] = model_out[0]
+            outputs['logit'] = model_out[1]
+        return inputs, outputs
 
 
-class HumanSegServer(object):
+class HumanSegServer(HumanSegMobile):
     # DeepLab Xception
-    pass
+    def __init__(self,
+                 num_classes=2,
+                 backbone='Xception65',
+                 output_stride=16,
+                 aspp_with_sep_conv=True,
+                 decoder_use_sep_conv=True,
+                 encoder_with_aspp=True,
+                 enable_decoder=True,
+                 use_bce_loss=False,
+                 use_dice_loss=False,
+                 class_weight=None,
+                 ignore_index=255,
+                 sync_bn=True):
+        self.init_params = locals()
+        if num_classes > 2 and (use_bce_loss or use_dice_loss):
+            raise ValueError(
+                "dice loss and bce loss is only applicable to binary classfication"
+            )
+
+        self.output_stride = output_stride
+
+        if backbone not in [
+                'Xception65', 'Xception41', 'MobileNetV2_x0.25',
+                'MobileNetV2_x0.5', 'MobileNetV2_x1.0', 'MobileNetV2_x1.5',
+                'MobileNetV2_x2.0'
+        ]:
+            raise ValueError(
+                "backbone: {} is set wrong. it should be one of "
+                "('Xception65', 'Xception41', 'MobileNetV2_x0.25', 'MobileNetV2_x0.5',"
+                " 'MobileNetV2_x1.0', 'MobileNetV2_x1.5', 'MobileNetV2_x2.0')".
+                format(backbone))
+
+        if class_weight is not None:
+            if isinstance(class_weight, list):
+                if len(class_weight) != num_classes:
+                    raise ValueError(
+                        "Length of class_weight should be equal to number of classes"
+                    )
+            elif isinstance(class_weight, str):
+                if class_weight.lower() != 'dynamic':
+                    raise ValueError(
+                        "if class_weight is string, must be dynamic!")
+            else:
+                raise TypeError(
+                    'Expect class_weight is a list or string but receive {}'.
+                    format(type(class_weight)))
+
+        self.backbone = backbone
+        self.num_classes = num_classes
+        self.use_bce_loss = use_bce_loss
+        self.use_dice_loss = use_dice_loss
+        self.class_weight = class_weight
+        self.ignore_index = ignore_index
+        self.aspp_with_sep_conv = aspp_with_sep_conv
+        self.decoder_use_sep_conv = decoder_use_sep_conv
+        self.encoder_with_aspp = encoder_with_aspp
+        self.enable_decoder = enable_decoder
+        self.sync_bn = sync_bn
+
+        self.labels = None
+        self.version = HumanSeg.__version__
+        if HumanSeg.env_info['place'] == 'cpu':
+            self.places = fluid.cpu_places()
+        else:
+            self.places = fluid.cuda_places()
+        self.exe = fluid.Executor(self.places[0])
+        self.train_prog = None
+        self.test_prog = None
+        self.parallel_train_prog = None
+        self.train_inputs = None
+        self.test_inputs = None
+        self.train_outputs = None
+        self.test_outputs = None
+        self.train_data_loader = None
+        self.eval_metrics = None
+        # 当前模型状态
+        self.status = 'Normal'
