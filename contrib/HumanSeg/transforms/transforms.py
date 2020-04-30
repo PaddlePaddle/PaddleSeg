@@ -34,7 +34,7 @@ class Compose:
 
     """
 
-    def __init__(self, transforms, to_rgb=False, input_file=True):
+    def __init__(self, transforms, to_rgb=False):
         if not isinstance(transforms, list):
             raise TypeError('The transforms must be a list!')
         if len(transforms) < 1:
@@ -42,7 +42,6 @@ class Compose:
                             'must be equal or larger than 1!')
         self.transforms = transforms
         self.to_rgb = to_rgb
-        self.input_file = input_file
 
     def __call__(self, im, im_info=None, label=None):
         """
@@ -59,10 +58,10 @@ class Compose:
 
         if im_info is None:
             im_info = dict()
-        if self.input_file:
+        if isinstance(im, str):
             im = cv2.imread(im).astype('float32')
-            if label is not None:
-                label = np.asarray(Image.open(label))
+        if isinstance(label, str):
+            label = np.asarray(Image.open(label))
         if im is None:
             raise ValueError('Can\'t read The image file {}!'.format(im))
         if self.to_rgb:
