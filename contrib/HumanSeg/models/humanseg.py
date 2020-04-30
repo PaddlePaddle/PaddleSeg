@@ -310,7 +310,7 @@ class HumanSegMobile(object):
         model_info['_ModelInputsOutputs']['test_inputs'] = [
             [k, v.name] for k, v in self.test_inputs.items()
         ]
-        model_info['_ModelInputsOutputs']['test_output'] = [
+        model_info['_ModelInputsOutputs']['test_outputs'] = [
             [k, v.name] for k, v in self.test_outputs.items()
         ]
 
@@ -803,3 +803,103 @@ class HumanSegServer(HumanSegMobile):
         self.eval_metrics = None
         # 当前模型状态
         self.status = 'Normal'
+
+
+class HRNet(HumanSegMobile):
+    def __init__(self,
+                 num_classes=2,
+                 stage1_num_modules=1,
+                 stage1_num_blocks=[4],
+                 stage1_num_channels=[64],
+                 stage2_num_modules=1,
+                 stage2_num_blocks=[4, 4],
+                 stage2_num_channels=[18, 36],
+                 stage3_num_modules=4,
+                 stage3_num_blocks=[4, 4, 4],
+                 stage3_num_channels=[18, 36, 72],
+                 stage4_num_modules=3,
+                 stage4_num_blocks=[4, 4, 4, 4],
+                 stage4_num_channels=[18, 36, 72, 144],
+                 use_bce_loss=False,
+                 use_dice_loss=False,
+                 class_weight=None,
+                 ignore_index=255,
+                 sync_bn=True):
+        self.init_params = locals()
+        if num_classes > 2 and (use_bce_loss or use_dice_loss):
+            raise ValueError(
+                "dice loss and bce loss is only applicable to binary classfication"
+            )
+
+        if class_weight is not None:
+            if isinstance(class_weight, list):
+                if len(class_weight) != num_classes:
+                    raise ValueError(
+                        "Length of class_weight should be equal to number of classes"
+                    )
+            elif isinstance(class_weight, str):
+                if class_weight.lower() != 'dynamic':
+                    raise ValueError(
+                        "if class_weight is string, must be dynamic!")
+            else:
+                raise TypeError(
+                    'Expect class_weight is a list or string but receive {}'.
+                    format(type(class_weight)))
+
+        self.num_classes = num_classes
+        self.use_bce_loss = use_bce_loss
+        self.use_dice_loss = use_dice_loss
+        self.class_weight = class_weight
+        self.ignore_index = ignore_index
+        self.sync_bn = sync_bn
+        self.stage1_num_modules = stage1_num_modules
+        self.stage1_num_modules = stage1_num_blocks
+        self.stage1_num_channels = stage1_num_channels
+        self.stage2_num_modules = stage2_num_modules
+        self.stage2_num_blocks = stage2_num_blocks
+        self.stage2_num_channels = stage2_num_channels
+        self.stage3_num_modules = stage3_num_modules
+        self.stage3_num_blocks = stage3_num_blocks
+        self.stage3_num_channels = stage3_num_channels
+        self.stage4_num_modules = stage4_num_modules
+        self.stage4_num_blocks = stage4_num_blocks
+        self.stage4_num_channels = stage4_num_channels
+
+        self.labels = None
+        self.version = HumanSeg.__version__
+        if HumanSeg.env_info['place'] == 'cpu':
+            self.places = fluid.cpu_places()
+        else:
+            self.places = fluid.cuda_places()
+        self.exe = fluid.Executor(self.places[0])
+        self.train_prog = None
+        self.test_prog = None
+        self.parallel_train_prog = None
+        self.train_inputs = None
+        self.test_inputs = None
+        self.train_outputs = None
+        self.test_outputs = None
+        self.train_data_loader = None
+        self.eval_metrics = None
+        # 当前模型状态
+        self.status = 'Normal'
+
+    def build_net(self, mode='train'):
+        """应根据不同的情况进行构建"""
+        model = HumanSeg.nets.HRNet(
+            self.num_classes,
+            mode=mode,
+            use_bce_loss=self.use_bce_loss,
+            use_dice_loss=self.use_dice_loss,
+            class_weight=self.class_weight,
+            ignore_index=self.ignore_index)
+        inputs = model.generate_inputs()
+        model_out = model.build_net(inputs)
+        outputs = OrderedDict()
+        if mode == 'train':
+            self.optimizer.minimize(model_out)
+            outputs['loss'] = model_out
+        else:
+            outputs['pred'] = model_out[0]
+            outputs['logit'] = model_out[1]
+        return inputs, outputs
