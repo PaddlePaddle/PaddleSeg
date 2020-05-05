@@ -391,7 +391,8 @@ class HRNet(object):
             self.stage1_num_blocks,
             self.stage1_num_channels,
             name='layer2')
-        tr1 = self._transition_layer([la1], [256],
+        tr1 = self._transition_layer([la1],
+                                     self.stage1_num_channels,
                                      self.stage2_num_channels,
                                      name='tr1')
         st2 = self._stage(
