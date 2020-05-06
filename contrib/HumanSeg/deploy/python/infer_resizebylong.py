@@ -152,11 +152,11 @@ class HumanSeg:
     封装了人像分割模型的加载，数据预处理，预测，后处理等
     """
 
-    def __init__(self, model_dir, mean, scale, eval_size, use_gpu=False):
+    def __init__(self, model_dir, mean, scale, long_size, use_gpu=False):
 
         self.mean = np.array(mean).reshape((3, 1, 1))
         self.scale = np.array(scale).reshape((3, 1, 1))
-        self.eval_size = eval_size
+        self.long_size = long_size
         self.load_model(model_dir, use_gpu)
 
     def load_model(self, model_dir, use_gpu):
@@ -186,8 +186,23 @@ class HumanSeg:
         返回值:
             经过预处理后的图片结果
         """
+        origin_h, origin_w = image.shape[0], image.shape[1]
+        scale = float(self.long_size) / max(origin_w, origin_h)
+        resize_w = int(round(origin_w * scale))
+        resize_h = int(round(origin_h * scale))
         img_mat = cv2.resize(
-            image, self.eval_size, interpolation=cv2.INTER_LINEAR)
+            image, (resize_w, resize_h), interpolation=cv2.INTER_LINEAR)
+        pad_h = self.long_size - resize_h
+        pad_w = self.long_size - resize_w
+        img_mat = cv2.copyMakeBorder(
+            img_mat,
+            0,
+            pad_h,
+            0,
+            pad_w,
+            cv2.BORDER_CONSTANT,
+            value=[127.5, 127.5, 127.5])
+
         # HWC -> CHW
         img_mat = img_mat.swapaxes(1, 2)
         img_mat = img_mat.swapaxes(0, 1)
@@ -207,15 +222,23 @@ class HumanSeg:
         """
         scoremap = output_data[0, 1, :, :]
         scoremap = (scoremap * 255).astype(np.uint8)
-        ori_h, ori_w = image.shape[0], image.shape[1]
-        evl_h, evl_w = self.eval_size[0], self.eval_size[1]
         # 光流处理
         cur_gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-        cur_gray = cv2.resize(cur_gray, (evl_w, evl_h))
+        origin_h, origin_w = image.shape[0], image.shape[1]
+        scale = float(self.long_size) / max(origin_w, origin_h)
+        resize_w = int(round(origin_w * scale))
+        resize_h = int(round(origin_h * scale))
+        cur_gray = cv2.resize(
+            cur_gray, (resize_w, resize_h), interpolation=cv2.INTER_LINEAR)
+        pad_h = self.long_size - resize_h
+        pad_w = self.long_size - resize_w
+        cur_gray = cv2.copyMakeBorder(
+            cur_gray, 0, pad_h, 0, pad_w, cv2.BORDER_CONSTANT, value=127.5)
         optflow_map = optflow_handle(cur_gray, scoremap, False)
         optflow_map = cv2.GaussianBlur(optflow_map, (3, 3), 0)
         optflow_map = threshold_mask(optflow_map, thresh_bg=0.2, thresh_fg=0.8)
-        optflow_map = cv2.resize(optflow_map, (ori_w, ori_h))
+        optflow_map = optflow_map[0:resize_h, 0:resize_w]
+        optflow_map = cv2.resize(optflow_map, (origin_w, origin_h))
         optflow_map = np.repeat(optflow_map[:, :, np.newaxis], 3, axis=2)
         bg_im = np.ones_like(optflow_map) * 255
         comb = (optflow_map * image + (1 - optflow_map) * bg_im).astype(
@@ -231,7 +254,7 @@ class HumanSeg:
         """
         im_mat = self.preprocess(image)
         im_tensor = fluid.core.PaddleTensor(im_mat.copy().astype('float32'))
-        output_data = self.predictor.run([im_tensor])[0]
+        output_data = self.predictor.run([im_tensor])[1]
         output_data = output_data.as_ndarray()
         return self.postprocess(image, output_data)
 
@@ -303,8 +326,8 @@ def main(args):
     # 加载模型
     mean = [0.5, 0.5, 0.5]
     scale = [0.5, 0.5, 0.5]
-    eval_size = (192, 192)
-    seg = HumanSeg(model_dir, mean, scale, eval_size, use_gpu)
+    long_size = 168
+    seg = HumanSeg(model_dir, mean, scale, long_size, use_gpu)
     if args.use_camera:
         # 开启摄像头
         predict_camera(seg)
