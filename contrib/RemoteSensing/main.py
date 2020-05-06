@@ -5,9 +5,11 @@ import numpy as np
 from PIL import Image as Image
 
 #================================setting========================
-os.environ['CUDA_VISIBLE_DEVICES'] = "7"
-
+# set gpu
+os.environ['CUDA_VISIBLE_DEVICES'] = "0"
+# batch size
 batch_size = 4
+# training epochs
 epochs = 100
 
 # number of data channel
