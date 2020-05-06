@@ -18,8 +18,12 @@ import numpy as np
 from PIL import Image, ImageEnhance
 
 
-def normalize(im, mean, std):
-    im = im.astype(np.float32, copy=False) / 255.0
+def normalize(im, max_value):
+    im = im.astype(np.float32, copy=False) / max_value
+    return im
+
+
+def standardize(im, mean, std):
     im -= mean
     im /= std
     return im

@@ -420,6 +420,23 @@ class ResizeStepScaling:
             return (im, im_info, label)
 
 
+class Clip:
+    """
+    对图像上超出一定范围的数据进行裁剪
+    """
+
+    def __init__(self, min_val, max_val):
+        self.min_val = min_val
+        self.max_val = max_val
+
+    def __call__(self, im, im_info=None, label=None):
+        np.clip(im, self.min_val, self.max_val, out=im)
+        if label is None:
+            return (im, im_info)
+        else:
+            return (im, im_info, label)
+
+
 class Normalize:
     """对图像进行标准化。
     1.尺度缩放到 [0,1]。
@@ -433,7 +450,9 @@ class Normalize:
         ValueError: mean或std不是list对象。std包含0。
     """
 
-    def __init__(self, mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5]):
+    def __init__(self, max_val=255.0, mean=[0.5, 0.5, 0.5], std=[0.5, 0.5,
+                                                                 0.5]):
+        self.max_val = max_val
         self.mean = mean
         self.std = std
         if not (isinstance(self.mean, list) and isinstance(self.std, list)):
@@ -457,7 +476,8 @@ class Normalize:
 
         mean = np.array(self.mean)[np.newaxis, np.newaxis, :]
         std = np.array(self.std)[np.newaxis, np.newaxis, :]
-        im = normalize(im, mean, std)
+        im = normalize(im, self.max_val)
+        im = standardize(im, mean, std)
 
         if label is None:
             return (im, im_info)
@@ -677,75 +697,6 @@ class RandomBlur:
                 if radius > 9:
                     radius = 9
                 im = cv2.GaussianBlur(im, (radius, radius), 0, 0)
-
-        if label is None:
-            return (im, im_info)
-        else:
-            return (im, im_info, label)
-
-
-class RandomRotation:
-    """对图像进行随机旋转。
-    在不超过最大旋转角度的情况下，图像进行随机旋转，当存在标注图像时，同步进行，
-    并对旋转后的图像和标注图像进行相应的padding。
-
-    Args:
-        max_rotation (float): 最大旋转角度。默认为15度。
-        im_padding_value (list): 图像padding的值。默认为[127.5, 127.5, 127.5]。
-        label_padding_value (int): 标注图像padding的值。默认为255。
-
-    """
-
-    def __init__(self,
-                 max_rotation=15,
-                 im_padding_value=[127.5, 127.5, 127.5],
-                 label_padding_value=255):
-        self.max_rotation = max_rotation
-        self.im_padding_value = im_padding_value
-        self.label_padding_value = label_padding_value
-
-    def __call__(self, im, im_info=None, label=None):
-        """
-        Args:
-            im (np.ndarray): 图像np.ndarray数据。
-            im_info (dict): 存储与图像相关的信息。
-            label (np.ndarray): 标注图像np.ndarray数据。
-
-        Returns:
-            tuple: 当label为空时，返回的tuple为(im, im_info)，分别对应图像np.ndarray数据、存储与图像相关信息的字典；
-                当label不为空时，返回的tuple为(im, im_info, label)，分别对应图像np.ndarray数据、
-                存储与图像相关信息的字典和标注图像np.ndarray数据。
-        """
-        if self.max_rotation > 0:
-            (h, w) = im.shape[:2]
-            do_rotation = np.random.uniform(-self.max_rotation,
-                                            self.max_rotation)
-            pc = (w // 2, h // 2)
-            r = cv2.getRotationMatrix2D(pc, do_rotation, 1.0)
-            cos = np.abs(r[0, 0])
-            sin = np.abs(r[0, 1])
-
-            nw = int((h * sin) + (w * cos))
-            nh = int((h * cos) + (w * sin))
-
-            (cx, cy) = pc
-            r[0, 2] += (nw / 2) - cx
-            r[1, 2] += (nh / 2) - cy
-            dsize = (nw, nh)
-            im = cv2.warpAffine(
-                im,
-                r,
-                dsize=dsize,
-                flags=cv2.INTER_LINEAR,
-                borderMode=cv2.BORDER_CONSTANT,
-                borderValue=self.im_padding_value)
-            label = cv2.warpAffine(
-                label,
-                r,
-                dsize=dsize,
-                flags=cv2.INTER_NEAREST,
-                borderMode=cv2.BORDER_CONSTANT,
-                borderValue=self.label_padding_value)
 
         if label is None:
             return (im, im_info)

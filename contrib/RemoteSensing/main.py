@@ -1,18 +1,20 @@
 import sys
 import os
 import os.path as osp
-import cv2
 import numpy as np
 from PIL import Image as Image
 
 #================================setting========================
-os.environ['CUDA_VISIBLE_DEVICES'] = "1"
+os.environ['CUDA_VISIBLE_DEVICES'] = "7"
 
 batch_size = 4
-channel = 10
-epochs = 1
+epochs = 100
 
-save_dir = 'saved_model/snow2019_unet_all_channel_vertical'
+# number of data channel
+channel = 10
+# model save directory
+save_dir = 'saved_model/snow2019_unet_all_channel_clip_norm_2'
+# dataset directory
 data_dir = "../../../dataset/snow2019/all_channel_data/"
 #=============================================================
 
@@ -35,17 +37,14 @@ train_transforms = T.Compose([
     T.RandomHorizontalFlip(0.5),
     T.ResizeStepScaling(0.5, 2.0, 0.25),
     T.RandomPaddingCrop(769),
-    T.Normalize(mean=[0.5] * channel, std=[0.5] * channel),
+    T.Clip(min_val=0, max_val=3400),
+    T.Normalize(max_val=3400, mean=[0.5] * channel, std=[0.5] * channel),
 ])
 
 eval_transforms = T.Compose([
     T.Padding([1049, 1049]),
-    T.Normalize(mean=[0.5] * channel, std=[0.5] * channel),
-])
-
-test_transforms = T.Compose([
-    T.Padding([1049, 1049]),
-    T.Normalize(mean=[0.5] * channel, std=[0.5] * channel),
+    T.Clip(min_val=0, max_val=3400),
+    T.Normalize(max_val=3400, mean=[0.5] * channel, std=[0.5] * channel),
 ])
 
 train_reader = Reader(
