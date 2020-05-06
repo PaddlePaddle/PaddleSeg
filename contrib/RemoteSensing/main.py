@@ -9,6 +9,8 @@ from PIL import Image as Image
 os.environ['CUDA_VISIBLE_DEVICES'] = "0"
 # batch size
 batch_size = 4
+# learning rate
+lr = 0.01
 # training epochs
 epochs = 100
 
@@ -82,7 +84,7 @@ model.train(
     save_dir=save_dir,
     pretrain_weights=None,
     optimizer=None,
-    learning_rate=0.01,
+    learning_rate=lr,
 )
 
 # predict
