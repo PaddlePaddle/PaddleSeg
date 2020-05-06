@@ -376,11 +376,12 @@ class HumanSegMobile(object):
             startup_prog=fluid.default_startup_program(),
             pretrain_weights=pretrain_weights,
             resume_weights=resume_weights)
+        '''
         if self.begin_epoch >= num_epochs:
             raise ValueError(
                 ("begin epoch[{}] is larger than num_epochs[{}]").format(
                     self.begin_epoch, num_epochs))
-
+        '''
         if not osp.isdir(save_dir):
             if osp.exists(save_dir):
                 os.remove(save_dir)
@@ -853,7 +854,7 @@ class HRNet(HumanSegMobile):
         self.ignore_index = ignore_index
         self.sync_bn = sync_bn
         self.stage1_num_modules = stage1_num_modules
-        self.stage1_num_modules = stage1_num_blocks
+        self.stage1_num_blocks = stage1_num_blocks
         self.stage1_num_channels = stage1_num_channels
         self.stage2_num_modules = stage2_num_modules
         self.stage2_num_blocks = stage2_num_blocks
@@ -889,6 +890,18 @@ class HRNet(HumanSegMobile):
         model = HumanSeg.nets.HRNet(
             self.num_classes,
             mode=mode,
+            stage1_num_modules=self.stage1_num_modules,
+            stage1_num_blocks=self.stage1_num_blocks,
+            stage1_num_channels=self.stage1_num_channels,
+            stage2_num_modules=self.stage2_num_modules,
+            stage2_num_blocks=self.stage2_num_blocks,
+            stage2_num_channels=self.stage2_num_channels,
+            stage3_num_modules=self.stage3_num_modules,
+            stage3_num_blocks=self.stage3_num_blocks,
+            stage3_num_channels=self.stage3_num_channels,
+            stage4_num_modules=self.stage4_num_modules,
+            stage4_num_blocks=self.stage4_num_blocks,
+            stage4_num_channels=self.stage4_num_channels,
             use_bce_loss=self.use_bce_loss,
             use_dice_loss=self.use_dice_loss,
             class_weight=self.class_weight,
