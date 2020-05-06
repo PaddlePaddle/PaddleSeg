@@ -113,7 +113,6 @@ class HRNet(object):
             return pred, logit
 
         return logit
-        return logit
 
     def generate_inputs(self):
         inputs = OrderedDict()

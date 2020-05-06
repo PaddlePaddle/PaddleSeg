@@ -326,7 +326,7 @@ def main(args):
     # 加载模型
     mean = [0.5, 0.5, 0.5]
     scale = [0.5, 0.5, 0.5]
-    long_size = 168
+    long_size = 192
     seg = HumanSeg(model_dir, mean, scale, long_size, use_gpu)
     if args.use_camera:
         # 开启摄像头
