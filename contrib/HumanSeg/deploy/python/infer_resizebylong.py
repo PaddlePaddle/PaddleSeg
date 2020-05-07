@@ -258,62 +258,57 @@ class HumanSeg:
         output_data = output_data.as_ndarray()
         return self.postprocess(image, output_data)
 
+    def image_segment(self, path):
+        """对图片文件进行分割
+            结果保存到`result.jpeg`文件中
+            """
+        img_mat = cv2.imread(path)
+        img_mat = self.run_predict(img_mat)
+        cv2.imwrite('result.jpeg', img_mat)
 
-def predict_image(seg, image_path):
-    """对图片文件进行分割
-    结果保存到`result.jpeg`文件中
-    """
-    img_mat = cv2.imread(image_path)
-    img_mat = seg.run_predict(img_mat)
-    cv2.imwrite('result.jpeg', img_mat)
-
-
-def predict_video(seg, video_path):
-    """对视频文件进行分割
-    结果保存到`result.avi`文件中
-    """
-    cap = cv2.VideoCapture(video_path)
-    if not cap.isOpened():
-        print("Error opening video stream or file")
-        return
-    width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-    height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-    fps = cap.get(cv2.CAP_PROP_FPS)
-    # 用于保存预测结果视频
-    out = cv2.VideoWriter('result.avi',
-                          cv2.VideoWriter_fourcc('M', 'J', 'P', 'G'), fps,
-                          (width, height))
-    # 开始获取视频帧
-    while cap.isOpened():
-        ret, frame = cap.read()
-        if ret:
-            img_mat = seg.run_predict(frame)
-            out.write(img_mat)
+    def video_segment(self, path=None):
+        """
+        对视屏流进行分割，
+        path为None时默认打开摄像头。
+        """
+        if path is None:
+            cap = cv2.VideoCapture(0)
         else:
-            break
-    cap.release()
-    out.release()
+            cap = cv2.VideoCapture(path)
+        if not cap.isOpened():
+            raise IOError("Error opening video stream or file")
+            return
 
+        if path is not None:
+            width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+            height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+            fps = cap.get(cv2.CAP_PROP_FPS)
+            # 用于保存预测结果视频
+            out = cv2.VideoWriter('result.avi',
+                                  cv2.VideoWriter_fourcc('M', 'J', 'P', 'G'),
+                                  fps, (width, height))
+            # 开始获取视频帧
+            while cap.isOpened():
+                ret, frame = cap.read()
+                if ret:
+                    img_mat = self.run_predict(frame)
+                    out.write(img_mat)
+                else:
+                    break
+            cap.release()
+            out.release()
 
-def predict_camera(seg):
-    """从摄像头获取视频流进行预测
-    视频分割结果实时显示到可视化窗口中
-    """
-    cap = cv2.VideoCapture(0)
-    if not cap.isOpened():
-        print("Error opening video stream or file")
-        return
-    # Start capturing from video
-    while cap.isOpened():
-        ret, frame = cap.read()
-        if ret:
-            img_mat = seg.run_predict(frame)
-            cv2.imshow('HumanSegmentation', img_mat)
-            if cv2.waitKey(1) & 0xFF == ord('q'):
-                break
         else:
-            break
-    cap.release()
+            while cap.isOpened():
+                ret, frame = cap.read()
+                if ret:
+                    img_mat = self.run_predict(frame)
+                    cv2.imshow('HumanSegmentation', img_mat)
+                    if cv2.waitKey(1) & 0xFF == ord('q'):
+                        break
+                else:
+                    break
+            cap.release()
 
 
 def main(args):
@@ -327,16 +322,19 @@ def main(args):
     mean = [0.5, 0.5, 0.5]
     scale = [0.5, 0.5, 0.5]
     long_size = 192
-    seg = HumanSeg(model_dir, mean, scale, long_size, use_gpu)
+    model = HumanSeg(model_dir, mean, scale, long_size, use_gpu)
     if args.use_camera:
         # 开启摄像头
-        predict_camera(seg)
+        model.video_segment()
     elif args.video_path:
         # 使用视频文件作为输入
-        predict_video(seg, args.video_path)
+        model.video_segment(args.video_path)
     elif args.img_path:
         # 使用图片文件作为输入
-        predict_image(seg, args.img_path)
+        model.image_segment(args.img_path)
+    else:
+        raise ValueError(
+            'One of (--model_dir, --video_path, --use_camera) should be given.')
 
 
 def parse_args():
