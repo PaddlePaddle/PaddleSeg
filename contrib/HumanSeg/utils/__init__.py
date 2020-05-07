@@ -16,3 +16,4 @@ from . import logging
 from . import utils
 from .metrics import ConfusionMatrix
 from .utils import *
+from .post_quantization import HumanSegPostTrainingQuantization

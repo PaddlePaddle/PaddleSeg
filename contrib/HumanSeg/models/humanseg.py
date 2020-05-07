@@ -24,6 +24,7 @@ import time
 import tqdm
 import cv2
 import yaml
+import paddleslim as slim
 
 import HumanSeg
 import HumanSeg.utils.logging as logging
@@ -233,9 +234,40 @@ class SegModel(object):
             if osp.exists(save_dir):
                 os.remove(save_dir)
             os.makedirs(save_dir)
-
-        fluid.save(self.train_prog, osp.join(save_dir, 'model'))
         model_info = self.get_model_info()
+
+        if self.status == 'Normal':
+            fluid.save(self.train_prog, osp.join(save_dir, 'model'))
+        elif self.status == 'Quant':
+            float_prog, int8_prog = slim.quant.convert(
+                self.test_prog, self.exe.place, save_int8=True)
+            test_input_names = [
+                var.name for var in list(self.test_inputs.values())
+            ]
+            test_outputs = list(self.test_outputs.values())
+            fluid.io.save_inference_model(
+                dirname=save_dir,
+                executor=self.exe,
+                params_filename='__params__',
+                feeded_var_names=test_input_names,
+                target_vars=test_outputs,
+                main_program=float_prog)
+            fluid.io.save_inference_model(
+                dirname=save_dir,
+                executor=self.exe,
+                params_filename='__params__',
+                feeded_var_names=test_input_names,
+                target_vars=test_outputs,
+                main_program=int8_prog)
+
+            model_info['_ModelInputsOutputs'] = dict()
+            model_info['_ModelInputsOutputs']['test_inputs'] = [
+                [k, v.name] for k, v in self.test_inputs.items()
+            ]
+            model_info['_ModelInputsOutputs']['test_outputs'] = [
+                [k, v.name] for k, v in self.test_outputs.items()
+            ]
+
         model_info['status'] = self.status
         with open(
                 osp.join(save_dir, 'model.yml'), encoding='utf-8',
@@ -277,8 +309,59 @@ class SegModel(object):
         open(osp.join(save_dir, '.success'), 'w').close()
         logging.info("Model for inference deploy saved in {}.".format(save_dir))
 
-    def export_quant_model(self):
-        pass
+    def export_quant_model(self,
+                           dataset,
+                           save_dir,
+                           batch_size=1,
+                           batch_nums=10,
+                           cache_dir="./temp"):
+        self.arrange_transform(transforms=dataset.transforms, mode='quant')
+        dataset.num_samples = batch_size * batch_nums
+        try:
+            from HumanSeg.utils import HumanSegPostTrainingQuantization
+        except:
+            raise Exception(
+                "Model Quantization is not available, try to upgrade your paddlepaddle>=1.7.0"
+            )
+        is_use_cache_file = True
+        if cache_dir is None:
+            is_use_cache_file = False
+        post_training_quantization = HumanSegPostTrainingQuantization(
+            executor=self.exe,
+            dataset=dataset,
+            program=self.test_prog,
+            inputs=self.test_inputs,
+            outputs=self.test_outputs,
+            batch_size=batch_size,
+            batch_nums=batch_nums,
+            scope=None,
+            algo='KL',
+            quantizable_op_type=["conv2d", "depthwise_conv2d", "mul"],
+            is_full_quantize=False,
+            is_use_cache_file=is_use_cache_file,
+            cache_dir=cache_dir)
+        post_training_quantization.quantize()
+        post_training_quantization.save_quantized_model(save_dir)
+        model_info = self.get_model_info()
+        model_info['status'] = 'Quant'
+
+        # Save input and output descrition of model
+        model_info['_ModelInputsOutputs'] = dict()
+        model_info['_ModelInputsOutputs']['test_inputs'] = [
+            [k, v.name] for k, v in self.test_inputs.items()
+        ]
+        model_info['_ModelInputsOutputs']['test_outputs'] = [
+            [k, v.name] for k, v in self.test_outputs.items()
+        ]
+
+        with open(
+                osp.join(save_dir, 'model.yml'), encoding='utf-8',
+                mode='w') as f:
+            yaml.dump(model_info, f)
+
+        # The flag of model for saving successfully
+        open(osp.join(save_dir, '.success'), 'w').close()
+        logging.info("Model for quant saved in {}.".format(save_dir))
 
     def default_optimizer(self,
                           learning_rate,
@@ -311,7 +394,8 @@ class SegModel(object):
               optimizer=None,
               learning_rate=0.01,
               lr_decay_power=0.9,
-              use_vdl=False):
+              use_vdl=False,
+              quant=False):
         self.labels = train_dataset.labels
         self.train_transforms = train_dataset.transforms
         self.train_init = locals()
@@ -330,12 +414,20 @@ class SegModel(object):
             startup_prog=fluid.default_startup_program(),
             pretrain_weights=pretrain_weights,
             resume_weights=resume_weights)
-        '''
+
+        # 进行量化
+        if quant:
+            self.train_prog = slim.quant.quant_aware(
+                self.train_prog, self.exe.place, for_test=False)
+            self.test_prog = slim.quant.quant_aware(
+                self.test_prog, self.exe.place, for_test=True)
+            self.status = 'Quant'
+
         if self.begin_epoch >= num_epochs:
             raise ValueError(
                 ("begin epoch[{}] is larger than num_epochs[{}]").format(
                     self.begin_epoch, num_epochs))
-        '''
+
         if not osp.isdir(save_dir):
             if osp.exists(save_dir):
                 os.remove(save_dir)

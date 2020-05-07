@@ -47,7 +47,7 @@ def load_model(model_dir):
             load_dict = pickle.load(f)
         fluid.io.set_program_state(model.test_prog, load_dict)
 
-    elif status == "Infer":
+    elif status in ['Infer', 'Quant']:
         [prog, input_names, outputs] = fluid.io.load_inference_model(
             model_dir, model.exe, params_filename='__params__')
         model.test_prog = prog
