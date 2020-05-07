@@ -23,7 +23,7 @@ import cv2
 import paddle.fluid as fluid
 
 
-def human_seg_tracking(pre_gray, cur_gray, prev_cfd, dl_weights, disflow):
+def humanseg_tracking(pre_gray, cur_gray, prev_cfd, dl_weights, disflow):
     """计算光流跟踪匹配点和光流图
     输入参数:
         pre_gray: 上一帧灰度图
@@ -73,7 +73,7 @@ def human_seg_tracking(pre_gray, cur_gray, prev_cfd, dl_weights, disflow):
     return track_cfd, is_track, dl_weights
 
 
-def human_seg_track_fuse(track_cfd, dl_cfd, dl_weights, is_track):
+def humanseg_track_fuse(track_cfd, dl_cfd, dl_weights, is_track):
     """光流追踪图和人像分割结构融合
     输入参数:
         track_cfd: 光流追踪图
@@ -140,9 +140,9 @@ def optflow_handle(cur_gray, scoremap, is_init):
         fusion_cfd = cur_cfd
     else:
         weights = np.ones((width, height), np.float32) * 0.3
-        track_cfd, is_track, weights = human_seg_tracking(
+        track_cfd, is_track, weights = humanseg_tracking(
             prev_gray, cur_gray, prev_cfd, weights, disflow)
-        fusion_cfd = human_seg_track_fuse(track_cfd, cur_cfd, weights, is_track)
+        fusion_cfd = humanseg_track_fuse(track_cfd, cur_cfd, weights, is_track)
     fusion_cfd = cv2.GaussianBlur(fusion_cfd, (3, 3), 0)
     return fusion_cfd
 
