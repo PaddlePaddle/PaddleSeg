@@ -239,7 +239,7 @@ class SegModel(object):
         if self.status == 'Normal':
             fluid.save(self.train_prog, osp.join(save_dir, 'model'))
         elif self.status == 'Quant':
-            float_prog, int8_prog = slim.quant.convert(
+            float_prog, _ = slim.quant.convert(
                 self.test_prog, self.exe.place, save_int8=True)
             test_input_names = [
                 var.name for var in list(self.test_inputs.values())
@@ -252,13 +252,6 @@ class SegModel(object):
                 feeded_var_names=test_input_names,
                 target_vars=test_outputs,
                 main_program=float_prog)
-            fluid.io.save_inference_model(
-                dirname=save_dir,
-                executor=self.exe,
-                params_filename='__params__',
-                feeded_var_names=test_input_names,
-                target_vars=test_outputs,
-                main_program=int8_prog)
 
             model_info['_ModelInputsOutputs'] = dict()
             model_info['_ModelInputsOutputs']['test_inputs'] = [
@@ -417,10 +410,14 @@ class SegModel(object):
 
         # 进行量化
         if quant:
+            # 当 for_test=False ，返回类型为 fluid.CompiledProgram
+            # 当 for_test=True ，返回类型为 fluid.Program
             self.train_prog = slim.quant.quant_aware(
                 self.train_prog, self.exe.place, for_test=False)
             self.test_prog = slim.quant.quant_aware(
                 self.test_prog, self.exe.place, for_test=True)
+            # self.parallel_train_prog = self.train_prog.with_data_parallel(
+            #     loss_name=self.train_outputs['loss'].name)
             self.status = 'Quant'
 
         if self.begin_epoch >= num_epochs:
@@ -455,11 +452,17 @@ class SegModel(object):
                 build_strategy.sync_batch_norm = self.sync_bn
             exec_strategy = fluid.ExecutionStrategy()
             exec_strategy.num_iteration_per_drop_scope = 1
-            self.parallel_train_prog = fluid.CompiledProgram(
-                self.train_prog).with_data_parallel(
+            if quant:
+                self.parallel_train_prog = self.train_prog.with_data_parallel(
                     loss_name=self.train_outputs['loss'].name,
                     build_strategy=build_strategy,
                     exec_strategy=exec_strategy)
+            else:
+                self.parallel_train_prog = fluid.CompiledProgram(
+                    self.train_prog).with_data_parallel(
+                        loss_name=self.train_outputs['loss'].name,
+                        build_strategy=build_strategy,
+                        exec_strategy=exec_strategy)
 
         total_num_steps = math.floor(
             train_dataset.num_samples / train_batch_size)
