@@ -231,7 +231,7 @@ class HumanSeg:
         """
         im_mat = self.preprocess(image)
         im_tensor = fluid.core.PaddleTensor(im_mat.copy().astype('float32'))
-        output_data = self.predictor.run([im_tensor])[0]
+        output_data = self.predictor.run([im_tensor])[1]
         output_data = output_data.as_ndarray()
         return self.postprocess(image, output_data)
 
