@@ -42,16 +42,10 @@ def dict2str(dict_input):
     return out.strip(', ')
 
 
-class HumanSegMobile(object):
+class SegModel(object):
     # DeepLab mobilenet
     def __init__(self,
                  num_classes=2,
-                 backbone='MobileNetV2_x1.0',
-                 output_stride=16,
-                 aspp_with_sep_conv=True,
-                 decoder_use_sep_conv=True,
-                 encoder_with_aspp=False,
-                 enable_decoder=False,
                  use_bce_loss=False,
                  use_dice_loss=False,
                  class_weight=None,
@@ -62,19 +56,6 @@ class HumanSegMobile(object):
             raise ValueError(
                 "dice loss and bce loss is only applicable to binary classfication"
             )
-
-        self.output_stride = output_stride
-
-        if backbone not in [
-                'Xception65', 'Xception41', 'MobileNetV2_x0.25',
-                'MobileNetV2_x0.5', 'MobileNetV2_x1.0', 'MobileNetV2_x1.5',
-                'MobileNetV2_x2.0'
-        ]:
-            raise ValueError(
-                "backbone: {} is set wrong. it should be one of "
-                "('Xception65', 'Xception41', 'MobileNetV2_x0.25', 'MobileNetV2_x0.5',"
-                " 'MobileNetV2_x1.0', 'MobileNetV2_x1.5', 'MobileNetV2_x2.0')".
-                format(backbone))
 
         if class_weight is not None:
             if isinstance(class_weight, list):
@@ -91,16 +72,11 @@ class HumanSegMobile(object):
                     'Expect class_weight is a list or string but receive {}'.
                     format(type(class_weight)))
 
-        self.backbone = backbone
         self.num_classes = num_classes
         self.use_bce_loss = use_bce_loss
         self.use_dice_loss = use_dice_loss
         self.class_weight = class_weight
         self.ignore_index = ignore_index
-        self.aspp_with_sep_conv = aspp_with_sep_conv
-        self.decoder_use_sep_conv = decoder_use_sep_conv
-        self.encoder_with_aspp = encoder_with_aspp
-        self.enable_decoder = enable_decoder
         self.sync_bn = sync_bn
 
         self.labels = None
@@ -133,29 +109,7 @@ class HumanSegMobile(object):
 
     def build_net(self, mode='train'):
         """应根据不同的情况进行构建"""
-        model = HumanSeg.nets.DeepLabv3p(
-            self.num_classes,
-            mode=mode,
-            backbone=self.backbone,
-            output_stride=self.output_stride,
-            aspp_with_sep_conv=self.aspp_with_sep_conv,
-            decoder_use_sep_conv=self.decoder_use_sep_conv,
-            encoder_with_aspp=self.encoder_with_aspp,
-            enable_decoder=self.enable_decoder,
-            use_bce_loss=self.use_bce_loss,
-            use_dice_loss=self.use_dice_loss,
-            class_weight=self.class_weight,
-            ignore_index=self.ignore_index)
-        inputs = model.generate_inputs()
-        model_out = model.build_net(inputs)
-        outputs = OrderedDict()
-        if mode == 'train':
-            self.optimizer.minimize(model_out)
-            outputs['loss'] = model_out
-        else:
-            outputs['pred'] = model_out[0]
-            outputs['logit'] = model_out[1]
-        return inputs, outputs
+        pass
 
     def build_program(self):
         # build training network
@@ -648,62 +602,77 @@ class HumanSegMobile(object):
         return {'label_map': pred, 'score_map': logit}
 
 
-class HumanSegLite(HumanSegMobile):
-    # DeepLab ShuffleNet
+class HumanSegMobile(SegModel):
+    # DeepLab mobilenet
     def __init__(self,
                  num_classes=2,
+                 backbone='MobileNetV2_x1.0',
+                 output_stride=16,
+                 aspp_with_sep_conv=True,
+                 decoder_use_sep_conv=True,
+                 encoder_with_aspp=False,
+                 enable_decoder=False,
                  use_bce_loss=False,
                  use_dice_loss=False,
                  class_weight=None,
                  ignore_index=255,
                  sync_bn=True):
+        super().__init__(
+            num_classes=num_classes,
+            use_bce_loss=use_bce_loss,
+            use_dice_loss=use_dice_loss,
+            class_weight=class_weight,
+            ignore_index=ignore_index,
+            sync_bn=sync_bn)
         self.init_params = locals()
-        if num_classes > 2 and (use_bce_loss or use_dice_loss):
+
+        self.output_stride = output_stride
+
+        if backbone not in [
+                'MobileNetV2_x0.25', 'MobileNetV2_x0.5', 'MobileNetV2_x1.0',
+                'MobileNetV2_x1.5', 'MobileNetV2_x2.0'
+        ]:
             raise ValueError(
-                "dice loss and bce loss is only applicable to binary classfication"
-            )
+                "backbone: {} is set wrong. it should be one of "
+                "('MobileNetV2_x0.25', 'MobileNetV2_x0.5',"
+                " 'MobileNetV2_x1.0', 'MobileNetV2_x1.5', 'MobileNetV2_x2.0')".
+                format(backbone))
 
-        if class_weight is not None:
-            if isinstance(class_weight, list):
-                if len(class_weight) != num_classes:
-                    raise ValueError(
-                        "Length of class_weight should be equal to number of classes"
-                    )
-            elif isinstance(class_weight, str):
-                if class_weight.lower() != 'dynamic':
-                    raise ValueError(
-                        "if class_weight is string, must be dynamic!")
-            else:
-                raise TypeError(
-                    'Expect class_weight is a list or string but receive {}'.
-                    format(type(class_weight)))
-
-        self.num_classes = num_classes
-        self.use_bce_loss = use_bce_loss
-        self.use_dice_loss = use_dice_loss
-        self.class_weight = class_weight
-        self.ignore_index = ignore_index
+        self.backbone = backbone
+        self.aspp_with_sep_conv = aspp_with_sep_conv
+        self.decoder_use_sep_conv = decoder_use_sep_conv
+        self.encoder_with_aspp = encoder_with_aspp
+        self.enable_decoder = enable_decoder
         self.sync_bn = sync_bn
 
-        self.labels = None
-        self.version = HumanSeg.__version__
-        if HumanSeg.env_info['place'] == 'cpu':
-            self.places = fluid.cpu_places()
+    def build_net(self, mode='train'):
+        model = HumanSeg.nets.DeepLabv3p(
+            self.num_classes,
+            mode=mode,
+            backbone=self.backbone,
+            output_stride=self.output_stride,
+            aspp_with_sep_conv=self.aspp_with_sep_conv,
+            decoder_use_sep_conv=self.decoder_use_sep_conv,
+            encoder_with_aspp=self.encoder_with_aspp,
+            enable_decoder=self.enable_decoder,
+            use_bce_loss=self.use_bce_loss,
+            use_dice_loss=self.use_dice_loss,
+            class_weight=self.class_weight,
+            ignore_index=self.ignore_index)
+        inputs = model.generate_inputs()
+        model_out = model.build_net(inputs)
+        outputs = OrderedDict()
+        if mode == 'train':
+            self.optimizer.minimize(model_out)
+            outputs['loss'] = model_out
         else:
-            self.places = fluid.cuda_places()
-        self.exe = fluid.Executor(self.places[0])
-        self.train_prog = None
-        self.test_prog = None
-        self.parallel_train_prog = None
-        self.train_inputs = None
-        self.test_inputs = None
-        self.train_outputs = None
-        self.test_outputs = None
-        self.train_data_loader = None
-        self.eval_metrics = None
-        # 当前模型状态
-        self.status = 'Normal'
+            outputs['pred'] = model_out[0]
+            outputs['logit'] = model_out[1]
+        return inputs, outputs
 
+
+class HumanSegLite(SegModel):
+    # DeepLab ShuffleNet
     def build_net(self, mode='train'):
         """应根据不同的情况进行构建"""
         model = HumanSeg.nets.ShuffleSeg(
@@ -725,7 +694,7 @@ class HumanSegLite(HumanSegMobile):
         return inputs, outputs
 
 
-class HumanSegServer(HumanSegMobile):
+class HumanSegServer(SegModel):
     # DeepLab Xception
     def __init__(self,
                  num_classes=2,
@@ -740,73 +709,55 @@ class HumanSegServer(HumanSegMobile):
                  class_weight=None,
                  ignore_index=255,
                  sync_bn=True):
+        super().__init__(
+            num_classes=num_classes,
+            use_bce_loss=use_bce_loss,
+            use_dice_loss=use_dice_loss,
+            class_weight=class_weight,
+            ignore_index=ignore_index,
+            sync_bn=sync_bn)
         self.init_params = locals()
-        if num_classes > 2 and (use_bce_loss or use_dice_loss):
-            raise ValueError(
-                "dice loss and bce loss is only applicable to binary classfication"
-            )
 
         self.output_stride = output_stride
 
-        if backbone not in [
-                'Xception65', 'Xception41', 'MobileNetV2_x0.25',
-                'MobileNetV2_x0.5', 'MobileNetV2_x1.0', 'MobileNetV2_x1.5',
-                'MobileNetV2_x2.0'
-        ]:
-            raise ValueError(
-                "backbone: {} is set wrong. it should be one of "
-                "('Xception65', 'Xception41', 'MobileNetV2_x0.25', 'MobileNetV2_x0.5',"
-                " 'MobileNetV2_x1.0', 'MobileNetV2_x1.5', 'MobileNetV2_x2.0')".
-                format(backbone))
-
-        if class_weight is not None:
-            if isinstance(class_weight, list):
-                if len(class_weight) != num_classes:
-                    raise ValueError(
-                        "Length of class_weight should be equal to number of classes"
-                    )
-            elif isinstance(class_weight, str):
-                if class_weight.lower() != 'dynamic':
-                    raise ValueError(
-                        "if class_weight is string, must be dynamic!")
-            else:
-                raise TypeError(
-                    'Expect class_weight is a list or string but receive {}'.
-                    format(type(class_weight)))
+        if backbone not in ['Xception65', 'Xception41']:
+            raise ValueError("backbone: {} is set wrong. it should be one of "
+                             "('Xception65', 'Xception41')".format(backbone))
 
         self.backbone = backbone
-        self.num_classes = num_classes
-        self.use_bce_loss = use_bce_loss
-        self.use_dice_loss = use_dice_loss
-        self.class_weight = class_weight
-        self.ignore_index = ignore_index
         self.aspp_with_sep_conv = aspp_with_sep_conv
         self.decoder_use_sep_conv = decoder_use_sep_conv
         self.encoder_with_aspp = encoder_with_aspp
         self.enable_decoder = enable_decoder
         self.sync_bn = sync_bn
 
-        self.labels = None
-        self.version = HumanSeg.__version__
-        if HumanSeg.env_info['place'] == 'cpu':
-            self.places = fluid.cpu_places()
+    def build_net(self, mode='train'):
+        model = HumanSeg.nets.DeepLabv3p(
+            self.num_classes,
+            mode=mode,
+            backbone=self.backbone,
+            output_stride=self.output_stride,
+            aspp_with_sep_conv=self.aspp_with_sep_conv,
+            decoder_use_sep_conv=self.decoder_use_sep_conv,
+            encoder_with_aspp=self.encoder_with_aspp,
+            enable_decoder=self.enable_decoder,
+            use_bce_loss=self.use_bce_loss,
+            use_dice_loss=self.use_dice_loss,
+            class_weight=self.class_weight,
+            ignore_index=self.ignore_index)
+        inputs = model.generate_inputs()
+        model_out = model.build_net(inputs)
+        outputs = OrderedDict()
+        if mode == 'train':
+            self.optimizer.minimize(model_out)
+            outputs['loss'] = model_out
         else:
-            self.places = fluid.cuda_places()
-        self.exe = fluid.Executor(self.places[0])
-        self.train_prog = None
-        self.test_prog = None
-        self.parallel_train_prog = None
-        self.train_inputs = None
-        self.test_inputs = None
-        self.train_outputs = None
-        self.test_outputs = None
-        self.train_data_loader = None
-        self.eval_metrics = None
-        # 当前模型状态
-        self.status = 'Normal'
+            outputs['pred'] = model_out[0]
+            outputs['logit'] = model_out[1]
+        return inputs, outputs
 
 
-class HRNet(HumanSegMobile):
+class HRNet(SegModel):
     def __init__(self,
                  num_classes=2,
                  stage1_num_modules=1,
@@ -826,33 +777,15 @@ class HRNet(HumanSegMobile):
                  class_weight=None,
                  ignore_index=255,
                  sync_bn=True):
+        super().__init__(
+            num_classes=num_classes,
+            use_bce_loss=use_bce_loss,
+            use_dice_loss=use_dice_loss,
+            class_weight=class_weight,
+            ignore_index=ignore_index,
+            sync_bn=sync_bn)
         self.init_params = locals()
-        if num_classes > 2 and (use_bce_loss or use_dice_loss):
-            raise ValueError(
-                "dice loss and bce loss is only applicable to binary classfication"
-            )
 
-        if class_weight is not None:
-            if isinstance(class_weight, list):
-                if len(class_weight) != num_classes:
-                    raise ValueError(
-                        "Length of class_weight should be equal to number of classes"
-                    )
-            elif isinstance(class_weight, str):
-                if class_weight.lower() != 'dynamic':
-                    raise ValueError(
-                        "if class_weight is string, must be dynamic!")
-            else:
-                raise TypeError(
-                    'Expect class_weight is a list or string but receive {}'.
-                    format(type(class_weight)))
-
-        self.num_classes = num_classes
-        self.use_bce_loss = use_bce_loss
-        self.use_dice_loss = use_dice_loss
-        self.class_weight = class_weight
-        self.ignore_index = ignore_index
-        self.sync_bn = sync_bn
         self.stage1_num_modules = stage1_num_modules
         self.stage1_num_blocks = stage1_num_blocks
         self.stage1_num_channels = stage1_num_channels
@@ -865,25 +798,6 @@ class HRNet(HumanSegMobile):
         self.stage4_num_modules = stage4_num_modules
         self.stage4_num_blocks = stage4_num_blocks
         self.stage4_num_channels = stage4_num_channels
-
-        self.labels = None
-        self.version = HumanSeg.__version__
-        if HumanSeg.env_info['place'] == 'cpu':
-            self.places = fluid.cpu_places()
-        else:
-            self.places = fluid.cuda_places()
-        self.exe = fluid.Executor(self.places[0])
-        self.train_prog = None
-        self.test_prog = None
-        self.parallel_train_prog = None
-        self.train_inputs = None
-        self.test_inputs = None
-        self.train_outputs = None
-        self.test_outputs = None
-        self.train_data_loader = None
-        self.eval_metrics = None
-        # 当前模型状态
-        self.status = 'Normal'
 
     def build_net(self, mode='train'):
         """应根据不同的情况进行构建"""
