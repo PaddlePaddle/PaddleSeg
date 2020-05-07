@@ -18,12 +18,10 @@ import numpy as np
 from PIL import Image, ImageEnhance
 
 
-def normalize(im, max_value):
+def normalize(im, max_value, mean, std):
+    # Rescaling (min-max normalization)
     im = im.astype(np.float32, copy=False) / max_value
-    return im
-
-
-def standardize(im, mean, std):
+    # Standardization (Z-score Normalization)
     im -= mean
     im /= std
     return im
