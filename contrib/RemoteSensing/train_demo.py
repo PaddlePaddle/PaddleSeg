@@ -59,15 +59,12 @@ train_transforms = T.Compose([
     T.RandomVerticalFlip(0.5),
     T.RandomHorizontalFlip(0.5),
     T.ResizeStepScaling(0.5, 2.0, 0.25),
-    T.RandomPaddingCrop(769),
-    T.Clip(min_val=0, max_val=3400),
-    T.Normalize(max_val=3400, mean=[0.5] * channel, std=[0.5] * channel),
+    T.RandomPaddingCrop(256),
+    T.Normalize(max_val=255, mean=[0.5] * channel, std=[0.5] * channel),
 ])
 
 eval_transforms = T.Compose([
-    T.Padding([1049, 1049]),
-    T.Clip(min_val=0, max_val=3400),
-    T.Normalize(max_val=3400, mean=[0.5] * channel, std=[0.5] * channel),
+    T.Normalize(max_val=255, mean=[0.5] * channel, std=[0.5] * channel),
 ])
 
 train_list = osp.join(data_dir, 'train.txt')

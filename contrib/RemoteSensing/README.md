@@ -76,10 +76,12 @@ labelB
 
 ## 快速上手
 
-本章节展示了如何通过RemoteSensing进行训练预测。
+本章节在一个小数据集上展示了如何通过RemoteSensing进行训练预测。
 
 ### 1. 准备数据集
-您需要将自己的数据按照上述的数据协议进行格式转换，可分别使用numpy和pil库保存遥感数据和标注图片。其中numpy api示例如下：
+为了快速体验，我们准备了一个小型demo数据集，已位于`RemoteSensing/dataset/demo/`目录下.
+
+对于您自己的数据集，您需要按照上述的数据协议进行格式转换，可分别使用numpy和pil库保存遥感数据和标注图片。其中numpy api示例如下：
 ```python
 import numpy as np
 
@@ -99,21 +101,18 @@ from RemoteSensing.readers.reader import Reader
 from RemoteSensing.models import UNet
 ```
 
-> 定义训练和验证时的数据处理流程, 在`train_transforms`中加入了`RandomVerticalFlip`,`RandomHorizontalFlip`等数据增强方式。
+> 定义训练和验证时的数据处理和增强流程, 在`train_transforms`中加入了`RandomVerticalFlip`,`RandomHorizontalFlip`等数据增强方式。
 ```python
 train_transforms = T.Compose([
     T.RandomVerticalFlip(0.5),
     T.RandomHorizontalFlip(0.5),
     T.ResizeStepScaling(0.5, 2.0, 0.25),
-    T.RandomPaddingCrop(769),
-    T.Clip(min_val=0, max_val=3400),
-    T.Normalize(max_val=3400, mean=[0.5] * channel, std=[0.5] * channel),
+    T.RandomPaddingCrop(256),
+    T.Normalize(max_val=255, mean=[0.5] * channel, std=[0.5] * channel),
 ])
 
 eval_transforms = T.Compose([
-    T.Padding([1049, 1049]),
-    T.Clip(min_val=0, max_val=3400),
-    T.Normalize(max_val=3400, mean=[0.5] * channel, std=[0.5] * channel),
+    T.Normalize(max_val=255, mean=[0.5] * channel, std=[0.5] * channel),
 ])
 ```
 
@@ -176,7 +175,7 @@ export CUDA_VISIBLE_DEVICES=0
 ```
 > 在RemoteSensing目录下运行`train_demo.py`即可开始训练。
 ```shell script
-python train_demo.py --data_dir '/your/data/dir/' --save_dir 'saved_model/unet/' --channel 10
+python train_demo.py --data_dir dataset/demo/ --save_dir saved_model/unet/ --channel 3 --num_epochs 20
 ```
 ### 4. 模型预测代码开发
 通过如下`predict_demo.py`代码进行预测。
@@ -227,7 +226,7 @@ export CUDA_VISIBLE_DEVICES=0
 ```
 > 在RemoteSensing目录下运行`predict_demo.py`即可开始训练。
 ```shell script
-python predict_demo.py --data_dir '/your/data/dir/' --load_model_dir 'saved_model/unet/'
+python predict_demo.py --data_dir dataset/demo/ --load_model_dir saved_model/unet/
 ```
 
 
