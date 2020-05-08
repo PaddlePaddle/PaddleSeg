@@ -17,7 +17,7 @@ from . import nets
 from . import models
 from . import datasets
 from . import transforms
-from .utils.utils import get_environ_info
+from .utils import get_environ_info
 
 env_info = get_environ_info()
 
