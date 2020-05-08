@@ -456,6 +456,8 @@ class SegModel(object):
             exec_strategy = fluid.ExecutionStrategy()
             exec_strategy.num_iteration_per_drop_scope = 1
             if quant:
+                build_strategy.fuse_all_reduce_ops = False
+                build_strategy.sync_batch_norm = False
                 self.parallel_train_prog = self.train_prog.with_data_parallel(
                     loss_name=self.train_outputs['loss'].name,
                     build_strategy=build_strategy,
@@ -660,13 +662,17 @@ class SegModel(object):
     def predict(self, im_file, transforms=None):
         """预测。
         Args:
-            img_file(str): 预测图像路径。
+            img_file(str|np.ndarray): 预测图像。
             transforms(paddlex.cv.transforms): 数据预处理操作。
 
         Returns:
             dict: 包含关键字'label_map'和'score_map', 'label_map'存储预测结果灰度图，
                 像素值表示对应的类别，'score_map'存储各类别的概率，shape=(h, w, num_classes)
         """
+        if isinstance(im_file, str):
+            if not osp.exists(im_file):
+                raise ValueError(
+                    'The Image file does not exist: {}'.format(im_file))
 
         if transforms is None and not hasattr(self, 'test_transforms'):
             raise Exception("transforms need to be defined, now is None.")
