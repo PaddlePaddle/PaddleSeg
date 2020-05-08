@@ -1,5 +1,7 @@
 import HumanSeg
+from HumanSeg.utils import visualize
 
-im_file = '/ssd1/chenguowei01/dataset/humanseg/supervise.ly/images/8d308c9cc0326a3bdfc90f7f6e1813df89786122.jpg'
+im_file = '/ssd1/chenguowei01/dataset/humanseg/supervise.ly/pexel/img/person_detection__ds6/img/pexels-photo-704264.jpg'
 model = HumanSeg.models.load_model('output/best_model')
 result = model.predict(im_file)
+visualize(im_file, result, save_dir='output/')

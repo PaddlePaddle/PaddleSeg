@@ -49,9 +49,3 @@ model.train(
     save_dir='output',
     use_vdl=True,
 )
-
-model.evaluate(eval_dataset, batch_size=10)
-im_file = '/ssd1/chenguowei01/dataset/humanseg/supervise.ly/images/8d308c9cc0326a3bdfc90f7f6e1813df89786122.jpg'
-result = model.predict(im_file)
-import cv2
-cv2.imwrite('pred.png', result['label_map'] * 200)
