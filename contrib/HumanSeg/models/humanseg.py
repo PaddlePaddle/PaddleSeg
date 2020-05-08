@@ -284,7 +284,8 @@ class SegModel(object):
                           learning_rate,
                           num_epochs,
                           num_steps_each_epoch,
-                          lr_decay_power=0.9):
+                          lr_decay_power=0.9,
+                          regularization_coeff=4e-5):
         decay_step = num_epochs * num_steps_each_epoch
         lr_decay = fluid.layers.polynomial_decay(
             learning_rate,
@@ -295,7 +296,7 @@ class SegModel(object):
             lr_decay,
             momentum=0.9,
             regularization=fluid.regularizer.L2Decay(
-                regularization_coeff=4e-05))
+                regularization_coeff=regularization_coeff))
         return optimizer
 
     def train(self,
@@ -311,6 +312,7 @@ class SegModel(object):
               optimizer=None,
               learning_rate=0.01,
               lr_decay_power=0.9,
+              regularization_coeff=4e-5,
               use_vdl=False):
         self.labels = train_dataset.labels
         self.train_transforms = train_dataset.transforms
@@ -323,19 +325,20 @@ class SegModel(object):
                 learning_rate=learning_rate,
                 num_epochs=num_epochs,
                 num_steps_each_epoch=num_steps_each_epoch,
-                lr_decay_power=lr_decay_power)
+                lr_decay_power=lr_decay_power,
+                regularization_coeff=regularization_coeff)
         self.optimizer = optimizer
         self.build_program()
         self.net_initialize(
             startup_prog=fluid.default_startup_program(),
             pretrain_weights=pretrain_weights,
             resume_weights=resume_weights)
-        '''
+
         if self.begin_epoch >= num_epochs:
             raise ValueError(
                 ("begin epoch[{}] is larger than num_epochs[{}]").format(
                     self.begin_epoch, num_epochs))
-        '''
+
         if not osp.isdir(save_dir):
             if osp.exists(save_dir):
                 os.remove(save_dir)
