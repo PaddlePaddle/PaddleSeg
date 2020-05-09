@@ -27,7 +27,7 @@ def parse_args():
     parser.add_argument(
         '--save_dir',
         dest='save_dir',
-        help='the directory for saveing the inferenc results',
+        help='the directory for saveing the inference results',
         type=str,
         default='./result')
     return parser.parse_args()

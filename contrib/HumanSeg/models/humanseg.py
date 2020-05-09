@@ -309,7 +309,7 @@ class SegModel(object):
                            save_dir,
                            batch_size=1,
                            batch_nums=10,
-                           cache_dir="./temp"):
+                           cache_dir="./.temp"):
         self.arrange_transform(transforms=dataset.transforms, mode='quant')
         dataset.num_samples = batch_size * batch_nums
         try:
@@ -337,6 +337,8 @@ class SegModel(object):
             cache_dir=cache_dir)
         post_training_quantization.quantize()
         post_training_quantization.save_quantized_model(save_dir)
+        if cache_dir is not None:
+            os.system('rm -r' + cache_dir)
         model_info = self.get_model_info()
         model_info['status'] = 'Quant'
 
@@ -798,17 +800,17 @@ class HumanSegMobile(SegModel):
     def __init__(self,
                  num_classes=2,
                  stage1_num_modules=1,
-                 stage1_num_blocks=[4],
-                 stage1_num_channels=[64],
+                 stage1_num_blocks=[2],
+                 stage1_num_channels=[32],
                  stage2_num_modules=1,
-                 stage2_num_blocks=[4, 4],
-                 stage2_num_channels=[18, 36],
-                 stage3_num_modules=4,
-                 stage3_num_blocks=[4, 4, 4],
-                 stage3_num_channels=[18, 36, 72],
-                 stage4_num_modules=3,
-                 stage4_num_blocks=[4, 4, 4, 4],
-                 stage4_num_channels=[18, 36, 72, 144],
+                 stage2_num_blocks=[2, 2],
+                 stage2_num_channels=[16, 32],
+                 stage3_num_modules=1,
+                 stage3_num_blocks=[2, 2, 2],
+                 stage3_num_channels=[16, 32, 64],
+                 stage4_num_modules=1,
+                 stage4_num_blocks=[2, 2, 2, 2],
+                 stage4_num_channels=[16, 32, 64, 128],
                  use_bce_loss=False,
                  use_dice_loss=False,
                  class_weight=None,
@@ -867,3 +869,36 @@ class HumanSegMobile(SegModel):
             outputs['pred'] = model_out[0]
             outputs['logit'] = model_out[1]
         return inputs, outputs
+
+    def train(self,
+              num_epochs,
+              train_dataset,
+              train_batch_size=2,
+              eval_dataset=None,
+              save_interval_epochs=1,
+              log_interval_steps=2,
+              save_dir='output',
+              pretrain_weights=None,
+              resume_weights=None,
+              optimizer=None,
+              learning_rate=0.01,
+              lr_decay_power=0.9,
+              regularization_coeff=5e-4,
+              use_vdl=False,
+              quant=False):
+        super().train(
+            num_epochs=num_epochs,
+            train_dataset=train_dataset,
+            train_batch_size=train_batch_size,
+            eval_dataset=eval_dataset,
+            save_interval_epochs=save_interval_epochs,
+            log_interval_steps=log_interval_steps,
+            save_dir=save_dir,
+            pretrain_weights=pretrain_weights,
+            resume_weights=resume_weights,
+            optimizer=optimizer,
+            learning_rate=learning_rate,
+            lr_decay_power=lr_decay_power,
+            regularization_coeff=regularization_coeff,
+            use_vdl=use_vdl,
+            quant=quant)
