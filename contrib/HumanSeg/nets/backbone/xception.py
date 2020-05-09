@@ -18,10 +18,10 @@ from __future__ import division
 from __future__ import print_function
 import math
 import paddle.fluid as fluid
-from HumanSeg.nets.libs import scope, name_scope
-from HumanSeg.nets.libs import bn, bn_relu, relu
-from HumanSeg.nets.libs import conv
-from HumanSeg.nets.libs import separate_conv
+from nets.libs import scope, name_scope
+from nets.libs import bn, bn_relu, relu
+from nets.libs import conv
+from nets.libs import separate_conv
 
 __all__ = ['xception_65', 'xception_41', 'xception_71']
 

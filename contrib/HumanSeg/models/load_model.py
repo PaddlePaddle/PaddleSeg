@@ -18,8 +18,8 @@ import six
 import copy
 from collections import OrderedDict
 import paddle.fluid as fluid
-import HumanSeg
-import HumanSeg.utils.logging as logging
+import utils.logging as logging
+import models
 
 
 def load_model(model_dir):
@@ -29,10 +29,10 @@ def load_model(model_dir):
         info = yaml.load(f.read(), Loader=yaml.Loader)
     status = info['status']
 
-    if not hasattr(HumanSeg.models, info['Model']):
+    if not hasattr(models, info['Model']):
         raise Exception("There's no attribute {} in HumanSeg.models".format(
             info['Model']))
-    model = getattr(HumanSeg.models, info['Model'])(**info['_init_params'])
+    model = getattr(models, info['Model'])(**info['_init_params'])
     if status == "Normal":
         startup_prog = fluid.Program()
         model.test_prog = fluid.Program()
@@ -73,7 +73,7 @@ def load_model(model_dir):
 
 
 def build_transforms(transforms_info):
-    import HumanSeg.transforms as T
+    import transforms as T
     transforms = list()
     for op_info in transforms_info:
         op_name = list(op_info.keys())[0]

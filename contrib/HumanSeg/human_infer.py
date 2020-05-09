@@ -5,7 +5,8 @@ import cv2
 import numpy as np
 import tqdm
 
-import HumanSeg
+import utils
+import models
 
 
 def parse_args():
@@ -39,7 +40,7 @@ def mkdir(path):
 
 
 def process(args):
-    model = HumanSeg.models.load_model(args.test_model)
+    model = models.load_model(args.test_model)
     added_saveed_path = osp.join(args.save_dir, 'added')
     mat_saved_path = osp.join(args.save_dir, 'mat')
     scoremap_saved_path = osp.join(args.save_dir, 'scoremap')
@@ -54,7 +55,7 @@ def process(args):
         result = model.predict(im)
 
         # save added image
-        added_image = HumanSeg.utils.visualize(im_file, result, weight=0.6)
+        added_image = utils.visualize(im_file, result, weight=0.6)
         added_image_file = osp.join(added_saveed_path, file)
         mkdir(added_image_file)
         cv2.imwrite(added_image_file, added_image)
