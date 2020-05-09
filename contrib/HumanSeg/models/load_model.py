@@ -30,7 +30,7 @@ def load_model(model_dir):
     status = info['status']
 
     if not hasattr(models, info['Model']):
-        raise Exception("There's no attribute {} in HumanSeg.models".format(
+        raise Exception("There's no attribute {} in models".format(
             info['Model']))
     model = getattr(models, info['Model'])(**info['_init_params'])
     if status == "Normal":
