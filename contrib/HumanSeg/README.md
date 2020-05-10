@@ -3,7 +3,7 @@
 本教程旨在通过paddlepaddle框架实现人像分割从训练到部署的流程。
 
 HumanSeg从复杂到简单提供三种人像分割模型：HumanSegServer、HumanSegMobile、HumanSegLite,
-HumanSegServer适应于服务端，HumanSegMobile和HumanSegLite适用于移动端。
+HumanSegServer适用于服务端，HumanSegMobile和HumanSegLite适用于移动端。
 
 ## 环境依赖
 
@@ -128,6 +128,8 @@ python quant_online.py --model_type HumanSegMobile \
 --val_list data/mini_supervisely/val.txt \
 --pretrained_weights output/best_model \
 --batch_size 2 \
+--learning_rate 0.001 \
+--num_epochs 2 \
 --save_interval_epochs 1
 ```
 其中参数含义如下：
