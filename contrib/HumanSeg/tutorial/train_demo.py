@@ -43,9 +43,9 @@ model.train(
     train_dataset=train_dataset,
     eval_dataset=eval_dataset,
     save_interval_epochs=5,
-    train_batch_size=256,
+    train_batch_size=32,
     # resume_weights='/Users/chenguowei01/PycharmProjects/github/PaddleSeg/contrib/HumanSeg/output/epoch_20',
-    log_interval_steps=2,
+    log_interval_steps=10,
     save_dir='output',
     use_vdl=True,
 )
