@@ -181,7 +181,7 @@ def load_pdparams(exe, main_prog, model_dir):
             len(vars_to_load), model_dir))
 
 
-def load_pretrain_weights(exe, main_prog, weights_dir, fuse_bn=False):
+def load_pretrained_weights(exe, main_prog, weights_dir, fuse_bn=False):
     if not osp.exists(weights_dir):
         raise Exception("Path {} not exists.".format(weights_dir))
     if osp.exists(osp.join(weights_dir, "model.pdparams")):

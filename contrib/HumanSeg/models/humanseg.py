@@ -151,7 +151,7 @@ class SegModel(object):
 
     def net_initialize(self,
                        startup_prog=None,
-                       pretrain_weights=None,
+                       pretrained_weights=None,
                        resume_weights=None):
         if startup_prog is None:
             startup_prog = fluid.default_startup_program()
@@ -174,11 +174,11 @@ class SegModel(object):
                 raise ValueError("Resume model path is not valid!")
             logging.info("Model checkpoint loaded successfully!")
 
-        elif pretrain_weights is not None:
+        elif pretrained_weights is not None:
             logging.info(
-                "Load pretrain weights from {}.".format(pretrain_weights))
-            utils.load_pretrain_weights(self.exe, self.train_prog,
-                                        pretrain_weights)
+                "Load pretrain weights from {}.".format(pretrained_weights))
+            utils.load_pretrained_weights(self.exe, self.train_prog,
+                                          pretrained_weights)
 
     def get_model_info(self):
         # 存储相应的信息到yml文件
@@ -389,7 +389,7 @@ class SegModel(object):
               save_interval_epochs=1,
               log_interval_steps=2,
               save_dir='output',
-              pretrain_weights=None,
+              pretrained_weights=None,
               resume_weights=None,
               optimizer=None,
               learning_rate=0.01,
@@ -414,7 +414,7 @@ class SegModel(object):
         self.build_program()
         self.net_initialize(
             startup_prog=fluid.default_startup_program(),
-            pretrain_weights=pretrain_weights,
+            pretrained_weights=pretrained_weights,
             resume_weights=resume_weights)
 
         # 进行量化
@@ -880,7 +880,7 @@ class HumanSegMobile(SegModel):
               save_interval_epochs=1,
               log_interval_steps=2,
               save_dir='output',
-              pretrain_weights=None,
+              pretrained_weights=None,
               resume_weights=None,
               optimizer=None,
               learning_rate=0.01,
@@ -896,7 +896,7 @@ class HumanSegMobile(SegModel):
             save_interval_epochs=save_interval_epochs,
             log_interval_steps=log_interval_steps,
             save_dir=save_dir,
-            pretrain_weights=pretrain_weights,
+            pretrained_weights=pretrained_weights,
             resume_weights=resume_weights,
             optimizer=optimizer,
             learning_rate=learning_rate,

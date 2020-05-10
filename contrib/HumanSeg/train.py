@@ -62,9 +62,9 @@ def parse_args():
         type=float,
         default=0.01)
     parser.add_argument(
-        '--pretrain_weights',
-        dest='pretrain_weights',
-        help='The path of pretrian weight',
+        '--pretrained_weights',
+        dest='pretrained_weights',
+        help='The path of pretrianed weight',
         type=str,
         default=None)
     parser.add_argument(
@@ -129,7 +129,7 @@ def train(args):
         eval_dataset=eval_dataset,
         save_interval_epochs=args.save_interval_epochs,
         save_dir=args.save_dir,
-        pretrain_weights=args.pretrain_weights,
+        pretrained_weights=args.pretrained_weights,
         resume_weights=args.resume_weights,
         learning_rate=args.learning_rate,
         use_vdl=args.use_vdl)
