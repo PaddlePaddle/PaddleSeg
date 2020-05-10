@@ -228,6 +228,8 @@ class SegModel(object):
                 del self.train_init['train_dataset']
             if 'eval_dataset' in self.train_init:
                 del self.train_init['eval_dataset']
+            if 'optimizer' in self.train_init:
+                del self.train_init['optimizer']
             info['train_init'] = self.train_init
         return info
 
