@@ -62,8 +62,8 @@ def parse_args():
         type=float,
         default=0.001)
     parser.add_argument(
-        '--pretrain_weights',
-        dest='pretrain_weights',
+        '--pretrained_weights',
+        dest='pretrained_weights',
         help='The model path for quant',
         type=str,
         default=None)
@@ -117,7 +117,7 @@ def train(args):
         eval_dataset=eval_dataset,
         save_interval_epochs=args.save_interval_epochs,
         save_dir=args.save_dir,
-        pretrain_weights=args.pretrain_weights,
+        pretrained_weights=args.pretrained_weights,
         learning_rate=args.learning_rate,
         quant=True)
 
