@@ -1,59 +1,59 @@
-# HumanSeg
+# HumanSeg人像分割模型
 
-本教程旨在通过paddlepaddle框架实现人像分割从训练到部署的流程。
+本教程基于PaddleSeg核心分割网络框架，提供针对人像分割场景从预训练模型、Fine-tune、视频分割预测部署的全流程应用指南。
 
-HumanSeg从复杂到简单提供三种人像分割模型：HumanSegServer、HumanSegMobile、HumanSegLite,
+HumanSeg提供三个人像分割模型系列：分别是HumanSeg-server、HumanSeg-mobile、HumanSeg-lite,适用于不同的算力场景
 HumanSegServer适用于服务端，HumanSegMobile和HumanSegLite适用于移动端。
 
 ## 环境依赖
 
-* PaddlePaddle >= 1.7.0 或develop版本
-* Python 3.5+
+* Python == 3.5/3.6/3.7
+* PaddlePaddle >= 1.7.2
+
+PaddlePaddle的快速安装可参考[飞桨快速安装](https://www.paddlepaddle.org.cn/install/quick)
 
 通过以下命令安装python包依赖，请确保在该分支上至少执行过一次以下命令
 ```shell
 $ pip install -r requirements.txt
 ```
 
-## 模型
-| 模型类型 | 预训练模型 | 导出模型 | 量化模型 | 说明 |
+
+## 预训练模型
+| 模型类型 | Checkpoint | Inference Model | Quant Inference Model | 说明 |
 | --- | --- | --- | --- | --- |
-| HumanSegServer | [humanseg_server](https://paddleseg.bj.bcebos.com/humanseg/models/humanseg_server.zip) | [humanseg_server_export](https://paddleseg.bj.bcebos.com/humanseg/models/humanseg_server_export.zip) | [humanseg_server_quant](https://paddleseg.bj.bcebos.com/humanseg/models/humanseg_server_quant.zip) | 服务端GPU环境  |
-| HumanSegMobile | [humanseg_mobile](https://paddleseg.bj.bcebos.com/humanseg/models/humanseg_mobile.zip) | [humanseg_mobile_export](https://paddleseg.bj.bcebos.com/humanseg/models/humanseg_mobile_export.zip) | [humanseg_mobile_quant](https://paddleseg.bj.bcebos.com/humanseg/models/humanseg_mobile_quant.zip) | 小模型, 适合轻量级计算环境 |
-| HumanSegLite | [humanseg_lite](https://paddleseg.bj.bcebos.com/humanseg/models/humanseg_lite.zip) | [humanseg_lite_export](https://paddleseg.bj.bcebos.com/humanseg/models/humanseg_lite_export.zip) |  [humanseg_lite_quant](https://paddleseg.bj.bcebos.com/humanseg/models/humanseg_lite_quant.zip) | 小模型, 适合轻量级计算环境 |
+| HumanSeg-server | [humanseg_server_ckpt](https://paddleseg.bj.bcebos.com/humanseg/models/humanseg_server.zip) | [humanseg_server_infernce](https://paddleseg.bj.bcebos.com/humanseg/models/humanseg_server_export.zip) | [humanseg_server_quant](https://paddleseg.bj.bcebos.com/humanseg/models/humanseg_server_quant.zip) | 服务端GPU环境  |
+| HumanSeg-mobile | [humanseg_mobile](https://paddleseg.bj.bcebos.com/humanseg/models/humanseg_mobile.zip) | [humanseg_mobile_infernce](https://paddleseg.bj.bcebos.com/humanseg/models/humanseg_mobile_export.zip) | [humanseg_mobile_quant](https://paddleseg.bj.bcebos.com/humanseg/models/humanseg_mobile_quant.zip) |轻量级模型, 适合移动端或CPU计算场景 |
+| HumanSeg-lite | [humanseg_lite](https://paddleseg.bj.bcebos.com/humanseg/models/humanseg_lite.zip) | [humanseg_lite_infernce](https://paddleseg.bj.bcebos.com/humanseg/models/humanseg_lite_export.zip) |  [humanseg_lite_quant](https://paddleseg.bj.bcebos.com/humanseg/models/humanseg_lite_quant.zip) | 轻量级模型, 适合移动端且有实时计算需求场景 |
 
-## 指定运行设备
+**NOTE:**
+其中Checkpoint为模型权重，用于Fine-tuning场景。
+Inference Model和Quant Inference Model为预测部署模型，包含`__model__`计算图结构、`__params__`模型参数和`model.yaml`基础的模型配置信息。
+其中Inference Model适用于服务端的CPU和GPU预测场景，Qunat Inference Model为的量化版本，适用于通过Paddle Lite进行移动端等端侧设备部署。更多Paddle Lite部署说明查看[Paddle Lite文档](https://paddle-lite.readthedocs.io/zh/latest/)
+
+执行以下脚本进行HumanSeg预训练模型的下载
 ```bash
-export CUDA_VISIBLE_DEVICES=0
+python pretrained_weights/download_pretrained_weights.py
 ```
-当CUDA_VISIBLE_DEVICES变量有效时，使用相应的显卡进行计算，无效时使用CPU进行计算
 
-## 准备训练数据
-我们提供了一份demo数据集，通过运行以下代码进行下载，该数据集是从supervise.ly抽取的一个小数据集。
+## 下载测试数据
+我们提供了一份[supervise.ly](https://supervise.ly/)发布人像分割数据集**Supervisely Persons**,从中随机抽取一小部分并转化成PaddleSeg可直接加载数据格式。通过运行以下代码进行快速下载。
 
 ```bash
 python data/download_data.py
 ```
 
-## 下载预训练模型
-运行以下代码进行预训练模型的下载
+## 视频流分割快速体验
 ```bash
-python pretrained_weights/download_pretrained_weights.py
-```
-
-## 视频流分割
-```bash
-# 打开摄像头进行预测
+# 通过电脑摄像头进行实时分割处理
 python video_infer.py --model_dir pretrained_weights/humanseg_lite_epxort
 
-# 对视频进行预测
+# 对人像视频进行分割处理
 python video_infer.py --model_dir pretrained_weights/humanseg_lite_epxort \
 ----video_path data/video_test.mp4
-
 ```
 
 ## 训练
-使用下述命令进行训练
+使用下述命令基于与训练模型进行Fine-tuning，请确保选用的模型结构`model_type`与模型参数`pretrained_weights`匹配。
 ```bash
 python train.py --model_type HumanSegMobile \
 --save_dir output/ \
@@ -64,7 +64,6 @@ python train.py --model_type HumanSegMobile \
 --batch_size 8 \
 --learning_rate 0.001 \
 --num_epochs 10 \
---save_interval_epochs 2
 ```
 其中参数含义如下：
 * `--model_type`: 模型类型，可选项为：HumanSegServer、HumanSegMobile和HumanSegLite
@@ -76,12 +75,13 @@ python train.py --model_type HumanSegMobile \
 * `--batch_size`: 批大小
 * `--learning_rate`: 初始学习率
 * `--num_epochs`: 训练轮数
-* `--save_interval_epochs`: 模型保存间隔
 
-更多参数请运行下述命令进行参看：
+更多命令行帮助可运行下述命令进行查看：
 ```bash
 python train.py --help
 ```
+**NOTE**
+可通过更换`--model_type`变量与对应的`--pretrained_weights`体验不同的模型快速尝试。
 
 ## 评估
 使用下述命令进行评估
@@ -89,13 +89,11 @@ python train.py --help
 python val.py --model_dir output/best_model \
 --data_dir data/mini_supervisely \
 --val_list data/mini_supervisely/val.txt \
---batch_size 2
 ```
 其中参数含义如下：
 * `--model_dir`: 模型路径
 * `--data_dir`: 数据集路径
 * `--val_list`: 验证集列表路径
-* `--batch_size`: 批大小
 
 ## 预测
 使用下述命令进行预测
@@ -144,7 +142,6 @@ python quant_online.py --model_type HumanSegMobile \
 --batch_size 2 \
 --learning_rate 0.001 \
 --num_epochs 2 \
---save_interval_epochs 1
 ```
 其中参数含义如下：
 * `--model_type`: 模型类型，可选项为：HumanSegServer、HumanSegMobile和HumanSegLite
@@ -156,4 +153,3 @@ python quant_online.py --model_type HumanSegMobile \
 * `--batch_size`: 批大小
 * `--learning_rate`: 初始学习率
 * `--num_epochs`: 训练轮数
-* `--save_interval_epochs`: 模型保存间隔
