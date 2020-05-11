@@ -22,9 +22,24 @@ sys.path.append(TEST_PATH)
 from test_utils import download_file_and_uncompress
 
 model_urls = {
-    "humanseg_server": "",
-    "humanseg_mobile": "",
-    "humanseg_lite": "",
+    "humanseg_server":
+    "https://paddleseg.bj.bcebos.com/humanseg/models/humanseg_server.zip",
+    "humanseg_server_export":
+    "https://paddleseg.bj.bcebos.com/humanseg/models/humanseg_server_export.zip",
+    "humanseg_server_quant":
+    "https://paddleseg.bj.bcebos.com/humanseg/models/humanseg_server_quant.zip",
+    "humanseg_mobile":
+    "https://paddleseg.bj.bcebos.com/humanseg/models/humanseg_mobile.zip",
+    "humanseg_mobile_export":
+    "https://paddleseg.bj.bcebos.com/humanseg/models/humanseg_mobile_export.zip",
+    "humanseg_mobile_quant":
+    "https://paddleseg.bj.bcebos.com/humanseg/models/humanseg_mobile_quant.zip",
+    "humanseg_lite":
+    "https://paddleseg.bj.bcebos.com/humanseg/models/humanseg_lite.zip",
+    "humanseg_lite_epxort":
+    "https://paddleseg.bj.bcebos.com/humanseg/models/humanseg_lite_export.zip",
+    "humanseg_lite_quant":
+    "https://paddleseg.bj.bcebos.com/humanseg/models/humanseg_lite_quant.zip",
 }
 
 if __name__ == "__main__":
