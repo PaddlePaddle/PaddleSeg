@@ -3,15 +3,14 @@
 提供基于PaddlSeg最新的分割特色模型:
 
 - [人像分割](./HumanSeg)
-- [人体解析](#人体解析)
-- [车道线分割](#车道线分割)
-- [工业表盘分割](#工业用表分割)
-- [在线体验](#在线体验)
+- [人体解析](./ACE2P)
+- [车道线分割](./LaneNet)
+- [工业表盘分割](#工业表盘分割)
+- [AIStudio在线教程](#在线体验)
 
 ## 人像分割HumanSeg
 
 HumanSeg系列全新升级，提供三个适用于不同场景，包含适用于移动端实时分割场景的模型`HumanSeg-lite`，提供了包含光流的后处理的优化，使人像分割在视频场景中更加顺畅，更多详情请参考[HumanSeg](./HumanSeg)
-
 
 
 ## 人体解析 Human Parsing
@@ -87,7 +86,7 @@ TEST.TEST_MODEL "./contrib/MechanicalIndustryMeter/unet_mechanical_industry_mete
   
   ![](MechanicalIndustryMeter/imgs/1560143028.5_IMG_3091.png)
 
-## 在线体验
+## AI Studio在线教程
 
 PaddleSeg在AI Studio平台上提供了在线体验的教程，欢迎体验：
 
@@ -96,5 +95,3 @@ PaddleSeg在AI Studio平台上提供了在线体验的教程，欢迎体验：
 |工业质检|[点击体验](https://aistudio.baidu.com/aistudio/projectdetail/184392)|
 |人像分割|[点击体验](https://aistudio.baidu.com/aistudio/projectdetail/188833)|
 |特色垂类模型|[点击体验](https://aistudio.baidu.com/aistudio/projectdetail/226710)|
-
-
