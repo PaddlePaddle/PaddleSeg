@@ -1,65 +1,20 @@
 # PaddleSeg 产业实践分割模型
 
-提供基于PaddlePaddle最新的分割特色模型:
+提供基于PaddlSeg最新的分割特色模型:
 
-- [人像分割](#人像分割)
+- [人像分割](./HumanSeg)
 - [人体解析](#人体解析)
 - [车道线分割](#车道线分割)
-- [工业用表分割](#工业用表分割)
+- [工业表盘分割](#工业用表分割)
 - [在线体验](#在线体验)
 
-## 人像分割
+## 人像分割HumanSeg
 
-**Note:** 本章节所有命令均在`contrib/HumanSeg`目录下执行。
-
-```
-cd contrib/HumanSeg
-```
-
-### 1. 模型结构
-
-DeepLabv3+ backbone为Xception65
-
-### 2. 下载模型和数据
- 
-执行以下命令下载并解压模型和数据集：
-
-```
-python download_HumanSeg.py
-```
-
-或点击[链接](https://paddleseg.bj.bcebos.com/models/HumanSeg.tgz)进行手动下载，并解压到contrib/HumanSeg文件夹下
-
-
-### 3. 运行
-
-使用GPU预测：
-```
-python -u infer.py --example HumanSeg --use_gpu
-```
-
-
-使用CPU预测：
-```
-python -u infer.py --example HumanSeg
-```
-
-
-预测结果存放在contrib/HumanSeg/HumanSeg/result目录下。
-
-### 4. 预测结果示例：
-
-  原图：
-  
-  ![](HumanSeg/imgs/Human.jpg)
-  
-  预测结果：
-  
-  ![](HumanSeg/imgs/HumanSeg.jpg)
+HumanSeg系列全新升级，提供三个适用于不同场景，包含适用于移动端实时分割场景的模型`HumanSeg-lite`，提供了包含光流的后处理的优化，使人像分割在视频场景中更加顺畅，更多详情请参考[HumanSeg](./HumanSeg)
 
 
 
-## 人体解析
+## 人体解析Human Parsing
 
 ![](ACE2P/imgs/result.jpg)
 
@@ -181,7 +136,7 @@ python -u infer.py --example RoadLine
 
 
 
-## 工业用表分割
+## 工业表盘分割
 
 
 **Note:** 本章节所有命令均在`PaddleSeg`目录下执行。
