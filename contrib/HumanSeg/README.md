@@ -43,7 +43,13 @@ python pretrained_weights/download_pretrained_weights.py
 
 ## 视频流分割
 ```bash
-python video_infer.py --model_dir path/to/model_dir
+# 打开摄像头进行预测
+python video_infer.py --model_dir pretrained_weights/humanseg_lite_epxort
+
+# 对视频进行预测
+python video_infer.py --model_dir pretrained_weights/humanseg_lite_epxort \
+----video_path data/video_test.mp4
+
 ```
 
 ## 训练
