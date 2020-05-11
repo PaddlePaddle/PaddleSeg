@@ -1,9 +1,6 @@
 # HumanSeg人像分割模型
 
-本教程基于PaddleSeg核心分割网络框架，提供针对人像分割场景从预训练模型、Fine-tune、视频分割预测部署的全流程应用指南。
-
-HumanSeg提供三个人像分割模型系列：分别是HumanSeg-server、HumanSeg-mobile、HumanSeg-lite,适用于不同的算力场景
-HumanSegServer适用于服务端，HumanSegMobile和HumanSegLite适用于移动端。
+本教程基于PaddleSeg核心分割网络，提供针对人像分割场景从预训练模型、Fine-tune、视频分割预测部署的全流程应用指南。
 
 ## 环境依赖
 
