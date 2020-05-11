@@ -802,7 +802,7 @@ class HumanSegMobile(SegModel):
     def __init__(self,
                  num_classes=2,
                  stage1_num_modules=1,
-                 stage1_num_blocks=[2],
+                 stage1_num_blocks=[1],
                  stage1_num_channels=[32],
                  stage2_num_modules=1,
                  stage2_num_blocks=[2, 2],

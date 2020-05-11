@@ -108,8 +108,16 @@ def train(args):
             parallel_method='thread',
             shuffle=False)
 
-    model = eval(args.model_type)(num_classes=2)
-
+    if args.model_type == 'HumanSegMobile':
+        model = HumanSegMobile(num_classes=2)
+    elif args.model_type == 'HumanSegLite':
+        model = HumanSegLite(num_classes=2)
+    elif args.model_type == 'HumanSegServer':
+        model = HumanSegServer(num_classes=2)
+    else:
+        raise ValueError(
+            "--model_type: {} is set wrong, it shold be one of ('HumanSegMobile', "
+            "'HumanSegLite', 'HumanSegServer')".format(args.model_type))
     model.train(
         num_epochs=args.num_epochs,
         train_dataset=train_dataset,
@@ -124,9 +132,4 @@ def train(args):
 
 if __name__ == '__main__':
     args = parse_args()
-
-    if args.model_type not in MODEL_TYPE:
-        raise ValueError(
-            "--model_type: {} is set wrong, it shold be one of ('HumanSegMobile', "
-            "'HumanSegLite', 'HumanSegServer')".format(args.model_type))
     train(args)
