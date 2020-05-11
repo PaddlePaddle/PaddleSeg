@@ -22,12 +22,16 @@ sys.path.append(TEST_PATH)
 from test_utils import download_file_and_uncompress
 
 
-def download_pet_dataset(savepath, extrapath):
-    url = "https://paddleseg.bj.bcebos.com/dataset/mini_supervisely.zip"
+def download_data(savepath, extrapath):
+    url = "https://paddleseg.bj.bcebos.com/humanseg/data/mini_supervisely.zip"
+    download_file_and_uncompress(
+        url=url, savepath=savepath, extrapath=extrapath)
+
+    url = "https://paddleseg.bj.bcebos.com/humanseg/data/video_test.zip"
     download_file_and_uncompress(
         url=url, savepath=savepath, extrapath=extrapath)
 
 
 if __name__ == "__main__":
-    download_pet_dataset(LOCAL_PATH, LOCAL_PATH)
-    print("Dataset download finish!")
+    download_data(LOCAL_PATH, LOCAL_PATH)
+    print("Data download finish!")
