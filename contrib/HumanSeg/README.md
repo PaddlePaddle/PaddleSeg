@@ -18,14 +18,15 @@ $ pip install -r requirements.txt
 ## 模型
 | 模型类型 | 预训练模型 | 导出模型 | 量化模型 | 说明 |
 | --- | --- | --- | --- | --- |
-| HumanSegServer | [humanseg_server]() | [humanseg_server_export]() | [humanseg_server_quant]() | 服务端GPU环境  |
-| HumanSegMobile | [humanseg_mobile]() | [humanseg_mobile_export]() | [humanseg_mobile_quant]() | 小模型, 适合轻量级计算环境 |
-| HumanSegLite | [humanseg_lite]() | [humanseg_lite_export]() |  [humanseg_lite_quant]() | 小模型, 适合轻量级计算环境 |
+| HumanSegServer | [humanseg_server](https://paddleseg.bj.bcebos.com/humanseg/models/humanseg_server.zip) | [humanseg_server_export](https://paddleseg.bj.bcebos.com/humanseg/models/humanseg_server_export.zip) | [humanseg_server_quant](https://paddleseg.bj.bcebos.com/humanseg/models/humanseg_server_quant.zip) | 服务端GPU环境  |
+| HumanSegMobile | [humanseg_mobile](https://paddleseg.bj.bcebos.com/humanseg/models/humanseg_mobile.zip) | [humanseg_mobile_export](https://paddleseg.bj.bcebos.com/humanseg/models/humanseg_mobile_export.zip) | [humanseg_mobile_quant](https://paddleseg.bj.bcebos.com/humanseg/models/humanseg_mobile_quant.zip) | 小模型, 适合轻量级计算环境 |
+| HumanSegLite | [humanseg_lite](https://paddleseg.bj.bcebos.com/humanseg/models/humanseg_lite.zip) | [humanseg_lite_export](https://paddleseg.bj.bcebos.com/humanseg/models/humanseg_lite_export.zip) |  [humanseg_lite_quant](https://paddleseg.bj.bcebos.com/humanseg/models/humanseg_lite_quant.zip) | 小模型, 适合轻量级计算环境 |
 
-## 视频流分割
+## 指定运行设备
 ```bash
-python video_infer.py --model_dir path/to/model_dir
+export CUDA_VISIBLE_DEVICES=0
 ```
+当CUDA_VISIBLE_DEVICES变量有效时，使用相应的显卡进行计算，无效时使用CPU进行计算
 
 ## 准备训练数据
 我们提供了一份demo数据集，通过运行以下代码进行下载，该数据集是从supervise.ly抽取的一个小数据集。
@@ -40,10 +41,15 @@ python data/download_data.py
 python pretrained_weights/download_pretrained_weights.py
 ```
 
+## 视频流分割
+```bash
+python video_infer.py --model_dir path/to/model_dir
+```
+
 ## 训练
 使用下述命令进行训练
 ```bash
-CUDA_VISIBLE_DEVICES=0 && python train.py --model_type HumanSegMobile \
+python train.py --model_type HumanSegMobile \
 --save_dir output/ \
 --data_dir data/mini_supervisely \
 --train_list data/mini_supervisely/train.txt \
