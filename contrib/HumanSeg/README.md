@@ -10,7 +10,7 @@ HumanSegServer适用于服务端，HumanSegMobile和HumanSegLite适用于移动�
 * Python == 3.5/3.6/3.7
 * PaddlePaddle >= 1.7.2
 
-PaddlePaddle的快速安装可参考[飞桨快速安装](https://www.paddlepaddle.org.cn/install/quick)
+PaddlePaddle的安装可参考[飞桨快速安装](https://www.paddlepaddle.org.cn/install/quick)
 
 通过以下命令安装python包依赖，请确保在该分支上至少执行过一次以下命令
 ```shell
@@ -84,7 +84,7 @@ python train.py --model_type HumanSegMobile \
 python train.py --help
 ```
 **NOTE**
-可通过更换`--model_type`变量与对应的`--pretrained_weights`体验不同的模型快速尝试。
+可通过更换`--model_type`变量与对应的`--pretrained_weights`使用不同的模型快速尝试。
 
 ## 评估
 使用下述命令进行评估
