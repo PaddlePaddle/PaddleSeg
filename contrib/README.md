@@ -6,7 +6,7 @@
 - [人体解析](./ACE2P)
 - [车道线分割](./LaneNet)
 - [工业表盘分割](#工业表盘分割)
-- [AIStudio在线教程](#在线体验)
+- [AIStudio在线教程](#AIStudio在线教程)
 
 ## 人像分割HumanSeg
 
@@ -86,7 +86,7 @@ TEST.TEST_MODEL "./contrib/MechanicalIndustryMeter/unet_mechanical_industry_mete
   
   ![](MechanicalIndustryMeter/imgs/1560143028.5_IMG_3091.png)
 
-## AI Studio在线教程
+## AIStudio在线教程
 
 PaddleSeg在AI Studio平台上提供了在线体验的教程，欢迎体验：
 
