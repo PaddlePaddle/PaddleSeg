@@ -26,10 +26,13 @@ import cv2
 import yaml
 import paddleslim as slim
 
-import HumanSeg
-import HumanSeg.utils.logging as logging
-from HumanSeg.utils import seconds_to_hms
-from HumanSeg.utils import ConfusionMatrix
+import utils
+import utils.logging as logging
+from utils import seconds_to_hms
+from utils import ConfusionMatrix
+from utils import get_environ_info
+from nets import DeepLabv3p, ShuffleSeg, HRNet
+import transforms as T
 
 
 def dict2str(dict_input):
@@ -81,8 +84,8 @@ class SegModel(object):
         self.sync_bn = sync_bn
 
         self.labels = None
-        self.version = HumanSeg.__version__
-        if HumanSeg.env_info['place'] == 'cpu':
+        self.env_info = get_environ_info()
+        if self.env_info['place'] == 'cpu':
             self.places = fluid.cpu_places()
         else:
             self.places = fluid.cuda_places()
@@ -105,8 +108,8 @@ class SegModel(object):
         else:
             raise Exception("Please support correct batch_size, \
                             which can be divided by available cards({}) in {}".
-                            format(HumanSeg.env_info['num'],
-                                   HumanSeg.env_info['place']))
+                            format(self.env_info['num'],
+                                   self.env_info['place']))
 
     def build_net(self, mode='train'):
         """应根据不同的情况进行构建"""
@@ -127,7 +130,7 @@ class SegModel(object):
         self.test_prog = self.test_prog.clone(for_test=True)
 
     def arrange_transform(self, transforms, mode='train'):
-        arrange_transform = HumanSeg.transforms.transforms.ArrangeSegmenter
+        arrange_transform = T.ArrangeSegmenter
         if type(transforms.transforms[-1]).__name__.startswith('Arrange'):
             transforms.transforms[-1] = arrange_transform(mode=mode)
         else:
@@ -148,7 +151,7 @@ class SegModel(object):
 
     def net_initialize(self,
                        startup_prog=None,
-                       pretrain_weights=None,
+                       pretrained_weights=None,
                        resume_weights=None):
         if startup_prog is None:
             startup_prog = fluid.default_startup_program()
@@ -171,16 +174,15 @@ class SegModel(object):
                 raise ValueError("Resume model path is not valid!")
             logging.info("Model checkpoint loaded successfully!")
 
-        elif pretrain_weights is not None:
+        elif pretrained_weights is not None:
             logging.info(
-                "Load pretrain weights from {}.".format(pretrain_weights))
-            HumanSeg.utils.utils.load_pretrain_weights(
-                self.exe, self.train_prog, pretrain_weights)
+                "Load pretrain weights from {}.".format(pretrained_weights))
+            utils.load_pretrained_weights(self.exe, self.train_prog,
+                                          pretrained_weights)
 
     def get_model_info(self):
         # 存储相应的信息到yml文件
         info = dict()
-        info['version'] = HumanSeg.__version__
         info['Model'] = self.__class__.__name__
         if 'self' in self.init_params:
             del self.init_params['self']
@@ -226,6 +228,8 @@ class SegModel(object):
                 del self.train_init['train_dataset']
             if 'eval_dataset' in self.train_init:
                 del self.train_init['eval_dataset']
+            if 'optimizer' in self.train_init:
+                del self.train_init['optimizer']
             info['train_init'] = self.train_init
         return info
 
@@ -307,11 +311,11 @@ class SegModel(object):
                            save_dir,
                            batch_size=1,
                            batch_nums=10,
-                           cache_dir="./temp"):
+                           cache_dir="./.temp"):
         self.arrange_transform(transforms=dataset.transforms, mode='quant')
         dataset.num_samples = batch_size * batch_nums
         try:
-            from HumanSeg.utils import HumanSegPostTrainingQuantization
+            from utils import HumanSegPostTrainingQuantization
         except:
             raise Exception(
                 "Model Quantization is not available, try to upgrade your paddlepaddle>=1.7.0"
@@ -335,6 +339,8 @@ class SegModel(object):
             cache_dir=cache_dir)
         post_training_quantization.quantize()
         post_training_quantization.save_quantized_model(save_dir)
+        if cache_dir is not None:
+            os.system('rm -r' + cache_dir)
         model_info = self.get_model_info()
         model_info['status'] = 'Quant'
 
@@ -383,7 +389,7 @@ class SegModel(object):
               save_interval_epochs=1,
               log_interval_steps=2,
               save_dir='output',
-              pretrain_weights=None,
+              pretrained_weights=None,
               resume_weights=None,
               optimizer=None,
               learning_rate=0.01,
@@ -408,7 +414,7 @@ class SegModel(object):
         self.build_program()
         self.net_initialize(
             startup_prog=fluid.default_startup_program(),
-            pretrain_weights=pretrain_weights,
+            pretrained_weights=pretrained_weights,
             resume_weights=resume_weights)
 
         # 进行量化
@@ -451,7 +457,7 @@ class SegModel(object):
         # 多卡训练
         if self.parallel_train_prog is None:
             build_strategy = fluid.compiler.BuildStrategy()
-            if HumanSeg.env_info['place'] != 'cpu' and len(self.places) > 1:
+            if self.env_info['place'] != 'cpu' and len(self.places) > 1:
                 build_strategy.sync_batch_norm = self.sync_bn
             exec_strategy = fluid.ExecutionStrategy()
             exec_strategy.num_iteration_per_drop_scope = 1
@@ -706,80 +712,11 @@ class SegModel(object):
         return {'label_map': pred, 'score_map': logit}
 
 
-class HumanSegMobile(SegModel):
-    # DeepLab mobilenet
-    def __init__(self,
-                 num_classes=2,
-                 backbone='MobileNetV2_x1.0',
-                 output_stride=16,
-                 aspp_with_sep_conv=True,
-                 decoder_use_sep_conv=True,
-                 encoder_with_aspp=False,
-                 enable_decoder=False,
-                 use_bce_loss=False,
-                 use_dice_loss=False,
-                 class_weight=None,
-                 ignore_index=255,
-                 sync_bn=True):
-        super().__init__(
-            num_classes=num_classes,
-            use_bce_loss=use_bce_loss,
-            use_dice_loss=use_dice_loss,
-            class_weight=class_weight,
-            ignore_index=ignore_index,
-            sync_bn=sync_bn)
-        self.init_params = locals()
-
-        self.output_stride = output_stride
-
-        if backbone not in [
-                'MobileNetV2_x0.25', 'MobileNetV2_x0.5', 'MobileNetV2_x1.0',
-                'MobileNetV2_x1.5', 'MobileNetV2_x2.0'
-        ]:
-            raise ValueError(
-                "backbone: {} is set wrong. it should be one of "
-                "('MobileNetV2_x0.25', 'MobileNetV2_x0.5',"
-                " 'MobileNetV2_x1.0', 'MobileNetV2_x1.5', 'MobileNetV2_x2.0')".
-                format(backbone))
-
-        self.backbone = backbone
-        self.aspp_with_sep_conv = aspp_with_sep_conv
-        self.decoder_use_sep_conv = decoder_use_sep_conv
-        self.encoder_with_aspp = encoder_with_aspp
-        self.enable_decoder = enable_decoder
-        self.sync_bn = sync_bn
-
-    def build_net(self, mode='train'):
-        model = HumanSeg.nets.DeepLabv3p(
-            self.num_classes,
-            mode=mode,
-            backbone=self.backbone,
-            output_stride=self.output_stride,
-            aspp_with_sep_conv=self.aspp_with_sep_conv,
-            decoder_use_sep_conv=self.decoder_use_sep_conv,
-            encoder_with_aspp=self.encoder_with_aspp,
-            enable_decoder=self.enable_decoder,
-            use_bce_loss=self.use_bce_loss,
-            use_dice_loss=self.use_dice_loss,
-            class_weight=self.class_weight,
-            ignore_index=self.ignore_index)
-        inputs = model.generate_inputs()
-        model_out = model.build_net(inputs)
-        outputs = OrderedDict()
-        if mode == 'train':
-            self.optimizer.minimize(model_out)
-            outputs['loss'] = model_out
-        else:
-            outputs['pred'] = model_out[0]
-            outputs['logit'] = model_out[1]
-        return inputs, outputs
-
-
 class HumanSegLite(SegModel):
     # DeepLab ShuffleNet
     def build_net(self, mode='train'):
         """应根据不同的情况进行构建"""
-        model = HumanSeg.nets.ShuffleSeg(
+        model = ShuffleSeg(
             self.num_classes,
             mode=mode,
             use_bce_loss=self.use_bce_loss,
@@ -836,7 +773,7 @@ class HumanSegServer(SegModel):
         self.sync_bn = sync_bn
 
     def build_net(self, mode='train'):
-        model = HumanSeg.nets.DeepLabv3p(
+        model = DeepLabv3p(
             self.num_classes,
             mode=mode,
             backbone=self.backbone,
@@ -861,21 +798,21 @@ class HumanSegServer(SegModel):
         return inputs, outputs
 
 
-class HRNet(SegModel):
+class HumanSegMobile(SegModel):
     def __init__(self,
                  num_classes=2,
                  stage1_num_modules=1,
-                 stage1_num_blocks=[4],
-                 stage1_num_channels=[64],
+                 stage1_num_blocks=[1],
+                 stage1_num_channels=[32],
                  stage2_num_modules=1,
-                 stage2_num_blocks=[4, 4],
-                 stage2_num_channels=[18, 36],
-                 stage3_num_modules=4,
-                 stage3_num_blocks=[4, 4, 4],
-                 stage3_num_channels=[18, 36, 72],
-                 stage4_num_modules=3,
-                 stage4_num_blocks=[4, 4, 4, 4],
-                 stage4_num_channels=[18, 36, 72, 144],
+                 stage2_num_blocks=[2, 2],
+                 stage2_num_channels=[16, 32],
+                 stage3_num_modules=1,
+                 stage3_num_blocks=[2, 2, 2],
+                 stage3_num_channels=[16, 32, 64],
+                 stage4_num_modules=1,
+                 stage4_num_blocks=[2, 2, 2, 2],
+                 stage4_num_channels=[16, 32, 64, 128],
                  use_bce_loss=False,
                  use_dice_loss=False,
                  class_weight=None,
@@ -905,7 +842,7 @@ class HRNet(SegModel):
 
     def build_net(self, mode='train'):
         """应根据不同的情况进行构建"""
-        model = HumanSeg.nets.HRNet(
+        model = HRNet(
             self.num_classes,
             mode=mode,
             stage1_num_modules=self.stage1_num_modules,
@@ -934,3 +871,36 @@ class HRNet(SegModel):
             outputs['pred'] = model_out[0]
             outputs['logit'] = model_out[1]
         return inputs, outputs
+
+    def train(self,
+              num_epochs,
+              train_dataset,
+              train_batch_size=2,
+              eval_dataset=None,
+              save_interval_epochs=1,
+              log_interval_steps=2,
+              save_dir='output',
+              pretrained_weights=None,
+              resume_weights=None,
+              optimizer=None,
+              learning_rate=0.01,
+              lr_decay_power=0.9,
+              regularization_coeff=5e-4,
+              use_vdl=False,
+              quant=False):
+        super().train(
+            num_epochs=num_epochs,
+            train_dataset=train_dataset,
+            train_batch_size=train_batch_size,
+            eval_dataset=eval_dataset,
+            save_interval_epochs=save_interval_epochs,
+            log_interval_steps=log_interval_steps,
+            save_dir=save_dir,
+            pretrained_weights=pretrained_weights,
+            resume_weights=resume_weights,
+            optimizer=optimizer,
+            learning_rate=learning_rate,
+            lr_decay_power=lr_decay_power,
+            regularization_coeff=regularization_coeff,
+            use_vdl=use_vdl,
+            quant=quant)

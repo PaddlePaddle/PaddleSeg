@@ -1,6 +1,6 @@
-# 实时人像分割预测部署
+# 人像分割预测部署
 
-本模型基于飞浆开源的人像分割模型，并做了大量的针对视频的光流追踪优化，提供了完整的支持视频流的实时人像分割解决方案，并提供了高性能的`Python`集成部署方案。
+本模型基于飞浆开源的人像分割模型，并做了大量的针对视频的光流追踪优化，提供了完整的支持视频流的人像分割解决方案，并提供了高性能的`Python`集成部署方案。
 
 
 ## 模型下载
@@ -9,9 +9,12 @@
 
 |模型文件 | 说明 |
 | --- | --- |
-|[shv75_deeplab_0303_quant](https://paddleseg.bj.bcebos.com/deploy/models/shv75_0303_quant.zip)  | 小模型, 适合轻量级计算环境 |
-|[shv75_deeplab_0303](https://paddleseg.bj.bcebos.com/deploy/models/shv75_deeplab_0303.zip)| 小模型，适合轻量级计算环境 |
-|[deeplabv3_xception_humanseg](https://paddleseg.bj.bcebos.com/deploy/models/deeplabv3_xception_humanseg.zip) | 服务端GPU环境 |
+|[humanseg_lite_quant]()  | 小模型, 适合轻量级计算环境 |
+|[humanseg_lite]()| 小模型，适合轻量级计算环境 |
+|[humanseg_mobile_quant]()  | 小模型, 适合轻量级计算环境 |
+|[humanseg_mobile]()| 小模型，适合轻量级计算环境 |
+|[humanseg_server_quant]() | 服务端GPU环境 |
+|[humanseg_server]() | 服务端GPU环境 |
 
 **注意：下载后解压到合适的路径，后续该路径将做为预测参数用于加载模型。**
 
