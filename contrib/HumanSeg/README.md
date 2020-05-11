@@ -28,7 +28,9 @@ HumanSeg开放了在大规模人像数据上训练的三个预训练模型，满
 
 **NOTE:**
 其中Checkpoint为模型权重，用于Fine-tuning场景。
+
 Inference Model和Quant Inference Model为预测部署模型，包含`__model__`计算图结构、`__params__`模型参数和`model.yaml`基础的模型配置信息。
+
 其中Inference Model适用于服务端的CPU和GPU预测场景，Qunat Inference Model为的量化版本，适用于通过Paddle Lite进行移动端等端侧设备部署。更多Paddle Lite部署说明查看[Paddle Lite文档](https://paddle-lite.readthedocs.io/zh/latest/)
 
 执行以下脚本进行HumanSeg预训练模型的下载
@@ -37,7 +39,7 @@ python pretrained_weights/download_pretrained_weights.py
 ```
 
 ## 下载测试数据
-我们提供了一份[supervise.ly](https://supervise.ly/)发布人像分割数据集**Supervisely Persons**,从中随机抽取一小部分并转化成PaddleSeg可直接加载数据格式。通过运行以下代码进行快速下载。
+我们提供了[supervise.ly](https://supervise.ly/)发布人像分割数据集**Supervisely Persons**, 从中随机抽取一小部分并转化成PaddleSeg可直接加载数据格式。通过运行以下代码进行快速下载，其中包含手机前置摄像头的人像测试视频`video_test.mp4`.
 
 ```bash
 python data/download_data.py
