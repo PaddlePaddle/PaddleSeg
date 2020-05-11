@@ -1,0 +1,7 @@
+images/1001.npy annotations/1001.png
+images/1002.npy annotations/1002.png
+images/1005.npy annotations/1005.png
+images/0.npy annotations/0.png
+images/1003.npy annotations/1003.png
+images/1000.npy annotations/1000.png
+images/1004.npy annotations/1004.png

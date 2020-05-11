@@ -19,8 +19,8 @@ import copy
 from collections import OrderedDict
 import paddle.fluid as fluid
 from paddle.fluid.framework import Parameter
-from ..utils import logging
-import RemoteSensing
+from utils import logging
+import models
 
 
 def load_model(model_dir):
@@ -30,12 +30,11 @@ def load_model(model_dir):
         info = yaml.load(f.read(), Loader=yaml.Loader)
     status = info['status']
 
-    if not hasattr(RemoteSensing.models, info['Model']):
-        raise Exception(
-            "There's no attribute {} in RemoteSensing.models".format(
-                info['Model']))
+    if not hasattr(models, info['Model']):
+        raise Exception("There's no attribute {} in models".format(
+            info['Model']))
 
-    model = getattr(RemoteSensing.models, info['Model'])(**info['_init_params'])
+    model = getattr(models, info['Model'])(**info['_init_params'])
     if status == "Normal" or \
             status == "Prune":
         startup_prog = fluid.Program()
@@ -82,7 +81,7 @@ def load_model(model_dir):
 
 
 def build_transforms(transforms_info):
-    from ..transforms import transforms as T
+    from transforms import transforms as T
     transforms = list()
     for op_info in transforms_info:
         op_name = list(op_info.keys())[0]

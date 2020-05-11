@@ -12,12 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from . import utils
-from . import nets
-from . import models
-from . import transforms
-from . import readers
-from .utils.utils import get_environ_info
+import utils
+import nets
+import models
+import transforms
+import readers
+from utils.utils import get_environ_info
 
 env_info = get_environ_info()
 

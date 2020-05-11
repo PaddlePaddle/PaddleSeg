@@ -18,11 +18,11 @@ import numpy as np
 import math
 import cv2
 import paddle.fluid as fluid
-import RemoteSensing
-import RemoteSensing.utils.logging as logging
+import utils.logging as logging
 from collections import OrderedDict
 from .base import BaseAPI
-from ..utils.metrics import ConfusionMatrix
+from utils.metrics import ConfusionMatrix
+import nets
 
 
 class UNet(BaseAPI):
@@ -90,7 +90,7 @@ class UNet(BaseAPI):
         self.trainable = True
 
     def build_net(self, mode='train'):
-        model = RemoteSensing.nets.UNet(
+        model = nets.UNet(
             self.num_classes,
             mode=mode,
             upsample_mode=self.upsample_mode,
@@ -152,9 +152,9 @@ class UNet(BaseAPI):
 
         Args:
             num_epochs (int): 训练迭代轮数。
-            train_reader (RemoteSensing.readers): 训练数据读取器。
+            train_reader (readers): 训练数据读取器。
             train_batch_size (int): 训练数据batch大小。同时作为验证数据batch大小。默认2。
-            eval_reader (RemoteSensing.readers): 评估数据读取器。
+            eval_reader (readers): 评估数据读取器。
             save_interval_epochs (int): 模型保存间隔（单位：迭代轮数）。默认为1。
             log_interval_steps (int): 训练日志输出间隔（单位：迭代次数）。默认为2。
             save_dir (str): 模型保存路径。默认'output'。
@@ -216,7 +216,7 @@ class UNet(BaseAPI):
         """评估。
 
         Args:
-            eval_reader (RemoteSensing.readers): 评估数据读取器。
+            eval_reader (readers): 评估数据读取器。
             batch_size (int): 评估时的batch大小。默认1。
             verbose (bool): 是否打印日志。默认True。
             epoch_id (int): 当前评估模型所在的训练轮数。
@@ -241,6 +241,8 @@ class UNet(BaseAPI):
 
         for step, data in enumerate(data_generator()):
             images = np.array([d[0] for d in data])
+            images = images.astype(np.float32)
+
             labels = np.array([d[1] for d in data])
             num_samples = images.shape[0]
             if num_samples < batch_size:
@@ -283,7 +285,7 @@ class UNet(BaseAPI):
         """预测。
         Args:
             img_file(str): 预测图像路径。
-            transforms(RemoteSensing.transforms): 数据预处理操作。
+            transforms(transforms): 数据预处理操作。
 
         Returns:
             np.ndarray: 预测结果灰度图。
@@ -297,6 +299,7 @@ class UNet(BaseAPI):
             self.arrange_transforms(
                 transforms=self.test_transforms, mode='test')
             im, im_info = self.test_transforms(im_file)
+        im = im.astype(np.float32)
         im = np.expand_dims(im, axis=0)
         result = self.exe.run(
             self.test_prog,

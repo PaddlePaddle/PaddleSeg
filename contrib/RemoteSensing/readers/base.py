@@ -22,7 +22,7 @@ import copy
 import random
 import platform
 import chardet
-from ..utils import logging
+from utils import logging
 
 
 class EndSignal():

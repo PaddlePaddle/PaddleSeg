@@ -170,7 +170,7 @@ class Resize:
     def __init__(self, target_size, interp='LINEAR'):
         self.interp = interp
         assert interp in self.interp_dict, "interp should be one of {}".format(
-            interp_dict.keys())
+            self.interp_dict.keys())
         if isinstance(target_size, list) or isinstance(target_size, tuple):
             if len(target_size) != 2:
                 raise ValueError(
@@ -271,17 +271,6 @@ class ResizeByLong:
                     -shape_before_resize (tuple): 保存resize之前图像的形状(h, w）。
         """
         if im_info is None:
-            im = np.pad(
-                im,
-                pad_width=((0, pad_height), (0, pad_width), (0, 0)),
-                mode='constant',
-                constant_values=(self.im_padding_value, self.im_padding_value))
-            label = np.pad(
-                label,
-                pad_width=((0, pad_height), (0, pad_width)),
-                mode='constant',
-                constant_values=(self.label_padding_value,
-                                 self.label_padding_value))
             im_info = OrderedDict()
 
         im_info['shape_before_resize'] = im.shape[:2]
@@ -420,20 +409,58 @@ class ResizeStepScaling:
             return (im, im_info, label)
 
 
+class Clip:
+    """
+    对图像上超出一定范围的数据进行裁剪。
+
+    Args:
+        min_val (list): 裁剪的下限，小于min_val的数值均设为min_val. 默认值[0, 0, 0].
+        max_val (list): 裁剪的上限，大于max_val的数值均设为max_val. 默认值[255.0, 255.0, 255.0]
+    """
+
+    def __init__(self, min_val=[0, 0, 0], max_val=[255.0, 255.0, 255.0]):
+        self.min_val = min_val
+        self.max_val = max_val
+
+    def __call__(self, im, im_info=None, label=None):
+        if isinstance(self.min_val, list) and isinstance(self.max_val, list):
+            for k in range(im.shape[2]):
+                np.clip(
+                    im[:, :, k],
+                    self.min_val[k],
+                    self.max_val[k],
+                    out=im[:, :, k])
+        else:
+            raise TypeError('min_val and max_val must be list')
+
+        if label is None:
+            return (im, im_info)
+        else:
+            return (im, im_info, label)
+
+
 class Normalize:
     """对图像进行标准化。
-    1.尺度缩放到 [0,1]。
+    1.图像像素归一化到区间 [0.0, 1.0]。
     2.对图像进行减均值除以标准差操作。
 
     Args:
-        mean (list): 图像数据集的均值。默认值[0.5, 0.5, 0.5]。
-        std (list): 图像数据集的标准差。默认值[0.5, 0.5, 0.5]。
+        min_val (list): 图像数据集的最小值。默认值[0, 0, 0].
+        max_val (list): 图像数据集的最大值。默认值[255.0, 255.0, 255.0]
+        mean (list): 图像数据集的均值。默认值[0.5, 0.5, 0.5].
+        std (list): 图像数据集的标准差。默认值[0.5, 0.5, 0.5].
 
     Raises:
         ValueError: mean或std不是list对象。std包含0。
     """
 
-    def __init__(self, mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5]):
+    def __init__(self,
+                 min_val=[0, 0, 0],
+                 max_val=[255.0, 255.0, 255.0],
+                 mean=[0.5, 0.5, 0.5],
+                 std=[0.5, 0.5, 0.5]):
+        self.min_val = min_val
+        self.max_val = max_val
         self.mean = mean
         self.std = std
         if not (isinstance(self.mean, list) and isinstance(self.std, list)):
@@ -457,7 +484,8 @@ class Normalize:
 
         mean = np.array(self.mean)[np.newaxis, np.newaxis, :]
         std = np.array(self.std)[np.newaxis, np.newaxis, :]
-        im = normalize(im, mean, std)
+
+        im = normalize(im, self.min_val, self.max_val, mean, std)
 
         if label is None:
             return (im, im_info)
@@ -471,7 +499,7 @@ class Padding:
 
     Args:
         target_size (int/list/tuple): padding后图像的大小。
-        im_padding_value (list): 图像padding的值。默认为[127.5, 127.5, 127.5]。
+        im_padding_value (list): 图像padding的值。默认为127.5。
         label_padding_value (int): 标注图像padding的值。默认值为255。
 
     Raises:
@@ -554,7 +582,7 @@ class RandomPaddingCrop:
 
     Args:
         crop_size（int or list or tuple): 裁剪图像大小。默认为512。
-        im_padding_value (list): 图像padding的值。默认为[127.5, 127.5, 127.5]。
+        im_padding_value (list): 图像padding的值。默认为127.5
         label_padding_value (int): 标注图像padding的值。默认值为255。
 
     Raises:
@@ -684,75 +712,6 @@ class RandomBlur:
             return (im, im_info, label)
 
 
-class RandomRotation:
-    """对图像进行随机旋转。
-    在不超过最大旋转角度的情况下，图像进行随机旋转，当存在标注图像时，同步进行，
-    并对旋转后的图像和标注图像进行相应的padding。
-
-    Args:
-        max_rotation (float): 最大旋转角度。默认为15度。
-        im_padding_value (list): 图像padding的值。默认为[127.5, 127.5, 127.5]。
-        label_padding_value (int): 标注图像padding的值。默认为255。
-
-    """
-
-    def __init__(self,
-                 max_rotation=15,
-                 im_padding_value=[127.5, 127.5, 127.5],
-                 label_padding_value=255):
-        self.max_rotation = max_rotation
-        self.im_padding_value = im_padding_value
-        self.label_padding_value = label_padding_value
-
-    def __call__(self, im, im_info=None, label=None):
-        """
-        Args:
-            im (np.ndarray): 图像np.ndarray数据。
-            im_info (dict): 存储与图像相关的信息。
-            label (np.ndarray): 标注图像np.ndarray数据。
-
-        Returns:
-            tuple: 当label为空时，返回的tuple为(im, im_info)，分别对应图像np.ndarray数据、存储与图像相关信息的字典；
-                当label不为空时，返回的tuple为(im, im_info, label)，分别对应图像np.ndarray数据、
-                存储与图像相关信息的字典和标注图像np.ndarray数据。
-        """
-        if self.max_rotation > 0:
-            (h, w) = im.shape[:2]
-            do_rotation = np.random.uniform(-self.max_rotation,
-                                            self.max_rotation)
-            pc = (w // 2, h // 2)
-            r = cv2.getRotationMatrix2D(pc, do_rotation, 1.0)
-            cos = np.abs(r[0, 0])
-            sin = np.abs(r[0, 1])
-
-            nw = int((h * sin) + (w * cos))
-            nh = int((h * cos) + (w * sin))
-
-            (cx, cy) = pc
-            r[0, 2] += (nw / 2) - cx
-            r[1, 2] += (nh / 2) - cy
-            dsize = (nw, nh)
-            im = cv2.warpAffine(
-                im,
-                r,
-                dsize=dsize,
-                flags=cv2.INTER_LINEAR,
-                borderMode=cv2.BORDER_CONSTANT,
-                borderValue=self.im_padding_value)
-            label = cv2.warpAffine(
-                label,
-                r,
-                dsize=dsize,
-                flags=cv2.INTER_NEAREST,
-                borderMode=cv2.BORDER_CONSTANT,
-                borderValue=self.label_padding_value)
-
-        if label is None:
-            return (im, im_info)
-        else:
-            return (im, im_info, label)
-
-
 class RandomScaleAspect:
     """裁剪并resize回原始尺寸的图像和标注图像。
     按照一定的面积比和宽高比对图像进行裁剪，并reszie回原始图像的图像，当存在标注图时，同步进行。
@@ -807,116 +766,6 @@ class RandomScaleAspect:
                         label, (img_width, img_height),
                         interpolation=cv2.INTER_NEAREST)
                     break
-        if label is None:
-            return (im, im_info)
-        else:
-            return (im, im_info, label)
-
-
-class RandomDistort:
-    """对图像进行随机失真。
-
-    1. 确定随机失真操作[变换明亮度、变换对比度、变换饱和度、变换色彩]的执行顺序。
-    2. 以一定的概率执行每个随机扰动操作。
-
-    Args:
-        brightness_range (float): 明亮度因子的范围。默认为0.5。
-        brightness_prob (float): 随机调整明亮度的概率。默认为0.5。
-        contrast_range (float): 对比度因子的范围。默认为0.5。
-        contrast_prob (float): 随机调整对比度的概率。默认为0.5。
-        saturation_range (float): 饱和度因子的范围。默认为0.5。
-        saturation_prob (float): 随机调整饱和度的概率。默认为0.5。
-        hue_range (int): 色调因子的范围。默认为18。
-        hue_prob (float): 随机调整色调的概率。默认为0.5。
-        is_order (bool): 是否按照固定顺序
-                        [变换明亮度、变换对比度、变换饱和度、变换色彩]
-                        执行像素内容变换操作。默认为False。
-    """
-
-    def __init__(self,
-                 brightness_range=0.5,
-                 brightness_prob=0.5,
-                 contrast_range=0.5,
-                 contrast_prob=0.5,
-                 saturation_range=0.5,
-                 saturation_prob=0.5,
-                 hue_range=18,
-                 hue_prob=0.5,
-                 is_order=False):
-        self.brightness_range = brightness_range
-        self.brightness_prob = brightness_prob
-        self.contrast_range = contrast_range
-        self.contrast_prob = contrast_prob
-        self.saturation_range = saturation_range
-        self.saturation_prob = saturation_prob
-        self.hue_range = hue_range
-        self.hue_prob = hue_prob
-        self.is_order = is_order
-
-    def __call__(self, im, im_info=None, label_info=None):
-        """
-        Args:
-            im (np.ndarray): 图像np.ndarray数据。
-            im_info (dict): 存储与图像相关的信息。
-            label (np.ndarray): 标注图像np.ndarray数据。
-
-        Returns:
-            tuple: 当label为空时，返回的tuple为(im, im_info)，分别对应图像np.ndarray数据、存储与图像相关信息的字典；
-                当label不为空时，返回的tuple为(im, im_info, label)，分别对应图像np.ndarray数据、
-                存储与图像相关信息的字典和标注图像np.ndarray数据。
-        """
-        brightness_lower = 1 - self.brightness_range
-        brightness_upper = 1 + self.brightness_range
-        contrast_lower = 1 - self.contrast_range
-        contrast_upper = 1 + self.contrast_range
-        saturation_lower = 1 - self.saturation_range
-        saturation_upper = 1 + self.saturation_range
-        hue_lower = -self.hue_range
-        hue_upper = self.hue_range
-        ops = [brightness, contrast, saturation, hue]
-        if self.is_order:
-            prob = np.random.uniform(0, 1)
-            if prob < 0.5:
-                ops = [
-                    brightness,
-                    saturation,
-                    hue,
-                    contrast,
-                ]
-        else:
-            random.shuffle(ops)
-        params_dict = {
-            'brightness': {
-                'brightness_lower': brightness_lower,
-                'brightness_upper': brightness_upper
-            },
-            'contrast': {
-                'contrast_lower': contrast_lower,
-                'contrast_upper': contrast_upper
-            },
-            'saturation': {
-                'saturation_lower': saturation_lower,
-                'saturation_upper': saturation_upper
-            },
-            'hue': {
-                'hue_lower': hue_lower,
-                'hue_upper': hue_upper
-            }
-        }
-        prob_dict = {
-            'brightness': self.brightness_prob,
-            'contrast': self.contrast_prob,
-            'saturation': self.saturation_prob,
-            'hue': self.hue_prob
-        }
-        im = Image.fromarray(im)
-        for id in range(4):
-            params = params_dict[ops[id].__name__]
-            prob = prob_dict[ops[id].__name__]
-            params['im'] = im
-            if np.random.uniform(0, 1) < prob:
-                im = ops[id](**params)
-        im = np.asarray(im)
         if label is None:
             return (im, im_info)
         else:

@@ -14,7 +14,7 @@
 from __future__ import absolute_import
 import os.path as osp
 import random
-from ..utils import logging
+from utils import logging
 from .base import BaseReader
 from .base import get_encoding
 from collections import OrderedDict
