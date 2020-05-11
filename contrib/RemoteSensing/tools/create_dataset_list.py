@@ -22,53 +22,44 @@ import warnings
 def parse_args():
     parser = argparse.ArgumentParser(
         description='PaddleSeg generate file list on your customized dataset.')
-    parser.add_argument(
-        'dataset_root',
-        help='dataset root directory',
-        type=str
-    )
+    parser.add_argument('dataset_root', help='dataset root directory', type=str)
     parser.add_argument(
         '--separator',
         dest='separator',
         help='file list separator',
         default=" ",
-        type=str
-    )
+        type=str)
     parser.add_argument(
         '--folder',
         help='the folder names of images and labels',
         type=str,
         nargs=2,
-        default=['images', 'annotations']
-    )
+        default=['images', 'annotations'])
     parser.add_argument(
         '--second_folder',
-        help='the second-level folder names of train set, validation set, test set',
+        help=
+        'the second-level folder names of train set, validation set, test set',
         type=str,
         nargs='*',
-        default=['train', 'val', 'test']
-    )
+        default=['train', 'val', 'test'])
     parser.add_argument(
         '--format',
-        help='data format of images and labels, e.g. jpg or png.',
+        help='data format of images and labels, default npy, png.',
         type=str,
         nargs=2,
-        default=['npy', 'png']
-    )
+        default=['npy', 'png'])
     parser.add_argument(
         '--label_class',
         help='label class names',
         type=str,
         nargs='*',
-        default=['__background__', '__foreground__']
-    )
+        default=['__background__', '__foreground__'])
     parser.add_argument(
         '--postfix',
         help='postfix of images or labels',
         type=str,
         nargs=2,
-        default=['', '']
-    )
+        default=['', ''])
 
     return parser.parse_args()
 
@@ -100,11 +91,11 @@ def get_files(image_or_label, dataset_split, args):
 def generate_list(args):
     dataset_root = args.dataset_root
     separator = args.separator
-    
+
     file_list = os.path.join(dataset_root, 'labels.txt')
     with open(file_list, "w") as f:
         for label_class in args.label_class:
-            f.write(label_class+'\n')
+            f.write(label_class + '\n')
 
     for dataset_split in args.second_folder:
         print("Creating {}.txt...".format(dataset_split))
@@ -116,15 +107,17 @@ def generate_list(args):
         num_images = len(image_files)
 
         if not label_files:
-            label_dir = os.path.join(dataset_root, args.folder[1], dataset_split)
+            label_dir = os.path.join(dataset_root, args.folder[1],
+                                     dataset_split)
             warnings.warn("No labels in {} !!!".format(label_dir))
         num_label = len(label_files)
 
         if num_images != num_label and num_label > 0:
-            raise Exception("Number of images = {}    number of labels = {} \n"
-                            "Either number of images is equal to number of labels, "
-                            "or number of labels is equal to 0.\n"
-                            "Please check your dataset!".format(num_images, num_label))
+            raise Exception(
+                "Number of images = {}    number of labels = {} \n"
+                "Either number of images is equal to number of labels, "
+                "or number of labels is equal to 0.\n"
+                "Please check your dataset!".format(num_images, num_label))
 
         file_list = os.path.join(dataset_root, dataset_split + '.txt')
         with open(file_list, "w") as f:

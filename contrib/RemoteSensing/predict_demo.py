@@ -1,11 +1,9 @@
-import sys
 import os
 import os.path as osp
 import numpy as np
 from PIL import Image as Image
 import argparse
-sys.path.append(osp.join(os.getcwd(), '..'))
-from RemoteSensing.models import load_model
+from models import load_model
 
 
 def parse_args():

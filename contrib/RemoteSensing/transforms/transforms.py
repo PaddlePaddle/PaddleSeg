@@ -414,16 +414,25 @@ class Clip:
     对图像上超出一定范围的数据进行裁剪。
 
     Args:
-        min_var (int): 裁剪的下限，小于min_var的数值均设为min_var.
-        max_var (int): 裁剪的上限，大于max_var的数值均设为max_var.
+        min_val (list): 裁剪的下限，小于min_val的数值均设为min_val. 默认值[0, 0, 0].
+        max_val (list): 裁剪的上限，大于max_val的数值均设为max_val. 默认值[255.0, 255.0, 255.0]
     """
 
-    def __init__(self, min_val, max_val):
+    def __init__(self, min_val=[0, 0, 0], max_val=[255.0, 255.0, 255.0]):
         self.min_val = min_val
         self.max_val = max_val
 
     def __call__(self, im, im_info=None, label=None):
-        np.clip(im, self.min_val, self.max_val, out=im)
+        if isinstance(self.min_val, list) and isinstance(self.max_val, list):
+            for k in range(im.shape[2]):
+                np.clip(
+                    im[:, :, k],
+                    self.min_val[k],
+                    self.max_val[k],
+                    out=im[:, :, k])
+        else:
+            raise TypeError('min_val and max_val must be list')
+
         if label is None:
             return (im, im_info)
         else:
@@ -432,19 +441,25 @@ class Clip:
 
 class Normalize:
     """对图像进行标准化。
-    1.尺度缩放到 [0,1]。
+    1.图像像素归一化到区间 [0.0, 1.0]。
     2.对图像进行减均值除以标准差操作。
 
     Args:
-        mean (list): 图像数据集的均值。默认值[0.5, 0.5, 0.5]。
-        std (list): 图像数据集的标准差。默认值[0.5, 0.5, 0.5]。
+        min_val (list): 图像数据集的最小值。默认值[0, 0, 0].
+        max_val (list): 图像数据集的最大值。默认值[255.0, 255.0, 255.0]
+        mean (list): 图像数据集的均值。默认值[0.5, 0.5, 0.5].
+        std (list): 图像数据集的标准差。默认值[0.5, 0.5, 0.5].
 
     Raises:
         ValueError: mean或std不是list对象。std包含0。
     """
 
-    def __init__(self, max_val=255.0, mean=[0.5, 0.5, 0.5], std=[0.5, 0.5,
-                                                                 0.5]):
+    def __init__(self,
+                 min_val=[0, 0, 0],
+                 max_val=[255.0, 255.0, 255.0],
+                 mean=[0.5, 0.5, 0.5],
+                 std=[0.5, 0.5, 0.5]):
+        self.min_val = min_val
         self.max_val = max_val
         self.mean = mean
         self.std = std
@@ -469,7 +484,8 @@ class Normalize:
 
         mean = np.array(self.mean)[np.newaxis, np.newaxis, :]
         std = np.array(self.std)[np.newaxis, np.newaxis, :]
-        im = normalize(im, self.max_val, mean, std)
+
+        im = normalize(im, self.min_val, self.max_val, mean, std)
 
         if label is None:
             return (im, im_info)

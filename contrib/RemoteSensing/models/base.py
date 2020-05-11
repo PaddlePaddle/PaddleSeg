@@ -21,13 +21,13 @@ import math
 import yaml
 import copy
 import json
-import functools
-import RemoteSensing.utils.logging as logging
-import RemoteSensing
+import utils.logging as logging
 from collections import OrderedDict
 from os import path as osp
-from paddle.fluid.framework import Program
-from ..utils.pretrain_weights import get_pretrain_weights
+from utils.pretrain_weights import get_pretrain_weights
+import transforms.transforms as T
+import utils
+import __init__
 
 
 def dict2str(dict_input):
@@ -46,7 +46,7 @@ class BaseAPI:
         # 现有的CV模型都有这个属性，而这个属且也需要在eval时用到
         self.num_classes = None
         self.labels = None
-        if RemoteSensing.env_info['place'] == 'cpu':
+        if __init__.env_info['place'] == 'cpu':
             self.places = fluid.cpu_places()
         else:
             self.places = fluid.cuda_places()
@@ -73,8 +73,8 @@ class BaseAPI:
         else:
             raise Exception("Please support correct batch_size, \
                             which can be divided by available cards({}) in {}".
-                            format(RemoteSensing.env_info['num'],
-                                   RemoteSensing.env_info['place']))
+                            format(__init__.env_info['num'],
+                                   __init__.env_info['place']))
 
     def build_program(self):
         # 构建训练网络
@@ -93,12 +93,9 @@ class BaseAPI:
     def arrange_transforms(self, transforms, mode='train'):
         # 给transforms添加arrange操作
         if transforms.transforms[-1].__class__.__name__.startswith('Arrange'):
-            transforms.transforms[
-                -1] = RemoteSensing.transforms.transforms.ArrangeSegmenter(
-                    mode=mode)
+            transforms.transforms[-1] = T.ArrangeSegmenter(mode=mode)
         else:
-            transforms.transforms.append(
-                RemoteSensing.transforms.transforms.ArrangeSegmenter(mode=mode))
+            transforms.transforms.append(T.ArrangeSegmenter(mode=mode))
 
     def build_train_data_loader(self, reader, batch_size):
         # 初始化data_loader
@@ -134,8 +131,8 @@ class BaseAPI:
         if pretrain_weights is not None:
             logging.info(
                 "Load pretrain weights from {}.".format(pretrain_weights))
-            RemoteSensing.utils.utils.load_pretrain_weights(
-                self.exe, self.train_prog, pretrain_weights, fuse_bn)
+            utils.utils.load_pretrain_weights(self.exe, self.train_prog,
+                                              pretrain_weights, fuse_bn)
         # 进行裁剪
         if sensitivities_file is not None:
             from .slim.prune_config import get_sensitivities
@@ -211,46 +208,6 @@ class BaseAPI:
         open(osp.join(save_dir, '.success'), 'w').close()
         logging.info("Model saved in {}.".format(save_dir))
 
-    def export_inference_model(self, save_dir):
-        test_input_names = [var.name for var in list(self.test_inputs.values())]
-        test_outputs = list(self.test_outputs.values())
-        if self.__class__.__name__ == 'MaskRCNN':
-            from RemoteSensing.utils.save import save_mask_inference_model
-            save_mask_inference_model(
-                dirname=save_dir,
-                executor=self.exe,
-                params_filename='__params__',
-                feeded_var_names=test_input_names,
-                target_vars=test_outputs,
-                main_program=self.test_prog)
-        else:
-            fluid.io.save_inference_model(
-                dirname=save_dir,
-                executor=self.exe,
-                params_filename='__params__',
-                feeded_var_names=test_input_names,
-                target_vars=test_outputs,
-                main_program=self.test_prog)
-        model_info = self.get_model_info()
-        model_info['status'] = 'Infer'
-
-        # 保存模型输出的变量描述
-        model_info['_ModelInputsOutputs'] = dict()
-        model_info['_ModelInputsOutputs']['test_inputs'] = [
-            [k, v.name] for k, v in self.test_inputs.items()
-        ]
-        model_info['_ModelInputsOutputs']['test_outputs'] = [
-            [k, v.name] for k, v in self.test_outputs.items()
-        ]
-
-        with open(
-                osp.join(save_dir, 'model.yml'), encoding='utf-8',
-                mode='w') as f:
-            yaml.dump(model_info, f)
-        # 模型保存成功的标志
-        open(osp.join(save_dir, '.success'), 'w').close()
-        logging.info("Model for inference deploy saved in {}.".format(save_dir))
-
     def train_loop(self,
                    num_epochs,
                    train_reader,
@@ -287,8 +244,7 @@ class BaseAPI:
         if self.parallel_train_prog is None:
             build_strategy = fluid.compiler.BuildStrategy()
             build_strategy.fuse_all_optimizer_ops = False
-            if RemoteSensing.env_info['place'] != 'cpu' and len(
-                    self.places) > 1:
+            if __init__.env_info['place'] != 'cpu' and len(self.places) > 1:
                 build_strategy.sync_batch_norm = self.sync_bn
             exec_strategy = fluid.ExecutionStrategy()
             exec_strategy.num_iteration_per_drop_scope = 1

@@ -1,7 +1,9 @@
 # 遥感分割（RemoteSensing）
 遥感影像分割是图像分割领域中的重要应用场景，广泛应用于土地测绘、环境监测、城市建设等领域。遥感影像分割的目标多种多样，有诸如积雪、农作物、道路、建筑、水源等地物目标，也有例如云层的空中目标。
 
-PaddleSeg提供了针对遥感专题的语义分割库，涵盖图像预处理、数据增强、模型训练、预测流程，帮助大家利用深度学习技术解决遥感影像分割问题。
+PaddleSeg提供了针对遥感专题的语义分割库RemoteSensing，涵盖图像预处理、数据增强、模型训练、预测流程，帮助大家利用深度学习技术解决遥感影像分割问题。
+
+针对遥感数据多通道、分布范围大、分布不均的特点，我们支持多通道训练预测，内置一系列多通道预处理和数据增强的策略，可结合实际业务场景进行定制组合，提升模型泛化能力和鲁棒性。
 
 **Note:** 所有命令需要在`PaddleSeg/contrib/RemoteSensing/`目录下执行。
 
@@ -102,12 +104,11 @@ np.save(save_path, img)
 ### 2. 训练代码开发
 通过如下`train_demo.py`代码进行训练。
 
-> 将RemoteSensing目录加入环境变量，导入RemoteSensing api
+> 导入RemoteSensing api
 ```python
-sys.path.append(osp.join(os.getcwd(), '..'))
-import RemoteSensing.transforms.transforms as T
-from RemoteSensing.readers.reader import Reader
-from RemoteSensing.models import UNet
+import transforms.transforms as T
+from readers.reader import Reader
+from models import UNet
 ```
 
 > 定义训练和验证时的数据处理和增强流程, 在`train_transforms`中加入了`RandomVerticalFlip`,`RandomHorizontalFlip`等数据增强方式。
@@ -117,17 +118,16 @@ train_transforms = T.Compose([
     T.RandomHorizontalFlip(0.5),
     T.ResizeStepScaling(0.5, 2.0, 0.25),
     T.RandomPaddingCrop(256),
-    T.Normalize(max_val=255, mean=[0.5] * channel, std=[0.5] * channel),
+    T.Normalize(mean=[0.5] * channel, std=[0.5] * channel),
 ])
 
 eval_transforms = T.Compose([
-    T.Normalize(max_val=255, mean=[0.5] * channel, std=[0.5] * channel),
+    T.Normalize(mean=[0.5] * channel, std=[0.5] * channel),
 ])
 ```
 
 > 定义数据读取器
 ```python
-import sys
 import os
 import os.path as osp
 
@@ -189,11 +189,9 @@ python train_demo.py --data_dir dataset/demo/ --save_dir saved_model/unet/ --cha
 ### 4. 模型预测代码开发
 通过如下`predict_demo.py`代码进行预测。
 
-> 将RemoteSensing目录加入环境变量，导入RemoteSensing api
+> 导入RemoteSensing api
 ```python
-import sys
-sys.path.append(osp.join(os.getcwd(), '..'))
-from RemoteSensing.models import load_model
+from models import load_model
 ```
 > 加载训练过程中最好的模型，设置预测结果保存路径。
 ```python

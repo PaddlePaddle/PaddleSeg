@@ -1,11 +1,8 @@
-import sys
-import os
 import os.path as osp
 import argparse
-sys.path.append(osp.join(os.getcwd(), '..'))
-import RemoteSensing.transforms.transforms as T
-from RemoteSensing.readers.reader import Reader
-from RemoteSensing.models import UNet
+import transforms.transforms as T
+from readers.reader import Reader
+from models import UNet
 
 
 def parse_args():
@@ -60,11 +57,11 @@ train_transforms = T.Compose([
     T.RandomHorizontalFlip(0.5),
     T.ResizeStepScaling(0.5, 2.0, 0.25),
     T.RandomPaddingCrop(256),
-    T.Normalize(max_val=255, mean=[0.5] * channel, std=[0.5] * channel),
+    T.Normalize(mean=[0.5] * channel, std=[0.5] * channel),
 ])
 
 eval_transforms = T.Compose([
-    T.Normalize(max_val=255, mean=[0.5] * channel, std=[0.5] * channel),
+    T.Normalize(mean=[0.5] * channel, std=[0.5] * channel),
 ])
 
 train_list = osp.join(data_dir, 'train.txt')

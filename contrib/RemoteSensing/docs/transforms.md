@@ -1,11 +1,11 @@
-# RemoteSensing.transforms.transforms
+# transforms.transforms
 
 对用于分割任务的数据进行操作。可以利用[Compose](#compose)类将图像预处理/增强操作进行组合。
 
 
 ## Compose类
 ```python
-RemoteSensing.transforms.transforms.Compose(transforms)
+transforms.transforms.Compose(transforms)
 ```
 根据数据预处理/数据增强列表对输入数据进行操作。
 ### 参数
@@ -14,7 +14,7 @@ RemoteSensing.transforms.transforms.Compose(transforms)
 
 ## RandomHorizontalFlip类
 ```python
-RemoteSensing.transforms.transforms.RandomHorizontalFlip(prob=0.5)
+transforms.transforms.RandomHorizontalFlip(prob=0.5)
 ```
 以一定的概率对图像进行水平翻转,模型训练时的数据增强操作。
 ### 参数
@@ -23,7 +23,7 @@ RemoteSensing.transforms.transforms.RandomHorizontalFlip(prob=0.5)
 
 ## RandomVerticalFlip类
 ```python
-RemoteSensing.transforms.transforms.RandomVerticalFlip(prob=0.1)
+transforms.transforms.RandomVerticalFlip(prob=0.1)
 ```
 以一定的概率对图像进行垂直翻转,模型训练时的数据增强操作。
 ### 参数
@@ -32,7 +32,7 @@ RemoteSensing.transforms.transforms.RandomVerticalFlip(prob=0.1)
 
 ## Resize类
 ```python
-RemoteSensing.transforms.transforms.Resize(target_size, interp='LINEAR')
+transforms.transforms.Resize(target_size, interp='LINEAR')
 ```
 调整图像大小（resize）。
 
@@ -48,7 +48,7 @@ RemoteSensing.transforms.transforms.Resize(target_size, interp='LINEAR')
 
 ## ResizeByLong类
 ```python
-RemoteSensing.transforms.transforms.ResizeByLong(long_size)
+transforms.transforms.ResizeByLong(long_size)
 ```
 对图像长边resize到固定值，短边按比例进行缩放。
 ### 参数
@@ -57,7 +57,7 @@ RemoteSensing.transforms.transforms.ResizeByLong(long_size)
 
 ## ResizeRangeScaling类
 ```python
-RemoteSensing.transforms.transforms.ResizeRangeScaling(min_value=400, max_value=600)
+transforms.transforms.ResizeRangeScaling(min_value=400, max_value=600)
 ```
 对图像长边随机resize到指定范围内，短边按比例进行缩放,模型训练时的数据增强操作。
 ### 参数
@@ -67,7 +67,7 @@ RemoteSensing.transforms.transforms.ResizeRangeScaling(min_value=400, max_value=
 
 ## ResizeStepScaling类
 ```python
-RemoteSensing.transforms.transforms.ResizeStepScaling(min_scale_factor=0.75, max_scale_factor=1.25, scale_step_size=0.25)
+transforms.transforms.ResizeStepScaling(min_scale_factor=0.75, max_scale_factor=1.25, scale_step_size=0.25)
 ```
 对图像按照某一个比例resize，这个比例以scale_step_size为步长，在[min_scale_factor, max_scale_factor]随机变动,模型训练时的数据增强操作。
 ### 参数
@@ -78,32 +78,33 @@ RemoteSensing.transforms.transforms.ResizeStepScaling(min_scale_factor=0.75, max
 
 ## Clip类
 ```python
-RemoteSensing.transforms.transforms.Clip(min_val, max_val)
+transforms.transforms.Clip(min_val=[0, 0, 0], max_val=[255.0, 255.0, 255.0])
 ```
 对图像上超出一定范围的数据进行裁剪。
 
 ### 参数
-* **min_var** (int): 裁剪的下限，小于min_var的数值均设为min_var.
-* **max_var** (int): 裁剪的上限，大于max_var的数值均设为max_var.
+* **min_var** (list): 裁剪的下限，小于min_val的数值均设为min_val. 默认值[0, 0, 0].
+* **max_var** (list): 裁剪的上限，大于max_val的数值均设为max_val. 默认值[255.0, 255.0, 255.0]
 
 
 ## Normalize类
 ```python
-RemoteSensing.transforms.transforms.Normalize(max_var=255, mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5])
+transforms.transforms.Normalize(min_val=[0, 0, 0], max_val=[255.0, 255.0, 255.0], mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5])
 ```
 对图像进行标准化。
 
-1.图像像素除以最大值归一化到区间 [0.0, 1.0]。
+1.图像像素归一化到区间 [0.0, 1.0]。
 2.对图像进行减均值除以标准差操作。
 ### 参数
-* **max_var** (int): 图像数据集的最大值。默认值为255.
+* **min_val** (list): 图像数据集的最小值。默认值[0, 0, 0].
+* **max_val** (list): 图像数据集的最大值。默认值[255.0, 255.0, 255.0]
 * **mean** (list): 图像数据集的均值。默认值[0.5, 0.5, 0.5]。
 * **std** (list): 图像数据集的标准差。默认值[0.5, 0.5, 0.5]。
 
 
 ## Padding类
 ```python
-RemoteSensing.transforms.transforms.Padding(target_size, im_padding_value=127.5, label_padding_value=255)
+transforms.transforms.Padding(target_size, im_padding_value=127.5, label_padding_value=255)
 ```
 对图像或标注图像进行padding，padding方向为右和下。根据提供的值对图像或标注图像进行padding操作。
 ### 参数
@@ -114,7 +115,7 @@ RemoteSensing.transforms.transforms.Padding(target_size, im_padding_value=127.5,
 
 ## RandomPaddingCrop类
 ```python
-RemoteSensing.transforms.transforms.RandomPaddingCrop(crop_size=512, im_padding_value=127.5, label_padding_value=255)
+transforms.transforms.RandomPaddingCrop(crop_size=512, im_padding_value=127.5, label_padding_value=255)
 ```
 对图像和标注图进行随机裁剪，当所需要的裁剪尺寸大于原图时，则进行padding操作，模型训练时的数据增强操作。
 ### 参数
@@ -125,7 +126,7 @@ RemoteSensing.transforms.transforms.RandomPaddingCrop(crop_size=512, im_padding_
 
 ## RandomBlur类
 ```python
-RemoteSensing.transforms.transforms.RandomBlur(prob=0.1)
+transforms.transforms.RandomBlur(prob=0.1)
 ```
 以一定的概率对图像进行高斯模糊，模型训练时的数据增强操作。
 ### 参数
@@ -134,7 +135,7 @@ RemoteSensing.transforms.transforms.RandomBlur(prob=0.1)
 
 ## RandomScaleAspect类
 ```python
-RemoteSensing.transforms.transforms.RandomScaleAspect(min_scale=0.5, aspect_ratio=0.33)
+transforms.transforms.RandomScaleAspect(min_scale=0.5, aspect_ratio=0.33)
 ```
 裁剪并resize回原始尺寸的图像和标注图像,模型训练时的数据增强操作。
 
