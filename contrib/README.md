@@ -1,4 +1,4 @@
-# PaddleSeg 特色垂类分割模型
+# PaddleSeg 产业实践分割模型
 
 提供基于PaddlePaddle最新的分割特色模型:
 
