@@ -1,0 +1,10 @@
+pre-commit
+yapf == 0.26.0
+flake8
+pyyaml >= 5.1
+visual >= 1.3.0
+Pillow
+numpy
+six
+opencv-python
+tqdm

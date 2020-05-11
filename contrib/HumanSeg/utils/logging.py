@@ -15,16 +15,16 @@
 import time
 import os
 import sys
-import HumanSeg
 
 levels = {0: 'ERROR', 1: 'WARNING', 2: 'INFO', 3: 'DEBUG'}
+log_level = 2
 
 
 def log(level=2, message=""):
     current_time = time.time()
     time_array = time.localtime(current_time)
     current_time = time.strftime("%Y-%m-%d %H:%M:%S", time_array)
-    if HumanSeg.log_level >= level:
+    if log_level >= level:
         print("{} [{}]\t{}".format(current_time, levels[level],
                                    message).encode("utf-8").decode("latin1"))
         sys.stdout.flush()

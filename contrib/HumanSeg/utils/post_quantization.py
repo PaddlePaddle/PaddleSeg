@@ -19,7 +19,7 @@ from paddle.fluid.contrib.slim.quantization import PostTrainingQuantization
 import paddle.fluid as fluid
 import os
 
-import HumanSeg.utils.logging as logging
+import utils.logging as logging
 
 
 class HumanSegPostTrainingQuantization(PostTrainingQuantization):

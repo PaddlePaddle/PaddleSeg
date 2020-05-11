@@ -23,7 +23,7 @@ import copy
 import random
 import platform
 import chardet
-import HumanSeg.utils.logging as logging
+import utils.logging as logging
 
 
 class EndSignal():
