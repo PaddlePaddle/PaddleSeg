@@ -1,6 +1,6 @@
 # HumanSeg人像分割模型
 
-本教程基于PaddleSeg核心分割网络，提供针对人像分割场景从预训练模型、Fine-tune、视频分割预测部署的全流程应用指南。
+本教程基于PaddleSeg核心分割网络，提供针对人像分割场景从预训练模型、Fine-tune、视频分割预测部署的全流程应用指南。最新发布HumanSeg-lite模型超轻量级人像分割模型，支持移动端场景的实时分割。
 
 ## 环境依赖
 
@@ -14,21 +14,20 @@ PaddlePaddle的安装可参考[飞桨快速安装](https://www.paddlepaddle.org.
 $ pip install -r requirements.txt
 ```
 
-
 ## 预训练模型
 HumanSeg开放了在大规模人像数据上训练的三个预训练模型，满足多种使用场景的需求
 | 模型类型 | Checkpoint | Inference Model | Quant Inference Model | 备注 |
 | --- | --- | --- | --- | --- |
-| HumanSeg-server | [humanseg_server_ckpt](https://paddleseg.bj.bcebos.com/humanseg/models/humanseg_server.zip) | [humanseg_server_infernce](https://paddleseg.bj.bcebos.com/humanseg/models/humanseg_server_export.zip) | -- | 高精度模型，适用于服务端GPU且背景复杂的人像场景  |
-| HumanSeg-mobile | [humanseg_mobile](https://paddleseg.bj.bcebos.com/humanseg/models/humanseg_mobile.zip) | [humanseg_mobile_infernce](https://paddleseg.bj.bcebos.com/humanseg/models/humanseg_mobile_export.zip) | [humanseg_mobile_quant](https://paddleseg.bj.bcebos.com/humanseg/models/humanseg_mobile_quant.zip) | 轻量级模型, 适用于移动端或服务端CPU的前置摄像头场景 |
-| HumanSeg-lite | [humanseg_lite](https://paddleseg.bj.bcebos.com/humanseg/models/humanseg_lite.zip) | [humanseg_lite_infernce](https://paddleseg.bj.bcebos.com/humanseg/models/humanseg_lite_export.zip) |  [humanseg_lite_quant](https://paddleseg.bj.bcebos.com/humanseg/models/humanseg_lite_quant.zip) | 超轻量级模型, 适用于手机自拍人像，且有移动端实时分割场景 |
+| HumanSeg-server | [humanseg_server_ckpt](https://paddleseg.bj.bcebos.com/humanseg/models/humanseg_server.zip) | [humanseg_server_export](https://paddleseg.bj.bcebos.com/humanseg/models/humanseg_server_export.zip) | -- | 高精度模型，适用于服务端GPU且背景复杂的人像场景  |
+| HumanSeg-mobile | [humanseg_mobile_ckpt](https://paddleseg.bj.bcebos.com/humanseg/models/humanseg_mobile.zip) | [humanseg_mobile_export](https://paddleseg.bj.bcebos.com/humanseg/models/humanseg_mobile_export.zip) | [humanseg_mobile_quant](https://paddleseg.bj.bcebos.com/humanseg/models/humanseg_mobile_quant.zip) | 轻量级模型, 适用于移动端或服务端CPU的前置摄像头场景 |
+| HumanSeg-lite | [humanseg_lite](https://paddleseg.bj.bcebos.com/humanseg/models/humanseg_lite.zip) | [humanseg_lite_export](https://paddleseg.bj.bcebos.com/humanseg/models/humanseg_lite_export.zip) |  [humanseg_lite_quant](https://paddleseg.bj.bcebos.com/humanseg/models/humanseg_lite_quant.zip) | 超轻量级模型, 适用于手机自拍人像，且有移动端实时分割场景 |
 
 **NOTE:**
 其中Checkpoint为模型权重，用于Fine-tuning场景。
 
-Inference Model和Quant Inference Model为预测部署模型，包含`__model__`计算图结构、`__params__`模型参数和`model.yaml`基础的模型配置信息。
+* Inference Model和Quant Inference Model为预测部署模型，包含`__model__`计算图结构、`__params__`模型参数和`model.yaml`基础的模型配置信息。
 
-其中Inference Model适用于服务端的CPU和GPU预测场景，Qunat Inference Model为的量化版本，适用于通过Paddle Lite进行移动端等端侧设备部署。更多Paddle Lite部署说明查看[Paddle Lite文档](https://paddle-lite.readthedocs.io/zh/latest/)
+* 其中Inference Model适用于服务端的CPU和GPU预测部署，Qunat Inference Model为量化版本，适用于通过Paddle Lite进行移动端等端侧设备部署。更多Paddle Lite部署说明查看[Paddle Lite文档](https://paddle-lite.readthedocs.io/zh/latest/)
 
 执行以下脚本进行HumanSeg预训练模型的下载
 ```bash
@@ -42,16 +41,18 @@ python pretrained_weights/download_pretrained_weights.py
 python data/download_data.py
 ```
 
-## 视频流分割快速体验
+## 快速体验视频流人像分割
 ```bash
 # 通过电脑摄像头进行实时分割处理
-python video_infer.py --model_dir pretrained_weights/humanseg_lite_epxort
+python video_infer.py --model_dir pretrained_weights/humanseg_lite_export
 
 # 对人像视频进行分割处理
-python video_infer.py --model_dir pretrained_weights/humanseg_lite_epxort \
---video_path data/video_test.mp4
+python video_infer.py --model_dir pretrained_weights/humanseg_lite_export --video_path data/video_test.mp4
 ```
 
+**NOTE**:
+
+视频分割处理时间需要几分钟，请耐心等待。
 
 ## 训练
 使用下述命令基于与训练模型进行Fine-tuning，请确保选用的模型结构`model_type`与模型参数`pretrained_weights`匹配。
@@ -61,7 +62,7 @@ python train.py --model_type HumanSegMobile \
 --data_dir data/mini_supervisely \
 --train_list data/mini_supervisely/train.txt \
 --val_list data/mini_supervisely/val.txt \
---pretrained_weights pretrained_weights/humanseg_Mobile \
+--pretrained_weights pretrained_weights/humanseg_mobile \
 --batch_size 8 \
 --learning_rate 0.001 \
 --num_epochs 10
@@ -89,7 +90,7 @@ python train.py --help
 ```bash
 python val.py --model_dir output/best_model \
 --data_dir data/mini_supervisely \
---val_list data/mini_supervisely/val.txt \
+--val_list data/mini_supervisely/val.txt
 ```
 其中参数含义如下：
 * `--model_dir`: 模型路径
@@ -142,7 +143,7 @@ python quant_online.py --model_type HumanSegMobile \
 --pretrained_weights output/best_model \
 --batch_size 2 \
 --learning_rate 0.001 \
---num_epochs 2 \
+--num_epochs 2
 ```
 其中参数含义如下：
 * `--model_type`: 模型类型，可选项为：HumanSegServer、HumanSegMobile和HumanSegLite

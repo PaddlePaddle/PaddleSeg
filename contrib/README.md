@@ -1,4 +1,4 @@
-# PaddleSeg 产业实践分割模型
+# PaddleSeg 产业实践
 
 提供基于PaddlSeg最新的分割特色模型:
 
@@ -8,7 +8,7 @@
 - [工业表盘分割](#工业表盘分割)
 - [AIStudio在线教程](#AIStudio在线教程)
 
-## 人像分割HumanSeg
+## 人像分割 HumanSeg
 
 HumanSeg系列全新升级，提供三个适用于不同场景，包含适用于移动端实时分割场景的模型`HumanSeg-lite`，提供了包含光流的后处理的优化，使人像分割在视频场景中更加顺畅，更多详情请参考[HumanSeg](./HumanSeg)
 
@@ -18,7 +18,7 @@ HumanSeg系列全新升级，提供三个适用于不同场景，包含适用于
 人体解析(Human Parsing)是细粒度的语义分割任务，旨在识别像素级别的人类图像的组成部分（例如，身体部位和服装）。ACE2P通过融合底层特征、全局上下文信息和边缘细节，端到端训练学习人体解析任务。以ACE2P单人人体解析网络为基础的解决方案在CVPR2019第三届LIP挑战赛中赢得了全部三个人体解析任务的第一名
 
 
-## ACE2P模型框架图
+#### ACE2P模型框架图
 ![](./ACE2P/imgs/net.jpg)
 
 PaddleSeg提供了ACE2P获得比赛冠军的预训练模型，更多详情请点击[ACE2P](./ACE2P)
@@ -37,7 +37,7 @@ PaddleSeg提供了基于LaneNet的车道线分割模型，更多详情请点击[
 
 ### 1. 模型结构
 
-unet
+U-Net
 
 ### 2. 数据准备
  
@@ -46,7 +46,6 @@ unet
 ```
 python ./contrib/MechanicalIndustryMeter/download_mini_mechanical_industry_meter.py
 ```
-
 
 ### 3. 下载预训练模型
 
