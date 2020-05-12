@@ -73,6 +73,13 @@ def parse_args():
         help='The interval epochs for save a model snapshot',
         type=int,
         default=1)
+    parser.add_argument(
+        "--image_shape",
+        dest="image_shape",
+        help="The image shape for net inputs.",
+        nargs=2,
+        default=[192, 192],
+        type=int)
 
     return parser.parse_args()
 
@@ -80,12 +87,12 @@ def parse_args():
 def train(args):
     train_transforms = transforms.Compose([
         transforms.RandomHorizontalFlip(),
-        transforms.Resize((192, 192)),
+        transforms.Resize(args.image_shape),
         transforms.Normalize()
     ])
 
     eval_transforms = transforms.Compose(
-        [transforms.Resize((192, 192)),
+        [transforms.Resize(args.image_shape),
          transforms.Normalize()])
 
     train_dataset = Dataset(

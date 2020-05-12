@@ -29,6 +29,13 @@ def parse_args():
         help='The directory for saving the inference results',
         type=str,
         default='./output')
+    parser.add_argument(
+        "--image_shape",
+        dest="image_shape",
+        help="The image shape for net inputs.",
+        nargs=2,
+        default=[192, 192],
+        type=int)
 
     return parser.parse_args()
 
@@ -60,9 +67,8 @@ def recover(img, im_info):
 
 
 def video_infer(args):
-
-    resize_h = 192
-    resize_w = 192
+    resize_h = args.image_shape[1]
+    resize_w = args.image_shape[0]
 
     test_transforms = transforms.Compose(
         [transforms.Resize((resize_w, resize_h)),
