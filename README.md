@@ -8,8 +8,6 @@
 
 PaddleSeg是基于[PaddlePaddle](https://www.paddlepaddle.org.cn)开发的端到端图像分割开发套件，覆盖了DeepLabv3+, U-Net, ICNet, PSPNet, HRNet, Fast-SCNN等主流分割网络。通过模块化的设计，以配置化方式驱动模型组合，帮助用户更便捷地完成从训练到部署的全流程图像分割应用。
 
-</br>
-
 - [特点](#特点) 
 - [安装](#安装)
 - [使用教程](#使用教程)
@@ -22,8 +20,6 @@ PaddleSeg是基于[PaddlePaddle](https://www.paddlepaddle.org.cn)开发的端到
 - [交流与反馈](#交流与反馈)
 - [更新日志](#更新日志)
 - [贡献代码](#贡献代码)
-
-</br>
 
 ## 特点
 
@@ -73,8 +69,6 @@ git clone https://github.com/PaddlePaddle/PaddleSeg
 cd PaddleSeg
 pip install -r requirements.txt
 ```
-
-</br>
 
 ## 使用教程
 
@@ -128,8 +122,6 @@ pip install -r requirements.txt
 |人像分割|[点击体验](https://aistudio.baidu.com/aistudio/projectdetail/188833)|
 |PaddleSeg特色垂类模型|[点击体验](https://aistudio.baidu.com/aistudio/projectdetail/226710)|
 
-</br>
-
 ## FAQ
 
 #### Q: 安装requirements.txt指定的依赖包时，部分包提示找不到？
@@ -152,26 +144,27 @@ python pdseg/train.py --cfg xxx.yaml TRAIN.RESUME_MODEL_DIR /PATH/TO/MODEL_CKPT/
 A: 降低Batch size，使用Group Norm策略；请注意训练过程中当`DEFAULT_NORM_TYPE`选择`bn`时，为了Batch Norm计算稳定性，batch size需要满足>=2
 
 
-#### Q: 出现错误 ModuleNotFoundError: No module named 'paddle.fluid.contrib.mixed_precision'
-
-A: 请将PaddlePaddle升级至1.5.2版本或以上。
-
-</br>
-
 ## 交流与反馈
 * 欢迎您通过[Github Issues](https://github.com/PaddlePaddle/PaddleSeg/issues)来提交问题、报告与建议
 * 微信公众号：飞桨PaddlePaddle
-* QQ群: 796771754
+* QQ群: 703252161
 
 <p align="center"><img width="200" height="200"  src="https://user-images.githubusercontent.com/45189361/64117959-1969de80-cdc9-11e9-84f7-e1c2849a004c.jpeg"/>&#8194;&#8194;&#8194;&#8194;&#8194;<img width="200" height="200" margin="500" src="./docs/imgs/qq_group2.png"/></p>
 <p align="center">  &#8194;&#8194;&#8194;微信公众号&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;官方技术交流QQ群</p>
 
 ## 更新日志
+* 2020.05.12
+
+  **`v0.5.0`**
+  * 全面升级[HumanSeg人像分割模型](./contrib/HumanSeg)，新增超轻量级人像分割模型HumanSeg-lite支持移动端实时人像分割处理，并提供基于光流的视频分割后处理提升分割流畅性。
+  * 新增[气象遥感分割方案](./contrib/RemoteSensing)，支持积雪分割、云分割等气象遥感场景。
+  * 新增Lovasz Loss
+  
 * 2020.02.25
 
   **`v0.4.0`**
-  * 新增适用于实时场景且不需要预训练模型的分割网络Fast-SCNN，提供基于Cityscapes的[预训练模型](./docs/model_zoo.md)1个。
-  * 新增LaneNet车道线检测网络，提供[预训练模型](https://github.com/PaddlePaddle/PaddleSeg/tree/release/v0.4.0/contrib/LaneNet#%E4%B8%83-%E5%8F%AF%E8%A7%86%E5%8C%96)一个。
+  * 新增适用于实时场景且不需要预训练模型的分割网络Fast-SCNN，提供基于Cityscapes的[预训练模型](./docs/model_zoo.md)1个
+  * 新增LaneNet车道线检测网络，提供[预训练模型](https://github.com/PaddlePaddle/PaddleSeg/tree/release/v0.4.0/contrib/LaneNet#%E4%B8%83-%E5%8F%AF%E8%A7%86%E5%8C%96)一个
   * 新增基于PaddleSlim的分割库压缩策略([量化](./slim/quantization/README.md), [蒸馏](./slim/distillation/README.md), [剪枝](./slim/prune/README.md), [搜索](./slim/nas/README.md))
   
   
