@@ -44,11 +44,10 @@ python data/download_data.py
 ## 视频流分割快速体验
 ```bash
 # 通过电脑摄像头进行实时分割处理
-python video_infer.py --model_dir pretrained_weights/humanseg_lite_epxort
+python video_infer.py --model_dir pretrained_weights/humanseg_lite_epxort/
 
 # 对人像视频进行分割处理
-python video_infer.py --model_dir pretrained_weights/humanseg_lite_epxort \
-----video_path data/video_test.mp4
+python video_infer.py --model_dir pretrained_weights/humanseg_lite_epxort/ --video_path data/video_test.mp4
 ```
 
 ## 训练
