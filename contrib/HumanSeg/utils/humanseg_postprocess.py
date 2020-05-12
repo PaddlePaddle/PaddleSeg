@@ -158,6 +158,4 @@ def postprocess(image, output_data):
     optflow_map = cv2.GaussianBlur(optflow_map, (3, 3), 0)
     optflow_map = threshold_mask(optflow_map, thresh_bg=0.2, thresh_fg=0.8)
     optflow_map = np.repeat(optflow_map[:, :, np.newaxis], 3, axis=2)
-    bg_im = np.ones_like(optflow_map) * 255
-    comb = (optflow_map * image + (1 - optflow_map) * bg_im).astype(np.uint8)
-    return comb
+    return optflow_map

@@ -42,7 +42,6 @@ def predict(img, model, test_transforms):
         feed={'image': img},
         fetch_list=list(model.test_outputs.values()))
     score_map = result[1]
-    print(score_map)
     score_map = np.squeeze(score_map, axis=0)
     score_map = np.transpose(score_map, (1, 2, 0))
     return score_map, im_info
@@ -92,7 +91,10 @@ def video_infer(args):
                 img = cv2.resize(frame, (192, 192))
                 img_mat = postprocess(img, score_map)
                 img_mat = recover(img_mat, im_info)
-                out.write(img_mat)
+                bg_im = np.ones_like(img_mat) * 255
+                comb = (img_mat * frame + (1 - img_mat) * bg_im).astype(
+                    np.uint8)
+                out.write(comb)
             else:
                 break
         cap.release()
@@ -106,8 +108,10 @@ def video_infer(args):
                 img = cv2.resize(frame, (192, 192))
                 img_mat = postprocess(img, score_map)
                 img_mat = recover(img_mat, im_info)
-                print(img_mat.shape)
-                cv2.imshow('HumanSegmentation', img_mat)
+                bg_im = np.ones_like(img_mat) * 255
+                comb = (img_mat * frame + (1 - img_mat) * bg_im).astype(
+                    np.uint8)
+                cv2.imshow('HumanSegmentation', comb)
                 if cv2.waitKey(1) & 0xFF == ord('q'):
                     break
             else:
