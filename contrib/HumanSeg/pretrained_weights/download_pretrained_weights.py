@@ -26,8 +26,6 @@ model_urls = {
     "https://paddleseg.bj.bcebos.com/humanseg/models/humanseg_server.zip",
     "humanseg_server_export":
     "https://paddleseg.bj.bcebos.com/humanseg/models/humanseg_server_export.zip",
-    "humanseg_server_quant":
-    "https://paddleseg.bj.bcebos.com/humanseg/models/humanseg_server_quant.zip",
     "humanseg_mobile":
     "https://paddleseg.bj.bcebos.com/humanseg/models/humanseg_mobile.zip",
     "humanseg_mobile_export":
@@ -36,7 +34,7 @@ model_urls = {
     "https://paddleseg.bj.bcebos.com/humanseg/models/humanseg_mobile_quant.zip",
     "humanseg_lite":
     "https://paddleseg.bj.bcebos.com/humanseg/models/humanseg_lite.zip",
-    "humanseg_lite_epxort":
+    "humanseg_lite_export":
     "https://paddleseg.bj.bcebos.com/humanseg/models/humanseg_lite_export.zip",
     "humanseg_lite_quant":
     "https://paddleseg.bj.bcebos.com/humanseg/models/humanseg_lite_quant.zip",
