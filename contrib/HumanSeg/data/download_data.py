@@ -29,7 +29,10 @@ def download_data(savepath, extrapath):
 
     url = "https://paddleseg.bj.bcebos.com/humanseg/data/video_test.zip"
     download_file_and_uncompress(
-        url=url, savepath=savepath, extrapath=extrapath)
+        url=url,
+        savepath=savepath,
+        extrapath=extrapath,
+        extraname='video_test.mp4')
 
 
 if __name__ == "__main__":

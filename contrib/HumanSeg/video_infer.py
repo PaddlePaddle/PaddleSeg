@@ -4,7 +4,7 @@ import os.path as osp
 import cv2
 import numpy as np
 
-from utils.humanseg_postprocess import postprocess
+from utils.humanseg_postprocess import postprocess, threshold_mask
 import models
 import transforms
 
@@ -33,9 +33,39 @@ def parse_args():
     return parser.parse_args()
 
 
+def predict(img, model, test_transforms):
+    model.arrange_transform(transforms=test_transforms, mode='test')
+    img, im_info = test_transforms(img)
+    img = np.expand_dims(img, axis=0)
+    result = model.exe.run(
+        model.test_prog,
+        feed={'image': img},
+        fetch_list=list(model.test_outputs.values()))
+    score_map = result[1]
+    score_map = np.squeeze(score_map, axis=0)
+    score_map = np.transpose(score_map, (1, 2, 0))
+    return score_map, im_info
+
+
+def recover(img, im_info):
+    keys = list(im_info.keys())
+    for k in keys[::-1]:
+        if k == 'shape_before_resize':
+            h, w = im_info[k][0], im_info[k][1]
+            img = cv2.resize(img, (w, h), cv2.INTER_LINEAR)
+        elif k == 'shape_before_padding':
+            h, w = im_info[k][0], im_info[k][1]
+            img = img[0:h, 0:w]
+    return img
+
+
 def video_infer(args):
+
+    resize_h = 192
+    resize_w = 192
+
     test_transforms = transforms.Compose(
-        [transforms.Resize((192, 192)),
+        [transforms.Resize((resize_w, resize_h)),
          transforms.Normalize()])
     model = models.load_model(args.model_dir)
     if not args.video_path:
@@ -47,11 +77,21 @@ def video_infer(args):
                       "--video_path whether existing: {}"
                       " or camera whether working".format(args.video_path))
         return
+
+    width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+    height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+
+    disflow = cv2.DISOpticalFlow_create(cv2.DISOPTICAL_FLOW_PRESET_ULTRAFAST)
+    prev_gray = np.zeros((resize_h, resize_w), np.uint8)
+    prev_cfd = np.zeros((resize_h, resize_w), np.float32)
+    is_init = True
+
+    fps = cap.get(cv2.CAP_PROP_FPS)
     if args.video_path:
-        width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-        height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-        fps = cap.get(cv2.CAP_PROP_FPS)
+
         # 用于保存预测结果视频
+        if not osp.exists(args.save_dir):
+            os.makedirs(args.save_dir)
         out = cv2.VideoWriter(
             osp.join(args.save_dir, 'result.avi'),
             cv2.VideoWriter_fourcc('M', 'J', 'P', 'G'), fps, (width, height))
@@ -59,9 +99,24 @@ def video_infer(args):
         while cap.isOpened():
             ret, frame = cap.read()
             if ret:
-                results = model.predict(frame, test_transforms)
-                img_mat = postprocess(frame, results['score_map'])
-                out.write(img_mat)
+                score_map, im_info = predict(frame, model, test_transforms)
+                cur_gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+                cur_gray = cv2.resize(cur_gray, (resize_w, resize_h))
+                scoremap = 255 * score_map[:, :, 1]
+                optflow_map = postprocess(cur_gray, scoremap, prev_gray, prev_cfd, \
+                        disflow, is_init)
+                prev_gray = cur_gray.copy()
+                prev_cfd = optflow_map.copy()
+                is_init = False
+                optflow_map = cv2.GaussianBlur(optflow_map, (3, 3), 0)
+                optflow_map = threshold_mask(
+                    optflow_map, thresh_bg=0.2, thresh_fg=0.8)
+                img_mat = np.repeat(optflow_map[:, :, np.newaxis], 3, axis=2)
+                img_mat = recover(img_mat, im_info)
+                bg_im = np.ones_like(img_mat) * 255
+                comb = (img_mat * frame + (1 - img_mat) * bg_im).astype(
+                    np.uint8)
+                out.write(comb)
             else:
                 break
         cap.release()
@@ -71,10 +126,25 @@ def video_infer(args):
         while cap.isOpened():
             ret, frame = cap.read()
             if ret:
-                results = model.predict(frame, test_transforms)
-                print(frame.shape, results['score_map'].shape)
-                img_mat = postprocess(frame, results['score_map'])
-                cv2.imshow('HumanSegmentation', img_mat)
+                score_map, im_info = predict(frame, model, test_transforms)
+                cur_gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+                cur_gray = cv2.resize(cur_gray, (resize_w, resize_h))
+                scoremap = 255 * score_map[:, :, 1]
+                optflow_map = postprocess(cur_gray, scoremap, prev_gray, prev_cfd, \
+                                          disflow, is_init)
+                prev_gray = cur_gray.copy()
+                prev_cfd = optflow_map.copy()
+                is_init = False
+                # optflow_map = optflow_map/255.0
+                optflow_map = cv2.GaussianBlur(optflow_map, (3, 3), 0)
+                optflow_map = threshold_mask(
+                    optflow_map, thresh_bg=0.2, thresh_fg=0.8)
+                img_mat = np.repeat(optflow_map[:, :, np.newaxis], 3, axis=2)
+                img_mat = recover(img_mat, im_info)
+                bg_im = np.ones_like(img_mat) * 255
+                comb = (img_mat * frame + (1 - img_mat) * bg_im).astype(
+                    np.uint8)
+                cv2.imshow('HumanSegmentation', comb)
                 if cv2.waitKey(1) & 0xFF == ord('q'):
                     break
             else:
