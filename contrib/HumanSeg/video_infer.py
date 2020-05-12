@@ -4,7 +4,7 @@ import os.path as osp
 import cv2
 import numpy as np
 
-from utils.humanseg_postprocess import postprocess
+from utils.humanseg_postprocess import postprocess, threshold_mask
 import models
 import transforms
 
@@ -60,8 +60,12 @@ def recover(img, im_info):
 
 
 def video_infer(args):
+
+    resize_h = 192
+    resize_w = 192
+
     test_transforms = transforms.Compose(
-        [transforms.Resize((192, 192)),
+        [transforms.Resize((resize_w, resize_h)),
          transforms.Normalize()])
     model = models.load_model(args.model_dir)
     if not args.video_path:
@@ -73,10 +77,18 @@ def video_infer(args):
                       "--video_path whether existing: {}"
                       " or camera whether working".format(args.video_path))
         return
+
+    width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+    height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+
+    disflow = cv2.DISOpticalFlow_create(cv2.DISOPTICAL_FLOW_PRESET_ULTRAFAST)
+    prev_gray = np.zeros((resize_h, resize_w), np.uint8)
+    prev_cfd = np.zeros((resize_h, resize_w), np.float32)
+    is_init = True
+
+    fps = cap.get(cv2.CAP_PROP_FPS)
     if args.video_path:
-        width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-        height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-        fps = cap.get(cv2.CAP_PROP_FPS)
+
         # 用于保存预测结果视频
         if not osp.exists(args.save_dir):
             os.makedirs(args.save_dir)
@@ -88,8 +100,18 @@ def video_infer(args):
             ret, frame = cap.read()
             if ret:
                 score_map, im_info = predict(frame, model, test_transforms)
-                img = cv2.resize(frame, (192, 192))
-                img_mat = postprocess(img, score_map)
+                cur_gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+                cur_gray = cv2.resize(cur_gray, (resize_w, resize_h))
+                scoremap = 255 * score_map[:, :, 1]
+                optflow_map = postprocess(cur_gray, scoremap, prev_gray, prev_cfd, \
+                        disflow, is_init)
+                prev_gray = cur_gray.copy()
+                prev_cfd = optflow_map.copy()
+                is_init = False
+                optflow_map = cv2.GaussianBlur(optflow_map, (3, 3), 0)
+                optflow_map = threshold_mask(
+                    optflow_map, thresh_bg=0.2, thresh_fg=0.8)
+                img_mat = np.repeat(optflow_map[:, :, np.newaxis], 3, axis=2)
                 img_mat = recover(img_mat, im_info)
                 bg_im = np.ones_like(img_mat) * 255
                 comb = (img_mat * frame + (1 - img_mat) * bg_im).astype(
@@ -105,8 +127,19 @@ def video_infer(args):
             ret, frame = cap.read()
             if ret:
                 score_map, im_info = predict(frame, model, test_transforms)
-                img = cv2.resize(frame, (192, 192))
-                img_mat = postprocess(img, score_map)
+                cur_gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+                cur_gray = cv2.resize(cur_gray, (resize_w, resize_h))
+                scoremap = 255 * score_map[:, :, 1]
+                optflow_map = postprocess(cur_gray, scoremap, prev_gray, prev_cfd, \
+                                          disflow, is_init)
+                prev_gray = cur_gray.copy()
+                prev_cfd = optflow_map.copy()
+                is_init = False
+                # optflow_map = optflow_map/255.0
+                optflow_map = cv2.GaussianBlur(optflow_map, (3, 3), 0)
+                optflow_map = threshold_mask(
+                    optflow_map, thresh_bg=0.2, thresh_fg=0.8)
+                img_mat = np.repeat(optflow_map[:, :, np.newaxis], 3, axis=2)
                 img_mat = recover(img_mat, im_info)
                 bg_im = np.ones_like(img_mat) * 255
                 comb = (img_mat * frame + (1 - img_mat) * bg_im).astype(
