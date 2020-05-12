@@ -65,7 +65,7 @@ python train.py --model_type HumanSegMobile \
 --pretrained_weights pretrained_weights/humanseg_mobile \
 --batch_size 8 \
 --learning_rate 0.001 \
---num_epochs 10 \
+--num_epochs 10
 ```
 其中参数含义如下：
 * `--model_type`: 模型类型，可选项为：HumanSegServer、HumanSegMobile和HumanSegLite
