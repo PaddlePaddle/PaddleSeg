@@ -49,8 +49,9 @@ python video_infer.py --model_dir pretrained_weights/humanseg_lite_epxort
 
 # 对人像视频进行分割处理
 python video_infer.py --model_dir pretrained_weights/humanseg_lite_epxort \
-----video_path data/video_test.mp4
+--video_path data/video_test.mp4
 ```
+
 
 ## 训练
 使用下述命令基于与训练模型进行Fine-tuning，请确保选用的模型结构`model_type`与模型参数`pretrained_weights`匹配。
@@ -63,7 +64,7 @@ python train.py --model_type HumanSegMobile \
 --pretrained_weights pretrained_weights/humanseg_Mobile \
 --batch_size 8 \
 --learning_rate 0.001 \
---num_epochs 10 \
+--num_epochs 10
 ```
 其中参数含义如下：
 * `--model_type`: 模型类型，可选项为：HumanSegServer、HumanSegMobile和HumanSegLite
