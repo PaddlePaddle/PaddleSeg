@@ -50,6 +50,10 @@ python video_infer.py --model_dir pretrained_weights/humanseg_lite_export
 python video_infer.py --model_dir pretrained_weights/humanseg_lite_export --video_path data/video_test.mp4
 ```
 
+**NOTE**:
+
+视频分割处理时间需要几分钟，请耐心等待。
+
 ## 训练
 使用下述命令基于与训练模型进行Fine-tuning，请确保选用的模型结构`model_type`与模型参数`pretrained_weights`匹配。
 ```bash
