@@ -1,4 +1,4 @@
-# PaddleSeg 产业实践分割模型
+# PaddleSeg 产业实践
 
 提供基于PaddlSeg最新的分割特色模型:
 
@@ -8,7 +8,7 @@
 - [工业表盘分割](#工业表盘分割)
 - [AIStudio在线教程](#AIStudio在线教程)
 
-## 人像分割HumanSeg
+## 人像分割 HumanSeg
 
 HumanSeg系列全新升级，提供三个适用于不同场景，包含适用于移动端实时分割场景的模型`HumanSeg-lite`，提供了包含光流的后处理的优化，使人像分割在视频场景中更加顺畅，更多详情请参考[HumanSeg](./HumanSeg)
 
@@ -37,7 +37,7 @@ PaddleSeg提供了基于LaneNet的车道线分割模型，更多详情请点击[
 
 ### 1. 模型结构
 
-unet
+U-Net
 
 ### 2. 数据准备
  
@@ -46,7 +46,6 @@ unet
 ```
 python ./contrib/MechanicalIndustryMeter/download_mini_mechanical_industry_meter.py
 ```
-
 
 ### 3. 下载预训练模型
 
