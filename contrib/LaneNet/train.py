@@ -78,14 +78,14 @@ def parse_args():
         help='debug mode, display detail information of training',
         action='store_true')
     parser.add_argument(
-        '--use_tb',
-        dest='use_tb',
-        help='whether to record the data during training to Tensorboard',
+        '--use_vdl',
+        dest='use_vdl',
+        help='whether to record the data during training to VisualDL',
         action='store_true')
     parser.add_argument(
-        '--tb_log_dir',
-        dest='tb_log_dir',
-        help='Tensorboard logging directory',
+        '--vdl_log_dir',
+        dest='vdl_log_dir',
+        help='VisualDL logging directory',
         default=None,
         type=str)
     parser.add_argument(
@@ -327,17 +327,17 @@ def train(cfg):
         fetch_list.extend([pred.name, grts.name, masks.name])
         # cm = ConfusionMatrix(cfg.DATASET.NUM_CLASSES, streaming=True)
 
-    if args.use_tb:
-        if not args.tb_log_dir:
-            print_info("Please specify the log directory by --tb_log_dir.")
+    if args.use_vdl:
+        if not args.vdl_log_dir:
+            print_info("Please specify the log directory by --vdl_log_dir.")
             exit(1)
 
-        from tb_paddle import SummaryWriter
-        log_writer = SummaryWriter(args.tb_log_dir)
+        from visualdl import LogWriter
+        log_writer = LogWriter(args.vdl_log_dir)
 
     # trainer_id = int(os.getenv("PADDLE_TRAINER_ID", 0))
     # num_trainers = int(os.environ.get('PADDLE_TRAINERS_NUM', 1))
-    global_step = 0
+    step = 0
     all_step = cfg.DATASET.TRAIN_TOTAL_IMAGES // cfg.BATCH_SIZE
     if cfg.DATASET.TRAIN_TOTAL_IMAGES % cfg.BATCH_SIZE and drop_last != True:
         all_step += 1
@@ -377,9 +377,9 @@ def train(cfg):
                 avg_acc += np.mean(out_acc)
                 avg_fp += np.mean(out_fp)
                 avg_fn += np.mean(out_fn)
-                global_step += 1
+                step += 1
 
-                if global_step % args.log_steps == 0 and cfg.TRAINER_ID == 0:
+                if step % args.log_steps == 0 and cfg.TRAINER_ID == 0:
                     avg_loss /= args.log_steps
                     avg_seg_loss /= args.log_steps
                     avg_emb_loss /= args.log_steps
@@ -389,14 +389,14 @@ def train(cfg):
                     speed = args.log_steps / timer.elapsed_time()
                     print((
                         "epoch={} step={} lr={:.5f} loss={:.4f} seg_loss={:.4f} emb_loss={:.4f} accuracy={:.4} fp={:.4} fn={:.4} step/sec={:.3f} | ETA {}"
-                    ).format(epoch, global_step, lr[0], avg_loss, avg_seg_loss,
+                    ).format(epoch, step, lr[0], avg_loss, avg_seg_loss,
                              avg_emb_loss, avg_acc, avg_fp, avg_fn, speed,
-                             calculate_eta(all_step - global_step, speed)))
-                    if args.use_tb:
+                             calculate_eta(all_step - step, speed)))
+                    if args.use_vdl:
                         log_writer.add_scalar('Train/loss', avg_loss,
-                                              global_step)
-                        log_writer.add_scalar('Train/lr', lr[0], global_step)
-                        log_writer.add_scalar('Train/speed', speed, global_step)
+                                              step)
+                        log_writer.add_scalar('Train/lr', lr[0], step)
+                        log_writer.add_scalar('Train/speed', speed, step)
                     sys.stdout.flush()
                     avg_loss = 0.0
                     avg_seg_loss = 0.0
@@ -422,14 +422,14 @@ def train(cfg):
                     ckpt_dir=ckpt_dir,
                     use_gpu=args.use_gpu,
                     use_mpio=args.use_mpio)
-                if args.use_tb:
+                if args.use_vdl:
                     log_writer.add_scalar('Evaluate/accuracy', accuracy,
-                                          global_step)
-                    log_writer.add_scalar('Evaluate/fp', fp, global_step)
-                    log_writer.add_scalar('Evaluate/fn', fn, global_step)
+                                          step)
+                    log_writer.add_scalar('Evaluate/fp', fp, step)
+                    log_writer.add_scalar('Evaluate/fn', fn, step)
 
-            # Use Tensorboard to visualize results
-            if args.use_tb and cfg.DATASET.VIS_FILE_LIST is not None:
+            # Use VisualDL to visualize results
+            if args.use_vdl and cfg.DATASET.VIS_FILE_LIST is not None:
                 visualize(
                     cfg=cfg,
                     use_gpu=args.use_gpu,

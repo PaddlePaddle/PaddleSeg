@@ -162,11 +162,11 @@ def visualize(cfg,
             img_cnt += 1
             print("#{} visualize image path: {}".format(img_cnt, vis_fn))
 
-            # Use Tensorboard to visualize image
+            # Use VisualDL to visualize image
             if log_writer is not None:
                 # Calulate epoch from ckpt_dir folder name
                 epoch = int(os.path.split(ckpt_dir)[-1])
-                print("Tensorboard visualization epoch", epoch)
+                print("VisualDL visualization epoch", epoch)
 
                 pred_mask_np = np.array(pred_mask.convert("RGB"))
                 log_writer.add_image(
