@@ -1,4 +1,4 @@
-# PaddleSeg 图像分割开发套件
+# PaddleSeg
 
 [![Build Status](https://travis-ci.org/PaddlePaddle/PaddleSeg.svg?branch=master)](https://travis-ci.org/PaddlePaddle/PaddleSeg)
 [![License](https://img.shields.io/badge/license-Apache%202-blue.svg)](LICENSE)
@@ -160,7 +160,7 @@ A: 降低Batch size，使用Group Norm策略；请注意训练过程中当`DEFAU
   **`v0.5.0`**
   * 全面升级[HumanSeg人像分割模型](./contrib/HumanSeg)，新增超轻量级人像分割模型HumanSeg-lite支持移动端实时人像分割处理，并提供基于光流的视频分割后处理提升分割流畅性。
   * 新增[气象遥感分割方案](./contrib/RemoteSensing)，支持积雪分割、云分割等气象遥感场景。
-  * 新增Lovasz Loss
+  * 新增[Lovasz Loss](docs/lovasz_loss.md)
   
 * 2020.02.25
 
