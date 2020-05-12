@@ -72,7 +72,6 @@ def video_infer(args):
             ret, frame = cap.read()
             if ret:
                 results = model.predict(frame, test_transforms)
-                print(frame.shape, results['score_map'].shape)
                 img_mat = postprocess(frame, results['score_map'])
                 cv2.imshow('HumanSegmentation', img_mat)
                 if cv2.waitKey(1) & 0xFF == ord('q'):
