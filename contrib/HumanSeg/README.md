@@ -58,7 +58,7 @@ python train.py --model_type HumanSegMobile \
 --data_dir data/mini_supervisely \
 --train_list data/mini_supervisely/train.txt \
 --val_list data/mini_supervisely/val.txt \
---pretrained_weights pretrained_weights/humanseg_Mobile \
+--pretrained_weights pretrained_weights/humanseg_mobile \
 --batch_size 8 \
 --learning_rate 0.001 \
 --num_epochs 10 \
