@@ -45,7 +45,7 @@ PaddleSeg支持多进程I/O、多卡并行、跨卡Batch Norm同步等训练加�
 
 - **产业实践案例**
 
-PaddleSeg提供大量真实产业实践案例，如人像分割、表计检测、遥感分割、人体解析，工业质检等产业实践案例，助理开发者更快落地深度学习图像分割技术。
+PaddleSeg提供丰富地产业实践案例，如[人像分割](./contrib/HumanSeg)、[工业表计检测](./contrib/MechanicalIndustryMeter)、[遥感分割](./contrib/RemoteSensing)、[人体解析]c(ontrib/ACE2P)，[工业质检](https://aistudio.baidu.com/aistudio/projectdetail/184392)等产业实践案例，助力开发者更便捷地落地图像分割技术。
 
 ## 安装
 
@@ -53,7 +53,7 @@ PaddleSeg提供大量真实产业实践案例，如人像分割、表计检测�
 
 版本要求
 * PaddlePaddle >= 1.7.0
-* Python 2.7 or 3.5+
+* Python >= 3.5+
 
 由于图像分割模型计算开销大，推荐在GPU版本的PaddlePaddle下使用PaddleSeg.
 ```
