@@ -43,7 +43,7 @@ PaddleSeg支持多进程I/O、多卡并行、跨卡Batch Norm同步等训练加�
 
 - **产业实践案例**
 
-PaddleSeg提供丰富地产业实践案例，如[人像分割](./contrib/HumanSeg)、[工业表计检测](./contrib/MechanicalIndustryMeter)、[遥感分割](./contrib/RemoteSensing)、[人体解析]c(ontrib/ACE2P)，[工业质检](https://aistudio.baidu.com/aistudio/projectdetail/184392)等产业实践案例，助力开发者更便捷地落地图像分割技术。
+PaddleSeg提供丰富地产业实践案例，如[人像分割](./contrib/HumanSeg)、[工业表计检测](./contrib/MechanicalIndustryMeter)、[遥感分割](./contrib/RemoteSensing)、[人体解析](contrib/ACE2P)，[工业质检](https://aistudio.baidu.com/aistudio/projectdetail/184392)等产业实践案例，助力开发者更便捷地落地图像分割技术。
 
 ## 安装
 
