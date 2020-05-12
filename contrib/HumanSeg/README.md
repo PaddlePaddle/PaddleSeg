@@ -90,7 +90,7 @@ python train.py --help
 ```bash
 python val.py --model_dir output/best_model \
 --data_dir data/mini_supervisely \
---val_list data/mini_supervisely/val.txt \
+--val_list data/mini_supervisely/val.txt 
 ```
 其中参数含义如下：
 * `--model_dir`: 模型路径
@@ -143,7 +143,7 @@ python quant_online.py --model_type HumanSegMobile \
 --pretrained_weights output/best_model \
 --batch_size 2 \
 --learning_rate 0.001 \
---num_epochs 2 \
+--num_epochs 2 
 ```
 其中参数含义如下：
 * `--model_type`: 模型类型，可选项为：HumanSegServer、HumanSegMobile和HumanSegLite
