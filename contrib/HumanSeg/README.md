@@ -1,6 +1,6 @@
 # HumanSeg人像分割模型
 
-本教程基于PaddleSeg核心分割网络，提供针对人像分割场景从预训练模型、Fine-tune、视频分割预测部署的全流程应用指南。
+本教程基于PaddleSeg核心分割网络，提供针对人像分割场景从预训练模型、Fine-tune、视频分割预测部署的全流程应用指南。最新发布HumanSeg-lite模型超轻量级人像分割模型，支持移动端场景的实时分割。
 
 ## 环境依赖
 
@@ -14,7 +14,6 @@ PaddlePaddle的安装可参考[飞桨快速安装](https://www.paddlepaddle.org.
 $ pip install -r requirements.txt
 ```
 
-
 ## 预训练模型
 HumanSeg开放了在大规模人像数据上训练的三个预训练模型，满足多种使用场景的需求
 | 模型类型 | Checkpoint | Inference Model | Quant Inference Model | 备注 |
@@ -26,9 +25,9 @@ HumanSeg开放了在大规模人像数据上训练的三个预训练模型，满
 **NOTE:**
 其中Checkpoint为模型权重，用于Fine-tuning场景。
 
-Inference Model和Quant Inference Model为预测部署模型，包含`__model__`计算图结构、`__params__`模型参数和`model.yaml`基础的模型配置信息。
+* Inference Model和Quant Inference Model为预测部署模型，包含`__model__`计算图结构、`__params__`模型参数和`model.yaml`基础的模型配置信息。
 
-其中Inference Model适用于服务端的CPU和GPU预测场景，Qunat Inference Model为的量化版本，适用于通过Paddle Lite进行移动端等端侧设备部署。更多Paddle Lite部署说明查看[Paddle Lite文档](https://paddle-lite.readthedocs.io/zh/latest/)
+* 其中Inference Model适用于服务端的CPU和GPU预测部署，Qunat Inference Model为量化版本，适用于通过Paddle Lite进行移动端等端侧设备部署。更多Paddle Lite部署说明查看[Paddle Lite文档](https://paddle-lite.readthedocs.io/zh/latest/)
 
 执行以下脚本进行HumanSeg预训练模型的下载
 ```bash
