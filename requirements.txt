@@ -8,4 +8,4 @@ six
 opencv-python
 tqdm
 requests
-visualdl == 2.0.0-alpha.1
+visualdl == 2.0.0-alpha.2

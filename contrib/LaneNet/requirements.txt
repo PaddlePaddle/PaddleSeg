@@ -9,4 +9,4 @@ opencv-python
 tqdm
 requests
 sklearn
-visualdl == 2.0.0.
+visualdl == 2.0.0-alpha.2
