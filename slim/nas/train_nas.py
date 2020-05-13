@@ -87,14 +87,14 @@ def parse_args():
         help='debug mode, display detail information of training',
         action='store_true')
     parser.add_argument(
-        '--use_tb',
-        dest='use_tb',
-        help='whether to record the data during training to Tensorboard',
+        '--use_vdl',
+        dest='use_vdl',
+        help='whether to record the data during training to VisualDL',
         action='store_true')
     parser.add_argument(
-        '--tb_log_dir',
-        dest='tb_log_dir',
-        help='Tensorboard logging directory',
+        '--vdl_log_dir',
+        dest='vdl_log_dir',
+        help='VisualDL logging directory',
         default=None,
         type=str)
     parser.add_argument(

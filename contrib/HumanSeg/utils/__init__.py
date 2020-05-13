@@ -13,6 +13,7 @@
 # limitations under the License.
 
 from . import logging
-from . import utils
+from . import humanseg_postprocess
 from .metrics import ConfusionMatrix
 from .utils import *
+from .post_quantization import HumanSegPostTrainingQuantization

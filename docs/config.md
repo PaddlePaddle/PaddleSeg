@@ -27,10 +27,10 @@ python pdseg/train.py BATCH_SIZE 1 --cfg configs/unet_optic.yaml
 |--cfg|配置文件路径|ALL|None||
 |--use_gpu|是否使用GPU进行训练|train/eval/vis|False||
 |--use_mpio|是否使用多进程进行IO处理|train/eval|False|打开该开关会占用一定量的CPU内存，但是可以提高训练速度。</br> **NOTE：** windows平台下不支持该功能, 建议使用自定义数据初次训练时不打开，打开会导致数据读取异常不可见。 |
-|--use_tb|是否使用TensorBoard记录训练数据|train|False||
+|--use_vdl|是否使用VisualDL记录训练数据|train|False||
 |--log_steps|训练日志的打印周期（单位为step）|train|10||
 |--debug|是否打印debug信息|train|False|IOU等指标涉及到混淆矩阵的计算，会降低训练速度|
-|--tb_log_dir &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|TensorBoard的日志路径|train|None||
+|--vdl_log_dir &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|VisualDL的日志路径|train|None||
 |--do_eval|是否在保存模型时进行效果评估   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|train|False||
 |--vis_dir|保存可视化图片的路径|vis|"visual"||
 
@@ -80,7 +80,7 @@ DATASET:
     VAL_FILE_LIST: './dataset/cityscapes/val.list'
     # 测试数据列表
     TEST_FILE_LIST: './dataset/cityscapes/test.list'
-    # Tensorboard 可视化的数据集
+    # VisualDL 可视化的数据集
     VIS_FILE_LIST: None
     # 类别数(需包括背景类)
     NUM_CLASSES: 19

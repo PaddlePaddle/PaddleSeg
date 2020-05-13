@@ -24,11 +24,15 @@ import time
 import tqdm
 import cv2
 import yaml
+import paddleslim as slim
 
-import HumanSeg
-import HumanSeg.utils.logging as logging
-from HumanSeg.utils import seconds_to_hms
-from HumanSeg.utils import ConfusionMatrix
+import utils
+import utils.logging as logging
+from utils import seconds_to_hms
+from utils import ConfusionMatrix
+from utils import get_environ_info
+from nets import DeepLabv3p, ShuffleSeg, HRNet
+import transforms as T
 
 
 def dict2str(dict_input):
@@ -42,16 +46,10 @@ def dict2str(dict_input):
     return out.strip(', ')
 
 
-class HumanSegMobile(object):
+class SegModel(object):
     # DeepLab mobilenet
     def __init__(self,
                  num_classes=2,
-                 backbone='MobileNetV2_x1.0',
-                 output_stride=16,
-                 aspp_with_sep_conv=True,
-                 decoder_use_sep_conv=True,
-                 encoder_with_aspp=False,
-                 enable_decoder=False,
                  use_bce_loss=False,
                  use_dice_loss=False,
                  class_weight=None,
@@ -62,19 +60,6 @@ class HumanSegMobile(object):
             raise ValueError(
                 "dice loss and bce loss is only applicable to binary classfication"
             )
-
-        self.output_stride = output_stride
-
-        if backbone not in [
-                'Xception65', 'Xception41', 'MobileNetV2_x0.25',
-                'MobileNetV2_x0.5', 'MobileNetV2_x1.0', 'MobileNetV2_x1.5',
-                'MobileNetV2_x2.0'
-        ]:
-            raise ValueError(
-                "backbone: {} is set wrong. it should be one of "
-                "('Xception65', 'Xception41', 'MobileNetV2_x0.25', 'MobileNetV2_x0.5',"
-                " 'MobileNetV2_x1.0', 'MobileNetV2_x1.5', 'MobileNetV2_x2.0')".
-                format(backbone))
 
         if class_weight is not None:
             if isinstance(class_weight, list):
@@ -91,21 +76,16 @@ class HumanSegMobile(object):
                     'Expect class_weight is a list or string but receive {}'.
                     format(type(class_weight)))
 
-        self.backbone = backbone
         self.num_classes = num_classes
         self.use_bce_loss = use_bce_loss
         self.use_dice_loss = use_dice_loss
         self.class_weight = class_weight
         self.ignore_index = ignore_index
-        self.aspp_with_sep_conv = aspp_with_sep_conv
-        self.decoder_use_sep_conv = decoder_use_sep_conv
-        self.encoder_with_aspp = encoder_with_aspp
-        self.enable_decoder = enable_decoder
         self.sync_bn = sync_bn
 
         self.labels = None
-        self.version = HumanSeg.__version__
-        if HumanSeg.env_info['place'] == 'cpu':
+        self.env_info = get_environ_info()
+        if self.env_info['place'] == 'cpu':
             self.places = fluid.cpu_places()
         else:
             self.places = fluid.cuda_places()
@@ -118,6 +98,9 @@ class HumanSegMobile(object):
         self.train_outputs = None
         self.test_outputs = None
         self.train_data_loader = None
+        self.eval_metrics = None
+        # 当前模型状态
+        self.status = 'Normal'
 
     def _get_single_car_bs(self, batch_size):
         if batch_size % len(self.places) == 0:
@@ -125,34 +108,12 @@ class HumanSegMobile(object):
         else:
             raise Exception("Please support correct batch_size, \
                             which can be divided by available cards({}) in {}".
-                            format(HumanSeg.env_info['num'],
-                                   HumanSeg.env_info['place']))
+                            format(self.env_info['num'],
+                                   self.env_info['place']))
 
     def build_net(self, mode='train'):
         """应根据不同的情况进行构建"""
-        model = HumanSeg.nets.DeepLabv3p(
-            self.num_classes,
-            mode=mode,
-            backbone=self.backbone,
-            output_stride=self.output_stride,
-            aspp_with_sep_conv=self.aspp_with_sep_conv,
-            decoder_use_sep_conv=self.decoder_use_sep_conv,
-            encoder_with_aspp=self.encoder_with_aspp,
-            enable_decoder=self.enable_decoder,
-            use_bce_loss=self.use_bce_loss,
-            use_dice_loss=self.use_dice_loss,
-            class_weight=self.class_weight,
-            ignore_index=self.ignore_index)
-        inputs = model.generate_inputs()
-        model_out = model.build_net(inputs)
-        outputs = OrderedDict()
-        if mode == 'train':
-            self.optimizer.minimize(model_out)
-            outputs['loss'] = model_out
-        else:
-            outputs['pred'] = model_out[0]
-            outputs['logit'] = model_out[1]
-        return inputs, outputs
+        pass
 
     def build_program(self):
         # build training network
@@ -169,7 +130,7 @@ class HumanSegMobile(object):
         self.test_prog = self.test_prog.clone(for_test=True)
 
     def arrange_transform(self, transforms, mode='train'):
-        arrange_transform = HumanSeg.transforms.transforms.ArrangeSegmenter
+        arrange_transform = T.ArrangeSegmenter
         if type(transforms.transforms[-1]).__name__.startswith('Arrange'):
             transforms.transforms[-1] = arrange_transform(mode=mode)
         else:
@@ -190,7 +151,7 @@ class HumanSegMobile(object):
 
     def net_initialize(self,
                        startup_prog=None,
-                       pretrain_weights=None,
+                       pretrained_weights=None,
                        resume_weights=None):
         if startup_prog is None:
             startup_prog = fluid.default_startup_program()
@@ -213,16 +174,15 @@ class HumanSegMobile(object):
                 raise ValueError("Resume model path is not valid!")
             logging.info("Model checkpoint loaded successfully!")
 
-        elif pretrain_weights is not None:
+        elif pretrained_weights is not None:
             logging.info(
-                "Load pretrain weights from {}.".format(pretrain_weights))
-            HumanSeg.utils.utils.load_pretrain_weights(
-                self.exe, self.train_prog, pretrain_weights)
+                "Load pretrain weights from {}.".format(pretrained_weights))
+            utils.load_pretrained_weights(self.exe, self.train_prog,
+                                          pretrained_weights)
 
     def get_model_info(self):
         # 存储相应的信息到yml文件
         info = dict()
-        info['version'] = HumanSeg.__version__
         info['Model'] = self.__class__.__name__
         if 'self' in self.init_params:
             del self.init_params['self']
@@ -268,6 +228,8 @@ class HumanSegMobile(object):
                 del self.train_init['train_dataset']
             if 'eval_dataset' in self.train_init:
                 del self.train_init['eval_dataset']
+            if 'optimizer' in self.train_init:
+                del self.train_init['optimizer']
             info['train_init'] = self.train_init
         return info
 
@@ -276,27 +238,136 @@ class HumanSegMobile(object):
             if osp.exists(save_dir):
                 os.remove(save_dir)
             os.makedirs(save_dir)
-
-        fluid.save(self.train_prog, osp.join(save_dir, 'model'))
         model_info = self.get_model_info()
+
+        if self.status == 'Normal':
+            fluid.save(self.train_prog, osp.join(save_dir, 'model'))
+        elif self.status == 'Quant':
+            float_prog, _ = slim.quant.convert(
+                self.test_prog, self.exe.place, save_int8=True)
+            test_input_names = [
+                var.name for var in list(self.test_inputs.values())
+            ]
+            test_outputs = list(self.test_outputs.values())
+            fluid.io.save_inference_model(
+                dirname=save_dir,
+                executor=self.exe,
+                params_filename='__params__',
+                feeded_var_names=test_input_names,
+                target_vars=test_outputs,
+                main_program=float_prog)
+
+            model_info['_ModelInputsOutputs'] = dict()
+            model_info['_ModelInputsOutputs']['test_inputs'] = [
+                [k, v.name] for k, v in self.test_inputs.items()
+            ]
+            model_info['_ModelInputsOutputs']['test_outputs'] = [
+                [k, v.name] for k, v in self.test_outputs.items()
+            ]
+
+        model_info['status'] = self.status
         with open(
                 osp.join(save_dir, 'model.yml'), encoding='utf-8',
                 mode='w') as f:
             yaml.dump(model_info, f)
+
+        # The flag of model for saving successfully
         open(osp.join(save_dir, '.success'), 'w').close()
         logging.info("Model saved in {}.".format(save_dir))
 
     def export_inference_model(self, save_dir):
-        pass
+        test_input_names = [var.name for var in list(self.test_inputs.values())]
+        test_outputs = list(self.test_outputs.values())
+        fluid.io.save_inference_model(
+            dirname=save_dir,
+            executor=self.exe,
+            params_filename='__params__',
+            feeded_var_names=test_input_names,
+            target_vars=test_outputs,
+            main_program=self.test_prog)
+        model_info = self.get_model_info()
+        model_info['status'] = 'Infer'
 
-    def export_quant_model(self):
-        pass
+        # Save input and output descrition of model
+        model_info['_ModelInputsOutputs'] = dict()
+        model_info['_ModelInputsOutputs']['test_inputs'] = [
+            [k, v.name] for k, v in self.test_inputs.items()
+        ]
+        model_info['_ModelInputsOutputs']['test_outputs'] = [
+            [k, v.name] for k, v in self.test_outputs.items()
+        ]
+
+        with open(
+                osp.join(save_dir, 'model.yml'), encoding='utf-8',
+                mode='w') as f:
+            yaml.dump(model_info, f)
+
+        # The flag of model for saving successfully
+        open(osp.join(save_dir, '.success'), 'w').close()
+        logging.info("Model for inference deploy saved in {}.".format(save_dir))
+
+    def export_quant_model(self,
+                           dataset,
+                           save_dir,
+                           batch_size=1,
+                           batch_nums=10,
+                           cache_dir="./.temp"):
+        self.arrange_transform(transforms=dataset.transforms, mode='quant')
+        dataset.num_samples = batch_size * batch_nums
+        try:
+            from utils import HumanSegPostTrainingQuantization
+        except:
+            raise Exception(
+                "Model Quantization is not available, try to upgrade your paddlepaddle>=1.7.0"
+            )
+        is_use_cache_file = True
+        if cache_dir is None:
+            is_use_cache_file = False
+        post_training_quantization = HumanSegPostTrainingQuantization(
+            executor=self.exe,
+            dataset=dataset,
+            program=self.test_prog,
+            inputs=self.test_inputs,
+            outputs=self.test_outputs,
+            batch_size=batch_size,
+            batch_nums=batch_nums,
+            scope=None,
+            algo='KL',
+            quantizable_op_type=["conv2d", "depthwise_conv2d", "mul"],
+            is_full_quantize=False,
+            is_use_cache_file=is_use_cache_file,
+            cache_dir=cache_dir)
+        post_training_quantization.quantize()
+        post_training_quantization.save_quantized_model(save_dir)
+        if cache_dir is not None:
+            os.system('rm -r' + cache_dir)
+        model_info = self.get_model_info()
+        model_info['status'] = 'Quant'
+
+        # Save input and output descrition of model
+        model_info['_ModelInputsOutputs'] = dict()
+        model_info['_ModelInputsOutputs']['test_inputs'] = [
+            [k, v.name] for k, v in self.test_inputs.items()
+        ]
+        model_info['_ModelInputsOutputs']['test_outputs'] = [
+            [k, v.name] for k, v in self.test_outputs.items()
+        ]
+
+        with open(
+                osp.join(save_dir, 'model.yml'), encoding='utf-8',
+                mode='w') as f:
+            yaml.dump(model_info, f)
+
+        # The flag of model for saving successfully
+        open(osp.join(save_dir, '.success'), 'w').close()
+        logging.info("Model for quant saved in {}.".format(save_dir))
 
     def default_optimizer(self,
                           learning_rate,
                           num_epochs,
                           num_steps_each_epoch,
-                          lr_decay_power=0.9):
+                          lr_decay_power=0.9,
+                          regularization_coeff=4e-5):
         decay_step = num_epochs * num_steps_each_epoch
         lr_decay = fluid.layers.polynomial_decay(
             learning_rate,
@@ -307,7 +378,7 @@ class HumanSegMobile(object):
             lr_decay,
             momentum=0.9,
             regularization=fluid.regularizer.L2Decay(
-                regularization_coeff=4e-05))
+                regularization_coeff=regularization_coeff))
         return optimizer
 
     def train(self,
@@ -318,12 +389,14 @@ class HumanSegMobile(object):
               save_interval_epochs=1,
               log_interval_steps=2,
               save_dir='output',
-              pretrain_weights=None,
+              pretrained_weights=None,
               resume_weights=None,
               optimizer=None,
               learning_rate=0.01,
               lr_decay_power=0.9,
-              use_vdl=False):
+              regularization_coeff=4e-5,
+              use_vdl=False,
+              quant=False):
         self.labels = train_dataset.labels
         self.train_transforms = train_dataset.transforms
         self.train_init = locals()
@@ -335,13 +408,27 @@ class HumanSegMobile(object):
                 learning_rate=learning_rate,
                 num_epochs=num_epochs,
                 num_steps_each_epoch=num_steps_each_epoch,
-                lr_decay_power=lr_decay_power)
+                lr_decay_power=lr_decay_power,
+                regularization_coeff=regularization_coeff)
         self.optimizer = optimizer
         self.build_program()
         self.net_initialize(
             startup_prog=fluid.default_startup_program(),
-            pretrain_weights=pretrain_weights,
+            pretrained_weights=pretrained_weights,
             resume_weights=resume_weights)
+
+        # 进行量化
+        if quant:
+            # 当 for_test=False ，返回类型为 fluid.CompiledProgram
+            # 当 for_test=True ，返回类型为 fluid.Program
+            self.train_prog = slim.quant.quant_aware(
+                self.train_prog, self.exe.place, for_test=False)
+            self.test_prog = slim.quant.quant_aware(
+                self.test_prog, self.exe.place, for_test=True)
+            # self.parallel_train_prog = self.train_prog.with_data_parallel(
+            #     loss_name=self.train_outputs['loss'].name)
+            self.status = 'Quant'
+
         if self.begin_epoch >= num_epochs:
             raise ValueError(
                 ("begin epoch[{}] is larger than num_epochs[{}]").format(
@@ -370,15 +457,23 @@ class HumanSegMobile(object):
         # 多卡训练
         if self.parallel_train_prog is None:
             build_strategy = fluid.compiler.BuildStrategy()
-            if HumanSeg.env_info['place'] != 'cpu' and len(self.places) > 1:
+            if self.env_info['place'] != 'cpu' and len(self.places) > 1:
                 build_strategy.sync_batch_norm = self.sync_bn
             exec_strategy = fluid.ExecutionStrategy()
             exec_strategy.num_iteration_per_drop_scope = 1
-            self.parallel_train_prog = fluid.CompiledProgram(
-                self.train_prog).with_data_parallel(
+            if quant:
+                build_strategy.fuse_all_reduce_ops = False
+                build_strategy.sync_batch_norm = False
+                self.parallel_train_prog = self.train_prog.with_data_parallel(
                     loss_name=self.train_outputs['loss'].name,
                     build_strategy=build_strategy,
                     exec_strategy=exec_strategy)
+            else:
+                self.parallel_train_prog = fluid.CompiledProgram(
+                    self.train_prog).with_data_parallel(
+                        loss_name=self.train_outputs['loss'].name,
+                        build_strategy=build_strategy,
+                        exec_strategy=exec_strategy)
 
         total_num_steps = math.floor(
             train_dataset.num_samples / train_batch_size)
@@ -398,10 +493,7 @@ class HumanSegMobile(object):
         if use_vdl:
             from visualdl import LogWriter
             vdl_logdir = osp.join(save_dir, 'vdl_log')
-            log_writer = LogWriter(vdl_logdir, sync_cycle=20)
-            train_step_component = OrderedDict()
-            eval_component = OrderedDict()
-
+            log_writer = LogWriter(vdl_logdir)
         best_miou = -1.0
         best_model_epoch = 1
         for i in range(self.begin_epoch, num_epochs):
@@ -432,13 +524,10 @@ class HumanSegMobile(object):
 
                     if use_vdl:
                         for k, v in step_metrics.items():
-                            if k not in train_step_component.keys():
-                                with log_writer.mode('Each_step_while_Training'
-                                                     ) as step_logger:
-                                    train_step_component[
-                                        k] = step_logger.scalar(
-                                            'Training: {}'.format(k))
-                            train_step_component[k].add_record(num_steps, v)
+                            log_writer.add_scalar(
+                                step=num_steps,
+                                tag='train/{}'.format(k),
+                                value=v)
 
                     # 计算剩余时间
                     avg_step_time = np.mean(time_stat)
@@ -478,8 +567,6 @@ class HumanSegMobile(object):
                         eval_dataset=eval_dataset,
                         batch_size=eval_batch_size,
                         epoch_id=i + 1)
-                    logging.info('[EVAL] Finished, Epoch={}, {} .'.format(
-                        i + 1, dict2str(self.eval_metrics)))
                     # 保存最优模型
                     current_miou = self.eval_metrics['miou']
                     if current_miou > best_miou:
@@ -494,12 +581,10 @@ class HumanSegMobile(object):
                             if isinstance(v, np.ndarray):
                                 if v.size > 1:
                                     continue
-                            if k not in eval_component:
-                                with log_writer.mode('Each_Epoch_on_Eval_Data'
-                                                     ) as eval_logger:
-                                    eval_component[k] = eval_logger.scalar(
-                                        'Evaluation: {}'.format(k))
-                            eval_component[k].add_record(i + 1, v)
+                            log_writer.add_scalar(
+                                step=num_steps,
+                                tag='evaluate/{}'.format(k),
+                                value=v)
                 self.save_model(save_dir=current_save_dir)
                 time_eval_one_epoch = time.time() - eval_epoch_start_time
                 if eval_dataset is not None:
@@ -567,18 +652,25 @@ class HumanSegMobile(object):
             zip(['miou', 'category_iou', 'macc', 'category_acc', 'kappa'],
                 [miou, category_iou, macc, category_acc,
                  conf_mat.kappa()]))
+
+        logging.info('[EVAL] Finished, Epoch={}, {} .'.format(
+            epoch_id, dict2str(metrics)))
         return metrics
 
     def predict(self, im_file, transforms=None):
         """预测。
         Args:
-            img_file(str): 预测图像路径。
+            img_file(str|np.ndarray): 预测图像。
             transforms(paddlex.cv.transforms): 数据预处理操作。
 
         Returns:
             dict: 包含关键字'label_map'和'score_map', 'label_map'存储预测结果灰度图，
                 像素值表示对应的类别，'score_map'存储各类别的概率，shape=(h, w, num_classes)
         """
+        if isinstance(im_file, str):
+            if not osp.exists(im_file):
+                raise ValueError(
+                    'The Image file does not exist: {}'.format(im_file))
 
         if transforms is None and not hasattr(self, 'test_transforms'):
             raise Exception("transforms need to be defined, now is None.")
@@ -612,18 +704,195 @@ class HumanSegMobile(object):
         return {'label_map': pred, 'score_map': logit}
 
 
-class HumanSegLite(object):
+class HumanSegLite(SegModel):
     # DeepLab ShuffleNet
-    def train(self):
-        pass
+    def build_net(self, mode='train'):
+        """应根据不同的情况进行构建"""
+        model = ShuffleSeg(
+            self.num_classes,
+            mode=mode,
+            use_bce_loss=self.use_bce_loss,
+            use_dice_loss=self.use_dice_loss,
+            class_weight=self.class_weight,
+            ignore_index=self.ignore_index)
+        inputs = model.generate_inputs()
+        model_out = model.build_net(inputs)
+        outputs = OrderedDict()
+        if mode == 'train':
+            self.optimizer.minimize(model_out)
+            outputs['loss'] = model_out
+        else:
+            outputs['pred'] = model_out[0]
+            outputs['logit'] = model_out[1]
+        return inputs, outputs
 
-    def evaluate(self):
-        pass
 
-    def predict(self):
-        pass
-
-
-class HumanSegServer(object):
+class HumanSegServer(SegModel):
     # DeepLab Xception
-    pass
+    def __init__(self,
+                 num_classes=2,
+                 backbone='Xception65',
+                 output_stride=16,
+                 aspp_with_sep_conv=True,
+                 decoder_use_sep_conv=True,
+                 encoder_with_aspp=True,
+                 enable_decoder=True,
+                 use_bce_loss=False,
+                 use_dice_loss=False,
+                 class_weight=None,
+                 ignore_index=255,
+                 sync_bn=True):
+        super().__init__(
+            num_classes=num_classes,
+            use_bce_loss=use_bce_loss,
+            use_dice_loss=use_dice_loss,
+            class_weight=class_weight,
+            ignore_index=ignore_index,
+            sync_bn=sync_bn)
+        self.init_params = locals()
+
+        self.output_stride = output_stride
+
+        if backbone not in ['Xception65', 'Xception41']:
+            raise ValueError("backbone: {} is set wrong. it should be one of "
+                             "('Xception65', 'Xception41')".format(backbone))
+
+        self.backbone = backbone
+        self.aspp_with_sep_conv = aspp_with_sep_conv
+        self.decoder_use_sep_conv = decoder_use_sep_conv
+        self.encoder_with_aspp = encoder_with_aspp
+        self.enable_decoder = enable_decoder
+        self.sync_bn = sync_bn
+
+    def build_net(self, mode='train'):
+        model = DeepLabv3p(
+            self.num_classes,
+            mode=mode,
+            backbone=self.backbone,
+            output_stride=self.output_stride,
+            aspp_with_sep_conv=self.aspp_with_sep_conv,
+            decoder_use_sep_conv=self.decoder_use_sep_conv,
+            encoder_with_aspp=self.encoder_with_aspp,
+            enable_decoder=self.enable_decoder,
+            use_bce_loss=self.use_bce_loss,
+            use_dice_loss=self.use_dice_loss,
+            class_weight=self.class_weight,
+            ignore_index=self.ignore_index)
+        inputs = model.generate_inputs()
+        model_out = model.build_net(inputs)
+        outputs = OrderedDict()
+        if mode == 'train':
+            self.optimizer.minimize(model_out)
+            outputs['loss'] = model_out
+        else:
+            outputs['pred'] = model_out[0]
+            outputs['logit'] = model_out[1]
+        return inputs, outputs
+
+
+class HumanSegMobile(SegModel):
+    def __init__(self,
+                 num_classes=2,
+                 stage1_num_modules=1,
+                 stage1_num_blocks=[1],
+                 stage1_num_channels=[32],
+                 stage2_num_modules=1,
+                 stage2_num_blocks=[2, 2],
+                 stage2_num_channels=[16, 32],
+                 stage3_num_modules=1,
+                 stage3_num_blocks=[2, 2, 2],
+                 stage3_num_channels=[16, 32, 64],
+                 stage4_num_modules=1,
+                 stage4_num_blocks=[2, 2, 2, 2],
+                 stage4_num_channels=[16, 32, 64, 128],
+                 use_bce_loss=False,
+                 use_dice_loss=False,
+                 class_weight=None,
+                 ignore_index=255,
+                 sync_bn=True):
+        super().__init__(
+            num_classes=num_classes,
+            use_bce_loss=use_bce_loss,
+            use_dice_loss=use_dice_loss,
+            class_weight=class_weight,
+            ignore_index=ignore_index,
+            sync_bn=sync_bn)
+        self.init_params = locals()
+
+        self.stage1_num_modules = stage1_num_modules
+        self.stage1_num_blocks = stage1_num_blocks
+        self.stage1_num_channels = stage1_num_channels
+        self.stage2_num_modules = stage2_num_modules
+        self.stage2_num_blocks = stage2_num_blocks
+        self.stage2_num_channels = stage2_num_channels
+        self.stage3_num_modules = stage3_num_modules
+        self.stage3_num_blocks = stage3_num_blocks
+        self.stage3_num_channels = stage3_num_channels
+        self.stage4_num_modules = stage4_num_modules
+        self.stage4_num_blocks = stage4_num_blocks
+        self.stage4_num_channels = stage4_num_channels
+
+    def build_net(self, mode='train'):
+        """应根据不同的情况进行构建"""
+        model = HRNet(
+            self.num_classes,
+            mode=mode,
+            stage1_num_modules=self.stage1_num_modules,
+            stage1_num_blocks=self.stage1_num_blocks,
+            stage1_num_channels=self.stage1_num_channels,
+            stage2_num_modules=self.stage2_num_modules,
+            stage2_num_blocks=self.stage2_num_blocks,
+            stage2_num_channels=self.stage2_num_channels,
+            stage3_num_modules=self.stage3_num_modules,
+            stage3_num_blocks=self.stage3_num_blocks,
+            stage3_num_channels=self.stage3_num_channels,
+            stage4_num_modules=self.stage4_num_modules,
+            stage4_num_blocks=self.stage4_num_blocks,
+            stage4_num_channels=self.stage4_num_channels,
+            use_bce_loss=self.use_bce_loss,
+            use_dice_loss=self.use_dice_loss,
+            class_weight=self.class_weight,
+            ignore_index=self.ignore_index)
+        inputs = model.generate_inputs()
+        model_out = model.build_net(inputs)
+        outputs = OrderedDict()
+        if mode == 'train':
+            self.optimizer.minimize(model_out)
+            outputs['loss'] = model_out
+        else:
+            outputs['pred'] = model_out[0]
+            outputs['logit'] = model_out[1]
+        return inputs, outputs
+
+    def train(self,
+              num_epochs,
+              train_dataset,
+              train_batch_size=2,
+              eval_dataset=None,
+              save_interval_epochs=1,
+              log_interval_steps=2,
+              save_dir='output',
+              pretrained_weights=None,
+              resume_weights=None,
+              optimizer=None,
+              learning_rate=0.01,
+              lr_decay_power=0.9,
+              regularization_coeff=5e-4,
+              use_vdl=False,
+              quant=False):
+        super().train(
+            num_epochs=num_epochs,
+            train_dataset=train_dataset,
+            train_batch_size=train_batch_size,
+            eval_dataset=eval_dataset,
+            save_interval_epochs=save_interval_epochs,
+            log_interval_steps=log_interval_steps,
+            save_dir=save_dir,
+            pretrained_weights=pretrained_weights,
+            resume_weights=resume_weights,
+            optimizer=optimizer,
+            learning_rate=learning_rate,
+            lr_decay_power=lr_decay_power,
+            regularization_coeff=regularization_coeff,
+            use_vdl=use_vdl,
+            quant=quant)

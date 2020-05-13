@@ -58,13 +58,14 @@ class Compose:
 
         if im_info is None:
             im_info = dict()
-        im = cv2.imread(im).astype('float32')
+        if isinstance(im, str):
+            im = cv2.imread(im).astype('float32')
+        if isinstance(label, str):
+            label = np.asarray(Image.open(label))
         if im is None:
             raise ValueError('Can\'t read The image file {}!'.format(im))
         if self.to_rgb:
             im = cv2.cvtColor(im, cv2.COLOR_BGR2RGB)
-        if label is not None:
-            label = np.asarray(Image.open(label))
 
         for op in self.transforms:
             outputs = op(im, im_info, label)
