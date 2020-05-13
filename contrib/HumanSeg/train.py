@@ -44,6 +44,13 @@ def parse_args():
         type=int,
         default=2)
     parser.add_argument(
+        "--image_shape",
+        dest="image_shape",
+        help="The image shape for net inputs.",
+        nargs=2,
+        default=[192, 192],
+        type=int)
+    parser.add_argument(
         '--num_epochs',
         dest='num_epochs',
         help='Number epochs for training',
@@ -91,13 +98,13 @@ def parse_args():
 
 def train(args):
     train_transforms = transforms.Compose([
+        transforms.Resize(args.image_shape),
         transforms.RandomHorizontalFlip(),
-        transforms.Resize((192, 192)),
         transforms.Normalize()
     ])
 
     eval_transforms = transforms.Compose(
-        [transforms.Resize((192, 192)),
+        [transforms.Resize(args.image_shape),
          transforms.Normalize()])
 
     train_dataset = Dataset(

@@ -65,7 +65,8 @@ python train.py --model_type HumanSegMobile \
 --pretrained_weights pretrained_weights/humanseg_mobile \
 --batch_size 8 \
 --learning_rate 0.001 \
---num_epochs 10
+--num_epochs 10 \
+--image_shape 192 192
 ```
 其中参数含义如下：
 * `--model_type`: 模型类型，可选项为：HumanSegServer、HumanSegMobile和HumanSegLite
@@ -77,6 +78,7 @@ python train.py --model_type HumanSegMobile \
 * `--batch_size`: 批大小
 * `--learning_rate`: 初始学习率
 * `--num_epochs`: 训练轮数
+* `--image_shape`: 网络输入图像大小（w, h）
 
 更多命令行帮助可运行下述命令进行查看：
 ```bash
@@ -90,24 +92,28 @@ python train.py --help
 ```bash
 python val.py --model_dir output/best_model \
 --data_dir data/mini_supervisely \
---val_list data/mini_supervisely/val.txt 
+--val_list data/mini_supervisely/val.txt \
+--image_shape 192 192
 ```
 其中参数含义如下：
 * `--model_dir`: 模型路径
 * `--data_dir`: 数据集路径
 * `--val_list`: 验证集列表路径
+* `--image_shape`: 网络输入图像大小（w, h）
 
 ## 预测
 使用下述命令进行预测
 ```bash
 python infer.py --model_dir output/best_model \
 --data_dir data/mini_supervisely \
---test_list data/mini_supervisely/test.txt
+--test_list data/mini_supervisely/test.txt \
+--image_shape 192 192
 ```
 其中参数含义如下：
 * `--model_dir`: 模型路径
 * `--data_dir`: 数据集路径
 * `--test_list`: 测试集列表路径
+* `--image_shape`: 网络输入图像大小（w, h）
 
 ## 模型导出
 ```bash
@@ -124,13 +130,15 @@ python export.py --model_dir output/best_model \
 python quant_offline.py --model_dir output/best_model \
 --data_dir data/mini_supervisely \
 --quant_list data/mini_supervisely/val.txt \
---save_dir output/quant_offline
+--save_dir output/quant_offline \
+--image_shape 192 192
 ```
 其中参数含义如下：
 * `--model_dir`: 待量化模型路径
 * `--data_dir`: 数据集路径
 * `--quant_list`: 量化数据集列表路径，一般直接选择训练集或验证集
 * `--save_dir`: 量化模型保存路径
+* `--image_shape`: 网络输入图像大小（w, h）
 
 ## 在线量化
 利用float训练模型进行在线量化。
@@ -143,7 +151,8 @@ python quant_online.py --model_type HumanSegMobile \
 --pretrained_weights output/best_model \
 --batch_size 2 \
 --learning_rate 0.001 \
---num_epochs 2 
+--num_epochs 2 \
+--image_shape 192 192
 ```
 其中参数含义如下：
 * `--model_type`: 模型类型，可选项为：HumanSegServer、HumanSegMobile和HumanSegLite
@@ -155,3 +164,4 @@ python quant_online.py --model_type HumanSegMobile \
 * `--batch_size`: 批大小
 * `--learning_rate`: 初始学习率
 * `--num_epochs`: 训练轮数
+* `--image_shape`: 网络输入图像大小（w, h）

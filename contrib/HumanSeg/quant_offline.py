@@ -42,12 +42,19 @@ def parse_args():
         help='The directory for saving the quant model',
         type=str,
         default='./output/quant_offline')
+    parser.add_argument(
+        "--image_shape",
+        dest="image_shape",
+        help="The image shape for net inputs.",
+        nargs=2,
+        default=[192, 192],
+        type=int)
     return parser.parse_args()
 
 
 def evaluate(args):
     eval_transforms = transforms.Compose(
-        [transforms.Resize((192, 192)),
+        [transforms.Resize(args.image_shape),
          transforms.Normalize()])
 
     eval_dataset = Dataset(

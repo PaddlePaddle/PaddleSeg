@@ -34,6 +34,13 @@ def parse_args():
         help='The directory for saving the inference results',
         type=str,
         default='./output/result')
+    parser.add_argument(
+        "--image_shape",
+        dest="image_shape",
+        help="The image shape for net inputs.",
+        nargs=2,
+        default=[192, 192],
+        type=int)
     return parser.parse_args()
 
 
@@ -45,7 +52,7 @@ def mkdir(path):
 
 def infer(args):
     test_transforms = transforms.Compose(
-        [transforms.Resize((192, 192)),
+        [transforms.Resize(args.image_shape),
          transforms.Normalize()])
     model = models.load_model(args.model_dir)
     added_saveed_path = osp.join(args.save_dir, 'added')
