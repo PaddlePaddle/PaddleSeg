@@ -261,9 +261,7 @@ class BaseAPI:
 
         if use_vdl:
             # VisualDL component
-            log_writer = LogWriter(vdl_logdir, sync_cycle=20)
-            train_step_component = OrderedDict()
-            eval_component = OrderedDict()
+            log_writer = LogWriter(vdl_logdir)
 
         best_accuracy_key = ""
         best_accuracy = -1.0
@@ -302,14 +300,10 @@ class BaseAPI:
 
                     if use_vdl:
                         for k, v in step_metrics.items():
-                            if k not in train_step_component.keys():
-                                with log_writer.mode('Each_Step_while_Training'
-                                                     ) as step_logger:
-                                    train_step_component[
-                                        k] = step_logger.scalar(
-                                            'Training: {}'.format(k))
-                            train_step_component[k].add_record(num_steps, v)
-
+                            log_writer.add_scalar(
+                                tag="Training: {}".format(k),
+                                value=v,
+                                step=num_steps)
                     logging.info(
                         "[TRAIN] Epoch={}/{}, Step={}/{}, {}, eta={}".format(
                             i + 1, num_epochs, step + 1, total_num_steps,
@@ -350,12 +344,10 @@ class BaseAPI:
                             if isinstance(v, np.ndarray):
                                 if v.size > 1:
                                     continue
-                            if k not in eval_component:
-                                with log_writer.mode('Each_Epoch_on_Eval_Data'
-                                                     ) as eval_logger:
-                                    eval_component[k] = eval_logger.scalar(
-                                        'Evaluation: {}'.format(k))
-                            eval_component[k].add_record(i + 1, v)
+                            log_writer.add_scalar(
+                                tag="Evaluation: {}".format(k),
+                                step=i + 1,
+                                value=v)
                 self.save_model(save_dir=current_save_dir)
                 logging.info(
                     'Current evaluated best model in eval_reader is epoch_{}, {}={}'

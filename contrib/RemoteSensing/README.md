@@ -62,8 +62,8 @@ RemoteSensing               # 根目录
 ```
 其中，相应的文件名可根据需要自行定义。
 
-由于遥感领域图像格式多种多样，不同传感器产生的数据格式可能不同。本分割库目前采用npy格式作为遥感数据的格式，采用png无损压缩格式作为标注图片格式。
-
+由于遥感领域图像格式多种多样，不同传感器产生的数据格式可能不同。本分割库目前采用npy格式作为原图格式，采用png无损压缩格式作为标注图片格式。
+原图的前两维是图像的尺寸，第3维是图像的通道数。
 标注图像为单通道图像，像素值即为对应的类别,像素标注类别需要从0开始递增，
 例如0，1，2，3表示有4种类别，标注类别最多为256类。其中可以指定特定的像素值用于表示该值的像素不参与训练和评估（默认为255）。
 
@@ -233,7 +233,7 @@ export CUDA_VISIBLE_DEVICES=0
 ```
 > 在RemoteSensing目录下运行`predict_demo.py`即可开始训练。
 ```shell script
-python predict_demo.py --data_dir dataset/demo/ --load_model_dir saved_model/unet/
+python predict_demo.py --data_dir dataset/demo/ --load_model_dir saved_model/unet/best_model/
 ```
 
 
