@@ -161,6 +161,7 @@ A: 降低Batch size，使用Group Norm策略；请注意训练过程中当`DEFAU
   * 全面升级[HumanSeg人像分割模型](./contrib/HumanSeg)，新增超轻量级人像分割模型HumanSeg-lite支持移动端实时人像分割处理，并提供基于光流的视频分割后处理提升分割流畅性。
   * 新增[气象遥感分割方案](./contrib/RemoteSensing)，支持积雪识别、云检测等气象遥感场景。
   * 新增[Lovasz Loss](docs/lovasz_loss.md)，解决数据类别不均衡问题。
+  * 使用VisualDL 2.0作为训练可视化工具
   
 * 2020.02.25
 
