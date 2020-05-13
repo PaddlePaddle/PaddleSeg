@@ -22,20 +22,20 @@ sys.path.append(TEST_PATH)
 from test_utils import download_file_and_uncompress
 
 model_urls = {
-    "humanseg_server":
-    "https://paddleseg.bj.bcebos.com/humanseg/models/humanseg_server.zip",
-    "humanseg_server_export":
-    "https://paddleseg.bj.bcebos.com/humanseg/models/humanseg_server_export.zip",
-    "humanseg_mobile":
-    "https://paddleseg.bj.bcebos.com/humanseg/models/humanseg_mobile.zip",
-    "humanseg_mobile_export":
-    "https://paddleseg.bj.bcebos.com/humanseg/models/humanseg_mobile_export.zip",
+    "humanseg_server_ckpt":
+    "https://paddleseg.bj.bcebos.com/humanseg/models/humanseg_server_ckpt.zip",
+    "humanseg_server_inference":
+    "https://paddleseg.bj.bcebos.com/humanseg/models/humanseg_server_inference.zip",
+    "humanseg_mobile_ckpt":
+    "https://paddleseg.bj.bcebos.com/humanseg/models/humanseg_mobile_ckpt.zip",
+    "humanseg_mobile_inference":
+    "https://paddleseg.bj.bcebos.com/humanseg/models/humanseg_mobile_inference.zip",
     "humanseg_mobile_quant":
     "https://paddleseg.bj.bcebos.com/humanseg/models/humanseg_mobile_quant.zip",
-    "humanseg_lite":
-    "https://paddleseg.bj.bcebos.com/humanseg/models/humanseg_lite.zip",
-    "humanseg_lite_export":
-    "https://paddleseg.bj.bcebos.com/humanseg/models/humanseg_lite_export.zip",
+    "humanseg_lite_ckpt":
+    "https://paddleseg.bj.bcebos.com/humanseg/models/humanseg_lite_ckpt.zip",
+    "humanseg_lite_inference":
+    "https://paddleseg.bj.bcebos.com/humanseg/models/humanseg_lite_inference.zip",
     "humanseg_lite_quant":
     "https://paddleseg.bj.bcebos.com/humanseg/models/humanseg_lite_quant.zip",
 }
