@@ -162,18 +162,17 @@ def visualize(cfg,
             img_cnt += 1
             print("#{} visualize image path: {}".format(img_cnt, vis_fn))
 
-            # Use Tensorboard to visualize image
+            # Use VisualDL to visualize image
             if log_writer is not None:
                 # Calulate epoch from ckpt_dir folder name
                 epoch = int(os.path.split(ckpt_dir)[-1])
-                print("Tensorboard visualization epoch", epoch)
+                print("VisualDL visualization epoch", epoch)
 
                 pred_mask_np = np.array(pred_mask.convert("RGB"))
                 log_writer.add_image(
                     "Predict/{}".format(img_name),
                     pred_mask_np,
-                    epoch,
-                    dataformats='HWC')
+                    epoch)
                 # Original image
                 # BGR->RGB
                 img = cv2.imread(
@@ -181,8 +180,7 @@ def visualize(cfg,
                 log_writer.add_image(
                     "Images/{}".format(img_name),
                     img,
-                    epoch,
-                    dataformats='HWC')
+                    epoch)
                 # add ground truth (label) images
                 grt = grts[i]
                 if grt is not None:
@@ -194,8 +192,7 @@ def visualize(cfg,
                     log_writer.add_image(
                         "Label/{}".format(img_name),
                         grt,
-                        epoch,
-                        dataformats='HWC')
+                        epoch)
 
         # If in local_test mode, only visualize 5 images just for testing
         # procedure

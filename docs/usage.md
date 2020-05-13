@@ -49,8 +49,8 @@ export CUDA_VISIBLE_DEVICES=0
 python pdseg/train.py --cfg configs/unet_optic.yaml \
                       --use_gpu \
                       --do_eval \
-                      --use_tb \
-                      --tb_log_dir train_log \
+                      --use_vdl \
+                      --vdl_log_dir train_log \
                       BATCH_SIZE 4 \
                       SOLVER.LR 0.001
                       
@@ -70,22 +70,22 @@ export CUDA_VISIBLE_DEVICES=0,1,2
 
 ## 5.训练过程可视化
 
-当打开do_eval和use_tb两个开关后，我们可以通过TensorBoard查看边训练边评估的效果。
+当打开do_eval和use_vdl两个开关后，我们可以通过VisualDL查看边训练边评估的效果。
 
 ```shell
-tensorboard --logdir train_log --host {$HOST_IP} --port {$PORT}
+visualdl --logdir train_log --host {$HOST_IP} --port {$PORT}
 ```
 
 NOTE:
 1. 上述示例中，$HOST\_IP为机器IP地址，请替换为实际IP，$PORT请替换为可访问的端口。
 2. 数据量较大时，前端加载速度会比较慢，请耐心等待。
 
-启动TensorBoard命令后，我们可以在浏览器中查看对应的训练数据。
+启动VisualDL命令后，我们可以在浏览器中查看对应的训练数据。
 在`SCALAR`这个tab中，查看训练loss、iou、acc的变化趋势。
-![](./imgs/tensorboard_scalar.JPG)
+![](./imgs/visualdl_scalar.png)
 
 在`IMAGE`这个tab中，查看样本图片。
-![](./imgs/tensorboard_image.JPG)
+![](./imgs/visualdl_image.png)
 
 ## 6.模型评估
 训练完成后，我们可以通过eval.py来评估模型效果。由于我们设置的训练EPOCH数量为10，保存间隔为5，因此一共会产生2个定期保存的模型，加上最终保存的final模型，一共有3个模型。我们选择最后保存的模型进行效果的评估：
