@@ -21,7 +21,9 @@ import warnings
 
 def parse_args():
     parser = argparse.ArgumentParser(
-        description='PaddleSeg generate file list on your customized dataset.')
+        description=
+        'a tool for dividing dataset and generating file lists by file directory structure.'
+    )
     parser.add_argument('dataset_root', help='dataset root directory', type=str)
     parser.add_argument(
         '--separator',
