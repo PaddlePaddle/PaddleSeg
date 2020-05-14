@@ -44,10 +44,10 @@ python data/download_data.py
 ## 快速体验视频流人像分割
 ```bash
 # 通过电脑摄像头进行实时分割处理
-python video_infer.py --model_dir pretrained_weights/humanseg_lite_export
+python video_infer.py --model_dir pretrained_weights/humanseg_lite_inference
 
 # 对人像视频进行分割处理
-python video_infer.py --model_dir pretrained_weights/humanseg_lite_export --video_path data/video_test.mp4
+python video_infer.py --model_dir pretrained_weights/humanseg_lite_inference --video_path data/video_test.mp4
 ```
 
 **NOTE**:
@@ -62,7 +62,7 @@ python train.py --model_type HumanSegMobile \
 --data_dir data/mini_supervisely \
 --train_list data/mini_supervisely/train.txt \
 --val_list data/mini_supervisely/val.txt \
---pretrained_weights pretrained_weights/humanseg_mobile \
+--pretrained_weights pretrained_weights/humanseg_mobile_ckpt \
 --batch_size 8 \
 --learning_rate 0.001 \
 --num_epochs 10 \
