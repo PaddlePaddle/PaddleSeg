@@ -70,7 +70,7 @@ export CUDA_VISIBLE_DEVICES=0,1,2
 
 ## 5.训练过程可视化
 
-当打开do_eval和use_vdl两个开关后，我们可以通过VisualDL查看边训练边评估的效果。
+训练过程可视化需要在启动训练脚本`train.py`时，打开`--do_eval`和`--use_vdl`两个开关，并设置日志保存目录`--vdl_log_dir`，然后便可以通过VisualDL查看边训练边评估的效果。
 
 ```shell
 visualdl --logdir train_log --host {$HOST_IP} --port {$PORT}
