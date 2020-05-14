@@ -122,7 +122,6 @@ python export.py --model_dir output/best_model \
 ```
 其中参数含义如下：
 * `--model_dir`: 模型路径
-* `--data_dir`: 数据集路径
 * `--save_dir`: 导出模型保存路径
 
 ## 离线量化
