@@ -213,6 +213,7 @@ class BaseAPI:
                    train_reader,
                    train_batch_size,
                    eval_reader=None,
+                   eval_best_metric=None,
                    save_interval_epochs=1,
                    log_interval_steps=10,
                    save_dir='output',
@@ -263,7 +264,6 @@ class BaseAPI:
             # VisualDL component
             log_writer = LogWriter(vdl_logdir)
 
-        best_accuracy_key = ""
         best_accuracy = -1.0
         best_model_epoch = 1
         for i in range(num_epochs):
@@ -330,10 +330,9 @@ class BaseAPI:
                     logging.info('[EVAL] Finished, Epoch={}, {} .'.format(
                         i + 1, dict2str(self.eval_metrics)))
                     # 保存最优模型
-                    best_accuracy_key = list(self.eval_metrics.keys())[0]
-                    current_accuracy = self.eval_metrics[best_accuracy_key]
-                    if current_accuracy > best_accuracy:
-                        best_accuracy = current_accuracy
+                    current_metric = self.eval_metrics[eval_best_metric]
+                    if current_metric > best_accuracy:
+                        best_accuracy = current_metric
                         best_model_epoch = i + 1
                         best_model_dir = osp.join(save_dir, "best_model")
                         self.save_model(save_dir=best_model_dir)
@@ -351,4 +350,4 @@ class BaseAPI:
                 self.save_model(save_dir=current_save_dir)
                 logging.info(
                     'Current evaluated best model in eval_reader is epoch_{}, {}={}'
-                    .format(best_model_epoch, best_accuracy_key, best_accuracy))
+                    .format(best_model_epoch, eval_best_metric, best_accuracy))
