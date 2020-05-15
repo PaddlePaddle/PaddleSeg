@@ -16,11 +16,19 @@ $ pip install -r requirements.txt
 
 ## 预训练模型
 HumanSeg开放了在大规模人像数据上训练的三个预训练模型，满足多种使用场景的需求
+
 | 模型类型 | Checkpoint | Inference Model | Quant Inference Model | 备注 |
+| --- | --- | --- | ---| --- |
+| HumanSeg-server  | [humanseg_server_ckpt](https://paddleseg.bj.bcebos.com/humanseg/models/humanseg_server_ckpt.zip) | [humanseg_server_inference](https://paddleseg.bj.bcebos.com/humanseg/models/humanseg_server_inference.zip) | -- | 高精度模型，适用于服务端GPU且背景复杂的人像场景， 模型结构为Deeplabv3+/Xcetion65  |
+| HumanSeg-mobile | [humanseg_mobile_ckpt](https://paddleseg.bj.bcebos.com/humanseg/models/humanseg_mobile_ckpt.zip) | [humanseg_mobile_inference](https://paddleseg.bj.bcebos.com/humanseg/models/humanseg_mobile_inference.zip) | [humanseg_mobile_quant](https://paddleseg.bj.bcebos.com/humanseg/models/humanseg_mobile_quant.zip) | 轻量级模型, 适用于移动端或服务端CPU的前置摄像头场景，模型结构为HRNet_w18_samll_v1  |
+| HumanSeg-lite | [humanseg_lite_ckpt](https://paddleseg.bj.bcebos.com/humanseg/models/humanseg_lite_ckpt.zip) | [humanseg_lite_inference](https://paddleseg.bj.bcebos.com/humanseg/models/humanseg_lite_inference.zip) |  [humanseg_lite_quant](https://paddleseg.bj.bcebos.com/humanseg/models/humanseg_lite_quant.zip) | 超轻量级模型, 适用于手机自拍人像，且有移动端实时分割场景， 模型结构为优化的ShuffleNetV2 |
+
+模型计算耗时（小米，cpu：骁龙855， 内存：6GB， 图片大小：192*192)
+
+| 模型 | humanseg_mobile_inference | humanseg_mobile_quant | humanseg_lite_inference | humanseg_lite_quant |
 | --- | --- | --- | --- | --- |
-| HumanSeg-server | [humanseg_server_ckpt](https://paddleseg.bj.bcebos.com/humanseg/models/humanseg_server_ckpt.zip) | [humanseg_server_inference](https://paddleseg.bj.bcebos.com/humanseg/models/humanseg_server_inference.zip) | -- | 高精度模型，适用于服务端GPU且背景复杂的人像场景  |
-| HumanSeg-mobile | [humanseg_mobile_ckpt](https://paddleseg.bj.bcebos.com/humanseg/models/humanseg_mobile_ckpt.zip) | [humanseg_mobile_inference](https://paddleseg.bj.bcebos.com/humanseg/models/humanseg_mobile_inference.zip) | [humanseg_mobile_quant](https://paddleseg.bj.bcebos.com/humanseg/models/humanseg_mobile_quant.zip) | 轻量级模型, 适用于移动端或服务端CPU的前置摄像头场景 |
-| HumanSeg-lite | [humanseg_lite_ckpt](https://paddleseg.bj.bcebos.com/humanseg/models/humanseg_lite_ckpt.zip) | [humanseg_lite_inference](https://paddleseg.bj.bcebos.com/humanseg/models/humanseg_lite_inference.zip) |  [humanseg_lite_quant](https://paddleseg.bj.bcebos.com/humanseg/models/humanseg_lite_quant.zip) | 超轻量级模型, 适用于手机自拍人像，且有移动端实时分割场景 |
+| 耗时（ms) | 42.25 | 24.93 | 17.26 | 11.89 |
+
 
 **NOTE:**
 其中Checkpoint为模型权重，用于Fine-tuning场景。
@@ -42,6 +50,7 @@ python data/download_data.py
 ```
 
 ## 快速体验视频流人像分割
+结合DIS（Dense Inverse Search-basedmethod）光流算法预测结果与分割结果，改善视频流人像分割
 ```bash
 # 通过电脑摄像头进行实时分割处理
 python video_infer.py --model_dir pretrained_weights/humanseg_lite_inference
@@ -49,6 +58,10 @@ python video_infer.py --model_dir pretrained_weights/humanseg_lite_inference
 # 对人像视频进行分割处理
 python video_infer.py --model_dir pretrained_weights/humanseg_lite_inference --video_path data/video_test.mp4
 ```
+
+视频分割结果如下：
+
+<img src="https://paddleseg.bj.bcebos.com/humanseg/data/video_test.gif" width="20%" height="20%"><img src="https://paddleseg.bj.bcebos.com/humanseg/data/result.gif" width="20%" height="20%">
 
 **NOTE**:
 
