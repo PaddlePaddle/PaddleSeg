@@ -213,6 +213,7 @@ class BaseAPI:
                    train_reader,
                    train_batch_size,
                    eval_reader=None,
+                   eval_best_metric=None,
                    save_interval_epochs=1,
                    log_interval_steps=10,
                    save_dir='output',
@@ -261,11 +262,8 @@ class BaseAPI:
 
         if use_vdl:
             # VisualDL component
-            log_writer = LogWriter(vdl_logdir, sync_cycle=20)
-            train_step_component = OrderedDict()
-            eval_component = OrderedDict()
+            log_writer = LogWriter(vdl_logdir)
 
-        best_accuracy_key = ""
         best_accuracy = -1.0
         best_model_epoch = 1
         for i in range(num_epochs):
@@ -302,14 +300,10 @@ class BaseAPI:
 
                     if use_vdl:
                         for k, v in step_metrics.items():
-                            if k not in train_step_component.keys():
-                                with log_writer.mode('Each_Step_while_Training'
-                                                     ) as step_logger:
-                                    train_step_component[
-                                        k] = step_logger.scalar(
-                                            'Training: {}'.format(k))
-                            train_step_component[k].add_record(num_steps, v)
-
+                            log_writer.add_scalar(
+                                tag="Training: {}".format(k),
+                                value=v,
+                                step=num_steps)
                     logging.info(
                         "[TRAIN] Epoch={}/{}, Step={}/{}, {}, eta={}".format(
                             i + 1, num_epochs, step + 1, total_num_steps,
@@ -336,10 +330,9 @@ class BaseAPI:
                     logging.info('[EVAL] Finished, Epoch={}, {} .'.format(
                         i + 1, dict2str(self.eval_metrics)))
                     # 保存最优模型
-                    best_accuracy_key = list(self.eval_metrics.keys())[0]
-                    current_accuracy = self.eval_metrics[best_accuracy_key]
-                    if current_accuracy > best_accuracy:
-                        best_accuracy = current_accuracy
+                    current_metric = self.eval_metrics[eval_best_metric]
+                    if current_metric > best_accuracy:
+                        best_accuracy = current_metric
                         best_model_epoch = i + 1
                         best_model_dir = osp.join(save_dir, "best_model")
                         self.save_model(save_dir=best_model_dir)
@@ -350,13 +343,11 @@ class BaseAPI:
                             if isinstance(v, np.ndarray):
                                 if v.size > 1:
                                     continue
-                            if k not in eval_component:
-                                with log_writer.mode('Each_Epoch_on_Eval_Data'
-                                                     ) as eval_logger:
-                                    eval_component[k] = eval_logger.scalar(
-                                        'Evaluation: {}'.format(k))
-                            eval_component[k].add_record(i + 1, v)
+                            log_writer.add_scalar(
+                                tag="Evaluation: {}".format(k),
+                                step=i + 1,
+                                value=v)
                 self.save_model(save_dir=current_save_dir)
                 logging.info(
                     'Current evaluated best model in eval_reader is epoch_{}, {}={}'
-                    .format(best_model_epoch, best_accuracy_key, best_accuracy))
+                    .format(best_model_epoch, eval_best_metric, best_accuracy))

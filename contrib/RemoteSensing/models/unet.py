@@ -138,6 +138,7 @@ class UNet(BaseAPI):
               train_reader,
               train_batch_size=2,
               eval_reader=None,
+              eval_best_metric='kappa',
               save_interval_epochs=1,
               log_interval_steps=2,
               save_dir='output',
@@ -154,7 +155,8 @@ class UNet(BaseAPI):
             num_epochs (int): 训练迭代轮数。
             train_reader (readers): 训练数据读取器。
             train_batch_size (int): 训练数据batch大小。同时作为验证数据batch大小。默认2。
-            eval_reader (readers): 评估数据读取器。
+            eval_reader (readers): 边训边评估的评估数据读取器。
+            eval_best_metric (str): 边训边评估保存最好模型的指标。默认为'kappa'。
             save_interval_epochs (int): 模型保存间隔（单位：迭代轮数）。默认为1。
             log_interval_steps (int): 训练日志输出间隔（单位：迭代次数）。默认为2。
             save_dir (str): 模型保存路径。默认'output'。
@@ -202,6 +204,7 @@ class UNet(BaseAPI):
             train_reader=train_reader,
             train_batch_size=train_batch_size,
             eval_reader=eval_reader,
+            eval_best_metric=eval_best_metric,
             save_interval_epochs=save_interval_epochs,
             log_interval_steps=log_interval_steps,
             save_dir=save_dir,
@@ -223,7 +226,7 @@ class UNet(BaseAPI):
             return_details (bool): 是否返回详细信息。默认False。
 
         Returns:
-            dict: 当return_details为False时，返回dict。包含关键字：'miou'、'categore_iou'、'macc'、
+            dict: 当return_details为False时，返回dict。包含关键字：'miou'、'category_iou'、'macc'、
                 'category_acc'和'kappa'，分别表示平均iou、各类别iou、平均准确率、各类别准确率和kappa系数。
             tuple (metrics, eval_details)：当return_details为True时，增加返回dict (eval_details)，
                 包含关键字：'confusion_matrix'，表示评估的混淆矩阵。
@@ -271,7 +274,7 @@ class UNet(BaseAPI):
         category_acc, macc = conf_mat.accuracy()
 
         metrics = OrderedDict(
-            zip(['miou', 'categore_iou', 'macc', 'category_acc', 'kappa'],
+            zip(['miou', 'category_iou', 'macc', 'category_acc', 'kappa'],
                 [miou, category_iou, macc, category_acc,
                  conf_mat.kappa()]))
         if return_details:

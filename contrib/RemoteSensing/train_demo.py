@@ -103,4 +103,4 @@ model.train(
     pretrain_weights=None,
     optimizer=None,
     learning_rate=lr,
-)
+    use_vdl=True)

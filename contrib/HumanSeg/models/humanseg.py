@@ -602,7 +602,7 @@ class SegModel(object):
             return_details (bool): 是否返回详细信息。默认False。
 
         Returns:
-            dict: 当return_details为False时，返回dict。包含关键字：'miou'、'categore_iou'、'macc'、
+            dict: 当return_details为False时，返回dict。包含关键字：'miou'、'category_iou'、'macc'、
                 'category_acc'和'kappa'，分别表示平均iou、各类别iou、平均准确率、各类别准确率和kappa系数。
             tuple (metrics, eval_details)：当return_details为True时，增加返回dict (eval_details)，
                 包含关键字：'confusion_matrix'，表示评估的混淆矩阵。

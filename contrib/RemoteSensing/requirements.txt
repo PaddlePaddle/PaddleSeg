@@ -1,9 +1,1 @@
-pre-commit
-yapf == 0.26.0
-flake8
-pyyaml >= 5.1
-Pillow
-numpy
-six
-opencv-python
-tqdm
+visualdl >= 2.0.0-alpha.2

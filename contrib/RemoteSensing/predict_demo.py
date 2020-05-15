@@ -29,8 +29,8 @@ data_dir = args.data_dir
 load_model_dir = args.load_model_dir
 
 # predict
-model = load_model(osp.join(load_model_dir, 'best_model'))
-pred_dir = osp.join(load_model_dir, 'pred')
+model = load_model(load_model_dir)
+pred_dir = osp.join(load_model_dir, 'predict')
 if not osp.exists(pred_dir):
     os.mkdir(pred_dir)
 
