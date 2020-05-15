@@ -11,31 +11,8 @@ import os.path as osp
 import numpy as np
 import PIL.Image
 import labelme
-import cv2
 
 from gray2pseudo_color import get_color_map_list
-
-
-def get_color_map_list(num_classes):
-    """ Returns the color map for visualizing the segmentation mask,
-        which can support arbitrary number of classes.
-    Args:
-        num_classes: Number of classes
-    Returns:
-        The color map
-    """
-    color_map = num_classes * [0, 0, 0]
-    for i in range(0, num_classes):
-        j = 0
-        lab = i
-        while lab:
-            color_map[i * 3] |= (((lab >> 0) & 1) << (7 - j))
-            color_map[i * 3 + 1] |= (((lab >> 1) & 1) << (7 - j))
-            color_map[i * 3 + 2] |= (((lab >> 2) & 1) << (7 - j))
-            j += 1
-            lab >>= 3
-
-    return color_map
 
 
 def parse_args():
@@ -89,10 +66,7 @@ def main(args):
             img_file = osp.join(osp.dirname(label_file), data['imagePath'])
             img = np.asarray(PIL.Image.open(img_file))
 
-            import cv2
-            img2 = np.asarray(cv2.imread(img_file))
-
-            lbl, _ = labelme.utils.shapes_to_label(
+            lbl = labelme.utils.shapes_to_label(
                 img_shape=img.shape,
                 shapes=data['shapes'],
                 label_name_to_value=class_name_to_id,
@@ -112,12 +86,5 @@ def main(args):
 
 
 if __name__ == '__main__':
-    # args = parse_args()
-    # main(args)
-
-    # debug code
-    args = argparse.ArgumentParser(
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    args.input_dir = '/Users/chulutao/Downloads/test'
-    # args.input_dir = 'docs/annotation/labelme_demo/'
+    args = parse_args()
     main(args)
