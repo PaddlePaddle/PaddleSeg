@@ -15,12 +15,32 @@ import labelme
 from gray2pseudo_color import get_color_map_list
 
 
+def get_color_map_list(num_classes):
+    """ Returns the color map for visualizing the segmentation mask,
+        which can support arbitrary number of classes.
+    Args:
+        num_classes: Number of classes
+    Returns:
+        The color map
+    """
+    color_map = num_classes * [0, 0, 0]
+    for i in range(0, num_classes):
+        j = 0
+        lab = i
+        while lab:
+            color_map[i * 3] |= (((lab >> 0) & 1) << (7 - j))
+            color_map[i * 3 + 1] |= (((lab >> 1) & 1) << (7 - j))
+            color_map[i * 3 + 2] |= (((lab >> 2) & 1) << (7 - j))
+            j += 1
+            lab >>= 3
+
+    return color_map
+
+
 def parse_args():
     parser = argparse.ArgumentParser(
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter
-    )
-    parser.add_argument('input_dir',
-                        help='input annotated directory')
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser.add_argument('input_dir', help='input annotated directory')
     return parser.parse_args()
 
 
@@ -62,8 +82,7 @@ def main(args):
         print('Generating dataset from:', label_file)
         with open(label_file) as f:
             base = osp.splitext(osp.basename(label_file))[0]
-            out_png_file = osp.join(
-                output_dir, base + '.png')
+            out_png_file = osp.join(output_dir, base + '.png')
 
             data = json.load(f)
 
@@ -77,16 +96,22 @@ def main(args):
                         # convert jingling format to labelme format
                         points = []
                         for i in range(1, int(len(polygon) / 2) + 1):
-                            points.append([polygon['x' + str(i)], polygon['y' + str(i)]])
-                        shape = {'label': name, 'points': points, 'shape_type': 'polygon'}
+                            points.append(
+                                [polygon['x' + str(i)], polygon['y' + str(i)]])
+                        shape = {
+                            'label': name,
+                            'points': points,
+                            'shape_type': 'polygon'
+                        }
                         data_shapes.append(shape)
 
             if 'size' not in data:
                 continue
             data_size = data['size']
-            img_shape = (data_size['height'], data_size['width'], data_size['depth'])
+            img_shape = (data_size['height'], data_size['width'],
+                         data_size['depth'])
 
-            lbl = labelme.utils.shapes_to_label(
+            lbl, _ = labelme.utils.shapes_to_label(
                 img_shape=img_shape,
                 shapes=data_shapes,
                 label_name_to_value=class_name_to_id,
@@ -102,8 +127,7 @@ def main(args):
             else:
                 raise ValueError(
                     '[%s] Cannot save the pixel-wise class label as PNG. '
-                    'Please consider using the .npy format.' % out_png_file
-                )
+                    'Please consider using the .npy format.' % out_png_file)
 
 
 if __name__ == '__main__':
