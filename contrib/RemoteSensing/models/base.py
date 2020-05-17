@@ -116,9 +116,7 @@ class BaseAPI:
                        startup_prog=None,
                        pretrain_weights=None,
                        fuse_bn=False,
-                       save_dir='.',
-                       sensitivities_file=None,
-                       eval_metric_loss=0.05):
+                       save_dir='.'):
         if hasattr(self, 'backbone'):
             backbone = self.backbone
         else:
@@ -133,18 +131,9 @@ class BaseAPI:
                 "Load pretrain weights from {}.".format(pretrain_weights))
             utils.utils.load_pretrain_weights(self.exe, self.train_prog,
                                               pretrain_weights, fuse_bn)
-        # 进行裁剪
-        if sensitivities_file is not None:
-            from .slim.prune_config import get_sensitivities
-            sensitivities_file = get_sensitivities(sensitivities_file, self,
-                                                   save_dir)
-            from .slim.prune import get_params_ratios, prune_program
-            prune_params_ratios = get_params_ratios(
-                sensitivities_file, eval_metric_loss=eval_metric_loss)
-            prune_program(self, prune_params_ratios)
-            self.status = 'Prune'
 
     def get_model_info(self):
+        # 存储相应的信息到yml文件
         info = dict()
         info['Model'] = self.__class__.__name__
         info['_Attributes'] = {}
@@ -167,11 +156,20 @@ class BaseAPI:
 
         if hasattr(self, 'test_transforms'):
             if self.test_transforms is not None:
-                info['Transforms'] = list()
+                info['test_transforms'] = list()
                 for op in self.test_transforms.transforms:
                     name = op.__class__.__name__
                     attr = op.__dict__
-                    info['Transforms'].append({name: attr})
+                    info['test_transforms'].append({name: attr})
+
+        if hasattr(self, 'train_transforms'):
+            if self.train_transforms is not None:
+                info['train_transforms'] = list()
+                for op in self.train_transforms.transforms:
+                    name = op.__class__.__name__
+                    attr = op.__dict__
+                    info['train_transforms'].append({name: attr})
+
         return info
 
     def save_model(self, save_dir):
@@ -190,19 +188,6 @@ class BaseAPI:
         if hasattr(self, 'eval_details'):
             with open(osp.join(save_dir, 'eval_details.json'), 'w') as f:
                 json.dump(self.eval_details, f)
-
-        if self.status == 'Prune':
-            # 保存裁剪的shape
-            shapes = {}
-            for block in self.train_prog.blocks:
-                for param in block.all_parameters():
-                    pd_var = fluid.global_scope().find_var(param.name)
-                    pd_param = pd_var.get_tensor()
-                    shapes[param.name] = np.array(pd_param).shape
-            with open(
-                    osp.join(save_dir, 'prune.yml'), encoding='utf-8',
-                    mode='w') as f:
-                yaml.dump(shapes, f)
 
         # 模型保存成功的标志
         open(osp.join(save_dir, '.success'), 'w').close()
@@ -264,7 +249,7 @@ class BaseAPI:
             # VisualDL component
             log_writer = LogWriter(vdl_logdir)
 
-        best_accuracy = -1.0
+        best_metric = -1.0
         best_model_epoch = 1
         for i in range(num_epochs):
             records = list()
@@ -331,8 +316,8 @@ class BaseAPI:
                         i + 1, dict2str(self.eval_metrics)))
                     # 保存最优模型
                     current_metric = self.eval_metrics[eval_best_metric]
-                    if current_metric > best_accuracy:
-                        best_accuracy = current_metric
+                    if current_metric > best_metric:
+                        best_metric = current_metric
                         best_model_epoch = i + 1
                         best_model_dir = osp.join(save_dir, "best_model")
                         self.save_model(save_dir=best_model_dir)
@@ -350,4 +335,4 @@ class BaseAPI:
                 self.save_model(save_dir=current_save_dir)
                 logging.info(
                     'Current evaluated best model in eval_reader is epoch_{}, {}={}'
-                    .format(best_model_epoch, eval_best_metric, best_accuracy))
+                    .format(best_model_epoch, eval_best_metric, best_metric))

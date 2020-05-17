@@ -48,6 +48,7 @@ with open(val_list) as f:
         # 以伪彩色png图片保存预测结果
         pred_name = osp.basename(img_path).rstrip('npy') + 'png'
         pred_path = osp.join(pred_dir, pred_name)
-        pred_mask = Image.fromarray(pred.astype(np.uint8), mode='P')
+        pred_mask = Image.fromarray(
+            pred['label_map'].astype(np.uint8), mode='P')
         pred_mask.putpalette(color_map)
         pred_mask.save(pred_path)

@@ -143,3 +143,18 @@ class ConfusionMatrix(object):
 
         kappa = (po - pe) / (1 - pe)
         return kappa
+
+    def recall(self):
+        '''
+        precision, recall of foreground(value=1) for 2 categories
+        '''
+        TP = self.confusion_matrix[1, 1]
+        FN = self.confusion_matrix[1, 0]
+        FP = self.confusion_matrix[0, 1]
+        TN = self.confusion_matrix[0, 0]
+        recall = TP / (TP + FN)
+        precision = TP / (TP + FP)
+        scr = TN / (TN + FP)
+        oe = FN / (TP + FN)
+        ce = FP / (TN + FP)
+        return precision, recall, scr, oe, ce
