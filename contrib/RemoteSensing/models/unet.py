@@ -146,9 +146,7 @@ class UNet(BaseAPI):
               optimizer=None,
               learning_rate=0.01,
               lr_decay_power=0.9,
-              use_vdl=False,
-              sensitivities_file=None,
-              eval_metric_loss=0.05):
+              use_vdl=False):
         """训练。
 
         Args:
@@ -167,9 +165,6 @@ class UNet(BaseAPI):
             learning_rate (float): 默认优化器的初始学习率。默认0.01。
             lr_decay_power (float): 默认优化器学习率多项式衰减系数。默认0.9。
             use_vdl (bool): 是否使用VisualDL进行可视化。默认False。
-            sensitivities_file (str): 若指定为路径时，则加载路径下敏感度信息进行裁剪；若为字符串'DEFAULT'，
-                则自动下载在ImageNet图片数据上获得的敏感度信息进行裁剪；若为None，则不进行裁剪。默认为None。
-            eval_metric_loss (float): 可容忍的精度损失。默认为0.05。
 
         Raises:
             ValueError: 模型从inference model进行加载。
@@ -195,9 +190,7 @@ class UNet(BaseAPI):
         self.net_initialize(
             startup_prog=fluid.default_startup_program(),
             pretrain_weights=pretrain_weights,
-            save_dir=save_dir,
-            sensitivities_file=sensitivities_file,
-            eval_metric_loss=eval_metric_loss)
+            save_dir=save_dir)
         # 训练
         self.train_loop(
             num_epochs=num_epochs,
@@ -319,4 +312,4 @@ class UNet(BaseAPI):
                 h, w = im_info[k][0], im_info[k][1]
                 pred = pred[0:h, 0:w]
 
-        return pred
+        return {'label_map': pred}
