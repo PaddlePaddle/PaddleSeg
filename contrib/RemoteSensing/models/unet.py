@@ -265,11 +265,16 @@ class UNet(BaseAPI):
 
         category_iou, miou = conf_mat.mean_iou()
         category_acc, macc = conf_mat.accuracy()
+        precision, recall, scr, oe, ce = conf_mat.recall()
 
         metrics = OrderedDict(
-            zip(['miou', 'category_iou', 'macc', 'category_acc', 'kappa'],
-                [miou, category_iou, macc, category_acc,
-                 conf_mat.kappa()]))
+            zip([
+                'miou', 'category_iou', 'macc', 'category_acc', 'kappa',
+                'precision', 'recall', 'scr', 'oe', 'ce'
+            ], [
+                miou, category_iou, macc, category_acc,
+                conf_mat.kappa(), precision, recall, scr, oe, ce
+            ]))
         if return_details:
             eval_details = {
                 'confusion_matrix': conf_mat.confusion_matrix.tolist()
