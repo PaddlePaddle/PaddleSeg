@@ -40,6 +40,7 @@ def softmax_with_loss(logit,
             ignore_index=cfg.DATASET.IGNORE_INDEX,
             return_softmax=True)
     else:
+        label = fluid.layers.squeeze(label, axes=[-1])
         label_one_hot = fluid.one_hot(input=label, depth=num_classes)
         if isinstance(weight, list):
             assert len(
