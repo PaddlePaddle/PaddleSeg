@@ -175,6 +175,8 @@ class UNet(BaseAPI):
             )
 
         self.labels = train_reader.labels
+        self.train_transforms = train_reader.transforms
+        self.train_init = locals()
 
         if optimizer is None:
             num_steps_each_epoch = train_reader.num_samples // train_batch_size

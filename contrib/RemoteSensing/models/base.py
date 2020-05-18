@@ -136,21 +136,24 @@ class BaseAPI:
         # 存储相应的信息到yml文件
         info = dict()
         info['Model'] = self.__class__.__name__
-        info['_Attributes'] = {}
         if 'self' in self.init_params:
             del self.init_params['self']
         if '__class__' in self.init_params:
             del self.init_params['__class__']
         info['_init_params'] = self.init_params
 
+        info['_Attributes'] = dict()
         info['_Attributes']['num_classes'] = self.num_classes
         info['_Attributes']['labels'] = self.labels
         try:
-            primary_metric_key = list(self.eval_metrics.keys())[0]
-            primary_metric_value = float(self.eval_metrics[primary_metric_key])
-            info['_Attributes']['eval_metrics'] = {
-                primary_metric_key: primary_metric_value
-            }
+            info['_Attributes']['eval_metric'] = dict()
+            for k, v in self.eval_metrics.items():
+                if isinstance(v, np.ndarray):
+                    if v.size > 1:
+                        v = [float(i) for i in v]
+                else:
+                    v = float(v)
+                info['_Attributes']['eval_metric'][k] = v
         except:
             pass
 
@@ -170,6 +173,16 @@ class BaseAPI:
                     attr = op.__dict__
                     info['train_transforms'].append({name: attr})
 
+        if hasattr(self, 'train_init'):
+            if 'self' in self.train_init:
+                del self.train_init['self']
+            if 'train_reader' in self.train_init:
+                del self.train_init['train_reader']
+            if 'eval_reader' in self.train_init:
+                del self.train_init['eval_reader']
+            if 'optimizer' in self.train_init:
+                del self.train_init['optimizer']
+            info['train_init'] = self.train_init
         return info
 
     def save_model(self, save_dir):
