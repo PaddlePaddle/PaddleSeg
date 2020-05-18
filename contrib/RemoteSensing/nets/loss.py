@@ -34,7 +34,7 @@ def softmax_with_loss(logit,
         loss, probs = fluid.layers.softmax_with_cross_entropy(
             logit, label, ignore_index=ignore_index, return_softmax=True)
     else:
-        label_one_hot = fluid.layers.one_hot(input=label, depth=num_classes)
+        label_one_hot = fluid.one_hot(input=label, depth=num_classes)
         if isinstance(weight, list):
             assert len(
                 weight
