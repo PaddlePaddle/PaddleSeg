@@ -115,7 +115,12 @@ def visualize(cfg,
 
     ckpt_dir = cfg.TEST.TEST_MODEL if not ckpt_dir else ckpt_dir
 
-    fluid.io.load_params(exe, ckpt_dir, main_program=test_prog)
+    if ckpt_dir is not None:
+        print('load test model:', ckpt_dir)
+        try:
+            fluid.load(test_prog, os.path.join(ckpt_dir, 'model'), exe)
+        except:
+            fluid.io.load_params(exe, ckpt_dir, main_program=test_prog)
 
     save_dir = vis_dir
     makedirs(save_dir)
@@ -169,18 +174,13 @@ def visualize(cfg,
                 print("VisualDL visualization epoch", epoch)
 
                 pred_mask_np = np.array(pred_mask.convert("RGB"))
-                log_writer.add_image(
-                    "Predict/{}".format(img_name),
-                    pred_mask_np,
-                    epoch)
+                log_writer.add_image("Predict/{}".format(img_name),
+                                     pred_mask_np, epoch)
                 # Original image
                 # BGR->RGB
-                img = cv2.imread(
-                    os.path.join(cfg.DATASET.DATA_DIR, img_name))[..., ::-1]
-                log_writer.add_image(
-                    "Images/{}".format(img_name),
-                    img,
-                    epoch)
+                img = cv2.imread(os.path.join(cfg.DATASET.DATA_DIR,
+                                              img_name))[..., ::-1]
+                log_writer.add_image("Images/{}".format(img_name), img, epoch)
                 # add ground truth (label) images
                 grt = grts[i]
                 if grt is not None:
@@ -189,10 +189,8 @@ def visualize(cfg,
                     grt_pil.putpalette(color_map)
                     grt_pil = grt_pil.resize((org_shape[1], org_shape[0]))
                     grt = np.array(grt_pil.convert("RGB"))
-                    log_writer.add_image(
-                        "Label/{}".format(img_name),
-                        grt,
-                        epoch)
+                    log_writer.add_image("Label/{}".format(img_name), grt,
+                                         epoch)
 
         # If in local_test mode, only visualize 5 images just for testing
         # procedure
