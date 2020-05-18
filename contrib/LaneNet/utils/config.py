@@ -68,7 +68,7 @@ cfg.DATASET.VAL_TOTAL_IMAGES = 500
 cfg.DATASET.TEST_FILE_LIST = './dataset/cityscapes/test.list'
 # 测试数据数量
 cfg.DATASET.TEST_TOTAL_IMAGES = 500
-# Tensorboard 可视化的数据集
+# VisualDL 可视化的数据集
 cfg.DATASET.VIS_FILE_LIST = None
 # 类别数(需包括背景类)
 cfg.DATASET.NUM_CLASSES = 19
