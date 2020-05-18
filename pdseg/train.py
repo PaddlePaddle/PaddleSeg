@@ -40,7 +40,7 @@ from models.model_builder import ModelPhase
 from eval import evaluate
 from vis import visualize
 from utils import dist_utils
-from utils.load_model_utils.py import load_pretrained_weights
+from utils.load_model_utils import load_pretrained_weights
 
 
 def parse_args():
@@ -452,7 +452,7 @@ def train(cfg):
 
     # save final model
     if cfg.TRAINER_ID == 0:
-        save_checkpoint(exe, train_prog, 'final')
+        save_checkpoint(train_prog, 'final')
 
 
 def main(args):

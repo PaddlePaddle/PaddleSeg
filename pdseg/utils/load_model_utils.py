@@ -83,7 +83,8 @@ def load_pdparams(exe, main_prog, model_dir):
         )
     else:
         print("There are {}/{} varaibles in {} are loaded.".format(
-            len(vars_to_load), len(vars_not_load), model_dir))
+            len(vars_to_load),
+            len(vars_to_load) + len(vars_not_load), model_dir))
 
 
 def load_pretrained_weights(exe, main_prog, weights_dir):
@@ -123,4 +124,5 @@ def load_pretrained_weights(exe, main_prog, weights_dir):
         )
     else:
         print("There are {}/{} varaibles in {} are loaded.".format(
-            len(vars_to_load), len(vars_not_load), weights_dir))
+            len(vars_to_load),
+            len(vars_to_load) + len(vars_not_load), weights_dir))
