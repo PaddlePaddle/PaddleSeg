@@ -1,1 +1,1 @@
-visualdl >= 2.0.0-alpha.2
+visualdl >= 2.0.0b
