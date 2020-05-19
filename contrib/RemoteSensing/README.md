@@ -69,7 +69,7 @@ RemoteSensing               # 根目录
 其中，相应的文件名可根据需要自行定义。
 
 遥感影像的格式多种多样，不同传感器产生的数据格式也可能不同。PaddleSeg以numpy.ndarray数据类型进行图像预处理。为统一接口并方便数据加载，我们采用numpy存储格式`npy`作为原图格式，采用`png`无损压缩格式作为标注图片格式。
-原图的前两维是图像的尺寸，第3维是图像的通道数。
+原图的尺寸应为(h, w, channel)，其中h, w为图像的高和宽，channel为图像的通道数。
 标注图像为单通道图像，像素值即为对应的类别,像素标注类别需要从0开始递增。
 例如0，1，2，3表示有4种类别，标注类别最多为256类。其中可以指定特定的像素值用于表示该值的像素不参与训练和评估（默认为255）。
 
@@ -107,136 +107,24 @@ import numpy as np
 np.save(save_path, img)
 ```
 
-### 2. 训练代码开发
-通过如下`train_demo.py`代码进行训练。
-
-#### Step1 定义训练和验证时的数据处理和增强流程, 在`train_transforms`中加入了`RandomVerticalFlip`,`RandomHorizontalFlip`等数据增强方式。
-```python
-import transforms.transforms as T
-from readers.reader import Reader
-from models import UNet
-
-train_transforms = T.Compose([
-    T.RandomVerticalFlip(0.5),
-    T.RandomHorizontalFlip(0.5),
-    T.ResizeStepScaling(0.5, 2.0, 0.25),
-    T.RandomPaddingCrop(256),
-    T.Normalize(mean=[0.5] * channel, std=[0.5] * channel),
-])
-
-eval_transforms = T.Compose([
-    T.Normalize(mean=[0.5] * channel, std=[0.5] * channel),
-])
-```
-
-#### Step2 定义数据读取器
-```python
-import os
-import os.path as osp
-
-train_list = osp.join(data_dir, 'train.txt')
-val_list = osp.join(data_dir, 'val.txt')
-label_list = osp.join(data_dir, 'labels.txt')
-
-train_reader = Reader(
-    data_dir=data_dir,
-    file_list=train_list,
-    label_list=label_list,
-    transforms=train_transforms,
-    num_workers=8,
-    buffer_size=16,
-    shuffle=True,
-    parallel_method='thread')
-
-eval_reader = Reader(
-    data_dir=data_dir,
-    file_list=val_list,
-    label_list=label_list,
-    transforms=eval_transforms,
-    num_workers=8,
-    buffer_size=16,
-    shuffle=False,
-    parallel_method='thread')
-```
-#### Step3 模型构建
-```python
-model = UNet(
-    num_classes=2, input_channel=channel, use_bce_loss=True, use_dice_loss=True)
-```
-#### Step4 模型训练，并开启边训边评估
-```python
-model.train(
-    num_epochs=num_epochs,
-    train_reader=train_reader,
-    train_batch_size=train_batch_size,
-    eval_reader=eval_reader,
-    save_interval_epochs=5,
-    log_interval_steps=10,
-    save_dir=save_dir,
-    pretrain_weights=None,
-    optimizer=None,
-    learning_rate=lr,
-    use_vdl=True
-)
-```
-
-
-### 3. 模型训练
-#### Step1 设置GPU卡号
+### 2. 模型训练
+#### （1） 设置GPU卡号
 ```shell script
 export CUDA_VISIBLE_DEVICES=0
 ```
-#### Step2 在RemoteSensing目录下运行`train_demo.py`即可开始训练。
+#### （2） 以U-Net为例，在RemoteSensing目录下运行`train_demo.py`即可开始训练。
 ```shell script
-python train_demo.py --data_dir dataset/demo/ --save_dir saved_model/unet/ --channel 3 --num_epochs 20
-```
-### 4. 模型预测代码开发
-通过如下`predict_demo.py`代码进行预测。
-
-#### Step1 加载训练过程中最好的模型，设置预测结果保存路径。
-```python
-import os
-import os.path as osp
-from models import load_model
-
-model = load_model(osp.join(save_dir, 'best_model'))
-pred_dir = osp.join(save_dir, 'pred')
-if not osp.exists(pred_dir):
-    os.mkdir(pred_dir)
+python train_demo.py --model_type unet --data_dir dataset/demo/ --save_dir saved_model/unet/ --channel 3 --num_epochs 20
 ```
 
-#### Step2 使用模型对验证集进行测试，并保存预测结果。
-```python
-import numpy as np
-from PIL import Image as Image
-
-val_list = osp.join(data_dir, 'val.txt')
-color_map = [0, 0, 0, 255, 255, 255]
-with open(val_list) as f:
-    lines = f.readlines()
-    for line in lines:
-        img_path = line.split(' ')[0]
-        print('Predicting {}'.format(img_path))
-        img_path_ = osp.join(data_dir, img_path)
-
-        pred = model.predict(img_path_)
-
-        # 以伪彩色png图片保存预测结果
-        pred_name = osp.basename(img_path).rstrip('npy') + 'png'
-        pred_path = osp.join(pred_dir, pred_name)
-        pred_mask = Image.fromarray(pred.astype(np.uint8), mode='P')
-        pred_mask.putpalette(color_map)
-        pred_mask.save(pred_path)
-```
-
-### 5. 模型预测
-#### Step1 设置GPU卡号
+### 3. 模型预测
+#### （1） 设置GPU卡号
 ```shell script
 export CUDA_VISIBLE_DEVICES=0
 ```
-#### Step2 在RemoteSensing目录下运行`predict_demo.py`即可开始训练。
+#### （2） 以刚训练好的U-Net最优模型为例，在RemoteSensing目录下运行`predict_demo.py`即可开始训练。
 ```shell script
-python predict_demo.py --data_dir dataset/demo/ --load_model_dir saved_model/unet/best_model/
+python predict_demo.py --data_dir dataset/demo/ --file_list val.txt --load_model_dir saved_model/unet/best_model
 ```
 
 
