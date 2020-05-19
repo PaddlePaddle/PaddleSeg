@@ -84,8 +84,7 @@ def parse_args():
         '--use_vdl',
         dest='use_vdl',
         help='Whether to use visualdl',
-        type=bool,
-        default=True)
+        action='store_true')
     parser.add_argument(
         '--save_interval_epochs',
         dest='save_interval_epochs',

@@ -19,15 +19,22 @@ HumanSeg开放了在大规模人像数据上训练的三个预训练模型，满
 
 | 模型类型 | Checkpoint | Inference Model | Quant Inference Model | 备注 |
 | --- | --- | --- | ---| --- |
-| HumanSeg-server  | [humanseg_server_ckpt](https://paddleseg.bj.bcebos.com/humanseg/models/humanseg_server_ckpt.zip) | [humanseg_server_inference](https://paddleseg.bj.bcebos.com/humanseg/models/humanseg_server_inference.zip) | -- | 高精度模型，适用于服务端GPU且背景复杂的人像场景， 模型结构为Deeplabv3+/Xcetion65  |
-| HumanSeg-mobile | [humanseg_mobile_ckpt](https://paddleseg.bj.bcebos.com/humanseg/models/humanseg_mobile_ckpt.zip) | [humanseg_mobile_inference](https://paddleseg.bj.bcebos.com/humanseg/models/humanseg_mobile_inference.zip) | [humanseg_mobile_quant](https://paddleseg.bj.bcebos.com/humanseg/models/humanseg_mobile_quant.zip) | 轻量级模型, 适用于移动端或服务端CPU的前置摄像头场景，模型结构为HRNet_w18_samll_v1  |
-| HumanSeg-lite | [humanseg_lite_ckpt](https://paddleseg.bj.bcebos.com/humanseg/models/humanseg_lite_ckpt.zip) | [humanseg_lite_inference](https://paddleseg.bj.bcebos.com/humanseg/models/humanseg_lite_inference.zip) |  [humanseg_lite_quant](https://paddleseg.bj.bcebos.com/humanseg/models/humanseg_lite_quant.zip) | 超轻量级模型, 适用于手机自拍人像，且有移动端实时分割场景， 模型结构为优化的ShuffleNetV2 |
+| HumanSeg-server  | [humanseg_server_ckpt](https://paddleseg.bj.bcebos.com/humanseg/models/humanseg_server_ckpt.zip) | [humanseg_server_inference](https://paddleseg.bj.bcebos.com/humanseg/models/humanseg_server_inference.zip) | -- | 高精度模型，适用于服务端GPU且背景复杂的人像场景， 模型结构为Deeplabv3+/Xcetion65, 输入大小（512， 512） |
+| HumanSeg-mobile | [humanseg_mobile_ckpt](https://paddleseg.bj.bcebos.com/humanseg/models/humanseg_mobile_ckpt.zip) | [humanseg_mobile_inference](https://paddleseg.bj.bcebos.com/humanseg/models/humanseg_mobile_inference.zip) | [humanseg_mobile_quant](https://paddleseg.bj.bcebos.com/humanseg/models/humanseg_mobile_quant.zip) | 轻量级模型, 适用于移动端或服务端CPU的前置摄像头场景，模型结构为HRNet_w18_samll_v1，输入大小（192， 192）  |
+| HumanSeg-lite | [humanseg_lite_ckpt](https://paddleseg.bj.bcebos.com/humanseg/models/humanseg_lite_ckpt.zip) | [humanseg_lite_inference](https://paddleseg.bj.bcebos.com/humanseg/models/humanseg_lite_inference.zip) |  [humanseg_lite_quant](https://paddleseg.bj.bcebos.com/humanseg/models/humanseg_lite_quant.zip) | 超轻量级模型, 适用于手机自拍人像，且有移动端实时分割场景， 模型结构为优化的ShuffleNetV2，输入大小（192， 192） |
 
-模型计算耗时（小米，cpu：骁龙855， 内存：6GB， 图片大小：192*192)
 
-| 模型 | humanseg_mobile_inference | humanseg_mobile_quant | humanseg_lite_inference | humanseg_lite_quant |
-| --- | --- | --- | --- | --- |
-| 耗时（ms) | 42.25 | 24.93 | 17.26 | 11.89 |
+模型性能
+
+| 模型 | 模型大小 | 计算耗时 |
+| --- | --- | --- |
+|humanseg_server_inference| 158M | - |
+|humanseg_mobile_inference | 5.8 M | 42.35ms |
+|humanseg_mobile_quant | 1.6M | 24.93ms |
+|humanseg_lite_inference | 541K | 17.26ms |
+|humanseg_lite_quant | 187k | 11.89ms |
+
+计算耗时运行环境： 小米，cpu：骁龙855， 内存：6GB， 图片大小：192*192)
 
 
 **NOTE:**
@@ -177,3 +184,7 @@ python quant_online.py --model_type HumanSegMobile \
 * `--learning_rate`: 初始学习率
 * `--num_epochs`: 训练轮数
 * `--image_shape`: 网络输入图像大小（w, h）
+
+## AIStudio在线教程
+
+我们在AI Studio平台上提供了人像分割在线体验的教程，[点击体验](https://aistudio.baidu.com/aistudio/projectdetail/475345)
