@@ -116,37 +116,6 @@ def parse_args():
     return parser.parse_args()
 
 
-def save_vars(executor, dirname, program=None, vars=None):
-    """
-    Temporary resolution for Win save variables compatability.
-    Will fix in PaddlePaddle v1.5.2
-    """
-
-    save_program = fluid.Program()
-    save_block = save_program.global_block()
-
-    for each_var in vars:
-        # NOTE: don't save the variable which type is RAW
-        if each_var.type == fluid.core.VarDesc.VarType.RAW:
-            continue
-        new_var = save_block.create_var(
-            name=each_var.name,
-            shape=each_var.shape,
-            dtype=each_var.dtype,
-            type=each_var.type,
-            lod_level=each_var.lod_level,
-            persistable=True)
-        file_path = os.path.join(dirname, new_var.name)
-        file_path = os.path.normpath(file_path)
-        save_block.append_op(
-            type='save',
-            inputs={'X': [new_var]},
-            outputs={},
-            attrs={'file_path': file_path})
-
-    executor.run(save_program)
-
-
 def save_checkpoint(program, ckpt_name):
     """
     Save checkpoint for evaluation or resume training
@@ -237,8 +206,6 @@ def train(cfg):
                 yield item[0], item[1], item[2]
 
     # Get device environment
-    # places = fluid.cuda_places() if args.use_gpu else fluid.cpu_places()
-    # place = places[0]
     gpu_id = int(os.environ.get('FLAGS_selected_gpus', 0))
     place = fluid.CUDAPlace(gpu_id) if args.use_gpu else fluid.CPUPlace()
     places = fluid.cuda_places() if args.use_gpu else fluid.cpu_places()
