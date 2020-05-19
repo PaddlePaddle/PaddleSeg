@@ -40,7 +40,7 @@ PaddleSeg提供了基于LaneNet的车道线分割模型，更多详情请点击[
 U-Net
 
 ### 2. 数据准备
- 
+
 执行以下命令下载并解压数据集，数据集将存放在contrib/MechanicalIndustryMeter文件夹下：
 
 ```
@@ -56,8 +56,8 @@ python ./pretrained_model/download_model.py unet_bn_coco
 ### 4. 训练与评估
 
 ```
-export CUDA_VISIBLE_DEVICES=0 
-python ./pdseg/train.py --log_steps 10 --cfg contrib/MechanicalIndustryMeter/unet_mechanical_meter.yaml --use_gpu --do_eval --use_mpio 
+export CUDA_VISIBLE_DEVICES=0
+python ./pdseg/train.py --log_steps 10 --cfg contrib/MechanicalIndustryMeter/unet_mechanical_meter.yaml --use_gpu --do_eval --use_mpio
 ```
 
 ### 5. 可视化
@@ -71,18 +71,18 @@ python ./contrib/MechanicalIndustryMeter/download_unet_mechanical_industry_meter
 
 ```
 python ./pdseg/vis.py --cfg contrib/MechanicalIndustryMeter/unet_mechanical_meter.yaml --use_gpu --vis_dir vis_meter \
-TEST.TEST_MODEL "./contrib/MechanicalIndustryMeter/unet_mechanical_industry_meter/" 
+TEST.TEST_MODEL "./contrib/MechanicalIndustryMeter/unet_mechanical_industry_meter/"
 ```
 可视化结果会保存在./vis_meter文件夹下。
 
 ### 6. 可视化结果示例：
 
   原图：
-  
+
   ![](MechanicalIndustryMeter/imgs/1560143028.5_IMG_3091.JPG)
-  
+
   预测结果：
-  
+
   ![](MechanicalIndustryMeter/imgs/1560143028.5_IMG_3091.png)
 
 ## AIStudio在线教程
@@ -92,5 +92,5 @@ PaddleSeg在AI Studio平台上提供了在线体验的教程，欢迎体验：
 |教程|链接|
 |-|-|
 |工业质检|[点击体验](https://aistudio.baidu.com/aistudio/projectdetail/184392)|
-|人像分割|[点击体验](https://aistudio.baidu.com/aistudio/projectdetail/188833)|
+|人像分割|[点击体验](https://aistudio.baidu.com/aistudio/projectdetail/475345)|
 |特色垂类模型|[点击体验](https://aistudio.baidu.com/aistudio/projectdetail/226710)|

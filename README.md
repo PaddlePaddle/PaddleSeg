@@ -121,7 +121,7 @@ pip install -r requirements.txt
 |U-Net图像分割|[点击体验](https://aistudio.baidu.com/aistudio/projectDetail/102889)|
 |DeepLabv3+图像分割|[点击体验](https://aistudio.baidu.com/aistudio/projectDetail/226703)|
 |工业质检（零件瑕疵检测）|[点击体验](https://aistudio.baidu.com/aistudio/projectdetail/184392)|
-|人像分割|[点击体验](https://aistudio.baidu.com/aistudio/projectdetail/188833)|
+|人像分割|[点击体验](https://aistudio.baidu.com/aistudio/projectdetail/475345)|
 |PaddleSeg特色垂类模型|[点击体验](https://aistudio.baidu.com/aistudio/projectdetail/226710)|
 
 ## FAQ

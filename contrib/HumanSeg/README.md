@@ -184,3 +184,7 @@ python quant_online.py --model_type HumanSegMobile \
 * `--learning_rate`: 初始学习率
 * `--num_epochs`: 训练轮数
 * `--image_shape`: 网络输入图像大小（w, h）
+
+## AIStudio在线教程
+
+我们在AI Studio平台上提供了人像分割在线体验的教程，[点击体验](https://aistudio.baidu.com/aistudio/projectdetail/475345)
