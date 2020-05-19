@@ -2,11 +2,17 @@ import os.path as osp
 import argparse
 import transforms.transforms as T
 from readers.reader import Reader
-from models import UNet
+from models import UNet, HRNet
 
 
 def parse_args():
     parser = argparse.ArgumentParser(description='RemoteSensing training')
+    parser.add_argument(
+        '--model_type',
+        dest='model_type',
+        help="Model type for traing, which is one of ('unet', 'hrnet')",
+        type=str,
+        default='hrnet')
     parser.add_argument(
         '--data_dir',
         dest='data_dir',
@@ -43,7 +49,6 @@ def parse_args():
 
 
 args = parse_args()
-
 data_dir = args.data_dir
 save_dir = args.save_dir
 channel = args.channel
@@ -89,8 +94,22 @@ eval_reader = Reader(
     shuffle=False,
     parallel_method='thread')
 
-model = UNet(
-    num_classes=2, input_channel=channel, use_bce_loss=True, use_dice_loss=True)
+if args.model_type == 'unet':
+    model = UNet(
+        num_classes=2,
+        input_channel=channel,
+        use_bce_loss=True,
+        use_dice_loss=True)
+elif args.model_type == 'hrnet':
+    model = HRNet(
+        num_classes=2,
+        input_channel=channel,
+        use_bce_loss=True,
+        use_dice_loss=True)
+else:
+    raise ValueError(
+        "--model_type: {} is set wrong, it shold be one of ('unet', "
+        "'hrnet')".format(args.model_type))
 
 model.train(
     num_epochs=num_epochs,

@@ -91,6 +91,8 @@ class HRNet(object):
         self.stage4_num_channels = stage4_num_channels
 
     def build_net(self, inputs):
+        if self.use_dice_loss or self.use_bce_loss:
+            self.num_classes = 1
         image = inputs['image']
         logit = self._high_resolution_net(image, self.num_classes)
         if self.num_classes == 1:
