@@ -24,7 +24,7 @@ import models
 
 def load_model(model_dir):
     if not osp.exists(osp.join(model_dir, "model.yml")):
-        raise Exception("There's not model.yml in {}".format(model_dir))
+        raise Exception("There's no model.yml in {}".format(model_dir))
     with open(osp.join(model_dir, "model.yml")) as f:
         info = yaml.load(f.read(), Loader=yaml.Loader)
     status = info['status']
