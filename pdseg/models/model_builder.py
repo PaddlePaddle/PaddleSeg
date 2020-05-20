@@ -223,6 +223,7 @@ def build_model(main_prog, start_prog, phase=ModelPhase.TRAIN):
                     raise Exception(
                         "softmax loss or lovasz softmax loss can not combine with bce loss or dice loss or lovasz hinge loss."
                     )
+            cfg.PHASE = phase
             logits = seg_model(image, class_num)
 
             # 根据选择的loss函数计算相应的损失函数
