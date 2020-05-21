@@ -3,6 +3,7 @@
 提供基于PaddlSeg最新的分割特色模型:
 
 - [人像分割](./HumanSeg)
+- [遥感分割](./RemoteSensing)
 - [人体解析](./ACE2P)
 - [车道线分割](./LaneNet)
 - [工业表盘分割](#工业表盘分割)
@@ -12,6 +13,14 @@
 
 HumanSeg系列全新升级，提供三个适用于不同场景，包含适用于移动端实时分割场景的模型`HumanSeg-lite`，提供了包含光流的后处理的优化，使人像分割在视频场景中更加顺畅，更多详情请参考[HumanSeg](./HumanSeg)
 
+## 遥感分割 Remote Sensing Segmentation
+PaddleSeg遥感影像分割涵盖图像预处理、数据增强、模型训练、预测流程。
+针对遥感数据多通道、分布范围大、分布不均的特点，我们支持多通道训练预测，内置10+多通道预处理和数据增强的策略，可结合实际业务场景进行定制组合，提升模型泛化能力和鲁棒性。
+内置U-Net, HRNet两种主流分割网络，可选择不同的损失函数如Dice Loss, BCE Loss等方式强化小目标和不均衡样本场景下的分割精度。更多详情请参考[RemoteSensing](./RemoteSensing)
+
+以下是遥感云检测的示例效果：
+
+![](./RemoteSensing/docs/imgs/rs.png)
 
 ## 人体解析 Human Parsing
 
