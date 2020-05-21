@@ -113,11 +113,10 @@ def load_pretrained_weights(exe, main_prog, weights_dir):
             continue
         vars_to_load.append(var)
 
-    fluid.io.load_vars(
-        executor=exe,
-        dirname=weights_dir,
-        main_program=main_prog,
-        vars=vars_to_load)
+    params_dict = fluid.io.load_program_state(
+        weights_dir, var_list=vars_to_load)
+    fluid.io.set_program_state(main_prog, params_dict)
+
     if len(vars_to_load) == 0:
         print(
             "There is no pretrain weights loaded, maybe you should check you pretrain model!"
