@@ -46,8 +46,9 @@ def dropout2d(input, prob, is_train=False):
         return input
     channels = input.shape[1]
     keep_prob = 1.0 - prob
-    random_tensor = keep_prob + fluid.layers.uniform_random_batch_size_like(
-        input, [-1, channels, 1, 1], min=0., max=1.)
+    shape = fluid.layers.shape(input)
+    random_tensor = keep_prob + fluid.layers.uniform_random(
+        [shape[0], channels, 1, 1], min=0., max=1.)
     binary_tensor = fluid.layers.floor(random_tensor)
     output = input / keep_prob * binary_tensor
     return output
@@ -251,6 +252,7 @@ class Classifier:
                 stride=self.stride,
                 filter=3,
                 act=fluid.layers.relu)
+
         x = dropout2d(x, 0.1, is_train=cfg.PHASE == 'train')
         x = conv(x, self.num_classes, 1, bias_attr=True)
         return x

@@ -19,8 +19,9 @@ from utils.config import cfg
 
 
 def unsorted_segment_sum(data, segment_ids, unique_labels, feature_dims):
-    zeros = fluid.layers.fill_constant_batch_size_like(
-        unique_labels, shape=[1, feature_dims], dtype='float32', value=0)
+    unique_labels_shape = fluid.layers.shape(unique_labels)
+    zeros = fluid.layers.fill_constant(
+        shape=[unique_labels_shape[0], feature_dims], dtype='float32', value=0)
     segment_ids = fluid.layers.unsqueeze(segment_ids, axes=[1])
     segment_ids.stop_gradient = True
     segment_sum = fluid.layers.scatter_nd_add(zeros, segment_ids, data)

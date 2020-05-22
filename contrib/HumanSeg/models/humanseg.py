@@ -103,7 +103,7 @@ class SegModel(object):
         # 当前模型状态
         self.status = 'Normal'
 
-    def _get_single_car_bs(self, batch_size):
+    def _get_single_card_bs(self, batch_size):
         if batch_size % len(self.places) == 0:
             return int(batch_size // len(self.places))
         else:
@@ -145,7 +145,7 @@ class SegModel(object):
                 capacity=64,
                 use_double_buffer=True,
                 iterable=True)
-        batch_size_each_gpu = self._get_single_car_bs(batch_size)
+        batch_size_each_gpu = self._get_single_card_bs(batch_size)
         self.train_data_loader.set_sample_list_generator(
             dataset.generator(batch_size=batch_size_each_gpu),
             places=self.places)
