@@ -1,5 +1,5 @@
 # coding: utf8
-# copyright (c) 2019 PaddlePaddle Authors. All Rights Reserve.
+# Copyright (c) 2019 PaddlePaddle Authors. All Rights Reserve.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@ from __future__ import division
 from __future__ import print_function
 
 import paddle.fluid as fluid
-
 
 from utils.config import cfg
 from pdseg.models.libs.model_libs import scope, name_scope
@@ -86,7 +85,12 @@ def bottleneck(inputs,
         with scope('down_sample'):
             inputs_shape = inputs.shape
             with scope('main_max_pool'):
-                net_main = fluid.layers.conv2d(inputs, inputs_shape[1], filter_size=3, stride=2, padding='SAME')
+                net_main = fluid.layers.conv2d(
+                    inputs,
+                    inputs_shape[1],
+                    filter_size=3,
+                    stride=2,
+                    padding='SAME')
 
             #First get the difference in depth to pad, then pad with zeros only on the last dimension.
             depth_to_pad = abs(inputs_shape[1] - output_depth)
@@ -95,12 +99,16 @@ def bottleneck(inputs,
                 net_main = fluid.layers.pad(net_main, paddings=paddings)
 
             with scope('block1'):
-                net = conv(inputs, reduced_depth, [2, 2], stride=2, padding='same')
+                net = conv(
+                    inputs, reduced_depth, [2, 2], stride=2, padding='same')
                 net = bn(net)
                 net = prelu(net, decoder=decoder)
 
             with scope('block2'):
-                net = conv(net, reduced_depth, [filter_size, filter_size], padding='same')
+                net = conv(
+                    net,
+                    reduced_depth, [filter_size, filter_size],
+                    padding='same')
                 net = bn(net)
                 net = prelu(net, decoder=decoder)
 
@@ -137,13 +145,18 @@ def bottleneck(inputs,
 
             # Second conv block --- apply dilated convolution here
             with scope('block2'):
-                net = conv(net, reduced_depth, filter_size, padding='SAME', dilation=dilation_rate)
+                net = conv(
+                    net,
+                    reduced_depth,
+                    filter_size,
+                    padding='SAME',
+                    dilation=dilation_rate)
                 net = bn(net)
                 net = prelu(net, decoder=decoder)
 
             # Final projection with 1x1 kernel (Expansion)
             with scope('block3'):
-                net = conv(net, output_depth, [1,1])
+                net = conv(net, output_depth, [1, 1])
                 net = bn(net)
                 net = prelu(net, decoder=decoder)
 
@@ -172,9 +185,11 @@ def bottleneck(inputs,
             # Second conv block --- apply asymmetric conv here
             with scope('block2'):
                 with scope('asymmetric_conv2a'):
-                    net = conv(net, reduced_depth, [filter_size, 1], padding='same')
+                    net = conv(
+                        net, reduced_depth, [filter_size, 1], padding='same')
                 with scope('asymmetric_conv2b'):
-                    net = conv(net, reduced_depth, [1, filter_size], padding='same')
+                    net = conv(
+                        net, reduced_depth, [1, filter_size], padding='same')
                 net = bn(net)
                 net = prelu(net, decoder=decoder)
 
@@ -211,7 +226,8 @@ def bottleneck(inputs,
             with scope('unpool'):
                 net_unpool = conv(inputs, output_depth, [1, 1])
                 net_unpool = bn(net_unpool)
-                net_unpool = fluid.layers.resize_bilinear(net_unpool, out_shape=output_shape[2:])
+                net_unpool = fluid.layers.resize_bilinear(
+                    net_unpool, out_shape=output_shape[2:])
 
             # First 1x1 projection to reduce depth
             with scope('block1'):
@@ -220,7 +236,12 @@ def bottleneck(inputs,
                 net = prelu(net, decoder=decoder)
 
             with scope('block2'):
-                net = deconv(net, reduced_depth, filter_size=filter_size, stride=2, padding='same')
+                net = deconv(
+                    net,
+                    reduced_depth,
+                    filter_size=filter_size,
+                    stride=2,
+                    padding='same')
                 net = bn(net)
                 net = prelu(net, decoder=decoder)
 
@@ -253,7 +274,10 @@ def bottleneck(inputs,
 
             # Second conv block
             with scope('block2'):
-                net = conv(net, reduced_depth, [filter_size, filter_size], padding='same')
+                net = conv(
+                    net,
+                    reduced_depth, [filter_size, filter_size],
+                    padding='same')
                 net = bn(net)
                 net = prelu(net, decoder=decoder)
 
@@ -281,17 +305,33 @@ def ENet_stage1(inputs, name_scope='stage1_block'):
               = bottleneck(inputs, output_depth=64, filter_size=3, regularizer_prob=0.01, type=DOWNSAMPLING,
                            name_scope='bottleneck1_0')
         with scope('bottleneck1_1'):
-            net = bottleneck(net, output_depth=64, filter_size=3, regularizer_prob=0.01,
-                             name_scope='bottleneck1_1')
+            net = bottleneck(
+                net,
+                output_depth=64,
+                filter_size=3,
+                regularizer_prob=0.01,
+                name_scope='bottleneck1_1')
         with scope('bottleneck1_2'):
-            net = bottleneck(net, output_depth=64, filter_size=3, regularizer_prob=0.01,
-                             name_scope='bottleneck1_2')
+            net = bottleneck(
+                net,
+                output_depth=64,
+                filter_size=3,
+                regularizer_prob=0.01,
+                name_scope='bottleneck1_2')
         with scope('bottleneck1_3'):
-            net = bottleneck(net, output_depth=64, filter_size=3, regularizer_prob=0.01,
-                             name_scope='bottleneck1_3')
+            net = bottleneck(
+                net,
+                output_depth=64,
+                filter_size=3,
+                regularizer_prob=0.01,
+                name_scope='bottleneck1_3')
         with scope('bottleneck1_4'):
-            net = bottleneck(net, output_depth=64, filter_size=3, regularizer_prob=0.01,
-                             name_scope='bottleneck1_4')
+            net = bottleneck(
+                net,
+                output_depth=64,
+                filter_size=3,
+                regularizer_prob=0.01,
+                name_scope='bottleneck1_4')
     return net, inputs_shape_1
 
 
@@ -302,17 +342,38 @@ def ENet_stage2(inputs, name_scope='stage2_block'):
                        name_scope='bottleneck2_0')
         for i in range(2):
             with scope('bottleneck2_{}'.format(str(4 * i + 1))):
-                net = bottleneck(net, output_depth=128, filter_size=3, regularizer_prob=0.1,
-                                 name_scope='bottleneck2_{}'.format(str(4 * i + 1)))
+                net = bottleneck(
+                    net,
+                    output_depth=128,
+                    filter_size=3,
+                    regularizer_prob=0.1,
+                    name_scope='bottleneck2_{}'.format(str(4 * i + 1)))
             with scope('bottleneck2_{}'.format(str(4 * i + 2))):
-                net = bottleneck(net, output_depth=128, filter_size=3, regularizer_prob=0.1, type=DILATED, dilation_rate=(2 ** (2*i+1)),
-                                 name_scope='bottleneck2_{}'.format(str(4 * i + 2)))
+                net = bottleneck(
+                    net,
+                    output_depth=128,
+                    filter_size=3,
+                    regularizer_prob=0.1,
+                    type=DILATED,
+                    dilation_rate=(2**(2 * i + 1)),
+                    name_scope='bottleneck2_{}'.format(str(4 * i + 2)))
             with scope('bottleneck2_{}'.format(str(4 * i + 3))):
-                net = bottleneck(net, output_depth=128, filter_size=5, regularizer_prob=0.1, type=ASYMMETRIC,
-                                 name_scope='bottleneck2_{}'.format(str(4 * i + 3)))
+                net = bottleneck(
+                    net,
+                    output_depth=128,
+                    filter_size=5,
+                    regularizer_prob=0.1,
+                    type=ASYMMETRIC,
+                    name_scope='bottleneck2_{}'.format(str(4 * i + 3)))
             with scope('bottleneck2_{}'.format(str(4 * i + 4))):
-                net = bottleneck(net, output_depth=128, filter_size=3, regularizer_prob=0.1, type=DILATED, dilation_rate=(2 ** (2*i+2)),
-                                 name_scope='bottleneck2_{}'.format(str(4 * i + 4)))
+                net = bottleneck(
+                    net,
+                    output_depth=128,
+                    filter_size=3,
+                    regularizer_prob=0.1,
+                    type=DILATED,
+                    dilation_rate=(2**(2 * i + 2)),
+                    name_scope='bottleneck2_{}'.format(str(4 * i + 4)))
     return net, inputs_shape_2
 
 
@@ -320,52 +381,106 @@ def ENet_stage3(inputs, name_scope='stage3_block'):
     with scope(name_scope):
         for i in range(2):
             with scope('bottleneck3_{}'.format(str(4 * i + 0))):
-                net = bottleneck(inputs, output_depth=128, filter_size=3, regularizer_prob=0.1,
-                                 name_scope='bottleneck3_{}'.format(str(4 * i + 0)))
+                net = bottleneck(
+                    inputs,
+                    output_depth=128,
+                    filter_size=3,
+                    regularizer_prob=0.1,
+                    name_scope='bottleneck3_{}'.format(str(4 * i + 0)))
             with scope('bottleneck3_{}'.format(str(4 * i + 1))):
-                net = bottleneck(net, output_depth=128, filter_size=3, regularizer_prob=0.1, type=DILATED, dilation_rate=(2 ** (2*i+1)),
-                                 name_scope='bottleneck3_{}'.format(str(4 * i + 1)))
+                net = bottleneck(
+                    net,
+                    output_depth=128,
+                    filter_size=3,
+                    regularizer_prob=0.1,
+                    type=DILATED,
+                    dilation_rate=(2**(2 * i + 1)),
+                    name_scope='bottleneck3_{}'.format(str(4 * i + 1)))
             with scope('bottleneck3_{}'.format(str(4 * i + 2))):
-                net = bottleneck(net, output_depth=128, filter_size=5, regularizer_prob=0.1, type=ASYMMETRIC,
-                                 name_scope='bottleneck3_{}'.format(str(4 * i + 2)))
+                net = bottleneck(
+                    net,
+                    output_depth=128,
+                    filter_size=5,
+                    regularizer_prob=0.1,
+                    type=ASYMMETRIC,
+                    name_scope='bottleneck3_{}'.format(str(4 * i + 2)))
             with scope('bottleneck3_{}'.format(str(4 * i + 3))):
-                net = bottleneck(net, output_depth=128, filter_size=3, regularizer_prob=0.1, type=DILATED, dilation_rate=(2 ** (2*i+2)),
-                                 name_scope='bottleneck3_{}'.format(str(4 * i + 3)))
+                net = bottleneck(
+                    net,
+                    output_depth=128,
+                    filter_size=3,
+                    regularizer_prob=0.1,
+                    type=DILATED,
+                    dilation_rate=(2**(2 * i + 2)),
+                    name_scope='bottleneck3_{}'.format(str(4 * i + 3)))
     return net
 
 
-def ENet_stage4(inputs, inputs_shape, connect_tensor,
-                skip_connections=True, name_scope='stage4_block'):
+def ENet_stage4(inputs,
+                inputs_shape,
+                connect_tensor,
+                skip_connections=True,
+                name_scope='stage4_block'):
     with scope(name_scope):
         with scope('bottleneck4_0'):
-            net = bottleneck(inputs, output_depth=64, filter_size=3, regularizer_prob=0.1,
-                             type=UPSAMPLING, decoder=True, output_shape=inputs_shape,
-                             name_scope='bottleneck4_0')
+            net = bottleneck(
+                inputs,
+                output_depth=64,
+                filter_size=3,
+                regularizer_prob=0.1,
+                type=UPSAMPLING,
+                decoder=True,
+                output_shape=inputs_shape,
+                name_scope='bottleneck4_0')
 
         if skip_connections:
             net = fluid.layers.elementwise_add(net, connect_tensor)
         with scope('bottleneck4_1'):
-            net = bottleneck(net, output_depth=64, filter_size=3, regularizer_prob=0.1, decoder=True,
-                             name_scope='bottleneck4_1')
+            net = bottleneck(
+                net,
+                output_depth=64,
+                filter_size=3,
+                regularizer_prob=0.1,
+                decoder=True,
+                name_scope='bottleneck4_1')
         with scope('bottleneck4_2'):
-            net = bottleneck(net, output_depth=64, filter_size=3, regularizer_prob=0.1, decoder=True,
-                             name_scope='bottleneck4_2')
+            net = bottleneck(
+                net,
+                output_depth=64,
+                filter_size=3,
+                regularizer_prob=0.1,
+                decoder=True,
+                name_scope='bottleneck4_2')
 
     return net
 
 
-def ENet_stage5(inputs, inputs_shape, connect_tensor, skip_connections=True,
+def ENet_stage5(inputs,
+                inputs_shape,
+                connect_tensor,
+                skip_connections=True,
                 name_scope='stage5_block'):
     with scope(name_scope):
-        net = bottleneck(inputs, output_depth=16, filter_size=3, regularizer_prob=0.1, type=UPSAMPLING,
-                         decoder=True, output_shape=inputs_shape,
-                         name_scope='bottleneck5_0')
+        net = bottleneck(
+            inputs,
+            output_depth=16,
+            filter_size=3,
+            regularizer_prob=0.1,
+            type=UPSAMPLING,
+            decoder=True,
+            output_shape=inputs_shape,
+            name_scope='bottleneck5_0')
 
         if skip_connections:
             net = fluid.layers.elementwise_add(net, connect_tensor)
         with scope('bottleneck5_1'):
-            net = bottleneck(net, output_depth=16, filter_size=3, regularizer_prob=0.1, decoder=True,
-                             name_scope='bottleneck5_1')
+            net = bottleneck(
+                net,
+                output_depth=16,
+                filter_size=3,
+                regularizer_prob=0.1,
+                decoder=True,
+                name_scope='bottleneck5_1')
     return net
 
 
@@ -378,14 +493,16 @@ def decoder(input, num_classes):
             segStage3 = ENet_stage3(stage2)
             segStage4 = ENet_stage4(segStage3, inputs_shape_2, stage1)
             segStage5 = ENet_stage5(segStage4, inputs_shape_1, initial)
-            segLogits = deconv(segStage5, num_classes, filter_size=2, stride=2, padding='SAME')
+            segLogits = deconv(
+                segStage5, num_classes, filter_size=2, stride=2, padding='SAME')
 
         # Embedding branch
         with scope('LaneNetEm'):
             emStage3 = ENet_stage3(stage2)
             emStage4 = ENet_stage4(emStage3, inputs_shape_2, stage1)
             emStage5 = ENet_stage5(emStage4, inputs_shape_1, initial)
-            emLogits = deconv(emStage5, 4, filter_size=2, stride=2, padding='SAME')
+            emLogits = deconv(
+                emStage5, 4, filter_size=2, stride=2, padding='SAME')
 
     elif 'vgg' in cfg.MODEL.LANENET.BACKBONE:
         encoder_list = ['pool5', 'pool4', 'pool3']
@@ -396,14 +513,16 @@ def decoder(input, num_classes):
         encoder_list = encoder_list[1:]
         for i in range(len(encoder_list)):
             with scope('deconv_{:d}'.format(i + 1)):
-                deconv_out = deconv(score, 64, filter_size=4, stride=2, padding='SAME')
+                deconv_out = deconv(
+                    score, 64, filter_size=4, stride=2, padding='SAME')
             input_tensor = input[encoder_list[i]]
             with scope('score_{:d}'.format(i + 1)):
                 score = conv(input_tensor, 64, 1)
             score = fluid.layers.elementwise_add(deconv_out, score)
 
         with scope('deconv_final'):
-            emLogits = deconv(score, 64, filter_size=16, stride=8, padding='SAME')
+            emLogits = deconv(
+                score, 64, filter_size=16, stride=8, padding='SAME')
         with scope('score_final'):
             segLogits = conv(emLogits, num_classes, 1)
         emLogits = relu(conv(emLogits, 4, 1))
@@ -415,7 +534,8 @@ def encoder(input):
         model = vgg_backbone(layers=16)
         #output = model.net(input)
 
-        _, encode_feature_dict = model.net(input, end_points=13, decode_points=[7, 10, 13])
+        _, encode_feature_dict = model.net(
+            input, end_points=13, decode_points=[7, 10, 13])
         output = {}
         output['pool3'] = encode_feature_dict[7]
         output['pool4'] = encode_feature_dict[10]
@@ -427,8 +547,9 @@ def encoder(input):
             stage2, inputs_shape_2 = ENet_stage2(stage1)
             output = (initial, stage1, stage2, inputs_shape_1, inputs_shape_2)
     else:
-        raise Exception("LaneNet expect enet and vgg backbone, but received {}".
-                        format(cfg.MODEL.LANENET.BACKBONE))
+        raise Exception(
+            "LaneNet expect enet and vgg backbone, but received {}".format(
+                cfg.MODEL.LANENET.BACKBONE))
     return output
 
 

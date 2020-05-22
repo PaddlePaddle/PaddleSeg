@@ -1,3 +1,17 @@
+# coding: utf8
+# Copyright (c) 2019 PaddlePaddle Authors. All Rights Reserve.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 """
 generate tusimple training dataset
 """
@@ -14,12 +28,16 @@ import numpy as np
 
 def init_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--src_dir', type=str, help='The origin path of unzipped tusimple dataset')
+    parser.add_argument(
+        '--src_dir',
+        type=str,
+        help='The origin path of unzipped tusimple dataset')
 
     return parser.parse_args()
 
 
-def process_json_file(json_file_path, src_dir, ori_dst_dir, binary_dst_dir, instance_dst_dir):
+def process_json_file(json_file_path, src_dir, ori_dst_dir, binary_dst_dir,
+                      instance_dst_dir):
 
     assert ops.exists(json_file_path), '{:s} not exist'.format(json_file_path)
 
@@ -39,11 +57,14 @@ def process_json_file(json_file_path, src_dir, ori_dst_dir, binary_dst_dir, inst
             h_samples = info_dict['h_samples']
             lanes = info_dict['lanes']
 
-            image_name_new = '{:s}.png'.format('{:d}'.format(line_index + image_nums).zfill(4))
+            image_name_new = '{:s}.png'.format(
+                '{:d}'.format(line_index + image_nums).zfill(4))
 
             src_image = cv2.imread(image_path, cv2.IMREAD_COLOR)
-            dst_binary_image = np.zeros([src_image.shape[0], src_image.shape[1]], np.uint8)
-            dst_instance_image = np.zeros([src_image.shape[0], src_image.shape[1]], np.uint8)
+            dst_binary_image = np.zeros(
+                [src_image.shape[0], src_image.shape[1]], np.uint8)
+            dst_instance_image = np.zeros(
+                [src_image.shape[0], src_image.shape[1]], np.uint8)
 
             for lane_index, lane in enumerate(lanes):
                 assert len(h_samples) == len(lane)
@@ -62,13 +83,23 @@ def process_json_file(json_file_path, src_dir, ori_dst_dir, binary_dst_dir, inst
                 lane_pts = np.vstack((lane_x, lane_y)).transpose()
                 lane_pts = np.array([lane_pts], np.int64)
 
-                cv2.polylines(dst_binary_image, lane_pts, isClosed=False,
-                              color=255, thickness=5)
-                cv2.polylines(dst_instance_image, lane_pts, isClosed=False,
-                              color=lane_index * 50 + 20, thickness=5)
+                cv2.polylines(
+                    dst_binary_image,
+                    lane_pts,
+                    isClosed=False,
+                    color=255,
+                    thickness=5)
+                cv2.polylines(
+                    dst_instance_image,
+                    lane_pts,
+                    isClosed=False,
+                    color=lane_index * 50 + 20,
+                    thickness=5)
 
-            dst_binary_image_path = ops.join(src_dir, binary_dst_dir, image_name_new)
-            dst_instance_image_path = ops.join(src_dir, instance_dst_dir, image_name_new)
+            dst_binary_image_path = ops.join(src_dir, binary_dst_dir,
+                                             image_name_new)
+            dst_instance_image_path = ops.join(src_dir, instance_dst_dir,
+                                               image_name_new)
             dst_rgb_image_path = ops.join(src_dir, ori_dst_dir, image_name_new)
 
             cv2.imwrite(dst_binary_image_path, dst_binary_image)
@@ -78,7 +109,12 @@ def process_json_file(json_file_path, src_dir, ori_dst_dir, binary_dst_dir, inst
             print('Process {:s} success'.format(image_name))
 
 
-def gen_sample(src_dir, b_gt_image_dir, i_gt_image_dir, image_dir, phase='train', split=False):
+def gen_sample(src_dir,
+               b_gt_image_dir,
+               i_gt_image_dir,
+               image_dir,
+               phase='train',
+               split=False):
 
     label_list = []
     with open('{:s}/{}ing/{}.txt'.format(src_dir, phase, phase), 'w') as file:
@@ -92,7 +128,8 @@ def gen_sample(src_dir, b_gt_image_dir, i_gt_image_dir, image_dir, phase='train'
             image_path = ops.join(image_dir, image_name)
 
             assert ops.exists(image_path), '{:s} not exist'.format(image_path)
-            assert ops.exists(instance_gt_image_path), '{:s} not exist'.format(instance_gt_image_path)
+            assert ops.exists(instance_gt_image_path), '{:s} not exist'.format(
+                instance_gt_image_path)
 
             b_gt_image = cv2.imread(binary_gt_image_path, cv2.IMREAD_COLOR)
             i_gt_image = cv2.imread(instance_gt_image_path, cv2.IMREAD_COLOR)
@@ -102,7 +139,8 @@ def gen_sample(src_dir, b_gt_image_dir, i_gt_image_dir, image_dir, phase='train'
                 print('image: {:s} corrupt'.format(image_name))
                 continue
             else:
-                info = '{:s} {:s} {:s}'.format(image_path, binary_gt_image_path, instance_gt_image_path)
+                info = '{:s} {:s} {:s}'.format(image_path, binary_gt_image_path,
+                                               instance_gt_image_path)
                 file.write(info + '\n')
                 label_list.append(info)
     if phase == 'train' and split:
@@ -110,10 +148,12 @@ def gen_sample(src_dir, b_gt_image_dir, i_gt_image_dir, image_dir, phase='train'
         val_list_len = len(label_list) // 10
         val_label_list = label_list[:val_list_len]
         train_label_list = label_list[val_list_len:]
-        with open('{:s}/{}ing/train_part.txt'.format(src_dir, phase, phase), 'w') as file:
+        with open('{:s}/{}ing/train_part.txt'.format(src_dir, phase, phase),
+                  'w') as file:
             for info in train_label_list:
                 file.write(info + '\n')
-        with open('{:s}/{}ing/val_part.txt'.format(src_dir, phase, phase), 'w') as file:
+        with open('{:s}/{}ing/val_part.txt'.format(src_dir, phase, phase),
+                  'w') as file:
             for info in val_label_list:
                 file.write(info + '\n')
     return
@@ -130,12 +170,14 @@ def process_tusimple_dataset(src_dir):
     for json_label_path in glob.glob('{:s}/label*.json'.format(src_dir)):
         json_label_name = ops.split(json_label_path)[1]
 
-        shutil.copyfile(json_label_path, ops.join(traing_folder_path, json_label_name))
+        shutil.copyfile(json_label_path,
+                        ops.join(traing_folder_path, json_label_name))
 
     for json_label_path in glob.glob('{:s}/test_label.json'.format(src_dir)):
         json_label_name = ops.split(json_label_path)[1]
 
-        shutil.copyfile(json_label_path, ops.join(testing_folder_path, json_label_name))
+        shutil.copyfile(json_label_path,
+                        ops.join(testing_folder_path, json_label_name))
 
     train_gt_image_dir = ops.join('training', 'gt_image')
     train_gt_binary_dir = ops.join('training', 'gt_binary_image')
@@ -154,9 +196,11 @@ def process_tusimple_dataset(src_dir):
     os.makedirs(os.path.join(src_dir, test_gt_instance_dir), exist_ok=True)
 
     for json_label_path in glob.glob('{:s}/*.json'.format(traing_folder_path)):
-        process_json_file(json_label_path, src_dir, train_gt_image_dir, train_gt_binary_dir, train_gt_instance_dir)
+        process_json_file(json_label_path, src_dir, train_gt_image_dir,
+                          train_gt_binary_dir, train_gt_instance_dir)
 
-    gen_sample(src_dir, train_gt_binary_dir, train_gt_instance_dir, train_gt_image_dir, 'train', True)
+    gen_sample(src_dir, train_gt_binary_dir, train_gt_instance_dir,
+               train_gt_image_dir, 'train', True)
 
 
 if __name__ == '__main__':

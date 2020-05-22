@@ -1,5 +1,5 @@
 # coding: utf8
-# copyright (c) 2019 PaddlePaddle Authors. All Rights Reserve.
+# Copyright (c) 2019 PaddlePaddle Authors. All Rights Reserve.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -141,7 +141,7 @@ class ResNet():
                     else:
                         conv_name = "res" + str(block + 2) + chr(97 + i)
                     dilation_rate = get_dilated_rate(dilation_dict, block)
-                    
+
                     conv = self.bottleneck_block(
                         input=conv,
                         num_filters=int(num_filters[block] * self.scale),
@@ -215,11 +215,11 @@ class ResNet():
                       groups=1,
                       act=None,
                       name=None):
-   
+
         if self.stem == 'pspnet':
-            bias_attr=ParamAttr(name=name + "_biases")
+            bias_attr = ParamAttr(name=name + "_biases")
         else:
-            bias_attr=False
+            bias_attr = False
 
         conv = fluid.layers.conv2d(
             input=input,
@@ -238,13 +238,15 @@ class ResNet():
             bn_name = "bn_" + name
         else:
             bn_name = "bn" + name[3:]
-        return fluid.layers.batch_norm(input=conv,
-                                       act=act,
-                                       name=bn_name + '.output.1',
-                                       param_attr=ParamAttr(name=bn_name + '_scale'),
-                                       bias_attr=ParamAttr(bn_name + '_offset'),
-                                       moving_mean_name=bn_name + '_mean',
-                                       moving_variance_name=bn_name + '_variance', )
+        return fluid.layers.batch_norm(
+            input=conv,
+            act=act,
+            name=bn_name + '.output.1',
+            param_attr=ParamAttr(name=bn_name + '_scale'),
+            bias_attr=ParamAttr(bn_name + '_offset'),
+            moving_mean_name=bn_name + '_mean',
+            moving_variance_name=bn_name + '_variance',
+        )
 
     def shortcut(self, input, ch_out, stride, is_first, name):
         ch_in = input.shape[1]
@@ -258,7 +260,7 @@ class ResNet():
             strides = [1, stride]
         else:
             strides = [stride, 1]
-        
+
         conv0 = self.conv_bn_layer(
             input=input,
             num_filters=num_filters,

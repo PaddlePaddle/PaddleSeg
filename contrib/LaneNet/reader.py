@@ -1,5 +1,5 @@
 # coding: utf8
-# copyright (c) 2019 PaddlePaddle Authors. All Rights Reserve.
+# Copyright (c) 2019 PaddlePaddle Authors. All Rights Reserve.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -58,7 +58,8 @@ class LaneNetDataset():
         if self.shuffle and cfg.NUM_TRAINERS > 1:
             np.random.RandomState(self.shuffle_seed).shuffle(self.all_lines)
             num_lines = len(self.all_lines) // cfg.NUM_TRAINERS
-            self.lines = self.all_lines[num_lines * cfg.TRAINER_ID: num_lines * (cfg.TRAINER_ID + 1)]
+            self.lines = self.all_lines[num_lines * cfg.TRAINER_ID:num_lines *
+                                        (cfg.TRAINER_ID + 1)]
             self.shuffle_seed += 1
         elif self.shuffle:
             np.random.shuffle(self.lines)
@@ -86,7 +87,8 @@ class LaneNetDataset():
         if self.shuffle and cfg.NUM_TRAINERS > 1:
             np.random.RandomState(self.shuffle_seed).shuffle(self.all_lines)
             num_lines = len(self.all_lines) // self.num_trainers
-            self.lines = self.all_lines[num_lines * self.trainer_id: num_lines * (self.trainer_id + 1)]
+            self.lines = self.all_lines[num_lines * self.trainer_id:num_lines *
+                                        (self.trainer_id + 1)]
             self.shuffle_seed += 1
         elif self.shuffle:
             np.random.shuffle(self.lines)
@@ -118,7 +120,8 @@ class LaneNetDataset():
         def batch_reader(is_test=False, drop_last=drop_last):
             if is_test:
                 imgs, grts, grts_instance, img_names, valid_shapes, org_shapes = [], [], [], [], [], []
-                for img, grt, grt_instance, img_name, valid_shape, org_shape in reader():
+                for img, grt, grt_instance, img_name, valid_shape, org_shape in reader(
+                ):
                     imgs.append(img)
                     grts.append(grt)
                     grts_instance.append(grt_instance)
@@ -126,14 +129,15 @@ class LaneNetDataset():
                     valid_shapes.append(valid_shape)
                     org_shapes.append(org_shape)
                     if len(imgs) == batch_size:
-                        yield np.array(imgs), np.array(
-                            grts), np.array(grts_instance), img_names, np.array(valid_shapes), np.array(
-                                org_shapes)
+                        yield np.array(imgs), np.array(grts), np.array(
+                            grts_instance), img_names, np.array(
+                                valid_shapes), np.array(org_shapes)
                         imgs, grts, grts_instance, img_names, valid_shapes, org_shapes = [], [], [], [], [], []
 
                 if not drop_last and len(imgs) > 0:
-                    yield np.array(imgs), np.array(grts), np.array(grts_instance), img_names, np.array(
-                        valid_shapes), np.array(org_shapes)
+                    yield np.array(imgs), np.array(grts), np.array(
+                        grts_instance), img_names, np.array(
+                            valid_shapes), np.array(org_shapes)
             else:
                 imgs, labs, labs_instance, ignore = [], [], [], []
                 bs = 0
@@ -144,12 +148,14 @@ class LaneNetDataset():
                     ignore.append(ig)
                     bs += 1
                     if bs == batch_size:
-                        yield np.array(imgs), np.array(labs), np.array(labs_instance), np.array(ignore)
+                        yield np.array(imgs), np.array(labs), np.array(
+                            labs_instance), np.array(ignore)
                         bs = 0
                         imgs, labs, labs_instance, ignore = [], [], [], []
 
                 if not drop_last and bs > 0:
-                    yield np.array(imgs), np.array(labs), np.array(labs_instance), np.array(ignore)
+                    yield np.array(imgs), np.array(labs), np.array(
+                        labs_instance), np.array(ignore)
 
         return batch_reader(is_test, drop_last)
 
@@ -299,10 +305,12 @@ class LaneNetDataset():
 
             img, grt = aug.rand_crop(img, grt, mode=mode)
         elif ModelPhase.is_eval(mode):
-            img, grt, grt_instance = aug.resize(img, grt, grt_instance, mode=mode)
+            img, grt, grt_instance = aug.resize(
+                img, grt, grt_instance, mode=mode)
         elif ModelPhase.is_visual(mode):
             ori_img = img.copy()
-            img, grt, grt_instance = aug.resize(img, grt, grt_instance, mode=mode)
+            img, grt, grt_instance = aug.resize(
+                img, grt, grt_instance, mode=mode)
             valid_shape = [img.shape[0], img.shape[1]]
         else:
             raise ValueError("Dataset mode={} Error!".format(mode))

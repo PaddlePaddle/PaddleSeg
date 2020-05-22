@@ -1,5 +1,5 @@
 # coding: utf8
-# copyright (c) 2019 PaddlePaddle Authors. All Rights Reserve.
+# Copyright (c) 2019 PaddlePaddle Authors. All Rights Reserve.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -31,7 +31,8 @@ gflags.DEFINE_string("conf", default="", help="Configuration File Path")
 gflags.DEFINE_string("input_dir", default="", help="Directory of Input Images")
 gflags.DEFINE_boolean("use_pr", default=False, help="Use optimized model")
 gflags.DEFINE_string("trt_mode", default="", help="Use optimized model")
-gflags.DEFINE_string("ext", default=".jpeg|.jpg", help="Input Image File Extensions")
+gflags.DEFINE_string(
+    "ext", default=".jpeg|.jpg", help="Input Image File Extensions")
 gflags.FLAGS = gflags.FLAGS
 
 
