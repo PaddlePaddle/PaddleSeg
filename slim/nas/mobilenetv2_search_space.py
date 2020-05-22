@@ -1,10 +1,11 @@
-# Copyright (c) 2019  PaddlePaddle Authors. All Rights Reserved.
+# coding: utf8
+# Copyright (c) 2019 PaddlePaddle Authors. All Rights Reserve.
 #
-# Licensed under the Apache License, Version 2.0 (the "License"
+# Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#     http://www.apache.org/licenses/LICENSE-2.0
+#    http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -31,7 +32,7 @@ __all__ = ["MobileNetV2SpaceSeg"]
 class MobileNetV2SpaceSeg(SearchSpaceBase):
     def __init__(self, input_size, output_size, block_num, block_mask=None):
         super(MobileNetV2SpaceSeg, self).__init__(input_size, output_size,
-                                               block_num, block_mask)
+                                                  block_num, block_mask)
         # self.head_num means the first convolution channel
         self.head_num = np.array([3, 4, 8, 12, 16, 24, 32])  #7
         # self.filter_num1 ~ self.filter_num6 means following convlution channel
@@ -48,7 +49,7 @@ class MobileNetV2SpaceSeg(SearchSpaceBase):
         self.k_size = np.array([3, 5])  #2
         # self.multiply means expansion_factor of each _inverted_residual_unit
         self.multiply = np.array([1, 2, 3, 4, 6])  #5
-        # self.repeat means repeat_num _inverted_residual_unit in each _invresi_blocks 
+        # self.repeat means repeat_num _inverted_residual_unit in each _invresi_blocks
         self.repeat = np.array([1, 2, 3, 4, 5, 6])  #6
 
     def init_tokens(self):
@@ -72,7 +73,7 @@ class MobileNetV2SpaceSeg(SearchSpaceBase):
 
     def range_table(self):
         """
-        Get range table of current search space, constrains the range of tokens. 
+        Get range table of current search space, constrains the range of tokens.
         """
         # head_num + 6 * [multiple(expansion_factor), filter_num, repeat, kernel_size]
         # yapf: disable
@@ -95,8 +96,8 @@ class MobileNetV2SpaceSeg(SearchSpaceBase):
             tokens = self.init_tokens()
 
         self.bottleneck_params_list = []
-        self.bottleneck_params_list.append(
-            (1, self.head_num[tokens[0]], 1, 1, 3))
+        self.bottleneck_params_list.append((1, self.head_num[tokens[0]], 1, 1,
+                                            3))
         self.bottleneck_params_list.append(
             (self.multiply[tokens[1]], self.filter_num1[tokens[2]],
              self.repeat[tokens[3]], 2, self.k_size[tokens[4]]))
@@ -150,7 +151,7 @@ class MobileNetV2SpaceSeg(SearchSpaceBase):
                         return (True if count == points else False)
 
             #conv1
-            # all padding is 'SAME' in the conv2d, can compute the actual padding automatic. 
+            # all padding is 'SAME' in the conv2d, can compute the actual padding automatic.
             input = conv_bn_layer(
                 input,
                 num_filters=int(32 * self.scale),

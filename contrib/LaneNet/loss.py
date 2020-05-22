@@ -1,5 +1,5 @@
 # coding: utf8
-# copyright (c) 2019 PaddlePaddle Authors. All Rights Reserve.
+# Copyright (c) 2019 PaddlePaddle Authors. All Rights Reserve.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,8 +19,8 @@ from utils.config import cfg
 
 
 def unsorted_segment_sum(data, segment_ids, unique_labels, feature_dims):
-    zeros = fluid.layers.fill_constant_batch_size_like(unique_labels, shape=[1, feature_dims],
-                                                       dtype='float32', value=0)
+    zeros = fluid.layers.fill_constant_batch_size_like(
+        unique_labels, shape=[1, feature_dims], dtype='float32', value=0)
     segment_ids = fluid.layers.unsqueeze(segment_ids, axes=[1])
     segment_ids.stop_gradient = True
     segment_sum = fluid.layers.scatter_nd_add(zeros, segment_ids, data)
@@ -30,29 +30,23 @@ def unsorted_segment_sum(data, segment_ids, unique_labels, feature_dims):
 
 
 def norm(x, axis=-1):
-    distance = fluid.layers.reduce_sum(fluid.layers.abs(x), dim=axis, keep_dim=True)
+    distance = fluid.layers.reduce_sum(
+        fluid.layers.abs(x), dim=axis, keep_dim=True)
     return distance
 
-def discriminative_loss_single(
-        prediction,
-        correct_label,
-        feature_dim,
-        label_shape,
-        delta_v,
-        delta_d,
-        param_var,
-        param_dist,
-        param_reg):
 
-    correct_label = fluid.layers.reshape(
-        correct_label, [
-            label_shape[1] * label_shape[0]])
+def discriminative_loss_single(prediction, correct_label, feature_dim,
+                               label_shape, delta_v, delta_d, param_var,
+                               param_dist, param_reg):
+
+    correct_label = fluid.layers.reshape(correct_label,
+                                         [label_shape[1] * label_shape[0]])
     prediction = fluid.layers.transpose(prediction, [1, 2, 0])
     reshaped_pred = fluid.layers.reshape(
-        prediction, [
-            label_shape[1] * label_shape[0], feature_dim])
+        prediction, [label_shape[1] * label_shape[0], feature_dim])
 
-    unique_labels, unique_id, counts = fluid.layers.unique_with_counts(correct_label)
+    unique_labels, unique_id, counts = fluid.layers.unique_with_counts(
+        correct_label)
     correct_label.stop_gradient = True
     counts = fluid.layers.cast(counts, 'float32')
     num_instances = fluid.layers.shape(unique_labels)
@@ -69,24 +63,29 @@ def discriminative_loss_single(
     distance = norm(tmp)
     distance = distance - delta_v
 
-    distance_pos = fluid.layers.greater_equal(distance, fluid.layers.zeros_like(distance))
+    distance_pos = fluid.layers.greater_equal(distance,
+                                              fluid.layers.zeros_like(distance))
     distance_pos = fluid.layers.cast(distance_pos, 'float32')
     distance = distance * distance_pos
 
     distance = fluid.layers.square(distance)
 
-    l_var = unsorted_segment_sum(distance, unique_id, unique_labels, feature_dims=1)
+    l_var = unsorted_segment_sum(
+        distance, unique_id, unique_labels, feature_dims=1)
     l_var = fluid.layers.elementwise_div(l_var, counts_rsp)
     l_var = fluid.layers.reduce_sum(l_var)
-    l_var = l_var / fluid.layers.cast(num_instances * (num_instances - 1), 'float32')
+    l_var = l_var / fluid.layers.cast(num_instances * (num_instances - 1),
+                                      'float32')
 
     mu_interleaved_rep = fluid.layers.expand(mu, [num_instances, 1])
     mu_band_rep = fluid.layers.expand(mu, [1, num_instances])
-    mu_band_rep = fluid.layers.reshape(mu_band_rep, (num_instances * num_instances, feature_dim))
+    mu_band_rep = fluid.layers.reshape(
+        mu_band_rep, (num_instances * num_instances, feature_dim))
 
     mu_diff = fluid.layers.elementwise_sub(mu_band_rep, mu_interleaved_rep)
 
-    intermediate_tensor = fluid.layers.reduce_sum(fluid.layers.abs(mu_diff), dim=1)
+    intermediate_tensor = fluid.layers.reduce_sum(
+        fluid.layers.abs(mu_diff), dim=1)
     intermediate_tensor.stop_gradient = True
     zero_vector = fluid.layers.zeros([1], 'float32')
     bool_mask = fluid.layers.not_equal(intermediate_tensor, zero_vector)
@@ -95,7 +94,8 @@ def discriminative_loss_single(
 
     mu_norm = norm(mu_diff_bool)
     mu_norm = 2. * delta_d - mu_norm
-    mu_norm_pos = fluid.layers.greater_equal(mu_norm, fluid.layers.zeros_like(mu_norm))
+    mu_norm_pos = fluid.layers.greater_equal(mu_norm,
+                                             fluid.layers.zeros_like(mu_norm))
     mu_norm_pos = fluid.layers.cast(mu_norm_pos, 'float32')
     mu_norm = mu_norm * mu_norm_pos
     mu_norm_pos.stop_gradient = True
@@ -122,8 +122,8 @@ def discriminative_loss(prediction, correct_label, feature_dim, image_shape,
     output_ta_reg = 0.
     for i in range(batch_size):
         disc_loss_single, l_var_single, l_dist_single, l_reg_single = discriminative_loss_single(
-            prediction[i], correct_label[i], feature_dim, image_shape, delta_v, delta_d, param_var, param_dist,
-            param_reg)
+            prediction[i], correct_label[i], feature_dim, image_shape, delta_v,
+            delta_d, param_var, param_dist, param_reg)
         output_ta_loss += disc_loss_single
         output_ta_var += l_var_single
         output_ta_dist += l_dist_single
@@ -134,5 +134,3 @@ def discriminative_loss(prediction, correct_label, feature_dim, image_shape,
     l_dist = output_ta_dist / batch_size
     l_reg = output_ta_reg / batch_size
     return disc_loss, l_var, l_dist, l_reg
-
-
