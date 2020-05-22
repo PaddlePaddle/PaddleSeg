@@ -104,37 +104,6 @@ def parse_args():
     return parser.parse_args()
 
 
-def save_vars(executor, dirname, program=None, vars=None):
-    """
-    Temporary resolution for Win save variables compatability.
-    Will fix in PaddlePaddle v1.5.2
-    """
-
-    save_program = fluid.Program()
-    save_block = save_program.global_block()
-
-    for each_var in vars:
-        # NOTE: don't save the variable which type is RAW
-        if each_var.type == fluid.core.VarDesc.VarType.RAW:
-            continue
-        new_var = save_block.create_var(
-            name=each_var.name,
-            shape=each_var.shape,
-            dtype=each_var.dtype,
-            type=each_var.type,
-            lod_level=each_var.lod_level,
-            persistable=True)
-        file_path = os.path.join(dirname, new_var.name)
-        file_path = os.path.normpath(file_path)
-        save_block.append_op(
-            type='save',
-            inputs={'X': [new_var]},
-            outputs={},
-            attrs={'file_path': file_path})
-
-    executor.run(save_program)
-
-
 def save_checkpoint(exe, program, ckpt_name):
     """
     Save checkpoint for evaluation or resume training
@@ -144,12 +113,11 @@ def save_checkpoint(exe, program, ckpt_name):
     if not os.path.isdir(ckpt_dir):
         os.makedirs(ckpt_dir)
 
-    save_vars(
+    fluid.io.save_vars(
         exe,
         ckpt_dir,
         program,
         vars=list(filter(fluid.io.is_persistable, program.list_vars())))
-
     return ckpt_dir
 
 
