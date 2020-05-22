@@ -45,6 +45,7 @@ from models.model_builder import ModelPhase
 from utils import lanenet_postprocess
 import matplotlib.pyplot as plt
 
+
 def parse_args():
     parser = argparse.ArgumentParser(description='PaddeSeg visualization tools')
     parser.add_argument(
@@ -106,7 +107,6 @@ def minmax_scale(input_arr):
     return output_arr
 
 
-
 def visualize(cfg,
               vis_file_list=None,
               use_gpu=False,
@@ -118,7 +118,6 @@ def visualize(cfg,
               **kwargs):
     if vis_file_list is None:
         vis_file_list = cfg.DATASET.TEST_FILE_LIST
-
 
     dataset = LaneNetDataset(
         file_list=vis_file_list,
@@ -139,7 +138,12 @@ def visualize(cfg,
 
     ckpt_dir = cfg.TEST.TEST_MODEL if not ckpt_dir else ckpt_dir
 
-    fluid.io.load_params(exe, ckpt_dir, main_program=test_prog)
+    if ckpt_dir is not None:
+        print('load test model:', ckpt_dir)
+        try:
+            fluid.load(test_prog, os.path.join(ckpt_dir, 'model'), exe)
+        except:
+            fluid.io.load_params(exe, ckpt_dir, main_program=test_prog)
 
     save_dir = os.path.join(vis_dir, 'visual_results')
     makedirs(save_dir)
@@ -161,22 +165,26 @@ def visualize(cfg,
 
         for i in range(num_imgs):
             gt_image = org_imgs[i]
-            binary_seg_image, instance_seg_image = segLogits[i].squeeze(-1), emLogits[i].transpose((1,2,0))
+            binary_seg_image, instance_seg_image = segLogits[i].squeeze(
+                -1), emLogits[i].transpose((1, 2, 0))
 
             postprocess_result = postprocessor.postprocess(
                 binary_seg_result=binary_seg_image,
                 instance_seg_result=instance_seg_image,
-                source_image=gt_image
-            )
-            pred_binary_fn = os.path.join(save_dir, to_png_fn(img_names[i], name='_pred_binary'))
-            pred_lane_fn = os.path.join(save_dir, to_png_fn(img_names[i], name='_pred_lane'))
-            pred_instance_fn = os.path.join(save_dir, to_png_fn(img_names[i], name='_pred_instance'))
+                source_image=gt_image)
+            pred_binary_fn = os.path.join(
+                save_dir, to_png_fn(img_names[i], name='_pred_binary'))
+            pred_lane_fn = os.path.join(
+                save_dir, to_png_fn(img_names[i], name='_pred_lane'))
+            pred_instance_fn = os.path.join(
+                save_dir, to_png_fn(img_names[i], name='_pred_instance'))
             dirname = os.path.dirname(pred_binary_fn)
 
             makedirs(dirname)
             mask_image = postprocess_result['mask_image']
             for i in range(4):
-                instance_seg_image[:, :, i] = minmax_scale(instance_seg_image[:, :, i])
+                instance_seg_image[:, :, i] = minmax_scale(
+                    instance_seg_image[:, :, i])
             embedding_image = np.array(instance_seg_image).astype(np.uint8)
 
             plt.figure('mask_image')
@@ -189,11 +197,11 @@ def visualize(cfg,
             plt.imshow(binary_seg_image * 255, cmap='gray')
             plt.show()
 
-            cv2.imwrite(pred_binary_fn, np.array(binary_seg_image * 255).astype(np.uint8))
+            cv2.imwrite(pred_binary_fn,
+                        np.array(binary_seg_image * 255).astype(np.uint8))
             cv2.imwrite(pred_lane_fn, postprocess_result['source_image'])
             cv2.imwrite(pred_instance_fn, mask_image)
             print(pred_lane_fn, 'saved!')
-
 
 
 if __name__ == '__main__':

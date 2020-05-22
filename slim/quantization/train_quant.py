@@ -40,7 +40,8 @@ from models.model_builder import parse_shape_from_file
 from eval_quant import evaluate
 from vis import visualize
 from utils import dist_utils
-from train import save_vars, save_checkpoint, load_checkpoint, update_best_model, print_info
+from utils.load_model_utils import load_pretrained_weights
+from train import update_best_model, print_info
 
 from paddleslim.quant import quant_aware
 
@@ -101,6 +102,55 @@ def parse_args():
     )
 
     return parser.parse_args()
+
+
+def save_checkpoint(exe, program, ckpt_name):
+    """
+    Save checkpoint for evaluation or resume training
+    """
+    ckpt_dir = os.path.join(cfg.TRAIN.MODEL_SAVE_DIR, str(ckpt_name))
+    print("Save model checkpoint to {}".format(ckpt_dir))
+    if not os.path.isdir(ckpt_dir):
+        os.makedirs(ckpt_dir)
+
+    fluid.io.save_vars(
+        exe,
+        ckpt_dir,
+        program,
+        vars=list(filter(fluid.io.is_persistable, program.list_vars())))
+    return ckpt_dir
+
+
+def load_checkpoint(exe, program):
+    """
+    Load checkpoiont from pretrained model directory for resume training
+    """
+
+    print('Resume model training from:', cfg.TRAIN.RESUME_MODEL_DIR)
+    if not os.path.exists(cfg.TRAIN.RESUME_MODEL_DIR):
+        raise ValueError("TRAIN.PRETRAIN_MODEL {} not exist!".format(
+            cfg.TRAIN.RESUME_MODEL_DIR))
+
+    fluid.io.load_persistables(
+        exe, cfg.TRAIN.RESUME_MODEL_DIR, main_program=program)
+
+    model_path = cfg.TRAIN.RESUME_MODEL_DIR
+    # Check is path ended by path spearator
+    if model_path[-1] == os.sep:
+        model_path = model_path[0:-1]
+    epoch_name = os.path.basename(model_path)
+    # If resume model is final model
+    if epoch_name == 'final':
+        begin_epoch = cfg.SOLVER.NUM_EPOCHS
+    # If resume model path is end of digit, restore epoch status
+    elif epoch_name.isdigit():
+        epoch = int(epoch_name)
+        begin_epoch = epoch + 1
+    else:
+        raise ValueError("Resume model path is not valid!")
+    print("Model checkpoint loaded successfully!")
+
+    return begin_epoch
 
 
 def train_quant(cfg):
@@ -182,42 +232,7 @@ def train_quant(cfg):
         begin_epoch = load_checkpoint(exe, train_prog)
     # Load pretrained model
     elif os.path.exists(cfg.TRAIN.PRETRAINED_MODEL_DIR):
-        print_info('Pretrained model dir: ', cfg.TRAIN.PRETRAINED_MODEL_DIR)
-        load_vars = []
-        load_fail_vars = []
-
-        def var_shape_matched(var, shape):
-            """
-            Check whehter persitable variable shape is match with current network
-            """
-            var_exist = os.path.exists(
-                os.path.join(cfg.TRAIN.PRETRAINED_MODEL_DIR, var.name))
-            if var_exist:
-                var_shape = parse_shape_from_file(
-                    os.path.join(cfg.TRAIN.PRETRAINED_MODEL_DIR, var.name))
-                return var_shape == shape
-            return False
-
-        for x in train_prog.list_vars():
-            if isinstance(x, fluid.framework.Parameter):
-                shape = tuple(fluid.global_scope().find_var(
-                    x.name).get_tensor().shape())
-                if var_shape_matched(x, shape):
-                    load_vars.append(x)
-                else:
-                    load_fail_vars.append(x)
-
-        fluid.io.load_vars(
-            exe, dirname=cfg.TRAIN.PRETRAINED_MODEL_DIR, vars=load_vars)
-        for var in load_vars:
-            print_info("Parameter[{}] loaded sucessfully!".format(var.name))
-        for var in load_fail_vars:
-            print_info(
-                "Parameter[{}] don't exist or shape does not match current network, skip"
-                " to load it.".format(var.name))
-        print_info("{}/{} pretrained parameters loaded successfully!".format(
-            len(load_vars),
-            len(load_vars) + len(load_fail_vars)))
+        load_pretrained_weights(exe, train_prog, cfg.TRAIN.PRETRAINED_MODEL_DIR)
     else:
         print_info(
             'Pretrained model dir {} not exists, training from scratch...'.

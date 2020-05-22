@@ -44,6 +44,7 @@ from model_builder import parse_shape_from_file
 from eval import evaluate
 from vis import visualize
 from utils import dist_utils
+from utils.load_model_utils import load_pretrained_weights
 
 import solver
 from paddleslim.dist.single_distiller import merge, l2_loss
@@ -116,38 +117,7 @@ def parse_args():
     return parser.parse_args()
 
 
-def save_vars(executor, dirname, program=None, vars=None):
-    """
-    Temporary resolution for Win save variables compatability.
-    Will fix in PaddlePaddle v1.5.2
-    """
-
-    save_program = fluid.Program()
-    save_block = save_program.global_block()
-
-    for each_var in vars:
-        # NOTE: don't save the variable which type is RAW
-        if each_var.type == fluid.core.VarDesc.VarType.RAW:
-            continue
-        new_var = save_block.create_var(
-            name=each_var.name,
-            shape=each_var.shape,
-            dtype=each_var.dtype,
-            type=each_var.type,
-            lod_level=each_var.lod_level,
-            persistable=True)
-        file_path = os.path.join(dirname, new_var.name)
-        file_path = os.path.normpath(file_path)
-        save_block.append_op(
-            type='save',
-            inputs={'X': [new_var]},
-            outputs={},
-            attrs={'file_path': file_path})
-
-    executor.run(save_program)
-
-
-def save_checkpoint(exe, program, ckpt_name):
+def save_checkpoint(program, ckpt_name):
     """
     Save checkpoint for evaluation or resume training
     """
@@ -156,29 +126,22 @@ def save_checkpoint(exe, program, ckpt_name):
     if not os.path.isdir(ckpt_dir):
         os.makedirs(ckpt_dir)
 
-    save_vars(
-        exe,
-        ckpt_dir,
-        program,
-        vars=list(filter(fluid.io.is_persistable, program.list_vars())))
+    fluid.save(program, os.path.join(ckpt_dir, 'model'))
 
     return ckpt_dir
 
 
 def load_checkpoint(exe, program):
     """
-    Load checkpoiont from pretrained model directory for resume training
+    Load checkpoiont for resuming training
     """
-
-    print('Resume model training from:', cfg.TRAIN.RESUME_MODEL_DIR)
-    if not os.path.exists(cfg.TRAIN.RESUME_MODEL_DIR):
-        raise ValueError("TRAIN.PRETRAIN_MODEL {} not exist!".format(
-            cfg.TRAIN.RESUME_MODEL_DIR))
-
-    fluid.io.load_persistables(
-        exe, cfg.TRAIN.RESUME_MODEL_DIR, main_program=program)
-
     model_path = cfg.TRAIN.RESUME_MODEL_DIR
+    print('Resume model training from:', model_path)
+    if not os.path.exists(model_path):
+        raise ValueError(
+            "TRAIN.PRETRAIN_MODEL {} not exist!".format(model_path))
+    fluid.load(program, os.path.join(model_path, 'model'), exe)
+
     # Check is path ended by path spearator
     if model_path[-1] == os.sep:
         model_path = model_path[0:-1]
@@ -193,7 +156,6 @@ def load_checkpoint(exe, program):
     else:
         raise ValueError("Resume model path is not valid!")
     print("Model checkpoint loaded successfully!")
-
     return begin_epoch
 
 
@@ -289,7 +251,11 @@ def train(cfg):
     ckpt_dir = cfg.SLIM.KNOWLEDGE_DISTILL_TEACHER_MODEL_DIR
     assert ckpt_dir is not None
     print('load teacher model:', ckpt_dir)
-    fluid.io.load_params(exe, ckpt_dir, main_program=teacher_program)
+    if os.path.exists(ckpt_dir):
+        try:
+            fluid.load(teacher_program, os.path.join(ckpt_dir, 'model'), exe)
+        except:
+            fluid.io.load_params(exe, ckpt_dir, main_program=teacher_program)
 
     # cfg = load_config(FLAGS.config)
     cfg.update_from_file(args.cfg_file)
@@ -355,42 +321,8 @@ def train(cfg):
         begin_epoch = load_checkpoint(exe, fluid.default_main_program())
     # Load pretrained model
     elif os.path.exists(cfg.TRAIN.PRETRAINED_MODEL_DIR):
-        print_info('Pretrained model dir: ', cfg.TRAIN.PRETRAINED_MODEL_DIR)
-        load_vars = []
-        load_fail_vars = []
-
-        def var_shape_matched(var, shape):
-            """
-            Check whehter persitable variable shape is match with current network
-            """
-            var_exist = os.path.exists(
-                os.path.join(cfg.TRAIN.PRETRAINED_MODEL_DIR, var.name))
-            if var_exist:
-                var_shape = parse_shape_from_file(
-                    os.path.join(cfg.TRAIN.PRETRAINED_MODEL_DIR, var.name))
-                return var_shape == shape
-            return False
-
-        for x in fluid.default_main_program().list_vars():
-            if isinstance(x, fluid.framework.Parameter):
-                shape = tuple(fluid.global_scope().find_var(
-                    x.name).get_tensor().shape())
-                if var_shape_matched(x, shape):
-                    load_vars.append(x)
-                else:
-                    load_fail_vars.append(x)
-
-        fluid.io.load_vars(
-            exe, dirname=cfg.TRAIN.PRETRAINED_MODEL_DIR, vars=load_vars)
-        for var in load_vars:
-            print_info("Parameter[{}] loaded sucessfully!".format(var.name))
-        for var in load_fail_vars:
-            print_info(
-                "Parameter[{}] don't exist or shape does not match current network, skip"
-                " to load it.".format(var.name))
-        print_info("{}/{} pretrained parameters loaded successfully!".format(
-            len(load_vars),
-            len(load_vars) + len(load_fail_vars)))
+        load_pretrained_weights(exe, fluid.default_main_program(),
+                                cfg.TRAIN.PRETRAINED_MODEL_DIR)
     else:
         print_info(
             'Pretrained model dir {} not exists, training from scratch...'.
@@ -475,12 +407,9 @@ def train(cfg):
                                                   step)
                             log_writer.add_scalar('Train/mean_acc', mean_acc,
                                                   step)
-                            log_writer.add_scalar('Train/loss', avg_loss,
-                                                  step)
-                            log_writer.add_scalar('Train/lr', lr[0],
-                                                  step)
-                            log_writer.add_scalar('Train/step/sec', speed,
-                                                  step)
+                            log_writer.add_scalar('Train/loss', avg_loss, step)
+                            log_writer.add_scalar('Train/lr', lr[0], step)
+                            log_writer.add_scalar('Train/step/sec', speed, step)
                         sys.stdout.flush()
                         avg_loss = 0.0
                         cm.zero_matrix()
@@ -503,16 +432,13 @@ def train(cfg):
                         speed = args.log_steps / timer.elapsed_time()
                         print((
                             "epoch={} step={} lr={:.5f} loss={:.4f} teacher loss={:.4f} distill loss={:.4f} step/sec={:.3f} | ETA {}"
-                        ).format(epoch, step, lr[0], avg_loss,
-                                 avg_t_loss, avg_d_loss, speed,
+                        ).format(epoch, step, lr[0], avg_loss, avg_t_loss,
+                                 avg_d_loss, speed,
                                  calculate_eta(all_step - step, speed)))
                         if args.use_vdl:
-                            log_writer.add_scalar('Train/loss', avg_loss,
-                                                  step)
-                            log_writer.add_scalar('Train/lr', lr[0],
-                                                  step)
-                            log_writer.add_scalar('Train/speed', speed,
-                                                  step)
+                            log_writer.add_scalar('Train/loss', avg_loss, step)
+                            log_writer.add_scalar('Train/lr', lr[0], step)
+                            log_writer.add_scalar('Train/speed', speed, step)
                         sys.stdout.flush()
                         avg_loss = 0.0
                         avg_t_loss = 0.0
@@ -527,7 +453,7 @@ def train(cfg):
 
         if (epoch % cfg.TRAIN.SNAPSHOT_EPOCH == 0
                 or epoch == cfg.SOLVER.NUM_EPOCHS) and cfg.TRAINER_ID == 0:
-            ckpt_dir = save_checkpoint(exe, fluid.default_main_program(), epoch)
+            ckpt_dir = save_checkpoint(fluid.default_main_program(), epoch)
 
             if args.do_eval:
                 print("Evaluation start")
@@ -537,10 +463,8 @@ def train(cfg):
                     use_gpu=args.use_gpu,
                     use_mpio=args.use_mpio)
                 if args.use_vdl:
-                    log_writer.add_scalar('Evaluate/mean_iou', mean_iou,
-                                          step)
-                    log_writer.add_scalar('Evaluate/mean_acc', mean_acc,
-                                          step)
+                    log_writer.add_scalar('Evaluate/mean_iou', mean_iou, step)
+                    log_writer.add_scalar('Evaluate/mean_acc', mean_acc, step)
 
                 if mean_iou > best_mIoU:
                     best_mIoU = mean_iou
@@ -560,11 +484,11 @@ def train(cfg):
                     ckpt_dir=ckpt_dir,
                     log_writer=log_writer)
         if cfg.TRAINER_ID == 0:
-            ckpt_dir = save_checkpoint(exe, fluid.default_main_program(), epoch)
+            ckpt_dir = save_checkpoint(fluid.default_main_program(), epoch)
 
     # save final model
     if cfg.TRAINER_ID == 0:
-        save_checkpoint(exe, fluid.default_main_program(), 'final')
+        save_checkpoint(fluid.default_main_program(), 'final')
 
 
 def main(args):
