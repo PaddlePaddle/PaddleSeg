@@ -17,6 +17,7 @@ from __future__ import print_function
 
 import argparse
 import glob
+import math
 import json
 import os
 import os.path as osp
@@ -24,9 +25,8 @@ import numpy as np
 import PIL.Image
 import PIL.ImageDraw
 import cv2
-import math
 
-from .gray2pseudo_color import get_color_map_list
+from gray2pseudo_color import get_color_map_list
 
 
 def parse_args():
@@ -80,9 +80,9 @@ def main(args):
             img_file = osp.join(osp.dirname(label_file), data['imagePath'])
             img = np.asarray(cv2.imread(img_file))
 
-            lbl = graphs2label(
+            lbl = shape2label(
                 img_size=img.shape,
-                graphs=data['shapes'],
+                shapes=data['shapes'],
                 class_name_mapping=class_name_to_id,
             )
 
@@ -99,48 +99,23 @@ def main(args):
                     'Please consider using the .npy format.' % out_png_file)
 
 
-def graph2mask(img_size, points, graph_type=None, point_size=6, line_width=9):
+def shape2mask(img_size, points):
     label_mask = PIL.Image.fromarray(np.zeros(img_size[:2], dtype=np.uint8))
     image_draw = PIL.ImageDraw.Draw(label_mask)
     points_list = [tuple(point) for point in points]
-    if graph_type == 'rectangle':
-        assert len(points_list
-                   ) == 2, 'Shape of graph_type=rectangle must have 2 points'
-        image_draw.rectangle(points_list, outline=1, fill=1)
-    elif graph_type == 'line':
-        assert len(
-            points_list) == 2, 'Shape of graph_type=line must have 2 points'
-        image_draw.line(xy=points_list, fill=1, width=line_width)
-    elif graph_type == 'linestrip':
-        image_draw.line(xy=points_list, fill=1, width=line_width)
-    elif graph_type == 'circle':
-        assert len(
-            points_list) == 2, 'Shape of graph_type=circle must have 2 points'
-        (cx, cy), (px, py) = points_list
-        d = math.sqrt((cx - px)**2 + (cy - py)**2)
-        image_draw.ellipse([cx - d, cy - d, cx + d, cy + d], outline=1, fill=1)
-    elif graph_type == 'point':
-        assert len(
-            points_list) == 1, 'Shape of graph_type=point must have 1 points'
-        cx, cy = points_list[0]
-        r = point_size
-        image_draw.ellipse([cx - r, cy - r, cx + r, cy + r], outline=1, fill=1)
-    else:
-        assert len(points_list) > 2, 'Polygon must have points more than 2'
-        image_draw.polygon(xy=points_list, outline=1, fill=1)
+    assert len(points_list) > 2, 'Polygon must have points more than 2'
+    image_draw.polygon(xy=points_list, outline=1, fill=1)
     return np.array(label_mask, dtype=bool)
 
 
-def graphs2label(img_size, graphs, class_name_mapping):
+def shape2label(img_size, shapes, class_name_mapping):
     label = np.zeros(img_size[:2], dtype=np.int32)
-    for graph in graphs:
-        points = graph['points']
-        class_name = graph['label']
-        graph_type = graph.get('shape_type', None)
-
+    for shape in shapes:
+        points = shape['points']
+        class_name = shape['label']
+        shape_type = shape.get('shape_type', None)
         class_id = class_name_mapping[class_name]
-
-        label_mask = graph2mask(img_size[:2], points, graph_type)
+        label_mask = shape2mask(img_size[:2], points)
         label[label_mask] = class_id
     return label
 

@@ -23,8 +23,8 @@ import os.path as osp
 import numpy as np
 import PIL.Image
 
-from .gray2pseudo_color import get_color_map_list
-from .labelme2seg import graphs2label
+from gray2pseudo_color import get_color_map_list
+from labelme2seg import shape2label
 
 
 def parse_args():
@@ -101,9 +101,9 @@ def main(args):
             img_shape = (data_size['height'], data_size['width'],
                          data_size['depth'])
 
-            lbl = graphs2label(
+            lbl = shape2label(
                 img_size=img_shape,
-                graphs=data_shapes,
+                shapes=data_shapes,
                 class_name_mapping=class_name_to_id,
             )
 
