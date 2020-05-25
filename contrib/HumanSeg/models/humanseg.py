@@ -302,7 +302,7 @@ class SegModel(object):
                 from utils import HumanSegPostTrainingQuantization
             except:
                 raise Exception(
-                    "Model Quantization is not available, try to upgrade your paddlepaddle>=1.7.0"
+                    "Model Quantization is not available, try to upgrade your paddlepaddle>=1.8.1"
                 )
             is_use_cache_file = True
             if cache_dir is None:
