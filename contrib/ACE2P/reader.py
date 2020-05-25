@@ -1,8 +1,23 @@
-# -*- coding: utf-8 -*- 
+# coding: utf8
+# Copyright (c) 2019 PaddlePaddle Authors. All Rights Reserve.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 import numpy as np
 import paddle.fluid as fluid
 from config import cfg
 import cv2
+
 
 def get_affine_points(src_shape, dst_shape, rot_grad=0):
     # 获取图像和仿射后图像的三组对应点坐标
@@ -23,7 +38,7 @@ def get_affine_points(src_shape, dst_shape, rot_grad=0):
 
     # 原始图像三组点
     points = [[0, 0]] * 3
-    points[0] = (np.array([w, h]) - 1) * 0.5 
+    points[0] = (np.array([w, h]) - 1) * 0.5
     points[1] = points[0] + 0.5 * affine_shape[0] * np.array([sin_v, -cos_v])
     points[2] = points[1] - 0.5 * affine_shape[1] * np.array([cos_v, sin_v])
 
@@ -34,6 +49,7 @@ def get_affine_points(src_shape, dst_shape, rot_grad=0):
 
     return points, points_trans
 
+
 def preprocess(im):
     # ACE2P模型数据预处理
     im_shape = im.shape[:2]
@@ -42,13 +58,10 @@ def preprocess(im):
         # 获取图像和仿射变换后图像的对应点坐标
         points, points_trans = get_affine_points(im_shape, scale)
         # 根据对应点集获得仿射矩阵
-        trans = cv2.getAffineTransform(np.float32(points),
-                                       np.float32(points_trans))
+        trans = cv2.getAffineTransform(
+            np.float32(points), np.float32(points_trans))
         # 根据仿射矩阵对图像进行仿射
-        input = cv2.warpAffine(im,
-                               trans,
-                               scale[::-1],
-                               flags=cv2.INTER_LINEAR)
+        input = cv2.warpAffine(im, trans, scale[::-1], flags=cv2.INTER_LINEAR)
 
         # 减均值测，除以方差，转换数据格式为NCHW
         input = input.astype(np.float32)
@@ -66,19 +79,20 @@ def preprocess(im):
     return input_images
 
 
-def multi_scale_test(exe, test_prog, feed_name, fetch_list,
-                        input_ims, im_shape):
-    
+def multi_scale_test(exe, test_prog, feed_name, fetch_list, input_ims,
+                     im_shape):
+
     # 由于部分类别分左右部位, flipped_idx为其水平翻转后对应的标签
     flipped_idx = (15, 14, 17, 16, 19, 18)
     ms_outputs = []
-    
+
     # 多尺度预测
     for idx, scale in enumerate(cfg.multi_scales):
         input_im = input_ims[idx]
-        parsing_output = exe.run(program=test_prog,
-                                 feed={feed_name[0]: input_im},
-                                 fetch_list=fetch_list)
+        parsing_output = exe.run(
+            program=test_prog,
+            feed={feed_name[0]: input_im},
+            fetch_list=fetch_list)
         output = parsing_output[0][0]
         if cfg.flip:
             # 若水平翻转，对部分类别进行翻转，与原始预测结果取均值
@@ -92,7 +106,8 @@ def multi_scale_test(exe, test_prog, feed_name, fetch_list,
         # 仿射变换回图像原始尺寸
         points, points_trans = get_affine_points(im_shape, scale)
         M = cv2.getAffineTransform(np.float32(points_trans), np.float32(points))
-        logits_result = cv2.warpAffine(output, M, im_shape[::-1], flags=cv2.INTER_LINEAR)
+        logits_result = cv2.warpAffine(
+            output, M, im_shape[::-1], flags=cv2.INTER_LINEAR)
         ms_outputs.append(logits_result)
 
     # 多尺度预测结果求均值，求预测概率最大的类别
@@ -100,4 +115,3 @@ def multi_scale_test(exe, test_prog, feed_name, fetch_list,
     ms_fused_parsing_output = np.mean(ms_fused_parsing_output, axis=0)
     parsing = np.argmax(ms_fused_parsing_output, axis=2)
     return parsing, ms_fused_parsing_output
-

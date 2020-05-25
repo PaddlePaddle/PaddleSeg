@@ -1,5 +1,5 @@
 # coding: utf8
-# copyright (c) 2019 PaddlePaddle Authors. All Rights Reserve.
+# Copyright (c) 2019 PaddlePaddle Authors. All Rights Reserve.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -55,7 +55,8 @@ class VGGNet():
         channels = [64, 128, 256, 512, 512]
         conv = input
         for i in range(len(nums)):
-            conv = self.conv_block(conv, channels[i], nums[i], name="conv" + str(i + 1) + "_")
+            conv = self.conv_block(
+                conv, channels[i], nums[i], name="conv" + str(i + 1) + "_")
             layers_count += nums[i]
             if check_points(layers_count, decode_points):
                 short_cuts[layers_count] = conv

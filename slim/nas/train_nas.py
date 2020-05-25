@@ -1,5 +1,5 @@
 # coding: utf8
-# copyright (c) 2019 PaddlePaddle Authors. All Rights Reserve.
+# Copyright (c) 2019 PaddlePaddle Authors. All Rights Reserve.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -47,6 +47,7 @@ from model_builder import parse_shape_from_file
 from eval_nas import evaluate
 from vis import visualize
 from utils import dist_utils
+from utils.load_model_utils import load_pretrained_weights
 
 from mobilenetv2_search_space import MobileNetV2SpaceSeg
 from paddleslim.nas.search_space.search_space_factory import SearchSpaceFactory
@@ -87,14 +88,14 @@ def parse_args():
         help='debug mode, display detail information of training',
         action='store_true')
     parser.add_argument(
-        '--use_tb',
-        dest='use_tb',
-        help='whether to record the data during training to Tensorboard',
+        '--use_vdl',
+        dest='use_vdl',
+        help='whether to record the data during training to VisualDL',
         action='store_true')
     parser.add_argument(
-        '--tb_log_dir',
-        dest='tb_log_dir',
-        help='Tensorboard logging directory',
+        '--vdl_log_dir',
+        dest='vdl_log_dir',
+        help='VisualDL logging directory',
         default=None,
         type=str)
     parser.add_argument(
@@ -116,38 +117,7 @@ def parse_args():
     return parser.parse_args()
 
 
-def save_vars(executor, dirname, program=None, vars=None):
-    """
-    Temporary resolution for Win save variables compatability.
-    Will fix in PaddlePaddle v1.5.2
-    """
-
-    save_program = fluid.Program()
-    save_block = save_program.global_block()
-
-    for each_var in vars:
-        # NOTE: don't save the variable which type is RAW
-        if each_var.type == fluid.core.VarDesc.VarType.RAW:
-            continue
-        new_var = save_block.create_var(
-            name=each_var.name,
-            shape=each_var.shape,
-            dtype=each_var.dtype,
-            type=each_var.type,
-            lod_level=each_var.lod_level,
-            persistable=True)
-        file_path = os.path.join(dirname, new_var.name)
-        file_path = os.path.normpath(file_path)
-        save_block.append_op(
-            type='save',
-            inputs={'X': [new_var]},
-            outputs={},
-            attrs={'file_path': file_path})
-
-    executor.run(save_program)
-
-
-def save_checkpoint(exe, program, ckpt_name):
+def save_checkpoint(program, ckpt_name):
     """
     Save checkpoint for evaluation or resume training
     """
@@ -156,29 +126,22 @@ def save_checkpoint(exe, program, ckpt_name):
     if not os.path.isdir(ckpt_dir):
         os.makedirs(ckpt_dir)
 
-    save_vars(
-        exe,
-        ckpt_dir,
-        program,
-        vars=list(filter(fluid.io.is_persistable, program.list_vars())))
+    fluid.save(program, os.path.join(ckpt_dir, 'model'))
 
     return ckpt_dir
 
 
 def load_checkpoint(exe, program):
     """
-    Load checkpoiont from pretrained model directory for resume training
+    Load checkpoiont for resuming training
     """
-
-    print('Resume model training from:', cfg.TRAIN.RESUME_MODEL_DIR)
-    if not os.path.exists(cfg.TRAIN.RESUME_MODEL_DIR):
-        raise ValueError("TRAIN.PRETRAIN_MODEL {} not exist!".format(
-            cfg.TRAIN.RESUME_MODEL_DIR))
-
-    fluid.io.load_persistables(
-        exe, cfg.TRAIN.RESUME_MODEL_DIR, main_program=program)
-
     model_path = cfg.TRAIN.RESUME_MODEL_DIR
+    print('Resume model training from:', model_path)
+    if not os.path.exists(model_path):
+        raise ValueError(
+            "TRAIN.PRETRAIN_MODEL {} not exist!".format(model_path))
+    fluid.load(program, os.path.join(model_path, 'model'), exe)
+
     # Check is path ended by path spearator
     if model_path[-1] == os.sep:
         model_path = model_path[0:-1]
@@ -193,7 +156,6 @@ def load_checkpoint(exe, program):
     else:
         raise ValueError("Resume model path is not valid!")
     print("Model checkpoint loaded successfully!")
-
     return begin_epoch
 
 
@@ -245,8 +207,6 @@ def train(cfg):
                 yield item[0], item[1], item[2]
 
     # Get device environment
-    # places = fluid.cuda_places() if args.use_gpu else fluid.cpu_places()
-    # place = places[0]
     gpu_id = int(os.environ.get('FLAGS_selected_gpus', 0))
     place = fluid.CUDAPlace(gpu_id) if args.use_gpu else fluid.CPUPlace()
     places = fluid.cuda_places() if args.use_gpu else fluid.cpu_places()
@@ -326,43 +286,8 @@ def train(cfg):
             begin_epoch = load_checkpoint(exe, train_prog)
         # Load pretrained model
         elif os.path.exists(cfg.TRAIN.PRETRAINED_MODEL_DIR):
-            print_info('Pretrained model dir: ', cfg.TRAIN.PRETRAINED_MODEL_DIR)
-            load_vars = []
-            load_fail_vars = []
-
-            def var_shape_matched(var, shape):
-                """
-                Check whehter persitable variable shape is match with current network
-                """
-                var_exist = os.path.exists(
-                    os.path.join(cfg.TRAIN.PRETRAINED_MODEL_DIR, var.name))
-                if var_exist:
-                    var_shape = parse_shape_from_file(
-                        os.path.join(cfg.TRAIN.PRETRAINED_MODEL_DIR, var.name))
-                    return var_shape == shape
-                return False
-
-            for x in train_prog.list_vars():
-                if isinstance(x, fluid.framework.Parameter):
-                    shape = tuple(fluid.global_scope().find_var(
-                        x.name).get_tensor().shape())
-                    if var_shape_matched(x, shape):
-                        load_vars.append(x)
-                    else:
-                        load_fail_vars.append(x)
-
-            fluid.io.load_vars(
-                exe, dirname=cfg.TRAIN.PRETRAINED_MODEL_DIR, vars=load_vars)
-            for var in load_vars:
-                print_info("Parameter[{}] loaded sucessfully!".format(var.name))
-            for var in load_fail_vars:
-                print_info(
-                    "Parameter[{}] don't exist or shape does not match current network, skip"
-                    " to load it.".format(var.name))
-            print_info(
-                "{}/{} pretrained parameters loaded successfully!".format(
-                    len(load_vars),
-                    len(load_vars) + len(load_fail_vars)))
+            load_pretrained_weights(exe, train_prog,
+                                    cfg.TRAIN.PRETRAINED_MODEL_DIR)
         else:
             print_info(
                 'Pretrained model dir {} not exists, training from scratch...'.
@@ -419,8 +344,7 @@ def train(cfg):
                 except Exception as e:
                     print(e)
             if epoch > cfg.SLIM.NAS_START_EVAL_EPOCH:
-                ckpt_dir = save_checkpoint(exe, train_prog,
-                                           '{}_tmp'.format(port))
+                ckpt_dir = save_checkpoint(train_prog, '{}_tmp'.format(port))
                 _, mean_iou, _, mean_acc = evaluate(
                     cfg=cfg,
                     arch=arch,

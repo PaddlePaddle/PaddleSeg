@@ -1,5 +1,5 @@
 # coding: utf8
-# copyright (c) 2019 PaddlePaddle Authors. All Rights Reserve.
+# Copyright (c) 2019 PaddlePaddle Authors. All Rights Reserve.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -26,9 +26,7 @@ import argparse
 import pprint
 import random
 import shutil
-import functools
 
-import paddle
 import numpy as np
 import paddle.fluid as fluid
 from paddle.fluid import profiler
@@ -39,10 +37,10 @@ from metrics import ConfusionMatrix
 from reader import SegDataset
 from models.model_builder import build_model
 from models.model_builder import ModelPhase
-from models.model_builder import parse_shape_from_file
 from eval import evaluate
 from vis import visualize
 from utils import dist_utils
+from utils.load_model_utils import load_pretrained_weights
 
 
 def parse_args():
@@ -77,14 +75,14 @@ def parse_args():
         help='debug mode, display detail information of training',
         action='store_true')
     parser.add_argument(
-        '--use_tb',
-        dest='use_tb',
-        help='whether to record the data during training to Tensorboard',
+        '--use_vdl',
+        dest='use_vdl',
+        help='whether to record the data during training to VisualDL',
         action='store_true')
     parser.add_argument(
-        '--tb_log_dir',
-        dest='tb_log_dir',
-        help='Tensorboard logging directory',
+        '--vdl_log_dir',
+        dest='vdl_log_dir',
+        help='VisualDL logging directory',
         default=None,
         type=str)
     parser.add_argument(
@@ -118,38 +116,7 @@ def parse_args():
     return parser.parse_args()
 
 
-def save_vars(executor, dirname, program=None, vars=None):
-    """
-    Temporary resolution for Win save variables compatability.
-    Will fix in PaddlePaddle v1.5.2
-    """
-
-    save_program = fluid.Program()
-    save_block = save_program.global_block()
-
-    for each_var in vars:
-        # NOTE: don't save the variable which type is RAW
-        if each_var.type == fluid.core.VarDesc.VarType.RAW:
-            continue
-        new_var = save_block.create_var(
-            name=each_var.name,
-            shape=each_var.shape,
-            dtype=each_var.dtype,
-            type=each_var.type,
-            lod_level=each_var.lod_level,
-            persistable=True)
-        file_path = os.path.join(dirname, new_var.name)
-        file_path = os.path.normpath(file_path)
-        save_block.append_op(
-            type='save',
-            inputs={'X': [new_var]},
-            outputs={},
-            attrs={'file_path': file_path})
-
-    executor.run(save_program)
-
-
-def save_checkpoint(exe, program, ckpt_name):
+def save_checkpoint(program, ckpt_name):
     """
     Save checkpoint for evaluation or resume training
     """
@@ -158,29 +125,22 @@ def save_checkpoint(exe, program, ckpt_name):
     if not os.path.isdir(ckpt_dir):
         os.makedirs(ckpt_dir)
 
-    save_vars(
-        exe,
-        ckpt_dir,
-        program,
-        vars=list(filter(fluid.io.is_persistable, program.list_vars())))
+    fluid.save(program, os.path.join(ckpt_dir, 'model'))
 
     return ckpt_dir
 
 
 def load_checkpoint(exe, program):
     """
-    Load checkpoiont from pretrained model directory for resume training
+    Load checkpoiont for resuming training
     """
-
-    print('Resume model training from:', cfg.TRAIN.RESUME_MODEL_DIR)
-    if not os.path.exists(cfg.TRAIN.RESUME_MODEL_DIR):
-        raise ValueError("TRAIN.PRETRAIN_MODEL {} not exist!".format(
-            cfg.TRAIN.RESUME_MODEL_DIR))
-
-    fluid.io.load_persistables(
-        exe, cfg.TRAIN.RESUME_MODEL_DIR, main_program=program)
-
     model_path = cfg.TRAIN.RESUME_MODEL_DIR
+    print('Resume model training from:', model_path)
+    if not os.path.exists(model_path):
+        raise ValueError(
+            "TRAIN.PRETRAIN_MODEL {} not exist!".format(model_path))
+    fluid.load(program, os.path.join(model_path, 'model'), exe)
+
     # Check is path ended by path spearator
     if model_path[-1] == os.sep:
         model_path = model_path[0:-1]
@@ -195,7 +155,6 @@ def load_checkpoint(exe, program):
     else:
         raise ValueError("Resume model path is not valid!")
     print("Model checkpoint loaded successfully!")
-
     return begin_epoch
 
 
@@ -247,8 +206,6 @@ def train(cfg):
                 yield item[0], item[1], item[2]
 
     # Get device environment
-    # places = fluid.cuda_places() if args.use_gpu else fluid.cpu_places()
-    # place = places[0]
     gpu_id = int(os.environ.get('FLAGS_selected_gpus', 0))
     place = fluid.CUDAPlace(gpu_id) if args.use_gpu else fluid.CPUPlace()
     places = fluid.cuda_places() if args.use_gpu else fluid.cpu_places()
@@ -304,42 +261,7 @@ def train(cfg):
         begin_epoch = load_checkpoint(exe, train_prog)
     # Load pretrained model
     elif os.path.exists(cfg.TRAIN.PRETRAINED_MODEL_DIR):
-        print_info('Pretrained model dir: ', cfg.TRAIN.PRETRAINED_MODEL_DIR)
-        load_vars = []
-        load_fail_vars = []
-
-        def var_shape_matched(var, shape):
-            """
-            Check whehter persitable variable shape is match with current network
-            """
-            var_exist = os.path.exists(
-                os.path.join(cfg.TRAIN.PRETRAINED_MODEL_DIR, var.name))
-            if var_exist:
-                var_shape = parse_shape_from_file(
-                    os.path.join(cfg.TRAIN.PRETRAINED_MODEL_DIR, var.name))
-                return var_shape == shape
-            return False
-
-        for x in train_prog.list_vars():
-            if isinstance(x, fluid.framework.Parameter):
-                shape = tuple(fluid.global_scope().find_var(
-                    x.name).get_tensor().shape())
-                if var_shape_matched(x, shape):
-                    load_vars.append(x)
-                else:
-                    load_fail_vars.append(x)
-
-        fluid.io.load_vars(
-            exe, dirname=cfg.TRAIN.PRETRAINED_MODEL_DIR, vars=load_vars)
-        for var in load_vars:
-            print_info("Parameter[{}] loaded sucessfully!".format(var.name))
-        for var in load_fail_vars:
-            print_info(
-                "Parameter[{}] don't exist or shape does not match current network, skip"
-                " to load it.".format(var.name))
-        print_info("{}/{} pretrained parameters loaded successfully!".format(
-            len(load_vars),
-            len(load_vars) + len(load_fail_vars)))
+        load_pretrained_weights(exe, train_prog, cfg.TRAIN.PRETRAINED_MODEL_DIR)
     else:
         print_info(
             'Pretrained model dir {} not exists, training from scratch...'.
@@ -354,17 +276,17 @@ def train(cfg):
         fetch_list.extend([pred.name, grts.name, masks.name])
         cm = ConfusionMatrix(cfg.DATASET.NUM_CLASSES, streaming=True)
 
-    if args.use_tb:
-        if not args.tb_log_dir:
-            print_info("Please specify the log directory by --tb_log_dir.")
+    if args.use_vdl:
+        if not args.vdl_log_dir:
+            print_info("Please specify the log directory by --vdl_log_dir.")
             exit(1)
 
-        from tb_paddle import SummaryWriter
-        log_writer = SummaryWriter(args.tb_log_dir)
+        from visualdl import LogWriter
+        log_writer = LogWriter(args.vdl_log_dir)
 
     # trainer_id = int(os.getenv("PADDLE_TRAINER_ID", 0))
     # num_trainers = int(os.environ.get('PADDLE_TRAINERS_NUM', 1))
-    global_step = 0
+    step = 0
     all_step = cfg.DATASET.TRAIN_TOTAL_IMAGES // cfg.BATCH_SIZE
     if cfg.DATASET.TRAIN_TOTAL_IMAGES % cfg.BATCH_SIZE and drop_last != True:
         all_step += 1
@@ -398,9 +320,9 @@ def train(cfg):
                         return_numpy=True)
                     cm.calculate(pred, grts, masks)
                     avg_loss += np.mean(np.array(loss))
-                    global_step += 1
+                    step += 1
 
-                    if global_step % args.log_steps == 0:
+                    if step % args.log_steps == 0:
                         speed = args.log_steps / timer.elapsed_time()
                         avg_loss /= args.log_steps
                         category_acc, mean_acc = cm.accuracy()
@@ -408,22 +330,19 @@ def train(cfg):
 
                         print_info((
                             "epoch={} step={} lr={:.5f} loss={:.4f} acc={:.5f} mIoU={:.5f} step/sec={:.3f} | ETA {}"
-                        ).format(epoch, global_step, lr[0], avg_loss, mean_acc,
+                        ).format(epoch, step, lr[0], avg_loss, mean_acc,
                                  mean_iou, speed,
-                                 calculate_eta(all_step - global_step, speed)))
+                                 calculate_eta(all_step - step, speed)))
                         print_info("Category IoU: ", category_iou)
                         print_info("Category Acc: ", category_acc)
-                        if args.use_tb:
+                        if args.use_vdl:
                             log_writer.add_scalar('Train/mean_iou', mean_iou,
-                                                  global_step)
+                                                  step)
                             log_writer.add_scalar('Train/mean_acc', mean_acc,
-                                                  global_step)
-                            log_writer.add_scalar('Train/loss', avg_loss,
-                                                  global_step)
-                            log_writer.add_scalar('Train/lr', lr[0],
-                                                  global_step)
-                            log_writer.add_scalar('Train/step/sec', speed,
-                                                  global_step)
+                                                  step)
+                            log_writer.add_scalar('Train/loss', avg_loss, step)
+                            log_writer.add_scalar('Train/lr', lr[0], step)
+                            log_writer.add_scalar('Train/step/sec', speed, step)
                         sys.stdout.flush()
                         avg_loss = 0.0
                         cm.zero_matrix()
@@ -435,30 +354,27 @@ def train(cfg):
                         fetch_list=fetch_list,
                         return_numpy=True)
                     avg_loss += np.mean(np.array(loss))
-                    global_step += 1
+                    step += 1
 
-                    if global_step % args.log_steps == 0 and cfg.TRAINER_ID == 0:
+                    if step % args.log_steps == 0 and cfg.TRAINER_ID == 0:
                         avg_loss /= args.log_steps
                         speed = args.log_steps / timer.elapsed_time()
                         print((
                             "epoch={} step={} lr={:.5f} loss={:.4f} step/sec={:.3f} | ETA {}"
-                        ).format(epoch, global_step, lr[0], avg_loss, speed,
-                                 calculate_eta(all_step - global_step, speed)))
-                        if args.use_tb:
-                            log_writer.add_scalar('Train/loss', avg_loss,
-                                                  global_step)
-                            log_writer.add_scalar('Train/lr', lr[0],
-                                                  global_step)
-                            log_writer.add_scalar('Train/speed', speed,
-                                                  global_step)
+                        ).format(epoch, step, lr[0], avg_loss, speed,
+                                 calculate_eta(all_step - step, speed)))
+                        if args.use_vdl:
+                            log_writer.add_scalar('Train/loss', avg_loss, step)
+                            log_writer.add_scalar('Train/lr', lr[0], step)
+                            log_writer.add_scalar('Train/speed', speed, step)
                         sys.stdout.flush()
                         avg_loss = 0.0
                         timer.restart()
 
                     # NOTE : used for benchmark, profiler tools
-                    if args.is_profiler and epoch == 1 and global_step == args.log_steps:
+                    if args.is_profiler and epoch == 1 and step == args.log_steps:
                         profiler.start_profiler("All")
-                    elif args.is_profiler and epoch == 1 and global_step == args.log_steps + 5:
+                    elif args.is_profiler and epoch == 1 and step == args.log_steps + 5:
                         profiler.stop_profiler("total", args.profiler_path)
                         return
 
@@ -470,7 +386,7 @@ def train(cfg):
 
         if (epoch % cfg.TRAIN.SNAPSHOT_EPOCH == 0
                 or epoch == cfg.SOLVER.NUM_EPOCHS) and cfg.TRAINER_ID == 0:
-            ckpt_dir = save_checkpoint(exe, train_prog, epoch)
+            ckpt_dir = save_checkpoint(train_prog, epoch)
 
             if args.do_eval:
                 print("Evaluation start")
@@ -479,11 +395,9 @@ def train(cfg):
                     ckpt_dir=ckpt_dir,
                     use_gpu=args.use_gpu,
                     use_mpio=args.use_mpio)
-                if args.use_tb:
-                    log_writer.add_scalar('Evaluate/mean_iou', mean_iou,
-                                          global_step)
-                    log_writer.add_scalar('Evaluate/mean_acc', mean_acc,
-                                          global_step)
+                if args.use_vdl:
+                    log_writer.add_scalar('Evaluate/mean_iou', mean_iou, step)
+                    log_writer.add_scalar('Evaluate/mean_acc', mean_acc, step)
 
                 if mean_iou > best_mIoU:
                     best_mIoU = mean_iou
@@ -493,8 +407,8 @@ def train(cfg):
                         os.path.join(cfg.TRAIN.MODEL_SAVE_DIR, 'best_model'),
                         mean_iou))
 
-            # Use Tensorboard to visualize results
-            if args.use_tb and cfg.DATASET.VIS_FILE_LIST is not None:
+            # Use VisualDL to visualize results
+            if args.use_vdl and cfg.DATASET.VIS_FILE_LIST is not None:
                 visualize(
                     cfg=cfg,
                     use_gpu=args.use_gpu,
@@ -505,7 +419,7 @@ def train(cfg):
 
     # save final model
     if cfg.TRAINER_ID == 0:
-        save_checkpoint(exe, train_prog, 'final')
+        save_checkpoint(train_prog, 'final')
 
 
 def main(args):

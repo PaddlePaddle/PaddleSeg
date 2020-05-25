@@ -1,14 +1,14 @@
-# PaddleSeg 图像分割库
+# PaddleSeg
 
 [![Build Status](https://travis-ci.org/PaddlePaddle/PaddleSeg.svg?branch=master)](https://travis-ci.org/PaddlePaddle/PaddleSeg)
 [![License](https://img.shields.io/badge/license-Apache%202-blue.svg)](LICENSE)
 [![Version](https://img.shields.io/github/release/PaddlePaddle/PaddleSeg.svg)](https://github.com/PaddlePaddle/PaddleSeg/releases)
+![python version](https://img.shields.io/badge/python-3.6+-orange.svg)
+![support os](https://img.shields.io/badge/os-linux%2C%20win%2C%20mac-yellow.svg)
 
 ## 简介
 
-PaddleSeg是基于[PaddlePaddle](https://www.paddlepaddle.org.cn)开发的语义分割库，覆盖了DeepLabv3+, U-Net, ICNet, PSPNet, HRNet, Fast-SCNN等主流分割模型。通过统一的配置，帮助用户更便捷地完成从训练到部署的全流程图像分割应用。
-
-</br>
+PaddleSeg是基于[PaddlePaddle](https://www.paddlepaddle.org.cn)开发的端到端图像分割开发套件，覆盖了DeepLabv3+, U-Net, ICNet, PSPNet, HRNet, Fast-SCNN等主流分割网络。通过模块化的设计，以配置化方式驱动模型组合，帮助开发者更便捷地完成从训练到部署的全流程图像分割应用。
 
 - [特点](#特点) 
 - [安装](#安装)
@@ -23,8 +23,6 @@ PaddleSeg是基于[PaddlePaddle](https://www.paddlepaddle.org.cn)开发的语义
 - [更新日志](#更新日志)
 - [贡献代码](#贡献代码)
 
-</br>
-
 ## 特点
 
 - **丰富的数据增强**
@@ -37,19 +35,23 @@ PaddleSeg是基于[PaddlePaddle](https://www.paddlepaddle.org.cn)开发的语义
 
 - **高性能**
 
-PaddleSeg支持多进程I/O、多卡并行、跨卡Batch Norm同步等训练加速策略，结合飞桨核心框架的显存优化功能，可大幅度减少分割模型的显存开销，让开发者更低成本、更高效地完成图像分割训练。
+PaddleSeg支持多进程I/O、多卡并行等训练加速策略，结合飞桨核心框架的显存优化功能，可大幅度减少分割模型的显存开销，让开发者更低成本、更高效地完成图像分割训练。
 
 - **工业级部署**
 
 全面提供**服务端**和**移动端**的工业级部署能力，依托飞桨高性能推理引擎和高性能图像处理实现，开发者可以轻松完成高性能的分割模型部署和集成。通过[Paddle-Lite](https://github.com/PaddlePaddle/Paddle-Lite)，可以在移动设备或者嵌入式设备上完成轻量级、高性能的人像分割模型部署。
+
+- **产业实践案例**
+
+PaddleSeg提供丰富地产业实践案例，如[人像分割](./contrib/HumanSeg)、[工业表计检测](https://github.com/PaddlePaddle/PaddleSeg/tree/develop/contrib#%E5%B7%A5%E4%B8%9A%E8%A1%A8%E7%9B%98%E5%88%86%E5%89%B2)、[遥感分割](./contrib/RemoteSensing)、[人体解析](contrib/ACE2P)，[工业质检](https://aistudio.baidu.com/aistudio/projectdetail/184392)等产业实践案例，助力开发者更便捷地落地图像分割技术。
 
 ## 安装
 
 ### 1. 安装PaddlePaddle
 
 版本要求
-* PaddlePaddle >= 1.6.1
-* Python 2.7 or 3.5+
+* PaddlePaddle >= 1.7.0
+* Python >= 3.5+
 
 由于图像分割模型计算开销大，推荐在GPU版本的PaddlePaddle下使用PaddleSeg.
 ```
@@ -69,8 +71,6 @@ git clone https://github.com/PaddlePaddle/PaddleSeg
 cd PaddleSeg
 pip install -r requirements.txt
 ```
-
-</br>
 
 ## 使用教程
 
@@ -121,10 +121,8 @@ pip install -r requirements.txt
 |U-Net图像分割|[点击体验](https://aistudio.baidu.com/aistudio/projectDetail/102889)|
 |DeepLabv3+图像分割|[点击体验](https://aistudio.baidu.com/aistudio/projectDetail/226703)|
 |工业质检（零件瑕疵检测）|[点击体验](https://aistudio.baidu.com/aistudio/projectdetail/184392)|
-|人像分割|[点击体验](https://aistudio.baidu.com/aistudio/projectdetail/188833)|
+|人像分割|[点击体验](https://aistudio.baidu.com/aistudio/projectdetail/475345)|
 |PaddleSeg特色垂类模型|[点击体验](https://aistudio.baidu.com/aistudio/projectdetail/226710)|
-
-</br>
 
 ## FAQ
 
@@ -148,26 +146,28 @@ python pdseg/train.py --cfg xxx.yaml TRAIN.RESUME_MODEL_DIR /PATH/TO/MODEL_CKPT/
 A: 降低Batch size，使用Group Norm策略；请注意训练过程中当`DEFAULT_NORM_TYPE`选择`bn`时，为了Batch Norm计算稳定性，batch size需要满足>=2
 
 
-#### Q: 出现错误 ModuleNotFoundError: No module named 'paddle.fluid.contrib.mixed_precision'
-
-A: 请将PaddlePaddle升级至1.5.2版本或以上。
-
-</br>
-
 ## 交流与反馈
 * 欢迎您通过[Github Issues](https://github.com/PaddlePaddle/PaddleSeg/issues)来提交问题、报告与建议
 * 微信公众号：飞桨PaddlePaddle
-* QQ群: 796771754
+* QQ群: 703252161
 
 <p align="center"><img width="200" height="200"  src="https://user-images.githubusercontent.com/45189361/64117959-1969de80-cdc9-11e9-84f7-e1c2849a004c.jpeg"/>&#8194;&#8194;&#8194;&#8194;&#8194;<img width="200" height="200" margin="500" src="./docs/imgs/qq_group2.png"/></p>
 <p align="center">  &#8194;&#8194;&#8194;微信公众号&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;官方技术交流QQ群</p>
 
 ## 更新日志
+* 2020.05.12
+
+  **`v0.5.0`**
+  * 全面升级[HumanSeg人像分割模型](./contrib/HumanSeg)，新增超轻量级人像分割模型HumanSeg-lite支持移动端实时人像分割处理，并提供基于光流的视频分割后处理提升分割流畅性。
+  * 新增[气象遥感分割方案](./contrib/RemoteSensing)，支持积雪识别、云检测等气象遥感场景。
+  * 新增[Lovasz Loss](docs/lovasz_loss.md)，解决数据类别不均衡问题。
+  * 使用VisualDL 2.0作为训练可视化工具
+  
 * 2020.02.25
 
   **`v0.4.0`**
-  * 新增适用于实时场景且不需要预训练模型的分割网络Fast-SCNN，提供基于Cityscapes的[预训练模型](./docs/model_zoo.md)1个。
-  * 新增LaneNet车道线检测网络，提供[预训练模型](https://github.com/PaddlePaddle/PaddleSeg/tree/release/v0.4.0/contrib/LaneNet#%E4%B8%83-%E5%8F%AF%E8%A7%86%E5%8C%96)一个。
+  * 新增适用于实时场景且不需要预训练模型的分割网络Fast-SCNN，提供基于Cityscapes的[预训练模型](./docs/model_zoo.md)1个
+  * 新增LaneNet车道线检测网络，提供[预训练模型](https://github.com/PaddlePaddle/PaddleSeg/tree/release/v0.4.0/contrib/LaneNet#%E4%B8%83-%E5%8F%AF%E8%A7%86%E5%8C%96)一个
   * 新增基于PaddleSlim的分割库压缩策略([量化](./slim/quantization/README.md), [蒸馏](./slim/distillation/README.md), [剪枝](./slim/prune/README.md), [搜索](./slim/nas/README.md))
   
   
@@ -203,4 +203,4 @@ A: 请将PaddlePaddle升级至1.5.2版本或以上。
 
 ## 贡献代码
 
-我们非常欢迎您为PaddleSeg贡献代码或者提供使用建议。如果您可以修复某个issue或者增加一个新功能，欢迎给我们提交pull requests.
+我们非常欢迎您为PaddleSeg贡献代码或者提供使用建议。如果您可以修复某个issue或者增加一个新功能，欢迎给我们提交Pull Requests.
