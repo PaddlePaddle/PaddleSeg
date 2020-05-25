@@ -1,5 +1,18 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
+# coding: utf8
+# Copyright (c) 2019 PaddlePaddle Authors. All Rights Reserve.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 # this code heavily base on https://github.com/MaybeShewill-CV/lanenet-lane-detection/blob/master/lanenet_model/lanenet_postprocess.py
 """
 LaneNet model post process
@@ -22,12 +35,14 @@ def _morphological_process(image, kernel_size=5):
     :return:
     """
     if len(image.shape) == 3:
-        raise ValueError('Binary segmentation result image should be a single channel image')
+        raise ValueError(
+            'Binary segmentation result image should be a single channel image')
 
     if image.dtype is not np.uint8:
         image = np.array(image, np.uint8)
 
-    kernel = cv2.getStructuringElement(shape=cv2.MORPH_ELLIPSE, ksize=(kernel_size, kernel_size))
+    kernel = cv2.getStructuringElement(
+        shape=cv2.MORPH_ELLIPSE, ksize=(kernel_size, kernel_size))
 
     # close operation fille hole
     closing = cv2.morphologyEx(image, cv2.MORPH_CLOSE, kernel, iterations=1)
@@ -46,13 +61,15 @@ def _connect_components_analysis(image):
     else:
         gray_image = image
 
-    return cv2.connectedComponentsWithStats(gray_image, connectivity=8, ltype=cv2.CV_32S)
+    return cv2.connectedComponentsWithStats(
+        gray_image, connectivity=8, ltype=cv2.CV_32S)
 
 
 class _LaneFeat(object):
     """
 
     """
+
     def __init__(self, feat, coord, class_id=-1):
         """
         lane feat object
@@ -108,18 +125,21 @@ class _LaneNetCluster(object):
     """
      Instance segmentation result cluster
     """
+
     def __init__(self):
         """
 
         """
-        self._color_map = [np.array([255, 0, 0]),
-                           np.array([0, 255, 0]),
-                           np.array([0, 0, 255]),
-                           np.array([125, 125, 0]),
-                           np.array([0, 125, 125]),
-                           np.array([125, 0, 125]),
-                           np.array([50, 100, 50]),
-                           np.array([100, 50, 100])]
+        self._color_map = [
+            np.array([255, 0, 0]),
+            np.array([0, 255, 0]),
+            np.array([0, 0, 255]),
+            np.array([125, 125, 0]),
+            np.array([0, 125, 125]),
+            np.array([125, 0, 125]),
+            np.array([50, 100, 50]),
+            np.array([100, 50, 100])
+        ]
 
     @staticmethod
     def _embedding_feats_dbscan_cluster(embedding_image_feats):
@@ -186,15 +206,16 @@ class _LaneNetCluster(object):
         # get embedding feats and coords
         get_lane_embedding_feats_result = self._get_lane_embedding_feats(
             binary_seg_ret=binary_seg_result,
-            instance_seg_ret=instance_seg_result
-        )
+            instance_seg_ret=instance_seg_result)
 
         # dbscan cluster
         dbscan_cluster_result = self._embedding_feats_dbscan_cluster(
-            embedding_image_feats=get_lane_embedding_feats_result['lane_embedding_feats']
-        )
+            embedding_image_feats=get_lane_embedding_feats_result[
+                'lane_embedding_feats'])
 
-        mask = np.zeros(shape=[binary_seg_result.shape[0], binary_seg_result.shape[1], 3], dtype=np.uint8)
+        mask = np.zeros(
+            shape=[binary_seg_result.shape[0], binary_seg_result.shape[1], 3],
+            dtype=np.uint8)
         db_labels = dbscan_cluster_result['db_labels']
         unique_labels = dbscan_cluster_result['unique_labels']
         coord = get_lane_embedding_feats_result['lane_coordinates']
@@ -219,11 +240,13 @@ class LaneNetPostProcessor(object):
     """
     lanenet post process for lane generation
     """
+
     def __init__(self, ipm_remap_file_path='./utils/tusimple_ipm_remap.yml'):
         """
         convert front car view to bird view
         """
-        assert ops.exists(ipm_remap_file_path), '{:s} not exist'.format(ipm_remap_file_path)
+        assert ops.exists(ipm_remap_file_path), '{:s} not exist'.format(
+            ipm_remap_file_path)
 
         self._cluster = _LaneNetCluster()
         self._ipm_remap_file_path = ipm_remap_file_path
@@ -232,14 +255,16 @@ class LaneNetPostProcessor(object):
         self._remap_to_ipm_x = remap_file_load_ret['remap_to_ipm_x']
         self._remap_to_ipm_y = remap_file_load_ret['remap_to_ipm_y']
 
-        self._color_map = [np.array([255, 0, 0]),
-                           np.array([0, 255, 0]),
-                           np.array([0, 0, 255]),
-                           np.array([125, 125, 0]),
-                           np.array([0, 125, 125]),
-                           np.array([125, 0, 125]),
-                           np.array([50, 100, 50]),
-                           np.array([100, 50, 100])]
+        self._color_map = [
+            np.array([255, 0, 0]),
+            np.array([0, 255, 0]),
+            np.array([0, 0, 255]),
+            np.array([125, 125, 0]),
+            np.array([0, 125, 125]),
+            np.array([125, 0, 125]),
+            np.array([50, 100, 50]),
+            np.array([100, 50, 100])
+        ]
 
     def _load_remap_matrix(self):
         fs = cv2.FileStorage(self._ipm_remap_file_path, cv2.FILE_STORAGE_READ)
@@ -256,15 +281,20 @@ class LaneNetPostProcessor(object):
 
         return ret
 
-    def postprocess(self, binary_seg_result, instance_seg_result=None,
-                    min_area_threshold=100, source_image=None,
+    def postprocess(self,
+                    binary_seg_result,
+                    instance_seg_result=None,
+                    min_area_threshold=100,
+                    source_image=None,
                     data_source='tusimple'):
 
         # convert binary_seg_result
         binary_seg_result = np.array(binary_seg_result * 255, dtype=np.uint8)
         # apply image morphology operation to fill in the hold and reduce the small area
-        morphological_ret = _morphological_process(binary_seg_result, kernel_size=5)
-        connect_components_analysis_ret = _connect_components_analysis(image=morphological_ret)
+        morphological_ret = _morphological_process(
+            binary_seg_result, kernel_size=5)
+        connect_components_analysis_ret = _connect_components_analysis(
+            image=morphological_ret)
 
         labels = connect_components_analysis_ret[1]
         stats = connect_components_analysis_ret[2]
@@ -276,8 +306,7 @@ class LaneNetPostProcessor(object):
         # apply embedding features cluster
         mask_image, lane_coords = self._cluster.apply_lane_feats_cluster(
             binary_seg_result=morphological_ret,
-            instance_seg_result=instance_seg_result
-        )
+            instance_seg_result=instance_seg_result)
 
         if mask_image is None:
             return {
@@ -292,15 +321,15 @@ class LaneNetPostProcessor(object):
         for lane_index, coords in enumerate(lane_coords):
             if data_source == 'tusimple':
                 tmp_mask = np.zeros(shape=(720, 1280), dtype=np.uint8)
-                tmp_mask[tuple((np.int_(coords[:, 1] * 720 / 256), np.int_(coords[:, 0] * 1280 / 512)))] = 255
+                tmp_mask[tuple((np.int_(coords[:, 1] * 720 / 256),
+                                np.int_(coords[:, 0] * 1280 / 512)))] = 255
             else:
                 raise ValueError('Wrong data source now only support tusimple')
             tmp_ipm_mask = cv2.remap(
                 tmp_mask,
                 self._remap_to_ipm_x,
                 self._remap_to_ipm_y,
-                interpolation=cv2.INTER_NEAREST
-            )
+                interpolation=cv2.INTER_NEAREST)
             nonzero_y = np.array(tmp_ipm_mask.nonzero()[0])
             nonzero_x = np.array(tmp_ipm_mask.nonzero()[1])
 
@@ -309,16 +338,19 @@ class LaneNetPostProcessor(object):
 
             [ipm_image_height, ipm_image_width] = tmp_ipm_mask.shape
             plot_y = np.linspace(10, ipm_image_height, ipm_image_height - 10)
-            fit_x = fit_param[0] * plot_y ** 2 + fit_param[1] * plot_y + fit_param[2]
+            fit_x = fit_param[0] * plot_y**2 + fit_param[
+                1] * plot_y + fit_param[2]
 
             lane_pts = []
             for index in range(0, plot_y.shape[0], 5):
                 src_x = self._remap_to_ipm_x[
-                    int(plot_y[index]), int(np.clip(fit_x[index], 0, ipm_image_width - 1))]
+                    int(plot_y[index]),
+                    int(np.clip(fit_x[index], 0, ipm_image_width - 1))]
                 if src_x <= 0:
                     continue
                 src_y = self._remap_to_ipm_y[
-                    int(plot_y[index]), int(np.clip(fit_x[index], 0, ipm_image_width - 1))]
+                    int(plot_y[index]),
+                    int(np.clip(fit_x[index], 0, ipm_image_width - 1))]
                 src_y = src_y if src_y > 0 else 0
 
                 lane_pts.append([src_x, src_y])
@@ -366,8 +398,10 @@ class LaneNetPostProcessor(object):
                     continue
 
                 lane_color = self._color_map[index].tolist()
-                cv2.circle(source_image, (int(interpolation_src_pt_x),
-                                          int(interpolation_src_pt_y)), 5, lane_color, -1)
+                cv2.circle(
+                    source_image,
+                    (int(interpolation_src_pt_x), int(interpolation_src_pt_y)),
+                    5, lane_color, -1)
         ret = {
             'mask_image': mask_image,
             'fit_params': fit_params,
