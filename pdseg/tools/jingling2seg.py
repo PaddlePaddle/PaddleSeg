@@ -20,34 +20,11 @@ import glob
 import json
 import os
 import os.path as osp
-
 import numpy as np
 import PIL.Image
-import labelme
 
-from gray2pseudo_color import get_color_map_list
-
-
-def get_color_map_list(num_classes):
-    """ Returns the color map for visualizing the segmentation mask,
-        which can support arbitrary number of classes.
-    Args:
-        num_classes: Number of classes
-    Returns:
-        The color map
-    """
-    color_map = num_classes * [0, 0, 0]
-    for i in range(0, num_classes):
-        j = 0
-        lab = i
-        while lab:
-            color_map[i * 3] |= (((lab >> 0) & 1) << (7 - j))
-            color_map[i * 3 + 1] |= (((lab >> 1) & 1) << (7 - j))
-            color_map[i * 3 + 2] |= (((lab >> 2) & 1) << (7 - j))
-            j += 1
-            lab >>= 3
-
-    return color_map
+from .gray2pseudo_color import get_color_map_list
+from .labelme2seg import graphs2label
 
 
 def parse_args():
@@ -124,10 +101,10 @@ def main(args):
             img_shape = (data_size['height'], data_size['width'],
                          data_size['depth'])
 
-            lbl, _ = labelme.utils.shapes_to_label(
-                img_shape=img_shape,
-                shapes=data_shapes,
-                label_name_to_value=class_name_to_id,
+            lbl = graphs2label(
+                img_size=img_shape,
+                graphs=data_shapes,
+                class_name_mapping=class_name_to_id,
             )
 
             if osp.splitext(out_png_file)[1] != '.png':

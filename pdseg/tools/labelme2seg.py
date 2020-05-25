@@ -20,35 +20,13 @@ import glob
 import json
 import os
 import os.path as osp
-
 import numpy as np
 import PIL.Image
-import labelme
+import PIL.ImageDraw
 import cv2
+import math
 
-from gray2pseudo_color import get_color_map_list
-
-
-def get_color_map_list(num_classes):
-    """ Returns the color map for visualizing the segmentation mask,
-        which can support arbitrary number of classes.
-    Args:
-        num_classes: Number of classes
-    Returns:
-        The color map
-    """
-    color_map = num_classes * [0, 0, 0]
-    for i in range(0, num_classes):
-        j = 0
-        lab = i
-        while lab:
-            color_map[i * 3] |= (((lab >> 0) & 1) << (7 - j))
-            color_map[i * 3 + 1] |= (((lab >> 1) & 1) << (7 - j))
-            color_map[i * 3 + 2] |= (((lab >> 2) & 1) << (7 - j))
-            j += 1
-            lab >>= 3
-
-    return color_map
+from .gray2pseudo_color import get_color_map_list
 
 
 def parse_args():
@@ -100,15 +78,12 @@ def main(args):
             data = json.load(f)
 
             img_file = osp.join(osp.dirname(label_file), data['imagePath'])
-            img = np.asarray(PIL.Image.open(img_file))
+            img = np.asarray(cv2.imread(img_file))
 
-            import cv2
-            img2 = np.asarray(cv2.imread(img_file))
-
-            lbl, _ = labelme.utils.shapes_to_label(
-                img_shape=img.shape,
-                shapes=data['shapes'],
-                label_name_to_value=class_name_to_id,
+            lbl = graphs2label(
+                img_size=img.shape,
+                graphs=data['shapes'],
+                class_name_mapping=class_name_to_id,
             )
 
             if osp.splitext(out_png_file)[1] != '.png':
@@ -124,13 +99,52 @@ def main(args):
                     'Please consider using the .npy format.' % out_png_file)
 
 
-if __name__ == '__main__':
-    # args = parse_args()
-    # main(args)
+def graph2mask(img_size, points, graph_type=None, point_size=6, line_width=9):
+    label_mask = PIL.Image.fromarray(np.zeros(img_size[:2], dtype=np.uint8))
+    image_draw = PIL.ImageDraw.Draw(label_mask)
+    points_list = [tuple(point) for point in points]
+    if graph_type == 'rectangle':
+        assert len(points_list
+                   ) == 2, 'Shape of graph_type=rectangle must have 2 points'
+        image_draw.rectangle(points_list, outline=1, fill=1)
+    elif graph_type == 'line':
+        assert len(
+            points_list) == 2, 'Shape of graph_type=line must have 2 points'
+        image_draw.line(xy=points_list, fill=1, width=line_width)
+    elif graph_type == 'linestrip':
+        image_draw.line(xy=points_list, fill=1, width=line_width)
+    elif graph_type == 'circle':
+        assert len(
+            points_list) == 2, 'Shape of graph_type=circle must have 2 points'
+        (cx, cy), (px, py) = points_list
+        d = math.sqrt((cx - px)**2 + (cy - py)**2)
+        image_draw.ellipse([cx - d, cy - d, cx + d, cy + d], outline=1, fill=1)
+    elif graph_type == 'point':
+        assert len(
+            points_list) == 1, 'Shape of graph_type=point must have 1 points'
+        cx, cy = points_list[0]
+        r = point_size
+        image_draw.ellipse([cx - r, cy - r, cx + r, cy + r], outline=1, fill=1)
+    else:
+        assert len(points_list) > 2, 'Polygon must have points more than 2'
+        image_draw.polygon(xy=points_list, outline=1, fill=1)
+    return np.array(label_mask, dtype=bool)
 
-    # debug code
-    args = argparse.ArgumentParser(
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    args.input_dir = '/Users/chulutao/Downloads/test'
-    # args.input_dir = 'docs/annotation/labelme_demo/'
+
+def graphs2label(img_size, graphs, class_name_mapping):
+    label = np.zeros(img_size[:2], dtype=np.int32)
+    for graph in graphs:
+        points = graph['points']
+        class_name = graph['label']
+        graph_type = graph.get('shape_type', None)
+
+        class_id = class_name_mapping[class_name]
+
+        label_mask = graph2mask(img_size[:2], points, graph_type)
+        label[label_mask] = class_id
+    return label
+
+
+if __name__ == '__main__':
+    args = parse_args()
     main(args)
