@@ -25,6 +25,7 @@ import time
 import tqdm
 import cv2
 import yaml
+import shutil
 import paddleslim as slim
 
 import utils
@@ -293,7 +294,7 @@ class SegModel(object):
                            save_dir=None,
                            batch_size=1,
                            batch_nums=10,
-                           cache_dir="./.temp",
+                           cache_dir=".temp",
                            quant_type="offline"):
         if quant_type == "offline":
             self.arrange_transform(transforms=dataset.transforms, mode='quant')
@@ -324,7 +325,7 @@ class SegModel(object):
             post_training_quantization.quantize()
             post_training_quantization.save_quantized_model(save_dir)
             if cache_dir is not None:
-                os.system('rm -r ' + cache_dir)
+                shutil.rmtree(cache_dir)
         else:
             float_prog, _ = slim.quant.convert(
                 self.test_prog, self.exe.place, save_int8=True)
