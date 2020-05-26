@@ -1,5 +1,5 @@
 # coding: utf8
-# copyright (c) 2019 PaddlePaddle Authors. All Rights Reserve.
+# Copyright (c) 2019 PaddlePaddle Authors. All Rights Reserve.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ from models.libs.model_libs import separate_conv
 from models.backbone.mobilenet_v2 import MobileNetV2 as mobilenet_backbone
 from models.backbone.xception import Xception as xception_backbone
 
+
 def encoder(input):
     # 编码器配置，采用ASPP架构，pooling + 1x1_conv + 三个不同尺度的空洞卷积并行, concat后1x1conv
     # ASPP_WITH_SEP_CONV：默认为真，使用depthwise可分离卷积，否则使用普通卷积
@@ -47,8 +48,7 @@ def encoder(input):
     with scope('encoder'):
         channel = 256
         with scope("image_pool"):
-            image_avg = fluid.layers.reduce_mean(
-                input, [2, 3], keep_dim=True)
+            image_avg = fluid.layers.reduce_mean(input, [2, 3], keep_dim=True)
             image_avg = bn_relu(
                 conv(
                     image_avg,
@@ -191,7 +191,10 @@ def nas_backbone(input, arch):
     end_points = 8
     decode_point = 3
     data, decode_shortcuts = arch(
-        input, end_points=end_points, return_block=decode_point, output_stride=16)
+        input,
+        end_points=end_points,
+        return_block=decode_point,
+        output_stride=16)
     decode_shortcut = decode_shortcuts[decode_point]
     return data, decode_shortcut
 

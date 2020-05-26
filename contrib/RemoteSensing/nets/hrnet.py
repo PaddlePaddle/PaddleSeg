@@ -1,5 +1,5 @@
 # coding: utf8
-# Copyright (c) 2019 PaddlePaddle Authors. All Rights Reserve.
+# copyright (c) 2020 PaddlePaddle Authors. All Rights Reserve.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -22,15 +22,16 @@ from collections import OrderedDict
 import paddle.fluid as fluid
 from paddle.fluid.initializer import MSRA
 from paddle.fluid.param_attr import ParamAttr
-from .seg_modules import softmax_with_loss
-from .seg_modules import dice_loss
-from .seg_modules import bce_loss
+from .loss import softmax_with_loss
+from .loss import dice_loss
+from .loss import bce_loss
 from .libs import sigmoid_to_softmax
 
 
 class HRNet(object):
     def __init__(self,
                  num_classes,
+                 input_channel=3,
                  mode='train',
                  stage1_num_modules=1,
                  stage1_num_blocks=[4],
@@ -70,6 +71,7 @@ class HRNet(object):
                     format(type(class_weight)))
 
         self.num_classes = num_classes
+        self.input_channel = input_channel
         self.mode = mode
         self.use_bce_loss = use_bce_loss
         self.use_dice_loss = use_dice_loss
@@ -119,7 +121,9 @@ class HRNet(object):
     def generate_inputs(self):
         inputs = OrderedDict()
         inputs['image'] = fluid.data(
-            dtype='float32', shape=[None, 3, None, None], name='image')
+            dtype='float32',
+            shape=[None, self.input_channel, None, None],
+            name='image')
         if self.mode == 'train':
             inputs['label'] = fluid.data(
                 dtype='int32', shape=[None, 1, None, None], name='label')

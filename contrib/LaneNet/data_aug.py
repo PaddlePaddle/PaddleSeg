@@ -1,5 +1,5 @@
 # coding: utf8
-# copyright (c) 2019 PaddlePaddle Authors. All Rights Reserve.
+# Copyright (c) 2019 PaddlePaddle Authors. All Rights Reserve.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ from utils.config import cfg
 from models.model_builder import ModelPhase
 from pdseg.data_aug import get_random_scale, randomly_scale_image_and_label, random_rotation, \
     rand_scale_aspect, hsv_color_jitter, rand_crop
+
 
 def resize(img, grt=None, grt_instance=None, mode=ModelPhase.TRAIN):
     """
@@ -44,7 +45,8 @@ def resize(img, grt=None, grt_instance=None, mode=ModelPhase.TRAIN):
         if grt is not None:
             grt = cv2.resize(grt, target_size, interpolation=cv2.INTER_NEAREST)
         if grt_instance is not None:
-            grt_instance = cv2.resize(grt_instance, target_size, interpolation=cv2.INTER_NEAREST)
+            grt_instance = cv2.resize(
+                grt_instance, target_size, interpolation=cv2.INTER_NEAREST)
     elif cfg.AUG.AUG_METHOD == 'stepscaling':
         if mode == ModelPhase.TRAIN:
             min_scale_factor = cfg.AUG.MIN_SCALE_FACTOR

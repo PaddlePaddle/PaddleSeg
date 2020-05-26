@@ -1,5 +1,5 @@
 # coding: utf8
-# copyright (c) 2019 PaddlePaddle Authors. All Rights Reserve.
+# Copyright (c) 2019 PaddlePaddle Authors. All Rights Reserve.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -71,7 +71,8 @@ class SegDataset(object):
         if self.shuffle and cfg.NUM_TRAINERS > 1:
             np.random.RandomState(self.shuffle_seed).shuffle(self.all_lines)
             num_lines = len(self.all_lines) // cfg.NUM_TRAINERS
-            self.lines = self.all_lines[num_lines * cfg.TRAINER_ID: num_lines * (cfg.TRAINER_ID + 1)]
+            self.lines = self.all_lines[num_lines * cfg.TRAINER_ID:num_lines *
+                                        (cfg.TRAINER_ID + 1)]
             self.shuffle_seed += 1
         elif self.shuffle:
             np.random.shuffle(self.lines)
@@ -99,7 +100,8 @@ class SegDataset(object):
         if self.shuffle and cfg.NUM_TRAINERS > 1:
             np.random.RandomState(self.shuffle_seed).shuffle(self.all_lines)
             num_lines = len(self.all_lines) // cfg.NUM_TRAINERS
-            self.lines = self.all_lines[num_lines * cfg.TRAINER_ID: num_lines * (cfg.TRAINER_ID + 1)]
+            self.lines = self.all_lines[num_lines * cfg.TRAINER_ID:num_lines *
+                                        (cfg.TRAINER_ID + 1)]
             self.shuffle_seed += 1
         elif self.shuffle:
             np.random.shuffle(self.lines)

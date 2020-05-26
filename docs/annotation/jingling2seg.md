@@ -59,16 +59,16 @@
 * 经过数据格式转换后的数据集目录结构如下：
 
  ```
- my_dataset                 # 根目录 
+ my_dataset                 # 根目录
  |-- outputs                # 标注工具导出目录
- |   |-- annotations            # 数据集真值 
- |       |-- xxx.png            # 像素级别的真值信息 
- |       |... 
+ |   |-- annotations            # 数据集真值
+ |       |-- xxx.png            # 像素级别的真值信息
+ |       |...
  |   |-- class_names.txt        # 数据集的类别名称
  |   |-- xxx.json               # 标注json文件
  |-- xxx.jpg(png or other)  # 数据集原图
  |-- ...
- 
+
  ```
 
 <div align="center">
@@ -76,16 +76,10 @@
     <p>图5 格式转换后的数据集目录的结构示意图</p>
  </div>
 
-* 运行转换脚本需要依赖labelme和pillow，如未安装，请先安装。Labelme的具体安装流程请参见[官方安装指南](https://github.com/wkentaro/labelme)。Pillow的安装：
-
-```shell
-pip install pillow
-```
-
 * 运行以下代码，将标注后的数据转换成满足以上格式的数据集：
 
 ```
-python pdseg/tools/jingling2seg.py <PATH/TO/LABEL_JSON_FILE> 
+python pdseg/tools/jingling2seg.py <PATH/TO/LABEL_JSON_FILE>
 ```
 
 其中，`<PATH/TO/LABEL_JSON_FILE>`为精灵标注产出的json文件所在文件夹的目录，一般为精灵工具使用（3）中`保存位置`下的`outputs`目录。
@@ -101,4 +95,4 @@ python pdseg/tools/jingling2seg.py docs/annotation/jingling_demo/outputs/
 <div align="center">
     <img src="../imgs/annotation/jingling-5.png" width="600px"/>
     <p>图6 格式转换后的数据集各目录的内容示意图</p>
- </div>	
+ </div>

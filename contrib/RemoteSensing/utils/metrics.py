@@ -1,5 +1,5 @@
 # coding: utf8
-# copyright (c) 2019 PaddlePaddle Authors. All Rights Reserve.
+# Copyright (c) 2019 PaddlePaddle Authors. All Rights Reserve.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -143,3 +143,14 @@ class ConfusionMatrix(object):
 
         kappa = (po - pe) / (1 - pe)
         return kappa
+
+    def precision_recall(self):
+        '''
+        precision, recall of foreground(value=1) for 2 categories
+        '''
+        TP = self.confusion_matrix[1, 1]
+        FN = self.confusion_matrix[1, 0]
+        FP = self.confusion_matrix[0, 1]
+        recall = TP / (TP + FN)
+        precision = TP / (TP + FP)
+        return precision, recall
