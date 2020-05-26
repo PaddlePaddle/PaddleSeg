@@ -20,12 +20,11 @@ import glob
 import json
 import os
 import os.path as osp
-
 import numpy as np
 import PIL.Image
-import labelme
 
 from gray2pseudo_color import get_color_map_list
+from labelme2seg import shape2label
 
 
 def parse_args():
@@ -102,10 +101,10 @@ def main(args):
             img_shape = (data_size['height'], data_size['width'],
                          data_size['depth'])
 
-            lbl = labelme.utils.shapes_to_label(
-                img_shape=img_shape,
+            lbl = shape2label(
+                img_size=img_shape,
                 shapes=data_shapes,
-                label_name_to_value=class_name_to_id,
+                class_name_mapping=class_name_to_id,
             )
 
             if osp.splitext(out_png_file)[1] != '.png':
