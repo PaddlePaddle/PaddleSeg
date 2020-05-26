@@ -1,4 +1,5 @@
-# copyright (c) 2020 PaddlePaddle Authors. All Rights Reserve.
+# coding: utf8
+# Copyright (c) 2019 PaddlePaddle Authors. All Rights Reserve.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,13 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import sys
-import time
 import os
 import os.path as osp
 import numpy as np
 import six
-import yaml
 import math
 from . import logging
 
@@ -204,11 +202,9 @@ def load_pretrain_weights(exe, main_prog, weights_dir, fuse_bn=False):
         vars_to_load.append(var)
         logging.debug("Weight {} will be load".format(var.name))
 
-    fluid.io.load_vars(
-        executor=exe,
-        dirname=weights_dir,
-        main_program=main_prog,
-        vars=vars_to_load)
+    params_dict = fluid.io.load_program_state(
+        weights_dir, var_list=vars_to_load)
+    fluid.io.set_program_state(main_prog, params_dict)
     if len(vars_to_load) == 0:
         logging.warning(
             "There is no pretrain weights loaded, maybe you should check you pretrain model!"

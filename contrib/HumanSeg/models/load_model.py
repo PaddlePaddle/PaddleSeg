@@ -1,4 +1,5 @@
-# copyright (c) 2020 PaddlePaddle Authors. All Rights Reserve.
+# coding: utf8
+# Copyright (c) 2019 PaddlePaddle Authors. All Rights Reserve.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -24,7 +25,7 @@ import models
 
 def load_model(model_dir):
     if not osp.exists(osp.join(model_dir, "model.yml")):
-        raise Exception("There's not model.yml in {}".format(model_dir))
+        raise Exception("There's no model.yml in {}".format(model_dir))
     with open(osp.join(model_dir, "model.yml")) as f:
         info = yaml.load(f.read(), Loader=yaml.Loader)
     status = info['status']
@@ -33,7 +34,7 @@ def load_model(model_dir):
         raise Exception("There's no attribute {} in models".format(
             info['Model']))
     model = getattr(models, info['Model'])(**info['_init_params'])
-    if status == "Normal":
+    if status in ["Normal", "QuantOnline"]:
         startup_prog = fluid.Program()
         model.test_prog = fluid.Program()
         with fluid.program_guard(model.test_prog, startup_prog):
@@ -41,11 +42,16 @@ def load_model(model_dir):
                 model.test_inputs, model.test_outputs = model.build_net(
                     mode='test')
         model.test_prog = model.test_prog.clone(for_test=True)
+        if status == "QuantOnline":
+            print('test quant online')
+            import paddleslim as slim
+            model.test_prog = slim.quant.quant_aware(
+                model.test_prog, model.exe.place, for_test=True)
         model.exe.run(startup_prog)
-        import pickle
-        with open(osp.join(model_dir, 'model.pdparams'), 'rb') as f:
-            load_dict = pickle.load(f)
-        fluid.io.set_program_state(model.test_prog, load_dict)
+        fluid.load(model.test_prog, osp.join(model_dir, 'model'))
+        if status == "QuantOnline":
+            model.test_prog = slim.quant.convert(model.test_prog,
+                                                 model.exe.place)
 
     elif status in ['Infer', 'Quant']:
         [prog, input_names, outputs] = fluid.io.load_inference_model(

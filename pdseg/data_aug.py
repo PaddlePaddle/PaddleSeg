@@ -1,5 +1,5 @@
 # coding: utf8
-# copyright (c) 2019 PaddlePaddle Authors. All Rights Reserve.
+# Copyright (c) 2019 PaddlePaddle Authors. All Rights Reserve.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -362,7 +362,7 @@ def hsv_color_jitter(crop_img,
         saturation_jitter_ratio > 0 or \
         contrast_jitter_ratio > 0:
         crop_img = random_jitter(crop_img, saturation_jitter_ratio,
-                      brightness_jitter_ratio, contrast_jitter_ratio)
+                                 brightness_jitter_ratio, contrast_jitter_ratio)
     return crop_img
 
 
@@ -391,7 +391,7 @@ def rand_crop(crop_img, crop_seg, mode=ModelPhase.TRAIN):
         crop_width = cfg.EVAL_CROP_SIZE[0]
         crop_height = cfg.EVAL_CROP_SIZE[1]
 
-    if not ModelPhase.is_train(mode): 
+    if not ModelPhase.is_train(mode):
         if (crop_height < img_height or crop_width < img_width):
             raise Exception(
                 "Crop size({},{}) must large than img size({},{}) when in EvalPhase."

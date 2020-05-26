@@ -1,31 +1,31 @@
-#copyright (c) 2020 PaddlePaddle Authors. All Rights Reserve.
+# coding: utf8
+# Copyright (c) 2019 PaddlePaddle Authors. All Rights Reserve.
 #
-#Licensed under the Apache License, Version 2.0 (the "License");
-#you may not use this file except in compliance with the License.
-#You may obtain a copy of the License at
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
 #    http://www.apache.org/licenses/LICENSE-2.0
 #
-#Unless required by applicable law or agreed to in writing, software
-#distributed under the License is distributed on an "AS IS" BASIS,
-#WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-#See the License for the specific language governing permissions and
-#limitations under the License.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 from __future__ import absolute_import
-import os.path as osp
 import numpy as np
 import math
 import cv2
 import paddle.fluid as fluid
 import utils.logging as logging
 from collections import OrderedDict
-from .base import BaseAPI
+from .base import BaseModel
 from utils.metrics import ConfusionMatrix
 import nets
 
 
-class UNet(BaseAPI):
+class UNet(BaseModel):
     """实现UNet网络的构建并进行训练、评估、预测和模型导出。
 
     Args:
@@ -55,9 +55,16 @@ class UNet(BaseAPI):
                  use_bce_loss=False,
                  use_dice_loss=False,
                  class_weight=None,
-                 ignore_index=255):
+                 ignore_index=255,
+                 sync_bn=True):
+        super().__init__(
+            num_classes=num_classes,
+            use_bce_loss=use_bce_loss,
+            use_dice_loss=use_dice_loss,
+            class_weight=class_weight,
+            ignore_index=ignore_index,
+            sync_bn=sync_bn)
         self.init_params = locals()
-        super(UNet, self).__init__()
         # dice_loss或bce_loss只适用两类分割中
         if num_classes > 2 and (use_bce_loss or use_dice_loss):
             raise ValueError(
@@ -115,24 +122,6 @@ class UNet(BaseAPI):
             outputs['logit'] = model_out[1]
         return inputs, outputs
 
-    def default_optimizer(self,
-                          learning_rate,
-                          num_epochs,
-                          num_steps_each_epoch,
-                          lr_decay_power=0.9):
-        decay_step = num_epochs * num_steps_each_epoch
-        lr_decay = fluid.layers.polynomial_decay(
-            learning_rate,
-            decay_step,
-            end_learning_rate=0,
-            power=lr_decay_power)
-        optimizer = fluid.optimizer.Momentum(
-            lr_decay,
-            momentum=0.9,
-            regularization=fluid.regularizer.L2Decay(
-                regularization_coeff=4e-05))
-        return optimizer
-
     def train(self,
               num_epochs,
               train_reader,
@@ -142,13 +131,13 @@ class UNet(BaseAPI):
               save_interval_epochs=1,
               log_interval_steps=2,
               save_dir='output',
-              pretrain_weights='COCO',
+              pretrain_weights=None,
+              resume_weights=None,
               optimizer=None,
               learning_rate=0.01,
               lr_decay_power=0.9,
-              use_vdl=False,
-              sensitivities_file=None,
-              eval_metric_loss=0.05):
+              regularization_coeff=5e-4,
+              use_vdl=False):
         """训练。
 
         Args:
@@ -160,46 +149,17 @@ class UNet(BaseAPI):
             save_interval_epochs (int): 模型保存间隔（单位：迭代轮数）。默认为1。
             log_interval_steps (int): 训练日志输出间隔（单位：迭代次数）。默认为2。
             save_dir (str): 模型保存路径。默认'output'。
-            pretrain_weights (str): 若指定为路径时，则加载路径下预训练模型；若为字符串'COCO'，
-                则自动下载在COCO图片数据上预训练的模型权重；若为None，则不使用预训练模型。默认为'COCO'。
+            pretrain_weights (str): 若指定为路径时，则加载路径下预训练模型；若为None，则不使用预训练模型。
             optimizer (paddle.fluid.optimizer): 优化器。当改参数为None时，使用默认的优化器：使用
                 fluid.optimizer.Momentum优化方法，polynomial的学习率衰减策略。
             learning_rate (float): 默认优化器的初始学习率。默认0.01。
             lr_decay_power (float): 默认优化器学习率多项式衰减系数。默认0.9。
             use_vdl (bool): 是否使用VisualDL进行可视化。默认False。
-            sensitivities_file (str): 若指定为路径时，则加载路径下敏感度信息进行裁剪；若为字符串'DEFAULT'，
-                则自动下载在ImageNet图片数据上获得的敏感度信息进行裁剪；若为None，则不进行裁剪。默认为None。
-            eval_metric_loss (float): 可容忍的精度损失。默认为0.05。
 
         Raises:
             ValueError: 模型从inference model进行加载。
         """
-        if not self.trainable:
-            raise ValueError(
-                "Model is not trainable since it was loaded from a inference model."
-            )
-
-        self.labels = train_reader.labels
-
-        if optimizer is None:
-            num_steps_each_epoch = train_reader.num_samples // train_batch_size
-            optimizer = self.default_optimizer(
-                learning_rate=learning_rate,
-                num_epochs=num_epochs,
-                num_steps_each_epoch=num_steps_each_epoch,
-                lr_decay_power=lr_decay_power)
-        self.optimizer = optimizer
-        # 构建训练、验证、预测网络
-        self.build_program()
-        # 初始化网络权重
-        self.net_initialize(
-            startup_prog=fluid.default_startup_program(),
-            pretrain_weights=pretrain_weights,
-            save_dir=save_dir,
-            sensitivities_file=sensitivities_file,
-            eval_metric_loss=eval_metric_loss)
-        # 训练
-        self.train_loop(
+        super().train(
             num_epochs=num_epochs,
             train_reader=train_reader,
             train_batch_size=train_batch_size,
@@ -208,6 +168,12 @@ class UNet(BaseAPI):
             save_interval_epochs=save_interval_epochs,
             log_interval_steps=log_interval_steps,
             save_dir=save_dir,
+            pretrain_weights=pretrain_weights,
+            resume_weights=resume_weights,
+            optimizer=optimizer,
+            learning_rate=learning_rate,
+            lr_decay_power=lr_decay_power,
+            regularization_coeff=regularization_coeff,
             use_vdl=use_vdl)
 
     def evaluate(self,
@@ -231,7 +197,7 @@ class UNet(BaseAPI):
             tuple (metrics, eval_details)：当return_details为True时，增加返回dict (eval_details)，
                 包含关键字：'confusion_matrix'，表示评估的混淆矩阵。
         """
-        self.arrange_transforms(transforms=eval_reader.transforms, mode='eval')
+        self.arrange_transform(transforms=eval_reader.transforms, mode='eval')
         total_steps = math.ceil(eval_reader.num_samples * 1.0 / batch_size)
         conf_mat = ConfusionMatrix(self.num_classes, streaming=True)
         data_generator = eval_reader.generator(
@@ -272,11 +238,16 @@ class UNet(BaseAPI):
 
         category_iou, miou = conf_mat.mean_iou()
         category_acc, macc = conf_mat.accuracy()
+        precision, recall = conf_mat.precision_recall()
 
         metrics = OrderedDict(
-            zip(['miou', 'category_iou', 'macc', 'category_acc', 'kappa'],
-                [miou, category_iou, macc, category_acc,
-                 conf_mat.kappa()]))
+            zip([
+                'miou', 'category_iou', 'macc', 'category_acc', 'kappa',
+                'precision', 'recall'
+            ], [
+                miou, category_iou, macc, category_acc,
+                conf_mat.kappa(), precision, recall
+            ]))
         if return_details:
             eval_details = {
                 'confusion_matrix': conf_mat.confusion_matrix.tolist()
@@ -296,11 +267,10 @@ class UNet(BaseAPI):
         if transforms is None and not hasattr(self, 'test_transforms'):
             raise Exception("transforms need to be defined, now is None.")
         if transforms is not None:
-            self.arrange_transforms(transforms=transforms, mode='test')
+            self.arrange_transform(transforms=transforms, mode='test')
             im, im_info = transforms(im_file)
         else:
-            self.arrange_transforms(
-                transforms=self.test_transforms, mode='test')
+            self.arrange_transform(transforms=self.test_transforms, mode='test')
             im, im_info = self.test_transforms(im_file)
         im = im.astype(np.float32)
         im = np.expand_dims(im, axis=0)
@@ -319,4 +289,4 @@ class UNet(BaseAPI):
                 h, w = im_info[k][0], im_info[k][1]
                 pred = pred[0:h, 0:w]
 
-        return pred
+        return {'label_map': pred}

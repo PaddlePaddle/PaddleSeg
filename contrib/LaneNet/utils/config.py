@@ -1,11 +1,11 @@
-# -*- coding: utf-8 -*-
-#   Copyright (c) 2019  PaddlePaddle Authors. All Rights Reserved.
+# coding: utf8
+# Copyright (c) 2019 PaddlePaddle Authors. All Rights Reserve.
 #
-# Licensed under the Apache License, Version 2.0 (the "License"
+# Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#     http://www.apache.org/licenses/LICENSE-2.0
+#    http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -80,8 +80,8 @@ cfg.DATASET.DATA_DIM = 3
 cfg.DATASET.SEPARATOR = ' '
 # 忽略的像素标签值, 默认为255，一般无需改动
 cfg.DATASET.IGNORE_INDEX = 255
-# 数据增强是图像的padding值 
-cfg.DATASET.PADDING_VALUE = [127.5,127.5,127.5]
+# 数据增强是图像的padding值
+cfg.DATASET.PADDING_VALUE = [127.5, 127.5, 127.5]
 
 ########################### 数据增强配置 ######################################
 # 图像镜像左右翻转

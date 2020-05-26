@@ -1,5 +1,5 @@
 # coding: utf8
-# copyright (c) 2019 PaddlePaddle Authors. All Rights Reserve.
+# Copyright (c) 2019 PaddlePaddle Authors. All Rights Reserve.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -122,7 +122,10 @@ def evaluate(cfg, ckpt_dir=None, use_gpu=False, use_mpio=False, **kwargs):
 
     if ckpt_dir is not None:
         print('load test model:', ckpt_dir)
-        fluid.io.load_params(exe, ckpt_dir, main_program=test_prog)
+        try:
+            fluid.load(test_prog, os.path.join(ckpt_dir, 'model'), exe)
+        except:
+            fluid.io.load_params(exe, ckpt_dir, main_program=test_prog)
 
     # Use streaming confusion matrix to calculate mean_iou
     np.set_printoptions(

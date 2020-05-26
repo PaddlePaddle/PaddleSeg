@@ -1,1 +1,1 @@
-visualdl == 2.0.0b1
+visualdl >= 2.0.0b

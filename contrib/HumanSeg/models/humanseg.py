@@ -1,10 +1,11 @@
-#   Copyright (c) 2020  PaddlePaddle Authors. All Rights Reserved.
+# coding: utf8
+# Copyright (c) 2019 PaddlePaddle Authors. All Rights Reserve.
 #
-# Licensed under the Apache License, Version 2.0 (the "License"
+# Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#     http://www.apache.org/licenses/LICENSE-2.0
+#    http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -24,6 +25,7 @@ import time
 import tqdm
 import cv2
 import yaml
+import shutil
 import paddleslim as slim
 
 import utils
@@ -102,7 +104,7 @@ class SegModel(object):
         # 当前模型状态
         self.status = 'Normal'
 
-    def _get_single_car_bs(self, batch_size):
+    def _get_single_card_bs(self, batch_size):
         if batch_size % len(self.places) == 0:
             return int(batch_size // len(self.places))
         else:
@@ -144,7 +146,7 @@ class SegModel(object):
                 capacity=64,
                 use_double_buffer=True,
                 iterable=True)
-        batch_size_each_gpu = self._get_single_car_bs(batch_size)
+        batch_size_each_gpu = self._get_single_card_bs(batch_size)
         self.train_data_loader.set_sample_list_generator(
             dataset.generator(batch_size=batch_size_each_gpu),
             places=self.places)
@@ -242,30 +244,11 @@ class SegModel(object):
 
         if self.status == 'Normal':
             fluid.save(self.train_prog, osp.join(save_dir, 'model'))
+            model_info['status'] = 'Normal'
         elif self.status == 'Quant':
-            float_prog, _ = slim.quant.convert(
-                self.test_prog, self.exe.place, save_int8=True)
-            test_input_names = [
-                var.name for var in list(self.test_inputs.values())
-            ]
-            test_outputs = list(self.test_outputs.values())
-            fluid.io.save_inference_model(
-                dirname=save_dir,
-                executor=self.exe,
-                params_filename='__params__',
-                feeded_var_names=test_input_names,
-                target_vars=test_outputs,
-                main_program=float_prog)
+            fluid.save(self.test_prog, osp.join(save_dir, 'model'))
+            model_info['status'] = 'QuantOnline'
 
-            model_info['_ModelInputsOutputs'] = dict()
-            model_info['_ModelInputsOutputs']['test_inputs'] = [
-                [k, v.name] for k, v in self.test_inputs.items()
-            ]
-            model_info['_ModelInputsOutputs']['test_outputs'] = [
-                [k, v.name] for k, v in self.test_outputs.items()
-            ]
-
-        model_info['status'] = self.status
         with open(
                 osp.join(save_dir, 'model.yml'), encoding='utf-8',
                 mode='w') as f:
@@ -307,40 +290,57 @@ class SegModel(object):
         logging.info("Model for inference deploy saved in {}.".format(save_dir))
 
     def export_quant_model(self,
-                           dataset,
-                           save_dir,
+                           dataset=None,
+                           save_dir=None,
                            batch_size=1,
                            batch_nums=10,
-                           cache_dir="./.temp"):
-        self.arrange_transform(transforms=dataset.transforms, mode='quant')
-        dataset.num_samples = batch_size * batch_nums
-        try:
-            from utils import HumanSegPostTrainingQuantization
-        except:
-            raise Exception(
-                "Model Quantization is not available, try to upgrade your paddlepaddle>=1.7.0"
-            )
-        is_use_cache_file = True
-        if cache_dir is None:
-            is_use_cache_file = False
-        post_training_quantization = HumanSegPostTrainingQuantization(
-            executor=self.exe,
-            dataset=dataset,
-            program=self.test_prog,
-            inputs=self.test_inputs,
-            outputs=self.test_outputs,
-            batch_size=batch_size,
-            batch_nums=batch_nums,
-            scope=None,
-            algo='KL',
-            quantizable_op_type=["conv2d", "depthwise_conv2d", "mul"],
-            is_full_quantize=False,
-            is_use_cache_file=is_use_cache_file,
-            cache_dir=cache_dir)
-        post_training_quantization.quantize()
-        post_training_quantization.save_quantized_model(save_dir)
-        if cache_dir is not None:
-            os.system('rm -r' + cache_dir)
+                           cache_dir=".temp",
+                           quant_type="offline"):
+        if quant_type == "offline":
+            self.arrange_transform(transforms=dataset.transforms, mode='quant')
+            dataset.num_samples = batch_size * batch_nums
+            try:
+                from utils import HumanSegPostTrainingQuantization
+            except:
+                raise Exception(
+                    "Model Quantization is not available, try to upgrade your paddlepaddle>=1.8.1"
+                )
+            is_use_cache_file = True
+            if cache_dir is None:
+                is_use_cache_file = False
+            post_training_quantization = HumanSegPostTrainingQuantization(
+                executor=self.exe,
+                dataset=dataset,
+                program=self.test_prog,
+                inputs=self.test_inputs,
+                outputs=self.test_outputs,
+                batch_size=batch_size,
+                batch_nums=batch_nums,
+                scope=None,
+                algo='KL',
+                quantizable_op_type=["conv2d", "depthwise_conv2d", "mul"],
+                is_full_quantize=False,
+                is_use_cache_file=is_use_cache_file,
+                cache_dir=cache_dir)
+            post_training_quantization.quantize()
+            post_training_quantization.save_quantized_model(save_dir)
+            if cache_dir is not None:
+                shutil.rmtree(cache_dir)
+        else:
+            float_prog, _ = slim.quant.convert(
+                self.test_prog, self.exe.place, save_int8=True)
+            test_input_names = [
+                var.name for var in list(self.test_inputs.values())
+            ]
+            test_outputs = list(self.test_outputs.values())
+            fluid.io.save_inference_model(
+                dirname=save_dir,
+                executor=self.exe,
+                params_filename='__params__',
+                feeded_var_names=test_input_names,
+                target_vars=test_outputs,
+                main_program=float_prog)
+
         model_info = self.get_model_info()
         model_info['status'] = 'Quant'
 
@@ -591,6 +591,16 @@ class SegModel(object):
                     logging.info(
                         'Current evaluated best model in eval_dataset is epoch_{}, miou={}'
                         .format(best_model_epoch, best_miou))
+
+        if quant:
+            if osp.exists(osp.join(save_dir, "best_model")):
+                fluid.load(
+                    program=self.test_prog,
+                    model_path=osp.join(save_dir, "best_model"),
+                    executor=self.exe)
+            self.export_quant_model(
+                save_dir=osp.join(save_dir, "best_model_export"),
+                quant_type="online")
 
     def evaluate(self, eval_dataset, batch_size=1, epoch_id=None):
         """评估。
