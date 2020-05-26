@@ -53,7 +53,7 @@ def parse_args():
 def export_inference_config():
     deploy_cfg = '''DEPLOY:
         USE_GPU : 1
-        USE_PR : 1
+        USE_PR : 0
         MODEL_PATH : "%s"
         MODEL_FILENAME : "%s"
         PARAMS_FILENAME : "%s"
