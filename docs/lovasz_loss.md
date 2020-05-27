@@ -5,7 +5,7 @@ Lovasz loss基于子模损失(submodular losses)的凸Lovasz扩展，对神经�
 
 
 ## Lovasz hinge loss
-### 使用方式
+### 使用指南
 
 PaddleSeg通过`cfg.SOLVER.LOSS`参数可以选择训练时的损失函数，
 如`cfg.SOLVER.LOSS=['lovasz_hinge_loss','bce_loss']`将指定训练loss为`lovasz hinge loss`与`bce loss`(binary cross-entropy loss)的组合。
@@ -72,7 +72,7 @@ lovasz hinge loss + bce loss和softmax loss的对比结果如下图所示。
 
 
 ## Lovasz softmax loss
-### 使用方式
+### 使用指南
 
 PaddleSeg通过`cfg.SOLVER.LOSS`参数可以选择训练时的损失函数，
 如`cfg.SOLVER.LOSS=['lovasz_softmax_loss','softmax_loss']`将指定训练loss为`lovasz softmax loss`与`softmax loss`的组合。
