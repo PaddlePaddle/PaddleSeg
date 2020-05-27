@@ -1,7 +1,7 @@
 # Lovasz loss
 对于图像分割任务中，经常出现类别分布不均匀的情况，例如：工业产品的瑕疵检测、道路提取及病变区域提取等。我们可使用lovasz loss解决这个问题。
 
-Lovasz loss基于子模损失(submodular losses)的凸Lovasz扩展，对神经网络的mean IoU损失进行优化。该工作发表在CVPR 2018上，可点击[参考文献](#参考文献)查看具体原理。Lovasz loss根据分割目标的类别数量可分为两种：lovasz hinge loss适用于二分类问题，lovasz softmax loss适用于多分类问题。
+Lovasz loss基于子模损失(submodular losses)的凸Lovasz扩展，对神经网络的mean IoU损失进行优化。Lovasz loss根据分割目标的类别数量可分为两种：lovasz hinge loss和lovasz softmax loss. 其中lovasz hinge loss适用于二分类问题，lovasz softmax loss适用于多分类问题。该工作发表在CVPR 2018上，可点击[参考文献](#参考文献)查看具体原理。
 
 
 ## Lovasz hinge loss
