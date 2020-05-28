@@ -196,8 +196,8 @@ def infer(args):
                     score_map, im_info = predict(frame, model, test_transforms)
                     cur_gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
                     cur_gray = cv2.resize(cur_gray, (resize_w, resize_h))
-                    scoremap = 255 * score_map[:, :, 1]
-                    optflow_map = postprocess(cur_gray, scoremap, prev_gray, prev_cfd, \
+                    score_map = 255 * score_map[:, :, 1]
+                    optflow_map = postprocess(cur_gray, score_map, prev_gray, prev_cfd, \
                                               disflow, is_init)
                     prev_gray = cur_gray.copy()
                     prev_cfd = optflow_map.copy()
@@ -252,8 +252,8 @@ def infer(args):
                     score_map, im_info = predict(frame, model, test_transforms)
                     cur_gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
                     cur_gray = cv2.resize(cur_gray, (resize_w, resize_h))
-                    scoremap = 255 * score_map[:, :, 1]
-                    optflow_map = postprocess(cur_gray, scoremap, prev_gray, prev_cfd, \
+                    score_map = 255 * score_map[:, :, 1]
+                    optflow_map = postprocess(cur_gray, score_map, prev_gray, prev_cfd, \
                                               disflow, is_init)
                     prev_gray = cur_gray.copy()
                     prev_cfd = optflow_map.copy()
