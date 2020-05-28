@@ -70,9 +70,29 @@ python video_infer.py --model_dir pretrained_weights/humanseg_lite_inference --v
 
 <img src="https://paddleseg.bj.bcebos.com/humanseg/data/video_test.gif" width="20%" height="20%"><img src="https://paddleseg.bj.bcebos.com/humanseg/data/result.gif" width="20%" height="20%">
 
+根据所选背景进行背景替换，背景可以是一张图片，也可以是一段视频。
+```bash
+# 通过电脑摄像头进行实时背景替换处理, 也可通过'--background_video_path'传入背景视频
+python bg_replace.py --model_dir pretrained_weights/humanseg_lite_inference --background_image_path data/background.jpg
+
+# 对人像视频进行背景替换处理, 也可通过'--background_video_path'传入背景视频
+python bg_replace.py --model_dir pretrained_weights/humanseg_lite_inference --video_path data/video_test.mp4 --background_image_path data/background.jpg
+
+# 对单张图像进行背景替换
+python bg_replace.py --model_dir pretrained_weights/humanseg_lite_inference --image_path data/human_image.jpg --background_image_path data/background.jpg
+
+```
+
+背景替换结果如下：
+
+<img src="https://paddleseg.bj.bcebos.com/humanseg/data/video_test.gif" width="20%" height="20%"><img src="https://paddleseg.bj.bcebos.com/humanseg/data/bg_replace.gif" width="20%" height="20%">
+
+
 **NOTE**:
 
 视频分割处理时间需要几分钟，请耐心等待。
+
+提供的模型适用于手机摄像头竖屏拍摄场景，宽屏效果会略差一些。
 
 ## 训练
 使用下述命令基于与训练模型进行Fine-tuning，请确保选用的模型结构`model_type`与模型参数`pretrained_weights`匹配。
