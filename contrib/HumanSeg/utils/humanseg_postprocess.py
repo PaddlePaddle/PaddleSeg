@@ -32,10 +32,8 @@ def human_seg_tracking(pre_gray, cur_gray, prev_cfd, dl_weights, disflow):
     h, w = pre_gray.shape[:2]
     track_cfd = np.zeros_like(prev_cfd)
     is_track = np.zeros_like(pre_gray)
-    # 这两个的处理的作用？
     flow_fw = disflow.calc(pre_gray, cur_gray, None)
     flow_bw = disflow.calc(cur_gray, pre_gray, None)
-    # cur_position =
     flow_fw = np.round(flow_fw).astype(np.int)
     flow_bw = np.round(flow_bw).astype(np.int)
     y_list = np.array(range(h))
@@ -109,7 +107,6 @@ def postprocess(cur_gray, scoremap, prev_gray, pre_cfd, disflow, is_init):
     cur_cfd = scoremap.copy()
 
     if is_init:
-        is_init = False
         if h <= 64 or w <= 64:
             disflow.setFinestScale(1)
         elif h <= 160 or w <= 160:
