@@ -56,11 +56,6 @@ def parse_args():
         type=str,
         default=None)
     parser.add_argument(
-        '--use_camera',
-        dest='use_camera',
-        help='Whether to open camera',
-        action='store_true')
-    parser.add_argument(
         '--save_dir',
         dest='save_dir',
         help='The directory for saving the inference results',
