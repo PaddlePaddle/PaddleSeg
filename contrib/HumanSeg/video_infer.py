@@ -22,7 +22,6 @@ import numpy as np
 from utils.humanseg_postprocess import postprocess, threshold_mask
 import models
 import transforms
-import time
 
 
 def parse_args():
