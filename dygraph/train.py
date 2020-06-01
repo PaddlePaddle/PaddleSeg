@@ -25,6 +25,7 @@ import transforms as T
 import models
 import utils.logging as logging
 from utils import get_environ_info
+from val import evaluate
 
 
 def parse_args():
@@ -61,6 +62,13 @@ def parse_args():
         help='Number of classes',
         type=int,
         default=2)
+    parser.add_argument(
+        '--ingore_index',
+        dest='ignore_index',
+        help=
+        'The pixel equaling ignore_index will not be computed during training',
+        type=int,
+        default=255)
 
     # params of training
     parser.add_argument(
@@ -118,7 +126,8 @@ def train(model,
           num_epochs=100,
           batch_size=2,
           pretrained_model=None,
-          save_interval_epochs=1):
+          save_interval_epochs=1,
+          num_classes=None):
     if not osp.isdir(save_dir):
         if osp.exists(save_dir):
             os.remove(save_dir)
@@ -150,10 +159,17 @@ def train(model,
             fluid.save_dygraph(model.state_dict(),
                                osp.join(current_save_dir, 'model'))
 
-            # if eval_dataset is not None:
-            #     model.eval()
-            #     evaluate(eval_dataset, batch_size=train_batch_size)
-            #     model.train()
+            if eval_dataset is not None:
+                model.eval()
+                evaluate(
+                    model,
+                    eval_dataset,
+                    model_dir=current_save_dir,
+                    num_classes=num_classes,
+                    batch_size=batch_size,
+                    ignore_index=model.ignore_index,
+                    epoch_id=epoch + 1)
+                model.train()
 
 
 def arrange_transform(transforms, mode='train'):
@@ -181,7 +197,7 @@ def main(args):
         shuffle=True)
     if args.val_list is not None:
         eval_transforms = T.Compose([T.Resize(args.input_size), T.Normalize()])
-        arrange_transform(train_transforms, mode='eval')
+        arrange_transform(eval_transforms, mode='eval')
         eval_dataset = Dataset(
             data_dir=args.data_dir,
             file_list=args.val_list,
@@ -192,7 +208,8 @@ def main(args):
             shuffle=False)
 
     if args.model_name == 'UNet':
-        model = models.UNet(num_classes=args.num_classes)
+        model = models.UNet(
+            num_classes=args.num_classes, ignore_index=args.ignore_index)
 
     # Creat optimizer
     num_steps_each_epoch = train_dataset.num_samples // args.batch_size
@@ -214,7 +231,8 @@ def main(args):
         num_epochs=args.num_epochs,
         batch_size=args.batch_size,
         pretrained_model=args.pretrained_model,
-        save_interval_epochs=args.save_interval_epochs)
+        save_interval_epochs=args.save_interval_epochs,
+        num_classes=args.num_classes)
 
 
 if __name__ == '__main__':

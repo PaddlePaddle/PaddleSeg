@@ -43,18 +43,18 @@ class UNet(fluid.dygraph.Layer):
         self.get_logit = GetLogit(64, num_classes)
         self.ignore_index = ignore_index
 
-    def forward(self, x, label, mode='train'):
+    def forward(self, x, label=None, mode='train'):
         encode_data, short_cuts = self.encode(x)
         decode_data = self.decode(encode_data, short_cuts)
         logit = self.get_logit(decode_data)
         if mode == 'train':
             return self._get_loss(logit, label)
         else:
-            logit = fluid.layers.softmax(logit, axis=1)
-            logit = fluid.layers.transpose(logit, [0, 2, 3, 1])
-            pred = fluid.layers.argmax(logit, axis=3)
+            score_map = fluid.layers.softmax(logit, axis=1)
+            score_map = fluid.layers.transpose(score_map, [0, 2, 3, 1])
+            pred = fluid.layers.argmax(score_map, axis=3)
             pred = fluid.layers.unsqueeze(pred, axes=[3])
-            return pred, logit
+            return pred, score_map
 
     def _get_loss(self, logit, label):
         mask = label != self.ignore_index
