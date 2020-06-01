@@ -228,13 +228,12 @@ def visualize(image, result, save_dir=None, weight=0.6):
         save_dir: the directory for saving visual image
         weight: the image weight of visual image, and the result weight is (1 - weight)
     """
-    label_map = result['label_map']
     color_map = get_color_map_list(256)
     color_map = np.array(color_map).astype("uint8")
     # Use OpenCV LUT for color mapping
-    c1 = cv2.LUT(label_map, color_map[:, 0])
-    c2 = cv2.LUT(label_map, color_map[:, 1])
-    c3 = cv2.LUT(label_map, color_map[:, 2])
+    c1 = cv2.LUT(result, color_map[:, 0])
+    c2 = cv2.LUT(result, color_map[:, 1])
+    c3 = cv2.LUT(result, color_map[:, 2])
     pseudo_img = np.dstack((c1, c2, c3))
 
     im = cv2.imread(image)
