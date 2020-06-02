@@ -16,32 +16,18 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-from collections import OrderedDict
-
 import paddle.fluid as fluid
 from paddle.fluid.dygraph import Conv2D, BatchNorm, Pool2D
-import contextlib
-
-regularizer = fluid.regularizer.L2DecayRegularizer(regularization_coeff=0.0)
-name_scope = ""
-
-
-@contextlib.contextmanager
-def scope(name):
-    global name_scope
-    bk = name_scope
-    name_scope = name_scope + name + '/'
-    yield
-    name_scope = bk
 
 
 class UNet(fluid.dygraph.Layer):
-    def __init__(self, num_classes, upsample_mode='bilinear', ignore_index=255):
+    def __init__(self, num_classes, ignore_index=255):
         super().__init__()
         self.encode = Encoder()
-        self.decode = Decode(upsample_mode=upsample_mode)
+        self.decode = Decode()
         self.get_logit = GetLogit(64, num_classes)
         self.ignore_index = ignore_index
+        self.EPS = 1e-5
 
     def forward(self, x, label=None, mode='train'):
         encode_data, short_cuts = self.encode(x)
@@ -67,7 +53,8 @@ class UNet(fluid.dygraph.Layer):
             axis=1)
 
         loss = loss * mask
-        avg_loss = fluid.layers.mean(loss) / (fluid.layers.mean(mask) + 0.00001)
+        avg_loss = fluid.layers.mean(loss) / (
+            fluid.layers.mean(mask) + self.EPS)
 
         label.stop_gradient = True
         mask.stop_gradient = True
@@ -77,17 +64,11 @@ class UNet(fluid.dygraph.Layer):
 class Encoder(fluid.dygraph.Layer):
     def __init__(self):
         super().__init__()
-        with scope('encode'):
-            with scope('block1'):
-                self.double_conv = DoubleConv(3, 64)
-            with scope('block1'):
-                self.down1 = Down(64, 128)
-            with scope('block2'):
-                self.down2 = Down(128, 256)
-            with scope('block3'):
-                self.down3 = Down(256, 512)
-            with scope('block4'):
-                self.down4 = Down(512, 512)
+        self.double_conv = DoubleConv(3, 64)
+        self.down1 = Down(64, 128)
+        self.down2 = Down(128, 256)
+        self.down3 = Down(256, 512)
+        self.down4 = Down(512, 512)
 
     def forward(self, x):
         short_cuts = []
@@ -104,17 +85,12 @@ class Encoder(fluid.dygraph.Layer):
 
 
 class Decode(fluid.dygraph.Layer):
-    def __init__(self, upsample_mode='bilinear'):
+    def __init__(self):
         super().__init__()
-        with scope('decode'):
-            with scope('decode1'):
-                self.up1 = Up(512, 256, upsample_mode)
-            with scope('decode2'):
-                self.up2 = Up(256, 128, upsample_mode)
-            with scope('decode3'):
-                self.up3 = Up(128, 64, upsample_mode)
-            with scope('decode4'):
-                self.up4 = Up(64, 64, upsample_mode)
+        self.up1 = Up(512, 256)
+        self.up2 = Up(256, 128)
+        self.up3 = Up(128, 64)
+        self.up4 = Up(64, 64)
 
     def forward(self, x, short_cuts):
         x = self.up1(x, short_cuts[3])
@@ -124,56 +100,23 @@ class Decode(fluid.dygraph.Layer):
         return x
 
 
-class GetLogit(fluid.dygraph.Layer):
-    def __init__(self):
-        super().__init__()
-
-
 class DoubleConv(fluid.dygraph.Layer):
     def __init__(self, num_channels, num_filters):
         super().__init__()
-        with scope('conv0'):
-            param_attr = fluid.ParamAttr(
-                name=name_scope + 'weights',
-                regularizer=regularizer,
-                initializer=fluid.initializer.TruncatedNormal(
-                    loc=0.0, scale=0.33))
-            self.conv0 = Conv2D(
-                num_channels=num_channels,
-                num_filters=num_filters,
-                filter_size=3,
-                stride=1,
-                padding=1,
-                param_attr=param_attr)
-            self.bn0 = BatchNorm(
-                num_channels=num_filters,
-                param_attr=fluid.ParamAttr(
-                    name=name_scope + 'gamma', regularizer=regularizer),
-                bias_attr=fluid.ParamAttr(
-                    name=name_scope + 'beta', regularizer=regularizer),
-                moving_mean_name=name_scope + 'moving_mean',
-                moving_variance_name=name_scope + 'moving_variance')
-        with scope('conv1'):
-            param_attr = fluid.ParamAttr(
-                name=name_scope + 'weights',
-                regularizer=regularizer,
-                initializer=fluid.initializer.TruncatedNormal(
-                    loc=0.0, scale=0.33))
-            self.conv1 = Conv2D(
-                num_channels=num_filters,
-                num_filters=num_filters,
-                filter_size=3,
-                stride=1,
-                padding=1,
-                param_attr=param_attr)
-            self.bn1 = BatchNorm(
-                num_channels=num_filters,
-                param_attr=fluid.ParamAttr(
-                    name=name_scope + 'gamma', regularizer=regularizer),
-                bias_attr=fluid.ParamAttr(
-                    name=name_scope + 'beta', regularizer=regularizer),
-                moving_mean_name=name_scope + 'moving_mean',
-                moving_variance_name=name_scope + 'moving_variance')
+        self.conv0 = Conv2D(
+            num_channels=num_channels,
+            num_filters=num_filters,
+            filter_size=3,
+            stride=1,
+            padding=1)
+        self.bn0 = BatchNorm(num_channels=num_filters)
+        self.conv1 = Conv2D(
+            num_channels=num_filters,
+            num_filters=num_filters,
+            filter_size=3,
+            stride=1,
+            padding=1)
+        self.bn1 = BatchNorm(num_channels=num_filters)
 
     def forward(self, x):
         x = self.conv0(x)
@@ -188,10 +131,9 @@ class DoubleConv(fluid.dygraph.Layer):
 class Down(fluid.dygraph.Layer):
     def __init__(self, num_channels, num_filters):
         super().__init__()
-        with scope("down"):
-            self.max_pool = Pool2D(
-                pool_size=2, pool_type='max', pool_stride=2, pool_padding=0)
-            self.double_conv = DoubleConv(num_channels, num_filters)
+        self.max_pool = Pool2D(
+            pool_size=2, pool_type='max', pool_stride=2, pool_padding=0)
+        self.double_conv = DoubleConv(num_channels, num_filters)
 
     def forward(self, x):
         x = self.max_pool(x)
@@ -200,34 +142,13 @@ class Down(fluid.dygraph.Layer):
 
 
 class Up(fluid.dygraph.Layer):
-    def __init__(self, num_channels, num_filters, upsample_mode):
+    def __init__(self, num_channels, num_filters):
         super().__init__()
-        self.upsample_mode = upsample_mode
-        with scope('up'):
-            if upsample_mode == 'bilinear':
-                self.double_conv = DoubleConv(2 * num_channels, num_filters)
-            if not upsample_mode == 'bilinear':
-                param_attr = fluid.ParamAttr(
-                    name=name_scope + 'weights',
-                    regularizer=regularizer,
-                    initializer=fluid.initializer.XavierInitializer(),
-                )
-                self.deconv = fluid.dygraph.Conv2DTranspose(
-                    num_channels=num_channels,
-                    num_filters=num_filters // 2,
-                    filter_size=2,
-                    stride=2,
-                    padding=0,
-                    param_attr=param_attr)
-                self.double_conv = DoubleConv(num_channels + num_filters // 2,
-                                              num_filters)
+        self.double_conv = DoubleConv(2 * num_channels, num_filters)
 
     def forward(self, x, short_cut):
-        if self.upsample_mode == 'bilinear':
-            short_cut_shape = fluid.layers.shape(short_cut)
-            x = fluid.layers.resize_bilinear(x, short_cut_shape[2:])
-        else:
-            x = self.deconv(x)
+        short_cut_shape = fluid.layers.shape(short_cut)
+        x = fluid.layers.resize_bilinear(x, short_cut_shape[2:])
         x = fluid.layers.concat([x, short_cut], axis=1)
         x = self.double_conv(x)
         return x
@@ -236,19 +157,12 @@ class Up(fluid.dygraph.Layer):
 class GetLogit(fluid.dygraph.Layer):
     def __init__(self, num_channels, num_classes):
         super().__init__()
-        with scope('logit'):
-            param_attr = fluid.ParamAttr(
-                name=name_scope + 'weights',
-                regularizer=regularizer,
-                initializer=fluid.initializer.TruncatedNormal(
-                    loc=0.0, scale=0.01))
-            self.conv = Conv2D(
-                num_channels=num_channels,
-                num_filters=num_classes,
-                filter_size=3,
-                stride=1,
-                padding=1,
-                param_attr=param_attr)
+        self.conv = Conv2D(
+            num_channels=num_channels,
+            num_filters=num_classes,
+            filter_size=3,
+            stride=1,
+            padding=1)
 
     def forward(self, x):
         x = self.conv(x)
