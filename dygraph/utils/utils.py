@@ -12,15 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import sys
-import time
 import os
 import os.path as osp
 import numpy as np
-import six
-import yaml
 import math
 import cv2
+import paddle.fluid as fluid
+
 from . import logging
 
 
@@ -56,6 +54,37 @@ def get_environ_info():
                 info['place'] = 'cuda'
                 info['num'] = fluid.core.get_cuda_device_count()
     return info
+
+
+def load_pretrained_model(model, pretrained_model):
+    logging.info('Load pretrained model!')
+    if pretrained_model is not None:
+        if osp.exists(pretrained_model):
+            ckpt_path = osp.join(pretrained_model, 'model')
+            para_state_dict, _ = fluid.load_dygraph(ckpt_path)
+            model_state_dict = model.state_dict()
+            keys = model_state_dict.keys()
+            num_params_loaded = 0
+            for k in keys:
+                if k not in para_state_dict:
+                    logging.warning("{} is not in pretrained model".format(k))
+                elif list(para_state_dict[k].shape) != list(
+                        model_state_dict[k].shape):
+                    logging.warning(
+                        "[SKIP] Shape of pretrained params {} doesn't match.(Pretrained: {}, Actual: {})"
+                        .format(k, para_state_dict[k].shape,
+                                model_state_dict[k].shape))
+                else:
+                    model_state_dict[k] = para_state_dict[k]
+                    num_params_loaded += 1
+            model.set_dict(model_state_dict)
+            logging.info("There are {}/{} varaibles are loaded.".format(
+                num_params_loaded, len(model_state_dict)))
+
+        else:
+            raise ValueError(
+                'The pretrained model directory is not Found: {}'.formnat(
+                    pretrained_model))
 
 
 def visualize(image, result, save_dir=None, weight=0.6):

@@ -20,11 +20,12 @@ from paddle.fluid.dygraph.base import to_variable
 import numpy as np
 import paddle.fluid as fluid
 
-from datasets.dataset import Dataset
+from datasets import Dataset
 import transforms as T
 import models
 import utils.logging as logging
 from utils import get_environ_info
+from utils import load_pretrained_model
 from val import evaluate
 
 
@@ -132,6 +133,8 @@ def train(model,
         if osp.exists(save_dir):
             os.remove(save_dir)
         os.makedirs(save_dir)
+
+    load_pretrained_model(model, pretrained_model)
 
     data_generator = train_dataset.generator(
         batch_size=batch_size, drop_last=True)
