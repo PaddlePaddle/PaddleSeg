@@ -111,7 +111,7 @@ def infer(model, data_dir=None, test_list=None, model_dir=None,
     for file in tqdm.tqdm(files):
         file = file.strip()
         im_file = osp.join(data_dir, file)
-        im, im_info = transforms(im_file)
+        im, im_info, _ = transforms(im_file)
         im = np.expand_dims(im, axis=0)
         im = to_variable(im)
 
@@ -140,17 +140,8 @@ def infer(model, data_dir=None, test_list=None, model_dir=None,
         cv2.imwrite(pred_saved_path, pred_im)
 
 
-def arrange_transform(transforms, mode='train'):
-    arrange_transform = T.ArrangeSegmenter
-    if type(transforms.transforms[-1]).__name__.startswith('Arrange'):
-        transforms.transforms[-1] = arrange_transform(mode=mode)
-    else:
-        transforms.transforms.append(arrange_transform(mode=mode))
-
-
 def main(args):
     test_transforms = T.Compose([T.Resize(args.input_size), T.Normalize()])
-    arrange_transform(test_transforms, mode='test')
 
     if args.model_name == 'UNet':
         model = models.UNet(num_classes=args.num_classes)

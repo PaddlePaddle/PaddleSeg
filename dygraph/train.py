@@ -143,7 +143,7 @@ def train(model,
     for epoch in range(num_epochs):
         for step, data in enumerate(data_generator()):
             images = np.array([d[0] for d in data])
-            labels = np.array([d[1] for d in data]).astype('int64')
+            labels = np.array([d[2] for d in data]).astype('int64')
             images = to_variable(images)
             labels = to_variable(labels)
             loss = model(images, labels, mode='train')
@@ -175,21 +175,12 @@ def train(model,
                 model.train()
 
 
-def arrange_transform(transforms, mode='train'):
-    arrange_transform = T.ArrangeSegmenter
-    if type(transforms.transforms[-1]).__name__.startswith('Arrange'):
-        transforms.transforms[-1] = arrange_transform(mode=mode)
-    else:
-        transforms.transforms.append(arrange_transform(mode=mode))
-
-
 def main(args):
     # Creat dataset reader
     train_transforms = T.Compose(
         [T.Resize(args.input_size),
          T.RandomHorizontalFlip(),
          T.Normalize()])
-    arrange_transform(train_transforms, mode='train')
     train_dataset = Dataset(
         data_dir=args.data_dir,
         file_list=args.train_list,
@@ -200,7 +191,6 @@ def main(args):
         shuffle=True)
     if args.val_list is not None:
         eval_transforms = T.Compose([T.Resize(args.input_size), T.Normalize()])
-        arrange_transform(eval_transforms, mode='eval')
         eval_dataset = Dataset(
             data_dir=args.data_dir,
             file_list=args.val_list,

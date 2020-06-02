@@ -74,7 +74,10 @@ class Compose:
                 im_info = outputs[1]
             if len(outputs) == 3:
                 label = outputs[2]
-        return outputs
+        im = permute(im)
+        if len(outputs) == 3:
+            label = label[np.newaxis, :, :]
+        return (im, im_info, label)
 
 
 class RandomHorizontalFlip:
@@ -873,42 +876,3 @@ class RandomDistort:
             return (im, im_info)
         else:
             return (im, im_info, label)
-
-
-class ArrangeSegmenter:
-    """获取训练/验证/预测所需的信息。
-
-    Args:
-        mode (str): 指定数据用于何种用途，取值范围为['train', 'eval', 'test', 'quant']。
-
-    Raises:
-        ValueError: mode的取值不在['train', 'eval', 'test', 'quant']之内
-    """
-
-    def __init__(self, mode):
-        if mode not in ['train', 'eval', 'test', 'quant']:
-            raise ValueError(
-                "mode should be defined as one of ['train', 'eval', 'test', 'quant']!"
-            )
-        self.mode = mode
-
-    def __call__(self, im, im_info, label=None):
-        """
-        Args:
-            im (np.ndarray): 图像np.ndarray数据。
-            im_info (dict): 存储与图像相关的信息。
-            label (np.ndarray): 标注图像np.ndarray数据。
-
-        Returns:
-            tuple: 当mode为'train'或'eval'时，返回的tuple为(im, label)，分别对应图像np.ndarray数据、存储与图像相关信息的字典；
-                当mode为'test'时，返回的tuple为(im, im_info)，分别对应图像np.ndarray数据、存储与图像相关信息的字典；当mode为
-                'quant'时，返回的tuple为(im,)，为图像np.ndarray数据。
-        """
-        im = permute(im)
-        if self.mode == 'train' or self.mode == 'eval':
-            label = label[np.newaxis, :, :]
-            return (im, label)
-        elif self.mode == 'test':
-            return (im, im_info)
-        else:
-            return (im, )

@@ -21,7 +21,7 @@ from paddle.fluid.dygraph.base import to_variable
 import numpy as np
 import paddle.fluid as fluid
 
-from datasets.dataset import Dataset
+from datasets import Dataset
 import transforms as T
 import models
 import utils.logging as logging
@@ -112,7 +112,7 @@ def evaluate(model,
             eval_dataset.num_samples, total_steps))
     for step, data in enumerate(data_generator()):
         images = np.array([d[0] for d in data])
-        labels = np.array([d[1] for d in data]).astype('int64')
+        labels = np.array([d[2] for d in data]).astype('int64')
         images = to_variable(images)
         pred, _ = model(images, labels, mode='eval')
 
@@ -134,17 +134,8 @@ def evaluate(model,
     logging.info("[EVAL] Kappa:{:.4f} ".format(conf_mat.kappa()))
 
 
-def arrange_transform(transforms, mode='train'):
-    arrange_transform = T.ArrangeSegmenter
-    if type(transforms.transforms[-1]).__name__.startswith('Arrange'):
-        transforms.transforms[-1] = arrange_transform(mode=mode)
-    else:
-        transforms.transforms.append(arrange_transform(mode=mode))
-
-
 def main(args):
     eval_transforms = T.Compose([T.Resize(args.input_size), T.Normalize()])
-    arrange_transform(eval_transforms, mode='eval')
     eval_dataset = Dataset(
         data_dir=args.data_dir,
         file_list=args.val_list,
