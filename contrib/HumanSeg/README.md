@@ -142,11 +142,12 @@ python val.py --model_dir output/best_model \
 * `--image_shape`: 网络输入图像大小（w, h）
 
 ## 预测
-使用下述命令进行预测
+使用下述命令进行预测， 预测结果默认保存在`./output/result/`文件夹中。
 ```bash
 python infer.py --model_dir output/best_model \
 --data_dir data/mini_supervisely \
 --test_list data/mini_supervisely/test.txt \
+--save_dir output/result \
 --image_shape 192 192
 ```
 其中参数含义如下：
