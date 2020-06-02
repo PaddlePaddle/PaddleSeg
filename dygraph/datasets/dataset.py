@@ -31,8 +31,9 @@ class EndSignal():
 
 
 def is_pic(img_name):
-    valid_suffix = ['JPEG', 'jpeg', 'JPG', 'jpg', 'BMP', 'bmp', 'PNG', 'png']
+    valid_suffix = ['jpeg', 'jpg', 'bmp', 'png']
     suffix = img_name.split('.')[-1]
+    suffix = suffix.lower()
     if suffix not in valid_suffix:
         return False
     return True
