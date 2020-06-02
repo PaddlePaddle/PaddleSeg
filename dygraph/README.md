@@ -1,13 +1,13 @@
 # 动态图执行
 
 ## 数据集设置
-'''
+```
 data_dir='data/path'
 train_list='train/list/path'
 val_list='val/list/path'
 test_list='test/list/path'
 num_classes=number/of/dataset/classes
-'''
+```
 
 ## 训练
 ```
