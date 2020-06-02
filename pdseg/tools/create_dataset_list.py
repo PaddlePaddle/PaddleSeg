@@ -130,12 +130,12 @@ def generate_list(args):
             for item in range(num_images):
                 left = image_files[item].replace(dataset_root, '')
                 if left[0] == os.path.sep:
-                    left = left.lstrip(os.path.sep)
+                    left = left.lstrip(os.path.sep).replace('\\', '/')
 
                 try:
                     right = label_files[item].replace(dataset_root, '')
                     if right[0] == os.path.sep:
-                        right = right.lstrip(os.path.sep)
+                        right = right.lstrip(os.path.sep).replace('\\', '/')
                     line = left + separator + right + '\n'
                 except:
                     line = left + '\n'
