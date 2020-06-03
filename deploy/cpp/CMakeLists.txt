@@ -48,9 +48,6 @@ endif()
 if(EXISTS "${PADDLE_DIR}/third_party/install/snappystream/include")
     include_directories("${PADDLE_DIR}/third_party/install/snappystream/include")
 endif()
-include_directories("${PADDLE_DIR}/third_party/install/zlib/include")
-include_directories("${PADDLE_DIR}/third_party/boost")
-include_directories("${PADDLE_DIR}/third_party/eigen3")
 
 if (EXISTS "${PADDLE_DIR}/third_party/install/snappy/lib")
     link_directories("${PADDLE_DIR}/third_party/install/snappy/lib")
@@ -59,7 +56,6 @@ if(EXISTS "${PADDLE_DIR}/third_party/install/snappystream/lib")
     link_directories("${PADDLE_DIR}/third_party/install/snappystream/lib")
 endif()
 
-link_directories("${PADDLE_DIR}/third_party/install/zlib/lib")
 link_directories("${PADDLE_DIR}/third_party/install/protobuf/lib")
 link_directories("${PADDLE_DIR}/third_party/install/glog/lib")
 link_directories("${PADDLE_DIR}/third_party/install/gflags/lib")
@@ -171,7 +167,7 @@ if (NOT WIN32)
     set(EXTERNAL_LIB "-lrt -ldl -lpthread")
     set(DEPS ${DEPS}
         ${MATH_LIB} ${MKLDNN_LIB}
-        glog gflags protobuf yaml-cpp z xxhash
+        glog gflags protobuf yaml-cpp xxhash
         ${EXTERNAL_LIB})
     if(EXISTS "${PADDLE_DIR}/third_party/install/snappystream/lib")
         set(DEPS ${DEPS} snappystream)
@@ -182,7 +178,7 @@ if (NOT WIN32)
 else()
     set(DEPS ${DEPS}
         ${MATH_LIB} ${MKLDNN_LIB}
-        opencv_world346 glog libyaml-cppmt gflags_static libprotobuf zlibstatic xxhash ${EXTERNAL_LIB})
+        opencv_world346 glog libyaml-cppmt gflags_static libprotobuf xxhash ${EXTERNAL_LIB})
     set(DEPS ${DEPS} libcmt shlwapi)
     if (EXISTS "${PADDLE_DIR}/third_party/install/snappy/lib")
         set(DEPS ${DEPS} snappy)

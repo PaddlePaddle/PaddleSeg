@@ -10,7 +10,7 @@
 
 PaddleSeg是基于[PaddlePaddle](https://www.paddlepaddle.org.cn)开发的端到端图像分割开发套件，覆盖了DeepLabv3+, U-Net, ICNet, PSPNet, HRNet, Fast-SCNN等主流分割网络。通过模块化的设计，以配置化方式驱动模型组合，帮助开发者更便捷地完成从训练到部署的全流程图像分割应用。
 
-- [特点](#特点) 
+- [特点](#特点)
 - [安装](#安装)
 - [使用教程](#使用教程)
   - [快速入门](#快速入门)
@@ -31,7 +31,7 @@ PaddleSeg是基于[PaddlePaddle](https://www.paddlepaddle.org.cn)开发的端到
 
 - **模块化设计**
 
-支持U-Net, DeepLabv3+, ICNet, PSPNet, HRNet, Fast-SCNN六种主流分割网络，结合预训练模型和可调节的骨干网络，满足不同性能和精度的要求；选择不同的损失函数如Dice Loss, BCE Loss等方式可以强化小目标和不均衡样本场景下的分割精度。
+支持U-Net, DeepLabv3+, ICNet, PSPNet, HRNet, Fast-SCNN六种主流分割网络，结合预训练模型和可调节的骨干网络，满足不同性能和精度的要求；选择不同的损失函数如Dice Loss, Lovasz Loss等方式可以强化小目标和不均衡样本场景下的分割精度。
 
 - **高性能**
 
@@ -107,8 +107,8 @@ pip install -r requirements.txt
 ### 高级功能
 
 * [PaddleSeg的数据增强](./docs/data_aug.md)
-* [如何解决二分类中类别不均衡问题](./docs/loss_select.md)
-* [特色垂类模型使用](./contrib)
+* [PaddleSeg的loss选择](./docs/loss_select.md)
+* [PaddleSeg产业实践](./contrib)
 * [多进程训练和混合精度训练](./docs/multiple_gpus_train_and_mixed_precision_train.md)
 * 使用PaddleSlim进行分割模型压缩([量化](./slim/quantization/README.md), [蒸馏](./slim/distillation/README.md), [剪枝](./slim/prune/README.md), [搜索](./slim/nas/README.md))
 ## 在线体验
@@ -162,15 +162,15 @@ A: 降低Batch size，使用Group Norm策略；请注意训练过程中当`DEFAU
   * 新增[气象遥感分割方案](./contrib/RemoteSensing)，支持积雪识别、云检测等气象遥感场景。
   * 新增[Lovasz Loss](docs/lovasz_loss.md)，解决数据类别不均衡问题。
   * 使用VisualDL 2.0作为训练可视化工具
-  
+
 * 2020.02.25
 
   **`v0.4.0`**
   * 新增适用于实时场景且不需要预训练模型的分割网络Fast-SCNN，提供基于Cityscapes的[预训练模型](./docs/model_zoo.md)1个
   * 新增LaneNet车道线检测网络，提供[预训练模型](https://github.com/PaddlePaddle/PaddleSeg/tree/release/v0.4.0/contrib/LaneNet#%E4%B8%83-%E5%8F%AF%E8%A7%86%E5%8C%96)一个
   * 新增基于PaddleSlim的分割库压缩策略([量化](./slim/quantization/README.md), [蒸馏](./slim/distillation/README.md), [剪枝](./slim/prune/README.md), [搜索](./slim/nas/README.md))
-  
-  
+
+
 * 2019.12.15
 
   **`v0.3.0`**
@@ -182,7 +182,7 @@ A: 降低Batch size，使用Group Norm策略；请注意训练过程中当`DEFAU
   * 新增Paddle-Lite移动端部署方案，支持人像分割模型的移动端部署。
   * 新增不同分割模型的预测[性能数据Benchmark](./deploy/python/docs/PaddleSeg_Infer_Benchmark.md), 便于开发者提供模型选型性能参考。
 
-  
+
 * 2019.11.04
 
   **`v0.2.0`**
