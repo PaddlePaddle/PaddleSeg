@@ -15,11 +15,28 @@
 from __future__ import absolute_import
 import os.path as osp
 import random
+import imghdr
+import gdal
+import numpy as np
 from utils import logging
 from .base import BaseReader
 from .base import get_encoding
 from collections import OrderedDict
-from .base import is_pic
+
+
+def read_img(img_path):
+    img_format = imghdr.what(img_path)
+    name, ext = osp.splitext(img_path)
+    if img_format == 'tiff' or ext == '.img':
+        dataset = gdal.Open(img_path)
+        if dataset == None:
+            raise Exception('Can not open', img_path)
+        im_data = dataset.ReadAsArray()
+        return im_data.transpose((1, 2, 0))
+    elif ext == '.npy':
+        return np.load(img_path)
+    else:
+        raise Exception('Not support {} image format!'.format(ext))
 
 
 class Reader(BaseReader):
@@ -27,7 +44,7 @@ class Reader(BaseReader):
 
     Args:
         data_dir (str): 数据集所在的目录路径。
-        file_list (str): 描述数据集图片文件和对应标注文件的文件路径（文本内每行路径为相对data_dir的相对路）。
+        file_list (str): 描述数据集图片文件和对应标注文件的文件路径（文本内每行路径为相对data_dir的相对路径）。
         label_list (str): 描述数据集包含的类别信息文件路径。
         transforms (list): 数据集中每个样本的预处理/增强算子。
         num_workers (int): 数据集中样本在预处理过程中的线程或进程数。默认为4。
