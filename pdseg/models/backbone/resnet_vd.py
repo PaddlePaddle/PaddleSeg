@@ -88,21 +88,21 @@ class ResNet():
         if self.stem == 'icnet' or self.stem == 'pspnet' or self.stem == 'deeplab':
             conv = self.conv_bn_layer(
                 input=input,
-                num_filters=int(64 * self.scale),
+                num_filters=int(32 * self.scale),
                 filter_size=3,
                 stride=2,
                 act='relu',
                 name="conv1_1")
             conv = self.conv_bn_layer(
                 input=conv,
-                num_filters=int(64 * self.scale),
+                num_filters=int(32 * self.scale),
                 filter_size=3,
                 stride=1,
                 act='relu',
                 name="conv1_2")
             conv = self.conv_bn_layer(
                 input=conv,
-                num_filters=int(128 * self.scale),
+                num_filters=int(64 * self.scale),
                 filter_size=3,
                 stride=1,
                 act='relu',
@@ -148,6 +148,7 @@ class ResNet():
                         stride=2
                         if i == 0 and block != 0 and dilation_rate == 1 else 1,
                         name=conv_name,
+                        is_first=block == i == 0,
                         dilation=dilation_rate)
                     layer_count += 3
 
@@ -248,27 +249,71 @@ class ResNet():
             moving_variance_name=bn_name + '_variance',
         )
 
+    def conv_bn_layer_new(self,
+                          input,
+                          num_filters,
+                          filter_size,
+                          stride=1,
+                          groups=1,
+                          act=None,
+                          name=None):
+        pool = fluid.layers.pool2d(
+            input=input,
+            pool_size=2,
+            pool_stride=2,
+            pool_padding=0,
+            pool_type='avg',
+            ceil_mode=True)
+
+        conv = fluid.layers.conv2d(
+            input=pool,
+            num_filters=num_filters,
+            filter_size=filter_size,
+            stride=1,
+            padding=(filter_size - 1) // 2,
+            groups=groups,
+            act=None,
+            param_attr=ParamAttr(name=name + "_weights"),
+            bias_attr=False)
+        if name == "conv1":
+            bn_name = "bn_" + name
+        else:
+            bn_name = "bn" + name[3:]
+        return fluid.layers.batch_norm(
+            input=conv,
+            act=act,
+            param_attr=ParamAttr(name=bn_name + '_scale'),
+            bias_attr=ParamAttr(bn_name + '_offset'),
+            moving_mean_name=bn_name + '_mean',
+            moving_variance_name=bn_name + '_variance')
+
     def shortcut(self, input, ch_out, stride, is_first, name):
         ch_in = input.shape[1]
-        if ch_in != ch_out or stride != 1 or is_first == True:
+        print('shortcut:', stride, is_first, ch_in, ch_out)
+        if ch_in != ch_out or stride != 1:
+            if is_first or stride == 1:
+                return self.conv_bn_layer(input, ch_out, 1, stride, name=name)
+            else:
+                return self.conv_bn_layer_new(
+                    input, ch_out, 1, stride, name=name)
+        elif is_first:
             return self.conv_bn_layer(input, ch_out, 1, stride, name=name)
         else:
             return input
 
-    def bottleneck_block(self, input, num_filters, stride, name, dilation=1):
-        if self.stem == 'deeplab':
-            strides = [1, stride]
-        if self.stem == 'pspnet' and self.layers == 101:
-            strides = [1, stride]
-        else:
-            strides = [stride, 1]
-
+    def bottleneck_block(self,
+                         input,
+                         num_filters,
+                         stride,
+                         name,
+                         is_first=False,
+                         dilation=1):
         conv0 = self.conv_bn_layer(
             input=input,
             num_filters=num_filters,
             filter_size=1,
             dilation=1,
-            stride=strides[0],
+            stride=1,
             act='relu',
             name=name + "_branch2a")
         if dilation > 1:
@@ -278,7 +323,7 @@ class ResNet():
             num_filters=num_filters,
             filter_size=3,
             dilation=dilation,
-            stride=strides[1],
+            stride=stride,
             act='relu',
             name=name + "_branch2b")
         conv2 = self.conv_bn_layer(
@@ -293,8 +338,10 @@ class ResNet():
             input,
             num_filters * 4,
             stride,
-            is_first=False,
+            is_first=is_first,
             name=name + "_branch1")
+        print(input.shape, short.shape, conv2.shape)
+        print(stride)
 
         return fluid.layers.elementwise_add(
             x=short, y=conv2, act='relu', name=name + ".add.output.5")

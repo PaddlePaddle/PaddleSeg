@@ -192,7 +192,7 @@ cfg.MODEL.FP16 = False
 cfg.MODEL.SCALE_LOSS = "DYNAMIC"
 
 ########################## DeepLab模型配置 ####################################
-# DeepLab backbone 配置, 可选项xception_65, mobilenetv2
+# DeepLab backbone 配置, 可选项xception_65, xception_41, xception_71, mobilenetv2, resnet_50, resnet_101, resnet_vd_50, resnet_vd_101
 cfg.MODEL.DEEPLAB.BACKBONE = "xception_65"
 # DeepLab output stride
 cfg.MODEL.DEEPLAB.OUTPUT_STRIDE = 16
