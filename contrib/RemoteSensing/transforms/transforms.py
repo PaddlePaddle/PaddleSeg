@@ -1,5 +1,5 @@
 # coding: utf8
-# Copyright (c) 2019 PaddlePaddle Authors. All Rights Reserve.
+# Copyright (c) 2020 PaddlePaddle Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import numpy as np
 from PIL import Image
 import cv2
 from collections import OrderedDict
+from readers.reader import read_img
 
 
 class Compose:
@@ -58,7 +59,7 @@ class Compose:
 
         if im_info is None:
             im_info = dict()
-        im = np.load(im)
+        im = read_img(im)
         if im is None:
             raise ValueError('Can\'t read The image file {}!'.format(im))
         if label is not None:

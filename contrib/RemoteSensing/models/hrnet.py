@@ -125,7 +125,7 @@ class HRNet(BaseModel):
               train_reader,
               train_batch_size=2,
               eval_reader=None,
-              eval_best_metric='kappa',
+              eval_best_metric='miou',
               save_interval_epochs=1,
               log_interval_steps=2,
               save_dir='output',
