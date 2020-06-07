@@ -1,4 +1,4 @@
-# copyright (c) 2020 PaddlePaddle Authors. All Rights Reserve.
+# Copyright (c) 2020 PaddlePaddle Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -69,92 +69,100 @@ def parse_args():
     return parser.parse_args()
 
 
-def compute_single_img(img):
-    global MEANS, STDS, TOTAL_IMG_NUM, CLIP_MIN_VALUE, CLIP_MAX_VALUE
-
-    TOTAL_IMG_NUM += 1
+def compute_single_img(img, clip_min_value, clip_max_value):
     channel = img.shape[2]
-    if MEANS == []:
-        MEANS = [0] * channel
-    if STDS == []:
-        STDS = [0] * channel
+    means = np.zeros(channel)
+    stds = np.zeros(channel)
     for k in range(channel):
-        if CLIP_MAX_VALUE != [] and CLIP_MIN_VALUE != []:
+        if clip_max_value != [] and clip_min_value != []:
             np.clip(
                 img[:, :, k],
-                CLIP_MIN_VALUE[k],
-                CLIP_MAX_VALUE[k],
+                clip_min_value[k],
+                clip_max_value[k],
                 out=img[:, :, k])
 
             # Rescaling (min-max normalization)
             range_value = [
-                CLIP_MAX_VALUE[i] - CLIP_MIN_VALUE[i]
-                for i in range(len(CLIP_MAX_VALUE))
+                clip_max_value[i] - clip_min_value[i]
+                for i in range(len(clip_max_value))
             ]
             img_k = (img[:, :, k].astype(np.float32, copy=False) -
-                     CLIP_MIN_VALUE[k]) / range_value[k]
+                     clip_min_value[k]) / range_value[k]
         else:
             img_k = img[:, :, k]
 
         # count mean, std
-        img_mean = np.mean(img_k)
-        img_std = np.std(img_k)
-        MEANS[k] += img_mean
-        STDS[k] += img_std
+        means[k] = np.mean(img_k)
+        stds[k] = np.std(img_k)
+    return means, stds
 
 
-def compute_normalize_coefficient():
-    global MEANS, STDS
-    for file_list in [TRAIN_FILE_LIST, VAL_FILE_LIST, TEST_FILE_LIST]:
+def compute_normalize_coefficient(data_dir, separator, clip_min_value,
+                                  clip_max_value):
+    train_file_list = osp.join(data_dir, 'train.txt')
+    val_file_list = osp.join(data_dir, 'val.txt')
+    test_file_list = osp.join(data_dir, 'test.txt')
+    total_img_num = 0
+    for file_list in [train_file_list, val_file_list, test_file_list]:
         with open(file_list, 'r') as fid:
+            print("\n-----------------------------\nCheck {}...".format(
+                file_list))
             lines = fid.readlines()
             if not lines:
                 print("File list is empty!")
                 continue
             for line in tqdm(lines):
                 line = line.strip()
-                parts = line.split(SEPARATOR)
+                parts = line.split(separator)
                 img_name, grt_name = parts[0], parts[1]
-                img_path = os.path.join(DATA_DIR, img_name)
+                img_path = os.path.join(data_dir, img_name)
                 img = read_img(img_path)
-
-                compute_single_img(img)
+                if total_img_num == 0:
+                    channel = img.shape[2]
+                    total_means = np.zeros(channel)
+                    total_stds = np.zeros(channel)
+                means, stds = compute_single_img(img, clip_min_value,
+                                                 clip_max_value)
+                total_means += means
+                total_stds += stds
+                total_img_num += 1
 
     # count mean, std
-    MEANS = [i / TOTAL_IMG_NUM for i in MEANS]
-    STDS = [i / TOTAL_IMG_NUM for i in STDS]
+    total_means = total_means / total_img_num
+    total_stds = total_stds / total_img_num
     print("\nCount the channel-by-channel mean and std of the image:\n"
-          "mean = {}\nstd = {}".format(MEANS, STDS))
+          "mean = {}\nstd = {}".format(total_means, total_stds))
 
 
-def compute_clip_percentage():
-    with open(PKL_PATH, 'rb') as f:
+def compute_clip_percentage(pkl_path, clip_min_value, clip_max_value):
+    """
+    Calculate the percentage of pixels to be clipped
+    """
+    with open(pkl_path, 'rb') as f:
         percentage, img_value_num = pickle.load(f)
 
     for k in range(len(img_value_num)):
-        # count clip value percentage
         range_pixel = 0
         for i, element in enumerate(img_value_num[k]):
-            if CLIP_MIN_VALUE[k] <= i <= CLIP_MAX_VALUE[k]:
+            if clip_min_value[k] <= i <= clip_max_value[k]:
                 range_pixel += element
         sum_pixel = sum(img_value_num[k])
-        print('channel {}, clip value percentage = {}'.format(
-            k, range_pixel / sum_pixel))
+        print('channel {}, the percentage of pixels to be clipped = {}'.format(
+            k, 1 - range_pixel / sum_pixel))
+
+
+def main():
+    args = parse_args()
+    data_dir = args.data_dir
+    separator = args.separator
+    clip_min_value = args.clip_min_value
+    clip_max_value = args.clip_max_value
+    pkl_path = args.pkl_path
+
+    compute_normalize_coefficient(data_dir, separator, clip_min_value,
+                                  clip_max_value)
+    compute_clip_percentage(pkl_path, clip_min_value, clip_max_value)
 
 
 if __name__ == "__main__":
-    args = parse_args()
-    DATA_DIR = args.data_dir
-    TRAIN_FILE_LIST = osp.join(DATA_DIR, 'train.txt')
-    VAL_FILE_LIST = osp.join(DATA_DIR, 'val.txt')
-    TEST_FILE_LIST = osp.join(DATA_DIR, 'test.txt')
-    SEPARATOR = args.separator
-    CLIP_MIN_VALUE = args.clip_min_value
-    CLIP_MAX_VALUE = args.clip_max_value
-    PKL_PATH = args.pkl_path
-    MEANS = []
-    STDS = []
-    TOTAL_IMG_NUM = 0
-
-    compute_normalize_coefficient()
-    compute_clip_percentage()
+    main()
