@@ -40,7 +40,7 @@ def read_img(img_path):
 
 
 class Reader(BaseReader):
-    """读取语分分割任务数据集，并对样本进行相应的处理。
+    """读取数据集，并对样本进行相应的处理。
 
     Args:
         data_dir (str): 数据集所在的目录路径。

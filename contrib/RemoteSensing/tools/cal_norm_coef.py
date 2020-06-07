@@ -97,8 +97,8 @@ def compute_single_img(img, clip_min_value, clip_max_value):
     return means, stds
 
 
-def compute_normalize_coefficient(data_dir, separator, clip_min_value,
-                                  clip_max_value):
+def cal_normalize_coefficient(data_dir, separator, clip_min_value,
+                              clip_max_value):
     train_file_list = osp.join(data_dir, 'train.txt')
     val_file_list = osp.join(data_dir, 'val.txt')
     test_file_list = osp.join(data_dir, 'test.txt')
@@ -134,7 +134,7 @@ def compute_normalize_coefficient(data_dir, separator, clip_min_value,
           "mean = {}\nstd = {}".format(total_means, total_stds))
 
 
-def compute_clip_percentage(pkl_path, clip_min_value, clip_max_value):
+def cal_clip_percentage(pkl_path, clip_min_value, clip_max_value):
     """
     Calculate the percentage of pixels to be clipped
     """
@@ -159,9 +159,9 @@ def main():
     clip_max_value = args.clip_max_value
     pkl_path = args.pkl_path
 
-    compute_normalize_coefficient(data_dir, separator, clip_min_value,
-                                  clip_max_value)
-    compute_clip_percentage(pkl_path, clip_min_value, clip_max_value)
+    cal_normalize_coefficient(data_dir, separator, clip_min_value,
+                              clip_max_value)
+    cal_clip_percentage(pkl_path, clip_min_value, clip_max_value)
 
 
 if __name__ == "__main__":
