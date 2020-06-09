@@ -25,8 +25,10 @@ def parse_args():
         description=
         'A tool for proportionally randomizing dataset to produce file lists.')
     parser.add_argument('dataset_root', help='the dataset root path', type=str)
-    parser.add_argument('images', help='the directory name of images', type=str)
-    parser.add_argument('labels', help='the directory name of labels', type=str)
+    parser.add_argument(
+        'images_dir_name', help='the directory name of images', type=str)
+    parser.add_argument(
+        'labels_dir_name', help='the directory name of labels', type=str)
     parser.add_argument(
         '--split', help='', nargs=3, type=float, default=[0.7, 0.3, 0])
     parser.add_argument(
@@ -43,10 +45,10 @@ def parse_args():
         type=str)
     parser.add_argument(
         '--format',
-        help='data format of images and labels, e.g. jpg, npy or png.',
+        help='data format of images and labels, e.g. jpg, tif or png.',
         type=str,
         nargs=2,
-        default=['npy', 'png'])
+        default=['tif', 'png'])
     parser.add_argument(
         '--postfix',
         help='postfix of images or labels',
@@ -84,8 +86,8 @@ def generate_list(args):
         for label_class in args.label_class:
             f.write(label_class + '\n')
 
-    image_dir = os.path.join(dataset_root, args.images)
-    label_dir = os.path.join(dataset_root, args.labels)
+    image_dir = os.path.join(dataset_root, args.images_dir_name)
+    label_dir = os.path.join(dataset_root, args.labels_dir_name)
     image_files = get_files(image_dir, args.format[0], args.postfix[0])
     label_files = get_files(label_dir, args.format[1], args.postfix[1])
     if not image_files:
