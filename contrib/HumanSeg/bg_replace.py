@@ -121,13 +121,13 @@ def infer(args):
     # 图像背景替换
     if args.image_path is not None:
         if not osp.exists(args.image_path):
-            raise ('The --image_path is not existed: {}'.format(
+            raise Exception('The --image_path is not existed: {}'.format(
                 args.image_path))
         if args.background_image_path is None:
-            raise ('The --background_image_path is not set. Please set it')
+            raise Exception('The --background_image_path is not set. Please set it')
         else:
             if not osp.exists(args.background_image_path):
-                raise ('The --background_image_path is not existed: {}'.format(
+                raise Exception('The --background_image_path is not existed: {}'.format(
                     args.background_image_path))
         img = cv2.imread(args.image_path)
         score_map, im_info = predict(img, model, test_transforms)
@@ -144,15 +144,15 @@ def infer(args):
         is_video_bg = False
         if args.background_video_path is not None:
             if not osp.exists(args.background_video_path):
-                raise ('The --background_video_path is not existed: {}'.format(
+                raise Exception('The --background_video_path is not existed: {}'.format(
                     args.background_video_path))
             is_video_bg = True
         elif args.background_image_path is not None:
             if not osp.exists(args.background_image_path):
-                raise ('The --background_image_path is not existed: {}'.format(
+                raise Exception('The --background_image_path is not existed: {}'.format(
                     args.background_image_path))
         else:
-            raise (
+            raise Exception(
                 'Please offer backgound image or video. You should set --backbground_iamge_paht or --background_video_path'
             )
 
@@ -162,9 +162,9 @@ def infer(args):
         prev_cfd = np.zeros((resize_h, resize_w), np.float32)
         is_init = True
         if args.video_path is not None:
-            print('Please waite. It is computing......')
+            print('Please wait. It is computing......')
             if not osp.exists(args.video_path):
-                raise ('The --video_path is not existed: {}'.format(
+                raise Exception('The --video_path is not existed: {}'.format(
                     args.video_path))
 
             cap_video = cv2.VideoCapture(args.video_path)
