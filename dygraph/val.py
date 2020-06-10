@@ -14,7 +14,6 @@
 
 import argparse
 import os
-import os.path as osp
 import math
 
 from paddle.fluid.dygraph.base import to_variable
@@ -33,59 +32,45 @@ def parse_args():
     parser = argparse.ArgumentParser(description='Model training')
 
     # params of model
-    parser.add_argument(
-        '--model_name',
-        dest='model_name',
-        help="Model type for traing, which is one of ('UNet')",
-        type=str,
-        default='UNet')
+    parser.add_argument('--model_name',
+                        dest='model_name',
+                        help="Model type for traing, which is one of ('UNet')",
+                        type=str,
+                        default='UNet')
 
     # params of dataset
-    parser.add_argument(
-        '--data_dir',
-        dest='data_dir',
-        help='The root directory of dataset',
-        type=str)
-    parser.add_argument(
-        '--val_list',
-        dest='val_list',
-        help='Val list file of dataset',
-        type=str,
-        default=None)
-    parser.add_argument(
-        '--num_classes',
-        dest='num_classes',
-        help='Number of classes',
-        type=int,
-        default=2)
-    parser.add_argument(
-        '--ingore_index',
-        dest='ignore_index',
-        help=
-        'The pixel equaling ignore_index will not be computed during evaluation',
-        type=int,
-        default=255)
+    parser.add_argument('--data_dir',
+                        dest='data_dir',
+                        help='The root directory of dataset',
+                        type=str)
+    parser.add_argument('--val_list',
+                        dest='val_list',
+                        help='Val list file of dataset',
+                        type=str,
+                        default=None)
+    parser.add_argument('--num_classes',
+                        dest='num_classes',
+                        help='Number of classes',
+                        type=int,
+                        default=2)
 
     # params of evaluate
-    parser.add_argument(
-        "--input_size",
-        dest="input_size",
-        help="The image size for net inputs.",
-        nargs=2,
-        default=[512, 512],
-        type=int)
-    parser.add_argument(
-        '--batch_size',
-        dest='batch_size',
-        help='Mini batch size',
-        type=int,
-        default=2)
-    parser.add_argument(
-        '--model_dir',
-        dest='model_dir',
-        help='The path of model for evaluation',
-        type=str,
-        default=None)
+    parser.add_argument("--input_size",
+                        dest="input_size",
+                        help="The image size for net inputs.",
+                        nargs=2,
+                        default=[512, 512],
+                        type=int)
+    parser.add_argument('--batch_size',
+                        dest='batch_size',
+                        help='Mini batch size',
+                        type=int,
+                        default=2)
+    parser.add_argument('--model_dir',
+                        dest='model_dir',
+                        help='The path of model for evaluation',
+                        type=str,
+                        default=None)
 
     return parser.parse_args()
 
@@ -97,13 +82,13 @@ def evaluate(model,
              batch_size=2,
              ignore_index=255,
              epoch_id=None):
-    ckpt_path = osp.join(model_dir, 'model')
+    ckpt_path = os.path.join(model_dir, 'model')
     para_state_dict, opti_state_dict = fluid.load_dygraph(ckpt_path)
     model.set_dict(para_state_dict)
     model.eval()
 
-    data_generator = eval_dataset.generator(
-        batch_size=batch_size, drop_last=True)
+    data_generator = eval_dataset.generator(batch_size=batch_size,
+                                            drop_last=True)
     total_steps = math.ceil(eval_dataset.num_samples * 1.0 / batch_size)
     conf_mat = ConfusionMatrix(num_classes, streaming=True)
 
@@ -135,27 +120,24 @@ def evaluate(model,
 
 
 def main(args):
-    eval_transforms = T.Compose([T.Resize(args.input_size), T.Normalize()])
-    eval_dataset = Dataset(
-        data_dir=args.data_dir,
-        file_list=args.val_list,
-        transforms=eval_transforms,
-        num_workers='auto',
-        buffer_size=100,
-        parallel_method='thread',
-        shuffle=False)
+    with fluid.dygraph.guard(places):
+        eval_transforms = T.Compose([T.Resize(args.input_size), T.Normalize()])
+        eval_dataset = Dataset(data_dir=args.data_dir,
+                               file_list=args.val_list,
+                               transforms=eval_transforms,
+                               num_workers='auto',
+                               buffer_size=100,
+                               parallel_method='thread',
+                               shuffle=False)
 
-    if args.model_name == 'UNet':
-        model = models.UNet(num_classes=args.num_classes)
+        if args.model_name == 'UNet':
+            model = models.UNet(num_classes=args.num_classes)
 
-    evaluate(
-        model,
-        eval_dataset,
-        model_dir=args.model_dir,
-        num_classes=args.num_classes,
-        batch_size=args.batch_size,
-        ignore_index=args.ignore_index,
-    )
+        evaluate(model,
+                 eval_dataset,
+                 model_dir=args.model_dir,
+                 num_classes=args.num_classes,
+                 batch_size=args.batch_size)
 
 
 if __name__ == '__main__':
@@ -165,5 +147,4 @@ if __name__ == '__main__':
         places = fluid.CPUPlace()
     else:
         places = fluid.CUDAPlace(0)
-    with fluid.dygraph.guard(places):
-        main(args)
+    main(args)

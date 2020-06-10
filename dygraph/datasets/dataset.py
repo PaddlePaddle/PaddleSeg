@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os.path as osp
+import os
 from threading import Thread
 import multiprocessing
 import collections
@@ -170,8 +170,8 @@ def multiprocess_reader(mapper,
             index = i % num_workers
             total_samples[index].append(sample)
         for i in range(num_workers):
-            p = multiprocessing.Process(
-                target=_read_into_queue, args=(total_samples[i], mapper, queue))
+            p = multiprocessing.Process(target=_read_into_queue,
+                                        args=(total_samples[i], mapper, queue))
             p.start()
 
         finish_num = 0
@@ -230,18 +230,18 @@ class Dataset:
                 items = line.strip().split()
                 if not is_pic(items[0]):
                     continue
-                full_path_im = osp.join(data_dir, items[0])
-                full_path_label = osp.join(data_dir, items[1])
-                if not osp.exists(full_path_im):
+                full_path_im = os.path.join(data_dir, items[0])
+                full_path_label = os.path.join(data_dir, items[1])
+                if not os.path.exists(full_path_im):
                     raise IOError(
                         'The image file {} is not exist!'.format(full_path_im))
-                if not osp.exists(full_path_label):
+                if not os.path.exists(full_path_label):
                     raise IOError('The image file {} is not exist!'.format(
                         full_path_label))
                 self.file_list.append([full_path_im, full_path_label])
         self.num_samples = len(self.file_list)
-        logging.info("{} samples in file {}".format(
-            len(self.file_list), file_list))
+        logging.info("{} samples in file {}".format(len(self.file_list),
+                                                    file_list))
 
     def iterator(self):
         self._epoch += 1
@@ -266,10 +266,9 @@ class Dataset:
                 )
             else:
                 parallel_reader = multiprocess_reader
-        return parallel_reader(
-            self.transforms,
-            self.iterator,
-            num_workers=self.num_workers,
-            buffer_size=self.buffer_size,
-            batch_size=batch_size,
-            drop_last=drop_last)
+        return parallel_reader(self.transforms,
+                               self.iterator,
+                               num_workers=self.num_workers,
+                               buffer_size=self.buffer_size,
+                               batch_size=batch_size,
+                               drop_last=drop_last)

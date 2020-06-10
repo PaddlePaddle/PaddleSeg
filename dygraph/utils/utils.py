@@ -13,7 +13,6 @@
 # limitations under the License.
 
 import os
-import os.path as osp
 import numpy as np
 import math
 import cv2
@@ -59,8 +58,8 @@ def get_environ_info():
 def load_pretrained_model(model, pretrained_model):
     logging.info('Load pretrained model!')
     if pretrained_model is not None:
-        if osp.exists(pretrained_model):
-            ckpt_path = osp.join(pretrained_model, 'model')
+        if os.path.exists(pretrained_model):
+            ckpt_path = os.path.join(pretrained_model, 'model')
             para_state_dict, _ = fluid.load_dygraph(ckpt_path)
             model_state_dict = model.state_dict()
             keys = model_state_dict.keys()
