@@ -77,7 +77,7 @@ def softmax_with_loss(logit,
         weighted_label_one_hot.stop_gradient = True
 
     loss = loss * ignore_mask
-    avg_loss = fluid.layers.mean(loss) / (fluid.layers.mean(ignore_mask) + 0.00001)
+    avg_loss = fluid.layers.mean(loss) / (fluid.layers.mean(ignore_mask) + cfg.MODEL.DEFAULT_EPSILON)
 
     label.stop_gradient = True
     ignore_mask.stop_gradient = True
