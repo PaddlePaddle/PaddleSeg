@@ -14,4 +14,5 @@
 
 from . import logging
 from .metrics import ConfusionMatrix
+from .download import download_file_and_uncompress
 from .utils import *
