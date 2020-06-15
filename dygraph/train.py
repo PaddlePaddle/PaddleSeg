@@ -18,13 +18,16 @@ import os
 from paddle.fluid.dygraph.base import to_variable
 import numpy as np
 import paddle.fluid as fluid
+from paddle.fluid.dygraph.parallel import ParallelEnv
+from paddle.fluid.io import DataLoader
 
-from datasets import Dataset
+from datasets import OpticDiscSeg, Dataset
 import transforms as T
 import models
 import utils.logging as logging
 from utils import get_environ_info
 from utils import load_pretrained_model
+from utils import DistributedBatchSampler
 from val import evaluate
 
 
@@ -95,12 +98,18 @@ def parse_args():
                         help='The directory for saving the model snapshot',
                         type=str,
                         default='./output')
+    parser.add_argument('--num_workers',
+                        dest='num_workers',
+                        help='Num workers for data loader',
+                        type=int,
+                        default=0)
 
     return parser.parse_args()
 
 
 def train(model,
           train_dataset,
+          places=None,
           eval_dataset=None,
           optimizer=None,
           save_dir='output',
@@ -108,7 +117,8 @@ def train(model,
           batch_size=2,
           pretrained_model=None,
           save_interval_epochs=1,
-          num_classes=None):
+          num_classes=None,
+          num_workers=8):
     if not os.path.isdir(save_dir):
         if os.path.exists(save_dir):
             os.remove(save_dir)
@@ -116,12 +126,22 @@ def train(model,
 
     load_pretrained_model(model, pretrained_model)
 
-    data_generator = train_dataset.generator(batch_size=batch_size,
-                                             drop_last=True)
-    num_steps_each_epoch = train_dataset.num_samples // args.batch_size
+    batch_sampler = DistributedBatchSampler(train_dataset,
+                                            batch_size=batch_size,
+                                            shuffle=True,
+                                            drop_last=True)
+    loader = DataLoader(
+        train_dataset,
+        batch_sampler=batch_sampler,
+        places=places,
+        num_workers=num_workers,
+        return_list=True,
+    )
+
+    num_steps_each_epoch = len(train_dataset) // batch_size
 
     for epoch in range(num_epochs):
-        for step, data in enumerate(data_generator()):
+        for step, data in enumerate(loader):
             images = np.array([d[0] for d in data])
             labels = np.array([d[2] for d in data]).astype('int64')
             images = to_variable(images)
@@ -156,6 +176,11 @@ def train(model,
 
 
 def main(args):
+    env_info = get_environ_info()
+    places = fluid.CUDAPlace(ParallelEnv().dev_id) \
+        if env_info['place'] == 'gpu' and fluid.is_compiled_with_cuda() \
+        else fluid.CPUPlace()
+
     with fluid.dygraph.guard(places):
         # Creat dataset reader
         train_transforms = T.Compose([
@@ -163,13 +188,8 @@ def main(args):
             T.RandomHorizontalFlip(),
             T.Normalize()
         ])
-        train_dataset = Dataset(data_dir=args.data_dir,
-                                file_list=args.train_list,
-                                transforms=train_transforms,
-                                num_workers='auto',
-                                buffer_size=100,
-                                parallel_method='thread',
-                                shuffle=True)
+        train_dataset = OpticDiscSeg(transforms=train_transforms, mode='train')
+
         if args.val_list is not None:
             eval_transforms = T.Compose(
                 [T.Resize(args.input_size),
@@ -186,7 +206,7 @@ def main(args):
             model = models.UNet(num_classes=args.num_classes, ignore_index=255)
 
         # Creat optimizer
-        num_steps_each_epoch = train_dataset.num_samples // args.batch_size
+        num_steps_each_epoch = len(train_dataset) // args.batch_size
         decay_step = args.num_epochs * num_steps_each_epoch
         lr_decay = fluid.layers.polynomial_decay(args.learning_rate,
                                                  decay_step,
@@ -200,21 +220,19 @@ def main(args):
 
         train(model,
               train_dataset,
-              eval_dataset,
-              optimizer,
+              places=places,
+              eval_dataset=eval_dataset,
+              optimizer=optimizer,
               save_dir=args.save_dir,
               num_epochs=args.num_epochs,
               batch_size=args.batch_size,
               pretrained_model=args.pretrained_model,
               save_interval_epochs=args.save_interval_epochs,
-              num_classes=args.num_classes)
+              num_classes=args.num_classes,
+              num_workers=args.num_workers)
 
 
 if __name__ == '__main__':
     args = parse_args()
-    env_info = get_environ_info()
-    if env_info['place'] == 'cpu':
-        places = fluid.CPUPlace()
-    else:
-        places = fluid.CUDAPlace(0)
+    print(args)
     main(args)

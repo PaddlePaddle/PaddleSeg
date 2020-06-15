@@ -31,13 +31,11 @@ class OpticDiscSeg(Dataset):
                  train_list=None,
                  val_list=None,
                  test_list=None,
-                 shuffle='False',
+                 transforms=None,
                  mode='train',
-                 transform=None,
                  download=True):
         self.data_dir = data_dir
-        self.shuffle = shuffle
-        self.transform = transform
+        self.transforms = transforms
         self.file_list = list()
 
         if mode.lower() not in ['train', 'eval', 'test']:
@@ -45,7 +43,7 @@ class OpticDiscSeg(Dataset):
                 "mode should be 'train', 'eval' or 'test', but got {}.".format(
                     mode))
 
-        if transform is None:
+        if self.transforms is None:
             raise Exception("transform is necessary, but it is None.")
 
         self.data_dir = data_dir
@@ -83,8 +81,6 @@ class OpticDiscSeg(Dataset):
                     image_path = os.path.join(self.data_dir, items[0])
                     grt_path = os.path.join(self.data_dir, items[1])
                 self.file_list.append([image_path, grt_path])
-        if shuffle:
-            random.shuffle(self.file_list)
 
     def __getitem__(self, idx):
         print(idx)
