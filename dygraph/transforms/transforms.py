@@ -33,8 +33,7 @@ class Compose:
         ValueError: transforms元素个数小于1。
 
     """
-
-    def __init__(self, transforms, to_rgb=False):
+    def __init__(self, transforms, to_rgb=True):
         if not isinstance(transforms, list):
             raise TypeError('The transforms must be a list!')
         if len(transforms) < 1:
@@ -87,7 +86,6 @@ class RandomHorizontalFlip:
         prob (float): 随机水平翻转的概率。默认值为0.5。
 
     """
-
     def __init__(self, prob=0.5):
         self.prob = prob
 
@@ -119,7 +117,6 @@ class RandomVerticalFlip:
     Args:
         prob (float): 随机垂直翻转的概率。默认值为0.1。
     """
-
     def __init__(self, prob=0.1):
         self.prob = prob
 
@@ -236,7 +233,6 @@ class ResizeByLong:
     Args:
         long_size (int): resize后图像的长边大小。
     """
-
     def __init__(self, long_size):
         self.long_size = long_size
 
@@ -278,7 +274,6 @@ class ResizeRangeScaling:
     Raises:
         ValueError: min_value大于max_value
     """
-
     def __init__(self, min_value=400, max_value=600):
         if min_value > max_value:
             raise ValueError('min_value must be less than max_value, '
@@ -326,7 +321,6 @@ class ResizeStepScaling:
     Raises:
         ValueError: min_scale_factor大于max_scale_factor
     """
-
     def __init__(self,
                  min_scale_factor=0.75,
                  max_scale_factor=1.25,
@@ -392,7 +386,6 @@ class Normalize:
     Raises:
         ValueError: mean或std不是list对象。std包含0。
     """
-
     def __init__(self, mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5]):
         self.mean = mean
         self.std = std
@@ -438,7 +431,6 @@ class Padding:
         TypeError: target_size不是int|list|tuple。
         ValueError:  target_size为list|tuple时元素个数不等于2。
     """
-
     def __init__(self,
                  target_size,
                  im_padding_value=[127.5, 127.5, 127.5],
@@ -491,23 +483,21 @@ class Padding:
                 'the size of image should be less than target_size, but the size of image ({}, {}), is larger than target_size ({}, {})'
                 .format(im_width, im_height, target_width, target_height))
         else:
-            im = cv2.copyMakeBorder(
-                im,
-                0,
-                pad_height,
-                0,
-                pad_width,
-                cv2.BORDER_CONSTANT,
-                value=self.im_padding_value)
+            im = cv2.copyMakeBorder(im,
+                                    0,
+                                    pad_height,
+                                    0,
+                                    pad_width,
+                                    cv2.BORDER_CONSTANT,
+                                    value=self.im_padding_value)
             if label is not None:
-                label = cv2.copyMakeBorder(
-                    label,
-                    0,
-                    pad_height,
-                    0,
-                    pad_width,
-                    cv2.BORDER_CONSTANT,
-                    value=self.label_padding_value)
+                label = cv2.copyMakeBorder(label,
+                                           0,
+                                           pad_height,
+                                           0,
+                                           pad_width,
+                                           cv2.BORDER_CONSTANT,
+                                           value=self.label_padding_value)
         if label is None:
             return (im, im_info)
         else:
@@ -526,7 +516,6 @@ class RandomPaddingCrop:
         TypeError: crop_size不是int/list/tuple。
         ValueError:  target_size为list/tuple时元素个数不等于2。
     """
-
     def __init__(self,
                  crop_size=512,
                  im_padding_value=[127.5, 127.5, 127.5],
@@ -575,23 +564,21 @@ class RandomPaddingCrop:
             pad_height = max(crop_height - img_height, 0)
             pad_width = max(crop_width - img_width, 0)
             if (pad_height > 0 or pad_width > 0):
-                im = cv2.copyMakeBorder(
-                    im,
-                    0,
-                    pad_height,
-                    0,
-                    pad_width,
-                    cv2.BORDER_CONSTANT,
-                    value=self.im_padding_value)
+                im = cv2.copyMakeBorder(im,
+                                        0,
+                                        pad_height,
+                                        0,
+                                        pad_width,
+                                        cv2.BORDER_CONSTANT,
+                                        value=self.im_padding_value)
                 if label is not None:
-                    label = cv2.copyMakeBorder(
-                        label,
-                        0,
-                        pad_height,
-                        0,
-                        pad_width,
-                        cv2.BORDER_CONSTANT,
-                        value=self.label_padding_value)
+                    label = cv2.copyMakeBorder(label,
+                                               0,
+                                               pad_height,
+                                               0,
+                                               pad_width,
+                                               cv2.BORDER_CONSTANT,
+                                               value=self.label_padding_value)
                 img_height = im.shape[0]
                 img_width = im.shape[1]
 
@@ -599,11 +586,11 @@ class RandomPaddingCrop:
                 h_off = np.random.randint(img_height - crop_height + 1)
                 w_off = np.random.randint(img_width - crop_width + 1)
 
-                im = im[h_off:(crop_height + h_off), w_off:(
-                    w_off + crop_width), :]
+                im = im[h_off:(crop_height + h_off), w_off:(w_off +
+                                                            crop_width), :]
                 if label is not None:
-                    label = label[h_off:(crop_height + h_off), w_off:(
-                        w_off + crop_width)]
+                    label = label[h_off:(crop_height +
+                                         h_off), w_off:(w_off + crop_width)]
         if label is None:
             return (im, im_info)
         else:
@@ -616,7 +603,6 @@ class RandomBlur:
     Args：
         prob (float): 图像模糊概率。默认为0.1。
     """
-
     def __init__(self, prob=0.1):
         self.prob = prob
 
@@ -664,7 +650,6 @@ class RandomRotation:
         label_padding_value (int): 标注图像padding的值。默认为255。
 
     """
-
     def __init__(self,
                  max_rotation=15,
                  im_padding_value=[127.5, 127.5, 127.5],
@@ -701,20 +686,18 @@ class RandomRotation:
             r[0, 2] += (nw / 2) - cx
             r[1, 2] += (nh / 2) - cy
             dsize = (nw, nh)
-            im = cv2.warpAffine(
-                im,
-                r,
-                dsize=dsize,
-                flags=cv2.INTER_LINEAR,
-                borderMode=cv2.BORDER_CONSTANT,
-                borderValue=self.im_padding_value)
-            label = cv2.warpAffine(
-                label,
-                r,
-                dsize=dsize,
-                flags=cv2.INTER_NEAREST,
-                borderMode=cv2.BORDER_CONSTANT,
-                borderValue=self.label_padding_value)
+            im = cv2.warpAffine(im,
+                                r,
+                                dsize=dsize,
+                                flags=cv2.INTER_LINEAR,
+                                borderMode=cv2.BORDER_CONSTANT,
+                                borderValue=self.im_padding_value)
+            label = cv2.warpAffine(label,
+                                   r,
+                                   dsize=dsize,
+                                   flags=cv2.INTER_NEAREST,
+                                   borderMode=cv2.BORDER_CONSTANT,
+                                   borderValue=self.label_padding_value)
 
         if label is None:
             return (im, im_info)
@@ -730,7 +713,6 @@ class RandomScaleAspect:
         min_scale (float)：裁取图像占原始图像的面积比，取值[0，1]，为0时则返回原图。默认为0.5。
         aspect_ratio (float): 裁取图像的宽高比范围，非负值，为0时返回原图。默认为0.33。
     """
-
     def __init__(self, min_scale=0.5, aspect_ratio=0.33):
         self.min_scale = min_scale
         self.aspect_ratio = aspect_ratio
@@ -769,12 +751,10 @@ class RandomScaleAspect:
 
                     im = im[h1:(h1 + dh), w1:(w1 + dw), :]
                     label = label[h1:(h1 + dh), w1:(w1 + dw)]
-                    im = cv2.resize(
-                        im, (img_width, img_height),
-                        interpolation=cv2.INTER_LINEAR)
-                    label = cv2.resize(
-                        label, (img_width, img_height),
-                        interpolation=cv2.INTER_NEAREST)
+                    im = cv2.resize(im, (img_width, img_height),
+                                    interpolation=cv2.INTER_LINEAR)
+                    label = cv2.resize(label, (img_width, img_height),
+                                       interpolation=cv2.INTER_NEAREST)
                     break
         if label is None:
             return (im, im_info)
@@ -798,7 +778,6 @@ class RandomDistort:
         hue_range (int): 色调因子的范围。默认为18。
         hue_prob (float): 随机调整色调的概率。默认为0.5。
     """
-
     def __init__(self,
                  brightness_range=0.5,
                  brightness_prob=0.5,

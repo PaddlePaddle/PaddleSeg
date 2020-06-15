@@ -13,6 +13,6 @@
 # limitations under the License.
 
 from . import logging
+from . import download
 from .metrics import ConfusionMatrix
-from .download import download_file_and_uncompress
 from .utils import *
