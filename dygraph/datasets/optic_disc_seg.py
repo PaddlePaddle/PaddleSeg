@@ -85,7 +85,7 @@ class OpticDiscSeg(Dataset):
     def __getitem__(self, idx):
         print(idx)
         image_path, grt_path = self.file_list[idx]
-        return self.transform(im=image_path, label=grt_path)
+        return self.transforms(im=image_path, label=grt_path)
 
     def __len__(self):
         return len(self.file_list)

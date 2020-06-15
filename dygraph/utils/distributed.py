@@ -95,7 +95,7 @@ class DistributedBatchSampler(BatchSampler):
         indices += indices[:(self.total_size - len(indices))]
         assert len(indices) == self.total_size
         if self.shuffle:
-            np.random.RandomState.shuffle(indices)
+            np.random.shuffle(indices)
 
         # subsample
         def _get_indices_by_batch_size(indices):
