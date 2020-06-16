@@ -280,7 +280,9 @@ def resnet_vd(input):
         dilation_dict = {3: 2}
     else:
         raise Exception("deeplab only support stride 8 or 16")
-    model = resnet_vd_backbone(layers, stem='deeplab')
+    lr_mult_list = cfg.MODEL.DEEPLAB.RESNET_LR_MULT_LIST
+    model = resnet_vd_backbone(
+        layers, stem='deeplab', lr_mult_list=lr_mult_list)
     data, decode_shortcuts = model.net(
         input,
         end_points=end_points,
