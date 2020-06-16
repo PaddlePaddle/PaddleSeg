@@ -18,6 +18,7 @@ import os
 import random
 
 from paddle.fluid.io import Dataset
+import cv2
 
 from utils.download import download_file_and_uncompress
 
@@ -37,6 +38,7 @@ class OpticDiscSeg(Dataset):
         self.data_dir = data_dir
         self.transforms = transforms
         self.file_list = list()
+        self.mode = mode
 
         if mode.lower() not in ['train', 'eval', 'test']:
             raise Exception(
@@ -50,9 +52,8 @@ class OpticDiscSeg(Dataset):
         if self.data_dir is None:
             if not download:
                 raise Exception("data_file not set and auto download disabled.")
-            self.data_dir = download_file_and_uncompress(url=URL,
-                                                         savepath=LOCAL_PATH,
-                                                         extrapath=LOCAL_PATH)
+            self.data_dir = download_file_and_uncompress(
+                url=URL, savepath=LOCAL_PATH, extrapath=LOCAL_PATH)
             if mode == 'train':
                 file_list = os.path.join(self.data_dir, 'train_list.txt')
             elif mode == 'eval':
@@ -83,9 +84,14 @@ class OpticDiscSeg(Dataset):
                 self.file_list.append([image_path, grt_path])
 
     def __getitem__(self, idx):
-        print(idx)
         image_path, grt_path = self.file_list[idx]
-        return self.transforms(im=image_path, label=grt_path)
+        im, im_info, label = self.transforms(im=image_path, label=grt_path)
+        if self.mode == 'train':
+            return im, label
+        elif self.mode == 'eval':
+            return im, label
+        if self.mode == 'test':
+            return im, im_info
 
     def __len__(self):
         return len(self.file_list)
