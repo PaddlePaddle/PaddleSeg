@@ -132,12 +132,19 @@ def train(model,
           save_interval_epochs=1,
           num_classes=None,
           num_workers=8):
+    ignore_index = model.ignore_index
+    nranks = ParallelEnv().nranks
+
+    load_pretrained_model(model, pretrained_model)
+
     if not os.path.isdir(save_dir):
         if os.path.exists(save_dir):
             os.remove(save_dir)
         os.makedirs(save_dir)
 
-    load_pretrained_model(model, pretrained_model)
+    if nranks > 1:
+        strategy = fluid.dygraph.prepare_context()
+        model_parallel = fluid.dygraph.DataParallel(model, strategy)
 
     batch_sampler = DistributedBatchSampler(
         train_dataset, batch_size=batch_size, shuffle=True, drop_last=True)
@@ -155,32 +162,39 @@ def train(model,
         for step, data in enumerate(loader):
             images = data[0]
             labels = data[1].astype('int64')
-            loss = model(images, labels, mode='train')
-            loss.backward()
+            if nranks > 1:
+                loss = model_parallel(images, labels, mode='train')
+                loss = model_parallel.scale_loss(loss)
+                loss.backward()
+                model_parallel.apply_collective_grads()
+            else:
+                loss = model(images, labels, mode='train')
+                loss.backward()
             optimizer.minimize(loss)
+            model_parallel.clear_gradients()
             logging.info("[TRAIN] Epoch={}/{}, Step={}/{}, loss={}".format(
                 epoch + 1, num_epochs, step + 1, num_steps_each_epoch,
                 loss.numpy()))
 
-        if (
-                epoch + 1
-        ) % save_interval_epochs == 0 or num_steps_each_epoch == num_epochs - 1:
+        if ((epoch + 1) % save_interval_epochs == 0
+                or num_steps_each_epoch == num_epochs - 1
+            ) and ParallelEnv().local_rank == 0:
             current_save_dir = os.path.join(save_dir,
                                             "epoch_{}".format(epoch + 1))
             if not os.path.isdir(current_save_dir):
                 os.makedirs(current_save_dir)
-            fluid.save_dygraph(model.state_dict(),
+            fluid.save_dygraph(model_parallel.state_dict(),
                                os.path.join(current_save_dir, 'model'))
 
             if eval_dataset is not None:
-                model.eval()
                 evaluate(
                     model,
                     eval_dataset,
+                    places=places,
                     model_dir=current_save_dir,
                     num_classes=num_classes,
                     batch_size=batch_size,
-                    ignore_index=model.ignore_index,
+                    ignore_index=ignore_index,
                     epoch_id=epoch + 1)
                 model.train()
 
@@ -188,7 +202,7 @@ def train(model,
 def main(args):
     env_info = get_environ_info()
     places = fluid.CUDAPlace(ParallelEnv().dev_id) \
-        if env_info['place'] == 'gpu' and fluid.is_compiled_with_cuda() \
+        if env_info['place'] == 'cuda' and fluid.is_compiled_with_cuda() \
         else fluid.CPUPlace()
 
     with fluid.dygraph.guard(places):
@@ -200,18 +214,13 @@ def main(args):
         ])
         train_dataset = OpticDiscSeg(transforms=train_transforms, mode='train')
 
+        eval_dataset = None
         if args.val_list is not None:
             eval_transforms = T.Compose(
                 [T.Resize(args.input_size),
                  T.Normalize()])
-            eval_dataset = Dataset(
-                data_dir=args.data_dir,
-                file_list=args.val_list,
-                transforms=eval_transforms,
-                num_workers='auto',
-                buffer_size=100,
-                parallel_method='thread',
-                shuffle=False)
+            eval_dataset = OpticDiscSeg(
+                transforms=train_transforms, mode='eval')
 
         if args.model_name == 'UNet':
             model = models.UNet(num_classes=args.num_classes, ignore_index=255)
@@ -244,5 +253,4 @@ def main(args):
 
 if __name__ == '__main__':
     args = parse_args()
-    print(args)
     main(args)

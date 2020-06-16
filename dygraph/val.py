@@ -19,6 +19,7 @@ import math
 from paddle.fluid.dygraph.base import to_variable
 import numpy as np
 import paddle.fluid as fluid
+from paddle.fluid.io import DataLoader
 
 from datasets import Dataset
 import transforms as T
@@ -26,57 +27,66 @@ import models
 import utils.logging as logging
 from utils import get_environ_info
 from utils import ConfusionMatrix
+from utils import DistributedBatchSampler
 
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Model training')
 
     # params of model
-    parser.add_argument('--model_name',
-                        dest='model_name',
-                        help="Model type for traing, which is one of ('UNet')",
-                        type=str,
-                        default='UNet')
+    parser.add_argument(
+        '--model_name',
+        dest='model_name',
+        help="Model type for traing, which is one of ('UNet')",
+        type=str,
+        default='UNet')
 
     # params of dataset
-    parser.add_argument('--data_dir',
-                        dest='data_dir',
-                        help='The root directory of dataset',
-                        type=str)
-    parser.add_argument('--val_list',
-                        dest='val_list',
-                        help='Val list file of dataset',
-                        type=str,
-                        default=None)
-    parser.add_argument('--num_classes',
-                        dest='num_classes',
-                        help='Number of classes',
-                        type=int,
-                        default=2)
+    parser.add_argument(
+        '--data_dir',
+        dest='data_dir',
+        help='The root directory of dataset',
+        type=str)
+    parser.add_argument(
+        '--val_list',
+        dest='val_list',
+        help='Val list file of dataset',
+        type=str,
+        default=None)
+    parser.add_argument(
+        '--num_classes',
+        dest='num_classes',
+        help='Number of classes',
+        type=int,
+        default=2)
 
     # params of evaluate
-    parser.add_argument("--input_size",
-                        dest="input_size",
-                        help="The image size for net inputs.",
-                        nargs=2,
-                        default=[512, 512],
-                        type=int)
-    parser.add_argument('--batch_size',
-                        dest='batch_size',
-                        help='Mini batch size',
-                        type=int,
-                        default=2)
-    parser.add_argument('--model_dir',
-                        dest='model_dir',
-                        help='The path of model for evaluation',
-                        type=str,
-                        default=None)
+    parser.add_argument(
+        "--input_size",
+        dest="input_size",
+        help="The image size for net inputs.",
+        nargs=2,
+        default=[512, 512],
+        type=int)
+    parser.add_argument(
+        '--batch_size',
+        dest='batch_size',
+        help='Mini batch size',
+        type=int,
+        default=2)
+    parser.add_argument(
+        '--model_dir',
+        dest='model_dir',
+        help='The path of model for evaluation',
+        type=str,
+        default=None)
 
     return parser.parse_args()
 
 
 def evaluate(model,
              eval_dataset=None,
+             places=None,
              model_dir=None,
              num_classes=None,
              batch_size=2,
@@ -87,18 +97,23 @@ def evaluate(model,
     model.set_dict(para_state_dict)
     model.eval()
 
-    data_generator = eval_dataset.generator(batch_size=batch_size,
-                                            drop_last=True)
+    batch_sampler = DistributedBatchSampler(
+        eval_dataset, batch_size=batch_size, shuffle=True, drop_last=False)
+    loader = DataLoader(
+        eval_dataset,
+        batch_sampler=batch_sampler,
+        places=places,
+        return_list=True,
+    )
     total_steps = math.ceil(eval_dataset.num_samples * 1.0 / batch_size)
     conf_mat = ConfusionMatrix(num_classes, streaming=True)
 
     logging.info(
         "Start to evaluating(total_samples={}, total_steps={})...".format(
             eval_dataset.num_samples, total_steps))
-    for step, data in enumerate(data_generator()):
-        images = np.array([d[0] for d in data])
-        labels = np.array([d[2] for d in data]).astype('int64')
-        images = to_variable(images)
+    for step, data in enumerate(loader):
+        images = data[0]
+        labels = data[1].astype('int64')
         pred, _ = model(images, labels, mode='eval')
 
         pred = pred.numpy()
@@ -120,31 +135,33 @@ def evaluate(model,
 
 
 def main(args):
-    with fluid.dygraph.guard(places):
-        eval_transforms = T.Compose([T.Resize(args.input_size), T.Normalize()])
-        eval_dataset = Dataset(data_dir=args.data_dir,
-                               file_list=args.val_list,
-                               transforms=eval_transforms,
-                               num_workers='auto',
-                               buffer_size=100,
-                               parallel_method='thread',
-                               shuffle=False)
-
-        if args.model_name == 'UNet':
-            model = models.UNet(num_classes=args.num_classes)
-
-        evaluate(model,
-                 eval_dataset,
-                 model_dir=args.model_dir,
-                 num_classes=args.num_classes,
-                 batch_size=args.batch_size)
-
-
-if __name__ == '__main__':
-    args = parse_args()
     env_info = get_environ_info()
     if env_info['place'] == 'cpu':
         places = fluid.CPUPlace()
     else:
         places = fluid.CUDAPlace(0)
+    with fluid.dygraph.guard(places):
+        eval_transforms = T.Compose([T.Resize(args.input_size), T.Normalize()])
+        eval_dataset = Dataset(
+            data_dir=args.data_dir,
+            file_list=args.val_list,
+            transforms=eval_transforms,
+            num_workers='auto',
+            buffer_size=100,
+            parallel_method='thread',
+            shuffle=False)
+
+        if args.model_name == 'UNet':
+            model = models.UNet(num_classes=args.num_classes)
+
+        evaluate(
+            model,
+            eval_dataset,
+            model_dir=args.model_dir,
+            num_classes=args.num_classes,
+            batch_size=args.batch_size)
+
+
+if __name__ == '__main__':
+    args = parse_args()
     main(args)

@@ -57,7 +57,7 @@ class OpticDiscSeg(Dataset):
             if mode == 'train':
                 file_list = os.path.join(self.data_dir, 'train_list.txt')
             elif mode == 'eval':
-                file_list = os.paht.join(self.data_dir, 'val_list.txt')
+                file_list = os.path.join(self.data_dir, 'val_list.txt')
             else:
                 file_list = os.path.join(self.data_dir, 'test_list.txt')
         else:
