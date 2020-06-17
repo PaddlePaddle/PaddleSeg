@@ -43,22 +43,11 @@ def parse_args():
 
     # params of dataset
     parser.add_argument(
-        '--data_dir',
-        dest='data_dir',
-        help='The root directory of dataset',
-        type=str)
-    parser.add_argument(
-        '--test_list',
-        dest='test_list',
-        help='Val list file of dataset',
+        '--dataset',
+        dest='dataset',
+        help='The dataset you want to train',
         type=str,
-        default=None)
-    parser.add_argument(
-        '--num_classes',
-        dest='num_classes',
-        help='Number of classes',
-        type=int,
-        default=2)
+        default='OpticDiscSeg')
 
     # params of prediction
     parser.add_argument(
@@ -142,12 +131,19 @@ def main(args):
     places = fluid.CUDAPlace(ParallelEnv().dev_id) \
         if env_info['place'] == 'cuda' and fluid.is_compiled_with_cuda() \
         else fluid.CPUPlace()
+
+    if args.dataset.lower() == 'opticdiscseg':
+        dataset = OpticDiscSeg
+    else:
+        raise Exception(
+            "The --dataset set wrong. It should be one of ('OpticDiscSeg',)")
+
     with fluid.dygraph.guard(places):
         test_transforms = T.Compose([T.Resize(args.input_size), T.Normalize()])
-        test_dataset = OpticDiscSeg(transforms=test_transforms, mode='test')
+        test_dataset = dataset(transforms=test_transforms, mode='test')
 
         if args.model_name == 'UNet':
-            model = models.UNet(num_classes=args.num_classes)
+            model = models.UNet(num_classes=test_dataset.num_classes)
 
         infer(
             model,

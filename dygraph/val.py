@@ -44,22 +44,11 @@ def parse_args():
 
     # params of dataset
     parser.add_argument(
-        '--data_dir',
-        dest='data_dir',
-        help='The root directory of dataset',
-        type=str)
-    parser.add_argument(
-        '--val_list',
-        dest='val_list',
-        help='Val list file of dataset',
+        '--dataset',
+        dest='dataset',
+        help='The dataset you want to evaluation',
         type=str,
-        default=None)
-    parser.add_argument(
-        '--num_classes',
-        dest='num_classes',
-        help='Number of classes',
-        type=int,
-        default=2)
+        default='OpticDiscSeg')
 
     # params of evaluate
     parser.add_argument(
@@ -140,19 +129,26 @@ def main(args):
     places = fluid.CUDAPlace(ParallelEnv().dev_id) \
         if env_info['place'] == 'cuda' and fluid.is_compiled_with_cuda() \
         else fluid.CPUPlace()
+
+    if args.dataset.lower() == 'opticdiscseg':
+        dataset = OpticDiscSeg
+    else:
+        raise Exception(
+            "The --dataset set wrong. It should be one of ('OpticDiscSeg',)")
+
     with fluid.dygraph.guard(places):
         eval_transforms = T.Compose([T.Resize(args.input_size), T.Normalize()])
-        eval_dataset = OpticDiscSeg(transforms=eval_transforms, mode='eval')
+        eval_dataset = dataset(transforms=eval_transforms, mode='eval')
 
         if args.model_name == 'UNet':
-            model = models.UNet(num_classes=args.num_classes)
+            model = models.UNet(num_classes=eval_dataset.num_classes)
 
         evaluate(
             model,
             eval_dataset,
             places=places,
             model_dir=args.model_dir,
-            num_classes=args.num_classes,
+            num_classes=eval_dataset.num_classes,
             batch_size=args.batch_size)
 
 
