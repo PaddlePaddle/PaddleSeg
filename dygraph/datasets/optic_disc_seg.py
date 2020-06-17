@@ -12,13 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import print_function
-
 import os
-import random
 
 from paddle.fluid.io import Dataset
-import cv2
 
 from utils.download import download_file_and_uncompress
 

@@ -12,10 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import paddle.fluid as fluid
 from paddle.fluid.dygraph import Conv2D, BatchNorm, Pool2D
 
@@ -23,8 +19,8 @@ from paddle.fluid.dygraph import Conv2D, BatchNorm, Pool2D
 class UNet(fluid.dygraph.Layer):
     def __init__(self, num_classes, ignore_index=255):
         super().__init__()
-        self.encode = Encoder()
-        self.decode = Decode()
+        self.encode = UnetEncoder()
+        self.decode = UnetDecode()
         self.get_logit = GetLogit(64, num_classes)
         self.ignore_index = ignore_index
         self.EPS = 1e-5
@@ -61,7 +57,7 @@ class UNet(fluid.dygraph.Layer):
         return avg_loss
 
 
-class Encoder(fluid.dygraph.Layer):
+class UnetEncoder(fluid.dygraph.Layer):
     def __init__(self):
         super().__init__()
         self.double_conv = DoubleConv(3, 64)
@@ -84,7 +80,7 @@ class Encoder(fluid.dygraph.Layer):
         return x, short_cuts
 
 
-class Decode(fluid.dygraph.Layer):
+class UnetDecode(fluid.dygraph.Layer):
     def __init__(self):
         super().__init__()
         self.up1 = Up(512, 256)
