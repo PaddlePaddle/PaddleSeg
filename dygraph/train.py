@@ -15,11 +15,10 @@
 import argparse
 import os
 
-from paddle.fluid.dygraph.base import to_variable
-import numpy as np
 import paddle.fluid as fluid
 from paddle.fluid.dygraph.parallel import ParallelEnv
 from paddle.fluid.io import DataLoader
+from paddle.incubate.hapi.distributed import DistributedBatchSampler
 
 from datasets import OpticDiscSeg
 import transforms as T
@@ -27,7 +26,6 @@ import models
 import utils.logging as logging
 from utils import get_environ_info
 from utils import load_pretrained_model
-from utils import DistributedBatchSampler
 from val import evaluate
 
 
