@@ -22,16 +22,13 @@ import cv2
 
 from utils.download import download_file_and_uncompress
 
-LOCAL_PATH = os.path.dirname(os.path.abspath(__file__))
+DATA_HOME = os.path.expanduser('~/.cache/paddle/dataset')
 URL = "https://paddleseg.bj.bcebos.com/dataset/optic_disc_seg.zip"
 
 
 class OpticDiscSeg(Dataset):
     def __init__(self,
                  data_dir=None,
-                 train_list=None,
-                 val_list=None,
-                 test_list=None,
                  transforms=None,
                  mode='train',
                  download=True):
@@ -39,6 +36,7 @@ class OpticDiscSeg(Dataset):
         self.transforms = transforms
         self.file_list = list()
         self.mode = mode
+        self.num_classes = 2
 
         if mode.lower() not in ['train', 'eval', 'test']:
             raise Exception(
@@ -53,20 +51,14 @@ class OpticDiscSeg(Dataset):
             if not download:
                 raise Exception("data_file not set and auto download disabled.")
             self.data_dir = download_file_and_uncompress(
-                url=URL, savepath=LOCAL_PATH, extrapath=LOCAL_PATH)
-            if mode == 'train':
-                file_list = os.path.join(self.data_dir, 'train_list.txt')
-            elif mode == 'eval':
-                file_list = os.path.join(self.data_dir, 'val_list.txt')
-            else:
-                file_list = os.path.join(self.data_dir, 'test_list.txt')
+                url=URL, savepath=DATA_HOME, extrapath=DATA_HOME)
+
+        if mode == 'train':
+            file_list = os.path.join(self.data_dir, 'train_list.txt')
+        elif mode == 'eval':
+            file_list = os.path.join(self.data_dir, 'val_list.txt')
         else:
-            if mode == 'train':
-                file_list = train_list
-            elif mode == 'eval':
-                file_list = val_list
-            else:
-                file_list = test_list
+            file_list = os.path.join(self.data_dir, 'test_list.txt')
 
         with open(file_list, 'r') as f:
             for line in f:
