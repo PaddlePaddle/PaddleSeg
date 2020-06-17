@@ -18,9 +18,11 @@ import os
 from paddle.fluid.dygraph.base import to_variable
 import numpy as np
 import paddle.fluid as fluid
+from paddle.fluid.dygraph.parallel import ParallelEnv
 import cv2
 import tqdm
 
+from datasets import OpticDiscSeg
 import transforms as T
 import models
 import utils
@@ -32,50 +34,58 @@ def parse_args():
     parser = argparse.ArgumentParser(description='Model training')
 
     # params of model
-    parser.add_argument('--model_name',
-                        dest='model_name',
-                        help="Model type for traing, which is one of ('UNet')",
-                        type=str,
-                        default='UNet')
+    parser.add_argument(
+        '--model_name',
+        dest='model_name',
+        help="Model type for traing, which is one of ('UNet')",
+        type=str,
+        default='UNet')
 
     # params of dataset
-    parser.add_argument('--data_dir',
-                        dest='data_dir',
-                        help='The root directory of dataset',
-                        type=str)
-    parser.add_argument('--test_list',
-                        dest='test_list',
-                        help='Val list file of dataset',
-                        type=str,
-                        default=None)
-    parser.add_argument('--num_classes',
-                        dest='num_classes',
-                        help='Number of classes',
-                        type=int,
-                        default=2)
+    parser.add_argument(
+        '--data_dir',
+        dest='data_dir',
+        help='The root directory of dataset',
+        type=str)
+    parser.add_argument(
+        '--test_list',
+        dest='test_list',
+        help='Val list file of dataset',
+        type=str,
+        default=None)
+    parser.add_argument(
+        '--num_classes',
+        dest='num_classes',
+        help='Number of classes',
+        type=int,
+        default=2)
 
     # params of prediction
-    parser.add_argument("--input_size",
-                        dest="input_size",
-                        help="The image size for net inputs.",
-                        nargs=2,
-                        default=[512, 512],
-                        type=int)
-    parser.add_argument('--batch_size',
-                        dest='batch_size',
-                        help='Mini batch size',
-                        type=int,
-                        default=2)
-    parser.add_argument('--model_dir',
-                        dest='model_dir',
-                        help='The path of model for evaluation',
-                        type=str,
-                        default=None)
-    parser.add_argument('--save_dir',
-                        dest='save_dir',
-                        help='The directory for saving the inference results',
-                        type=str,
-                        default='./output/result')
+    parser.add_argument(
+        "--input_size",
+        dest="input_size",
+        help="The image size for net inputs.",
+        nargs=2,
+        default=[512, 512],
+        type=int)
+    parser.add_argument(
+        '--batch_size',
+        dest='batch_size',
+        help='Mini batch size',
+        type=int,
+        default=2)
+    parser.add_argument(
+        '--model_dir',
+        dest='model_dir',
+        help='The path of model for evaluation',
+        type=str,
+        default=None)
+    parser.add_argument(
+        '--save_dir',
+        dest='save_dir',
+        help='The directory for saving the inference results',
+        type=str,
+        default='./output/result')
 
     return parser.parse_args()
 
@@ -86,26 +96,19 @@ def mkdir(path):
         os.makedirs(sub_dir)
 
 
-def infer(model, data_dir=None, test_list=None, model_dir=None,
-          transforms=None):
+def infer(model, test_dataset=None, model_dir=None, save_dir='output'):
     ckpt_path = os.path.join(model_dir, 'model')
     para_state_dict, opti_state_dict = fluid.load_dygraph(ckpt_path)
     model.set_dict(para_state_dict)
     model.eval()
 
-    added_saved_dir = os.path.join(args.save_dir, 'added')
-    pred_saved_dir = os.path.join(args.save_dir, 'prediction')
+    added_saved_dir = os.path.join(save_dir, 'added')
+    pred_saved_dir = os.path.join(save_dir, 'prediction')
 
     logging.info("Start to predict...")
-    with open(test_list, 'r') as f:
-        files = f.readlines()
-    for file in tqdm.tqdm(files):
-        file = file.strip()
-        im_file = os.path.join(data_dir, file)
-        im, im_info, _ = transforms(im_file)
-        im = np.expand_dims(im, axis=0)
+    for im, im_info, im_path in tqdm.tqdm(test_dataset):
+        im = im[np.newaxis, ...]
         im = to_variable(im)
-
         pred, _ = model(im, mode='test')
         pred = pred.numpy()
         pred = np.squeeze(pred).astype('uint8')
@@ -118,38 +121,41 @@ def infer(model, data_dir=None, test_list=None, model_dir=None,
                 h, w = im_info[k][0], im_info[k][1]
                 pred = pred[0:h, 0:w]
 
+        im_file = im_path.replace(test_dataset.data_dir, '')
+        if im_file[0] == '/':
+            im_file = im_file[1:]
         # save added image
-        added_image = utils.visualize(im_file, pred, weight=0.6)
-        added_image_path = os.path.join(added_saved_dir, file)
+        added_image = utils.visualize(im_path, pred, weight=0.6)
+        added_image_path = os.path.join(added_saved_dir, im_file)
         mkdir(added_image_path)
         cv2.imwrite(added_image_path, added_image)
 
         # save prediction
-        pred_im = utils.visualize(im_file, pred, weight=0.0)
-        pred_saved_path = os.path.join(pred_saved_dir, file)
+        pred_im = utils.visualize(im_path, pred, weight=0.0)
+        pred_saved_path = os.path.join(pred_saved_dir, im_file)
         mkdir(pred_saved_path)
         cv2.imwrite(pred_saved_path, pred_im)
 
 
 def main(args):
+    env_info = get_environ_info()
+    places = fluid.CUDAPlace(ParallelEnv().dev_id) \
+        if env_info['place'] == 'cuda' and fluid.is_compiled_with_cuda() \
+        else fluid.CPUPlace()
     with fluid.dygraph.guard(places):
         test_transforms = T.Compose([T.Resize(args.input_size), T.Normalize()])
+        test_dataset = OpticDiscSeg(transforms=test_transforms, mode='test')
 
         if args.model_name == 'UNet':
             model = models.UNet(num_classes=args.num_classes)
 
-        infer(model,
-              data_dir=args.data_dir,
-              test_list=args.test_list,
-              model_dir=args.model_dir,
-              transforms=test_transforms)
+        infer(
+            model,
+            model_dir=args.model_dir,
+            test_dataset=test_dataset,
+            save_dir=args.save_dir)
 
 
 if __name__ == '__main__':
     args = parse_args()
-    env_info = get_environ_info()
-    if env_info['place'] == 'cpu':
-        places = fluid.CPUPlace()
-    else:
-        places = fluid.CUDAPlace(0)
     main(args)

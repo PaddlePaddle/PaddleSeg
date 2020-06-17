@@ -91,7 +91,7 @@ class OpticDiscSeg(Dataset):
         elif self.mode == 'eval':
             return im, label
         if self.mode == 'test':
-            return im, im_info
+            return im, im_info, image_path
 
     def __len__(self):
         return len(self.file_list)

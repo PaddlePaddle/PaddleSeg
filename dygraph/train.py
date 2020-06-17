@@ -116,6 +116,11 @@ def parse_args():
         help='Num workers for data loader',
         type=int,
         default=0)
+    parser.add_argument(
+        '--do_eval',
+        dest='do_eval',
+        help='Eval while training',
+        action='store_true')
 
     return parser.parse_args()
 
@@ -183,7 +188,7 @@ def train(model,
                                             "epoch_{}".format(epoch + 1))
             if not os.path.isdir(current_save_dir):
                 os.makedirs(current_save_dir)
-            fluid.save_dygraph(model_parallel.state_dict(),
+            fluid.save_dygraph(model.state_dict(),
                                os.path.join(current_save_dir, 'model'))
 
             if eval_dataset is not None:
@@ -215,12 +220,11 @@ def main(args):
         train_dataset = OpticDiscSeg(transforms=train_transforms, mode='train')
 
         eval_dataset = None
-        if args.val_list is not None:
+        if args.do_eval:
             eval_transforms = T.Compose(
                 [T.Resize(args.input_size),
                  T.Normalize()])
-            eval_dataset = OpticDiscSeg(
-                transforms=train_transforms, mode='eval')
+            eval_dataset = OpticDiscSeg(transforms=eval_transforms, mode='eval')
 
         if args.model_name == 'UNet':
             model = models.UNet(num_classes=args.num_classes, ignore_index=255)

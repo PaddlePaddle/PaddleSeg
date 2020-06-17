@@ -19,25 +19,26 @@ import math
 from paddle.fluid.dygraph.base import to_variable
 import numpy as np
 import paddle.fluid as fluid
+from paddle.fluid.dygraph.parallel import ParallelEnv
 from paddle.fluid.io import DataLoader
+from paddle.fluid.dataloader import BatchSampler
 
-from datasets import Dataset
+from datasets import OpticDiscSeg
 import transforms as T
 import models
 import utils.logging as logging
 from utils import get_environ_info
 from utils import ConfusionMatrix
-from utils import DistributedBatchSampler
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description='Model training')
+    parser = argparse.ArgumentParser(description='Model evaluation')
 
     # params of model
     parser.add_argument(
         '--model_name',
         dest='model_name',
-        help="Model type for traing, which is one of ('UNet')",
+        help="Model type for evaluation, which is one of ('UNet')",
         type=str,
         default='UNet')
 
@@ -97,28 +98,28 @@ def evaluate(model,
     model.set_dict(para_state_dict)
     model.eval()
 
-    batch_sampler = DistributedBatchSampler(
-        eval_dataset, batch_size=batch_size, shuffle=True, drop_last=False)
+    batch_sampler = BatchSampler(
+        eval_dataset, batch_size=batch_size, shuffle=False, drop_last=False)
     loader = DataLoader(
         eval_dataset,
         batch_sampler=batch_sampler,
         places=places,
         return_list=True,
     )
-    total_steps = math.ceil(eval_dataset.num_samples * 1.0 / batch_size)
+    total_steps = math.ceil(len(eval_dataset) * 1.0 / batch_size)
     conf_mat = ConfusionMatrix(num_classes, streaming=True)
 
     logging.info(
         "Start to evaluating(total_samples={}, total_steps={})...".format(
-            eval_dataset.num_samples, total_steps))
+            len(eval_dataset), total_steps))
     for step, data in enumerate(loader):
         images = data[0]
         labels = data[1].astype('int64')
-        pred, _ = model(images, labels, mode='eval')
+        pred, _ = model(images, mode='eval')
 
         pred = pred.numpy()
+        labels = labels.numpy()
         mask = labels != ignore_index
-
         conf_mat.calculate(pred=pred, label=labels, ignore=mask)
         _, iou = conf_mat.mean_iou()
 
@@ -128,7 +129,7 @@ def evaluate(model,
     category_iou, miou = conf_mat.mean_iou()
     category_acc, macc = conf_mat.accuracy()
     logging.info("[EVAL] #image={} acc={:.4f} IoU={:.4f}".format(
-        eval_dataset.num_samples, macc, miou))
+        len(eval_dataset), macc, miou))
     logging.info("[EVAL] Category IoU: " + str(category_iou))
     logging.info("[EVAL] Category Acc: " + str(category_acc))
     logging.info("[EVAL] Kappa:{:.4f} ".format(conf_mat.kappa()))
@@ -136,20 +137,12 @@ def evaluate(model,
 
 def main(args):
     env_info = get_environ_info()
-    if env_info['place'] == 'cpu':
-        places = fluid.CPUPlace()
-    else:
-        places = fluid.CUDAPlace(0)
+    places = fluid.CUDAPlace(ParallelEnv().dev_id) \
+        if env_info['place'] == 'cuda' and fluid.is_compiled_with_cuda() \
+        else fluid.CPUPlace()
     with fluid.dygraph.guard(places):
         eval_transforms = T.Compose([T.Resize(args.input_size), T.Normalize()])
-        eval_dataset = Dataset(
-            data_dir=args.data_dir,
-            file_list=args.val_list,
-            transforms=eval_transforms,
-            num_workers='auto',
-            buffer_size=100,
-            parallel_method='thread',
-            shuffle=False)
+        eval_dataset = OpticDiscSeg(transforms=eval_transforms, mode='eval')
 
         if args.model_name == 'UNet':
             model = models.UNet(num_classes=args.num_classes)
@@ -157,6 +150,7 @@ def main(args):
         evaluate(
             model,
             eval_dataset,
+            places=places,
             model_dir=args.model_dir,
             num_classes=args.num_classes,
             batch_size=args.batch_size)
