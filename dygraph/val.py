@@ -23,7 +23,7 @@ from paddle.fluid.dygraph.parallel import ParallelEnv
 from paddle.fluid.io import DataLoader
 from paddle.fluid.dataloader import BatchSampler
 
-from datasets import OpticDiscSeg
+from datasets import OpticDiscSeg, Cityscapes
 import transforms as T
 import models
 import utils.logging as logging
@@ -46,7 +46,8 @@ def parse_args():
     parser.add_argument(
         '--dataset',
         dest='dataset',
-        help='The dataset you want to evaluation',
+        help=
+        "The dataset you want to evaluation, which is one of ('OpticDiscSeg', 'Cityscapes')",
         type=str,
         default='OpticDiscSeg')
 
@@ -132,9 +133,12 @@ def main(args):
 
     if args.dataset.lower() == 'opticdiscseg':
         dataset = OpticDiscSeg
+    elif args.dataset.lower() == 'cityscapes':
+        dataset = Cityscapes
     else:
         raise Exception(
-            "The --dataset set wrong. It should be one of ('OpticDiscSeg',)")
+            "The --dataset set wrong. It should be one of ('OpticDiscSeg', 'Cityscapes')"
+        )
 
     with fluid.dygraph.guard(places):
         eval_transforms = T.Compose([T.Resize(args.input_size), T.Normalize()])

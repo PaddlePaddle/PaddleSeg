@@ -22,7 +22,7 @@ from paddle.fluid.dygraph.parallel import ParallelEnv
 import cv2
 import tqdm
 
-from datasets import OpticDiscSeg
+from datasets import OpticDiscSeg, Cityscapes
 import transforms as T
 import models
 import utils
@@ -45,7 +45,8 @@ def parse_args():
     parser.add_argument(
         '--dataset',
         dest='dataset',
-        help='The dataset you want to train',
+        help=
+        "The dataset you want to train, which is one of ('OpticDiscSeg', 'Cityscapes')",
         type=str,
         default='OpticDiscSeg')
 
@@ -134,9 +135,12 @@ def main(args):
 
     if args.dataset.lower() == 'opticdiscseg':
         dataset = OpticDiscSeg
+    elif args.dataset.lower() == 'cityscapes':
+        dataset = Cityscapes
     else:
         raise Exception(
-            "The --dataset set wrong. It should be one of ('OpticDiscSeg',)")
+            "The --dataset set wrong. It should be one of ('OpticDiscSeg', 'Cityscapes')"
+        )
 
     with fluid.dygraph.guard(places):
         test_transforms = T.Compose([T.Resize(args.input_size), T.Normalize()])

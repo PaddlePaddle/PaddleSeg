@@ -20,7 +20,7 @@ from paddle.fluid.dygraph.parallel import ParallelEnv
 from paddle.fluid.io import DataLoader
 from paddle.incubate.hapi.distributed import DistributedBatchSampler
 
-from datasets import OpticDiscSeg
+from datasets import OpticDiscSeg, Cityscapes
 import transforms as T
 import models
 import utils.logging as logging
@@ -38,13 +38,14 @@ def parse_args():
         dest='model_name',
         help="Model type for traing, which is one of ('UNet')",
         type=str,
-        default='OpticDiscSeg')
+        default='UNet')
 
     # params of dataset
     parser.add_argument(
         '--dataset',
         dest='dataset',
-        help='The dataset you want to train',
+        help=
+        "The dataset you want to train, which is one of ('OpticDiscSeg', 'Cityscapes')",
         type=str,
         default='OpticDiscSeg')
 
@@ -194,9 +195,12 @@ def main(args):
 
     if args.dataset.lower() == 'opticdiscseg':
         dataset = OpticDiscSeg
+    elif args.dataset.lower() == 'cityscapes':
+        dataset = Cityscapes
     else:
         raise Exception(
-            "The --dataset set wrong. It should be one of ('OpticDiscSeg',)")
+            "The --dataset set wrong. It should be one of ('OpticDiscSeg', 'Cityscapes')"
+        )
 
     with fluid.dygraph.guard(places):
         # Creat dataset reader
