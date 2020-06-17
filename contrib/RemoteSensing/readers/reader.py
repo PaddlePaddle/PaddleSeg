@@ -22,6 +22,7 @@ from utils import logging
 from .base import BaseReader
 from .base import get_encoding
 from collections import OrderedDict
+from PIL import Image
 
 
 def read_img(img_path):
@@ -33,6 +34,8 @@ def read_img(img_path):
             raise Exception('Can not open', img_path)
         im_data = dataset.ReadAsArray()
         return im_data.transpose((1, 2, 0))
+    elif img_format == 'png':
+        return np.asarray(Image.open(img_path))
     elif ext == '.npy':
         return np.load(img_path)
     else:

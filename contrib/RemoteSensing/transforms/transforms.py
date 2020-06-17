@@ -15,9 +15,7 @@
 
 from .ops import *
 import random
-import os.path as osp
 import numpy as np
-from PIL import Image
 import cv2
 from collections import OrderedDict
 from readers.reader import read_img
@@ -63,7 +61,7 @@ class Compose:
         if im is None:
             raise ValueError('Can\'t read The image file {}!'.format(im))
         if label is not None:
-            label = np.asarray(Image.open(label))
+            label = read_img(label)
 
         for op in self.transforms:
             outputs = op(im, im_info, label)

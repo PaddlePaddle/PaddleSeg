@@ -46,10 +46,10 @@ def parse_args():
         default=['train', 'val', 'test'])
     parser.add_argument(
         '--format',
-        help='data format of images and labels, default npy, png.',
+        help='data format of images and labels, default tif, png.',
         type=str,
         nargs=2,
-        default=['npy', 'png'])
+        default=['tif', 'png'])
     parser.add_argument(
         '--label_class',
         help='label class names',

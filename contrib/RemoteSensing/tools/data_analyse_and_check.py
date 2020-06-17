@@ -51,6 +51,12 @@ def parse_args():
         help='file list separator',
         default=" ",
         type=str)
+    parser.add_argument(
+        '--ignore_index',
+        dest='ignore_index',
+        help='Ignored class index',
+        default=255,
+        type=int)
     if len(sys.argv) == 1:
         parser.print_help()
         sys.exit(1)
@@ -106,12 +112,12 @@ def img_pixel_statistics(img, img_value_num, img_min_value, img_max_value):
     return means, stds, img_min_value, img_max_value, img_value_num
 
 
-def dataset_pixel_statistics(data_dir, total_means, total_stds, img_value_num,
-                             img_min_value, img_max_value, total_img_num,
-                             logger):
-    logger.info("\n-----------------------------\nDataset pixel statistics...")
+def data_distribution_statistics(data_dir, img_value_num, logger):
+    """count the distribution of image value, value number
+    """
+    logger.info(
+        "\n-----------------------------\nThe whole dataset statistics...")
 
-    # count the distribution of image value, value number
     if not img_value_num:
         return
     logger.info("\nImage pixel statistics:")
@@ -124,15 +130,21 @@ def dataset_pixel_statistics(data_dir, total_means, total_stds, img_value_num,
     with open(os.path.join(data_dir, 'img_pixel_statistics.pkl'), 'wb') as f:
         pickle.dump([total_ratio, img_value_num], f)
 
-    # print min value, max value
+
+def data_range_statistics(img_min_value, img_max_value, logger):
+    """print min value, max value
+    """
     logger.info("value range: \nimg_min_value = {} \nimg_max_value = {}".format(
         img_min_value, img_max_value))
 
-    # count mean, std
+
+def cal_normalize_coefficient(total_means, total_stds, total_img_num, logger):
+    """count mean, std
+    """
     total_means = total_means / total_img_num
     total_stds = total_stds / total_img_num
-    print("\nCount the channel-by-channel mean and std of the image:\n"
-          "mean = {}\nstd = {}".format(total_means, total_stds))
+    logger.info("\nCount the channel-by-channel mean and std of the image:\n"
+                "mean = {}\nstd = {}".format(total_means, total_stds))
 
 
 def error_print(str):
@@ -160,12 +172,12 @@ def get_img_shape_range(img, max_width, max_height, min_width, min_height):
     return max_width, max_height, min_width, min_height
 
 
-def get_image_dim(img, img_dim):
+def get_img_channel_num(img, img_channels):
     """获取图像的通道数"""
     img_shape = img.shape
-    if img_shape[-1] not in img_dim:
-        img_dim.append(img_shape[-1])
-    return img_dim
+    if img_shape[-1] not in img_channels:
+        img_channels.append(img_shape[-1])
+    return img_channels
 
 
 def is_label_single_channel(label):
@@ -215,22 +227,15 @@ def ground_truth_check(label, label_path):
     return png_format, unique, counts
 
 
-def sum_label_check(png_format, label_classes, num_of_each_class, ignore_index,
-                    num_classes, png_format_right_num, png_format_wrong_num,
+def sum_label_check(label_classes, num_of_each_class, ignore_index, num_classes,
                     total_label_classes, total_num_of_each_class):
     """
-    统计所有标注图上的格式、类别和每个类别的像素数
+    统计所有标注图上的类别和每个类别的像素数
     params:
-        png_format: 是否是png格式图片
         label_classes: 标注类别
         num_of_each_class: 各个类别的像素数目
     """
     is_label_correct = True
-
-    if png_format:
-        png_format_right_num += 1
-    else:
-        png_format_wrong_num += 1
 
     if ignore_index in label_classes:
         label_classes2 = np.delete(label_classes,
@@ -251,32 +256,18 @@ def sum_label_check(png_format, label_classes, num_of_each_class, ignore_index,
             add_num.append(num_of_each_class[i])
     total_num_of_each_class += add_num
     total_label_classes += add_class
-    return is_label_correct, png_format_right_num, png_format_wrong_num, total_num_of_each_class, total_label_classes
+    return is_label_correct, total_num_of_each_class, total_label_classes
 
 
-def label_check_statistics(num_classes, png_format_wrong_image,
-                           png_format_right_num, png_format_wrong_num,
-                           total_label_classes, total_num_of_each_class,
-                           wrong_labels, logger):
+def label_class_check(num_classes, total_label_classes, total_num_of_each_class,
+                      wrong_labels, logger):
     """
-    对标注图像进行校验，输出校验结果
-    """
-    if png_format_wrong_num == 0:
-        if png_format_right_num:
-            logger.info(correct_print("label format check"))
-        else:
-            logger.info(error_print("label format check"))
-            logger.info("No label image to check")
-            return
-    else:
-        logger.info(error_print("label format check"))
-    logger.info(
-        "total {} label images are png format, {} label images are not png "
-        "format".format(png_format_right_num, png_format_wrong_num))
-    if len(png_format_wrong_image) > 0:
-        for i in png_format_wrong_image:
-            logger.debug(i)
+    检查实际标注类别是否和配置参数`num_classes`，`ignore_index`匹配。
 
+    **NOTE:**
+    标注图像类别数值必须在[0~(`num_classes`-1)]范围内或者为`ignore_index`。
+    标注类别最好从0开始，否则可能影响精度。
+    """
     total_ratio = total_num_of_each_class / sum(total_num_of_each_class)
     total_ratio = np.around(total_ratio, decimals=4)
     total_nc = sorted(
@@ -293,9 +284,15 @@ def label_check_statistics(num_classes, png_format_wrong_image,
                     num_classes - 1))
             for i in wrong_labels:
                 logger.debug(i)
+    return total_nc
 
+
+def label_class_statistics(total_nc, logger):
+    """
+    对标注图像进行校验，输出校验结果
+    """
     logger.info(
-        "\nLabel pixel statistics:\n"
+        "\nLabel class statistics:\n"
         "(label class, percentage, total pixel number) = {} ".format(total_nc))
 
 
@@ -360,9 +357,9 @@ def img_shape_range_statistics(max_width, min_width, max_height, min_height,
         format(max_width, min_width, max_height, min_height))
 
 
-def img_dim_statistics(img_dim, logger):
+def img_channels_statistics(img_channels, logger):
     logger.info("\nImage channels statistics\nImage channels = {}".format(
-        np.unique(img_dim)))
+        np.unique(img_channels)))
 
 
 def data_analyse_and_check(data_dir, num_classes, separator, ignore_index,
@@ -381,14 +378,11 @@ def data_analyse_and_check(data_dir, num_classes, separator, ignore_index,
         min_height = sys.float_info.max
         label_not_single_channel = []
         shape_unequal_image = []
-        png_format_wrong_image = []
         wrong_labels = []
         wrong_lines = []
-        png_format_right_num = 0
-        png_format_wrong_num = 0
         total_label_classes = []
         total_num_of_each_class = []
-        img_dim = []
+        img_channels = []
 
         with open(file_list, 'r') as fid:
             logger.info("\n-----------------------------\nCheck {}...".format(
@@ -433,12 +427,9 @@ def data_analyse_and_check(data_dir, num_classes, separator, ignore_index,
                         shape_unequal_image.append(line)
                     png_format, label_classes, num_of_each_class = ground_truth_check(
                         label, label_path)
-                    if not png_format:
-                        png_format_wrong_image.append(line)
-                    is_label_correct, png_format_right_num, png_format_wrong_num, total_num_of_each_class, total_label_classes = sum_label_check(
-                        png_format, label_classes, num_of_each_class,
-                        ignore_index, num_classes, png_format_right_num,
-                        png_format_wrong_num, total_label_classes,
+                    is_label_correct, total_num_of_each_class, total_label_classes = sum_label_check(
+                        label_classes, num_of_each_class, ignore_index,
+                        num_classes, total_label_classes,
                         total_num_of_each_class)
                     if not is_label_correct:
                         wrong_labels.append(line)
@@ -460,32 +451,35 @@ def data_analyse_and_check(data_dir, num_classes, separator, ignore_index,
                 total_stds += stds
                 max_width, max_height, min_width, min_height = get_img_shape_range(
                     img, max_width, max_height, min_width, min_height)
-                img_dim = get_image_dim(img, img_dim)
+                img_channels = get_img_channel_num(img, img_channels)
                 total_img_num += 1
 
+            # data check
             separator_check(wrong_lines, file_list, separator, logger)
             imread_check(imread_failed, logger)
-            img_dim_statistics(img_dim, logger)
-            img_shape_range_statistics(max_width, min_width, max_height,
-                                       min_height, logger)
-
             if has_label:
                 single_channel_label_check(label_not_single_channel, logger)
                 shape_check(shape_unequal_image, logger)
-                label_check_statistics(
-                    num_classes, png_format_wrong_image, png_format_right_num,
-                    png_format_wrong_num, total_label_classes,
-                    total_num_of_each_class, wrong_labels, logger)
+                total_nc = label_class_check(num_classes, total_label_classes,
+                                             total_num_of_each_class,
+                                             wrong_labels, logger)
 
-    dataset_pixel_statistics(data_dir, total_means, total_stds, img_value_num,
-                             img_min_value, img_max_value, total_img_num,
-                             logger)
+            # data analyse on train, validation, test set.
+            img_channels_statistics(img_channels, logger)
+            img_shape_range_statistics(max_width, min_width, max_height,
+                                       min_height, logger)
+            if has_label:
+                label_class_statistics(total_nc, logger)
+    # data analyse on the whole dataset.
+    data_range_statistics(img_min_value, img_max_value, logger)
+    data_distribution_statistics(data_dir, img_value_num, logger)
+    cal_normalize_coefficient(total_means, total_stds, total_img_num, logger)
 
 
 def main():
     args = parse_args()
     data_dir = args.data_dir
-    ignore_index = 255
+    ignore_index = args.ignore_index
     num_classes = args.num_classes
     separator = args.separator
 
