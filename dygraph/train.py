@@ -21,7 +21,7 @@ import paddle.fluid as fluid
 from paddle.fluid.dygraph.parallel import ParallelEnv
 from paddle.fluid.io import DataLoader
 
-from datasets import OpticDiscSeg, Dataset
+from datasets import OpticDiscSeg
 import transforms as T
 import models
 import utils.logging as logging
