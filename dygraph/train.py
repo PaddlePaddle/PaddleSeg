@@ -171,7 +171,7 @@ def train(model,
                 loss = model(images, labels, mode='train')
                 loss.backward()
             optimizer.minimize(loss)
-            model_parallel.clear_gradients()
+            model.clear_gradients()
             logging.info("[TRAIN] Epoch={}/{}, Step={}/{}, loss={}".format(
                 epoch + 1, num_epochs, step + 1, num_steps_each_epoch,
                 loss.numpy()))
