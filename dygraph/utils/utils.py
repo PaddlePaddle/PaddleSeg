@@ -29,15 +29,7 @@ def seconds_to_hms(seconds):
     return hms_str
 
 
-def setting_environ_flags():
-    if "CUDA_VISIBLE_DEVICES" in os.environ:
-        if os.environ["CUDA_VISIBLE_DEVICES"].count("-1") > 0:
-            os.environ["CUDA_VISIBLE_DEVICES"] = ""
-
-
 def get_environ_info():
-    setting_environ_flags()
-    import paddle.fluid as fluid
     info = dict()
     info['place'] = 'cpu'
     info['num'] = int(os.environ.get('CPU_NUM', 1))
