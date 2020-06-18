@@ -30,6 +30,16 @@ from utils.utils import seconds_to_hms, get_environ_info
 from utils.metrics import ConfusionMatrix
 import transforms.transforms as T
 import utils
+import paddle
+
+
+def save_infer_program(test_program, ckpt_dir):
+    _test_program = test_program.clone()
+    _test_program.desc.flush()
+    _test_program.desc._set_version()
+    paddle.fluid.core.save_op_compatible_info(_test_program.desc)
+    with open(os.path.join(ckpt_dir, 'model') + ".pdmodel", "wb") as f:
+        f.write(_test_program.desc.serialize_to_string())
 
 
 def dict2str(dict_input):
@@ -238,6 +248,7 @@ class BaseModel(object):
 
         if self.status == 'Normal':
             fluid.save(self.train_prog, osp.join(save_dir, 'model'))
+            save_infer_program(self.test_prog, save_dir)
 
         model_info['status'] = self.status
         with open(

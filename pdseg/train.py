@@ -27,6 +27,7 @@ import pprint
 import random
 import shutil
 
+import paddle
 import numpy as np
 import paddle.fluid as fluid
 from paddle.fluid import profiler
@@ -158,6 +159,15 @@ def load_checkpoint(exe, program):
     return begin_epoch
 
 
+def save_infer_program(test_program, ckpt_dir):
+    _test_program = test_program.clone()
+    _test_program.desc.flush()
+    _test_program.desc._set_version()
+    paddle.fluid.core.save_op_compatible_info(_test_program.desc)
+    with open(os.path.join(ckpt_dir, 'model') + ".pdmodel", "wb") as f:
+        f.write(_test_program.desc.serialize_to_string())
+
+
 def update_best_model(ckpt_dir):
     best_model_dir = os.path.join(cfg.TRAIN.MODEL_SAVE_DIR, 'best_model')
     if os.path.exists(best_model_dir):
@@ -173,6 +183,7 @@ def print_info(*msg):
 def train(cfg):
     startup_prog = fluid.Program()
     train_prog = fluid.Program()
+    test_prog = fluid.Program()
     if args.enable_ce:
         startup_prog.random_seed = 1000
         train_prog.random_seed = 1000
@@ -224,6 +235,7 @@ def train(cfg):
 
     data_loader, avg_loss, lr, pred, grts, masks = build_model(
         train_prog, startup_prog, phase=ModelPhase.TRAIN)
+    build_model(test_prog, fluid.Program(), phase=ModelPhase.EVAL)
     data_loader.set_sample_generator(
         data_generator, batch_size=batch_size_per_dev, drop_last=drop_last)
 
@@ -387,6 +399,7 @@ def train(cfg):
         if (epoch % cfg.TRAIN.SNAPSHOT_EPOCH == 0
                 or epoch == cfg.SOLVER.NUM_EPOCHS) and cfg.TRAINER_ID == 0:
             ckpt_dir = save_checkpoint(train_prog, epoch)
+            save_infer_program(test_prog, ckpt_dir)
 
             if args.do_eval:
                 print("Evaluation start")
@@ -419,7 +432,8 @@ def train(cfg):
 
     # save final model
     if cfg.TRAINER_ID == 0:
-        save_checkpoint(train_prog, 'final')
+        ckpt_dir = save_checkpoint(train_prog, 'final')
+        save_infer_program(test_prog, ckpt_dir)
 
 
 def main(args):

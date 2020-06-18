@@ -21,5 +21,3 @@ import readers
 from utils.utils import get_environ_info
 
 env_info = get_environ_info()
-
-log_level = 2
