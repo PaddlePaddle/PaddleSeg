@@ -78,7 +78,7 @@ def parse_args():
     parser.add_argument(
         '--pretrained_model',
         dest='pretrained_model',
-        help='The path of pretrianed weight',
+        help='The path of pretrained weight',
         type=str,
         default=None)
     parser.add_argument(
@@ -161,7 +161,7 @@ def train(model,
             optimizer.minimize(loss)
             model.clear_gradients()
             logging.info("[TRAIN] Epoch={}/{}, Step={}/{}, loss={}".format(
-                epoch + 1, num_epochs, step + 1, num_steps_each_epoch,
+                epoch + 1, num_epochs, step + 1, len(batch_sampler),
                 loss.numpy()))
 
         if ((epoch + 1) % save_interval_epochs == 0

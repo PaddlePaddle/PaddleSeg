@@ -13,3 +13,4 @@
 # limitations under the License.
 
 from .optic_disc_seg import OpticDiscSeg
+from .cityscapes import Cityscapes

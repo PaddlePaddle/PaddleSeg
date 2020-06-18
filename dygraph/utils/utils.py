@@ -48,8 +48,8 @@ def get_environ_info():
 
 
 def load_pretrained_model(model, pretrained_model):
-    logging.info('Load pretrained model!')
     if pretrained_model is not None:
+        logging.info('Load pretrained model!')
         if os.path.exists(pretrained_model):
             ckpt_path = os.path.join(pretrained_model, 'model')
             para_state_dict, _ = fluid.load_dygraph(ckpt_path)
