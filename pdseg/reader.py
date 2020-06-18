@@ -318,6 +318,8 @@ class SegDataset(object):
             raise ValueError("Dataset mode={} Error!".format(mode))
 
         # Normalize image
+        if cfg.AUG.TO_RGB:
+            img = img[..., ::-1]
         img = self.normalize_image(img)
 
         if ModelPhase.is_train(mode) or ModelPhase.is_eval(mode):

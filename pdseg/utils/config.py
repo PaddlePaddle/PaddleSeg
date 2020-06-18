@@ -117,6 +117,8 @@ cfg.AUG.RICH_CROP.CONTRAST_JITTER_RATIO = 0.5
 cfg.AUG.RICH_CROP.BLUR = False
 # 图像启动模糊百分比，0-1
 cfg.AUG.RICH_CROP.BLUR_RATIO = 0.1
+# 图像是否切换到rgb模式
+cfg.AUG.TO_RGB = True
 
 ########################### 训练配置 ##########################################
 # 模型保存路径
