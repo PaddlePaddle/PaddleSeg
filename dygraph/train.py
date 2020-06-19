@@ -144,8 +144,6 @@ def train(model,
         return_list=True,
     )
 
-    num_steps_each_epoch = len(train_dataset) // batch_size
-
     for epoch in range(num_epochs):
         for step, data in enumerate(loader):
             images = data[0]
@@ -165,8 +163,7 @@ def train(model,
                 loss.numpy()))
 
         if ((epoch + 1) % save_interval_epochs == 0
-                or num_steps_each_epoch == num_epochs - 1
-            ) and ParallelEnv().local_rank == 0:
+                or epoch == num_epochs - 1) and ParallelEnv().local_rank == 0:
             current_save_dir = os.path.join(save_dir,
                                             "epoch_{}".format(epoch + 1))
             if not os.path.isdir(current_save_dir):
@@ -223,7 +220,10 @@ def main(args):
                 num_classes=train_dataset.num_classes, ignore_index=255)
 
         # Creat optimizer
-        num_steps_each_epoch = len(train_dataset) // args.batch_size
+        # todo, may less one than len(loader)
+        num_steps_each_epoch = len(train_dataset) // (
+            args.batch_size * ParallelEnv().nranks)
+        print(num_steps_each_epoch, 'num_steps_each_epoch')
         decay_step = args.num_epochs * num_steps_each_epoch
         lr_decay = fluid.layers.polynomial_decay(
             args.learning_rate, decay_step, end_learning_rate=0, power=0.9)
