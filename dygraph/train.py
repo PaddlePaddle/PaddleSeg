@@ -26,6 +26,7 @@ import models
 import utils.logging as logging
 from utils import get_environ_info
 from utils import load_pretrained_model
+from utils import resume
 from val import evaluate
 
 
@@ -117,13 +118,18 @@ def train(model,
           num_epochs=100,
           batch_size=2,
           pretrained_model=None,
+          resume_model=None,
           save_interval_epochs=1,
           num_classes=None,
           num_workers=8):
     ignore_index = model.ignore_index
     nranks = ParallelEnv().nranks
 
-    load_pretrained_model(model, pretrained_model)
+    start_epoch = 0
+    if resume_model is not None:
+        start_epoch = resume(optimizer, resume_model)
+    elif pretrained_model is not None:
+        load_pretrained_model(model, pretrained_model)
 
     if not os.path.isdir(save_dir):
         if os.path.exists(save_dir):
@@ -144,7 +150,7 @@ def train(model,
         return_list=True,
     )
 
-    for epoch in range(num_epochs):
+    for epoch in range(start_epoch, num_epochs):
         for step, data in enumerate(loader):
             images = data[0]
             labels = data[1].astype('int64')
@@ -158,9 +164,11 @@ def train(model,
                 loss.backward()
             optimizer.minimize(loss)
             model.clear_gradients()
-            logging.info("[TRAIN] Epoch={}/{}, Step={}/{}, loss={}".format(
-                epoch + 1, num_epochs, step + 1, len(batch_sampler),
-                loss.numpy()))
+            lr = optimizer.current_step_lr()
+            logging.info(
+                "[TRAIN] Epoch={}/{}, Step={}/{}, loss={}, lr={}".format(
+                    epoch + 1, num_epochs, step + 1, len(batch_sampler),
+                    loss.numpy(), lr))
 
         if ((epoch + 1) % save_interval_epochs == 0
                 or epoch == num_epochs - 1) and ParallelEnv().local_rank == 0:
@@ -169,6 +177,8 @@ def train(model,
             if not os.path.isdir(current_save_dir):
                 os.makedirs(current_save_dir)
             fluid.save_dygraph(model.state_dict(),
+                               os.path.join(current_save_dir, 'model'))
+            fluid.save_dygraph(optimizer.state_dict(),
                                os.path.join(current_save_dir, 'model'))
 
             if eval_dataset is not None:
