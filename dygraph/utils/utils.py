@@ -78,12 +78,13 @@ def load_pretrained_model(model, pretrained_model):
                     pretrained_model))
 
 
-def resume(optimizer, resume_model):
+def resume(model, optimizer, resume_model):
     if resume_model is not None:
         logging.info('Resume model from {}'.format(resume_model))
         if os.path.exists(resume_model):
             ckpt_path = os.path.join(resume_model, 'model')
-            _, opti_state_dict = fluid.load_dygraph(ckpt_path)
+            para_state_dict, opti_state_dict = fluid.load_dygraph(ckpt_path)
+            model.set_dict(para_state_dict)
             optimizer.set_dict(opti_state_dict)
             epoch = resume_model.split('_')[-1]
             if epoch.isdigit():

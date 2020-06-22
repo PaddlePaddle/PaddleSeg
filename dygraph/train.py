@@ -79,7 +79,13 @@ def parse_args():
     parser.add_argument(
         '--pretrained_model',
         dest='pretrained_model',
-        help='The path of pretrained weight',
+        help='The path of pretrained model',
+        type=str,
+        default=None)
+    parser.add_argument(
+        '--resume_model',
+        dest='resume_model',
+        help='The path of resume model',
         type=str,
         default=None)
     parser.add_argument(
@@ -127,7 +133,7 @@ def train(model,
 
     start_epoch = 0
     if resume_model is not None:
-        start_epoch = resume(optimizer, resume_model)
+        start_epoch = resume(model, optimizer, resume_model)
     elif pretrained_model is not None:
         load_pretrained_model(model, pretrained_model)
 
@@ -233,7 +239,6 @@ def main(args):
         # todo, may less one than len(loader)
         num_steps_each_epoch = len(train_dataset) // (
             args.batch_size * ParallelEnv().nranks)
-        print(num_steps_each_epoch, 'num_steps_each_epoch')
         decay_step = args.num_epochs * num_steps_each_epoch
         lr_decay = fluid.layers.polynomial_decay(
             args.learning_rate, decay_step, end_learning_rate=0, power=0.9)
@@ -253,6 +258,7 @@ def main(args):
             num_epochs=args.num_epochs,
             batch_size=args.batch_size,
             pretrained_model=args.pretrained_model,
+            resume_model=args.resume_model,
             save_interval_epochs=args.save_interval_epochs,
             num_classes=train_dataset.num_classes,
             num_workers=args.num_workers)
