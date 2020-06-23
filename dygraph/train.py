@@ -14,6 +14,7 @@
 
 import argparse
 import os
+import time
 
 import paddle.fluid as fluid
 from paddle.fluid.dygraph.parallel import ParallelEnv
@@ -27,6 +28,7 @@ import utils.logging as logging
 from utils import get_environ_info
 from utils import load_pretrained_model
 from utils import resume
+from utils import Timer, calculate_eta
 from val import evaluate
 
 
@@ -111,6 +113,12 @@ def parse_args():
         dest='do_eval',
         help='Eval while training',
         action='store_true')
+    parser.add_argument(
+        '--log_steps',
+        dest='log_steps',
+        help='Display logging information at every log_steps',
+        default=10,
+        type=int)
 
     return parser.parse_args()
 
@@ -126,6 +134,7 @@ def train(model,
           pretrained_model=None,
           resume_model=None,
           save_interval_epochs=1,
+          log_steps=10,
           num_classes=None,
           num_workers=8):
     ignore_index = model.ignore_index
@@ -156,6 +165,10 @@ def train(model,
         return_list=True,
     )
 
+    timer = Timer()
+    timer.start()
+    steps_per_epoch = len(batch_sampler)
+    avg_loss = 0.0
     for epoch in range(start_epoch, num_epochs):
         for step, data in enumerate(loader):
             images = data[0]
@@ -170,11 +183,19 @@ def train(model,
                 loss.backward()
             optimizer.minimize(loss)
             model.clear_gradients()
+            avg_loss += loss.numpy()
             lr = optimizer.current_step_lr()
-            logging.info(
-                "[TRAIN] Epoch={}/{}, Step={}/{}, loss={}, lr={}".format(
-                    epoch + 1, num_epochs, step + 1, len(batch_sampler),
-                    loss.numpy(), lr))
+            if step % log_steps == 0:
+                avg_loss /= log_steps
+                time_step = timer.elapsed_time() / log_steps
+                remain_step = (num_epochs - epoch) * steps_per_epoch - step + 1
+                logging.info(
+                    "[TRAIN] Epoch={}/{}, Step={}/{}, loss={:.4f}, lr={:.6f}, sec/step={:.4f} | ETA {}"
+                    .format(epoch + 1, num_epochs, step + 1, steps_per_epoch,
+                            avg_loss, lr, time_step,
+                            calculate_eta(remain_step, time_step)))
+                avg_loss = 0.0
+                timer.restart()
 
         if ((epoch + 1) % save_interval_epochs == 0
                 or epoch == num_epochs - 1) and ParallelEnv().local_rank == 0:
@@ -260,6 +281,7 @@ def main(args):
             pretrained_model=args.pretrained_model,
             resume_model=args.resume_model,
             save_interval_epochs=args.save_interval_epochs,
+            log_steps=args.log_steps,
             num_classes=train_dataset.num_classes,
             num_workers=args.num_workers)
 
