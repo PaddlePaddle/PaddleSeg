@@ -183,12 +183,12 @@ def train(model,
                 loss.backward()
             optimizer.minimize(loss)
             model.clear_gradients()
-            avg_loss += loss.numpy()
+            avg_loss += loss.numpy()[0]
             lr = optimizer.current_step_lr()
             if step % log_steps == 0:
                 avg_loss /= log_steps
                 time_step = timer.elapsed_time() / log_steps
-                remain_step = (num_epochs - epoch) * steps_per_epoch - step + 1
+                remain_step = (num_epochs - epoch) * steps_per_epoch - step - 1
                 logging.info(
                     "[TRAIN] Epoch={}/{}, Step={}/{}, loss={:.4f}, lr={:.6f}, sec/step={:.4f} | ETA {}"
                     .format(epoch + 1, num_epochs, step + 1, steps_per_epoch,
