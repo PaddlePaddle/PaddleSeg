@@ -180,6 +180,8 @@ def train(model,
     steps_per_epoch = len(batch_sampler)
     total_steps = steps_per_epoch * (num_epochs - start_epoch)
     num_steps = 0
+    best_mean_iou = -1.0
+    best_model_epoch = 1
     for epoch in range(start_epoch, num_epochs):
         for step, data in enumerate(loader):
             images = data[0]
@@ -233,6 +235,16 @@ def train(model,
                     batch_size=batch_size,
                     ignore_index=ignore_index,
                     epoch_id=epoch + 1)
+                if mean_iou > best_mean_iou:
+                    best_mean_iou = mean_iou
+                    best_model_epoch = epoch + 1
+                    best_model_dir = os.path.join(save_dir, "best_model")
+                    fluid.save_dygraph(model.state_dict(),
+                                       os.path.join(best_model_dir, 'model'))
+                    logging.info(
+                        'Current evaluated best model in eval_dataset is epoch_{}, miou={:4f}'
+                        .format(best_model_epoch, best_mean_iou))
+
                 if use_vdl:
                     log_writer.add_scalar('Evaluate/mean_iou', mean_iou,
                                           epoch + 1)

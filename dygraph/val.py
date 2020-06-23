@@ -119,7 +119,7 @@ def evaluate(model,
         time_step = timer.elapsed_time()
         remain_step = total_steps - step - 1
         logging.info(
-            "[EVAL] Epoch={}, Step={}/{}, iou={}, sec/step={:.4f} | ETA {}".
+            "[EVAL] Epoch={}, Step={}/{}, iou={:4f}, sec/step={:.4f} | ETA {}".
             format(epoch_id, step + 1, total_steps, iou, time_step,
                    calculate_eta(remain_step, time_step)))
         timer.restart()
