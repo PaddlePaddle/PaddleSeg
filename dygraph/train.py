@@ -14,7 +14,6 @@
 
 import argparse
 import os
-import time
 
 import paddle.fluid as fluid
 from paddle.fluid.dygraph.parallel import ParallelEnv
@@ -119,6 +118,11 @@ def parse_args():
         help='Display logging information at every log_steps',
         default=10,
         type=int)
+    parser.add_argument(
+        '--use_vdl',
+        dest='use_vdl',
+        help='Whether to record the data during training to VisualDL',
+        action='store_true')
 
     return parser.parse_args()
 
@@ -136,7 +140,8 @@ def train(model,
           save_interval_epochs=1,
           log_steps=10,
           num_classes=None,
-          num_workers=8):
+          num_workers=8,
+          use_vdl=False):
     ignore_index = model.ignore_index
     nranks = ParallelEnv().nranks
 
@@ -165,10 +170,16 @@ def train(model,
         return_list=True,
     )
 
+    if use_vdl:
+        from visualdl import LogWriter
+        log_writer = LogWriter(save_dir)
+
     timer = Timer()
     timer.start()
-    steps_per_epoch = len(batch_sampler)
     avg_loss = 0.0
+    steps_per_epoch = len(batch_sampler)
+    total_steps = steps_per_epoch * (num_epochs - start_epoch)
+    num_steps = 0
     for epoch in range(start_epoch, num_epochs):
         for step, data in enumerate(loader):
             images = data[0]
@@ -185,17 +196,21 @@ def train(model,
             model.clear_gradients()
             avg_loss += loss.numpy()[0]
             lr = optimizer.current_step_lr()
-            if step % log_steps == 0:
+            num_steps += 1
+            if num_steps % log_steps == 0:
                 avg_loss /= log_steps
                 time_step = timer.elapsed_time() / log_steps
-                remain_step = (num_epochs - epoch) * steps_per_epoch - step - 1
+                remain_steps = total_steps - num_steps
                 logging.info(
                     "[TRAIN] Epoch={}/{}, Step={}/{}, loss={:.4f}, lr={:.6f}, sec/step={:.4f} | ETA {}"
                     .format(epoch + 1, num_epochs, step + 1, steps_per_epoch,
                             avg_loss, lr, time_step,
-                            calculate_eta(remain_step, time_step)))
+                            calculate_eta(remain_steps, time_step)))
                 avg_loss = 0.0
                 timer.restart()
+                if use_vdl:
+                    log_writer.add_scalar('Train/loss', avg_loss, num_steps)
+                    log_writer.add_scalar('Train/lr', lr, num_steps)
 
         if ((epoch + 1) % save_interval_epochs == 0
                 or epoch == num_epochs - 1) and ParallelEnv().local_rank == 0:
@@ -209,7 +224,7 @@ def train(model,
                                os.path.join(current_save_dir, 'model'))
 
             if eval_dataset is not None:
-                evaluate(
+                mean_iou, mean_acc = evaluate(
                     model,
                     eval_dataset,
                     places=places,
@@ -218,6 +233,11 @@ def train(model,
                     batch_size=batch_size,
                     ignore_index=ignore_index,
                     epoch_id=epoch + 1)
+                if use_vdl:
+                    log_writer.add_scalar('Evaluate/mean_iou', mean_iou,
+                                          num_steps)
+                    log_writer.add_scalar('Evaluate/mean_acc', mean_acc,
+                                          num_steps)
                 model.train()
 
 
@@ -283,7 +303,8 @@ def main(args):
             save_interval_epochs=args.save_interval_epochs,
             log_steps=args.log_steps,
             num_classes=train_dataset.num_classes,
-            num_workers=args.num_workers)
+            num_workers=args.num_workers,
+            use_vdl=args.use_vdl)
 
 
 if __name__ == '__main__':

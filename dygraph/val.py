@@ -131,6 +131,7 @@ def evaluate(model,
     logging.info("[EVAL] Category IoU: " + str(category_iou))
     logging.info("[EVAL] Category Acc: " + str(category_acc))
     logging.info("[EVAL] Kappa:{:.4f} ".format(conf_mat.kappa()))
+    return miou, macc
 
 
 def main(args):
