@@ -197,7 +197,7 @@ def train(model,
             avg_loss += loss.numpy()[0]
             lr = optimizer.current_step_lr()
             num_steps += 1
-            if num_steps % log_steps == 0:
+            if num_steps % log_steps == 0 and ParallelEnv().local_rank == 0:
                 avg_loss /= log_steps
                 time_step = timer.elapsed_time() / log_steps
                 remain_steps = total_steps - num_steps
@@ -206,14 +206,14 @@ def train(model,
                     .format(epoch + 1, num_epochs, step + 1, steps_per_epoch,
                             avg_loss, lr, time_step,
                             calculate_eta(remain_steps, time_step)))
-                avg_loss = 0.0
-                timer.restart()
                 if use_vdl:
                     log_writer.add_scalar('Train/loss', avg_loss, num_steps)
                     log_writer.add_scalar('Train/lr', lr, num_steps)
+                avg_loss = 0.0
+                timer.restart()
 
         if ((epoch + 1) % save_interval_epochs == 0
-                or epoch == num_epochs - 1) and ParallelEnv().local_rank == 0:
+                or epoch + 1 == num_epochs) and ParallelEnv().local_rank == 0:
             current_save_dir = os.path.join(save_dir,
                                             "epoch_{}".format(epoch + 1))
             if not os.path.isdir(current_save_dir):
@@ -235,10 +235,12 @@ def train(model,
                     epoch_id=epoch + 1)
                 if use_vdl:
                     log_writer.add_scalar('Evaluate/mean_iou', mean_iou,
-                                          num_steps)
+                                          epoch + 1)
                     log_writer.add_scalar('Evaluate/mean_acc', mean_acc,
-                                          num_steps)
+                                          epoch + 1)
                 model.train()
+    if use_vdl:
+        log_writer.close()
 
 
 def main(args):
