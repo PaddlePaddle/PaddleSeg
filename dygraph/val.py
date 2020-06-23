@@ -29,6 +29,7 @@ import models
 import utils.logging as logging
 from utils import get_environ_info
 from utils import ConfusionMatrix
+from utils import Timer, calculate_eta
 
 
 def parse_args():
@@ -96,12 +97,14 @@ def evaluate(model,
         places=places,
         return_list=True,
     )
-    total_steps = math.ceil(len(eval_dataset) * 1.0 / batch_size)
+    total_steps = len(batch_sampler)
     conf_mat = ConfusionMatrix(num_classes, streaming=True)
 
     logging.info(
         "Start to evaluating(total_samples={}, total_steps={})...".format(
             len(eval_dataset), total_steps))
+    timer = Timer()
+    timer.start()
     for step, data in enumerate(loader):
         images = data[0]
         labels = data[1].astype('int64')
@@ -113,8 +116,13 @@ def evaluate(model,
         conf_mat.calculate(pred=pred, label=labels, ignore=mask)
         _, iou = conf_mat.mean_iou()
 
-        logging.info("[EVAL] Epoch={}, Step={}/{}, iou={}".format(
-            epoch_id, step + 1, total_steps, iou))
+        time_step = timer.elapsed_time()
+        remain_step = total_steps - step - 1
+        logging.info(
+            "[EVAL] Epoch={}, Step={}/{}, iou={}, sec/step={:.4f} | ETA {}".
+            format(epoch_id, step + 1, total_steps, iou, time_step,
+                   calculate_eta(remain_step, time_step)))
+        timer.restart()
 
     category_iou, miou = conf_mat.mean_iou()
     category_acc, macc = conf_mat.accuracy()

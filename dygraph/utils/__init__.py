@@ -16,3 +16,4 @@ from . import logging
 from . import download
 from .metrics import ConfusionMatrix
 from .utils import *
+from .timer import Timer, calculate_eta
