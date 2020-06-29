@@ -4,7 +4,7 @@ MODEL.DEEPLAB 子Group存放所有和DeepLabv3+模型相关的配置
 
 ## `BACKBONE`
 
-DeepLabV3+所用骨干网络，支持`mobilenetv2` `xception65`两种
+DeepLabV3+所用骨干网络，支持`mobilenetv2` `xception65` `xception41` `resnet50_vd` `resnet101_vd`
 
 ### 默认值
 
