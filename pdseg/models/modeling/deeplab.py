@@ -271,8 +271,7 @@ def deeplabv3p(img, num_classes):
         data, decode_shortcut = resnet_vd(img)
     else:
         raise Exception(
-            "deeplab only support xception, mobilenet, resnet and resnet_vd backbone"
-        )
+            "deeplab only support xception, mobilenet, and resnet_vd backbone")
 
     # 编码器解码器设置
     cfg.MODEL.DEFAULT_EPSILON = 1e-5
