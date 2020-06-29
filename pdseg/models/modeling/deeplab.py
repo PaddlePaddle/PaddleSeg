@@ -248,7 +248,7 @@ def resnet_vd(input):
         dilation_dict = {3: 2}
     else:
         raise Exception("deeplab only support stride 8 or 16")
-    lr_mult_list = cfg.MODEL.DEEPLAB.RESNET_LR_MULT_LIST
+    lr_mult_list = cfg.MODEL.DEEPLAB.BACKBONE_LR_MULT_LIST
     model = resnet_vd_backbone(
         layers, stem='deeplab', lr_mult_list=lr_mult_list)
     data, decode_shortcuts = model.net(
@@ -265,11 +265,16 @@ def deeplabv3p(img, num_classes):
     # Backbone设置：xception 或 mobilenetv2
     if 'xception' in cfg.MODEL.DEEPLAB.BACKBONE:
         data, decode_shortcut = xception(img)
-        print('xception backbone do not support BACKBONE_LR_MULT_LIST setting')
+        if cfg.MODEL.DEEPLAB.BACKBONE_LR_MULT_LIST is not None:
+            print(
+                'xception backbone do not support BACKBONE_LR_MULT_LIST setting'
+            )
     elif 'mobilenet' in cfg.MODEL.DEEPLAB.BACKBONE:
         data, decode_shortcut = mobilenetv2(img)
-        print(
-            'mobilenetv2 backbone do not support BACKBONE_LR_MULT_LIST setting')
+        if cfg.MODEL.DEEPLAB.BACKBONE_LR_MULT_LIST is not None:
+            print(
+                'mobilenetv2 backbone do not support BACKBONE_LR_MULT_LIST setting'
+            )
     elif 'resnet' in cfg.MODEL.DEEPLAB.BACKBONE:
         data, decode_shortcut = resnet_vd(img)
     else:
