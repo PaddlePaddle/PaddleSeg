@@ -74,7 +74,7 @@ def load_pretrained_model(model, pretrained_model):
 
         else:
             raise ValueError(
-                'The pretrained model directory is not Found: {}'.formnat(
+                'The pretrained model directory is not Found: {}'.format(
                     pretrained_model))
     else:
         logging.info('No pretrained model to load, train from scratch')
@@ -94,7 +94,7 @@ def resume(model, optimizer, resume_model):
             return epoch
         else:
             raise ValueError(
-                'The resume model directory is not Found: {}'.formnat(
+                'The resume model directory is not Found: {}'.format(
                     resume_model))
     else:
         logging.info('No model need to resume')
