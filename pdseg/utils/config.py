@@ -117,6 +117,8 @@ cfg.AUG.RICH_CROP.CONTRAST_JITTER_RATIO = 0.5
 cfg.AUG.RICH_CROP.BLUR = False
 # 图像启动模糊百分比，0-1
 cfg.AUG.RICH_CROP.BLUR_RATIO = 0.1
+# 图像是否切换到rgb模式
+cfg.AUG.TO_RGB = True
 
 ########################### 训练配置 ##########################################
 # 模型保存路径
@@ -192,7 +194,7 @@ cfg.MODEL.FP16 = False
 cfg.MODEL.SCALE_LOSS = "DYNAMIC"
 
 ########################## DeepLab模型配置 ####################################
-# DeepLab backbone 配置, 可选项xception_65, mobilenetv2
+# DeepLab backbone 配置, 可选项xception_65, xception_41, xception_71, mobilenetv2, resnet50_vd, resnet101_vd
 cfg.MODEL.DEEPLAB.BACKBONE = "xception_65"
 # DeepLab output stride
 cfg.MODEL.DEEPLAB.OUTPUT_STRIDE = 16
@@ -206,6 +208,8 @@ cfg.MODEL.DEEPLAB.ENABLE_DECODER = True
 cfg.MODEL.DEEPLAB.ASPP_WITH_SEP_CONV = True
 # 解码器是否使用可分离卷积
 cfg.MODEL.DEEPLAB.DECODER_USE_SEP_CONV = True
+# resnet_vd分阶段学习率
+cfg.MODEL.DEEPLAB.BACKBONE_LR_MULT_LIST = None
 
 ########################## UNET模型配置 #######################################
 # 上采样方式, 默认为双线性插值

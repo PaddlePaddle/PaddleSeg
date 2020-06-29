@@ -26,6 +26,7 @@ from models.libs.model_libs import conv
 from models.libs.model_libs import separate_conv
 from models.backbone.mobilenet_v2 import MobileNetV2 as mobilenet_backbone
 from models.backbone.xception import Xception as xception_backbone
+from models.backbone.resnet_vd import ResNet as resnet_vd_backbone
 
 
 def encoder(input):
@@ -227,14 +228,58 @@ def xception(input):
     return data, decode_shortcut
 
 
+def resnet_vd(input):
+    # backbone: resnet_vd, 可选resnet50_vd, resnet101_vd
+    # end_points: resnet终止层数
+    # dilation_dict: resnet block数及对应的膨胀卷积尺度
+    backbone = cfg.MODEL.DEEPLAB.BACKBONE
+    if '50' in backbone:
+        layers = 50
+    elif '101' in backbone:
+        layers = 101
+    else:
+        raise Exception("resnet_vd backbone only support layers 50 or 101")
+    output_stride = cfg.MODEL.DEEPLAB.OUTPUT_STRIDE
+    end_points = layers - 1
+    decode_point = 10
+    if output_stride == 8:
+        dilation_dict = {2: 2, 3: 4}
+    elif output_stride == 16:
+        dilation_dict = {3: 2}
+    else:
+        raise Exception("deeplab only support stride 8 or 16")
+    lr_mult_list = cfg.MODEL.DEEPLAB.BACKBONE_LR_MULT_LIST
+    model = resnet_vd_backbone(
+        layers, stem='deeplab', lr_mult_list=lr_mult_list)
+    data, decode_shortcuts = model.net(
+        input,
+        end_points=end_points,
+        decode_points=decode_point,
+        dilation_dict=dilation_dict)
+    decode_shortcut = decode_shortcuts[decode_point]
+
+    return data, decode_shortcut
+
+
 def deeplabv3p(img, num_classes):
     # Backbone设置：xception 或 mobilenetv2
     if 'xception' in cfg.MODEL.DEEPLAB.BACKBONE:
         data, decode_shortcut = xception(img)
+        if cfg.MODEL.DEEPLAB.BACKBONE_LR_MULT_LIST is not None:
+            print(
+                'xception backbone do not support BACKBONE_LR_MULT_LIST setting'
+            )
     elif 'mobilenet' in cfg.MODEL.DEEPLAB.BACKBONE:
         data, decode_shortcut = mobilenetv2(img)
+        if cfg.MODEL.DEEPLAB.BACKBONE_LR_MULT_LIST is not None:
+            print(
+                'mobilenetv2 backbone do not support BACKBONE_LR_MULT_LIST setting'
+            )
+    elif 'resnet' in cfg.MODEL.DEEPLAB.BACKBONE:
+        data, decode_shortcut = resnet_vd(img)
     else:
-        raise Exception("deeplab only support xception and mobilenet backbone")
+        raise Exception(
+            "deeplab only support xception, mobilenet, and resnet_vd backbone")
 
     # 编码器解码器设置
     cfg.MODEL.DEFAULT_EPSILON = 1e-5
