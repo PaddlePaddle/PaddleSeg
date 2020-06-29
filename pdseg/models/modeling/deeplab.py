@@ -229,37 +229,6 @@ def xception(input):
     return data, decode_shortcut
 
 
-def resnet(input):
-    # backbone: resnet, 可选resnet_50, resnet_101
-    # end_points: resnet终止层数
-    # dilation_dict: resnet block数及对应的膨胀卷积尺度
-    backbone = cfg.MODEL.DEEPLAB.BACKBONE
-    if '50' in backbone:
-        layers = 50
-    elif '101' in backbone:
-        layers = 101
-    else:
-        raise Exception("resnet backbone only support layers 50 or 101")
-    output_stride = cfg.MODEL.DEEPLAB.OUTPUT_STRIDE
-    end_points = layers - 1
-    decode_point = 10
-    if output_stride == 8:
-        dilation_dict = {2: 2, 3: 4}
-    elif output_stride == 16:
-        dilation_dict = {3: 2}
-    else:
-        raise Exception("deeplab only support stride 8 or 16")
-    model = resnet_backbone(layers, stem='deeplab')
-    data, decode_shortcuts = model.net(
-        input,
-        end_points=end_points,
-        decode_points=decode_point,
-        dilation_dict=dilation_dict)
-    decode_shortcut = decode_shortcuts[decode_point]
-
-    return data, decode_shortcut
-
-
 def resnet_vd(input):
     # backbone: resnet_vd, 可选resnet_vd_50, resnet_vd_101
     # end_points: resnet终止层数
@@ -299,10 +268,8 @@ def deeplabv3p(img, num_classes):
         data, decode_shortcut = xception(img)
     elif 'mobilenet' in cfg.MODEL.DEEPLAB.BACKBONE:
         data, decode_shortcut = mobilenetv2(img)
-    elif 'resnet_vd' in cfg.MODEL.DEEPLAB.BACKBONE:
-        data, decode_shortcut = resnet_vd(img)
     elif 'resnet' in cfg.MODEL.DEEPLAB.BACKBONE:
-        data, decode_shortcut = resnet(img)
+        data, decode_shortcut = resnet_vd(img)
     else:
         raise Exception(
             "deeplab only support xception, mobilenet, resnet and resnet_vd backbone"

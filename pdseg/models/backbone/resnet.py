@@ -85,7 +85,7 @@ class ResNet():
             depth = [3, 8, 36, 3]
         num_filters = [64, 128, 256, 512]
 
-        if self.stem == 'icnet' or self.stem == 'pspnet' or self.stem == 'deeplab':
+        if self.stem == 'icnet' or self.stem == 'pspnet':
             conv = self.conv_bn_layer(
                 input=input,
                 num_filters=int(64 * self.scale),
@@ -256,8 +256,6 @@ class ResNet():
             return input
 
     def bottleneck_block(self, input, num_filters, stride, name, dilation=1):
-        if self.stem == 'deeplab':
-            strides = [1, stride]
         if self.stem == 'pspnet' and self.layers == 101:
             strides = [1, stride]
         else:
