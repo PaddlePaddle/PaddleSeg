@@ -209,7 +209,7 @@ cfg.MODEL.DEEPLAB.ASPP_WITH_SEP_CONV = True
 # 解码器是否使用可分离卷积
 cfg.MODEL.DEEPLAB.DECODER_USE_SEP_CONV = True
 # resnet_vd分阶段学习率
-cfg.MODEL.DEEPLAB.RESNET_LR_MULT_LIST = [1.0, 1.0, 1.0, 1.0, 1.0]
+cfg.MODEL.DEEPLAB.BACKBONE_LR_MULT_LIST = [1.0, 1.0, 1.0, 1.0, 1.0]
 
 ########################## UNET模型配置 #######################################
 # 上采样方式, 默认为双线性插值

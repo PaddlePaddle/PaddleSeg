@@ -265,8 +265,11 @@ def deeplabv3p(img, num_classes):
     # Backbone设置：xception 或 mobilenetv2
     if 'xception' in cfg.MODEL.DEEPLAB.BACKBONE:
         data, decode_shortcut = xception(img)
+        print('xception backbone do not support BACKBONE_LR_MULT_LIST setting')
     elif 'mobilenet' in cfg.MODEL.DEEPLAB.BACKBONE:
         data, decode_shortcut = mobilenetv2(img)
+        print(
+            'mobilenetv2 backbone do not support BACKBONE_LR_MULT_LIST setting')
     elif 'resnet' in cfg.MODEL.DEEPLAB.BACKBONE:
         data, decode_shortcut = resnet_vd(img)
     else:

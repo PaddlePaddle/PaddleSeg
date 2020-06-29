@@ -18,6 +18,7 @@ from __future__ import division
 from __future__ import print_function
 
 import math
+
 import numpy as np
 import paddle.fluid as fluid
 from paddle.fluid.param_attr import ParamAttr
