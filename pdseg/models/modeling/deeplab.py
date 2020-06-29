@@ -26,7 +26,6 @@ from models.libs.model_libs import conv
 from models.libs.model_libs import separate_conv
 from models.backbone.mobilenet_v2 import MobileNetV2 as mobilenet_backbone
 from models.backbone.xception import Xception as xception_backbone
-from models.backbone.resnet import ResNet as resnet_backbone
 from models.backbone.resnet_vd import ResNet as resnet_vd_backbone
 
 
@@ -230,7 +229,7 @@ def xception(input):
 
 
 def resnet_vd(input):
-    # backbone: resnet_vd, 可选resnet_vd_50, resnet_vd_101
+    # backbone: resnet_vd, 可选resnet50_vd, resnet101_vd
     # end_points: resnet终止层数
     # dilation_dict: resnet block数及对应的膨胀卷积尺度
     backbone = cfg.MODEL.DEEPLAB.BACKBONE
