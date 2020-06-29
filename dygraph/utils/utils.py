@@ -49,7 +49,7 @@ def get_environ_info():
 
 def load_pretrained_model(model, pretrained_model):
     if pretrained_model is not None:
-        logging.info('Load pretrained model!')
+        logging.info('Load pretrained model from {}'.format(pretrained_model))
         if os.path.exists(pretrained_model):
             ckpt_path = os.path.join(pretrained_model, 'model')
             para_state_dict, _ = fluid.load_dygraph(ckpt_path)
@@ -74,8 +74,30 @@ def load_pretrained_model(model, pretrained_model):
 
         else:
             raise ValueError(
-                'The pretrained model directory is not Found: {}'.formnat(
+                'The pretrained model directory is not Found: {}'.format(
                     pretrained_model))
+    else:
+        logging.info('No pretrained model to load, train from scratch')
+
+
+def resume(model, optimizer, resume_model):
+    if resume_model is not None:
+        logging.info('Resume model from {}'.format(resume_model))
+        if os.path.exists(resume_model):
+            ckpt_path = os.path.join(resume_model, 'model')
+            para_state_dict, opti_state_dict = fluid.load_dygraph(ckpt_path)
+            model.set_dict(para_state_dict)
+            optimizer.set_dict(opti_state_dict)
+            epoch = resume_model.split('_')[-1]
+            if epoch.isdigit():
+                epoch = int(epoch)
+            return epoch
+        else:
+            raise ValueError(
+                'The resume model directory is not Found: {}'.format(
+                    resume_model))
+    else:
+        logging.info('No model need to resume')
 
 
 def visualize(image, result, save_dir=None, weight=0.6):
