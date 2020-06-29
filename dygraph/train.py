@@ -121,7 +121,7 @@ def parse_args():
     parser.add_argument(
         '--use_vdl',
         dest='use_vdl',
-        help='Whether to record the data during training to VisualDL',
+        help='Whether to record the data to VisualDL during training',
         action='store_true')
 
     return parser.parse_args()

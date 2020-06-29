@@ -76,6 +76,8 @@ def load_pretrained_model(model, pretrained_model):
             raise ValueError(
                 'The pretrained model directory is not Found: {}'.formnat(
                     pretrained_model))
+    else:
+        logging.info('No pretrained model to load, train from scratch')
 
 
 def resume(model, optimizer, resume_model):
@@ -94,6 +96,8 @@ def resume(model, optimizer, resume_model):
             raise ValueError(
                 'The resume model directory is not Found: {}'.formnat(
                     resume_model))
+    else:
+        logging.info('No model need to resume')
 
 
 def visualize(image, result, save_dir=None, weight=0.6):
