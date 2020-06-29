@@ -1,5 +1,5 @@
 # coding: utf8
-# Copyright (c) 2019 PaddlePaddle Authors. All Rights Reserve.
+# Copyright (c) 2020 PaddlePaddle Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -127,7 +127,7 @@ class UNet(BaseModel):
               train_reader,
               train_batch_size=2,
               eval_reader=None,
-              eval_best_metric='kappa',
+              eval_best_metric='miou',
               save_interval_epochs=1,
               log_interval_steps=2,
               save_dir='output',

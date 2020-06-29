@@ -1,3 +1,0 @@
-images/100.npy annotations/100.png
-images/1.npy annotations/1.png
-images/10.npy annotations/10.png

@@ -1,5 +1,5 @@
 # coding: utf8
-# Copyright (c) 2019 PaddlePaddle Authors. All Rights Reserve.
+# Copyright (c) 2020 PaddlePaddle Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import numpy as np
 from PIL import Image as Image
 import argparse
 from models import load_model
+from models.utils.visualize import get_color_map_list
 
 
 def parse_args():
@@ -54,6 +55,13 @@ def parse_args():
         help='save directory name of predict results',
         default='predict_results',
         type=str)
+    parser.add_argument(
+        '--color_map',
+        dest='color_map',
+        help='color map of predict results',
+        type=int,
+        nargs='*',
+        default=-1)
     if len(sys.argv) < 2:
         parser.print_help()
         sys.exit(1)
@@ -68,37 +76,41 @@ load_model_dir = args.load_model_dir
 save_img_dir = args.save_img_dir
 if not osp.exists(save_img_dir):
     os.makedirs(save_img_dir)
+if args.color_map == -1:
+    color_map = get_color_map_list(256)
+else:
+    color_map = args.color_map
 
 # predict
 model = load_model(load_model_dir)
 
-color_map = [0, 0, 0, 0, 255, 0]
 if single_img is not None:
     pred = model.predict(single_img)
     # 以伪彩色png图片保存预测结果
-    pred_name = osp.basename(single_img).rstrip('npy') + 'png'
-    pred_path = osp.join(save_img_dir, pred_name)
+    pred_name, _ = osp.splitext(osp.basename(single_img))
+    pred_path = osp.join(save_img_dir, pred_name + '.png')
     pred_mask = Image.fromarray(pred['label_map'].astype(np.uint8), mode='P')
     pred_mask.putpalette(color_map)
     pred_mask.save(pred_path)
+    print('Predict result is saved in {}'.format(pred_path))
 elif (file_list is not None) and (data_dir is not None):
     with open(osp.join(data_dir, file_list)) as f:
         lines = f.readlines()
         for line in lines:
             img_path = line.split(' ')[0]
-            print('Predicting {}'.format(img_path))
             img_path_ = osp.join(data_dir, img_path)
 
             pred = model.predict(img_path_)
 
             # 以伪彩色png图片保存预测结果
-            pred_name = osp.basename(img_path).rstrip('npy') + 'png'
-            pred_path = osp.join(save_img_dir, pred_name)
+            pred_name, _ = osp.splitext(osp.basename(img_path))
+            pred_path = osp.join(save_img_dir, pred_name + '.png')
             pred_mask = Image.fromarray(
                 pred['label_map'].astype(np.uint8), mode='P')
             pred_mask.putpalette(color_map)
             pred_mask.save(pred_path)
+            print('Predict result is saved in {}'.format(pred_path))
 else:
     raise Exception(
-        'You should either set the parameter single_img, or set the parameters data_dir, file_list.'
+        'You should either set the parameter single_img, or set the parameters data_dir and file_list.'
     )

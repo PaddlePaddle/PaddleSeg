@@ -1,5 +1,5 @@
 # coding: utf8
-# Copyright (c) 2019 PaddlePaddle Authors. All Rights Reserve.
+# Copyright (c) 2020 PaddlePaddle Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -46,10 +46,10 @@ def parse_args():
         default=['train', 'val', 'test'])
     parser.add_argument(
         '--format',
-        help='data format of images and labels, default npy, png.',
+        help='data format of images and labels, default tif, png.',
         type=str,
         nargs=2,
-        default=['npy', 'png'])
+        default=['tif', 'png'])
     parser.add_argument(
         '--label_class',
         help='label class names',

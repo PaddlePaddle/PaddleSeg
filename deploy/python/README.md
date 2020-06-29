@@ -79,7 +79,7 @@ DEPLOY:
 ### 5.2 执行预测程序
 在终端输入以下命令进行预测:
 ```bash
-python infer.py --conf=/path/to/deploy.yaml --input_dir/path/to/images_directory
+python infer.py --conf=/path/to/deploy.yaml --input_dir=/path/to/images_directory
 ```
 参数说明如下:
 

@@ -109,7 +109,7 @@ def video_infer(args):
 
     fps = cap.get(cv2.CAP_PROP_FPS)
     if args.video_path:
-        print('Please waite. It is computing......')
+        print('Please wait. It is computing......')
         # 用于保存预测结果视频
         if not osp.exists(args.save_dir):
             os.makedirs(args.save_dir)
