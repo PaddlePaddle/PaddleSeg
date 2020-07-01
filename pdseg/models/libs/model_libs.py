@@ -109,6 +109,10 @@ def bn_relu(data):
     return fluid.layers.relu(bn(data))
 
 
+def qsigmoid(data):
+    return fluid.layers.relu6(data + 3) * 0.16667
+
+
 def relu(data):
     return fluid.layers.relu(data)
 
