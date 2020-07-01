@@ -24,7 +24,7 @@ import tqdm
 
 from datasets import OpticDiscSeg, Cityscapes
 import transforms as T
-import models
+from models import MODELS
 import utils
 import utils.logging as logging
 from utils import get_environ_info
@@ -37,7 +37,12 @@ def parse_args():
     parser.add_argument(
         '--model_name',
         dest='model_name',
-        help="Model type for traing, which is one of ('UNet')",
+        help=
+        'Model type for testing, which is one of ("UNet", "HRNet_W18_Small_V1", "HRNet_W18_Small_V2", '
+        '"HRNet_W18", "HRNet_W30", "HRNet_W32", "HRNet_W40", "HRNet_W44", "HRNet_W48", '
+        '"HRNet_W60", "HRNet_W64", "SE_HRNet_W18_Small_V1", "SE_HRNet_W18_Small_V2", "SE_HRNet_W18", '
+        '"SE_HRNet_W30", "SE_HRNet_W32", "SE_HRNet_W40","SE_HRNet_W44", "SE_HRNet_W48", '
+        '"SE_HRNet_W60", "SE_HRNet_W64")',
         type=str,
         default='UNet')
 
@@ -146,8 +151,11 @@ def main(args):
         test_transforms = T.Compose([T.Resize(args.input_size), T.Normalize()])
         test_dataset = dataset(transforms=test_transforms, mode='test')
 
-        if args.model_name == 'UNet':
-            model = models.UNet(num_classes=test_dataset.num_classes)
+        if args.model_name not in MODELS:
+            raise Exception(
+                '--model_name is invalid. it should be one of {}'.format(
+                    str(list(MODELS.keys()))))
+        model = MODELS[args.model_name](num_classes=test_dataset.num_classes)
 
         infer(
             model,
