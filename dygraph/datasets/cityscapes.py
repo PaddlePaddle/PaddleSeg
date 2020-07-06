@@ -14,8 +14,7 @@
 
 import os
 
-from paddle.fluid.io import Dataset
-
+from dataset import Dataset
 from utils.download import download_file_and_uncompress
 
 DATA_HOME = os.path.expanduser('~/.cache/paddle/dataset')
@@ -70,16 +69,3 @@ class Cityscapes(Dataset):
                     image_path = os.path.join(self.data_dir, items[0])
                     grt_path = os.path.join(self.data_dir, items[1])
                 self.file_list.append([image_path, grt_path])
-
-    def __getitem__(self, idx):
-        image_path, grt_path = self.file_list[idx]
-        im, im_info, label = self.transforms(im=image_path, label=grt_path)
-        if self.mode == 'train':
-            return im, label
-        elif self.mode == 'eval':
-            return im, label
-        if self.mode == 'test':
-            return im, im_info, image_path
-
-    def __len__(self):
-        return len(self.file_list)

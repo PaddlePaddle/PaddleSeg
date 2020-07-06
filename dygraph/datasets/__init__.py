@@ -12,5 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from .dataset import Dataset
 from .optic_disc_seg import OpticDiscSeg
 from .cityscapes import Cityscapes
