@@ -14,7 +14,7 @@
 
 import os
 
-from dataset import Dataset
+from .dataset import Dataset
 from utils.download import download_file_and_uncompress
 
 DATA_HOME = os.path.expanduser('~/.cache/paddle/dataset')
