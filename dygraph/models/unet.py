@@ -14,7 +14,10 @@
 
 import paddle.fluid as fluid
 from paddle.fluid.dygraph import Conv2D, Pool2D
-from paddle.fluid.dygraph import SyncBatchNorm as BatchNorm
+try:
+    from paddle.fluid.dygraph import SyncBatchNorm as BatchNorm
+except:
+    from paddle.fluid.dygraph import BatchNorm
 
 
 class UNet(fluid.dygraph.Layer):
