@@ -37,6 +37,7 @@ PaddleSeg对所有内置的分割模型都提供了公开数据集下的预训�
 |---|---|---|---|
 | ResNet50（适配PSPNet） | ImageNet | [resnet50_v2_pspnet](https://paddleseg.bj.bcebos.com/resnet50_v2_pspnet.tgz)| -- |
 | ResNet101（适配PSPNet） | ImageNet | [resnet101_v2_pspnet](https://paddleseg.bj.bcebos.com/resnet101_v2_pspnet.tgz)| -- |
+| ResNet50_vd | ImageNet | [ResNet50_vd_ssld_pretrained.tgz](https://paddleseg.bj.bcebos.com/models/ResNet50_vd_ssld_pretrained.tgz) | 83.0%/96.4% |
 
 ## COCO预训练模型
 
@@ -58,7 +59,8 @@ train数据集合为Cityscapes训练集合，测试为Cityscapes的验证集合
 |---|---|---|---|---|---|
 | DeepLabv3+/MobileNetv2/bn | Cityscapes |[mobilenet_cityscapes.tgz](https://paddleseg.bj.bcebos.com/models/mobilenet_cityscapes.tgz) |16|false| 0.698|
 | DeepLabv3+/Xception65/gn  | Cityscapes |[deeplabv3p_xception65_gn_cityscapes.tgz](https://paddleseg.bj.bcebos.com/models/deeplabv3p_xception65_cityscapes.tgz) |16|false| 0.7824 |
-| DeepLabv3+/Xception65/bn | Cityscapes |[deeplabv3p_xception65_bn_cityscapes_.tgz](https://paddleseg.bj.bcebos.com/models/xception65_bn_cityscapes.tgz) | 16 | false | 0.7930 |
+| DeepLabv3+/Xception65/bn | Cityscapes |[deeplabv3p_xception65_bn_cityscapes.tgz](https://paddleseg.bj.bcebos.com/models/xception65_bn_cityscapes.tgz) | 16 | false | 0.7930 |
+| DeepLabv3+/ResNet50_vd/bn | Cityscapes |[deeplabv3p_resnet50_vd_cityscapes.tgz](https://paddleseg.bj.bcebos.com/models/deeplabv3p_resnet50_vd_cityscapes.tgz) | 16 | false | 0.8006 |
 | ICNet/bn | Cityscapes |[icnet_cityscapes.tgz](https://paddleseg.bj.bcebos.com/models/icnet_cityscapes.tar.gz) |16|false| 0.6831 |
 | PSPNet/bn | Cityscapes |[pspnet50_cityscapes.tgz](https://paddleseg.bj.bcebos.com/models/pspnet50_cityscapes.tgz) |16|false| 0.7013 |
 | PSPNet/bn | Cityscapes |[pspnet101_cityscapes.tgz](https://paddleseg.bj.bcebos.com/models/pspnet101_cityscapes.tgz) |16|false| 0.7734 |
