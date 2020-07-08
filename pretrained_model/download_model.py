@@ -34,6 +34,10 @@ model_urls = {
     "https://paddle-imagenet-models-name.bj.bcebos.com/MobileNetV2_x0_5_pretrained.tar",
     "mobilenetv2-0-25_bn_imagenet":
     "https://paddle-imagenet-models-name.bj.bcebos.com/MobileNetV2_x0_25_pretrained.tar",
+    "mobilenetv3-1-0_large_bn_imagenet":
+    "https://paddle-imagenet-models-name.bj.bcebos.com/MobileNetV3_large_x1_0_ssld_pretrained.tar",
+    "mobilenetv3-1-0_small_bn_imagenet":
+    "https://paddle-imagenet-models-name.bj.bcebos.com/MobileNetV3_small_x1_0_ssld_pretrained.tar",
     "xception41_imagenet":
     "https://paddleseg.bj.bcebos.com/models/Xception41_pretrained.tgz",
     "xception65_imagenet":

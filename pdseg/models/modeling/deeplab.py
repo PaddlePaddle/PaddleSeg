@@ -21,10 +21,11 @@ import paddle
 import paddle.fluid as fluid
 from utils.config import cfg
 from models.libs.model_libs import scope, name_scope
-from models.libs.model_libs import bn, bn_relu, relu
+from models.libs.model_libs import bn, bn_relu, relu, qsigmoid
 from models.libs.model_libs import conv
 from models.libs.model_libs import separate_conv
-from models.backbone.mobilenet_v2 import MobileNetV2 as mobilenet_backbone
+from models.backbone.mobilenet_v2 import MobileNetV2 as mobilenet_v2_backbone
+from models.backbone.mobilenet_v3 import MobileNetV3 as mobilenet_v3_backbone
 from models.backbone.xception import Xception as xception_backbone
 from models.backbone.resnet_vd import ResNet as resnet_vd_backbone
 
@@ -35,22 +36,42 @@ def encoder(input):
     # OUTPUT_STRIDE: 下采样倍数，8或16，决定aspp_ratios大小
     # aspp_ratios：ASPP模块空洞卷积的采样率
 
-    if cfg.MODEL.DEEPLAB.OUTPUT_STRIDE == 16:
-        aspp_ratios = [6, 12, 18]
-    elif cfg.MODEL.DEEPLAB.OUTPUT_STRIDE == 8:
-        aspp_ratios = [12, 24, 36]
+    if not cfg.MODEL.DEEPLAB.ENCODER.ASPP_RATIOS:
+        if cfg.MODEL.DEEPLAB.OUTPUT_STRIDE == 16:
+            aspp_ratios = [6, 12, 18]
+        elif cfg.MODEL.DEEPLAB.OUTPUT_STRIDE == 8:
+            aspp_ratios = [12, 24, 36]
+        else:
+            aspp_ratios = []
     else:
-        raise Exception("deeplab only support stride 8 or 16")
+        aspp_ratios = cfg.MODEL.DEEPLAB.ENCODER.ASPP_RATIOS
 
     param_attr = fluid.ParamAttr(
         name=name_scope + 'weights',
         regularizer=None,
         initializer=fluid.initializer.TruncatedNormal(loc=0.0, scale=0.06))
+
+    concat_logits = []
     with scope('encoder'):
-        channel = 256
+        channel = cfg.MODEL.DEEPLAB.ENCODER.ASPP_CONVS_FILTERS
         with scope("image_pool"):
-            image_avg = fluid.layers.reduce_mean(input, [2, 3], keep_dim=True)
-            image_avg = bn_relu(
+            if not cfg.MODEL.DEEPLAB.ENCODER.POOLING_CROP_SIZE:
+                image_avg = fluid.layers.reduce_mean(
+                    input, [2, 3], keep_dim=True)
+            else:
+                pool_w = int((cfg.MODEL.DEEPLAB.ENCODER.POOLING_CROP_SIZE[0] -
+                              1.0) / cfg.MODEL.DEEPLAB.OUTPUT_STRIDE + 1.0)
+                pool_h = int((cfg.MODEL.DEEPLAB.ENCODER.POOLING_CROP_SIZE[1] -
+                              1.0) / cfg.MODEL.DEEPLAB.OUTPUT_STRIDE + 1.0)
+                image_avg = fluid.layers.pool2d(
+                    input,
+                    pool_size=(pool_h, pool_w),
+                    pool_stride=cfg.MODEL.DEEPLAB.ENCODER.POOLING_STRIDE,
+                    pool_type='avg',
+                    pool_padding='VALID')
+
+            act = qsigmoid if cfg.MODEL.DEEPLAB.ENCODER.SE_USE_QSIGMOID else bn_relu
+            image_avg = act(
                 conv(
                     image_avg,
                     channel,
@@ -60,6 +81,8 @@ def encoder(input):
                     padding=0,
                     param_attr=param_attr))
             image_avg = fluid.layers.resize_bilinear(image_avg, input.shape[2:])
+            if cfg.MODEL.DEEPLAB.ENCODER.ADD_IMAGE_LEVEL_FEATURE:
+                concat_logits.append(image_avg)
 
         with scope("aspp0"):
             aspp0 = bn_relu(
@@ -71,62 +94,154 @@ def encoder(input):
                     groups=1,
                     padding=0,
                     param_attr=param_attr))
-        with scope("aspp1"):
-            if cfg.MODEL.DEEPLAB.ASPP_WITH_SEP_CONV:
-                aspp1 = separate_conv(
-                    input, channel, 1, 3, dilation=aspp_ratios[0], act=relu)
-            else:
-                aspp1 = bn_relu(
-                    conv(
-                        input,
-                        channel,
-                        stride=1,
-                        filter_size=3,
-                        dilation=aspp_ratios[0],
-                        padding=aspp_ratios[0],
-                        param_attr=param_attr))
-        with scope("aspp2"):
-            if cfg.MODEL.DEEPLAB.ASPP_WITH_SEP_CONV:
-                aspp2 = separate_conv(
-                    input, channel, 1, 3, dilation=aspp_ratios[1], act=relu)
-            else:
-                aspp2 = bn_relu(
-                    conv(
-                        input,
-                        channel,
-                        stride=1,
-                        filter_size=3,
-                        dilation=aspp_ratios[1],
-                        padding=aspp_ratios[1],
-                        param_attr=param_attr))
-        with scope("aspp3"):
-            if cfg.MODEL.DEEPLAB.ASPP_WITH_SEP_CONV:
-                aspp3 = separate_conv(
-                    input, channel, 1, 3, dilation=aspp_ratios[2], act=relu)
-            else:
-                aspp3 = bn_relu(
-                    conv(
-                        input,
-                        channel,
-                        stride=1,
-                        filter_size=3,
-                        dilation=aspp_ratios[2],
-                        padding=aspp_ratios[2],
-                        param_attr=param_attr))
+            concat_logits.append(aspp0)
+
+        if aspp_ratios:
+            with scope("aspp1"):
+                if cfg.MODEL.DEEPLAB.ASPP_WITH_SEP_CONV:
+                    aspp1 = separate_conv(
+                        input, channel, 1, 3, dilation=aspp_ratios[0], act=relu)
+                else:
+                    aspp1 = bn_relu(
+                        conv(
+                            input,
+                            channel,
+                            stride=1,
+                            filter_size=3,
+                            dilation=aspp_ratios[0],
+                            padding=aspp_ratios[0],
+                            param_attr=param_attr))
+                concat_logits.append(aspp1)
+            with scope("aspp2"):
+                if cfg.MODEL.DEEPLAB.ASPP_WITH_SEP_CONV:
+                    aspp2 = separate_conv(
+                        input, channel, 1, 3, dilation=aspp_ratios[1], act=relu)
+                else:
+                    aspp2 = bn_relu(
+                        conv(
+                            input,
+                            channel,
+                            stride=1,
+                            filter_size=3,
+                            dilation=aspp_ratios[1],
+                            padding=aspp_ratios[1],
+                            param_attr=param_attr))
+                concat_logits.append(aspp2)
+            with scope("aspp3"):
+                if cfg.MODEL.DEEPLAB.ASPP_WITH_SEP_CONV:
+                    aspp3 = separate_conv(
+                        input, channel, 1, 3, dilation=aspp_ratios[2], act=relu)
+                else:
+                    aspp3 = bn_relu(
+                        conv(
+                            input,
+                            channel,
+                            stride=1,
+                            filter_size=3,
+                            dilation=aspp_ratios[2],
+                            padding=aspp_ratios[2],
+                            param_attr=param_attr))
+                concat_logits.append(aspp3)
+
         with scope("concat"):
-            data = fluid.layers.concat([image_avg, aspp0, aspp1, aspp2, aspp3],
-                                       axis=1)
-            data = bn_relu(
-                conv(
-                    data,
-                    channel,
-                    1,
-                    1,
-                    groups=1,
-                    padding=0,
-                    param_attr=param_attr))
-            data = fluid.layers.dropout(data, 0.9)
+            data = fluid.layers.concat(concat_logits, axis=1)
+            if cfg.MODEL.DEEPLAB.ENCODER.ASPP_WITH_CONCAT_PROJECTION:
+                data = bn_relu(
+                    conv(
+                        data,
+                        channel,
+                        1,
+                        1,
+                        groups=1,
+                        padding=0,
+                        param_attr=param_attr))
+                data = fluid.layers.dropout(data, 0.9)
+
+        if cfg.MODEL.DEEPLAB.ENCODER.ASPP_WITH_SE:
+            data = data * image_avg
         return data
+
+
+def _decoder_with_sum_merge(encode_data, decode_shortcut, param_attr):
+    encode_data = fluid.layers.resize_bilinear(encode_data,
+                                               decode_shortcut.shape[2:])
+    encode_data = conv(
+        encode_data,
+        cfg.MODEL.DEEPLAB.DECODER.CONV_FILTERS,
+        1,
+        1,
+        groups=1,
+        padding=0,
+        param_attr=param_attr)
+
+    with scope('merge'):
+        decode_shortcut = conv(
+            decode_shortcut,
+            cfg.MODEL.DEEPLAB.DECODER.CONV_FILTERS,
+            1,
+            1,
+            groups=1,
+            padding=0,
+            param_attr=param_attr)
+
+        return encode_data + decode_shortcut
+
+
+def _decoder_with_concat(encode_data, decode_shortcut, param_attr):
+    with scope('concat'):
+        decode_shortcut = bn_relu(
+            conv(
+                decode_shortcut,
+                48,
+                1,
+                1,
+                groups=1,
+                padding=0,
+                param_attr=param_attr))
+
+        encode_data = fluid.layers.resize_bilinear(encode_data,
+                                                   decode_shortcut.shape[2:])
+        encode_data = fluid.layers.concat([encode_data, decode_shortcut],
+                                          axis=1)
+    if cfg.MODEL.DEEPLAB.DECODER_USE_SEP_CONV:
+        with scope("separable_conv1"):
+            encode_data = separate_conv(
+                encode_data,
+                cfg.MODEL.DEEPLAB.DECODER.CONV_FILTERS,
+                1,
+                3,
+                dilation=1,
+                act=relu)
+        with scope("separable_conv2"):
+            encode_data = separate_conv(
+                encode_data,
+                cfg.MODEL.DEEPLAB.DECODER.CONV_FILTERS,
+                1,
+                3,
+                dilation=1,
+                act=relu)
+    else:
+        with scope("decoder_conv1"):
+            encode_data = bn_relu(
+                conv(
+                    encode_data,
+                    cfg.MODEL.DEEPLAB.DECODER.CONV_FILTERS,
+                    stride=1,
+                    filter_size=3,
+                    dilation=1,
+                    padding=1,
+                    param_attr=param_attr))
+        with scope("decoder_conv2"):
+            encode_data = bn_relu(
+                conv(
+                    encode_data,
+                    cfg.MODEL.DEEPLAB.DECODER.CONV_FILTERS,
+                    stride=1,
+                    filter_size=3,
+                    dilation=1,
+                    padding=1,
+                    param_attr=param_attr))
+    return encode_data
 
 
 def decoder(encode_data, decode_shortcut):
@@ -139,61 +254,49 @@ def decoder(encode_data, decode_shortcut):
         regularizer=None,
         initializer=fluid.initializer.TruncatedNormal(loc=0.0, scale=0.06))
     with scope('decoder'):
-        with scope('concat'):
-            decode_shortcut = bn_relu(
-                conv(
-                    decode_shortcut,
-                    48,
-                    1,
-                    1,
-                    groups=1,
-                    padding=0,
-                    param_attr=param_attr))
+        if cfg.MODEL.DEEPLAB.DECODER.USE_SUM_MERGE:
+            return _decoder_with_sum_merge(encode_data, decode_shortcut,
+                                           param_attr)
 
-            encode_data = fluid.layers.resize_bilinear(
-                encode_data, decode_shortcut.shape[2:])
-            encode_data = fluid.layers.concat([encode_data, decode_shortcut],
-                                              axis=1)
-        if cfg.MODEL.DEEPLAB.DECODER_USE_SEP_CONV:
-            with scope("separable_conv1"):
-                encode_data = separate_conv(
-                    encode_data, 256, 1, 3, dilation=1, act=relu)
-            with scope("separable_conv2"):
-                encode_data = separate_conv(
-                    encode_data, 256, 1, 3, dilation=1, act=relu)
-        else:
-            with scope("decoder_conv1"):
-                encode_data = bn_relu(
-                    conv(
-                        encode_data,
-                        256,
-                        stride=1,
-                        filter_size=3,
-                        dilation=1,
-                        padding=1,
-                        param_attr=param_attr))
-            with scope("decoder_conv2"):
-                encode_data = bn_relu(
-                    conv(
-                        encode_data,
-                        256,
-                        stride=1,
-                        filter_size=3,
-                        dilation=1,
-                        padding=1,
-                        param_attr=param_attr))
-        return encode_data
+        return _decoder_with_concat(encode_data, decode_shortcut, param_attr)
 
 
-def mobilenetv2(input):
+def mobilenet(input):
+    if 'v3' in cfg.MODEL.DEEPLAB.BACKBONE:
+        model_name = 'large' if 'large' in cfg.MODEL.DEEPLAB.BACKBONE else 'small'
+        return _mobilenetv3(input, model_name)
+    return _mobilenetv2(input)
+
+
+def _mobilenetv3(input, model_name='large'):
+    # Backbone: mobilenetv3结构配置
+    # DEPTH_MULTIPLIER: mobilenetv3的scale设置，默认1.0
+    # OUTPUT_STRIDE：下采样倍数
+    scale = cfg.MODEL.DEEPLAB.DEPTH_MULTIPLIER
+    output_stride = cfg.MODEL.DEEPLAB.OUTPUT_STRIDE
+    lr_mult_shortcut = cfg.MODEL.DEEPLAB.BACKBONE_LR_MULT_LIST
+    model = mobilenet_v3_backbone(
+        scale=scale,
+        output_stride=output_stride,
+        model_name=model_name,
+        lr_mult_list=lr_mult_shortcut)
+    data, decode_shortcut = model.net(input)
+    return data, decode_shortcut
+
+
+def _mobilenetv2(input):
     # Backbone: mobilenetv2结构配置
     # DEPTH_MULTIPLIER: mobilenetv2的scale设置，默认1.0
     # OUTPUT_STRIDE：下采样倍数
     # end_points: mobilenetv2的block数
     # decode_point: 从mobilenetv2中引出分支所在block数, 作为decoder输入
+    if cfg.MODEL.DEEPLAB.BACKBONE_LR_MULT_LIST is not None:
+        print(
+            'mobilenetv2 backbone do not support BACKBONE_LR_MULT_LIST setting')
+
     scale = cfg.MODEL.DEEPLAB.DEPTH_MULTIPLIER
     output_stride = cfg.MODEL.DEEPLAB.OUTPUT_STRIDE
-    model = mobilenet_backbone(scale=scale, output_stride=output_stride)
+    model = mobilenet_v2_backbone(scale=scale, output_stride=output_stride)
     end_points = 18
     decode_point = 4
     data, decode_shortcuts = model.net(
@@ -272,11 +375,7 @@ def deeplabv3p(img, num_classes):
                 'xception backbone do not support BACKBONE_LR_MULT_LIST setting'
             )
     elif 'mobilenet' in cfg.MODEL.DEEPLAB.BACKBONE:
-        data, decode_shortcut = mobilenetv2(img)
-        if cfg.MODEL.DEEPLAB.BACKBONE_LR_MULT_LIST is not None:
-            print(
-                'mobilenetv2 backbone do not support BACKBONE_LR_MULT_LIST setting'
-            )
+        data, decode_shortcut = mobilenet(img)
     elif 'resnet' in cfg.MODEL.DEEPLAB.BACKBONE:
         data, decode_shortcut = resnet_vd(img)
     else:
@@ -296,16 +395,20 @@ def deeplabv3p(img, num_classes):
         regularizer=fluid.regularizer.L2DecayRegularizer(
             regularization_coeff=0.0),
         initializer=fluid.initializer.TruncatedNormal(loc=0.0, scale=0.01))
-    with scope('logit'):
-        with fluid.name_scope('last_conv'):
-            logit = conv(
-                data,
-                num_classes,
-                1,
-                stride=1,
-                padding=0,
-                bias_attr=True,
-                param_attr=param_attr)
-        logit = fluid.layers.resize_bilinear(logit, img.shape[2:])
 
+    if not cfg.MODEL.DEEPLAB.DECODER.OUTPUT_IS_LOGITS:
+        with scope('logit'):
+            with fluid.name_scope('last_conv'):
+                logit = conv(
+                    data,
+                    num_classes,
+                    1,
+                    stride=1,
+                    padding=0,
+                    bias_attr=True,
+                    param_attr=param_attr)
+    else:
+        logit = data
+
+    logit = fluid.layers.resize_bilinear(logit, img.shape[2:])
     return logit
