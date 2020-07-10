@@ -42,6 +42,8 @@ model_urls = {
     "https://paddleseg.bj.bcebos.com/models/Xception41_pretrained.tgz",
     "xception65_imagenet":
     "https://paddleseg.bj.bcebos.com/models/Xception65_pretrained.tgz",
+    "resnet50_vd_imagenet":
+    "https://paddleseg.bj.bcebos.com/models/ResNet50_vd_ssld_pretrained.tgz",
     "hrnet_w18_bn_imagenet":
     "https://paddleseg.bj.bcebos.com/models/hrnet_w18_imagenet.tar",
     "hrnet_w30_bn_imagenet":
@@ -76,6 +78,8 @@ model_urls = {
     "https://paddleseg.bj.bcebos.com/models/deeplabv3p_xception65_cityscapes.tgz",
     "deeplabv3p_xception65_bn_cityscapes":
     "https://paddleseg.bj.bcebos.com/models/xception65_bn_cityscapes.tgz",
+    "deeplabv3p_resnet50_vd_cityscapes":
+    "https://paddleseg.bj.bcebos.com/models/deeplabv3p_resnet50_vd_cityscapes.tgz",
     "unet_bn_coco":
     "https://paddleseg.bj.bcebos.com/models/unet_coco_v3.tgz",
     "icnet_bn_cityscapes":
