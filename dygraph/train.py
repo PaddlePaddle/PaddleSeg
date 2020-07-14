@@ -230,10 +230,8 @@ def train(model,
                 mean_iou, mean_acc = evaluate(
                     model,
                     eval_dataset,
-                    places=places,
                     model_dir=current_save_dir,
                     num_classes=num_classes,
-                    batch_size=batch_size,
                     ignore_index=ignore_index,
                     epoch_id=epoch + 1)
                 if mean_iou > best_mean_iou:

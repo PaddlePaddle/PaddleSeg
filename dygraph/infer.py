@@ -98,7 +98,6 @@ def infer(model, test_dataset=None, model_dir=None, save_dir='output'):
 
     logging.info("Start to predict...")
     for im, im_info, im_path in tqdm.tqdm(test_dataset):
-        im = im[np.newaxis, ...]
         im = to_variable(im)
         pred, _ = model(im, mode='test')
         pred = pred.numpy()

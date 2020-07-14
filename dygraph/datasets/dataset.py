@@ -14,10 +14,12 @@
 
 import os
 
-from paddle.fluid.io import Dataset
+import paddle.fluid as fluid
+import numpy as np
+from PIL import Image
 
 
-class Dataset(Dataset):
+class Dataset(fluid.io.Dataset):
     def __init__(self,
                  data_dir,
                  num_classes,
@@ -85,12 +87,18 @@ class Dataset(Dataset):
 
     def __getitem__(self, idx):
         image_path, grt_path = self.file_list[idx]
-        im, im_info, label = self.transforms(im=image_path, label=grt_path)
         if self.mode == 'train':
+            im, im_info, label = self.transforms(im=image_path, label=grt_path)
             return im, label
         elif self.mode == 'eval':
-            return im, label
+            im, im_info, _ = self.transforms(im=image_path)
+            im = im[np.newaxis, ...]
+            label = np.asarray(Image.open(grt_path))
+            label = label[np.newaxis, np.newaxis, :, :]
+            return im, im_info, label
         if self.mode == 'test':
+            im, im_info, _ = self.transforms(im=image_path)
+            im = im[np.newaxis, ...]
             return im, im_info, image_path
 
     def __len__(self):
