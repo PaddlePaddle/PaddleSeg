@@ -107,14 +107,16 @@ def infer(model, test_dataset=None, model_dir=None, save_dir='output'):
         pred, _ = model(im, mode='test')
         pred = pred.numpy()
         pred = np.squeeze(pred).astype('uint8')
-        keys = list(im_info.keys())
-        for k in keys[::-1]:
-            if k == 'shape_before_resize':
-                h, w = im_info[k][0], im_info[k][1]
+        for info in im_info[::-1]:
+            if info[0] == 'resize':
+                h, w = info[1][0], info[1][1]
                 pred = cv2.resize(pred, (w, h), cv2.INTER_NEAREST)
-            elif k == 'shape_before_padding':
-                h, w = im_info[k][0], im_info[k][1]
+            elif info[0] == 'padding':
+                h, w = info[1][0], info[1][1]
                 pred = pred[0:h, 0:w]
+            else:
+                raise Exception("Unexpected info '{}' in im_info".format(
+                    info[0]))
 
         im_file = im_path.replace(test_dataset.data_dir, '')
         if im_file[0] == '/':
