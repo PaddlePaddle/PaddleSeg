@@ -37,12 +37,8 @@ def parse_args():
     parser.add_argument(
         '--model_name',
         dest='model_name',
-        help=
-        'Model type for testing, which is one of ("UNet", "HRNet_W18_Small_V1", "HRNet_W18_Small_V2", '
-        '"HRNet_W18", "HRNet_W30", "HRNet_W32", "HRNet_W40", "HRNet_W44", "HRNet_W48", '
-        '"HRNet_W60", "HRNet_W64", "SE_HRNet_W18_Small_V1", "SE_HRNet_W18_Small_V2", "SE_HRNet_W18", '
-        '"SE_HRNet_W30", "SE_HRNet_W32", "SE_HRNet_W40","SE_HRNet_W44", "SE_HRNet_W48", '
-        '"SE_HRNet_W60", "SE_HRNet_W64")',
+        help='Model type for testing, which is one of {}'.format(
+            str(list(MODELS.keys()))),
         type=str,
         default='UNet')
 

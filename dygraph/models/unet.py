@@ -13,7 +13,11 @@
 # limitations under the License.
 
 import paddle.fluid as fluid
-from paddle.fluid.dygraph import Conv2D, BatchNorm, Pool2D
+from paddle.fluid.dygraph import Conv2D, Pool2D
+try:
+    from paddle.fluid.dygraph import SyncBatchNorm as BatchNorm
+except:
+    from paddle.fluid.dygraph import BatchNorm
 
 
 class UNet(fluid.dygraph.Layer):
