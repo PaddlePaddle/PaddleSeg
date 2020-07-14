@@ -95,8 +95,8 @@ def evaluate(model,
     for step, (im, im_info, label) in enumerate(eval_dataset):
         im = to_variable(im)
         pred, _ = model(im, mode='eval')
-        pred = pred.numpy()
-        pred = np.squeeze(pred).astype('uint8')
+        pred = pred.numpy().astype('float32')
+        pred = np.squeeze(pred)
         for info in im_info[::-1]:
             if info[0] == 'resize':
                 h, w = info[1][0], info[1][1]
@@ -108,6 +108,7 @@ def evaluate(model,
                 raise Exception("Unexpected info '{}' in im_info".format(
                     info[0]))
         pred = pred[np.newaxis, :, :, np.newaxis]
+        pred = pred.astype('int64')
         mask = label != ignore_index
 
         conf_mat.calculate(pred=pred, label=label, ignore=mask)
