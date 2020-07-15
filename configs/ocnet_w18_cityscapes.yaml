@@ -14,13 +14,13 @@ AUG:
 BATCH_SIZE: 4
 #BATCH_SIZE: 4
 DATASET:
-    DATA_DIR: "/home/ssd1/wenzongzheng/wenzongzheng/cityscapes/"
+    DATA_DIR: "./dataset/cityscapes/"
     IMAGE_TYPE: "rgb"  # choice rgb or rgba
     NUM_CLASSES: 19
-    TEST_FILE_LIST: "/home/ssd1/wenzongzheng/wenzongzheng/cityscapes/val.list"
-    TRAIN_FILE_LIST: "/home/ssd1/wenzongzheng/wenzongzheng/cityscapes/train.list"
-    VAL_FILE_LIST: "/home/ssd1/wenzongzheng/wenzongzheng/cityscapes/val.list"
-    VIS_FILE_LIST: "/home/ssd1/wenzongzheng/wenzongzheng/cityscapes/val.list"
+    TEST_FILE_LIST: "./dataset/cityscapes/val.list"
+    TRAIN_FILE_LIST: "./dataset/cityscapes/train.list"
+    VAL_FILE_LIST: "./dataset/cityscapes/val.list"
+    VIS_FILE_LIST: "./dataset/cityscapes/val.list"
     IGNORE_INDEX: 255
     SEPARATOR: " "
 FREEZE:
