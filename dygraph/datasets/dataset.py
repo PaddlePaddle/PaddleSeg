@@ -14,10 +14,10 @@
 
 import os
 
-from paddle.fluid.io import Dataset
+import paddle.fluid as fluid
 
 
-class Dataset(Dataset):
+class Dataset(fluid.io.Dataset):
     def __init__(self,
                  data_dir,
                  num_classes,
