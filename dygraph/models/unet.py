@@ -43,6 +43,8 @@ class UNet(fluid.dygraph.Layer):
             return pred, score_map
 
     def _get_loss(self, logit, label):
+        logit = fluid.layers.transpose(logit, [0, 2, 3, 1])
+        label = fluid.layers.transpose(label, [0, 2, 3, 1])
         mask = label != self.ignore_index
         mask = fluid.layers.cast(mask, 'float32')
         loss, probs = fluid.layers.softmax_with_cross_entropy(
