@@ -52,7 +52,3 @@ SOLVER:
     LR_POLICY: "poly"
     OPTIMIZER: "sgd"
     NUM_EPOCHS: 500
-#    LOSS: ["lovasz_softmax_loss","softmax_loss"]
-#    LOSS_WEIGHT:
-#        LOVASZ_SOFTMAX_LOSS: 0.2
-#        SOFTMAX_LOSS: 0.8
