@@ -24,7 +24,7 @@ import tqdm
 
 from datasets import OpticDiscSeg, Cityscapes
 import transforms as T
-import models
+from models import MODELS
 import utils
 import utils.logging as logging
 from utils import get_environ_info
@@ -37,7 +37,8 @@ def parse_args():
     parser.add_argument(
         '--model_name',
         dest='model_name',
-        help="Model type for traing, which is one of ('UNet')",
+        help='Model type for testing, which is one of {}'.format(
+            str(list(MODELS.keys()))),
         type=str,
         default='UNet')
 
@@ -97,19 +98,20 @@ def infer(model, test_dataset=None, model_dir=None, save_dir='output'):
 
     logging.info("Start to predict...")
     for im, im_info, im_path in tqdm.tqdm(test_dataset):
-        im = im[np.newaxis, ...]
         im = to_variable(im)
         pred, _ = model(im, mode='test')
         pred = pred.numpy()
         pred = np.squeeze(pred).astype('uint8')
-        keys = list(im_info.keys())
-        for k in keys[::-1]:
-            if k == 'shape_before_resize':
-                h, w = im_info[k][0], im_info[k][1]
+        for info in im_info[::-1]:
+            if info[0] == 'resize':
+                h, w = info[1][0], info[1][1]
                 pred = cv2.resize(pred, (w, h), cv2.INTER_NEAREST)
-            elif k == 'shape_before_padding':
-                h, w = im_info[k][0], im_info[k][1]
+            elif info[0] == 'padding':
+                h, w = info[1][0], info[1][1]
                 pred = pred[0:h, 0:w]
+            else:
+                raise Exception("Unexpected info '{}' in im_info".format(
+                    info[0]))
 
         im_file = im_path.replace(test_dataset.data_dir, '')
         if im_file[0] == '/':
@@ -146,8 +148,11 @@ def main(args):
         test_transforms = T.Compose([T.Resize(args.input_size), T.Normalize()])
         test_dataset = dataset(transforms=test_transforms, mode='test')
 
-        if args.model_name == 'UNet':
-            model = models.UNet(num_classes=test_dataset.num_classes)
+        if args.model_name not in MODELS:
+            raise Exception(
+                '--model_name is invalid. it should be one of {}'.format(
+                    str(list(MODELS.keys()))))
+        model = MODELS[args.model_name](num_classes=test_dataset.num_classes)
 
         infer(
             model,

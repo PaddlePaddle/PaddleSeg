@@ -13,3 +13,28 @@
 # limitations under the License.
 
 from .unet import UNet
+from .hrnet import *
+
+MODELS = {
+    "UNet": UNet,
+    "HRNet_W18_Small_V1": HRNet_W18_Small_V1,
+    "HRNet_W18_Small_V2": HRNet_W18_Small_V2,
+    "HRNet_W18": HRNet_W18,
+    "HRNet_W30": HRNet_W30,
+    "HRNet_W32": HRNet_W32,
+    "HRNet_W40": HRNet_W40,
+    "HRNet_W44": HRNet_W44,
+    "HRNet_W48": HRNet_W48,
+    "HRNet_W60": HRNet_W48,
+    "HRNet_W64": HRNet_W64,
+    "SE_HRNet_W18_Small_V1": SE_HRNet_W18_Small_V1,
+    "SE_HRNet_W18_Small_V2": SE_HRNet_W18_Small_V2,
+    "SE_HRNet_W18": SE_HRNet_W18,
+    "SE_HRNet_W30": SE_HRNet_W30,
+    "SE_HRNet_W32": SE_HRNet_W30,
+    "SE_HRNet_W40": SE_HRNet_W40,
+    "SE_HRNet_W44": SE_HRNet_W44,
+    "SE_HRNet_W48": SE_HRNet_W48,
+    "SE_HRNet_W60": SE_HRNet_W60,
+    "SE_HRNet_W64": SE_HRNet_W64
+}

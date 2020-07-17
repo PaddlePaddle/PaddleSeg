@@ -16,8 +16,10 @@ import argparse
 import os
 import math
 
-from paddle.fluid.dygraph.base import to_variable
 import numpy as np
+import tqdm
+import cv2
+from paddle.fluid.dygraph.base import to_variable
 import paddle.fluid as fluid
 from paddle.fluid.dygraph.parallel import ParallelEnv
 from paddle.fluid.io import DataLoader
@@ -25,7 +27,7 @@ from paddle.fluid.dataloader import BatchSampler
 
 from datasets import OpticDiscSeg, Cityscapes
 import transforms as T
-import models
+from models import MODELS
 import utils.logging as logging
 from utils import get_environ_info
 from utils import ConfusionMatrix
@@ -39,7 +41,8 @@ def parse_args():
     parser.add_argument(
         '--model_name',
         dest='model_name',
-        help="Model type for evaluation, which is one of ('UNet')",
+        help='Model type for evaluation, which is one of {}'.format(
+            str(list(MODELS.keys()))),
         type=str,
         default='UNet')
 
@@ -61,12 +64,6 @@ def parse_args():
         default=[512, 512],
         type=int)
     parser.add_argument(
-        '--batch_size',
-        dest='batch_size',
-        help='Mini batch size',
-        type=int,
-        default=2)
-    parser.add_argument(
         '--model_dir',
         dest='model_dir',
         help='The path of model for evaluation',
@@ -78,10 +75,8 @@ def parse_args():
 
 def evaluate(model,
              eval_dataset=None,
-             places=None,
              model_dir=None,
              num_classes=None,
-             batch_size=2,
              ignore_index=255,
              epoch_id=None):
     ckpt_path = os.path.join(model_dir, 'model')
@@ -89,15 +84,7 @@ def evaluate(model,
     model.set_dict(para_state_dict)
     model.eval()
 
-    batch_sampler = BatchSampler(
-        eval_dataset, batch_size=batch_size, shuffle=False, drop_last=False)
-    loader = DataLoader(
-        eval_dataset,
-        batch_sampler=batch_sampler,
-        places=places,
-        return_list=True,
-    )
-    total_steps = len(batch_sampler)
+    total_steps = len(eval_dataset)
     conf_mat = ConfusionMatrix(num_classes, streaming=True)
 
     logging.info(
@@ -105,15 +92,26 @@ def evaluate(model,
             len(eval_dataset), total_steps))
     timer = Timer()
     timer.start()
-    for step, data in enumerate(loader):
-        images = data[0]
-        labels = data[1].astype('int64')
-        pred, _ = model(images, mode='eval')
+    for step, (im, im_info, label) in enumerate(eval_dataset):
+        im = to_variable(im)
+        pred, _ = model(im, mode='eval')
+        pred = pred.numpy().astype('float32')
+        pred = np.squeeze(pred)
+        for info in im_info[::-1]:
+            if info[0] == 'resize':
+                h, w = info[1][0], info[1][1]
+                pred = cv2.resize(pred, (w, h), cv2.INTER_NEAREST)
+            elif info[0] == 'padding':
+                h, w = info[1][0], info[1][1]
+                pred = pred[0:h, 0:w]
+            else:
+                raise Exception("Unexpected info '{}' in im_info".format(
+                    info[0]))
+        pred = pred[np.newaxis, :, :, np.newaxis]
+        pred = pred.astype('int64')
+        mask = label != ignore_index
 
-        pred = pred.numpy()
-        labels = labels.numpy()
-        mask = labels != ignore_index
-        conf_mat.calculate(pred=pred, label=labels, ignore=mask)
+        conf_mat.calculate(pred=pred, label=label, ignore=mask)
         _, iou = conf_mat.mean_iou()
 
         time_step = timer.elapsed_time()
@@ -153,16 +151,17 @@ def main(args):
         eval_transforms = T.Compose([T.Resize(args.input_size), T.Normalize()])
         eval_dataset = dataset(transforms=eval_transforms, mode='eval')
 
-        if args.model_name == 'UNet':
-            model = models.UNet(num_classes=eval_dataset.num_classes)
+        if args.model_name not in MODELS:
+            raise Exception(
+                '--model_name is invalid. it should be one of {}'.format(
+                    str(list(MODELS.keys()))))
+        model = MODELS[args.model_name](num_classes=eval_dataset.num_classes)
 
         evaluate(
             model,
             eval_dataset,
-            places=places,
             model_dir=args.model_dir,
-            num_classes=eval_dataset.num_classes,
-            batch_size=args.batch_size)
+            num_classes=eval_dataset.num_classes)
 
 
 if __name__ == '__main__':

@@ -22,7 +22,7 @@ from paddle.incubate.hapi.distributed import DistributedBatchSampler
 
 from datasets import OpticDiscSeg, Cityscapes
 import transforms as T
-import models
+from models import MODELS
 import utils.logging as logging
 from utils import get_environ_info
 from utils import load_pretrained_model
@@ -38,7 +38,8 @@ def parse_args():
     parser.add_argument(
         '--model_name',
         dest='model_name',
-        help="Model type for traing, which is one of ('UNet')",
+        help='Model type for training, which is one of {}'.format(
+            str(list(MODELS.keys()))),
         type=str,
         default='UNet')
 
@@ -181,7 +182,7 @@ def train(model,
     total_steps = steps_per_epoch * (num_epochs - start_epoch)
     num_steps = 0
     best_mean_iou = -1.0
-    best_model_epoch = 1
+    best_model_epoch = -1
     for epoch in range(start_epoch, num_epochs):
         for step, data in enumerate(loader):
             images = data[0]
@@ -229,10 +230,8 @@ def train(model,
                 mean_iou, mean_acc = evaluate(
                     model,
                     eval_dataset,
-                    places=places,
                     model_dir=current_save_dir,
                     num_classes=num_classes,
-                    batch_size=batch_size,
                     ignore_index=ignore_index,
                     epoch_id=epoch + 1)
                 if mean_iou > best_mean_iou:
@@ -241,9 +240,9 @@ def train(model,
                     best_model_dir = os.path.join(save_dir, "best_model")
                     fluid.save_dygraph(model.state_dict(),
                                        os.path.join(best_model_dir, 'model'))
-                    logging.info(
-                        'Current evaluated best model in eval_dataset is epoch_{}, miou={:4f}'
-                        .format(best_model_epoch, best_mean_iou))
+                logging.info(
+                    'Current evaluated best model in eval_dataset is epoch_{}, miou={:4f}'
+                    .format(best_model_epoch, best_mean_iou))
 
                 if use_vdl:
                     log_writer.add_scalar('Evaluate/mean_iou', mean_iou,
@@ -286,9 +285,11 @@ def main(args):
                  T.Normalize()])
             eval_dataset = dataset(transforms=eval_transforms, mode='eval')
 
-        if args.model_name == 'UNet':
-            model = models.UNet(
-                num_classes=train_dataset.num_classes, ignore_index=255)
+        if args.model_name not in MODELS:
+            raise Exception(
+                '--model_name is invalid. it should be one of {}'.format(
+                    str(list(MODELS.keys()))))
+        model = MODELS[args.model_name](num_classes=train_dataset.num_classes)
 
         # Creat optimizer
         # todo, may less one than len(loader)
