@@ -52,7 +52,7 @@ class UNet(fluid.dygraph.Layer):
             label,
             ignore_index=self.ignore_index,
             return_softmax=True,
-            axis=1)
+            axis=-1)
 
         loss = loss * mask
         avg_loss = fluid.layers.mean(loss) / (
