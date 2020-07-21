@@ -19,6 +19,7 @@ import paddle.fluid as fluid
 from paddle.fluid.param_attr import ParamAttr
 from paddle.fluid.layer_helper import LayerHelper
 from paddle.fluid.dygraph.nn import Conv2D, Pool2D, Linear
+from paddle.fluid.initializer import Normal
 try:
     from paddle.fluid.dygraph import SyncBatchNorm as BatchNorm
 except:
@@ -140,7 +141,8 @@ class HRNet(fluid.dygraph.Layer):
             filter_size=1,
             stride=1,
             padding=0,
-            param_attr=ParamAttr(name='conv-1_weights'))
+            param_attr=ParamAttr(
+                initializer=Normal(scale=0.001), name='conv-1_weights'))
 
     def forward(self, x, label=None, mode='train'):
         input_shape = x.shape[2:]
@@ -218,7 +220,8 @@ class ConvBNLayer(fluid.dygraph.Layer):
             padding=(filter_size - 1) // 2,
             groups=groups,
             act=None,
-            param_attr=ParamAttr(name=name + "_weights"),
+            param_attr=ParamAttr(
+                initializer=Normal(scale=0.001), name=name + "_weights"),
             bias_attr=False)
         bn_name = name + '_bn'
         self._batch_norm = BatchNorm(
@@ -646,7 +649,7 @@ class FuseLayers(fluid.dygraph.Layer):
                     y = self.residual_func_list[residual_func_idx](input[j])
                     residual_func_idx += 1
 
-                    y = fluid.layers.resize_nearest(input=y, scale=2**(j - i))
+                    y = fluid.layers.resize_bilinear(input=y, scale=2**(j - i))
                     residual = fluid.layers.elementwise_add(
                         x=residual, y=y, act=None)
                 elif j < i:
