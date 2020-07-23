@@ -89,12 +89,12 @@ pip install -r requirements.txt
 * [数据和配置校验](./docs/check.md)
 * [分割模型介绍](./docs/models.md)
 * [预训练模型下载](./docs/model_zoo.md)
-* [DeepLabv3+模型使用教程](./turtorial/finetune_deeplabv3plus.md)
-* [U-Net模型使用教程](./turtorial/finetune_unet.md)
-* [ICNet模型使用教程](./turtorial/finetune_icnet.md)
-* [PSPNet模型使用教程](./turtorial/finetune_pspnet.md)
-* [HRNet模型使用教程](./turtorial/finetune_hrnet.md)
-* [Fast-SCNN模型使用教程](./turtorial/finetune_fast_scnn.md)
+* [DeepLabv3+模型使用教程](./tutorial/finetune_deeplabv3plus.md)
+* [U-Net模型使用教程](./tutorial/finetune_unet.md)
+* [ICNet模型使用教程](./tutorial/finetune_icnet.md)
+* [PSPNet模型使用教程](./tutorial/finetune_pspnet.md)
+* [HRNet模型使用教程](./tutorial/finetune_hrnet.md)
+* [Fast-SCNN模型使用教程](./tutorial/finetune_fast_scnn.md)
 
 ### 预测部署
 
