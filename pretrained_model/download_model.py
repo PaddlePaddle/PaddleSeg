@@ -24,6 +24,8 @@ from test_utils import download_file_and_uncompress
 
 model_urls = {
     # ImageNet Pretrained
+    "mobilenetv3_large_ssld_imagenet":
+    "https://paddleseg.bj.bcebos.com/models/MobileNetV3_large_x1_0_ssld_pretrained.tar",
     "mobilenetv2-2-0_bn_imagenet":
     "https://paddle-imagenet-models-name.bj.bcebos.com/MobileNetV2_x2_0_pretrained.tar",
     "mobilenetv2-1-5_bn_imagenet":
@@ -72,6 +74,8 @@ model_urls = {
     "https://paddleseg.bj.bcebos.com/models/pspnet101_coco.tgz",
 
     # Cityscapes pretrained
+    "deeplabv3p_mobilenetv3_large_cityscapes":
+    "https://paddleseg.bj.bcebos.com/models/deeplabv3p_mobilenetv3_large_cityscapes.tar.gz",
     "deeplabv3p_mobilenetv2-1-0_bn_cityscapes":
     "https://paddleseg.bj.bcebos.com/models/mobilenet_cityscapes.tgz",
     "deeplabv3p_xception65_gn_cityscapes":
