@@ -28,24 +28,38 @@ class ComponentManager:
         >>> model_manager.add_component(ResNet)
         or pass a sequence alliteratively:
         >>> model_manager.add_component([AlexNet, ResNet])
-        >>> print(model_manager.components)
+        >>> print(model_manager.components_dict)
     output: {'AlexNet': <class '__main__.AlexNet'>, 'ResNet': <class '__main__.ResNet'>}
 
-    Or an easier way, using it as a Python decorator, while just add it above the class declaration.
+    Or a easier way, using it as a Python decorator, while just add it above the class declaration.
         >>> model_manager = ComponentManager()
         >>> @model_manager.add_component
         >>> class AlexNet: ...
         >>> @model_manager.add_component
         >>> class ResNet: ...
-        >>> print(model_manager.components)
+        >>> print(model_manager.components_dict)
     output: {'AlexNet': <class '__main__.AlexNet'>, 'ResNet': <class '__main__.ResNet'>}
     """
 
     def __init__(self):
         self._components_dict = dict()
+        
+    def __len__(self):
+        return len(self._components_dict)
+
+    def __repr__(self):
+        return "{}:{}".format(self.__class__.__name__, list(self._components_dict.keys()))
+
+    def __getitem__(self, item):
+        if item not in self._components_dict.keys():
+            raise KeyError("{} does not exist in the current {}".format(item, self))
+        return self._components_dict[item]
+
+    def __contains__(self, item):
+        return self._components_dict.get(item, None) is not None
 
     @property
-    def components(self):
+    def components_dict(self):
         return self._components_dict
 
     def _add_single_component(self, component):
@@ -77,7 +91,7 @@ class ComponentManager:
         :param components (class | list | tuple): support three types of components
         :return: None
         """
-
+        print(components)
         # check whether the type is a sequence
         if isinstance(components, collections.Sequence):
             for component in components:
@@ -85,9 +99,3 @@ class ComponentManager:
         else:
             component = components
             self._add_single_component(component)
-
-    def __len__(self):
-        return len(self._components_dict)
-
-    def __repr__(self):
-        return "{}:{}".format(self.__class__.__name__, list(self._components_dict.keys()))
