@@ -89,6 +89,5 @@ class ComponentManager:
     def __len__(self):
         return len(self._components_dict)
 
-    def __str__(self):
-        print_str = "{}({})".format(self.__class__.__name__, self._components_dict)
-        return print_str
+    def __repr__(self):
+        return "{}:{}".format(self.__class__.__name__, list(self._components_dict.keys()))
