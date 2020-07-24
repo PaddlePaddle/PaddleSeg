@@ -31,7 +31,7 @@ class ComponentManager:
         >>> print(model_manager.components)
     output: {'AlexNet': <class '__main__.AlexNet'>, 'ResNet': <class '__main__.ResNet'>}
 
-    Or a easier way, using it as a Python decorator, while just add it above the class declaration.
+    Or an easier way, using it as a Python decorator, while just add it above the class declaration.
         >>> model_manager = ComponentManager()
         >>> @model_manager.add_component
         >>> class AlexNet: ...
