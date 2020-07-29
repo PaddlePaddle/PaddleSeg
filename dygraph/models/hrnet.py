@@ -171,7 +171,7 @@ class HRNet(fluid.dygraph.Layer):
         logit = self.conv_last_1(x)
         logit = fluid.layers.resize_bilinear(logit, input_shape)
 
-        if mode == 'train':
+        if self.training:
             if label is None:
                 raise Exception('Label is need during training')
             return self._get_loss(logit, label)

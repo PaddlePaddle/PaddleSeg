@@ -29,11 +29,11 @@ class UNet(fluid.dygraph.Layer):
         self.ignore_index = ignore_index
         self.EPS = 1e-5
 
-    def forward(self, x, label=None, mode='train'):
+    def forward(self, x, label=None):
         encode_data, short_cuts = self.encode(x)
         decode_data = self.decode(encode_data, short_cuts)
         logit = self.get_logit(decode_data)
-        if mode == 'train':
+        if self.training:
             return self._get_loss(logit, label)
         else:
             score_map = fluid.layers.softmax(logit, axis=1)

@@ -188,12 +188,12 @@ def train(model,
             images = data[0]
             labels = data[1].astype('int64')
             if nranks > 1:
-                loss = model_parallel(images, labels, mode='train')
+                loss = model_parallel(images, labels)
                 loss = model_parallel.scale_loss(loss)
                 loss.backward()
                 model_parallel.apply_collective_grads()
             else:
-                loss = model(images, labels, mode='train')
+                loss = model(images, labels)
                 loss.backward()
             optimizer.minimize(loss)
             model.clear_gradients()

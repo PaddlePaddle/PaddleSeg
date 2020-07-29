@@ -94,7 +94,7 @@ def evaluate(model,
     timer.start()
     for step, (im, im_info, label) in enumerate(eval_dataset):
         im = to_variable(im)
-        pred, _ = model(im, mode='eval')
+        pred, _ = model(im)
         pred = pred.numpy().astype('float32')
         pred = np.squeeze(pred)
         for info in im_info[::-1]:
