@@ -44,7 +44,8 @@ def evaluate(model,
             len(eval_dataset), total_steps))
     timer = Timer()
     timer.start()
-    for step, (im, im_info, label) in enumerate(eval_dataset):
+    for step, (im, im_info, label) in tqdm.tqdm(
+            enumerate(eval_dataset), total=total_steps):
         im = to_variable(im)
         pred, _ = model(im)
         pred = pred.numpy().astype('float32')
@@ -68,7 +69,7 @@ def evaluate(model,
 
         time_step = timer.elapsed_time()
         remain_step = total_steps - step - 1
-        logging.info(
+        logging.debug(
             "[EVAL] Epoch={}, Step={}/{}, iou={:4f}, sec/step={:.4f} | ETA {}".
             format(epoch_id, step + 1, total_steps, iou, time_step,
                    calculate_eta(remain_step, time_step)))
@@ -76,7 +77,7 @@ def evaluate(model,
 
     category_iou, miou = conf_mat.mean_iou()
     category_acc, macc = conf_mat.accuracy()
-    logging.info("[EVAL] #image={} acc={:.4f} IoU={:.4f}".format(
+    logging.info("[EVAL] #Images={} mAcc={:.4f} mIoU={:.4f}".format(
         len(eval_dataset), macc, miou))
     logging.info("[EVAL] Category IoU: " + str(category_iou))
     logging.info("[EVAL] Category Acc: " + str(category_acc))
