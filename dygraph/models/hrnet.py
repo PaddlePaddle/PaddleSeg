@@ -224,8 +224,12 @@ class ConvBNLayer(fluid.dygraph.Layer):
         self._batch_norm = BatchNorm(
             num_filters,
             act=act,
-            param_attr=ParamAttr(name=bn_name + '_scale'),
-            bias_attr=ParamAttr(bn_name + '_offset'),
+            param_attr=ParamAttr(
+                name=bn_name + '_scale',
+                initializer=fluid.initializer.Constant(1.0)),
+            bias_attr=ParamAttr(
+                bn_name + '_offset',
+                initializer=fluid.initializer.Constant(0.0)),
             moving_mean_name=bn_name + '_mean',
             moving_variance_name=bn_name + '_variance')
 
