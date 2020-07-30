@@ -212,6 +212,8 @@ def train(model,
                 if use_vdl:
                     log_writer.add_scalar('Train/loss', avg_loss, num_steps)
                     log_writer.add_scalar('Train/lr', lr, num_steps)
+                    log_writer.add_scalar('Train/time_step', time_step,
+                                          num_steps)
                 avg_loss = 0.0
                 timer.restart()
 
