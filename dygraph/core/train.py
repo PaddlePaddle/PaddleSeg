@@ -87,6 +87,7 @@ def train(model,
             labels = data[1].astype('int64')
             if nranks > 1:
                 loss = ddp_model(images, labels)
+                # apply_collective_grads sum grads over multiple gpus.
                 loss = ddp_model.scale_loss(loss)
                 loss.backward()
                 ddp_model.apply_collective_grads()
