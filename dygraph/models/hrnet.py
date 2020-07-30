@@ -20,12 +20,7 @@ from paddle.fluid.param_attr import ParamAttr
 from paddle.fluid.layer_helper import LayerHelper
 from paddle.fluid.dygraph.nn import Conv2D, Pool2D, Linear
 from paddle.fluid.initializer import Normal
-try:
-    from paddle.fluid.dygraph import SyncBatchNorm as BatchNorm
-    print('using sync batch norm')
-except:
-    from paddle.fluid.dygraph import BatchNorm
-    print('using batch norm')
+from paddle.fluid.dygraph import SyncBatchNorm as BatchNorm
 
 __all__ = [
     "HRNet_W18_Small_V1", "HRNet_W18_Small_V2", "HRNet_W18", "HRNet_W30",
