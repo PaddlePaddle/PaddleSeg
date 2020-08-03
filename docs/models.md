@@ -75,7 +75,7 @@ Fast-SCNN [7] 是一个面向实时的语义分割网络。在双分支的结构
 
 [3] [Pyramid Scene Parsing Network](https://arxiv.org/abs/1612.01105)
 
-[4] [Fully Convolutional Networks for Semantic Segmentation](https://people.eecs.berkeley.edu/~jonlong/long_shelhamer_fcn.pdf)
+[4] [Fully Convolutional Networks for Semantic Segmentation](https://arxiv.org/abs/1605.06211)
 
 [5] [ICNet for Real-Time Semantic Segmentation on High-Resolution Images](https://arxiv.org/abs/1704.08545)
 
