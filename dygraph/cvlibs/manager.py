@@ -31,7 +31,7 @@ class ComponentManager:
         >>> print(model_manager.components_dict)
     output: {'AlexNet': <class '__main__.AlexNet'>, 'ResNet': <class '__main__.ResNet'>}
 
-    Or a easier way, using it as a Python decorator, while just add it above the class declaration.
+    Or an easier way, using it as a Python decorator, while just add it above the class declaration.
         >>> model_manager = ComponentManager()
         >>> @model_manager.add_component
         >>> class AlexNet: ...
@@ -55,8 +55,6 @@ class ComponentManager:
             raise KeyError("{} does not exist in the current {}".format(item, self))
         return self._components_dict[item]
 
-    def __contains__(self, item):
-        return self._components_dict.get(item, None) is not None
 
     @property
     def components_dict(self):
@@ -66,36 +64,46 @@ class ComponentManager:
         """
         Add a single component into the corresponding manager
 
-        :param component (class): a new component
-        :return: None
+        Args:
+        component (function | class): a new component
+
+        Returns:
+        None
         """
 
-        # only support a class type
-        if not inspect.isclass(component):
-            raise TypeError("Expect class type, but received {}".format(type(component)))
+        # Currently only support class or function type
+        if not (inspect.isclass(component) or inspect.isfunction(component)):
+            raise TypeError("Expect class/function type, but received {}".format(type(component)))
 
-        # obtain the internal name of the component
+        # Obtain the internal name of the component
         component_name = component.__name__
 
-        # check whether the component was added already
+        # Check whether the component was added already
         if component_name in self._components_dict.keys():
             raise KeyError("{} exists already!".format(component_name))
         else:
-            # take the internal name of the component as its key
+            # Take the internal name of the component as its key
             self._components_dict[component_name] = component
 
     def add_component(self, components):
         """
         Add component(s) into the corresponding manager
 
-        :param components (class | list | tuple): support three types of components
-        :return: None
+        Args:
+        components (function | class | list | tuple): support three types of components
+        
+        Returns:
+        None
         """
-        print(components)
-        # check whether the type is a sequence
+
+        # Check whether the type is a sequence
         if isinstance(components, collections.Sequence):
             for component in components:
                 self._add_single_component(component)
         else:
             component = components
             self._add_single_component(component)
+        
+
+MODELS = ComponentManager()
+BACKBONES = ComponentManager()
