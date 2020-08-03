@@ -20,6 +20,7 @@ import inspect
 class ComponentManager:
     """
     Implement a manager class to add the new component properly.
+    The component can be added as either class or function type.
     For example:
         >>> model_manager = ComponentManager()
         >>> class AlexNet: ...
