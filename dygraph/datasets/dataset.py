@@ -1,4 +1,4 @@
-#   Copyright (c) 2020 PaddlePaddle Authors. All Rights Reserved.
+# Copyright (c) 2020 PaddlePaddle Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,20 +20,49 @@ from PIL import Image
 
 
 class Dataset(fluid.io.Dataset):
+    """Pass in a custom dataset that conforms to the format.
+
+    Args:
+        data_dir: The dataset directory.
+        num_classes: Number of classes.
+        image_set: Which part of dataset to use. Generally, image_set is of ('train', 'val', 'test'). Default: 'train'.
+        mode: Dataset usage. it is one of ('train', 'eva', 'test'). Default: 'train'.
+        train_list: The train dataset file. When image_set is 'train', train_list is necessary.
+            The contents of train_list file are as follow:
+            image1.jpg ground_truth1.png
+            image2.jpg ground_truth2.png
+        val_list: The evaluation dataset file. When image_set is 'val', val_list is necessary.
+            The contents is the same as train_list
+        test_list: The test dataset file. When image_set is 'test', test_list is necessary.
+            The annotation file is not necessary in test_list file.
+        separator: The separator of dataset list. Default: ' '.
+        transforms: Transforms for image.
+
+        Examples:
+            todo
+
+    """
+
     def __init__(self,
                  data_dir,
                  num_classes,
+                 image_set='train',
+                 mode='train',
                  train_list=None,
                  val_list=None,
                  test_list=None,
                  separator=' ',
-                 transforms=None,
-                 mode='train'):
+                 transforms=None):
         self.data_dir = data_dir
         self.transforms = transforms
         self.file_list = list()
         self.mode = mode
         self.num_classes = num_classes
+
+        if image_set.lower() not in ['train', 'val', 'test']:
+            raise Exception(
+                "image_set should be one of ('train', 'val', 'test'), but got {}."
+                .format(image_set))
 
         if mode.lower() not in ['train', 'eval', 'test']:
             raise Exception(
@@ -41,22 +70,24 @@ class Dataset(fluid.io.Dataset):
                     mode))
 
         if self.transforms is None:
-            raise Exception("transform is necessary, but it is None.")
+            raise Exception("transforms is necessary, but it is None.")
 
         self.data_dir = data_dir
-        if mode == 'train':
+        if image_set == 'train':
             if train_list is None:
                 raise Exception(
-                    'When mode is "train", train_list is need, but it is None.')
+                    'When mode is "train", train_list is necessary, but it is None.'
+                )
             elif not os.path.exists(train_list):
                 raise Exception(
                     'train_list is not found: {}'.format(train_list))
             else:
                 file_list = train_list
-        elif mode == 'eval':
+        elif image_set == 'eval':
             if val_list is None:
                 raise Exception(
-                    'When mode is "eval", val_list is need, but it is None.')
+                    'When mode is "eval", val_list is necessary, but it is None.'
+                )
             elif not os.path.exists(val_list):
                 raise Exception('val_list is not found: {}'.format(val_list))
             else:
@@ -64,7 +95,8 @@ class Dataset(fluid.io.Dataset):
         else:
             if test_list is None:
                 raise Exception(
-                    'When mode is "test", test_list is need, but it is None.')
+                    'When mode is "test", test_list is necessary, but it is None.'
+                )
             elif not os.path.exists(test_list):
                 raise Exception('test_list is not found: {}'.format(test_list))
             else:

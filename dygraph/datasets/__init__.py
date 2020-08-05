@@ -15,3 +15,4 @@
 from .dataset import Dataset
 from .optic_disc_seg import OpticDiscSeg
 from .cityscapes import Cityscapes
+from .voc import PascalVoc

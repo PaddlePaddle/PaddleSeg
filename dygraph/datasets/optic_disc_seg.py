@@ -1,4 +1,4 @@
-#   Copyright (c) 2020 PaddlePaddle Authors. All Rights Reserved.
+# Copyright (c) 2020 PaddlePaddle Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ class OpticDiscSeg(Dataset):
     def __init__(self,
                  data_dir=None,
                  transforms=None,
+                 image_set='train',
                  mode='train',
                  download=True):
         self.data_dir = data_dir
@@ -33,24 +34,28 @@ class OpticDiscSeg(Dataset):
         self.mode = mode
         self.num_classes = 2
 
+        if image_set.lower() not in ['train', 'val', 'test']:
+            raise Exception(
+                "image_set should be one of ('train', 'val', 'test'), but got {}."
+                .format(image_set))
+
         if mode.lower() not in ['train', 'eval', 'test']:
             raise Exception(
                 "mode should be 'train', 'eval' or 'test', but got {}.".format(
                     mode))
 
         if self.transforms is None:
-            raise Exception("transform is necessary, but it is None.")
+            raise Exception("transforms is necessary, but it is None.")
 
-        self.data_dir = data_dir
         if self.data_dir is None:
             if not download:
                 raise Exception("data_file not set and auto download disabled.")
             self.data_dir = download_file_and_uncompress(
                 url=URL, savepath=DATA_HOME, extrapath=DATA_HOME)
 
-        if mode == 'train':
+        if image_set == 'train':
             file_list = os.path.join(self.data_dir, 'train_list.txt')
-        elif mode == 'eval':
+        elif image_set == 'val':
             file_list = os.path.join(self.data_dir, 'val_list.txt')
         else:
             file_list = os.path.join(self.data_dir, 'test_list.txt')

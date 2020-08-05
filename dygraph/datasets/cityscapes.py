@@ -1,4 +1,4 @@
-#   Copyright (c) 2020 PaddlePaddle Authors. All Rights Reserved.
+# Copyright (c) 2020 PaddlePaddle Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -39,9 +39,8 @@ class Cityscapes(Dataset):
                     mode))
 
         if self.transforms is None:
-            raise Exception("transform is necessary, but it is None.")
+            raise Exception("transforms is necessary, but it is None.")
 
-        self.data_dir = data_dir
         if self.data_dir is None:
             if not download:
                 raise Exception("data_file not set and auto download disabled.")
