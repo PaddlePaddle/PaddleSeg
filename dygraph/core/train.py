@@ -74,15 +74,18 @@ def train(model,
         log_writer = LogWriter(save_dir)
 
     timer = Timer()
-    timer.start()
     avg_loss = 0.0
     steps_per_epoch = len(batch_sampler)
     total_steps = steps_per_epoch * (num_epochs - start_epoch)
     num_steps = 0
     best_mean_iou = -1.0
     best_model_epoch = -1
+    train_reader_cost = 0.0
+    train_batch_cost = 0.0
     for epoch in range(start_epoch, num_epochs):
+        timer.start()
         for step, data in enumerate(loader):
+            train_reader_cost += timer.elapsed_time()
             images = data[0]
             labels = data[1].astype('int64')
             if nranks > 1:
@@ -99,22 +102,29 @@ def train(model,
             avg_loss += loss.numpy()[0]
             lr = optimizer.current_step_lr()
             num_steps += 1
+            train_batch_cost += timer.elapsed_time()
             if num_steps % log_steps == 0 and ParallelEnv().local_rank == 0:
                 avg_loss /= log_steps
-                time_step = timer.elapsed_time() / log_steps
+                avg_train_reader_cost = train_reader_cost / log_steps
+                avg_train_batch_cost = train_batch_cost / log_steps
+                train_reader_cost = 0.0
+                train_batch_cost = 0.0
                 remain_steps = total_steps - num_steps
+                eta = calculate_eta(remain_steps, avg_train_batch_cost)
                 logging.info(
-                    "[TRAIN] Epoch={}/{}, Step={}/{}, loss={:.4f}, lr={:.6f}, sec/step={:.4f} | ETA {}"
+                    "[TRAIN] Epoch={}/{}, Step={}/{}, loss={:.4f}, lr={:.6f}, batch_cost={:.4f}, reader_cost={:.4f} | ETA {}"
                     .format(epoch + 1, num_epochs, step + 1, steps_per_epoch,
-                            avg_loss * nranks, lr, time_step,
-                            calculate_eta(remain_steps, time_step)))
+                            avg_loss * nranks, lr, avg_train_batch_cost,
+                            avg_train_reader_cost, eta))
                 if use_vdl:
                     log_writer.add_scalar('Train/loss', avg_loss, num_steps)
                     log_writer.add_scalar('Train/lr', lr, num_steps)
-                    log_writer.add_scalar('Train/time_step', time_step,
-                                          num_steps)
+                    log_writer.add_scalar('Train/batch_cost',
+                                          avg_train_batch_cost, num_steps)
+                    log_writer.add_scalar('Train/reader_cost',
+                                          avg_train_reader_cost, num_steps)
                 avg_loss = 0.0
-                timer.restart()
+            timer.restart()
 
         if ((epoch + 1) % save_interval_epochs == 0
                 or epoch + 1 == num_epochs) and ParallelEnv().local_rank == 0:
@@ -128,7 +138,7 @@ def train(model,
                                os.path.join(current_save_dir, 'model'))
 
             if eval_dataset is not None:
-                mean_iou, mean_acc = evaluate(
+                mean_iou, avg_acc = evaluate(
                     model,
                     eval_dataset,
                     model_dir=current_save_dir,
@@ -146,10 +156,8 @@ def train(model,
                     .format(best_model_epoch, best_mean_iou))
 
                 if use_vdl:
-                    log_writer.add_scalar('Evaluate/mean_iou', mean_iou,
-                                          epoch + 1)
-                    log_writer.add_scalar('Evaluate/mean_acc', mean_acc,
-                                          epoch + 1)
+                    log_writer.add_scalar('Evaluate/mIoU', mean_iou, epoch + 1)
+                    log_writer.add_scalar('Evaluate/aAcc', avg_acc, epoch + 1)
                 model.train()
     if use_vdl:
         log_writer.close()
