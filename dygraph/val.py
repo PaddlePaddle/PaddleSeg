@@ -87,7 +87,7 @@ def main(args):
 
     with fluid.dygraph.guard(places):
         eval_transforms = T.Compose([T.Resize(args.input_size), T.Normalize()])
-        eval_dataset = dataset(transforms=eval_transforms, mode='eval')
+        eval_dataset = dataset(transforms=eval_transforms, mode='val')
 
         if args.model_name not in MODELS:
             raise Exception(

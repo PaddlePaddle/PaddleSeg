@@ -25,15 +25,13 @@ class PascalVOC(Dataset):
     please run the voc_augment.py in tools.
     Args:
         data_dir: The dataset directory.
-        image_set: Which part of dataset to use. Generally, image_set is of ('train', 'val', 'trainval', 'trainaug). Default: 'train'.
-        mode: Dataset usage. it is one of ('train', 'eva', 'test'). Default: 'train'.
+        mode: Which part of dataset to use.. it is one of ('train', 'val', 'test'). Default: 'train'.
         transforms: Transforms for image.
         download: Whether to download dataset if data_dir is None.
     """
 
     def __init__(self,
                  data_dir=None,
-                 image_set='train',
                  mode='train',
                  transforms=None,
                  download=True):
@@ -43,22 +41,17 @@ class PascalVOC(Dataset):
         self.file_list = list()
         self.num_classes = 21
 
-        if image_set.lower() not in ['train', 'val', 'trainval', 'trainaug']:
+        if mode.lower() not in ['train', 'trainval', 'trainaug', 'val']:
             raise Exception(
-                "image_set should be one of ('train', 'val', 'trainval', 'trainaug'), but got {}."
-                .format(image_set))
-
-        if mode.lower() not in ['train', 'eval', 'test']:
-            raise Exception(
-                "mode should be 'train', 'eval' or 'test', but got {}.".format(
-                    mode))
+                "mode should be one of ('train', 'trainval', 'trainaug', 'val') in PascalVOC dataset, but got {}."
+                .format(mode))
 
         if self.transforms is None:
             raise Exception("transforms is necessary, but it is None.")
 
         if self.data_dir is None:
             if not download:
-                raise Exception("data_file not set and auto download disabled.")
+                raise Exception("data_dir not set and auto download disabled.")
             self.data_dir = download_file_and_uncompress(
                 url=URL,
                 savepath=DATA_HOME,
@@ -68,19 +61,19 @@ class PascalVOC(Dataset):
 
         image_set_dir = os.path.join(self.data_dir, 'VOC2012', 'ImageSets',
                                      'Segmentation')
-        if image_set == 'train':
+        if mode == 'train':
             file_list = os.path.join(image_set_dir, 'train.txt')
-        elif image_set == 'val':
+        elif mode == 'val':
             file_list = os.path.join(image_set_dir, 'val.txt')
-        elif image_set == 'trainval':
+        elif mode == 'trainval':
             file_list = os.path.join(image_set_dir, 'trainval.txt')
-        elif image_set == 'trainaug':
+        elif mode == 'trainaug':
             file_list = os.path.join(image_set_dir, 'train.txt')
             file_list_aug = os.path.join(image_set_dir, 'aug.txt')
 
             if not os.path.exists(file_list_aug):
                 raise Exception(
-                    "When image_set is 'trainaug', Pascal Voc dataset should be augmented, "
+                    "When mode is 'trainaug', Pascal Voc dataset should be augmented, "
                     "Please make sure voc_augment.py has been properly run when using this mode."
                 )
 
@@ -95,10 +88,11 @@ class PascalVOC(Dataset):
                 image_path = os.path.join(img_dir, ''.join([line, '.jpg']))
                 grt_path = os.path.join(grt_dir, ''.join([line, '.png']))
                 self.file_list.append([image_path, grt_path])
-        if image_set == 'trainaug':
+        if mode == 'trainaug':
             with open(file_list_aug, 'r') as f:
                 for line in f:
                     line = line.strip()
                     image_path = os.path.join(img_dir, ''.join([line, '.jpg']))
-                    grt_path = os.path.join(grt_dir, ''.join([line, '.png']))
+                    grt_path = os.path.join(grt_dir_aug, ''.join([line,
+                                                                  '.png']))
                     self.file_list.append([image_path, grt_path])

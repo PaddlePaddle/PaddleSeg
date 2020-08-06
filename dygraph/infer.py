@@ -13,20 +13,13 @@
 # limitations under the License.
 
 import argparse
-import os
 
-from paddle.fluid.dygraph.base import to_variable
-import numpy as np
 import paddle.fluid as fluid
 from paddle.fluid.dygraph.parallel import ParallelEnv
-import cv2
-import tqdm
 
 from datasets import DATASETS
 import transforms as T
 from models import MODELS
-import utils
-import utils.logging as logging
 from utils import get_environ_info
 from core import infer
 
@@ -43,7 +36,7 @@ def parse_args():
         type=str,
         default='UNet')
 
-    # params of dataset
+    # params of infer
     parser.add_argument(
         '--dataset',
         dest='dataset',

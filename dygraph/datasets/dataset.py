@@ -25,8 +25,7 @@ class Dataset(fluid.io.Dataset):
     Args:
         data_dir: The dataset directory.
         num_classes: Number of classes.
-        image_set: Which part of dataset to use. Generally, image_set is of ('train', 'val', 'test'). Default: 'train'.
-        mode: Dataset usage. it is one of ('train', 'eva', 'test'). Default: 'train'.
+        mode: which part of dataset to use. it is one of ('train', 'val', 'test'). Default: 'train'.
         train_list: The train dataset file. When image_set is 'train', train_list is necessary.
             The contents of train_list file are as follow:
             image1.jpg ground_truth1.png
@@ -46,7 +45,6 @@ class Dataset(fluid.io.Dataset):
     def __init__(self,
                  data_dir,
                  num_classes,
-                 image_set='train',
                  mode='train',
                  train_list=None,
                  val_list=None,
@@ -59,21 +57,16 @@ class Dataset(fluid.io.Dataset):
         self.mode = mode
         self.num_classes = num_classes
 
-        if image_set.lower() not in ['train', 'val', 'test']:
+        if mode.lower() not in ['train', 'val', 'test']:
             raise Exception(
-                "image_set should be one of ('train', 'val', 'test'), but got {}."
-                .format(image_set))
-
-        if mode.lower() not in ['train', 'eval', 'test']:
-            raise Exception(
-                "mode should be 'train', 'eval' or 'test', but got {}.".format(
+                "mode should be 'train', 'val' or 'test', but got {}.".format(
                     mode))
 
         if self.transforms is None:
             raise Exception("transforms is necessary, but it is None.")
 
         self.data_dir = data_dir
-        if image_set == 'train':
+        if mode == 'train':
             if train_list is None:
                 raise Exception(
                     'When mode is "train", train_list is necessary, but it is None.'
@@ -83,10 +76,10 @@ class Dataset(fluid.io.Dataset):
                     'train_list is not found: {}'.format(train_list))
             else:
                 file_list = train_list
-        elif image_set == 'eval':
+        elif mode == 'val':
             if val_list is None:
                 raise Exception(
-                    'When mode is "eval", val_list is necessary, but it is None.'
+                    'When mode is "val", val_list is necessary, but it is None.'
                 )
             elif not os.path.exists(val_list):
                 raise Exception('val_list is not found: {}'.format(val_list))
@@ -106,9 +99,9 @@ class Dataset(fluid.io.Dataset):
             for line in f:
                 items = line.strip().split(separator)
                 if len(items) != 2:
-                    if mode == 'train' or mode == 'eval':
+                    if mode == 'train' or mode == 'val':
                         raise Exception(
-                            "File list format incorrect! It should be"
+                            "File list format incorrect! In training or evaluation task it should be"
                             " image_name{}label_name\\n".format(separator))
                     image_path = os.path.join(self.data_dir, items[0])
                     grt_path = None
@@ -119,19 +112,19 @@ class Dataset(fluid.io.Dataset):
 
     def __getitem__(self, idx):
         image_path, grt_path = self.file_list[idx]
-        if self.mode == 'train':
-            im, im_info, label = self.transforms(im=image_path, label=grt_path)
-            return im, label
-        elif self.mode == 'eval':
+        if self.mode == 'test':
+            im, im_info, _ = self.transforms(im=image_path)
+            im = im[np.newaxis, ...]
+            return im, im_info, image_path
+        elif self.mode == 'val':
             im, im_info, _ = self.transforms(im=image_path)
             im = im[np.newaxis, ...]
             label = np.asarray(Image.open(grt_path))
             label = label[np.newaxis, np.newaxis, :, :]
             return im, im_info, label
-        if self.mode == 'test':
-            im, im_info, _ = self.transforms(im=image_path)
-            im = im[np.newaxis, ...]
-            return im, im_info, image_path
+        else:
+            im, im_info, label = self.transforms(im=image_path, label=grt_path)
+            return im, label
 
     def __len__(self):
         return len(self.file_list)
