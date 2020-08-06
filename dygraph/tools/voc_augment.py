@@ -43,18 +43,18 @@ def parse_args():
         dest='voc_path',
         help='pascal voc path',
         type=str,
-        default=os.path.join(DATA_HOME + 'VOCdevkit'))
+        default=os.path.join(DATA_HOME, 'VOCdevkit'))
 
     parser.add_argument(
         '--num_workers',
         dest='num_workers',
         help='How many processes are used for data conversion',
-        type=str,
+        type=int,
         default=cpu_count())
     return parser.parse_args()
 
 
-def conver_to_png(mat_file, sbd_cls_dir, save_dir):
+def mat_to_png(mat_file, sbd_cls_dir, save_dir):
     mat_path = os.path.join(sbd_cls_dir, mat_file)
     mat = loadmat(mat_path)
     mask = mat['GTcls'][0]['Segmentation'][0].astype(np.uint8)
@@ -75,27 +75,30 @@ def main():
         sbd_file_list += [line.strip() for line in f]
     if not os.path.exists(args.voc_path):
         raise Exception(
-            'Ther is no voc_path: {}. Please ensure that the Pascal VOC dataset has been downloaded correctly'
+            'There is no voc_path: {}. Please ensure that the Pascal VOC dataset has been downloaded correctly'
         )
     with open(
             os.path.join(args.voc_path,
-                         'VOC2012/ImageSets/Segmentation/trainval.txt',
-                         'r')) as f:
+                         'VOC2012/ImageSets/Segmentation/trainval.txt'),
+            'r') as f:
         voc_file_list = [line.strip() for line in f]
 
     aug_file_list = list(set(sbd_file_list) - set(voc_file_list))
     with open(
             os.path.join(args.voc_path,
-                         'VOC2012/ImageSets/Segmentation/aug.txt', 'w')) as f:
-        f.writelines(''.join(line, '\n') for line in aug_file_list)
+                         'VOC2012/ImageSets/Segmentation/aug.txt'), 'w') as f:
+        f.writelines(''.join([line, '\n']) for line in aug_file_list)
 
     sbd_cls_dir = os.path.join(sbd_path, 'dataset/cls')
-    save_dir = os.path.join(args.voc_path,
-                            'VOC2012/ImageSets/SegmentationClassAug')
+    save_dir = os.path.join(args.voc_path, 'VOC2012/SegmentationClassAug')
+    if not os.path.exists(save_dir):
+        os.mkdir(save_dir)
     mat_file_list = os.listdir(sbd_cls_dir)
     p = Pool(args.num_workers)
     for f in tqdm.tqdm(mat_file_list):
-        p.apply_async(conver_to_png, args=(f, sbd_cls_dir, save_dir))
+        p.apply_async(mat_to_png, args=(f, sbd_cls_dir, save_dir))
+    p.close()
+    p.join()
 
 
 if __name__ == '__main__':

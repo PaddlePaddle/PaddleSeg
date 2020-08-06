@@ -20,7 +20,7 @@ DATA_HOME = os.path.expanduser('~/.cache/paddle/dataset')
 URL = "https://paddleseg.bj.bcebos.com/dataset/VOCtrainval_11-May-2012.tar"
 
 
-class PascalVoc(Dataset):
+class PascalVOC(Dataset):
     """Pascal VOC dataset `http://host.robots.ox.ac.uk/pascal/VOC/`. If you want to augment the dataset,
     please run the voc_augment.py in tools.
     Args:
@@ -36,7 +36,7 @@ class PascalVoc(Dataset):
                  image_set='train',
                  mode='train',
                  transforms=None,
-                 download=False):
+                 download=True):
         self.data_dir = data_dir
         self.transforms = transforms
         self.mode = mode

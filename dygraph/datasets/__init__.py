@@ -15,4 +15,10 @@
 from .dataset import Dataset
 from .optic_disc_seg import OpticDiscSeg
 from .cityscapes import Cityscapes
-from .voc import PascalVoc
+from .voc import PascalVOC
+
+DATASETS = {
+    "OpticDiscSeg": OpticDiscSeg,
+    "Cityscapes": Cityscapes,
+    "PascalVOC": PascalVOC
+}
