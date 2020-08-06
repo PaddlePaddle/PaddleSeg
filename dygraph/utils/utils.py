@@ -88,6 +88,7 @@ def resume(model, optimizer, resume_model):
     if resume_model is not None:
         logging.info('Resume model from {}'.format(resume_model))
         if os.path.exists(resume_model):
+            resume_model = os.path.normpath(resume_model)
             ckpt_path = os.path.join(resume_model, 'model')
             para_state_dict, opti_state_dict = fluid.load_dygraph(ckpt_path)
             model.set_dict(para_state_dict)
