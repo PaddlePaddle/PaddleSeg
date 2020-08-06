@@ -100,5 +100,6 @@ class PascalVOC(Dataset):
                 for line in f:
                     line = line.strip()
                     image_path = os.path.join(img_dir, ''.join([line, '.jpg']))
-                    grt_path = os.path.join(grt_dir, ''.join([line, '.png']))
+                    grt_path = os.path.join(grt_dir_aug, ''.join([line,
+                                                                  '.png']))
                     self.file_list.append([image_path, grt_path])
