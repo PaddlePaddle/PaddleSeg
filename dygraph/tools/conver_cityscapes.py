@@ -21,10 +21,12 @@ cityscapes
 |--leftImg8bit
 |  |--train
 |  |--val
+|  |--test
 |
 |--gtFine
 |  |--train
 |  |--val
+|  |--test
 """
 
 import os
