@@ -57,7 +57,6 @@ class PascalVOC(Dataset):
                 savepath=DATA_HOME,
                 extrapath=DATA_HOME,
                 extraname='VOCdevkit')
-            print(self.data_dir)
 
         image_set_dir = os.path.join(self.data_dir, 'VOC2012', 'ImageSets',
                                      'Segmentation')
