@@ -24,46 +24,47 @@ URL = "https://paddleseg.bj.bcebos.com/dataset/ADEChallengeData2016.zip"
 class ADE20K(Dataset):
     """ADE20K dataset `http://sceneparsing.csail.mit.edu/`.
     Args:
-        data_dir: The dataset directory.
+        dataset_root: The dataset directory.
         mode: Which part of dataset to use.. it is one of ('train', 'val'). Default: 'train'.
         transforms: Transforms for image.
-        download: Whether to download dataset if data_dir is None.
+        download: Whether to download dataset if dataset_root is None.
     """
 
     def __init__(self,
-                 data_dir=None,
+                 dataset_root=None,
                  mode='train',
                  transforms=None,
                  download=True):
-        self.data_dir = data_dir
+        self.dataset_root = dataset_root
         self.transforms = transforms
         self.mode = mode
         self.file_list = list()
-        self.num_classes = 21
+        self.num_classes = 150
 
         if mode.lower() not in ['train', 'val']:
             raise Exception(
-                "mode should be one of ('train', 'val') in PascalVOC dataset, but got {}."
+                "mode should be one of ('train', 'val') in ADE20K dataset, but got {}."
                 .format(mode))
 
         if self.transforms is None:
             raise Exception("transforms is necessary, but it is None.")
 
-        if self.data_dir is None:
+        if self.dataset_root is None:
             if not download:
-                raise Exception("data_dir not set and auto download disabled.")
-            self.data_dir = download_file_and_uncompress(
+                raise Exception(
+                    "dataset_root not set and auto download disabled.")
+            self.dataset_root = download_file_and_uncompress(
                 url=URL,
                 savepath=DATA_HOME,
                 extrapath=DATA_HOME,
                 extraname='ADEChallengeData2016')
 
         if mode == 'train':
-            img_dir = os.path.join(self.data_dir, 'images/training')
-            grt_dir = os.path.join(self.data_dir, 'annotations/training')
+            img_dir = os.path.join(self.dataset_root, 'images/training')
+            grt_dir = os.path.join(self.dataset_root, 'annotations/training')
         elif mode == 'val':
-            img_dir = os.path.join(self.data_dir, 'images/validation')
-            grt_dir = os.path.join(self.data_dir, 'annotations/validation')
+            img_dir = os.path.join(self.dataset_root, 'images/validation')
+            grt_dir = os.path.join(self.dataset_root, 'annotations/validation')
         img_files = os.listdir(img_dir)
         grt_files = [i.replace('.jpg', '.png') for i in img_files]
         for i in range(len(img_files)):

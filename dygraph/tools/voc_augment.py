@@ -15,7 +15,7 @@
 File: voc_augment.py
 
 This file use SBD(Semantic Boundaries Dataset) <http://home.bharathh.info/pubs/codes/SBD/download.html>
-to augment the Pascal VOC
+to augment the Pascal VOC.
 """
 
 import os

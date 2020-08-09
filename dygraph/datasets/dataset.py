@@ -23,7 +23,7 @@ class Dataset(fluid.io.Dataset):
     """Pass in a custom dataset that conforms to the format.
 
     Args:
-        data_dir: The dataset directory.
+        dataset_root: The dataset directory.
         num_classes: Number of classes.
         mode: which part of dataset to use. it is one of ('train', 'val', 'test'). Default: 'train'.
         train_list: The train dataset file. When image_set is 'train', train_list is necessary.
@@ -43,7 +43,7 @@ class Dataset(fluid.io.Dataset):
     """
 
     def __init__(self,
-                 data_dir,
+                 dataset_root,
                  num_classes,
                  mode='train',
                  train_list=None,
@@ -51,7 +51,7 @@ class Dataset(fluid.io.Dataset):
                  test_list=None,
                  separator=' ',
                  transforms=None):
-        self.data_dir = data_dir
+        self.dataset_root = dataset_root
         self.transforms = transforms
         self.file_list = list()
         self.mode = mode
@@ -65,7 +65,7 @@ class Dataset(fluid.io.Dataset):
         if self.transforms is None:
             raise Exception("transforms is necessary, but it is None.")
 
-        self.data_dir = data_dir
+        self.dataset_root = dataset_root
         if mode == 'train':
             if train_list is None:
                 raise Exception(
@@ -103,11 +103,11 @@ class Dataset(fluid.io.Dataset):
                         raise Exception(
                             "File list format incorrect! In training or evaluation task it should be"
                             " image_name{}label_name\\n".format(separator))
-                    image_path = os.path.join(self.data_dir, items[0])
+                    image_path = os.path.join(self.dataset_root, items[0])
                     grt_path = None
                 else:
-                    image_path = os.path.join(self.data_dir, items[0])
-                    grt_path = os.path.join(self.data_dir, items[1])
+                    image_path = os.path.join(self.dataset_root, items[0])
+                    grt_path = os.path.join(self.dataset_root, items[1])
                 self.file_list.append([image_path, grt_path])
 
     def __getitem__(self, idx):

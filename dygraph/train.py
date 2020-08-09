@@ -51,6 +51,12 @@ def parse_args():
             str(list(DATASETS.keys()))),
         type=str,
         default='OpticDiscSeg')
+    parser.add_argument(
+        '--dataset_root',
+        dest='dataset_root',
+        help="dataset root directory",
+        type=str,
+        default=None)
 
     # params of training
     parser.add_argument(
@@ -146,14 +152,20 @@ def main(args):
             T.RandomHorizontalFlip(),
             T.Normalize()
         ])
-        train_dataset = dataset(transforms=train_transforms, mode='train')
+        train_dataset = dataset(
+            dataset_root=args.dataset_root,
+            transforms=train_transforms,
+            mode='train')
 
         eval_dataset = None
         if args.do_eval:
             eval_transforms = T.Compose(
                 [T.Resize(args.input_size),
                  T.Normalize()])
-            eval_dataset = dataset(transforms=eval_transforms, mode='val')
+            eval_dataset = dataset(
+                dataset_root=args.dataset_root,
+                transforms=eval_transforms,
+                mode='val')
 
         if args.model_name not in MODELS:
             raise Exception(

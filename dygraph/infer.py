@@ -44,6 +44,12 @@ def parse_args():
             str(list(DATASETS.keys()))),
         type=str,
         default='OpticDiscSeg')
+    parser.add_argument(
+        '--dataset_root',
+        dest='dataset_root',
+        help="dataset root directory",
+        type=str,
+        default=None)
 
     # params of prediction
     parser.add_argument(
@@ -88,7 +94,10 @@ def main(args):
 
     with fluid.dygraph.guard(places):
         test_transforms = T.Compose([T.Resize(args.input_size), T.Normalize()])
-        test_dataset = dataset(transforms=test_transforms, mode='test')
+        test_dataset = dataset(
+            dataset_root=args.dataset_root,
+            transforms=test_transforms,
+            mode='test')
 
         if args.model_name not in MODELS:
             raise Exception(

@@ -23,11 +23,11 @@ URL = "https://paddleseg.bj.bcebos.com/dataset/optic_disc_seg.zip"
 
 class OpticDiscSeg(Dataset):
     def __init__(self,
-                 data_dir=None,
+                 dataset_root=None,
                  transforms=None,
                  mode='train',
                  download=True):
-        self.data_dir = data_dir
+        self.dataset_root = dataset_root
         self.transforms = transforms
         self.file_list = list()
         self.mode = mode
@@ -41,18 +41,18 @@ class OpticDiscSeg(Dataset):
         if self.transforms is None:
             raise Exception("transforms is necessary, but it is None.")
 
-        if self.data_dir is None:
+        if self.dataset_root is None:
             if not download:
                 raise Exception("data_file not set and auto download disabled.")
-            self.data_dir = download_file_and_uncompress(
+            self.dataset_root = download_file_and_uncompress(
                 url=URL, savepath=DATA_HOME, extrapath=DATA_HOME)
 
         if mode == 'train':
-            file_list = os.path.join(self.data_dir, 'train_list.txt')
+            file_list = os.path.join(self.dataset_root, 'train_list.txt')
         elif mode == 'val':
-            file_list = os.path.join(self.data_dir, 'val_list.txt')
+            file_list = os.path.join(self.dataset_root, 'val_list.txt')
         else:
-            file_list = os.path.join(self.data_dir, 'test_list.txt')
+            file_list = os.path.join(self.dataset_root, 'test_list.txt')
 
         with open(file_list, 'r') as f:
             for line in f:
@@ -62,9 +62,9 @@ class OpticDiscSeg(Dataset):
                         raise Exception(
                             "File list format incorrect! It should be"
                             " image_name label_name\\n")
-                    image_path = os.path.join(self.data_dir, items[0])
+                    image_path = os.path.join(self.dataset_root, items[0])
                     grt_path = None
                 else:
-                    image_path = os.path.join(self.data_dir, items[0])
-                    grt_path = os.path.join(self.data_dir, items[1])
+                    image_path = os.path.join(self.dataset_root, items[0])
+                    grt_path = os.path.join(self.dataset_root, items[1])
                 self.file_list.append([image_path, grt_path])

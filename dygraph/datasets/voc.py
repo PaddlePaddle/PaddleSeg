@@ -24,18 +24,18 @@ class PascalVOC(Dataset):
     """Pascal VOC dataset `http://host.robots.ox.ac.uk/pascal/VOC/`. If you want to augment the dataset,
     please run the voc_augment.py in tools.
     Args:
-        data_dir: The dataset directory.
+        dataset_root: The dataset directory.
         mode: Which part of dataset to use.. it is one of ('train', 'val', 'test'). Default: 'train'.
         transforms: Transforms for image.
-        download: Whether to download dataset if data_dir is None.
+        download: Whether to download dataset if dataset_root is None.
     """
 
     def __init__(self,
-                 data_dir=None,
+                 dataset_root=None,
                  mode='train',
                  transforms=None,
                  download=True):
-        self.data_dir = data_dir
+        self.dataset_root = dataset_root
         self.transforms = transforms
         self.mode = mode
         self.file_list = list()
@@ -49,16 +49,17 @@ class PascalVOC(Dataset):
         if self.transforms is None:
             raise Exception("transforms is necessary, but it is None.")
 
-        if self.data_dir is None:
+        if self.dataset_root is None:
             if not download:
-                raise Exception("data_dir not set and auto download disabled.")
-            self.data_dir = download_file_and_uncompress(
+                raise Exception(
+                    "dataset_root not set and auto download disabled.")
+            self.dataset_root = download_file_and_uncompress(
                 url=URL,
                 savepath=DATA_HOME,
                 extrapath=DATA_HOME,
                 extraname='VOCdevkit')
 
-        image_set_dir = os.path.join(self.data_dir, 'VOC2012', 'ImageSets',
+        image_set_dir = os.path.join(self.dataset_root, 'VOC2012', 'ImageSets',
                                      'Segmentation')
         if mode == 'train':
             file_list = os.path.join(image_set_dir, 'train.txt')
@@ -76,9 +77,10 @@ class PascalVOC(Dataset):
                     "Please make sure voc_augment.py has been properly run when using this mode."
                 )
 
-        img_dir = os.path.join(self.data_dir, 'VOC2012', 'JPEGImages')
-        grt_dir = os.path.join(self.data_dir, 'VOC2012', 'SegmentationClass')
-        grt_dir_aug = os.path.join(self.data_dir, 'VOC2012',
+        img_dir = os.path.join(self.dataset_root, 'VOC2012', 'JPEGImages')
+        grt_dir = os.path.join(self.dataset_root, 'VOC2012',
+                               'SegmentationClass')
+        grt_dir_aug = os.path.join(self.dataset_root, 'VOC2012',
                                    'SegmentationClassAug')
 
         with open(file_list, 'r') as f:

@@ -35,13 +35,13 @@ class Cityscapes(Dataset):
     Make sure there are **labelTrainIds.png in gtFine directory. If not, please run the conver_cityscapes.py in tools.
 
     Args:
-        data_dir: Cityscapes dataset directory.
+        dataset_root: Cityscapes dataset directory.
         mode: Which part of dataset to use. it is one of ('train', 'val', 'test'). Default: 'train'.
         transforms: Transforms for image.
     """
 
-    def __init__(self, data_dir, transforms=None, mode='train'):
-        self.data_dir = data_dir
+    def __init__(self, dataset_root, transforms=None, mode='train'):
+        self.dataset_root = dataset_root
         self.transforms = transforms
         self.file_list = list()
         self.mode = mode
@@ -55,10 +55,11 @@ class Cityscapes(Dataset):
         if self.transforms is None:
             raise Exception("transforms is necessary, but it is None.")
 
-        img_dir = os.path.join(self.data_dir, 'leftImg8bit')
-        grt_dir = os.path.join(self.data_dir, 'gtFine')
-        if not os.path.isdir(self.data_dir) or not os.path.isdir(
-                img_dir) or not os.path.isdir(grt_dir):
+        img_dir = os.path.join(self.dataset_root, 'leftImg8bit')
+        grt_dir = os.path.join(self.dataset_root, 'gtFine')
+        if self.dataset_root is None or not os.path.isdir(
+                self.dataset_root) or not os.path.isdir(
+                    img_dir) or not os.path.isdir(grt_dir):
             raise Exception(
                 "The dataset is not Found or the folder structure is nonconfoumance."
             )
