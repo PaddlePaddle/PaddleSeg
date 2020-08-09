@@ -58,6 +58,9 @@ class PascalVOC(Dataset):
                 savepath=DATA_HOME,
                 extrapath=DATA_HOME,
                 extraname='VOCdevkit')
+        elif not os.path.exists(self.dataset_root):
+            raise Exception('there is not dataset_root: {}.'.format(
+                self.dataset_root))
 
         image_set_dir = os.path.join(self.dataset_root, 'VOC2012', 'ImageSets',
                                      'Segmentation')

@@ -66,6 +66,10 @@ class Dataset(fluid.io.Dataset):
             raise Exception("transforms is necessary, but it is None.")
 
         self.dataset_root = dataset_root
+        if not os.path.exists(self.dataset_root):
+            raise Exception('there is not dataset_root: {}.'.format(
+                self.dataset_root))
+
         if mode == 'train':
             if train_list is None:
                 raise Exception(

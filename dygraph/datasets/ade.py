@@ -58,6 +58,9 @@ class ADE20K(Dataset):
                 savepath=DATA_HOME,
                 extrapath=DATA_HOME,
                 extraname='ADEChallengeData2016')
+        elif not os.path.exists(self.dataset_root):
+            raise Exception('there is not dataset_root: {}.'.format(
+                self.dataset_root))
 
         if mode == 'train':
             img_dir = os.path.join(self.dataset_root, 'images/training')
