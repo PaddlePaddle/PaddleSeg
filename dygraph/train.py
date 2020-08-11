@@ -13,21 +13,14 @@
 # limitations under the License.
 
 import argparse
-import os
 
 import paddle.fluid as fluid
 from paddle.fluid.dygraph.parallel import ParallelEnv
-from paddle.fluid.io import DataLoader
-from paddle.incubate.hapi.distributed import DistributedBatchSampler
 
 from datasets import DATASETS
 import transforms as T
 from models import MODELS
-import utils.logging as logging
 from utils import get_environ_info
-from utils import load_pretrained_model
-from utils import resume
-from utils import Timer, calculate_eta
 from core import train
 
 
@@ -141,7 +134,7 @@ def main(args):
         else fluid.CPUPlace()
 
     if args.dataset not in DATASETS:
-        raise Exception('--dataset is invalid. it should be one of {}'.format(
+        raise Exception('`--dataset` is invalid. it should be one of {}'.format(
             str(list(DATASETS.keys()))))
     dataset = DATASETS[args.dataset]
 
@@ -169,7 +162,7 @@ def main(args):
 
         if args.model_name not in MODELS:
             raise Exception(
-                '--model_name is invalid. it should be one of {}'.format(
+                '`--model_name` is invalid. it should be one of {}'.format(
                     str(list(MODELS.keys()))))
         model = MODELS[args.model_name](num_classes=train_dataset.num_classes)
 

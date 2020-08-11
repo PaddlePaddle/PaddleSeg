@@ -63,39 +63,40 @@ class Dataset(fluid.io.Dataset):
                     mode))
 
         if self.transforms is None:
-            raise Exception("transforms is necessary, but it is None.")
+            raise Exception("`transforms` is necessary, but it is None.")
 
         self.dataset_root = dataset_root
         if not os.path.exists(self.dataset_root):
-            raise Exception('there is not dataset_root: {}.'.format(
+            raise Exception('there is not `dataset_root`: {}.'.format(
                 self.dataset_root))
 
         if mode == 'train':
             if train_list is None:
                 raise Exception(
-                    'When mode is "train", train_list is necessary, but it is None.'
+                    'When `mode` is "train", `train_list` is necessary, but it is None.'
                 )
             elif not os.path.exists(train_list):
                 raise Exception(
-                    'train_list is not found: {}'.format(train_list))
+                    '`train_list` is not found: {}'.format(train_list))
             else:
                 file_list = train_list
         elif mode == 'val':
             if val_list is None:
                 raise Exception(
-                    'When mode is "val", val_list is necessary, but it is None.'
+                    'When `mode` is "val", `val_list` is necessary, but it is None.'
                 )
             elif not os.path.exists(val_list):
-                raise Exception('val_list is not found: {}'.format(val_list))
+                raise Exception('`val_list` is not found: {}'.format(val_list))
             else:
                 file_list = val_list
         else:
             if test_list is None:
                 raise Exception(
-                    'When mode is "test", test_list is necessary, but it is None.'
+                    'When `mode` is "test", `test_list` is necessary, but it is None.'
                 )
             elif not os.path.exists(test_list):
-                raise Exception('test_list is not found: {}'.format(test_list))
+                raise Exception(
+                    '`test_list` is not found: {}'.format(test_list))
             else:
                 file_list = test_list
 

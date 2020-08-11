@@ -30,7 +30,7 @@ class ADE20K(Dataset):
         dataset_root: The dataset directory.
         mode: Which part of dataset to use.. it is one of ('train', 'val'). Default: 'train'.
         transforms: Transforms for image.
-        download: Whether to download dataset if dataset_root is None.
+        download: Whether to download dataset if `dataset_root` is None.
     """
 
     def __init__(self,
@@ -46,23 +46,23 @@ class ADE20K(Dataset):
 
         if mode.lower() not in ['train', 'val']:
             raise Exception(
-                "mode should be one of ('train', 'val') in ADE20K dataset, but got {}."
+                "`mode` should be one of ('train', 'val') in ADE20K dataset, but got {}."
                 .format(mode))
 
         if self.transforms is None:
-            raise Exception("transforms is necessary, but it is None.")
+            raise Exception("`transforms` is necessary, but it is None.")
 
         if self.dataset_root is None:
             if not download:
                 raise Exception(
-                    "dataset_root not set and auto download disabled.")
+                    "`dataset_root` not set and auto download disabled.")
             self.dataset_root = download_file_and_uncompress(
                 url=URL,
                 savepath=DATA_HOME,
                 extrapath=DATA_HOME,
                 extraname='ADEChallengeData2016')
         elif not os.path.exists(self.dataset_root):
-            raise Exception('there is not dataset_root: {}.'.format(
+            raise Exception('there is not `dataset_root`: {}.'.format(
                 self.dataset_root))
 
         if mode == 'train':

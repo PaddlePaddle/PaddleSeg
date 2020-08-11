@@ -88,7 +88,7 @@ def main(args):
         else fluid.CPUPlace()
 
     if args.dataset not in DATASETS:
-        raise Exception('--dataset is invalid. it should be one of {}'.format(
+        raise Exception('`--dataset` is invalid. it should be one of {}'.format(
             str(list(DATASETS.keys()))))
     dataset = DATASETS[args.dataset]
 
@@ -101,7 +101,7 @@ def main(args):
 
         if args.model_name not in MODELS:
             raise Exception(
-                '--model_name is invalid. it should be one of {}'.format(
+                '`--model_name` is invalid. it should be one of {}'.format(
                     str(list(MODELS.keys()))))
         model = MODELS[args.model_name](num_classes=test_dataset.num_classes)
 

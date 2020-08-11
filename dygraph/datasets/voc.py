@@ -43,23 +43,23 @@ class PascalVOC(Dataset):
 
         if mode.lower() not in ['train', 'trainval', 'trainaug', 'val']:
             raise Exception(
-                "mode should be one of ('train', 'trainval', 'trainaug', 'val') in PascalVOC dataset, but got {}."
+                "`mode` should be one of ('train', 'trainval', 'trainaug', 'val') in PascalVOC dataset, but got {}."
                 .format(mode))
 
         if self.transforms is None:
-            raise Exception("transforms is necessary, but it is None.")
+            raise Exception("`transforms` is necessary, but it is None.")
 
         if self.dataset_root is None:
             if not download:
                 raise Exception(
-                    "dataset_root not set and auto download disabled.")
+                    "`dataset_root` not set and auto download disabled.")
             self.dataset_root = download_file_and_uncompress(
                 url=URL,
                 savepath=DATA_HOME,
                 extrapath=DATA_HOME,
                 extraname='VOCdevkit')
         elif not os.path.exists(self.dataset_root):
-            raise Exception('there is not dataset_root: {}.'.format(
+            raise Exception('there is not `dataset_root`: {}.'.format(
                 self.dataset_root))
 
         image_set_dir = os.path.join(self.dataset_root, 'VOC2012', 'ImageSets',
@@ -76,7 +76,7 @@ class PascalVOC(Dataset):
 
             if not os.path.exists(file_list_aug):
                 raise Exception(
-                    "When mode is 'trainaug', Pascal Voc dataset should be augmented, "
+                    "When `mode` is 'trainaug', Pascal Voc dataset should be augmented, "
                     "Please make sure voc_augment.py has been properly run when using this mode."
                 )
 

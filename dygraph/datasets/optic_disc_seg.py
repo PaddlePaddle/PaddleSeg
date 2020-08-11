@@ -35,19 +35,20 @@ class OpticDiscSeg(Dataset):
 
         if mode.lower() not in ['train', 'val', 'test']:
             raise Exception(
-                "mode should be 'train', 'val' or 'test', but got {}.".format(
+                "`mode` should be 'train', 'val' or 'test', but got {}.".format(
                     mode))
 
         if self.transforms is None:
-            raise Exception("transforms is necessary, but it is None.")
+            raise Exception("`transforms` is necessary, but it is None.")
 
         if self.dataset_root is None:
             if not download:
-                raise Exception("data_file not set and auto download disabled.")
+                raise Exception(
+                    "`data_root` not set and auto download disabled.")
             self.dataset_root = download_file_and_uncompress(
                 url=URL, savepath=DATA_HOME, extrapath=DATA_HOME)
         elif not os.path.exists(self.dataset_root):
-            raise Exception('there is not dataset_root: {}.'.format(
+            raise Exception('there is not `dataset_root`: {}.'.format(
                 self.dataset_root))
 
         if mode == 'train':
