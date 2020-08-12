@@ -645,12 +645,14 @@ class FuseLayers(fluid.dygraph.Layer):
         residual_func_idx = 0
         for i in range(self._actual_ch):
             residual = input[i]
+            residual_shape = residual.shape[-2:]
             for j in range(len(self._in_channels)):
                 if j > i:
                     y = self.residual_func_list[residual_func_idx](input[j])
                     residual_func_idx += 1
 
-                    y = fluid.layers.resize_bilinear(input=y, scale=2**(j - i))
+                    y = fluid.layers.resize_bilinear(
+                        input=y, out_shape=residual_shape)
                     residual = fluid.layers.elementwise_add(
                         x=residual, y=y, act=None)
                 elif j < i:
