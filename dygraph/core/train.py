@@ -117,7 +117,8 @@ def train(model,
                             avg_loss * nranks, lr, avg_train_batch_cost,
                             avg_train_reader_cost, eta))
                 if use_vdl:
-                    log_writer.add_scalar('Train/loss', avg_loss, num_steps)
+                    log_writer.add_scalar('Train/loss', avg_loss * nranks,
+                                          num_steps)
                     log_writer.add_scalar('Train/lr', lr, num_steps)
                     log_writer.add_scalar('Train/batch_cost',
                                           avg_train_batch_cost, num_steps)

@@ -1,4 +1,4 @@
-#   Copyright (c) 2020 PaddlePaddle Authors. All Rights Reserved.
+# Copyright (c) 2020 PaddlePaddle Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,59 +13,62 @@
 # limitations under the License.
 
 import os
+import glob
 
 from .dataset import Dataset
-from utils.download import download_file_and_uncompress
-
-DATA_HOME = os.path.expanduser('~/.cache/paddle/dataset')
-URL = "https://paddleseg.bj.bcebos.com/dataset/cityscapes.tar"
 
 
 class Cityscapes(Dataset):
-    def __init__(self,
-                 data_dir=None,
-                 transforms=None,
-                 mode='train',
-                 download=True):
-        self.data_dir = data_dir
+    """Cityscapes dataset `https://www.cityscapes-dataset.com/`.
+    The folder structure is as follow:
+    cityscapes
+    |
+    |--leftImg8bit
+    |  |--train
+    |  |--val
+    |  |--test
+    |
+    |--gtFine
+    |  |--train
+    |  |--val
+    |  |--test
+    Make sure there are **labelTrainIds.png in gtFine directory. If not, please run the conver_cityscapes.py in tools.
+
+    Args:
+        dataset_root: Cityscapes dataset directory.
+        mode: Which part of dataset to use. it is one of ('train', 'val', 'test'). Default: 'train'.
+        transforms: Transforms for image.
+    """
+
+    def __init__(self, dataset_root, transforms=None, mode='train'):
+        self.dataset_root = dataset_root
         self.transforms = transforms
         self.file_list = list()
         self.mode = mode
         self.num_classes = 19
 
-        if mode.lower() not in ['train', 'eval', 'test']:
+        if mode.lower() not in ['train', 'val', 'test']:
             raise Exception(
-                "mode should be 'train', 'eval' or 'test', but got {}.".format(
+                "mode should be 'train', 'val' or 'test', but got {}.".format(
                     mode))
 
         if self.transforms is None:
-            raise Exception("transform is necessary, but it is None.")
+            raise Exception("`transforms` is necessary, but it is None.")
 
-        self.data_dir = data_dir
-        if self.data_dir is None:
-            if not download:
-                raise Exception("data_file not set and auto download disabled.")
-            self.data_dir = download_file_and_uncompress(
-                url=URL, savepath=DATA_HOME, extrapath=DATA_HOME)
+        img_dir = os.path.join(self.dataset_root, 'leftImg8bit')
+        grt_dir = os.path.join(self.dataset_root, 'gtFine')
+        if self.dataset_root is None or not os.path.isdir(
+                self.dataset_root) or not os.path.isdir(
+                    img_dir) or not os.path.isdir(grt_dir):
+            raise Exception(
+                "The dataset is not Found or the folder structure is nonconfoumance."
+            )
 
-        if mode == 'train':
-            file_list = os.path.join(self.data_dir, 'train.list')
-        elif mode == 'eval':
-            file_list = os.path.join(self.data_dir, 'val.list')
-        else:
-            file_list = os.path.join(self.data_dir, 'test.list')
+        grt_files = sorted(
+            glob.glob(
+                os.path.join(grt_dir, mode, '*', '*_gtFine_labelTrainIds.png')))
+        img_files = sorted(
+            glob.glob(os.path.join(img_dir, mode, '*', '*_leftImg8bit.png')))
 
-        with open(file_list, 'r') as f:
-            for line in f:
-                items = line.strip().split()
-                if len(items) != 2:
-                    if mode == 'train' or mode == 'eval':
-                        raise Exception(
-                            "File list format incorrect! It should be"
-                            " image_name label_name\\n")
-                    image_path = os.path.join(self.data_dir, items[0])
-                    grt_path = None
-                else:
-                    image_path = os.path.join(self.data_dir, items[0])
-                    grt_path = os.path.join(self.data_dir, items[1])
-                self.file_list.append([image_path, grt_path])
+        self.file_list = [[img_path, grt_path]
+                          for img_path, grt_path in zip(img_files, grt_files)]

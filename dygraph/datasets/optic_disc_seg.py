@@ -1,4 +1,4 @@
-#   Copyright (c) 2020 PaddlePaddle Authors. All Rights Reserved.
+# Copyright (c) 2020 PaddlePaddle Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -23,49 +23,52 @@ URL = "https://paddleseg.bj.bcebos.com/dataset/optic_disc_seg.zip"
 
 class OpticDiscSeg(Dataset):
     def __init__(self,
-                 data_dir=None,
+                 dataset_root=None,
                  transforms=None,
                  mode='train',
                  download=True):
-        self.data_dir = data_dir
+        self.dataset_root = dataset_root
         self.transforms = transforms
         self.file_list = list()
         self.mode = mode
         self.num_classes = 2
 
-        if mode.lower() not in ['train', 'eval', 'test']:
+        if mode.lower() not in ['train', 'val', 'test']:
             raise Exception(
-                "mode should be 'train', 'eval' or 'test', but got {}.".format(
+                "`mode` should be 'train', 'val' or 'test', but got {}.".format(
                     mode))
 
         if self.transforms is None:
-            raise Exception("transform is necessary, but it is None.")
+            raise Exception("`transforms` is necessary, but it is None.")
 
-        self.data_dir = data_dir
-        if self.data_dir is None:
+        if self.dataset_root is None:
             if not download:
-                raise Exception("data_file not set and auto download disabled.")
-            self.data_dir = download_file_and_uncompress(
+                raise Exception(
+                    "`data_root` not set and auto download disabled.")
+            self.dataset_root = download_file_and_uncompress(
                 url=URL, savepath=DATA_HOME, extrapath=DATA_HOME)
+        elif not os.path.exists(self.dataset_root):
+            raise Exception('there is not `dataset_root`: {}.'.format(
+                self.dataset_root))
 
         if mode == 'train':
-            file_list = os.path.join(self.data_dir, 'train_list.txt')
-        elif mode == 'eval':
-            file_list = os.path.join(self.data_dir, 'val_list.txt')
+            file_list = os.path.join(self.dataset_root, 'train_list.txt')
+        elif mode == 'val':
+            file_list = os.path.join(self.dataset_root, 'val_list.txt')
         else:
-            file_list = os.path.join(self.data_dir, 'test_list.txt')
+            file_list = os.path.join(self.dataset_root, 'test_list.txt')
 
         with open(file_list, 'r') as f:
             for line in f:
                 items = line.strip().split()
                 if len(items) != 2:
-                    if mode == 'train' or mode == 'eval':
+                    if mode == 'train' or mode == 'val':
                         raise Exception(
                             "File list format incorrect! It should be"
                             " image_name label_name\\n")
-                    image_path = os.path.join(self.data_dir, items[0])
+                    image_path = os.path.join(self.dataset_root, items[0])
                     grt_path = None
                 else:
-                    image_path = os.path.join(self.data_dir, items[0])
-                    grt_path = os.path.join(self.data_dir, items[1])
+                    image_path = os.path.join(self.dataset_root, items[0])
+                    grt_path = os.path.join(self.dataset_root, items[1])
                 self.file_list.append([image_path, grt_path])

@@ -13,20 +13,13 @@
 # limitations under the License.
 
 import argparse
-import os
 
-from paddle.fluid.dygraph.base import to_variable
-import numpy as np
 import paddle.fluid as fluid
 from paddle.fluid.dygraph.parallel import ParallelEnv
-import cv2
-import tqdm
 
-from datasets import OpticDiscSeg, Cityscapes
+from datasets import DATASETS
 import transforms as T
 from models import MODELS
-import utils
-import utils.logging as logging
 from utils import get_environ_info
 from core import infer
 
@@ -43,14 +36,20 @@ def parse_args():
         type=str,
         default='UNet')
 
-    # params of dataset
+    # params of infer
     parser.add_argument(
         '--dataset',
         dest='dataset',
-        help=
-        "The dataset you want to train, which is one of ('OpticDiscSeg', 'Cityscapes')",
+        help="The dataset you want to test, which is one of {}".format(
+            str(list(DATASETS.keys()))),
         type=str,
         default='OpticDiscSeg')
+    parser.add_argument(
+        '--dataset_root',
+        dest='dataset_root',
+        help="dataset root directory",
+        type=str,
+        default=None)
 
     # params of prediction
     parser.add_argument(
@@ -88,22 +87,21 @@ def main(args):
         if env_info['place'] == 'cuda' and fluid.is_compiled_with_cuda() \
         else fluid.CPUPlace()
 
-    if args.dataset.lower() == 'opticdiscseg':
-        dataset = OpticDiscSeg
-    elif args.dataset.lower() == 'cityscapes':
-        dataset = Cityscapes
-    else:
-        raise Exception(
-            "The --dataset set wrong. It should be one of ('OpticDiscSeg', 'Cityscapes')"
-        )
+    if args.dataset not in DATASETS:
+        raise Exception('`--dataset` is invalid. it should be one of {}'.format(
+            str(list(DATASETS.keys()))))
+    dataset = DATASETS[args.dataset]
 
     with fluid.dygraph.guard(places):
         test_transforms = T.Compose([T.Resize(args.input_size), T.Normalize()])
-        test_dataset = dataset(transforms=test_transforms, mode='test')
+        test_dataset = dataset(
+            dataset_root=args.dataset_root,
+            transforms=test_transforms,
+            mode='test')
 
         if args.model_name not in MODELS:
             raise Exception(
-                '--model_name is invalid. it should be one of {}'.format(
+                '`--model_name` is invalid. it should be one of {}'.format(
                     str(list(MODELS.keys()))))
         model = MODELS[args.model_name](num_classes=test_dataset.num_classes)
 
