@@ -30,7 +30,7 @@ import tqdm
 from utils.download import download_file_and_uncompress
 
 DATA_HOME = os.path.expanduser('~/.cache/paddle/dataset')
-URL = 'https://paddleseg.bj.bcebos.com/dataset/benchmark.tgz'
+URL = 'http://www.eecs.berkeley.edu/Research/Projects/CS/vision/grouping/semantic_contours/benchmark.tgz'
 
 
 def parse_args():

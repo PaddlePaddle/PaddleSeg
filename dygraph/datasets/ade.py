@@ -21,7 +21,7 @@ from .dataset import Dataset
 from utils.download import download_file_and_uncompress
 
 DATA_HOME = os.path.expanduser('~/.cache/paddle/dataset')
-URL = "https://paddleseg.bj.bcebos.com/dataset/ADEChallengeData2016.zip"
+URL = "http://data.csail.mit.edu/places/ADEchallenge/ADEChallengeData2016.zip"
 
 
 class ADE20K(Dataset):

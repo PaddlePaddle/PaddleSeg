@@ -17,7 +17,7 @@ from .dataset import Dataset
 from utils.download import download_file_and_uncompress
 
 DATA_HOME = os.path.expanduser('~/.cache/paddle/dataset')
-URL = "https://paddleseg.bj.bcebos.com/dataset/VOCtrainval_11-May-2012.tar"
+URL = "http://host.robots.ox.ac.uk/pascal/VOC/voc2012/VOCtrainval_11-May-2012.tar"
 
 
 class PascalVOC(Dataset):
