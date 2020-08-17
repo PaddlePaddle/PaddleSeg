@@ -68,6 +68,6 @@ train数据集合为Cityscapes训练集合，测试为Cityscapes的验证集合
 | PSPNet/bn | Cityscapes |[pspnet101_cityscapes.tgz](https://paddleseg.bj.bcebos.com/models/pspnet101_cityscapes.tgz) |16|false| 0.7734 |
 | HRNet_W18/bn | Cityscapes |[hrnet_w18_bn_cityscapes.tgz](https://paddleseg.bj.bcebos.com/models/hrnet_w18_bn_cityscapes.tgz) | 4 | false | 0.7936 |
 | Fast-SCNN/bn | Cityscapes |[fast_scnn_cityscapes.tar](https://paddleseg.bj.bcebos.com/models/fast_scnn_cityscape.tar) | 32 | false | 0.6964 |
-| OCNet/bn | Cityscapes |[ocnet_w18_bn_cityscapes.tar.gz](https://paddleseg.bj.bcebos.com/models/ocnet_w18_bn_cityscapes.tar.gz) | 4 | false | 0.8023 |
+| OCRNet/bn | Cityscapes |[ocrnet_w18_bn_cityscapes.tar.gz](https://paddleseg.bj.bcebos.com/models/ocrnet_w18_bn_cityscapes.tar.gz) | 4 | false | 0.8023 |
 
 测试环境为python 3.7.3，v100，cudnn 7.6.2。

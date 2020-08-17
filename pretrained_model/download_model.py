@@ -96,8 +96,8 @@ model_urls = {
     "https://paddleseg.bj.bcebos.com/models/hrnet_w18_bn_cityscapes.tgz",
     "fast_scnn_cityscapes":
     "https://paddleseg.bj.bcebos.com/models/fast_scnn_cityscape.tar",
-    "ocnet_w18_bn_cityscapes":
-    "https://paddleseg.bj.bcebos.com/models/ocnet_w18_bn_cityscapes.tar.gz",
+    "ocrnet_w18_bn_cityscapes":
+    "https://paddleseg.bj.bcebos.com/models/ocrnet_w18_bn_cityscapes.tar.gz",
 }
 
 if __name__ == "__main__":

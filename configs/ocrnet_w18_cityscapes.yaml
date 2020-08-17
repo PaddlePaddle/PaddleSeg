@@ -27,7 +27,7 @@ FREEZE:
     MODEL_FILENAME: "model"
     PARAMS_FILENAME: "params"
 MODEL:
-    MODEL_NAME: "ocnet"
+    MODEL_NAME: "ocrnet"
     DEFAULT_NORM_TYPE: "bn"
     HRNET:
         STAGE2:
@@ -41,12 +41,12 @@ MODEL:
         OCR_KEY_CHANNELS: 256
     MULTI_LOSS_WEIGHT: [1.0, 1.0]
 TRAIN:
-    PRETRAINED_MODEL_DIR: u"./pretrained_model/ocnet_w18_cityscape/best_model"
-    MODEL_SAVE_DIR: "output/ocnet_w18_bn_cityscapes"
+    PRETRAINED_MODEL_DIR: u"./pretrained_model/ocrnet_w18_cityscape/best_model"
+    MODEL_SAVE_DIR: "output/ocrnet_w18_bn_cityscapes"
     SNAPSHOT_EPOCH: 1
     SYNC_BATCH_NORM: True
 TEST:
-    TEST_MODEL: "output/ocnet_w18_bn_cityscapes/first"
+    TEST_MODEL: "output/ocrnet_w18_bn_cityscapes/first"
 SOLVER:
     LR: 0.01
     LR_POLICY: "poly"
