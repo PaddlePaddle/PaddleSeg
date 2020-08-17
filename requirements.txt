@@ -2,4 +2,4 @@ pre-commit
 yapf == 0.26.0
 flake8
 pyyaml >= 5.1
-visualdl == 2.0.0b4
+visualdl >= 2.0.0
