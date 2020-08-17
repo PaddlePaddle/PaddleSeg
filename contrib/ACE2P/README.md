@@ -37,8 +37,6 @@ ACE2P模型包含三个分支:
 
 ![](imgs/result.jpg)
 
-![](ACE2P/imgs/result.jpg)
-
 人体解析(Human Parsing)是细粒度的语义分割任务，旨在识别像素级别的人类图像的组成部分（例如，身体部位和服装）。本章节使用冠军模型Augmented Context Embedding with Edge Perceiving (ACE2P)进行预测分割。
 
 ## 代码使用说明
@@ -79,11 +77,11 @@ python -u infer.py --example ACE2P
   
   原图：
   
-  ![](ACE2P/imgs/117676_2149260.jpg)
+  ![](imgs/117676_2149260.jpg)
   
   预测结果：
   
-  ![](ACE2P/imgs/117676_2149260.png)
+  ![](imgs/117676_2149260.png)
   
 ### 备注
 
