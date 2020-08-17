@@ -14,6 +14,7 @@
 
 from .unet import UNet
 from .hrnet import *
+from .deeplab import *
 
 MODELS = {
     "UNet": UNet,
@@ -36,5 +37,11 @@ MODELS = {
     "SE_HRNet_W44": SE_HRNet_W44,
     "SE_HRNet_W48": SE_HRNet_W48,
     "SE_HRNet_W60": SE_HRNet_W60,
-    "SE_HRNet_W64": SE_HRNet_W64
+    "SE_HRNet_W64": SE_HRNet_W64,
+    "DeepLabV3P": DeepLabV3P,
+    "deeplabv3p_resnet101_vd": deeplabv3p_resnet101_vd,
+    "deeplabv3p_resnet101_vd_os8": deeplabv3p_resnet101_vd_os8,
+    "deeplabv3p_resnet50_vd": deeplabv3p_resnet50_vd,
+    "deeplabv3p_resnet50_vd_os8": deeplabv3p_resnet50_vd_os8,
+    "deeplabv3p_xception65_deeplab": deeplabv3p_xception65_deeplab
 }
