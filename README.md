@@ -95,6 +95,7 @@ pip install -r requirements.txt
 * [PSPNet模型使用教程](./tutorial/finetune_pspnet.md)
 * [HRNet模型使用教程](./tutorial/finetune_hrnet.md)
 * [Fast-SCNN模型使用教程](./tutorial/finetune_fast_scnn.md)
+* [OCRNet模型使用教程](./tutorial/finetune_ocrnet.md)
 
 ### 预测部署
 
