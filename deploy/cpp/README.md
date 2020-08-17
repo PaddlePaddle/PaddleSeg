@@ -82,7 +82,7 @@ deeplabv3p_xception65_humanseg
 
 ### 4.2. 修改配置
 
-基于`PaddleSeg`训练的模型导出时，会自动生成对应的预测模型配置文件，请参考文档：[模型导出](../docs/model_export.md)。
+基于`PaddleSeg`训练的模型导出时，会自动生成对应的预测模型配置文件，请参考文档：[模型导出](../../docs/model_export.md)。
 
 `inference`源代码(即本目录)的`conf`目录下提供了示例人像分割模型的配置文件`humanseg.yaml`, 相关的字段含义和说明如下：
 
