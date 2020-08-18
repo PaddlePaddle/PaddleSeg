@@ -20,9 +20,9 @@ import cv2
 from paddle.fluid.dygraph.base import to_variable
 import paddle.fluid as fluid
 
-import utils.logging as logging
-from utils import ConfusionMatrix
-from utils import Timer, calculate_eta
+import dygraph.utils.logging as logging
+from dygraph.utils import ConfusionMatrix
+from dygraph.utils import Timer, calculate_eta
 
 
 def evaluate(model,

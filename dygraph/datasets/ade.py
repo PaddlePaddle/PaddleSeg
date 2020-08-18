@@ -18,7 +18,7 @@ import numpy as np
 from PIL import Image
 
 from .dataset import Dataset
-from utils.download import download_file_and_uncompress
+from dygraph.utils.download import download_file_and_uncompress
 
 DATA_HOME = os.path.expanduser('~/.cache/paddle/dataset')
 URL = "http://data.csail.mit.edu/places/ADEchallenge/ADEChallengeData2016.zip"
