@@ -14,7 +14,7 @@
 
 import os
 from .dataset import Dataset
-from utils.download import download_file_and_uncompress
+from dygraph.utils.download import download_file_and_uncompress
 
 DATA_HOME = os.path.expanduser('~/.cache/paddle/dataset')
 URL = "http://host.robots.ox.ac.uk/pascal/VOC/voc2012/VOCtrainval_11-May-2012.tar"

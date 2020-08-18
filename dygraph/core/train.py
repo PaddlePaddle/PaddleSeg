@@ -19,10 +19,10 @@ from paddle.fluid.dygraph.parallel import ParallelEnv
 from paddle.fluid.io import DataLoader
 from paddle.incubate.hapi.distributed import DistributedBatchSampler
 
-import utils.logging as logging
-from utils import load_pretrained_model
-from utils import resume
-from utils import Timer, calculate_eta
+import dygraph.utils.logging as logging
+from dygraph.utils import load_pretrained_model
+from dygraph.utils import resume
+from dygraph.utils import Timer, calculate_eta
 from .val import evaluate
 
 

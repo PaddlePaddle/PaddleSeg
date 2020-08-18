@@ -17,11 +17,11 @@ import argparse
 import paddle.fluid as fluid
 from paddle.fluid.dygraph.parallel import ParallelEnv
 
-from datasets import DATASETS
-import transforms as T
-from models import MODELS
-from utils import get_environ_info
-from core import evaluate
+from dygraph.datasets import DATASETS
+import dygraph.transforms as T
+from dygraph.models import MODELS
+from dygraph.utils import get_environ_info
+from dygraph.core import evaluate
 
 
 def parse_args():

@@ -27,7 +27,7 @@ import numpy as np
 from scipy.io import loadmat
 import tqdm
 
-from utils.download import download_file_and_uncompress
+from dygraph.utils.download import download_file_and_uncompress
 
 DATA_HOME = os.path.expanduser('~/.cache/paddle/dataset')
 URL = 'http://www.eecs.berkeley.edu/Research/Projects/CS/vision/grouping/semantic_contours/benchmark.tgz'
