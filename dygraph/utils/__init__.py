@@ -17,3 +17,4 @@ from . import download
 from .metrics import ConfusionMatrix
 from .utils import *
 from .timer import Timer, calculate_eta
+from .get_environ_info import get_environ_info

@@ -84,7 +84,7 @@ def parse_args():
 def main(args):
     env_info = get_environ_info()
     places = fluid.CUDAPlace(ParallelEnv().dev_id) \
-        if env_info['place'] == 'cuda' and fluid.is_compiled_with_cuda() \
+        if env_info['Paddle compiled with cuda'] and env_info['GPUs used'] \
         else fluid.CPUPlace()
 
     if args.dataset not in DATASETS:
