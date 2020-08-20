@@ -1,5 +1,5 @@
 # coding: utf8
-# copyright (c) 2019 PaddlePaddle Authors. All Rights Reserve.
+# Copyright (c) 2019 PaddlePaddle Authors. All Rights Reserve.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -21,55 +21,48 @@ import warnings
 
 def parse_args():
     parser = argparse.ArgumentParser(
-        description='PaddleSeg generate file list on cityscapes or your customized dataset.')
-    parser.add_argument(
-        'dataset_root',
-        help='dataset root directory',
-        type=str
+        description=
+        'PaddleSeg generate file list on cityscapes or your customized dataset.'
     )
+    parser.add_argument('dataset_root', help='dataset root directory', type=str)
     parser.add_argument(
         '--type',
         help='dataset type: \n'
-             '- cityscapes \n'
-             '- custom(default)',
+        '- cityscapes \n'
+        '- custom(default)',
         default="custom",
-        type=str
-    )
+        type=str)
     parser.add_argument(
         '--separator',
         dest='separator',
         help='file list separator',
         default="|",
-        type=str
-    )
+        type=str)
     parser.add_argument(
         '--folder',
         help='the folder names of images and labels',
         type=str,
         nargs=2,
-        default=['images', 'annotations']
-    )
+        default=['images', 'annotations'])
     parser.add_argument(
         '--second_folder',
-        help='the second-level folder names of train set, validation set, test set',
+        help=
+        'the second-level folder names of train set, validation set, test set',
         type=str,
         nargs='*',
-        default=['train', 'val', 'test']
-    )
+        default=['train', 'val', 'test'])
     parser.add_argument(
         '--format',
         help='data format of images and labels, e.g. jpg or png.',
         type=str,
         nargs=2,
-        default=['jpg', 'png']
-    )
+        default=['jpg', 'png'])
     parser.add_argument(
         '--postfix',
         help='postfix of images or labels',
         type=str,
         nargs=2,
-        default=['', '']
-    )
+        default=['', ''])
 
     return parser.parse_args()
 
@@ -116,18 +109,21 @@ def generate_list(args):
         label_files = get_files(1, dataset_split, args)
         if not image_files:
             img_dir = os.path.join(dataset_root, args.folder[0], dataset_split)
-            print("No files in {}".format(img_dir))
+            warnings.warn("No images in {} !!!".format(img_dir))
         num_images = len(image_files)
 
         if not label_files:
-            label_dir = os.path.join(dataset_root, args.folder[1], dataset_split)
-            print("No files in {}".format(label_dir))
+            label_dir = os.path.join(dataset_root, args.folder[1],
+                                     dataset_split)
+            warnings.warn("No labels in {} !!!".format(label_dir))
         num_label = len(label_files)
 
-        if num_images < num_label:
-            warnings.warn("number of images = {}  <  number of labels = {}."
-                          .format(num_images, num_label))
-            continue
+        if num_images != num_label and num_label > 0:
+            raise Exception(
+                "Number of images = {}    number of labels = {} \n"
+                "Either number of images is equal to number of labels, "
+                "or number of labels is equal to 0.\n"
+                "Please check your dataset!".format(num_images, num_label))
 
         file_list = os.path.join(dataset_root, dataset_split + '.txt')
         with open(file_list, "w") as f:

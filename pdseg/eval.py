@@ -1,5 +1,5 @@
 # coding: utf8
-# copyright (c) 2019 PaddlePaddle Authors. All Rights Reserve.
+# Copyright (c) 2019 PaddlePaddle Authors. All Rights Reserve.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -22,13 +22,9 @@ import os
 os.environ['FLAGS_eager_delete_tensor_gb'] = "0.0"
 
 import sys
-import time
 import argparse
-import functools
 import pprint
-import cv2
 import numpy as np
-import paddle
 import paddle.fluid as fluid
 
 from utils.config import cfg
@@ -92,10 +88,10 @@ def evaluate(cfg, ckpt_dir=None, use_gpu=False, use_mpio=False, **kwargs):
         for b in data_gen:
             yield b[0], b[1], b[2]
 
-    py_reader, avg_loss, pred, grts, masks = build_model(
+    data_loader, avg_loss, pred, grts, masks = build_model(
         test_prog, startup_prog, phase=ModelPhase.EVAL)
 
-    py_reader.decorate_sample_generator(
+    data_loader.set_sample_generator(
         data_generator, drop_last=False, batch_size=cfg.BATCH_SIZE)
 
     # Get device environment
@@ -111,9 +107,15 @@ def evaluate(cfg, ckpt_dir=None, use_gpu=False, use_mpio=False, **kwargs):
 
     ckpt_dir = cfg.TEST.TEST_MODEL if not ckpt_dir else ckpt_dir
 
+    if not os.path.exists(ckpt_dir):
+        raise ValueError('The TEST.TEST_MODEL {} is not found'.format(ckpt_dir))
+
     if ckpt_dir is not None:
         print('load test model:', ckpt_dir)
-        fluid.io.load_params(exe, ckpt_dir, main_program=test_prog)
+        try:
+            fluid.load(test_prog, os.path.join(ckpt_dir, 'model'), exe)
+        except:
+            fluid.io.load_params(exe, ckpt_dir, main_program=test_prog)
 
     # Use streaming confusion matrix to calculate mean_iou
     np.set_printoptions(
@@ -125,7 +127,7 @@ def evaluate(cfg, ckpt_dir=None, use_gpu=False, use_mpio=False, **kwargs):
     all_step = cfg.DATASET.TEST_TOTAL_IMAGES // cfg.BATCH_SIZE + 1
     timer = Timer()
     timer.start()
-    py_reader.start()
+    data_loader.start()
     while True:
         try:
             step += 1
@@ -165,7 +167,7 @@ def main():
     args = parse_args()
     if args.cfg_file is not None:
         cfg.update_from_file(args.cfg_file)
-    if args.opts is not None:
+    if args.opts:
         cfg.update_from_list(args.opts)
     cfg.check_and_infer()
     print(pprint.pformat(cfg))

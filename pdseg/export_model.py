@@ -1,5 +1,5 @@
 # coding: utf8
-# copyright (c) 2019 PaddlePaddle Authors. All Rights Reserve.
+# Copyright (c) 2019 PaddlePaddle Authors. All Rights Reserve.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -49,9 +49,11 @@ def parse_args():
         sys.exit(1)
     return parser.parse_args()
 
+
 def export_inference_config():
     deploy_cfg = '''DEPLOY:
         USE_GPU : 1
+        USE_PR : 0
         MODEL_PATH : "%s"
         MODEL_FILENAME : "%s"
         PARAMS_FILENAME : "%s"
@@ -65,9 +67,8 @@ def export_inference_config():
         PREDICTOR_MODE : "ANALYSIS"
         BATCH_SIZE : 1
     ''' % (cfg.FREEZE.SAVE_DIR, cfg.FREEZE.MODEL_FILENAME,
-            cfg.FREEZE.PARAMS_FILENAME, cfg.EVAL_CROP_SIZE,
-            cfg.MEAN, cfg.STD, cfg.DATASET.IMAGE_TYPE,
-            cfg.DATASET.NUM_CLASSES, len(cfg.STD))
+           cfg.FREEZE.PARAMS_FILENAME, cfg.EVAL_CROP_SIZE, cfg.MEAN, cfg.STD,
+           cfg.DATASET.IMAGE_TYPE, cfg.DATASET.NUM_CLASSES, len(cfg.STD))
     if not os.path.exists(cfg.FREEZE.SAVE_DIR):
         os.mkdir(cfg.FREEZE.SAVE_DIR)
     yaml_path = os.path.join(cfg.FREEZE.SAVE_DIR, 'deploy.yaml')
@@ -93,7 +94,13 @@ def export_inference_model(args):
     infer_prog = infer_prog.clone(for_test=True)
 
     if os.path.exists(cfg.TEST.TEST_MODEL):
-        fluid.io.load_params(exe, cfg.TEST.TEST_MODEL, main_program=infer_prog)
+        print('load test model:', cfg.TEST.TEST_MODEL)
+        try:
+            fluid.load(infer_prog, os.path.join(cfg.TEST.TEST_MODEL, 'model'),
+                       exe)
+        except:
+            fluid.io.load_params(
+                exe, cfg.TEST.TEST_MODEL, main_program=infer_prog)
     else:
         print("TEST.TEST_MODEL diretory is empty!")
         exit(-1)
@@ -116,7 +123,7 @@ def main():
     args = parse_args()
     if args.cfg_file is not None:
         cfg.update_from_file(args.cfg_file)
-    if args.opts is not None:
+    if args.opts:
         cfg.update_from_list(args.opts)
     cfg.check_and_infer()
     print(pprint.pformat(cfg))

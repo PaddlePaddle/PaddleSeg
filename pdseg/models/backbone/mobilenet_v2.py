@@ -1,5 +1,5 @@
 # coding: utf8
-# copyright (c) 2019 PaddlePaddle Authors. All Rights Reserve.
+# Copyright (c) 2019 PaddlePaddle Authors. All Rights Reserve.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -308,8 +308,8 @@ def MobileNetV2_scale():
 
 
 if __name__ == '__main__':
-    image_shape = [3, 224, 224]
-    image = fluid.layers.data(name='image', shape=image_shape, dtype='float32')
+    image_shape = [-1, 3, 224, 224]
+    image = fluid.data(name='image', shape=image_shape, dtype='float32')
     model = MobileNetV2_x1_0()
     logit, decode_ends = model.net(image)
     #print("logit:", logit.shape)

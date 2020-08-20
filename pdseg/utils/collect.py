@@ -1,10 +1,11 @@
-#   Copyright (c) 2019  PaddlePaddle Authors. All Rights Reserved.
+# coding: utf8
+# Copyright (c) 2019 PaddlePaddle Authors. All Rights Reserve.
 #
-# Licensed under the Apache License, Version 2.0 (the "License"
+# Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#     http://www.apache.org/licenses/LICENSE-2.0
+#    http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -98,7 +99,7 @@ class SegConfig(dict):
                 'DATASET.IMAGE_TYPE config error, only support `rgb`, `gray` and `rgba`'
             )
         if self.MEAN is not None:
-            self.DATASET.PADDING_VALUE = [x*255.0 for x in self.MEAN]
+            self.DATASET.PADDING_VALUE = [x * 255.0 for x in self.MEAN]
 
         if not self.TRAIN_CROP_SIZE:
             raise ValueError(
@@ -111,9 +112,12 @@ class SegConfig(dict):
             )
 
         # Ensure file list is use UTF-8 encoding
-        train_sets = codecs.open(self.DATASET.TRAIN_FILE_LIST, 'r', 'utf-8').readlines()
-        val_sets = codecs.open(self.DATASET.VAL_FILE_LIST, 'r', 'utf-8').readlines()
-        test_sets = codecs.open(self.DATASET.TEST_FILE_LIST, 'r', 'utf-8').readlines()
+        train_sets = codecs.open(self.DATASET.TRAIN_FILE_LIST, 'r',
+                                 'utf-8').readlines()
+        val_sets = codecs.open(self.DATASET.VAL_FILE_LIST, 'r',
+                               'utf-8').readlines()
+        test_sets = codecs.open(self.DATASET.TEST_FILE_LIST, 'r',
+                                'utf-8').readlines()
         self.DATASET.TRAIN_TOTAL_IMAGES = len(train_sets)
         self.DATASET.VAL_TOTAL_IMAGES = len(val_sets)
         self.DATASET.TEST_TOTAL_IMAGES = len(test_sets)
@@ -121,6 +125,13 @@ class SegConfig(dict):
         if self.MODEL.MODEL_NAME == 'icnet' and \
                 len(self.MODEL.MULTI_LOSS_WEIGHT) != 3:
             self.MODEL.MULTI_LOSS_WEIGHT = [1.0, 0.4, 0.16]
+
+        if self.AUG.AUG_METHOD not in [
+                'unpadding', 'stepscaling', 'rangescaling'
+        ]:
+            raise ValueError(
+                'AUG.AUG_METHOD config error, only support `unpadding`, `unpadding` and `rangescaling`'
+            )
 
     def update_from_list(self, config_list):
         if len(config_list) % 2 != 0:

@@ -44,51 +44,55 @@
 
 **注意：导出的标注文件位于`保存位置`下的`outputs`目录。**
 
-精灵标注产出的真值文件可参考我们给出的文件夹`data_annotated`。
+精灵标注产出的真值文件可参考我们给出的文件夹[docs/annotation/jingling_demo](jingling_demo)
 
 <div align="center">
     <img src="../imgs/annotation/jingling-4.png" width="300px"/>
     <p>图4 精灵标注产出的真值文件的示意图</p>
  </div>
 
- ## 3 数据格式转换
+**注意：** 对于中间有空洞的目标（例如游泳圈），暂不支持对空洞部分的标注。如有需要，可借助[labelme](./labelme2seg.md)。
 
-* 我们用于完成语义分割的数据集目录结构如下：
+ ## 3 数据格式转换
+最后用我们提供的数据转换脚本将上述标注工具产出的数据格式转换为模型训练时所需的数据格式。
+
+* 经过数据格式转换后的数据集目录结构如下：
 
  ```
- my_dataset                 # 根目录 
- |-- JPEGImages             # 数据集图片
- |-- SegmentationClassPNG   # 数据集真值 
- |   |-- xxx.png            # 像素级别的真值信息 
- |   |... 
- |-- class_names.txt        # 数据集的类别名称
- 
+ my_dataset                 # 根目录
+ |-- outputs                # 标注工具导出目录
+ |   |-- annotations            # 数据集真值
+ |       |-- xxx.png            # 像素级别的真值信息
+ |       |...
+ |   |-- class_names.txt        # 数据集的类别名称
+ |   |-- xxx.json               # 标注json文件
+ |-- xxx.jpg(png or other)  # 数据集原图
+ |-- ...
+
  ```
 
 <div align="center">
-    <img src="../imgs/annotation/image-6.png" width="600px"/>
-    <p>图5 训练所需的数据集目录的结构示意图</p>
+    <img src="../imgs/annotation/image-6-2.png" width="600px"/>
+    <p>图5 格式转换后的数据集目录的结构示意图</p>
  </div>
-
-* 运行转换脚本需要依赖labelme和pillow，如未安装，请先安装。Labelme的具体安装流程请参见[官方安装指南](https://github.com/wkentaro/labelme)。Pillow的安装：
-
-```shell
-pip install pillow
-```
 
 * 运行以下代码，将标注后的数据转换成满足以上格式的数据集：
 
 ```
-  python jingling2seg.py <path/to/label_json_file> <path/to/output_dataset>
+python pdseg/tools/jingling2seg.py <PATH/TO/LABEL_JSON_FILE>
 ```
 
-其中，`<path/to/label_json_files>`为精灵标注产出的json文件所在文件夹的目录，一般为精灵工具使用（3）中`保存位置`下的`outputs`目录。`<path/to/output_dataset>`为转换后的数据集所在文件夹的目录。
+其中，`<PATH/TO/LABEL_JSON_FILE>`为精灵标注产出的json文件所在文件夹的目录，一般为精灵工具使用（3）中`保存位置`下的`outputs`目录。
 
-**注意：`<path/to/output_dataset>`不用预先创建，脚本运行时会自动创建，否则会报错。**
+我们已内置了一个标注的示例，可运行以下代码进行体验：
 
-转换得到的数据集可参考我们给出的文件夹`my_dataset`。其中，文件`class_names.txt`是数据集中所有标注类别的名称，包含背景类；文件夹`JPEGImages`保存的是数据集的图片；文件夹`SegmentationClassPNG`保存的是各图片的像素级别的真值信息，背景类`_background_`对应为0，其它目标类别从1开始递增，至多为255。
+```
+python pdseg/tools/jingling2seg.py docs/annotation/jingling_demo/outputs/
+```
+
+转换得到的数据集可参考我们给出的文件夹[docs/annotation/jingling_demo](jingling_demo)。其中，文件`class_names.txt`是数据集中所有标注类别的名称，包含背景类；文件夹`annotations`保存的是各图片的像素级别的真值信息，背景类`_background_`对应为0，其它目标类别从1开始递增，至多为255。
 
 <div align="center">
     <img src="../imgs/annotation/jingling-5.png" width="600px"/>
-    <p>图6 训练所需的数据集各目录的内容示意图</p>
- </div>	
+    <p>图6 格式转换后的数据集各目录的内容示意图</p>
+ </div>

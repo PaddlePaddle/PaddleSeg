@@ -1,5 +1,5 @@
 # coding: utf8
-# copyright (c) 2019 PaddlePaddle Authors. All Rights Reserve.
+# Copyright (c) 2019 PaddlePaddle Authors. All Rights Reserve.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,9 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import sys
 import struct
-import importlib
 
 import paddle.fluid as fluid
 import numpy as np
@@ -26,6 +24,9 @@ from utils.config import cfg
 from loss import multi_softmax_with_loss
 from loss import multi_dice_loss
 from loss import multi_bce_loss
+from lovasz_losses import lovasz_hinge
+from lovasz_losses import lovasz_softmax
+from models.modeling import deeplab, unet, icnet, pspnet, hrnet, fast_scnn, ocrnet
 
 
 class ModelPhase(object):
@@ -70,39 +71,27 @@ class ModelPhase(object):
         return False
 
 
-def map_model_name(model_name):
-    name_dict = {
-        "unet": "unet.unet",
-        "deeplabv3p": "deeplab.deeplabv3p",
-        "icnet": "icnet.icnet",
-        "pspnet": "pspnet.pspnet",
-    }
-    if model_name in name_dict.keys():
-        return name_dict[model_name]
+def seg_model(image, class_num):
+    model_name = cfg.MODEL.MODEL_NAME
+    if model_name == 'unet':
+        logits = unet.unet(image, class_num)
+    elif model_name == 'deeplabv3p':
+        logits = deeplab.deeplabv3p(image, class_num)
+    elif model_name == 'icnet':
+        logits = icnet.icnet(image, class_num)
+    elif model_name == 'pspnet':
+        logits = pspnet.pspnet(image, class_num)
+    elif model_name == 'hrnet':
+        logits = hrnet.hrnet(image, class_num)
+    elif model_name == 'fast_scnn':
+        logits = fast_scnn.fast_scnn(image, class_num)
+    elif model_name == 'ocrnet':
+        logits = ocrnet.ocrnet(image, class_num)
     else:
         raise Exception(
-            "unknow model name, only support unet, deeplabv3p, icnet")
-
-
-def get_func(func_name):
-    """Helper to return a function object by name. func_name must identify a
-    function in this module or the path to a function relative to the base
-    'modeling' module.
-    """
-    if func_name == '':
-        return None
-    try:
-        parts = func_name.split('.')
-        # Refers to a function in this module
-        if len(parts) == 1:
-            return globals()[parts[0]]
-        # Otherwise, assume we're referencing a module under modeling
-        module_name = 'models.' + '.'.join(parts[:-1])
-        module = importlib.import_module(module_name)
-        return getattr(module, parts[-1])
-    except Exception:
-        print('Failed to find function: {}'.format(func_name))
-    return module
+            "unknow model name, only support unet, deeplabv3p, icnet, pspnet, hrnet, fast_scnn"
+        )
+    return logits
 
 
 def softmax(logit):
@@ -110,6 +99,7 @@ def softmax(logit):
     logit = fluid.layers.softmax(logit)
     logit = fluid.layers.transpose(logit, [0, 3, 1, 2])
     return logit
+
 
 def sigmoid_to_softmax(logit):
     """
@@ -133,51 +123,60 @@ def build_model(main_prog, start_prog, phase=ModelPhase.TRAIN):
         width = cfg.EVAL_CROP_SIZE[0]
         height = cfg.EVAL_CROP_SIZE[1]
 
-    image_shape = [cfg.DATASET.DATA_DIM, height, width]
-    grt_shape = [1, height, width]
+    image_shape = [-1, cfg.DATASET.DATA_DIM, height, width]
+    grt_shape = [-1, 1, height, width]
     class_num = cfg.DATASET.NUM_CLASSES
 
     with fluid.program_guard(main_prog, start_prog):
         with fluid.unique_name.guard():
-            image = fluid.layers.data(
-                name='image', shape=image_shape, dtype='float32')
-            label = fluid.layers.data(
-                name='label', shape=grt_shape, dtype='int32')
-            mask = fluid.layers.data(
-                name='mask', shape=grt_shape, dtype='int32')
+            # 在导出模型的时候，增加图像标准化预处理,减小预测部署时图像的处理流程
+            # 预测部署时只须对输入图像增加batch_size维度即可
+            image = fluid.data(name='image', shape=image_shape, dtype='float32')
+            label = fluid.data(name='label', shape=grt_shape, dtype='int32')
+            mask = fluid.data(name='mask', shape=grt_shape, dtype='int32')
 
-            # use PyReader when doing traning and evaluation
+            # use DataLoader when doing traning and evaluation
             if ModelPhase.is_train(phase) or ModelPhase.is_eval(phase):
-                py_reader = fluid.io.PyReader(
+                data_loader = fluid.io.DataLoader.from_generator(
                     feed_list=[image, label, mask],
                     capacity=cfg.DATALOADER.BUF_SIZE,
                     iterable=False,
                     use_double_buffer=True)
 
-            model_name = map_model_name(cfg.MODEL.MODEL_NAME)
-            model_func = get_func("modeling." + model_name)
-
             loss_type = cfg.SOLVER.LOSS
             if not isinstance(loss_type, list):
                 loss_type = list(loss_type)
 
-            if class_num > 2 and (("dice_loss" in loss_type) or ("bce_loss" in loss_type)):
-                raise Exception("dice loss and bce loss is only applicable to binary classfication")
-            
-            if ("dice_loss" in loss_type) or ("bce_loss" in loss_type):
-                class_num = 1
-                if "softmax_loss" in loss_type:
-                    raise Exception("softmax loss can not combine with dice loss or bce loss")
-            
-            logits = model_func(image, class_num)
+            # lovasz_hinge_loss或dice_loss或bce_loss只适用两类分割中
+            if class_num > 2 and (("lovasz_hinge_loss" in loss_type) or
+                                  ("dice_loss" in loss_type) or
+                                  ("bce_loss" in loss_type)):
+                raise Exception(
+                    "lovasz hinge loss, dice loss and bce loss are only applicable to binary classfication."
+                )
 
+            # 在两类分割情况下，当loss函数选择lovasz_hinge_loss或dice_loss或bce_loss的时候，最后logit输出通道数设置为1
+            if ("dice_loss" in loss_type) or ("bce_loss" in loss_type) or (
+                    "lovasz_hinge_loss" in loss_type):
+                class_num = 1
+                if ("softmax_loss" in loss_type) or (
+                        "lovasz_softmax_loss" in loss_type):
+                    raise Exception(
+                        "softmax loss or lovasz softmax loss can not combine with bce loss or dice loss or lovasz hinge loss."
+                    )
+            cfg.PHASE = phase
+            logits = seg_model(image, class_num)
+
+            # 根据选择的loss函数计算相应的损失函数
             if ModelPhase.is_train(phase) or ModelPhase.is_eval(phase):
                 loss_valid = False
                 avg_loss_list = []
                 valid_loss = []
-                if "softmax_loss" in loss_type: 
-                    avg_loss_list.append(multi_softmax_with_loss(logits,
-                        label, mask,class_num))
+                if "softmax_loss" in loss_type:
+                    weight = cfg.SOLVER.CROSS_ENTROPY_WEIGHT
+                    avg_loss_list.append(
+                        multi_softmax_with_loss(logits, label, mask, class_num,
+                                                weight))
                     loss_valid = True
                     valid_loss.append("softmax_loss")
                 if "dice_loss" in loss_type:
@@ -188,18 +187,35 @@ def build_model(main_prog, start_prog, phase=ModelPhase.TRAIN):
                     avg_loss_list.append(multi_bce_loss(logits, label, mask))
                     loss_valid = True
                     valid_loss.append("bce_loss")
+                if "lovasz_hinge_loss" in loss_type:
+                    avg_loss_list.append(
+                        lovasz_hinge(logits, label, ignore=mask))
+                    loss_valid = True
+                    valid_loss.append("lovasz_hinge_loss")
+                if "lovasz_softmax_loss" in loss_type:
+                    probas = fluid.layers.softmax(logits, axis=1)
+                    avg_loss_list.append(
+                        lovasz_softmax(probas, label, ignore=mask))
+                    loss_valid = True
+                    valid_loss.append("lovasz_softmax_loss")
                 if not loss_valid:
-                    raise Exception("SOLVER.LOSS: {} is set wrong. it should "
-                            "include one of (softmax_loss, bce_loss, dice_loss) at least"
-                            " example: ['softmax_loss'], ['dice_loss'], ['bce_loss', 'dice_loss']".format(cfg.SOLVER.LOSS))
-                
+                    raise Exception(
+                        "SOLVER.LOSS: {} is set wrong. it should "
+                        "include one of (softmax_loss, bce_loss, dice_loss, lovasz_hinge_loss, lovasz_softmax_loss) at least"
+                        " example: ['softmax_loss'], ['dice_loss'], ['bce_loss', 'dice_loss'], ['lovasz_hinge_loss','bce_loss'], ['lovasz_softmax_loss','softmax_loss']"
+                        .format(cfg.SOLVER.LOSS))
+
                 invalid_loss = [x for x in loss_type if x not in valid_loss]
                 if len(invalid_loss) > 0:
-                    print("Warning: the loss {} you set is invalid. it will not be included in loss computed.".format(invalid_loss))
+                    print(
+                        "Warning: the loss {} you set is invalid. it will not be included in loss computed."
+                        .format(invalid_loss))
 
                 avg_loss = 0
                 for i in range(0, len(avg_loss_list)):
-                    avg_loss += avg_loss_list[i]
+                    loss_name = valid_loss[i].upper()
+                    loss_weight = eval('cfg.SOLVER.LOSS_WEIGHT.' + loss_name)
+                    avg_loss += loss_weight * avg_loss_list[i]
 
             #get pred result in original size
             if isinstance(logits, tuple):
@@ -212,10 +228,12 @@ def build_model(main_prog, start_prog, phase=ModelPhase.TRAIN):
 
             # return image input and logit output for inference graph prune
             if ModelPhase.is_predict(phase):
+                # 两类分割中，使用lovasz_hinge_loss或dice_loss或bce_loss返回的logit为单通道，进行到两通道的变换
                 if class_num == 1:
                     logit = sigmoid_to_softmax(logit)
                 else:
                     logit = softmax(logit)
+
                 return image, logit
 
             if class_num == 1:
@@ -234,12 +252,12 @@ def build_model(main_prog, start_prog, phase=ModelPhase.TRAIN):
                 return pred, logit
 
             if ModelPhase.is_eval(phase):
-                return py_reader, avg_loss, pred, label, mask
+                return data_loader, avg_loss, pred, label, mask
 
             if ModelPhase.is_train(phase):
                 optimizer = solver.Solver(main_prog, start_prog)
                 decayed_lr = optimizer.optimise(avg_loss)
-                return py_reader, avg_loss, decayed_lr, pred, label, mask
+                return data_loader, avg_loss, decayed_lr, pred, label, mask
 
 
 def to_int(string, dest="I"):

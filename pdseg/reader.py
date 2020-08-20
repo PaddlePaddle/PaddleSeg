@@ -1,5 +1,5 @@
 # coding: utf8
-# copyright (c) 2019 PaddlePaddle Authors. All Rights Reserve.
+# Copyright (c) 2019 PaddlePaddle Authors. All Rights Reserve.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -27,12 +27,20 @@ import numpy as np
 import paddle
 import paddle.fluid as fluid
 import cv2
+from PIL import Image
 
 import data_aug as aug
 from utils.config import cfg
 from data_utils import GeneratorEnqueuer
 from models.model_builder import ModelPhase
 import copy
+
+
+def pil_imread(file_path):
+    """read pseudo-color label"""
+    im = Image.open(file_path)
+    return np.asarray(im)
+
 
 def cv2_imread(file_path, flag=cv2.IMREAD_COLOR):
     # resolve cv2.imread open Chinese file path issues on Windows Platform.
@@ -63,7 +71,8 @@ class SegDataset(object):
         if self.shuffle and cfg.NUM_TRAINERS > 1:
             np.random.RandomState(self.shuffle_seed).shuffle(self.all_lines)
             num_lines = len(self.all_lines) // cfg.NUM_TRAINERS
-            self.lines = self.all_lines[num_lines * cfg.TRAINER_ID: num_lines * (cfg.TRAINER_ID + 1)]
+            self.lines = self.all_lines[num_lines * cfg.TRAINER_ID:num_lines *
+                                        (cfg.TRAINER_ID + 1)]
             self.shuffle_seed += 1
         elif self.shuffle:
             np.random.shuffle(self.lines)
@@ -90,8 +99,9 @@ class SegDataset(object):
         # Re-shuffle file list
         if self.shuffle and cfg.NUM_TRAINERS > 1:
             np.random.RandomState(self.shuffle_seed).shuffle(self.all_lines)
-            num_lines = len(self.all_lines) // self.num_trainers
-            self.lines = self.all_lines[num_lines * self.trainer_id: num_lines * (self.trainer_id + 1)]
+            num_lines = len(self.all_lines) // cfg.NUM_TRAINERS
+            self.lines = self.all_lines[num_lines * cfg.TRAINER_ID:num_lines *
+                                        (cfg.TRAINER_ID + 1)]
             self.shuffle_seed += 1
         elif self.shuffle:
             np.random.shuffle(self.lines)
@@ -179,7 +189,7 @@ class SegDataset(object):
 
         if grt_name is not None:
             grt_path = os.path.join(src_dir, grt_name)
-            grt = cv2_imread(grt_path, cv2.IMREAD_GRAYSCALE)
+            grt = pil_imread(grt_path)
         else:
             grt = None
 
@@ -308,6 +318,8 @@ class SegDataset(object):
             raise ValueError("Dataset mode={} Error!".format(mode))
 
         # Normalize image
+        if cfg.AUG.TO_RGB:
+            img = img[..., ::-1]
         img = self.normalize_image(img)
 
         if ModelPhase.is_train(mode) or ModelPhase.is_eval(mode):
