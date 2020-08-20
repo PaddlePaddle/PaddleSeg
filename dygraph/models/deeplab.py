@@ -14,15 +14,14 @@
 
 
 import os
-from functools import partial
 
+from dygraph.cvlibs import manager
+from dygraph.models.architectures import layer_utils
 from paddle import fluid
 from paddle.fluid import dygraph
 from paddle.fluid.dygraph import Conv2D
 
 from dygraph.utils import utils
-from dygraph.models.architectures import layer_utils, xception_deeplab, resnet_vd, mobilenetv3
-from dygraph.cvlibs import manager
 
 __all__ = ['DeepLabV3P', "deeplabv3p_resnet101_vd", "deeplabv3p_resnet101_vd_os8",
            "deeplabv3p_resnet50_vd", "deeplabv3p_resnet50_vd_os8",
@@ -287,25 +286,30 @@ def build_aspp(output_stride, using_sep_conv):
 def build_decoder(num_classes, using_sep_conv):
     return Decoder(num_classes, using_sep_conv=using_sep_conv)
 
+
 @manager.MODELS.add_component
 def deeplabv3p_resnet101_vd(*args, **kwargs):
     pretrained_model = None
     return DeepLabV3P(backbone='ResNet101_vd', pretrained_model=pretrained_model, **kwargs)
+
 
 @manager.MODELS.add_component
 def deeplabv3p_resnet101_vd_os8(*args, **kwargs):
     pretrained_model = None
     return DeepLabV3P(backbone='ResNet101_vd', output_stride=8, pretrained_model=pretrained_model, **kwargs)
 
+
 @manager.MODELS.add_component
 def deeplabv3p_resnet50_vd(*args, **kwargs):
     pretrained_model = None
     return DeepLabV3P(backbone='ResNet50_vd', pretrained_model=pretrained_model, **kwargs)
 
+
 @manager.MODELS.add_component
 def deeplabv3p_resnet50_vd_os8(*args, **kwargs):
     pretrained_model = None
     return DeepLabV3P(backbone='ResNet50_vd', output_stride=8, pretrained_model=pretrained_model, **kwargs)
+
 
 @manager.MODELS.add_component
 def deeplabv3p_xception65_deeplab(*args, **kwargs):
@@ -316,6 +320,7 @@ def deeplabv3p_xception65_deeplab(*args, **kwargs):
                       backbone_channels=(128, 2048),
                       **kwargs)
 
+
 @manager.MODELS.add_component
 def deeplabv3p_mobilenetv3_large(*args, **kwargs):
     pretrained_model = None
@@ -324,6 +329,7 @@ def deeplabv3p_mobilenetv3_large(*args, **kwargs):
                       backbone_indices=(0, 3),
                       backbone_channels=(24, 160),
                       **kwargs)
+
 
 @manager.MODELS.add_component
 def deeplabv3p_mobilenetv3_small(*args, **kwargs):
