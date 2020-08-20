@@ -21,6 +21,7 @@ from dygraph.datasets import DATASETS
 import dygraph.transforms as T
 from dygraph.models import MODELS
 from dygraph.utils import get_environ_info
+from dygraph.utils import logger
 from dygraph.core import train
 
 
@@ -129,8 +130,12 @@ def parse_args():
 
 def main(args):
     env_info = get_environ_info()
+    info = ['{}: {}'.format(k, v) for k, v in env_info.items()]
+    info = '\n'.join(['\n', format('Environment Information', '-^48s')] + info +
+                     ['-' * 48])
+    logger.info(info)
     places = fluid.CUDAPlace(ParallelEnv().dev_id) \
-        if env_info['place'] == 'cuda' and fluid.is_compiled_with_cuda() \
+        if env_info['Paddle compiled with cuda'] and env_info['GPUs used'] \
         else fluid.CPUPlace()
 
     if args.dataset not in DATASETS:
