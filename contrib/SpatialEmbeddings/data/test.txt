@@ -1,0 +1,2 @@
+kitti/0007/kitti_0007_000512.png
+kitti/0007/kitti_0007_000518.png
