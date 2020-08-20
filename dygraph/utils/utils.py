@@ -29,24 +29,6 @@ def seconds_to_hms(seconds):
     return hms_str
 
 
-def get_environ_info():
-    info = dict()
-    info['place'] = 'cpu'
-    info['num'] = int(os.environ.get('CPU_NUM', 1))
-    if os.environ.get('CUDA_VISIBLE_DEVICES', None) != "":
-        if hasattr(fluid.core, 'get_cuda_device_count'):
-            gpu_num = 0
-            try:
-                gpu_num = fluid.core.get_cuda_device_count()
-            except:
-                os.environ['CUDA_VISIBLE_DEVICES'] = ''
-                pass
-            if gpu_num > 0:
-                info['place'] = 'cuda'
-                info['num'] = fluid.core.get_cuda_device_count()
-    return info
-
-
 def load_pretrained_model(model, pretrained_model):
     if pretrained_model is not None:
         logger.info('Load pretrained model from {}'.format(pretrained_model))
