@@ -4,6 +4,8 @@ from paddle.fluid.param_attr import ParamAttr
 from paddle.fluid.layer_helper import LayerHelper
 from paddle.fluid.dygraph.nn import Conv2D, Pool2D, BatchNorm, Linear, Dropout
 
+from dygraph.cvlibs import manager
+
 __all__ = ["Xception41_deeplab", "Xception65_deeplab", "Xception71_deeplab"]
 
 
@@ -400,7 +402,7 @@ def Xception41_deeplab(**args):
     model = XceptionDeeplab('xception_41', **args)
     return model
 
-
+@manager.BACKBONES.add_component
 def Xception65_deeplab(**args):
     model = XceptionDeeplab("xception_65", **args)
     return model
