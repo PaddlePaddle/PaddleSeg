@@ -77,8 +77,8 @@ def _get_gpu_info():
 def get_environ_info():
     """collect environment information"""
     env_info = {}
-    env_info['system platform'] = sys.platform
-    if env_info['system platform'] == 'linux':
+    env_info['System Platform'] = sys.platform
+    if env_info['System Platform'] == 'linux':
         lsb_v = subprocess.check_output(['lsb_release', '-v']).decode().strip()
         lsb_v = lsb_v.replace('\t', ' ')
         lsb_d = subprocess.check_output(['lsb_release', '-d']).decode().strip()
@@ -92,8 +92,7 @@ def get_environ_info():
 
     if compiled_with_cuda:
         cuda_home = _find_cuda_home()
-        env_info['cuda home'] = cuda_home
-        env_info['nvcc'] = _get_nvcc_info(cuda_home)
+        env_info['NVCC'] = _get_nvcc_info(cuda_home)
         gpu_nums = fluid.core.get_cuda_device_count()
         env_info['GPUs used'] = gpu_nums
         env_info['CUDA_VISIBLE_DEVICES'] = os.environ.get(
@@ -102,9 +101,9 @@ def get_environ_info():
 
     gcc = subprocess.check_output(['gcc', '--version']).decode()
     gcc = gcc.strip().split('\n')[0]
-    env_info['gcc'] = gcc
+    env_info['GCC'] = gcc
 
-    env_info['Paddle'] = paddle.__version__
+    env_info['PaddlePaddle'] = paddle.__version__
     env_info['OpenCV'] = cv2.__version__
 
     return env_info
