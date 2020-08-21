@@ -19,7 +19,7 @@ from paddle.fluid.dygraph.parallel import ParallelEnv
 from paddle.fluid.io import DataLoader
 from paddle.incubate.hapi.distributed import DistributedBatchSampler
 
-import dygraph.utils.logging as logging
+import dygraph.utils.logger as logger
 from dygraph.utils import load_pretrained_model
 from dygraph.utils import resume
 from dygraph.utils import Timer, calculate_eta
@@ -111,7 +111,7 @@ def train(model,
                 train_batch_cost = 0.0
                 remain_steps = total_steps - num_steps
                 eta = calculate_eta(remain_steps, avg_train_batch_cost)
-                logging.info(
+                logger.info(
                     "[TRAIN] Epoch={}/{}, Step={}/{}, loss={:.4f}, lr={:.6f}, batch_cost={:.4f}, reader_cost={:.4f} | ETA {}"
                     .format(epoch + 1, num_epochs, step + 1, steps_per_epoch,
                             avg_loss * nranks, lr, avg_train_batch_cost,
@@ -152,7 +152,7 @@ def train(model,
                     best_model_dir = os.path.join(save_dir, "best_model")
                     fluid.save_dygraph(model.state_dict(),
                                        os.path.join(best_model_dir, 'model'))
-                logging.info(
+                logger.info(
                     'Current evaluated best model in eval_dataset is epoch_{}, miou={:4f}'
                     .format(best_model_epoch, best_mean_iou))
 
