@@ -28,6 +28,8 @@ from paddle.fluid.dygraph.nn import Conv2D, Pool2D, BatchNorm, Linear, Dropout
 
 from dygraph.utils import utils
 
+from dygraph.cvlibs import manager
+
 __all__ = [
     "ResNet18_vd", "ResNet34_vd", "ResNet50_vd", "ResNet101_vd", "ResNet152_vd"
 ]
@@ -199,9 +201,9 @@ class BasicBlock(fluid.dygraph.Layer):
 
 
 class ResNet_vd(fluid.dygraph.Layer):
-    def __init__(self, layers=50, class_dim=1000, dilation_dict=None, multi_grid=(1, 2, 4), **kwargs):
+    def __init__(self, layers=50, class_dim=1000, output_stride=None, multi_grid=(1, 2, 4), **kwargs):
         super(ResNet_vd, self).__init__()
-
+        
         self.layers = layers
         supported_layers = [18, 34, 50, 101, 152, 200]
         assert layers in supported_layers, \
@@ -221,6 +223,12 @@ class ResNet_vd(fluid.dygraph.Layer):
         num_channels = [64, 256, 512,
                         1024] if layers >= 50 else [64, 64, 128, 256]
         num_filters = [64, 128, 256, 512]
+
+        dilation_dict=None
+        if output_stride == 8:
+            dilation_dict = {2: 2, 3: 4}
+        elif output_stride == 16:
+            dilation_dict = {3: 2}
 
         self.conv1_1 = ConvBNLayer(
             num_channels=3,
@@ -359,12 +367,12 @@ def ResNet34_vd(**args):
     model = ResNet_vd(layers=34, **args)
     return model
 
-
+@manager.BACKBONES.add_component
 def ResNet50_vd(**args):
     model = ResNet_vd(layers=50, **args)
     return model
 
-
+@manager.BACKBONES.add_component
 def ResNet101_vd(**args):
     model = ResNet_vd(layers=101, **args)
     return model
