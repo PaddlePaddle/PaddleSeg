@@ -14,6 +14,8 @@ cfg.model_path = 'SpatialEmbeddings_kitti'
 # 预测结果保存路径
 cfg.vis_dir = "result"
 
+# 待预测图像输入尺寸
+cfg.input_size = (384, 1248)
 # sigma值
 cfg.n_sigma = 2
 # 中心点阈值
