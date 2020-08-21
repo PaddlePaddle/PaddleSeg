@@ -67,10 +67,14 @@ def _get_nvcc_info(cuda_home):
 
 
 def _get_gpu_info():
-    gpu_info = subprocess.check_output(['nvidia-smi', '-L']).decode().strip()
-    gpu_info = gpu_info.split('\n')
-    for i in range(len(gpu_info)):
-        gpu_info[i] = ' '.join(gpu_info[i].split(' ')[:4])
+    try:
+        gpu_info = subprocess.check_output(['nvidia-smi',
+                                            '-L']).decode().strip()
+        gpu_info = gpu_info.split('\n')
+        for i in range(len(gpu_info)):
+            gpu_info[i] = ' '.join(gpu_info[i].split(' ')[:4])
+    except:
+        gpu_info = ' Can not get GPU information. Please make sure CUDA have been installed successfully.'
     return gpu_info
 
 
@@ -107,9 +111,3 @@ def get_environ_info():
     env_info['OpenCV'] = cv2.__version__
 
     return env_info
-
-
-if __name__ == '__main__':
-    env_info = get_environ_info()
-    for k, v in env_info.items():
-        print('{}: {}'.format(k, v))
