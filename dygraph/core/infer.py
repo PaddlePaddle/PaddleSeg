@@ -56,7 +56,7 @@ def infer(model, test_dataset=None, model_dir=None, save_dir='output'):
                 raise Exception("Unexpected info '{}' in im_info".format(
                     info[0]))
 
-        im_file = im_path.replace(test_dataset.data_dir, '')
+        im_file = im_path.replace(test_dataset.dataset_root, '')
         if im_file[0] == '/':
             im_file = im_file[1:]
         # save added image

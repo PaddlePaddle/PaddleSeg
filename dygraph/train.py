@@ -62,11 +62,11 @@ def parse_args():
         default=[512, 512],
         type=int)
     parser.add_argument(
-        '--num_epochs',
-        dest='num_epochs',
-        help='Number epochs for training',
+        '--iters',
+        dest='iters',
+        help='iters for training',
         type=int,
-        default=100)
+        default=10000)
     parser.add_argument(
         '--batch_size',
         dest='batch_size',
@@ -92,9 +92,9 @@ def parse_args():
         type=str,
         default=None)
     parser.add_argument(
-        '--save_interval_epochs',
-        dest='save_interval_epochs',
-        help='The interval epochs for save a model snapshot',
+        '--save_interval_iters',
+        dest='save_interval_iters',
+        help='The interval iters for save a model snapshot',
         type=int,
         default=5)
     parser.add_argument(
@@ -115,9 +115,9 @@ def parse_args():
         help='Eval while training',
         action='store_true')
     parser.add_argument(
-        '--log_steps',
-        dest='log_steps',
-        help='Display logging information at every log_steps',
+        '--log_iters',
+        dest='log_iters',
+        help='Display logging information at every log_iters',
         default=10,
         type=int)
     parser.add_argument(
@@ -172,11 +172,10 @@ def main(args):
 
         # Creat optimizer
         # todo, may less one than len(loader)
-        num_steps_each_epoch = len(train_dataset) // (
+        num_iters_each_epoch = len(train_dataset) // (
             args.batch_size * ParallelEnv().nranks)
-        decay_step = args.num_epochs * num_steps_each_epoch
         lr_decay = fluid.layers.polynomial_decay(
-            args.learning_rate, decay_step, end_learning_rate=0, power=0.9)
+            args.learning_rate, args.iters, end_learning_rate=0, power=0.9)
         optimizer = fluid.optimizer.Momentum(
             lr_decay,
             momentum=0.9,
@@ -190,12 +189,12 @@ def main(args):
             eval_dataset=eval_dataset,
             optimizer=optimizer,
             save_dir=args.save_dir,
-            num_epochs=args.num_epochs,
+            iters=args.iters,
             batch_size=args.batch_size,
             pretrained_model=args.pretrained_model,
             resume_model=args.resume_model,
-            save_interval_epochs=args.save_interval_epochs,
-            log_steps=args.log_steps,
+            save_interval_iters=args.save_interval_iters,
+            log_iters=args.log_iters,
             num_classes=train_dataset.num_classes,
             num_workers=args.num_workers,
             use_vdl=args.use_vdl)
