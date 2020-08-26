@@ -12,7 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .architectures import *
-from .unet import UNet
-from .deeplab import *
-from .fcn import *
+from . import layer_utils
+from .hrnet import *
+from .resnet_vd import *
+from .xception_deeplab import *
+from .mobilenetv3 import *

@@ -20,20 +20,38 @@ from paddle.fluid.param_attr import ParamAttr
 from paddle.fluid.layer_helper import LayerHelper
 from paddle.fluid.dygraph.nn import Conv2D, Pool2D, Linear
 from paddle.fluid.initializer import Normal
-from paddle.fluid.dygraph import SyncBatchNorm as BatchNorm
+from paddle.nn import SyncBatchNorm as BatchNorm
+
+from dygraph.cvlibs import manager
 
 __all__ = [
     "HRNet_W18_Small_V1", "HRNet_W18_Small_V2", "HRNet_W18", "HRNet_W30",
-    "HRNet_W32", "HRNet_W40", "HRNet_W44", "HRNet_W48", "HRNet_W60",
-    "HRNet_W64", "SE_HRNet_W18_Small_V1", "SE_HRNet_W18_Small_V2",
-    "SE_HRNet_W18", "SE_HRNet_W30", "SE_HRNet_W32", "SE_HRNet_W40",
-    "SE_HRNet_W44", "SE_HRNet_W48", "SE_HRNet_W60", "SE_HRNet_W64"
+    "HRNet_W32", "HRNet_W40", "HRNet_W44", "HRNet_W48", "HRNet_W60", "HRNet_W64"
 ]
 
 
 class HRNet(fluid.dygraph.Layer):
+    """
+    HRNet：Deep High-Resolution Representation Learning for Visual Recognition
+    https://arxiv.org/pdf/1908.07919.pdf.
+
+    Args:
+        stage1_num_modules (int): number of modules for stage1. Default 1.
+        stage1_num_blocks (list): number of blocks per module for stage1. Default [4].
+        stage1_num_channels (list): number of channels per branch for stage1. Default [64].
+        stage2_num_modules (int): number of modules for stage2. Default 1.
+        stage2_num_blocks (list): number of blocks per module for stage2. Default [4, 4]
+        stage2_num_channels (list): number of channels per branch for stage2. Default [18, 36].
+        stage3_num_modules (int): number of modules for stage3. Default 4.
+        stage3_num_blocks (list): number of blocks per module for stage3. Default [4, 4, 4]
+        stage3_num_channels (list): number of channels per branch for stage3. Default [18, 36, 72].
+        stage4_num_modules (int): number of modules for stage4. Default 3.
+        stage4_num_blocks (list): number of blocks per module for stage4. Default [4, 4, 4, 4]
+        stage4_num_channels (list): number of channels per branch for stage4. Default [18, 36, 72. 144].
+        has_se (bool): whether to use Squeeze-and-Excitation module. Default False.
+    """
+
     def __init__(self,
-                 num_classes,
                  stage1_num_modules=1,
                  stage1_num_blocks=[4],
                  stage1_num_channels=[64],
@@ -46,11 +64,9 @@ class HRNet(fluid.dygraph.Layer):
                  stage4_num_modules=3,
                  stage4_num_blocks=[4, 4, 4, 4],
                  stage4_num_channels=[18, 36, 72, 144],
-                 has_se=False,
-                 ignore_index=255):
+                 has_se=False):
         super(HRNet, self).__init__()
 
-        self.num_classes = num_classes
         self.stage1_num_modules = stage1_num_modules
         self.stage1_num_blocks = stage1_num_blocks
         self.stage1_num_channels = stage1_num_channels
@@ -64,8 +80,6 @@ class HRNet(fluid.dygraph.Layer):
         self.stage4_num_blocks = stage4_num_blocks
         self.stage4_num_channels = stage4_num_channels
         self.has_se = has_se
-        self.ignore_index = ignore_index
-        self.EPS = 1e-5
 
         self.conv_layer1_1 = ConvBNLayer(
             num_channels=3,
@@ -112,6 +126,7 @@ class HRNet(fluid.dygraph.Layer):
             num_modules=self.stage3_num_modules,
             num_blocks=self.stage3_num_blocks,
             num_filters=self.stage3_num_channels,
+            has_se=self.has_se,
             name="st3")
 
         self.tr3 = TransitionLayer(
@@ -123,23 +138,8 @@ class HRNet(fluid.dygraph.Layer):
             num_modules=self.stage4_num_modules,
             num_blocks=self.stage4_num_blocks,
             num_filters=self.stage4_num_channels,
+            has_se=self.has_se,
             name="st4")
-
-        last_inp_channels = sum(self.stage4_num_channels)
-        self.conv_last_2 = ConvBNLayer(
-            num_channels=last_inp_channels,
-            num_filters=last_inp_channels,
-            filter_size=1,
-            stride=1,
-            name='conv-2')
-        self.conv_last_1 = Conv2D(
-            num_channels=last_inp_channels,
-            num_filters=self.num_classes,
-            filter_size=1,
-            stride=1,
-            padding=0,
-            param_attr=ParamAttr(
-                initializer=Normal(scale=0.001), name='conv-1_weights'))
 
     def forward(self, x, label=None, mode='train'):
         input_shape = x.shape[2:]
@@ -162,40 +162,8 @@ class HRNet(fluid.dygraph.Layer):
         x2 = fluid.layers.resize_bilinear(st4[2], out_shape=(x0_h, x0_w))
         x3 = fluid.layers.resize_bilinear(st4[3], out_shape=(x0_h, x0_w))
         x = fluid.layers.concat([st4[0], x1, x2, x3], axis=1)
-        x = self.conv_last_2(x)
-        logit = self.conv_last_1(x)
-        logit = fluid.layers.resize_bilinear(logit, input_shape)
 
-        if self.training:
-            if label is None:
-                raise Exception('Label is need during training')
-            return self._get_loss(logit, label)
-        else:
-            score_map = fluid.layers.softmax(logit, axis=1)
-            score_map = fluid.layers.transpose(score_map, [0, 2, 3, 1])
-            pred = fluid.layers.argmax(score_map, axis=3)
-            pred = fluid.layers.unsqueeze(pred, axes=[3])
-            return pred, score_map
-
-    def _get_loss(self, logit, label):
-        logit = fluid.layers.transpose(logit, [0, 2, 3, 1])
-        label = fluid.layers.transpose(label, [0, 2, 3, 1])
-        mask = label != self.ignore_index
-        mask = fluid.layers.cast(mask, 'float32')
-        loss, probs = fluid.layers.softmax_with_cross_entropy(
-            logit,
-            label,
-            ignore_index=self.ignore_index,
-            return_softmax=True,
-            axis=-1)
-
-        loss = loss * mask
-        avg_loss = fluid.layers.mean(loss) / (
-            fluid.layers.mean(mask) + self.EPS)
-
-        label.stop_gradient = True
-        mask.stop_gradient = True
-        return avg_loss
+        return x
 
 
 class ConvBNLayer(fluid.dygraph.Layer):
@@ -698,189 +666,9 @@ class LastClsOut(fluid.dygraph.Layer):
         return outs
 
 
-def HRNet_W18_Small_V1(num_classes):
+@manager.BACKBONES.add_component
+def HRNet_W18_Small_V1(**kwargs):
     model = HRNet(
-        num_classes=num_classes,
-        stage1_num_modules=1,
-        stage1_num_blocks=[1],
-        stage1_num_channels=[32],
-        stage2_num_modules=1,
-        stage2_num_blocks=[2, 2],
-        stage2_num_channels=[16, 32],
-        stage3_num_modules=1,
-        stage3_num_blocks=[2, 2, 2],
-        stage3_num_channels=[16, 32, 64],
-        stage4_num_modules=1,
-        stage4_num_blocks=[2, 2, 2, 2],
-        stage4_num_channels=[16, 32, 64, 128])
-    return model
-
-
-def HRNet_W18_Small_V2(num_classes):
-    model = HRNet(
-        num_classes=num_classes,
-        stage1_num_modules=1,
-        stage1_num_blocks=[2],
-        stage1_num_channels=[64],
-        stage2_num_modules=1,
-        stage2_num_blocks=[2, 2],
-        stage2_num_channels=[18, 36],
-        stage3_num_modules=1,
-        stage3_num_blocks=[2, 2, 2],
-        stage3_num_channels=[18, 36, 72],
-        stage4_num_modules=1,
-        stage4_num_blocks=[2, 2, 2, 2],
-        stage4_num_channels=[18, 36, 72, 144])
-    return model
-
-
-def HRNet_W18(num_classes):
-    model = HRNet(
-        num_classes=num_classes,
-        stage1_num_modules=1,
-        stage1_num_blocks=[4],
-        stage1_num_channels=[64],
-        stage2_num_modules=1,
-        stage2_num_blocks=[4, 4],
-        stage2_num_channels=[18, 36],
-        stage3_num_modules=4,
-        stage3_num_blocks=[4, 4, 4],
-        stage3_num_channels=[18, 36, 72],
-        stage4_num_modules=3,
-        stage4_num_blocks=[4, 4, 4, 4],
-        stage4_num_channels=[18, 36, 72, 144])
-    return model
-
-
-def HRNet_W30(num_classes):
-    model = HRNet(
-        num_classes=num_classes,
-        stage1_num_modules=1,
-        stage1_num_blocks=[4],
-        stage1_num_channels=[64],
-        stage2_num_modules=1,
-        stage2_num_blocks=[4, 4],
-        stage2_num_channels=[30, 60],
-        stage3_num_modules=4,
-        stage3_num_blocks=[4, 4, 4],
-        stage3_num_channels=[30, 60, 120],
-        stage4_num_modules=3,
-        stage4_num_blocks=[4, 4, 4, 4],
-        stage4_num_channels=[30, 60, 120, 240])
-    return model
-
-
-def HRNet_W32(num_classes):
-    model = HRNet(
-        num_classes=num_classes,
-        stage1_num_modules=1,
-        stage1_num_blocks=[4],
-        stage1_num_channels=[64],
-        stage2_num_modules=1,
-        stage2_num_blocks=[4, 4],
-        stage2_num_channels=[32, 64],
-        stage3_num_modules=4,
-        stage3_num_blocks=[4, 4, 4],
-        stage3_num_channels=[32, 64, 128],
-        stage4_num_modules=3,
-        stage4_num_blocks=[4, 4, 4, 4],
-        stage4_num_channels=[32, 64, 128, 256])
-    return model
-
-
-def HRNet_W40(num_classes):
-    model = HRNet(
-        num_classes=num_classes,
-        stage1_num_modules=1,
-        stage1_num_blocks=[4],
-        stage1_num_channels=[64],
-        stage2_num_modules=1,
-        stage2_num_blocks=[4, 4],
-        stage2_num_channels=[40, 80],
-        stage3_num_modules=4,
-        stage3_num_blocks=[4, 4, 4],
-        stage3_num_channels=[40, 80, 160],
-        stage4_num_modules=3,
-        stage4_num_blocks=[4, 4, 4, 4],
-        stage4_num_channels=[40, 80, 160, 320])
-    return model
-
-
-def HRNet_W44(num_classes):
-    model = HRNet(
-        num_classes=num_classes,
-        stage1_num_modules=1,
-        stage1_num_blocks=[4],
-        stage1_num_channels=[64],
-        stage2_num_modules=1,
-        stage2_num_blocks=[4, 4],
-        stage2_num_channels=[44, 88],
-        stage3_num_modules=4,
-        stage3_num_blocks=[4, 4, 4],
-        stage3_num_channels=[44, 88, 176],
-        stage4_num_modules=3,
-        stage4_num_blocks=[4, 4, 4, 4],
-        stage4_num_channels=[44, 88, 176, 352])
-    return model
-
-
-def HRNet_W48(num_classes):
-    model = HRNet(
-        num_classes=num_classes,
-        stage1_num_modules=1,
-        stage1_num_blocks=[4],
-        stage1_num_channels=[64],
-        stage2_num_modules=1,
-        stage2_num_blocks=[4, 4],
-        stage2_num_channels=[48, 96],
-        stage3_num_modules=4,
-        stage3_num_blocks=[4, 4, 4],
-        stage3_num_channels=[48, 96, 192],
-        stage4_num_modules=3,
-        stage4_num_blocks=[4, 4, 4, 4],
-        stage4_num_channels=[48, 96, 192, 384])
-    return model
-
-
-def HRNet_W60(num_classes):
-    model = HRNet(
-        num_classes=num_classes,
-        stage1_num_modules=1,
-        stage1_num_blocks=[4],
-        stage1_num_channels=[64],
-        stage2_num_modules=1,
-        stage2_num_blocks=[4, 4],
-        stage2_num_channels=[60, 120],
-        stage3_num_modules=4,
-        stage3_num_blocks=[4, 4, 4],
-        stage3_num_channels=[60, 120, 240],
-        stage4_num_modules=3,
-        stage4_num_blocks=[4, 4, 4, 4],
-        stage4_num_channels=[60, 120, 240, 480])
-    return model
-
-
-def HRNet_W64(num_classes):
-    model = HRNet(
-        num_classes=num_classes,
-        stage1_num_modules=1,
-        stage1_num_blocks=[4],
-        stage1_num_channels=[64],
-        stage2_num_modules=1,
-        stage2_num_blocks=[4, 4],
-        stage2_num_channels=[64, 128],
-        stage3_num_modules=4,
-        stage3_num_blocks=[4, 4, 4],
-        stage3_num_channels=[64, 128, 256],
-        stage4_num_modules=3,
-        stage4_num_blocks=[4, 4, 4, 4],
-        stage4_num_channels=[64, 128, 256, 512])
-    return model
-
-
-def SE_HRNet_W18_Small_V1(num_classes):
-    model = HRNet(
-        num_classes=num_classes,
         stage1_num_modules=1,
         stage1_num_blocks=[1],
         stage1_num_channels=[32],
@@ -893,13 +681,13 @@ def SE_HRNet_W18_Small_V1(num_classes):
         stage4_num_modules=1,
         stage4_num_blocks=[2, 2, 2, 2],
         stage4_num_channels=[16, 32, 64, 128],
-        has_se=True)
+        **kwargs)
     return model
 
 
-def SE_HRNet_W18_Small_V2(num_classes):
+@manager.BACKBONES.add_component
+def HRNet_W18_Small_V2(**kwargs):
     model = HRNet(
-        num_classes=num_classes,
         stage1_num_modules=1,
         stage1_num_blocks=[2],
         stage1_num_channels=[64],
@@ -912,13 +700,13 @@ def SE_HRNet_W18_Small_V2(num_classes):
         stage4_num_modules=1,
         stage4_num_blocks=[2, 2, 2, 2],
         stage4_num_channels=[18, 36, 72, 144],
-        has_se=True)
+        **kwargs)
     return model
 
 
-def SE_HRNet_W18(num_classes):
+@manager.BACKBONES.add_component
+def HRNet_W18(**kwargs):
     model = HRNet(
-        num_classes=num_classes,
         stage1_num_modules=1,
         stage1_num_blocks=[4],
         stage1_num_channels=[64],
@@ -931,13 +719,13 @@ def SE_HRNet_W18(num_classes):
         stage4_num_modules=3,
         stage4_num_blocks=[4, 4, 4, 4],
         stage4_num_channels=[18, 36, 72, 144],
-        has_se=True)
+        **kwargs)
     return model
 
 
-def SE_HRNet_W30(num_classes):
+@manager.BACKBONES.add_component
+def HRNet_W30(**kwargs):
     model = HRNet(
-        num_classes=num_classes,
         stage1_num_modules=1,
         stage1_num_blocks=[4],
         stage1_num_channels=[64],
@@ -950,13 +738,13 @@ def SE_HRNet_W30(num_classes):
         stage4_num_modules=3,
         stage4_num_blocks=[4, 4, 4, 4],
         stage4_num_channels=[30, 60, 120, 240],
-        has_se=True)
+        **kwargs)
     return model
 
 
-def SE_HRNet_W32(num_classes):
+@manager.BACKBONES.add_component
+def HRNet_W32(**kwargs):
     model = HRNet(
-        num_classes=num_classes,
         stage1_num_modules=1,
         stage1_num_blocks=[4],
         stage1_num_channels=[64],
@@ -969,13 +757,13 @@ def SE_HRNet_W32(num_classes):
         stage4_num_modules=3,
         stage4_num_blocks=[4, 4, 4, 4],
         stage4_num_channels=[32, 64, 128, 256],
-        has_se=True)
+        **kwargs)
     return model
 
 
-def SE_HRNet_W40(num_classes):
+@manager.BACKBONES.add_component
+def HRNet_W40(**kwargs):
     model = HRNet(
-        num_classes=num_classes,
         stage1_num_modules=1,
         stage1_num_blocks=[4],
         stage1_num_channels=[64],
@@ -988,13 +776,13 @@ def SE_HRNet_W40(num_classes):
         stage4_num_modules=3,
         stage4_num_blocks=[4, 4, 4, 4],
         stage4_num_channels=[40, 80, 160, 320],
-        has_se=True)
+        **kwargs)
     return model
 
 
-def SE_HRNet_W44(num_classes):
+@manager.BACKBONES.add_component
+def HRNet_W44(**kwargs):
     model = HRNet(
-        num_classes=num_classes,
         stage1_num_modules=1,
         stage1_num_blocks=[4],
         stage1_num_channels=[64],
@@ -1007,13 +795,13 @@ def SE_HRNet_W44(num_classes):
         stage4_num_modules=3,
         stage4_num_blocks=[4, 4, 4, 4],
         stage4_num_channels=[44, 88, 176, 352],
-        has_se=True)
+        **kwargs)
     return model
 
 
-def SE_HRNet_W48(num_classes):
+@manager.BACKBONES.add_component
+def HRNet_W48(**kwargs):
     model = HRNet(
-        num_classes=num_classes,
         stage1_num_modules=1,
         stage1_num_blocks=[4],
         stage1_num_channels=[64],
@@ -1026,13 +814,13 @@ def SE_HRNet_W48(num_classes):
         stage4_num_modules=3,
         stage4_num_blocks=[4, 4, 4, 4],
         stage4_num_channels=[48, 96, 192, 384],
-        has_se=True)
+        **kwargs)
     return model
 
 
-def SE_HRNet_W60(num_classes):
+@manager.BACKBONES.add_component
+def HRNet_W60(**kwargs):
     model = HRNet(
-        num_classes=num_classes,
         stage1_num_modules=1,
         stage1_num_blocks=[4],
         stage1_num_channels=[64],
@@ -1045,13 +833,13 @@ def SE_HRNet_W60(num_classes):
         stage4_num_modules=3,
         stage4_num_blocks=[4, 4, 4, 4],
         stage4_num_channels=[60, 120, 240, 480],
-        has_se=True)
+        **kwargs)
     return model
 
 
-def SE_HRNet_W64(num_classes):
+@manager.BACKBONES.add_component
+def HRNet_W64(**kwargs):
     model = HRNet(
-        num_classes=num_classes,
         stage1_num_modules=1,
         stage1_num_blocks=[4],
         stage1_num_channels=[64],
@@ -1064,5 +852,5 @@ def SE_HRNet_W64(num_classes):
         stage4_num_modules=3,
         stage4_num_blocks=[4, 4, 4, 4],
         stage4_num_channels=[64, 128, 256, 512],
-        has_se=True)
+        **kwargs)
     return model

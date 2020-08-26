@@ -19,7 +19,6 @@ from paddle.fluid.dygraph.parallel import ParallelEnv
 
 from dygraph.datasets import DATASETS
 import dygraph.transforms as T
-#from dygraph.models import MODELS
 from dygraph.cvlibs import manager
 from dygraph.utils import get_environ_info
 from dygraph.utils import logger
@@ -167,8 +166,9 @@ def main(args):
                 transforms=eval_transforms,
                 mode='val')
 
-
-        model = manager.MODELS[args.model_name](num_classes=train_dataset.num_classes)
+        model = manager.MODELS[args.model_name](
+            num_classes=train_dataset.num_classes,
+            pretrained_model=args.pretrained_model)
 
         # Creat optimizer
         # todo, may less one than len(loader)
@@ -191,7 +191,6 @@ def main(args):
             save_dir=args.save_dir,
             iters=args.iters,
             batch_size=args.batch_size,
-            pretrained_model=args.pretrained_model,
             resume_model=args.resume_model,
             save_interval_iters=args.save_interval_iters,
             log_iters=args.log_iters,

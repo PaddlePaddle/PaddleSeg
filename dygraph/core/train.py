@@ -34,7 +34,6 @@ def train(model,
           save_dir='output',
           iters=10000,
           batch_size=2,
-          pretrained_model=None,
           resume_model=None,
           save_interval_iters=1000,
           log_iters=10,
@@ -47,8 +46,6 @@ def train(model,
     start_iter = 0
     if resume_model is not None:
         start_iter = resume(model, optimizer, resume_model)
-    elif pretrained_model is not None:
-        load_pretrained_model(model, pretrained_model)
 
     if not os.path.isdir(save_dir):
         if os.path.exists(save_dir):
@@ -126,7 +123,6 @@ def train(model,
                     log_writer.add_scalar('Train/reader_cost',
                                           avg_train_reader_cost, iter)
                 avg_loss = 0.0
-            timer.restart()
 
             if (iter % save_interval_iters == 0
                     or iter == iters) and ParallelEnv().local_rank == 0:
@@ -162,5 +158,6 @@ def train(model,
                         log_writer.add_scalar('Evaluate/mIoU', mean_iou, iter)
                         log_writer.add_scalar('Evaluate/aAcc', avg_acc, iter)
                     model.train()
+            timer.restart()
     if use_vdl:
         log_writer.close()

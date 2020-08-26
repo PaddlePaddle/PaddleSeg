@@ -12,19 +12,36 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
+
 import paddle.fluid as fluid
 from paddle.fluid.dygraph import Conv2D, Pool2D
-from paddle.fluid.dygraph import SyncBatchNorm as BatchNorm
+from paddle.nn import SyncBatchNorm as BatchNorm
+
+from dygraph.cvlibs import manager
+from dygraph import utils
 
 
 class UNet(fluid.dygraph.Layer):
-    def __init__(self, num_classes, ignore_index=255):
+    """
+    U-Net: Convolutional Networks for Biomedical Image Segmentation.
+    https://arxiv.org/abs/1505.04597
+
+    Args:
+        num_classes (int): the unique number of target classes.
+        pretrained_model (str): the path of pretrained model.
+        ignore_index (int): the value of ground-truth mask would be ignored while computing loss or doing evaluation. Default 255.
+    """
+
+    def __init__(self, num_classes, pretrained_model=None, ignore_index=255):
         super(UNet, self).__init__()
         self.encode = UnetEncoder()
         self.decode = UnetDecode()
         self.get_logit = GetLogit(64, num_classes)
         self.ignore_index = ignore_index
         self.EPS = 1e-5
+
+        self.init_weight(pretrained_model)
 
     def forward(self, x, label=None):
         encode_data, short_cuts = self.encode(x)
@@ -38,6 +55,20 @@ class UNet(fluid.dygraph.Layer):
             pred = fluid.layers.argmax(score_map, axis=3)
             pred = fluid.layers.unsqueeze(pred, axes=[3])
             return pred, score_map
+
+    def init_weight(self, pretrained_model=None):
+        """
+        Initialize the parameters of model parts.
+        Args:
+            pretrained_model ([str], optional): the pretrained_model path of backbone. Defaults to None.
+        """
+        if pretrained_model is not None:
+            if os.path.exists(pretrained_model):
+                utils.load_pretrained_model(self.backbone, pretrained_model)
+                utils.load_pretrained_model(self, pretrained_model)
+            else:
+                raise Exception('Pretrained model is not found: {}'.format(
+                    pretrained_model))
 
     def _get_loss(self, logit, label):
         logit = fluid.layers.transpose(logit, [0, 2, 3, 1])
@@ -108,14 +139,14 @@ class DoubleConv(fluid.dygraph.Layer):
             filter_size=3,
             stride=1,
             padding=1)
-        self.bn0 = BatchNorm(num_channels=num_filters)
+        self.bn0 = BatchNorm(num_filters)
         self.conv1 = Conv2D(
             num_channels=num_filters,
             num_filters=num_filters,
             filter_size=3,
             stride=1,
             padding=1)
-        self.bn1 = BatchNorm(num_channels=num_filters)
+        self.bn1 = BatchNorm(num_filters)
 
     def forward(self, x):
         x = self.conv0(x)
@@ -166,3 +197,8 @@ class GetLogit(fluid.dygraph.Layer):
     def forward(self, x):
         x = self.conv(x)
         return x
+
+
+@manager.MODELS.add_component
+def unet(*args, **kwargs):
+    return UNet(*args, **kwargs)
