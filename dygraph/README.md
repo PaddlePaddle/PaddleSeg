@@ -1,8 +1,12 @@
 # 动态图执行
 
 ## 下载及添加路径
+```
 git clone https://github.com/PaddlePaddle/PaddleSeg
+cd PaddleSeg
 export PYTHONPATH=$PYTHONPATH:`pwd`
+cd dygraph
+```
 
 ## 训练
 ```
