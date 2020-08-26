@@ -21,7 +21,7 @@ import cv2
 import tqdm
 
 from dygraph import utils
-import dygraph.utils.logging as logging
+import dygraph.utils.logger as logger
 
 
 def mkdir(path):
@@ -39,7 +39,7 @@ def infer(model, test_dataset=None, model_dir=None, save_dir='output'):
     added_saved_dir = os.path.join(save_dir, 'added')
     pred_saved_dir = os.path.join(save_dir, 'prediction')
 
-    logging.info("Start to predict...")
+    logger.info("Start to predict...")
     for im, im_info, im_path in tqdm.tqdm(test_dataset):
         im = to_variable(im)
         pred, _ = model(im)
@@ -56,7 +56,7 @@ def infer(model, test_dataset=None, model_dir=None, save_dir='output'):
                 raise Exception("Unexpected info '{}' in im_info".format(
                     info[0]))
 
-        im_file = im_path.replace(test_dataset.data_dir, '')
+        im_file = im_path.replace(test_dataset.dataset_root, '')
         if im_file[0] == '/':
             im_file = im_file[1:]
         # save added image

@@ -12,8 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from . import logging
+from . import logger
 from . import download
 from .metrics import ConfusionMatrix
 from .utils import *
 from .timer import Timer, calculate_eta
+from .get_environ_info import get_environ_info
