@@ -19,7 +19,6 @@ from paddle.fluid.dygraph.parallel import ParallelEnv
 
 from dygraph.datasets import DATASETS
 import dygraph.transforms as T
-#from dygraph.models import MODELS
 from dygraph.cvlibs import manager
 from dygraph.utils import get_environ_info
 from dygraph.utils import logger
