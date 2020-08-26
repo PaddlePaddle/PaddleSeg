@@ -16,6 +16,7 @@ from .architectures import *
 from .unet import UNet
 from .hrnet import *
 from .deeplab import *
+from .fcn import *
 
 # MODELS = {
 #     "UNet": UNet,
