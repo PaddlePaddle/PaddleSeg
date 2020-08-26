@@ -6,7 +6,7 @@ export PYTHONPATH=$PYTHONPATH:`pwd`
 
 ## 训练
 ```
-python3 train.py --model_name UNet \
+python3 train.py --model_name unet \
 --dataset OpticDiscSeg \
 --input_size 192 192 \
 --iters 10 \
@@ -17,7 +17,7 @@ python3 train.py --model_name UNet \
 
 ## 评估
 ```
-python3 val.py --model_name UNet \
+python3 val.py --model_name unet \
 --dataset OpticDiscSeg \
 --input_size 192 192 \
 --model_dir output/best_model
@@ -25,7 +25,7 @@ python3 val.py --model_name UNet \
 
 ## 预测
 ```
-python3 infer.py --model_name UNet \
+python3 infer.py --model_name unet \
 --dataset OpticDiscSeg \
 --model_dir output/best_model \
 --input_size 192 192

@@ -41,6 +41,10 @@ class FCN(fluid.dygraph.Layer):
     Args:
         backbone (str): backbone name,
         num_classes (int): the unique number of target classes.
+        in_channels (int): the channels of input feature maps.
+        channels (int): channels after conv layer before the last one.
+        pretrained_model (str): the path of pretrained model.
+        ignore_index (int): the value of ground-truth mask would be ignored while computing loss or doing evaluation. Default 255.
     """
 
     def __init__(self,
@@ -49,7 +53,6 @@ class FCN(fluid.dygraph.Layer):
                  in_channels,
                  channels=None,
                  pretrained_model=None,
-                 has_se=False,
                  ignore_index=255,
                  **kwargs):
         super(FCN, self).__init__()
