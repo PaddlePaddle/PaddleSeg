@@ -1,12 +1,16 @@
 # 动态图执行
 
+## 下载及添加路径
+git clone https://github.com/PaddlePaddle/PaddleSeg
+export PYTHONPATH=$PYTHONPATH:`pwd`
+
 ## 训练
 ```
 python3 train.py --model_name UNet \
 --dataset OpticDiscSeg \
 --input_size 192 192 \
---num_epochs 10 \
---save_interval_epochs 1 \
+--iters 10 \
+--save_interval_iters 1 \
 --do_eval \
 --save_dir output
 ```
