@@ -13,24 +13,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import paddle.nn.functional as F
 from paddle import fluid
 from paddle.fluid import dygraph
 from paddle.fluid.dygraph import Conv2D
-from paddle.fluid.dygraph import SyncBatchNorm as BatchNorm
-import cv2
-import os
-import sys
+from paddle.nn import SyncBatchNorm as BatchNorm
+from paddle.nn.layer import activation
 
 
 class ConvBnRelu(dygraph.Layer):
-
     def __init__(self,
                  num_channels,
                  num_filters,
                  filter_size,
                  using_sep_conv=False,
                  **kwargs):
-        
+
         super(ConvBnRelu, self).__init__()
 
         if using_sep_conv:
@@ -41,16 +39,16 @@ class ConvBnRelu(dygraph.Layer):
         else:
 
             self.conv = Conv2D(num_channels,
-                                num_filters,
-                                filter_size,
-                                **kwargs)
+                               num_filters,
+                               filter_size,
+                               **kwargs)
 
         self.batch_norm = BatchNorm(num_filters)
 
     def forward(self, x):
         x = self.conv(x)
         x = self.batch_norm(x)
-        x = fluid.layers.relu(x)
+        x = F.relu(x)
         return x
 
 
@@ -81,7 +79,7 @@ class ConvReluPool(dygraph.Layer):
 
     def forward(self, x):
         x = self.conv(x)
-        x = fluid.layers.relu(x)
+        x = F.relu(x)
         x = fluid.layers.pool2d(x, pool_size=2, pool_type="max", pool_stride=2)
         return x
 
@@ -106,15 +104,15 @@ class DepthwiseConvBnRelu(dygraph.Layer):
                  **kwargs):
         super(DepthwiseConvBnRelu, self).__init__()
         self.depthwise_conv = ConvBn(num_channels,
-                                    num_filters=num_channels,
-                                    filter_size=filter_size,
-                                    groups=num_channels,
-                                    use_cudnn=False,
-                                    **kwargs)
+                                     num_filters=num_channels,
+                                     filter_size=filter_size,
+                                     groups=num_channels,
+                                     use_cudnn=False,
+                                     **kwargs)
         self.piontwise_conv = ConvBnRelu(num_channels,
-                                        num_filters,
-                                        filter_size=1,
-                                        groups=1)
+                                         num_filters,
+                                         filter_size=1,
+                                         groups=1)
 
     def forward(self, x):
         x = self.depthwise_conv(x)
@@ -122,20 +120,43 @@ class DepthwiseConvBnRelu(dygraph.Layer):
         return x
 
 
-def compute_loss(logits, label, ignore_index=255):
-    mask = label != ignore_index
-    mask = fluid.layers.cast(mask, 'float32')
-    loss, probs = fluid.layers.softmax_with_cross_entropy(
-        logits,
-        label,
-        ignore_index=ignore_index,
-        return_softmax=True,
-        axis=1)
+class Activation(fluid.dygraph.Layer):
+    """
+    The wrapper of activations
+    For example:
+        >>> relu = Activation("relu")
+        >>> print(relu)
+        <class 'paddle.nn.layer.activation.ReLU'>
+        >>> sigmoid = Activation("sigmoid")
+        >>> print(sigmoid)
+        <class 'paddle.nn.layer.activation.Sigmoid'>
+        >>> not_exit_one = Activation("not_exit_one")
+        KeyError: "not_exit_one does not exist in the current dict_keys(['elu', 'gelu', 'hardshrink', 
+        'tanh', 'hardtanh', 'prelu', 'relu', 'relu6', 'selu', 'leakyrelu', 'sigmoid', 'softmax', 
+        'softplus', 'softshrink', 'softsign', 'tanhshrink', 'logsigmoid', 'logsoftmax', 'hsigmoid'])"
 
-    loss = loss * mask
-    avg_loss = fluid.layers.mean(loss) / (
-            fluid.layers.mean(mask) + 1e-5)
+    Args:
+        act (str): the activation name in lowercase
+    """
 
-    label.stop_gradient = True
-    mask.stop_gradient = True
-    return avg_loss
+    def __init__(self, act=None):
+        super(Activation, self).__init__()
+
+        self._act = act
+        upper_act_names = activation.__all__
+        lower_act_names = [act.lower() for act in upper_act_names]
+        act_dict = dict(zip(lower_act_names, upper_act_names))
+
+        if act is not None:
+            if act in act_dict.keys():
+                act_name = act_dict[act]
+                self.act_func = eval("activation.{}()".format(act_name))
+            else:
+                raise KeyError("{} does not exist in the current {}".format(act, act_dict.keys()))
+
+    def forward(self, x):
+
+        if self._act is not None:
+            return self.act_func(x)
+        else:
+            return x
