@@ -105,6 +105,7 @@ class ComponentManager:
             component = components
             self._add_single_component(component)
         
+        return components
 
 MODELS = ComponentManager()
 BACKBONES = ComponentManager()
