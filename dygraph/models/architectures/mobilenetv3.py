@@ -21,7 +21,8 @@ import paddle
 import paddle.fluid as fluid
 from paddle.fluid.param_attr import ParamAttr
 from paddle.fluid.layer_helper import LayerHelper
-from paddle.fluid.dygraph.nn import Conv2D, Pool2D, BatchNorm, Linear, Dropout
+from paddle.fluid.dygraph.nn import Conv2D, Pool2D, Linear, Dropout
+from paddle.fluid.dygraph import SyncBatchNorm as BatchNorm
 
 import math
 
