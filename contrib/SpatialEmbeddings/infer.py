@@ -7,6 +7,7 @@ from utils.data_util import Cluster, pad_img
 from PIL import Image as PILImage
 import importlib
 import paddle.fluid as fluid
+from models import SpatialEmbeddings
 
 args = get_arguments()
 config = importlib.import_module('config')
@@ -38,10 +39,8 @@ class TestDataSet():
     def preprocess(self, img):
         # 图像预处理
         h, w = img.shape[:2]
-        h_new = (h//32 + 1 if h % 32 != 0 else h//32)*32
-        w_new = (w//32 + 1 if w % 32 != 0 else w//32)*32
+        h_new, w_new = cfg.input_size
         img = np.pad(img, ((0, h_new - h), (0, w_new - w), (0, 0)), 'edge')
-        
         img = img.astype(np.float32)/255.0
         img = img.transpose((2, 0, 1))
         img = np.expand_dims(img, axis=0)
@@ -61,18 +60,33 @@ class TestDataSet():
 
         return img_process, name_prefix, img_shape
 
+def get_model(main_prog, startup_prog):
+    img_shape = [3, cfg.input_size[0], cfg.input_size[1]]
+    with fluid.program_guard(main_prog, startup_prog):
+        with fluid.unique_name.guard():
+            input = fluid.layers.data(name='image', shape=img_shape, dtype='float32')
+            output = SpatialEmbeddings(input)
+    return input, output
 
 def infer():
     if not os.path.exists(cfg.vis_dir):
         os.makedirs(cfg.vis_dir)
 
+    startup_prog = fluid.Program()
+    test_prog = fluid.Program()
+    
+    input, output = get_model(test_prog, startup_prog)
+    test_prog = test_prog.clone(for_test=True)
+
     place = fluid.CUDAPlace(0) if cfg.use_gpu else fluid.CPUPlace()
     exe = fluid.Executor(place)
+    exe.run(startup_prog)
 
     # 加载预测模型
-    test_prog, feed_name, fetch_list = fluid.io.load_inference_model(
-        dirname=cfg.model_path, executor=exe, params_filename='__params__')
-
+    def if_exist(var):
+        return os.path.exists(os.path.join(cfg.model_path, var.name))
+    fluid.io.load_vars(exe, cfg.model_path, main_program=test_prog, predicate=if_exist)
+    
     #加载预测数据集
     test_dataset = TestDataSet()
     data_num = test_dataset.data_num
@@ -83,9 +97,10 @@ def infer():
         if image is None:
             print(im_name, 'is None')
             continue
+        
         # 预测
-        output = exe.run(program=test_prog, feed={feed_name[0]: image}, fetch_list=fetch_list)
-        instance_map, predictions = cluster.cluster(output[0][0], n_sigma=cfg.n_sigma, \
+        outputs = exe.run(program=test_prog, feed={'image': image}, fetch_list=output)
+        instance_map, predictions = cluster.cluster(outputs[0][0], n_sigma=cfg.n_sigma, \
                                     min_pixel=cfg.min_pixel, threshold=cfg.threshold)
 
         # 预测结果保存
