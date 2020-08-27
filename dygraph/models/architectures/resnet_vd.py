@@ -25,10 +25,10 @@ import paddle.fluid as fluid
 from paddle.fluid.param_attr import ParamAttr
 from paddle.fluid.layer_helper import LayerHelper
 from paddle.fluid.dygraph.nn import Conv2D, Pool2D, Linear, Dropout
-from paddle.fluid.dygraph import SyncBatchNorm as BatchNorm
+from paddle.nn import SyncBatchNorm as BatchNorm
 
 from dygraph.utils import utils
-
+from dygraph.models.architectures import layer_utils
 from dygraph.cvlibs import manager
 
 __all__ = [
@@ -70,17 +70,17 @@ class ConvBNLayer(fluid.dygraph.Layer):
             bn_name = "bn" + name[3:]
         self._batch_norm = BatchNorm(
             num_filters,
-            act=act,
-            param_attr=ParamAttr(name=bn_name + '_scale'),
-            bias_attr=ParamAttr(bn_name + '_offset'),
-            moving_mean_name=bn_name + '_mean',
-            moving_variance_name=bn_name + '_variance')
+            weight_attr=ParamAttr(name=bn_name + '_scale'),
+            bias_attr=ParamAttr(bn_name + '_offset'))
+        self._act_op = layer_utils.Activation(act=act)
 
     def forward(self, inputs):
         if self.is_vd_mode:
             inputs = self._pool2d_avg(inputs)
         y = self._conv(inputs)
         y = self._batch_norm(y)
+        y = self._act_op(y)
+
         return y
 
 
