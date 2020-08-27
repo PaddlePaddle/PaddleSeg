@@ -19,7 +19,7 @@ from paddle.fluid.dygraph.parallel import ParallelEnv
 
 from dygraph.datasets import DATASETS
 import dygraph.transforms as T
-from dygraph.models import MODELS
+from dygraph.cvlibs import manager
 from dygraph.utils import get_environ_info
 from dygraph.core import infer
 
@@ -32,7 +32,7 @@ def parse_args():
         '--model_name',
         dest='model_name',
         help='Model type for testing, which is one of {}'.format(
-            str(list(MODELS.keys()))),
+            str(list(manager.MODELS.components_dict.keys()))),
         type=str,
         default='UNet')
 
@@ -99,11 +99,8 @@ def main(args):
             transforms=test_transforms,
             mode='test')
 
-        if args.model_name not in MODELS:
-            raise Exception(
-                '`--model_name` is invalid. it should be one of {}'.format(
-                    str(list(MODELS.keys()))))
-        model = MODELS[args.model_name](num_classes=test_dataset.num_classes)
+        model = manager.MODELS[args.model_name](
+            num_classes=test_dataset.num_classes)
 
         infer(
             model,
