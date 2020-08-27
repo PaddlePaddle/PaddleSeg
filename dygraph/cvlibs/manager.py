@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import collections
+from collections.abc import Sequence
 import inspect
 
 
@@ -98,7 +98,7 @@ class ComponentManager:
         """
 
         # Check whether the type is a sequence
-        if isinstance(components, collections.Sequence):
+        if isinstance(components, Sequence):
             for component in components:
                 self._add_single_component(component)
         else:
