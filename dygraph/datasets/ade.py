@@ -19,11 +19,14 @@ from PIL import Image
 
 from .dataset import Dataset
 from dygraph.utils.download import download_file_and_uncompress
+from dygraph.cvlibs import manager
+from dygraph.transforms import Compose
 
 DATA_HOME = os.path.expanduser('~/.cache/paddle/dataset')
 URL = "http://data.csail.mit.edu/places/ADEchallenge/ADEChallengeData2016.zip"
 
 
+@manager.DATASETS.add_component
 class ADE20K(Dataset):
     """ADE20K dataset `http://sceneparsing.csail.mit.edu/`.
     Args:
@@ -39,7 +42,7 @@ class ADE20K(Dataset):
                  transforms=None,
                  download=True):
         self.dataset_root = dataset_root
-        self.transforms = transforms
+        self.transforms = Compose(transforms)
         self.mode = mode
         self.file_list = list()
         self.num_classes = 150

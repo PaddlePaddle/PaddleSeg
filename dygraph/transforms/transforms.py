@@ -21,8 +21,10 @@ from PIL import Image
 import cv2
 
 from .functional import *
+from dygraph.cvlibs import manager
 
 
+@manager.TRANSFORMS.add_component
 class Compose:
     def __init__(self, transforms, to_rgb=True):
         if not isinstance(transforms, list):
@@ -58,6 +60,7 @@ class Compose:
         return (im, im_info, label)
 
 
+@manager.TRANSFORMS.add_component
 class RandomHorizontalFlip:
     def __init__(self, prob=0.5):
         self.prob = prob
@@ -73,6 +76,7 @@ class RandomHorizontalFlip:
             return (im, im_info, label)
 
 
+@manager.TRANSFORMS.add_component
 class RandomVerticalFlip:
     def __init__(self, prob=0.1):
         self.prob = prob
@@ -88,6 +92,7 @@ class RandomVerticalFlip:
             return (im, im_info, label)
 
 
+@manager.TRANSFORMS.add_component
 class Resize:
     # The interpolation mode
     interp_dict = {
@@ -137,6 +142,7 @@ class Resize:
             return (im, im_info, label)
 
 
+@manager.TRANSFORMS.add_component
 class ResizeByLong:
     def __init__(self, long_size):
         self.long_size = long_size
@@ -156,6 +162,7 @@ class ResizeByLong:
             return (im, im_info, label)
 
 
+@manager.TRANSFORMS.add_component
 class ResizeRangeScaling:
     def __init__(self, min_value=400, max_value=600):
         if min_value > max_value:
@@ -181,6 +188,7 @@ class ResizeRangeScaling:
             return (im, im_info, label)
 
 
+@manager.TRANSFORMS.add_component
 class ResizeStepScaling:
     def __init__(self,
                  min_scale_factor=0.75,
@@ -224,6 +232,7 @@ class ResizeStepScaling:
             return (im, im_info, label)
 
 
+@manager.TRANSFORMS.add_component
 class Normalize:
     def __init__(self, mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5]):
         self.mean = mean
@@ -245,6 +254,7 @@ class Normalize:
             return (im, im_info, label)
 
 
+@manager.TRANSFORMS.add_component
 class Padding:
     def __init__(self,
                  target_size,
@@ -305,6 +315,7 @@ class Padding:
             return (im, im_info, label)
 
 
+@manager.TRANSFORMS.add_component
 class RandomPaddingCrop:
     def __init__(self,
                  crop_size=512,
@@ -378,6 +389,7 @@ class RandomPaddingCrop:
             return (im, im_info, label)
 
 
+@manager.TRANSFORMS.add_component
 class RandomBlur:
     def __init__(self, prob=0.1):
         self.prob = prob
@@ -404,6 +416,7 @@ class RandomBlur:
             return (im, im_info, label)
 
 
+@manager.TRANSFORMS.add_component
 class RandomRotation:
     def __init__(self,
                  max_rotation=15,
@@ -451,6 +464,7 @@ class RandomRotation:
             return (im, im_info, label)
 
 
+@manager.TRANSFORMS.add_component
 class RandomScaleAspect:
     def __init__(self, min_scale=0.5, aspect_ratio=0.33):
         self.min_scale = min_scale
@@ -492,6 +506,7 @@ class RandomScaleAspect:
             return (im, im_info, label)
 
 
+@manager.TRANSFORMS.add_component
 class RandomDistort:
     def __init__(self,
                  brightness_range=0.5,
