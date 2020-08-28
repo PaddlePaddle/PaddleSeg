@@ -2,8 +2,10 @@ import paddle
 import paddle.fluid as fluid
 from paddle.fluid.param_attr import ParamAttr
 from paddle.fluid.layer_helper import LayerHelper
-from paddle.fluid.dygraph.nn import Conv2D, Pool2D, BatchNorm, Linear, Dropout
+from paddle.fluid.dygraph.nn import Conv2D, Pool2D, Linear, Dropout
+from paddle.nn import SyncBatchNorm as BatchNorm
 
+from dygraph.models.architectures import layer_utils
 from dygraph.cvlibs import manager
 
 __all__ = ["Xception41_deeplab", "Xception65_deeplab", "Xception71_deeplab"]
@@ -79,17 +81,17 @@ class ConvBNLayer(fluid.dygraph.Layer):
             param_attr=ParamAttr(name=name + "/weights"),
             bias_attr=False)
         self._bn = BatchNorm(
-            num_channels=output_channels,
-            act=act,
+            num_features=output_channels,
             epsilon=1e-3,
             momentum=0.99,
-            param_attr=ParamAttr(name=name + "/BatchNorm/gamma"),
-            bias_attr=ParamAttr(name=name + "/BatchNorm/beta"),
-            moving_mean_name=name + "/BatchNorm/moving_mean",
-            moving_variance_name=name + "/BatchNorm/moving_variance")
+            weight_attr=ParamAttr(name=name + "/BatchNorm/gamma"),
+            bias_attr=ParamAttr(name=name + "/BatchNorm/beta"))
+        
+        self._act_op = layer_utils.Activation(act=act)
 
     def forward(self, inputs):
-        return self._bn(self._conv(inputs))
+        
+        return self._act_op(self._bn(self._conv(inputs)))
 
 
 class Seperate_Conv(fluid.dygraph.Layer):
@@ -115,13 +117,13 @@ class Seperate_Conv(fluid.dygraph.Layer):
             bias_attr=False)
         self._bn1 = BatchNorm(
             input_channels,
-            act=act,
             epsilon=1e-3,
             momentum=0.99,
-            param_attr=ParamAttr(name=name + "/depthwise/BatchNorm/gamma"),
-            bias_attr=ParamAttr(name=name + "/depthwise/BatchNorm/beta"),
-            moving_mean_name=name + "/depthwise/BatchNorm/moving_mean",
-            moving_variance_name=name + "/depthwise/BatchNorm/moving_variance")
+            weight_attr=ParamAttr(name=name + "/depthwise/BatchNorm/gamma"),
+            bias_attr=ParamAttr(name=name + "/depthwise/BatchNorm/beta"))
+        
+        self._act_op1 = layer_utils.Activation(act=act)
+
         self._conv2 = Conv2D(
             input_channels,
             output_channels,
@@ -133,19 +135,21 @@ class Seperate_Conv(fluid.dygraph.Layer):
             bias_attr=False)
         self._bn2 = BatchNorm(
             output_channels,
-            act=act,
             epsilon=1e-3,
             momentum=0.99,
-            param_attr=ParamAttr(name=name + "/pointwise/BatchNorm/gamma"),
-            bias_attr=ParamAttr(name=name + "/pointwise/BatchNorm/beta"),
-            moving_mean_name=name + "/pointwise/BatchNorm/moving_mean",
-            moving_variance_name=name + "/pointwise/BatchNorm/moving_variance")
+            weight_attr=ParamAttr(name=name + "/pointwise/BatchNorm/gamma"),
+            bias_attr=ParamAttr(name=name + "/pointwise/BatchNorm/beta"))
+        
+        self._act_op2 = layer_utils.Activation(act=act)
+        
 
     def forward(self, inputs):
         x = self._conv1(inputs)
         x = self._bn1(x)
+        x = self._act_op1(x)
         x = self._conv2(x)
         x = self._bn2(x)
+        x = self._act_op2(x)
         return x
 
 

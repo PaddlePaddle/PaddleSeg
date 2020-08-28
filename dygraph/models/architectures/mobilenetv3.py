@@ -16,15 +16,17 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import math
 import numpy as np
+
 import paddle
 import paddle.fluid as fluid
 from paddle.fluid.param_attr import ParamAttr
 from paddle.fluid.layer_helper import LayerHelper
-from paddle.fluid.dygraph.nn import Conv2D, Pool2D, BatchNorm, Linear, Dropout
+from paddle.fluid.dygraph.nn import Conv2D, Pool2D, Linear, Dropout
+from paddle.nn import SyncBatchNorm as BatchNorm
 
-import math
-
+from dygraph.models.architectures import layer_utils
 from dygraph.cvlibs import manager
 
 __all__ = [
@@ -251,19 +253,18 @@ class ConvBNLayer(fluid.dygraph.Layer):
             bias_attr=False,
             use_cudnn=use_cudnn,
             act=None)
-        self.bn = fluid.dygraph.BatchNorm(
-            num_channels=out_c,
-            act=None,
-            param_attr=ParamAttr(
+        self.bn = BatchNorm(
+            num_features=out_c,
+            weight_attr=ParamAttr(
                 name=name + "_bn_scale",
                 regularizer=fluid.regularizer.L2DecayRegularizer(
                     regularization_coeff=0.0)),
             bias_attr=ParamAttr(
                 name=name + "_bn_offset",
                 regularizer=fluid.regularizer.L2DecayRegularizer(
-                    regularization_coeff=0.0)),
-            moving_mean_name=name + "_bn_mean",
-            moving_variance_name=name + "_bn_variance")
+                    regularization_coeff=0.0)))
+        
+        self._act_op = layer_utils.Activation(act=None)
 
     def forward(self, x):
         x = self.conv(x)

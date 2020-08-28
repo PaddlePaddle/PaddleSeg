@@ -16,3 +16,4 @@ from .architectures import *
 from .unet import UNet
 from .deeplab import *
 from .fcn import *
+from .pspnet import *
