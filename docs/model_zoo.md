@@ -14,6 +14,7 @@ PaddleSeg对所有内置的分割模型都提供了公开数据集下的预训�
 | MobileNetV2_0.5x  | ImageNet | 0.5x | [MobileNetV2_0.5x](https://paddle-imagenet-models-name.bj.bcebos.com/MobileNetV2_x0_5_pretrained.tar) | 65.03%/85.72% |
 | MobileNetV2_1.5x  | ImageNet | 1.5x | [MobileNetV2_1.5x](https://paddle-imagenet-models-name.bj.bcebos.com/MobileNetV2_x1_5_pretrained.tar) | 74.12%/91.67% |
 | MobileNetV2_2.0x  | ImageNet | 2.0x | [MobileNetV2_2.0x](https://paddle-imagenet-models-name.bj.bcebos.com/MobileNetV2_x2_0_pretrained.tar) | 75.23%/92.58% |
+| MobileNetV3_Large_ssld_1.0x  | ImageNet | 1.0x | [MobileNetV3_Large_ssld_1.0x](https://paddleseg.bj.bcebos.com/models/MobileNetV3_large_x1_0_ssld_pretrained.tar) | 79.00%/94.50% |
 
 用户可以结合实际场景的精度和预测性能要求，选取不同`Depth multiplier`参数的MobileNet模型。
 
@@ -37,6 +38,7 @@ PaddleSeg对所有内置的分割模型都提供了公开数据集下的预训�
 |---|---|---|---|
 | ResNet50（适配PSPNet） | ImageNet | [resnet50_v2_pspnet](https://paddleseg.bj.bcebos.com/resnet50_v2_pspnet.tgz)| -- |
 | ResNet101（适配PSPNet） | ImageNet | [resnet101_v2_pspnet](https://paddleseg.bj.bcebos.com/resnet101_v2_pspnet.tgz)| -- |
+| ResNet50_vd | ImageNet | [ResNet50_vd_ssld_pretrained.tgz](https://paddleseg.bj.bcebos.com/models/ResNet50_vd_ssld_pretrained.tgz) | 83.0%/96.4% |
 
 ## COCO预训练模型
 
@@ -57,12 +59,15 @@ train数据集合为Cityscapes训练集合，测试为Cityscapes的验证集合
 | 模型 | 数据集合 | 下载地址 |Output Stride| mutli-scale test| mIoU on val|
 |---|---|---|---|---|---|
 | DeepLabv3+/MobileNetv2/bn | Cityscapes |[mobilenet_cityscapes.tgz](https://paddleseg.bj.bcebos.com/models/mobilenet_cityscapes.tgz) |16|false| 0.698|
+| DeepLabv3+/MobileNetv3_Large/bn | Cityscapes |[deeplabv3p_mobilenetv3_large_cityscapes.tar.gz](https://paddleseg.bj.bcebos.com/models/deeplabv3p_mobilenetv3_large_cityscapes.tar.gz) |32|false| 0.7328|
 | DeepLabv3+/Xception65/gn  | Cityscapes |[deeplabv3p_xception65_gn_cityscapes.tgz](https://paddleseg.bj.bcebos.com/models/deeplabv3p_xception65_cityscapes.tgz) |16|false| 0.7824 |
-| DeepLabv3+/Xception65/bn | Cityscapes |[deeplabv3p_xception65_bn_cityscapes_.tgz](https://paddleseg.bj.bcebos.com/models/xception65_bn_cityscapes.tgz) | 16 | false | 0.7930 |
+| DeepLabv3+/Xception65/bn | Cityscapes |[deeplabv3p_xception65_bn_cityscapes.tgz](https://paddleseg.bj.bcebos.com/models/xception65_bn_cityscapes.tgz) | 16 | false | 0.7930 |
+| DeepLabv3+/ResNet50_vd/bn | Cityscapes |[deeplabv3p_resnet50_vd_cityscapes.tgz](https://paddleseg.bj.bcebos.com/models/deeplabv3p_resnet50_vd_cityscapes.tgz) | 16 | false | 0.8006 |
 | ICNet/bn | Cityscapes |[icnet_cityscapes.tgz](https://paddleseg.bj.bcebos.com/models/icnet_cityscapes.tar.gz) |16|false| 0.6831 |
 | PSPNet/bn | Cityscapes |[pspnet50_cityscapes.tgz](https://paddleseg.bj.bcebos.com/models/pspnet50_cityscapes.tgz) |16|false| 0.7013 |
 | PSPNet/bn | Cityscapes |[pspnet101_cityscapes.tgz](https://paddleseg.bj.bcebos.com/models/pspnet101_cityscapes.tgz) |16|false| 0.7734 |
 | HRNet_W18/bn | Cityscapes |[hrnet_w18_bn_cityscapes.tgz](https://paddleseg.bj.bcebos.com/models/hrnet_w18_bn_cityscapes.tgz) | 4 | false | 0.7936 |
 | Fast-SCNN/bn | Cityscapes |[fast_scnn_cityscapes.tar](https://paddleseg.bj.bcebos.com/models/fast_scnn_cityscape.tar) | 32 | false | 0.6964 |
+| OCRNet/bn | Cityscapes |[ocrnet_w18_bn_cityscapes.tar.gz](https://paddleseg.bj.bcebos.com/models/ocrnet_w18_bn_cityscapes.tar.gz) | 4 | false | 0.8023 |
 
 测试环境为python 3.7.3，v100，cudnn 7.6.2。

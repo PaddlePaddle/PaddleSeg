@@ -1,6 +1,6 @@
 # 模型导出
 
-通过训练得到一个满足要求的模型后，如果想要将该模型接入到C++预测库或者Serving服务，我们需要通过`pdseg/export_model.py`来导出该模型。
+通过训练得到一个满足要求的模型后，如果想要将该模型接入到C++预测库或者Serving服务，我们需要通过[`pdseg/export_model.py`](../../pdseg/export_model.py)来导出该模型。
 
 该脚本的使用方法和`train.py/eval.py/vis.py`完全一样。
 

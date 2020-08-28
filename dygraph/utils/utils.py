@@ -18,7 +18,7 @@ import math
 import cv2
 import paddle.fluid as fluid
 
-from . import logging
+from . import logger
 
 
 def seconds_to_hms(seconds):
@@ -29,39 +29,25 @@ def seconds_to_hms(seconds):
     return hms_str
 
 
-def get_environ_info():
-    info = dict()
-    info['place'] = 'cpu'
-    info['num'] = int(os.environ.get('CPU_NUM', 1))
-    if os.environ.get('CUDA_VISIBLE_DEVICES', None) != "":
-        if hasattr(fluid.core, 'get_cuda_device_count'):
-            gpu_num = 0
-            try:
-                gpu_num = fluid.core.get_cuda_device_count()
-            except:
-                os.environ['CUDA_VISIBLE_DEVICES'] = ''
-                pass
-            if gpu_num > 0:
-                info['place'] = 'cuda'
-                info['num'] = fluid.core.get_cuda_device_count()
-    return info
-
-
 def load_pretrained_model(model, pretrained_model):
     if pretrained_model is not None:
-        logging.info('Load pretrained model from {}'.format(pretrained_model))
+        logger.info('Load pretrained model from {}'.format(pretrained_model))
         if os.path.exists(pretrained_model):
             ckpt_path = os.path.join(pretrained_model, 'model')
-            para_state_dict, _ = fluid.load_dygraph(ckpt_path)
+            try:
+                para_state_dict, _ = fluid.load_dygraph(ckpt_path)
+            except:
+                para_state_dict = fluid.load_program_state(pretrained_model)
+
             model_state_dict = model.state_dict()
             keys = model_state_dict.keys()
             num_params_loaded = 0
             for k in keys:
                 if k not in para_state_dict:
-                    logging.warning("{} is not in pretrained model".format(k))
+                    logger.warning("{} is not in pretrained model".format(k))
                 elif list(para_state_dict[k].shape) != list(
                         model_state_dict[k].shape):
-                    logging.warning(
+                    logger.warning(
                         "[SKIP] Shape of pretrained params {} doesn't match.(Pretrained: {}, Actual: {})"
                         .format(k, para_state_dict[k].shape,
                                 model_state_dict[k].shape))
@@ -69,7 +55,7 @@ def load_pretrained_model(model, pretrained_model):
                     model_state_dict[k] = para_state_dict[k]
                     num_params_loaded += 1
             model.set_dict(model_state_dict)
-            logging.info("There are {}/{} varaibles are loaded.".format(
+            logger.info("There are {}/{} varaibles are loaded.".format(
                 num_params_loaded, len(model_state_dict)))
 
         else:
@@ -77,13 +63,14 @@ def load_pretrained_model(model, pretrained_model):
                 'The pretrained model directory is not Found: {}'.format(
                     pretrained_model))
     else:
-        logging.info('No pretrained model to load, train from scratch')
+        logger.info('No pretrained model to load, train from scratch')
 
 
 def resume(model, optimizer, resume_model):
     if resume_model is not None:
-        logging.info('Resume model from {}'.format(resume_model))
+        logger.info('Resume model from {}'.format(resume_model))
         if os.path.exists(resume_model):
+            resume_model = os.path.normpath(resume_model)
             ckpt_path = os.path.join(resume_model, 'model')
             para_state_dict, opti_state_dict = fluid.load_dygraph(ckpt_path)
             model.set_dict(para_state_dict)
@@ -97,7 +84,7 @@ def resume(model, optimizer, resume_model):
                 'The resume model directory is not Found: {}'.format(
                     resume_model))
     else:
-        logging.info('No model need to resume')
+        logger.info('No model need to resume')
 
 
 def visualize(image, result, save_dir=None, weight=0.6):

@@ -26,7 +26,7 @@ from loss import multi_dice_loss
 from loss import multi_bce_loss
 from lovasz_losses import lovasz_hinge
 from lovasz_losses import lovasz_softmax
-from models.modeling import deeplab, unet, icnet, pspnet, hrnet, fast_scnn
+from models.modeling import deeplab, unet, icnet, pspnet, hrnet, fast_scnn, ocrnet
 
 
 class ModelPhase(object):
@@ -85,6 +85,8 @@ def seg_model(image, class_num):
         logits = hrnet.hrnet(image, class_num)
     elif model_name == 'fast_scnn':
         logits = fast_scnn.fast_scnn(image, class_num)
+    elif model_name == 'ocrnet':
+        logits = ocrnet.ocrnet(image, class_num)
     else:
         raise Exception(
             "unknow model name, only support unet, deeplabv3p, icnet, pspnet, hrnet, fast_scnn"

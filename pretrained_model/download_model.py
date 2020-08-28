@@ -24,6 +24,8 @@ from test_utils import download_file_and_uncompress
 
 model_urls = {
     # ImageNet Pretrained
+    "mobilenetv3_large_ssld_imagenet":
+    "https://paddleseg.bj.bcebos.com/models/MobileNetV3_large_x1_0_ssld_pretrained.tar",
     "mobilenetv2-2-0_bn_imagenet":
     "https://paddle-imagenet-models-name.bj.bcebos.com/MobileNetV2_x2_0_pretrained.tar",
     "mobilenetv2-1-5_bn_imagenet":
@@ -42,6 +44,8 @@ model_urls = {
     "https://paddleseg.bj.bcebos.com/models/Xception41_pretrained.tgz",
     "xception65_imagenet":
     "https://paddleseg.bj.bcebos.com/models/Xception65_pretrained.tgz",
+    "resnet50_vd_imagenet":
+    "https://paddleseg.bj.bcebos.com/models/ResNet50_vd_ssld_pretrained.tgz",
     "hrnet_w18_bn_imagenet":
     "https://paddleseg.bj.bcebos.com/models/hrnet_w18_imagenet.tar",
     "hrnet_w30_bn_imagenet":
@@ -70,12 +74,16 @@ model_urls = {
     "https://paddleseg.bj.bcebos.com/models/pspnet101_coco.tgz",
 
     # Cityscapes pretrained
+    "deeplabv3p_mobilenetv3_large_cityscapes":
+    "https://paddleseg.bj.bcebos.com/models/deeplabv3p_mobilenetv3_large_cityscapes.tar.gz",
     "deeplabv3p_mobilenetv2-1-0_bn_cityscapes":
     "https://paddleseg.bj.bcebos.com/models/mobilenet_cityscapes.tgz",
     "deeplabv3p_xception65_gn_cityscapes":
     "https://paddleseg.bj.bcebos.com/models/deeplabv3p_xception65_cityscapes.tgz",
     "deeplabv3p_xception65_bn_cityscapes":
     "https://paddleseg.bj.bcebos.com/models/xception65_bn_cityscapes.tgz",
+    "deeplabv3p_resnet50_vd_cityscapes":
+    "https://paddleseg.bj.bcebos.com/models/deeplabv3p_resnet50_vd_cityscapes.tgz",
     "unet_bn_coco":
     "https://paddleseg.bj.bcebos.com/models/unet_coco_v3.tgz",
     "icnet_bn_cityscapes":
@@ -88,6 +96,8 @@ model_urls = {
     "https://paddleseg.bj.bcebos.com/models/hrnet_w18_bn_cityscapes.tgz",
     "fast_scnn_cityscapes":
     "https://paddleseg.bj.bcebos.com/models/fast_scnn_cityscape.tar",
+    "ocrnet_w18_bn_cityscapes":
+    "https://paddleseg.bj.bcebos.com/models/ocrnet_w18_bn_cityscapes.tar.gz",
 }
 
 if __name__ == "__main__":

@@ -12,4 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from .architectures import *
 from .unet import UNet
+from .deeplab import *
+from .fcn import *
+from .pspnet import *

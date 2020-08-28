@@ -145,8 +145,11 @@ PaddleSeg在AI Studio平台上提供了在线体验的DeepLabv3+图像分割教�
 |mobilenetv2-0-25_bn_imagenet|MobileNetV2|bn|ImageNet|MODEL.MODEL_NAME: deeplabv3p <br> MODEL.DEEPLAB.BACKBONE: mobilenetv2 <br> MODEL.DEEPLAB.DEPTH_MULTIPLIER: 0.25 <br> MODEL.DEFAULT_NORM_TYPE: bn|
 |xception41_imagenet|Xception41|bn|ImageNet|MODEL.MODEL_NAME: deeplabv3p <br> MODEL.DEEPLAB.BACKBONE: xception_41 <br> MODEL.DEFAULT_NORM_TYPE: bn|
 |xception65_imagenet|Xception65|bn|ImageNet|MODEL.MODEL_NAME: deeplabv3p <br> MODEL.DEEPLAB.BACKBONE: xception_65 <br> MODEL.DEFAULT_NORM_TYPE: bn|
+|resnet50_vd_imagenet|ResNet50_vd|bn|ImageNet|MODEL.MODEL_NAME: deeplabv3p <br> MODEL.DEEPLAB.BACKBONE: resnet50_vd <br> MODEL.DEFAULT_NORM_TYPE: bn|
 |deeplabv3p_mobilenetv2-1-0_bn_coco|MobileNetV2|bn|COCO|MODEL.MODEL_NAME: deeplabv3p <br> MODEL.DEEPLAB.BACKBONE: mobilenetv2 <br> MODEL.DEEPLAB.DEPTH_MULTIPLIER: 1.0 <br> MODEL.DEEPLAB.ENCODER_WITH_ASPP: False <br> MODEL.DEEPLAB.ENABLE_DECODER: False <br> MODEL.DEFAULT_NORM_TYPE: bn|
 |**deeplabv3p_xception65_bn_coco**|Xception65|bn|COCO|MODEL.MODEL_NAME: deeplabv3p <br> MODEL.DEEPLAB.BACKBONE: xception_65 <br> MODEL.DEFAULT_NORM_TYPE: bn |
 |deeplabv3p_mobilenetv2-1-0_bn_cityscapes|MobileNetV2|bn|Cityscapes|MODEL.MODEL_NAME: deeplabv3p <br> MODEL.DEEPLAB.BACKBONE: mobilenetv2 <br> MODEL.DEEPLAB.DEPTH_MULTIPLIER: 1.0 <br> MODEL.DEEPLAB.ENCODER_WITH_ASPP: False <br> MODEL.DEEPLAB.ENABLE_DECODER: False <br> MODEL.DEFAULT_NORM_TYPE: bn|
+|deeplabv3p_mobilenetv3_large_cityscapes|MobileNetV3|bn|Cityscapes|MODEL.MODEL_NAME: deeplabv3p <br> MODEL.DEEPLAB.BACKBONE: mobilenetv3_large <br> MODEL.DEFAULT_NORM_TYPE: bn|
 |deeplabv3p_xception65_gn_cityscapes|Xception65|gn|Cityscapes|MODEL.MODEL_NAME: deeplabv3p <br>  MODEL.DEEPLAB.BACKBONE: xception_65 <br> MODEL.DEFAULT_NORM_TYPE: gn|
 |deeplabv3p_xception65_bn_cityscapes|Xception65|bn|Cityscapes|MODEL.MODEL_NAME: deeplabv3p <br> MODEL.DEEPLAB.BACKBONE: xception_65 <br> MODEL.DEFAULT_NORM_TYPE: bn|
+|deeplabv3p_resnet50_vd_cityscapes|resnet50_vd|bn|Cityscapes|MODEL.MODEL_NAME: deeplabv3p <br> MODEL.DEEPLAB.BACKBONE: resnet50_vd <br> MODEL.DEFAULT_NORM_TYPE: bn|

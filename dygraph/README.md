@@ -1,43 +1,36 @@
 # 动态图执行
 
-## 数据集设置
+## 下载及添加路径
 ```
-data_dir='data/path'
-train_list='train/list/path'
-val_list='val/list/path'
-test_list='test/list/path'
-num_classes=number/of/dataset/classes
+git clone https://github.com/PaddlePaddle/PaddleSeg
+cd PaddleSeg
+export PYTHONPATH=$PYTHONPATH:`pwd`
+cd dygraph
 ```
 
 ## 训练
 ```
-python3 train.py --model_name UNet \
---data_dir $data_dir \
---train_list $train_list \
---val_list $val_list \
---num_classes $num_classes \
+python3 train.py --model_name unet \
+--dataset OpticDiscSeg \
 --input_size 192 192 \
---num_epochs 4 \
---save_interval_epochs 1 \
+--iters 10 \
+--save_interval_iters 1 \
+--do_eval \
 --save_dir output
 ```
 
 ## 评估
 ```
-python3 val.py --model_name UNet \
---data_dir $data_dir \
---val_list $val_list \
---num_classes $num_classes \
+python3 val.py --model_name unet \
+--dataset OpticDiscSeg \
 --input_size 192 192 \
---model_dir output/epoch_1
+--model_dir output/best_model
 ```
 
 ## 预测
 ```
-python3 infer.py --model_name UNet \
---data_dir $data_dir \
---test_list $test_list \
---num_classes $num_classes \
---input_size 192 192 \
---model_dir output/epoch_1
+python3 infer.py --model_name unet \
+--dataset OpticDiscSeg \
+--model_dir output/best_model \
+--input_size 192 192
 ```

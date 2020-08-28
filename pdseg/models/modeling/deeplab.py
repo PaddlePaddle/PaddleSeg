@@ -352,6 +352,8 @@ def resnet_vd(input):
     else:
         raise Exception("deeplab only support stride 8 or 16")
     lr_mult_list = cfg.MODEL.DEEPLAB.BACKBONE_LR_MULT_LIST
+    if lr_mult_list is None:
+        lr_mult_list = [1.0, 1.0, 1.0, 1.0, 1.0]
     model = resnet_vd_backbone(
         layers, stem='deeplab', lr_mult_list=lr_mult_list)
     data, decode_shortcuts = model.net(
