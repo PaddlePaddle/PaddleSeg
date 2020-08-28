@@ -209,23 +209,23 @@ class PPModule(fluid.dygraph.Layer):
 
 @manager.MODELS.add_component
 def pspnet_resnet101_vd(*args, **kwargs):
-    pretrained_model = "/mnt/liuyi22/PaddlePaddle/PaddleClas/pretrained/resnet101_vd_ssld_imagenet"
+    pretrained_model = None
     return PSPNet(backbone='ResNet101_vd', pretrained_model=pretrained_model, **kwargs)
 
 
 @manager.MODELS.add_component
 def pspnet_resnet101_vd_os8(*args, **kwargs):
-    pretrained_model = "/mnt/liuyi22/PaddlePaddle/PaddleClas/pretrained/resnet101_vd_ssld_imagenet"
+    pretrained_model = None
     return PSPNet(backbone='ResNet101_vd', output_stride=8, pretrained_model=pretrained_model, **kwargs)
 
 
 @manager.MODELS.add_component
 def pspnet_resnet50_vd(*args, **kwargs):
-    pretrained_model = "/mnt/liuyi22/PaddlePaddle/PaddleClas/pretrained/resnet50_vd_ssld_v2_imagenet"
+    pretrained_model = None
     return PSPNet(backbone='ResNet50_vd', pretrained_model=pretrained_model, **kwargs)
 
 
 @manager.MODELS.add_component
 def pspnet_resnet50_vd_os8(*args, **kwargs):
-    pretrained_model = "/mnt/liuyi22/PaddlePaddle/PaddleClas/pretrained/resnet50_vd_ssld_v2_imagenet"
+    pretrained_model = None
     return PSPNet(backbone='ResNet50_vd', output_stride=8, pretrained_model=pretrained_model, **kwargs)
