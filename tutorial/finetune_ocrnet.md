@@ -77,7 +77,9 @@ MODEL:
         STAGE4:
             NUM_CHANNELS: [18, 36, 72, 144]
     # 此处设置OCR HEAD
-    
+        OCR_MID_CHANNELS: 512
+        OCR_KEY_CHANNELS: 256
+    MULTI_LOSS_WEIGHT: [1.0, 1.0]
 
 # 其他配置
 TRAIN_CROP_SIZE: (512, 512)
@@ -142,4 +144,4 @@ python pdseg/vis.py --use_gpu --cfg ./configs/ocrnet_optic.yaml
 
 |预训练模型名称|Backbone|数据集|配置|
 |-|-|-|-|
-|ocrnet_w18_bn_cityscapes|OCRNet| Cityscapes | MODEL.MODEL_NAME: ocrnet <br> MODEL.HRNET.STAGE2.NUM_CHANNELS: [18, 36] <br> MODEL.HRNET.STAGE3.NUM_CHANNELS: [18, 36, 72] <br> MODEL.HRNET.STAGE4.NUM_CHANNELS: [18, 36, 72, 144] <br> MODEL.DEFAULT_NORM_TYPE: bn <br> MODEL.OCR.OCR_MID_CHANNELS: 512 <br> MODEL.OCR.OCR_KEY_CHANNELS: 256|
+|ocrnet_w18_bn_cityscapes|OCRNet| Cityscapes | MODEL.MODEL_NAME: ocrnet <br> MODEL.HRNET.STAGE2.NUM_CHANNELS: [18, 36] <br> MODEL.HRNET.STAGE3.NUM_CHANNELS: [18, 36, 72] <br> MODEL.HRNET.STAGE4.NUM_CHANNELS: [18, 36, 72, 144] <br> MODEL.DEFAULT_NORM_TYPE: bn <br> MODEL.OCR.OCR_MID_CHANNELS: 512 <br> MODEL.OCR.OCR_KEY_CHANNELS: 256 <br> MODEL.MULTI_LOSS_WEIGHT: [1.0, 1.0] |
