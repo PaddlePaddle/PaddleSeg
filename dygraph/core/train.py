@@ -79,7 +79,7 @@ def train(model,
     train_batch_cost = 0.0
     timer.start()
 
-    iter = 0
+    iter = start_iter
     while iter < iters:
         for data in loader:
             iter += 1
