@@ -156,6 +156,14 @@ A: 降低Batch size，使用Group Norm策略；请注意训练过程中当`DEFAU
 <p align="center">  &#8194;&#8194;&#8194;微信公众号&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;&#8194;官方技术交流QQ群</p>
 
 ## 更新日志
+
+* 2020.08.31
+
+  **`v0.6.0`**
+  * 丰富Deeplabv3p网络结构，新增ResNet-vd、MobileNetv3两种backbone，满足高性能与高精度场景，并提供基于Cityscapes和ImageNet的[预训练模型](./docs/model_zoo.md)4个。
+  * 新增高精度分割模型OCRNet，支持以HRNet作为backbone，提供基于Cityscapes的[预训练模型](https://github.com/PaddlePaddle/PaddleSeg/blob/develop/docs/model_zoo.md#cityscapes%E9%A2%84%E8%AE%AD%E7%BB%83%E6%A8%A1%E5%9E%8B)，mIoU超过80%。
+  * 新增proposal free的实例分割模型[Spatial Embedding](https://github.com/PaddlePaddle/PaddleSeg/tree/develop/contrib/SpatialEmbeddings)，性能与精度均超越MaskRCNN。提供了基于kitti的预训练模型。
+
 * 2020.05.12
 
   **`v0.5.0`**
