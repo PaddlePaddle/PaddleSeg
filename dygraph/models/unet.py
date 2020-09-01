@@ -64,7 +64,6 @@ class UNet(fluid.dygraph.Layer):
         """
         if pretrained_model is not None:
             if os.path.exists(pretrained_model):
-                utils.load_pretrained_model(self.backbone, pretrained_model)
                 utils.load_pretrained_model(self, pretrained_model)
             else:
                 raise Exception('Pretrained model is not found: {}'.format(
