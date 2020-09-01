@@ -83,11 +83,16 @@ def get_environ_info():
     env_info = {}
     env_info['System Platform'] = sys.platform
     if env_info['System Platform'] == 'linux':
-        lsb_v = subprocess.check_output(['lsb_release', '-v']).decode().strip()
-        lsb_v = lsb_v.replace('\t', ' ')
-        lsb_d = subprocess.check_output(['lsb_release', '-d']).decode().strip()
-        lsb_d = lsb_d.replace('\t', ' ')
-        env_info['LSB'] = [lsb_v, lsb_d]
+        try:
+            lsb_v = subprocess.check_output(['lsb_release',
+                                             '-v']).decode().strip()
+            lsb_v = lsb_v.replace('\t', ' ')
+            lsb_d = subprocess.check_output(['lsb_release',
+                                             '-d']).decode().strip()
+            lsb_d = lsb_d.replace('\t', ' ')
+            env_info['LSB'] = [lsb_v, lsb_d]
+        except:
+            pass
 
     env_info['Python'] = sys.version.replace('\n', '')
 
