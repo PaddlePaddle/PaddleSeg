@@ -295,7 +295,7 @@ class Predictor:
 
 def run(deploy_conf, imgs_dir, support_extensions=".jpg|.jpeg"):
     # 1. scan and get all images with valid extensions in directory imgs_dir
-    imgs = get_images_from_dir(imgs_dir)
+    imgs = get_images_from_dir(imgs_dir, support_extensions)
     if len(imgs) == 0:
         print("No Image (with extensions : %s) found in [%s]" %
               (support_extensions, imgs_dir))
