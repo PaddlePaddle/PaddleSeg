@@ -13,13 +13,17 @@
 # limitations under the License.
 
 import os
+
 from .dataset import Dataset
 from dygraph.utils.download import download_file_and_uncompress
+from dygraph.cvlibs import manager
+from dygraph.transforms import Compose
 
 DATA_HOME = os.path.expanduser('~/.cache/paddle/dataset')
 URL = "http://host.robots.ox.ac.uk/pascal/VOC/voc2012/VOCtrainval_11-May-2012.tar"
 
 
+@manager.DATASETS.add_component
 class PascalVOC(Dataset):
     """Pascal VOC dataset `http://host.robots.ox.ac.uk/pascal/VOC/`. If you want to augment the dataset,
     please run the voc_augment.py in tools.
@@ -36,7 +40,7 @@ class PascalVOC(Dataset):
                  transforms=None,
                  download=True):
         self.dataset_root = dataset_root
-        self.transforms = transforms
+        self.transforms = Compose(transforms)
         self.mode = mode
         self.file_list = list()
         self.num_classes = 21

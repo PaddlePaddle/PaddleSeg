@@ -44,18 +44,19 @@ class ComponentManager:
 
     def __init__(self):
         self._components_dict = dict()
-        
+
     def __len__(self):
         return len(self._components_dict)
 
     def __repr__(self):
-        return "{}:{}".format(self.__class__.__name__, list(self._components_dict.keys()))
+        return "{}:{}".format(self.__class__.__name__,
+                              list(self._components_dict.keys()))
 
     def __getitem__(self, item):
         if item not in self._components_dict.keys():
-            raise KeyError("{} does not exist in the current {}".format(item, self))
+            raise KeyError("{} does not exist in the current {}".format(
+                item, self))
         return self._components_dict[item]
-
 
     @property
     def components_dict(self):
@@ -74,7 +75,9 @@ class ComponentManager:
 
         # Currently only support class or function type
         if not (inspect.isclass(component) or inspect.isfunction(component)):
-            raise TypeError("Expect class/function type, but received {}".format(type(component)))
+            raise TypeError(
+                "Expect class/function type, but received {}".format(
+                    type(component)))
 
         # Obtain the internal name of the component
         component_name = component.__name__
@@ -92,7 +95,7 @@ class ComponentManager:
 
         Args:
         components (function | class | list | tuple): support three types of components
-        
+
         Returns:
         None
         """
@@ -104,8 +107,11 @@ class ComponentManager:
         else:
             component = components
             self._add_single_component(component)
-        
+
         return components
+
 
 MODELS = ComponentManager()
 BACKBONES = ComponentManager()
+DATASETS = ComponentManager()
+TRANSFORMS = ComponentManager()

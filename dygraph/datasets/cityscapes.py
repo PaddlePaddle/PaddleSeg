@@ -16,8 +16,11 @@ import os
 import glob
 
 from .dataset import Dataset
+from dygraph.cvlibs import manager
+from dygraph.transforms import Compose
 
 
+@manager.DATASETS.add_component
 class Cityscapes(Dataset):
     """Cityscapes dataset `https://www.cityscapes-dataset.com/`.
     The folder structure is as follow:
@@ -42,7 +45,7 @@ class Cityscapes(Dataset):
 
     def __init__(self, dataset_root, transforms=None, mode='train'):
         self.dataset_root = dataset_root
-        self.transforms = transforms
+        self.transforms = Compose(transforms)
         self.file_list = list()
         self.mode = mode
         self.num_classes = 19
