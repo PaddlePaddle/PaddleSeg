@@ -96,7 +96,7 @@ def parse_args():
         dest='save_interval_iters',
         help='The interval iters for save a model snapshot',
         type=int,
-        default=5)
+        default=1000)
     parser.add_argument(
         '--save_dir',
         dest='save_dir',
