@@ -17,7 +17,8 @@ import os
 import paddle.fluid as fluid
 from paddle.fluid.dygraph.parallel import ParallelEnv
 from paddle.fluid.io import DataLoader
-from paddle.incubate.hapi.distributed import DistributedBatchSampler
+# from paddle.incubate.hapi.distributed import DistributedBatchSampler
+from paddle.io import DistributedBatchSampler
 
 import dygraph.utils.logger as logger
 from dygraph.utils import load_pretrained_model
