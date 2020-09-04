@@ -95,7 +95,7 @@ def visualize(cfg,
               local_test=False,
               **kwargs):
     if vis_file_list is None:
-        vis_file_list = cfg.DATASET.TEST_FILE_LIST
+        vis_file_list = cfg.DATASET.VIS_FILE_LIST
     dataset = SegDataset(
         file_list=vis_file_list,
         mode=ModelPhase.VISUAL,
