@@ -1,0 +1,43 @@
+batch_size: 2
+iters: 160000
+
+train_dataset:
+  type: Cityscapes
+  dataset_root: datasets/cityscapes
+  transforms:
+    - type: RandomHorizontalFlip
+    - type: ResizeStepScaling
+      min_scale_factor: 0.5
+      max_scale_factor: 2.0
+      scale_step_size: 0.25
+    - type: RandomPaddingCrop
+      crop_size: [1024, 512]
+    - type: Normalize
+  mode: train
+
+val_dataset:
+  type: Cityscapes
+  dataset_root: datasets/cityscapes
+  transforms:
+    - type: Normalize
+  mode: val
+
+model:
+  type: OCRNet
+  backbone:
+    type: HRNet_W48
+    pretrained: dygraph/pretrained_model/hrnet_w48_imagenet/
+  num_classes: 19
+  in_channels: 720
+
+optimizer:
+  type: sgd
+
+learning_rate:
+  value: 0.01
+  decay:
+    type: poly
+    power: 0.9
+
+loss:
+  type: CrossEntropy
