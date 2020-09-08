@@ -55,8 +55,8 @@ class Compose:
             if len(outputs) == 3:
                 label = outputs[2]
         im = permute(im)
-        if len(outputs) == 3:
-            label = label[np.newaxis, :, :]
+        # if len(outputs) == 3:
+        #     label = label[np.newaxis, :, :]
         return (im, im_info, label)
 
 

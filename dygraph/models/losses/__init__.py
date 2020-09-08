@@ -12,5 +12,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from . import manager
-from . import param_init
+from .cross_entroy_loss import CrossEntropyLoss

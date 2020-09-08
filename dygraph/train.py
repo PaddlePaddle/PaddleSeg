@@ -110,6 +110,8 @@ def main(args):
 
         val_dataset = cfg.val_dataset if args.do_eval else None
 
+        losses = cfg.loss
+
         train(
             cfg.model,
             train_dataset,
@@ -123,7 +125,8 @@ def main(args):
             log_iters=args.log_iters,
             num_classes=train_dataset.num_classes,
             num_workers=args.num_workers,
-            use_vdl=args.use_vdl)
+            use_vdl=args.use_vdl,
+            losses=losses)
 
 
 if __name__ == '__main__':

@@ -35,15 +35,34 @@ class Config(object):
             raise FileNotFoundError('File {} does not exist'.format(path))
 
         if path.endswith('yml') or path.endswith('yaml'):
-            self._parse_from_yaml(path)
+            dic = self._parse_from_yaml(path)
+            self._build(dic)
         else:
             raise RuntimeError('Config file should in yaml format!')
+
+    def _update_dic(self, dic, base_dic):
+        """
+        update dic from base_dic
+        """
+        dic = dic.copy()
+        for key, val in base_dic.items():
+            if isinstance(val, dict) and key in dic:
+                dic[key] = self._update_dic(dic[key], val)
+            else:
+                dic[key] = val
+        return dic
 
     def _parse_from_yaml(self, path: str):
         '''Parse a yaml file and build config'''
         with codecs.open(path, 'r', 'utf-8') as file:
             dic = yaml.load(file, Loader=yaml.FullLoader)
-            self._build(dic)
+        if '_base_' in dic:
+            cfg_dir = os.path.dirname(path)
+            base_path = dic.pop('_base_')
+            base_path = os.path.join(cfg_dir, base_path)
+            base_dic = self._parse_from_yaml(base_path)
+            dic = self._update_dic(dic, base_dic)
+        return dic
 
     def _build(self, dic: dict):
         '''Build config from dictionary'''
@@ -68,6 +87,7 @@ class Config(object):
         })
 
         self._loss_cfg = dic.get('loss', {})
+        self._losses = None
 
         self._optimizer_cfg = dic.get('optimizer', {})
 
@@ -145,14 +165,23 @@ class Config(object):
         return args
 
     @property
-    def loss_type(self) -> str:
-        ...
-
-    @property
-    def loss_args(self) -> dict:
-        args = self._loss_cfg.copy()
-        args.pop('type')
-        return args
+    def loss(self) -> list:
+        if not self._losses:
+            args = self._loss_cfg.copy()
+            self._losses = dict()
+            for key, val in args.items():
+                if key == 'types':
+                    self._losses['types'] = []
+                    for item in args['types']:
+                        self._losses['types'].append(self._load_object(item))
+                else:
+                    self._losses[key] = val
+            if len(self._losses['coef']) != len(self._losses['types']):
+                raise RuntimeError(
+                    'The length of coef should equal to types in loss config: {} != {}.'
+                    .format(
+                        len(self._losses['coef']), len(self._losses['types'])))
+        return self._losses
 
     @property
     def model(self) -> Callable:
@@ -175,7 +204,7 @@ class Config(object):
     def _load_component(self, com_name: str) -> Any:
         com_list = [
             manager.MODELS, manager.BACKBONES, manager.DATASETS,
-            manager.TRANSFORMS
+            manager.TRANSFORMS, manager.LOSSES
         ]
 
         for com in com_list:

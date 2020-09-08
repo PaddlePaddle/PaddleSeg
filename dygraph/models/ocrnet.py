@@ -12,11 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
+
 import paddle.fluid as fluid
 from paddle.fluid.dygraph import Sequential, Conv2D
 
 from dygraph.cvlibs import manager
 from dygraph.models.architectures.layer_utils import ConvBnRelu
+from dygraph import utils
 
 
 class SpatialGatherBlock(fluid.dygraph.Layer):
@@ -116,8 +119,9 @@ class ObjectAttentionBlock(fluid.dygraph.Layer):
 class OCRNet(fluid.dygraph.Layer):
     def __init__(self,
                  num_classes,
-                 in_channels,
                  backbone,
+                 model_pretrained=None,
+                 in_channels=None,
                  ocr_mid_channels=512,
                  ocr_key_channels=256,
                  ignore_index=255):
@@ -138,6 +142,8 @@ class OCRNet(fluid.dygraph.Layer):
         self.aux_head = Sequential(
             ConvBnRelu(in_channels, in_channels, 3, padding=1),
             Conv2D(in_channels, self.num_classes, 1))
+
+        self.init_weight(model_pretrained)
 
     def forward(self, x, label=None):
         feats = self.backbone(x)
@@ -163,6 +169,19 @@ class OCRNet(fluid.dygraph.Layer):
         pred = fluid.layers.argmax(score_map, axis=3)
         pred = fluid.layers.unsqueeze(pred, axes=[3])
         return pred, score_map
+
+    def init_weight(self, pretrained_model=None):
+        """
+        Initialize the parameters of model parts.
+        Args:
+            pretrained_model ([str], optional): the path of pretrained model.. Defaults to None.
+        """
+        if pretrained_model is not None:
+            if os.path.exists(pretrained_model):
+                utils.load_pretrained_model(self, pretrained_model)
+            else:
+                raise Exception('Pretrained model is not found: {}'.format(
+                    pretrained_model))
 
     def _get_loss(self, logit, label):
         """

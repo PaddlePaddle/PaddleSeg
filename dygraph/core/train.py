@@ -14,17 +14,40 @@
 
 import os
 
+import paddle
 import paddle.fluid as fluid
 from paddle.fluid.dygraph.parallel import ParallelEnv
 from paddle.fluid.io import DataLoader
 # from paddle.incubate.hapi.distributed import DistributedBatchSampler
 from paddle.io import DistributedBatchSampler
+import paddle.nn.functional as F
 
 import dygraph.utils.logger as logger
 from dygraph.utils import load_pretrained_model
 from dygraph.utils import resume
 from dygraph.utils import Timer, calculate_eta
 from .val import evaluate
+
+
+def check_logits_losses(logits, losses):
+    len_logits = len(logits)
+    len_losses = len(losses['types'])
+    if len_logits != len_losses:
+        raise RuntimeError(
+            'The length of logits should equal to the types of loss config: {} != {}.'
+            .format(len_logits, len_losses))
+
+
+def loss_computation(logits, label, losses):
+    check_logits_losses(logits, losses)
+    loss = 0
+    for i in range(len(logits)):
+        logit = logits[i]
+        if logit.shape[-2:] != label.shape[-2:]:
+            logit = F.resize_bilinear(logit, label.shape[-2:])
+        loss_i = losses['types'][i](logit, label)
+        loss += losses['coef'][i] * loss_i
+    return loss
 
 
 def train(model,
@@ -40,7 +63,8 @@ def train(model,
           log_iters=10,
           num_classes=None,
           num_workers=8,
-          use_vdl=False):
+          use_vdl=False,
+          losses=None):
     ignore_index = model.ignore_index
     nranks = ParallelEnv().nranks
 
@@ -90,13 +114,17 @@ def train(model,
             images = data[0]
             labels = data[1].astype('int64')
             if nranks > 1:
-                loss = ddp_model(images, labels)
+                logits = ddp_model(images)
+                loss = loss_computation(logits, labels, losses)
+                # loss = ddp_model(images, labels)
                 # apply_collective_grads sum grads over multiple gpus.
                 loss = ddp_model.scale_loss(loss)
                 loss.backward()
                 ddp_model.apply_collective_grads()
             else:
-                loss = model(images, labels)
+                logits = model(images)
+                loss = loss_computation(logits, labels, losses)
+                # loss = model(images, labels)
                 loss.backward()
             optimizer.minimize(loss)
             model.clear_gradients()

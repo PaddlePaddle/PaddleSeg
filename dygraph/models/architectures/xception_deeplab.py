@@ -1,3 +1,19 @@
+# copyright (c) 2020 PaddlePaddle Authors. All Rights Reserve.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+import os
+
 import paddle
 import paddle.fluid as fluid
 from paddle.fluid.param_attr import ParamAttr
@@ -7,6 +23,7 @@ from paddle.nn import SyncBatchNorm as BatchNorm
 
 from dygraph.models.architectures import layer_utils
 from dygraph.cvlibs import manager
+from dygraph.utils import utils
 
 __all__ = ["Xception41_deeplab", "Xception65_deeplab", "Xception71_deeplab"]
 
@@ -86,11 +103,11 @@ class ConvBNLayer(fluid.dygraph.Layer):
             momentum=0.99,
             weight_attr=ParamAttr(name=name + "/BatchNorm/gamma"),
             bias_attr=ParamAttr(name=name + "/BatchNorm/beta"))
-        
+
         self._act_op = layer_utils.Activation(act=act)
 
     def forward(self, inputs):
-        
+
         return self._act_op(self._bn(self._conv(inputs)))
 
 
@@ -121,7 +138,7 @@ class Seperate_Conv(fluid.dygraph.Layer):
             momentum=0.99,
             weight_attr=ParamAttr(name=name + "/depthwise/BatchNorm/gamma"),
             bias_attr=ParamAttr(name=name + "/depthwise/BatchNorm/beta"))
-        
+
         self._act_op1 = layer_utils.Activation(act=act)
 
         self._conv2 = Conv2D(
@@ -139,9 +156,8 @@ class Seperate_Conv(fluid.dygraph.Layer):
             momentum=0.99,
             weight_attr=ParamAttr(name=name + "/pointwise/BatchNorm/gamma"),
             bias_attr=ParamAttr(name=name + "/pointwise/BatchNorm/beta"))
-        
+
         self._act_op2 = layer_utils.Activation(act=act)
-        
 
     def forward(self, inputs):
         x = self._conv1(inputs)
@@ -254,11 +270,16 @@ class Xception_Block(fluid.dygraph.Layer):
 
 
 class XceptionDeeplab(fluid.dygraph.Layer):
-    
+
     #def __init__(self, backbone, class_dim=1000):
     # add output_stride
-    def __init__(self, backbone, output_stride=16, class_dim=1000, **kwargs):
-    
+    def __init__(self,
+                 backbone,
+                 backbone_pretrained=None,
+                 output_stride=16,
+                 class_dim=1000,
+                 **kwargs):
+
         super(XceptionDeeplab, self).__init__()
 
         bottleneck_params = gen_bottleneck_params(backbone)
@@ -280,7 +301,6 @@ class XceptionDeeplab(fluid.dygraph.Layer):
             padding=1,
             act="relu",
             name=self.backbone + "/entry_flow/conv2")
-
         """
             bottleneck_params = {
             "entry_flow": (3, [2, 2, 2], [128, 256, 728]),
@@ -381,6 +401,8 @@ class XceptionDeeplab(fluid.dygraph.Layer):
             param_attr=ParamAttr(name="fc_weights"),
             bias_attr=ParamAttr(name="fc_bias"))
 
+        self.init_weight(backbone_pretrained)
+
     def forward(self, inputs):
         x = self._conv1(inputs)
         x = self._conv2(x)
@@ -394,17 +416,31 @@ class XceptionDeeplab(fluid.dygraph.Layer):
         x = self._exit_flow_1(x)
         x = self._exit_flow_2(x)
         feat_list.append(x)
-        
+
         x = self._drop(x)
         x = self._pool(x)
         x = fluid.layers.squeeze(x, axes=[2, 3])
         x = self._fc(x)
         return x, feat_list
 
+    def init_weight(self, pretrained_model=None):
+        """
+        Initialize the parameters of model parts.
+        Args:
+            pretrained_model ([str], optional): the path of pretrained model. Defaults to None.
+        """
+        if pretrained_model is not None:
+            if os.path.exists(pretrained_model):
+                utils.load_pretrained_model(self, pretrained_model)
+            else:
+                raise Exception('Pretrained model is not found: {}'.format(
+                    pretrained_model))
+
 
 def Xception41_deeplab(**args):
     model = XceptionDeeplab('xception_41', **args)
     return model
+
 
 @manager.BACKBONES.add_component
 def Xception65_deeplab(**args):

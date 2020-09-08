@@ -13,6 +13,7 @@
 # limitations under the License.
 
 from .architectures import *
+from .losses import *
 from .unet import UNet
 from .deeplab import *
 from .fcn import *

@@ -1,5 +1,6 @@
-batch_size: 2
-iters: 40000
+batch_size: 4
+iters: 100000
+learning_rate: 0.01
 
 train_dataset:
   type: Cityscapes
@@ -22,14 +23,6 @@ val_dataset:
     - type: Normalize
   mode: val
 
-model:
-  type: OCRNet
-  backbone:
-    type: HRNet_W18
-    backbone_pretrianed: None
-  num_classes: 19
-  in_channels: 270
-  model_pretrained: None
 
 optimizer:
   type: sgd
@@ -41,4 +34,6 @@ learning_rate:
     power: 0.9
 
 loss:
-  type: CrossEntropy
+  types:
+    - type: CrossEntropyLoss
+  coef: [1]

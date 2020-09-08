@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import math
+import os
 
 import paddle
 import paddle.fluid as fluid
@@ -23,6 +24,8 @@ from paddle.fluid.initializer import Normal
 from paddle.nn import SyncBatchNorm as BatchNorm
 
 from dygraph.cvlibs import manager
+from dygraph.utils import utils
+from dygraph.cvlibs import param_init
 
 __all__ = [
     "HRNet_W18_Small_V1", "HRNet_W18_Small_V2", "HRNet_W18", "HRNet_W30",
@@ -36,6 +39,7 @@ class HRNet(fluid.dygraph.Layer):
     https://arxiv.org/pdf/1908.07919.pdf.
 
     Args:
+        backbone_pretrained (str): the path of pretrained model.
         stage1_num_modules (int): number of modules for stage1. Default 1.
         stage1_num_blocks (list): number of blocks per module for stage1. Default [4].
         stage1_num_channels (list): number of channels per branch for stage1. Default [64].
@@ -52,6 +56,7 @@ class HRNet(fluid.dygraph.Layer):
     """
 
     def __init__(self,
+                 backbone_pretrained=None,
                  stage1_num_modules=1,
                  stage1_num_blocks=[4],
                  stage1_num_channels=[64],
@@ -141,6 +146,8 @@ class HRNet(fluid.dygraph.Layer):
             has_se=self.has_se,
             name="st4")
 
+        self.init_weight(backbone_pretrained)
+
     def forward(self, x, label=None, mode='train'):
         input_shape = x.shape[2:]
         conv1 = self.conv_layer1_1(x)
@@ -163,7 +170,31 @@ class HRNet(fluid.dygraph.Layer):
         x3 = fluid.layers.resize_bilinear(st4[3], out_shape=(x0_h, x0_w))
         x = fluid.layers.concat([st4[0], x1, x2, x3], axis=1)
 
-        return x
+        return [x]
+
+    def init_weight(self, pretrained_model=None):
+        """
+        Initialize the parameters of model parts.
+        Args:
+            pretrained_model ([str], optional): the path of pretrained model. Defaults to None.
+        """
+        params = self.parameters()
+        for param in params:
+            param_name = param.name
+            if 'batch_norm' in param_name:
+                if 'w_0' in param_name:
+                    param_init.constant_init(param, 1.0)
+                elif 'b_0' in param_name:
+                    param_init.constant_init(param, 0.0)
+            if 'conv' in param_name and 'w_0' in param_name:
+                param_init.normal_init(param, scale=0.001)
+
+        if pretrained_model is not None:
+            if os.path.exists(pretrained_model):
+                utils.load_pretrained_model(self, pretrained_model)
+            else:
+                raise Exception('Pretrained model is not found: {}'.format(
+                    pretrained_model))
 
 
 class ConvBNLayer(fluid.dygraph.Layer):
@@ -184,18 +215,8 @@ class ConvBNLayer(fluid.dygraph.Layer):
             stride=stride,
             padding=(filter_size - 1) // 2,
             groups=groups,
-            param_attr=ParamAttr(
-                initializer=Normal(scale=0.001), name=name + "_weights"),
             bias_attr=False)
-        bn_name = name + '_bn'
-        self._batch_norm = BatchNorm(
-            num_filters,
-            weight_attr=ParamAttr(
-                name=bn_name + '_scale',
-                initializer=fluid.initializer.Constant(1.0)),
-            bias_attr=ParamAttr(
-                bn_name + '_offset',
-                initializer=fluid.initializer.Constant(0.0)))
+        self._batch_norm = BatchNorm(num_filters)
         self.act = act
 
     def forward(self, input):

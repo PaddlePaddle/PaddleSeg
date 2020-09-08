@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 import os
 
 import paddle.nn.functional as F
@@ -29,15 +28,17 @@ class PSPNet(fluid.dygraph.Layer):
     """
     The PSPNet implementation
 
-    The orginal artile refers to 
-        Zhao, Hengshuang, et al. "Pyramid scene parsing network." 
+    The orginal artile refers to
+        Zhao, Hengshuang, et al. "Pyramid scene parsing network."
         Proceedings of the IEEE conference on computer vision and pattern recognition. 2017.
         (https://openaccess.thecvf.com/content_cvpr_2017/papers/Zhao_Pyramid_Scene_Parsing_CVPR_2017_paper.pdf)
 
     Args:
-        backbone (str): backbone name, currently support Resnet50/101.
+        num_classes (int): the unique number of target classes.
 
-        num_classes (int): the unique number of target classes. Default 2.
+        backbone (Paddle.nn.Layer): backbone name, currently support Resnet50/101.
+
+        model_pretrained (str): the path of pretrained model.
 
         output_stride (int): the ratio of input size and final feature size. Default 16.
 
@@ -57,42 +58,44 @@ class PSPNet(fluid.dygraph.Layer):
         enable_auxiliary_loss (bool): a bool values indictes whether adding auxiliary loss. Default to True.
 
         ignore_index (int): the value of ground-truth mask would be ignored while doing evaluation. Default to 255.
-
-        pretrained_model (str): the pretrained_model path of backbone.
     """
 
     def __init__(self,
+                 num_classes,
                  backbone,
-                 num_classes=2,
+                 model_pretrained=None,
                  output_stride=16,
                  backbone_indices=(2, 3),
                  backbone_channels=(1024, 2048),
                  pp_out_channels=1024,
                  bin_sizes=(1, 2, 3, 6),
                  enable_auxiliary_loss=True,
-                 ignore_index=255,
-                 pretrained_model=None):
+                 ignore_index=255):
 
         super(PSPNet, self).__init__()
-        self.backbone = manager.BACKBONES[backbone](output_stride=output_stride,
-                                                    multi_grid=(1, 1, 1))
+        # self.backbone = manager.BACKBONES[backbone](output_stride=output_stride,
+        #                                             multi_grid=(1, 1, 1))
+        self.backbone = backbone
         self.backbone_indices = backbone_indices
 
-        self.psp_module = PPModule(in_channels=backbone_channels[1],
-                                   out_channels=pp_out_channels,
-                                   bin_sizes=bin_sizes)
+        self.psp_module = PPModule(
+            in_channels=backbone_channels[1],
+            out_channels=pp_out_channels,
+            bin_sizes=bin_sizes)
 
-        self.conv = Conv2D(num_channels=pp_out_channels,
-                           num_filters=num_classes,
-                           filter_size=1)
+        self.conv = Conv2D(
+            num_channels=pp_out_channels,
+            num_filters=num_classes,
+            filter_size=1)
 
         if enable_auxiliary_loss:
-            self.fcn_head = model_utils.FCNHead(in_channels=backbone_channels[0], out_channels=num_classes)
+            self.fcn_head = model_utils.FCNHead(
+                in_channels=backbone_channels[0], out_channels=num_classes)
 
         self.enable_auxiliary_loss = enable_auxiliary_loss
         self.ignore_index = ignore_index
 
-        self.init_weight(pretrained_model)
+        self.init_weight(model_pretrained)
 
     def forward(self, input, label=None):
 
@@ -107,7 +110,8 @@ class PSPNet(fluid.dygraph.Layer):
         if self.enable_auxiliary_loss:
             auxiliary_feat = feat_list[self.backbone_indices[0]]
             auxiliary_logit = self.fcn_head(auxiliary_feat)
-            auxiliary_logit = fluid.layers.resize_bilinear(auxiliary_logit, input.shape[2:])
+            auxiliary_logit = fluid.layers.resize_bilinear(
+                auxiliary_logit, input.shape[2:])
 
         if self.training:
             loss = model_utils.get_loss(logit, label)
@@ -116,7 +120,6 @@ class PSPNet(fluid.dygraph.Layer):
                 loss += (0.4 * auxiliary_loss)
             return loss
 
-
         else:
             pred, score_map = model_utils.get_pred_score_map(logit)
             return pred, score_map
@@ -124,14 +127,15 @@ class PSPNet(fluid.dygraph.Layer):
     def init_weight(self, pretrained_model=None):
         """
         Initialize the parameters of model parts.
-
         Args:
-            pretrained_model ([str], optional): the pretrained_model path of backbone. Defaults to None.
+            pretrained_model ([str], optional): the path of pretrained model. Defaults to None.
         """
-
         if pretrained_model is not None:
             if os.path.exists(pretrained_model):
-                utils.load_pretrained_model(self.backbone, pretrained_model)
+                utils.load_pretrained_model(self, pretrained_model)
+            else:
+                raise Exception('Pretrained model is not found: {}'.format(
+                    pretrained_model))
 
 
 class PPModule(fluid.dygraph.Layer):
@@ -151,19 +155,21 @@ class PPModule(fluid.dygraph.Layer):
         self.bin_sizes = bin_sizes
 
         # we use dimension reduction after pooling mentioned in original implementation.
-        self.stages = fluid.dygraph.LayerList([self._make_stage(in_channels, size) for size in bin_sizes])
+        self.stages = fluid.dygraph.LayerList(
+            [self._make_stage(in_channels, size) for size in bin_sizes])
 
-        self.conv_bn_relu2 = layer_utils.ConvBnRelu(num_channels=in_channels * 2,
-                                                    num_filters=out_channels,
-                                                    filter_size=3,
-                                                    padding=1)
+        self.conv_bn_relu2 = layer_utils.ConvBnRelu(
+            num_channels=in_channels * 2,
+            num_filters=out_channels,
+            filter_size=3,
+            padding=1)
 
     def _make_stage(self, in_channels, size):
         """
         Create one pooling layer.
 
         In our implementation, we adopt the same dimention reduction as the original paper that might be
-        slightly different with other implementations. 
+        slightly different with other implementations.
 
         After pooling, the channels are reduced to 1/len(bin_sizes) immediately, while some other implementations
         keep the channels to be same.
@@ -180,9 +186,10 @@ class PPModule(fluid.dygraph.Layer):
 
         # this paddle version does not support AdaptiveAvgPool2d, so skip it here.
         # prior = nn.AdaptiveAvgPool2d(output_size=(size, size))
-        conv = layer_utils.ConvBnRelu(num_channels=in_channels,
-                                      num_filters=in_channels // len(self.bin_sizes),
-                                      filter_size=1)
+        conv = layer_utils.ConvBnRelu(
+            num_channels=in_channels,
+            num_filters=in_channels // len(self.bin_sizes),
+            filter_size=1)
 
         return conv
 
@@ -190,7 +197,8 @@ class PPModule(fluid.dygraph.Layer):
         cat_layers = []
         for i, stage in enumerate(self.stages):
             size = self.bin_sizes[i]
-            x = fluid.layers.adaptive_pool2d(input, pool_size=(size, size), pool_type="max")
+            x = fluid.layers.adaptive_pool2d(
+                input, pool_size=(size, size), pool_type="max")
             x = stage(x)
             x = fluid.layers.resize_bilinear(x, out_shape=input.shape[2:])
             cat_layers.append(x)
@@ -204,22 +212,32 @@ class PPModule(fluid.dygraph.Layer):
 @manager.MODELS.add_component
 def pspnet_resnet101_vd(*args, **kwargs):
     pretrained_model = None
-    return PSPNet(backbone='ResNet101_vd', pretrained_model=pretrained_model, **kwargs)
+    return PSPNet(
+        backbone='ResNet101_vd', pretrained_model=pretrained_model, **kwargs)
 
 
 @manager.MODELS.add_component
 def pspnet_resnet101_vd_os8(*args, **kwargs):
     pretrained_model = None
-    return PSPNet(backbone='ResNet101_vd', output_stride=8, pretrained_model=pretrained_model, **kwargs)
+    return PSPNet(
+        backbone='ResNet101_vd',
+        output_stride=8,
+        pretrained_model=pretrained_model,
+        **kwargs)
 
 
 @manager.MODELS.add_component
 def pspnet_resnet50_vd(*args, **kwargs):
     pretrained_model = None
-    return PSPNet(backbone='ResNet50_vd', pretrained_model=pretrained_model, **kwargs)
+    return PSPNet(
+        backbone='ResNet50_vd', pretrained_model=pretrained_model, **kwargs)
 
 
 @manager.MODELS.add_component
 def pspnet_resnet50_vd_os8(*args, **kwargs):
     pretrained_model = None
-    return PSPNet(backbone='ResNet50_vd', output_stride=8, pretrained_model=pretrained_model, **kwargs)
+    return PSPNet(
+        backbone='ResNet50_vd',
+        output_stride=8,
+        pretrained_model=pretrained_model,
+        **kwargs)
