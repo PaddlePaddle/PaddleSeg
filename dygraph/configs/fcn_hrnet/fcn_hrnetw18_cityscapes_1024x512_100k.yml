@@ -1,0 +1,9 @@
+_base_: '../_base_/cityscapes.yml'
+
+model:
+  type: FCN
+  backbone:
+    type: HRNet_W18
+    backbone_pretrained: pretrained_model/hrnet_w18_imagenet
+  num_classes: 19
+  backbone_channels: [270]

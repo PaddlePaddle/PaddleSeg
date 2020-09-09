@@ -17,8 +17,12 @@ import os
 import paddle.fluid as fluid
 import numpy as np
 from PIL import Image
+from dygraph.cvlibs import manager
+
+from dygraph.transforms import Compose
 
 
+@manager.DATASETS.add_component
 class Dataset(fluid.io.Dataset):
     """Pass in a custom dataset that conforms to the format.
 
@@ -52,7 +56,7 @@ class Dataset(fluid.io.Dataset):
                  separator=' ',
                  transforms=None):
         self.dataset_root = dataset_root
-        self.transforms = transforms
+        self.transforms = Compose(transforms)
         self.file_list = list()
         self.mode = mode
         self.num_classes = num_classes

@@ -17,8 +17,9 @@ from __future__ import division
 from __future__ import print_function
 
 import math
-import numpy as np
+import os
 
+import numpy as np
 import paddle
 import paddle.fluid as fluid
 from paddle.fluid.param_attr import ParamAttr
@@ -28,6 +29,7 @@ from paddle.nn import SyncBatchNorm as BatchNorm
 
 from dygraph.models.architectures import layer_utils
 from dygraph.cvlibs import manager
+from dygraph.utils import utils
 
 __all__ = [
     "MobileNetV3_small_x0_35", "MobileNetV3_small_x0_5",
@@ -46,6 +48,7 @@ def make_divisible(v, divisor=8, min_value=None):
         new_v += divisor
     return new_v
 
+
 def get_padding_same(kernel_size, dilation_rate):
     """
     SAME padding implementation given kernel_size and dilation_rate.
@@ -53,7 +56,7 @@ def get_padding_same(kernel_size, dilation_rate):
         (F-(k+(k -1)*(r-1))+2*p)/s + 1 = F_new
         where F: a feature map
               k: kernel size, r: dilation rate, p: padding value, s: stride
-              F_new: new feature map 
+              F_new: new feature map
     Args:
         kernel_size (int)
         dilation_rate (int)
@@ -63,12 +66,19 @@ def get_padding_same(kernel_size, dilation_rate):
     """
     k = kernel_size
     r = dilation_rate
-    padding_same = (k + (k - 1) * (r - 1) - 1)//2 
+    padding_same = (k + (k - 1) * (r - 1) - 1) // 2
 
     return padding_same
 
+
 class MobileNetV3(fluid.dygraph.Layer):
-    def __init__(self, scale=1.0, model_name="small", class_dim=1000, output_stride=None, **kwargs):
+    def __init__(self,
+                 backbone_pretrained=None,
+                 scale=1.0,
+                 model_name="small",
+                 class_dim=1000,
+                 output_stride=None,
+                 **kwargs):
         super(MobileNetV3, self).__init__()
 
         inplanes = 16
@@ -77,19 +87,21 @@ class MobileNetV3(fluid.dygraph.Layer):
                 # k, exp, c,  se,     nl,  s,
                 [3, 16, 16, False, "relu", 1],
                 [3, 64, 24, False, "relu", 2],
-                [3, 72, 24, False, "relu", 1], # output 1 -> out_index=2
+                [3, 72, 24, False, "relu", 1],  # output 1 -> out_index=2
                 [5, 72, 40, True, "relu", 2],
                 [5, 120, 40, True, "relu", 1],
-                [5, 120, 40, True, "relu", 1], # output 2 -> out_index=5
+                [5, 120, 40, True, "relu", 1],  # output 2 -> out_index=5
                 [3, 240, 80, False, "hard_swish", 2],
                 [3, 200, 80, False, "hard_swish", 1],
                 [3, 184, 80, False, "hard_swish", 1],
                 [3, 184, 80, False, "hard_swish", 1],
                 [3, 480, 112, True, "hard_swish", 1],
-                [3, 672, 112, True, "hard_swish", 1], # output 3 -> out_index=11
+                [3, 672, 112, True, "hard_swish",
+                 1],  # output 3 -> out_index=11
                 [5, 672, 160, True, "hard_swish", 2],
                 [5, 960, 160, True, "hard_swish", 1],
-                [5, 960, 160, True, "hard_swish", 1], # output 3 -> out_index=14
+                [5, 960, 160, True, "hard_swish",
+                 1],  # output 3 -> out_index=14
             ]
             self.out_indices = [2, 5, 11, 14]
 
@@ -98,17 +110,17 @@ class MobileNetV3(fluid.dygraph.Layer):
         elif model_name == "small":
             self.cfg = [
                 # k, exp, c,  se,     nl,  s,
-                [3, 16, 16, True, "relu", 2], # output 1 -> out_index=0
+                [3, 16, 16, True, "relu", 2],  # output 1 -> out_index=0
                 [3, 72, 24, False, "relu", 2],
-                [3, 88, 24, False, "relu", 1], # output 2 -> out_index=3
+                [3, 88, 24, False, "relu", 1],  # output 2 -> out_index=3
                 [5, 96, 40, True, "hard_swish", 2],
                 [5, 240, 40, True, "hard_swish", 1],
                 [5, 240, 40, True, "hard_swish", 1],
                 [5, 120, 48, True, "hard_swish", 1],
-                [5, 144, 48, True, "hard_swish", 1], # output 3 -> out_index=7
+                [5, 144, 48, True, "hard_swish", 1],  # output 3 -> out_index=7
                 [5, 288, 96, True, "hard_swish", 2],
                 [5, 576, 96, True, "hard_swish", 1],
-                [5, 576, 96, True, "hard_swish", 1], # output 4 -> out_index=10
+                [5, 576, 96, True, "hard_swish", 1],  # output 4 -> out_index=10
             ]
             self.out_indices = [0, 3, 7, 10]
 
@@ -157,7 +169,6 @@ class MobileNetV3(fluid.dygraph.Layer):
             self.add_sublayer(
                 sublayer=self.block_list[-1], name="conv" + str(i + 2))
             inplanes = make_divisible(scale * c)
-            
 
         self.last_second_conv = ConvBNLayer(
             in_c=inplanes,
@@ -189,8 +200,10 @@ class MobileNetV3(fluid.dygraph.Layer):
             param_attr=ParamAttr("fc_weights"),
             bias_attr=ParamAttr(name="fc_offset"))
 
+        self.init_weight(backbone_pretrained)
+
     def modify_bottle_params(self, output_stride=None):
-        
+
         if output_stride is not None and output_stride % 2 != 0:
             raise Exception("output stride must to be even number")
         if output_stride is not None:
@@ -201,9 +214,9 @@ class MobileNetV3(fluid.dygraph.Layer):
                 if stride > output_stride:
                     rate = rate * _cfg[-1]
                     self.cfg[i][-1] = 1
-                    
+
                 self.dilation_cfg[i] = rate
-    
+
     def forward(self, inputs, label=None, dropout_prob=0.2):
         x = self.conv1(inputs)
         # A feature list saves each downsampling feature.
@@ -223,6 +236,19 @@ class MobileNetV3(fluid.dygraph.Layer):
 
         return x, feat_list
 
+    def init_weight(self, pretrained_model=None):
+        """
+        Initialize the parameters of model parts.
+        Args:
+            pretrained_model ([str], optional): the path of pretrained model. Defaults to None.
+        """
+        if pretrained_model is not None:
+            if os.path.exists(pretrained_model):
+                utils.load_pretrained_model(self, pretrained_model)
+            else:
+                raise Exception('Pretrained model is not found: {}'.format(
+                    pretrained_model))
+
 
 class ConvBNLayer(fluid.dygraph.Layer):
     def __init__(self,
@@ -240,7 +266,7 @@ class ConvBNLayer(fluid.dygraph.Layer):
         super(ConvBNLayer, self).__init__()
         self.if_act = if_act
         self.act = act
-        
+
         self.conv = fluid.dygraph.Conv2D(
             num_channels=in_c,
             num_filters=out_c,
@@ -263,7 +289,7 @@ class ConvBNLayer(fluid.dygraph.Layer):
                 name=name + "_bn_offset",
                 regularizer=fluid.regularizer.L2DecayRegularizer(
                     regularization_coeff=0.0)))
-        
+
         self._act_op = layer_utils.Activation(act=None)
 
     def forward(self, x):
@@ -304,14 +330,15 @@ class ResidualUnit(fluid.dygraph.Layer):
             if_act=True,
             act=act,
             name=name + "_expand")
-        
-        
+
         self.bottleneck_conv = ConvBNLayer(
             in_c=mid_c,
             out_c=mid_c,
             filter_size=filter_size,
             stride=stride,
-            padding= get_padding_same(filter_size, dilation), #int((filter_size - 1) // 2) + (dilation - 1),
+            padding=get_padding_same(
+                filter_size,
+                dilation),  #int((filter_size - 1) // 2) + (dilation - 1),
             dilation=dilation,
             num_groups=mid_c,
             if_act=True,
@@ -329,6 +356,7 @@ class ResidualUnit(fluid.dygraph.Layer):
             act=None,
             name=name + "_linear")
         self.dilation = dilation
+
     def forward(self, inputs):
         x = self.expand_conv(inputs)
         x = self.bottleneck_conv(x)
@@ -386,6 +414,7 @@ def MobileNetV3_small_x0_75(**kwargs):
     model = MobileNetV3(model_name="small", scale=0.75, **kwargs)
     return model
 
+
 @manager.BACKBONES.add_component
 def MobileNetV3_small_x1_0(**kwargs):
     model = MobileNetV3(model_name="small", scale=1.0, **kwargs)
@@ -410,6 +439,7 @@ def MobileNetV3_large_x0_5(**kwargs):
 def MobileNetV3_large_x0_75(**kwargs):
     model = MobileNetV3(model_name="large", scale=0.75, **kwargs)
     return model
+
 
 @manager.BACKBONES.add_component
 def MobileNetV3_large_x1_0(**kwargs):

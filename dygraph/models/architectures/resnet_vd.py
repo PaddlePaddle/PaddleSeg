@@ -30,6 +30,7 @@ from paddle.nn import SyncBatchNorm as BatchNorm
 from dygraph.utils import utils
 from dygraph.models.architectures import layer_utils
 from dygraph.cvlibs import manager
+from dygraph.utils import utils
 
 __all__ = [
     "ResNet18_vd", "ResNet34_vd", "ResNet50_vd", "ResNet101_vd", "ResNet152_vd"
@@ -47,18 +48,23 @@ class ConvBNLayer(fluid.dygraph.Layer):
             groups=1,
             is_vd_mode=False,
             act=None,
-            name=None, ):
+            name=None,
+    ):
         super(ConvBNLayer, self).__init__()
 
         self.is_vd_mode = is_vd_mode
         self._pool2d_avg = Pool2D(
-            pool_size=2, pool_stride=2, pool_padding=0, pool_type='avg', ceil_mode=True)
+            pool_size=2,
+            pool_stride=2,
+            pool_padding=0,
+            pool_type='avg',
+            ceil_mode=True)
         self._conv = Conv2D(
             num_channels=num_channels,
             num_filters=num_filters,
             filter_size=filter_size,
             stride=stride,
-            padding=(filter_size - 1) // 2 if dilation ==1  else 0,
+            padding=(filter_size - 1) // 2 if dilation == 1 else 0,
             dilation=dilation,
             groups=groups,
             act=None,
@@ -125,19 +131,20 @@ class BottleneckBlock(fluid.dygraph.Layer):
                 num_filters=num_filters * 4,
                 filter_size=1,
                 stride=1,
-                is_vd_mode=False if if_first or stride==1 else True,
+                is_vd_mode=False if if_first or stride == 1 else True,
                 name=name + "_branch1")
 
         self.shortcut = shortcut
 
     def forward(self, inputs):
         y = self.conv0(inputs)
-        
+
         ####################################################################
         # If given dilation rate > 1, using corresponding padding
         if self.dilation > 1:
             padding = self.dilation
-            y = fluid.layers.pad(y, [0,0,0,0,padding,padding,padding,padding])
+            y = fluid.layers.pad(
+                y, [0, 0, 0, 0, padding, padding, padding, padding])
         #####################################################################
         conv1 = self.conv1(y)
         conv2 = self.conv2(conv1)
@@ -196,15 +203,21 @@ class BasicBlock(fluid.dygraph.Layer):
         else:
             short = self.short(inputs)
         y = fluid.layers.elementwise_add(x=short, y=conv1)
-        
+
         layer_helper = LayerHelper(self.full_name(), act='relu')
         return layer_helper.append_activation(y)
 
 
 class ResNet_vd(fluid.dygraph.Layer):
-    def __init__(self, layers=50, class_dim=1000, output_stride=None, multi_grid=(1, 2, 4), **kwargs):
+    def __init__(self,
+                 backbone_pretrained=None,
+                 layers=50,
+                 class_dim=1000,
+                 output_stride=None,
+                 multi_grid=(1, 2, 4),
+                 **kwargs):
         super(ResNet_vd, self).__init__()
-        
+
         self.layers = layers
         supported_layers = [18, 34, 50, 101, 152, 200]
         assert layers in supported_layers, \
@@ -221,11 +234,11 @@ class ResNet_vd(fluid.dygraph.Layer):
             depth = [3, 8, 36, 3]
         elif layers == 200:
             depth = [3, 12, 48, 3]
-        num_channels = [64, 256, 512,
-                        1024] if layers >= 50 else [64, 64, 128, 256]
+        num_channels = [64, 256, 512, 1024
+                        ] if layers >= 50 else [64, 64, 128, 256]
         num_filters = [64, 128, 256, 512]
 
-        dilation_dict=None
+        dilation_dict = None
         if output_stride == 8:
             dilation_dict = {2: 2, 3: 4}
         elif output_stride == 16:
@@ -254,13 +267,13 @@ class ResNet_vd(fluid.dygraph.Layer):
             name="conv1_3")
         self.pool2d_max = Pool2D(
             pool_size=3, pool_stride=2, pool_padding=1, pool_type='max')
-        
+
         # self.block_list = []
         self.stage_list = []
         if layers >= 50:
             for block in range(len(depth)):
                 shortcut = False
-                block_list=[]
+                block_list = []
                 for i in range(depth[block]):
                     if layers in [101, 152] and block == 2:
                         if i == 0:
@@ -269,11 +282,12 @@ class ResNet_vd(fluid.dygraph.Layer):
                             conv_name = "res" + str(block + 2) + "b" + str(i)
                     else:
                         conv_name = "res" + str(block + 2) + chr(97 + i)
-                    
+
                     ###############################################################################
                     # Add dilation rate for some segmentation tasks, if dilation_dict is not None.
-                    dilation_rate = dilation_dict[block] if dilation_dict and block in dilation_dict else 1
-                    
+                    dilation_rate = dilation_dict[
+                        block] if dilation_dict and block in dilation_dict else 1
+
                     # Actually block here is 'stage', and i is 'block' in 'stage'
                     # At the stage 4, expand the the dilation_rate using multi_grid, default (1, 2, 4)
                     if block == 3:
@@ -284,9 +298,11 @@ class ResNet_vd(fluid.dygraph.Layer):
                     bottleneck_block = self.add_sublayer(
                         'bb_%d_%d' % (block, i),
                         BottleneckBlock(
-                            num_channels=num_channels[block] if i == 0 else num_filters[block] * 4,
+                            num_channels=num_channels[block]
+                            if i == 0 else num_filters[block] * 4,
                             num_filters=num_filters[block],
-                            stride=2 if i == 0 and block != 0 and dilation_rate == 1 else 1,
+                            stride=2 if i == 0 and block != 0
+                            and dilation_rate == 1 else 1,
                             shortcut=shortcut,
                             if_first=block == i == 0,
                             name=conv_name,
@@ -298,7 +314,7 @@ class ResNet_vd(fluid.dygraph.Layer):
         else:
             for block in range(len(depth)):
                 shortcut = False
-                block_list=[]
+                block_list = []
                 for i in range(depth[block]):
                     conv_name = "res" + str(block + 2) + chr(97 + i)
                     basic_block = self.add_sublayer(
@@ -330,6 +346,8 @@ class ResNet_vd(fluid.dygraph.Layer):
                 name="fc_0.w_0"),
             bias_attr=ParamAttr(name="fc_0.b_0"))
 
+        self.init_weight(backbone_pretrained)
+
     def forward(self, inputs):
         y = self.conv1_1(inputs)
         y = self.conv1_2(y)
@@ -343,7 +361,7 @@ class ResNet_vd(fluid.dygraph.Layer):
                 y = block(y)
                 #print("stage {} block {}".format(i+1, j+1), y.shape)
             feat_list.append(y)
-            
+
         y = self.pool2d_avg(y)
         y = fluid.layers.reshape(y, shape=[-1, self.pool2d_avg_channels])
         y = self.out(y)
@@ -355,8 +373,18 @@ class ResNet_vd(fluid.dygraph.Layer):
     #         if os.path.exists(pretrained_model):
     #             utils.load_pretrained_model(self, pretrained_model)
 
-            
-
+    def init_weight(self, pretrained_model=None):
+        """
+        Initialize the parameters of model parts.
+        Args:
+            pretrained_model ([str], optional): the path of pretrained model. Defaults to None.
+        """
+        if pretrained_model is not None:
+            if os.path.exists(pretrained_model):
+                utils.load_pretrained_model(self, pretrained_model)
+            else:
+                raise Exception('Pretrained model is not found: {}'.format(
+                    pretrained_model))
 
 
 def ResNet18_vd(**args):
@@ -368,10 +396,12 @@ def ResNet34_vd(**args):
     model = ResNet_vd(layers=34, **args)
     return model
 
+
 @manager.BACKBONES.add_component
 def ResNet50_vd(**args):
     model = ResNet_vd(layers=50, **args)
     return model
+
 
 @manager.BACKBONES.add_component
 def ResNet101_vd(**args):

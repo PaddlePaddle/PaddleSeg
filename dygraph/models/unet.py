@@ -33,7 +33,7 @@ class UNet(fluid.dygraph.Layer):
         ignore_index (int): the value of ground-truth mask would be ignored while computing loss or doing evaluation. Default 255.
     """
 
-    def __init__(self, num_classes, pretrained_model=None, ignore_index=255):
+    def __init__(self, num_classes, model_pretrained=None, ignore_index=255):
         super(UNet, self).__init__()
         self.encode = UnetEncoder()
         self.decode = UnetDecode()
@@ -41,7 +41,7 @@ class UNet(fluid.dygraph.Layer):
         self.ignore_index = ignore_index
         self.EPS = 1e-5
 
-        self.init_weight(pretrained_model)
+        self.init_weight(model_pretrained)
 
     def forward(self, x, label=None):
         encode_data, short_cuts = self.encode(x)
@@ -60,7 +60,7 @@ class UNet(fluid.dygraph.Layer):
         """
         Initialize the parameters of model parts.
         Args:
-            pretrained_model ([str], optional): the pretrained_model path of backbone. Defaults to None.
+            pretrained_model ([str], optional): the path of pretrained model. Defaults to None.
         """
         if pretrained_model is not None:
             if os.path.exists(pretrained_model):

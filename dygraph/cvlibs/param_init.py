@@ -12,5 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from . import manager
-from . import param_init
+import paddle.fluid as fluid
+
+
+def constant_init(param, **kwargs):
+    initializer = fluid.initializer.Constant(**kwargs)
+    initializer(param, param.block)
+
+
+def normal_init(param, **kwargs):
+    initializer = fluid.initializer.Normal(**kwargs)
+    initializer(param, param.block)

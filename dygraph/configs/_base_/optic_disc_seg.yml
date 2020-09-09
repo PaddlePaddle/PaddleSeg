@@ -1,0 +1,37 @@
+batch_size: 4
+iters: 10000
+learning_rate: 0.01
+
+train_dataset:
+  type: OpticDiscSeg
+  dataset_root: data/optic_disc_seg
+  transforms:
+    - type: Resize
+      target_size: [512, 512]
+    - type: RandomHorizontalFlip
+    - type: Normalize
+  mode: train
+
+val_dataset:
+  type: OpticDiscSeg
+  dataset_root: data/optic_disc_seg
+  transforms:
+    - type: Resize
+      target_size: [512, 512]
+    - type: Normalize
+  mode: val
+
+
+optimizer:
+  type: sgd
+
+learning_rate:
+  value: 0.01
+  decay:
+    type: poly
+    power: 0.9
+
+loss:
+  types:
+    - type: CrossEntropyLoss
+  coef: [1]

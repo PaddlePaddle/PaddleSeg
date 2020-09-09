@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 import os
 
 from dygraph.cvlibs import manager
@@ -23,10 +22,12 @@ from paddle.fluid.dygraph import Conv2D
 
 from dygraph.utils import utils
 
-__all__ = ['DeepLabV3P', "deeplabv3p_resnet101_vd", "deeplabv3p_resnet101_vd_os8",
-           "deeplabv3p_resnet50_vd", "deeplabv3p_resnet50_vd_os8",
-           "deeplabv3p_xception65_deeplab",
-           "deeplabv3p_mobilenetv3_large", "deeplabv3p_mobilenetv3_small"]
+__all__ = [
+    'DeepLabV3P', "deeplabv3p_resnet101_vd", "deeplabv3p_resnet101_vd_os8",
+    "deeplabv3p_resnet50_vd", "deeplabv3p_resnet50_vd_os8",
+    "deeplabv3p_xception65_deeplab", "deeplabv3p_mobilenetv3_large",
+    "deeplabv3p_mobilenetv3_small"
+]
 
 
 class ImageAverage(dygraph.Layer):
@@ -40,9 +41,8 @@ class ImageAverage(dygraph.Layer):
 
     def __init__(self, num_channels):
         super(ImageAverage, self).__init__()
-        self.conv_bn_relu = layer_utils.ConvBnRelu(num_channels,
-                                                   num_filters=256,
-                                                   filter_size=1)
+        self.conv_bn_relu = layer_utils.ConvBnRelu(
+            num_channels, num_filters=256, filter_size=1)
 
     def forward(self, input):
         x = fluid.layers.reduce_mean(input, dim=[2, 3], keep_dim=True)
@@ -69,44 +69,49 @@ class ASPP(dygraph.Layer):
         elif output_stride == 8:
             aspp_ratios = (12, 24, 36)
         else:
-            raise NotImplementedError("Only support output_stride is 8 or 16, but received{}".format(output_stride))
+            raise NotImplementedError(
+                "Only support output_stride is 8 or 16, but received{}".format(
+                    output_stride))
 
         self.image_average = ImageAverage(num_channels=in_channels)
 
         # The first aspp using 1*1 conv
-        self.aspp1 = layer_utils.ConvBnRelu(num_channels=in_channels,
-                                            num_filters=256,
-                                            filter_size=1,
-                                            using_sep_conv=False)
+        self.aspp1 = layer_utils.ConvBnRelu(
+            num_channels=in_channels,
+            num_filters=256,
+            filter_size=1,
+            using_sep_conv=False)
 
         # The second aspp using 3*3 (separable) conv at dilated rate aspp_ratios[0]
-        self.aspp2 = layer_utils.ConvBnRelu(num_channels=in_channels,
-                                            num_filters=256,
-                                            filter_size=3,
-                                            using_sep_conv=using_sep_conv,
-                                            dilation=aspp_ratios[0],
-                                            padding=aspp_ratios[0])
+        self.aspp2 = layer_utils.ConvBnRelu(
+            num_channels=in_channels,
+            num_filters=256,
+            filter_size=3,
+            using_sep_conv=using_sep_conv,
+            dilation=aspp_ratios[0],
+            padding=aspp_ratios[0])
 
         # The Third aspp using 3*3 (separable) conv at dilated rate aspp_ratios[1]
-        self.aspp3 = layer_utils.ConvBnRelu(num_channels=in_channels,
-                                            num_filters=256,
-                                            filter_size=3,
-                                            using_sep_conv=using_sep_conv,
-                                            dilation=aspp_ratios[1],
-                                            padding=aspp_ratios[1])
+        self.aspp3 = layer_utils.ConvBnRelu(
+            num_channels=in_channels,
+            num_filters=256,
+            filter_size=3,
+            using_sep_conv=using_sep_conv,
+            dilation=aspp_ratios[1],
+            padding=aspp_ratios[1])
 
         # The Third aspp using 3*3 (separable) conv at dilated rate aspp_ratios[2]
-        self.aspp4 = layer_utils.ConvBnRelu(num_channels=in_channels,
-                                            num_filters=256,
-                                            filter_size=3,
-                                            using_sep_conv=using_sep_conv,
-                                            dilation=aspp_ratios[2],
-                                            padding=aspp_ratios[2])
+        self.aspp4 = layer_utils.ConvBnRelu(
+            num_channels=in_channels,
+            num_filters=256,
+            filter_size=3,
+            using_sep_conv=using_sep_conv,
+            dilation=aspp_ratios[2],
+            padding=aspp_ratios[2])
 
         # After concat op, using 1*1 conv
-        self.conv_bn_relu = layer_utils.ConvBnRelu(num_channels=1280,
-                                                   num_filters=256,
-                                                   filter_size=1)
+        self.conv_bn_relu = layer_utils.ConvBnRelu(
+            num_channels=1280, num_filters=256, filter_size=1)
 
     def forward(self, x):
 
@@ -136,23 +141,23 @@ class Decoder(dygraph.Layer):
     def __init__(self, num_classes, in_channels, using_sep_conv=True):
         super(Decoder, self).__init__()
 
-        self.conv_bn_relu1 = layer_utils.ConvBnRelu(num_channels=in_channels,
-                                                    num_filters=48,
-                                                    filter_size=1)
+        self.conv_bn_relu1 = layer_utils.ConvBnRelu(
+            num_channels=in_channels, num_filters=48, filter_size=1)
 
-        self.conv_bn_relu2 = layer_utils.ConvBnRelu(num_channels=304,
-                                                    num_filters=256,
-                                                    filter_size=3,
-                                                    using_sep_conv=using_sep_conv,
-                                                    padding=1)
-        self.conv_bn_relu3 = layer_utils.ConvBnRelu(num_channels=256,
-                                                    num_filters=256,
-                                                    filter_size=3,
-                                                    using_sep_conv=using_sep_conv,
-                                                    padding=1)
-        self.conv = Conv2D(num_channels=256,
-                           num_filters=num_classes,
-                           filter_size=1)
+        self.conv_bn_relu2 = layer_utils.ConvBnRelu(
+            num_channels=304,
+            num_filters=256,
+            filter_size=3,
+            using_sep_conv=using_sep_conv,
+            padding=1)
+        self.conv_bn_relu3 = layer_utils.ConvBnRelu(
+            num_channels=256,
+            num_filters=256,
+            filter_size=3,
+            using_sep_conv=using_sep_conv,
+            padding=1)
+        self.conv = Conv2D(
+            num_channels=256, num_filters=num_classes, filter_size=1)
 
     def forward(self, x, low_level_feat):
         low_level_feat = self.conv_bn_relu1(low_level_feat)
@@ -164,6 +169,7 @@ class Decoder(dygraph.Layer):
         return x
 
 
+@manager.MODELS.add_component
 class DeepLabV3P(dygraph.Layer):
     """
     The DeepLabV3P consists of three main components, Backbone, ASPP and Decoder
@@ -173,9 +179,11 @@ class DeepLabV3P(dygraph.Layer):
      (https://arxiv.org/abs/1802.02611)
 
     Args:
-        backbone (str): backbone name, currently support Xception65, Resnet101_vd. Default Resnet101_vd.
+        num_classes (int): the unique number of target classes.
 
-        num_classes (int): the unique number of target classes. Default 2.
+        backbone (paddle.nn.Layer): backbone networks, currently support Xception65, Resnet101_vd. Default Resnet101_vd.
+
+        model_pretrained (str): the path of pretrained model.
 
         output_stride (int): the ratio of input size and final feature size. Default 16.
 
@@ -193,28 +201,29 @@ class DeepLabV3P(dygraph.Layer):
 
         using_sep_conv (bool): a bool value indicates whether using separable convolutions
                         in ASPP and Decoder components. Default True.
-        pretrained_model (str): the pretrained_model path of backbone.
     """
 
     def __init__(self,
+                 num_classes,
                  backbone,
-                 num_classes=2,
+                 model_pretrained=None,
                  output_stride=16,
                  backbone_indices=(0, 3),
                  backbone_channels=(256, 2048),
                  ignore_index=255,
-                 using_sep_conv=True,
-                 pretrained_model=None):
+                 using_sep_conv=True):
 
         super(DeepLabV3P, self).__init__()
 
-        self.backbone = manager.BACKBONES[backbone](output_stride=output_stride)
+        # self.backbone = manager.BACKBONES[backbone](output_stride=output_stride)
+        self.backbone = backbone
         self.aspp = ASPP(output_stride, backbone_channels[1], using_sep_conv)
-        self.decoder = Decoder(num_classes, backbone_channels[0], using_sep_conv)
+        self.decoder = Decoder(num_classes, backbone_channels[0],
+                               using_sep_conv)
         self.ignore_index = ignore_index
         self.EPS = 1e-5
         self.backbone_indices = backbone_indices
-        self.init_weight(pretrained_model)
+        self.init_weight(model_pretrained)
 
     def forward(self, input, label=None):
 
@@ -238,14 +247,14 @@ class DeepLabV3P(dygraph.Layer):
         """
         Initialize the parameters of model parts.
         Args:
-            pretrained_model ([str], optional): the pretrained_model path of backbone. Defaults to None.
+            pretrained_model ([str], optional): the path of pretrained model. Defaults to None.
         """
         if pretrained_model is not None:
             if os.path.exists(pretrained_model):
-                utils.load_pretrained_model(self.backbone, pretrained_model)
-                # utils.load_pretrained_model(self, pretrained_model)
-                # for param in self.backbone.parameters():
-                #     param.stop_gradient = True
+                utils.load_pretrained_model(self, pretrained_model)
+            else:
+                raise Exception('Pretrained model is not found: {}'.format(
+                    pretrained_model))
 
     def _get_loss(self, logit, label):
         """
@@ -271,7 +280,7 @@ class DeepLabV3P(dygraph.Layer):
 
         loss = loss * mask
         avg_loss = fluid.layers.mean(loss) / (
-                fluid.layers.mean(mask) + self.EPS)
+            fluid.layers.mean(mask) + self.EPS)
 
         label.stop_gradient = True
         mask.stop_gradient = True
@@ -290,52 +299,65 @@ def build_decoder(num_classes, using_sep_conv):
 @manager.MODELS.add_component
 def deeplabv3p_resnet101_vd(*args, **kwargs):
     pretrained_model = None
-    return DeepLabV3P(backbone='ResNet101_vd', pretrained_model=pretrained_model, **kwargs)
+    return DeepLabV3P(
+        backbone='ResNet101_vd', pretrained_model=pretrained_model, **kwargs)
 
 
 @manager.MODELS.add_component
 def deeplabv3p_resnet101_vd_os8(*args, **kwargs):
     pretrained_model = None
-    return DeepLabV3P(backbone='ResNet101_vd', output_stride=8, pretrained_model=pretrained_model, **kwargs)
+    return DeepLabV3P(
+        backbone='ResNet101_vd',
+        output_stride=8,
+        pretrained_model=pretrained_model,
+        **kwargs)
 
 
 @manager.MODELS.add_component
 def deeplabv3p_resnet50_vd(*args, **kwargs):
     pretrained_model = None
-    return DeepLabV3P(backbone='ResNet50_vd', pretrained_model=pretrained_model, **kwargs)
+    return DeepLabV3P(
+        backbone='ResNet50_vd', pretrained_model=pretrained_model, **kwargs)
 
 
 @manager.MODELS.add_component
 def deeplabv3p_resnet50_vd_os8(*args, **kwargs):
     pretrained_model = None
-    return DeepLabV3P(backbone='ResNet50_vd', output_stride=8, pretrained_model=pretrained_model, **kwargs)
+    return DeepLabV3P(
+        backbone='ResNet50_vd',
+        output_stride=8,
+        pretrained_model=pretrained_model,
+        **kwargs)
 
 
 @manager.MODELS.add_component
 def deeplabv3p_xception65_deeplab(*args, **kwargs):
     pretrained_model = None
-    return DeepLabV3P(backbone='Xception65_deeplab',
-                      pretrained_model=pretrained_model,
-                      backbone_indices=(0, 1),
-                      backbone_channels=(128, 2048),
-                      **kwargs)
+    return DeepLabV3P(
+        backbone='Xception65_deeplab',
+        pretrained_model=pretrained_model,
+        backbone_indices=(0, 1),
+        backbone_channels=(128, 2048),
+        **kwargs)
 
 
 @manager.MODELS.add_component
 def deeplabv3p_mobilenetv3_large(*args, **kwargs):
     pretrained_model = None
-    return DeepLabV3P(backbone='MobileNetV3_large_x1_0',
-                      pretrained_model=pretrained_model,
-                      backbone_indices=(0, 3),
-                      backbone_channels=(24, 160),
-                      **kwargs)
+    return DeepLabV3P(
+        backbone='MobileNetV3_large_x1_0',
+        pretrained_model=pretrained_model,
+        backbone_indices=(0, 3),
+        backbone_channels=(24, 160),
+        **kwargs)
 
 
 @manager.MODELS.add_component
 def deeplabv3p_mobilenetv3_small(*args, **kwargs):
     pretrained_model = None
-    return DeepLabV3P(backbone='MobileNetV3_small_x1_0',
-                      pretrained_model=pretrained_model,
-                      backbone_indices=(0, 3),
-                      backbone_channels=(16, 96),
-                      **kwargs)
+    return DeepLabV3P(
+        backbone='MobileNetV3_small_x1_0',
+        pretrained_model=pretrained_model,
+        backbone_indices=(0, 3),
+        backbone_channels=(16, 96),
+        **kwargs)

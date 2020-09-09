@@ -16,11 +16,14 @@ import os
 
 from .dataset import Dataset
 from dygraph.utils.download import download_file_and_uncompress
+from dygraph.cvlibs import manager
+from dygraph.transforms import Compose
 
 DATA_HOME = os.path.expanduser('~/.cache/paddle/dataset')
 URL = "https://paddleseg.bj.bcebos.com/dataset/optic_disc_seg.zip"
 
 
+@manager.DATASETS.add_component
 class OpticDiscSeg(Dataset):
     def __init__(self,
                  dataset_root=None,
@@ -28,7 +31,7 @@ class OpticDiscSeg(Dataset):
                  mode='train',
                  download=True):
         self.dataset_root = dataset_root
-        self.transforms = transforms
+        self.transforms = Compose(transforms)
         self.file_list = list()
         self.mode = mode
         self.num_classes = 2

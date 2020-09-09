@@ -19,6 +19,8 @@ import tqdm
 import cv2
 from paddle.fluid.dygraph.base import to_variable
 import paddle.fluid as fluid
+import paddle.nn.functional as F
+import paddle
 
 import dygraph.utils.logger as logger
 from dygraph.utils import ConfusionMatrix
@@ -47,7 +49,9 @@ def evaluate(model,
     for iter, (im, im_info, label) in tqdm.tqdm(
             enumerate(eval_dataset), total=total_iters):
         im = to_variable(im)
-        pred, _ = model(im)
+        # pred, _ = model(im)
+        logits = model(im)
+        pred = paddle.argmax(logits[0], axis=1)
         pred = pred.numpy().astype('float32')
         pred = np.squeeze(pred)
         for info in im_info[::-1]:

@@ -17,78 +17,36 @@ import argparse
 import paddle.fluid as fluid
 from paddle.fluid.dygraph.parallel import ParallelEnv
 
-from dygraph.datasets import DATASETS
-import dygraph.transforms as T
+import dygraph
 from dygraph.cvlibs import manager
 from dygraph.utils import get_environ_info
 from dygraph.utils import logger
+from dygraph.utils import Config
 from dygraph.core import train
 
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Model training')
-
-    # params of model
-    parser.add_argument(
-        '--model_name',
-        dest='model_name',
-        help='Model type for training, which is one of {}'.format(
-            str(list(manager.MODELS.components_dict.keys()))),
-        type=str,
-        default='UNet')
-
-    # params of dataset
-    parser.add_argument(
-        '--dataset',
-        dest='dataset',
-        help="The dataset you want to train, which is one of {}".format(
-            str(list(DATASETS.keys()))),
-        type=str,
-        default='OpticDiscSeg')
-    parser.add_argument(
-        '--dataset_root',
-        dest='dataset_root',
-        help="dataset root directory",
-        type=str,
-        default=None)
-
     # params of training
     parser.add_argument(
-        "--input_size",
-        dest="input_size",
-        help="The image size for net inputs.",
-        nargs=2,
-        default=[512, 512],
-        type=int)
+        "--config", dest="cfg", help="The config file.", default=None, type=str)
     parser.add_argument(
         '--iters',
         dest='iters',
         help='iters for training',
         type=int,
-        default=10000)
+        default=None)
     parser.add_argument(
         '--batch_size',
         dest='batch_size',
         help='Mini batch size of one gpu or cpu',
         type=int,
-        default=2)
+        default=None)
     parser.add_argument(
         '--learning_rate',
         dest='learning_rate',
         help='Learning rate',
         type=float,
-        default=0.01)
-    parser.add_argument(
-        '--pretrained_model',
-        dest='pretrained_model',
-        help='The path of pretrained model',
-        type=str,
-        default=None)
-    parser.add_argument(
-        '--resume_model',
-        dest='resume_model',
-        help='The path of resume model',
-        type=str,
         default=None)
     parser.add_argument(
         '--save_interval_iters',
@@ -139,64 +97,36 @@ def main(args):
         if env_info['Paddle compiled with cuda'] and env_info['GPUs used'] \
         else fluid.CPUPlace()
 
-    if args.dataset not in DATASETS:
-        raise Exception('`--dataset` is invalid. it should be one of {}'.format(
-            str(list(DATASETS.keys()))))
-    dataset = DATASETS[args.dataset]
-
     with fluid.dygraph.guard(places):
-        # Creat dataset reader
-        train_transforms = T.Compose([
-            T.Resize(args.input_size),
-            T.RandomHorizontalFlip(),
-            T.Normalize()
-        ])
-        train_dataset = dataset(
-            dataset_root=args.dataset_root,
-            transforms=train_transforms,
-            mode='train')
+        if not args.cfg:
+            raise RuntimeError('No configuration file specified.')
 
-        eval_dataset = None
-        if args.do_eval:
-            eval_transforms = T.Compose(
-                [T.Resize(args.input_size),
-                 T.Normalize()])
-            eval_dataset = dataset(
-                dataset_root=args.dataset_root,
-                transforms=eval_transforms,
-                mode='val')
+        cfg = Config(args.cfg)
+        train_dataset = cfg.train_dataset
+        if not train_dataset:
+            raise RuntimeError(
+                'The training dataset is not specified in the configuration file.'
+            )
 
-        model = manager.MODELS[args.model_name](
-            num_classes=train_dataset.num_classes,
-            pretrained_model=args.pretrained_model)
+        val_dataset = cfg.val_dataset if args.do_eval else None
 
-        # Creat optimizer
-        # todo, may less one than len(loader)
-        num_iters_each_epoch = len(train_dataset) // (
-            args.batch_size * ParallelEnv().nranks)
-        lr_decay = fluid.layers.polynomial_decay(
-            args.learning_rate, args.iters, end_learning_rate=0, power=0.9)
-        optimizer = fluid.optimizer.Momentum(
-            lr_decay,
-            momentum=0.9,
-            parameter_list=model.parameters(),
-            regularization=fluid.regularizer.L2Decay(regularization_coeff=4e-5))
+        losses = cfg.loss
 
         train(
-            model,
+            cfg.model,
             train_dataset,
             places=places,
-            eval_dataset=eval_dataset,
-            optimizer=optimizer,
+            eval_dataset=val_dataset,
+            optimizer=cfg.optimizer,
             save_dir=args.save_dir,
-            iters=args.iters,
-            batch_size=args.batch_size,
-            resume_model=args.resume_model,
+            iters=cfg.iters,
+            batch_size=cfg.batch_size,
             save_interval_iters=args.save_interval_iters,
             log_iters=args.log_iters,
             num_classes=train_dataset.num_classes,
             num_workers=args.num_workers,
-            use_vdl=args.use_vdl)
+            use_vdl=args.use_vdl,
+            losses=losses)
 
 
 if __name__ == '__main__':
