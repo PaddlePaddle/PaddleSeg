@@ -17,8 +17,7 @@ from paddle import nn
 import paddle.nn.functional as F
 
 from dygraph.cvlibs import manager
-
-
+'''
 @manager.LOSSES.add_component
 class CrossEntropyLoss(nn.CrossEntropyLoss):
     """
@@ -40,8 +39,9 @@ class CrossEntropyLoss(nn.CrossEntropyLoss):
     """
 
     def __init__(self, weight=None, ignore_index=255, reduction='mean'):
-        super(CrossEntropyLoss, self).__init__(
-            weight=weight, ignore_index=ignore_index, reduction=reduction)
+        self.weight = weight
+        self.ignore_index = ignore_index
+        self.reduction = reduction
         self.EPS = 1e-5
         if self.reduction not in ['sum', 'mean', 'none']:
             raise ValueError(
@@ -66,6 +66,49 @@ class CrossEntropyLoss(nn.CrossEntropyLoss):
             weight=self.weight,
             ignore_index=self.ignore_index,
             reduction=self.reduction)
+
+        mask = label != self.ignore_index
+        mask = paddle.cast(mask, 'float32')
+        avg_loss = loss / (paddle.mean(mask) + self.EPS)
+
+        label.stop_gradient = True
+        mask.stop_gradient = True
+        return avg_loss
+'''
+
+
+@manager.LOSSES.add_component
+class CrossEntropyLoss(nn.Layer):
+    """
+    Implements the cross entropy loss function.
+
+    Args:
+        ignore_index (int64): Specifies a target value that is ignored
+            and does not contribute to the input gradient. Default ``255``.
+    """
+
+    def __init__(self, ignore_index=255):
+        super(CrossEntropyLoss, self).__init__()
+        self.ignore_index = ignore_index
+        self.EPS = 1e-5
+
+    def forward(self, logit, label):
+        """
+        Forward computation.
+        Args:
+            logit (Tensor): logit tensor, the data type is float32, float64. Shape is
+	            (N, C), where C is number of classes, and if shape is more than 2D, this
+	            is (N, C, D1, D2,..., Dk), k >= 1.
+            label (Variable): label tensor, the data type is int64. Shape is (N), where each
+	            value is 0 <= label[i] <= C-1, and if shape is more than 2D, this is
+	            (N, D1, D2,..., Dk), k >= 1.
+        """
+        if len(label.shape) != len(logit.shape):
+            label = paddle.unsqueeze(label, 1)
+
+        loss = F.softmax_with_cross_entropy(
+            logit, label, ignore_index=self.ignore_index, axis=1)
+        loss = paddle.reduce_mean(loss)
 
         mask = label != self.ignore_index
         mask = paddle.cast(mask, 'float32')

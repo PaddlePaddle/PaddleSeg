@@ -86,7 +86,8 @@ class FCN(fluid.dygraph.Layer):
             filter_size=1,
             stride=1,
             padding=0)
-        self.init_weight(model_pretrained)
+        if self.training:
+            self.init_weight(model_pretrained)
 
     def forward(self, x):
         input_shape = x.shape[2:]
@@ -131,36 +132,6 @@ class FCN(fluid.dygraph.Layer):
             else:
                 raise Exception('Pretrained model is not found: {}'.format(
                     pretrained_model))
-
-    # def _get_loss(self, logit, label):
-    #     """
-    #     compute forward loss of the model
-
-    #     Args:
-    #         logit (tensor): the logit of model output
-    #         label (tensor): ground truth
-
-    #     Returns:
-    #         avg_loss (tensor): forward loss
-    #     """
-    #     logit = fluid.layers.transpose(logit, [0, 2, 3, 1])
-    #     label = fluid.layers.transpose(label, [0, 2, 3, 1])
-    #     mask = label != self.ignore_index
-    #     mask = fluid.layers.cast(mask, 'float32')
-    #     loss, probs = fluid.layers.softmax_with_cross_entropy(
-    #         logit,
-    #         label,
-    #         ignore_index=self.ignore_index,
-    #         return_softmax=True,
-    #         axis=-1)
-
-    #     loss = loss * mask
-    #     avg_loss = fluid.layers.mean(loss) / (
-    #         fluid.layers.mean(mask) + self.EPS)
-
-    #     label.stop_gradient = True
-    #     mask.stop_gradient = True
-    #     return avg_loss
 
 
 class ConvBNLayer(fluid.dygraph.Layer):

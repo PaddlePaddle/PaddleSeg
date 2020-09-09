@@ -146,7 +146,8 @@ class HRNet(fluid.dygraph.Layer):
             has_se=self.has_se,
             name="st4")
 
-        self.init_weight(backbone_pretrained)
+        if self.training:
+            self.init_weight(backbone_pretrained)
 
     def forward(self, x, label=None, mode='train'):
         input_shape = x.shape[2:]

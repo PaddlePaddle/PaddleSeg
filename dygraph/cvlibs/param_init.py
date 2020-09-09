@@ -15,11 +15,11 @@
 import paddle.fluid as fluid
 
 
-def constant_init(param, value=0.0):
-    initializer = fluid.initializer.Constant(value)
+def constant_init(param, **kwargs):
+    initializer = fluid.initializer.Constant(**kwargs)
     initializer(param, param.block)
 
 
-def normal_init(param, loc=0.0, scale=1.0, seed=0):
-    initializer = fluid.initializer.Normal(loc=loc, scale=scale, seed=seed)
+def normal_init(param, **kwargs):
+    initializer = fluid.initializer.Normal(**kwargs)
     initializer(param, param.block)
