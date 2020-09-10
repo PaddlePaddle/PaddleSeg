@@ -63,7 +63,7 @@ def load_pretrained_model(model, pretrained_model):
                 'The pretrained model directory is not Found: {}'.format(
                     pretrained_model))
     else:
-        logger.info('No pretrained model to load, train from scratch')
+        logger.warning('No pretrained model to load, train from scratch')
 
 
 def resume(model, optimizer, resume_model):

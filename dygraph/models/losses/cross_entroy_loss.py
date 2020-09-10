@@ -15,6 +15,7 @@
 import paddle
 from paddle import nn
 import paddle.nn.functional as F
+import paddle.fluid as fluid
 
 from dygraph.cvlibs import manager
 '''
@@ -106,13 +107,34 @@ class CrossEntropyLoss(nn.Layer):
         if len(label.shape) != len(logit.shape):
             label = paddle.unsqueeze(label, 1)
 
-        loss = F.softmax_with_cross_entropy(
-            logit, label, ignore_index=self.ignore_index, axis=1)
-        loss = paddle.reduce_mean(loss)
+        # logit = paddle.transpose(logit, [0, 2, 3, 1])
+        # label = paddle.transpose(label, [0, 2, 3, 1])
+        # loss = F.softmax_with_cross_entropy(
+        #     logit, label, ignore_index=self.ignore_index, axis=-1)
+        # loss = paddle.reduce_mean(loss)
 
+        # mask = label != self.ignore_index
+        # mask = paddle.cast(mask, 'float32')
+        # avg_loss = loss / (paddle.mean(mask) + self.EPS)
+
+        # label.stop_gradient = True
+        # mask.stop_gradient = True
+        # return avg_loss
+
+        logit = fluid.layers.transpose(logit, [0, 2, 3, 1])
+        label = fluid.layers.transpose(label, [0, 2, 3, 1])
         mask = label != self.ignore_index
-        mask = paddle.cast(mask, 'float32')
-        avg_loss = loss / (paddle.mean(mask) + self.EPS)
+        mask = fluid.layers.cast(mask, 'float32')
+        loss, probs = fluid.layers.softmax_with_cross_entropy(
+            logit,
+            label,
+            ignore_index=self.ignore_index,
+            return_softmax=True,
+            axis=-1)
+
+        loss = loss * mask
+        avg_loss = fluid.layers.mean(loss) / (
+            fluid.layers.mean(mask) + self.EPS)
 
         label.stop_gradient = True
         mask.stop_gradient = True

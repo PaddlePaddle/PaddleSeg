@@ -64,8 +64,8 @@ def train(model,
           num_classes=None,
           num_workers=8,
           use_vdl=False,
-          losses=None):
-    ignore_index = model.ignore_index
+          losses=None,
+          ignore_index=255):
     nranks = ParallelEnv().nranks
 
     start_iter = 0

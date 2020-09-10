@@ -26,6 +26,7 @@ from paddle.nn import SyncBatchNorm as BatchNorm
 from dygraph.cvlibs import manager
 from dygraph import utils
 from dygraph.cvlibs import param_init
+from dygraph.utils import logger
 
 __all__ = [
     "fcn_hrnet_w18_small_v1", "fcn_hrnet_w18_small_v2", "fcn_hrnet_w18",
@@ -52,25 +53,22 @@ class FCN(fluid.dygraph.Layer):
         backbone_channels (tuple): the same length with "backbone_indices". It indicates the channels of corresponding index.
 
         channels (int): channels after conv layer before the last one.
-
-        ignore_index (int): the value of ground-truth mask would be ignored while computing loss or doing evaluation. Default 255.
     """
 
     def __init__(self,
                  num_classes,
                  backbone,
+                 backbone_pretrained=None,
                  model_pretrained=None,
                  backbone_indices=(-1, ),
                  backbone_channels=(270, ),
-                 channels=None,
-                 ignore_index=255,
-                 **kwargs):
+                 channels=None):
         super(FCN, self).__init__()
 
         self.num_classes = num_classes
+        self.backbone_pretrained = backbone_pretrained
+        self.model_pretrained = model_pretrained
         self.backbone_indices = backbone_indices
-        self.ignore_index = ignore_index
-        self.EPS = 1e-5
         if channels is None:
             channels = backbone_channels[backbone_indices[0]]
 
@@ -87,7 +85,7 @@ class FCN(fluid.dygraph.Layer):
             stride=1,
             padding=0)
         if self.training:
-            self.init_weight(model_pretrained)
+            self.init_weight()
 
     def forward(self, x):
         input_shape = x.shape[2:]
@@ -98,40 +96,33 @@ class FCN(fluid.dygraph.Layer):
         logit = fluid.layers.resize_bilinear(logit, input_shape)
         return [logit]
 
-        # if self.training:
-        #     if label is None:
-        #         raise Exception('Label is need during training')
-        #     return self._get_loss(logit, label)
-        # else:
-        #     score_map = fluid.layers.softmax(logit, axis=1)
-        #     score_map = fluid.layers.transpose(score_map, [0, 2, 3, 1])
-        #     pred = fluid.layers.argmax(score_map, axis=3)
-        #     pred = fluid.layers.unsqueeze(pred, axes=[3])
-        #     return pred, score_map
-
-    def init_weight(self, pretrained_model=None):
-        """
-        Initialize the parameters of model parts.
-        Args:
-            pretrained_model ([str], optional): the path of pretrained model. Defaults to None.
-        """
+    def init_weight(self):
         params = self.parameters()
         for param in params:
             param_name = param.name
             if 'batch_norm' in param_name:
                 if 'w_0' in param_name:
-                    param_init.constant_init(param, 1.0)
+                    param_init.constant_init(param, value=1.0)
                 elif 'b_0' in param_name:
-                    param_init.constant_init(param, 0.0)
+                    param_init.constant_init(param, value=0.0)
             if 'conv' in param_name and 'w_0' in param_name:
                 param_init.normal_init(param, scale=0.001)
 
-        if pretrained_model is not None:
-            if os.path.exists(pretrained_model):
-                utils.load_pretrained_model(self, pretrained_model)
+        if self.model_pretrained is not None:
+            if os.path.exists(self.model_pretrained):
+                utils.load_pretrained_model(self, self.model_pretrained)
             else:
                 raise Exception('Pretrained model is not found: {}'.format(
-                    pretrained_model))
+                    self.model_pretrained))
+        elif self.backbone_pretrained is not None:
+            if os.path.exists(self.backbone_pretrained):
+                utils.load_pretrained_model(self.backbone,
+                                            self.backbone_pretrained)
+            else:
+                raise Exception('Pretrained model is not found: {}'.format(
+                    self.backbone_pretrained))
+        else:
+            logger.warning('No pretrained model to load, train from scratch')
 
 
 class ConvBNLayer(fluid.dygraph.Layer):

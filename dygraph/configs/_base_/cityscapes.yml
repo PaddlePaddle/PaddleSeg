@@ -36,4 +36,5 @@ learning_rate:
 loss:
   types:
     - type: CrossEntropyLoss
+      ignore_index: 255
   coef: [1]

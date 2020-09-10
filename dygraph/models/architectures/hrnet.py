@@ -56,7 +56,6 @@ class HRNet(fluid.dygraph.Layer):
     """
 
     def __init__(self,
-                 backbone_pretrained=None,
                  stage1_num_modules=1,
                  stage1_num_blocks=[4],
                  stage1_num_channels=[64],
@@ -146,9 +145,6 @@ class HRNet(fluid.dygraph.Layer):
             has_se=self.has_se,
             name="st4")
 
-        if self.training:
-            self.init_weight(backbone_pretrained)
-
     def forward(self, x, label=None, mode='train'):
         input_shape = x.shape[2:]
         conv1 = self.conv_layer1_1(x)
@@ -172,30 +168,6 @@ class HRNet(fluid.dygraph.Layer):
         x = fluid.layers.concat([st4[0], x1, x2, x3], axis=1)
 
         return [x]
-
-    def init_weight(self, pretrained_model=None):
-        """
-        Initialize the parameters of model parts.
-        Args:
-            pretrained_model ([str], optional): the path of pretrained model. Defaults to None.
-        """
-        params = self.parameters()
-        for param in params:
-            param_name = param.name
-            if 'batch_norm' in param_name:
-                if 'w_0' in param_name:
-                    param_init.constant_init(param, 1.0)
-                elif 'b_0' in param_name:
-                    param_init.constant_init(param, 0.0)
-            if 'conv' in param_name and 'w_0' in param_name:
-                param_init.normal_init(param, scale=0.001)
-
-        if pretrained_model is not None:
-            if os.path.exists(pretrained_model):
-                utils.load_pretrained_model(self, pretrained_model)
-            else:
-                raise Exception('Pretrained model is not found: {}'.format(
-                    pretrained_model))
 
 
 class ConvBNLayer(fluid.dygraph.Layer):

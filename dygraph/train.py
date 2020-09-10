@@ -53,7 +53,7 @@ def parse_args():
         dest='save_interval_iters',
         help='The interval iters for save a model snapshot',
         type=int,
-        default=5)
+        default=1000)
     parser.add_argument(
         '--save_dir',
         dest='save_dir',
@@ -126,7 +126,8 @@ def main(args):
             num_classes=train_dataset.num_classes,
             num_workers=args.num_workers,
             use_vdl=args.use_vdl,
-            losses=losses)
+            losses=losses,
+            ignore_index=losses['types'][0].ignore_index)
 
 
 if __name__ == '__main__':
