@@ -36,20 +36,22 @@ class Config(object):
 
         if path.endswith('yml') or path.endswith('yaml'):
             dic = self._parse_from_yaml(path)
+            print(dic)
             self._build(dic)
         else:
             raise RuntimeError('Config file should in yaml format!')
 
     def _update_dic(self, dic, base_dic):
         """
-        update dic from base_dic
+        update config from dic based base_dic
         """
-        dic = dic.copy()
-        for key, val in base_dic.items():
-            if isinstance(val, dict) and key in dic:
-                dic[key] = self._update_dic(dic[key], val)
+        base_dic = base_dic.copy()
+        for key, val in dic.items():
+            if isinstance(val, dict) and key in base_dic:
+                base_dic[key] = self._update_dic(val, base_dic[key])
             else:
-                dic[key] = val
+                base_dic[key] = val
+        dic = base_dic
         return dic
 
     def _parse_from_yaml(self, path: str):
