@@ -109,7 +109,7 @@ def evaluate(cfg, ckpt_dir=None, use_gpu=False, use_mpio=False, **kwargs):
         test_prog, startup_prog, phase=ModelPhase.EVAL)
 
     data_loader.set_sample_generator(
-        data_generator, drop_last=False, batch_size=cfg.BATCH_SIZE)
+        data_generator, drop_last=False, batch_size=1)
 
     # Get device environment
     places = fluid.cuda_places() if use_gpu else fluid.cpu_places()
@@ -142,6 +142,7 @@ def evaluate(cfg, ckpt_dir=None, use_gpu=False, use_mpio=False, **kwargs):
         fluid.io.load_persistables(exe, ckpt_dir, main_program=test_prog)
     if kwargs['convert']:
         test_prog = convert(test_prog, place, config)
+    compiled_test_prog = fluid.CompiledProgram(test_prog)
     # Use streaming confusion matrix to calculate mean_iou
     np.set_printoptions(
         precision=4, suppress=True, linewidth=160, floatmode="fixed")
@@ -157,7 +158,7 @@ def evaluate(cfg, ckpt_dir=None, use_gpu=False, use_mpio=False, **kwargs):
         try:
             step += 1
             loss, pred, grts, masks = exe.run(
-                test_prog, fetch_list=fetch_list, return_numpy=True)
+                compiled_test_prog, fetch_list=fetch_list, return_numpy=True)
 
             loss = np.mean(np.array(loss))
 
