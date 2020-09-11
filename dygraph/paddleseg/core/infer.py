@@ -20,8 +20,8 @@ import paddle.fluid as fluid
 import cv2
 import tqdm
 
-from dygraph import utils
-import dygraph.utils.logger as logger
+from paddleseg import utils
+import paddleseg.utils.logger as logger
 
 
 def mkdir(path):

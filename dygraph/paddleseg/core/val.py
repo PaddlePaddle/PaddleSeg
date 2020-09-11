@@ -22,9 +22,9 @@ import paddle.fluid as fluid
 import paddle.nn.functional as F
 import paddle
 
-import dygraph.utils.logger as logger
-from dygraph.utils import ConfusionMatrix
-from dygraph.utils import Timer, calculate_eta
+import paddleseg.utils.logger as logger
+from paddleseg.utils import ConfusionMatrix
+from paddleseg.utils import Timer, calculate_eta
 
 
 def evaluate(model,
