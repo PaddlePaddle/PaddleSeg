@@ -17,7 +17,7 @@ from paddle import nn
 import paddle.nn.functional as F
 import paddle.fluid as fluid
 
-from dygraph.cvlibs import manager
+from paddleseg.cvlibs import manager
 '''
 @manager.LOSSES.add_component
 class CrossEntropyLoss(nn.CrossEntropyLoss):

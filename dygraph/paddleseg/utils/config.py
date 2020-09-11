@@ -19,7 +19,7 @@ from typing import Any, Callable
 import yaml
 import paddle.fluid as fluid
 
-import dygraph.cvlibs.manager as manager
+import paddleseg.cvlibs.manager as manager
 
 
 class Config(object):

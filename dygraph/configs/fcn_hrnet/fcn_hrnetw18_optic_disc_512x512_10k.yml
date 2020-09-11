@@ -4,6 +4,6 @@ model:
   type: FCN
   backbone:
     type: HRNet_W18
-    backbone_pretrained: pretrained_model/hrnet_w18_imagenet
   num_classes: 2
   backbone_channels: [270]
+  backbone_pretrained: pretrained_model/hrnet_w18_imagenet

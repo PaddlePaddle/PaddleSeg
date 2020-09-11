@@ -17,12 +17,10 @@ import argparse
 import paddle.fluid as fluid
 from paddle.fluid.dygraph.parallel import ParallelEnv
 
-import dygraph
-from dygraph.cvlibs import manager
-from dygraph.utils import get_environ_info
-from dygraph.utils import logger
-from dygraph.utils import Config
-from dygraph.core import train
+import paddleseg
+from paddleseg.cvlibs import manager
+from paddleseg.utils import get_environ_info, logger, Config
+from paddleseg.core import train
 
 
 def parse_args():
@@ -53,7 +51,7 @@ def parse_args():
         dest='save_interval_iters',
         help='The interval iters for save a model snapshot',
         type=int,
-        default=5)
+        default=1000)
     parser.add_argument(
         '--save_dir',
         dest='save_dir',
@@ -126,7 +124,8 @@ def main(args):
             num_classes=train_dataset.num_classes,
             num_workers=args.num_workers,
             use_vdl=args.use_vdl,
-            losses=losses)
+            losses=losses,
+            ignore_index=losses['types'][0].ignore_index)
 
 
 if __name__ == '__main__':

@@ -22,10 +22,10 @@ from paddle.fluid.io import DataLoader
 from paddle.io import DistributedBatchSampler
 import paddle.nn.functional as F
 
-import dygraph.utils.logger as logger
-from dygraph.utils import load_pretrained_model
-from dygraph.utils import resume
-from dygraph.utils import Timer, calculate_eta
+import paddleseg.utils.logger as logger
+from paddleseg.utils import load_pretrained_model
+from paddleseg.utils import resume
+from paddleseg.utils import Timer, calculate_eta
 from .val import evaluate
 
 
@@ -66,6 +66,7 @@ def train(model,
           use_vdl=False,
           losses=None,
           ignore_index=255):
+
     nranks = ParallelEnv().nranks
 
     start_iter = 0

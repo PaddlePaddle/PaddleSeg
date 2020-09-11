@@ -23,10 +23,10 @@ from paddle.fluid.dygraph.nn import Conv2D, Pool2D, Linear
 from paddle.fluid.initializer import Normal
 from paddle.nn import SyncBatchNorm as BatchNorm
 
-from dygraph.cvlibs import manager
-from dygraph import utils
-from dygraph.cvlibs import param_init
-from dygraph.utils import logger
+from paddleseg.cvlibs import manager
+from paddleseg import utils
+from paddleseg.cvlibs import param_init
+from paddleseg.utils import logger
 
 __all__ = [
     "fcn_hrnet_w18_small_v1", "fcn_hrnet_w18_small_v2", "fcn_hrnet_w18",

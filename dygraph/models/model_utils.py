@@ -18,7 +18,8 @@ import paddle.nn.functional as F
 from paddle import fluid
 from paddle.fluid import dygraph
 from paddle.fluid.dygraph import Conv2D
-from paddle.nn import SyncBatchNorm as BatchNorm
+#from paddle.nn import SyncBatchNorm as BatchNorm
+from paddle.fluid.dygraph import SyncBatchNorm as BatchNorm
 
 from dygraph.models.architectures import layer_utils
 
@@ -47,10 +48,37 @@ class FCNHead(fluid.dygraph.Layer):
 
     def forward(self, x):
         x = self.conv_bn_relu(x)
-        x = F.dropout(x, p=0.1)
+        x = F.dropout(x, dropout_prob=0.1)
         x = self.conv(x)
         return x
 
+class AuxLayer(fluid.dygraph.Layer):
+    """
+    The auxilary layer implementation for auxilary loss
+
+    Args:
+        in_channels (int): the number of input channels.
+        inter_channels (int): intermediate channels.
+        out_channels (int): the number of output channels, which is usually num_classes.
+    """
+
+    def __init__(self, in_channels, inter_channels, out_channels):
+        super(AuxLayer, self).__init__()
+
+        self.conv_bn_relu = layer_utils.ConvBnRelu(num_channels=in_channels,
+                                                   num_filters=inter_channels,
+                                                   filter_size=3,
+                                                   padding=1)
+
+        self.conv = Conv2D(num_channels=inter_channels,
+                           num_filters=out_channels,
+                           filter_size=1)
+
+    def forward(self, x):
+        x = self.conv_bn_relu(x)
+        x = F.dropout(x, dropout_prob=0.1)
+        x = self.conv(x)
+        return x
 
 def get_loss(logit, label, ignore_index=255, EPS=1e-5):
     """
