@@ -70,11 +70,11 @@ class FCN(fluid.dygraph.Layer):
         self.model_pretrained = model_pretrained
         self.backbone_indices = backbone_indices
         if channels is None:
-            channels = backbone_channels[backbone_indices[0]]
+            channels = backbone_channels[0]
 
         self.backbone = backbone
         self.conv_last_2 = ConvBNLayer(
-            num_channels=backbone_channels[backbone_indices[0]],
+            num_channels=backbone_channels[0],
             num_filters=channels,
             filter_size=1,
             stride=1)

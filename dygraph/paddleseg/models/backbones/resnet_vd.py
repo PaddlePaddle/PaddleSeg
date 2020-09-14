@@ -363,7 +363,7 @@ class ResNet_vd(fluid.dygraph.Layer):
         y = self.pool2d_avg(y)
         y = fluid.layers.reshape(y, shape=[-1, self.pool2d_avg_channels])
         y = self.out(y)
-        return y, feat_list
+        return feat_list
 
     # def init_weight(self, pretrained_model=None):
 
@@ -385,6 +385,7 @@ class ResNet_vd(fluid.dygraph.Layer):
                     pretrained_model))
 
 
+@manager.BACKBONES.add_component
 def ResNet18_vd(**args):
     model = ResNet_vd(layers=18, **args)
     return model
