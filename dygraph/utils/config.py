@@ -137,6 +137,12 @@ class Config(object):
             lr = self.learning_rate
             args = self.optimizer_args
             args.setdefault('momentum', 0.9)
+            weight_decay = args.get('weight_decay', None)
+            if weight_decay is not None:
+                args.pop('weight_decay')
+                regularization = fluid.regularizer.L2DecayRegularizer(
+                    regularization_coeff=weight_decay)
+            args.setdefault('regularization', None)
             return fluid.optimizer.Momentum(
                 lr, parameter_list=self.model.parameters(), **args)
         else:
