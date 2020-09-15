@@ -18,7 +18,7 @@ import paddle
 import paddle.nn.functional as F
 from paddle import nn
 from paddleseg.cvlibs import manager
-from paddleseg.models.common import layer_utils
+from paddleseg.models.common import pyramid_pool, layer_libs
 from paddleseg.utils import utils
 
 __all__ = ['DeepLabV3P', 'DeepLabV3']
@@ -43,8 +43,9 @@ class DeepLabV3P(nn.Layer):
 
         model_pretrained (str): the path of pretrained model.
 
-        output_stride (int): the ratio of input size and final feature size. 
-        Support 16 or 8. Default to 16.
+        aspp_ratios (tuple): the dilation rate using in ASSP module.
+        if output_stride=16, aspp_ratios should be set as (1, 6, 12, 18).
+        if output_stride=8, aspp_ratios is (1, 12, 24, 36).
 
         backbone_indices (tuple): two values in the tuple indicte the indices of output of backbone.
                         the first index will be taken as a low-level feature in Deconder component;
@@ -61,18 +62,24 @@ class DeepLabV3P(nn.Layer):
     def __init__(self,
                  num_classes,
                  backbone,
+                 backbone_pretrained=None,
                  model_pretrained=None,
                  backbone_indices=(0, 3),
                  backbone_channels=(256, 2048),
-                 output_stride=16):
+                 aspp_ratios=(1, 6, 12, 18),
+                 aspp_out_channels=256):
 
         super(DeepLabV3P, self).__init__()
 
         self.backbone = backbone
-        self.aspp = ASPP(output_stride, backbone_channels[1])
+        self.backbone_pretrained = backbone_pretrained
+        self.model_pretrained = model_pretrained
+        
+        self.aspp = pyramid_pool.ASPPModule(
+            aspp_ratios, backbone_channels[1], aspp_out_channels, sep_conv=True, image_pooling=True)
         self.decoder = Decoder(num_classes, backbone_channels[0])
         self.backbone_indices = backbone_indices
-        self.init_weight(model_pretrained)
+        self.init_weight()
 
     def forward(self, input, label=None):
 
@@ -87,19 +94,17 @@ class DeepLabV3P(nn.Layer):
 
         return logit_list
 
-    def init_weight(self, pretrained_model=None):
+    def init_weight(self):
         """
         Initialize the parameters of model parts.
         Args:
             pretrained_model ([str], optional): the path of pretrained model. Defaults to None.
         """
-        if pretrained_model is not None:
-            if os.path.exists(pretrained_model):
-                utils.load_pretrained_model(self, pretrained_model)
-            else:
-                raise Exception('Pretrained model is not found: {}'.format(
-                    pretrained_model))
-
+        if self.model_pretrained is not None:
+            utils.load_pretrained_model(self, self.model_pretrained)
+        elif self.backbone_pretrained is not None:
+            utils.load_pretrained_model(self.backbone, self.backbone_pretrained)
+           
 
 @manager.MODELS.add_component
 class DeepLabV3(nn.Layer):
@@ -119,15 +124,21 @@ class DeepLabV3(nn.Layer):
     def __init__(self,
                  num_classes,
                  backbone,
+                 backbone_pretrained=None,
                  model_pretrained=None,
                  backbone_indices=(3,),
                  backbone_channels=(2048,),
-                 output_stride=16):
+                 aspp_ratios=(1, 6, 12, 18),
+                 aspp_out_channels=256):
 
         super(DeepLabV3, self).__init__()
 
         self.backbone = backbone
-        self.aspp = ASPP(output_stride, backbone_channels[0])
+
+        self.aspp = pyramid_pool.ASPPModule(
+            aspp_ratios, backbone_channels[0], aspp_out_channels, 
+            sep_conv=False, image_pooling=True)
+
         self.cls = nn.Conv2d(
             in_channels=backbone_channels[0],
             out_channels=num_classes,
@@ -161,98 +172,6 @@ class DeepLabV3(nn.Layer):
                     pretrained_model))
 
 
-class ImageAverage(nn.Layer):
-    """
-    Global average pooling
-
-    Args:
-        in_channels (int): the number of input channels.
-
-    """
-
-    def __init__(self, in_channels):
-        super(ImageAverage, self).__init__()
-        self.conv_bn_relu = layer_utils.ConvBnRelu(
-            in_channels, out_channels=256, kernel_size=1)
-
-    def forward(self, input):
-        x = paddle.reduce_mean(input, dim=[2, 3], keep_dim=True)
-        x = self.conv_bn_relu(x)
-        x = F.resize_bilinear(x, out_shape=input.shape[2:])
-        return x
-
-
-class ASPP(nn.Layer):
-    """
-     Decoder module of DeepLabV3P model
-
-    Args:
-        output_stride (int): the ratio of input size and final feature size. Support 16 or 8.
-
-        in_channels (int): the number of input channels in decoder module.
-
-    """
-
-    def __init__(self, output_stride, in_channels):
-        super(ASPP, self).__init__()
-
-        if output_stride == 16:
-            aspp_ratios = (6, 12, 18)
-        elif output_stride == 8:
-            aspp_ratios = (12, 24, 36)
-        else:
-            raise NotImplementedError(
-                "Only support output_stride is 8 or 16, but received{}".format(
-                    output_stride))
-
-        self.image_average = ImageAverage(in_channels=in_channels)
-
-        # The first aspp using 1*1 conv
-        self.aspp1 = layer_utils.DepthwiseConvBnRelu(
-            in_channels=in_channels, out_channels=256, kernel_size=1)
-
-        # The second aspp using 3*3 (separable) conv at dilated rate aspp_ratios[0]
-        self.aspp2 = layer_utils.DepthwiseConvBnRelu(
-            in_channels=in_channels,
-            out_channels=256,
-            kernel_size=3,
-            dilation=aspp_ratios[0],
-            padding=aspp_ratios[0])
-
-        # The Third aspp using 3*3 (separable) conv at dilated rate aspp_ratios[1]
-        self.aspp3 = layer_utils.DepthwiseConvBnRelu(
-            in_channels=in_channels,
-            out_channels=256,
-            kernel_size=3,
-            dilation=aspp_ratios[1],
-            padding=aspp_ratios[1])
-
-        # The Third aspp using 3*3 (separable) conv at dilated rate aspp_ratios[2]
-        self.aspp4 = layer_utils.DepthwiseConvBnRelu(
-            in_channels=in_channels,
-            out_channels=256,
-            kernel_size=3,
-            dilation=aspp_ratios[2],
-            padding=aspp_ratios[2])
-
-        # After concat op, using 1*1 conv
-        self.conv_bn_relu = layer_utils.ConvBnRelu(
-            in_channels=1280, out_channels=256, kernel_size=1)
-
-    def forward(self, x):
-
-        x1 = self.image_average(x)
-        x2 = self.aspp1(x)
-        x3 = self.aspp2(x)
-        x4 = self.aspp3(x)
-        x5 = self.aspp4(x)
-        x = paddle.concat([x1, x2, x3, x4, x5], axis=1)
-
-        x = self.conv_bn_relu(x)
-        x = F.dropout(x, p=0.1)  # dropout_prob
-        return x
-
-
 class Decoder(nn.Layer):
     """
     Decoder module of DeepLabV3P model
@@ -267,12 +186,12 @@ class Decoder(nn.Layer):
     def __init__(self, num_classes, in_channels):
         super(Decoder, self).__init__()
 
-        self.conv_bn_relu1 = layer_utils.ConvBnRelu(
+        self.conv_bn_relu1 = layer_libs.ConvBnRelu(
             in_channels=in_channels, out_channels=48, kernel_size=1)
 
-        self.conv_bn_relu2 = layer_utils.DepthwiseConvBnRelu(
+        self.conv_bn_relu2 = layer_libs.DepthwiseConvBnRelu(
             in_channels=304, out_channels=256, kernel_size=3, padding=1)
-        self.conv_bn_relu3 = layer_utils.DepthwiseConvBnRelu(
+        self.conv_bn_relu3 = layer_libs.DepthwiseConvBnRelu(
             in_channels=256, out_channels=256, kernel_size=3, padding=1)
         self.conv = nn.Conv2d(
             in_channels=256, out_channels=num_classes, kernel_size=1)
