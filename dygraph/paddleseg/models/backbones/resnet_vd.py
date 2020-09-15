@@ -28,7 +28,7 @@ from paddle.fluid.dygraph.nn import Conv2D, Pool2D, Linear, Dropout
 from paddle.nn import SyncBatchNorm as BatchNorm
 
 from paddleseg.utils import utils
-from paddleseg.models.common import layer_utils
+from paddleseg.models.common import layer_libs, activation
 from paddleseg.cvlibs import manager
 
 __all__ = [
@@ -77,7 +77,7 @@ class ConvBNLayer(fluid.dygraph.Layer):
             num_filters,
             weight_attr=ParamAttr(name=bn_name + '_scale'),
             bias_attr=ParamAttr(bn_name + '_offset'))
-        self._act_op = layer_utils.Activation(act=act)
+        self._act_op = activation.Activation(act=act)
 
     def forward(self, inputs):
         if self.is_vd_mode:
@@ -213,7 +213,7 @@ class ResNet_vd(fluid.dygraph.Layer):
                  layers=50,
                  class_dim=1000,
                  output_stride=None,
-                 multi_grid=(1, 2, 4)):
+                 multi_grid=(1, 1, 1)):
         super(ResNet_vd, self).__init__()
 
         self.layers = layers

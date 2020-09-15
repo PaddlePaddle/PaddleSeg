@@ -17,8 +17,9 @@ import os
 import paddle
 import paddle.nn.functional as F
 from paddle import nn
+
 from paddleseg.cvlibs import manager
-from paddleseg.models.common import layer_utils, model_utils
+from paddleseg.models.common import layer_libs
 from paddleseg.utils import utils
 
 
@@ -88,7 +89,7 @@ class ANN(nn.Layer):
             psp_size=psp_size)
 
         self.context = nn.Sequential(
-            layer_utils.ConvBnRelu(
+            layer_libs.ConvBnRelu(
                 in_channels=high_in_channels,
                 out_channels=inter_channels,
                 kernel_size=3,
@@ -106,7 +107,7 @@ class ANN(nn.Layer):
             in_channels=inter_channels,
             out_channels=num_classes,
             kernel_size=1)
-        self.auxlayer = model_utils.AuxLayer(
+        self.auxlayer = layer_libs.AuxLayer(
             in_channels=low_in_channels,
             inter_channels=low_in_channels // 2,
             out_channels=num_classes,
@@ -189,7 +190,7 @@ class AFNB(nn.Layer):
                                     key_channels, value_channels, out_channels,
                                     size) for size in sizes
         ])
-        self.conv_bn = layer_utils.ConvBn(
+        self.conv_bn = layer_libs.ConvBn(
             in_channels=out_channels + high_in_channels,
             out_channels=out_channels,
             kernel_size=1)
@@ -243,7 +244,7 @@ class APNB(nn.Layer):
             SelfAttentionBlock_APNB(in_channels, out_channels, key_channels,
                                     value_channels, size) for size in sizes
         ])
-        self.conv_bn = layer_utils.ConvBnRelu(
+        self.conv_bn = layer_libs.ConvBnRelu(
             in_channels=in_channels * 2,
             out_channels=out_channels,
             kernel_size=1)
@@ -310,11 +311,11 @@ class SelfAttentionBlock_AFNB(nn.Layer):
         if out_channels == None:
             self.out_channels = high_in_channels
         self.pool = nn.Pool2D(pool_size=(scale, scale), pool_type="max")
-        self.f_key = layer_utils.ConvBnRelu(
+        self.f_key = layer_libs.ConvBnRelu(
             in_channels=low_in_channels,
             out_channels=key_channels,
             kernel_size=1)
-        self.f_query = layer_utils.ConvBnRelu(
+        self.f_query = layer_libs.ConvBnRelu(
             in_channels=high_in_channels,
             out_channels=key_channels,
             kernel_size=1)
@@ -393,7 +394,7 @@ class SelfAttentionBlock_APNB(nn.Layer):
         self.value_channels = value_channels
 
         self.pool = nn.Pool2D(pool_size=(scale, scale), pool_type="max")
-        self.f_key = layer_utils.ConvBnRelu(
+        self.f_key = layer_libs.ConvBnRelu(
             in_channels=self.in_channels,
             out_channels=self.key_channels,
             kernel_size=1)

@@ -18,7 +18,7 @@ import paddle.fluid as fluid
 from paddle.fluid.dygraph import Sequential, Conv2D
 
 from paddleseg.cvlibs import manager
-from paddleseg.models.common.layer_utils import ConvBnRelu
+from paddleseg.models.common.layer_libs import ConvBnRelu
 from paddleseg import utils
 
 
