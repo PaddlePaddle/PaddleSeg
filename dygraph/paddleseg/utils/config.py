@@ -15,11 +15,14 @@
 import codecs
 import os
 from typing import Any, Callable
+import pprint
 
 import yaml
-import paddle.fluid as fluid
+import paddle
+import paddle.nn.functional as F
 
 import paddleseg.cvlibs.manager as manager
+from paddleseg.utils import logger
 
 
 class Config(object):
@@ -36,7 +39,7 @@ class Config(object):
 
         if path.endswith('yml') or path.endswith('yaml'):
             dic = self._parse_from_yaml(path)
-            print(dic)
+            logger.info('\n' + pprint.pformat(dic))
             self._build(dic)
         else:
             raise RuntimeError('Config file should in yaml format!')
@@ -127,24 +130,18 @@ class Config(object):
             lr = self._learning_rate
             args = self.decay_args
             args.setdefault('decay_steps', self.iters)
-            return fluid.layers.polynomial_decay(lr, **args)
+            return paddle.optimizer.PolynomialLR(lr, **args)
         else:
             raise RuntimeError('Only poly decay support.')
 
     @property
-    def optimizer(self) -> fluid.optimizer.Optimizer:
+    def optimizer(self) -> paddle.optimizer.Optimizer:
         if self.optimizer_type == 'sgd':
             lr = self.learning_rate
             args = self.optimizer_args
             args.setdefault('momentum', 0.9)
-            weight_decay = args.get('weight_decay', None)
-            if weight_decay is not None:
-                args.pop('weight_decay')
-                regularization = fluid.regularizer.L2DecayRegularizer(
-                    regularization_coeff=weight_decay)
-            args.setdefault('regularization', None)
-            return fluid.optimizer.Momentum(
-                lr, parameter_list=self.model.parameters(), **args)
+            return paddle.optimizer.Momentum(
+                lr, parameters=self.model.parameters(), **args)
         else:
             raise RuntimeError('Only sgd optimizer support.')
 

@@ -15,11 +15,9 @@
 import os
 
 import paddle
-import paddle.fluid as fluid
-from paddle.fluid.dygraph.parallel import ParallelEnv
-from paddle.fluid.io import DataLoader
-# from paddle.incubate.hapi.distributed import DistributedBatchSampler
+from paddle.distributed import ParallelEnv
 from paddle.io import DistributedBatchSampler
+from paddle.io import DataLoader
 import paddle.nn.functional as F
 
 import paddleseg.utils.logger as logger
@@ -79,8 +77,8 @@ def train(model,
         os.makedirs(save_dir)
 
     if nranks > 1:
-        strategy = fluid.dygraph.prepare_context()
-        ddp_model = fluid.dygraph.DataParallel(model, strategy)
+        strategy = paddle.distributed.prepare_context()
+        ddp_model = paddle.DataParallel(model, strategy)
 
     batch_sampler = DistributedBatchSampler(
         train_dataset, batch_size=batch_size, shuffle=True, drop_last=True)
@@ -130,7 +128,7 @@ def train(model,
             optimizer.minimize(loss)
             model.clear_gradients()
             avg_loss += loss.numpy()[0]
-            lr = optimizer.current_step_lr()
+            lr = optimizer.get_lr()
             train_batch_cost += timer.elapsed_time()
             if (iter) % log_iters == 0 and ParallelEnv().local_rank == 0:
                 avg_loss /= log_iters
@@ -160,10 +158,10 @@ def train(model,
                                                 "iter_{}".format(iter))
                 if not os.path.isdir(current_save_dir):
                     os.makedirs(current_save_dir)
-                fluid.save_dygraph(model.state_dict(),
-                                   os.path.join(current_save_dir, 'model'))
-                fluid.save_dygraph(optimizer.state_dict(),
-                                   os.path.join(current_save_dir, 'model'))
+                paddle.save(model.state_dict(),
+                            os.path.join(current_save_dir, 'model'))
+                paddle.save(optimizer.state_dict(),
+                            os.path.join(current_save_dir, 'model'))
 
                 if eval_dataset is not None:
                     mean_iou, avg_acc = evaluate(
@@ -177,9 +175,8 @@ def train(model,
                         best_mean_iou = mean_iou
                         best_model_iter = iter
                         best_model_dir = os.path.join(save_dir, "best_model")
-                        fluid.save_dygraph(
-                            model.state_dict(),
-                            os.path.join(best_model_dir, 'model'))
+                        paddle.save(model.state_dict(),
+                                    os.path.join(best_model_dir, 'model'))
                     logger.info(
                         'Current evaluated best model in eval_dataset is iter_{}, miou={:4f}'
                         .format(best_model_iter, best_mean_iou))

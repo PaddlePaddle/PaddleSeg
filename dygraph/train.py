@@ -14,8 +14,8 @@
 
 import argparse
 
-import paddle.fluid as fluid
-from paddle.fluid.dygraph.parallel import ParallelEnv
+import paddle
+from paddle.distributed import ParallelEnv
 
 import paddleseg
 from paddleseg.cvlibs import manager
@@ -91,41 +91,40 @@ def main(args):
                      ['-' * 48])
     logger.info(info)
 
-    places = fluid.CUDAPlace(ParallelEnv().dev_id) \
+    places = paddle.CUDAPlace(ParallelEnv().dev_id) \
         if env_info['Paddle compiled with cuda'] and env_info['GPUs used'] \
-        else fluid.CPUPlace()
+        else paddle.CPUPlace()
 
-    with fluid.dygraph.guard(places):
-        if not args.cfg:
-            raise RuntimeError('No configuration file specified.')
+    paddle.disable_static(places)
+    if not args.cfg:
+        raise RuntimeError('No configuration file specified.')
 
-        cfg = Config(args.cfg)
-        train_dataset = cfg.train_dataset
-        if not train_dataset:
-            raise RuntimeError(
-                'The training dataset is not specified in the configuration file.'
-            )
+    cfg = Config(args.cfg)
+    train_dataset = cfg.train_dataset
+    if not train_dataset:
+        raise RuntimeError(
+            'The training dataset is not specified in the configuration file.')
 
-        val_dataset = cfg.val_dataset if args.do_eval else None
+    val_dataset = cfg.val_dataset if args.do_eval else None
 
-        losses = cfg.loss
+    losses = cfg.loss
 
-        train(
-            cfg.model,
-            train_dataset,
-            places=places,
-            eval_dataset=val_dataset,
-            optimizer=cfg.optimizer,
-            save_dir=args.save_dir,
-            iters=cfg.iters,
-            batch_size=cfg.batch_size,
-            save_interval_iters=args.save_interval_iters,
-            log_iters=args.log_iters,
-            num_classes=train_dataset.num_classes,
-            num_workers=args.num_workers,
-            use_vdl=args.use_vdl,
-            losses=losses,
-            ignore_index=losses['types'][0].ignore_index)
+    train(
+        cfg.model,
+        train_dataset,
+        places=places,
+        eval_dataset=val_dataset,
+        optimizer=cfg.optimizer,
+        save_dir=args.save_dir,
+        iters=cfg.iters,
+        batch_size=cfg.batch_size,
+        save_interval_iters=args.save_interval_iters,
+        log_iters=args.log_iters,
+        num_classes=train_dataset.num_classes,
+        num_workers=args.num_workers,
+        use_vdl=args.use_vdl,
+        losses=losses,
+        ignore_index=losses['types'][0].ignore_index)
 
 
 if __name__ == '__main__':
