@@ -16,10 +16,12 @@ import math
 import os
 
 import paddle
+from paddle.nn import Conv2d
+
 import paddle.fluid as fluid
 from paddle.fluid.param_attr import ParamAttr
 from paddle.fluid.layer_helper import LayerHelper
-from paddle.fluid.dygraph.nn import Conv2D, Pool2D, Linear
+from paddle.fluid.dygraph.nn import Pool2D, Linear
 from paddle.fluid.initializer import Normal
 from paddle.nn import SyncBatchNorm as BatchNorm
 
@@ -27,6 +29,7 @@ from paddleseg.cvlibs import manager
 from paddleseg import utils
 from paddleseg.cvlibs import param_init
 from paddleseg.utils import logger
+from paddleseg.models.common import layer_utils
 
 __all__ = [
     "fcn_hrnet_w18_small_v1", "fcn_hrnet_w18_small_v2", "fcn_hrnet_w18",
@@ -74,14 +77,14 @@ class FCN(fluid.dygraph.Layer):
 
         self.backbone = backbone
         self.conv_last_2 = ConvBNLayer(
-            num_channels=backbone_channels[0],
-            num_filters=channels,
-            filter_size=1,
+            in_channels=backbone_channels[0],
+            out_channels=channels,
+            kernel_size=1,
             stride=1)
-        self.conv_last_1 = Conv2D(
-            num_channels=channels,
-            num_filters=self.num_classes,
-            filter_size=1,
+        self.conv_last_1 = Conv2d(
+            in_channels=channels,
+            out_channels=self.num_classes,
+            kernel_size=1,
             stride=1,
             padding=0)
         if self.training:
@@ -127,30 +130,29 @@ class FCN(fluid.dygraph.Layer):
 
 class ConvBNLayer(fluid.dygraph.Layer):
     def __init__(self,
-                 num_channels,
-                 num_filters,
-                 filter_size,
+                 in_channels,
+                 out_channels,
+                 kernel_size,
                  stride=1,
                  groups=1,
                  act="relu"):
         super(ConvBNLayer, self).__init__()
 
-        self._conv = Conv2D(
-            num_channels=num_channels,
-            num_filters=num_filters,
-            filter_size=filter_size,
+        self._conv = Conv2d(
+            in_channels=in_channels,
+            out_channels=out_channels,
+            kernel_size=kernel_size,
             stride=stride,
-            padding=(filter_size - 1) // 2,
+            padding=(kernel_size - 1) // 2,
             groups=groups,
             bias_attr=False)
-        self._batch_norm = BatchNorm(num_filters)
-        self.act = act
+        self._batch_norm = BatchNorm(out_channels)
+        self.act = layer_utils.Activation(act=act)
 
     def forward(self, input):
         y = self._conv(input)
         y = self._batch_norm(y)
-        if self.act == 'relu':
-            y = fluid.layers.relu(y)
+        y = self.act(y)
         return y
 
 
