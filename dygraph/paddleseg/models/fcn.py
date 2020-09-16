@@ -16,13 +16,9 @@ import math
 import os
 
 import paddle
+import paddle.nn as nn
+import paddle.nn.functional as F
 from paddle.nn import Conv2d
-
-import paddle.fluid as fluid
-from paddle.fluid.param_attr import ParamAttr
-from paddle.fluid.layer_helper import LayerHelper
-from paddle.fluid.dygraph.nn import Pool2D, Linear
-from paddle.fluid.initializer import Normal
 from paddle.nn import SyncBatchNorm as BatchNorm
 
 from paddleseg.cvlibs import manager
@@ -39,7 +35,7 @@ __all__ = [
 
 
 @manager.MODELS.add_component
-class FCN(fluid.dygraph.Layer):
+class FCN(nn.Layer):
     """
     Fully Convolutional Networks for Semantic Segmentation.
     https://arxiv.org/abs/1411.4038
@@ -96,7 +92,7 @@ class FCN(fluid.dygraph.Layer):
         x = fea_list[self.backbone_indices[0]]
         x = self.conv_last_2(x)
         logit = self.conv_last_1(x)
-        logit = fluid.layers.resize_bilinear(logit, input_shape)
+        logit = F.resize_bilinear(logit, input_shape)
         return [logit]
 
     def init_weight(self):
@@ -128,7 +124,7 @@ class FCN(fluid.dygraph.Layer):
             logger.warning('No pretrained model to load, train from scratch')
 
 
-class ConvBNLayer(fluid.dygraph.Layer):
+class ConvBNLayer(nn.Layer):
     def __init__(self,
                  in_channels,
                  out_channels,
