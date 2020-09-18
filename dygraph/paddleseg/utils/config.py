@@ -130,6 +130,7 @@ class Config(object):
             lr = self._learning_rate
             args = self.decay_args
             args.setdefault('decay_steps', self.iters)
+            args.setdefault('end_lr', 0)
             return paddle.optimizer.PolynomialLR(lr, **args)
         else:
             raise RuntimeError('Only poly decay support.')
