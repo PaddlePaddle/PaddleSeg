@@ -15,7 +15,7 @@
 import paddle.nn.functional as F
 from paddle import nn
 from paddleseg.cvlibs import manager
-from paddleseg.models.common import layer_utils, model_utils
+from paddleseg.models.common import layer_libs
 
 
 @manager.MODELS.add_component
@@ -110,15 +110,15 @@ class LearningToDownsample(nn.Layer):
     def __init__(self, dw_channels1=32, dw_channels2=48, out_channels=64):
         super(LearningToDownsample, self).__init__()
 
-        self.conv_bn_relu = layer_utils.ConvBnRelu(
+        self.conv_bn_relu = layer_libs.ConvBnRelu(
             in_channels=3, out_channels=dw_channels1, kernel_size=3, stride=2)
-        self.dsconv_bn_relu1 = layer_utils.DepthwiseConvBnRelu(
+        self.dsconv_bn_relu1 = layer_libs.DepthwiseConvBnRelu(
             in_channels=dw_channels1,
             out_channels=dw_channels2,
             kernel_size=3,
             stride=2,
             padding=1)
-        self.dsconv_bn_relu2 = layer_utils.DepthwiseConvBnRelu(
+        self.dsconv_bn_relu2 = layer_libs.DepthwiseConvBnRelu(
             in_channels=dw_channels2,
             out_channels=out_channels,
             kernel_size=3,
@@ -220,13 +220,13 @@ class LinearBottleneck(nn.Layer):
         expand_channels = in_channels * expansion
         self.block = nn.Sequential(
             # pw
-            layer_utils.ConvBnRelu(
+            layer_libs.ConvBnRelu(
                 in_channels=in_channels,
                 out_channels=expand_channels,
                 kernel_size=1,
                 bias_attr=False),
             # dw
-            layer_utils.ConvBnRelu(
+            layer_libs.ConvBnRelu(
                 in_channels=expand_channels,
                 out_channels=expand_channels,
                 kernel_size=3,
@@ -267,7 +267,7 @@ class FeatureFusionModule(nn.Layer):
         super(FeatureFusionModule, self).__init__()
 
         # There only depth-wise conv is used WITHOUT point-wise conv
-        self.dwconv = layer_utils.ConvBnRelu(
+        self.dwconv = layer_libs.ConvBnRelu(
             in_channels=low_in_channels,
             out_channels=out_channels,
             kernel_size=3,
@@ -317,13 +317,13 @@ class Classifier(nn.Layer):
     def __init__(self, input_channels, num_classes):
         super(Classifier, self).__init__()
 
-        self.dsconv1 = layer_utils.DepthwiseConvBnRelu(
+        self.dsconv1 = layer_libs.DepthwiseConvBnRelu(
             in_channels=input_channels,
             out_channels=input_channels,
             kernel_size=3,
             padding=1)
 
-        self.dsconv2 = layer_utils.DepthwiseConvBnRelu(
+        self.dsconv2 = layer_libs.DepthwiseConvBnRelu(
             in_channels=input_channels,
             out_channels=input_channels,
             kernel_size=3,

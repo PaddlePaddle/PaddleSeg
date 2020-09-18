@@ -18,7 +18,7 @@ import paddle
 import paddle.nn.functional as F
 from paddle import nn
 from paddleseg.cvlibs import manager
-from paddleseg.models.common import layer_utils, model_utils
+from paddleseg.models.common import layer_libs
 from paddleseg.utils import utils
 
 
@@ -72,7 +72,7 @@ class GCNet(nn.Layer):
         self.backbone = backbone
 
         in_channels = backbone_channels[1]
-        self.conv_bn_relu1 = layer_utils.ConvBnRelu(
+        self.conv_bn_relu1 = layer_libs.ConvBnRelu(
             in_channels=in_channels,
             out_channels=gc_channels,
             kernel_size=3,
@@ -80,13 +80,13 @@ class GCNet(nn.Layer):
 
         self.gc_block = GlobalContextBlock(in_channels=gc_channels, ratio=ratio)
 
-        self.conv_bn_relu2 = layer_utils.ConvBnRelu(
+        self.conv_bn_relu2 = layer_libs.ConvBnRelu(
             in_channels=gc_channels,
             out_channels=gc_channels,
             kernel_size=3,
             padding=1)
 
-        self.conv_bn_relu3 = layer_utils.ConvBnRelu(
+        self.conv_bn_relu3 = layer_libs.ConvBnRelu(
             in_channels=in_channels + gc_channels,
             out_channels=gc_channels,
             kernel_size=3,
@@ -96,7 +96,7 @@ class GCNet(nn.Layer):
             in_channels=gc_channels, out_channels=num_classes, kernel_size=1)
 
         if enable_auxiliary_loss:
-            self.auxlayer = model_utils.AuxLayer(
+            self.auxlayer = layer_libs.AuxLayer(
                 in_channels=backbone_channels[0],
                 inter_channels=backbone_channels[0] // 4,
                 out_channels=num_classes)
@@ -161,9 +161,9 @@ class GlobalContextBlock(nn.Layer):
 
         self.conv_mask = nn.Conv2d(
             in_channels=in_channels, out_channels=1, kernel_size=1)
-        # current paddle version does not support Softmax class
-        # self.softmax = layer_utils.Activation("softmax", dim=2)
 
+        self.softmax = nn.Softmax(axis=2)
+        
         inter_channels = int(in_channels * ratio)
         self.channel_add_conv = nn.Sequential(
             nn.Conv2d(
@@ -188,7 +188,7 @@ class GlobalContextBlock(nn.Layer):
         # [N, 1, H * W]
         context_mask = paddle.reshape(
             context_mask, shape=[batch, 1, height * width])
-        context_mask = F.softmax(context_mask)
+        context_mask = self.softmax(context_mask)
         # [N, 1, H * W, 1]
         context_mask = paddle.unsqueeze(context_mask, axis=-1)
         # [N, 1, C, 1]

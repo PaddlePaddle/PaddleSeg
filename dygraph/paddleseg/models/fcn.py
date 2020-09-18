@@ -25,7 +25,7 @@ from paddleseg.cvlibs import manager
 from paddleseg import utils
 from paddleseg.cvlibs import param_init
 from paddleseg.utils import logger
-from paddleseg.models.common import layer_utils
+from paddleseg.models.common import layer_libs, activation
 
 __all__ = [
     "fcn_hrnet_w18_small_v1", "fcn_hrnet_w18_small_v2", "fcn_hrnet_w18",
@@ -143,7 +143,7 @@ class ConvBNLayer(nn.Layer):
             groups=groups,
             bias_attr=False)
         self._batch_norm = BatchNorm(out_channels)
-        self.act = layer_utils.Activation(act=act)
+        self.act = activation.Activation(act=act)
 
     def forward(self, input):
         y = self._conv(input)

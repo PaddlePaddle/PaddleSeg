@@ -17,7 +17,7 @@ import os
 import paddle.nn.functional as F
 from paddle import nn
 from paddleseg.cvlibs import manager
-from paddleseg.models.common import model_utils
+from paddleseg.models.common import layer_libs, pyramid_pool
 from paddleseg.utils import utils
 
 
@@ -70,7 +70,7 @@ class PSPNet(nn.Layer):
         self.backbone = backbone
         self.backbone_indices = backbone_indices
 
-        self.psp_module = model_utils.PPModule(
+        self.psp_module = pyramid_pool.PPModule(
             in_channels=backbone_channels[1],
             out_channels=pp_out_channels,
             bin_sizes=bin_sizes)
@@ -81,8 +81,11 @@ class PSPNet(nn.Layer):
             kernel_size=1)
 
         if enable_auxiliary_loss:
-            self.fcn_head = model_utils.FCNHead(
-                in_channels=backbone_channels[0], out_channels=num_classes)
+            
+            self.auxlayer = layer_libs.AuxLayer(
+                in_channels=backbone_channels[0], 
+                inter_channels=backbone_channels[0] // 4,
+                out_channels=num_classes)
 
         self.enable_auxiliary_loss = enable_auxiliary_loss
 
@@ -102,7 +105,7 @@ class PSPNet(nn.Layer):
 
         if self.enable_auxiliary_loss:
             auxiliary_feat = feat_list[self.backbone_indices[0]]
-            auxiliary_logit = self.fcn_head(auxiliary_feat)
+            auxiliary_logit = self.auxlayer(auxiliary_feat)
             auxiliary_logit = F.resize_bilinear(auxiliary_logit,
                                                 input.shape[2:])
             logit_list.append(auxiliary_logit)

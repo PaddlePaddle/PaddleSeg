@@ -21,7 +21,7 @@ from paddle.fluid.layer_helper import LayerHelper
 from paddle.fluid.dygraph.nn import Conv2D, Pool2D, Linear, Dropout
 from paddle.nn import SyncBatchNorm as BatchNorm
 
-from paddleseg.models.common import layer_utils
+from paddleseg.models.common import layer_libs
 from paddleseg.cvlibs import manager
 from paddleseg.utils import utils
 

@@ -28,7 +28,7 @@ from paddle.nn import Conv2d, Linear, Dropout
 from paddle.nn import AdaptiveAvgPool2d, MaxPool2d, AvgPool2d
 
 from paddleseg.utils import utils
-from paddleseg.models.common import layer_utils
+from paddleseg.models.common import layer_libs, activation
 from paddleseg.cvlibs import manager
 
 __all__ = [
@@ -68,7 +68,7 @@ class ConvBNLayer(nn.Layer):
         else:
             bn_name = "bn" + name[3:]
         self._batch_norm = BatchNorm(out_channels)
-        self._act_op = layer_utils.Activation(act=act)
+        self._act_op = activation.Activation(act=act)
 
     def forward(self, inputs):
         if self.is_vd_mode:
@@ -201,7 +201,7 @@ class ResNet_vd(nn.Layer):
                  layers=50,
                  class_dim=1000,
                  output_stride=None,
-                 multi_grid=(1, 2, 4)):
+                 multi_grid=(1, 1, 1)):
         super(ResNet_vd, self).__init__()
 
         self.layers = layers
