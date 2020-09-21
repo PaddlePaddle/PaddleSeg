@@ -32,28 +32,19 @@ class GCNet(nn.Layer):
         (https://arxiv.org/pdf/1904.11492.pdf)
 
     Args:
-
         num_classes (int): the unique number of target classes.
-
         backbone (Paddle.nn.Layer): backbone network, currently support Resnet50/101.
-
         model_pretrained (str): the path of pretrained model. Defaullt to None.
-
         backbone_indices (tuple): two values in the tuple indicte the indices of output of backbone.
-                        the first index will be taken as a deep-supervision feature in auxiliary layer;
-                        the second one will be taken as input of GlobalContextBlock. Usually backbone 
-                        consists of four downsampling stage, and return an output of each stage, so we 
-                        set default (2, 3), which means taking feature map of the third stage (res4b22) 
-                        and the fourth stage (res5c) in backbone.
-
+            the first index will be taken as a deep-supervision feature in auxiliary layer;
+            the second one will be taken as input of GlobalContextBlock. Usually backbone 
+            consists of four downsampling stage, and return an output of each stage, so we 
+            set default (2, 3), which means taking feature map of the third stage (res4b22) 
+            and the fourth stage (res5c) in backbone.
         backbone_channels (tuple): the same length with "backbone_indices". It indicates the channels of corresponding index.
-
         gc_channels (int): input channels to Global Context Block. Default to 512.
-
         ratio (float): it indictes the ratio of attention channels and gc_channels. Default to 1/4.
-
         enable_auxiliary_loss (bool): a bool values indictes whether adding auxiliary loss. Default to True.
-
     """
 
     def __init__(self,

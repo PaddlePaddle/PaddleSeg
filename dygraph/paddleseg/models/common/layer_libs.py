@@ -18,7 +18,6 @@ from paddle import nn
 import paddle.nn.functional as F
 from paddle.nn import Conv2d
 from paddle.nn import SyncBatchNorm as BatchNorm
-from paddle.nn.layer import activation
 
 
 class ConvBNRelu(nn.Layer):
@@ -94,11 +93,8 @@ class AuxLayer(nn.Layer):
 
     Args:
         in_channels (int): the number of input channels.
-
         inter_channels (int): intermediate channels.
-
         out_channels (int): the number of output channels, which is usually num_classes.
-
         dropout_prob (float): the droput rate. Default to 0.1.
     """
 

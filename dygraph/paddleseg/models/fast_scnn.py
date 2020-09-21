@@ -15,7 +15,7 @@
 import paddle.nn.functional as F
 from paddle import nn
 from paddleseg.cvlibs import manager
-from paddleseg.models.common import layer_libs
+from paddleseg.models.common import layer_libs, pyramid_pool
 
 
 @manager.MODELS.add_component
@@ -33,12 +33,9 @@ class FastSCNN(nn.Layer):
     Args:
 
         num_classes (int): the unique number of target classes. Default to 2.
-
         model_pretrained (str): the path of pretrained model. Defaullt to None.
-
         enable_auxiliary_loss (bool): a bool values indictes whether adding auxiliary loss.
-        if true, auxiliary loss will be added after LearningToDownsample module, where the weight is 0.4. Default to False.
-
+            if true, auxiliary loss will be added after LearningToDownsample module, where the weight is 0.4. Default to False.
     """
 
     def __init__(self,
@@ -55,7 +52,7 @@ class FastSCNN(nn.Layer):
         self.classifier = Classifier(128, num_classes)
 
         if enable_auxiliary_loss:
-            self.auxlayer = model_utils.AuxLayer(64, 32, num_classes)
+            self.auxlayer = layer_libs.AuxLayer(64, 32, num_classes)
 
         self.enable_auxiliary_loss = enable_auxiliary_loss
 
@@ -101,9 +98,7 @@ class LearningToDownsample(nn.Layer):
 
     Args:
         dw_channels1 (int): the input channels of the first sep conv. Default to 32.
-
         dw_channels2 (int): the input channels of the second sep conv. Default to 48.
-
         out_channels (int): the output channels of LearningToDownsample module. Default to 64.
     """
 
@@ -141,13 +136,9 @@ class GlobalFeatureExtractor(nn.Layer):
 
     Args:
         in_channels (int): the number of input channels to the module. Default to 64.
-
         block_channels (tuple): a tuple represents output channels of each bottleneck block. Default to (64, 96, 128).
-
         out_channels (int): the number of output channels of the module. Default to 128.
-
         expansion (int): the expansion factor in bottleneck. Default to 6.
-
         num_blocks (tuple): it indicates the repeat time of each bottleneck. Default to (3, 3, 3).
     """
 
@@ -169,7 +160,7 @@ class GlobalFeatureExtractor(nn.Layer):
                                             block_channels[2], num_blocks[2],
                                             expansion, 1)
 
-        self.ppm = model_utils.PPModule(
+        self.ppm = pyramid_pool.PPModule(
             block_channels[2], out_channels, dim_reduction=True)
 
     def _make_layer(self,
@@ -199,11 +190,8 @@ class LinearBottleneck(nn.Layer):
 
     Args:
         in_channels (int): the number of input channels to bottleneck block.
-
         out_channels (int): the number of output channels of bottleneck block.
-
         expansion (int). the expansion factor in bottleneck. Default to 6.
-
         stride (int). the stride used in depth-wise conv.
     """
 
@@ -257,9 +245,7 @@ class FeatureFusionModule(nn.Layer):
 
     Args:
         high_in_channels (int): the channels of high-resolution feature (output of LearningToDownsample).
-
         low_in_channels (int). the channels of low-resolution feature (output of GlobalFeatureExtractor).
-
         out_channels (int). the output channels of this module.
     """
 
@@ -309,9 +295,7 @@ class Classifier(nn.Layer):
 
     Args:
         input_channels (int): the input channels to this module.
-
         num_classes (int). the unique number of target classes.
-
     """
 
     def __init__(self, input_channels, num_classes):

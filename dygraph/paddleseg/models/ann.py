@@ -35,30 +35,20 @@ class ANN(nn.Layer):
     It mainly consists of AFNB and APNB modules.
 
     Args:
-
         num_classes (int): the unique number of target classes.
-
         backbone (Paddle.nn.Layer): backbone network, currently support Resnet50/101.
-
         model_pretrained (str): the path of pretrained model. Defaullt to None.
-
         backbone_indices (tuple): two values in the tuple indicte the indices of output of backbone.
-                        the first index will be taken as low-level features; the second one will be 
-                        taken as high-level features in AFNB module. Usually backbone consists of four 
-                        downsampling stage, and return an output of each stage, so we set default (2, 3), 
-                        which means taking feature map of the third stage and the fourth stage in backbone.
-
+            the first index will be taken as low-level features; the second one will be 
+            taken as high-level features in AFNB module. Usually backbone consists of four 
+            downsampling stage, and return an output of each stage, so we set default (2, 3), 
+            which means taking feature map of the third stage and the fourth stage in backbone.
         backbone_channels (tuple): the same length with "backbone_indices". It indicates the channels of corresponding index.
-
         key_value_channels (int): the key and value channels of self-attention map in both AFNB and APNB modules.
-        Default to 256.
-
+            Default to 256.
         inter_channels (int): both input and output channels of APNB modules.
-
         psp_size (tuple): the out size of pooled feature maps. Default to (1, 3, 6, 8).
-
         enable_auxiliary_loss (bool): a bool values indictes whether adding auxiliary loss. Default to True.
-
     """
 
     def __init__(self,
@@ -156,21 +146,13 @@ class AFNB(nn.Layer):
 
     Args:
         low_in_channels (int): low-level-feature channels.
-
         high_in_channels (int): high-level-feature channels.
-
         out_channels (int): out channels of AFNB module.
-
         key_channels (int): the key channels in self-attention block.
-
         value_channels (int): the value channels in self-attention block.
-
         dropout_prob (float): the dropout rate of output.
-
         sizes (tuple): the number of AFNB modules. Default to ([1]).
-
         psp_size (tuple): the out size of pooled feature maps. Default to (1, 3, 6, 8).
-
     """
 
     def __init__(self,
@@ -214,19 +196,12 @@ class APNB(nn.Layer):
 
     Args:
         in_channels (int): the input channels of APNB module.
-
         out_channels (int): out channels of APNB module.
-
         key_channels (int): the key channels in self-attention block.
-
         value_channels (int): the value channels in self-attention block.
-
         dropout_prob (float): the dropout rate of output.
-
         sizes (tuple): the number of AFNB modules. Default to ([1]).
-
         psp_size (tuple): the out size of pooled feature maps. Default to (1, 3, 6, 8).
-
     """
 
     def __init__(self,
@@ -279,17 +254,11 @@ class SelfAttentionBlock_AFNB(nn.Layer):
 
     Args:
         low_in_channels (int): low-level-feature channels.
-
         high_in_channels (int): high-level-feature channels.
-
         key_channels (int): the key channels in self-attention block.
-
         value_channels (int): the value channels in self-attention block.
-
         out_channels (int): out channels of AFNB module.
-
         scale (int): pooling size. Defaut to 1.
-
         psp_size (tuple): the out size of pooled feature maps. Default to (1, 3, 6, 8).
     """
 
@@ -366,15 +335,10 @@ class SelfAttentionBlock_APNB(nn.Layer):
 
     Args:
         in_channels (int): the input channels of APNB module.
-
         out_channels (int): out channels of APNB module.
-
         key_channels (int): the key channels in self-attention block.
-
         value_channels (int): the value channels in self-attention block.
-
         scale (int): pooling size. Defaut to 1.
-
         psp_size (tuple): the out size of pooled feature maps. Default to (1, 3, 6, 8).
     """
 
