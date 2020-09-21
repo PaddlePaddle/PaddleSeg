@@ -38,25 +38,19 @@ class DeepLabV3P(nn.Layer):
 
     Args:
         num_classes (int): the unique number of target classes.
-
         backbone (paddle.nn.Layer): backbone network, currently support Xception65, Resnet101_vd.
-
         model_pretrained (str): the path of pretrained model.
-
         aspp_ratios (tuple): the dilation rate using in ASSP module.
-        if output_stride=16, aspp_ratios should be set as (1, 6, 12, 18).
-        if output_stride=8, aspp_ratios is (1, 12, 24, 36).
-
+            if output_stride=16, aspp_ratios should be set as (1, 6, 12, 18).
+            if output_stride=8, aspp_ratios is (1, 12, 24, 36).
         backbone_indices (tuple): two values in the tuple indicte the indices of output of backbone.
-                        the first index will be taken as a low-level feature in Deconder component;
-                        the second one will be taken as input of ASPP component.
-                        Usually backbone consists of four downsampling stage, and return an output of
-                        each stage, so we set default (0, 3), which means taking feature map of the first
-                        stage in backbone as low-level feature used in Decoder, and feature map of the fourth
-                        stage as input of ASPP.
-
+            the first index will be taken as a low-level feature in Deconder component;
+            the second one will be taken as input of ASPP component.
+            Usually backbone consists of four downsampling stage, and return an output of
+            each stage, so we set default (0, 3), which means taking feature map of the first
+            stage in backbone as low-level feature used in Decoder, and feature map of the fourth
+            stage as input of ASPP.
         backbone_channels (tuple): the same length with "backbone_indices". It indicates the channels of corresponding index.
-
     """
 
     def __init__(self,
@@ -118,7 +112,6 @@ class DeepLabV3(nn.Layer):
 
     Args:
         Refer to DeepLabV3P above 
-
     """
 
     def __init__(self,
@@ -178,7 +171,6 @@ class Decoder(nn.Layer):
 
     Args:
         num_classes (int): the number of classes.
-
         in_channels (int): the number of input channels in decoder module.
 
     """
