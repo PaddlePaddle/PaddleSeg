@@ -21,11 +21,11 @@ import math
 
 import numpy as np
 import paddle
-import paddle.fluid as fluid
-from paddle.fluid.param_attr import ParamAttr
-from paddle.fluid.layer_helper import LayerHelper
-from paddle.fluid.dygraph.nn import Conv2D, Pool2D, Linear, Dropout
+import paddle.nn as nn
+import paddle.nn.functional as F
 from paddle.nn import SyncBatchNorm as BatchNorm
+from paddle.nn import Conv2d, Linear, Dropout
+from paddle.nn import AdaptiveAvgPool2d, MaxPool2d, AvgPool2d
 
 from paddleseg.utils import utils
 from paddleseg.models.common import layer_libs, activation
@@ -36,12 +36,12 @@ __all__ = [
 ]
 
 
-class ConvBNLayer(fluid.dygraph.Layer):
+class ConvBNLayer(nn.Layer):
     def __init__(
             self,
-            num_channels,
-            num_filters,
-            filter_size,
+            in_channels,
+            out_channels,
+            kernel_size,
             stride=1,
             dilation=1,
             groups=1,
@@ -52,31 +52,22 @@ class ConvBNLayer(fluid.dygraph.Layer):
         super(ConvBNLayer, self).__init__()
 
         self.is_vd_mode = is_vd_mode
-        self._pool2d_avg = Pool2D(
-            pool_size=2,
-            pool_stride=2,
-            pool_padding=0,
-            pool_type='avg',
-            ceil_mode=True)
-        self._conv = Conv2D(
-            num_channels=num_channels,
-            num_filters=num_filters,
-            filter_size=filter_size,
+        self._pool2d_avg = AvgPool2d(
+            kernel_size=2, stride=2, padding=0, ceil_mode=True)
+        self._conv = Conv2d(
+            in_channels=in_channels,
+            out_channels=out_channels,
+            kernel_size=kernel_size,
             stride=stride,
-            padding=(filter_size - 1) // 2 if dilation == 1 else 0,
+            padding=(kernel_size - 1) // 2 if dilation == 1 else 0,
             dilation=dilation,
             groups=groups,
-            act=None,
-            param_attr=ParamAttr(name=name + "_weights"),
             bias_attr=False)
         if name == "conv1":
             bn_name = "bn_" + name
         else:
             bn_name = "bn" + name[3:]
-        self._batch_norm = BatchNorm(
-            num_filters,
-            weight_attr=ParamAttr(name=bn_name + '_scale'),
-            bias_attr=ParamAttr(bn_name + '_offset'))
+        self._batch_norm = BatchNorm(out_channels)
         self._act_op = activation.Activation(act=act)
 
     def forward(self, inputs):
@@ -89,10 +80,10 @@ class ConvBNLayer(fluid.dygraph.Layer):
         return y
 
 
-class BottleneckBlock(fluid.dygraph.Layer):
+class BottleneckBlock(nn.Layer):
     def __init__(self,
-                 num_channels,
-                 num_filters,
+                 in_channels,
+                 out_channels,
                  stride,
                  shortcut=True,
                  if_first=False,
@@ -101,34 +92,34 @@ class BottleneckBlock(fluid.dygraph.Layer):
         super(BottleneckBlock, self).__init__()
 
         self.conv0 = ConvBNLayer(
-            num_channels=num_channels,
-            num_filters=num_filters,
-            filter_size=1,
+            in_channels=in_channels,
+            out_channels=out_channels,
+            kernel_size=1,
             act='relu',
             name=name + "_branch2a")
 
         self.dilation = dilation
 
         self.conv1 = ConvBNLayer(
-            num_channels=num_filters,
-            num_filters=num_filters,
-            filter_size=3,
+            in_channels=out_channels,
+            out_channels=out_channels,
+            kernel_size=3,
             stride=stride,
             act='relu',
             dilation=dilation,
             name=name + "_branch2b")
         self.conv2 = ConvBNLayer(
-            num_channels=num_filters,
-            num_filters=num_filters * 4,
-            filter_size=1,
+            in_channels=out_channels,
+            out_channels=out_channels * 4,
+            kernel_size=1,
             act=None,
             name=name + "_branch2c")
 
         if not shortcut:
             self.short = ConvBNLayer(
-                num_channels=num_channels,
-                num_filters=num_filters * 4,
-                filter_size=1,
+                in_channels=in_channels,
+                out_channels=out_channels * 4,
+                kernel_size=1,
                 stride=1,
                 is_vd_mode=False if if_first or stride == 1 else True,
                 name=name + "_branch1")
@@ -142,8 +133,7 @@ class BottleneckBlock(fluid.dygraph.Layer):
         # If given dilation rate > 1, using corresponding padding
         if self.dilation > 1:
             padding = self.dilation
-            y = fluid.layers.pad(
-                y, [0, 0, 0, 0, padding, padding, padding, padding])
+            y = F.pad(y, [0, 0, 0, 0, padding, padding, padding, padding])
         #####################################################################
         conv1 = self.conv1(y)
         conv2 = self.conv2(conv1)
@@ -153,15 +143,14 @@ class BottleneckBlock(fluid.dygraph.Layer):
         else:
             short = self.short(inputs)
 
-        y = fluid.layers.elementwise_add(x=short, y=conv2)
-        layer_helper = LayerHelper(self.full_name(), act='relu')
-        return layer_helper.append_activation(y)
+        y = paddle.elementwise_add(x=short, y=conv2, act='relu')
+        return y
 
 
-class BasicBlock(fluid.dygraph.Layer):
+class BasicBlock(nn.Layer):
     def __init__(self,
-                 num_channels,
-                 num_filters,
+                 in_channels,
+                 out_channels,
                  stride,
                  shortcut=True,
                  if_first=False,
@@ -169,24 +158,24 @@ class BasicBlock(fluid.dygraph.Layer):
         super(BasicBlock, self).__init__()
         self.stride = stride
         self.conv0 = ConvBNLayer(
-            num_channels=num_channels,
-            num_filters=num_filters,
-            filter_size=3,
+            in_channels=in_channels,
+            out_channels=out_channels,
+            kernel_size=3,
             stride=stride,
             act='relu',
             name=name + "_branch2a")
         self.conv1 = ConvBNLayer(
-            num_channels=num_filters,
-            num_filters=num_filters,
-            filter_size=3,
+            in_channels=out_channels,
+            out_channels=out_channels,
+            kernel_size=3,
             act=None,
             name=name + "_branch2b")
 
         if not shortcut:
             self.short = ConvBNLayer(
-                num_channels=num_channels,
-                num_filters=num_filters,
-                filter_size=1,
+                in_channels=in_channels,
+                out_channels=out_channels,
+                kernel_size=1,
                 stride=1,
                 is_vd_mode=False if if_first else True,
                 name=name + "_branch1")
@@ -201,13 +190,12 @@ class BasicBlock(fluid.dygraph.Layer):
             short = inputs
         else:
             short = self.short(inputs)
-        y = fluid.layers.elementwise_add(x=short, y=conv1)
+        y = paddle.elementwise_add(x=short, y=conv1, act='relu')
 
-        layer_helper = LayerHelper(self.full_name(), act='relu')
-        return layer_helper.append_activation(y)
+        return y
 
 
-class ResNet_vd(fluid.dygraph.Layer):
+class ResNet_vd(nn.Layer):
     def __init__(self,
                  backbone_pretrained=None,
                  layers=50,
@@ -243,28 +231,27 @@ class ResNet_vd(fluid.dygraph.Layer):
             dilation_dict = {3: 2}
 
         self.conv1_1 = ConvBNLayer(
-            num_channels=3,
-            num_filters=32,
-            filter_size=3,
+            in_channels=3,
+            out_channels=32,
+            kernel_size=3,
             stride=2,
             act='relu',
             name="conv1_1")
         self.conv1_2 = ConvBNLayer(
-            num_channels=32,
-            num_filters=32,
-            filter_size=3,
+            in_channels=32,
+            out_channels=32,
+            kernel_size=3,
             stride=1,
             act='relu',
             name="conv1_2")
         self.conv1_3 = ConvBNLayer(
-            num_channels=32,
-            num_filters=64,
-            filter_size=3,
+            in_channels=32,
+            out_channels=64,
+            kernel_size=3,
             stride=1,
             act='relu',
             name="conv1_3")
-        self.pool2d_max = Pool2D(
-            pool_size=3, pool_stride=2, pool_padding=1, pool_type='max')
+        self.pool2d_max = MaxPool2d(kernel_size=3, stride=2, padding=1)
 
         # self.block_list = []
         self.stage_list = []
@@ -296,9 +283,9 @@ class ResNet_vd(fluid.dygraph.Layer):
                     bottleneck_block = self.add_sublayer(
                         'bb_%d_%d' % (block, i),
                         BottleneckBlock(
-                            num_channels=num_channels[block]
+                            in_channels=num_channels[block]
                             if i == 0 else num_filters[block] * 4,
-                            num_filters=num_filters[block],
+                            out_channels=num_filters[block],
                             stride=2 if i == 0 and block != 0
                             and dilation_rate == 1 else 1,
                             shortcut=shortcut,
@@ -318,9 +305,9 @@ class ResNet_vd(fluid.dygraph.Layer):
                     basic_block = self.add_sublayer(
                         'bb_%d_%d' % (block, i),
                         BasicBlock(
-                            num_channels=num_channels[block]
+                            in_channels=num_channels[block]
                             if i == 0 else num_filters[block],
-                            num_filters=num_filters[block],
+                            out_channels=num_filters[block],
                             stride=2 if i == 0 and block != 0 else 1,
                             shortcut=shortcut,
                             if_first=block == i == 0,
@@ -328,23 +315,6 @@ class ResNet_vd(fluid.dygraph.Layer):
                     block_list.append(basic_block)
                     shortcut = True
                 self.stage_list.append(block_list)
-
-        self.pool2d_avg = Pool2D(
-            pool_size=7, pool_type='avg', global_pooling=True)
-
-        self.pool2d_avg_channels = num_channels[-1] * 2
-
-        stdv = 1.0 / math.sqrt(self.pool2d_avg_channels * 1.0)
-
-        self.out = Linear(
-            self.pool2d_avg_channels,
-            class_dim,
-            param_attr=ParamAttr(
-                initializer=fluid.initializer.Uniform(-stdv, stdv),
-                name="fc_0.w_0"),
-            bias_attr=ParamAttr(name="fc_0.b_0"))
-
-        self.init_weight(backbone_pretrained)
 
     def forward(self, inputs):
         y = self.conv1_1(inputs)
@@ -357,34 +327,12 @@ class ResNet_vd(fluid.dygraph.Layer):
         for i, stage in enumerate(self.stage_list):
             for j, block in enumerate(stage):
                 y = block(y)
-                #print("stage {} block {}".format(i+1, j+1), y.shape)
             feat_list.append(y)
 
-        y = self.pool2d_avg(y)
-        y = fluid.layers.reshape(y, shape=[-1, self.pool2d_avg_channels])
-        y = self.out(y)
-        return y, feat_list
-
-    # def init_weight(self, pretrained_model=None):
-
-    #     if pretrained_model is not None:
-    #         if os.path.exists(pretrained_model):
-    #             utils.load_pretrained_model(self, pretrained_model)
-
-    def init_weight(self, pretrained_model=None):
-        """
-        Initialize the parameters of model parts.
-        Args:
-            pretrained_model ([str], optional): the path of pretrained model. Defaults to None.
-        """
-        if pretrained_model is not None:
-            if os.path.exists(pretrained_model):
-                utils.load_pretrained_model(self, pretrained_model)
-            else:
-                raise Exception('Pretrained model is not found: {}'.format(
-                    pretrained_model))
+        return feat_list
 
 
+@manager.BACKBONES.add_component
 def ResNet18_vd(**args):
     model = ResNet_vd(layers=18, **args)
     return model

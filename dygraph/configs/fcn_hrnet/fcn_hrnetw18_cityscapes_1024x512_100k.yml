@@ -7,3 +7,6 @@ model:
   num_classes: 19
   backbone_channels: [270]
   backbone_pretrained: pretrained_model/hrnet_w18_imagenet
+
+optimizer:
+  weight_decay: 0.0005

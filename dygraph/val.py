@@ -14,8 +14,8 @@
 
 import argparse
 
-import paddle.fluid as fluid
-from paddle.fluid.dygraph.parallel import ParallelEnv
+import paddle
+from paddle.distributed import ParallelEnv
 
 import paddleseg
 from paddleseg.cvlibs import manager
@@ -41,25 +41,25 @@ def parse_args():
 
 def main(args):
     env_info = get_environ_info()
-    places = fluid.CUDAPlace(ParallelEnv().dev_id) \
+    places = paddle.CUDAPlace(ParallelEnv().dev_id) \
         if env_info['Paddle compiled with cuda'] and env_info['GPUs used'] \
-        else fluid.CPUPlace()
+        else paddle.CPUPlace()
 
-    with fluid.dygraph.guard(places):
-        if not args.cfg:
-            raise RuntimeError('No configuration file specified.')
+    paddle.disable_static(places)
+    if not args.cfg:
+        raise RuntimeError('No configuration file specified.')
 
-        cfg = Config(args.cfg)
-        val_dataset = cfg.val_dataset
-        if not val_dataset:
-            raise RuntimeError(
-                'The verification dataset is not specified in the configuration file.'
-            )
-        evaluate(
-            cfg.model,
-            val_dataset,
-            model_dir=args.model_dir,
-            num_classes=val_dataset.num_classes)
+    cfg = Config(args.cfg)
+    val_dataset = cfg.val_dataset
+    if not val_dataset:
+        raise RuntimeError(
+            'The verification dataset is not specified in the configuration file.'
+        )
+    evaluate(
+        cfg.model,
+        val_dataset,
+        model_dir=args.model_dir,
+        num_classes=val_dataset.num_classes)
 
 
 if __name__ == '__main__':

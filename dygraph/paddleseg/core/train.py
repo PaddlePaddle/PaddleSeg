@@ -15,11 +15,10 @@
 import os
 
 import paddle
-import paddle.fluid as fluid
-from paddle.fluid.dygraph.parallel import ParallelEnv
-from paddle.fluid.io import DataLoader
-# from paddle.incubate.hapi.distributed import DistributedBatchSampler
+from paddle.distributed import ParallelEnv
+from paddle.distributed import init_parallel_env
 from paddle.io import DistributedBatchSampler
+from paddle.io import DataLoader
 import paddle.nn.functional as F
 
 import paddleseg.utils.logger as logger
@@ -79,11 +78,14 @@ def train(model,
         os.makedirs(save_dir)
 
     if nranks > 1:
-        strategy = fluid.dygraph.prepare_context()
-        ddp_model = fluid.dygraph.DataParallel(model, strategy)
+        # Initialize parallel training environment.
+        init_parallel_env()
+        strategy = paddle.distributed.prepare_context()
+        ddp_model = paddle.DataParallel(model, strategy)
 
     batch_sampler = DistributedBatchSampler(
         train_dataset, batch_size=batch_size, shuffle=True, drop_last=True)
+
     loader = DataLoader(
         train_dataset,
         batch_sampler=batch_sampler,
@@ -117,7 +119,6 @@ def train(model,
             if nranks > 1:
                 logits = ddp_model(images)
                 loss = loss_computation(logits, labels, losses)
-                # loss = ddp_model(images, labels)
                 # apply_collective_grads sum grads over multiple gpus.
                 loss = ddp_model.scale_loss(loss)
                 loss.backward()
@@ -127,10 +128,17 @@ def train(model,
                 loss = loss_computation(logits, labels, losses)
                 # loss = model(images, labels)
                 loss.backward()
-            optimizer.minimize(loss)
+            # optimizer.minimize(loss)
+            optimizer.step()
+            if isinstance(optimizer._learning_rate,
+                          paddle.optimizer._LRScheduler):
+                optimizer._learning_rate.step()
             model.clear_gradients()
+            # Sum loss over all ranks
+            if nranks > 1:
+                paddle.distributed.all_reduce(loss)
             avg_loss += loss.numpy()[0]
-            lr = optimizer.current_step_lr()
+            lr = optimizer.get_lr()
             train_batch_cost += timer.elapsed_time()
             if (iter) % log_iters == 0 and ParallelEnv().local_rank == 0:
                 avg_loss /= log_iters
@@ -143,10 +151,10 @@ def train(model,
                 logger.info(
                     "[TRAIN] epoch={}, iter={}/{}, loss={:.4f}, lr={:.6f}, batch_cost={:.4f}, reader_cost={:.4f} | ETA {}"
                     .format((iter - 1) // iters_per_epoch + 1, iter, iters,
-                            avg_loss * nranks, lr, avg_train_batch_cost,
+                            avg_loss, lr, avg_train_batch_cost,
                             avg_train_reader_cost, eta))
                 if use_vdl:
-                    log_writer.add_scalar('Train/loss', avg_loss * nranks, iter)
+                    log_writer.add_scalar('Train/loss', avg_loss, iter)
                     log_writer.add_scalar('Train/lr', lr, iter)
                     log_writer.add_scalar('Train/batch_cost',
                                           avg_train_batch_cost, iter)
@@ -160,10 +168,10 @@ def train(model,
                                                 "iter_{}".format(iter))
                 if not os.path.isdir(current_save_dir):
                     os.makedirs(current_save_dir)
-                fluid.save_dygraph(model.state_dict(),
-                                   os.path.join(current_save_dir, 'model'))
-                fluid.save_dygraph(optimizer.state_dict(),
-                                   os.path.join(current_save_dir, 'model'))
+                paddle.save(model.state_dict(),
+                            os.path.join(current_save_dir, 'model'))
+                paddle.save(optimizer.state_dict(),
+                            os.path.join(current_save_dir, 'model'))
 
                 if eval_dataset is not None:
                     mean_iou, avg_acc = evaluate(
@@ -177,9 +185,8 @@ def train(model,
                         best_mean_iou = mean_iou
                         best_model_iter = iter
                         best_model_dir = os.path.join(save_dir, "best_model")
-                        fluid.save_dygraph(
-                            model.state_dict(),
-                            os.path.join(best_model_dir, 'model'))
+                        paddle.save(model.state_dict(),
+                                    os.path.join(best_model_dir, 'model'))
                     logger.info(
                         'Current evaluated best model in eval_dataset is iter_{}, miou={:4f}'
                         .format(best_model_iter, best_mean_iou))
