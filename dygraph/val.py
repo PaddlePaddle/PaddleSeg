@@ -55,6 +55,11 @@ def main(args):
         raise RuntimeError(
             'The verification dataset is not specified in the configuration file.'
         )
+
+    print('---------------Config Information---------------')
+    print(cfg)
+    print('------------------------------------------------')
+
     evaluate(
         cfg.model,
         val_dataset,

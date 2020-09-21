@@ -100,14 +100,21 @@ def main(args):
         raise RuntimeError('No configuration file specified.')
 
     cfg = Config(args.cfg)
+    cfg.update(
+        learning_rate=args.learning_rate,
+        iters=args.iters,
+        batch_size=args.batch_size)
+
     train_dataset = cfg.train_dataset
     if not train_dataset:
         raise RuntimeError(
             'The training dataset is not specified in the configuration file.')
-
     val_dataset = cfg.val_dataset if args.do_eval else None
-
     losses = cfg.loss
+
+    print('---------------Config Information---------------')
+    print(cfg)
+    print('------------------------------------------------')
 
     train(
         cfg.model,
