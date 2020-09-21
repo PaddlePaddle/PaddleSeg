@@ -25,13 +25,13 @@ class ConvBNRelu(nn.Layer):
 
         super(ConvBNRelu, self).__init__()
 
-        self.conv = Conv2d(in_channels, out_channels, kernel_size, **kwargs)
+        self._conv = Conv2d(in_channels, out_channels, kernel_size, **kwargs)
 
-        self.batch_norm = BatchNorm(out_channels)
+        self._batch_norm = BatchNorm(out_channels)
 
     def forward(self, x):
-        x = self.conv(x)
-        x = self.batch_norm(x)
+        x = self._conv(x)
+        x = self._batch_norm(x)
         x = F.relu(x)
         return x
 
@@ -41,13 +41,13 @@ class ConvBN(nn.Layer):
 
         super(ConvBN, self).__init__()
 
-        self.conv = Conv2d(in_channels, out_channels, kernel_size, **kwargs)
+        self._conv = Conv2d(in_channels, out_channels, kernel_size, **kwargs)
 
-        self.batch_norm = BatchNorm(out_channels)
+        self._batch_norm = BatchNorm(out_channels)
 
     def forward(self, x):
-        x = self.conv(x)
-        x = self.batch_norm(x)
+        x = self._conv(x)
+        x = self._batch_norm(x)
         return x
 
 
