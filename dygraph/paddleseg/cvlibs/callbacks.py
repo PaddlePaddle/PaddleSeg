@@ -275,18 +275,3 @@ class VisualDL(Callback):
 
     def on_train_end(self, logs=None):
         self.writer.close()
-
-if __name__ == "__main__":
-
-    paddle.disable_static()
-    x = np.random.uniform(-1, 1, [10, 10]).astype("float32")
-    linear = paddle.nn.Linear(10, 10)
-    scheduler = paddle.optimizer.lr_scheduler.PolynomialLR(learning_rate=0.5, decay_steps=20)
-    sgd = paddle.optimizer.SGD(learning_rate=scheduler, parameters=linear.parameters())
-
-    callbacks1 = ModelCheckpoint(save_dir="/mnt/liuyi22/PaddlePaddle/PaddleSeg/dygraph/1", verbose=1, period=10)
-    callback_list = CallbackList([callbacks1])
-    callback_list.set_model(linear)
-
-    for iter in range(100):
-        callback_list.on_iter_end(iter)
