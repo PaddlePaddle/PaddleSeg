@@ -33,26 +33,18 @@ class PSPNet(nn.Layer):
 
     Args:
         num_classes (int): the unique number of target classes.
-
         backbone (Paddle.nn.Layer): backbone network, currently support Resnet50/101.
-
         model_pretrained (str): the path of pretrained model. Defaullt to None.
-
         backbone_indices (tuple): two values in the tuple indicte the indices of output of backbone.
                         the first index will be taken as a deep-supervision feature in auxiliary layer;
                         the second one will be taken as input of Pyramid Pooling Module (PPModule).
                         Usually backbone consists of four downsampling stage, and return an output of
                         each stage, so we set default (2, 3), which means taking feature map of the third
                         stage (res4b22) in backbone, and feature map of the fourth stage (res5c) as input of PPModule.
-
         backbone_channels (tuple): the same length with "backbone_indices". It indicates the channels of corresponding index.
-
         pp_out_channels (int): output channels after Pyramid Pooling Module. Default to 1024.
-
         bin_sizes (tuple): the out size of pooled feature maps. Default to (1,2,3,6).
-
         enable_auxiliary_loss (bool): a bool values indictes whether adding auxiliary loss. Default to True.
-
     """
 
     def __init__(self,

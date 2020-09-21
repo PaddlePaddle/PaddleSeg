@@ -28,15 +28,10 @@ class ASPPModule(nn.Layer):
 
     Args:
         aspp_ratios (tuple): the dilation rate using in ASSP module.
-
         in_channels (int): the number of input channels.
-
         out_channels (int): the number of output channels.
-
         sep_conv (bool): if using separable conv in ASPP module.
-
         image_pooling: if augmented with image-level features.
-
     """
 
     def __init__(self, 
@@ -106,11 +101,8 @@ class PPModule(nn.Layer):
 
     Args:
         in_channels (int): the number of intput channels to pyramid pooling module.
-
         out_channels (int): the number of output channels after pyramid pooling module.
-
         bin_sizes (tuple): the out size of pooled feature maps. Default to (1,2,3,6).
-
         dim_reduction (bool): a bool value represent if reduing dimention after pooling. Default to True.
     """
 
@@ -152,7 +144,6 @@ class PPModule(nn.Layer):
 
         Args:
             in_channels (int): the number of intput channels to pyramid pooling module.
-
             size (int): the out size of the pooled layer.
 
         Returns:
