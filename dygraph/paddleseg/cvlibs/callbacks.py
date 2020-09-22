@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 import os
 import time
 
@@ -23,6 +22,7 @@ from paddle.distributed.parallel import ParallelEnv
 from visualdl import LogWriter
 from paddleseg.utils.progbar import Progbar
 import paddleseg.utils.logger as logger
+
 
 class CallbackList(object):
     """Container abstracting a list of callbacks.
@@ -44,7 +44,7 @@ class CallbackList(object):
     def set_model(self, model):
         for callback in self.callbacks:
             callback.set_model(model)
-    
+
     def set_optimizer(self, optimizer):
         for callback in self.callbacks:
             callback.set_optimizer(optimizer)
@@ -82,6 +82,7 @@ class CallbackList(object):
     def __iter__(self):
         return iter(self.callbacks)
 
+
 class Callback(object):
     """Abstract base class used to build new callbacks.
     """
@@ -94,7 +95,7 @@ class Callback(object):
 
     def set_model(self, model):
         self.model = model
-    
+
     def set_optimizer(self, optimizer):
         self.optimizer = optimizer
 
@@ -110,18 +111,18 @@ class Callback(object):
     def on_train_end(self, logs=None):
         pass
 
-class BaseLogger(Callback):
 
+class BaseLogger(Callback):
     def __init__(self, period=10):
         super(BaseLogger, self).__init__()
         self.period = period
-    
+
     def _reset(self):
         self.totals = {}
 
     def on_train_begin(self, logs=None):
         self.totals = {}
-    
+
     def on_iter_end(self, iter, logs=None):
         logs = logs or {}
         #(iter - 1) // iters_per_epoch + 1
@@ -132,13 +133,13 @@ class BaseLogger(Callback):
                 self.totals[k] = v
 
         if iter % self.period == 0 and ParallelEnv().local_rank == 0:
-            
+
             for k in self.totals:
                 logs[k] = self.totals[k] / self.period
             self._reset()
 
-class TrainLogger(Callback):
 
+class TrainLogger(Callback):
     def __init__(self, log_freq=10):
         self.log_freq = log_freq
 
@@ -154,7 +155,7 @@ class TrainLogger(Callback):
         return result.format(*arr)
 
     def on_iter_end(self, iter, logs=None):
-       
+
         if iter % self.log_freq == 0 and ParallelEnv().local_rank == 0:
             total_iters = self.params["total_iters"]
             iters_per_epoch = self.params["iters_per_epoch"]
@@ -167,49 +168,50 @@ class TrainLogger(Callback):
             reader_cost = logs["reader_cost"]
 
             logger.info(
-                "[TRAIN] epoch={}, iter={}/{}, loss={:.4f}, lr={:.6f}, batch_cost={:.4f}, reader_cost={:.4f} | ETA {}".
-                    format(current_epoch, iter, total_iters,
-                        loss, lr, batch_cost, reader_cost, eta))
+                "[TRAIN] epoch={}, iter={}/{}, loss={:.4f}, lr={:.6f}, batch_cost={:.4f}, reader_cost={:.4f} | ETA {}"
+                .format(current_epoch, iter, total_iters, loss, lr, batch_cost,
+                        reader_cost, eta))
+
 
 class ProgbarLogger(Callback):
-
     def __init__(self):
         super(ProgbarLogger, self).__init__()
 
     def on_train_begin(self, logs=None):
         self.verbose = self.params["verbose"]
         self.total_iters = self.params["total_iters"]
-        self.target = self.params["total_iters"] 
+        self.target = self.params["total_iters"]
         self.progbar = Progbar(target=self.target, verbose=self.verbose)
         self.seen = 0
         self.log_values = []
-    
+
     def on_iter_begin(self, iter, logs=None):
         #self.seen = 0
         if self.seen < self.target:
             self.log_values = []
-    
+
     def on_iter_end(self, iter, logs=None):
         logs = logs or {}
         self.seen += 1
         for k in self.params['metrics']:
             if k in logs:
                 self.log_values.append((k, logs[k]))
-        
+
         #if self.verbose and self.seen < self.target and ParallelEnv.local_rank == 0:
-            #print(self.log_values)
+        #print(self.log_values)
         if self.seen < self.target:
             self.progbar.update(self.seen, self.log_values)
-            
-        
-    
+
 
 class ModelCheckpoint(Callback):
+    def __init__(self,
+                 save_dir,
+                 monitor="miou",
+                 save_best_only=False,
+                 save_params_only=True,
+                 mode="max",
+                 period=1):
 
-    def __init__(self, save_dir, monitor="miou",
-                 save_best_only=False, save_params_only=True, 
-                 mode="max", period=1):
-        
         super(ModelCheckpoint, self).__init__()
         self.monitor = monitor
         self.save_dir = save_dir
@@ -241,7 +243,7 @@ class ModelCheckpoint(Callback):
         current_save_dir = os.path.join(self.save_dir, "iter_{}".format(iter))
         current_save_dir = os.path.abspath(current_save_dir)
         #if self.iters_since_last_save % self.period and ParallelEnv().local_rank == 0:
-            #self.iters_since_last_save = 0
+        #self.iters_since_last_save = 0
         if iter % self.period == 0 and ParallelEnv().local_rank == 0:
             if self.verbose > 0:
                 print("iter {iter_num}: saving model to {path}".format(
@@ -252,11 +254,9 @@ class ModelCheckpoint(Callback):
 
             if not self.save_params_only:
                 paddle.save(self.optimizer.state_dict(), filepath)
-    
 
 
 class VisualDL(Callback):
-
     def __init__(self, log_dir="./log", freq=1):
         super(VisualDL, self).__init__()
         self.log_dir = log_dir

@@ -44,6 +44,19 @@ def seconds_to_hms(seconds):
     return hms_str
 
 
+def load_entire_model(model, pretrained):
+
+    if pretrained is not None:
+        if os.path.exists(pretrained):
+            load_pretrained_model(model, pretrained)
+        else:
+            raise Exception('Pretrained model is not found: {}'.format(
+                pretrained))
+    else:
+        logger.warning('Not all pretrained params of {} to load, '\
+             'training from scratch or a pretrained backbone'.format(model.__class__.__name__))
+
+
 def load_pretrained_model(model, pretrained_model):
     if pretrained_model is not None:
         logger.info('Load pretrained model from {}'.format(pretrained_model))
@@ -82,7 +95,7 @@ def load_pretrained_model(model, pretrained_model):
                     model_state_dict[k] = para_state_dict[k]
                     num_params_loaded += 1
             model.set_dict(model_state_dict)
-            logger.info("There are {}/{} varaibles are loaded.".format(
+            logger.info("There are {}/{} variables are loaded.".format(
                 num_params_loaded, len(model_state_dict)))
 
         else:

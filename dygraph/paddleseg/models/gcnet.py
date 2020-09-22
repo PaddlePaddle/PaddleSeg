@@ -27,15 +27,15 @@ class GCNet(nn.Layer):
     """
     The GCNet implementation based on PaddlePaddle.
 
-    The orginal artile refers to 
+    The original article refers to 
         Cao, Yue, et al. "GCnet: Non-local networks meet squeeze-excitation networks and beyond."
         (https://arxiv.org/pdf/1904.11492.pdf)
 
     Args:
         num_classes (int): the unique number of target classes.
         backbone (Paddle.nn.Layer): backbone network, currently support Resnet50/101.
-        model_pretrained (str): the path of pretrained model. Defaullt to None.
-        backbone_indices (tuple): two values in the tuple indicte the indices of output of backbone.
+        model_pretrained (str): the path of pretrained model. Default to None.
+        backbone_indices (tuple): two values in the tuple indicate the indices of output of backbone.
             the first index will be taken as a deep-supervision feature in auxiliary layer;
             the second one will be taken as input of GlobalContextBlock. Usually backbone 
             consists of four downsampling stage, and return an output of each stage, so we 
@@ -43,8 +43,8 @@ class GCNet(nn.Layer):
             and the fourth stage (res5c) in backbone.
         backbone_channels (tuple): the same length with "backbone_indices". It indicates the channels of corresponding index.
         gc_channels (int): input channels to Global Context Block. Default to 512.
-        ratio (float): it indictes the ratio of attention channels and gc_channels. Default to 1/4.
-        enable_auxiliary_loss (bool): a bool values indictes whether adding auxiliary loss. Default to True.
+        ratio (float): it indicates the ratio of attention channels and gc_channels. Default to 1/4.
+        enable_auxiliary_loss (bool): a bool values indicates whether adding auxiliary loss. Default to True.
     """
 
     def __init__(self,
@@ -63,7 +63,7 @@ class GCNet(nn.Layer):
         self.backbone = backbone
 
         in_channels = backbone_channels[1]
-        self.conv_bn_relu1 = layer_libs.ConvBnRelu(
+        self.conv_bn_relu1 = layer_libs.ConvBNReLU(
             in_channels=in_channels,
             out_channels=gc_channels,
             kernel_size=3,
@@ -71,13 +71,13 @@ class GCNet(nn.Layer):
 
         self.gc_block = GlobalContextBlock(in_channels=gc_channels, ratio=ratio)
 
-        self.conv_bn_relu2 = layer_libs.ConvBnRelu(
+        self.conv_bn_relu2 = layer_libs.ConvBNReLU(
             in_channels=gc_channels,
             out_channels=gc_channels,
             kernel_size=3,
             padding=1)
 
-        self.conv_bn_relu3 = layer_libs.ConvBnRelu(
+        self.conv_bn_relu3 = layer_libs.ConvBNReLU(
             in_channels=in_channels + gc_channels,
             out_channels=gc_channels,
             kernel_size=3,
@@ -154,7 +154,7 @@ class GlobalContextBlock(nn.Layer):
             in_channels=in_channels, out_channels=1, kernel_size=1)
 
         self.softmax = nn.Softmax(axis=2)
-        
+
         inter_channels = int(in_channels * ratio)
         self.channel_add_conv = nn.Sequential(
             nn.Conv2d(
