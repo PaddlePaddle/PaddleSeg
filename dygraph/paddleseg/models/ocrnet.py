@@ -18,7 +18,7 @@ import paddle.fluid as fluid
 from paddle.fluid.dygraph import Sequential, Conv2D
 
 from paddleseg.cvlibs import manager
-from paddleseg.models.common.layer_libs import ConvBnRelu
+from paddleseg.models.common.layer_libs import ConvBNReLU
 from paddleseg import utils
 
 
@@ -73,16 +73,16 @@ class ObjectAttentionBlock(fluid.dygraph.Layer):
         self.key_channels = key_channels
 
         self.f_pixel = Sequential(
-            ConvBnRelu(in_channels, key_channels, 1),
-            ConvBnRelu(key_channels, key_channels, 1))
+            ConvBNReLU(in_channels, key_channels, 1),
+            ConvBNReLU(key_channels, key_channels, 1))
 
         self.f_object = Sequential(
-            ConvBnRelu(in_channels, key_channels, 1),
-            ConvBnRelu(key_channels, key_channels, 1))
+            ConvBNReLU(in_channels, key_channels, 1),
+            ConvBNReLU(key_channels, key_channels, 1))
 
-        self.f_down = ConvBnRelu(in_channels, key_channels, 1)
+        self.f_down = ConvBNReLU(in_channels, key_channels, 1)
 
-        self.f_up = ConvBnRelu(key_channels, in_channels, 1)
+        self.f_up = ConvBNReLU(key_channels, in_channels, 1)
 
     def forward(self, x, proxy):
         n, _, h, w = x.shape
@@ -135,12 +135,12 @@ class OCRNet(fluid.dygraph.Layer):
         self.spatial_gather = SpatialGatherBlock()
         self.spatial_ocr = SpatialOCRModule(ocr_mid_channels, ocr_key_channels,
                                             ocr_mid_channels)
-        self.conv3x3_ocr = ConvBnRelu(
+        self.conv3x3_ocr = ConvBNReLU(
             in_channels, ocr_mid_channels, 3, padding=1)
         self.cls_head = Conv2D(ocr_mid_channels, self.num_classes, 1)
 
         self.aux_head = Sequential(
-            ConvBnRelu(in_channels, in_channels, 3, padding=1),
+            ConvBNReLU(in_channels, in_channels, 3, padding=1),
             Conv2D(in_channels, self.num_classes, 1))
 
         self.init_weight(model_pretrained)
