@@ -14,12 +14,12 @@
 
 import os
 
+import paddleseg.env as segenv
 from .dataset import Dataset
 from paddleseg.utils.download import download_file_and_uncompress
 from paddleseg.cvlibs import manager
 from paddleseg.transforms import Compose
 
-DATA_HOME = os.path.expanduser('~/.cache/paddle/dataset')
 URL = "http://host.robots.ox.ac.uk/pascal/VOC/voc2012/VOCtrainval_11-May-2012.tar"
 
 
@@ -59,8 +59,8 @@ class PascalVOC(Dataset):
                     "`dataset_root` not set and auto download disabled.")
             self.dataset_root = download_file_and_uncompress(
                 url=URL,
-                savepath=DATA_HOME,
-                extrapath=DATA_HOME,
+                savepath=segenv.DATA_HOME,
+                extrapath=segenv.DATA_HOME,
                 extraname='VOCdevkit')
         elif not os.path.exists(self.dataset_root):
             raise Exception('there is not `dataset_root`: {}.'.format(
