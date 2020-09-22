@@ -20,10 +20,10 @@ from paddle.nn import Conv2d
 from paddle.nn import SyncBatchNorm as BatchNorm
 
 
-class ConvBnRelu(nn.Layer):
+class ConvBNRelu(nn.Layer):
     def __init__(self, in_channels, out_channels, kernel_size, **kwargs):
 
-        super(ConvBnRelu, self).__init__()
+        super(ConvBNRelu, self).__init__()
 
         self.conv = Conv2d(in_channels, out_channels, kernel_size, **kwargs)
 
@@ -36,10 +36,10 @@ class ConvBnRelu(nn.Layer):
         return x
 
 
-class ConvBn(nn.Layer):
+class ConvBN(nn.Layer):
     def __init__(self, in_channels, out_channels, kernel_size, **kwargs):
 
-        super(ConvBn, self).__init__()
+        super(ConvBN, self).__init__()
 
         self.conv = Conv2d(in_channels, out_channels, kernel_size, **kwargs)
 
@@ -69,16 +69,16 @@ class ConvReluPool(nn.Layer):
         return x
 
 
-class DepthwiseConvBnRelu(nn.Layer):
+class DepthwiseConvBNRelu(nn.Layer):
     def __init__(self, in_channels, out_channels, kernel_size, **kwargs):
-        super(DepthwiseConvBnRelu, self).__init__()
-        self.depthwise_conv = ConvBn(
+        super(DepthwiseConvBNRelu, self).__init__()
+        self.depthwise_conv = ConvBN(
             in_channels,
             out_channels=in_channels,
             kernel_size=kernel_size,
             groups=in_channels,
             **kwargs)
-        self.piontwise_conv = ConvBnRelu(
+        self.piontwise_conv = ConvBNRelu(
             in_channels, out_channels, kernel_size=1, groups=1)
 
     def forward(self, x):
@@ -105,7 +105,7 @@ class AuxLayer(nn.Layer):
                  dropout_prob=0.1):
         super(AuxLayer, self).__init__()
 
-        self.conv_bn_relu = ConvBnRelu(
+        self.conv_bn_relu = ConvBNRelu(
             in_channels=in_channels,
             out_channels=inter_channels,
             kernel_size=3,
@@ -123,4 +123,3 @@ class AuxLayer(nn.Layer):
         x = F.dropout(x, p=self.dropout_prob)
         x = self.conv(x)
         return x
-
