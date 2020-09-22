@@ -330,8 +330,8 @@ class ResNet_vd(nn.Layer):
 
         # A feature list saves the output feature map of each stage.
         feat_list = []
-        for i, stage in enumerate(self.stage_list):
-            for j, block in enumerate(stage):
+        for stage in self.stage_list:
+            for block in stage:
                 y = block(y)
             feat_list.append(y)
 
