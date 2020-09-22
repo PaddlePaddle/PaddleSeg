@@ -4,7 +4,7 @@ learning_rate: 0.01
 
 train_dataset:
   type: Cityscapes
-  dataset_root: /mnt/liuyi22/.cache/paddle/dataset/cityscapes
+  dataset_root: data/cityscapes
   transforms:
     - type: ResizeStepScaling
       min_scale_factor: 0.5
@@ -18,7 +18,7 @@ train_dataset:
 
 val_dataset:
   type: Cityscapes
-  dataset_root: /mnt/liuyi22/.cache/paddle/dataset/cityscapes
+  dataset_root: data/cityscapes
   transforms:
     - type: Normalize
   mode: val
