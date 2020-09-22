@@ -29,140 +29,193 @@ class DeepLabV3P(nn.Layer):
     """
     The DeepLabV3Plus implementation based on PaddlePaddle.
 
-    The orginal artile refers to
-    "Encoder-Decoder with Atrous Separable Convolution for Semantic Image Segmentation"
-     Liang-Chieh Chen, Yukun Zhu, George Papandreou, Florian Schroff, Hartwig Adam.
+    The original article refers to
+     Liang-Chieh Chen, et, al. "Encoder-Decoder with Atrous Separable Convolution for Semantic Image Segmentation"
      (https://arxiv.org/abs/1802.02611)
-
-     The DeepLabV3P consists of three main components, Backbone, ASPP and Decoder.
 
     Args:
         num_classes (int): the unique number of target classes.
-        backbone (paddle.nn.Layer): backbone network, currently support Xception65, Resnet101_vd.
-        model_pretrained (str): the path of pretrained model.
-        aspp_ratios (tuple): the dilation rate using in ASSP module.
-            if output_stride=16, aspp_ratios should be set as (1, 6, 12, 18).
-            if output_stride=8, aspp_ratios is (1, 12, 24, 36).
-        backbone_indices (tuple): two values in the tuple indicte the indices of output of backbone.
-            the first index will be taken as a low-level feature in Deconder component;
+        backbone (paddle.nn.Layer): backbone network, currently support Resnet50_vd/Resnet101_vd/Xception65.
+        backbone_indices (tuple): two values in the tuple indicate the indices of output of backbone.
+            the first index will be taken as a low-level feature in Decoder component;
             the second one will be taken as input of ASPP component.
             Usually backbone consists of four downsampling stage, and return an output of
             each stage, so we set default (0, 3), which means taking feature map of the first
             stage in backbone as low-level feature used in Decoder, and feature map of the fourth
             stage as input of ASPP.
-        backbone_channels (tuple): the same length with "backbone_indices". It indicates the channels of corresponding index.
+        aspp_ratios (tuple): the dilation rate using in ASSP module.
+            if output_stride=16, aspp_ratios should be set as (1, 6, 12, 18).
+            if output_stride=8, aspp_ratios is (1, 12, 24, 36).
+        aspp_out_channels (int): the output channels of ASPP module.
+        pretrained (str): the path of pretrained model for fine tuning.
+        
     """
 
     def __init__(self,
                  num_classes,
                  backbone,
-                 backbone_pretrained=None,
-                 model_pretrained=None,
                  backbone_indices=(0, 3),
-                 backbone_channels=(256, 2048),
                  aspp_ratios=(1, 6, 12, 18),
-                 aspp_out_channels=256):
+                 aspp_out_channels=256,
+                 pretrained=None):
 
         super(DeepLabV3P, self).__init__()
 
         self.backbone = backbone
-        self.backbone_pretrained = backbone_pretrained
-        self.model_pretrained = model_pretrained
+        backbone_channels = backbone.backbone_channels
+
+        self.head = DeepLabV3PHead(
+            num_classes,
+            backbone_indices,
+            backbone_channels,
+            aspp_ratios,
+            aspp_out_channels)
+
+        utils.load_entire_model(self, pretrained)
+
+    def forward(self, input):
+
+        feat_list = self.backbone(input)
+        logit_list = self.head(feat_list)
+        return [
+            F.resize_bilinear(logit, input.shape[2:]) for logit in logit_list
+        ]
+
+class DeepLabV3PHead(nn.Layer):
+    """
+    The DeepLabV3PHead implementation based on PaddlePaddle.
+
+    Args:
+        num_classes (int): the unique number of target classes.
+        backbone_indices (tuple): two values in the tuple indicate the indices of output of backbone.
+            the first index will be taken as a low-level feature in Decoder component;
+            the second one will be taken as input of ASPP component.
+            Usually backbone consists of four downsampling stage, and return an output of
+            each stage, so we set default (0, 3), which means taking feature map of the first
+            stage in backbone as low-level feature used in Decoder, and feature map of the fourth
+            stage as input of ASPP.
+        backbone_channels (tuple): returned channels of backbone
+        aspp_ratios (tuple): the dilation rate using in ASSP module.
+            if output_stride=16, aspp_ratios should be set as (1, 6, 12, 18).
+            if output_stride=8, aspp_ratios is (1, 12, 24, 36).
+        aspp_out_channels (int): the output channels of ASPP module.
+        
+    """
+
+    def __init__(self,
+                 num_classes,
+                 backbone_indices,
+                 backbone_channels,
+                 aspp_ratios=(1, 6, 12, 18),
+                 aspp_out_channels=256):
+
+        super(DeepLabV3PHead, self).__init__()
         
         self.aspp = pyramid_pool.ASPPModule(
-            aspp_ratios, backbone_channels[1], aspp_out_channels, sep_conv=True, image_pooling=True)
-        self.decoder = Decoder(num_classes, backbone_channels[0])
+            aspp_ratios,
+            backbone_channels[backbone_indices[1]],
+            aspp_out_channels,
+            sep_conv=True,
+            image_pooling=True)
+        self.decoder = Decoder(num_classes, backbone_channels[backbone_indices[0]])
         self.backbone_indices = backbone_indices
         self.init_weight()
 
-    def forward(self, input, label=None):
+    def forward(self, feat_list):
 
         logit_list = []
-        _, feat_list = self.backbone(input)
         low_level_feat = feat_list[self.backbone_indices[0]]
         x = feat_list[self.backbone_indices[1]]
         x = self.aspp(x)
         logit = self.decoder(x, low_level_feat)
-        logit = F.resize_bilinear(logit, input.shape[2:])
         logit_list.append(logit)
 
         return logit_list
 
     def init_weight(self):
-        """
-        Initialize the parameters of model parts.
-        Args:
-            pretrained_model ([str], optional): the path of pretrained model. Defaults to None.
-        """
-        if self.model_pretrained is not None:
-            utils.load_pretrained_model(self, self.model_pretrained)
-        elif self.backbone_pretrained is not None:
-            utils.load_pretrained_model(self.backbone, self.backbone_pretrained)
-           
+        pass
 
 @manager.MODELS.add_component
 class DeepLabV3(nn.Layer):
     """
     The DeepLabV3 implementation based on PaddlePaddle.
 
-    The orginal article refers to
-    "Rethinking Atrous Convolution for Semantic Image Segmentation"
-     Liang-Chieh Chen, George Papandreou, Florian Schroff, Hartwig Adam.
+    The original article refers to
+     Liang-Chieh Chen, et, al. "Rethinking Atrous Convolution for Semantic Image Segmentation"
      (https://arxiv.org/pdf/1706.05587.pdf)
 
     Args:
         Refer to DeepLabV3P above 
     """
-
+    
     def __init__(self,
                  num_classes,
                  backbone,
-                 backbone_pretrained=None,
-                 model_pretrained=None,
-                 backbone_indices=(3,),
-                 backbone_channels=(2048,),
+                 pretrained=None,
+                 backbone_indices=(3, ),
                  aspp_ratios=(1, 6, 12, 18),
                  aspp_out_channels=256):
 
         super(DeepLabV3, self).__init__()
 
         self.backbone = backbone
+        backbone_channels = backbone.backbone_channels
+
+        self.head = DeepLabV3Head(
+            num_classes,
+            backbone_indices,
+            backbone_channels,
+            aspp_ratios,
+            aspp_out_channels)
+        
+        utils.load_entire_model(self, pretrained)
+
+    def forward(self, input):
+
+        feat_list = self.backbone(input)
+        logit_list = self.head(feat_list)
+        return [
+            F.resize_bilinear(logit, input.shape[2:]) for logit in logit_list
+        ]
+
+
+class DeepLabV3Head(nn.Layer):
+    def __init__(self,
+                 num_classes,
+                 backbone_indices=(3, ),
+                 backbone_channels=(2048, ),
+                 aspp_ratios=(1, 6, 12, 18),
+                 aspp_out_channels=256):
+
+        super(DeepLabV3Head, self).__init__()
 
         self.aspp = pyramid_pool.ASPPModule(
-            aspp_ratios, backbone_channels[0], aspp_out_channels, 
-            sep_conv=False, image_pooling=True)
+            aspp_ratios,
+            backbone_channels[backbone_indices[0]],
+            aspp_out_channels,
+            sep_conv=False,
+            image_pooling=True)
 
         self.cls = nn.Conv2d(
-            in_channels=backbone_channels[0],
+            in_channels=backbone_channels[backbone_indices[0]],
             out_channels=num_classes,
             kernel_size=1)
 
         self.backbone_indices = backbone_indices
-        self.init_weight(model_pretrained)
+        self.init_weight()
 
-    def forward(self, input, label=None):
+    def forward(self, feat_list):
 
         logit_list = []
-        _, feat_list = self.backbone(input)
+
         x = feat_list[self.backbone_indices[0]]
         logit = self.cls(x)
-        logit = F.resize_bilinear(logit, input.shape[2:])
         logit_list.append(logit)
 
         return logit_list
 
-    def init_weight(self, pretrained_model=None):
-        """
-        Initialize the parameters of model parts.
-        Args:
-            pretrained_model ([str], optional): the path of pretrained model. Defaults to None.
-        """
-        if pretrained_model is not None:
-            if os.path.exists(pretrained_model):
-                utils.load_pretrained_model(self, pretrained_model)
-            else:
-                raise Exception('Pretrained model is not found: {}'.format(
-                    pretrained_model))
+    def init_weight(self):
+        pass
 
 
 class Decoder(nn.Layer):
@@ -178,12 +231,12 @@ class Decoder(nn.Layer):
     def __init__(self, num_classes, in_channels):
         super(Decoder, self).__init__()
 
-        self.conv_bn_relu1 = layer_libs.ConvBnRelu(
+        self.conv_bn_relu1 = layer_libs.ConvBNReLU(
             in_channels=in_channels, out_channels=48, kernel_size=1)
 
-        self.conv_bn_relu2 = layer_libs.DepthwiseConvBnRelu(
+        self.conv_bn_relu2 = layer_libs.DepthwiseConvBNReLU(
             in_channels=304, out_channels=256, kernel_size=3, padding=1)
-        self.conv_bn_relu3 = layer_libs.DepthwiseConvBnRelu(
+        self.conv_bn_relu3 = layer_libs.DepthwiseConvBNReLU(
             in_channels=256, out_channels=256, kernel_size=3, padding=1)
         self.conv = nn.Conv2d(
             in_channels=256, out_channels=num_classes, kernel_size=1)

@@ -124,7 +124,6 @@ class ObjectAttentionBlock(nn.Layer):
 class OCRHead(nn.Layer):
     """
     The Object contextual representation head.
-
     Args:
         num_classes(int): the unique number of target classes.
         in_channels(tuple): the number of input channels.
@@ -179,11 +178,9 @@ class OCRHead(nn.Layer):
 class OCRNet(nn.Layer):
     """
     The OCRNet implementation based on PaddlePaddle.
-
     The original article refers to
         Yuan, Yuhui, et al. "Object-Contextual Representations for Semantic Segmentation"
         (https://arxiv.org/pdf/1909.11065.pdf)
-
     Args:
         num_classes(int): the unique number of target classes.
         backbone(Paddle.nn.Layer): backbone network.

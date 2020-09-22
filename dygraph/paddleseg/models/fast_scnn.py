@@ -26,15 +26,15 @@ class FastSCNN(nn.Layer):
     As mentioned in the original paper, FastSCNN is a real-time segmentation algorithm (123.5fps) 
     even for high resolution images (1024x2048).
 
-    The orginal artile refers to 
+    The original article refers to 
         Poudel, Rudra PK, et al. "Fast-scnn: Fast semantic segmentation network."
         (https://arxiv.org/pdf/1902.04502.pdf)
 
     Args:
 
         num_classes (int): the unique number of target classes. Default to 2.
-        model_pretrained (str): the path of pretrained model. Defaullt to None.
-        enable_auxiliary_loss (bool): a bool values indictes whether adding auxiliary loss.
+        model_pretrained (str): the path of pretrained model. Default to None.
+        enable_auxiliary_loss (bool): a bool values indicates whether adding auxiliary loss.
             if true, auxiliary loss will be added after LearningToDownsample module, where the weight is 0.4. Default to False.
     """
 
@@ -105,15 +105,15 @@ class LearningToDownsample(nn.Layer):
     def __init__(self, dw_channels1=32, dw_channels2=48, out_channels=64):
         super(LearningToDownsample, self).__init__()
 
-        self.conv_bn_relu = layer_libs.ConvBnRelu(
+        self.conv_bn_relu = layer_libs.ConvBNReLU(
             in_channels=3, out_channels=dw_channels1, kernel_size=3, stride=2)
-        self.dsconv_bn_relu1 = layer_libs.DepthwiseConvBnRelu(
+        self.dsconv_bn_relu1 = layer_libs.DepthwiseConvBNReLU(
             in_channels=dw_channels1,
             out_channels=dw_channels2,
             kernel_size=3,
             stride=2,
             padding=1)
-        self.dsconv_bn_relu2 = layer_libs.DepthwiseConvBnRelu(
+        self.dsconv_bn_relu2 = layer_libs.DepthwiseConvBNReLU(
             in_channels=dw_channels2,
             out_channels=out_channels,
             kernel_size=3,
@@ -208,13 +208,13 @@ class LinearBottleneck(nn.Layer):
         expand_channels = in_channels * expansion
         self.block = nn.Sequential(
             # pw
-            layer_libs.ConvBnRelu(
+            layer_libs.ConvBNReLU(
                 in_channels=in_channels,
                 out_channels=expand_channels,
                 kernel_size=1,
                 bias_attr=False),
             # dw
-            layer_libs.ConvBnRelu(
+            layer_libs.ConvBNReLU(
                 in_channels=expand_channels,
                 out_channels=expand_channels,
                 kernel_size=3,
@@ -239,7 +239,7 @@ class LinearBottleneck(nn.Layer):
 
 class FeatureFusionModule(nn.Layer):
     """
-    Feature Fusion Module Implememtation.
+    Feature Fusion Module Implementation.
 
     This module fuses high-resolution feature and low-resolution feature.
 
@@ -253,7 +253,7 @@ class FeatureFusionModule(nn.Layer):
         super(FeatureFusionModule, self).__init__()
 
         # There only depth-wise conv is used WITHOUT point-wise conv
-        self.dwconv = layer_libs.ConvBnRelu(
+        self.dwconv = layer_libs.ConvBNReLU(
             in_channels=low_in_channels,
             out_channels=out_channels,
             kernel_size=3,
@@ -301,13 +301,13 @@ class Classifier(nn.Layer):
     def __init__(self, input_channels, num_classes):
         super(Classifier, self).__init__()
 
-        self.dsconv1 = layer_libs.DepthwiseConvBnRelu(
+        self.dsconv1 = layer_libs.DepthwiseConvBNReLU(
             in_channels=input_channels,
             out_channels=input_channels,
             kernel_size=3,
             padding=1)
 
-        self.dsconv2 = layer_libs.DepthwiseConvBnRelu(
+        self.dsconv2 = layer_libs.DepthwiseConvBNReLU(
             in_channels=input_channels,
             out_channels=input_channels,
             kernel_size=3,

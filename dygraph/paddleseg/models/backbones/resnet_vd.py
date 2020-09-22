@@ -133,8 +133,9 @@ class BottleneckBlock(nn.Layer):
         # If given dilation rate > 1, using corresponding padding
         if self.dilation > 1:
             padding = self.dilation
-            y = F.pad(y, [0, 0, 0, 0, padding, padding, padding, padding])
+            y = F.pad(y, [padding, padding, padding, padding])
         #####################################################################
+
         conv1 = self.conv1(y)
         conv2 = self.conv2(conv1)
 
@@ -197,11 +198,10 @@ class BasicBlock(nn.Layer):
 
 class ResNet_vd(nn.Layer):
     def __init__(self,
-                 backbone_pretrained=None,
                  layers=50,
-                 class_dim=1000,
                  output_stride=None,
-                 multi_grid=(1, 1, 1)):
+                 multi_grid=(1, 1, 1),
+                 pretrained=None):
         super(ResNet_vd, self).__init__()
 
         self.layers = layers
@@ -223,6 +223,10 @@ class ResNet_vd(nn.Layer):
         num_channels = [64, 256, 512, 1024
                         ] if layers >= 50 else [64, 64, 128, 256]
         num_filters = [64, 128, 256, 512]
+
+        # for channels of returned stage
+        self.backbone_channels = [c * 4 for c in num_filters
+                                  ] if layers >= 50 else num_filters
 
         dilation_dict = None
         if output_stride == 8:
@@ -315,6 +319,8 @@ class ResNet_vd(nn.Layer):
                     block_list.append(basic_block)
                     shortcut = True
                 self.stage_list.append(block_list)
+                
+        utils.load_pretrained_model(self, pretrained)
 
     def forward(self, inputs):
         y = self.conv1_1(inputs)
@@ -324,12 +330,14 @@ class ResNet_vd(nn.Layer):
 
         # A feature list saves the output feature map of each stage.
         feat_list = []
-        for i, stage in enumerate(self.stage_list):
-            for j, block in enumerate(stage):
+        for stage in self.stage_list:
+            for block in stage:
                 y = block(y)
             feat_list.append(y)
 
         return feat_list
+    
+
 
 
 @manager.BACKBONES.add_component

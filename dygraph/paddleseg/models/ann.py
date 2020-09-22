@@ -28,7 +28,7 @@ class ANN(nn.Layer):
     """
     The ANN implementation based on PaddlePaddle.
 
-    The orginal artile refers to 
+    The original article refers to 
         Zhen, Zhu, et al. "Asymmetric Non-local Neural Networks for Semantic Segmentation."
         (https://arxiv.org/pdf/1908.07678.pdf)
 
@@ -37,8 +37,8 @@ class ANN(nn.Layer):
     Args:
         num_classes (int): the unique number of target classes.
         backbone (Paddle.nn.Layer): backbone network, currently support Resnet50/101.
-        model_pretrained (str): the path of pretrained model. Defaullt to None.
-        backbone_indices (tuple): two values in the tuple indicte the indices of output of backbone.
+        model_pretrained (str): the path of pretrained model. Default to None.
+        backbone_indices (tuple): two values in the tuple indicate the indices of output of backbone.
             the first index will be taken as low-level features; the second one will be 
             taken as high-level features in AFNB module. Usually backbone consists of four 
             downsampling stage, and return an output of each stage, so we set default (2, 3), 
@@ -48,7 +48,7 @@ class ANN(nn.Layer):
             Default to 256.
         inter_channels (int): both input and output channels of APNB modules.
         psp_size (tuple): the out size of pooled feature maps. Default to (1, 3, 6, 8).
-        enable_auxiliary_loss (bool): a bool values indictes whether adding auxiliary loss. Default to True.
+        enable_auxiliary_loss (bool): a bool values indicates whether adding auxiliary loss. Default to True.
     """
 
     def __init__(self,
@@ -79,7 +79,7 @@ class ANN(nn.Layer):
             psp_size=psp_size)
 
         self.context = nn.Sequential(
-            layer_libs.ConvBnRelu(
+            layer_libs.ConvBNReLU(
                 in_channels=high_in_channels,
                 out_channels=inter_channels,
                 kernel_size=3,
@@ -94,9 +94,7 @@ class ANN(nn.Layer):
                 psp_size=psp_size))
 
         self.cls = nn.Conv2d(
-            in_channels=inter_channels,
-            out_channels=num_classes,
-            kernel_size=1)
+            in_channels=inter_channels, out_channels=num_classes, kernel_size=1)
         self.auxlayer = layer_libs.AuxLayer(
             in_channels=low_in_channels,
             inter_channels=low_in_channels // 2,
@@ -122,7 +120,8 @@ class ANN(nn.Layer):
 
         if self.enable_auxiliary_loss:
             auxiliary_logit = self.auxlayer(low_level_x)
-            auxiliary_logit = F.resize_bilinear(auxiliary_logit, input.shape[2:])
+            auxiliary_logit = F.resize_bilinear(auxiliary_logit,
+                                                input.shape[2:])
             logit_list.append(auxiliary_logit)
 
         return logit_list
@@ -219,7 +218,7 @@ class APNB(nn.Layer):
             SelfAttentionBlock_APNB(in_channels, out_channels, key_channels,
                                     value_channels, size) for size in sizes
         ])
-        self.conv_bn = layer_libs.ConvBnRelu(
+        self.conv_bn = layer_libs.ConvBNReLU(
             in_channels=in_channels * 2,
             out_channels=out_channels,
             kernel_size=1)
@@ -280,11 +279,11 @@ class SelfAttentionBlock_AFNB(nn.Layer):
         if out_channels == None:
             self.out_channels = high_in_channels
         self.pool = nn.Pool2D(pool_size=(scale, scale), pool_type="max")
-        self.f_key = layer_libs.ConvBnRelu(
+        self.f_key = layer_libs.ConvBNReLU(
             in_channels=low_in_channels,
             out_channels=key_channels,
             kernel_size=1)
-        self.f_query = layer_libs.ConvBnRelu(
+        self.f_query = layer_libs.ConvBNReLU(
             in_channels=high_in_channels,
             out_channels=key_channels,
             kernel_size=1)
@@ -315,7 +314,7 @@ class SelfAttentionBlock_AFNB(nn.Layer):
         key = _pp_module(key, self.psp_size)
 
         sim_map = paddle.matmul(query, key)
-        sim_map = (self.key_channels ** -.5) * sim_map
+        sim_map = (self.key_channels**-.5) * sim_map
         sim_map = F.softmax(sim_map, axis=-1)
 
         context = paddle.matmul(sim_map, value)
@@ -358,7 +357,7 @@ class SelfAttentionBlock_APNB(nn.Layer):
         self.value_channels = value_channels
 
         self.pool = nn.Pool2D(pool_size=(scale, scale), pool_type="max")
-        self.f_key = layer_libs.ConvBnRelu(
+        self.f_key = layer_libs.ConvBNReLU(
             in_channels=self.in_channels,
             out_channels=self.key_channels,
             kernel_size=1)
@@ -384,15 +383,14 @@ class SelfAttentionBlock_APNB(nn.Layer):
         value = paddle.transpose(value, perm=(0, 2, 1))
 
         query = self.f_query(x)
-        query = paddle.reshape(
-            query, shape=(batch_size, self.key_channels, -1))
+        query = paddle.reshape(query, shape=(batch_size, self.key_channels, -1))
         query = paddle.transpose(query, perm=(0, 2, 1))
 
         key = self.f_key(x)
         key = _pp_module(key, self.psp_size)
 
         sim_map = paddle.matmul(query, key)
-        sim_map = (self.key_channels ** -.5) * sim_map
+        sim_map = (self.key_channels**-.5) * sim_map
         sim_map = F.softmax(sim_map, axis=-1)
 
         context = paddle.matmul(sim_map, value)
