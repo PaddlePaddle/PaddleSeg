@@ -112,9 +112,10 @@ def main(args):
     val_dataset = cfg.val_dataset if args.do_eval else None
     losses = cfg.loss
 
-    print('---------------Config Information---------------')
-    print(cfg)
-    print('------------------------------------------------')
+    msg = '\n---------------Config Information---------------\n'
+    msg += str(cfg)
+    msg += '------------------------------------------------'
+    logger.info(msg)
 
     train(
         cfg.model,

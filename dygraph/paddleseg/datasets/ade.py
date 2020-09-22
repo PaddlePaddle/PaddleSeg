@@ -17,12 +17,12 @@ import os
 import numpy as np
 from PIL import Image
 
+import paddleseg.env as segenv
 from .dataset import Dataset
 from paddleseg.utils.download import download_file_and_uncompress
 from paddleseg.cvlibs import manager
 from paddleseg.transforms import Compose
 
-DATA_HOME = os.path.expanduser('~/.cache/paddle/dataset')
 URL = "http://data.csail.mit.edu/places/ADEchallenge/ADEChallengeData2016.zip"
 
 
@@ -61,8 +61,8 @@ class ADE20K(Dataset):
                     "`dataset_root` not set and auto download disabled.")
             self.dataset_root = download_file_and_uncompress(
                 url=URL,
-                savepath=DATA_HOME,
-                extrapath=DATA_HOME,
+                savepath=segenv.DATA_HOME,
+                extrapath=segenv.DATA_HOME,
                 extraname='ADEChallengeData2016')
         elif not os.path.exists(self.dataset_root):
             raise Exception('there is not `dataset_root`: {}.'.format(

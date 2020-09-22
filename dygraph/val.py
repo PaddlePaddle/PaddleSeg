@@ -19,7 +19,7 @@ from paddle.distributed import ParallelEnv
 
 import paddleseg
 from paddleseg.cvlibs import manager
-from paddleseg.utils import get_environ_info, Config
+from paddleseg.utils import get_environ_info, Config, logger
 from paddleseg.core import evaluate
 
 
@@ -56,9 +56,10 @@ def main(args):
             'The verification dataset is not specified in the configuration file.'
         )
 
-    print('---------------Config Information---------------')
-    print(cfg)
-    print('------------------------------------------------')
+    msg = '\n---------------Config Information---------------\n'
+    msg += str(cfg)
+    msg += '------------------------------------------------'
+    logger.info(msg)
 
     evaluate(
         cfg.model,
