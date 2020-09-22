@@ -87,7 +87,8 @@ def seg_train(model,
     out_labels = ["loss", "reader_cost", "batch_cost"]
     base_logger = callbacks.BaseLogger(period=log_iters)
     train_logger = callbacks.TrainLogger(log_freq=log_iters)
-    model_ckpt = callbacks.ModelCheckpoint(save_dir, save_params_only=False, period=save_interval_iters)
+    model_ckpt = callbacks.ModelCheckpoint(
+        save_dir, save_params_only=False, period=save_interval_iters)
     vdl = callbacks.VisualDL(log_dir=os.path.join(save_dir, "log"))
     cbks_list = [base_logger, train_logger, model_ckpt, vdl]
 
@@ -120,7 +121,7 @@ def seg_train(model,
             iter += 1
             if iter > iters:
                 break
-            
+
             logs["reader_cost"] = timer.elapsed_time()
             ############## 2 ################
             cbks.on_iter_begin(iter, logs)
@@ -136,7 +137,7 @@ def seg_train(model,
                 loss = ddp_model.scale_loss(loss)
                 loss.backward()
                 ddp_model.apply_collective_grads()
-                
+
             else:
                 logits = model(images)
                 loss = loss_computation(logits, labels, losses)
@@ -148,7 +149,7 @@ def seg_train(model,
             model.clear_gradients()
 
             logs['loss'] = loss.numpy()[0]
-            
+
             logs["batch_cost"] = timer.elapsed_time()
 
             ############## 3 ################
@@ -159,4 +160,6 @@ def seg_train(model,
 
 ############### 4 ###############
     cbks.on_train_end(logs)
+
+
 #################################

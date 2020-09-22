@@ -26,7 +26,7 @@ class PSPNet(nn.Layer):
     """
     The PSPNet implementation based on PaddlePaddle.
 
-    The orginal artile refers to
+    The original article refers to
         Zhao, Hengshuang, et al. "Pyramid scene parsing network."
         Proceedings of the IEEE conference on computer vision and pattern recognition. 2017.
         (https://openaccess.thecvf.com/content_cvpr_2017/papers/Zhao_Pyramid_Scene_Parsing_CVPR_2017_paper.pdf)
@@ -34,8 +34,8 @@ class PSPNet(nn.Layer):
     Args:
         num_classes (int): the unique number of target classes.
         backbone (Paddle.nn.Layer): backbone network, currently support Resnet50/101.
-        model_pretrained (str): the path of pretrained model. Defaullt to None.
-        backbone_indices (tuple): two values in the tuple indicte the indices of output of backbone.
+        model_pretrained (str): the path of pretrained model. Default to None.
+        backbone_indices (tuple): two values in the tuple indicate the indices of output of backbone.
                         the first index will be taken as a deep-supervision feature in auxiliary layer;
                         the second one will be taken as input of Pyramid Pooling Module (PPModule).
                         Usually backbone consists of four downsampling stage, and return an output of
@@ -44,7 +44,7 @@ class PSPNet(nn.Layer):
         backbone_channels (tuple): the same length with "backbone_indices". It indicates the channels of corresponding index.
         pp_out_channels (int): output channels after Pyramid Pooling Module. Default to 1024.
         bin_sizes (tuple): the out size of pooled feature maps. Default to (1,2,3,6).
-        enable_auxiliary_loss (bool): a bool values indictes whether adding auxiliary loss. Default to True.
+        enable_auxiliary_loss (bool): a bool values indicates whether adding auxiliary loss. Default to True.
     """
 
     def __init__(self,
@@ -107,6 +107,7 @@ class PSPNet(nn.Layer):
     def init_weight(self, pretrained_model=None):
         """
         Initialize the parameters of model parts.
+        
         Args:
             pretrained_model ([str], optional): the path of pretrained model. Defaults to None.
         """

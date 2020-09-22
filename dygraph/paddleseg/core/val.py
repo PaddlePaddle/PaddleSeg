@@ -67,7 +67,7 @@ def evaluate(model,
         pred = pred[np.newaxis, :, :, np.newaxis]
         pred = pred.astype('int64')
         mask = label != ignore_index
-
+        # To-DO Test Execution Time
         conf_mat.calculate(pred=pred, label=label, ignore=mask)
         _, iou = conf_mat.mean_iou()
 

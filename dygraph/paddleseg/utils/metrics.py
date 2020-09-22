@@ -41,7 +41,7 @@ class ConfusionMatrix(object):
         label = np.asarray(label)[mask]
         pred = np.asarray(pred)[mask]
         one = np.ones_like(pred)
-        # Accumuate ([row=label, col=pred], 1) into sparse matrix
+        # Accumuate ([row=label, col=pred], 1) into sparse
         spm = csr_matrix((one, (label, pred)),
                          shape=(self.num_classes, self.num_classes))
         spm = spm.todense()
