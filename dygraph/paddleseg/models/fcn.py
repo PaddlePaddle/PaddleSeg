@@ -72,10 +72,11 @@ class FCN(nn.Layer):
             channels = backbone_channels[0]
 
         self.backbone = backbone
-        self.conv_last_2 = ConvBNLayer(
+        self.conv_last_2 = layer_libs.ConvBNReLU(
             in_channels=backbone_channels[0],
             out_channels=channels,
             kernel_size=1,
+            padding='same',
             stride=1)
         self.conv_last_1 = Conv2d(
             in_channels=channels,
@@ -122,34 +123,6 @@ class FCN(nn.Layer):
                     self.backbone_pretrained))
         else:
             logger.warning('No pretrained model to load, train from scratch')
-
-
-class ConvBNLayer(nn.Layer):
-    def __init__(self,
-                 in_channels,
-                 out_channels,
-                 kernel_size,
-                 stride=1,
-                 groups=1,
-                 act="relu"):
-        super(ConvBNLayer, self).__init__()
-
-        self._conv = Conv2d(
-            in_channels=in_channels,
-            out_channels=out_channels,
-            kernel_size=kernel_size,
-            stride=stride,
-            padding=(kernel_size - 1) // 2,
-            groups=groups,
-            bias_attr=False)
-        self._batch_norm = BatchNorm(out_channels)
-        self.act = activation.Activation(act=act)
-
-    def forward(self, input):
-        y = self._conv(input)
-        y = self._batch_norm(y)
-        y = self.act(y)
-        return y
 
 
 @manager.MODELS.add_component
