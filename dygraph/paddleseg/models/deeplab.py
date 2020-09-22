@@ -62,14 +62,13 @@ class DeepLabV3P(nn.Layer):
         super(DeepLabV3P, self).__init__()
 
         self.backbone = backbone
-        backbone_channels = backbone.backbone_channels
+        backbone_channels = [
+            backbone.feat_channels[i] for i in backbone_indices
+        ]
 
-        self.head = DeepLabV3PHead(
-            num_classes,
-            backbone_indices,
-            backbone_channels,
-            aspp_ratios,
-            aspp_out_channels)
+        self.head = DeepLabV3PHead(num_classes, backbone_indices,
+                                   backbone_channels, aspp_ratios,
+                                   aspp_out_channels)
 
         utils.load_entire_model(self, pretrained)
 
@@ -80,6 +79,7 @@ class DeepLabV3P(nn.Layer):
         return [
             F.resize_bilinear(logit, input.shape[2:]) for logit in logit_list
         ]
+
 
 class DeepLabV3PHead(nn.Layer):
     """
@@ -110,14 +110,14 @@ class DeepLabV3PHead(nn.Layer):
                  aspp_out_channels=256):
 
         super(DeepLabV3PHead, self).__init__()
-        
+
         self.aspp = pyramid_pool.ASPPModule(
             aspp_ratios,
-            backbone_channels[backbone_indices[1]],
+            backbone_channels[1],
             aspp_out_channels,
             sep_conv=True,
             image_pooling=True)
-        self.decoder = Decoder(num_classes, backbone_channels[backbone_indices[0]])
+        self.decoder = Decoder(num_classes, backbone_channels[0])
         self.backbone_indices = backbone_indices
         self.init_weight()
 
@@ -135,6 +135,7 @@ class DeepLabV3PHead(nn.Layer):
     def init_weight(self):
         pass
 
+
 @manager.MODELS.add_component
 class DeepLabV3(nn.Layer):
     """
@@ -147,7 +148,7 @@ class DeepLabV3(nn.Layer):
     Args:
         Refer to DeepLabV3P above 
     """
-    
+
     def __init__(self,
                  num_classes,
                  backbone,
@@ -159,15 +160,14 @@ class DeepLabV3(nn.Layer):
         super(DeepLabV3, self).__init__()
 
         self.backbone = backbone
-        backbone_channels = backbone.backbone_channels
+        backbone_channels = [
+            backbone.feat_channels[i] for i in backbone_indices
+        ]
 
-        self.head = DeepLabV3Head(
-            num_classes,
-            backbone_indices,
-            backbone_channels,
-            aspp_ratios,
-            aspp_out_channels)
-        
+        self.head = DeepLabV3Head(num_classes, backbone_indices,
+                                  backbone_channels, aspp_ratios,
+                                  aspp_out_channels)
+
         utils.load_entire_model(self, pretrained)
 
     def forward(self, input):
@@ -191,13 +191,13 @@ class DeepLabV3Head(nn.Layer):
 
         self.aspp = pyramid_pool.ASPPModule(
             aspp_ratios,
-            backbone_channels[backbone_indices[0]],
+            backbone_channels[0],
             aspp_out_channels,
             sep_conv=False,
             image_pooling=True)
 
         self.cls = nn.Conv2d(
-            in_channels=backbone_channels[backbone_indices[0]],
+            in_channels=backbone_channels[0],
             out_channels=num_classes,
             kernel_size=1)
 
