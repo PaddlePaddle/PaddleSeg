@@ -123,7 +123,7 @@ class ObjectAttentionBlock(nn.Layer):
 
 class OCRHead(nn.Layer):
     """
-    The OCR Head.
+    The Object contextual representation head.
 
     Args:
         num_classes(int): the unique number of target classes.
@@ -180,14 +180,14 @@ class OCRNet(nn.Layer):
     """
     The OCRNet implementation based on PaddlePaddle.
 
-    The orginal artile refers to
+    The original article refers to
         Yuan, Yuhui, et al. "Object-Contextual Representations for Semantic Segmentation"
         (https://arxiv.org/pdf/1909.11065.pdf)
 
     Args:
         num_classes(int): the unique number of target classes.
         backbone(Paddle.nn.Layer): backbone network.
-        pretrained(str): the path or url of pretrained model. Defaullt to None.
+        pretrained(str): the path or url of pretrained model. Default to None.
         backbone_indices(tuple): two values in the tuple indicate the indices of output of backbone.
                         the first index will be taken as a deep-supervision feature in auxiliary layer;
                         the second one will be taken as input of pixel representation.
