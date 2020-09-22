@@ -85,6 +85,24 @@ class DepthwiseConvBNReLU(nn.Layer):
         return x
 
 
+class DepthwiseConvBN(nn.Layer):
+    def __init__(self, in_channels, out_channels, kernel_size, **kwargs):
+        super(DepthwiseConvBN, self).__init__()
+        self.depthwise_conv = ConvBN(
+            in_channels,
+            out_channels=in_channels,
+            kernel_size=kernel_size,
+            groups=in_channels,
+            **kwargs)
+        self.piontwise_conv = ConvBN(
+            in_channels, out_channels, kernel_size=1, groups=1)
+
+    def forward(self, x):
+        x = self.depthwise_conv(x)
+        x = self.piontwise_conv(x)
+        return x
+
+
 class AuxLayer(nn.Layer):
     """
     The auxilary layer implementation for auxilary loss
