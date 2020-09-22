@@ -190,7 +190,7 @@ class DANet(nn.Layer):
 
         self.backbone = backbone
         self.backbone_indices = backbone_indices
-        in_channels = [self.backbone.channels[i] for i in backbone_indices]
+        in_channels = [self.backbone.feat_channels[i] for i in backbone_indices]
 
         self.head = DAHead(num_classes=num_classes, in_channels=in_channels)
 
