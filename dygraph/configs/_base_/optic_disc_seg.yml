@@ -30,6 +30,7 @@ learning_rate:
   decay:
     type: poly
     power: 0.9
+    end_lr: 0
 
 loss:
   types:
