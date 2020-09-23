@@ -33,38 +33,25 @@ class UNet(nn.Layer):
 
     Args:
         num_classes (int): the unique number of target classes.
-        pretrained_model (str): the path of pretrained model.
-        ignore_index (int): the value of ground-truth mask would be ignored while computing loss or doing evaluation. Default 255.
+        pretrained (str): the path of pretrained model for fine tuning.
     """
 
-    def __init__(self, num_classes, model_pretrained=None, ignore_index=255):
+    def __init__(self, num_classes, pretrained=None):
         super(UNet, self).__init__()
-        self.model_pretrained = model_pretrained
-        self.ignore_index = ignore_index
 
         self.encode = UnetEncoder()
         self.decode = UnetDecode()
         self.get_logit = GetLogit(64, num_classes)
-        self.EPS = 1e-5
 
-        self.init_weight()
+        utils.load_entire_model(self, pretrained)
 
     def forward(self, x, label=None):
+        logit_list = []
         encode_data, short_cuts = self.encode(x)
         decode_data = self.decode(encode_data, short_cuts)
         logit = self.get_logit(decode_data)
-        return [logit]
-
-    def init_weight(self):
-        """
-        Initialize the parameters of model parts.
-        """
-        if self.model_pretrained is not None:
-            if os.path.exists(self.model_pretrained):
-                utils.load_pretrained_model(self, self.model_pretrained)
-            else:
-                raise Exception('Pretrained model is not found: {}'.format(
-                    self.model_pretrained))
+        logit_list.append(logit)
+        return logit_list
 
 
 class UnetEncoder(nn.Layer):

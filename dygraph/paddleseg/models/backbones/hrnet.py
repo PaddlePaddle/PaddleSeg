@@ -57,6 +57,7 @@ class HRNet(nn.Layer):
     """
 
     def __init__(self,
+                 pretrained=None,
                  stage1_num_modules=1,
                  stage1_num_blocks=[4],
                  stage1_num_channels=[64],
@@ -71,7 +72,7 @@ class HRNet(nn.Layer):
                  stage4_num_channels=[18, 36, 72, 144],
                  has_se=False):
         super(HRNet, self).__init__()
-
+        self.pretrained = pretrained
         self.stage1_num_modules = stage1_num_modules
         self.stage1_num_blocks = stage1_num_blocks
         self.stage1_num_channels = stage1_num_channels
@@ -85,6 +86,7 @@ class HRNet(nn.Layer):
         self.stage4_num_blocks = stage4_num_blocks
         self.stage4_num_channels = stage4_num_channels
         self.has_se = has_se
+        self.feat_channels = [sum(stage4_num_channels)]
 
         self.conv_layer1_1 = layer_libs.ConvBNReLU(
             in_channels=3,
@@ -145,6 +147,7 @@ class HRNet(nn.Layer):
             num_filters=self.stage4_num_channels,
             has_se=self.has_se,
             name="st4")
+        self.init_weight()
 
     def forward(self, x, label=None, mode='train'):
         input_shape = x.shape[2:]
@@ -169,6 +172,20 @@ class HRNet(nn.Layer):
         x = paddle.concat([st4[0], x1, x2, x3], axis=1)
 
         return [x]
+
+    def init_weight(self):
+        params = self.parameters()
+        for param in params:
+            param_name = param.name
+            if 'batch_norm' in param_name:
+                if 'w_0' in param_name:
+                    param_init.constant_init(param, value=1.0)
+                elif 'b_0' in param_name:
+                    param_init.constant_init(param, value=0.0)
+            if 'conv' in param_name and 'w_0' in param_name:
+                param_init.normal_init(param, scale=0.001)
+        if self.pretrained is not None:
+            utils.load_pretrained_model(self, self.pretrained)
 
 
 class Layer1(nn.Layer):

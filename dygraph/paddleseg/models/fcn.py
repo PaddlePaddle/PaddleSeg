@@ -36,65 +36,78 @@ __all__ = [
 
 @manager.MODELS.add_component
 class FCN(nn.Layer):
+    def __init__(self,
+                 num_classes,
+                 backbone,
+                 pretrained=None,
+                 backbone_indices=(-1, ),
+                 channels=None):
+        super(FCN, self).__init__()
+
+        self.backbone = backbone
+        backbone_channels = [
+            backbone.feat_channels[i] for i in backbone_indices
+        ]
+
+        self.head = FCNHead(num_classes, backbone_indices, backbone_channels,
+                            channels)
+        utils.load_entire_model(self, pretrained)
+
+    def forward(self, input):
+        feat_list = self.backbone(input)
+        logit_list = self.head(feat_list)
+        return [
+            F.resize_bilinear(logit, input.shape[2:]) for logit in logit_list
+        ]
+
+
+class FCNHead(nn.Layer):
     """
-    Fully Convolutional Networks for Semantic Segmentation.
+    A simple implementation for Fully Convolutional Networks for Semantic Segmentation.
     https://arxiv.org/abs/1411.4038
 
     Args:
         num_classes (int): the unique number of target classes.
-
         backbone (paddle.nn.Layer): backbone networks.
-
         model_pretrained (str): the path of pretrained model.
-
         backbone_indices (tuple): one values in the tuple indicte the indices of output of backbone.Default -1.
-
         backbone_channels (tuple): the same length with "backbone_indices". It indicates the channels of corresponding index.
-
         channels (int): channels after conv layer before the last one.
     """
 
     def __init__(self,
                  num_classes,
-                 backbone,
-                 backbone_pretrained=None,
-                 model_pretrained=None,
                  backbone_indices=(-1, ),
                  backbone_channels=(270, ),
                  channels=None):
-        super(FCN, self).__init__()
+        super(FCNHead, self).__init__()
 
         self.num_classes = num_classes
-        self.backbone_pretrained = backbone_pretrained
-        self.model_pretrained = model_pretrained
         self.backbone_indices = backbone_indices
         if channels is None:
             channels = backbone_channels[0]
 
-        self.backbone = backbone
-        self.conv_last_2 = layer_libs.ConvBNReLU(
+        self.conv_1 = layer_libs.ConvBNReLU(
             in_channels=backbone_channels[0],
             out_channels=channels,
             kernel_size=1,
             padding='same',
             stride=1)
-        self.conv_last_1 = Conv2d(
+        self.cls = Conv2d(
             in_channels=channels,
             out_channels=self.num_classes,
             kernel_size=1,
             stride=1,
             padding=0)
-        if self.training:
-            self.init_weight()
+        self.init_weight()
 
-    def forward(self, x):
-        input_shape = x.shape[2:]
-        fea_list = self.backbone(x)
-        x = fea_list[self.backbone_indices[0]]
-        x = self.conv_last_2(x)
-        logit = self.conv_last_1(x)
-        logit = F.resize_bilinear(logit, input_shape)
-        return [logit]
+    def forward(self, feat_list):
+        logit_list = []
+        x = feat_list[self.backbone_indices[0]]
+        x = self.conv_1(x)
+        logit = self.cls(x)
+        logit_list.append(logit)
+        return logit_list
 
     def init_weight(self):
         params = self.parameters()
@@ -107,22 +120,6 @@ class FCN(nn.Layer):
                     param_init.constant_init(param, value=0.0)
             if 'conv' in param_name and 'w_0' in param_name:
                 param_init.normal_init(param, scale=0.001)
-
-        if self.model_pretrained is not None:
-            if os.path.exists(self.model_pretrained):
-                utils.load_pretrained_model(self, self.model_pretrained)
-            else:
-                raise Exception('Pretrained model is not found: {}'.format(
-                    self.model_pretrained))
-        elif self.backbone_pretrained is not None:
-            if os.path.exists(self.backbone_pretrained):
-                utils.load_pretrained_model(self.backbone,
-                                            self.backbone_pretrained)
-            else:
-                raise Exception('Pretrained model is not found: {}'.format(
-                    self.backbone_pretrained))
-        else:
-            logger.warning('No pretrained model to load, train from scratch')
 
 
 @manager.MODELS.add_component
