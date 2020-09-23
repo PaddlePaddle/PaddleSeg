@@ -50,8 +50,8 @@ def load_entire_model(model, pretrained):
         if os.path.exists(pretrained):
             load_pretrained_model(model, pretrained)
         else:
-            raise Exception('Pretrained model is not found: {}'.format(
-                pretrained))
+            raise Exception(
+                'Pretrained model is not found: {}'.format(pretrained))
     else:
         logger.warning('Not all pretrained params of {} to load, '\
              'training from scratch or a pretrained backbone'.format(model.__class__.__name__))
