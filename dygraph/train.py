@@ -121,7 +121,7 @@ def main(args):
         cfg.model,
         train_dataset,
         places=places,
-        eval_dataset=val_dataset,
+        val_dataset=val_dataset,
         optimizer=cfg.optimizer,
         save_dir=args.save_dir,
         iters=cfg.iters,
