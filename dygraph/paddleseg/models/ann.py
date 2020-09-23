@@ -19,7 +19,7 @@ import paddle.nn.functional as F
 from paddle import nn
 
 from paddleseg.cvlibs import manager
-from paddleseg.models.common import layer_libs
+from paddleseg.models.common.layer_libs import ConvBNReLU, ConvBN, AuxLayer
 from paddleseg.utils import utils
 
 
@@ -32,11 +32,62 @@ class ANN(nn.Layer):
         Zhen, Zhu, et al. "Asymmetric Non-local Neural Networks for Semantic Segmentation."
         (https://arxiv.org/pdf/1908.07678.pdf)
 
+    Args:
+        num_classes (int): the unique number of target classes.
+        backbone (Paddle.nn.Layer): backbone network, currently support Resnet50/101.
+        model_pretrained (str): the path of pretrained model. Default to None.
+        backbone_indices (tuple): two values in the tuple indicate the indices of output of backbone.
+        key_value_channels (int): the key and value channels of self-attention map in both AFNB and APNB modules.
+            Default to 256.
+        inter_channels (int): both input and output channels of APNB modules.
+        psp_size (tuple): the out size of pooled feature maps. Default to (1, 3, 6, 8).
+        enable_auxiliary_loss (bool): a bool values indicates whether adding auxiliary loss. Default to True.
+        pretrained (str): the path of pretrained model. Default to None.
+    """
+
+    def __init__(self,
+                 num_classes,
+                 backbone,
+                 backbone_indices=(2, 3),
+                 key_value_channels=256,
+                 inter_channels=512,
+                 psp_size=(1, 3, 6, 8),
+                 enable_auxiliary_loss=True,
+                 pretrained=None,):
+        super(ANN, self).__init__()
+
+        self.backbone = backbone
+        backbone_channels = [
+            backbone.feat_channels[i] for i in backbone_indices
+        ]
+
+        self.head = ANNHead(
+            num_classes, 
+            backbone_indices,
+            backbone_channels,
+            key_value_channels,
+            inter_channels,
+            psp_size,
+            enable_auxiliary_loss)
+
+        utils.load_entire_model(self, pretrained)
+
+    def forward(self, input):
+
+        feat_list = self.backbone(input)
+        logit_list = self.head(feat_list)
+        return [
+            F.resize_bilinear(logit, input.shape[2:]) for logit in logit_list
+        ]
+
+class ANNHead(nn.Layer):
+    """
+    The ANNHead implementation.
+
     It mainly consists of AFNB and APNB modules.
 
     Args:
         num_classes (int): the unique number of target classes.
-        backbone (Paddle.nn.Layer): backbone network, currently support Resnet50/101.
         model_pretrained (str): the path of pretrained model. Default to None.
         backbone_indices (tuple): two values in the tuple indicate the indices of output of backbone.
             the first index will be taken as low-level features; the second one will be 
@@ -53,17 +104,13 @@ class ANN(nn.Layer):
 
     def __init__(self,
                  num_classes,
-                 backbone,
-                 model_pretrained=None,
                  backbone_indices=(2, 3),
                  backbone_channels=(1024, 2048),
                  key_value_channels=256,
                  inter_channels=512,
                  psp_size=(1, 3, 6, 8),
                  enable_auxiliary_loss=True):
-        super(ANN, self).__init__()
-
-        self.backbone = backbone
+        super(ANNHead, self).__init__()
 
         low_in_channels = backbone_channels[0]
         high_in_channels = backbone_channels[1]
@@ -79,7 +126,7 @@ class ANN(nn.Layer):
             psp_size=psp_size)
 
         self.context = nn.Sequential(
-            layer_libs.ConvBNReLU(
+            ConvBNReLU(
                 in_channels=high_in_channels,
                 out_channels=inter_channels,
                 kernel_size=3,
@@ -95,7 +142,7 @@ class ANN(nn.Layer):
 
         self.cls = nn.Conv2d(
             in_channels=inter_channels, out_channels=num_classes, kernel_size=1)
-        self.auxlayer = layer_libs.AuxLayer(
+        self.auxlayer = AuxLayer(
             in_channels=low_in_channels,
             inter_channels=low_in_channels // 2,
             out_channels=num_classes,
@@ -104,41 +151,31 @@ class ANN(nn.Layer):
         self.backbone_indices = backbone_indices
         self.enable_auxiliary_loss = enable_auxiliary_loss
 
-        self.init_weight(model_pretrained)
+        self.init_weight()
 
-    def forward(self, input, label=None):
+    def forward(self, feat_list):
 
         logit_list = []
-        _, feat_list = self.backbone(input)
         low_level_x = feat_list[self.backbone_indices[0]]
         high_level_x = feat_list[self.backbone_indices[1]]
         x = self.fusion(low_level_x, high_level_x)
         x = self.context(x)
         logit = self.cls(x)
-        logit = F.resize_bilinear(logit, input.shape[2:])
         logit_list.append(logit)
 
         if self.enable_auxiliary_loss:
             auxiliary_logit = self.auxlayer(low_level_x)
-            auxiliary_logit = F.resize_bilinear(auxiliary_logit,
-                                                input.shape[2:])
             logit_list.append(auxiliary_logit)
 
         return logit_list
 
-    def init_weight(self, pretrained_model=None):
+    def init_weight(self):
         """
         Initialize the parameters of model parts.
-
-        Args:
-            pretrained_model ([str], optional): the pretrained_model path of backbone. Defaults to None.
         """
+        pass
 
-        if pretrained_model is not None:
-            if os.path.exists(pretrained_model):
-                utils.load_pretrained_model(self.backbone, pretrained_model)
-
-
+        
 class AFNB(nn.Layer):
     """
     Asymmetric Fusion Non-local Block
@@ -171,7 +208,7 @@ class AFNB(nn.Layer):
                                     key_channels, value_channels, out_channels,
                                     size) for size in sizes
         ])
-        self.conv_bn = layer_libs.ConvBn(
+        self.conv_bn = ConvBN(
             in_channels=out_channels + high_in_channels,
             out_channels=out_channels,
             kernel_size=1)
@@ -218,7 +255,7 @@ class APNB(nn.Layer):
             SelfAttentionBlock_APNB(in_channels, out_channels, key_channels,
                                     value_channels, size) for size in sizes
         ])
-        self.conv_bn = layer_libs.ConvBNReLU(
+        self.conv_bn = ConvBNReLU(
             in_channels=in_channels * 2,
             out_channels=out_channels,
             kernel_size=1)
@@ -279,11 +316,11 @@ class SelfAttentionBlock_AFNB(nn.Layer):
         if out_channels == None:
             self.out_channels = high_in_channels
         self.pool = nn.Pool2D(pool_size=(scale, scale), pool_type="max")
-        self.f_key = layer_libs.ConvBNReLU(
+        self.f_key = ConvBNReLU(
             in_channels=low_in_channels,
             out_channels=key_channels,
             kernel_size=1)
-        self.f_query = layer_libs.ConvBNReLU(
+        self.f_query = ConvBNReLU(
             in_channels=high_in_channels,
             out_channels=key_channels,
             kernel_size=1)
@@ -357,7 +394,7 @@ class SelfAttentionBlock_APNB(nn.Layer):
         self.value_channels = value_channels
 
         self.pool = nn.Pool2D(pool_size=(scale, scale), pool_type="max")
-        self.f_key = layer_libs.ConvBNReLU(
+        self.f_key = ConvBNReLU(
             in_channels=self.in_channels,
             out_channels=self.key_channels,
             kernel_size=1)

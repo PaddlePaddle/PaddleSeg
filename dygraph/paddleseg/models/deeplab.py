@@ -18,7 +18,8 @@ import paddle
 import paddle.nn.functional as F
 from paddle import nn
 from paddleseg.cvlibs import manager
-from paddleseg.models.common import pyramid_pool, layer_libs
+from paddleseg.models.common import pyramid_pool
+from paddleseg.models.common.layer_libs import ConvBNReLU, DepthwiseConvBNReLU, AuxLayer
 from paddleseg.utils import utils
 
 __all__ = ['DeepLabV3P', 'DeepLabV3']
@@ -47,8 +48,7 @@ class DeepLabV3P(nn.Layer):
             if output_stride=16, aspp_ratios should be set as (1, 6, 12, 18).
             if output_stride=8, aspp_ratios is (1, 12, 24, 36).
         aspp_out_channels (int): the output channels of ASPP module.
-        pretrained (str): the path of pretrained model for fine tuning.
-        
+        pretrained (str): the path of pretrained model. Default to None.
     """
 
     def __init__(self,
@@ -94,7 +94,7 @@ class DeepLabV3PHead(nn.Layer):
             each stage, so we set default (0, 3), which means taking feature map of the first
             stage in backbone as low-level feature used in Decoder, and feature map of the fourth
             stage as input of ASPP.
-        backbone_channels (tuple): returned channels of backbone
+        backbone_channels (tuple): the same length with "backbone_indices". It indicates the channels of corresponding index.
         aspp_ratios (tuple): the dilation rate using in ASSP module.
             if output_stride=16, aspp_ratios should be set as (1, 6, 12, 18).
             if output_stride=8, aspp_ratios is (1, 12, 24, 36).
@@ -231,12 +231,12 @@ class Decoder(nn.Layer):
     def __init__(self, num_classes, in_channels):
         super(Decoder, self).__init__()
 
-        self.conv_bn_relu1 = layer_libs.ConvBNReLU(
+        self.conv_bn_relu1 = ConvBNReLU(
             in_channels=in_channels, out_channels=48, kernel_size=1)
 
-        self.conv_bn_relu2 = layer_libs.DepthwiseConvBNReLU(
+        self.conv_bn_relu2 = DepthwiseConvBNReLU(
             in_channels=304, out_channels=256, kernel_size=3, padding=1)
-        self.conv_bn_relu3 = layer_libs.DepthwiseConvBNReLU(
+        self.conv_bn_relu3 = DepthwiseConvBNReLU(
             in_channels=256, out_channels=256, kernel_size=3, padding=1)
         self.conv = nn.Conv2d(
             in_channels=256, out_channels=num_classes, kernel_size=1)
