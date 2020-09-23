@@ -14,9 +14,11 @@
 
 import paddle.nn.functional as F
 from paddle import nn
-from paddleseg.cvlibs import manager
-from paddleseg.models.common import layer_libs, pyramid_pool
 
+from paddleseg.cvlibs import manager
+from paddleseg.models.common import pyramid_pool
+from paddleseg.models.common.layer_libs import ConvBNReLU, DepthwiseConvBNReLU, AuxLayer
+from paddleseg.utils import utils
 
 @manager.MODELS.add_component
 class FastSCNN(nn.Layer):
@@ -33,15 +35,15 @@ class FastSCNN(nn.Layer):
     Args:
 
         num_classes (int): the unique number of target classes. Default to 2.
-        model_pretrained (str): the path of pretrained model. Default to None.
         enable_auxiliary_loss (bool): a bool values indicates whether adding auxiliary loss.
             if true, auxiliary loss will be added after LearningToDownsample module, where the weight is 0.4. Default to False.
+        pretrained (str): the path of pretrained model. Default to None.
     """
 
     def __init__(self,
                  num_classes,
-                 model_pretrained=None,
-                 enable_auxiliary_loss=True):
+                 enable_auxiliary_loss=True,
+                 pretrained=None):
 
         super(FastSCNN, self).__init__()
 
@@ -52,11 +54,12 @@ class FastSCNN(nn.Layer):
         self.classifier = Classifier(128, num_classes)
 
         if enable_auxiliary_loss:
-            self.auxlayer = layer_libs.AuxLayer(64, 32, num_classes)
+            self.auxlayer = AuxLayer(64, 32, num_classes)
 
         self.enable_auxiliary_loss = enable_auxiliary_loss
 
-        self.init_weight(model_pretrained)
+        self.init_weight()
+        utils.load_entire_model(self, pretrained)
 
     def forward(self, input, label=None):
 
@@ -76,18 +79,11 @@ class FastSCNN(nn.Layer):
 
         return logit_list
 
-    def init_weight(self, pretrained_model=None):
+    def init_weight(self):
         """
         Initialize the parameters of model parts.
-        Args:
-            pretrained_model ([str], optional): the path of pretrained model. Defaults to None.
         """
-        if pretrained_model is not None:
-            if os.path.exists(pretrained_model):
-                utils.load_pretrained_model(self, pretrained_model)
-            else:
-                raise Exception('Pretrained model is not found: {}'.format(
-                    pretrained_model))
+        pass
 
 
 class LearningToDownsample(nn.Layer):
@@ -105,15 +101,15 @@ class LearningToDownsample(nn.Layer):
     def __init__(self, dw_channels1=32, dw_channels2=48, out_channels=64):
         super(LearningToDownsample, self).__init__()
 
-        self.conv_bn_relu = layer_libs.ConvBNReLU(
+        self.conv_bn_relu = ConvBNReLU(
             in_channels=3, out_channels=dw_channels1, kernel_size=3, stride=2)
-        self.dsconv_bn_relu1 = layer_libs.DepthwiseConvBNReLU(
+        self.dsconv_bn_relu1 = DepthwiseConvBNReLU(
             in_channels=dw_channels1,
             out_channels=dw_channels2,
             kernel_size=3,
             stride=2,
             padding=1)
-        self.dsconv_bn_relu2 = layer_libs.DepthwiseConvBNReLU(
+        self.dsconv_bn_relu2 = DepthwiseConvBNReLU(
             in_channels=dw_channels2,
             out_channels=out_channels,
             kernel_size=3,
@@ -208,13 +204,13 @@ class LinearBottleneck(nn.Layer):
         expand_channels = in_channels * expansion
         self.block = nn.Sequential(
             # pw
-            layer_libs.ConvBNReLU(
+            ConvBNReLU(
                 in_channels=in_channels,
                 out_channels=expand_channels,
                 kernel_size=1,
                 bias_attr=False),
             # dw
-            layer_libs.ConvBNReLU(
+            ConvBNReLU(
                 in_channels=expand_channels,
                 out_channels=expand_channels,
                 kernel_size=3,
@@ -253,7 +249,7 @@ class FeatureFusionModule(nn.Layer):
         super(FeatureFusionModule, self).__init__()
 
         # There only depth-wise conv is used WITHOUT point-wise conv
-        self.dwconv = layer_libs.ConvBNReLU(
+        self.dwconv = ConvBNReLU(
             in_channels=low_in_channels,
             out_channels=out_channels,
             kernel_size=3,
@@ -289,9 +285,9 @@ class FeatureFusionModule(nn.Layer):
 
 class Classifier(nn.Layer):
     """
-    The Classifier module implemetation.
+    The Classifier module implementation.
 
-    This module consists of two depth-wsie conv and one conv.
+    This module consists of two depth-wise conv and one conv.
 
     Args:
         input_channels (int): the input channels to this module.
@@ -301,13 +297,13 @@ class Classifier(nn.Layer):
     def __init__(self, input_channels, num_classes):
         super(Classifier, self).__init__()
 
-        self.dsconv1 = layer_libs.DepthwiseConvBNReLU(
+        self.dsconv1 = DepthwiseConvBNReLU(
             in_channels=input_channels,
             out_channels=input_channels,
             kernel_size=3,
             padding=1)
 
-        self.dsconv2 = layer_libs.DepthwiseConvBNReLU(
+        self.dsconv2 = DepthwiseConvBNReLU(
             in_channels=input_channels,
             out_channels=input_channels,
             kernel_size=3,

@@ -17,7 +17,8 @@ import os
 import paddle.nn.functional as F
 from paddle import nn
 from paddleseg.cvlibs import manager
-from paddleseg.models.common import layer_libs, pyramid_pool
+from paddleseg.models.common import pyramid_pool
+from paddleseg.models.common.layer_libs import ConvBNReLU, AuxLayer
 from paddleseg.utils import utils
 
 
@@ -36,11 +37,59 @@ class PSPNet(nn.Layer):
         backbone (Paddle.nn.Layer): backbone network, currently support Resnet50/101.
         model_pretrained (str): the path of pretrained model. Default to None.
         backbone_indices (tuple): two values in the tuple indicate the indices of output of backbone.
-                        the first index will be taken as a deep-supervision feature in auxiliary layer;
-                        the second one will be taken as input of Pyramid Pooling Module (PPModule).
-                        Usually backbone consists of four downsampling stage, and return an output of
-                        each stage, so we set default (2, 3), which means taking feature map of the third
-                        stage (res4b22) in backbone, and feature map of the fourth stage (res5c) as input of PPModule.
+        pp_out_channels (int): output channels after Pyramid Pooling Module. Default to 1024.
+        bin_sizes (tuple): the out size of pooled feature maps. Default to (1,2,3,6).
+        enable_auxiliary_loss (bool): a bool values indicates whether adding auxiliary loss. Default to True.
+        pretrained (str): the path of pretrained model. Default to None.
+    """
+
+    def __init__(self,
+                 num_classes,
+                 backbone,
+                 backbone_indices=(2, 3),
+                 pp_out_channels=1024,
+                 bin_sizes=(1, 2, 3, 6),
+                 enable_auxiliary_loss=True,
+                 pretrained=None):
+
+        super(PSPNet, self).__init__()
+
+        self.backbone = backbone
+        backbone_channels = [
+            backbone.feat_channels[i] for i in backbone_indices
+        ]
+
+        self.head = PSPNetHead(
+            num_classes, 
+            backbone_indices,
+            backbone_channels,
+            pp_out_channels,
+            bin_sizes,
+            enable_auxiliary_loss)
+
+        utils.load_entire_model(self, pretrained)
+
+    def forward(self, input):
+
+        feat_list = self.backbone(input)
+        logit_list = self.head(feat_list)
+        return [
+            F.resize_bilinear(logit, input.shape[2:]) for logit in logit_list
+        ]
+
+
+class PSPNetHead(nn.Layer):
+    """
+    The PSPNetHead implementation.
+
+    Args:
+        num_classes (int): the unique number of target classes.
+        backbone_indices (tuple): two values in the tuple indicate the indices of output of backbone.
+            the first index will be taken as a deep-supervision feature in auxiliary layer;
+            the second one will be taken as input of Pyramid Pooling Module (PPModule).
+            Usually backbone consists of four downsampling stage, and return an output of
+            each stage, so we set default (2, 3), which means taking feature map of the third
+            stage (res4b22) in backbone, and feature map of the fourth stage (res5c) as input of PPModule.
         backbone_channels (tuple): the same length with "backbone_indices". It indicates the channels of corresponding index.
         pp_out_channels (int): output channels after Pyramid Pooling Module. Default to 1024.
         bin_sizes (tuple): the out size of pooled feature maps. Default to (1,2,3,6).
@@ -49,17 +98,14 @@ class PSPNet(nn.Layer):
 
     def __init__(self,
                  num_classes,
-                 backbone,
-                 model_pretrained=None,
                  backbone_indices=(2, 3),
                  backbone_channels=(1024, 2048),
                  pp_out_channels=1024,
                  bin_sizes=(1, 2, 3, 6),
                  enable_auxiliary_loss=True):
 
-        super(PSPNet, self).__init__()
+        super(PSPNetHead, self).__init__()
 
-        self.backbone = backbone
         self.backbone_indices = backbone_indices
 
         self.psp_module = pyramid_pool.PPModule(
@@ -73,33 +119,29 @@ class PSPNet(nn.Layer):
             kernel_size=1)
 
         if enable_auxiliary_loss:
-            
-            self.auxlayer = layer_libs.AuxLayer(
-                in_channels=backbone_channels[0], 
+
+            self.auxlayer = AuxLayer(
+                in_channels=backbone_channels[0],
                 inter_channels=backbone_channels[0] // 4,
                 out_channels=num_classes)
 
         self.enable_auxiliary_loss = enable_auxiliary_loss
 
-        self.init_weight(model_pretrained)
+        self.init_weight()
 
-    def forward(self, input, label=None):
+    def forward(self, feat_list):
 
         logit_list = []
-        _, feat_list = self.backbone(input)
 
         x = feat_list[self.backbone_indices[1]]
         x = self.psp_module(x)
         x = F.dropout(x, p=0.1)  # dropout_prob
         logit = self.conv(x)
-        logit = F.resize_bilinear(logit, input.shape[2:])
         logit_list.append(logit)
 
         if self.enable_auxiliary_loss:
             auxiliary_feat = feat_list[self.backbone_indices[0]]
             auxiliary_logit = self.auxlayer(auxiliary_feat)
-            auxiliary_logit = F.resize_bilinear(auxiliary_logit,
-                                                input.shape[2:])
             logit_list.append(auxiliary_logit)
 
         return logit_list
@@ -107,13 +149,6 @@ class PSPNet(nn.Layer):
     def init_weight(self, pretrained_model=None):
         """
         Initialize the parameters of model parts.
-        
-        Args:
-            pretrained_model ([str], optional): the path of pretrained model. Defaults to None.
         """
-        if pretrained_model is not None:
-            if os.path.exists(pretrained_model):
-                utils.load_pretrained_model(self, pretrained_model)
-            else:
-                raise Exception('Pretrained model is not found: {}'.format(
-                    pretrained_model))
+        pass
+
