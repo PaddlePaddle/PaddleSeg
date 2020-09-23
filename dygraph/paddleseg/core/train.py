@@ -52,7 +52,7 @@ def loss_computation(logits, label, losses):
 def train(model,
           train_dataset,
           places=None,
-          eval_dataset=None,
+          val_dataset=None,
           optimizer=None,
           save_dir='output',
           iters=10000,
@@ -173,10 +173,10 @@ def train(model,
                 paddle.save(optimizer.state_dict(),
                             os.path.join(current_save_dir, 'model'))
 
-                if eval_dataset is not None:
+                if val_dataset is not None:
                     mean_iou, avg_acc = evaluate(
                         model,
-                        eval_dataset,
+                        val_dataset,
                         model_dir=current_save_dir,
                         num_classes=num_classes,
                         ignore_index=ignore_index,
@@ -188,7 +188,7 @@ def train(model,
                         paddle.save(model.state_dict(),
                                     os.path.join(best_model_dir, 'model'))
                     logger.info(
-                        'Current evaluated best model in eval_dataset is iter_{}, miou={:4f}'
+                        'Current evaluated best model in val_dataset is iter_{}, miou={:4f}'
                         .format(best_model_iter, best_mean_iou))
 
                     if use_vdl:
