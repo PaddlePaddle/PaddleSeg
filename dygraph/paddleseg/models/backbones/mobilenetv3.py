@@ -25,7 +25,8 @@ import paddle.nn as nn
 import paddle.nn.functional as F
 from paddle.nn import Conv2d, AdaptiveAvgPool2d
 from paddle.nn import SyncBatchNorm as BatchNorm
-from paddle.regularizer import L2Decay
+# from paddle.regularizer import L2Decay
+from paddle.fluid.regularizer import L2Decay
 from paddle import ParamAttr
 
 from paddleseg.models.common import layer_libs, activation

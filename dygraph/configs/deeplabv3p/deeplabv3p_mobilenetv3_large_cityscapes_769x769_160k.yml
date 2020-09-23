@@ -1,5 +1,7 @@
 _base_: '../_base_/cityscapes.yml'
 
+iters: 160000
+
 model:
   type: DeepLabV3
   backbone:
