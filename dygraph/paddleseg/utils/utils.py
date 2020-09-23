@@ -95,15 +95,18 @@ def load_pretrained_model(model, pretrained_model):
                     model_state_dict[k] = para_state_dict[k]
                     num_params_loaded += 1
             model.set_dict(model_state_dict)
-            logger.info("There are {}/{} variables are loaded.".format(
-                num_params_loaded, len(model_state_dict)))
+            logger.info("There are {}/{} variables are loaded into {}.".format(
+                num_params_loaded, len(model_state_dict),
+                model.__class__.__name__))
 
         else:
             raise ValueError(
                 'The pretrained model directory is not Found: {}'.format(
                     pretrained_model))
     else:
-        logger.warning('No pretrained model to load, train from scratch')
+        logger.info(
+            'No pretrained model to load, {} will be train from scratch.'.
+            format(model.__class__.__name__))
 
 
 def resume(model, optimizer, resume_model):

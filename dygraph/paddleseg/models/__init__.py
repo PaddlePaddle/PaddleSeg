@@ -14,11 +14,14 @@
 
 from .backbones import *
 from .losses import *
-from .unet import UNet
-from .deeplab import *
-from .fcn import *
-from .pspnet import *
-from .ocrnet import *
-from .fast_scnn import *
-from .gcnet import *
+
 from .ann import *
+from .bisenet import *
+from .danet import *
+from .deeplab import *
+from .fast_scnn import *
+from .fcn import *
+from .gcnet import *
+from .ocrnet import *
+from .pspnet import *
+from .unet import UNet
