@@ -16,16 +16,17 @@ import math
 import os
 
 import paddle
-import paddle.fluid as fluid
-from paddle.fluid.param_attr import ParamAttr
-from paddle.fluid.layer_helper import LayerHelper
-from paddle.fluid.dygraph.nn import Conv2D, Pool2D, Linear
-from paddle.fluid.initializer import Normal
+from paddle import ParamAttr
+import paddle.nn as nn
+import paddle.nn.functional as F
 from paddle.nn import SyncBatchNorm as BatchNorm
+from paddle.nn import Conv2d, Linear
+from paddle.nn import AdaptiveAvgPool2d, MaxPool2d, AvgPool2d
 
 from paddleseg.cvlibs import manager
 from paddleseg.utils import utils
 from paddleseg.cvlibs import param_init
+from paddleseg.models.common import layer_libs
 
 __all__ = [
     "HRNet_W18_Small_V1", "HRNet_W18_Small_V2", "HRNet_W18", "HRNet_W30",
@@ -33,7 +34,7 @@ __all__ = [
 ]
 
 
-class HRNet(fluid.dygraph.Layer):
+class HRNet(nn.Layer):
     """
     HRNet：Deep High-Resolution Representation Learning for Visual Recognition
     https://arxiv.org/pdf/1908.07919.pdf.
@@ -56,6 +57,7 @@ class HRNet(fluid.dygraph.Layer):
     """
 
     def __init__(self,
+                 pretrained=None,
                  stage1_num_modules=1,
                  stage1_num_blocks=[4],
                  stage1_num_channels=[64],
@@ -70,7 +72,7 @@ class HRNet(fluid.dygraph.Layer):
                  stage4_num_channels=[18, 36, 72, 144],
                  has_se=False):
         super(HRNet, self).__init__()
-
+        self.pretrained = pretrained
         self.stage1_num_modules = stage1_num_modules
         self.stage1_num_blocks = stage1_num_blocks
         self.stage1_num_channels = stage1_num_channels
@@ -84,22 +86,23 @@ class HRNet(fluid.dygraph.Layer):
         self.stage4_num_blocks = stage4_num_blocks
         self.stage4_num_channels = stage4_num_channels
         self.has_se = has_se
+        self.feat_channels = [sum(stage4_num_channels)]
 
-        self.conv_layer1_1 = ConvBNLayer(
-            num_channels=3,
-            num_filters=64,
-            filter_size=3,
+        self.conv_layer1_1 = layer_libs.ConvBNReLU(
+            in_channels=3,
+            out_channels=64,
+            kernel_size=3,
             stride=2,
-            act='relu',
-            name="layer1_1")
+            padding='same',
+            bias_attr=False)
 
-        self.conv_layer1_2 = ConvBNLayer(
-            num_channels=64,
-            num_filters=64,
-            filter_size=3,
+        self.conv_layer1_2 = layer_libs.ConvBNReLU(
+            in_channels=64,
+            out_channels=64,
+            kernel_size=3,
             stride=2,
-            act='relu',
-            name="layer1_2")
+            padding='same',
+            bias_attr=False)
 
         self.la1 = Layer1(
             num_channels=64,
@@ -144,6 +147,7 @@ class HRNet(fluid.dygraph.Layer):
             num_filters=self.stage4_num_channels,
             has_se=self.has_se,
             name="st4")
+        self.init_weight()
 
     def forward(self, x, label=None, mode='train'):
         input_shape = x.shape[2:]
@@ -162,45 +166,29 @@ class HRNet(fluid.dygraph.Layer):
         st4 = self.st4(tr3)
 
         x0_h, x0_w = st4[0].shape[2:]
-        x1 = fluid.layers.resize_bilinear(st4[1], out_shape=(x0_h, x0_w))
-        x2 = fluid.layers.resize_bilinear(st4[2], out_shape=(x0_h, x0_w))
-        x3 = fluid.layers.resize_bilinear(st4[3], out_shape=(x0_h, x0_w))
-        x = fluid.layers.concat([st4[0], x1, x2, x3], axis=1)
+        x1 = F.resize_bilinear(st4[1], out_shape=(x0_h, x0_w))
+        x2 = F.resize_bilinear(st4[2], out_shape=(x0_h, x0_w))
+        x3 = F.resize_bilinear(st4[3], out_shape=(x0_h, x0_w))
+        x = paddle.concat([st4[0], x1, x2, x3], axis=1)
 
         return [x]
 
-
-class ConvBNLayer(fluid.dygraph.Layer):
-    def __init__(self,
-                 num_channels,
-                 num_filters,
-                 filter_size,
-                 stride=1,
-                 groups=1,
-                 act="relu",
-                 name=None):
-        super(ConvBNLayer, self).__init__()
-
-        self._conv = Conv2D(
-            num_channels=num_channels,
-            num_filters=num_filters,
-            filter_size=filter_size,
-            stride=stride,
-            padding=(filter_size - 1) // 2,
-            groups=groups,
-            bias_attr=False)
-        self._batch_norm = BatchNorm(num_filters)
-        self.act = act
-
-    def forward(self, input):
-        y = self._conv(input)
-        y = self._batch_norm(y)
-        if self.act == 'relu':
-            y = fluid.layers.relu(y)
-        return y
+    def init_weight(self):
+        params = self.parameters()
+        for param in params:
+            param_name = param.name
+            if 'batch_norm' in param_name:
+                if 'w_0' in param_name:
+                    param_init.constant_init(param, value=1.0)
+                elif 'b_0' in param_name:
+                    param_init.constant_init(param, value=0.0)
+            if 'conv' in param_name and 'w_0' in param_name:
+                param_init.normal_init(param, scale=0.001)
+        if self.pretrained is not None:
+            utils.load_pretrained_model(self, self.pretrained)
 
 
-class Layer1(fluid.dygraph.Layer):
+class Layer1(nn.Layer):
     def __init__(self,
                  num_channels,
                  num_filters,
@@ -230,7 +218,7 @@ class Layer1(fluid.dygraph.Layer):
         return conv
 
 
-class TransitionLayer(fluid.dygraph.Layer):
+class TransitionLayer(nn.Layer):
     def __init__(self, in_channels, out_channels, name=None):
         super(TransitionLayer, self).__init__()
 
@@ -243,20 +231,22 @@ class TransitionLayer(fluid.dygraph.Layer):
                 if in_channels[i] != out_channels[i]:
                     residual = self.add_sublayer(
                         "transition_{}_layer_{}".format(name, i + 1),
-                        ConvBNLayer(
-                            num_channels=in_channels[i],
-                            num_filters=out_channels[i],
-                            filter_size=3,
-                            name=name + '_layer_' + str(i + 1)))
+                        layer_libs.ConvBNReLU(
+                            in_channels=in_channels[i],
+                            out_channels=out_channels[i],
+                            kernel_size=3,
+                            padding='same',
+                            bias_attr=False))
             else:
                 residual = self.add_sublayer(
                     "transition_{}_layer_{}".format(name, i + 1),
-                    ConvBNLayer(
-                        num_channels=in_channels[-1],
-                        num_filters=out_channels[i],
-                        filter_size=3,
+                    layer_libs.ConvBNReLU(
+                        in_channels=in_channels[-1],
+                        out_channels=out_channels[i],
+                        kernel_size=3,
                         stride=2,
-                        name=name + '_layer_' + str(i + 1)))
+                        padding='same',
+                        bias_attr=False))
             self.conv_bn_func_list.append(residual)
 
     def forward(self, input):
@@ -272,7 +262,7 @@ class TransitionLayer(fluid.dygraph.Layer):
         return outs
 
 
-class Branches(fluid.dygraph.Layer):
+class Branches(nn.Layer):
     def __init__(self,
                  num_blocks,
                  in_channels,
@@ -307,7 +297,7 @@ class Branches(fluid.dygraph.Layer):
         return outs
 
 
-class BottleneckBlock(fluid.dygraph.Layer):
+class BottleneckBlock(nn.Layer):
     def __init__(self,
                  num_channels,
                  num_filters,
@@ -320,34 +310,35 @@ class BottleneckBlock(fluid.dygraph.Layer):
         self.has_se = has_se
         self.downsample = downsample
 
-        self.conv1 = ConvBNLayer(
-            num_channels=num_channels,
-            num_filters=num_filters,
-            filter_size=1,
-            act="relu",
-            name=name + "_conv1",
-        )
-        self.conv2 = ConvBNLayer(
-            num_channels=num_filters,
-            num_filters=num_filters,
-            filter_size=3,
+        self.conv1 = layer_libs.ConvBNReLU(
+            in_channels=num_channels,
+            out_channels=num_filters,
+            kernel_size=1,
+            padding='same',
+            bias_attr=False)
+
+        self.conv2 = layer_libs.ConvBNReLU(
+            in_channels=num_filters,
+            out_channels=num_filters,
+            kernel_size=3,
             stride=stride,
-            act="relu",
-            name=name + "_conv2")
-        self.conv3 = ConvBNLayer(
-            num_channels=num_filters,
-            num_filters=num_filters * 4,
-            filter_size=1,
-            act=None,
-            name=name + "_conv3")
+            padding='same',
+            bias_attr=False)
+
+        self.conv3 = layer_libs.ConvBN(
+            in_channels=num_filters,
+            out_channels=num_filters * 4,
+            kernel_size=1,
+            padding='same',
+            bias_attr=False)
 
         if self.downsample:
-            self.conv_down = ConvBNLayer(
-                num_channels=num_channels,
-                num_filters=num_filters * 4,
-                filter_size=1,
-                act=None,
-                name=name + "_downsample")
+            self.conv_down = layer_libs.ConvBN(
+                in_channels=num_channels,
+                out_channels=num_filters * 4,
+                kernel_size=1,
+                padding='same',
+                bias_attr=False)
 
         if self.has_se:
             self.se = SELayer(
@@ -368,11 +359,12 @@ class BottleneckBlock(fluid.dygraph.Layer):
         if self.has_se:
             conv3 = self.se(conv3)
 
-        y = fluid.layers.elementwise_add(x=conv3, y=residual, act="relu")
+        y = conv3 + residual
+        y = F.relu(y)
         return y
 
 
-class BasicBlock(fluid.dygraph.Layer):
+class BasicBlock(nn.Layer):
     def __init__(self,
                  num_channels,
                  num_filters,
@@ -385,28 +377,27 @@ class BasicBlock(fluid.dygraph.Layer):
         self.has_se = has_se
         self.downsample = downsample
 
-        self.conv1 = ConvBNLayer(
-            num_channels=num_channels,
-            num_filters=num_filters,
-            filter_size=3,
+        self.conv1 = layer_libs.ConvBNReLU(
+            in_channels=num_channels,
+            out_channels=num_filters,
+            kernel_size=3,
             stride=stride,
-            act="relu",
-            name=name + "_conv1")
-        self.conv2 = ConvBNLayer(
-            num_channels=num_filters,
-            num_filters=num_filters,
-            filter_size=3,
-            stride=1,
-            act=None,
-            name=name + "_conv2")
+            padding='same',
+            bias_attr=False)
+        self.conv2 = layer_libs.ConvBN(
+            in_channels=num_filters,
+            out_channels=num_filters,
+            kernel_size=3,
+            padding='same',
+            bias_attr=False)
 
         if self.downsample:
-            self.conv_down = ConvBNLayer(
-                num_channels=num_channels,
-                num_filters=num_filters * 4,
-                filter_size=1,
-                act="relu",
-                name=name + "_downsample")
+            self.conv_down = layer_libs.ConvBNReLU(
+                in_channels=num_channels,
+                out_channels=num_filters,
+                kernel_size=1,
+                padding='same',
+                bias_attr=False)
 
         if self.has_se:
             self.se = SELayer(
@@ -426,15 +417,16 @@ class BasicBlock(fluid.dygraph.Layer):
         if self.has_se:
             conv2 = self.se(conv2)
 
-        y = fluid.layers.elementwise_add(x=conv2, y=residual, act="relu")
+        y = conv2 + residual
+        y = F.relu(y)
         return y
 
 
-class SELayer(fluid.dygraph.Layer):
+class SELayer(nn.Layer):
     def __init__(self, num_channels, num_filters, reduction_ratio, name=None):
         super(SELayer, self).__init__()
 
-        self.pool2d_gap = Pool2D(pool_type='avg', global_pooling=True)
+        self.pool2d_gap = AdaptiveAvgPool2d(1)
 
         self._num_channels = num_channels
 
@@ -445,9 +437,7 @@ class SELayer(fluid.dygraph.Layer):
             med_ch,
             act="relu",
             param_attr=ParamAttr(
-                initializer=fluid.initializer.Uniform(-stdv, stdv),
-                name=name + "_sqz_weights"),
-            bias_attr=ParamAttr(name=name + '_sqz_offset'))
+                initializer=nn.initializer.Uniform(-stdv, stdv)))
 
         stdv = 1.0 / math.sqrt(med_ch * 1.0)
         self.excitation = Linear(
@@ -455,22 +445,20 @@ class SELayer(fluid.dygraph.Layer):
             num_filters,
             act="sigmoid",
             param_attr=ParamAttr(
-                initializer=fluid.initializer.Uniform(-stdv, stdv),
-                name=name + "_exc_weights"),
-            bias_attr=ParamAttr(name=name + '_exc_offset'))
+                initializer=nn.initializer.Uniform(-stdv, stdv)))
 
     def forward(self, input):
         pool = self.pool2d_gap(input)
-        pool = fluid.layers.reshape(pool, shape=[-1, self._num_channels])
+        pool = paddle.reshape(pool, shape=[-1, self._num_channels])
         squeeze = self.squeeze(pool)
         excitation = self.excitation(squeeze)
-        excitation = fluid.layers.reshape(
+        excitation = paddle.reshape(
             excitation, shape=[-1, self._num_channels, 1, 1])
         out = input * excitation
         return out
 
 
-class Stage(fluid.dygraph.Layer):
+class Stage(nn.Layer):
     def __init__(self,
                  num_channels,
                  num_modules,
@@ -514,7 +502,7 @@ class Stage(fluid.dygraph.Layer):
         return out
 
 
-class HighResolutionModule(fluid.dygraph.Layer):
+class HighResolutionModule(nn.Layer):
     def __init__(self,
                  num_channels,
                  num_blocks,
@@ -543,7 +531,7 @@ class HighResolutionModule(fluid.dygraph.Layer):
         return out
 
 
-class FuseLayers(fluid.dygraph.Layer):
+class FuseLayers(nn.Layer):
     def __init__(self,
                  in_channels,
                  out_channels,
@@ -561,14 +549,12 @@ class FuseLayers(fluid.dygraph.Layer):
                 if j > i:
                     residual_func = self.add_sublayer(
                         "residual_{}_layer_{}_{}".format(name, i + 1, j + 1),
-                        ConvBNLayer(
-                            num_channels=in_channels[j],
-                            num_filters=out_channels[i],
-                            filter_size=1,
-                            stride=1,
-                            act=None,
-                            name=name + '_layer_' + str(i + 1) + '_' +
-                            str(j + 1)))
+                        layer_libs.ConvBN(
+                            in_channels=in_channels[j],
+                            out_channels=out_channels[i],
+                            kernel_size=1,
+                            padding='same',
+                            bias_attr=False))
                     self.residual_func_list.append(residual_func)
                 elif j < i:
                     pre_num_filters = in_channels[j]
@@ -577,27 +563,25 @@ class FuseLayers(fluid.dygraph.Layer):
                             residual_func = self.add_sublayer(
                                 "residual_{}_layer_{}_{}_{}".format(
                                     name, i + 1, j + 1, k + 1),
-                                ConvBNLayer(
-                                    num_channels=pre_num_filters,
-                                    num_filters=out_channels[i],
-                                    filter_size=3,
+                                layer_libs.ConvBN(
+                                    in_channels=pre_num_filters,
+                                    out_channels=out_channels[i],
+                                    kernel_size=3,
                                     stride=2,
-                                    act=None,
-                                    name=name + '_layer_' + str(i + 1) + '_' +
-                                    str(j + 1) + '_' + str(k + 1)))
+                                    padding='same',
+                                    bias_attr=False))
                             pre_num_filters = out_channels[i]
                         else:
                             residual_func = self.add_sublayer(
                                 "residual_{}_layer_{}_{}_{}".format(
                                     name, i + 1, j + 1, k + 1),
-                                ConvBNLayer(
-                                    num_channels=pre_num_filters,
-                                    num_filters=out_channels[j],
-                                    filter_size=3,
+                                layer_libs.ConvBNReLU(
+                                    in_channels=pre_num_filters,
+                                    out_channels=out_channels[j],
+                                    kernel_size=3,
                                     stride=2,
-                                    act="relu",
-                                    name=name + '_layer_' + str(i + 1) + '_' +
-                                    str(j + 1) + '_' + str(k + 1)))
+                                    padding='same',
+                                    bias_attr=False))
                             pre_num_filters = out_channels[j]
                         self.residual_func_list.append(residual_func)
 
@@ -612,51 +596,19 @@ class FuseLayers(fluid.dygraph.Layer):
                     y = self.residual_func_list[residual_func_idx](input[j])
                     residual_func_idx += 1
 
-                    y = fluid.layers.resize_bilinear(
-                        input=y, out_shape=residual_shape)
-                    residual = fluid.layers.elementwise_add(
-                        x=residual, y=y, act=None)
+                    y = F.resize_bilinear(input=y, out_shape=residual_shape)
+                    residual = residual + y
                 elif j < i:
                     y = input[j]
                     for k in range(i - j):
                         y = self.residual_func_list[residual_func_idx](y)
                         residual_func_idx += 1
 
-                    residual = fluid.layers.elementwise_add(
-                        x=residual, y=y, act=None)
+                    residual = residual + y
 
-            layer_helper = LayerHelper(self.full_name(), act='relu')
-            residual = layer_helper.append_activation(residual)
+            residual = F.relu(residual)
             outs.append(residual)
 
-        return outs
-
-
-class LastClsOut(fluid.dygraph.Layer):
-    def __init__(self,
-                 num_channel_list,
-                 has_se,
-                 num_filters_list=[32, 64, 128, 256],
-                 name=None):
-        super(LastClsOut, self).__init__()
-
-        self.func_list = []
-        for idx in range(len(num_channel_list)):
-            func = self.add_sublayer(
-                "conv_{}_conv_{}".format(name, idx + 1),
-                BottleneckBlock(
-                    num_channels=num_channel_list[idx],
-                    num_filters=num_filters_list[idx],
-                    has_se=has_se,
-                    downsample=True,
-                    name=name + 'conv_' + str(idx + 1)))
-            self.func_list.append(func)
-
-    def forward(self, inputs):
-        outs = []
-        for idx, input in enumerate(inputs):
-            out = self.func_list[idx](input)
-            outs.append(out)
         return outs
 
 
