@@ -23,3 +23,8 @@ def constant_init(param, **kwargs):
 def normal_init(param, **kwargs):
     initializer = fluid.initializer.Normal(**kwargs)
     initializer(param, param.block)
+
+
+def msra_init(param, **kwargs):
+    initializer = fluid.initializer.MSRA(**kwargs)
+    initializer(param, param.block)
