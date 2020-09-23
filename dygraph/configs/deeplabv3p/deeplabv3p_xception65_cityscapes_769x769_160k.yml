@@ -1,0 +1,13 @@
+_base_: '../_base_/cityscapes.yml'
+
+model:
+  type: DeepLabV3
+  backbone:
+    type: Xception65_deeplab
+    pretrained: Null
+  num_classes: 19
+  pretrained: Null
+  backbone_indices: [0, 1]
+
+optimizer:
+  weight_decay: 0.00004
