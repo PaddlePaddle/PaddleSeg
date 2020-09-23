@@ -110,16 +110,12 @@ class FCNHead(nn.Layer):
         return logit_list
 
     def init_weight(self):
-        params = self.parameters()
-        for param in params:
-            param_name = param.name
-            if 'batch_norm' in param_name:
-                if 'w_0' in param_name:
-                    param_init.constant_init(param, value=1.0)
-                elif 'b_0' in param_name:
-                    param_init.constant_init(param, value=0.0)
-            if 'conv' in param_name and 'w_0' in param_name:
-                param_init.normal_init(param, scale=0.001)
+        for layer in self.sublayers():
+            if isinstance(layer, nn.Conv2d):
+                param_init.normal_init(layer.weight, scale=0.001)
+            elif isinstance(layer, (nn.BatchNorm, nn.SyncBatchNorm)):
+                param_init.constant_init(layer.weight, value=1.0)
+                param_init.constant_init(layer.bias, value=0.0)
 
 
 @manager.MODELS.add_component
