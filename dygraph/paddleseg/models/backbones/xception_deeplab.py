@@ -15,13 +15,12 @@
 import os
 
 import paddle
-import paddle.fluid as fluid
-from paddle.fluid.param_attr import ParamAttr
-from paddle.fluid.layer_helper import LayerHelper
-from paddle.fluid.dygraph.nn import Conv2D, Pool2D, Linear, Dropout
+import paddle.nn as nn
+import paddle.nn.functional as F
+from paddle.nn import Conv2d, Linear, Dropout
 from paddle.nn import SyncBatchNorm as BatchNorm
 
-from paddleseg.models.common import layer_libs
+from paddleseg.models.common import layer_libs, activation
 from paddleseg.cvlibs import manager
 from paddleseg.utils import utils
 
@@ -78,7 +77,7 @@ def gen_bottleneck_params(backbone='xception_65'):
     return bottleneck_params
 
 
-class ConvBNLayer(fluid.dygraph.Layer):
+class ConvBNLayer(nn.Layer):
     def __init__(self,
                  input_channels,
                  output_channels,
@@ -89,29 +88,24 @@ class ConvBNLayer(fluid.dygraph.Layer):
                  name=None):
         super(ConvBNLayer, self).__init__()
 
-        self._conv = Conv2D(
-            num_channels=input_channels,
-            num_filters=output_channels,
-            filter_size=filter_size,
+        self._conv = Conv2d(
+            in_channels=input_channels,
+            out_channels=output_channels,
+            kernel_size=filter_size,
             stride=stride,
             padding=padding,
-            param_attr=ParamAttr(name=name + "/weights"),
             bias_attr=False)
         self._bn = BatchNorm(
-            num_features=output_channels,
-            epsilon=1e-3,
-            momentum=0.99,
-            weight_attr=ParamAttr(name=name + "/BatchNorm/gamma"),
-            bias_attr=ParamAttr(name=name + "/BatchNorm/beta"))
+            num_features=output_channels, epsilon=1e-3, momentum=0.99)
 
-        self._act_op = layer_utils.Activation(act=act)
+        self._act_op = activation.Activation(act=act)
 
     def forward(self, inputs):
 
         return self._act_op(self._bn(self._conv(inputs)))
 
 
-class Seperate_Conv(fluid.dygraph.Layer):
+class Seperate_Conv(nn.Layer):
     def __init__(self,
                  input_channels,
                  output_channels,
@@ -122,42 +116,30 @@ class Seperate_Conv(fluid.dygraph.Layer):
                  name=None):
         super(Seperate_Conv, self).__init__()
 
-        self._conv1 = Conv2D(
-            num_channels=input_channels,
-            num_filters=input_channels,
-            filter_size=filter,
+        self._conv1 = Conv2d(
+            in_channels=input_channels,
+            out_channels=input_channels,
+            kernel_size=filter,
             stride=stride,
             groups=input_channels,
             padding=(filter) // 2 * dilation,
             dilation=dilation,
-            param_attr=ParamAttr(name=name + "/depthwise/weights"),
             bias_attr=False)
-        self._bn1 = BatchNorm(
-            input_channels,
-            epsilon=1e-3,
-            momentum=0.99,
-            weight_attr=ParamAttr(name=name + "/depthwise/BatchNorm/gamma"),
-            bias_attr=ParamAttr(name=name + "/depthwise/BatchNorm/beta"))
+        self._bn1 = BatchNorm(input_channels, epsilon=1e-3, momentum=0.99)
 
-        self._act_op1 = layer_utils.Activation(act=act)
+        self._act_op1 = activation.Activation(act=act)
 
-        self._conv2 = Conv2D(
+        self._conv2 = Conv2d(
             input_channels,
             output_channels,
             1,
             stride=1,
             groups=1,
             padding=0,
-            param_attr=ParamAttr(name=name + "/pointwise/weights"),
             bias_attr=False)
-        self._bn2 = BatchNorm(
-            output_channels,
-            epsilon=1e-3,
-            momentum=0.99,
-            weight_attr=ParamAttr(name=name + "/pointwise/BatchNorm/gamma"),
-            bias_attr=ParamAttr(name=name + "/pointwise/BatchNorm/beta"))
+        self._bn2 = BatchNorm(output_channels, epsilon=1e-3, momentum=0.99)
 
-        self._act_op2 = layer_utils.Activation(act=act)
+        self._act_op2 = activation.Activation(act=act)
 
     def forward(self, inputs):
         x = self._conv1(inputs)
@@ -169,7 +151,7 @@ class Seperate_Conv(fluid.dygraph.Layer):
         return x
 
 
-class Xception_Block(fluid.dygraph.Layer):
+class Xception_Block(nn.Layer):
     def __init__(self,
                  input_channels,
                  output_channels,
@@ -248,13 +230,12 @@ class Xception_Block(fluid.dygraph.Layer):
                 name=name + "/shortcut")
 
     def forward(self, inputs):
-        layer_helper = LayerHelper(self.full_name(), act='relu')
         if not self.activation_fn_in_separable_conv:
-            x = layer_helper.append_activation(inputs)
+            x = F.relu(inputs)
             x = self._conv1(x)
-            x = layer_helper.append_activation(x)
+            x = F.relu(x)
             x = self._conv2(x)
-            x = layer_helper.append_activation(x)
+            x = F.relu(x)
             x = self._conv3(x)
         else:
             x = self._conv1(inputs)
@@ -266,16 +247,16 @@ class Xception_Block(fluid.dygraph.Layer):
             skip = self._short(inputs)
         else:
             skip = inputs
-        return fluid.layers.elementwise_add(x, skip)
+        return x + skip
 
 
-class XceptionDeeplab(fluid.dygraph.Layer):
+class XceptionDeeplab(nn.Layer):
 
     #def __init__(self, backbone, class_dim=1000):
     # add output_stride
     def __init__(self,
                  backbone,
-                 backbone_pretrained=None,
+                 pretrained=None,
                  output_stride=16,
                  class_dim=1000):
 
@@ -283,6 +264,7 @@ class XceptionDeeplab(fluid.dygraph.Layer):
 
         bottleneck_params = gen_bottleneck_params(backbone)
         self.backbone = backbone
+        self.feat_channels = [128, 2048]
 
         self._conv1 = ConvBNLayer(
             3,
@@ -388,19 +370,8 @@ class XceptionDeeplab(fluid.dygraph.Layer):
             has_skip=False,
             activation_fn_in_separable_conv=True,
             name=self.backbone + "/exit_flow/block2")
-        s = s * stride
 
-        self.stride = s
-
-        self._drop = Dropout(p=0.5)
-        self._pool = Pool2D(pool_type="avg", global_pooling=True)
-        self._fc = Linear(
-            self.chns[1][-1],
-            class_dim,
-            param_attr=ParamAttr(name="fc_weights"),
-            bias_attr=ParamAttr(name="fc_bias"))
-
-        self.init_weight(backbone_pretrained)
+        utils.load_pretrained_model(self, pretrained)
 
     def forward(self, inputs):
         x = self._conv1(inputs)
@@ -415,27 +386,10 @@ class XceptionDeeplab(fluid.dygraph.Layer):
         x = self._exit_flow_1(x)
         x = self._exit_flow_2(x)
         feat_list.append(x)
-
-        x = self._drop(x)
-        x = self._pool(x)
-        x = fluid.layers.squeeze(x, axes=[2, 3])
-        x = self._fc(x)
-        return x, feat_list
-
-    def init_weight(self, pretrained_model=None):
-        """
-        Initialize the parameters of model parts.
-        Args:
-            pretrained_model ([str], optional): the path of pretrained model. Defaults to None.
-        """
-        if pretrained_model is not None:
-            if os.path.exists(pretrained_model):
-                utils.load_pretrained_model(self, pretrained_model)
-            else:
-                raise Exception('Pretrained model is not found: {}'.format(
-                    pretrained_model))
+        return feat_list
 
 
+@manager.BACKBONES.add_component
 def Xception41_deeplab(**args):
     model = XceptionDeeplab('xception_41', **args)
     return model
@@ -447,6 +401,7 @@ def Xception65_deeplab(**args):
     return model
 
 
+@manager.BACKBONES.add_component
 def Xception71_deeplab(**args):
     model = XceptionDeeplab("xception_71", **args)
     return model
