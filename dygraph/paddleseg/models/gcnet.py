@@ -18,8 +18,10 @@ import paddle
 import paddle.nn.functional as F
 from paddle import nn
 from paddleseg.cvlibs import manager
-from paddleseg.models.common import layer_libs
+from paddleseg.models.common.layer_libs import ConvBNReLU, AuxLayer
 from paddleseg.utils import utils
+
+
 
 
 @manager.MODELS.add_component
@@ -34,7 +36,54 @@ class GCNet(nn.Layer):
     Args:
         num_classes (int): the unique number of target classes.
         backbone (Paddle.nn.Layer): backbone network, currently support Resnet50/101.
-        model_pretrained (str): the path of pretrained model. Default to None.
+        backbone_indices (tuple): two values in the tuple indicate the indices of output of backbone.
+        gc_channels (int): input channels to Global Context Block. Default to 512.
+        ratio (float): it indicates the ratio of attention channels and gc_channels. Default to 1/4.
+        enable_auxiliary_loss (bool): a bool values indicates whether adding auxiliary loss. Default to True.
+        pretrained (str): the path of pretrained model. Default to None.
+    """
+
+    def __init__(self,
+                 num_classes,
+                 backbone,
+                 backbone_indices=(2, 3),
+                 gc_channels=512,
+                 ratio=1 / 4,
+                 enable_auxiliary_loss=True,
+                 pretrained=None):
+
+        super(GCNet, self).__init__()
+
+        self.backbone = backbone
+        backbone_channels = [
+            backbone.feat_channels[i] for i in backbone_indices
+        ]
+
+        self.head = GCNetHead(
+            num_classes, 
+            backbone_indices,
+            backbone_channels,
+            gc_channels,
+            ratio,
+            enable_auxiliary_loss)
+
+        utils.load_entire_model(self, pretrained)
+
+    def forward(self, input):
+
+        feat_list = self.backbone(input)
+        logit_list = self.head(feat_list)
+        return [
+            F.resize_bilinear(logit, input.shape[2:]) for logit in logit_list
+        ]
+
+
+class GCNetHead(nn.Layer):
+    """
+    The GCNetHead implementation.
+
+    Args:
+        num_classes (int): the unique number of target classes.
         backbone_indices (tuple): two values in the tuple indicate the indices of output of backbone.
             the first index will be taken as a deep-supervision feature in auxiliary layer;
             the second one will be taken as input of GlobalContextBlock. Usually backbone 
@@ -49,21 +98,16 @@ class GCNet(nn.Layer):
 
     def __init__(self,
                  num_classes,
-                 backbone,
-                 model_pretrained=None,
                  backbone_indices=(2, 3),
                  backbone_channels=(1024, 2048),
                  gc_channels=512,
                  ratio=1 / 4,
-                 enable_auxiliary_loss=True,
-                 pretrained_model=None):
+                 enable_auxiliary_loss=True):
 
-        super(GCNet, self).__init__()
-
-        self.backbone = backbone
+        super(GCNetHead, self).__init__()
 
         in_channels = backbone_channels[1]
-        self.conv_bn_relu1 = layer_libs.ConvBNReLU(
+        self.conv_bn_relu1 = ConvBNReLU(
             in_channels=in_channels,
             out_channels=gc_channels,
             kernel_size=3,
@@ -71,13 +115,13 @@ class GCNet(nn.Layer):
 
         self.gc_block = GlobalContextBlock(in_channels=gc_channels, ratio=ratio)
 
-        self.conv_bn_relu2 = layer_libs.ConvBNReLU(
+        self.conv_bn_relu2 = ConvBNReLU(
             in_channels=gc_channels,
             out_channels=gc_channels,
             kernel_size=3,
             padding=1)
 
-        self.conv_bn_relu3 = layer_libs.ConvBNReLU(
+        self.conv_bn_relu3 = ConvBNReLU(
             in_channels=in_channels + gc_channels,
             out_channels=gc_channels,
             kernel_size=3,
@@ -87,7 +131,7 @@ class GCNet(nn.Layer):
             in_channels=gc_channels, out_channels=num_classes, kernel_size=1)
 
         if enable_auxiliary_loss:
-            self.auxlayer = layer_libs.AuxLayer(
+            self.auxlayer = AuxLayer(
                 in_channels=backbone_channels[0],
                 inter_channels=backbone_channels[0] // 4,
                 out_channels=num_classes)
@@ -95,12 +139,11 @@ class GCNet(nn.Layer):
         self.backbone_indices = backbone_indices
         self.enable_auxiliary_loss = enable_auxiliary_loss
 
-        self.init_weight(model_pretrained)
+        self.init_weight()
 
-    def forward(self, input, label=None):
+    def forward(self, feat_list):
 
         logit_list = []
-        _, feat_list = self.backbone(input)
         x = feat_list[self.backbone_indices[1]]
 
         output = self.conv_bn_relu1(x)
@@ -112,14 +155,11 @@ class GCNet(nn.Layer):
 
         output = F.dropout(output, p=0.1)  # dropout_prob
         logit = self.conv(output)
-        logit = F.resize_bilinear(logit, input.shape[2:])
         logit_list.append(logit)
 
         if self.enable_auxiliary_loss:
             low_level_feat = feat_list[self.backbone_indices[0]]
             auxiliary_logit = self.auxlayer(low_level_feat)
-            auxiliary_logit = F.resize_bilinear(auxiliary_logit,
-                                                input.shape[2:])
             logit_list.append(auxiliary_logit)
 
         return logit_list
@@ -127,15 +167,8 @@ class GCNet(nn.Layer):
     def init_weight(self, pretrained_model=None):
         """
         Initialize the parameters of model parts.
-        Args:
-            pretrained_model ([str], optional): the path of pretrained model. Defaults to None.
         """
-        if pretrained_model is not None:
-            if os.path.exists(pretrained_model):
-                utils.load_pretrained_model(self, pretrained_model)
-            else:
-                raise Exception('Pretrained model is not found: {}'.format(
-                    pretrained_model))
+        pass
 
 
 class GlobalContextBlock(nn.Layer):
