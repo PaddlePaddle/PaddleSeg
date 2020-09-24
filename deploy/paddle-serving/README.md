@@ -6,7 +6,7 @@ PaddleServing是Paddle的在线预测服务框架，可以快速部署训练好�
 
 ## 2.安装Paddle Serving
 
-目前PaddleServing的正式版本为0.3.2版本，本文中的示例需要develop版本的paddle_serving_app，请从[链接](https://github.com/PaddlePaddle/Serving/blob/develop/doc/LATEST_PACKAGES.md#app)中下载并安装。
+目前PaddleServing的正式版本为0.3.2版本。
 
 服务端安装：
 
@@ -47,41 +47,18 @@ python pdseg/export_serving_model.py --cfg configs/unet_optic.yaml TEST.TEST_MOD
 
 `freeze_model/serving_server`目录下包含了模型文件和serving server端配置文件，`freeze_model/serving_client`目录下包含了serving client端配置文件。
 
+分别将serving_server和serving_client复制到server和client启动的路径下。
+
 ## 4.部署预测服务
 
 ```shell
-python -m paddle_serving_server.serve --model unet_model/ --port 9494 # CPU
-python -m paddle_serving_server_gpu.serve --model unet_model --port 9494 --gpu_ids 0 #GPU
+python -m paddle_serving_server.serve --model serving_server/ --port 9494 # CPU
+python -m paddle_serving_server_gpu.serve --model serving_server --port 9494 --gpu_ids 0 #GPU
 ```
 
 ## 5.执行预测
-
-```python
-#seg_client.py
-from paddle_serving_client import Client
-from paddle_serving_app.reader import Sequential, File2Image, Resize, Transpose, BGR2RGB, SegPostprocess, Normalize, Div
-import sys
-import cv2
-
-client = Client()
-client.load_client_config("unet_client/serving_client_conf.prototxt")
-client.connect(["127.0.0.1:9494"])
-
-preprocess = Sequential([
-    File2Image(), Resize(
-        (512, 512), interpolation=cv2.INTER_LINEAR), Div(255.0),
-    Normalize([0.5, 0.5, 0.5], [0.5, 0.5, 0.5], False), Transpose((2, 0, 1))
-])
-
-postprocess = SegPostprocess(2)
-
-filename = "N0060.jpg"
-im = preprocess(filename)
-fetch_map = client.predict(feed={"image": im}, fetch=["transpose_1.tmp_0"])
-fetch_map["filename"] = filename
-postprocess(fetch_map)
+```shell
+python seg_client.py ../../dataset/optic_disc_seg/JPEGImages/N0060.jpg
 ```
-
-脚本执行之后，当前目录下生成处理后的图片。
-
-完整的部署示例请参考PaddleServing的[unet示例](https://github.com/PaddlePaddle/Serving/tree/develop/python/examples/unet_for_image_seg)。
+脚本执行之后，会在输入图片所在的目录下生成处理后的图片
+示例中为`../../dataset/optic_disc_seg/JPEGImages/N0060_jpg_mask.png`和`../../dataset/optic_disc_seg/JPEGImages/N0060_jpg_result.png`
