@@ -46,7 +46,7 @@ class ASPPModule(nn.Layer):
         for ratio in aspp_ratios:
 
             if sep_conv and ratio > 1:
-                conv_func = layer_libs.DepthwiseConvBNReLU
+                conv_func = layer_libs.SeparableConvBNReLU
             else:
                 conv_func = layer_libs.ConvBNReLU
 
@@ -134,7 +134,7 @@ class PPModule(nn.Layer):
         Create one pooling layer.
 
         In our implementation, we adopt the same dimension reduction as the original paper that might be
-        slightly different with other implementations. 
+        slightly different with other implementations.
 
         After pooling, the channels are reduced to 1/len(bin_sizes) immediately, while some other implementations
         keep the channels to be same.

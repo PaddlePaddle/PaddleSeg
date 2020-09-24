@@ -21,11 +21,17 @@ from paddle.nn import SyncBatchNorm as BatchNorm
 
 
 class ConvBNReLU(nn.Layer):
-    def __init__(self, in_channels, out_channels, kernel_size, **kwargs):
+    def __init__(self,
+                 in_channels,
+                 out_channels,
+                 kernel_size,
+                 padding='same',
+                 **kwargs):
 
         super(ConvBNReLU, self).__init__()
 
-        self._conv = Conv2d(in_channels, out_channels, kernel_size, **kwargs)
+        self._conv = Conv2d(
+            in_channels, out_channels, kernel_size, padding=padding, **kwargs)
 
         self._batch_norm = BatchNorm(out_channels)
 
@@ -37,10 +43,16 @@ class ConvBNReLU(nn.Layer):
 
 
 class ConvBN(nn.Layer):
-    def __init__(self, in_channels, out_channels, kernel_size, **kwargs):
+    def __init__(self,
+                 in_channels,
+                 out_channels,
+                 kernel_size,
+                 padding='same',
+                 **kwargs):
 
         super(ConvBN, self).__init__()
-        self._conv = Conv2d(in_channels, out_channels, kernel_size, **kwargs)
+        self._conv = Conv2d(
+            in_channels, out_channels, kernel_size, padding=padding, **kwargs)
         self._batch_norm = BatchNorm(out_channels)
 
     def forward(self, x):
@@ -67,17 +79,23 @@ class ConvReluPool(nn.Layer):
         return x
 
 
-class DepthwiseConvBNReLU(nn.Layer):
-    def __init__(self, in_channels, out_channels, kernel_size, **kwargs):
-        super(DepthwiseConvBNReLU, self).__init__()
+class SeparableConvBNReLU(nn.Layer):
+    def __init__(self,
+                 in_channels,
+                 out_channels,
+                 kernel_size,
+                 padding='same',
+                 **kwargs):
+        super(SeparableConvBNReLU, self).__init__()
         self.depthwise_conv = ConvBN(
             in_channels,
             out_channels=in_channels,
             kernel_size=kernel_size,
+            padding=padding,
             groups=in_channels,
             **kwargs)
         self.piontwise_conv = ConvBNReLU(
-            in_channels, out_channels, kernel_size=1, groups=1)
+            in_channels, out_channels, kernel_size=1, padding=padding, groups=1)
 
     def forward(self, x):
         x = self.depthwise_conv(x)
@@ -86,20 +104,23 @@ class DepthwiseConvBNReLU(nn.Layer):
 
 
 class DepthwiseConvBN(nn.Layer):
-    def __init__(self, in_channels, out_channels, kernel_size, **kwargs):
+    def __init__(self,
+                 in_channels,
+                 out_channels,
+                 kernel_size,
+                 padding='same',
+                 **kwargs):
         super(DepthwiseConvBN, self).__init__()
         self.depthwise_conv = ConvBN(
             in_channels,
-            out_channels=in_channels,
+            out_channels=out_channels,
             kernel_size=kernel_size,
+            padding=padding,
             groups=in_channels,
             **kwargs)
-        self.piontwise_conv = ConvBN(
-            in_channels, out_channels, kernel_size=1, groups=1)
 
     def forward(self, x):
         x = self.depthwise_conv(x)
-        x = self.piontwise_conv(x)
         return x
 
 
