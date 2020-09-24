@@ -19,7 +19,7 @@ import paddle.nn.functional as F
 from paddle import nn
 from paddleseg.cvlibs import manager
 from paddleseg.models.common import pyramid_pool
-from paddleseg.models.common.layer_libs import ConvBNReLU, DepthwiseConvBNReLU, AuxLayer
+from paddleseg.models.common.layer_libs import ConvBNReLU, SeparableConvBNReLU, AuxLayer
 from paddleseg.utils import utils
 
 __all__ = ['DeepLabV3P', 'DeepLabV3']
@@ -99,7 +99,7 @@ class DeepLabV3PHead(nn.Layer):
             if output_stride=16, aspp_ratios should be set as (1, 6, 12, 18).
             if output_stride=8, aspp_ratios is (1, 12, 24, 36).
         aspp_out_channels (int): the output channels of ASPP module.
-        
+
     """
 
     def __init__(self,
@@ -146,7 +146,7 @@ class DeepLabV3(nn.Layer):
      (https://arxiv.org/pdf/1706.05587.pdf)
 
     Args:
-        Refer to DeepLabV3P above 
+        Refer to DeepLabV3P above
     """
 
     def __init__(self,
@@ -234,9 +234,9 @@ class Decoder(nn.Layer):
         self.conv_bn_relu1 = ConvBNReLU(
             in_channels=in_channels, out_channels=48, kernel_size=1)
 
-        self.conv_bn_relu2 = DepthwiseConvBNReLU(
+        self.conv_bn_relu2 = SeparableConvBNReLU(
             in_channels=304, out_channels=256, kernel_size=3, padding=1)
-        self.conv_bn_relu3 = DepthwiseConvBNReLU(
+        self.conv_bn_relu3 = SeparableConvBNReLU(
             in_channels=256, out_channels=256, kernel_size=3, padding=1)
         self.conv = nn.Conv2d(
             in_channels=256, out_channels=num_classes, kernel_size=1)

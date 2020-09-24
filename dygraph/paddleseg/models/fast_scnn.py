@@ -17,18 +17,19 @@ from paddle import nn
 
 from paddleseg.cvlibs import manager
 from paddleseg.models.common import pyramid_pool
-from paddleseg.models.common.layer_libs import ConvBNReLU, DepthwiseConvBNReLU, AuxLayer
+from paddleseg.models.common.layer_libs import ConvBNReLU, SeparableConvBNReLU, AuxLayer
 from paddleseg.utils import utils
+
 
 @manager.MODELS.add_component
 class FastSCNN(nn.Layer):
     """
     The FastSCNN implementation based on PaddlePaddle.
 
-    As mentioned in the original paper, FastSCNN is a real-time segmentation algorithm (123.5fps) 
+    As mentioned in the original paper, FastSCNN is a real-time segmentation algorithm (123.5fps)
     even for high resolution images (1024x2048).
 
-    The original article refers to 
+    The original article refers to
         Poudel, Rudra PK, et al. "Fast-scnn: Fast semantic segmentation network."
         (https://arxiv.org/pdf/1902.04502.pdf)
 
@@ -40,9 +41,7 @@ class FastSCNN(nn.Layer):
         pretrained (str): the path of pretrained model. Default to None.
     """
 
-    def __init__(self,
-                 num_classes,
-                 enable_auxiliary_loss=True,
+    def __init__(self, num_classes, enable_auxiliary_loss=True,
                  pretrained=None):
 
         super(FastSCNN, self).__init__()
@@ -103,13 +102,13 @@ class LearningToDownsample(nn.Layer):
 
         self.conv_bn_relu = ConvBNReLU(
             in_channels=3, out_channels=dw_channels1, kernel_size=3, stride=2)
-        self.dsconv_bn_relu1 = DepthwiseConvBNReLU(
+        self.dsconv_bn_relu1 = SeparableConvBNReLU(
             in_channels=dw_channels1,
             out_channels=dw_channels2,
             kernel_size=3,
             stride=2,
             padding=1)
-        self.dsconv_bn_relu2 = DepthwiseConvBNReLU(
+        self.dsconv_bn_relu2 = SeparableConvBNReLU(
             in_channels=dw_channels2,
             out_channels=out_channels,
             kernel_size=3,
@@ -127,7 +126,7 @@ class GlobalFeatureExtractor(nn.Layer):
     """
     Global feature extractor module
 
-    This module consists of three LinearBottleneck blocks (like inverted residual introduced by MobileNetV2) and 
+    This module consists of three LinearBottleneck blocks (like inverted residual introduced by MobileNetV2) and
     a PPModule (introduced by PSPNet).
 
     Args:
@@ -297,13 +296,13 @@ class Classifier(nn.Layer):
     def __init__(self, input_channels, num_classes):
         super(Classifier, self).__init__()
 
-        self.dsconv1 = DepthwiseConvBNReLU(
+        self.dsconv1 = SeparableConvBNReLU(
             in_channels=input_channels,
             out_channels=input_channels,
             kernel_size=3,
             padding=1)
 
-        self.dsconv2 = DepthwiseConvBNReLU(
+        self.dsconv2 = SeparableConvBNReLU(
             in_channels=input_channels,
             out_channels=input_channels,
             kernel_size=3,
