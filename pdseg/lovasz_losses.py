@@ -18,6 +18,7 @@ from __future__ import division
 from __future__ import print_function
 import paddle.fluid as fluid
 import numpy as np
+from utils.config import cfg
 
 
 def _cumsum(x):
@@ -203,3 +204,43 @@ def flatten_probas(probas, labels, ignore=None):
     vprobas = fluid.layers.gather(probas, indexs[:, 0])
     vlabels = fluid.layers.gather(labels, indexs[:, 0])
     return vprobas, vlabels
+
+
+def multi_lovasz_softmax_loss(logits, label, ignore_mask=None):
+    if isinstance(logits, tuple):
+        avg_loss = 0
+        for i, logit in enumerate(logits):
+            if label.shape[2] != logit.shape[2] or label.shape[
+                    3] != logit.shape[3]:
+                logit_label = fluid.layers.resize_nearest(
+                    label, logit.shape[2:])
+            else:
+                logit_label = label
+            logit_mask = (logit_label.astype('int32') !=
+                          cfg.DATASET.IGNORE_INDEX).astype('int32')
+            probas = fluid.layers.softmax(logit, axis=1)
+            loss = lovasz_softmax(probas, logit_label, ignore=logit_mask)
+            avg_loss += cfg.MODEL.MULTI_LOSS_WEIGHT[i] * loss
+    else:
+        probas = fluid.layers.softmax(logits, axis=1)
+        avg_loss = lovasz_softmax(probas, label, ignore=ignore_mask)
+    return avg_loss
+
+
+def multi_lovasz_hinge_loss(logits, label, ignore_mask=None):
+    if isinstance(logits, tuple):
+        avg_loss = 0
+        for i, logit in enumerate(logits):
+            if label.shape[2] != logit.shape[2] or label.shape[
+                    3] != logit.shape[3]:
+                logit_label = fluid.layers.resize_nearest(
+                    label, logit.shape[2:])
+            else:
+                logit_label = label
+            logit_mask = (logit_label.astype('int32') !=
+                          cfg.DATASET.IGNORE_INDEX).astype('int32')
+            loss = lovasz_hinge(logit, logit_label, ignore=logit_mask)
+            avg_loss += cfg.MODEL.MULTI_LOSS_WEIGHT[i] * loss
+    else:
+        avg_loss = lovasz_hinge(logits, label, ignore=ignore_mask)
+    return avg_loss
