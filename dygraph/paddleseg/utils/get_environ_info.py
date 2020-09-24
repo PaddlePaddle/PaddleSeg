@@ -19,8 +19,8 @@ import subprocess
 import glob
 
 import paddle
-import paddle.fluid as fluid
 import cv2
+from paddle.distributed import ParallelEnv
 
 IS_WINDOWS = sys.platform == 'win32'
 
@@ -96,13 +96,14 @@ def get_environ_info():
 
     env_info['Python'] = sys.version.replace('\n', '')
 
+    # todo is_compiled_with_cuda() has not been moved
     compiled_with_cuda = paddle.fluid.is_compiled_with_cuda()
     env_info['Paddle compiled with cuda'] = compiled_with_cuda
 
     if compiled_with_cuda:
         cuda_home = _find_cuda_home()
         env_info['NVCC'] = _get_nvcc_info(cuda_home)
-        gpu_nums = fluid.core.get_cuda_device_count()
+        gpu_nums = ParallelEnv().nranks
         env_info['GPUs used'] = gpu_nums
         env_info['CUDA_VISIBLE_DEVICES'] = os.environ.get(
             'CUDA_VISIBLE_DEVICES')

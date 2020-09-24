@@ -14,11 +14,12 @@
 
 import contextlib
 import os
-import numpy as np
 import math
+
+import numpy as np
 import cv2
 import tempfile
-import paddle.fluid as fluid
+import paddle
 from urllib.parse import urlparse, unquote
 
 import filelock
@@ -74,10 +75,7 @@ def load_pretrained_model(model, pretrained_model):
 
         if os.path.exists(pretrained_model):
             ckpt_path = os.path.join(pretrained_model, 'model')
-            try:
-                para_state_dict, _ = fluid.load_dygraph(ckpt_path)
-            except:
-                para_state_dict = fluid.load_program_state(pretrained_model)
+            para_state_dict, _ = paddle.load(ckpt_path)
 
             model_state_dict = model.state_dict()
             keys = model_state_dict.keys()
@@ -115,7 +113,7 @@ def resume(model, optimizer, resume_model):
         if os.path.exists(resume_model):
             resume_model = os.path.normpath(resume_model)
             ckpt_path = os.path.join(resume_model, 'model')
-            para_state_dict, opti_state_dict = fluid.load_dygraph(ckpt_path)
+            para_state_dict, opti_state_dict = paddle.load(ckpt_path)
             model.set_dict(para_state_dict)
             optimizer.set_dict(opti_state_dict)
             epoch = resume_model.split('_')[-1]

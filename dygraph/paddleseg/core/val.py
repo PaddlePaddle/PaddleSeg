@@ -17,10 +17,9 @@ import os
 import numpy as np
 import tqdm
 import cv2
-from paddle.fluid.dygraph.base import to_variable
-import paddle.fluid as fluid
-import paddle.nn.functional as F
 import paddle
+import paddle.nn.functional as F
+from paddle import to_variable
 
 import paddleseg.utils.logger as logger
 from paddleseg.utils import ConfusionMatrix
@@ -34,7 +33,7 @@ def evaluate(model,
              ignore_index=255,
              iter_id=None):
     ckpt_path = os.path.join(model_dir, 'model')
-    para_state_dict, opti_state_dict = fluid.load_dygraph(ckpt_path)
+    para_state_dict, opti_state_dict = paddle.load(ckpt_path)
     model.set_dict(para_state_dict)
     model.eval()
 

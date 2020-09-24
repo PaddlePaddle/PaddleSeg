@@ -14,7 +14,7 @@
 
 import os
 
-import paddle.fluid as fluid
+import paddle
 import numpy as np
 from PIL import Image
 
@@ -23,7 +23,7 @@ from paddleseg.transforms import Compose
 
 
 @manager.DATASETS.add_component
-class Dataset(fluid.io.Dataset):
+class Dataset(paddle.io.Dataset):
     """Pass in a custom dataset that conforms to the format.
 
     Args:
