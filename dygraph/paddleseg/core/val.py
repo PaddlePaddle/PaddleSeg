@@ -49,7 +49,6 @@ def evaluate(model,
     for iter, (im, im_info, label) in tqdm.tqdm(
             enumerate(eval_dataset), total=total_iters):
         im = to_variable(im)
-        # pred, _ = model(im)
         logits = model(im)
         pred = paddle.argmax(logits[0], axis=1)
         pred = pred.numpy().astype('float32')
@@ -68,7 +67,7 @@ def evaluate(model,
         pred = pred.astype('int64')
         mask = label != ignore_index
         # To-DO Test Execution Time
-        conf_mat.calculate(pred=pred, label=label, ignore=mask)
+        conf_mat.calculate(pred=pred, label=label, mask=mask)
         _, iou = conf_mat.mean_iou()
 
         time_iter = timer.elapsed_time()
