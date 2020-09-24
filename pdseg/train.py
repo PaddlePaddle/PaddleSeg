@@ -454,6 +454,7 @@ def main(args):
 
 
 if __name__ == '__main__':
+    paddle.enable_static()
     args = parse_args()
     if fluid.core.is_compiled_with_cuda() != True and args.use_gpu == True:
         print(
