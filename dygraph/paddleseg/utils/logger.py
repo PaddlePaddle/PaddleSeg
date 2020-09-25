@@ -16,7 +16,7 @@ import time
 import os
 import sys
 
-from paddle.fluid.dygraph.parallel import ParallelEnv
+from paddle.distributed import ParallelEnv
 
 levels = {0: 'ERROR', 1: 'WARNING', 2: 'INFO', 3: 'DEBUG'}
 log_level = 2

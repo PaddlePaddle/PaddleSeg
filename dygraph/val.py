@@ -18,8 +18,8 @@ import paddle
 from paddle.distributed import ParallelEnv
 
 import paddleseg
-from paddleseg.cvlibs import manager
-from paddleseg.utils import get_environ_info, Config, logger
+from paddleseg.cvlibs import manager, Config
+from paddleseg.utils import get_environ_info, logger
 from paddleseg.core import evaluate
 
 

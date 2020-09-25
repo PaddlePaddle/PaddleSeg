@@ -29,18 +29,32 @@ class ConfusionMatrix(object):
         self.num_classes = num_classes
         self.streaming = streaming
 
-    def calculate(self, pred, label, ignore=None):
+    def calculate(self, pred, label, mask):
+        """
+        Calculate confusion matrix
+
+        Args:
+            pred (np.ndarray): The prediction of input image by model.
+            label (np.ndarray): The ground truth of input image.
+            mask (np.ndarray): The mask which pixel is valid. The dtype should be bool.
+        """
         # If not in streaming mode, clear matrix everytime when call `calculate`
         if not self.streaming:
             self.zero_matrix()
 
-        label = np.transpose(label, (0, 2, 3, 1))
-        ignore = np.transpose(ignore, (0, 2, 3, 1))
-        mask = np.array(ignore) == 1
+        pred = np.squeeze(pred)
+        label = np.squeeze(label)
+        mask = np.squeeze(mask)
 
-        label = np.asarray(label)[mask]
-        pred = np.asarray(pred)[mask]
-        one = np.ones_like(pred)
+        if not pred.shape == label.shape == mask.shape:
+            raise ValueError(
+                'Shape of `pred`, `label` and `mask` should be equal, '
+                'but there are {}, {} and {}.'.format(pred.shape, label.shape,
+                                                      mask.shape))
+
+        label = label[mask]
+        pred = pred[mask]
+        one = np.ones_like(pred).astype('int64')
         # Accumuate ([row=label, col=pred], 1) into sparse
         spm = csr_matrix((one, (label, pred)),
                          shape=(self.num_classes, self.num_classes))

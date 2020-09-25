@@ -17,10 +17,9 @@ import os
 import numpy as np
 import tqdm
 import cv2
-from paddle.fluid.dygraph.base import to_variable
-import paddle.fluid as fluid
-import paddle.nn.functional as F
 import paddle
+import paddle.nn.functional as F
+from paddle import to_variable
 
 import paddleseg.utils.logger as logger
 from paddleseg.utils import ConfusionMatrix
@@ -34,7 +33,7 @@ def evaluate(model,
              ignore_index=255,
              iter_id=None):
     ckpt_path = os.path.join(model_dir, 'model')
-    para_state_dict, opti_state_dict = fluid.load_dygraph(ckpt_path)
+    para_state_dict, opti_state_dict = paddle.load(ckpt_path)
     model.set_dict(para_state_dict)
     model.eval()
 
@@ -49,7 +48,6 @@ def evaluate(model,
     for iter, (im, im_info, label) in tqdm.tqdm(
             enumerate(eval_dataset), total=total_iters):
         im = to_variable(im)
-        # pred, _ = model(im)
         logits = model(im)
         pred = paddle.argmax(logits[0], axis=1)
         pred = pred.numpy().astype('float32')
@@ -68,7 +66,7 @@ def evaluate(model,
         pred = pred.astype('int64')
         mask = label != ignore_index
         # To-DO Test Execution Time
-        conf_mat.calculate(pred=pred, label=label, ignore=mask)
+        conf_mat.calculate(pred=pred, label=label, mask=mask)
         _, iou = conf_mat.mean_iou()
 
         time_iter = timer.elapsed_time()
