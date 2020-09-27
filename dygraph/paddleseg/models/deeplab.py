@@ -197,7 +197,7 @@ class DeepLabV3Head(nn.Layer):
             image_pooling=True)
 
         self.cls = nn.Conv2d(
-            in_channels=backbone_channels[0],
+            in_channels=aspp_out_channels,
             out_channels=num_classes,
             kernel_size=1)
 
@@ -209,6 +209,7 @@ class DeepLabV3Head(nn.Layer):
         logit_list = []
 
         x = feat_list[self.backbone_indices[0]]
+        x = self.aspp(x)
         logit = self.cls(x)
         logit_list.append(logit)
 

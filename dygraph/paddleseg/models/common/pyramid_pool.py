@@ -79,13 +79,15 @@ class ASPPModule(nn.Layer):
 
         outputs = []
         for block in self.aspp_blocks:
-            outputs.append(block(x))
+            y = block(x)
+            y = F.resize_bilinear(y, out_shape=x.shape[2:])
+            outputs.append(y)
 
         if self.image_pooling:
             img_avg = self.global_avg_pool(x)
             img_avg = F.resize_bilinear(img_avg, out_shape=x.shape[2:])
             outputs.append(img_avg)
-
+            
         x = paddle.concat(outputs, axis=1)
         x = self.conv_bn_relu(x)
         x = self.dropout(x)
