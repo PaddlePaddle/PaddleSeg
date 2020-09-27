@@ -127,9 +127,10 @@ class Dataset(paddle.io.Dataset):
             return im, im_info, image_path
         elif self.mode == 'val':
             im, im_info, _ = self.transforms(im=image_path)
-            im = im[np.newaxis, ...]
+            # im = im[np.newaxis, ...]
+            im = np.transpose(im, (1, 2, 0))
             label = np.asarray(Image.open(grt_path))
-            label = label[np.newaxis, np.newaxis, :, :]
+            # label = label[np.newaxis, np.newaxis, :, :]
             return im, im_info, label
         else:
             im, im_info, label = self.transforms(im=image_path, label=grt_path)
