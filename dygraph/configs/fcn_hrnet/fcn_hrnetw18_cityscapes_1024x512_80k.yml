@@ -4,10 +4,12 @@ model:
   type: FCN
   backbone:
     type: HRNet_W18
-    pretrained: pretrained_model/hrnet_w18_imagenet
+    pretrained: pretrained_model/hrnet_w18_ssld
   num_classes: 19
   pretrained: Null
   backbone_indices: [-1]
 
 optimizer:
   weight_decay: 0.0005
+
+iters: 80000
