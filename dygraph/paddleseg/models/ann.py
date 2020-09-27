@@ -18,7 +18,7 @@ import paddle
 import paddle.nn.functional as F
 from paddle import nn
 
-from paddleseg.cvlibs import manager
+from paddleseg.cvlibs import manager, param_init
 from paddleseg.models.common.layer_libs import ConvBNReLU, ConvBN, AuxLayer
 from paddleseg.utils import utils
 
@@ -294,7 +294,7 @@ class SelfAttentionBlock_AFNB(nn.Layer):
         key_channels (int): the key channels in self-attention block.
         value_channels (int): the value channels in self-attention block.
         out_channels (int): out channels of AFNB module.
-        scale (int): pooling size. Defaut to 1.
+        scale (int): pooling size. Default to 1.
         psp_size (tuple): the out size of pooled feature maps. Default to (1, 3, 6, 8).
     """
 
@@ -374,7 +374,7 @@ class SelfAttentionBlock_APNB(nn.Layer):
         out_channels (int): out channels of APNB module.
         key_channels (int): the key channels in self-attention block.
         value_channels (int): the value channels in self-attention block.
-        scale (int): pooling size. Defaut to 1.
+        scale (int): pooling size. Default to 1.
         psp_size (tuple): the out size of pooled feature maps. Default to (1, 3, 6, 8).
     """
 
