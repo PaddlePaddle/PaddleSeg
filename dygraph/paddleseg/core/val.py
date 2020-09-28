@@ -19,7 +19,7 @@ import tqdm
 import cv2
 import paddle
 import paddle.nn.functional as F
-from paddle import to_variable
+from paddle import to_tensor
 
 import paddleseg.utils.logger as logger
 from paddleseg.utils import ConfusionMatrix
@@ -47,7 +47,7 @@ def evaluate(model,
     timer.start()
     for iter, (im, im_info, label) in tqdm.tqdm(
             enumerate(eval_dataset), total=total_iters):
-        im = to_variable(im)
+        im = to_tensor(im)
         logits = model(im)
         pred = paddle.argmax(logits[0], axis=1)
         pred = pred.numpy().astype('float32')
