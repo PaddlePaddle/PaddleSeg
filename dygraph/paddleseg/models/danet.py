@@ -116,14 +116,12 @@ class DAHead(nn.Layer):
         in_channels = in_channels[-1]
         inter_channels = in_channels // 4
 
-        self.channel_conv = ConvBNReLU(
-            in_channels, inter_channels, 3, padding=1)
-        self.position_conv = ConvBNReLU(
-            in_channels, inter_channels, 3, padding=1)
+        self.channel_conv = ConvBNReLU(in_channels, inter_channels, 3)
+        self.position_conv = ConvBNReLU(in_channels, inter_channels, 3)
         self.pam = PAM(inter_channels)
         self.cam = CAM()
-        self.conv1 = ConvBNReLU(inter_channels, inter_channels, 3, padding=1)
-        self.conv2 = ConvBNReLU(inter_channels, inter_channels, 3, padding=1)
+        self.conv1 = ConvBNReLU(inter_channels, inter_channels, 3)
+        self.conv2 = ConvBNReLU(inter_channels, inter_channels, 3)
 
         self.aux_head_pam = nn.Sequential(
             nn.Dropout2d(0.1), nn.Conv2d(inter_channels, num_classes, 1))
@@ -141,12 +139,10 @@ class DAHead(nn.Layer):
         channel_feats = self.channel_conv(feats)
         channel_feats = self.cam(channel_feats)
         channel_feats = self.conv1(channel_feats)
-        cam_head = self.aux_head_cam(channel_feats)
 
         position_feats = self.position_conv(feats)
         position_feats = self.pam(position_feats)
         position_feats = self.conv2(position_feats)
-        pam_head = self.aux_head_pam(position_feats)
 
         feats_sum = position_feats + channel_feats
         cam_logit = self.aux_head_cam(channel_feats)
