@@ -22,4 +22,4 @@ filename = sys.argv[1]
 im = preprocess(filename)
 fetch_map = client.predict(feed={"image": im}, fetch=["transpose_1.tmp_0"])
 fetch_map["filename"] = filename
-postprocess(fetch_map)
+result_png = postprocess(fetch_map)

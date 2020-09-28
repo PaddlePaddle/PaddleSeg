@@ -56,3 +56,4 @@ class SegPostprocess(object):
                                 fy=0,
                                 interpolation=cv2.INTER_CUBIC)
         cv2.imwrite(vis_result_name, result_png, [cv2.CV_8UC1])
+        return result_png
