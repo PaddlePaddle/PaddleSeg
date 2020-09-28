@@ -44,7 +44,6 @@ class ASPPModule(nn.Layer):
         self.aspp_blocks = []
 
         for ratio in aspp_ratios:
-
             if sep_conv and ratio > 1:
                 conv_func = layer_libs.SeparableConvBNReLU
             else:
@@ -76,7 +75,6 @@ class ASPPModule(nn.Layer):
         self.dropout = nn.Dropout(p=0.1)  # drop rate
 
     def forward(self, x):
-
         outputs = []
         for block in self.aspp_blocks:
             y = block(x)
@@ -140,7 +138,6 @@ class PPModule(nn.Layer):
 
         After pooling, the channels are reduced to 1/len(bin_sizes) immediately, while some other implementations
         keep the channels to be same.
-
 
         Args:
             in_channels (int): the number of intput channels to pyramid pooling module.
