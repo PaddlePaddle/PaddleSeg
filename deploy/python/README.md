@@ -92,7 +92,7 @@ python infer.py --conf=/path/to/deploy.yaml --input_dir=/path/to/images_director
 
 运行后程序会扫描`input_dir` 目录下所有指定格式图片，并生成`预测mask`和`可视化的结果`。
 
-对于图片`a.jpeg`, `预测mask` 存在`a_jpeg.png` 中，而可视化结果则在`a_jpeg_result.png` 中。
+对于图片`a.jpeg`, `预测mask` 存在`a_jpeg_mask.png` 中，而可视化结果则在`a_jpeg_result.png` 中。
 
 输入样例:
 ![avatar](../cpp/images/humanseg/demo2.jpeg)
