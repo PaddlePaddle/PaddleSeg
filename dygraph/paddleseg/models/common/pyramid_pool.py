@@ -23,7 +23,7 @@ from paddleseg.models.common import layer_libs
 
 class ASPPModule(nn.Layer):
     """
-     Atrous Spatial Pyramid Pooling
+    Atrous Spatial Pyramid Pooling
 
     Args:
         aspp_ratios (tuple): the dilation rate using in ASSP module.
@@ -156,7 +156,6 @@ class PPModule(nn.Layer):
     def forward(self, input):
         cat_layers = []
         for i, stage in enumerate(self.stages):
-            size = self.bin_sizes[i]
             x = stage(input)
             x = F.resize_bilinear(x, out_shape=input.shape[2:])
             cat_layers.append(x)
