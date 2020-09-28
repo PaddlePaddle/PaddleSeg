@@ -278,6 +278,6 @@ class BiSeNetV2(nn.Layer):
             for sublayer in self.sublayers():
                 if isinstance(sublayer, nn.Conv2d):
                     param_init.msra_init(sublayer.weight)
-                elif isinstance(sublayer, nn.SyncBatchNorm):
+                elif isinstance(sublayer, (nn.BatchNorm, nn.SyncBatchNorm)):
                     param_init.constant_init(sublayer.weight, value=1.0)
                     param_init.constant_init(sublayer.bias, value=0.0)

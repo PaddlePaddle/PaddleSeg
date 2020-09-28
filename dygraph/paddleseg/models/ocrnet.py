@@ -170,7 +170,7 @@ class OCRHead(nn.Layer):
         for sublayer in self.sublayers():
             if isinstance(sublayer, nn.Conv2d):
                 param_init.normal_init(sublayer.weight, scale=0.001)
-            elif isinstance(sublayer, nn.SyncBatchNorm):
+            elif isinstance(sublayer, (nn.BatchNorm, nn.SyncBatchNorm)):
                 param_init.constant_init(sublayer.weight, value=1.0)
                 param_init.constant_init(sublayer.bias, value=0.0)
 
