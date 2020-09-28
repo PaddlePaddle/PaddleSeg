@@ -1,4 +1,3 @@
-# -*- encoding: utf-8 -*-
 # Copyright (c) 2020 PaddlePaddle Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -28,8 +27,8 @@ class Activation(nn.Layer):
         >>> print(sigmoid)
         <class 'paddle.nn.layer.activation.Sigmoid'>
         >>> not_exit_one = Activation("not_exit_one")
-        KeyError: "not_exit_one does not exist in the current dict_keys(['elu', 'gelu', 'hardshrink', 
-        'tanh', 'hardtanh', 'prelu', 'relu', 'relu6', 'selu', 'leakyrelu', 'sigmoid', 'softmax', 
+        KeyError: "not_exit_one does not exist in the current dict_keys(['elu', 'gelu', 'hardshrink',
+        'tanh', 'hardtanh', 'prelu', 'relu', 'relu6', 'selu', 'leakyrelu', 'sigmoid', 'softmax',
         'softplus', 'softshrink', 'softsign', 'tanhshrink', 'logsigmoid', 'logsoftmax', 'hsigmoid'])"
 
     Args:

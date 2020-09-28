@@ -1,4 +1,3 @@
-# -*- encoding: utf-8 -*-
 # Copyright (c) 2020 PaddlePaddle Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -87,7 +86,7 @@ class ASPPModule(nn.Layer):
             img_avg = self.global_avg_pool(x)
             img_avg = F.resize_bilinear(img_avg, out_shape=x.shape[2:])
             outputs.append(img_avg)
-            
+
         x = paddle.concat(outputs, axis=1)
         x = self.conv_bn_relu(x)
         x = self.dropout(x)
