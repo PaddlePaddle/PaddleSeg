@@ -152,8 +152,9 @@ class OCRHead(nn.Layer):
                                  in_channels[self.indices[0]], self.num_classes)
         self.init_weight()
 
-    def forward(self, x, label=None):
-        feat_shallow, feat_deep = x[self.indices[0]], x[self.indices[1]]
+    def forward(self, feat_list):
+        feat_shallow, feat_deep = feat_list[self.indices[0]], feat_list[
+            self.indices[1]]
 
         soft_regions = self.aux_head(feat_shallow)
         pixels = self.conv3x3_ocr(feat_deep)
@@ -213,10 +214,10 @@ class OCRNet(nn.Layer):
 
         self.init_weight(pretrained)
 
-    def forward(self, x, label=None):
+    def forward(self, x):
         feats = self.backbone(x)
         feats = [feats[i] for i in self.backbone_indices]
-        preds = self.head(feats, label)
+        preds = self.head(feats)
         preds = [F.resize_bilinear(pred, x.shape[2:]) for pred in preds]
         return preds
 

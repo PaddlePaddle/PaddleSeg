@@ -134,8 +134,8 @@ class DAHead(nn.Layer):
 
         self.init_weight()
 
-    def forward(self, x, label=None):
-        feats = x[-1]
+    def forward(self, feat_list):
+        feats = feat_list[-1]
         channel_feats = self.channel_conv(feats)
         channel_feats = self.cam(channel_feats)
         channel_feats = self.conv1(channel_feats)
@@ -192,10 +192,10 @@ class DANet(nn.Layer):
 
         self.init_weight(pretrained)
 
-    def forward(self, x, label=None):
+    def forward(self, x):
         feats = self.backbone(x)
         feats = [feats[i] for i in self.backbone_indices]
-        preds = self.head(feats, label)
+        preds = self.head(feats)
         preds = [F.resize_bilinear(pred, x.shape[2:]) for pred in preds]
         return preds
 
