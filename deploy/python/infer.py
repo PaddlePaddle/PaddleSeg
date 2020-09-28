@@ -59,12 +59,16 @@ trt_precision_map = {
 }
 
 
-# scan a directory and get all images with support extensions
+# scan a directory and get all images with support extensions(will ignore *_mask.* and *_result.*)
 def get_images_from_dir(img_dir, support_ext=".jpg|.jpeg"):
     if (not os.path.exists(img_dir) or not os.path.isdir(img_dir)):
         raise Exception("Image Directory [%s] invalid" % img_dir)
     imgs = []
     for item in os.listdir(img_dir):
+        name, ext = os.path.splitext(item)
+        ext = ext[1:].strip().lower()
+        if name.endswith("_mask") or name.endswith("_result"):
+            continue
         ext = os.path.splitext(item)[1][1:].strip().lower()
         if (len(ext) > 0 and ext in support_ext):
             item_path = os.path.join(img_dir, item)
