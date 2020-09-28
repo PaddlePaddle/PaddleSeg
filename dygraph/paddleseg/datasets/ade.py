@@ -46,6 +46,7 @@ class ADE20K(Dataset):
         self.mode = mode
         self.file_list = list()
         self.num_classes = 150
+        self.ignore_index = 255
 
         if mode.lower() not in ['train', 'val']:
             raise Exception(

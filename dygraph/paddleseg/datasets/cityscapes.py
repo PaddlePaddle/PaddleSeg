@@ -49,6 +49,7 @@ class Cityscapes(Dataset):
         self.file_list = list()
         self.mode = mode
         self.num_classes = 19
+        self.ignore_index = 255
 
         if mode.lower() not in ['train', 'val', 'test']:
             raise Exception(

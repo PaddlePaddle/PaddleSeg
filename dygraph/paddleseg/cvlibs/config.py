@@ -35,7 +35,10 @@ class Config(object):
                  learning_rate: float = None,
                  batch_size: int = None,
                  iters: int = None):
-        if not path or not os.path.exists(path):
+        if not path:
+            raise ValueError('Please specify the configuration file path.')
+
+        if not os.path.exists(path):
             raise FileNotFoundError('File {} does not exist'.format(path))
 
         self._model = None
@@ -158,6 +161,7 @@ class Config(object):
                 if key == 'types':
                     self._losses['types'] = []
                     for item in args['types']:
+                        item['ignore_index'] = self.train_dataset.ignore_index
                         self._losses['types'].append(self._load_object(item))
                 else:
                     self._losses[key] = val
@@ -171,6 +175,8 @@ class Config(object):
     @property
     def model(self) -> paddle.nn.Layer:
         model_cfg = self.dic.get('model').copy()
+        model_cfg['num_classes'] = self.train_dataset.num_classes
+
         if not model_cfg:
             raise RuntimeError('No model specified in the configuration file.')
         if not self._model:
