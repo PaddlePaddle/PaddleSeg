@@ -99,8 +99,8 @@ def main(args):
     if not args.cfg:
         raise RuntimeError('No configuration file specified.')
 
-    cfg = Config(args.cfg)
-    cfg.update(
+    cfg = Config(
+        args.cfg,
         learning_rate=args.learning_rate,
         iters=args.iters,
         batch_size=args.batch_size)

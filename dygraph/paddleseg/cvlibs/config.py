@@ -30,7 +30,11 @@ class Config(object):
         path(str) : the path of config file, supports yaml format only
     '''
 
-    def __init__(self, path: str):
+    def __init__(self,
+                 path: str,
+                 learning_rate: float = None,
+                 batch_size: int = None,
+                 iters: int = None):
         if not path or not os.path.exists(path):
             raise FileNotFoundError('File {} does not exist'.format(path))
 
@@ -40,6 +44,9 @@ class Config(object):
             self.dic = self._parse_from_yaml(path)
         else:
             raise RuntimeError('Config file should in yaml format!')
+
+        self.update(
+            learning_rate=learning_rate, batch_size=batch_size, iters=iters)
 
     def _update_dic(self, dic, base_dic):
         """
@@ -142,7 +149,7 @@ class Config(object):
         return args
 
     @property
-    def loss(self) -> list:
+    def loss(self) -> dict:
         args = self.dic.get('loss', {}).copy()
 
         if not self._losses:
