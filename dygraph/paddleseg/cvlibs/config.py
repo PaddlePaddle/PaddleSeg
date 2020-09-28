@@ -18,10 +18,8 @@ from typing import Any, Callable
 
 import yaml
 import paddle
-import paddle.nn.functional as F
 
 import paddleseg.cvlibs.manager as manager
-from paddleseg.utils import logger
 
 
 class Config(object):
@@ -33,7 +31,7 @@ class Config(object):
     '''
 
     def __init__(self, path: str):
-        if not os.path.exists(path):
+        if not path or not os.path.exists(path):
             raise FileNotFoundError('File {} does not exist'.format(path))
 
         self._model = None
@@ -95,7 +93,7 @@ class Config(object):
         return iters
 
     @property
-    def learning_rate(self) -> float:
+    def learning_rate(self) -> paddle.optimizer._LRScheduler:
         _learning_rate = self.dic.get('learning_rate', {}).get('value')
         if not _learning_rate:
             raise RuntimeError(
@@ -164,7 +162,7 @@ class Config(object):
         return self._losses
 
     @property
-    def model(self) -> Callable:
+    def model(self) -> paddle.nn.Layer:
         model_cfg = self.dic.get('model').copy()
         if not model_cfg:
             raise RuntimeError('No model specified in the configuration file.')
@@ -173,14 +171,14 @@ class Config(object):
         return self._model
 
     @property
-    def train_dataset(self) -> Any:
+    def train_dataset(self) -> paddle.io.Dataset:
         _train_dataset = self.dic.get('train_dataset').copy()
         if not _train_dataset:
             return None
         return self._load_object(_train_dataset)
 
     @property
-    def val_dataset(self) -> Any:
+    def val_dataset(self) -> paddle.io.Dataset:
         _val_dataset = self.dic.get('val_dataset').copy()
         if not _val_dataset:
             return None
