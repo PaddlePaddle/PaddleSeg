@@ -19,21 +19,36 @@ from paddle.nn.layer import activation
 
 class Activation(nn.Layer):
     """
-    The wrapper of activations
-    For example:
-        >>> relu = Activation("relu")
-        >>> print(relu)
-        <class 'paddle.nn.layer.activation.ReLU'>
-        >>> sigmoid = Activation("sigmoid")
-        >>> print(sigmoid)
-        <class 'paddle.nn.layer.activation.Sigmoid'>
-        >>> not_exit_one = Activation("not_exit_one")
-        KeyError: "not_exit_one does not exist in the current dict_keys(['elu', 'gelu', 'hardshrink', 
-        'tanh', 'hardtanh', 'prelu', 'relu', 'relu6', 'selu', 'leakyrelu', 'sigmoid', 'softmax', 
-        'softplus', 'softshrink', 'softsign', 'tanhshrink', 'logsigmoid', 'logsoftmax', 'hsigmoid'])"
+    The wrapper of activations.
 
     Args:
-        act (str): the activation name in lowercase
+        act (str, optional): The activation name in lowercase. It must be one of ['elu', 'gelu',
+            'hardshrink', 'tanh', 'hardtanh', 'prelu', 'relu', 'relu6', 'selu', 'leakyrelu', 'sigmoid',
+            'softmax', 'softplus', 'softshrink', 'softsign', 'tanhshrink', 'logsigmoid', 'logsoftmax',
+            'hsigmoid']. Default: None, means identical transformation.
+
+    Returns:
+        A callable object of Activation.
+
+    Raises:
+        KeyError: When parameter `act` is not in the optional range.
+
+    Examples:
+
+        from paddleseg.models.common.activation import Activation
+
+        relu = Activation("relu")
+        print(relu)
+        # <class 'paddle.nn.layer.activation.ReLU'>
+
+        sigmoid = Activation("sigmoid")
+        print(sigmoid)
+        # <class 'paddle.nn.layer.activation.Sigmoid'>
+
+        not_exit_one = Activation("not_exit_one")
+        # KeyError: "not_exit_one does not exist in the current dict_keys(['elu', 'gelu', 'hardshrink',
+        # 'tanh', 'hardtanh', 'prelu', 'relu', 'relu6', 'selu', 'leakyrelu', 'sigmoid', 'softmax',
+        # 'softplus', 'softshrink', 'softsign', 'tanhshrink', 'logsigmoid', 'logsoftmax', 'hsigmoid'])"
     """
 
     def __init__(self, act=None):

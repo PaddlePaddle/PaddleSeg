@@ -17,29 +17,46 @@ from collections.abc import Sequence
 import inspect
 
 
-class ComponentManager:
+class ComponentManager(object):
     """
     Implement a manager class to add the new component properly.
     The component can be added as either class or function type.
-    For example:
-        >>> model_manager = ComponentManager()
-        >>> class AlexNet: ...
-        >>> class ResNet: ...
-        >>> model_manager.add_component(AlexNet)
-        >>> model_manager.add_component(ResNet)
-        or pass a sequence alliteratively:
-        >>> model_manager.add_component([AlexNet, ResNet])
-        >>> print(model_manager.components_dict)
-    output: {'AlexNet': <class '__main__.AlexNet'>, 'ResNet': <class '__main__.ResNet'>}
 
-    Or an easier way, using it as a Python decorator, while just add it above the class declaration.
-        >>> model_manager = ComponentManager()
-        >>> @model_manager.add_component
-        >>> class AlexNet: ...
-        >>> @model_manager.add_component
-        >>> class ResNet: ...
-        >>> print(model_manager.components_dict)
-    output: {'AlexNet': <class '__main__.AlexNet'>, 'ResNet': <class '__main__.ResNet'>}
+    Returns:
+        A callable object of ComponentManager.
+
+    Examples 1:
+
+        from paddleseg.cvlibs.manager import ComponentManager
+
+        model_manager = ComponentManager()
+
+        class AlexNet: ...
+        class ResNet: ...
+
+        model_manager.add_component(AlexNet)
+        model_manager.add_component(ResNet)
+
+        # Or pass a sequence alliteratively:
+        model_manager.add_component([AlexNet, ResNet])
+        print(model_manager.components_dict)
+        # {'AlexNet': <class '__main__.AlexNet'>, 'ResNet': <class '__main__.ResNet'>}
+
+    Examples 2:
+
+        # Or an easier way, using it as a Python decorator, while just add it above the class declaration.
+        from paddleseg.cvlibs.manager import ComponentManager
+
+        model_manager = ComponentManager()
+
+        @model_manager.add_component
+        class AlexNet: ...
+
+        @model_manager.add_component
+        class ResNet: ...
+
+        print(model_manager.components_dict)
+        # {'AlexNet': <class '__main__.AlexNet'>, 'ResNet': <class '__main__.ResNet'>}
     """
 
     def __init__(self):
@@ -64,13 +81,17 @@ class ComponentManager:
 
     def _add_single_component(self, component):
         """
-        Add a single component into the corresponding manager
+        Add a single component into the corresponding manager.
 
         Args:
-        component (function | class): a new component
+            component (function|class): A new component.
 
         Returns:
-        None
+            None
+
+        Raises:
+            TypeError: When `component` is neither class nor function.
+            KeyError: When `component` was added already.
         """
 
         # Currently only support class or function type
@@ -91,13 +112,13 @@ class ComponentManager:
 
     def add_component(self, components):
         """
-        Add component(s) into the corresponding manager
+        Add component(s) into the corresponding manager.
 
         Args:
-        components (function | class | list | tuple): support three types of components
+            components (function|class|list|tuple): Support 4 types of components.
 
         Returns:
-        None
+            None
         """
 
         # Check whether the type is a sequence
