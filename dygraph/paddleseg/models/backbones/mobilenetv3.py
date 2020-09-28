@@ -12,25 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
-import math
-import os
-
-import numpy as np
 import paddle
 import paddle.nn as nn
 import paddle.nn.functional as F
-from paddle.nn import Conv2d, AdaptiveAvgPool2d
-from paddle.nn import SyncBatchNorm as BatchNorm
+from paddle import ParamAttr
 # from paddle.regularizer import L2Decay
 from paddle.fluid.regularizer import L2Decay
-from paddle import ParamAttr
-
-from paddleseg.models.common import layer_libs, activation
+from paddle.nn import Conv2d, AdaptiveAvgPool2d
+from paddle.nn import SyncBatchNorm as BatchNorm
 from paddleseg.cvlibs import manager
+from paddleseg.models.common import activation
 from paddleseg.utils import utils
 
 __all__ = [
@@ -177,32 +168,6 @@ class MobileNetV3(nn.Layer):
                 sublayer=self.block_list[-1], name="conv" + str(i + 2))
             inplanes = make_divisible(scale * c)
 
-        # self.last_second_conv = ConvBNLayer(
-        #     in_c=inplanes,
-        #     out_c=make_divisible(scale * self.cls_ch_squeeze),
-        #     filter_size=1,
-        #     stride=1,
-        #     padding=0,
-        #     num_groups=1,
-        #     if_act=True,
-        #     act="hard_swish",
-        #     name="conv_last")
-
-        # self.pool = Pool2D(
-        #     pool_type="avg", global_pooling=True, use_cudnn=False)
-
-        # self.last_conv = Conv2d(
-        #     in_channels=make_divisible(scale * self.cls_ch_squeeze),
-        #     out_channels=self.cls_ch_expand,
-        #     kernel_size=1,
-        #     stride=1,
-        #     padding=0,
-        #     bias_attr=False)
-
-        # self.out = Linear(
-        #     input_dim=self.cls_ch_expand,
-        #     output_dim=class_dim)
-
         utils.load_pretrained_model(self, pretrained)
 
     def modify_bottle_params(self, output_stride=None):
@@ -228,14 +193,6 @@ class MobileNetV3(nn.Layer):
             x = block(x)
             if i in self.out_indices:
                 feat_list.append(x)
-            #print("block {}:".format(i),x.shape, self.dilation_cfg[i])
-        # x = self.last_second_conv(x)
-        # x = self.pool(x)
-        # x = self.last_conv(x)
-        # x = F.hard_swish(x)
-        # x = F.dropout(x=x, dropout_prob=dropout_prob)
-        # x = paddle.reshape(x, shape=[x.shape[0], x.shape[1]])
-        # x = self.out(x)
 
         return feat_list
 
@@ -313,7 +270,7 @@ class ResidualUnit(nn.Layer):
             stride=stride,
             padding=get_padding_same(
                 filter_size,
-                dilation),  #int((filter_size - 1) // 2) + (dilation - 1),
+                dilation),  # int((filter_size - 1) // 2) + (dilation - 1),
             dilation=dilation,
             num_groups=mid_c,
             if_act=True,
