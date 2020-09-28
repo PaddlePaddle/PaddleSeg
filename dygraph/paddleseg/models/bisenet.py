@@ -270,7 +270,7 @@ class BiSeNetV2(nn.Layer):
         """
         if pretrained is not None:
             if os.path.exists(pretrained):
-                utils.load_pretrained_model(self, pretrained)
+                utils.load_entire_model(self, pretrained)
             else:
                 raise Exception(
                     'Pretrained model is not found: {}'.format(pretrained))

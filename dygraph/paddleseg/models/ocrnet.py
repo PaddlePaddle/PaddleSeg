@@ -185,21 +185,21 @@ class OCRNet(nn.Layer):
     Args:
         num_classes(int): the unique number of target classes.
         backbone(Paddle.nn.Layer): backbone network.
-        pretrained(str): the path or url of pretrained model. Default to None.
         backbone_indices(tuple): two values in the tuple indicate the indices of output of backbone.
                         the first index will be taken as a deep-supervision feature in auxiliary layer;
                         the second one will be taken as input of pixel representation.
         ocr_mid_channels(int): the number of middle channels in OCRHead.
         ocr_key_channels(int): the number of key channels in ObjectAttentionBlock.
+        pretrained(str): the path or url of pretrained model. Default to None.
     """
 
     def __init__(self,
                  num_classes,
                  backbone,
-                 pretrained=None,
                  backbone_indices=None,
                  ocr_mid_channels=512,
-                 ocr_key_channels=256):
+                 ocr_key_channels=256,
+                 pretrained=None):
         super(OCRNet, self).__init__()
 
         self.backbone = backbone
@@ -212,7 +212,7 @@ class OCRNet(nn.Layer):
             ocr_mid_channels=ocr_mid_channels,
             ocr_key_channels=ocr_key_channels)
 
-        self.init_weight(pretrained)
+        utils.load_entire_model(self, pretrained=pretrained)
 
     def forward(self, x):
         feats = self.backbone(x)
@@ -220,16 +220,3 @@ class OCRNet(nn.Layer):
         preds = self.head(feats)
         preds = [F.resize_bilinear(pred, x.shape[2:]) for pred in preds]
         return preds
-
-    def init_weight(self, pretrained=None):
-        """
-        Initialize the parameters of model parts.
-        Args:
-            pretrained ([str], optional): the path of pretrained model.. Defaults to None.
-        """
-        if pretrained is not None:
-            if os.path.exists(pretrained):
-                utils.load_pretrained_model(self, pretrained)
-            else:
-                raise Exception(
-                    'Pretrained model is not found: {}'.format(pretrained))

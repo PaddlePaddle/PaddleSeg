@@ -172,16 +172,17 @@ class DANet(nn.Layer):
     Args:
         num_classes(int): the unique number of target classes.
         backbone(Paddle.nn.Layer): backbone network.
+        backbone_indices(tuple): values in the tuple indicate the indices of
+                                 output of backbone. Only the last indice is
+                                 used.
         pretrained(str): the path or url of pretrained model. Default to None.
-        backbone_indices(tuple): values in the tuple indicate the indices of output of backbone.
-                                 Only the last indice is used.
     """
 
     def __init__(self,
                  num_classes,
                  backbone,
-                 pretrained=None,
-                 backbone_indices=None):
+                 backbone_indices=None,
+                 pretrained=None):
         super(DANet, self).__init__()
 
         self.backbone = backbone
@@ -190,7 +191,7 @@ class DANet(nn.Layer):
 
         self.head = DAHead(num_classes=num_classes, in_channels=in_channels)
 
-        self.init_weight(pretrained)
+        utils.load_entire_model(self, pretrained)
 
     def forward(self, x):
         feats = self.backbone(x)
@@ -198,16 +199,3 @@ class DANet(nn.Layer):
         preds = self.head(feats)
         preds = [F.resize_bilinear(pred, x.shape[2:]) for pred in preds]
         return preds
-
-    def init_weight(self, pretrained=None):
-        """
-        Initialize the parameters of model parts.
-        Args:
-            pretrained ([str], optional): the path of pretrained model.. Defaults to None.
-        """
-        if pretrained is not None:
-            if os.path.exists(pretrained):
-                utils.load_pretrained_model(self, pretrained)
-            else:
-                raise Exception(
-                    'Pretrained model is not found: {}'.format(pretrained))
