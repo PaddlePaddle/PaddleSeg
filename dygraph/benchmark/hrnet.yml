@@ -1,0 +1,48 @@
+batch_size: 2
+iters: 500
+
+train_dataset:
+  type: Cityscapes
+  dataset_root: data/cityscapes
+  transforms:
+    - type: ResizeStepScaling
+      min_scale_factor: 0.5
+      max_scale_factor: 2.0
+      scale_step_size: 0.25
+    - type: RandomPaddingCrop
+      crop_size: [1024, 512]
+    - type: RandomHorizontalFlip
+    - type: RandomDistort
+    - type: Normalize
+  mode: train
+
+val_dataset:
+  type: Cityscapes
+  dataset_root: data/cityscapes
+  transforms:
+    - type: Normalize
+  mode: val
+
+model:
+  type: FCN
+  backbone:
+    type: HRNet_W18
+  num_classes: 19
+  backbone_indices: [-1]
+
+optimizer:
+  type: sgd
+  weight_decay: 0.0005
+
+learning_rate:
+  value: 0.01
+  decay:
+    type: poly
+    power: 0.9
+    end_lr: 0.0
+
+loss:
+  types:
+    - type: CrossEntropyLoss
+      ignore_index: 255
+  coef: [1]
