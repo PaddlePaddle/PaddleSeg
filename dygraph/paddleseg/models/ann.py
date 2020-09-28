@@ -73,7 +73,6 @@ class ANN(nn.Layer):
         utils.load_entire_model(self, pretrained)
 
     def forward(self, input):
-
         feat_list = self.backbone(input)
         logit_list = self.head(feat_list)
         return [
@@ -154,7 +153,6 @@ class ANNHead(nn.Layer):
         self.init_weight()
 
     def forward(self, feat_list):
-
         logit_list = []
         low_level_x = feat_list[self.backbone_indices[0]]
         high_level_x = feat_list[self.backbone_indices[1]]
