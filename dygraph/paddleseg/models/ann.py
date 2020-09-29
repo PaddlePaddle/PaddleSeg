@@ -31,15 +31,15 @@ class ANN(nn.Layer):
     (https://arxiv.org/pdf/1908.07678.pdf)
 
     Args:
-        num_classes (int): the unique number of target classes.
-        backbone (Paddle.nn.Layer): backbone network, currently support Resnet50/101.
-        backbone_indices (tuple, optional): two values in the tuple indicate the indices of output of backbone.
-        key_value_channels (int, optional): the key and value channels of self-attention map in both AFNB and APNB modules.
+        num_classes (int): The unique number of target classes.
+        backbone (Paddle.nn.Layer): Backbone network, currently support Resnet50/101.
+        backbone_indices (tuple, optional): Two values in the tuple indicate the indices of output of backbone.
+        key_value_channels (int, optional): The key and value channels of self-attention map in both AFNB and APNB modules.
             Default: 256.
-        inter_channels (int, optional): both input and output channels of APNB modules. Default: 512.
-        psp_size (tuple, optional): the out size of pooled feature maps. Default: (1, 3, 6, 8).
-        enable_auxiliary_loss (bool, optional): a bool values indicates whether adding auxiliary loss. Default: True.
-        pretrained (str, optional): the path of pretrained model. Default: None.
+        inter_channels (int, optional): Both input and output channels of APNB modules. Default: 512.
+        psp_size (tuple, optional): The out size of pooled feature maps. Default: (1, 3, 6, 8).
+        enable_auxiliary_loss (bool, optional): A bool values indicates whether adding auxiliary loss. Default: True.
+        pretrained (str, optional): The path of pretrained model. Default: None.
     """
 
     def __init__(self,
@@ -51,7 +51,7 @@ class ANN(nn.Layer):
                  psp_size=(1, 3, 6, 8),
                  enable_auxiliary_loss=True,
                  pretrained=None):
-        super(ANN, self).__init__()
+        super().__init__()
 
         self.backbone = backbone
         backbone_channels = [
@@ -84,17 +84,17 @@ class ANNHead(nn.Layer):
     It mainly consists of AFNB and APNB modules.
 
     Args:
-        num_classes (int): the unique number of target classes.
-        backbone_indices (tuple): two values in the tuple indicate the indices of output of backbone.
-            the first index will be taken as low-level features; the second one will be 
+        num_classes (int): The unique number of target classes.
+        backbone_indices (tuple): Two values in the tuple indicate the indices of output of backbone.
+            The first index will be taken as low-level features; the second one will be 
             taken as high-level features in AFNB module. Usually backbone consists of four 
             downsampling stage, such as ResNet, and return an output of each stage. If the argument is (2, 3), 
             it means taking feature map of the third stage and the fourth stage in backbone.
-        backbone_channels (tuple): the same length with "backbone_indices". It indicates the channels of corresponding index.
-        key_value_channels (int): the key and value channels of self-attention map in both AFNB and APNB modules.
-        inter_channels (int): both input and output channels of APNB modules.
-        psp_size (tuple): the out size of pooled feature maps.
-        enable_auxiliary_loss (bool, optional): a bool values indicates whether adding auxiliary loss. Default: True.
+        backbone_channels (tuple): The same length with "backbone_indices". It indicates the channels of corresponding index.
+        key_value_channels (int): The key and value channels of self-attention map in both AFNB and APNB modules.
+        inter_channels (int): Both input and output channels of APNB modules.
+        psp_size (tuple): The out size of pooled feature maps.
+        enable_auxiliary_loss (bool, optional): A bool values indicates whether adding auxiliary loss. Default: True.
     """
 
     def __init__(self,
@@ -167,14 +167,14 @@ class AFNB(nn.Layer):
     Asymmetric Fusion Non-local Block
 
     Args:
-        low_in_channels (int): low-level-feature channels.
-        high_in_channels (int): high-level-feature channels.
-        out_channels (int): out channels of AFNB module.
-        key_channels (int): the key channels in self-attention block.
-        value_channels (int): the value channels in self-attention block.
-        dropout_prob (float): the dropout rate of output.
-        repeat_sizes (tuple, optional): the number of AFNB modules. Default: ([1]).
-        psp_size (tuple. optional): the out size of pooled feature maps. Default: (1, 3, 6, 8).
+        low_in_channels (int): Low-level-feature channels.
+        high_in_channels (int): High-level-feature channels.
+        out_channels (int): Out channels of AFNB module.
+        key_channels (int): The key channels in self-attention block.
+        value_channels (int): The value channels in self-attention block.
+        dropout_prob (float): The dropout rate of output.
+        repeat_sizes (tuple, optional): The number of AFNB modules. Default: ([1]).
+        psp_size (tuple. optional): The out size of pooled feature maps. Default: (1, 3, 6, 8).
     """
 
     def __init__(self,
@@ -217,13 +217,13 @@ class APNB(nn.Layer):
     Asymmetric Pyramid Non-local Block
 
     Args:
-        in_channels (int): the input channels of APNB module.
-        out_channels (int): out channels of APNB module.
-        key_channels (int): the key channels in self-attention block.
-        value_channels (int): the value channels in self-attention block.
-        dropout_prob (float): the dropout rate of output.
-        repeat_sizes (tuple, optional): the number of AFNB modules. Default: ([1]).
-        psp_size (tuple, optional): the out size of pooled feature maps. Default: (1, 3, 6, 8).
+        in_channels (int): The input channels of APNB module.
+        out_channels (int): Out channels of APNB module.
+        key_channels (int): The key channels in self-attention block.
+        value_channels (int): The value channels in self-attention block.
+        dropout_prob (float): The dropout rate of output.
+        repeat_sizes (tuple, optional): The number of AFNB modules. Default: ([1]).
+        psp_size (tuple, optional): The out size of pooled feature maps. Default: (1, 3, 6, 8).
     """
 
     def __init__(self,
@@ -275,13 +275,13 @@ class SelfAttentionBlock_AFNB(nn.Layer):
     Self-Attention Block for AFNB module.
 
     Args:
-        low_in_channels (int): low-level-feature channels.
-        high_in_channels (int): high-level-feature channels.
-        key_channels (int): the key channels in self-attention block.
-        value_channels (int): the value channels in self-attention block.
-        out_channels (int, optional): out channels of AFNB module. Default: None.
-        scale (int, optional): pooling size. Default: 1.
-        psp_size (tuple, optional): the out size of pooled feature maps. Default: (1, 3, 6, 8).
+        low_in_channels (int): Low-level-feature channels.
+        high_in_channels (int): High-level-feature channels.
+        key_channels (int): The key channels in self-attention block.
+        value_channels (int): The value channels in self-attention block.
+        out_channels (int, optional): Out channels of AFNB module. Default: None.
+        scale (int, optional): Pooling size. Default: 1.
+        psp_size (tuple, optional): The out size of pooled feature maps. Default: (1, 3, 6, 8).
     """
 
     def __init__(self,
@@ -356,12 +356,12 @@ class SelfAttentionBlock_APNB(nn.Layer):
     Self-Attention Block for APNB module.
 
     Args:
-        in_channels (int): the input channels of APNB module.
-        out_channels (int): out channels of APNB module.
-        key_channels (int): the key channels in self-attention block.
-        value_channels (int): the value channels in self-attention block.
-        scale (int, optional): pooling size. Default: 1.
-        psp_size (tuple, optional): the out size of pooled feature maps. Default: (1, 3, 6, 8).
+        in_channels (int): The input channels of APNB module.
+        out_channels (int): The out channels of APNB module.
+        key_channels (int): The key channels in self-attention block.
+        value_channels (int): The value channels in self-attention block.
+        scale (int, optional): Pooling size. Default: 1.
+        psp_size (tuple, optional): The out size of pooled feature maps. Default: (1, 3, 6, 8).
     """
 
     def __init__(self,
