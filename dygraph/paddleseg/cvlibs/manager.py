@@ -93,9 +93,6 @@ class ComponentManager:
         Args:
             component (function|class): A new component.
 
-        Returns:
-            None
-
         Raises:
             TypeError: When `component` is neither class nor function.
             KeyError: When `component` was added already.
