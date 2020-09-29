@@ -6,4 +6,5 @@ iters: 40000
 model:
   type: UNet
   num_classes: 19
+  use_deconv: False
   pretrained: Null
