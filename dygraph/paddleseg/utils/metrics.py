@@ -20,7 +20,17 @@ from scipy.sparse import csr_matrix
 
 class ConfusionMatrix(object):
     """
-        Confusion Matrix for segmentation evaluation
+        Confusion Matrix for segmentation evaluation.
+
+        The calculation method of metrics (mIoU, Accuracy, Kappa) refers to
+        Hao S, Zhou Y, Guo Y. A Brief Survey on Semantic Segmentation with
+        Deep Learning[J]. Neurocomputing, 2020.
+        (https://www.sciencedirect.com/science/article/abs/pii/S0925231220305476)
+        or
+        Garcia-Garcia A, Orts-Escolano S, Oprea S, et al. A review on
+        deep learning techniques applied to semantic segmentation[J].
+        arXiv preprint arXiv:1704.06857, 2017.
+        (https://arxiv.org/pdf/1704.06857.pdf)
     """
 
     def __init__(self, num_classes=2, streaming=False):
@@ -67,8 +77,21 @@ class ConfusionMatrix(object):
                                          dtype='int64')
 
     def mean_iou(self):
+        """
+        Calculate mIoU and Category IoU.
+
+        Mean Intersection over Union (mIoU): This is the standard metric for
+        segmentation purposes. It computes a ratio between the intersection
+        and the union of two sets, in our case the ground truth and our
+        predicted segmentation.
+
+        Category IoU: Computing mIoU for each class.
+
+        Returns:
+            list(numpy.ndarray, float), a list of Category IoU and mIoU.
+        """
         iou_list = []
-        avg_iou = 0
+        miou = 0
         # TODO: use numpy sum axis api to simpliy
         vji = np.zeros(self.num_classes, dtype=int)
         vij = np.zeros(self.num_classes, dtype=int)
@@ -90,20 +113,31 @@ class ConfusionMatrix(object):
                 iou = 0
             else:
                 iou = float(self.confusion_matrix[c][c]) / total
-            avg_iou += iou
+            miou += iou
             iou_list.append(iou)
-        avg_iou = float(avg_iou) / float(self.num_classes)
-        return np.array(iou_list), avg_iou
+        miou = float(miou) / float(self.num_classes)
+        return np.array(iou_list), miou
 
     def accuracy(self):
+        """
+        Calculate Category Accuracy and Pixel Accuracy.
+
+        Pixel Accuracy (PA): Computing a ratio between the amount of
+        properly classified pixels and the total number of them.
+
+        Category Accuracy: Computing Pixel Accuracy for each class.
+
+        Returns:
+            list(numpy.ndarray, float), a list of Category Accuracy and Pixel Accuracy.
+        """
         total = self.confusion_matrix.sum()
         total_right = 0
         for c in range(self.num_classes):
             total_right += self.confusion_matrix[c][c]
         if total == 0:
-            avg_acc = 0
+            pixel_acc = 0
         else:
-            avg_acc = float(total_right) / total
+            pixel_acc = float(total_right) / total
 
         vij = np.zeros(self.num_classes, dtype=int)
         for i in range(self.num_classes):
@@ -119,9 +153,20 @@ class ConfusionMatrix(object):
             else:
                 acc = self.confusion_matrix[c][c] / float(vij[c])
             acc_list.append(acc)
-        return np.array(acc_list), avg_acc
+        return np.array(acc_list), pixel_acc
 
     def kappa(self):
+        """
+        Calculate Cohen's kappa coefficient.
+
+        Cohen's kappa coefficient: A statistic that is used to measure
+        inter-rater reliability (and also Intra-rater reliability) for
+        qualitative (categorical) items. Refer to
+        https://en.wikipedia.org/wiki/Cohen%27s_kappa
+
+        Returns
+            Float, kappa coefficient.
+        """
         vji = np.zeros(self.num_classes)
         vij = np.zeros(self.num_classes)
         for j in range(self.num_classes):

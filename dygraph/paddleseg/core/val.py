@@ -24,6 +24,8 @@ import paddleseg.utils.logger as logger
 from paddleseg.utils import ConfusionMatrix
 from paddleseg.utils import Timer, calculate_eta
 
+np.set_printoptions(suppress=True)
+
 
 def evaluate(model, eval_dataset=None, model_dir=None, iter_id=None):
     ckpt_path = os.path.join(model_dir, 'model')
