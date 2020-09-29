@@ -12,13 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
-
 import paddle
 import paddle.nn as nn
 import paddle.nn.functional as F
 
-from paddleseg.cvlibs import manager, param_init
+from paddleseg.cvlibs import manager
 from paddleseg.models import layers
 from paddleseg.utils import utils
 
@@ -61,7 +59,7 @@ class ANN(nn.Layer):
         ]
 
         self.head = ANNHead(
-            num_classes, 
+            num_classes,
             backbone_indices,
             backbone_channels,
             key_value_channels,
@@ -77,6 +75,7 @@ class ANN(nn.Layer):
         return [
             F.resize_bilinear(logit, input.shape[2:]) for logit in logit_list
         ]
+
 
 class ANNHead(nn.Layer):
     """
@@ -162,7 +161,7 @@ class ANNHead(nn.Layer):
 
         return logit_list
 
-        
+
 class AFNB(nn.Layer):
     """
     Asymmetric Fusion Non-local Block
@@ -338,7 +337,7 @@ class SelfAttentionBlock_AFNB(nn.Layer):
         key = _pp_module(key, self.psp_size)
 
         sim_map = paddle.matmul(query, key)
-        sim_map = (self.key_channels**-.5) * sim_map
+        sim_map = (self.key_channels ** -.5) * sim_map
         sim_map = F.softmax(sim_map, axis=-1)
 
         context = paddle.matmul(sim_map, value)
@@ -413,7 +412,7 @@ class SelfAttentionBlock_APNB(nn.Layer):
         key = _pp_module(key, self.psp_size)
 
         sim_map = paddle.matmul(query, key)
-        sim_map = (self.key_channels**-.5) * sim_map
+        sim_map = (self.key_channels ** -.5) * sim_map
         sim_map = F.softmax(sim_map, axis=-1)
 
         context = paddle.matmul(sim_map, value)
