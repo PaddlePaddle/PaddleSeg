@@ -18,7 +18,6 @@ import os
 import paddle
 import paddle.nn as nn
 import paddle.nn.functional as F
-from paddle.nn import Conv2d
 from paddle.nn import SyncBatchNorm as BatchNorm
 
 from paddleseg.cvlibs import manager
@@ -27,15 +26,25 @@ from paddleseg.cvlibs import param_init
 from paddleseg.utils import logger
 from paddleseg.models import layers
 
-__all__ = [
-    "fcn_hrnet_w18_small_v1", "fcn_hrnet_w18_small_v2", "fcn_hrnet_w18",
-    "fcn_hrnet_w30", "fcn_hrnet_w32", "fcn_hrnet_w40", "fcn_hrnet_w44",
-    "fcn_hrnet_w48", "fcn_hrnet_w60", "fcn_hrnet_w64"
-]
-
 
 @manager.MODELS.add_component
 class FCN(nn.Layer):
+    """
+    A simple implementation for FCN based on PaddlePaddle.
+
+    The original article refers to
+    Evan Shelhamer, et, al. "Fully Convolutional Networks for Semantic Segmentation"
+    (https://arxiv.org/abs/1411.4038).
+
+    Args:
+        num_classes (int): the unique number of target classes.
+        backbone (paddle.nn.Layer): backbone networks.
+        pretrained (str): the path of pretrained model. Default: None
+        backbone_indices (tuple): one values in the tuple indicte the indices of output of backbone. Default: (-1, ).
+        channels (int): Channels after conv layer before the last one of FCNHead.
+            If not set, it is set to the number of channels of input features. Default: None.
+    """
+
     def __init__(self,
                  num_classes,
                  backbone,
@@ -63,16 +72,16 @@ class FCN(nn.Layer):
 
 class FCNHead(nn.Layer):
     """
-    A simple implementation for Fully Convolutional Networks for Semantic Segmentation.
-    https://arxiv.org/abs/1411.4038
+    A simple implementation for FCNHead based on PaddlePaddle
 
     Args:
-        num_classes (int): the unique number of target classes.
-        backbone (paddle.nn.Layer): backbone networks.
-        model_pretrained (str): the path of pretrained model.
-        backbone_indices (tuple): one values in the tuple indicte the indices of output of backbone.Default -1.
-        backbone_channels (tuple): the same length with "backbone_indices". It indicates the channels of corresponding index.
-        channels (int): channels after conv layer before the last one.
+        num_classes (int): The unique number of target classes.
+        backbone_indices (tuple): One values in the tuple indicte the
+            indices of output of backbone.Default -1. Default: (-1, )
+        backbone_channels (tuple): The same length with "backbone_indices".
+            It indicates the channels of corresponding index. Default: (270, )
+        channels (int): Channels after conv layer before the last one.
+            If not set, it is set to the number of channels of input features. Default: None.
     """
 
     def __init__(self,
@@ -93,7 +102,7 @@ class FCNHead(nn.Layer):
             kernel_size=1,
             padding='same',
             stride=1)
-        self.cls = Conv2d(
+        self.cls = nn.Conv2d(
             in_channels=channels,
             out_channels=self.num_classes,
             kernel_size=1,
@@ -116,53 +125,3 @@ class FCNHead(nn.Layer):
             elif isinstance(layer, (nn.BatchNorm, nn.SyncBatchNorm)):
                 param_init.constant_init(layer.weight, value=1.0)
                 param_init.constant_init(layer.bias, value=0.0)
-
-
-@manager.MODELS.add_component
-def fcn_hrnet_w18_small_v1(*args, **kwargs):
-    return FCN(backbone='HRNet_W18_Small_V1', backbone_channels=(240), **kwargs)
-
-
-@manager.MODELS.add_component
-def fcn_hrnet_w18_small_v2(*args, **kwargs):
-    return FCN(backbone='HRNet_W18_Small_V2', backbone_channels=(270), **kwargs)
-
-
-@manager.MODELS.add_component
-def fcn_hrnet_w18(*args, **kwargs):
-    return FCN(backbone='HRNet_W18', backbone_channels=(270), **kwargs)
-
-
-@manager.MODELS.add_component
-def fcn_hrnet_w30(*args, **kwargs):
-    return FCN(backbone='HRNet_W30', backbone_channels=(450), **kwargs)
-
-
-@manager.MODELS.add_component
-def fcn_hrnet_w32(*args, **kwargs):
-    return FCN(backbone='HRNet_W32', backbone_channels=(480), **kwargs)
-
-
-@manager.MODELS.add_component
-def fcn_hrnet_w40(*args, **kwargs):
-    return FCN(backbone='HRNet_W40', backbone_channels=(600), **kwargs)
-
-
-@manager.MODELS.add_component
-def fcn_hrnet_w44(*args, **kwargs):
-    return FCN(backbone='HRNet_W44', backbone_channels=(660), **kwargs)
-
-
-@manager.MODELS.add_component
-def fcn_hrnet_w48(*args, **kwargs):
-    return FCN(backbone='HRNet_W48', backbone_channels=(720), **kwargs)
-
-
-@manager.MODELS.add_component
-def fcn_hrnet_w60(*args, **kwargs):
-    return FCN(backbone='HRNet_W60', backbone_channels=(900), **kwargs)
-
-
-@manager.MODELS.add_component
-def fcn_hrnet_w64(*args, **kwargs):
-    return FCN(backbone='HRNet_W64', backbone_channels=(960), **kwargs)
