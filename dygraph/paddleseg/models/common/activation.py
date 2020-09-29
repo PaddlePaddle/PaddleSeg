@@ -52,7 +52,6 @@ class Activation(nn.Layer):
                     act, act_dict.keys()))
 
     def forward(self, x):
-
         if self._act is not None:
             return self.act_func(x)
         else:

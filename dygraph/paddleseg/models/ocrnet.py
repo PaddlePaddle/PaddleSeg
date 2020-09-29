@@ -152,8 +152,9 @@ class OCRHead(nn.Layer):
                                  in_channels[self.indices[0]], self.num_classes)
         self.init_weight()
 
-    def forward(self, x, label=None):
-        feat_shallow, feat_deep = x[self.indices[0]], x[self.indices[1]]
+    def forward(self, feat_list):
+        feat_shallow, feat_deep = feat_list[self.indices[0]], feat_list[
+            self.indices[1]]
 
         soft_regions = self.aux_head(feat_shallow)
         pixels = self.conv3x3_ocr(feat_deep)
@@ -169,7 +170,7 @@ class OCRHead(nn.Layer):
         for sublayer in self.sublayers():
             if isinstance(sublayer, nn.Conv2d):
                 param_init.normal_init(sublayer.weight, scale=0.001)
-            elif isinstance(sublayer, nn.SyncBatchNorm):
+            elif isinstance(sublayer, (nn.BatchNorm, nn.SyncBatchNorm)):
                 param_init.constant_init(sublayer.weight, value=1.0)
                 param_init.constant_init(sublayer.bias, value=0.0)
 
@@ -184,21 +185,21 @@ class OCRNet(nn.Layer):
     Args:
         num_classes(int): the unique number of target classes.
         backbone(Paddle.nn.Layer): backbone network.
-        pretrained(str): the path or url of pretrained model. Default to None.
         backbone_indices(tuple): two values in the tuple indicate the indices of output of backbone.
                         the first index will be taken as a deep-supervision feature in auxiliary layer;
                         the second one will be taken as input of pixel representation.
         ocr_mid_channels(int): the number of middle channels in OCRHead.
         ocr_key_channels(int): the number of key channels in ObjectAttentionBlock.
+        pretrained(str): the path or url of pretrained model. Default to None.
     """
 
     def __init__(self,
                  num_classes,
                  backbone,
-                 pretrained=None,
                  backbone_indices=None,
                  ocr_mid_channels=512,
-                 ocr_key_channels=256):
+                 ocr_key_channels=256,
+                 pretrained=None):
         super(OCRNet, self).__init__()
 
         self.backbone = backbone
@@ -211,24 +212,11 @@ class OCRNet(nn.Layer):
             ocr_mid_channels=ocr_mid_channels,
             ocr_key_channels=ocr_key_channels)
 
-        self.init_weight(pretrained)
+        utils.load_entire_model(self, pretrained=pretrained)
 
-    def forward(self, x, label=None):
+    def forward(self, x):
         feats = self.backbone(x)
         feats = [feats[i] for i in self.backbone_indices]
-        preds = self.head(feats, label)
+        preds = self.head(feats)
         preds = [F.resize_bilinear(pred, x.shape[2:]) for pred in preds]
         return preds
-
-    def init_weight(self, pretrained=None):
-        """
-        Initialize the parameters of model parts.
-        Args:
-            pretrained ([str], optional): the path of pretrained model.. Defaults to None.
-        """
-        if pretrained is not None:
-            if os.path.exists(pretrained):
-                utils.load_pretrained_model(self, pretrained)
-            else:
-                raise Exception(
-                    'Pretrained model is not found: {}'.format(pretrained))

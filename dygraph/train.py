@@ -99,8 +99,8 @@ def main(args):
     if not args.cfg:
         raise RuntimeError('No configuration file specified.')
 
-    cfg = Config(args.cfg)
-    cfg.update(
+    cfg = Config(
+        args.cfg,
         learning_rate=args.learning_rate,
         iters=args.iters,
         batch_size=args.batch_size)
@@ -128,11 +128,9 @@ def main(args):
         batch_size=cfg.batch_size,
         save_interval_iters=args.save_interval_iters,
         log_iters=args.log_iters,
-        num_classes=train_dataset.num_classes,
         num_workers=args.num_workers,
         use_vdl=args.use_vdl,
-        losses=losses,
-        ignore_index=losses['types'][0].ignore_index)
+        losses=losses)
 
 
 if __name__ == '__main__':

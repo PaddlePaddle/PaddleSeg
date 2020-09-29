@@ -60,11 +60,9 @@ def train(model,
           resume_model=None,
           save_interval_iters=1000,
           log_iters=10,
-          num_classes=None,
           num_workers=8,
           use_vdl=False,
-          losses=None,
-          ignore_index=255):
+          losses=None):
 
     nranks = ParallelEnv().nranks
 
@@ -178,8 +176,6 @@ def train(model,
                         model,
                         val_dataset,
                         model_dir=current_save_dir,
-                        num_classes=num_classes,
-                        ignore_index=ignore_index,
                         iter_id=iter)
                     if mean_iou > best_mean_iou:
                         best_mean_iou = mean_iou
