@@ -19,7 +19,6 @@ import tqdm
 import cv2
 import paddle
 import paddle.nn.functional as F
-from paddle import to_tensor
 
 import paddleseg.utils.logger as logger
 from paddleseg.utils import ConfusionMatrix
@@ -35,14 +34,13 @@ def evaluate(model, eval_dataset=None, model_dir=None, iter_id=None):
     total_iters = len(eval_dataset)
     conf_mat = ConfusionMatrix(eval_dataset.num_classes, streaming=True)
 
-    logger.info(
-        "Start to evaluating(total_samples={}, total_iters={})...".format(
-            len(eval_dataset), total_iters))
+    logger.info("Start evaluating (total_samples={}, total_iters={})...".format(
+        len(eval_dataset), total_iters))
     timer = Timer()
     timer.start()
     for iter, (im, im_info, label) in tqdm.tqdm(
             enumerate(eval_dataset), total=total_iters):
-        im = to_tensor(im)
+        im = paddle.to_tensor(im)
         logits = model(im)
         pred = paddle.argmax(logits[0], axis=1)
         pred = pred.numpy().astype('float32')
@@ -67,16 +65,15 @@ def evaluate(model, eval_dataset=None, model_dir=None, iter_id=None):
         time_iter = timer.elapsed_time()
         remain_iter = total_iters - iter - 1
         logger.debug(
-            "[EVAL] iter_id={}, iter={}/{}, iou={:4f}, sec/iter={:.4f} | ETA {}"
+            "[EVAL] iter_id={}, iter={}/{}, IoU={:4f}, sec/iter={:.4f} | ETA {}"
             .format(iter_id, iter + 1, total_iters, iou, time_iter,
                     calculate_eta(remain_iter, time_iter)))
         timer.restart()
 
     category_iou, miou = conf_mat.mean_iou()
-    category_acc, macc = conf_mat.accuracy()
-    logger.info("[EVAL] #Images={} mAcc={:.4f} mIoU={:.4f}".format(
-        len(eval_dataset), macc, miou))
-    logger.info("[EVAL] Category IoU: " + str(category_iou))
-    logger.info("[EVAL] Category Acc: " + str(category_acc))
-    logger.info("[EVAL] Kappa:{:.4f} ".format(conf_mat.kappa()))
-    return miou, macc
+    category_acc, acc = conf_mat.accuracy()
+    logger.info("[EVAL] #Images={} mIoU={:.4f} Acc={:.4f} Kappa={:.4f} ".format(
+        len(eval_dataset), miou, acc, conf_mat.kappa()))
+    logger.info("[EVAL] Category IoU: \n" + str(np.round(category_iou, 4)))
+    logger.info("[EVAL] Category Acc: \n" + str(np.round(category_acc, 4)))
+    return miou, acc

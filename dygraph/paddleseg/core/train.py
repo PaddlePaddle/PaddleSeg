@@ -60,7 +60,7 @@ def train(model,
           resume_model=None,
           save_interval_iters=1000,
           log_iters=10,
-          num_workers=8,
+          num_workers=0,
           use_vdl=False,
           losses=None):
 
@@ -172,7 +172,7 @@ def train(model,
                             os.path.join(current_save_dir, 'model'))
 
                 if val_dataset is not None:
-                    mean_iou, avg_acc = evaluate(
+                    mean_iou, acc = evaluate(
                         model,
                         val_dataset,
                         model_dir=current_save_dir,
@@ -184,12 +184,12 @@ def train(model,
                         paddle.save(model.state_dict(),
                                     os.path.join(best_model_dir, 'model'))
                     logger.info(
-                        'Current evaluated best model in val_dataset is iter_{}, miou={:4f}'
-                        .format(best_model_iter, best_mean_iou))
+                        '[EVAL] The model with the best validation mIoU ({:.4f}) was saved at iter {}.'
+                        .format(best_mean_iou, best_model_iter))
 
                     if use_vdl:
                         log_writer.add_scalar('Evaluate/mIoU', mean_iou, iter)
-                        log_writer.add_scalar('Evaluate/aAcc', avg_acc, iter)
+                        log_writer.add_scalar('Evaluate/Acc', acc, iter)
                     model.train()
             timer.restart()
     if use_vdl:
