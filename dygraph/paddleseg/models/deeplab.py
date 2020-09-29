@@ -31,7 +31,7 @@ class DeepLabV3P(nn.Layer):
     The DeepLabV3Plus implementation based on PaddlePaddle.
 
     The original article refers to
-     Liang-Chieh Chen, et, al. "Encoder-Decoder with Atrous Separable Convolution for Semantic Image Segmentation."
+     Liang-Chieh Chen, et, al. "Encoder-Decoder with Atrous Separable Convolution for Semantic Image Segmentation"
      (https://arxiv.org/abs/1802.02611)
 
     Args:
@@ -55,7 +55,7 @@ class DeepLabV3P(nn.Layer):
                  aspp_out_channels=256,
                  pretrained=None):
 
-        super(DeepLabV3P, self).__init__()
+        super().__init__()
 
         self.backbone = backbone
         backbone_channels = [
@@ -101,7 +101,7 @@ class DeepLabV3PHead(nn.Layer):
                  aspp_ratios,
                  aspp_out_channels):
 
-        super(DeepLabV3PHead, self).__init__()
+        super().__init__()
 
         self.aspp = layers.ASPPModule(
             aspp_ratios,
@@ -130,7 +130,7 @@ class DeepLabV3(nn.Layer):
 
     The original article refers to
      Liang-Chieh Chen, et, al. "Rethinking Atrous Convolution for Semantic Image Segmentation"
-     (https://arxiv.org/pdf/1706.05587.pdf)
+     (https://arxiv.org/pdf/1706.05587.pdf).
 
     Args:
         Please Refer to DeepLabV3P above.
@@ -144,7 +144,7 @@ class DeepLabV3(nn.Layer):
                  aspp_ratios=(1, 6, 12, 18),
                  aspp_out_channels=256):
 
-        super(DeepLabV3, self).__init__()
+        super().__init__()
 
         self.backbone = backbone
         backbone_channels = [
@@ -180,7 +180,7 @@ class DeepLabV3Head(nn.Layer):
                  aspp_ratios,
                  aspp_out_channels):
 
-        super(DeepLabV3Head, self).__init__()
+        super().__init__()
 
         self.aspp = layers.ASPPModule(
             aspp_ratios,

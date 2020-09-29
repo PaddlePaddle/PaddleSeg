@@ -27,8 +27,8 @@ class ANN(nn.Layer):
     The ANN implementation based on PaddlePaddle.
 
     The original article refers to 
-    Zhen, Zhu, et al. "Asymmetric Non-local Neural Networks for Semantic Segmentation."
-    (https://arxiv.org/pdf/1908.07678.pdf)
+    Zhen, Zhu, et al. "Asymmetric Non-local Neural Networks for Semantic Segmentation"
+    (https://arxiv.org/pdf/1908.07678.pdf).
 
     Args:
         num_classes (int): The unique number of target classes.
@@ -105,7 +105,7 @@ class ANNHead(nn.Layer):
                  inter_channels,
                  psp_size,
                  enable_auxiliary_loss=True):
-        super(ANNHead, self).__init__()
+        super().__init__()
 
         low_in_channels = backbone_channels[0]
         high_in_channels = backbone_channels[1]
@@ -186,7 +186,7 @@ class AFNB(nn.Layer):
                  dropout_prob,
                  repeat_sizes=([1]),
                  psp_size=(1, 3, 6, 8)):
-        super(AFNB, self).__init__()
+        super().__init__()
 
         self.psp_size = psp_size
         self.stages = nn.LayerList([
@@ -234,7 +234,7 @@ class APNB(nn.Layer):
                  dropout_prob,
                  repeat_sizes=([1]),
                  psp_size=(1, 3, 6, 8)):
-        super(APNB, self).__init__()
+        super().__init__()
 
         self.psp_size = psp_size
         self.stages = nn.LayerList([
@@ -292,7 +292,7 @@ class SelfAttentionBlock_AFNB(nn.Layer):
                  out_channels=None,
                  scale=1,
                  psp_size=(1, 3, 6, 8)):
-        super(SelfAttentionBlock_AFNB, self).__init__()
+        super().__init__()
 
         self.scale = scale
         self.in_channels = low_in_channels
@@ -371,7 +371,7 @@ class SelfAttentionBlock_APNB(nn.Layer):
                  value_channels,
                  scale=1,
                  psp_size=(1, 3, 6, 8)):
-        super(SelfAttentionBlock_APNB, self).__init__()
+        super().__init__()
 
         self.scale = scale
         self.in_channels = in_channels
