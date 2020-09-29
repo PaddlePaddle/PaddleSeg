@@ -22,7 +22,7 @@ from paddle.nn import SyncBatchNorm as BatchNorm
 
 from paddleseg.cvlibs import manager
 from paddleseg import utils
-from paddleseg.models.common import layer_libs
+from paddleseg.models import layers
 
 
 @manager.MODELS.add_component

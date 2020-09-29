@@ -25,7 +25,7 @@ from paddleseg.cvlibs import manager
 from paddleseg import utils
 from paddleseg.cvlibs import param_init
 from paddleseg.utils import logger
-from paddleseg.models.common import layer_libs, activation
+from paddleseg.models import layers
 
 __all__ = [
     "fcn_hrnet_w18_small_v1", "fcn_hrnet_w18_small_v2", "fcn_hrnet_w18",
@@ -87,7 +87,7 @@ class FCNHead(nn.Layer):
         if channels is None:
             channels = backbone_channels[0]
 
-        self.conv_1 = layer_libs.ConvBNReLU(
+        self.conv_1 = layers.ConvBNReLU(
             in_channels=backbone_channels[0],
             out_channels=channels,
             kernel_size=1,

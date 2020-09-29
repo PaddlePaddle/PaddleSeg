@@ -17,11 +17,10 @@ import os
 import paddle
 import paddle.nn.functional as F
 from paddle import nn
+
 from paddleseg.cvlibs import manager
-from paddleseg.models.common.layer_libs import ConvBNReLU, AuxLayer
+from paddleseg.models import layers
 from paddleseg.utils import utils
-
-
 
 
 @manager.MODELS.add_component

@@ -18,8 +18,7 @@ import paddle
 import paddle.nn.functional as F
 from paddle import nn
 from paddleseg.cvlibs import manager
-from paddleseg.models.common import pyramid_pool
-from paddleseg.models.common.layer_libs import ConvBNReLU, SeparableConvBNReLU, AuxLayer
+from paddleseg.models import layers
 from paddleseg.utils import utils
 
 __all__ = ['DeepLabV3P', 'DeepLabV3']
@@ -186,7 +185,7 @@ class DeepLabV3Head(nn.Layer):
 
         super(DeepLabV3Head, self).__init__()
 
-        self.aspp = pyramid_pool.ASPPModule(
+        self.aspp = layers.ASPPModule(
             aspp_ratios,
             backbone_channels[0],
             aspp_out_channels,
@@ -227,12 +226,12 @@ class Decoder(nn.Layer):
     def __init__(self, num_classes, in_channels):
         super(Decoder, self).__init__()
 
-        self.conv_bn_relu1 = ConvBNReLU(
+        self.conv_bn_relu1 = layers.ConvBNReLU(
             in_channels=in_channels, out_channels=48, kernel_size=1)
 
-        self.conv_bn_relu2 = SeparableConvBNReLU(
+        self.conv_bn_relu2 = layers.SeparableConvBNReLU(
             in_channels=304, out_channels=256, kernel_size=3, padding=1)
-        self.conv_bn_relu3 = SeparableConvBNReLU(
+        self.conv_bn_relu3 = layers.SeparableConvBNReLU(
             in_channels=256, out_channels=256, kernel_size=3, padding=1)
         self.conv = nn.Conv2d(
             in_channels=256, out_channels=num_classes, kernel_size=1)

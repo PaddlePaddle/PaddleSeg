@@ -16,9 +16,9 @@ import os
 
 import paddle.nn.functional as F
 from paddle import nn
+
 from paddleseg.cvlibs import manager
-from paddleseg.models.common import pyramid_pool
-from paddleseg.models.common.layer_libs import ConvBNReLU, AuxLayer
+from paddleseg.models import layers
 from paddleseg.utils import utils
 
 
@@ -107,7 +107,7 @@ class PSPNetHead(nn.Layer):
 
         self.backbone_indices = backbone_indices
 
-        self.psp_module = pyramid_pool.PPModule(
+        self.psp_module = layers.PPModule(
             in_channels=backbone_channels[1],
             out_channels=pp_out_channels,
             bin_sizes=bin_sizes)
@@ -119,7 +119,7 @@ class PSPNetHead(nn.Layer):
 
         if enable_auxiliary_loss:
 
-            self.auxlayer = AuxLayer(
+            self.auxlayer = layers.AuxLayer(
                 in_channels=backbone_channels[0],
                 inter_channels=backbone_channels[0] // 4,
                 out_channels=num_classes)

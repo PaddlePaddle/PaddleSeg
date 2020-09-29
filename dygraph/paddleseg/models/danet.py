@@ -20,7 +20,7 @@ import paddle.nn.functional as F
 
 from paddleseg.utils import utils
 from paddleseg.cvlibs import manager, param_init
-from paddleseg.models.common.layer_libs import ConvBNReLU
+from paddleseg.models import layers
 
 
 class PAM(nn.Layer):
@@ -116,12 +116,12 @@ class DAHead(nn.Layer):
         in_channels = in_channels[-1]
         inter_channels = in_channels // 4
 
-        self.channel_conv = ConvBNReLU(in_channels, inter_channels, 3)
-        self.position_conv = ConvBNReLU(in_channels, inter_channels, 3)
+        self.channel_conv = layers.ConvBNReLU(in_channels, inter_channels, 3)
+        self.position_conv = layers.ConvBNReLU(in_channels, inter_channels, 3)
         self.pam = PAM(inter_channels)
         self.cam = CAM()
-        self.conv1 = ConvBNReLU(inter_channels, inter_channels, 3)
-        self.conv2 = ConvBNReLU(inter_channels, inter_channels, 3)
+        self.conv1 = layers.ConvBNReLU(inter_channels, inter_channels, 3)
+        self.conv2 = layers.ConvBNReLU(inter_channels, inter_channels, 3)
 
         self.aux_head_pam = nn.Sequential(
             nn.Dropout2d(0.1), nn.Conv2d(inter_channels, num_classes, 1))
