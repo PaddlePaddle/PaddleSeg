@@ -15,8 +15,8 @@
 import os
 
 import paddle
+import paddle.nn as nn
 import paddle.nn.functional as F
-from paddle import nn
 
 from paddleseg.cvlibs import manager, param_init
 from paddleseg.models import layers
@@ -147,8 +147,6 @@ class ANNHead(nn.Layer):
         self.backbone_indices = backbone_indices
         self.enable_auxiliary_loss = enable_auxiliary_loss
 
-        self.init_weight()
-
     def forward(self, feat_list):
         logit_list = []
         low_level_x = feat_list[self.backbone_indices[0]]
@@ -164,12 +162,6 @@ class ANNHead(nn.Layer):
 
         return logit_list
 
-    def init_weight(self):
-        """
-        Initialize the parameters of model parts.
-        """
-        pass
-
         
 class AFNB(nn.Layer):
     """
@@ -182,8 +174,8 @@ class AFNB(nn.Layer):
         key_channels (int): the key channels in self-attention block.
         value_channels (int): the value channels in self-attention block.
         dropout_prob (float): the dropout rate of output.
-        repeat_sizes (tuple): the number of AFNB modules. Default to ([1]).
-        psp_size (tuple): the out size of pooled feature maps. Default to (1, 3, 6, 8).
+        repeat_sizes (tuple, optional): the number of AFNB modules. Default: ([1]).
+        psp_size (tuple. optional): the out size of pooled feature maps. Default: (1, 3, 6, 8).
     """
 
     def __init__(self,
@@ -231,8 +223,8 @@ class APNB(nn.Layer):
         key_channels (int): the key channels in self-attention block.
         value_channels (int): the value channels in self-attention block.
         dropout_prob (float): the dropout rate of output.
-        repeat_sizes (tuple): the number of AFNB modules. Default to ([1]).
-        psp_size (tuple): the out size of pooled feature maps. Default to (1, 3, 6, 8).
+        repeat_sizes (tuple, optional): the number of AFNB modules. Default: ([1]).
+        psp_size (tuple, optional): the out size of pooled feature maps. Default: (1, 3, 6, 8).
     """
 
     def __init__(self,
@@ -288,9 +280,9 @@ class SelfAttentionBlock_AFNB(nn.Layer):
         high_in_channels (int): high-level-feature channels.
         key_channels (int): the key channels in self-attention block.
         value_channels (int): the value channels in self-attention block.
-        out_channels (int): out channels of AFNB module.
-        scale (int): pooling size. Default to 1.
-        psp_size (tuple): the out size of pooled feature maps. Default to (1, 3, 6, 8).
+        out_channels (int, optional): out channels of AFNB module. Default: None.
+        scale (int, optional): pooling size. Default: 1.
+        psp_size (tuple, optional): the out size of pooled feature maps. Default: (1, 3, 6, 8).
     """
 
     def __init__(self,
@@ -310,7 +302,7 @@ class SelfAttentionBlock_AFNB(nn.Layer):
         self.value_channels = value_channels
         if out_channels == None:
             self.out_channels = high_in_channels
-        self.pool = nn.Pool2D(pool_size=(scale, scale), pool_type="max")
+        self.pool = nn.MaxPool2d(scale)
         self.f_key = layers.ConvBNReLU(
             in_channels=low_in_channels,
             out_channels=key_channels,
@@ -369,8 +361,8 @@ class SelfAttentionBlock_APNB(nn.Layer):
         out_channels (int): out channels of APNB module.
         key_channels (int): the key channels in self-attention block.
         value_channels (int): the value channels in self-attention block.
-        scale (int): pooling size. Default to 1.
-        psp_size (tuple): the out size of pooled feature maps. Default to (1, 3, 6, 8).
+        scale (int, optional): pooling size. Default: 1.
+        psp_size (tuple, optional): the out size of pooled feature maps. Default: (1, 3, 6, 8).
     """
 
     def __init__(self,
@@ -387,8 +379,7 @@ class SelfAttentionBlock_APNB(nn.Layer):
         self.out_channels = out_channels
         self.key_channels = key_channels
         self.value_channels = value_channels
-
-        self.pool = nn.Pool2D(pool_size=(scale, scale), pool_type="max")
+        self.pool = nn.MaxPool2d(scale)
         self.f_key = layers.ConvBNReLU(
             in_channels=self.in_channels,
             out_channels=self.key_channels,
