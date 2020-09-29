@@ -99,7 +99,7 @@ class PPModule(nn.Layer):
     Args:
         in_channels (int): The number of intput channels to pyramid pooling module.
         out_channels (int): The number of output channels after pyramid pooling module.
-        bin_sizes (tuple, optional): The out size of pooled feature maps. Default: (1,2,3,6).
+        bin_sizes (tuple, optional): The out size of pooled feature maps. Default: (1, 2, 3, 6).
         dim_reduction (bool, optional): A bool value represents if reducing dimension after pooling. Default: True.
     """
 

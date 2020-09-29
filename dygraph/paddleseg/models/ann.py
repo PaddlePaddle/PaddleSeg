@@ -38,7 +38,7 @@ class ANN(nn.Layer):
             Default: 256.
         inter_channels (int, optional): Both input and output channels of APNB modules. Default: 512.
         psp_size (tuple, optional): The out size of pooled feature maps. Default: (1, 3, 6, 8).
-        enable_auxiliary_loss (bool, optional): A bool values indicates whether adding auxiliary loss. Default: True.
+        enable_auxiliary_loss (bool, optional): A bool value indicates whether adding auxiliary loss. Default: True.
         pretrained (str, optional): The path of pretrained model. Default: None.
     """
 
@@ -94,7 +94,7 @@ class ANNHead(nn.Layer):
         key_value_channels (int): The key and value channels of self-attention map in both AFNB and APNB modules.
         inter_channels (int): Both input and output channels of APNB modules.
         psp_size (tuple): The out size of pooled feature maps.
-        enable_auxiliary_loss (bool, optional): A bool values indicates whether adding auxiliary loss. Default: True.
+        enable_auxiliary_loss (bool, optional): A bool value indicates whether adding auxiliary loss. Default: True.
     """
 
     def __init__(self,

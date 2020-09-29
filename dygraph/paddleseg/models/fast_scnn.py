@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import paddle.nn as nn
 import paddle.nn.functional as F
-from paddle import nn
 
 from paddleseg.cvlibs import manager
 from paddleseg.models import layers
@@ -38,7 +38,7 @@ class FastSCNN(nn.Layer):
 
         num_classes (int): The unique number of target classes.
         enable_auxiliary_loss (bool, optional): A bool value indicates whether adding auxiliary loss.
-            If true, auxiliary loss will be added after LearningToDownsample module, where the weight is 0.4. Default: False.
+            If true, auxiliary loss will be added after LearningToDownsample module. Default: False.
         pretrained (str, optional): The path of pretrained model. Default: None.
     """
 

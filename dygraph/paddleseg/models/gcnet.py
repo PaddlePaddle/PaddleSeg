@@ -12,11 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
-
 import paddle
+import paddle.nn as nn
 import paddle.nn.functional as F
-from paddle import nn
 
 from paddleseg.cvlibs import manager
 from paddleseg.models import layers
@@ -29,17 +27,17 @@ class GCNet(nn.Layer):
     The GCNet implementation based on PaddlePaddle.
 
     The original article refers to 
-        Cao, Yue, et al. "GCnet: Non-local networks meet squeeze-excitation networks and beyond."
-        (https://arxiv.org/pdf/1904.11492.pdf)
+    Cao, Yue, et al. "GCnet: Non-local networks meet squeeze-excitation networks and beyond"
+    (https://arxiv.org/pdf/1904.11492.pdf).
 
     Args:
-        num_classes (int): the unique number of target classes.
-        backbone (Paddle.nn.Layer): backbone network, currently support Resnet50/101.
-        backbone_indices (tuple): two values in the tuple indicate the indices of output of backbone.
-        gc_channels (int): input channels to Global Context Block. Default to 512.
-        ratio (float): it indicates the ratio of attention channels and gc_channels. Default to 1/4.
-        enable_auxiliary_loss (bool): a bool values indicates whether adding auxiliary loss. Default to True.
-        pretrained (str): the path of pretrained model. Default to None.
+        num_classes (int): The unique number of target classes.
+        backbone (Paddle.nn.Layer): Backbone network, currently support Resnet50/101.
+        backbone_indices (tuple, optional): Two values in the tuple indicate the indices of output of backbone.
+        gc_channels (int, optional): The input channels to Global Context Block. Default: 512.
+        ratio (float, optional): It indicates the ratio of attention channels and gc_channels. Default: 0.25.
+        enable_auxiliary_loss (bool, optional): A bool value indicates whether adding auxiliary loss. Default: True.
+        pretrained (str, optional): The path of pretrained model. Default: None.
     """
 
     def __init__(self,
@@ -47,11 +45,10 @@ class GCNet(nn.Layer):
                  backbone,
                  backbone_indices=(2, 3),
                  gc_channels=512,
-                 ratio=1 / 4,
+                 ratio=0.25,
                  enable_auxiliary_loss=True,
                  pretrained=None):
-
-        super(GCNet, self).__init__()
+        super().__init__()
 
         self.backbone = backbone
         backbone_channels = [
@@ -59,7 +56,7 @@ class GCNet(nn.Layer):
         ]
 
         self.head = GCNetHead(
-            num_classes, 
+            num_classes,
             backbone_indices,
             backbone_channels,
             gc_channels,
@@ -81,31 +78,28 @@ class GCNetHead(nn.Layer):
     The GCNetHead implementation.
 
     Args:
-        num_classes (int): the unique number of target classes.
-        backbone_indices (tuple): two values in the tuple indicate the indices of output of backbone.
-            the first index will be taken as a deep-supervision feature in auxiliary layer;
-            the second one will be taken as input of GlobalContextBlock. Usually backbone 
-            consists of four downsampling stage, and return an output of each stage, so we 
-            set default (2, 3), which means taking feature map of the third stage (res4b22) 
-            and the fourth stage (res5c) in backbone.
-        backbone_channels (tuple): the same length with "backbone_indices". It indicates the channels of corresponding index.
-        gc_channels (int): input channels to Global Context Block. Default to 512.
-        ratio (float): it indicates the ratio of attention channels and gc_channels. Default to 1/4.
-        enable_auxiliary_loss (bool): a bool values indicates whether adding auxiliary loss. Default to True.
+        num_classes (int): The unique number of target classes.
+        backbone_indices (tuple): Two values in the tuple indicate the indices of output of backbone.
+            The first index will be taken as a deep-supervision feature in auxiliary layer;
+            the second one will be taken as input of GlobalContextBlock.
+        backbone_channels (tuple): The same length with "backbone_indices". It indicates the channels of corresponding index.
+        gc_channels (int): The input channels to Global Context Block.
+        ratio (float): It indicates the ratio of attention channels and gc_channels.
+        enable_auxiliary_loss (bool, optional): A bool value indicates whether adding auxiliary loss. Default: True.
     """
 
     def __init__(self,
                  num_classes,
-                 backbone_indices=(2, 3),
-                 backbone_channels=(1024, 2048),
-                 gc_channels=512,
-                 ratio=1 / 4,
+                 backbone_indices,
+                 backbone_channels,
+                 gc_channels,
+                 ratio,
                  enable_auxiliary_loss=True):
 
-        super(GCNetHead, self).__init__()
+        super().__init__()
 
         in_channels = backbone_channels[1]
-        self.conv_bn_relu1 = ConvBNReLU(
+        self.conv_bn_relu1 = layers.ConvBNReLU(
             in_channels=in_channels,
             out_channels=gc_channels,
             kernel_size=3,
@@ -113,13 +107,13 @@ class GCNetHead(nn.Layer):
 
         self.gc_block = GlobalContextBlock(in_channels=gc_channels, ratio=ratio)
 
-        self.conv_bn_relu2 = ConvBNReLU(
+        self.conv_bn_relu2 = layers.ConvBNReLU(
             in_channels=gc_channels,
             out_channels=gc_channels,
             kernel_size=3,
             padding=1)
 
-        self.conv_bn_relu3 = ConvBNReLU(
+        self.conv_bn_relu3 = layers.ConvBNReLU(
             in_channels=in_channels + gc_channels,
             out_channels=gc_channels,
             kernel_size=3,
@@ -129,15 +123,13 @@ class GCNetHead(nn.Layer):
             in_channels=gc_channels, out_channels=num_classes, kernel_size=1)
 
         if enable_auxiliary_loss:
-            self.auxlayer = AuxLayer(
+            self.auxlayer = layers.AuxLayer(
                 in_channels=backbone_channels[0],
                 inter_channels=backbone_channels[0] // 4,
                 out_channels=num_classes)
 
         self.backbone_indices = backbone_indices
         self.enable_auxiliary_loss = enable_auxiliary_loss
-
-        self.init_weight()
 
     def forward(self, feat_list):
         logit_list = []
@@ -161,24 +153,18 @@ class GCNetHead(nn.Layer):
 
         return logit_list
 
-    def init_weight(self, pretrained_model=None):
-        """
-        Initialize the parameters of model parts.
-        """
-        pass
-
 
 class GlobalContextBlock(nn.Layer):
     """
     Global Context Block implementation.
 
     Args:
-        in_channels (int): input channels of Global Context Block
-        ratio (float): the channels of attention map.
+        in_channels (int): The input channels of Global Context Block.
+        ratio (float): The channels of attention map.
     """
 
     def __init__(self, in_channels, ratio):
-        super(GlobalContextBlock, self).__init__()
+        super().__init__()
 
         self.conv_mask = nn.Conv2d(
             in_channels=in_channels, out_channels=1, kernel_size=1)
