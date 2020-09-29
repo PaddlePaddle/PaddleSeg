@@ -52,7 +52,7 @@ class ANN(nn.Layer):
                  inter_channels=512,
                  psp_size=(1, 3, 6, 8),
                  enable_auxiliary_loss=True,
-                 pretrained=None,):
+                 pretrained=None):
         super(ANN, self).__init__()
 
         self.backbone = backbone
