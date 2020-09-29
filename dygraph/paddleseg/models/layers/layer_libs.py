@@ -60,7 +60,7 @@ class ConvBN(nn.Layer):
         return x
 
 
-class ConvReluPool(nn.Layer):
+class ConvReLUPool(nn.Layer):
     def __init__(self, in_channels, out_channels):
         super(ConvReluPool, self).__init__()
         self.conv = Conv2d(
