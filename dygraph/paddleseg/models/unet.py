@@ -120,7 +120,6 @@ class UpSampling(nn.Layer):
             in_channels = in_channels + out_channels // 2
         else:
             in_channels *= 2
-        print(in_channels)
 
         self.double_conv = nn.Sequential(
             layers.ConvBNReLU(in_channels, out_channels, 3),
@@ -132,6 +131,5 @@ class UpSampling(nn.Layer):
         else:
             x = F.resize_bilinear(x, short_cut.shape[2:])
         x = paddle.concat([x, short_cut], axis=1)
-        print(x.shape)
         x = self.double_conv(x)
         return x
