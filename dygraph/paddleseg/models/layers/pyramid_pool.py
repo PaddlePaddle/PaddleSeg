@@ -17,7 +17,7 @@ from paddle import nn
 import paddle.nn.functional as F
 from paddle.nn import SyncBatchNorm as BatchNorm
 
-from paddleseg.models.common import layer_libs
+from paddleseg.models import layers
 
 
 class ASPPModule(nn.Layer):
@@ -44,9 +44,9 @@ class ASPPModule(nn.Layer):
 
         for ratio in aspp_ratios:
             if sep_conv and ratio > 1:
-                conv_func = layer_libs.SeparableConvBNReLU
+                conv_func = layers.SeparableConvBNReLU
             else:
-                conv_func = layer_libs.ConvBNReLU
+                conv_func = layers.ConvBNReLU
 
             block = conv_func(
                 in_channels=in_channels,
@@ -61,12 +61,12 @@ class ASPPModule(nn.Layer):
         if image_pooling:
             self.global_avg_pool = nn.Sequential(
                 nn.AdaptiveAvgPool2d(output_size=(1, 1)),
-                layer_libs.ConvBNReLU(
+                layers.ConvBNReLU(
                     in_channels, out_channels, kernel_size=1, bias_attr=False))
             out_size += 1
         self.image_pooling = image_pooling
 
-        self.conv_bn_relu = layer_libs.ConvBNReLU(
+        self.conv_bn_relu = layers.ConvBNReLU(
             in_channels=out_channels * out_size,
             out_channels=out_channels,
             kernel_size=1)
@@ -122,7 +122,7 @@ class PPModule(nn.Layer):
             for size in bin_sizes
         ])
 
-        self.conv_bn_relu2 = layer_libs.ConvBNReLU(
+        self.conv_bn_relu2 = layers.ConvBNReLU(
             in_channels=in_channels + inter_channels * len(bin_sizes),
             out_channels=out_channels,
             kernel_size=3,
@@ -147,7 +147,7 @@ class PPModule(nn.Layer):
         """
 
         prior = nn.AdaptiveAvgPool2d(output_size=(size, size))
-        conv = layer_libs.ConvBNReLU(
+        conv = layers.ConvBNReLU(
             in_channels=in_channels, out_channels=out_channels, kernel_size=1)
 
         return nn.Sequential(prior, conv)

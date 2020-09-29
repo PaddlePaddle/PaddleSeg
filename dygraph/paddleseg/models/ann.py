@@ -19,7 +19,7 @@ import paddle.nn.functional as F
 from paddle import nn
 
 from paddleseg.cvlibs import manager, param_init
-from paddleseg.models.common.layer_libs import ConvBNReLU, ConvBN, AuxLayer
+from paddleseg.models import layers
 from paddleseg.utils import utils
 
 
@@ -29,20 +29,19 @@ class ANN(nn.Layer):
     The ANN implementation based on PaddlePaddle.
 
     The original article refers to 
-        Zhen, Zhu, et al. "Asymmetric Non-local Neural Networks for Semantic Segmentation."
-        (https://arxiv.org/pdf/1908.07678.pdf)
+    Zhen, Zhu, et al. "Asymmetric Non-local Neural Networks for Semantic Segmentation."
+    (https://arxiv.org/pdf/1908.07678.pdf)
 
     Args:
         num_classes (int): the unique number of target classes.
         backbone (Paddle.nn.Layer): backbone network, currently support Resnet50/101.
-        model_pretrained (str): the path of pretrained model. Default to None.
-        backbone_indices (tuple): two values in the tuple indicate the indices of output of backbone.
-        key_value_channels (int): the key and value channels of self-attention map in both AFNB and APNB modules.
-            Default to 256.
-        inter_channels (int): both input and output channels of APNB modules.
-        psp_size (tuple): the out size of pooled feature maps. Default to (1, 3, 6, 8).
-        enable_auxiliary_loss (bool): a bool values indicates whether adding auxiliary loss. Default to True.
-        pretrained (str): the path of pretrained model. Default to None.
+        backbone_indices (tuple, optional): two values in the tuple indicate the indices of output of backbone.
+        key_value_channels (int, optional): the key and value channels of self-attention map in both AFNB and APNB modules.
+            Default: 256.
+        inter_channels (int, optional): both input and output channels of APNB modules. Default: 512.
+        psp_size (tuple, optional): the out size of pooled feature maps. Default: (1, 3, 6, 8).
+        enable_auxiliary_loss (bool, optional): a bool values indicates whether adding auxiliary loss. Default: True.
+        pretrained (str, optional): the path of pretrained model. Default: None.
     """
 
     def __init__(self,
@@ -87,27 +86,25 @@ class ANNHead(nn.Layer):
 
     Args:
         num_classes (int): the unique number of target classes.
-        model_pretrained (str): the path of pretrained model. Default to None.
         backbone_indices (tuple): two values in the tuple indicate the indices of output of backbone.
             the first index will be taken as low-level features; the second one will be 
             taken as high-level features in AFNB module. Usually backbone consists of four 
-            downsampling stage, and return an output of each stage, so we set default (2, 3), 
-            which means taking feature map of the third stage and the fourth stage in backbone.
+            downsampling stage, such as ResNet, and return an output of each stage. If the argument is (2, 3), 
+            it means taking feature map of the third stage and the fourth stage in backbone.
         backbone_channels (tuple): the same length with "backbone_indices". It indicates the channels of corresponding index.
         key_value_channels (int): the key and value channels of self-attention map in both AFNB and APNB modules.
-            Default to 256.
         inter_channels (int): both input and output channels of APNB modules.
-        psp_size (tuple): the out size of pooled feature maps. Default to (1, 3, 6, 8).
-        enable_auxiliary_loss (bool): a bool values indicates whether adding auxiliary loss. Default to True.
+        psp_size (tuple): the out size of pooled feature maps.
+        enable_auxiliary_loss (bool, optional): a bool values indicates whether adding auxiliary loss. Default: True.
     """
 
     def __init__(self,
                  num_classes,
-                 backbone_indices=(2, 3),
-                 backbone_channels=(1024, 2048),
-                 key_value_channels=256,
-                 inter_channels=512,
-                 psp_size=(1, 3, 6, 8),
+                 backbone_indices,
+                 backbone_channels,
+                 key_value_channels,
+                 inter_channels,
+                 psp_size,
                  enable_auxiliary_loss=True):
         super(ANNHead, self).__init__()
 
@@ -121,11 +118,11 @@ class ANNHead(nn.Layer):
             key_channels=key_value_channels,
             value_channels=key_value_channels,
             dropout_prob=0.05,
-            sizes=([1]),
+            repeat_sizes=([1]),
             psp_size=psp_size)
 
         self.context = nn.Sequential(
-            ConvBNReLU(
+            layers.ConvBNReLU(
                 in_channels=high_in_channels,
                 out_channels=inter_channels,
                 kernel_size=3,
@@ -136,12 +133,12 @@ class ANNHead(nn.Layer):
                 key_channels=key_value_channels,
                 value_channels=key_value_channels,
                 dropout_prob=0.05,
-                sizes=([1]),
+                repeat_sizes=([1]),
                 psp_size=psp_size))
 
         self.cls = nn.Conv2d(
             in_channels=inter_channels, out_channels=num_classes, kernel_size=1)
-        self.auxlayer = AuxLayer(
+        self.auxlayer = layers.AuxLayer(
             in_channels=low_in_channels,
             inter_channels=low_in_channels // 2,
             out_channels=num_classes,
@@ -185,7 +182,7 @@ class AFNB(nn.Layer):
         key_channels (int): the key channels in self-attention block.
         value_channels (int): the value channels in self-attention block.
         dropout_prob (float): the dropout rate of output.
-        sizes (tuple): the number of AFNB modules. Default to ([1]).
+        repeat_sizes (tuple): the number of AFNB modules. Default to ([1]).
         psp_size (tuple): the out size of pooled feature maps. Default to (1, 3, 6, 8).
     """
 
@@ -196,7 +193,7 @@ class AFNB(nn.Layer):
                  key_channels,
                  value_channels,
                  dropout_prob,
-                 sizes=([1]),
+                 repeat_sizes=([1]),
                  psp_size=(1, 3, 6, 8)):
         super(AFNB, self).__init__()
 
@@ -204,9 +201,9 @@ class AFNB(nn.Layer):
         self.stages = nn.LayerList([
             SelfAttentionBlock_AFNB(low_in_channels, high_in_channels,
                                     key_channels, value_channels, out_channels,
-                                    size) for size in sizes
+                                    size) for size in repeat_sizes
         ])
-        self.conv_bn = ConvBN(
+        self.conv_bn = layers.ConvBN(
             in_channels=out_channels + high_in_channels,
             out_channels=out_channels,
             kernel_size=1)
@@ -234,7 +231,7 @@ class APNB(nn.Layer):
         key_channels (int): the key channels in self-attention block.
         value_channels (int): the value channels in self-attention block.
         dropout_prob (float): the dropout rate of output.
-        sizes (tuple): the number of AFNB modules. Default to ([1]).
+        repeat_sizes (tuple): the number of AFNB modules. Default to ([1]).
         psp_size (tuple): the out size of pooled feature maps. Default to (1, 3, 6, 8).
     """
 
@@ -244,16 +241,16 @@ class APNB(nn.Layer):
                  key_channels,
                  value_channels,
                  dropout_prob,
-                 sizes=([1]),
+                 repeat_sizes=([1]),
                  psp_size=(1, 3, 6, 8)):
         super(APNB, self).__init__()
 
         self.psp_size = psp_size
         self.stages = nn.LayerList([
             SelfAttentionBlock_APNB(in_channels, out_channels, key_channels,
-                                    value_channels, size) for size in sizes
+                                    value_channels, size) for size in repeat_sizes
         ])
-        self.conv_bn = ConvBNReLU(
+        self.conv_bn = layers.ConvBNReLU(
             in_channels=in_channels * 2,
             out_channels=out_channels,
             kernel_size=1)
@@ -314,11 +311,11 @@ class SelfAttentionBlock_AFNB(nn.Layer):
         if out_channels == None:
             self.out_channels = high_in_channels
         self.pool = nn.Pool2D(pool_size=(scale, scale), pool_type="max")
-        self.f_key = ConvBNReLU(
+        self.f_key = layers.ConvBNReLU(
             in_channels=low_in_channels,
             out_channels=key_channels,
             kernel_size=1)
-        self.f_query = ConvBNReLU(
+        self.f_query = layers.ConvBNReLU(
             in_channels=high_in_channels,
             out_channels=key_channels,
             kernel_size=1)
@@ -392,7 +389,7 @@ class SelfAttentionBlock_APNB(nn.Layer):
         self.value_channels = value_channels
 
         self.pool = nn.Pool2D(pool_size=(scale, scale), pool_type="max")
-        self.f_key = ConvBNReLU(
+        self.f_key = layers.ConvBNReLU(
             in_channels=self.in_channels,
             out_channels=self.key_channels,
             kernel_size=1)

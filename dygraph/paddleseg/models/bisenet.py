@@ -20,23 +20,22 @@ import paddle.nn.functional as F
 
 from paddleseg import utils
 from paddleseg.cvlibs import manager, param_init
-from paddleseg.models.common.layer_libs import ConvBNReLU, ConvBN, DepthwiseConvBN
-from paddleseg.models.common.activation import Activation
+from paddleseg.models import layers
 
 
 class StemBlock(nn.Layer):
     def __init__(self, in_dim, out_dim):
         super(StemBlock, self).__init__()
 
-        self.conv = ConvBNReLU(in_dim, out_dim, 3, stride=2)
+        self.conv = layers.ConvBNReLU(in_dim, out_dim, 3, stride=2)
 
         self.left = nn.Sequential(
-            ConvBNReLU(out_dim, out_dim // 2, 1),
-            ConvBNReLU(out_dim // 2, out_dim, 3, stride=2))
+            layers.ConvBNReLU(out_dim, out_dim // 2, 1),
+            layers.ConvBNReLU(out_dim // 2, out_dim, 3, stride=2))
 
         self.right = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
 
-        self.fuse = ConvBNReLU(out_dim * 2, out_dim, 3)
+        self.fuse = layers.ConvBNReLU(out_dim * 2, out_dim, 3)
 
     def forward(self, x):
         x = self.conv(x)
@@ -53,7 +52,7 @@ class ContextEmbeddingBlock(nn.Layer):
         self.gap = nn.AdaptiveAvgPool2d(1)
         self.bn = nn.SyncBatchNorm(in_dim)
 
-        self.conv_1x1 = ConvBNReLU(in_dim, out_dim, 1)
+        self.conv_1x1 = layers.ConvBNReLU(in_dim, out_dim, 1)
         self.conv_3x3 = nn.Conv2d(out_dim, out_dim, 3, 1, 1)
 
     def forward(self, x):
@@ -72,8 +71,8 @@ class GatherAndExpandsionLayer1(nn.Layer):
         expand_dim = expand * in_dim
 
         self.conv = nn.Sequential(
-            ConvBNReLU(in_dim, in_dim, 3), DepthwiseConvBN(
-                in_dim, expand_dim, 3), ConvBN(expand_dim, out_dim, 1))
+            layers.ConvBNReLU(in_dim, in_dim, 3), layers.DepthwiseConvBN(
+                in_dim, expand_dim, 3), layers.ConvBN(expand_dim, out_dim, 1))
 
     def forward(self, x):
         return F.relu(self.conv(x) + x)
@@ -88,14 +87,14 @@ class GatherAndExpandsionLayer2(nn.Layer):
         expand_dim = expand * in_dim
 
         self.branch_1 = nn.Sequential(
-            ConvBNReLU(in_dim, in_dim, 3),
-            DepthwiseConvBN(in_dim, expand_dim, 3, stride=2),
-            DepthwiseConvBN(expand_dim, expand_dim, 3),
-            ConvBN(expand_dim, out_dim, 1))
+            layers.ConvBNReLU(in_dim, in_dim, 3),
+            layers.DepthwiseConvBN(in_dim, expand_dim, 3, stride=2),
+            layers.DepthwiseConvBN(expand_dim, expand_dim, 3),
+            layers.ConvBN(expand_dim, out_dim, 1))
 
         self.branch_2 = nn.Sequential(
-            DepthwiseConvBN(in_dim, in_dim, 3, stride=2),
-            ConvBN(in_dim, out_dim, 1))
+            layers.DepthwiseConvBN(in_dim, in_dim, 3, stride=2),
+            layers.ConvBN(in_dim, out_dim, 1))
 
     def forward(self, x):
         return F.relu(self.branch_1(x) + self.branch_2(x))
@@ -111,16 +110,16 @@ class DetailBranch(nn.Layer):
 
         self.convs = nn.Sequential(
             # stage 1
-            ConvBNReLU(3, C1, 3, stride=2),
-            ConvBNReLU(C1, C1, 3),
+            layers.ConvBNReLU(3, C1, 3, stride=2),
+            layers.ConvBNReLU(C1, C1, 3),
             # stage 2
-            ConvBNReLU(C1, C2, 3, stride=2),
-            ConvBNReLU(C2, C2, 3),
-            ConvBNReLU(C2, C2, 3),
+            layers.ConvBNReLU(C1, C2, 3, stride=2),
+            layers.ConvBNReLU(C2, C2, 3),
+            layers.ConvBNReLU(C2, C2, 3),
             # stage 3
-            ConvBNReLU(C2, C3, 3, stride=2),
-            ConvBNReLU(C3, C3, 3),
-            ConvBNReLU(C3, C3, 3),
+            layers.ConvBNReLU(C2, C3, 3, stride=2),
+            layers.ConvBNReLU(C3, C3, 3),
+            layers.ConvBNReLU(C3, C3, 3),
         )
 
     def forward(self, x):
@@ -168,22 +167,22 @@ class BGA(nn.Layer):
         super(BGA, self).__init__()
 
         self.db_branch_keep = nn.Sequential(
-            DepthwiseConvBN(out_dim, out_dim, 3), nn.Conv2d(
+            layers.DepthwiseConvBN(out_dim, out_dim, 3), nn.Conv2d(
                 out_dim, out_dim, 1))
 
         self.db_branch_down = nn.Sequential(
-            ConvBN(out_dim, out_dim, 3, stride=2),
+            layers.ConvBN(out_dim, out_dim, 3, stride=2),
             nn.AvgPool2d(kernel_size=3, stride=2, padding=1))
 
         self.sb_branch_keep = nn.Sequential(
-            DepthwiseConvBN(out_dim, out_dim, 3), nn.Conv2d(
-                out_dim, out_dim, 1), Activation(act='sigmoid'))
+            layers.DepthwiseConvBN(out_dim, out_dim, 3), nn.Conv2d(
+                out_dim, out_dim, 1), layers.Activation(act='sigmoid'))
 
         self.sb_branch_up = nn.Sequential(
-            ConvBN(out_dim, out_dim, 3),
-            nn.UpsamplingBilinear2d(scale_factor=4), Activation(act='sigmoid'))
+            layers.ConvBN(out_dim, out_dim, 3),
+            nn.UpsamplingBilinear2d(scale_factor=4), layers.Activation(act='sigmoid'))
 
-        self.conv = ConvBN(out_dim, out_dim, 3)
+        self.conv = layers.ConvBN(out_dim, out_dim, 3)
 
     def forward(self, dfm, sfm):
         db_feat_keep = self.db_branch_keep(dfm)
@@ -202,7 +201,7 @@ class SegHead(nn.Layer):
         super(SegHead, self).__init__()
 
         self.conv_3x3 = nn.Sequential(
-            ConvBNReLU(in_dim, mid_dim, 3), nn.Dropout(0.1))
+            layers.ConvBNReLU(in_dim, mid_dim, 3), nn.Dropout(0.1))
 
         self.conv_1x1 = nn.Conv2d(mid_dim, num_classes, 1, 1)
 

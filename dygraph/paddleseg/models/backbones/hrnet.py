@@ -26,7 +26,7 @@ from paddle.nn import AdaptiveAvgPool2d, MaxPool2d, AvgPool2d
 from paddleseg.cvlibs import manager
 from paddleseg.utils import utils
 from paddleseg.cvlibs import param_init
-from paddleseg.models.common import layer_libs
+from paddleseg.models import layers
 
 __all__ = [
     "HRNet_W18_Small_V1", "HRNet_W18_Small_V2", "HRNet_W18", "HRNet_W30",
@@ -88,7 +88,7 @@ class HRNet(nn.Layer):
         self.has_se = has_se
         self.feat_channels = [sum(stage4_num_channels)]
 
-        self.conv_layer1_1 = layer_libs.ConvBNReLU(
+        self.conv_layer1_1 = layers.ConvBNReLU(
             in_channels=3,
             out_channels=64,
             kernel_size=3,
@@ -96,7 +96,7 @@ class HRNet(nn.Layer):
             padding='same',
             bias_attr=False)
 
-        self.conv_layer1_2 = layer_libs.ConvBNReLU(
+        self.conv_layer1_2 = layers.ConvBNReLU(
             in_channels=64,
             out_channels=64,
             kernel_size=3,
@@ -227,7 +227,7 @@ class TransitionLayer(nn.Layer):
                 if in_channels[i] != out_channels[i]:
                     residual = self.add_sublayer(
                         "transition_{}_layer_{}".format(name, i + 1),
-                        layer_libs.ConvBNReLU(
+                        layers.ConvBNReLU(
                             in_channels=in_channels[i],
                             out_channels=out_channels[i],
                             kernel_size=3,
@@ -236,7 +236,7 @@ class TransitionLayer(nn.Layer):
             else:
                 residual = self.add_sublayer(
                     "transition_{}_layer_{}".format(name, i + 1),
-                    layer_libs.ConvBNReLU(
+                    layers.ConvBNReLU(
                         in_channels=in_channels[-1],
                         out_channels=out_channels[i],
                         kernel_size=3,
@@ -306,14 +306,14 @@ class BottleneckBlock(nn.Layer):
         self.has_se = has_se
         self.downsample = downsample
 
-        self.conv1 = layer_libs.ConvBNReLU(
+        self.conv1 = layers.ConvBNReLU(
             in_channels=num_channels,
             out_channels=num_filters,
             kernel_size=1,
             padding='same',
             bias_attr=False)
 
-        self.conv2 = layer_libs.ConvBNReLU(
+        self.conv2 = layers.ConvBNReLU(
             in_channels=num_filters,
             out_channels=num_filters,
             kernel_size=3,
@@ -321,7 +321,7 @@ class BottleneckBlock(nn.Layer):
             padding='same',
             bias_attr=False)
 
-        self.conv3 = layer_libs.ConvBN(
+        self.conv3 = layers.ConvBN(
             in_channels=num_filters,
             out_channels=num_filters * 4,
             kernel_size=1,
@@ -329,7 +329,7 @@ class BottleneckBlock(nn.Layer):
             bias_attr=False)
 
         if self.downsample:
-            self.conv_down = layer_libs.ConvBN(
+            self.conv_down = layers.ConvBN(
                 in_channels=num_channels,
                 out_channels=num_filters * 4,
                 kernel_size=1,
@@ -373,14 +373,14 @@ class BasicBlock(nn.Layer):
         self.has_se = has_se
         self.downsample = downsample
 
-        self.conv1 = layer_libs.ConvBNReLU(
+        self.conv1 = layers.ConvBNReLU(
             in_channels=num_channels,
             out_channels=num_filters,
             kernel_size=3,
             stride=stride,
             padding='same',
             bias_attr=False)
-        self.conv2 = layer_libs.ConvBN(
+        self.conv2 = layers.ConvBN(
             in_channels=num_filters,
             out_channels=num_filters,
             kernel_size=3,
@@ -388,7 +388,7 @@ class BasicBlock(nn.Layer):
             bias_attr=False)
 
         if self.downsample:
-            self.conv_down = layer_libs.ConvBNReLU(
+            self.conv_down = layers.ConvBNReLU(
                 in_channels=num_channels,
                 out_channels=num_filters,
                 kernel_size=1,
@@ -545,7 +545,7 @@ class FuseLayers(nn.Layer):
                 if j > i:
                     residual_func = self.add_sublayer(
                         "residual_{}_layer_{}_{}".format(name, i + 1, j + 1),
-                        layer_libs.ConvBN(
+                        layers.ConvBN(
                             in_channels=in_channels[j],
                             out_channels=out_channels[i],
                             kernel_size=1,
@@ -559,7 +559,7 @@ class FuseLayers(nn.Layer):
                             residual_func = self.add_sublayer(
                                 "residual_{}_layer_{}_{}_{}".format(
                                     name, i + 1, j + 1, k + 1),
-                                layer_libs.ConvBN(
+                                layers.ConvBN(
                                     in_channels=pre_num_filters,
                                     out_channels=out_channels[i],
                                     kernel_size=3,
@@ -571,7 +571,7 @@ class FuseLayers(nn.Layer):
                             residual_func = self.add_sublayer(
                                 "residual_{}_layer_{}_{}_{}".format(
                                     name, i + 1, j + 1, k + 1),
-                                layer_libs.ConvBNReLU(
+                                layers.ConvBNReLU(
                                     in_channels=pre_num_filters,
                                     out_channels=out_channels[j],
                                     kernel_size=3,

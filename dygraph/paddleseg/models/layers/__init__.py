@@ -12,6 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from . import layer_libs
-from . import activation
-from . import pyramid_pool
+from .layer_libs import ConvBNReLU, ConvBN, SeparableConvBNReLU, DepthwiseConvBN, AuxLayer
+from .activation import Activation
+from .pyramid_pool import ASPPModule, PPModule

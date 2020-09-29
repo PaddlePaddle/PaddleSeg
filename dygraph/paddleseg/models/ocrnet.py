@@ -20,7 +20,7 @@ import paddle.nn.functional as F
 
 from paddleseg import utils
 from paddleseg.cvlibs import manager, param_init
-from paddleseg.models.common.layer_libs import ConvBNReLU, AuxLayer
+from paddleseg.models import layers
 
 
 class SpatialGatherBlock(nn.Layer):
@@ -79,16 +79,16 @@ class ObjectAttentionBlock(nn.Layer):
         self.key_channels = key_channels
 
         self.f_pixel = nn.Sequential(
-            ConvBNReLU(in_channels, key_channels, 1),
-            ConvBNReLU(key_channels, key_channels, 1))
+            layers.ConvBNReLU(in_channels, key_channels, 1),
+            layers.ConvBNReLU(key_channels, key_channels, 1))
 
         self.f_object = nn.Sequential(
-            ConvBNReLU(in_channels, key_channels, 1),
-            ConvBNReLU(key_channels, key_channels, 1))
+            layers.ConvBNReLU(in_channels, key_channels, 1),
+            layers.ConvBNReLU(key_channels, key_channels, 1))
 
-        self.f_down = ConvBNReLU(in_channels, key_channels, 1)
+        self.f_down = layers.ConvBNReLU(in_channels, key_channels, 1)
 
-        self.f_up = ConvBNReLU(key_channels, in_channels, 1)
+        self.f_up = layers.ConvBNReLU(key_channels, in_channels, 1)
 
     def forward(self, x, proxy):
         n, _, h, w = x.shape
@@ -145,10 +145,10 @@ class OCRHead(nn.Layer):
 
         self.indices = [-2, -1] if len(in_channels) > 1 else [-1, -1]
 
-        self.conv3x3_ocr = ConvBNReLU(
+        self.conv3x3_ocr = layers.ConvBNReLU(
             in_channels[self.indices[1]], ocr_mid_channels, 3, padding=1)
         self.cls_head = nn.Conv2d(ocr_mid_channels, self.num_classes, 1)
-        self.aux_head = AuxLayer(in_channels[self.indices[0]],
+        self.aux_head = layers.AuxLayer(in_channels[self.indices[0]],
                                  in_channels[self.indices[0]], self.num_classes)
         self.init_weight()
 

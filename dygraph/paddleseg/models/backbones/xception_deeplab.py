@@ -20,7 +20,7 @@ import paddle.nn.functional as F
 from paddle.nn import Conv2d, Linear, Dropout
 from paddle.nn import SyncBatchNorm as BatchNorm
 
-from paddleseg.models.common import layer_libs, activation
+from paddleseg.models import layers
 from paddleseg.cvlibs import manager
 from paddleseg.utils import utils
 
