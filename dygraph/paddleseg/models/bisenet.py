@@ -190,7 +190,7 @@ class BGA(nn.Layer):
         db_feat_down = self.db_branch_down(dfm)
         sb_feat_keep = self.sb_branch_keep(sfm)
         sb_feat_up = self.sb_branch_up(sfm)
-        db_feat = db_feat_down * sb_feat_keep
+        db_feat = db_feat_keep * sb_feat_up
         sb_feat = db_feat_down * sb_feat_keep
         sb_feat = F.resize_bilinear(sb_feat, db_feat.shape[2:])
 
@@ -213,7 +213,7 @@ class SegHead(nn.Layer):
 
 
 @manager.MODELS.add_component
-class BiSeNet(nn.Layer):
+class BiSeNetV2(nn.Layer):
     """
     The BiSeNet V2 implementation based on PaddlePaddle.
 
@@ -228,7 +228,7 @@ class BiSeNet(nn.Layer):
     """
 
     def __init__(self, num_classes, lambd=0.25, pretrained=None):
-        super(BiSeNet, self).__init__()
+        super(BiSeNetV2, self).__init__()
 
         C1, C2, C3 = 64, 64, 128
         db_channels = (C1, C2, C3)
@@ -248,7 +248,7 @@ class BiSeNet(nn.Layer):
 
         self.init_weight(pretrained)
 
-    def forward(self, x, label=None):
+    def forward(self, x):
         dfm = self.db(x)
         feat1, feat2, feat3, feat4, sfm = self.sb(x)
         logit1 = self.aux_head1(feat1)
@@ -270,7 +270,7 @@ class BiSeNet(nn.Layer):
         """
         if pretrained is not None:
             if os.path.exists(pretrained):
-                utils.load_pretrained_model(self, pretrained)
+                utils.load_entire_model(self, pretrained)
             else:
                 raise Exception(
                     'Pretrained model is not found: {}'.format(pretrained))
@@ -278,6 +278,6 @@ class BiSeNet(nn.Layer):
             for sublayer in self.sublayers():
                 if isinstance(sublayer, nn.Conv2d):
                     param_init.msra_init(sublayer.weight)
-                elif isinstance(sublayer, nn.SyncBatchNorm):
+                elif isinstance(sublayer, (nn.BatchNorm, nn.SyncBatchNorm)):
                     param_init.constant_init(sublayer.weight, value=1.0)
                     param_init.constant_init(sublayer.bias, value=0.0)

@@ -116,14 +116,12 @@ class DAHead(nn.Layer):
         in_channels = in_channels[-1]
         inter_channels = in_channels // 4
 
-        self.channel_conv = ConvBNReLU(
-            in_channels, inter_channels, 3, padding=1)
-        self.position_conv = ConvBNReLU(
-            in_channels, inter_channels, 3, padding=1)
+        self.channel_conv = ConvBNReLU(in_channels, inter_channels, 3)
+        self.position_conv = ConvBNReLU(in_channels, inter_channels, 3)
         self.pam = PAM(inter_channels)
         self.cam = CAM()
-        self.conv1 = ConvBNReLU(inter_channels, inter_channels, 3, padding=1)
-        self.conv2 = ConvBNReLU(inter_channels, inter_channels, 3, padding=1)
+        self.conv1 = ConvBNReLU(inter_channels, inter_channels, 3)
+        self.conv2 = ConvBNReLU(inter_channels, inter_channels, 3)
 
         self.aux_head_pam = nn.Sequential(
             nn.Dropout2d(0.1), nn.Conv2d(inter_channels, num_classes, 1))
@@ -136,17 +134,15 @@ class DAHead(nn.Layer):
 
         self.init_weight()
 
-    def forward(self, x, label=None):
-        feats = x[-1]
+    def forward(self, feat_list):
+        feats = feat_list[-1]
         channel_feats = self.channel_conv(feats)
         channel_feats = self.cam(channel_feats)
         channel_feats = self.conv1(channel_feats)
-        cam_head = self.aux_head_cam(channel_feats)
 
         position_feats = self.position_conv(feats)
         position_feats = self.pam(position_feats)
         position_feats = self.conv2(position_feats)
-        pam_head = self.aux_head_pam(position_feats)
 
         feats_sum = position_feats + channel_feats
         cam_logit = self.aux_head_cam(channel_feats)
@@ -159,7 +155,7 @@ class DAHead(nn.Layer):
         for sublayer in self.sublayers():
             if isinstance(sublayer, nn.Conv2d):
                 param_init.normal_init(sublayer.weight, scale=0.001)
-            elif isinstance(sublayer, nn.SyncBatchNorm):
+            elif isinstance(sublayer, (nn.BatchNorm, nn.SyncBatchNorm)):
                 param_init.constant_init(sublayer.weight, value=1.0)
                 param_init.constant_init(sublayer.bias, value=0.0)
 
@@ -176,16 +172,17 @@ class DANet(nn.Layer):
     Args:
         num_classes(int): the unique number of target classes.
         backbone(Paddle.nn.Layer): backbone network.
+        backbone_indices(tuple): values in the tuple indicate the indices of
+                                 output of backbone. Only the last indice is
+                                 used.
         pretrained(str): the path or url of pretrained model. Default to None.
-        backbone_indices(tuple): values in the tuple indicate the indices of output of backbone.
-                                 Only the last indice is used.
     """
 
     def __init__(self,
                  num_classes,
                  backbone,
-                 pretrained=None,
-                 backbone_indices=None):
+                 backbone_indices=None,
+                 pretrained=None):
         super(DANet, self).__init__()
 
         self.backbone = backbone
@@ -194,24 +191,11 @@ class DANet(nn.Layer):
 
         self.head = DAHead(num_classes=num_classes, in_channels=in_channels)
 
-        self.init_weight(pretrained)
+        utils.load_entire_model(self, pretrained)
 
-    def forward(self, x, label=None):
+    def forward(self, x):
         feats = self.backbone(x)
         feats = [feats[i] for i in self.backbone_indices]
-        preds = self.head(feats, label)
+        preds = self.head(feats)
         preds = [F.resize_bilinear(pred, x.shape[2:]) for pred in preds]
         return preds
-
-    def init_weight(self, pretrained=None):
-        """
-        Initialize the parameters of model parts.
-        Args:
-            pretrained ([str], optional): the path of pretrained model.. Defaults to None.
-        """
-        if pretrained is not None:
-            if os.path.exists(pretrained):
-                utils.load_pretrained_model(self, pretrained)
-            else:
-                raise Exception(
-                    'Pretrained model is not found: {}'.format(pretrained))
