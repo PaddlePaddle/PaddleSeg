@@ -154,6 +154,19 @@ class Config(object):
     @property
     def loss(self) -> dict:
         args = self.dic.get('loss', {}).copy()
+        if 'types' in args and 'coef' in args:
+            len_types = len(args['types'])
+            len_coef = len(args['coef'])
+            if len_types != len_coef:
+                if len_types == 1:
+                    args['types'] = args['types'] * len_coef
+                else:
+                    raise ValueError(
+                        'The length of types should equal to coef or equal to 1 in loss config, but they are {} and {}.'
+                        .format(len_types, len_coef))
+        else:
+            raise ValueError(
+                'Loss config should contain keys of "types" and "coef"')
 
         if not self._losses:
             self._losses = dict()
