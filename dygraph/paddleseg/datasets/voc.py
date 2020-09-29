@@ -44,6 +44,7 @@ class PascalVOC(Dataset):
         self.mode = mode
         self.file_list = list()
         self.num_classes = 21
+        self.ignore_index = 255
 
         if mode.lower() not in ['train', 'trainval', 'trainaug', 'val']:
             raise Exception(

@@ -1,4 +1,3 @@
-# -*- encoding: utf-8 -*-
 # Copyright (c) 2020 PaddlePaddle Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -23,7 +22,7 @@ from paddleseg.models.common import layer_libs
 
 class ASPPModule(nn.Layer):
     """
-     Atrous Spatial Pyramid Pooling
+    Atrous Spatial Pyramid Pooling
 
     Args:
         aspp_ratios (tuple): the dilation rate using in ASSP module.
@@ -44,7 +43,6 @@ class ASPPModule(nn.Layer):
         self.aspp_blocks = []
 
         for ratio in aspp_ratios:
-
             if sep_conv and ratio > 1:
                 conv_func = layer_libs.SeparableConvBNReLU
             else:
@@ -76,7 +74,6 @@ class ASPPModule(nn.Layer):
         self.dropout = nn.Dropout(p=0.1)  # drop rate
 
     def forward(self, x):
-
         outputs = []
         for block in self.aspp_blocks:
             y = block(x)
@@ -87,7 +84,7 @@ class ASPPModule(nn.Layer):
             img_avg = self.global_avg_pool(x)
             img_avg = F.resize_bilinear(img_avg, out_shape=x.shape[2:])
             outputs.append(img_avg)
-            
+
         x = paddle.concat(outputs, axis=1)
         x = self.conv_bn_relu(x)
         x = self.dropout(x)
@@ -141,7 +138,6 @@ class PPModule(nn.Layer):
         After pooling, the channels are reduced to 1/len(bin_sizes) immediately, while some other implementations
         keep the channels to be same.
 
-
         Args:
             in_channels (int): the number of intput channels to pyramid pooling module.
             size (int): the out size of the pooled layer.
@@ -159,7 +155,6 @@ class PPModule(nn.Layer):
     def forward(self, input):
         cat_layers = []
         for i, stage in enumerate(self.stages):
-            size = self.bin_sizes[i]
             x = stage(input)
             x = F.resize_bilinear(x, out_shape=input.shape[2:])
             cat_layers.append(x)

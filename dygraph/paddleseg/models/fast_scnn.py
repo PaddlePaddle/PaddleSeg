@@ -61,7 +61,6 @@ class FastSCNN(nn.Layer):
         utils.load_entire_model(self, pretrained)
 
     def forward(self, input, label=None):
-
         logit_list = []
         higher_res_features = self.learning_to_downsample(input)
         x = self.global_feature_extractor(higher_res_features)
@@ -274,9 +273,7 @@ class FeatureFusionModule(nn.Layer):
         low_res_input = F.resize_bilinear(input=low_res_input, scale=4)
         low_res_input = self.dwconv(low_res_input)
         low_res_input = self.conv_low_res(low_res_input)
-
         high_res_input = self.conv_high_res(high_res_input)
-
         x = high_res_input + low_res_input
 
         return self.relu(x)

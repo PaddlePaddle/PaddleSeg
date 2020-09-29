@@ -18,10 +18,8 @@ from typing import Any, Callable
 
 import yaml
 import paddle
-import paddle.nn.functional as F
 
 import paddleseg.cvlibs.manager as manager
-from paddleseg.utils import logger
 
 
 class Config(object):
@@ -32,7 +30,14 @@ class Config(object):
         path(str) : the path of config file, supports yaml format only
     '''
 
-    def __init__(self, path: str):
+    def __init__(self,
+                 path: str,
+                 learning_rate: float = None,
+                 batch_size: int = None,
+                 iters: int = None):
+        if not path:
+            raise ValueError('Please specify the configuration file path.')
+
         if not os.path.exists(path):
             raise FileNotFoundError('File {} does not exist'.format(path))
 
@@ -42,6 +47,9 @@ class Config(object):
             self.dic = self._parse_from_yaml(path)
         else:
             raise RuntimeError('Config file should in yaml format!')
+
+        self.update(
+            learning_rate=learning_rate, batch_size=batch_size, iters=iters)
 
     def _update_dic(self, dic, base_dic):
         """
@@ -95,7 +103,7 @@ class Config(object):
         return iters
 
     @property
-    def learning_rate(self) -> float:
+    def learning_rate(self) -> paddle.optimizer._LRScheduler:
         _learning_rate = self.dic.get('learning_rate', {}).get('value')
         if not _learning_rate:
             raise RuntimeError(
@@ -144,7 +152,7 @@ class Config(object):
         return args
 
     @property
-    def loss(self) -> list:
+    def loss(self) -> dict:
         args = self.dic.get('loss', {}).copy()
 
         if not self._losses:
@@ -153,6 +161,7 @@ class Config(object):
                 if key == 'types':
                     self._losses['types'] = []
                     for item in args['types']:
+                        item['ignore_index'] = self.train_dataset.ignore_index
                         self._losses['types'].append(self._load_object(item))
                 else:
                     self._losses[key] = val
@@ -164,8 +173,10 @@ class Config(object):
         return self._losses
 
     @property
-    def model(self) -> Callable:
+    def model(self) -> paddle.nn.Layer:
         model_cfg = self.dic.get('model').copy()
+        model_cfg['num_classes'] = self.train_dataset.num_classes
+
         if not model_cfg:
             raise RuntimeError('No model specified in the configuration file.')
         if not self._model:
@@ -173,14 +184,14 @@ class Config(object):
         return self._model
 
     @property
-    def train_dataset(self) -> Any:
+    def train_dataset(self) -> paddle.io.Dataset:
         _train_dataset = self.dic.get('train_dataset').copy()
         if not _train_dataset:
             return None
         return self._load_object(_train_dataset)
 
     @property
-    def val_dataset(self) -> Any:
+    def val_dataset(self) -> paddle.io.Dataset:
         _val_dataset = self.dic.get('val_dataset').copy()
         if not _val_dataset:
             return None

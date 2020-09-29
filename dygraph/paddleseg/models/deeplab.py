@@ -73,7 +73,6 @@ class DeepLabV3P(nn.Layer):
         utils.load_entire_model(self, pretrained)
 
     def forward(self, input):
-
         feat_list = self.backbone(input)
         logit_list = self.head(feat_list)
         return [
@@ -122,7 +121,6 @@ class DeepLabV3PHead(nn.Layer):
         self.init_weight()
 
     def forward(self, feat_list):
-
         logit_list = []
         low_level_feat = feat_list[self.backbone_indices[0]]
         x = feat_list[self.backbone_indices[1]]
@@ -171,7 +169,6 @@ class DeepLabV3(nn.Layer):
         utils.load_entire_model(self, pretrained)
 
     def forward(self, input):
-
         feat_list = self.backbone(input)
         logit_list = self.head(feat_list)
         return [
@@ -205,9 +202,7 @@ class DeepLabV3Head(nn.Layer):
         self.init_weight()
 
     def forward(self, feat_list):
-
         logit_list = []
-
         x = feat_list[self.backbone_indices[0]]
         x = self.aspp(x)
         logit = self.cls(x)

@@ -1,4 +1,3 @@
-# -*- encoding: utf-8 -*-
 # Copyright (c) 2020 PaddlePaddle Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -95,7 +94,7 @@ class SeparableConvBNReLU(nn.Layer):
             groups=in_channels,
             **kwargs)
         self.piontwise_conv = ConvBNReLU(
-            in_channels, out_channels, kernel_size=1, padding=padding, groups=1)
+            in_channels, out_channels, kernel_size=1, groups=1)
 
     def forward(self, x):
         x = self.depthwise_conv(x)

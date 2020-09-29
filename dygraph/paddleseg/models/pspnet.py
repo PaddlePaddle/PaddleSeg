@@ -70,7 +70,6 @@ class PSPNet(nn.Layer):
         utils.load_entire_model(self, pretrained)
 
     def forward(self, input):
-
         feat_list = self.backbone(input)
         logit_list = self.head(feat_list)
         return [
@@ -130,9 +129,7 @@ class PSPNetHead(nn.Layer):
         self.init_weight()
 
     def forward(self, feat_list):
-
         logit_list = []
-
         x = feat_list[self.backbone_indices[1]]
         x = self.psp_module(x)
         x = F.dropout(x, p=0.1)  # dropout_prob

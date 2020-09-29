@@ -1,4 +1,3 @@
-# -*- encoding: utf-8 -*-
 # Copyright (c) 2020 PaddlePaddle Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -68,7 +67,6 @@ class Activation(nn.Layer):
                     act, act_dict.keys()))
 
     def forward(self, x):
-
         if self._act is not None:
             return self.act_func(x)
         else:

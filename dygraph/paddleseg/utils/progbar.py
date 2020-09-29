@@ -19,18 +19,20 @@ import numpy as np
 
 
 class Progbar(object):
-    """Displays a progress bar.
-     refers to https://github.com/keras-team/keras/blob/keras-2/keras/utils/generic_utils.py
-  Arguments:
-      target: Total number of steps expected, None if unknown.
-      width: Progress bar width on screen.
-      verbose: Verbosity mode, 0 (silent), 1 (verbose), 2 (semi-verbose)
-      stateful_metrics: Iterable of string names of metrics that should *not* be
-        averaged over time. Metrics in this list will be displayed as-is. All
-        others will be averaged by the progbar before display.
-      interval: Minimum visual progress update interval (in seconds).
-      unit_name: Display name for step counts (usually "step" or "sample").
-  """
+    """
+    Displays a progress bar.
+        It refers to https://github.com/keras-team/keras/blob/keras-2/keras/utils/generic_utils.py
+    
+    Args:
+        target (int): Total number of steps expected, None if unknown.
+        width (int): Progress bar width on screen.
+        verbose (int): Verbosity mode, 0 (silent), 1 (verbose), 2 (semi-verbose)
+        stateful_metrics (list|tuple): Iterable of string names of metrics that should *not* be
+            averaged over time. Metrics in this list will be displayed as-is. All
+            others will be averaged by the progbar before display.
+        interval (float): Minimum visual progress update interval (in seconds).
+        unit_name (str): Display name for step counts (usually "step" or "sample").
+    """
 
     def __init__(self,
                  target,
@@ -64,15 +66,18 @@ class Progbar(object):
         self._last_update = 0
 
     def update(self, current, values=None, finalize=None):
-        """Updates the progress bar.
-    Arguments:
-        current: Index of current step.
-        values: List of tuples: `(name, value_for_last_step)`. If `name` is in
-          `stateful_metrics`, `value_for_last_step` will be displayed as-is.
-          Else, an average of the metric over time will be displayed.
-        finalize: Whether this is the last update for the progress bar. If
-          `None`, defaults to `current >= self.target`.
-    """
+        """
+        Updates the progress bar.
+
+        Args:
+            current (int): Index of current step.
+            values (list): List of tuples: `(name, value_for_last_step)`. If `name` is in
+                `stateful_metrics`, `value_for_last_step` will be displayed as-is.
+                Else, an average of the metric over time will be displayed.
+            finalize (bool): Whether this is the last update for the progress bar. If
+                `None`, defaults to `current >= self.target`.
+        """
+
         if finalize is None:
             if self.target is None:
                 finalize = False

@@ -54,12 +54,14 @@ class Dataset(paddle.io.Dataset):
                  val_list=None,
                  test_list=None,
                  separator=' ',
-                 transforms=None):
+                 transforms=None,
+                 ignore_index=255):
         self.dataset_root = dataset_root
         self.transforms = Compose(transforms)
         self.file_list = list()
         self.mode = mode
         self.num_classes = num_classes
+        self.ignore_index = ignore_index
 
         if mode.lower() not in ['train', 'val', 'test']:
             raise Exception(
