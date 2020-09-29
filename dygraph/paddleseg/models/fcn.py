@@ -29,6 +29,22 @@ from paddleseg.models.common import layer_libs, activation
 
 @manager.MODELS.add_component
 class FCN(nn.Layer):
+    """
+    A simple implementation for FCN based on PaddlePaddle.
+
+    The original article refers to
+    Evan Shelhamer, et, al. "Fully Convolutional Networks for Semantic Segmentation"
+    (https://arxiv.org/abs/1411.4038).
+
+    Args:
+        num_classes (int): the unique number of target classes.
+        backbone (paddle.nn.Layer): backbone networks.
+        pretrained (str): the path of pretrained model. Default: None
+        backbone_indices (tuple): one values in the tuple indicte the indices of output of backbone. Default: (-1, ).
+        channels (int): Channels after conv layer before the last one of FCNHead.
+            If not set, it is set to the number of channels of input features. Default: None.
+    """
+
     def __init__(self,
                  num_classes,
                  backbone,
@@ -56,16 +72,16 @@ class FCN(nn.Layer):
 
 class FCNHead(nn.Layer):
     """
-    A simple implementation for Fully Convolutional Networks for Semantic Segmentation.
-    https://arxiv.org/abs/1411.4038
+    A simple implementation for FCNHead based on PaddlePaddle
 
     Args:
-        num_classes (int): the unique number of target classes.
-        backbone (paddle.nn.Layer): backbone networks.
-        model_pretrained (str): the path of pretrained model.
-        backbone_indices (tuple): one values in the tuple indicte the indices of output of backbone.Default -1.
-        backbone_channels (tuple): the same length with "backbone_indices". It indicates the channels of corresponding index.
-        channels (int): channels after conv layer before the last one.
+        num_classes (int): The unique number of target classes.
+        backbone_indices (tuple): One values in the tuple indicte the
+            indices of output of backbone.Default -1. Default: (-1, )
+        backbone_channels (tuple): The same length with "backbone_indices".
+            It indicates the channels of corresponding index. Default: (270, )
+        channels (int): Channels after conv layer before the last one.
+            If not set, it is set to the number of channels of input features. Default: None.
     """
 
     def __init__(self,
