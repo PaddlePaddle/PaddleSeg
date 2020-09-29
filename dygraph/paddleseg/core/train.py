@@ -126,8 +126,8 @@ def train(model,
                 loss = loss_computation(logits, labels, losses)
                 # loss = model(images, labels)
                 loss.backward()
-            # optimizer.minimize(loss)
             optimizer.step()
+            lr = optimizer.get_lr()
             if isinstance(optimizer._learning_rate,
                           paddle.optimizer._LRScheduler):
                 optimizer._learning_rate.step()
@@ -136,7 +136,6 @@ def train(model,
             if nranks > 1:
                 paddle.distributed.all_reduce(loss)
             avg_loss += loss.numpy()[0]
-            lr = optimizer.get_lr()
             train_batch_cost += timer.elapsed_time()
             if (iter) % log_iters == 0 and ParallelEnv().local_rank == 0:
                 avg_loss /= log_iters
