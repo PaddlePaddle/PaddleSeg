@@ -28,7 +28,7 @@ class ASPPModule(nn.Layer):
         aspp_ratios (tuple): the dilation rate using in ASSP module.
         in_channels (int): the number of input channels.
         out_channels (int): the number of output channels.
-        sep_conv (bool): if using separable conv in ASPP module.
+        use_sep_conv (bool): if using separable conv in ASPP module.
         image_pooling: if augmented with image-level features.
     """
 
@@ -36,14 +36,14 @@ class ASPPModule(nn.Layer):
                  aspp_ratios,
                  in_channels,
                  out_channels,
-                 sep_conv=False,
+                 use_sep_conv=False,
                  image_pooling=False):
         super(ASPPModule, self).__init__()
 
         self.aspp_blocks = []
 
         for ratio in aspp_ratios:
-            if sep_conv and ratio > 1:
+            if use_sep_conv and ratio > 1:
                 conv_func = layers.SeparableConvBNReLU
             else:
                 conv_func = layers.ConvBNReLU

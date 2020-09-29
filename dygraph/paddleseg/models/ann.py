@@ -88,7 +88,7 @@ class ANNHead(nn.Layer):
         backbone_indices (tuple): Two values in the tuple indicate the indices of output of backbone.
             The first index will be taken as low-level features; the second one will be 
             taken as high-level features in AFNB module. Usually backbone consists of four 
-            downsampling stage, such as ResNet, and return an output of each stage. If the argument is (2, 3), 
+            downsampling stage, such as ResNet, and return an output of each stage. If it is (2, 3), 
             it means taking feature map of the third stage and the fourth stage in backbone.
         backbone_channels (tuple): The same length with "backbone_indices". It indicates the channels of corresponding index.
         key_value_channels (int): The key and value channels of self-attention map in both AFNB and APNB modules.
