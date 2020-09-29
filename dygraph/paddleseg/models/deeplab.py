@@ -12,8 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
-
 import paddle
 import paddle.nn.functional as F
 from paddle import nn
@@ -54,7 +52,6 @@ class DeepLabV3P(nn.Layer):
                  aspp_ratios=(1, 6, 12, 18),
                  aspp_out_channels=256,
                  pretrained=None):
-
         super().__init__()
 
         self.backbone = backbone
@@ -100,7 +97,6 @@ class DeepLabV3PHead(nn.Layer):
                  backbone_channels,
                  aspp_ratios,
                  aspp_out_channels):
-
         super().__init__()
 
         self.aspp = layers.ASPPModule(
@@ -140,10 +136,9 @@ class DeepLabV3(nn.Layer):
                  num_classes,
                  backbone,
                  pretrained=None,
-                 backbone_indices=(3, ),
+                 backbone_indices=(3,),
                  aspp_ratios=(1, 6, 12, 18),
                  aspp_out_channels=256):
-
         super().__init__()
 
         self.backbone = backbone
@@ -179,7 +174,6 @@ class DeepLabV3Head(nn.Layer):
                  backbone_channels,
                  aspp_ratios,
                  aspp_out_channels):
-
         super().__init__()
 
         self.aspp = layers.ASPPModule(
