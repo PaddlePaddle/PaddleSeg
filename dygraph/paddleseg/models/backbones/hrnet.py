@@ -13,20 +13,14 @@
 # limitations under the License.
 
 import math
-import os
 
 import paddle
-from paddle import ParamAttr
 import paddle.nn as nn
 import paddle.nn.functional as F
-from paddle.nn import SyncBatchNorm as BatchNorm
-from paddle.nn import Conv2d, Linear
-from paddle.nn import AdaptiveAvgPool2d, MaxPool2d, AvgPool2d
 
-from paddleseg.cvlibs import manager
-from paddleseg.utils import utils
-from paddleseg.cvlibs import param_init
+from paddleseg.cvlibs import manager, param_init
 from paddleseg.models import layers
+from paddleseg.utils import utils
 
 __all__ = [
     "HRNet_W18_Small_V1", "HRNet_W18_Small_V2", "HRNet_W18", "HRNet_W30",
@@ -280,7 +274,7 @@ class Branches(nn.Layer):
                         num_filters=out_channels[i],
                         has_se=has_se,
                         name=name + '_branch_layer_' + str(i + 1) + '_' +
-                        str(j + 1)))
+                             str(j + 1)))
                 self.basic_block_list[i].append(basic_block_func)
 
     def forward(self, inputs):
@@ -422,25 +416,25 @@ class SELayer(nn.Layer):
     def __init__(self, num_channels, num_filters, reduction_ratio, name=None):
         super(SELayer, self).__init__()
 
-        self.pool2d_gap = AdaptiveAvgPool2d(1)
+        self.pool2d_gap = nn.AdaptiveAvgPool2d(1)
 
         self._num_channels = num_channels
 
         med_ch = int(num_channels / reduction_ratio)
         stdv = 1.0 / math.sqrt(num_channels * 1.0)
-        self.squeeze = Linear(
+        self.squeeze = nn.Linear(
             num_channels,
             med_ch,
             act="relu",
-            param_attr=ParamAttr(
+            param_attr=paddle.ParamAttr(
                 initializer=nn.initializer.Uniform(-stdv, stdv)))
 
         stdv = 1.0 / math.sqrt(med_ch * 1.0)
-        self.excitation = Linear(
+        self.excitation = nn.Linear(
             med_ch,
             num_filters,
             act="sigmoid",
-            param_attr=ParamAttr(
+            param_attr=paddle.ParamAttr(
                 initializer=nn.initializer.Uniform(-stdv, stdv)))
 
     def forward(self, input):
