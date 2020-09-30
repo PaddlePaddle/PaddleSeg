@@ -12,8 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
-
 import paddle
 import paddle.nn as nn
 import paddle.nn.functional as F
@@ -109,7 +107,7 @@ class ObjectAttentionBlock(nn.Layer):
 
         # sim_map (n, h1*w1, h2*w2)
         sim_map = paddle.bmm(query, key)
-        sim_map = (self.key_channels**-.5) * sim_map
+        sim_map = (self.key_channels ** -.5) * sim_map
         sim_map = F.softmax(sim_map, axis=-1)
 
         # context from (n, h1*w1, key_channels) to (n , out_channels, h1, w1)
@@ -149,7 +147,7 @@ class OCRHead(nn.Layer):
             in_channels[self.indices[1]], ocr_mid_channels, 3, padding=1)
         self.cls_head = nn.Conv2d(ocr_mid_channels, self.num_classes, 1)
         self.aux_head = layers.AuxLayer(in_channels[self.indices[0]],
-                                 in_channels[self.indices[0]], self.num_classes)
+                                        in_channels[self.indices[0]], self.num_classes)
         self.init_weight()
 
     def forward(self, feat_list):
