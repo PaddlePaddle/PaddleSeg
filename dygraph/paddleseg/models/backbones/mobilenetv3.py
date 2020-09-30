@@ -15,13 +15,10 @@
 import paddle
 import paddle.nn as nn
 import paddle.nn.functional as F
-from paddle import ParamAttr
 # from paddle.regularizer import L2Decay
 from paddle.fluid.regularizer import L2Decay
-from paddle.nn import Conv2d, AdaptiveAvgPool2d
-from paddle.nn import SyncBatchNorm as BatchNorm
+
 from paddleseg.cvlibs import manager
-from paddleseg.models import layers
 from paddleseg.utils import utils
 
 __all__ = [
@@ -214,7 +211,7 @@ class ConvBNLayer(nn.Layer):
         self.if_act = if_act
         self.act = act
 
-        self.conv = Conv2d(
+        self.conv = nn.Conv2d(
             in_channels=in_c,
             out_channels=out_c,
             kernel_size=filter_size,
@@ -223,10 +220,10 @@ class ConvBNLayer(nn.Layer):
             dilation=dilation,
             groups=num_groups,
             bias_attr=False)
-        self.bn = BatchNorm(
+        self.bn = nn.SyncBatchNorm(
             num_features=out_c,
-            weight_attr=ParamAttr(regularizer=L2Decay(0.0)),
-            bias_attr=ParamAttr(regularizer=L2Decay(0.0)))
+            weight_attr=paddle.ParamAttr(regularizer=L2Decay(0.0)),
+            bias_attr=paddle.ParamAttr(regularizer=L2Decay(0.0)))
 
         self._act_op = activation.Activation(act=None)
 
@@ -303,14 +300,14 @@ class ResidualUnit(nn.Layer):
 class SEModule(nn.Layer):
     def __init__(self, channel, reduction=4, name=""):
         super(SEModule, self).__init__()
-        self.avg_pool = AdaptiveAvgPool2d(1)
-        self.conv1 = Conv2d(
+        self.avg_pool = nn.AdaptiveAvgPool2d(1)
+        self.conv1 = nn.Conv2d(
             in_channels=channel,
             out_channels=channel // reduction,
             kernel_size=1,
             stride=1,
             padding=0)
-        self.conv2 = Conv2d(
+        self.conv2 = nn.Conv2d(
             in_channels=channel // reduction,
             out_channels=channel,
             kernel_size=1,

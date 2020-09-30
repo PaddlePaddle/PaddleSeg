@@ -13,9 +13,8 @@
 # limitations under the License.
 
 import paddle
-from paddle import nn
 import paddle.nn.functional as F
-from paddle.nn import SyncBatchNorm as BatchNorm
+from paddle import nn
 
 from paddleseg.models import layers
 

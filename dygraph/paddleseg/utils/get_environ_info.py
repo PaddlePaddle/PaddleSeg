@@ -12,14 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
-import sys
-from collections import OrderedDict
-import subprocess
 import glob
+import os
+import subprocess
+import sys
 
-import paddle
 import cv2
+import paddle
 from paddle.distributed import ParallelEnv
 
 IS_WINDOWS = sys.platform == 'win32'

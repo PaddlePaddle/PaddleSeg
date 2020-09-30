@@ -13,16 +13,15 @@
 # limitations under the License.
 
 import contextlib
-import os
 import math
-
-import numpy as np
-import cv2
+import os
 import tempfile
-import paddle
 from urllib.parse import urlparse, unquote
 
+import cv2
 import filelock
+import numpy as np
+import paddle
 
 import paddleseg.env as segenv
 from paddleseg.utils import logger
@@ -46,7 +45,6 @@ def seconds_to_hms(seconds):
 
 
 def load_entire_model(model, pretrained):
-
     if pretrained is not None:
         if os.path.exists(pretrained):
             load_pretrained_model(model, pretrained)
@@ -54,8 +52,8 @@ def load_entire_model(model, pretrained):
             raise Exception(
                 'Pretrained model is not found: {}'.format(pretrained))
     else:
-        logger.warning('Not all pretrained params of {} to load, '\
-             'training from scratch or a pretrained backbone'.format(model.__class__.__name__))
+        logger.warning('Not all pretrained params of {} to load, ' \
+                       'training from scratch or a pretrained backbone'.format(model.__class__.__name__))
 
 
 def load_pretrained_model(model, pretrained_model):
@@ -87,8 +85,8 @@ def load_pretrained_model(model, pretrained_model):
                         model_state_dict[k].shape):
                     logger.warning(
                         "[SKIP] Shape of pretrained params {} doesn't match.(Pretrained: {}, Actual: {})"
-                        .format(k, para_state_dict[k].shape,
-                                model_state_dict[k].shape))
+                            .format(k, para_state_dict[k].shape,
+                                    model_state_dict[k].shape))
                 else:
                     model_state_dict[k] = para_state_dict[k]
                     num_params_loaded += 1
@@ -104,7 +102,7 @@ def load_pretrained_model(model, pretrained_model):
     else:
         logger.info(
             'No pretrained model to load, {} will be train from scratch.'.
-            format(model.__class__.__name__))
+                format(model.__class__.__name__))
 
 
 def resume(model, optimizer, resume_model):
