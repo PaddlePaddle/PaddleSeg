@@ -35,7 +35,6 @@ class FastSCNN(nn.Layer):
     (https://arxiv.org/pdf/1902.04502.pdf).
 
     Args:
-
         num_classes (int): The unique number of target classes.
         enable_auxiliary_loss (bool, optional): A bool value indicates whether adding auxiliary loss.
             If true, auxiliary loss will be added after LearningToDownsample module. Default: False.
