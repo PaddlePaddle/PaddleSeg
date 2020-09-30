@@ -121,13 +121,13 @@ class DepthwiseConvBN(nn.Layer):
 
 class AuxLayer(nn.Layer):
     """
-    The auxilary layer implementation for auxilary loss
+    The auxiliary layer implementation for auxiliary loss.
 
     Args:
-        in_channels (int): the number of input channels.
-        inter_channels (int): intermediate channels.
-        out_channels (int): the number of output channels, which is usually num_classes.
-        dropout_prob (float): the droput rate. Default to 0.1.
+        in_channels (int): The number of input channels.
+        inter_channels (int): The intermediate channels.
+        out_channels (int): The number of output channels, and usually it is num_classes.
+        dropout_prob (float, optional): The drop rate. Default: 0.1.
     """
 
     def __init__(self,
