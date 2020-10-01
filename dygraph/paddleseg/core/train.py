@@ -15,17 +15,13 @@
 import os
 
 import paddle
-from paddle.distributed import ParallelEnv
-from paddle.distributed import init_parallel_env
-from paddle.io import DistributedBatchSampler
-from paddle.io import DataLoader
 import paddle.nn.functional as F
+from paddle.distributed import init_parallel_env, ParallelEnv
+from paddle.io import DataLoader, DistributedBatchSampler
 
+from paddleseg.utils import Timer, calculate_eta, resume
 import paddleseg.utils.logger as logger
-from paddleseg.utils import load_pretrained_model
-from paddleseg.utils import resume
-from paddleseg.utils import Timer, calculate_eta
-from .val import evaluate
+from paddleseg.core.val import evaluate
 
 
 def check_logits_losses(logits, losses):
@@ -34,7 +30,7 @@ def check_logits_losses(logits, losses):
     if len_logits != len_losses:
         raise RuntimeError(
             'The length of logits should equal to the types of loss config: {} != {}.'
-            .format(len_logits, len_losses))
+                .format(len_logits, len_losses))
 
 
 def loss_computation(logits, label, losses):
@@ -63,7 +59,6 @@ def train(model,
           num_workers=0,
           use_vdl=False,
           losses=None):
-
     nranks = ParallelEnv().nranks
 
     start_iter = 0
@@ -147,9 +142,9 @@ def train(model,
                 eta = calculate_eta(remain_iters, avg_train_batch_cost)
                 logger.info(
                     "[TRAIN] epoch={}, iter={}/{}, loss={:.4f}, lr={:.6f}, batch_cost={:.4f}, reader_cost={:.4f} | ETA {}"
-                    .format((iter - 1) // iters_per_epoch + 1, iter, iters,
-                            avg_loss, lr, avg_train_batch_cost,
-                            avg_train_reader_cost, eta))
+                        .format((iter - 1) // iters_per_epoch + 1, iter, iters,
+                                avg_loss, lr, avg_train_batch_cost,
+                                avg_train_reader_cost, eta))
                 if use_vdl:
                     log_writer.add_scalar('Train/loss', avg_loss, iter)
                     log_writer.add_scalar('Train/lr', lr, iter)
@@ -160,7 +155,7 @@ def train(model,
                 avg_loss = 0.0
 
             if (iter % save_interval_iters == 0
-                    or iter == iters) and ParallelEnv().local_rank == 0:
+                or iter == iters) and ParallelEnv().local_rank == 0:
                 current_save_dir = os.path.join(save_dir,
                                                 "iter_{}".format(iter))
                 if not os.path.isdir(current_save_dir):
@@ -184,7 +179,7 @@ def train(model,
                                     os.path.join(best_model_dir, 'model'))
                     logger.info(
                         '[EVAL] The model with the best validation mIoU ({:.4f}) was saved at iter {}.'
-                        .format(best_mean_iou, best_model_iter))
+                            .format(best_mean_iou, best_model_iter))
 
                     if use_vdl:
                         log_writer.add_scalar('Evaluate/mIoU', mean_iou, iter)

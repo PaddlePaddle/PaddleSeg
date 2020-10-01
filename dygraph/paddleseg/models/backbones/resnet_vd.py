@@ -12,24 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
-import os
-import math
-
-import numpy as np
 import paddle
 import paddle.nn as nn
 import paddle.nn.functional as F
-from paddle.nn import SyncBatchNorm as BatchNorm
-from paddle.nn import Conv2d, Linear, Dropout
-from paddle.nn import AdaptiveAvgPool2d, MaxPool2d, AvgPool2d
 
-from paddleseg.utils import utils
-from paddleseg.models import layers
 from paddleseg.cvlibs import manager
+from paddleseg.models import layers
+from paddleseg.utils import utils
 
 __all__ = [
     "ResNet18_vd", "ResNet34_vd", "ResNet50_vd", "ResNet101_vd", "ResNet152_vd"
@@ -52,9 +41,9 @@ class ConvBNLayer(nn.Layer):
         super(ConvBNLayer, self).__init__()
 
         self.is_vd_mode = is_vd_mode
-        self._pool2d_avg = AvgPool2d(
+        self._pool2d_avg = nn.AvgPool2d(
             kernel_size=2, stride=2, padding=0, ceil_mode=True)
-        self._conv = Conv2d(
+        self._conv = nn.Conv2d(
             in_channels=in_channels,
             out_channels=out_channels,
             kernel_size=kernel_size,
@@ -67,7 +56,7 @@ class ConvBNLayer(nn.Layer):
             bn_name = "bn_" + name
         else:
             bn_name = "bn" + name[3:]
-        self._batch_norm = BatchNorm(out_channels)
+        self._batch_norm = nn.SyncBatchNorm(out_channels)
         self._act_op = layers.Activation(act=act)
 
     def forward(self, inputs):
@@ -255,7 +244,7 @@ class ResNet_vd(nn.Layer):
             stride=1,
             act='relu',
             name="conv1_3")
-        self.pool2d_max = MaxPool2d(kernel_size=3, stride=2, padding=1)
+        self.pool2d_max = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
 
         # self.block_list = []
         self.stage_list = []
@@ -281,7 +270,7 @@ class ResNet_vd(nn.Layer):
                     # At the stage 4, expand the the dilation_rate using multi_grid, default (1, 2, 4)
                     if block == 3:
                         dilation_rate = dilation_rate * multi_grid[i]
-                    #print("stage {}, block {}: dilation rate".format(block, i), dilation_rate)
+                    # print("stage {}, block {}: dilation rate".format(block, i), dilation_rate)
                     ###############################################################################
 
                     bottleneck_block = self.add_sublayer(
@@ -291,7 +280,7 @@ class ResNet_vd(nn.Layer):
                             if i == 0 else num_filters[block] * 4,
                             out_channels=num_filters[block],
                             stride=2 if i == 0 and block != 0
-                            and dilation_rate == 1 else 1,
+                                        and dilation_rate == 1 else 1,
                             shortcut=shortcut,
                             if_first=block == i == 0,
                             name=conv_name,

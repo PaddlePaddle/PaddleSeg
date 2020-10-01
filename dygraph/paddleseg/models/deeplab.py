@@ -12,11 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
-
 import paddle
+import paddle.nn as nn
 import paddle.nn.functional as F
-from paddle import nn
+
 from paddleseg.cvlibs import manager
 from paddleseg.models import layers
 from paddleseg.utils import utils
@@ -34,20 +33,16 @@ class DeepLabV3P(nn.Layer):
      (https://arxiv.org/abs/1802.02611)
 
     Args:
-        num_classes (int): the unique number of target classes.
-        backbone (paddle.nn.Layer): backbone network, currently support Resnet50_vd/Resnet101_vd/Xception65.
-        backbone_indices (tuple): two values in the tuple indicate the indices of output of backbone.
-            the first index will be taken as a low-level feature in Decoder component;
-            the second one will be taken as input of ASPP component.
-            Usually backbone consists of four downsampling stage, and return an output of
-            each stage, so we set default (0, 3), which means taking feature map of the first
-            stage in backbone as low-level feature used in Decoder, and feature map of the fourth
-            stage as input of ASPP.
-        aspp_ratios (tuple): the dilation rate using in ASSP module.
-            if output_stride=16, aspp_ratios should be set as (1, 6, 12, 18).
-            if output_stride=8, aspp_ratios is (1, 12, 24, 36).
-        aspp_out_channels (int): the output channels of ASPP module.
-        pretrained (str): the path of pretrained model. Default to None.
+        num_classes (int): The unique number of target classes.
+        backbone (paddle.nn.Layer): Backbone network, currently support Resnet50_vd/Resnet101_vd/Xception65.
+        backbone_indices (tuple, optional): Two values in the tuple indicate the indices of output of backbone.
+           Default: (0, 3).
+        aspp_ratios (tuple, optional): The dilation rate using in ASSP module.
+            If output_stride=16, aspp_ratios should be set as (1, 6, 12, 18).
+            If output_stride=8, aspp_ratios is (1, 12, 24, 36).
+            Default: (1, 6, 12, 18).
+        aspp_out_channels (int, optional): The output channels of ASPP module. Default: 256.
+        pretrained (str, optional): The path of pretrained model. Default: None.
     """
 
     def __init__(self,
@@ -57,8 +52,7 @@ class DeepLabV3P(nn.Layer):
                  aspp_ratios=(1, 6, 12, 18),
                  aspp_out_channels=256,
                  pretrained=None):
-
-        super(DeepLabV3P, self).__init__()
+        super().__init__()
 
         self.backbone = backbone
         backbone_channels = [
@@ -84,40 +78,35 @@ class DeepLabV3PHead(nn.Layer):
     The DeepLabV3PHead implementation based on PaddlePaddle.
 
     Args:
-        num_classes (int): the unique number of target classes.
-        backbone_indices (tuple): two values in the tuple indicate the indices of output of backbone.
+        num_classes (int): The unique number of target classes.
+        backbone_indices (tuple): Two values in the tuple indicate the indices of output of backbone.
             the first index will be taken as a low-level feature in Decoder component;
             the second one will be taken as input of ASPP component.
             Usually backbone consists of four downsampling stage, and return an output of
-            each stage, so we set default (0, 3), which means taking feature map of the first
+            each stage. If we set it as (0, 3), it means taking feature map of the first
             stage in backbone as low-level feature used in Decoder, and feature map of the fourth
             stage as input of ASPP.
-        backbone_channels (tuple): the same length with "backbone_indices". It indicates the channels of corresponding index.
-        aspp_ratios (tuple): the dilation rate using in ASSP module.
-            if output_stride=16, aspp_ratios should be set as (1, 6, 12, 18).
-            if output_stride=8, aspp_ratios is (1, 12, 24, 36).
-        aspp_out_channels (int): the output channels of ASPP module.
-
+        backbone_channels (tuple): The same length with "backbone_indices". It indicates the channels of corresponding index.
+        aspp_ratios (tuple): The dilation rates using in ASSP module.
+        aspp_out_channels (int): The output channels of ASPP module.
     """
 
     def __init__(self,
                  num_classes,
                  backbone_indices,
                  backbone_channels,
-                 aspp_ratios=(1, 6, 12, 18),
-                 aspp_out_channels=256):
+                 aspp_ratios,
+                 aspp_out_channels):
+        super().__init__()
 
-        super(DeepLabV3PHead, self).__init__()
-
-        self.aspp = pyramid_pool.ASPPModule(
+        self.aspp = layers.ASPPModule(
             aspp_ratios,
             backbone_channels[1],
             aspp_out_channels,
-            sep_conv=True,
+            use_sep_conv=True,
             image_pooling=True)
         self.decoder = Decoder(num_classes, backbone_channels[0])
         self.backbone_indices = backbone_indices
-        self.init_weight()
 
     def forward(self, feat_list):
         logit_list = []
@@ -129,9 +118,6 @@ class DeepLabV3PHead(nn.Layer):
 
         return logit_list
 
-    def init_weight(self):
-        pass
-
 
 @manager.MODELS.add_component
 class DeepLabV3(nn.Layer):
@@ -140,21 +126,20 @@ class DeepLabV3(nn.Layer):
 
     The original article refers to
      Liang-Chieh Chen, et, al. "Rethinking Atrous Convolution for Semantic Image Segmentation"
-     (https://arxiv.org/pdf/1706.05587.pdf)
+     (https://arxiv.org/pdf/1706.05587.pdf).
 
     Args:
-        Refer to DeepLabV3P above
+        Please Refer to DeepLabV3P above.
     """
 
     def __init__(self,
                  num_classes,
                  backbone,
                  pretrained=None,
-                 backbone_indices=(3, ),
+                 backbone_indices=(3,),
                  aspp_ratios=(1, 6, 12, 18),
                  aspp_out_channels=256):
-
-        super(DeepLabV3, self).__init__()
+        super().__init__()
 
         self.backbone = backbone
         backbone_channels = [
@@ -176,20 +161,26 @@ class DeepLabV3(nn.Layer):
 
 
 class DeepLabV3Head(nn.Layer):
+    """
+    The DeepLabV3Head implementation based on PaddlePaddle.
+
+    Args:
+        Please Refer to DeepLabV3PHead above.
+    """
+
     def __init__(self,
                  num_classes,
-                 backbone_indices=(3, ),
-                 backbone_channels=(2048, ),
-                 aspp_ratios=(1, 6, 12, 18),
-                 aspp_out_channels=256):
-
-        super(DeepLabV3Head, self).__init__()
+                 backbone_indices,
+                 backbone_channels,
+                 aspp_ratios,
+                 aspp_out_channels):
+        super().__init__()
 
         self.aspp = layers.ASPPModule(
             aspp_ratios,
             backbone_channels[0],
             aspp_out_channels,
-            sep_conv=False,
+            use_sep_conv=False,
             image_pooling=True)
 
         self.cls = nn.Conv2d(
@@ -198,7 +189,6 @@ class DeepLabV3Head(nn.Layer):
             kernel_size=1)
 
         self.backbone_indices = backbone_indices
-        self.init_weight()
 
     def forward(self, feat_list):
         logit_list = []
@@ -209,18 +199,14 @@ class DeepLabV3Head(nn.Layer):
 
         return logit_list
 
-    def init_weight(self):
-        pass
-
 
 class Decoder(nn.Layer):
     """
     Decoder module of DeepLabV3P model
 
     Args:
-        num_classes (int): the number of classes.
-        in_channels (int): the number of input channels in decoder module.
-
+        num_classes (int): The number of classes.
+        in_channels (int): The number of input channels in decoder module.
     """
 
     def __init__(self, num_classes, in_channels):

@@ -13,7 +13,6 @@
 # limitations under the License.
 
 import os
-import shutil
 
 from paddleseg.utils import logger
 

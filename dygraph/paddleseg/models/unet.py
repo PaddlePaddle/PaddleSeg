@@ -12,16 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
-
 import paddle
 import paddle.nn as nn
 import paddle.nn.functional as F
-from paddle.nn import Conv2d
-from paddle.nn import SyncBatchNorm as BatchNorm
 
-from paddleseg.cvlibs import manager
 from paddleseg import utils
+from paddleseg.cvlibs import manager
 from paddleseg.models import layers
 
 
@@ -46,7 +42,7 @@ class UNet(nn.Layer):
 
         self.encode = Encoder()
         self.decode = Decoder(use_deconv=use_deconv)
-        self.cls = self.conv = Conv2d(
+        self.cls = self.conv = nn.Conv2d(
             in_channels=64,
             out_channels=num_classes,
             kernel_size=3,

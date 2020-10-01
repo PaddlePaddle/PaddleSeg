@@ -12,18 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import math
-import os
-
 import paddle
 import paddle.nn as nn
 import paddle.nn.functional as F
-from paddle.nn import SyncBatchNorm as BatchNorm
 
-from paddleseg.cvlibs import manager
 from paddleseg import utils
-from paddleseg.cvlibs import param_init
-from paddleseg.utils import logger
+from paddleseg.cvlibs import manager, param_init
 from paddleseg.models import layers
 
 
@@ -49,7 +43,7 @@ class FCN(nn.Layer):
                  num_classes,
                  backbone,
                  pretrained=None,
-                 backbone_indices=(-1, ),
+                 backbone_indices=(-1,),
                  channels=None):
         super(FCN, self).__init__()
 
@@ -86,8 +80,8 @@ class FCNHead(nn.Layer):
 
     def __init__(self,
                  num_classes,
-                 backbone_indices=(-1, ),
-                 backbone_channels=(270, ),
+                 backbone_indices=(-1,),
+                 backbone_channels=(270,),
                  channels=None):
         super(FCNHead, self).__init__()
 

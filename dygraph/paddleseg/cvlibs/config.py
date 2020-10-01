@@ -14,13 +14,12 @@
 
 import codecs
 import os
-from typing import Any, Callable
+from typing import Any
 
-import yaml
 import paddle
+import yaml
 
 import paddleseg.cvlibs.manager as manager
-
 
 class Config(object):
     '''
@@ -163,7 +162,7 @@ class Config(object):
                 else:
                     raise ValueError(
                         'The length of types should equal to coef or equal to 1 in loss config, but they are {} and {}.'
-                        .format(len_types, len_coef))
+                            .format(len_types, len_coef))
         else:
             raise ValueError(
                 'Loss config should contain keys of "types" and "coef"')
@@ -181,7 +180,7 @@ class Config(object):
             if len(self._losses['coef']) != len(self._losses['types']):
                 raise RuntimeError(
                     'The length of coef should equal to types in loss config: {} != {}.'
-                    .format(
+                        .format(
                         len(self._losses['coef']), len(self._losses['types'])))
         return self._losses
 
