@@ -15,11 +15,13 @@
 import paddle
 import paddle.nn as nn
 import paddle.nn.functional as F
+# FIXME (chenguowei), it will be use paddle.regularizer.L2Decay in the future
 # from paddle.regularizer import L2Decay
 from paddle.fluid.regularizer import L2Decay
 
 from paddleseg.cvlibs import manager
 from paddleseg.utils import utils
+from paddleseg.models import layers
 
 __all__ = [
     "MobileNetV3_small_x0_35", "MobileNetV3_small_x0_5",
@@ -139,8 +141,7 @@ class MobileNetV3(nn.Layer):
             padding=1,
             num_groups=1,
             if_act=True,
-            act="hard_swish",
-            name="conv1")
+            act="hard_swish")
 
         self.block_list = []
 
@@ -204,9 +205,7 @@ class ConvBNLayer(nn.Layer):
                  dilation=1,
                  num_groups=1,
                  if_act=True,
-                 act=None,
-                 use_cudnn=True,
-                 name=""):
+                 act=None):
         super(ConvBNLayer, self).__init__()
         self.if_act = if_act
         self.act = act
@@ -225,7 +224,7 @@ class ConvBNLayer(nn.Layer):
             weight_attr=paddle.ParamAttr(regularizer=L2Decay(0.0)),
             bias_attr=paddle.ParamAttr(regularizer=L2Decay(0.0)))
 
-        self._act_op = activation.Activation(act=None)
+        self._act_op = layers.Activation(act=act)
 
     def forward(self, x):
         x = self.conv(x)
@@ -257,8 +256,7 @@ class ResidualUnit(nn.Layer):
             stride=1,
             padding=0,
             if_act=True,
-            act=act,
-            name=name + "_expand")
+            act=act)
 
         self.bottleneck_conv = ConvBNLayer(
             in_c=mid_c,
@@ -271,8 +269,7 @@ class ResidualUnit(nn.Layer):
             dilation=dilation,
             num_groups=mid_c,
             if_act=True,
-            act=act,
-            name=name + "_depthwise")
+            act=act)
         if self.if_se:
             self.mid_se = SEModule(mid_c, name=name + "_se")
         self.linear_conv = ConvBNLayer(
@@ -282,8 +279,7 @@ class ResidualUnit(nn.Layer):
             stride=1,
             padding=0,
             if_act=False,
-            act=None,
-            name=name + "_linear")
+            act=None)
         self.dilation = dilation
 
     def forward(self, inputs):

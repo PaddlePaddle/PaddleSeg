@@ -15,14 +15,14 @@
 import sys
 import time
 
-from paddle.distributed import ParallelEnv
+import paddle
 
 levels = {0: 'ERROR', 1: 'WARNING', 2: 'INFO', 3: 'DEBUG'}
 log_level = 2
 
 
 def log(level=2, message=""):
-    if ParallelEnv().local_rank == 0:
+    if paddle.distributed.ParallelEnv().local_rank == 0:
         current_time = time.time()
         time_array = time.localtime(current_time)
         current_time = time.strftime("%Y-%m-%d %H:%M:%S", time_array)

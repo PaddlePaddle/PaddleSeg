@@ -15,7 +15,7 @@
 import os
 
 import paddleseg.env as segenv
-from .dataset import Dataset
+from paddleseg.datasets import Dataset
 from paddleseg.utils.download import download_file_and_uncompress
 from paddleseg.cvlibs import manager
 from paddleseg.transforms import Compose
