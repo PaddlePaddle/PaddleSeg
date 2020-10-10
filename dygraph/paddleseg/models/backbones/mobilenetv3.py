@@ -224,7 +224,7 @@ class ConvBNLayer(nn.Layer):
             weight_attr=paddle.ParamAttr(regularizer=L2Decay(0.0)),
             bias_attr=paddle.ParamAttr(regularizer=L2Decay(0.0)))
 
-        self._act_op = layers.Activation(act=None)
+        self._act_op = layers.Activation(act=act)
 
     def forward(self, x):
         x = self.conv(x)
