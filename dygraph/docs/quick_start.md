@@ -45,4 +45,25 @@ python -m paddle.distributed.launch train.py \
 
 ## 训练可视化
 
+PaddleSeg会将训练过程中的数据写入VisualDL文件，并实时的查看训练过程中的日志，记录的数据包括：
+1. loss变化趋势
+2. 学习率变化趋势
+3. 训练时间
+4. 数据读取时间
+5. mean IoU变化趋势（当打开了`do_eval`开关后生效）
+6. mean pixel Accuracy变化趋势（当打开了`do_eval`开关后生效）
+
+使用如下命令启动VisualDL查看日志
+```shell
+# 下述命令会在127.0.0.1上启动一个服务，支持通过前端web页面查看，可以通过--host这个参数指定实际ip地址
+visualdl --logdir output/
+```
+
 ## 模型评估
+
+当保存完模型后，我们可以通过PaddleSeg提供的脚本对模型进行评估
+```shell
+python val.py \
+       --config configs/bisenetv2/bisenetv2_cityscapes_1024x512_160k.yml \
+       --model_dir output/iter_4000
+```
