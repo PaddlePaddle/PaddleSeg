@@ -25,6 +25,7 @@ import sys
 import argparse
 import pprint
 import numpy as np
+import paddle
 import paddle.fluid as fluid
 
 from utils.config import cfg
@@ -175,4 +176,5 @@ def main():
 
 
 if __name__ == '__main__':
+    paddle.enable_static()
     main()

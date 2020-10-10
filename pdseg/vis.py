@@ -27,6 +27,7 @@ import argparse
 import pprint
 import cv2
 import numpy as np
+import paddle
 import paddle.fluid as fluid
 
 from PIL import Image as PILImage
@@ -199,6 +200,7 @@ def visualize(cfg,
 
 
 if __name__ == '__main__':
+    paddle.enable_static()
     args = parse_args()
     if args.cfg_file is not None:
         cfg.update_from_file(args.cfg_file)

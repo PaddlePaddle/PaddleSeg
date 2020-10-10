@@ -24,8 +24,7 @@ from utils.config import cfg
 from loss import multi_softmax_with_loss
 from loss import multi_dice_loss
 from loss import multi_bce_loss
-from lovasz_losses import lovasz_hinge
-from lovasz_losses import lovasz_softmax
+from lovasz_losses import multi_lovasz_hinge_loss, multi_lovasz_softmax_loss
 from models.modeling import deeplab, unet, icnet, pspnet, hrnet, fast_scnn, ocrnet
 
 
@@ -189,13 +188,12 @@ def build_model(main_prog, start_prog, phase=ModelPhase.TRAIN):
                     valid_loss.append("bce_loss")
                 if "lovasz_hinge_loss" in loss_type:
                     avg_loss_list.append(
-                        lovasz_hinge(logits, label, ignore=mask))
+                        multi_lovasz_hinge_loss(logits, label, mask))
                     loss_valid = True
                     valid_loss.append("lovasz_hinge_loss")
                 if "lovasz_softmax_loss" in loss_type:
-                    probas = fluid.layers.softmax(logits, axis=1)
                     avg_loss_list.append(
-                        lovasz_softmax(probas, label, ignore=mask))
+                        multi_lovasz_softmax_loss(logits, label, mask))
                     loss_valid = True
                     valid_loss.append("lovasz_softmax_loss")
                 if not loss_valid:
@@ -257,6 +255,10 @@ def build_model(main_prog, start_prog, phase=ModelPhase.TRAIN):
             if ModelPhase.is_train(phase):
                 optimizer = solver.Solver(main_prog, start_prog)
                 decayed_lr = optimizer.optimise(avg_loss)
+                if class_num == 1:
+                    logit = sigmoid_to_softmax(logit)
+                else:
+                    logit = softmax(logit)
                 return data_loader, avg_loss, decayed_lr, pred, label, mask
 
 

@@ -14,15 +14,13 @@
 
 import argparse
 
-import paddle.fluid as fluid
-from paddle.fluid.dygraph.parallel import ParallelEnv
+import paddle
+from paddle.distributed import ParallelEnv
 
-import dygraph
-from dygraph.cvlibs import manager
-from dygraph.utils import get_environ_info
-from dygraph.utils import logger
-from dygraph.utils import Config
-from dygraph.core import train
+import paddleseg
+from paddleseg.cvlibs import manager, Config
+from paddleseg.utils import get_environ_info, logger
+from paddleseg.core import train
 
 
 def parse_args():
@@ -53,7 +51,7 @@ def parse_args():
         dest='save_interval_iters',
         help='The interval iters for save a model snapshot',
         type=int,
-        default=5)
+        default=1000)
     parser.add_argument(
         '--save_dir',
         dest='save_dir',
@@ -89,41 +87,50 @@ def parse_args():
 def main(args):
     env_info = get_environ_info()
     info = ['{}: {}'.format(k, v) for k, v in env_info.items()]
-    info = '\n'.join(['\n', format('Environment Information', '-^48s')] + info +
+    info = '\n'.join(['', format('Environment Information', '-^48s')] + info +
                      ['-' * 48])
     logger.info(info)
 
-    places = fluid.CUDAPlace(ParallelEnv().dev_id) \
+    places = paddle.CUDAPlace(ParallelEnv().dev_id) \
         if env_info['Paddle compiled with cuda'] and env_info['GPUs used'] \
-        else fluid.CPUPlace()
+        else paddle.CPUPlace()
 
-    with fluid.dygraph.guard(places):
-        if not args.cfg:
-            raise RuntimeError('No configuration file specified.')
+    paddle.disable_static(places)
+    if not args.cfg:
+        raise RuntimeError('No configuration file specified.')
 
-        cfg = Config(args.cfg)
-        train_dataset = cfg.train_dataset
-        if not train_dataset:
-            raise RuntimeError(
-                'The training dataset is not specified in the configuration file.'
-            )
+    cfg = Config(
+        args.cfg,
+        learning_rate=args.learning_rate,
+        iters=args.iters,
+        batch_size=args.batch_size)
 
-        val_dataset = cfg.val_dataset if args.do_eval else None
+    train_dataset = cfg.train_dataset
+    if not train_dataset:
+        raise RuntimeError(
+            'The training dataset is not specified in the configuration file.')
+    val_dataset = cfg.val_dataset if args.do_eval else None
+    losses = cfg.loss
 
-        train(
-            cfg.model,
-            train_dataset,
-            places=places,
-            eval_dataset=val_dataset,
-            optimizer=cfg.optimizer,
-            save_dir=args.save_dir,
-            iters=cfg.iters,
-            batch_size=cfg.batch_size,
-            save_interval_iters=args.save_interval_iters,
-            log_iters=args.log_iters,
-            num_classes=train_dataset.num_classes,
-            num_workers=args.num_workers,
-            use_vdl=args.use_vdl)
+    msg = '\n---------------Config Information---------------\n'
+    msg += str(cfg)
+    msg += '------------------------------------------------'
+    logger.info(msg)
+
+    train(
+        cfg.model,
+        train_dataset,
+        places=places,
+        val_dataset=val_dataset,
+        optimizer=cfg.optimizer,
+        save_dir=args.save_dir,
+        iters=cfg.iters,
+        batch_size=cfg.batch_size,
+        save_interval_iters=args.save_interval_iters,
+        log_iters=args.log_iters,
+        num_workers=args.num_workers,
+        use_vdl=args.use_vdl,
+        losses=losses)
 
 
 if __name__ == '__main__':

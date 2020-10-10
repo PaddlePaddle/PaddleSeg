@@ -274,12 +274,14 @@ def _mobilenetv3(input, model_name='large'):
     # OUTPUT_STRIDE：下采样倍数
     scale = cfg.MODEL.DEEPLAB.DEPTH_MULTIPLIER
     output_stride = cfg.MODEL.DEEPLAB.OUTPUT_STRIDE
-    lr_mult_shortcut = cfg.MODEL.DEEPLAB.BACKBONE_LR_MULT_LIST
+    lr_mult_list = cfg.MODEL.DEEPLAB.BACKBONE_LR_MULT_LIST
+    if lr_mult_list is None:
+        lr_mult_list = [1.0, 1.0, 1.0, 1.0, 1.0]
     model = mobilenet_v3_backbone(
         scale=scale,
         output_stride=output_stride,
         model_name=model_name,
-        lr_mult_list=lr_mult_shortcut)
+        lr_mult_list=lr_mult_list)
     data, decode_shortcut = model.net(input)
     return data, decode_shortcut
 
