@@ -537,7 +537,6 @@ class FuseLayers(nn.Layer):
         self.residual_func_list = []
         for i in range(self._actual_ch):
             for j in range(len(in_channels)):
-                residual_func = None
                 if j > i:
                     residual_func = self.add_sublayer(
                         "residual_{}_layer_{}_{}".format(name, i + 1, j + 1),
