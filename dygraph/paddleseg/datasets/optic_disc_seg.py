@@ -14,9 +14,9 @@
 
 import os
 
-import paddleseg.env as segenv
 from .dataset import Dataset
 from paddleseg.utils.download import download_file_and_uncompress
+from paddleseg.utils import seg_env
 from paddleseg.cvlibs import manager
 from paddleseg.transforms import Compose
 
@@ -49,7 +49,9 @@ class OpticDiscSeg(Dataset):
                 raise Exception(
                     "`data_root` not set and auto download disabled.")
             self.dataset_root = download_file_and_uncompress(
-                url=URL, savepath=segenv.DATA_HOME, extrapath=segenv.DATA_HOME)
+                url=URL,
+                savepath=seg_env.DATA_HOME,
+                extrapath=seg_env.DATA_HOME)
         elif not os.path.exists(self.dataset_root):
             raise Exception('there is not `dataset_root`: {}.'.format(
                 self.dataset_root))

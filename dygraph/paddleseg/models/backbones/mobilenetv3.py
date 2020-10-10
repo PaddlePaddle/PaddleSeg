@@ -223,8 +223,9 @@ class ConvBNLayer(nn.Layer):
             num_features=out_c,
             weight_attr=paddle.ParamAttr(regularizer=L2Decay(0.0)),
             bias_attr=paddle.ParamAttr(regularizer=L2Decay(0.0)))
-
-        self._act_op = layers.Activation(act=act)
+        # FIXME (chenguowei), paddle2.0beta has not hard_swish. Make act = None temporarily
+        # self._act_op = layers.Activation(act=act)
+        self._act_op = layers.Activation(act=None)
 
     def forward(self, x):
         x = self.conv(x)
