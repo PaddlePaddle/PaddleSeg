@@ -190,10 +190,12 @@ class ResNet_vd(nn.Layer):
                  layers=50,
                  output_stride=None,
                  multi_grid=(1, 1, 1),
+                 lr_mult_list=(0.1, 0.1, 0.2, 0.2),
                  pretrained=None):
         super(ResNet_vd, self).__init__()
 
         self.layers = layers
+        self.lr_mult_list = lr_mult_list
         supported_layers = [18, 34, 50, 101, 152, 200]
         assert layers in supported_layers, \
             "supported layers are {} but input layer is {}".format(
@@ -280,7 +282,7 @@ class ResNet_vd(nn.Layer):
                             if i == 0 else num_filters[block] * 4,
                             out_channels=num_filters[block],
                             stride=2 if i == 0 and block != 0
-                                        and dilation_rate == 1 else 1,
+                            and dilation_rate == 1 else 1,
                             shortcut=shortcut,
                             if_first=block == i == 0,
                             name=conv_name,
@@ -309,7 +311,7 @@ class ResNet_vd(nn.Layer):
                     shortcut = True
                 self.stage_list.append(block_list)
 
-        utils.load_pretrained_model(self, pretrained)
+        self.init_weight(pretrained)
 
     def forward(self, inputs):
         y = self.conv1_1(inputs)
@@ -325,6 +327,25 @@ class ResNet_vd(nn.Layer):
             feat_list.append(y)
 
         return feat_list
+
+    def init_weight(self, pretrained):
+        utils.load_pretrained_model(self, pretrained)
+
+        for idx, stage in enumerate(self.stage_list):
+            for layer in stage:
+                for sublayer in layer.sublayers():
+                    if isinstance(sublayer, nn.Conv2d):
+                        sublayer.weight.optimize_attr[
+                            'learning_rate'] = self.lr_mult_list[idx]
+                        if sublayer.bias:
+                            sublayer.bias.optimize_attr[
+                                'learning_rate'] = self.lr_mult_list[idx]
+
+                    if isinstance(sublayer, nn.SyncBatchNorm):
+                        sublayer.weight.optimize_attr[
+                            'learning_rate'] = self.lr_mult_list[idx]
+                        sublayer.bias.optimize_attr[
+                            'learning_rate'] = self.lr_mult_list[idx]
 
 
 @manager.BACKBONES.add_component
