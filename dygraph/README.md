@@ -7,16 +7,20 @@
 * DANet
 * Deeplabv3
 * Deeplabv3p
-* FastSCNN
+* Fast-SCNN
 * FCN
 * GCNet
 * OCRNet
 * PSPNet
 * UNet
 
+## 安装
+
 ## 使用教程
 
-### 快速入门
-### 配置化
-### API使用
-### 多尺度预测 & 滑动窗口预测
+* 快速入门
+  * 配置化
+  * API使用
+  * 多卡训练
+* 自定义数据集
+* 多尺度预测 & 滑动窗口预测
