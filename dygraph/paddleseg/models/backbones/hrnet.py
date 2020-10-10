@@ -30,11 +30,14 @@ __all__ = [
 
 class HRNet(nn.Layer):
     """
-    HRNet：Deep High-Resolution Representation Learning for Visual Recognition
-    https://arxiv.org/pdf/1908.07919.pdf.
+    The HRNet implementation based on PaddlePaddle.
+
+    The original article refers to
+    Jingdong Wang, et, al. "HRNet：Deep High-Resolution Representation Learning for Visual Recognition"
+    (https://arxiv.org/pdf/1908.07919.pdf).
 
     Args:
-        backbone_pretrained (str): the path of pretrained model.
+        pretrained (str): the path of pretrained model.
         stage1_num_modules (int): number of modules for stage1. Default 1.
         stage1_num_blocks (list): number of blocks per module for stage1. Default [4].
         stage1_num_channels (list): number of channels per branch for stage1. Default [64].
@@ -143,8 +146,7 @@ class HRNet(nn.Layer):
             name="st4")
         self.init_weight()
 
-    def forward(self, x, label=None, mode='train'):
-        input_shape = x.shape[2:]
+    def forward(self, x):
         conv1 = self.conv_layer1_1(x)
         conv2 = self.conv_layer1_2(conv1)
 
@@ -201,8 +203,8 @@ class Layer1(nn.Layer):
                     name=name + '_' + str(i + 1)))
             self.bottleneck_block_list.append(bottleneck_block)
 
-    def forward(self, input):
-        conv = input
+    def forward(self, x):
+        conv = x
         for block_func in self.bottleneck_block_list:
             conv = block_func(conv)
         return conv
@@ -239,16 +241,16 @@ class TransitionLayer(nn.Layer):
                         bias_attr=False))
             self.conv_bn_func_list.append(residual)
 
-    def forward(self, input):
+    def forward(self, x):
         outs = []
         for idx, conv_bn_func in enumerate(self.conv_bn_func_list):
             if conv_bn_func is None:
-                outs.append(input[idx])
+                outs.append(x[idx])
             else:
-                if idx < len(input):
-                    outs.append(conv_bn_func(input[idx]))
+                if idx < len(x):
+                    outs.append(conv_bn_func(x[idx]))
                 else:
-                    outs.append(conv_bn_func(input[-1]))
+                    outs.append(conv_bn_func(x[-1]))
         return outs
 
 
@@ -274,12 +276,12 @@ class Branches(nn.Layer):
                         num_filters=out_channels[i],
                         has_se=has_se,
                         name=name + '_branch_layer_' + str(i + 1) + '_' +
-                             str(j + 1)))
+                        str(j + 1)))
                 self.basic_block_list[i].append(basic_block_func)
 
-    def forward(self, inputs):
+    def forward(self, x):
         outs = []
-        for idx, input in enumerate(inputs):
+        for idx, input in enumerate(x):
             conv = input
             for basic_block_func in self.basic_block_list[idx]:
                 conv = basic_block_func(conv)
@@ -337,14 +339,14 @@ class BottleneckBlock(nn.Layer):
                 reduction_ratio=16,
                 name=name + '_fc')
 
-    def forward(self, input):
-        residual = input
-        conv1 = self.conv1(input)
+    def forward(self, x):
+        residual = x
+        conv1 = self.conv1(x)
         conv2 = self.conv2(conv1)
         conv3 = self.conv3(conv2)
 
         if self.downsample:
-            residual = self.conv_down(input)
+            residual = self.conv_down(x)
 
         if self.has_se:
             conv3 = self.se(conv3)
@@ -396,13 +398,13 @@ class BasicBlock(nn.Layer):
                 reduction_ratio=16,
                 name=name + '_fc')
 
-    def forward(self, input):
-        residual = input
-        conv1 = self.conv1(input)
+    def forward(self, x):
+        residual = x
+        conv1 = self.conv1(x)
         conv2 = self.conv2(conv1)
 
         if self.downsample:
-            residual = self.conv_down(input)
+            residual = self.conv_down(x)
 
         if self.has_se:
             conv2 = self.se(conv2)
@@ -437,14 +439,14 @@ class SELayer(nn.Layer):
             param_attr=paddle.ParamAttr(
                 initializer=nn.initializer.Uniform(-stdv, stdv)))
 
-    def forward(self, input):
-        pool = self.pool2d_gap(input)
+    def forward(self, x):
+        pool = self.pool2d_gap(x)
         pool = paddle.reshape(pool, shape=[-1, self._num_channels])
         squeeze = self.squeeze(pool)
         excitation = self.excitation(squeeze)
         excitation = paddle.reshape(
             excitation, shape=[-1, self._num_channels, 1, 1])
-        out = input * excitation
+        out = x * excitation
         return out
 
 
@@ -485,8 +487,8 @@ class Stage(nn.Layer):
 
             self.stage_func_list.append(stage_func)
 
-    def forward(self, input):
-        out = input
+    def forward(self, x):
+        out = x
         for idx in range(self._num_modules):
             out = self.stage_func_list[idx](out)
         return out
@@ -515,8 +517,8 @@ class HighResolutionModule(nn.Layer):
             multi_scale_output=multi_scale_output,
             name=name)
 
-    def forward(self, input):
-        out = self.branches_func(input)
+    def forward(self, x):
+        out = self.branches_func(x)
         out = self.fuse_func(out)
         return out
 
@@ -535,7 +537,6 @@ class FuseLayers(nn.Layer):
         self.residual_func_list = []
         for i in range(self._actual_ch):
             for j in range(len(in_channels)):
-                residual_func = None
                 if j > i:
                     residual_func = self.add_sublayer(
                         "residual_{}_layer_{}_{}".format(name, i + 1, j + 1),
@@ -575,21 +576,21 @@ class FuseLayers(nn.Layer):
                             pre_num_filters = out_channels[j]
                         self.residual_func_list.append(residual_func)
 
-    def forward(self, input):
+    def forward(self, x):
         outs = []
         residual_func_idx = 0
         for i in range(self._actual_ch):
-            residual = input[i]
+            residual = x[i]
             residual_shape = residual.shape[-2:]
             for j in range(len(self._in_channels)):
                 if j > i:
-                    y = self.residual_func_list[residual_func_idx](input[j])
+                    y = self.residual_func_list[residual_func_idx](x[j])
                     residual_func_idx += 1
 
                     y = F.resize_bilinear(input=y, out_shape=residual_shape)
                     residual = residual + y
                 elif j < i:
-                    y = input[j]
+                    y = x[j]
                     for k in range(i - j):
                         y = self.residual_func_list[residual_func_idx](y)
                         residual_func_idx += 1
