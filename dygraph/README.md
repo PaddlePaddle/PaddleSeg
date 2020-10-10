@@ -17,10 +17,13 @@
 ## 安装
 
 1. 安装PaddlePaddle
+
 版本要求
 
-PaddlePaddle >= 2.0.0b
-Python >= 3.6+
+* PaddlePaddle >= 2.0.0b
+
+* Python >= 3.6+
+
 由于图像分割模型计算开销大，推荐在GPU版本的PaddlePaddle下使用PaddleSeg.
 
 ```shell
