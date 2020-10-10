@@ -15,5 +15,5 @@
 
 |Model|Backbone|Training iters|mIoU|mIoU(ms+flip)|Link|
 |-|-|-|-|-|-|
-||||||[Training log]() \| [VDL log](https://www.paddlepaddle.org.cn/paddle/visualdl/service/app/scalar?id=176bf6ca4d89957ffe62ac7c30fcd039) \| model |
+||||||[Training log]() \| [VDL log](https://www.paddlepaddle.org.cn/paddle/visualdl/service/app/scalar?id=176bf6ca4d89957ffe62ac7c30fcd039) \| [Model]() \| [Training Command]()|
 ||||||||
