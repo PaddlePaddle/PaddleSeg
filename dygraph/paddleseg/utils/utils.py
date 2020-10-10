@@ -23,15 +23,14 @@ import filelock
 import numpy as np
 import paddle
 
-import paddleseg.env as segenv
-from paddleseg.utils import logger
+from paddleseg.utils import logger, seg_env
 from paddleseg.utils.download import download_file_and_uncompress
 
 
 @contextlib.contextmanager
 def generate_tempdir(directory: str = None, **kwargs):
     '''Generate a temporary directory'''
-    directory = segenv.TMP_HOME if not directory else directory
+    directory = seg_env.TMP_HOME if not directory else directory
     with tempfile.TemporaryDirectory(dir=directory, **kwargs) as _dir:
         yield _dir
 
@@ -64,11 +63,12 @@ def load_pretrained_model(model, pretrained_model):
             pretrained_model = unquote(pretrained_model)
             savename = pretrained_model.split('/')[-1].split('.')[0]
             with generate_tempdir() as _dir:
-                with filelock.FileLock(os.path.join(segenv.TMP_HOME, savename)):
+                with filelock.FileLock(
+                        os.path.join(seg_env.TMP_HOME, savename)):
                     pretrained_model = download_file_and_uncompress(
                         pretrained_model,
                         savepath=_dir,
-                        extrapath=segenv.PRETRAINED_MODEL_HOME,
+                        extrapath=seg_env.PRETRAINED_MODEL_HOME,
                         extraname=savename)
 
         if os.path.exists(pretrained_model):
@@ -85,8 +85,8 @@ def load_pretrained_model(model, pretrained_model):
                         model_state_dict[k].shape):
                     logger.warning(
                         "[SKIP] Shape of pretrained params {} doesn't match.(Pretrained: {}, Actual: {})"
-                            .format(k, para_state_dict[k].shape,
-                                    model_state_dict[k].shape))
+                        .format(k, para_state_dict[k].shape,
+                                model_state_dict[k].shape))
                 else:
                     model_state_dict[k] = para_state_dict[k]
                     num_params_loaded += 1
@@ -102,7 +102,7 @@ def load_pretrained_model(model, pretrained_model):
     else:
         logger.info(
             'No pretrained model to load, {} will be train from scratch.'.
-                format(model.__class__.__name__))
+            format(model.__class__.__name__))
 
 
 def resume(model, optimizer, resume_model):
