@@ -15,7 +15,7 @@
 import os
 import glob
 
-from .dataset import Dataset
+from paddleseg.datasets import Dataset
 from paddleseg.cvlibs import manager
 from paddleseg.transforms import Compose
 
