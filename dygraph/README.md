@@ -10,7 +10,7 @@
 * Fast-SCNN
 * FCN
 * GCNet
-* OCRNet
+* [OCRNet](https://github.com/nepeplwu/PaddleSeg/blob/develop/dygraph/configs/ocrnet/README.md)
 * PSPNet
 * UNet
 
