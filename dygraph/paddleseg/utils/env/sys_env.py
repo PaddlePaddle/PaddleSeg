@@ -91,7 +91,10 @@ def get_sys_env():
     if compiled_with_cuda:
         cuda_home = _find_cuda_home()
         env_info['NVCC'] = _get_nvcc_info(cuda_home)
-        env_info['cudnn'] = paddle.get_cudnn_version()
+        # refer to https://github.com/PaddlePaddle/Paddle/blob/95e1434bb2fc8fd43a519cfa60ae36845a0cf2ef/paddle/fluid/platform/device_context.cc#L329
+        v = paddle.get_cudnn_version()
+        v = str(v // 1000) + '.' + str(v % 1000 // 100)
+        env_info['cudnn'] = v
         gpu_nums = paddle.distributed.ParallelEnv().nranks
         env_info['GPUs used'] = gpu_nums
         env_info['CUDA_VISIBLE_DEVICES'] = os.environ.get(
