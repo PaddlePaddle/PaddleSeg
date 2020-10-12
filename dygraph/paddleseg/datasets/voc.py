@@ -25,13 +25,16 @@ URL = "http://host.robots.ox.ac.uk/pascal/VOC/voc2012/VOCtrainval_11-May-2012.ta
 
 @manager.DATASETS.add_component
 class PascalVOC(Dataset):
-    """Pascal VOC dataset `http://host.robots.ox.ac.uk/pascal/VOC/`. If you want to augment the dataset,
-    please run the voc_augment.py in tools.
+    """
+    PascalVOC2012 dataset `http://host.robots.ox.ac.uk/pascal/VOC/`.
+    If you want to augment the dataset, please run the voc_augment.py in tools.
+
     Args:
-        dataset_root: The dataset directory.
-        mode: Which part of dataset to use.. it is one of ('train', 'val', 'test'). Default: 'train'.
-        transforms: Transforms for image.
-        download: Whether to download dataset if dataset_root is None.
+        transforms (list): Transforms for image.
+        dataset_root (str): The dataset directory. Default: None
+        mode (str): Which part of dataset to use. it is one of ('train', 'trainval', 'trainaug', 'val').
+            If you want to set mode to 'trainaug', please make sure the dataset have been augmented. Default: 'train'.
+        download (bool): Whether to download dataset if dataset_root is None. Default: True
     """
 
     def __init__(self,
