@@ -557,7 +557,7 @@ class RandomDistort:
         }
         im = im.astype('uint8')
         im = Image.fromarray(im)
-        for id in range(4):
+        for id in range(len(ops)):
             params = params_dict[ops[id].__name__]
             prob = prob_dict[ops[id].__name__]
             params['im'] = im
