@@ -116,14 +116,14 @@ class Dataset(paddle.io.Dataset):
                             "File list format incorrect! In training or evaluation task it should be"
                             " image_name{}label_name\\n".format(separator))
                     image_path = os.path.join(self.dataset_root, items[0])
-                    grt_path = None
+                    label_path = None
                 else:
                     image_path = os.path.join(self.dataset_root, items[0])
-                    grt_path = os.path.join(self.dataset_root, items[1])
-                self.file_list.append([image_path, grt_path])
+                    label_path = os.path.join(self.dataset_root, items[1])
+                self.file_list.append([image_path, label_path])
 
     def __getitem__(self, idx):
-        image_path, grt_path = self.file_list[idx]
+        image_path, label_path = self.file_list[idx]
         if self.mode == 'test':
             im, im_info, _ = self.transforms(im=image_path)
             im = im[np.newaxis, ...]
@@ -131,11 +131,12 @@ class Dataset(paddle.io.Dataset):
         elif self.mode == 'val':
             im, im_info, _ = self.transforms(im=image_path)
             im = im[np.newaxis, ...]
-            label = np.asarray(Image.open(grt_path))
+            label = np.asarray(Image.open(label_path))
             label = label[np.newaxis, np.newaxis, :, :]
             return im, im_info, label
         else:
-            im, im_info, label = self.transforms(im=image_path, label=grt_path)
+            im, im_info, label = self.transforms(
+                im=image_path, label=label_path)
             return im, label
 
     def __len__(self):

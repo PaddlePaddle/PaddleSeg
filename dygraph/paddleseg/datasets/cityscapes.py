@@ -61,19 +61,21 @@ class Cityscapes(Dataset):
             raise Exception("`transforms` is necessary, but it is None.")
 
         img_dir = os.path.join(self.dataset_root, 'leftImg8bit')
-        grt_dir = os.path.join(self.dataset_root, 'gtFine')
+        label_dir = os.path.join(self.dataset_root, 'gtFine')
         if self.dataset_root is None or not os.path.isdir(
                 self.dataset_root) or not os.path.isdir(
-                    img_dir) or not os.path.isdir(grt_dir):
+                    img_dir) or not os.path.isdir(label_dir):
             raise Exception(
                 "The dataset is not Found or the folder structure is nonconfoumance."
             )
 
-        grt_files = sorted(
+        label_files = sorted(
             glob.glob(
-                os.path.join(grt_dir, mode, '*', '*_gtFine_labelTrainIds.png')))
+                os.path.join(label_dir, mode, '*',
+                             '*_gtFine_labelTrainIds.png')))
         img_files = sorted(
             glob.glob(os.path.join(img_dir, mode, '*', '*_leftImg8bit.png')))
 
-        self.file_list = [[img_path, grt_path]
-                          for img_path, grt_path in zip(img_files, grt_files)]
+        self.file_list = [[
+            img_path, label_path
+        ] for img_path, label_path in zip(img_files, label_files)]

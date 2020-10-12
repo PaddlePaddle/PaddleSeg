@@ -74,19 +74,20 @@ class ADE20K(Dataset):
 
         if mode == 'train':
             img_dir = os.path.join(self.dataset_root, 'images/training')
-            grt_dir = os.path.join(self.dataset_root, 'annotations/training')
+            label_dir = os.path.join(self.dataset_root, 'annotations/training')
         elif mode == 'val':
             img_dir = os.path.join(self.dataset_root, 'images/validation')
-            grt_dir = os.path.join(self.dataset_root, 'annotations/validation')
+            label_dir = os.path.join(self.dataset_root,
+                                     'annotations/validation')
         img_files = os.listdir(img_dir)
-        grt_files = [i.replace('.jpg', '.png') for i in img_files]
+        label_files = [i.replace('.jpg', '.png') for i in img_files]
         for i in range(len(img_files)):
             img_path = os.path.join(img_dir, img_files[i])
-            grt_path = os.path.join(grt_dir, grt_files[i])
-            self.file_list.append([img_path, grt_path])
+            label_path = os.path.join(label_dir, label_files[i])
+            self.file_list.append([img_path, label_path])
 
     def __getitem__(self, idx):
-        image_path, grt_path = self.file_list[idx]
+        image_path, label_path = self.file_list[idx]
         if self.mode == 'test':
             im, im_info, _ = self.transforms(im=image_path)
             im = im[np.newaxis, ...]
@@ -94,13 +95,14 @@ class ADE20K(Dataset):
         elif self.mode == 'val':
             im, im_info, _ = self.transforms(im=image_path)
             im = im[np.newaxis, ...]
-            label = np.asarray(Image.open(grt_path))
+            label = np.asarray(Image.open(label_path))
             # The class 0 is ignored. And it will equal to 255 after
             # subtracted 1, because the dtype of label is uint8.
             label = label - 1
             label = label[np.newaxis, np.newaxis, :, :]
             return im, im_info, label
         else:
-            im, im_info, label = self.transforms(im=image_path, label=grt_path)
+            im, im_info, label = self.transforms(
+                im=image_path, label=label_path)
             label = label - 1
             return im, label

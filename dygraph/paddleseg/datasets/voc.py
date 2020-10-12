@@ -87,22 +87,22 @@ class PascalVOC(Dataset):
                 )
 
         img_dir = os.path.join(self.dataset_root, 'VOC2012', 'JPEGImages')
-        grt_dir = os.path.join(self.dataset_root, 'VOC2012',
-                               'SegmentationClass')
-        grt_dir_aug = os.path.join(self.dataset_root, 'VOC2012',
-                                   'SegmentationClassAug')
+        label_dir = os.path.join(self.dataset_root, 'VOC2012',
+                                 'SegmentationClass')
+        label_dir_aug = os.path.join(self.dataset_root, 'VOC2012',
+                                     'SegmentationClassAug')
 
         with open(file_list, 'r') as f:
             for line in f:
                 line = line.strip()
                 image_path = os.path.join(img_dir, ''.join([line, '.jpg']))
-                grt_path = os.path.join(grt_dir, ''.join([line, '.png']))
-                self.file_list.append([image_path, grt_path])
+                label_path = os.path.join(label_dir, ''.join([line, '.png']))
+                self.file_list.append([image_path, label_path])
         if mode == 'trainaug':
             with open(file_list_aug, 'r') as f:
                 for line in f:
                     line = line.strip()
                     image_path = os.path.join(img_dir, ''.join([line, '.jpg']))
-                    grt_path = os.path.join(grt_dir_aug, ''.join([line,
-                                                                  '.png']))
-                    self.file_list.append([image_path, grt_path])
+                    label_path = os.path.join(label_dir_aug,
+                                              ''.join([line, '.png']))
+                    self.file_list.append([image_path, label_path])
