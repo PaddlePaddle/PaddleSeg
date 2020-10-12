@@ -14,5 +14,5 @@ train_dataset:
 val_dataset:
   transforms:
     - type: Padding
-      target_size: [2045, 1025]
+      target_size: [2049, 1025]
     - type: Normalize
