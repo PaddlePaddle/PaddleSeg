@@ -14,6 +14,8 @@
 
 import random
 
+import numpy as np
+
 from paddleseg.cvlibs import manager
 from .functional import *
 
@@ -48,9 +50,7 @@ class Compose:
                 im_info = outputs[1]
             if len(outputs) == 3:
                 label = outputs[2]
-        im = permute(im)
-        # if len(outputs) == 3:
-        #     label = label[np.newaxis, :, :]
+        im = np.transpose(im, (2, 0, 1))
         return (im, im_info, label)
 
 
