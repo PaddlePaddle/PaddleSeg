@@ -48,7 +48,7 @@ class ConvBNLayer(nn.Layer):
             out_channels=out_channels,
             kernel_size=kernel_size,
             stride=stride,
-            padding="same" #(kernel_size - 1) // 2 if dilation == 1 else 0,
+            padding="same", #(kernel_size - 1) // 2 if dilation == 1 else 0,
             dilation=dilation,
             groups=groups,
             bias_attr=False)
