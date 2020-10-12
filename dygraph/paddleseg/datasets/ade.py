@@ -28,7 +28,9 @@ URL = "http://data.csail.mit.edu/places/ADEchallenge/ADEChallengeData2016.zip"
 
 @manager.DATASETS.add_component
 class ADE20K(Dataset):
-    """ADE20K dataset `http://sceneparsing.csail.mit.edu/`.
+    """
+    ADE20K dataset `http://sceneparsing.csail.mit.edu/`.
+
     Args:
         dataset_root: The dataset directory.
         mode: Which part of dataset to use.. it is one of ('train', 'val'). Default: 'train'.
@@ -43,12 +45,13 @@ class ADE20K(Dataset):
                  download=True):
         self.dataset_root = dataset_root
         self.transforms = Compose(transforms)
+        mode = mode.lower()
         self.mode = mode
         self.file_list = list()
         self.num_classes = 150
         self.ignore_index = 255
 
-        if mode.lower() not in ['train', 'val']:
+        if mode not in ['train', 'val']:
             raise Exception(
                 "`mode` should be one of ('train', 'val') in ADE20K dataset, but got {}."
                 .format(mode))

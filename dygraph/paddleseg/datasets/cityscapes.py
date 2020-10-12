@@ -47,11 +47,12 @@ class Cityscapes(Dataset):
         self.dataset_root = dataset_root
         self.transforms = Compose(transforms)
         self.file_list = list()
+        mode = mode.lower()
         self.mode = mode
         self.num_classes = 19
         self.ignore_index = 255
 
-        if mode.lower() not in ['train', 'val', 'test']:
+        if mode not in ['train', 'val', 'test']:
             raise Exception(
                 "mode should be 'train', 'val' or 'test', but got {}.".format(
                     mode))

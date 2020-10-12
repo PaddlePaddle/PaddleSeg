@@ -41,12 +41,13 @@ class PascalVOC(Dataset):
                  download=True):
         self.dataset_root = dataset_root
         self.transforms = Compose(transforms)
+        mode = mode.lower()
         self.mode = mode
         self.file_list = list()
         self.num_classes = 21
         self.ignore_index = 255
 
-        if mode.lower() not in ['train', 'trainval', 'trainaug', 'val']:
+        if mode not in ['train', 'trainval', 'trainaug', 'val']:
             raise Exception(
                 "`mode` should be one of ('train', 'trainval', 'trainaug', 'val') in PascalVOC dataset, but got {}."
                 .format(mode))
