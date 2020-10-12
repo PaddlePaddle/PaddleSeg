@@ -17,9 +17,9 @@ import os
 import numpy as np
 from PIL import Image
 
-import paddleseg.env as segenv
-from .dataset import Dataset
+from paddleseg.datasets import Dataset
 from paddleseg.utils.download import download_file_and_uncompress
+from paddleseg.utils import seg_env
 from paddleseg.cvlibs import manager
 from paddleseg.transforms import Compose
 
@@ -62,8 +62,8 @@ class ADE20K(Dataset):
                     "`dataset_root` not set and auto download disabled.")
             self.dataset_root = download_file_and_uncompress(
                 url=URL,
-                savepath=segenv.DATA_HOME,
-                extrapath=segenv.DATA_HOME,
+                savepath=seg_env.DATA_HOME,
+                extrapath=seg_env.DATA_HOME,
                 extraname='ADEChallengeData2016')
         elif not os.path.exists(self.dataset_root):
             raise Exception('there is not `dataset_root`: {}.'.format(

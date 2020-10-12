@@ -19,8 +19,7 @@ import numpy as np
 import paddle
 import tqdm
 
-from paddleseg.utils import ConfusionMatrix, Timer, calculate_eta
-import paddleseg.utils.logger as logger
+from paddleseg.utils import ConfusionMatrix, Timer, calculate_eta, logger
 
 np.set_printoptions(suppress=True)
 
@@ -66,8 +65,8 @@ def evaluate(model, eval_dataset=None, model_dir=None, iter_id=None):
         remain_iter = total_iters - iter - 1
         logger.debug(
             "[EVAL] iter_id={}, iter={}/{}, IoU={:4f}, sec/iter={:.4f} | ETA {}"
-                .format(iter_id, iter + 1, total_iters, iou, time_iter,
-                        calculate_eta(remain_iter, time_iter)))
+            .format(iter_id, iter + 1, total_iters, iou, time_iter,
+                    calculate_eta(remain_iter, time_iter)))
         timer.restart()
 
     category_iou, miou = conf_mat.mean_iou()

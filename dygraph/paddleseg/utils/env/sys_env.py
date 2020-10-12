@@ -19,7 +19,6 @@ import sys
 
 import cv2
 import paddle
-from paddle.distributed import ParallelEnv
 
 IS_WINDOWS = sys.platform == 'win32'
 
@@ -77,7 +76,7 @@ def _get_gpu_info():
     return gpu_info
 
 
-def get_environ_info():
+def get_sys_env():
     """collect environment information"""
     env_info = {}
     env_info['System Platform'] = sys.platform
@@ -102,7 +101,7 @@ def get_environ_info():
     if compiled_with_cuda:
         cuda_home = _find_cuda_home()
         env_info['NVCC'] = _get_nvcc_info(cuda_home)
-        gpu_nums = ParallelEnv().nranks
+        gpu_nums = paddle.distributed.ParallelEnv().nranks
         env_info['GPUs used'] = gpu_nums
         env_info['CUDA_VISIBLE_DEVICES'] = os.environ.get(
             'CUDA_VISIBLE_DEVICES')

@@ -15,11 +15,9 @@
 import argparse
 
 import paddle
-from paddle.distributed import ParallelEnv
 
-import paddleseg
 from paddleseg.cvlibs import manager, Config
-from paddleseg.utils import get_environ_info, logger
+from paddleseg.utils import get_sys_env, logger
 from paddleseg.core import train
 
 
@@ -85,13 +83,13 @@ def parse_args():
 
 
 def main(args):
-    env_info = get_environ_info()
+    env_info = get_sys_env()
     info = ['{}: {}'.format(k, v) for k, v in env_info.items()]
     info = '\n'.join(['', format('Environment Information', '-^48s')] + info +
                      ['-' * 48])
     logger.info(info)
 
-    places = paddle.CUDAPlace(ParallelEnv().dev_id) \
+    places = paddle.CUDAPlace(paddle.distributed.ParallelEnv().dev_id) \
         if env_info['Paddle compiled with cuda'] and env_info['GPUs used'] \
         else paddle.CPUPlace()
 

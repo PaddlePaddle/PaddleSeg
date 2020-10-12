@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import paddle
 import paddle.nn as nn
 import paddle.nn.functional as F
 
@@ -43,7 +42,7 @@ class FCN(nn.Layer):
                  num_classes,
                  backbone,
                  pretrained=None,
-                 backbone_indices=(-1,),
+                 backbone_indices=(-1, ),
                  channels=None):
         super(FCN, self).__init__()
 
@@ -80,8 +79,8 @@ class FCNHead(nn.Layer):
 
     def __init__(self,
                  num_classes,
-                 backbone_indices=(-1,),
-                 backbone_channels=(270,),
+                 backbone_indices=(-1, ),
+                 backbone_channels=(270, ),
                  channels=None):
         super(FCNHead, self).__init__()
 

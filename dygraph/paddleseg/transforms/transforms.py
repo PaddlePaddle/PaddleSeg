@@ -1,4 +1,3 @@
-# coding: utf8
 # Copyright (c) 2020 PaddlePaddle Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -107,11 +106,11 @@ class Resize:
             if len(target_size) != 2:
                 raise TypeError(
                     'when target is list or tuple, it should include 2 elements, but it is {}'
-                        .format(target_size))
+                    .format(target_size))
         elif not isinstance(target_size, int):
             raise TypeError(
                 "Type of target_size is invalid. Must be Integer or List or tuple, now is {}"
-                    .format(type(target_size)))
+                .format(type(target_size)))
 
         self.target_size = target_size
 
@@ -163,7 +162,7 @@ class ResizeRangeScaling:
         if min_value > max_value:
             raise ValueError('min_value must be less than max_value, '
                              'but they are {} and {}.'.format(
-                min_value, max_value))
+                                 min_value, max_value))
         self.min_value = min_value
         self.max_value = max_value
 
@@ -259,11 +258,11 @@ class Padding:
             if len(target_size) != 2:
                 raise ValueError(
                     'when target is list or tuple, it should include 2 elements, but it is {}'
-                        .format(target_size))
+                    .format(target_size))
         elif not isinstance(target_size, int):
             raise TypeError(
                 "Type of target_size is invalid. Must be Integer or List or tuple, now is {}"
-                    .format(type(target_size)))
+                .format(type(target_size)))
         self.target_size = target_size
         self.im_padding_value = im_padding_value
         self.label_padding_value = label_padding_value
@@ -285,7 +284,7 @@ class Padding:
         if pad_height < 0 or pad_width < 0:
             raise ValueError(
                 'the size of image should be less than target_size, but the size of image ({}, {}), is larger than target_size ({}, {})'
-                    .format(im_width, im_height, target_width, target_height))
+                .format(im_width, im_height, target_width, target_height))
         else:
             im = cv2.copyMakeBorder(
                 im,
@@ -320,11 +319,11 @@ class RandomPaddingCrop:
             if len(crop_size) != 2:
                 raise ValueError(
                     'when crop_size is list or tuple, it should include 2 elements, but it is {}'
-                        .format(crop_size))
+                    .format(crop_size))
         elif not isinstance(crop_size, int):
             raise TypeError(
                 "Type of crop_size is invalid. Must be Integer or List or tuple, now is {}"
-                    .format(type(crop_size)))
+                .format(type(crop_size)))
         self.crop_size = crop_size
         self.im_padding_value = im_padding_value
         self.label_padding_value = label_padding_value
@@ -374,10 +373,10 @@ class RandomPaddingCrop:
                 w_off = np.random.randint(img_width - crop_width + 1)
 
                 im = im[h_off:(crop_height + h_off), w_off:(
-                        w_off + crop_width), :]
+                    w_off + crop_width), :]
                 if label is not None:
                     label = label[h_off:(crop_height + h_off), w_off:(
-                            w_off + crop_width)]
+                        w_off + crop_width)]
         if label is None:
             return (im, im_info)
         else:
