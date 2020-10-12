@@ -48,7 +48,7 @@ class ConvBNLayer(nn.Layer):
             out_channels=out_channels,
             kernel_size=kernel_size,
             stride=stride,
-            padding=(kernel_size - 1) // 2 if dilation == 1 else 0,
+            padding="same" #(kernel_size - 1) // 2 if dilation == 1 else 0,
             dilation=dilation,
             groups=groups,
             bias_attr=False)
@@ -120,9 +120,9 @@ class BottleneckBlock(nn.Layer):
 
         ####################################################################
         # If given dilation rate > 1, using corresponding padding
-        if self.dilation > 1:
-            padding = self.dilation
-            y = F.pad(y, [padding, padding, padding, padding])
+        # if self.dilation > 1:
+        #     padding = self.dilation
+        #     y = F.pad(y, [padding, padding, padding, padding])
         #####################################################################
 
         conv1 = self.conv1(y)
@@ -331,21 +331,21 @@ class ResNet_vd(nn.Layer):
     def init_weight(self, pretrained):
         utils.load_pretrained_model(self, pretrained)
 
-        for idx, stage in enumerate(self.stage_list):
-            for layer in stage:
-                for sublayer in layer.sublayers():
-                    if isinstance(sublayer, nn.Conv2d):
-                        sublayer.weight.optimize_attr[
-                            'learning_rate'] = self.lr_mult_list[idx]
-                        if sublayer.bias:
-                            sublayer.bias.optimize_attr[
-                                'learning_rate'] = self.lr_mult_list[idx]
+        # for idx, stage in enumerate(self.stage_list):
+        #     for layer in stage:
+        #         for sublayer in layer.sublayers():
+        #             if isinstance(sublayer, nn.Conv2d):
+        #                 sublayer.weight.optimize_attr[
+        #                     'learning_rate'] = self.lr_mult_list[idx]
+        #                 if sublayer.bias:
+        #                     sublayer.bias.optimize_attr[
+        #                         'learning_rate'] = self.lr_mult_list[idx]
 
-                    if isinstance(sublayer, nn.SyncBatchNorm):
-                        sublayer.weight.optimize_attr[
-                            'learning_rate'] = self.lr_mult_list[idx]
-                        sublayer.bias.optimize_attr[
-                            'learning_rate'] = self.lr_mult_list[idx]
+        #             if isinstance(sublayer, nn.SyncBatchNorm):
+        #                 sublayer.weight.optimize_attr[
+        #                     'learning_rate'] = self.lr_mult_list[idx]
+        #                 sublayer.bias.optimize_attr[
+        #                     'learning_rate'] = self.lr_mult_list[idx]
 
 
 @manager.BACKBONES.add_component
