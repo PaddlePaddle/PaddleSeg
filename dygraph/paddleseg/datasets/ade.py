@@ -32,10 +32,10 @@ class ADE20K(Dataset):
     ADE20K dataset `http://sceneparsing.csail.mit.edu/`.
 
     Args:
-        dataset_root: The dataset directory.
-        mode: Which part of dataset to use.. it is one of ('train', 'val'). Default: 'train'.
-        transforms: Transforms for image.
-        download: Whether to download dataset if `dataset_root` is None.
+        transforms (list): Transforms for image.
+        dataset_root (str): The dataset directory.
+        mode (str): Which part of dataset to use.. it is one of ('train', 'val'). Default: 'train'.
+        download (bool): Whether to download dataset if `dataset_root` is None.
     """
 
     def __init__(self,
@@ -88,11 +88,7 @@ class ADE20K(Dataset):
 
     def __getitem__(self, idx):
         image_path, label_path = self.file_list[idx]
-        if self.mode == 'test':
-            im, im_info, _ = self.transforms(im=image_path)
-            im = im[np.newaxis, ...]
-            return im, im_info, image_path
-        elif self.mode == 'val':
+        if self.mode == 'val':
             im, im_info, _ = self.transforms(im=image_path)
             im = im[np.newaxis, ...]
             label = np.asarray(Image.open(label_path))

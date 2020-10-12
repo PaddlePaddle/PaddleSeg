@@ -27,22 +27,22 @@ class Dataset(paddle.io.Dataset):
     """Pass in a custom dataset that conforms to the format.
 
     Args:
-        dataset_root: The dataset directory.
-        num_classes: Number of classes.
-        mode: which part of dataset to use. it is one of ('train', 'val', 'test'). Default: 'train'.
-        train_path: The train dataset file. When image_set is 'train', train_path is necessary.
+        transforms (list): Transforms for image.
+        dataset_root (str): The dataset directory.
+        num_classes (int): Number of classes.
+        mode (str): which part of dataset to use. it is one of ('train', 'val', 'test'). Default: 'train'.
+        train_path (str): The train dataset file. When image_set is 'train', train_path is necessary.
             The contents of train_path file are as follow:
             image1.jpg ground_truth1.png
             image2.jpg ground_truth2.png
-        val_path: The evaluation dataset file. When image_set is 'val', val_path is necessary.
+        val_path (str): The evaluation dataset file. When image_set is 'val', val_path is necessary.
             The contents is the same as train_path
-        test_path: The test dataset file. When image_set is 'test', test_path is necessary.
+        test_path (str): The test dataset file. When image_set is 'test', test_path is necessary.
             The annotation file is not necessary in test_path file.
-        separator: The separator of dataset list. Default: ' '.
-        transforms: Transforms for image.
+        separator (str): The separator of dataset list. Default: ' '.
 
         Examples:
-            todo
+            TODO
 
     """
 

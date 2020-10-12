@@ -22,25 +22,28 @@ from paddleseg.transforms import Compose
 
 @manager.DATASETS.add_component
 class Cityscapes(Dataset):
-    """Cityscapes dataset `https://www.cityscapes-dataset.com/`.
+    """
+    Cityscapes dataset `https://www.cityscapes-dataset.com/`.
     The folder structure is as follow:
-    cityscapes
-    |
-    |--leftImg8bit
-    |  |--train
-    |  |--val
-    |  |--test
-    |
-    |--gtFine
-    |  |--train
-    |  |--val
-    |  |--test
+
+        cityscapes
+        |
+        |--leftImg8bit
+        |  |--train
+        |  |--val
+        |  |--test
+        |
+        |--gtFine
+        |  |--train
+        |  |--val
+        |  |--test
+
     Make sure there are **labelTrainIds.png in gtFine directory. If not, please run the conver_cityscapes.py in tools.
 
     Args:
-        dataset_root: Cityscapes dataset directory.
-        mode: Which part of dataset to use. it is one of ('train', 'val', 'test'). Default: 'train'.
-        transforms: Transforms for image.
+        transforms (list): Transforms for image.
+        dataset_root (str): Cityscapes dataset directory.
+        mode (str): Which part of dataset to use. it is one of ('train', 'val', 'test'). Default: 'train'.
     """
 
     def __init__(self, transforms, dataset_root, mode='train'):
