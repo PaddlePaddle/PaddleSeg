@@ -47,6 +47,7 @@ class Dataset(paddle.io.Dataset):
     """
 
     def __init__(self,
+                 transforms,
                  dataset_root,
                  num_classes,
                  mode='train',
@@ -54,11 +55,11 @@ class Dataset(paddle.io.Dataset):
                  val_list=None,
                  test_list=None,
                  separator=' ',
-                 transforms=None,
                  ignore_index=255):
         self.dataset_root = dataset_root
         self.transforms = Compose(transforms)
         self.file_list = list()
+        mode = mode.lower()
         self.mode = mode
         self.num_classes = num_classes
         self.ignore_index = ignore_index

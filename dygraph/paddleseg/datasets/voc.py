@@ -35,9 +35,9 @@ class PascalVOC(Dataset):
     """
 
     def __init__(self,
+                 transforms,
                  dataset_root=None,
                  mode='train',
-                 transforms=None,
                  download=True):
         self.dataset_root = dataset_root
         self.transforms = Compose(transforms)

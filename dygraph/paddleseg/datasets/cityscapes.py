@@ -43,7 +43,7 @@ class Cityscapes(Dataset):
         transforms: Transforms for image.
     """
 
-    def __init__(self, dataset_root, transforms=None, mode='train'):
+    def __init__(self, transforms, dataset_root, mode='train'):
         self.dataset_root = dataset_root
         self.transforms = Compose(transforms)
         self.file_list = list()
