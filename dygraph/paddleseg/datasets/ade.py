@@ -92,6 +92,8 @@ class ADE20K(Dataset):
             im, im_info, _ = self.transforms(im=image_path)
             im = im[np.newaxis, ...]
             label = np.asarray(Image.open(grt_path))
+            # The class 0 is ignored. And it will equal to 255 after
+            # subtracted 1, because the dtype of label is uint8.
             label = label - 1
             label = label[np.newaxis, np.newaxis, :, :]
             return im, im_info, label
