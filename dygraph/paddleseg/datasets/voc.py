@@ -25,28 +25,32 @@ URL = "http://host.robots.ox.ac.uk/pascal/VOC/voc2012/VOCtrainval_11-May-2012.ta
 
 @manager.DATASETS.add_component
 class PascalVOC(Dataset):
-    """Pascal VOC dataset `http://host.robots.ox.ac.uk/pascal/VOC/`. If you want to augment the dataset,
-    please run the voc_augment.py in tools.
+    """
+    PascalVOC2012 dataset `http://host.robots.ox.ac.uk/pascal/VOC/`.
+    If you want to augment the dataset, please run the voc_augment.py in tools.
+
     Args:
-        dataset_root: The dataset directory.
-        mode: Which part of dataset to use.. it is one of ('train', 'val', 'test'). Default: 'train'.
-        transforms: Transforms for image.
-        download: Whether to download dataset if dataset_root is None.
+        transforms (list): Transforms for image.
+        dataset_root (str): The dataset directory. Default: None
+        mode (str): Which part of dataset to use. it is one of ('train', 'trainval', 'trainaug', 'val').
+            If you want to set mode to 'trainaug', please make sure the dataset have been augmented. Default: 'train'.
+        download (bool): Whether to download dataset if dataset_root is None. Default: True
     """
 
     def __init__(self,
+                 transforms,
                  dataset_root=None,
                  mode='train',
-                 transforms=None,
                  download=True):
         self.dataset_root = dataset_root
         self.transforms = Compose(transforms)
+        mode = mode.lower()
         self.mode = mode
         self.file_list = list()
         self.num_classes = 21
         self.ignore_index = 255
 
-        if mode.lower() not in ['train', 'trainval', 'trainaug', 'val']:
+        if mode not in ['train', 'trainval', 'trainaug', 'val']:
             raise Exception(
                 "`mode` should be one of ('train', 'trainval', 'trainaug', 'val') in PascalVOC dataset, but got {}."
                 .format(mode))
@@ -70,38 +74,38 @@ class PascalVOC(Dataset):
         image_set_dir = os.path.join(self.dataset_root, 'VOC2012', 'ImageSets',
                                      'Segmentation')
         if mode == 'train':
-            file_list = os.path.join(image_set_dir, 'train.txt')
+            file_path = os.path.join(image_set_dir, 'train.txt')
         elif mode == 'val':
-            file_list = os.path.join(image_set_dir, 'val.txt')
+            file_path = os.path.join(image_set_dir, 'val.txt')
         elif mode == 'trainval':
-            file_list = os.path.join(image_set_dir, 'trainval.txt')
+            file_path = os.path.join(image_set_dir, 'trainval.txt')
         elif mode == 'trainaug':
-            file_list = os.path.join(image_set_dir, 'train.txt')
-            file_list_aug = os.path.join(image_set_dir, 'aug.txt')
+            file_path = os.path.join(image_set_dir, 'train.txt')
+            file_path_aug = os.path.join(image_set_dir, 'aug.txt')
 
-            if not os.path.exists(file_list_aug):
+            if not os.path.exists(file_path_aug):
                 raise Exception(
                     "When `mode` is 'trainaug', Pascal Voc dataset should be augmented, "
                     "Please make sure voc_augment.py has been properly run when using this mode."
                 )
 
         img_dir = os.path.join(self.dataset_root, 'VOC2012', 'JPEGImages')
-        grt_dir = os.path.join(self.dataset_root, 'VOC2012',
-                               'SegmentationClass')
-        grt_dir_aug = os.path.join(self.dataset_root, 'VOC2012',
-                                   'SegmentationClassAug')
+        label_dir = os.path.join(self.dataset_root, 'VOC2012',
+                                 'SegmentationClass')
+        label_dir_aug = os.path.join(self.dataset_root, 'VOC2012',
+                                     'SegmentationClassAug')
 
-        with open(file_list, 'r') as f:
+        with open(file_path, 'r') as f:
             for line in f:
                 line = line.strip()
                 image_path = os.path.join(img_dir, ''.join([line, '.jpg']))
-                grt_path = os.path.join(grt_dir, ''.join([line, '.png']))
-                self.file_list.append([image_path, grt_path])
+                label_path = os.path.join(label_dir, ''.join([line, '.png']))
+                self.file_list.append([image_path, label_path])
         if mode == 'trainaug':
-            with open(file_list_aug, 'r') as f:
+            with open(file_path_aug, 'r') as f:
                 for line in f:
                     line = line.strip()
                     image_path = os.path.join(img_dir, ''.join([line, '.jpg']))
-                    grt_path = os.path.join(grt_dir_aug, ''.join([line,
-                                                                  '.png']))
-                    self.file_list.append([image_path, grt_path])
+                    label_path = os.path.join(label_dir_aug,
+                                              ''.join([line, '.png']))
+                    self.file_list.append([image_path, label_path])
