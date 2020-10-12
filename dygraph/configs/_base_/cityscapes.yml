@@ -25,6 +25,7 @@ val_dataset:
 
 optimizer:
   type: sgd
+  weight_decay: 4.0e-5
 
 learning_rate:
   value: 0.01
