@@ -39,7 +39,9 @@ class ASPPModule(nn.Layer):
                  image_pooling=False):
         super().__init__()
 
-        self.aspp_blocks = []
+        # FIXME(chenguowei)
+        # self.aspp_blocks = [], hang problem.
+        self.aspp_blocks = nn.LayerList()
 
         for ratio in aspp_ratios:
             if use_sep_conv and ratio > 1:

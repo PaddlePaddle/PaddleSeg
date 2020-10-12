@@ -51,8 +51,8 @@ def load_entire_model(model, pretrained):
             raise Exception(
                 'Pretrained model is not found: {}'.format(pretrained))
     else:
-        logger.warning('Not all pretrained params of {} to load, ' \
-                       'training from scratch or a pretrained backbone'.format(model.__class__.__name__))
+        logger.warning('Not all pretrained params of {} are loaded, ' \
+                       'training from scratch or a pretrained backbone.'.format(model.__class__.__name__))
 
 
 def load_pretrained_model(model, pretrained_model):
