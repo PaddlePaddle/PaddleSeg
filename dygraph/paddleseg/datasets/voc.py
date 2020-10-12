@@ -71,16 +71,16 @@ class PascalVOC(Dataset):
         image_set_dir = os.path.join(self.dataset_root, 'VOC2012', 'ImageSets',
                                      'Segmentation')
         if mode == 'train':
-            file_list = os.path.join(image_set_dir, 'train.txt')
+            file_path = os.path.join(image_set_dir, 'train.txt')
         elif mode == 'val':
-            file_list = os.path.join(image_set_dir, 'val.txt')
+            file_path = os.path.join(image_set_dir, 'val.txt')
         elif mode == 'trainval':
-            file_list = os.path.join(image_set_dir, 'trainval.txt')
+            file_path = os.path.join(image_set_dir, 'trainval.txt')
         elif mode == 'trainaug':
-            file_list = os.path.join(image_set_dir, 'train.txt')
-            file_list_aug = os.path.join(image_set_dir, 'aug.txt')
+            file_path = os.path.join(image_set_dir, 'train.txt')
+            file_path_aug = os.path.join(image_set_dir, 'aug.txt')
 
-            if not os.path.exists(file_list_aug):
+            if not os.path.exists(file_path_aug):
                 raise Exception(
                     "When `mode` is 'trainaug', Pascal Voc dataset should be augmented, "
                     "Please make sure voc_augment.py has been properly run when using this mode."
@@ -92,14 +92,14 @@ class PascalVOC(Dataset):
         label_dir_aug = os.path.join(self.dataset_root, 'VOC2012',
                                      'SegmentationClassAug')
 
-        with open(file_list, 'r') as f:
+        with open(file_path, 'r') as f:
             for line in f:
                 line = line.strip()
                 image_path = os.path.join(img_dir, ''.join([line, '.jpg']))
                 label_path = os.path.join(label_dir, ''.join([line, '.png']))
                 self.file_list.append([image_path, label_path])
         if mode == 'trainaug':
-            with open(file_list_aug, 'r') as f:
+            with open(file_path_aug, 'r') as f:
                 for line in f:
                     line = line.strip()
                     image_path = os.path.join(img_dir, ''.join([line, '.jpg']))
