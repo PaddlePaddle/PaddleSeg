@@ -228,7 +228,7 @@ class ResizeStepScaling:
 
 @manager.TRANSFORMS.add_component
 class Normalize:
-    def __init__(self, mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5]):
+    def __init__(self, mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5)):
         self.mean = mean
         self.std = std
         if not (isinstance(self.mean, list) and isinstance(self.std, list)):
@@ -252,7 +252,7 @@ class Normalize:
 class Padding:
     def __init__(self,
                  target_size,
-                 im_padding_value=[127.5, 127.5, 127.5],
+                 im_padding_value=(127.5, 127.5, 127.5),
                  label_padding_value=255):
         if isinstance(target_size, list) or isinstance(target_size, tuple):
             if len(target_size) != 2:
@@ -313,7 +313,7 @@ class Padding:
 class RandomPaddingCrop:
     def __init__(self,
                  crop_size=512,
-                 im_padding_value=[127.5, 127.5, 127.5],
+                 im_padding_value=(127.5, 127.5, 127.5),
                  label_padding_value=255):
         if isinstance(crop_size, list) or isinstance(crop_size, tuple):
             if len(crop_size) != 2:
@@ -414,7 +414,7 @@ class RandomBlur:
 class RandomRotation:
     def __init__(self,
                  max_rotation=15,
-                 im_padding_value=[127.5, 127.5, 127.5],
+                 im_padding_value=(127.5, 127.5, 127.5),
                  label_padding_value=255):
         self.max_rotation = max_rotation
         self.im_padding_value = im_padding_value
