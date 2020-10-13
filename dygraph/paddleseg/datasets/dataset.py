@@ -31,18 +31,30 @@ class Dataset(paddle.io.Dataset):
         dataset_root (str): The dataset directory.
         num_classes (int): Number of classes.
         mode (str): which part of dataset to use. it is one of ('train', 'val', 'test'). Default: 'train'.
-        train_path (str): The train dataset file. When image_set is 'train', train_path is necessary.
+        train_path (str): The train dataset file. When mode is 'train', train_path is necessary.
             The contents of train_path file are as follow:
             image1.jpg ground_truth1.png
             image2.jpg ground_truth2.png
-        val_path (str): The evaluation dataset file. When image_set is 'val', val_path is necessary.
+        val_path (str): The evaluation dataset file. When mode is 'val', val_path is necessary.
             The contents is the same as train_path
-        test_path (str): The test dataset file. When image_set is 'test', test_path is necessary.
+        test_path (str): The test dataset file. When mode is 'test', test_path is necessary.
             The annotation file is not necessary in test_path file.
         separator (str): The separator of dataset list. Default: ' '.
 
         Examples:
-            TODO
+
+            import paddleseg.transforms as T
+            from paddleseg.datasets import Dataset
+
+            transforms = [T.RandomPaddingCrop(crop_size=(512,512)), T.Normalize()]
+            dataset_root = 'dataset_root_path'
+            train_path = 'train_path'
+            num_classes = 2
+            dataset = Dataset(transforms = transforms,
+                              dataset_root = dataset_root,
+                              num_classes = 2,
+                              train_path = train_path,
+                              mode = 'train')
 
     """
 
