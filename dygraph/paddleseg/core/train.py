@@ -163,11 +163,7 @@ def train(model,
                             os.path.join(current_save_dir, 'model'))
 
                 if val_dataset is not None:
-                    mean_iou, acc = evaluate(
-                        model,
-                        val_dataset,
-                        model_dir=current_save_dir,
-                        iter_id=iter)
+                    mean_iou, acc = evaluate(model, val_dataset, iter_id=iter)
                     if mean_iou > best_mean_iou:
                         best_mean_iou = mean_iou
                         best_model_iter = iter
