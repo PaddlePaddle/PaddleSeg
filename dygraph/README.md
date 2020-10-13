@@ -4,17 +4,19 @@
 
 ## 模型库
 
-* ANN
-* BiSeNetv2
-* DANet
-* Deeplabv3
-* Deeplabv3p
-* Fast-SCNN
-* FCN
-* GCNet
-* [OCRNet](https://github.com/nepeplwu/PaddleSeg/blob/develop/dygraph/configs/ocrnet/)
-* PSPNet
-* UNet
+|模型\骨干网络|ResNet50|ResNet101|HRNetw18|HRNetw48|
+|-|-|-|-|-|
+|ANN|√|√|||
+|BiSeNetv2|-|-|-|-|
+|DANet|√|√|||
+|Deeplabv3|√|√|||
+|Deeplabv3p|√|√|||
+|Fast-SCNN|-|-|-|-|
+|FCN|||√|√|
+|GCNet|√|√|||
+|[OCRNet](https://github.com/nepeplwu/PaddleSeg/blob/develop/dygraph/configs/ocrnet/)|||√|√|
+|PSPNet|√|√|||
+|UNet|-|-|-|-|
 
 ## 数据集
 
