@@ -12,7 +12,7 @@
 * Fast-SCNN
 * FCN
 * GCNet
-* [OCRNet](https://github.com/nepeplwu/PaddleSeg/blob/develop/dygraph/configs/ocrnet/README.md)
+* [OCRNet](https://github.com/nepeplwu/PaddleSeg/blob/develop/dygraph/configs/ocrnet/)
 * PSPNet
 * UNet
 
@@ -55,6 +55,6 @@ pip install -r requirements.txt
 
 * [快速入门](./docs/quick_start.md)
 * [数据集准备](./docs/data_prepare.md)
-* [配置项](./configs)
-* [APIs](./docs/apis.md)
+* [配置项](./configs/)
+* [APIs](./docs/apis/)
 * [多尺度预测 & 滑动窗口预测](./docs/infer.md)
