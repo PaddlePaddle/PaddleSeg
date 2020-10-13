@@ -16,6 +16,12 @@
 * PSPNet
 * UNet
 
+## 数据集
+
+* CityScapes
+* Pascal VOC
+* ADE20K
+
 ## 安装
 
 1. 安装PaddlePaddle
