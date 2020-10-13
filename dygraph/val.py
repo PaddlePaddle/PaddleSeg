@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import argparse
+import os
 
 import paddle
 
@@ -59,11 +60,12 @@ def main(args):
     msg += '------------------------------------------------'
     logger.info(msg)
 
-    evaluate(
-        cfg.model,
-        val_dataset,
-        model_dir=args.model_dir,
-        num_classes=val_dataset.num_classes)
+    model = cfg.model
+    ckpt_path = os.path.join(args.model_dir, 'model')
+    para_state_dict, opti_state_dict = paddle.load(ckpt_path)
+    model.set_dict(para_state_dict)
+
+    evaluate(model, val_dataset)
 
 
 if __name__ == '__main__':
