@@ -121,6 +121,9 @@ class DAHead(nn.Layer):
         self.conv1 = layers.ConvBNReLU(inter_channels, inter_channels, 3)
         self.conv2 = layers.ConvBNReLU(inter_channels, inter_channels, 3)
 
+        self.aux_head = nn.Sequential(
+            nn.Dropout2d(0.1), nn.Conv2d(in_channels, num_classes, 1))
+
         self.aux_head_pam = nn.Sequential(
             nn.Dropout2d(0.1), nn.Conv2d(inter_channels, num_classes, 1))
 
@@ -129,8 +132,6 @@ class DAHead(nn.Layer):
 
         self.cls_head = nn.Sequential(
             nn.Dropout2d(0.1), nn.Conv2d(inter_channels, num_classes, 1))
-
-        self.init_weight()
 
     def forward(self, feat_list):
         feats = feat_list[-1]
@@ -146,16 +147,8 @@ class DAHead(nn.Layer):
         cam_logit = self.aux_head_cam(channel_feats)
         pam_logit = self.aux_head_cam(position_feats)
         logit = self.cls_head(feats_sum)
-        return [logit, cam_logit, pam_logit]
-
-    def init_weight(self):
-        """Initialize the parameters of model parts."""
-        for sublayer in self.sublayers():
-            if isinstance(sublayer, nn.Conv2d):
-                param_init.normal_init(sublayer.weight, scale=0.001)
-            elif isinstance(sublayer, (nn.BatchNorm, nn.SyncBatchNorm)):
-                param_init.constant_init(sublayer.weight, value=1.0)
-                param_init.constant_init(sublayer.bias, value=0.0)
+        aux_logit = self.aux_head(feats)
+        return [logit, cam_logit, pam_logit, aux_logit]
 
 
 @manager.MODELS.add_component
