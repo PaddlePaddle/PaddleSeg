@@ -97,19 +97,19 @@ class Resize:
         'LANCZOS4': cv2.INTER_LANCZOS4
     }
 
-    def __init__(self, target_size=512, interp='LINEAR'):
+    def __init__(self, target_size=(512, 512), interp='LINEAR'):
         self.interp = interp
         if not (interp == "RANDOM" or interp in self.interp_dict):
             raise ValueError("interp should be one of {}".format(
                 self.interp_dict.keys()))
         if isinstance(target_size, list) or isinstance(target_size, tuple):
             if len(target_size) != 2:
-                raise TypeError(
-                    'when target is list or tuple, it should include 2 elements, but it is {}'
-                    .format(target_size))
-        elif not isinstance(target_size, int):
+                raise ValueError(
+                    '`target_size` should include 2 elements, but it is {}'.
+                    format(target_size))
+        else:
             raise TypeError(
-                "Type of target_size is invalid. Must be Integer or List or tuple, now is {}"
+                "Type of `target_size` is invalid. It should be list or tuple, now is {}"
                 .format(type(target_size)))
 
         self.target_size = target_size
@@ -260,11 +260,11 @@ class Padding:
         if isinstance(target_size, list) or isinstance(target_size, tuple):
             if len(target_size) != 2:
                 raise ValueError(
-                    'when target is list or tuple, it should include 2 elements, but it is {}'
-                    .format(target_size))
-        elif not isinstance(target_size, int):
+                    '`target_size` should include 2 elements, but it is {}'.
+                    format(target_size))
+        else:
             raise TypeError(
-                "Type of target_size is invalid. Must be Integer or List or tuple, now is {}"
+                "Type of target_size is invalid. It should be list or tuple, now is {}"
                 .format(type(target_size)))
         self.target_size = target_size
         self.im_padding_value = im_padding_value
