@@ -14,10 +14,12 @@
 
 import random
 
+import cv2
 import numpy as np
+from PIL import Image
 
 from paddleseg.cvlibs import manager
-from .functional import *
+from paddleseg.transforms import functional
 
 
 @manager.TRANSFORMS.add_component
@@ -61,9 +63,9 @@ class RandomHorizontalFlip:
 
     def __call__(self, im, im_info=None, label=None):
         if random.random() < self.prob:
-            im = horizontal_flip(im)
+            im = functional.horizontal_flip(im)
             if label is not None:
-                label = horizontal_flip(label)
+                label = functional.horizontal_flip(label)
         if label is None:
             return (im, im_info)
         else:
@@ -77,9 +79,9 @@ class RandomVerticalFlip:
 
     def __call__(self, im, im_info=None, label=None):
         if random.random() < self.prob:
-            im = vertical_flip(im)
+            im = functional.vertical_flip(im)
             if label is not None:
-                label = vertical_flip(label)
+                label = functional.vertical_flip(label)
         if label is None:
             return (im, im_info)
         else:
@@ -100,7 +102,7 @@ class Resize:
     def __init__(self, target_size=(512, 512), interp='LINEAR'):
         self.interp = interp
         if not (interp == "RANDOM" or interp in self.interp_dict):
-            raise ValueError("interp should be one of {}".format(
+            raise ValueError("`interp` should be one of {}".format(
                 self.interp_dict.keys()))
         if isinstance(target_size, list) or isinstance(target_size, tuple):
             if len(target_size) != 2:
@@ -109,7 +111,7 @@ class Resize:
                     format(target_size))
         else:
             raise TypeError(
-                "Type of `target_size` is invalid. It should be list or tuple, now is {}"
+                "The type of `target_size` is invalid. It must be list or tuple, but now is {}"
                 .format(type(target_size)))
 
         self.target_size = target_size
@@ -126,9 +128,10 @@ class Resize:
             interp = random.choice(list(self.interp_dict.keys()))
         else:
             interp = self.interp
-        im = resize(im, self.target_size, self.interp_dict[interp])
+        im = functional.resize(im, self.target_size, self.interp_dict[interp])
         if label is not None:
-            label = resize(label, self.target_size, cv2.INTER_NEAREST)
+            label = functional.resize(label, self.target_size,
+                                      cv2.INTER_NEAREST)
 
         if label is None:
             return (im, im_info)
@@ -146,9 +149,10 @@ class ResizeByLong:
             im_info = list()
 
         im_info.append(('resize', im.shape[:2]))
-        im = resize_long(im, self.long_size)
+        im = functional.resize_long(im, self.long_size)
         if label is not None:
-            label = resize_long(label, self.long_size, cv2.INTER_NEAREST)
+            label = functional.resize_long(label, self.long_size,
+                                           cv2.INTER_NEAREST)
 
         if label is None:
             return (im, im_info)
@@ -172,9 +176,10 @@ class ResizeRangeScaling:
         else:
             random_size = int(
                 np.random.uniform(self.min_value, self.max_value) + 0.5)
-        im = resize_long(im, random_size, cv2.INTER_LINEAR)
+        im = functional.resize_long(im, random_size, cv2.INTER_LINEAR)
         if label is not None:
-            label = resize_long(label, random_size, cv2.INTER_NEAREST)
+            label = functional.resize_long(label, random_size,
+                                           cv2.INTER_NEAREST)
 
         if label is None:
             return (im, im_info)
@@ -216,9 +221,9 @@ class ResizeStepScaling:
         w = int(round(scale_factor * im.shape[1]))
         h = int(round(scale_factor * im.shape[0]))
 
-        im = resize(im, (w, h), cv2.INTER_LINEAR)
+        im = functional.resize(im, (w, h), cv2.INTER_LINEAR)
         if label is not None:
-            label = resize(label, (w, h), cv2.INTER_NEAREST)
+            label = functional.resize(label, (w, h), cv2.INTER_NEAREST)
 
         if label is None:
             return (im, im_info)
@@ -243,7 +248,7 @@ class Normalize:
     def __call__(self, im, im_info=None, label=None):
         mean = np.array(self.mean)[np.newaxis, np.newaxis, :]
         std = np.array(self.std)[np.newaxis, np.newaxis, :]
-        im = normalize(im, mean, std)
+        im = functional.normalize(im, mean, std)
 
         if label is None:
             return (im, im_info)
@@ -264,7 +269,7 @@ class Padding:
                     format(target_size))
         else:
             raise TypeError(
-                "Type of target_size is invalid. It should be list or tuple, now is {}"
+                "The type of `target_size` is invalid. It should be list or tuple, now is {}"
                 .format(type(target_size)))
         self.target_size = target_size
         self.im_padding_value = im_padding_value
@@ -286,7 +291,7 @@ class Padding:
         pad_width = target_width - im_width
         if pad_height < 0 or pad_width < 0:
             raise ValueError(
-                'the size of image should be less than target_size, but the size of image ({}, {}), is larger than target_size ({}, {})'
+                'The size of image should be less than `target_size`, but the size of image ({}, {}) is larger than `target_size` ({}, {})'
                 .format(im_width, im_height, target_width, target_height))
         else:
             im = cv2.copyMakeBorder(
@@ -321,11 +326,11 @@ class RandomPaddingCrop:
         if isinstance(crop_size, list) or isinstance(crop_size, tuple):
             if len(crop_size) != 2:
                 raise ValueError(
-                    'when crop_size is list or tuple, it should include 2 elements, but it is {}'
+                    'If the type of `crop_size` is list or tuple, it should include 2 elements, but it is {}'
                     .format(crop_size))
         elif not isinstance(crop_size, int):
             raise TypeError(
-                "Type of crop_size is invalid. Must be Integer or List or tuple, now is {}"
+                "The type of `crop_size` is invalid. It must be integer or list or tuple, but now it is {}"
                 .format(type(crop_size)))
         self.crop_size = crop_size
         self.im_padding_value = im_padding_value
@@ -532,7 +537,10 @@ class RandomDistort:
         saturation_upper = 1 + self.saturation_range
         hue_lower = -self.hue_range
         hue_upper = self.hue_range
-        ops = [brightness, contrast, saturation, hue]
+        ops = [
+            functional.brightness, functional.contrast, functional.saturation,
+            functional.hue
+        ]
         random.shuffle(ops)
         params_dict = {
             'brightness': {
