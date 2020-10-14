@@ -71,8 +71,9 @@ class GatherAndExpandsionLayer1(nn.Layer):
         expand_dim = expand * in_dim
 
         self.conv = nn.Sequential(
-            layers.ConvBNReLU(in_dim, in_dim, 3), layers.DepthwiseConvBN(
-                in_dim, expand_dim, 3), layers.ConvBN(expand_dim, out_dim, 1))
+            layers.ConvBNReLU(in_dim, in_dim, 3),
+            layers.DepthwiseConvBN(in_dim, expand_dim, 3),
+            layers.ConvBN(expand_dim, out_dim, 1))
 
     def forward(self, x):
         return F.relu(self.conv(x) + x)
@@ -167,20 +168,21 @@ class BGA(nn.Layer):
         super(BGA, self).__init__()
 
         self.db_branch_keep = nn.Sequential(
-            layers.DepthwiseConvBN(out_dim, out_dim, 3), nn.Conv2d(
-                out_dim, out_dim, 1))
+            layers.DepthwiseConvBN(out_dim, out_dim, 3),
+            nn.Conv2d(out_dim, out_dim, 1))
 
         self.db_branch_down = nn.Sequential(
             layers.ConvBN(out_dim, out_dim, 3, stride=2),
             nn.AvgPool2d(kernel_size=3, stride=2, padding=1))
 
         self.sb_branch_keep = nn.Sequential(
-            layers.DepthwiseConvBN(out_dim, out_dim, 3), nn.Conv2d(
-                out_dim, out_dim, 1), layers.Activation(act='sigmoid'))
+            layers.DepthwiseConvBN(out_dim, out_dim, 3),
+            nn.Conv2d(out_dim, out_dim, 1), layers.Activation(act='sigmoid'))
 
         self.sb_branch_up = nn.Sequential(
             layers.ConvBN(out_dim, out_dim, 3),
-            nn.UpsamplingBilinear2d(scale_factor=4), layers.Activation(act='sigmoid'))
+            nn.UpsamplingBilinear2d(scale_factor=4),
+            layers.Activation(act='sigmoid'))
 
         self.conv = layers.ConvBN(out_dim, out_dim, 3)
 
@@ -271,7 +273,7 @@ class BiSeNetV2(nn.Layer):
             if os.path.exists(pretrained):
                 utils.load_entire_model(self, pretrained)
             else:
-                raise Exception(
+                raise FileNotFoundError(
                     'Pretrained model is not found: {}'.format(pretrained))
         else:
             for sublayer in self.sublayers():

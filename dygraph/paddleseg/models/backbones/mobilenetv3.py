@@ -171,7 +171,7 @@ class MobileNetV3(nn.Layer):
     def modify_bottle_params(self, output_stride=None):
 
         if output_stride is not None and output_stride % 2 != 0:
-            raise Exception("output stride must to be even number")
+            raise ValueError("output stride must to be even number")
         if output_stride is not None:
             stride = 2
             rate = 1
