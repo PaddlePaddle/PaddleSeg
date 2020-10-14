@@ -60,7 +60,7 @@ def seg_train(model,
               iters=10000,
               batch_size=2,
               resume_model=None,
-              save_interval_iters=1000,
+              save_interval=1000,
               log_iters=10,
               num_workers=8):
 
@@ -88,7 +88,7 @@ def seg_train(model,
     base_logger = callbacks.BaseLogger(period=log_iters)
     train_logger = callbacks.TrainLogger(log_freq=log_iters)
     model_ckpt = callbacks.ModelCheckpoint(
-        save_dir, save_params_only=False, period=save_interval_iters)
+        save_dir, save_params_only=False, period=save_interval)
     vdl = callbacks.VisualDL(log_dir=os.path.join(save_dir, "log"))
     cbks_list = [base_logger, train_logger, model_ckpt, vdl]
 

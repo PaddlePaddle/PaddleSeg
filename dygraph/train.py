@@ -45,9 +45,9 @@ def parse_args():
         type=float,
         default=None)
     parser.add_argument(
-        '--save_interval_iters',
-        dest='save_interval_iters',
-        help='The interval iters for save a model snapshot',
+        '--save_interval',
+        dest='save_interval',
+        help='How many iters to save a model snapshot once during training.',
         type=int,
         default=1000)
     parser.add_argument(
@@ -124,7 +124,7 @@ def main(args):
         save_dir=args.save_dir,
         iters=cfg.iters,
         batch_size=cfg.batch_size,
-        save_interval_iters=args.save_interval_iters,
+        save_interval=args.save_interval,
         log_iters=args.log_iters,
         num_workers=args.num_workers,
         use_vdl=args.use_vdl,

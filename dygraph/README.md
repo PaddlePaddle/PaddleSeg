@@ -14,7 +14,7 @@ python3 train.py --model_name unet \
 --dataset OpticDiscSeg \
 --input_size 192 192 \
 --iters 10 \
---save_interval_iters 1 \
+--save_interval 1 \
 --do_eval \
 --save_dir output
 ```
