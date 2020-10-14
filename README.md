@@ -103,6 +103,7 @@ pip install -r requirements.txt
 * [Python预测](./deploy/python/)
 * [C++预测](./deploy/cpp/)
 * [Paddle-Lite移动端预测部署](./deploy/lite/)
+* [PaddleServing预测部署](./deploy/paddle-serving)
 
 
 ### 高级功能

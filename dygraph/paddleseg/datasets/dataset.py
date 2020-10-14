@@ -77,44 +77,45 @@ class Dataset(paddle.io.Dataset):
         self.ignore_index = ignore_index
 
         if mode.lower() not in ['train', 'val', 'test']:
-            raise Exception(
+            raise ValueError(
                 "mode should be 'train', 'val' or 'test', but got {}.".format(
                     mode))
 
         if self.transforms is None:
-            raise Exception("`transforms` is necessary, but it is None.")
+            raise ValueError("`transforms` is necessary, but it is None.")
 
         self.dataset_root = dataset_root
         if not os.path.exists(self.dataset_root):
-            raise Exception('there is not `dataset_root`: {}.'.format(
+            raise FileNotFoundError('there is not `dataset_root`: {}.'.format(
                 self.dataset_root))
 
         if mode == 'train':
             if train_path is None:
-                raise Exception(
+                raise ValueError(
                     'When `mode` is "train", `train_path` is necessary, but it is None.'
                 )
             elif not os.path.exists(train_path):
-                raise Exception(
+                raise FileNotFoundError(
                     '`train_path` is not found: {}'.format(train_path))
             else:
                 file_path = train_path
         elif mode == 'val':
             if val_path is None:
-                raise Exception(
+                raise ValueError(
                     'When `mode` is "val", `val_path` is necessary, but it is None.'
                 )
             elif not os.path.exists(val_path):
-                raise Exception('`val_path` is not found: {}'.format(val_path))
+                raise FileNotFoundError(
+                    '`val_path` is not found: {}'.format(val_path))
             else:
                 file_path = val_path
         else:
             if test_path is None:
-                raise Exception(
+                raise ValueError(
                     'When `mode` is "test", `test_path` is necessary, but it is None.'
                 )
             elif not os.path.exists(test_path):
-                raise Exception(
+                raise FileNotFoundError(
                     '`test_path` is not found: {}'.format(test_path))
             else:
                 file_path = test_path
@@ -124,7 +125,7 @@ class Dataset(paddle.io.Dataset):
                 items = line.strip().split(separator)
                 if len(items) != 2:
                     if mode == 'train' or mode == 'val':
-                        raise Exception(
+                        raise ValueError(
                             "File list format incorrect! In training or evaluation task it should be"
                             " image_name{}label_name\\n".format(separator))
                     image_path = os.path.join(self.dataset_root, items[0])
