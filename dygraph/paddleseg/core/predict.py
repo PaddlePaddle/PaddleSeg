@@ -72,7 +72,7 @@ def predict(model,
                 h, w = info[1][0], info[1][1]
                 pred = pred[0:h, 0:w]
             else:
-                raise Exception("Unexpected info '{}' in im_info".format(
+                raise ValueError("Unexpected info '{}' in im_info".format(
                     info[0]))
 
         # get the saved name

@@ -38,7 +38,7 @@ def load_entire_model(model, pretrained):
         if os.path.exists(pretrained):
             load_pretrained_model(model, pretrained)
         else:
-            raise Exception(
+            raise FileNotFoundError(
                 'Pretrained model is not found: {}'.format(pretrained))
     else:
         logger.warning('Not all pretrained params of {} are loaded, ' \

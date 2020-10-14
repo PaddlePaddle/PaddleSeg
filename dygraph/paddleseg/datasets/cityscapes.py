@@ -56,19 +56,19 @@ class Cityscapes(Dataset):
         self.ignore_index = 255
 
         if mode not in ['train', 'val', 'test']:
-            raise Exception(
+            raise ValueError(
                 "mode should be 'train', 'val' or 'test', but got {}.".format(
                     mode))
 
         if self.transforms is None:
-            raise Exception("`transforms` is necessary, but it is None.")
+            raise ValueError("`transforms` is necessary, but it is None.")
 
         img_dir = os.path.join(self.dataset_root, 'leftImg8bit')
         label_dir = os.path.join(self.dataset_root, 'gtFine')
         if self.dataset_root is None or not os.path.isdir(
                 self.dataset_root) or not os.path.isdir(
                     img_dir) or not os.path.isdir(label_dir):
-            raise Exception(
+            raise ValueError(
                 "The dataset is not Found or the folder structure is nonconfoumance."
             )
 
