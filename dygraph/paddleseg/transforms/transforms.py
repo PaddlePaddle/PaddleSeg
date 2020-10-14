@@ -111,7 +111,7 @@ class Resize:
                     format(target_size))
         else:
             raise TypeError(
-                "The type of `target_size` is invalid. It must be list or tuple, but now is {}"
+                "Type of `target_size` is invalid. It should be list or tuple, but it is {}"
                 .format(type(target_size)))
 
         self.target_size = target_size
@@ -269,7 +269,7 @@ class Padding:
                     format(target_size))
         else:
             raise TypeError(
-                "The type of `target_size` is invalid. It should be list or tuple, now is {}"
+                "Type of target_size is invalid. It should be list or tuple, now is {}"
                 .format(type(target_size)))
         self.target_size = target_size
         self.im_padding_value = im_padding_value
@@ -320,17 +320,17 @@ class Padding:
 @manager.TRANSFORMS.add_component
 class RandomPaddingCrop:
     def __init__(self,
-                 crop_size=512,
+                 crop_size=(512, 512),
                  im_padding_value=(127.5, 127.5, 127.5),
                  label_padding_value=255):
         if isinstance(crop_size, list) or isinstance(crop_size, tuple):
             if len(crop_size) != 2:
                 raise ValueError(
-                    'If the type of `crop_size` is list or tuple, it should include 2 elements, but it is {}'
+                    'Type of `crop_size` is list or tuple. It should include 2 elements, but it is {}'
                     .format(crop_size))
-        elif not isinstance(crop_size, int):
+        else:
             raise TypeError(
-                "The type of `crop_size` is invalid. It must be integer or list or tuple, but now it is {}"
+                "The type of `crop_size` is invalid. It should be list or tuple, but it is {}"
                 .format(type(crop_size)))
         self.crop_size = crop_size
         self.im_padding_value = im_padding_value
