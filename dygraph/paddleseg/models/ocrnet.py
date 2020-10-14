@@ -63,9 +63,9 @@ class OCRNet(nn.Layer):
     def forward(self, x):
         feats = self.backbone(x)
         feats = [feats[i] for i in self.backbone_indices]
-        preds = self.head(feats)
-        preds = [F.resize_bilinear(pred, x.shape[2:]) for pred in preds]
-        return preds
+        logit_list = self.head(feats)
+        logit_list = [F.resize_bilinear(logit, x.shape[2:]) for logit in logit_list]
+        return logit_list
 
 
 class OCRHead(nn.Layer):

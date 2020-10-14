@@ -65,11 +65,11 @@ class GCNet(nn.Layer):
 
         utils.load_entire_model(self, pretrained)
 
-    def forward(self, input):
-        feat_list = self.backbone(input)
+    def forward(self, x):
+        feat_list = self.backbone(x)
         logit_list = self.head(feat_list)
         return [
-            F.resize_bilinear(logit, input.shape[2:]) for logit in logit_list
+            F.resize_bilinear(logit, x.shape[2:]) for logit in logit_list
         ]
 
 

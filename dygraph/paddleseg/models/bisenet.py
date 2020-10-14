@@ -68,10 +68,10 @@ class BiSeNetV2(nn.Layer):
         logit4 = self.aux_head4(feat4)
         logit = self.head(self.bga(dfm, sfm))
 
-        logits = [logit, logit1, logit2, logit3, logit4]
-        logits = [F.resize_bilinear(logit, x.shape[2:]) for logit in logits]
+        logit_list = [logit, logit1, logit2, logit3, logit4]
+        logit_list = [F.resize_bilinear(logit, x.shape[2:]) for logit in logit_list]
 
-        return logits
+        return logit_list
 
     def init_weight(self, pretrained=None):
         """
