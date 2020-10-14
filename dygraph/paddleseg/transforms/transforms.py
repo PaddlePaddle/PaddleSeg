@@ -111,7 +111,7 @@ class Resize:
                     format(target_size))
         else:
             raise TypeError(
-                "Type of `target_size` is invalid. It should be list or tuple, now is {}"
+                "Type of `target_size` is invalid. It should be list or tuple, but it is {}"
                 .format(type(target_size)))
 
         self.target_size = target_size
@@ -330,7 +330,7 @@ class RandomPaddingCrop:
                     .format(crop_size))
         else:
             raise TypeError(
-                "The type of `crop_size` is invalid. It should be list or tuple, but now it is {}"
+                "The type of `crop_size` is invalid. It should be list or tuple, but it is {}"
                 .format(type(crop_size)))
         self.crop_size = crop_size
         self.im_padding_value = im_padding_value
