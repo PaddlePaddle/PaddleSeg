@@ -24,6 +24,19 @@ from paddleseg.transforms import functional
 
 @manager.TRANSFORMS.add_component
 class Compose:
+    """
+    Do transformation on input data with corresponding pre-processing and augmentation operations.
+    The shape of input data to all operations is [height, width, channels].
+
+    Args:
+        transforms (list): A list contains data pre-processing or augmentation.
+        to_rgb (bool, optional): If converting image to RGB color space. Default: True.
+
+    Raises:
+        TypeError: When 'transforms' is not a list.
+        ValueError: when the length of 'transforms' is less than 1.
+    """
+
     def __init__(self, transforms, to_rgb=True):
         if not isinstance(transforms, list):
             raise TypeError('The transforms must be a list!')
@@ -34,6 +47,18 @@ class Compose:
         self.to_rgb = to_rgb
 
     def __call__(self, im, im_info=None, label=None):
+        """
+        Args:
+            im (str|np.ndarray): It is either image path or image object.
+            im_info (dict, optional): A dictionary maintains image info before transformation. Default: None.
+                - im_info["shape_before_resize"] (tuple): the image reshape before resize, (h, w).
+                - im_info["shape_before_padding"] (tuple): the image reshape before padding, (h, w).
+            label (str/np.ndarray): It is either label path or label ndarray.
+
+        Returns:
+            tuple: A tuple including image, image info, and label after transformation.
+        """
+
         if im_info is None:
             im_info = list()
         if isinstance(im, str):
@@ -58,6 +83,13 @@ class Compose:
 
 @manager.TRANSFORMS.add_component
 class RandomHorizontalFlip:
+    """
+    Flip an image horizontally with a certain probability.
+
+    Args:
+        prob (float, optional): A probability of horizontally flipping. Default: 0.5.
+    """
+
     def __init__(self, prob=0.5):
         self.prob = prob
 
@@ -74,6 +106,13 @@ class RandomHorizontalFlip:
 
 @manager.TRANSFORMS.add_component
 class RandomVerticalFlip:
+    """
+    Flip an image vertically with a certain probability.
+
+    Args:
+        prob (float, optional): A probability of vertical flipping. Default: 0.1.
+    """
+
     def __init__(self, prob=0.1):
         self.prob = prob
 
@@ -90,6 +129,21 @@ class RandomVerticalFlip:
 
 @manager.TRANSFORMS.add_component
 class Resize:
+    """
+    Resize an image.
+
+    Args:
+        target_size (list|tuple, optional): the target size of image. Default: (512, 512).
+        interp (str, optional): The interpolation mode of resize is consistent with opencv.
+            ['NEAREST', 'LINEAR', 'CUBIC', 'AREA', 'LANCZOS4', 'RANDOM']. Note that when it is
+            'RANDOM', a random interpolation mode would be specified. Default: "LINEAR".
+
+    Raises:
+        TypeError: When 'target_size' type is neither list nor tuple.
+        ValueError: When "interp" is out of pre-defined methods ('NEAREST', 'LINEAR', 'CUBIC',
+        'AREA', 'LANCZOS4', 'RANDOM').
+    """
+
     # The interpolation mode
     interp_dict = {
         'NEAREST': cv2.INTER_NEAREST,
@@ -117,6 +171,21 @@ class Resize:
         self.target_size = target_size
 
     def __call__(self, im, im_info=None, label=None):
+        """
+        Args:
+            im (np.ndarray): The Image data.
+            im_info (dict, optional): A dictionary maintains image info before this transformation. Default: None.
+            label (np.ndarray, optional): The label data. Default: None.
+
+        Returns:
+            tuple: When label is None, it returns (im, im_info), otherwise it returns (im, im_info, label),
+                where im_info["shape_before_resize"] is updated to the size of the image before this transformation.
+
+        Raises:
+            TypeError: When the 'img' type is not numpy.
+            ValueError: When the length of "im" shape is not 3.
+        """
+
         if im_info is None:
             im_info = list()
         im_info.append(('resize', im.shape[:2]))
@@ -141,10 +210,26 @@ class Resize:
 
 @manager.TRANSFORMS.add_component
 class ResizeByLong:
+    """
+    Resize the long side of an image to given size, and then scale the other side proportionally.
+
+    Args:
+        long_size (int): The target size of long side.
+    """
     def __init__(self, long_size):
         self.long_size = long_size
 
     def __call__(self, im, im_info=None, label=None):
+        """
+        Args:
+            im (np.ndarray): The Image data.
+            im_info (dict, optional): A dictionary maintains image info before this transformation. Default: None.
+            label (np.ndarray, optional): The label data. Default: None.
+
+        Returns:
+            tuple: When label is None, it returns (im, im_info), otherwise it returns (im, im_info, label).
+        """
+
         if im_info is None:
             im_info = list()
 
@@ -162,6 +247,14 @@ class ResizeByLong:
 
 @manager.TRANSFORMS.add_component
 class ResizeRangeScaling:
+    """
+    Resize the long side of an image into a range, and then scale the other side proportionally.
+
+    Args:
+        min_value (int, optional): The minimum value of long side after resize. Default: 400.
+        max_value (int, optional): The maximum value of long side after resize. Default: 600.
+    """
+
     def __init__(self, min_value=400, max_value=600):
         if min_value > max_value:
             raise ValueError('min_value must be less than max_value, '
@@ -171,6 +264,16 @@ class ResizeRangeScaling:
         self.max_value = max_value
 
     def __call__(self, im, im_info=None, label=None):
+        """
+        Args:
+            im (np.ndarray): The Image data.
+            im_info (dict, optional): A dictionary maintains image info before this transformation. Default: None.
+            label (np.ndarray, optional): The label data. Default: None.
+
+        Returns:
+            tuple: When label is None, it returns (im, im_info), otherwise it returns (im, im_info, label).
+        """
+
         if self.min_value == self.max_value:
             random_size = self.max_value
         else:
@@ -189,6 +292,18 @@ class ResizeRangeScaling:
 
 @manager.TRANSFORMS.add_component
 class ResizeStepScaling:
+    """
+    Scale an image proportionally within a range.
+
+    Args:
+        min_scale_factor (float, optional): The minimum scale. Default: 0.75.
+        max_scale_factor (float, optional): the maximum scale. Default: 1.25.
+        scale_step_size (float, optional): The scale interval. Default: 0.25.
+
+    Raises:
+        ValueError: When min_scale_factor is smaller than max_scale_factor.
+    """
+
     def __init__(self,
                  min_scale_factor=0.75,
                  max_scale_factor=1.25,
@@ -203,6 +318,16 @@ class ResizeStepScaling:
         self.scale_step_size = scale_step_size
 
     def __call__(self, im, im_info=None, label=None):
+        """
+        Args:
+            im (np.ndarray): The Image data.
+            im_info (dict, optional): A dictionary maintains image info before this transformation. Default: None.
+            label (np.ndarray, optional): The label data. Default: None.
+
+        Returns:
+            tuple: When label is None, it returns (im, im_info), otherwise it returns (im, im_info, label).
+        """
+
         if self.min_scale_factor == self.max_scale_factor:
             scale_factor = self.min_scale_factor
 
@@ -233,6 +358,16 @@ class ResizeStepScaling:
 
 @manager.TRANSFORMS.add_component
 class Normalize:
+    """
+    Normalize an image.
+
+    Args:
+        mean (list, optional): The mean value of a data set. Default: [0.5, 0.5, 0.5].
+        std (list, optional): The standard deviation of a data set. Default: [0.5, 0.5, 0.5].
+
+    Raises:
+        ValueError: When mean/std is not list or any value in std is 0.
+    """
     def __init__(self, mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5)):
         self.mean = mean
         self.std = std
@@ -246,6 +381,16 @@ class Normalize:
             raise ValueError('{}: std is invalid!'.format(self))
 
     def __call__(self, im, im_info=None, label=None):
+        """
+        Args:
+            im (np.ndarray): The Image data.
+            im_info (dict, optional): A dictionary maintains image info before this transformation. Default: None.
+            label (np.ndarray, optional): The label data. Default: None.
+
+        Returns:
+            tuple: When label is None, it returns (im, im_info), otherwise it returns (im, im_info, label).
+        """
+
         mean = np.array(self.mean)[np.newaxis, np.newaxis, :]
         std = np.array(self.std)[np.newaxis, np.newaxis, :]
         im = functional.normalize(im, mean, std)
@@ -258,6 +403,20 @@ class Normalize:
 
 @manager.TRANSFORMS.add_component
 class Padding:
+    """
+    Add bottom-right padding to a raw image or annotation image.
+
+    Args:
+        target_size (list|tuple): The target size after padding.
+        im_padding_value (list, optional): The padding value of raw image.
+            Default: [127.5, 127.5, 127.5].
+        label_padding_value (int, optional): The padding value of annotation image. Default: 255.
+
+    Raises:
+        TypeError: When target_size is neither list nor tuple.
+        ValueError: When the length of target_size is not 2.
+    """
+
     def __init__(self,
                  target_size,
                  im_padding_value=(127.5, 127.5, 127.5),
@@ -276,6 +435,16 @@ class Padding:
         self.label_padding_value = label_padding_value
 
     def __call__(self, im, im_info=None, label=None):
+        """
+        Args:
+            im (np.ndarray): The Image data.
+            im_info (dict, optional): A dictionary maintains image info before this transformation. Default: None.
+            label (np.ndarray, optional): The label data. Default: None.
+
+        Returns:
+            tuple: When label is None, it returns (im, im_info), otherwise it returns (im, im_info, label),
+                where im_info["shape_before_padding"] is updated to the size of the image before this transformation.
+        """
         if im_info is None:
             im_info = list()
         im_info.append(('padding', im.shape[:2]))
@@ -319,6 +488,21 @@ class Padding:
 
 @manager.TRANSFORMS.add_component
 class RandomPaddingCrop:
+    """
+    Crop a sub-image from a raw image and annotation image randomly. If the target cropping size
+    is larger than original image, then the bottom-right padding will be added.
+
+    Args:
+        crop_size (tuple, optional): The target cropping size. Default: (512, 512).
+        im_padding_value (list, optional): The padding value of raw image.
+            Default: [127.5, 127.5, 127.5].
+        label_padding_value (int, optional): The padding value of annotation image. Default: 255.
+
+    Raises:
+        TypeError: When crop_size is neither list nor tuple.
+        ValueError: When the length of crop_size is not 2.
+    """
+
     def __init__(self,
                  crop_size=(512, 512),
                  im_padding_value=(127.5, 127.5, 127.5),
@@ -337,6 +521,16 @@ class RandomPaddingCrop:
         self.label_padding_value = label_padding_value
 
     def __call__(self, im, im_info=None, label=None):
+        """
+        Args:
+            im (np.ndarray): The Image data.
+            im_info (dict, optional): A dictionary maintains image info before this transformation. Default: None.
+            label (np.ndarray, optional): The label data. Default: None.
+
+        Returns:
+            tuple: When label is None, it returns (im, im_info), otherwise it returns (im, im_info, label).
+        """
+
         if isinstance(self.crop_size, int):
             crop_width = self.crop_size
             crop_height = self.crop_size
@@ -393,10 +587,27 @@ class RandomPaddingCrop:
 
 @manager.TRANSFORMS.add_component
 class RandomBlur:
+    """
+    Blurring an image by a Gaussian function with a certain probability.
+
+    Args:
+        prob (float, optional): A probability of blurring an image. Default: 0.1.
+    """
+
     def __init__(self, prob=0.1):
         self.prob = prob
 
     def __call__(self, im, im_info=None, label=None):
+        """
+        Args:
+            im (np.ndarray): The Image data.
+            im_info (dict, optional): A dictionary maintains image info before this transformation. Default: None.
+            label (np.ndarray, optional): The label data. Default: None.
+
+        Returns:
+            tuple: When label is None, it returns (im, im_info), otherwise it returns (im, im_info, label).
+        """
+
         if self.prob <= 0:
             n = 0
         elif self.prob >= 1:
@@ -420,6 +631,16 @@ class RandomBlur:
 
 @manager.TRANSFORMS.add_component
 class RandomRotation:
+    """
+    Rotate an image randomly with padding.
+
+    Args:
+        max_rotation (float, optional): The maximum rotation degree. Default: 15.
+        im_padding_value (list, optional): The padding value of raw image.
+            Default: [127.5, 127.5, 127.5].
+        label_padding_value (int, optional): The padding value of annotation image. Default: 255.
+    """
+
     def __init__(self,
                  max_rotation=15,
                  im_padding_value=(127.5, 127.5, 127.5),
@@ -429,6 +650,16 @@ class RandomRotation:
         self.label_padding_value = label_padding_value
 
     def __call__(self, im, im_info=None, label=None):
+        """
+        Args:
+            im (np.ndarray): The Image data.
+            im_info (dict, optional): A dictionary maintains image info before this transformation. Default: None.
+            label (np.ndarray, optional): The label data. Default: None.
+
+        Returns:
+            tuple: When label is None, it returns (im, im_info), otherwise it returns (im, im_info, label).
+        """
+
         if self.max_rotation > 0:
             (h, w) = im.shape[:2]
             do_rotation = np.random.uniform(-self.max_rotation,
@@ -468,11 +699,30 @@ class RandomRotation:
 
 @manager.TRANSFORMS.add_component
 class RandomScaleAspect:
+    """
+    Crop a sub-image from an original image with a range of area ratio and aspect and
+    then scale the sub-image back to the size of the original image.
+
+    Args:
+        min_scale (float, optional): The minimum area ratio of cropped image to the original image. Default: 0.5.
+        aspect_ratio (float, optional): the minimum aspect ratio. Default: 0.33.
+    """
+
     def __init__(self, min_scale=0.5, aspect_ratio=0.33):
         self.min_scale = min_scale
         self.aspect_ratio = aspect_ratio
 
     def __call__(self, im, im_info=None, label=None):
+        """
+        Args:
+            im (np.ndarray): The Image data.
+            im_info (dict, optional): A dictionary maintains image info before this transformation. Default: None.
+            label (np.ndarray, optional): The label data. Default: None.
+
+        Returns:
+            tuple: When label is None, it returns (im, im_info), otherwise it returns (im, im_info, label).
+        """
+
         if self.min_scale != 0 and self.aspect_ratio != 0:
             img_height = im.shape[0]
             img_width = im.shape[1]
@@ -510,6 +760,20 @@ class RandomScaleAspect:
 
 @manager.TRANSFORMS.add_component
 class RandomDistort:
+    """
+    Distort an image with random configurations.
+
+    Args:
+        brightness_range (float): A range of brightness. Default: 0.5.
+        brightness_prob (float): A probability of adjusting brightness. Default: 0.5.
+        contrast_range (float): A range of contrast. Default: 0.5.
+        contrast_prob (float): A probability of adjusting contrast. Default: 0.5.
+        saturation_range (float): A range of saturation. Default: 0.5.
+        saturation_prob (float): A probability of adjusting saturation. Default: 0.5.
+        hue_range (int): A range of hue. Default: 0.5.
+        hue_prob (float): A probability of adjusting hue. Default: 0.5.
+    """
+
     def __init__(self,
                  brightness_range=0.5,
                  brightness_prob=0.5,
@@ -529,6 +793,16 @@ class RandomDistort:
         self.hue_prob = hue_prob
 
     def __call__(self, im, im_info=None, label=None):
+        """
+        Args:
+            im (np.ndarray): The Image data.
+            im_info (dict, optional): A dictionary maintains image info before this transformation. Default: None.
+            label (np.ndarray, optional): The label data. Default: None.
+
+        Returns:
+            tuple: When label is None, it returns (im, im_info), otherwise it returns (im, im_info, label).
+        """
+
         brightness_lower = 1 - self.brightness_range
         brightness_upper = 1 + self.brightness_range
         contrast_lower = 1 - self.contrast_range

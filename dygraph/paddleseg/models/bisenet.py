@@ -23,6 +23,77 @@ from paddleseg.cvlibs import manager, param_init
 from paddleseg.models import layers
 
 
+@manager.MODELS.add_component
+class BiSeNetV2(nn.Layer):
+    """
+    The BiSeNet V2 implementation based on PaddlePaddle.
+
+    The original article refers to
+        Yu, Changqian, et al. "BiSeNet V2: Bilateral Network with Guided Aggregation for Real-time Semantic Segmentation"
+        (https://arxiv.org/abs/2004.02147)
+
+    Args:
+        num_classes(int): the unique number of target classes.
+        lambd(float): factor for controlling the size of semantic branch channels. Default to 0.25.
+        pretrained(str): the path or url of pretrained model. Default to None.
+    """
+
+    def __init__(self, num_classes, lambd=0.25, pretrained=None):
+        super(BiSeNetV2, self).__init__()
+
+        C1, C2, C3 = 64, 64, 128
+        db_channels = (C1, C2, C3)
+        C1, C3, C4, C5 = int(C1 * lambd), int(C3 * lambd), 64, 128
+        sb_channels = (C1, C3, C4, C5)
+        mid_channels = 128
+
+        self.db = DetailBranch(db_channels)
+        self.sb = SemanticBranch(sb_channels)
+
+        self.bga = BGA(mid_channels)
+        self.aux_head1 = SegHead(C1, C1, num_classes)
+        self.aux_head2 = SegHead(C3, C3, num_classes)
+        self.aux_head3 = SegHead(C4, C4, num_classes)
+        self.aux_head4 = SegHead(C5, C5, num_classes)
+        self.head = SegHead(mid_channels, mid_channels, num_classes)
+
+        self.init_weight(pretrained)
+
+    def forward(self, x):
+        dfm = self.db(x)
+        feat1, feat2, feat3, feat4, sfm = self.sb(x)
+        logit1 = self.aux_head1(feat1)
+        logit2 = self.aux_head2(feat2)
+        logit3 = self.aux_head3(feat3)
+        logit4 = self.aux_head4(feat4)
+        logit = self.head(self.bga(dfm, sfm))
+
+        logit_list = [logit, logit1, logit2, logit3, logit4]
+        logit_list = [F.resize_bilinear(logit, x.shape[2:]) for logit in logit_list]
+
+        return logit_list
+
+    def init_weight(self, pretrained=None):
+        """
+        Initialize the parameters of model parts.
+        Args:
+            pretrained ([str], optional): the path of pretrained model.. Defaults to None.
+        """
+        if pretrained is not None:
+            if os.path.exists(pretrained):
+                utils.load_entire_model(self, pretrained)
+            else:
+                raise Exception(
+                    'Pretrained model is not found: {}'.format(pretrained))
+        else:
+            for sublayer in self.sublayers():
+                if isinstance(sublayer, nn.Conv2d):
+                    param_init.msra_init(sublayer.weight)
+                elif isinstance(sublayer, (nn.BatchNorm, nn.SyncBatchNorm)):
+                    param_init.constant_init(sublayer.weight, value=1.0)
+                    param_init.constant_init(sublayer.bias, value=0.0)
+
+
 class StemBlock(nn.Layer):
     def __init__(self, in_dim, out_dim):
         super(StemBlock, self).__init__()
@@ -211,74 +282,3 @@ class SegHead(nn.Layer):
         conv1 = self.conv_3x3(x)
         conv2 = self.conv_1x1(conv1)
         return conv2
-
-
-@manager.MODELS.add_component
-class BiSeNetV2(nn.Layer):
-    """
-    The BiSeNet V2 implementation based on PaddlePaddle.
-
-    The original article refers to
-        Yu, Changqian, et al. "BiSeNet V2: Bilateral Network with Guided Aggregation for Real-time Semantic Segmentation"
-        (https://arxiv.org/abs/2004.02147)
-
-    Args:
-        num_classes(int): the unique number of target classes.
-        lambd(float): factor for controlling the size of semantic branch channels. Default to 0.25.
-        pretrained(str): the path or url of pretrained model. Default to None.
-    """
-
-    def __init__(self, num_classes, lambd=0.25, pretrained=None):
-        super(BiSeNetV2, self).__init__()
-
-        C1, C2, C3 = 64, 64, 128
-        db_channels = (C1, C2, C3)
-        C1, C3, C4, C5 = int(C1 * lambd), int(C3 * lambd), 64, 128
-        sb_channels = (C1, C3, C4, C5)
-        mid_channels = 128
-
-        self.db = DetailBranch(db_channels)
-        self.sb = SemanticBranch(sb_channels)
-
-        self.bga = BGA(mid_channels)
-        self.aux_head1 = SegHead(C1, C1, num_classes)
-        self.aux_head2 = SegHead(C3, C3, num_classes)
-        self.aux_head3 = SegHead(C4, C4, num_classes)
-        self.aux_head4 = SegHead(C5, C5, num_classes)
-        self.head = SegHead(mid_channels, mid_channels, num_classes)
-
-        self.init_weight(pretrained)
-
-    def forward(self, x):
-        dfm = self.db(x)
-        feat1, feat2, feat3, feat4, sfm = self.sb(x)
-        logit1 = self.aux_head1(feat1)
-        logit2 = self.aux_head2(feat2)
-        logit3 = self.aux_head3(feat3)
-        logit4 = self.aux_head4(feat4)
-        logit = self.head(self.bga(dfm, sfm))
-
-        logits = [logit, logit1, logit2, logit3, logit4]
-        logits = [F.resize_bilinear(logit, x.shape[2:]) for logit in logits]
-
-        return logits
-
-    def init_weight(self, pretrained=None):
-        """
-        Initialize the parameters of model parts.
-        Args:
-            pretrained ([str], optional): the path of pretrained model.. Defaults to None.
-        """
-        if pretrained is not None:
-            if os.path.exists(pretrained):
-                utils.load_entire_model(self, pretrained)
-            else:
-                raise FileNotFoundError(
-                    'Pretrained model is not found: {}'.format(pretrained))
-        else:
-            for sublayer in self.sublayers():
-                if isinstance(sublayer, nn.Conv2d):
-                    param_init.msra_init(sublayer.weight)
-                elif isinstance(sublayer, (nn.BatchNorm, nn.SyncBatchNorm)):
-                    param_init.constant_init(sublayer.weight, value=1.0)
-                    param_init.constant_init(sublayer.bias, value=0.0)

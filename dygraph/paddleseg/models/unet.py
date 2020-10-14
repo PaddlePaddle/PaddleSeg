@@ -51,10 +51,12 @@ class UNet(nn.Layer):
         utils.load_entire_model(self, pretrained)
 
     def forward(self, x):
+        logit_list = []
         x, short_cuts = self.encode(x)
         x = self.decode(x, short_cuts)
         logit = self.cls(x)
-        return [logit]
+        logit_list.append(logit)
+        return logit_list
 
 
 class Encoder(nn.Layer):
