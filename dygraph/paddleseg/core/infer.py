@@ -53,7 +53,7 @@ def infer(model, test_dataset=None, model_dir=None, save_dir='output'):
                 h, w = info[1][0], info[1][1]
                 pred = pred[0:h, 0:w]
             else:
-                raise Exception("Unexpected info '{}' in im_info".format(
+                raise ValueError("Unexpected info '{}' in im_info".format(
                     info[0]))
 
         im_file = im_path.replace(test_dataset.dataset_root, '')

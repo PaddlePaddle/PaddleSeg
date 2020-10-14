@@ -17,6 +17,7 @@ import paddle.nn.functional as F
 
 from paddleseg.cvlibs import manager
 from paddleseg.utils import utils
+from paddleseg.layers import layers
 
 __all__ = ["Xception41_deeplab", "Xception65_deeplab", "Xception71_deeplab"]
 
@@ -65,7 +66,7 @@ def gen_bottleneck_params(backbone='xception_65'):
             "exit_flow": (2, [2, 1], [[728, 1024, 1024], [1536, 1536, 2048]])
         }
     else:
-        raise Exception(
+        raise ValueError(
             "xception backbont only support xception_41/xception_65/xception_71"
         )
     return bottleneck_params
@@ -92,7 +93,7 @@ class ConvBNLayer(nn.Layer):
         self._bn = nn.SyncBatchNorm(
             num_features=output_channels, epsilon=1e-3, momentum=0.99)
 
-        self._act_op = activation.Activation(act=act)
+        self._act_op = layers.Activation(act=act)
 
     def forward(self, inputs):
         return self._act_op(self._bn(self._conv(inputs)))
@@ -118,9 +119,10 @@ class Seperate_Conv(nn.Layer):
             padding=(filter) // 2 * dilation,
             dilation=dilation,
             bias_attr=False)
-        self._bn1 = nn.SyncBatchNorm(input_channels, epsilon=1e-3, momentum=0.99)
+        self._bn1 = nn.SyncBatchNorm(
+            input_channels, epsilon=1e-3, momentum=0.99)
 
-        self._act_op1 = activation.Activation(act=act)
+        self._act_op1 = layers.Activation(act=act)
 
         self._conv2 = nn.Conv2d(
             input_channels,
@@ -130,9 +132,10 @@ class Seperate_Conv(nn.Layer):
             groups=1,
             padding=0,
             bias_attr=False)
-        self._bn2 = nn.SyncBatchNorm(output_channels, epsilon=1e-3, momentum=0.99)
+        self._bn2 = nn.SyncBatchNorm(
+            output_channels, epsilon=1e-3, momentum=0.99)
 
-        self._act_op2 = activation.Activation(act=act)
+        self._act_op2 = layers.Activation(act=act)
 
     def forward(self, inputs):
         x = self._conv1(inputs)

@@ -49,7 +49,7 @@ def evaluate(model, eval_dataset=None, iter_id=None):
                 h, w = info[1][0], info[1][1]
                 pred = pred[0:h, 0:w]
             else:
-                raise Exception("Unexpected info '{}' in im_info".format(
+                raise ValueError("Unexpected info '{}' in im_info".format(
                     info[0]))
         pred = pred[np.newaxis, :, :, np.newaxis]
         pred = pred.astype('int64')
