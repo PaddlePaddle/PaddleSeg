@@ -34,8 +34,7 @@ class DANet(nn.Layer):
         num_classes(int): the unique number of target classes.
         backbone(Paddle.nn.Layer): backbone network.
         backbone_indices(tuple): values in the tuple indicate the indices of
-                                 output of backbone. Only the last indice is
-                                 used.
+            output of backbone. Only the last index is used.
         pretrained(str): the path or url of pretrained model. Default to None.
     """
 

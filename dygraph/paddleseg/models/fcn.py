@@ -32,18 +32,18 @@ class FCN(nn.Layer):
     Args:
         num_classes (int): the unique number of target classes.
         backbone (paddle.nn.Layer): backbone networks.
-        pretrained (str): the path of pretrained model. Default: None
         backbone_indices (tuple): one values in the tuple indicte the indices of output of backbone. Default: (-1, ).
         channels (int): Channels after conv layer before the last one of FCNHead.
             If not set, it is set to the number of channels of input features. Default: None.
+        pretrained (str): the path of pretrained model. Default: None
     """
 
     def __init__(self,
                  num_classes,
                  backbone,
-                 pretrained=None,
                  backbone_indices=(-1, ),
-                 channels=None):
+                 channels=None,
+                 pretrained=None):
         super(FCN, self).__init__()
 
         self.backbone = backbone
