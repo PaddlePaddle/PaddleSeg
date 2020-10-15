@@ -166,7 +166,8 @@ class MobileNetV3(nn.Layer):
                 sublayer=self.block_list[-1], name="conv" + str(i + 2))
             inplanes = make_divisible(scale * c)
 
-        utils.load_pretrained_model(self, pretrained)
+        self.pretrained = pretrained
+        self.init_weight()
 
     def modify_bottle_params(self, output_stride=None):
 
@@ -193,6 +194,10 @@ class MobileNetV3(nn.Layer):
                 feat_list.append(x)
 
         return feat_list
+
+    def init_weight(self):
+        if self.pretrained is not None:
+            utils.load_pretrained_model(self, self.pretrained)
 
 
 class ConvBNLayer(nn.Layer):

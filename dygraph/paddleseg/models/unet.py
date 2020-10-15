@@ -48,7 +48,9 @@ class UNet(nn.Layer):
             kernel_size=3,
             stride=1,
             padding=1)
-        utils.load_entire_model(self, pretrained)
+
+        self.pretrained = pretrained
+        self.init_weight()
 
     def forward(self, x):
         logit_list = []
@@ -57,6 +59,10 @@ class UNet(nn.Layer):
         logit = self.cls(x)
         logit_list.append(logit)
         return logit_list
+
+    def init_weight(self):
+        if self.pretrained is not None:
+            utils.load_entire_model(self, self.pretrained)
 
 
 class Encoder(nn.Layer):

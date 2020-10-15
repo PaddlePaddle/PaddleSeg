@@ -58,14 +58,21 @@ class OCRNet(nn.Layer):
             ocr_mid_channels=ocr_mid_channels,
             ocr_key_channels=ocr_key_channels)
 
-        utils.load_entire_model(self, pretrained=pretrained)
+        self.pretrained = pretrained
+        self.init_weight()
 
     def forward(self, x):
         feats = self.backbone(x)
         feats = [feats[i] for i in self.backbone_indices]
         logit_list = self.head(feats)
-        logit_list = [F.resize_bilinear(logit, x.shape[2:]) for logit in logit_list]
+        logit_list = [
+            F.resize_bilinear(logit, x.shape[2:]) for logit in logit_list
+        ]
         return logit_list
+
+    def init_weight(self):
+        if self.pretrained is not None:
+            utils.load_entire_model(self, self.pretrained)
 
 
 class OCRHead(nn.Layer):
@@ -96,7 +103,8 @@ class OCRHead(nn.Layer):
             in_channels[self.indices[1]], ocr_mid_channels, 3, padding=1)
         self.cls_head = nn.Conv2d(ocr_mid_channels, self.num_classes, 1)
         self.aux_head = layers.AuxLayer(in_channels[self.indices[0]],
-                                        in_channels[self.indices[0]], self.num_classes)
+                                        in_channels[self.indices[0]],
+                                        self.num_classes)
         self.init_weight()
 
     def forward(self, feat_list):
@@ -208,7 +216,7 @@ class ObjectAttentionBlock(nn.Layer):
 
         # sim_map (n, h1*w1, h2*w2)
         sim_map = paddle.bmm(query, key)
-        sim_map = (self.key_channels ** -.5) * sim_map
+        sim_map = (self.key_channels**-.5) * sim_map
         sim_map = F.softmax(sim_map, axis=-1)
 
         # context from (n, h1*w1, key_channels) to (n , out_channels, h1, w1)

@@ -51,14 +51,21 @@ class DANet(nn.Layer):
 
         self.head = DAHead(num_classes=num_classes, in_channels=in_channels)
 
-        utils.load_entire_model(self, pretrained)
+        self.pretrained = pretrained
+        self.init_weight()
 
     def forward(self, x):
         feats = self.backbone(x)
         feats = [feats[i] for i in self.backbone_indices]
         logit_list = self.head(feats)
-        logit_list = [F.resize_bilinear(logit, x.shape[2:]) for logit in logit_list]
+        logit_list = [
+            F.resize_bilinear(logit, x.shape[2:]) for logit in logit_list
+        ]
         return logit_list
+
+    def init_weight(self):
+        if self.pretrained is not None:
+            utils.load_entire_model(self, self.pretrained)
 
 
 class DAHead(nn.Layer):
