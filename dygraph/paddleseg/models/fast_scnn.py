@@ -38,7 +38,7 @@ class FastSCNN(nn.Layer):
         num_classes (int): The unique number of target classes.
         enable_auxiliary_loss (bool, optional): A bool value indicates whether adding auxiliary loss.
             If true, auxiliary loss will be added after LearningToDownsample module. Default: False.
-        pretrained (str, optional): The path of pretrained model. Default: None.
+        pretrained (str, optional): The path or url of pretrained model. Default: None.
     """
 
     def __init__(self, num_classes, enable_auxiliary_loss=True,

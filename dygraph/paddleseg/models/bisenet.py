@@ -29,8 +29,8 @@ class BiSeNetV2(nn.Layer):
     The BiSeNet V2 implementation based on PaddlePaddle.
 
     The original article refers to
-        Yu, Changqian, et al. "BiSeNet V2: Bilateral Network with Guided Aggregation for Real-time Semantic Segmentation"
-        (https://arxiv.org/abs/2004.02147)
+    Yu, Changqian, et al. "BiSeNet V2: Bilateral Network with Guided Aggregation for Real-time Semantic Segmentation"
+    (https://arxiv.org/abs/2004.02147)
 
     Args:
         num_classes (int): The unique number of target classes.
