@@ -43,7 +43,7 @@ class DANet(nn.Layer):
                  backbone,
                  backbone_indices=None,
                  pretrained=None):
-        super(DANet, self).__init__()
+        super().__init__()
 
         self.backbone = backbone
         self.backbone_indices = backbone_indices
@@ -71,7 +71,7 @@ class DAHead(nn.Layer):
     """
 
     def __init__(self, num_classes, in_channels=None):
-        super(DAHead, self).__init__()
+        super().__init__()
         in_channels = in_channels[-1]
         inter_channels = in_channels // 4
 
@@ -116,7 +116,7 @@ class PAM(nn.Layer):
     """Position attention module"""
 
     def __init__(self, in_channels):
-        super(PAM, self).__init__()
+        super().__init__()
         mid_channels = in_channels // 8
 
         self.query_conv = nn.Conv2d(in_channels, mid_channels, 1, 1)
@@ -160,7 +160,7 @@ class CAM(nn.Layer):
     """Channel attention module"""
 
     def __init__(self):
-        super(CAM, self).__init__()
+        super().__init__()
 
         self.gamma = self.create_parameter(
             shape=[1],
