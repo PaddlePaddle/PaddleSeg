@@ -1,0 +1,6 @@
+_base_: '../_base_/optic_disc_seg.yml'
+
+model:
+  type: UNet
+  num_classes: 2
+  pretrained: Null
