@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import paddle
 import paddle.nn as nn
 import paddle.nn.functional as F
 
@@ -33,18 +32,18 @@ class FCN(nn.Layer):
     Args:
         num_classes (int): the unique number of target classes.
         backbone (paddle.nn.Layer): backbone networks.
-        pretrained (str): the path of pretrained model. Default: None
         backbone_indices (tuple): one values in the tuple indicte the indices of output of backbone. Default: (-1, ).
         channels (int): Channels after conv layer before the last one of FCNHead.
             If not set, it is set to the number of channels of input features. Default: None.
+        pretrained (str): the path of pretrained model. Default: None
     """
 
     def __init__(self,
                  num_classes,
                  backbone,
-                 pretrained=None,
-                 backbone_indices=(-1,),
-                 channels=None):
+                 backbone_indices=(-1, ),
+                 channels=None,
+                 pretrained=None):
         super(FCN, self).__init__()
 
         self.backbone = backbone
@@ -56,11 +55,11 @@ class FCN(nn.Layer):
                             channels)
         utils.load_entire_model(self, pretrained)
 
-    def forward(self, input):
-        feat_list = self.backbone(input)
+    def forward(self, x):
+        feat_list = self.backbone(x)
         logit_list = self.head(feat_list)
         return [
-            F.resize_bilinear(logit, input.shape[2:]) for logit in logit_list
+            F.resize_bilinear(logit, x.shape[2:]) for logit in logit_list
         ]
 
 
@@ -80,8 +79,8 @@ class FCNHead(nn.Layer):
 
     def __init__(self,
                  num_classes,
-                 backbone_indices=(-1,),
-                 backbone_channels=(270,),
+                 backbone_indices=(-1, ),
+                 backbone_channels=(270, ),
                  channels=None):
         super(FCNHead, self).__init__()
 

@@ -15,6 +15,7 @@
 from . import logger
 from . import download
 from .metrics import ConfusionMatrix
+from .env import seg_env, get_sys_env
 from .utils import *
 from .timer import Timer, calculate_eta
-from .get_environ_info import get_environ_info
+from .visualize import visualize

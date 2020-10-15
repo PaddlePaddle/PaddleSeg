@@ -19,7 +19,7 @@ import paddle
 
 from paddleseg.cvlibs import manager, Config
 from paddleseg.utils import get_sys_env, logger
-from paddleseg.core import evaluate
+from paddleseg.core import predict
 
 
 def parse_args():
@@ -34,8 +34,48 @@ def parse_args():
         help='The path of model for evaluation',
         type=str,
         default=None)
+    parser.add_argument(
+        '--image_path',
+        dest='image_path',
+        help=
+        'The path of image, it can be a file or a directory including images',
+        type=str,
+        default=None)
+    parser.add_argument(
+        '--save_dir',
+        dest='save_dir',
+        help='The directory for saving the predicted results',
+        type=str,
+        default='./output/result')
 
     return parser.parse_args()
+
+
+def get_image_list(image_path):
+    """get image list"""
+    valid_suffix = [
+        '.JPEG', '.jpeg', '.JPG', '.jpg', '.BMP', '.bmp', '.PNG', '.png'
+    ]
+    image_list = []
+    image_dir = None
+    if os.path.isfile(image_path):
+        if os.path.splitext(image_path)[-1] in valid_suffix:
+            image_list.append(image_path)
+    elif os.path.isdir(image_path):
+        image_dir = image_path
+        for root, dirs, files in os.walk(image_path):
+            for f in files:
+                if os.path.splitext(f)[-1] in valid_suffix:
+                    image_list.append(os.path.join(root, f))
+    else:
+        raise FileNotFoundError(
+            '`--image_path` is not found. it should be an image file or a directory including images'
+        )
+
+    if len(image_list) == 0:
+        raise RuntimeError('There are not image file in `--image_path`')
+
+    return image_list, image_dir
 
 
 def main(args):
@@ -61,11 +101,16 @@ def main(args):
     logger.info(msg)
 
     model = cfg.model
-    ckpt_path = os.path.join(args.model_dir, 'model')
-    para_state_dict, opti_state_dict = paddle.load(ckpt_path)
-    model.set_dict(para_state_dict)
+    transforms = val_dataset.transforms
+    image_list, image_dir = get_image_list(args.image_path)
 
-    evaluate(model, val_dataset)
+    predict(
+        model,
+        model_dir=args.model_dir,
+        transforms=transforms,
+        image_list=image_list,
+        image_dir=image_dir,
+        save_dir=args.save_dir)
 
 
 if __name__ == '__main__':

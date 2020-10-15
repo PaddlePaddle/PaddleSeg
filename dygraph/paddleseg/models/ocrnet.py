@@ -21,6 +21,107 @@ from paddleseg.cvlibs import manager, param_init
 from paddleseg.models import layers
 
 
+@manager.MODELS.add_component
+class OCRNet(nn.Layer):
+    """
+    The OCRNet implementation based on PaddlePaddle.
+    The original article refers to
+        Yuan, Yuhui, et al. "Object-Contextual Representations for Semantic Segmentation"
+        (https://arxiv.org/pdf/1909.11065.pdf)
+    Args:
+        num_classes(int): the unique number of target classes.
+        backbone(Paddle.nn.Layer): backbone network.
+        backbone_indices(tuple): two values in the tuple indicate the indices of output of backbone.
+                        the first index will be taken as a deep-supervision feature in auxiliary layer;
+                        the second one will be taken as input of pixel representation.
+        ocr_mid_channels(int): the number of middle channels in OCRHead.
+        ocr_key_channels(int): the number of key channels in ObjectAttentionBlock.
+        pretrained(str): the path or url of pretrained model. Default to None.
+    """
+
+    def __init__(self,
+                 num_classes,
+                 backbone,
+                 backbone_indices=None,
+                 ocr_mid_channels=512,
+                 ocr_key_channels=256,
+                 pretrained=None):
+        super(OCRNet, self).__init__()
+
+        self.backbone = backbone
+        self.backbone_indices = backbone_indices
+        in_channels = [self.backbone.feat_channels[i] for i in backbone_indices]
+
+        self.head = OCRHead(
+            num_classes=num_classes,
+            in_channels=in_channels,
+            ocr_mid_channels=ocr_mid_channels,
+            ocr_key_channels=ocr_key_channels)
+
+        utils.load_entire_model(self, pretrained=pretrained)
+
+    def forward(self, x):
+        feats = self.backbone(x)
+        feats = [feats[i] for i in self.backbone_indices]
+        logit_list = self.head(feats)
+        logit_list = [F.resize_bilinear(logit, x.shape[2:]) for logit in logit_list]
+        return logit_list
+
+
+class OCRHead(nn.Layer):
+    """
+    The Object contextual representation head.
+    Args:
+        num_classes(int): the unique number of target classes.
+        in_channels(tuple): the number of input channels.
+        ocr_mid_channels(int): the number of middle channels in OCRHead.
+        ocr_key_channels(int): the number of key channels in ObjectAttentionBlock.
+    """
+
+    def __init__(self,
+                 num_classes,
+                 in_channels=None,
+                 ocr_mid_channels=512,
+                 ocr_key_channels=256):
+        super(OCRHead, self).__init__()
+
+        self.num_classes = num_classes
+        self.spatial_gather = SpatialGatherBlock()
+        self.spatial_ocr = SpatialOCRModule(ocr_mid_channels, ocr_key_channels,
+                                            ocr_mid_channels)
+
+        self.indices = [-2, -1] if len(in_channels) > 1 else [-1, -1]
+
+        self.conv3x3_ocr = layers.ConvBNReLU(
+            in_channels[self.indices[1]], ocr_mid_channels, 3, padding=1)
+        self.cls_head = nn.Conv2d(ocr_mid_channels, self.num_classes, 1)
+        self.aux_head = layers.AuxLayer(in_channels[self.indices[0]],
+                                        in_channels[self.indices[0]], self.num_classes)
+        self.init_weight()
+
+    def forward(self, feat_list):
+        feat_shallow, feat_deep = feat_list[self.indices[0]], feat_list[
+            self.indices[1]]
+
+        soft_regions = self.aux_head(feat_shallow)
+        pixels = self.conv3x3_ocr(feat_deep)
+
+        object_regions = self.spatial_gather(pixels, soft_regions)
+        ocr = self.spatial_ocr(pixels, object_regions)
+
+        logit = self.cls_head(ocr)
+        return [logit, soft_regions]
+
+    def init_weight(self):
+        """Initialize the parameters of model parts."""
+        for sublayer in self.sublayers():
+            if isinstance(sublayer, nn.Conv2d):
+                param_init.normal_init(sublayer.weight, scale=0.001)
+            elif isinstance(sublayer, (nn.BatchNorm, nn.SyncBatchNorm)):
+                param_init.constant_init(sublayer.weight, value=1.0)
+                param_init.constant_init(sublayer.bias, value=0.0)
+
+
 class SpatialGatherBlock(nn.Layer):
     """Aggregation layer to compute the pixel-region representation"""
 
@@ -117,104 +218,3 @@ class ObjectAttentionBlock(nn.Layer):
         context = self.f_up(context)
 
         return context
-
-
-class OCRHead(nn.Layer):
-    """
-    The Object contextual representation head.
-    Args:
-        num_classes(int): the unique number of target classes.
-        in_channels(tuple): the number of input channels.
-        ocr_mid_channels(int): the number of middle channels in OCRHead.
-        ocr_key_channels(int): the number of key channels in ObjectAttentionBlock.
-    """
-
-    def __init__(self,
-                 num_classes,
-                 in_channels=None,
-                 ocr_mid_channels=512,
-                 ocr_key_channels=256):
-        super(OCRHead, self).__init__()
-
-        self.num_classes = num_classes
-        self.spatial_gather = SpatialGatherBlock()
-        self.spatial_ocr = SpatialOCRModule(ocr_mid_channels, ocr_key_channels,
-                                            ocr_mid_channels)
-
-        self.indices = [-2, -1] if len(in_channels) > 1 else [-1, -1]
-
-        self.conv3x3_ocr = layers.ConvBNReLU(
-            in_channels[self.indices[1]], ocr_mid_channels, 3, padding=1)
-        self.cls_head = nn.Conv2d(ocr_mid_channels, self.num_classes, 1)
-        self.aux_head = layers.AuxLayer(in_channels[self.indices[0]],
-                                        in_channels[self.indices[0]], self.num_classes)
-        self.init_weight()
-
-    def forward(self, feat_list):
-        feat_shallow, feat_deep = feat_list[self.indices[0]], feat_list[
-            self.indices[1]]
-
-        soft_regions = self.aux_head(feat_shallow)
-        pixels = self.conv3x3_ocr(feat_deep)
-
-        object_regions = self.spatial_gather(pixels, soft_regions)
-        ocr = self.spatial_ocr(pixels, object_regions)
-
-        logit = self.cls_head(ocr)
-        return [logit, soft_regions]
-
-    def init_weight(self):
-        """Initialize the parameters of model parts."""
-        for sublayer in self.sublayers():
-            if isinstance(sublayer, nn.Conv2d):
-                param_init.normal_init(sublayer.weight, scale=0.001)
-            elif isinstance(sublayer, (nn.BatchNorm, nn.SyncBatchNorm)):
-                param_init.constant_init(sublayer.weight, value=1.0)
-                param_init.constant_init(sublayer.bias, value=0.0)
-
-
-@manager.MODELS.add_component
-class OCRNet(nn.Layer):
-    """
-    The OCRNet implementation based on PaddlePaddle.
-    The original article refers to
-        Yuan, Yuhui, et al. "Object-Contextual Representations for Semantic Segmentation"
-        (https://arxiv.org/pdf/1909.11065.pdf)
-    Args:
-        num_classes(int): the unique number of target classes.
-        backbone(Paddle.nn.Layer): backbone network.
-        backbone_indices(tuple): two values in the tuple indicate the indices of output of backbone.
-                        the first index will be taken as a deep-supervision feature in auxiliary layer;
-                        the second one will be taken as input of pixel representation.
-        ocr_mid_channels(int): the number of middle channels in OCRHead.
-        ocr_key_channels(int): the number of key channels in ObjectAttentionBlock.
-        pretrained(str): the path or url of pretrained model. Default to None.
-    """
-
-    def __init__(self,
-                 num_classes,
-                 backbone,
-                 backbone_indices=None,
-                 ocr_mid_channels=512,
-                 ocr_key_channels=256,
-                 pretrained=None):
-        super(OCRNet, self).__init__()
-
-        self.backbone = backbone
-        self.backbone_indices = backbone_indices
-        in_channels = [self.backbone.feat_channels[i] for i in backbone_indices]
-
-        self.head = OCRHead(
-            num_classes=num_classes,
-            in_channels=in_channels,
-            ocr_mid_channels=ocr_mid_channels,
-            ocr_key_channels=ocr_key_channels)
-
-        utils.load_entire_model(self, pretrained=pretrained)
-
-    def forward(self, x):
-        feats = self.backbone(x)
-        feats = [feats[i] for i in self.backbone_indices]
-        preds = self.head(feats)
-        preds = [F.resize_bilinear(pred, x.shape[2:]) for pred in preds]
-        return preds

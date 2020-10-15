@@ -14,12 +14,12 @@
 
 import glob
 import os
+import platform
 import subprocess
 import sys
 
 import cv2
 import paddle
-from paddle.distributed import ParallelEnv
 
 IS_WINDOWS = sys.platform == 'win32'
 
@@ -77,40 +77,36 @@ def _get_gpu_info():
     return gpu_info
 
 
-def get_environ_info():
+def get_sys_env():
     """collect environment information"""
     env_info = {}
-    env_info['System Platform'] = sys.platform
-    if env_info['System Platform'] == 'linux':
-        try:
-            lsb_v = subprocess.check_output(['lsb_release',
-                                             '-v']).decode().strip()
-            lsb_v = lsb_v.replace('\t', ' ')
-            lsb_d = subprocess.check_output(['lsb_release',
-                                             '-d']).decode().strip()
-            lsb_d = lsb_d.replace('\t', ' ')
-            env_info['LSB'] = [lsb_v, lsb_d]
-        except:
-            pass
+    env_info['platform'] = platform.platform()
 
     env_info['Python'] = sys.version.replace('\n', '')
 
-    # todo is_compiled_with_cuda() has not been moved
+    # TODO is_compiled_with_cuda() has not been moved
     compiled_with_cuda = paddle.fluid.is_compiled_with_cuda()
     env_info['Paddle compiled with cuda'] = compiled_with_cuda
 
     if compiled_with_cuda:
         cuda_home = _find_cuda_home()
         env_info['NVCC'] = _get_nvcc_info(cuda_home)
-        gpu_nums = ParallelEnv().nranks
+        # refer to https://github.com/PaddlePaddle/Paddle/blob/95e1434bb2fc8fd43a519cfa60ae36845a0cf2ef/paddle/fluid/platform/device_context.cc#L329
+        v = paddle.get_cudnn_version()
+        v = str(v // 1000) + '.' + str(v % 1000 // 100)
+        env_info['cudnn'] = v
+        gpu_nums = paddle.distributed.ParallelEnv().nranks
         env_info['GPUs used'] = gpu_nums
         env_info['CUDA_VISIBLE_DEVICES'] = os.environ.get(
             'CUDA_VISIBLE_DEVICES')
         env_info['GPU'] = _get_gpu_info()
 
-    gcc = subprocess.check_output(['gcc', '--version']).decode()
-    gcc = gcc.strip().split('\n')[0]
-    env_info['GCC'] = gcc
+    try:
+        gcc = subprocess.check_output(['gcc', '--version']).decode()
+        gcc = gcc.strip().split('\n')[0]
+        env_info['GCC'] = gcc
+    except:
+        pass
 
     env_info['PaddlePaddle'] = paddle.__version__
     env_info['OpenCV'] = cv2.__version__

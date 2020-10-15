@@ -27,102 +27,116 @@ class Dataset(paddle.io.Dataset):
     """Pass in a custom dataset that conforms to the format.
 
     Args:
-        dataset_root: The dataset directory.
-        num_classes: Number of classes.
-        mode: which part of dataset to use. it is one of ('train', 'val', 'test'). Default: 'train'.
-        train_list: The train dataset file. When image_set is 'train', train_list is necessary.
-            The contents of train_list file are as follow:
+        transforms (list): Transforms for image.
+        dataset_root (str): The dataset directory.
+        num_classes (int): Number of classes.
+        mode (str): which part of dataset to use. it is one of ('train', 'val', 'test'). Default: 'train'.
+        train_path (str): The train dataset file. When mode is 'train', train_path is necessary.
+            The contents of train_path file are as follow:
             image1.jpg ground_truth1.png
             image2.jpg ground_truth2.png
-        val_list: The evaluation dataset file. When image_set is 'val', val_list is necessary.
-            The contents is the same as train_list
-        test_list: The test dataset file. When image_set is 'test', test_list is necessary.
-            The annotation file is not necessary in test_list file.
-        separator: The separator of dataset list. Default: ' '.
-        transforms: Transforms for image.
+        val_path (str): The evaluation dataset file. When mode is 'val', val_path is necessary.
+            The contents is the same as train_path
+        test_path (str): The test dataset file. When mode is 'test', test_path is necessary.
+            The annotation file is not necessary in test_path file.
+        separator (str): The separator of dataset list. Default: ' '.
 
         Examples:
-            todo
+
+            import paddleseg.transforms as T
+            from paddleseg.datasets import Dataset
+
+            transforms = [T.RandomPaddingCrop(crop_size=(512,512)), T.Normalize()]
+            dataset_root = 'dataset_root_path'
+            train_path = 'train_path'
+            num_classes = 2
+            dataset = Dataset(transforms = transforms,
+                              dataset_root = dataset_root,
+                              num_classes = 2,
+                              train_path = train_path,
+                              mode = 'train')
 
     """
 
     def __init__(self,
+                 transforms,
                  dataset_root,
                  num_classes,
                  mode='train',
-                 train_list=None,
-                 val_list=None,
-                 test_list=None,
+                 train_path=None,
+                 val_path=None,
+                 test_path=None,
                  separator=' ',
-                 transforms=None,
                  ignore_index=255):
         self.dataset_root = dataset_root
         self.transforms = Compose(transforms)
         self.file_list = list()
+        mode = mode.lower()
         self.mode = mode
         self.num_classes = num_classes
         self.ignore_index = ignore_index
 
         if mode.lower() not in ['train', 'val', 'test']:
-            raise Exception(
+            raise ValueError(
                 "mode should be 'train', 'val' or 'test', but got {}.".format(
                     mode))
 
         if self.transforms is None:
-            raise Exception("`transforms` is necessary, but it is None.")
+            raise ValueError("`transforms` is necessary, but it is None.")
 
         self.dataset_root = dataset_root
         if not os.path.exists(self.dataset_root):
-            raise Exception('there is not `dataset_root`: {}.'.format(
+            raise FileNotFoundError('there is not `dataset_root`: {}.'.format(
                 self.dataset_root))
 
         if mode == 'train':
-            if train_list is None:
-                raise Exception(
-                    'When `mode` is "train", `train_list` is necessary, but it is None.'
+            if train_path is None:
+                raise ValueError(
+                    'When `mode` is "train", `train_path` is necessary, but it is None.'
                 )
-            elif not os.path.exists(train_list):
-                raise Exception(
-                    '`train_list` is not found: {}'.format(train_list))
+            elif not os.path.exists(train_path):
+                raise FileNotFoundError(
+                    '`train_path` is not found: {}'.format(train_path))
             else:
-                file_list = train_list
+                file_path = train_path
         elif mode == 'val':
-            if val_list is None:
-                raise Exception(
-                    'When `mode` is "val", `val_list` is necessary, but it is None.'
+            if val_path is None:
+                raise ValueError(
+                    'When `mode` is "val", `val_path` is necessary, but it is None.'
                 )
-            elif not os.path.exists(val_list):
-                raise Exception('`val_list` is not found: {}'.format(val_list))
+            elif not os.path.exists(val_path):
+                raise FileNotFoundError(
+                    '`val_path` is not found: {}'.format(val_path))
             else:
-                file_list = val_list
+                file_path = val_path
         else:
-            if test_list is None:
-                raise Exception(
-                    'When `mode` is "test", `test_list` is necessary, but it is None.'
+            if test_path is None:
+                raise ValueError(
+                    'When `mode` is "test", `test_path` is necessary, but it is None.'
                 )
-            elif not os.path.exists(test_list):
-                raise Exception(
-                    '`test_list` is not found: {}'.format(test_list))
+            elif not os.path.exists(test_path):
+                raise FileNotFoundError(
+                    '`test_path` is not found: {}'.format(test_path))
             else:
-                file_list = test_list
+                file_path = test_path
 
-        with open(file_list, 'r') as f:
+        with open(file_path, 'r') as f:
             for line in f:
                 items = line.strip().split(separator)
                 if len(items) != 2:
                     if mode == 'train' or mode == 'val':
-                        raise Exception(
+                        raise ValueError(
                             "File list format incorrect! In training or evaluation task it should be"
                             " image_name{}label_name\\n".format(separator))
                     image_path = os.path.join(self.dataset_root, items[0])
-                    grt_path = None
+                    label_path = None
                 else:
                     image_path = os.path.join(self.dataset_root, items[0])
-                    grt_path = os.path.join(self.dataset_root, items[1])
-                self.file_list.append([image_path, grt_path])
+                    label_path = os.path.join(self.dataset_root, items[1])
+                self.file_list.append([image_path, label_path])
 
     def __getitem__(self, idx):
-        image_path, grt_path = self.file_list[idx]
+        image_path, label_path = self.file_list[idx]
         if self.mode == 'test':
             im, im_info, _ = self.transforms(im=image_path)
             im = im[np.newaxis, ...]
@@ -130,11 +144,12 @@ class Dataset(paddle.io.Dataset):
         elif self.mode == 'val':
             im, im_info, _ = self.transforms(im=image_path)
             im = im[np.newaxis, ...]
-            label = np.asarray(Image.open(grt_path))
+            label = np.asarray(Image.open(label_path))
             label = label[np.newaxis, np.newaxis, :, :]
             return im, im_info, label
         else:
-            im, im_info, label = self.transforms(im=image_path, label=grt_path)
+            im, im_info, label = self.transforms(
+                im=image_path, label=label_path)
             return im, label
 
     def __len__(self):

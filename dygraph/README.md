@@ -53,6 +53,17 @@ cd PaddleSeg/dygpraph
 pip install -r requirements.txt
 ```
 
+## 训练
+```
+python3 train.py --model_name unet \
+--dataset OpticDiscSeg \
+--input_size 192 192 \
+--iters 10 \
+--save_interval 1 \
+--do_eval \
+--save_dir output
+```
+
 ## 使用教程
 
 * [快速入门](./docs/quick_start.md)

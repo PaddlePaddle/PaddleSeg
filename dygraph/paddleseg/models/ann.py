@@ -69,11 +69,11 @@ class ANN(nn.Layer):
 
         utils.load_entire_model(self, pretrained)
 
-    def forward(self, input):
-        feat_list = self.backbone(input)
+    def forward(self, x):
+        feat_list = self.backbone(x)
         logit_list = self.head(feat_list)
         return [
-            F.resize_bilinear(logit, input.shape[2:]) for logit in logit_list
+            F.resize_bilinear(logit, x.shape[2:]) for logit in logit_list
         ]
 
 
@@ -247,13 +247,13 @@ class APNB(nn.Layer):
             kernel_size=1)
         self.dropout_prob = dropout_prob
 
-    def forward(self, feats):
-        priors = [stage(feats) for stage in self.stages]
+    def forward(self, x):
+        priors = [stage(x) for stage in self.stages]
         context = priors[0]
         for i in range(1, len(priors)):
             context += priors[i]
 
-        output = self.conv_bn(paddle.concat([context, feats], axis=1))
+        output = self.conv_bn(paddle.concat([context, x], axis=1))
         output = F.dropout(output, p=self.dropout_prob)  # dropout_prob
 
         return output
