@@ -6,16 +6,16 @@
 
 |模型\骨干网络|ResNet50|ResNet101|HRNetw18|HRNetw48|
 |-|-|-|-|-|
-|ANN|√|√|||
+|ANN|✔|✔|||
 |BiSeNetv2|-|-|-|-|
-|DANet|√|√|||
-|Deeplabv3|√|√|||
-|Deeplabv3p|√|√|||
+|DANet|✔|✔|||
+|Deeplabv3|✔|✔|||
+|Deeplabv3p|✔|✔|||
 |Fast-SCNN|-|-|-|-|
-|FCN|||√|√|
-|GCNet|√|√|||
+|FCN|||✔|✔|
+|GCNet|✔|✔|||
 |[OCRNet](https://github.com/nepeplwu/PaddleSeg/blob/develop/dygraph/configs/ocrnet/)|||√|√|
-|PSPNet|√|√|||
+|PSPNet|☑|☑|||
 |UNet|-|-|-|-|
 
 ## 数据集
