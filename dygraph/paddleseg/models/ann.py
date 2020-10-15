@@ -164,7 +164,7 @@ class ANNHead(nn.Layer):
 
 class AFNB(nn.Layer):
     """
-    Asymmetric Fusion Non-local Block
+    Asymmetric Fusion Non-local Block.
 
     Args:
         low_in_channels (int): Low-level-feature channels.
@@ -214,7 +214,7 @@ class AFNB(nn.Layer):
 
 class APNB(nn.Layer):
     """
-    Asymmetric Pyramid Non-local Block
+    Asymmetric Pyramid Non-local Block.
 
     Args:
         in_channels (int): The input channels of APNB module.

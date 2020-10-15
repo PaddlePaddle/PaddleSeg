@@ -31,17 +31,17 @@ class DANet(nn.Layer):
         (https://arxiv.org/pdf/1809.02983.pdf)
 
     Args:
-        num_classes(int): the unique number of target classes.
-        backbone(Paddle.nn.Layer): backbone network.
-        backbone_indices(tuple): values in the tuple indicate the indices of
-            output of backbone. Only the last index is used.
-        pretrained(str): the path or url of pretrained model. Default to None.
+        num_classes (int): The unique number of target classes.
+        backbone (Paddle.nn.Layer): A backbone network.
+        backbone_indices (tuple): The values in the tuple indicate the indices of
+            output of backbone.
+        pretrained (str, optional): The path or url of pretrained model. Default: None.
     """
 
     def __init__(self,
                  num_classes,
                  backbone,
-                 backbone_indices=None,
+                 backbone_indices,
                  pretrained=None):
         super().__init__()
 
