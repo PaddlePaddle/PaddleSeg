@@ -27,8 +27,8 @@ class DANet(nn.Layer):
     The DANet implementation based on PaddlePaddle.
 
     The original article refers to
-        Fu, jun, et al. "Dual Attention Network for Scene Segmentation"
-        (https://arxiv.org/pdf/1809.02983.pdf)
+    Fu, jun, et al. "Dual Attention Network for Scene Segmentation"
+    (https://arxiv.org/pdf/1809.02983.pdf)
 
     Args:
         num_classes (int): The unique number of target classes.
@@ -73,11 +73,11 @@ class DAHead(nn.Layer):
     The Dual attention head.
 
     Args:
-        num_classes(int): the unique number of target classes.
-        in_channels(tuple): the number of input channels.
+        num_classes(int): The unique number of target classes.
+        in_channels(tuple): The number of input channels.
     """
 
-    def __init__(self, num_classes, in_channels=None):
+    def __init__(self, num_classes, in_channels):
         super().__init__()
         in_channels = in_channels[-1]
         inter_channels = in_channels // 4
@@ -120,7 +120,7 @@ class DAHead(nn.Layer):
 
 
 class PAM(nn.Layer):
-    """Position attention module"""
+    """Position attention module."""
 
     def __init__(self, in_channels):
         super().__init__()
@@ -164,7 +164,7 @@ class PAM(nn.Layer):
 
 
 class CAM(nn.Layer):
-    """Channel attention module"""
+    """Channel attention module."""
 
     def __init__(self):
         super().__init__()

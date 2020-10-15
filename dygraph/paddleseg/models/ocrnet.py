@@ -29,20 +29,21 @@ class OCRNet(nn.Layer):
         Yuan, Yuhui, et al. "Object-Contextual Representations for Semantic Segmentation"
         (https://arxiv.org/pdf/1909.11065.pdf)
     Args:
-        num_classes(int): the unique number of target classes.
-        backbone(Paddle.nn.Layer): backbone network.
-        backbone_indices(tuple): two values in the tuple indicate the indices of output of backbone.
-                        the first index will be taken as a deep-supervision feature in auxiliary layer;
-                        the second one will be taken as input of pixel representation.
-        ocr_mid_channels(int): the number of middle channels in OCRHead.
-        ocr_key_channels(int): the number of key channels in ObjectAttentionBlock.
-        pretrained(str): the path or url of pretrained model. Default to None.
+        num_classes (int): The unique number of target classes.
+        backbone (Paddle.nn.Layer): Backbone network.
+        backbone_indices (tuple): A tuple indicates the indices of output of backbone.
+            It can be either one or two values, if two values, the first index will be taken as
+            a deep-supervision feature in auxiliary layer; the second one will be taken as
+            input of pixel representation. If one value, it is taken by both above.
+        ocr_mid_channels (int, optional): The number of middle channels in OCRHead. Default: 512.
+        ocr_key_channels (int, optional): The number of key channels in ObjectAttentionBlock. Default: 256.
+        pretrained (str, optional): The path or url of pretrained model. Default: None.
     """
 
     def __init__(self,
                  num_classes,
                  backbone,
-                 backbone_indices=None,
+                 backbone_indices,
                  ocr_mid_channels=512,
                  ocr_key_channels=256,
                  pretrained=None):
@@ -79,15 +80,15 @@ class OCRHead(nn.Layer):
     """
     The Object contextual representation head.
     Args:
-        num_classes(int): the unique number of target classes.
-        in_channels(tuple): the number of input channels.
-        ocr_mid_channels(int): the number of middle channels in OCRHead.
-        ocr_key_channels(int): the number of key channels in ObjectAttentionBlock.
+        num_classes(int): The unique number of target classes.
+        in_channels(tuple): The number of input channels.
+        ocr_mid_channels(int, optional): The number of middle channels in OCRHead. Default: 512.
+        ocr_key_channels(int, optional): The number of key channels in ObjectAttentionBlock. Default: 256.
     """
 
     def __init__(self,
                  num_classes,
-                 in_channels=None,
+                 in_channels,
                  ocr_mid_channels=512,
                  ocr_key_channels=256):
         super().__init__()
@@ -131,7 +132,7 @@ class OCRHead(nn.Layer):
 
 
 class SpatialGatherBlock(nn.Layer):
-    """Aggregation layer to compute the pixel-region representation"""
+    """Aggregation layer to compute the pixel-region representation."""
 
     def forward(self, pixels, regions):
         n, c, h, w = pixels.shape
@@ -154,7 +155,7 @@ class SpatialGatherBlock(nn.Layer):
 
 
 class SpatialOCRModule(nn.Layer):
-    """Aggregate the global object representation to update the representation for each pixel"""
+    """Aggregate the global object representation to update the representation for each pixel."""
 
     def __init__(self,
                  in_channels,

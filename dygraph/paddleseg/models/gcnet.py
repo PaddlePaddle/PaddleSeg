@@ -37,7 +37,7 @@ class GCNet(nn.Layer):
         gc_channels (int, optional): The input channels to Global Context Block. Default: 512.
         ratio (float, optional): It indicates the ratio of attention channels and gc_channels. Default: 0.25.
         enable_auxiliary_loss (bool, optional): A bool value indicates whether adding auxiliary loss. Default: True.
-        pretrained (str, optional): The path of pretrained model. Default: None.
+        pretrained (str, optional): The path or url of pretrained model. Default: None.
     """
 
     def __init__(self,

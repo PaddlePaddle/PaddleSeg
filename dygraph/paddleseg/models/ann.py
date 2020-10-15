@@ -39,7 +39,7 @@ class ANN(nn.Layer):
         inter_channels (int, optional): Both input and output channels of APNB modules. Default: 512.
         psp_size (tuple, optional): The out size of pooled feature maps. Default: (1, 3, 6, 8).
         enable_auxiliary_loss (bool, optional): A bool value indicates whether adding auxiliary loss. Default: True.
-        pretrained (str, optional): The path of pretrained model. Default: None.
+        pretrained (str, optional): The path or url of pretrained model. Default: None.
     """
 
     def __init__(self,
