@@ -64,6 +64,7 @@ def main(args):
     ckpt_path = os.path.join(args.model_dir, 'model')
     para_state_dict, opti_state_dict = paddle.load(ckpt_path)
     model.set_dict(para_state_dict)
+    logger.info('Loaded trained params of model successfully')
 
     evaluate(model, val_dataset)
 

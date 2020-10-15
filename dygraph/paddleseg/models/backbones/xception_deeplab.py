@@ -17,7 +17,7 @@ import paddle.nn.functional as F
 
 from paddleseg.cvlibs import manager
 from paddleseg.utils import utils
-from paddleseg.layers import layers
+from paddleseg.models import layers
 
 __all__ = ["Xception41_deeplab", "Xception65_deeplab", "Xception71_deeplab"]
 
@@ -367,7 +367,8 @@ class XceptionDeeplab(nn.Layer):
             activation_fn_in_separable_conv=True,
             name=self.backbone + "/exit_flow/block2")
 
-        utils.load_pretrained_model(self, pretrained)
+        self.pretrained = pretrained
+        self.init_weight()
 
     def forward(self, inputs):
         x = self._conv1(inputs)
@@ -383,6 +384,10 @@ class XceptionDeeplab(nn.Layer):
         x = self._exit_flow_2(x)
         feat_list.append(x)
         return feat_list
+
+    def init_weight(self):
+        if self.pretrained is not None:
+            utils.load_pretrained_model(self, self.pretrained)
 
 
 @manager.BACKBONES.add_component

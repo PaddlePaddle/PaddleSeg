@@ -57,7 +57,8 @@ class BiSeNetV2(nn.Layer):
         self.aux_head4 = SegHead(C5, C5, num_classes)
         self.head = SegHead(mid_channels, mid_channels, num_classes)
 
-        self.init_weight(pretrained)
+        self.pretrained = pretrained
+        self.init_weight()
 
     def forward(self, x):
         dfm = self.db(x)
@@ -69,23 +70,15 @@ class BiSeNetV2(nn.Layer):
         logit = self.head(self.bga(dfm, sfm))
 
         logit_list = [logit, logit1, logit2, logit3, logit4]
-        logit_list = [F.resize_bilinear(logit, x.shape[2:]) for logit in logit_list]
+        logit_list = [
+            F.resize_bilinear(logit, x.shape[2:]) for logit in logit_list
+        ]
 
         return logit_list
 
-    def init_weight(self, pretrained=None):
-        """
-        Initialize the parameters of model parts.
-
-        Args:
-            pretrained (str, optional): The path of pretrained model. Defaults: None.
-        """
-        if pretrained is not None:
-            if os.path.exists(pretrained):
-                utils.load_entire_model(self, pretrained)
-            else:
-                raise Exception(
-                    'Pretrained model is not found: {}'.format(pretrained))
+    def init_weight(self):
+        if self.pretrained is not None:
+            utils.load_entire_model(self, self.pretrained)
         else:
             for sublayer in self.sublayers():
                 if isinstance(sublayer, nn.Conv2d):

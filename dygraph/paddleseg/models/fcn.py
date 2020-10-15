@@ -53,14 +53,18 @@ class FCN(nn.Layer):
 
         self.head = FCNHead(num_classes, backbone_indices, backbone_channels,
                             channels)
-        utils.load_entire_model(self, pretrained)
+
+        self.pretrained = pretrained
+        self.init_weight()
 
     def forward(self, x):
         feat_list = self.backbone(x)
         logit_list = self.head(feat_list)
-        return [
-            F.resize_bilinear(logit, x.shape[2:]) for logit in logit_list
-        ]
+        return [F.resize_bilinear(logit, x.shape[2:]) for logit in logit_list]
+
+    def init_weight(self):
+        if self.pretrained is not None:
+            utils.load_entire_model(self, self.pretrained)
 
 
 class FCNHead(nn.Layer):
