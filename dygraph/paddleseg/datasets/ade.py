@@ -32,10 +32,10 @@ class ADE20K(Dataset):
     ADE20K dataset `http://sceneparsing.csail.mit.edu/`.
 
     Args:
-        transforms (list): Transforms for image.
-        dataset_root (str): The dataset directory.
-        mode (str): Which part of dataset to use.. it is one of ('train', 'val'). Default: 'train'.
-        download (bool): Whether to download dataset if `dataset_root` is None.
+        transforms (list): A list of image transformations.
+        dataset_root (str, optional): The ADK20K dataset directory. Default: None.
+        mode (str, optional): A subset of the entire dataset. It should be one of ('train', 'val'). Default: 'train'.
+        download (bool, optional): Whether downloading dataset if `dataset_root` is None. Default: True.
     """
 
     def __init__(self,
