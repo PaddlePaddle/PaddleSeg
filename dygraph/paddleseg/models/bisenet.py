@@ -33,13 +33,13 @@ class BiSeNetV2(nn.Layer):
         (https://arxiv.org/abs/2004.02147)
 
     Args:
-        num_classes(int): the unique number of target classes.
-        lambd(float): factor for controlling the size of semantic branch channels. Default to 0.25.
-        pretrained(str): the path or url of pretrained model. Default to None.
+        num_classes (int): The unique number of target classes.
+        lambd (float, optional): A factor for controlling the size of semantic branch channels. Default: 0.25.
+        pretrained (str, optional): The path or url of pretrained model. Default: None.
     """
 
     def __init__(self, num_classes, lambd=0.25, pretrained=None):
-        super(BiSeNetV2, self).__init__()
+        super().__init__()
 
         C1, C2, C3 = 64, 64, 128
         db_channels = (C1, C2, C3)
@@ -131,7 +131,7 @@ class GatherAndExpandsionLayer1(nn.Layer):
     """Gather And Expandsion Layer with stride 1"""
 
     def __init__(self, in_dim, out_dim, expand):
-        super(GatherAndExpandsionLayer1, self).__init__()
+        super().__init__()
 
         expand_dim = expand * in_dim
 
@@ -148,7 +148,7 @@ class GatherAndExpandsionLayer2(nn.Layer):
     """Gather And Expandsion Layer with stride 2"""
 
     def __init__(self, in_dim, out_dim, expand):
-        super(GatherAndExpandsionLayer2, self).__init__()
+        super().__init__()
 
         expand_dim = expand * in_dim
 
@@ -170,7 +170,7 @@ class DetailBranch(nn.Layer):
     """The detail branch of BiSeNet, which has wide channels but shallow layers."""
 
     def __init__(self, in_channels):
-        super(DetailBranch, self).__init__()
+        super().__init__()
 
         C1, C2, C3 = in_channels
 
@@ -196,7 +196,7 @@ class SemanticBranch(nn.Layer):
     """The semantic branch of BiSeNet, which has narrow channels but deep layers."""
 
     def __init__(self, in_channels):
-        super(SemanticBranch, self).__init__()
+        super().__init__()
         C1, C3, C4, C5 = in_channels
 
         self.stem = StemBlock(3, C1)
@@ -230,7 +230,7 @@ class BGA(nn.Layer):
     """The Bilateral Guided Aggregation Layer, used to fuse the semantic features and spatial features."""
 
     def __init__(self, out_dim):
-        super(BGA, self).__init__()
+        super().__init__()
 
         self.db_branch_keep = nn.Sequential(
             layers.DepthwiseConvBN(out_dim, out_dim, 3),
@@ -265,7 +265,7 @@ class BGA(nn.Layer):
 
 class SegHead(nn.Layer):
     def __init__(self, in_dim, mid_dim, num_classes):
-        super(SegHead, self).__init__()
+        super().__init__()
 
         self.conv_3x3 = nn.Sequential(
             layers.ConvBNReLU(in_dim, mid_dim, 3), nn.Dropout(0.1))

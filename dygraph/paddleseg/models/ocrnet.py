@@ -46,7 +46,7 @@ class OCRNet(nn.Layer):
                  ocr_mid_channels=512,
                  ocr_key_channels=256,
                  pretrained=None):
-        super(OCRNet, self).__init__()
+        super().__init__()
 
         self.backbone = backbone
         self.backbone_indices = backbone_indices
@@ -90,7 +90,7 @@ class OCRHead(nn.Layer):
                  in_channels=None,
                  ocr_mid_channels=512,
                  ocr_key_channels=256):
-        super(OCRHead, self).__init__()
+        super().__init__()
 
         self.num_classes = num_classes
         self.spatial_gather = SpatialGatherBlock()
@@ -161,7 +161,7 @@ class SpatialOCRModule(nn.Layer):
                  key_channels,
                  out_channels,
                  dropout_rate=0.1):
-        super(SpatialOCRModule, self).__init__()
+        super().__init__()
 
         self.attention_block = ObjectAttentionBlock(in_channels, key_channels)
         self.dropout_rate = dropout_rate
@@ -180,7 +180,7 @@ class ObjectAttentionBlock(nn.Layer):
     """A self-attention module."""
 
     def __init__(self, in_channels, key_channels):
-        super(ObjectAttentionBlock, self).__init__()
+        super().__init__()
 
         self.in_channels = in_channels
         self.key_channels = key_channels
