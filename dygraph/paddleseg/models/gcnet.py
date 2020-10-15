@@ -26,7 +26,7 @@ class GCNet(nn.Layer):
     """
     The GCNet implementation based on PaddlePaddle.
 
-    The original article refers to 
+    The original article refers to
     Cao, Yue, et al. "GCnet: Non-local networks meet squeeze-excitation networks and beyond"
     (https://arxiv.org/pdf/1904.11492.pdf).
 
@@ -55,22 +55,20 @@ class GCNet(nn.Layer):
             backbone.feat_channels[i] for i in backbone_indices
         ]
 
-        self.head = GCNetHead(
-            num_classes,
-            backbone_indices,
-            backbone_channels,
-            gc_channels,
-            ratio,
-            enable_auxiliary_loss)
+        self.head = GCNetHead(num_classes, backbone_indices, backbone_channels,
+                              gc_channels, ratio, enable_auxiliary_loss)
 
-        utils.load_entire_model(self, pretrained)
+        self.pretrained = pretrained
+        self.init_weight()
 
     def forward(self, x):
         feat_list = self.backbone(x)
         logit_list = self.head(feat_list)
-        return [
-            F.resize_bilinear(logit, x.shape[2:]) for logit in logit_list
-        ]
+        return [F.resize_bilinear(logit, x.shape[2:]) for logit in logit_list]
+
+    def init_weight(self):
+        if self.pretrained is not None:
+            utils.load_entire_model(self, self.pretrained)
 
 
 class GCNetHead(nn.Layer):

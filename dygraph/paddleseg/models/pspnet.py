@@ -54,22 +54,21 @@ class PSPNet(nn.Layer):
             backbone.feat_channels[i] for i in backbone_indices
         ]
 
-        self.head = PSPNetHead(
-            num_classes,
-            backbone_indices,
-            backbone_channels,
-            pp_out_channels,
-            bin_sizes,
-            enable_auxiliary_loss)
+        self.head = PSPNetHead(num_classes, backbone_indices, backbone_channels,
+                               pp_out_channels, bin_sizes,
+                               enable_auxiliary_loss)
 
-        utils.load_entire_model(self, pretrained)
+        self.pretrained = pretrained
+        self.init_weight()
 
     def forward(self, x):
         feat_list = self.backbone(x)
         logit_list = self.head(feat_list)
-        return [
-            F.resize_bilinear(logit, x.shape[2:]) for logit in logit_list
-        ]
+        return [F.resize_bilinear(logit, x.shape[2:]) for logit in logit_list]
+
+    def init_weight(self):
+        if self.pretrained is not None:
+            utils.load_entire_model(self, self.pretrained)
 
 
 class PSPNetHead(nn.Layer):
@@ -85,7 +84,7 @@ class PSPNetHead(nn.Layer):
             each stage. If we set it as (2, 3) in ResNet, that means taking feature map of the third
             stage (res4b22) in backbone, and feature map of the fourth stage (res5c) as input of PPModule.
         backbone_channels (tuple): The same length with "backbone_indices". It indicates the channels of corresponding index.
-        pp_out_channels (int): The output channels after Pyramid Pooling Module. 
+        pp_out_channels (int): The output channels after Pyramid Pooling Module.
         bin_sizes (tuple): The out size of pooled feature maps.
         enable_auxiliary_loss (bool, optional): A bool value indicates whether adding auxiliary loss. Default: True.
     """

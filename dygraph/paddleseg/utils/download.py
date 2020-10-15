@@ -125,6 +125,8 @@ def download_file_and_uncompress(url,
         extrapath = "."
 
     savename = url.split("/")[-1]
+    if not os.path.exists(savepath):
+        os.makedirs(savepath)
     savepath = os.path.join(savepath, savename)
     savename = ".".join(savename.split(".")[:-1])
     savename = os.path.join(extrapath, savename)
