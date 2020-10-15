@@ -34,14 +34,9 @@ class PascalVOC(Dataset):
         dataset_root (str): The dataset directory. Default: None
         mode (str): Which part of dataset to use. it is one of ('train', 'trainval', 'trainaug', 'val').
             If you want to set mode to 'trainaug', please make sure the dataset have been augmented. Default: 'train'.
-        download (bool): Whether to download dataset if dataset_root is None. Default: True
     """
 
-    def __init__(self,
-                 transforms,
-                 dataset_root=None,
-                 mode='train',
-                 download=True):
+    def __init__(self, transforms, dataset_root=None, mode='train'):
         self.dataset_root = dataset_root
         self.transforms = Compose(transforms)
         mode = mode.lower()
@@ -59,17 +54,20 @@ class PascalVOC(Dataset):
             raise ValueError("`transforms` is necessary, but it is None.")
 
         if self.dataset_root is None:
-            if not download:
-                raise ValueError(
-                    "`dataset_root` not set and auto download disabled.")
             self.dataset_root = download_file_and_uncompress(
                 url=URL,
                 savepath=seg_env.DATA_HOME,
                 extrapath=seg_env.DATA_HOME,
                 extraname='VOCdevkit')
         elif not os.path.exists(self.dataset_root):
-            raise FileNotFoundError('there is not `dataset_root`: {}.'.format(
-                self.dataset_root))
+            self.dataset_root = os.path.normpath(self.dataset_root)
+            savepath, extraname = self.dataset_root.rsplit(
+                sep=os.path.sep, maxsplit=1)
+            self.dataset_root = download_file_and_uncompress(
+                url=URL,
+                savepath=savepath,
+                extrapath=savepath,
+                extraname=extraname)
 
         image_set_dir = os.path.join(self.dataset_root, 'VOC2012', 'ImageSets',
                                      'Segmentation')

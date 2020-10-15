@@ -35,14 +35,9 @@ class ADE20K(Dataset):
         transforms (list): Transforms for image.
         dataset_root (str): The dataset directory.
         mode (str): Which part of dataset to use.. it is one of ('train', 'val'). Default: 'train'.
-        download (bool): Whether to download dataset if `dataset_root` is None.
     """
 
-    def __init__(self,
-                 transforms,
-                 dataset_root=None,
-                 mode='train',
-                 download=True):
+    def __init__(self, transforms, dataset_root=None, mode='train'):
         self.dataset_root = dataset_root
         self.transforms = Compose(transforms)
         mode = mode.lower()
@@ -60,17 +55,20 @@ class ADE20K(Dataset):
             raise ValueError("`transforms` is necessary, but it is None.")
 
         if self.dataset_root is None:
-            if not download:
-                raise ValueError(
-                    "`dataset_root` not set and auto download disabled.")
             self.dataset_root = download_file_and_uncompress(
                 url=URL,
                 savepath=seg_env.DATA_HOME,
                 extrapath=seg_env.DATA_HOME,
                 extraname='ADEChallengeData2016')
         elif not os.path.exists(self.dataset_root):
-            raise FileNotFoundError('there is not `dataset_root`: {}.'.format(
-                self.dataset_root))
+            self.dataset_root = os.path.normpath(self.dataset_root)
+            savepath, extraname = self.dataset_root.rsplit(
+                sep=os.path.sep, maxsplit=1)
+            self.dataset_root = download_file_and_uncompress(
+                url=URL,
+                savepath=savepath,
+                extrapath=savepath,
+                extraname=extraname)
 
         if mode == 'train':
             img_dir = os.path.join(self.dataset_root, 'images/training')
