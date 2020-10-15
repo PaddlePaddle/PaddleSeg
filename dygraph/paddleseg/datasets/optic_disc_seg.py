@@ -32,8 +32,7 @@ class OpticDiscSeg(Dataset):
     Args:
         transforms (list): Transforms for image.
         dataset_root (str): The dataset directory. Default: None
-        mode (str): Which part of dataset to use. it is one of ('train', 'val', 'test').
-            If you want to set mode to 'trainaug', please make sure the dataset have been augmented. Default: 'train'.
+        mode (str): Which part of dataset to use. it is one of ('train', 'val', 'test'). Default: 'train'.
     """
 
     def __init__(self, dataset_root=None, transforms=None, mode='train'):
