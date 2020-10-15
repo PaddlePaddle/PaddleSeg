@@ -33,9 +33,9 @@ class BiSeNetV2(nn.Layer):
         (https://arxiv.org/abs/2004.02147)
 
     Args:
-        num_classes(int): the unique number of target classes.
-        lambd(float): factor for controlling the size of semantic branch channels. Default to 0.25.
-        pretrained(str): the path or url of pretrained model. Default to None.
+        num_classes (int): The unique number of target classes.
+        lambd (float, optional): A factor for controlling the size of semantic branch channels. Default: 0.25.
+        pretrained (str, optional): The path or url of pretrained model. Default: None.
     """
 
     def __init__(self, num_classes, lambd=0.25, pretrained=None):
@@ -76,8 +76,9 @@ class BiSeNetV2(nn.Layer):
     def init_weight(self, pretrained=None):
         """
         Initialize the parameters of model parts.
+
         Args:
-            pretrained ([str], optional): the path of pretrained model.. Defaults to None.
+            pretrained (str, optional): The path of pretrained model. Defaults: None.
         """
         if pretrained is not None:
             if os.path.exists(pretrained):
