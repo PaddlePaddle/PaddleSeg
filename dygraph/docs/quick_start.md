@@ -33,7 +33,7 @@ python train.py \
 |learning_rate|初始学习率|否|配置文件中指定值|
 |config|配置文件|是|-|
 |save_dir|模型和visualdl日志文件的保存根路径|否|output|
-|num_workers|用于异步读取数据的进程数量|否|0|
+|num_workers|用于异步读取数据的进程数量， 大于等于1时开启子进程读取数据|否|0|
 |use_vdl|是否开启visualdl记录训练数据|否|否|
 |save_interval_iters|模型保存的间隔步数|否|1000|
 |do_eval|是否在保存模型时启动评估, 启动时将会根据mIoU保存最佳模型至best_model|否|否|
