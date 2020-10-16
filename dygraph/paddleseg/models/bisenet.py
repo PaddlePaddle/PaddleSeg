@@ -29,17 +29,17 @@ class BiSeNetV2(nn.Layer):
     The BiSeNet V2 implementation based on PaddlePaddle.
 
     The original article refers to
-        Yu, Changqian, et al. "BiSeNet V2: Bilateral Network with Guided Aggregation for Real-time Semantic Segmentation"
-        (https://arxiv.org/abs/2004.02147)
+    Yu, Changqian, et al. "BiSeNet V2: Bilateral Network with Guided Aggregation for Real-time Semantic Segmentation"
+    (https://arxiv.org/abs/2004.02147)
 
     Args:
-        num_classes(int): the unique number of target classes.
-        lambd(float): factor for controlling the size of semantic branch channels. Default to 0.25.
-        pretrained(str): the path or url of pretrained model. Default to None.
+        num_classes (int): The unique number of target classes.
+        lambd (float, optional): A factor for controlling the size of semantic branch channels. Default: 0.25.
+        pretrained (str, optional): The path or url of pretrained model. Default: None.
     """
 
     def __init__(self, num_classes, lambd=0.25, pretrained=None):
-        super(BiSeNetV2, self).__init__()
+        super().__init__()
 
         C1, C2, C3 = 64, 64, 128
         db_channels = (C1, C2, C3)
@@ -57,7 +57,8 @@ class BiSeNetV2(nn.Layer):
         self.aux_head4 = SegHead(C5, C5, num_classes)
         self.head = SegHead(mid_channels, mid_channels, num_classes)
 
-        self.init_weight(pretrained)
+        self.pretrained = pretrained
+        self.init_weight()
 
     def forward(self, x):
         dfm = self.db(x)
@@ -69,22 +70,15 @@ class BiSeNetV2(nn.Layer):
         logit = self.head(self.bga(dfm, sfm))
 
         logit_list = [logit, logit1, logit2, logit3, logit4]
-        logit_list = [F.resize_bilinear(logit, x.shape[2:]) for logit in logit_list]
+        logit_list = [
+            F.resize_bilinear(logit, x.shape[2:]) for logit in logit_list
+        ]
 
         return logit_list
 
-    def init_weight(self, pretrained=None):
-        """
-        Initialize the parameters of model parts.
-        Args:
-            pretrained ([str], optional): the path of pretrained model.. Defaults to None.
-        """
-        if pretrained is not None:
-            if os.path.exists(pretrained):
-                utils.load_entire_model(self, pretrained)
-            else:
-                raise Exception(
-                    'Pretrained model is not found: {}'.format(pretrained))
+    def init_weight(self):
+        if self.pretrained is not None:
+            utils.load_entire_model(self, self.pretrained)
         else:
             for sublayer in self.sublayers():
                 if isinstance(sublayer, nn.Conv2d):
@@ -133,11 +127,11 @@ class ContextEmbeddingBlock(nn.Layer):
         return self.conv_3x3(conv1)
 
 
-class GatherAndExpandsionLayer1(nn.Layer):
-    """Gather And Expandsion Layer with stride 1"""
+class GatherAndExpansionLayer1(nn.Layer):
+    """Gather And Expansion Layer with stride 1"""
 
     def __init__(self, in_dim, out_dim, expand):
-        super(GatherAndExpandsionLayer1, self).__init__()
+        super().__init__()
 
         expand_dim = expand * in_dim
 
@@ -150,11 +144,11 @@ class GatherAndExpandsionLayer1(nn.Layer):
         return F.relu(self.conv(x) + x)
 
 
-class GatherAndExpandsionLayer2(nn.Layer):
-    """Gather And Expandsion Layer with stride 2"""
+class GatherAndExpansionLayer2(nn.Layer):
+    """Gather And Expansion Layer with stride 2"""
 
     def __init__(self, in_dim, out_dim, expand):
-        super(GatherAndExpandsionLayer2, self).__init__()
+        super().__init__()
 
         expand_dim = expand * in_dim
 
@@ -176,7 +170,7 @@ class DetailBranch(nn.Layer):
     """The detail branch of BiSeNet, which has wide channels but shallow layers."""
 
     def __init__(self, in_channels):
-        super(DetailBranch, self).__init__()
+        super().__init__()
 
         C1, C2, C3 = in_channels
 
@@ -202,24 +196,24 @@ class SemanticBranch(nn.Layer):
     """The semantic branch of BiSeNet, which has narrow channels but deep layers."""
 
     def __init__(self, in_channels):
-        super(SemanticBranch, self).__init__()
+        super().__init__()
         C1, C3, C4, C5 = in_channels
 
         self.stem = StemBlock(3, C1)
 
         self.stage3 = nn.Sequential(
-            GatherAndExpandsionLayer2(C1, C3, 6),
-            GatherAndExpandsionLayer1(C3, C3, 6))
+            GatherAndExpansionLayer2(C1, C3, 6),
+            GatherAndExpansionLayer1(C3, C3, 6))
 
         self.stage4 = nn.Sequential(
-            GatherAndExpandsionLayer2(C3, C4, 6),
-            GatherAndExpandsionLayer1(C4, C4, 6))
+            GatherAndExpansionLayer2(C3, C4, 6),
+            GatherAndExpansionLayer1(C4, C4, 6))
 
         self.stage5_4 = nn.Sequential(
-            GatherAndExpandsionLayer2(C4, C5, 6),
-            GatherAndExpandsionLayer1(C5, C5, 6),
-            GatherAndExpandsionLayer1(C5, C5, 6),
-            GatherAndExpandsionLayer1(C5, C5, 6))
+            GatherAndExpansionLayer2(C4, C5, 6),
+            GatherAndExpansionLayer1(C5, C5, 6),
+            GatherAndExpansionLayer1(C5, C5, 6),
+            GatherAndExpansionLayer1(C5, C5, 6))
 
         self.ce = ContextEmbeddingBlock(C5, C5)
 
@@ -236,7 +230,7 @@ class BGA(nn.Layer):
     """The Bilateral Guided Aggregation Layer, used to fuse the semantic features and spatial features."""
 
     def __init__(self, out_dim):
-        super(BGA, self).__init__()
+        super().__init__()
 
         self.db_branch_keep = nn.Sequential(
             layers.DepthwiseConvBN(out_dim, out_dim, 3),
@@ -271,7 +265,7 @@ class BGA(nn.Layer):
 
 class SegHead(nn.Layer):
     def __init__(self, in_dim, mid_dim, num_classes):
-        super(SegHead, self).__init__()
+        super().__init__()
 
         self.conv_3x3 = nn.Sequential(
             layers.ConvBNReLU(in_dim, mid_dim, 3), nn.Dropout(0.1))

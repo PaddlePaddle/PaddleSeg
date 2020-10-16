@@ -59,7 +59,7 @@ class Config(object):
         train_dataset = cfg.train_dataset
 
         # the argument of model should be parsed after dataset,
-        # Since the model builder uses some properties in dataset,
+        # since the model builder uses some properties in dataset.
         model = cfg.model
         ...
     '''

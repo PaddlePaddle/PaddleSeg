@@ -17,7 +17,7 @@ import paddle.nn as nn
 
 def constant_init(param, **kwargs):
     """
-    Initialize the `param` with constant.
+    Initialize the `param` with constants.
 
     Args:
         param (Tensor): Tensor that needs to be initialized.
@@ -39,7 +39,7 @@ def constant_init(param, **kwargs):
 
 def normal_init(param, **kwargs):
     """
-    Initialize the `param` with Normal distribution.
+    Initialize the `param` with a Normal distribution.
 
     Args:
         param (Tensor): Tensor that needs to be initialized.
@@ -63,7 +63,7 @@ def msra_init(param, **kwargs):
 
     This function implements the `param` initialization from the paper
     `Delving Deep into Rectifiers: Surpassing Human-Level Performance on
-    ImageNet Classification <https://arxiv.org/abs/1502.01852>`_
+    ImageNet Classification <https://arxiv.org/abs/1502.01852>`
     by Kaiming He, Xiangyu Zhang, Shaoqing Ren and Jian Sun. This is a
     robust initialization method that particularly considers the rectifier
     nonlinearities. In case of Uniform distribution, the range is [-x, x], where

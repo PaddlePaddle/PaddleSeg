@@ -27,23 +27,20 @@ class DANet(nn.Layer):
     The DANet implementation based on PaddlePaddle.
 
     The original article refers to
-        Fu, jun, et al. "Dual Attention Network for Scene Segmentation"
-        (https://arxiv.org/pdf/1809.02983.pdf)
+    Fu, jun, et al. "Dual Attention Network for Scene Segmentation"
+    (https://arxiv.org/pdf/1809.02983.pdf)
 
     Args:
-        num_classes(int): the unique number of target classes.
-        backbone(Paddle.nn.Layer): backbone network.
-        backbone_indices(tuple): values in the tuple indicate the indices of
-            output of backbone. Only the last index is used.
-        pretrained(str): the path or url of pretrained model. Default to None.
+        num_classes (int): The unique number of target classes.
+        backbone (Paddle.nn.Layer): A backbone network.
+        backbone_indices (tuple): The values in the tuple indicate the indices of
+            output of backbone.
+        pretrained (str, optional): The path or url of pretrained model. Default: None.
     """
 
-    def __init__(self,
-                 num_classes,
-                 backbone,
-                 backbone_indices=None,
+    def __init__(self, num_classes, backbone, backbone_indices,
                  pretrained=None):
-        super(DANet, self).__init__()
+        super().__init__()
 
         self.backbone = backbone
         self.backbone_indices = backbone_indices
@@ -51,14 +48,21 @@ class DANet(nn.Layer):
 
         self.head = DAHead(num_classes=num_classes, in_channels=in_channels)
 
-        utils.load_entire_model(self, pretrained)
+        self.pretrained = pretrained
+        self.init_weight()
 
     def forward(self, x):
         feats = self.backbone(x)
         feats = [feats[i] for i in self.backbone_indices]
         logit_list = self.head(feats)
-        logit_list = [F.resize_bilinear(logit, x.shape[2:]) for logit in logit_list]
+        logit_list = [
+            F.resize_bilinear(logit, x.shape[2:]) for logit in logit_list
+        ]
         return logit_list
+
+    def init_weight(self):
+        if self.pretrained is not None:
+            utils.load_entire_model(self, self.pretrained)
 
 
 class DAHead(nn.Layer):
@@ -66,12 +70,12 @@ class DAHead(nn.Layer):
     The Dual attention head.
 
     Args:
-        num_classes(int): the unique number of target classes.
-        in_channels(tuple): the number of input channels.
+        num_classes (int): The unique number of target classes.
+        in_channels (tuple): The number of input channels.
     """
 
-    def __init__(self, num_classes, in_channels=None):
-        super(DAHead, self).__init__()
+    def __init__(self, num_classes, in_channels):
+        super().__init__()
         in_channels = in_channels[-1]
         inter_channels = in_channels // 4
 
@@ -113,10 +117,10 @@ class DAHead(nn.Layer):
 
 
 class PAM(nn.Layer):
-    """Position attention module"""
+    """Position attention module."""
 
     def __init__(self, in_channels):
-        super(PAM, self).__init__()
+        super().__init__()
         mid_channels = in_channels // 8
 
         self.query_conv = nn.Conv2d(in_channels, mid_channels, 1, 1)
@@ -157,10 +161,10 @@ class PAM(nn.Layer):
 
 
 class CAM(nn.Layer):
-    """Channel attention module"""
+    """Channel attention module."""
 
     def __init__(self):
-        super(CAM, self).__init__()
+        super().__init__()
 
         self.gamma = self.create_parameter(
             shape=[1],

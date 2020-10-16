@@ -28,25 +28,27 @@ class OCRNet(nn.Layer):
     The original article refers to
         Yuan, Yuhui, et al. "Object-Contextual Representations for Semantic Segmentation"
         (https://arxiv.org/pdf/1909.11065.pdf)
+
     Args:
-        num_classes(int): the unique number of target classes.
-        backbone(Paddle.nn.Layer): backbone network.
-        backbone_indices(tuple): two values in the tuple indicate the indices of output of backbone.
-                        the first index will be taken as a deep-supervision feature in auxiliary layer;
-                        the second one will be taken as input of pixel representation.
-        ocr_mid_channels(int): the number of middle channels in OCRHead.
-        ocr_key_channels(int): the number of key channels in ObjectAttentionBlock.
-        pretrained(str): the path or url of pretrained model. Default to None.
+        num_classes (int): The unique number of target classes.
+        backbone (Paddle.nn.Layer): Backbone network.
+        backbone_indices (tuple): A tuple indicates the indices of output of backbone.
+            It can be either one or two values, if two values, the first index will be taken as
+            a deep-supervision feature in auxiliary layer; the second one will be taken as
+            input of pixel representation. If one value, it is taken by both above.
+        ocr_mid_channels (int, optional): The number of middle channels in OCRHead. Default: 512.
+        ocr_key_channels (int, optional): The number of key channels in ObjectAttentionBlock. Default: 256.
+        pretrained (str, optional): The path or url of pretrained model. Default: None.
     """
 
     def __init__(self,
                  num_classes,
                  backbone,
-                 backbone_indices=None,
+                 backbone_indices,
                  ocr_mid_channels=512,
                  ocr_key_channels=256,
                  pretrained=None):
-        super(OCRNet, self).__init__()
+        super().__init__()
 
         self.backbone = backbone
         self.backbone_indices = backbone_indices
@@ -58,32 +60,40 @@ class OCRNet(nn.Layer):
             ocr_mid_channels=ocr_mid_channels,
             ocr_key_channels=ocr_key_channels)
 
-        utils.load_entire_model(self, pretrained=pretrained)
+        self.pretrained = pretrained
+        self.init_weight()
 
     def forward(self, x):
         feats = self.backbone(x)
         feats = [feats[i] for i in self.backbone_indices]
         logit_list = self.head(feats)
-        logit_list = [F.resize_bilinear(logit, x.shape[2:]) for logit in logit_list]
+        logit_list = [
+            F.resize_bilinear(logit, x.shape[2:]) for logit in logit_list
+        ]
         return logit_list
+
+    def init_weight(self):
+        if self.pretrained is not None:
+            utils.load_entire_model(self, self.pretrained)
 
 
 class OCRHead(nn.Layer):
     """
     The Object contextual representation head.
+
     Args:
-        num_classes(int): the unique number of target classes.
-        in_channels(tuple): the number of input channels.
-        ocr_mid_channels(int): the number of middle channels in OCRHead.
-        ocr_key_channels(int): the number of key channels in ObjectAttentionBlock.
+        num_classes(int): The unique number of target classes.
+        in_channels(tuple): The number of input channels.
+        ocr_mid_channels(int, optional): The number of middle channels in OCRHead. Default: 512.
+        ocr_key_channels(int, optional): The number of key channels in ObjectAttentionBlock. Default: 256.
     """
 
     def __init__(self,
                  num_classes,
-                 in_channels=None,
+                 in_channels,
                  ocr_mid_channels=512,
                  ocr_key_channels=256):
-        super(OCRHead, self).__init__()
+        super().__init__()
 
         self.num_classes = num_classes
         self.spatial_gather = SpatialGatherBlock()
@@ -96,7 +106,8 @@ class OCRHead(nn.Layer):
             in_channels[self.indices[1]], ocr_mid_channels, 3, padding=1)
         self.cls_head = nn.Conv2d(ocr_mid_channels, self.num_classes, 1)
         self.aux_head = layers.AuxLayer(in_channels[self.indices[0]],
-                                        in_channels[self.indices[0]], self.num_classes)
+                                        in_channels[self.indices[0]],
+                                        self.num_classes)
         self.init_weight()
 
     def forward(self, feat_list):
@@ -123,7 +134,7 @@ class OCRHead(nn.Layer):
 
 
 class SpatialGatherBlock(nn.Layer):
-    """Aggregation layer to compute the pixel-region representation"""
+    """Aggregation layer to compute the pixel-region representation."""
 
     def forward(self, pixels, regions):
         n, c, h, w = pixels.shape
@@ -146,14 +157,14 @@ class SpatialGatherBlock(nn.Layer):
 
 
 class SpatialOCRModule(nn.Layer):
-    """Aggregate the global object representation to update the representation for each pixel"""
+    """Aggregate the global object representation to update the representation for each pixel."""
 
     def __init__(self,
                  in_channels,
                  key_channels,
                  out_channels,
                  dropout_rate=0.1):
-        super(SpatialOCRModule, self).__init__()
+        super().__init__()
 
         self.attention_block = ObjectAttentionBlock(in_channels, key_channels)
         self.dropout_rate = dropout_rate
@@ -172,7 +183,7 @@ class ObjectAttentionBlock(nn.Layer):
     """A self-attention module."""
 
     def __init__(self, in_channels, key_channels):
-        super(ObjectAttentionBlock, self).__init__()
+        super().__init__()
 
         self.in_channels = in_channels
         self.key_channels = key_channels
@@ -208,7 +219,7 @@ class ObjectAttentionBlock(nn.Layer):
 
         # sim_map (n, h1*w1, h2*w2)
         sim_map = paddle.bmm(query, key)
-        sim_map = (self.key_channels ** -.5) * sim_map
+        sim_map = (self.key_channels**-.5) * sim_map
         sim_map = F.softmax(sim_map, axis=-1)
 
         # context from (n, h1*w1, key_channels) to (n , out_channels, h1, w1)

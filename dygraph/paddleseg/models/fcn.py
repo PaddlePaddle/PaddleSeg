@@ -30,12 +30,13 @@ class FCN(nn.Layer):
     (https://arxiv.org/abs/1411.4038).
 
     Args:
-        num_classes (int): the unique number of target classes.
-        backbone (paddle.nn.Layer): backbone networks.
-        backbone_indices (tuple): one values in the tuple indicte the indices of output of backbone. Default: (-1, ).
-        channels (int): Channels after conv layer before the last one of FCNHead.
-            If not set, it is set to the number of channels of input features. Default: None.
-        pretrained (str): the path of pretrained model. Default: None
+        num_classes (int): The unique number of target classes.
+        backbone (paddle.nn.Layer): Backbone networks.
+        backbone_indices (tuple, optional): The values in the tuple indicate the indices of output of backbone.
+            Default: (-1, ).
+        channels (int, optional): The channels between conv layer and the last layer of FCNHead.
+            If None, it will be the number of channels of input features. Default: None.
+        pretrained (str, optional): The path or url of pretrained model. Default: None
     """
 
     def __init__(self,
@@ -53,14 +54,18 @@ class FCN(nn.Layer):
 
         self.head = FCNHead(num_classes, backbone_indices, backbone_channels,
                             channels)
-        utils.load_entire_model(self, pretrained)
+
+        self.pretrained = pretrained
+        self.init_weight()
 
     def forward(self, x):
         feat_list = self.backbone(x)
         logit_list = self.head(feat_list)
-        return [
-            F.resize_bilinear(logit, x.shape[2:]) for logit in logit_list
-        ]
+        return [F.resize_bilinear(logit, x.shape[2:]) for logit in logit_list]
+
+    def init_weight(self):
+        if self.pretrained is not None:
+            utils.load_entire_model(self, self.pretrained)
 
 
 class FCNHead(nn.Layer):
@@ -69,12 +74,11 @@ class FCNHead(nn.Layer):
 
     Args:
         num_classes (int): The unique number of target classes.
-        backbone_indices (tuple): One values in the tuple indicte the
-            indices of output of backbone.Default -1. Default: (-1, )
-        backbone_channels (tuple): The same length with "backbone_indices".
-            It indicates the channels of corresponding index. Default: (270, )
-        channels (int): Channels after conv layer before the last one.
-            If not set, it is set to the number of channels of input features. Default: None.
+        backbone_indices (tuple, optional): The values in the tuple indicate the indices of output of backbone.
+            Default: (-1, ).
+        channels (int, optional): The channels between conv layer and the last layer of FCNHead.
+            If None, it will be the number of channels of input features. Default: None.
+        pretrained (str, optional): The path of pretrained model. Default: None
     """
 
     def __init__(self,

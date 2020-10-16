@@ -26,7 +26,7 @@ class ANN(nn.Layer):
     """
     The ANN implementation based on PaddlePaddle.
 
-    The original article refers to 
+    The original article refers to
     Zhen, Zhu, et al. "Asymmetric Non-local Neural Networks for Semantic Segmentation"
     (https://arxiv.org/pdf/1908.07678.pdf).
 
@@ -39,7 +39,7 @@ class ANN(nn.Layer):
         inter_channels (int, optional): Both input and output channels of APNB modules. Default: 512.
         psp_size (tuple, optional): The out size of pooled feature maps. Default: (1, 3, 6, 8).
         enable_auxiliary_loss (bool, optional): A bool value indicates whether adding auxiliary loss. Default: True.
-        pretrained (str, optional): The path of pretrained model. Default: None.
+        pretrained (str, optional): The path or url of pretrained model. Default: None.
     """
 
     def __init__(self,
@@ -58,23 +58,21 @@ class ANN(nn.Layer):
             backbone.feat_channels[i] for i in backbone_indices
         ]
 
-        self.head = ANNHead(
-            num_classes,
-            backbone_indices,
-            backbone_channels,
-            key_value_channels,
-            inter_channels,
-            psp_size,
-            enable_auxiliary_loss)
+        self.head = ANNHead(num_classes, backbone_indices, backbone_channels,
+                            key_value_channels, inter_channels, psp_size,
+                            enable_auxiliary_loss)
 
-        utils.load_entire_model(self, pretrained)
+        self.pretrained = pretrained
+        self.init_weight()
 
     def forward(self, x):
         feat_list = self.backbone(x)
         logit_list = self.head(feat_list)
-        return [
-            F.resize_bilinear(logit, x.shape[2:]) for logit in logit_list
-        ]
+        return [F.resize_bilinear(logit, x.shape[2:]) for logit in logit_list]
+
+    def init_weight(self):
+        if self.pretrained is not None:
+            utils.load_entire_model(self, self.pretrained)
 
 
 class ANNHead(nn.Layer):
@@ -86,9 +84,9 @@ class ANNHead(nn.Layer):
     Args:
         num_classes (int): The unique number of target classes.
         backbone_indices (tuple): Two values in the tuple indicate the indices of output of backbone.
-            The first index will be taken as low-level features; the second one will be 
-            taken as high-level features in AFNB module. Usually backbone consists of four 
-            downsampling stage, such as ResNet, and return an output of each stage. If it is (2, 3), 
+            The first index will be taken as low-level features; the second one will be
+            taken as high-level features in AFNB module. Usually backbone consists of four
+            downsampling stage, such as ResNet, and return an output of each stage. If it is (2, 3),
             it means taking feature map of the third stage and the fourth stage in backbone.
         backbone_channels (tuple): The same length with "backbone_indices". It indicates the channels of corresponding index.
         key_value_channels (int): The key and value channels of self-attention map in both AFNB and APNB modules.
@@ -164,7 +162,7 @@ class ANNHead(nn.Layer):
 
 class AFNB(nn.Layer):
     """
-    Asymmetric Fusion Non-local Block
+    Asymmetric Fusion Non-local Block.
 
     Args:
         low_in_channels (int): Low-level-feature channels.
@@ -214,7 +212,7 @@ class AFNB(nn.Layer):
 
 class APNB(nn.Layer):
     """
-    Asymmetric Pyramid Non-local Block
+    Asymmetric Pyramid Non-local Block.
 
     Args:
         in_channels (int): The input channels of APNB module.
@@ -239,7 +237,8 @@ class APNB(nn.Layer):
         self.psp_size = psp_size
         self.stages = nn.LayerList([
             SelfAttentionBlock_APNB(in_channels, out_channels, key_channels,
-                                    value_channels, size) for size in repeat_sizes
+                                    value_channels, size)
+            for size in repeat_sizes
         ])
         self.conv_bn = layers.ConvBNReLU(
             in_channels=in_channels * 2,
@@ -337,7 +336,7 @@ class SelfAttentionBlock_AFNB(nn.Layer):
         key = _pp_module(key, self.psp_size)
 
         sim_map = paddle.matmul(query, key)
-        sim_map = (self.key_channels ** -.5) * sim_map
+        sim_map = (self.key_channels**-.5) * sim_map
         sim_map = F.softmax(sim_map, axis=-1)
 
         context = paddle.matmul(sim_map, value)
@@ -412,7 +411,7 @@ class SelfAttentionBlock_APNB(nn.Layer):
         key = _pp_module(key, self.psp_size)
 
         sim_map = paddle.matmul(query, key)
-        sim_map = (self.key_channels ** -.5) * sim_map
+        sim_map = (self.key_channels**-.5) * sim_map
         sim_map = F.softmax(sim_map, axis=-1)
 
         context = paddle.matmul(sim_map, value)

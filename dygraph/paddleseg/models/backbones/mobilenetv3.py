@@ -41,29 +41,6 @@ def make_divisible(v, divisor=8, min_value=None):
     return new_v
 
 
-# def get_padding_same(kernel_size, dilation_rate):
-#     """
-#     SAME padding implementation given kernel_size and dilation_rate.
-#     The calculation formula as following:
-#         (F-(k+(k -1)*(r-1))+2*p)/s + 1 = F_new
-#         where F: a feature map
-#               k: kernel size, r: dilation rate, p: padding value, s: stride
-#               F_new: new feature map
-
-#     Args:
-#         kernel_size (int): The
-#         dilation_rate (int)
-
-#     Returns:
-#         int. The padding value
-#     """
-#     k = kernel_size
-#     r = dilation_rate
-#     padding_same = (k + (k - 1) * (r - 1) - 1) // 2
-
-#     return padding_same
-
-
 class MobileNetV3(nn.Layer):
     def __init__(self,
                  pretrained=None,
@@ -167,7 +144,8 @@ class MobileNetV3(nn.Layer):
                 sublayer=self.block_list[-1], name="conv" + str(i + 2))
             inplanes = make_divisible(scale * c)
 
-        utils.load_pretrained_model(self, pretrained)
+        self.pretrained = pretrained
+        self.init_weight()
 
     def modify_bottle_params(self, output_stride=None):
 
@@ -194,6 +172,10 @@ class MobileNetV3(nn.Layer):
                 feat_list.append(x)
 
         return feat_list
+
+    def init_weight(self):
+        if self.pretrained is not None:
+            utils.load_pretrained_model(self, self.pretrained)
 
 
 class ConvBNLayer(nn.Layer):
@@ -260,19 +242,6 @@ class ResidualUnit(nn.Layer):
             if_act=True,
             act=act)
 
-        # self.bottleneck_conv = ConvBNLayer(
-        #     in_c=mid_c,
-        #     out_c=mid_c,
-        #     filter_size=filter_size,
-        #     stride=stride,
-        #     padding=get_padding_same(
-        #         filter_size,
-        #         dilation),  # int((filter_size - 1) // 2) + (dilation - 1),
-        #     dilation=dilation,
-        #     num_groups=mid_c,
-        #     if_act=True,
-        #     act=act)
-        print('=================')
         self.bottleneck_conv = ConvBNLayer(
             in_c=mid_c,
             out_c=mid_c,
