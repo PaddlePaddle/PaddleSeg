@@ -11,7 +11,7 @@
 |DANet|✔|✔|||
 |Deeplabv3|✔|✔|||
 |Deeplabv3p|✔|✔|||
-|Fast-SCNN|-|-|-|-|
+|[Fast-SCNN](./configs/fastscnn/README.md)|-|-|-|-|
 |FCN|||✔|✔|
 |GCNet|✔|✔|||
 |[OCRNet](./configs/ocrnet/)|||✔|✔|
@@ -20,9 +20,11 @@
 
 ## 数据集
 
-* CityScapes
-* Pascal VOC
-* ADE20K
+- [x] CityScapes
+- [x] Pascal VOC
+- [x] ADE20K
+- [ ] Pascal Context
+- [ ] COCO stuff
 
 ## 安装
 
@@ -36,9 +38,8 @@
 
 由于图像分割模型计算开销大，推荐在GPU版本的PaddlePaddle下使用PaddleSeg.
 
-```shell
-pip install -U paddlepaddle-gpu
-```
+安装教程请见[PaddlePaddle官网](https://www.paddlepaddle.org.cn/install/quick)。
+
 
 2. 下载PaddleSeg代码
 ```shell
@@ -64,5 +65,3 @@ python3 train.py --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml
 * [快速入门](./docs/quick_start.md)
 * [数据集准备](./docs/data_prepare.md)
 * [配置项](./configs/)
-* [APIs](./docs/apis/)
-* [多尺度预测 & 滑动窗口预测](./docs/infer.md)

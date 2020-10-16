@@ -28,6 +28,7 @@ class OCRNet(nn.Layer):
     The original article refers to
         Yuan, Yuhui, et al. "Object-Contextual Representations for Semantic Segmentation"
         (https://arxiv.org/pdf/1909.11065.pdf)
+
     Args:
         num_classes (int): The unique number of target classes.
         backbone (Paddle.nn.Layer): Backbone network.
@@ -79,6 +80,7 @@ class OCRNet(nn.Layer):
 class OCRHead(nn.Layer):
     """
     The Object contextual representation head.
+
     Args:
         num_classes(int): The unique number of target classes.
         in_channels(tuple): The number of input channels.

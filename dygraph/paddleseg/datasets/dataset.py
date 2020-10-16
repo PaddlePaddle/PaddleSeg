@@ -24,7 +24,8 @@ from paddleseg.transforms import Compose
 
 @manager.DATASETS.add_component
 class Dataset(paddle.io.Dataset):
-    """Pass in a custom dataset that conforms to the format.
+    """
+    Pass in a custom dataset that conforms to the format.
 
     Args:
         transforms (list): Transforms for image.

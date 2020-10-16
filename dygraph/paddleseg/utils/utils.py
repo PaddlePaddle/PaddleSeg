@@ -91,7 +91,7 @@ def load_pretrained_model(model, pretrained_model):
                     pretrained_model))
     else:
         logger.info(
-            'No pretrained model to load, {} will be train from scratch.'.
+            'No pretrained model to load, {} will be trained from scratch.'.
             format(model.__class__.__name__))
 
 
@@ -110,7 +110,7 @@ def resume(model, optimizer, resume_model):
             return epoch
         else:
             raise ValueError(
-                'The resume model directory is not Found: {}'.format(
-                    resume_model))
+                'Directory of the model needed to resume is not Found: {}'.
+                format(resume_model))
     else:
-        logger.info('No model need to resume')
+        logger.info('No model needed to resume.')

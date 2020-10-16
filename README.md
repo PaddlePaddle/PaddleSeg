@@ -50,14 +50,12 @@ PaddleSeg提供丰富地产业实践案例，如[人像分割](./contrib/HumanSe
 ### 1. 安装PaddlePaddle
 
 版本要求
-* PaddlePaddle >= 1.7.0
+* PaddlePaddle >= 1.7.0 and < 2.0
 * Python >= 3.5+
 
 由于图像分割模型计算开销大，推荐在GPU版本的PaddlePaddle下使用PaddleSeg.
-```
-pip install -U paddlepaddle-gpu
-```
-同时请保证您参考NVIDIA官网，已经正确配置和安装了显卡驱动，CUDA 9，cuDNN 7.3，NCCL2等依赖，其他更加详细的安装信息请参考：[PaddlePaddle安装说明](https://www.paddlepaddle.org.cn/install/doc/index)。
+
+安装教程请见[PaddlePaddle官网](https://www.paddlepaddle.org.cn/install/quick)。
 
 ### 2. 下载PaddleSeg代码
 
