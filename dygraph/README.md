@@ -6,16 +6,16 @@
 
 |模型\骨干网络|ResNet50|ResNet101|HRNetw18|HRNetw48|
 |-|-|-|-|-|
-|ANN|√|√|||
+|[ANN](./configs/ann/README.md)|✔|✔|||
 |BiSeNetv2|-|-|-|-|
-|DANet|√|√|||
-|Deeplabv3|√|√|||
-|Deeplabv3p|√|√|||
+|DANet|✔|✔|||
+|Deeplabv3|✔|✔|||
+|Deeplabv3p|✔|✔|||
 |Fast-SCNN|-|-|-|-|
-|FCN|||√|√|
-|GCNet|√|√|||
-|[OCRNet](https://github.com/nepeplwu/PaddleSeg/blob/develop/dygraph/configs/ocrnet/)|||√|√|
-|PSPNet|√|√|||
+|FCN|||✔|✔|
+|GCNet|✔|✔|||
+|[OCRNet](./configs/ocrnet/)|||✔|✔|
+|PSPNet|✔|✔|||
 |UNet|-|-|-|-|
 
 ## 数据集
@@ -50,18 +50,13 @@ git clone https://github.com/PaddlePaddle/PaddleSeg
 
 ```
 cd PaddleSeg/dygpraph
+export PYTHONPATH=`pwd`
 pip install -r requirements.txt
 ```
 
 ## 训练
 ```
-python3 train.py --model_name unet \
---dataset OpticDiscSeg \
---input_size 192 192 \
---iters 10 \
---save_interval 1 \
---do_eval \
---save_dir output
+python3 train.py --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml
 ```
 
 ## 使用教程

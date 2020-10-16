@@ -32,9 +32,9 @@ class UNet(nn.Layer):
 
     Args:
         num_classes (int): The unique number of target classes.
-        use_deconv (bool): Whether to use deconvolution when upsampling.
+        use_deconv (bool, optional): A bool value indicates whether using deconvolution in upsampling.
             If False, use resize_bilinear. Default: False.
-        pretrained (str): the path of pretrained model for fine tuning. Default: None.
+        pretrained (str, optional): The path or url of pretrained model for fine tuning. Default: None.
     """
 
     def __init__(self, num_classes, use_deconv=False, pretrained=None):

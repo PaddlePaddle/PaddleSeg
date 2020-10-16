@@ -29,8 +29,8 @@ class BiSeNetV2(nn.Layer):
     The BiSeNet V2 implementation based on PaddlePaddle.
 
     The original article refers to
-        Yu, Changqian, et al. "BiSeNet V2: Bilateral Network with Guided Aggregation for Real-time Semantic Segmentation"
-        (https://arxiv.org/abs/2004.02147)
+    Yu, Changqian, et al. "BiSeNet V2: Bilateral Network with Guided Aggregation for Real-time Semantic Segmentation"
+    (https://arxiv.org/abs/2004.02147)
 
     Args:
         num_classes (int): The unique number of target classes.
@@ -127,8 +127,8 @@ class ContextEmbeddingBlock(nn.Layer):
         return self.conv_3x3(conv1)
 
 
-class GatherAndExpandsionLayer1(nn.Layer):
-    """Gather And Expandsion Layer with stride 1"""
+class GatherAndExpansionLayer1(nn.Layer):
+    """Gather And Expansion Layer with stride 1"""
 
     def __init__(self, in_dim, out_dim, expand):
         super().__init__()
@@ -144,8 +144,8 @@ class GatherAndExpandsionLayer1(nn.Layer):
         return F.relu(self.conv(x) + x)
 
 
-class GatherAndExpandsionLayer2(nn.Layer):
-    """Gather And Expandsion Layer with stride 2"""
+class GatherAndExpansionLayer2(nn.Layer):
+    """Gather And Expansion Layer with stride 2"""
 
     def __init__(self, in_dim, out_dim, expand):
         super().__init__()
@@ -202,18 +202,18 @@ class SemanticBranch(nn.Layer):
         self.stem = StemBlock(3, C1)
 
         self.stage3 = nn.Sequential(
-            GatherAndExpandsionLayer2(C1, C3, 6),
-            GatherAndExpandsionLayer1(C3, C3, 6))
+            GatherAndExpansionLayer2(C1, C3, 6),
+            GatherAndExpansionLayer1(C3, C3, 6))
 
         self.stage4 = nn.Sequential(
-            GatherAndExpandsionLayer2(C3, C4, 6),
-            GatherAndExpandsionLayer1(C4, C4, 6))
+            GatherAndExpansionLayer2(C3, C4, 6),
+            GatherAndExpansionLayer1(C4, C4, 6))
 
         self.stage5_4 = nn.Sequential(
-            GatherAndExpandsionLayer2(C4, C5, 6),
-            GatherAndExpandsionLayer1(C5, C5, 6),
-            GatherAndExpandsionLayer1(C5, C5, 6),
-            GatherAndExpandsionLayer1(C5, C5, 6))
+            GatherAndExpansionLayer2(C4, C5, 6),
+            GatherAndExpansionLayer1(C5, C5, 6),
+            GatherAndExpansionLayer1(C5, C5, 6),
+            GatherAndExpansionLayer1(C5, C5, 6))
 
         self.ce = ContextEmbeddingBlock(C5, C5)
 

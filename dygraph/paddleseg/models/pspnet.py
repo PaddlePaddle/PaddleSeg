@@ -36,7 +36,7 @@ class PSPNet(nn.Layer):
         pp_out_channels (int, optional): The output channels after Pyramid Pooling Module. Default: 1024.
         bin_sizes (tuple, optional): The out size of pooled feature maps. Default: (1,2,3,6).
         enable_auxiliary_loss (bool, optional): A bool value indicates whether adding auxiliary loss. Default: True.
-        pretrained (str, optional): The path of pretrained model. Default: None.
+        pretrained (str, optional): The path or url of pretrained model. Default: None.
     """
 
     def __init__(self,

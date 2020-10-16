@@ -42,7 +42,7 @@ class DeepLabV3P(nn.Layer):
             If output_stride=8, aspp_ratios is (1, 12, 24, 36).
             Default: (1, 6, 12, 18).
         aspp_out_channels (int, optional): The output channels of ASPP module. Default: 256.
-        pretrained (str, optional): The path of pretrained model. Default: None.
+        pretrained (str, optional): The path or url of pretrained model. Default: None.
     """
 
     def __init__(self,

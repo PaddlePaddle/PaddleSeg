@@ -13,12 +13,12 @@
 # limitations under the License.
 
 import contextlib
+import filelock
 import math
 import os
 import tempfile
 from urllib.parse import urlparse, unquote
 
-import filelock
 import paddle
 
 from paddleseg.utils import logger, seg_env

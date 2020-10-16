@@ -74,7 +74,7 @@ def main():
     with open(os.path.join(sbd_path, 'dataset/val.txt'), 'r') as f:
         sbd_file_list += [line.strip() for line in f]
     if not os.path.exists(args.voc_path):
-        raise Exception(
+        raise FileNotFoundError(
             'There is no voc_path: {}. Please ensure that the Pascal VOC dataset has been downloaded correctly'
         )
     with open(
