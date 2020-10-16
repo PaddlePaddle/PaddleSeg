@@ -14,7 +14,7 @@
 |Fast-SCNN|-|-|-|-|
 |FCN|||✔|✔|
 |GCNet|✔|✔|||
-|[OCRNet](https://github.com/nepeplwu/PaddleSeg/blob/develop/dygraph/configs/ocrnet/)|||✔|✔|
+|[OCRNet](./configs/ocrnet/)|||✔|✔|
 |PSPNet|✔|✔|||
 |UNet|-|-|-|-|
 
