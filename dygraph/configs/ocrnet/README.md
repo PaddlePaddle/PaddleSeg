@@ -1,10 +1,10 @@
 # Object-Contextual Representations for Semantic Segmentation
 
-## 模型介绍
+## Reference
 
 > Yuan Y, Chen X, Wang J. Object-contextual representations for semantic segmentation[J]. arXiv preprint arXiv:1909.11065, 2019.
 
-## 模型效果
+## Performance
 
 ### CityScapes
 
