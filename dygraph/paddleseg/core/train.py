@@ -51,7 +51,7 @@ def train(model,
           iters=10000,
           batch_size=2,
           resume_model=None,
-          save_interval_iters=1000,
+          save_interval=1000,
           log_iters=10,
           num_workers=0,
           use_vdl=False,
@@ -151,8 +151,7 @@ def train(model,
                                           avg_train_reader_cost, iter)
                 avg_loss = 0.0
 
-            if (iter % save_interval_iters == 0
-                    or iter == iters) and local_rank == 0:
+            if (iter % save_interval == 0 or iter == iters) and local_rank == 0:
                 current_save_dir = os.path.join(save_dir,
                                                 "iter_{}".format(iter))
                 if not os.path.isdir(current_save_dir):
@@ -163,11 +162,7 @@ def train(model,
                             os.path.join(current_save_dir, 'model'))
 
                 if val_dataset is not None:
-                    mean_iou, acc = evaluate(
-                        model,
-                        val_dataset,
-                        model_dir=current_save_dir,
-                        iter_id=iter)
+                    mean_iou, acc = evaluate(model, val_dataset, iter_id=iter)
                     if mean_iou > best_mean_iou:
                         best_mean_iou = mean_iou
                         best_model_iter = iter

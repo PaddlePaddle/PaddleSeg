@@ -77,6 +77,7 @@ MODEL:
         STAGE4:
             NUM_CHANNELS: [18, 36, 72, 144]
     # 此处设置OCR HEAD
+    OCR:
         OCR_MID_CHANNELS: 512
         OCR_KEY_CHANNELS: 256
     MULTI_LOSS_WEIGHT: [1.0, 1.0]

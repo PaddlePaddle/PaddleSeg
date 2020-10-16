@@ -16,3 +16,4 @@ from .dataset import Dataset
 from .cityscapes import Cityscapes
 from .voc import PascalVOC
 from .ade import ADE20K
+from .optic_disc_seg import OpticDiscSeg

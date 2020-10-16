@@ -48,14 +48,11 @@ class ConvBNLayer(nn.Layer):
             out_channels=out_channels,
             kernel_size=kernel_size,
             stride=stride,
-            padding="same", #(kernel_size - 1) // 2 if dilation == 1 else 0,
+            padding=(kernel_size - 1) // 2 if dilation == 1 else 0,
             dilation=dilation,
             groups=groups,
             bias_attr=False)
-        if name == "conv1":
-            bn_name = "bn_" + name
-        else:
-            bn_name = "bn" + name[3:]
+
         self._batch_norm = nn.SyncBatchNorm(out_channels)
         self._act_op = layers.Activation(act=act)
 
@@ -119,10 +116,11 @@ class BottleneckBlock(nn.Layer):
         y = self.conv0(inputs)
 
         ####################################################################
-        # If given dilation rate > 1, using corresponding padding
-        # if self.dilation > 1:
-        #     padding = self.dilation
-        #     y = F.pad(y, [padding, padding, padding, padding])
+        # If given dilation rate > 1, using corresponding padding.
+        # The performance drops down without the follow padding.
+        if self.dilation > 1:
+            padding = self.dilation
+            y = F.pad(y, [padding, padding, padding, padding])
         #####################################################################
 
         conv1 = self.conv1(y)
@@ -269,10 +267,9 @@ class ResNet_vd(nn.Layer):
                         block] if dilation_dict and block in dilation_dict else 1
 
                     # Actually block here is 'stage', and i is 'block' in 'stage'
-                    # At the stage 4, expand the the dilation_rate using multi_grid, default (1, 2, 4)
+                    # At the stage 4, expand the the dilation_rate if given multi_grid
                     if block == 3:
                         dilation_rate = dilation_rate * multi_grid[i]
-                    # print("stage {}, block {}: dilation rate".format(block, i), dilation_rate)
                     ###############################################################################
 
                     bottleneck_block = self.add_sublayer(
@@ -311,7 +308,8 @@ class ResNet_vd(nn.Layer):
                     shortcut = True
                 self.stage_list.append(block_list)
 
-        self.init_weight(pretrained)
+        self.pretrained = pretrained
+        self.init_weight()
 
     def forward(self, inputs):
         y = self.conv1_1(inputs)
@@ -328,8 +326,8 @@ class ResNet_vd(nn.Layer):
 
         return feat_list
 
-    def init_weight(self, pretrained):
-        utils.load_pretrained_model(self, pretrained)
+    def init_weight(self):
+        utils.load_pretrained_model(self, self.pretrained)
 
         # for idx, stage in enumerate(self.stage_list):
         #     for layer in stage:

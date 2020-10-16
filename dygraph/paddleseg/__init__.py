@@ -12,6 +12,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from . import models
-from . import datasets
-from . import transforms
+from . import models, datasets, transforms

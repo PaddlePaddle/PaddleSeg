@@ -13,12 +13,12 @@
 # limitations under the License.
 
 import contextlib
+import filelock
 import math
 import os
 import tempfile
 from urllib.parse import urlparse, unquote
 
-import filelock
 import paddle
 
 from paddleseg.utils import logger, seg_env
@@ -38,7 +38,7 @@ def load_entire_model(model, pretrained):
         if os.path.exists(pretrained):
             load_pretrained_model(model, pretrained)
         else:
-            raise Exception(
+            raise FileNotFoundError(
                 'Pretrained model is not found: {}'.format(pretrained))
     else:
         logger.warning('Not all pretrained params of {} are loaded, ' \
@@ -47,7 +47,7 @@ def load_entire_model(model, pretrained):
 
 def load_pretrained_model(model, pretrained_model):
     if pretrained_model is not None:
-        logger.info('Load pretrained model from {}'.format(pretrained_model))
+        logger.info('Loading pretrained model from {}'.format(pretrained_model))
         # download pretrained model from url
         if urlparse(pretrained_model).netloc:
             pretrained_model = unquote(pretrained_model)
@@ -81,7 +81,7 @@ def load_pretrained_model(model, pretrained_model):
                     model_state_dict[k] = para_state_dict[k]
                     num_params_loaded += 1
             model.set_dict(model_state_dict)
-            logger.info("There are {}/{} variables are loaded into {}.".format(
+            logger.info("There are {}/{} variables loaded into {}.".format(
                 num_params_loaded, len(model_state_dict),
                 model.__class__.__name__))
 

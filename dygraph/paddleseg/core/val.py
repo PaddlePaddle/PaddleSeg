@@ -24,10 +24,7 @@ from paddleseg.utils import ConfusionMatrix, Timer, calculate_eta, logger
 np.set_printoptions(suppress=True)
 
 
-def evaluate(model, eval_dataset=None, model_dir=None, iter_id=None):
-    ckpt_path = os.path.join(model_dir, 'model')
-    para_state_dict, opti_state_dict = paddle.load(ckpt_path)
-    model.set_dict(para_state_dict)
+def evaluate(model, eval_dataset=None, iter_id=None):
     model.eval()
 
     total_iters = len(eval_dataset)
@@ -52,7 +49,7 @@ def evaluate(model, eval_dataset=None, model_dir=None, iter_id=None):
                 h, w = info[1][0], info[1][1]
                 pred = pred[0:h, 0:w]
             else:
-                raise Exception("Unexpected info '{}' in im_info".format(
+                raise ValueError("Unexpected info '{}' in im_info".format(
                     info[0]))
         pred = pred[np.newaxis, :, :, np.newaxis]
         pred = pred.astype('int64')

@@ -22,57 +22,63 @@ from paddleseg.transforms import Compose
 
 @manager.DATASETS.add_component
 class Cityscapes(Dataset):
-    """Cityscapes dataset `https://www.cityscapes-dataset.com/`.
+    """
+    Cityscapes dataset `https://www.cityscapes-dataset.com/`.
     The folder structure is as follow:
-    cityscapes
-    |
-    |--leftImg8bit
-    |  |--train
-    |  |--val
-    |  |--test
-    |
-    |--gtFine
-    |  |--train
-    |  |--val
-    |  |--test
+
+        cityscapes
+        |
+        |--leftImg8bit
+        |  |--train
+        |  |--val
+        |  |--test
+        |
+        |--gtFine
+        |  |--train
+        |  |--val
+        |  |--test
+
     Make sure there are **labelTrainIds.png in gtFine directory. If not, please run the conver_cityscapes.py in tools.
 
     Args:
-        dataset_root: Cityscapes dataset directory.
-        mode: Which part of dataset to use. it is one of ('train', 'val', 'test'). Default: 'train'.
-        transforms: Transforms for image.
+        transforms (list): Transforms for image.
+        dataset_root (str): Cityscapes dataset directory.
+        mode (str): Which part of dataset to use. it is one of ('train', 'val', 'test'). Default: 'train'.
     """
 
-    def __init__(self, dataset_root, transforms=None, mode='train'):
+    def __init__(self, transforms, dataset_root, mode='train'):
         self.dataset_root = dataset_root
         self.transforms = Compose(transforms)
         self.file_list = list()
+        mode = mode.lower()
         self.mode = mode
         self.num_classes = 19
         self.ignore_index = 255
 
-        if mode.lower() not in ['train', 'val', 'test']:
-            raise Exception(
+        if mode not in ['train', 'val', 'test']:
+            raise ValueError(
                 "mode should be 'train', 'val' or 'test', but got {}.".format(
                     mode))
 
         if self.transforms is None:
-            raise Exception("`transforms` is necessary, but it is None.")
+            raise ValueError("`transforms` is necessary, but it is None.")
 
         img_dir = os.path.join(self.dataset_root, 'leftImg8bit')
-        grt_dir = os.path.join(self.dataset_root, 'gtFine')
+        label_dir = os.path.join(self.dataset_root, 'gtFine')
         if self.dataset_root is None or not os.path.isdir(
                 self.dataset_root) or not os.path.isdir(
-                    img_dir) or not os.path.isdir(grt_dir):
-            raise Exception(
+                    img_dir) or not os.path.isdir(label_dir):
+            raise ValueError(
                 "The dataset is not Found or the folder structure is nonconfoumance."
             )
 
-        grt_files = sorted(
+        label_files = sorted(
             glob.glob(
-                os.path.join(grt_dir, mode, '*', '*_gtFine_labelTrainIds.png')))
+                os.path.join(label_dir, mode, '*',
+                             '*_gtFine_labelTrainIds.png')))
         img_files = sorted(
             glob.glob(os.path.join(img_dir, mode, '*', '*_leftImg8bit.png')))
 
-        self.file_list = [[img_path, grt_path]
-                          for img_path, grt_path in zip(img_files, grt_files)]
+        self.file_list = [[
+            img_path, label_path
+        ] for img_path, label_path in zip(img_files, label_files)]

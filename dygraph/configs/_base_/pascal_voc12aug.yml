@@ -1,24 +1,26 @@
 batch_size: 4
-iters: 80000
+iters: 40000
 
 train_dataset:
-  type: Cityscapes
-  dataset_root: data/cityscapes
+  type: PascalVOC
+  dataset_root: data/VOCdevkit/
   transforms:
     - type: ResizeStepScaling
       min_scale_factor: 0.5
       max_scale_factor: 2.0
       scale_step_size: 0.25
     - type: RandomPaddingCrop
-      crop_size: [1024, 512]
+      crop_size: [512, 512]
     - type: RandomHorizontalFlip
     - type: Normalize
-  mode: train
+  mode: trainaug
 
 val_dataset:
-  type: Cityscapes
-  dataset_root: data/cityscapes
+  type: PascalVOC
+  dataset_root: data/VOCdevkit/
   transforms:
+    - type: Padding
+      target_size: [512, 512]
     - type: Normalize
   mode: val
 

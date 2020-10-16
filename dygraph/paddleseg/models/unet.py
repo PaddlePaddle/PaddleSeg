@@ -32,9 +32,9 @@ class UNet(nn.Layer):
 
     Args:
         num_classes (int): The unique number of target classes.
-        use_deconv (bool): Whether to use deconvolution when upsampling.
+        use_deconv (bool, optional): A bool value indicates whether using deconvolution in upsampling.
             If False, use resize_bilinear. Default: False.
-        pretrained (str): the path of pretrained model for fine tuning. Default: None.
+        pretrained (str, optional): The path or url of pretrained model for fine tuning. Default: None.
     """
 
     def __init__(self, num_classes, use_deconv=False, pretrained=None):
@@ -48,13 +48,21 @@ class UNet(nn.Layer):
             kernel_size=3,
             stride=1,
             padding=1)
-        utils.load_entire_model(self, pretrained)
+
+        self.pretrained = pretrained
+        self.init_weight()
 
     def forward(self, x):
+        logit_list = []
         x, short_cuts = self.encode(x)
         x = self.decode(x, short_cuts)
         logit = self.cls(x)
-        return [logit]
+        logit_list.append(logit)
+        return logit_list
+
+    def init_weight(self):
+        if self.pretrained is not None:
+            utils.load_entire_model(self, self.pretrained)
 
 
 class Encoder(nn.Layer):

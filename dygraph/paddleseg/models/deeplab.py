@@ -42,7 +42,7 @@ class DeepLabV3P(nn.Layer):
             If output_stride=8, aspp_ratios is (1, 12, 24, 36).
             Default: (1, 6, 12, 18).
         aspp_out_channels (int, optional): The output channels of ASPP module. Default: 256.
-        pretrained (str, optional): The path of pretrained model. Default: None.
+        pretrained (str, optional): The path or url of pretrained model. Default: None.
     """
 
     def __init__(self,
@@ -63,14 +63,17 @@ class DeepLabV3P(nn.Layer):
                                    backbone_channels, aspp_ratios,
                                    aspp_out_channels)
 
-        utils.load_entire_model(self, pretrained)
+        self.pretrained = pretrained
+        self.init_weight()
 
-    def forward(self, input):
-        feat_list = self.backbone(input)
+    def forward(self, x):
+        feat_list = self.backbone(x)
         logit_list = self.head(feat_list)
-        return [
-            F.resize_bilinear(logit, input.shape[2:]) for logit in logit_list
-        ]
+        return [F.resize_bilinear(logit, x.shape[2:]) for logit in logit_list]
+
+    def init_weight(self):
+        if self.pretrained is not None:
+            utils.load_entire_model(self, self.pretrained)
 
 
 class DeepLabV3PHead(nn.Layer):
@@ -91,12 +94,8 @@ class DeepLabV3PHead(nn.Layer):
         aspp_out_channels (int): The output channels of ASPP module.
     """
 
-    def __init__(self,
-                 num_classes,
-                 backbone_indices,
-                 backbone_channels,
-                 aspp_ratios,
-                 aspp_out_channels):
+    def __init__(self, num_classes, backbone_indices, backbone_channels,
+                 aspp_ratios, aspp_out_channels):
         super().__init__()
 
         self.aspp = layers.ASPPModule(
@@ -136,7 +135,7 @@ class DeepLabV3(nn.Layer):
                  num_classes,
                  backbone,
                  pretrained=None,
-                 backbone_indices=(3,),
+                 backbone_indices=(3, ),
                  aspp_ratios=(1, 6, 12, 18),
                  aspp_out_channels=256):
         super().__init__()
@@ -150,14 +149,17 @@ class DeepLabV3(nn.Layer):
                                   backbone_channels, aspp_ratios,
                                   aspp_out_channels)
 
-        utils.load_entire_model(self, pretrained)
+        self.pretrained = pretrained
+        self.init_weight()
 
-    def forward(self, input):
-        feat_list = self.backbone(input)
+    def forward(self, x):
+        feat_list = self.backbone(x)
         logit_list = self.head(feat_list)
-        return [
-            F.resize_bilinear(logit, input.shape[2:]) for logit in logit_list
-        ]
+        return [F.resize_bilinear(logit, x.shape[2:]) for logit in logit_list]
+
+    def init_weight(self):
+        if self.pretrained is not None:
+            utils.load_entire_model(self, self.pretrained)
 
 
 class DeepLabV3Head(nn.Layer):
@@ -168,12 +170,8 @@ class DeepLabV3Head(nn.Layer):
         Please Refer to DeepLabV3PHead above.
     """
 
-    def __init__(self,
-                 num_classes,
-                 backbone_indices,
-                 backbone_channels,
-                 aspp_ratios,
-                 aspp_out_channels):
+    def __init__(self, num_classes, backbone_indices, backbone_channels,
+                 aspp_ratios, aspp_out_channels):
         super().__init__()
 
         self.aspp = layers.ASPPModule(

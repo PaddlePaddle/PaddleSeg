@@ -1,27 +1,24 @@
 batch_size: 4
-iters: 80000
+iters: 1000
 
 train_dataset:
-  type: Cityscapes
-  dataset_root: data/cityscapes
+  type: OpticDiscSeg
+  dataset_root: data/optic_disc_seg
   transforms:
-    - type: ResizeStepScaling
-      min_scale_factor: 0.5
-      max_scale_factor: 2.0
-      scale_step_size: 0.25
-    - type: RandomPaddingCrop
-      crop_size: [1024, 512]
+    - type: Resize
+      target_size: [512, 512]
     - type: RandomHorizontalFlip
     - type: Normalize
   mode: train
 
 val_dataset:
-  type: Cityscapes
-  dataset_root: data/cityscapes
+  type: OpticDiscSeg
+  dataset_root: data/optic_disc_seg
   transforms:
+    - type: Resize
+      target_size: [512, 512]
     - type: Normalize
   mode: val
-
 
 optimizer:
   type: sgd
@@ -33,7 +30,7 @@ learning_rate:
   decay:
     type: poly
     power: 0.9
-    end_lr: 0.0
+    end_lr: 0
 
 loss:
   types:

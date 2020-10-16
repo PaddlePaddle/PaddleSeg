@@ -23,10 +23,44 @@ import paddleseg.cvlibs.manager as manager
 
 class Config(object):
     '''
-    Training config.
+    Training configuration parsing. The only yaml/yml file is supported.
+
+    The following hyper-parameters are available in the config file:
+        batch_size: The number of samples per gpu.
+        iters: The total training steps.
+        train_dataset: A training data config including type/data_root/transforms/mode.
+            For data type, please refer to paddleseg.datasets.
+            For specific transforms, please refer to paddleseg.transforms.transforms.
+        val_dataset: A validation data config including type/data_root/transforms/mode.
+        optimizer: A optimizer config, but currently PaddleSeg only supports sgd with momentum in config file.
+            In addition, weight_decay could be set as a regularization.
+        learning_rate: A learning rate config. If decay is configured, learning _rate value is the starting learning rate,
+             where only poly decay is supported using the config file. In addition, decay power and end_lr are tuned experimentally.
+        loss: A loss config. Multi-loss config is available. The loss type order is consistent with the seg model outputs,
+            where the coef term indicates the weight of corresponding loss. Note that the number of coef must be the same as the number of
+            model outputs, and there could be only one loss type if using the same loss type among the outputs, otherwise the number of
+            loss type must be consistent with coef.
+        model: A model config including type/backbone and model-dependent arguments.
+            For model type, please refer to paddleseg.models.
+            For backbone, please refer to paddleseg.models.backbones.
 
     Args:
-        path(str) : the path of config file, supports yaml format only
+        path(str) : the path of config file, supports yaml format only.
+
+    Examples:
+
+        from paddleseg.cvlibs.config import Config
+
+        # Create a cfg object with yaml file path.
+        cfg = Config(yaml_cfg_path)
+
+        # Parsing the argument when its property is used.
+        train_dataset = cfg.train_dataset
+
+        # the argument of model should be parsed after dataset,
+        # since the model builder uses some properties in dataset.
+        model = cfg.model
+        ...
     '''
 
     def __init__(self,
