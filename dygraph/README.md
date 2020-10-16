@@ -6,7 +6,7 @@
 
 |模型\骨干网络|ResNet50|ResNet101|HRNetw18|HRNetw48|
 |-|-|-|-|-|
-|ANN|✔|✔|||
+|[ANN](./configs/ann/README.md)|✔|✔|||
 |BiSeNetv2|-|-|-|-|
 |DANet|✔|✔|||
 |Deeplabv3|✔|✔|||
@@ -14,7 +14,7 @@
 |Fast-SCNN|-|-|-|-|
 |FCN|||✔|✔|
 |GCNet|✔|✔|||
-|[OCRNet](https://github.com/nepeplwu/PaddleSeg/blob/develop/dygraph/configs/ocrnet/)|||✔|✔|
+|[OCRNet](./configs/ocrnet/)|||✔|✔|
 |PSPNet|✔|✔|||
 |UNet|-|-|-|-|
 
