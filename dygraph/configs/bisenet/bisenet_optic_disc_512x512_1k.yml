@@ -1,6 +1,9 @@
 _base_: '../_base_/optic_disc_seg.yml'
 
 model:
-  type: UNet
+  type: BiSeNetV2
   num_classes: 2
   pretrained: Null
+
+loss:
+    coef: [1, 1, 1, 1, 1]
