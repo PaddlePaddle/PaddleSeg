@@ -29,7 +29,7 @@ import tqdm
 
 from paddleseg.utils.download import download_file_and_uncompress
 
-DATA_HOME = os.path.expanduser('data/')
+DATA_HOME = os.path.expanduser('~/.paddleseg/dataset/')
 URL = 'http://www.eecs.berkeley.edu/Research/Projects/CS/vision/grouping/semantic_contours/benchmark.tgz'
 
 
