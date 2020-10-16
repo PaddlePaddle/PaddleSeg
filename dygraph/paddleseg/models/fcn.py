@@ -30,7 +30,7 @@ class FCN(nn.Layer):
     (https://arxiv.org/abs/1411.4038).
 
     Args:
-        num_classes (int): the unique number of target classes.
+        num_classes (int): The unique number of target classes.
         backbone (paddle.nn.Layer): Backbone networks.
         backbone_indices (tuple, optional): The values in the tuple indicate the indices of output of backbone.
             Default: (-1, ).

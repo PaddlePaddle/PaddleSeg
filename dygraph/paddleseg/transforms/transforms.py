@@ -51,12 +51,12 @@ class Compose:
         Args:
             im (str|np.ndarray): It is either image path or image object.
             im_info (dict, optional): A dictionary maintains image info before transformation. Default: None.
-                - im_info["shape_before_resize"] (tuple): the image reshape before resize, (h, w).
-                - im_info["shape_before_padding"] (tuple): the image reshape before padding, (h, w).
-            label (str/np.ndarray): It is either label path or label ndarray.
+                - im_info["shape_before_resize"] (tuple): The image reshape before resize, (h, w).
+                - im_info["shape_before_padding"] (tuple): The image reshape before padding, (h, w).
+            label (str|np.ndarray): It is either label path or label ndarray.
 
         Returns:
-            tuple: A tuple including image, image info, and label after transformation.
+            (tuple). A tuple including image, image info, and label after transformation.
         """
 
         if im_info is None:
@@ -133,7 +133,7 @@ class Resize:
     Resize an image.
 
     Args:
-        target_size (list|tuple, optional): the target size of image. Default: (512, 512).
+        target_size (list|tuple, optional): The target size of image. Default: (512, 512).
         interp (str, optional): The interpolation mode of resize is consistent with opencv.
             ['NEAREST', 'LINEAR', 'CUBIC', 'AREA', 'LANCZOS4', 'RANDOM']. Note that when it is
             'RANDOM', a random interpolation mode would be specified. Default: "LINEAR".
@@ -178,7 +178,7 @@ class Resize:
             label (np.ndarray, optional): The label data. Default: None.
 
         Returns:
-            tuple: When label is None, it returns (im, im_info), otherwise it returns (im, im_info, label),
+            (tuple). When label is None, it returns (im, im_info), otherwise it returns (im, im_info, label),
                 where im_info["shape_before_resize"] is updated to the size of the image before this transformation.
 
         Raises:
@@ -216,6 +216,7 @@ class ResizeByLong:
     Args:
         long_size (int): The target size of long side.
     """
+
     def __init__(self, long_size):
         self.long_size = long_size
 
@@ -227,7 +228,7 @@ class ResizeByLong:
             label (np.ndarray, optional): The label data. Default: None.
 
         Returns:
-            tuple: When label is None, it returns (im, im_info), otherwise it returns (im, im_info, label).
+            (tuple). When label is None, it returns (im, im_info), otherwise it returns (im, im_info, label).
         """
 
         if im_info is None:
@@ -271,7 +272,7 @@ class ResizeRangeScaling:
             label (np.ndarray, optional): The label data. Default: None.
 
         Returns:
-            tuple: When label is None, it returns (im, im_info), otherwise it returns (im, im_info, label).
+            (tuple). When label is None, it returns (im, im_info), otherwise it returns (im, im_info, label).
         """
 
         if self.min_value == self.max_value:
@@ -297,7 +298,7 @@ class ResizeStepScaling:
 
     Args:
         min_scale_factor (float, optional): The minimum scale. Default: 0.75.
-        max_scale_factor (float, optional): the maximum scale. Default: 1.25.
+        max_scale_factor (float, optional): The maximum scale. Default: 1.25.
         scale_step_size (float, optional): The scale interval. Default: 0.25.
 
     Raises:
@@ -325,7 +326,7 @@ class ResizeStepScaling:
             label (np.ndarray, optional): The label data. Default: None.
 
         Returns:
-            tuple: When label is None, it returns (im, im_info), otherwise it returns (im, im_info, label).
+            (tuple). When label is None, it returns (im, im_info), otherwise it returns (im, im_info, label).
         """
 
         if self.min_scale_factor == self.max_scale_factor:
@@ -368,6 +369,7 @@ class Normalize:
     Raises:
         ValueError: When mean/std is not list or any value in std is 0.
     """
+
     def __init__(self, mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5)):
         self.mean = mean
         self.std = std
@@ -388,7 +390,7 @@ class Normalize:
             label (np.ndarray, optional): The label data. Default: None.
 
         Returns:
-            tuple: When label is None, it returns (im, im_info), otherwise it returns (im, im_info, label).
+            (tuple). When label is None, it returns (im, im_info), otherwise it returns (im, im_info, label).
         """
 
         mean = np.array(self.mean)[np.newaxis, np.newaxis, :]
@@ -442,7 +444,7 @@ class Padding:
             label (np.ndarray, optional): The label data. Default: None.
 
         Returns:
-            tuple: When label is None, it returns (im, im_info), otherwise it returns (im, im_info, label),
+            (tuple). When label is None, it returns (im, im_info), otherwise it returns (im, im_info, label),
                 where im_info["shape_before_padding"] is updated to the size of the image before this transformation.
         """
         if im_info is None:
@@ -528,7 +530,7 @@ class RandomPaddingCrop:
             label (np.ndarray, optional): The label data. Default: None.
 
         Returns:
-            tuple: When label is None, it returns (im, im_info), otherwise it returns (im, im_info, label).
+            (tuple). When label is None, it returns (im, im_info), otherwise it returns (im, im_info, label).
         """
 
         if isinstance(self.crop_size, int):
@@ -605,7 +607,7 @@ class RandomBlur:
             label (np.ndarray, optional): The label data. Default: None.
 
         Returns:
-            tuple: When label is None, it returns (im, im_info), otherwise it returns (im, im_info, label).
+            (tuple). When label is None, it returns (im, im_info), otherwise it returns (im, im_info, label).
         """
 
         if self.prob <= 0:
@@ -657,7 +659,7 @@ class RandomRotation:
             label (np.ndarray, optional): The label data. Default: None.
 
         Returns:
-            tuple: When label is None, it returns (im, im_info), otherwise it returns (im, im_info, label).
+            (tuple). When label is None, it returns (im, im_info), otherwise it returns (im, im_info, label).
         """
 
         if self.max_rotation > 0:
@@ -705,7 +707,7 @@ class RandomScaleAspect:
 
     Args:
         min_scale (float, optional): The minimum area ratio of cropped image to the original image. Default: 0.5.
-        aspect_ratio (float, optional): the minimum aspect ratio. Default: 0.33.
+        aspect_ratio (float, optional): The minimum aspect ratio. Default: 0.33.
     """
 
     def __init__(self, min_scale=0.5, aspect_ratio=0.33):
@@ -720,7 +722,7 @@ class RandomScaleAspect:
             label (np.ndarray, optional): The label data. Default: None.
 
         Returns:
-            tuple: When label is None, it returns (im, im_info), otherwise it returns (im, im_info, label).
+            (tuple). When label is None, it returns (im, im_info), otherwise it returns (im, im_info, label).
         """
 
         if self.min_scale != 0 and self.aspect_ratio != 0:
@@ -764,14 +766,14 @@ class RandomDistort:
     Distort an image with random configurations.
 
     Args:
-        brightness_range (float): A range of brightness. Default: 0.5.
-        brightness_prob (float): A probability of adjusting brightness. Default: 0.5.
-        contrast_range (float): A range of contrast. Default: 0.5.
-        contrast_prob (float): A probability of adjusting contrast. Default: 0.5.
-        saturation_range (float): A range of saturation. Default: 0.5.
-        saturation_prob (float): A probability of adjusting saturation. Default: 0.5.
-        hue_range (int): A range of hue. Default: 0.5.
-        hue_prob (float): A probability of adjusting hue. Default: 0.5.
+        brightness_range (float, optional): A range of brightness. Default: 0.5.
+        brightness_prob (float, optional): A probability of adjusting brightness. Default: 0.5.
+        contrast_range (float, optional): A range of contrast. Default: 0.5.
+        contrast_prob (float, optional): A probability of adjusting contrast. Default: 0.5.
+        saturation_range (float, optional): A range of saturation. Default: 0.5.
+        saturation_prob (float, optional): A probability of adjusting saturation. Default: 0.5.
+        hue_range (int, optional): A range of hue. Default: 0.5.
+        hue_prob (float, optional): A probability of adjusting hue. Default: 0.5.
     """
 
     def __init__(self,
@@ -800,7 +802,7 @@ class RandomDistort:
             label (np.ndarray, optional): The label data. Default: None.
 
         Returns:
-            tuple: When label is None, it returns (im, im_info), otherwise it returns (im, im_info, label).
+            (tuple). When label is None, it returns (im, im_info), otherwise it returns (im, im_info, label).
         """
 
         brightness_lower = 1 - self.brightness_range

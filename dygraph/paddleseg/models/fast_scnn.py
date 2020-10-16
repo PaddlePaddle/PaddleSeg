@@ -230,8 +230,8 @@ class FeatureFusionModule(nn.Layer):
 
     Args:
         high_in_channels (int): The channels of high-resolution feature (output of LearningToDownsample).
-        low_in_channels (int). The channels of low-resolution feature (output of GlobalFeatureExtractor).
-        out_channels (int). The output channels of this module.
+        low_in_channels (int): The channels of low-resolution feature (output of GlobalFeatureExtractor).
+        out_channels (int): The output channels of this module.
     """
 
     def __init__(self, high_in_channels, low_in_channels, out_channels):
@@ -267,7 +267,7 @@ class Classifier(nn.Layer):
 
     Args:
         input_channels (int): The input channels to this module.
-        num_classes (int). The unique number of target classes.
+        num_classes (int): The unique number of target classes.
     """
 
     def __init__(self, input_channels, num_classes):

@@ -37,20 +37,20 @@ class HRNet(nn.Layer):
     (https://arxiv.org/pdf/1908.07919.pdf).
 
     Args:
-        pretrained (str): the path of pretrained model.
-        stage1_num_modules (int): number of modules for stage1. Default 1.
-        stage1_num_blocks (list): number of blocks per module for stage1. Default [4].
-        stage1_num_channels (list): number of channels per branch for stage1. Default [64].
-        stage2_num_modules (int): number of modules for stage2. Default 1.
-        stage2_num_blocks (list): number of blocks per module for stage2. Default [4, 4]
-        stage2_num_channels (list): number of channels per branch for stage2. Default [18, 36].
-        stage3_num_modules (int): number of modules for stage3. Default 4.
-        stage3_num_blocks (list): number of blocks per module for stage3. Default [4, 4, 4]
-        stage3_num_channels (list): number of channels per branch for stage3. Default [18, 36, 72].
-        stage4_num_modules (int): number of modules for stage4. Default 3.
-        stage4_num_blocks (list): number of blocks per module for stage4. Default [4, 4, 4, 4]
-        stage4_num_channels (list): number of channels per branch for stage4. Default [18, 36, 72. 144].
-        has_se (bool): whether to use Squeeze-and-Excitation module. Default False.
+        pretrained (str): The path of pretrained model.
+        stage1_num_modules (int): Number of modules for stage1. Default 1.
+        stage1_num_blocks (list): Number of blocks per module for stage1. Default [4].
+        stage1_num_channels (list): Number of channels per branch for stage1. Default [64].
+        stage2_num_modules (int): Number of modules for stage2. Default 1.
+        stage2_num_blocks (list): Number of blocks per module for stage2. Default [4, 4]
+        stage2_num_channels (list): Number of channels per branch for stage2. Default [18, 36].
+        stage3_num_modules (int): Number of modules for stage3. Default 4.
+        stage3_num_blocks (list): Number of blocks per module for stage3. Default [4, 4, 4]
+        stage3_num_channels (list): Number of channels per branch for stage3. Default [18, 36, 72].
+        stage4_num_modules (int): Number of modules for stage4. Default 3.
+        stage4_num_blocks (list): Number of blocks per module for stage4. Default [4, 4, 4, 4]
+        stage4_num_channels (list): Number of channels per branch for stage4. Default [18, 36, 72. 144].
+        has_se (bool): Whether to use Squeeze-and-Excitation module. Default False.
     """
 
     def __init__(self,

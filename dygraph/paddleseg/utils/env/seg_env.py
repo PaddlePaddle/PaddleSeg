@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """
-This module is used to store environmental parameters in PaddleSeg
+This module is used to store environmental parameters in PaddleSeg.
 
 SEG_HOME : Root directory for storing PaddleSeg related data. Default to ~/.paddleseg.
            Users can change the default value through the SEG_HOME environment variable.

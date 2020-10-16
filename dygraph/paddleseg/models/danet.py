@@ -38,10 +38,7 @@ class DANet(nn.Layer):
         pretrained (str, optional): The path or url of pretrained model. Default: None.
     """
 
-    def __init__(self,
-                 num_classes,
-                 backbone,
-                 backbone_indices,
+    def __init__(self, num_classes, backbone, backbone_indices,
                  pretrained=None):
         super().__init__()
 
@@ -73,8 +70,8 @@ class DAHead(nn.Layer):
     The Dual attention head.
 
     Args:
-        num_classes(int): The unique number of target classes.
-        in_channels(tuple): The number of input channels.
+        num_classes (int): The unique number of target classes.
+        in_channels (tuple): The number of input channels.
     """
 
     def __init__(self, num_classes, in_channels):
