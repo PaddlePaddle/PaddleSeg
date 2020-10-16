@@ -20,9 +20,11 @@
 
 ## 数据集
 
-* CityScapes
-* Pascal VOC
-* ADE20K
+- [x] CityScapes
+- [x] Pascal VOC
+- [x] ADE20K
+- [ ] Pascal Context
+- [ ] COCO stuff
 
 ## 安装
 
@@ -64,5 +66,3 @@ python3 train.py --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml
 * [快速入门](./docs/quick_start.md)
 * [数据集准备](./docs/data_prepare.md)
 * [配置项](./configs/)
-* [APIs](./docs/apis/)
-* [多尺度预测 & 滑动窗口预测](./docs/infer.md)
