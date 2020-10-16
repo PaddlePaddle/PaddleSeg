@@ -35,4 +35,9 @@ learning_rate:
 loss:
   types:
     - type: CrossEntropyLoss
-  coef: [1]
+  coef: [1, 1, 1, 1, 1]
+
+model:
+  type: BiSeNetV2
+  num_classes: 2
+  pretrained: Null
