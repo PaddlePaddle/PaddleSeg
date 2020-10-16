@@ -29,7 +29,7 @@ import tqdm
 
 from paddleseg.utils.download import download_file_and_uncompress
 
-DATA_HOME = os.path.expanduser('data/VOCdevkit')
+DATA_HOME = os.path.expanduser('data/')
 URL = 'http://www.eecs.berkeley.edu/Research/Projects/CS/vision/grouping/semantic_contours/benchmark.tgz'
 
 

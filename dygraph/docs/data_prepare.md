@@ -1,6 +1,6 @@
 # 数据集准备
 
-PaddleSeg目前支持CityScapes、ADE20K、Pascal VOC等数据集的加载，在加载数据集时，如若本地不存在对应数据，则会自动触发下载
+PaddleSeg目前支持CityScapes、ADE20K、Pascal VOC等数据集的加载，在加载数据集时，如若本地不存在对应数据，则会自动触发下载(除Cityscapes数据集).
 
 ## 关于CityScapes数据集
 Cityscapes是关于城市街道场景的语义理解图片数据集。它主要包含来自50个不同城市的街道场景，
@@ -23,7 +23,7 @@ Cityscapes是关于城市街道场景的语义理解图片数据集。它主要�
 
 运行下列命令进行标签转换：
 ```shell
-python -m pip install cityscapesscripts
+pip install cityscapesscripts
 python tools/convert_cityscapes.py --cityscapes_path data/cityscapes --num_workers 8
 ```
 其中`cityscapes_path`应根据实际数据集路径进行调整。 `num_workers`决定启动的进程数，可根据实际情况进行调整大小。
@@ -31,14 +31,15 @@ python tools/convert_cityscapes.py --cityscapes_path data/cityscapes --num_worke
 ## 关于Pascal VOC 2012数据集
 [Pascal VOC 2012](http://host.robots.ox.ac.uk/pascal/VOC/)数据集以对象分割为主，包含20个类别和背景类，其中训练集1464张，验证集1449张。
 通常情况下会利用[SBD(Semantic Boundaries Dataset)](http://home.bharathh.info/pubs/codes/SBD/download.html)进行扩充，扩充后训练集10582张。
-运行下列命令进行数据集扩充：
+运行下列命令进行SBD数据集下载并进行扩充：
 ```shell
 python tools/convert_cityscapes.py --voc_path data/VOCdevkit --num_workers 8
 ```
 其中`voc_path`应根据实际数据集路径进行调整。
 
 ## 关于ADE20K数据集
-[ADE20K](http://sceneparsing.csail.mit.edu/)场景解析数据集包含150个语义类别。其中训练集20210张，验证集2000张。
+[ADE20K](http://sceneparsing.csail.mit.edu/)由MIT发布的可用于场景感知、分割和多物体识别等多种任务的数据集。
+其涵盖了150个语义类别，包括训练集20210张，验证集2000张。
 
 ## 自定义数据集
 
@@ -72,19 +73,22 @@ python tools/convert_cityscapes.py --voc_path data/VOCdevkit --num_workers 8
 
 2.标注图像的标签从0,1依次取值，不可间隔。若有需要忽略的像素，则按255进行标注。
 
-可按如下方式构建对自定义数据集进行调用：
-```python
-import paddleseg.transforms as T
-from paddleseg.datasets import Dataset
-
-transforms = [T.RandomPaddingCrop(crop_size=(512,512)), T.Normalize()]
-dataset_root = 'custom_dataset'
-train_path = 'custom_dataset/train.txt'
-num_classes = 2
-dataset = Dataset(transforms = transforms,
-                  dataset_root = dataset_root,
-                  num_classes = 2,
-                  train_path = train_path,
-                  mode = 'train')
+可按如下方式对自定义数据集进行配置：
+```
+train_dataset:
+  type: Dataset
+  dataset_root: custom_dataset
+  train_path: custom_dataset/train.txt
+  num_classes: 2
+  transforms:
+    - type: ResizeStepScaling
+      min_scale_factor: 0.5
+      max_scale_factor: 2.0
+      scale_step_size: 0.25
+    - type: RandomPaddingCrop
+      crop_size: [512, 512]
+    - type: RandomHorizontalFlip
+    - type: Normalize
+  mode: train
 ```
 
