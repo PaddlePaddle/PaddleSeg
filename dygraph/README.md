@@ -6,17 +6,17 @@
 
 |模型\骨干网络|ResNet50|ResNet101|HRNetw18|HRNetw48|
 |-|-|-|-|-|
-|[ANN](./configs/ann/README.md)|✔|✔|||
+|[ANN](./configs/ann)|✔|✔|||
 |BiSeNetv2|-|-|-|-|
 |DANet|✔|✔|||
 |Deeplabv3|✔|✔|||
 |Deeplabv3p|✔|✔|||
-|[Fast-SCNN](./configs/fastscnn/README.md)|-|-|-|-|
-|FCN|||✔|✔|
+|[Fast-SCNN](./configs/fastscnn)|-|-|-|-|
+|[FCN](./configs/fcn)|||✔|✔|
 |GCNet|✔|✔|||
 |[OCRNet](./configs/ocrnet/)|||✔|✔|
 |PSPNet|✔|✔|||
-|UNet|-|-|-|-|
+|[UNet](./configs/unet)|-|-|-|-|
 
 ## 数据集
 
