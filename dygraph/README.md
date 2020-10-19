@@ -38,7 +38,7 @@
 
 由于图像分割模型计算开销大，推荐在GPU版本的PaddlePaddle下使用PaddleSeg.
 
-安装教程请见[PaddlePaddle官网](https://www.paddlepaddle.org.cn/install/quick)。
+安装教程请见[PaddlePaddle官网](https://www.paddlepaddle.org.cn/documentation/docs/zh/2.0-beta/install/index_cn.html)。
 
 
 2. 下载PaddleSeg代码
