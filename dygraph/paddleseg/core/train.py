@@ -15,17 +15,10 @@
 import os
 
 import paddle
-from paddle.distributed import ParallelEnv
-from paddle.distributed import init_parallel_env
-from paddle.io import DistributedBatchSampler
-from paddle.io import DataLoader
 import paddle.nn.functional as F
 
-import paddleseg.utils.logger as logger
-from paddleseg.utils import load_pretrained_model
-from paddleseg.utils import resume
-from paddleseg.utils import Timer, calculate_eta
-from .val import evaluate
+from paddleseg.utils import Timer, calculate_eta, resume, logger
+from paddleseg.core.val import evaluate
 
 
 def check_logits_losses(logits, losses):
@@ -58,15 +51,13 @@ def train(model,
           iters=10000,
           batch_size=2,
           resume_model=None,
-          save_interval_iters=1000,
+          save_interval=1000,
           log_iters=10,
-          num_classes=None,
-          num_workers=8,
+          num_workers=0,
           use_vdl=False,
-          losses=None,
-          ignore_index=255):
-
-    nranks = ParallelEnv().nranks
+          losses=None):
+    nranks = paddle.distributed.ParallelEnv().nranks
+    local_rank = paddle.distributed.ParallelEnv().local_rank
 
     start_iter = 0
     if resume_model is not None:
@@ -79,14 +70,14 @@ def train(model,
 
     if nranks > 1:
         # Initialize parallel training environment.
-        init_parallel_env()
+        paddle.distributed.init_parallel_env()
         strategy = paddle.distributed.prepare_context()
         ddp_model = paddle.DataParallel(model, strategy)
 
-    batch_sampler = DistributedBatchSampler(
+    batch_sampler = paddle.io.DistributedBatchSampler(
         train_dataset, batch_size=batch_size, shuffle=True, drop_last=True)
 
-    loader = DataLoader(
+    loader = paddle.io.DataLoader(
         train_dataset,
         batch_sampler=batch_sampler,
         places=places,
@@ -126,10 +117,9 @@ def train(model,
             else:
                 logits = model(images)
                 loss = loss_computation(logits, labels, losses)
-                # loss = model(images, labels)
                 loss.backward()
-            # optimizer.minimize(loss)
             optimizer.step()
+            lr = optimizer.get_lr()
             if isinstance(optimizer._learning_rate,
                           paddle.optimizer._LRScheduler):
                 optimizer._learning_rate.step()
@@ -138,9 +128,8 @@ def train(model,
             if nranks > 1:
                 paddle.distributed.all_reduce(loss)
             avg_loss += loss.numpy()[0]
-            lr = optimizer.get_lr()
             train_batch_cost += timer.elapsed_time()
-            if (iter) % log_iters == 0 and ParallelEnv().local_rank == 0:
+            if (iter) % log_iters == 0 and local_rank == 0:
                 avg_loss /= log_iters
                 avg_train_reader_cost = train_reader_cost / log_iters
                 avg_train_batch_cost = train_batch_cost / log_iters
@@ -162,8 +151,7 @@ def train(model,
                                           avg_train_reader_cost, iter)
                 avg_loss = 0.0
 
-            if (iter % save_interval_iters == 0
-                    or iter == iters) and ParallelEnv().local_rank == 0:
+            if (iter % save_interval == 0 or iter == iters) and local_rank == 0:
                 current_save_dir = os.path.join(save_dir,
                                                 "iter_{}".format(iter))
                 if not os.path.isdir(current_save_dir):
@@ -174,13 +162,7 @@ def train(model,
                             os.path.join(current_save_dir, 'model'))
 
                 if val_dataset is not None:
-                    mean_iou, avg_acc = evaluate(
-                        model,
-                        val_dataset,
-                        model_dir=current_save_dir,
-                        num_classes=num_classes,
-                        ignore_index=ignore_index,
-                        iter_id=iter)
+                    mean_iou, acc = evaluate(model, val_dataset, iter_id=iter)
                     if mean_iou > best_mean_iou:
                         best_mean_iou = mean_iou
                         best_model_iter = iter
@@ -188,12 +170,12 @@ def train(model,
                         paddle.save(model.state_dict(),
                                     os.path.join(best_model_dir, 'model'))
                     logger.info(
-                        'Current evaluated best model in val_dataset is iter_{}, miou={:4f}'
-                        .format(best_model_iter, best_mean_iou))
+                        '[EVAL] The model with the best validation mIoU ({:.4f}) was saved at iter {}.'
+                        .format(best_mean_iou, best_model_iter))
 
                     if use_vdl:
                         log_writer.add_scalar('Evaluate/mIoU', mean_iou, iter)
-                        log_writer.add_scalar('Evaluate/aAcc', avg_acc, iter)
+                        log_writer.add_scalar('Evaluate/Acc', acc, iter)
                     model.train()
             timer.restart()
     if use_vdl:

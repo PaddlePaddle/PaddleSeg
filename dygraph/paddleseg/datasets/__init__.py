@@ -13,14 +13,7 @@
 # limitations under the License.
 
 from .dataset import Dataset
-from .optic_disc_seg import OpticDiscSeg
 from .cityscapes import Cityscapes
 from .voc import PascalVOC
 from .ade import ADE20K
-
-DATASETS = {
-    "OpticDiscSeg": OpticDiscSeg,
-    "Cityscapes": Cityscapes,
-    "PascalVOC": PascalVOC,
-    "ADE20K": ADE20K
-}
+from .optic_disc_seg import OpticDiscSeg

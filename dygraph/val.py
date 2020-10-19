@@ -13,15 +13,14 @@
 # limitations under the License.
 
 import argparse
+import os
 
 import paddle
-from paddle.distributed import ParallelEnv
 
-import paddleseg
 from paddleseg.cvlibs import manager, Config
-from paddleseg.utils import get_environ_info, logger
 # from paddleseg.core import evaluate
 from paddleseg.core.val_mutiscale_slide import evaluate
+from paddleseg.utils import get_sys_env, logger
 
 
 def parse_args():
@@ -41,8 +40,8 @@ def parse_args():
 
 
 def main(args):
-    env_info = get_environ_info()
-    places = paddle.CUDAPlace(ParallelEnv().dev_id) \
+    env_info = get_sys_env()
+    places = paddle.CUDAPlace(paddle.distributed.ParallelEnv().dev_id) \
         if env_info['Paddle compiled with cuda'] and env_info['GPUs used'] \
         else paddle.CPUPlace()
 
@@ -62,11 +61,13 @@ def main(args):
     msg += '------------------------------------------------'
     logger.info(msg)
 
-    evaluate(
-        cfg.model,
-        val_dataset,
-        model_dir=args.model_dir,
-        num_classes=val_dataset.num_classes)
+    model = cfg.model
+    ckpt_path = os.path.join(args.model_dir, 'model')
+    para_state_dict, opti_state_dict = paddle.load(ckpt_path)
+    model.set_dict(para_state_dict)
+    logger.info('Loaded trained params of model successfully')
+
+    evaluate(model, val_dataset)
 
 
 if __name__ == '__main__':

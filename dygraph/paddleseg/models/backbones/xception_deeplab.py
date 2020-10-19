@@ -12,17 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
-
-import paddle
 import paddle.nn as nn
 import paddle.nn.functional as F
-from paddle.nn import Conv2d, Linear, Dropout
-from paddle.nn import SyncBatchNorm as BatchNorm
 
-from paddleseg.models.common import layer_libs, activation
 from paddleseg.cvlibs import manager
 from paddleseg.utils import utils
+from paddleseg.models import layers
 
 __all__ = ["Xception41_deeplab", "Xception65_deeplab", "Xception71_deeplab"]
 
@@ -71,8 +66,8 @@ def gen_bottleneck_params(backbone='xception_65'):
             "exit_flow": (2, [2, 1], [[728, 1024, 1024], [1536, 1536, 2048]])
         }
     else:
-        raise Exception(
-            "xception backbont only support xception_41/xception_65/xception_71"
+        raise ValueError(
+            "Xception backbont only support xception_41/xception_65/xception_71"
         )
     return bottleneck_params
 
@@ -88,20 +83,19 @@ class ConvBNLayer(nn.Layer):
                  name=None):
         super(ConvBNLayer, self).__init__()
 
-        self._conv = Conv2d(
+        self._conv = nn.Conv2d(
             in_channels=input_channels,
             out_channels=output_channels,
             kernel_size=filter_size,
             stride=stride,
             padding=padding,
             bias_attr=False)
-        self._bn = BatchNorm(
+        self._bn = nn.SyncBatchNorm(
             num_features=output_channels, epsilon=1e-3, momentum=0.99)
 
-        self._act_op = activation.Activation(act=act)
+        self._act_op = layers.Activation(act=act)
 
     def forward(self, inputs):
-
         return self._act_op(self._bn(self._conv(inputs)))
 
 
@@ -116,7 +110,7 @@ class Seperate_Conv(nn.Layer):
                  name=None):
         super(Seperate_Conv, self).__init__()
 
-        self._conv1 = Conv2d(
+        self._conv1 = nn.Conv2d(
             in_channels=input_channels,
             out_channels=input_channels,
             kernel_size=filter,
@@ -125,11 +119,12 @@ class Seperate_Conv(nn.Layer):
             padding=(filter) // 2 * dilation,
             dilation=dilation,
             bias_attr=False)
-        self._bn1 = BatchNorm(input_channels, epsilon=1e-3, momentum=0.99)
+        self._bn1 = nn.SyncBatchNorm(
+            input_channels, epsilon=1e-3, momentum=0.99)
 
-        self._act_op1 = activation.Activation(act=act)
+        self._act_op1 = layers.Activation(act=act)
 
-        self._conv2 = Conv2d(
+        self._conv2 = nn.Conv2d(
             input_channels,
             output_channels,
             1,
@@ -137,9 +132,10 @@ class Seperate_Conv(nn.Layer):
             groups=1,
             padding=0,
             bias_attr=False)
-        self._bn2 = BatchNorm(output_channels, epsilon=1e-3, momentum=0.99)
+        self._bn2 = nn.SyncBatchNorm(
+            output_channels, epsilon=1e-3, momentum=0.99)
 
-        self._act_op2 = activation.Activation(act=act)
+        self._act_op2 = layers.Activation(act=act)
 
     def forward(self, inputs):
         x = self._conv1(inputs)
@@ -252,7 +248,7 @@ class Xception_Block(nn.Layer):
 
 class XceptionDeeplab(nn.Layer):
 
-    #def __init__(self, backbone, class_dim=1000):
+    # def __init__(self, backbone, class_dim=1000):
     # add output_stride
     def __init__(self,
                  backbone,
@@ -371,7 +367,8 @@ class XceptionDeeplab(nn.Layer):
             activation_fn_in_separable_conv=True,
             name=self.backbone + "/exit_flow/block2")
 
-        utils.load_pretrained_model(self, pretrained)
+        self.pretrained = pretrained
+        self.init_weight()
 
     def forward(self, inputs):
         x = self._conv1(inputs)
@@ -387,6 +384,10 @@ class XceptionDeeplab(nn.Layer):
         x = self._exit_flow_2(x)
         feat_list.append(x)
         return feat_list
+
+    def init_weight(self):
+        if self.pretrained is not None:
+            utils.load_pretrained_model(self, self.pretrained)
 
 
 @manager.BACKBONES.add_component

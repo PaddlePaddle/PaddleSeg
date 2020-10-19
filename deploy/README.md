@@ -10,3 +10,4 @@
 
 [4. 移动端部署(仅支持Android)](./lite)
 
+[5. 使用PaddleServing部署](./paddle-serving)

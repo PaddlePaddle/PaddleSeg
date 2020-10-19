@@ -166,8 +166,6 @@ def multi_scale_flip_inference(model,
 
 def evaluate(model,
              eval_dataset=None,
-             model_dir=None,
-             num_classes=None,
              scale=[1],
              flip=True,
              flip_directions=['horizontal'],
@@ -176,19 +174,10 @@ def evaluate(model,
              crop_size=None,
              ignore_index=255,
              iter_id=None):
-    if model_dir is None:
-        raise ValueError('`model_dir` should be provided, but is None')
-    ckpt_path = os.path.join(model_dir, 'model')
-    if not os.path.exists(ckpt_path + '.pdparams'):
-        raise ValueError(
-            '`model_dir` should be a directory which include a model.pdparams file'
-        )
-    para_state_dict, opti_state_dict = paddle.load(ckpt_path)
-    model.set_dict(para_state_dict)
     model.eval()
 
     total_iters = len(eval_dataset)
-    conf_mat = ConfusionMatrix(num_classes, streaming=True)
+    conf_mat = ConfusionMatrix(eval_dataset.num_classes, streaming=True)
 
     logger.info(
         "Start to evaluating(total_samples={}, total_iters={})...".format(
@@ -201,7 +190,7 @@ def evaluate(model,
             model,
             im,
             im_info=im_info,
-            num_classes=num_classes,
+            num_classes=eval_dataset.num_classes,
             #scales=[0.5, 0.75, 1.0, 1.25, 1.5, 1.75],
             scales=[1.0],
             flip=True,

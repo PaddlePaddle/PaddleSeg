@@ -1,4 +1,3 @@
-# -*- encoding: utf-8 -*-
 # Copyright (c) 2020 PaddlePaddle Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,41 +13,41 @@
 # limitations under the License.
 
 import paddle
-from paddle import nn
 import paddle.nn.functional as F
-from paddle.nn import SyncBatchNorm as BatchNorm
+from paddle import nn
 
-from paddleseg.models.common import layer_libs
+from paddleseg.models import layers
 
 
 class ASPPModule(nn.Layer):
     """
-     Atrous Spatial Pyramid Pooling
+    Atrous Spatial Pyramid Pooling.
 
     Args:
-        aspp_ratios (tuple): the dilation rate using in ASSP module.
-        in_channels (int): the number of input channels.
-        out_channels (int): the number of output channels.
-        sep_conv (bool): if using separable conv in ASPP module.
-        image_pooling: if augmented with image-level features.
+        aspp_ratios (tuple): The dilation rate using in ASSP module.
+        in_channels (int): The number of input channels.
+        out_channels (int): The number of output channels.
+        use_sep_conv (bool, optional): If using separable conv in ASPP module. Default: False.
+        image_pooling (bool, optional): If augmented with image-level features. Default: False
     """
 
     def __init__(self,
                  aspp_ratios,
                  in_channels,
                  out_channels,
-                 sep_conv=False,
+                 use_sep_conv=False,
                  image_pooling=False):
-        super(ASPPModule, self).__init__()
+        super().__init__()
 
-        self.aspp_blocks = []
+        # FIXME(chenguowei)
+        # self.aspp_blocks = [], hang problem.
+        self.aspp_blocks = nn.LayerList()
 
         for ratio in aspp_ratios:
-
-            if sep_conv and ratio > 1:
-                conv_func = layer_libs.SeparableConvBNReLU
+            if use_sep_conv and ratio > 1:
+                conv_func = layers.SeparableConvBNReLU
             else:
-                conv_func = layer_libs.ConvBNReLU
+                conv_func = layers.ConvBNReLU
 
             block = conv_func(
                 in_channels=in_channels,
@@ -63,12 +62,12 @@ class ASPPModule(nn.Layer):
         if image_pooling:
             self.global_avg_pool = nn.Sequential(
                 nn.AdaptiveAvgPool2d(output_size=(1, 1)),
-                layer_libs.ConvBNReLU(
+                layers.ConvBNReLU(
                     in_channels, out_channels, kernel_size=1, bias_attr=False))
             out_size += 1
         self.image_pooling = image_pooling
 
-        self.conv_bn_relu = layer_libs.ConvBNReLU(
+        self.conv_bn_relu = layers.ConvBNReLU(
             in_channels=out_channels * out_size,
             out_channels=out_channels,
             kernel_size=1)
@@ -76,10 +75,11 @@ class ASPPModule(nn.Layer):
         self.dropout = nn.Dropout(p=0.1)  # drop rate
 
     def forward(self, x):
-
         outputs = []
         for block in self.aspp_blocks:
-            outputs.append(block(x))
+            y = block(x)
+            y = F.resize_bilinear(y, out_shape=x.shape[2:])
+            outputs.append(y)
 
         if self.image_pooling:
             img_avg = self.global_avg_pool(x)
@@ -95,13 +95,13 @@ class ASPPModule(nn.Layer):
 
 class PPModule(nn.Layer):
     """
-    Pyramid pooling module originally in PSPNet
+    Pyramid pooling module originally in PSPNet.
 
     Args:
-        in_channels (int): the number of intput channels to pyramid pooling module.
-        out_channels (int): the number of output channels after pyramid pooling module.
-        bin_sizes (tuple): the out size of pooled feature maps. Default to (1,2,3,6).
-        dim_reduction (bool): a bool value represent if reducing dimension after pooling. Default to True.
+        in_channels (int): The number of intput channels to pyramid pooling module.
+        out_channels (int): The number of output channels after pyramid pooling module.
+        bin_sizes (tuple, optional): The out size of pooled feature maps. Default: (1, 2, 3, 6).
+        dim_reduction (bool, optional): A bool value represents if reducing dimension after pooling. Default: True.
     """
 
     def __init__(self,
@@ -109,7 +109,7 @@ class PPModule(nn.Layer):
                  out_channels,
                  bin_sizes=(1, 2, 3, 6),
                  dim_reduction=True):
-        super(PPModule, self).__init__()
+        super().__init__()
 
         self.bin_sizes = bin_sizes
 
@@ -123,7 +123,7 @@ class PPModule(nn.Layer):
             for size in bin_sizes
         ])
 
-        self.conv_bn_relu2 = layer_libs.ConvBNReLU(
+        self.conv_bn_relu2 = layers.ConvBNReLU(
             in_channels=in_channels + inter_channels * len(bin_sizes),
             out_channels=out_channels,
             kernel_size=3,
@@ -139,25 +139,23 @@ class PPModule(nn.Layer):
         After pooling, the channels are reduced to 1/len(bin_sizes) immediately, while some other implementations
         keep the channels to be same.
 
-
         Args:
-            in_channels (int): the number of intput channels to pyramid pooling module.
-            size (int): the out size of the pooled layer.
+            in_channels (int): The number of intput channels to pyramid pooling module.
+            size (int): The out size of the pooled layer.
 
         Returns:
-            conv (tensor): a tensor after Pyramid Pooling Module
+            conv (Tensor): A tensor after Pyramid Pooling Module.
         """
 
         prior = nn.AdaptiveAvgPool2d(output_size=(size, size))
-        conv = layer_libs.ConvBNReLU(
+        conv = layers.ConvBNReLU(
             in_channels=in_channels, out_channels=out_channels, kernel_size=1)
 
         return nn.Sequential(prior, conv)
 
     def forward(self, input):
         cat_layers = []
-        for i, stage in enumerate(self.stages):
-            size = self.bin_sizes[i]
+        for stage in self.stages:
             x = stage(input)
             x = F.resize_bilinear(x, out_shape=input.shape[2:])
             cat_layers.append(x)

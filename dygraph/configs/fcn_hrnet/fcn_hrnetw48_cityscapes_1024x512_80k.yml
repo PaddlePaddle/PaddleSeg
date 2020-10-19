@@ -4,10 +4,12 @@ model:
   type: FCN
   backbone:
     type: HRNet_W48
-    pretrained: pretrained_model/hrnet_w48_imagenet
+    pretrained: https://bj.bcebos.com/paddleseg/dygraph/hrnet_w48_ssld.tar.gz
   num_classes: 19
   pretrained: Null
   backbone_indices: [-1]
 
 optimizer:
   weight_decay: 0.0005
+
+iters: 80000

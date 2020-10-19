@@ -1,5 +1,5 @@
 batch_size: 4
-iters: 10000
+iters: 1000
 
 train_dataset:
   type: OpticDiscSeg
@@ -20,9 +20,10 @@ val_dataset:
     - type: Normalize
   mode: val
 
-
 optimizer:
   type: sgd
+  momentum: 0.9
+  weight_decay: 4.0e-5
 
 learning_rate:
   value: 0.01
@@ -34,4 +35,9 @@ learning_rate:
 loss:
   types:
     - type: CrossEntropyLoss
-  coef: [1]
+  coef: [1, 1, 1, 1, 1]
+
+model:
+  type: BiSeNetV2
+  num_classes: 2
+  pretrained: Null

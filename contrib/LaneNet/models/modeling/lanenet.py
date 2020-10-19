@@ -19,11 +19,12 @@ from __future__ import print_function
 import paddle.fluid as fluid
 
 from utils.config import cfg
-from pdseg.models.libs.model_libs import scope, name_scope
-from pdseg.models.libs.model_libs import bn, bn_relu, relu
-from pdseg.models.libs.model_libs import conv, max_pool, deconv
 from pdseg.models.backbone.vgg import VGGNet as vgg_backbone
-#from models.backbone.vgg import VGGNet as vgg_backbone
+from pdseg.models.libs.model_libs import bn, relu
+from pdseg.models.libs.model_libs import conv, max_pool, deconv
+from pdseg.models.libs.model_libs import scope
+
+# from models.backbone.vgg import VGGNet as vgg_backbone
 
 # Bottleneck type
 REGULAR = 1
@@ -40,9 +41,9 @@ def prelu(x, decoder=False):
     return fluid.layers.prelu(x, 'channel')
 
 
-def iniatial_block(inputs, name_scope='iniatial_block'):
+def initial_block(inputs, name_scope='initial_block'):
     '''
-    The initial block for Enet has 2 branches: The convolution branch and Maxpool branch.
+    The initial block for ENet has 2 branches: The convolution branch and MaxPool branch.
     The conv branch has 13 filters, while the maxpool branch gives 3 channels corresponding to the RGB channels.
     Both output layers are then concatenated to give an output of 16 channels.
 
@@ -74,14 +75,13 @@ def bottleneck(inputs,
                dilation_rate=None,
                decoder=False,
                name_scope='bottleneck'):
-
     # Calculate the depth reduction based on the projection ratio used in 1x1 convolution.
     reduced_depth = int(inputs.shape[1] / projection_ratio)
 
     # DOWNSAMPLING BOTTLENECK
     if type == DOWNSAMPLING:
-        #=============MAIN BRANCH=============
-        #Just perform a max pooling
+        # =============MAIN BRANCH=============
+        # Just perform a max pooling
         with scope('down_sample'):
             inputs_shape = inputs.shape
             with scope('main_max_pool'):
@@ -92,7 +92,7 @@ def bottleneck(inputs,
                     stride=2,
                     padding='SAME')
 
-            #First get the difference in depth to pad, then pad with zeros only on the last dimension.
+            # First get the difference in depth to pad, then pad with zeros only on the last dimension.
             depth_to_pad = abs(inputs_shape[1] - output_depth)
             paddings = [0, 0, 0, depth_to_pad, 0, 0, 0, 0]
             with scope('main_padding'):
@@ -129,7 +129,7 @@ def bottleneck(inputs,
     # DILATION CONVOLUTION BOTTLENECK
     # Everything is the same as a regular bottleneck except for the dilation rate argument
     elif type == DILATED:
-        #Check if dilation rate is given
+        # Check if dilation rate is given
         if not dilation_rate:
             raise ValueError('Dilation rate is not given.')
 
@@ -212,16 +212,16 @@ def bottleneck(inputs,
     # UPSAMPLING BOTTLENECK
     # Everything is the same as a regular one, except convolution becomes transposed.
     elif type == UPSAMPLING:
-        #Check if pooling indices is given
+        # Check if pooling indices is given
 
-        #Check output_shape given or not
+        # Check output_shape given or not
         if output_shape is None:
             raise ValueError('Output depth is not given')
 
-        #=======MAIN BRANCH=======
-        #Main branch to upsample. output shape must match with the shape of the layer that was pooled initially, in order
-        #for the pooling indices to work correctly. However, the initial pooled layer was padded, so need to reduce dimension
-        #before unpooling. In the paper, padding is replaced with convolution for this purpose of reducing the depth!
+        # =======MAIN BRANCH=======
+        # Main branch to upsample. output shape must match with the shape of the layer that was pooled initially, in order
+        # for the pooling indices to work correctly. However, the initial pooled layer was padded, so need to reduce dimension
+        # before unpooling. In the paper, padding is replaced with convolution for this purpose of reducing the depth!
         with scope('upsampling'):
             with scope('unpool'):
                 net_unpool = conv(inputs, output_depth, [1, 1])
@@ -302,8 +302,8 @@ def ENet_stage1(inputs, name_scope='stage1_block'):
     with scope(name_scope):
         with scope('bottleneck1_0'):
             net, inputs_shape_1 \
-              = bottleneck(inputs, output_depth=64, filter_size=3, regularizer_prob=0.01, type=DOWNSAMPLING,
-                           name_scope='bottleneck1_0')
+                = bottleneck(inputs, output_depth=64, filter_size=3, regularizer_prob=0.01, type=DOWNSAMPLING,
+                             name_scope='bottleneck1_0')
         with scope('bottleneck1_1'):
             net = bottleneck(
                 net,
@@ -338,8 +338,8 @@ def ENet_stage1(inputs, name_scope='stage1_block'):
 def ENet_stage2(inputs, name_scope='stage2_block'):
     with scope(name_scope):
         net, inputs_shape_2 \
-          = bottleneck(inputs, output_depth=128, filter_size=3, regularizer_prob=0.1, type=DOWNSAMPLING,
-                       name_scope='bottleneck2_0')
+            = bottleneck(inputs, output_depth=128, filter_size=3, regularizer_prob=0.1, type=DOWNSAMPLING,
+                         name_scope='bottleneck2_0')
         for i in range(2):
             with scope('bottleneck2_{}'.format(str(4 * i + 1))):
                 net = bottleneck(
@@ -355,7 +355,7 @@ def ENet_stage2(inputs, name_scope='stage2_block'):
                     filter_size=3,
                     regularizer_prob=0.1,
                     type=DILATED,
-                    dilation_rate=(2**(2 * i + 1)),
+                    dilation_rate=(2 ** (2 * i + 1)),
                     name_scope='bottleneck2_{}'.format(str(4 * i + 2)))
             with scope('bottleneck2_{}'.format(str(4 * i + 3))):
                 net = bottleneck(
@@ -372,7 +372,7 @@ def ENet_stage2(inputs, name_scope='stage2_block'):
                     filter_size=3,
                     regularizer_prob=0.1,
                     type=DILATED,
-                    dilation_rate=(2**(2 * i + 2)),
+                    dilation_rate=(2 ** (2 * i + 2)),
                     name_scope='bottleneck2_{}'.format(str(4 * i + 4)))
     return net, inputs_shape_2
 
@@ -394,7 +394,7 @@ def ENet_stage3(inputs, name_scope='stage3_block'):
                     filter_size=3,
                     regularizer_prob=0.1,
                     type=DILATED,
-                    dilation_rate=(2**(2 * i + 1)),
+                    dilation_rate=(2 ** (2 * i + 1)),
                     name_scope='bottleneck3_{}'.format(str(4 * i + 1)))
             with scope('bottleneck3_{}'.format(str(4 * i + 2))):
                 net = bottleneck(
@@ -411,7 +411,7 @@ def ENet_stage3(inputs, name_scope='stage3_block'):
                     filter_size=3,
                     regularizer_prob=0.1,
                     type=DILATED,
-                    dilation_rate=(2**(2 * i + 2)),
+                    dilation_rate=(2 ** (2 * i + 2)),
                     name_scope='bottleneck3_{}'.format(str(4 * i + 3)))
     return net
 
@@ -485,7 +485,6 @@ def ENet_stage5(inputs,
 
 
 def decoder(input, num_classes):
-
     if 'enet' in cfg.MODEL.LANENET.BACKBONE:
         # Segmentation branch
         with scope('LaneNetSeg'):
@@ -532,7 +531,7 @@ def decoder(input, num_classes):
 def encoder(input):
     if 'vgg' in cfg.MODEL.LANENET.BACKBONE:
         model = vgg_backbone(layers=16)
-        #output = model.net(input)
+        # output = model.net(input)
 
         _, encode_feature_dict = model.net(
             input, end_points=13, decode_points=[7, 10, 13])
@@ -540,9 +539,9 @@ def encoder(input):
         output['pool3'] = encode_feature_dict[7]
         output['pool4'] = encode_feature_dict[10]
         output['pool5'] = encode_feature_dict[13]
-    elif 'enet' in cfg.MODEL.LANET.BACKBONE:
+    elif 'enet' in cfg.MODEL.LANENET.BACKBONE:
         with scope('LaneNetBase'):
-            initial = iniatial_block(input)
+            initial = initial_block(input)
             stage1, inputs_shape_1 = ENet_stage1(initial)
             stage2, inputs_shape_2 = ENet_stage2(stage1)
             output = (initial, stage1, stage2, inputs_shape_1, inputs_shape_2)
@@ -554,7 +553,6 @@ def encoder(input):
 
 
 def lanenet(img, num_classes):
-
     output = encoder(img)
     segLogits, emLogits = decoder(output, num_classes)
 

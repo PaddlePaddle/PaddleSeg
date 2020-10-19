@@ -12,26 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
-import math
-import os
-
-import numpy as np
 import paddle
 import paddle.nn as nn
 import paddle.nn.functional as F
-from paddle.nn import Conv2d, AdaptiveAvgPool2d
-from paddle.nn import SyncBatchNorm as BatchNorm
+# FIXME (chenguowei), it will be use paddle.regularizer.L2Decay in the future
 # from paddle.regularizer import L2Decay
 from paddle.fluid.regularizer import L2Decay
-from paddle import ParamAttr
 
-from paddleseg.models.common import layer_libs, activation
 from paddleseg.cvlibs import manager
 from paddleseg.utils import utils
+from paddleseg.models import layers
 
 __all__ = [
     "MobileNetV3_small_x0_35", "MobileNetV3_small_x0_5",
@@ -49,28 +39,6 @@ def make_divisible(v, divisor=8, min_value=None):
     if new_v < 0.9 * v:
         new_v += divisor
     return new_v
-
-
-def get_padding_same(kernel_size, dilation_rate):
-    """
-    SAME padding implementation given kernel_size and dilation_rate.
-    The calculation formula as following:
-        (F-(k+(k -1)*(r-1))+2*p)/s + 1 = F_new
-        where F: a feature map
-              k: kernel size, r: dilation rate, p: padding value, s: stride
-              F_new: new feature map
-    Args:
-        kernel_size (int)
-        dilation_rate (int)
-
-    Returns:
-        padding_same (int): padding value
-    """
-    k = kernel_size
-    r = dilation_rate
-    padding_same = (k + (k - 1) * (r - 1) - 1) // 2
-
-    return padding_same
 
 
 class MobileNetV3(nn.Layer):
@@ -151,8 +119,7 @@ class MobileNetV3(nn.Layer):
             padding=1,
             num_groups=1,
             if_act=True,
-            act="hard_swish",
-            name="conv1")
+            act="hard_swish")
 
         self.block_list = []
 
@@ -177,38 +144,13 @@ class MobileNetV3(nn.Layer):
                 sublayer=self.block_list[-1], name="conv" + str(i + 2))
             inplanes = make_divisible(scale * c)
 
-        # self.last_second_conv = ConvBNLayer(
-        #     in_c=inplanes,
-        #     out_c=make_divisible(scale * self.cls_ch_squeeze),
-        #     filter_size=1,
-        #     stride=1,
-        #     padding=0,
-        #     num_groups=1,
-        #     if_act=True,
-        #     act="hard_swish",
-        #     name="conv_last")
-
-        # self.pool = Pool2D(
-        #     pool_type="avg", global_pooling=True, use_cudnn=False)
-
-        # self.last_conv = Conv2d(
-        #     in_channels=make_divisible(scale * self.cls_ch_squeeze),
-        #     out_channels=self.cls_ch_expand,
-        #     kernel_size=1,
-        #     stride=1,
-        #     padding=0,
-        #     bias_attr=False)
-
-        # self.out = Linear(
-        #     input_dim=self.cls_ch_expand,
-        #     output_dim=class_dim)
-
-        utils.load_pretrained_model(self, pretrained)
+        self.pretrained = pretrained
+        self.init_weight()
 
     def modify_bottle_params(self, output_stride=None):
 
         if output_stride is not None and output_stride % 2 != 0:
-            raise Exception("output stride must to be even number")
+            raise ValueError("output stride must to be even number")
         if output_stride is not None:
             stride = 2
             rate = 1
@@ -228,16 +170,12 @@ class MobileNetV3(nn.Layer):
             x = block(x)
             if i in self.out_indices:
                 feat_list.append(x)
-            #print("block {}:".format(i),x.shape, self.dilation_cfg[i])
-        # x = self.last_second_conv(x)
-        # x = self.pool(x)
-        # x = self.last_conv(x)
-        # x = F.hard_swish(x)
-        # x = F.dropout(x=x, dropout_prob=dropout_prob)
-        # x = paddle.reshape(x, shape=[x.shape[0], x.shape[1]])
-        # x = self.out(x)
 
         return feat_list
+
+    def init_weight(self):
+        if self.pretrained is not None:
+            utils.load_pretrained_model(self, self.pretrained)
 
 
 class ConvBNLayer(nn.Layer):
@@ -250,14 +188,12 @@ class ConvBNLayer(nn.Layer):
                  dilation=1,
                  num_groups=1,
                  if_act=True,
-                 act=None,
-                 use_cudnn=True,
-                 name=""):
+                 act=None):
         super(ConvBNLayer, self).__init__()
         self.if_act = if_act
         self.act = act
 
-        self.conv = Conv2d(
+        self.conv = nn.Conv2d(
             in_channels=in_c,
             out_channels=out_c,
             kernel_size=filter_size,
@@ -266,12 +202,13 @@ class ConvBNLayer(nn.Layer):
             dilation=dilation,
             groups=num_groups,
             bias_attr=False)
-        self.bn = BatchNorm(
+        self.bn = nn.SyncBatchNorm(
             num_features=out_c,
-            weight_attr=ParamAttr(regularizer=L2Decay(0.0)),
-            bias_attr=ParamAttr(regularizer=L2Decay(0.0)))
-
-        self._act_op = activation.Activation(act=None)
+            weight_attr=paddle.ParamAttr(regularizer=L2Decay(0.0)),
+            bias_attr=paddle.ParamAttr(regularizer=L2Decay(0.0)))
+        # FIXME (chenguowei), paddle2.0beta has not hard_swish. Make act = None temporarily
+        # self._act_op = layers.Activation(act=act)
+        self._act_op = layers.Activation(act=None)
 
     def forward(self, x):
         x = self.conv(x)
@@ -303,22 +240,18 @@ class ResidualUnit(nn.Layer):
             stride=1,
             padding=0,
             if_act=True,
-            act=act,
-            name=name + "_expand")
+            act=act)
 
         self.bottleneck_conv = ConvBNLayer(
             in_c=mid_c,
             out_c=mid_c,
             filter_size=filter_size,
             stride=stride,
-            padding=get_padding_same(
-                filter_size,
-                dilation),  #int((filter_size - 1) // 2) + (dilation - 1),
+            padding='same',
             dilation=dilation,
             num_groups=mid_c,
             if_act=True,
-            act=act,
-            name=name + "_depthwise")
+            act=act)
         if self.if_se:
             self.mid_se = SEModule(mid_c, name=name + "_se")
         self.linear_conv = ConvBNLayer(
@@ -328,8 +261,7 @@ class ResidualUnit(nn.Layer):
             stride=1,
             padding=0,
             if_act=False,
-            act=None,
-            name=name + "_linear")
+            act=None)
         self.dilation = dilation
 
     def forward(self, inputs):
@@ -346,14 +278,14 @@ class ResidualUnit(nn.Layer):
 class SEModule(nn.Layer):
     def __init__(self, channel, reduction=4, name=""):
         super(SEModule, self).__init__()
-        self.avg_pool = AdaptiveAvgPool2d(1)
-        self.conv1 = Conv2d(
+        self.avg_pool = nn.AdaptiveAvgPool2d(1)
+        self.conv1 = nn.Conv2d(
             in_channels=channel,
             out_channels=channel // reduction,
             kernel_size=1,
             stride=1,
             padding=0)
-        self.conv2 = Conv2d(
+        self.conv2 = nn.Conv2d(
             in_channels=channel // reduction,
             out_channels=channel,
             kernel_size=1,

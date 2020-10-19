@@ -1,4 +1,3 @@
-# coding:utf-8
 # Copyright (c) 2020  PaddlePaddle Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License"
@@ -12,9 +11,16 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""
+This module is used to store environmental parameters in PaddleSeg.
+
+SEG_HOME : Root directory for storing PaddleSeg related data. Default to ~/.paddleseg.
+           Users can change the default value through the SEG_HOME environment variable.
+DATA_HOME : The directory to store the automatically downloaded dataset, e.g ADE20K.
+PRETRAINED_MODEL_HOME : The directory to store the automatically downloaded pretrained model.
+"""
 
 import os
-import shutil
 
 from paddleseg.utils import logger
 

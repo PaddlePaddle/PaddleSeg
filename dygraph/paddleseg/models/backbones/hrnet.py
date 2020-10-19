@@ -13,20 +13,14 @@
 # limitations under the License.
 
 import math
-import os
 
 import paddle
-from paddle import ParamAttr
 import paddle.nn as nn
 import paddle.nn.functional as F
-from paddle.nn import SyncBatchNorm as BatchNorm
-from paddle.nn import Conv2d, Linear
-from paddle.nn import AdaptiveAvgPool2d, MaxPool2d, AvgPool2d
 
-from paddleseg.cvlibs import manager
+from paddleseg.cvlibs import manager, param_init
+from paddleseg.models import layers
 from paddleseg.utils import utils
-from paddleseg.cvlibs import param_init
-from paddleseg.models.common import layer_libs
 
 __all__ = [
     "HRNet_W18_Small_V1", "HRNet_W18_Small_V2", "HRNet_W18", "HRNet_W30",
@@ -36,24 +30,27 @@ __all__ = [
 
 class HRNet(nn.Layer):
     """
-    HRNet：Deep High-Resolution Representation Learning for Visual Recognition
-    https://arxiv.org/pdf/1908.07919.pdf.
+    The HRNet implementation based on PaddlePaddle.
+
+    The original article refers to
+    Jingdong Wang, et, al. "HRNet：Deep High-Resolution Representation Learning for Visual Recognition"
+    (https://arxiv.org/pdf/1908.07919.pdf).
 
     Args:
-        backbone_pretrained (str): the path of pretrained model.
-        stage1_num_modules (int): number of modules for stage1. Default 1.
-        stage1_num_blocks (list): number of blocks per module for stage1. Default [4].
-        stage1_num_channels (list): number of channels per branch for stage1. Default [64].
-        stage2_num_modules (int): number of modules for stage2. Default 1.
-        stage2_num_blocks (list): number of blocks per module for stage2. Default [4, 4]
-        stage2_num_channels (list): number of channels per branch for stage2. Default [18, 36].
-        stage3_num_modules (int): number of modules for stage3. Default 4.
-        stage3_num_blocks (list): number of blocks per module for stage3. Default [4, 4, 4]
-        stage3_num_channels (list): number of channels per branch for stage3. Default [18, 36, 72].
-        stage4_num_modules (int): number of modules for stage4. Default 3.
-        stage4_num_blocks (list): number of blocks per module for stage4. Default [4, 4, 4, 4]
-        stage4_num_channels (list): number of channels per branch for stage4. Default [18, 36, 72. 144].
-        has_se (bool): whether to use Squeeze-and-Excitation module. Default False.
+        pretrained (str): The path of pretrained model.
+        stage1_num_modules (int): Number of modules for stage1. Default 1.
+        stage1_num_blocks (list): Number of blocks per module for stage1. Default [4].
+        stage1_num_channels (list): Number of channels per branch for stage1. Default [64].
+        stage2_num_modules (int): Number of modules for stage2. Default 1.
+        stage2_num_blocks (list): Number of blocks per module for stage2. Default [4, 4]
+        stage2_num_channels (list): Number of channels per branch for stage2. Default [18, 36].
+        stage3_num_modules (int): Number of modules for stage3. Default 4.
+        stage3_num_blocks (list): Number of blocks per module for stage3. Default [4, 4, 4]
+        stage3_num_channels (list): Number of channels per branch for stage3. Default [18, 36, 72].
+        stage4_num_modules (int): Number of modules for stage4. Default 3.
+        stage4_num_blocks (list): Number of blocks per module for stage4. Default [4, 4, 4, 4]
+        stage4_num_channels (list): Number of channels per branch for stage4. Default [18, 36, 72. 144].
+        has_se (bool): Whether to use Squeeze-and-Excitation module. Default False.
     """
 
     def __init__(self,
@@ -88,7 +85,7 @@ class HRNet(nn.Layer):
         self.has_se = has_se
         self.feat_channels = [sum(stage4_num_channels)]
 
-        self.conv_layer1_1 = layer_libs.ConvBNReLU(
+        self.conv_layer1_1 = layers.ConvBNReLU(
             in_channels=3,
             out_channels=64,
             kernel_size=3,
@@ -96,7 +93,7 @@ class HRNet(nn.Layer):
             padding='same',
             bias_attr=False)
 
-        self.conv_layer1_2 = layer_libs.ConvBNReLU(
+        self.conv_layer1_2 = layers.ConvBNReLU(
             in_channels=64,
             out_channels=64,
             kernel_size=3,
@@ -149,8 +146,7 @@ class HRNet(nn.Layer):
             name="st4")
         self.init_weight()
 
-    def forward(self, x, label=None, mode='train'):
-        input_shape = x.shape[2:]
+    def forward(self, x):
         conv1 = self.conv_layer1_1(x)
         conv2 = self.conv_layer1_2(conv1)
 
@@ -207,8 +203,8 @@ class Layer1(nn.Layer):
                     name=name + '_' + str(i + 1)))
             self.bottleneck_block_list.append(bottleneck_block)
 
-    def forward(self, input):
-        conv = input
+    def forward(self, x):
+        conv = x
         for block_func in self.bottleneck_block_list:
             conv = block_func(conv)
         return conv
@@ -227,7 +223,7 @@ class TransitionLayer(nn.Layer):
                 if in_channels[i] != out_channels[i]:
                     residual = self.add_sublayer(
                         "transition_{}_layer_{}".format(name, i + 1),
-                        layer_libs.ConvBNReLU(
+                        layers.ConvBNReLU(
                             in_channels=in_channels[i],
                             out_channels=out_channels[i],
                             kernel_size=3,
@@ -236,7 +232,7 @@ class TransitionLayer(nn.Layer):
             else:
                 residual = self.add_sublayer(
                     "transition_{}_layer_{}".format(name, i + 1),
-                    layer_libs.ConvBNReLU(
+                    layers.ConvBNReLU(
                         in_channels=in_channels[-1],
                         out_channels=out_channels[i],
                         kernel_size=3,
@@ -245,16 +241,16 @@ class TransitionLayer(nn.Layer):
                         bias_attr=False))
             self.conv_bn_func_list.append(residual)
 
-    def forward(self, input):
+    def forward(self, x):
         outs = []
         for idx, conv_bn_func in enumerate(self.conv_bn_func_list):
             if conv_bn_func is None:
-                outs.append(input[idx])
+                outs.append(x[idx])
             else:
-                if idx < len(input):
-                    outs.append(conv_bn_func(input[idx]))
+                if idx < len(x):
+                    outs.append(conv_bn_func(x[idx]))
                 else:
-                    outs.append(conv_bn_func(input[-1]))
+                    outs.append(conv_bn_func(x[-1]))
         return outs
 
 
@@ -283,9 +279,9 @@ class Branches(nn.Layer):
                         str(j + 1)))
                 self.basic_block_list[i].append(basic_block_func)
 
-    def forward(self, inputs):
+    def forward(self, x):
         outs = []
-        for idx, input in enumerate(inputs):
+        for idx, input in enumerate(x):
             conv = input
             for basic_block_func in self.basic_block_list[idx]:
                 conv = basic_block_func(conv)
@@ -306,14 +302,14 @@ class BottleneckBlock(nn.Layer):
         self.has_se = has_se
         self.downsample = downsample
 
-        self.conv1 = layer_libs.ConvBNReLU(
+        self.conv1 = layers.ConvBNReLU(
             in_channels=num_channels,
             out_channels=num_filters,
             kernel_size=1,
             padding='same',
             bias_attr=False)
 
-        self.conv2 = layer_libs.ConvBNReLU(
+        self.conv2 = layers.ConvBNReLU(
             in_channels=num_filters,
             out_channels=num_filters,
             kernel_size=3,
@@ -321,7 +317,7 @@ class BottleneckBlock(nn.Layer):
             padding='same',
             bias_attr=False)
 
-        self.conv3 = layer_libs.ConvBN(
+        self.conv3 = layers.ConvBN(
             in_channels=num_filters,
             out_channels=num_filters * 4,
             kernel_size=1,
@@ -329,7 +325,7 @@ class BottleneckBlock(nn.Layer):
             bias_attr=False)
 
         if self.downsample:
-            self.conv_down = layer_libs.ConvBN(
+            self.conv_down = layers.ConvBN(
                 in_channels=num_channels,
                 out_channels=num_filters * 4,
                 kernel_size=1,
@@ -343,14 +339,14 @@ class BottleneckBlock(nn.Layer):
                 reduction_ratio=16,
                 name=name + '_fc')
 
-    def forward(self, input):
-        residual = input
-        conv1 = self.conv1(input)
+    def forward(self, x):
+        residual = x
+        conv1 = self.conv1(x)
         conv2 = self.conv2(conv1)
         conv3 = self.conv3(conv2)
 
         if self.downsample:
-            residual = self.conv_down(input)
+            residual = self.conv_down(x)
 
         if self.has_se:
             conv3 = self.se(conv3)
@@ -373,14 +369,14 @@ class BasicBlock(nn.Layer):
         self.has_se = has_se
         self.downsample = downsample
 
-        self.conv1 = layer_libs.ConvBNReLU(
+        self.conv1 = layers.ConvBNReLU(
             in_channels=num_channels,
             out_channels=num_filters,
             kernel_size=3,
             stride=stride,
             padding='same',
             bias_attr=False)
-        self.conv2 = layer_libs.ConvBN(
+        self.conv2 = layers.ConvBN(
             in_channels=num_filters,
             out_channels=num_filters,
             kernel_size=3,
@@ -388,7 +384,7 @@ class BasicBlock(nn.Layer):
             bias_attr=False)
 
         if self.downsample:
-            self.conv_down = layer_libs.ConvBNReLU(
+            self.conv_down = layers.ConvBNReLU(
                 in_channels=num_channels,
                 out_channels=num_filters,
                 kernel_size=1,
@@ -402,13 +398,13 @@ class BasicBlock(nn.Layer):
                 reduction_ratio=16,
                 name=name + '_fc')
 
-    def forward(self, input):
-        residual = input
-        conv1 = self.conv1(input)
+    def forward(self, x):
+        residual = x
+        conv1 = self.conv1(x)
         conv2 = self.conv2(conv1)
 
         if self.downsample:
-            residual = self.conv_down(input)
+            residual = self.conv_down(x)
 
         if self.has_se:
             conv2 = self.se(conv2)
@@ -422,35 +418,35 @@ class SELayer(nn.Layer):
     def __init__(self, num_channels, num_filters, reduction_ratio, name=None):
         super(SELayer, self).__init__()
 
-        self.pool2d_gap = AdaptiveAvgPool2d(1)
+        self.pool2d_gap = nn.AdaptiveAvgPool2d(1)
 
         self._num_channels = num_channels
 
         med_ch = int(num_channels / reduction_ratio)
         stdv = 1.0 / math.sqrt(num_channels * 1.0)
-        self.squeeze = Linear(
+        self.squeeze = nn.Linear(
             num_channels,
             med_ch,
             act="relu",
-            param_attr=ParamAttr(
+            param_attr=paddle.ParamAttr(
                 initializer=nn.initializer.Uniform(-stdv, stdv)))
 
         stdv = 1.0 / math.sqrt(med_ch * 1.0)
-        self.excitation = Linear(
+        self.excitation = nn.Linear(
             med_ch,
             num_filters,
             act="sigmoid",
-            param_attr=ParamAttr(
+            param_attr=paddle.ParamAttr(
                 initializer=nn.initializer.Uniform(-stdv, stdv)))
 
-    def forward(self, input):
-        pool = self.pool2d_gap(input)
+    def forward(self, x):
+        pool = self.pool2d_gap(x)
         pool = paddle.reshape(pool, shape=[-1, self._num_channels])
         squeeze = self.squeeze(pool)
         excitation = self.excitation(squeeze)
         excitation = paddle.reshape(
             excitation, shape=[-1, self._num_channels, 1, 1])
-        out = input * excitation
+        out = x * excitation
         return out
 
 
@@ -491,8 +487,8 @@ class Stage(nn.Layer):
 
             self.stage_func_list.append(stage_func)
 
-    def forward(self, input):
-        out = input
+    def forward(self, x):
+        out = x
         for idx in range(self._num_modules):
             out = self.stage_func_list[idx](out)
         return out
@@ -521,8 +517,8 @@ class HighResolutionModule(nn.Layer):
             multi_scale_output=multi_scale_output,
             name=name)
 
-    def forward(self, input):
-        out = self.branches_func(input)
+    def forward(self, x):
+        out = self.branches_func(x)
         out = self.fuse_func(out)
         return out
 
@@ -541,11 +537,10 @@ class FuseLayers(nn.Layer):
         self.residual_func_list = []
         for i in range(self._actual_ch):
             for j in range(len(in_channels)):
-                residual_func = None
                 if j > i:
                     residual_func = self.add_sublayer(
                         "residual_{}_layer_{}_{}".format(name, i + 1, j + 1),
-                        layer_libs.ConvBN(
+                        layers.ConvBN(
                             in_channels=in_channels[j],
                             out_channels=out_channels[i],
                             kernel_size=1,
@@ -559,7 +554,7 @@ class FuseLayers(nn.Layer):
                             residual_func = self.add_sublayer(
                                 "residual_{}_layer_{}_{}_{}".format(
                                     name, i + 1, j + 1, k + 1),
-                                layer_libs.ConvBN(
+                                layers.ConvBN(
                                     in_channels=pre_num_filters,
                                     out_channels=out_channels[i],
                                     kernel_size=3,
@@ -571,7 +566,7 @@ class FuseLayers(nn.Layer):
                             residual_func = self.add_sublayer(
                                 "residual_{}_layer_{}_{}_{}".format(
                                     name, i + 1, j + 1, k + 1),
-                                layer_libs.ConvBNReLU(
+                                layers.ConvBNReLU(
                                     in_channels=pre_num_filters,
                                     out_channels=out_channels[j],
                                     kernel_size=3,
@@ -581,21 +576,21 @@ class FuseLayers(nn.Layer):
                             pre_num_filters = out_channels[j]
                         self.residual_func_list.append(residual_func)
 
-    def forward(self, input):
+    def forward(self, x):
         outs = []
         residual_func_idx = 0
         for i in range(self._actual_ch):
-            residual = input[i]
+            residual = x[i]
             residual_shape = residual.shape[-2:]
             for j in range(len(self._in_channels)):
                 if j > i:
-                    y = self.residual_func_list[residual_func_idx](input[j])
+                    y = self.residual_func_list[residual_func_idx](x[j])
                     residual_func_idx += 1
 
                     y = F.resize_bilinear(input=y, out_shape=residual_shape)
                     residual = residual + y
                 elif j < i:
-                    y = input[j]
+                    y = x[j]
                     for k in range(i - j):
                         y = self.residual_func_list[residual_func_idx](y)
                         residual_func_idx += 1

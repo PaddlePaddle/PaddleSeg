@@ -24,11 +24,6 @@ def normalize(im, mean, std):
     return im
 
 
-def permute(im):
-    im = np.transpose(im, (2, 0, 1))
-    return im
-
-
 def resize(im, target_size=608, interp=cv2.INTER_LINEAR):
     if isinstance(target_size, list) or isinstance(target_size, tuple):
         w = target_size[0]

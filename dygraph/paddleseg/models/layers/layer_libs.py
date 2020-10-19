@@ -1,4 +1,3 @@
-# -*- encoding: utf-8 -*-
 # Copyright (c) 2020 PaddlePaddle Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,10 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import paddle
-from paddle import nn
+import paddle.nn as nn
 import paddle.nn.functional as F
-from paddle.nn import Conv2d
 from paddle.nn import SyncBatchNorm as BatchNorm
 
 
@@ -27,10 +24,9 @@ class ConvBNReLU(nn.Layer):
                  kernel_size,
                  padding='same',
                  **kwargs):
+        super().__init__()
 
-        super(ConvBNReLU, self).__init__()
-
-        self._conv = Conv2d(
+        self._conv = nn.Conv2d(
             in_channels, out_channels, kernel_size, padding=padding, **kwargs)
 
         self._batch_norm = BatchNorm(out_channels)
@@ -49,9 +45,8 @@ class ConvBN(nn.Layer):
                  kernel_size,
                  padding='same',
                  **kwargs):
-
-        super(ConvBN, self).__init__()
-        self._conv = Conv2d(
+        super().__init__()
+        self._conv = nn.Conv2d(
             in_channels, out_channels, kernel_size, padding=padding, **kwargs)
         self._batch_norm = BatchNorm(out_channels)
 
@@ -61,10 +56,10 @@ class ConvBN(nn.Layer):
         return x
 
 
-class ConvReluPool(nn.Layer):
+class ConvReLUPool(nn.Layer):
     def __init__(self, in_channels, out_channels):
-        super(ConvReluPool, self).__init__()
-        self.conv = Conv2d(
+        super().__init__()
+        self.conv = nn.Conv2d(
             in_channels,
             out_channels,
             kernel_size=3,
@@ -86,7 +81,7 @@ class SeparableConvBNReLU(nn.Layer):
                  kernel_size,
                  padding='same',
                  **kwargs):
-        super(SeparableConvBNReLU, self).__init__()
+        super().__init__()
         self.depthwise_conv = ConvBN(
             in_channels,
             out_channels=in_channels,
@@ -95,7 +90,7 @@ class SeparableConvBNReLU(nn.Layer):
             groups=in_channels,
             **kwargs)
         self.piontwise_conv = ConvBNReLU(
-            in_channels, out_channels, kernel_size=1, padding=padding, groups=1)
+            in_channels, out_channels, kernel_size=1, groups=1)
 
     def forward(self, x):
         x = self.depthwise_conv(x)
@@ -110,7 +105,7 @@ class DepthwiseConvBN(nn.Layer):
                  kernel_size,
                  padding='same',
                  **kwargs):
-        super(DepthwiseConvBN, self).__init__()
+        super().__init__()
         self.depthwise_conv = ConvBN(
             in_channels,
             out_channels=out_channels,
@@ -126,13 +121,13 @@ class DepthwiseConvBN(nn.Layer):
 
 class AuxLayer(nn.Layer):
     """
-    The auxilary layer implementation for auxilary loss
+    The auxiliary layer implementation for auxiliary loss.
 
     Args:
-        in_channels (int): the number of input channels.
-        inter_channels (int): intermediate channels.
-        out_channels (int): the number of output channels, which is usually num_classes.
-        dropout_prob (float): the droput rate. Default to 0.1.
+        in_channels (int): The number of input channels.
+        inter_channels (int): The intermediate channels.
+        out_channels (int): The number of output channels, and usually it is num_classes.
+        dropout_prob (float, optional): The drop rate. Default: 0.1.
     """
 
     def __init__(self,
@@ -140,7 +135,7 @@ class AuxLayer(nn.Layer):
                  inter_channels,
                  out_channels,
                  dropout_prob=0.1):
-        super(AuxLayer, self).__init__()
+        super().__init__()
 
         self.conv_bn_relu = ConvBNReLU(
             in_channels=in_channels,

@@ -15,11 +15,9 @@
 import argparse
 
 import paddle
-from paddle.distributed import ParallelEnv
 
-import paddleseg
 from paddleseg.cvlibs import manager, Config
-from paddleseg.utils import get_environ_info, logger
+from paddleseg.utils import get_sys_env, logger
 from paddleseg.core import train
 
 
@@ -47,9 +45,9 @@ def parse_args():
         type=float,
         default=None)
     parser.add_argument(
-        '--save_interval_iters',
-        dest='save_interval_iters',
-        help='The interval iters for save a model snapshot',
+        '--save_interval',
+        dest='save_interval',
+        help='How many iters to save a model snapshot once during training.',
         type=int,
         default=1000)
     parser.add_argument(
@@ -85,13 +83,13 @@ def parse_args():
 
 
 def main(args):
-    env_info = get_environ_info()
+    env_info = get_sys_env()
     info = ['{}: {}'.format(k, v) for k, v in env_info.items()]
     info = '\n'.join(['', format('Environment Information', '-^48s')] + info +
                      ['-' * 48])
     logger.info(info)
 
-    places = paddle.CUDAPlace(ParallelEnv().dev_id) \
+    places = paddle.CUDAPlace(paddle.distributed.ParallelEnv().dev_id) \
         if env_info['Paddle compiled with cuda'] and env_info['GPUs used'] \
         else paddle.CPUPlace()
 
@@ -99,8 +97,8 @@ def main(args):
     if not args.cfg:
         raise RuntimeError('No configuration file specified.')
 
-    cfg = Config(args.cfg)
-    cfg.update(
+    cfg = Config(
+        args.cfg,
         learning_rate=args.learning_rate,
         iters=args.iters,
         batch_size=args.batch_size)
@@ -126,13 +124,11 @@ def main(args):
         save_dir=args.save_dir,
         iters=cfg.iters,
         batch_size=cfg.batch_size,
-        save_interval_iters=args.save_interval_iters,
+        save_interval=args.save_interval,
         log_iters=args.log_iters,
-        num_classes=train_dataset.num_classes,
         num_workers=args.num_workers,
         use_vdl=args.use_vdl,
-        losses=losses,
-        ignore_index=losses['types'][0].ignore_index)
+        losses=losses)
 
 
 if __name__ == '__main__':

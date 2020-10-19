@@ -14,25 +14,64 @@
 
 import codecs
 import os
-from typing import Any, Callable
+from typing import Any
 
-import yaml
 import paddle
-import paddle.nn.functional as F
+import yaml
 
 import paddleseg.cvlibs.manager as manager
-from paddleseg.utils import logger
 
 
 class Config(object):
     '''
-    Training config.
+    Training configuration parsing. The only yaml/yml file is supported.
+
+    The following hyper-parameters are available in the config file:
+        batch_size: The number of samples per gpu.
+        iters: The total training steps.
+        train_dataset: A training data config including type/data_root/transforms/mode.
+            For data type, please refer to paddleseg.datasets.
+            For specific transforms, please refer to paddleseg.transforms.transforms.
+        val_dataset: A validation data config including type/data_root/transforms/mode.
+        optimizer: A optimizer config, but currently PaddleSeg only supports sgd with momentum in config file.
+            In addition, weight_decay could be set as a regularization.
+        learning_rate: A learning rate config. If decay is configured, learning _rate value is the starting learning rate,
+             where only poly decay is supported using the config file. In addition, decay power and end_lr are tuned experimentally.
+        loss: A loss config. Multi-loss config is available. The loss type order is consistent with the seg model outputs,
+            where the coef term indicates the weight of corresponding loss. Note that the number of coef must be the same as the number of
+            model outputs, and there could be only one loss type if using the same loss type among the outputs, otherwise the number of
+            loss type must be consistent with coef.
+        model: A model config including type/backbone and model-dependent arguments.
+            For model type, please refer to paddleseg.models.
+            For backbone, please refer to paddleseg.models.backbones.
 
     Args:
-        path(str) : the path of config file, supports yaml format only
+        path (str) : The path of config file, supports yaml format only.
+
+    Examples:
+
+        from paddleseg.cvlibs.config import Config
+
+        # Create a cfg object with yaml file path.
+        cfg = Config(yaml_cfg_path)
+
+        # Parsing the argument when its property is used.
+        train_dataset = cfg.train_dataset
+
+        # the argument of model should be parsed after dataset,
+        # since the model builder uses some properties in dataset.
+        model = cfg.model
+        ...
     '''
 
-    def __init__(self, path: str):
+    def __init__(self,
+                 path: str,
+                 learning_rate: float = None,
+                 batch_size: int = None,
+                 iters: int = None):
+        if not path:
+            raise ValueError('Please specify the configuration file path.')
+
         if not os.path.exists(path):
             raise FileNotFoundError('File {} does not exist'.format(path))
 
@@ -43,9 +82,12 @@ class Config(object):
         else:
             raise RuntimeError('Config file should in yaml format!')
 
+        self.update(
+            learning_rate=learning_rate, batch_size=batch_size, iters=iters)
+
     def _update_dic(self, dic, base_dic):
         """
-        update config from dic based base_dic
+        Update config from dic based base_dic
         """
         base_dic = base_dic.copy()
         for key, val in dic.items():
@@ -95,7 +137,7 @@ class Config(object):
         return iters
 
     @property
-    def learning_rate(self) -> float:
+    def learning_rate(self) -> paddle.optimizer._LRScheduler:
         _learning_rate = self.dic.get('learning_rate', {}).get('value')
         if not _learning_rate:
             raise RuntimeError(
@@ -144,8 +186,21 @@ class Config(object):
         return args
 
     @property
-    def loss(self) -> list:
+    def loss(self) -> dict:
         args = self.dic.get('loss', {}).copy()
+        if 'types' in args and 'coef' in args:
+            len_types = len(args['types'])
+            len_coef = len(args['coef'])
+            if len_types != len_coef:
+                if len_types == 1:
+                    args['types'] = args['types'] * len_coef
+                else:
+                    raise ValueError(
+                        'The length of types should equal to coef or equal to 1 in loss config, but they are {} and {}.'
+                        .format(len_types, len_coef))
+        else:
+            raise ValueError(
+                'Loss config should contain keys of "types" and "coef"')
 
         if not self._losses:
             self._losses = dict()
@@ -153,6 +208,7 @@ class Config(object):
                 if key == 'types':
                     self._losses['types'] = []
                     for item in args['types']:
+                        item['ignore_index'] = self.train_dataset.ignore_index
                         self._losses['types'].append(self._load_object(item))
                 else:
                     self._losses[key] = val
@@ -164,8 +220,10 @@ class Config(object):
         return self._losses
 
     @property
-    def model(self) -> Callable:
+    def model(self) -> paddle.nn.Layer:
         model_cfg = self.dic.get('model').copy()
+        model_cfg['num_classes'] = self.train_dataset.num_classes
+
         if not model_cfg:
             raise RuntimeError('No model specified in the configuration file.')
         if not self._model:
@@ -173,14 +231,14 @@ class Config(object):
         return self._model
 
     @property
-    def train_dataset(self) -> Any:
+    def train_dataset(self) -> paddle.io.Dataset:
         _train_dataset = self.dic.get('train_dataset').copy()
         if not _train_dataset:
             return None
         return self._load_object(_train_dataset)
 
     @property
-    def val_dataset(self) -> Any:
+    def val_dataset(self) -> paddle.io.Dataset:
         _val_dataset = self.dic.get('val_dataset').copy()
         if not _val_dataset:
             return None

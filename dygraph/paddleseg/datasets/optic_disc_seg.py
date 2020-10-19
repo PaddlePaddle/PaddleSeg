@@ -14,9 +14,9 @@
 
 import os
 
-import paddleseg.env as segenv
 from .dataset import Dataset
 from paddleseg.utils.download import download_file_and_uncompress
+from paddleseg.utils import seg_env
 from paddleseg.cvlibs import manager
 from paddleseg.transforms import Compose
 
@@ -25,43 +25,56 @@ URL = "https://paddleseg.bj.bcebos.com/dataset/optic_disc_seg.zip"
 
 @manager.DATASETS.add_component
 class OpticDiscSeg(Dataset):
-    def __init__(self,
-                 dataset_root=None,
-                 transforms=None,
-                 mode='train',
-                 download=True):
+    """
+    OpticDiscSeg dataset is extraced from iChallenge-AMD
+    (https://ai.baidu.com/broad/subordinate?dataset=amd).
+
+    Args:
+        transforms (list): Transforms for image.
+        dataset_root (str): The dataset directory. Default: None
+        mode (str): Which part of dataset to use. it is one of ('train', 'val', 'test'). Default: 'train'.
+    """
+
+    def __init__(self, dataset_root=None, transforms=None, mode='train'):
         self.dataset_root = dataset_root
         self.transforms = Compose(transforms)
-        self.file_list = list()
+        mode = mode.lower()
         self.mode = mode
+        self.file_list = list()
         self.num_classes = 2
+        self.ignore_index = 255
 
-        if mode.lower() not in ['train', 'val', 'test']:
-            raise Exception(
+        if mode not in ['train', 'val', 'test']:
+            raise ValueError(
                 "`mode` should be 'train', 'val' or 'test', but got {}.".format(
                     mode))
 
         if self.transforms is None:
-            raise Exception("`transforms` is necessary, but it is None.")
+            raise ValueError("`transforms` is necessary, but it is None.")
 
         if self.dataset_root is None:
-            if not download:
-                raise Exception(
-                    "`data_root` not set and auto download disabled.")
             self.dataset_root = download_file_and_uncompress(
-                url=URL, savepath=segenv.DATA_HOME, extrapath=segenv.DATA_HOME)
+                url=URL,
+                savepath=seg_env.DATA_HOME,
+                extrapath=seg_env.DATA_HOME)
         elif not os.path.exists(self.dataset_root):
-            raise Exception('there is not `dataset_root`: {}.'.format(
-                self.dataset_root))
+            self.dataset_root = os.path.normpath(self.dataset_root)
+            savepath, extraname = self.dataset_root.rsplit(
+                sep=os.path.sep, maxsplit=1)
+            self.dataset_root = download_file_and_uncompress(
+                url=URL,
+                savepath=savepath,
+                extrapath=savepath,
+                extraname=extraname)
 
         if mode == 'train':
-            file_list = os.path.join(self.dataset_root, 'train_list.txt')
+            file_path = os.path.join(self.dataset_root, 'train_list.txt')
         elif mode == 'val':
-            file_list = os.path.join(self.dataset_root, 'val_list.txt')
+            file_path = os.path.join(self.dataset_root, 'val_list.txt')
         else:
-            file_list = os.path.join(self.dataset_root, 'test_list.txt')
+            file_path = os.path.join(self.dataset_root, 'test_list.txt')
 
-        with open(file_list, 'r') as f:
+        with open(file_path, 'r') as f:
             for line in f:
                 items = line.strip().split()
                 if len(items) != 2:

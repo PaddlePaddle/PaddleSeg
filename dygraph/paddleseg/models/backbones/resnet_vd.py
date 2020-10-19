@@ -12,24 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
-import os
-import math
-
-import numpy as np
 import paddle
 import paddle.nn as nn
 import paddle.nn.functional as F
-from paddle.nn import SyncBatchNorm as BatchNorm
-from paddle.nn import Conv2d, Linear, Dropout
-from paddle.nn import AdaptiveAvgPool2d, MaxPool2d, AvgPool2d
 
-from paddleseg.utils import utils
-from paddleseg.models.common import layer_libs, activation
 from paddleseg.cvlibs import manager
+from paddleseg.models import layers
+from paddleseg.utils import utils
 
 __all__ = [
     "ResNet18_vd", "ResNet34_vd", "ResNet50_vd", "ResNet101_vd", "ResNet152_vd"
@@ -52,9 +41,9 @@ class ConvBNLayer(nn.Layer):
         super(ConvBNLayer, self).__init__()
 
         self.is_vd_mode = is_vd_mode
-        self._pool2d_avg = AvgPool2d(
+        self._pool2d_avg = nn.AvgPool2d(
             kernel_size=2, stride=2, padding=0, ceil_mode=True)
-        self._conv = Conv2d(
+        self._conv = nn.Conv2d(
             in_channels=in_channels,
             out_channels=out_channels,
             kernel_size=kernel_size,
@@ -63,12 +52,9 @@ class ConvBNLayer(nn.Layer):
             dilation=dilation,
             groups=groups,
             bias_attr=False)
-        if name == "conv1":
-            bn_name = "bn_" + name
-        else:
-            bn_name = "bn" + name[3:]
-        self._batch_norm = BatchNorm(out_channels)
-        self._act_op = activation.Activation(act=act)
+
+        self._batch_norm = nn.SyncBatchNorm(out_channels)
+        self._act_op = layers.Activation(act=act)
 
     def forward(self, inputs):
         if self.is_vd_mode:
@@ -130,7 +116,8 @@ class BottleneckBlock(nn.Layer):
         y = self.conv0(inputs)
 
         ####################################################################
-        # If given dilation rate > 1, using corresponding padding
+        # If given dilation rate > 1, using corresponding padding.
+        # The performance drops down without the follow padding.
         if self.dilation > 1:
             padding = self.dilation
             y = F.pad(y, [padding, padding, padding, padding])
@@ -201,10 +188,12 @@ class ResNet_vd(nn.Layer):
                  layers=50,
                  output_stride=None,
                  multi_grid=(1, 1, 1),
+                 lr_mult_list=(0.1, 0.1, 0.2, 0.2),
                  pretrained=None):
         super(ResNet_vd, self).__init__()
 
         self.layers = layers
+        self.lr_mult_list = lr_mult_list
         supported_layers = [18, 34, 50, 101, 152, 200]
         assert layers in supported_layers, \
             "supported layers are {} but input layer is {}".format(
@@ -255,7 +244,7 @@ class ResNet_vd(nn.Layer):
             stride=1,
             act='relu',
             name="conv1_3")
-        self.pool2d_max = MaxPool2d(kernel_size=3, stride=2, padding=1)
+        self.pool2d_max = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
 
         # self.block_list = []
         self.stage_list = []
@@ -278,10 +267,9 @@ class ResNet_vd(nn.Layer):
                         block] if dilation_dict and block in dilation_dict else 1
 
                     # Actually block here is 'stage', and i is 'block' in 'stage'
-                    # At the stage 4, expand the the dilation_rate using multi_grid, default (1, 2, 4)
+                    # At the stage 4, expand the the dilation_rate if given multi_grid
                     if block == 3:
                         dilation_rate = dilation_rate * multi_grid[i]
-                    #print("stage {}, block {}: dilation rate".format(block, i), dilation_rate)
                     ###############################################################################
 
                     bottleneck_block = self.add_sublayer(
@@ -320,7 +308,8 @@ class ResNet_vd(nn.Layer):
                     shortcut = True
                 self.stage_list.append(block_list)
 
-        utils.load_pretrained_model(self, pretrained)
+        self.pretrained = pretrained
+        self.init_weight()
 
     def forward(self, inputs):
         y = self.conv1_1(inputs)
@@ -336,6 +325,25 @@ class ResNet_vd(nn.Layer):
             feat_list.append(y)
 
         return feat_list
+
+    def init_weight(self):
+        utils.load_pretrained_model(self, self.pretrained)
+
+        # for idx, stage in enumerate(self.stage_list):
+        #     for layer in stage:
+        #         for sublayer in layer.sublayers():
+        #             if isinstance(sublayer, nn.Conv2d):
+        #                 sublayer.weight.optimize_attr[
+        #                     'learning_rate'] = self.lr_mult_list[idx]
+        #                 if sublayer.bias:
+        #                     sublayer.bias.optimize_attr[
+        #                         'learning_rate'] = self.lr_mult_list[idx]
+
+        #             if isinstance(sublayer, nn.SyncBatchNorm):
+        #                 sublayer.weight.optimize_attr[
+        #                     'learning_rate'] = self.lr_mult_list[idx]
+        #                 sublayer.bias.optimize_attr[
+        #                     'learning_rate'] = self.lr_mult_list[idx]
 
 
 @manager.BACKBONES.add_component

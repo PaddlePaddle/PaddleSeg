@@ -1,5 +1,5 @@
 batch_size: 4
-iters: 100000
+iters: 80000
 
 train_dataset:
   type: Cityscapes
@@ -25,6 +25,8 @@ val_dataset:
 
 optimizer:
   type: sgd
+  momentum: 0.9
+  weight_decay: 4.0e-5
 
 learning_rate:
   value: 0.01
@@ -36,5 +38,4 @@ learning_rate:
 loss:
   types:
     - type: CrossEntropyLoss
-      ignore_index: 255
   coef: [1]
