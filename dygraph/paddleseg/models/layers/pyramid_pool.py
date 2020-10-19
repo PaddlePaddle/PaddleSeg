@@ -144,7 +144,7 @@ class PPModule(nn.Layer):
             size (int): The out size of the pooled layer.
 
         Returns:
-            conv (tensor): A tensor after Pyramid Pooling Module.
+            conv (Tensor): A tensor after Pyramid Pooling Module.
         """
 
         prior = nn.AdaptiveAvgPool2d(output_size=(size, size))

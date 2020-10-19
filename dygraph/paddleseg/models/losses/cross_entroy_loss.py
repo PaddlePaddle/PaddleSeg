@@ -26,7 +26,7 @@ class CrossEntropyLoss(nn.CrossEntropyLoss):
     Args:
         weight (Tensor): Weight tensor, a manual rescaling weight given
             to each class and the shape is (C). It has the same dimensions as class
-	        number and the data type is float32, float64. Default ``'None'``.
+            number and the data type is float32, float64. Default ``'None'``.
         ignore_index (int64): Specifies a target value that is ignored
             and does not contribute to the input gradient. Default ``255``.
         reduction (str): Indicate how to average the loss by batch_size,
@@ -52,13 +52,14 @@ class CrossEntropyLoss(nn.CrossEntropyLoss):
     def forward(self, logit, label):
         """
         Forward computation.
+
         Args:
-            logit (Tensor): logit tensor, the data type is float32, float64. Shape is
-	            (N, C), where C is number of classes, and if shape is more than 2D, this
-	            is (N, C, D1, D2,..., Dk), k >= 1.
-            label (Variable): label tensor, the data type is int64. Shape is (N), where each
-	            value is 0 <= label[i] <= C-1, and if shape is more than 2D, this is
-	            (N, D1, D2,..., Dk), k >= 1.
+            logit (Tensor): Logit tensor, the data type is float32, float64. Shape is
+                (N, C), where C is number of classes, and if shape is more than 2D, this
+                is (N, C, D1, D2,..., Dk), k >= 1.
+            label (Tensor): Label tensor, the data type is int64. Shape is (N), where each
+                value is 0 <= label[i] <= C-1, and if shape is more than 2D, this is
+                (N, D1, D2,..., Dk), k >= 1.
         """
         loss = paddle.nn.functional.cross_entropy(
             logit,
@@ -95,13 +96,14 @@ class CrossEntropyLoss(nn.Layer):
     def forward(self, logit, label):
         """
         Forward computation.
+
         Args:
-            logit (Tensor): logit tensor, the data type is float32, float64. Shape is
-	            (N, C), where C is number of classes, and if shape is more than 2D, this
-	            is (N, C, D1, D2,..., Dk), k >= 1.
-            label (Variable): label tensor, the data type is int64. Shape is (N), where each
-	            value is 0 <= label[i] <= C-1, and if shape is more than 2D, this is
-	            (N, D1, D2,..., Dk), k >= 1.
+            logit (Tensor): Logit tensor, the data type is float32, float64. Shape is
+                (N, C), where C is number of classes, and if shape is more than 2D, this
+                is (N, C, D1, D2,..., Dk), k >= 1.
+            label (Tensor): Label tensor, the data type is int64. Shape is (N), where each
+                value is 0 <= label[i] <= C-1, and if shape is more than 2D, this is
+                (N, D1, D2,..., Dk), k >= 1.
         """
         if len(label.shape) != len(logit.shape):
             label = paddle.unsqueeze(label, 1)
