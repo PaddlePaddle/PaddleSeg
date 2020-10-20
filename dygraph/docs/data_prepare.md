@@ -33,7 +33,7 @@ python tools/convert_cityscapes.py --cityscapes_path data/cityscapes --num_worke
 通常情况下会利用[SBD(Semantic Boundaries Dataset)](http://home.bharathh.info/pubs/codes/SBD/download.html)进行扩充，扩充后训练集10582张。
 运行下列命令进行SBD数据集下载并进行扩充：
 ```shell
-python tools/convert_cityscapes.py --voc_path data/VOCdevkit --num_workers 8
+python tools/voc_augment.py --voc_path data/VOCdevkit --num_workers 8
 ```
 其中`voc_path`应根据实际数据集路径进行调整。
 
