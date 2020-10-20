@@ -13,7 +13,7 @@
 |Deeplabv3p|✔|✔|||
 |[Fast-SCNN](./configs/fastscnn)|-|-|-|-|
 |[FCN](./configs/fcn)|||✔|✔|
-|GCNet|✔|✔|||
+|[GCNet](./configs/gcnet)|✔|✔|||
 |[OCRNet](./configs/ocrnet/)|||✔|✔|
 |PSPNet|✔|✔|||
 |[UNet](./configs/unet)|-|-|-|-|
