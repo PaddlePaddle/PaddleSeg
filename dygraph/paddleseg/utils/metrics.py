@@ -39,7 +39,7 @@ class ConfusionMatrix(object):
 
     def calculate(self, pred, label, mask):
         """
-        Calculate confusion matrix
+        Calculate confusion matrix.
 
         Args:
             pred (np.ndarray): The prediction of input image by model.
@@ -163,7 +163,7 @@ class ConfusionMatrix(object):
         https://en.wikipedia.org/wiki/Cohen%27s_kappa
 
         Returns
-            Float, kappa coefficient.
+            (Float). Kappa coefficient.
         """
         vji = np.zeros(self.num_classes)
         vij = np.zeros(self.num_classes)

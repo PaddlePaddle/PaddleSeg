@@ -20,13 +20,13 @@ import numpy as np
 
 def visualize(image, result, save_dir=None, weight=0.6):
     """
-    Convert segment result to color image, and save added image.
+    Convert predict result to color image, and save added image.
 
     Args:
-        image: the path of origin image
-        result: the predict result of image
-        save_dir: the directory for saving visual image. Default: None.
-        weight: the image weight of visual image, and the result weight is (1 - weight). Default: 0.6
+        image (str): The path of origin image.
+        result (np.ndarray): The predict result of image.
+        save_dir (str): The directory for saving visual image. Default: None.
+        weight (float): The image weight of visual image, and the result weight is (1 - weight). Default: 0.6
 
     Returns:
         vis_result (np.ndarray): If `save_dir` is None, return the visualized result.
@@ -59,10 +59,10 @@ def get_color_map_list(num_classes):
     which can support arbitrary number of classes.
 
     Args:
-        num_classes (int): Number of classes
+        num_classes (int): Number of classes.
 
     Returns:
-        color_map (list): The color map
+        (list). The color map.
     """
 
     num_classes += 1

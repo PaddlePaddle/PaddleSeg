@@ -1,9 +1,8 @@
 # Asymmetric Non-local Neural Networks for Semantic Segmentation
 
 ## Reference
-    Authors: Zhu, Zhen, Mengde Xu, Song Bai, Tengteng Huang, and Xiang Bai. 
-    Title: "Asymmetric non-local neural networks for semantic segmentation." 
-    Proceeding: The IEEE International Conference on Computer Vision, pp. 593-602. 2019.
+
+> Zhu Z, Xu M, Bai S, et al. Asymmetric non-local neural networks for semantic segmentation[C]//Proceedings of the IEEE International Conference on Computer Vision. 2019: 593-602.
 
 ## Performance
 
