@@ -195,8 +195,7 @@ class SegDataset(object):
 
         if img is None:
             raise Exception(
-                "Empty image, src_dir: {}, img: {} & lab: {}".format(
-                    src_dir, img_path, grt_path))
+                "Empty image, source image path: {}".format(img_path))
 
         img_height = img.shape[0]
         img_width = img.shape[1]
@@ -207,12 +206,12 @@ class SegDataset(object):
 
             if img_height != grt_height or img_width != grt_width:
                 raise Exception(
-                    "source img and label img must has the same size")
+                    "Source img and label img must has the same size.")
         else:
             if mode == ModelPhase.TRAIN or mode == ModelPhase.EVAL:
                 raise Exception(
-                    "Empty image, src_dir: {}, img: {} & lab: {}".format(
-                        src_dir, img_path, grt_path))
+                    "No laber image path for image '{}' when training or evaluating. "
+                    .format(img_path))
 
         if len(img.shape) < 3:
             img = cv2.cvtColor(img, cv2.COLOR_GRAY2BGR)
@@ -226,12 +225,12 @@ class SegDataset(object):
                 .format(img_channels, cfg.DATASET.DATADIM, img_name))
         if img_channels != len(cfg.MEAN):
             raise Exception(
-                "img name {}, img chns {} mean size {}, size unequal".format(
-                    img_name, img_channels, len(cfg.MEAN)))
+                "Image name {}, image channels {} do not equal the length of cfg.MEAN {}."
+                .format(img_name, img_channels, len(cfg.MEAN)))
         if img_channels != len(cfg.STD):
             raise Exception(
-                "img name {}, img chns {} std size {}, size unequal".format(
-                    img_name, img_channels, len(cfg.STD)))
+                "Image name {}, image channels {} do not equal the length of cfg.STD {}."
+                .format(img_name, img_channels, len(cfg.STD)))
 
         return img, grt, img_name, grt_name
 

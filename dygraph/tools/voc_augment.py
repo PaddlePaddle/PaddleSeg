@@ -29,7 +29,7 @@ import tqdm
 
 from paddleseg.utils.download import download_file_and_uncompress
 
-DATA_HOME = os.path.expanduser('~/.cache/paddle/dataset')
+DATA_HOME = os.path.expanduser('~/.paddleseg/dataset/')
 URL = 'http://www.eecs.berkeley.edu/Research/Projects/CS/vision/grouping/semantic_contours/benchmark.tgz'
 
 
@@ -74,7 +74,7 @@ def main():
     with open(os.path.join(sbd_path, 'dataset/val.txt'), 'r') as f:
         sbd_file_list += [line.strip() for line in f]
     if not os.path.exists(args.voc_path):
-        raise Exception(
+        raise FileNotFoundError(
             'There is no voc_path: {}. Please ensure that the Pascal VOC dataset has been downloaded correctly'
         )
     with open(

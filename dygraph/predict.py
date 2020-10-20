@@ -52,7 +52,7 @@ def parse_args():
 
 
 def get_image_list(image_path):
-    """get image list"""
+    """Get image list"""
     valid_suffix = [
         '.JPEG', '.jpeg', '.JPG', '.jpg', '.BMP', '.bmp', '.PNG', '.png'
     ]
