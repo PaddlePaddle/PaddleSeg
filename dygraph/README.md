@@ -11,8 +11,8 @@
 |DANet|✔|✔|||
 |Deeplabv3|✔|✔|||
 |Deeplabv3p|✔|✔|||
-|[Fast-SCNN](./configs/fastscnn)|-|-|-|-|
-|[FCN](./configs/fcn)|||✔|✔|
+|[Fast-SCNN]((./configs/fastscnn/README.md))|-|-|-|-|
+|FCN|||✔|✔|
 |GCNet|✔|✔|||
 |[OCRNet](./configs/ocrnet/)|||✔|✔|
 |PSPNet|✔|✔|||
