@@ -1,5 +1,8 @@
 _base_: '../_base_/cityscapes.yml'
 
+batch_size: 2
+iters: 160000
+
 model:
   type: OCRNet
   backbone:
