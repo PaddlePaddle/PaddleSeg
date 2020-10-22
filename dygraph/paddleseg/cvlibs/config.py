@@ -21,6 +21,7 @@ import yaml
 
 import paddleseg.cvlibs.manager as manager
 
+
 class Config(object):
     '''
     Training configuration parsing. The only yaml/yml file is supported.
@@ -45,7 +46,7 @@ class Config(object):
             For backbone, please refer to paddleseg.models.backbones.
 
     Args:
-        path(str) : the path of config file, supports yaml format only.
+        path (str) : The path of config file, supports yaml format only.
 
     Examples:
 
@@ -58,7 +59,7 @@ class Config(object):
         train_dataset = cfg.train_dataset
 
         # the argument of model should be parsed after dataset,
-        # Since the model builder uses some properties in dataset,
+        # since the model builder uses some properties in dataset.
         model = cfg.model
         ...
     '''
@@ -86,7 +87,7 @@ class Config(object):
 
     def _update_dic(self, dic, base_dic):
         """
-        update config from dic based base_dic
+        Update config from dic based base_dic
         """
         base_dic = base_dic.copy()
         for key, val in dic.items():
@@ -196,7 +197,7 @@ class Config(object):
                 else:
                     raise ValueError(
                         'The length of types should equal to coef or equal to 1 in loss config, but they are {} and {}.'
-                            .format(len_types, len_coef))
+                        .format(len_types, len_coef))
         else:
             raise ValueError(
                 'Loss config should contain keys of "types" and "coef"')
@@ -214,7 +215,7 @@ class Config(object):
             if len(self._losses['coef']) != len(self._losses['types']):
                 raise RuntimeError(
                     'The length of coef should equal to types in loss config: {} != {}.'
-                        .format(
+                    .format(
                         len(self._losses['coef']), len(self._losses['types'])))
         return self._losses
 

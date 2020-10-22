@@ -40,7 +40,7 @@ def predict(model,
 
     Args:
         model (nn.Layer): Used to predict for input image.
-        model_dir (str): the path including model.pdparams about model.
+        model_dir (str): The path including model.pdparams about model.
         transforms (transform.Compose): Preprocess for input image.
         image_list (list): A list of images to be predicted.
         image_dir (str): The directory of the images to be predicted. Default: None.

@@ -6,23 +6,25 @@
 
 |模型\骨干网络|ResNet50|ResNet101|HRNetw18|HRNetw48|
 |-|-|-|-|-|
-|ANN|✔|✔|||
+|[ANN](./configs/ann)|✔|✔|||
 |BiSeNetv2|-|-|-|-|
 |DANet|✔|✔|||
-|Deeplabv3|✔|✔|||
+|[Deeplabv3](./configs/deeplabv3)|✔|✔|||
 |Deeplabv3p|✔|✔|||
-|Fast-SCNN|-|-|-|-|
-|FCN|||✔|✔|
-|GCNet|✔|✔|||
-|[OCRNet](https://github.com/nepeplwu/PaddleSeg/blob/develop/dygraph/configs/ocrnet/)|||√|√|
-|PSPNet|☑|☑|||
-|UNet|-|-|-|-|
+|[Fast-SCNN](./configs/fastscnn)|-|-|-|-|
+|[FCN](./configs/fcn)|||✔|✔|
+|[GCNet](./configs/gcnet)|✔|✔|||
+|[OCRNet](./configs/ocrnet/)|||✔|✔|
+|[PSPNet](./configs/pspnet)|✔|✔|||
+|[UNet](./configs/unet)|-|-|-|-|
 
 ## 数据集
 
-* CityScapes
-* Pascal VOC
-* ADE20K
+- [x] CityScapes
+- [x] Pascal VOC
+- [x] ADE20K
+- [ ] Pascal Context
+- [ ] COCO stuff
 
 ## 安装
 
@@ -36,9 +38,9 @@
 
 由于图像分割模型计算开销大，推荐在GPU版本的PaddlePaddle下使用PaddleSeg.
 
-```shell
-pip install -U paddlepaddle-gpu
-```
+
+安装教程请见[PaddlePaddle官网](https://www.paddlepaddle.org.cn/documentation/docs/zh/2.0-beta/install/index_cn.html)。
+
 
 2. 下载PaddleSeg代码
 ```shell
@@ -48,20 +50,16 @@ git clone https://github.com/PaddlePaddle/PaddleSeg
 3. 安装PaddleSeg依赖
 通过以下命令安装python包依赖，请确保在该分支上至少执行过一次以下命令：
 
+
 ```
 cd PaddleSeg/dygpraph
+export PYTHONPATH=`pwd`
 pip install -r requirements.txt
 ```
 
 ## 训练
 ```
-python3 train.py --model_name unet \
---dataset OpticDiscSeg \
---input_size 192 192 \
---iters 10 \
---save_interval 1 \
---do_eval \
---save_dir output
+python3 train.py --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml
 ```
 
 ## 使用教程
@@ -69,5 +67,3 @@ python3 train.py --model_name unet \
 * [快速入门](./docs/quick_start.md)
 * [数据集准备](./docs/data_prepare.md)
 * [配置项](./configs/)
-* [APIs](./docs/apis/)
-* [多尺度预测 & 滑动窗口预测](./docs/infer.md)

@@ -24,9 +24,11 @@ import paddleseg.utils.logger as logger
 
 
 class CallbackList(object):
-    """Container abstracting a list of callbacks.
-    # Arguments
-        callbacks: List of `Callback` instances.
+    """
+    Container abstracting a list of callbacks.
+
+    Args:
+        callbacks (list[Callback]): List of `Callback` instances.
     """
 
     def __init__(self, callbacks=None):
@@ -226,7 +228,7 @@ class ModelCheckpoint(Callback):
             self.monitor_op = np.greater
             self.best = -np.Inf
         else:
-            raise RuntimeError("mode is not either \"min\" or \"max\"!")
+            raise RuntimeError("`mode` is neither \"min\" nor \"max\"!")
 
     def on_train_begin(self, logs=None):
         self.verbose = self.params["verbose"]

@@ -308,7 +308,8 @@ class ResNet_vd(nn.Layer):
                     shortcut = True
                 self.stage_list.append(block_list)
 
-        self.init_weight(pretrained)
+        self.pretrained = pretrained
+        self.init_weight()
 
     def forward(self, inputs):
         y = self.conv1_1(inputs)
@@ -325,8 +326,8 @@ class ResNet_vd(nn.Layer):
 
         return feat_list
 
-    def init_weight(self, pretrained):
-        utils.load_pretrained_model(self, pretrained)
+    def init_weight(self):
+        utils.load_pretrained_model(self, self.pretrained)
 
         # for idx, stage in enumerate(self.stage_list):
         #     for layer in stage:

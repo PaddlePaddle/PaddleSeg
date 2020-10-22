@@ -38,7 +38,7 @@ class FastSCNN(nn.Layer):
         num_classes (int): The unique number of target classes.
         enable_auxiliary_loss (bool, optional): A bool value indicates whether adding auxiliary loss.
             If true, auxiliary loss will be added after LearningToDownsample module. Default: False.
-        pretrained (str, optional): The path of pretrained model. Default: None.
+        pretrained (str, optional): The path or url of pretrained model. Default: None.
     """
 
     def __init__(self, num_classes, enable_auxiliary_loss=True,
@@ -57,7 +57,8 @@ class FastSCNN(nn.Layer):
 
         self.enable_auxiliary_loss = enable_auxiliary_loss
 
-        self.init_weight(pretrained)
+        self.pretrained = pretrained
+        self.init_weight()
 
     def forward(self, x):
         logit_list = []
@@ -70,21 +71,14 @@ class FastSCNN(nn.Layer):
 
         if self.enable_auxiliary_loss:
             auxiliary_logit = self.auxlayer(higher_res_features)
-            auxiliary_logit = F.resize_bilinear(auxiliary_logit,
-                                                x.shape[2:])
+            auxiliary_logit = F.resize_bilinear(auxiliary_logit, x.shape[2:])
             logit_list.append(auxiliary_logit)
 
         return logit_list
 
-    def init_weight(self, pretrained=None):
-        """
-        Initialize the parameters of model parts.
-
-        Args:
-            pretrained (str, optional): The path of pretrained model. Defaults: None.
-        """
-
-        utils.load_entire_model(self, pretrained)
+    def init_weight(self):
+        if self.pretrained is not None:
+            utils.load_entire_model(self, self.pretrained)
 
 
 class LearningToDownsample(nn.Layer):
@@ -150,12 +144,12 @@ class GlobalFeatureExtractor(nn.Layer):
         self.bottleneck1 = self._make_layer(InvertedBottleneck, in_channels,
                                             block_channels[0], num_blocks[0],
                                             expansion, 2)
-        self.bottleneck2 = self._make_layer(InvertedBottleneck, block_channels[0],
-                                            block_channels[1], num_blocks[1],
-                                            expansion, 2)
-        self.bottleneck3 = self._make_layer(InvertedBottleneck, block_channels[1],
-                                            block_channels[2], num_blocks[2],
-                                            expansion, 1)
+        self.bottleneck2 = self._make_layer(
+            InvertedBottleneck, block_channels[0], block_channels[1],
+            num_blocks[1], expansion, 2)
+        self.bottleneck3 = self._make_layer(
+            InvertedBottleneck, block_channels[1], block_channels[2],
+            num_blocks[2], expansion, 1)
 
         self.ppm = layers.PPModule(
             block_channels[2], out_channels, dim_reduction=True)
@@ -192,11 +186,7 @@ class InvertedBottleneck(nn.Layer):
         stride (int, optional). The stride used in depth-wise conv. Defalt: 2.
     """
 
-    def __init__(self,
-                 in_channels,
-                 out_channels,
-                 expansion=6,
-                 stride=2):
+    def __init__(self, in_channels, out_channels, expansion=6, stride=2):
         super().__init__()
 
         self.use_shortcut = stride == 1 and in_channels == out_channels
@@ -240,8 +230,8 @@ class FeatureFusionModule(nn.Layer):
 
     Args:
         high_in_channels (int): The channels of high-resolution feature (output of LearningToDownsample).
-        low_in_channels (int). The channels of low-resolution feature (output of GlobalFeatureExtractor).
-        out_channels (int). The output channels of this module.
+        low_in_channels (int): The channels of low-resolution feature (output of GlobalFeatureExtractor).
+        out_channels (int): The output channels of this module.
     """
 
     def __init__(self, high_in_channels, low_in_channels, out_channels):
@@ -277,7 +267,7 @@ class Classifier(nn.Layer):
 
     Args:
         input_channels (int): The input channels to this module.
-        num_classes (int). The unique number of target classes.
+        num_classes (int): The unique number of target classes.
     """
 
     def __init__(self, input_channels, num_classes):
