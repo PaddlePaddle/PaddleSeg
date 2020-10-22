@@ -9,7 +9,7 @@
 |[ANN](./configs/ann)|✔|✔|||
 |BiSeNetv2|-|-|-|-|
 |DANet|✔|✔|||
-|Deeplabv3|✔|✔|||
+|[Deeplabv3](./configs/deeplabv3)|✔|✔|||
 |Deeplabv3p|✔|✔|||
 |[Fast-SCNN](./configs/fastscnn)|-|-|-|-|
 |[FCN](./configs/fcn)|||✔|✔|
