@@ -57,9 +57,9 @@ def normal_init(param, **kwargs):
     initializer(param, param.block)
 
 
-def msra_init(param, **kwargs):
+def kaiming_normal_init(param, **kwargs):
     """
-    Initialize the input tensor with MSRA initialization.
+    Initialize the input tensor with Kaiming Normal initialization.
 
     This function implements the `param` initialization from the paper
     `Delving Deep into Rectifiers: Surpassing Human-Level Performance on
@@ -81,8 +81,8 @@ def msra_init(param, **kwargs):
 
         linear = nn.Linear(2, 4)
         # uniform is used to decide whether to use uniform or normal distribution
-        param_init.msra_init(linear.weight, uniform=False)
+        param_init.kaiming_normal_init(linear.weight)
 
     """
-    initializer = nn.initializer.MSRA(**kwargs)
+    initializer = nn.initializer.KaimingNormal(**kwargs)
     initializer(param, param.block)

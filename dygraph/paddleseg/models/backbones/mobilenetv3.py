@@ -15,9 +15,7 @@
 import paddle
 import paddle.nn as nn
 import paddle.nn.functional as F
-# FIXME (chenguowei), it will be use paddle.regularizer.L2Decay in the future
-# from paddle.regularizer import L2Decay
-from paddle.fluid.regularizer import L2Decay
+from paddle.regularizer import L2Decay
 
 from paddleseg.cvlibs import manager
 from paddleseg.utils import utils
@@ -193,7 +191,7 @@ class ConvBNLayer(nn.Layer):
         self.if_act = if_act
         self.act = act
 
-        self.conv = nn.Conv2d(
+        self.conv = nn.Conv2D(
             in_channels=in_c,
             out_channels=out_c,
             kernel_size=filter_size,
@@ -278,14 +276,14 @@ class ResidualUnit(nn.Layer):
 class SEModule(nn.Layer):
     def __init__(self, channel, reduction=4, name=""):
         super(SEModule, self).__init__()
-        self.avg_pool = nn.AdaptiveAvgPool2d(1)
-        self.conv1 = nn.Conv2d(
+        self.avg_pool = nn.AdaptiveAvgPool2D(1)
+        self.conv1 = nn.Conv2D(
             in_channels=channel,
             out_channels=channel // reduction,
             kernel_size=1,
             stride=1,
             padding=0)
-        self.conv2 = nn.Conv2d(
+        self.conv2 = nn.Conv2D(
             in_channels=channel // reduction,
             out_channels=channel,
             kernel_size=1,

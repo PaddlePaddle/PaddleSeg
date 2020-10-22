@@ -40,11 +40,10 @@ def parse_args():
 
 def main(args):
     env_info = get_sys_env()
-    places = paddle.CUDAPlace(paddle.distributed.ParallelEnv().dev_id) \
-        if env_info['Paddle compiled with cuda'] and env_info['GPUs used'] \
-        else paddle.CPUPlace()
+    place = 'gpu' if env_info['Paddle compiled with cuda'] and env_info[
+        'GPUs used'] else 'cpu'
 
-    paddle.disable_static(places)
+    paddle.set_device(place)
     if not args.cfg:
         raise RuntimeError('No configuration file specified.')
 
@@ -61,8 +60,8 @@ def main(args):
     logger.info(msg)
 
     model = cfg.model
-    ckpt_path = os.path.join(args.model_dir, 'model')
-    para_state_dict, opti_state_dict = paddle.load(ckpt_path)
+    ckpt_path = os.path.join(args.model_dir, 'model.pdparams')
+    para_state_dict = paddle.load(ckpt_path)
     model.set_dict(para_state_dict)
     logger.info('Loaded trained params of model successfully')
 

@@ -162,17 +162,17 @@ class HRNet(nn.Layer):
         st4 = self.st4(tr3)
 
         x0_h, x0_w = st4[0].shape[2:]
-        x1 = F.resize_bilinear(st4[1], out_shape=(x0_h, x0_w))
-        x2 = F.resize_bilinear(st4[2], out_shape=(x0_h, x0_w))
-        x3 = F.resize_bilinear(st4[3], out_shape=(x0_h, x0_w))
+        x1 = F.interpolate(st4[1], (x0_h, x0_w), mode='bilinear')
+        x2 = F.interpolate(st4[2], (x0_h, x0_w), mode='bilinear')
+        x3 = F.interpolate(st4[3], (x0_h, x0_w), mode='bilinear')
         x = paddle.concat([st4[0], x1, x2, x3], axis=1)
 
         return [x]
 
     def init_weight(self):
         for layer in self.sublayers():
-            if isinstance(layer, nn.Conv2d):
-                param_init.normal_init(layer.weight, scale=0.001)
+            if isinstance(layer, nn.Conv2D):
+                param_init.normal_init(layer.weight, std=0.001)
             elif isinstance(layer, (nn.BatchNorm, nn.SyncBatchNorm)):
                 param_init.constant_init(layer.weight, value=1.0)
                 param_init.constant_init(layer.bias, value=0.0)
@@ -587,7 +587,7 @@ class FuseLayers(nn.Layer):
                     y = self.residual_func_list[residual_func_idx](x[j])
                     residual_func_idx += 1
 
-                    y = F.resize_bilinear(input=y, out_shape=residual_shape)
+                    y = F.interpolate(y, residual_shape, mode='bilinear')
                     residual = residual + y
                 elif j < i:
                     y = x[j]

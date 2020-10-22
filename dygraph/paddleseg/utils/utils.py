@@ -62,8 +62,8 @@ def load_pretrained_model(model, pretrained_model):
                         extraname=savename)
 
         if os.path.exists(pretrained_model):
-            ckpt_path = os.path.join(pretrained_model, 'model')
-            para_state_dict, _ = paddle.load(ckpt_path)
+            ckpt_path = os.path.join(pretrained_model, 'model.pdparams')
+            para_state_dict = paddle.load(ckpt_path)
 
             model_state_dict = model.state_dict()
             keys = model_state_dict.keys()
@@ -100,8 +100,10 @@ def resume(model, optimizer, resume_model):
         logger.info('Resume model from {}'.format(resume_model))
         if os.path.exists(resume_model):
             resume_model = os.path.normpath(resume_model)
-            ckpt_path = os.path.join(resume_model, 'model')
-            para_state_dict, opti_state_dict = paddle.load(ckpt_path)
+            ckpt_path = os.path.join(resume_model, 'model.pdparams')
+            para_state_dict = paddle.load(ckpt_path)
+            ckpt_path = os.path.join(resume_model, 'model.pdopt')
+            opti_state_dict = paddle.load(ckpt_path)
             model.set_dict(para_state_dict)
             optimizer.set_dict(opti_state_dict)
             epoch = resume_model.split('_')[-1]
