@@ -35,7 +35,12 @@ python tools/convert_cityscapes.py --cityscapes_path data/cityscapes --num_worke
 ```shell
 python tools/voc_augment.py --voc_path data/VOCdevkit --num_workers 8
 ```
-其中`voc_path`应根据实际数据集路径进行调整。运行前请确保在dygraph目录下执行过'export PYTHONPATH=`pwd`'。
+其中`voc_path`应根据实际数据集路径进行调整。
+
+**注意** 运行前请确保在dygraph目录下执行过下列命令：
+```shell
+export PYTHONPATH=`pwd`
+```
 
 ## 关于ADE20K数据集
 [ADE20K](http://sceneparsing.csail.mit.edu/)由MIT发布的可用于场景感知、分割和多物体识别等多种任务的数据集。
