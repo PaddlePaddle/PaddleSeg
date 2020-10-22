@@ -15,7 +15,7 @@
 |[FCN](./configs/fcn)|||✔|✔|
 |[GCNet](./configs/gcnet)|✔|✔|||
 |[OCRNet](./configs/ocrnet/)|||✔|✔|
-|PSPNet|✔|✔|||
+|[PSPNet](./configs/pspnet)|✔|✔|||
 |[UNet](./configs/unet)|-|-|-|-|
 
 ## 数据集

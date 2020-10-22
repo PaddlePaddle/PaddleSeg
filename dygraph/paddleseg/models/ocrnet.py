@@ -105,9 +105,11 @@ class OCRHead(nn.Layer):
         self.conv3x3_ocr = layers.ConvBNReLU(
             in_channels[self.indices[1]], ocr_mid_channels, 3, padding=1)
         self.cls_head = nn.Conv2d(ocr_mid_channels, self.num_classes, 1)
-        self.aux_head = layers.AuxLayer(in_channels[self.indices[0]],
-                                        in_channels[self.indices[0]],
-                                        self.num_classes)
+        self.aux_head = nn.Sequential(
+            layers.ConvBNReLU(in_channels[self.indices[0]],
+                              in_channels[self.indices[0]], 1),
+            nn.Conv2d(in_channels[self.indices[0]], self.num_classes, 1))
+
         self.init_weight()
 
     def forward(self, feat_list):
@@ -169,7 +171,8 @@ class SpatialOCRModule(nn.Layer):
         self.attention_block = ObjectAttentionBlock(in_channels, key_channels)
         self.dropout_rate = dropout_rate
         self.conv1x1 = nn.Sequential(
-            nn.Conv2d(2 * in_channels, out_channels, 1), nn.Dropout2d(0.1))
+            layers.ConvBNReLU(2 * in_channels, out_channels, 1),
+            nn.Dropout2d(0.1))
 
     def forward(self, pixels, regions):
         context = self.attention_block(pixels, regions)
