@@ -42,7 +42,7 @@ class UNet(nn.Layer):
 
         self.encode = Encoder()
         self.decode = Decoder(use_deconv=use_deconv)
-        self.cls = self.conv = nn.Conv2d(
+        self.cls = self.conv = nn.Conv2D(
             in_channels=64,
             out_channels=num_classes,
             kernel_size=3,
@@ -79,7 +79,7 @@ class Encoder(nn.Layer):
 
     def down_sampling(self, in_channels, out_channels):
         modules = []
-        modules.append(nn.MaxPool2d(kernel_size=2, stride=2))
+        modules.append(nn.MaxPool2D(kernel_size=2, stride=2))
         modules.append(layers.ConvBNReLU(in_channels, out_channels, 3))
         modules.append(layers.ConvBNReLU(out_channels, out_channels, 3))
         return nn.Sequential(*modules)
@@ -115,7 +115,7 @@ class UpSampling(nn.Layer):
 
         self.use_deconv = use_deconv
         if self.use_deconv:
-            self.deconv = nn.ConvTranspose2d(
+            self.deconv = nn.ConvTranspose2D(
                 in_channels,
                 out_channels // 2,
                 kernel_size=2,
@@ -133,7 +133,7 @@ class UpSampling(nn.Layer):
         if self.use_deconv:
             x = self.deconv(x)
         else:
-            x = F.resize_bilinear(x, short_cut.shape[2:])
+            x = F.interpolate(x, short_cut.shape[2:], mode='bilinear')
         x = paddle.concat([x, short_cut], axis=1)
         x = self.double_conv(x)
         return x

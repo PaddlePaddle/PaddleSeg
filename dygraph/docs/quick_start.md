@@ -1,3 +1,4 @@
+
 # 快速开始
 
 本教程提供了一个快速入门的使用示例，用于训练一个基于视盘分割数据集的BiSeNetv2模型。
@@ -31,6 +32,7 @@ python train.py \
 |learning_rate|初始学习率|否|配置文件中指定值|
 |config|配置文件|是|-|
 |save_dir|模型和visualdl日志文件的保存根路径|否|output|
+
 |num_workers|用于异步读取数据的进程数量， 大于等于1时开启子进程读取数据|否|0|
 |use_vdl|是否开启visualdl记录训练数据|否|否|
 |save_interval_iters|模型保存的间隔步数|否|1000|
@@ -64,6 +66,7 @@ PaddleSeg会将训练过程中的数据写入VisualDL文件，并实时的查看
 # 下述命令会在127.0.0.1上启动一个服务，支持通过前端web页面查看，可以通过--host这个参数指定实际ip地址
 visualdl --logdir output/
 ```
+
 在浏览器输入提示的网址，效果如下：
 ![](images/quick_start_vdl.jpg)
 
@@ -74,7 +77,7 @@ visualdl --logdir output/
 ```shell
 python val.py \
        --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml \
-       --model_dir output/iter_1000
+       --model_path output/iter_1000/model.pdparams
 ```
 
 ## 效果可视化
@@ -82,7 +85,7 @@ python val.py \
 ```shell
 python predict.py \
        --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml \
-       --model_dir output/iter_1000 \
+       --model_path output/iter_1000/model.pdparams \
        --image_path data/optic_disc_seg/JPEGImages/H0003.jpg \
        --save_dir output/result
 ```

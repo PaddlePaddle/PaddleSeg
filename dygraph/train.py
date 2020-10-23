@@ -89,11 +89,10 @@ def main(args):
                      ['-' * 48])
     logger.info(info)
 
-    places = paddle.CUDAPlace(paddle.distributed.ParallelEnv().dev_id) \
-        if env_info['Paddle compiled with cuda'] and env_info['GPUs used'] \
-        else paddle.CPUPlace()
+    place = 'gpu' if env_info['Paddle compiled with cuda'] and env_info[
+        'GPUs used'] else 'cpu'
 
-    paddle.disable_static(places)
+    paddle.set_device(place)
     if not args.cfg:
         raise RuntimeError('No configuration file specified.')
 
@@ -118,7 +117,6 @@ def main(args):
     train(
         cfg.model,
         train_dataset,
-        places=places,
         val_dataset=val_dataset,
         optimizer=cfg.optimizer,
         save_dir=args.save_dir,

@@ -26,7 +26,7 @@ class ConvBNReLU(nn.Layer):
                  **kwargs):
         super().__init__()
 
-        self._conv = nn.Conv2d(
+        self._conv = nn.Conv2D(
             in_channels, out_channels, kernel_size, padding=padding, **kwargs)
 
         self._batch_norm = BatchNorm(out_channels)
@@ -46,7 +46,7 @@ class ConvBN(nn.Layer):
                  padding='same',
                  **kwargs):
         super().__init__()
-        self._conv = nn.Conv2d(
+        self._conv = nn.Conv2D(
             in_channels, out_channels, kernel_size, padding=padding, **kwargs)
         self._batch_norm = BatchNorm(out_channels)
 
@@ -59,7 +59,7 @@ class ConvBN(nn.Layer):
 class ConvReLUPool(nn.Layer):
     def __init__(self, in_channels, out_channels):
         super().__init__()
-        self.conv = nn.Conv2d(
+        self.conv = nn.Conv2D(
             in_channels,
             out_channels,
             kernel_size=3,
@@ -143,7 +143,7 @@ class AuxLayer(nn.Layer):
             kernel_size=3,
             padding=1)
 
-        self.conv = nn.Conv2d(
+        self.conv = nn.Conv2D(
             in_channels=inter_channels,
             out_channels=out_channels,
             kernel_size=1)

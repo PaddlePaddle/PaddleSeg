@@ -64,7 +64,10 @@ class GCNet(nn.Layer):
     def forward(self, x):
         feat_list = self.backbone(x)
         logit_list = self.head(feat_list)
-        return [F.resize_bilinear(logit, x.shape[2:]) for logit in logit_list]
+        return [
+            F.interpolate(logit, x.shape[2:], mode='bilinear')
+            for logit in logit_list
+        ]
 
     def init_weight(self):
         if self.pretrained is not None:
@@ -117,7 +120,7 @@ class GCNetHead(nn.Layer):
             kernel_size=3,
             padding=1)
 
-        self.conv = nn.Conv2d(
+        self.conv = nn.Conv2D(
             in_channels=gc_channels, out_channels=num_classes, kernel_size=1)
 
         if enable_auxiliary_loss:
@@ -164,19 +167,19 @@ class GlobalContextBlock(nn.Layer):
     def __init__(self, in_channels, ratio):
         super().__init__()
 
-        self.conv_mask = nn.Conv2d(
+        self.conv_mask = nn.Conv2D(
             in_channels=in_channels, out_channels=1, kernel_size=1)
 
         self.softmax = nn.Softmax(axis=2)
 
         inter_channels = int(in_channels * ratio)
         self.channel_add_conv = nn.Sequential(
-            nn.Conv2d(
+            nn.Conv2D(
                 in_channels=in_channels,
                 out_channels=inter_channels,
                 kernel_size=1),
             nn.LayerNorm(normalized_shape=[inter_channels, 1, 1]), nn.ReLU(),
-            nn.Conv2d(
+            nn.Conv2D(
                 in_channels=inter_channels,
                 out_channels=in_channels,
                 kernel_size=1))

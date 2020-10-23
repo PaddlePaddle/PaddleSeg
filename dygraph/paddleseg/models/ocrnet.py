@@ -68,7 +68,8 @@ class OCRNet(nn.Layer):
         feats = [feats[i] for i in self.backbone_indices]
         logit_list = self.head(feats)
         logit_list = [
-            F.resize_bilinear(logit, x.shape[2:]) for logit in logit_list
+            F.interpolate(logit, x.shape[2:], mode='bilinear')
+            for logit in logit_list
         ]
         return logit_list
 
@@ -104,10 +105,12 @@ class OCRHead(nn.Layer):
 
         self.conv3x3_ocr = layers.ConvBNReLU(
             in_channels[self.indices[1]], ocr_mid_channels, 3, padding=1)
-        self.cls_head = nn.Conv2d(ocr_mid_channels, self.num_classes, 1)
-        self.aux_head = layers.AuxLayer(in_channels[self.indices[0]],
-                                        in_channels[self.indices[0]],
-                                        self.num_classes)
+        self.cls_head = nn.Conv2D(ocr_mid_channels, self.num_classes, 1)
+        self.aux_head = nn.Sequential(
+            layers.ConvBNReLU(in_channels[self.indices[0]],
+                              in_channels[self.indices[0]], 1),
+            nn.Conv2D(in_channels[self.indices[0]], self.num_classes, 1))
+
         self.init_weight()
 
     def forward(self, feat_list):
@@ -126,8 +129,8 @@ class OCRHead(nn.Layer):
     def init_weight(self):
         """Initialize the parameters of model parts."""
         for sublayer in self.sublayers():
-            if isinstance(sublayer, nn.Conv2d):
-                param_init.normal_init(sublayer.weight, scale=0.001)
+            if isinstance(sublayer, nn.Conv2D):
+                param_init.normal_init(sublayer.weight, std=0.001)
             elif isinstance(sublayer, (nn.BatchNorm, nn.SyncBatchNorm)):
                 param_init.constant_init(sublayer.weight, value=1.0)
                 param_init.constant_init(sublayer.bias, value=0.0)
@@ -169,7 +172,8 @@ class SpatialOCRModule(nn.Layer):
         self.attention_block = ObjectAttentionBlock(in_channels, key_channels)
         self.dropout_rate = dropout_rate
         self.conv1x1 = nn.Sequential(
-            nn.Conv2d(2 * in_channels, out_channels, 1), nn.Dropout2d(0.1))
+            layers.ConvBNReLU(2 * in_channels, out_channels, 1),
+            nn.Dropout2D(0.1))
 
     def forward(self, pixels, regions):
         context = self.attention_block(pixels, regions)

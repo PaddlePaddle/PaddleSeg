@@ -1,4 +1,3 @@
-
 _base_: '../_base_/cityscapes.yml'
 
 batch_size: 2
@@ -7,9 +6,8 @@ iters: 160000
 model:
   type: OCRNet
   backbone:
-    type: HRNet_W48
-
-    pretrained: https://bj.bcebos.com/paddleseg/dygraph/hrnet_w48_ssld.tar.gz
+    type: HRNet_W18
+    pretrained: https://bj.bcebos.com/paddleseg/dygraph/hrnet_w18_ssld.tar.gz
   num_classes: 19
   backbone_indices: [0]
 
@@ -21,7 +19,6 @@ learning_rate:
   decay:
     type: poly
     power: 0.9
-
 
 
 loss:

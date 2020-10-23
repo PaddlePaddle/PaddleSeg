@@ -66,12 +66,13 @@ class FastSCNN(nn.Layer):
         x = self.global_feature_extractor(higher_res_features)
         x = self.feature_fusion(higher_res_features, x)
         logit = self.classifier(x)
-        logit = F.resize_bilinear(logit, x.shape[2:])
+        logit = F.interpolate(logit, x.shape[2:], mode='bilinear')
         logit_list.append(logit)
 
         if self.enable_auxiliary_loss:
             auxiliary_logit = self.auxlayer(higher_res_features)
-            auxiliary_logit = F.resize_bilinear(auxiliary_logit, x.shape[2:])
+            auxiliary_logit = F.interpolate(
+                auxiliary_logit, x.shape[2:], mode='bilinear')
             logit_list.append(auxiliary_logit)
 
         return logit_list
@@ -250,7 +251,8 @@ class FeatureFusionModule(nn.Layer):
         self.conv_high_res = layers.ConvBN(high_in_channels, out_channels, 1)
 
     def forward(self, high_res_input, low_res_input):
-        low_res_input = F.resize_bilinear(input=low_res_input, scale=4)
+        low_res_input = F.interpolate(
+            low_res_input, scale_factor=4, mode='bilinear')
         low_res_input = self.dwconv(low_res_input)
         low_res_input = self.conv_low_res(low_res_input)
         high_res_input = self.conv_high_res(high_res_input)
@@ -285,7 +287,7 @@ class Classifier(nn.Layer):
             kernel_size=3,
             padding=1)
 
-        self.conv = nn.Conv2d(
+        self.conv = nn.Conv2D(
             in_channels=input_channels, out_channels=num_classes, kernel_size=1)
 
     def forward(self, x):

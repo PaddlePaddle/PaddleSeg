@@ -20,7 +20,7 @@ PaddleSeg遥感影像分割涵盖图像预处理、数据增强、模型训练�
 
 以下是遥感云检测的示例效果：
 
-![](./RemoteSensing/docs/imgs/rs.png)
+![](./RemoteSensing/docs/imgs/vis.png)
 
 ## 人体解析 Human Parsing
 
