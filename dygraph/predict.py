@@ -80,11 +80,10 @@ def get_image_list(image_path):
 
 def main(args):
     env_info = get_sys_env()
-    places = paddle.CUDAPlace(paddle.distributed.ParallelEnv().dev_id) \
-        if env_info['Paddle compiled with cuda'] and env_info['GPUs used'] \
-        else paddle.CPUPlace()
+    place = 'gpu' if env_info['Paddle compiled with cuda'] and env_info[
+        'GPUs used'] else 'cpu'
 
-    paddle.disable_static(places)
+    paddle.set_device(place)
     if not args.cfg:
         raise RuntimeError('No configuration file specified.')
 
