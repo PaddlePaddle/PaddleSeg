@@ -52,7 +52,7 @@ git clone https://github.com/PaddlePaddle/PaddleSeg
 
 
 ```
-cd PaddleSeg/dygpraph
+cd PaddleSeg/dygraph
 export PYTHONPATH=`pwd`
 pip install -r requirements.txt
 ```
