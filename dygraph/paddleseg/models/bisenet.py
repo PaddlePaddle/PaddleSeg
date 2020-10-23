@@ -255,12 +255,13 @@ class BGA(nn.Layer):
         sb_feat_keep = self.sb_branch_keep(sfm)
 
         sb_feat_up = self.sb_branch_up(sfm)
-        sb_feat_up = F.resize_bilinear(sb_feat_up, db_feat_keep.shape[2:])
+        sb_feat_up = F.interpolate(
+            sb_feat_up, db_feat_keep.shape[2:], mode='bilinear')
         sb_feat_up = F.sigmoid(sb_feat_up)
         db_feat = db_feat_keep * sb_feat_up
 
         sb_feat = db_feat_down * sb_feat_keep
-        sb_feat = F.resize_bilinear(sb_feat, db_feat.shape[2:])
+        sb_feat = F.interpolate(sb_feat, db_feat.shape[2:], mode='bilinear')
 
         return self.conv(db_feat + sb_feat)
 
