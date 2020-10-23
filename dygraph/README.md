@@ -10,7 +10,7 @@
 |BiSeNetv2|-|-|-|-|
 |DANet|✔|✔|||
 |[Deeplabv3](./configs/deeplabv3)|✔|✔|||
-|Deeplabv3p|✔|✔|||
+|[Deeplabv3p](./configs/deeplabv3p)|✔|✔|||
 |[Fast-SCNN](./configs/fastscnn)|-|-|-|-|
 |[FCN](./configs/fcn)|||✔|✔|
 |[GCNet](./configs/gcnet)|✔|✔|||
