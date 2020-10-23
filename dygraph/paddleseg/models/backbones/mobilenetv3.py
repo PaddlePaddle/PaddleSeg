@@ -15,7 +15,6 @@
 import paddle
 import paddle.nn as nn
 import paddle.nn.functional as F
-from paddle.regularizer import L2Decay
 
 from paddleseg.cvlibs import manager
 from paddleseg.utils import utils
@@ -202,11 +201,11 @@ class ConvBNLayer(nn.Layer):
             bias_attr=False)
         self.bn = nn.SyncBatchNorm(
             num_features=out_c,
-            weight_attr=paddle.ParamAttr(regularizer=L2Decay(0.0)),
-            bias_attr=paddle.ParamAttr(regularizer=L2Decay(0.0)))
-        # FIXME (chenguowei), paddle2.0beta has not hard_swish. Make act = None temporarily
-        # self._act_op = layers.Activation(act=act)
-        self._act_op = layers.Activation(act=None)
+            weight_attr=paddle.ParamAttr(
+                regularizer=paddle.regularizer.L2Decay(0.0)),
+            bias_attr=paddle.ParamAttr(
+                regularizer=paddle.regularizer.L2Decay(0.0)))
+        self._act_op = layers.Activation(act='hardswish')
 
     def forward(self, x):
         x = self.conv(x)

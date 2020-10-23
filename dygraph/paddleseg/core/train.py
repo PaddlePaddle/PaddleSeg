@@ -154,9 +154,9 @@ def train(model,
                 if not os.path.isdir(current_save_dir):
                     os.makedirs(current_save_dir)
                 paddle.save(model.state_dict(),
-                            os.path.join(current_save_dir, 'model'))
+                            os.path.join(current_save_dir, 'model.pdparams'))
                 paddle.save(optimizer.state_dict(),
-                            os.path.join(current_save_dir, 'model'))
+                            os.path.join(current_save_dir, 'model.pdopt'))
 
                 if val_dataset is not None:
                     mean_iou, acc = evaluate(model, val_dataset, iter_id=iter)
@@ -164,8 +164,9 @@ def train(model,
                         best_mean_iou = mean_iou
                         best_model_iter = iter
                         best_model_dir = os.path.join(save_dir, "best_model")
-                        paddle.save(model.state_dict(),
-                                    os.path.join(best_model_dir, 'model'))
+                        paddle.save(
+                            model.state_dict(),
+                            os.path.join(best_model_dir, 'model.pdparams'))
                     logger.info(
                         '[EVAL] The model with the best validation mIoU ({:.4f}) was saved at iter {}.'
                         .format(best_mean_iou, best_model_iter))

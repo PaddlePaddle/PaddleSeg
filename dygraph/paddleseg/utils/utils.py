@@ -61,9 +61,11 @@ def load_pretrained_model(model, pretrained_model):
                         extrapath=seg_env.PRETRAINED_MODEL_HOME,
                         extraname=savename)
 
+                    pretrained_model = os.path.join(pretrained_model,
+                                                    'model.pdparams')
+
         if os.path.exists(pretrained_model):
-            ckpt_path = os.path.join(pretrained_model, 'model.pdparams')
-            para_state_dict = paddle.load(ckpt_path)
+            para_state_dict = paddle.load(pretrained_model)
 
             model_state_dict = model.state_dict()
             keys = model_state_dict.keys()

@@ -29,8 +29,8 @@ def parse_args():
     parser.add_argument(
         "--config", dest="cfg", help="The config file.", default=None, type=str)
     parser.add_argument(
-        '--model_dir',
-        dest='model_dir',
+        '--model_path',
+        dest='model_path',
         help='The path of model for evaluation',
         type=str,
         default=None)
@@ -60,8 +60,7 @@ def main(args):
     logger.info(msg)
 
     model = cfg.model
-    ckpt_path = os.path.join(args.model_dir, 'model.pdparams')
-    para_state_dict = paddle.load(ckpt_path)
+    para_state_dict = paddle.load(args.model_path)
     model.set_dict(para_state_dict)
     logger.info('Loaded trained params of model successfully')
 
