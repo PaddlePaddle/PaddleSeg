@@ -77,7 +77,7 @@ visualdl --logdir output/
 ```shell
 python val.py \
        --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml \
-       --model_dir output/iter_1000
+       --model_path output/iter_1000/model.pdparams
 ```
 
 ## 效果可视化
@@ -85,7 +85,7 @@ python val.py \
 ```shell
 python predict.py \
        --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml \
-       --model_dir output/iter_1000 \
+       --model_path output/iter_1000/model.pdparams \
        --image_path data/optic_disc_seg/JPEGImages/H0003.jpg \
        --save_dir output/result
 ```

@@ -32,7 +32,7 @@
 
 版本要求
 
-* PaddlePaddle >= 2.0.0b
+* PaddlePaddle >= 2.0.0rc
 
 * Python >= 3.6+
 
