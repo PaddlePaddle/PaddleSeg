@@ -30,6 +30,7 @@ import numpy as np
 import paddle
 import paddle.fluid as fluid
 
+from utils import paddle_utils
 from PIL import Image as PILImage
 from utils.config import cfg
 from reader import SegDataset
@@ -200,7 +201,7 @@ def visualize(cfg,
 
 
 if __name__ == '__main__':
-    paddle.enable_static()
+    paddle_utils.enable_static()
     args = parse_args()
     if args.cfg_file is not None:
         cfg.update_from_file(args.cfg_file)
