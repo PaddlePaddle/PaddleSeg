@@ -116,7 +116,7 @@ class CrossEntropyLoss(nn.Layer):
         mask = label != self.ignore_index
         mask = paddle.cast(mask, 'float32')
         loss = loss * mask
-        avg_loss = paddle.reduce_mean(loss) / (paddle.mean(mask) + self.EPS)
+        avg_loss = paddle.mean(loss) / (paddle.mean(mask) + self.EPS)
 
         label.stop_gradient = True
         mask.stop_gradient = True

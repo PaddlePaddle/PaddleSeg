@@ -41,9 +41,9 @@ class ConvBNLayer(nn.Layer):
         super(ConvBNLayer, self).__init__()
 
         self.is_vd_mode = is_vd_mode
-        self._pool2d_avg = nn.AvgPool2d(
+        self._pool2d_avg = nn.AvgPool2D(
             kernel_size=2, stride=2, padding=0, ceil_mode=True)
-        self._conv = nn.Conv2d(
+        self._conv = nn.Conv2D(
             in_channels=in_channels,
             out_channels=out_channels,
             kernel_size=kernel_size,
@@ -131,7 +131,8 @@ class BottleneckBlock(nn.Layer):
         else:
             short = self.short(inputs)
 
-        y = paddle.elementwise_add(x=short, y=conv2, act='relu')
+        y = paddle.add(x=short, y=conv2)
+        y = F.relu(y)
         return y
 
 
@@ -244,7 +245,7 @@ class ResNet_vd(nn.Layer):
             stride=1,
             act='relu',
             name="conv1_3")
-        self.pool2d_max = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
+        self.pool2d_max = nn.MaxPool2D(kernel_size=3, stride=2, padding=1)
 
         # self.block_list = []
         self.stage_list = []
@@ -332,7 +333,7 @@ class ResNet_vd(nn.Layer):
         # for idx, stage in enumerate(self.stage_list):
         #     for layer in stage:
         #         for sublayer in layer.sublayers():
-        #             if isinstance(sublayer, nn.Conv2d):
+        #             if isinstance(sublayer, nn.Conv2D):
         #                 sublayer.weight.optimize_attr[
         #                     'learning_rate'] = self.lr_mult_list[idx]
         #                 if sublayer.bias:

@@ -36,7 +36,7 @@ def loss_computation(logits, label, losses):
     for i in range(len(logits)):
         logit = logits[i]
         if logit.shape[-2:] != label.shape[-2:]:
-            logit = F.resize_bilinear(logit, label.shape[-2:])
+            logit = F.interpolate(logit, label.shape[-2:], mode='bilinear')
         loss_i = losses['types'][i](logit, label)
         loss += losses['coef'][i] * loss_i
     return loss
@@ -44,7 +44,6 @@ def loss_computation(logits, label, losses):
 
 def train(model,
           train_dataset,
-          places=None,
           val_dataset=None,
           optimizer=None,
           save_dir='output',
@@ -80,7 +79,6 @@ def train(model,
     loader = paddle.io.DataLoader(
         train_dataset,
         batch_sampler=batch_sampler,
-        places=places,
         num_workers=num_workers,
         return_list=True,
     )
@@ -110,10 +108,9 @@ def train(model,
             if nranks > 1:
                 logits = ddp_model(images)
                 loss = loss_computation(logits, labels, losses)
-                # apply_collective_grads sum grads over multiple gpus.
-                loss = ddp_model.scale_loss(loss)
+                # loss = ddp_model.scale_loss(loss)
                 loss.backward()
-                ddp_model.apply_collective_grads()
+                # ddp_model.apply_collective_grads()
             else:
                 logits = model(images)
                 loss = loss_computation(logits, labels, losses)
@@ -121,12 +118,12 @@ def train(model,
             optimizer.step()
             lr = optimizer.get_lr()
             if isinstance(optimizer._learning_rate,
-                          paddle.optimizer._LRScheduler):
+                          paddle.optimizer.lr.LRScheduler):
                 optimizer._learning_rate.step()
             model.clear_gradients()
             # Sum loss over all ranks
-            if nranks > 1:
-                paddle.distributed.all_reduce(loss)
+            # if nranks > 1:
+            #     paddle.distributed.all_reduce(loss)
             avg_loss += loss.numpy()[0]
             train_batch_cost += timer.elapsed_time()
             if (iter) % log_iters == 0 and local_rank == 0:
@@ -157,9 +154,9 @@ def train(model,
                 if not os.path.isdir(current_save_dir):
                     os.makedirs(current_save_dir)
                 paddle.save(model.state_dict(),
-                            os.path.join(current_save_dir, 'model'))
+                            os.path.join(current_save_dir, 'model.pdparams'))
                 paddle.save(optimizer.state_dict(),
-                            os.path.join(current_save_dir, 'model'))
+                            os.path.join(current_save_dir, 'model.pdopt'))
 
                 if val_dataset is not None:
                     mean_iou, acc = evaluate(model, val_dataset, iter_id=iter)
@@ -167,8 +164,9 @@ def train(model,
                         best_mean_iou = mean_iou
                         best_model_iter = iter
                         best_model_dir = os.path.join(save_dir, "best_model")
-                        paddle.save(model.state_dict(),
-                                    os.path.join(best_model_dir, 'model'))
+                        paddle.save(
+                            model.state_dict(),
+                            os.path.join(best_model_dir, 'model.pdparams'))
                     logger.info(
                         '[EVAL] The model with the best validation mIoU ({:.4f}) was saved at iter {}.'
                         .format(best_mean_iou, best_model_iter))

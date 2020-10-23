@@ -30,7 +30,7 @@ def mkdir(path):
 
 
 def predict(model,
-            model_dir,
+            model_path,
             transforms,
             image_list,
             image_dir=None,
@@ -40,15 +40,14 @@ def predict(model,
 
     Args:
         model (nn.Layer): Used to predict for input image.
-        model_dir (str): The path including model.pdparams about model.
+        model_path (str): The path of pretrained model.
         transforms (transform.Compose): Preprocess for input image.
         image_list (list): A list of images to be predicted.
         image_dir (str): The directory of the images to be predicted. Default: None.
         save_dir (str): The directory to save the visualized results. Default: 'output'.
 
     """
-    ckpt_path = os.path.join(model_dir, 'model')
-    para_state_dict, opti_state_dict = paddle.load(ckpt_path)
+    para_state_dict = paddle.load(model_path)
     model.set_dict(para_state_dict)
     model.eval()
 

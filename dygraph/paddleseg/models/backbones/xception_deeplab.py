@@ -83,7 +83,7 @@ class ConvBNLayer(nn.Layer):
                  name=None):
         super(ConvBNLayer, self).__init__()
 
-        self._conv = nn.Conv2d(
+        self._conv = nn.Conv2D(
             in_channels=input_channels,
             out_channels=output_channels,
             kernel_size=filter_size,
@@ -110,7 +110,7 @@ class Seperate_Conv(nn.Layer):
                  name=None):
         super(Seperate_Conv, self).__init__()
 
-        self._conv1 = nn.Conv2d(
+        self._conv1 = nn.Conv2D(
             in_channels=input_channels,
             out_channels=input_channels,
             kernel_size=filter,
@@ -124,7 +124,7 @@ class Seperate_Conv(nn.Layer):
 
         self._act_op1 = layers.Activation(act=act)
 
-        self._conv2 = nn.Conv2d(
+        self._conv2 = nn.Conv2D(
             input_channels,
             output_channels,
             1,
