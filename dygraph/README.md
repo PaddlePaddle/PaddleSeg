@@ -54,6 +54,8 @@ git clone https://github.com/PaddlePaddle/PaddleSeg
 ```
 cd PaddleSeg/dygraph
 export PYTHONPATH=`pwd`
+# windows下请执行以下命令
+# set PYTHONPATH=%cd%
 pip install -r requirements.txt
 ```
 

@@ -40,6 +40,8 @@ python tools/voc_augment.py --voc_path data/VOCdevkit --num_workers 8
 **注意** 运行前请确保在dygraph目录下执行过下列命令：
 ```shell
 export PYTHONPATH=`pwd`
+# windows下请执行相面的命令
+# set PYTHONPATH=%cd%
 ```
 
 ## 关于ADE20K数据集
