@@ -32,11 +32,12 @@
 
 版本要求
 
-* PaddlePaddle >= 2.0.0b
+* PaddlePaddle >= 2.0.0rc
 
 * Python >= 3.6+
 
 由于图像分割模型计算开销大，推荐在GPU版本的PaddlePaddle下使用PaddleSeg.
+
 
 安装教程请见[PaddlePaddle官网](https://www.paddlepaddle.org.cn/documentation/docs/zh/2.0-beta/install/index_cn.html)。
 
@@ -48,6 +49,7 @@ git clone https://github.com/PaddlePaddle/PaddleSeg
 
 3. 安装PaddleSeg依赖
 通过以下命令安装python包依赖，请确保在该分支上至少执行过一次以下命令：
+
 
 ```
 cd PaddleSeg/dygpraph

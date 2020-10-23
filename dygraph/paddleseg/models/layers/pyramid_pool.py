@@ -39,8 +39,6 @@ class ASPPModule(nn.Layer):
                  image_pooling=False):
         super().__init__()
 
-        # FIXME(chenguowei)
-        # self.aspp_blocks = [], hang problem.
         self.aspp_blocks = nn.LayerList()
 
         for ratio in aspp_ratios:
@@ -61,7 +59,7 @@ class ASPPModule(nn.Layer):
 
         if image_pooling:
             self.global_avg_pool = nn.Sequential(
-                nn.AdaptiveAvgPool2d(output_size=(1, 1)),
+                nn.AdaptiveAvgPool2D(output_size=(1, 1)),
                 layers.ConvBNReLU(
                     in_channels, out_channels, kernel_size=1, bias_attr=False))
             out_size += 1
@@ -78,12 +76,12 @@ class ASPPModule(nn.Layer):
         outputs = []
         for block in self.aspp_blocks:
             y = block(x)
-            y = F.resize_bilinear(y, out_shape=x.shape[2:])
+            y = F.interpolate(y, x.shape[2:], mode='bilinear')
             outputs.append(y)
 
         if self.image_pooling:
             img_avg = self.global_avg_pool(x)
-            img_avg = F.resize_bilinear(img_avg, out_shape=x.shape[2:])
+            img_avg = F.interpolate(img_avg, x.shape[2:], mode='bilinear')
             outputs.append(img_avg)
 
         x = paddle.concat(outputs, axis=1)
@@ -147,7 +145,7 @@ class PPModule(nn.Layer):
             conv (Tensor): A tensor after Pyramid Pooling Module.
         """
 
-        prior = nn.AdaptiveAvgPool2d(output_size=(size, size))
+        prior = nn.AdaptiveAvgPool2D(output_size=(size, size))
         conv = layers.ConvBNReLU(
             in_channels=in_channels, out_channels=out_channels, kernel_size=1)
 
@@ -157,7 +155,7 @@ class PPModule(nn.Layer):
         cat_layers = []
         for stage in self.stages:
             x = stage(input)
-            x = F.resize_bilinear(x, out_shape=input.shape[2:])
+            x = F.interpolate(x, input.shape[2:], mode='bilinear')
             cat_layers.append(x)
         cat_layers = [input] + cat_layers[::-1]
         cat = paddle.concat(cat_layers, axis=1)
