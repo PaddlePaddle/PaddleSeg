@@ -6,7 +6,7 @@ model:
 
 optimizer:
   type: sgd
-  weight_decay: 0.0005
+  weight_decay: 0.00004
 
 loss:
   types:
@@ -15,10 +15,10 @@ loss:
     - type: CrossEntropyLoss
     - type: CrossEntropyLoss
     - type: CrossEntropyLoss
-  coef: [1, 1, 1, 1, 1]
+  coef: [1, 0.7, 0.7, 0.7, 0.7]
 
 batch_size: 4
-iters: 320000
+iters: 160000
 
 learning_rate:
   value: 0.05

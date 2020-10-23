@@ -245,10 +245,7 @@ class BGA(nn.Layer):
             layers.DepthwiseConvBN(out_dim, out_dim, 3),
             nn.Conv2D(out_dim, out_dim, 1), layers.Activation(act='sigmoid'))
 
-        self.sb_branch_up = nn.Sequential(
-            layers.ConvBN(out_dim, out_dim, 3),
-            nn.Upsample(scale_factor=4, mode='bilinear'),
-            layers.Activation(act='sigmoid'))
+        self.sb_branch_up = layers.ConvBN(out_dim, out_dim, 3)
 
         self.conv = layers.ConvBN(out_dim, out_dim, 3)
 
@@ -256,10 +253,14 @@ class BGA(nn.Layer):
         db_feat_keep = self.db_branch_keep(dfm)
         db_feat_down = self.db_branch_down(dfm)
         sb_feat_keep = self.sb_branch_keep(sfm)
+
         sb_feat_up = self.sb_branch_up(sfm)
+        sb_feat_up = F.resize_bilinear(sb_feat_up, db_feat_keep.shape[2:])
+        sb_feat_up = F.sigmoid(sb_feat_up)
         db_feat = db_feat_keep * sb_feat_up
+
         sb_feat = db_feat_down * sb_feat_keep
-        sb_feat = F.interpolate(sb_feat, db_feat.shape[2:], mode='bilinear')
+        sb_feat = F.resize_bilinear(sb_feat, db_feat.shape[2:])
 
         return self.conv(db_feat + sb_feat)
 
