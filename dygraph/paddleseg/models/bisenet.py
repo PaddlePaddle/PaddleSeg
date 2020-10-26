@@ -120,7 +120,7 @@ class ContextEmbeddingBlock(nn.Layer):
         super(ContextEmbeddingBlock, self).__init__()
 
         self.gap = nn.AdaptiveAvgPool2D(1)
-        self.bn = nn.SyncBatchNorm(in_dim)
+        self.bn = layers.SyncBatchNorm(in_dim)
 
         self.conv_1x1 = layers.ConvBNReLU(in_dim, out_dim, 1)
         self.conv_3x3 = nn.Conv2D(out_dim, out_dim, 3, 1, 1)
