@@ -62,13 +62,14 @@ class FastSCNN(nn.Layer):
 
     def forward(self, x):
         logit_list = []
+        input_size = x.shape[2:]
         higher_res_features = self.learning_to_downsample(x)
         x = self.global_feature_extractor(higher_res_features)
         x = self.feature_fusion(higher_res_features, x)
         logit = self.classifier(x)
         logit = F.interpolate(
             logit,
-            x.shape[2:],
+            input_size,
             mode='bilinear',
             align_corners=True,
             align_mode=1)
@@ -78,7 +79,7 @@ class FastSCNN(nn.Layer):
             auxiliary_logit = self.auxlayer(higher_res_features)
             auxiliary_logit = F.interpolate(
                 auxiliary_logit,
-                x.shape[2:],
+                input_size,
                 mode='bilinear',
                 align_corners=True,
                 align_mode=1)
