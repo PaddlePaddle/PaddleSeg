@@ -162,9 +162,21 @@ class HRNet(nn.Layer):
         st4 = self.st4(tr3)
 
         x0_h, x0_w = st4[0].shape[2:]
-        x1 = F.interpolate(st4[1], (x0_h, x0_w), mode='bilinear')
-        x2 = F.interpolate(st4[2], (x0_h, x0_w), mode='bilinear')
-        x3 = F.interpolate(st4[3], (x0_h, x0_w), mode='bilinear')
+        x1 = F.interpolate(
+            st4[1], (x0_h, x0_w),
+            mode='bilinear',
+            align_corners=True,
+            align_mode=1)
+        x2 = F.interpolate(
+            st4[2], (x0_h, x0_w),
+            mode='bilinear',
+            align_corners=True,
+            align_mode=1)
+        x3 = F.interpolate(
+            st4[3], (x0_h, x0_w),
+            mode='bilinear',
+            align_corners=True,
+            align_mode=1)
         x = paddle.concat([st4[0], x1, x2, x3], axis=1)
 
         return [x]
@@ -587,7 +599,12 @@ class FuseLayers(nn.Layer):
                     y = self.residual_func_list[residual_func_idx](x[j])
                     residual_func_idx += 1
 
-                    y = F.interpolate(y, residual_shape, mode='bilinear')
+                    y = F.interpolate(
+                        y,
+                        residual_shape,
+                        mode='bilinear',
+                        align_corners=True,
+                        align_mode=1)
                     residual = residual + y
                 elif j < i:
                     y = x[j]

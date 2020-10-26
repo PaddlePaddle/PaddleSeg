@@ -68,8 +68,12 @@ class OCRNet(nn.Layer):
         feats = [feats[i] for i in self.backbone_indices]
         logit_list = self.head(feats)
         logit_list = [
-            F.interpolate(logit, x.shape[2:], mode='bilinear')
-            for logit in logit_list
+            F.interpolate(
+                logit,
+                x.shape[2:],
+                mode='bilinear',
+                align_corners=True,
+                align_mode=1) for logit in logit_list
         ]
         return logit_list
 

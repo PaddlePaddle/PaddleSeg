@@ -71,8 +71,12 @@ class BiSeNetV2(nn.Layer):
 
         logit_list = [logit, logit1, logit2, logit3, logit4]
         logit_list = [
-            F.interpolate(logit, x.shape[2:], mode='bilinear')
-            for logit in logit_list
+            F.interpolate(
+                logit,
+                x.shape[2:],
+                mode='bilinear',
+                align_corners=True,
+                align_mode=1) for logit in logit_list
         ]
 
         return logit_list
@@ -256,13 +260,21 @@ class BGA(nn.Layer):
 
         sb_feat_up = self.sb_branch_up(sfm)
         sb_feat_up = F.interpolate(
-            sb_feat_up, db_feat_keep.shape[2:], mode='bilinear')
+            sb_feat_up,
+            db_feat_keep.shape[2:],
+            mode='bilinear',
+            align_corners=True,
+            align_mode=1)
         sb_feat_up = F.sigmoid(sb_feat_up)
         db_feat = db_feat_keep * sb_feat_up
 
         sb_feat = db_feat_down * sb_feat_keep
-        sb_feat = F.interpolate(sb_feat, db_feat.shape[2:], mode='bilinear')
-
+        sb_feat = F.interpolate(
+            sb_feat,
+            db_feat.shape[2:],
+            mode='bilinear',
+            align_corners=True,
+            align_mode=1)
         return self.conv(db_feat + sb_feat)
 
 

@@ -36,7 +36,12 @@ def loss_computation(logits, label, losses):
     for i in range(len(logits)):
         logit = logits[i]
         if logit.shape[-2:] != label.shape[-2:]:
-            logit = F.interpolate(logit, label.shape[-2:], mode='bilinear')
+            logit = F.interpolate(
+                logit,
+                label.shape[-2:],
+                mode='bilinear',
+                align_corners=True,
+                align_mode=1)
         loss_i = losses['types'][i](logit, label)
         loss += losses['coef'][i] * loss_i
     return loss

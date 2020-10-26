@@ -66,13 +66,22 @@ class FastSCNN(nn.Layer):
         x = self.global_feature_extractor(higher_res_features)
         x = self.feature_fusion(higher_res_features, x)
         logit = self.classifier(x)
-        logit = F.interpolate(logit, x.shape[2:], mode='bilinear')
+        logit = F.interpolate(
+            logit,
+            x.shape[2:],
+            mode='bilinear',
+            align_corners=True,
+            align_mode=1)
         logit_list.append(logit)
 
         if self.enable_auxiliary_loss:
             auxiliary_logit = self.auxlayer(higher_res_features)
             auxiliary_logit = F.interpolate(
-                auxiliary_logit, x.shape[2:], mode='bilinear')
+                auxiliary_logit,
+                x.shape[2:],
+                mode='bilinear',
+                align_corners=True,
+                align_mode=1)
             logit_list.append(auxiliary_logit)
 
         return logit_list
@@ -252,7 +261,11 @@ class FeatureFusionModule(nn.Layer):
 
     def forward(self, high_res_input, low_res_input):
         low_res_input = F.interpolate(
-            low_res_input, scale_factor=4, mode='bilinear')
+            low_res_input,
+            scale_factor=4,
+            mode='bilinear',
+            align_corners=True,
+            align_mode=1)
         low_res_input = self.dwconv(low_res_input)
         low_res_input = self.conv_low_res(low_res_input)
         high_res_input = self.conv_high_res(high_res_input)

@@ -133,7 +133,12 @@ class UpSampling(nn.Layer):
         if self.use_deconv:
             x = self.deconv(x)
         else:
-            x = F.interpolate(x, short_cut.shape[2:], mode='bilinear')
+            x = F.interpolate(
+                x,
+                short_cut.shape[2:],
+                mode='bilinear',
+                align_corners=True,
+                align_mode=1)
         x = paddle.concat([x, short_cut], axis=1)
         x = self.double_conv(x)
         return x

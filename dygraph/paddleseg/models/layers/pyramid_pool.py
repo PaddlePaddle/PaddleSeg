@@ -76,12 +76,22 @@ class ASPPModule(nn.Layer):
         outputs = []
         for block in self.aspp_blocks:
             y = block(x)
-            y = F.interpolate(y, x.shape[2:], mode='bilinear')
+            y = F.interpolate(
+                y,
+                x.shape[2:],
+                mode='bilinear',
+                align_corners=True,
+                align_mode=1)
             outputs.append(y)
 
         if self.image_pooling:
             img_avg = self.global_avg_pool(x)
-            img_avg = F.interpolate(img_avg, x.shape[2:], mode='bilinear')
+            img_avg = F.interpolate(
+                img_avg,
+                x.shape[2:],
+                mode='bilinear',
+                align_corners=True,
+                align_mode=1)
             outputs.append(img_avg)
 
         x = paddle.concat(outputs, axis=1)
@@ -155,7 +165,12 @@ class PPModule(nn.Layer):
         cat_layers = []
         for stage in self.stages:
             x = stage(input)
-            x = F.interpolate(x, input.shape[2:], mode='bilinear')
+            x = F.interpolate(
+                x,
+                input.shape[2:],
+                mode='bilinear',
+                align_corners=True,
+                align_mode=1)
             cat_layers.append(x)
         cat_layers = [input] + cat_layers[::-1]
         cat = paddle.concat(cat_layers, axis=1)

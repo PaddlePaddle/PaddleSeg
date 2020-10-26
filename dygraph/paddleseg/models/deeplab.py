@@ -70,8 +70,12 @@ class DeepLabV3P(nn.Layer):
         feat_list = self.backbone(x)
         logit_list = self.head(feat_list)
         return [
-            F.interpolate(logit, x.shape[2:], mode='bilinear')
-            for logit in logit_list
+            F.interpolate(
+                logit,
+                x.shape[2:],
+                mode='bilinear',
+                align_corners=True,
+                align_mode=1) for logit in logit_list
         ]
 
     def init_weight(self):
@@ -159,8 +163,12 @@ class DeepLabV3(nn.Layer):
         feat_list = self.backbone(x)
         logit_list = self.head(feat_list)
         return [
-            F.interpolate(logit, x.shape[2:], mode='bilinear')
-            for logit in logit_list
+            F.interpolate(
+                logit,
+                x.shape[2:],
+                mode='bilinear',
+                align_corners=True,
+                align_mode=1) for logit in logit_list
         ]
 
     def init_weight(self):
@@ -228,7 +236,12 @@ class Decoder(nn.Layer):
 
     def forward(self, x, low_level_feat):
         low_level_feat = self.conv_bn_relu1(low_level_feat)
-        x = F.interpolate(x, low_level_feat.shape[2:], mode='bilinear')
+        x = F.interpolate(
+            x,
+            low_level_feat.shape[2:],
+            mode='bilinear',
+            align_corners=True,
+            align_mode=1)
         x = paddle.concat([x, low_level_feat], axis=1)
         x = self.conv_bn_relu2(x)
         x = self.conv_bn_relu3(x)
