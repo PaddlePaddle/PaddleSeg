@@ -143,15 +143,15 @@ class AuxLayer(nn.Layer):
             kernel_size=3,
             padding=1)
 
+        self.dropout = nn.Dropout(p=dropout_prob)
+
         self.conv = nn.Conv2D(
             in_channels=inter_channels,
             out_channels=out_channels,
             kernel_size=1)
 
-        self.dropout_prob = dropout_prob
-
     def forward(self, x):
         x = self.conv_bn_relu(x)
-        x = F.dropout(x, p=self.dropout_prob)
+        x = self.dropout(x)
         x = self.conv(x)
         return x
