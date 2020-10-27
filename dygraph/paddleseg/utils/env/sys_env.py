@@ -95,8 +95,12 @@ def get_sys_env():
         v = paddle.get_cudnn_version()
         v = str(v // 1000) + '.' + str(v % 1000 // 100)
         env_info['cudnn'] = v
-        gpu_nums = paddle.distributed.ParallelEnv().nranks
+        if 'gpu' in paddle.get_device():
+            gpu_nums = paddle.distributed.ParallelEnv().nranks
+        else:
+            gpu_nums = 0
         env_info['GPUs used'] = gpu_nums
+
         env_info['CUDA_VISIBLE_DEVICES'] = os.environ.get(
             'CUDA_VISIBLE_DEVICES')
         env_info['GPU'] = _get_gpu_info()
