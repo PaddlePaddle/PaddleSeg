@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import os
+import time
 
 import paddle
 import paddle.nn.functional as F
@@ -181,5 +182,8 @@ def train(model,
                         log_writer.add_scalar('Evaluate/Acc', acc, iter)
                     model.train()
             timer.restart()
+
+    # Sleep for half a second to let dataloader release resources.
+    time.sleep(0.5)
     if use_vdl:
         log_writer.close()
