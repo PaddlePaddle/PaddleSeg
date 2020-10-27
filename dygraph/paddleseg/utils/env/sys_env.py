@@ -103,6 +103,8 @@ def get_sys_env():
 
         env_info['CUDA_VISIBLE_DEVICES'] = os.environ.get(
             'CUDA_VISIBLE_DEVICES')
+        if gpu_nums == 0:
+            os.environ['CUDA_VISIBLE_DEVICES'] = ''
         env_info['GPU'] = _get_gpu_info()
 
     try:
