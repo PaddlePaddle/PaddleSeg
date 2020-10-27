@@ -113,6 +113,8 @@ class PSPNetHead(nn.Layer):
             out_channels=pp_out_channels,
             bin_sizes=bin_sizes)
 
+        self.dropout = nn.Dropout(p=0.1)  # dropout_prob
+
         self.conv = nn.Conv2D(
             in_channels=pp_out_channels,
             out_channels=num_classes,
@@ -130,7 +132,7 @@ class PSPNetHead(nn.Layer):
         logit_list = []
         x = feat_list[self.backbone_indices[1]]
         x = self.psp_module(x)
-        x = F.dropout(x, p=0.1)  # dropout_prob
+        x = self.dropout(x)
         logit = self.conv(x)
         logit_list.append(logit)
 

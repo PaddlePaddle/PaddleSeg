@@ -124,6 +124,8 @@ class GCNetHead(nn.Layer):
             kernel_size=3,
             padding=1)
 
+        self.dropout = nn.Dropout(p=0.1)
+
         self.conv = nn.Conv2D(
             in_channels=gc_channels, out_channels=num_classes, kernel_size=1)
 
@@ -147,7 +149,7 @@ class GCNetHead(nn.Layer):
         output = paddle.concat([x, output], axis=1)
         output = self.conv_bn_relu3(output)
 
-        output = F.dropout(output, p=0.1)  # dropout_prob
+        output = self.dropout(output)
         logit = self.conv(output)
         logit_list.append(logit)
 
