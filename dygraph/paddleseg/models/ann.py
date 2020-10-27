@@ -203,7 +203,7 @@ class AFNB(nn.Layer):
             in_channels=out_channels + high_in_channels,
             out_channels=out_channels,
             kernel_size=1)
-        self.dropout_prob = dropout_prob
+        self.dropout = nn.Dropout(p=dropout_prob)
 
     def forward(self, low_feats, high_feats):
         priors = [stage(low_feats, high_feats) for stage in self.stages]
@@ -212,7 +212,7 @@ class AFNB(nn.Layer):
             context += priors[i]
 
         output = self.conv_bn(paddle.concat([context, high_feats], axis=1))
-        output = F.dropout(output, p=self.dropout_prob)  # dropout_prob
+        output = self.dropout(output)
 
         return output
 
@@ -251,7 +251,7 @@ class APNB(nn.Layer):
             in_channels=in_channels * 2,
             out_channels=out_channels,
             kernel_size=1)
-        self.dropout_prob = dropout_prob
+        self.dropout = nn.Dropout(p=dropout_prob)
 
     def forward(self, x):
         priors = [stage(x) for stage in self.stages]
@@ -260,7 +260,7 @@ class APNB(nn.Layer):
             context += priors[i]
 
         output = self.conv_bn(paddle.concat([context, x], axis=1))
-        output = F.dropout(output, p=self.dropout_prob)  # dropout_prob
+        output = self.dropout(output)
 
         return output
 

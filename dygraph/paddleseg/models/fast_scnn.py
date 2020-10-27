@@ -26,14 +26,11 @@ __all__ = ['FastSCNN']
 class FastSCNN(nn.Layer):
     """
     The FastSCNN implementation based on PaddlePaddle.
-
     As mentioned in the original paper, FastSCNN is a real-time segmentation algorithm (123.5fps)
     even for high resolution images (1024x2048).
-
     The original article refers to
     Poudel, Rudra PK, et al. "Fast-scnn: Fast semantic segmentation network"
     (https://arxiv.org/pdf/1902.04502.pdf).
-
     Args:
         num_classes (int): The unique number of target classes.
         enable_auxiliary_loss (bool, optional): A bool value indicates whether adding auxiliary loss.
@@ -95,9 +92,7 @@ class FastSCNN(nn.Layer):
 class LearningToDownsample(nn.Layer):
     """
     Learning to downsample module.
-
     This module consists of three downsampling blocks (one conv and two separable conv)
-
     Args:
         dw_channels1 (int, optional): The input channels of the first sep conv. Default: 32.
         dw_channels2 (int, optional): The input channels of the second sep conv. Default: 48.
@@ -132,10 +127,8 @@ class LearningToDownsample(nn.Layer):
 class GlobalFeatureExtractor(nn.Layer):
     """
     Global feature extractor module.
-
     This module consists of three InvertedBottleneck blocks (like inverted residual introduced by MobileNetV2) and
     a PPModule (introduced by PSPNet).
-
     Args:
         in_channels (int, optional): The number of input channels to the module. Default: 64.
         block_channels (tuple, optional): A tuple represents output channels of each bottleneck block. Default: (64, 96, 128).
@@ -189,7 +182,6 @@ class GlobalFeatureExtractor(nn.Layer):
 class InvertedBottleneck(nn.Layer):
     """
     Single Inverted bottleneck implementation.
-
     Args:
         in_channels (int): The number of input channels to bottleneck block.
         out_channels (int): The number of output channels of bottleneck block.
@@ -236,9 +228,7 @@ class InvertedBottleneck(nn.Layer):
 class FeatureFusionModule(nn.Layer):
     """
     Feature Fusion Module Implementation.
-
     This module fuses high-resolution feature and low-resolution feature.
-
     Args:
         high_in_channels (int): The channels of high-resolution feature (output of LearningToDownsample).
         low_in_channels (int): The channels of low-resolution feature (output of GlobalFeatureExtractor).
@@ -278,9 +268,7 @@ class FeatureFusionModule(nn.Layer):
 class Classifier(nn.Layer):
     """
     The Classifier module implementation.
-
     This module consists of two depth-wise conv and one conv.
-
     Args:
         input_channels (int): The input channels to this module.
         num_classes (int): The unique number of target classes.
@@ -304,9 +292,11 @@ class Classifier(nn.Layer):
         self.conv = nn.Conv2D(
             in_channels=input_channels, out_channels=num_classes, kernel_size=1)
 
+        self.dropout = nn.Dropout(p=0.1)  # dropout_prob
+
     def forward(self, x):
         x = self.dsconv1(x)
         x = self.dsconv2(x)
-        x = F.dropout(x, p=0.1)  # dropout_prob
+        x = self.dropout(x)
         x = self.conv(x)
         return x
