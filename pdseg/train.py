@@ -42,6 +42,7 @@ from eval import evaluate
 from vis import visualize
 from utils import dist_utils
 from utils.load_model_utils import load_pretrained_weights
+from utils import paddle_utils
 
 
 def parse_args():
@@ -454,7 +455,7 @@ def main(args):
 
 
 if __name__ == '__main__':
-    paddle.enable_static()
+    paddle_utils.enable_static()
     args = parse_args()
     if fluid.core.is_compiled_with_cuda() != True and args.use_gpu == True:
         print(

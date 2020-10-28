@@ -7,8 +7,8 @@
 |模型\骨干网络|ResNet50|ResNet101|HRNetw18|HRNetw48|
 |-|-|-|-|-|
 |[ANN](./configs/ann)|✔|✔|||
-|BiSeNetv2|-|-|-|-|
-|DANet|✔|✔|||
+|[BiSeNetv2](./configs/bisenet)|-|-|-|-|
+|[DANet](./configs/danet)|✔|✔|||
 |[Deeplabv3](./configs/deeplabv3)|✔|✔|||
 |[Deeplabv3P](./configs/deeplabv3p)|✔|✔|||
 |[Fast-SCNN](./configs/fastscnn)|-|-|-|-|
@@ -52,8 +52,10 @@ git clone https://github.com/PaddlePaddle/PaddleSeg
 
 
 ```
-cd PaddleSeg/dygpraph
+cd PaddleSeg/dygraph
 export PYTHONPATH=`pwd`
+# windows下请执行以下命令
+# set PYTHONPATH=%cd%
 pip install -r requirements.txt
 ```
 

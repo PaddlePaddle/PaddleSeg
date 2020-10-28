@@ -15,6 +15,8 @@
 
 ```shell
 export CUDA_VISIBLE_DEVICES=0 # 设置1张可用的卡
+# windows下请执行以下命令
+# set CUDA_VISIBLE_DEVICES=0
 python train.py \
        --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml \
        --do_eval \
@@ -40,7 +42,7 @@ python train.py \
 |log_iters|打印日志的间隔步数|否|10|
 
 
-**注意**：如果想要使用多卡训练的话，需要将环境变量CUDA_VISIBLE_DEVICES指定为多卡（不指定时默认使用所有的gpu)，并使用paddle.distributed.launch启动训练脚本:
+**注意**：如果想要使用多卡训练的话，需要将环境变量CUDA_VISIBLE_DEVICES指定为多卡（不指定时默认使用所有的gpu)，并使用paddle.distributed.launch启动训练脚本（windows下由于不支持nccl，无法使用多卡训练）:
 ```shell
 export CUDA_VISIBLE_DEVICES=0,1,2,3 # 设置4张可用的卡
 python -m paddle.distributed.launch train.py \

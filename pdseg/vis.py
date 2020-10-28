@@ -30,6 +30,7 @@ import numpy as np
 import paddle
 import paddle.fluid as fluid
 
+from utils import paddle_utils
 from PIL import Image as PILImage
 from utils.config import cfg
 from reader import SegDataset
@@ -94,7 +95,7 @@ def visualize(cfg,
               local_test=False,
               **kwargs):
     if vis_file_list is None:
-        vis_file_list = cfg.DATASET.TEST_FILE_LIST
+        vis_file_list = cfg.DATASET.VIS_FILE_LIST
     dataset = SegDataset(
         file_list=vis_file_list,
         mode=ModelPhase.VISUAL,
@@ -200,7 +201,7 @@ def visualize(cfg,
 
 
 if __name__ == '__main__':
-    paddle.enable_static()
+    paddle_utils.enable_static()
     args = parse_args()
     if args.cfg_file is not None:
         cfg.update_from_file(args.cfg_file)
