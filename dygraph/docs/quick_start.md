@@ -1,4 +1,3 @@
-简体中文 | [English]()
 
 # 快速开始
 
@@ -16,6 +15,8 @@
 
 ```shell
 export CUDA_VISIBLE_DEVICES=0 # 设置1张可用的卡
+# windows下请执行以下命令
+# set CUDA_VISIBLE_DEVICES=0
 python train.py \
        --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml \
        --do_eval \
@@ -38,13 +39,25 @@ python train.py \
 |save_interval_iters|模型保存的间隔步数|否|1000|
 |do_eval|是否在保存模型时启动评估, 启动时将会根据mIoU保存最佳模型至best_model|否|否|
 |log_iters|打印日志的间隔步数|否|10|
+|resume_model|恢复训练模型路径，如：`output/iter_1000`|否|None|
 
 
-**注意**：如果想要使用多卡训练的话，需要将环境变量CUDA_VISIBLE_DEVICES指定为多卡（不指定时默认使用所有的gpu)，并使用paddle.distributed.launch启动训练脚本:
+**注意**：如果想要使用多卡训练的话，需要将环境变量CUDA_VISIBLE_DEVICES指定为多卡（不指定时默认使用所有的gpu)，并使用paddle.distributed.launch启动训练脚本（windows下由于不支持nccl，无法使用多卡训练）:
 ```shell
 export CUDA_VISIBLE_DEVICES=0,1,2,3 # 设置4张可用的卡
 python -m paddle.distributed.launch train.py \
        --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml \
+       --do_eval \
+       --use_vdl \
+       --save_interval 500 \
+       --save_dir output
+```
+
+恢复训练：
+```shell
+python train.py \
+       --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml \
+       --resume_model output/iter_500 \
        --do_eval \
        --use_vdl \
        --save_interval 500 \
@@ -66,6 +79,7 @@ PaddleSeg会将训练过程中的数据写入VisualDL文件，并实时的查看
 # 下述命令会在127.0.0.1上启动一个服务，支持通过前端web页面查看，可以通过--host这个参数指定实际ip地址
 visualdl --logdir output/
 ```
+
 在浏览器输入提示的网址，效果如下：
 ![](images/quick_start_vdl.jpg)
 
@@ -76,7 +90,7 @@ visualdl --logdir output/
 ```shell
 python val.py \
        --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml \
-       --model_dir output/iter_1000
+       --model_path output/iter_1000/model.pdparams
 ```
 
 ## 效果可视化
@@ -84,7 +98,7 @@ python val.py \
 ```shell
 python predict.py \
        --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml \
-       --model_dir output/iter_1000 \
+       --model_path output/iter_1000/model.pdparams \
        --image_path data/optic_disc_seg/JPEGImages/H0003.jpg \
        --save_dir output/result
 ```

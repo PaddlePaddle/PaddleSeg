@@ -68,7 +68,14 @@ class ANN(nn.Layer):
     def forward(self, x):
         feat_list = self.backbone(x)
         logit_list = self.head(feat_list)
-        return [F.resize_bilinear(logit, x.shape[2:]) for logit in logit_list]
+        return [
+            F.interpolate(
+                logit,
+                x.shape[2:],
+                mode='bilinear',
+                align_corners=True,
+                align_mode=1) for logit in logit_list
+        ]
 
     def init_weight(self):
         if self.pretrained is not None:
@@ -133,7 +140,7 @@ class ANNHead(nn.Layer):
                 repeat_sizes=([1]),
                 psp_size=psp_size))
 
-        self.cls = nn.Conv2d(
+        self.cls = nn.Conv2D(
             in_channels=inter_channels, out_channels=num_classes, kernel_size=1)
         self.auxlayer = layers.AuxLayer(
             in_channels=low_in_channels,
@@ -196,7 +203,7 @@ class AFNB(nn.Layer):
             in_channels=out_channels + high_in_channels,
             out_channels=out_channels,
             kernel_size=1)
-        self.dropout_prob = dropout_prob
+        self.dropout = nn.Dropout(p=dropout_prob)
 
     def forward(self, low_feats, high_feats):
         priors = [stage(low_feats, high_feats) for stage in self.stages]
@@ -205,7 +212,7 @@ class AFNB(nn.Layer):
             context += priors[i]
 
         output = self.conv_bn(paddle.concat([context, high_feats], axis=1))
-        output = F.dropout(output, p=self.dropout_prob)  # dropout_prob
+        output = self.dropout(output)
 
         return output
 
@@ -244,7 +251,7 @@ class APNB(nn.Layer):
             in_channels=in_channels * 2,
             out_channels=out_channels,
             kernel_size=1)
-        self.dropout_prob = dropout_prob
+        self.dropout = nn.Dropout(p=dropout_prob)
 
     def forward(self, x):
         priors = [stage(x) for stage in self.stages]
@@ -253,7 +260,7 @@ class APNB(nn.Layer):
             context += priors[i]
 
         output = self.conv_bn(paddle.concat([context, x], axis=1))
-        output = F.dropout(output, p=self.dropout_prob)  # dropout_prob
+        output = self.dropout(output)
 
         return output
 
@@ -262,7 +269,7 @@ def _pp_module(x, psp_size):
     n, c, h, w = x.shape
     priors = []
     for size in psp_size:
-        feat = F.adaptive_pool2d(x, pool_size=size, pool_type="avg")
+        feat = F.adaptive_avg_pool2d(x, size)
         feat = paddle.reshape(feat, shape=(n, c, -1))
         priors.append(feat)
     center = paddle.concat(priors, axis=-1)
@@ -300,7 +307,7 @@ class SelfAttentionBlock_AFNB(nn.Layer):
         self.value_channels = value_channels
         if out_channels == None:
             self.out_channels = high_in_channels
-        self.pool = nn.MaxPool2d(scale)
+        self.pool = nn.MaxPool2D(scale)
         self.f_key = layers.ConvBNReLU(
             in_channels=low_in_channels,
             out_channels=key_channels,
@@ -309,12 +316,12 @@ class SelfAttentionBlock_AFNB(nn.Layer):
             in_channels=high_in_channels,
             out_channels=key_channels,
             kernel_size=1)
-        self.f_value = nn.Conv2d(
+        self.f_value = nn.Conv2D(
             in_channels=low_in_channels,
             out_channels=value_channels,
             kernel_size=1)
 
-        self.W = nn.Conv2d(
+        self.W = nn.Conv2D(
             in_channels=value_channels,
             out_channels=out_channels,
             kernel_size=1)
@@ -377,17 +384,17 @@ class SelfAttentionBlock_APNB(nn.Layer):
         self.out_channels = out_channels
         self.key_channels = key_channels
         self.value_channels = value_channels
-        self.pool = nn.MaxPool2d(scale)
+        self.pool = nn.MaxPool2D(scale)
         self.f_key = layers.ConvBNReLU(
             in_channels=self.in_channels,
             out_channels=self.key_channels,
             kernel_size=1)
         self.f_query = self.f_key
-        self.f_value = nn.Conv2d(
+        self.f_value = nn.Conv2D(
             in_channels=self.in_channels,
             out_channels=self.value_channels,
             kernel_size=1)
-        self.W = nn.Conv2d(
+        self.W = nn.Conv2D(
             in_channels=self.value_channels,
             out_channels=self.out_channels,
             kernel_size=1)

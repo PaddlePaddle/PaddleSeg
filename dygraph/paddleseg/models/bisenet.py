@@ -71,7 +71,12 @@ class BiSeNetV2(nn.Layer):
 
         logit_list = [logit, logit1, logit2, logit3, logit4]
         logit_list = [
-            F.resize_bilinear(logit, x.shape[2:]) for logit in logit_list
+            F.interpolate(
+                logit,
+                x.shape[2:],
+                mode='bilinear',
+                align_corners=True,
+                align_mode=1) for logit in logit_list
         ]
 
         return logit_list
@@ -81,8 +86,8 @@ class BiSeNetV2(nn.Layer):
             utils.load_entire_model(self, self.pretrained)
         else:
             for sublayer in self.sublayers():
-                if isinstance(sublayer, nn.Conv2d):
-                    param_init.msra_init(sublayer.weight)
+                if isinstance(sublayer, nn.Conv2D):
+                    param_init.kaiming_normal_init(sublayer.weight)
                 elif isinstance(sublayer, (nn.BatchNorm, nn.SyncBatchNorm)):
                     param_init.constant_init(sublayer.weight, value=1.0)
                     param_init.constant_init(sublayer.bias, value=0.0)
@@ -98,7 +103,7 @@ class StemBlock(nn.Layer):
             layers.ConvBNReLU(out_dim, out_dim // 2, 1),
             layers.ConvBNReLU(out_dim // 2, out_dim, 3, stride=2))
 
-        self.right = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
+        self.right = nn.MaxPool2D(kernel_size=3, stride=2, padding=1)
 
         self.fuse = layers.ConvBNReLU(out_dim * 2, out_dim, 3)
 
@@ -114,11 +119,11 @@ class ContextEmbeddingBlock(nn.Layer):
     def __init__(self, in_dim, out_dim):
         super(ContextEmbeddingBlock, self).__init__()
 
-        self.gap = nn.AdaptiveAvgPool2d(1)
-        self.bn = nn.SyncBatchNorm(in_dim)
+        self.gap = nn.AdaptiveAvgPool2D(1)
+        self.bn = layers.SyncBatchNorm(in_dim)
 
         self.conv_1x1 = layers.ConvBNReLU(in_dim, out_dim, 1)
-        self.conv_3x3 = nn.Conv2d(out_dim, out_dim, 3, 1, 1)
+        self.conv_3x3 = nn.Conv2D(out_dim, out_dim, 3, 1, 1)
 
     def forward(self, x):
         gap = self.gap(x)
@@ -234,20 +239,17 @@ class BGA(nn.Layer):
 
         self.db_branch_keep = nn.Sequential(
             layers.DepthwiseConvBN(out_dim, out_dim, 3),
-            nn.Conv2d(out_dim, out_dim, 1))
+            nn.Conv2D(out_dim, out_dim, 1))
 
         self.db_branch_down = nn.Sequential(
             layers.ConvBN(out_dim, out_dim, 3, stride=2),
-            nn.AvgPool2d(kernel_size=3, stride=2, padding=1))
+            nn.AvgPool2D(kernel_size=3, stride=2, padding=1))
 
         self.sb_branch_keep = nn.Sequential(
             layers.DepthwiseConvBN(out_dim, out_dim, 3),
-            nn.Conv2d(out_dim, out_dim, 1), layers.Activation(act='sigmoid'))
+            nn.Conv2D(out_dim, out_dim, 1), layers.Activation(act='sigmoid'))
 
-        self.sb_branch_up = nn.Sequential(
-            layers.ConvBN(out_dim, out_dim, 3),
-            nn.UpsamplingBilinear2d(scale_factor=4),
-            layers.Activation(act='sigmoid'))
+        self.sb_branch_up = layers.ConvBN(out_dim, out_dim, 3)
 
         self.conv = layers.ConvBN(out_dim, out_dim, 3)
 
@@ -255,11 +257,24 @@ class BGA(nn.Layer):
         db_feat_keep = self.db_branch_keep(dfm)
         db_feat_down = self.db_branch_down(dfm)
         sb_feat_keep = self.sb_branch_keep(sfm)
-        sb_feat_up = self.sb_branch_up(sfm)
-        db_feat = db_feat_keep * sb_feat_up
-        sb_feat = db_feat_down * sb_feat_keep
-        sb_feat = F.resize_bilinear(sb_feat, db_feat.shape[2:])
 
+        sb_feat_up = self.sb_branch_up(sfm)
+        sb_feat_up = F.interpolate(
+            sb_feat_up,
+            db_feat_keep.shape[2:],
+            mode='bilinear',
+            align_corners=True,
+            align_mode=1)
+        sb_feat_up = F.sigmoid(sb_feat_up)
+        db_feat = db_feat_keep * sb_feat_up
+
+        sb_feat = db_feat_down * sb_feat_keep
+        sb_feat = F.interpolate(
+            sb_feat,
+            db_feat.shape[2:],
+            mode='bilinear',
+            align_corners=True,
+            align_mode=1)
         return self.conv(db_feat + sb_feat)
 
 
@@ -270,7 +285,7 @@ class SegHead(nn.Layer):
         self.conv_3x3 = nn.Sequential(
             layers.ConvBNReLU(in_dim, mid_dim, 3), nn.Dropout(0.1))
 
-        self.conv_1x1 = nn.Conv2d(mid_dim, num_classes, 1, 1)
+        self.conv_1x1 = nn.Conv2D(mid_dim, num_classes, 1, 1)
 
     def forward(self, x):
         conv1 = self.conv_3x3(x)

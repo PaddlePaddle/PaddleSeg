@@ -29,8 +29,8 @@ def parse_args():
     parser.add_argument(
         "--config", dest="cfg", help="The config file.", default=None, type=str)
     parser.add_argument(
-        '--model_dir',
-        dest='model_dir',
+        '--model_path',
+        dest='model_path',
         help='The path of model for evaluation',
         type=str,
         default=None)
@@ -80,11 +80,10 @@ def get_image_list(image_path):
 
 def main(args):
     env_info = get_sys_env()
-    places = paddle.CUDAPlace(paddle.distributed.ParallelEnv().dev_id) \
-        if env_info['Paddle compiled with cuda'] and env_info['GPUs used'] \
-        else paddle.CPUPlace()
+    place = 'gpu' if env_info['Paddle compiled with cuda'] and env_info[
+        'GPUs used'] else 'cpu'
 
-    paddle.disable_static(places)
+    paddle.set_device(place)
     if not args.cfg:
         raise RuntimeError('No configuration file specified.')
 
@@ -106,7 +105,7 @@ def main(args):
 
     predict(
         model,
-        model_dir=args.model_dir,
+        model_path=args.model_path,
         transforms=transforms,
         image_list=image_list,
         image_dir=image_dir,

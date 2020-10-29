@@ -250,11 +250,12 @@ class ModelCheckpoint(Callback):
                 print("iter {iter_num}: saving model to {path}".format(
                     iter_num=iter, path=current_save_dir))
 
-            filepath = os.path.join(current_save_dir, 'model')
-            paddle.save(self.model.state_dict(), filepath)
+            paddle.save(self.model.state_dict(),
+                        os.path.join(current_save_dir, 'model.pdparams'))
 
             if not self.save_params_only:
-                paddle.save(self.optimizer.state_dict(), filepath)
+                paddle.save(self.optimizer.state_dict(),
+                            os.path.join(current_save_dir, 'model.pdopt'))
 
 
 class VisualDL(Callback):

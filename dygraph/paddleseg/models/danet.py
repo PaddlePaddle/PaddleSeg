@@ -56,7 +56,12 @@ class DANet(nn.Layer):
         feats = [feats[i] for i in self.backbone_indices]
         logit_list = self.head(feats)
         logit_list = [
-            F.resize_bilinear(logit, x.shape[2:]) for logit in logit_list
+            F.interpolate(
+                logit,
+                x.shape[2:],
+                mode='bilinear',
+                align_corners=True,
+                align_mode=1) for logit in logit_list
         ]
         return logit_list
 
@@ -87,16 +92,16 @@ class DAHead(nn.Layer):
         self.conv2 = layers.ConvBNReLU(inter_channels, inter_channels, 3)
 
         self.aux_head = nn.Sequential(
-            nn.Dropout2d(0.1), nn.Conv2d(in_channels, num_classes, 1))
+            nn.Dropout2D(0.1), nn.Conv2D(in_channels, num_classes, 1))
 
         self.aux_head_pam = nn.Sequential(
-            nn.Dropout2d(0.1), nn.Conv2d(inter_channels, num_classes, 1))
+            nn.Dropout2D(0.1), nn.Conv2D(inter_channels, num_classes, 1))
 
         self.aux_head_cam = nn.Sequential(
-            nn.Dropout2d(0.1), nn.Conv2d(inter_channels, num_classes, 1))
+            nn.Dropout2D(0.1), nn.Conv2D(inter_channels, num_classes, 1))
 
         self.cls_head = nn.Sequential(
-            nn.Dropout2d(0.1), nn.Conv2d(inter_channels, num_classes, 1))
+            nn.Dropout2D(0.1), nn.Conv2D(inter_channels, num_classes, 1))
 
     def forward(self, feat_list):
         feats = feat_list[-1]
@@ -123,9 +128,9 @@ class PAM(nn.Layer):
         super().__init__()
         mid_channels = in_channels // 8
 
-        self.query_conv = nn.Conv2d(in_channels, mid_channels, 1, 1)
-        self.key_conv = nn.Conv2d(in_channels, mid_channels, 1, 1)
-        self.value_conv = nn.Conv2d(in_channels, in_channels, 1, 1)
+        self.query_conv = nn.Conv2D(in_channels, mid_channels, 1, 1)
+        self.key_conv = nn.Conv2D(in_channels, mid_channels, 1, 1)
+        self.value_conv = nn.Conv2D(in_channels, in_channels, 1, 1)
 
         self.gamma = self.create_parameter(
             shape=[1],

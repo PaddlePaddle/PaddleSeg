@@ -12,9 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import paddle
 import paddle.nn as nn
 import paddle.nn.functional as F
-from paddle.nn import SyncBatchNorm as BatchNorm
+
+
+def SyncBatchNorm(*args, **kwargs):
+    """In cpu environment nn.SyncBatchNorm does not have kernel so use nn.BatchNorm instead"""
+    if paddle.get_device() == 'cpu':
+        return nn.BatchNorm(*args, **kwargs)
+    else:
+        return nn.SyncBatchNorm(*args, **kwargs)
 
 
 class ConvBNReLU(nn.Layer):
@@ -26,10 +34,10 @@ class ConvBNReLU(nn.Layer):
                  **kwargs):
         super().__init__()
 
-        self._conv = nn.Conv2d(
+        self._conv = nn.Conv2D(
             in_channels, out_channels, kernel_size, padding=padding, **kwargs)
 
-        self._batch_norm = BatchNorm(out_channels)
+        self._batch_norm = SyncBatchNorm(out_channels)
 
     def forward(self, x):
         x = self._conv(x)
@@ -46,9 +54,9 @@ class ConvBN(nn.Layer):
                  padding='same',
                  **kwargs):
         super().__init__()
-        self._conv = nn.Conv2d(
+        self._conv = nn.Conv2D(
             in_channels, out_channels, kernel_size, padding=padding, **kwargs)
-        self._batch_norm = BatchNorm(out_channels)
+        self._batch_norm = SyncBatchNorm(out_channels)
 
     def forward(self, x):
         x = self._conv(x)
@@ -59,7 +67,7 @@ class ConvBN(nn.Layer):
 class ConvReLUPool(nn.Layer):
     def __init__(self, in_channels, out_channels):
         super().__init__()
-        self.conv = nn.Conv2d(
+        self.conv = nn.Conv2D(
             in_channels,
             out_channels,
             kernel_size=3,
@@ -143,15 +151,15 @@ class AuxLayer(nn.Layer):
             kernel_size=3,
             padding=1)
 
-        self.conv = nn.Conv2d(
+        self.dropout = nn.Dropout(p=dropout_prob)
+
+        self.conv = nn.Conv2D(
             in_channels=inter_channels,
             out_channels=out_channels,
             kernel_size=1)
 
-        self.dropout_prob = dropout_prob
-
     def forward(self, x):
         x = self.conv_bn_relu(x)
-        x = F.dropout(x, p=self.dropout_prob)
+        x = self.dropout(x)
         x = self.conv(x)
         return x

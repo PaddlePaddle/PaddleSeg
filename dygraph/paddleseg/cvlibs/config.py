@@ -137,7 +137,7 @@ class Config(object):
         return iters
 
     @property
-    def learning_rate(self) -> paddle.optimizer._LRScheduler:
+    def learning_rate(self) -> paddle.optimizer.lr.LRScheduler:
         _learning_rate = self.dic.get('learning_rate', {}).get('value')
         if not _learning_rate:
             raise RuntimeError(
@@ -148,7 +148,7 @@ class Config(object):
 
         if decay_type == 'poly':
             lr = _learning_rate
-            return paddle.optimizer.PolynomialLR(lr, **args)
+            return paddle.optimizer.lr.PolynomialDecay(lr, **args)
         else:
             raise RuntimeError('Only poly decay support.')
 

@@ -61,7 +61,14 @@ class FCN(nn.Layer):
     def forward(self, x):
         feat_list = self.backbone(x)
         logit_list = self.head(feat_list)
-        return [F.resize_bilinear(logit, x.shape[2:]) for logit in logit_list]
+        return [
+            F.interpolate(
+                logit,
+                x.shape[2:],
+                mode='bilinear',
+                align_corners=True,
+                align_mode=1) for logit in logit_list
+        ]
 
     def init_weight(self):
         if self.pretrained is not None:
@@ -99,7 +106,7 @@ class FCNHead(nn.Layer):
             kernel_size=1,
             padding='same',
             stride=1)
-        self.cls = nn.Conv2d(
+        self.cls = nn.Conv2D(
             in_channels=channels,
             out_channels=self.num_classes,
             kernel_size=1,
@@ -117,8 +124,8 @@ class FCNHead(nn.Layer):
 
     def init_weight(self):
         for layer in self.sublayers():
-            if isinstance(layer, nn.Conv2d):
-                param_init.normal_init(layer.weight, scale=0.001)
+            if isinstance(layer, nn.Conv2D):
+                param_init.normal_init(layer.weight, std=0.001)
             elif isinstance(layer, (nn.BatchNorm, nn.SyncBatchNorm)):
                 param_init.constant_init(layer.weight, value=1.0)
                 param_init.constant_init(layer.bias, value=0.0)

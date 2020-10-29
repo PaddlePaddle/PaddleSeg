@@ -33,9 +33,16 @@ python tools/convert_cityscapes.py --cityscapes_path data/cityscapes --num_worke
 通常情况下会利用[SBD(Semantic Boundaries Dataset)](http://home.bharathh.info/pubs/codes/SBD/download.html)进行扩充，扩充后训练集10582张。
 运行下列命令进行SBD数据集下载并进行扩充：
 ```shell
-python tools/convert_cityscapes.py --voc_path data/VOCdevkit --num_workers 8
+python tools/voc_augment.py --voc_path data/VOCdevkit --num_workers 8
 ```
 其中`voc_path`应根据实际数据集路径进行调整。
+
+**注意** 运行前请确保在dygraph目录下执行过下列命令：
+```shell
+export PYTHONPATH=`pwd`
+# windows下请执行相面的命令
+# set PYTHONPATH=%cd%
+```
 
 ## 关于ADE20K数据集
 [ADE20K](http://sceneparsing.csail.mit.edu/)由MIT发布的可用于场景感知、分割和多物体识别等多种任务的数据集。
@@ -74,7 +81,7 @@ python tools/convert_cityscapes.py --voc_path data/VOCdevkit --num_workers 8
 2.标注图像的标签从0,1依次取值，不可间隔。若有需要忽略的像素，则按255进行标注。
 
 可按如下方式对自定义数据集进行配置：
-```
+```yaml
 train_dataset:
   type: Dataset
   dataset_root: custom_dataset
@@ -91,4 +98,3 @@ train_dataset:
     - type: Normalize
   mode: train
 ```
-

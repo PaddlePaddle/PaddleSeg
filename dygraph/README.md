@@ -6,21 +6,21 @@
 
 |模型\骨干网络|ResNet50|ResNet101|HRNetw18|HRNetw48|
 |-|-|-|-|-|
-|[ANN](./configs/ann/README.md)|✔|✔|||
-|BiSeNetv2|-|-|-|-|
-|DANet|✔|✔|||
-|Deeplabv3|✔|✔|||
-|Deeplabv3p|✔|✔|||
-|[Fast-SCNN](./configs/fastscnn/README.md)|-|-|-|-|
-|FCN|||✔|✔|
-|GCNet|✔|✔|||
+|[ANN](./configs/ann)|✔|✔|||
+|[BiSeNetv2](./configs/bisenet)|-|-|-|-|
+|[DANet](./configs/danet)|✔|✔|||
+|[Deeplabv3](./configs/deeplabv3)|✔|✔|||
+|[Deeplabv3P](./configs/deeplabv3p)|✔|✔|||
+|[Fast-SCNN](./configs/fastscnn)|-|-|-|-|
+|[FCN](./configs/fcn)|||✔|✔|
+|[GCNet](./configs/gcnet)|✔|✔|||
 |[OCRNet](./configs/ocrnet/)|||✔|✔|
-|PSPNet|✔|✔|||
-|UNet|-|-|-|-|
+|[PSPNet](./configs/pspnet)|✔|✔|||
+|[UNet](./configs/unet)|-|-|-|-|
 
 ## 数据集
 
-- [x] CityScapes
+- [x] Cityscapes
 - [x] Pascal VOC
 - [x] ADE20K
 - [ ] Pascal Context
@@ -32,13 +32,14 @@
 
 版本要求
 
-* PaddlePaddle >= 2.0.0b
+* PaddlePaddle >= 2.0.0rc
 
 * Python >= 3.6+
 
-由于图像分割模型计算开销大，推荐在GPU版本的PaddlePaddle下使用PaddleSeg.
+由于图像分割模型计算开销大，推荐在GPU版本的PaddlePaddle下使用PaddleSeg。推荐安装10.0以上的CUDA环境。
 
-安装教程请见[PaddlePaddle官网](https://www.paddlepaddle.org.cn/install/quick)。
+
+安装教程请见[PaddlePaddle官网](https://www.paddlepaddle.org.cn/documentation/docs/zh/2.0-beta/install/index_cn.html)。
 
 
 2. 下载PaddleSeg代码
@@ -49,15 +50,18 @@ git clone https://github.com/PaddlePaddle/PaddleSeg
 3. 安装PaddleSeg依赖
 通过以下命令安装python包依赖，请确保在该分支上至少执行过一次以下命令：
 
-```
-cd PaddleSeg/dygpraph
+
+```shell
+cd PaddleSeg/dygraph
 export PYTHONPATH=`pwd`
+# windows下请执行以下命令
+# set PYTHONPATH=%cd%
 pip install -r requirements.txt
 ```
 
 ## 训练
-```
-python3 train.py --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml
+```shell
+python train.py --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml
 ```
 
 ## 使用教程

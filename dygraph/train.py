@@ -51,6 +51,12 @@ def parse_args():
         type=int,
         default=1000)
     parser.add_argument(
+        '--resume_model',
+        dest='resume_model',
+        help='The path of resume model',
+        type=str,
+        default=None)
+    parser.add_argument(
         '--save_dir',
         dest='save_dir',
         help='The directory for saving the model snapshot',
@@ -89,11 +95,10 @@ def main(args):
                      ['-' * 48])
     logger.info(info)
 
-    places = paddle.CUDAPlace(paddle.distributed.ParallelEnv().dev_id) \
-        if env_info['Paddle compiled with cuda'] and env_info['GPUs used'] \
-        else paddle.CPUPlace()
+    place = 'gpu' if env_info['Paddle compiled with cuda'] and env_info[
+        'GPUs used'] else 'cpu'
 
-    paddle.disable_static(places)
+    paddle.set_device(place)
     if not args.cfg:
         raise RuntimeError('No configuration file specified.')
 
@@ -118,12 +123,12 @@ def main(args):
     train(
         cfg.model,
         train_dataset,
-        places=places,
         val_dataset=val_dataset,
         optimizer=cfg.optimizer,
         save_dir=args.save_dir,
         iters=cfg.iters,
         batch_size=cfg.batch_size,
+        resume_model=args.resume_model,
         save_interval=args.save_interval,
         log_iters=args.log_iters,
         num_workers=args.num_workers,

@@ -64,7 +64,14 @@ class PSPNet(nn.Layer):
     def forward(self, x):
         feat_list = self.backbone(x)
         logit_list = self.head(feat_list)
-        return [F.resize_bilinear(logit, x.shape[2:]) for logit in logit_list]
+        return [
+            F.interpolate(
+                logit,
+                x.shape[2:],
+                mode='bilinear',
+                align_corners=True,
+                align_mode=1) for logit in logit_list
+        ]
 
     def init_weight(self):
         if self.pretrained is not None:
@@ -106,7 +113,9 @@ class PSPNetHead(nn.Layer):
             out_channels=pp_out_channels,
             bin_sizes=bin_sizes)
 
-        self.conv = nn.Conv2d(
+        self.dropout = nn.Dropout(p=0.1)  # dropout_prob
+
+        self.conv = nn.Conv2D(
             in_channels=pp_out_channels,
             out_channels=num_classes,
             kernel_size=1)
@@ -123,7 +132,7 @@ class PSPNetHead(nn.Layer):
         logit_list = []
         x = feat_list[self.backbone_indices[1]]
         x = self.psp_module(x)
-        x = F.dropout(x, p=0.1)  # dropout_prob
+        x = self.dropout(x)
         logit = self.conv(x)
         logit_list.append(logit)
 
