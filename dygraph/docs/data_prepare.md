@@ -81,7 +81,7 @@ export PYTHONPATH=`pwd`
 2.标注图像的标签从0,1依次取值，不可间隔。若有需要忽略的像素，则按255进行标注。
 
 可按如下方式对自定义数据集进行配置：
-```
+```yaml
 train_dataset:
   type: Dataset
   dataset_root: custom_dataset

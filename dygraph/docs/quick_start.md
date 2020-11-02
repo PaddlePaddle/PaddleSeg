@@ -34,12 +34,12 @@ python train.py \
 |learning_rate|初始学习率|否|配置文件中指定值|
 |config|配置文件|是|-|
 |save_dir|模型和visualdl日志文件的保存根路径|否|output|
-
 |num_workers|用于异步读取数据的进程数量， 大于等于1时开启子进程读取数据|否|0|
 |use_vdl|是否开启visualdl记录训练数据|否|否|
 |save_interval_iters|模型保存的间隔步数|否|1000|
 |do_eval|是否在保存模型时启动评估, 启动时将会根据mIoU保存最佳模型至best_model|否|否|
 |log_iters|打印日志的间隔步数|否|10|
+|resume_model|恢复训练模型路径，如：`output/iter_1000`|否|None|
 
 
 **注意**：如果想要使用多卡训练的话，需要将环境变量CUDA_VISIBLE_DEVICES指定为多卡（不指定时默认使用所有的gpu)，并使用paddle.distributed.launch启动训练脚本（windows下由于不支持nccl，无法使用多卡训练）:
@@ -47,6 +47,17 @@ python train.py \
 export CUDA_VISIBLE_DEVICES=0,1,2,3 # 设置4张可用的卡
 python -m paddle.distributed.launch train.py \
        --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml \
+       --do_eval \
+       --use_vdl \
+       --save_interval 500 \
+       --save_dir output
+```
+
+恢复训练：
+```shell
+python train.py \
+       --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml \
+       --resume_model output/iter_500 \
        --do_eval \
        --use_vdl \
        --save_interval 500 \
