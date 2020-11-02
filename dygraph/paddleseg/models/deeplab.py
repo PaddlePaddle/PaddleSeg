@@ -161,7 +161,7 @@ class DeepLabV3(nn.Layer):
 
         self.head = DeepLabV3Head(num_classes, backbone_indices,
                                   backbone_channels, aspp_ratios,
-                                  aspp_out_channels)
+                                  aspp_out_channels, align_corners)
         self.align_corners = align_corners
         self.pretrained = pretrained
         self.init_weight()
