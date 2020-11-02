@@ -37,6 +37,8 @@ class GCNet(nn.Layer):
         gc_channels (int, optional): The input channels to Global Context Block. Default: 512.
         ratio (float, optional): It indicates the ratio of attention channels and gc_channels. Default: 0.25.
         enable_auxiliary_loss (bool, optional): A bool value indicates whether adding auxiliary loss. Default: True.
+        align_corners (bool, optional): An argument of F.interpolate. It should be set to False when the feature size is even,
+            e.g. 1024x512, otherwise it is True, e.g. 76x769. Default: False.
         pretrained (str, optional): The path or url of pretrained model. Default: None.
     """
 
@@ -47,6 +49,7 @@ class GCNet(nn.Layer):
                  gc_channels=512,
                  ratio=0.25,
                  enable_auxiliary_loss=True,
+                 align_corners=False,
                  pretrained=None):
         super().__init__()
 
@@ -57,7 +60,7 @@ class GCNet(nn.Layer):
 
         self.head = GCNetHead(num_classes, backbone_indices, backbone_channels,
                               gc_channels, ratio, enable_auxiliary_loss)
-
+        self.align_corners = align_corners
         self.pretrained = pretrained
         self.init_weight()
 
@@ -69,8 +72,7 @@ class GCNet(nn.Layer):
                 logit,
                 x.shape[2:],
                 mode='bilinear',
-                align_corners=True,
-                align_mode=1) for logit in logit_list
+                align_corners=self.align_corners) for logit in logit_list
         ]
 
     def init_weight(self):
