@@ -39,6 +39,8 @@ class ANN(nn.Layer):
         inter_channels (int, optional): Both input and output channels of APNB modules. Default: 512.
         psp_size (tuple, optional): The out size of pooled feature maps. Default: (1, 3, 6, 8).
         enable_auxiliary_loss (bool, optional): A bool value indicates whether adding auxiliary loss. Default: True.
+        align_corners (bool, optional): An argument of F.interpolate. It should be set to False when the feature size is even,
+            e.g. 1024x512, otherwise it is True, e.g. 76x769. Default: False.
         pretrained (str, optional): The path or url of pretrained model. Default: None.
     """
 
@@ -50,6 +52,7 @@ class ANN(nn.Layer):
                  inter_channels=512,
                  psp_size=(1, 3, 6, 8),
                  enable_auxiliary_loss=True,
+                 align_corners=False,
                  pretrained=None):
         super().__init__()
 
@@ -61,7 +64,7 @@ class ANN(nn.Layer):
         self.head = ANNHead(num_classes, backbone_indices, backbone_channels,
                             key_value_channels, inter_channels, psp_size,
                             enable_auxiliary_loss)
-
+        self.align_corners = align_corners
         self.pretrained = pretrained
         self.init_weight()
 
@@ -73,8 +76,7 @@ class ANN(nn.Layer):
                 logit,
                 x.shape[2:],
                 mode='bilinear',
-                align_corners=True,
-                align_mode=1) for logit in logit_list
+                align_corners=self.align_corners) for logit in logit_list
         ]
 
     def init_weight(self):
