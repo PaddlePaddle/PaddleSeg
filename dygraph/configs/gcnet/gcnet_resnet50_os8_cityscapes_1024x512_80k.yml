@@ -21,4 +21,5 @@ model:
   gc_channels: 512
   ratio: 0.25
   enable_auxiliary_loss: True
+  align_corners: False
   pretrained: null

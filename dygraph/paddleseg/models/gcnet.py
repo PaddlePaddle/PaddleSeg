@@ -38,7 +38,7 @@ class GCNet(nn.Layer):
         ratio (float, optional): It indicates the ratio of attention channels and gc_channels. Default: 0.25.
         enable_auxiliary_loss (bool, optional): A bool value indicates whether adding auxiliary loss. Default: True.
         align_corners (bool, optional): An argument of F.interpolate. It should be set to False when the feature size is even,
-            e.g. 1024x512, otherwise it is True, e.g. 76x769. Default: False.
+            e.g. 1024x512, otherwise it is True, e.g. 769x769. Default: False.
         pretrained (str, optional): The path or url of pretrained model. Default: None.
     """
 

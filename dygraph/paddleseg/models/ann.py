@@ -40,7 +40,7 @@ class ANN(nn.Layer):
         psp_size (tuple, optional): The out size of pooled feature maps. Default: (1, 3, 6, 8).
         enable_auxiliary_loss (bool, optional): A bool value indicates whether adding auxiliary loss. Default: True.
         align_corners (bool, optional): An argument of F.interpolate. It should be set to False when the feature size is even,
-            e.g. 1024x512, otherwise it is True, e.g. 76x769. Default: False.
+            e.g. 1024x512, otherwise it is True, e.g. 769x769. Default: False.
         pretrained (str, optional): The path or url of pretrained model. Default: None.
     """
 

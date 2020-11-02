@@ -23,4 +23,5 @@ model:
   inter_channels: 512
   psp_size: [1, 3, 6, 8]
   enable_auxiliary_loss: True
+  align_corners: False
   pretrained: null
