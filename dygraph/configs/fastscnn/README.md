@@ -10,4 +10,4 @@
 
 | Model | Backbone | Resolution | Training Iters | mIoU | mIoU (multi-scale) | Links |
 |:-:|:-:|:-:|:-:|:-:|:-:|:-:|
-|Fast SCNN|-|1024x1024|300000|69.46%|-|[model](https://paddleseg.bj.bcebos.com/dygraph/fastscnn_cityscapes_1024x1024_300k/model.pdparams) \| [log](https://paddleseg.bj.bcebos.com/dygraph/fastscnn_cityscapes_1024x1024_300k/train.log) \| [vdl](https://paddlepaddle.org.cn/paddle/visualdl/service/app?id=4de7e8f13ded9a1445ebe5204214ac83)|
+|Fast SCNN|-|1024x1024|160000|69.31%|-|[model](https://bj.bcebos.com/paddleseg/dygraph/cityscapes/fastscnn_cityscapes_1024x1024_160k/model.pdparams) \| [log](https://bj.bcebos.com/paddleseg/dygraph/cityscapes/fastscnn_cityscapes_1024x1024_160k/train.log) \| [vdl](https://paddlepaddle.org.cn/paddle/visualdl/service/app/scalar?id=3b4c3f01c9213cac14e53c69d262a337)|
