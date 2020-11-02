@@ -32,16 +32,22 @@ class UNet(nn.Layer):
 
     Args:
         num_classes (int): The unique number of target classes.
+        align_corners (bool): An argument of F.interpolate. It should be set to False when the output size of feature
+            is even, e.g. 1024x512, otherwise it is True, e.g. 769x769.  Default: False.
         use_deconv (bool, optional): A bool value indicates whether using deconvolution in upsampling.
             If False, use resize_bilinear. Default: False.
         pretrained (str, optional): The path or url of pretrained model for fine tuning. Default: None.
     """
 
-    def __init__(self, num_classes, use_deconv=False, pretrained=None):
+    def __init__(self,
+                 num_classes,
+                 align_corners=False,
+                 use_deconv=False,
+                 pretrained=None):
         super().__init__()
 
         self.encode = Encoder()
-        self.decode = Decoder(use_deconv=use_deconv)
+        self.decode = Decoder(align_corners, use_deconv=use_deconv)
         self.cls = self.conv = nn.Conv2D(
             in_channels=64,
             out_channels=num_classes,
@@ -94,12 +100,12 @@ class Encoder(nn.Layer):
 
 
 class Decoder(nn.Layer):
-    def __init__(self, use_deconv=False):
+    def __init__(self, align_corners, use_deconv=False):
         super().__init__()
 
         up_channels = [[512, 256], [256, 128], [128, 64], [64, 64]]
         self.up_sample_list = nn.LayerList([
-            UpSampling(channel[0], channel[1], use_deconv)
+            UpSampling(channel[0], channel[1], align_corners, use_deconv)
             for channel in up_channels
         ])
 
@@ -110,8 +116,14 @@ class Decoder(nn.Layer):
 
 
 class UpSampling(nn.Layer):
-    def __init__(self, in_channels, out_channels, use_deconv=False):
+    def __init__(self,
+                 in_channels,
+                 out_channels,
+                 align_corners,
+                 use_deconv=False):
         super().__init__()
+
+        self.align_corners = align_corners
 
         self.use_deconv = use_deconv
         if self.use_deconv:
@@ -137,8 +149,7 @@ class UpSampling(nn.Layer):
                 x,
                 short_cut.shape[2:],
                 mode='bilinear',
-                align_corners=True,
-                align_mode=1)
+                align_corners=self.align_corners)
         x = paddle.concat([x, short_cut], axis=1)
         x = self.double_conv(x)
         return x
