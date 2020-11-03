@@ -1,11 +1,7 @@
 _base_: '../_base_/cityscapes.yml'
 
 batch_size: 2
-iters: 160000
-  
-learning_rate:
-  decay:
-    end_lr: 1.0e-5
+iters: 80000
 
 model:
   type: DeepLabV3P
@@ -18,4 +14,5 @@ model:
   backbone_indices: [0, 3]
   aspp_ratios: [1, 12, 24, 36]
   aspp_out_channels: 256
+  align_corners: False
   pretrained: null
