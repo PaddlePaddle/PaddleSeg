@@ -18,6 +18,7 @@ DATASET:
     TEST_FILE_LIST: "dataset/MiniDeepGlobeRoadExtraction/val.txt"
     TRAIN_FILE_LIST: "dataset/MiniDeepGlobeRoadExtraction/train.txt"
     VAL_FILE_LIST: "dataset/MiniDeepGlobeRoadExtraction/val.txt"
+    VIS_FILE_LIST: "dataset/MiniDeepGlobeRoadExtraction/val.txt"
     IGNORE_INDEX: 255
     SEPARATOR: '|'
 FREEZE:

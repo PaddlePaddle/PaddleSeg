@@ -21,6 +21,7 @@ DATASET:
     TEST_FILE_LIST: "dataset/VOCtrainval_11-May-2012/VOC2012/ImageSets/Segmentation/val.list"
     TRAIN_FILE_LIST: "dataset/VOCtrainval_11-May-2012/VOC2012/ImageSets/Segmentation/train.list"
     VAL_FILE_LIST: "dataset/VOCtrainval_11-May-2012/VOC2012/ImageSets/Segmentation/val.list"
+    VIS_FILE_LIST: "dataset/VOCtrainval_11-May-2012/VOC2012/ImageSets/Segmentation/val.list"
     IGNORE_INDEX: 255
     SEPARATOR: " "
 MODEL:
