@@ -9,6 +9,10 @@ train_dataset:
     - type: RandomPaddingCrop
       crop_size: [769, 769]
     - type: RandomHorizontalFlip
+    - type: RandomDistort
+      brightness_range: 0.4
+      contrast_range: 0.4
+      saturation_range: 0.4
     - type: Normalize
 
 val_dataset:

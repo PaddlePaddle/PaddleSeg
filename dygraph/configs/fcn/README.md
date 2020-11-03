@@ -9,5 +9,5 @@
 
 | Model | Backbone | Resolution | Training Iters | mIoU | mIoU (multi-scale) | Links |
 |:-:|:-:|:-:|:-:|:-:|:-:|:-:|
-|FCN|HRNet_W18|1024x512|80000|80.33%|-|[model](https://paddleseg.bj.bcebos.com/dygraph/fcn_hrnetw18_cityscapes_1024x512_80k/model.pdparams) \| [log](https://paddleseg.bj.bcebos.com/dygraph/fcn_hrnetw18_cityscapes_1024x512_80k/train.log) \| [vdl](https://paddlepaddle.org.cn/paddle/visualdl/service/app?id=141ed1c7aa77474ec2a2d063713570f9)|
-|FCN|HRNet_W48|1024x512|80000|81.12%|-|[model](https://paddleseg.bj.bcebos.com/dygraph/fcn_hrnetw48_cityscapes_1024x512_80k/model.pdparams) \| [log](https://paddleseg.bj.bcebos.com/dygraph/fcn_hrnetw48_cityscapes_1024x512_80k/train.log) \| [vdl](https://paddlepaddle.org.cn/paddle/visualdl/service/app?id=6f219d4b9bab266385ab6023ea097aa6)|
+|FCN|HRNet_W18|1024x512|80000|80.34%|-|[model](https://paddleseg.bj.bcebos.com/dygraph/fcn_hrnetw18_cityscapes_1024x512_80k/model.pdparams) \| [log](https://paddleseg.bj.bcebos.com/dygraph/fcn_hrnetw18_cityscapes_1024x512_80k/train.log) \| [vdl](https://paddlepaddle.org.cn/paddle/visualdl/service/app?id=141ed1c7aa77474ec2a2d063713570f9)|
+|FCN|HRNet_W48|1024x512|80000|81.17%|-|[model](https://paddleseg.bj.bcebos.com/dygraph/fcn_hrnetw48_cityscapes_1024x512_80k/model.pdparams) \| [log](https://paddleseg.bj.bcebos.com/dygraph/fcn_hrnetw48_cityscapes_1024x512_80k/train.log) \| [vdl](https://paddlepaddle.org.cn/paddle/visualdl/service/app?id=6f219d4b9bab266385ab6023ea097aa6)|

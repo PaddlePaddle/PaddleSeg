@@ -35,10 +35,16 @@ class DANet(nn.Layer):
         backbone (Paddle.nn.Layer): A backbone network.
         backbone_indices (tuple): The values in the tuple indicate the indices of
             output of backbone.
+        align_corners (bool): An argument of F.interpolate. It should be set to False when the output size of feature
+            is even, e.g. 1024x512, otherwise it is True, e.g. 769x769.  Default: False.
         pretrained (str, optional): The path or url of pretrained model. Default: None.
     """
 
-    def __init__(self, num_classes, backbone, backbone_indices,
+    def __init__(self,
+                 num_classes,
+                 backbone,
+                 backbone_indices,
+                 align_corners=False,
                  pretrained=None):
         super().__init__()
 
@@ -48,6 +54,7 @@ class DANet(nn.Layer):
 
         self.head = DAHead(num_classes=num_classes, in_channels=in_channels)
 
+        self.align_corners = align_corners
         self.pretrained = pretrained
         self.init_weight()
 
@@ -56,8 +63,11 @@ class DANet(nn.Layer):
         feats = [feats[i] for i in self.backbone_indices]
         logit_list = self.head(feats)
         logit_list = [
-            F.interpolate(logit, x.shape[2:], mode='bilinear')
-            for logit in logit_list
+            F.interpolate(
+                logit,
+                x.shape[2:],
+                mode='bilinear',
+                align_corners=self.align_corners) for logit in logit_list
         ]
         return logit_list
 

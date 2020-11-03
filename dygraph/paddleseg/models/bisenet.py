@@ -38,7 +38,11 @@ class BiSeNetV2(nn.Layer):
         pretrained (str, optional): The path or url of pretrained model. Default: None.
     """
 
-    def __init__(self, num_classes, lambd=0.25, pretrained=None):
+    def __init__(self,
+                 num_classes,
+                 lambd=0.25,
+                 align_corners=False,
+                 pretrained=None):
         super().__init__()
 
         C1, C2, C3 = 64, 64, 128
@@ -50,13 +54,14 @@ class BiSeNetV2(nn.Layer):
         self.db = DetailBranch(db_channels)
         self.sb = SemanticBranch(sb_channels)
 
-        self.bga = BGA(mid_channels)
+        self.bga = BGA(mid_channels, align_corners)
         self.aux_head1 = SegHead(C1, C1, num_classes)
         self.aux_head2 = SegHead(C3, C3, num_classes)
         self.aux_head3 = SegHead(C4, C4, num_classes)
         self.aux_head4 = SegHead(C5, C5, num_classes)
         self.head = SegHead(mid_channels, mid_channels, num_classes)
 
+        self.align_corners = align_corners
         self.pretrained = pretrained
         self.init_weight()
 
@@ -71,8 +76,11 @@ class BiSeNetV2(nn.Layer):
 
         logit_list = [logit, logit1, logit2, logit3, logit4]
         logit_list = [
-            F.interpolate(logit, x.shape[2:], mode='bilinear')
-            for logit in logit_list
+            F.interpolate(
+                logit,
+                x.shape[2:],
+                mode='bilinear',
+                align_corners=self.align_corners) for logit in logit_list
         ]
 
         return logit_list
@@ -116,7 +124,7 @@ class ContextEmbeddingBlock(nn.Layer):
         super(ContextEmbeddingBlock, self).__init__()
 
         self.gap = nn.AdaptiveAvgPool2D(1)
-        self.bn = nn.SyncBatchNorm(in_dim)
+        self.bn = layers.SyncBatchNorm(in_dim)
 
         self.conv_1x1 = layers.ConvBNReLU(in_dim, out_dim, 1)
         self.conv_3x3 = nn.Conv2D(out_dim, out_dim, 3, 1, 1)
@@ -230,8 +238,10 @@ class SemanticBranch(nn.Layer):
 class BGA(nn.Layer):
     """The Bilateral Guided Aggregation Layer, used to fuse the semantic features and spatial features."""
 
-    def __init__(self, out_dim):
+    def __init__(self, out_dim, align_corners):
         super().__init__()
+
+        self.align_corners = align_corners
 
         self.db_branch_keep = nn.Sequential(
             layers.DepthwiseConvBN(out_dim, out_dim, 3),
@@ -256,12 +266,20 @@ class BGA(nn.Layer):
 
         sb_feat_up = self.sb_branch_up(sfm)
         sb_feat_up = F.interpolate(
-            sb_feat_up, db_feat_keep.shape[2:], mode='bilinear')
+            sb_feat_up,
+            db_feat_keep.shape[2:],
+            mode='bilinear',
+            align_corners=self.align_corners)
+
         sb_feat_up = F.sigmoid(sb_feat_up)
         db_feat = db_feat_keep * sb_feat_up
 
         sb_feat = db_feat_down * sb_feat_keep
-        sb_feat = F.interpolate(sb_feat, db_feat.shape[2:], mode='bilinear')
+        sb_feat = F.interpolate(
+            sb_feat,
+            db_feat.shape[2:],
+            mode='bilinear',
+            align_corners=self.align_corners)
 
         return self.conv(db_feat + sb_feat)
 

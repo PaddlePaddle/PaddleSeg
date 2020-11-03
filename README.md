@@ -156,6 +156,18 @@ A: 降低Batch size，使用Group Norm策略；请注意训练过程中当`DEFAU
 
 ## 更新日志
 
+* 2020.10.28
+
+  **`v0.7.0`**
+  * 全面支持Paddle2.0-rc动态图模式，推出PaddleSeg[动态图体验版](./dygraph/)
+  * 发布大量动态图模型，支持11个分割模型，4个骨干网络，3个数据集：
+      * 分割模型：ANN, BiSeNetV2, DANet, DeeplabV3, DeeplabV3+, FCN, FastSCNN, GCNet, OCRNet, PSPNet, UNet
+      * 骨干网络：ResNet, HRNet, MobileNetV3, Xception
+      * 数据集：Cityscapes, ADE20K, Pascal VOC
+
+  * 提供高精度骨干网络预训练模型以及基于Cityscapes数据集的语义分割[预训练模型](./dygraph/configs/)。Cityscapes精度超过**82%**。
+
+
 * 2020.08.31
 
   **`v0.6.0`**
