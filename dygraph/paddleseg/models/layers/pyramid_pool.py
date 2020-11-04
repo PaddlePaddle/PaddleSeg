@@ -27,6 +27,8 @@ class ASPPModule(nn.Layer):
         aspp_ratios (tuple): The dilation rate using in ASSP module.
         in_channels (int): The number of input channels.
         out_channels (int): The number of output channels.
+        align_corners (bool): An argument of F.interpolate. It should be set to False when the output size of feature
+            is even, e.g. 1024x512, otherwise it is True, e.g. 769x769.
         use_sep_conv (bool, optional): If using separable conv in ASPP module. Default: False.
         image_pooling (bool, optional): If augmented with image-level features. Default: False
     """
@@ -35,10 +37,12 @@ class ASPPModule(nn.Layer):
                  aspp_ratios,
                  in_channels,
                  out_channels,
+                 align_corners,
                  use_sep_conv=False,
                  image_pooling=False):
         super().__init__()
 
+        self.align_corners = align_corners
         self.aspp_blocks = nn.LayerList()
 
         for ratio in aspp_ratios:
@@ -80,8 +84,7 @@ class ASPPModule(nn.Layer):
                 y,
                 x.shape[2:],
                 mode='bilinear',
-                align_corners=True,
-                align_mode=1)
+                align_corners=self.align_corners)
             outputs.append(y)
 
         if self.image_pooling:
@@ -90,8 +93,7 @@ class ASPPModule(nn.Layer):
                 img_avg,
                 x.shape[2:],
                 mode='bilinear',
-                align_corners=True,
-                align_mode=1)
+                align_corners=self.align_corners)
             outputs.append(img_avg)
 
         x = paddle.concat(outputs, axis=1)
@@ -110,13 +112,12 @@ class PPModule(nn.Layer):
         out_channels (int): The number of output channels after pyramid pooling module.
         bin_sizes (tuple, optional): The out size of pooled feature maps. Default: (1, 2, 3, 6).
         dim_reduction (bool, optional): A bool value represents if reducing dimension after pooling. Default: True.
+        align_corners (bool): An argument of F.interpolate. It should be set to False when the output size of feature
+            is even, e.g. 1024x512, otherwise it is True, e.g. 769x769.
     """
 
-    def __init__(self,
-                 in_channels,
-                 out_channels,
-                 bin_sizes=(1, 2, 3, 6),
-                 dim_reduction=True):
+    def __init__(self, in_channels, out_channels, bin_sizes, dim_reduction,
+                 align_corners):
         super().__init__()
 
         self.bin_sizes = bin_sizes
@@ -136,6 +137,8 @@ class PPModule(nn.Layer):
             out_channels=out_channels,
             kernel_size=3,
             padding=1)
+
+        self.align_corners = align_corners
 
     def _make_stage(self, in_channels, out_channels, size):
         """
@@ -169,8 +172,7 @@ class PPModule(nn.Layer):
                 x,
                 input.shape[2:],
                 mode='bilinear',
-                align_corners=True,
-                align_mode=1)
+                align_corners=self.align_corners)
             cat_layers.append(x)
         cat_layers = [input] + cat_layers[::-1]
         cat = paddle.concat(cat_layers, axis=1)

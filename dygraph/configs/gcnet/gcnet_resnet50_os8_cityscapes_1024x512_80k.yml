@@ -1,8 +1,8 @@
 _base_: '../_base_/cityscapes.yml'
 
 batch_size: 2
-iters: 160000
-  
+iters: 80000
+
 learning_rate:
   decay:
     end_lr: 1.0e-5
@@ -21,4 +21,5 @@ model:
   gc_channels: 512
   ratio: 0.25
   enable_auxiliary_loss: True
+  align_corners: False
   pretrained: null
