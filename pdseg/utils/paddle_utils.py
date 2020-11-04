@@ -17,7 +17,12 @@ import paddle
 
 
 def enable_static():
-    version_arr = paddle.__version__.split('.')
-    major_version, _, patch_version = version_arr
-    if int(major_version) >= 2 and 'rc' in patch_version:
+    if hasattr(paddle, 'enable_static'):
         paddle.enable_static()
+
+
+def save_op_version_info(program_desc):
+    if hasattr(paddle.fluid.core, 'save_op_version_info'):
+        paddle.fluid.core.save_op_version_info(program_desc)
+    else:
+        paddle.fluid.core.save_op_compatible_info(program_desc)

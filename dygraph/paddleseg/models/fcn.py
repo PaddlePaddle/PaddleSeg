@@ -36,6 +36,8 @@ class FCN(nn.Layer):
             Default: (-1, ).
         channels (int, optional): The channels between conv layer and the last layer of FCNHead.
             If None, it will be the number of channels of input features. Default: None.
+        align_corners (bool): An argument of F.interpolate. It should be set to False when the output size of feature
+            is even, e.g. 1024x512, otherwise it is True, e.g. 769x769.  Default: False.
         pretrained (str, optional): The path or url of pretrained model. Default: None
     """
 
@@ -44,6 +46,7 @@ class FCN(nn.Layer):
                  backbone,
                  backbone_indices=(-1, ),
                  channels=None,
+                 align_corners=False,
                  pretrained=None):
         super(FCN, self).__init__()
 
@@ -55,6 +58,7 @@ class FCN(nn.Layer):
         self.head = FCNHead(num_classes, backbone_indices, backbone_channels,
                             channels)
 
+        self.align_corners = align_corners
         self.pretrained = pretrained
         self.init_weight()
 
@@ -66,8 +70,7 @@ class FCN(nn.Layer):
                 logit,
                 x.shape[2:],
                 mode='bilinear',
-                align_corners=True,
-                align_mode=1) for logit in logit_list
+                align_corners=self.align_corners) for logit in logit_list
         ]
 
     def init_weight(self):

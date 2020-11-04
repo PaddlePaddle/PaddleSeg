@@ -42,6 +42,8 @@ class DeepLabV3P(nn.Layer):
             If output_stride=8, aspp_ratios is (1, 12, 24, 36).
             Default: (1, 6, 12, 18).
         aspp_out_channels (int, optional): The output channels of ASPP module. Default: 256.
+        align_corners (bool, optional): An argument of F.interpolate. It should be set to False when the feature size is even,
+            e.g. 1024x512, otherwise it is True, e.g. 769x769. Default: False.
         pretrained (str, optional): The path or url of pretrained model. Default: None.
     """
 
@@ -51,6 +53,7 @@ class DeepLabV3P(nn.Layer):
                  backbone_indices=(0, 3),
                  aspp_ratios=(1, 6, 12, 18),
                  aspp_out_channels=256,
+                 align_corners=False,
                  pretrained=None):
         super().__init__()
 
@@ -61,8 +64,9 @@ class DeepLabV3P(nn.Layer):
 
         self.head = DeepLabV3PHead(num_classes, backbone_indices,
                                    backbone_channels, aspp_ratios,
-                                   aspp_out_channels)
+                                   aspp_out_channels, align_corners)
 
+        self.align_corners = align_corners
         self.pretrained = pretrained
         self.init_weight()
 
@@ -74,8 +78,7 @@ class DeepLabV3P(nn.Layer):
                 logit,
                 x.shape[2:],
                 mode='bilinear',
-                align_corners=True,
-                align_mode=1) for logit in logit_list
+                align_corners=self.align_corners) for logit in logit_list
         ]
 
     def init_weight(self):
@@ -99,19 +102,22 @@ class DeepLabV3PHead(nn.Layer):
         backbone_channels (tuple): The same length with "backbone_indices". It indicates the channels of corresponding index.
         aspp_ratios (tuple): The dilation rates using in ASSP module.
         aspp_out_channels (int): The output channels of ASPP module.
+        align_corners (bool): An argument of F.interpolate. It should be set to False when the output size of feature
+            is even, e.g. 1024x512, otherwise it is True, e.g. 769x769.
     """
 
     def __init__(self, num_classes, backbone_indices, backbone_channels,
-                 aspp_ratios, aspp_out_channels):
+                 aspp_ratios, aspp_out_channels, align_corners):
         super().__init__()
 
         self.aspp = layers.ASPPModule(
             aspp_ratios,
             backbone_channels[1],
             aspp_out_channels,
+            align_corners,
             use_sep_conv=True,
             image_pooling=True)
-        self.decoder = Decoder(num_classes, backbone_channels[0])
+        self.decoder = Decoder(num_classes, backbone_channels[0], align_corners)
         self.backbone_indices = backbone_indices
 
     def forward(self, feat_list):
@@ -141,10 +147,11 @@ class DeepLabV3(nn.Layer):
     def __init__(self,
                  num_classes,
                  backbone,
-                 pretrained=None,
                  backbone_indices=(3, ),
                  aspp_ratios=(1, 6, 12, 18),
-                 aspp_out_channels=256):
+                 aspp_out_channels=256,
+                 align_corners=False,
+                 pretrained=None):
         super().__init__()
 
         self.backbone = backbone
@@ -154,8 +161,8 @@ class DeepLabV3(nn.Layer):
 
         self.head = DeepLabV3Head(num_classes, backbone_indices,
                                   backbone_channels, aspp_ratios,
-                                  aspp_out_channels)
-
+                                  aspp_out_channels, align_corners)
+        self.align_corners = align_corners
         self.pretrained = pretrained
         self.init_weight()
 
@@ -167,8 +174,7 @@ class DeepLabV3(nn.Layer):
                 logit,
                 x.shape[2:],
                 mode='bilinear',
-                align_corners=True,
-                align_mode=1) for logit in logit_list
+                align_corners=self.align_corners) for logit in logit_list
         ]
 
     def init_weight(self):
@@ -185,13 +191,14 @@ class DeepLabV3Head(nn.Layer):
     """
 
     def __init__(self, num_classes, backbone_indices, backbone_channels,
-                 aspp_ratios, aspp_out_channels):
+                 aspp_ratios, aspp_out_channels, align_corners):
         super().__init__()
 
         self.aspp = layers.ASPPModule(
             aspp_ratios,
             backbone_channels[0],
             aspp_out_channels,
+            align_corners,
             use_sep_conv=False,
             image_pooling=True)
 
@@ -221,7 +228,7 @@ class Decoder(nn.Layer):
         in_channels (int): The number of input channels in decoder module.
     """
 
-    def __init__(self, num_classes, in_channels):
+    def __init__(self, num_classes, in_channels, align_corners):
         super(Decoder, self).__init__()
 
         self.conv_bn_relu1 = layers.ConvBNReLU(
@@ -234,14 +241,15 @@ class Decoder(nn.Layer):
         self.conv = nn.Conv2D(
             in_channels=256, out_channels=num_classes, kernel_size=1)
 
+        self.align_corners = align_corners
+
     def forward(self, x, low_level_feat):
         low_level_feat = self.conv_bn_relu1(low_level_feat)
         x = F.interpolate(
             x,
             low_level_feat.shape[2:],
             mode='bilinear',
-            align_corners=True,
-            align_mode=1)
+            align_corners=self.align_corners)
         x = paddle.concat([x, low_level_feat], axis=1)
         x = self.conv_bn_relu2(x)
         x = self.conv_bn_relu3(x)

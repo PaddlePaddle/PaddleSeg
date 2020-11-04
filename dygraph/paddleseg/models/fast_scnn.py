@@ -35,25 +35,35 @@ class FastSCNN(nn.Layer):
         num_classes (int): The unique number of target classes.
         enable_auxiliary_loss (bool, optional): A bool value indicates whether adding auxiliary loss.
             If true, auxiliary loss will be added after LearningToDownsample module. Default: False.
+        align_corners (bool): An argument of F.interpolate. It should be set to False when the output size of feature
+            is even, e.g. 1024x512, otherwise it is True, e.g. 769x769.. Default: False.
         pretrained (str, optional): The path or url of pretrained model. Default: None.
     """
 
-    def __init__(self, num_classes, enable_auxiliary_loss=True,
+    def __init__(self,
+                 num_classes,
+                 enable_auxiliary_loss=True,
+                 align_corners=False,
                  pretrained=None):
 
         super().__init__()
 
         self.learning_to_downsample = LearningToDownsample(32, 48, 64)
         self.global_feature_extractor = GlobalFeatureExtractor(
-            64, [64, 96, 128], 128, 6, [3, 3, 3])
-        self.feature_fusion = FeatureFusionModule(64, 128, 128)
+            in_channels=64,
+            block_channels=[64, 96, 128],
+            out_channels=128,
+            expansion=6,
+            num_blocks=[3, 3, 3],
+            align_corners=True)
+        self.feature_fusion = FeatureFusionModule(64, 128, 128, align_corners)
         self.classifier = Classifier(128, num_classes)
 
         if enable_auxiliary_loss:
             self.auxlayer = layers.AuxLayer(64, 32, num_classes)
 
         self.enable_auxiliary_loss = enable_auxiliary_loss
-
+        self.align_corners = align_corners
         self.pretrained = pretrained
         self.init_weight()
 
@@ -68,8 +78,7 @@ class FastSCNN(nn.Layer):
             logit,
             input_size,
             mode='bilinear',
-            align_corners=True,
-            align_mode=1)
+            align_corners=self.align_corners)
         logit_list.append(logit)
 
         if self.enable_auxiliary_loss:
@@ -78,8 +87,7 @@ class FastSCNN(nn.Layer):
                 auxiliary_logit,
                 input_size,
                 mode='bilinear',
-                align_corners=True,
-                align_mode=1)
+                align_corners=self.align_corners)
             logit_list.append(auxiliary_logit)
 
         return logit_list
@@ -130,19 +138,17 @@ class GlobalFeatureExtractor(nn.Layer):
     This module consists of three InvertedBottleneck blocks (like inverted residual introduced by MobileNetV2) and
     a PPModule (introduced by PSPNet).
     Args:
-        in_channels (int, optional): The number of input channels to the module. Default: 64.
-        block_channels (tuple, optional): A tuple represents output channels of each bottleneck block. Default: (64, 96, 128).
-        out_channels (int, optional): The number of output channels of the module. Default: 128.
-        expansion (int, optional): The expansion factor in bottleneck. Default: 6.
-        num_blocks (tuple, optional): It indicates the repeat time of each bottleneck. Default: (3, 3, 3).
+        in_channels (int): The number of input channels to the module.
+        block_channels (tuple): A tuple represents output channels of each bottleneck block.
+        out_channels (int): The number of output channels of the module. Default:
+        expansion (int): The expansion factor in bottleneck.
+        num_blocks (tuple): It indicates the repeat time of each bottleneck.
+        align_corners (bool): An argument of F.interpolate. It should be set to False when the output size of feature
+            is even, e.g. 1024x512, otherwise it is True, e.g. 769x769.
     """
 
-    def __init__(self,
-                 in_channels=64,
-                 block_channels=(64, 96, 128),
-                 out_channels=128,
-                 expansion=6,
-                 num_blocks=(3, 3, 3)):
+    def __init__(self, in_channels, block_channels, out_channels, expansion,
+                 num_blocks, align_corners):
         super(GlobalFeatureExtractor, self).__init__()
 
         self.bottleneck1 = self._make_layer(InvertedBottleneck, in_channels,
@@ -156,7 +162,11 @@ class GlobalFeatureExtractor(nn.Layer):
             num_blocks[2], expansion, 1)
 
         self.ppm = layers.PPModule(
-            block_channels[2], out_channels, dim_reduction=True)
+            block_channels[2],
+            out_channels,
+            bin_sizes=(1, 2, 3, 6),
+            dim_reduction=True,
+            align_corners=align_corners)
 
     def _make_layer(self,
                     block,
@@ -233,9 +243,12 @@ class FeatureFusionModule(nn.Layer):
         high_in_channels (int): The channels of high-resolution feature (output of LearningToDownsample).
         low_in_channels (int): The channels of low-resolution feature (output of GlobalFeatureExtractor).
         out_channels (int): The output channels of this module.
+        align_corners (bool): An argument of F.interpolate. It should be set to False when the output size of feature
+            is even, e.g. 1024x512, otherwise it is True, e.g. 769x769.
     """
 
-    def __init__(self, high_in_channels, low_in_channels, out_channels):
+    def __init__(self, high_in_channels, low_in_channels, out_channels,
+                 align_corners):
         super().__init__()
 
         # Only depth-wise conv
@@ -249,14 +262,14 @@ class FeatureFusionModule(nn.Layer):
 
         self.conv_low_res = layers.ConvBN(out_channels, out_channels, 1)
         self.conv_high_res = layers.ConvBN(high_in_channels, out_channels, 1)
+        self.align_corners = align_corners
 
     def forward(self, high_res_input, low_res_input):
         low_res_input = F.interpolate(
             low_res_input,
             scale_factor=4,
             mode='bilinear',
-            align_corners=True,
-            align_mode=1)
+            align_corners=self.align_corners)
         low_res_input = self.dwconv(low_res_input)
         low_res_input = self.conv_low_res(low_res_input)
         high_res_input = self.conv_high_res(high_res_input)
