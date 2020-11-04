@@ -10,5 +10,4 @@
 
 | Model | Backbone | Resolution | Training Iters | mIoU | mIoU (multi-scale) | Links |
 |:-:|:-:|:-:|:-:|:-:|:-:|:-:|
-|DeepLabV3P|ResNet50_OS8|1024x512|160000|80.42%|-|[model](https://bj.bcebos.com/paddleseg/dygraph/cityscapes/deeplabv3p_resnet50_os8_cityscapes_1024x512_160k/model.pdparams) \| [log](https://bj.bcebos.com/paddleseg/dygraph/cityscapes/deeplabv3p_resnet50_os8_cityscapes_1024x512_160k/train.log) \| [vdl](https://paddlepaddle.org.cn/paddle/visualdl/service/app?id=bc26244ab0b0b33896435389a2b0c8cb)|
-|DeepLabV3P|ResNet101_OS8|1024x512|160000|80.82%|-|[model](https://bj.bcebos.com/paddleseg/dygraph/cityscapes/deeplabv3p_resnet101_os8_cityscapes_1024x512_160k/model.pdparams) \| [log](https://bj.bcebos.com/paddleseg/dygraph/cityscapes/deeplabv3p_resnet101_os8_cityscapes_1024x512_160k/train.log) \| [vdl](https://paddlepaddle.org.cn/paddle/visualdl/service/app?id=16ec785362f84995ec9a65384f7944db)|
+|DeepLabV3P|ResNet50_OS8|1024x512|80000|80.36%|-|[model](https://bj.bcebos.com/paddleseg/dygraph/cityscapes/deeplabv3p_resnet50_os8_cityscapes_1024x512_80k/model.pdparams) \| [log](https://bj.bcebos.com/paddleseg/dygraph/cityscapes/deeplabv3p_resnet50_os8_cityscapes_1024x512_80k/train.log) \| [vdl](https://paddlepaddle.org.cn/paddle/visualdl/service/app?id=860bd0049ba5495d629a96d5aaf1bf75)|
