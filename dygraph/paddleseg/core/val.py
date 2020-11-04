@@ -20,7 +20,7 @@ import paddle
 import paddle.nn.functional as F
 import tqdm
 
-from paddleseg.utils import ConfusionMatrix, Timer, calculate_eta, logger
+from paddleseg.utils import metrics, Timer, calculate_eta, logger
 
 np.set_printoptions(suppress=True)
 
@@ -75,7 +75,7 @@ def evaluate(model, eval_dataset=None, iter_id=None, num_workers=0):
         strategy = paddle.distributed.prepare_context()
         ddp_model = paddle.DataParallel(model, strategy)
     batch_sampler = paddle.io.DistributedBatchSampler(
-        eval_dataset, batch_size=4, shuffle=False, drop_last=False)
+        eval_dataset, batch_size=1, shuffle=False, drop_last=False)
     loader = paddle.io.DataLoader(
         eval_dataset,
         batch_sampler=batch_sampler,
@@ -84,7 +84,9 @@ def evaluate(model, eval_dataset=None, iter_id=None, num_workers=0):
     )
 
     total_iters = len(loader)
-    conf_mat = ConfusionMatrix(eval_dataset.num_classes, streaming=True)
+    intersect_area_all = 0
+    pred_area_all = 0
+    label_area_all = 0
 
     logger.info("Start evaluating (total_samples={}, total_iters={})...".format(
         len(eval_dataset), total_iters))
@@ -92,8 +94,6 @@ def evaluate(model, eval_dataset=None, iter_id=None, num_workers=0):
     timer.start()
     reader_time = 0
     logit_time = 0
-    gather_time = 0
-    tocpu_time = 0
     conf_time = 0
     all_time = 0
     for iter, (im, label) in enumerate(loader):
@@ -113,54 +113,60 @@ def evaluate(model, eval_dataset=None, iter_id=None, num_workers=0):
         if local_rank == 0:
             logit_time += timer.elapsed_time() - logit_start
 
-        # Gather and concat pred and label from all ranks
-        gather_start = timer.elapsed_time()
+        conf_start = timer.elapsed_time()
+        intersect_area, pred_area, label_area = metrics.calculate_area(
+            pred,
+            label,
+            eval_dataset.num_classes,
+            ignore_index=eval_dataset.ignore_index)
+        if local_rank == 0:
+            conf_time += timer.elapsed_time() - conf_start
+
+        # Gather from all ranks
         if nranks > 1:
-            pred_list = []
-            label_list = []
-            paddle.distributed.all_gather(pred_list, pred)
-            paddle.distributed.all_gather(label_list, label)
+            intersect_area_list = []
+            pred_area_list = []
+            label_area_list = []
+            paddle.distributed.all_gather(intersect_area_list, intersect_area)
+            paddle.distributed.all_gather(pred_area_list, pred_area)
+            paddle.distributed.all_gather(label_area_list, label_area)
 
             # Some image has been evaluated and should be eliminated in last iter
             if (iter + 1) * nranks > len(eval_dataset):
                 valid = len(eval_dataset) - iter * nranks
-                pred_list = pred_list[:valid]
-                label_list = label_list[:valid]
-            pred = paddle.concat(pred_list, axis=0)
-            label = paddle.concat(label_list, axis=0)
-        if local_rank == 0:
-            gather_time += timer.elapsed_time() - gather_start
+                intersect_area_list = intersect_area_list[:valid]
+                pred_area_list = pred_area_list[:valid]
+                label_area_list = label_area_list[:valid]
 
-        tocpu_start = timer.elapsed_time()
-        pred = pred.numpy()
-        label = label.numpy()
-        if local_rank == 0:
-            tocpu_time += timer.elapsed_time() - tocpu_start
-        mask = label != eval_dataset.ignore_index
+            for i in range(len(intersect_area_list)):
+                intersect_area_all = intersect_area_all + intersect_area_list[i]
+                pred_area_all = pred_area_all + pred_area_list[i]
+                label_area_all = label_area_all + label_area_list[i]
+        else:
+            intersect_area_all = intersect_area_all + intersect_area
+            pred_area_all = pred_area_all + pred_area
+            label_area_all = label_area_all + label_area
 
-        conf_start = timer.elapsed_time()
-        conf_mat.calculate(pred=pred, label=label, mask=mask)
-        _, iou = conf_mat.mean_iou()
-        if local_rank == 0:
-            conf_time += timer.elapsed_time() - conf_start
+        category_iou, miou = metrics.mean_iou(intersect_area_all, pred_area_all,
+                                              label_area_all)
 
         batch_cost = timer.elapsed_time()
         all_time += batch_cost
         remain_iter = total_iters - iter - 1
         logger.info(
             "[EVAL] iter_id={}, iter={}/{}, IoU={:4f}, batch_cost={:.4f}, reader_cost={:4f} | ETA {}"
-            .format(iter_id, iter + 1, total_iters, iou, batch_cost,
+            .format(iter_id, iter + 1, total_iters, miou, batch_cost,
                     reader_cost, calculate_eta(remain_iter, batch_cost)))
         timer.restart()
 
-    category_iou, miou = conf_mat.mean_iou()
-    category_acc, acc = conf_mat.accuracy()
+    category_acc, acc = metrics.accuracy(intersect_area_all, pred_area_all)
+    kappa = metrics.kappa(intersect_area_all, pred_area_all, label_area_all)
+
     logger.info("[EVAL] #Images={} mIoU={:.4f} Acc={:.4f} Kappa={:.4f} ".format(
-        len(eval_dataset), miou, acc, conf_mat.kappa()))
+        len(eval_dataset), miou, acc, kappa))
     logger.info("[EVAL] Category IoU: \n" + str(np.round(category_iou, 4)))
     logger.info("[EVAL] Category Acc: \n" + str(np.round(category_acc, 4)))
     logger.info(
-        'reader_time: {},\nlogit_time: {},\ngather_time: {},\n tocpu_time: {}\n, conf_time: {},\n all_time: {}'
-        .format(reader_time, logit_time, gather_time, tocpu_time, conf_time,
-                all_time))
+        'reader_time: {},\nlogit_time: {},\n conf_time: {},\n all_time: {}'.
+        format(reader_time, logit_time, conf_time, all_time))
     return miou, acc
