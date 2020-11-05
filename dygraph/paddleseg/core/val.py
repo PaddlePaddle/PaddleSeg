@@ -92,32 +92,21 @@ def evaluate(model, eval_dataset=None, iter_id=None, num_workers=0):
         len(eval_dataset), total_iters))
     timer = Timer()
     timer.start()
-    reader_time = 0
-    logit_time = 0
-    conf_time = 0
-    all_time = 0
     for iter, (im, label) in enumerate(loader):
         reader_cost = timer.elapsed_time()
-        reader_time += reader_cost
         label = label.astype('int64')
 
-        logit_start = timer.elapsed_time()
         logits = model(im)
         pred = logits[0]
         pred = paddle.argmax(pred, axis=1, keepdim=True, dtype='int32')
         pred = reverse_transform(pred, label,
                                  eval_dataset.transforms.transforms)
-        if local_rank == 0:
-            logit_time += timer.elapsed_time() - logit_start
 
-        conf_start = timer.elapsed_time()
         intersect_area, pred_area, label_area = metrics.calculate_area(
             pred,
             label,
             eval_dataset.num_classes,
             ignore_index=eval_dataset.ignore_index)
-        if local_rank == 0:
-            conf_time += timer.elapsed_time() - conf_start
 
         # Gather from all ranks
         if nranks > 1:
@@ -148,7 +137,6 @@ def evaluate(model, eval_dataset=None, iter_id=None, num_workers=0):
                                               label_area_all)
 
         batch_cost = timer.elapsed_time()
-        all_time += batch_cost
         remain_iter = total_iters - iter - 1
         logger.info(
             "[EVAL] iter_id={}, iter={}/{}, IoU={:4f}, batch_cost={:.4f}, reader_cost={:4f} | ETA {}"
@@ -163,7 +151,4 @@ def evaluate(model, eval_dataset=None, iter_id=None, num_workers=0):
         len(eval_dataset), miou, acc, kappa))
     logger.info("[EVAL] Category IoU: \n" + str(np.round(category_iou, 4)))
     logger.info("[EVAL] Category Acc: \n" + str(np.round(category_acc, 4)))
-    logger.info(
-        'reader_time: {},\nlogit_time: {},\n conf_time: {},\n all_time: {}'.
-        format(reader_time, logit_time, conf_time, all_time))
     return miou, acc
