@@ -20,7 +20,7 @@ import paddle
 import paddle.nn.functional as F
 import tqdm
 
-from paddleseg.utils import metrics, Timer, calculate_eta, logger
+from paddleseg.utils import metrics, Timer, calculate_eta, logger, progbar
 
 np.set_printoptions(suppress=True)
 
@@ -90,10 +90,8 @@ def evaluate(model, eval_dataset=None, iter_id=None, num_workers=0):
 
     logger.info("Start evaluating (total_samples={}, total_iters={})...".format(
         len(eval_dataset), total_iters))
-    timer = Timer()
-    timer.start()
+    progbar_val = progbar.Progbar(target=total_iters, verbose=1)
     for iter, (im, label) in enumerate(loader):
-        reader_cost = timer.elapsed_time()
         label = label.astype('int64')
 
         logits = model(im)
@@ -133,17 +131,11 @@ def evaluate(model, eval_dataset=None, iter_id=None, num_workers=0):
             pred_area_all = pred_area_all + pred_area
             label_area_all = label_area_all + label_area
 
-        category_iou, miou = metrics.mean_iou(intersect_area_all, pred_area_all,
-                                              label_area_all)
+        if local_rank == 0:
+            progbar_val.update(iter + 1)
 
-        batch_cost = timer.elapsed_time()
-        remain_iter = total_iters - iter - 1
-        logger.info(
-            "[EVAL] iter_id={}, iter={}/{}, IoU={:4f}, batch_cost={:.4f}, reader_cost={:4f} | ETA {}"
-            .format(iter_id, iter + 1, total_iters, miou, batch_cost,
-                    reader_cost, calculate_eta(remain_iter, batch_cost)))
-        timer.restart()
-
+    category_iou, miou = metrics.mean_iou(intersect_area_all, pred_area_all,
+                                          label_area_all)
     category_acc, acc = metrics.accuracy(intersect_area_all, pred_area_all)
     kappa = metrics.kappa(intersect_area_all, pred_area_all, label_area_all)
 
