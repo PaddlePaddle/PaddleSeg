@@ -61,6 +61,7 @@ class BiSeNetV2(nn.Layer):
         self.init_weight()
 
     def forward(self, x):
+        #         print(x.name, x.dtype)
         dfm = self.db(x)
         feat1, feat2, feat3, feat4, sfm = self.sb(x)
         logit1 = self.aux_head1(feat1)

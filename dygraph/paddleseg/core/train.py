@@ -96,6 +96,11 @@ def train(model,
     train_batch_cost = 0.0
     timer.start()
 
+    fp16 = False
+    if fp16:
+        print('turn on fp16!!!')
+    scaler = paddle.amp.GradScaler(init_loss_scaling=1024)
+
     iter = start_iter
     while iter < iters:
         for data in loader:
@@ -104,23 +109,49 @@ def train(model,
                 break
             train_reader_cost += timer.elapsed_time()
             images = data[0]
+            images = paddle.reshape(images, images.shape)
             labels = data[1].astype('int64')
-            if nranks > 1:
-                logits = ddp_model(images)
-                loss = loss_computation(logits, labels, losses)
-                # loss = ddp_model.scale_loss(loss)
-                loss.backward()
-                # ddp_model.apply_collective_grads()
+            if fp16:
+                #print(images.name, images, images._place_str)
+                #break
+                with paddle.amp.auto_cast():
+
+                    if nranks > 1:
+                        logits = ddp_model(images)
+                    else:
+                        logits = model(images)
+                    loss = loss_computation(logits, labels, losses)
+
+                scaled = scaler.scale(loss)
+                #                     print('loss:', loss, '\nscaled:', scaled)
+                scaled.backward()
+                scaler.minimize(optimizer, scaled)
+                lr = optimizer.get_lr()
+                if isinstance(optimizer._learning_rate,
+                              paddle.optimizer.lr.LRScheduler):
+                    optimizer._learning_rate.step()
+                model.clear_gradients()
             else:
-                logits = model(images)
-                loss = loss_computation(logits, labels, losses)
-                loss.backward()
-            optimizer.step()
-            lr = optimizer.get_lr()
-            if isinstance(optimizer._learning_rate,
-                          paddle.optimizer.lr.LRScheduler):
-                optimizer._learning_rate.step()
-            model.clear_gradients()
+                if nranks > 1:
+                    logits = ddp_model(images)
+                    loss = loss_computation(logits, labels, losses)
+                    # loss = ddp_model.scale_loss(loss)
+                    loss.backward()
+                    # ddp_model.apply_collective_grads()
+                else:
+                    #                     logits = model(images)
+                    inputs = {'images': images, 'gts': labels}
+                    logits = model(inputs)
+                    print(logits)
+                    exit()
+                    loss = loss_computation(logits, labels, losses)
+                    loss.backward()
+                optimizer.step()
+                lr = optimizer.get_lr()
+                if isinstance(optimizer._learning_rate,
+                              paddle.optimizer.lr.LRScheduler):
+                    optimizer._learning_rate.step()
+                model.clear_gradients()
             # Sum loss over all ranks
             # if nranks > 1:
             #     paddle.distributed.all_reduce(loss)
