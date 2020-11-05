@@ -36,6 +36,8 @@ class PSPNet(nn.Layer):
         pp_out_channels (int, optional): The output channels after Pyramid Pooling Module. Default: 1024.
         bin_sizes (tuple, optional): The out size of pooled feature maps. Default: (1,2,3,6).
         enable_auxiliary_loss (bool, optional): A bool value indicates whether adding auxiliary loss. Default: True.
+        align_corners (bool, optional): An argument of F.interpolate. It should be set to False when the feature size is even,
+            e.g. 1024x512, otherwise it is True, e.g. 769x769. Default: False.
         pretrained (str, optional): The path or url of pretrained model. Default: None.
     """
 
@@ -46,6 +48,7 @@ class PSPNet(nn.Layer):
                  pp_out_channels=1024,
                  bin_sizes=(1, 2, 3, 6),
                  enable_auxiliary_loss=True,
+                 align_corners=False,
                  pretrained=None):
         super().__init__()
 
@@ -56,8 +59,8 @@ class PSPNet(nn.Layer):
 
         self.head = PSPNetHead(num_classes, backbone_indices, backbone_channels,
                                pp_out_channels, bin_sizes,
-                               enable_auxiliary_loss)
-
+                               enable_auxiliary_loss, align_corners)
+        self.align_corners = align_corners
         self.pretrained = pretrained
         self.init_weight()
 
@@ -65,8 +68,11 @@ class PSPNet(nn.Layer):
         feat_list = self.backbone(x)
         logit_list = self.head(feat_list)
         return [
-            F.interpolate(logit, x.shape[2:], mode='bilinear')
-            for logit in logit_list
+            F.interpolate(
+                logit,
+                x.shape[2:],
+                mode='bilinear',
+                align_corners=self.align_corners) for logit in logit_list
         ]
 
     def init_weight(self):
@@ -90,15 +96,13 @@ class PSPNetHead(nn.Layer):
         pp_out_channels (int): The output channels after Pyramid Pooling Module.
         bin_sizes (tuple): The out size of pooled feature maps.
         enable_auxiliary_loss (bool, optional): A bool value indicates whether adding auxiliary loss. Default: True.
+        align_corners (bool): An argument of F.interpolate. It should be set to False when the output size of feature
+            is even, e.g. 1024x512, otherwise it is True, e.g. 769x769.
     """
 
-    def __init__(self,
-                 num_classes,
-                 backbone_indices,
-                 backbone_channels,
-                 pp_out_channels,
-                 bin_sizes,
-                 enable_auxiliary_loss=True):
+    def __init__(self, num_classes, backbone_indices, backbone_channels,
+                 pp_out_channels, bin_sizes, enable_auxiliary_loss,
+                 align_corners):
 
         super().__init__()
 
@@ -107,7 +111,11 @@ class PSPNetHead(nn.Layer):
         self.psp_module = layers.PPModule(
             in_channels=backbone_channels[1],
             out_channels=pp_out_channels,
-            bin_sizes=bin_sizes)
+            bin_sizes=bin_sizes,
+            dim_reduction=True,
+            align_corners=align_corners)
+
+        self.dropout = nn.Dropout(p=0.1)  # dropout_prob
 
         self.conv = nn.Conv2D(
             in_channels=pp_out_channels,
@@ -126,7 +134,7 @@ class PSPNetHead(nn.Layer):
         logit_list = []
         x = feat_list[self.backbone_indices[1]]
         x = self.psp_module(x)
-        x = F.dropout(x, p=0.1)  # dropout_prob
+        x = self.dropout(x)
         logit = self.conv(x)
         logit_list.append(logit)
 

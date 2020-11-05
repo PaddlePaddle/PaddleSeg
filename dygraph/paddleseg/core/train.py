@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import os
+import time
 
 import paddle
 import paddle.nn.functional as F
@@ -36,7 +37,12 @@ def loss_computation(logits, label, losses):
     for i in range(len(logits)):
         logit = logits[i]
         if logit.shape[-2:] != label.shape[-2:]:
-            logit = F.interpolate(logit, label.shape[-2:], mode='bilinear')
+            logit = F.interpolate(
+                logit,
+                label.shape[-2:],
+                mode='bilinear',
+                align_corners=True,
+                align_mode=1)
         loss_i = losses['types'][i](logit, label)
         loss += losses['coef'][i] * loss_i
     return loss
@@ -207,5 +213,8 @@ def train(model,
                         log_writer.add_scalar('Evaluate/Acc', acc, iter)
                     model.train()
             timer.restart()
+
+    # Sleep for half a second to let dataloader release resources.
+    time.sleep(0.5)
     if use_vdl:
         log_writer.close()
