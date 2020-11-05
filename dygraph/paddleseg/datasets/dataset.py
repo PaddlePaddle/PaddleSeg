@@ -144,11 +144,6 @@ class Dataset(paddle.io.Dataset):
             return im, image_path
         elif self.mode == 'val':
             im, _ = self.transforms(im=image_path)
-            # im = im[np.newaxis, ...]
-
-            # # for multi scale by cv2.resize
-            # im = np.transpose(im, (1, 2, 0))
-
             label = np.asarray(Image.open(label_path))
             label = label[np.newaxis, :, :]
             return im, label

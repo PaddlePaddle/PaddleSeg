@@ -51,7 +51,7 @@ def get_reverse_list(ori_label, transforms):
 
 
 def reverse_transform(pred, ori_label, transforms):
-    """recover to origin shape"""
+    """recover pred to origin shape"""
     reverse_list = get_reverse_list(ori_label, transforms)
     for item in reverse_list[::-1]:
         if item[0] == 'resize':
@@ -70,10 +70,10 @@ def evaluate(model, eval_dataset=None, iter_id=None, num_workers=0):
     nranks = paddle.distributed.ParallelEnv().nranks
     local_rank = paddle.distributed.ParallelEnv().local_rank
     if nranks > 1:
-        # Initialize parallel training environment.
-        paddle.distributed.init_parallel_env()
-        strategy = paddle.distributed.prepare_context()
-        ddp_model = paddle.DataParallel(model, strategy)
+        # Initialize parallel environment if not done.
+        if not paddle.distributed.parallel.parallel_helper._is_parallel_ctx_initialized(
+        ):
+            paddle.distributed.init_parallel_env()
     batch_sampler = paddle.io.DistributedBatchSampler(
         eval_dataset, batch_size=1, shuffle=False, drop_last=False)
     loader = paddle.io.DataLoader(
@@ -102,12 +102,9 @@ def evaluate(model, eval_dataset=None, iter_id=None, num_workers=0):
         label = label.astype('int64')
 
         logit_start = timer.elapsed_time()
-        if nranks > 1:
-            logits = ddp_model(im)
-        else:
-            logits = model(im)
+        logits = model(im)
         pred = logits[0]
-        pred = paddle.argmax(pred, axis=1)
+        pred = paddle.argmax(pred, axis=1, keepdim=True, dtype='int32')
         pred = reverse_transform(pred, label,
                                  eval_dataset.transforms.transforms)
         if local_rank == 0:
