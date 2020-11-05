@@ -14,11 +14,9 @@
 
 import os
 
-import cv2
 import numpy as np
 import paddle
 import paddle.nn.functional as F
-import tqdm
 
 from paddleseg.utils import metrics, Timer, calculate_eta, logger, progbar
 
