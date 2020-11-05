@@ -73,10 +73,10 @@ def calculate_area(pred, label, num_classes, ignore_index=255):
 
 def mean_iou(intersect_area, pred_area, label_area):
     """
-    Calculate iou
+    Calculate iou.
 
     Args:
-        intersect_area (Tensor): The intersection area of prediction and ground truth on all classes..
+        intersect_area (Tensor): The intersection area of prediction and ground truth on all classes.
         pred_area (Tensor): The prediction area on all classes.
         label_area (Tensor): The ground truth area on all classes.
 
