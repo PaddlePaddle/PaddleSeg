@@ -141,6 +141,6 @@ def kappa(intersect_area, pred_area, label_area):
     label_area = label_area.numpy()
     total_area = np.sum(label_area)
     po = np.sum(intersect_area) / total_area
-    pe = np.sum(pred_area * label_area) / total_area
+    pe = np.sum(pred_area * label_area) / (total_area * total_area)
     kappa = (po - pe) / (1 - pe)
     return kappa
