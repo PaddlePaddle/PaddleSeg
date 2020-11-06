@@ -42,6 +42,7 @@ from eval import evaluate
 from vis import visualize
 from utils import dist_utils
 from utils.load_model_utils import load_pretrained_weights
+from utils import paddle_utils
 
 
 def parse_args():
@@ -163,7 +164,7 @@ def save_infer_program(test_program, ckpt_dir):
     _test_program = test_program.clone()
     _test_program.desc.flush()
     _test_program.desc._set_version()
-    paddle.fluid.core.save_op_compatible_info(_test_program.desc)
+    paddle_utils.save_op_version_info(_test_program.desc)
     with open(os.path.join(ckpt_dir, 'model') + ".pdmodel", "wb") as f:
         f.write(_test_program.desc.serialize_to_string())
 
@@ -454,7 +455,7 @@ def main(args):
 
 
 if __name__ == '__main__':
-    paddle.enable_static()
+    paddle_utils.enable_static()
     args = parse_args()
     if fluid.core.is_compiled_with_cuda() != True and args.use_gpu == True:
         print(

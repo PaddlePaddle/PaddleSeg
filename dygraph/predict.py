@@ -29,8 +29,8 @@ def parse_args():
     parser.add_argument(
         "--config", dest="cfg", help="The config file.", default=None, type=str)
     parser.add_argument(
-        '--model_dir',
-        dest='model_dir',
+        '--model_path',
+        dest='model_path',
         help='The path of model for evaluation',
         type=str,
         default=None)
@@ -105,7 +105,7 @@ def main(args):
 
     predict(
         model,
-        model_dir=args.model_dir,
+        model_path=args.model_path,
         transforms=transforms,
         image_list=image_list,
         image_dir=image_dir,

@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import os
+import time
 
 import paddle
 import paddle.nn.functional as F
@@ -36,7 +37,12 @@ def loss_computation(logits, label, losses):
     for i in range(len(logits)):
         logit = logits[i]
         if logit.shape[-2:] != label.shape[-2:]:
-            logit = F.interpolate(logit, label.shape[-2:], mode='bilinear')
+            logit = F.interpolate(
+                logit,
+                label.shape[-2:],
+                mode='bilinear',
+                align_corners=True,
+                align_mode=1)
         loss_i = losses['types'][i](logit, label)
         loss += losses['coef'][i] * loss_i
     return loss
@@ -108,9 +114,7 @@ def train(model,
             if nranks > 1:
                 logits = ddp_model(images)
                 loss = loss_computation(logits, labels, losses)
-                # loss = ddp_model.scale_loss(loss)
                 loss.backward()
-                # ddp_model.apply_collective_grads()
             else:
                 logits = model(images)
                 loss = loss_computation(logits, labels, losses)
@@ -121,9 +125,6 @@ def train(model,
                           paddle.optimizer.lr.LRScheduler):
                 optimizer._learning_rate.step()
             model.clear_gradients()
-            # Sum loss over all ranks
-            # if nranks > 1:
-            #     paddle.distributed.all_reduce(loss)
             avg_loss += loss.numpy()[0]
             train_batch_cost += timer.elapsed_time()
             if (iter) % log_iters == 0 and local_rank == 0:
@@ -148,6 +149,12 @@ def train(model,
                                           avg_train_reader_cost, iter)
                 avg_loss = 0.0
 
+            if (iter % save_interval == 0
+                    or iter == iters) and (val_dataset is not None):
+                mean_iou, acc = evaluate(
+                    model, val_dataset, iter_id=iter, num_workers=num_workers)
+                model.train()
+
             if (iter % save_interval == 0 or iter == iters) and local_rank == 0:
                 current_save_dir = os.path.join(save_dir,
                                                 "iter_{}".format(iter))
@@ -159,7 +166,6 @@ def train(model,
                             os.path.join(current_save_dir, 'model.pdopt'))
 
                 if val_dataset is not None:
-                    mean_iou, acc = evaluate(model, val_dataset, iter_id=iter)
                     if mean_iou > best_mean_iou:
                         best_mean_iou = mean_iou
                         best_model_iter = iter
@@ -174,7 +180,9 @@ def train(model,
                     if use_vdl:
                         log_writer.add_scalar('Evaluate/mIoU', mean_iou, iter)
                         log_writer.add_scalar('Evaluate/Acc', acc, iter)
-                    model.train()
             timer.restart()
+
+    # Sleep for half a second to let dataloader release resources.
+    time.sleep(0.5)
     if use_vdl:
         log_writer.close()

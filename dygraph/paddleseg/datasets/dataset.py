@@ -139,18 +139,16 @@ class Dataset(paddle.io.Dataset):
     def __getitem__(self, idx):
         image_path, label_path = self.file_list[idx]
         if self.mode == 'test':
-            im, im_info, _ = self.transforms(im=image_path)
+            im, _ = self.transforms(im=image_path)
             im = im[np.newaxis, ...]
-            return im, im_info, image_path
+            return im, image_path
         elif self.mode == 'val':
-            im, im_info, _ = self.transforms(im=image_path)
-            im = im[np.newaxis, ...]
+            im, _ = self.transforms(im=image_path)
             label = np.asarray(Image.open(label_path))
-            label = label[np.newaxis, np.newaxis, :, :]
-            return im, im_info, label
+            label = label[np.newaxis, :, :]
+            return im, label
         else:
-            im, im_info, label = self.transforms(
-                im=image_path, label=label_path)
+            im, label = self.transforms(im=image_path, label=label_path)
             return im, label
 
     def __len__(self):

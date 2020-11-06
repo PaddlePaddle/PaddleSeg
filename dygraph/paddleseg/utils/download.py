@@ -93,7 +93,7 @@ def _uncompress_file(filepath, extrapath, delete_file, print_progress):
     if filepath.endswith("zip"):
         handler = _uncompress_file_zip
     elif filepath.endswith("tgz"):
-        handler = _uncompress_file_tar
+        handler = functools.partial(_uncompress_file_tar, mode="r:*")
     else:
         handler = functools.partial(_uncompress_file_tar, mode="r")
 

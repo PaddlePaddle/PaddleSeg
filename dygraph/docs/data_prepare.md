@@ -40,6 +40,8 @@ python tools/voc_augment.py --voc_path data/VOCdevkit --num_workers 8
 **注意** 运行前请确保在dygraph目录下执行过下列命令：
 ```shell
 export PYTHONPATH=`pwd`
+# windows下请执行相面的命令
+# set PYTHONPATH=%cd%
 ```
 
 ## 关于ADE20K数据集
@@ -79,7 +81,7 @@ export PYTHONPATH=`pwd`
 2.标注图像的标签从0,1依次取值，不可间隔。若有需要忽略的像素，则按255进行标注。
 
 可按如下方式对自定义数据集进行配置：
-```
+```yaml
 train_dataset:
   type: Dataset
   dataset_root: custom_dataset
