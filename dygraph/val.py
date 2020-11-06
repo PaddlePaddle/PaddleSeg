@@ -19,7 +19,6 @@ import paddle
 
 from paddleseg.cvlibs import manager, Config
 from paddleseg.core import evaluate
-# from paddleseg.core.val_mutiscale_slide import evaluate
 from paddleseg.utils import get_sys_env, logger
 
 
