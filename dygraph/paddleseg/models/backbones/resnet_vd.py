@@ -53,7 +53,7 @@ class ConvBNLayer(nn.Layer):
             groups=groups,
             bias_attr=False)
 
-        self._batch_norm = nn.SyncBatchNorm(out_channels)
+        self._batch_norm = layers.SyncBatchNorm(out_channels)
         self._act_op = layers.Activation(act=act)
 
     def forward(self, inputs):

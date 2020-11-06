@@ -51,6 +51,12 @@ def parse_args():
         type=int,
         default=1000)
     parser.add_argument(
+        '--resume_model',
+        dest='resume_model',
+        help='The path of resume model',
+        type=str,
+        default=None)
+    parser.add_argument(
         '--save_dir',
         dest='save_dir',
         help='The directory for saving the model snapshot',
@@ -122,6 +128,7 @@ def main(args):
         save_dir=args.save_dir,
         iters=cfg.iters,
         batch_size=cfg.batch_size,
+        resume_model=args.resume_model,
         save_interval=args.save_interval,
         log_iters=args.log_iters,
         num_workers=args.num_workers,

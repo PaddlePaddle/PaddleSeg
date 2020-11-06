@@ -199,7 +199,7 @@ class ConvBNLayer(nn.Layer):
             dilation=dilation,
             groups=num_groups,
             bias_attr=False)
-        self.bn = nn.SyncBatchNorm(
+        self.bn = layers.SyncBatchNorm(
             num_features=out_c,
             weight_attr=paddle.ParamAttr(
                 regularizer=paddle.regularizer.L2Decay(0.0)),

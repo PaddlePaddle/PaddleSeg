@@ -106,8 +106,8 @@ def resume(model, optimizer, resume_model):
             para_state_dict = paddle.load(ckpt_path)
             ckpt_path = os.path.join(resume_model, 'model.pdopt')
             opti_state_dict = paddle.load(ckpt_path)
-            model.set_dict(para_state_dict)
-            optimizer.set_dict(opti_state_dict)
+            model.set_state_dict(para_state_dict)
+            optimizer.set_state_dict(opti_state_dict)
             epoch = resume_model.split('_')[-1]
             if epoch.isdigit():
                 epoch = int(epoch)

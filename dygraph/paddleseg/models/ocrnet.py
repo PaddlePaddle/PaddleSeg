@@ -38,6 +38,8 @@ class OCRNet(nn.Layer):
             input of pixel representation. If one value, it is taken by both above.
         ocr_mid_channels (int, optional): The number of middle channels in OCRHead. Default: 512.
         ocr_key_channels (int, optional): The number of key channels in ObjectAttentionBlock. Default: 256.
+        align_corners (bool): An argument of F.interpolate. It should be set to False when the output size of feature
+            is even, e.g. 1024x512, otherwise it is True, e.g. 769x769.  Default: False.
         pretrained (str, optional): The path or url of pretrained model. Default: None.
     """
 
@@ -47,6 +49,7 @@ class OCRNet(nn.Layer):
                  backbone_indices,
                  ocr_mid_channels=512,
                  ocr_key_channels=256,
+                 align_corners=False,
                  pretrained=None):
         super().__init__()
 
@@ -60,6 +63,7 @@ class OCRNet(nn.Layer):
             ocr_mid_channels=ocr_mid_channels,
             ocr_key_channels=ocr_key_channels)
 
+        self.align_corners = align_corners
         self.pretrained = pretrained
         self.init_weight()
 
@@ -68,8 +72,11 @@ class OCRNet(nn.Layer):
         feats = [feats[i] for i in self.backbone_indices]
         logit_list = self.head(feats)
         logit_list = [
-            F.interpolate(logit, x.shape[2:], mode='bilinear')
-            for logit in logit_list
+            F.interpolate(
+                logit,
+                x.shape[2:],
+                mode='bilinear',
+                align_corners=self.align_corners) for logit in logit_list
         ]
         return logit_list
 

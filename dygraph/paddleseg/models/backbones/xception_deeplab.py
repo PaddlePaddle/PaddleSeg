@@ -90,7 +90,7 @@ class ConvBNLayer(nn.Layer):
             stride=stride,
             padding=padding,
             bias_attr=False)
-        self._bn = nn.SyncBatchNorm(
+        self._bn = layers.SyncBatchNorm(
             num_features=output_channels, epsilon=1e-3, momentum=0.99)
 
         self._act_op = layers.Activation(act=act)
@@ -119,7 +119,7 @@ class Seperate_Conv(nn.Layer):
             padding=(filter) // 2 * dilation,
             dilation=dilation,
             bias_attr=False)
-        self._bn1 = nn.SyncBatchNorm(
+        self._bn1 = layers.SyncBatchNorm(
             input_channels, epsilon=1e-3, momentum=0.99)
 
         self._act_op1 = layers.Activation(act=act)
@@ -132,7 +132,7 @@ class Seperate_Conv(nn.Layer):
             groups=1,
             padding=0,
             bias_attr=False)
-        self._bn2 = nn.SyncBatchNorm(
+        self._bn2 = layers.SyncBatchNorm(
             output_channels, epsilon=1e-3, momentum=0.99)
 
         self._act_op2 = layers.Activation(act=act)
