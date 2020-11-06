@@ -14,6 +14,7 @@
 
 from .dataset import Dataset
 from .cityscapes import Cityscapes
+from .cityscapes_autolabeling import CityscapesAutolabeling
 from .voc import PascalVOC
 from .ade import ADE20K
 from .optic_disc_seg import OpticDiscSeg
