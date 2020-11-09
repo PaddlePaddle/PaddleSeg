@@ -105,7 +105,7 @@ def train(model,
     fp16 = False
     if fp16:
         print('turn on fp16!!!')
-    scaler = paddle.amp.GradScaler(init_loss_scaling=1024)
+        scaler = paddle.amp.GradScaler(init_loss_scaling=1024)
 
     iter = start_iter
     while iter < iters:
@@ -145,11 +145,26 @@ def train(model,
                     loss.backward()
                     # ddp_model.apply_collective_grads()
                 else:
-                    #                     logits = model(images)
-                    inputs = {'images': images, 'gts': labels}
-                    logits = model(inputs)
-                    print(logits)
+                    restore, _ = paddle.fluid.load_dygraph(
+                        "/ssd1/home/chulutao/semantic-segmentation-convert/ocr_new/model"
+                    )
+                    model.set_dict(restore)
+
+                    #                     images = paddle.arange(6291456, dtype='float32')
+                    #                     images = paddle.reshape(images, (1, 3, 1024, 2048))
+                    images = 5 * paddle.ones(
+                        (1, 3, 1024, 2048), dtype='float32')
+                    print(images)
+                    logits = model(images)
+                    #                     inputs = {'images': images, 'gts': labels}
+                    #                     logits = model(inputs)
+                    a, b, c = logits
+                    print(a)
+                    print(b)
+                    print(c)
+                    print(paddle.sum(a), paddle.sum(b), paddle.sum(c))
                     exit()
+
                     loss = loss_computation(logits, labels, losses)
                     loss.backward()
                 optimizer.step()
