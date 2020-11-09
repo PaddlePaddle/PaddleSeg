@@ -51,6 +51,8 @@ class HRNet(nn.Layer):
         stage4_num_blocks (list): Number of blocks per module for stage4. Default [4, 4, 4, 4]
         stage4_num_channels (list): Number of channels per branch for stage4. Default [18, 36, 72. 144].
         has_se (bool): Whether to use Squeeze-and-Excitation module. Default False.
+        align_corners (bool, optional): An argument of F.interpolate. It should be set to False when the feature size is even,
+            e.g. 1024x512, otherwise it is True, e.g. 769x769. Default: False.
     """
 
     def __init__(self,
@@ -67,7 +69,8 @@ class HRNet(nn.Layer):
                  stage4_num_modules=3,
                  stage4_num_blocks=[4, 4, 4, 4],
                  stage4_num_channels=[18, 36, 72, 144],
-                 has_se=False):
+                 has_se=False,
+                 align_corners=False):
         super(HRNet, self).__init__()
         self.pretrained = pretrained
         self.stage1_num_modules = stage1_num_modules
@@ -83,6 +86,7 @@ class HRNet(nn.Layer):
         self.stage4_num_blocks = stage4_num_blocks
         self.stage4_num_channels = stage4_num_channels
         self.has_se = has_se
+        self.align_corners = align_corners
         self.feat_channels = [sum(stage4_num_channels)]
 
         self.conv_layer1_1 = layers.ConvBNReLU(
@@ -119,7 +123,8 @@ class HRNet(nn.Layer):
             num_blocks=self.stage2_num_blocks,
             num_filters=self.stage2_num_channels,
             has_se=self.has_se,
-            name="st2")
+            name="st2",
+            align_corners=align_corners)
 
         self.tr2 = TransitionLayer(
             in_channels=self.stage2_num_channels,
@@ -131,7 +136,8 @@ class HRNet(nn.Layer):
             num_blocks=self.stage3_num_blocks,
             num_filters=self.stage3_num_channels,
             has_se=self.has_se,
-            name="st3")
+            name="st3",
+            align_corners=align_corners)
 
         self.tr3 = TransitionLayer(
             in_channels=self.stage3_num_channels,
@@ -143,7 +149,8 @@ class HRNet(nn.Layer):
             num_blocks=self.stage4_num_blocks,
             num_filters=self.stage4_num_channels,
             has_se=self.has_se,
-            name="st4")
+            name="st4",
+            align_corners=align_corners)
         self.init_weight()
 
     def forward(self, x):
@@ -165,18 +172,15 @@ class HRNet(nn.Layer):
         x1 = F.interpolate(
             st4[1], (x0_h, x0_w),
             mode='bilinear',
-            align_corners=True,
-            align_mode=1)
+            align_corners=self.align_corners)
         x2 = F.interpolate(
             st4[2], (x0_h, x0_w),
             mode='bilinear',
-            align_corners=True,
-            align_mode=1)
+            align_corners=self.align_corners)
         x3 = F.interpolate(
             st4[3], (x0_h, x0_w),
             mode='bilinear',
-            align_corners=True,
-            align_mode=1)
+            align_corners=self.align_corners)
         x = paddle.concat([st4[0], x1, x2, x3], axis=1)
 
         return [x]
@@ -470,7 +474,8 @@ class Stage(nn.Layer):
                  num_filters,
                  has_se=False,
                  multi_scale_output=True,
-                 name=None):
+                 name=None,
+                 align_corners=False):
         super(Stage, self).__init__()
 
         self._num_modules = num_modules
@@ -486,7 +491,8 @@ class Stage(nn.Layer):
                         num_filters=num_filters,
                         has_se=has_se,
                         multi_scale_output=False,
-                        name=name + '_' + str(i + 1)))
+                        name=name + '_' + str(i + 1),
+                        align_corners=align_corners))
             else:
                 stage_func = self.add_sublayer(
                     "stage_{}_{}".format(name, i + 1),
@@ -495,7 +501,8 @@ class Stage(nn.Layer):
                         num_blocks=num_blocks,
                         num_filters=num_filters,
                         has_se=has_se,
-                        name=name + '_' + str(i + 1)))
+                        name=name + '_' + str(i + 1),
+                        align_corners=align_corners))
 
             self.stage_func_list.append(stage_func)
 
@@ -513,7 +520,8 @@ class HighResolutionModule(nn.Layer):
                  num_filters,
                  has_se=False,
                  multi_scale_output=True,
-                 name=None):
+                 name=None,
+                 align_corners=False):
         super(HighResolutionModule, self).__init__()
 
         self.branches_func = Branches(
@@ -527,7 +535,8 @@ class HighResolutionModule(nn.Layer):
             in_channels=num_filters,
             out_channels=num_filters,
             multi_scale_output=multi_scale_output,
-            name=name)
+            name=name,
+            align_corners=align_corners)
 
     def forward(self, x):
         out = self.branches_func(x)
@@ -540,11 +549,13 @@ class FuseLayers(nn.Layer):
                  in_channels,
                  out_channels,
                  multi_scale_output=True,
-                 name=None):
+                 name=None,
+                 align_corners=False):
         super(FuseLayers, self).__init__()
 
         self._actual_ch = len(in_channels) if multi_scale_output else 1
         self._in_channels = in_channels
+        self.align_corners = align_corners
 
         self.residual_func_list = []
         for i in range(self._actual_ch):
@@ -603,8 +614,7 @@ class FuseLayers(nn.Layer):
                         y,
                         residual_shape,
                         mode='bilinear',
-                        align_corners=True,
-                        align_mode=1)
+                        align_corners=self.align_corners)
                     residual = residual + y
                 elif j < i:
                     y = x[j]
