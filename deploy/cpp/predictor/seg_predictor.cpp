@@ -13,7 +13,6 @@
 // limitations under the License.
 
 #include "seg_predictor.h"
-#include <unsupported/Eigen/CXX11/Tensor>
 #undef min
 namespace PaddleSolution {
     using std::chrono::duration_cast;
