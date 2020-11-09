@@ -189,9 +189,11 @@ cfg.MODEL.DEFAULT_EPSILON = 1e-5
 # BatchNorm动量, 一般无需改动
 cfg.MODEL.BN_MOMENTUM = 0.99
 # 是否使用FP16训练
-cfg.MODEL.FP16 = False
+cfg.MODEL.FP16 = True
+# cfg.MODEL.FP16 = False
 # 混合精度训练需对LOSS进行scale, 默认为动态scale，静态scale可以设置为512.0
 cfg.MODEL.SCALE_LOSS = "DYNAMIC"
+# cfg.MODEL.SCALE_LOSS = 512.0
 
 ########################## DeepLab模型配置 ####################################
 # DeepLab backbone 配置, 可选项xception_65, xception_41, xception_71, mobilenetv2, resnet50_vd, resnet101_vd

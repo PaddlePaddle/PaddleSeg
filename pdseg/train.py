@@ -54,6 +54,12 @@ def parse_args():
         default=None,
         type=str)
     parser.add_argument(
+        '--data_format',
+        dest='data_format',
+        help='Tensor data format when training.',
+        default='NCHW',
+        type=str)
+    parser.add_argument(
         '--use_gpu',
         dest='use_gpu',
         help='Use gpu or cpu',
@@ -234,9 +240,17 @@ def train(cfg):
     batch_size_per_dev = cfg.BATCH_SIZE // dev_count
     print_info("batch_size_per_dev: {}".format(batch_size_per_dev))
 
+    print('data_format = ', args.data_format)
     data_loader, avg_loss, lr, pred, grts, masks = build_model(
-        train_prog, startup_prog, phase=ModelPhase.TRAIN)
-    build_model(test_prog, fluid.Program(), phase=ModelPhase.EVAL)
+        train_prog,
+        startup_prog,
+        phase=ModelPhase.TRAIN,
+        data_format=args.data_format)
+    build_model(
+        test_prog,
+        fluid.Program(),
+        phase=ModelPhase.EVAL,
+        data_format=args.data_format)
     data_loader.set_sample_generator(
         data_generator, batch_size=batch_size_per_dev, drop_last=drop_last)
 
@@ -371,9 +385,11 @@ def train(cfg):
 
                     if step % args.log_steps == 0 and cfg.TRAINER_ID == 0:
                         avg_loss /= args.log_steps
-                        speed = args.log_steps / timer.elapsed_time()
+                        speed = args.log_steps / timer.elapsed_time(
+                        ) * cfg.BATCH_SIZE
+                        print("batch_size={}".format(cfg.BATCH_SIZE))
                         print((
-                            "epoch={} step={} lr={:.5f} loss={:.4f} step/sec={:.3f} | ETA {}"
+                            "epoch={} step={} lr={:.5f} loss={:.4f} images/sec={:.3f} | ETA {}"
                         ).format(epoch, step, lr[0], avg_loss, speed,
                                  calculate_eta(all_step - step, speed)))
                         if args.use_vdl:

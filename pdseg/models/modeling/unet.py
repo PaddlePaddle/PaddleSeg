@@ -107,7 +107,7 @@ def decode(data, short_cuts):
     return data
 
 
-def get_logit(data, num_classes):
+def get_logit(data, num_classes, data_format="NCHW"):
     # 根据类别数设置最后一个卷积层输出
     param_attr = fluid.ParamAttr(
         name='weights',
@@ -116,15 +116,24 @@ def get_logit(data, num_classes):
         initializer=fluid.initializer.TruncatedNormal(loc=0.0, scale=0.01))
     with scope("logit"):
         data = conv(
-            data, num_classes, 3, stride=1, padding=1, param_attr=param_attr)
+            data,
+            num_classes,
+            3,
+            stride=1,
+            padding=1,
+            param_attr=param_attr,
+            data_format=data_format)
     return data
 
 
-def unet(input, num_classes):
+def unet(input, num_classes, data_format="NCHW"):
     # UNET网络配置，对称的编码器解码器
     encode_data, short_cuts = encode(input)
     decode_data = decode(encode_data, short_cuts)
-    logit = get_logit(decode_data, num_classes)
+    decode_data_in = fluid.layers.transpose(
+        decode_data, [0, 2, 3, 1]) if data_format == 'NHWC' else decode_data
+    decode_data_in.stop_gradient = decode_data.stop_gradient
+    logit = get_logit(decode_data_in, num_classes, data_format=data_format)
     return logit
 
 

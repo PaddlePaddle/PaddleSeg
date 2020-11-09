@@ -146,6 +146,33 @@ class Solver(object):
             regularization=fluid.regularizer.L2Decay(
                 regularization_coeff=self.weight_decay),
         )
+
+        if cfg.MODEL.FP16:
+            if cfg.MODEL.MODEL_NAME in ["pspnet"]:
+                custom_black_list = {"pool2d"}
+            else:
+                custom_black_list = {}
+            amp_lists = AutoMixedPrecisionLists(
+                custom_black_list=custom_black_list)
+            assert isinstance(cfg.MODEL.SCALE_LOSS, float) or isinstance(cfg.MODEL.SCALE_LOSS, str), \
+                "data type of MODEL.SCALE_LOSS must be float or str"
+            if isinstance(cfg.MODEL.SCALE_LOSS, float):
+                optimizer = decorate(
+                    optimizer,
+                    amp_lists=amp_lists,
+                    init_loss_scaling=cfg.MODEL.SCALE_LOSS,
+                    use_dynamic_loss_scaling=False)
+            else:
+                assert cfg.MODEL.SCALE_LOSS.lower() in [
+                    'dynamic'
+                ], "if MODEL.SCALE_LOSS is a string,\
+                 must be set as 'DYNAMIC'!"
+
+                optimizer = decorate(
+                    optimizer,
+                    amp_lists=amp_lists,
+                    use_dynamic_loss_scaling=True)
+
         optimizer.minimize(loss)
         return decayed_lr
 

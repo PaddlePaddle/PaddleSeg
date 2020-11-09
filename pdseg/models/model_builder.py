@@ -70,10 +70,10 @@ class ModelPhase(object):
         return False
 
 
-def seg_model(image, class_num):
+def seg_model(image, class_num, data_format="NCHW"):
     model_name = cfg.MODEL.MODEL_NAME
     if model_name == 'unet':
-        logits = unet.unet(image, class_num)
+        logits = unet.unet(image, class_num, data_format=data_format)
     elif model_name == 'deeplabv3p':
         logits = deeplab.deeplabv3p(image, class_num)
     elif model_name == 'icnet':
@@ -112,7 +112,10 @@ def sigmoid_to_softmax(logit):
     return logit
 
 
-def build_model(main_prog, start_prog, phase=ModelPhase.TRAIN):
+def build_model(main_prog,
+                start_prog,
+                phase=ModelPhase.TRAIN,
+                data_format="NCHW"):
     if not ModelPhase.is_valid_phase(phase):
         raise ValueError("ModelPhase {} is not valid!".format(phase))
     if ModelPhase.is_train(phase):
@@ -164,7 +167,7 @@ def build_model(main_prog, start_prog, phase=ModelPhase.TRAIN):
                         "softmax loss or lovasz softmax loss can not combine with bce loss or dice loss or lovasz hinge loss."
                     )
             cfg.PHASE = phase
-            logits = seg_model(image, class_num)
+            logits = seg_model(image, class_num, data_format=data_format)
 
             # 根据选择的loss函数计算相应的损失函数
             if ModelPhase.is_train(phase) or ModelPhase.is_eval(phase):
