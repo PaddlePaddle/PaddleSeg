@@ -386,4 +386,5 @@ if __name__ == '__main__':
             "Please: 1. Install paddlepaddle-gpu to run your models on GPU or 2. Set use_gpu=False to run models on CPU."
         )
         sys.exit(1)
+    paddle.enable_static()
     main(args)
