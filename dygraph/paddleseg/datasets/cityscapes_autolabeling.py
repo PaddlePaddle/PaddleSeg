@@ -100,8 +100,9 @@ class CityscapesAutolabeling(Dataset):
             # count autolabeling
             img_dir = os.path.join(self.dataset_root, 'leftImg8bit_trainextra',
                                    'leftImg8bit', 'train_extra')
-            label_dir = os.path.join(self.dataset_root, 'autolabelled',
-                                     'train_extra')
+            label_dir = os.path.join(self.dataset_root, 'convert_autolabelled')
+            # label_dir = os.path.join(self.dataset_root, 'autolabelled',
+            #                          'train_extra')
             if self.dataset_root is None or not os.path.isdir(
                     self.dataset_root) or not os.path.isdir(
                         img_dir) or not os.path.isdir(label_dir):
@@ -113,12 +114,17 @@ class CityscapesAutolabeling(Dataset):
                 glob.glob(os.path.join(label_dir, '*', '*_leftImg8bit.png')))
             autolabeling_img_files = sorted(
                 glob.glob(os.path.join(img_dir, '*', '*_leftImg8bit.png')))
+            if len(autolabeling_img_files) != len(autolabeling_label_files):
+                raise ValueError(
+                    "The number of images = {} is not equal to the number of labels = {} in Cityscapes Autolabeling dataset."
+                    .format(
+                        len(autolabeling_img_files),
+                        len(autolabeling_label_files)))
 
             autolabeling_file_list = [
                 [img_path, label_path] for img_path, label_path in zip(
                     autolabeling_img_files, autolabeling_label_files)
             ]
-
             random.shuffle(autolabeling_file_list)
             autolabeling_file_list = autolabeling_file_list[:autolabeling_num]
 

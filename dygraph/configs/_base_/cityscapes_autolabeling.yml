@@ -3,7 +3,7 @@ iters: 80000
 
 train_dataset:
   type: CityscapesAutolabeling
-  dataset_root: data/cityscapes
+  dataset_root: ../../dataset/cityscapes-for-nvidia
   transforms:
     - type: ResizeStepScaling
       min_scale_factor: 0.5
@@ -21,7 +21,7 @@ train_dataset:
 
 val_dataset:
   type: CityscapesAutolabeling
-  dataset_root: data/cityscapes
+  dataset_root: ../../dataset/cityscapes-for-nvidia
   transforms:
     - type: Normalize
   mode: val
