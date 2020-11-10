@@ -29,7 +29,7 @@ def get_color_map_list(num_classes):
     return color_map
 
 
-dataset_root = '/clt/dataset/cityscapes-for-nvidia'
+dataset_root = '/ssd1/home/chulutao/dataset/cityscapes-for-nvidia'
 
 label_dir = os.path.join(dataset_root, 'autolabelled', 'train_extra')
 if dataset_root is None or not os.path.isdir(dataset_root) or not os.path.isdir(

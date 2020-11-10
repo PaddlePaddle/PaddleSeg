@@ -1,4 +1,3 @@
-
 _base_: '../_base_/cityscapes_autolabeling.yml'
 
 batch_size: 2

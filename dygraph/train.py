@@ -107,9 +107,8 @@ def main(args):
         learning_rate=args.learning_rate,
         iters=args.iters,
         batch_size=args.batch_size)
-
     train_dataset = cfg.train_dataset
-    if not train_dataset:
+    if train_dataset is None:
         raise RuntimeError(
             'The training dataset is not specified in the configuration file.')
     val_dataset = cfg.val_dataset if args.do_eval else None
