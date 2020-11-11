@@ -31,6 +31,7 @@ import paddle.fluid as fluid
 
 from utils.config import cfg
 from utils.timer import Timer, calculate_eta
+from utils import paddle_utils
 from models.model_builder import build_model
 from models.model_builder import ModelPhase
 from reader import SegDataset
@@ -201,4 +202,5 @@ def main():
 
 
 if __name__ == '__main__':
+    paddle_utils.enable_static()
     main()

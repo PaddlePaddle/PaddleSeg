@@ -26,6 +26,7 @@ import numpy as np
 import paddle.fluid as fluid
 
 from utils.config import cfg
+from utils import paddle_utils
 from models.model_builder import build_model
 from models.model_builder import ModelPhase
 from paddleslim.quant import quant_aware, convert
@@ -146,4 +147,5 @@ def main():
 
 
 if __name__ == '__main__':
+    paddle_utils.enable_static()
     main()
