@@ -47,6 +47,7 @@ from eval_prune import evaluate
 from vis import visualize
 from utils import dist_utils
 from utils.load_model_utils import load_pretrained_weights
+from utils import paddle_utils
 
 from paddleslim.prune import Pruner, save_model
 from paddleslim.analysis import flops
@@ -466,4 +467,5 @@ if __name__ == '__main__':
             "Please: 1. Install paddlepaddle-gpu to run your models on GPU or 2. Set use_gpu=False to run models on CPU."
         )
         sys.exit(1)
+    paddle_utils.enable_static()
     main(args)
