@@ -132,13 +132,13 @@ def evaluate(model, eval_dataset=None, iter_id=None, num_workers=0):
         if local_rank == 0:
             progbar_val.update(iter + 1)
 
-    category_iou, miou = metrics.mean_iou(intersect_area_all, pred_area_all,
-                                          label_area_all)
-    category_acc, acc = metrics.accuracy(intersect_area_all, pred_area_all)
+    class_iou, miou = metrics.mean_iou(intersect_area_all, pred_area_all,
+                                       label_area_all)
+    class_acc, acc = metrics.accuracy(intersect_area_all, pred_area_all)
     kappa = metrics.kappa(intersect_area_all, pred_area_all, label_area_all)
 
     logger.info("[EVAL] #Images={} mIoU={:.4f} Acc={:.4f} Kappa={:.4f} ".format(
         len(eval_dataset), miou, acc, kappa))
-    logger.info("[EVAL] Category IoU: \n" + str(np.round(category_iou, 4)))
-    logger.info("[EVAL] Category Acc: \n" + str(np.round(category_acc, 4)))
+    logger.info("[EVAL] Class IoU: \n" + str(np.round(class_iou, 4)))
+    logger.info("[EVAL] Class Acc: \n" + str(np.round(class_acc, 4)))
     return miou, acc

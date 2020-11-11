@@ -88,15 +88,15 @@ def mean_iou(intersect_area, pred_area, label_area):
     pred_area = pred_area.numpy()
     label_area = label_area.numpy()
     union = pred_area + label_area - intersect_area
-    category_iou = []
+    class_iou = []
     for i in range(len(intersect_area)):
         if union[i] == 0:
             iou = 0
         else:
             iou = intersect_area[i] / union[i]
-        category_iou.append(iou)
-    miou = np.mean(category_iou)
-    return np.array(category_iou), miou
+        class_iou.append(iou)
+    miou = np.mean(class_iou)
+    return np.array(class_iou), miou
 
 
 def accuracy(intersect_area, pred_area):
@@ -113,15 +113,15 @@ def accuracy(intersect_area, pred_area):
     """
     intersect_area = intersect_area.numpy()
     pred_area = pred_area.numpy()
-    category_acc = []
+    class_acc = []
     for i in range(len(intersect_area)):
         if pred_area[i] == 0:
             acc = 0
         else:
             acc = intersect_area[i] / pred_area[i]
-        category_acc.append(acc)
+        class_acc.append(acc)
     macc = np.sum(intersect_area) / np.sum(pred_area)
-    return np.array(category_acc), macc
+    return np.array(class_acc), macc
 
 
 def kappa(intersect_area, pred_area, label_area):
