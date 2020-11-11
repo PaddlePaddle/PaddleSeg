@@ -41,11 +41,11 @@ fluid_inference
 ### Step3: 安装配置OpenCV
 
 1. 在OpenCV官网下载适用于Windows平台的3.4.6版本， [下载地址](https://sourceforge.net/projects/opencvlibrary/files/3.4.6/opencv-3.4.6-vc14_vc15.exe/download)  
-2. 运行下载的可执行文件，将OpenCV解压至指定目录，如`D:\PaddleDeploy\opencv`  
+2. 运行下载的可执行文件，将OpenCV解压至指定目录，如`D:\projects\opencv`  
 3. 配置环境变量，如下流程所示  
 	- 我的电脑->属性->高级系统设置->环境变量  
     - 在系统变量中找到Path（如没有，自行创建），并双击编辑  
-    - 新建，将opencv路径填入并保存，如`D:\PaddleDeploy\opencv\build\x64\vc14\bin` 
+    - 新建，将opencv路径填入并保存，如`D:\projects\opencv\build\x64\vc14\bin` 
 
 ### Step4: 以VS2015为例编译代码
 
@@ -70,7 +70,7 @@ call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" amd6
 
 ```bash
 # 切换到预测库所在目录
-cd /d D:\projects\PaddleSeg\deply\cpp\
+cd /d D:\projects\PaddleSeg\deploy\cpp\
 # 创建构建目录, 重新构建只需要删除该目录即可
 mkdir build
 cd build
@@ -87,7 +87,7 @@ cd /d D:\projects\PaddleSeg\deploy\cpp\
 mkdir build
 cd build
 # cmake构建VS项目
-D:\projects\PaddleSeg\inference\build> cmake .. -G "Visual Studio 14 2015 Win64" -DWITH_GPU=OFF -DPADDLE_DIR=D:\projects\fluid_inference -DOPENCV_DIR=D:\projects\opencv -T host=x64
+D:\projects\PaddleSeg\deploy\cpp\build> cmake .. -G "Visual Studio 14 2015 Win64" -DWITH_GPU=OFF -DPADDLE_DIR=D:\projects\fluid_inference -DOPENCV_DIR=D:\projects\opencv -T host=x64
 ```
 
 这里的`cmake`参数`-G`, 表示生成对应的VS版本的工程，可以根据自己的`VS`版本调整，具体请参考[cmake文档](https://cmake.org/cmake/help/v3.15/manual/cmake-generators.7.html)
@@ -95,7 +95,7 @@ D:\projects\PaddleSeg\inference\build> cmake .. -G "Visual Studio 14 2015 Win64"
 * 生成可执行文件
 
 ```
-D:\projects\PaddleSeg\inference\build> msbuild /m /p:Configuration=Release cpp_inference_demo.sln
+D:\projects\PaddleSeg\deploy\cpp\build> msbuild /m /p:Configuration=Release cpp_inference_demo.sln
 ```
 
 ### Step5: 预测及可视化

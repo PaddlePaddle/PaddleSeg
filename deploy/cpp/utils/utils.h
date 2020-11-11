@@ -134,10 +134,6 @@ namespace utils {
                        std::vector<uchar>& mask, std::vector<uchar>& scoremap) {
         int out_img_len = shape[1] * shape[2];
         int blob_out_len = out_img_len * shape[0];
-        /*
-        Eigen::TensorMap<Eigen::Tensor<float, 3>> out_3d(out, shape[0], shape[1], shape[2]);
-        Eigen::Tensor<Eigen::DenseIndex, 2> argmax = out_3d.argmax(0);
-        */
         float max_value = -1;
         int label = 0;
         #pragma omp parallel private(label)
