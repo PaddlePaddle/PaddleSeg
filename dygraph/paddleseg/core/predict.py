@@ -17,10 +17,10 @@ import os
 import cv2
 import numpy as np
 import paddle
-import tqdm
 
 from paddleseg import utils
-import paddleseg.utils.logger as logger
+from paddleseg.core import infer
+from paddleseg.utils import logger, progbar
 
 
 def mkdir(path):
@@ -34,7 +34,14 @@ def predict(model,
             transforms,
             image_list,
             image_dir=None,
-            save_dir='output'):
+            save_dir='output',
+            aug_pred=False,
+            scales=1.0,
+            flip_horizontal=True,
+            flip_vertical=False,
+            is_slide=False,
+            stride=None,
+            crop_size=None):
     """
     predict and visualize the image_list.
 
@@ -55,24 +62,37 @@ def predict(model,
     pred_saved_dir = os.path.join(save_dir, 'pseudo_color_prediction')
 
     logger.info("Start to predict...")
-    for im_path in tqdm.tqdm(image_list):
-        im, im_info, _ = transforms(im_path)
+    progbar_pred = progbar.Progbar(target=len(image_list), verbose=1)
+    for i, im_path in enumerate(image_list):
+        im = cv2.imread(im_path)
+        ori_shape = im.shape[:2]
+        im, _ = transforms(im)
         im = im[np.newaxis, ...]
         im = paddle.to_tensor(im)
-        logits = model(im)
-        pred = paddle.argmax(logits[0], axis=1)
-        pred = pred.numpy()
-        pred = np.squeeze(pred).astype('uint8')
-        for info in im_info[::-1]:
-            if info[0] == 'resize':
-                h, w = info[1][0], info[1][1]
-                pred = cv2.resize(pred, (w, h), cv2.INTER_NEAREST)
-            elif info[0] == 'padding':
-                h, w = info[1][0], info[1][1]
-                pred = pred[0:h, 0:w]
-            else:
-                raise ValueError("Unexpected info '{}' in im_info".format(
-                    info[0]))
+
+        if aug_pred:
+            pred = infer.aug_inference(
+                model,
+                im,
+                ori_shape=ori_shape,
+                transforms=transforms.transforms,
+                scales=scales,
+                flip_horizontal=flip_horizontal,
+                flip_vertical=flip_vertical,
+                is_slide=is_slide,
+                stride=stride,
+                crop_size=crop_size)
+        else:
+            pred = infer.inference(
+                model,
+                im,
+                ori_shape=ori_shape,
+                transforms=transforms.transforms,
+                is_slide=is_slide,
+                stride=stride,
+                crop_size=crop_size)
+        pred = paddle.squeeze(pred)
+        pred = pred.numpy().astype('uint8')
 
         # get the saved name
         if image_dir is not None:
@@ -93,3 +113,5 @@ def predict(model,
         pred_saved_path = os.path.join(pred_saved_dir, im_file)
         mkdir(pred_saved_path)
         cv2.imwrite(pred_saved_path, pred_im)
+
+        progbar_pred.update(i + 1)

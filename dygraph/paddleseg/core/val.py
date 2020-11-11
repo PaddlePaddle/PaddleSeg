@@ -27,7 +27,7 @@ np.set_printoptions(suppress=True)
 def evaluate(model,
              eval_dataset,
              aug_eval=False,
-             scales=1,
+             scales=1.0,
              flip_horizontal=True,
              flip_vertical=False,
              is_slide=False,

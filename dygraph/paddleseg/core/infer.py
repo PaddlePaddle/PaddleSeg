@@ -177,7 +177,7 @@ def aug_inference(model,
                   im,
                   ori_shape,
                   transforms,
-                  scales=1,
+                  scales=1.0,
                   flip_horizontal=False,
                   flip_vertical=False,
                   is_slide=False,
@@ -191,7 +191,7 @@ def aug_inference(model,
         im (Tensor): the input image.
         ori_shape (list): Origin shape of image.
         transforms (list): Transforms for image.
-        scales (int|tuple|list):  Scales for resize. Default: 1.
+        scales (float|tuple|list):  Scales for resize. Default: 1.
         flip_horizontal (bool): Whether to flip horizontally. Default: False.
         flip_vertical (bool): Whether to flip vertically. Default: False.
         is_slide (bool): Whether to infer by sliding wimdow. Default: False.
@@ -201,11 +201,11 @@ def aug_inference(model,
     Returns:
         Tensor: Prediction of image with shape (1, 1, h, w) is returned.
     """
-    if isinstance(scales, int):
+    if isinstance(scales, float):
         scales = [scales]
     elif not isinstance(scales, (tuple, list)):
         raise TypeError(
-            '`scales` expects int/tuple/list type, but received {}'.format(
+            '`scales` expects float/tuple/list type, but received {}'.format(
                 type(scales)))
     final_logit = 0
     h_input, w_input = im.shape[-2], im.shape[-1]
