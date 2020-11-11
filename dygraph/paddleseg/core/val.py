@@ -38,7 +38,8 @@ def evaluate(model, eval_dataset=None, iter_id=None):
             enumerate(eval_dataset), total=total_iters):
         im = paddle.to_tensor(im)
         logits = model(im)
-        pred = paddle.argmax(logits[0], axis=1)
+        pred = paddle.argmax(logits[0], axis=0)
+        #pred = paddle.argmax(logits[0], axis=1)
         pred = pred.numpy().astype('float32')
         pred = np.squeeze(pred)
         for info in im_info[::-1]:

@@ -25,4 +25,5 @@ from .gcnet import *
 from .ocrnet import *
 from .pspnet import *
 from .unet import UNet
-from .ocrnet_sota import *
+from .mscale_ocr_finetune import MscaleOCRFinetune
+# from .mscale_ocr import *
