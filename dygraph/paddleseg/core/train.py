@@ -145,30 +145,8 @@ def train(model,
                 if nranks > 1:
                     logits = ddp_model(images)
                     loss = loss_computation(logits, labels, losses)
-                    # loss = ddp_model.scale_loss(loss)
                     loss.backward()
-                    # ddp_model.apply_collective_grads()
                 else:
-                    #                     restore, _ = paddle.fluid.load_dygraph(
-                    #                         "/ssd1/home/chulutao/semantic-segmentation-convert/ocr_new/model"
-                    #                     )
-                    #                     model.set_dict(restore)
-
-                    #                     #                     images = paddle.arange(6291456, dtype='float32')
-                    #                     #                     images = paddle.reshape(images, (1, 3, 1024, 2048))
-                    #                     images = 5 * paddle.ones(
-                    #                         (1, 3, 1024, 2048), dtype='float32')
-                    #                     print(images)
-                    #                     logits = model(images)
-                    #                     #                     inputs = {'images': images, 'gts': labels}
-                    #                     #                     logits = model(inputs)
-                    #                     a, b, c = logits
-                    #                     print(a)
-                    #                     print(b)
-                    #                     print(c)
-                    #                     print(paddle.sum(a), paddle.sum(b), paddle.sum(c))
-                    #                     exit()
-
                     logits = model(images)
                     loss = loss_computation(logits, labels, losses)
                     loss.backward()
@@ -178,9 +156,27 @@ def train(model,
                               paddle.optimizer.lr.LRScheduler):
                     optimizer._learning_rate.step()
                 model.clear_gradients()
-            # Sum loss over all ranks
-            # if nranks > 1:
-            #     paddle.distributed.all_reduce(loss)
+
+                #                     restore, _ = paddle.fluid.load_dygraph(
+                #                         "/ssd1/home/chulutao/semantic-segmentation-convert/ocr_new/model"
+                #                     )
+                #                     model.set_dict(restore)
+
+                #                     #                     images = paddle.arange(6291456, dtype='float32')
+                #                     #                     images = paddle.reshape(images, (1, 3, 1024, 2048))
+                #                     images = 5 * paddle.ones(
+                #                         (1, 3, 1024, 2048), dtype='float32')
+                #                     print(images)
+                #                     logits = model(images)
+                #                     #                     inputs = {'images': images, 'gts': labels}
+                #                     #                     logits = model(inputs)
+                #                     a, b, c = logits
+                #                     print(a)
+                #                     print(b)
+                #                     print(c)
+                #                     print(paddle.sum(a), paddle.sum(b), paddle.sum(c))
+                #                     exit()
+
             avg_loss += loss.numpy()[0]
             train_batch_cost += timer.elapsed_time()
             if (iter) % log_iters == 0 and local_rank == 0:
@@ -205,6 +201,12 @@ def train(model,
                                           avg_train_reader_cost, iter)
                 avg_loss = 0.0
 
+            if (iter % save_interval == 0
+                    or iter == iters) and (val_dataset is not None):
+                mean_iou, acc = evaluate(
+                    model, val_dataset, iter_id=iter, num_workers=num_workers)
+                model.train()
+
             if (iter % save_interval == 0 or iter == iters) and local_rank == 0:
                 current_save_dir = os.path.join(save_dir,
                                                 "iter_{}".format(iter))
@@ -216,7 +218,6 @@ def train(model,
                             os.path.join(current_save_dir, 'model.pdopt'))
 
                 if val_dataset is not None:
-                    mean_iou, acc = evaluate(model, val_dataset, iter_id=iter)
                     if mean_iou > best_mean_iou:
                         best_mean_iou = mean_iou
                         best_model_iter = iter
@@ -231,7 +232,6 @@ def train(model,
                     if use_vdl:
                         log_writer.add_scalar('Evaluate/mIoU', mean_iou, iter)
                         log_writer.add_scalar('Evaluate/Acc', acc, iter)
-                    model.train()
             timer.restart()
 
     # Sleep for half a second to let dataloader release resources.

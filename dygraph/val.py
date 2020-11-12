@@ -18,8 +18,8 @@ import os
 import paddle
 
 from paddleseg.cvlibs import manager, Config
-from paddleseg.utils import get_sys_env, logger
 from paddleseg.core import evaluate
+from paddleseg.utils import get_sys_env, logger
 
 
 def parse_args():
@@ -34,6 +34,12 @@ def parse_args():
         help='The path of model for evaluation',
         type=str,
         default=None)
+    parser.add_argument(
+        '--num_workers',
+        dest='num_workers',
+        help='Num workers for data loader',
+        type=int,
+        default=0)
 
     return parser.parse_args()
 
@@ -67,7 +73,7 @@ def main(args):
     model.set_dict(restore)
     logger.info('Loaded trained params of model successfully')
 
-    evaluate(model, val_dataset)
+    evaluate(model, val_dataset, num_workers=args.num_workers)
 
 
 if __name__ == '__main__':
