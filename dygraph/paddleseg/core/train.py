@@ -61,6 +61,10 @@ def train(model,
           num_workers=0,
           use_vdl=False,
           losses=None):
+
+    restore, _ = paddle.fluid.load_dygraph("./pretrain/ocr_pretrain/model")
+    model.set_dict(restore)
+
     nranks = paddle.distributed.ParallelEnv().nranks
     local_rank = paddle.distributed.ParallelEnv().local_rank
 
@@ -145,26 +149,27 @@ def train(model,
                     loss.backward()
                     # ddp_model.apply_collective_grads()
                 else:
-                    restore, _ = paddle.fluid.load_dygraph(
-                        "/ssd1/home/chulutao/semantic-segmentation-convert/ocr_new/model"
-                    )
-                    model.set_dict(restore)
+                    #                     restore, _ = paddle.fluid.load_dygraph(
+                    #                         "/ssd1/home/chulutao/semantic-segmentation-convert/ocr_new/model"
+                    #                     )
+                    #                     model.set_dict(restore)
 
-                    #                     images = paddle.arange(6291456, dtype='float32')
-                    #                     images = paddle.reshape(images, (1, 3, 1024, 2048))
-                    images = 5 * paddle.ones(
-                        (1, 3, 1024, 2048), dtype='float32')
-                    print(images)
+                    #                     #                     images = paddle.arange(6291456, dtype='float32')
+                    #                     #                     images = paddle.reshape(images, (1, 3, 1024, 2048))
+                    #                     images = 5 * paddle.ones(
+                    #                         (1, 3, 1024, 2048), dtype='float32')
+                    #                     print(images)
+                    #                     logits = model(images)
+                    #                     #                     inputs = {'images': images, 'gts': labels}
+                    #                     #                     logits = model(inputs)
+                    #                     a, b, c = logits
+                    #                     print(a)
+                    #                     print(b)
+                    #                     print(c)
+                    #                     print(paddle.sum(a), paddle.sum(b), paddle.sum(c))
+                    #                     exit()
+
                     logits = model(images)
-                    #                     inputs = {'images': images, 'gts': labels}
-                    #                     logits = model(inputs)
-                    a, b, c = logits
-                    print(a)
-                    print(b)
-                    print(c)
-                    print(paddle.sum(a), paddle.sum(b), paddle.sum(c))
-                    exit()
-
                     loss = loss_computation(logits, labels, losses)
                     loss.backward()
                 optimizer.step()

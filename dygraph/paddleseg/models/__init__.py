@@ -26,4 +26,5 @@ from .ocrnet import *
 from .pspnet import *
 from .unet import UNet
 from .mscale_ocr_finetune import MscaleOCRFinetune
+from .mscale_ocr_pretrain import MscaleOCRPretrain
 # from .mscale_ocr import *
