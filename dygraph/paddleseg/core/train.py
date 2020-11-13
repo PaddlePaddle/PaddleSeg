@@ -34,16 +34,18 @@ def check_logits_losses(logits, losses):
 def loss_computation(logits, label, losses):
     check_logits_losses(logits, losses)
     loss = 0
+    #     print('=========')
     for i in range(len(logits)):
         logit = logits[i]
-        if logit.shape[-2:] != label.shape[-2:]:
-            logit = F.interpolate(
-                logit,
-                label.shape[-2:],
-                mode='bilinear',
-                align_corners=True,
-                align_mode=1)
+        #         if logit.shape[-2:] != label.shape[-2:]:
+        #             logit = F.interpolate(
+        #                 logit,
+        #                 label.shape[-2:],
+        #                 mode='bilinear',
+        #                 align_corners=True,
+        #                 align_mode=1)
         loss_i = losses['types'][i](logit, label)
+        #         print(i, losses['coef'][i], loss_i)
         loss += losses['coef'][i] * loss_i
     return loss
 
@@ -62,8 +64,8 @@ def train(model,
           use_vdl=False,
           losses=None):
 
-    #     restore, _ = paddle.fluid.load_dygraph("./pretrain/ocr_pretrain/model")
-    #     model.set_dict(restore)
+    restore, _ = paddle.fluid.load_dygraph("./pretrain/ocr_pretrain/model")
+    model.set_dict(restore)
 
     nranks = paddle.distributed.ParallelEnv().nranks
     local_rank = paddle.distributed.ParallelEnv().local_rank
@@ -143,40 +145,61 @@ def train(model,
                     optimizer._learning_rate.step()
                 model.clear_gradients()
             else:
-                #                 if nranks > 1:
-                #                     logits = ddp_model(images)
-                #                     loss = loss_computation(logits, labels, losses)
-                #                     loss.backward()
-                #                 else:
-                #                     logits = model(images)
-                #                     loss = loss_computation(logits, labels, losses)
-                #                     loss.backward()
-                #                 optimizer.step()
-                #                 lr = optimizer.get_lr()
-                #                 if isinstance(optimizer._learning_rate,
-                #                               paddle.optimizer.lr.LRScheduler):
-                #                     optimizer._learning_rate.step()
-                #                 model.clear_gradients()
+                if nranks > 1:
+                    logits = ddp_model(images)
+                    loss = loss_computation(logits, labels, losses)
+                    loss.backward()
+                else:
+                    logits = model(images)
+                    loss = loss_computation(logits, labels, losses)
+                    loss.backward()
+                optimizer.step()
+                lr = optimizer.get_lr()
+                if isinstance(optimizer._learning_rate,
+                              paddle.optimizer.lr.LRScheduler):
+                    optimizer._learning_rate.step()
+                model.clear_gradients()
 
-                restore, _ = paddle.fluid.load_dygraph(
-                    "./pretrain/ocr_finetune_good/model")
-                model.set_dict(restore)
 
-                #                     images = paddle.arange(6291456, dtype='float32')
-                #                     images = paddle.reshape(images, (1, 3, 1024, 2048))
-                images = 5 * paddle.ones((1, 3, 1024, 2048), dtype='float32')
-                labels = 9 * paddle.ones((1, 1, 1024, 2048), dtype='int64')
-                #             print(images)
-                logits = model(images)
-                loss = loss_computation(logits, labels, losses)
-                print(loss)
+######################### debug
+#                 restore, _ = paddle.fluid.load_dygraph(
+#                     "./pretrain/ocr_finetune_good/model")
+#                 model.set_dict(restore)
 
-                #             a, b, c = logits
-                #             print(a)
-                #             print(b)
-                #             print(c)
-                #             print(paddle.sum(a), paddle.sum(b), paddle.sum(c))
-                exit()
+#                     images = paddle.arange(6291456, dtype='float32')
+#                     images = paddle.reshape(images, (1, 3, 1024, 2048))
+#                 images = 5 * paddle.ones((1, 3, 1024, 2048), dtype='float32')
+#                 labels = 9 * paddle.ones((1, 1, 1024, 2048), dtype='int64')
+#             print(images)
+#                 model.eval()
+#                 logits = model(images)
+
+#                 import numpy as np
+#                 np.random.seed(6)
+#                 a = paddle.to_tensor(np.random.rand(1, 19, 1024, 2048).astype("float32"))
+#                 b = paddle.to_tensor(np.random.rand(1, 19, 1024, 2048).astype("float32"))
+#                 print(a, '\n', b)
+#                 c = paddle.to_tensor(np.random.rand(1, 19, 1024, 2048).astype("float32"))
+#                 d = paddle.to_tensor(np.random.rand(1, 19, 1024, 2048).astype("float32"))
+
+#                 a = paddle.reshape(paddle.arange(0, 200).astype("float32"), [1,2,10,10]) / 800
+#                 b = paddle.reshape(paddle.arange(200, 400).astype("float32"), [1,2,10,10]) / 800
+#                 c = paddle.reshape(paddle.arange(400, 600).astype("float32"), [1,2,10,10]) / 800
+#                 d = paddle.reshape(paddle.arange(600, 800).astype("float32"), [1,2,10,10]) / 800
+#                 labels = paddle.ones((1, 1, 10, 10), dtype='int64')
+#                 logits = [a, b, c, d]
+#                 print(a, '\n', b)
+#                 print('==========')
+#                 loss = loss_computation(logits, labels, losses)
+#                 print(loss)
+
+#                 #             a, b, c = logits
+#                 #             print(a)
+#                 #             print(b)
+#                 #             print(c)
+#                 #             print(paddle.sum(a), paddle.sum(b), paddle.sum(c))
+#                 exit()
+###############################
 
             avg_loss += loss.numpy()[0]
             train_batch_cost += timer.elapsed_time()
