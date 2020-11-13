@@ -66,10 +66,10 @@ def evaluate(model, eval_dataset=None, iter_id=None):
                     calculate_eta(remain_iter, time_iter)))
         timer.restart()
 
-    category_iou, miou = conf_mat.mean_iou()
-    category_acc, acc = conf_mat.accuracy()
+    class_iou, miou = conf_mat.mean_iou()
+    class_acc, acc = conf_mat.accuracy()
     logger.info("[EVAL] #Images={} mIoU={:.4f} Acc={:.4f} Kappa={:.4f} ".format(
         len(eval_dataset), miou, acc, conf_mat.kappa()))
-    logger.info("[EVAL] Category IoU: \n" + str(np.round(category_iou, 4)))
-    logger.info("[EVAL] Category Acc: \n" + str(np.round(category_acc, 4)))
+    logger.info("[EVAL] Class IoU: \n" + str(np.round(class_iou, 4)))
+    logger.info("[EVAL] Class Acc: \n" + str(np.round(class_acc, 4)))
     return miou, acc
