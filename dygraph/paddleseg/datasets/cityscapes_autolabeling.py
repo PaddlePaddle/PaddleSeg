@@ -112,9 +112,12 @@ class CityscapesAutolabeling(paddle.io.Dataset):
             label = label[np.newaxis, np.newaxis, :, :]
             return im, im_info, label
         else:
-
-            if idx / self.num_files < self.coase_proba:
-                image_path, label_path = self.coarse_file_list[idx]
+            if idx / self.num_files < self.coarse_proba:
+                rand_idx = np.random.randint(0, len(self.coarse_file_list))
+                image_path, label_path = self.coarse_file_list[rand_idx]
+            else:
+                rand_idx = np.random.randint(0, len(self.file_list))
+                image_path, label_path = self.file_list[rand_idx]
 
             im, im_info, label = self.transforms(
                 im=image_path, label=label_path)
