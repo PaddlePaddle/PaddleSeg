@@ -16,42 +16,22 @@ import os
 import glob
 import random
 
-from paddleseg.datasets import Dataset
+import paddle
+import numpy as np
+import PIL
+
 from paddleseg.cvlibs import manager
 from paddleseg.transforms import Compose
 
 
 @manager.DATASETS.add_component
-class CityscapesAutolabeling(Dataset):
+class CityscapesAutolabeling(paddle.io.Dataset):
     """
-    Cityscapes dataset `https://www.cityscapes-dataset.com/`.
-    The folder structure is as follow:
-
-        cityscapes
-        |
-        |--leftImg8bit
-        |  |--train
-        |  |--val
-        |  |--test
-        |
-        |--gtFine
-        |  |--train
-        |  |--val
-        |  |--test
-
-    Make sure there are **labelTrainIds.png in gtFine directory. If not, please run the conver_cityscapes.py in tools.
-
-    Args:
-        transforms (list): Transforms for image.
-        dataset_root (str): Cityscapes dataset directory.
-        mode (str): Which part of dataset to use. it is one of ('train', 'val', 'test'). Default: 'train'.
+    TODO: rewrite the comments
     """
 
-    def __init__(self,
-                 transforms,
-                 dataset_root,
-                 mode='train',
-                 autolabeling_percentage=0.5):
+    def __init__(self, transforms, dataset_root, mode='train',
+                 coarse_proba=0.5):
         self.dataset_root = dataset_root
         self.transforms = Compose(transforms)
         self.file_list = list()
@@ -59,6 +39,7 @@ class CityscapesAutolabeling(Dataset):
         self.mode = mode
         self.num_classes = 19
         self.ignore_index = 255
+        self.coarse_proba = coarse_proba
 
         if mode not in ['train', 'val', 'test']:
             raise ValueError(
@@ -89,44 +70,55 @@ class CityscapesAutolabeling(Dataset):
         ] for img_path, label_path in zip(img_files, label_files)]
 
         if mode == 'train':
-            random.shuffle(self.file_list)
 
-            total_num = len(self.file_list)
-            autolabeling_num = int(total_num * autolabeling_percentage)
-            origin_num = total_num - autolabeling_num
-
-            self.file_list = self.file_list[:origin_num]
-
-            # count autolabeling
+            # use coarse dataset only in training
             img_dir = os.path.join(self.dataset_root, 'leftImg8bit_trainextra',
                                    'leftImg8bit', 'train_extra')
             label_dir = os.path.join(self.dataset_root, 'convert_autolabelled')
-            # label_dir = os.path.join(self.dataset_root, 'autolabelled',
-            #                          'train_extra')
+
             if self.dataset_root is None or not os.path.isdir(
                     self.dataset_root) or not os.path.isdir(
                         img_dir) or not os.path.isdir(label_dir):
                 raise ValueError(
-                    "The dataset is not Found or the folder structure is nonconfoumance."
+                    "The coarse dataset is not Found or the folder structure is nonconfoumance."
                 )
 
-            autolabeling_label_files = sorted(
+            coarse_label_files = sorted(
                 glob.glob(os.path.join(label_dir, '*', '*_leftImg8bit.png')))
-            autolabeling_img_files = sorted(
+            coarse_img_files = sorted(
                 glob.glob(os.path.join(img_dir, '*', '*_leftImg8bit.png')))
-            if len(autolabeling_img_files) != len(autolabeling_label_files):
+            if len(coarse_img_files) != len(coarse_label_files):
                 raise ValueError(
                     "The number of images = {} is not equal to the number of labels = {} in Cityscapes Autolabeling dataset."
-                    .format(
-                        len(autolabeling_img_files),
-                        len(autolabeling_label_files)))
+                    .format(len(coarse_img_files), len(coarse_label_files)))
 
-            autolabeling_file_list = [
-                [img_path, label_path] for img_path, label_path in zip(
-                    autolabeling_img_files, autolabeling_label_files)
-            ]
-            random.shuffle(autolabeling_file_list)
-            autolabeling_file_list = autolabeling_file_list[:autolabeling_num]
+            self.coarse_file_list = [[img_path, label_path]
+                                     for img_path, label_path in zip(
+                                         coarse_img_files, coarse_label_files)]
 
-            self.file_list.extend(autolabeling_file_list)
-        pass
+            # Keep the same number of files in one epoch even using coarse data.
+            self.num_files = len(self.file_list)
+
+    def __getitem__(self, idx):
+        image_path, label_path = self.file_list[idx]
+        if self.mode == 'test':
+            im, im_info, _ = self.transforms(im=image_path)
+            im = im[np.newaxis, ...]
+            return im, im_info, image_path
+        elif self.mode == 'val':
+            im, im_info, _ = self.transforms(im=image_path)
+            im = im[np.newaxis, ...]
+            label = np.asarray(PIL.Image.open(label_path))
+            label = label[np.newaxis, np.newaxis, :, :]
+            return im, im_info, label
+        else:
+
+            if idx / self.num_files < self.coase_proba:
+                image_path, label_path = self.coarse_file_list[idx]
+
+            im, im_info, label = self.transforms(
+                im=image_path, label=label_path)
+            return im, label
+
+    def __len__(self):
+        return self.num_files
