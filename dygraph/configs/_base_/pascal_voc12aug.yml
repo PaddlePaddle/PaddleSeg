@@ -1,43 +1,4 @@
-batch_size: 4
-iters: 40000
+_base_: './pascal_voc12.yml'
 
 train_dataset:
-  type: PascalVOC
-  dataset_root: data/VOCdevkit/
-  transforms:
-    - type: ResizeStepScaling
-      min_scale_factor: 0.5
-      max_scale_factor: 2.0
-      scale_step_size: 0.25
-    - type: RandomPaddingCrop
-      crop_size: [512, 512]
-    - type: RandomHorizontalFlip
-    - type: Normalize
   mode: trainaug
-
-val_dataset:
-  type: PascalVOC
-  dataset_root: data/VOCdevkit/
-  transforms:
-    - type: Padding
-      target_size: [512, 512]
-    - type: Normalize
-  mode: val
-
-
-optimizer:
-  type: sgd
-  momentum: 0.9
-  weight_decay: 4.0e-5
-
-learning_rate:
-  value: 0.01
-  decay:
-    type: poly
-    power: 0.9
-    end_lr: 0.0
-
-loss:
-  types:
-    - type: CrossEntropyLoss
-  coef: [1]
