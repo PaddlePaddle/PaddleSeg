@@ -7,7 +7,7 @@
 
 ### Cityscapes
 
-| Model | Backbone | Resolution | Training Iters | mIoU | mIoU (multi-scale) | Links |
-|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
-|FCN|HRNet_W18|1024x512|80000|80.34%|-|[model](https://paddleseg.bj.bcebos.com/dygraph/fcn_hrnetw18_cityscapes_1024x512_80k/model.pdparams) \| [log](https://paddleseg.bj.bcebos.com/dygraph/fcn_hrnetw18_cityscapes_1024x512_80k/train.log) \| [vdl](https://paddlepaddle.org.cn/paddle/visualdl/service/app?id=141ed1c7aa77474ec2a2d063713570f9)|
-|FCN|HRNet_W48|1024x512|80000|81.17%|-|[model](https://paddleseg.bj.bcebos.com/dygraph/fcn_hrnetw48_cityscapes_1024x512_80k/model.pdparams) \| [log](https://paddleseg.bj.bcebos.com/dygraph/fcn_hrnetw48_cityscapes_1024x512_80k/train.log) \| [vdl](https://paddlepaddle.org.cn/paddle/visualdl/service/app?id=6f219d4b9bab266385ab6023ea097aa6)|
+| Model | Backbone | Resolution | Training Iters | mIoU | mIoU (flip) | mIoU (ms+flip) | Links |
+|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
+|FCN|HRNet_W18|1024x512|80000|78.97%|79.49%|79.74%|[model](https://bj.bcebos.com/paddleseg/dygraph/cityscapes/fcn_hrnetw18_cityscapes_1024x512_80k/model.pdparams) \| [log](https://bj.bcebos.com/paddleseg/dygraph/cityscapes/fcn_hrnetw18_cityscapes_1024x512_80k/train.log) \| [vdl](https://paddlepaddle.org.cn/paddle/visualdl/service/app?id=bebec8e1a3802c4babd3c69e1bf50d51)|
+|FCN|HRNet_W48|1024x512|80000|80.70%|81.24%|81.56%|[model](https://bj.bcebos.com/paddleseg/dygraph/cityscapes/fcn_hrnetw48_cityscapes_1024x512_80k/model.pdparams) \| [log](https://bj.bcebos.com/paddleseg/dygraph/cityscapes/fcn_hrnetw48_cityscapes_1024x512_80k/train.log) \| [vdl](https://paddlepaddle.org.cn/paddle/visualdl/service/app?id=ae1cb76014cdc54406c36f1e3dc2a530)|
