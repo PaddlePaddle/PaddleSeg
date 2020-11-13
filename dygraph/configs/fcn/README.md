@@ -16,4 +16,4 @@
 
 | Model | Backbone | Resolution | Training Iters | mIoU | mIoU (flip) | mIoU (ms+flip) | Links |
 |:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
-|FCN|HRNet_W18|512x512|40000|75.39%|76.04%|77.09%|[model](https://bj.bcebos.com/paddleseg/dygraph/cityscapes/fcn_hrnetw18_voc12aug_512x512_40k/model.pdparams) \| [log](https://bj.bcebos.com/paddleseg/dygraph/cityscapes/fcn_hrnetw18_voc12aug_512x512_40k/train.log) \| [vdl](https://paddlepaddle.org.cn/paddle/visualdl/service/app?id=fbe6caaca0f7d7ea1dba1c60b8db2a7e)|
+|FCN|HRNet_W18|512x512|40000|75.39%|76.04%|77.09%|[model](https://bj.bcebos.com/paddleseg/dygraph/pascal_voc12/fcn_hrnetw18_voc12aug_512x512_40k/model.pdparams) \| [log](https://bj.bcebos.com/paddleseg/dygraph/pascal_voc12/fcn_hrnetw18_voc12aug_512x512_40k/train.log) \| [vdl](https://paddlepaddle.org.cn/paddle/visualdl/service/app?id=fbe6caaca0f7d7ea1dba1c60b8db2a7e)|
