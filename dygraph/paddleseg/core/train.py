@@ -62,8 +62,8 @@ def train(model,
           use_vdl=False,
           losses=None):
 
-    restore, _ = paddle.fluid.load_dygraph("./pretrain/ocr_pretrain/model")
-    model.set_dict(restore)
+    #     restore, _ = paddle.fluid.load_dygraph("./pretrain/ocr_pretrain/model")
+    #     model.set_dict(restore)
 
     nranks = paddle.distributed.ParallelEnv().nranks
     local_rank = paddle.distributed.ParallelEnv().local_rank
@@ -119,9 +119,10 @@ def train(model,
                 break
             train_reader_cost += timer.elapsed_time()
             images = data[0]
-            images = paddle.reshape(images, images.shape)
             labels = data[1].astype('int64')
+
             if fp16:
+                images = paddle.reshape(images, images.shape)
                 #print(images.name, images, images._place_str)
                 #break
                 with paddle.amp.auto_cast():
@@ -142,40 +143,40 @@ def train(model,
                     optimizer._learning_rate.step()
                 model.clear_gradients()
             else:
-                if nranks > 1:
-                    logits = ddp_model(images)
-                    loss = loss_computation(logits, labels, losses)
-                    loss.backward()
-                else:
-                    logits = model(images)
-                    loss = loss_computation(logits, labels, losses)
-                    loss.backward()
-                optimizer.step()
-                lr = optimizer.get_lr()
-                if isinstance(optimizer._learning_rate,
-                              paddle.optimizer.lr.LRScheduler):
-                    optimizer._learning_rate.step()
-                model.clear_gradients()
-
-                #                     restore, _ = paddle.fluid.load_dygraph(
-                #                         "/ssd1/home/chulutao/semantic-segmentation-convert/ocr_new/model"
-                #                     )
-                #                     model.set_dict(restore)
-
-                #                     #                     images = paddle.arange(6291456, dtype='float32')
-                #                     #                     images = paddle.reshape(images, (1, 3, 1024, 2048))
-                #                     images = 5 * paddle.ones(
-                #                         (1, 3, 1024, 2048), dtype='float32')
-                #                     print(images)
+                #                 if nranks > 1:
+                #                     logits = ddp_model(images)
+                #                     loss = loss_computation(logits, labels, losses)
+                #                     loss.backward()
+                #                 else:
                 #                     logits = model(images)
-                #                     #                     inputs = {'images': images, 'gts': labels}
-                #                     #                     logits = model(inputs)
-                #                     a, b, c = logits
-                #                     print(a)
-                #                     print(b)
-                #                     print(c)
-                #                     print(paddle.sum(a), paddle.sum(b), paddle.sum(c))
-                #                     exit()
+                #                     loss = loss_computation(logits, labels, losses)
+                #                     loss.backward()
+                #                 optimizer.step()
+                #                 lr = optimizer.get_lr()
+                #                 if isinstance(optimizer._learning_rate,
+                #                               paddle.optimizer.lr.LRScheduler):
+                #                     optimizer._learning_rate.step()
+                #                 model.clear_gradients()
+
+                restore, _ = paddle.fluid.load_dygraph(
+                    "./pretrain/ocr_finetune_good/model")
+                model.set_dict(restore)
+
+                #                     images = paddle.arange(6291456, dtype='float32')
+                #                     images = paddle.reshape(images, (1, 3, 1024, 2048))
+                images = 5 * paddle.ones((1, 3, 1024, 2048), dtype='float32')
+                labels = 9 * paddle.ones((1, 1, 1024, 2048), dtype='int64')
+                #             print(images)
+                logits = model(images)
+                loss = loss_computation(logits, labels, losses)
+                print(loss)
+
+                #             a, b, c = logits
+                #             print(a)
+                #             print(b)
+                #             print(c)
+                #             print(paddle.sum(a), paddle.sum(b), paddle.sum(c))
+                exit()
 
             avg_loss += loss.numpy()[0]
             train_batch_cost += timer.elapsed_time()
