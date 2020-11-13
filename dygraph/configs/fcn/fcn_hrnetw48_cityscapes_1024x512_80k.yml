@@ -1,15 +1,6 @@
-_base_: '../_base_/cityscapes.yml'
+_base_: './fcn_hrnetw18_cityscapes_1024x512_80k.yml'
 
 model:
-  type: FCN
   backbone:
     type: HRNet_W48
     pretrained: https://bj.bcebos.com/paddleseg/dygraph/hrnet_w48_ssld.tar.gz
-  num_classes: 19
-  pretrained: Null
-  backbone_indices: [-1]
-
-optimizer:
-  weight_decay: 0.0005
-
-iters: 80000

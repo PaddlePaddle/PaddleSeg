@@ -45,6 +45,7 @@ from eval import evaluate
 from vis import visualize
 from utils import dist_utils
 from utils.load_model_utils import load_pretrained_weights
+from utils import paddle_utils
 
 import solver
 from paddleslim.dist.single_distiller import merge, l2_loss
@@ -518,4 +519,5 @@ if __name__ == '__main__':
             "Please: 1. Install paddlepaddle-gpu to run your models on GPU or 2. Set use_gpu=False to run models on CPU."
         )
         sys.exit(1)
+    paddle_utils.enable_static()
     main(args)

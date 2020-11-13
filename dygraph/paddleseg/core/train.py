@@ -34,16 +34,18 @@ def check_logits_losses(logits, losses):
 def loss_computation(logits, label, losses):
     check_logits_losses(logits, losses)
     loss = 0
+    #     print('=========')
     for i in range(len(logits)):
         logit = logits[i]
-        if logit.shape[-2:] != label.shape[-2:]:
-            logit = F.interpolate(
-                logit,
-                label.shape[-2:],
-                mode='bilinear',
-                align_corners=True,
-                align_mode=1)
+        #         if logit.shape[-2:] != label.shape[-2:]:
+        #             logit = F.interpolate(
+        #                 logit,
+        #                 label.shape[-2:],
+        #                 mode='bilinear',
+        #                 align_corners=True,
+        #                 align_mode=1)
         loss_i = losses['types'][i](logit, label)
+        #         print(i, losses['coef'][i], loss_i)
         loss += losses['coef'][i] * loss_i
     return loss
 
@@ -61,6 +63,10 @@ def train(model,
           num_workers=0,
           use_vdl=False,
           losses=None):
+
+    restore, _ = paddle.fluid.load_dygraph("./pretrain/ocr_pretrain/model")
+    model.set_dict(restore)
+
     nranks = paddle.distributed.ParallelEnv().nranks
     local_rank = paddle.distributed.ParallelEnv().local_rank
 
@@ -102,6 +108,11 @@ def train(model,
     train_batch_cost = 0.0
     timer.start()
 
+    fp16 = False
+    if fp16:
+        print('turn on fp16!!!')
+        scaler = paddle.amp.GradScaler(init_loss_scaling=1024)
+
     iter = start_iter
     while iter < iters:
         for data in loader:
@@ -111,25 +122,85 @@ def train(model,
             train_reader_cost += timer.elapsed_time()
             images = data[0]
             labels = data[1].astype('int64')
-            if nranks > 1:
-                logits = ddp_model(images)
-                loss = loss_computation(logits, labels, losses)
-                # loss = ddp_model.scale_loss(loss)
-                loss.backward()
-                # ddp_model.apply_collective_grads()
+
+            if fp16:
+                images = paddle.reshape(images, images.shape)
+                #print(images.name, images, images._place_str)
+                #break
+                with paddle.amp.auto_cast():
+
+                    if nranks > 1:
+                        logits = ddp_model(images)
+                    else:
+                        logits = model(images)
+                    loss = loss_computation(logits, labels, losses)
+
+                scaled = scaler.scale(loss)
+                #                     print('loss:', loss, '\nscaled:', scaled)
+                scaled.backward()
+                scaler.minimize(optimizer, scaled)
+                lr = optimizer.get_lr()
+                if isinstance(optimizer._learning_rate,
+                              paddle.optimizer.lr.LRScheduler):
+                    optimizer._learning_rate.step()
+                model.clear_gradients()
             else:
-                logits = model(images)
-                loss = loss_computation(logits, labels, losses)
-                loss.backward()
-            optimizer.step()
-            lr = optimizer.get_lr()
-            if isinstance(optimizer._learning_rate,
-                          paddle.optimizer.lr.LRScheduler):
-                optimizer._learning_rate.step()
-            model.clear_gradients()
-            # Sum loss over all ranks
-            # if nranks > 1:
-            #     paddle.distributed.all_reduce(loss)
+                if nranks > 1:
+                    logits = ddp_model(images)
+                    loss = loss_computation(logits, labels, losses)
+                    loss.backward()
+                else:
+                    logits = model(images)
+                    loss = loss_computation(logits, labels, losses)
+                    loss.backward()
+                optimizer.step()
+                lr = optimizer.get_lr()
+                if isinstance(optimizer._learning_rate,
+                              paddle.optimizer.lr.LRScheduler):
+                    optimizer._learning_rate.step()
+                model.clear_gradients()
+
+
+######################### debug
+#                 restore, _ = paddle.fluid.load_dygraph(
+#                     "./pretrain/ocr_finetune_good/model")
+#                 model.set_dict(restore)
+
+#                     images = paddle.arange(6291456, dtype='float32')
+#                     images = paddle.reshape(images, (1, 3, 1024, 2048))
+#                 images = 5 * paddle.ones((1, 3, 1024, 2048), dtype='float32')
+#                 labels = 9 * paddle.ones((1, 1, 1024, 2048), dtype='int64')
+#             print(images)
+#                 model.eval()
+#                 logits = model(images)
+
+#                 import numpy as np
+#                 np.random.seed(6)
+#                 a = paddle.to_tensor(np.random.rand(1, 19, 1024, 2048).astype("float32"))
+#                 b = paddle.to_tensor(np.random.rand(1, 19, 1024, 2048).astype("float32"))
+#                 print(a, '\n', b)
+#                 c = paddle.to_tensor(np.random.rand(1, 19, 1024, 2048).astype("float32"))
+#                 d = paddle.to_tensor(np.random.rand(1, 19, 1024, 2048).astype("float32"))
+
+#                 a = paddle.reshape(paddle.arange(0, 200).astype("float32"), [1,2,10,10]) / 800
+#                 b = paddle.reshape(paddle.arange(200, 400).astype("float32"), [1,2,10,10]) / 800
+#                 c = paddle.reshape(paddle.arange(400, 600).astype("float32"), [1,2,10,10]) / 800
+#                 d = paddle.reshape(paddle.arange(600, 800).astype("float32"), [1,2,10,10]) / 800
+#                 labels = paddle.ones((1, 1, 10, 10), dtype='int64')
+#                 logits = [a, b, c, d]
+#                 print(a, '\n', b)
+#                 print('==========')
+#                 loss = loss_computation(logits, labels, losses)
+#                 print(loss)
+
+#                 #             a, b, c = logits
+#                 #             print(a)
+#                 #             print(b)
+#                 #             print(c)
+#                 #             print(paddle.sum(a), paddle.sum(b), paddle.sum(c))
+#                 exit()
+###############################
+
             avg_loss += loss.numpy()[0]
             train_batch_cost += timer.elapsed_time()
             if (iter) % log_iters == 0 and local_rank == 0:
@@ -154,6 +225,12 @@ def train(model,
                                           avg_train_reader_cost, iter)
                 avg_loss = 0.0
 
+            if (iter % save_interval == 0
+                    or iter == iters) and (val_dataset is not None):
+                mean_iou, acc = evaluate(
+                    model, val_dataset, iter_id=iter, num_workers=num_workers)
+                model.train()
+
             if (iter % save_interval == 0 or iter == iters) and local_rank == 0:
                 current_save_dir = os.path.join(save_dir,
                                                 "iter_{}".format(iter))
@@ -165,7 +242,6 @@ def train(model,
                             os.path.join(current_save_dir, 'model.pdopt'))
 
                 if val_dataset is not None:
-                    mean_iou, acc = evaluate(model, val_dataset, iter_id=iter)
                     if mean_iou > best_mean_iou:
                         best_mean_iou = mean_iou
                         best_model_iter = iter
@@ -180,7 +256,6 @@ def train(model,
                     if use_vdl:
                         log_writer.add_scalar('Evaluate/mIoU', mean_iou, iter)
                         log_writer.add_scalar('Evaluate/Acc', acc, iter)
-                    model.train()
             timer.restart()
 
     # Sleep for half a second to let dataloader release resources.

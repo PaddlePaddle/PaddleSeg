@@ -65,12 +65,13 @@ class Cityscapes(Dataset):
 
         img_dir = os.path.join(self.dataset_root, 'leftImg8bit')
         label_dir = os.path.join(self.dataset_root, 'gtFine')
-        if self.dataset_root is None or not os.path.isdir(
-                self.dataset_root) or not os.path.isdir(
-                    img_dir) or not os.path.isdir(label_dir):
-            raise ValueError(
-                "The dataset is not Found or the folder structure is nonconfoumance."
-            )
+        if self.dataset_root is None or not os.path.isdir(self.dataset_root):
+            raise FileNotFoundError("Do not find dataset root {}".format(
+                self.dataset_root))
+        if not os.path.isdir(img_dir) or not os.path.isdir(label_dir):
+            raise FileNotFoundError(
+                'The dataset folder structure is nonconfoumance. Do not find images directory {} or labels directory {}'
+                .format(img_dir, label_dir))
 
         label_files = sorted(
             glob.glob(

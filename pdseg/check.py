@@ -601,7 +601,7 @@ def check_test_dataset():
                 if not is_label_correct:
                     label_wrong.append(line)
             else:
-                list_wrong.append(lines)
+                list_wrong.append(line)
                 continue
             get_image_max_height_width(img)
             get_image_min_max_aspectratio(img)

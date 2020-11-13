@@ -55,7 +55,7 @@ class FastSCNN(nn.Layer):
             out_channels=128,
             expansion=6,
             num_blocks=[3, 3, 3],
-            align_corners=align_corners)
+            align_corners=True)
         self.feature_fusion = FeatureFusionModule(64, 128, 128, align_corners)
         self.classifier = Classifier(128, num_classes)
 

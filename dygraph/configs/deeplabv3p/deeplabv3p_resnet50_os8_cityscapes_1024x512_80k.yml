@@ -1,0 +1,18 @@
+_base_: '../_base_/cityscapes.yml'
+
+batch_size: 2
+iters: 80000
+
+model:
+  type: DeepLabV3P
+  backbone:
+    type: ResNet50_vd
+    output_stride: 8
+    multi_grid: [1, 2, 4]
+    pretrained: https://bj.bcebos.com/paddleseg/dygraph/resnet50_vd_ssld_v2.tar.gz
+  num_classes: 19
+  backbone_indices: [0, 3]
+  aspp_ratios: [1, 12, 24, 36]
+  aspp_out_channels: 256
+  align_corners: False
+  pretrained: null
