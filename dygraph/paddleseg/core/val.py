@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import os
+import collections.abc
 
 import numpy as np
 import paddle
@@ -93,9 +94,13 @@ def evaluate(model, eval_dataset=None, iter_id=None, num_workers=0):
         label = label.astype('int64')
 
         logits = model(im)
+        if not isinstance(logits, collections.abc.Sequence):
+            raise TypeError(
+                "The type of logits must be one of collections.abc.Sequence, e.g. list, tuple. But received {}"
+                .format(type(logits)))
+
         pred = logits[0]
-        #         pred = paddle.argmax(pred, axis=1, keepdim=True, dtype='int32')
-        pred = paddle.argmax(pred, axis=0, keepdim=True, dtype='int32')
+        pred = paddle.argmax(pred, axis=1, keepdim=True, dtype='int32')
         pred = reverse_transform(pred, label,
                                  eval_dataset.transforms.transforms)
 

@@ -66,11 +66,9 @@ def main(args):
     logger.info(msg)
 
     model = cfg.model
-    #     para_state_dict = paddle.load(args.model_path)
-    #     model.set_dict(para_state_dict)
+    para_state_dict = paddle.load(args.model_path)
+    model.set_dict(para_state_dict)
 
-    restore, _ = paddle.fluid.load_dygraph("./pretrain/ocr_finetune_good/model")
-    model.set_dict(restore)
     logger.info('Loaded trained params of model successfully')
 
     evaluate(model, val_dataset, num_workers=args.num_workers)

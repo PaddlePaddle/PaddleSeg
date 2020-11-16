@@ -1,19 +1,36 @@
 import math
 
 import paddle
+import paddle.nn as nn
 import paddle.fluid as fluid
-from paddleseg.cvlibs import manager
+from paddleseg.cvlibs import manager, param_init
+from paddleseg.utils import utils
+from paddleseg.models import layers
+'''add init_weight, dropout and syncbn'''
 
 
 @manager.MODELS.add_component
 class MscaleOCRFinetune(fluid.dygraph.Layer):
-    def __init__(self, params, num_classes=19):
+    def __init__(self, params, num_classes=19, pretrained=None):
         super().__init__()
+        self.pretrained = pretrained
         self.highresolutionnet0 = HighResolutionNet(params=params)
         self.ocr_block0 = OCR_block(params=params)
         self.scale_attn0 = Scale_attn(params=params)
+        self.init_weight()
+
+    def init_weight(self):
+        for layer in self.sublayers():
+            if isinstance(layer, nn.Conv2D):
+                param_init.normal_init(layer.weight, std=0.001)
+            elif isinstance(layer, (nn.BatchNorm, nn.SyncBatchNorm)):
+                param_init.constant_init(layer.weight, value=1.0)
+                param_init.constant_init(layer.bias, value=0.0)
+        if self.pretrained is not None:
+            utils.load_pretrained_model(self, self.pretrained)
 
     def forward(self, x, n_scales=[0.5, 1.0, 2.0]):
+        #         return self.two_scale_forward(x)
         if self.training:
             return self.two_scale_forward(x)
         else:
@@ -70,14 +87,13 @@ class MscaleOCRFinetune(fluid.dygraph.Layer):
         joint_aux = aux_lo + (1 - logit_attn) * aux_1x
 
         output = [joint_pred, joint_aux]
-        if self.training:
 
-            # Optionally, apply supervision to the multi-scale predictions
-            # directly. Turn off RMI to keep things lightweight
-            SUPERVISED_MSCALE_WT = 0.05
-            if SUPERVISED_MSCALE_WT:  ## sota=0.05
-                scaled_pred_05x = scale_as(pred_05x, p_1x)
-                output.extend([scaled_pred_05x, pred_10x])
+        # Optionally, apply supervision to the multi-scale predictions
+        # directly. Turn off RMI to keep things lightweight
+        SUPERVISED_MSCALE_WT = 0.05
+        if SUPERVISED_MSCALE_WT:  ## sota=0.05
+            scaled_pred_05x = scale_as(pred_05x, p_1x)
+            output.extend([scaled_pred_05x, pred_10x])
 
 #         print(output)
 #         print(paddle.sum(joint_pred), paddle.sum(joint_aux), paddle.sum(scaled_pred_05x), paddle.sum(pred_10x))
@@ -158,12 +174,10 @@ class MscaleOCRFinetune(fluid.dygraph.Layer):
                 pred = cls_out + (1 - attn_out) * pred
                 aux = aux_out + (1 - attn_out) * aux
 
+
 #         output_dict['pred'] = pred
 #         return output_dict
-        return pred
-
-
-#     def forward(self, x0):
+        return [pred]
 
     def single_scale_forward(self, x0):
         x0 = fluid.dygraph.base.to_variable(value=x0)
@@ -243,8 +257,7 @@ class Backbone_stage2_0_fuse_layers__1_1_0_0(fluid.dygraph.Layer):
             dilation=[1, 1],
             groups=1,
             in_channels=48)
-        self.bn0 = paddle.nn.BatchNorm(
-            is_test=True, num_channels=96, momentum=0.1, epsilon=1e-05)
+        self.bn0 = layers.SyncBatchNorm(96, momentum=0.1, epsilon=1e-05)
 
     def forward(self, x0):
         x1 = self.conv0(x0)
@@ -267,8 +280,7 @@ class Backbone_stage3_0_fuse_layers__3_1_0_0(fluid.dygraph.Layer):
             dilation=[1, 1],
             groups=1,
             in_channels=48)
-        self.bn0 = paddle.nn.BatchNorm(
-            is_test=True, num_channels=96, momentum=0.1, epsilon=1e-05)
+        self.bn0 = layers.SyncBatchNorm(96, momentum=0.1, epsilon=1e-05)
 
     def forward(self, x0):
         x1 = self.conv0(x0)
@@ -291,8 +303,7 @@ class Backbone_stage3_0_fuse_layers__5_2_0_0(fluid.dygraph.Layer):
             dilation=[1, 1],
             groups=1,
             in_channels=48)
-        self.bn0 = paddle.nn.BatchNorm(
-            is_test=True, num_channels=48, momentum=0.1, epsilon=1e-05)
+        self.bn0 = layers.SyncBatchNorm(48, momentum=0.1, epsilon=1e-05)
         self.relu0 = paddle.nn.ReLU()
 
     def forward(self, x0):
@@ -317,8 +328,7 @@ class Backbone_stage3_0_fuse_layers__5_2_0_1(fluid.dygraph.Layer):
             dilation=[1, 1],
             groups=1,
             in_channels=48)
-        self.bn0 = paddle.nn.BatchNorm(
-            is_test=True, num_channels=192, momentum=0.1, epsilon=1e-05)
+        self.bn0 = layers.SyncBatchNorm(192, momentum=0.1, epsilon=1e-05)
 
     def forward(self, x0):
         x1 = self.conv0(x0)
@@ -341,8 +351,7 @@ class Backbone_stage3_0_fuse_layers__5_2_1_0(fluid.dygraph.Layer):
             dilation=[1, 1],
             groups=1,
             in_channels=96)
-        self.bn0 = paddle.nn.BatchNorm(
-            is_test=True, num_channels=192, momentum=0.1, epsilon=1e-05)
+        self.bn0 = layers.SyncBatchNorm(192, momentum=0.1, epsilon=1e-05)
 
     def forward(self, x0):
         x1 = self.conv0(x0)
@@ -365,8 +374,7 @@ class Backbone_stage3_1_fuse_layers__7_1_0_0(fluid.dygraph.Layer):
             dilation=[1, 1],
             groups=1,
             in_channels=48)
-        self.bn0 = paddle.nn.BatchNorm(
-            is_test=True, num_channels=96, momentum=0.1, epsilon=1e-05)
+        self.bn0 = layers.SyncBatchNorm(96, momentum=0.1, epsilon=1e-05)
 
     def forward(self, x0):
         x1 = self.conv0(x0)
@@ -389,8 +397,7 @@ class Backbone_stage3_1_fuse_layers__9_2_0_0(fluid.dygraph.Layer):
             dilation=[1, 1],
             groups=1,
             in_channels=48)
-        self.bn0 = paddle.nn.BatchNorm(
-            is_test=True, num_channels=48, momentum=0.1, epsilon=1e-05)
+        self.bn0 = layers.SyncBatchNorm(48, momentum=0.1, epsilon=1e-05)
         self.relu0 = paddle.nn.ReLU()
 
     def forward(self, x0):
@@ -415,8 +422,7 @@ class Backbone_stage3_1_fuse_layers__9_2_0_1(fluid.dygraph.Layer):
             dilation=[1, 1],
             groups=1,
             in_channels=48)
-        self.bn0 = paddle.nn.BatchNorm(
-            is_test=True, num_channels=192, momentum=0.1, epsilon=1e-05)
+        self.bn0 = layers.SyncBatchNorm(192, momentum=0.1, epsilon=1e-05)
 
     def forward(self, x0):
         x1 = self.conv0(x0)
@@ -439,8 +445,7 @@ class Backbone_stage3_1_fuse_layers__9_2_1_0(fluid.dygraph.Layer):
             dilation=[1, 1],
             groups=1,
             in_channels=96)
-        self.bn0 = paddle.nn.BatchNorm(
-            is_test=True, num_channels=192, momentum=0.1, epsilon=1e-05)
+        self.bn0 = layers.SyncBatchNorm(192, momentum=0.1, epsilon=1e-05)
 
     def forward(self, x0):
         x1 = self.conv0(x0)
@@ -463,8 +468,7 @@ class Backbone_stage3_2_fuse_layers__11_1_0_0(fluid.dygraph.Layer):
             dilation=[1, 1],
             groups=1,
             in_channels=48)
-        self.bn0 = paddle.nn.BatchNorm(
-            is_test=True, num_channels=96, momentum=0.1, epsilon=1e-05)
+        self.bn0 = layers.SyncBatchNorm(96, momentum=0.1, epsilon=1e-05)
 
     def forward(self, x0):
         x1 = self.conv0(x0)
@@ -487,8 +491,7 @@ class Backbone_stage3_2_fuse_layers__13_2_0_0(fluid.dygraph.Layer):
             dilation=[1, 1],
             groups=1,
             in_channels=48)
-        self.bn0 = paddle.nn.BatchNorm(
-            is_test=True, num_channels=48, momentum=0.1, epsilon=1e-05)
+        self.bn0 = layers.SyncBatchNorm(48, momentum=0.1, epsilon=1e-05)
         self.relu0 = paddle.nn.ReLU()
 
     def forward(self, x0):
@@ -513,8 +516,7 @@ class Backbone_stage3_2_fuse_layers__13_2_0_1(fluid.dygraph.Layer):
             dilation=[1, 1],
             groups=1,
             in_channels=48)
-        self.bn0 = paddle.nn.BatchNorm(
-            is_test=True, num_channels=192, momentum=0.1, epsilon=1e-05)
+        self.bn0 = layers.SyncBatchNorm(192, momentum=0.1, epsilon=1e-05)
 
     def forward(self, x0):
         x1 = self.conv0(x0)
@@ -537,8 +539,7 @@ class Backbone_stage3_2_fuse_layers__13_2_1_0(fluid.dygraph.Layer):
             dilation=[1, 1],
             groups=1,
             in_channels=96)
-        self.bn0 = paddle.nn.BatchNorm(
-            is_test=True, num_channels=192, momentum=0.1, epsilon=1e-05)
+        self.bn0 = layers.SyncBatchNorm(192, momentum=0.1, epsilon=1e-05)
 
     def forward(self, x0):
         x1 = self.conv0(x0)
@@ -561,8 +562,7 @@ class Backbone_stage3_3_fuse_layers__15_1_0_0(fluid.dygraph.Layer):
             dilation=[1, 1],
             groups=1,
             in_channels=48)
-        self.bn0 = paddle.nn.BatchNorm(
-            is_test=True, num_channels=96, momentum=0.1, epsilon=1e-05)
+        self.bn0 = layers.SyncBatchNorm(96, momentum=0.1, epsilon=1e-05)
 
     def forward(self, x0):
         x1 = self.conv0(x0)
@@ -585,8 +585,7 @@ class Backbone_stage3_3_fuse_layers__17_2_0_0(fluid.dygraph.Layer):
             dilation=[1, 1],
             groups=1,
             in_channels=48)
-        self.bn0 = paddle.nn.BatchNorm(
-            is_test=True, num_channels=48, momentum=0.1, epsilon=1e-05)
+        self.bn0 = layers.SyncBatchNorm(48, momentum=0.1, epsilon=1e-05)
         self.relu0 = paddle.nn.ReLU()
 
     def forward(self, x0):
@@ -611,8 +610,7 @@ class Backbone_stage3_3_fuse_layers__17_2_0_1(fluid.dygraph.Layer):
             dilation=[1, 1],
             groups=1,
             in_channels=48)
-        self.bn0 = paddle.nn.BatchNorm(
-            is_test=True, num_channels=192, momentum=0.1, epsilon=1e-05)
+        self.bn0 = layers.SyncBatchNorm(192, momentum=0.1, epsilon=1e-05)
 
     def forward(self, x0):
         x1 = self.conv0(x0)
@@ -635,8 +633,7 @@ class Backbone_stage3_3_fuse_layers__17_2_1_0(fluid.dygraph.Layer):
             dilation=[1, 1],
             groups=1,
             in_channels=96)
-        self.bn0 = paddle.nn.BatchNorm(
-            is_test=True, num_channels=192, momentum=0.1, epsilon=1e-05)
+        self.bn0 = layers.SyncBatchNorm(192, momentum=0.1, epsilon=1e-05)
 
     def forward(self, x0):
         x1 = self.conv0(x0)
@@ -659,8 +656,7 @@ class Backbone_stage4_0_fuse_layers__20_1_0_0(fluid.dygraph.Layer):
             dilation=[1, 1],
             groups=1,
             in_channels=48)
-        self.bn0 = paddle.nn.BatchNorm(
-            is_test=True, num_channels=96, momentum=0.1, epsilon=1e-05)
+        self.bn0 = layers.SyncBatchNorm(96, momentum=0.1, epsilon=1e-05)
 
     def forward(self, x0):
         x1 = self.conv0(x0)
@@ -683,8 +679,7 @@ class Backbone_stage4_0_fuse_layers__23_2_0_0(fluid.dygraph.Layer):
             dilation=[1, 1],
             groups=1,
             in_channels=48)
-        self.bn0 = paddle.nn.BatchNorm(
-            is_test=True, num_channels=48, momentum=0.1, epsilon=1e-05)
+        self.bn0 = layers.SyncBatchNorm(48, momentum=0.1, epsilon=1e-05)
         self.relu0 = paddle.nn.ReLU()
 
     def forward(self, x0):
@@ -709,8 +704,7 @@ class Backbone_stage4_0_fuse_layers__23_2_0_1(fluid.dygraph.Layer):
             dilation=[1, 1],
             groups=1,
             in_channels=48)
-        self.bn0 = paddle.nn.BatchNorm(
-            is_test=True, num_channels=192, momentum=0.1, epsilon=1e-05)
+        self.bn0 = layers.SyncBatchNorm(192, momentum=0.1, epsilon=1e-05)
 
     def forward(self, x0):
         x1 = self.conv0(x0)
@@ -733,8 +727,7 @@ class Backbone_stage4_0_fuse_layers__23_2_1_0(fluid.dygraph.Layer):
             dilation=[1, 1],
             groups=1,
             in_channels=96)
-        self.bn0 = paddle.nn.BatchNorm(
-            is_test=True, num_channels=192, momentum=0.1, epsilon=1e-05)
+        self.bn0 = layers.SyncBatchNorm(192, momentum=0.1, epsilon=1e-05)
 
     def forward(self, x0):
         x1 = self.conv0(x0)
@@ -757,8 +750,7 @@ class Backbone_stage4_0_fuse_layers__25_3_0_0(fluid.dygraph.Layer):
             dilation=[1, 1],
             groups=1,
             in_channels=48)
-        self.bn0 = paddle.nn.BatchNorm(
-            is_test=True, num_channels=48, momentum=0.1, epsilon=1e-05)
+        self.bn0 = layers.SyncBatchNorm(48, momentum=0.1, epsilon=1e-05)
         self.relu0 = paddle.nn.ReLU()
 
     def forward(self, x0):
@@ -783,8 +775,7 @@ class Backbone_stage4_0_fuse_layers__25_3_0_1(fluid.dygraph.Layer):
             dilation=[1, 1],
             groups=1,
             in_channels=48)
-        self.bn0 = paddle.nn.BatchNorm(
-            is_test=True, num_channels=48, momentum=0.1, epsilon=1e-05)
+        self.bn0 = layers.SyncBatchNorm(48, momentum=0.1, epsilon=1e-05)
         self.relu0 = paddle.nn.ReLU()
 
     def forward(self, x0):
@@ -809,8 +800,7 @@ class Backbone_stage4_0_fuse_layers__25_3_0_2(fluid.dygraph.Layer):
             dilation=[1, 1],
             groups=1,
             in_channels=48)
-        self.bn0 = paddle.nn.BatchNorm(
-            is_test=True, num_channels=384, momentum=0.1, epsilon=1e-05)
+        self.bn0 = layers.SyncBatchNorm(384, momentum=0.1, epsilon=1e-05)
 
     def forward(self, x0):
         x1 = self.conv0(x0)
@@ -833,8 +823,7 @@ class Backbone_stage4_0_fuse_layers__25_3_1_0(fluid.dygraph.Layer):
             dilation=[1, 1],
             groups=1,
             in_channels=96)
-        self.bn0 = paddle.nn.BatchNorm(
-            is_test=True, num_channels=96, momentum=0.1, epsilon=1e-05)
+        self.bn0 = layers.SyncBatchNorm(96, momentum=0.1, epsilon=1e-05)
         self.relu0 = paddle.nn.ReLU()
 
     def forward(self, x0):
@@ -859,8 +848,7 @@ class Backbone_stage4_0_fuse_layers__25_3_1_1(fluid.dygraph.Layer):
             dilation=[1, 1],
             groups=1,
             in_channels=96)
-        self.bn0 = paddle.nn.BatchNorm(
-            is_test=True, num_channels=384, momentum=0.1, epsilon=1e-05)
+        self.bn0 = layers.SyncBatchNorm(384, momentum=0.1, epsilon=1e-05)
 
     def forward(self, x0):
         x1 = self.conv0(x0)
@@ -883,8 +871,7 @@ class Backbone_stage4_0_fuse_layers__26_3_2_0(fluid.dygraph.Layer):
             dilation=[1, 1],
             groups=1,
             in_channels=192)
-        self.bn0 = paddle.nn.BatchNorm(
-            is_test=True, num_channels=384, momentum=0.1, epsilon=1e-05)
+        self.bn0 = layers.SyncBatchNorm(384, momentum=0.1, epsilon=1e-05)
 
     def forward(self, x0):
         x1 = self.conv0(x0)
@@ -907,8 +894,7 @@ class Backbone_stage4_1_fuse_layers__29_1_0_0(fluid.dygraph.Layer):
             dilation=[1, 1],
             groups=1,
             in_channels=48)
-        self.bn0 = paddle.nn.BatchNorm(
-            is_test=True, num_channels=96, momentum=0.1, epsilon=1e-05)
+        self.bn0 = layers.SyncBatchNorm(96, momentum=0.1, epsilon=1e-05)
 
     def forward(self, x0):
         x1 = self.conv0(x0)
@@ -931,8 +917,7 @@ class Backbone_stage4_1_fuse_layers__32_2_0_0(fluid.dygraph.Layer):
             dilation=[1, 1],
             groups=1,
             in_channels=48)
-        self.bn0 = paddle.nn.BatchNorm(
-            is_test=True, num_channels=48, momentum=0.1, epsilon=1e-05)
+        self.bn0 = layers.SyncBatchNorm(48, momentum=0.1, epsilon=1e-05)
         self.relu0 = paddle.nn.ReLU()
 
     def forward(self, x0):
@@ -957,8 +942,7 @@ class Backbone_stage4_1_fuse_layers__32_2_0_1(fluid.dygraph.Layer):
             dilation=[1, 1],
             groups=1,
             in_channels=48)
-        self.bn0 = paddle.nn.BatchNorm(
-            is_test=True, num_channels=192, momentum=0.1, epsilon=1e-05)
+        self.bn0 = layers.SyncBatchNorm(192, momentum=0.1, epsilon=1e-05)
 
     def forward(self, x0):
         x1 = self.conv0(x0)
@@ -981,8 +965,7 @@ class Backbone_stage4_1_fuse_layers__32_2_1_0(fluid.dygraph.Layer):
             dilation=[1, 1],
             groups=1,
             in_channels=96)
-        self.bn0 = paddle.nn.BatchNorm(
-            is_test=True, num_channels=192, momentum=0.1, epsilon=1e-05)
+        self.bn0 = layers.SyncBatchNorm(192, momentum=0.1, epsilon=1e-05)
 
     def forward(self, x0):
         x1 = self.conv0(x0)
@@ -1005,8 +988,7 @@ class Backbone_stage4_1_fuse_layers__34_3_0_0(fluid.dygraph.Layer):
             dilation=[1, 1],
             groups=1,
             in_channels=48)
-        self.bn0 = paddle.nn.BatchNorm(
-            is_test=True, num_channels=48, momentum=0.1, epsilon=1e-05)
+        self.bn0 = layers.SyncBatchNorm(48, momentum=0.1, epsilon=1e-05)
         self.relu0 = paddle.nn.ReLU()
 
     def forward(self, x0):
@@ -1031,8 +1013,7 @@ class Backbone_stage4_1_fuse_layers__34_3_0_1(fluid.dygraph.Layer):
             dilation=[1, 1],
             groups=1,
             in_channels=48)
-        self.bn0 = paddle.nn.BatchNorm(
-            is_test=True, num_channels=48, momentum=0.1, epsilon=1e-05)
+        self.bn0 = layers.SyncBatchNorm(48, momentum=0.1, epsilon=1e-05)
         self.relu0 = paddle.nn.ReLU()
 
     def forward(self, x0):
@@ -1057,8 +1038,7 @@ class Backbone_stage4_1_fuse_layers__34_3_0_2(fluid.dygraph.Layer):
             dilation=[1, 1],
             groups=1,
             in_channels=48)
-        self.bn0 = paddle.nn.BatchNorm(
-            is_test=True, num_channels=384, momentum=0.1, epsilon=1e-05)
+        self.bn0 = layers.SyncBatchNorm(384, momentum=0.1, epsilon=1e-05)
 
     def forward(self, x0):
         x1 = self.conv0(x0)
@@ -1081,8 +1061,7 @@ class Backbone_stage4_1_fuse_layers__34_3_1_0(fluid.dygraph.Layer):
             dilation=[1, 1],
             groups=1,
             in_channels=96)
-        self.bn0 = paddle.nn.BatchNorm(
-            is_test=True, num_channels=96, momentum=0.1, epsilon=1e-05)
+        self.bn0 = layers.SyncBatchNorm(96, momentum=0.1, epsilon=1e-05)
         self.relu0 = paddle.nn.ReLU()
 
     def forward(self, x0):
@@ -1107,8 +1086,7 @@ class Backbone_stage4_1_fuse_layers__34_3_1_1(fluid.dygraph.Layer):
             dilation=[1, 1],
             groups=1,
             in_channels=96)
-        self.bn0 = paddle.nn.BatchNorm(
-            is_test=True, num_channels=384, momentum=0.1, epsilon=1e-05)
+        self.bn0 = layers.SyncBatchNorm(384, momentum=0.1, epsilon=1e-05)
 
     def forward(self, x0):
         x1 = self.conv0(x0)
@@ -1131,8 +1109,7 @@ class Backbone_stage4_1_fuse_layers__35_3_2_0(fluid.dygraph.Layer):
             dilation=[1, 1],
             groups=1,
             in_channels=192)
-        self.bn0 = paddle.nn.BatchNorm(
-            is_test=True, num_channels=384, momentum=0.1, epsilon=1e-05)
+        self.bn0 = layers.SyncBatchNorm(384, momentum=0.1, epsilon=1e-05)
 
     def forward(self, x0):
         x1 = self.conv0(x0)
@@ -1155,8 +1132,7 @@ class Backbone_stage4_2_fuse_layers__38_1_0_0(fluid.dygraph.Layer):
             dilation=[1, 1],
             groups=1,
             in_channels=48)
-        self.bn0 = paddle.nn.BatchNorm(
-            is_test=True, num_channels=96, momentum=0.1, epsilon=1e-05)
+        self.bn0 = layers.SyncBatchNorm(96, momentum=0.1, epsilon=1e-05)
 
     def forward(self, x0):
         x1 = self.conv0(x0)
@@ -1179,8 +1155,7 @@ class Backbone_stage4_2_fuse_layers__41_2_0_0(fluid.dygraph.Layer):
             dilation=[1, 1],
             groups=1,
             in_channels=48)
-        self.bn0 = paddle.nn.BatchNorm(
-            is_test=True, num_channels=48, momentum=0.1, epsilon=1e-05)
+        self.bn0 = layers.SyncBatchNorm(48, momentum=0.1, epsilon=1e-05)
         self.relu0 = paddle.nn.ReLU()
 
     def forward(self, x0):
@@ -1205,8 +1180,7 @@ class Backbone_stage4_2_fuse_layers__41_2_0_1(fluid.dygraph.Layer):
             dilation=[1, 1],
             groups=1,
             in_channels=48)
-        self.bn0 = paddle.nn.BatchNorm(
-            is_test=True, num_channels=192, momentum=0.1, epsilon=1e-05)
+        self.bn0 = layers.SyncBatchNorm(192, momentum=0.1, epsilon=1e-05)
 
     def forward(self, x0):
         x1 = self.conv0(x0)
@@ -1229,8 +1203,7 @@ class Backbone_stage4_2_fuse_layers__41_2_1_0(fluid.dygraph.Layer):
             dilation=[1, 1],
             groups=1,
             in_channels=96)
-        self.bn0 = paddle.nn.BatchNorm(
-            is_test=True, num_channels=192, momentum=0.1, epsilon=1e-05)
+        self.bn0 = layers.SyncBatchNorm(192, momentum=0.1, epsilon=1e-05)
 
     def forward(self, x0):
         x1 = self.conv0(x0)
@@ -1253,8 +1226,7 @@ class Backbone_stage4_2_fuse_layers__43_3_0_0(fluid.dygraph.Layer):
             dilation=[1, 1],
             groups=1,
             in_channels=48)
-        self.bn0 = paddle.nn.BatchNorm(
-            is_test=True, num_channels=48, momentum=0.1, epsilon=1e-05)
+        self.bn0 = layers.SyncBatchNorm(48, momentum=0.1, epsilon=1e-05)
         self.relu0 = paddle.nn.ReLU()
 
     def forward(self, x0):
@@ -1279,8 +1251,7 @@ class Backbone_stage4_2_fuse_layers__43_3_0_1(fluid.dygraph.Layer):
             dilation=[1, 1],
             groups=1,
             in_channels=48)
-        self.bn0 = paddle.nn.BatchNorm(
-            is_test=True, num_channels=48, momentum=0.1, epsilon=1e-05)
+        self.bn0 = layers.SyncBatchNorm(48, momentum=0.1, epsilon=1e-05)
         self.relu0 = paddle.nn.ReLU()
 
     def forward(self, x0):
@@ -1305,8 +1276,7 @@ class Backbone_stage4_2_fuse_layers__43_3_0_2(fluid.dygraph.Layer):
             dilation=[1, 1],
             groups=1,
             in_channels=48)
-        self.bn0 = paddle.nn.BatchNorm(
-            is_test=True, num_channels=384, momentum=0.1, epsilon=1e-05)
+        self.bn0 = layers.SyncBatchNorm(384, momentum=0.1, epsilon=1e-05)
 
     def forward(self, x0):
         x1 = self.conv0(x0)
@@ -1329,8 +1299,7 @@ class Backbone_stage4_2_fuse_layers__43_3_1_0(fluid.dygraph.Layer):
             dilation=[1, 1],
             groups=1,
             in_channels=96)
-        self.bn0 = paddle.nn.BatchNorm(
-            is_test=True, num_channels=96, momentum=0.1, epsilon=1e-05)
+        self.bn0 = layers.SyncBatchNorm(96, momentum=0.1, epsilon=1e-05)
         self.relu0 = paddle.nn.ReLU()
 
     def forward(self, x0):
@@ -1355,8 +1324,7 @@ class Backbone_stage4_2_fuse_layers__43_3_1_1(fluid.dygraph.Layer):
             dilation=[1, 1],
             groups=1,
             in_channels=96)
-        self.bn0 = paddle.nn.BatchNorm(
-            is_test=True, num_channels=384, momentum=0.1, epsilon=1e-05)
+        self.bn0 = layers.SyncBatchNorm(384, momentum=0.1, epsilon=1e-05)
 
     def forward(self, x0):
         x1 = self.conv0(x0)
@@ -1379,8 +1347,7 @@ class Backbone_stage4_2_fuse_layers__44_3_2_0(fluid.dygraph.Layer):
             dilation=[1, 1],
             groups=1,
             in_channels=192)
-        self.bn0 = paddle.nn.BatchNorm(
-            is_test=True, num_channels=384, momentum=0.1, epsilon=1e-05)
+        self.bn0 = layers.SyncBatchNorm(384, momentum=0.1, epsilon=1e-05)
 
     def forward(self, x0):
         x1 = self.conv0(x0)
@@ -1402,11 +1369,8 @@ class BasicBlock(fluid.dygraph.Layer):
             dilation=[1, 1],
             groups=1,
             in_channels=conv0_in_channels)
-        self.bn0 = paddle.nn.BatchNorm(
-            is_test=True,
-            num_channels=bn0_num_channels,
-            momentum=0.1,
-            epsilon=1e-05)
+        self.bn0 = layers.SyncBatchNorm(
+            bn0_num_channels, momentum=0.1, epsilon=1e-05)
         self.relu0 = paddle.nn.ReLU()
         self.conv1 = paddle.nn.Conv2D(
             out_channels=conv1_out_channels,
@@ -1417,11 +1381,8 @@ class BasicBlock(fluid.dygraph.Layer):
             dilation=[1, 1],
             groups=1,
             in_channels=conv1_in_channels)
-        self.bn1 = paddle.nn.BatchNorm(
-            is_test=True,
-            num_channels=bn1_num_channels,
-            momentum=0.1,
-            epsilon=1e-05)
+        self.bn1 = layers.SyncBatchNorm(
+            bn1_num_channels, momentum=0.1, epsilon=1e-05)
         self.relu1 = paddle.nn.ReLU()
 
     def forward(self, x0):
@@ -1932,8 +1893,7 @@ class Backbone_stage2_0_fuse_layers_0_1(fluid.dygraph.Layer):
             dilation=[1, 1],
             groups=1,
             in_channels=96)
-        self.bn0 = paddle.nn.BatchNorm(
-            is_test=True, num_channels=48, momentum=0.1, epsilon=1e-05)
+        self.bn0 = layers.SyncBatchNorm(48, momentum=0.1, epsilon=1e-05)
 
     def forward(self, x0):
         x1 = self.conv0(x0)
@@ -1956,8 +1916,7 @@ class Backbone_stage3_0_fuse_layers__1_0_1(fluid.dygraph.Layer):
             dilation=[1, 1],
             groups=1,
             in_channels=96)
-        self.bn0 = paddle.nn.BatchNorm(
-            is_test=True, num_channels=48, momentum=0.1, epsilon=1e-05)
+        self.bn0 = layers.SyncBatchNorm(48, momentum=0.1, epsilon=1e-05)
 
     def forward(self, x0):
         x1 = self.conv0(x0)
@@ -1980,8 +1939,7 @@ class Backbone_stage3_0_fuse_layers__2_0_2(fluid.dygraph.Layer):
             dilation=[1, 1],
             groups=1,
             in_channels=192)
-        self.bn0 = paddle.nn.BatchNorm(
-            is_test=True, num_channels=48, momentum=0.1, epsilon=1e-05)
+        self.bn0 = layers.SyncBatchNorm(48, momentum=0.1, epsilon=1e-05)
 
     def forward(self, x0):
         x1 = self.conv0(x0)
@@ -2004,8 +1962,7 @@ class Backbone_stage3_0_fuse_layers__4_1_2(fluid.dygraph.Layer):
             dilation=[1, 1],
             groups=1,
             in_channels=192)
-        self.bn0 = paddle.nn.BatchNorm(
-            is_test=True, num_channels=96, momentum=0.1, epsilon=1e-05)
+        self.bn0 = layers.SyncBatchNorm(96, momentum=0.1, epsilon=1e-05)
 
     def forward(self, x0):
         x1 = self.conv0(x0)
@@ -2028,8 +1985,7 @@ class Backbone_stage3_1_fuse_layers__5_0_1(fluid.dygraph.Layer):
             dilation=[1, 1],
             groups=1,
             in_channels=96)
-        self.bn0 = paddle.nn.BatchNorm(
-            is_test=True, num_channels=48, momentum=0.1, epsilon=1e-05)
+        self.bn0 = layers.SyncBatchNorm(48, momentum=0.1, epsilon=1e-05)
 
     def forward(self, x0):
         x1 = self.conv0(x0)
@@ -2052,8 +2008,7 @@ class Backbone_stage3_1_fuse_layers__6_0_2(fluid.dygraph.Layer):
             dilation=[1, 1],
             groups=1,
             in_channels=192)
-        self.bn0 = paddle.nn.BatchNorm(
-            is_test=True, num_channels=48, momentum=0.1, epsilon=1e-05)
+        self.bn0 = layers.SyncBatchNorm(48, momentum=0.1, epsilon=1e-05)
 
     def forward(self, x0):
         x1 = self.conv0(x0)
@@ -2076,8 +2031,7 @@ class Backbone_stage3_1_fuse_layers__8_1_2(fluid.dygraph.Layer):
             dilation=[1, 1],
             groups=1,
             in_channels=192)
-        self.bn0 = paddle.nn.BatchNorm(
-            is_test=True, num_channels=96, momentum=0.1, epsilon=1e-05)
+        self.bn0 = layers.SyncBatchNorm(96, momentum=0.1, epsilon=1e-05)
 
     def forward(self, x0):
         x1 = self.conv0(x0)
@@ -2100,8 +2054,7 @@ class Backbone_stage3_2_fuse_layers__9_0_1(fluid.dygraph.Layer):
             dilation=[1, 1],
             groups=1,
             in_channels=96)
-        self.bn0 = paddle.nn.BatchNorm(
-            is_test=True, num_channels=48, momentum=0.1, epsilon=1e-05)
+        self.bn0 = layers.SyncBatchNorm(48, momentum=0.1, epsilon=1e-05)
 
     def forward(self, x0):
         x1 = self.conv0(x0)
@@ -2124,8 +2077,7 @@ class Backbone_stage3_2_fuse_layers__10_0_2(fluid.dygraph.Layer):
             dilation=[1, 1],
             groups=1,
             in_channels=192)
-        self.bn0 = paddle.nn.BatchNorm(
-            is_test=True, num_channels=48, momentum=0.1, epsilon=1e-05)
+        self.bn0 = layers.SyncBatchNorm(48, momentum=0.1, epsilon=1e-05)
 
     def forward(self, x0):
         x1 = self.conv0(x0)
@@ -2148,8 +2100,7 @@ class Backbone_stage3_2_fuse_layers__12_1_2(fluid.dygraph.Layer):
             dilation=[1, 1],
             groups=1,
             in_channels=192)
-        self.bn0 = paddle.nn.BatchNorm(
-            is_test=True, num_channels=96, momentum=0.1, epsilon=1e-05)
+        self.bn0 = layers.SyncBatchNorm(96, momentum=0.1, epsilon=1e-05)
 
     def forward(self, x0):
         x1 = self.conv0(x0)
@@ -2172,8 +2123,7 @@ class Backbone_stage3_3_fuse_layers__13_0_1(fluid.dygraph.Layer):
             dilation=[1, 1],
             groups=1,
             in_channels=96)
-        self.bn0 = paddle.nn.BatchNorm(
-            is_test=True, num_channels=48, momentum=0.1, epsilon=1e-05)
+        self.bn0 = layers.SyncBatchNorm(48, momentum=0.1, epsilon=1e-05)
 
     def forward(self, x0):
         x1 = self.conv0(x0)
@@ -2196,8 +2146,7 @@ class Backbone_stage3_3_fuse_layers__14_0_2(fluid.dygraph.Layer):
             dilation=[1, 1],
             groups=1,
             in_channels=192)
-        self.bn0 = paddle.nn.BatchNorm(
-            is_test=True, num_channels=48, momentum=0.1, epsilon=1e-05)
+        self.bn0 = layers.SyncBatchNorm(48, momentum=0.1, epsilon=1e-05)
 
     def forward(self, x0):
         x1 = self.conv0(x0)
@@ -2220,8 +2169,7 @@ class Backbone_stage3_3_fuse_layers__16_1_2(fluid.dygraph.Layer):
             dilation=[1, 1],
             groups=1,
             in_channels=192)
-        self.bn0 = paddle.nn.BatchNorm(
-            is_test=True, num_channels=96, momentum=0.1, epsilon=1e-05)
+        self.bn0 = layers.SyncBatchNorm(96, momentum=0.1, epsilon=1e-05)
 
     def forward(self, x0):
         x1 = self.conv0(x0)
@@ -2244,8 +2192,7 @@ class Backbone_stage4_0_fuse_layers__17_0_1(fluid.dygraph.Layer):
             dilation=[1, 1],
             groups=1,
             in_channels=96)
-        self.bn0 = paddle.nn.BatchNorm(
-            is_test=True, num_channels=48, momentum=0.1, epsilon=1e-05)
+        self.bn0 = layers.SyncBatchNorm(48, momentum=0.1, epsilon=1e-05)
 
     def forward(self, x0):
         x1 = self.conv0(x0)
@@ -2268,8 +2215,7 @@ class Backbone_stage4_0_fuse_layers__18_0_2(fluid.dygraph.Layer):
             dilation=[1, 1],
             groups=1,
             in_channels=192)
-        self.bn0 = paddle.nn.BatchNorm(
-            is_test=True, num_channels=48, momentum=0.1, epsilon=1e-05)
+        self.bn0 = layers.SyncBatchNorm(48, momentum=0.1, epsilon=1e-05)
 
     def forward(self, x0):
         x1 = self.conv0(x0)
@@ -2292,8 +2238,7 @@ class Backbone_stage4_0_fuse_layers__19_0_3(fluid.dygraph.Layer):
             dilation=[1, 1],
             groups=1,
             in_channels=384)
-        self.bn0 = paddle.nn.BatchNorm(
-            is_test=True, num_channels=48, momentum=0.1, epsilon=1e-05)
+        self.bn0 = layers.SyncBatchNorm(48, momentum=0.1, epsilon=1e-05)
 
     def forward(self, x0):
         x1 = self.conv0(x0)
@@ -2316,8 +2261,7 @@ class Backbone_stage4_0_fuse_layers__21_1_2(fluid.dygraph.Layer):
             dilation=[1, 1],
             groups=1,
             in_channels=192)
-        self.bn0 = paddle.nn.BatchNorm(
-            is_test=True, num_channels=96, momentum=0.1, epsilon=1e-05)
+        self.bn0 = layers.SyncBatchNorm(96, momentum=0.1, epsilon=1e-05)
 
     def forward(self, x0):
         x1 = self.conv0(x0)
@@ -2340,8 +2284,7 @@ class Backbone_stage4_0_fuse_layers__22_1_3(fluid.dygraph.Layer):
             dilation=[1, 1],
             groups=1,
             in_channels=384)
-        self.bn0 = paddle.nn.BatchNorm(
-            is_test=True, num_channels=96, momentum=0.1, epsilon=1e-05)
+        self.bn0 = layers.SyncBatchNorm(96, momentum=0.1, epsilon=1e-05)
 
     def forward(self, x0):
         x1 = self.conv0(x0)
@@ -2364,8 +2307,7 @@ class Backbone_stage4_0_fuse_layers__24_2_3(fluid.dygraph.Layer):
             dilation=[1, 1],
             groups=1,
             in_channels=384)
-        self.bn0 = paddle.nn.BatchNorm(
-            is_test=True, num_channels=192, momentum=0.1, epsilon=1e-05)
+        self.bn0 = layers.SyncBatchNorm(192, momentum=0.1, epsilon=1e-05)
 
     def forward(self, x0):
         x1 = self.conv0(x0)
@@ -2388,8 +2330,7 @@ class Backbone_stage4_1_fuse_layers__26_0_1(fluid.dygraph.Layer):
             dilation=[1, 1],
             groups=1,
             in_channels=96)
-        self.bn0 = paddle.nn.BatchNorm(
-            is_test=True, num_channels=48, momentum=0.1, epsilon=1e-05)
+        self.bn0 = layers.SyncBatchNorm(48, momentum=0.1, epsilon=1e-05)
 
     def forward(self, x0):
         x1 = self.conv0(x0)
@@ -2412,8 +2353,7 @@ class Backbone_stage4_1_fuse_layers__27_0_2(fluid.dygraph.Layer):
             dilation=[1, 1],
             groups=1,
             in_channels=192)
-        self.bn0 = paddle.nn.BatchNorm(
-            is_test=True, num_channels=48, momentum=0.1, epsilon=1e-05)
+        self.bn0 = layers.SyncBatchNorm(48, momentum=0.1, epsilon=1e-05)
 
     def forward(self, x0):
         x1 = self.conv0(x0)
@@ -2436,8 +2376,7 @@ class Backbone_stage4_1_fuse_layers__28_0_3(fluid.dygraph.Layer):
             dilation=[1, 1],
             groups=1,
             in_channels=384)
-        self.bn0 = paddle.nn.BatchNorm(
-            is_test=True, num_channels=48, momentum=0.1, epsilon=1e-05)
+        self.bn0 = layers.SyncBatchNorm(48, momentum=0.1, epsilon=1e-05)
 
     def forward(self, x0):
         x1 = self.conv0(x0)
@@ -2460,8 +2399,7 @@ class Backbone_stage4_1_fuse_layers__30_1_2(fluid.dygraph.Layer):
             dilation=[1, 1],
             groups=1,
             in_channels=192)
-        self.bn0 = paddle.nn.BatchNorm(
-            is_test=True, num_channels=96, momentum=0.1, epsilon=1e-05)
+        self.bn0 = layers.SyncBatchNorm(96, momentum=0.1, epsilon=1e-05)
 
     def forward(self, x0):
         x1 = self.conv0(x0)
@@ -2484,8 +2422,7 @@ class Backbone_stage4_1_fuse_layers__31_1_3(fluid.dygraph.Layer):
             dilation=[1, 1],
             groups=1,
             in_channels=384)
-        self.bn0 = paddle.nn.BatchNorm(
-            is_test=True, num_channels=96, momentum=0.1, epsilon=1e-05)
+        self.bn0 = layers.SyncBatchNorm(96, momentum=0.1, epsilon=1e-05)
 
     def forward(self, x0):
         x1 = self.conv0(x0)
@@ -2508,8 +2445,7 @@ class Backbone_stage4_1_fuse_layers__33_2_3(fluid.dygraph.Layer):
             dilation=[1, 1],
             groups=1,
             in_channels=384)
-        self.bn0 = paddle.nn.BatchNorm(
-            is_test=True, num_channels=192, momentum=0.1, epsilon=1e-05)
+        self.bn0 = layers.SyncBatchNorm(192, momentum=0.1, epsilon=1e-05)
 
     def forward(self, x0):
         x1 = self.conv0(x0)
@@ -2532,8 +2468,7 @@ class Backbone_stage4_2_fuse_layers__35_0_1(fluid.dygraph.Layer):
             dilation=[1, 1],
             groups=1,
             in_channels=96)
-        self.bn0 = paddle.nn.BatchNorm(
-            is_test=True, num_channels=48, momentum=0.1, epsilon=1e-05)
+        self.bn0 = layers.SyncBatchNorm(48, momentum=0.1, epsilon=1e-05)
 
     def forward(self, x0):
         x1 = self.conv0(x0)
@@ -2556,8 +2491,7 @@ class Backbone_stage4_2_fuse_layers__36_0_2(fluid.dygraph.Layer):
             dilation=[1, 1],
             groups=1,
             in_channels=192)
-        self.bn0 = paddle.nn.BatchNorm(
-            is_test=True, num_channels=48, momentum=0.1, epsilon=1e-05)
+        self.bn0 = layers.SyncBatchNorm(48, momentum=0.1, epsilon=1e-05)
 
     def forward(self, x0):
         x1 = self.conv0(x0)
@@ -2580,8 +2514,7 @@ class Backbone_stage4_2_fuse_layers__37_0_3(fluid.dygraph.Layer):
             dilation=[1, 1],
             groups=1,
             in_channels=384)
-        self.bn0 = paddle.nn.BatchNorm(
-            is_test=True, num_channels=48, momentum=0.1, epsilon=1e-05)
+        self.bn0 = layers.SyncBatchNorm(48, momentum=0.1, epsilon=1e-05)
 
     def forward(self, x0):
         x1 = self.conv0(x0)
@@ -2604,8 +2537,7 @@ class Backbone_stage4_2_fuse_layers__39_1_2(fluid.dygraph.Layer):
             dilation=[1, 1],
             groups=1,
             in_channels=192)
-        self.bn0 = paddle.nn.BatchNorm(
-            is_test=True, num_channels=96, momentum=0.1, epsilon=1e-05)
+        self.bn0 = layers.SyncBatchNorm(96, momentum=0.1, epsilon=1e-05)
 
     def forward(self, x0):
         x1 = self.conv0(x0)
@@ -2628,8 +2560,7 @@ class Backbone_stage4_2_fuse_layers__40_1_3(fluid.dygraph.Layer):
             dilation=[1, 1],
             groups=1,
             in_channels=384)
-        self.bn0 = paddle.nn.BatchNorm(
-            is_test=True, num_channels=96, momentum=0.1, epsilon=1e-05)
+        self.bn0 = layers.SyncBatchNorm(96, momentum=0.1, epsilon=1e-05)
 
     def forward(self, x0):
         x1 = self.conv0(x0)
@@ -2652,8 +2583,7 @@ class Backbone_stage4_2_fuse_layers__42_2_3(fluid.dygraph.Layer):
             dilation=[1, 1],
             groups=1,
             in_channels=384)
-        self.bn0 = paddle.nn.BatchNorm(
-            is_test=True, num_channels=192, momentum=0.1, epsilon=1e-05)
+        self.bn0 = layers.SyncBatchNorm(192, momentum=0.1, epsilon=1e-05)
 
     def forward(self, x0):
         x1 = self.conv0(x0)
@@ -2724,8 +2654,7 @@ class Ocr_ocr_distri_head_object_context_block_f_pixel_1(fluid.dygraph.Layer):
     ):
         super(Ocr_ocr_distri_head_object_context_block_f_pixel_1,
               self).__init__()
-        self.bn0 = paddle.nn.BatchNorm(
-            is_test=True, num_channels=256, momentum=0.1, epsilon=1e-05)
+        self.bn0 = layers.SyncBatchNorm(256, momentum=0.1, epsilon=1e-05)
         self.relu0 = paddle.nn.ReLU()
 
     def forward(self, x0):
@@ -2741,8 +2670,7 @@ class Ocr_ocr_distri_head_object_context_block_f_pixel_3(fluid.dygraph.Layer):
     ):
         super(Ocr_ocr_distri_head_object_context_block_f_pixel_3,
               self).__init__()
-        self.bn0 = paddle.nn.BatchNorm(
-            is_test=True, num_channels=256, momentum=0.1, epsilon=1e-05)
+        self.bn0 = layers.SyncBatchNorm(256, momentum=0.1, epsilon=1e-05)
         self.relu0 = paddle.nn.ReLU()
 
     def forward(self, x0):
@@ -2758,8 +2686,7 @@ class Ocr_ocr_distri_head_object_context_block_f_object_1(fluid.dygraph.Layer):
     ):
         super(Ocr_ocr_distri_head_object_context_block_f_object_1,
               self).__init__()
-        self.bn0 = paddle.nn.BatchNorm(
-            is_test=True, num_channels=256, momentum=0.1, epsilon=1e-05)
+        self.bn0 = layers.SyncBatchNorm(256, momentum=0.1, epsilon=1e-05)
         self.relu0 = paddle.nn.ReLU()
 
     def forward(self, x0):
@@ -2775,8 +2702,7 @@ class Ocr_ocr_distri_head_object_context_block_f_object_3(fluid.dygraph.Layer):
     ):
         super(Ocr_ocr_distri_head_object_context_block_f_object_3,
               self).__init__()
-        self.bn0 = paddle.nn.BatchNorm(
-            is_test=True, num_channels=256, momentum=0.1, epsilon=1e-05)
+        self.bn0 = layers.SyncBatchNorm(256, momentum=0.1, epsilon=1e-05)
         self.relu0 = paddle.nn.ReLU()
 
     def forward(self, x0):
@@ -2792,8 +2718,7 @@ class Ocr_ocr_distri_head_object_context_block_f_down_1(fluid.dygraph.Layer):
     ):
         super(Ocr_ocr_distri_head_object_context_block_f_down_1,
               self).__init__()
-        self.bn0 = paddle.nn.BatchNorm(
-            is_test=True, num_channels=256, momentum=0.1, epsilon=1e-05)
+        self.bn0 = layers.SyncBatchNorm(256, momentum=0.1, epsilon=1e-05)
         self.relu0 = paddle.nn.ReLU()
 
     def forward(self, x0):
@@ -2808,8 +2733,7 @@ class Ocr_ocr_distri_head_object_context_block_f_up_1(fluid.dygraph.Layer):
             params,
     ):
         super(Ocr_ocr_distri_head_object_context_block_f_up_1, self).__init__()
-        self.bn0 = paddle.nn.BatchNorm(
-            is_test=True, num_channels=512, momentum=0.1, epsilon=1e-05)
+        self.bn0 = layers.SyncBatchNorm(512, momentum=0.1, epsilon=1e-05)
         self.relu0 = paddle.nn.ReLU()
 
     def forward(self, x0):
@@ -3714,8 +3638,7 @@ class Backbone_layer1_0_downsample(fluid.dygraph.Layer):
             dilation=[1, 1],
             groups=1,
             in_channels=64)
-        self.bn0 = paddle.nn.BatchNorm(
-            is_test=True, num_channels=256, momentum=0.1, epsilon=1e-05)
+        self.bn0 = layers.SyncBatchNorm(256, momentum=0.1, epsilon=1e-05)
 
     def forward(self, x0):
         x1 = self.conv0(x0)
@@ -3738,8 +3661,7 @@ class Backbone_transition1_1_0(fluid.dygraph.Layer):
             dilation=[1, 1],
             groups=1,
             in_channels=256)
-        self.bn0 = paddle.nn.BatchNorm(
-            is_test=True, num_channels=96, momentum=0.1, epsilon=1e-05)
+        self.bn0 = layers.SyncBatchNorm(96, momentum=0.1, epsilon=1e-05)
         self.relu0 = paddle.nn.ReLU()
 
     def forward(self, x0):
@@ -3764,8 +3686,7 @@ class Backbone_transition2_2_0(fluid.dygraph.Layer):
             dilation=[1, 1],
             groups=1,
             in_channels=96)
-        self.bn0 = paddle.nn.BatchNorm(
-            is_test=True, num_channels=192, momentum=0.1, epsilon=1e-05)
+        self.bn0 = layers.SyncBatchNorm(192, momentum=0.1, epsilon=1e-05)
         self.relu0 = paddle.nn.ReLU()
 
     def forward(self, x0):
@@ -3790,8 +3711,7 @@ class Backbone_transition3_3_0(fluid.dygraph.Layer):
             dilation=[1, 1],
             groups=1,
             in_channels=192)
-        self.bn0 = paddle.nn.BatchNorm(
-            is_test=True, num_channels=384, momentum=0.1, epsilon=1e-05)
+        self.bn0 = layers.SyncBatchNorm(384, momentum=0.1, epsilon=1e-05)
         self.relu0 = paddle.nn.ReLU()
 
     def forward(self, x0):
@@ -3807,14 +3727,18 @@ class Ocr_ocr_distri_head_conv_bn_dropout_1(fluid.dygraph.Layer):
             params,
     ):
         super(Ocr_ocr_distri_head_conv_bn_dropout_1, self).__init__()
-        self.bn0 = paddle.nn.BatchNorm(
-            is_test=True, num_channels=512, momentum=0.1, epsilon=1e-05)
+        self.bn0 = layers.SyncBatchNorm(512, momentum=0.1, epsilon=1e-05)
         self.relu0 = paddle.nn.ReLU()
+#         self.dropout0 = paddle.nn.Dropout2D(0.05)  ######################### add dropout
 
     def forward(self, x0):
         x1 = self.bn0(x0)
         x2 = self.relu0(x1)
         return x2
+
+
+#         x3 = self.dropout0(x2)
+#         return x3
 
 
 class ModuleList55_0(fluid.dygraph.Layer):
@@ -5298,8 +5222,7 @@ class Bottleneck0(fluid.dygraph.Layer):
             dilation=[1, 1],
             groups=1,
             in_channels=256)
-        self.bn0 = paddle.nn.BatchNorm(
-            is_test=True, num_channels=64, momentum=0.1, epsilon=1e-05)
+        self.bn0 = layers.SyncBatchNorm(64, momentum=0.1, epsilon=1e-05)
         self.relu0 = paddle.nn.ReLU()
         self.conv1 = paddle.nn.Conv2D(
             out_channels=64,
@@ -5310,8 +5233,7 @@ class Bottleneck0(fluid.dygraph.Layer):
             dilation=[1, 1],
             groups=1,
             in_channels=64)
-        self.bn1 = paddle.nn.BatchNorm(
-            is_test=True, num_channels=64, momentum=0.1, epsilon=1e-05)
+        self.bn1 = layers.SyncBatchNorm(64, momentum=0.1, epsilon=1e-05)
         self.relu1 = paddle.nn.ReLU()
         self.conv2 = paddle.nn.Conv2D(
             out_channels=256,
@@ -5322,8 +5244,7 @@ class Bottleneck0(fluid.dygraph.Layer):
             dilation=[1, 1],
             groups=1,
             in_channels=64)
-        self.bn2 = paddle.nn.BatchNorm(
-            is_test=True, num_channels=256, momentum=0.1, epsilon=1e-05)
+        self.bn2 = layers.SyncBatchNorm(256, momentum=0.1, epsilon=1e-05)
         self.relu2 = paddle.nn.ReLU()
 
     def forward(self, x0):
@@ -5355,8 +5276,7 @@ class Bottleneck1(fluid.dygraph.Layer):
             dilation=[1, 1],
             groups=1,
             in_channels=64)
-        self.bn0 = paddle.nn.BatchNorm(
-            is_test=True, num_channels=64, momentum=0.1, epsilon=1e-05)
+        self.bn0 = layers.SyncBatchNorm(64, momentum=0.1, epsilon=1e-05)
         self.relu0 = paddle.nn.ReLU()
         self.conv1 = paddle.nn.Conv2D(
             out_channels=64,
@@ -5367,8 +5287,7 @@ class Bottleneck1(fluid.dygraph.Layer):
             dilation=[1, 1],
             groups=1,
             in_channels=64)
-        self.bn1 = paddle.nn.BatchNorm(
-            is_test=True, num_channels=64, momentum=0.1, epsilon=1e-05)
+        self.bn1 = layers.SyncBatchNorm(64, momentum=0.1, epsilon=1e-05)
         self.relu1 = paddle.nn.ReLU()
         self.conv2 = paddle.nn.Conv2D(
             out_channels=256,
@@ -5379,8 +5298,7 @@ class Bottleneck1(fluid.dygraph.Layer):
             dilation=[1, 1],
             groups=1,
             in_channels=64)
-        self.bn2 = paddle.nn.BatchNorm(
-            is_test=True, num_channels=256, momentum=0.1, epsilon=1e-05)
+        self.bn2 = layers.SyncBatchNorm(256, momentum=0.1, epsilon=1e-05)
         self.backbone_layer1_0_downsample0 = Backbone_layer1_0_downsample(
             params=params)
         self.relu2 = paddle.nn.ReLU()
@@ -5478,8 +5396,7 @@ class Backbone_transition1_0(fluid.dygraph.Layer):
             dilation=[1, 1],
             groups=1,
             in_channels=256)
-        self.bn0 = paddle.nn.BatchNorm(
-            is_test=True, num_channels=48, momentum=0.1, epsilon=1e-05)
+        self.bn0 = layers.SyncBatchNorm(48, momentum=0.1, epsilon=1e-05)
         self.relu0 = paddle.nn.ReLU()
 
     def forward(self, x0):
@@ -5495,8 +5412,7 @@ class Ocr_conv3x3_ocr_1(fluid.dygraph.Layer):
             params,
     ):
         super(Ocr_conv3x3_ocr_1, self).__init__()
-        self.bn0 = paddle.nn.BatchNorm(
-            is_test=True, num_channels=512, momentum=0.1, epsilon=1e-05)
+        self.bn0 = layers.SyncBatchNorm(512, momentum=0.1, epsilon=1e-05)
         self.relu0 = paddle.nn.ReLU()
 
     def forward(self, x0):
@@ -5511,8 +5427,7 @@ class Ocr_aux_head_1(fluid.dygraph.Layer):
             params,
     ):
         super(Ocr_aux_head_1, self).__init__()
-        self.bn0 = paddle.nn.BatchNorm(
-            is_test=True, num_channels=720, momentum=0.1, epsilon=1e-05)
+        self.bn0 = layers.SyncBatchNorm(720, momentum=0.1, epsilon=1e-05)
         self.relu0 = paddle.nn.ReLU()
 
     def forward(self, x0):
@@ -6565,8 +6480,7 @@ class HighResolutionNet(fluid.dygraph.Layer):
             dilation=[1, 1],
             groups=1,
             in_channels=3)
-        self.bn0 = paddle.nn.BatchNorm(
-            is_test=True, num_channels=64, momentum=0.1, epsilon=1e-05)
+        self.bn0 = layers.SyncBatchNorm(64, momentum=0.1, epsilon=1e-05)
         self.relu0 = paddle.nn.ReLU()
         self.conv1 = paddle.nn.Conv2D(
             out_channels=64,
@@ -6577,8 +6491,7 @@ class HighResolutionNet(fluid.dygraph.Layer):
             dilation=[1, 1],
             groups=1,
             in_channels=64)
-        self.bn1 = paddle.nn.BatchNorm(
-            is_test=True, num_channels=64, momentum=0.1, epsilon=1e-05)
+        self.bn1 = layers.SyncBatchNorm(64, momentum=0.1, epsilon=1e-05)
         self.relu1 = paddle.nn.ReLU()
         self.backbone_layer10 = Backbone_layer1(params=params)
         self.modulelist30 = ModuleList3(params=params)
@@ -6716,8 +6629,7 @@ class Scale_attn(fluid.dygraph.Layer):
             dilation=[1, 1],
             groups=1,
             in_channels=512)
-        self.bn0 = paddle.nn.BatchNorm(
-            is_test=True, num_channels=256, momentum=0.1, epsilon=1e-05)
+        self.bn0 = layers.SyncBatchNorm(256, momentum=0.1, epsilon=1e-05)
         self.relu0 = paddle.nn.ReLU()
         self.conv1 = paddle.nn.Conv2D(
             out_channels=256,
@@ -6728,8 +6640,7 @@ class Scale_attn(fluid.dygraph.Layer):
             dilation=[1, 1],
             groups=1,
             in_channels=256)
-        self.bn1 = paddle.nn.BatchNorm(
-            is_test=True, num_channels=256, momentum=0.1, epsilon=1e-05)
+        self.bn1 = layers.SyncBatchNorm(256, momentum=0.1, epsilon=1e-05)
         self.relu1 = paddle.nn.ReLU()
         self.conv2 = paddle.nn.Conv2D(
             out_channels=1,

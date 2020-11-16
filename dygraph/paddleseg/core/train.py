@@ -34,7 +34,6 @@ def check_logits_losses(logits, losses):
 def loss_computation(logits, label, losses):
     check_logits_losses(logits, losses)
     loss = 0
-    #     print('=========')
     for i in range(len(logits)):
         logit = logits[i]
         #         if logit.shape[-2:] != label.shape[-2:]:
@@ -45,8 +44,9 @@ def loss_computation(logits, label, losses):
         #                 align_corners=True,
         #                 align_mode=1)
         loss_i = losses['types'][i](logit, label)
-        #         print(i, losses['coef'][i], loss_i)
+        print(i, losses['coef'][i], loss_i)
         loss += losses['coef'][i] * loss_i
+    print('total loss:', loss)
     return loss
 
 
@@ -63,9 +63,6 @@ def train(model,
           num_workers=0,
           use_vdl=False,
           losses=None):
-
-    restore, _ = paddle.fluid.load_dygraph("./pretrain/ocr_pretrain/model")
-    model.set_dict(restore)
 
     nranks = paddle.distributed.ParallelEnv().nranks
     local_rank = paddle.distributed.ParallelEnv().local_rank
@@ -123,10 +120,24 @@ def train(model,
             images = data[0]
             labels = data[1].astype('int64')
 
+            #             img = images
+            #             lab = labels
+            #             print(img)
+            #             print(lab)
+            #             import numpy as np
+            #             img = np.squeeze(img.numpy()).astype('uint8')
+            #             print(img.shape)
+            #             img = np.transpose(img, (1,2,0))
+            #             lab = np.squeeze(lab.numpy()).astype('uint8')
+            #             import cv2
+            #             cv2.imwrite('img{}.png'.format(iter), img)
+            #             cv2.imwrite('lab{}.png'.format(iter), lab)
+            # #             exit()
+            #             if iter==5:
+            #                 exit()
+
             if fp16:
                 images = paddle.reshape(images, images.shape)
-                #print(images.name, images, images._place_str)
-                #break
                 with paddle.amp.auto_cast():
 
                     if nranks > 1:
@@ -136,7 +147,6 @@ def train(model,
                     loss = loss_computation(logits, labels, losses)
 
                 scaled = scaler.scale(loss)
-                #                     print('loss:', loss, '\nscaled:', scaled)
                 scaled.backward()
                 scaler.minimize(optimizer, scaled)
                 lr = optimizer.get_lr()
@@ -150,9 +160,26 @@ def train(model,
                     loss = loss_computation(logits, labels, losses)
                     loss.backward()
                 else:
+                    # debug finetune+mscale+loss
+                    print('iter: ', iter)
+                    import numpy as np
+                    images = np.load('/ssd1/home/chulutao/random-data/img.npy')
+                    labels = np.load(
+                        '/ssd1/home/chulutao/random-data/labels.npy')
+                    images = paddle.to_tensor(images)
+                    labels = paddle.to_tensor(labels)
+                    if iter == 1:
+                        print(images)
+                        print(labels)
+
+#                     model.eval()
+
                     logits = model(images)
                     loss = loss_computation(logits, labels, losses)
                     loss.backward()
+
+                    if iter == 10:
+                        exit()
                 optimizer.step()
                 lr = optimizer.get_lr()
                 if isinstance(optimizer._learning_rate,
@@ -162,17 +189,19 @@ def train(model,
 
 
 ######################### debug
-#                 restore, _ = paddle.fluid.load_dygraph(
-#                     "./pretrain/ocr_finetune_good/model")
-#                 model.set_dict(restore)
 
-#                     images = paddle.arange(6291456, dtype='float32')
-#                     images = paddle.reshape(images, (1, 3, 1024, 2048))
+#                 # debug
+#                 images = paddle.arange(6291456, dtype='float32')
+#                 images = paddle.reshape(images, (1, 3, 1024, 2048))
 #                 images = 5 * paddle.ones((1, 3, 1024, 2048), dtype='float32')
 #                 labels = 9 * paddle.ones((1, 1, 1024, 2048), dtype='int64')
-#             print(images)
+#                 images = paddle.reshape(paddle.arange(0, 30000).astype("float32"), [1,3,100,100])
+#                 print(images)
 #                 model.eval()
 #                 logits = model(images)
+
+#                 print(logits)
+#                 exit()
 
 #                 import numpy as np
 #                 np.random.seed(6)
@@ -182,22 +211,17 @@ def train(model,
 #                 c = paddle.to_tensor(np.random.rand(1, 19, 1024, 2048).astype("float32"))
 #                 d = paddle.to_tensor(np.random.rand(1, 19, 1024, 2048).astype("float32"))
 
-#                 a = paddle.reshape(paddle.arange(0, 200).astype("float32"), [1,2,10,10]) / 800
-#                 b = paddle.reshape(paddle.arange(200, 400).astype("float32"), [1,2,10,10]) / 800
-#                 c = paddle.reshape(paddle.arange(400, 600).astype("float32"), [1,2,10,10]) / 800
-#                 d = paddle.reshape(paddle.arange(600, 800).astype("float32"), [1,2,10,10]) / 800
-#                 labels = paddle.ones((1, 1, 10, 10), dtype='int64')
 #                 logits = [a, b, c, d]
-#                 print(a, '\n', b)
+#                 print(a)
+#                 import numpy as np
+#                 np.random.seed(6)
+#                 labels = paddle.to_tensor(np.random.randint(20, size=(1,1,100,100)))
+#                 print(labels)
+#                 labels = paddle.ones((1, 1, 10, 10), dtype='int64')
 #                 print('==========')
 #                 loss = loss_computation(logits, labels, losses)
 #                 print(loss)
 
-#                 #             a, b, c = logits
-#                 #             print(a)
-#                 #             print(b)
-#                 #             print(c)
-#                 #             print(paddle.sum(a), paddle.sum(b), paddle.sum(c))
 #                 exit()
 ###############################
 
