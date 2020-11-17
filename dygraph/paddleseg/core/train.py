@@ -44,9 +44,11 @@ def loss_computation(logits, label, losses):
         #                 align_corners=True,
         #                 align_mode=1)
         loss_i = losses['types'][i](logit, label)
-        print(i, losses['coef'][i], loss_i)
+        #         print(i, losses['coef'][i], loss_i)
         loss += losses['coef'][i] * loss_i
-    print('total loss:', loss)
+
+
+#     print('total loss:', loss)
     return loss
 
 
@@ -160,19 +162,19 @@ def train(model,
                     loss = loss_computation(logits, labels, losses)
                     loss.backward()
                 else:
-                    # debug finetune+mscale+loss
-                    print('iter: ', iter)
-                    import numpy as np
-                    images = np.load('/ssd1/home/chulutao/random-data/img.npy')
-                    labels = np.load(
-                        '/ssd1/home/chulutao/random-data/labels.npy')
-                    images = paddle.to_tensor(images)
-                    labels = paddle.to_tensor(labels)
-                    if iter == 1:
-                        print(images)
-                        print(labels)
+                    #                     # debug finetune+mscale+loss
+                    #                     print('iter: ', iter)
+                    #                     import numpy as np
+                    #                     images = np.load('/ssd1/home/chulutao/random-data/img.npy')
+                    #                     labels = np.load(
+                    #                         '/ssd1/home/chulutao/random-data/labels.npy')
+                    #                     images = paddle.to_tensor(images)
+                    #                     labels = paddle.to_tensor(labels)
+                    #                     if iter == 1:
+                    #                         print(images)
+                    #                         print(labels)
 
-#                     model.eval()
+                    #                     model.eval()
 
                     logits = model(images)
                     loss = loss_computation(logits, labels, losses)

@@ -96,8 +96,8 @@ class CityscapesAutolabeling(paddle.io.Dataset):
                                      for img_path, label_path in zip(
                                          coarse_img_files, coarse_label_files)]
 
-            # Keep the same number of files in one epoch even using coarse data.
-            self.num_files = len(self.file_list)
+        # Keep the same number of files in one epoch even using coarse data.
+        self.num_files = len(self.file_list)
 
     def __getitem__(self, idx):
         image_path, label_path = self.file_list[idx]
