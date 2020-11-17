@@ -18,7 +18,7 @@ import random
 
 import paddle
 import numpy as np
-import PIL
+from PIL import Image
 
 from paddleseg.cvlibs import manager
 from paddleseg.transforms import Compose
@@ -107,9 +107,8 @@ class CityscapesAutolabeling(paddle.io.Dataset):
             return im, image_path
         elif self.mode == 'val':
             im, _ = self.transforms(im=image_path)
-            im = im[np.newaxis, ...]
-            label = np.asarray(PIL.Image.open(label_path))
-            label = label[np.newaxis, np.newaxis, :, :]
+            label = np.asarray(Image.open(label_path))
+            label = label[np.newaxis, :, :]
             return im, label
         else:
             if idx / self.num_files < self.coarse_proba:
