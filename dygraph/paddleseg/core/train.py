@@ -44,9 +44,11 @@ def loss_computation(logits, label, losses):
         #                 align_corners=True,
         #                 align_mode=1)
         loss_i = losses['types'][i](logit, label)
-        print(i, losses['coef'][i], loss_i)
+        #         print(i, losses['coef'][i], loss_i)
         loss += losses['coef'][i] * loss_i
-    print('total loss:', loss)
+
+
+#     print('total loss:', loss)
     return loss
 
 
@@ -160,26 +162,26 @@ def train(model,
                     loss = loss_computation(logits, labels, losses)
                     loss.backward()
                 else:
-                    # debug finetune+mscale+loss
-                    print('iter: ', iter)
-                    import numpy as np
-                    images = np.load('/ssd1/home/chulutao/random-data/img.npy')
-                    labels = np.load(
-                        '/ssd1/home/chulutao/random-data/labels.npy')
-                    images = paddle.to_tensor(images)
-                    labels = paddle.to_tensor(labels)
-                    if iter == 1:
-                        print(images)
-                        print(labels)
+                    #                     # debug finetune+mscale+loss
+                    #                     print('iter: ', iter)
+                    #                     import numpy as np
+                    #                     images = np.load('/ssd1/home/chulutao/random-data/img.npy')
+                    #                     labels = np.load(
+                    #                         '/ssd1/home/chulutao/random-data/labels.npy')
+                    #                     images = paddle.to_tensor(images)
+                    #                     labels = paddle.to_tensor(labels)
+                    #                     if iter == 1:
+                    #                         print(images)
+                    #                         print(labels)
 
-#                     model.eval()
+                    #                     model.eval()
 
                     logits = model(images)
                     loss = loss_computation(logits, labels, losses)
                     loss.backward()
 
-                    if iter == 10:
-                        exit()
+#                     if iter == 10:
+#                         exit()
                 optimizer.step()
                 lr = optimizer.get_lr()
                 if isinstance(optimizer._learning_rate,
@@ -252,7 +254,7 @@ def train(model,
             if (iter % save_interval == 0
                     or iter == iters) and (val_dataset is not None):
                 mean_iou, acc = evaluate(
-                    model, val_dataset, iter_id=iter, num_workers=num_workers)
+                    model, val_dataset, num_workers=num_workers)
                 model.train()
 
             if (iter % save_interval == 0 or iter == iters) and local_rank == 0:

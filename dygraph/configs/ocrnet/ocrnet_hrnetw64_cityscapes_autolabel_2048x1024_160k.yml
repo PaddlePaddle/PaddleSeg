@@ -1,16 +1,18 @@
-batch_size: 4
-iters: 80000
+_base_: '../_base_/cityscapes_autolabeling.yml'
+
+batch_size: 1
+iters: 160000
 
 train_dataset:
-  type: ADE20K
-  dataset_root: data/ADEChallengeData2016/
+  type: CityscapesAutolabeling
+  dataset_root: ../../dataset/cityscapes-for-nvidia
   transforms:
     - type: ResizeStepScaling
       min_scale_factor: 0.5
       max_scale_factor: 2.0
       scale_step_size: 0.25
     - type: RandomPaddingCrop
-      crop_size: [512, 512]
+      crop_size: [2048, 1024]
     - type: RandomHorizontalFlip
     - type: RandomDistort
       brightness_range: 0.4
@@ -19,27 +21,28 @@ train_dataset:
     - type: Normalize
   mode: train
 
-val_dataset:
-  type: ADE20K
-  dataset_root: data/ADEChallengeData2016/
-  transforms:
-    - type: Normalize
-  mode: val
+model:
+  type: OCRNet
+  backbone:
+    type: HRNet_W64
 
+    pretrained: 'pretrain/se_hrnet_w64.pdparams'
+  num_classes: 19
+  backbone_indices: [0]
 
 optimizer:
   type: sgd
-  momentum: 0.9
-  weight_decay: 4.0e-5
 
 learning_rate:
   value: 0.01
   decay:
     type: poly
     power: 0.9
-    end_lr: 0.0
+
+
 
 loss:
   types:
     - type: CrossEntropyLoss
-  coef: [1]
+    - type: CrossEntropyLoss
+  coef: [1, 1]

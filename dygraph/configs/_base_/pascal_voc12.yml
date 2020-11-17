@@ -1,9 +1,9 @@
 batch_size: 4
-iters: 80000
+iters: 40000
 
 train_dataset:
-  type: ADE20K
-  dataset_root: data/ADEChallengeData2016/
+  type: PascalVOC
+  dataset_root: data/VOCdevkit/
   transforms:
     - type: ResizeStepScaling
       min_scale_factor: 0.5
@@ -20,9 +20,11 @@ train_dataset:
   mode: train
 
 val_dataset:
-  type: ADE20K
-  dataset_root: data/ADEChallengeData2016/
+  type: PascalVOC
+  dataset_root: data/VOCdevkit/
   transforms:
+    - type: Padding
+      target_size: [512, 512]
     - type: Normalize
   mode: val
 

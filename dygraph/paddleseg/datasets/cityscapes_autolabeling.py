@@ -96,21 +96,21 @@ class CityscapesAutolabeling(paddle.io.Dataset):
                                      for img_path, label_path in zip(
                                          coarse_img_files, coarse_label_files)]
 
-            # Keep the same number of files in one epoch even using coarse data.
-            self.num_files = len(self.file_list)
+        # Keep the same number of files in one epoch even using coarse data.
+        self.num_files = len(self.file_list)
 
     def __getitem__(self, idx):
         image_path, label_path = self.file_list[idx]
         if self.mode == 'test':
-            im, im_info, _ = self.transforms(im=image_path)
+            im, _ = self.transforms(im=image_path)
             im = im[np.newaxis, ...]
-            return im, im_info, image_path
+            return im, image_path
         elif self.mode == 'val':
-            im, im_info, _ = self.transforms(im=image_path)
+            im, _ = self.transforms(im=image_path)
             im = im[np.newaxis, ...]
             label = np.asarray(PIL.Image.open(label_path))
             label = label[np.newaxis, np.newaxis, :, :]
-            return im, im_info, label
+            return im, label
         else:
             if idx / self.num_files < self.coarse_proba:
                 rand_idx = np.random.randint(0, len(self.coarse_file_list))
@@ -119,8 +119,7 @@ class CityscapesAutolabeling(paddle.io.Dataset):
                 rand_idx = np.random.randint(0, len(self.file_list))
                 image_path, label_path = self.file_list[rand_idx]
 
-            im, im_info, label = self.transforms(
-                im=image_path, label=label_path)
+            im, label = self.transforms(im=image_path, label=label_path)
             return im, label
 
     def __len__(self):

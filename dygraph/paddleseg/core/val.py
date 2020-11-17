@@ -13,58 +13,27 @@
 # limitations under the License.
 
 import os
-import collections.abc
 
 import numpy as np
 import paddle
 import paddle.nn.functional as F
 
 from paddleseg.utils import metrics, Timer, calculate_eta, logger, progbar
+from paddleseg.core import infer
 
 np.set_printoptions(suppress=True)
 
 
-def get_reverse_list(ori_label, transforms):
-    """
-    get reverse list of transform.
-
-    Args:
-        ori_label (Tensor): Origin label
-        transforms (List): List of transform.
-
-    Returns:
-        list: List of tuple, there are two format:
-            ('resize', (h, w)) The image shape before resize,
-            ('padding', (h, w)) The image shape before padding.
-    """
-    reverse_list = []
-    h, w = ori_label.shape[-2], ori_label.shape[-1]
-    for op in transforms:
-        if op.__class__.__name__ in ['Resize', 'ResizeByLong']:
-            reverse_list.append(('resize', (h, w)))
-            h, w = op.target_size[0], op.target_size[1]
-        if op.__class__.__name__ in ['Padding']:
-            reverse_list.append(('padding', (h, w)))
-            w, h = op.target_size[0], op.target_size[1]
-    return reverse_list
-
-
-def reverse_transform(pred, ori_label, transforms):
-    """recover pred to origin shape"""
-    reverse_list = get_reverse_list(ori_label, transforms)
-    for item in reverse_list[::-1]:
-        if item[0] == 'resize':
-            h, w = item[1][0], item[1][1]
-            pred = F.interpolate(pred, (h, w), mode='nearest')
-        elif item[0] == 'padding':
-            h, w = item[1][0], item[1][1]
-            pred = pred[:, :, 0:h, 0:w]
-        else:
-            raise Exception("Unexpected info '{}' in im_info".format(item[0]))
-    return pred
-
-
-def evaluate(model, eval_dataset=None, iter_id=None, num_workers=0):
+def evaluate(model,
+             eval_dataset,
+             aug_eval=False,
+             scales=1.0,
+             flip_horizontal=True,
+             flip_vertical=False,
+             is_slide=False,
+             stride=None,
+             crop_size=None,
+             num_workers=0):
     model.eval()
     nranks = paddle.distributed.ParallelEnv().nranks
     local_rank = paddle.distributed.ParallelEnv().local_rank
@@ -93,16 +62,28 @@ def evaluate(model, eval_dataset=None, iter_id=None, num_workers=0):
     for iter, (im, label) in enumerate(loader):
         label = label.astype('int64')
 
-        logits = model(im)
-        if not isinstance(logits, collections.abc.Sequence):
-            raise TypeError(
-                "The type of logits must be one of collections.abc.Sequence, e.g. list, tuple. But received {}"
-                .format(type(logits)))
-
-        pred = logits[0]
-        pred = paddle.argmax(pred, axis=1, keepdim=True, dtype='int32')
-        pred = reverse_transform(pred, label,
-                                 eval_dataset.transforms.transforms)
+        ori_shape = label.shape[-2:]
+        if aug_eval:
+            pred = infer.aug_inference(
+                model,
+                im,
+                ori_shape=ori_shape,
+                transforms=eval_dataset.transforms.transforms,
+                scales=scales,
+                flip_horizontal=flip_horizontal,
+                flip_vertical=flip_vertical,
+                is_slide=is_slide,
+                stride=stride,
+                crop_size=crop_size)
+        else:
+            pred = infer.inference(
+                model,
+                im,
+                ori_shape=ori_shape,
+                transforms=eval_dataset.transforms.transforms,
+                is_slide=is_slide,
+                stride=stride,
+                crop_size=crop_size)
 
         intersect_area, pred_area, label_area = metrics.calculate_area(
             pred,
@@ -138,13 +119,13 @@ def evaluate(model, eval_dataset=None, iter_id=None, num_workers=0):
         if local_rank == 0:
             progbar_val.update(iter + 1)
 
-    category_iou, miou = metrics.mean_iou(intersect_area_all, pred_area_all,
-                                          label_area_all)
-    category_acc, acc = metrics.accuracy(intersect_area_all, pred_area_all)
+    class_iou, miou = metrics.mean_iou(intersect_area_all, pred_area_all,
+                                       label_area_all)
+    class_acc, acc = metrics.accuracy(intersect_area_all, pred_area_all)
     kappa = metrics.kappa(intersect_area_all, pred_area_all, label_area_all)
 
     logger.info("[EVAL] #Images={} mIoU={:.4f} Acc={:.4f} Kappa={:.4f} ".format(
         len(eval_dataset), miou, acc, kappa))
-    logger.info("[EVAL] Category IoU: \n" + str(np.round(category_iou, 4)))
-    logger.info("[EVAL] Category Acc: \n" + str(np.round(category_acc, 4)))
+    logger.info("[EVAL] Class IoU: \n" + str(np.round(class_iou, 4)))
+    logger.info("[EVAL] Class Acc: \n" + str(np.round(class_acc, 4)))
     return miou, acc
