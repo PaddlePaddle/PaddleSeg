@@ -152,7 +152,7 @@ def train(model,
             if (iter % save_interval == 0
                     or iter == iters) and (val_dataset is not None):
                 mean_iou, acc = evaluate(
-                    model, val_dataset, iter_id=iter, num_workers=num_workers)
+                    model, val_dataset, num_workers=num_workers)
                 model.train()
 
             if (iter % save_interval == 0 or iter == iters) and local_rank == 0:
