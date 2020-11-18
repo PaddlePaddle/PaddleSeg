@@ -127,6 +127,7 @@ def download_file_and_uncompress(url,
     savename = url.split("/")[-1]
     if not os.path.exists(savepath):
         os.makedirs(savepath)
+
     savepath = os.path.join(savepath, savename)
     savename = ".".join(savename.split(".")[:-1])
     savename = os.path.join(extrapath, savename)
@@ -145,6 +146,13 @@ def download_file_and_uncompress(url,
         if not os.path.exists(savename):
             if not os.path.exists(savepath):
                 _download_file(url, savepath, print_progress)
+
+            if not tarfile.is_tarfile(savepath) or zipfile.is_zipfile(savepath):
+                if not os.path.exists(extraname):
+                    os.makedirs(extraname)
+                shutil.move(savepath, extraname)
+                return extraname
+
             savename = _uncompress_file(savepath, extrapath, delete_file,
                                         print_progress)
             savename = os.path.join(extrapath, savename)
