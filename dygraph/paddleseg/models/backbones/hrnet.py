@@ -658,10 +658,10 @@ def HRNet_W18_Small_V2(**kwargs):
         stage2_num_modules=1,
         stage2_num_blocks=[2, 2],
         stage2_num_channels=[18, 36],
-        stage3_num_modules=1,
+        stage3_num_modules=3,
         stage3_num_blocks=[2, 2, 2],
         stage3_num_channels=[18, 36, 72],
-        stage4_num_modules=1,
+        stage4_num_modules=2,
         stage4_num_blocks=[2, 2, 2, 2],
         stage4_num_channels=[18, 36, 72, 144],
         **kwargs)
