@@ -98,7 +98,7 @@ python val.py \
 ```shell
 python val.py \
        --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml \
-       --model_path output/iter_1000/model.pdparams 、
+       --model_path output/iter_1000/model.pdparams \
        --aug_eval \
        --scales 0.75 1.0 1.25 \
        --flip_horizontal
@@ -108,7 +108,7 @@ python val.py \
 ```shell
 python val.py \
        --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml \
-       --model_path output/iter_1000/model.pdparams 、
+       --model_path output/iter_1000/model.pdparams \
        --is_slide \
        --crop_size 256 256 \
        --stride 128 128
