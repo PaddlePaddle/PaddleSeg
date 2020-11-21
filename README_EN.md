@@ -12,21 +12,6 @@ PaddleSeg is an end-to-end image segmentation development kit based on PaddlePad
 
 ## Main Features
 
-- [特点](#特点)
-- [安装](#安装)
-- [使用教程](#使用教程)
-  - [快速入门](#快速入门)
-  - [基础功能](#基础功能)
-  - [预测部署](#预测部署)
-  - [高级功能](#高级功能)
-- [在线体验](#在线体验)
-- [FAQ](#FAQ)
-- [交流与反馈](#交流与反馈)
-- [更新日志](#更新日志)
-- [贡献代码](#贡献代码)
-
-## 特点
-
 - **Practical Data Augmentation Techniques**
 
 PaddleSeg provides 10+ data augmentation techniques, which are developed from the product-level applications in Baidu. The techniques are able to help developers improve the generalization and robustness ability of their customized models.
@@ -47,57 +32,49 @@ PaddleSeg supports the industry-level deployment in both **server** and **mobile
 
 PaddleSeg provides rich practical cases in industry, such as human segmentation, mechanical meter segmentation, lane segmentation, remote sensing image segmentation, human parsing, and industry inspection, etc. The practical cases allow developers to get a closer look at the image segmentation area, and get more hand-on experiences on the real practice.
 
-## 安装
+## Installation
 
-### 1. 安装PaddlePaddle
+### 1. Install PaddlePaddle
 
-版本要求
+System Requirements:
 * PaddlePaddle >= 1.7.0 and < 2.0
 * Python >= 3.5+
 
-由于图像分割模型计算开销大，推荐在GPU版本的PaddlePaddle下使用PaddleSeg.
+Highly recommend you install the GPU version of PaddlePaddle, due to large overhead of segmentation models, otherwise it could be out of memory while running the models.
 
-安装教程请见[PaddlePaddle官网](https://www.paddlepaddle.org.cn/install/quick)。
+For more detailed installation tutorials, please refer to the official website of PaddlePaddle(https://www.paddlepaddle.org.cn/install/quick)。
 
-### 2. 下载PaddleSeg代码
+### 2. Download PaddleSeg
 
 ```
 git clone https://github.com/PaddlePaddle/PaddleSeg
 ```
 
-### 3. 安装PaddleSeg依赖
-通过以下命令安装python包依赖，请确保在该分支上至少执行过一次以下命令：
+### 3. Install Dependencies
+Install the python dependencies via the following commands，and please make sure execute it at least once in your branch.
 ```
 cd PaddleSeg
 pip install -r requirements.txt
 ```
 
-## 使用教程
+## Tutorials
 
-我们提供了一系列的使用教程，来说明如何使用PaddleSeg完成语义分割模型的训练、评估、部署。
+For a better understanding of PaddleSeg, we provide comprehensive tutorials to show the whole process of using PaddleSeg on model training, evaluation and deployment. Besides the basic usages of PaddleSeg, the design insights will be also mentioned in the tutorials.
 
-这一系列的文档被分为**快速入门**、**基础功能**、**预测部署**、**高级功能**四个部分，四个教程由浅至深地介绍PaddleSeg的设计思路和使用方法。
+### Quick Start
 
-### 快速入门
+* [PaddleSeg Start](./docs/usage.md)
 
-* [PaddleSeg快速入门](./docs/usage.md)
+### Basic Usages
 
-### 基础功能
-
-* [自定义数据的标注与准备](./docs/data_prepare.md)
+* [Customized Data Labelling and Preparation](./docs/data_prepare.md)
 * [脚本使用和配置说明](./docs/config.md)
 * [数据和配置校验](./docs/check.md)
 * [分割模型介绍](./docs/models.md)
 * [预训练模型下载](./docs/model_zoo.md)
 * [DeepLabv3+模型使用教程](./tutorial/finetune_deeplabv3plus.md)
-* [U-Net模型使用教程](./tutorial/finetune_unet.md)
-* [ICNet模型使用教程](./tutorial/finetune_icnet.md)
-* [PSPNet模型使用教程](./tutorial/finetune_pspnet.md)
-* [HRNet模型使用教程](./tutorial/finetune_hrnet.md)
-* [Fast-SCNN模型使用教程](./tutorial/finetune_fast_scnn.md)
-* [OCRNet模型使用教程](./tutorial/finetune_ocrnet.md)
 
-### 预测部署
+### Inference and Deployment
 
 * [模型导出](./docs/model_export.md)
 * [Python预测](./deploy/python/)
@@ -106,13 +83,13 @@ pip install -r requirements.txt
 * [PaddleServing预测部署](./deploy/paddle-serving)
 
 
-### 高级功能
+### Advanced features
 
-* [PaddleSeg的数据增强](./docs/data_aug.md)
-* [PaddleSeg的loss选择](./docs/loss_select.md)
-* [PaddleSeg产业实践](./contrib)
-* [多进程训练和混合精度训练](./docs/multiple_gpus_train_and_mixed_precision_train.md)
-* 使用PaddleSlim进行分割模型压缩([量化](./slim/quantization/README.md), [蒸馏](./slim/distillation/README.md), [剪枝](./slim/prune/README.md), [搜索](./slim/nas/README.md))
+* [Data Augmentation](./docs/data_aug.md)
+* [Loss Functions](./docs/loss_select.md)
+* [Practical Cases](./contrib)
+* [Multiprocessing and Mixed-Precision Training](./docs/multiple_gpus_train_and_mixed_precision_train.md)
+* Model Optimization ([Quantization](./slim/quantization/README.md), [Distillation](./slim/distillation/README.md), [Pruning](./slim/prune/README.md), [NAS](./slim/nas/README.md))
 ## 在线体验
 
 我们在AI Studio平台上提供了在线体验的教程，欢迎体验：
