@@ -42,7 +42,7 @@ System Requirements:
 
 Highly recommend you install the GPU version of PaddlePaddle, due to large overhead of segmentation models, otherwise it could be out of memory while running the models.
 
-For more detailed installation tutorials, please refer to the official website of PaddlePaddle(https://www.paddlepaddle.org.cn/install/quick)。
+For more detailed installation tutorials, please refer to the official website of [PaddlePaddle](https://www.paddlepaddle.org.cn/install/quick)。
 
 ### 2. Download PaddleSeg
 
@@ -68,19 +68,19 @@ For a better understanding of PaddleSeg, we provide comprehensive tutorials to s
 ### Basic Usages
 
 * [Customized Data Labelling and Preparation](./docs/data_prepare.md)
-* [脚本使用和配置说明](./docs/config.md)
-* [数据和配置校验](./docs/check.md)
-* [分割模型介绍](./docs/models.md)
-* [预训练模型下载](./docs/model_zoo.md)
-* [DeepLabv3+模型使用教程](./tutorial/finetune_deeplabv3plus.md)
+* [Scripts and Config Guide](./docs/config.md)
+* [Data and Config Verification](./docs/check.md)
+* [Segmentation Models](./docs/models.md)
+* [Pretrained Models](./docs/model_zoo.md)
+* [DeepLabv3+ Tutorial](./tutorial/finetune_deeplabv3plus.md)
 
 ### Inference and Deployment
 
-* [模型导出](./docs/model_export.md)
-* [Python预测](./deploy/python/)
-* [C++预测](./deploy/cpp/)
-* [Paddle-Lite移动端预测部署](./deploy/lite/)
-* [PaddleServing预测部署](./deploy/paddle-serving)
+* [Model Export](./docs/model_export.md)
+* [Python Inference](./deploy/python/)
+* [C++ Inference](./deploy/cpp/)
+* [Paddle-Lite Mobile Inference & Deployment](./deploy/lite/)
+* [PaddleServing Inference & Deployment](./deploy/paddle-serving)
 
 
 ### Advanced features
