@@ -8,7 +8,7 @@ English | [简体中文](README.md)
 ![python version](https://img.shields.io/badge/python-3.6+-orange.svg)
 ![support os](https://img.shields.io/badge/os-linux%2C%20win%2C%20mac-yellow.svg)
 
-<img src="./docs/imgs/seg_news_icon.png" width="50"/> *[2020-10-28] PaddleSeg [dygraph](./dygraph) version is ready, and the new version supports PaddlePaddle 2.0rc, see [release notes](./docs/release_notes.md).*
+<img src="./docs/imgs/seg_news_icon.png" width="50"/> *[2020-10-28] PaddleSeg has released the [dygraph](./dygraph) version, which supports PaddlePaddle 2.0rc, see detailed [release notes](./docs/release_notes.md).*
 
 ## Introduction
 
@@ -46,7 +46,7 @@ System Requirements:
 * PaddlePaddle >= 1.7.0 and < 2.0
 * Python >= 3.5+
 
-> Note: the above requirements are for the static graph version. If you intent to use the dynamic one, please refers to [here](./dygraph/README.md).
+> Note: the above requirements are for the static graph version. If you intent to use the dynamic one, please refers to [here](./dygraph).
 
 Highly recommend you install the GPU version of PaddlePaddle, due to large overhead of segmentation models, otherwise it could be out of memory while running the models.
 
