@@ -103,15 +103,21 @@ def predict(model,
             im_file = im_file[1:]
 
         # save added image
-        added_image = utils.visualize(im_path, pred, weight=0.6)
+        added_image = utils.visualize.visualize(im_path, pred, weight=0.6)
         added_image_path = os.path.join(added_saved_dir, im_file)
         mkdir(added_image_path)
         cv2.imwrite(added_image_path, added_image)
 
         # save pseudo color prediction
-        pred_im = utils.visualize(im_path, pred, weight=0.0)
-        pred_saved_path = os.path.join(pred_saved_dir, im_file)
+        pred_mask = utils.visualize.get_pseudo_color_map(pred)
+        pred_saved_path = os.path.join(pred_saved_dir,
+                                       im_file.rsplit(".")[0] + ".png")
         mkdir(pred_saved_path)
-        cv2.imwrite(pred_saved_path, pred_im)
+        pred_mask.save(pred_saved_path)
+
+        # pred_im = utils.visualize(im_path, pred, weight=0.0)
+        # pred_saved_path = os.path.join(pred_saved_dir, im_file)
+        # mkdir(pred_saved_path)
+        # cv2.imwrite(pred_saved_path, pred_im)
 
         progbar_pred.update(i + 1)
