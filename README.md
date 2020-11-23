@@ -75,7 +75,7 @@ For a better understanding of PaddleSeg, we provide comprehensive tutorials to s
 
 ### Basic Usages
 
-* [Customized Data Labelling and Preparation](./docs/data_prepare.md)
+* [Customized Data Preparation](./docs/data_prepare.md)
 * [Scripts and Config Guide](./docs/config.md)
 * [Data and Config Verification](./docs/check.md)
 * [Segmentation Models](./docs/models.md)
