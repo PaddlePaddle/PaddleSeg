@@ -60,10 +60,10 @@ def main(args):
     logger.info(msg)
 
     model = cfg.model
-    para_state_dict = paddle.load(args.model_path)
-    model.set_dict(para_state_dict)
-    logger.info('Loaded trained params of model successfully')
-
+    if args.model_path:
+        para_state_dict = paddle.load(args.model_path)
+        model.set_dict(para_state_dict)
+        logger.info('Loaded trained params of model successfully')
     evaluate(model, val_dataset)
 
 
