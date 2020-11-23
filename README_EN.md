@@ -14,6 +14,8 @@ English | [简体中文](README.md)
 
 PaddleSeg is an end-to-end image segmentation development kit based on PaddlePaddle, which aims to help developers in the whole process of training models, optimizing performance and inference speed, and deploying models. Currently PaddleSeg supports seven efficient segmentation models, including DeepLabv3+, U-Net, ICNet, PSPNet, HRNet, Fast-SCNN, and OCRNet, which are extensively used in both academia and industry. Enjoy your Seg journey!
 
+![demo](./docs/imgs/cityscapes.png)
+
 ## Main Features
 
 - **Practical Data Augmentation Techniques**
@@ -100,7 +102,7 @@ For a better understanding of PaddleSeg, we provide comprehensive tutorials to s
 
 ### AI Studio Tutorial
 
-We further provide a few tutorials in Baidu AI Studio：[Get Started](https://aistudio.baidu.com/aistudio/projectdetail/100798), [Pet Seg](https://aistudio.baidu.com/aistudio/projectDetail/102889), [Mini_City Seg](https://aistudio.baidu.com/aistudio/projectDetail/226703), [Industry Inspection](https://aistudio.baidu.com/aistudio/projectdetail/184392), [Human Seg](https://aistudio.baidu.com/aistudio/projectdetail/475345), [More](https://aistudio.baidu.com/aistudio/projectdetail/226710)
+We further provide a few tutorials in Baidu AI Studio：[Get Started](https://aistudio.baidu.com/aistudio/projectdetail/100798), [Pet Seg](https://aistudio.baidu.com/aistudio/projectDetail/102889), [Mini_City Seg](https://aistudio.baidu.com/aistudio/projectDetail/226703), [Industry Inspection](https://aistudio.baidu.com/aistudio/projectdetail/184392), [Human Seg](https://aistudio.baidu.com/aistudio/projectdetail/475345), [More](https://aistudio.baidu.com/aistudio/projectdetail/226710).
 
 ## FAQ
 
