@@ -93,8 +93,29 @@ python val.py \
        --model_path output/iter_1000/model.pdparams
 ```
 
+如果想进行多尺度翻转评估可通过传入`--aug_eval`进行开启，然后通过`--scales`传入尺度信息，
+`--flip_horizontal`开启水平翻转， `flip_vertical`开启垂直翻转。使用示例如下：
+```shell
+python val.py \
+       --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml \
+       --model_path output/iter_1000/model.pdparams \
+       --aug_eval \
+       --scales 0.75 1.0 1.25 \
+       --flip_horizontal
+```
+
+如果想进行滑窗评估可通过传入`--is_slide`进行开启， 通过`--crop_size`传入窗口大小， `--stride`传入步长。使用示例如下：
+```shell
+python val.py \
+       --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml \
+       --model_path output/iter_1000/model.pdparams \
+       --is_slide \
+       --crop_size 256 256 \
+       --stride 128 128
+```
+
 ## 效果可视化
-当保存完模型后，可以通过PaddleSeg提供的脚本对模型预测结果进行可视化，查看分割效果
+当保存完模型后，可以通过PaddleSeg提供的脚本对模型预测结果进行可视化，查看分割效果。
 ```shell
 python predict.py \
        --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml \
@@ -104,4 +125,6 @@ python predict.py \
 ```
 其中`image_path`也可以是一个目录，这时候将对目录内的所有图片进行预测并保存可视化结果图。效果如下：
 ![](images/quick_start_predict.jpg)
+
+同样的，可以通过`--aug_pred`开启多尺度翻转预测， `--is_slide`开启滑窗预测。
 

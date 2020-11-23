@@ -39,8 +39,6 @@ learning_rate:
     type: poly
     power: 0.9
 
-
-
 loss:
   types:
     - type: CrossEntropyLoss
