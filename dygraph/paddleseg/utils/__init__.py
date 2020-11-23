@@ -18,4 +18,4 @@ from . import metrics
 from .env import seg_env, get_sys_env
 from .utils import *
 from .timer import Timer, calculate_eta
-from .visualize import visualize
+from . import visualize

@@ -434,7 +434,7 @@ class SELayer(nn.Layer):
     def __init__(self, num_channels, num_filters, reduction_ratio, name=None):
         super(SELayer, self).__init__()
 
-        self.pool2d_gap = nn.AdaptiveAvgPool2d(1)
+        self.pool2d_gap = nn.AdaptiveAvgPool2D(1)
 
         self._num_channels = num_channels
 
@@ -443,23 +443,23 @@ class SELayer(nn.Layer):
         self.squeeze = nn.Linear(
             num_channels,
             med_ch,
-            act="relu",
-            param_attr=paddle.ParamAttr(
+            weight_attr=paddle.ParamAttr(
                 initializer=nn.initializer.Uniform(-stdv, stdv)))
 
         stdv = 1.0 / math.sqrt(med_ch * 1.0)
         self.excitation = nn.Linear(
             med_ch,
             num_filters,
-            act="sigmoid",
-            param_attr=paddle.ParamAttr(
+            weight_attr=paddle.ParamAttr(
                 initializer=nn.initializer.Uniform(-stdv, stdv)))
 
     def forward(self, x):
         pool = self.pool2d_gap(x)
         pool = paddle.reshape(pool, shape=[-1, self._num_channels])
         squeeze = self.squeeze(pool)
+        squeeze = F.relu(squeeze)
         excitation = self.excitation(squeeze)
+        excitation = F.sigmoid(excitation)
         excitation = paddle.reshape(
             excitation, shape=[-1, self._num_channels, 1, 1])
         out = x * excitation
@@ -658,10 +658,10 @@ def HRNet_W18_Small_V2(**kwargs):
         stage2_num_modules=1,
         stage2_num_blocks=[2, 2],
         stage2_num_channels=[18, 36],
-        stage3_num_modules=1,
+        stage3_num_modules=3,
         stage3_num_blocks=[2, 2, 2],
         stage3_num_channels=[18, 36, 72],
-        stage4_num_modules=1,
+        stage4_num_modules=2,
         stage4_num_blocks=[2, 2, 2, 2],
         stage4_num_channels=[18, 36, 72, 144],
         **kwargs)

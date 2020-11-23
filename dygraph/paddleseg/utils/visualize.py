@@ -16,6 +16,7 @@ import os
 
 import cv2
 import numpy as np
+from PIL import Image as PILImage
 
 
 def visualize(image, result, save_dir=None, weight=0.6):
@@ -33,6 +34,7 @@ def visualize(image, result, save_dir=None, weight=0.6):
     """
 
     color_map = get_color_map_list(256)
+    color_map = [color_map[i:i + 3] for i in range(0, len(color_map), 3)]
     color_map = np.array(color_map).astype("uint8")
     # Use OpenCV LUT for color mapping
     c1 = cv2.LUT(result, color_map[:, 0])
@@ -51,6 +53,13 @@ def visualize(image, result, save_dir=None, weight=0.6):
         cv2.imwrite(out_path, vis_result)
     else:
         return vis_result
+
+
+def get_pseudo_color_map(pred):
+    pred_mask = PILImage.fromarray(pred.astype(np.uint8), mode='P')
+    color_map = get_color_map_list(256)
+    pred_mask.putpalette(color_map)
+    return pred_mask
 
 
 def get_color_map_list(num_classes):
@@ -76,6 +85,6 @@ def get_color_map_list(num_classes):
             color_map[i * 3 + 2] |= (((lab >> 2) & 1) << (7 - j))
             j += 1
             lab >>= 3
-    color_map = [color_map[i:i + 3] for i in range(0, len(color_map), 3)]
-    color_map = color_map[1:]
+    # color_map = [color_map[i:i + 3] for i in range(0, len(color_map), 3)]
+    color_map = color_map[3:]
     return color_map
