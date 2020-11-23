@@ -8,7 +8,7 @@ English | [简体中文](README.md)
 ![python version](https://img.shields.io/badge/python-3.6+-orange.svg)
 ![support os](https://img.shields.io/badge/os-linux%2C%20win%2C%20mac-yellow.svg)
 
-<img src="./docs/imgs/seg_news_icon.png" width="50"/> *[2020-10-28] PaddleSeg dygraph version is ready, and the new version supports PaddlePaddle 2.0rc, see [release notes](./docs/release_notes.md)*
+<img src="./docs/imgs/seg_news_icon.png" width="50"/> *[2020-10-28] PaddleSeg [dygraph](./dygraph) version is ready, and the new version supports PaddlePaddle 2.0rc, see [release notes](./docs/release_notes.md).*
 
 ## Introduction
 
