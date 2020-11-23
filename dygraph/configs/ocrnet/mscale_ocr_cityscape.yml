@@ -12,8 +12,8 @@ train_dataset:
       max_scale_factor: 2.0
       scale_step_size: 0
     - type: RandomPaddingCrop
-      crop_size: [2048, 1024]
-#       crop_size: [769, 769]
+      # crop_size: [2048, 1024]
+      crop_size: [300, 300]
     - type: RandomHorizontalFlip
 
 #     - type: RandomDistort
@@ -40,11 +40,18 @@ val_dataset:
       std: [0.229, 0.224, 0.225]
 
 model:
-#   type: MscaleOCRPretrain
-  type: MscaleOCRFinetune
-  params: None
-#   pretrained: pretrain/ocr_pretrain/model.pdparams
-  pretrained: pretrain/ocr_finetune_good/model.pdparams
+  type: MscaleOCRNet
+  backbone:
+    type: HRNet_W48
+    pretrained: https://bj.bcebos.com/paddleseg/dygraph/hrnet_w48_ssld.tar.gz
+  num_classes: 19
+  backbone_indices: [0]
+
+# #   type: MscaleOCRPretrain
+#   type: MscaleOCRFinetune
+#   params: None
+# #   pretrained: pretrain/ocr_pretrain/model.pdparams
+#   pretrained: pretrain/ocr_finetune_good/model.pdparams
 
 optimizer:
   type: sgd

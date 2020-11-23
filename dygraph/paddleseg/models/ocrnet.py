@@ -50,7 +50,8 @@ class OCRNet(nn.Layer):
                  ocr_mid_channels=512,
                  ocr_key_channels=256,
                  align_corners=False,
-                 pretrained=None):
+                 pretrained=None,
+                 ms_attention=False):
         super().__init__()
 
         self.backbone = backbone
@@ -61,10 +62,12 @@ class OCRNet(nn.Layer):
             num_classes=num_classes,
             in_channels=in_channels,
             ocr_mid_channels=ocr_mid_channels,
-            ocr_key_channels=ocr_key_channels)
+            ocr_key_channels=ocr_key_channels,
+            ms_attention=ms_attention)
 
         self.align_corners = align_corners
         self.pretrained = pretrained
+        self.ms_attention = ms_attention
         self.init_weight()
 
     def forward(self, x):
@@ -100,10 +103,12 @@ class OCRHead(nn.Layer):
                  num_classes,
                  in_channels,
                  ocr_mid_channels=512,
-                 ocr_key_channels=256):
+                 ocr_key_channels=256,
+                 ms_attention=False):
         super().__init__()
 
         self.num_classes = num_classes
+        self.ms_attention = ms_attention
         self.spatial_gather = SpatialGatherBlock()
         self.spatial_ocr = SpatialOCRModule(ocr_mid_channels, ocr_key_channels,
                                             ocr_mid_channels)
@@ -131,6 +136,8 @@ class OCRHead(nn.Layer):
         ocr = self.spatial_ocr(pixels, object_regions)
 
         logit = self.cls_head(ocr)
+        if self.ms_attention:
+            return [logit, soft_regions, ocr]
         return [logit, soft_regions]
 
     def init_weight(self):
