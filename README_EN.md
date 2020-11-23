@@ -8,7 +8,7 @@ English | [简体中文](README.md)
 ![python version](https://img.shields.io/badge/python-3.6+-orange.svg)
 ![support os](https://img.shields.io/badge/os-linux%2C%20win%2C%20mac-yellow.svg)
 
-![ ](./docs/imgs/seg_news_icon.png): PaddleSeg v0.7 is ready and support PaddlePaddle 2.0rc, [release notes]()
+<img src="./docs/imgs/seg_news_icon.png" width="50"/>  PaddleSeg v0.7 is ready and support PaddlePaddle 2.0rc, [release notes]()
 
 ## Introduction
 
