@@ -5,3 +5,4 @@ pyyaml >= 5.1
 visualdl >= 2.0.0
 opencv-python
 tqdm
+filelock

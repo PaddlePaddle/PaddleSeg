@@ -38,7 +38,9 @@ def progress(str, end=False):
 
 
 def _download_file(url, savepath, print_progress):
-    r = requests.get(url, stream=True)
+    if print_progress:
+        print("Connecting to {}".format(url))
+    r = requests.get(url, stream=True, timeout=15)
     total_length = r.headers.get('content-length')
 
     if total_length is None:
