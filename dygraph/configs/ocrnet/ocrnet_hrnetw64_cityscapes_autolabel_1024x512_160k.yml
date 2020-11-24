@@ -1,0 +1,42 @@
+_base_: '../_base_/cityscapes_autolabeling.yml'
+
+batch_size: 2
+iters: 160000
+
+train_dataset:
+  type: CityscapesAutolabeling
+  dataset_root: ../../dataset/cityscapes-for-nvidia
+  transforms:
+    - type: ResizeStepScaling
+      min_scale_factor: 0.5
+      max_scale_factor: 2.0
+      scale_step_size: 0.25
+    - type: RandomPaddingCrop
+      crop_size: [1024, 512]
+    - type: RandomHorizontalFlip
+    - type: Normalize
+  mode: train
+
+model:
+  type: OCRNet
+  backbone:
+    type: HRNet_W64
+    has_se: True
+    pretrained: 'pretrain/se_hrnet_w64.pdparams'
+  num_classes: 19
+  backbone_indices: [0]
+
+optimizer:
+  type: sgd
+
+learning_rate:
+  value: 0.01
+  decay:
+    type: poly
+    power: 0.9
+
+loss:
+  types:
+    - type: CrossEntropyLoss
+    - type: CrossEntropyLoss
+  coef: [1, 0.4]

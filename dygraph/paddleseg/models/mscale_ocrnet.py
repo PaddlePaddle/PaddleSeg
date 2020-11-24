@@ -15,6 +15,7 @@ class MscaleOCRNet(nn.Layer):
                  num_classes,
                  backbone,
                  backbone_indices,
+                 n_scales=[0.5, 1.0, 2.0],
                  ocr_mid_channels=512,
                  ocr_key_channels=256,
                  align_corners=False,
@@ -30,6 +31,7 @@ class MscaleOCRNet(nn.Layer):
             ms_attention=True)
         self.scale_attn = AttenHead(in_ch=ocr_mid_channels, out_ch=1)
 
+        self.n_scales = n_scales
         self.pretrained = pretrained
         self.align_corners = align_corners
         self.init_weight()
@@ -44,12 +46,12 @@ class MscaleOCRNet(nn.Layer):
         if self.pretrained is not None:
             utils.load_pretrained_model(self, self.pretrained)
 
-    def forward(self, x, n_scales=[0.5, 1.0, 2.0]):
+    def forward(self, x):
         #         return self.two_scale_forward(x)
         if self.training:
             return self.two_scale_forward(x)
         else:
-            return self.nscale_forward(x, n_scales)
+            return self.nscale_forward(x, self.n_scales)
 
     def two_scale_forward(self, x_1x):
         """
