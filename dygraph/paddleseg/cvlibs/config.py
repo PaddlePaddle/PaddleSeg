@@ -19,7 +19,7 @@ from typing import Any
 import paddle
 import yaml
 
-import paddleseg.cvlibs.manager as manager
+from paddleseg.cvlibs import manager
 
 
 class Config(object):
