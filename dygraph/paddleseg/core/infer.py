@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import collections.abc
 from itertools import combinations
 
 import numpy as np
@@ -122,8 +123,12 @@ def slide_inference(model, im, crop_size, stride):
             h1 = max(h2 - h_crop, 0)
             w1 = max(w2 - w_crop, 0)
             im_crop = im[:, :, h1:h2, w1:w2]
-            im_pad = F.pad(im_crop, [0, w_crop, 0, h_crop])
-            logit = model(im_crop)[0].numpy()
+            logits = model(im_crop)
+            if not isinstance(logits, collections.abc.Sequence):
+                raise TypeError(
+                    "The type of logits must be one of collections.abc.Sequence, e.g. list, tuple. But received {}"
+                    .format(type(logits)))
+            logit = logits[0].numpy()
             if final_logit is None:
                 final_logit = np.zeros([1, logit.shape[1], h_im, w_im])
             final_logit[:, :, h1:h2, w1:w2] += logit[:, :, :h2 - h1, :w2 - w1]
@@ -162,6 +167,10 @@ def inference(model,
     """
     if not is_slide:
         logits = model(im)
+        if not isinstance(logits, collections.abc.Sequence):
+            raise TypeError(
+                "The type of logits must be one of collections.abc.Sequence, e.g. list, tuple. But received {}"
+                .format(type(logits)))
         logit = logits[0]
     else:
         logit = slide_inference(model, im, crop_size=crop_size, stride=stride)
