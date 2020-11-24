@@ -40,8 +40,6 @@ class ConvBNReLU(nn.Layer):
         self._batch_norm = SyncBatchNorm(out_channels)
 
     def forward(self, x):
-        #         print(x.name, self._conv.weight.name)
-        #print(x, self._conv.weight)
         x = self._conv(x)
         x = self._batch_norm(x)
         x = F.relu(x)
