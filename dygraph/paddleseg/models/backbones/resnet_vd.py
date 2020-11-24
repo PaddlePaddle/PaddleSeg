@@ -169,7 +169,8 @@ class BasicBlock(nn.Layer):
             short = inputs
         else:
             short = self.short(inputs)
-        y = paddle.elementwise_add(x=short, y=conv1, act='relu')
+        y = paddle.add(x=short, y=conv1)
+        y = F.relu(y)
 
         return y
 
