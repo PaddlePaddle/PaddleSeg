@@ -496,7 +496,7 @@ class RandomPaddingCrop:
         self.im_padding_value = im_padding_value
         self.label_padding_value = label_padding_value
 
-    def __call__(self, im, label=None):
+    def __call__(self, im, label=None, centroid=None):
         """
         Args:
             im (np.ndarray): The Image data.
@@ -546,8 +546,17 @@ class RandomPaddingCrop:
                 img_width = im.shape[1]
 
             if crop_height > 0 and crop_width > 0:
-                h_off = np.random.randint(img_height - crop_height + 1)
-                w_off = np.random.randint(img_width - crop_width + 1)
+                if centroid is not None:
+                    c_x, c_y = centroid
+                    max_x = img_width - crop_width
+                    max_y = img_height - crop_height
+                    x1 = np.random.randint(c_x - crop_width, c_x)
+                    w_off = min(max_x, max(0, x1))
+                    y1 = np.random.randint(c_y - crop_height, c_y)
+                    h_off = min(max_y, max(0, y1))
+                else:
+                    h_off = np.random.randint(img_height - crop_height + 1)
+                    w_off = np.random.randint(img_width - crop_width + 1)
 
                 im = im[h_off:(crop_height + h_off), w_off:(
                     w_off + crop_width), :]
