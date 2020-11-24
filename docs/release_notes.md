@@ -32,14 +32,14 @@
   **`v0.4.0`**
   * 新增适用于实时场景且不需要预训练模型的分割网络Fast-SCNN，提供基于Cityscapes的[预训练模型](./model_zoo.md)1个
   * 新增LaneNet车道线检测网络，提供[预训练模型](https://github.com/PaddlePaddle/PaddleSeg/tree/release/v0.4.0/contrib/LaneNet#%E4%B8%83-%E5%8F%AF%E8%A7%86%E5%8C%96)一个
-  * 新增基于PaddleSlim的分割库压缩策略([量化](./slim/quantization/README.md), [蒸馏](../slim/distillation/README.md), [剪枝](../slim/prune/README.md), [搜索](../slim/nas/README.md))
+  * 新增基于PaddleSlim的分割库压缩策略([量化](../slim/quantization/README.md), [蒸馏](../slim/distillation/README.md), [剪枝](../slim/prune/README.md), [搜索](../slim/nas/README.md))
 
 
 * 2019.12.15
 
   **`v0.3.0`**
   * 新增HRNet分割网络，提供基于cityscapes和ImageNet的[预训练模型](./model_zoo.md)8个
-  * 支持使用[伪彩色标签](./docs/data_prepare.md#%E7%81%B0%E5%BA%A6%E6%A0%87%E6%B3%A8vs%E4%BC%AA%E5%BD%A9%E8%89%B2%E6%A0%87%E6%B3%A8)进行训练/评估/预测，提升训练体验，并提供将灰度标注图转为伪彩色标注图的脚本
+  * 支持使用[伪彩色标签](./data_prepare.md#%E7%81%B0%E5%BA%A6%E6%A0%87%E6%B3%A8vs%E4%BC%AA%E5%BD%A9%E8%89%B2%E6%A0%87%E6%B3%A8)进行训练/评估/预测，提升训练体验，并提供将灰度标注图转为伪彩色标注图的脚本
   * 新增[学习率warmup](./configs/solver_group.md#lr_warmup)功能，支持与不同的学习率Decay策略配合使用
   * 新增图像归一化操作的GPU化实现，进一步提升预测速度。
   * 新增Python部署方案，更低成本完成工业级部署。
