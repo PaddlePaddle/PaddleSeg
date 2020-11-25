@@ -1,0 +1,61 @@
+batch_size: 16
+iters: 160000
+
+train_dataset:
+  type: Dataset
+  dataset_root: dataset/rs_data
+  num_classes: 7
+  train_path: dataset/rs_data/train_list.txt
+  transforms:
+    - type: ResizeStepScaling
+      min_scale_factor: 0.75
+      max_scale_factor: 1.5
+      scale_step_size: 0.25
+    - type: RandomHorizontalFlip
+    - type: RandomVerticalFlip
+    - type: RandomRotation
+      max_rotation: 30
+    - type: RandomDistort
+      brightness_range: 0.2
+      contrast_range: 0.2
+      saturation_range: 0.2
+    - type: RandomPaddingCrop
+      crop_size: [256, 256]
+    - type: Normalize
+  mode: train
+
+val_dataset:
+  type: Dataset
+  dataset_root: dataset/rs_data
+  num_classes: 7
+  val_path: dataset/rs_data/val_list.txt
+  transforms:
+    - type: Normalize
+  mode: val
+
+
+optimizer:
+  type: sgd
+  momentum: 0.9
+  weight_decay: 4.0e-5
+
+learning_rate:
+  value: 0.01
+  decay:
+    type: poly
+    power: 0.9
+    end_lr: 0.0
+
+loss:
+  types:
+    - type: CrossEntropyLoss
+  coef: [1]
+
+model:
+  type: FCN
+  backbone:
+    type: HRNet_W48
+    align_corners: False
+    pretrained: https://bj.bcebos.com/paddleseg/dygraph/hrnet_w48_ssld.tar.gz
+  backbone_indices: [-1]
+  pretrained: Null

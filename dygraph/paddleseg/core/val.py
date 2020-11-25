@@ -59,7 +59,9 @@ def evaluate(model,
     logger.info("Start evaluating (total_samples={}, total_iters={})...".format(
         len(eval_dataset), total_iters))
     progbar_val = progbar.Progbar(target=total_iters, verbose=1)
+    timer = Timer()
     for iter, (im, label) in enumerate(loader):
+        reader_cost = timer.elapsed_time()
         label = label.astype('int64')
 
         ori_shape = label.shape[-2:]
@@ -115,9 +117,12 @@ def evaluate(model,
             intersect_area_all = intersect_area_all + intersect_area
             pred_area_all = pred_area_all + pred_area
             label_area_all = label_area_all + label_area
+        batch_cost = timer.elapsed_time()
+        timer.restart()
 
         if local_rank == 0:
-            progbar_val.update(iter + 1)
+            progbar_val.update(iter + 1, [('batch_cost', batch_cost),
+                                          ('reader cost', reader_cost)])
 
     class_iou, miou = metrics.mean_iou(intersect_area_all, pred_area_all,
                                        label_area_all)
