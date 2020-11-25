@@ -34,3 +34,11 @@ model:
   param2: ...
   param3: ...
 ```
+
+Note: If your model has more than one output, i.e. main loss + auxiliary losses, you have to modify loss in the yaml file. For example, PSPNet has two losses, where both are CrossEntropyLoss, and the weight of auxilary loss is 0.4, thus we have the loss settings:
+```python
+loss:
+  types:
+    - type: CrossEntropyLoss
+  coef: [1, 0.4]
+```
