@@ -1,0 +1,9 @@
+_base_: 'fcn_hrnetw48_ccf_256x256_160k.yml'
+
+model:
+  type: OCRNet
+
+loss:
+  types:
+    - type: CrossEntropyLoss
+  coef: [1, 0.4]
