@@ -37,12 +37,6 @@ class MscaleOCRNet(nn.Layer):
         self.init_weight()
 
     def init_weight(self):
-        for layer in self.sublayers():
-            if isinstance(layer, nn.Conv2D):
-                param_init.normal_init(layer.weight, std=0.001)
-            elif isinstance(layer, (nn.BatchNorm, nn.SyncBatchNorm)):
-                param_init.constant_init(layer.weight, value=1.0)
-                param_init.constant_init(layer.bias, value=0.0)
         if self.pretrained is not None:
             utils.load_pretrained_model(self, self.pretrained)
 
@@ -90,16 +84,30 @@ class MscaleOCRNet(nn.Layer):
         #         p_1x = pred_10x
         #         aux_1x = 7*paddle.ones([1, 19, 1024, 2048])
 
-        p_lo = logit_attn * p_lo
-        aux_lo = logit_attn * aux_lo
+        p_lo = p_lo * logit_attn
+        aux_lo = aux_lo * logit_attn
         p_lo = scale_as(p_lo, p_1x)
         aux_lo = scale_as(aux_lo, p_1x)
 
         logit_attn = scale_as(logit_attn, p_1x)
 
         # combine lo and hi predictions with attention
-        joint_pred = p_lo + (1 - logit_attn) * p_1x
-        joint_aux = aux_lo + (1 - logit_attn) * aux_1x
+        joint_pred = p_lo + p_1x * (1 - logit_attn)
+        joint_aux = aux_lo + aux_1x * (1 - logit_attn)
+
+        #         print('logit_attn',logit_attn)
+        #         print('p_1x',p_1x)
+        #         print('aux_1x',aux_1x)
+        #         print('logit_attn.grad',logit_attn.grad)
+        #         print('p_1x.grad',p_1x.grad)
+        #         print('joint_pred.grad',joint_pred.grad)
+
+        #         lp = (1 - logit_attn) * p_1x
+        #         print('lp',lp)
+        #         pl = p_1x * (1 - logit_attn)
+        #         print('pl',pl)
+        #         print((lp.numpy()==pl.numpy()).all())
+        #         exit()
 
         output = [joint_pred, joint_aux]
 
@@ -173,20 +181,20 @@ class MscaleOCRNet(nn.Layer):
             elif s >= 1.0:
                 # downscale previous
                 pred = scale_as(pred, cls_out, self.align_corners)
-                pred = attn_out * cls_out + (1 - attn_out) * pred
+                pred = cls_out * attn_out + pred * (1 - attn_out)
                 aux = scale_as(aux, cls_out, self.align_corners)
-                aux = attn_out * aux_out + (1 - attn_out) * aux
+                aux = aux_out * attn_out + aux * (1 - attn_out)
             else:
                 # s < 1.0: upscale current
-                cls_out = attn_out * cls_out
-                aux_out = attn_out * aux_out
+                cls_out = cls_out * attn_out
+                aux_out = aux_out * attn_out
 
                 cls_out = scale_as(cls_out, pred, self.align_corners)
                 aux_out = scale_as(aux_out, pred, self.align_corners)
                 attn_out = scale_as(attn_out, pred, self.align_corners)
 
-                pred = cls_out + (1 - attn_out) * pred
-                aux = aux_out + (1 - attn_out) * aux
+                pred = cls_out + pred * (1 - attn_out)
+                aux = aux_out + aux * (1 - attn_out)
 
 
 #         output_dict['pred'] = pred
