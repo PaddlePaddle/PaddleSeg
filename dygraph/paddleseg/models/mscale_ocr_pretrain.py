@@ -20,12 +20,6 @@ class MscaleOCRPretrain(fluid.dygraph.Layer):
         self.init_weight()
 
     def init_weight(self):
-        for layer in self.sublayers():
-            if isinstance(layer, nn.Conv2D):
-                param_init.normal_init(layer.weight, std=0.001)
-            elif isinstance(layer, (nn.BatchNorm, nn.SyncBatchNorm)):
-                param_init.constant_init(layer.weight, value=1.0)
-                param_init.constant_init(layer.bias, value=0.0)
         if self.pretrained is not None:
             utils.load_pretrained_model(self, self.pretrained)
 
