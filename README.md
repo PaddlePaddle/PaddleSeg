@@ -97,12 +97,12 @@ For a better understanding of PaddleSeg, we provide comprehensive tutorials to s
 * [Loss Functions](./docs/loss_select.md)
 * [Practical Cases](./contrib)
 * [Multiprocessing and Mixed-Precision Training](./docs/multiple_gpus_train_and_mixed_precision_train.md)
-* Model Optimization ([Quantization](./slim/quantization/README.md), [Distillation](./slim/distillation/README.md), [Pruning](./slim/prune/README.md), [NAS](./slim/nas/README.md))
+* Model Compression ([Quantization](./slim/quantization/README.md), [Distillation](./slim/distillation/README.md), [Pruning](./slim/prune/README.md), [NAS](./slim/nas/README.md))
 
 
-### AI Studio Tutorial
+### Online Tutorials
 
-We further provide a few tutorials in Baidu AI Studio：[Get Started](https://aistudio.baidu.com/aistudio/projectdetail/100798), [Pet Seg](https://aistudio.baidu.com/aistudio/projectDetail/102889), [Mini_City Seg](https://aistudio.baidu.com/aistudio/projectDetail/226703), [Industry Inspection](https://aistudio.baidu.com/aistudio/projectdetail/184392), [Human Seg](https://aistudio.baidu.com/aistudio/projectdetail/475345), [More](https://aistudio.baidu.com/aistudio/projectdetail/226710).
+We further provide a few online tutorials in Baidu AI Studio：[Get Started](https://aistudio.baidu.com/aistudio/projectdetail/100798), [U-Net](https://aistudio.baidu.com/aistudio/projectDetail/102889), [DeepLabv3+](https://aistudio.baidu.com/aistudio/projectDetail/226703), [Industry Inspection](https://aistudio.baidu.com/aistudio/projectdetail/184392), [HumanSeg](https://aistudio.baidu.com/aistudio/projectdetail/475345), [More](https://aistudio.baidu.com/aistudio/projectdetail/226710).
 
 
 ## Feedbacks and Contact
