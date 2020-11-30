@@ -1,0 +1,6 @@
+_base_: 'ann_resnet50_os8_voc12aug_512x512_40k.yml'
+
+model:
+  backbone:
+    type: ResNet101_vd
+    pretrained: https://bj.bcebos.com/paddleseg/dygraph/resnet101_vd_ssld.tar.gz
