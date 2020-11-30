@@ -19,8 +19,8 @@ train_dataset:
       max_scale_factor: 2.0
       scale_step_size: 0.25
     - type: RandomPaddingCrop
-      crop_size: [1024, 512]
-#       crop_size: [300, 300]
+      # crop_size: [1024, 512]
+      crop_size: [2048, 1024]
     - type: RandomHorizontalFlip
 #     - type: RandomDistort
 #       brightness_range: 0.4
