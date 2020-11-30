@@ -17,5 +17,5 @@
 
 | Model | Backbone | Resolution | Training Iters | mIoU | mIoU (flip) | mIoU (ms+flip) | Links |
 |:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
-|ANN|ResNet50_OS8|512x512|40000|80.82%|81.10%|81.42%|[model](https://bj.bcebos.com/paddleseg/dygraph/pascal_voc12/ann_resnet50_os8_voc12aug_512x512_40k/model.pdparams) \| [log](hhttps://bj.bcebos.com/paddleseg/dygraph/pascal_voc12/ann_resnet50_os8_voc12aug_512x512_40k/train.log) \| [vdl](https://paddlepaddle.org.cn/paddle/visualdl/service/app?id=3a5e7bc1b44c3f552f73bdbe569e5a76)|
+|ANN|ResNet50_OS8|512x512|40000|80.82%|81.10%|81.42%|[model](https://bj.bcebos.com/paddleseg/dygraph/pascal_voc12/ann_resnet50_os8_voc12aug_512x512_40k/model.pdparams) \| [log](https://bj.bcebos.com/paddleseg/dygraph/pascal_voc12/ann_resnet50_os8_voc12aug_512x512_40k/train.log) \| [vdl](https://paddlepaddle.org.cn/paddle/visualdl/service/app?id=3a5e7bc1b44c3f552f73bdbe569e5a76)|
 |ANN|ResNet101_OS8|512x512|40000|79.62%|79.84%|80.05%|[model](https://bj.bcebos.com/paddleseg/dygraph/pascal_voc12/ann_resnet101_os8_voc12aug_512x512_40k/model.pdparams) \| [log](https://bj.bcebos.com/paddleseg/dygraph/pascal_voc12/ann_resnet101_os8_voc12aug_512x512_40k/train.log) \| [vdl](https://paddlepaddle.org.cn/paddle/visualdl/service/app?id=02c57c64c72cf87cf3b3d5b2373399a0)|
