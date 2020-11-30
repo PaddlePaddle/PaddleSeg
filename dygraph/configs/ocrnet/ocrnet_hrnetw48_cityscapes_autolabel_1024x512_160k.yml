@@ -1,4 +1,6 @@
 
+_base_: '../_base_/cityscapes_autolabeling.yml'
+
 batch_size: 2
 iters: 160000
 
@@ -6,44 +8,24 @@ model:
   type: OCRNet
   backbone:
     type: HRNet_W48
+
     pretrained: https://bj.bcebos.com/paddleseg/dygraph/hrnet_w48_ssld.tar.gz
   num_classes: 19
   backbone_indices: [0]
 
-train_dataset:
-  type: CityscapesAutolabeling
-  dataset_root: ../../dataset/cityscapes-for-nvidia
-  transforms:
-    - type: ResizeStepScaling
-      min_scale_factor: 0.5
-      max_scale_factor: 2.0
-      scale_step_size: 0.25
-    - type: RandomPaddingCrop
-      crop_size: [1024, 512]
-    - type: RandomHorizontalFlip
-    - type: Normalize
-  mode: train
-
-val_dataset:
-  type: CityscapesAutolabeling
-  dataset_root: ../../dataset/cityscapes-for-nvidia
-  transforms:
-    - type: Normalize
-  mode: val
-
 optimizer:
   type: sgd
-  weight_decay: 4.0e-5
 
 learning_rate:
   value: 0.01
   decay:
     type: poly
     power: 0.9
-    end_lr: 0.0
+
+
 
 loss:
   types:
     - type: CrossEntropyLoss
     - type: CrossEntropyLoss
-  coef: [1, 0.4]
+  coef: [1, 1]

@@ -34,15 +34,14 @@ class MscaleOCRNet(nn.Layer):
         self.n_scales = n_scales
         self.pretrained = pretrained
         self.align_corners = align_corners
+        self.init_weight()
 
+    def init_weight(self):
         if self.pretrained is not None:
             utils.load_pretrained_model(self, self.pretrained)
 
-        b = "/clt/nvidia-assert/random_data/scale_attn.pdparams"
-        utils.load_pretrained_model(self.scale_attn, b)
-        pass
-
     def forward(self, x):
+        #         return self.two_scale_forward(x)
         if self.training:
             return self.two_scale_forward(x)
         else:
@@ -57,22 +56,12 @@ class MscaleOCRNet(nn.Layer):
         If we use attention to combine the aux outputs, then
         we can use normal weighting for aux vs. cls outputs
         """
-        # x_lo = nn.functional.interpolate(
-        #     x_1x,
-        #     scale_factor=0.5,
-        #     align_corners=self.align_corners,
-        #     mode='bilinear')
-        # lo_outs = self.single_scale_forward(x_lo)
-
-        self.eval()
-        import numpy as np
-        np.random.seed(10)
-        a = np.random.randn(1, 512, 512, 1024).astype('float32')
-        ocr_mid_feats = paddle.to_tensor(a)
-        print(ocr_mid_feats[0, 0, 0, 0:5])
-        self.cls_out = ocr_mid_feats[:, 10:29, :, :]
-        self.aux_out = ocr_mid_feats[:, 110:129, :, :]
-        lo_outs = self.single_scale_forward(ocr_mid_feats)
+        x_lo = nn.functional.interpolate(
+            x_1x,
+            scale_factor=0.5,
+            align_corners=self.align_corners,
+            mode='bilinear')
+        lo_outs = self.single_scale_forward(x_lo)
 
         pred_05x = lo_outs['cls_out']
         p_lo = pred_05x
@@ -80,15 +69,7 @@ class MscaleOCRNet(nn.Layer):
         logit_attn = lo_outs['logit_attn']
         attn_05x = logit_attn
 
-        np.random.seed(10)
-        a = np.random.randn(1, 512, 1024, 2048).astype('float32')
-        ocr_mid_feats = paddle.to_tensor(a)
-        print(ocr_mid_feats[0, 0, 0, 0:5])
-        self.cls_out = ocr_mid_feats[:, 10:29, :, :]
-        self.aux_out = ocr_mid_feats[:, 110:129, :, :]
-        hi_outs = self.single_scale_forward(ocr_mid_feats)
-        # hi_outs = self.single_scale_forward(x_1x)
-
+        hi_outs = self.single_scale_forward(x_1x)
         pred_10x = hi_outs['cls_out']
         p_1x = pred_10x
         aux_1x = hi_outs['aux_out']
@@ -137,12 +118,10 @@ class MscaleOCRNet(nn.Layer):
             scaled_pred_05x = scale_as(pred_05x, p_1x)
             output.extend([scaled_pred_05x, pred_10x])
 
-        print(pred_10x[0, 0, 0, 0:5])
-        print(
-            paddle.sum(joint_pred), paddle.sum(joint_aux),
-            paddle.sum(scaled_pred_05x), paddle.sum(pred_10x))
-        print('2scale forward')
-        exit()
+#         print(output)
+#         print(paddle.sum(joint_pred), paddle.sum(joint_aux), paddle.sum(scaled_pred_05x), paddle.sum(pred_10x))
+#         print('2scale forward')
+#         exit()
         return output
 
     def nscale_forward(self, x_1x, scales):
@@ -224,11 +203,8 @@ class MscaleOCRNet(nn.Layer):
 
     def single_scale_forward(self, x):
         x_size = x.shape[2:]
-        # cls_out, aux_out, ocr_mid_feats = self.ocrnet(x)
-        # attn = self.scale_attn(ocr_mid_feats)
-        cls_out = self.cls_out
-        aux_out = self.aux_out
-        attn = self.scale_attn(x)
+        cls_out, aux_out, ocr_mid_feats = self.ocrnet(x)
+        attn = self.scale_attn(ocr_mid_feats)
 
         cls_out = nn.functional.interpolate(
             cls_out,
