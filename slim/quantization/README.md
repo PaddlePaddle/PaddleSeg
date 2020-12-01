@@ -148,6 +148,10 @@ TRAIN.SYNC_BATCH_NORM False \
 SLIM.PREPROCESS True \
 ```
 
+## 预测部署
+
+请参考[量化模型部署文档](./deploy/)
+
 ## 量化结果
 
 
