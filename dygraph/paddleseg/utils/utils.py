@@ -35,11 +35,7 @@ def generate_tempdir(directory: str = None, **kwargs):
 
 def load_entire_model(model, pretrained):
     if pretrained is not None:
-        if os.path.exists(pretrained):
-            load_pretrained_model(model, pretrained)
-        else:
-            raise FileNotFoundError(
-                'Pretrained model is not found: {}'.format(pretrained))
+        load_pretrained_model(model, pretrained)
     else:
         logger.warning('Not all pretrained params of {} are loaded, ' \
                        'training from scratch or a pretrained backbone.'.format(model.__class__.__name__))
@@ -51,7 +47,11 @@ def load_pretrained_model(model, pretrained_model):
         # download pretrained model from url
         if urlparse(pretrained_model).netloc:
             pretrained_model = unquote(pretrained_model)
-            savename = pretrained_model.split('/')[-1].split('.')[0]
+            savename = pretrained_model.split('/')[-1]
+            if not savename.endswith(('tgz', 'tar.gz', 'tar', 'zip')):
+                savename = pretrained_model.split('/')[-2]
+            else:
+                savename = savename.split('.')[0]
             with generate_tempdir() as _dir:
                 with filelock.FileLock(
                         os.path.join(seg_env.TMP_HOME, savename)):

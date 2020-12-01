@@ -3,9 +3,9 @@ iters: 160000
 
 train_dataset:
   type: Dataset
-  dataset_root: dataset/rs_data
+  dataset_root: data/rs_data
   num_classes: 7
-  train_path: dataset/rs_data/train_list.txt
+  train_path: data/rs_data/train_list.txt
   transforms:
     - type: ResizeStepScaling
       min_scale_factor: 0.75
@@ -26,9 +26,9 @@ train_dataset:
 
 val_dataset:
   type: Dataset
-  dataset_root: dataset/rs_data
+  dataset_root: data/rs_data
   num_classes: 7
-  val_path: dataset/rs_data/val_list.txt
+  val_path: data/rs_data/val_list.txt
   transforms:
     - type: Normalize
   mode: val

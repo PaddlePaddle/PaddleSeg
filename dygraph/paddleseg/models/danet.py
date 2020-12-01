@@ -67,7 +67,8 @@ class DANet(nn.Layer):
                 logit,
                 x.shape[2:],
                 mode='bilinear',
-                align_corners=self.align_corners) for logit in logit_list
+                align_corners=self.align_corners,
+                align_mode=1) for logit in logit_list
         ]
         return logit_list
 
