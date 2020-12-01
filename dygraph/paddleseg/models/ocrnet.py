@@ -177,10 +177,9 @@ class SpatialOCRModule(nn.Layer):
         super().__init__()
 
         self.attention_block = ObjectAttentionBlock(in_channels, key_channels)
-        self.dropout_rate = dropout_rate
         self.conv1x1 = nn.Sequential(
             layers.ConvBNReLU(2 * in_channels, out_channels, 1),
-            nn.Dropout2D(0.1))
+            nn.Dropout2D(dropout_rate))
 
     def forward(self, pixels, regions):
         context = self.attention_block(pixels, regions)
