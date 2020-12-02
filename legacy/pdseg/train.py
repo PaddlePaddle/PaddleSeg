@@ -56,7 +56,13 @@ def parse_args():
     parser.add_argument(
         '--use_gpu',
         dest='use_gpu',
-        help='Use gpu or cpu',
+        help='Use gpu, xpu or cpu',
+        action='store_true',
+        default=False)
+    parser.add_argument(
+        '--use_xpu',
+        dest='use_xpu',
+        help='Use xpu, gpu or cpu',
         action='store_true',
         default=False)
     parser.add_argument(
@@ -219,8 +225,16 @@ def train(cfg):
 
     # Get device environment
     gpu_id = int(os.environ.get('FLAGS_selected_gpus', 0))
-    place = fluid.CUDAPlace(gpu_id) if args.use_gpu else fluid.CPUPlace()
-    places = fluid.cuda_places() if args.use_gpu else fluid.cpu_places()
+    xpu_id = int(os.environ.get('FLAGS_selected_xpus', 0))
+    if args.use_gpu:
+        place = fluid.CUDAPlace(gpu_id)
+        places = fluid.cuda_places()
+    elif args.use_xpu:
+        place = fluid.XPUPlace(xpu_id)
+        places = [place]
+    else:
+        place = fluid.CPUPlace()
+        places = fluid.cpu_places()
 
     # Get number of GPU
     dev_count = cfg.NUM_TRAINERS if cfg.NUM_TRAINERS > 1 else len(places)
@@ -263,10 +277,13 @@ def train(cfg):
             print_info(
                 "Sync BatchNorm strategy will not be effective if GPU device"
                 " count <= 1")
-    compiled_train_prog = fluid.CompiledProgram(train_prog).with_data_parallel(
-        loss_name=avg_loss.name,
-        exec_strategy=exec_strategy,
-        build_strategy=build_strategy)
+    if args.use_xpu:
+        compiled_train_prog = train_prog
+    else:
+        compiled_train_prog = fluid.CompiledProgram(train_prog).with_data_parallel(
+            loss_name=avg_loss.name,
+            exec_strategy=exec_strategy,
+            build_strategy=build_strategy)
 
     # Resume training
     begin_epoch = cfg.SOLVER.BEGIN_EPOCH
@@ -408,6 +425,7 @@ def train(cfg):
                     cfg=cfg,
                     ckpt_dir=ckpt_dir,
                     use_gpu=args.use_gpu,
+                    use_xpu=args.use_xpu,
                     use_mpio=args.use_mpio)
                 if args.use_vdl:
                     log_writer.add_scalar('Evaluate/mean_iou', mean_iou, step)

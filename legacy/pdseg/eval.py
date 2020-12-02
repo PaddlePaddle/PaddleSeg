@@ -48,7 +48,13 @@ def parse_args():
     parser.add_argument(
         '--use_gpu',
         dest='use_gpu',
-        help='Use gpu or cpu',
+        help='Use xpu, gpu or cpu',
+        action='store_true',
+        default=False)
+    parser.add_argument(
+        '--use_xpu',
+        dest='use_xpu',
+        help='Use xpu, gpu or cpu',
         action='store_true',
         default=False)
     parser.add_argument(
@@ -68,7 +74,7 @@ def parse_args():
     return parser.parse_args()
 
 
-def evaluate(cfg, ckpt_dir=None, use_gpu=False, use_mpio=False, **kwargs):
+def evaluate(cfg, ckpt_dir=None, use_gpu=False, use_xpu=False, use_mpio=False, **kwargs):
     np.set_printoptions(precision=5, suppress=True)
 
     startup_prog = fluid.Program()
@@ -97,7 +103,13 @@ def evaluate(cfg, ckpt_dir=None, use_gpu=False, use_mpio=False, **kwargs):
         data_generator, drop_last=False, batch_size=cfg.BATCH_SIZE)
 
     # Get device environment
-    places = fluid.cuda_places() if use_gpu else fluid.cpu_places()
+    if use_gpu:
+        places = fluid.cuda_places()
+    elif use_xpu:
+        xpu_id = int(os.environ.get('FLAGS_selected_xpus', 0))
+        places = [fluid.XPUPlace(xpu_id)]
+    else:
+        fluid.cpu_places()
     place = places[0]
     dev_count = len(places)
     print("#Device count: {}".format(dev_count))
