@@ -1,10 +1,20 @@
-# PaddleSeg（动态图版本）
+English | [简体中文](README_CN.md)
 
-本目录提供了PaddleSeg的动态图版本，目前已经完成了模型训练、评估、数据处理等功能，在未来的版本中，PaddleSeg将会启动默认的动态图模式。目前该目录处于实验阶段，如果您在使用过程中遇到任何问题，请通过issue反馈给我们，我们将会在第一时间跟进处理。
+# PaddleSeg（Dynamic Graph）
 
-## 模型库
+[![Build Status](https://travis-ci.org/PaddlePaddle/PaddleSeg.svg?branch=master)](https://travis-ci.org/PaddlePaddle/PaddleSeg)
+[![License](https://img.shields.io/badge/license-Apache%202-blue.svg)](LICENSE)
+[![Version](https://img.shields.io/github/release/PaddlePaddle/PaddleSeg.svg)](https://github.com/PaddlePaddle/PaddleSeg/releases)
+![python version](https://img.shields.io/badge/python-3.6+-orange.svg)
+![support os](https://img.shields.io/badge/os-linux%2C%20win%2C%20mac-yellow.svg)
 
-|模型\骨干网络|ResNet50|ResNet101|HRNetw18|HRNetw48|
+Welcome to the dynamic version! PaddleSeg is the first development kit which supports PaddlePaddle 2.0. Currently, we provide an experimental version that allows developers to have full-featured experience on dynamic graph. In the near future, the dynamic version will be set as default, and the static one will be moved to "legacy" directory.
+
+The full-detailed documents and tutorials are coming soon. So far there are minimum tutorials that help you to enjoy the strengths of dynamic version.
+
+## Model Zoo
+
+|Model\Backbone|ResNet50|ResNet101|HRNetw18|HRNetw48|
 |-|-|-|-|-|
 |[ANN](./configs/ann)|✔|✔|||
 |[BiSeNetv2](./configs/bisenet)|-|-|-|-|
@@ -18,7 +28,7 @@
 |[PSPNet](./configs/pspnet)|✔|✔|||
 |[UNet](./configs/unet)|-|-|-|-|
 
-## 数据集
+## Dataset
 
 - [x] Cityscapes
 - [x] Pascal VOC
@@ -26,47 +36,50 @@
 - [ ] Pascal Context
 - [ ] COCO stuff
 
-## 安装
+## Installation
 
-1. 安装PaddlePaddle
+1. Install PaddlePaddle
 
-版本要求
-
+System Requirements:
 * PaddlePaddle >= 2.0.0rc
-
 * Python >= 3.6+
 
-由于图像分割模型计算开销大，推荐在GPU版本的PaddlePaddle下使用PaddleSeg。推荐安装10.0以上的CUDA环境。
+> Note: the above requirements are for the **dynamic** graph version. If you intent to use the static one, please refers to [here](../).
+
+Highly recommend you install the GPU version of PaddlePaddle, due to large overhead of segmentation models, otherwise it could be out of memory while running the models.
+
+For more detailed installation tutorials, please refer to the official website of [PaddlePaddle](https://www.paddlepaddle.org.cn/documentation/docs/zh/2.0-beta/install/index_cn.html)。
 
 
-安装教程请见[PaddlePaddle官网](https://www.paddlepaddle.org.cn/documentation/docs/zh/2.0-beta/install/index_cn.html)。
+### Download PaddleSeg
 
-
-2. 下载PaddleSeg代码
-```shell
+```
 git clone https://github.com/PaddlePaddle/PaddleSeg
 ```
 
-3. 安装PaddleSeg依赖
-通过以下命令安装python包依赖，请确保在该分支上至少执行过一次以下命令：
-
-
+### Install Dependencies
+Install the python dependencies via the following commands，and please make sure execute it at least once in your branch.
 ```shell
 cd PaddleSeg/dygraph
 export PYTHONPATH=`pwd`
-# windows下请执行以下命令
+# Run the following one on Windows
 # set PYTHONPATH=%cd%
 pip install -r requirements.txt
 ```
 
-## 训练
+## Quick Training
 ```shell
 python train.py --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml
 ```
 
-## 使用教程
+## Tutorials
 
-* [快速入门](./docs/quick_start.md)
-* [数据集准备](./docs/data_prepare.md)
-* [配置项](./configs/)
+* [Get Started](./docs/quick_start.md)
+* [Data Preparation](./docs/data_prepare.md)
+* [Training Configuration](./configs/)
 * [Add New Components](./docs/add_new_model.md)
+
+
+## Feedbacks and Contact
+* The dynamic version is still under development, if you find any issue or have an idea on new features, please don't hesitate to contact us via [GitHub Issues](https://github.com/PaddlePaddle/PaddleSeg/issues).
+* PaddleSeg User Group (QQ): 850378321 or 793114768
