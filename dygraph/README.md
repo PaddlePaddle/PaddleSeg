@@ -44,7 +44,7 @@ System Requirements:
 * PaddlePaddle >= 2.0.0rc
 * Python >= 3.6+
 
-> Note: the above requirements are for the **dynamic** graph version. If you intent to use the static one, please refers to [here](../).
+> Note: the above requirements are for the **dynamic** graph version. If you intent to use the static one, please refers to [here](../README.md).
 
 Highly recommend you install the GPU version of PaddlePaddle, due to large overhead of segmentation models, otherwise it could be out of memory while running the models.
 
