@@ -1,7 +1,4 @@
-_base_: '../_base_/cityscapes.yml'
-
-batch_size: 2
-iters: 160000
+_base_: '../_base_/pascal_voc12aug.yml'
 
 model:
   type: OCRNet
@@ -25,4 +22,4 @@ loss:
   types:
     - type: CrossEntropyLoss
     - type: CrossEntropyLoss
-  coef: [1, 0.4]
+  coef: [1, 1]
