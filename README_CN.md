@@ -8,6 +8,8 @@
 ![python version](https://img.shields.io/badge/python-3.6+-orange.svg)
 ![support os](https://img.shields.io/badge/os-linux%2C%20win%2C%20mac-yellow.svg)
 
+<img src="./docs/imgs/seg_news_icon.png" width="50"/> *[2020-12-02] PaddleSeg已经发布了全新的[动态图版本](./dygraph),全面适配 PaddlePaddle 2.0rc, 静态图版本只作维护不再添加新功能，更多信息请查看详细[更新日志](./docs/release_notes.md).*
+
 ## 简介
 
 PaddleSeg是基于[PaddlePaddle](https://www.paddlepaddle.org.cn)开发的端到端图像分割开发套件，覆盖了DeepLabv3+, U-Net, ICNet, PSPNet, HRNet, Fast-SCNN等主流分割网络。通过模块化的设计，以配置化方式驱动模型组合，帮助开发者更便捷地完成从训练到部署的全流程图像分割应用。

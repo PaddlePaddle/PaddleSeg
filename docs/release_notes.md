@@ -1,5 +1,14 @@
 ## Release Notes
 
+* 2020.12.02
+
+  **`v0.8.0`**
+  * Add multi-scale/flipping/sliding-window inference.
+  * Add the fast multi-GPUs evaluation, and high-efficient metric calculation.
+  * Add Pascal VOC 2012 dataset.
+  * Add high-accuracy pre-trained models on Pascal VOC 2012, see [detailed models](../dygraph/configs/).
+  * Support visualizing pseudo-color images in PNG format while predicting.
+
 * 2020.10.28
 
   **`v0.7.0`**
