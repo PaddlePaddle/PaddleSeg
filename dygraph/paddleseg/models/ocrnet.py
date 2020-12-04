@@ -74,13 +74,14 @@ class OCRNet(nn.Layer):
         feats = self.backbone(x)
         feats = [feats[i] for i in self.backbone_indices]
         logit_list = self.head(feats)
-        logit_list = [
-            F.interpolate(
-                logit,
-                x.shape[2:],
-                mode='bilinear',
-                align_corners=self.align_corners) for logit in logit_list
-        ]
+        if not self.ms_attention:
+            logit_list = [
+                F.interpolate(
+                    logit,
+                    x.shape[2:],
+                    mode='bilinear',
+                    align_corners=self.align_corners) for logit in logit_list
+            ]
         return logit_list
 
     def init_weight(self):

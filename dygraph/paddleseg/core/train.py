@@ -179,9 +179,6 @@ def train(model,
                     logits = model(images)
                     loss = loss_computation(logits, labels, losses)
                     loss.backward()
-
-#                     if iter == 10:
-#                         exit()
                 optimizer.step()
                 lr = optimizer.get_lr()
                 if isinstance(optimizer._learning_rate,
