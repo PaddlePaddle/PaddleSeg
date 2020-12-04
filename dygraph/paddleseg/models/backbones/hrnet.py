@@ -94,7 +94,7 @@ class HRNet(nn.Layer):
             out_channels=64,
             kernel_size=3,
             stride=2,
-            padding='same',
+            padding=1,
             bias_attr=False)
 
         self.conv_layer1_2 = layers.ConvBNReLU(
@@ -102,7 +102,7 @@ class HRNet(nn.Layer):
             out_channels=64,
             kernel_size=3,
             stride=2,
-            padding='same',
+            padding=1,
             bias_attr=False)
 
         self.la1 = Layer1(
@@ -243,7 +243,7 @@ class TransitionLayer(nn.Layer):
                             in_channels=in_channels[i],
                             out_channels=out_channels[i],
                             kernel_size=3,
-                            padding='same',
+                            padding=1,
                             bias_attr=False))
             else:
                 residual = self.add_sublayer(
@@ -253,7 +253,7 @@ class TransitionLayer(nn.Layer):
                         out_channels=out_channels[i],
                         kernel_size=3,
                         stride=2,
-                        padding='same',
+                        padding=1,
                         bias_attr=False))
             self.conv_bn_func_list.append(residual)
 
@@ -322,7 +322,7 @@ class BottleneckBlock(nn.Layer):
             in_channels=num_channels,
             out_channels=num_filters,
             kernel_size=1,
-            padding='same',
+            padding=0,
             bias_attr=False)
 
         self.conv2 = layers.ConvBNReLU(
@@ -330,14 +330,14 @@ class BottleneckBlock(nn.Layer):
             out_channels=num_filters,
             kernel_size=3,
             stride=stride,
-            padding='same',
+            padding=1,
             bias_attr=False)
 
         self.conv3 = layers.ConvBN(
             in_channels=num_filters,
             out_channels=num_filters * 4,
             kernel_size=1,
-            padding='same',
+            padding=0,
             bias_attr=False)
 
         if self.downsample:
@@ -345,7 +345,6 @@ class BottleneckBlock(nn.Layer):
                 in_channels=num_channels,
                 out_channels=num_filters * 4,
                 kernel_size=1,
-                padding='same',
                 bias_attr=False)
 
         if self.has_se:
@@ -390,13 +389,13 @@ class BasicBlock(nn.Layer):
             out_channels=num_filters,
             kernel_size=3,
             stride=stride,
-            padding='same',
+            padding=1,
             bias_attr=False)
         self.conv2 = layers.ConvBN(
             in_channels=num_filters,
             out_channels=num_filters,
             kernel_size=3,
-            padding='same',
+            padding=1,
             bias_attr=False)
 
         if self.downsample:
@@ -404,7 +403,7 @@ class BasicBlock(nn.Layer):
                 in_channels=num_channels,
                 out_channels=num_filters,
                 kernel_size=1,
-                padding='same',
+                padding=0,
                 bias_attr=False)
 
         if self.has_se:
@@ -567,7 +566,7 @@ class FuseLayers(nn.Layer):
                             in_channels=in_channels[j],
                             out_channels=out_channels[i],
                             kernel_size=1,
-                            padding='same',
+                            padding=0,
                             bias_attr=False))
                     self.residual_func_list.append(residual_func)
                 elif j < i:
@@ -582,7 +581,7 @@ class FuseLayers(nn.Layer):
                                     out_channels=out_channels[i],
                                     kernel_size=3,
                                     stride=2,
-                                    padding='same',
+                                    padding=1,
                                     bias_attr=False))
                             pre_num_filters = out_channels[i]
                         else:
@@ -594,7 +593,7 @@ class FuseLayers(nn.Layer):
                                     out_channels=out_channels[j],
                                     kernel_size=3,
                                     stride=2,
-                                    padding='same',
+                                    padding=1,
                                     bias_attr=False))
                             pre_num_filters = out_channels[j]
                         self.residual_func_list.append(residual_func)
