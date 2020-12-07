@@ -54,7 +54,7 @@ git clone https://github.com/PaddlePaddle/PaddleSeg
 
 
 ```shell
-cd PaddleSeg/dygraph
+cd PaddleSeg
 export PYTHONPATH=`pwd`
 # windows下请执行以下命令
 # set PYTHONPATH=%cd%

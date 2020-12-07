@@ -60,7 +60,7 @@ git clone https://github.com/PaddlePaddle/PaddleSeg
 ### Install Dependencies
 Install the python dependencies via the following commands，and please make sure execute it at least once in your branch.
 ```shell
-cd PaddleSeg/dygraph
+cd PaddleSeg
 export PYTHONPATH=`pwd`
 # Run the following one on Windows
 # set PYTHONPATH=%cd%

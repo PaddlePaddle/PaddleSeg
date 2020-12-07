@@ -742,7 +742,7 @@ class RandomDistort:
         contrast_prob (float, optional): A probability of adjusting contrast. Default: 0.5.
         saturation_range (float, optional): A range of saturation. Default: 0.5.
         saturation_prob (float, optional): A probability of adjusting saturation. Default: 0.5.
-        hue_range (int, optional): A range of hue. Default: 0.5.
+        hue_range (int, optional): A range of hue. Default: 18.
         hue_prob (float, optional): A probability of adjusting hue. Default: 0.5.
     """
 
