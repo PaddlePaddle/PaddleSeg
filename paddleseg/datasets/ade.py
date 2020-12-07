@@ -22,6 +22,7 @@ from paddleseg.utils.download import download_file_and_uncompress
 from paddleseg.utils import seg_env
 from paddleseg.cvlibs import manager
 from paddleseg.transforms import Compose
+import paddleseg.transforms.functional as F
 
 URL = "http://data.csail.mit.edu/places/ADEchallenge/ADEChallengeData2016.zip"
 
@@ -35,9 +36,10 @@ class ADE20K(Dataset):
         transforms (list): A list of image transformations.
         dataset_root (str, optional): The ADK20K dataset directory. Default: None.
         mode (str, optional): A subset of the entire dataset. It should be one of ('train', 'val'). Default: 'train'.
+        edge (bool): Whether to compute edge while training. Defualt: False
     """
 
-    def __init__(self, transforms, dataset_root=None, mode='train'):
+    def __init__(self, transforms, dataset_root=None, mode='train', edge=False):
         self.dataset_root = dataset_root
         self.transforms = Compose(transforms)
         mode = mode.lower()
@@ -45,6 +47,7 @@ class ADE20K(Dataset):
         self.file_list = list()
         self.num_classes = 150
         self.ignore_index = 255
+        self.edge = edge
 
         if mode not in ['train', 'val']:
             raise ValueError(
@@ -97,4 +100,9 @@ class ADE20K(Dataset):
         else:
             im, label = self.transforms(im=image_path, label=label_path)
             label = label - 1
-            return im, label
+            if self.edge:
+                edge_mask = F.mask_to_binary_edge(
+                    label, radius=2, num_classes=self.num_classes)
+                return im, label, edge_mask
+            else:
+                return im, label

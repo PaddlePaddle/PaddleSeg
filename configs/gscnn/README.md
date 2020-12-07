@@ -1,0 +1,13 @@
+# Gated-scnn: Gated shape cnns for semantic segmentation
+
+## Reference
+
+> Takikawa T, Acuna D, Jampani V, et al. Gated-scnn: Gated shape cnns for semantic segmentation[C]//Proceedings of the IEEE International Conference on Computer Vision. 2019: 5229-5238.
+
+## Performance
+
+### Cityscapes
+
+| Model | Backbone | Resolution | Training Iters | mIoU | mIoU (flip) | mIoU (ms+flip) | Links |
+|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
+|GSCNN|ResNet50_OS8|1024x512|80000|80.67%|80.88%|80.88%|[model](https://bj.bcebos.com/paddleseg/dygraph/cutyscapes/gscnn_resnet50_os8_cityscapes_1024x512_80k/model.pdparams) \| [log](https://bj.bcebos.com/paddleseg/dygraph/cutyscapes/gscnn_resnet50_os8_cityscapes_1024x512_80k/train.log) \| [vdl](https://paddlepaddle.org.cn/paddle/visualdl/service/app?id=11b79b6a2899739c0d009b1ce34bad77)|

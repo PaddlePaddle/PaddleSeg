@@ -184,6 +184,7 @@ class ResNet_vd(nn.Layer):
                  pretrained=None):
         super(ResNet_vd, self).__init__()
 
+        self.conv1_logit = None  # for gscnn shape stream
         self.layers = layers
         self.lr_mult_list = lr_mult_list
         supported_layers = [18, 34, 50, 101, 152, 200]
@@ -298,6 +299,7 @@ class ResNet_vd(nn.Layer):
         y = self.conv1_1(inputs)
         y = self.conv1_2(y)
         y = self.conv1_3(y)
+        self.conv1_logit = y.clone()
         y = self.pool2d_max(y)
 
         # A feature list saves the output feature map of each stage.
