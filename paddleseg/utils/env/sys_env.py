@@ -62,6 +62,8 @@ def _get_nvcc_info(cuda_home):
             nvcc = nvcc.strip().split('\n')[-1]
         except subprocess.SubprocessError:
             nvcc = "Not Available"
+    else:
+        nvcc = "Not Available"
     return nvcc
 
 
