@@ -149,7 +149,8 @@ def download_file_and_uncompress(url,
             if not os.path.exists(savepath):
                 _download_file(url, savepath, print_progress)
 
-            if not tarfile.is_tarfile(savepath) or zipfile.is_zipfile(savepath):
+            if (not tarfile.is_tarfile(savepath)) and (
+                    not zipfile.is_zipfile(savepath)):
                 if not os.path.exists(extraname):
                     os.makedirs(extraname)
                 shutil.move(savepath, extraname)
