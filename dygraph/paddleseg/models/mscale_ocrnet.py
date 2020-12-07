@@ -6,7 +6,6 @@ from paddleseg.cvlibs import manager, param_init
 from paddleseg.utils import utils
 from paddleseg.models import layers
 from .ocrnet import OCRNet
-'''add init_weight, dropout and syncbn'''
 
 
 @manager.MODELS.add_component
@@ -34,14 +33,11 @@ class MscaleOCRNet(nn.Layer):
         self.n_scales = n_scales
         self.pretrained = pretrained
         self.align_corners = align_corners
-        self.init_weight()
 
-    def init_weight(self):
         if self.pretrained is not None:
             utils.load_pretrained_model(self, self.pretrained)
 
     def forward(self, x):
-        #         return self.two_scale_forward(x)
         if self.training:
             return self.two_scale_forward(x)
         else:

@@ -74,13 +74,14 @@ class OCRNet(nn.Layer):
         feats = self.backbone(x)
         feats = [feats[i] for i in self.backbone_indices]
         logit_list = self.head(feats)
-        logit_list = [
-            F.interpolate(
-                logit,
-                x.shape[2:],
-                mode='bilinear',
-                align_corners=self.align_corners) for logit in logit_list
-        ]
+        if not self.ms_attention:
+            logit_list = [
+                F.interpolate(
+                    logit,
+                    x.shape[2:],
+                    mode='bilinear',
+                    align_corners=self.align_corners) for logit in logit_list
+            ]
         return logit_list
 
     def init_weight(self):
@@ -110,8 +111,11 @@ class OCRHead(nn.Layer):
         self.num_classes = num_classes
         self.ms_attention = ms_attention
         self.spatial_gather = SpatialGatherBlock()
-        self.spatial_ocr = SpatialOCRModule(ocr_mid_channels, ocr_key_channels,
-                                            ocr_mid_channels)
+        self.spatial_ocr = SpatialOCRModule(
+            ocr_mid_channels,
+            ocr_key_channels,
+            ocr_mid_channels,
+            dropout_rate=0.05)
 
         self.indices = [-2, -1] if len(in_channels) > 1 else [-1, -1]
 
@@ -184,10 +188,10 @@ class SpatialOCRModule(nn.Layer):
         super().__init__()
 
         self.attention_block = ObjectAttentionBlock(in_channels, key_channels)
-        self.dropout_rate = dropout_rate
         self.conv1x1 = nn.Sequential(
-            layers.ConvBNReLU(2 * in_channels, out_channels, 1),
-            nn.Dropout2D(0.1))
+            layers.ConvBNReLU(
+                2 * in_channels, out_channels, 1, bias_attr=False),
+            nn.Dropout2D(dropout_rate))
 
     def forward(self, pixels, regions):
         context = self.attention_block(pixels, regions)
@@ -207,16 +211,18 @@ class ObjectAttentionBlock(nn.Layer):
         self.key_channels = key_channels
 
         self.f_pixel = nn.Sequential(
-            layers.ConvBNReLU(in_channels, key_channels, 1),
-            layers.ConvBNReLU(key_channels, key_channels, 1))
+            layers.ConvBNReLU(in_channels, key_channels, 1, bias_attr=False),
+            layers.ConvBNReLU(key_channels, key_channels, 1, bias_attr=False))
 
         self.f_object = nn.Sequential(
-            layers.ConvBNReLU(in_channels, key_channels, 1),
-            layers.ConvBNReLU(key_channels, key_channels, 1))
+            layers.ConvBNReLU(in_channels, key_channels, 1, bias_attr=False),
+            layers.ConvBNReLU(key_channels, key_channels, 1, bias_attr=False))
 
-        self.f_down = layers.ConvBNReLU(in_channels, key_channels, 1)
+        self.f_down = layers.ConvBNReLU(
+            in_channels, key_channels, 1, bias_attr=False)
 
-        self.f_up = layers.ConvBNReLU(key_channels, in_channels, 1)
+        self.f_up = layers.ConvBNReLU(
+            key_channels, in_channels, 1, bias_attr=False)
 
     def forward(self, x, proxy):
         n, _, h, w = x.shape
