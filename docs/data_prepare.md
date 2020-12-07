@@ -1,175 +1,100 @@
-# PaddleSeg 数据准备
+# 数据集准备
 
-## 数据标注
+PaddleSeg目前支持CityScapes、ADE20K、Pascal VOC等数据集的加载，在加载数据集时，如若本地不存在对应数据，则会自动触发下载(除Cityscapes数据集).
 
-### 标注协议
-PaddleSeg采用单通道的标注图片，每一种像素值代表一种类别，像素标注类别需要从0开始递增，例如0，1，2，3表示有4种类别。
+## 关于CityScapes数据集
+Cityscapes是关于城市街道场景的语义理解图片数据集。它主要包含来自50个不同城市的街道场景，
+拥有5000张（2048 x 1024）城市驾驶场景的高质量像素级注释图像，包含19个类别。其中训练集2975张， 验证集500张和测试集1525张。
 
-**NOTE:** 标注图像请使用PNG无损压缩格式的图片。标注类别最多为256类。
+由于协议限制，请自行前往[CityScapes官网](https://www.cityscapes-dataset.com/)下载数据集，
+我们建议您将数据集存放于`PaddleSeg/dygraph/data`中，以便与我们配置文件完全兼容。数据集下载后请组织成如下结构：
 
-### 灰度标注vs伪彩色标注
-一般的分割库使用单通道灰度图作为标注图片，往往显示出来是全黑的效果。灰度标注图的弊端：
-1. 对图像标注后，无法直接观察标注是否正确。
-2. 模型测试过程无法直接判断分割的实际效果。
+    cityscapes
+    |
+    |--leftImg8bit
+    |  |--train
+    |  |--val
+    |  |--test
+    |
+    |--gtFine
+    |  |--train
+    |  |--val
+    |  |--test
 
-**PaddleSeg支持伪彩色图作为标注图片，在原来的单通道图片基础上，注入调色板。在基本不增加图片大小的基础上，却可以显示出彩色的效果。** 
+运行下列命令进行标签转换：
+```shell
+pip install cityscapesscripts
+python tools/convert_cityscapes.py --cityscapes_path data/cityscapes --num_workers 8
+```
+其中`cityscapes_path`应根据实际数据集路径进行调整。 `num_workers`决定启动的进程数，可根据实际情况进行调整大小。
 
-同时PaddleSeg也兼容灰度图标注，用户原来的灰度数据集可以不做修改，直接使用。
-![](./imgs/annotation/image-11.png)
+## 关于Pascal VOC 2012数据集
+[Pascal VOC 2012](http://host.robots.ox.ac.uk/pascal/VOC/)数据集以对象分割为主，包含20个类别和背景类，其中训练集1464张，验证集1449张。
+通常情况下会利用[SBD(Semantic Boundaries Dataset)](http://home.bharathh.info/pubs/codes/SBD/download.html)进行扩充，扩充后训练集10582张。
+运行下列命令进行SBD数据集下载并进行扩充：
+```shell
+python tools/voc_augment.py --voc_path data/VOCdevkit --num_workers 8
+```
+其中`voc_path`应根据实际数据集路径进行调整。
 
-### 灰度标注转换为伪彩色标注
-如果用户需要转换成伪彩色标注图，可使用我们的转换工具。适用于以下两种常见的情况：
-1. 如果您希望将指定目录下的所有灰度标注图转换为伪彩色标注图，则执行以下命令，指定灰度标注所在的目录即可。
-```buildoutcfg
-python pdseg/tools/gray2pseudo_color.py <dir_or_file> <output_dir>
+**注意** 运行前请确保在dygraph目录下执行过下列命令：
+```shell
+export PYTHONPATH=`pwd`
+# windows下请执行相面的命令
+# set PYTHONPATH=%cd%
 ```
 
-|参数|用途|
-|-|-|
-|dir_or_file|指定灰度标注所在目录|
-|output_dir|彩色标注图片的输出目录|
+## 关于ADE20K数据集
+[ADE20K](http://sceneparsing.csail.mit.edu/)由MIT发布的可用于场景感知、分割和多物体识别等多种任务的数据集。
+其涵盖了150个语义类别，包括训练集20210张，验证集2000张。
 
-2. 如果您仅希望将指定数据集中的部分灰度标注图转换为伪彩色标注图，则执行以下命令，需要已有文件列表，按列表读取指定图片。
-```buildoutcfg
-python pdseg/tools/gray2pseudo_color.py <dir_or_file> <output_dir> --dataset_dir <dataset directory> --file_separator <file list separator>
+## 自定义数据集
+
+如果您需要使用自定义数据集进行训练，请按照以下步骤准备数据.
+
+1.推荐整理成如下结构
+
+    custom_dataset
+        |
+        |--images
+        |  |--image1.jpg
+        |  |--image2.jpg
+        |  |--...
+        |
+        |--labels
+        |  |--label1.jpg
+        |  |--label2.png
+        |  |--...
+        |
+        |--train.txt
+        |
+        |--val.txt
+        |
+        |--test.txt
+
+其中train.txt和val.txt的内容如下所示：
+
+    images/image1.jpg labels/label1.png
+    images/image2.jpg labels/label2.png
+    ...
+
+2.标注图像的标签从0,1依次取值，不可间隔。若有需要忽略的像素，则按255进行标注。
+
+可按如下方式对自定义数据集进行配置：
+```yaml
+train_dataset:
+  type: Dataset
+  dataset_root: custom_dataset
+  train_path: custom_dataset/train.txt
+  num_classes: 2
+  transforms:
+    - type: ResizeStepScaling
+      min_scale_factor: 0.5
+      max_scale_factor: 2.0
+      scale_step_size: 0.25
+    - type: RandomPaddingCrop
+      crop_size: [512, 512]
+    - type: RandomHorizontalFlip
+    - type: Normalize
+  mode: train
 ```
-|参数|用途|
-|-|-|
-|dir_or_file|指定文件列表路径|
-|output_dir|彩色标注图片的输出目录|
-|--dataset_dir|数据集所在根目录|
-|--file_separator|文件列表分隔符|
-
-### 标注教程
-用户需预先采集好用于训练、评估和测试的图片，然后使用数据标注工具完成数据标注。
-
-PddleSeg已支持2种标注工具：LabelMe、精灵数据标注工具。标注教程如下：
-
-- [LabelMe标注教程](annotation/labelme2seg.md)
-- [精灵数据标注工具教程](annotation/jingling2seg.md)
-
-
-## 文件列表
-
-### 文件列表规范
-
-PaddleSeg采用通用的文件列表方式组织训练集、验证集和测试集。在训练、评估、可视化过程前必须准备好相应的文件列表。
-
-文件列表组织形式如下
-```
-原始图片路径 [SEP] 标注图片路径
-```
-
-其中`[SEP]`是文件路径分割符，可以在`DATASET.SEPARATOR`配置项中修改, 默认为空格。文件列表的路径以数据集根目录作为相对路径起始点，`DATASET.DATA_DIR`即为数据集根目录。
-
-如下图所示，左边为原图的图片路径，右边为图片对应的标注路径。
-
-![cityscapes_filelist](./imgs/file_list.png)
-
-**注意事项**
-
-* 务必保证分隔符在文件列表中每行只存在一次, 如文件名中存在空格，请使用"|"等文件名不可用字符进行切分
-
-* 文件列表请使用**UTF-8**格式保存, PaddleSeg默认使用UTF-8编码读取file_list文件
-
-若数据集缺少标注图片，则文件列表不用包含分隔符和标注图片路径，如下图所示。
-
-![cityscapes_filelist](./imgs/file_list2.png)
-
-**注意事项**
-
-此时的文件列表仅可在调用`pdseg/vis.py`进行可视化展示时使用，
-即仅可在`DATASET.TEST_FILE_LIST`和`DATASET.VIS_FILE_LIST`配置项中使用。
-不可在`DATASET.TRAIN_FILE_LIST`和`DATASET.VAL_FILE_LIST`配置项中使用。
-
-
-**符合规范的文件列表是什么样的呢？**
-
-请参考目录[`./docs/annotation/cityscapes_demo`](../docs/annotation/cityscapes_demo/)。
-
-### 数据集目录结构整理
-
-如果用户想要生成数据集的文件列表，需要整理成如下的目录结构（类似于Cityscapes数据集）：
-
-```
-./dataset/   # 数据集根目录
-├── annotations      # 标注目录
-│   ├── test
-│   │   ├── ...
-│   │   └── ...
-│   ├── train
-│   │   ├── ...
-│   │   └── ...
-│   └── val
-│       ├── ...
-│       └── ...
-└── images       # 原图目录
-    ├── test
-    │   ├── ...
-    │   └── ...
-    ├── train
-    │   ├── ...
-    │   └── ...
-    └── val
-        ├── ...
-        └── ...
-Note：以上目录名可任意
-```
-
-### 文件列表生成
-PaddleSeg提供了生成文件列表的使用脚本，可适用于自定义数据集或cityscapes数据集，并支持通过不同的Flags来开启特定功能。
-```
-python pdseg/tools/create_dataset_list.py <your/dataset/dir> ${FLAGS}
-```
-运行后将在数据集根目录下生成训练/验证/测试集的文件列表（文件主名与`--second_folder`一致，扩展名为`.txt`）。
-
-**Note:** 生成文件列表要求：要么原图和标注图片数量一致，要么只有原图，没有标注图片。若数据集缺少标注图片，仍可自动生成不含分隔符和标注图片路径的文件列表。
-
-#### 命令行FLAGS列表
-
-|FLAG|用途|默认值|参数数目|
-|-|-|-|-|
-|--type|指定数据集类型，`cityscapes`或`自定义`|`自定义`|1|
-|--separator|文件列表分隔符|"&#124;"|1|
-|--folder|图片和标签集的文件夹名|"images" "annotations"|2|
-|--second_folder|训练/验证/测试集的文件夹名|"train" "val" "test"|若干|
-|--format|图片和标签集的数据格式|"jpg"  "png"|2|
-|--postfix|按文件主名（无扩展名）是否包含指定后缀对图片和标签集进行筛选|""   ""（2个空字符）|2|
-
-#### 使用示例
-- **对于自定义数据集**
-
-若您已经按上述说明整理好了数据集目录结构，可以运行下面的命令生成文件列表。
-
-```
-# 生成文件列表，其分隔符为空格，图片和标签集的数据格式都为png
-python pdseg/tools/create_dataset_list.py <your/dataset/dir> --separator " " --format png png
-```
-```
-# 生成文件列表，其图片和标签集的文件夹名为img和gt，训练和验证集的文件夹名为training和validation，不生成测试集列表
-python pdseg/tools/create_dataset_list.py <your/dataset/dir> \
-        --folder img gt --second_folder training validation
-```
-**Note:** 必须指定自定义数据集目录，可以按需要设定FLAG。无需指定`--type`。
-
-- **对于cityscapes数据集**
-
-若您使用的是cityscapes数据集，可以运行下面的命令生成文件列表。
-
-```
-# 生成cityscapes文件列表，其分隔符为逗号
-python pdseg/tools/create_dataset_list.py <your/dataset/dir> --type cityscapes --separator ","
-```
-**Note:** 
-
-必须指定cityscapes数据集目录，`--type`必须为`cityscapes`。
-
-在cityscapes类型下，部分FLAG将被重新设定，无需手动指定，具体如下：
-
-|FLAG|固定值|
-|-|-|
-|--folder|"leftImg8bit" "gtFine"|
-|--format|"png" "png"|
-|--postfix|"_leftImg8bit" "_gtFine_labelTrainIds"|
-
-其余FLAG可以按需要设定。
