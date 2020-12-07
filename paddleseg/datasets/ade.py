@@ -36,7 +36,7 @@ class ADE20K(Dataset):
         transforms (list): A list of image transformations.
         dataset_root (str, optional): The ADK20K dataset directory. Default: None.
         mode (str, optional): A subset of the entire dataset. It should be one of ('train', 'val'). Default: 'train'.
-        edge (bool): Whether to compute edge while training. Defualt: False
+        edge (bool): Whether to compute edge while training. Default: False
     """
 
     def __init__(self, transforms, dataset_root=None, mode='train', edge=False):

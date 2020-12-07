@@ -44,7 +44,7 @@ class Cityscapes(Dataset):
         transforms (list): Transforms for image.
         dataset_root (str): Cityscapes dataset directory.
         mode (str): Which part of dataset to use. it is one of ('train', 'val', 'test'). Default: 'train'.
-        edge (bool): Whether to compute edge while training. Defualt: False
+        edge (bool): Whether to compute edge while training. Default: False
     """
 
     def __init__(self, transforms, dataset_root, mode='train', edge=False):

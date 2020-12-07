@@ -34,7 +34,7 @@ class PascalVOC(Dataset):
         dataset_root (str): The dataset directory. Default: None
         mode (str): Which part of dataset to use. it is one of ('train', 'trainval', 'trainaug', 'val').
             If you want to set mode to 'trainaug', please make sure the dataset have been augmented. Default: 'train'.
-        edge (bool): Whether to compute edge while training. Defualt: False
+        edge (bool): Whether to compute edge while training. Default: False
     """
 
     def __init__(self, transforms, dataset_root=None, mode='train', edge=False):

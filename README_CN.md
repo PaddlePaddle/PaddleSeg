@@ -16,6 +16,7 @@
 |[Fast-SCNN](./configs/fastscnn)|-|-|-|-|
 |[FCN](./configs/fcn)|||✔|✔|
 |[GCNet](./configs/gcnet)|✔|✔|||
+|[GSCNN](./configs/gscnn)|✔|✔|||
 |[OCRNet](./configs/ocrnet/)|||✔|✔|
 |[PSPNet](./configs/pspnet)|✔|✔|||
 |[UNet](./configs/unet)|-|-|-|-|

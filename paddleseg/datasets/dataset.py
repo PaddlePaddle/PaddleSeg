@@ -42,7 +42,7 @@ class Dataset(paddle.io.Dataset):
         test_path (str): The test dataset file. When mode is 'test', test_path is necessary.
             The annotation file is not necessary in test_path file.
         separator (str): The separator of dataset list. Default: ' '.
-        edge (bool): Whether to compute edge while training. Defualt: False
+        edge (bool): Whether to compute edge while training. Default: False
 
         Examples:
 
