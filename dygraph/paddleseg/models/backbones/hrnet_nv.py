@@ -23,12 +23,13 @@ from paddleseg.models import layers
 from paddleseg.utils import utils
 
 __all__ = [
-    "HRNet_W18_Small_V1", "HRNet_W18_Small_V2", "HRNet_W18", "HRNet_W30",
-    "HRNet_W32", "HRNet_W40", "HRNet_W44", "HRNet_W48", "HRNet_W60", "HRNet_W64"
+    "HRNet_W18_NV_Small_V1", "HRNet_W18_NV_Small_V2", "HRNet_W18_NV",
+    "HRNet_W30_NV", "HRNet_W32_NV", "HRNet_W40_NV", "HRNet_W44_NV",
+    "HRNet_W48_NV", "HRNet_W60_NV", "HRNet_W64_NV"
 ]
 
 
-class HRNet(nn.Layer):
+class HRNetNV(nn.Layer):
     """
     The HRNet implementation based on PaddlePaddle.
 
@@ -71,7 +72,7 @@ class HRNet(nn.Layer):
                  stage4_num_channels=[18, 36, 72, 144],
                  has_se=False,
                  align_corners=False):
-        super(HRNet, self).__init__()
+        super(HRNetNV, self).__init__()
         self.pretrained = pretrained
         self.stage1_num_modules = stage1_num_modules
         self.stage1_num_blocks = stage1_num_blocks
@@ -94,7 +95,7 @@ class HRNet(nn.Layer):
             out_channels=64,
             kernel_size=3,
             stride=2,
-            padding='same',
+            padding=1,
             bias_attr=False)
 
         self.conv_layer1_2 = layers.ConvBNReLU(
@@ -102,7 +103,7 @@ class HRNet(nn.Layer):
             out_channels=64,
             kernel_size=3,
             stride=2,
-            padding='same',
+            padding=1,
             bias_attr=False)
 
         self.la1 = Layer1(
@@ -243,7 +244,7 @@ class TransitionLayer(nn.Layer):
                             in_channels=in_channels[i],
                             out_channels=out_channels[i],
                             kernel_size=3,
-                            padding='same',
+                            padding=1,
                             bias_attr=False))
             else:
                 residual = self.add_sublayer(
@@ -253,7 +254,7 @@ class TransitionLayer(nn.Layer):
                         out_channels=out_channels[i],
                         kernel_size=3,
                         stride=2,
-                        padding='same',
+                        padding=1,
                         bias_attr=False))
             self.conv_bn_func_list.append(residual)
 
@@ -322,7 +323,7 @@ class BottleneckBlock(nn.Layer):
             in_channels=num_channels,
             out_channels=num_filters,
             kernel_size=1,
-            padding='same',
+            padding=0,
             bias_attr=False)
 
         self.conv2 = layers.ConvBNReLU(
@@ -330,14 +331,14 @@ class BottleneckBlock(nn.Layer):
             out_channels=num_filters,
             kernel_size=3,
             stride=stride,
-            padding='same',
+            padding=1,
             bias_attr=False)
 
         self.conv3 = layers.ConvBN(
             in_channels=num_filters,
             out_channels=num_filters * 4,
             kernel_size=1,
-            padding='same',
+            padding=0,
             bias_attr=False)
 
         if self.downsample:
@@ -345,7 +346,6 @@ class BottleneckBlock(nn.Layer):
                 in_channels=num_channels,
                 out_channels=num_filters * 4,
                 kernel_size=1,
-                padding='same',
                 bias_attr=False)
 
         if self.has_se:
@@ -390,13 +390,13 @@ class BasicBlock(nn.Layer):
             out_channels=num_filters,
             kernel_size=3,
             stride=stride,
-            padding='same',
+            padding=1,
             bias_attr=False)
         self.conv2 = layers.ConvBN(
             in_channels=num_filters,
             out_channels=num_filters,
             kernel_size=3,
-            padding='same',
+            padding=1,
             bias_attr=False)
 
         if self.downsample:
@@ -404,7 +404,7 @@ class BasicBlock(nn.Layer):
                 in_channels=num_channels,
                 out_channels=num_filters,
                 kernel_size=1,
-                padding='same',
+                padding=0,
                 bias_attr=False)
 
         if self.has_se:
@@ -567,7 +567,7 @@ class FuseLayers(nn.Layer):
                             in_channels=in_channels[j],
                             out_channels=out_channels[i],
                             kernel_size=1,
-                            padding='same',
+                            padding=0,
                             bias_attr=False))
                     self.residual_func_list.append(residual_func)
                 elif j < i:
@@ -582,7 +582,7 @@ class FuseLayers(nn.Layer):
                                     out_channels=out_channels[i],
                                     kernel_size=3,
                                     stride=2,
-                                    padding='same',
+                                    padding=1,
                                     bias_attr=False))
                             pre_num_filters = out_channels[i]
                         else:
@@ -594,7 +594,7 @@ class FuseLayers(nn.Layer):
                                     out_channels=out_channels[j],
                                     kernel_size=3,
                                     stride=2,
-                                    padding='same',
+                                    padding=1,
                                     bias_attr=False))
                             pre_num_filters = out_channels[j]
                         self.residual_func_list.append(residual_func)
@@ -631,8 +631,8 @@ class FuseLayers(nn.Layer):
 
 
 @manager.BACKBONES.add_component
-def HRNet_W18_Small_V1(**kwargs):
-    model = HRNet(
+def HRNet_W18_NV_Small_V1(**kwargs):
+    model = HRNetNV(
         stage1_num_modules=1,
         stage1_num_blocks=[1],
         stage1_num_channels=[32],
@@ -650,8 +650,8 @@ def HRNet_W18_Small_V1(**kwargs):
 
 
 @manager.BACKBONES.add_component
-def HRNet_W18_Small_V2(**kwargs):
-    model = HRNet(
+def HRNet_W18_NV_Small_V2(**kwargs):
+    model = HRNetNV(
         stage1_num_modules=1,
         stage1_num_blocks=[2],
         stage1_num_channels=[64],
@@ -669,8 +669,8 @@ def HRNet_W18_Small_V2(**kwargs):
 
 
 @manager.BACKBONES.add_component
-def HRNet_W18(**kwargs):
-    model = HRNet(
+def HRNet_W18_NV(**kwargs):
+    model = HRNetNV(
         stage1_num_modules=1,
         stage1_num_blocks=[4],
         stage1_num_channels=[64],
@@ -688,8 +688,8 @@ def HRNet_W18(**kwargs):
 
 
 @manager.BACKBONES.add_component
-def HRNet_W30(**kwargs):
-    model = HRNet(
+def HRNet_W30_NV(**kwargs):
+    model = HRNetNV(
         stage1_num_modules=1,
         stage1_num_blocks=[4],
         stage1_num_channels=[64],
@@ -707,8 +707,8 @@ def HRNet_W30(**kwargs):
 
 
 @manager.BACKBONES.add_component
-def HRNet_W32(**kwargs):
-    model = HRNet(
+def HRNet_W32_NV(**kwargs):
+    model = HRNetNV(
         stage1_num_modules=1,
         stage1_num_blocks=[4],
         stage1_num_channels=[64],
@@ -726,8 +726,8 @@ def HRNet_W32(**kwargs):
 
 
 @manager.BACKBONES.add_component
-def HRNet_W40(**kwargs):
-    model = HRNet(
+def HRNet_W40_NV(**kwargs):
+    model = HRNetNV(
         stage1_num_modules=1,
         stage1_num_blocks=[4],
         stage1_num_channels=[64],
@@ -745,8 +745,8 @@ def HRNet_W40(**kwargs):
 
 
 @manager.BACKBONES.add_component
-def HRNet_W44(**kwargs):
-    model = HRNet(
+def HRNet_W44_NV(**kwargs):
+    model = HRNetNV(
         stage1_num_modules=1,
         stage1_num_blocks=[4],
         stage1_num_channels=[64],
@@ -764,8 +764,8 @@ def HRNet_W44(**kwargs):
 
 
 @manager.BACKBONES.add_component
-def HRNet_W48(**kwargs):
-    model = HRNet(
+def HRNet_W48_NV(**kwargs):
+    model = HRNetNV(
         stage1_num_modules=1,
         stage1_num_blocks=[4],
         stage1_num_channels=[64],
@@ -783,8 +783,8 @@ def HRNet_W48(**kwargs):
 
 
 @manager.BACKBONES.add_component
-def HRNet_W60(**kwargs):
-    model = HRNet(
+def HRNet_W60_NV(**kwargs):
+    model = HRNetNV(
         stage1_num_modules=1,
         stage1_num_blocks=[4],
         stage1_num_channels=[64],
@@ -802,8 +802,8 @@ def HRNet_W60(**kwargs):
 
 
 @manager.BACKBONES.add_component
-def HRNet_W64(**kwargs):
-    model = HRNet(
+def HRNet_W64_NV(**kwargs):
+    model = HRNetNV(
         stage1_num_modules=1,
         stage1_num_blocks=[4],
         stage1_num_channels=[64],
