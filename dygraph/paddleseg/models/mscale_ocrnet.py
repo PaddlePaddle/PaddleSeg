@@ -5,7 +5,7 @@ import paddle.nn as nn
 from paddleseg.cvlibs import manager, param_init
 from paddleseg.utils import utils
 from paddleseg.models import layers
-from .ocrnet import OCRNet
+from .ocrnet_nv import OCRNetNV
 
 
 @manager.MODELS.add_component
@@ -20,7 +20,7 @@ class MscaleOCRNet(nn.Layer):
                  align_corners=False,
                  pretrained=None):
         super().__init__()
-        self.ocrnet = OCRNet(
+        self.ocrnet = OCRNetNV(
             num_classes,
             backbone,
             backbone_indices,

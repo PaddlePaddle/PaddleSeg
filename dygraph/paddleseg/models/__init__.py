@@ -23,6 +23,7 @@ from .fast_scnn import *
 from .fcn import *
 from .gcnet import *
 from .ocrnet import *
+from .ocrnet_nv import OCRNetNV
 from .pspnet import *
 from .unet import UNet
 from .mscale_ocr_finetune import MscaleOCRFinetune
