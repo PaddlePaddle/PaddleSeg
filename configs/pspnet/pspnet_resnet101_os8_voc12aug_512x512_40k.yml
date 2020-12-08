@@ -1,0 +1,17 @@
+_base_: 'pspnet_resnet50_os8_voc12aug_512x512_40k.yml'
+
+train_dataset:
+  transforms:
+    - type: RandomPaddingCrop
+      crop_size: [512, 512]
+    - type: RandomHorizontalFlip
+    - type: RandomDistort
+      brightness_range: 0.4
+      contrast_range: 0.4
+      saturation_range: 0.4
+    - type: Normalize
+
+model:
+  backbone:
+    type: ResNet101_vd
+    pretrained: https://bj.bcebos.com/paddleseg/dygraph/resnet101_vd_ssld.tar.gz
