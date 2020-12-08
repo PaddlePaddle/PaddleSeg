@@ -1,7 +1,5 @@
 _base_: '../_base_/cityscapes.yml'
 
-batch_size: 2
-iters: 80000
 
 model:
   type: EMANet
@@ -13,15 +11,7 @@ model:
   
 
 optimizer:
-  type: sgd
-  momentum: 0.9
   weight_decay: 0.0005
-
-learning_rate:
-  value: 0.01
-  decay:
-    type: poly
-    power: 0.9
 
 
 loss:
