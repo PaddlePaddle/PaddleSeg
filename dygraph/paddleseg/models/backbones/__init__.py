@@ -13,6 +13,7 @@
 # limitations under the License.
 
 from .hrnet import *
+from .hrnet_nv import *
 from .resnet_vd import *
 from .xception_deeplab import *
 from .mobilenetv3 import *
