@@ -28,7 +28,6 @@ class OCRNet(nn.Layer):
     The original article refers to
         Yuan, Yuhui, et al. "Object-Contextual Representations for Semantic Segmentation"
         (https://arxiv.org/pdf/1909.11065.pdf)
-
     Args:
         num_classes (int): The unique number of target classes.
         backbone (Paddle.nn.Layer): Backbone network.
@@ -50,8 +49,7 @@ class OCRNet(nn.Layer):
                  ocr_mid_channels=512,
                  ocr_key_channels=256,
                  align_corners=False,
-                 pretrained=None,
-                 ms_attention=False):
+                 pretrained=None):
         super().__init__()
 
         self.backbone = backbone
@@ -62,26 +60,23 @@ class OCRNet(nn.Layer):
             num_classes=num_classes,
             in_channels=in_channels,
             ocr_mid_channels=ocr_mid_channels,
-            ocr_key_channels=ocr_key_channels,
-            ms_attention=ms_attention)
+            ocr_key_channels=ocr_key_channels)
 
         self.align_corners = align_corners
         self.pretrained = pretrained
-        self.ms_attention = ms_attention
         self.init_weight()
 
     def forward(self, x):
         feats = self.backbone(x)
         feats = [feats[i] for i in self.backbone_indices]
         logit_list = self.head(feats)
-        if not self.ms_attention:
-            logit_list = [
-                F.interpolate(
-                    logit,
-                    x.shape[2:],
-                    mode='bilinear',
-                    align_corners=self.align_corners) for logit in logit_list
-            ]
+        logit_list = [
+            F.interpolate(
+                logit,
+                x.shape[2:],
+                mode='bilinear',
+                align_corners=self.align_corners) for logit in logit_list
+        ]
         return logit_list
 
     def init_weight(self):
@@ -92,7 +87,6 @@ class OCRNet(nn.Layer):
 class OCRHead(nn.Layer):
     """
     The Object contextual representation head.
-
     Args:
         num_classes(int): The unique number of target classes.
         in_channels(tuple): The number of input channels.
@@ -104,18 +98,13 @@ class OCRHead(nn.Layer):
                  num_classes,
                  in_channels,
                  ocr_mid_channels=512,
-                 ocr_key_channels=256,
-                 ms_attention=False):
+                 ocr_key_channels=256):
         super().__init__()
 
         self.num_classes = num_classes
-        self.ms_attention = ms_attention
         self.spatial_gather = SpatialGatherBlock()
-        self.spatial_ocr = SpatialOCRModule(
-            ocr_mid_channels,
-            ocr_key_channels,
-            ocr_mid_channels,
-            dropout_rate=0.05)
+        self.spatial_ocr = SpatialOCRModule(ocr_mid_channels, ocr_key_channels,
+                                            ocr_mid_channels)
 
         self.indices = [-2, -1] if len(in_channels) > 1 else [-1, -1]
 
@@ -140,8 +129,6 @@ class OCRHead(nn.Layer):
         ocr = self.spatial_ocr(pixels, object_regions)
 
         logit = self.cls_head(ocr)
-        if self.ms_attention:
-            return [logit, soft_regions, ocr]
         return [logit, soft_regions]
 
     def init_weight(self):
@@ -189,8 +176,7 @@ class SpatialOCRModule(nn.Layer):
 
         self.attention_block = ObjectAttentionBlock(in_channels, key_channels)
         self.conv1x1 = nn.Sequential(
-            layers.ConvBNReLU(
-                2 * in_channels, out_channels, 1, bias_attr=False),
+            layers.ConvBNReLU(2 * in_channels, out_channels, 1),
             nn.Dropout2D(dropout_rate))
 
     def forward(self, pixels, regions):
@@ -211,18 +197,16 @@ class ObjectAttentionBlock(nn.Layer):
         self.key_channels = key_channels
 
         self.f_pixel = nn.Sequential(
-            layers.ConvBNReLU(in_channels, key_channels, 1, bias_attr=False),
-            layers.ConvBNReLU(key_channels, key_channels, 1, bias_attr=False))
+            layers.ConvBNReLU(in_channels, key_channels, 1),
+            layers.ConvBNReLU(key_channels, key_channels, 1))
 
         self.f_object = nn.Sequential(
-            layers.ConvBNReLU(in_channels, key_channels, 1, bias_attr=False),
-            layers.ConvBNReLU(key_channels, key_channels, 1, bias_attr=False))
+            layers.ConvBNReLU(in_channels, key_channels, 1),
+            layers.ConvBNReLU(key_channels, key_channels, 1))
 
-        self.f_down = layers.ConvBNReLU(
-            in_channels, key_channels, 1, bias_attr=False)
+        self.f_down = layers.ConvBNReLU(in_channels, key_channels, 1)
 
-        self.f_up = layers.ConvBNReLU(
-            key_channels, in_channels, 1, bias_attr=False)
+        self.f_up = layers.ConvBNReLU(key_channels, in_channels, 1)
 
     def forward(self, x, proxy):
         n, _, h, w = x.shape
