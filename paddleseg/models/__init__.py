@@ -26,3 +26,4 @@ from .ocrnet import *
 from .pspnet import *
 from .unet import UNet
 from .gscnn import GSCNN
+from .decoupled_segnet import DecoupledSegNet
