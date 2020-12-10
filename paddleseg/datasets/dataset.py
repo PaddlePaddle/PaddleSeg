@@ -20,6 +20,7 @@ from PIL import Image
 
 from paddleseg.cvlibs import manager
 from paddleseg.transforms import Compose
+import paddleseg.transforms.functional as F
 
 
 @manager.DATASETS.add_component
@@ -41,6 +42,7 @@ class Dataset(paddle.io.Dataset):
         test_path (str): The test dataset file. When mode is 'test', test_path is necessary.
             The annotation file is not necessary in test_path file.
         separator (str): The separator of dataset list. Default: ' '.
+        edge (bool): Whether to compute edge while training. Default: False
 
         Examples:
 
@@ -68,7 +70,8 @@ class Dataset(paddle.io.Dataset):
                  val_path=None,
                  test_path=None,
                  separator=' ',
-                 ignore_index=255):
+                 ignore_index=255,
+                 edge=False):
         self.dataset_root = dataset_root
         self.transforms = Compose(transforms)
         self.file_list = list()
@@ -76,6 +79,7 @@ class Dataset(paddle.io.Dataset):
         self.mode = mode
         self.num_classes = num_classes
         self.ignore_index = ignore_index
+        self.edge = edge
 
         if mode.lower() not in ['train', 'val', 'test']:
             raise ValueError(
@@ -149,7 +153,12 @@ class Dataset(paddle.io.Dataset):
             return im, label
         else:
             im, label = self.transforms(im=image_path, label=label_path)
-            return im, label
+            if self.edge:
+                edge_mask = F.mask_to_binary_edge(
+                    label, radius=2, num_classes=self.num_classes)
+                return im, label, edge_mask
+            else:
+                return im, label
 
     def __len__(self):
         return len(self.file_list)

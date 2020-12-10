@@ -22,29 +22,25 @@ from paddleseg.utils import Timer, calculate_eta, resume, logger
 from paddleseg.core.val import evaluate
 
 
-def check_logits_losses(logits, losses):
-    len_logits = len(logits)
+def check_logits_losses(logits_list, losses):
+    len_logits = len(logits_list)
     len_losses = len(losses['types'])
     if len_logits != len_losses:
         raise RuntimeError(
-            'The length of logits should equal to the types of loss config: {} != {}.'
+            'The length of logits_list should equal to the types of loss config: {} != {}.'
             .format(len_logits, len_losses))
 
 
-def loss_computation(logits, label, losses):
-    check_logits_losses(logits, losses)
+def loss_computation(logits_list, labels, losses, edges=None):
+    check_logits_losses(logits_list, losses)
     loss = 0
-    for i in range(len(logits)):
-        logit = logits[i]
-        if logit.shape[-2:] != label.shape[-2:]:
-            logit = F.interpolate(
-                logit,
-                label.shape[-2:],
-                mode='bilinear',
-                align_corners=True,
-                align_mode=1)
-        loss_i = losses['types'][i](logit, label)
-        loss += losses['coef'][i] * loss_i
+    for i in range(len(logits_list)):
+        logits = logits_list[i]
+        loss_i = losses['types'][i]
+        # Whether to use edges as labels According to loss type .
+        if loss_i.__class__.__name__ in ('BCELoss', ):
+            labels = edges
+        loss += losses['coef'][i] * loss_i(logits, labels)
     return loss
 
 
@@ -111,14 +107,21 @@ def train(model,
             train_reader_cost += timer.elapsed_time()
             images = data[0]
             labels = data[1].astype('int64')
+            edges = None
+            if len(data) == 3:
+                edges = data[2].astype('int64')
+
             if nranks > 1:
-                logits = ddp_model(images)
-                loss = loss_computation(logits, labels, losses)
-                loss.backward()
+                logits_list = ddp_model(images)
             else:
-                logits = model(images)
-                loss = loss_computation(logits, labels, losses)
-                loss.backward()
+                logits_list = model(images)
+            loss = loss_computation(
+                logits_list=logits_list,
+                labels=labels,
+                losses=losses,
+                edges=edges)
+            loss.backward()
+
             optimizer.step()
             lr = optimizer.get_lr()
             if isinstance(optimizer._learning_rate,
@@ -127,6 +130,7 @@ def train(model,
             model.clear_gradients()
             avg_loss += loss.numpy()[0]
             train_batch_cost += timer.elapsed_time()
+
             if (iter) % log_iters == 0 and local_rank == 0:
                 avg_loss /= log_iters
                 avg_train_reader_cost = train_reader_cost / log_iters
