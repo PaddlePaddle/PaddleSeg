@@ -20,7 +20,7 @@ EVAL_CROP_SIZE: (512, 512)
 AUG:
     AUG_METHOD: "unpadding"
     FIX_RESIZE_SIZE: (512, 512)
-BATCH_SIZE: 2
+BATCH_SIZE: 1
 TRAIN:
     PRETRAINED_MODEL_DIR: "./pretrained_model/deeplabv3p_xception65_bn_coco/"
     MODEL_SAVE_DIR: "./saved_model/deeplabv3p_xception65_bn_optic/"
