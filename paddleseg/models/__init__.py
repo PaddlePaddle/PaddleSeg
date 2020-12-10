@@ -25,4 +25,4 @@ from .gcnet import *
 from .ocrnet import *
 from .pspnet import *
 from .unet import UNet
-from .gscnn import GSCNN
+from .u2net import U2Net, U2Netp
