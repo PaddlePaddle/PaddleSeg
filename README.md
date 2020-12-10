@@ -27,7 +27,7 @@ The full-detailed documents and tutorials are coming soon. So far there are mini
 |[GSCNN](./configs/gscnn)|✔|✔|||
 |[OCRNet](./configs/ocrnet/)|||✔|✔|
 |[PSPNet](./configs/pspnet)|✔|✔|||
-|[UNet](./configs/unet)|-|-|-|-|
+|[U-Net](./configs/unet)|-|-|-|-|
 |[U<sup>2</sup>-Net](./configs/u2net)|-|-|-|-|
 
 ## Dataset
