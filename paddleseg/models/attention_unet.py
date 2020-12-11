@@ -1,3 +1,17 @@
+# Copyright (c) 2020 PaddlePaddle Authors. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 import paddle
 import paddle.nn as nn
 from paddleseg.cvlibs import manager
@@ -6,21 +20,92 @@ from paddleseg import utils
 import numpy as np
 
 
+@manager.MODELS.add_component
+class AttentionUNet(nn.Layer):
+    """
+    The Attention-UNet implementation based on PaddlePaddle.
+    As mentioned in the original paper, author proposes a novel attention gate (AG)
+    that automatically learns to focus on target structures of varying shapes and sizes.
+    Models trained with AGs implicitly learn to suppress irrelevant regions in an input image while
+    highlighting salient features useful for a specific task
+    Oktay, O, et, al. "Attention u-net: Learning where to look for the pancreas."
+    (https://arxiv.org/pdf/1804.03999.pdf).
+    Args:
+        num_classes (int): The unique number of target classes.
+        pretrained (str, optional): The path or url of pretrained model. Default: None.
+    """
+
+    def __init__(self, num_classes, pretrained=None):
+        super().__init__()
+        n_channels = 3
+        self.encoder = Encoder(n_channels, [64, 128, 256, 512])
+        filters = np.array([64, 128, 256, 512, 1024])
+        self.up5 = UpConv(ch_in=filters[4], ch_out=filters[3])
+        self.att5 = AttentionBlock(F_g=filters[3], F_l=filters[3], F_out=filters[2])
+        self.up_conv5 = ConvBlock(ch_in=filters[4], ch_out=filters[3])
+
+        self.up4 = UpConv(ch_in=filters[3], ch_out=filters[2])
+        self.att4 = AttentionBlock(F_g=filters[2], F_l=filters[2], F_out=filters[1])
+        self.up_conv4 = ConvBlock(ch_in=filters[3], ch_out=filters[2])
+
+        self.up3 = UpConv(ch_in=filters[2], ch_out=filters[1])
+        self.att3 = AttentionBlock(F_g=filters[1], F_l=filters[1], F_out=filters[0])
+        self.up_conv3 = ConvBlock(ch_in=filters[2], ch_out=filters[1])
+
+        self.up2 = UpConv(ch_in=filters[1], ch_out=filters[0])
+        self.att2 = AttentionBlock(F_g=filters[0], F_l=filters[0], F_out=filters[0] // 2)
+        self.up_conv2 = ConvBlock(ch_in=filters[1], ch_out=filters[0])
+
+        self.conv_1x1 = nn.Conv2D(filters[0], num_classes, kernel_size=1, stride=1, padding=0)
+        self.pretrained = pretrained
+        self.init_weight()
+
+    def forward(self, x):
+        x5, (x1, x2, x3, x4) = self.encoder(x)
+        d5 = self.up5(x5)
+        x4 = self.att5(g=d5, x=x4)
+        d5 = paddle.concat([x4, d5], axis=1)
+        d5 = self.up_conv5(d5)
+
+        d4 = self.up4(d5)
+        x3 = self.att4(g=d4, x=x3)
+        d4 = paddle.concat((x3, d4), axis=1)
+        d4 = self.up_conv4(d4)
+
+        d3 = self.up3(d4)
+        x2 = self.att3(g=d3, x=x2)
+        d3 = paddle.concat((x2, d3), axis=1)
+        d3 = self.up_conv3(d3)
+
+        d2 = self.up2(d3)
+        x1 = self.att2(g=d2, x=x1)
+        d2 = paddle.concat((x1, d2), axis=1)
+        d2 = self.up_conv2(d2)
+
+        logit = self.conv_1x1(d2)
+        logit_list = [logit]
+        return logit_list
+
+    def init_weight(self):
+        if self.pretrained is not None:
+            utils.load_entire_model(self, self.pretrained)
+
+
 class AttentionBlock(nn.Layer):
-    def __init__(self, F_g, F_l, F_int):
+    def __init__(self, F_g, F_l, F_out):
         super().__init__()
         self.W_g = nn.Sequential(
-            nn.Conv2D(F_g, F_int, kernel_size=1, stride=1, padding=0),
-            nn.BatchNorm2D(F_int)
+            nn.Conv2D(F_g, F_out, kernel_size=1, stride=1, padding=0),
+            nn.BatchNorm2D(F_out)
         )
 
         self.W_x = nn.Sequential(
-            nn.Conv2D(F_l, F_int, kernel_size=1, stride=1, padding=0),
-            nn.BatchNorm2D(F_int)
+            nn.Conv2D(F_l, F_out, kernel_size=1, stride=1, padding=0),
+            nn.BatchNorm2D(F_out)
         )
 
         self.psi = nn.Sequential(
-            nn.Conv2D(F_int, 1, kernel_size=1, stride=1, padding=0),
+            nn.Conv2D(F_out, 1, kernel_size=1, stride=1, padding=0),
             nn.BatchNorm2D(1),
             nn.Sigmoid()
         )
@@ -32,8 +117,8 @@ class AttentionBlock(nn.Layer):
         x1 = self.W_x(x)
         psi = self.relu(g1 + x1)
         psi = self.psi(psi)
-
-        return x * psi
+        res = x * psi
+        return res
 
 
 class UpConv(nn.Layer):
@@ -91,61 +176,3 @@ class ConvBlock(nn.Layer):
 
     def forward(self, x):
         return self.conv(x)
-
-
-@manager.MODELS.add_component
-class AttentionUNet(nn.Layer):
-    def __init__(self, n_channels=3, num_classes=1, pretrained=None):
-        super().__init__()
-        self.encoder = Encoder(n_channels, [64, 128, 256, 512])
-        filters = np.array([64, 128, 256, 512, 1024])
-        self.up5 = UpConv(ch_in=filters[4], ch_out=filters[3])
-        self.att5 = AttentionBlock(F_g=filters[3], F_l=filters[3], F_int=filters[2])
-        self.up_conv5 = ConvBlock(ch_in=filters[4], ch_out=filters[3])
-
-        self.up4 = UpConv(ch_in=filters[3], ch_out=filters[2])
-        self.att4 = AttentionBlock(F_g=filters[2], F_l=filters[2], F_int=filters[1])
-        self.up_conv4 = ConvBlock(ch_in=filters[3], ch_out=filters[2])
-
-        self.up3 = UpConv(ch_in=filters[2], ch_out=filters[1])
-        self.att3 = AttentionBlock(F_g=filters[1], F_l=filters[1], F_int=filters[0])
-        self.up_conv3 = ConvBlock(ch_in=filters[2], ch_out=filters[1])
-
-        self.up2 = UpConv(ch_in=filters[1], ch_out=filters[0])
-        self.att2 = AttentionBlock(F_g=filters[0], F_l=filters[0], F_int=filters[0] // 2)
-        self.up_conv2 = ConvBlock(ch_in=filters[1], ch_out=filters[0])
-
-        self.conv_1x1 = nn.Conv2D(filters[0], num_classes, kernel_size=1, stride=1, padding=0)
-        self.pretrained = pretrained
-        self.init_weight()
-
-    def forward(self, x):
-        x5, (x1, x2, x3, x4) = self.encoder(x)
-        d5 = self.up5(x5)
-        x4 = self.att5(g=d5, x=x4)
-        d5 = paddle.concat([x4, d5], axis=1)
-        d5 = self.up_conv5(d5)
-
-        d4 = self.up4(d5)
-        x3 = self.att4(g=d4, x=x3)
-        d4 = paddle.concat((x3, d4), axis=1)
-        d4 = self.up_conv4(d4)
-
-        d3 = self.up3(d4)
-        x2 = self.att3(g=d3, x=x2)
-        d3 = paddle.concat((x2, d3), axis=1)
-        d3 = self.up_conv3(d3)
-
-        d2 = self.up2(d3)
-        x1 = self.att2(g=d2, x=x1)
-        d2 = paddle.concat((x1, d2), axis=1)
-        d2 = self.up_conv2(d2)
-
-        logit = self.conv_1x1(d2)
-        logit_list = []
-        logit_list.append(logit)
-        return logit_list
-
-    def init_weight(self):
-        if self.pretrained is not None:
-            utils.load_entire_model(self, self.pretrained)
