@@ -63,7 +63,6 @@ class MscaleOCRNet(nn.Layer):
         p_lo = pred_05x
         aux_lo = lo_outs['aux_out']
         logit_attn = lo_outs['logit_attn']
-        attn_05x = logit_attn
 
         hi_outs = self.single_scale_forward(x_1x)
         pred_10x = hi_outs['cls_out']
@@ -153,7 +152,6 @@ class MscaleOCRNet(nn.Layer):
 
         pred = None
         aux = None
-        output_dict = {}
 
         for s in scales:
             x = nn.functional.interpolate(
