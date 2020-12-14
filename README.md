@@ -25,6 +25,7 @@ The full-detailed documents and tutorials are coming soon. So far there are mini
 |[FCN](./configs/fcn)|||✔|✔|
 |[GCNet](./configs/gcnet)|✔|✔|||
 |[GSCNN](./configs/gscnn)|✔|✔|||
+|[HarDNet](./configs/hardnet)|-|-|-|-|
 |[OCRNet](./configs/ocrnet/)|||✔|✔|
 |[PSPNet](./configs/pspnet)|✔|✔|||
 |[U-Net](./configs/unet)|-|-|-|-|
