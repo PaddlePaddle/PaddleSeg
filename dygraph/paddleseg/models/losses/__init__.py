@@ -13,3 +13,4 @@
 # limitations under the License.
 
 from .cross_entroy_loss import CrossEntropyLoss
+from .bootstrapped_cross_entropy import BootstrappedCrossEntropyLoss

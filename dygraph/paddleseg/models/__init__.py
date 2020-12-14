@@ -25,3 +25,4 @@ from .gcnet import *
 from .ocrnet import *
 from .pspnet import *
 from .unet import UNet
+from .hardnet import HarDNet
