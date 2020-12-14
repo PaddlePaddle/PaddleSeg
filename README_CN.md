@@ -17,6 +17,7 @@
 |[FCN](./configs/fcn)|||✔|✔|
 |[GCNet](./configs/gcnet)|✔|✔|||
 |[GSCNN](./configs/gscnn)|✔|✔|||
+|[HarDNet](./configs/hardnet)|-|-|-|-|
 |[OCRNet](./configs/ocrnet/)|||✔|✔|
 |[PSPNet](./configs/pspnet)|✔|✔|||
 |[U-Net](./configs/unet)|-|-|-|-|
