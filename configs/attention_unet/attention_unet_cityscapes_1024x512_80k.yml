@@ -1,0 +1,15 @@
+_base_: '../_base_/cityscapes.yml'
+
+batch_size: 2
+iters: 80000
+
+learning_rate:
+  value: 0.05
+  decay:
+    type: poly
+    power: 0.9
+    end_lr: 0.0
+
+model:
+  type: AttentionUNet
+  pretrained: Null
