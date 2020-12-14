@@ -7,7 +7,7 @@ Cityscapes是关于城市街道场景的语义理解图片数据集。它主要�
 拥有5000张（2048 x 1024）城市驾驶场景的高质量像素级注释图像，包含19个类别。其中训练集2975张， 验证集500张和测试集1525张。
 
 由于协议限制，请自行前往[CityScapes官网](https://www.cityscapes-dataset.com/)下载数据集，
-我们建议您将数据集存放于`PaddleSeg/dygraph/data`中，以便与我们配置文件完全兼容。数据集下载后请组织成如下结构：
+我们建议您将数据集存放于`PaddleSeg/data`中，以便与我们配置文件完全兼容。数据集下载后请组织成如下结构：
 
     cityscapes
     |
@@ -37,7 +37,7 @@ python tools/voc_augment.py --voc_path data/VOCdevkit --num_workers 8
 ```
 其中`voc_path`应根据实际数据集路径进行调整。
 
-**注意** 运行前请确保在dygraph目录下执行过下列命令：
+**注意** 运行前请确保在PaddleSeg目录下执行过下列命令：
 ```shell
 export PYTHONPATH=`pwd`
 # windows下请执行相面的命令

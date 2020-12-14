@@ -25,9 +25,12 @@ The full-detailed documents and tutorials are coming soon. So far there are mini
 |[FCN](./configs/fcn)|||✔|✔|
 |[GCNet](./configs/gcnet)|✔|✔|||
 |[GSCNN](./configs/gscnn)|✔|✔|||
+|[HarDNet](./configs/hardnet)|-|-|-|-|
 |[OCRNet](./configs/ocrnet/)|||✔|✔|
 |[PSPNet](./configs/pspnet)|✔|✔|||
-|[UNet](./configs/unet)|-|-|-|-|
+|[U-Net](./configs/unet)|-|-|-|-|
+|[U<sup>2</sup>-Net](./configs/u2net)|-|-|-|-|
+|[Att U-Net](./configs/attention_unet)|-|-|-|-|
 
 ## Dataset
 
@@ -84,3 +87,7 @@ python train.py --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml
 ## Feedbacks and Contact
 * The dynamic version is still under development, if you find any issue or have an idea on new features, please don't hesitate to contact us via [GitHub Issues](https://github.com/PaddlePaddle/PaddleSeg/issues).
 * PaddleSeg User Group (QQ): 850378321 or 793114768
+
+## Acknowledgement
+* Thanks [jm12138](https://github.com/jm12138) for contributing U<sup>2</sup>-Net.
+* Thanks [zjhellofss](https://github.com/zjhellofss) (Fu Shenshen) for contributing Attention U-Net.

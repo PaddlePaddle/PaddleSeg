@@ -109,7 +109,7 @@ def evaluate(cfg, ckpt_dir=None, use_gpu=False, use_xpu=False, use_mpio=False, *
         xpu_id = int(os.environ.get('FLAGS_selected_xpus', 0))
         places = [fluid.XPUPlace(xpu_id)]
     else:
-        fluid.cpu_places()
+        places = fluid.cpu_places()
     place = places[0]
     dev_count = len(places)
     print("#Device count: {}".format(dev_count))

@@ -17,9 +17,12 @@
 |[FCN](./configs/fcn)|||✔|✔|
 |[GCNet](./configs/gcnet)|✔|✔|||
 |[GSCNN](./configs/gscnn)|✔|✔|||
+|[HarDNet](./configs/hardnet)|-|-|-|-|
 |[OCRNet](./configs/ocrnet/)|||✔|✔|
 |[PSPNet](./configs/pspnet)|✔|✔|||
-|[UNet](./configs/unet)|-|-|-|-|
+|[U-Net](./configs/unet)|-|-|-|-|
+|[U<sup>2</sup>-Net](./configs/u2net)|-|-|-|-|
+|[Att U-Net](./configs/attention_unet)|-|-|-|-|
 
 ## 数据集
 
@@ -73,3 +76,8 @@ python train.py --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml
 * [数据集准备](./docs/data_prepare.md)
 * [配置项](./configs/)
 * [Add New Components](./docs/add_new_model.md)
+
+## 代码贡献
+
+* 非常感谢[jm12138](https://github.com/jm12138)贡献U<sup>2</sup>-Net模型。
+* 非常感谢[zjhellofss](https://github.com/zjhellofss)（傅莘莘）贡献Attention U-Net模型。
