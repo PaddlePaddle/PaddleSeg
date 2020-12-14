@@ -97,9 +97,6 @@ class CityscapesAutolabeling(paddle.io.Dataset):
                                      for img_path, label_path in zip(
                                          coarse_img_files, coarse_label_files)]
             random.shuffle(self.coarse_file_list)
-            self.num_coarse = len(self.coarse_file_list)
-            self.rank = 0
-            self.coarse_rank = 0
 
         # Keep the same number of files in one epoch even using coarse data.
         self.num_files = len(self.file_list)
@@ -119,21 +116,17 @@ class CityscapesAutolabeling(paddle.io.Dataset):
             if idx / self.num_files < self.coarse_proba:
                 #                 rand_idx = np.random.randint(0, len(self.coarse_file_list))
                 #                 image_path, label_path = self.coarse_file_list[rand_idx]
-                image_path, label_path = self.coarse_file_list[self.coarse_rank]
-                self.coarse_rank += 1
-                if self.coarse_rank >= self.num_coarse:
-                    self.coarse_rank = 0
-                    random.shuffle(self.coarse_file_list)
+                image_path, label_path = self.coarse_file_list[idx]
             else:
                 #                 rand_idx = np.random.randint(0, len(self.file_list))
                 #                 image_path, label_path = self.file_list[rand_idx]
-                image_path, label_path = self.file_list[self.rank]
-                self.rank += 1
-                if self.rank >= self.num_files:
-                    self.rank = 0
-                    random.shuffle(self.file_list)
+                image_path, label_path = self.file_list[idx]
             im, label = self.transforms(im=image_path, label=label_path)
             return im, label
+
+    def shuffle(self):
+        random.shuffle(self.file_list)
+        random.shuffle(self.coarse_file_list)
 
     def __len__(self):
         return self.num_files
