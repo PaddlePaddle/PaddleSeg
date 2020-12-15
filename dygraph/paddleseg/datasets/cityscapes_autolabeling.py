@@ -30,8 +30,11 @@ class CityscapesAutolabeling(paddle.io.Dataset):
     TODO: rewrite the comments
     """
 
-    def __init__(self, transforms, dataset_root, mode='train',
-                 coarse_proba=0.5):
+    def __init__(self,
+                 transforms,
+                 dataset_root,
+                 mode='train',
+                 coarse_multiple=1):
         self.dataset_root = dataset_root
         self.transforms = Compose(transforms)
         self.file_list = list()
@@ -39,7 +42,7 @@ class CityscapesAutolabeling(paddle.io.Dataset):
         self.mode = mode
         self.num_classes = 19
         self.ignore_index = 255
-        self.coarse_proba = coarse_proba
+        self.coarse_multiple = coarse_multiple
 
         if mode not in ['train', 'val', 'test']:
             raise ValueError(
@@ -69,9 +72,10 @@ class CityscapesAutolabeling(paddle.io.Dataset):
             img_path, label_path
         ] for img_path, label_path in zip(img_files, label_files)]
         random.shuffle(self.file_list)
+        self.num_files = len(self.file_list)
+        self.total_num_files = self.num_files
 
         if mode == 'train':
-
             # use coarse dataset only in training
             img_dir = os.path.join(self.dataset_root, 'leftImg8bit_trainextra',
                                    'leftImg8bit', 'train_extra')
@@ -98,29 +102,27 @@ class CityscapesAutolabeling(paddle.io.Dataset):
                                          coarse_img_files, coarse_label_files)]
             random.shuffle(self.coarse_file_list)
 
-        # Keep the same number of files in one epoch even using coarse data.
-        self.num_files = len(self.file_list)
+            self.total_num_files = int(self.num_files * (1 + coarse_multiple))
 
     def __getitem__(self, idx):
-        image_path, label_path = self.file_list[idx]
         if self.mode == 'test':
+            image_path, label_path = self.file_list[idx]
             im, _ = self.transforms(im=image_path)
             im = im[np.newaxis, ...]
             return im, image_path
         elif self.mode == 'val':
+            image_path, label_path = self.file_list[idx]
             im, _ = self.transforms(im=image_path)
             label = np.asarray(Image.open(label_path))
             label = label[np.newaxis, :, :]
             return im, label
         else:
-            if idx / self.num_files < self.coarse_proba:
-                #                 rand_idx = np.random.randint(0, len(self.coarse_file_list))
-                #                 image_path, label_path = self.coarse_file_list[rand_idx]
-                image_path, label_path = self.coarse_file_list[idx]
+            if idx >= self.num_files:
+                image_path, label_path = self.coarse_file_list[idx -
+                                                               self.num_files]
             else:
-                #                 rand_idx = np.random.randint(0, len(self.file_list))
-                #                 image_path, label_path = self.file_list[rand_idx]
                 image_path, label_path = self.file_list[idx]
+
             im, label = self.transforms(im=image_path, label=label_path)
             return im, label
 
@@ -129,4 +131,4 @@ class CityscapesAutolabeling(paddle.io.Dataset):
         random.shuffle(self.coarse_file_list)
 
     def __len__(self):
-        return self.num_files
+        return self.total_num_files
