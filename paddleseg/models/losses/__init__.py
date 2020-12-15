@@ -16,3 +16,4 @@ from .cross_entroy_loss import CrossEntropyLoss
 from .binary_cross_entroy_loss import BCELoss
 from .dual_task_loss import DualTaskLoss
 from .edge_attention_loss import EdgeAttentionLoss
+from .dice_loss import DiceLoss
