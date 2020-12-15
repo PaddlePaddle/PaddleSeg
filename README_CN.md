@@ -17,6 +17,7 @@
 |[FCN](./configs/fcn)|||✔|✔|
 |[GCNet](./configs/gcnet)|✔|✔|||
 |[GSCNN](./configs/gscnn)|✔|✔|||
+|[HarDNet](./configs/hardnet)|-|-|-|-|
 |[OCRNet](./configs/ocrnet/)|||✔|✔|
 |[PSPNet](./configs/pspnet)|✔|✔|||
 |[U-Net](./configs/unet)|-|-|-|-|
@@ -79,4 +80,4 @@ python train.py --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml
 ## 代码贡献
 
 * 非常感谢[jm12138](https://github.com/jm12138)贡献U<sup>2</sup>-Net模型。
-* 非常感谢[zjhellofss](https://github.com/zjhellofss)（傅莘莘）贡献Attention U-Net模型。
+* 非常感谢[zjhellofss](https://github.com/zjhellofss)（傅莘莘）贡献Attention U-Net模型，和Dice loss损失函数。

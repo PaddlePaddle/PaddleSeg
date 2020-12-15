@@ -154,15 +154,18 @@ class Config(object):
 
     @property
     def optimizer(self) -> paddle.optimizer.Optimizer:
+        lr = self.learning_rate
         args = self.optimizer_args
         optimizer_type = args.pop('type')
-
+        
         if optimizer_type == 'sgd':
-            lr = self.learning_rate
             return paddle.optimizer.Momentum(
                 lr, parameters=self.model.parameters(), **args)
+        elif optimizer_type == 'adam':
+            return paddle.optimizer.Adam(
+                lr, parameters=self.model.parameters(), **args)
         else:
-            raise RuntimeError('Only sgd optimizer support.')
+            raise RuntimeError('Only sgd and adam optimizer support.')
 
     @property
     def optimizer_args(self) -> dict:
