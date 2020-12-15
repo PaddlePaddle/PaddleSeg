@@ -121,6 +121,8 @@ def train(model,
             train_reader_cost += timer.elapsed_time()
             images = data[0]
             labels = data[1].astype('int64')
+            if iter % iters_per_epoch == 0:
+                train_dataset.shuffle()
 
             #             img = images
             #             lab = labels
