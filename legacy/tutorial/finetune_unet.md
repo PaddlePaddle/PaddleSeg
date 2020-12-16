@@ -100,6 +100,7 @@ python pdseg/check.py --cfg ./configs/unet_optic.yaml
 校验通过后，使用下述命令启动训练
 
 使用GPU训练，执行下面命令
+
 ```shell
 # 指定GPU卡号（以0号卡为例）
 export CUDA_VISIBLE_DEVICES=0
@@ -107,8 +108,9 @@ export CUDA_VISIBLE_DEVICES=0
 python pdseg/train.py --use_gpu --cfg ./configs/unet_optic.yaml
 ```
 
-使用XPU训练，因为昆仑1的内存不够大，在用昆仑1训练的时候，需要把./configs/unet_optic.yaml 里面的 BATCH_SIZE 修改为 1，
-执行下面命令
+使用XPU训练，因为昆仑1的内存不够，在用昆仑1训练的时候，需要把./configs/unet_optic.yaml 里面的 BATCH_SIZE 
+修改为 1. 执行下面命令
+
 ```shell
 # 指定xpu的卡号 （以0号卡为例）
 export FLAGS_selected_xpus=0
@@ -118,8 +120,8 @@ export XPUSIM_DEVICE_MODEL=KUNLUN1
 export XPU_PADDLE_TRAIN_L3_SIZE=13631488
 # 设置xpu的stream
 export XPU_PADDLE_MAIN_STREAM=0
-
-python3.7 pdseg/train.py --use_xpu --cfg configs/unet_optic.yaml --use_mpio --log_steps 1 --do_eval
+# 训练
+python pdseg/train.py --use_xpu --cfg configs/unet_optic.yaml --use_mpio --log_steps 1 --do_eval
 ```
 
 ## 六. 进行评估
