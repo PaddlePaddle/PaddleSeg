@@ -49,9 +49,18 @@ def predict(model,
         model (nn.Layer): Used to predict for input image.
         model_path (str): The path of pretrained model.
         transforms (transform.Compose): Preprocess for input image.
-        image_list (list): A list of images to be predicted.
-        image_dir (str): The directory of the images to be predicted. Default: None.
-        save_dir (str): The directory to save the visualized results. Default: 'output'.
+        image_list (list): A list of image path to be predicted.
+        image_dir (str, optional): The root directory of the images predicted. Default: None.
+        save_dir (str, optional): The directory to save the visualized results. Default: 'output'.
+        aug_pred (bool, optional): Whether to use mulit-scales and flip augment for predition. Default: False.
+        scales (list|float, optional): Scales for augment. It is valid when `aug_pred` is True. Default: 1.0.
+        flip_horizontal (bool, optional): Whether to use flip horizontally augment. It is valid when `aug_pred` is True. Default: True.
+        flip_vertical (bool, optional): Whether to use flip vertically augment. It is valid when `aug_pred` is True. Default: False.
+        is_slide (bool, optional): Whether to predict by sliding window. Default: False.
+        stride (tuple|list, optional): The stride of sliding window, the first is width and the second is height.
+            It should be provided when `is_slide` is True.
+        crop_size (tuple|list, optional):  The crop size of sliding window, the first is width and the second is height.
+            It should be provided when `is_slide` is True.
 
     """
     para_state_dict = paddle.load(model_path)

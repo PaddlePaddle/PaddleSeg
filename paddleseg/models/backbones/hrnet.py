@@ -37,20 +37,20 @@ class HRNet(nn.Layer):
     (https://arxiv.org/pdf/1908.07919.pdf).
 
     Args:
-        pretrained (str): The path of pretrained model.
-        stage1_num_modules (int): Number of modules for stage1. Default 1.
-        stage1_num_blocks (list): Number of blocks per module for stage1. Default [4].
-        stage1_num_channels (list): Number of channels per branch for stage1. Default [64].
-        stage2_num_modules (int): Number of modules for stage2. Default 1.
-        stage2_num_blocks (list): Number of blocks per module for stage2. Default [4, 4]
-        stage2_num_channels (list): Number of channels per branch for stage2. Default [18, 36].
-        stage3_num_modules (int): Number of modules for stage3. Default 4.
-        stage3_num_blocks (list): Number of blocks per module for stage3. Default [4, 4, 4]
-        stage3_num_channels (list): Number of channels per branch for stage3. Default [18, 36, 72].
-        stage4_num_modules (int): Number of modules for stage4. Default 3.
-        stage4_num_blocks (list): Number of blocks per module for stage4. Default [4, 4, 4, 4]
-        stage4_num_channels (list): Number of channels per branch for stage4. Default [18, 36, 72. 144].
-        has_se (bool): Whether to use Squeeze-and-Excitation module. Default False.
+        pretrained (str, optional): The path of pretrained model.
+        stage1_num_modules (int, optional): Number of modules for stage1. Default 1.
+        stage1_num_blocks (list, optional): Number of blocks per module for stage1. Default (4).
+        stage1_num_channels (list, optional): Number of channels per branch for stage1. Default (64).
+        stage2_num_modules (int, optional): Number of modules for stage2. Default 1.
+        stage2_num_blocks (list, optional): Number of blocks per module for stage2. Default (4, 4).
+        stage2_num_channels (list, optional): Number of channels per branch for stage2. Default (18, 36).
+        stage3_num_modules (int, optional): Number of modules for stage3. Default 4.
+        stage3_num_blocks (list, optional): Number of blocks per module for stage3. Default (4, 4, 4).
+        stage3_num_channels (list, optional): Number of channels per branch for stage3. Default [18, 36, 72).
+        stage4_num_modules (int, optional): Number of modules for stage4. Default 3.
+        stage4_num_blocks (list, optional): Number of blocks per module for stage4. Default (4, 4, 4, 4).
+        stage4_num_channels (list, optional): Number of channels per branch for stage4. Default (18, 36, 72. 144).
+        has_se (bool, optional): Whether to use Squeeze-and-Excitation module. Default False.
         align_corners (bool, optional): An argument of F.interpolate. It should be set to False when the feature size is even,
             e.g. 1024x512, otherwise it is True, e.g. 769x769. Default: False.
     """
@@ -58,17 +58,17 @@ class HRNet(nn.Layer):
     def __init__(self,
                  pretrained=None,
                  stage1_num_modules=1,
-                 stage1_num_blocks=[4],
-                 stage1_num_channels=[64],
+                 stage1_num_blocks=(4, ),
+                 stage1_num_channels=(64, ),
                  stage2_num_modules=1,
-                 stage2_num_blocks=[4, 4],
-                 stage2_num_channels=[18, 36],
+                 stage2_num_blocks=(4, 4),
+                 stage2_num_channels=(18, 36),
                  stage3_num_modules=4,
-                 stage3_num_blocks=[4, 4, 4],
-                 stage3_num_channels=[18, 36, 72],
+                 stage3_num_blocks=(4, 4, 4),
+                 stage3_num_channels=(18, 36, 72),
                  stage4_num_modules=3,
-                 stage4_num_blocks=[4, 4, 4, 4],
-                 stage4_num_channels=[18, 36, 72, 144],
+                 stage4_num_blocks=(4, 4, 4, 4),
+                 stage4_num_channels=(18, 36, 72, 144),
                  has_se=False,
                  align_corners=False):
         super(HRNet, self).__init__()
