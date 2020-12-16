@@ -125,8 +125,9 @@ class BCELoss(nn.Layer):
         """
         eps = 1e-6
         if len(label.shape) != len(logit.shape):
-            label = paddle.unsqueeze(1)
-        mask = (label != self.ignore_index).astype('float32')
+            label = paddle.unsqueeze(label, 1)
+        mask = (label != self.ignore_index)
+        mask = paddle.cast(mask, 'float32')
         if isinstance(self.weight, str):
             pos_index = (label == 1)
             neg_index = (label == 0)
@@ -151,7 +152,7 @@ class BCELoss(nn.Layer):
             reduction='none',
             pos_weight=self.pos_weight)
         loss = loss * mask
-        loss = paddle.mean(loss) / paddle.mean(mask)
+        loss = paddle.mean(loss) / paddle.mean(mask + eps)
         label.stop_gradient = True
         mask.stop_gradient = True
 
