@@ -74,7 +74,6 @@ class CityscapesAutolabeling(paddle.io.Dataset):
         self.file_list = [[
             img_path, label_path
         ] for img_path, label_path in zip(img_files, label_files)]
-        random.shuffle(self.file_list)
         self.num_files = len(self.file_list)
         self.total_num_files = self.num_files
 
@@ -130,7 +129,6 @@ class CityscapesAutolabeling(paddle.io.Dataset):
             return im, label
 
     def shuffle(self):
-        random.shuffle(self.file_list)
         random.shuffle(self.coarse_file_list)
 
     def __len__(self):
