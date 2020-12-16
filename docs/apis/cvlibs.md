@@ -1,7 +1,7 @@
 # paddleseg.cvlibs
 
 - [Manager](#Manager)
-- [Parameters Initialization](#Parameters Initialization)
+- [Parameters Initialization](#parameters-initialization)
 - [Config](#Config)
 
 
