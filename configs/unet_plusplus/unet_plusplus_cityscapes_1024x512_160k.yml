@@ -1,0 +1,13 @@
+_base_: '../_base_/cityscapes.yml'
+
+batch_size: 4
+iters: 160000
+
+model:
+  type: UNetPlusPlus
+  in_channels: 3
+  num_classes: 19
+  use_deconv: False
+  align_corners: False
+  pretrained: Null
+  is_ds: True
