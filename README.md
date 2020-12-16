@@ -31,6 +31,7 @@ The full-detailed documents and tutorials are coming soon. So far there are mini
 |[U-Net](./configs/unet)|-|-|-|-|
 |[U<sup>2</sup>-Net](./configs/u2net)|-|-|-|-|
 |[Att U-Net](./configs/attention_unet)|-|-|-|-|
+|[U-Net++](./configs/unet_plusplus)|-|-|-|-|
 
 ## Dataset
 
@@ -90,4 +91,5 @@ python train.py --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml
 
 ## Acknowledgement
 * Thanks [jm12138](https://github.com/jm12138) for contributing U<sup>2</sup>-Net.
-* Thanks [zjhellofss](https://github.com/zjhellofss) (Fu Shenshen) for contributing Attention U-Net.
+* Thanks [zjhellofss](https://github.com/zjhellofss) (Fu Shenshen) for contributing Attention U-Net, and Dice Loss.
+* Thanks [liuguoyu666](https://github.com/liguoyu666) for contributing U-Net++.
