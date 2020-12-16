@@ -50,10 +50,6 @@ python dataset/download_optic.py
 export FLAGS_selected_xpus=0
 # 执行xpu产品名称 这里指定昆仑1
 export XPUSIM_DEVICE_MODEL=KUNLUN1
-# 设置L3的大小
-export XPU_PADDLE_TRAIN_L3_SIZE=13631488
-# 设置xpu的stream
-export XPU_PADDLE_MAIN_STREAM=0
 # 训练
 python pdseg/train.py --use_xpu --cfg configs/unet_optic.yaml --use_mpio --log_steps 1 --do_eval
 ```
