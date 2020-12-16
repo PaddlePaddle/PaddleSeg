@@ -17,6 +17,7 @@ The models subpackage contains the following model for image sementic segmentaio
 - [U<sup>2</sup>Net](#U<sup>2</sup>Net)
 - [U<sup>2</sup>Net+](#U<sup>2</sup>Net+)
 - [AttentionUNet](#AttentionUNet)
+- [UNet++](#UNet++)
 
 ## [DeepLabV3+](../../paddleseg/models/deeplab.py)
 > CLASS paddleseg.models.DeepLabV3P(num_classes, backbone, backbone_indices=(0, 3), aspp_ratios=(1, 6, 12, 18), aspp_out_channels=256, align_corners=False, pretrained=None)
@@ -377,3 +378,27 @@ The models subpackage contains the following model for image sementic segmentaio
 > > Args
 > > > - **num_classes** (int): The unique number of target classes.
 > > > - **pretrained** (str, optional): The path or url of pretrained model. Default: None.
+
+## [UNet++](../../paddleseg/models/unet_plusplus.py)
+> class UNetPlusPlus(in_channels,
+                 num_classes,
+                 use_deconv=False,
+                 align_corners=False,
+                 pretrained=None,
+                 is_ds=True)
+
+    The UNet++ implementation based on PaddlePaddle.
+
+    The original article refers to
+    Zongwei Zhou, et, al. "UNet++: A Nested U-Net Architecture for Medical Image Segmentation"
+    (https://arxiv.org/abs/1807.10165).
+
+> > Args
+> > > - **in_channels** (int): The channel number of input image.
+> > > - **num_classes** (int): The unique number of target classes.
+> > > - **use_deconv** (bool, optional): A bool value indicates whether using deconvolution in upsampling.
+            If False, use resize_bilinear. Default: False.
+> > > - **align_corners** (bool): An argument of F.interpolate. It should be set to False when the output size of feature
+            is even, e.g. 1024x512, otherwise it is True, e.g. 769x769.  Default: False.
+> > > - **pretrained** (str, optional): The path or url of pretrained model for fine tuning. Default: None.
+> > > - **is_ds** (bool): use deep supervision or not. Default: True
