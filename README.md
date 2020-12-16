@@ -31,6 +31,7 @@ The full-detailed documents and tutorials are coming soon. So far there are mini
 |[U-Net](./configs/unet)|-|-|-|-|
 |[U<sup>2</sup>-Net](./configs/u2net)|-|-|-|-|
 |[Att U-Net](./configs/attention_unet)|-|-|-|-|
+|[U-Net++](./configs/unet_plusplus)|-|-|-|-|
 
 ## Dataset
 
