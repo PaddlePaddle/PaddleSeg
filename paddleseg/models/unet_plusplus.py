@@ -7,7 +7,7 @@ from paddleseg.models.layers.layer_libs import SyncBatchNorm
 
 
 @manager.MODELS.add_component
-class Unet_2Plus(nn.Layer):
+class UNetPlusPlus(nn.Layer):
     """
     The UNet++ implementation based on PaddlePaddle.
 
@@ -27,16 +27,16 @@ class Unet_2Plus(nn.Layer):
         """
 
     def __init__(self, in_channels, num_classes, use_deconv=False, align_corners=False, pretrained=None, is_ds=True):
-        super(Unet_2Plus, self).__init__()
+        super(UNetPlusPlus, self).__init__()
         self.is_ds = is_ds
         channels = [32, 64, 128, 256, 512]
         self.pool = nn.MaxPool2D(kernel_size=2, stride=2)
 
-        self.conv0_0 = Unet_Conv2D(in_channels, channels[0])
-        self.conv1_0 = Unet_Conv2D(channels[0], channels[1])
-        self.conv2_0 = Unet_Conv2D(channels[1], channels[2])
-        self.conv3_0 = Unet_Conv2D(channels[2], channels[3])
-        self.conv4_0 = Unet_Conv2D(channels[3], channels[4])
+        self.conv0_0 = DoubleConv(in_channels, channels[0])
+        self.conv1_0 = DoubleConv(channels[0], channels[1])
+        self.conv2_0 = DoubleConv(channels[1], channels[2])
+        self.conv3_0 = DoubleConv(channels[2], channels[3])
+        self.conv4_0 = DoubleConv(channels[3], channels[4])
 
         self.up_cat0_1 = Unet_UP(channels[1], channels[0], n_cat=2, use_deconv=use_deconv, align_corners=align_corners)
         self.up_cat1_1 = Unet_UP(channels[2], channels[1], n_cat=2, use_deconv=use_deconv, align_corners=align_corners)
@@ -114,10 +114,10 @@ class Unet_2Plus(nn.Layer):
             return [out_4]
 
 
-class Unet_Conv2D(nn.Layer):
+class DoubleConv(nn.Layer):
 
     def __init__(self, in_channels, out_channels, filter_size=3, stride=1, padding=1):
-        super(Unet_Conv2D, self).__init__()
+        super(DoubleConv, self).__init__()
         self.conv = nn.Sequential(nn.Conv2D(in_channels, out_channels, filter_size, stride, padding),
                                   SyncBatchNorm(out_channels),
                                   nn.ReLU(),
@@ -143,7 +143,7 @@ class Unet_UP(nn.Layer):
                                     nn.Conv2D(in_channels, out_channels, 1, 1, 0)
                                     )
 
-        self.conv = Unet_Conv2D(n_cat * out_channels, out_channels)
+        self.conv = DoubleConv(n_cat * out_channels, out_channels)
 
     def forward(self, high_feature, *low_features):
         features = [self.up(high_feature)]

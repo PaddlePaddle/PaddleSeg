@@ -4,7 +4,7 @@ batch_size: 4
 iters: 160000
 
 model:
-  type: Unet_2Plus
+  type: UNetPlusPlus
   in_channels: 3
   num_classes: 19
   use_deconv: False
