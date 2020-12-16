@@ -1,8 +1,8 @@
 # paddleseg.models
 
 The models subpackage contains the following model for image sementic segmentaion.
-- [DeepLabV3+](#DeepLabV3+)
-- [DeepLabV3](#DeepLabV3)
+- [DeepLabV3+](#DeepLabV3)
+- [DeepLabV3](#DeepLabV3-1)
 - [FCN](#FCN)
 - [OCRNet](#OCRNet)
 - [PSPNet](#PSPNet)
@@ -14,10 +14,10 @@ The models subpackage contains the following model for image sementic segmentaio
 - [GSCNN](#GSCNN)
 - [HarDNet](#HarDNet)
 - [UNet](#UNet)
-- [U<sup>2</sup>Net](#U<sup>2</sup>Net)
-- [U<sup>2</sup>Net+](#U<sup>2</sup>Net+)
+- [U<sup>2</sup>Net](#U2Net)
+- [U<sup>2</sup>Net+](#U2Net-1)
 - [AttentionUNet](#AttentionUNet)
-- [UNet++](#UNet++)
+- [UNet++](#UNet-1)
 
 ## [DeepLabV3+](../../paddleseg/models/deeplab.py)
 > CLASS paddleseg.models.DeepLabV3P(num_classes, backbone, backbone_indices=(0, 3), aspp_ratios=(1, 6, 12, 18), aspp_out_channels=256, align_corners=False, pretrained=None)
