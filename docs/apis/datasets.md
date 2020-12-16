@@ -1,5 +1,5 @@
 # paddleseg.datasets
-- [Custom Dataset](#Custom)
+- [Custom Dataset](#custom-dataset)
 - [Cityscapes](#Cityscapes)
 - [PascalVOC](#PascalVOC)
 - [ADE20K](#ADE20K)
