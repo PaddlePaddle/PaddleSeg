@@ -11,7 +11,7 @@
 
 ## 模型训练
 
-我们可以通过PaddleSeg提供的脚本对模型进行训练，请确保完成了PaddleSeg的安装工作，并且位于PaddleSeg/dygraph目录下，执行以下脚本：
+我们可以通过PaddleSeg提供的脚本对模型进行训练，请确保完成了PaddleSeg的安装工作，并且位于PaddleSeg目录下，执行以下脚本：
 
 ```shell
 export CUDA_VISIBLE_DEVICES=0 # 设置1张可用的卡
@@ -34,7 +34,6 @@ python train.py \
 |learning_rate|初始学习率|否|配置文件中指定值|
 |config|配置文件|是|-|
 |save_dir|模型和visualdl日志文件的保存根路径|否|output|
-
 |num_workers|用于异步读取数据的进程数量， 大于等于1时开启子进程读取数据|否|0|
 |use_vdl|是否开启visualdl记录训练数据|否|否|
 |save_interval_iters|模型保存的间隔步数|否|1000|
