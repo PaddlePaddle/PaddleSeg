@@ -1,2 +1,5 @@
-使用unet++在cityscapes上训练160k个iter，单卡batch_size为1，共4卡，学习率设为0.005，最终miou为0.5109。
-需要重新训练。
+# A Nested U-Net Architecture for Medical Image Segmentation
+
+## Reference
+
+> Zhou, Zongwei, Md Mahfuzur Rahman Siddiquee, Nima Tajbakhsh, and Jianming Liang. "Unet++: A nested u-net architecture for medical image segmentation." In Deep Learning in Medical Image Analysis and Multimodal Learning for Clinical Decision Support, pp. 3-11. Springer, Cham, 2018.
