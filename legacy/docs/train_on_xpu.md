@@ -9,14 +9,20 @@
 ### DeeplabV3
 * 数据准备(在legacy目录下)：
 
-```python pretrained_model/download_model.py deeplabv3p_xception65_bn_coco```
+```shell
+python pretrained_model/download_model.py deeplabv3p_xception65_bn_coco
+```
 
 * 预训练模型准备(在legacy目录下)：
 
-```python dataset/download_optic.py```
+```shell
+python dataset/download_optic.py
+```
 
 
 * 执行训练(在legacy目录下)：
 
-```python pdseg/train.py --cfg configs/deeplabv3p_xception65_optic_kunlun.yaml --use_mpio --use_xpu --log_steps 1 --do_eval```
+```shell
+python pdseg/train.py --cfg configs/deeplabv3p_xception65_optic_kunlun.yaml --use_mpio --use_xpu --log_steps 1 --do_eval
+```
 
