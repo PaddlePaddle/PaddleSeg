@@ -1,5 +1,6 @@
 import paddle
 import paddle.nn as nn
+
 from paddleseg.cvlibs import manager
 from paddleseg.utils import load_entire_model
 from paddleseg.cvlibs.param_init import kaiming_normal_init
@@ -28,6 +29,7 @@ class UNetPlusPlus(nn.Layer):
 
     def __init__(self, in_channels, num_classes, use_deconv=False, align_corners=False, pretrained=None, is_ds=True):
         super(UNetPlusPlus, self).__init__()
+        self.pretrained = pretrained
         self.is_ds = is_ds
         channels = [32, 64, 128, 256, 512]
         self.pool = nn.MaxPool2D(kernel_size=2, stride=2)
@@ -38,26 +40,25 @@ class UNetPlusPlus(nn.Layer):
         self.conv3_0 = DoubleConv(channels[2], channels[3])
         self.conv4_0 = DoubleConv(channels[3], channels[4])
 
-        self.up_cat0_1 = Unet_UP(channels[1], channels[0], n_cat=2, use_deconv=use_deconv, align_corners=align_corners)
-        self.up_cat1_1 = Unet_UP(channels[2], channels[1], n_cat=2, use_deconv=use_deconv, align_corners=align_corners)
-        self.up_cat2_1 = Unet_UP(channels[3], channels[2], n_cat=2, use_deconv=use_deconv, align_corners=align_corners)
-        self.up_cat3_1 = Unet_UP(channels[4], channels[3], n_cat=2, use_deconv=use_deconv, align_corners=align_corners)
+        self.up_cat0_1 = UpSampling(channels[1], channels[0], n_cat=2, use_deconv=use_deconv, align_corners=align_corners)
+        self.up_cat1_1 = UpSampling(channels[2], channels[1], n_cat=2, use_deconv=use_deconv, align_corners=align_corners)
+        self.up_cat2_1 = UpSampling(channels[3], channels[2], n_cat=2, use_deconv=use_deconv, align_corners=align_corners)
+        self.up_cat3_1 = UpSampling(channels[4], channels[3], n_cat=2, use_deconv=use_deconv, align_corners=align_corners)
 
-        self.up_cat0_2 = Unet_UP(channels[1], channels[0], n_cat=3, use_deconv=use_deconv, align_corners=align_corners)
-        self.up_cat1_2 = Unet_UP(channels[2], channels[1], n_cat=3, use_deconv=use_deconv, align_corners=align_corners)
-        self.up_cat2_2 = Unet_UP(channels[3], channels[2], n_cat=3, use_deconv=use_deconv, align_corners=align_corners)
+        self.up_cat0_2 = UpSampling(channels[1], channels[0], n_cat=3, use_deconv=use_deconv, align_corners=align_corners)
+        self.up_cat1_2 = UpSampling(channels[2], channels[1], n_cat=3, use_deconv=use_deconv, align_corners=align_corners)
+        self.up_cat2_2 = UpSampling(channels[3], channels[2], n_cat=3, use_deconv=use_deconv, align_corners=align_corners)
 
-        self.up_cat0_3 = Unet_UP(channels[1], channels[0], n_cat=4, use_deconv=use_deconv, align_corners=align_corners)
-        self.up_cat1_3 = Unet_UP(channels[2], channels[1], n_cat=4, use_deconv=use_deconv, align_corners=align_corners)
+        self.up_cat0_3 = UpSampling(channels[1], channels[0], n_cat=4, use_deconv=use_deconv, align_corners=align_corners)
+        self.up_cat1_3 = UpSampling(channels[2], channels[1], n_cat=4, use_deconv=use_deconv, align_corners=align_corners)
 
-        self.up_cat0_4 = Unet_UP(channels[1], channels[0], n_cat=5, use_deconv=use_deconv, align_corners=align_corners)
+        self.up_cat0_4 = UpSampling(channels[1], channels[0], n_cat=5, use_deconv=use_deconv, align_corners=align_corners)
 
         self.out_1 = nn.Conv2D(channels[0], num_classes, 1, 1, 0)
         self.out_2 = nn.Conv2D(channels[0], num_classes, 1, 1, 0)
         self.out_3 = nn.Conv2D(channels[0], num_classes, 1, 1, 0)
         self.out_4 = nn.Conv2D(channels[0], num_classes, 1, 1, 0)
 
-        self.pretrained = pretrained
         self.init_weight()
 
     def init_weight(self):
@@ -132,10 +133,10 @@ class DoubleConv(nn.Layer):
         return conv
 
 
-class Unet_UP(nn.Layer):
+class UpSampling(nn.Layer):
 
     def __init__(self, in_channels, out_channels, n_cat, use_deconv=False, align_corners=False):
-        super(Unet_UP, self).__init__()
+        super(UpSampling, self).__init__()
         if use_deconv:
             self.up = nn.Conv2DTranspose(in_channels, out_channels, kernel_size=2, stride=2, padding=0)
         else:
