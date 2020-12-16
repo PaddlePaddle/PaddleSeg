@@ -23,6 +23,9 @@ from PIL import Image
 from paddleseg.cvlibs import manager
 from paddleseg.transforms import Compose
 
+# Random seed is set to ensure that after shuffling dataset per epoch during multi-gpu training, the data sequences of all gpus are consistent.
+random.seed(100)
+
 
 @manager.DATASETS.add_component
 class CityscapesAutolabeling(paddle.io.Dataset):
