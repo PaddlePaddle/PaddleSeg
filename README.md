@@ -83,6 +83,7 @@ python train.py --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml
 * [Get Started](./docs/quick_start.md)
 * [Data Preparation](./docs/data_prepare.md)
 * [Training Configuration](./configs/)
+* [API references](./docs/apis)
 * [Add New Components](./docs/add_new_model.md)
 
 
