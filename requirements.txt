@@ -6,3 +6,4 @@ visualdl >= 2.0.0
 opencv-python
 tqdm
 filelock
+scipy
