@@ -32,8 +32,8 @@ class OpticDiscSeg(Dataset):
     Args:
         transforms (list): Transforms for image.
         dataset_root (str): The dataset directory. Default: None
-        mode (str): Which part of dataset to use. it is one of ('train', 'val', 'test'). Default: 'train'.
-        edge (bool): Whether to compute edge while training. Default: False
+        mode (str, optional): Which part of dataset to use. it is one of ('train', 'val', 'test'). Default: 'train'.
+        edge (bool, optional): Whether to compute edge while training. Default: False
     """
 
     def __init__(self,

@@ -34,6 +34,27 @@ def evaluate(model,
              stride=None,
              crop_size=None,
              num_workers=0):
+    """
+    Launch evalution.
+
+    Args:
+        model（nn.Layer): A sementic segmentation model.
+        eval_dataset (paddle.io.Dataset): Used to read and process validation datasets.
+        aug_eval (bool, optional): Whether to use mulit-scales and flip augment for evaluation. Default: False.
+        scales (list|float, optional): Scales for augment. It is valid when `aug_eval` is True. Default: 1.0.
+        flip_horizontal (bool, optional): Whether to use flip horizontally augment. It is valid when `aug_eval` is True. Default: True.
+        flip_vertical (bool, optional): Whether to use flip vertically augment. It is valid when `aug_eval` is True. Default: False.
+        is_slide (bool, optional): Whether to evaluate by sliding window. Default: False.
+        stride (tuple|list, optional): The stride of sliding window, the first is width and the second is height.
+            It should be provided when `is_slide` is True.
+        crop_size (tuple|list, optional):  The crop size of sliding window, the first is width and the second is height.
+            It should be provided when `is_slide` is True.
+        num_workers (int, optional): Num workers for data loader. Default: 0.
+
+    Returns:
+        float: The mIoU of validation datasets.
+        float: The accuracy of validation datasets.
+    """
     model.eval()
     nranks = paddle.distributed.ParallelEnv().nranks
     local_rank = paddle.distributed.ParallelEnv().local_rank
