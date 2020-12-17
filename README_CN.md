@@ -39,6 +39,7 @@ PaddleSeg是基于飞桨[PaddlePaddle](https://www.paddlepaddle.org.cn)开发的
 |[U-Net](./configs/unet)|-|-|-|-|
 |[U<sup>2</sup>-Net](./configs/u2net)|-|-|-|-|
 |[Att U-Net](./configs/attention_unet)|-|-|-|-|
+|[U-Net++](./configs/unet_plusplus)|-|-|-|-|
 
 ## 数据集
 
@@ -88,3 +89,4 @@ python train.py --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml
 
 * 非常感谢[jm12138](https://github.com/jm12138)贡献U<sup>2</sup>-Net模型。
 * 非常感谢[zjhellofss](https://github.com/zjhellofss)（傅莘莘）贡献Attention U-Net模型，和Dice loss损失函数。
+* 非常感谢[liuguoyu666](https://github.com/liguoyu666)贡献U-Net++模型。

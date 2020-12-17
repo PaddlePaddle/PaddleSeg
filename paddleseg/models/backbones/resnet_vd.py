@@ -176,17 +176,30 @@ class BasicBlock(nn.Layer):
 
 
 class ResNet_vd(nn.Layer):
+    """
+    The ResNet_vd implementation based on PaddlePaddle.
+
+    The original article refers to Jingdong
+    Tong He, et, al. "Bag of Tricks for Image Classification with Convolutional Neural Networks"
+    (https://arxiv.org/pdf/1812.01187.pdf).
+
+    Args:
+        layers (int, optional): The layers of ResNet_vd. The supported layers are (18, 34, 50, 101, 152, 200). Default: 50.
+        output_stride (int, optional): The stride of output features compared to input images. It is 8 or 16. Default: 8.
+        multi_grid (tuple|list, optional): The grid of stage4. Defult: (1, 1, 1).
+        pretrained (str, optional): The path of pretrained model.
+
+    """
+
     def __init__(self,
                  layers=50,
-                 output_stride=None,
+                 output_stride=8,
                  multi_grid=(1, 1, 1),
-                 lr_mult_list=(0.1, 0.1, 0.2, 0.2),
                  pretrained=None):
         super(ResNet_vd, self).__init__()
 
         self.conv1_logit = None  # for gscnn shape stream
         self.layers = layers
-        self.lr_mult_list = lr_mult_list
         supported_layers = [18, 34, 50, 101, 152, 200]
         assert layers in supported_layers, \
             "supported layers are {} but input layer is {}".format(
@@ -313,22 +326,6 @@ class ResNet_vd(nn.Layer):
 
     def init_weight(self):
         utils.load_pretrained_model(self, self.pretrained)
-
-        # for idx, stage in enumerate(self.stage_list):
-        #     for layer in stage:
-        #         for sublayer in layer.sublayers():
-        #             if isinstance(sublayer, nn.Conv2D):
-        #                 sublayer.weight.optimize_attr[
-        #                     'learning_rate'] = self.lr_mult_list[idx]
-        #                 if sublayer.bias:
-        #                     sublayer.bias.optimize_attr[
-        #                         'learning_rate'] = self.lr_mult_list[idx]
-
-        #             if isinstance(sublayer, nn.SyncBatchNorm):
-        #                 sublayer.weight.optimize_attr[
-        #                     'learning_rate'] = self.lr_mult_list[idx]
-        #                 sublayer.bias.optimize_attr[
-        #                     'learning_rate'] = self.lr_mult_list[idx]
 
 
 @manager.BACKBONES.add_component
