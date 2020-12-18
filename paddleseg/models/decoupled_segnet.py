@@ -79,8 +79,8 @@ class DecoupledSegNet(nn.Layer):
         ]
         # print('seg_logit, body_logit, edge_logit')
         # print(seg_logit.shape, body_logit.shape, edge_logit.shape)
-        # return [body_logit]
-        return [seg_logit, body_logit, edge_logit, (seg_logit, edge_logit)]
+        return [seg_logit]
+        # return [seg_logit, body_logit, edge_logit, (seg_logit, edge_logit)]
 
     def init_weight(self):
         if self.pretrained is not None:
