@@ -8,7 +8,7 @@ English | [简体中文](README_CN.md)
 ![python version](https://img.shields.io/badge/python-3.6+-orange.svg)
 ![support os](https://img.shields.io/badge/os-linux%2C%20win%2C%20mac-yellow.svg)
 
-![demo](./docs/images/cityscapes.png)
+![demo](./docs/images/cityscapes.gif)
 
 Welcome to PaddleSeg! PaddleSeg is an end-to-end image segmentation development kit developed based on [PaddlePaddle](https://www.paddlepaddle.org.cn), which covers a large number of high-quality segmentation models in different directions such as *high-performance* and *lightweight*. With the help of modular design, one can conveniently complete the entire image segmentation application from training to deployment through configuration calls or API calls.
 
