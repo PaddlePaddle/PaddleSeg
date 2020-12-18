@@ -58,8 +58,9 @@ class BCELoss(nn.Layer):
         pos_weight (float|str, optional): A weight of positive examples. If type is str,
             it should equal to 'dynamic'. It will compute weight dynamically in every step.
             Default is ``'None'``.
-        ignore_index (int64): Specifies a target value that is ignored
+        ignore_index (int64, optional): Specifies a target value that is ignored
             and does not contribute to the input gradient. Default ``255``.
+        edge_label (bool, optional): Whether to use edge label. Default: False
     Shapes:
         logit (Tensor): The input predications tensor. 2-D tensor with shape: [N, *],
             N is batch_size, `*` means number of additional dimensions. The ``logit``
@@ -80,11 +81,16 @@ class BCELoss(nn.Layer):
             print(output.numpy())  # [0.45618808]
     """
 
-    def __init__(self, weight=None, pos_weight=None, ignore_index=255):
+    def __init__(self,
+                 weight=None,
+                 pos_weight=None,
+                 ignore_index=255,
+                 edge_label=False):
         super().__init__()
         self.weight = weight
         self.pos_weight = pos_weight
         self.ignore_index = ignore_index
+        self.edge_label = edge_label
 
         if self.weight is not None:
             if isinstance(self.weight, str):
@@ -126,6 +132,11 @@ class BCELoss(nn.Layer):
         eps = 1e-6
         if len(label.shape) != len(logit.shape):
             label = paddle.unsqueeze(label, 1)
+        # label.shape should equal to the logit.shape
+        if label.shape[1] != logit.shape[1]:
+            label = label.squeeze(1)
+            label = F.one_hot(label, logit.shape[1])
+            label = label.transpose((0, 3, 1, 2))
         mask = (label != self.ignore_index)
         mask = paddle.cast(mask, 'float32')
         if isinstance(self.weight, str):

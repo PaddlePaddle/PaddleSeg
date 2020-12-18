@@ -39,7 +39,8 @@ def loss_computation(logits_list, labels, losses, edges=None):
         loss_i = losses['types'][i]
         # Whether to use edges as labels According to loss type .
         if loss_i.__class__.__name__ in ('BCELoss', ):
-            labels = edges
+            if loss_i.edge_label:
+                labels = edges
         loss += losses['coef'][i] * loss_i(logits, labels)
     return loss
 
