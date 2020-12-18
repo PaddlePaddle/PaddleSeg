@@ -104,7 +104,10 @@ class DeployConfig:
             # 9. channels
             self.channels = deploy_conf["CHANNELS"]
             # 10. use_pr
-            self.use_pr = deploy_conf["USE_PR"]
+            if "USE_PR" in deploy_conf:
+                self.use_pr = deploy_conf["USE_PR"]
+            else:
+                self.use_pr = False
 
 
 class ImageReader:
