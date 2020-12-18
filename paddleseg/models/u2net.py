@@ -327,7 +327,7 @@ class U2Net(nn.Layer):
 
     The original article refers to
     Xuebin Qin, et, al. "U^2-Net: Going Deeper with Nested U-Structure for Salient Object Detection"
-    (https://arxiv.org/abs/1505.04597).
+    (https://arxiv.org/abs/2005.09007).
 
     Args:
         num_classes (int): The unique number of target classes.
@@ -448,7 +448,7 @@ class U2Net(nn.Layer):
 ### U^2-Net small ###
 @manager.MODELS.add_component
 class U2Netp(nn.Layer):
-    """Please Refer to DeepLabV3P above."""
+    """Please Refer to U2Net above."""
 
     def __init__(self, num_classes, in_ch=3, pretrained=None):
         super(U2Netp, self).__init__()
