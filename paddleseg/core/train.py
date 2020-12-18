@@ -57,6 +57,25 @@ def train(model,
           num_workers=0,
           use_vdl=False,
           losses=None):
+    """
+    Launch training.
+
+    Args:
+        model（nn.Layer): A sementic segmentation model.
+        train_dataset (paddle.io.Dataset): Used to read and process training datasets.
+        val_dataset (paddle.io.Dataset, optional): Used to read and process validation datasets.
+        optimizer (paddle.optimizer.Optimizer): The optimizer.
+        save_dir (str, optional): The directory for saving the model snapshot. Default: 'output'.
+        iters (int, optional): How may iters to train the model. Defualt: 10000.
+        batch_size (int, optional): Mini batch size of one gpu or cpu. Default: 2.
+        resume_model (str, optional): The path of resume model.
+        save_interval (int, optional): How many iters to save a model snapshot once during training. Default: 1000.
+        log_iters (int, optional): Display logging information at every log_iters. Default: 10.
+        num_workers (int, optional): Num workers for data loader. Default: 0.
+        use_vdl (bool, optional): Whether to record the data to VisualDL during training. Default: False.
+        losses (dict): A dict including 'types' and 'coef'. The length of coef should equal to 1 or len(losses['types']).
+            The 'types' item is a list of object of paddleseg.models.losses while the 'coef' item is a list of the relevant coefficient.
+    """
     nranks = paddle.distributed.ParallelEnv().nranks
     local_rank = paddle.distributed.ParallelEnv().local_rank
 
