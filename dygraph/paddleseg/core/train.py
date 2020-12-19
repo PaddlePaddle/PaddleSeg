@@ -125,22 +125,6 @@ def train(model,
                        'shuffle') and iter % iters_per_epoch == 0:
                 train_dataset.shuffle()
 
-            #             img = images
-            #             lab = labels
-            #             print(img)
-            #             print(lab)
-            #             import numpy as np
-            #             img = np.squeeze(img.numpy()).astype('uint8')
-            #             print(img.shape)
-            #             img = np.transpose(img, (1,2,0))
-            #             lab = np.squeeze(lab.numpy()).astype('uint8')
-            #             import cv2
-            #             cv2.imwrite('img{}.png'.format(iter), img)
-            #             cv2.imwrite('lab{}.png'.format(iter), lab)
-            # #             exit()
-            #             if iter==5:
-            #                 exit()
-
             if fp16:
                 images = paddle.reshape(images, images.shape)
                 with paddle.amp.auto_cast():
@@ -165,20 +149,6 @@ def train(model,
                     loss = loss_computation(logits, labels, losses)
                     loss.backward()
                 else:
-                    #                     # debug finetune+mscale+loss
-                    #                     print('iter: ', iter)
-                    #                     import numpy as np
-                    #                     images = np.load('/ssd1/home/chulutao/random-data/img.npy')
-                    #                     labels = np.load(
-                    #                         '/ssd1/home/chulutao/random-data/labels.npy')
-                    #                     images = paddle.to_tensor(images)
-                    #                     labels = paddle.to_tensor(labels)
-                    #                     if iter == 1:
-                    #                         print(images)
-                    #                         print(labels)
-
-                    #                     model.eval()
-
                     logits = model(images)
                     loss = loss_computation(logits, labels, losses)
                     loss.backward()
@@ -188,44 +158,6 @@ def train(model,
                               paddle.optimizer.lr.LRScheduler):
                     optimizer._learning_rate.step()
                 model.clear_gradients()
-
-
-######################### debug
-
-#                 # debug
-#                 images = paddle.arange(6291456, dtype='float32')
-#                 images = paddle.reshape(images, (1, 3, 1024, 2048))
-#                 images = 5 * paddle.ones((1, 3, 1024, 2048), dtype='float32')
-#                 labels = 9 * paddle.ones((1, 1, 1024, 2048), dtype='int64')
-#                 images = paddle.reshape(paddle.arange(0, 30000).astype("float32"), [1,3,100,100])
-#                 print(images)
-#                 model.eval()
-#                 logits = model(images)
-
-#                 print(logits)
-#                 exit()
-
-#                 import numpy as np
-#                 np.random.seed(6)
-#                 a = paddle.to_tensor(np.random.rand(1, 19, 1024, 2048).astype("float32"))
-#                 b = paddle.to_tensor(np.random.rand(1, 19, 1024, 2048).astype("float32"))
-#                 print(a, '\n', b)
-#                 c = paddle.to_tensor(np.random.rand(1, 19, 1024, 2048).astype("float32"))
-#                 d = paddle.to_tensor(np.random.rand(1, 19, 1024, 2048).astype("float32"))
-
-#                 logits = [a, b, c, d]
-#                 print(a)
-#                 import numpy as np
-#                 np.random.seed(6)
-#                 labels = paddle.to_tensor(np.random.randint(20, size=(1,1,100,100)))
-#                 print(labels)
-#                 labels = paddle.ones((1, 1, 10, 10), dtype='int64')
-#                 print('==========')
-#                 loss = loss_computation(logits, labels, losses)
-#                 print(loss)
-
-#                 exit()
-###############################
 
             avg_loss += loss.numpy()[0]
             train_batch_cost += timer.elapsed_time()
@@ -255,7 +187,16 @@ def train(model,
                     or iter == iters) and (val_dataset is not None):
                 num_workers = 1 if num_workers > 0 else 0
                 mean_iou, acc = evaluate(
-                    model, val_dataset, num_workers=num_workers)
+                    model,
+                    val_dataset,
+                    aug_eval=True,
+                    scales=1.0,
+                    flip_horizontal=True,
+                    flip_vertical=False,
+                    is_slide=False,
+                    stride=None,
+                    crop_size=None,
+                    num_workers=num_workers)
                 model.train()
 
             if (iter % save_interval == 0 or iter == iters) and local_rank == 0:
