@@ -1,6 +1,6 @@
 English | [简体中文](README_CN.md)
 
-# PaddleSeg（Dynamic Graph）
+# PaddleSeg
 
 [![Build Status](https://travis-ci.org/PaddlePaddle/PaddleSeg.svg?branch=master)](https://travis-ci.org/PaddlePaddle/PaddleSeg)
 [![License](https://img.shields.io/badge/license-Apache%202-blue.svg)](LICENSE)
@@ -8,9 +8,17 @@ English | [简体中文](README_CN.md)
 ![python version](https://img.shields.io/badge/python-3.6+-orange.svg)
 ![support os](https://img.shields.io/badge/os-linux%2C%20win%2C%20mac-yellow.svg)
 
-Welcome to the dynamic version! PaddleSeg is the first development kit which supports PaddlePaddle 2.0. Currently, we provide an experimental version that allows developers to have full-featured experience on dynamic graph. In the near future, the dynamic version will be set as default, and the static one will be moved to "legacy" directory.
+![demo](./docs/images/cityscapes.gif)
 
-The full-detailed documents and tutorials are coming soon. So far there are minimum tutorials that help you to enjoy the strengths of dynamic version.
+Welcome to PaddleSeg! PaddleSeg is an end-to-end image segmentation development kit developed based on [PaddlePaddle](https://www.paddlepaddle.org.cn), which covers a large number of high-quality segmentation models in different directions such as *high-performance* and *lightweight*. With the help of modular design, one can conveniently complete the entire image segmentation application from training to deployment through configuration calls or API calls.
+
+## Core features
+
+**High performance model**: Based on the high-performance backbone trained by Baidu's self-developed [semi-supervised label knowledge distillation scheme (SSLD)](https://paddleclas.readthedocs.io/zh_CN/latest/advanced_tutorials/distillation/distillation.html#ssld), combined with the state of the art segmentation technology, we provides 50+ high-quality pre-training models, which are better than other open source implementations.
+
+**Modular design**: PaddleSeg support 15+ mainstream *segmentation networks*, developers can start based on actual application scenarios and assemble diversified training configurations combined with modular design of *data enhancement strategies*, *backbone networks*, *loss functions* and other different components to meet different performance and accuracy requirements.
+
+**High efficiency**: PaddleSeg provides multi-process asynchronous I/O, multi-card parallel training, evaluation and other acceleration strategies, combined with the memory optimization function of the PaddlePaddle, which can greatly reduce the training overhead of the segmentation model, all this allowing developers to lower cost and more efficiently train image segmentation model.
 
 ## Model Zoo
 
@@ -43,33 +51,26 @@ The full-detailed documents and tutorials are coming soon. So far there are mini
 
 ## Installation
 
-1. Install PaddlePaddle
+#### step 1. Install PaddlePaddle
 
 System Requirements:
 * PaddlePaddle >= 2.0.0rc
 * Python >= 3.6+
 
-> Note: the above requirements are for the **dynamic** graph version. If you intent to use the static one, please refers to [here](../README.md).
-
-Highly recommend you install the GPU version of PaddlePaddle, due to large overhead of segmentation models, otherwise it could be out of memory while running the models.
-
-For more detailed installation tutorials, please refer to the official website of [PaddlePaddle](https://www.paddlepaddle.org.cn/documentation/docs/zh/2.0-beta/install/index_cn.html)。
+Highly recommend you install the GPU version of PaddlePaddle, due to large overhead of segmentation models, otherwise it could be out of memory while running the models. For more detailed installation tutorials, please refer to the official website of [PaddlePaddle](https://www.paddlepaddle.org.cn/documentation/docs/zh/2.0-beta/install/index_cn.html)。
 
 
-### Download PaddleSeg
+#### step 2. Install PaddleSeg
 
-```
-git clone https://github.com/PaddlePaddle/PaddleSeg
-```
-
-### Install Dependencies
-Install the python dependencies via the following commands，and please make sure execute it at least once in your branch.
 ```shell
-cd PaddleSeg
-export PYTHONPATH=`pwd`
-# Run the following one on Windows
-# set PYTHONPATH=%cd%
-pip install -r requirements.txt
+pip install paddleseg
+```
+
+
+#### step 3. Download PaddleSeg repo
+
+```shell
+git clone https://github.com/PaddlePaddle/PaddleSeg
 ```
 
 ## Quick Training
@@ -83,6 +84,7 @@ python train.py --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml
 * [API Tutorial](https://aistudio.baidu.com/aistudio/projectdetail/1339458)
 * [Data Preparation](./docs/data_prepare.md)
 * [Training Configuration](./configs/)
+* [API references](./docs/apis)
 * [Add New Components](./docs/add_new_model.md)
 
 
