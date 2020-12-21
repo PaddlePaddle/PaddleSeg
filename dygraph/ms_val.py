@@ -123,9 +123,7 @@ def main(args):
         #         [0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 2.25, 2.5],
     ]
     for n_scales in all_ns:
-        #         for args.flip_horizontal in [False, True]:
-        logger.info('===================' + str(n_scales) + '  ' +
-                    str(args.flip_horizontal))
+        args.flip_horizontal = True
         from paddleseg.models.mscale_ocrnet import MscaleOCRNet
         from paddleseg.models.backbones.hrnet_nv import HRNet_W48_NV
 
@@ -149,6 +147,9 @@ def main(args):
             stride=args.stride,
             num_workers=args.num_workers,
         )
+
+        logger.info('===================above eval scales' + str(n_scales) +
+                    '  ' + str(args.flip_horizontal))
 
 
 if __name__ == '__main__':
