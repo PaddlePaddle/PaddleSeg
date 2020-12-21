@@ -112,6 +112,8 @@ def get_image_list(image_path):
         image_dir = image_path
         for root, dirs, files in os.walk(image_path):
             for f in files:
+                if '.ipynb_checkpoints' in root:
+                    continue
                 if os.path.splitext(f)[-1] in valid_suffix:
                     image_list.append(os.path.join(root, f))
     else:
@@ -149,7 +151,7 @@ def main(args):
     model = cfg.model
     transforms = val_dataset.transforms
     image_list, image_dir = get_image_list(args.image_path)
-
+    logger.info('Number of predict images = {}'.format(len(image_list)))
     predict(
         model,
         model_path=args.model_path,
