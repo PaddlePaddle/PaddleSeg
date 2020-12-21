@@ -72,61 +72,62 @@ def predict(model,
 
     logger.info("Start to predict...")
     progbar_pred = progbar.Progbar(target=len(image_list), verbose=1)
-    for i, im_path in enumerate(image_list):
-        im = cv2.imread(im_path)
-        ori_shape = im.shape[:2]
-        im, _ = transforms(im)
-        im = im[np.newaxis, ...]
-        im = paddle.to_tensor(im)
+    with paddle.no_grad():
+        for i, im_path in enumerate(image_list):
+            im = cv2.imread(im_path)
+            ori_shape = im.shape[:2]
+            im, _ = transforms(im)
+            im = im[np.newaxis, ...]
+            im = paddle.to_tensor(im)
 
-        if aug_pred:
-            pred = infer.aug_inference(
-                model,
-                im,
-                ori_shape=ori_shape,
-                transforms=transforms.transforms,
-                scales=scales,
-                flip_horizontal=flip_horizontal,
-                flip_vertical=flip_vertical,
-                is_slide=is_slide,
-                stride=stride,
-                crop_size=crop_size)
-        else:
-            pred = infer.inference(
-                model,
-                im,
-                ori_shape=ori_shape,
-                transforms=transforms.transforms,
-                is_slide=is_slide,
-                stride=stride,
-                crop_size=crop_size)
-        pred = paddle.squeeze(pred)
-        pred = pred.numpy().astype('uint8')
+            if aug_pred:
+                pred = infer.aug_inference(
+                    model,
+                    im,
+                    ori_shape=ori_shape,
+                    transforms=transforms.transforms,
+                    scales=scales,
+                    flip_horizontal=flip_horizontal,
+                    flip_vertical=flip_vertical,
+                    is_slide=is_slide,
+                    stride=stride,
+                    crop_size=crop_size)
+            else:
+                pred = infer.inference(
+                    model,
+                    im,
+                    ori_shape=ori_shape,
+                    transforms=transforms.transforms,
+                    is_slide=is_slide,
+                    stride=stride,
+                    crop_size=crop_size)
+            pred = paddle.squeeze(pred)
+            pred = pred.numpy().astype('uint8')
 
-        # get the saved name
-        if image_dir is not None:
-            im_file = im_path.replace(image_dir, '')
-        else:
-            im_file = os.path.basename(im_path)
-        if im_file[0] == '/':
-            im_file = im_file[1:]
+            # get the saved name
+            if image_dir is not None:
+                im_file = im_path.replace(image_dir, '')
+            else:
+                im_file = os.path.basename(im_path)
+            if im_file[0] == '/':
+                im_file = im_file[1:]
 
-        # save added image
-        added_image = utils.visualize.visualize(im_path, pred, weight=0.6)
-        added_image_path = os.path.join(added_saved_dir, im_file)
-        mkdir(added_image_path)
-        cv2.imwrite(added_image_path, added_image)
+            # save added image
+            added_image = utils.visualize.visualize(im_path, pred, weight=0.6)
+            added_image_path = os.path.join(added_saved_dir, im_file)
+            mkdir(added_image_path)
+            cv2.imwrite(added_image_path, added_image)
 
-        # save pseudo color prediction
-        pred_mask = utils.visualize.get_pseudo_color_map(pred)
-        pred_saved_path = os.path.join(pred_saved_dir,
-                                       im_file.rsplit(".")[0] + ".png")
-        mkdir(pred_saved_path)
-        pred_mask.save(pred_saved_path)
+            # save pseudo color prediction
+            pred_mask = utils.visualize.get_pseudo_color_map(pred)
+            pred_saved_path = os.path.join(pred_saved_dir,
+                                           im_file.rsplit(".")[0] + ".png")
+            mkdir(pred_saved_path)
+            pred_mask.save(pred_saved_path)
 
-        # pred_im = utils.visualize(im_path, pred, weight=0.0)
-        # pred_saved_path = os.path.join(pred_saved_dir, im_file)
-        # mkdir(pred_saved_path)
-        # cv2.imwrite(pred_saved_path, pred_im)
+            # pred_im = utils.visualize(im_path, pred, weight=0.0)
+            # pred_saved_path = os.path.join(pred_saved_dir, im_file)
+            # mkdir(pred_saved_path)
+            # cv2.imwrite(pred_saved_path, pred_im)
 
-        progbar_pred.update(i + 1)
+            progbar_pred.update(i + 1)
