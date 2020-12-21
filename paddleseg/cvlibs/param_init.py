@@ -74,6 +74,9 @@ def kaiming_normal_init(param, **kwargs):
     .. math::
         \sqrt{\\frac{2.0}{fan\_in}}
 
+    Args:
+        param (Tensor): Tensor that needs to be initialized.
+
     Examples:
 
         from paddleseg.cvlibs import param_init

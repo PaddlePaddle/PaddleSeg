@@ -20,6 +20,7 @@ from PIL import Image
 
 from paddleseg.cvlibs import manager
 from paddleseg.transforms import Compose
+import paddleseg.transforms.functional as F
 
 
 @manager.DATASETS.add_component
@@ -31,16 +32,17 @@ class Dataset(paddle.io.Dataset):
         transforms (list): Transforms for image.
         dataset_root (str): The dataset directory.
         num_classes (int): Number of classes.
-        mode (str): which part of dataset to use. it is one of ('train', 'val', 'test'). Default: 'train'.
-        train_path (str): The train dataset file. When mode is 'train', train_path is necessary.
+        mode (str, optional): which part of dataset to use. it is one of ('train', 'val', 'test'). Default: 'train'.
+        train_path (str, optional): The train dataset file. When mode is 'train', train_path is necessary.
             The contents of train_path file are as follow:
             image1.jpg ground_truth1.png
             image2.jpg ground_truth2.png
-        val_path (str): The evaluation dataset file. When mode is 'val', val_path is necessary.
+        val_path (str. optional): The evaluation dataset file. When mode is 'val', val_path is necessary.
             The contents is the same as train_path
-        test_path (str): The test dataset file. When mode is 'test', test_path is necessary.
+        test_path (str, optional): The test dataset file. When mode is 'test', test_path is necessary.
             The annotation file is not necessary in test_path file.
-        separator (str): The separator of dataset list. Default: ' '.
+        separator (str, optional): The separator of dataset list. Default: ' '.
+        edge (bool, optional): Whether to compute edge while training. Default: False
 
         Examples:
 
@@ -68,7 +70,8 @@ class Dataset(paddle.io.Dataset):
                  val_path=None,
                  test_path=None,
                  separator=' ',
-                 ignore_index=255):
+                 ignore_index=255,
+                 edge=False):
         self.dataset_root = dataset_root
         self.transforms = Compose(transforms)
         self.file_list = list()
@@ -76,6 +79,7 @@ class Dataset(paddle.io.Dataset):
         self.mode = mode
         self.num_classes = num_classes
         self.ignore_index = ignore_index
+        self.edge = edge
 
         if mode.lower() not in ['train', 'val', 'test']:
             raise ValueError(
@@ -149,7 +153,12 @@ class Dataset(paddle.io.Dataset):
             return im, label
         else:
             im, label = self.transforms(im=image_path, label=label_path)
-            return im, label
+            if self.edge:
+                edge_mask = F.mask_to_binary_edge(
+                    label, radius=2, num_classes=self.num_classes)
+                return im, label, edge_mask
+            else:
+                return im, label
 
     def __len__(self):
         return len(self.file_list)

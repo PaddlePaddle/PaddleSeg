@@ -1,0 +1,23 @@
+_base_: '../_base_/cityscapes_1024x1024.yml'
+
+batch_size: 4
+iters: 160000
+
+learning_rate:
+  value: 0.02
+
+optimizer:
+  type: sgd
+  momentum: 0.9
+  weight_decay: 5.0e-4
+
+model:
+  type: HarDNet
+  pretrained: null
+
+loss:
+  types:
+    - type: BootstrappedCrossEntropyLoss
+      min_K: 4096
+      loss_th: 0.3
+  coef: [1]
