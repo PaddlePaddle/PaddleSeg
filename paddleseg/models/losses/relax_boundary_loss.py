@@ -21,7 +21,7 @@ from scipy.ndimage.interpolation import shift
 from paddleseg.cvlibs import manager
 
 
-# @manager.LOSSES.add_component
+@manager.LOSSES.add_component
 class RelaxBoundaryLoss(nn.Layer):
     """
     Implements the ohem cross entropy loss function.

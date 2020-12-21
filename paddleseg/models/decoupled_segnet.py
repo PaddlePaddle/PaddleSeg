@@ -70,6 +70,7 @@ class DecoupledSegNet(nn.Layer):
     def forward(self, x):
         feat_list = self.backbone(x)
         logit_list = self.head(feat_list)
+
         seg_logit, body_logit, edge_logit = [
             F.interpolate(
                 logit,
@@ -77,10 +78,17 @@ class DecoupledSegNet(nn.Layer):
                 mode='bilinear',
                 align_corners=self.align_corners) for logit in logit_list
         ]
-        # print('seg_logit, body_logit, edge_logit')
-        # print(seg_logit.shape, body_logit.shape, edge_logit.shape)
-        return [seg_logit]
-        # return [seg_logit, body_logit, edge_logit, (seg_logit, edge_logit)]
+
+        # deeplabv3
+        # seg_logit = [
+        #     F.interpolate(
+        #         logit,
+        #         x.shape[2:],
+        #         mode='bilinear',
+        #         align_corners=self.align_corners) for logit in logit_list
+        # ]
+        # return [seg_logit]
+        return [seg_logit, body_logit, edge_logit, (seg_logit, edge_logit)]
 
     def init_weight(self):
         if self.pretrained is not None:
@@ -96,13 +104,13 @@ class DecoupledSegNetHead(nn.Layer):
         super().__init__()
         self.backbone_indices = backbone_indices
         self.align_corners = align_corners
-
         self.aspp = layers.ASPPModule(
             aspp_ratios=aspp_ratios,
             in_channels=backbone_channels[backbone_indices[1]],
             out_channels=aspp_out_channels,
             align_corners=align_corners,
             image_pooling=True)
+
         # self.bot_aspp = nn.Conv2D(aspp_out_channels * 5, 256, kernel_size=1, bias_attr=False)
         self.bot_fine = nn.Conv2D(
             backbone_channels[backbone_indices[0]], 48, 1, bias_attr=False)
@@ -137,6 +145,12 @@ class DecoupledSegNetHead(nn.Layer):
                 kernel_size=3,
                 bias_attr=False),
             nn.Conv2D(256, num_classes, kernel_size=1, bias_attr=False))
+
+        # # deeplabv3 输出
+        # self.cls = nn.Conv2D(
+        #     in_channels=aspp_out_channels,
+        #     out_channels=num_classes,
+        #     kernel_size=1)
 
     def forward(self, feat_list):
         fine_fea = feat_list[self.backbone_indices[0]]
@@ -179,7 +193,9 @@ class DecoupledSegNetHead(nn.Layer):
         seg_out = paddle.concat([aspp, seg_out], axis=1)
         seg_final_out = self.final_seg(seg_out)
 
-        return seg_final_out, seg_body_out, seg_edge_out
+        return [seg_final_out, seg_body_out, seg_edge_out]
+
+        # return [self.cls(aspp)]
 
 
 class SqueezeBodyEdge(nn.Layer):
