@@ -57,7 +57,8 @@ def train(model,
           log_iters=10,
           num_workers=0,
           use_vdl=False,
-          losses=None):
+          losses=None,
+          save_latest_only=False):
     """
     Launch training.
 
@@ -181,14 +182,21 @@ def train(model,
                 model.train()
 
             if (iter % save_interval == 0 or iter == iters) and local_rank == 0:
-                current_save_dir = os.path.join(save_dir,
-                                                "iter_{}".format(iter))
+                if save_latest_only:
+                    current_save_dir = os.path.join(save_dir, 'latest_model')
+                else:
+                    current_save_dir = os.path.join(save_dir,
+                                                    "iter_{}".format(iter))
                 if not os.path.isdir(current_save_dir):
                     os.makedirs(current_save_dir)
                 paddle.save(model.state_dict(),
                             os.path.join(current_save_dir, 'model.pdparams'))
                 paddle.save(optimizer.state_dict(),
                             os.path.join(current_save_dir, 'model.pdopt'))
+                if save_latest_only:
+                    with open(os.path.join(current_save_dir, 'iter.txt'),
+                              'w') as f:
+                        f.write(str(iter))
 
                 if val_dataset is not None:
                     if mean_iou > best_mean_iou:
