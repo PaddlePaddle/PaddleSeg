@@ -108,10 +108,20 @@ def resume(model, optimizer, resume_model):
             opti_state_dict = paddle.load(ckpt_path)
             model.set_state_dict(para_state_dict)
             optimizer.set_state_dict(opti_state_dict)
-            epoch = resume_model.split('_')[-1]
-            if epoch.isdigit():
-                epoch = int(epoch)
-            return epoch
+
+            iter_txt = os.path.join(resume_model, 'iter.txt')
+            if os.path.exists(iter_txt):
+                with open(iter_txt, 'r') as f:
+                    iter = f.read()
+                    iter = int(iter)
+            elif 'iter' in resume_model:
+                iter = resume_model.split('_')[-1]
+                iter = int(iter)
+            else:
+                raise ValueError(
+                    'Can not get iter. Please check your resume_model: {}'.
+                    format(resume_model))
+            return iter
         else:
             raise ValueError(
                 'Directory of the model needed to resume is not Found: {}'.
