@@ -77,6 +77,7 @@ def train(model,
         use_vdl (bool, optional): Whether to record the data to VisualDL during training. Default: False.
         losses (dict): A dict including 'types' and 'coef'. The length of coef should equal to 1 or len(losses['types']).
             The 'types' item is a list of object of paddleseg.models.losses while the 'coef' item is a list of the relevant coefficient.
+        save_latest_only (bool, optional): Save latest model only. Default: False.
     """
     nranks = paddle.distributed.ParallelEnv().nranks
     local_rank = paddle.distributed.ParallelEnv().local_rank
