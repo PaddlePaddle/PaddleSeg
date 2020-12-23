@@ -44,11 +44,7 @@ def loss_computation(logits, label, losses):
         #                 align_corners=True,
         #                 align_mode=1)
         loss_i = losses['types'][i](logit, label)
-        #         print(i, losses['coef'][i], loss_i)
         loss += losses['coef'][i] * loss_i
-
-
-#     print('total loss:', loss)
     return loss
 
 
