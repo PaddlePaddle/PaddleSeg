@@ -37,10 +37,11 @@ def loss_computation(logits_list, labels, losses, edges=None):
     for i in range(len(logits_list)):
         logits = logits_list[i]
         loss_i = losses['types'][i]
-        # Whether to use edges as labels According to loss type .
-        if loss_i.__class__.__name__ in ('BCELoss', ):
-            labels = edges
-        loss_list.append(losses['coef'][i] * loss_i(logits, labels))
+        # Whether to use edges as labels According to loss type.
+        if loss_i.__class__.__name__ in ('BCELoss', ) and loss_i.edge_label:
+            loss_list.append(losses['coef'][i] * loss_i(logits, edges))
+        else:
+            loss_list.append(losses['coef'][i] * loss_i(logits, labels))
     return loss_list
 
 
@@ -56,7 +57,28 @@ def train(model,
           log_iters=10,
           num_workers=0,
           use_vdl=False,
-          losses=None):
+          losses=None,
+          save_latest_only=False):
+    """
+    Launch training.
+
+    Args:
+        model（nn.Layer): A sementic segmentation model.
+        train_dataset (paddle.io.Dataset): Used to read and process training datasets.
+        val_dataset (paddle.io.Dataset, optional): Used to read and process validation datasets.
+        optimizer (paddle.optimizer.Optimizer): The optimizer.
+        save_dir (str, optional): The directory for saving the model snapshot. Default: 'output'.
+        iters (int, optional): How may iters to train the model. Defualt: 10000.
+        batch_size (int, optional): Mini batch size of one gpu or cpu. Default: 2.
+        resume_model (str, optional): The path of resume model.
+        save_interval (int, optional): How many iters to save a model snapshot once during training. Default: 1000.
+        log_iters (int, optional): Display logging information at every log_iters. Default: 10.
+        num_workers (int, optional): Num workers for data loader. Default: 0.
+        use_vdl (bool, optional): Whether to record the data to VisualDL during training. Default: False.
+        losses (dict): A dict including 'types' and 'coef'. The length of coef should equal to 1 or len(losses['types']).
+            The 'types' item is a list of object of paddleseg.models.losses while the 'coef' item is a list of the relevant coefficient.
+        save_latest_only (bool, optional): Save latest model only. Default: False.
+    """
     nranks = paddle.distributed.ParallelEnv().nranks
     local_rank = paddle.distributed.ParallelEnv().local_rank
 
@@ -184,14 +206,21 @@ def train(model,
                 model.train()
 
             if (iter % save_interval == 0 or iter == iters) and local_rank == 0:
-                current_save_dir = os.path.join(save_dir,
-                                                "iter_{}".format(iter))
+                if save_latest_only:
+                    current_save_dir = os.path.join(save_dir, 'latest_model')
+                else:
+                    current_save_dir = os.path.join(save_dir,
+                                                    "iter_{}".format(iter))
                 if not os.path.isdir(current_save_dir):
                     os.makedirs(current_save_dir)
                 paddle.save(model.state_dict(),
                             os.path.join(current_save_dir, 'model.pdparams'))
                 paddle.save(optimizer.state_dict(),
                             os.path.join(current_save_dir, 'model.pdopt'))
+                if save_latest_only:
+                    with open(os.path.join(current_save_dir, 'iter.txt'),
+                              'w') as f:
+                        f.write(str(iter))
 
                 if val_dataset is not None:
                     if mean_iou > best_mean_iou:

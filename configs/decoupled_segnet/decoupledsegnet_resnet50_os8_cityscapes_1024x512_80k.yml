@@ -22,6 +22,7 @@ loss:
     - type: RelaxBoundaryLoss
     - type: BCELoss
       weight: 'dynamic'
+      edge_label: True
     - type: EdgeAttentionLoss
   coef: [1,1,25,1]
 

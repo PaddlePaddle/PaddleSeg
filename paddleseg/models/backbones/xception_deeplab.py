@@ -247,14 +247,21 @@ class Xception_Block(nn.Layer):
 
 
 class XceptionDeeplab(nn.Layer):
+    """
+    The Xception backobne of DeepLabv3+ implementation based on PaddlePaddle.
 
-    # def __init__(self, backbone, class_dim=1000):
-    # add output_stride
-    def __init__(self,
-                 backbone,
-                 pretrained=None,
-                 output_stride=16,
-                 class_dim=1000):
+    The original article refers to
+     Liang-Chieh Chen, et, al. "Encoder-Decoder with Atrous Separable Convolution for Semantic Image Segmentation"
+     (https://arxiv.org/abs/1802.02611)
+
+     Args:
+         backbone (str): Which type of Xception_DeepLab to select. It should be one of ('xception_41', 'xception_65', 'xception_71').
+         pretrained (str, optional): The path of pretrained model.
+         output_stride (int, optional): The stride of output features compared to input images. It is 8 or 16. Default: 16.
+
+    """
+
+    def __init__(self, backbone, pretrained=None, output_stride=16):
 
         super(XceptionDeeplab, self).__init__()
 

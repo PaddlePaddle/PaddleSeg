@@ -63,6 +63,11 @@ def parse_args():
         type=str,
         default='./output')
     parser.add_argument(
+        '--save_latest_only',
+        dest='save_latest_only',
+        help='Save latest model only',
+        action='store_true')
+    parser.add_argument(
         '--num_workers',
         dest='num_workers',
         help='Num workers for data loader',
@@ -133,7 +138,8 @@ def main(args):
         log_iters=args.log_iters,
         num_workers=args.num_workers,
         use_vdl=args.use_vdl,
-        losses=losses)
+        losses=losses,
+        save_latest_only=args.save_latest_only)
 
 
 if __name__ == '__main__':

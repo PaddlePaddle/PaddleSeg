@@ -11,7 +11,7 @@
 
 ## 模型训练
 
-我们可以通过PaddleSeg提供的脚本对模型进行训练，请确保完成了PaddleSeg的安装工作，并且位于PaddleSeg/dygraph目录下，执行以下脚本：
+我们可以通过PaddleSeg提供的脚本对模型进行训练，请确保完成了PaddleSeg的安装工作，并且位于PaddleSeg目录下，执行以下脚本：
 
 ```shell
 export CUDA_VISIBLE_DEVICES=0 # 设置1张可用的卡
