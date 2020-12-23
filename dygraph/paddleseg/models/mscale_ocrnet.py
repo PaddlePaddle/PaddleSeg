@@ -69,16 +69,6 @@ class MscaleOCRNet(nn.Layer):
         p_1x = pred_10x
         aux_1x = hi_outs['aux_out']
 
-        #         pred_05x = 3* paddle.ones([1, 19, 1024, 2048])
-        #         p_lo = pred_05x
-        #         aux_lo = 4 * paddle.ones([1, 19, 1024, 2048])
-        #         logit_attn = 5 * paddle.ones([1, 1, 1024, 2048])
-        #         attn_05x = logit_attn
-
-        #         pred_10x = 6 * paddle.ones([1, 19, 1024, 2048])
-        #         p_1x = pred_10x
-        #         aux_1x = 7*paddle.ones([1, 19, 1024, 2048])
-
         p_lo = p_lo * logit_attn
         aux_lo = aux_lo * logit_attn
         p_lo = scale_as(p_lo, p_1x)
@@ -90,33 +80,13 @@ class MscaleOCRNet(nn.Layer):
         joint_pred = p_lo + p_1x * (1 - logit_attn)
         joint_aux = aux_lo + aux_1x * (1 - logit_attn)
 
-        #         print('logit_attn',logit_attn)
-        #         print('p_1x',p_1x)
-        #         print('aux_1x',aux_1x)
-        #         print('logit_attn.grad',logit_attn.grad)
-        #         print('p_1x.grad',p_1x.grad)
-        #         print('joint_pred.grad',joint_pred.grad)
-
-        #         lp = (1 - logit_attn) * p_1x
-        #         print('lp',lp)
-        #         pl = p_1x * (1 - logit_attn)
-        #         print('pl',pl)
-        #         print((lp.numpy()==pl.numpy()).all())
-        #         exit()
-
         output = [joint_pred, joint_aux]
 
         # Optionally, apply supervision to the multi-scale predictions
         # directly. Turn off RMI to keep things lightweight
-        SUPERVISED_MSCALE_WT = 0.05
-        if SUPERVISED_MSCALE_WT:  ## sota=0.05
-            scaled_pred_05x = scale_as(pred_05x, p_1x)
-            output.extend([scaled_pred_05x, pred_10x])
-
-#         print(output)
-#         print(paddle.sum(joint_pred), paddle.sum(joint_aux), paddle.sum(scaled_pred_05x), paddle.sum(pred_10x))
-#         print('2scale forward')
-#         exit()
+        scaled_pred_05x = scale_as(pred_05x, p_1x)
+        output.extend([scaled_pred_05x, pred_10x])
+        output.extend(output)
         return output
 
     def nscale_forward(self, x_1x, scales):
