@@ -1,7 +1,20 @@
+# Copyright (c) 2020 PaddlePaddle Authors. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 import paddle
 import paddle.nn as nn
 import paddle.nn.functional as F
-import paddle.distributed as dist
 
 from paddleseg.models import layers
 from paddleseg.cvlibs import manager
@@ -21,8 +34,6 @@ class EMANet(nn.Layer):
         num_classes (int): The unique number of target classes.
         backbone (Paddle.nn.Layer): A backbone network.
         backbone_indices (tuple): The values in the tuple indicate the indices of output of backbone.
-        num_classes (int): The unique number of target classes.
-        in_channels (tuple): The number of input channels.
         ema_channels (int): EMA module channels.
         gc_channels (int): The input channels to Global Context Block.
         num_bases (int): Number of bases.
@@ -36,7 +47,7 @@ class EMANet(nn.Layer):
     """
 
     def __init__(self,
-                num_classes,
+                num_classes:,
                 backbone,
                 backbone_indices=(2, 3),
                 ema_channels=512, 
@@ -58,9 +69,6 @@ class EMANet(nn.Layer):
         self.align_corners = align_corners
         self.pretrained = pretrained
         self.init_weight()
-#         with open('checkpoint1.txt', 'w') as f:
-#             for keys, values in self.state_dict().items():
-#                 f.write(keys +'\t'+str(values.shape)+"\n")
 
     def forward(self, x):
         feats = self.backbone(x)
@@ -184,8 +192,8 @@ class EMAU(nn.Layer):
 
         if self.training:
             mu = paddle.mean(mu, 0, keepdim=True)
-            if dist.get_world_size() >1:
-                dist.reduce(mu/dist.get_world_size(), 0)
+            if paddle.distributed.get_world_size() >1:
+                paddle.distributed.reduce(mu/paddle.distributed.get_world_size(), 0)
             mu = F.normalize(mu, axis=1, p=2)
             self.mu = self.mu * (1 - self.momentum) + mu * self.momentum
         return x
