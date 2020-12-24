@@ -23,23 +23,10 @@ loss:
     - type: BCELoss
       weight: 'dynamic'
       edge_label: True
-    - type: EdgeAttentionLoss
+    - type: OhemEdgeAttentionLoss
   coef: [1,1,25,1]
 
 train_dataset:
-#   transforms:
-#     - type: ResizeStepScaling
-#       min_scale_factor: 0.75
-#       max_scale_factor: 2.0
-#       scale_step_size: 0.25
-#     - type: RandomPaddingCrop
-#       crop_size: [832, 832]
-#     - type: RandomHorizontalFlip
-#     - type: RandomDistort
-#       brightness_range: 0.4
-#       contrast_range: 0.4
-#       saturation_range: 0.4
-#     - type: Normalize
   edge: True
 
 # optimizer:

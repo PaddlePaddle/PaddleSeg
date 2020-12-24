@@ -25,9 +25,9 @@ class OhemCrossEntropyLoss(nn.Layer):
     Implements the ohem cross entropy loss function.
 
     Args:
-        thresh (float): The threshold of ohem. Default: 0.7.
-        thresh (int): The min number to keep in loss computation. Default: 10000.
-        ignore_index (int64): Specifies a target value that is ignored
+        thresh (float, optional): The threshold of ohem. Default: 0.7.
+        min_kept (int, optional): The min number to keep in loss computation. Default: 10000.
+        ignore_index (int64, optional): Specifies a target value that is ignored
             and does not contribute to the input gradient. Default ``255``.
     """
 
