@@ -128,12 +128,12 @@ def generate_list(args):
         file_list = os.path.join(dataset_root, dataset_split + '.txt')
         with open(file_list, "w") as f:
             for item in range(num_images):
-                left = image_files[item].replace(dataset_root, '')
+                left = image_files[item].replace(dataset_root, '', 1)
                 if left[0] == os.path.sep:
                     left = left.lstrip(os.path.sep)
 
                 try:
-                    right = label_files[item].replace(dataset_root, '')
+                    right = label_files[item].replace(dataset_root, '', 1)
                     if right[0] == os.path.sep:
                         right = right.lstrip(os.path.sep)
                     line = left + separator + right + '\n'
