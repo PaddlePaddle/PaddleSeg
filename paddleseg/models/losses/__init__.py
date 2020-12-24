@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .cross_entroy_loss import CrossEntropyLoss
-from .binary_cross_entroy_loss import BCELoss
+from .cross_entropy_loss import CrossEntropyLoss
+from .binary_cross_entropy_loss import BCELoss
 from .gscnn_dual_task_loss import DualTaskLoss
 from .edge_attention_loss import EdgeAttentionLoss
 from .bootstrapped_cross_entropy import BootstrappedCrossEntropyLoss
