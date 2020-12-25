@@ -38,10 +38,10 @@ def loss_computation(logits_list, labels, losses, edges=None):
         logits = logits_list[i]
         loss_i = losses['types'][i]
         # Whether to use edges as labels According to loss type .
-        if loss_i.__class__.__name__ in ('BCELoss', ):
-            if loss_i.edge_label:
-                labels = edges
-        loss += losses['coef'][i] * loss_i(logits, labels)
+        if loss_i.__class__.__name__ in ('BCELoss', ) and loss_i.edge_label:
+            loss += losses['coef'][i] * loss_i(logits, edges)
+        else:
+            loss += losses['coef'][i] * loss_i(logits, labels)
     return loss
 
 
@@ -77,6 +77,7 @@ def train(model,
         use_vdl (bool, optional): Whether to record the data to VisualDL during training. Default: False.
         losses (dict): A dict including 'types' and 'coef'. The length of coef should equal to 1 or len(losses['types']).
             The 'types' item is a list of object of paddleseg.models.losses while the 'coef' item is a list of the relevant coefficient.
+        save_latest_only (bool, optional): Save latest model only. Default: False.
     """
     nranks = paddle.distributed.ParallelEnv().nranks
     local_rank = paddle.distributed.ParallelEnv().local_rank
