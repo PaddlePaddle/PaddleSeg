@@ -72,9 +72,6 @@ class EdgeAttentionLoss(nn.Layer):
         avg_loss = paddle.mean(loss) / (paddle.mean(mask) + self.EPS)
         if paddle.mean(mask) < self.mean_mask:
             self.mean_mask = paddle.mean(mask)
-        print(self.mean_mask.numpy(),
-              paddle.sum(mask).numpy(),
-              paddle.mean(mask).numpy())
 
         label.stop_gradient = True
         mask.stop_gradient = True

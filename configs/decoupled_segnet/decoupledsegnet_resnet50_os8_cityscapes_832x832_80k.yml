@@ -23,7 +23,7 @@ loss:
     - type: BCELoss
       weight: 'dynamic'
       edge_label: True
-    - type: EdgeAttentionLoss
+    - type: OhemEdgeAttentionLoss
   coef: [1,1,25,1]
 
 train_dataset:
