@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import os
+import math
 
 import cv2
 import numpy as np
@@ -27,6 +28,12 @@ def mkdir(path):
     sub_dir = os.path.dirname(path)
     if not os.path.exists(sub_dir):
         os.makedirs(sub_dir)
+
+
+def partition_list(arr, m):
+    """split the list 'arr' into m pieces"""
+    n = int(math.ceil(len(arr) / float(m)))
+    return [arr[i:i + n] for i in range(0, len(arr), n)]
 
 
 def predict(model,
@@ -58,6 +65,12 @@ def predict(model,
     #     para_state_dict = paddle.load(model_path)
     #     model.set_dict(para_state_dict)
     model.eval()
+    nranks = paddle.distributed.get_world_size()
+    local_rank = paddle.distributed.get_rank()
+    if nranks > 1:
+        img_lists = partition_list(image_list, nranks)
+    else:
+        img_lists = [image_list]
 
     added_saved_dir = os.path.join(save_dir, 'added_prediction')
     pred_saved_dir = os.path.join(save_dir, 'pseudo_color_prediction')
@@ -65,9 +78,9 @@ def predict(model,
     logger.info("Start to predict...")
     logger.info("aug_pred = {} flip_horizontal = {}".format(
         aug_pred, flip_horizontal))
-    progbar_pred = progbar.Progbar(target=len(image_list), verbose=1)
+    progbar_pred = progbar.Progbar(target=len(img_lists[0]), verbose=1)
     with paddle.no_grad():
-        for i, im_path in enumerate(image_list):
+        for i, im_path in enumerate(img_lists[local_rank]):
             im = cv2.imread(im_path)
             ori_shape = im.shape[:2]
             im, _ = transforms(im)
