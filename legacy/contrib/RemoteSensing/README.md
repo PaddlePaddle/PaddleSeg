@@ -13,7 +13,7 @@ PaddleSeg遥感影像分割涵盖数据分析、预处理、数据增强、模�
 ## 前置依赖
 **Note:** 若没有特殊说明，以下所有命令需要在`PaddleSeg/contrib/RemoteSensing/`目录下执行。
 
-- Paddle 1.7.1+ or 2.0.0+
+- Paddle 1.7.1+
 由于图像分割模型计算开销大，推荐在GPU版本的PaddlePaddle下使用。
 PaddlePaddle的安装, 请按照[官网指引](https://paddlepaddle.org.cn/install/quick)安装合适自己的版本。
 
