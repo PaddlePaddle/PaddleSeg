@@ -44,6 +44,7 @@ trainid2labelid = {label.trainId: label.id for label in reversed(labels)}
 root_dir = '/home/chulutao/PaddleSeg/dygraph/saved_model/mscale_ocr_cityscapes_autolabel_whole_mapillary_boot_ce_weight_flip/test_predict_results/'
 im_dir = root_dir + 'pseudo_color_prediction/'
 result_dir = root_dir + 'convert_to_labelid/'
+
 # image_list, _ = get_image_list(im_dir)
 # print(len(image_list))
 # for i, im_path in enumerate(image_list):
@@ -64,14 +65,19 @@ result_dir = root_dir + 'convert_to_labelid/'
 #     mkdir(result_path)
 #     new_im.save(result_path)
 
-import shutil
-for root, dirs, files in os.walk(result_dir):
-    print(root)
-    if '.ipynb_checkpoints' in root:
-        print(root)
-        shutil.rmtree(root)
 
-print('after clear')
-for root, dirs, files in os.walk(result_dir):
-    if '.ipynb_checkpoints' in root:
+def clear(dire):
+    import shutil
+    for root, dirs, files in os.walk(dire):
         print(root)
+        if '.ipynb_checkpoints' in root:
+            print(root)
+            shutil.rmtree(root)
+
+    print('after clear')
+    for root, dirs, files in os.walk(dire):
+        if '.ipynb_checkpoints' in root:
+            print(root)
+
+
+clear(im_dir)
