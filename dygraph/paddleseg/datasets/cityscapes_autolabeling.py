@@ -37,7 +37,8 @@ class CityscapesAutolabeling(paddle.io.Dataset):
                  transforms,
                  dataset_root,
                  mode='train',
-                 coarse_multiple=1):
+                 coarse_multiple=1,
+                 add_val=False):
         self.dataset_root = dataset_root
         self.transforms = Compose(transforms)
         self.file_list = list()
@@ -78,6 +79,21 @@ class CityscapesAutolabeling(paddle.io.Dataset):
         self.total_num_files = self.num_files
 
         if mode == 'train':
+            # whether to add val set in training
+            if add_val:
+                label_files = sorted(
+                    glob.glob(
+                        os.path.join(label_dir, 'val', '*',
+                                     '*_gtFine_labelTrainIds.png')))
+                img_files = sorted(
+                    glob.glob(
+                        os.path.join(img_dir, 'val', '*', '*_leftImg8bit.png')))
+                val_file_list = [[
+                    img_path, label_path
+                ] for img_path, label_path in zip(img_files, label_files)]
+                self.file_list.extend(val_file_list)
+                self.num_files = len(self.file_list)
+
             # use coarse dataset only in training
             img_dir = os.path.join(self.dataset_root, 'leftImg8bit_trainextra',
                                    'leftImg8bit', 'train_extra')
