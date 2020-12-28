@@ -91,6 +91,7 @@ class BCELoss(nn.Layer):
         self.pos_weight = pos_weight
         self.ignore_index = ignore_index
         self.edge_label = edge_label
+        self.EPS = 1e-10
 
         if self.weight is not None:
             if isinstance(self.weight, str):
@@ -101,7 +102,7 @@ class BCELoss(nn.Layer):
             elif isinstance(self.weight, paddle.VarBase):
                 raise TypeError(
                     'The type of `weight` is wrong, it should be Tensor or str, but it is {}'
-                    .format(type(self.pos_weight)))
+                    .format(type(self.weight)))
 
         if self.pos_weight is not None:
             if isinstance(self.pos_weight, str):
@@ -129,41 +130,44 @@ class BCELoss(nn.Layer):
                 value is 0 or 1, and if shape is more than 2D, this is
                 (N, C, D1, D2,..., Dk), k >= 1.
         """
-        eps = 1e-6
         if len(label.shape) != len(logit.shape):
             label = paddle.unsqueeze(label, 1)
+        mask = (label != self.ignore_index)
+        mask = paddle.cast(mask, 'float32')
         # label.shape should equal to the logit.shape
         if label.shape[1] != logit.shape[1]:
             label = label.squeeze(1)
             label = F.one_hot(label, logit.shape[1])
             label = label.transpose((0, 3, 1, 2))
-        mask = (label != self.ignore_index)
-        mask = paddle.cast(mask, 'float32')
         if isinstance(self.weight, str):
             pos_index = (label == 1)
             neg_index = (label == 0)
             pos_num = paddle.sum(pos_index.astype('float32'))
             neg_num = paddle.sum(neg_index.astype('float32'))
             sum_num = pos_num + neg_num
-            weight_pos = 2 * neg_num / (sum_num + eps)
-            weight_neg = 2 * pos_num / (sum_num + eps)
-            self.weight = weight_pos * label + weight_neg * (1 - label)
+            weight_pos = 2 * neg_num / (sum_num + self.EPS)
+            weight_neg = 2 * pos_num / (sum_num + self.EPS)
+            weight = weight_pos * label + weight_neg * (1 - label)
+        else:
+            weight = self.weight
         if isinstance(self.pos_weight, str):
             pos_index = (label == 1)
             neg_index = (label == 0)
             pos_num = paddle.sum(pos_index.astype('float32'))
             neg_num = paddle.sum(neg_index.astype('float32'))
             sum_num = pos_num + neg_num
-            self.pos_weight = 2 * neg_num / (sum_num + eps)
+            pos_weight = 2 * neg_num / (sum_num + self.EPS)
+        else:
+            pos_weight = self.pos_weight
         label = label.astype('float32')
         loss = paddle.nn.functional.binary_cross_entropy_with_logits(
             logit,
             label,
-            weight=self.weight,
+            weight=weight,
             reduction='none',
-            pos_weight=self.pos_weight)
+            pos_weight=pos_weight)
         loss = loss * mask
-        loss = paddle.mean(loss) / paddle.mean(mask + eps)
+        loss = paddle.mean(loss) / (paddle.mean(mask) + self.EPS)
         label.stop_gradient = True
         mask.stop_gradient = True
 
