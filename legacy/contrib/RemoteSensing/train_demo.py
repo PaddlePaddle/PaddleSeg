@@ -15,9 +15,11 @@
 
 import os.path as osp
 import argparse
+
 import transforms.transforms as T
 from readers.reader import Reader
 from models import UNet, HRNet
+from utils import paddle_utils
 
 
 def parse_args():
@@ -97,6 +99,7 @@ def parse_args():
     return parser.parse_args()
 
 
+paddle_utils.enable_static()
 args = parse_args()
 data_dir = args.data_dir
 save_dir = args.save_dir
