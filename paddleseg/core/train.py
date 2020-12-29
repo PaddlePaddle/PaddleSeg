@@ -207,6 +207,8 @@ def train(model,
                         paddle.save(
                             model.state_dict(),
                             os.path.join(best_model_dir, 'model.pdparams'))
+                        paddle.save(optimizer.state_dict(),
+                                    os.path.join(best_model_dir, 'model.pdopt'))
                     logger.info(
                         '[EVAL] The model with the best validation mIoU ({:.4f}) was saved at iter {}.'
                         .format(best_mean_iou, best_model_iter))
