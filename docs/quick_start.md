@@ -40,6 +40,7 @@ python train.py \
 |do_eval|是否在保存模型时启动评估, 启动时将会根据mIoU保存最佳模型至best_model|否|否|
 |log_iters|打印日志的间隔步数|否|10|
 |resume_model|恢复训练模型路径，如：`output/iter_1000`|否|None|
+|keep_checkpoint_max|最新模型保存个数|否|5|
 
 
 **注意**：如果想要使用多卡训练的话，需要将环境变量CUDA_VISIBLE_DEVICES指定为多卡（不指定时默认使用所有的gpu)，并使用paddle.distributed.launch启动训练脚本（windows下由于不支持nccl，无法使用多卡训练）:
