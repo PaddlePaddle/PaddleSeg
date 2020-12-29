@@ -63,10 +63,11 @@ def parse_args():
         type=str,
         default='./output')
     parser.add_argument(
-        '--save_latest_only',
-        dest='save_latest_only',
-        help='Save latest model only',
-        action='store_true')
+        '--keep_checkpoint_max',
+        dest='keep_checkpoint_max',
+        help='Maximum number of checkpoints to save',
+        type=int,
+        default=5)
     parser.add_argument(
         '--num_workers',
         dest='num_workers',
@@ -139,7 +140,7 @@ def main(args):
         num_workers=args.num_workers,
         use_vdl=args.use_vdl,
         losses=losses,
-        save_latest_only=args.save_latest_only)
+        keep_checkpoint_max=args.keep_checkpoint_max)
 
 
 if __name__ == '__main__':
