@@ -37,7 +37,7 @@ Dice系数请参见[维基百科](https://zh.wikipedia.org/wiki/Dice%E7%B3%BB%E6
 在图像分割中，`softmax loss`评估每一个像素点的类别预测，然后平均所有的像素点。这个本质上就是对图片上的每个像素进行平等的学习。这就造成了一个问题，如果在图像上的多种类别有不平衡的表征，那么训练会由最主流的类别主导。以上面DeepGlobe道路提取的数据为例子，网络将偏向于背景的学习，降低了网络对前景目标的提取能力。
 而`dice loss(dice coefficient loss)`通过预测和标注的交集除以它们的总体像素进行计算，它将一个类别的所有像素作为一个整体作为考量，而且计算交集在总体中的占比，所以不受大量背景像素的影响，能够取得更好的效果。
 
-在实际应用中`dice loss`往往与`bce loss(binary cross entroy loss)`结合使用，提高模型训练的稳定性。
+在实际应用中`dice loss`往往与`bce loss(binary cross entropy loss)`结合使用，提高模型训练的稳定性。
 
 
 ## PaddleSeg指定训练loss

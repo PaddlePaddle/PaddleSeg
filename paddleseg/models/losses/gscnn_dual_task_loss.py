@@ -103,6 +103,8 @@ class DualTaskLoss(nn.Layer):
         n, c, h, w = logit.shape
         th = 1e-8
         eps = 1e-10
+        if len(labels.shape) == 3:
+            labels = labels.unsqueeze(1)
         mask = (labels != self.ignore_index)
         mask.stop_gradient = True
         logit = logit * mask
