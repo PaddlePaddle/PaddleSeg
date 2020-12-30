@@ -1,4 +1,5 @@
-# Copyright (c) 2020 PaddlePaddle Authors. All Rights Reserved.
+# coding: utf8
+# Copyright (c) 2020 PaddlePaddle Authors. All Rights Reserve.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,9 +13,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .cross_entropy_loss import CrossEntropyLoss
-from .binary_cross_entropy_loss import BCELoss
-from .gscnn_dual_task_loss import DualTaskLoss
-from .edge_attention_loss import EdgeAttentionLoss
-from .bootstrapped_cross_entropy import BootstrappedCrossEntropyLoss
-from .dice_loss import DiceLoss
+import paddle
+
+
+def enable_static():
+    if hasattr(paddle, 'enable_static'):
+        paddle.enable_static()
+
+
+def save_op_version_info(program_desc):
+    if hasattr(paddle.fluid.core, 'save_op_version_info'):
+        paddle.fluid.core.save_op_version_info(program_desc)
+    else:
+        paddle.fluid.core.save_op_compatible_info(program_desc)
