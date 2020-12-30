@@ -46,7 +46,7 @@ Welcome to PaddleSeg! PaddleSeg is an end-to-end image segmentation development 
 - [x] Cityscapes
 - [x] Pascal VOC
 - [x] ADE20K
-- [ ] Pascal Context
+- [x] Pascal Context
 - [ ] COCO stuff
 
 ## Installation
