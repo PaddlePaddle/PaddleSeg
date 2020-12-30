@@ -47,7 +47,7 @@ PaddleSeg是基于飞桨[PaddlePaddle](https://www.paddlepaddle.org.cn)开发的
 - [x] Pascal VOC
 - [x] ADE20K
 - [ ] Pascal Context
-- [ ] COCO stuff
+- [x] COCO stuff
 
 ## 安装
 
