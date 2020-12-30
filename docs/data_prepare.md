@@ -49,7 +49,7 @@ export PYTHONPATH=`pwd`
 其涵盖了150个语义类别，包括训练集20210张，验证集2000张。
 
 ## 关于Coco Stuff数据集
-Coco Stuff是基于Coco数据集的像素级别的实例分割数据集。它主要覆盖172个类别，包含80个'thing'，91个'stuff'和1个'unlabeled',
+Coco Stuff是基于Coco数据集的像素级别语义分割数据集。它主要覆盖172个类别，包含80个'thing'，91个'stuff'和1个'unlabeled',
 其中训练集118k, 验证集5k.
 
 在使用Coco Stuff数据集前， 请自行前往[COCO-Stuff主页](https://github.com/nightrome/cocostuff)下载数据集，或者下载[coco2017训练集原图](http://images.cocodataset.org/zips/train2017.zip), [coco2017验证集原图](http://images.cocodataset.org/zips/val2017.zip)及[标注图](http://calvin.inf.ed.ac.uk/wp-content/uploads/data/cocostuffdataset/stuffthingmaps_trainval2017.zip)
