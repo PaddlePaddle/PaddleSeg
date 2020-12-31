@@ -47,7 +47,7 @@ class EMANet(nn.Layer):
     """
 
     def __init__(self,
-                num_classes:,
+                num_classes,
                 backbone,
                 backbone_indices=(2, 3),
                 ema_channels=512, 
