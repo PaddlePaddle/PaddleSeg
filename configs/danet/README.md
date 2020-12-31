@@ -2,7 +2,7 @@
 
 ## Reference
 
-> Fu J, Liu J, Tian H, et al. Dual attention network for scene segmentation[C]//Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition. 2019: 3146-3154.
+> Fu, Jun, Jing Liu, Haijie Tian, Yong Li, Yongjun Bao, Zhiwei Fang, and Hanqing Lu. "Dual attention network for scene segmentation." In Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition, pp. 3146-3154. 2019.
 
 ## Performance
 
