@@ -2,7 +2,7 @@
 
 ## Reference
 
-> Yu C, Gao C, Wang J, et al. BiSeNet V2: Bilateral Network with Guided Aggregation for Real-time Semantic Segmentation[J]. arXiv preprint arXiv:2004.02147, 2020.
+> Yu, Changqian, Changxin Gao, Jingbo Wang, Gang Yu, Chunhua Shen, and Nong Sang. "BiSeNet V2: Bilateral Network with Guided Aggregation for Real-time Semantic Segmentation." arXiv preprint arXiv:2004.02147 (2020).
 
 ## Performance
 
