@@ -1,4 +1,5 @@
 import math
+import sys
 
 import paddle
 import paddle.nn as nn
@@ -9,7 +10,7 @@ from .ocrnet_nv import OCRNetNV
 
 
 @manager.MODELS.add_component
-class MscaleOCRNet(nn.Layer):
+class MsAttentionCoefOCRNet(nn.Layer):
     def __init__(self,
                  num_classes,
                  backbone,
@@ -116,13 +117,14 @@ class MscaleOCRNet(nn.Layer):
           If training, return loss, else return prediction + attention
         """
         assert 1.0 in scales, 'expected 1.0 to be the target scale'
-        # Lower resolution provides attention for higher rez predictions,
-        # so we evaluate in order: high to low
-        scales = sorted(scales, reverse=True)
+        # Low to high
+        scales = sorted(scales)
 
-        pred = None
+        pred = 0
+        cls_outs = []
+        attn_outs = []
 
-        for s in scales:
+        for i, s in enumerate(scales):
             x = nn.functional.interpolate(
                 x_1x,
                 scale_factor=s,
@@ -133,21 +135,21 @@ class MscaleOCRNet(nn.Layer):
             cls_out = outs['cls_out']
             attn_out = outs['logit_attn']
 
-            if pred is None:
-                pred = cls_out
-            elif s >= 1.0:
-                # downscale previous
-                pred = scale_as(pred, cls_out, self.align_corners)
-                pred = cls_out * attn_out + pred * (1 - attn_out)
-            else:
-                # s < 1.0: upscale current
-                cls_out = cls_out * attn_out
+            if s != 1.0:
+                cls_out = scale_as(cls_out, x_1x, self.align_corners)
+                attn_out = scale_as(attn_out, x_1x, self.align_corners)
 
-                cls_out = scale_as(cls_out, pred, self.align_corners)
-                attn_out = scale_as(attn_out, pred, self.align_corners)
+            if i == 1:
+                attn_out = 1 - attn_outs[-1]
+            elif i > 1:
+                attn_out = attn_outs[-1] * (1 - attn_out) / (
+                    attn_out + sys.float_info.epsilon)
 
-                pred = cls_out + pred * (1 - attn_out)
+            cls_outs.append(cls_out)
+            attn_outs.append(attn_out)
 
+        for i in range(len(scales)):
+            pred += cls_outs[i] * attn_outs[i]
         return [pred]
 
     def single_scale_forward(self, x):
@@ -188,6 +190,12 @@ class AttenHead(nn.Layer):
 
     def forward(self, x):
         return self.atten_head(x)
+
+
+def softmax(attn_list):
+    fuse_attn = paddle.concat(attn_list, axis=1)
+    fuse_attn = nn.functional.softmax(fuse_attn, axis=1)
+    return [fuse_attn[:, i, :, :] for i in range(fuse_attn.shape[1])]
 
 
 def scale_as(x, y, align_corners=False):
