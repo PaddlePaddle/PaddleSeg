@@ -9,7 +9,7 @@ from .ocrnet_nv import OCRNetNV
 
 
 @manager.MODELS.add_component
-class MscaleOCRNet(nn.Layer):
+class MsClassWiseOCRNet(nn.Layer):
     def __init__(self,
                  num_classes,
                  backbone,
@@ -28,7 +28,7 @@ class MscaleOCRNet(nn.Layer):
             ocr_key_channels=ocr_key_channels,
             align_corners=align_corners,
             ms_attention=True)
-        self.scale_attn = AttenHead(in_ch=ocr_mid_channels, out_ch=1)
+        self.scale_attn = AttenHead(in_ch=ocr_mid_channels, out_ch=num_classes)
 
         self.n_scales = n_scales
         self.pretrained = pretrained
@@ -74,6 +74,7 @@ class MscaleOCRNet(nn.Layer):
         p_lo = scale_as(p_lo, p_1x)
         aux_lo = scale_as(aux_lo, p_1x)
 
+        #         print(logit_attn.shape, p_1x.shape)  [1, 19, 512, 1024] [1, 19, 1024, 2048]
         logit_attn = scale_as(logit_attn, p_1x)
 
         # combine lo and hi predictions with attention
@@ -202,7 +203,7 @@ class AttenHead(nn.Layer):
             nn.Sigmoid())
 
     def forward(self, x):
-        return self.atten_head(x)
+        return self.atten_head(x)  # low x.shape [1, 512, 128, 256]
 
 
 def scale_as(x, y, align_corners=False):
