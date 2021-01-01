@@ -9,7 +9,7 @@ from .ocrnet_nv import OCRNetNV
 
 
 @manager.MODELS.add_component
-class MscaleOCRNet(nn.Layer):
+class MsClassWiseOCRNet(nn.Layer):
     def __init__(self,
                  num_classes,
                  backbone,
@@ -28,7 +28,7 @@ class MscaleOCRNet(nn.Layer):
             ocr_key_channels=ocr_key_channels,
             align_corners=align_corners,
             ms_attention=True)
-        self.scale_attn = AttenHead(in_ch=ocr_mid_channels, out_ch=1)
+        self.scale_attn = AttenHead(in_ch=ocr_mid_channels, out_ch=num_classes)
 
         self.n_scales = n_scales
         self.pretrained = pretrained
@@ -74,6 +74,7 @@ class MscaleOCRNet(nn.Layer):
         p_lo = scale_as(p_lo, p_1x)
         aux_lo = scale_as(aux_lo, p_1x)
 
+        #         print(logit_attn.shape, p_1x.shape)  [1, 19, 512, 1024] [1, 19, 1024, 2048]
         logit_attn = scale_as(logit_attn, p_1x)
 
         # combine lo and hi predictions with attention
@@ -83,7 +84,7 @@ class MscaleOCRNet(nn.Layer):
         output = [joint_pred, joint_aux]
 
         # Optionally, apply supervision to the multi-scale predictions
-        # directly.
+        # directly. Turn off RMI to keep things lightweight
         scaled_pred_05x = scale_as(pred_05x, p_1x)
         output.extend([scaled_pred_05x, pred_10x])
         output.extend(output)
@@ -121,6 +122,7 @@ class MscaleOCRNet(nn.Layer):
         scales = sorted(scales, reverse=True)
 
         pred = None
+        aux = None
 
         for s in scales:
             x = nn.functional.interpolate(
@@ -132,22 +134,36 @@ class MscaleOCRNet(nn.Layer):
 
             cls_out = outs['cls_out']
             attn_out = outs['logit_attn']
+            aux_out = outs['aux_out']
+
+            #             output_dict[fmt_scale('pred', s)] = cls_out
+            #             if s != 2.0:
+            #                 output_dict[fmt_scale('attn', s)] = attn_out
 
             if pred is None:
                 pred = cls_out
+                aux = aux_out
             elif s >= 1.0:
                 # downscale previous
                 pred = scale_as(pred, cls_out, self.align_corners)
                 pred = cls_out * attn_out + pred * (1 - attn_out)
+                aux = scale_as(aux, cls_out, self.align_corners)
+                aux = aux_out * attn_out + aux * (1 - attn_out)
             else:
                 # s < 1.0: upscale current
                 cls_out = cls_out * attn_out
+                aux_out = aux_out * attn_out
 
                 cls_out = scale_as(cls_out, pred, self.align_corners)
+                aux_out = scale_as(aux_out, pred, self.align_corners)
                 attn_out = scale_as(attn_out, pred, self.align_corners)
 
                 pred = cls_out + pred * (1 - attn_out)
+                aux = aux_out + aux * (1 - attn_out)
 
+
+#         output_dict['pred'] = pred
+#         return output_dict
         return [pred]
 
     def single_scale_forward(self, x):
@@ -187,7 +203,7 @@ class AttenHead(nn.Layer):
             nn.Sigmoid())
 
     def forward(self, x):
-        return self.atten_head(x)
+        return self.atten_head(x)  # low x.shape [1, 512, 128, 256]
 
 
 def scale_as(x, y, align_corners=False):

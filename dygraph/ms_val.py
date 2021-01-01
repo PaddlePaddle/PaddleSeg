@@ -129,10 +129,14 @@ def main(args):
     for n_scales in all_ns:
         args.flip_horizontal = True
         from paddleseg.models.mscale_ocrnet import MscaleOCRNet
+        from paddleseg.models.ms_ocrnet_attention_coef import MsAttentionCoefOCRNet
+        from paddleseg.models.ms_2input_atten_ocrnet import Ms2InputAttenOCRNet
         from paddleseg.models.backbones.hrnet_nv import HRNet_W48_NV
 
         backbone = HRNet_W48_NV()
-        model = MscaleOCRNet(19, backbone, [0], n_scales=n_scales)
+
+        model = MscaleOCRNet(19, backbone, [0], n_scales=n_scales)  ###
+
         utils.load_entire_model(model, args.model_path)
         #     para_state_dict = paddle.load(args.model_path)
         #     model.set_dict(para_state_dict)
