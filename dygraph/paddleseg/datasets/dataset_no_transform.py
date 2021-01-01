@@ -86,6 +86,11 @@ class DatasetNoTransform(paddle.io.Dataset):
         img_files = sorted(
             glob.glob(os.path.join(img_dir, '*_leftImg8bit.png')))
 
+        if len(img_files) != len(label_files):
+            raise ValueError(
+                "The number of images = {} is not equal to the number of labels = {} in Cityscapes dataset."
+                .format(len(img_files), len(label_files)))
+
         self.file_list = [[
             img_path, label_path
         ] for img_path, label_path in zip(img_files, label_files)]
