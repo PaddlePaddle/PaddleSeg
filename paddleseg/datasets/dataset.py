@@ -32,17 +32,17 @@ class Dataset(paddle.io.Dataset):
         transforms (list): Transforms for image.
         dataset_root (str): The dataset directory.
         num_classes (int): Number of classes.
-        mode (str): which part of dataset to use. it is one of ('train', 'val', 'test'). Default: 'train'.
-        train_path (str): The train dataset file. When mode is 'train', train_path is necessary.
+        mode (str, optional): which part of dataset to use. it is one of ('train', 'val', 'test'). Default: 'train'.
+        train_path (str, optional): The train dataset file. When mode is 'train', train_path is necessary.
             The contents of train_path file are as follow:
             image1.jpg ground_truth1.png
             image2.jpg ground_truth2.png
-        val_path (str): The evaluation dataset file. When mode is 'val', val_path is necessary.
+        val_path (str. optional): The evaluation dataset file. When mode is 'val', val_path is necessary.
             The contents is the same as train_path
-        test_path (str): The test dataset file. When mode is 'test', test_path is necessary.
+        test_path (str, optional): The test dataset file. When mode is 'test', test_path is necessary.
             The annotation file is not necessary in test_path file.
-        separator (str): The separator of dataset list. Default: ' '.
-        edge (bool): Whether to compute edge while training. Default: False
+        separator (str, optional): The separator of dataset list. Default: ' '.
+        edge (bool, optional): Whether to compute edge while training. Default: False
 
         Examples:
 

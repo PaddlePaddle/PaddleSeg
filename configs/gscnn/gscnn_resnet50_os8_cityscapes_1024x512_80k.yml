@@ -22,6 +22,7 @@ loss:
     - type: CrossEntropyLoss
     - type: EdgeAttentionLoss
     - type: BCELoss
+      edge_label: True
     - type: DualTaskLoss
   coef: [1, 1, 20, 1]
 

@@ -104,8 +104,7 @@ class DeployConfig:
             # 9. channels
             self.channels = deploy_conf["CHANNELS"]
             # 10. use_pr
-            self.use_pr = deploy_conf["USE_PR"]
-
+            self.use_pr = deploy_conf.get("USE_PR", False)
 
 class ImageReader:
     def __init__(self, configs):

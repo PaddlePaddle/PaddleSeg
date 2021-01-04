@@ -39,11 +39,25 @@ def make_divisible(v, divisor=8, min_value=None):
 
 
 class MobileNetV3(nn.Layer):
+    """
+    The MobileNetV3 implementation based on PaddlePaddle.
+
+    The original article refers to Jingdong
+    Andrew Howard, et, al. "Searching for MobileNetV3"
+    (https://arxiv.org/pdf/1905.02244.pdf).
+
+    Args:
+        pretrained (str, optional): The path of pretrained model.
+        scale (float, optional): The scale of channels . Default: 1.0.
+        model_name (str, optional): Model name. It determines the type of MobileNetV3. The value is 'small' or 'large'. Defualt: 'small'.
+        output_stride (int, optional): The stride of output features compared to input images. The value should be one of (2, 4, 8, 16, 32). Default: None.
+
+    """
+
     def __init__(self,
                  pretrained=None,
                  scale=1.0,
                  model_name="small",
-                 class_dim=1000,
                  output_stride=None):
         super(MobileNetV3, self).__init__()
 

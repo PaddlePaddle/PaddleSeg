@@ -6,4 +6,3 @@
 * [paddleseg.models](./models.md)
 * [paddleseg.models.backbones](./backbones.md)
 * [paddleseg.transforms](./transforms.md)
-* [paddleseg.utils](./utils.md)
