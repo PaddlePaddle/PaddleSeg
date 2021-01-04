@@ -65,7 +65,7 @@ def parse_args():
     parser.add_argument(
         '--keep_checkpoint_max',
         dest='keep_checkpoint_max',
-        help='The max checkpoints to save',
+        help='Maximum number of checkpoints to save',
         type=int,
         default=5)
     parser.add_argument(
