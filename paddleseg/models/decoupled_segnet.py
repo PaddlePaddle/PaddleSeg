@@ -95,7 +95,7 @@ class DecoupledSegNetHead(nn.Layer):
         backbone_indices (tuple): Two values in the tuple indicate the indices of output of backbone.
             the first index will be taken as a low-level feature in Edge presevation component;
             the second one will be taken as input of ASPP component.
-        backbone_channels (tuple): The same length with "backbone_indices". It indicates the channels of corresponding index.
+        backbone_channels (tuple): The channels of output of backbone.
         aspp_ratios (tuple): The dilation rates using in ASSP module.
         aspp_out_channels (int): The output channels of ASPP module.
         align_corners (bool): An argument of F.interpolate. It should be set to False when the output size of feature
