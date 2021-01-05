@@ -40,6 +40,7 @@ Welcome to PaddleSeg! PaddleSeg is an end-to-end image segmentation development 
 |[U<sup>2</sup>-Net](./configs/u2net)|-|-|-|-|
 |[Att U-Net](./configs/attention_unet)|-|-|-|-|
 |[U-Net++](./configs/unet_plusplus)|-|-|-|-|
+|[DecoupledSegNet](./configs/decoupled_segnet)|✔|✔|||
 
 ## Dataset
 

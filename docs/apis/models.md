@@ -18,6 +18,7 @@ The models subpackage contains the following model for image sementic segmentaio
 - [U<sup>2</sup>Net+](#U2Net-1)
 - [AttentionUNet](#AttentionUNet)
 - [UNet++](#UNet-1)
+- [DecoupledSegNet](#DecoupledSegNet)
 
 ## [DeepLabV3+](../../paddleseg/models/deeplab.py)
 > CLASS paddleseg.models.DeepLabV3P(num_classes, backbone, backbone_indices=(0, 3), aspp_ratios=(1, 6, 12, 18), aspp_out_channels=256, align_corners=False, pretrained=None)
@@ -402,3 +403,32 @@ The models subpackage contains the following model for image sementic segmentaio
             is even, e.g. 1024x512, otherwise it is True, e.g. 769x769.  Default: False.
 > > > - **pretrained** (str, optional): The path or url of pretrained model for fine tuning. Default: None.
 > > > - **is_ds** (bool): use deep supervision or not. Default: True
+
+## [DecoupledSegNet](../../paddleseg/models/decoupled_segnet.py)
+> class DecoupledSegNet(num_classes,
+                 backbone,
+                 backbone_indices=(0, 3),
+                 aspp_ratios=(1, 6, 12, 18),
+                 aspp_out_channels=256,
+                 align_corners=False,
+                 pretrained=None)
+
+    The DecoupledSegNet implementation based on PaddlePaddle.
+
+    The original article refers to
+    Xiangtai Li, et, al. "Improving Semantic Segmentation via Decoupled Body and Edge Supervision"
+    (https://arxiv.org/pdf/2007.10035.pdf)
+
+> > Args
+> > > - **num_classes** (int): The unique number of target classes.
+> > > - **backbone** (paddle.nn.Layer): Backbone network, currently support Resnet50_vd/Resnet101_vd.
+> > > - **backbone_indices** (tuple, optional): Two values in the tuple indicate the indices of output of backbone.
+           Default: (0, 3).
+> > > - **aspp_ratios** (tuple, optional): The dilation rate using in ASSP module.
+            If output_stride=16, aspp_ratios should be set as (1, 6, 12, 18).
+            If output_stride=8, aspp_ratios is (1, 12, 24, 36).
+            Default: (1, 6, 12, 18).
+> > > - **aspp_out_channels** (int, optional): The output channels of ASPP module. Default: 256.
+> > > - **align_corners** (bool, optional): An argument of F.interpolate. It should be set to False when the feature size is even,
+            e.g. 1024x512, otherwise it is True, e.g. 769x769. Default: False.
+> > > - **pretrained** (str, optional): The path or url of pretrained model. Default: None.
