@@ -31,8 +31,8 @@ class DecoupledSegNet(nn.Layer):
     The DecoupledSegNet implementation based on PaddlePaddle.
 
     The original article refers to
-    , et, al. ""
-    ()
+    Xiangtai Li, et, al. "Improving Semantic Segmentation via Decoupled Body and Edge Supervision"
+    (https://arxiv.org/pdf/2007.10035.pdf)
 
     Args:
         num_classes (int): The unique number of target classes.
@@ -79,15 +79,6 @@ class DecoupledSegNet(nn.Layer):
                 align_corners=self.align_corners) for logit in logit_list
         ]
 
-        # deeplabv3
-        # seg_logit = [
-        #     F.interpolate(
-        #         logit,
-        #         x.shape[2:],
-        #         mode='bilinear',
-        #         align_corners=self.align_corners) for logit in logit_list
-        # ]
-        # return [seg_logit]
         return [seg_logit, body_logit, edge_logit, (seg_logit, edge_logit)]
 
     def init_weight(self):
@@ -97,6 +88,18 @@ class DecoupledSegNet(nn.Layer):
 
 class DecoupledSegNetHead(nn.Layer):
     """
+    The DecoupledSegNetHead implementation based on PaddlePaddle.
+
+    Args:
+        num_classes (int): The unique number of target classes.
+        backbone_indices (tuple): Two values in the tuple indicate the indices of output of backbone.
+            the first index will be taken as a low-level feature in Edge presevation component;
+            the second one will be taken as input of ASPP component.
+        backbone_channels (tuple): The same length with "backbone_indices". It indicates the channels of corresponding index.
+        aspp_ratios (tuple): The dilation rates using in ASSP module.
+        aspp_out_channels (int): The output channels of ASPP module.
+        align_corners (bool): An argument of F.interpolate. It should be set to False when the output size of feature
+            is even, e.g. 1024x512, otherwise it is True, e.g. 769x769.
     """
 
     def __init__(self, num_classes, backbone_indices, backbone_channels,
@@ -111,7 +114,6 @@ class DecoupledSegNetHead(nn.Layer):
             align_corners=align_corners,
             image_pooling=True)
 
-        # self.bot_aspp = nn.Conv2D(aspp_out_channels * 5, 256, kernel_size=1, bias_attr=False)
         self.bot_fine = nn.Conv2D(
             backbone_channels[backbone_indices[0]], 48, 1, bias_attr=False)
         # decoupled
@@ -146,24 +148,13 @@ class DecoupledSegNetHead(nn.Layer):
                 bias_attr=False),
             nn.Conv2D(256, num_classes, kernel_size=1, bias_attr=False))
 
-        # # deeplabv3 输出
-        # self.cls = nn.Conv2D(
-        #     in_channels=aspp_out_channels,
-        #     out_channels=num_classes,
-        #     kernel_size=1)
-
     def forward(self, feat_list):
         fine_fea = feat_list[self.backbone_indices[0]]
         fine_size = fine_fea.shape
         x = feat_list[self.backbone_indices[1]]
-        # print('backbone', x.shape)
-        # x = self.aspp(x) # 256c
-        # print('aspp out', x.shape)
-        # aspp = self.bot_aspp(x)
         aspp = self.aspp(x)
 
         # decoupled
-        # print('aspp', aspp.shape)
         seg_body, seg_edge = self.squeeze_body_edge(aspp)
         # Edge presevation and edge out
         fine_fea = self.bot_fine(fine_fea)
@@ -175,9 +166,7 @@ class DecoupledSegNetHead(nn.Layer):
         seg_edge = self.edge_fusion(paddle.concat([seg_edge, fine_fea], axis=1))
         seg_edge_out = self.edge_out(seg_edge)
         seg_edge_out = self.sigmoid_edge(seg_edge_out)  # seg_edge output
-        # Body out
-        # print('seg_body', seg_body.shape)
-        seg_body_out = self.dsn_seg_body(seg_body)
+        seg_body_out = self.dsn_seg_body(seg_body)  # body out
 
         # seg_final out
         seg_out = seg_edge + F.interpolate(
@@ -194,8 +183,6 @@ class DecoupledSegNetHead(nn.Layer):
         seg_final_out = self.final_seg(seg_out)
 
         return [seg_final_out, seg_body_out, seg_edge_out]
-
-        # return [self.cls(aspp)]
 
 
 class SqueezeBodyEdge(nn.Layer):
@@ -238,43 +225,3 @@ class SqueezeBodyEdge(nn.Layer):
 
         output = F.grid_sample(input, grid)
         return output
-
-
-if __name__ == '__main__':
-    # x = paddle.rand((1, 3, 512, 512))
-    # backbone = resnet_vd.ResNet50_vd(output_stride=8)
-    # model = DecoupledSegNet(
-    #     num_classes=2,
-    #     backbone=backbone,
-    #     backbone_indices=(0, 3),
-    #     aspp_ratios=(1, 12, 24, 36),
-    #     aspp_out_channels=256,
-    #     align_corners=False,
-    #     pretrained=None)
-    # out = model(x)
-
-    input = paddle.rand((1, 1, 4, 4))
-    flow = paddle.rand((1, 2, 4, 4))
-    size = [4, 4]
-
-    out_h, out_w = size
-    n, c, h, w = input.shape
-    norm = paddle.to_tensor([[[[out_w, out_h]]]], dtype='float32')
-    h_grid = paddle.linspace(-1.0, 1.0, out_h).reshape([-1, 1])
-    h_grid = paddle.concat([h_grid] * out_w, axis=1)
-    w_grid = paddle.linspace(-1.0, 1.0, out_w).reshape([1, -1])
-    w_grid = paddle.concat([w_grid] * out_h, axis=0)
-    grid = paddle.concat([w_grid.unsqueeze(2), h_grid.unsqueeze(2)], axis=2)
-
-    grid = paddle.concat([grid.unsqueeze(0)] * n, axis=0)
-    grid = grid + paddle.transpose(flow, (0, 2, 3, 1)) / norm
-
-    output = F.grid_sample(input, grid)
-    print('input')
-    print(input)
-    print('flow')
-    print(flow)
-    print('grid')
-    print(grid)
-    print('output')
-    print(output)

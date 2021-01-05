@@ -1,7 +1,5 @@
 _base_: '../_base_/cityscapes.yml'
 
-# iters: 160000
-
 model:
   type: DecoupledSegNet
   backbone:
@@ -29,5 +27,5 @@ loss:
 train_dataset:
   edge: True
 
-# optimizer:
-#   weight_decay: 5.0e-4
+optimizer:
+  weight_decay: 5.0e-4

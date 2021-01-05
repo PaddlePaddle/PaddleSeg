@@ -179,20 +179,17 @@ def train(model,
                     .format((iter - 1) // iters_per_epoch + 1, iter, iters,
                             avg_loss, lr, avg_train_batch_cost,
                             avg_train_reader_cost, eta))
-                avg_loss_dict = {}
-                for i, value in enumerate(avg_loss_list):
-                    avg_loss_dict['loss_' + str(i)] = value
-                loss_info = []
-                for key, value in avg_loss_dict.items():
-                    value_str = '{:.4f}'.format(value)
-                    loss_info.append(': '.join([key, value_str]))
-                loss_info = ', '.join(loss_info)
-                logger.info("[TRAIN] loss distributed: " + loss_info)
                 if use_vdl:
                     log_writer.add_scalar('Train/loss', avg_loss, iter)
-                    for key, value in avg_loss_dict.items():
-                        log_tag = 'Train/' + key
-                        log_writer.add_scalar(log_tag, value, iter)
+                    # Record all losses if there are more than 2 losses.
+                    if len(avg_loss_list) > 1:
+                        avg_loss_dict = {}
+                        for i, value in enumerate(avg_loss_list):
+                            avg_loss_dict['loss_' + str(i)] = value
+                        for key, value in avg_loss_dict.items():
+                            log_tag = 'Train/' + key
+                            log_writer.add_scalar(log_tag, value, iter)
+
                     log_writer.add_scalar('Train/lr', lr, iter)
                     log_writer.add_scalar('Train/batch_cost',
                                           avg_train_batch_cost, iter)

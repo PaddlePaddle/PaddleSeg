@@ -27,10 +27,11 @@ class RelaxBoundaryLoss(nn.Layer):
     Implements the ohem cross entropy loss function.
 
     Args:
-        thresh (float): The threshold of ohem. Default: 0.7.
-        thresh (int): The min number to keep in loss computation. Default: 10000.
+        border (int, optional): The value of border to relax. Default: 1.
+        calculate_weights (bool, optional): Whether to calculate weights for every classes. Default: False.
+        upper_bound (float, optional): The upper bound of weights if calculating weights for every classes. Default: 1.0.
         ignore_index (int64): Specifies a target value that is ignored
-            and does not contribute to the input gradient. Default ``255``.
+            and does not contribute to the input gradient. Default: 255.
     """
 
     def __init__(self,
@@ -44,34 +45,6 @@ class RelaxBoundaryLoss(nn.Layer):
         self.upper_bound = upper_bound
         self.ignore_index = ignore_index
         self.EPS = 1e-5
-
-    # def relax_onehot(self, label, num_classes):
-    #     if len(label.shape) == 4:
-    #         label = label.squeeze(1)
-
-    #     label = label.numpy()
-    #     label[label == self.ignore_index] = num_classes
-
-    #     onehot = []
-    #     for n in range(label.shape[0]):
-    #         label_n = label[n]
-    #         onehot_n = 0
-    #         for i in range(-self.border, self.border + 1):
-    #             for j in range(-self.border, self.border + 1):
-    #                 # i is h direction, j is w direction
-    #                 shifted = shift(label_n, (i, j), cval=num_classes)
-    #                 ncols = num_classes + 1
-    #                 onehot_nij = np.zeros((shifted.size, ncols), dtype='int64')
-    #                 onehot_nij[np.arange(shifted.size), shifted.ravel()] = 1
-    #                 onehot_nij.shape = shifted.shape + (ncols, )
-    #                 onehot_n += onehot_nij
-    #         onehot_n = onehot_n[np.newaxis, :, :, :]
-    #         onehot.append(onehot_n)
-    #     onehot = np.concatenate(onehot, axis=0)
-    #     onehot[onehot > 1] = 1
-    #     onehot = np.transpose(onehot, (0, 3, 1, 2))
-    #     onehot = paddle.to_tensor(onehot)
-    #     return onehot
 
     def relax_onehot(self, label, num_classes):
         # pad label, and let ignore_index as num_classes
@@ -107,20 +80,10 @@ class RelaxBoundaryLoss(nn.Layer):
                    border_weights=None,
                    ignore_mask=None):
         soft = F.softmax(logit, axis=1)
-        # print('soft')
-        # print(soft)
         # calculate the valid soft where label is 1.
         soft_label = ((soft * label[:, :-1, :, :]).sum(
             1, keepdim=True)) * (label[:, :-1, :, :].astype('float32'))
-        # print('label onehot')
-        # print(label)
-        # print('soft * label sum')
-        # print((soft * label[:, :-1, :, :]).sum(1, keepdim=True))
-        # print('soft label')
-        # print(soft_label)
         soft = soft * (1 - label[:, :-1, :, :]) + soft_label
-        # print('relax soft')
-        # print(soft)
         logsoft = paddle.log(soft)
         if class_weights is not None:
             logsoft = class_weights.unsqueeze((0, 2, 3))
@@ -164,16 +127,3 @@ class RelaxBoundaryLoss(nn.Layer):
                 border_weights=border_weights,
                 ignore_mask=ignore_mask[i])
         return loss
-
-
-if __name__ == '__main__':
-    paddle.set_device('cpu')
-    logit = paddle.rand((1, 3, 4, 4))
-    label = paddle.to_tensor([[[0, 0, 0, 0], [0, 0, 0, 0], [1, 1, 2, 2],
-                               [1, 1, 2, 2]]])
-    # label = paddle.randint(0, 3, (1, 1, 4, 4))
-    loss_func = RelaxBoundaryLoss()
-    onehot_cpu = loss_func.relax_onehot(label, 3)
-    onehot_gpu = loss_func.relax_onehot_gpu(label, 3)
-    print(onehot_cpu)
-    print(onehot_gpu)

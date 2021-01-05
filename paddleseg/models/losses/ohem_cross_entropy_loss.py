@@ -53,9 +53,6 @@ class OhemCrossEntropyLoss(nn.Layer):
         if len(label.shape) != len(logit.shape):
             label = paddle.unsqueeze(label, 1)
 
-        # logit = paddle.transpose(logit, [0, 2, 3, 1])
-        # label = paddle.transpose(label, [0, 2, 3, 1])
-
         # get the label after ohem
         n, c, h, w = logit.shape
         label = label.reshape((-1, ))
@@ -100,11 +97,3 @@ class OhemCrossEntropyLoss(nn.Layer):
         label.stop_gradient = True
         valid_mask.stop_gradient = True
         return avg_loss
-
-
-if __name__ == '__main__':
-    paddle.set_device('cpu')
-    logit = paddle.rand((1, 2, 4, 4))
-    label = paddle.randint(0, 2, (1, 1, 4, 4))
-    loss_func = OhemCrossEntropyLoss(thresh=0.5, min_kept=10)
-    loss = loss_func(logit, label)
