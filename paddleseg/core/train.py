@@ -14,6 +14,8 @@
 
 import os
 import time
+from collections import deque
+import shutil
 
 import paddle
 import paddle.nn.functional as F
@@ -58,7 +60,7 @@ def train(model,
           num_workers=0,
           use_vdl=False,
           losses=None,
-          save_latest_only=False):
+          keep_checkpoint_max=5):
     """
     Launch training.
 
@@ -77,7 +79,7 @@ def train(model,
         use_vdl (bool, optional): Whether to record the data to VisualDL during training. Default: False.
         losses (dict): A dict including 'types' and 'coef'. The length of coef should equal to 1 or len(losses['types']).
             The 'types' item is a list of object of paddleseg.models.losses while the 'coef' item is a list of the relevant coefficient.
-        save_latest_only (bool, optional): Save latest model only. Default: False.
+        keep_checkpoint_max (int, optional): Maximum number of checkpoints to save. Default: 5.
     """
     nranks = paddle.distributed.ParallelEnv().nranks
     local_rank = paddle.distributed.ParallelEnv().local_rank
@@ -119,6 +121,7 @@ def train(model,
     best_model_iter = -1
     train_reader_cost = 0.0
     train_batch_cost = 0.0
+    save_models = deque()
     timer.start()
 
     iter = start_iter
@@ -206,21 +209,18 @@ def train(model,
                 model.train()
 
             if (iter % save_interval == 0 or iter == iters) and local_rank == 0:
-                if save_latest_only:
-                    current_save_dir = os.path.join(save_dir, 'latest_model')
-                else:
-                    current_save_dir = os.path.join(save_dir,
-                                                    "iter_{}".format(iter))
+                current_save_dir = os.path.join(save_dir,
+                                                "iter_{}".format(iter))
                 if not os.path.isdir(current_save_dir):
                     os.makedirs(current_save_dir)
                 paddle.save(model.state_dict(),
                             os.path.join(current_save_dir, 'model.pdparams'))
                 paddle.save(optimizer.state_dict(),
                             os.path.join(current_save_dir, 'model.pdopt'))
-                if save_latest_only:
-                    with open(os.path.join(current_save_dir, 'iter.txt'),
-                              'w') as f:
-                        f.write(str(iter))
+                save_models.append(current_save_dir)
+                if len(save_models) > keep_checkpoint_max > 0:
+                    model_to_remove = save_models.popleft()
+                    shutil.rmtree(model_to_remove)
 
                 if val_dataset is not None:
                     if mean_iou > best_mean_iou:
