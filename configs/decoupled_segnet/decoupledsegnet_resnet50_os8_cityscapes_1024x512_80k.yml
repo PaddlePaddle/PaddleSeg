@@ -26,6 +26,3 @@ loss:
 
 train_dataset:
   edge: True
-
-optimizer:
-  weight_decay: 5.0e-4
