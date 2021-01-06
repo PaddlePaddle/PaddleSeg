@@ -21,6 +21,7 @@ from paddleseg.models import layers
 
 class AttentionBlock(nn.Layer):
     """General self-attention block/non-local block.
+
     The original article refers to refer to https://arxiv.org/abs/1706.03762.
     Args:
         key_in_channels (int): Input channels of key feature.
