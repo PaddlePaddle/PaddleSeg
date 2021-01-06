@@ -30,3 +30,5 @@ from .hardnet import HarDNet
 from .u2net import U2Net, U2Netp
 from .attention_unet import AttentionUNet
 from .unet_plusplus import UNetPlusPlus
+from .emanet import *
+from .isanet import *
