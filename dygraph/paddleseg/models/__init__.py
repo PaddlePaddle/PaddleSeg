@@ -33,3 +33,4 @@ from .ms_class_wise_ocrnet import MsClassWiseOCRNet
 from .ms_2attention_ocrnet import Ms2AttentionOCRNet
 from .ms_ocrnet_attention_coef import MsAttentionCoefOCRNet
 from .ms_2input_atten_ocrnet import Ms2InputAttenOCRNet
+from .ms_cls_input_atten_ocrnet import MsClsInputAttenOCRNet

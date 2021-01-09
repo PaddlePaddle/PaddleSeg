@@ -113,10 +113,11 @@ def main(args):
     logger.info(msg)
 
     args.aug_eval = True
+    args.flip_horizontal = True
     all_ns = [
         #         [0.5, 1.0, 2.0],
         #[0.5, 1.0],
-        #[0.25, 0.5, 1.0],
+        [0.25, 0.5, 1.0],
         [0.5, 1.0, 1.5],
         [0.5, 0.75, 1.0, 2.0],
         [0.5, 1.0, 1.5, 2.0],
@@ -128,16 +129,8 @@ def main(args):
         #         [0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 2.25, 2.5],
     ]
     for n_scales in all_ns:
-        args.flip_horizontal = True
-        from paddleseg.models.mscale_ocrnet import MscaleOCRNet
-        from paddleseg.models.ms_ocrnet_attention_coef import MsAttentionCoefOCRNet
-        from paddleseg.models.ms_2input_atten_ocrnet import Ms2InputAttenOCRNet
-        from paddleseg.models.backbones.hrnet_nv import HRNet_W48_NV
-
-        backbone = HRNet_W48_NV()
-
-        model = MscaleOCRNet(19, backbone, [0], n_scales=n_scales)  ###
-
+        model = cfg.model
+        model.n_scales = n_scales
         utils.load_entire_model(model, args.model_path)
         #     para_state_dict = paddle.load(args.model_path)
         #     model.set_dict(para_state_dict)
@@ -157,8 +150,8 @@ def main(args):
             num_workers=args.num_workers,
         )
 
-        logger.info('===================above eval scales' + str(n_scales) +
-                    '  ' + str(args.flip_horizontal))
+        logger.info('===================above eval scales' +
+                    str(model.n_scales) + '  ' + str(args.flip_horizontal))
 
 
 if __name__ == '__main__':
