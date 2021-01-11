@@ -10,7 +10,7 @@ English | [简体中文](README_CN.md)
 
 ![demo](./docs/images/cityscapes.gif)
 
-Welcome to PaddleSeg! PaddleSeg is an end-to-end image segmentation development kit developed based on [PaddlePaddle](https://www.paddlepaddle.org.cn), which covers a large number of high-quality segmentation models in different directions such as *high-performance* and *lightweight*. With the help of modular design, one can conveniently complete the entire image segmentation application from training to deployment through configuration calls or API calls.
+Welcome to PaddleSeg! PaddleSeg is an end-to-end image segmentation development kit developed based on [PaddlePaddle](https://www.paddlepaddle.org.cn), which covers a large number of high-quality segmentation models in different directions such as *high-performance* and *lightweight*. With the help of modular design, we provide two application methods: *Configuration Drive* and *API Calling*. So one can conveniently complete the entire image segmentation application from training to deployment through configuration calls or API calls.
 
 ## Core features
 
@@ -61,6 +61,7 @@ Highly recommend you install the GPU version of PaddlePaddle, due to large overh
 
 
 #### step 2. Install PaddleSeg
+Support to construct a customized segmentation framework with *API Calling* method for flexible development.
 
 ```shell
 pip install paddleseg
@@ -68,12 +69,15 @@ pip install paddleseg
 
 
 #### step 3. Download PaddleSeg repo
+Support to complete the whole process segmentation application with *Configuration Drive* method, simple and fast.
 
 ```shell
 git clone https://github.com/PaddlePaddle/PaddleSeg
 ```
 
-## Quick Training
+#### step 4. Verify installation
+Run the following command. If you can train normally, you have installed it successfully.
+
 ```shell
 python train.py --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml
 ```
