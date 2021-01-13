@@ -97,7 +97,7 @@ class GSCNNHead(nn.Layer):
             each stage. If we set it as (0, 1, 2, 3), it means taking feature map of the first
             stage in backbone as low-level feature used in Decoder, feature map of the fourth
             stage as input of ASPP, and the feature map of the second to fourth stage as input of GCL.
-        backbone_channels (tuple): The same length with "backbone_indices". It indicates the channels of corresponding index.
+        backbone_channels (tuple): The channels of output of backbone.
         aspp_ratios (tuple): The dilation rates using in ASSP module.
         aspp_out_channels (int): The output channels of ASPP module.
         align_corners (bool): An argument of F.interpolate. It should be set to False when the output size of feature

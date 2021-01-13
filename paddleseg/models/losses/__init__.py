@@ -18,3 +18,6 @@ from .gscnn_dual_task_loss import DualTaskLoss
 from .edge_attention_loss import EdgeAttentionLoss
 from .bootstrapped_cross_entropy import BootstrappedCrossEntropyLoss
 from .dice_loss import DiceLoss
+from .ohem_cross_entropy_loss import OhemCrossEntropyLoss
+from .decoupledsegnet_relax_boundary_loss import RelaxBoundaryLoss
+from .ohem_edge_attention_loss import OhemEdgeAttentionLoss

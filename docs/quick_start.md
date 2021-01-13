@@ -42,7 +42,7 @@ python train.py \
 |resume_model|恢复训练模型路径，如：`output/iter_1000`|否|None|
 |keep_checkpoint_max|最新模型保存个数|否|5|
 
-
+### 多卡训练
 **注意**：如果想要使用多卡训练的话，需要将环境变量CUDA_VISIBLE_DEVICES指定为多卡（不指定时默认使用所有的gpu)，并使用paddle.distributed.launch启动训练脚本（windows下由于不支持nccl，无法使用多卡训练）:
 ```shell
 export CUDA_VISIBLE_DEVICES=0,1,2,3 # 设置4张可用的卡
@@ -54,7 +54,7 @@ python -m paddle.distributed.launch train.py \
        --save_dir output
 ```
 
-恢复训练：
+### 恢复训练
 ```shell
 python train.py \
        --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml \
@@ -67,7 +67,7 @@ python train.py \
 
 ## 训练可视化
 
-PaddleSeg会将训练过程中的数据写入VisualDL文件，并实时的查看训练过程中的日志，记录的数据包括：
+当打开`use_vdl`开关后，PaddleSeg会将训练过程中的数据写入VisualDL文件，可实时查看训练过程中的日志。记录的数据包括：
 1. loss变化趋势
 2. 学习率变化趋势
 3. 训练时间
@@ -116,7 +116,7 @@ python val.py \
 ```
 
 ## 效果可视化
-当保存完模型后，可以通过PaddleSeg提供的脚本对模型预测结果进行可视化，查看分割效果。
+当保存完模型后，可以通过PaddleSeg提供的脚本对模型进行预测，同时对结果进行可视化，查看分割效果。
 ```shell
 python predict.py \
        --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml \
