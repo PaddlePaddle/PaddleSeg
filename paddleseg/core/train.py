@@ -35,16 +35,16 @@ def check_logits_losses(logits_list, losses):
 
 def loss_computation(logits_list, labels, losses, edges=None):
     check_logits_losses(logits_list, losses)
-    loss = 0
+    loss_list = []
     for i in range(len(logits_list)):
         logits = logits_list[i]
         loss_i = losses['types'][i]
-        # Whether to use edges as labels According to loss type .
+        # Whether to use edges as labels According to loss type.
         if loss_i.__class__.__name__ in ('BCELoss', ) and loss_i.edge_label:
-            loss += losses['coef'][i] * loss_i(logits, edges)
+            loss_list.append(losses['coef'][i] * loss_i(logits, edges))
         else:
-            loss += losses['coef'][i] * loss_i(logits, labels)
-    return loss
+            loss_list.append(losses['coef'][i] * loss_i(logits, labels))
+    return loss_list
 
 
 def train(model,
@@ -115,6 +115,7 @@ def train(model,
 
     timer = Timer()
     avg_loss = 0.0
+    avg_loss_list = []
     iters_per_epoch = len(batch_sampler)
     best_mean_iou = -1.0
     best_model_iter = -1
@@ -140,11 +141,12 @@ def train(model,
                 logits_list = ddp_model(images)
             else:
                 logits_list = model(images)
-            loss = loss_computation(
+            loss_list = loss_computation(
                 logits_list=logits_list,
                 labels=labels,
                 losses=losses,
                 edges=edges)
+            loss = sum(loss_list)
             loss.backward()
 
             optimizer.step()
@@ -154,10 +156,18 @@ def train(model,
                 optimizer._learning_rate.step()
             model.clear_gradients()
             avg_loss += loss.numpy()[0]
+            if not avg_loss_list:
+                avg_loss_list = [l for l in loss_list]
+            else:
+                for i in range(len(loss_list)):
+                    avg_loss_list[i] += loss_list[i]
             train_batch_cost += timer.elapsed_time()
 
             if (iter) % log_iters == 0 and local_rank == 0:
                 avg_loss /= log_iters
+                avg_loss_list = [
+                    l.numpy()[0] / log_iters for l in avg_loss_list
+                ]
                 avg_train_reader_cost = train_reader_cost / log_iters
                 avg_train_batch_cost = train_batch_cost / log_iters
                 train_reader_cost = 0.0
@@ -171,12 +181,22 @@ def train(model,
                             avg_train_reader_cost, eta))
                 if use_vdl:
                     log_writer.add_scalar('Train/loss', avg_loss, iter)
+                    # Record all losses if there are more than 2 losses.
+                    if len(avg_loss_list) > 1:
+                        avg_loss_dict = {}
+                        for i, value in enumerate(avg_loss_list):
+                            avg_loss_dict['loss_' + str(i)] = value
+                        for key, value in avg_loss_dict.items():
+                            log_tag = 'Train/' + key
+                            log_writer.add_scalar(log_tag, value, iter)
+
                     log_writer.add_scalar('Train/lr', lr, iter)
                     log_writer.add_scalar('Train/batch_cost',
                                           avg_train_batch_cost, iter)
                     log_writer.add_scalar('Train/reader_cost',
                                           avg_train_reader_cost, iter)
                 avg_loss = 0.0
+                avg_loss_list = []
 
             if (iter % save_interval == 0
                     or iter == iters) and (val_dataset is not None):
