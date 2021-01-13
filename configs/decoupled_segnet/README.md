@@ -2,7 +2,7 @@
 
 ## Reference
 
-> Li X, Li X, Zhang L, et al. Improving semantic segmentation via decoupled body and edge supervision[J]. arXiv preprint arXiv:2007.10035, 2020.
+> Li, Xiangtai, Xia Li, Li Zhang, Guangliang Cheng, Jianping Shi, Zhouchen Lin, Shaohua Tan, and Yunhai Tong. "Improving semantic segmentation via decoupled body and edge supervision." arXiv preprint arXiv:2007.10035 (2020).
 
 ## Performance
 
