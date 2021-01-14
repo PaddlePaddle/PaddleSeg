@@ -92,8 +92,7 @@ def train(model,
     if nranks > 1:
         # Initialize parallel training environment.
         paddle.distributed.init_parallel_env()
-        strategy = paddle.distributed.prepare_context()
-        ddp_model = paddle.DataParallel(model, strategy)
+        ddp_model = paddle.DataParallel(model)
 
     batch_sampler = paddle.io.DistributedBatchSampler(
         train_dataset, batch_size=batch_size, shuffle=True, drop_last=True)
