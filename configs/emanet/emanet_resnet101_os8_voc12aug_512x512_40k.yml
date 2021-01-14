@@ -1,0 +1,28 @@
+_base_: '../_base_/pascal_voc12aug.yml'
+
+model:
+  type: EMANet
+  backbone:
+    type: ResNet101_vd
+    output_stride: 8
+    pretrained: https://bj.bcebos.com/paddleseg/dygraph/resnet101_vd_ssld.tar.gz
+  ema_channels: 512
+  gc_channels: 256
+  num_bases: 64
+  stage_num: 3
+  momentum: 0.1
+  concat_input: True
+  enable_auxiliary_loss: True
+  align_corners: True
+  
+optimizer:
+  type: sgd
+  momentum: 0.9
+  weight_decay: 0.0005
+
+
+loss:
+  types:
+    - type: CrossEntropyLoss
+    - type: CrossEntropyLoss
+  coef: [1, 0.4]

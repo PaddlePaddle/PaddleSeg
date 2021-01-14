@@ -15,3 +15,4 @@
 from .layer_libs import ConvBNReLU, ConvBN, SeparableConvBNReLU, DepthwiseConvBN, AuxLayer, SyncBatchNorm
 from .activation import Activation
 from .pyramid_pool import ASPPModule, PPModule
+from .attention import AttentionBlock
