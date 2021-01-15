@@ -111,6 +111,16 @@ def eval_fn(net, eval_dataset):
     return miou
 
 
+def export_model(net, eval_dataset, save_dir):
+    net.forward = paddle.jit.to_static(net.forward)
+    input_shape = [1] + list(eval_dataset[0][0].shape)
+    input_var = paddle.ones(input_shape)
+    out = net(input_var)
+
+    save_path = os.path.join(save_dir, 'model')
+    paddle.jit.save(net, save_path, input_spec=input_var)
+
+
 def main(args):
     env_info = get_sys_env()
     info = ['{}: {}'.format(k, v) for k, v in env_info.items()]
@@ -186,6 +196,9 @@ def main(args):
         use_vdl=args.use_vdl,
         losses=cfg.loss,
         keep_checkpoint_max=args.keep_checkpoint_max)
+
+    export_model(net, val_dataset, args.save_dir)
+    logger.info(f'Model retraining finish. Model is saved in {args.save_dir}')
 
 
 if __name__ == '__main__':
