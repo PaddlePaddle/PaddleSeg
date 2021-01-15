@@ -63,6 +63,12 @@ def parse_args():
         type=str,
         default='./output')
     parser.add_argument(
+        '--keep_checkpoint_max',
+        dest='keep_checkpoint_max',
+        help='Maximum number of checkpoints to save',
+        type=int,
+        default=5)
+    parser.add_argument(
         '--num_workers',
         dest='num_workers',
         help='Num workers for data loader',
@@ -133,7 +139,8 @@ def main(args):
         log_iters=args.log_iters,
         num_workers=args.num_workers,
         use_vdl=args.use_vdl,
-        losses=losses)
+        losses=losses,
+        keep_checkpoint_max=args.keep_checkpoint_max)
 
 
 if __name__ == '__main__':

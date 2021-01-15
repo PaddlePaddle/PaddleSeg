@@ -1,4 +1,5 @@
-# Copyright (c) 2020 PaddlePaddle Authors. All Rights Reserved.
+# coding: utf8
+# Copyright (c) 2020 PaddlePaddle Authors. All Rights Reserve.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,22 +13,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .backbones import *
-from .losses import *
+import paddle
 
-from .ann import *
-from .bisenet import *
-from .danet import *
-from .deeplab import *
-from .fast_scnn import *
-from .fcn import *
-from .gcnet import *
-from .ocrnet import *
-from .pspnet import *
-from .gscnn import GSCNN
-from .unet import UNet
-from .hardnet import HarDNet
-from .u2net import U2Net, U2Netp
-from .attention_unet import AttentionUNet
-from .unet_plusplus import UNetPlusPlus
-from .decoupled_segnet import DecoupledSegNet
+
+def enable_static():
+    if hasattr(paddle, 'enable_static'):
+        paddle.enable_static()
+
+
+def save_op_version_info(program_desc):
+    if hasattr(paddle.fluid.core, 'save_op_version_info'):
+        paddle.fluid.core.save_op_version_info(program_desc)
+    else:
+        paddle.fluid.core.save_op_compatible_info(program_desc)

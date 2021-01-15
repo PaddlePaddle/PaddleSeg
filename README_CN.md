@@ -10,7 +10,7 @@
 
 ![demo](./docs/images/cityscapes.gif)
 
-PaddleSeg是基于飞桨[PaddlePaddle](https://www.paddlepaddle.org.cn)开发的端到端图像分割开发套件，涵盖了**高精度**和**轻量级**等不同方向的大量高质量分割模型。通过模块化的设计，提供了**配置化驱动**和**API调用**等两种应用方式，帮助开发者更便捷地完成从训练到部署的全流程图像分割应用。
+PaddleSeg是基于飞桨[PaddlePaddle](https://www.paddlepaddle.org.cn)开发的端到端图像分割开发套件，涵盖了**高精度**和**轻量级**等不同方向的大量高质量分割模型。通过模块化的设计，提供了**配置化驱动**和**API调用**两种应用方式，帮助开发者更便捷地完成从训练到部署的全流程图像分割应用。
 
 ## 特性
 
@@ -40,6 +40,7 @@ PaddleSeg是基于飞桨[PaddlePaddle](https://www.paddlepaddle.org.cn)开发的
 |[U<sup>2</sup>-Net](./configs/u2net)|-|-|-|-|
 |[Att U-Net](./configs/attention_unet)|-|-|-|-|
 |[U-Net++](./configs/unet_plusplus)|-|-|-|-|
+|[DecoupledSegNet](./configs/decoupled_segnet)|✔|✔|||
 
 ## 数据集
 
@@ -63,17 +64,22 @@ PaddleSeg是基于飞桨[PaddlePaddle](https://www.paddlepaddle.org.cn)开发的
 
 
 #### 2. 安装PaddleSeg
+支持用**API调用**的方式构建定制化的分割框架，灵活开发。
 
 ```shell
 pip install paddleseg
 ```
 
 #### 3. 下载PaddleSeg仓库
+支持用**配置化驱动**的方式完成全流程分割应用，简单快捷。
+
 ```shell
 git clone https://github.com/PaddlePaddle/PaddleSeg
 ```
 
-## 训练
+#### 4. 验证安装
+运行以下命令，如果可以正常进行训练，说明您已经安装成功。
+
 ```shell
 python train.py --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml
 ```

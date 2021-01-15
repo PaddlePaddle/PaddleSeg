@@ -14,6 +14,8 @@
 
 import os
 import time
+from collections import deque
+import shutil
 
 import paddle
 import paddle.nn.functional as F
@@ -33,16 +35,16 @@ def check_logits_losses(logits_list, losses):
 
 def loss_computation(logits_list, labels, losses, edges=None):
     check_logits_losses(logits_list, losses)
-    loss = 0
+    loss_list = []
     for i in range(len(logits_list)):
         logits = logits_list[i]
         loss_i = losses['types'][i]
-        # Whether to use edges as labels According to loss type .
-        if loss_i.__class__.__name__ in ('BCELoss', ):
-            if loss_i.edge_label:
-                labels = edges
-        loss += losses['coef'][i] * loss_i(logits, labels)
-    return loss
+        # Whether to use edges as labels According to loss type.
+        if loss_i.__class__.__name__ in ('BCELoss', ) and loss_i.edge_label:
+            loss_list.append(losses['coef'][i] * loss_i(logits, edges))
+        else:
+            loss_list.append(losses['coef'][i] * loss_i(logits, labels))
+    return loss_list
 
 
 def train(model,
@@ -57,7 +59,8 @@ def train(model,
           log_iters=10,
           num_workers=0,
           use_vdl=False,
-          losses=None):
+          losses=None,
+          keep_checkpoint_max=5):
     """
     Launch training.
 
@@ -76,6 +79,7 @@ def train(model,
         use_vdl (bool, optional): Whether to record the data to VisualDL during training. Default: False.
         losses (dict): A dict including 'types' and 'coef'. The length of coef should equal to 1 or len(losses['types']).
             The 'types' item is a list of object of paddleseg.models.losses while the 'coef' item is a list of the relevant coefficient.
+        keep_checkpoint_max (int, optional): Maximum number of checkpoints to save. Default: 5.
     """
     nranks = paddle.distributed.ParallelEnv().nranks
     local_rank = paddle.distributed.ParallelEnv().local_rank
@@ -92,8 +96,7 @@ def train(model,
     if nranks > 1:
         # Initialize parallel training environment.
         paddle.distributed.init_parallel_env()
-        strategy = paddle.distributed.prepare_context()
-        ddp_model = paddle.DataParallel(model, strategy)
+        ddp_model = paddle.DataParallel(model)
 
     batch_sampler = paddle.io.DistributedBatchSampler(
         train_dataset, batch_size=batch_size, shuffle=True, drop_last=True)
@@ -111,11 +114,13 @@ def train(model,
 
     timer = Timer()
     avg_loss = 0.0
+    avg_loss_list = []
     iters_per_epoch = len(batch_sampler)
     best_mean_iou = -1.0
     best_model_iter = -1
     train_reader_cost = 0.0
     train_batch_cost = 0.0
+    save_models = deque()
     timer.start()
 
     iter = start_iter
@@ -135,11 +140,12 @@ def train(model,
                 logits_list = ddp_model(images)
             else:
                 logits_list = model(images)
-            loss = loss_computation(
+            loss_list = loss_computation(
                 logits_list=logits_list,
                 labels=labels,
                 losses=losses,
                 edges=edges)
+            loss = sum(loss_list)
             loss.backward()
 
             optimizer.step()
@@ -149,10 +155,18 @@ def train(model,
                 optimizer._learning_rate.step()
             model.clear_gradients()
             avg_loss += loss.numpy()[0]
+            if not avg_loss_list:
+                avg_loss_list = [l for l in loss_list]
+            else:
+                for i in range(len(loss_list)):
+                    avg_loss_list[i] += loss_list[i]
             train_batch_cost += timer.elapsed_time()
 
             if (iter) % log_iters == 0 and local_rank == 0:
                 avg_loss /= log_iters
+                avg_loss_list = [
+                    l.numpy()[0] / log_iters for l in avg_loss_list
+                ]
                 avg_train_reader_cost = train_reader_cost / log_iters
                 avg_train_batch_cost = train_batch_cost / log_iters
                 train_reader_cost = 0.0
@@ -166,12 +180,22 @@ def train(model,
                             avg_train_reader_cost, eta))
                 if use_vdl:
                     log_writer.add_scalar('Train/loss', avg_loss, iter)
+                    # Record all losses if there are more than 2 losses.
+                    if len(avg_loss_list) > 1:
+                        avg_loss_dict = {}
+                        for i, value in enumerate(avg_loss_list):
+                            avg_loss_dict['loss_' + str(i)] = value
+                        for key, value in avg_loss_dict.items():
+                            log_tag = 'Train/' + key
+                            log_writer.add_scalar(log_tag, value, iter)
+
                     log_writer.add_scalar('Train/lr', lr, iter)
                     log_writer.add_scalar('Train/batch_cost',
                                           avg_train_batch_cost, iter)
                     log_writer.add_scalar('Train/reader_cost',
                                           avg_train_reader_cost, iter)
                 avg_loss = 0.0
+                avg_loss_list = []
 
             if (iter % save_interval == 0
                     or iter == iters) and (val_dataset is not None):
@@ -189,6 +213,10 @@ def train(model,
                             os.path.join(current_save_dir, 'model.pdparams'))
                 paddle.save(optimizer.state_dict(),
                             os.path.join(current_save_dir, 'model.pdopt'))
+                save_models.append(current_save_dir)
+                if len(save_models) > keep_checkpoint_max > 0:
+                    model_to_remove = save_models.popleft()
+                    shutil.rmtree(model_to_remove)
 
                 if val_dataset is not None:
                     if mean_iou > best_mean_iou:
@@ -206,6 +234,20 @@ def train(model,
                         log_writer.add_scalar('Evaluate/mIoU', mean_iou, iter)
                         log_writer.add_scalar('Evaluate/Acc', acc, iter)
             timer.restart()
+
+    # Calculate flops.
+    if local_rank == 0:
+
+        def count_syncbn(m, x, y):
+            x = x[0]
+            nelements = x.numel()
+            m.total_ops += int(2 * nelements)
+
+        _, c, h, w = images.shape
+        flops = paddle.flops(
+            model, [1, c, h, w],
+            custom_ops={paddle.nn.SyncBatchNorm: count_syncbn})
+        logger.info(flops)
 
     # Sleep for half a second to let dataloader release resources.
     time.sleep(0.5)

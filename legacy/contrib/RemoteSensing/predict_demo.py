@@ -21,6 +21,7 @@ from PIL import Image as Image
 import argparse
 from models import load_model
 from models.utils.visualize import get_color_map_list
+from utils import paddle_utils
 
 
 def parse_args():
@@ -68,6 +69,7 @@ def parse_args():
     return parser.parse_args()
 
 
+paddle_utils.enable_static()
 args = parse_args()
 data_dir = args.data_dir
 file_list = args.file_list

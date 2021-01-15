@@ -108,10 +108,10 @@ def resume(model, optimizer, resume_model):
             opti_state_dict = paddle.load(ckpt_path)
             model.set_state_dict(para_state_dict)
             optimizer.set_state_dict(opti_state_dict)
-            epoch = resume_model.split('_')[-1]
-            if epoch.isdigit():
-                epoch = int(epoch)
-            return epoch
+
+            iter = resume_model.split('_')[-1]
+            iter = int(iter)
+            return iter
         else:
             raise ValueError(
                 'Directory of the model needed to resume is not Found: {}'.

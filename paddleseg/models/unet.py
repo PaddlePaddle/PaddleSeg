@@ -127,7 +127,7 @@ class UpSampling(nn.Layer):
 
         self.use_deconv = use_deconv
         if self.use_deconv:
-            self.deconv = nn.ConvTranspose2D(
+            self.deconv = nn.Conv2DTranspose(
                 in_channels,
                 out_channels // 2,
                 kernel_size=2,
