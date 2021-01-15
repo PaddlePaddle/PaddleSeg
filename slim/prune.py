@@ -36,8 +36,8 @@ def parse_args():
         default=None,
         required=True)
     parser.add_argument(
-        "--prune_ratio",
-        dest="prune_ratio",
+        "--pruning_ratio",
+        dest="pruning_ratio",
         help="The ratio of model pruning.",
         type=float,
         default=None,
@@ -50,58 +50,11 @@ def parse_args():
         default=None,
         required=True)
     parser.add_argument(
-        '--batch_size',
-        dest='batch_size',
-        help='Mini batch size of one gpu or cpu.',
-        type=int,
-        default=None)
-    parser.add_argument(
-        '--learning_rate',
-        dest='learning_rate',
-        help='Learning rate of retraining.',
-        type=float,
-        default=None)
-    parser.add_argument(
-        '--save_interval',
-        dest='save_interval',
-        help=
-        'The number of interval iterations to save the model during training.',
-        type=int,
-        default=1000)
-    parser.add_argument(
         '--save_dir',
         dest='save_dir',
         help='The directory for saving the model snapshot',
         type=str,
         default='./output')
-    parser.add_argument(
-        '--keep_checkpoint_max',
-        dest='keep_checkpoint_max',
-        help='Maximum number of checkpoints to save',
-        type=int,
-        default=5)
-    parser.add_argument(
-        '--num_workers',
-        dest='num_workers',
-        help='Num workers for data loader',
-        type=int,
-        default=0)
-    parser.add_argument(
-        '--do_eval',
-        dest='do_eval',
-        help='Eval while retraining',
-        action='store_true')
-    parser.add_argument(
-        '--log_iters',
-        dest='log_iters',
-        help='Display logging information at every log_iters',
-        default=10,
-        type=int)
-    parser.add_argument(
-        '--use_vdl',
-        dest='use_vdl',
-        help='Whether to record the data to VisualDL during training',
-        action='store_true')
 
     return parser.parse_args()
 
@@ -132,18 +85,14 @@ def main(args):
         'GPUs used'] else 'cpu'
     paddle.set_device(place)
 
-    if not (0.0 < args.prune_ratio < 1.0):
+    if not (0.0 < args.pruning_ratio < 1.0):
         raise RuntimeError(
             'The model pruning rate must be in the range of (0, 1).')
 
     if not os.path.exists(args.save_dir):
         os.makedirs(args.save_dir)
 
-    cfg = Config(
-        args.cfg,
-        learning_rate=args.learning_rate,
-        iters=args.retraining_iters,
-        batch_size=args.batch_size)
+    cfg = Config(args.cfg, iters=args.retraining_iters)
 
     train_dataset = cfg.train_dataset
     if not train_dataset:
@@ -190,12 +139,7 @@ def main(args):
         save_dir=args.save_dir,
         iters=cfg.iters,
         batch_size=cfg.batch_size,
-        save_interval=args.save_interval,
-        log_iters=args.log_iters,
-        num_workers=args.num_workers,
-        use_vdl=args.use_vdl,
-        losses=cfg.loss,
-        keep_checkpoint_max=args.keep_checkpoint_max)
+        losses=cfg.loss)
 
     export_model(net, val_dataset, args.save_dir)
     logger.info(f'Model retraining finish. Model is saved in {args.save_dir}')
