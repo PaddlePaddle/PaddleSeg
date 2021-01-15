@@ -55,6 +55,12 @@ def parse_args():
         help='The directory for saving the model snapshot',
         type=str,
         default='./output')
+    parser.add_argument(
+        '--model_path',
+        dest='model_path',
+        help='The path of model for evaluation',
+        type=str,
+        default=None)
 
     return parser.parse_args()
 
@@ -105,6 +111,11 @@ def main(args):
             'The validation dataset is not specified in the configuration file.'
         )
     net = cfg.model
+
+    if args.model_path:
+        para_state_dict = paddle.load(args.model_path)
+        net.set_dict(para_state_dict)
+        logger.info('Loaded trained params of model successfully')
 
     msg = '\n---------------Config Information---------------\n'
     msg += str(cfg)
