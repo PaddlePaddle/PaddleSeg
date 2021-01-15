@@ -91,7 +91,7 @@ python train.py --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml
 * [Training Configuration](./configs/)
 * [API References](./docs/apis)
 * [Add New Components](./docs/add_new_model.md)
-* [Model Compression](./docs/slim)
+* [Model Compression](./slim)
 
 ## Feedbacks and Contact
 * The dynamic version is still under development, if you find any issue or have an idea on new features, please don't hesitate to contact us via [GitHub Issues](https://github.com/PaddlePaddle/PaddleSeg/issues).
