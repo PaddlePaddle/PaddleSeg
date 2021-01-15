@@ -189,7 +189,8 @@ def main(args):
             save_dir,
             input_spec=[
                 paddle.static.InputSpec(
-                    shape=[None, 3, 1024, 2048], dtype='float32')
+                    shape=[None] + list(val_dataset[0][0].shape),
+                    dtype='float32')
             ])
     logger.info(
         f'Model retraining complete. The quantized model is saved in {save_dir}.'
