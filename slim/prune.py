@@ -122,6 +122,10 @@ def main(args):
         'GPUs used'] else 'cpu'
     paddle.set_device(place)
 
+    if not (0.0 < args.prune_ratio < 1.0):
+        raise RuntimeError(
+            'The model pruning rate must be in the range of (0, 1).')
+
     if not os.path.exists(args.save_dir):
         os.makedirs(args.save_dir)
 
