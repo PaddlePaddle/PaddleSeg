@@ -100,3 +100,25 @@ python train.py --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml
 * 非常感谢[jm12138](https://github.com/jm12138)贡献U<sup>2</sup>-Net模型。
 * 非常感谢[zjhellofss](https://github.com/zjhellofss)（傅莘莘）贡献Attention U-Net模型，和Dice loss损失函数。
 * 非常感谢[liuguoyu666](https://github.com/liguoyu666)贡献U-Net++模型。
+
+## 学术引用
+
+假如我们的项目对你的学术有帮助，请考虑引用：
+
+```latex
+@misc{liu2021paddleseg,
+      title={PaddleSeg: A High-Efficient Development Toolkit for Image Segmentation}, 
+      author={Yi Liu and Lutao Chu and Guowei Chen and Zewu Wu and Zeyu Chen and Baohua Lai and Yuying Hao},
+      year={2021},
+      eprint={2101.06175},
+      archivePrefix={arXiv},
+      primaryClass={cs.CV}
+}
+
+@misc{paddleseg2019,
+    title={PaddleSeg, End-to-end image segmentation kit based on PaddlePaddle},
+    author={PaddlePaddle Authors},
+    howpublished = {\url{https://github.com/PaddlePaddle/PaddleSeg}},
+    year={2019}
+}
+```
