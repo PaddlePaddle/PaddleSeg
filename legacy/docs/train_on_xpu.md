@@ -10,15 +10,14 @@
 * 数据准备(在legacy目录下)：
 
 ```shell
-python pretrained_model/download_model.py deeplabv3p_xception65_bn_coco
+python dataset/download_optic.py
 ```
 
 * 预训练模型准备(在legacy目录下)：
 
 ```shell
-python dataset/download_optic.py
+python pretrained_model/download_model.py deeplabv3p_xception65_bn_coco
 ```
-
 
 * 执行训练(在legacy目录下)：
 
@@ -30,15 +29,14 @@ python pdseg/train.py --cfg configs/deeplabv3p_xception65_optic_kunlun.yaml --us
 * 数据准备(在legacy目录下)：
 
 ```shell
-python pretrained_model/download_model.py unet_bn_coco
+python dataset/download_optic.py
 ```
 
 * 预训练模型准备(在legacy目录下)：
 
 ```shell
-python dataset/download_optic.py
+python pretrained_model/download_model.py unet_bn_coco
 ```
-
 
 * 执行训练(在legacy目录下)：
 
@@ -58,15 +56,14 @@ python pdseg/train.py --use_xpu --cfg configs/unet_optic.yaml --use_mpio --log_s
 * 数据准备(在legacy目录下)：
 
 ```shell
-python pretrained_model/download_model.py hrnet_w18_bn_cityscapes
+python dataset/download_optic.py
 ```
 
 * 预训练模型准备(在legacy目录下)：
 
 ```shell
-python dataset/download_optic.py
+python pretrained_model/download_model.py hrnet_w18_bn_cityscapes
 ```
-
 
 * 执行训练(在legacy目录下)：
 
