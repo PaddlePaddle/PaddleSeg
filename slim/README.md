@@ -77,7 +77,7 @@ python train.py \
 
 |参数名|用途|是否必选项|默认值|
 |-|-|-|-|
-|prune_ratio|卷积核裁剪比率|是||
+|pruning_ratio|卷积核裁剪比率|是||
 |retraining_iters|裁剪完成后的重训练迭代数|是||
 |config|配置文件|是||
 |model_path|预训练模型参数路径|否|配置文件中指定值|
@@ -87,7 +87,7 @@ python train.py \
 ```shell
 python slim/prune.py \
        --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml \
-       --prune_rate 0.2
+       --pruning_ratio 0.2
        --model_path output/model.pdparams
        --retraining_iters 100
        --save_dir prune_model

@@ -136,19 +136,17 @@ def main(args):
         batch_size=cfg.batch_size,
         losses=cfg.loss)
 
-    save_dir = os.path.join(args.save_dir, 'model')
-
     if paddle.distributed.get_rank() == 0:
         quantizer.save_quantized_model(
             net,
-            save_dir,
+            os.path.join(args.save_dir, 'model'),
             input_spec=[
                 paddle.static.InputSpec(
                     shape=[None] + list(val_dataset[0][0].shape),
                     dtype='float32')
             ])
     logger.info(
-        f'Model retraining complete. The quantized model is saved in {save_dir}.'
+        f'Model retraining complete. The quantized model is saved in {args.save_dir}.'
     )
 
 
