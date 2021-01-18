@@ -80,12 +80,10 @@ class MsClsInputAttenOCRNet(nn.Layer):
         joint_pred = p_lo + p_1x * (1 - logit_attn)
         joint_aux = aux_lo + aux_1x * (1 - logit_attn)
 
-        output = [joint_pred, joint_aux]
-
         # Optionally, apply supervision to the multi-scale predictions
         # directly.
         scaled_pred_05x = scale_as(pred_05x, p_1x)
-        output.extend([scaled_pred_05x, pred_10x])
+        output = [joint_pred, joint_aux, scaled_pred_05x, pred_10x]
         output.extend(output)
         return output
 

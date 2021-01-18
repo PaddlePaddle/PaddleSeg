@@ -34,3 +34,5 @@ from .ms_2attention_ocrnet import Ms2AttentionOCRNet
 from .ms_ocrnet_attention_coef import MsAttentionCoefOCRNet
 from .ms_2input_atten_ocrnet import Ms2InputAttenOCRNet
 from .ms_cls_input_atten_ocrnet import MsClsInputAttenOCRNet
+from .ms_cls_input_no_aux_atten_ocrnet import MsClsInputNoAuxAttenOCRNet
+from .ms_cls_input_atten_ocrnet_crp import MsClsInputAttenOCRNetCRP
