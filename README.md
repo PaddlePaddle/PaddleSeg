@@ -112,4 +112,11 @@ If you find our project useful in your research, please consider citing:
       archivePrefix={arXiv},
       primaryClass={cs.CV}
 }
+
+@misc{paddleseg2019,
+    title={PaddleSeg, End-to-end image segmentation kit based on PaddlePaddle},
+    author={PaddlePaddle Authors},
+    howpublished = {\url{https://github.com/PaddlePaddle/PaddleSeg}},
+    year={2019}
+}
 ```
