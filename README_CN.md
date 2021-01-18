@@ -101,7 +101,7 @@ python train.py --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml
 
 ## 学术引用
 
-假如我们的项目对你的学术有帮助，请考虑引用：
+如果我们的项目在学术上帮助到你，请考虑以下引用：
 
 ```latex
 @misc{liu2021paddleseg,
