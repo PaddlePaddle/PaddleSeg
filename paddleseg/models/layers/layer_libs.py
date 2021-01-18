@@ -17,6 +17,24 @@ import paddle.nn as nn
 import paddle.nn.functional as F
 
 
+def convert_syncbn_to_bn(net):
+    for key, sublayer in net._sub_layers.items():
+        if isinstance(sublayer, nn.SyncBatchNorm):
+            sync_bn_dict = sublayer.state_dict()
+            bn = nn.BatchNorm2D(
+                num_features=sublayer._num_features,
+                momentum=sublayer._momentum,
+                epsilon=sublayer._epsilon,
+                data_format=sublayer._data_formet,
+                use_global_stats=sublayer._use_global_stas,
+                name=sublayer._name)
+
+            bn.set_dict(sync_bn_dict)
+            setattr(net, key, bn)
+        else:
+            convert_syncbn_to_bn(sublayer)
+
+
 def SyncBatchNorm(*args, **kwargs):
     """In cpu environment nn.SyncBatchNorm does not have kernel so use nn.BatchNorm2D instead"""
     if paddle.get_device() == 'cpu':
