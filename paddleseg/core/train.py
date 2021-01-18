@@ -108,6 +108,10 @@ def train(model,
         return_list=True,
     )
 
+    # use amp
+    logger.info('use amp to train')
+    scaler = paddle.amp.GradScaler(init_loss_scaling=1024)
+
     if use_vdl:
         from visualdl import LogWriter
         log_writer = LogWriter(save_dir)
@@ -136,19 +140,24 @@ def train(model,
             if len(data) == 3:
                 edges = data[2].astype('int64')
 
-            if nranks > 1:
-                logits_list = ddp_model(images)
-            else:
-                logits_list = model(images)
-            loss_list = loss_computation(
-                logits_list=logits_list,
-                labels=labels,
-                losses=losses,
-                edges=edges)
-            loss = sum(loss_list)
-            loss.backward()
+            with paddle.amp.auto_cast(enable=True):
+                if nranks > 1:
+                    logits_list = ddp_model(images)
+                else:
+                    logits_list = model(images)
+                loss_list = loss_computation(
+                    logits_list=logits_list,
+                    labels=labels,
+                    losses=losses,
+                    edges=edges)
+                loss = sum(loss_list)
+            # loss.backward()
+            # optimizer.step()
 
-            optimizer.step()
+            scaled = scaler.scale(loss)  # scale the loss
+            scaled.backward()  # do backward
+            scaler.minimize(optimizer, scaled)  # update parameters
+
             lr = optimizer.get_lr()
             if isinstance(optimizer._learning_rate,
                           paddle.optimizer.lr.LRScheduler):
