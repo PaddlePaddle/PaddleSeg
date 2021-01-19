@@ -16,3 +16,4 @@ from .layer_libs import ConvBNReLU, ConvBN, SeparableConvBNReLU, DepthwiseConvBN
 from .activation import Activation
 from .pyramid_pool import ASPPModule, PPModule
 from .attention import AttentionBlock
+from .nonlocal2d import NonLocal2d

@@ -32,3 +32,4 @@ from .attention_unet import AttentionUNet
 from .unet_plusplus import UNetPlusPlus
 from .emanet import *
 from .isanet import *
+from .dnlnet import *
