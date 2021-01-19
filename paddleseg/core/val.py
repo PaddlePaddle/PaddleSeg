@@ -145,10 +145,12 @@ def evaluate(model,
             batch_cost_averager.record(
                     time.time() - batch_start,
                     num_samples=len(label))
+            batch_cost = batch_cost_averager.get_average()
+            reader_cost = reader_cost_averager.get_average()
 
             if local_rank == 0:
-                progbar_val.update(iter + 1, [('batch_cost', batch_cost_averager.get_average()),
-                                              ('reader cost', reader_cost_averager.get_average())])
+                progbar_val.update(iter + 1, [('batch_cost', batch_cost),
+                                              ('reader cost', reader_cost)])
             reader_cost_averager.reset()
             batch_cost_averager.reset()
             batch_start = time.time()
