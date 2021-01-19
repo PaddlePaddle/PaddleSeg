@@ -77,7 +77,7 @@ class PascalContextGenerator(object):
             427, 44, 45, 46, 308, 59, 440, 445, 31, 232, 65, 354, 424,
             68, 326, 72, 458, 34, 207, 80, 355, 85, 347, 220, 349, 360,
             98, 187, 104, 105, 366, 189, 368, 113, 115]))
-        self._key = np.array(range(len(self._mapping))).astype('uint8')
+        self._key = np.array(range(len(self._mapping))).astype('uint8') - 1
 
         self.train_detail = Detail(self.annFile, self._image_dir, 'train')
         self.train_ids = self.train_detail.getImgs()

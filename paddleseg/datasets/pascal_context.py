@@ -24,7 +24,7 @@ from paddleseg.transforms import Compose
 class PascalContext(Dataset):
     """
     PascalVOC2010 dataset `http://host.robots.ox.ac.uk/pascal/VOC/`.
-    If you want to use pascal context dataset, please run the voc_context.py in tools firstly.
+    If you want to use pascal context dataset, please run the convert_voc2010.py in tools firstly.
 
     Args:
         transforms (list): Transforms for image.
@@ -40,7 +40,7 @@ class PascalContext(Dataset):
         self.mode = mode
         self.file_list = list()
         self.num_classes = 59
-        self.ignore_index = 0
+        self.ignore_index = 255
 
         if mode not in ['train', 'trainval', 'val']:
             raise ValueError(

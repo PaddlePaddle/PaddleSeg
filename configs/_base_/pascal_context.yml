@@ -1,5 +1,5 @@
 batch_size: 4
-iters: 30000
+iters: 40000
 
 train_dataset:
   type: PascalContext
