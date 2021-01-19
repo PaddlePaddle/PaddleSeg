@@ -1,5 +1,5 @@
 batch_size: 4
-iters: 60000
+iters: 80000
 
 train_dataset:
   type: CocoStuff
