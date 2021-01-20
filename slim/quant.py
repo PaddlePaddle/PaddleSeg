@@ -129,13 +129,13 @@ def main(args):
     train(
         net,
         train_dataset,
-        val_dataset=val_dataset,
         optimizer=cfg.optimizer,
         save_dir=args.save_dir,
         iters=cfg.iters,
         batch_size=cfg.batch_size,
         losses=cfg.loss)
 
+    evaluate(net, val_dataset)
     if paddle.distributed.get_rank() == 0:
         quantizer.save_quantized_model(
             net,

@@ -145,13 +145,13 @@ def main(args):
     train(
         net,
         train_dataset,
-        val_dataset=val_dataset,
         optimizer=cfg.optimizer,
         save_dir=args.save_dir,
         iters=cfg.iters,
         batch_size=cfg.batch_size,
         losses=cfg.loss)
 
+    evaluate(net, val_dataset)
     export_model(net, val_dataset, args.save_dir)
     logger.info(f'Model retraining finish. Model is saved in {args.save_dir}')
 
