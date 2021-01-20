@@ -54,19 +54,7 @@ def encoder(input):
     with scope('encoder'):
         channel = cfg.MODEL.DEEPLAB.ENCODER.ASPP_CONVS_FILTERS
         with scope("image_pool"):
-            if not cfg.MODEL.DEEPLAB.ENCODER.POOLING_CROP_SIZE:
-                image_avg = paddle.mean(input, [2, 3], keepdim=True)
-            else:
-                pool_w = int((cfg.MODEL.DEEPLAB.ENCODER.POOLING_CROP_SIZE[0] -
-                              1.0) / cfg.MODEL.DEEPLAB.OUTPUT_STRIDE + 1.0)
-                pool_h = int((cfg.MODEL.DEEPLAB.ENCODER.POOLING_CROP_SIZE[1] -
-                              1.0) / cfg.MODEL.DEEPLAB.OUTPUT_STRIDE + 1.0)
-                iamge_avg = F.avg_pool2d(
-                    input,
-                    kernel_size=(pool_h, pool_w),
-                    stride=cfg.MODEL.DEEPLAB.ENCODER.POOLING_STRIDE,
-                    padding='VALID')
-
+            image_avg = F.adaptive_avg_pool2d(input, output_size=(1, 1))
             act = qsigmoid if cfg.MODEL.DEEPLAB.ENCODER.SE_USE_QSIGMOID else bn_relu
             image_avg = act(
                 conv(
@@ -91,7 +79,10 @@ def encoder(input):
                     1,
                     groups=1,
                     padding=0,
-                    param_attr=param_attr))
+                    param_attr=param_attr,
+                    bias_attr=None))
+            aspp0 = F.interpolate(
+                aspp0, input.shape[2:], mode='bilinear', align_corners=True)
             concat_logits.append(aspp0)
 
         if aspp_ratios:
@@ -109,6 +100,8 @@ def encoder(input):
                             dilation=aspp_ratios[0],
                             padding=aspp_ratios[0],
                             param_attr=param_attr))
+                aspp1 = F.interpolate(
+                    aspp1, input.shape[2:], mode='bilinear', align_corners=True)
                 concat_logits.append(aspp1)
             with scope("aspp2"):
                 if cfg.MODEL.DEEPLAB.ASPP_WITH_SEP_CONV:
@@ -124,6 +117,8 @@ def encoder(input):
                             dilation=aspp_ratios[1],
                             padding=aspp_ratios[1],
                             param_attr=param_attr))
+                aspp2 = F.interpolate(
+                    aspp2, input.shape[2:], mode='bilinear', align_corners=True)
                 concat_logits.append(aspp2)
             with scope("aspp3"):
                 if cfg.MODEL.DEEPLAB.ASPP_WITH_SEP_CONV:
@@ -139,6 +134,8 @@ def encoder(input):
                             dilation=aspp_ratios[2],
                             padding=aspp_ratios[2],
                             param_attr=param_attr))
+                aspp3 = F.interpolate(
+                    aspp3, input.shape[2:], mode='bilinear', align_corners=True)
                 concat_logits.append(aspp3)
 
         with scope("concat"):
@@ -152,7 +149,8 @@ def encoder(input):
                         1,
                         groups=1,
                         padding=0,
-                        param_attr=param_attr))
+                        param_attr=param_attr,
+                        bias_attr=None))
                 data = F.dropout(data, 0.1, mode='downscale_in_infer')
 
         if cfg.MODEL.DEEPLAB.ENCODER.ASPP_WITH_SE:
@@ -198,7 +196,8 @@ def _decoder_with_concat(encode_data, decode_shortcut, param_attr):
                 1,
                 groups=1,
                 padding=0,
-                param_attr=param_attr))
+                param_attr=param_attr,
+                bias_attr=None))
 
         encode_data = F.interpolate(
             encode_data,
@@ -213,16 +212,14 @@ def _decoder_with_concat(encode_data, decode_shortcut, param_attr):
                 cfg.MODEL.DEEPLAB.DECODER.CONV_FILTERS,
                 1,
                 3,
-                dilation=1,
-                act=relu)
+                dilation=1)
         with scope("separable_conv2"):
             encode_data = separate_conv(
                 encode_data,
                 cfg.MODEL.DEEPLAB.DECODER.CONV_FILTERS,
                 1,
                 3,
-                dilation=1,
-                act=relu)
+                dilation=1)
     else:
         with scope("decoder_conv1"):
             encode_data = bn_relu(

@@ -116,7 +116,7 @@ def conv(*args, **kargs):
             name=name_scope + 'biases',
             regularizer=None,
             initializer=paddle.nn.initializer.Constant(value=0.0))
-    else:
+    elif 'bias_attr' not in kargs:
         kargs['bias_attr'] = False
     return static.nn.conv2d(*args, **kargs)
 
@@ -145,7 +145,8 @@ def separate_conv(input, channel, stride, filter, dilation=1, act=None):
             padding=(filter // 2) * dilation,
             dilation=dilation,
             use_cudnn=False,
-            param_attr=param_attr)
+            param_attr=param_attr,
+            bias_attr=None)
         input = bn(input)
         if act: input = act(input)
 
@@ -155,7 +156,14 @@ def separate_conv(input, channel, stride, filter, dilation=1, act=None):
         initializer=paddle.nn.initializer.TruncatedNormal(mean=0.0, std=0.33))
     with scope('pointwise'):
         input = conv(
-            input, channel, 1, 1, groups=1, padding=0, param_attr=param_attr)
+            input,
+            channel,
+            1,
+            1,
+            groups=1,
+            padding=0,
+            param_attr=param_attr,
+            bias_attr=None)
         input = bn(input)
         if act: input = act(input)
     return input

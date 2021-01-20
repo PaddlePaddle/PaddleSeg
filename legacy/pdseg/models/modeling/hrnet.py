@@ -31,7 +31,8 @@ def conv_bn_layer(input,
                   padding=1,
                   num_groups=1,
                   if_act=True,
-                  name=None):
+                  name=None,
+                  bias_attr=False):
     conv = nn.conv2d(
         input=input,
         num_filters=num_filters,
@@ -43,7 +44,7 @@ def conv_bn_layer(input,
         param_attr=paddle.ParamAttr(
             initializer=paddle.nn.initializer.KaimingUniform(),
             name=name + '_weights'),
-        bias_attr=False)
+        bias_attr=bias_attr)
     bn_name = name + '_bn'
     bn = nn.batch_norm(
         input=conv,
@@ -286,7 +287,8 @@ def high_resolution_net(input, num_classes):
         num_filters=last_channels,
         stride=1,
         if_act=True,
-        name='conv-2')
+        name='conv-2',
+        bias_attr=None)
     out = nn.conv2d(
         input=out,
         num_filters=num_classes,
@@ -297,7 +299,7 @@ def high_resolution_net(input, num_classes):
         param_attr=paddle.ParamAttr(
             initializer=paddle.nn.initializer.KaimingUniform(),
             name='conv-1_weights'),
-        bias_attr=False)
+        bias_attr=None)
 
     out = F.interpolate(
         out, size=input.shape[2:], mode='bilinear', align_corners=True)
