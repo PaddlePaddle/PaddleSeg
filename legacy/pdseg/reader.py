@@ -25,7 +25,6 @@ import codecs
 
 import numpy as np
 import paddle
-import paddle.fluid as fluid
 import cv2
 from PIL import Image
 

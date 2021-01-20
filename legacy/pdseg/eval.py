@@ -26,7 +26,7 @@ import argparse
 import pprint
 import numpy as np
 import paddle
-import paddle.fluid as fluid
+import paddle.static as static
 
 from utils import paddle_utils
 from utils.config import cfg
@@ -74,11 +74,16 @@ def parse_args():
     return parser.parse_args()
 
 
-def evaluate(cfg, ckpt_dir=None, use_gpu=False, use_xpu=False, use_mpio=False, **kwargs):
+def evaluate(cfg,
+             ckpt_dir=None,
+             use_gpu=False,
+             use_xpu=False,
+             use_mpio=False,
+             **kwargs):
     np.set_printoptions(precision=5, suppress=True)
 
-    startup_prog = fluid.Program()
-    test_prog = fluid.Program()
+    startup_prog = static.Program()
+    test_prog = static.Program()
     dataset = SegDataset(
         file_list=cfg.DATASET.VAL_FILE_LIST,
         mode=ModelPhase.EVAL,
@@ -104,17 +109,17 @@ def evaluate(cfg, ckpt_dir=None, use_gpu=False, use_xpu=False, use_mpio=False, *
 
     # Get device environment
     if use_gpu:
-        places = fluid.cuda_places()
+        places = static.cuda_places()
     elif use_xpu:
         xpu_id = int(os.environ.get('FLAGS_selected_xpus', 0))
-        places = [fluid.XPUPlace(xpu_id)]
+        places = [paddle.XPUPlace(xpu_id)]
     else:
-        places = fluid.cpu_places()
+        places = static.cpu_places()
     place = places[0]
     dev_count = len(places)
     print("#Device count: {}".format(dev_count))
 
-    exe = fluid.Executor(place)
+    exe = static.Executor(place)
     exe.run(startup_prog)
 
     test_prog = test_prog.clone(for_test=True)
@@ -127,9 +132,9 @@ def evaluate(cfg, ckpt_dir=None, use_gpu=False, use_xpu=False, use_mpio=False, *
     if ckpt_dir is not None:
         print('load test model:', ckpt_dir)
         try:
-            fluid.load(test_prog, os.path.join(ckpt_dir, 'model'), exe)
+            static.load(test_prog, os.path.join(ckpt_dir, 'model'), exe)
         except:
-            fluid.io.load_params(exe, ckpt_dir, main_program=test_prog)
+            paddle.fluid.io.load_params(exe, ckpt_dir, main_program=test_prog)
 
     # Use streaming confusion matrix to calculate mean_iou
     np.set_printoptions(
@@ -163,7 +168,7 @@ def evaluate(cfg, ckpt_dir=None, use_gpu=False, use_xpu=False, use_mpio=False, *
                         calculate_eta(all_step - step, speed)))
             timer.restart()
             sys.stdout.flush()
-        except fluid.core.EOFException:
+        except paddle.fluid.core.EOFException:
             break
 
     category_iou, avg_iou = conf_mat.mean_iou()

@@ -27,9 +27,9 @@ import pprint
 import random
 import shutil
 
-import paddle
 import numpy as np
-import paddle.fluid as fluid
+import paddle
+import paddle.static as static
 from paddle.fluid import profiler
 
 from utils.config import cfg
@@ -133,7 +133,7 @@ def save_checkpoint(program, ckpt_name):
     if not os.path.isdir(ckpt_dir):
         os.makedirs(ckpt_dir)
 
-    fluid.save(program, os.path.join(ckpt_dir, 'model'))
+    static.save(program, os.path.join(ckpt_dir, 'model'))
 
     return ckpt_dir
 
@@ -147,7 +147,7 @@ def load_checkpoint(exe, program):
     if not os.path.exists(model_path):
         raise ValueError(
             "TRAIN.PRETRAIN_MODEL {} not exist!".format(model_path))
-    fluid.load(program, os.path.join(model_path, 'model'), exe)
+    static.load(program, os.path.join(model_path, 'model'), exe)
 
     # Check is path ended by path spearator
     if model_path[-1] == os.sep:
@@ -188,9 +188,9 @@ def print_info(*msg):
 
 
 def train(cfg):
-    startup_prog = fluid.Program()
-    train_prog = fluid.Program()
-    test_prog = fluid.Program()
+    startup_prog = static.Program()
+    train_prog = static.Program()
+    test_prog = static.Program()
     if args.enable_ce:
         startup_prog.random_seed = 1000
         train_prog.random_seed = 1000
@@ -227,14 +227,14 @@ def train(cfg):
     gpu_id = int(os.environ.get('FLAGS_selected_gpus', 0))
     xpu_id = int(os.environ.get('FLAGS_selected_xpus', 0))
     if args.use_gpu:
-        place = fluid.CUDAPlace(gpu_id)
-        places = fluid.cuda_places()
+        place = paddle.CUDAPlace(gpu_id)
+        places = static.cuda_places()
     elif args.use_xpu:
-        place = fluid.XPUPlace(xpu_id)
+        place = paddle.XPUPlace(xpu_id)
         places = [place]
     else:
-        place = fluid.CPUPlace()
-        places = fluid.cpu_places()
+        place = paddle.CPUPlace()
+        places = static.cpu_places()
 
     # Get number of GPU
     dev_count = cfg.NUM_TRAINERS if cfg.NUM_TRAINERS > 1 else len(places)
@@ -250,19 +250,19 @@ def train(cfg):
 
     data_loader, avg_loss, lr, pred, grts, masks = build_model(
         train_prog, startup_prog, phase=ModelPhase.TRAIN)
-    build_model(test_prog, fluid.Program(), phase=ModelPhase.EVAL)
+    build_model(test_prog, static.Program(), phase=ModelPhase.EVAL)
     data_loader.set_sample_generator(
         data_generator, batch_size=batch_size_per_dev, drop_last=drop_last)
 
-    exe = fluid.Executor(place)
+    exe = static.Executor(place)
     exe.run(startup_prog)
 
-    exec_strategy = fluid.ExecutionStrategy()
+    exec_strategy = static.ExecutionStrategy()
     # Clear temporary variables every 100 iteration
     if args.use_gpu:
-        exec_strategy.num_threads = fluid.core.get_cuda_device_count()
+        exec_strategy.num_threads = len(paddle.get_cuda_rng_state())
     exec_strategy.num_iteration_per_drop_scope = 100
-    build_strategy = fluid.BuildStrategy()
+    build_strategy = static.BuildStrategy()
 
     if cfg.NUM_TRAINERS > 1 and args.use_gpu:
         dist_utils.prepare_for_multi_process(exe, build_strategy, train_prog)
@@ -280,10 +280,11 @@ def train(cfg):
     if args.use_xpu:
         compiled_train_prog = train_prog
     else:
-        compiled_train_prog = fluid.CompiledProgram(train_prog).with_data_parallel(
-            loss_name=avg_loss.name,
-            exec_strategy=exec_strategy,
-            build_strategy=build_strategy)
+        compiled_train_prog = static.CompiledProgram(
+            train_prog).with_data_parallel(
+                loss_name=avg_loss.name,
+                exec_strategy=exec_strategy,
+                build_strategy=build_strategy)
 
     # Resume training
     begin_epoch = cfg.SOLVER.BEGIN_EPOCH
@@ -297,7 +298,7 @@ def train(cfg):
             'Pretrained model dir {} not exists, training from scratch...'.
             format(cfg.TRAIN.PRETRAINED_MODEL_DIR))
 
-    fetch_list = [avg_loss.name, lr.name]
+    fetch_list = [avg_loss.name]
     if args.debug:
         # Fetch more variable info and use streaming confusion matrix to
         # calculate IoU results if in debug mode
@@ -344,7 +345,7 @@ def train(cfg):
                 if args.debug:
                     # Print category IoU and accuracy to check whether the
                     # traning process is corresponed to expectation
-                    loss, lr, pred, grts, masks = exe.run(
+                    loss, pred, grts, masks = exe.run(
                         program=compiled_train_prog,
                         fetch_list=fetch_list,
                         return_numpy=True)
@@ -360,7 +361,7 @@ def train(cfg):
 
                         print_info((
                             "epoch={} step={} lr={:.5f} loss={:.4f} acc={:.5f} mIoU={:.5f} step/sec={:.3f} | ETA {}"
-                        ).format(epoch, step, lr[0], avg_loss, mean_acc,
+                        ).format(epoch, step, lr.get_lr(), avg_loss, mean_acc,
                                  mean_iou, speed,
                                  calculate_eta(all_step - step, speed)))
                         print_info("Category IoU: ", category_iou)
@@ -371,7 +372,7 @@ def train(cfg):
                             log_writer.add_scalar('Train/mean_acc', mean_acc,
                                                   step)
                             log_writer.add_scalar('Train/loss', avg_loss, step)
-                            log_writer.add_scalar('Train/lr', lr[0], step)
+                            log_writer.add_scalar('Train/lr', lr.ger_lr(), step)
                             log_writer.add_scalar('Train/step/sec', speed, step)
                         sys.stdout.flush()
                         avg_loss = 0.0
@@ -379,7 +380,7 @@ def train(cfg):
                         timer.restart()
                 else:
                     # If not in debug mode, avoid unnessary log and calculate
-                    loss, lr = exe.run(
+                    loss = exe.run(
                         program=compiled_train_prog,
                         fetch_list=fetch_list,
                         return_numpy=True)
@@ -391,11 +392,11 @@ def train(cfg):
                         speed = args.log_steps / timer.elapsed_time()
                         print((
                             "epoch={} step={} lr={:.5f} loss={:.4f} step/sec={:.3f} | ETA {}"
-                        ).format(epoch, step, lr[0], avg_loss, speed,
+                        ).format(epoch, step, lr.get_lr(), avg_loss, speed,
                                  calculate_eta(all_step - step, speed)))
                         if args.use_vdl:
                             log_writer.add_scalar('Train/loss', avg_loss, step)
-                            log_writer.add_scalar('Train/lr', lr[0], step)
+                            log_writer.add_scalar('Train/lr', lr.get_lr(), step)
                             log_writer.add_scalar('Train/speed', speed, step)
                         sys.stdout.flush()
                         avg_loss = 0.0
@@ -407,8 +408,9 @@ def train(cfg):
                     elif args.is_profiler and epoch == 1 and step == args.log_steps + 5:
                         profiler.stop_profiler("total", args.profiler_path)
                         return
+                lr.step()
 
-            except fluid.core.EOFException:
+            except paddle.fluid.core.EOFException:
                 data_loader.reset()
                 break
             except Exception as e:
@@ -475,7 +477,7 @@ def main(args):
 if __name__ == '__main__':
     paddle_utils.enable_static()
     args = parse_args()
-    if fluid.core.is_compiled_with_cuda() != True and args.use_gpu == True:
+    if paddle.is_compiled_with_cuda() != True and args.use_gpu == True:
         print(
             "You can not set use_gpu = True in the model because you are using paddlepaddle-cpu."
         )
