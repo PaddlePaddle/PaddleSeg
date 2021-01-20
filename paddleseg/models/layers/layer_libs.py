@@ -18,6 +18,10 @@ import paddle.nn.functional as F
 
 
 def convert_syncbn_to_bn(net):
+    """
+    Since SyncBatchNorm does not have a cpu kernel, when exporting the model, the SyncBatchNorm
+    in the model needs to be converted to BatchNorm.
+    """
     for key, sublayer in net._sub_layers.items():
         if isinstance(sublayer, nn.SyncBatchNorm):
             sync_bn_dict = sublayer.state_dict()
@@ -25,8 +29,8 @@ def convert_syncbn_to_bn(net):
                 num_features=sublayer._num_features,
                 momentum=sublayer._momentum,
                 epsilon=sublayer._epsilon,
-                data_format=sublayer._data_formet,
-                use_global_stats=sublayer._use_global_stas,
+                data_format=sublayer._data_format,
+                use_global_stats=sublayer._use_global_stats,
                 name=sublayer._name)
 
             bn.set_dict(sync_bn_dict)
