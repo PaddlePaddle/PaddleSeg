@@ -63,6 +63,7 @@ def main(args):
     net.forward = paddle.jit.to_static(net.forward)
     in_shape = [1] + list(cfg.val_dataset[0][0].shape)
     in_var = paddle.ones(in_shape)
+    out = net(in_var)
 
     paddle.jit.save(
         net, os.path.join(args.save_dir, 'model'), input_spec=[in_var])

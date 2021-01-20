@@ -25,14 +25,19 @@ def convert_syncbn_to_bn(net):
     for key, sublayer in net._sub_layers.items():
         if isinstance(sublayer, nn.SyncBatchNorm):
             sync_bn_dict = sublayer.state_dict()
-            bn = nn.BatchNorm2D(
-                num_features=sublayer._num_features,
-                momentum=sublayer._momentum,
-                epsilon=sublayer._epsilon,
-                data_format=sublayer._data_format,
-                use_global_stats=sublayer._use_global_stats,
-                name=sublayer._name)
 
+            param = {
+                'num_features': sublayer._num_features,
+                'momentum': sublayer._momentum,
+                'epsilon': sublayer._epsilon,
+                'data_format': sublayer._data_format,
+                'name': sublayer._name
+            }
+
+            if hasattr(sublayer, '_use_global_stats'):
+                param['use_global_stats'] = sublayer._use_global_stats
+
+            bn = nn.BatchNorm2D(**param)
             bn.set_dict(sync_bn_dict)
             setattr(net, key, bn)
         else:
