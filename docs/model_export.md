@@ -2,11 +2,11 @@
 
 本教程提供了一个将训练好的动态图模型转化为静态图模型并进行部署的例子
 
-*注意：如果已经通过量化或者剪枝优化过模型，则模型已经保存为静态图模型，可以直接进行部署。可以直接查看[部署](#模型部署预测)*
+*注意：如果已经通过量化或者剪枝优化过模型，则模型已经保存为静态图模型，可以直接查看[部署](#模型部署预测)*
 
 ## 获取预训练模型
 
-*注意：下述例子为Linux或者Mac上执行的例子，windows请自行在浏览器下载参数并存放到所创建的目录*
+*注意：下述例子为Linux或者Mac上执行的例子，windows请自行在浏览器下载[参数](https://paddleseg.bj.bcebos.com/dygraph/cityscapes/bisenet_cityscapes_1024x1024_160k/model.pdparams)并存放到所创建的目录*
 ```shell
 mkdir bisenet && cd bisenet
 wget https://paddleseg.bj.bcebos.com/dygraph/cityscapes/bisenet_cityscapes_1024x1024_160k/model.pdparams

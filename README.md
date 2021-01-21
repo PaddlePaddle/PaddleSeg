@@ -55,7 +55,7 @@ Welcome to PaddleSeg! PaddleSeg is an end-to-end image segmentation development 
 #### step 1. Install PaddlePaddle
 
 System Requirements:
-* PaddlePaddle >= 2.0.0rc
+* PaddlePaddle >= 2.0.0
 * Python >= 3.6+
 
 Highly recommend you install the GPU version of PaddlePaddle, due to large overhead of segmentation models, otherwise it could be out of memory while running the models. For more detailed installation tutorials, please refer to the official website of [PaddlePaddle](https://www.paddlepaddle.org.cn/documentation/docs/zh/2.0-beta/install/index_cn.html)。

@@ -56,7 +56,7 @@ PaddleSeg是基于飞桨[PaddlePaddle](https://www.paddlepaddle.org.cn)开发的
 
 版本要求
 
-* PaddlePaddle >= 2.0.0rc
+* PaddlePaddle >= 2.0.0
 
 * Python >= 3.6+
 
