@@ -93,6 +93,7 @@ python train.py --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml
 * [API参考](./docs/apis)
 * [添加新组件](./docs/add_new_model.md)
 * [模型压缩](./slim)
+* [模型导出](./docs/model_export.md)
 
 ## 代码贡献
 
