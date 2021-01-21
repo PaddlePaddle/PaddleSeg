@@ -14,6 +14,9 @@ cd ..
 ```
 
 ## 将模型导出为静态图模型
+
+请确保完成了PaddleSeg的安装工作，并且位于PaddleSeg目录下，执行以下脚本：
+
 ```shell
 export CUDA_VISIBLE_DEVICES=0 # 设置1张可用的卡
 # windows下请执行以下命令
