@@ -26,6 +26,7 @@ import argparse
 import pprint
 import random
 import shutil
+import time
 
 import numpy as np
 import paddle
@@ -33,7 +34,7 @@ import paddle.static as static
 from paddle.fluid import profiler
 
 from utils.config import cfg
-from utils.timer import Timer, calculate_eta
+from utils.timer import TimeAverager, calculate_eta
 from metrics import ConfusionMatrix
 from reader import SegDataset
 from models.model_builder import build_model
@@ -325,9 +326,10 @@ def train(cfg):
 
     avg_loss = 0.0
     best_mIoU = 0.0
+    reader_cost_averager = TimeAverager()
+    batch_cost_averager = TimeAverager()
 
-    timer = Timer()
-    timer.start()
+    batch_start = time.time()
     if begin_epoch > cfg.SOLVER.NUM_EPOCHS:
         raise ValueError(
             ("begin epoch[{}] is larger than cfg.SOLVER.NUM_EPOCHS[{}]").format(
@@ -342,72 +344,42 @@ def train(cfg):
         data_loader.start()
         while True:
             try:
-                if args.debug:
-                    # Print category IoU and accuracy to check whether the
-                    # traning process is corresponed to expectation
-                    loss, pred, grts, masks = exe.run(
-                        program=compiled_train_prog,
-                        fetch_list=fetch_list,
-                        return_numpy=True)
-                    cm.calculate(pred, grts, masks)
-                    avg_loss += np.mean(np.array(loss))
-                    step += 1
+                reader_cost_averager.record(time.time() - batch_start)
+                loss = exe.run(
+                    program=compiled_train_prog,
+                    fetch_list=fetch_list,
+                    return_numpy=True)
+                avg_loss += np.mean(np.array(loss))
+                step += 1
+                batch_cost_averager.record(
+                    time.time() - batch_start, num_samples=cfg.BATCH_SIZE)
 
-                    if step % args.log_steps == 0:
-                        speed = args.log_steps / timer.elapsed_time()
-                        avg_loss /= args.log_steps
-                        category_acc, mean_acc = cm.accuracy()
-                        category_iou, mean_iou = cm.mean_iou()
+                if step % args.log_steps == 0 and cfg.TRAINER_ID == 0:
+                    avg_train_batch_cost = batch_cost_averager.get_average()
+                    avg_train_reader_cost = reader_cost_averager.get_average()
+                    eta = calculate_eta(all_step - step, avg_train_batch_cost)
+                    print(
+                        "epoch={} step={} lr={:.5f} loss={:.4f} batch_cost={:.4f}, reader_cost={:.5f}, ips={:.4f} samples/sec | ETA {}"
+                        .format(epoch, step, lr.get_lr(), avg_loss,
+                                avg_train_batch_cost, avg_train_reader_cost,
+                                batch_cost_averager.get_ips_average(), eta))
+                    if args.use_vdl:
+                        log_writer.add_scalar('Train/loss', avg_loss, step)
+                        log_writer.add_scalar('Train/lr', lr.get_lr(), step)
+                        log_writer.add_scalar('Train/batch_cost',
+                                              avg_train_batch_cost, step)
+                        log_writer.add_scalar('Train/reader_cost',
+                                              avg_train_reader_cost, step)
+                    sys.stdout.flush()
+                    avg_loss = 0.0
+                batch_start = time.time()
 
-                        print_info((
-                            "epoch={} step={} lr={:.5f} loss={:.4f} acc={:.5f} mIoU={:.5f} step/sec={:.3f} | ETA {}"
-                        ).format(epoch, step, lr.get_lr(), avg_loss, mean_acc,
-                                 mean_iou, speed,
-                                 calculate_eta(all_step - step, speed)))
-                        print_info("Category IoU: ", category_iou)
-                        print_info("Category Acc: ", category_acc)
-                        if args.use_vdl:
-                            log_writer.add_scalar('Train/mean_iou', mean_iou,
-                                                  step)
-                            log_writer.add_scalar('Train/mean_acc', mean_acc,
-                                                  step)
-                            log_writer.add_scalar('Train/loss', avg_loss, step)
-                            log_writer.add_scalar('Train/lr', lr.ger_lr(), step)
-                            log_writer.add_scalar('Train/step/sec', speed, step)
-                        sys.stdout.flush()
-                        avg_loss = 0.0
-                        cm.zero_matrix()
-                        timer.restart()
-                else:
-                    # If not in debug mode, avoid unnessary log and calculate
-                    loss = exe.run(
-                        program=compiled_train_prog,
-                        fetch_list=fetch_list,
-                        return_numpy=True)
-                    avg_loss += np.mean(np.array(loss))
-                    step += 1
-
-                    if step % args.log_steps == 0 and cfg.TRAINER_ID == 0:
-                        avg_loss /= args.log_steps
-                        speed = args.log_steps / timer.elapsed_time()
-                        print((
-                            "epoch={} step={} lr={:.5f} loss={:.4f} step/sec={:.3f} | ETA {}"
-                        ).format(epoch, step, lr.get_lr(), avg_loss, speed,
-                                 calculate_eta(all_step - step, speed)))
-                        if args.use_vdl:
-                            log_writer.add_scalar('Train/loss', avg_loss, step)
-                            log_writer.add_scalar('Train/lr', lr.get_lr(), step)
-                            log_writer.add_scalar('Train/speed', speed, step)
-                        sys.stdout.flush()
-                        avg_loss = 0.0
-                        timer.restart()
-
-                    # NOTE : used for benchmark, profiler tools
-                    if args.is_profiler and epoch == 1 and step == args.log_steps:
-                        profiler.start_profiler("All")
-                    elif args.is_profiler and epoch == 1 and step == args.log_steps + 5:
-                        profiler.stop_profiler("total", args.profiler_path)
-                        return
+                # NOTE : used for benchmark, profiler tools
+                if args.is_profiler and epoch == 1 and step == args.log_steps:
+                    profiler.start_profiler("All")
+                elif args.is_profiler and epoch == 1 and step == args.log_steps + 5:
+                    profiler.stop_profiler("total", args.profiler_path)
+                    return
                 lr.step()
 
             except paddle.fluid.core.EOFException:

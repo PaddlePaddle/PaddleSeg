@@ -24,13 +24,15 @@ os.environ['FLAGS_eager_delete_tensor_gb'] = "0.0"
 import sys
 import argparse
 import pprint
+import time
+
 import numpy as np
 import paddle
 import paddle.static as static
 
 from utils import paddle_utils
 from utils.config import cfg
-from utils.timer import Timer, calculate_eta
+from utils.timer import TimeAverager, calculate_eta
 from models.model_builder import build_model
 from models.model_builder import ModelPhase
 from reader import SegDataset
@@ -144,11 +146,13 @@ def evaluate(cfg,
     num_images = 0
     step = 0
     all_step = cfg.DATASET.TEST_TOTAL_IMAGES // cfg.BATCH_SIZE + 1
-    timer = Timer()
-    timer.start()
+    reader_cost_averager = TimeAverager()
+    batch_cost_averager = TimeAverager()
+    batch_start = time.time()
     data_loader.start()
     while True:
         try:
+            reader_cost_averager.record(time.time() - batch_start)
             step += 1
             loss, pred, grts, masks = exe.run(
                 test_prog, fetch_list=fetch_list, return_numpy=True)
@@ -160,13 +164,15 @@ def evaluate(cfg,
             _, iou = conf_mat.mean_iou()
             _, acc = conf_mat.accuracy()
 
-            speed = 1.0 / timer.elapsed_time()
-
+            batch_cost_averager.record(
+                time.time() - batch_start, num_samples=cfg.BATCH_SIZE)
+            batch_cost = batch_cost_averager.get_average()
+            reader_cost = reader_cost_averager.get_average()
+            eta = calculate_eta(all_step - step, batch_cost)
             print(
-                "[EVAL]step={} loss={:.5f} acc={:.4f} IoU={:.4f} step/sec={:.2f} | ETA {}"
-                .format(step, loss, acc, iou, speed,
-                        calculate_eta(all_step - step, speed)))
-            timer.restart()
+                "[EVAL]step={} loss={:.5f} acc={:.4f} IoU={:.4f} batch_cost={:.4f}, reader_cost={:.5f} | ETA {}"
+                .format(step, loss, acc, iou, batch_cost, batch_cost, eta))
+            batch_start = time.time()
             sys.stdout.flush()
         except paddle.fluid.core.EOFException:
             break
