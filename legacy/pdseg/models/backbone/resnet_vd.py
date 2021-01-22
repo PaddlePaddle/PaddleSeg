@@ -20,8 +20,10 @@ from __future__ import print_function
 import math
 
 import numpy as np
-import paddle.fluid as fluid
-from paddle.fluid.param_attr import ParamAttr
+import paddle
+import paddle.static as static
+import paddle.nn.functional as F
+from paddle import ParamAttr
 
 __all__ = [
     "ResNet", "ResNet18", "ResNet34", "ResNet50", "ResNet101", "ResNet152"
@@ -128,12 +130,7 @@ class ResNet():
                 act='relu',
                 name="conv1")
 
-        conv = fluid.layers.pool2d(
-            input=conv,
-            pool_size=3,
-            pool_stride=2,
-            pool_padding=1,
-            pool_type='max')
+        conv = F.max_pool2d(conv, kernel_size=3, stride=2, padding=1)
 
         layer_count = 1
         if check_points(layer_count, decode_points):
@@ -179,14 +176,13 @@ class ResNet():
                             np.ceil(
                                 np.array(conv.shape[2:]).astype('int32') / 2))
 
-            pool = fluid.layers.pool2d(
-                input=conv, pool_size=7, pool_type='avg', global_pooling=True)
+            pool = F.adaptive_avg_pool2d(conv, output_size=(1, 1))
             stdv = 1.0 / math.sqrt(pool.shape[1] * 1.0)
-            out = fluid.layers.fc(
+            out = static.nn.fc(
                 input=pool,
                 size=class_dim,
-                param_attr=fluid.param_attr.ParamAttr(
-                    initializer=fluid.initializer.Uniform(-stdv, stdv)))
+                param_attr=ParamAttr(
+                    initializer=paddle.nn.initializer.Uniform(-stdv, stdv)))
         else:
             for block in range(len(depth)):
                 self.curr_stage += 1
@@ -205,23 +201,22 @@ class ResNet():
                     if check_points(layer_count, end_points):
                         return conv, decode_ends
 
-            pool = fluid.layers.pool2d(
-                input=conv, pool_size=7, pool_type='avg', global_pooling=True)
+            pool = F.adaptive_avg_pool2d(conv, output_size=(1, 1))
             stdv = 1.0 / math.sqrt(pool.shape[1] * 1.0)
-            out = fluid.layers.fc(
+            out = static.nn.fc(
                 input=pool,
                 size=class_dim,
-                param_attr=fluid.param_attr.ParamAttr(
-                    initializer=fluid.initializer.Uniform(-stdv, stdv)))
+                param_attr=ParamAttr(
+                    initializer=paddle.nn.initializer.Uniform(-stdv, stdv)))
         return out
 
     def zero_padding(self, input, padding):
-        return fluid.layers.pad(
-            input, [0, 0, 0, 0, padding, padding, padding, padding])
+        return F.pad(input, [padding, padding, padding, padding])
 
     def interp(self, input, out_shape):
         out_shape = list(out_shape.astype("int32"))
-        return fluid.layers.resize_bilinear(input, out_shape=out_shape)
+        return F.interpolate(
+            input, out_shape, mode='bilinear', align_corners=True)
 
     def conv_bn_layer(self,
                       input,
@@ -239,7 +234,7 @@ class ResNet():
         else:
             bias_attr = False
 
-        conv = fluid.layers.conv2d(
+        conv = static.nn.conv2d(
             input=input,
             num_filters=num_filters,
             filter_size=filter_size,
@@ -256,7 +251,7 @@ class ResNet():
             bn_name = "bn_" + name
         else:
             bn_name = "bn" + name[3:]
-        return fluid.layers.batch_norm(
+        return static.nn.batch_norm(
             input=conv,
             act=act,
             name=bn_name + '.output.1',
@@ -276,15 +271,10 @@ class ResNet():
                           act=None,
                           name=None):
         lr_mult = self.lr_mult_list[self.curr_stage]
-        pool = fluid.layers.pool2d(
-            input=input,
-            pool_size=2,
-            pool_stride=2,
-            pool_padding=0,
-            pool_type='avg',
-            ceil_mode=True)
+        pool = F.avg_pool2d(
+            input, kernel_size=2, stride=2, padding=0, ceil_mode=True)
 
-        conv = fluid.layers.conv2d(
+        conv = static.nn.conv2d(
             input=pool,
             num_filters=num_filters,
             filter_size=filter_size,
@@ -298,7 +288,7 @@ class ResNet():
             bn_name = "bn_" + name
         else:
             bn_name = "bn" + name[3:]
-        return fluid.layers.batch_norm(
+        return static.nn.batch_norm(
             input=conv,
             act=act,
             param_attr=ParamAttr(
@@ -360,8 +350,7 @@ class ResNet():
             is_first=is_first,
             name=name + "_branch1")
 
-        return fluid.layers.elementwise_add(
-            x=short, y=conv2, act='relu', name=name + ".add.output.5")
+        return F.relu(short + conv2)
 
     def basic_block(self, input, num_filters, stride, is_first, name):
         conv0 = self.conv_bn_layer(
@@ -379,7 +368,7 @@ class ResNet():
             name=name + "_branch2b")
         short = self.shortcut(
             input, num_filters, stride, is_first, name=name + "_branch1")
-        return fluid.layers.elementwise_add(x=short, y=conv1, act='relu')
+        return F.relu(short + conv1)
 
 
 def ResNet18():

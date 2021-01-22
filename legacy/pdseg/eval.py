@@ -24,13 +24,15 @@ os.environ['FLAGS_eager_delete_tensor_gb'] = "0.0"
 import sys
 import argparse
 import pprint
+import time
+
 import numpy as np
 import paddle
-import paddle.fluid as fluid
+import paddle.static as static
 
 from utils import paddle_utils
 from utils.config import cfg
-from utils.timer import Timer, calculate_eta
+from utils.timer import TimeAverager, calculate_eta
 from models.model_builder import build_model
 from models.model_builder import ModelPhase
 from reader import SegDataset
@@ -74,11 +76,16 @@ def parse_args():
     return parser.parse_args()
 
 
-def evaluate(cfg, ckpt_dir=None, use_gpu=False, use_xpu=False, use_mpio=False, **kwargs):
+def evaluate(cfg,
+             ckpt_dir=None,
+             use_gpu=False,
+             use_xpu=False,
+             use_mpio=False,
+             **kwargs):
     np.set_printoptions(precision=5, suppress=True)
 
-    startup_prog = fluid.Program()
-    test_prog = fluid.Program()
+    startup_prog = static.Program()
+    test_prog = static.Program()
     dataset = SegDataset(
         file_list=cfg.DATASET.VAL_FILE_LIST,
         mode=ModelPhase.EVAL,
@@ -104,17 +111,17 @@ def evaluate(cfg, ckpt_dir=None, use_gpu=False, use_xpu=False, use_mpio=False, *
 
     # Get device environment
     if use_gpu:
-        places = fluid.cuda_places()
+        places = static.cuda_places()
     elif use_xpu:
         xpu_id = int(os.environ.get('FLAGS_selected_xpus', 0))
-        places = [fluid.XPUPlace(xpu_id)]
+        places = [paddle.XPUPlace(xpu_id)]
     else:
-        places = fluid.cpu_places()
+        places = static.cpu_places()
     place = places[0]
     dev_count = len(places)
     print("#Device count: {}".format(dev_count))
 
-    exe = fluid.Executor(place)
+    exe = static.Executor(place)
     exe.run(startup_prog)
 
     test_prog = test_prog.clone(for_test=True)
@@ -127,9 +134,9 @@ def evaluate(cfg, ckpt_dir=None, use_gpu=False, use_xpu=False, use_mpio=False, *
     if ckpt_dir is not None:
         print('load test model:', ckpt_dir)
         try:
-            fluid.load(test_prog, os.path.join(ckpt_dir, 'model'), exe)
+            static.load(test_prog, os.path.join(ckpt_dir, 'model'), exe)
         except:
-            fluid.io.load_params(exe, ckpt_dir, main_program=test_prog)
+            paddle.fluid.io.load_params(exe, ckpt_dir, main_program=test_prog)
 
     # Use streaming confusion matrix to calculate mean_iou
     np.set_printoptions(
@@ -139,11 +146,13 @@ def evaluate(cfg, ckpt_dir=None, use_gpu=False, use_xpu=False, use_mpio=False, *
     num_images = 0
     step = 0
     all_step = cfg.DATASET.TEST_TOTAL_IMAGES // cfg.BATCH_SIZE + 1
-    timer = Timer()
-    timer.start()
+    reader_cost_averager = TimeAverager()
+    batch_cost_averager = TimeAverager()
+    batch_start = time.time()
     data_loader.start()
     while True:
         try:
+            reader_cost_averager.record(time.time() - batch_start)
             step += 1
             loss, pred, grts, masks = exe.run(
                 test_prog, fetch_list=fetch_list, return_numpy=True)
@@ -155,15 +164,17 @@ def evaluate(cfg, ckpt_dir=None, use_gpu=False, use_xpu=False, use_mpio=False, *
             _, iou = conf_mat.mean_iou()
             _, acc = conf_mat.accuracy()
 
-            speed = 1.0 / timer.elapsed_time()
-
+            batch_cost_averager.record(
+                time.time() - batch_start, num_samples=cfg.BATCH_SIZE)
+            batch_cost = batch_cost_averager.get_average()
+            reader_cost = reader_cost_averager.get_average()
+            eta = calculate_eta(all_step - step, batch_cost)
             print(
-                "[EVAL]step={} loss={:.5f} acc={:.4f} IoU={:.4f} step/sec={:.2f} | ETA {}"
-                .format(step, loss, acc, iou, speed,
-                        calculate_eta(all_step - step, speed)))
-            timer.restart()
+                "[EVAL]step={} loss={:.5f} acc={:.4f} IoU={:.4f} batch_cost={:.4f}, reader_cost={:.5f} | ETA {}"
+                .format(step, loss, acc, iou, batch_cost, batch_cost, eta))
+            batch_start = time.time()
             sys.stdout.flush()
-        except fluid.core.EOFException:
+        except paddle.fluid.core.EOFException:
             break
 
     category_iou, avg_iou = conf_mat.mean_iou()

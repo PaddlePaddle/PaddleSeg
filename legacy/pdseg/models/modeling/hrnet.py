@@ -18,9 +18,8 @@ from __future__ import division
 from __future__ import print_function
 
 import paddle
-import paddle.fluid as fluid
-from paddle.fluid.initializer import MSRA
-from paddle.fluid.param_attr import ParamAttr
+import paddle.static.nn as nn
+import paddle.nn.functional as F
 
 from utils.config import cfg
 
@@ -32,8 +31,9 @@ def conv_bn_layer(input,
                   padding=1,
                   num_groups=1,
                   if_act=True,
-                  name=None):
-    conv = fluid.layers.conv2d(
+                  name=None,
+                  bias_attr=False):
+    conv = nn.conv2d(
         input=input,
         num_filters=num_filters,
         filter_size=filter_size,
@@ -41,21 +41,23 @@ def conv_bn_layer(input,
         padding=(filter_size - 1) // 2,
         groups=num_groups,
         act=None,
-        param_attr=ParamAttr(initializer=MSRA(), name=name + '_weights'),
-        bias_attr=False)
+        param_attr=paddle.ParamAttr(
+            initializer=paddle.nn.initializer.KaimingUniform(),
+            name=name + '_weights'),
+        bias_attr=bias_attr)
     bn_name = name + '_bn'
-    bn = fluid.layers.batch_norm(
+    bn = nn.batch_norm(
         input=conv,
-        param_attr=ParamAttr(
+        param_attr=paddle.ParamAttr(
             name=bn_name + "_scale",
-            initializer=fluid.initializer.Constant(1.0)),
-        bias_attr=ParamAttr(
+            initializer=paddle.nn.initializer.Constant(1.0)),
+        bias_attr=paddle.ParamAttr(
             name=bn_name + "_offset",
-            initializer=fluid.initializer.Constant(0.0)),
+            initializer=paddle.nn.initializer.Constant(0.0)),
         moving_mean_name=bn_name + '_mean',
         moving_variance_name=bn_name + '_variance')
     if if_act:
-        bn = fluid.layers.relu(bn)
+        bn = F.relu(bn)
     return bn
 
 
@@ -80,7 +82,7 @@ def basic_block(input, num_filters, stride=1, downsample=False, name=None):
             num_filters=num_filters,
             if_act=False,
             name=name + '_downsample')
-    return fluid.layers.elementwise_add(x=residual, y=conv, act='relu')
+    return F.relu(residual + conv)
 
 
 def bottleneck_block(input, num_filters, stride=1, downsample=False, name=None):
@@ -109,7 +111,7 @@ def bottleneck_block(input, num_filters, stride=1, downsample=False, name=None):
             num_filters=num_filters * 4,
             if_act=False,
             name=name + '_downsample')
-    return fluid.layers.elementwise_add(x=residual, y=conv, act='relu')
+    return F.relu(residual + conv)
 
 
 def fuse_layers(x, channels, multi_scale_output=True, name=None):
@@ -127,10 +129,12 @@ def fuse_layers(x, channels, multi_scale_output=True, name=None):
                     num_filters=channels[i],
                     if_act=False,
                     name=name + '_layer_' + str(i + 1) + '_' + str(j + 1))
-                y = fluid.layers.resize_bilinear(
-                    input=y, out_shape=[height, width])
-                residual = fluid.layers.elementwise_add(
-                    x=residual, y=y, act=None)
+                y = F.interpolate(
+                    y,
+                    size=[height, width],
+                    mode='bilinear',
+                    align_corners=True)
+                residual = residual + y
             elif j < i:
                 y = x[j]
                 for k in range(i - j):
@@ -151,10 +155,9 @@ def fuse_layers(x, channels, multi_scale_output=True, name=None):
                             stride=2,
                             name=name + '_layer_' + str(i + 1) + '_' +
                             str(j + 1) + '_' + str(k + 1))
-                residual = fluid.layers.elementwise_add(
-                    x=residual, y=y, act=None)
+                residual = residual + y
 
-        residual = fluid.layers.relu(residual)
+        residual = F.relu(residual)
         out.append(residual)
     return out
 
@@ -268,11 +271,14 @@ def high_resolution_net(input, num_classes):
     # upsample
     shape = st4[0].shape
     height, width = shape[-2], shape[-1]
-    st4[1] = fluid.layers.resize_bilinear(st4[1], out_shape=[height, width])
-    st4[2] = fluid.layers.resize_bilinear(st4[2], out_shape=[height, width])
-    st4[3] = fluid.layers.resize_bilinear(st4[3], out_shape=[height, width])
+    st4[1] = F.interpolate(
+        st4[1], size=[height, width], mode='bilinear', align_corners=True)
+    st4[2] = F.interpolate(
+        st4[2], size=[height, width], mode='bilinear', align_corners=True)
+    st4[3] = F.interpolate(
+        st4[3], size=[height, width], mode='bilinear', align_corners=True)
 
-    out = fluid.layers.concat(st4, axis=1)
+    out = paddle.concat(st4, axis=1)
     last_channels = sum(channels_4)
 
     out = conv_bn_layer(
@@ -281,18 +287,22 @@ def high_resolution_net(input, num_classes):
         num_filters=last_channels,
         stride=1,
         if_act=True,
-        name='conv-2')
-    out = fluid.layers.conv2d(
+        name='conv-2',
+        bias_attr=None)
+    out = nn.conv2d(
         input=out,
         num_filters=num_classes,
         filter_size=1,
         stride=1,
         padding=0,
         act=None,
-        param_attr=ParamAttr(initializer=MSRA(), name='conv-1_weights'),
-        bias_attr=False)
+        param_attr=paddle.ParamAttr(
+            initializer=paddle.nn.initializer.KaimingUniform(),
+            name='conv-1_weights'),
+        bias_attr=None)
 
-    out = fluid.layers.resize_bilinear(out, input.shape[2:])
+    out = F.interpolate(
+        out, size=input.shape[2:], mode='bilinear', align_corners=True)
 
     return out
 
@@ -304,6 +314,6 @@ def hrnet(input, num_classes):
 
 if __name__ == '__main__':
     image_shape = [-1, 3, 769, 769]
-    image = fluid.data(name='image', shape=image_shape, dtype='float32')
+    image = nn.data(name='image', shape=image_shape, dtype='float32')
     logit = hrnet(image, 4)
     print("logit:", logit.shape)

@@ -60,7 +60,8 @@ def train(model,
           num_workers=0,
           use_vdl=False,
           losses=None,
-          keep_checkpoint_max=5):
+          keep_checkpoint_max=5,
+          fp16=False):
     """
     Launch training.
 
@@ -80,6 +81,7 @@ def train(model,
         losses (dict): A dict including 'types' and 'coef'. The length of coef should equal to 1 or len(losses['types']).
             The 'types' item is a list of object of paddleseg.models.losses while the 'coef' item is a list of the relevant coefficient.
         keep_checkpoint_max (int, optional): Maximum number of checkpoints to save. Default: 5.
+        fp16: Whther to use amp.
     """
     nranks = paddle.distributed.ParallelEnv().nranks
     local_rank = paddle.distributed.ParallelEnv().local_rank
@@ -108,6 +110,11 @@ def train(model,
         return_list=True,
     )
 
+    # use amp
+    if fp16:
+        logger.info('use amp to train')
+        scaler = paddle.amp.GradScaler(init_loss_scaling=1024)
+
     if use_vdl:
         from visualdl import LogWriter
         log_writer = LogWriter(save_dir)
@@ -135,19 +142,38 @@ def train(model,
             if len(data) == 3:
                 edges = data[2].astype('int64')
 
-            if nranks > 1:
-                logits_list = ddp_model(images)
-            else:
-                logits_list = model(images)
-            loss_list = loss_computation(
-                logits_list=logits_list,
-                labels=labels,
-                losses=losses,
-                edges=edges)
-            loss = sum(loss_list)
-            loss.backward()
+            if fp16:
+                with paddle.amp.auto_cast(enable=True):
+                    if nranks > 1:
+                        logits_list = ddp_model(images)
+                    else:
+                        logits_list = model(images)
+                    loss_list = loss_computation(
+                        logits_list=logits_list,
+                        labels=labels,
+                        losses=losses,
+                        edges=edges)
+                    loss = sum(loss_list)
+                # loss.backward()
+                # optimizer.step()
 
-            optimizer.step()
+                scaled = scaler.scale(loss)  # scale the loss
+                scaled.backward()  # do backward
+                scaler.minimize(optimizer, scaled)  # update parameters
+            else:
+                if nranks > 1:
+                    logits_list = ddp_model(images)
+                else:
+                    logits_list = model(images)
+                loss_list = loss_computation(
+                    logits_list=logits_list,
+                    labels=labels,
+                    losses=losses,
+                    edges=edges)
+                loss = sum(loss_list)
+                loss.backward()
+                optimizer.step()
+
             lr = optimizer.get_lr()
             if isinstance(optimizer._learning_rate,
                           paddle.optimizer.lr.LRScheduler):

@@ -14,14 +14,11 @@
 # limitations under the License.
 
 import sys
-import paddle.fluid as fluid
+
+import paddle
 import numpy as np
-import importlib
 from utils.config import cfg
-try:
-    from paddle.fluid.contrib.mixed_precision.decorator import OptimizerWithMixedPrecison, decorate, AutoMixedPrecisionLists
-except:
-    from paddle.fluid.contrib.mixed_precision.decorator import OptimizerWithMixedPrecision, decorate, AutoMixedPrecisionLists
+from paddle.static.amp import decorate, AutoMixedPrecisionLists
 
 
 class Solver(object):
@@ -36,53 +33,11 @@ class Solver(object):
         self.total_step = cfg.SOLVER.NUM_EPOCHS * self.step_per_epoch
         self.main_prog = main_prog
         self.start_prog = start_prog
-        self.warmup_step = cfg.SOLVER.LR_WARMUP_STEPS if cfg.SOLVER.LR_WARMUP else -1
-        self.decay_step = self.total_step - self.warmup_step
-        self.decay_epochs = cfg.SOLVER.NUM_EPOCHS - self.warmup_step / self.step_per_epoch
-
-    def lr_warmup(self, learning_rate, start_lr, end_lr):
-        linear_step = end_lr - start_lr
-        lr = fluid.layers.tensor.create_global_var(
-            shape=[1],
-            value=0.0,
-            dtype='float32',
-            persistable=True,
-            name="learning_rate_warmup")
-
-        global_step = fluid.layers.learning_rate_scheduler._decay_step_counter()
-        warmup_counter = fluid.layers.autoincreased_step_counter(
-            counter_name='@LR_DECAY_COUNTER_WARMUP_IN_SEG@', begin=1, step=1)
-        global_counter = fluid.default_main_program().global_block(
-        ).vars['@LR_DECAY_COUNTER@']
-        warmup_counter = fluid.layers.cast(warmup_counter, 'float32')
-
-        with fluid.layers.control_flow.Switch() as switch:
-            with switch.case(warmup_counter <= self.warmup_step):
-                decayed_lr = start_lr + linear_step * (
-                    warmup_counter / self.warmup_step)
-                fluid.layers.tensor.assign(decayed_lr, lr)
-                # hold the global_step to 0 during the warm-up phase
-                fluid.layers.increment(global_counter, value=-1)
-            with switch.default():
-                fluid.layers.tensor.assign(learning_rate, lr)
-        return lr
-
-    def piecewise_decay(self):
-        gamma = cfg.SOLVER.GAMMA
-        bd = [self.step_per_epoch * e for e in cfg.SOLVER.DECAY_EPOCH]
-        lr = [cfg.SOLVER.LR * (gamma**i) for i in range(len(bd) + 1)]
-        decayed_lr = fluid.layers.piecewise_decay(boundaries=bd, values=lr)
-        return decayed_lr
 
     def poly_decay(self):
         power = cfg.SOLVER.POWER
-        decayed_lr = fluid.layers.polynomial_decay(
-            cfg.SOLVER.LR, self.decay_step, end_learning_rate=0, power=power)
-        return decayed_lr
-
-    def cosine_decay(self):
-        decayed_lr = fluid.layers.cosine_decay(
-            cfg.SOLVER.LR, self.step_per_epoch, self.decay_epochs)
+        decayed_lr = paddle.optimizer.lr.PolynomialDecay(
+            cfg.SOLVER.LR, self.total_step, end_lr=0, power=power)
         return decayed_lr
 
     def get_lr(self, lr_policy):
@@ -96,23 +51,18 @@ class Solver(object):
             raise Exception(
                 "unsupport learning decay policy! only support poly,piecewise,cosine"
             )
-
-        decayed_lr = self.lr_warmup(decayed_lr, 0, cfg.SOLVER.LR)
         return decayed_lr
 
     def sgd_optimizer(self, lr_policy, loss):
         decayed_lr = self.get_lr(lr_policy)
-        optimizer = fluid.optimizer.Momentum(
+        optimizer = paddle.optimizer.Momentum(
             learning_rate=decayed_lr,
             momentum=self.momentum,
-            regularization=fluid.regularizer.L2Decay(
-                regularization_coeff=self.weight_decay),
+            weight_decay=self.weight_decay,
         )
         if cfg.MODEL.FP16:
-            if cfg.MODEL.MODEL_NAME in ["pspnet"]:
-                custom_black_list = {"pool2d"}
-            else:
-                custom_black_list = {}
+            print('use amp')
+            custom_black_list = {}
             amp_lists = AutoMixedPrecisionLists(
                 custom_black_list=custom_black_list)
             assert isinstance(cfg.MODEL.SCALE_LOSS, float) or isinstance(cfg.MODEL.SCALE_LOSS, str), \
@@ -139,12 +89,11 @@ class Solver(object):
 
     def adam_optimizer(self, lr_policy, loss):
         decayed_lr = self.get_lr(lr_policy)
-        optimizer = fluid.optimizer.Adam(
+        optimizer = paddle.optimizer.Adam(
             learning_rate=decayed_lr,
             beta1=self.momentum,
             beta2=self.momentum2,
-            regularization=fluid.regularizer.L2Decay(
-                regularization_coeff=self.weight_decay),
+            weight_decay=self.weight_decay,
         )
         optimizer.minimize(loss)
         return decayed_lr

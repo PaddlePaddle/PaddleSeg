@@ -15,17 +15,16 @@
 
 import struct
 
-import paddle.fluid as fluid
+import paddle
+import paddle.static as static
+import paddle.nn.functional as F
 import numpy as np
 from paddle.fluid.proto.framework_pb2 import VarType
 
 import solver
 from utils.config import cfg
 from loss import multi_softmax_with_loss
-from loss import multi_dice_loss
-from loss import multi_bce_loss
-from lovasz_losses import multi_lovasz_hinge_loss, multi_lovasz_softmax_loss
-from models.modeling import deeplab, unet, icnet, pspnet, hrnet, fast_scnn, ocrnet
+from models.modeling import deeplab, hrnet
 
 
 class ModelPhase(object):
@@ -72,20 +71,10 @@ class ModelPhase(object):
 
 def seg_model(image, class_num):
     model_name = cfg.MODEL.MODEL_NAME
-    if model_name == 'unet':
-        logits = unet.unet(image, class_num)
-    elif model_name == 'deeplabv3p':
+    if model_name == 'deeplabv3p':
         logits = deeplab.deeplabv3p(image, class_num)
-    elif model_name == 'icnet':
-        logits = icnet.icnet(image, class_num)
-    elif model_name == 'pspnet':
-        logits = pspnet.pspnet(image, class_num)
     elif model_name == 'hrnet':
         logits = hrnet.hrnet(image, class_num)
-    elif model_name == 'fast_scnn':
-        logits = fast_scnn.fast_scnn(image, class_num)
-    elif model_name == 'ocrnet':
-        logits = ocrnet.ocrnet(image, class_num)
     else:
         raise Exception(
             "unknow model name, only support unet, deeplabv3p, icnet, pspnet, hrnet, fast_scnn"
@@ -94,9 +83,9 @@ def seg_model(image, class_num):
 
 
 def softmax(logit):
-    logit = fluid.layers.transpose(logit, [0, 2, 3, 1])
-    logit = fluid.layers.softmax(logit)
-    logit = fluid.layers.transpose(logit, [0, 3, 1, 2])
+    logit = paddle.transpose(logit, [0, 2, 3, 1])
+    logit = F.softmax(logit)
+    logit = paddle.transpose(logit, [0, 3, 1, 2])
     return logit
 
 
@@ -104,11 +93,11 @@ def sigmoid_to_softmax(logit):
     """
     one channel to two channel
     """
-    logit = fluid.layers.transpose(logit, [0, 2, 3, 1])
-    logit = fluid.layers.sigmoid(logit)
+    logit = paddle.transpose(logit, [0, 2, 3, 1])
+    logit = F.sigmoid(logit)
     logit_back = 1 - logit
-    logit = fluid.layers.concat([logit_back, logit], axis=-1)
-    logit = fluid.layers.transpose(logit, [0, 3, 1, 2])
+    logit = paddle.concat([logit_back, logit], axis=-1)
+    logit = paddle.transpose(logit, [0, 3, 1, 2])
     return logit
 
 
@@ -126,17 +115,18 @@ def build_model(main_prog, start_prog, phase=ModelPhase.TRAIN):
     grt_shape = [-1, 1, height, width]
     class_num = cfg.DATASET.NUM_CLASSES
 
-    with fluid.program_guard(main_prog, start_prog):
-        with fluid.unique_name.guard():
+    with static.program_guard(main_prog, start_prog):
+        with paddle.utils.unique_name.guard():
             # 在导出模型的时候，增加图像标准化预处理,减小预测部署时图像的处理流程
             # 预测部署时只须对输入图像增加batch_size维度即可
-            image = fluid.data(name='image', shape=image_shape, dtype='float32')
-            label = fluid.data(name='label', shape=grt_shape, dtype='int32')
-            mask = fluid.data(name='mask', shape=grt_shape, dtype='int32')
+            image = static.data(
+                name='image', shape=image_shape, dtype='float32')
+            label = static.data(name='label', shape=grt_shape, dtype='int32')
+            mask = static.data(name='mask', shape=grt_shape, dtype='int32')
 
             # use DataLoader when doing traning and evaluation
             if ModelPhase.is_train(phase) or ModelPhase.is_eval(phase):
-                data_loader = fluid.io.DataLoader.from_generator(
+                data_loader = paddle.io.DataLoader.from_generator(
                     feed_list=[image, label, mask],
                     capacity=cfg.DATALOADER.BUF_SIZE,
                     iterable=False,
@@ -178,24 +168,6 @@ def build_model(main_prog, start_prog, phase=ModelPhase.TRAIN):
                                                 weight))
                     loss_valid = True
                     valid_loss.append("softmax_loss")
-                if "dice_loss" in loss_type:
-                    avg_loss_list.append(multi_dice_loss(logits, label, mask))
-                    loss_valid = True
-                    valid_loss.append("dice_loss")
-                if "bce_loss" in loss_type:
-                    avg_loss_list.append(multi_bce_loss(logits, label, mask))
-                    loss_valid = True
-                    valid_loss.append("bce_loss")
-                if "lovasz_hinge_loss" in loss_type:
-                    avg_loss_list.append(
-                        multi_lovasz_hinge_loss(logits, label, mask))
-                    loss_valid = True
-                    valid_loss.append("lovasz_hinge_loss")
-                if "lovasz_softmax_loss" in loss_type:
-                    avg_loss_list.append(
-                        multi_lovasz_softmax_loss(logits, label, mask))
-                    loss_valid = True
-                    valid_loss.append("lovasz_softmax_loss")
                 if not loss_valid:
                     raise Exception(
                         "SOLVER.LOSS: {} is set wrong. it should "
@@ -222,7 +194,8 @@ def build_model(main_prog, start_prog, phase=ModelPhase.TRAIN):
                 logit = logits
 
             if logit.shape[2:] != label.shape[2:]:
-                logit = fluid.layers.resize_bilinear(logit, label.shape[2:])
+                logit = F.interpolate(
+                    logit, label.shape[2:], mode='bilinear', align_corners=True)
 
             # return image input and logit output for inference graph prune
             if ModelPhase.is_predict(phase):
@@ -236,12 +209,12 @@ def build_model(main_prog, start_prog, phase=ModelPhase.TRAIN):
 
             if class_num == 1:
                 out = sigmoid_to_softmax(logit)
-                out = fluid.layers.transpose(out, [0, 2, 3, 1])
+                out = paddle.transpose(out, [0, 2, 3, 1])
             else:
-                out = fluid.layers.transpose(logit, [0, 2, 3, 1])
+                out = paddle.transpose(logit, [0, 2, 3, 1])
 
-            pred = fluid.layers.argmax(out, axis=3)
-            pred = fluid.layers.unsqueeze(pred, axes=[3])
+            pred = paddle.argmax(out, axis=3)
+            pred = paddle.unsqueeze(pred, axis=[3])
             if ModelPhase.is_visual(phase):
                 if class_num == 1:
                     logit = sigmoid_to_softmax(logit)
