@@ -35,7 +35,7 @@ class LovaszSoftmaxLoss(nn.Layer):
         classes: 'all' for all, 'present' for classes present in labels, or a list of classes to average.
     """
 
-    def __init__(self, ignore_index=None, classes='present'):
+    def __init__(self, ignore_index=255, classes='present'):
         super(LovaszSoftmaxLoss, self).__init__()
         self.ignore_index = ignore_index
         self.classes = classes
@@ -67,7 +67,7 @@ class LovaszHingeLoss(nn.Layer):
         ignore_index: int64, specifies a target value that is ignored and does not contribute to the input gradient. Default ``None``.
     """
 
-    def __init__(self, ignore_index=None):
+    def __init__(self, ignore_index=255):
         super(LovaszHingeLoss, self).__init__()
         self.ignore_index = ignore_index
 
@@ -123,7 +123,7 @@ def lovasz_hinge_flat(logits, labels):
     gt_sorted = paddle.gather(labels, perm)
     grad = lovasz_grad(gt_sorted)
     grad.stop_gradient = True
-    loss = paddle.dot(F.relu(errors_sorted), grad)
+    loss = paddle.sum(F.relu(errors_sorted) * grad)
     return loss
 
 
@@ -132,8 +132,8 @@ def flatten_binary_scores(scores, labels, ignore=None):
     Flattens predictions in the batch (binary case)
     Remove labels according to 'ignore'
     """
-    scores = paddle.reshape(scores, [-1, 1])
-    labels = paddle.reshape(labels, [-1, 1])
+    scores = paddle.reshape(scores, [-1])
+    labels = paddle.reshape(labels, [-1])
     labels.stop_gradient = True
     if ignore is None:
         return scores, labels
@@ -144,8 +144,8 @@ def flatten_binary_scores(scores, labels, ignore=None):
     indexs.stop_gradient = True
     vscores = paddle.gather(scores, indexs[:, 0])
     vlabels = paddle.gather(labels, indexs[:, 0])
-    vscores = paddle.squeeze(vscores, axis=1)
-    vlabels = paddle.squeeze(vlabels, axis=1)
+    # vscores = paddle.squeeze(vscores, axis=1)
+    # vlabels = paddle.squeeze(vlabels, axis=1)
     return vscores, vlabels
 
 
@@ -184,7 +184,7 @@ def lovasz_softmax_flat(probas, labels, classes='present'):
 
         grad = lovasz_grad(fg_sorted)  # grad值相同，无梯度
         grad.stop_gradient = True
-        loss = paddle.dot(errors_sorted, grad)
+        loss = paddle.sum(errors_sorted * grad)
         losses.append(loss)  # loss梯度相同，值相同
 
     if len(classes_to_sum) == 1:
@@ -204,7 +204,7 @@ def flatten_probas(probas, labels, ignore=None):
     C = probas.shape[1]
     probas = paddle.transpose(probas, [0, 2, 3, 1])
     probas = paddle.reshape(probas, [-1, C])
-    labels = paddle.reshape(labels, [-1, 1])
+    labels = paddle.reshape(labels, [-1])
     if ignore is None:
         return probas, labels
     valid = labels != ignore
@@ -215,5 +215,5 @@ def flatten_probas(probas, labels, ignore=None):
     vprobas = paddle.gather(probas, indexs[:, 0])
     # print(probas.shape, vprobas.shape)  # [1789832, 20] [1700971, 20]
     vlabels = paddle.gather(labels, indexs[:, 0])
-    vlabels = paddle.squeeze(vlabels, axis=1)
+    # vlabels = paddle.squeeze(vlabels, axis=1)
     return vprobas, vlabels
