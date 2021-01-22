@@ -15,6 +15,8 @@
 import argparse
 import os
 
+import yaml
+
 import paddle
 from paddleslim.dygraph.quant import QAT
 from paddleseg.cvlibs.config import Config
@@ -137,14 +139,22 @@ def main(args):
 
     evaluate(net, val_dataset)
     if paddle.distributed.get_rank() == 0:
+        input_var = paddle.ones([1] + list(val_dataset[0][0].shape))
         quantizer.save_quantized_model(
-            net,
-            os.path.join(args.save_dir, 'model'),
-            input_spec=[
-                paddle.static.InputSpec(
-                    shape=[None] + list(val_dataset[0][0].shape),
-                    dtype='float32')
-            ])
+            net, os.path.join(args.save_dir, 'model'), input_spec=[input_var])
+
+        yml_file = os.path.join(args.save_dir, 'deploy.yaml')
+        with open(yml_file, 'w') as file:
+            transforms = cfg.dic['val_dataset']['transforms']
+            data = {
+                'Deploy': {
+                    'transforms': transforms,
+                    'model': 'model.pdmodel',
+                    'params': 'model.pdiparams'
+                }
+            }
+            yaml.dump(data, file)
+
     logger.info(
         f'Model retraining complete. The quantized model is saved in {args.save_dir}.'
     )

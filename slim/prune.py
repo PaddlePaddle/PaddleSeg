@@ -16,6 +16,8 @@ import argparse
 import os
 from functools import partial
 
+import yaml
+
 import paddle
 from paddleslim.dygraph import L1NormFilterPruner
 from paddleslim.analysis import dygraph_flops
@@ -23,6 +25,7 @@ from paddleseg.cvlibs.config import Config
 from paddleseg.core.val import evaluate
 from paddleseg.core.train import train
 from paddleseg.utils import get_sys_env, logger
+from paddleseg.models.layers.layer_libs import convert_syncbn_to_bn
 
 
 def parse_args():
@@ -70,14 +73,27 @@ def eval_fn(net, eval_dataset):
     return miou
 
 
-def export_model(net, eval_dataset, save_dir):
+def export_model(net, cfg, save_dir):
+    convert_syncbn_to_bn(net)
     net.forward = paddle.jit.to_static(net.forward)
-    input_shape = [1] + list(eval_dataset[0][0].shape)
+    input_shape = [1] + list(cfg.val_dataset[0][0].shape)
     input_var = paddle.ones(input_shape)
     out = net(input_var)
 
     save_path = os.path.join(save_dir, 'model')
     paddle.jit.save(net, save_path, input_spec=input_var)
+
+    yml_file = os.path.join(save_dir, 'deploy.yaml')
+    with open(yml_file, 'w') as file:
+        transforms = cfg.dic['val_dataset']['transforms']
+        data = {
+            'Deploy': {
+                'transforms': transforms,
+                'model': 'model.pdmodel',
+                'params': 'model.pdiparams'
+            }
+        }
+        yaml.dump(data, file)
 
 
 def main(args):
@@ -108,7 +124,7 @@ def main(args):
     val_dataset = cfg.val_dataset
     if not val_dataset:
         raise RuntimeError(
-            'The validation dataset is not specified in the configuration file.'
+            'The validation dataset is not specified in the c;onfiguration file.'
         )
     net = cfg.model
 
@@ -137,7 +153,7 @@ def main(args):
     logger.info(
         f'Step 2/3: Start to prune the model, the ratio of pruning is {args.pruning_ratio}. FLOPs before pruning: {flops}.'
     )
-    pruner.sensitive_prune(args.pruned_flops)
+    pruner.sensitive_prune(0.2)
     flops = dygraph_flops(net, sample_shape)
     logger.info(f'Model pruning completed. FLOPs after pruning: {flops}.')
 
@@ -152,7 +168,10 @@ def main(args):
         losses=cfg.loss)
 
     evaluate(net, val_dataset)
-    export_model(net, val_dataset, args.save_dir)
+
+    if paddle.distributed.get_rank() == 0:
+        export_model(net, val_dataset, args.save_dir)
+
     logger.info(f'Model retraining finish. Model is saved in {args.save_dir}')
 
 
