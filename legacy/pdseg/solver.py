@@ -18,10 +18,7 @@ import sys
 import paddle
 import numpy as np
 from utils.config import cfg
-try:
-    from paddle.fluid.contrib.mixed_precision.decorator import OptimizerWithMixedPrecison, decorate, AutoMixedPrecisionLists
-except:
-    from paddle.fluid.contrib.mixed_precision.decorator import OptimizerWithMixedPrecision, decorate, AutoMixedPrecisionLists
+from paddle.static.amp import decorate, AutoMixedPrecisionLists
 
 
 class Solver(object):
@@ -64,10 +61,8 @@ class Solver(object):
             weight_decay=self.weight_decay,
         )
         if cfg.MODEL.FP16:
-            if cfg.MODEL.MODEL_NAME in ["pspnet"]:
-                custom_black_list = {"pool2d"}
-            else:
-                custom_black_list = {}
+            print('use amp')
+            custom_black_list = {}
             amp_lists = AutoMixedPrecisionLists(
                 custom_black_list=custom_black_list)
             assert isinstance(cfg.MODEL.SCALE_LOSS, float) or isinstance(cfg.MODEL.SCALE_LOSS, str), \
