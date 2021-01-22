@@ -90,6 +90,8 @@ def parse_args():
         dest='use_vdl',
         help='Whether to record the data to VisualDL during training',
         action='store_true')
+    parser.add_argument(
+        '--fp16', dest='fp16', help='Whther to use amp', action='store_true')
 
     return parser.parse_args()
 
@@ -140,7 +142,8 @@ def main(args):
         num_workers=args.num_workers,
         use_vdl=args.use_vdl,
         losses=losses,
-        keep_checkpoint_max=args.keep_checkpoint_max)
+        keep_checkpoint_max=args.keep_checkpoint_max,
+        fp16=args.fp16)
 
 
 if __name__ == '__main__':
