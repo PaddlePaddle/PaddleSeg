@@ -18,9 +18,70 @@ from __future__ import division
 from __future__ import print_function
 
 import numpy as np
-
 import paddle
+from paddle import nn
 import paddle.nn.functional as F
+
+from paddleseg.cvlibs import manager
+
+
+@manager.LOSSES.add_component
+class LovaszSoftmaxLoss(nn.Layer):
+    """
+    Multi-class Lovasz-Softmax loss
+
+    Args:
+        ignore_index: int64, specifies a target value that is ignored and does not contribute to the input gradient. Default ``None``.
+        classes: 'all' for all, 'present' for classes present in labels, or a list of classes to average.
+    """
+
+    def __init__(self, ignore_index=None, classes='present'):
+        super(LovaszSoftmaxLoss, self).__init__()
+        self.ignore_index = ignore_index
+        self.classes = classes
+
+    def forward(self, logits, labels):
+        """
+        Forward computation.
+
+        Args:
+            logits: [N, C, H, W] Tensor, logits at each prediction (between -\infty and +\infty)
+            labels: [N, 1, H, W] Tensor, ground truth labels (between 0 and C - 1)
+        """
+        probas = F.softmax(
+            logits, axis=1
+        )  # probas grad [ 0.0000000e+00  0.0000000e+00  0.0000000e+00  0.0000000e+00  -5.5730345e-07]
+        vprobas, vlabels = flatten_probas(
+            probas, labels, self.ignore_index
+        )  # vprobas grad和torch不同，第一个类别是0，torch不是，第一个类别的第一个元素是0.05
+        loss = lovasz_softmax_flat(vprobas, vlabels, classes=self.classes)
+        return loss
+
+
+@manager.LOSSES.add_component
+class LovaszHingeLoss(nn.Layer):
+    """
+    Binary Lovasz hinge loss
+
+    Args:
+        ignore_index: int64, specifies a target value that is ignored and does not contribute to the input gradient. Default ``None``.
+    """
+
+    def __init__(self, ignore_index=None):
+        super(LovaszHingeLoss, self).__init__()
+        self.ignore_index = ignore_index
+
+    def forward(self, logits, labels):
+        """
+        Forward computation.
+
+        Args:
+            logits: [N, C, H, W] Tensor, logits at each pixel (between -\infty and +\infty)
+            labels: [N, 1, H, W] Tensor, binary ground truth masks (0 or 1)
+        """
+        loss = lovasz_hinge_flat(
+            *flatten_binary_scores(logits, labels, self.ignore_index))
+        return loss
 
 
 def lovasz_grad(gt_sorted):
@@ -33,7 +94,7 @@ def lovasz_grad(gt_sorted):
 
     intersection = gts - paddle.cumsum(gt_sorted, axis=0)
     union = gts + paddle.cumsum(1 - gt_sorted, axis=0)
-    jaccard = 1.0 - intersection / union
+    jaccard = 1.0 - intersection.cast('float32') / union.cast('float32')
 
     if p > 1:  # cover 1-pixel case
         jaccard[1:p] = jaccard[1:p] - jaccard[0:-1]
@@ -42,17 +103,6 @@ def lovasz_grad(gt_sorted):
         # jaccard2 = paddle.slice(jaccard, axis=[0], starts=[0], ends=[-1])
         # jaccard = paddle.concat([jaccard0, jaccard1 - jaccard2], axis=0)
     return jaccard
-
-
-def lovasz_hinge(logits, labels, ignore=None):
-    """
-    Binary Lovasz hinge loss
-      logits: [N, C, H, W] Tensor, logits at each pixel (between -\infty and +\infty)
-      labels: [N, 1, H, W] Tensor, binary ground truth masks (0 or 1)
-      ignore: [N, 1, H, W] Tensor. Void class labels, ignore pixels which value=0
-    """
-    loss = lovasz_hinge_flat(*flatten_binary_scores(logits, labels, ignore))
-    return loss
 
 
 def lovasz_hinge_flat(logits, labels):
@@ -64,44 +114,17 @@ def lovasz_hinge_flat(logits, labels):
     if len(labels) == 0:
         # only void pixels, the gradients should be 0
         return logits.sum() * 0.
-    signs = 2. * labels.float() - 1.
+    signs = 2. * labels - 1.
     signs.stop_gradient = True
     errors = 1. - logits * signs
     errors_sorted, perm = paddle.fluid.core.ops.argsort(errors, 'axis', 0,
                                                         'descending', True)
-    perm = perm.data
     errors_sorted.stop_gradient = False
-    gt_sorted = labels[perm]
-    # gt_sorted = paddle.gather(labels, perm)
+    gt_sorted = paddle.gather(labels, perm)
     grad = lovasz_grad(gt_sorted)
     grad.stop_gradient = True
     loss = paddle.dot(F.relu(errors_sorted), grad)
     return loss
-
-    # shape = paddle.shape(logits)
-    # y = paddle.zeros_like(shape[0])
-
-    # out_var = paddle.create_tensor("float32")
-    # with paddle.control_flow.Switch() as switch:
-    #     with switch.case(paddle.equal(shape[0], y)):
-    #         loss = paddle.sum(logits) * 0.
-    #         paddle.assign(input=loss, output=out_var)
-    #     with switch.case(paddle.greater_than(shape[0], y)):
-    #         labelsf = paddle.cast(labels, logits.dtype)
-    #         signs = labelsf * 2 - 1.
-    #         signs.stop_gradient = True
-    #         errors = 1.0 - paddle.elementwise_mul(logits, signs)
-    #         errors_sorted, perm = paddle.argsort(
-    #             errors, axis=0, descending=True)
-    #         errors_sorted.stop_gradient = False
-    #         gt_sorted = paddle.gather(labelsf, perm)
-
-    #         grad = lovasz_grad(gt_sorted)
-    #         grad.stop_gradient = True
-    #         loss = paddle.sum(
-    #             paddle.relu(errors_sorted) * grad)
-    #         paddle.assign(input=loss, output=out_var)
-    # return out_var
 
 
 def flatten_binary_scores(scores, labels, ignore=None):
@@ -114,27 +137,16 @@ def flatten_binary_scores(scores, labels, ignore=None):
     labels.stop_gradient = True
     if ignore is None:
         return scores, labels
-    ignore = paddle.cast(ignore, 'int32')
-    ignore_mask = paddle.reshape(ignore, (-1, 1))
-    indexs = paddle.where(ignore_mask == 1)
+    valid = labels != ignore
+    # ignore = paddle.cast(ignore, 'int32')
+    valid_mask = paddle.reshape(valid, (-1, 1))
+    indexs = paddle.nonzero(valid_mask)
     indexs.stop_gradient = True
     vscores = paddle.gather(scores, indexs[:, 0])
     vlabels = paddle.gather(labels, indexs[:, 0])
+    vscores = paddle.squeeze(vscores, axis=1)
+    vlabels = paddle.squeeze(vlabels, axis=1)
     return vscores, vlabels
-
-
-def lovasz_softmax(logits, labels, classes='present', ignore=None):
-    """
-    Multi-class Lovasz-Softmax loss
-      logits: [N, C, H, W] Tensor, logits at each prediction (between -\infty and +\infty)
-      labels: [N, 1, H, W] Tensor, ground truth labels (between 0 and C - 1)
-      classes: 'all' for all, 'present' for classes present in labels, or a list of classes to average.
-      ignore: [N, 1, H, W] Tensor. Void class labels, ignore pixels which value=0
-    """
-    probas = F.softmax(logits, axis=1)
-    vprobas, vlabels = flatten_probas(probas, labels, ignore)
-    loss = lovasz_softmax_flat(vprobas, vlabels, classes=classes)
-    return loss
 
 
 def lovasz_softmax_flat(probas, labels, classes='present'):
@@ -149,45 +161,38 @@ def lovasz_softmax_flat(probas, labels, classes='present'):
         return probas * 0.
     C = probas.shape[1]
     losses = []
-    present = []
     classes_to_sum = list(range(C)) if classes in ['all', 'present'
                                                    ] else classes
     for c in classes_to_sum:
-        fg = paddle.cast(labels == c, probas.dtype)
+        fg = paddle.cast(labels == c, probas.dtype)  # foreground for class c
+        if classes == 'present' and fg.sum() == 0:
+            continue
         fg.stop_gradient = True
-        if classes == 'present':
-            present.append(paddle.cast(paddle.sum(fg) > 0, "int64"))
         if C == 1:
             if len(classes_to_sum) > 1:
                 raise ValueError('Sigmoid output possible only with 1 class')
             class_pred = probas[:, 0]
         else:
             class_pred = probas[:, c]
-        errors = paddle.abs(fg - class_pred)
+        errors = paddle.abs(fg - class_pred)  # errors梯度不同
         errors_sorted, perm = paddle.fluid.core.ops.argsort(
             errors, 'axis', 0, 'descending', True)
-        errors_sorted.stop_gradient = False
+        errors_sorted.stop_gradient = False  # errors_sorted梯度相同
 
         fg_sorted = paddle.gather(fg, perm)
         fg_sorted.stop_gradient = True
 
-        grad = lovasz_grad(fg_sorted)
+        grad = lovasz_grad(fg_sorted)  # grad值相同，无梯度
         grad.stop_gradient = True
-        loss = paddle.sum(errors_sorted * grad)
-
-        losses.append(loss)
+        loss = paddle.dot(errors_sorted, grad)
+        losses.append(loss)  # loss梯度相同，值相同
 
     if len(classes_to_sum) == 1:
         return losses[0]
 
-    losses_tensor = paddle.stack(losses)
-    if classes == 'present':
-        present_tensor = paddle.stack(present)
-        index = paddle.nonzero(present_tensor)
-        index.stop_gradient = True
-        losses_tensor = paddle.gather(losses_tensor, index[:, 0])
-    loss = paddle.mean(losses_tensor)
-    return loss
+    losses_tensor = paddle.stack(losses)  # losses_tensor值相同，梯度也相同
+    mean_loss = paddle.mean(losses_tensor)
+    return mean_loss
 
 
 def flatten_probas(probas, labels, ignore=None):
@@ -202,11 +207,13 @@ def flatten_probas(probas, labels, ignore=None):
     labels = paddle.reshape(labels, [-1, 1])
     if ignore is None:
         return probas, labels
-    ignore = paddle.cast(ignore, 'int32')
-    ignore_mask = paddle.reshape(ignore, [-1, 1])
-    indexs = paddle.nonzero(ignore_mask)
+    valid = labels != ignore
+    # valid = paddle.cast(valid, 'int32')
+    valid_mask = paddle.reshape(valid, [-1, 1])
+    indexs = paddle.nonzero(valid_mask)
     indexs.stop_gradient = True
     vprobas = paddle.gather(probas, indexs[:, 0])
+    # print(probas.shape, vprobas.shape)  # [1789832, 20] [1700971, 20]
     vlabels = paddle.gather(labels, indexs[:, 0])
     vlabels = paddle.squeeze(vlabels, axis=1)
     return vprobas, vlabels

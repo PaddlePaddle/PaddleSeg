@@ -14,6 +14,7 @@
 
 from .cross_entropy_loss import CrossEntropyLoss
 from .binary_cross_entropy_loss import BCELoss
+from .lovasz_loss import LovaszSoftmaxLoss, LovaszHingeLoss
 from .gscnn_dual_task_loss import DualTaskLoss
 from .edge_attention_loss import EdgeAttentionLoss
 from .bootstrapped_cross_entropy import BootstrappedCrossEntropyLoss
