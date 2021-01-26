@@ -15,10 +15,11 @@
 import os
 
 import numpy as np
+import time
 import paddle
 import paddle.nn.functional as F
 
-from paddleseg.utils import metrics, Timer, calculate_eta, logger, progbar
+from paddleseg.utils import metrics, TimeAverager, calculate_eta, logger, progbar
 from paddleseg.core import infer
 
 np.set_printoptions(suppress=True)
@@ -80,10 +81,12 @@ def evaluate(model,
     logger.info("Start evaluating (total_samples={}, total_iters={})...".format(
         len(eval_dataset), total_iters))
     progbar_val = progbar.Progbar(target=total_iters, verbose=1)
-    timer = Timer()
+    reader_cost_averager = TimeAverager()
+    batch_cost_averager = TimeAverager()
+    batch_start = time.time()
     with paddle.no_grad():
         for iter, (im, label) in enumerate(loader):
-            reader_cost = timer.elapsed_time()
+            reader_cost_averager.record(time.time() - batch_start)
             label = label.astype('int64')
 
             ori_shape = label.shape[-2:]
@@ -141,12 +144,18 @@ def evaluate(model,
                 intersect_area_all = intersect_area_all + intersect_area
                 pred_area_all = pred_area_all + pred_area
                 label_area_all = label_area_all + label_area
-            batch_cost = timer.elapsed_time()
-            timer.restart()
+            batch_cost_averager.record(
+                    time.time() - batch_start,
+                    num_samples=len(label))
+            batch_cost = batch_cost_averager.get_average()
+            reader_cost = reader_cost_averager.get_average()
 
             if local_rank == 0:
                 progbar_val.update(iter + 1, [('batch_cost', batch_cost),
                                               ('reader cost', reader_cost)])
+            reader_cost_averager.reset()
+            batch_cost_averager.reset()
+            batch_start = time.time()
 
     class_iou, miou = metrics.mean_iou(intersect_area_all, pred_area_all,
                                        label_area_all)

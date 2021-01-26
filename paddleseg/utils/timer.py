@@ -15,37 +15,30 @@
 import time
 
 
-class Timer(object):
-    """ Simple timer class for measuring time consuming """
-
+class TimeAverager(object):
     def __init__(self):
-        self._start_time = 0.0
-        self._end_time = 0.0
-        self._elapsed_time = 0.0
-        self._is_running = False
+        self.reset()
 
-    def start(self):
-        self._is_running = True
-        self._start_time = time.time()
+    def reset(self):
+        self._cnt = 0
+        self._total_time = 0
+        self._total_samples = 0
 
-    def restart(self):
-        self.start()
+    def record(self, usetime, num_samples=None):
+        self._cnt += 1
+        self._total_time += usetime
+        if num_samples:
+            self._total_samples += num_samples
 
-    def stop(self):
-        self._is_running = False
-        self._end_time = time.time()
+    def get_average(self):
+        if self._cnt == 0:
+            return 0
+        return self._total_time / float(self._cnt)
 
-    def elapsed_time(self):
-        self._end_time = time.time()
-        self._elapsed_time = self._end_time - self._start_time
-        if not self.is_running:
-            return 0.0
-
-        return self._elapsed_time
-
-    @property
-    def is_running(self):
-        return self._is_running
+    def get_ips_average(self):
+        if not self._total_samples or self._cnt == 0:
+            return 0
+        return float(self._total_samples) / self._total_time
 
 
 def calculate_eta(remaining_step, speed):

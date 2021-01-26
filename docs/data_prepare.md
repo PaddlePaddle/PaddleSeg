@@ -48,6 +48,30 @@ export PYTHONPATH=`pwd`
 [ADE20K](http://sceneparsing.csail.mit.edu/)由MIT发布的可用于场景感知、分割和多物体识别等多种任务的数据集。
 其涵盖了150个语义类别，包括训练集20210张，验证集2000张。
 
+## 关于Pascal Context数据集
+Pascal Context是基于PASCAL VOC 2010数据集额外标注的像素级别的语义分割数据集。我们提供的转换脚本支持59个类别，其中训练集4996, 验证集5104张.
+
+
+在使用Pascal Context数据集前， 请先下载[VOC2010](http://host.robots.ox.ac.uk/pascal/VOC/voc2010/VOCtrainval_03-May-2010.tar)，随后自行前往[Pascal-Context主页](https://www.cs.stanford.edu/~roozbeh/pascal-context/)下载数据集及[标注](https://codalabuser.blob.core.windows.net/public/trainval_merged.json)
+我们建议您将数据集存放于`PaddleSeg/data`中，以便与我们配置文件完全兼容。数据集下载后请组织成如下结构：
+    
+    VOC2010
+    |
+    |--Annotations
+    |
+    |--ImageSets
+    |
+    |--SegmentationClass
+    |  
+    |--JPEGImages
+    |
+    |--SegmentationObject
+    |
+    |--trainval_merged.json
+    
+其中，标注图像的标签从1，2依次取值，不可间隔。若有需要忽略的像素，则按0进行标注。在使用Pascal Context数据集时，需要安装[Detail](https://github.com/zhanghang1989/detail-api).
+
+
 ## 自定义数据集
 
 如果您需要使用自定义数据集进行训练，请按照以下步骤准备数据.
