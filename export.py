@@ -19,8 +19,8 @@ import paddle
 import yaml
 
 from paddleseg.cvlibs import Config
-from paddleseg.models.layers.layer_libs import convert_syncbn_to_bn
 from paddleseg.utils import logger
+from paddleseg.utils.paddle import convert_syncbn_to_bn
 
 
 def parse_args():
@@ -58,15 +58,14 @@ def main(args):
         net.set_dict(para_state_dict)
         logger.info('Loaded trained params of model successfully.')
 
-    convert_syncbn_to_bn(net)
-
     net.forward = paddle.jit.to_static(net.forward)
     in_shape = [1] + list(cfg.val_dataset[0][0].shape)
     in_var = paddle.ones(in_shape)
     out = net(in_var)
+    save_path = os.path.join(args.save_dir, 'model')
+    paddle.jit.save(net, save_path, input_spec=[in_var])
 
-    paddle.jit.save(
-        net, os.path.join(args.save_dir, 'model'), input_spec=[in_var])
+    convert_syncbn_to_bn(f'{save_path}.pdmodel')
 
     yml_file = os.path.join(args.save_dir, 'deploy.yaml')
     with open(yml_file, 'w') as file:

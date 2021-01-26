@@ -23,6 +23,7 @@ from paddleseg.cvlibs.config import Config
 from paddleseg.core.val import evaluate
 from paddleseg.core.train import train
 from paddleseg.utils import get_sys_env, logger
+from paddleseg.utils.paddle import convert_syncbn_to_bn
 
 
 def parse_args():
@@ -86,10 +87,6 @@ def get_quant_config():
 
 def main(args):
     env_info = get_sys_env()
-    info = ['{}: {}'.format(k, v) for k, v in env_info.items()]
-    info = '\n'.join(['', format('Environment Information', '-^48s')] + info +
-                     ['-' * 48])
-    logger.info(info)
 
     place = 'gpu' if env_info['Paddle compiled with cuda'] and env_info[
         'GPUs used'] else 'cpu'
@@ -117,11 +114,6 @@ def main(args):
         net.set_dict(para_state_dict)
         logger.info('Loaded trained params of model successfully')
 
-    msg = '\n---------------Config Information---------------\n'
-    msg += str(cfg)
-    msg += '------------------------------------------------'
-    logger.info(msg)
-
     logger.info('Step 1/2: Start to quantify the model...')
     quantizer = QAT(config=get_quant_config())
     quantizer.quantize(net)
@@ -138,10 +130,13 @@ def main(args):
         losses=cfg.loss)
 
     evaluate(net, val_dataset)
+
     if paddle.distributed.get_rank() == 0:
+        save_path = os.path.join(args.save_dir, 'model')
         input_var = paddle.ones([1] + list(val_dataset[0][0].shape))
-        quantizer.save_quantized_model(
-            net, os.path.join(args.save_dir, 'model'), input_spec=[input_var])
+        quantizer.save_quantized_model(net, save_path, input_spec=[input_var])
+
+        convert_syncbn_to_bn(f'{save_path}.pdmodel')
 
         yml_file = os.path.join(args.save_dir, 'deploy.yaml')
         with open(yml_file, 'w') as file:

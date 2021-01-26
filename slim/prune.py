@@ -25,7 +25,7 @@ from paddleseg.cvlibs.config import Config
 from paddleseg.core.val import evaluate
 from paddleseg.core.train import train
 from paddleseg.utils import get_sys_env, logger
-from paddleseg.models.layers.layer_libs import convert_syncbn_to_bn
+from paddleseg.utils.paddle import convert_syncbn_to_bn
 
 
 def parse_args():
@@ -74,14 +74,15 @@ def eval_fn(net, eval_dataset):
 
 
 def export_model(net, cfg, save_dir):
-    convert_syncbn_to_bn(net)
     net.forward = paddle.jit.to_static(net.forward)
     input_shape = [1] + list(cfg.val_dataset[0][0].shape)
     input_var = paddle.ones(input_shape)
     out = net(input_var)
 
     save_path = os.path.join(save_dir, 'model')
-    paddle.jit.save(net, save_path, input_spec=input_var)
+    paddle.jit.save(net, save_path, input_spec=[input_var])
+
+    convert_syncbn_to_bn(f'{save_path}.pdmodel')
 
     yml_file = os.path.join(save_dir, 'deploy.yaml')
     with open(yml_file, 'w') as file:
@@ -98,10 +99,6 @@ def export_model(net, cfg, save_dir):
 
 def main(args):
     env_info = get_sys_env()
-    info = ['{}: {}'.format(k, v) for k, v in env_info.items()]
-    info = '\n'.join(['', format('Environment Information', '-^48s')] + info +
-                     ['-' * 48])
-    logger.info(info)
 
     place = 'gpu' if env_info['Paddle compiled with cuda'] and env_info[
         'GPUs used'] else 'cpu'
@@ -132,11 +129,6 @@ def main(args):
         para_state_dict = paddle.load(args.model_path)
         net.set_dict(para_state_dict)
         logger.info('Loaded trained params of model successfully')
-
-    msg = '\n---------------Config Information---------------\n'
-    msg += str(cfg)
-    msg += '------------------------------------------------'
-    logger.info(msg)
 
     logger.info(
         'Step 1/3: Start calculating the sensitivity of model parameters...')
@@ -170,7 +162,7 @@ def main(args):
     evaluate(net, val_dataset)
 
     if paddle.distributed.get_rank() == 0:
-        export_model(net, val_dataset, args.save_dir)
+        export_model(net, cfg, args.save_dir)
 
     logger.info(f'Model retraining finish. Model is saved in {args.save_dir}')
 

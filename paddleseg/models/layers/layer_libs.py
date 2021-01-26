@@ -17,33 +17,6 @@ import paddle.nn as nn
 import paddle.nn.functional as F
 
 
-def convert_syncbn_to_bn(net):
-    """
-    Since SyncBatchNorm does not have a cpu kernel, when exporting the model, the SyncBatchNorm
-    in the model needs to be converted to BatchNorm.
-    """
-    for key, sublayer in net._sub_layers.items():
-        if isinstance(sublayer, nn.SyncBatchNorm):
-            sync_bn_dict = sublayer.state_dict()
-
-            param = {
-                'num_features': sublayer._num_features,
-                'momentum': sublayer._momentum,
-                'epsilon': sublayer._epsilon,
-                'data_format': sublayer._data_format,
-                'name': sublayer._name
-            }
-
-            if hasattr(sublayer, '_use_global_stats'):
-                param['use_global_stats'] = sublayer._use_global_stats
-
-            bn = nn.BatchNorm2D(**param)
-            bn.set_dict(sync_bn_dict)
-            setattr(net, key, bn)
-        else:
-            convert_syncbn_to_bn(sublayer)
-
-
 def SyncBatchNorm(*args, **kwargs):
     """In cpu environment nn.SyncBatchNorm does not have kernel so use nn.BatchNorm2D instead"""
     if paddle.get_device() == 'cpu':
