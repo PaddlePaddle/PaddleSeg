@@ -7,4 +7,3 @@ opencv-python
 tqdm
 filelock
 scipy
-paddleseg
