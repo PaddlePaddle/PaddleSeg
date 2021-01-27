@@ -38,8 +38,9 @@ class BootstrappedCrossEntropyLoss(nn.Layer):
         self.ignore_index = ignore_index
         self.K = min_K
         self.threshold = loss_th
-        self.weight = paddle.to_tensor(weight)  #  修复weight与F.cross_entropy需要的weight数据类型不一致的bug
-        #  删除重复的self.ignore_index = ignore_index
+        if weight is not None:
+            weight = paddle.to_tensor(weight, dtype='float32')
+        self.weight = weight
     def forward(self, logit, label):
 
         n, c, h, w = logit.shape
