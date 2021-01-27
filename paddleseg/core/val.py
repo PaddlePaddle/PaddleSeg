@@ -123,7 +123,8 @@ def evaluate(model,
                 intersect_area_list = []
                 pred_area_list = []
                 label_area_list = []
-                paddle.distributed.all_gather(intersect_area_list, intersect_area)
+                paddle.distributed.all_gather(intersect_area_list,
+                                              intersect_area)
                 paddle.distributed.all_gather(pred_area_list, pred_area)
                 paddle.distributed.all_gather(label_area_list, label_area)
 
@@ -135,7 +136,8 @@ def evaluate(model,
                     label_area_list = label_area_list[:valid]
 
                 for i in range(len(intersect_area_list)):
-                    intersect_area_all = intersect_area_all + intersect_area_list[i]
+                    intersect_area_all = intersect_area_all + intersect_area_list[
+                        i]
                     pred_area_all = pred_area_all + pred_area_list[i]
                     label_area_all = label_area_all + label_area_list[i]
             else:
