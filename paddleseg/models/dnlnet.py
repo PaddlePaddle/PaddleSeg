@@ -1,4 +1,4 @@
-# Copyright (c) 2020 PaddlePaddle Authors. All Rights Reserved.
+# Copyright (c) 2021 PaddlePaddle Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -120,7 +120,7 @@ class DNLHead(nn.Layer):
         self.enable_auxiliary_loss = enable_auxiliary_loss
         inter_channels = self.in_channels // 4
 
-        self.dnl_block = DisentangledNonLocal2d(
+        self.dnl_block = DisentangledNonLocal2D(
             in_channels=inter_channels,
             reduction=reduction,
             use_scale=use_scale,
@@ -167,7 +167,7 @@ class DNLHead(nn.Layer):
             return [output]
 
 
-class DisentangledNonLocal2d(layers.NonLocal2d):
+class DisentangledNonLocal2D(layers.NonLocal2D):
     """Disentangled Non-Local Blocks.
 
     Args:
