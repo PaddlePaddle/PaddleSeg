@@ -157,7 +157,7 @@ class Config(object):
         lr = self.learning_rate
         args = self.optimizer_args
         optimizer_type = args.pop('type')
-        
+
         if optimizer_type == 'sgd':
             return paddle.optimizer.Momentum(
                 lr, parameters=self.model.parameters(), **args)
@@ -235,14 +235,14 @@ class Config(object):
 
     @property
     def train_dataset(self) -> paddle.io.Dataset:
-        _train_dataset = self.dic.get('train_dataset').copy()
+        _train_dataset = self.dic.get('train_dataset', {}).copy()
         if not _train_dataset:
             return None
         return self._load_object(_train_dataset)
 
     @property
     def val_dataset(self) -> paddle.io.Dataset:
-        _val_dataset = self.dic.get('val_dataset').copy()
+        _val_dataset = self.dic.get('val_dataset', {}).copy()
         if not _val_dataset:
             return None
         return self._load_object(_val_dataset)
