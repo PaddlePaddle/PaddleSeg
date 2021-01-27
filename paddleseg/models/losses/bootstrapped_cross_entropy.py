@@ -41,7 +41,6 @@ class BootstrappedCrossEntropyLoss(nn.Layer):
         if weight is not None:
             weight = paddle.to_tensor(weight, dtype='float32')
         self.weight = weight
-        
     def forward(self, logit, label):
 
         n, c, h, w = logit.shape
