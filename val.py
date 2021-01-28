@@ -102,9 +102,13 @@ def main(args):
 
     cfg = Config(args.cfg)
     val_dataset = cfg.val_dataset
-    if not val_dataset:
+    if val_dataset is None:
         raise RuntimeError(
             'The verification dataset is not specified in the configuration file.'
+        )
+    elif len(val_dataset) == 0:
+        raise ValueError(
+            'The length of val_dataset is 0. Please check if your dataset is valid'
         )
 
     msg = '\n---------------Config Information---------------\n'
