@@ -38,8 +38,9 @@ class BootstrappedCrossEntropyLoss(nn.Layer):
         self.ignore_index = ignore_index
         self.K = min_K
         self.threshold = loss_th
+        if weight is not None:
+            weight = paddle.to_tensor(weight, dtype='float32')
         self.weight = weight
-        self.ignore_index = ignore_index
 
     def forward(self, logit, label):
 
