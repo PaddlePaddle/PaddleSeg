@@ -1,4 +1,0 @@
-services {
-  name: "ImageSegService"
-  workflows: "workflow1"
-}

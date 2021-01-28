@@ -1,0 +1,6 @@
+_base_: './fcn_hrnetw18_cityscapes_1024x512_80k.yml'
+
+model:
+  backbone:
+    type: HRNet_W48
+    pretrained: https://bj.bcebos.com/paddleseg/dygraph/hrnet_w48_ssld.tar.gz

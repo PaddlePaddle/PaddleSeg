@@ -1,0 +1,42 @@
+TRAIN_CROP_SIZE: (512, 512) # (width, height), for unpadding rangescaling and stepscaling
+EVAL_CROP_SIZE: (512, 512) # (width, height), for unpadding rangescaling and stepscaling
+AUG:
+    AUG_METHOD: "unpadding" # choice unpadding rangescaling and stepscaling
+    FIX_RESIZE_SIZE: (512, 512) # (width, height), for unpadding
+
+    INF_RESIZE_VALUE: 500  # for rangescaling
+    MAX_RESIZE_VALUE: 600  # for rangescaling
+    MIN_RESIZE_VALUE: 400  # for rangescaling
+
+    MAX_SCALE_FACTOR: 1.25  # for stepscaling
+    MIN_SCALE_FACTOR: 0.75  # for stepscaling
+    SCALE_STEP_SIZE: 0.25  # for stepscaling
+    MIRROR: True
+BATCH_SIZE: 4
+DATASET:
+    DATA_DIR: "./dataset/mini_pet/"
+    IMAGE_TYPE: "rgb"  # choice rgb or rgba
+    NUM_CLASSES: 3
+    TEST_FILE_LIST: "./dataset/mini_pet/file_list/test_list.txt"
+    TRAIN_FILE_LIST: "./dataset/mini_pet/file_list/train_list.txt"
+    VAL_FILE_LIST: "./dataset/mini_pet/file_list/val_list.txt"
+    VIS_FILE_LIST: "./dataset/mini_pet/file_list/test_list.txt"
+    IGNORE_INDEX: 255
+    SEPARATOR: " "
+FREEZE:
+    MODEL_FILENAME: "__model__"
+    PARAMS_FILENAME: "__params__"
+MODEL:
+    MODEL_NAME: "unet"
+    DEFAULT_NORM_TYPE: "bn"
+TEST:
+    TEST_MODEL: "./saved_model/unet_pet/final/"
+TRAIN:
+    MODEL_SAVE_DIR: "./saved_model/unet_pet/"
+    PRETRAINED_MODEL_DIR: "./test/models/unet_coco_init/"
+    SNAPSHOT_EPOCH: 10
+SOLVER:
+    NUM_EPOCHS: 100
+    LR: 0.005
+    LR_POLICY: "poly"
+    OPTIMIZER: "adam"

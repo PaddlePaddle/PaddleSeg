@@ -1,0 +1,43 @@
+EVAL_CROP_SIZE: (2049, 1025) # (width, height), for unpadding rangescaling and stepscaling
+TRAIN_CROP_SIZE: (769, 769) # (width, height), for unpadding rangescaling and stepscaling
+AUG:
+    AUG_METHOD: "stepscaling" # choice unpadding rangescaling and stepscaling
+    FIX_RESIZE_SIZE: (640, 640) # (width, height), for unpadding
+    INF_RESIZE_VALUE: 500  # for rangescaling
+    MAX_RESIZE_VALUE: 600  # for rangescaling
+    MIN_RESIZE_VALUE: 400  # for rangescaling
+    MAX_SCALE_FACTOR: 2.0  # for stepscaling
+    MIN_SCALE_FACTOR: 0.5  # for stepscaling
+    SCALE_STEP_SIZE: 0.25  # for stepscaling
+    MIRROR: True
+BATCH_SIZE: 4
+DATASET:
+    DATA_DIR: "./dataset/cityscapes/"
+    IMAGE_TYPE: "rgb"  # choice rgb or rgba
+    NUM_CLASSES: 19
+    TEST_FILE_LIST: "dataset/cityscapes/val.list"
+    TRAIN_FILE_LIST: "dataset/cityscapes/train.list"
+    VAL_FILE_LIST: "dataset/cityscapes/val.list"
+    VIS_FILE_LIST: "dataset/cityscapes/vis.list"
+    SEPARATOR: " "
+    IGNORE_INDEX: 255
+FREEZE:
+    MODEL_FILENAME: "__model__"
+    PARAMS_FILENAME: "__params__"
+MODEL:
+    DEFAULT_NORM_TYPE: "gn"
+    MODEL_NAME: "deeplabv3p"
+    DEEPLAB:
+        ASPP_WITH_SEP_CONV: True
+        DECODER_USE_SEP_CONV: True
+TEST:
+    TEST_MODEL: "./saved_model/cityscape_v5/final/"
+TRAIN:
+    MODEL_SAVE_DIR: "./saved_model/cityscape_v5/"
+    PRETRAINED_MODEL_DIR: "pretrained_model/deeplabv3plus_gn_init"
+    SNAPSHOT_EPOCH: 10
+SOLVER:
+    LR: 0.001
+    LR_POLICY: "poly"
+    OPTIMIZER: "sgd"
+    NUM_EPOCHS: 700

@@ -1,0 +1,12 @@
+_base_: '../_base_/cityscapes.yml'
+
+batch_size: 4
+iters: 160000
+
+model:
+  type: U2Netp
+  num_classes: 19
+  pretrained: Null
+
+loss:
+  coef: [1, 1, 1, 1, 1, 1, 1]

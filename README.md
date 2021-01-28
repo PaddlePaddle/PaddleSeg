@@ -8,108 +8,117 @@ English | [简体中文](README_CN.md)
 ![python version](https://img.shields.io/badge/python-3.6+-orange.svg)
 ![support os](https://img.shields.io/badge/os-linux%2C%20win%2C%20mac-yellow.svg)
 
-<img src="./docs/imgs/seg_news_icon.png" width="50"/> *[2020-12-02] PaddleSeg has released the [dynamic graph](./dygraph) version, which supports PaddlePaddle 2.0rc. For the static graph, we only fix bugs without adding new features. See detailed [release notes](./docs/release_notes.md).*
+![demo](./docs/images/cityscapes.gif)
 
-## Introduction
+Welcome to PaddleSeg! PaddleSeg is an end-to-end image segmentation development kit developed based on [PaddlePaddle](https://www.paddlepaddle.org.cn), which covers a large number of high-quality segmentation models in different directions such as *high-performance* and *lightweight*. With the help of modular design, we provide two application methods: *Configuration Drive* and *API Calling*. So one can conveniently complete the entire image segmentation application from training to deployment through configuration calls or API calls.
 
-PaddleSeg is an end-to-end image segmentation development kit based on PaddlePaddle, which aims to help developers in the whole process of training models, optimizing performance and inference speed, and deploying models. Currently PaddleSeg supports seven efficient segmentation models, including DeepLabv3+, U-Net, ICNet, PSPNet, HRNet, Fast-SCNN, and OCRNet, which are extensively used in both academia and industry. Enjoy your Seg journey!
+## Core features
 
-![demo](./docs/imgs/cityscapes.png)
+**High performance model**: Based on the high-performance backbone trained by Baidu's self-developed [semi-supervised label knowledge distillation scheme (SSLD)](https://paddleclas.readthedocs.io/zh_CN/latest/advanced_tutorials/distillation/distillation.html#ssld), combined with the state of the art segmentation technology, we provides 50+ high-quality pre-training models, which are better than other open source implementations.
 
-## Main Features
+**Modular design**: PaddleSeg support 15+ mainstream *segmentation networks*, developers can start based on actual application scenarios and assemble diversified training configurations combined with modular design of *data enhancement strategies*, *backbone networks*, *loss functions* and other different components to meet different performance and accuracy requirements.
 
-- **Practical Data Augmentation Techniques**
+**High efficiency**: PaddleSeg provides multi-process asynchronous I/O, multi-card parallel training, evaluation and other acceleration strategies, combined with the memory optimization function of the PaddlePaddle, which can greatly reduce the training overhead of the segmentation model, all this allowing developers to lower cost and more efficiently train image segmentation model.
 
-PaddleSeg provides 10+ data augmentation techniques, which are developed from the product-level applications in Baidu. The techniques are able to help developers improve the generalization and robustness ability of their customized models.
+## Model Zoo
 
-- **Modular Design**
+|Model\Backbone|ResNet50|ResNet101|HRNetw18|HRNetw48|
+|-|-|-|-|-|
+|[ANN](./configs/ann)|✔|✔|||
+|[BiSeNetv2](./configs/bisenet)|-|-|-|-|
+|[DANet](./configs/danet)|✔|✔|||
+|[Deeplabv3](./configs/deeplabv3)|✔|✔|||
+|[Deeplabv3P](./configs/deeplabv3p)|✔|✔|||
+|[Fast-SCNN](./configs/fastscnn)|-|-|-|-|
+|[FCN](./configs/fcn)|||✔|✔|
+|[GCNet](./configs/gcnet)|✔|✔|||
+|[GSCNN](./configs/gscnn)|✔|✔|||
+|[HarDNet](./configs/hardnet)|-|-|-|-|
+|[OCRNet](./configs/ocrnet/)|||✔|✔|
+|[PSPNet](./configs/pspnet)|✔|✔|||
+|[U-Net](./configs/unet)|-|-|-|-|
+|[U<sup>2</sup>-Net](./configs/u2net)|-|-|-|-|
+|[Att U-Net](./configs/attention_unet)|-|-|-|-|
+|[U-Net++](./configs/unet_plusplus)|-|-|-|-|
+|[DecoupledSegNet](./configs/decoupled_segnet)|✔|✔|||
 
-PaddleSeg supports seven popular segmentation models, including U-Net, DeepLabv3+, ICNet, PSPNet, HRNet, Fast-SCNN, and OCRNet. Combing with different components, such as pre-trained models, adjustable backbone architectures and loss functions, developer can easily build an efficient segmentation model according to their practical performance requirements.
+## Dataset
 
-- **High Performance**
-
-PaddleSeg supports the efficient acceleration strategies, such as multi-processing I/O operations, and multi-GPUs parallel training. Moreover, integrating GPU memory optimization techniques in the PaddlePaddle framework, PaddleSeg significantly reduces training overhead of the segmentation models, which helps developers complete the segmentation tasks in a high-efficient way.
-
-- **Industry-Level Deployment**
-
-PaddleSeg supports the industry-level deployment in both **server** and **mobile devices** with the high-performance inference engine and image processing ability, which helps developers achieve the high-performance deployment and integration of segmentation model efficiently. Particularly, using another paddle tool [Paddle-Lite](https://github.com/PaddlePaddle/Paddle-Lite), the segmentation models trained in PaddleSeg are able to be deployed on mobile/embedded devices quickly and easily.
-
-- **Rich Practical Cases**
-
-PaddleSeg provides rich practical cases in industry, such as human segmentation, mechanical meter segmentation, lane segmentation, remote sensing image segmentation, human parsing, and industry inspection, etc. The practical cases allow developers to get a closer look at the image segmentation area, and get more hand-on experiences on the real practice.
+- [x] Cityscapes
+- [x] Pascal VOC
+- [x] ADE20K
+- [x] Pascal Context
+- [x] COCO stuff
 
 ## Installation
 
-### 1. Install PaddlePaddle
+#### step 1. Install PaddlePaddle
 
 System Requirements:
-* PaddlePaddle >= 1.7.0 and < 2.0
-* Python >= 3.5+
+* PaddlePaddle >= 2.0.0rc
+* Python >= 3.6+
 
-> Note: the above requirements are for the **static** graph version. If you intent to use the dynamic one, please refers to [here](./dygraph).
+Highly recommend you install the GPU version of PaddlePaddle, due to large overhead of segmentation models, otherwise it could be out of memory while running the models. For more detailed installation tutorials, please refer to the official website of [PaddlePaddle](https://www.paddlepaddle.org.cn/documentation/docs/zh/2.0-beta/install/index_cn.html)。
 
-Highly recommend you install the GPU version of PaddlePaddle, due to large overhead of segmentation models, otherwise it could be out of memory while running the models.
 
-For more detailed installation tutorials, please refer to the official website of [PaddlePaddle](https://www.paddlepaddle.org.cn/install/quick)。
+#### step 2. Install PaddleSeg
+Support to construct a customized segmentation framework with *API Calling* method for flexible development.
 
-### 2. Download PaddleSeg
-
+```shell
+pip install paddleseg
 ```
+
+
+#### step 3. Download PaddleSeg repo
+Support to complete the whole process segmentation application with *Configuration Drive* method, simple and fast.
+
+```shell
 git clone https://github.com/PaddlePaddle/PaddleSeg
 ```
 
-### 3. Install Dependencies
-Install the python dependencies via the following commands，and please make sure execute it at least once in your branch.
-```
-cd PaddleSeg
-pip install -r requirements.txt
+#### step 4. Verify installation
+Run the following command. If you can train normally, you have installed it successfully.
+
+```shell
+python train.py --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml
 ```
 
 ## Tutorials
 
-For a better understanding of PaddleSeg, we provide comprehensive tutorials to show the whole process of using PaddleSeg on model training, evaluation and deployment. Besides the basic usages of PaddleSeg, the design insights will be also mentioned in the tutorials.
-
-### Quick Start
-
-* [PaddleSeg Start](./docs/usage.md)
-
-### Basic Usages
-
-* [Customized Data Preparation](./docs/data_prepare.md)
-* [Scripts and Config Guide](./docs/config.md)
-* [Data and Config Verification](./docs/check.md)
-* [Segmentation Models](./docs/models.md)
-* [Pretrained Models](./docs/model_zoo.md)
-* [DeepLabv3+ Tutorial](./tutorial/finetune_deeplabv3plus.md)
-
-### Inference and Deployment
-
-* [Model Export](./docs/model_export.md)
-* [Python Inference](./deploy/python/)
-* [C++ Inference](./deploy/cpp/)
-* [Paddle-Lite Mobile Inference & Deployment](./deploy/lite/)
-* [PaddleServing Inference & Deployment](./deploy/paddle-serving)
-
-
-### Advanced features
-
-* [Data Augmentation](./docs/data_aug.md)
-* [Loss Functions](./docs/loss_select.md)
-* [Practical Cases](./contrib)
-* [Multiprocessing and Mixed-Precision Training](./docs/multiple_gpus_train_and_mixed_precision_train.md)
-* Model Compression ([Quantization](./slim/quantization/README.md), [Distillation](./slim/distillation/README.md), [Pruning](./slim/prune/README.md), [NAS](./slim/nas/README.md))
-
-
-### Online Tutorials
-
-We further provide a few online tutorials in Baidu AI Studio：[Get Started](https://aistudio.baidu.com/aistudio/projectdetail/100798), [U-Net](https://aistudio.baidu.com/aistudio/projectDetail/102889), [DeepLabv3+](https://aistudio.baidu.com/aistudio/projectDetail/226703), [Industry Inspection](https://aistudio.baidu.com/aistudio/projectdetail/184392), [HumanSeg](https://aistudio.baidu.com/aistudio/projectdetail/475345), [More](https://aistudio.baidu.com/aistudio/projectdetail/226710).
+* [Get Started](./docs/quick_start.md)
+* [API Tutorial](https://aistudio.baidu.com/aistudio/projectdetail/1339458)
+* [Data Preparation](./docs/data_prepare.md)
+* [Training Configuration](./configs/)
+* [API References](./docs/apis)
+* [Add New Components](./docs/add_new_model.md)
 
 
 ## Feedbacks and Contact
-* If your question is not answered properly in [FAQ](./docs/faq.md) or you have an idea on PaddleSeg, please report an issue via [Github Issues](https://github.com/PaddlePaddle/PaddleSeg/issues).
+* The dynamic version is still under development, if you find any issue or have an idea on new features, please don't hesitate to contact us via [GitHub Issues](https://github.com/PaddlePaddle/PaddleSeg/issues).
 * PaddleSeg User Group (QQ): 850378321 or 793114768
 
+## Acknowledgement
+* Thanks [jm12138](https://github.com/jm12138) for contributing U<sup>2</sup>-Net.
+* Thanks [zjhellofss](https://github.com/zjhellofss) (Fu Shenshen) for contributing Attention U-Net, and Dice Loss.
+* Thanks [liuguoyu666](https://github.com/liguoyu666) for contributing U-Net++.
 
-## Contributing
+## Citation
+If you find our project useful in your research, please consider citing:
 
-All contributions and suggestions are welcomed. If you want to contribute to PaddleSeg，please summit an issue or create a pull request directly.
+```latex
+@misc{liu2021paddleseg,
+      title={PaddleSeg: A High-Efficient Development Toolkit for Image Segmentation}, 
+      author={Yi Liu and Lutao Chu and Guowei Chen and Zewu Wu and Zeyu Chen and Baohua Lai and Yuying Hao},
+      year={2021},
+      eprint={2101.06175},
+      archivePrefix={arXiv},
+      primaryClass={cs.CV}
+}
+
+@misc{paddleseg2019,
+    title={PaddleSeg, End-to-end image segmentation kit based on PaddlePaddle},
+    author={PaddlePaddle Authors},
+    howpublished = {\url{https://github.com/PaddlePaddle/PaddleSeg}},
+    year={2019}
+}
+```
