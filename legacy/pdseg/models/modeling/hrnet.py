@@ -133,7 +133,7 @@ def fuse_layers(x, channels, multi_scale_output=True, name=None):
                     y,
                     size=[height, width],
                     mode='bilinear',
-                    align_corners=True)
+                    align_corners=False)
                 residual = residual + y
             elif j < i:
                 y = x[j]
@@ -272,11 +272,11 @@ def high_resolution_net(input, num_classes):
     shape = st4[0].shape
     height, width = shape[-2], shape[-1]
     st4[1] = F.interpolate(
-        st4[1], size=[height, width], mode='bilinear', align_corners=True)
+        st4[1], size=[height, width], mode='bilinear', align_corners=False)
     st4[2] = F.interpolate(
-        st4[2], size=[height, width], mode='bilinear', align_corners=True)
+        st4[2], size=[height, width], mode='bilinear', align_corners=False)
     st4[3] = F.interpolate(
-        st4[3], size=[height, width], mode='bilinear', align_corners=True)
+        st4[3], size=[height, width], mode='bilinear', align_corners=False)
 
     out = paddle.concat(st4, axis=1)
     last_channels = sum(channels_4)
@@ -302,7 +302,7 @@ def high_resolution_net(input, num_classes):
         bias_attr=None)
 
     out = F.interpolate(
-        out, size=input.shape[2:], mode='bilinear', align_corners=True)
+        out, size=input.shape[2:], mode='bilinear', align_corners=False)
 
     return out
 

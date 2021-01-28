@@ -195,7 +195,10 @@ def build_model(main_prog, start_prog, phase=ModelPhase.TRAIN):
 
             if logit.shape[2:] != label.shape[2:]:
                 logit = F.interpolate(
-                    logit, label.shape[2:], mode='bilinear', align_corners=True)
+                    logit,
+                    label.shape[2:],
+                    mode='bilinear',
+                    align_corners=False)
 
             # return image input and logit output for inference graph prune
             if ModelPhase.is_predict(phase):
