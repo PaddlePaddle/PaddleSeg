@@ -288,7 +288,7 @@ def high_resolution_net(input, num_classes):
         stride=1,
         if_act=True,
         name='conv-2',
-        bias_attr=None)
+        bias_attr=cfg.MODEL.HRNET.BIAS)
     out = nn.conv2d(
         input=out,
         num_filters=num_classes,
@@ -299,7 +299,7 @@ def high_resolution_net(input, num_classes):
         param_attr=paddle.ParamAttr(
             initializer=paddle.nn.initializer.KaimingUniform(),
             name='conv-1_weights'),
-        bias_attr=None)
+        bias_attr=cfg.MODEL.HRNET.BIAS)
 
     out = F.interpolate(
         out, size=input.shape[2:], mode='bilinear', align_corners=False)

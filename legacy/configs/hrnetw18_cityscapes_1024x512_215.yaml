@@ -34,6 +34,8 @@ MODEL:
             NUM_CHANNELS: [18, 36, 72]
         STAGE4:
             NUM_CHANNELS: [18, 36, 72, 144]
+        BIAS:
+            False
 
 TRAIN:
     PRETRAINED_MODEL_DIR: u"./pretrained_model/hrnet_w18_ssld"
