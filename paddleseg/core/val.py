@@ -136,26 +136,38 @@ def evaluate(model,
                     label_area_list = label_area_list[:valid]
 
                 for i in range(len(intersect_area_list)):
+<<<<<<< HEAD
                     intersect_area_all = intersect_area_all + intersect_area_list[
                         i]
+=======
+                    intersect_area_all = intersect_area_all + intersect_area_list[i]
+>>>>>>> release/v2.0.0-rc
                     pred_area_all = pred_area_all + pred_area_list[i]
                     label_area_all = label_area_all + label_area_list[i]
             else:
                 intersect_area_all = intersect_area_all + intersect_area
                 pred_area_all = pred_area_all + pred_area
                 label_area_all = label_area_all + label_area
+<<<<<<< HEAD
             batch_cost_averager.record(
                     time.time() - batch_start,
                     num_samples=len(label))
             batch_cost = batch_cost_averager.get_average()
             reader_cost = reader_cost_averager.get_average()
+=======
+            batch_cost = timer.elapsed_time()
+            timer.restart()
+>>>>>>> release/v2.0.0-rc
 
             if local_rank == 0:
                 progbar_val.update(iter + 1, [('batch_cost', batch_cost),
                                               ('reader cost', reader_cost)])
+<<<<<<< HEAD
             reader_cost_averager.reset()
             batch_cost_averager.reset()
             batch_start = time.time()
+=======
+>>>>>>> release/v2.0.0-rc
 
     class_iou, miou = metrics.mean_iou(intersect_area_all, pred_area_all,
                                        label_area_all)
