@@ -130,6 +130,8 @@ def main(args):
         cfg.model,
         train_dataset,
         val_dataset=val_dataset,
+        aug_eval=True,
+        flip_horizontal_eval=True,
         optimizer=cfg.optimizer,
         save_dir=args.save_dir,
         iters=cfg.iters,
@@ -145,4 +147,7 @@ def main(args):
 
 if __name__ == '__main__':
     args = parse_args()
+    args.cfg = 'configs/mscale_ocr_cityscapes_autolabel_mapillary_dice_boot_mink10w_lr0.005.yml'
+    args.do_eval = True
+    args.save_interval = 10
     main(args)

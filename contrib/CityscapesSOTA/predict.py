@@ -20,6 +20,7 @@ import paddle
 from paddleseg.cvlibs import manager, Config
 from paddleseg.utils import get_sys_env, logger
 from paddleseg.core import predict
+import datasets, models
 
 
 def parse_args():

@@ -15,10 +15,11 @@
 import argparse
 
 import paddle
-
 from paddleseg.cvlibs import manager, Config
 from paddleseg.utils import get_sys_env, logger
-from paddleseg.core import train
+
+import datasets, models
+from scripts.train import train
 
 
 def parse_args():
@@ -130,6 +131,8 @@ def main(args):
         cfg.model,
         train_dataset,
         val_dataset=val_dataset,
+        aug_eval=True,
+        flip_horizontal_eval=True,
         optimizer=cfg.optimizer,
         save_dir=args.save_dir,
         iters=cfg.iters,
