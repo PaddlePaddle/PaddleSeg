@@ -145,7 +145,7 @@ def main(args):
     logger.info(
         f'Step 2/3: Start to prune the model, the ratio of pruning is {args.pruning_ratio}. FLOPs before pruning: {flops}.'
     )
-    pruner.sensitive_prune(0.2)
+    pruner.sensitive_prune(args.pruning_ratio)
     flops = dygraph_flops(net, sample_shape)
     logger.info(f'Model pruning completed. FLOPs after pruning: {flops}.')
 
