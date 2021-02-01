@@ -17,7 +17,7 @@ import argparse
 import paddle
 
 from paddleseg.cvlibs import manager, Config
-from paddleseg.utils import get_sys_env, logger
+from paddleseg.utils import get_sys_env, logger, config_check
 from paddleseg.core import train
 
 
@@ -129,6 +129,8 @@ def main(args):
     msg += str(cfg)
     msg += '------------------------------------------------'
     logger.info(msg)
+
+    config_check(cfg)
 
     train(
         cfg.model,
