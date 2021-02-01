@@ -34,5 +34,7 @@ python pdseg/train.py --cfg configs/hrnetw18_cityscapes_1024x512_215.yaml --use_
 
 ## 竞品
 竞品为[mmsegmentation](https://github.com/open-mmlab/mmsegmentation)
+
 对应竞品配置文件为：configs/hrnet/fcn_hr18_512x1024_80k_cityscapes.py
-相关执行方式其参考官方仓库。
+
+相关执行方式请参考其官方仓库。
