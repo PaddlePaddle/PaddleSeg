@@ -145,8 +145,7 @@ def evaluate(model,
                 pred_area_all = pred_area_all + pred_area
                 label_area_all = label_area_all + label_area
             batch_cost_averager.record(
-                    time.time() - batch_start,
-                    num_samples=len(label))
+                time.time() - batch_start, num_samples=len(label))
             batch_cost = batch_cost_averager.get_average()
             reader_cost = reader_cost_averager.get_average()
 
