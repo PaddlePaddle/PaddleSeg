@@ -216,7 +216,7 @@ class ResNet():
     def interp(self, input, out_shape):
         out_shape = list(out_shape.astype("int32"))
         return F.interpolate(
-            input, out_shape, mode='bilinear', align_corners=True)
+            input, out_shape, mode='bilinear', align_corners=False)
 
     def conv_bn_layer(self,
                       input,

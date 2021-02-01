@@ -61,7 +61,7 @@ def multi_softmax_with_loss(logits,
             if label.shape[2] != logit.shape[2] or label.shape[
                     3] != logit.shape[3]:
                 logit_label = F.interpolate(
-                    label, logit.shape[2:], mode='nearest', align_corners=True)
+                    label, logit.shape[2:], mode='nearest', align_corners=False)
             else:
                 logit_label = label
             logit_mask = (logit_label.astype('int32') !=

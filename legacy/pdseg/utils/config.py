@@ -248,6 +248,8 @@ cfg.MODEL.HRNET.STAGE3.NUM_CHANNELS = [40, 80, 160]
 # HRNET STAGE4 设置
 cfg.MODEL.HRNET.STAGE4.NUM_MODULES = 3
 cfg.MODEL.HRNET.STAGE4.NUM_CHANNELS = [40, 80, 160, 320]
+# FCN Head的卷积是否用bias
+cfg.MODEL.HRNET.BIAS = None
 ########################## OCNET模型配置 ######################################
 
 cfg.MODEL.OCR.OCR_MID_CHANNELS = 512

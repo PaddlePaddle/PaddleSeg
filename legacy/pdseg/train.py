@@ -358,6 +358,7 @@ def train(cfg):
                     avg_train_batch_cost = batch_cost_averager.get_average()
                     avg_train_reader_cost = reader_cost_averager.get_average()
                     eta = calculate_eta(all_step - step, avg_train_batch_cost)
+                    avg_loss /= args.log_steps
                     print(
                         "epoch={} step={} lr={:.5f} loss={:.4f} batch_cost={:.4f}, reader_cost={:.5f}, ips={:.4f} samples/sec | ETA {}"
                         .format(epoch, step, lr.get_lr(), avg_loss,

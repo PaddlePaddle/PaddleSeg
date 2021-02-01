@@ -29,6 +29,7 @@ model:
     type: HRNet_W18
   num_classes: 19
   backbone_indices: [-1]
+  bias: False
 
 optimizer:
   type: sgd

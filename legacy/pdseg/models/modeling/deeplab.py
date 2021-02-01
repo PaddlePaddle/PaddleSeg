@@ -66,7 +66,10 @@ def encoder(input):
                     padding=0,
                     param_attr=param_attr))
             image_avg = F.interpolate(
-                image_avg, input.shape[2:], mode='bilinear', align_corners=True)
+                image_avg,
+                input.shape[2:],
+                mode='bilinear',
+                align_corners=False)
             if cfg.MODEL.DEEPLAB.ENCODER.ADD_IMAGE_LEVEL_FEATURE:
                 concat_logits.append(image_avg)
 
@@ -82,7 +85,7 @@ def encoder(input):
                     param_attr=param_attr,
                     bias_attr=None))
             aspp0 = F.interpolate(
-                aspp0, input.shape[2:], mode='bilinear', align_corners=True)
+                aspp0, input.shape[2:], mode='bilinear', align_corners=False)
             concat_logits.append(aspp0)
 
         if aspp_ratios:
@@ -101,7 +104,10 @@ def encoder(input):
                             padding=aspp_ratios[0],
                             param_attr=param_attr))
                 aspp1 = F.interpolate(
-                    aspp1, input.shape[2:], mode='bilinear', align_corners=True)
+                    aspp1,
+                    input.shape[2:],
+                    mode='bilinear',
+                    align_corners=False)
                 concat_logits.append(aspp1)
             with scope("aspp2"):
                 if cfg.MODEL.DEEPLAB.ASPP_WITH_SEP_CONV:
@@ -118,7 +124,10 @@ def encoder(input):
                             padding=aspp_ratios[1],
                             param_attr=param_attr))
                 aspp2 = F.interpolate(
-                    aspp2, input.shape[2:], mode='bilinear', align_corners=True)
+                    aspp2,
+                    input.shape[2:],
+                    mode='bilinear',
+                    align_corners=False)
                 concat_logits.append(aspp2)
             with scope("aspp3"):
                 if cfg.MODEL.DEEPLAB.ASPP_WITH_SEP_CONV:
@@ -135,7 +144,10 @@ def encoder(input):
                             padding=aspp_ratios[2],
                             param_attr=param_attr))
                 aspp3 = F.interpolate(
-                    aspp3, input.shape[2:], mode='bilinear', align_corners=True)
+                    aspp3,
+                    input.shape[2:],
+                    mode='bilinear',
+                    align_corners=False)
                 concat_logits.append(aspp3)
 
         with scope("concat"):
@@ -163,7 +175,7 @@ def _decoder_with_sum_merge(encode_data, decode_shortcut, param_attr):
         encode_data,
         decode_shortcut.shape[2:],
         mode='bilinear',
-        align_corners=True)
+        align_corners=False)
     encode_data = conv(
         encode_data,
         cfg.MODEL.DEEPLAB.DECODER.CONV_FILTERS,
@@ -203,7 +215,7 @@ def _decoder_with_concat(encode_data, decode_shortcut, param_attr):
             encode_data,
             decode_shortcut.shape[2:],
             mode='bilinear',
-            align_corners=True)
+            align_corners=False)
         encode_data = paddle.concat([encode_data, decode_shortcut], axis=1)
     if cfg.MODEL.DEEPLAB.DECODER_USE_SEP_CONV:
         with scope("separable_conv1"):
@@ -331,5 +343,5 @@ def deeplabv3p(img, num_classes):
         logit = data
 
     logit = F.interpolate(
-        logit, img.shape[2:], mode='bilinear', align_corners=True)
+        logit, img.shape[2:], mode='bilinear', align_corners=False)
     return logit

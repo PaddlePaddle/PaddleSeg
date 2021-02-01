@@ -21,6 +21,9 @@ def SyncBatchNorm(*args, **kwargs):
     """In cpu environment nn.SyncBatchNorm does not have kernel so use nn.BatchNorm2D instead"""
     if paddle.get_device() == 'cpu':
         return nn.BatchNorm2D(*args, **kwargs)
+    elif paddle.distributed.ParallelEnv().nranks == 1:
+        print('using batch norm')
+        return nn.BatchNorm2D(*args, **kwargs)
     else:
         return nn.SyncBatchNorm(*args, **kwargs)
 
