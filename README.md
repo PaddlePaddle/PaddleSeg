@@ -16,6 +16,9 @@ export CUDA_VISIBLE_DEVICES=0,1
 python -m paddle.distributed.launch train.py --config benchmark/hrnet.yml --iters 2000 --log_iters 10 --fp16
 ```
 
+deeplabv3p 模型的配置文件为：
+benchmark/deeplabv3p.yml
+
 ## 静态图
 
 通过 **MODEL.FP16 True** 开启amp训练
@@ -31,6 +34,9 @@ python pdseg/train.py --cfg configs/hrnetw18_cityscapes_1024x512_215.yaml --use_
 export CUDA_VISIBLE_DEVICES=0,1
 python pdseg/train.py --cfg configs/hrnetw18_cityscapes_1024x512_215.yaml --use_gpu  --use_mpio --log_steps 10 BATCH_SIZE 4 SOLVER.NUM_EPOCHS 3 MODEL.FP16 True
 ```
+
+deeplabv3p模型的配置文件为：
+configs/deeplabv3p_resnet50_vd_cityscapes.yaml
 
 ## 竞品
 竞品为[mmsegmentation](https://github.com/open-mmlab/mmsegmentation)
