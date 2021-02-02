@@ -1,9 +1,9 @@
 batch_size: 1
-iters: 65078
+iters: 65000
 
 model:
   type: MscaleOCRNet
-  # pretrained: pretrain/ocrnet_hrnetw48_mapillary_pretrain.pdparams
+  pretrained: pretrain/ocrnet_hrnetw48_mapillary_pretrain.pdparams
   n_scales: [0.5,1.0,2.0]
   backbone:
     type: HRNet_W48_NV
