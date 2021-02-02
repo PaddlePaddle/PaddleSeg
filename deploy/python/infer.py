@@ -19,7 +19,7 @@ import os
 import yaml
 import numpy as np
 import paddleseg.transforms as T
-from paddle.inference import create_predictor
+from paddle.inference import create_predictor, PrecisionType
 from paddle.inference import Config as PredictConfig
 from paddleseg.cvlibs import manager
 from paddleseg.utils import get_sys_env, logger
@@ -66,6 +66,14 @@ class Predictor:
         pred_cfg.disable_glog_info()
         if self.args.use_gpu:
             pred_cfg.enable_use_gpu(100, 0)
+
+            pred_cfg.enable_tensorrt_engine(
+                workspace_size=1 << 30,
+                max_batch_size=1,
+                min_subgraph_size=3,
+                precision_mode=PrecisionType.Int8,
+                use_static=False,
+                use_calib_mode=False)
 
         self.predictor = create_predictor(pred_cfg)
 
