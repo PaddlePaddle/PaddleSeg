@@ -14,6 +14,7 @@
 
 import argparse
 import os
+import shutil
 from functools import partial
 
 import yaml
@@ -32,12 +33,19 @@ def parse_args():
     parser = argparse.ArgumentParser(description='Model pruning')
     # params of pruning
     parser.add_argument(
-        "--config",
-        dest="cfg",
-        help="The config file.",
-        type=str,
-        default=None,
-        required=True)
+        "--config", dest="cfg", help="The config file.", type=str, default=None)
+    parser.add_argument(
+        '--batch_size',
+        dest='batch_size',
+        help='Mini batch size of one gpu or cpu',
+        type=int,
+        default=None)
+    parser.add_argument(
+        '--learning_rate',
+        dest='learning_rate',
+        help='Learning rate',
+        type=float,
+        default=None)
     parser.add_argument(
         "--pruning_ratio",
         dest="pruning_ratio",
@@ -111,7 +119,11 @@ def main(args):
     if not os.path.exists(args.save_dir):
         os.makedirs(args.save_dir)
 
-    cfg = Config(args.cfg, iters=args.retraining_iters)
+    cfg = Config(
+        args.cfg,
+        iters=args.retraining_iters,
+        batch_size=args.batch_size,
+        learning_rate=args.learning_rate)
 
     train_dataset = cfg.train_dataset
     if not train_dataset:
@@ -163,6 +175,10 @@ def main(args):
 
     if paddle.distributed.get_rank() == 0:
         export_model(net, cfg, args.save_dir)
+
+        ckpt = os.path.join(args.save_dir, f'iter_{args.retrainig_iters}')
+        if os.path.exists(ckpt):
+            shutil.rmtree(ckpt)
 
     logger.info(f'Model retraining finish. Model is saved in {args.save_dir}')
 

@@ -14,6 +14,7 @@
 
 import argparse
 import os
+import shutil
 
 import yaml
 
@@ -36,6 +37,18 @@ def parse_args():
         type=str,
         default=None,
         required=True)
+    parser.add_argument(
+        '--batch_size',
+        dest='batch_size',
+        help='Mini batch size of one gpu or cpu',
+        type=int,
+        default=None)
+    parser.add_argument(
+        '--learning_rate',
+        dest='learning_rate',
+        help='Learning rate',
+        type=float,
+        default=None)
     parser.add_argument(
         '--retraining_iters',
         dest='retraining_iters',
@@ -95,7 +108,11 @@ def main(args):
     if not os.path.exists(args.save_dir):
         os.makedirs(args.save_dir)
 
-    cfg = Config(args.cfg, iters=args.retraining_iters)
+    cfg = Config(
+        args.cfg,
+        iters=args.retraining_iters,
+        batch_size=args.batch_size,
+        learning_rate=args.learning_rate)
 
     train_dataset = cfg.train_dataset
     if not train_dataset:
@@ -149,6 +166,10 @@ def main(args):
                 }
             }
             yaml.dump(data, file)
+
+        ckpt = os.path.join(args.save_dir, f'iter_{args.retraining_iters}')
+        if os.path.exists(ckpt):
+            shutil.rmtree(ckpt)
 
     logger.info(
         f'Model retraining complete. The quantized model is saved in {args.save_dir}.'
