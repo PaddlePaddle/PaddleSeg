@@ -228,9 +228,10 @@ class Config(object):
         if not model_cfg:
             raise RuntimeError('No model specified in the configuration file.')
         if not 'num_classes' in model_cfg:
-            if self.train_dataset:
+            if self.train_dataset and hasattr(self.train_dataset,
+                                              'num_classes'):
                 model_cfg['num_classes'] = self.train_dataset.num_classes
-            elif self.val_dataset:
+            elif self.val_dataset and hasattr(self.val_dataset, 'num_classes'):
                 model_cfg['num_classes'] = self.val_dataset.num_classes
             else:
                 raise ValueError(
