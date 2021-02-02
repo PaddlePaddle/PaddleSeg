@@ -93,7 +93,7 @@ cd ..
 ### Evaluation on Cityscapes
 
 | Model | Backbone | mIoU | mIoU (flip) | mIoU (5 scales + flip) |
-|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
+|:-:|:-:|:-:|:-:|:-:|
 |MscaleOCRNet|HRNet_w48|86.89%|86.99%|87.00%|
 
 ```shell

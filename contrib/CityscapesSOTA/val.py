@@ -115,8 +115,6 @@ def main(args):
 
     model = cfg.model
     utils.load_entire_model(model, args.model_path)
-    #     para_state_dict = paddle.load(args.model_path)
-    #     model.set_dict(para_state_dict)
 
     logger.info('Loaded trained params of model successfully')
 

@@ -152,7 +152,6 @@ def main(args):
     transforms = val_dataset.transforms
     image_list, image_dir = get_image_list(args.image_path)
     logger.info('Number of predict images = {}'.format(len(image_list)))
-    config_check(cfg, val_dataset=val_dataset)
 
     config_check(cfg, val_dataset=val_dataset)
 
