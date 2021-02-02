@@ -30,7 +30,46 @@ random.seed(100)
 @manager.DATASETS.add_component
 class CityscapesAutolabeling(paddle.io.Dataset):
     """
-    TODO: rewrite the comments
+    Cityscapes dataset with fine data, coarse data and autolabelled data.
+    Source: https://www.cityscapes-dataset.com/
+    Autolabelled-Data from [google drive](https://drive.google.com/file/d/1DtPo-WP-hjaOwsbj6ZxTtOo_7R_4TKRG/view?usp=sharing)
+
+    The folder structure is as follow:
+
+        cityscapes
+        |
+        |--leftImg8bit
+        |  |--train
+        |  |--val
+        |  |--test
+        |
+        |--gtFine
+        |  |--train
+        |  |--val
+        |  |--test
+        |
+        |--leftImg8bit_trainextra
+        |  |--leftImg8bit
+        |     |--train_extra
+        |        |--augsburg
+        |        |--bayreuth
+        |        |--...
+        |
+        |--convert_autolabelled
+        |  |--augsburg
+        |  |--bayreuth
+        |  |--...
+
+    Make sure there are **labelTrainIds.png in gtFine directory. If not, please run the conver_cityscapes.py in tools.
+    Convert autolabelled data according to PaddleSeg data format:
+        python tools/convert_cityscapes_autolabeling.py --dataset_root data/cityscapes/
+
+    Args:
+        transforms (list): Transforms for image.
+        dataset_root (str): Cityscapes dataset directory.
+        mode (str, optional): Which part of dataset to use. it is one of ('train', 'val', 'test'). Default: 'train'.
+        coarse_multiple (float|int, optional): Multiple of the amount of coarse data relative to fine data. Default: 1
+        add_val (bool, optional): Whether to add val set in training. Default: False
     """
 
     def __init__(self,

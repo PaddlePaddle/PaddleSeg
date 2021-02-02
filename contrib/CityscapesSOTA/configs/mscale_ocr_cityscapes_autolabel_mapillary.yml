@@ -12,7 +12,7 @@ model:
 
 train_dataset:
   type: CityscapesAutolabeling
-  dataset_root: ../../../../dataset/cityscapes-for-nvidia
+  dataset_root: data/cityscapes
   transforms:
     - type: ResizeStepScaling
       min_scale_factor: 0.5
@@ -38,7 +38,7 @@ train_dataset:
 
 val_dataset:
   type: CityscapesAutolabeling
-  dataset_root: ../../../../dataset/cityscapes-for-nvidia
+  dataset_root: data/cityscapes
   transforms:
     - type: Normalize
       mean: [0.485, 0.456, 0.406]
