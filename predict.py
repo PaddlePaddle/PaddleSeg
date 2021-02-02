@@ -154,6 +154,8 @@ def main(args):
     logger.info('Number of predict images = {}'.format(len(image_list)))
     config_check(cfg, val_dataset=val_dataset)
 
+    config_check(cfg, val_dataset=val_dataset)
+
     predict(
         model,
         model_path=args.model_path,
