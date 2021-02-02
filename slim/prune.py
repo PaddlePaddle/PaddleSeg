@@ -72,12 +72,19 @@ def parse_args():
         help='The path of model for evaluation',
         type=str,
         default=None)
+    parser.add_argument(
+        '--num_workers',
+        dest='num_workers',
+        help='Num workers for data loader',
+        type=int,
+        default=0)
 
     return parser.parse_args()
 
 
-def eval_fn(net, eval_dataset):
-    miou, _ = evaluate(net, eval_dataset, num_workers=6, print_detail=False)
+def eval_fn(net, eval_dataset, num_workers):
+    miou, _ = evaluate(
+        net, eval_dataset, num_workers=num_workers, print_detail=False)
     return miou
 
 
@@ -148,7 +155,8 @@ def main(args):
     sen_file = os.path.join(args.save_dir, 'sen.pickle')
     pruner = L1NormFilterPruner(net, sample_shape)
     pruner.sensitive(
-        eval_func=partial(eval_fn, net, val_dataset), sen_file=sen_file)
+        eval_func=partial(eval_fn, net, val_dataset, args.num_workers),
+        sen_file=sen_file)
     logger.info(
         f'The sensitivity calculation of model parameters is complete. The result is saved in {sen_file}.'
     )
@@ -167,6 +175,7 @@ def main(args):
         train_dataset,
         optimizer=cfg.optimizer,
         save_dir=args.save_dir,
+        num_workers=args.num_workers,
         iters=cfg.iters,
         batch_size=cfg.batch_size,
         losses=cfg.loss)

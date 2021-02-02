@@ -68,6 +68,12 @@ def parse_args():
         help='The path of model for evaluation',
         type=str,
         default=None)
+    parser.add_argument(
+        '--num_workers',
+        dest='num_workers',
+        help='Num workers for data loader',
+        type=int,
+        default=0)
 
     return parser.parse_args()
 
@@ -142,6 +148,7 @@ def main(args):
         train_dataset,
         optimizer=cfg.optimizer,
         save_dir=args.save_dir,
+        num_workers=args.num_workers,
         iters=cfg.iters,
         batch_size=cfg.batch_size,
         losses=cfg.loss)

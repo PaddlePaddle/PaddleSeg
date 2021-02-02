@@ -38,7 +38,10 @@ python train.py \
 |-|-|-|-|
 |retraining_iters|量化完成后的重训练迭代数|是||
 |config|配置文件|是||
-|model_path|预训练模型参数路径|否|配置文件中指定值|
+|batch_size|重训练时的单卡batch size|否|配置文件中指定值|
+|learning_rate|重训练时的学习率|否|配置文件中指定值|
+|model_path|预训练模型参数路径|否||
+|num_workers|重训练时用于异步读取数据的进程数量，大于等于1时开启子进程读取数据|否|0|
 |save_dir|量化后模型的保存路径|否|output|
 
 ```shell
@@ -80,9 +83,11 @@ python train.py \
 |pruning_ratio|卷积核裁剪比率|是||
 |retraining_iters|裁剪完成后的重训练迭代数|是||
 |config|配置文件|是||
-|model_path|预训练模型参数路径|否|配置文件中指定值|
+|batch_size|重训练时的单卡batch size|否|配置文件中指定值|
+|learning_rate|重训练时的学习率|否|配置文件中指定值|
+|model_path|预训练模型参数路径|否||
+|num_workers|重训练时用于异步读取数据的进程数量，大于等于1时开启子进程读取数据|否|0|
 |save_dir|裁剪后模型的保存路径|否|output|
-|num_workers|用于异步读取数据的进程数量， 大于等于1时开启子进程读取数据|否|0|
 
 ```shell
 python slim/prune.py \
