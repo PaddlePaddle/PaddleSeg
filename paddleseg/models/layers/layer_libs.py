@@ -22,7 +22,6 @@ def SyncBatchNorm(*args, **kwargs):
     if paddle.get_device() == 'cpu':
         return nn.BatchNorm2D(*args, **kwargs)
     elif paddle.distributed.ParallelEnv().nranks == 1:
-        print('using batch norm')
         return nn.BatchNorm2D(*args, **kwargs)
     else:
         return nn.SyncBatchNorm(*args, **kwargs)
