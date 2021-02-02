@@ -176,7 +176,7 @@ def main(args):
     if paddle.distributed.get_rank() == 0:
         export_model(net, cfg, args.save_dir)
 
-        ckpt = os.path.join(args.save_dir, f'iter_{args.retrainig_iters}')
+        ckpt = os.path.join(args.save_dir, f'iter_{args.retraining_iters}')
         if os.path.exists(ckpt):
             shutil.rmtree(ckpt)
 
