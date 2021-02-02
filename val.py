@@ -122,7 +122,7 @@ def main(args):
         model.set_dict(para_state_dict)
         logger.info('Loaded trained params of model successfully')
 
-    config_check(cfg)
+    config_check(cfg, val_dataset=val_dataset)
 
     evaluate(
         model,

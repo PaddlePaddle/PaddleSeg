@@ -130,7 +130,7 @@ def main(args):
     msg += '------------------------------------------------'
     logger.info(msg)
 
-    config_check(cfg)
+    config_check(cfg, train_dataset=train_dataset, val_dataset=val_dataset)
 
     train(
         cfg.model,

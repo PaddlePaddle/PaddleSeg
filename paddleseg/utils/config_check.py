@@ -15,26 +15,28 @@
 import numpy as np
 
 
-def config_check(cfg):
+def config_check(cfg, train_dataset=None, val_dataset=None):
     """
     To check config。
 
     Args:
         cfg (paddleseg.cvlibs.Config): An object of paddleseg.cvlibs.Config.
+        train_dataset (paddle.io.Dataset): Used to read and process training datasets.
+        val_dataset (paddle.io.Dataset, optional): Used to read and process validation datasets.
     """
 
-    num_classes_check(cfg)
+    num_classes_check(cfg, train_dataset, val_dataset)
 
 
-def num_classes_check(cfg):
+def num_classes_check(cfg, train_dataset, val_dataset):
     """"
     Check that the num_classes in model, train_dataset and val_dataset is consistent.
     """
     num_classes_set = set()
-    if cfg.train_dataset and hasattr(cfg.train_dataset, 'num_classes'):
-        num_classes_set.add(cfg.train_dataset.num_classes)
-    if cfg.val_dataset and hasattr(cfg.val_dataset, 'num_classes'):
-        num_classes_set.add(cfg.val_dataset.num_classes)
+    if train_dataset and hasattr(train_dataset, 'num_classes'):
+        num_classes_set.add(train_dataset.num_classes)
+    if val_dataset and hasattr(val_dataset, 'num_classes'):
+        num_classes_set.add(val_dataset.num_classes)
     if cfg.dic.get('model', None) and cfg.dic['model'].get('num_classes', None):
         num_classes_set.add(cfg.dic['model'].get('num_classes'))
     if (not cfg.train_dataset) and (not cfg.val_dataset):
@@ -49,3 +51,9 @@ def num_classes_check(cfg):
         raise ValueError(
             '`num_classes` is not consistent: {}. Please set it consistently in model or train_dataset or val_dataset'
             .format(num_classes_set))
+    else:
+        num_classes = num_classes_set.pop()
+        if train_dataset:
+            train_dataset.num_classes = num_classes
+        if val_dataset:
+            val_dataset.num_classes = num_classes
