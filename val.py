@@ -106,6 +106,10 @@ def main(args):
         raise RuntimeError(
             'The verification dataset is not specified in the configuration file.'
         )
+    elif len(val_dataset) == 0:
+        raise ValueError(
+            'The length of val_dataset is 0. Please check if your dataset is valid'
+        )
 
     msg = '\n---------------Config Information---------------\n'
     msg += str(cfg)

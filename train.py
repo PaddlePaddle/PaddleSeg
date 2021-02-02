@@ -118,6 +118,10 @@ def main(args):
     if train_dataset is None:
         raise RuntimeError(
             'The training dataset is not specified in the configuration file.')
+    elif len(train_dataset) == 0:
+        raise ValueError(
+            'The length of train_dataset is 0. Please check if your dataset is valid'
+        )
     val_dataset = cfg.val_dataset if args.do_eval else None
     losses = cfg.loss
 
