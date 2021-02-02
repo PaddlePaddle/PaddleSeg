@@ -28,4 +28,3 @@ loss:
     - type: CrossEntropyLoss
     - type: CrossEntropyLoss
   coef: [1, 0.4]
-
