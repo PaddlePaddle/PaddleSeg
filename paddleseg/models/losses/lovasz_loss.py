@@ -46,7 +46,7 @@ class LovaszSoftmaxLoss(nn.Layer):
 
         Args:
             logits: [N, C, H, W] Tensor, logits at each prediction (between -\infty and +\infty)
-            labels: [N, 1, H, W] Tensor, ground truth labels (between 0 and C - 1)
+        labels: [N, 1, H, W] or [N, H, W] Tensor, ground truth labels (between 0 and C - 1)
         """
         probas = F.softmax(
             logits, axis=1
@@ -76,9 +76,11 @@ class LovaszHingeLoss(nn.Layer):
         Forward computation.
 
         Args:
-            logits: [N, C, H, W] Tensor, logits at each pixel (between -\infty and +\infty)
-            labels: [N, 1, H, W] Tensor, binary ground truth masks (0 or 1)
+            logits: [N, 1, H, W] or [N, 2, H, W] Tensor, logits at each pixel (between -\infty and +\infty)
+            labels: [N, 1, H, W] or [N, H, W] Tensor, binary ground truth masks (0 or 1)
         """
+        if logits.shape[1] == 2:
+            logits = binary_channel_to_unary(logits)
         loss = lovasz_hinge_flat(
             *flatten_binary_scores(logits, labels, self.ignore_index))
         return loss
@@ -103,6 +105,14 @@ def lovasz_grad(gt_sorted):
         # jaccard2 = paddle.slice(jaccard, axis=[0], starts=[0], ends=[-1])
         # jaccard = paddle.concat([jaccard0, jaccard1 - jaccard2], axis=0)
     return jaccard
+
+
+def binary_channel_to_unary(logits, eps=1e-9):
+    probas = F.softmax(logits, axis=1)
+    probas = probas[:, 1, :, :]
+    logits = paddle.log(probas + eps / (1 - probas + eps))
+    logits = logits.unsqueeze(1)
+    return logits
 
 
 def lovasz_hinge_flat(logits, labels):
