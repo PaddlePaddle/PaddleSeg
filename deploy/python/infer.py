@@ -67,13 +67,14 @@ class Predictor:
         if self.args.use_gpu:
             pred_cfg.enable_use_gpu(100, 0)
 
-            pred_cfg.enable_tensorrt_engine(
-                workspace_size=1 << 30,
-                max_batch_size=1,
-                min_subgraph_size=3,
-                precision_mode=PrecisionType.Int8,
-                use_static=False,
-                use_calib_mode=False)
+            if self.args.use_trt:
+                pred_cfg.enable_tensorrt_engine(
+                    workspace_size=1 << 30,
+                    max_batch_size=1,
+                    min_subgraph_size=3,
+                    precision_mode=PrecisionType.Int8,
+                    use_static=False,
+                    use_calib_mode=False)
 
         self.predictor = create_predictor(pred_cfg)
 
@@ -142,6 +143,12 @@ def parse_args():
         help='The directory for saving the predict result.',
         type=str,
         default='./output')
+    parser.add_argument(
+        '--use_trt',
+        dest='use_trt',
+        help='Whether to use Nvidia TensorRT to accelerate prediction.',
+        type=bool,
+        default=False)
 
     return parser.parse_args()
 
