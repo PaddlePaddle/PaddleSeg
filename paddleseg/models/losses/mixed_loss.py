@@ -21,6 +21,18 @@ from paddleseg.cvlibs import manager
 
 @manager.LOSSES.add_component
 class MixedLoss(nn.Layer):
+    """
+    Weighted computations for multiple Loss.
+    The advantage is that mixed loss training can be achieved without changing the networking code.
+
+    Args:
+        losses (list of nn.Layer): A list consisting of multiple loss classes
+        coef (float|int): Weighting coefficient of multiple loss
+
+    Returns:
+        A callable object of MixedLoss.
+    """
+
     def __init__(self, losses, coef):
         super(MixedLoss, self).__init__()
         if not isinstance(losses, list):
@@ -38,16 +50,9 @@ class MixedLoss(nn.Layer):
         self.coef = coef
 
     def forward(self, logits, labels):
-        final_output = 0
         loss_list = []
+        final_output = 0
         for i, loss in enumerate(self.losses):
             output = loss(logits, labels)
             final_output += output * self.coef[i]
-            loss_list.append(output * self.coef[i])
-        return final_output, loss_list
-
-        # loss_list = []
-        # for i, loss in enumerate(self.losses):
-        #     output = loss(logits, labels)
-        #     loss_list.append(output * self.coef[i])
-        # return loss_list
+        return final_output

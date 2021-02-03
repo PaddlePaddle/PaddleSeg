@@ -90,6 +90,7 @@ python train.py --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml
 * [API使用教程](https://aistudio.baidu.com/aistudio/projectdetail/1339458)
 * [数据集准备](./docs/data_prepare.md)
 * [配置项](./configs/)
+* [Loss使用](./docs/loss_usage.md)
 * [API参考](./docs/apis)
 * [添加新组件](./docs/add_new_model.md)
 

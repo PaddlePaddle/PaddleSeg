@@ -89,6 +89,7 @@ python train.py --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml
 * [API Tutorial](https://aistudio.baidu.com/aistudio/projectdetail/1339458)
 * [Data Preparation](./docs/data_prepare.md)
 * [Training Configuration](./configs/)
+* [Loss Usage](./docs/loss_usage.md)
 * [API References](./docs/apis)
 * [Add New Components](./docs/add_new_model.md)
 
