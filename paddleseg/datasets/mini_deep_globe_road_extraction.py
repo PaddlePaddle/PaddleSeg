@@ -26,13 +26,14 @@ URL = "https://paddleseg.bj.bcebos.com/dataset/MiniDeepGlobeRoadExtraction.zip"
 @manager.DATASETS.add_component
 class MiniDeepGlobeRoadExtraction(Dataset):
     """
-    OpticDiscSeg dataset is extraced from iChallenge-AMD
-    (https://ai.baidu.com/broad/subordinate?dataset=amd).
+    MiniDeepGlobeRoadExtraction dataset is extraced from DeepGlobe CVPR2018 challenge (http://deepglobe.org/)
+
+    There are 800 images in the training set and 200 images in the validation set.
 
     Args:
-        transforms (list): Transforms for image.
-        dataset_root (str): The dataset directory. Default: None
-        mode (str, optional): Which part of dataset to use. it is one of ('train', 'val', 'test'). Default: 'train'.
+        dataset_root (str, optional): The dataset directory. Default: None
+        transforms (list, optional): Transforms for image. Default: None
+        mode (str, optional): Which part of dataset to use. it is one of ('train', 'val'). Default: 'train'.
         edge (bool, optional): Whether to compute edge while training. Default: False
     """
 

@@ -8,6 +8,8 @@ English | [简体中文](README_CN.md)
 ![python version](https://img.shields.io/badge/python-3.6+-orange.svg)
 ![support os](https://img.shields.io/badge/os-linux%2C%20win%2C%20mac-yellow.svg)
 
+<img src="./docs/images/seg_news_icon.png" width="50"/> *[2020-12-18] PaddleSeg has released the v2.0.0-rc version, which supports the dynamic graph by default. The static-graph codes have been moved to [legacy](./legacy). See detailed [release notes](./docs/release_notes.md).*
+
 ![demo](./docs/images/cityscapes.gif)
 
 Welcome to PaddleSeg! PaddleSeg is an end-to-end image segmentation development kit developed based on [PaddlePaddle](https://www.paddlepaddle.org.cn), which covers a large number of high-quality segmentation models in different directions such as *high-performance* and *lightweight*. With the help of modular design, we provide two application methods: *Configuration Drive* and *API Calling*. So one can conveniently complete the entire image segmentation application from training to deployment through configuration calls or API calls.
@@ -41,14 +43,16 @@ Welcome to PaddleSeg! PaddleSeg is an end-to-end image segmentation development 
 |[Att U-Net](./configs/attention_unet)|-|-|-|-|
 |[U-Net++](./configs/unet_plusplus)|-|-|-|-|
 |[DecoupledSegNet](./configs/decoupled_segnet)|✔|✔|||
-
+|[EMANet](./configs/emanet)|✔|✔|-|-|
+|[ISANet](./configs/isanet)|✔|✔|-|-|
+|[DNLNet](./configs/dnlnet)|✔|✔|-|-|
 ## Dataset
 
 - [x] Cityscapes
 - [x] Pascal VOC
 - [x] ADE20K
-- [ ] Pascal Context
-- [ ] COCO stuff
+- [x] Pascal Context
+- [x] COCO stuff
 
 ## Installation
 
@@ -102,3 +106,24 @@ python train.py --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml
 * Thanks [jm12138](https://github.com/jm12138) for contributing U<sup>2</sup>-Net.
 * Thanks [zjhellofss](https://github.com/zjhellofss) (Fu Shenshen) for contributing Attention U-Net, and Dice Loss.
 * Thanks [liuguoyu666](https://github.com/liguoyu666) for contributing U-Net++.
+
+## Citation
+If you find our project useful in your research, please consider citing:
+
+```latex
+@misc{liu2021paddleseg,
+      title={PaddleSeg: A High-Efficient Development Toolkit for Image Segmentation},
+      author={Yi Liu and Lutao Chu and Guowei Chen and Zewu Wu and Zeyu Chen and Baohua Lai and Yuying Hao},
+      year={2021},
+      eprint={2101.06175},
+      archivePrefix={arXiv},
+      primaryClass={cs.CV}
+}
+
+@misc{paddleseg2019,
+    title={PaddleSeg, End-to-end image segmentation kit based on PaddlePaddle},
+    author={PaddlePaddle Authors},
+    howpublished = {\url{https://github.com/PaddlePaddle/PaddleSeg}},
+    year={2019}
+}
+```

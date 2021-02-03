@@ -18,7 +18,7 @@ import os
 import paddle
 
 from paddleseg.cvlibs import manager, Config
-from paddleseg.utils import get_sys_env, logger
+from paddleseg.utils import get_sys_env, logger, config_check
 from paddleseg.core import predict
 
 
@@ -149,6 +149,8 @@ def main(args):
     model = cfg.model
     transforms = val_dataset.transforms
     image_list, image_dir = get_image_list(args.image_path)
+
+    config_check(cfg, val_dataset=val_dataset)
 
     predict(
         model,
