@@ -47,14 +47,17 @@ python train.py \
 ```shell
 python slim/quant.py \
        --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml \
-       --retraining_iters 100
-       --model_path output/model.pdparams
+       --retraining_iters 10 \
+       --model_path output/best_model/model.pdparams \
        --save_dir quant_model
 ```
 
 ## 模型裁剪
 
 模型裁剪，是指通过减少卷积层中卷积核的数量，来减小模型大小和降低模型计算复杂度的一种模型压缩方式。PaddleSeg基于PaddleSlim库，提供了基于敏感度的卷积通道剪裁脚本，能够快速地分析出模型中的冗余参数，按照用户指定的裁剪比例进行剪枝并重新训练，在精度和速度上取得一个较好的平衡。
+
+*注意：目前只有以下模型支持裁剪功能，更多模型正在支持中：*
+*BiSeNetv2、FCN、Fast-SCNN、HardNet、UNet*
 
 ### step 1. 模型训练
 
@@ -92,9 +95,9 @@ python train.py \
 ```shell
 python slim/prune.py \
        --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml \
-       --pruning_ratio 0.2
-       --model_path output/model.pdparams
-       --retraining_iters 100
+       --pruning_ratio 0.2 \
+       --model_path output/best_model/model.pdparams \
+       --retraining_iters 100 \
        --save_dir prune_model
 ```
 
