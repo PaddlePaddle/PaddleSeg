@@ -37,7 +37,7 @@ loss:
 接下来以经典的[Cityscapes](https://www.cityscapes-dataset.com/)数据集为例应用lovasz softmax loss. Cityscapes数据集共有19类目标，其中的类别并不均衡，例如类别`road`、`building`很常见，`fence`、`motocycle`、`wall`则较为罕见。我们将lovasz softmax loss与softmax loss进行了实验对比。这里使用OCRNet模型，backbone为HRNet w18.
 
 
-* 数据集下载
+* 数据准备
 
 见[数据集准备教程](data_prepare.md)
 
@@ -62,12 +62,15 @@ CUDA_VISIBLE_DEVICES=0,1,2,3 python -u -m paddle.distributed.launch train.py \
   <img src="./images/Lovasz_Softmax_Evaluate_mIoU.png" hspace='10' /> <br />
  </p>
 
-图中蓝色曲线代表lovasz softmax loss + cross entropy loss，最高mIoU为81.53%，绿色曲线代表cross entropy loss， 最高mIoU为63.55%，相比提升1.08个百分点。
 
 |Loss|best mIoU|
 |-|-|
-|cross entropy loss|81.53%|
-|lovasz softmax loss + cross entropy loss|
+|cross entropy loss|80.46%|
+|lovasz softmax loss + cross entropy loss|81.53%|
+
+图中蓝色曲线代表lovasz softmax loss + cross entropy loss，绿色曲线代表cross entropy loss，相比提升1个百分点。
+
+可看出使用lovasz softmax loss后，精度曲线基本都高于原来的精度。
 
 ## Lovasz hinge loss实验对比
 
@@ -75,53 +78,47 @@ CUDA_VISIBLE_DEVICES=0,1,2,3 python -u -m paddle.distributed.launch train.py \
 基于MiniDeepGlobeRoadExtraction数据集与cross entropy loss进行了实验对比。
 该数据集来源于[DeepGlobe CVPR2018挑战赛](http://deepglobe.org/)的Road Extraction单项，训练数据道路占比为 4.5%. 道路在整张图片中的比例很小，是典型的类别不均衡场景。图片样例如下：
 <p align="center">
-  <img src="./imgs/deepglobe.png" hspace='10'/> <br />
+  <img src="./images/deepglobe.png" hspace='10'/> <br />
  </p>
 
-数据模型使用DeepLabv3+模型，backbone为MobileNetV2.
+这里使用OCRNet模型，backbone为HRNet w18.
 
-* 数据集下载
+* 数据集
 我们从DeepGlobe比赛的Road Extraction的训练集中随机抽取了800张图片作为训练集，200张图片作为验证集，
-制作了一个小型的道路提取数据集[MiniDeepGlobeRoadExtraction](https://paddleseg.bj.bcebos.com/dataset/MiniDeepGlobeRoadExtraction.zip)
+制作了一个小型的道路提取数据集[MiniDeepGlobeRoadExtraction](https://paddleseg.bj.bcebos.com/dataset/MiniDeepGlobeRoadExtraction.zip)。
+运行训练脚本将自动下载该数据集。
 
+* Lovasz loss训练
 ```shell
-python dataset/download_mini_deepglobe_road_extraction.py
+CUDA_VISIBLE_DEVICES=0,1,2,3 python -u -m paddle.distributed.launch train.py \
+--config configs/ocrnet/ocrnet_hrnetw18_road_extraction_768x768_15k_lovasz_hinge.yml \
+--use_vdl  --num_workers 3 --do_eval
 ```
 
-* 预训练模型下载
+* Cross entropy loss训练
 ```shell
-python pretrained_model/download_model.py deeplabv3p_mobilenetv2-1-0_bn_coco
-```
-* 配置/数据校验
-```shell
-python pdseg/check.py --cfg ./configs/lovasz_hinge_deeplabv3p_mobilenet_road.yaml
-```
-
-* 训练
-```shell
-python pdseg/train.py --cfg ./configs/lovasz_hinge_deeplabv3p_mobilenet_road.yaml --use_gpu --use_mpio SOLVER.LOSS "['lovasz_hinge_loss','bce_loss']"
-```
-
-* 评估
-```shell
-python pdseg/eval.py --cfg ./configs/lovasz_hinge_deeplabv3p_mobilenet_road.yaml --use_gpu --use_mpio SOLVER.LOSS "['lovasz_hinge_loss','bce_loss']"
+CUDA_VISIBLE_DEVICES=0,1,2,3 python -u -m paddle.distributed.launch train.py \
+--config configs/ocrnet/ocrnet_hrnetw18_road_extraction_768x768_15k.yml \
+--use_vdl  --num_workers 3 --do_eval
 ```
 
 * 结果比较
 
-lovasz hinge loss + bce loss和softmax loss的mIoU曲线如下图所示。
+实验mIoU曲线如下图所示。
 <p align="center">
-  <img src="./imgs/lovasz-hinge.png" hspace='10'/> <br />
+  <img src="./images/Lovasz_Hinge_Evaluate_mIoU.png" hspace='10'/> <br />
  </p>
 
-图中蓝色曲线为lovasz hinge loss + bce loss，最高mIoU为76.2%，橙色曲线为softmax loss， 最高mIoU为73.44%，相比提升2.76个百分点。
 
-分割效果如下：
-<p align="center">
-  <img src="./imgs/lovasz-hinge-vis.png" hspace='10'/> <br />
- </p>
+|Loss|best mIoU|
+|-|-|
+|cross entropy loss|78.69%|
+|lovasz softmax loss + cross entropy loss|79.18%|
 
-可以看出，softmax loss训练的结果中道路并不连续，主干道部分缺失尤为严重。而lovasz loss训练的结果提升显著，主干道并无缺失，连小路也基本连续。
+图中紫色曲线为lovasz hinge loss + cross entropy loss，蓝色曲线为cross entropy loss，相比提升0.5个百分点。
+
+可看出使用lovasz hinge loss后，精度曲线全面高于原来的精度。
+
 
 
 ## 参考文献
