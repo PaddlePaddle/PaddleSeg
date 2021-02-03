@@ -25,6 +25,16 @@ from paddleseg.models import layers
 class OCRNetNV(nn.Layer):
     """
     The OCRNet implementation based on PaddlePaddle.
+    The differences from OCRNet at OCRNet at paddleseg/models/ocrnet.py are
+
+        1. The convolution bias is set to False
+
+        2. droput_ rate in SpatialOCRModule is 0.05
+
+        3. OCRHead will return `ocr`.
+
+        4. Will not Logit_ List size to the original size, when MS_ attention=True
+
     The original article refers to
         Yuan, Yuhui, et al. "Object-Contextual Representations for Semantic Segmentation"
         (https://arxiv.org/pdf/1909.11065.pdf)

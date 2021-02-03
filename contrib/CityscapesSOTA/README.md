@@ -1,5 +1,5 @@
 # Cityscapes SOTA
-PaddlePaddle implementation of the paper [Hierarchical Multi-Scale Attention for Semantic Segmentation](https://arxiv.org/abs/2005.10821).<br>
+The implementation of Hierarchical Multi-Scale Attention based on PaddlePaddle. [[Paper]](https://arxiv.org/abs/2005.10821)<br>
 
 Based on the above work, we made some optimizations:
 - Use dice loss and bootstrapped cross entropy loss instead of cross entropy
@@ -19,10 +19,12 @@ System Requirements:
 * PaddlePaddle >= 2.0.0rc1
 * Python >= 3.6+
 
-Highly recommend you install the GPU version of PaddlePaddle, due to large overhead of segmentation models, otherwise it could be out of memory while running the models. For more detailed installation tutorials, please refer to the official website of [PaddlePaddle](https://www.paddlepaddle.org.cn/documentation/docs/zh/2.0-beta/install/index_cn.html)。
+Highly recommend you install the GPU version of PaddlePaddle, due to large overhead of segmentation models, otherwise it could be out of memory while running the models. For more detailed installation tutorials, please refer to the official website of [PaddlePaddle](https://www.paddlepaddle.org.cn/install/quick?docurl=/documentation/docs/zh/2.0/install/)。
 
 
 #### step 2. Install PaddleSeg
+
+You should use *API Calling* method to install PaddleSeg for flexible development.
 
 ```shell
 pip install paddleseg

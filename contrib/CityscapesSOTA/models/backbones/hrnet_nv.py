@@ -32,6 +32,8 @@ __all__ = [
 class HRNetNV(nn.Layer):
     """
     The HRNet implementation based on PaddlePaddle.
+    The difference from HRNet at paddleseg/models/backbones/hrnet.py is
+        1. The padding parameter of convolution is different.
 
     The original article refers to
     Jingdong Wang, et, al. "HRNet：Deep High-Resolution Representation Learning for Visual Recognition"
