@@ -81,6 +81,7 @@ def train(model,
             The 'types' item is a list of object of paddleseg.models.losses while the 'coef' item is a list of the relevant coefficient.
         keep_checkpoint_max (int, optional): Maximum number of checkpoints to save. Default: 5.
     """
+    model.train()
     nranks = paddle.distributed.ParallelEnv().nranks
     local_rank = paddle.distributed.ParallelEnv().local_rank
 
@@ -94,9 +95,13 @@ def train(model,
         os.makedirs(save_dir)
 
     if nranks > 1:
-        # Initialize parallel training environment.
-        paddle.distributed.init_parallel_env()
-        ddp_model = paddle.DataParallel(model)
+        # Initialize parallel environment if not done.
+        if not paddle.distributed.parallel.parallel_helper._is_parallel_ctx_initialized(
+        ):
+            paddle.distributed.init_parallel_env()
+            ddp_model = paddle.DataParallel(model)
+        else:
+            ddp_model = paddle.DataParallel(model)
 
     batch_sampler = paddle.io.DistributedBatchSampler(
         train_dataset, batch_size=batch_size, shuffle=True, drop_last=True)
