@@ -83,6 +83,7 @@ def train(model,
         keep_checkpoint_max (int, optional): Maximum number of checkpoints to save. Default: 5.
         fp16: Whther to use amp.
     """
+    model.train()
     nranks = paddle.distributed.ParallelEnv().nranks
     local_rank = paddle.distributed.ParallelEnv().local_rank
 
@@ -96,9 +97,13 @@ def train(model,
         os.makedirs(save_dir)
 
     if nranks > 1:
-        # Initialize parallel training environment.
-        paddle.distributed.init_parallel_env()
-        ddp_model = paddle.DataParallel(model)
+        # Initialize parallel environment if not done.
+        if not paddle.distributed.parallel.parallel_helper._is_parallel_ctx_initialized(
+        ):
+            paddle.distributed.init_parallel_env()
+            ddp_model = paddle.DataParallel(model)
+        else:
+            ddp_model = paddle.DataParallel(model)
 
     batch_sampler = paddle.io.DistributedBatchSampler(
         train_dataset, batch_size=batch_size, shuffle=True, drop_last=True)
@@ -186,8 +191,7 @@ def train(model,
                 for i in range(len(loss_list)):
                     avg_loss_list[i] += loss_list[i]
             batch_cost_averager.record(
-                    time.time() - batch_start,
-                    num_samples=batch_size)
+                time.time() - batch_start, num_samples=batch_size)
 
             if (iter) % log_iters == 0 and local_rank == 0:
                 avg_loss /= log_iters
@@ -202,7 +206,8 @@ def train(model,
                     "[TRAIN] epoch={}, iter={}/{}, loss={:.4f}, lr={:.6f}, batch_cost={:.4f}, reader_cost={:.5f}, ips={:.4f} samples/sec | ETA {}"
                     .format((iter - 1) // iters_per_epoch + 1, iter, iters,
                             avg_loss, lr, avg_train_batch_cost,
-                            avg_train_reader_cost, batch_cost_averager.get_ips_average(), eta))
+                            avg_train_reader_cost,
+                            batch_cost_averager.get_ips_average(), eta))
                 if use_vdl:
                     log_writer.add_scalar('Train/loss', avg_loss, iter)
                     # Record all losses if there are more than 2 losses.
@@ -274,7 +279,6 @@ def train(model,
         flops = paddle.flops(
             model, [1, c, h, w],
             custom_ops={paddle.nn.SyncBatchNorm: count_syncbn})
-        logger.info(flops)
 
     # Sleep for half a second to let dataloader release resources.
     time.sleep(0.5)

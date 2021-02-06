@@ -19,7 +19,7 @@ import paddle
 
 from paddleseg.cvlibs import manager, Config
 from paddleseg.core import evaluate
-from paddleseg.utils import get_sys_env, logger
+from paddleseg.utils import get_sys_env, logger, config_check
 
 
 def parse_args():
@@ -102,9 +102,13 @@ def main(args):
 
     cfg = Config(args.cfg)
     val_dataset = cfg.val_dataset
-    if not val_dataset:
+    if val_dataset is None:
         raise RuntimeError(
             'The verification dataset is not specified in the configuration file.'
+        )
+    elif len(val_dataset) == 0:
+        raise ValueError(
+            'The length of val_dataset is 0. Please check if your dataset is valid'
         )
 
     msg = '\n---------------Config Information---------------\n'
@@ -117,6 +121,8 @@ def main(args):
         para_state_dict = paddle.load(args.model_path)
         model.set_dict(para_state_dict)
         logger.info('Loaded trained params of model successfully')
+
+    config_check(cfg, val_dataset=val_dataset)
 
     evaluate(
         model,

@@ -8,6 +8,8 @@
 ![python version](https://img.shields.io/badge/python-3.6+-orange.svg)
 ![support os](https://img.shields.io/badge/os-linux%2C%20win%2C%20mac-yellow.svg)
 
+<img src="./docs/images/seg_news_icon.png" width="50"/> *[2020-12-18] PaddleSeg发布2.0.0rc版，动态图正式成为主目录。静态图已经被移至[legacy](./legacy)子目录下。更多信息请查看详细[更新日志](./docs/release_notes_cn.md)。*
+
 ![demo](./docs/images/cityscapes.gif)
 
 PaddleSeg是基于飞桨[PaddlePaddle](https://www.paddlepaddle.org.cn)开发的端到端图像分割开发套件，涵盖了**高精度**和**轻量级**等不同方向的大量高质量分割模型。通过模块化的设计，提供了**配置化驱动**和**API调用**两种应用方式，帮助开发者更便捷地完成从训练到部署的全流程图像分割应用。
@@ -41,6 +43,9 @@ PaddleSeg是基于飞桨[PaddlePaddle](https://www.paddlepaddle.org.cn)开发的
 |[Att U-Net](./configs/attention_unet)|-|-|-|-|
 |[U-Net++](./configs/unet_plusplus)|-|-|-|-|
 |[DecoupledSegNet](./configs/decoupled_segnet)|✔|✔|||
+|[EMANet](./configs/emanet)|✔|✔|-|-|
+|[ISANet](./configs/isanet)|✔|✔|-|-|
+|[DNLNet](./configs/dnlnet)|✔|✔|-|-|
 
 ## 数据集
 
@@ -48,7 +53,7 @@ PaddleSeg是基于飞桨[PaddlePaddle](https://www.paddlepaddle.org.cn)开发的
 - [x] Pascal VOC
 - [x] ADE20K
 - [x] Pascal Context
-- [ ] COCO stuff
+- [x] COCO stuff
 
 ## 安装
 
@@ -56,7 +61,7 @@ PaddleSeg是基于飞桨[PaddlePaddle](https://www.paddlepaddle.org.cn)开发的
 
 版本要求
 
-* PaddlePaddle >= 2.0.0rc
+* PaddlePaddle >= 2.0.0
 
 * Python >= 3.6+
 
@@ -92,6 +97,12 @@ python train.py --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml
 * [配置项](./configs/)
 * [API参考](./docs/apis)
 * [添加新组件](./docs/add_new_model.md)
+* [模型压缩](./slim)
+* [模型导出](./docs/model_export.md)
+
+## 联系我们
+* 如果你发现任何PaddleSeg存在的问题或者是建议, 欢迎通过[GitHub Issues](https://github.com/PaddlePaddle/PaddleSeg/issues)给我们提issues。
+* 同时欢迎加入PaddleSeg技术交流群：850378321（QQ群1）或者793114768（QQ群2）。
 
 ## 代码贡献
 

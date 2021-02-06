@@ -17,7 +17,7 @@ import argparse
 import paddle
 
 from paddleseg.cvlibs import manager, Config
-from paddleseg.utils import get_sys_env, logger
+from paddleseg.utils import get_sys_env, logger, config_check
 from paddleseg.core import train
 
 
@@ -117,9 +117,13 @@ def main(args):
         batch_size=args.batch_size)
 
     train_dataset = cfg.train_dataset
-    if not train_dataset:
+    if train_dataset is None:
         raise RuntimeError(
             'The training dataset is not specified in the configuration file.')
+    elif len(train_dataset) == 0:
+        raise ValueError(
+            'The length of train_dataset is 0. Please check if your dataset is valid'
+        )
     val_dataset = cfg.val_dataset if args.do_eval else None
     losses = cfg.loss
 
@@ -127,6 +131,8 @@ def main(args):
     msg += str(cfg)
     msg += '------------------------------------------------'
     logger.info(msg)
+
+    config_check(cfg, train_dataset=train_dataset, val_dataset=val_dataset)
 
     train(
         cfg.model,

@@ -2,7 +2,7 @@
 
 ## Reference
 
-> Takikawa T, Acuna D, Jampani V, et al. Gated-scnn: Gated shape cnns for semantic segmentation[C]//Proceedings of the IEEE International Conference on Computer Vision. 2019: 5229-5238.
+> Takikawa, Towaki, David Acuna, Varun Jampani, and Sanja Fidler. "Gated-scnn: Gated shape cnns for semantic segmentation." In Proceedings of the IEEE International Conference on Computer Vision, pp. 5229-5238. 2019.
 
 ## Performance
 

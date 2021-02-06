@@ -229,6 +229,71 @@ class ResizeByLong:
 
 
 @manager.TRANSFORMS.add_component
+class LimitLong:
+    """
+    Limit the long edge of image.
+
+    If the long edge is larger than max_long, resize the long edge
+    to max_long, while scale the short edge proportionally.
+
+    If the long edge is smaller than min_long, resize the long edge
+    to min_long, while scale the short edge proportionally.
+
+    Args:
+        max_long (int, optional): If the long edge of image is larger than max_long,
+            it will be resize to max_long. Default: None.
+        min_long (int, optional): If the long edge of image is smaller than min_long,
+            it will be resize to min_long. Default: None.
+    """
+
+    def __init__(self, max_long=None, min_long=None):
+        if max_long is not None:
+            if not isinstance(max_long, int):
+                raise TypeError(
+                    "Type of `max_long` is invalid. It should be int, but it is {}"
+                    .format(type(max_long)))
+        if min_long is not None:
+            if not isinstance(min_long, int):
+                raise TypeError(
+                    "Type of `min_long` is invalid. It should be int, but it is {}"
+                    .format(type(min_long)))
+        if (max_long is not None) and (min_long is not None):
+            if min_long > max_long:
+                raise ValueError(
+                    '`max_long should not smaller than min_long, but they are {} and {}'
+                    .format(max_long, min_long))
+        self.max_long = max_long
+        self.min_long = min_long
+
+    def __call__(self, im, label=None):
+        """
+        Args:
+            im (np.ndarray): The Image data.
+            label (np.ndarray, optional): The label data. Default: None.
+
+        Returns:
+            (tuple). When label is None, it returns (im, ), otherwise it returns (im, label).
+        """
+        h, w = im.shape[0], im.shape[1]
+        long_edge = max(h, w)
+        target = long_edge
+        if (self.max_long is not None) and (long_edge > self.max_long):
+            target = self.max_long
+        elif (self.min_long is not None) and (long_edge < self.min_long):
+            target = self.min_long
+
+        if target != long_edge:
+            im = functional.resize_long(im, target)
+            if label is not None:
+                label = functional.resize_long(label, target, cv2.INTER_NEAREST)
+
+        if label is None:
+            return (im, )
+        else:
+            return (im, label)
+
+
+@manager.TRANSFORMS.add_component
 class ResizeRangeScaling:
     """
     Resize the long side of an image into a range, and then scale the other side proportionally.

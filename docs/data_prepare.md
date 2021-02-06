@@ -48,6 +48,25 @@ export PYTHONPATH=`pwd`
 [ADE20K](http://sceneparsing.csail.mit.edu/)由MIT发布的可用于场景感知、分割和多物体识别等多种任务的数据集。
 其涵盖了150个语义类别，包括训练集20210张，验证集2000张。
 
+## 关于Coco Stuff数据集
+Coco Stuff是基于Coco数据集的像素级别语义分割数据集。它主要覆盖172个类别，包含80个'thing'，91个'stuff'和1个'unlabeled',
+其中训练集118k, 验证集5k.
+
+在使用Coco Stuff数据集前， 请自行前往[COCO-Stuff主页](https://github.com/nightrome/cocostuff)下载数据集，或者下载[coco2017训练集原图](http://images.cocodataset.org/zips/train2017.zip), [coco2017验证集原图](http://images.cocodataset.org/zips/val2017.zip)及[标注图](http://calvin.inf.ed.ac.uk/wp-content/uploads/data/cocostuffdataset/stuffthingmaps_trainval2017.zip)
+我们建议您将数据集存放于`PaddleSeg/data`中，以便与我们配置文件完全兼容。数据集下载后请组织成如下结构：
+
+    cocostuff
+    |
+    |--images
+    |  |--train2017
+    |  |--val2017
+    |
+    |--annotations
+    |  |--train2017
+    |  |--val2017
+    
+其中，标注图像的标签从0,1依次取值，不可间隔。若有需要忽略的像素，则按255进行标注。
+
 ## 关于Pascal Context数据集
 Pascal Context是基于PASCAL VOC 2010数据集额外标注的像素级别的语义分割数据集。我们提供的转换脚本支持59个类别，其中训练集4996, 验证集5104张.
 
@@ -70,7 +89,6 @@ Pascal Context是基于PASCAL VOC 2010数据集额外标注的像素级别的语
     |--trainval_merged.json
     
 其中，标注图像的标签从1，2依次取值，不可间隔。若有需要忽略的像素，则按0进行标注。在使用Pascal Context数据集时，需要安装[Detail](https://github.com/zhanghang1989/detail-api).
-
 
 ## 自定义数据集
 
