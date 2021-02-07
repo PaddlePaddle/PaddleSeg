@@ -61,7 +61,7 @@ PaddleSeg是基于飞桨[PaddlePaddle](https://www.paddlepaddle.org.cn)开发的
 
 版本要求
 
-* PaddlePaddle >= 2.0.0rc
+* PaddlePaddle >= 2.0.0
 
 * Python >= 3.6+
 
@@ -97,6 +97,8 @@ python train.py --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml
 * [配置项](./configs/)
 * [API参考](./docs/apis)
 * [添加新组件](./docs/add_new_model.md)
+* [模型压缩](./slim)
+* [模型导出](./docs/model_export.md)
 
 ## 实践案例
 
