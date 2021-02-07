@@ -20,7 +20,7 @@ python deploy/python/infer.py --config /path/to/deploy.yaml --image_path
 参数说明如下:
 |参数名|用途|是否必选项|默认值|
 |-|-|-|-|
-|config|配置文件|是|-|
+|config|**导出模型时生成的配置文件**, 而非configs目录下的配置文件|是|-|
 |image_path|预测图片的路径或者目录|是|-|
 |batch_size|单卡batch size|否|配置文件中指定值|
 |save_dir|保存预测结果的目录|否|output|
