@@ -50,6 +50,8 @@ def loss_computation(logits_list, labels, losses, edges=None):
 def train(model,
           train_dataset,
           val_dataset=None,
+          aug_eval=False,
+          flip_horizontal_eval=False,
           optimizer=None,
           save_dir='output',
           iters=10000,
@@ -68,6 +70,8 @@ def train(model,
         model（nn.Layer): A sementic segmentation model.
         train_dataset (paddle.io.Dataset): Used to read and process training datasets.
         val_dataset (paddle.io.Dataset, optional): Used to read and process validation datasets.
+        aug_eval (bool, optional): Whether to use mulit-scales and flip augment for evaluation. Default: False.
+        flip_horizontal_eval (bool, optional): Whether to use flip horizontally augment. It is valid when `aug_eval` is True. Default: True.
         optimizer (paddle.optimizer.Optimizer): The optimizer.
         save_dir (str, optional): The directory for saving the model snapshot. Default: 'output'.
         iters (int, optional): How may iters to train the model. Defualt: 10000.
@@ -81,7 +85,6 @@ def train(model,
             The 'types' item is a list of object of paddleseg.models.losses while the 'coef' item is a list of the relevant coefficient.
         keep_checkpoint_max (int, optional): Maximum number of checkpoints to save. Default: 5.
     """
-    model.train()
     nranks = paddle.distributed.ParallelEnv().nranks
     local_rank = paddle.distributed.ParallelEnv().local_rank
 
@@ -95,13 +98,9 @@ def train(model,
         os.makedirs(save_dir)
 
     if nranks > 1:
-        # Initialize parallel environment if not done.
-        if not paddle.distributed.parallel.parallel_helper._is_parallel_ctx_initialized(
-        ):
-            paddle.distributed.init_parallel_env()
-            ddp_model = paddle.DataParallel(model)
-        else:
-            ddp_model = paddle.DataParallel(model)
+        # Initialize parallel training environment.
+        paddle.distributed.init_parallel_env()
+        ddp_model = paddle.DataParallel(model)
 
     batch_sampler = paddle.io.DistributedBatchSampler(
         train_dataset, batch_size=batch_size, shuffle=True, drop_last=True)
@@ -140,6 +139,10 @@ def train(model,
             if len(data) == 3:
                 edges = data[2].astype('int64')
 
+            if hasattr(train_dataset,
+                       'shuffle') and iter % iters_per_epoch == 0:
+                train_dataset.shuffle()
+
             if nranks > 1:
                 logits_list = ddp_model(images)
             else:
@@ -160,16 +163,18 @@ def train(model,
             model.clear_gradients()
             avg_loss += loss.numpy()[0]
             if not avg_loss_list:
-                avg_loss_list = [l.numpy() for l in loss_list]
+                avg_loss_list = [l for l in loss_list]
             else:
                 for i in range(len(loss_list)):
-                    avg_loss_list[i] += loss_list[i].numpy()
+                    avg_loss_list[i] += loss_list[i]
             batch_cost_averager.record(
                 time.time() - batch_start, num_samples=batch_size)
 
             if (iter) % log_iters == 0 and local_rank == 0:
                 avg_loss /= log_iters
-                avg_loss_list = [l[0] / log_iters for l in avg_loss_list]
+                avg_loss_list = [
+                    l.numpy()[0] / log_iters for l in avg_loss_list
+                ]
                 remain_iters = iters - iter
                 avg_train_batch_cost = batch_cost_averager.get_average()
                 avg_train_reader_cost = reader_cost_averager.get_average()
@@ -205,7 +210,16 @@ def train(model,
                     or iter == iters) and (val_dataset is not None):
                 num_workers = 1 if num_workers > 0 else 0
                 mean_iou, acc = evaluate(
-                    model, val_dataset, num_workers=num_workers)
+                    model,
+                    val_dataset,
+                    aug_eval=aug_eval,
+                    scales=1.0,
+                    flip_horizontal=flip_horizontal_eval,
+                    flip_vertical=False,
+                    is_slide=False,
+                    stride=None,
+                    crop_size=None,
+                    num_workers=num_workers)
                 model.train()
 
             if (iter % save_interval == 0 or iter == iters) and local_rank == 0:
@@ -251,6 +265,7 @@ def train(model,
         flops = paddle.flops(
             model, [1, c, h, w],
             custom_ops={paddle.nn.SyncBatchNorm: count_syncbn})
+        logger.info(flops)
 
     # Sleep for half a second to let dataloader release resources.
     time.sleep(0.5)

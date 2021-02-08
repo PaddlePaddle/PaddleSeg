@@ -62,7 +62,7 @@ System Requirements:
 * PaddlePaddle >= 2.0.0
 * Python >= 3.6+
 
-Highly recommend you install the GPU version of PaddlePaddle, due to large overhead of segmentation models, otherwise it could be out of memory while running the models. For more detailed installation tutorials, please refer to the official website of [PaddlePaddle](https://www.paddlepaddle.org.cn/documentation/docs/zh/2.0-beta/install/index_cn.html)。
+Highly recommend you install the GPU version of PaddlePaddle, due to large overhead of segmentation models, otherwise it could be out of memory while running the models. For more detailed installation tutorials, please refer to the official website of [PaddlePaddle](https://www.paddlepaddle.org.cn/install/quick?docurl=/documentation/docs/zh/2.0/install/)。
 
 
 #### step 2. Install PaddleSeg
@@ -98,6 +98,10 @@ python train.py --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml
 * [Model Compression](./slim)
 * [Model Deploy](./docs/model_export.md)
 
+## Practical Cases
+
+* [Cityscapes SOTA](./contrib/CityscapesSOTA)
+
 ## Feedbacks and Contact
 * The dynamic version is still under development, if you find any issue or have an idea on new features, please don't hesitate to contact us via [GitHub Issues](https://github.com/PaddlePaddle/PaddleSeg/issues).
 * PaddleSeg User Group (QQ): 850378321 or 793114768
@@ -112,7 +116,7 @@ If you find our project useful in your research, please consider citing:
 
 ```latex
 @misc{liu2021paddleseg,
-      title={PaddleSeg: A High-Efficient Development Toolkit for Image Segmentation}, 
+      title={PaddleSeg: A High-Efficient Development Toolkit for Image Segmentation},
       author={Yi Liu and Lutao Chu and Guowei Chen and Zewu Wu and Zeyu Chen and Baohua Lai and Yuying Hao},
       year={2021},
       eprint={2101.06175},

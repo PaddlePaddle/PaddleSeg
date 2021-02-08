@@ -19,7 +19,7 @@ import paddle
 
 from paddleseg.cvlibs import manager, Config
 from paddleseg.core import evaluate
-from paddleseg.utils import get_sys_env, logger, config_check
+from paddleseg.utils import get_sys_env, logger, config_check, utils
 
 
 def parse_args():
@@ -118,8 +118,7 @@ def main(args):
 
     model = cfg.model
     if args.model_path:
-        para_state_dict = paddle.load(args.model_path)
-        model.set_dict(para_state_dict)
+        utils.load_entire_model(model, args.model_path)
         logger.info('Loaded trained params of model successfully')
 
     config_check(cfg, val_dataset=val_dataset)
