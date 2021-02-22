@@ -31,7 +31,7 @@ class LovaszSoftmaxLoss(nn.Layer):
     Multi-class Lovasz-Softmax loss.
 
     Args:
-        ignore_index (int64): Specifies a target value that is ignored and does not contribute to the input gradient. Default ``None``.
+        ignore_index (int64): Specifies a target value that is ignored and does not contribute to the input gradient. Default ``255``.
         classes (str|list): 'all' for all, 'present' for classes present in labels, or a list of classes to average.
     """
 
@@ -60,7 +60,7 @@ class LovaszHingeLoss(nn.Layer):
     Binary Lovasz hinge loss.
 
     Args:
-        ignore_index (int64): Specifies a target value that is ignored and does not contribute to the input gradient. Default ``None``.
+        ignore_index (int64): Specifies a target value that is ignored and does not contribute to the input gradient. Default ``255``.
     """
 
     def __init__(self, ignore_index=255):
