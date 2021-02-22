@@ -39,5 +39,4 @@ loss:
 
 model:
   type: BiSeNetV2
-  num_classes: 2
   pretrained: Null
