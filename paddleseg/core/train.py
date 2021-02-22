@@ -96,14 +96,19 @@ def train(model,
             os.remove(save_dir)
         os.makedirs(save_dir)
 
+    # if nranks > 1:
+    #     # Initialize parallel environment if not done.
+    #     if not paddle.distributed.parallel.parallel_helper._is_parallel_ctx_initialized(
+    #     ):
+    #         paddle.distributed.init_parallel_env()
+    #         ddp_model = paddle.DataParallel(model)
+    #     else:
+    #         ddp_model = paddle.DataParallel(model)
+
     if nranks > 1:
-        # Initialize parallel environment if not done.
-        if not paddle.distributed.parallel.parallel_helper._is_parallel_ctx_initialized(
-        ):
-            paddle.distributed.init_parallel_env()
-            ddp_model = paddle.DataParallel(model)
-        else:
-            ddp_model = paddle.DataParallel(model)
+        paddle.distributed.fleet.init(is_collective=True)
+        optimizer = paddle.distributed.fleet.distributed_optimizer(optimizer)
+        ddp_model = paddle.distributed.fleet.distributed_model(model)
 
     batch_sampler = paddle.io.DistributedBatchSampler(
         train_dataset, batch_size=batch_size, shuffle=True, drop_last=True)
@@ -159,8 +164,6 @@ def train(model,
                         losses=losses,
                         edges=edges)
                     loss = sum(loss_list)
-                # loss.backward()
-                # optimizer.step()
 
                 scaled = scaler.scale(loss)  # scale the loss
                 scaled.backward()  # do backward
@@ -180,9 +183,15 @@ def train(model,
                 optimizer.step()
 
             lr = optimizer.get_lr()
-            if isinstance(optimizer._learning_rate,
-                          paddle.optimizer.lr.LRScheduler):
-                optimizer._learning_rate.step()
+
+            # update lr
+            if isinstance(optimizer, paddle.distributed.fleet.Fleet):
+                lr_sche = optimizer.user_defined_optimizer._learning_rate
+            else:
+                lr_sche = optimizer._learning_rate
+            if isinstance(lr_sche, paddle.optimizer.lr.LRScheduler):
+                lr_sche.step()
+
             model.clear_gradients()
             avg_loss += loss.numpy()[0]
             if not avg_loss_list:
