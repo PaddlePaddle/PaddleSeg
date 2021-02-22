@@ -28,11 +28,11 @@ from paddleseg.cvlibs import manager
 @manager.LOSSES.add_component
 class LovaszSoftmaxLoss(nn.Layer):
     """
-    Multi-class Lovasz-Softmax loss
+    Multi-class Lovasz-Softmax loss.
 
     Args:
-        ignore_index: int64, specifies a target value that is ignored and does not contribute to the input gradient. Default ``None``.
-        classes: 'all' for all, 'present' for classes present in labels, or a list of classes to average.
+        ignore_index (int64): Specifies a target value that is ignored and does not contribute to the input gradient. Default ``None``.
+        classes (str|list): 'all' for all, 'present' for classes present in labels, or a list of classes to average.
     """
 
     def __init__(self, ignore_index=255, classes='present'):
@@ -45,8 +45,8 @@ class LovaszSoftmaxLoss(nn.Layer):
         Forward computation.
 
         Args:
-            logits: [N, C, H, W] Tensor, logits at each prediction (between -\infty and +\infty)
-            labels: [N, 1, H, W] or [N, H, W] Tensor, ground truth labels (between 0 and C - 1)
+            logits (Tensor): Shape is [N, C, H, W], logits at each prediction (between -\infty and +\infty).
+            labels (Tensor): Shape is [N, 1, H, W] or [N, H, W], ground truth labels (between 0 and C - 1).
         """
         probas = F.softmax(logits, axis=1)
         vprobas, vlabels = flatten_probas(probas, labels, self.ignore_index)
@@ -57,10 +57,10 @@ class LovaszSoftmaxLoss(nn.Layer):
 @manager.LOSSES.add_component
 class LovaszHingeLoss(nn.Layer):
     """
-    Binary Lovasz hinge loss
+    Binary Lovasz hinge loss.
 
     Args:
-        ignore_index: int64, specifies a target value that is ignored and does not contribute to the input gradient. Default ``None``.
+        ignore_index (int64): Specifies a target value that is ignored and does not contribute to the input gradient. Default ``None``.
     """
 
     def __init__(self, ignore_index=255):
@@ -72,8 +72,8 @@ class LovaszHingeLoss(nn.Layer):
         Forward computation.
 
         Args:
-            logits: [N, 1, H, W] or [N, 2, H, W] Tensor, logits at each pixel (between -\infty and +\infty)
-            labels: [N, 1, H, W] or [N, H, W] Tensor, binary ground truth masks (0 or 1)
+            logits (Tensor): Shape is [N, 1, H, W] or [N, 2, H, W], logits at each pixel (between -\infty and +\infty).
+            labels (Tensor): Shape is [N, 1, H, W] or [N, H, W], binary ground truth masks (0 or 1).
         """
         if logits.shape[1] == 2:
             logits = binary_channel_to_unary(logits)
@@ -84,8 +84,8 @@ class LovaszHingeLoss(nn.Layer):
 
 def lovasz_grad(gt_sorted):
     """
-    Computes gradient of the Lovasz extension w.r.t sorted errors
-    See Alg. 1 in paper
+    Computes gradient of the Lovasz extension w.r.t sorted errors.
+    See Alg. 1 in paper.
     """
     gts = paddle.sum(gt_sorted)
     p = len(gt_sorted)
@@ -100,6 +100,9 @@ def lovasz_grad(gt_sorted):
 
 
 def binary_channel_to_unary(logits, eps=1e-9):
+    """
+    Converts binary channel logits to unary channel logits for lovasz hinge loss.
+    """
     probas = F.softmax(logits, axis=1)
     probas = probas[:, 1, :, :]
     logits = paddle.log(probas + eps / (1 - probas + eps))
@@ -109,9 +112,11 @@ def binary_channel_to_unary(logits, eps=1e-9):
 
 def lovasz_hinge_flat(logits, labels):
     """
-    Binary Lovasz hinge loss
-      logits: [P] Tensor, logits at each prediction (between -\infty and +\infty)
-      labels: [P] Tensor, binary ground truth labels (0 or 1)
+    Binary Lovasz hinge loss.
+
+    Args:
+        logits (Tensor): Shape is [P], logits at each prediction (between -\infty and +\infty).
+        labels (Tensor): Shape is [P], binary ground truth labels (0 or 1).
     """
     if len(labels) == 0:
         # only void pixels, the gradients should be 0
@@ -131,8 +136,8 @@ def lovasz_hinge_flat(logits, labels):
 
 def flatten_binary_scores(scores, labels, ignore=None):
     """
-    Flattens predictions in the batch (binary case)
-    Remove labels according to 'ignore'
+    Flattens predictions in the batch (binary case).
+    Remove labels according to 'ignore'.
     """
     scores = paddle.reshape(scores, [-1])
     labels = paddle.reshape(labels, [-1])
@@ -150,10 +155,12 @@ def flatten_binary_scores(scores, labels, ignore=None):
 
 def lovasz_softmax_flat(probas, labels, classes='present'):
     """
-    Multi-class Lovasz-Softmax loss
-      probas: [P, C] Tensor, class probabilities at each prediction (between 0 and 1)
-      labels: [P] Tensor, ground truth labels (between 0 and C - 1)
-      classes: 'all' for all, 'present' for classes present in labels, or a list of classes to average.
+    Multi-class Lovasz-Softmax loss.
+
+    Args:
+        probas (Tensor): Shape is [P, C], class probabilities at each prediction (between 0 and 1).
+        labels (Tensor): Shape is [P], ground truth labels (between 0 and C - 1).
+        classes (str|list): 'all' for all, 'present' for classes present in labels, or a list of classes to average.
     """
     if probas.numel() == 0:
         # only void pixels, the gradients should be 0
@@ -196,7 +203,7 @@ def lovasz_softmax_flat(probas, labels, classes='present'):
 
 def flatten_probas(probas, labels, ignore=None):
     """
-    Flattens predictions in the batch
+    Flattens predictions in the batch.
     """
     if len(probas.shape) == 3:
         probas = paddle.unsqueeze(probas, axis=1)

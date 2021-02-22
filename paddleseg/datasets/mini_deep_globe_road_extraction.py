@@ -31,10 +31,10 @@ class MiniDeepGlobeRoadExtraction(Dataset):
     There are 800 images in the training set and 200 images in the validation set.
 
     Args:
-        dataset_root (str, optional): The dataset directory. Default: None
-        transforms (list, optional): Transforms for image. Default: None
-        mode (str, optional): Which part of dataset to use. it is one of ('train', 'val'). Default: 'train'.
-        edge (bool, optional): Whether to compute edge while training. Default: False
+        dataset_root (str, optional): The dataset directory. Default: None.
+        transforms (list, optional): Transforms for image. Default: None.
+        mode (str, optional): Which part of dataset to use. It is one of ('train', 'val'). Default: 'train'.
+        edge (bool, optional): Whether to compute edge while training. Default: False.
     """
 
     def __init__(self,

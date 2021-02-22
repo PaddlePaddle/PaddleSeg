@@ -212,8 +212,8 @@ class Config(object):
                     self._losses['types'] = []
                     for item in args['types']:
                         if item['type'] != 'MixedLoss':
-                            item[
-                                'ignore_index'] = self.train_dataset.ignore_index
+                            item['ignore_index'] = \
+                                self.train_dataset.ignore_index
                         self._losses['types'].append(self._load_object(item))
                 else:
                     self._losses[key] = val
