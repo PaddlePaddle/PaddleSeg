@@ -59,7 +59,7 @@ CUDA_VISIBLE_DEVICES=0,1,2,3 python -u -m paddle.distributed.launch train.py \
 
 实验mIoU曲线如下图所示。
 <p align="center">
-  <img src="./images/Lovasz_Softmax_Evaluate_mIoU.png" hspace='10' /> <br />
+  <img src="./images/Lovasz_Softmax_Evaluate_mIoU.png" height="400" /> <br />
  </p>
 
 
@@ -106,7 +106,7 @@ CUDA_VISIBLE_DEVICES=0,1,2,3 python -u -m paddle.distributed.launch train.py \
 
 实验mIoU曲线如下图所示。
 <p align="center">
-  <img src="./images/Lovasz_Hinge_Evaluate_mIoU.png" hspace='10'/> <br />
+  <img src="./images/Lovasz_Hinge_Evaluate_mIoU.png" width="600" /> <br />
  </p>
 
 
