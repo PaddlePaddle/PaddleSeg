@@ -1,5 +1,5 @@
 # Lovasz loss
-对于图像分割任务中，经常出现类别分布不均匀的情况，例如：工业产品的瑕疵检测、道路提取及病变区域提取等。我们可使用lovasz loss解决这个问题。
+在图像分割任务中，经常出现类别分布不均匀的情况，例如：工业产品的瑕疵检测、道路提取及病变区域提取等。我们可使用lovasz loss解决这个问题。
 
 Lovasz loss基于子模损失(submodular losses)的凸Lovasz扩展，对神经网络的mean IoU损失进行优化。Lovasz loss根据分割目标的类别数量可分为两种：lovasz hinge loss和lovasz softmax loss. 其中lovasz hinge loss适用于二分类问题，lovasz softmax loss适用于多分类问题。该工作发表在CVPR 2018上，可点击[参考文献](#参考文献)查看具体原理。
 
@@ -63,14 +63,16 @@ CUDA_VISIBLE_DEVICES=0,1,2,3 python -u -m paddle.distributed.launch train.py \
  </p>
 
 
-|Loss|best mIoU|
-|-|-|
-|cross entropy loss|80.46%|
-|lovasz softmax loss + cross entropy loss|81.53%|
 
 图中蓝色曲线代表lovasz softmax loss + cross entropy loss，绿色曲线代表cross entropy loss，相比提升1个百分点。
 
 可看出使用lovasz softmax loss后，精度曲线基本都高于原来的精度。
+
+
+|Loss|best mIoU|
+|-|-|
+|cross entropy loss|80.46%|
+|lovasz softmax loss + cross entropy loss|81.53%|
 
 ## Lovasz hinge loss实验对比
 
@@ -110,15 +112,15 @@ CUDA_VISIBLE_DEVICES=0,1,2,3 python -u -m paddle.distributed.launch train.py \
  </p>
 
 
-|Loss|best mIoU|
-|-|-|
-|cross entropy loss|78.69%|
-|lovasz softmax loss + cross entropy loss|79.18%|
 
 图中紫色曲线为lovasz hinge loss + cross entropy loss，蓝色曲线为cross entropy loss，相比提升0.5个百分点。
 
 可看出使用lovasz hinge loss后，精度曲线全面高于原来的精度。
 
+|Loss|best mIoU|
+|-|-|
+|cross entropy loss|78.69%|
+|lovasz softmax loss + cross entropy loss|79.18%|
 
 
 ## 参考文献
