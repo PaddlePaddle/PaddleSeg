@@ -113,7 +113,6 @@ class FCNHead(nn.Layer):
             in_channels=backbone_channels[0],
             out_channels=channels,
             kernel_size=1,
-            padding='same',
             stride=1,
             bias_attr=bias)
         self.cls = nn.Conv2D(
@@ -121,7 +120,6 @@ class FCNHead(nn.Layer):
             out_channels=self.num_classes,
             kernel_size=1,
             stride=1,
-            padding=0,
             bias_attr=bias)
         self.init_weight()
 
