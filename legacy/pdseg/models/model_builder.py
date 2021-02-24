@@ -230,12 +230,12 @@ def build_model(main_prog, start_prog, phase=ModelPhase.TRAIN):
 
             if ModelPhase.is_train(phase):
                 optimizer = solver.Solver(main_prog, start_prog)
-                decayed_lr = optimizer.optimise(avg_loss)
+                decayed_lr, optimizer_ = optimizer.optimise(avg_loss)
                 if class_num == 1:
                     logit = sigmoid_to_softmax(logit)
                 else:
                     logit = softmax(logit)
-                return data_loader, avg_loss, decayed_lr, pred, label, mask
+                return data_loader, avg_loss, decayed_lr, pred, label, mask, optimizer_
 
 
 def to_int(string, dest="I"):
