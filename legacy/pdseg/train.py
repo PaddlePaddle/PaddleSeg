@@ -32,6 +32,7 @@ import numpy as np
 import paddle
 import paddle.static as static
 from paddle.fluid import profiler
+import paddle.distributed.fleet as fleet
 
 from utils.config import cfg
 from utils.timer import TimeAverager, calculate_eta
@@ -249,7 +250,7 @@ def train(cfg):
     batch_size_per_dev = cfg.BATCH_SIZE // dev_count
     print_info("batch_size_per_dev: {}".format(batch_size_per_dev))
 
-    data_loader, avg_loss, lr, pred, grts, masks = build_model(
+    data_loader, avg_loss, lr, pred, grts, masks, optimizer = build_model(
         train_prog, startup_prog, phase=ModelPhase.TRAIN)
     build_model(test_prog, static.Program(), phase=ModelPhase.EVAL)
     data_loader.set_sample_generator(
@@ -266,8 +267,14 @@ def train(cfg):
     build_strategy = static.BuildStrategy()
 
     if cfg.NUM_TRAINERS > 1 and args.use_gpu:
-        dist_utils.prepare_for_multi_process(exe, build_strategy, train_prog)
-        exec_strategy.num_threads = 1
+        strategy = fleet.DistributedStrategy()
+        strategy.execution_strategy = exec_strategy
+        strategy.build_strategy = build_strategy
+        fleet.init(is_collective=True, strategy=strategy)
+        optimizer = paddle.distributed.fleet.distributed_optimizer(optimizer)
+    # if cfg.NUM_TRAINERS > 1 and args.use_gpu:
+    # dist_utils.prepare_for_multi_process(exe, build_strategy, train_prog)
+    # exec_strategy.num_threads = 1
 
     if cfg.TRAIN.SYNC_BATCH_NORM and args.use_gpu:
         if dev_count > 1:
@@ -441,6 +448,7 @@ def main(args):
 
     cfg.TRAINER_ID = int(os.getenv("PADDLE_TRAINER_ID", 0))
     cfg.NUM_TRAINERS = int(os.environ.get('PADDLE_TRAINERS_NUM', 1))
+    print('************NUM_TRAINERS**********', cfg.NUM_TRAINERS)
 
     cfg.check_and_infer()
     print_info(pprint.pformat(cfg))
