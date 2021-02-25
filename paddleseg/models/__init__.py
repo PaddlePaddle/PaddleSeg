@@ -31,3 +31,6 @@ from .u2net import U2Net, U2Netp
 from .attention_unet import AttentionUNet
 from .unet_plusplus import UNetPlusPlus
 from .decoupled_segnet import DecoupledSegNet
+from .emanet import *
+from .isanet import *
+from .dnlnet import *
