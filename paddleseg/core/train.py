@@ -107,7 +107,8 @@ def train(model,
 
     if nranks > 1:
         paddle.distributed.fleet.init(is_collective=True)
-        optimizer = paddle.distributed.fleet.distributed_optimizer(optimizer)
+        optimizer = paddle.distributed.fleet.distributed_optimizer(
+            optimizer)  # The return is Fleet object
         ddp_model = paddle.distributed.fleet.distributed_model(model)
 
     batch_sampler = paddle.io.DistributedBatchSampler(
@@ -153,7 +154,8 @@ def train(model,
                 edges = data[2].astype('int64')
 
             if fp16:
-                with paddle.amp.auto_cast(enable=True):
+                with paddle.amp.auto_cast(
+                        enable=True, custom_black_list={'bilinear_interp_v2'}):
                     if nranks > 1:
                         logits_list = ddp_model(images)
                     else:
@@ -167,7 +169,10 @@ def train(model,
 
                 scaled = scaler.scale(loss)  # scale the loss
                 scaled.backward()  # do backward
-                scaler.minimize(optimizer, scaled)  # update parameters
+                if isinstance(optimizer, paddle.distributed.fleet.Fleet):
+                    scaler.minimize(optimizer.user_defined_optimizer, scaled)
+                else:
+                    scaler.minimize(optimizer, scaled)  # update parameters
             else:
                 if nranks > 1:
                     logits_list = ddp_model(images)
