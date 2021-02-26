@@ -48,9 +48,9 @@ python train.py \
 
 ```shell
 # 请在PaddleSeg根目录运行
-export PYTONPATH=`pwd`
+export PYTHONPATH=`pwd`
 # windows下请执行以下命令
-# set PYTONPATH=%cd%
+# set PYTHONPATH=%cd%
 
 python slim/quant.py \
        --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml \
@@ -101,9 +101,9 @@ python train.py \
 
 ```shell
 # 请在PaddleSeg根目录运行
-export PYTONPATH=`pwd`
+export PYTHONPATH=`pwd`
 # windows下请执行以下命令
-# set PYTONPATH=%cd%
+# set PYTHONPATH=%cd%
 
 python slim/prune.py \
        --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml \
