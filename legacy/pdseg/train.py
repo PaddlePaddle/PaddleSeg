@@ -359,7 +359,8 @@ def train(cfg):
                 avg_loss += np.mean(np.array(loss))
                 step += 1
                 batch_cost_averager.record(
-                    time.time() - batch_start, num_samples=cfg.BATCH_SIZE)
+                    time.time() - batch_start,
+                    num_samples=cfg.BATCH_SIZE / dev_count)
 
                 if step % args.log_steps == 0 and cfg.TRAINER_ID == 0:
                     avg_train_batch_cost = batch_cost_averager.get_average()
