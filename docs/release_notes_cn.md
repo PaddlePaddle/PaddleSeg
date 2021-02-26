@@ -1,6 +1,20 @@
 简体中文 | [English](release_notes.md)
 
 ## Release Notes
+* 2020.02.26
+
+  **`v2.0`**
+  * 全新发布2.0版本，全面升级至动态图，支持20+分割模型，4个骨干网络，5个数据集，7种Loss：
+    * 分割模型：ANN, BiSeNetV2, DANet, DeeplabV3, DeeplabV3+, FCN, FastSCNN, Gated-scnn, GCNet, HarDNet, OCRNet, PSPNet, UNet, UNet++, U^2Net, Attention UNet、Decoupled SegNet、EMANet、DNLNet、ISANet
+    * 骨干网络：ResNet, HRNet, MobileNetV3, Xception
+    * 数据集：Cityscapes, ADE20K, Pascal VOC, Pascal Context, COCO Stuff
+    * Loss：CrossEntropy Loss、BootstrappedCrossEntropy Loss、Dice Loss、BCE Loss、OhemCrossEntropyLoss、RelaxBoundaryLoss、OhemEdgeAttentionLoss
+  * 提供基于Cityscapes和Pascal Voc数据集的高质量预训练模型 50+
+  * 支持多卡GPU并行评估，提供了高效的指标计算功能。支持多尺度评估/翻转评估/滑动窗口评估等多种评估方式。
+  * 支持XPU模型训练，包括DeepLabv3、HRNet、UNet。
+  * 开源了基于Hierarchical Multi-Scale Attention结构的语义分割模型，在Cityscapes验证集上达到87% mIoU。
+  * 动态图模式支持模型在线量化、剪枝等模型压缩功能。
+  * 动态图下支持模型动转静，实现高性能部署。
 
 * 2020.12.18
 
