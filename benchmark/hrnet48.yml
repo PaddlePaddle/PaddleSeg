@@ -26,7 +26,8 @@ val_dataset:
 model:
   type: FCN
   backbone:
-    type: HRNet_W18
+    type: HRNet_W48
+    pretrained: https://bj.bcebos.com/paddleseg/dygraph/hrnet_w48_ssld.tar.gz
   num_classes: 19
   backbone_indices: [-1]
   bias: False
