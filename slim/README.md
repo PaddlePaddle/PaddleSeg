@@ -128,7 +128,7 @@ python slim/prune.py \
        TensorRT: 6.0.1.5
 
     测试方法:
-       1. 运行耗时为纯模型预测时间，测试图片cityspcaes(1024x512)
+       1. 运行耗时为纯模型预测时间，测试图片cityspcaes(1024x2048)
        2. 预测10次作为热启动，连续预测50次取平均得到预测时间
        3. 使用GPU + TensorRT测试
 
