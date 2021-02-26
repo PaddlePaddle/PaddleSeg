@@ -5,7 +5,7 @@
 
   **`v2.0`**
   * 全新发布2.0版本，全面升级至动态图，支持20+分割模型，4个骨干网络，5个数据集，7种Loss：
-    * 分割模型：ANN, BiSeNetV2, DANet, DeeplabV3, DeeplabV3+, FCN, FastSCNN, Gated-scnn, GCNet, HarDNet, OCRNet, PSPNet, UNet, UNet++, U^2Net, Attention UNet、Decoupled SegNet、EMANet、DNLNet、ISANet
+    * 分割模型：ANN、BiSeNetV2、DANet、DeeplabV3、DeeplabV3+、FCN、FastSCNN、Gated-scnn、GCNet、HarDNet、OCRNet、PSPNet、UNet、UNet++、U<sup>2</sup>Net、Attention UNet、Decoupled SegNet、EMANet、DNLNet、ISANet
     * 骨干网络：ResNet, HRNet, MobileNetV3, Xception
     * 数据集：Cityscapes, ADE20K, Pascal VOC, Pascal Context, COCO Stuff
     * Loss：CrossEntropy Loss、BootstrappedCrossEntropy Loss、Dice Loss、BCE Loss、OhemCrossEntropyLoss、RelaxBoundaryLoss、OhemEdgeAttentionLoss
