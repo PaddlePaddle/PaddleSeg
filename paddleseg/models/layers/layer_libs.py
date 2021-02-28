@@ -17,6 +17,7 @@ import os
 import paddle
 import paddle.nn as nn
 import paddle.nn.functional as F
+from paddleseg.cvlibs.param_init import kaiming_normal_init
 
 
 def SyncBatchNorm(*args, **kwargs):
@@ -164,4 +165,37 @@ class AuxLayer(nn.Layer):
         x = self.conv_bn_relu(x)
         x = self.dropout(x)
         x = self.conv(x)
+        return x
+
+
+class unetConv2(nn.Layer):
+    def __init__(self, in_size, out_size, is_batchnorm, n=2, ks=3, stride=1, padding=1):
+        super(unetConv2, self).__init__()
+        self.n = n
+        self.ks = ks
+        self.stride = stride
+        self.padding = padding
+        s = stride
+        p = padding
+        if is_batchnorm:
+            for i in range(1, n + 1):
+                conv = nn.Sequential(nn.Conv2D(in_size, out_size, ks, s, p),
+                                     nn.BatchNorm(out_size),
+                                     nn.ReLU(), )
+                setattr(self, 'conv%d' % i, conv)
+                in_size = out_size
+        else:
+            for i in range(1, n + 1):
+                conv = nn.Sequential(nn.Conv2D(in_size, out_size, ks, s, p),
+                                     nn.ReLU(), )
+                setattr(self, 'conv%d' % i, conv)
+                in_size = out_size
+        # initialise the blocks
+        for sublayer in self.sublayers():
+            kaiming_normal_init(sublayer.weight)
+    def forward(self, inputs):
+        x = inputs
+        for i in range(1, self.n + 1):
+            conv = getattr(self, 'conv%d' % i)
+            x = conv(x)
         return x
