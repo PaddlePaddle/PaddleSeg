@@ -12,8 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
-
 import paddle
 import paddle.nn as nn
 import paddle.nn.functional as F
@@ -21,7 +19,7 @@ import paddle.nn.functional as F
 
 def SyncBatchNorm(*args, **kwargs):
     """In cpu environment nn.SyncBatchNorm does not have kernel so use nn.BatchNorm2D instead"""
-    if paddle.get_device() == 'cpu' or os.environ.get('PADDLESEG_EXPORT_STAGE'):
+    if paddle.get_device() == 'cpu':
         return nn.BatchNorm2D(*args, **kwargs)
     else:
         return nn.SyncBatchNorm(*args, **kwargs)
@@ -164,38 +162,4 @@ class AuxLayer(nn.Layer):
         x = self.conv_bn_relu(x)
         x = self.dropout(x)
         x = self.conv(x)
-        return x
-
-
-class unetConv2(nn.Layer):
-    def __init__(self, in_size, out_size, is_batchnorm, n=2, ks=3, stride=1, padding=1):
-        super(unetConv2, self).__init__()
-        self.n = n
-        self.ks = ks
-        self.stride = stride
-        self.padding = padding
-        s = stride
-        p = padding
-        if is_batchnorm:
-            for i in range(1, n + 1):
-                conv = nn.Sequential(nn.Conv2D(in_size, out_size, ks, s, p),
-                                     nn.BatchNorm(out_size),
-                                     nn.ReLU(), )
-                setattr(self, 'conv%d' % i, conv)
-                in_size = out_size
-        else:
-            for i in range(1, n + 1):
-                conv = nn.Sequential(nn.Conv2D(in_size, out_size, ks, s, p),
-                                     nn.ReLU(), )
-                setattr(self, 'conv%d' % i, conv)
-                in_size = out_size
-        # initialise the blocks
-        for children in self.children():
-            children.weight_attr = paddle.framework.ParamAttr(initializer=paddle.nn.initializer.KaimingNormal)
-            children.bias_attr = paddle.framework.ParamAttr(initializer=paddle.nn.initializer.KaimingNormal)
-    def forward(self, inputs):
-        x = inputs
-        for i in range(1, self.n + 1):
-            conv = getattr(self, 'conv%d' % i)
-            x = conv(x)
         return x
