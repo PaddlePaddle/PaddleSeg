@@ -403,6 +403,8 @@ def train(cfg):
             save_infer_program(test_prog, ckpt_dir)
 
             if args.do_eval:
+                tmp = cfg.BATCH_SIZE
+                cfg.BATCH_SIZE = batch_size_per_dev
                 print("Evaluation start")
                 _, mean_iou, _, mean_acc = evaluate(
                     cfg=cfg,
@@ -421,6 +423,7 @@ def train(cfg):
                         ckpt_dir,
                         os.path.join(cfg.TRAIN.MODEL_SAVE_DIR, 'best_model'),
                         mean_iou))
+                cfg.BATCH_SIZE = tmp
 
             # Use VisualDL to visualize results
             if args.use_vdl and cfg.DATASET.VIS_FILE_LIST is not None:
