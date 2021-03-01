@@ -12,10 +12,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .dataset import Dataset
-from .cityscapes import Cityscapes
-from .voc import PascalVOC
-from .ade import ADE20K
-from .optic_disc_seg import OpticDiscSeg
-from .pascal_context import PascalContext
-from .mini_deep_globe_road_extraction import MiniDeepGlobeRoadExtraction
+from .cityscapes_autolabeling import CityscapesAutolabeling

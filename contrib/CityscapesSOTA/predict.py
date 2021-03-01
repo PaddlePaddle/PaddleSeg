@@ -18,8 +18,9 @@ import os
 import paddle
 
 from paddleseg.cvlibs import manager, Config
-from paddleseg.utils import get_sys_env, logger, config_check
+from paddleseg.utils import get_sys_env, logger
 from paddleseg.core import predict
+import datasets, models
 
 
 def parse_args():
@@ -152,9 +153,6 @@ def main(args):
     transforms = val_dataset.transforms
     image_list, image_dir = get_image_list(args.image_path)
     logger.info('Number of predict images = {}'.format(len(image_list)))
-
-    config_check(cfg, val_dataset=val_dataset)
-
     predict(
         model,
         model_path=args.model_path,

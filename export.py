@@ -20,7 +20,6 @@ import yaml
 
 from paddleseg.cvlibs import Config
 from paddleseg.utils import logger
-from paddleseg.utils.paddle import convert_syncbn_to_bn
 
 
 def parse_args():
@@ -50,6 +49,7 @@ def parse_args():
 
 
 def main(args):
+    os.environ['PADDLESEG_EXPORT_STAGE'] = 'True'
     cfg = Config(args.cfg)
     net = cfg.model
 
@@ -64,8 +64,6 @@ def main(args):
     out = net(in_var)
     save_path = os.path.join(args.save_dir, 'model')
     paddle.jit.save(net, save_path, input_spec=[in_var])
-
-    convert_syncbn_to_bn(f'{save_path}.pdmodel')
 
     yml_file = os.path.join(args.save_dir, 'deploy.yaml')
     with open(yml_file, 'w') as file:
