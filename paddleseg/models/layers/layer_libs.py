@@ -191,8 +191,9 @@ class unetConv2(nn.Layer):
                 setattr(self, 'conv%d' % i, conv)
                 in_size = out_size
         # initialise the blocks
-        for sublayer in self.sublayers():
-            kaiming_normal_init(sublayer.weight)
+        for children in self.children():
+            children.weight_attr = paddle.framework.ParamAttr(initializer=paddle.nn.initializer.KaimingNormal)
+            children.bias_attr = paddle.framework.ParamAttr(initializer=paddle.nn.initializer.KaimingNormal)
     def forward(self, inputs):
         x = inputs
         for i in range(1, self.n + 1):

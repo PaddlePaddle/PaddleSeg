@@ -32,14 +32,14 @@ class UNet_3Plus(nn.Layer):
 
     Args:
         in_channels (int): The channel number of input image.  Default: 3.
-        n_classes (int): The unique number of target classes.  Default: 2.
+        num_classes (int): The unique number of target classes.  Default: 2.
         feature_scale (int): The feature map scale.  Default: 4.
         is_deconv (bool): A bool value indicates whether using deconvolution in upsampling.
             If False, use resize_bilinear. Default: True.
         is_batchnorm (bool): use batchnorm after conv or not.  Default: True.
         end_sigmoid (bool): use sigmoid for results or not. Default: False.
     """
-    def __init__(self, in_channels=3, n_classes=2, feature_scale=4, is_deconv=True, is_batchnorm=True, end_sigmoid=False):
+    def __init__(self, in_channels=3, num_classes=2, feature_scale=4, is_deconv=True, is_batchnorm=True, end_sigmoid=False):
         super(UNet_3Plus, self).__init__()
         self.is_deconv = is_deconv
         self.in_channels = in_channels
@@ -178,12 +178,12 @@ class UNet_3Plus(nn.Layer):
         self.bn1d_1 = nn.BatchNorm(self.UpChannels)
         self.relu1d_1 = nn.ReLU()
         # output
-        self.outconv1 = nn.Conv2D(self.UpChannels, n_classes, 3, padding=1)
+        self.outconv1 = nn.Conv2D(self.UpChannels, num_classes, 3, padding=1)
         # initialise weights
         for sublayer in self.sublayers ():
             if isinstance(sublayer, nn.Conv2D):
                 kaiming_normal_init(sublayer.weight)
-            elif isinstance(sublayer, nn.BatchNorm, nn.SyncBatchNorm):
+            elif isinstance(sublayer, (nn.BatchNorm, nn.SyncBatchNorm)):
                 kaiming_normal_init(sublayer.weight)
     def forward(self, inputs):
         ## -------------Encoder-------------
@@ -225,7 +225,7 @@ class UNet_3Plus(nn.Layer):
         hd5_UT_hd1 = self.hd5_UT_hd1_relu(self.hd5_UT_hd1_bn(self.hd5_UT_hd1_conv(self.hd5_UT_hd1(hd5))))
         hd1 = self.relu1d_1(self.bn1d_1(self.conv1d_1(
             paddle.concat([h1_Cat_hd1, hd2_UT_hd1, hd3_UT_hd1, hd4_UT_hd1, hd5_UT_hd1], 1)))) # hd1->320*320*UpChannels
-        d1 = self.outconv1(hd1)  # d1->320*320*n_classes
+        d1 = self.outconv1(hd1)  # d1->320*320*num_classes
         if self.end_sigmoid:
             out = [F.sigmoid(d1)]
         else:
@@ -244,14 +244,14 @@ class UNet_3Plus_DeepSup(nn.Layer):
 
     Args:
         in_channels (int): The channel number of input image.  Default: 3.
-        n_classes (int): The unique number of target classes.  Default: 2.
+        num_classes (int): The unique number of target classes.  Default: 2.
         feature_scale (int): The feature map scale.  Default: 4.
         is_deconv (bool): A bool value indicates whether using deconvolution in upsampling.
             If False, use resize_bilinear. Default: True.
         is_batchnorm (bool): use batchnorm after conv or not.  Default: True.
         end_sigmoid (bool): use sigmoid for results or not. Default: False.
     """
-    def __init__(self, in_channels=3, n_classes=2, feature_scale=4, is_deconv=True, is_batchnorm=True, end_sigmoid=False):
+    def __init__(self, in_channels=3, num_classes=2, feature_scale=4, is_deconv=True, is_batchnorm=True, end_sigmoid=False):
         super(UNet_3Plus_DeepSup, self).__init__()
         self.is_deconv = is_deconv
         self.in_channels = in_channels
@@ -396,16 +396,16 @@ class UNet_3Plus_DeepSup(nn.Layer):
         self.upscore3 = nn.Upsample(scale_factor=4, mode='bilinear')
         self.upscore2 = nn.Upsample(scale_factor=2, mode='bilinear')
         # DeepSup
-        self.outconv1 = nn.Conv2D(self.UpChannels, n_classes, 3, padding=1)
-        self.outconv2 = nn.Conv2D(self.UpChannels, n_classes, 3, padding=1)
-        self.outconv3 = nn.Conv2D(self.UpChannels, n_classes, 3, padding=1)
-        self.outconv4 = nn.Conv2D(self.UpChannels, n_classes, 3, padding=1)
-        self.outconv5 = nn.Conv2D(filters[4], n_classes, 3, padding=1)
+        self.outconv1 = nn.Conv2D(self.UpChannels, num_classes, 3, padding=1)
+        self.outconv2 = nn.Conv2D(self.UpChannels, num_classes, 3, padding=1)
+        self.outconv3 = nn.Conv2D(self.UpChannels, num_classes, 3, padding=1)
+        self.outconv4 = nn.Conv2D(self.UpChannels, num_classes, 3, padding=1)
+        self.outconv5 = nn.Conv2D(filters[4], num_classes, 3, padding=1)
         # initialise weights
         for sublayer in self.sublayers ():
             if isinstance(sublayer, nn.Conv2D):
                 kaiming_normal_init(sublayer.weight)
-            elif isinstance(sublayer, nn.BatchNorm, nn.SyncBatchNorm):
+            elif isinstance(sublayer, (nn.BatchNorm, nn.SyncBatchNorm)):
                 kaiming_normal_init(sublayer.weight)
     def forward(self, inputs):
         ## -------------Encoder-------------
@@ -474,14 +474,14 @@ class UNet_3Plus_DeepSup_CGM(nn.Layer):
 
     Args:
         in_channels (int): The channel number of input image.  Default: 3.
-        n_classes (int): The unique number of target classes.  Default: 2.
+        num_classes (int): The unique number of target classes.  Default: 2.
         feature_scale (int): The feature map scale.  Default: 4.
         is_deconv (bool): A bool value indicates whether using deconvolution in upsampling.
             If False, use resize_bilinear. Default: True.
         is_batchnorm (bool): use batchnorm after conv or not.  Default: True.
         end_sigmoid (bool): use sigmoid for results or not. Default: False.
     """
-    def __init__(self, in_channels=3, n_classes=1, feature_scale=4, is_deconv=True, is_batchnorm=True, end_sigmoid=False):
+    def __init__(self, in_channels=3, num_classes=2, feature_scale=4, is_deconv=True, is_batchnorm=True, end_sigmoid=False):
         super(UNet_3Plus_DeepSup_CGM, self).__init__()
         self.is_deconv = is_deconv
         self.in_channels = in_channels
@@ -626,11 +626,11 @@ class UNet_3Plus_DeepSup_CGM(nn.Layer):
         self.upscore3 = nn.Upsample(scale_factor=4, mode='bilinear')
         self.upscore2 = nn.Upsample(scale_factor=2, mode='bilinear')
         # DeepSup
-        self.outconv1 = nn.Conv2D(self.UpChannels, n_classes, 3, padding=1)
-        self.outconv2 = nn.Conv2D(self.UpChannels, n_classes, 3, padding=1)
-        self.outconv3 = nn.Conv2D(self.UpChannels, n_classes, 3, padding=1)
-        self.outconv4 = nn.Conv2D(self.UpChannels, n_classes, 3, padding=1)
-        self.outconv5 = nn.Conv2D(filters[4], n_classes, 3, padding=1)
+        self.outconv1 = nn.Conv2D(self.UpChannels, num_classes, 3, padding=1)
+        self.outconv2 = nn.Conv2D(self.UpChannels, num_classes, 3, padding=1)
+        self.outconv3 = nn.Conv2D(self.UpChannels, num_classes, 3, padding=1)
+        self.outconv4 = nn.Conv2D(self.UpChannels, num_classes, 3, padding=1)
+        self.outconv5 = nn.Conv2D(filters[4], num_classes, 3, padding=1)
         self.cls = nn.Sequential(
                     nn.Dropout(p=0.5),
                     nn.Conv2D(filters[4], 2, 1),
@@ -640,13 +640,15 @@ class UNet_3Plus_DeepSup_CGM(nn.Layer):
         for sublayer in self.sublayers ():
             if isinstance(sublayer, nn.Conv2D):
                 kaiming_normal_init(sublayer.weight)
-            elif isinstance(sublayer, nn.BatchNorm, nn.SyncBatchNorm):
+            elif isinstance(sublayer, (nn.BatchNorm, nn.SyncBatchNorm)):
                 kaiming_normal_init(sublayer.weight)
     def dotProduct(self, seg, cls):
         B, N, H, W = seg.shape
         seg = seg.reshape((B, N, H * W))
-        # final = torch.einsum("ijk,ij->ijk", [seg, cls])  # 爱因斯坦求和，这个场景就等于seg*cls
-        final = seg * cls
+        # final = torch.einsum("ijk,ij->ijk", [seg, cls])  # 爱因斯坦求和，目前paddle没有，用下面三行代替
+        clssp = paddle.ones([1, N])
+        ecls = (cls * clssp).reshape([B, N, 1])
+        final = seg * ecls
         final = final.reshape((B, N, H, W))
         return final
     def forward(self, inputs):
