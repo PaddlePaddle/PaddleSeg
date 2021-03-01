@@ -17,7 +17,6 @@ import os
 import paddle
 import paddle.nn as nn
 import paddle.nn.functional as F
-from paddleseg.cvlibs.param_init import kaiming_normal_init
 
 
 def SyncBatchNorm(*args, **kwargs):
