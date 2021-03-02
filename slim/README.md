@@ -14,6 +14,8 @@ pip install paddleslim==2.0.0
 
 模型量化是通过将模型中的参数计算，从浮点计算转成低比特定点计算的技术，可以有效的降低模型计算强度、参数大小和内存消耗。PaddleSeg基于PaddleSlim库，提供了模型在线量化的能力。
 
+*注意：对于小模型而言，由于模型本身运行速度已经非常快，加入量化操作反而可能导致模型运行速度变慢*
+
 ### step 1. 模型训练
 
 我们可以通过PaddleSeg提供的脚本对模型进行训练，请确保完成了PaddleSeg的安装工作，并且位于PaddleSeg目录下，执行以下脚本：
@@ -45,6 +47,11 @@ python train.py \
 |save_dir|量化后模型的保存路径|否|output|
 
 ```shell
+# 请在PaddleSeg根目录运行
+export PYTHONPATH=`pwd`
+# windows下请执行以下命令
+# set PYTHONPATH=%cd%
+
 python slim/quant.py \
        --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml \
        --retraining_iters 10 \
@@ -93,6 +100,11 @@ python train.py \
 |save_dir|裁剪后模型的保存路径|否|output|
 
 ```shell
+# 请在PaddleSeg根目录运行
+export PYTHONPATH=`pwd`
+# windows下请执行以下命令
+# set PYTHONPATH=%cd%
+
 python slim/prune.py \
        --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml \
        --pruning_ratio 0.2 \
@@ -104,3 +116,40 @@ python slim/prune.py \
 ## 部署
 
 通过`量化`和`剪枝`得到的模型，我们可以直接进行部署应用，相关教程请参考[模型部署](../docs/model_export.md)
+
+
+## 量化&剪枝加速比
+
+    测试环境：
+       GPU: V100
+       CPU: Intel(R) Xeon(R) Gold 6148 CPU @ 2.40GHz
+       CUDA: 10.2
+       cuDNN: 7.6
+       TensorRT: 6.0.1.5
+
+    测试方法:
+       1. 运行耗时为纯模型预测时间，测试图片cityspcaes(1024x2048)
+       2. 预测10次作为热启动，连续预测50次取平均得到预测时间
+       3. 使用GPU + TensorRT测试
+
+|模型|未量化运行耗时(ms)|量化运行耗时(ms)|加速比|
+|-|-|-|-|
+|deeplabv3_resnet50_os8|204.2|150.1|26.49%|
+|deeplabv3p_resnet50_os8|147.2|89.5|39.20%|
+|gcnet_resnet50_os8|201.8|126.1|37.51%|
+|pspnet_resnet50_os8|266.8|206.8|22.49%|  
+
+|模型|裁剪率|运行耗时(ms)|加速比|
+|-|-|-|-|
+|fastscnn|-|7.0|-|
+||0.1|5.9|15.71%|
+||0.2|5.7|18.57%|
+||0.3|5.6|20.00%|
+|fcn_hrnetw18|-|43.28|-|
+||0.1|40.46|6.51%|
+||0.2|40.41|6.63%|
+||0.3|38.84|10.25%|
+|unet|-|76.04|-|
+||0.1|74.39|2.16%|
+||0.2|72.10|5.18%|
+||0.3|66.96|11.94%|
