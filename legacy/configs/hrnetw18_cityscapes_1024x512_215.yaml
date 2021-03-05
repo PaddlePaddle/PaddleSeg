@@ -48,5 +48,6 @@ TEST:
 SOLVER:
     LR: 0.01
     LR_POLICY: "poly"
+    WEIGHT_DECAY: 5.0e-4
     OPTIMIZER: "sgd"
     NUM_EPOCHS: 215
