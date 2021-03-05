@@ -65,7 +65,7 @@ PaddleSeg是基于飞桨[PaddlePaddle](https://www.paddlepaddle.org.cn)开发的
 
 * Python >= 3.6+
 
-由于图像分割模型计算开销大，推荐在GPU版本的PaddlePaddle下使用PaddleSeg。推荐安装10.0以上的CUDA环境。安装教程请见[PaddlePaddle官网](https://www.paddlepaddle.org.cn/documentation/docs/zh/2.0-rc/install/index_cn.html)。
+由于图像分割模型计算开销大，推荐在GPU版本的PaddlePaddle下使用PaddleSeg。推荐安装10.0以上的CUDA环境。安装教程请见[PaddlePaddle官网](https://www.paddlepaddle.org.cn/install/quick?docurl=/documentation/docs/zh/2.0/install/)。
 
 
 #### 2. 安装PaddleSeg
@@ -95,10 +95,15 @@ python train.py --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml
 * [API使用教程](https://aistudio.baidu.com/aistudio/projectdetail/1339458)
 * [数据集准备](./docs/data_prepare.md)
 * [配置项](./configs/)
+* [Loss使用](./docs/loss_usage.md)
 * [API参考](./docs/apis)
 * [添加新组件](./docs/add_new_model.md)
 * [模型压缩](./slim)
 * [模型导出](./docs/model_export.md)
+
+## 实践案例
+
+* [Cityscapes SOTA](./contrib/CityscapesSOTA)
 
 ## 联系我们
 * 如果你发现任何PaddleSeg存在的问题或者是建议, 欢迎通过[GitHub Issues](https://github.com/PaddlePaddle/PaddleSeg/issues)给我们提issues。
@@ -116,7 +121,7 @@ python train.py --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml
 
 ```latex
 @misc{liu2021paddleseg,
-      title={PaddleSeg: A High-Efficient Development Toolkit for Image Segmentation}, 
+      title={PaddleSeg: A High-Efficient Development Toolkit for Image Segmentation},
       author={Yi Liu and Lutao Chu and Guowei Chen and Zewu Wu and Zeyu Chen and Baohua Lai and Yuying Hao},
       year={2021},
       eprint={2101.06175},

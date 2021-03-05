@@ -20,7 +20,6 @@ DATASET:
     TEST_FILE_LIST: "./dataset/cityscapes/val.list"
     TRAIN_FILE_LIST: "./dataset/cityscapes/train.list"
     VAL_FILE_LIST: "./dataset/cityscapes/val.list"
-    VIS_FILE_LIST: "./dataset/cityscapes/val.list"
     IGNORE_INDEX: 255
     SEPARATOR: " "
 
@@ -49,5 +48,6 @@ TEST:
 SOLVER:
     LR: 0.01
     LR_POLICY: "poly"
+    WEIGHT_DECAY: 5.0e-4
     OPTIMIZER: "sgd"
     NUM_EPOCHS: 215

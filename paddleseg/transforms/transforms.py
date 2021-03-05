@@ -29,7 +29,7 @@ class Compose:
     The shape of input data to all operations is [height, width, channels].
 
     Args:
-        transforms (list): A list contains data pre-processing or augmentation.
+        transforms (list): A list contains data pre-processing or augmentation. Empty list means only reading images, no transformation.
         to_rgb (bool, optional): If converting image to RGB color space. Default: True.
 
     Raises:
@@ -40,9 +40,6 @@ class Compose:
     def __init__(self, transforms, to_rgb=True):
         if not isinstance(transforms, list):
             raise TypeError('The transforms must be a list!')
-        if len(transforms) < 1:
-            raise ValueError('The length of transforms ' + \
-                             'must be equal or larger than 1!')
         self.transforms = transforms
         self.to_rgb = to_rgb
 

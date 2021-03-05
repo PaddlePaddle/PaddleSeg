@@ -190,8 +190,9 @@ def print_info(*msg):
 
 
 def train(cfg):
-    startup_prog = static.Program()
-    train_prog = static.Program()
+    # Use the default program for fleetrun
+    startup_prog = static.default_startup_program()
+    train_prog = static.default_main_program()
     test_prog = static.Program()
     if args.enable_ce:
         startup_prog.random_seed = 1000
@@ -256,25 +257,12 @@ def train(cfg):
     data_loader.set_sample_generator(
         data_generator, batch_size=batch_size_per_dev, drop_last=drop_last)
 
-    exe = static.Executor(place)
-    exe.run(startup_prog)
-
     exec_strategy = static.ExecutionStrategy()
     # Clear temporary variables every 100 iteration
     if args.use_gpu:
         exec_strategy.num_threads = len(paddle.get_cuda_rng_state())
     exec_strategy.num_iteration_per_drop_scope = 100
     build_strategy = static.BuildStrategy()
-
-    if cfg.NUM_TRAINERS > 1 and args.use_gpu:
-        strategy = fleet.DistributedStrategy()
-        strategy.execution_strategy = exec_strategy
-        strategy.build_strategy = build_strategy
-        fleet.init(is_collective=True, strategy=strategy)
-        optimizer = paddle.distributed.fleet.distributed_optimizer(optimizer)
-    # if cfg.NUM_TRAINERS > 1 and args.use_gpu:
-    # dist_utils.prepare_for_multi_process(exe, build_strategy, train_prog)
-    # exec_strategy.num_threads = 1
 
     if cfg.TRAIN.SYNC_BATCH_NORM and args.use_gpu:
         if dev_count > 1:
@@ -285,7 +273,27 @@ def train(cfg):
             print_info(
                 "Sync BatchNorm strategy will not be effective if GPU device"
                 " count <= 1")
-    if args.use_xpu:
+
+    if cfg.NUM_TRAINERS > 1 and args.use_gpu:
+        strategy = fleet.DistributedStrategy()
+        exec_strategy.num_threads = 1
+        strategy.execution_strategy = exec_strategy
+        strategy.build_strategy = build_strategy
+        strategy.cudnn_exhaustive_search = False
+        strategy.cudnn_batchnorm_spatial_persistent = False
+        strategy.conv_workspace_size_limit = 512
+        fleet.init(is_collective=True, strategy=strategy)
+        optimizer = paddle.distributed.fleet.distributed_optimizer(optimizer)
+    optimizer.minimize(avg_loss)
+    # if cfg.NUM_TRAINERS > 1 and args.use_gpu:
+    #     dist_utils.prepare_for_multi_process(exe, build_strategy, train_prog)
+    #     exec_strategy.num_threads = 1
+
+    with open("train_prog_{}".format(cfg.NUM_TRAINERS), "w") as f:
+        if cfg.TRAINER_ID == 0:
+            f.writelines(str(train_prog))
+
+    if args.use_xpu or (cfg.NUM_TRAINERS > 1 and args.use_gpu):
         compiled_train_prog = train_prog
     else:
         compiled_train_prog = static.CompiledProgram(
@@ -293,6 +301,9 @@ def train(cfg):
                 loss_name=avg_loss.name,
                 exec_strategy=exec_strategy,
                 build_strategy=build_strategy)
+
+    exe = static.Executor(place)
+    exe.run(startup_prog)
 
     # Resume training
     begin_epoch = cfg.SOLVER.BEGIN_EPOCH
@@ -359,7 +370,8 @@ def train(cfg):
                 avg_loss += np.mean(np.array(loss))
                 step += 1
                 batch_cost_averager.record(
-                    time.time() - batch_start, num_samples=cfg.BATCH_SIZE)
+                    time.time() - batch_start,
+                    num_samples=cfg.BATCH_SIZE / dev_count)
 
                 if step % args.log_steps == 0 and cfg.TRAINER_ID == 0:
                     avg_train_batch_cost = batch_cost_averager.get_average()
@@ -402,6 +414,8 @@ def train(cfg):
             save_infer_program(test_prog, ckpt_dir)
 
             if args.do_eval:
+                tmp = cfg.BATCH_SIZE
+                cfg.BATCH_SIZE = batch_size_per_dev
                 print("Evaluation start")
                 _, mean_iou, _, mean_acc = evaluate(
                     cfg=cfg,
@@ -420,6 +434,7 @@ def train(cfg):
                         ckpt_dir,
                         os.path.join(cfg.TRAIN.MODEL_SAVE_DIR, 'best_model'),
                         mean_iou))
+                cfg.BATCH_SIZE = tmp
 
             # Use VisualDL to visualize results
             if args.use_vdl and cfg.DATASET.VIS_FILE_LIST is not None:

@@ -26,7 +26,6 @@ from paddleseg.cvlibs.config import Config
 from paddleseg.core.val import evaluate
 from paddleseg.core.train import train
 from paddleseg.utils import get_sys_env, logger
-from paddleseg.utils.paddle import convert_syncbn_to_bn
 
 
 def parse_args():
@@ -97,8 +96,6 @@ def export_model(net, cfg, save_dir):
     save_path = os.path.join(save_dir, 'model')
     paddle.jit.save(net, save_path, input_spec=[input_var])
 
-    convert_syncbn_to_bn(f'{save_path}.pdmodel')
-
     yml_file = os.path.join(save_dir, 'deploy.yaml')
     with open(yml_file, 'w') as file:
         transforms = cfg.dic['val_dataset']['transforms']
@@ -142,6 +139,7 @@ def main(args):
         raise RuntimeError(
             'The validation dataset is not specified in the c;onfiguration file.'
         )
+    os.environ['PADDLESEG_EXPORT_STAGE'] = 'True'
     net = cfg.model
 
     if args.model_path:
@@ -165,7 +163,16 @@ def main(args):
     logger.info(
         f'Step 2/3: Start to prune the model, the ratio of pruning is {args.pruning_ratio}. FLOPs before pruning: {flops}.'
     )
-    pruner.sensitive_prune(args.pruning_ratio)
+
+    # Avoid the bug when pruning conv2d with small channel number.
+    # Remove this code after PaddleSlim 2.1 is available.
+    # Related issue: https://github.com/PaddlePaddle/PaddleSlim/issues/674.
+    skips = []
+    for param in net.parameters():
+        if param.shape[0] <= 8:
+            skips.append(param.name)
+
+    pruner.sensitive_prune(args.pruning_ratio, skip_vars=skips)
     flops = dygraph_flops(net, sample_shape)
     logger.info(f'Model pruning completed. FLOPs after pruning: {flops}.')
 

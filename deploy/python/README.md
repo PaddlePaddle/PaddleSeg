@@ -20,10 +20,16 @@ python deploy/python/infer.py --config /path/to/deploy.yaml --image_path
 参数说明如下:
 |参数名|用途|是否必选项|默认值|
 |-|-|-|-|
-|config|配置文件|是|-|
+|config|**导出模型时生成的配置文件**, 而非configs目录下的配置文件|是|-|
 |image_path|预测图片的路径或者目录|是|-|
+|use_trt|是否开启TensorRT来加速预测|否|否|
+|use_int8|启动TensorRT预测时，是否以int8模式运行|否|否|
 |batch_size|单卡batch size|否|配置文件中指定值|
 |save_dir|保存预测结果的目录|否|output|
 
 *测试样例和预测结果如下*
 ![cityscape_predict_demo.png](../../docs/images/cityscapes_predict_demo.png)
+
+*注意：*
+*1. 当使用量化模型预测时，需要同时开启TensorRT预测和int8预测才会有加速效果*
+*2. 使用TensorRT需要使用支持TRT功能的Paddle库，请参考[附录](https://www.paddlepaddle.org.cn/documentation/docs/zh/install/Tables.html#whl-release)下载对应的PaddlePaddle安装包，或者参考[源码编译](https://www.paddlepaddle.org.cn/documentation/docs/zh/install/compile/fromsource.html)自行编译*
