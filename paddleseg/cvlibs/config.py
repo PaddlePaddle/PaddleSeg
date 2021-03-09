@@ -149,8 +149,11 @@ class Config(object):
         if decay_type == 'poly':
             lr = _learning_rate
             return paddle.optimizer.lr.PolynomialDecay(lr, **args)
+        elif decay_type == 'piecewise':
+            values = _learning_rate
+            return paddle.optimizer.lr.PiecewiseDecay(values=values, **args)
         else:
-            raise RuntimeError('Only poly decay support.')
+            raise RuntimeError('Only poly and piecewise decay support.')
 
     @property
     def optimizer(self) -> paddle.optimizer.Optimizer:
