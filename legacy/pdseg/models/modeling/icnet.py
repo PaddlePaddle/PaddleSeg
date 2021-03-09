@@ -116,9 +116,18 @@ def resnet(input):
     scale = cfg.MODEL.ICNET.DEPTH_MULTIPLIER
     layers = cfg.MODEL.ICNET.LAYERS
     model = resnet_backbone(scale=scale, layers=layers, stem='icnet')
-    end_points = 49
-    decode_point = 13
-    resize_point = 13
+    if layers >= 50:
+        end_points = layers - 1
+        decode_point = 13
+        resize_point = 13
+    elif layers == 18:
+        end_points = 13
+        decode_point = 9
+        resize_point = 9
+    elif layers == 34:
+        end_points = 27
+        decode_point = 15
+        resize_point = 15
     dilation_dict = {2: 2, 3: 4}
     data, decode_shortcuts = model.net(
         input,

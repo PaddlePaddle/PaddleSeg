@@ -18,3 +18,4 @@ from .voc import PascalVOC
 from .ade import ADE20K
 from .optic_disc_seg import OpticDiscSeg
 from .pascal_context import PascalContext
+from .mini_deep_globe_road_extraction import MiniDeepGlobeRoadExtraction

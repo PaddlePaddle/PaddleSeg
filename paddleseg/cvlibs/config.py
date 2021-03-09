@@ -211,7 +211,9 @@ class Config(object):
                 if key == 'types':
                     self._losses['types'] = []
                     for item in args['types']:
-                        item['ignore_index'] = self.train_dataset.ignore_index
+                        if item['type'] != 'MixedLoss':
+                            item['ignore_index'] = \
+                                self.train_dataset.ignore_index
                         self._losses['types'].append(self._load_object(item))
                 else:
                     self._losses[key] = val
@@ -225,10 +227,19 @@ class Config(object):
     @property
     def model(self) -> paddle.nn.Layer:
         model_cfg = self.dic.get('model').copy()
-        model_cfg['num_classes'] = self.train_dataset.num_classes
-
         if not model_cfg:
             raise RuntimeError('No model specified in the configuration file.')
+        if not 'num_classes' in model_cfg:
+            if self.train_dataset and hasattr(self.train_dataset,
+                                              'num_classes'):
+                model_cfg['num_classes'] = self.train_dataset.num_classes
+            elif self.val_dataset and hasattr(self.val_dataset, 'num_classes'):
+                model_cfg['num_classes'] = self.val_dataset.num_classes
+            else:
+                raise ValueError(
+                    '`num_classes` is not found. Please set it in model, train_dataset or val_dataset'
+                )
+
         if not self._model:
             self._model = self._load_object(model_cfg)
         return self._model
