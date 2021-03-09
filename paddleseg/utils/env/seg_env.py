@@ -45,7 +45,7 @@ def _get_seg_home():
 def _get_sub_home(directory):
     home = os.path.join(_get_seg_home(), directory)
     if not os.path.exists(home):
-        os.makedirs(home)
+        os.makedirs(home, exist_ok=True)
     return home
 
 
