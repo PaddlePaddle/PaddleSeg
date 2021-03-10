@@ -1,0 +1,44 @@
+_base_: '../_base_/cityscapes.yml'
+
+model:
+  type: DecoupledSegNet
+  backbone:
+    type: ResNet50_vd
+    output_stride: 8
+    multi_grid: [1, 2, 4]
+    pretrained: https://bj.bcebos.com/paddleseg/dygraph/resnet50_vd_ssld_v2.tar.gz
+  num_classes: 19
+  backbone_indices: [0, 3]
+  aspp_ratios: [1, 12, 24, 36]
+  aspp_out_channels: 256
+  align_corners: False
+  pretrained: null
+
+loss:
+  types:
+    - type: OhemCrossEntropyLoss
+    - type: RelaxBoundaryLoss
+    - type: BCELoss
+      weight: 'dynamic'
+      edge_label: True
+    - type: OhemEdgeAttentionLoss
+  coef: [1,1,25,1]
+
+train_dataset:
+  transforms:
+    - type: ResizeStepScaling
+      min_scale_factor: 0.75
+      max_scale_factor: 2.0
+      scale_step_size: 0.25
+    - type: RandomPaddingCrop
+      crop_size: [832, 832]
+    - type: RandomHorizontalFlip
+    - type: RandomDistort
+      brightness_range: 0.4
+      contrast_range: 0.4
+      saturation_range: 0.4
+    - type: Normalize
+  edge: True
+
+optimizer:
+  weight_decay: 5.0e-4
