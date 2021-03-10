@@ -276,6 +276,7 @@ def train(cfg):
 
     if cfg.NUM_TRAINERS > 1 and args.use_gpu:
         strategy = fleet.DistributedStrategy()
+        strategy.sync_batch_norm = True
         exec_strategy.num_threads = 1
         strategy.execution_strategy = exec_strategy
         strategy.build_strategy = build_strategy
