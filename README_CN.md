@@ -46,6 +46,7 @@ PaddleSeg是基于飞桨[PaddlePaddle](https://www.paddlepaddle.org.cn)开发的
 |[EMANet](./configs/emanet)|✔|✔|-|-|
 |[ISANet](./configs/isanet)|✔|✔|-|-|
 |[DNLNet](./configs/dnlnet)|✔|✔|-|-|
+|[SFNet](./configs/sfnet)|✔|-|-|-|
 
 ## 数据集
 

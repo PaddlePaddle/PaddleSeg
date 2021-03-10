@@ -46,6 +46,7 @@ Welcome to PaddleSeg! PaddleSeg is an end-to-end image segmentation development 
 |[EMANet](./configs/emanet)|✔|✔|-|-|
 |[ISANet](./configs/isanet)|✔|✔|-|-|
 |[DNLNet](./configs/dnlnet)|✔|✔|-|-|
+|[SFNet](./configs/sfnet)|✔|-|-|-|
 ## Dataset
 
 - [x] Cityscapes

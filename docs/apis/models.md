@@ -503,3 +503,21 @@ The models subpackage contains the following model for image sementic segmentaio
 > > > - **align_corners** (bool): An argument of F.interpolate. It should be set to False when the output size of feature
             is even, e.g. 1024x512, otherwise it is True, e.g. 769x769.  Default: False.
 > > > - **pretrained** (str, optional): The path or url of pretrained model. Default: None.
+
+## [SFNet](../../paddleseg/models/sfnet.py)
+> CLASS paddleseg.models.SFNet(num_classes, backbone, backbone_indices, enable_auxiliary_loss=False, align_corners=False, pretrained=None)
+
+    The SFNet implementation based on PaddlePaddle.
+
+    The original article refers to
+    Li, Xiangtai, et al. "Semantic Flow for Fast and Accurate Scene Parsing"
+    (https://arxiv.org/pdf/2002.10120.pdf).
+
+> > Args
+> > > - **num_class** (int): The unique number of target classes.
+> > > - **backbone** (Paddle.nn.Layer): A backbone network.
+> > > - **backbone_indices** (tuple): The values in the tuple indicate the indices of output of backbone.
+> > > - **enable_auxiliary_loss** (bool, optional): A bool value indicates whether adding auxiliary loss. Default: True.
+> > > - **align_corners** (bool): An argument of F.interpolate. It should be set to False when the output size of feature
+            is even, e.g. 1024x512, otherwise it is True, e.g. 769x769.  Default: False.
+> > > - **pretrained** (str, optional): The path or url of pretrained model. Default: None.
