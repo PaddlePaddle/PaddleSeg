@@ -9,7 +9,6 @@ model:
     type: ResNet18_vd
     output_stride: 8
     pretrained: https://paddle-imagenet-models-name.bj.bcebos.com/dygraph/ResNet18_vd_pretrained.pdparams
-  num_classes: 19
   backbone_indices: [0, 1, 2, 3]
 
 train_dataset:

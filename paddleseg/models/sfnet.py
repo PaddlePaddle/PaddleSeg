@@ -33,8 +33,8 @@ class SFNet(nn.Layer):
     Args:
         num_classes (int): The unique number of target classes.
         backbone (Paddle.nn.Layer): Backbone network, currently support Resnet50/101.
-        backbone_indices (tuple, optional): Two values in the tuple indicate the indices of output of backbone.
-        enable_auxiliary_loss (bool, optional): A bool value indicates whether adding auxiliary loss. Default: True.
+        backbone_indices (tuple): Four values in the tuple indicate the indices of output of backbone.
+        enable_auxiliary_loss (bool, optional): A bool value indicates whether adding auxiliary loss. Default: False.
         align_corners (bool, optional): An argument of F.interpolate. It should be set to False when the feature size is even,
             e.g. 1024x512, otherwise it is True, e.g. 769x769. Default: False.
         pretrained (str, optional): The path or url of pretrained model. Default: None.
@@ -99,8 +99,8 @@ class SFNetHead(nn.Layer):
         inplane (int): Input channels of PPM module.
         num_class (int): The unique number of target classes.
         fpn_inplanes (list): The feature channels from backbone.
-        fpn_dim (int): The input channels of FAM module.
-
+        fpn_dim (int, optional): The input channels of FAM module. Default: 256.
+        enable_auxiliary_loss (bool, optional): A bool value indicates whether adding auxiliary loss. Default: False.
     """
 
     def __init__(self,
@@ -137,20 +137,7 @@ class SFNetHead(nn.Layer):
                 AlignedModule(inplane=fpn_dim, outplane=fpn_dim // 2))
             if self.enable_auxiliary_loss:
                 self.dsn.append(
-                    nn.Sequential(
-                        nn.Conv2D(
-                            fpn_dim,
-                            fpn_dim,
-                            kernel_size=3,
-                            stride=1,
-                            padding=1), layers.SyncBatchNorm(fpn_dim),
-                        nn.ReLU(), nn.Dropout2D(0.1),
-                        nn.Conv2D(
-                            fpn_dim,
-                            num_class,
-                            kernel_size=1,
-                            stride=1,
-                            padding=0)))
+                    nn.Sequential(layers.AuxLayer(fpn_dim, fpn_dim, num_class)))
 
         self.fpn_out = nn.LayerList(self.fpn_out)
         self.fpn_out_align = nn.LayerList(self.fpn_out_align)
@@ -204,7 +191,7 @@ class AlignedModule(nn.Layer):
     Args:
        inplane (int): Input channles of FAM module.
        outplane (int): Output channels of FAN module.
-       kernel_size (int): Kernel size of semantic flow convolution layer.
+       kernel_size (int, optional): Kernel size of semantic flow convolution layer. Default: 3.
     """
 
     def __init__(self, inplane, outplane, kernel_size=3):
