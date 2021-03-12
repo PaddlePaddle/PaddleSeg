@@ -158,6 +158,10 @@ def lovasz_softmax_flat(probas, labels, classes='present'):
             class_pred = probas[:, 0]
         else:
             class_pred = probas[:, c]
+
+        if len(class_pred.shape) == 1:
+            class_pred = fluid.layers.unsqueeze(class_pred, axes=1)
+
         errors = fluid.layers.abs(fg - class_pred)
         errors_sorted, perm = fluid.layers.argsort(
             errors, axis=0, descending=True)

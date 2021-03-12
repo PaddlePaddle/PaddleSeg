@@ -34,3 +34,4 @@ from .decoupled_segnet import DecoupledSegNet
 from .emanet import *
 from .isanet import *
 from .dnlnet import *
+from .sfnet import *
