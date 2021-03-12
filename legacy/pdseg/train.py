@@ -251,7 +251,7 @@ def train(cfg):
     batch_size_per_dev = cfg.BATCH_SIZE // dev_count
     print_info("batch_size_per_dev: {}".format(batch_size_per_dev))
 
-    data_loader, avg_loss, lr, pred, grts, masks, optimizer = build_model(
+    data_loader, avg_loss, lr, pred, grts, masks, optimizer, _new_generator = build_model(
         train_prog, startup_prog, phase=ModelPhase.TRAIN)
     build_model(test_prog, static.Program(), phase=ModelPhase.EVAL)
     data_loader.set_sample_generator(
@@ -285,7 +285,9 @@ def train(cfg):
         strategy.conv_workspace_size_limit = 512
         fleet.init(is_collective=True, strategy=strategy)
         optimizer = paddle.distributed.fleet.distributed_optimizer(optimizer)
-    optimizer.minimize(avg_loss)
+
+    with paddle.utils.unique_name.guard(_new_generator):
+        optimizer.minimize(avg_loss)
     # if cfg.NUM_TRAINERS > 1 and args.use_gpu:
     #     dist_utils.prepare_for_multi_process(exe, build_strategy, train_prog)
     #     exec_strategy.num_threads = 1
