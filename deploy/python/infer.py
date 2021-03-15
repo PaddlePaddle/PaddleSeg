@@ -68,11 +68,12 @@ class Predictor:
             pred_cfg.enable_use_gpu(100, 0)
 
             if self.args.use_trt:
+                ptype = PrecisionType.Int8 if args.use_int8 else PrecisionType.Float32
                 pred_cfg.enable_tensorrt_engine(
                     workspace_size=1 << 30,
                     max_batch_size=1,
                     min_subgraph_size=3,
-                    precision_mode=PrecisionType.Int8,
+                    precision_mode=ptype,
                     use_static=False,
                     use_calib_mode=False)
 
@@ -96,7 +97,6 @@ class Predictor:
             ])
             input_handle.reshape(data.shape)
             input_handle.copy_from_cpu(data)
-
             self.predictor.run()
 
             output_names = self.predictor.get_output_names()
@@ -106,11 +106,16 @@ class Predictor:
         self.postprocess(results, imgs)
 
     def postprocess(self, results, imgs):
+        if not os.path.exists(self.args.save_dir):
+            os.makedirs(self.args.save_dir)
+
         results = np.concatenate(results, axis=0)
         for i in range(results.shape[0]):
             result = np.argmax(results[i], axis=0)
             result = get_pseudo_color_map(result)
             basename = os.path.basename(imgs[i])
+            basename, _ = os.path.splitext(basename)
+            basename = f'{basename}.png'
             result.save(os.path.join(self.args.save_dir, basename))
 
 
@@ -147,8 +152,12 @@ def parse_args():
         '--use_trt',
         dest='use_trt',
         help='Whether to use Nvidia TensorRT to accelerate prediction.',
-        type=bool,
-        default=False)
+        action='store_true')
+    parser.add_argument(
+        '--use_int8',
+        dest='use_int8',
+        help='Whether to use Int8 prediction when using TensorRT prediction.',
+        action='store_true')
 
     return parser.parse_args()
 

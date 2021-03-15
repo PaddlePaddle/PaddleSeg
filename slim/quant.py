@@ -24,7 +24,6 @@ from paddleseg.cvlibs.config import Config
 from paddleseg.core.val import evaluate
 from paddleseg.core.train import train
 from paddleseg.utils import get_sys_env, logger
-from paddleseg.utils.paddle import convert_syncbn_to_bn
 
 
 def parse_args():
@@ -130,6 +129,7 @@ def main(args):
         raise RuntimeError(
             'The validation dataset is not specified in the configuration file.'
         )
+    os.environ['PADDLESEG_EXPORT_STAGE'] = 'True'
     net = cfg.model
 
     if args.model_path:
@@ -159,8 +159,6 @@ def main(args):
         save_path = os.path.join(args.save_dir, 'model')
         input_var = paddle.ones([1] + list(val_dataset[0][0].shape))
         quantizer.save_quantized_model(net, save_path, input_spec=[input_var])
-
-        convert_syncbn_to_bn(f'{save_path}.pdmodel')
 
         yml_file = os.path.join(args.save_dir, 'deploy.yaml')
         with open(yml_file, 'w') as file:
