@@ -395,6 +395,8 @@ def train(cfg):
                                               avg_train_reader_cost, step)
                     sys.stdout.flush()
                     avg_loss = 0.0
+                    reader_cost_averager.reset()
+                    batch_cost_averager.reset()
                 batch_start = time.time()
 
                 # NOTE : used for benchmark, profiler tools
