@@ -82,7 +82,7 @@ def evaluate(model,
 
     if print_detail:
         logger.info(
-            "Start evaluating (total_samples={}, total_iters={})...".format(
+            "Start evaluating (total_samples: {}, total_iters: {})...".format(
                 len(eval_dataset), total_iters))
     progbar_val = progbar.Progbar(target=total_iters, verbose=1)
     reader_cost_averager = TimeAverager()
@@ -167,7 +167,7 @@ def evaluate(model,
 
     if print_detail:
         logger.info(
-            "[EVAL] #Images={} mIoU={:.4f} Acc={:.4f} Kappa={:.4f} ".format(
+            "[EVAL] #Images: {} mIoU: {:.4f} Acc: {:.4f} Kappa: {:.4f} ".format(
                 len(eval_dataset), miou, acc, kappa))
         logger.info("[EVAL] Class IoU: \n" + str(np.round(class_iou, 4)))
         logger.info("[EVAL] Class Acc: \n" + str(np.round(class_acc, 4)))
