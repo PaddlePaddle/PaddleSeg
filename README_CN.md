@@ -8,7 +8,7 @@
 ![python version](https://img.shields.io/badge/python-3.6+-orange.svg)
 ![support os](https://img.shields.io/badge/os-linux%2C%20win%2C%20mac-yellow.svg)
 
-<img src="./docs/images/seg_news_icon.png" width="50"/> *[2020-12-18] PaddleSeg发布2.0.0rc版，动态图正式成为主目录。静态图已经被移至[legacy](./legacy)子目录下。更多信息请查看详细[更新日志](./docs/release_notes_cn.md)。*
+<img src="./docs/images/seg_news_icon.png" width="50"/> *[2021-02-26] PaddleSeg发布2.0动态图正式版。静态图已经被移至[legacy](./legacy)子目录下。更多信息请查看详细[更新日志](./docs/release_notes_cn.md)。*
 
 ![demo](./docs/images/cityscapes.gif)
 

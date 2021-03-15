@@ -8,7 +8,7 @@ English | [简体中文](README_CN.md)
 ![python version](https://img.shields.io/badge/python-3.6+-orange.svg)
 ![support os](https://img.shields.io/badge/os-linux%2C%20win%2C%20mac-yellow.svg)
 
-<img src="./docs/images/seg_news_icon.png" width="50"/> *[2020-12-18] PaddleSeg has released the v2.0.0-rc version, which supports the dynamic graph by default. The static-graph codes have been moved to [legacy](./legacy). See detailed [release notes](./docs/release_notes.md).*
+<img src="./docs/images/seg_news_icon.png" width="50"/> *[2021-02-26] PaddleSeg has released the v2.0 version, which supports the dynamic graph by default. The static-graph codes have been moved to [legacy](./legacy). See detailed [release notes](./docs/release_notes.md).*
 
 ![demo](./docs/images/cityscapes.gif)
 
