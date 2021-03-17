@@ -215,7 +215,7 @@ def train(model,
                 avg_train_reader_cost = reader_cost_averager.get_average()
                 eta = calculate_eta(remain_iters, avg_train_batch_cost)
                 logger.info(
-                    "[TRAIN] epoch={}, iter={}/{}, loss={:.4f}, lr={:.6f}, batch_cost={:.4f}, reader_cost={:.5f}, ips={:.4f} samples/sec | ETA {}"
+                    "[TRAIN] epoch: {}, iter: {}/{}, loss: {:.4f}, lr: {:.6f}, batch_cost: {:.4f}, reader_cost: {:.5f}, ips: {:.4f} samples/sec | ETA {}"
                     .format((iter - 1) // iters_per_epoch + 1, iter, iters,
                             avg_loss, lr, avg_train_batch_cost,
                             avg_train_reader_cost,

@@ -170,7 +170,7 @@ def evaluate(cfg,
             reader_cost = reader_cost_averager.get_average()
             eta = calculate_eta(all_step - step, batch_cost)
             print(
-                "[EVAL]step={} loss={:.5f} acc={:.4f} IoU={:.4f} batch_cost={:.4f}, reader_cost={:.5f} | ETA {}"
+                "[EVAL]step: {} loss: {:.5f} acc: {:.4f} IoU: {:.4f} batch_cost: {:.4f}, reader_cost: {:.5f} | ETA {}"
                 .format(step, loss, acc, iou, batch_cost, batch_cost, eta))
             batch_start = time.time()
             sys.stdout.flush()
@@ -179,7 +179,7 @@ def evaluate(cfg,
 
     category_iou, avg_iou = conf_mat.mean_iou()
     category_acc, avg_acc = conf_mat.accuracy()
-    print("[EVAL]#image={} acc={:.4f} IoU={:.4f}".format(
+    print("[EVAL]#image: {} acc: {:.4f} IoU: {:.4f}".format(
         num_images, avg_acc, avg_iou))
     print("[EVAL]Category IoU:", category_iou)
     print("[EVAL]Category Acc:", category_acc)
