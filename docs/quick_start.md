@@ -4,7 +4,7 @@
 本教程提供了一个快速入门的使用示例，用于训练一个基于视盘分割数据集的BiSeNetv2模型。
 为了快速完成整体教程，我们将训练的迭代次数设置为1000（以Tesla V100为例，训练时间大约为5min）。
 
-更详细的教程推荐点击[10分钟上手PaddleSeg](https://aistudio.baidu.com/aistudio/projectdetail/1672610)，可在线运行实践从训练到部署的整个流程。
+更详细的教程推荐点击[10分钟上手PaddleSeg](https://aistudio.baidu.com/aistudio/projectdetail/1672610)，可**在线运行**实践从训练到部署的全流程。
 
 在了解完整体使用流程后，关于标准数据集的训练请参考[模型库的训练配置](../configs)，可根据需要进行修改。
 
