@@ -5,11 +5,11 @@ English | [简体中文](release_notes_cn.md)
 * 2020.02.26
 
   **`v2.0`**
-  * We newly released version 2.0 which has been fully upgraded to dynamic graphics. It supports more than 20 segmentation models, 4 backbone networks, , 5 datasets and 7 losses:
+  * We newly released version 2.0 which has been fully upgraded to dynamic graphics. It supports more than 20 segmentation models, 4 backbone networks, , 5 datasets and 9 losses:
     * Segmentation models: ANN, BiSeNetV2, DANet, DeeplabV3, DeeplabV3+, FCN, FastSCNN, Gated-scnn, GCNet, HarDNet, OCRNet, PSPNet, UNet, UNet++, U<sup>2</sup>Net, Attention UNet, Decoupled SegNet, EMANet, DNLNet, ISANet
     * Backbone networks: ResNet, HRNet, MobileNetV3, and Xception
     * Datasets: Cityscapes, ADE20K, Pascal VOC, Pascal Context, COCO Stuff
-    * Losses: CrossEntropy Loss、BootstrappedCrossEntropy Loss、Dice Loss、BCE Loss、OhemCrossEntropyLoss、RelaxBoundaryLoss、OhemEdgeAttentionLoss
+    * Losses: CrossEntropy Loss, BootstrappedCrossEntropy Loss, Dice Loss, BCE Loss, OhemCrossEntropyLoss, RelaxBoundaryLoss, OhemEdgeAttentionLoss, Lovasz Hinge Loss, Lovasz Softmax Loss
   * We provide more than 50 high quality pre-trained models based on Cityscapes and Pascal Voc datasets.
   * The new version support multi-card GPU parallel evaluation for more efficient metrics calculation.  It also support multiple evaluation methods such as multi-scale evaluation/flip evaluation/sliding window evaluation.
   * XPU model training including DeepLabv3, HRNet, UNet, is available now.
