@@ -100,6 +100,8 @@ class ADE20K(Dataset):
         else:
             im, label = self.transforms(im=image_path, label=label_path)
             label = label - 1
+            # Recover the ignore pixels adding by transform
+            label[label == 254] = 255
             if self.edge:
                 edge_mask = F.mask_to_binary_edge(
                     label, radius=2, num_classes=self.num_classes)
