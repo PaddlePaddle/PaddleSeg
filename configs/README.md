@@ -28,13 +28,20 @@
 ### optimizer
 > 训练优化器
 >  * 参数
->     * type : 优化器类型，目前只支持sgd
+>     * type : 优化器类型，目前只支持'sgd'和'adam'
 >     * momentum : 动量
 >     * weight_decay : L2正则化的值
 
 ----
-### learning_rate
+### lr_scheduler
 > 学习率
+>  * 参数
+>     * type : 学习率类型，支持10种策略，分别是'PolynomialDecay', 'PiecewiseDecay', 'StepDecay', 'CosineAnnealingDecay', 'ExponentialDecay', 'InverseTimeDecay', 'LinearWarmup', 'MultiStepDecay', 'NaturalExpDecay', 'NoamDecay'.
+>     * **others** : 请参考[Paddle官方LRScheduler文档](https://www.paddlepaddle.org.cn/documentation/docs/zh/api/paddle/optimizer/lr/LRScheduler_cn.html)
+
+----
+### learning_rate
+> 学习率（不推荐使用该配置，将来会被废弃，建议使用`lr_scheduler`代替）
 >  * 参数
 >     * value : 初始学习率
 >     * decay : 衰减配置
@@ -90,12 +97,11 @@ optimizer:
   momentum: 0.9
   weight_decay: 4.0e-5
 
-learning_rate:
-  value: 0.01
-  decay:
-    type: poly
-    power: 0.9
-    end_lr: 0.0
+lr_scheduler:
+  type: PolynomialDecay
+  learning_rate: 0.01
+  power: 0.9
+  end_lr: 0
 
 loss:
   types:
