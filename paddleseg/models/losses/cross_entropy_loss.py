@@ -29,10 +29,11 @@ class CrossEntropyLoss(nn.Layer):
             and does not contribute to the input gradient. Default ``255``.
     """
 
-    def __init__(self, ignore_index=255):
+    def __init__(self, ignore_index=255, data_format='NCHW'):
         super(CrossEntropyLoss, self).__init__()
         self.ignore_index = ignore_index
         self.EPS = 1e-5
+        self.data_format = data_format
 
     def forward(self, logit, label):
         """
@@ -46,13 +47,17 @@ class CrossEntropyLoss(nn.Layer):
                 value is 0 <= label[i] <= C-1, and if shape is more than 2D, this is
                 (N, D1, D2,..., Dk), k >= 1.
         """
+        if self.data_format == 'NCHW':
+            axis = 1
+        else:
+            axis = -1
         if len(label.shape) != len(logit.shape):
-            label = paddle.unsqueeze(label, 1)
+            label = paddle.unsqueeze(label, axis)
 
-        logit = paddle.transpose(logit, [0, 2, 3, 1])
-        label = paddle.transpose(label, [0, 2, 3, 1])
+        # logit = paddle.transpose(logit, [0, 2, 3, 1])
+        # label = paddle.transpose(label, [0, 2, 3, 1])
         loss = F.softmax_with_cross_entropy(
-            logit, label, ignore_index=self.ignore_index, axis=-1)
+            logit, label, ignore_index=self.ignore_index, axis=axis)
 
         mask = label != self.ignore_index
         mask = paddle.cast(mask, 'float32')
