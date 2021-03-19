@@ -19,7 +19,6 @@ DATASET:
     TEST_FILE_LIST: "dataset/cityscapes/val.list"
     TRAIN_FILE_LIST: "dataset/cityscapes/train.list"
     VAL_FILE_LIST: "dataset/cityscapes/val.list"
-    VIS_FILE_LIST: "dataset/cityscapes/val.list"
     IGNORE_INDEX: 255
     SEPARATOR: " "
 FREEZE:

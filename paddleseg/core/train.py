@@ -81,7 +81,7 @@ def train(model,
         losses (dict): A dict including 'types' and 'coef'. The length of coef should equal to 1 or len(losses['types']).
             The 'types' item is a list of object of paddleseg.models.losses while the 'coef' item is a list of the relevant coefficient.
         keep_checkpoint_max (int, optional): Maximum number of checkpoints to save. Default: 5.
-        fp16: Whther to use amp.
+        fp16 (bool, optional): Whther to use amp.
     """
     model.train()
     nranks = paddle.distributed.ParallelEnv().nranks
@@ -152,6 +152,8 @@ def train(model,
             edges = None
             if len(data) == 3:
                 edges = data[2].astype('int64')
+            if model.data_format == 'NHWC':
+                images = images.transpose((0, 2, 3, 1))
 
             if fp16:
                 with paddle.amp.auto_cast(

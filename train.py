@@ -92,11 +92,25 @@ def parse_args():
         action='store_true')
     parser.add_argument(
         '--fp16', dest='fp16', help='Whther to use amp', action='store_true')
+    parser.add_argument(
+        '--data_format',
+        dest='data_format',
+        help=
+        'Data format that specifies the layout of input. It can be "NCHW" or "NHWC". Default: "NCHW".',
+        type=str,
+        default='NCHW')
 
     return parser.parse_args()
 
 
 def main(args):
+    # import numpy as np
+    # from paddle.fluid import core
+    # np.random.seed(0)
+    # core.default_cuda_generator(0).manual_seed(256)
+    # core.default_cpu_generator().manual_seed(256)
+    # print(paddle.rand((1,)))
+
     env_info = get_sys_env()
     info = ['{}: {}'.format(k, v) for k, v in env_info.items()]
     info = '\n'.join(['', format('Environment Information', '-^48s')] + info +
@@ -115,6 +129,12 @@ def main(args):
         learning_rate=args.learning_rate,
         iters=args.iters,
         batch_size=args.batch_size)
+
+    cfg.dic['model']['data_format'] = args.data_format
+    cfg.dic['model']['backbone']['data_format'] = args.data_format
+    loss_len = len(cfg.dic['loss']['types'])
+    for i in range(loss_len):
+        cfg.dic['loss']['types'][i]['data_format'] = args.data_format
 
     train_dataset = cfg.train_dataset
     if train_dataset is None:
