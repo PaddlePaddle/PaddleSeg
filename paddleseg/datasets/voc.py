@@ -44,7 +44,7 @@ class PascalVOC(Dataset):
         mode = mode.lower()
         self.mode = mode
         self.file_list = list()
-        self.num_classes = 21
+        self.num_classes = self.NUM_CLASSES
         self.ignore_index = 255
         self.edge = edge
 

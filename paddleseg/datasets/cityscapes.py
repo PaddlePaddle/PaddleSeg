@@ -54,7 +54,7 @@ class Cityscapes(Dataset):
         self.file_list = list()
         mode = mode.lower()
         self.mode = mode
-        self.num_classes = 19
+        self.num_classes = self.NUM_CLASSES
         self.ignore_index = 255
         self.edge = edge
 

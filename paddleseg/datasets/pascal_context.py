@@ -40,7 +40,7 @@ class PascalContext(Dataset):
         mode = mode.lower()
         self.mode = mode
         self.file_list = list()
-        self.num_classes = 59
+        self.num_classes = self.NUM_CLASSES
         self.ignore_index = 255
 
         if mode not in ['train', 'trainval', 'val']:

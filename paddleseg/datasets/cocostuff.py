@@ -50,7 +50,7 @@ class CocoStuff(Dataset):
         self.file_list = list()
         mode = mode.lower()
         self.mode = mode
-        self.num_classes = 172
+        self.num_classes = self.NUM_CLASSES
         self.ignore_index = 255
 
         if mode not in ['train', 'val']:
