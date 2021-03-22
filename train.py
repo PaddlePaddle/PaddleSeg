@@ -130,11 +130,16 @@ def main(args):
         iters=args.iters,
         batch_size=args.batch_size)
 
-    cfg.dic['model']['data_format'] = args.data_format
-    cfg.dic['model']['backbone']['data_format'] = args.data_format
-    loss_len = len(cfg.dic['loss']['types'])
-    for i in range(loss_len):
-        cfg.dic['loss']['types'][i]['data_format'] = args.data_format
+    # Only support for the DeepLabv3+ model
+    if args.data_format == 'NHWC':
+        if cfg.dic['model'] != 'DeepLabV3P':
+            raise ValueError(
+                'The "NHWC" data format only support the DeepLabV3P model!')
+        cfg.dic['model']['data_format'] = args.data_format
+        cfg.dic['model']['backbone']['data_format'] = args.data_format
+        loss_len = len(cfg.dic['loss']['types'])
+        for i in range(loss_len):
+            cfg.dic['loss']['types'][i]['data_format'] = args.data_format
 
     train_dataset = cfg.train_dataset
     if train_dataset is None:
