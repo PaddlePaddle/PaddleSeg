@@ -48,9 +48,12 @@ class FCN(nn.Layer):
                  channels=None,
                  align_corners=False,
                  pretrained=None,
-                 bias=True):
+                 bias=True,
+                 data_format="NCHW"):
         super(FCN, self).__init__()
 
+        if data_format != 'NCHW':
+            raise ('fcn only support NCHW data format')
         self.backbone = backbone
         backbone_channels = [
             backbone.feat_channels[i] for i in backbone_indices
@@ -65,6 +68,7 @@ class FCN(nn.Layer):
 
         self.align_corners = align_corners
         self.pretrained = pretrained
+        self.data_format = data_format
         self.init_weight()
 
     def forward(self, x):
