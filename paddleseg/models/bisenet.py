@@ -68,17 +68,21 @@ class BiSeNetV2(nn.Layer):
     def forward(self, x):
         dfm = self.db(x)
         feat1, feat2, feat3, feat4, sfm = self.sb(x)
-        logit1 = self.aux_head1(feat1)
-        logit2 = self.aux_head2(feat2)
-        logit3 = self.aux_head3(feat3)
-        logit4 = self.aux_head4(feat4)
         logit = self.head(self.bga(dfm, sfm))
 
-        logit_list = [logit, logit1, logit2, logit3, logit4]
+        if not self.training:
+            logit_list = [logit]
+        else:
+            logit1 = self.aux_head1(feat1)
+            logit2 = self.aux_head2(feat2)
+            logit3 = self.aux_head3(feat3)
+            logit4 = self.aux_head4(feat4)
+            logit_list = [logit, logit1, logit2, logit3, logit4]
+
         logit_list = [
             F.interpolate(
                 logit,
-                x.shape[2:],
+                paddle.shape(x)[2:],
                 mode='bilinear',
                 align_corners=self.align_corners) for logit in logit_list
         ]
@@ -267,7 +271,7 @@ class BGA(nn.Layer):
         sb_feat_up = self.sb_branch_up(sfm)
         sb_feat_up = F.interpolate(
             sb_feat_up,
-            db_feat_keep.shape[2:],
+            paddle.shape(db_feat_keep)[2:],
             mode='bilinear',
             align_corners=self.align_corners)
 
@@ -277,7 +281,7 @@ class BGA(nn.Layer):
         sb_feat = db_feat_down * sb_feat_keep
         sb_feat = F.interpolate(
             sb_feat,
-            db_feat.shape[2:],
+            paddle.shape(db_feat)[2:],
             mode='bilinear',
             align_corners=self.align_corners)
 

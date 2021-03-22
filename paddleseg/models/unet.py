@@ -147,7 +147,7 @@ class UpSampling(nn.Layer):
         else:
             x = F.interpolate(
                 x,
-                short_cut.shape[2:],
+                paddle.shape(short_cut)[2:],
                 mode='bilinear',
                 align_corners=self.align_corners)
         x = paddle.concat([x, short_cut], axis=1)
