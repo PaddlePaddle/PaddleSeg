@@ -107,7 +107,7 @@ python train.py --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml
 
 ## 联系我们
 * 如果你发现任何PaddleSeg存在的问题或者是建议, 欢迎通过[GitHub Issues](https://github.com/PaddlePaddle/PaddleSeg/issues)给我们提issues。
-* 同时欢迎加入PaddleSeg技术交流群：850378321（QQ群1）或者793114768（QQ群2）。
+* 同时欢迎加入PaddleSeg技术交流群：1004738029 (QQ群3) 或者 850378321（QQ群1已满）或者793114768（QQ群2已满）。
 
 ## 代码贡献
 
