@@ -21,6 +21,7 @@ import paddle
 import yaml
 
 from paddleseg.cvlibs import manager
+from paddleseg.utils import logger
 
 
 class Config(object):
@@ -153,11 +154,11 @@ class Config(object):
             params.setdefault('end_lr', 0)
             params.setdefault('power', 0.9)
 
-        return eval('paddle.optimizer.lr.' + lr_type + '(**params)')
+        return getattr(paddle.optimizer.lr, lr_type)(**params)
 
     @property
     def learning_rate(self) -> paddle.optimizer.lr.LRScheduler:
-        warnings.warn(
+        logger.warning(
             '''`learning_rate` in configuration file will be deprecated, please use `lr_scheduler` instead. E.g
             lr_scheduler:
                 type: poly

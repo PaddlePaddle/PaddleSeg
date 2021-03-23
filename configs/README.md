@@ -40,8 +40,8 @@
 >     * **others** : 请参考[Paddle官方LRScheduler文档](https://www.paddlepaddle.org.cn/documentation/docs/zh/api/paddle/optimizer/lr/LRScheduler_cn.html)
 
 ----
-### learning_rate
-> 学习率（不推荐使用该配置，将来会被废弃，建议使用`lr_scheduler`代替）
+### learning_rate（不推荐使用该配置，将来会被废弃，建议使用`lr_scheduler`代替）
+> 学习率
 >  * 参数
 >     * value : 初始学习率
 >     * decay : 衰减配置
