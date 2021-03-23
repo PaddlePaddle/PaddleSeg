@@ -18,7 +18,7 @@ The models subpackage contains the following model for image sementic segmentaio
 - [U<sup>2</sup>Net+](#U2Net-1)
 - [AttentionUNet](#AttentionUNet)
 - [UNet++](#UNet-1)
-- [UNet3+](#UNet-2)
+- [UNet3+](#UNet3+)
 - [DecoupledSegNet](#DecoupledSegNet)
 - [ISANet](#ISANet)
 - [EMANet](#EMANet)
