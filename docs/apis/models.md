@@ -18,7 +18,7 @@ The models subpackage contains the following model for image sementic segmentaio
 - [U<sup>2</sup>Net+](#U2Net-1)
 - [AttentionUNet](#AttentionUNet)
 - [UNet++](#UNet-1)
-- [UNet3+](#UNet3+)
+- [UNet3+](#UNet-2)
 - [DecoupledSegNet](#DecoupledSegNet)
 - [ISANet](#ISANet)
 - [EMANet](#EMANet)
@@ -409,7 +409,7 @@ The models subpackage contains the following model for image sementic segmentaio
 > > > - **pretrained** (str, optional): The path or url of pretrained model for fine tuning. Default: None.
 > > > - **is_ds** (bool): use deep supervision or not. Default: True
 
-## [UNet3+](../../paddleseg/models/unet_3plus.py)
+## <span id="jump1">[UNet3+](../../paddleseg/models/unet_3plus.py)</span>
 > class UNet3Plus(in_channels,
                  num_classes,
                  is_batchnorm=True,
