@@ -15,6 +15,7 @@
 import paddle.nn as nn
 import paddle.nn.functional as F
 
+import paddle
 from paddleseg.cvlibs import manager
 from paddleseg.models import layers
 from paddleseg.utils import utils
@@ -69,7 +70,7 @@ class FastSCNN(nn.Layer):
 
     def forward(self, x):
         logit_list = []
-        input_size = x.shape[2:]
+        input_size = paddle.shape(x)[2:]
         higher_res_features = self.learning_to_downsample(x)
         x = self.global_feature_extractor(higher_res_features)
         x = self.feature_fusion(higher_res_features, x)
@@ -265,10 +266,9 @@ class FeatureFusionModule(nn.Layer):
         self.align_corners = align_corners
 
     def forward(self, high_res_input, low_res_input):
-        h, w = high_res_input.shape[2:]
         low_res_input = F.interpolate(
             low_res_input,
-            [h, w],
+            paddle.shape(high_res_input)[2:],
             mode='bilinear',
             align_corners=self.align_corners)
         low_res_input = self.dwconv(low_res_input)
