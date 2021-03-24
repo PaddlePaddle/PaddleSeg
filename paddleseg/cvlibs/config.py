@@ -20,6 +20,7 @@ import paddle
 import yaml
 
 from paddleseg.cvlibs import manager
+from paddleseg.utils import logger
 
 
 class Config(object):
@@ -117,7 +118,10 @@ class Config(object):
                iters: int = None):
         '''Update config'''
         if learning_rate:
-            self.dic['learning_rate']['value'] = learning_rate
+            if 'lr_scheduler' in self.dic:
+                self.dic['lr_scheduler']['learning_rate'] = learning_rate
+            else:
+                self.dic['learning_rate']['value'] = learning_rate
 
         if batch_size:
             self.dic['batch_size'] = batch_size
@@ -137,7 +141,27 @@ class Config(object):
         return iters
 
     @property
+    def lr_scheduler(self) -> paddle.optimizer.lr.LRScheduler:
+        if 'lr_scheduler' not in self.dic:
+            raise RuntimeError(
+                'No `lr_scheduler` specified in the configuration file.')
+        params = self.dic.get('lr_scheduler')
+
+        lr_type = params.pop('type')
+        if lr_type == 'PolynomialDecay':
+            params.setdefault('decay_steps', self.iters)
+            params.setdefault('end_lr', 0)
+            params.setdefault('power', 0.9)
+
+        return getattr(paddle.optimizer.lr, lr_type)(**params)
+
+    @property
     def learning_rate(self) -> paddle.optimizer.lr.LRScheduler:
+        logger.warning(
+            '''`learning_rate` in configuration file will be deprecated, please use `lr_scheduler` instead. E.g
+            lr_scheduler:
+                type: poly
+                learning_rate: 0.01''')
         _learning_rate = self.dic.get('learning_rate', {}).get('value')
         if not _learning_rate:
             raise RuntimeError(
@@ -154,7 +178,10 @@ class Config(object):
 
     @property
     def optimizer(self) -> paddle.optimizer.Optimizer:
-        lr = self.learning_rate
+        if 'lr_scheduler' in self.dic:
+            lr = self.lr_scheduler
+        else:
+            lr = self.learning_rate
         args = self.optimizer_args
         optimizer_type = args.pop('type')
 
