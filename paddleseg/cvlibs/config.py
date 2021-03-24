@@ -15,7 +15,6 @@
 import codecs
 import os
 from typing import Any
-import warnings
 
 import paddle
 import yaml
