@@ -44,6 +44,7 @@ Welcome to PaddleSeg! PaddleSeg is an end-to-end image segmentation development 
 |[U-Net++](./configs/unet_plusplus)|-|-|-|-|
 |[EMANet](./configs/emanet)|✔|✔|-|-|
 |[ISANet](./configs/isanet)|✔|✔|-|-|
+|[DNLNet](./configs/dnlnet)|✔|✔|-|-|
 ## Dataset
 
 - [x] Cityscapes
@@ -99,3 +100,24 @@ python train.py --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml
 * Thanks [jm12138](https://github.com/jm12138) for contributing U<sup>2</sup>-Net.
 * Thanks [zjhellofss](https://github.com/zjhellofss) (Fu Shenshen) for contributing Attention U-Net, and Dice Loss.
 * Thanks [liuguoyu666](https://github.com/liguoyu666) for contributing U-Net++.
+
+## Citation
+If you find our project useful in your research, please consider citing:
+
+```latex
+@misc{liu2021paddleseg,
+      title={PaddleSeg: A High-Efficient Development Toolkit for Image Segmentation}, 
+      author={Yi Liu and Lutao Chu and Guowei Chen and Zewu Wu and Zeyu Chen and Baohua Lai and Yuying Hao},
+      year={2021},
+      eprint={2101.06175},
+      archivePrefix={arXiv},
+      primaryClass={cs.CV}
+}
+
+@misc{paddleseg2019,
+    title={PaddleSeg, End-to-end image segmentation kit based on PaddlePaddle},
+    author={PaddlePaddle Authors},
+    howpublished = {\url{https://github.com/PaddlePaddle/PaddleSeg}},
+    year={2019}
+}
+```

@@ -20,6 +20,7 @@ The models subpackage contains the following model for image sementic segmentaio
 - [UNet++](#UNet-1)
 - [ISANet](#ISANet)
 - [EMANet](#EMANet)
+- [DNLNet](#DNLNet)
 
 
 ## [DeepLabV3+](../../paddleseg/models/deeplab.py)
@@ -444,6 +445,30 @@ The models subpackage contains the following model for image sementic segmentaio
 > > > - **num_bases** (int): Number of bases.
 > > > - **stage_num** (int): The iteration number for EM.
 > > > - **momentum** (float): The parameter for updating bases.
+> > > - **concat_input** (bool): Whether concat the input and output of convs before classification layer. Default: True
+> > > - **enable_auxiliary_loss** (bool, optional): A bool value indicates whether adding auxiliary loss. Default: True.
+> > > - **align_corners** (bool): An argument of F.interpolate. It should be set to False when the output size of feature
+            is even, e.g. 1024x512, otherwise it is True, e.g. 769x769.  Default: False.
+> > > - **pretrained** (str, optional): The path or url of pretrained model. Default: None.
+
+## [DNLNet](../../paddleseg/models/dnlnet.py)
+> CLASS paddleseg.models.DNLNet(num_classes, backbone, backbone_indices=(2, 3), reduction=2, use_scale=True, mode='embedded_gaussian', temperature=0.05, concat_input=True, enable_auxiliary_loss=True, align_corners=False, pretrained=None)
+
+    The DNLNet implementation based on PaddlePaddle.
+
+    The original article refers to
+    Minghao Yin, et al. "Disentangled Non-Local Neural Networks"
+    (https://arxiv.org/abs/2006.06668)
+
+> > Args
+> > > - **num_classes** (int): The unique number of target classes.
+> > > - **backbone** (Paddle.nn.Layer): A backbone network.
+> > > - **backbone_indices** (tuple): The values in the tuple indicate the indices of output of backbone.
+> > > - **reduction** (int): Reduction factor of projection transform. Default: 2.
+> > > - **use_scale** (bool): Whether to scale pairwise_weight by sqrt(1/inter_channels). Default: False.
+> > > - **mode** (str): The nonlocal mode. Options are 'embedded_gaussian',
+            'dot_product'. Default: 'embedded_gaussian'.
+> > > - **temperature** (float): Temperature to adjust attention. Default: 0.05.
 > > > - **concat_input** (bool): Whether concat the input and output of convs before classification layer. Default: True
 > > > - **enable_auxiliary_loss** (bool, optional): A bool value indicates whether adding auxiliary loss. Default: True.
 > > > - **align_corners** (bool): An argument of F.interpolate. It should be set to False when the output size of feature
