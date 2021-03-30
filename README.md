@@ -42,6 +42,7 @@ Welcome to PaddleSeg! PaddleSeg is an end-to-end image segmentation development 
 |[U<sup>2</sup>-Net](./configs/u2net)|-|-|-|-|
 |[Att U-Net](./configs/attention_unet)|-|-|-|-|
 |[U-Net++](./configs/unet_plusplus)|-|-|-|-|
+|[U-Net3+](./configs/unet_3plus)|-|-|-|-|
 |[DecoupledSegNet](./configs/decoupled_segnet)|✔|✔|||
 |[EMANet](./configs/emanet)|✔|✔|-|-|
 |[ISANet](./configs/isanet)|✔|✔|-|-|
@@ -111,7 +112,7 @@ python train.py --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml
 ## Acknowledgement
 * Thanks [jm12138](https://github.com/jm12138) for contributing U<sup>2</sup>-Net.
 * Thanks [zjhellofss](https://github.com/zjhellofss) (Fu Shenshen) for contributing Attention U-Net, and Dice Loss.
-* Thanks [liuguoyu666](https://github.com/liguoyu666) for contributing U-Net++.
+* Thanks [liuguoyu666](https://github.com/liguoyu666), [geoyee](https://github.com/geoyee) for contributing U-Net++ and U-Net3+.
 
 ## Citation
 If you find our project useful in your research, please consider citing:
