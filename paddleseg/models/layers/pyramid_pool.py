@@ -78,7 +78,7 @@ class ASPPModule(nn.Layer):
 
     def forward(self, x):
         outputs = []
-        interpolate_shape = x.shape[2:]
+        interpolate_shape = paddle.shape(x)[2:]
         for block in self.aspp_blocks:
             y = block(x)
             y = F.interpolate(
@@ -171,7 +171,7 @@ class PPModule(nn.Layer):
             x = stage(input)
             x = F.interpolate(
                 x,
-                input.shape[2:],
+                paddle.shape(input)[2:],
                 mode='bilinear',
                 align_corners=self.align_corners)
             cat_layers.append(x)

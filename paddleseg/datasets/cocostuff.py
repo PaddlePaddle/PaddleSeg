@@ -19,6 +19,7 @@ from paddleseg.datasets import Dataset
 from paddleseg.cvlibs import manager
 from paddleseg.transforms import Compose
 
+
 @manager.DATASETS.add_component
 class CocoStuff(Dataset):
     """
@@ -41,6 +42,7 @@ class CocoStuff(Dataset):
         dataset_root (str): Cityscapes dataset directory.
         mode (str): Which part of dataset to use. it is one of ('train', 'val'). Default: 'train'.
     """
+    NUM_CLASSES = 172
 
     def __init__(self, transforms, dataset_root, mode='train'):
         self.dataset_root = dataset_root
@@ -48,7 +50,7 @@ class CocoStuff(Dataset):
         self.file_list = list()
         mode = mode.lower()
         self.mode = mode
-        self.num_classes = 172
+        self.num_classes = self.NUM_CLASSES
         self.ignore_index = 255
 
         if mode not in ['train', 'val']:
@@ -68,15 +70,11 @@ class CocoStuff(Dataset):
             )
 
         label_files = sorted(
-            glob.glob(
-                os.path.join(label_dir, mode+'2017', '*.png')))
-        
+            glob.glob(os.path.join(label_dir, mode + '2017', '*.png')))
+
         img_files = sorted(
-            glob.glob(os.path.join(img_dir, mode+'2017',  '*.jpg')))
+            glob.glob(os.path.join(img_dir, mode + '2017', '*.jpg')))
 
         self.file_list = [[
             img_path, label_path
         ] for img_path, label_path in zip(img_files, label_files)]
-
-
-
