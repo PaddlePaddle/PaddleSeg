@@ -40,6 +40,7 @@ class AttentionBlock(nn.Layer):
             channels
         with_out (bool): Whether use out projection.
     """
+
     def __init__(self, key_in_channels, query_in_channels, channels,
                  out_channels, share_key_query, query_downsample,
                  key_downsample, key_query_num_convs, value_out_num_convs,
@@ -47,15 +48,17 @@ class AttentionBlock(nn.Layer):
         super(AttentionBlock, self).__init__()
         if share_key_query:
             assert key_in_channels == query_in_channels
+        self.with_out = with_out
         self.key_in_channels = key_in_channels
         self.query_in_channels = query_in_channels
         self.out_channels = out_channels
         self.channels = channels
         self.share_key_query = share_key_query
-        self.key_project = self.build_project(key_in_channels,
-                                              channels,
-                                              num_convs=key_query_num_convs,
-                                              use_conv_module=key_query_norm)
+        self.key_project = self.build_project(
+            key_in_channels,
+            channels,
+            num_convs=key_query_num_convs,
+            use_conv_module=key_query_norm)
         if share_key_query:
             self.query_project = self.key_project
         else:
@@ -67,11 +70,11 @@ class AttentionBlock(nn.Layer):
 
         self.value_project = self.build_project(
             key_in_channels,
-            channels if with_out else out_channels,
+            channels if self.with_out else out_channels,
             num_convs=value_out_num_convs,
             use_conv_module=value_out_norm)
 
-        if with_out:
+        if self.with_out:
             self.out_project = self.build_project(
                 channels,
                 out_channels,
@@ -86,10 +89,20 @@ class AttentionBlock(nn.Layer):
 
     def build_project(self, in_channels, channels, num_convs, use_conv_module):
         if use_conv_module:
-            convs = [layers.ConvBNReLU(in_channels=in_channels, out_channels=channels, kernel_size=1, bias_attr=False)]
+            convs = [
+                layers.ConvBNReLU(
+                    in_channels=in_channels,
+                    out_channels=channels,
+                    kernel_size=1,
+                    bias_attr=False)
+            ]
             for _ in range(num_convs - 1):
                 convs.append(
-                    layers.ConvBNReLU(in_channels=channels, out_channels=channels, kernel_size=1, bias_attr=False))
+                    layers.ConvBNReLU(
+                        in_channels=channels,
+                        out_channels=channels,
+                        kernel_size=1,
+                        bias_attr=False))
         else:
             convs = [nn.Conv2D(in_channels, channels, 1)]
             for _ in range(num_convs - 1):
@@ -102,11 +115,11 @@ class AttentionBlock(nn.Layer):
         return convs
 
     def forward(self, query_feats, key_feats):
-        b, c, h, w = query_feats.shape
+        query_shape = paddle.shape(query_feats)
         query = self.query_project(query_feats)
         if self.query_downsample is not None:
             query = self.query_downsample(query)
-        query = query.reshape([*query.shape[:2], -1]).transpose([0, 2, 1])
+        query = query.flatten(2).transpose([0, 2, 1])
 
         key = self.key_project(key_feats)
         value = self.value_project(key_feats)
@@ -115,16 +128,18 @@ class AttentionBlock(nn.Layer):
             key = self.key_downsample(key)
             value = self.key_downsample(value)
 
-        key = key.reshape([*key.shape[:2], -1])
-        value = value.reshape([*value.shape[:2], -1]).transpose([0, 2, 1])
+        key = key.flatten(2)
+        value = value.flatten(2).transpose([0, 2, 1])
         sim_map = paddle.matmul(query, key)
         if self.matmul_norm:
-            sim_map = (self.channels ** -0.5) * sim_map
+            sim_map = (self.channels**-0.5) * sim_map
         sim_map = F.softmax(sim_map, axis=-1)
 
         context = paddle.matmul(sim_map, value)
         context = paddle.transpose(context, [0, 2, 1])
-        context = paddle.reshape(context, [b, -1, *query_feats.shape[2:]])
+
+        context = paddle.reshape(
+            context, [0, self.out_channels, query_shape[2], query_shape[3]])
 
         if self.out_project is not None:
             context = self.out_project(context)

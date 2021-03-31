@@ -74,7 +74,12 @@ def parse_args():
     return parser.parse_args()
 
 
-def evaluate(cfg, ckpt_dir=None, use_gpu=False, use_xpu=False, use_mpio=False, **kwargs):
+def evaluate(cfg,
+             ckpt_dir=None,
+             use_gpu=False,
+             use_xpu=False,
+             use_mpio=False,
+             **kwargs):
     np.set_printoptions(precision=5, suppress=True)
 
     startup_prog = fluid.Program()
@@ -158,7 +163,7 @@ def evaluate(cfg, ckpt_dir=None, use_gpu=False, use_xpu=False, use_mpio=False, *
             speed = 1.0 / timer.elapsed_time()
 
             print(
-                "[EVAL]step={} loss={:.5f} acc={:.4f} IoU={:.4f} step/sec={:.2f} | ETA {}"
+                "[EVAL]step: {} loss: {:.5f} acc: {:.4f} IoU: {:.4f} step/sec: {:.2f} | ETA {}"
                 .format(step, loss, acc, iou, speed,
                         calculate_eta(all_step - step, speed)))
             timer.restart()
@@ -168,7 +173,7 @@ def evaluate(cfg, ckpt_dir=None, use_gpu=False, use_xpu=False, use_mpio=False, *
 
     category_iou, avg_iou = conf_mat.mean_iou()
     category_acc, avg_acc = conf_mat.accuracy()
-    print("[EVAL]#image={} acc={:.4f} IoU={:.4f}".format(
+    print("[EVAL]#image: {} acc: {:.4f} IoU: {:.4f}".format(
         num_images, avg_acc, avg_iou))
     print("[EVAL]Category IoU:", category_iou)
     print("[EVAL]Category Acc:", category_acc)

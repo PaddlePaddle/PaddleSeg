@@ -14,12 +14,13 @@
 
 import codecs
 import os
-from typing import Any
+from typing import Any, Dict, Generic
 
 import paddle
 import yaml
 
 from paddleseg.cvlibs import manager
+from paddleseg.utils import logger
 
 
 class Config(object):
@@ -117,7 +118,10 @@ class Config(object):
                iters: int = None):
         '''Update config'''
         if learning_rate:
-            self.dic['learning_rate']['value'] = learning_rate
+            if 'lr_scheduler' in self.dic:
+                self.dic['lr_scheduler']['learning_rate'] = learning_rate
+            else:
+                self.dic['learning_rate']['value'] = learning_rate
 
         if batch_size:
             self.dic['batch_size'] = batch_size
@@ -137,7 +141,27 @@ class Config(object):
         return iters
 
     @property
+    def lr_scheduler(self) -> paddle.optimizer.lr.LRScheduler:
+        if 'lr_scheduler' not in self.dic:
+            raise RuntimeError(
+                'No `lr_scheduler` specified in the configuration file.')
+        params = self.dic.get('lr_scheduler')
+
+        lr_type = params.pop('type')
+        if lr_type == 'PolynomialDecay':
+            params.setdefault('decay_steps', self.iters)
+            params.setdefault('end_lr', 0)
+            params.setdefault('power', 0.9)
+
+        return getattr(paddle.optimizer.lr, lr_type)(**params)
+
+    @property
     def learning_rate(self) -> paddle.optimizer.lr.LRScheduler:
+        logger.warning(
+            '''`learning_rate` in configuration file will be deprecated, please use `lr_scheduler` instead. E.g
+            lr_scheduler:
+                type: poly
+                learning_rate: 0.01''')
         _learning_rate = self.dic.get('learning_rate', {}).get('value')
         if not _learning_rate:
             raise RuntimeError(
@@ -149,12 +173,18 @@ class Config(object):
         if decay_type == 'poly':
             lr = _learning_rate
             return paddle.optimizer.lr.PolynomialDecay(lr, **args)
+        elif decay_type == 'piecewise':
+            values = _learning_rate
+            return paddle.optimizer.lr.PiecewiseDecay(values=values, **args)
         else:
-            raise RuntimeError('Only poly decay support.')
+            raise RuntimeError('Only poly and piecewise decay support.')
 
     @property
     def optimizer(self) -> paddle.optimizer.Optimizer:
-        lr = self.learning_rate
+        if 'lr_scheduler' in self.dic:
+            lr = self.lr_scheduler
+        else:
+            lr = self.learning_rate
         args = self.optimizer_args
         optimizer_type = args.pop('type')
 
@@ -230,30 +260,57 @@ class Config(object):
         if not model_cfg:
             raise RuntimeError('No model specified in the configuration file.')
         if not 'num_classes' in model_cfg:
-            if self.train_dataset and hasattr(self.train_dataset,
-                                              'num_classes'):
-                model_cfg['num_classes'] = self.train_dataset.num_classes
-            elif self.val_dataset and hasattr(self.val_dataset, 'num_classes'):
-                model_cfg['num_classes'] = self.val_dataset.num_classes
-            else:
+            num_classes = None
+            if self.train_dataset_config:
+                if hasattr(self.train_dataset_class, 'NUM_CLASSES'):
+                    num_classes = self.train_dataset_class.NUM_CLASSES
+                elif hasattr(self.train_dataset, 'num_classes'):
+                    num_classes = self.train_dataset.num_classes
+            elif self.val_dataset_config:
+                if hasattr(self.val_dataset_class, 'NUM_CLASSES'):
+                    num_classes = self.val_dataset_class.NUM_CLASSES
+                elif hasattr(self.val_dataset, 'num_classes'):
+                    num_classes = self.val_dataset.num_classes
+
+            if not num_classes:
                 raise ValueError(
                     '`num_classes` is not found. Please set it in model, train_dataset or val_dataset'
                 )
+
+            model_cfg['num_classes'] = num_classes
 
         if not self._model:
             self._model = self._load_object(model_cfg)
         return self._model
 
     @property
+    def train_dataset_config(self) -> Dict:
+        return self.dic.get('train_dataset', {}).copy()
+
+    @property
+    def val_dataset_config(self) -> Dict:
+        return self.dic.get('val_dataset', {}).copy()
+
+    @property
+    def train_dataset_class(self) -> Generic:
+        dataset_type = self.train_dataset_config['type']
+        return self._load_component(dataset_type)
+
+    @property
+    def val_dataset_class(self) -> Generic:
+        dataset_type = self.val_dataset_config['type']
+        return self._load_component(dataset_type)
+
+    @property
     def train_dataset(self) -> paddle.io.Dataset:
-        _train_dataset = self.dic.get('train_dataset', {}).copy()
+        _train_dataset = self.train_dataset_config
         if not _train_dataset:
             return None
         return self._load_object(_train_dataset)
 
     @property
     def val_dataset(self) -> paddle.io.Dataset:
-        _val_dataset = self.dic.get('val_dataset', {}).copy()
+        _val_dataset = self.val_dataset_config
         if not _val_dataset:
             return None
         return self._load_object(_val_dataset)
@@ -291,6 +348,10 @@ class Config(object):
                 params[key] = val
 
         return component(**params)
+
+    @property
+    def export_config(self) -> Dict:
+        return self.dic.get('export', {})
 
     def _is_meta_type(self, item: Any) -> bool:
         return isinstance(item, dict) and 'type' in item

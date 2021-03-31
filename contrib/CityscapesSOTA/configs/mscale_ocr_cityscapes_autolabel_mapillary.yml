@@ -50,12 +50,11 @@ optimizer:
   momentum: 0.9
   weight_decay: 0.0001
 
-learning_rate:
-  value: 0.005
-  decay:
-    type: poly
-    power: 2
-    end_lr: 0.0
+lr_scheduler:
+  type: PolynomialDecay
+  learning_rate: 0.005
+  power: 2
+  end_lr: 0.0
 
 loss:
   types:

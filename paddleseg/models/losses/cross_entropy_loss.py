@@ -25,14 +25,20 @@ class CrossEntropyLoss(nn.Layer):
     Implements the cross entropy loss function.
 
     Args:
-        ignore_index (int64): Specifies a target value that is ignored
+        weight (tuple|list|ndarray|Tensor, optional): A manual rescaling weight
+            given to each class. Its length must be equal to the number of classes.
+            Default ``None``.
+        ignore_index (int64, optional): Specifies a target value that is ignored
             and does not contribute to the input gradient. Default ``255``.
     """
 
-    def __init__(self, ignore_index=255):
+    def __init__(self, weight=None, ignore_index=255):
         super(CrossEntropyLoss, self).__init__()
+        if weight is not None:
+            weight = paddle.to_tensor(weight, dtype='float32')
+        self.weight = weight
         self.ignore_index = ignore_index
-        self.EPS = 1e-5
+        self.EPS = 1e-8
 
     def forward(self, logit, label):
         """
@@ -46,13 +52,24 @@ class CrossEntropyLoss(nn.Layer):
                 value is 0 <= label[i] <= C-1, and if shape is more than 2D, this is
                 (N, D1, D2,..., Dk), k >= 1.
         """
-        if len(label.shape) != len(logit.shape):
-            label = paddle.unsqueeze(label, 1)
+        if self.weight is not None and logit.shape[1] != len(self.weight):
+            raise ValueError(
+                'The number of weights = {} must be the same as the number of classes = {}.'
+                .format(len(self.weight), logit.shape[1]))
 
         logit = paddle.transpose(logit, [0, 2, 3, 1])
-        label = paddle.transpose(label, [0, 2, 3, 1])
-        loss = F.softmax_with_cross_entropy(
-            logit, label, ignore_index=self.ignore_index, axis=-1)
+        if self.weight is None:
+            loss = F.cross_entropy(
+                logit, label, ignore_index=self.ignore_index, reduction='none')
+        else:
+            label_one_hot = F.one_hot(label, logit.shape[-1])
+            loss = F.cross_entropy(
+                logit,
+                label_one_hot * self.weight,
+                soft_label=True,
+                ignore_index=self.ignore_index,
+                reduction='none')
+            loss = loss.squeeze(-1)
 
         mask = label != self.ignore_index
         mask = paddle.cast(mask, 'float32')
