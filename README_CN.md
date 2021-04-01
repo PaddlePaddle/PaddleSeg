@@ -8,7 +8,7 @@
 ![python version](https://img.shields.io/badge/python-3.6+-orange.svg)
 ![support os](https://img.shields.io/badge/os-linux%2C%20win%2C%20mac-yellow.svg)
 
-<img src="./docs/images/seg_news_icon.png" width="50"/> *[2020-12-18] PaddleSeg发布2.0.0rc版，动态图正式成为主目录。静态图已经被移至[legacy](./legacy)子目录下。更多信息请查看详细[更新日志](./docs/release_notes_cn.md)。*
+<img src="./docs/images/seg_news_icon.png" width="50"/> *[2021-02-26] PaddleSeg发布2.0动态图正式版。静态图已经被移至[legacy](./legacy)子目录下。更多信息请查看详细[更新日志](./docs/release_notes_cn.md)。*
 
 ![demo](./docs/images/cityscapes.gif)
 
@@ -109,7 +109,7 @@ python train.py --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml
 
 ## 联系我们
 * 如果你发现任何PaddleSeg存在的问题或者是建议, 欢迎通过[GitHub Issues](https://github.com/PaddlePaddle/PaddleSeg/issues)给我们提issues。
-* 同时欢迎加入PaddleSeg技术交流群：850378321（QQ群1）或者793114768（QQ群2）。
+* 同时欢迎加入PaddleSeg技术交流群：1004738029 (QQ群3) 或者 850378321（QQ群1已满）或者793114768（QQ群2已满）。
 
 ## 代码贡献
 
