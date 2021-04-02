@@ -87,7 +87,6 @@ Run the following command. If you can train normally, you have installed it succ
 python train.py --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml
 ```
 
-
 ## Tutorials
 
 * [Get Started](./docs/quick_start.md)

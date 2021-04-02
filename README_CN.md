@@ -89,7 +89,6 @@ git clone https://github.com/PaddlePaddle/PaddleSeg
 python train.py --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml
 ```
 
-
 ## 使用教程
 
 * [快速入门](./docs/quick_start.md)
