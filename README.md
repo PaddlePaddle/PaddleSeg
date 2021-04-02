@@ -90,7 +90,10 @@ python train.py --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml
 Run the following command to make predictions.
 
 ```shell
-python predict.py --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml --model_path output/model.pdparmas --image_path data/optic_disc_seg/JPEGImages/N0001.jpg
+python predict.py \
+    --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml \
+    --model_path output/model.pdparmas \
+    --image_path data/optic_disc_seg/JPEGImages/N0001.jpg
 ```
 
 ![pred result](./docs/images/optic_pred.jpg)
