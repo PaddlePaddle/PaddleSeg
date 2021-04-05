@@ -8,24 +8,35 @@
 ![python version](https://img.shields.io/badge/python-3.6+-orange.svg)
 ![support os](https://img.shields.io/badge/os-linux%2C%20win%2C%20mac-yellow.svg)
 
-<img src="./docs/images/seg_news_icon.png" width="50"/> *[2021-02-26] PaddleSeg发布2.0动态图正式版。静态图已经被移至[legacy](./legacy)子目录下。更多信息请查看详细[更新日志](./docs/release_notes_cn.md)。*
+<img src="./docs/images/seg_news_icon.png" width="50"/> *[2021-2-06] PaddleSeg发布2.0.0动态图正式版，完全适配了PaddlePaddle2.0版本。更多信息请查看详细[更新日志](./docs/release_notes_cn.md)。*
 
 ![demo](./docs/images/cityscapes.gif)
 
 PaddleSeg是基于飞桨[PaddlePaddle](https://www.paddlepaddle.org.cn)开发的端到端图像分割开发套件，涵盖了**高精度**和**轻量级**等不同方向的大量高质量分割模型。通过模块化的设计，提供了**配置化驱动**和**API调用**两种应用方式，帮助开发者更便捷地完成从训练到部署的全流程图像分割应用。
 
-## 特性
+## 特性 <img src="./docs/images/feature.png" width="20"/>
 
-* **高精度模型**：基于百度自研的[半监督标签知识蒸馏方案（SSLD）](https://paddleclas.readthedocs.io/zh_CN/latest/advanced_tutorials/distillation/distillation.html#ssld)训练得到高精度骨干网络，结合前沿的分割技术，提供了50+的高质量预训练模型，效果优于其他开源实现。
 
-* **模块化设计**：支持15+主流 *分割网络* ，结合模块化设计的 *数据增强策略* 、*骨干网络*、*损失函数* 等不同组件，开发者可以基于实际应用场景出发，组装多样化的训练配置，满足不同性能和精度的要求。
+* <img src="./docs/images/f0.png" width="20"/> **高精度模型**：基于百度自研的[半监督标签知识蒸馏方案（SSLD）](https://paddleclas.readthedocs.io/zh_CN/latest/advanced_tutorials/distillation/distillation.html#ssld)训练得到高精度骨干网络，结合前沿的分割技术，提供了50+的高质量预训练模型，效果优于其他开源实现。
 
-* **高性能**：支持多进程异步I/O、多卡并行训练、评估等加速策略，结合飞桨核心框架的显存优化功能，可大幅度减少分割模型的训练开销，让开发者更低成本、更高效地完成图像分割训练。
+* <img src="./docs/images/f2.png" width="20"/> **模块化设计**：支持20+主流 *分割网络* ，结合模块化设计的 *数据增强策略* 、*骨干网络*、*损失函数* 等不同组件，开发者可以基于实际应用场景出发，组装多样化的训练配置，满足不同性能和精度的要求。
 
-## 模型库
+* <img src="./docs/images/f3.png" width="20"/> **高性能**：支持多进程异步I/O、多卡并行训练、评估等加速策略，结合飞桨核心框架的显存优化功能，可大幅度减少分割模型的训练开销，让开发者更低成本、更高效地完成图像分割训练。
+
+## 技术交流 <img src="./docs/images/chat.png" width="20"/>
+
+* 如果你发现任何PaddleSeg存在的问题或者是建议, 欢迎通过[GitHub Issues](https://github.com/PaddlePaddle/PaddleSeg/issues)给我们提issues。
+* 同时欢迎加入PaddleSeg微信群
+<div align="center">
+<img src="./docs/images/seg_weichat.png"  width = "200" />
+</div>
+
+* 大家也可以通过QQ群和我们进行交流：1004738029 
+
+## 模型库  <img src="./docs/images/model.png" width="20"/>
 
 |模型\骨干网络|ResNet50|ResNet101|HRNetw18|HRNetw48|
-|-|-|-|-|-|
+|--|--|--|--|--|
 |[ANN](./configs/ann)|✔|✔|||
 |[BiSeNetv2](./configs/bisenet)|-|-|-|-|
 |[DANet](./configs/danet)|✔|✔|||
@@ -47,7 +58,7 @@ PaddleSeg是基于飞桨[PaddlePaddle](https://www.paddlepaddle.org.cn)开发的
 |[ISANet](./configs/isanet)|✔|✔|-|-|
 |[DNLNet](./configs/dnlnet)|✔|✔|-|-|
 
-## 数据集
+## 数据集 <img src="./docs/images/data.png" width="20"/>
 
 - [x] Cityscapes
 - [x] Pascal VOC
@@ -55,7 +66,7 @@ PaddleSeg是基于飞桨[PaddlePaddle](https://www.paddlepaddle.org.cn)开发的
 - [x] Pascal Context
 - [x] COCO stuff
 
-## 安装
+## 安装 <img src="./docs/images/install1.png" width="20"/>
 
 #### 1. 安装PaddlePaddle
 
@@ -89,7 +100,7 @@ git clone https://github.com/PaddlePaddle/PaddleSeg
 python train.py --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml
 ```
 
-## 使用教程
+## 使用教程 <img src="./docs/images/teach.png" width="30"/>
 
 * [快速入门](./docs/quick_start.md)
 * [API使用教程](https://aistudio.baidu.com/aistudio/projectdetail/1339458)
@@ -101,21 +112,19 @@ python train.py --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml
 * [模型压缩](./slim)
 * [模型导出](./docs/model_export.md)
 
-## 实践案例
+## 实践案例 <img src="./docs/images/anli.png" width="20"/>
 
 * [Cityscapes SOTA](./contrib/CityscapesSOTA)
 
-## 联系我们
-* 如果你发现任何PaddleSeg存在的问题或者是建议, 欢迎通过[GitHub Issues](https://github.com/PaddlePaddle/PaddleSeg/issues)给我们提issues。
-* 同时欢迎加入PaddleSeg技术交流群：1004738029 (QQ群3) 或者 850378321（QQ群1已满）或者793114768（QQ群2已满）。
 
-## 代码贡献
+
+## 代码贡献 <img src="./docs/images/con.png" width="30"/>
 
 * 非常感谢[jm12138](https://github.com/jm12138)贡献U<sup>2</sup>-Net模型。
 * 非常感谢[zjhellofss](https://github.com/zjhellofss)（傅莘莘）贡献Attention U-Net模型，和Dice loss损失函数。
 * 非常感谢[liuguoyu666](https://github.com/liguoyu666)贡献U-Net++模型。
 
-## 学术引用
+## 学术引用 <img src="./docs/images/yinyong1.png" width="30"/>
 
 如果我们的项目在学术上帮助到你，请考虑以下引用：
 
