@@ -247,11 +247,13 @@ class VisionTransformer(nn.Layer):
 
     def forward_features(self, x):
         x = self.patch_embed(x)
+        x_shape = paddle.shape(x)
         n, c, h, w = x.shape
         pos_embed = self.pos_embed[:, 1:, :]
         pos_embed = pos_embed.transpose([0, 2, 1])
-        pos_embed = pos_embed.reshape([1, c, self.pos_h, self.pos_w])
-        pos_embed = F.interpolate(pos_embed, [h, w])
+        pos_embed = pos_embed.reshape([1, -1, self.pos_h, self.pos_w])
+        pos_embed = F.interpolate(
+            pos_embed, x_shape[2:], mode='bilinear', align_corners=False)
         x = x + pos_embed
 
         x = x.flatten(2).transpose([0, 2, 1])
@@ -260,9 +262,13 @@ class VisionTransformer(nn.Layer):
         for idx, blk in enumerate(self.blocks):
             x = blk(x)
             if idx < self.depth - 1:
-                res.append(x.transpose([0, 2, 1]).reshape([n, c, h, w]))
+                res.append(
+                    x.transpose([0, 2, 1]).reshape(
+                        [0, self.embed_dim, x_shape[2], x_shape[3]]))
         x = self.norm(x)
-        res.append(x.transpose([0, 2, 1]).reshape([n, c, h, w]))
+        res.append(
+            x.transpose([0, 2, 1]).reshape(
+                [0, self.embed_dim, x_shape[2], x_shape[3]]))
         return res
 
     def forward(self, x):
