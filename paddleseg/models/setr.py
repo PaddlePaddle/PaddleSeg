@@ -35,20 +35,22 @@ class SegmentationTransformer(nn.Layer):
         self.backbone = backbone
         self.num_classes = num_classes
 
-        if head == 'naive':
+        if head.lower() == 'naive':
             self.head = NaiveHead(
                 num_classes=self.num_classes,
                 backbone_indices=backbone_indices,
                 in_channels=self.backbone.embed_dim)
-        elif head == 'pup':
+        elif head.lower() == 'pup':
             self.head = PUPHead(
                 num_classes=self.num_classes,
                 backbone_indices=backbone_indices,
                 in_channels=self.backbone.embed_dim)
-        elif head == 'mla':
+        elif head.lower() == 'mla':
             self.head = MLAHead()
         else:
-            raise RuntimeError()
+            raise RuntimeError(
+                'Unsupported segmentation head type {}. Only naive/pup/mla is valid.'
+                .format(head))
 
         self.align_corners = align_corners
         self.pretrained = pretrained
@@ -87,12 +89,14 @@ class NaiveHead(nn.Layer):
                 kernel_size=1),
         )
 
+        aux_head_nums = len(backbone_indices) - 1
         self.aux_heads = nn.LayerList([
             layers.AuxLayer(
                 in_channels=in_channels,
                 inter_channels=in_channels,
                 out_channels=num_classes)
-        ] * (len(backbone_indices) - 1))
+        ] * aux_head_nums)
+
         self.backbone_indices = backbone_indices
         self.init_weight()
 
@@ -145,12 +149,13 @@ class PUPHead(nn.Layer):
                 out_channels=num_classes,
                 kernel_size=1))
 
+        aux_head_nums = len(backbone_indices) - 1
         self.aux_heads = nn.LayerList([
             layers.AuxLayer(
                 in_channels=in_channels,
                 inter_channels=in_channels,
                 out_channels=num_classes)
-        ] * (len(backbone_indices) - 1))
+        ] * aux_head_nums)
         self.backbone_indices = backbone_indices
 
         self.init_weight()

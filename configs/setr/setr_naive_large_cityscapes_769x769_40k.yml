@@ -6,6 +6,7 @@ model:
     type: ViT_large_patch16_384
     pretrained: vit/ViT_large_patch16_384/model.pdparams
   num_classes: 19
+  backbone_indices: [9, 14, 19, 23]
   head: naive
   align_corners: True
 
