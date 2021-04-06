@@ -1,0 +1,23 @@
+_base_: '../_base_/cityscapes_769x769.yml'
+
+model:
+  type: SegmentationTransformer
+  backbone:
+    type: ViT_large_patch16_384
+    pretrained: vit/ViT_large_patch16_384/model.pdparams
+  num_classes: 19
+  head: naive
+  align_corners: True
+
+optimizer:
+  weight_decay: 0.0
+
+iters: 40000
+
+loss:
+  types:
+    - type: CrossEntropyLoss
+    - type: CrossEntropyLoss
+    - type: CrossEntropyLoss
+    - type: CrossEntropyLoss
+  coef: [1, 0.4, 0.4, 0.4]
