@@ -35,17 +35,46 @@ def parse_args():
     parser.add_argument(
         '--save_dir',
         dest='save_dir',
-        help='The directory for saving the model snapshot',
+        help='The directory for saving the exported model',
         type=str,
         default='./output')
     parser.add_argument(
         '--model_path',
         dest='model_path',
-        help='The path of model for evaluation',
+        help='The path of model for export',
         type=str,
         default=None)
+    parser.add_argument(
+        '--add_argmax',
+        dest='add_argmax',
+        help='Add the argmax operation at the end of the network',
+        action='store_true')
+    parser.add_argument(
+        '--add_softmax',
+        dest='add_softmax',
+        help='Add the softmax operation at the end of the network',
+        action='store_true')
 
     return parser.parse_args()
+
+
+class NewNet(paddle.nn.Layer):
+    def __init__(self, net, add_argmax=False, add_softmax=False):
+        super().__init__()
+        self.net = net
+        self.add_argmax = add_argmax
+        self.add_softmax = add_softmax
+
+    def forward(self, x):
+        outs = self.net(x)
+        new_outs = []
+        for out in outs:
+            if self.add_softmax:
+                out = paddle.nn.functional.softmax(out, axis=1)
+            if self.add_argmax:
+                out = paddle.argmax(out, axis=1)
+            new_outs.append(out)
+        return new_outs
 
 
 def main(args):
@@ -58,15 +87,20 @@ def main(args):
         net.set_dict(para_state_dict)
         logger.info('Loaded trained params of model successfully.')
 
-    net.eval()
-    net = paddle.jit.to_static(
-        net,
+    if args.add_argmax or args.add_softmax:
+        new_net = NewNet(net, args.add_argmax, args.add_softmax)
+    else:
+        new_net = net
+
+    new_net.eval()
+    new_net = paddle.jit.to_static(
+        new_net,
         input_spec=[
             paddle.static.InputSpec(
                 shape=[None, 3, None, None], dtype='float32')
         ])
     save_path = os.path.join(args.save_dir, 'model')
-    paddle.jit.save(net, save_path)
+    paddle.jit.save(new_net, save_path)
 
     yml_file = os.path.join(args.save_dir, 'deploy.yaml')
     with open(yml_file, 'w') as file:

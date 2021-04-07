@@ -111,7 +111,10 @@ class Predictor:
 
         results = np.concatenate(results, axis=0)
         for i in range(results.shape[0]):
-            result = np.argmax(results[i], axis=0)
+            if self.args.without_argmax:
+                result = results[i]
+            else:
+                result = np.argmax(results[i], axis=0)
             result = get_pseudo_color_map(result)
             basename = os.path.basename(imgs[i])
             basename, _ = os.path.splitext(basename)
@@ -157,6 +160,11 @@ def parse_args():
         '--use_int8',
         dest='use_int8',
         help='Whether to use Int8 prediction when using TensorRT prediction.',
+        action='store_true')
+    parser.add_argument(
+        '--without_argmax',
+        dest='without_argmax',
+        help='Do not perform argmax operation on the predict result.',
         action='store_true')
 
     return parser.parse_args()

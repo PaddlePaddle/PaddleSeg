@@ -33,6 +33,8 @@ python export.py \
 |config|配置文件|是|-|
 |save_dir|模型和visualdl日志文件的保存根路径|否|output|
 |model_path|预训练模型参数的路径|否|配置文件中指定值|
+|add_argmax|在网络末端添加argmax算子|否|否|
+|add_softmax|在网络末端添加softmax算子|否|否|
 
 ## 结果文件
 
