@@ -18,6 +18,12 @@ The models subpackage contains the following model for image sementic segmentaio
 - [U<sup>2</sup>Net+](#U2Net-1)
 - [AttentionUNet](#AttentionUNet)
 - [UNet++](#UNet-1)
+- [UNet3+](#UNet-2)
+- [DecoupledSegNet](#DecoupledSegNet)
+- [ISANet](#ISANet)
+- [EMANet](#EMANet)
+- [DNLNet](#DNLNet)
+
 
 ## [DeepLabV3+](../../paddleseg/models/deeplab.py)
 > CLASS paddleseg.models.DeepLabV3P(num_classes, backbone, backbone_indices=(0, 3), aspp_ratios=(1, 6, 12, 18), aspp_out_channels=256, align_corners=False, pretrained=None)
@@ -402,3 +408,138 @@ The models subpackage contains the following model for image sementic segmentaio
             is even, e.g. 1024x512, otherwise it is True, e.g. 769x769.  Default: False.
 > > > - **pretrained** (str, optional): The path or url of pretrained model for fine tuning. Default: None.
 > > > - **is_ds** (bool): use deep supervision or not. Default: True
+
+## <span id="UNet-2">[UNet3+](../../paddleseg/models/unet_3plus.py)</span>
+> class UNet3Plus(in_channels,
+                 num_classes,
+                 is_batchnorm=True,
+                 is_deepsup=False,
+                 is_CGM=False)
+
+    The UNet3+ implementation based on PaddlePaddle.
+
+    The original article refers to
+    Huang H , Lin L , Tong R , et al. "UNet 3+: A Full-Scale Connected UNet for Medical Image Segmentation"
+    (https://arxiv.org/abs/2004.08790).
+
+> > Args
+> > > - **in_channels** (int): The channel number of input image.
+> > > - **num_classes** (int): The unique number of target classes.
+> > > - **is_batchnorm** (bool, optional) Use batchnorm after conv or not.  Default: True.
+> > > - **is_deepsup** (bool, optional): Use deep supervision or not.  Default: False.
+> > > - **is_CGM** (bool, optional): Use classification-guided module or not.
+            If True, is_deepsup must be True.  Default: False.
+
+## [DecoupledSegNet](../../paddleseg/models/decoupled_segnet.py)
+> class DecoupledSegNet(num_classes,
+                 backbone,
+                 backbone_indices=(0, 3),
+                 aspp_ratios=(1, 6, 12, 18),
+                 aspp_out_channels=256,
+                 align_corners=False,
+                 pretrained=None)
+
+    The DecoupledSegNet implementation based on PaddlePaddle.
+
+    The original article refers to
+    Xiangtai Li, et, al. "Improving Semantic Segmentation via Decoupled Body and Edge Supervision"
+    (https://arxiv.org/pdf/2007.10035.pdf)
+
+> > Args
+> > > - **num_classes** (int): The unique number of target classes.
+> > > - **backbone** (paddle.nn.Layer): Backbone network, currently support Resnet50_vd/Resnet101_vd.
+> > > - **backbone_indices** (tuple, optional): Two values in the tuple indicate the indices of output of backbone.
+           Default: (0, 3).
+> > > - **aspp_ratios** (tuple, optional): The dilation rate using in ASSP module.
+            If output_stride=16, aspp_ratios should be set as (1, 6, 12, 18).
+            If output_stride=8, aspp_ratios is (1, 12, 24, 36).
+            Default: (1, 6, 12, 18).
+> > > - **aspp_out_channels** (int, optional): The output channels of ASPP module. Default: 256.
+> > > - **align_corners** (bool, optional): An argument of F.interpolate. It should be set to False when the feature size is even,
+            e.g. 1024x512, otherwise it is True, e.g. 769x769. Default: False.
+> > > - **pretrained** (str, optional): The path or url of pretrained model. Default: None.
+
+## [ISANet](../../paddleseg/models/isanet.py)
+> CLASS paddleseg.models.ISANet(num_classes, backbone, backbone_indices=(2, 3), isa_channels=256, down_factor=(8, 8), enable_auxiliary_loss=True, align_corners=False, pretrained=None)
+
+    The ISANet implementation based on PaddlePaddle.
+
+    The original article refers to Lang Huang, et al. "Interlaced Sparse Self-Attention for Semantic Segmentation"
+    (https://arxiv.org/abs/1907.12273).
+
+> > Args
+> > > - **num_classes** (int): The unique number of target classes.
+> > > - **backbone** (Paddle.nn.Layer): A backbone network.
+> > > - **backbone_indices** (tuple): The values in the tuple indicate the indices of output of backbone.
+> > > - **isa_channels** (int): The channels of ISA Module.
+> > > - **down_factor** (tuple): Divide the height and width dimension to (Ph, PW) groups.
+> > > - **enable_auxiliary_loss** (bool, optional): A bool value indicates whether adding auxiliary loss. Default: True.
+> > > - **align_corners** (bool): An argument of F.interpolate. It should be set to False when the output size of feature
+            is even, e.g. 1024x512, otherwise it is True, e.g. 769x769.  Default: False.
+> > > - **pretrained** (str, optional): The path or url of pretrained model. Default: None.
+
+## [EMANet](../../paddleseg/models/emanet.py)
+> CLASS paddleseg.models.EMANet(num_classes, backbone, backbone_indices=(2, 3), ema_channels=512, gc_channels=256, num_bases=64, stage_num=3, momentum=0.1, concat_input=True, enable_auxiliary_loss=True, align_corners=False, pretrained=None)
+
+    The EMANet implementation based on PaddlePaddle.
+
+    The original article refers to
+    Xia Li, et al. "Expectation-Maximization Attention Networks for Semantic Segmentation"
+    (https://arxiv.org/abs/1907.13426)
+
+> > Args
+> > > - **num_classes** (int): The unique number of target classes.
+> > > - **backbone** (Paddle.nn.Layer): A backbone network.
+> > > - **backbone_indices** (tuple): The values in the tuple indicate the indices of output of backbone.
+> > > - **ema_channels** (int): EMA module channels.
+> > > - **gc_channels** (int): The input channels to Global Context Block.
+> > > - **num_bases** (int): Number of bases.
+> > > - **stage_num** (int): The iteration number for EM.
+> > > - **momentum** (float): The parameter for updating bases.
+> > > - **concat_input** (bool): Whether concat the input and output of convs before classification layer. Default: True
+> > > - **enable_auxiliary_loss** (bool, optional): A bool value indicates whether adding auxiliary loss. Default: True.
+> > > - **align_corners** (bool): An argument of F.interpolate. It should be set to False when the output size of feature
+            is even, e.g. 1024x512, otherwise it is True, e.g. 769x769.  Default: False.
+> > > - **pretrained** (str, optional): The path or url of pretrained model. Default: None.
+
+## [DNLNet](../../paddleseg/models/dnlnet.py)
+> CLASS paddleseg.models.DNLNet(num_classes, backbone, backbone_indices=(2, 3), reduction=2, use_scale=True, mode='embedded_gaussian', temperature=0.05, concat_input=True, enable_auxiliary_loss=True, align_corners=False, pretrained=None)
+
+    The DNLNet implementation based on PaddlePaddle.
+
+    The original article refers to
+    Minghao Yin, et al. "Disentangled Non-Local Neural Networks"
+    (https://arxiv.org/abs/2006.06668)
+
+> > Args
+> > > - **num_classes** (int): The unique number of target classes.
+> > > - **backbone** (Paddle.nn.Layer): A backbone network.
+> > > - **backbone_indices** (tuple): The values in the tuple indicate the indices of output of backbone.
+> > > - **reduction** (int): Reduction factor of projection transform. Default: 2.
+> > > - **use_scale** (bool): Whether to scale pairwise_weight by sqrt(1/inter_channels). Default: False.
+> > > - **mode** (str): The nonlocal mode. Options are 'embedded_gaussian',
+            'dot_product'. Default: 'embedded_gaussian'.
+> > > - **temperature** (float): Temperature to adjust attention. Default: 0.05.
+> > > - **concat_input** (bool): Whether concat the input and output of convs before classification layer. Default: True
+> > > - **enable_auxiliary_loss** (bool, optional): A bool value indicates whether adding auxiliary loss. Default: True.
+> > > - **align_corners** (bool): An argument of F.interpolate. It should be set to False when the output size of feature
+            is even, e.g. 1024x512, otherwise it is True, e.g. 769x769.  Default: False.
+> > > - **pretrained** (str, optional): The path or url of pretrained model. Default: None.
+
+## [SFNet](../../paddleseg/models/sfnet.py)
+> CLASS paddleseg.models.SFNet(num_classes, backbone, backbone_indices, enable_auxiliary_loss=False, align_corners=False, pretrained=None)
+
+    The SFNet implementation based on PaddlePaddle.
+
+    The original article refers to
+    Li, Xiangtai, et al. "Semantic Flow for Fast and Accurate Scene Parsing"
+    (https://arxiv.org/pdf/2002.10120.pdf).
+
+> > Args
+> > > - **num_class** (int): The unique number of target classes.
+> > > - **backbone** (Paddle.nn.Layer): A backbone network.
+> > > - **backbone_indices** (tuple): The values in the tuple indicate the indices of output of backbone.
+> > > - **enable_auxiliary_loss** (bool, optional): A bool value indicates whether adding auxiliary loss. Default: True.
+> > > - **align_corners** (bool): An argument of F.interpolate. It should be set to False when the output size of feature
+            is even, e.g. 1024x512, otherwise it is True, e.g. 769x769.  Default: False.
+> > > - **pretrained** (str, optional): The path or url of pretrained model. Default: None.

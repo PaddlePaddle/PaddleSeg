@@ -1,0 +1,54 @@
+
+
+batch_size: 4
+iters: 15000
+
+train_dataset:
+  type: MiniDeepGlobeRoadExtraction
+  dataset_root: data/MiniDeepGlobeRoadExtraction
+  transforms:
+    - type: ResizeStepScaling
+      min_scale_factor: 0.5
+      max_scale_factor: 2.0
+      scale_step_size: 0.25
+    - type: RandomPaddingCrop
+      crop_size: [768, 768]
+    - type: RandomHorizontalFlip
+    - type: Normalize
+  mode: train
+
+val_dataset:
+  type: MiniDeepGlobeRoadExtraction
+  dataset_root: data/MiniDeepGlobeRoadExtraction
+  transforms:
+    - type: Normalize
+  mode: val
+
+model:
+  type: OCRNet
+  backbone:
+    type: HRNet_W18
+    pretrained: https://bj.bcebos.com/paddleseg/dygraph/hrnet_w18_ssld.tar.gz
+  backbone_indices: [0]
+
+optimizer:
+  type: sgd
+
+lr_scheduler:
+  type: PolynomialDecay
+  learning_rate: 0.01
+  power: 0.9
+
+loss:
+  types:
+    - type: MixedLoss
+      losses:
+        - type: CrossEntropyLoss
+        - type: LovaszHingeLoss
+      coef: [1, 0.01]
+    - type: MixedLoss
+      losses:
+        - type: CrossEntropyLoss
+        - type: LovaszHingeLoss
+      coef: [1, 0.01]
+  coef: [1, 0.4]

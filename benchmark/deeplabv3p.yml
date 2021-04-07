@@ -37,12 +37,11 @@ optimizer:
   type: sgd
   weight_decay: 0.00004
 
-learning_rate:
-  value: 0.01
-  decay:
-    type: poly
-    power: 0.9
-    end_lr: 0.0
+lr_scheduler:
+  type: PolynomialDecay
+  learning_rate: 0.01
+  end_lr: 0
+  power: 0.9
 
 loss:
   types:

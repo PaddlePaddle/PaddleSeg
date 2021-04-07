@@ -1,0 +1,26 @@
+_base_: '../_base_/pascal_voc12aug.yml'
+
+model:
+  type: ISANet
+  isa_channels: 256
+  backbone:
+    type: ResNet50_vd
+    output_stride: 8
+    pretrained:  https://bj.bcebos.com/paddleseg/dygraph/resnet50_vd_ssld_v2.tar.gz
+  align_corners: True
+
+optimizer:
+  type: sgd
+  momentum: 0.9
+  weight_decay: 0.00001
+
+lr_scheduler:
+  type: PolynomialDecay
+  learning_rate: 0.01
+  power: 0.9
+
+loss:
+  types:
+    - type: CrossEntropyLoss
+    - type: CrossEntropyLoss
+  coef: [1, 0.4]

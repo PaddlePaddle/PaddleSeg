@@ -8,9 +8,11 @@
 ![python version](https://img.shields.io/badge/python-3.6+-orange.svg)
 ![support os](https://img.shields.io/badge/os-linux%2C%20win%2C%20mac-yellow.svg)
 
+<img src="./docs/images/seg_news_icon.png" width="50"/> *[2021-02-26] PaddleSeg发布2.0动态图正式版。静态图已经被移至[legacy](./legacy)子目录下。更多信息请查看详细[更新日志](./docs/release_notes_cn.md)。*
+
 ![demo](./docs/images/cityscapes.gif)
 
-PaddleSeg是基于飞桨[PaddlePaddle](https://www.paddlepaddle.org.cn)开发的端到端图像分割开发套件，涵盖了**高精度**和**轻量级**等不同方向的大量高质量分割模型。通过模块化的设计，提供了**配置化驱动**和**API调用**等两种应用方式，帮助开发者更便捷地完成从训练到部署的全流程图像分割应用。
+PaddleSeg是基于飞桨[PaddlePaddle](https://www.paddlepaddle.org.cn)开发的端到端图像分割开发套件，涵盖了**高精度**和**轻量级**等不同方向的大量高质量分割模型。通过模块化的设计，提供了**配置化驱动**和**API调用**两种应用方式，帮助开发者更便捷地完成从训练到部署的全流程图像分割应用。
 
 ## 特性
 
@@ -40,14 +42,20 @@ PaddleSeg是基于飞桨[PaddlePaddle](https://www.paddlepaddle.org.cn)开发的
 |[U<sup>2</sup>-Net](./configs/u2net)|-|-|-|-|
 |[Att U-Net](./configs/attention_unet)|-|-|-|-|
 |[U-Net++](./configs/unet_plusplus)|-|-|-|-|
+|[U-Net3+](./configs/unet_3plus)|-|-|-|-|
+|[DecoupledSegNet](./configs/decoupled_segnet)|✔|✔|||
+|[EMANet](./configs/emanet)|✔|✔|-|-|
+|[ISANet](./configs/isanet)|✔|✔|-|-|
+|[DNLNet](./configs/dnlnet)|✔|✔|-|-|
+|[SFNet](./configs/sfnet)|✔|-|-|-|
 
 ## 数据集
 
 - [x] Cityscapes
 - [x] Pascal VOC
 - [x] ADE20K
-- [ ] Pascal Context
-- [ ] COCO stuff
+- [x] Pascal Context
+- [x] COCO stuff
 
 ## 安装
 
@@ -55,25 +63,30 @@ PaddleSeg是基于飞桨[PaddlePaddle](https://www.paddlepaddle.org.cn)开发的
 
 版本要求
 
-* PaddlePaddle >= 2.0.0rc
+* PaddlePaddle >= 2.0.0
 
 * Python >= 3.6+
 
-由于图像分割模型计算开销大，推荐在GPU版本的PaddlePaddle下使用PaddleSeg。推荐安装10.0以上的CUDA环境。安装教程请见[PaddlePaddle官网](https://www.paddlepaddle.org.cn/documentation/docs/zh/2.0-rc/install/index_cn.html)。
+由于图像分割模型计算开销大，推荐在GPU版本的PaddlePaddle下使用PaddleSeg。推荐安装10.0以上的CUDA环境。安装教程请见[PaddlePaddle官网](https://www.paddlepaddle.org.cn/install/quick?docurl=/documentation/docs/zh/2.0/install/)。
 
 
 #### 2. 安装PaddleSeg
+支持用**API调用**的方式构建定制化的分割框架，灵活开发。
 
 ```shell
 pip install paddleseg
 ```
 
 #### 3. 下载PaddleSeg仓库
+支持用**配置化驱动**的方式完成全流程分割应用，简单快捷。
+
 ```shell
 git clone https://github.com/PaddlePaddle/PaddleSeg
 ```
 
-## 训练
+#### 4. 验证安装
+运行以下命令，如果可以正常进行训练，说明您已经安装成功。
+
 ```shell
 python train.py --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml
 ```
@@ -84,11 +97,44 @@ python train.py --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml
 * [API使用教程](https://aistudio.baidu.com/aistudio/projectdetail/1339458)
 * [数据集准备](./docs/data_prepare.md)
 * [配置项](./configs/)
+* [Loss使用](./docs/loss_usage.md)
 * [API参考](./docs/apis)
 * [添加新组件](./docs/add_new_model.md)
+* [模型压缩](./slim)
+* [模型导出](./docs/model_export.md)
+
+## 实践案例
+
+* [Cityscapes SOTA](./contrib/CityscapesSOTA)
+
+## 联系我们
+* 如果你发现任何PaddleSeg存在的问题或者是建议, 欢迎通过[GitHub Issues](https://github.com/PaddlePaddle/PaddleSeg/issues)给我们提issues。
+* 同时欢迎加入PaddleSeg技术交流群：1004738029 (QQ群3) 或者 850378321（QQ群1已满）或者793114768（QQ群2已满）。
 
 ## 代码贡献
 
 * 非常感谢[jm12138](https://github.com/jm12138)贡献U<sup>2</sup>-Net模型。
 * 非常感谢[zjhellofss](https://github.com/zjhellofss)（傅莘莘）贡献Attention U-Net模型，和Dice loss损失函数。
-* 非常感谢[liuguoyu666](https://github.com/liguoyu666)贡献U-Net++模型。
+* 非常感谢[liuguoyu666](https://github.com/liguoyu666)，[geoyee](https://github.com/geoyee)贡献U-Net++和U-Net3+模型。
+
+## 学术引用
+
+如果我们的项目在学术上帮助到你，请考虑以下引用：
+
+```latex
+@misc{liu2021paddleseg,
+      title={PaddleSeg: A High-Efficient Development Toolkit for Image Segmentation},
+      author={Yi Liu and Lutao Chu and Guowei Chen and Zewu Wu and Zeyu Chen and Baohua Lai and Yuying Hao},
+      year={2021},
+      eprint={2101.06175},
+      archivePrefix={arXiv},
+      primaryClass={cs.CV}
+}
+
+@misc{paddleseg2019,
+    title={PaddleSeg, End-to-end image segmentation kit based on PaddlePaddle},
+    author={PaddlePaddle Authors},
+    howpublished = {\url{https://github.com/PaddlePaddle/PaddleSeg}},
+    year={2019}
+}
+```

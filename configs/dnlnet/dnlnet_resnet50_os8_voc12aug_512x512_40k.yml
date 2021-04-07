@@ -1,0 +1,24 @@
+_base_: '../_base_/pascal_voc12aug.yml'
+
+model:
+  type: DNLNet
+  backbone:
+    type: ResNet50_vd
+    output_stride: 8
+    pretrained: https://bj.bcebos.com/paddleseg/dygraph/resnet50_vd_ssld_v2.tar.gz
+
+optimizer:
+  type: sgd
+  momentum: 0.9
+  weight_decay: 4.0e-05
+
+lr_scheduler:
+  type: PolynomialDecay
+  learning_rate: 0.01
+  power: 0.9
+
+loss:
+  types:
+    - type: CrossEntropyLoss
+    - type: CrossEntropyLoss
+  coef: [1, 0.4]

@@ -5,17 +5,15 @@ model:
   backbone:
     type: HRNet_W18
     pretrained: https://bj.bcebos.com/paddleseg/dygraph/hrnet_w18_ssld.tar.gz
-  num_classes: 19
   backbone_indices: [0]
 
 optimizer:
   type: sgd
 
-learning_rate:
-  value: 0.01
-  decay:
-    type: poly
-    power: 0.9
+lr_scheduler:
+  type: PolynomialDecay
+  learning_rate: 0.01
+  power: 0.9
 
 
 loss:

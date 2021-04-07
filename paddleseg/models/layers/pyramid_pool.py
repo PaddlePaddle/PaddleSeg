@@ -78,11 +78,12 @@ class ASPPModule(nn.Layer):
 
     def forward(self, x):
         outputs = []
+        interpolate_shape = paddle.shape(x)[2:]
         for block in self.aspp_blocks:
             y = block(x)
             y = F.interpolate(
                 y,
-                x.shape[2:],
+                interpolate_shape,
                 mode='bilinear',
                 align_corners=self.align_corners)
             outputs.append(y)
@@ -91,7 +92,7 @@ class ASPPModule(nn.Layer):
             img_avg = self.global_avg_pool(x)
             img_avg = F.interpolate(
                 img_avg,
-                x.shape[2:],
+                interpolate_shape,
                 mode='bilinear',
                 align_corners=self.align_corners)
             outputs.append(img_avg)
@@ -170,7 +171,7 @@ class PPModule(nn.Layer):
             x = stage(input)
             x = F.interpolate(
                 x,
-                input.shape[2:],
+                paddle.shape(input)[2:],
                 mode='bilinear',
                 align_corners=self.align_corners)
             cat_layers.append(x)

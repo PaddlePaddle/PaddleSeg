@@ -35,7 +35,8 @@ class EdgeAttentionLoss(nn.Layer):
         super().__init__()
         self.edge_threshold = edge_threshold
         self.ignore_index = ignore_index
-        self.EPS = 1e-5
+        self.EPS = 1e-10
+        self.mean_mask = 1
 
     def forward(self, logits, label):
         """
@@ -69,6 +70,8 @@ class EdgeAttentionLoss(nn.Layer):
         mask = paddle.cast(mask, 'float32')
         loss = loss * mask
         avg_loss = paddle.mean(loss) / (paddle.mean(mask) + self.EPS)
+        if paddle.mean(mask) < self.mean_mask:
+            self.mean_mask = paddle.mean(mask)
 
         label.stop_gradient = True
         mask.stop_gradient = True
