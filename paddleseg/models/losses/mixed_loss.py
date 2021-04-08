@@ -26,8 +26,8 @@ class MixedLoss(nn.Layer):
     The advantage is that mixed loss training can be achieved without changing the networking code.
 
     Args:
-        losses (list of nn.Layer): A list consisting of multiple loss classes
-        coef (float|int): Weighting coefficient of multiple loss
+        losses (list[nn.Layer]): A list consisting of multiple loss classes
+        coef (list[float|int]): Weighting coefficient of multiple loss
 
     Returns:
         A callable object of MixedLoss.
