@@ -30,7 +30,9 @@ from .hardnet import HarDNet
 from .u2net import U2Net, U2Netp
 from .attention_unet import AttentionUNet
 from .unet_plusplus import UNetPlusPlus
+from .unet_3plus import UNet3Plus
 from .decoupled_segnet import DecoupledSegNet
 from .emanet import *
 from .isanet import *
 from .dnlnet import *
+from .sfnet import *
