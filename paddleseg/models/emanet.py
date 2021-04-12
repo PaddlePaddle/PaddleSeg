@@ -47,18 +47,18 @@ class EMANet(nn.Layer):
     """
 
     def __init__(self,
-                num_classes,
-                backbone,
-                backbone_indices=(2, 3),
-                ema_channels=512, 
-                gc_channels=256,
-                num_bases=64, 
-                stage_num=3,
-                momentum=0.1,
-                concat_input=True, 
-                enable_auxiliary_loss=True,
-                align_corners=False, 
-                pretrained=None):
+                 num_classes,
+                 backbone,
+                 backbone_indices=(2, 3),
+                 ema_channels=512, 
+                 gc_channels=256,
+                 num_bases=64, 
+                 stage_num=3,
+                 momentum=0.1,
+                 concat_input=True, 
+                 enable_auxiliary_loss=True,
+                 align_corners=False, 
+                 pretrained=None):
         super().__init__()
 
         self.backbone = backbone
@@ -198,5 +198,3 @@ class EMAU(nn.Layer):
             self.mu = mu
 
         return x
-
-
