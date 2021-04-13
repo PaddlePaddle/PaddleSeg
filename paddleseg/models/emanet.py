@@ -1,4 +1,4 @@
-# Copyright (c) 2020 PaddlePaddle Authors. All Rights Reserved.
+# Copyright (c) 2021 PaddlePaddle Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -78,7 +78,7 @@ class EMANet(nn.Layer):
         logit_list = [
             F.interpolate(
                 logit,
-                x.shape[2:],
+                paddle.shape(x)[2:],
                 mode='bilinear',
                 align_corners=self.align_corners) for logit in logit_list
         ]
@@ -185,9 +185,9 @@ class EMAU(nn.Layer):
         self.register_buffer('mu', mu)
 
     def forward(self, x):
-        b, c, h, w = x.shape
-        x = paddle.reshape(x, [b, c, h * w])
-        mu = paddle.tile(self.mu, [b, 1, 1])
+        x_shape = paddle.shape(x)
+        x = x.flatten(2)
+        mu = paddle.tile(self.mu, [x_shape[0], 1, 1])
 
         with paddle.no_grad():
             for i in range(self.stage_num):
@@ -200,7 +200,7 @@ class EMAU(nn.Layer):
 
         z_t = paddle.transpose(z, [0, 2, 1])
         x = paddle.matmul(mu, z_t)
-        x = paddle.reshape(x, [b, c, h, w])
+        x = paddle.reshape(x, [0, x_shape[1], x_shape[2], x_shape[3]])
 
         if self.training:
             mu = paddle.mean(mu, 0, keepdim=True)
