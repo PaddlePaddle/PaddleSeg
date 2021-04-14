@@ -4,15 +4,14 @@ from __future__ import unicode_literals
 import argparse
 import os
 
+
 def get_arguments():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--use_gpu",
-                        action="store_true",
-                        help="Use gpu or cpu to test.")
-    parser.add_argument('--example',
-                        type=str,
-                        help='RoadLine, HumanSeg or ACE2P')
-                        
+    parser.add_argument(
+        "--use_gpu", action="store_true", help="Use gpu or cpu to test.")
+    parser.add_argument(
+        '--example', type=str, help='RoadLine, HumanSeg or ACE2P')
+
     return parser.parse_args()
 
 
@@ -34,6 +33,7 @@ class AttrDict(dict):
         else:
             self[name] = value
 
+
 def merge_cfg_from_args(args, cfg):
     """Merge config keys, values in args into the global config."""
     for k, v in vars(args).items():
@@ -44,4 +44,3 @@ def merge_cfg_from_args(args, cfg):
             value = v
         if value is not None:
             cfg[k] = value
-

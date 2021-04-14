@@ -10,7 +10,7 @@ Download data from one of following links:
 
 option 1: The official dataset link: https://spacenet.ai/sn7-challenge/
 
-option 2: The BaiduYun [link](https://pan.baidu.com/s/1WM0IHup5Uau7FZGQf7rzdA), the access code: 17th 
+option 2: The BaiduYun [link](https://pan.baidu.com/s/1WM0IHup5Uau7FZGQf7rzdA), the access code: 17th
 
 ### 3. Deployment Guide
 

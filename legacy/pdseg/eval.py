@@ -74,7 +74,12 @@ def parse_args():
     return parser.parse_args()
 
 
-def evaluate(cfg, ckpt_dir=None, use_gpu=False, use_xpu=False, use_mpio=False, **kwargs):
+def evaluate(cfg,
+             ckpt_dir=None,
+             use_gpu=False,
+             use_xpu=False,
+             use_mpio=False,
+             **kwargs):
     np.set_printoptions(precision=5, suppress=True)
 
     startup_prog = fluid.Program()

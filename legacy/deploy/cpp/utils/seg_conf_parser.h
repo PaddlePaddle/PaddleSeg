@@ -150,7 +150,7 @@ class PaddleSegModelConfigPaser {
             return false;
         }
         // 11. use_gpu
-        if (config["DEPLOY"]["USE_GPU"].IsDefined()) { 
+        if (config["DEPLOY"]["USE_GPU"].IsDefined()) {
             _use_gpu = config["DEPLOY"]["USE_GPU"].as<int>();
         } else {
             _use_gpu = 0;

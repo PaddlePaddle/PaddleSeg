@@ -12,7 +12,7 @@ PaddleSeg采用单通道的标注图片，每一种像素值代表一种类别�
 1. 对图像标注后，无法直接观察标注是否正确。
 2. 模型测试过程无法直接判断分割的实际效果。
 
-**PaddleSeg支持伪彩色图作为标注图片，在原来的单通道图片基础上，注入调色板。在基本不增加图片大小的基础上，却可以显示出彩色的效果。** 
+**PaddleSeg支持伪彩色图作为标注图片，在原来的单通道图片基础上，注入调色板。在基本不增加图片大小的基础上，却可以显示出彩色的效果。**
 
 同时PaddleSeg也兼容灰度图标注，用户原来的灰度数据集可以不做修改，直接使用。
 ![](./imgs/annotation/image-11.png)
@@ -160,7 +160,7 @@ python pdseg/tools/create_dataset_list.py <your/dataset/dir> \
 # 生成cityscapes文件列表，其分隔符为逗号
 python pdseg/tools/create_dataset_list.py <your/dataset/dir> --type cityscapes --separator ","
 ```
-**Note:** 
+**Note:**
 
 必须指定cityscapes数据集目录，`--type`必须为`cityscapes`。
 

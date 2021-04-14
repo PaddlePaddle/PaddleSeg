@@ -45,6 +45,3 @@ loss:
   types:
     - type: CrossEntropyLoss
   coef: [1]
-
-
-

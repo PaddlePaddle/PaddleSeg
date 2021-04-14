@@ -65,7 +65,7 @@ LaneNet
 
 ```yaml
 # 数据集配置
-DATASET: 
+DATASET:
     DATA_DIR: "./dataset/tusimple_lane_detection"
     IMAGE_TYPE: "rgb"  # choice rgb or rgba
     NUM_CLASSES: 2
@@ -79,14 +79,14 @@ MODEL:
     MODEL_NAME: "lanenet"
 
 # 其他配置
-EVAL_CROP_SIZE: (512, 256) 
+EVAL_CROP_SIZE: (512, 256)
 TRAIN_CROP_SIZE: (512, 256)
-AUG: 
+AUG:
     AUG_METHOD: u"unpadding" # choice unpadding rangescaling and stepscaling
     FIX_RESIZE_SIZE: (512, 256) # (width, height), for unpadding
     MIRROR: False
-    RICH_CROP: 
-        ENABLE: False 
+    RICH_CROP:
+        ENABLE: False
 BATCH_SIZE: 4
 TEST:
     TEST_MODEL: "./saved_model/lanenet/final/"
@@ -127,12 +127,10 @@ TEST.TEST_MODEL pretrained_models/LaneNet_vgg_tusimple/
 ```
 
 可视化结果示例：
-  
+
   预测结果：<br/>
   ![](imgs/0005_pred_lane.png)
   分割结果：<br/>
   ![](imgs/0005_pred_binary.png)<br/>
   车道线实例预测结果：<br/>
   ![](imgs/0005_pred_instance.png)
-
-

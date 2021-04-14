@@ -1,6 +1,6 @@
 EVAL_CROP_SIZE: (2049, 1537) # (width, height), for unpadding rangescaling and stepscaling
 TRAIN_CROP_SIZE: (769, 769) # (width, height), for unpadding rangescaling and stepscaling
-AUG: 
+AUG:
     AUG_METHOD: u"stepscaling" # choice unpadding rangescaling and stepscaling
     FIX_RESIZE_SIZE: (640, 640) # (width, height), for unpadding
     INF_RESIZE_VALUE: 500  # for rangescaling
@@ -10,17 +10,17 @@ AUG:
     MIN_SCALE_FACTOR: 0.5  # for stepscaling
     SCALE_STEP_SIZE: 0.25  # for stepscaling
     MIRROR: True
-    RICH_CROP: 
-        ENABLE: False 
+    RICH_CROP:
+        ENABLE: False
 
 BATCH_SIZE: 2
 MEAN: [0.5, 0.5, 0.5]
 STD: [0.5, 0.5, 0.5]
 
-DATALOADER: 
+DATALOADER:
     BUF_SIZE: 256
     NUM_WORKERS: 4
-DATASET: 
+DATASET:
     DATA_DIR: "./contrib/MechanicalIndustryMeter/mini_mechanical_industry_meter_data/"
     IMAGE_TYPE: "rgb"  # choice rgb or rgba
     NUM_CLASSES: 5
