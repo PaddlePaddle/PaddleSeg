@@ -103,7 +103,6 @@ class Attention(nn.Layer):
         self.proj_drop = nn.Dropout(proj_drop)
 
     def forward(self, x):
-        # B= paddle.shape(x)[0]
         N, C = x.shape[1:]
         qkv = self.qkv(x).reshape((-1, N, 3, self.num_heads,
                                    C // self.num_heads)).transpose((2, 0, 3, 1,
@@ -248,7 +247,6 @@ class VisionTransformer(nn.Layer):
     def forward_features(self, x):
         x = self.patch_embed(x)
         x_shape = paddle.shape(x)
-        n, c, h, w = x.shape
         pos_embed = self.pos_embed[:, 1:, :]
         pos_embed = pos_embed.transpose([0, 2, 1])
         pos_embed = pos_embed.reshape([1, -1, self.pos_h, self.pos_w])
