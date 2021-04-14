@@ -177,6 +177,7 @@ class EMAU(nn.Layer):
         assert stage_num >= 1
         self.stage_num = stage_num
         self.momentum = momentum
+        self.c = c
 
         tmp_mu = self.create_parameter(
             shape=[1, c, k],
@@ -200,7 +201,7 @@ class EMAU(nn.Layer):
 
         z_t = paddle.transpose(z, [0, 2, 1])
         x = paddle.matmul(mu, z_t)
-        x = paddle.reshape(x, [0, x_shape[1], x_shape[2], x_shape[3]])
+        x = paddle.reshape(x, [0, self.c, x_shape[2], x_shape[3]])
 
         if self.training:
             mu = paddle.mean(mu, 0, keepdim=True)
