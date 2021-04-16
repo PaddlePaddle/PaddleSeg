@@ -45,33 +45,43 @@ def parse_args():
         type=str,
         default=None)
     parser.add_argument(
-        '--add_argmax',
-        dest='add_argmax',
-        help='Add the argmax operation at the end of the network',
+        '--without_argmax',
+        dest='without_argmax',
+        help='Do not add the argmax operation at the end of the network',
         action='store_true')
     parser.add_argument(
-        '--add_softmax',
-        dest='add_softmax',
+        '--with_softmax',
+        dest='with_softmax',
         help='Add the softmax operation at the end of the network',
         action='store_true')
 
     return parser.parse_args()
 
 
-class NewNet(paddle.nn.Layer):
-    def __init__(self, net, add_argmax=False, add_softmax=False):
+class SavedSegmentationNet(paddle.nn.Layer):
+    def __init__(self, net, without_argmax=False, with_softmax=False):
         super().__init__()
         self.net = net
-        self.add_argmax = add_argmax
-        self.add_softmax = add_softmax
+        self.post_processer = PostPorcesser(without_argmax, with_softmax)
 
     def forward(self, x):
         outs = self.net(x)
+        outs = self.post_processer(outs)
+        return outs
+
+
+class PostPorcesser(paddle.nn.Layer):
+    def __init__(self, without_argmax, with_softmax):
+        super().__init__()
+        self.without_argmax = without_argmax
+        self.with_softmax = with_softmax
+
+    def forward(self, outs):
         new_outs = []
         for out in outs:
-            if self.add_softmax:
+            if self.with_softmax:
                 out = paddle.nn.functional.softmax(out, axis=1)
-            if self.add_argmax:
+            if not self.without_argmax:
                 out = paddle.argmax(out, axis=1)
             new_outs.append(out)
         return new_outs
@@ -87,8 +97,9 @@ def main(args):
         net.set_dict(para_state_dict)
         logger.info('Loaded trained params of model successfully.')
 
-    if args.add_argmax or args.add_softmax:
-        new_net = NewNet(net, args.add_argmax, args.add_softmax)
+    if not args.without_argmax or args.with_softmax:
+        new_net = SavedSegmentationNet(net, args.without_argmax,
+                                       args.with_softmax)
     else:
         new_net = net
 
