@@ -18,6 +18,7 @@ The models subpackage contains the following model for image sementic segmentaio
 - [U<sup>2</sup>Net+](#U2Net-1)
 - [AttentionUNet](#AttentionUNet)
 - [UNet++](#UNet-1)
+- [UNet3+](#UNet-2)
 - [DecoupledSegNet](#DecoupledSegNet)
 - [ISANet](#ISANet)
 - [EMANet](#EMANet)
@@ -407,6 +408,27 @@ The models subpackage contains the following model for image sementic segmentaio
             is even, e.g. 1024x512, otherwise it is True, e.g. 769x769.  Default: False.
 > > > - **pretrained** (str, optional): The path or url of pretrained model for fine tuning. Default: None.
 > > > - **is_ds** (bool): use deep supervision or not. Default: True
+
+## <span id="UNet-2">[UNet3+](../../paddleseg/models/unet_3plus.py)</span>
+> class UNet3Plus(in_channels,
+                 num_classes,
+                 is_batchnorm=True,
+                 is_deepsup=False,
+                 is_CGM=False)
+
+    The UNet3+ implementation based on PaddlePaddle.
+
+    The original article refers to
+    Huang H , Lin L , Tong R , et al. "UNet 3+: A Full-Scale Connected UNet for Medical Image Segmentation"
+    (https://arxiv.org/abs/2004.08790).
+
+> > Args
+> > > - **in_channels** (int): The channel number of input image.
+> > > - **num_classes** (int): The unique number of target classes.
+> > > - **is_batchnorm** (bool, optional) Use batchnorm after conv or not.  Default: True.
+> > > - **is_deepsup** (bool, optional): Use deep supervision or not.  Default: False.
+> > > - **is_CGM** (bool, optional): Use classification-guided module or not.
+            If True, is_deepsup must be True.  Default: False.
 
 ## [DecoupledSegNet](../../paddleseg/models/decoupled_segnet.py)
 > class DecoupledSegNet(num_classes,

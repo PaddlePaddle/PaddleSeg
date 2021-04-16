@@ -76,7 +76,7 @@ class DeepLabV3P(nn.Layer):
         return [
             F.interpolate(
                 logit,
-                x.shape[2:],
+                paddle.shape(x)[2:],
                 mode='bilinear',
                 align_corners=self.align_corners) for logit in logit_list
         ]
@@ -172,7 +172,7 @@ class DeepLabV3(nn.Layer):
         return [
             F.interpolate(
                 logit,
-                x.shape[2:],
+                paddle.shape(x)[2:],
                 mode='bilinear',
                 align_corners=self.align_corners) for logit in logit_list
         ]
@@ -247,7 +247,7 @@ class Decoder(nn.Layer):
         low_level_feat = self.conv_bn_relu1(low_level_feat)
         x = F.interpolate(
             x,
-            low_level_feat.shape[2:],
+            paddle.shape(low_level_feat)[2:],
             mode='bilinear',
             align_corners=self.align_corners)
         x = paddle.concat([x, low_level_feat], axis=1)

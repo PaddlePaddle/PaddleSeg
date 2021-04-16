@@ -96,7 +96,7 @@ class HarDNet(nn.Layer):
         self.init_weight()
 
     def forward(self, x):
-        input_shape = x.shape[2:]
+        input_shape = paddle.shape(x)[2:]
         x = self.stem(x)
         x, skip_connections = self.encoder(x)
         x = self.decoder(x, skip_connections)
@@ -215,7 +215,7 @@ class Decoder(nn.Layer):
             skip = skip_connections.pop()
             x = F.interpolate(
                 x,
-                size=skip.shape[2:],
+                size=paddle.shape(skip)[2:],
                 mode="bilinear",
                 align_corners=self.align_corners)
             x = paddle.concat([x, skip], axis=1)

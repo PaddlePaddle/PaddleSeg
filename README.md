@@ -8,7 +8,7 @@ English | [简体中文](README_CN.md)
 ![python version](https://img.shields.io/badge/python-3.6+-orange.svg)
 ![support os](https://img.shields.io/badge/os-linux%2C%20win%2C%20mac-yellow.svg)
 
-<img src="./docs/images/seg_news_icon.png" width="50"/> *[2020-12-18] PaddleSeg has released the v2.0.0-rc version, which supports the dynamic graph by default. The static-graph codes have been moved to [legacy](./legacy). See detailed [release notes](./docs/release_notes.md).*
+<img src="./docs/images/seg_news_icon.png" width="50"/> *[2021-02-26] PaddleSeg has released the v2.0 version, which supports the dynamic graph by default. The static-graph codes have been moved to [legacy](./legacy). See detailed [release notes](./docs/release_notes.md).*
 
 ![demo](./docs/images/cityscapes.gif)
 
@@ -42,6 +42,7 @@ Welcome to PaddleSeg! PaddleSeg is an end-to-end image segmentation development 
 |[U<sup>2</sup>-Net](./configs/u2net)|-|-|-|-|
 |[Att U-Net](./configs/attention_unet)|-|-|-|-|
 |[U-Net++](./configs/unet_plusplus)|-|-|-|-|
+|[U-Net3+](./configs/unet_3plus)|-|-|-|-|
 |[DecoupledSegNet](./configs/decoupled_segnet)|✔|✔|||
 |[EMANet](./configs/emanet)|✔|✔|-|-|
 |[ISANet](./configs/isanet)|✔|✔|-|-|
@@ -106,12 +107,12 @@ python train.py --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml
 
 ## Feedbacks and Contact
 * The dynamic version is still under development, if you find any issue or have an idea on new features, please don't hesitate to contact us via [GitHub Issues](https://github.com/PaddlePaddle/PaddleSeg/issues).
-* PaddleSeg User Group (QQ): 850378321 or 793114768
+* PaddleSeg User Group (QQ): 1004738029 or 850378321 or 793114768
 
 ## Acknowledgement
 * Thanks [jm12138](https://github.com/jm12138) for contributing U<sup>2</sup>-Net.
 * Thanks [zjhellofss](https://github.com/zjhellofss) (Fu Shenshen) for contributing Attention U-Net, and Dice Loss.
-* Thanks [liuguoyu666](https://github.com/liguoyu666) for contributing U-Net++.
+* Thanks [liuguoyu666](https://github.com/liguoyu666), [geoyee](https://github.com/geoyee) for contributing U-Net++ and U-Net3+.
 
 ## Citation
 If you find our project useful in your research, please consider citing:

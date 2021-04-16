@@ -35,6 +35,7 @@ class OpticDiscSeg(Dataset):
         mode (str, optional): Which part of dataset to use. it is one of ('train', 'val', 'test'). Default: 'train'.
         edge (bool, optional): Whether to compute edge while training. Default: False
     """
+    NUM_CLASSES = 2
 
     def __init__(self,
                  dataset_root=None,
@@ -46,7 +47,7 @@ class OpticDiscSeg(Dataset):
         mode = mode.lower()
         self.mode = mode
         self.file_list = list()
-        self.num_classes = 2
+        self.num_classes = self.NUM_CLASSES
         self.ignore_index = 255
         self.edge = edge
 
