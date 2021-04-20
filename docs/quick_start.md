@@ -247,7 +247,7 @@ output
   ├── iter_1000
           ├── model.pdparams
           └── model.pdopt
-  └── best_model #在训练的时候，训练时候增加--do_eval后，每保存一次模型，都会eval一次，miou最高的模型会被另存为bset_model
+  └── best_model #在训练的时候，训练时候增加--do_eval后，每保存一次模型，都会eval一次，miou最高的模型会被另存为best_model
           └── model.pdparams  
 ```
 
