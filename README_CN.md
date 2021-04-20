@@ -116,6 +116,7 @@ python train.py --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml
 * 非常感谢[jm12138](https://github.com/jm12138)贡献U<sup>2</sup>-Net模型。
 * 非常感谢[zjhellofss](https://github.com/zjhellofss)（傅莘莘）贡献Attention U-Net模型，和Dice loss损失函数。
 * 非常感谢[liuguoyu666](https://github.com/liguoyu666)，[geoyee](https://github.com/geoyee)贡献U-Net++和U-Net3+模型。
+* 非常感谢[yazheng0307](https://github.com/yazheng0307) (刘正)贡献快速入门文档。
 
 ## 学术引用
 
