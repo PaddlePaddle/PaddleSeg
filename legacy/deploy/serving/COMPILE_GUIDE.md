@@ -1,7 +1,7 @@
-# 源码编译安装及搭建服务流程 
+# 源码编译安装及搭建服务流程
 本文将介绍源码编译安装以及在服务搭建流程。编译前确保PaddleServing的依赖项安装完毕。依赖安装教程请前往[PaddleSegServing 依赖安装](./README.md).
 
-## 1. 编译安装PaddleServing 
+## 1. 编译安装PaddleServing
 下列步骤介绍CPU版本以及GPU版本的PaddleServing编译安装过程。
 
 ```bash
@@ -10,7 +10,7 @@ cd ~
 git clone https://github.com/PaddlePaddle/serving.git
 # Step 2. 进入serving目录，创建build目录编译、安装
 cd serving
-mkdir build 
+mkdir build
 cd build
 # Step 3. 以下为生成GPU版本的makefile，生成CPU版本的makefile执行 cmake -DWITH_GPU=OFF ..
 cmake -DWITH_GPU=ON -DCUDNN_ROOT=/usr/local/cuda/lib64 ..
@@ -27,13 +27,13 @@ serving
 ├── CONTRIBUTING.md
 ├── cube
 ├── demo-client
-├── demo-serving 
+├── demo-serving
 │   ├── CMakeLists.txt
 │   ├── conf        # demo-serving 的配置文件目录
 │   ├── data        # 模型文件以及参数文件的目录
 │   ├── op          # 数据处理的源文件目录
 │   ├── proto       # 数据传输的proto文件目录
-│   └── scripts 
+│   └── scripts
 ├── doc
 ├── inferencer-fluid-cpu
 ├── inferencer-fluid-gpu
@@ -63,7 +63,7 @@ serving
 ├── CONTRIBUTING.md
 ├── cube
 ├── demo-client
-├── demo-serving 
+├── demo-serving
 ├── doc
 ├── inferencer-fluid-cpu
 ├── inferencer-fluid-gpu

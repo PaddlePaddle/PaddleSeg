@@ -46,7 +46,7 @@ class DiceLoss(nn.Layer):
         labels_one_hot = paddle.stack(tuple(single_label_lists), axis=1)
         logits = F.softmax(logits, axis=1)
         labels_one_hot = paddle.cast(labels_one_hot, dtype='float32')
-        dims = (0,) + tuple(range(2, labels.ndimension()))
+        dims = (0, ) + tuple(range(2, labels.ndimension()))
         intersection = paddle.sum(logits * labels_one_hot, dims)
         cardinality = paddle.sum(logits + labels_one_hot, dims)
         dice_loss = (2. * intersection / (cardinality + self.eps)).mean()

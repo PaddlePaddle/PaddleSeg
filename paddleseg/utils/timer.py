@@ -48,6 +48,6 @@ def calculate_eta(remaining_step, speed):
     result = "{:0>2}:{:0>2}:{:0>2}"
     arr = []
     for i in range(2, -1, -1):
-        arr.append(int(remaining_time / 60 ** i))
-        remaining_time %= 60 ** i
+        arr.append(int(remaining_time / 60**i))
+        remaining_time %= 60**i
     return result.format(*arr)

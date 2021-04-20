@@ -74,15 +74,15 @@ python -u infer.py --example ACE2P
 **NOTE:** 运行该模型需要2G左右显存。由于数据图片较多，预测过程将比较耗时。
 
 #### 4. 预测结果示例：
-  
+
   原图：
-  
+
   ![](imgs/117676_2149260.jpg)
-  
+
   预测结果：
-  
+
   ![](imgs/117676_2149260.png)
-  
+
 ### 备注
 
 1. 数据及模型路径等详细配置见ACE2P/HumanSeg/RoadLine下的config.py文件
@@ -90,12 +90,12 @@ python -u infer.py --example ACE2P
 
 ## 引用
 
-**论文** 
+**论文**
 
 *Devil in the Details: Towards Accurate Single and Multiple Human Parsing* https://arxiv.org/abs/1809.05996
 
 **代码**
 
-https://github.com/Microsoft/human-pose-estimation.pytorch 
+https://github.com/Microsoft/human-pose-estimation.pytorch
 
 https://github.com/liutinglt/CE2P

@@ -58,16 +58,21 @@ def main(args):
         net.set_dict(para_state_dict)
         logger.info('Loaded trained params of model successfully.')
 
-    net.forward = paddle.jit.to_static(net.forward)
-    in_shape = [1] + list(cfg.val_dataset[0][0].shape)
-    in_var = paddle.ones(in_shape)
-    out = net(in_var)
+    net.eval()
+    net = paddle.jit.to_static(
+        net,
+        input_spec=[
+            paddle.static.InputSpec(
+                shape=[None, 3, None, None], dtype='float32')
+        ])
     save_path = os.path.join(args.save_dir, 'model')
-    paddle.jit.save(net, save_path, input_spec=[in_var])
+    paddle.jit.save(net, save_path)
 
     yml_file = os.path.join(args.save_dir, 'deploy.yaml')
     with open(yml_file, 'w') as file:
-        transforms = cfg.dic['val_dataset']['transforms']
+        transforms = cfg.export_config.get('transforms', [{
+            'type': 'Normalize'
+        }])
         data = {
             'Deploy': {
                 'transforms': transforms,

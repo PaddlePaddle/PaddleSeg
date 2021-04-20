@@ -280,10 +280,11 @@ def train(cfg):
     if args.use_xpu:
         compiled_train_prog = train_prog
     else:
-        compiled_train_prog = fluid.CompiledProgram(train_prog).with_data_parallel(
-            loss_name=avg_loss.name,
-            exec_strategy=exec_strategy,
-            build_strategy=build_strategy)
+        compiled_train_prog = fluid.CompiledProgram(
+            train_prog).with_data_parallel(
+                loss_name=avg_loss.name,
+                exec_strategy=exec_strategy,
+                build_strategy=build_strategy)
 
     # Resume training
     begin_epoch = cfg.SOLVER.BEGIN_EPOCH

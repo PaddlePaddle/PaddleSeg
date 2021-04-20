@@ -37,4 +37,3 @@ class WriteJsonOp
 }  // namespace predictor
 }  // namespace paddle_serving
 }  // namespace baiu
-

@@ -51,9 +51,10 @@ class SegPostprocess(object):
         vis_result_name = img_name_fix + "_result.png"
         result_png = score_png
 
-        result_png = cv2.resize(result_png, (ori_shape[1], ori_shape[0]),
-                                fx=0,
-                                fy=0,
-                                interpolation=cv2.INTER_CUBIC)
+        result_png = cv2.resize(
+            result_png, (ori_shape[1], ori_shape[0]),
+            fx=0,
+            fy=0,
+            interpolation=cv2.INTER_CUBIC)
         cv2.imwrite(vis_result_name, result_png, [cv2.CV_8UC1])
         return result_png

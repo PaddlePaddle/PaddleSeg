@@ -35,7 +35,7 @@ int ImageSegOp::inference() {
     return -1;
   }
   const TensorVector* in = &reader_out->tensors;
-  
+
   const std::vector<int> *width_vec = &reader_out->width_vec;
   const std::vector<int> *height_vec = &reader_out->height_vec;
   //debug
@@ -62,7 +62,7 @@ int ImageSegOp::inference() {
   std::string model_name;
   sc_ptr->get_model_name(model_name);
   LOG(INFO) << "model name = " << model_name;
-  int ret;  
+  int ret;
   if ((ret = InferManager::instance().infer(
           model_name.c_str(), in, out, batch_size))) {
     LOG(ERROR) << "Failed do infer in fluid model: "
@@ -84,7 +84,7 @@ int ImageSegOp::inference() {
 
   uint32_t total_size = 1;
   for (int i = 0; i < out_tensor.shape.size(); ++i) {
-      total_size *= out_tensor.shape[i];    
+      total_size *= out_tensor.shape[i];
   }
   LOG(INFO) << "total_size = " << total_size;
   uint32_t item_size = total_size / sample_size;
@@ -105,8 +105,8 @@ int ImageSegOp::inference() {
     int width = size_vec[0];
     int height = size_vec[1];
     int class_num;
-    sc_ptr->get_class_num(class_num);	   
-    LOG(INFO) << "width = " << width << ", height = " << height << ", class_num = " << class_num; 
+    sc_ptr->get_class_num(class_num);
+    LOG(INFO) << "width = " << width << ", height = " << height << ", class_num = " << class_num;
     uint32_t out_size = width * height;
     mask_raw.clear();
     mask_raw.resize(out_size);
@@ -137,7 +137,7 @@ int ImageSegOp::inference() {
     for(int i = 0; i < out_size; ++i){
         temp_mat[i] = 255 * data[i + out_size];
     }
-    mask_mat.data = temp_mat.data(); 
+    mask_mat.data = temp_mat.data();
 
     cv::Mat mask_temp_mat((*height_vec)[si], (*width_vec)[si], mask_mat.type());
     //Size(cols, rows)

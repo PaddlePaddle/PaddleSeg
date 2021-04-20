@@ -8,13 +8,13 @@ namespace seg_conf{
 SegConf::SegConf(const std::string &configuration_filename) {
     std::cout << "filename: " << configuration_filename << std::endl;
     try{
-        if(!_seg_conf_file.open(configuration_filename, cv::FileStorage::READ)){        
+        if(!_seg_conf_file.open(configuration_filename, cv::FileStorage::READ)){
                 std::cout << "Configuration file open error!" << std::endl;
         }
     } catch(...){
         std::cout << "error" << std::endl;
     }
-    
+
 }
 
 SegConf::~SegConf(){
@@ -44,7 +44,7 @@ int SegConf::get_size_vector(std::vector<int> &size_vec) const{
 
 int SegConf::get_channels(int &channels) const{
     return get_scalar_from_file_node("CHANNELS", channels);
-} 
+}
 
 int SegConf::get_class_num(int &class_num) const {
     return get_scalar_from_file_node("CLASS_NUM", class_num);

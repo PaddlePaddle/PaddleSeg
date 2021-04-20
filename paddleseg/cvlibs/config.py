@@ -14,7 +14,7 @@
 
 import codecs
 import os
-from typing import Any
+from typing import Any, Dict, Generic
 
 import paddle
 import yaml
@@ -233,30 +233,57 @@ class Config(object):
         if not model_cfg:
             raise RuntimeError('No model specified in the configuration file.')
         if not 'num_classes' in model_cfg:
-            if self.train_dataset and hasattr(self.train_dataset,
-                                              'num_classes'):
-                model_cfg['num_classes'] = self.train_dataset.num_classes
-            elif self.val_dataset and hasattr(self.val_dataset, 'num_classes'):
-                model_cfg['num_classes'] = self.val_dataset.num_classes
-            else:
+            num_classes = None
+            if self.train_dataset_config:
+                if hasattr(self.train_dataset_class, 'NUM_CLASSES'):
+                    num_classes = self.train_dataset_class.NUM_CLASSES
+                elif hasattr(self.train_dataset, 'num_classes'):
+                    num_classes = self.train_dataset.num_classes
+            elif self.val_dataset_config:
+                if hasattr(self.val_dataset_class, 'NUM_CLASSES'):
+                    num_classes = self.val_dataset_class.NUM_CLASSES
+                elif hasattr(self.val_dataset, 'num_classes'):
+                    num_classes = self.val_dataset.num_classes
+
+            if not num_classes:
                 raise ValueError(
                     '`num_classes` is not found. Please set it in model, train_dataset or val_dataset'
                 )
+
+            model_cfg['num_classes'] = num_classes
 
         if not self._model:
             self._model = self._load_object(model_cfg)
         return self._model
 
     @property
+    def train_dataset_config(self) -> Dict:
+        return self.dic.get('train_dataset', {}).copy()
+
+    @property
+    def val_dataset_config(self) -> Dict:
+        return self.dic.get('val_dataset', {}).copy()
+
+    @property
+    def train_dataset_class(self) -> Generic:
+        dataset_type = self.train_dataset_config['type']
+        return self._load_component(dataset_type)
+
+    @property
+    def val_dataset_class(self) -> Generic:
+        dataset_type = self.val_dataset_config['type']
+        return self._load_component(dataset_type)
+
+    @property
     def train_dataset(self) -> paddle.io.Dataset:
-        _train_dataset = self.dic.get('train_dataset', {}).copy()
+        _train_dataset = self.train_dataset_config
         if not _train_dataset:
             return None
         return self._load_object(_train_dataset)
 
     @property
     def val_dataset(self) -> paddle.io.Dataset:
-        _val_dataset = self.dic.get('val_dataset', {}).copy()
+        _val_dataset = self.val_dataset_config
         if not _val_dataset:
             return None
         return self._load_object(_val_dataset)
@@ -294,6 +321,10 @@ class Config(object):
                 params[key] = val
 
         return component(**params)
+
+    @property
+    def export_config(self) -> Dict:
+        return self.dic.get('export', {})
 
     def _is_meta_type(self, item: Any) -> bool:
         return isinstance(item, dict) and 'type' in item
