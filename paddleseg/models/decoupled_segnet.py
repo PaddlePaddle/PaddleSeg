@@ -213,6 +213,7 @@ class SqueezeBodyEdge(nn.Layer):
     def flow_warp(self, input, flow, size):
         input_shape = paddle.shape(input)
         norm = size[::-1].reshape([1, 1, 1, -1])
+        norm.stop_gradient = True
         h_grid = paddle.linspace(-1.0, 1.0, size[0]).reshape([-1, 1])
         h_grid = h_grid.tile([size[1]])
         w_grid = paddle.linspace(-1.0, 1.0, size[1]).reshape([-1, 1])
