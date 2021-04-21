@@ -33,6 +33,8 @@ python export.py \
 |config|配置文件|是|-|
 |save_dir|模型和visualdl日志文件的保存根路径|否|output|
 |model_path|预训练模型参数的路径|否|配置文件中指定值|
+|with_softmax|在网络末端添加softmax算子。由于PaddleSeg组网默认返回logits，如果想要部署模型获取概率值，可以置为True|否|False|
+|without_argmax|是否不在网络末端添加argmax算子。由于PaddleSeg组网默认返回logits，为部署模型可以直接获取预测结果，我们默认在网络末端添加argmax算子|否|False|
 
 ## 结果文件
 

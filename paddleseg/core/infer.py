@@ -36,9 +36,21 @@ def get_reverse_list(ori_shape, transforms):
     reverse_list = []
     h, w = ori_shape[0], ori_shape[1]
     for op in transforms:
-        if op.__class__.__name__ in ['Resize', 'ResizeByLong']:
+        if op.__class__.__name__ in ['Resize']:
             reverse_list.append(('resize', (h, w)))
             h, w = op.target_size[0], op.target_size[1]
+        if op.__class__.__name__ in ['ResizeByLong']:
+            reverse_list.append(('resize', (h, w)))
+            long_edge = max(h, w)
+            short_edge = min(h, w)
+            short_edge = int(round(short_edge * op.long_size / long_edge))
+            long_edge = op.long_size
+            if h > w:
+                h = long_edge
+                w = short_edge
+            else:
+                w = long_edge
+                h = short_edge
         if op.__class__.__name__ in ['Padding']:
             reverse_list.append(('padding', (h, w)))
             w, h = op.target_size[0], op.target_size[1]

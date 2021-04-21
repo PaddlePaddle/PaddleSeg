@@ -26,6 +26,7 @@ python deploy/python/infer.py --config /path/to/deploy.yaml --image_path
 |use_int8|启动TensorRT预测时，是否以int8模式运行|否|否|
 |batch_size|单卡batch size|否|配置文件中指定值|
 |save_dir|保存预测结果的目录|否|output|
+|with_argmax|对预测结果进行argmax操作|否|否|
 
 *测试样例和预测结果如下*
 ![cityscape_predict_demo.png](../../docs/images/cityscapes_predict_demo.png)
