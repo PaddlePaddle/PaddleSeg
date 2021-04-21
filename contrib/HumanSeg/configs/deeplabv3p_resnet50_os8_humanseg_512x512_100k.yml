@@ -1,0 +1,56 @@
+batch_size: 8
+iters: 40000
+
+train_dataset:
+  type: HumanSeg
+  dataset_root: /ssd2/chulutao/humanseg/
+  transforms:
+    - type: Resize
+      target_size: [512, 512]
+    - type: Normalize
+  mode: train
+
+val_dataset:
+  type: HumanSeg
+  dataset_root: /ssd2/chulutao/humanseg/
+  transforms:
+    - type: Resize
+      target_size: [512, 512]
+    - type: Normalize
+  mode: val
+
+export:
+  transforms:
+    - type: Resize
+      target_size: [512, 512]
+    - type: Normalize
+
+model:
+  type: DeepLabV3P
+  backbone:
+    type: ResNet50_vd
+    output_stride: 8
+    multi_grid: [1, 2, 4]
+    pretrained: https://bj.bcebos.com/paddleseg/dygraph/resnet50_vd_ssld_v2.tar.gz
+  num_classes: 2
+  backbone_indices: [0, 3]
+  aspp_ratios: [1, 12, 24, 36]
+  aspp_out_channels: 256
+  align_corners: False
+  pretrained: null
+
+optimizer:
+  type: sgd
+  momentum: 0.9
+  weight_decay: 4.0e-5
+
+lr_scheduler:
+  type: PolynomialDecay
+  learning_rate: 0.01
+  end_lr: 0
+  power: 0.9
+
+loss:
+  types:
+    - type: CrossEntropyLoss
+  coef: [1]
