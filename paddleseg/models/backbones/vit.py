@@ -259,15 +259,8 @@ class VisionTransformer(nn.Layer):
         res = []
         for idx, blk in enumerate(self.blocks):
             x = blk(x)
-            if idx < self.depth - 1:
-                res.append(
-                    x.transpose([0, 2, 1]).reshape(
-                        [0, self.embed_dim, x_shape[2], x_shape[3]]))
-        x = self.norm(x)
-        res.append(
-            x.transpose([0, 2, 1]).reshape(
-                [0, self.embed_dim, x_shape[2], x_shape[3]]))
-        return res
+            res.append(x)
+        return res, x_shape
 
     def forward(self, x):
         return self.forward_features(x)
