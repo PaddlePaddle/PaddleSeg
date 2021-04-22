@@ -13,6 +13,9 @@ model:
 optimizer:
   weight_decay: 0.0
 
+lr_scheduler:
+  end_lr: 1.0e-4
+
 iters: 40000
 
 loss:
