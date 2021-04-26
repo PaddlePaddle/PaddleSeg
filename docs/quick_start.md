@@ -62,7 +62,7 @@
 
 ​                                                                                            图5：数据集的原图和效果图
 
- 
+
 
 ```python
 #下载并解压数据集
@@ -89,7 +89,7 @@
 
   ```python
    其中train.txt和val.txt的内容如下所示：
-  
+
    images/image1.jpg labels/label1.png
    images/image2.jpg labels/label2.png
    ...
@@ -166,7 +166,7 @@ learning_rate: #设定学习率
 loss: #设定损失函数的类型
   types:
     - type: CrossEntropyLoss #损失函数类型
-  coef: [1, 1, 1, 1, 1] 
+  coef: [1, 1, 1, 1, 1]
   #BiseNetV2有4个辅助loss，加上主loss共五个，1表示权重 all_loss = coef_1 * loss_1 + .... + coef_n * loss_n
 
 model: #模型说明
@@ -195,27 +195,27 @@ A：与模型方案相关的信息均在配置文件中，还包括对原始样�
 - transform是对数据的预处理的策略，用户可根据自己的实际需要改动
 
 ```python
-train_dataset: 
-  type: Dataset 
-  dataset_root: dataset/optic_disc_seg 
-  train_path: dataset/optic_disc_seg/train_list.txt 
-  num_classes: 2 
-  transforms: 
-    - type: Resize 
-      target_size: [512, 512] 
-    - type: RandomHorizontalFlip 
-    - type: Normalize 
+train_dataset:
+  type: Dataset
+  dataset_root: dataset/optic_disc_seg
+  train_path: dataset/optic_disc_seg/train_list.txt
+  num_classes: 2
+  transforms:
+    - type: Resize
+      target_size: [512, 512]
+    - type: RandomHorizontalFlip
+    - type: Normalize
   mode: train
 
-val_dataset: 
-  type: Dataset 
-  dataset_root: dataset/optic_disc_seg 
-  val_path: dataset/optic_disc_seg/val_list.txt 
-  num_classes: 2 
+val_dataset:
+  type: Dataset
+  dataset_root: dataset/optic_disc_seg
+  val_path: dataset/optic_disc_seg/val_list.txt
+  num_classes: 2
   transforms:
     - type: Resize  
       target_size: [512, 512]  
-    - type: Normalize 
+    - type: Normalize
   mode: val
 ```
 
@@ -244,9 +244,9 @@ output
   ├── iter_500 #表示在500步保存一次模型
           ├── model.pdparams  #模型参数
           └── model.pdopt  #训练阶段的优化器参数
-  ├── iter_1000 
-          ├── model.pdparams 
-          └── model.pdopt 
+  ├── iter_1000
+          ├── model.pdparams
+          └── model.pdopt
   └── best_model #在训练的时候，训练时候增加--do_eval后，每保存一次模型，都会eval一次，miou最高的模型会被另存为bset_model
           └── model.pdparams  
 ```
@@ -385,10 +385,10 @@ Kappa=P0−Pe1−PeKappa= \frac{P_0-P_e}{1-P_e}*K**a**p**p**a*=1−*P**e**P*0−
 ...
 2021-01-13 16:41:29 [INFO]	Start evaluating (total_samples=76, total_iters=76)...
 76/76 [==============================] - 2s 30ms/step - batch_cost: 0.0268 - reader cost: 1.7656e-
-2021-01-13 16:41:31 [INFO]	[EVAL] #Images=76 mIoU=0.8526 Acc=0.9942 Kappa=0.8283 
-2021-01-13 16:41:31 [INFO]	[EVAL] Class IoU: 
+2021-01-13 16:41:31 [INFO]	[EVAL] #Images=76 mIoU=0.8526 Acc=0.9942 Kappa=0.8283
+2021-01-13 16:41:31 [INFO]	[EVAL] Class IoU:
 [0.9941 0.7112]
-2021-01-13 16:41:31 [INFO]	[EVAL] Class Acc: 
+2021-01-13 16:41:31 [INFO]	[EVAL] Class Acc:
 [0.9959 0.8886]
 ```
 
@@ -454,8 +454,8 @@ output
 
 | 端侧         | 库           | 教程   |
 | :----------- | :----------- | :----- |
-| Python端部署 | Paddle预测库 | 已完善 |
-| 移动端部署   | ONNX         | 完善中 |
+| Python端部署 | Paddle预测库 | [示例](../deploy/python/) |
+| 移动端部署   | PaddleLite        | [示例](../deploy/lite/) |
 | 服务端部署   | HubServing   | 完善中 |
 | 前端部署     | PaddleJS     | 完善中 |
 
@@ -488,7 +488,7 @@ PaddleSeg
      ├──  paddleseg #训练部署的核心代码
               ├── core  
               ├── cvlibs #  Config类定义在该文件夹中。它保存了数据集、模型配置、主干网络、损失函数等所有的超参数。
-                      ├── callbacks.py 
+                      ├── callbacks.py
                       └── ...
               ├── datasets #PaddleSeg支持的数据格式，包括ade、citycapes等多种格式
                       ├── ade.py
@@ -514,8 +514,8 @@ PaddleSeg
               ├── transforms #进行数据预处理的操作，包括各种数据增强策略
                       ├── functional.py
                       └── transforms.py
-              └── utils 
-                      ├── config_check.py 
+              └── utils
+                      ├── config_check.py
                       ├── visualize.py
                       └── ...
      ├──  train.py  # 训练入口文件，该文件里描述了参数的解析，训练的启动方法，以及为训练准备的资源等。
