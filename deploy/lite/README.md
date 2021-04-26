@@ -1,7 +1,7 @@
 # 移动端部署
 
 ## 1.介绍
-以人像分割在安卓端的部署为例，介绍如何使用[Paddle-Lite](https://github.com/PaddlePaddle/Paddle-Lite)对分割模型进行移动端的部署。文档第二节介绍如何使用人像分割安卓端的demo，第3章介绍如何进行二次开发，更新Paddle-Lite预测库，或将新的PaddleSeg模型部署到安卓设备。
+以人像分割在安卓端的部署为例，介绍如何使用[Paddle-Lite](https://github.com/PaddlePaddle/Paddle-Lite)对分割模型进行移动端的部署。文档第2章介绍如何使用人像分割安卓端的demo，第3章介绍如何进行二次开发，更新Paddle-Lite预测库，或将新的PaddleSeg模型部署到安卓设备。
 
 ## 2.安卓Demo使用
 
