@@ -5,15 +5,15 @@
 
 Panoptic DeepLab首次证实了bottem-up算法能够达到state-of-the-art的效果。Panoptic DeepLab预测三个输出：Semantic Segmentation, Center Prediction 和 Center Regression。实例类别像素根据最近距离原则聚集到实例中心点得到实例分割结果。最后按照majority-vote规则融合语义分割结果和实例分割结果，得到最终的全景分割结果。
 其通过将每一个像素赋值给每一个类别或实例达到分割的效果。
-![](./docs/panoptic_deeplab.png)
+![](./docs/panoptic_deeplab.jpg)
 
 ## Model Baselines
 
 ### Cityscapes
 | Backbone | Batch Size |Resolution | Training Iters | PQ | SQ | RQ | AP | mIoU | Links |
 |:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
-|ResNet50_OS32| 8  | 2049x1025|90000|100%|100%|100%|100%|100%|[model](https://bj.bcebos.com/paddleseg/dygraph/pnoptic_segmentation/panoptic_deeplab_resnet50_os32_cityscapes_2049x1025_bs1_90k_lr00005/model.pdparams) \| [log](https://bj.bcebos.com/paddleseg/dygraph/pnoptic_segmentation/panoptic_deeplab_resnet50_os32_cityscapes_2049x1025_bs1_90k_lr00005/train.log)|
-|ResNet50_OS32| 64 | 1025x513|90000|100%|100%|100%|100%|100%|[model](https://bj.bcebos.com/paddleseg/dygraph/pnoptic_segmentation/panoptic_deeplab_resnet50_os32_cityscapes_1025x513_bs8_90k_lr00005/model.pdparams) \| [log](https://bj.bcebos.com/paddleseg/dygraph/pnoptic_segmentation/panoptic_deeplab_resnet50_os32_cityscapes_1025x513_bs8_90k_lr00005/train.log)|
+|ResNet50_OS32| 8  | 2049x1025|90000|58.35%|80.03%|71.52%|25.80%|79.18%|[model](https://bj.bcebos.com/paddleseg/dygraph/pnoptic_segmentation/panoptic_deeplab_resnet50_os32_cityscapes_2049x1025_bs1_90k_lr00005/model.pdparams) \| [log](https://bj.bcebos.com/paddleseg/dygraph/pnoptic_segmentation/panoptic_deeplab_resnet50_os32_cityscapes_2049x1025_bs1_90k_lr00005/train.log)|
+|ResNet50_OS32| 64 | 1025x513|90000|60.32%|80.56%|73.56%|26.77%|79.67%|[model](https://bj.bcebos.com/paddleseg/dygraph/pnoptic_segmentation/panoptic_deeplab_resnet50_os32_cityscapes_1025x513_bs8_90k_lr00005/model.pdparams) \| [log](https://bj.bcebos.com/paddleseg/dygraph/pnoptic_segmentation/panoptic_deeplab_resnet50_os32_cityscapes_1025x513_bs8_90k_lr00005/train.log)|
 
 ## 环境准备
 
@@ -43,7 +43,8 @@ export PYTHONPATH=`pwd`:$PYTHONPATH
 
 ### Cityscapes
 
-数据集目录结构：
+前往[CityScapes官网](https://www.cityscapes-dataset.com/)下载数据集并整理成如下结构。
+
 ```
 cityscapes/
 |--gtFine/
@@ -74,7 +75,10 @@ pip install git+https://github.com/mcordts/cityscapesScripts.git
 
 *_panoptic.png 生成命令：
 ```shell
-python /path/to/cityscapesscripts/preparation/createPanopticImgs.py --dataset-folder data/cityscapes/gtFine/ --output-folder data/cityscapes/gtFine/ --use-train-id
+python /path/to/cityscapesscripts/preparation/createPanopticImgs.py \
+        --dataset-folder data/cityscapes/gtFine/ \
+        --output-folder data/cityscapes/gtFine/ \
+        --use-train-id
 ```
 
 ## 训练
@@ -98,7 +102,7 @@ python train.py --help
 ## 评估
 ```shell
 python val.py \
-       --config panoptic_deeplab/panoptic_deeplab_resnet50_os32_cityscapes_1025x513_bs8_90k_lr00005.yml \
+       --config configs/panoptic_deeplab/panoptic_deeplab_resnet50_os32_cityscapes_1025x513_bs8_90k_lr00005.yml \
        --model_path output/iter_90000/model.pdparams
 ```
 更多参数信息请运行如下命令进行查看
@@ -121,15 +125,15 @@ python predict.py --help
 ```
 全景分割结果：
 <center class="half">
-    <img src="docs/visualization_panoptic.png"/ width="40%"/ height="40%"/> <img src="docs/visualization_panoptic_added.jpg"/ width="40%"/ height="40%"/>
+    <img src="docs/visualization_panoptic.png"/ width="40%"/ height="40%"/><img src="docs/visualization_panoptic_added.jpg"/ width="40%"/ height="40%"/>
 </center>
 
 语义分割结果:
 <center class="half">
-    <img src="docs/visualization_semantic.png" width="40%"/ height="40%"/> <img src="docs/visualization_semantic_added.jpg" width="40%"/ height="40%"/>
+    <img src="docs/visualization_semantic.png" width="40%"/ height="40%"/><img src="docs/visualization_semantic_added.jpg" width="40%"/ height="40%"/>
 </center>
 
 实例分割结果:
 <center class="half">
-    <img src="docs/visualization_instance.png" width="40%"/ height="40%"/> <img src="docs/visualization_instance_added.jpg" width="40%"/ height="40%"/>
+    <img src="docs/visualization_instance.png" width="40%"/ height="40%"/><img src="docs/visualization_instance_added.jpg" width="40%"/ height="40%"/>
 </center>
