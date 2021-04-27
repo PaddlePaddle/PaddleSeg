@@ -16,7 +16,7 @@ import paddle
 import paddle.nn as nn
 import paddle.nn.functional as F
 
-from paddleseg.cvlibs import manager
+from paddleseg.cvlibs import manager, param_init
 from paddleseg.models import layers
 from paddleseg.utils import utils
 
@@ -25,8 +25,9 @@ __all__ = ['ShuffleNetV2']
 
 @manager.MODELS.add_component
 class ShuffleNetV2(nn.Layer):
-    def __init__(self, num_classes, align_corners=False):
+    def __init__(self, num_classes, pretrained=None, align_corners=False):
         super().__init__()
+        self.pretrained = pretrained
         self.num_classes = num_classes
         self.align_corners = align_corners
 
@@ -56,9 +57,11 @@ class ShuffleNetV2(nn.Layer):
             self.num_classes,
             2,
             stride=2,
-            padding=0,
+            padding='SAME',
             weight_attr=weight_attr,
             bias_attr=True)
+
+        self.init_weight()
 
     def forward(self, x):
         ## Encoder
@@ -86,6 +89,16 @@ class ShuffleNetV2(nn.Layer):
         decode_conv = self.depthwise_separable1(concat)
         logit = self.deconv(decode_conv)
         return [logit]
+
+    def init_weight(self):
+        for layer in self.sublayers():
+            if isinstance(layer, nn.Conv2D):
+                param_init.normal_init(layer.weight, std=0.001)
+            elif isinstance(layer, (nn.BatchNorm, nn.SyncBatchNorm)):
+                param_init.constant_init(layer.weight, value=1.0)
+                param_init.constant_init(layer.bias, value=0.0)
+        if self.pretrained is not None:
+            utils.load_pretrained_model(self, self.pretrained)
 
 
 class _ConvBNReLU(nn.Layer):
@@ -204,16 +217,17 @@ class SFNetV2Module(nn.Layer):
         else:
             branch = input
             shortcut = self._depthwise_separable_0(input)
+
         branch_1x1 = self._conv(branch)
         branch_dw1x1 = self._depthwise_separable_1(branch_1x1)
         output = paddle.concat(x=[shortcut, branch_dw1x1], axis=1)
 
         # channel shuffle
         out_shape = paddle.shape(output)
-        b, c, h, w = out_shape[0], out_shape[1], out_shape[2], out_shape[3]
-        output = paddle.reshape(x=output, shape=[b, 2, self.in_channels, h, w])
+        h, w = out_shape[2], out_shape[3]
+        output = paddle.reshape(x=output, shape=[0, 2, self.in_channels, h, w])
         output = paddle.transpose(x=output, perm=[0, 2, 1, 3, 4])
-        output = paddle.reshape(x=output, shape=[b, c, h, w])
+        output = paddle.reshape(x=output, shape=[0, 2 * self.in_channels, h, w])
         return output
 
 

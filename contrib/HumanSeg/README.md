@@ -152,21 +152,7 @@ python infer.py --model_dir output/best_model \
 export CUDA_VISIBLE_DEVICES=0 # 设置1张可用的卡
 # windows下请执行以下命令
 # set CUDA_VISIBLE_DEVICES=0
-python export.py \
-       --config configs/deeplabv3p_resnet50_os8_humanseg_512x512_100k.yml \
-       --model_path saved_model/deeplabv3p_resnet50_os8_humanseg_512x512_100k/best_model/model.pdparams \
-       --save_dir export_model/deeplabv3p_resnet50_os8_humanseg_512x512_100k/
-
-
-python export.py \
-       --config configs/shufflenetv2_humanseg_192x192.yml \
-       --model_path saved_model/shufflenetv2_humanseg_192x192/best_model/model.pdparams \
-       --save_dir export_model/shufflenetv2_humanseg_192x192/
-
-python export.py \
-       --config configs/fcn_hrnetw18_small_v1_humanseg_192x192.yml \
-       --model_path saved_model/fcn_hrnetw18_small_v1_humanseg_192x192/best_model/model.pdparams \
-       --save_dir export_model/fcn_hrnetw18_small_v1_humanseg_192x192/
+python ../../export.py --config configs/shufflenetv2_humanseg_portrait.yml --save_dir export_model/shufflenetv2_humanseg_portrait --model_path saved_model/shufflenetv2_humanseg_portrait/best_model/model.pdparams --without_argmax --with_softmax
 ```
 
 ### 导出脚本参数解释
