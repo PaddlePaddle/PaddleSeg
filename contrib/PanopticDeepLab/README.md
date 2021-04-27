@@ -124,16 +124,16 @@ python -m paddle.distributed.launch predict.py \
 python predict.py --help
 ```
 全景分割结果：
-<center class="half">
-    <img src="docs/visualization_panoptic.png"/ width="40%"/ height="40%"/><img src="docs/visualization_panoptic_added.jpg"/ width="40%"/ height="40%"/>
+<center>
+    <img src="docs/visualization_panoptic.png">
 </center>
 
 语义分割结果:
-<center class="half">
-    <img src="docs/visualization_semantic.png" width="40%"/ height="40%"/><img src="docs/visualization_semantic_added.jpg" width="40%"/ height="40%"/>
+<center>
+    <img src="docs/visualization_semantic.png">
 </center>
 
 实例分割结果:
-<center class="half">
-    <img src="docs/visualization_instance.png" width="40%"/ height="40%"/><img src="docs/visualization_instance_added.jpg" width="40%"/ height="40%"/>
+<center>
+    <img src="docs/visualization_instance.png">
 </center>
