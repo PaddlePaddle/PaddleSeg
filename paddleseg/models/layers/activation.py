@@ -53,7 +53,7 @@ class Activation(nn.Layer):
         super(Activation, self).__init__()
 
         self._act = act
-        upper_act_names = nn.layer.activation.__all__
+        upper_act_names = nn.layer.activation.__dict__.keys()
         lower_act_names = [act.lower() for act in upper_act_names]
         act_dict = dict(zip(lower_act_names, upper_act_names))
 
