@@ -180,8 +180,8 @@ class PUPHead(nn.Layer):
                 layers.ConvBNReLU(
                     in_channels=in_channels,
                     out_channels=inter_channels,
-                    kernel_size=1), nn.Upsample(
-                        scale_factor=4, mode='bilinear'),
+                    kernel_size=3,
+                    padding=1), nn.Upsample(scale_factor=4, mode='bilinear'),
                 nn.Conv2D(
                     in_channels=inter_channels,
                     out_channels=num_classes,
