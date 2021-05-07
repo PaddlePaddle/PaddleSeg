@@ -45,7 +45,6 @@ class EMANet(nn.Layer):
             is even, e.g. 1024x512, otherwise it is True, e.g. 769x769.  Default: False.
         pretrained (str, optional): The path or url of pretrained model. Default: None.
     """
-
     def __init__(self,
                  num_classes,
                  backbone,
@@ -76,11 +75,11 @@ class EMANet(nn.Layer):
         feats = [feats[i] for i in self.backbone_indices]
         logit_list = self.head(feats)
         logit_list = [
-            F.interpolate(
-                logit,
-                paddle.shape(x)[2:],
-                mode='bilinear',
-                align_corners=self.align_corners) for logit in logit_list
+            F.interpolate(logit,
+                          paddle.shape(x)[2:],
+                          mode='bilinear',
+                          align_corners=self.align_corners)
+            for logit in logit_list
         ]
 
         return logit_list
@@ -105,7 +104,6 @@ class EMAHead(nn.Layer):
         concat_input (bool): Whether concat the input and output of convs before classification layer. Default: True
         enable_auxiliary_loss (bool, optional): A bool value indicates whether adding auxiliary loss. Default: True.
     """
-
     def __init__(self,
                  num_classes,
                  in_channels,
@@ -123,24 +121,26 @@ class EMAHead(nn.Layer):
         self.enable_auxiliary_loss = enable_auxiliary_loss
 
         self.emau = EMAU(ema_channels, num_bases, stage_num, momentum=momentum)
-        self.ema_in_conv = layers.ConvBNReLU(
-            in_channels=self.in_channels,
-            out_channels=ema_channels,
-            kernel_size=3)
+        self.ema_in_conv = layers.ConvBNReLU(in_channels=self.in_channels,
+                                             out_channels=ema_channels,
+                                             kernel_size=3)
         self.ema_mid_conv = nn.Conv2D(ema_channels, ema_channels, kernel_size=1)
-        self.ema_out_conv = layers.ConvBNReLU(
-            in_channels=ema_channels, out_channels=ema_channels, kernel_size=1)
-        self.bottleneck = layers.ConvBNReLU(
-            in_channels=ema_channels, out_channels=gc_channels, kernel_size=3)
-        self.cls = nn.Sequential(
-            nn.Dropout2D(p=0.1), nn.Conv2D(gc_channels, num_classes, 1))
+        self.ema_out_conv = layers.ConvBNReLU(in_channels=ema_channels,
+                                              out_channels=ema_channels,
+                                              kernel_size=1)
+        self.bottleneck = layers.ConvBNReLU(in_channels=ema_channels,
+                                            out_channels=gc_channels,
+                                            kernel_size=3)
+        self.cls = nn.Sequential(nn.Dropout2D(p=0.1),
+                                 nn.Conv2D(gc_channels, num_classes, 1))
         self.aux = nn.Sequential(
-            layers.ConvBNReLU(
-                in_channels=1024, out_channels=256, kernel_size=3),
-            nn.Dropout2D(p=0.1), nn.Conv2D(256, num_classes, 1))
+            layers.ConvBNReLU(in_channels=1024, out_channels=256,
+                              kernel_size=3), nn.Dropout2D(p=0.1),
+            nn.Conv2D(256, num_classes, 1))
         if self.concat_input:
-            self.conv_cat = layers.ConvBNReLU(
-                self.in_channels + gc_channels, gc_channels, kernel_size=3)
+            self.conv_cat = layers.ConvBNReLU(self.in_channels + gc_channels,
+                                              gc_channels,
+                                              kernel_size=3)
 
     def forward(self, feat_list):
         C3, C4 = feat_list
@@ -171,7 +171,6 @@ class EMAU(nn.Layer):
         stage_num (int): The iteration number for EM.
         momentum (float): The parameter for updating bases.
     '''
-
     def __init__(self, c, k, stage_num=3, momentum=0.1):
         super(EMAU, self).__init__()
         assert stage_num >= 1
@@ -207,8 +206,9 @@ class EMAU(nn.Layer):
             mu = paddle.mean(mu, 0, keepdim=True)
             mu = F.normalize(mu, axis=1, p=2)
             mu = self.mu * (1 - self.momentum) + mu * self.momentum
-            mu = paddle.distributed.all_reduce(mu)
-            mu /= paddle.distributed.get_world_size()
+            if paddle.distributed.get_world_size() > 1:
+                mu = paddle.distributed.all_reduce(mu)
+                mu /= paddle.distributed.get_world_size()
             self.mu = mu
 
         return x
