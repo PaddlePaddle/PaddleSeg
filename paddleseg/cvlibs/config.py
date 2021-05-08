@@ -160,7 +160,7 @@ class Config(object):
         logger.warning(
             '''`learning_rate` in configuration file will be deprecated, please use `lr_scheduler` instead. E.g
             lr_scheduler:
-                type: poly
+                type: PolynomialDecay
                 learning_rate: 0.01''')
         _learning_rate = self.dic.get('learning_rate', {}).get('value')
         if not _learning_rate:
