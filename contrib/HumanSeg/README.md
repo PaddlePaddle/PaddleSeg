@@ -36,6 +36,11 @@ HumanSeg开放了在大规模人像数据上训练的三个预训练模型，满
 | HumanSeg-mobile | [humanseg_mobile_ckpt]() | [humanseg_mobile_inference]() | [humanseg_mobile_quant]() | 轻量级模型, 适用于移动端或服务端CPU的前置摄像头场景，模型结构为HRNet_w18_samll_v1，输入大小（192， 192）  |
 | HumanSeg-lite | [humanseg_lite_ckpt]() | [humanseg_lite_inference]() |  [humanseg_lite_quant]() | 超轻量级模型, 适用于手机自拍人像，且有移动端实时分割场景， 模型结构为优化的ShuffleNetV2，输入大小（192， 192） |
 
+| Method | Input Size | FLOPS | Parameters |
+|-|-|-|-|
+| ShuffleNetV2 | 398x224 | 293631872(294M) | 137012(137K) |
+| ShuffleNetV2 | 192x192 | 121272192(121M) | 137012(137K) |
+| HRNet w18 small v1 | 192x192 | 584182656(584M) | 1543954(1.54M) |
 
 ## 下载测试数据
 我们提供了[supervise.ly](https://supervise.ly/)发布人像分割数据集**Supervisely Persons**, 从中随机抽取一小部分并转化成PaddleSeg可直接加载数据格式。通过运行以下代码进行快速下载，其中包含手机前置摄像头的人像测试视频`video_test.mp4`.

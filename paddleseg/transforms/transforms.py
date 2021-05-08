@@ -762,13 +762,14 @@ class RandomRotation:
                 flags=cv2.INTER_LINEAR,
                 borderMode=cv2.BORDER_CONSTANT,
                 borderValue=self.im_padding_value)
-            label = cv2.warpAffine(
-                label,
-                r,
-                dsize=dsize,
-                flags=cv2.INTER_NEAREST,
-                borderMode=cv2.BORDER_CONSTANT,
-                borderValue=self.label_padding_value)
+            if label is not None:
+                label = cv2.warpAffine(
+                    label,
+                    r,
+                    dsize=dsize,
+                    flags=cv2.INTER_NEAREST,
+                    borderMode=cv2.BORDER_CONSTANT,
+                    borderValue=self.label_padding_value)
 
         if label is None:
             return (im, )

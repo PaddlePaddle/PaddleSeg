@@ -171,4 +171,4 @@ def evaluate(model,
                 len(eval_dataset), miou, acc, kappa))
         logger.info("[EVAL] Class IoU: \n" + str(np.round(class_iou, 4)))
         logger.info("[EVAL] Class Acc: \n" + str(np.round(class_acc, 4)))
-    return miou, acc
+    return miou, acc, class_iou, class_acc, kappa

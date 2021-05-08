@@ -16,6 +16,7 @@ import collections.abc
 from itertools import combinations
 
 import numpy as np
+import cv2
 import paddle
 import paddle.nn.functional as F
 
@@ -54,6 +55,15 @@ def get_reverse_list(ori_shape, transforms):
         if op.__class__.__name__ in ['Padding']:
             reverse_list.append(('padding', (h, w)))
             w, h = op.target_size[0], op.target_size[1]
+        if op.__class__.__name__ in ['PaddingByAspectRatio']:
+            reverse_list.append(('padding', (h, w)))
+            ratio = w / h
+            if ratio == op.aspect_ratio:
+                pass
+            elif ratio > op.aspect_ratio:
+                h = int(w / op.aspect_ratio)
+            else:
+                w = int(h * op.aspect_ratio)
         if op.__class__.__name__ in ['LimitLong']:
             long_edge = max(h, w)
             short_edge = min(h, w)
@@ -86,6 +96,21 @@ def reverse_transform(pred, ori_shape, transforms):
                 pred = paddle.cast(pred, 'int32')
             else:
                 pred = F.interpolate(pred, (h, w), mode='nearest')
+        elif item[0] == 'padding':
+            h, w = item[1][0], item[1][1]
+            pred = pred[:, :, 0:h, 0:w]
+        else:
+            raise Exception("Unexpected info '{}' in im_info".format(item[0]))
+    return pred
+
+
+def reverse_transform_numpy(pred, ori_shape, transforms):
+    """recover pred to origin shape when pred is a numpy.ndarray"""
+    reverse_list = get_reverse_list(ori_shape, transforms)
+    for item in reverse_list[::-1]:
+        if item[0] == 'resize':
+            h, w = item[1][0], item[1][1]
+            pred = cv2.resize(pred, (h, w), interpolation=cv2.INTER_NEAREST)
         elif item[0] == 'padding':
             h, w = item[1][0], item[1][1]
             pred = pred[:, :, 0:h, 0:w]

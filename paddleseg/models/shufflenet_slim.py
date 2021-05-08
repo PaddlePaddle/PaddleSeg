@@ -57,7 +57,7 @@ class ShuffleNetV2(nn.Layer):
             self.num_classes,
             2,
             stride=2,
-            padding='SAME',
+            padding=0,
             weight_attr=weight_attr,
             bias_attr=True)
 
