@@ -7,7 +7,7 @@
 
 ### 2.1 要求
 * Android Studio 3.4；
-* Android手机或开发板；
+* Android手机；
 
 ### 2.2 一键安装
 * git clone https://github.com/PaddlePaddle/PaddleSeg.git ;
