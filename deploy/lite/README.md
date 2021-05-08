@@ -7,12 +7,12 @@
 
 ### 2.1 要求
 * Android Studio 3.4；
-* Android手机或开发板；
+* Android手机；
 
 ### 2.2 一键安装
 * git clone https://github.com/PaddlePaddle/PaddleSeg.git ;
 * 打开Android Studio，在"Welcome to Android Studio"窗口点击"Open an existing Android Studio project"，在弹出的路径选择窗口中进入"PaddleSeg/deploy/lite/humanseg_android_demo/"目录，然后点击右下角的"Open"按钮即可导入工程，构建工程的过程中会自动下载demo需要的模型和Lite预测库；
-* 通过USB连接Android手机或开发板；
+* 通过USB连接Android手机；
 * 载入工程后，点击菜单栏的Run->Run 'App'按钮，在弹出的"Select Deployment Target"窗口选择已经连接的Android设备，然后点击"OK"按钮；
 
 *注：此安卓demo基于[Paddle-Lite-Demo](https://github.com/PaddlePaddle/Paddle-Lite-Demo)开发，更多的细节请参考该repo。*

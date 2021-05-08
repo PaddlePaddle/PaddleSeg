@@ -455,7 +455,7 @@ output
 | 端侧         | 库           | 教程   |
 | :----------- | :----------- | :----- |
 | Python端部署 | Paddle预测库 | [示例](../deploy/python/) |
-| 移动端部署   | PaddleLite        | [示例](../deploy/lite/) |
+| 移动端部署   | PaddleLite   | [示例](../deploy/lite/)   |
 | 服务端部署   | HubServing   | 完善中 |
 | 前端部署     | PaddleJS     | 完善中 |
 
@@ -526,3 +526,4 @@ PaddleSeg
 - 同学们还可以尝试使用PaddleSeg的API来自己开发，开发人员在使用pip install命令安装PaddleSeg后，仅需通过几行代码即可轻松实现图像分割模型的训练、评估和推理。 感兴趣的小伙伴们可以访问[PaddleSeg动态图API使用教程](https://aistudio.baidu.com/aistudio/projectdetail/1339458?channelType=0&channel=0)
 
 PaddleSeg等各领域的开发套件已经为真正的工业实践提供了顶级方案，有国内的团队使用PaddleSeg的开发套件取得国际比赛的好成绩，可见开发套件提供的效果是State Of The Art的。
+
