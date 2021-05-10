@@ -207,8 +207,9 @@ class EMAU(nn.Layer):
             mu = paddle.mean(mu, 0, keepdim=True)
             mu = F.normalize(mu, axis=1, p=2)
             mu = self.mu * (1 - self.momentum) + mu * self.momentum
-            mu = paddle.distributed.all_reduce(mu)
-            mu /= paddle.distributed.get_world_size()
-            self.mu = mu
+            if paddle.distributed.get_world_size() > 1:
+                mu = paddle.distributed.all_reduce(mu)
+                mu /= paddle.distributed.get_world_size()
+                self.mu = mu
 
         return x
