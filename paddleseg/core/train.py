@@ -157,7 +157,7 @@ def train(model,
 
             if fp16:
                 with paddle.amp.auto_cast(
-                        enable=True, custom_white_list={"elementwise_add", "batch_norm"}, custom_black_list={'bilinear_interp_v2'}):
+                        enable=True, custom_white_list={"elementwise_add", "batch_norm", "sync_batch_norm"}, custom_black_list={'bilinear_interp_v2'}):
                     if nranks > 1:
                         logits_list = ddp_model(images)
                     else:
