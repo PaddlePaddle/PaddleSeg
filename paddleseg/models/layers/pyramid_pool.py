@@ -39,7 +39,8 @@ class ASPPModule(nn.Layer):
                  out_channels,
                  align_corners,
                  use_sep_conv=False,
-                 image_pooling=False):
+                 image_pooling=False,
+                 drop_rate=0.1):
         super().__init__()
 
         self.align_corners = align_corners
@@ -74,7 +75,7 @@ class ASPPModule(nn.Layer):
             out_channels=out_channels,
             kernel_size=1)
 
-        self.dropout = nn.Dropout(p=0.1)  # drop rate
+        self.dropout = nn.Dropout(p=drop_rate)  # drop rate
 
     def forward(self, x):
         outputs = []
