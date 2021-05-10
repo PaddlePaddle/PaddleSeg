@@ -16,10 +16,12 @@ import argparse
 import os
 
 import paddle
-
 from paddleseg.cvlibs import manager, Config
 from paddleseg.utils import get_sys_env, logger, config_check
-from paddleseg.core import predict
+
+from core import predict
+from datasets import *
+from models import *
 
 
 def parse_args():

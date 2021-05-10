@@ -18,10 +18,11 @@ import math
 import cv2
 import numpy as np
 import paddle
-
-from paddleseg import utils
-from paddleseg.core import infer
+import paddleseg
 from paddleseg.utils import logger, progbar
+
+from core import infer
+import utils
 
 
 def mkdir(path):
@@ -86,7 +87,7 @@ def predict(model,
         nms_kernel(int, optional): NMS max pooling kernel size. Default: 7.
         top_k(int, optional): Top k centers to keep. Default: 200.
     """
-    utils.utils.load_entire_model(model, model_path)
+    paddleseg.utils.utils.load_entire_model(model, model_path)
     model.eval()
     nranks = paddle.distributed.get_world_size()
     local_rank = paddle.distributed.get_rank()
