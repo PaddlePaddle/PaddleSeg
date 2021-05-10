@@ -16,10 +16,13 @@ import argparse
 import os
 
 import paddle
-
+import paddleseg
 from paddleseg.cvlibs import manager, Config
-from paddleseg.core import evaluate
-from paddleseg.utils import get_sys_env, logger, config_check, utils
+from paddleseg.utils import get_sys_env, logger, config_check
+
+from core import evaluate
+from datasets import *
+from models import *
 
 
 def parse_args():
@@ -89,7 +92,7 @@ def main(args):
 
     model = cfg.model
     if args.model_path:
-        utils.load_entire_model(model, args.model_path)
+        paddleseg.utils.utils.load_entire_model(model, args.model_path)
         logger.info('Loaded trained params of model successfully')
 
     config_check(cfg, val_dataset=val_dataset)
