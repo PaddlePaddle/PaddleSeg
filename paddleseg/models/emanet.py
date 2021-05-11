@@ -210,6 +210,6 @@ class EMAU(nn.Layer):
             if paddle.distributed.get_world_size() > 1:
                 mu = paddle.distributed.all_reduce(mu)
                 mu /= paddle.distributed.get_world_size()
-                self.mu = mu
+            self.mu = mu
 
         return x
