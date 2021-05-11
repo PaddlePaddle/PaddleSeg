@@ -20,8 +20,6 @@ import numpy as np
 import paddle
 import paddle.nn.functional as F
 
-debug = False
-
 
 def get_reverse_list(ori_shape, transforms):
     """
