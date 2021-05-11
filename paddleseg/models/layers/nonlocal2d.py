@@ -135,11 +135,11 @@ class NonLocal2D(nn.Layer):
         elif self.mode == 'concatenation':
             theta_x = paddle.reshape(
                 self.theta(x), [n, self.inter_channels, -1, 1])
-            phi_x = self.phi(x).view(n, self.inter_channels, 1, -1)
+            phi_x = paddle.reshape(self.phi(x), [n, self.inter_channels, 1, -1])
 
         else:
             theta_x = paddle.reshape(
-                self.theta(x), [n, self.inter_channels, -1, 1])
+                self.theta(x), [n, self.inter_channels, -1])
             theta_x = paddle.transpose(theta_x, [0, 2, 1])
             phi_x = paddle.reshape(self.phi(x), [n, self.inter_channels, -1])
 
