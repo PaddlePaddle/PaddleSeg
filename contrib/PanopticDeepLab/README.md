@@ -27,14 +27,15 @@ Panoptic DeepLab首次证实了bottem-up算法能够达到state-of-the-art的效
 git clone https://github.com/PaddlePaddle/PaddleSeg
 ```
 
-3. 进入PaddleSeg/contrib/PanopticDeepLab目录
+3. 安装paddleseg
 ```shell
-cd PaddleSeg/contrib/PanopticDeepLab
+cd PaddleSeg
+pip install -e .
 ```
 
-4. 将当前目录添加到PYTHONPATH
+4. 进入PaddleSeg/contrib/PanopticDeepLab目录
 ```shell
-export PYTHONPATH=`pwd`:$PYTHONPATH
+cd contrib/PanopticDeepLab
 ```
 
 ## 数据集准备
@@ -43,7 +44,7 @@ export PYTHONPATH=`pwd`:$PYTHONPATH
 
 ### Cityscapes
 
-前往[CityScapes官网](https://www.cityscapes-dataset.com/)下载数据集并整理成如下结构。
+前往[CityScapes官网](https://www.cityscapes-dataset.com/)下载数据集并整理成如下结构:
 
 ```
 cityscapes/
@@ -73,7 +74,7 @@ cityscapes/
 pip install git+https://github.com/mcordts/cityscapesScripts.git
 ```
 
-*_panoptic.png 生成命令：
+`*_panoptic.png` 生成命令(需找到`createPanopticImgs.py`文件)：
 ```shell
 python /path/to/cityscapesscripts/preparation/createPanopticImgs.py \
         --dataset-folder data/cityscapes/gtFine/ \
@@ -94,7 +95,7 @@ python -m paddle.distributed.launch train.py \
 
 **note:** 使用--do_eval会影响训练速度及增加显存消耗，根据选择进行开闭。
 
-更多参数信息请运行如下命令进行查看
+更多参数信息请运行如下命令进行查看:
 ```shell
 python train.py --help
 ```
@@ -105,7 +106,9 @@ python val.py \
        --config configs/panoptic_deeplab/panoptic_deeplab_resnet50_os32_cityscapes_1025x513_bs8_90k_lr00005.yml \
        --model_path output/iter_90000/model.pdparams
 ```
-更多参数信息请运行如下命令进行查看
+你可以直接下载我们提供的模型进行评估。
+
+更多参数信息请运行如下命令进行查看:
 ```shell
 python val.py --help
 ```
@@ -119,11 +122,13 @@ python -m paddle.distributed.launch predict.py \
     --image_path data/cityscapes/leftImg8bit/val/ \
     --save_dir ./output/result
 ```
-更多参数信息请运行如下命令进行查看
+你可以直接下载我们提供的模型进行预测。
+
+更多参数信息请运行如下命令进行查看:
 ```shell
 python predict.py --help
 ```
-全景分割结果：
+全景分割结果:
 <center>
     <img src="docs/visualization_panoptic.png">
 </center>
