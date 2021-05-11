@@ -39,10 +39,11 @@ def parse_args():
         help='Config file for training (and optionally testing)',
         default=None,
         type=str)
-    parser.add_argument('opts',
-                        help='See utils/config.py for all options',
-                        default=None,
-                        nargs=argparse.REMAINDER)
+    parser.add_argument(
+        'opts',
+        help='See utils/config.py for all options',
+        default=None,
+        nargs=argparse.REMAINDER)
     if len(sys.argv) == 1:
         parser.print_help()
         sys.exit(1)
@@ -83,9 +84,8 @@ def export_serving_model(args):
     print("Exporting serving model...")
     startup_prog = fluid.Program()
     infer_prog = fluid.Program()
-    image, logit_out = build_model(infer_prog,
-                                   startup_prog,
-                                   phase=ModelPhase.PREDICT)
+    image, logit_out = build_model(
+        infer_prog, startup_prog, phase=ModelPhase.PREDICT)
 
     # Use CPU for exporting inference model instead of GPU
     place = fluid.CPUPlace()
@@ -99,9 +99,8 @@ def export_serving_model(args):
             fluid.load(infer_prog, os.path.join(cfg.TEST.TEST_MODEL, 'model'),
                        exe)
         except:
-            fluid.io.load_params(exe,
-                                 cfg.TEST.TEST_MODEL,
-                                 main_program=infer_prog)
+            fluid.io.load_params(
+                exe, cfg.TEST.TEST_MODEL, main_program=infer_prog)
     else:
         print("TEST.TEST_MODEL diretory is empty!")
         exit(-1)

@@ -200,10 +200,10 @@ SOLVER:
     NUM_EPOCHS: 30
     # loss的选择，支持softmax_loss, bce_loss, dice_loss
     LOSS: ["softmax_loss"]
-    # 是否开启warmup学习策略 
-    LR_WARMUP: False 
+    # 是否开启warmup学习策略
+    LR_WARMUP: False
     # warmup的迭代次数
-    LR_WARMUP_STEPS: 2000 
+    LR_WARMUP_STEPS: 2000
 
 ########################## 测试配置 ###########################################
 TEST:
@@ -215,17 +215,17 @@ AUG:
     # 图像resize的方式有三种：
     # unpadding（固定尺寸），stepscaling（按比例resize），rangescaling（长边对齐）
     AUG_METHOD: 'unpadding'
-    
+
     # 图像resize的固定尺寸（宽，高），非负
     FIX_RESIZE_SIZE: (500, 500)
-    
+
     # 图像resize方式为stepscaling，resize最小尺度，非负
     MIN_SCALE_FACTOR: 0.5
     # 图像resize方式为stepscaling，resize最大尺度，不小于MIN_SCALE_FACTOR
     MAX_SCALE_FACTOR: 2.0
     # 图像resize方式为stepscaling，resize尺度范围间隔，非负
     SCALE_STEP_SIZE: 0.25
-    
+
     # 图像resize方式为rangescaling，训练时长边resize的范围最小值，非负
     MIN_RESIZE_VALUE: 400
     # 图像resize方式为rangescaling，训练时长边resize的范围最大值，
@@ -234,7 +234,7 @@ AUG:
     # 图像resize方式为rangescaling, 测试验证可视化模式下长边resize的长度，
     # 在MIN_RESIZE_VALUE到MAX_RESIZE_VALUE范围内
     INF_RESIZE_VALUE: 500
-    
+
     # 图像镜像左右翻转
     MIRROR: True
     # 图像上下翻转开关，True/False
@@ -278,4 +278,3 @@ DATALOADER:
     # 数据载入时缓存队列大小, 建议值256
     BUF_SIZE: 256
 ```
-

@@ -355,7 +355,7 @@ def ENet_stage2(inputs, name_scope='stage2_block'):
                     filter_size=3,
                     regularizer_prob=0.1,
                     type=DILATED,
-                    dilation_rate=(2 ** (2 * i + 1)),
+                    dilation_rate=(2**(2 * i + 1)),
                     name_scope='bottleneck2_{}'.format(str(4 * i + 2)))
             with scope('bottleneck2_{}'.format(str(4 * i + 3))):
                 net = bottleneck(
@@ -372,7 +372,7 @@ def ENet_stage2(inputs, name_scope='stage2_block'):
                     filter_size=3,
                     regularizer_prob=0.1,
                     type=DILATED,
-                    dilation_rate=(2 ** (2 * i + 2)),
+                    dilation_rate=(2**(2 * i + 2)),
                     name_scope='bottleneck2_{}'.format(str(4 * i + 4)))
     return net, inputs_shape_2
 
@@ -394,7 +394,7 @@ def ENet_stage3(inputs, name_scope='stage3_block'):
                     filter_size=3,
                     regularizer_prob=0.1,
                     type=DILATED,
-                    dilation_rate=(2 ** (2 * i + 1)),
+                    dilation_rate=(2**(2 * i + 1)),
                     name_scope='bottleneck3_{}'.format(str(4 * i + 1)))
             with scope('bottleneck3_{}'.format(str(4 * i + 2))):
                 net = bottleneck(
@@ -411,7 +411,7 @@ def ENet_stage3(inputs, name_scope='stage3_block'):
                     filter_size=3,
                     regularizer_prob=0.1,
                     type=DILATED,
-                    dilation_rate=(2 ** (2 * i + 2)),
+                    dilation_rate=(2**(2 * i + 2)),
                     name_scope='bottleneck3_{}'.format(str(4 * i + 3)))
     return net
 

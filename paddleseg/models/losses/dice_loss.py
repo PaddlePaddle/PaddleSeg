@@ -30,7 +30,7 @@ class DiceLoss(nn.Layer):
         super(DiceLoss, self).__init__()
         self.ignore_index = ignore_index
         self.eps = 1e-5
-        self.smooth = smooth # Laplace smoothing, https://github.com/pytorch/pytorch/issues/1249#issuecomment-337999895
+        self.smooth = smooth  # Laplace smoothing, https://github.com/pytorch/pytorch/issues/1249#issuecomment-337999895
 
     def forward(self, logits, labels):
         if len(labels.shape) != len(logits.shape):
@@ -53,8 +53,9 @@ class DiceLoss(nn.Layer):
         logits = logits * mask
 
         labels_one_hot = paddle.cast(labels_one_hot, dtype='float32')
-        dims = (0,) + tuple(range(2, labels.ndimension()))
+        dims = (0, ) + tuple(range(2, labels.ndimension()))
         intersection = paddle.sum(logits * labels_one_hot, dims)
         cardinality = paddle.sum(logits + labels_one_hot, dims)
-        dice_loss = ((2. * intersection + self.smooth) / (cardinality + self.eps + self.smooth)).mean()
+        dice_loss = ((2. * intersection + self.smooth) /
+                     (cardinality + self.eps + self.smooth)).mean()
         return 1 - dice_loss
