@@ -424,28 +424,3 @@ class SinglePanopticDeepLabHead(nn.Layer):
             pred[key] = self.classifier[i](x)
 
         return pred
-
-
-if __name__ == '__main__':
-    paddle.set_device('cpu')
-    from paddleseg.models.backbones import ResNet50_vd
-    backbone = ResNet50_vd(output_stride=32)
-    model = PanopticDeepLab(
-        num_classes=2,
-        backbone=backbone,
-        backbone_indices=(2, 1, 0, 3),
-        aspp_ratios=(1, 3, 6, 9),
-        aspp_out_channels=256,
-        decoder_channels=256,
-        low_level_channels_projects=[128, 64, 32],
-        align_corners=True,
-        instance_aspp_out_channels=256,
-        instance_decoder_channels=128,
-        instance_low_level_channels_projects=[64, 32, 16],
-        instance_num_classes=[1, 2],
-        instance_head_channels=32,
-        instance_class_key=["center", "offset"])
-    flop = paddle.flops(model, (1, 3, 512, 1024), print_detail=True)
-    x = paddle.rand((1, 3, 512, 1024))
-    result = model(x)
-    print(result)

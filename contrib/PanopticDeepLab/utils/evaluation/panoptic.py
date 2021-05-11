@@ -208,13 +208,3 @@ class PanopticEvaluator:
             if name == 'All':
                 results['per_class'] = per_class_results
         return OrderedDict(pan_seg=results)
-
-
-if __name__ == '__main__':
-    panoptic_metirc = PanopticEvaluator(2, [1])
-    pred = np.zeros((100, 100))
-    gt = np.zeros((100, 100))
-    pred[0:50, 0:50] = 1
-    gt[0:60, 0:60] = 1
-    panoptic_metirc.update(pred, gt)
-    print(panoptic_metirc.evaluate())
