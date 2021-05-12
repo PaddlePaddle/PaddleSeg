@@ -109,7 +109,7 @@ def main(args):
     dataset_root_list = [
         "data/portrait2600",
         "data/matting_human_half",
-        "/ssd2/chulutao/humanseg",
+        "/ssd3/chulutao/humanseg",
     ]
     train_transforms = [
         PaddingByAspectRatio(1.77777778),
