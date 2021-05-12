@@ -17,6 +17,7 @@ import time
 from collections import deque
 import shutil
 
+import numpy as np
 import paddle
 import paddle.nn.functional as F
 
@@ -120,7 +121,7 @@ def train(model,
     avg_loss = 0.0
     avg_loss_list = []
     iters_per_epoch = len(batch_sampler)
-    best_mean_iou = -1.0
+    best_total_iou = -1.0
     best_model_iter = -1
     reader_cost_averager = TimeAverager()
     batch_cost_averager = TimeAverager()
@@ -139,6 +140,11 @@ def train(model,
             edges = None
             if len(data) == 3:
                 edges = data[2].astype('int64')
+
+            if iter % iters_per_epoch == 0 and hasattr(train_dataset,
+                                                       'shuffle'):
+                train_dataset.shuffle()
+                logger.info('Shuffle train dataset')
 
             if nranks > 1:
                 logits_list = ddp_model(images)
@@ -201,11 +207,16 @@ def train(model,
                 reader_cost_averager.reset()
                 batch_cost_averager.reset()
 
+            val_dataset0, val_dataset1, val_dataset2 = val_dataset
             if (iter % save_interval == 0
                     or iter == iters) and (val_dataset is not None):
                 num_workers = 1 if num_workers > 0 else 0
-                mean_iou, acc, class_iou, _, _ = evaluate(
-                    model, val_dataset, num_workers=num_workers)
+                mean_iou, acc, class_iou0, _, _ = evaluate(
+                    model, val_dataset0, num_workers=num_workers)
+                mean_iou, acc, class_iou1, _, _ = evaluate(
+                    model, val_dataset1, num_workers=num_workers)
+                mean_iou, acc, class_iou2, _, _ = evaluate(
+                    model, val_dataset2, num_workers=num_workers)
                 model.train()
 
             if (iter % save_interval == 0 or iter == iters) and local_rank == 0:
@@ -223,24 +234,41 @@ def train(model,
                     shutil.rmtree(model_to_remove)
 
                 if val_dataset is not None:
-                    if mean_iou > best_mean_iou:
-                        best_mean_iou = mean_iou
+                    class_weight = [0.7, 0.3]
+                    dataset_weight = [0.6, 0.2, 0.2]
+                    dataset0_iou = class_weight[0] * class_iou0[
+                        0] + class_weight[1] * class_iou0[1]
+                    dataset1_iou = class_weight[0] * class_iou1[
+                        0] + class_weight[1] * class_iou1[1]
+                    dataset2_iou = class_weight[0] * class_iou2[
+                        0] + class_weight[1] * class_iou2[1]
+                    total_iou = dataset_weight[
+                        0] * dataset0_iou + dataset_weight[
+                            1] * dataset1_iou + dataset_weight[2] * dataset2_iou
+                    logger.info("[EVAL] Total IoU: \n" +
+                                str(np.round(total_iou, 4)))
+
+                    if total_iou > best_total_iou:
+                        best_total_iou = total_iou
                         best_model_iter = iter
                         best_model_dir = os.path.join(save_dir, "best_model")
                         paddle.save(
                             model.state_dict(),
                             os.path.join(best_model_dir, 'model.pdparams'))
                     logger.info(
-                        '[EVAL] The model with the best validation mIoU ({:.4f}) was saved at iter {}.'
-                        .format(best_mean_iou, best_model_iter))
+                        '[EVAL] The model with the best validation total IoU ({:.4f}) was saved at iter {}.'
+                        .format(best_total_iou, best_model_iter))
 
                     if use_vdl:
-                        log_writer.add_scalar('Evaluate/mIoU', mean_iou, iter)
-                        for i, iou in enumerate(class_iou):
-                            log_writer.add_scalar('Evaluate/IoU {}'.format(i),
-                                                  float(iou), iter)
+                        log_writer.add_scalar('Evaluate/total IoU', total_iou,
+                                              iter)
+                        for k, class_iou in enumerate(
+                            [class_iou0, class_iou1, class_iou2]):
+                            for i, iou in enumerate(class_iou):
+                                log_writer.add_scalar(
+                                    'Evaluate/Dataset {} IoU {}'.format(k, i),
+                                    float(iou), iter)
 
-                        log_writer.add_scalar('Evaluate/Acc', acc, iter)
             batch_start = time.time()
 
     # Calculate flops.

@@ -18,17 +18,17 @@ import paddle
 
 from paddleseg.cvlibs import manager, Config
 from paddleseg.utils import get_sys_env, logger, config_check
-from paddleseg.core import train
-
+from paddleseg.transforms import *
+from paddleseg.models import *
+from paddleseg.models.losses import *
 from datasets.humanseg import HumanSeg
-from models import *
+from datasets.multi_dataset import MultiDataset
+from scripts.train import train
 
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Model training')
     # params of training
-    parser.add_argument(
-        "--config", dest="cfg", help="The config file.", default=None, type=str)
     parser.add_argument(
         '--iters',
         dest='iters',
@@ -40,12 +40,6 @@ def parse_args():
         dest='batch_size',
         help='Mini batch size of one gpu or cpu',
         type=int,
-        default=None)
-    parser.add_argument(
-        '--learning_rate',
-        dest='learning_rate',
-        help='Learning rate',
-        type=float,
         default=None)
     parser.add_argument(
         '--save_interval',
@@ -108,16 +102,39 @@ def main(args):
         'GPUs used'] else 'cpu'
 
     paddle.set_device(place)
-    if not args.cfg:
-        raise RuntimeError('No configuration file specified.')
 
-    cfg = Config(
-        args.cfg,
-        learning_rate=args.learning_rate,
-        iters=args.iters,
-        batch_size=args.batch_size)
+    iters = args.iters
+    batch_size = args.batch_size
 
-    train_dataset = cfg.train_dataset
+    dataset_root_list = [
+        "data/portrait2600",
+        "data/matting_human_half",
+        "/ssd2/chulutao/humanseg",
+    ]
+    train_transforms = [
+        PaddingByAspectRatio(1.77777778),
+        Resize(target_size=[398, 224]),
+        ResizeStepScaling(scale_step_size=0),
+        RandomRotation(),
+        RandomPaddingCrop(crop_size=[398, 224]),
+        RandomHorizontalFlip(),
+        RandomDistort(),
+        RandomBlur(prob=0.3),
+        Normalize()
+    ]
+
+    val_transforms = [
+        PaddingByAspectRatio(1.77777778),
+        Resize(target_size=[398, 224]),
+        Normalize()
+    ]
+
+    train_dataset = MultiDataset(
+        train_transforms,
+        dataset_root_list,
+        data_ratio=[1, 1, 10],
+        mode='train',
+        num_classes=2)
     if train_dataset is None:
         raise RuntimeError(
             'The training dataset is not specified in the configuration file.')
@@ -125,24 +142,56 @@ def main(args):
         raise ValueError(
             'The length of train_dataset is 0. Please check if your dataset is valid'
         )
-    val_dataset = cfg.val_dataset if args.do_eval else None
-    losses = cfg.loss
 
-    msg = '\n---------------Config Information---------------\n'
-    msg += str(cfg)
-    msg += '------------------------------------------------'
-    logger.info(msg)
+    if args.do_eval:
+        val_dataset0 = MultiDataset(
+            val_transforms,
+            dataset_root_list,
+            data_ratio=[1, 1, 10],
+            mode='val',
+            num_classes=2,
+            val_test_set_rank=0)
+        val_dataset1 = MultiDataset(
+            val_transforms,
+            dataset_root_list,
+            data_ratio=[1, 1, 10],
+            mode='val',
+            num_classes=2,
+            val_test_set_rank=1)
+        val_dataset2 = MultiDataset(
+            val_transforms,
+            dataset_root_list,
+            data_ratio=[1, 1, 10],
+            mode='val',
+            num_classes=2,
+            val_test_set_rank=2)
+        val_dataset = [val_dataset0, val_dataset1, val_dataset2]
+    else:
+        val_dataset = None
 
-    config_check(cfg, train_dataset=train_dataset, val_dataset=val_dataset)
+    model = ShuffleNetV2(align_corners=False, num_classes=2)
+    losses = {
+        'types': [
+            MixedLoss(
+                losses=[CrossEntropyLoss(),
+                        LovaszSoftmaxLoss()],
+                coef=[0.8, 0.2])
+        ],
+        'coef': [1]
+    }
+    lr = paddle.optimizer.lr.PolynomialDecay(
+        learning_rate=1, end_lr=0, power=0.9, decay_steps=iters)
+    optimizer = paddle.optimizer.Momentum(
+        lr, parameters=model.parameters(), momentum=0.9, weight_decay=0.0005)
 
     train(
-        cfg.model,
+        model,
         train_dataset,
         val_dataset=val_dataset,
-        optimizer=cfg.optimizer,
+        optimizer=optimizer,
         save_dir=args.save_dir,
-        iters=cfg.iters,
-        batch_size=cfg.batch_size,
+        iters=iters,
+        batch_size=batch_size,
         resume_model=args.resume_model,
         save_interval=args.save_interval,
         log_iters=args.log_iters,
