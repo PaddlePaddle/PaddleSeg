@@ -103,13 +103,22 @@ def main(args):
 
     paddle.set_device(place)
 
-    iters = args.iters
-    batch_size = args.batch_size
+    iters = 7000
+    save_interval = 300
+    batch_size = 128
+    learning_rate = 0.1
+    pretrained = 'saved_model/shufflenetv2_humanseg_192x192/best_model/model.pdparams'
+
+    logger.info('iters {}'.format(iters))
+    logger.info('save_interval {}'.format(save_interval))
+    logger.info('batch_size {}'.format(batch_size))
+    logger.info('learning_rate {}'.format(learning_rate))
+    logger.info('pretrained {}'.format(pretrained))
 
     dataset_root_list = [
         "data/portrait2600",
         "data/matting_human_half",
-        "/ssd3/chulutao/humanseg",
+        "/ssd2/chulutao/humanseg",
     ]
     train_transforms = [
         PaddingByAspectRatio(1.77777778),
@@ -169,7 +178,8 @@ def main(args):
     else:
         val_dataset = None
 
-    model = ShuffleNetV2(align_corners=False, num_classes=2)
+    model = ShuffleNetV2(
+        align_corners=False, num_classes=2, pretrained=pretrained)
     losses = {
         'types': [
             MixedLoss(
@@ -180,7 +190,7 @@ def main(args):
         'coef': [1]
     }
     lr = paddle.optimizer.lr.PolynomialDecay(
-        learning_rate=1, end_lr=0, power=0.9, decay_steps=iters)
+        learning_rate=learning_rate, end_lr=0, power=0.9, decay_steps=iters)
     optimizer = paddle.optimizer.Momentum(
         lr, parameters=model.parameters(), momentum=0.9, weight_decay=0.0005)
 
@@ -193,7 +203,7 @@ def main(args):
         iters=iters,
         batch_size=batch_size,
         resume_model=args.resume_model,
-        save_interval=args.save_interval,
+        save_interval=save_interval,
         log_iters=args.log_iters,
         num_workers=args.num_workers,
         use_vdl=args.use_vdl,

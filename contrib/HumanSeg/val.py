@@ -19,18 +19,17 @@ import paddle
 
 from paddleseg.cvlibs import manager, Config
 from paddleseg.core import evaluate
+from paddleseg.models import *
 from paddleseg.utils import get_sys_env, logger, config_check, utils
-
+from paddleseg.transforms import *
 from datasets.humanseg import HumanSeg
-from models import *
+from datasets.multi_dataset import MultiDataset
 
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Model evaluation')
 
     # params of evaluate
-    parser.add_argument(
-        "--config", dest="cfg", help="The config file.", default=None, type=str)
     parser.add_argument(
         '--model_path',
         dest='model_path',
@@ -44,53 +43,6 @@ def parse_args():
         type=int,
         default=0)
 
-    # augment for evaluation
-    parser.add_argument(
-        '--aug_eval',
-        dest='aug_eval',
-        help='Whether to use mulit-scales and flip augment for evaluation',
-        action='store_true')
-    parser.add_argument(
-        '--scales',
-        dest='scales',
-        nargs='+',
-        help='Scales for augment',
-        type=float,
-        default=1.0)
-    parser.add_argument(
-        '--flip_horizontal',
-        dest='flip_horizontal',
-        help='Whether to use flip horizontally augment',
-        action='store_true')
-    parser.add_argument(
-        '--flip_vertical',
-        dest='flip_vertical',
-        help='Whether to use flip vertically augment',
-        action='store_true')
-
-    # sliding window evaluation
-    parser.add_argument(
-        '--is_slide',
-        dest='is_slide',
-        help='Whether to evaluate by sliding window',
-        action='store_true')
-    parser.add_argument(
-        '--crop_size',
-        dest='crop_size',
-        nargs=2,
-        help=
-        'The crop size of sliding window, the first is width and the second is height.',
-        type=int,
-        default=None)
-    parser.add_argument(
-        '--stride',
-        dest='stride',
-        nargs=2,
-        help=
-        'The stride of sliding window, the first is width and the second is height.',
-        type=int,
-        default=None)
-
     return parser.parse_args()
 
 
@@ -100,44 +52,65 @@ def main(args):
         'GPUs used'] else 'cpu'
 
     paddle.set_device(place)
-    if not args.cfg:
-        raise RuntimeError('No configuration file specified.')
 
-    cfg = Config(args.cfg)
-    val_dataset = cfg.val_dataset
-    if val_dataset is None:
-        raise RuntimeError(
-            'The verification dataset is not specified in the configuration file.'
-        )
-    elif len(val_dataset) == 0:
-        raise ValueError(
-            'The length of val_dataset is 0. Please check if your dataset is valid'
-        )
+    dataset_root_list = [
+        "data/portrait2600",
+        "data/matting_human_half",
+        "/ssd2/chulutao/humanseg",
+    ]
+    class_weight = [0.3, 0.7]
+    dataset_weight = [0.2, 0.2, 0.6]
 
-    msg = '\n---------------Config Information---------------\n'
-    msg += str(cfg)
-    msg += '------------------------------------------------'
-    logger.info(msg)
+    val_transforms = [
+        PaddingByAspectRatio(1.77777778),
+        Resize(target_size=[398, 224]),
+        Normalize()
+    ]
 
-    model = cfg.model
+    val_dataset0 = MultiDataset(
+        val_transforms,
+        dataset_root_list,
+        data_ratio=[1, 1, 10],
+        mode='val',
+        num_classes=2,
+        val_test_set_rank=0)
+    val_dataset1 = MultiDataset(
+        val_transforms,
+        dataset_root_list,
+        data_ratio=[1, 1, 10],
+        mode='val',
+        num_classes=2,
+        val_test_set_rank=1)
+    val_dataset2 = MultiDataset(
+        val_transforms,
+        dataset_root_list,
+        data_ratio=[1, 1, 10],
+        mode='val',
+        num_classes=2,
+        val_test_set_rank=2)
+
+    model = ShuffleNetV2(align_corners=False, num_classes=2)
+
     if args.model_path:
         utils.load_entire_model(model, args.model_path)
         logger.info('Loaded trained params of model successfully')
 
-    config_check(cfg, val_dataset=val_dataset)
+    mean_iou, acc, class_iou0, _, _ = evaluate(
+        model, val_dataset0, num_workers=args.num_workers)
+    mean_iou, acc, class_iou1, _, _ = evaluate(
+        model, val_dataset1, num_workers=args.num_workers)
+    mean_iou, acc, class_iou2, _, _ = evaluate(
+        model, val_dataset2, num_workers=args.num_workers)
 
-    evaluate(
-        model,
-        val_dataset,
-        aug_eval=args.aug_eval,
-        scales=args.scales,
-        flip_horizontal=args.flip_horizontal,
-        flip_vertical=args.flip_vertical,
-        is_slide=args.is_slide,
-        crop_size=args.crop_size,
-        stride=args.stride,
-        num_workers=args.num_workers,
-    )
+    dataset0_iou = class_weight[0] * class_iou0[0] + class_weight[
+        1] * class_iou0[1]
+    dataset1_iou = class_weight[0] * class_iou1[0] + class_weight[
+        1] * class_iou1[1]
+    dataset2_iou = class_weight[0] * class_iou2[0] + class_weight[
+        1] * class_iou2[1]
+    total_iou = dataset_weight[0] * dataset0_iou + dataset_weight[
+        1] * dataset1_iou + dataset_weight[2] * dataset2_iou
+    logger.info("[EVAL] Total IoU: \n" + str(np.round(total_iou, 4)))
 
 
 if __name__ == '__main__':

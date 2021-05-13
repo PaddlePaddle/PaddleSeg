@@ -235,7 +235,7 @@ def train(model,
 
                 if val_dataset is not None:
                     class_weight = [0.3, 0.7]
-                    dataset_weight = [0.6, 0.2, 0.2]
+                    dataset_weight = [0.2, 0.2, 0.6]
                     dataset0_iou = class_weight[0] * class_iou0[
                         0] + class_weight[1] * class_iou0[1]
                     dataset1_iou = class_weight[0] * class_iou1[
