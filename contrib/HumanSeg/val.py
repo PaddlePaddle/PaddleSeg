@@ -56,10 +56,11 @@ def main(args):
     dataset_root_list = [
         "data/portrait2600",
         "data/matting_human_half",
-        "/ssd2/chulutao/humanseg",
+        "/ssd3/chulutao/humanseg",
     ]
-    class_weight = [0.3, 0.7]
-    dataset_weight = [0.2, 0.2, 0.6]
+    valset_weight = [0.2, 0.2, 0.6]
+    valset_class_weight = [0.3, 0.7]
+    data_ratio = [10, 1, 1]
 
     val_transforms = [
         PaddingByAspectRatio(1.77777778),
@@ -70,21 +71,27 @@ def main(args):
     val_dataset0 = MultiDataset(
         val_transforms,
         dataset_root_list,
-        data_ratio=[1, 1, 10],
+        valset_weight,
+        valset_class_weight,
+        data_ratio=data_ratio,
         mode='val',
         num_classes=2,
         val_test_set_rank=0)
     val_dataset1 = MultiDataset(
         val_transforms,
         dataset_root_list,
-        data_ratio=[1, 1, 10],
+        valset_weight,
+        valset_class_weight,
+        data_ratio=data_ratio,
         mode='val',
         num_classes=2,
         val_test_set_rank=1)
     val_dataset2 = MultiDataset(
         val_transforms,
         dataset_root_list,
-        data_ratio=[1, 1, 10],
+        valset_weight,
+        valset_class_weight,
+        data_ratio=data_ratio,
         mode='val',
         num_classes=2,
         val_test_set_rank=2)
@@ -95,6 +102,11 @@ def main(args):
         utils.load_entire_model(model, args.model_path)
         logger.info('Loaded trained params of model successfully')
 
+    logger.info('dataset_root_list {}'.format(str(dataset_root_list)))
+    logger.info('valset_weight {}'.format(str(valset_weight)))
+    logger.info('valset_class_weight {}'.format(str(valset_class_weight)))
+    logger.info('data_ratio {}'.format(str(data_ratio)))
+
     mean_iou, acc, class_iou0, _, _ = evaluate(
         model, val_dataset0, num_workers=args.num_workers)
     mean_iou, acc, class_iou1, _, _ = evaluate(
@@ -102,14 +114,17 @@ def main(args):
     mean_iou, acc, class_iou2, _, _ = evaluate(
         model, val_dataset2, num_workers=args.num_workers)
 
-    dataset0_iou = class_weight[0] * class_iou0[0] + class_weight[
+    dataset0_iou = valset_class_weight[0] * class_iou0[0] + valset_class_weight[
         1] * class_iou0[1]
-    dataset1_iou = class_weight[0] * class_iou1[0] + class_weight[
+    dataset1_iou = valset_class_weight[0] * class_iou1[0] + valset_class_weight[
         1] * class_iou1[1]
-    dataset2_iou = class_weight[0] * class_iou2[0] + class_weight[
+    dataset2_iou = valset_class_weight[0] * class_iou2[0] + valset_class_weight[
         1] * class_iou2[1]
-    total_iou = dataset_weight[0] * dataset0_iou + dataset_weight[
-        1] * dataset1_iou + dataset_weight[2] * dataset2_iou
+    total_iou = valset_weight[0] * dataset0_iou + valset_weight[
+        1] * dataset1_iou + valset_weight[2] * dataset2_iou
+    logger.info("[EVAL] Dataset 0 Class IoU: \n" + str(np.round(class_iou0, 4)))
+    logger.info("[EVAL] Dataset 1 Class IoU: \n" + str(np.round(class_iou1, 4)))
+    logger.info("[EVAL] Dataset 2 Class IoU: \n" + str(np.round(class_iou2, 4)))
     logger.info("[EVAL] Total IoU: \n" + str(np.round(total_iou, 4)))
 
 

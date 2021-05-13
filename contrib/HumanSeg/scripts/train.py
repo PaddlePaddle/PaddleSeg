@@ -234,8 +234,8 @@ def train(model,
                     shutil.rmtree(model_to_remove)
 
                 if val_dataset is not None:
-                    class_weight = [0.3, 0.7]
-                    dataset_weight = [0.2, 0.2, 0.6]
+                    class_weight = val_dataset0.valset_class_weight
+                    dataset_weight = val_dataset0.valset_weight
                     dataset0_iou = class_weight[0] * class_iou0[
                         0] + class_weight[1] * class_iou0[1]
                     dataset1_iou = class_weight[0] * class_iou1[
@@ -245,6 +245,12 @@ def train(model,
                     total_iou = dataset_weight[
                         0] * dataset0_iou + dataset_weight[
                             1] * dataset1_iou + dataset_weight[2] * dataset2_iou
+                    logger.info("[EVAL] Dataset 0 Class IoU: \n" +
+                                str(np.round(class_iou0, 4)))
+                    logger.info("[EVAL] Dataset 1 Class IoU: \n" +
+                                str(np.round(class_iou1, 4)))
+                    logger.info("[EVAL] Dataset 2 Class IoU: \n" +
+                                str(np.round(class_iou2, 4)))
                     logger.info("[EVAL] Total IoU: \n" +
                                 str(np.round(total_iou, 4)))
 

@@ -103,23 +103,21 @@ def main(args):
 
     paddle.set_device(place)
 
-    iters = 7000
-    save_interval = 300
+    iters = 10000
+    save_interval = 400
     batch_size = 128
-    learning_rate = 0.1
+    learning_rate = 1
     pretrained = 'saved_model/shufflenetv2_humanseg_192x192/best_model/model.pdparams'
-
-    logger.info('iters {}'.format(iters))
-    logger.info('save_interval {}'.format(save_interval))
-    logger.info('batch_size {}'.format(batch_size))
-    logger.info('learning_rate {}'.format(learning_rate))
-    logger.info('pretrained {}'.format(pretrained))
 
     dataset_root_list = [
         "data/portrait2600",
         "data/matting_human_half",
-        "/ssd2/chulutao/humanseg",
+        "/ssd3/chulutao/humanseg",
     ]
+    valset_weight = [0.2, 0.2, 0.6]
+    valset_class_weight = [0.3, 0.7]
+    data_ratio = [10, 1, 1]
+
     train_transforms = [
         PaddingByAspectRatio(1.77777778),
         Resize(target_size=[398, 224]),
@@ -141,7 +139,9 @@ def main(args):
     train_dataset = MultiDataset(
         train_transforms,
         dataset_root_list,
-        data_ratio=[1, 1, 10],
+        valset_weight,
+        valset_class_weight,
+        data_ratio=data_ratio,
         mode='train',
         num_classes=2)
     if train_dataset is None:
@@ -156,21 +156,27 @@ def main(args):
         val_dataset0 = MultiDataset(
             val_transforms,
             dataset_root_list,
-            data_ratio=[1, 1, 10],
+            valset_weight,
+            valset_class_weight,
+            data_ratio=data_ratio,
             mode='val',
             num_classes=2,
             val_test_set_rank=0)
         val_dataset1 = MultiDataset(
             val_transforms,
             dataset_root_list,
-            data_ratio=[1, 1, 10],
+            valset_weight,
+            valset_class_weight,
+            data_ratio=data_ratio,
             mode='val',
             num_classes=2,
             val_test_set_rank=1)
         val_dataset2 = MultiDataset(
             val_transforms,
             dataset_root_list,
-            data_ratio=[1, 1, 10],
+            valset_weight,
+            valset_class_weight,
+            data_ratio=data_ratio,
             mode='val',
             num_classes=2,
             val_test_set_rank=2)
@@ -193,6 +199,16 @@ def main(args):
         learning_rate=learning_rate, end_lr=0, power=0.9, decay_steps=iters)
     optimizer = paddle.optimizer.Momentum(
         lr, parameters=model.parameters(), momentum=0.9, weight_decay=0.0005)
+
+    logger.info('iters {}'.format(iters))
+    logger.info('save_interval {}'.format(save_interval))
+    logger.info('batch_size {}'.format(batch_size))
+    logger.info('learning_rate {}'.format(learning_rate))
+    logger.info('pretrained {}'.format(pretrained))
+    logger.info('dataset_root_list {}'.format(str(dataset_root_list)))
+    logger.info('valset_weight {}'.format(str(valset_weight)))
+    logger.info('valset_class_weight {}'.format(str(valset_class_weight)))
+    logger.info('data_ratio {}'.format(str(data_ratio)))
 
     train(
         model,

@@ -74,6 +74,8 @@ class MultiDataset(paddle.io.Dataset):
     def __init__(self,
                  transforms,
                  dataset_root_list,
+                 valset_weight,
+                 valset_class_weight,
                  data_ratio,
                  mode='train',
                  num_classes=2,
@@ -87,6 +89,8 @@ class MultiDataset(paddle.io.Dataset):
         self.num_classes = num_classes
         self.ignore_index = 255
         self.data_ratio = data_ratio
+        self.valset_weight = valset_weight
+        self.valset_class_weight = valset_class_weight
         self.separator = ' '
 
         if mode not in ['train', 'val', 'test']:
