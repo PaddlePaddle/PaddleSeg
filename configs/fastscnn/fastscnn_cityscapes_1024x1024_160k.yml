@@ -8,12 +8,11 @@ loss:
     - type: CrossEntropyLoss
   coef: [1.0, 0.4]
 
-learning_rate:
-  value: 0.05
-  decay:
-    type: poly
-    power: 0.9
-    end_lr: 1.0e-4
+lr_scheduler:
+  type: PolynomialDecay
+  learning_rate: 0.05
+  end_lr: 1.0e-4
+  power: 0.9
 
 model:
   type: FastSCNN

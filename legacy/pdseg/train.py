@@ -360,7 +360,7 @@ def train(cfg):
                         category_iou, mean_iou = cm.mean_iou()
 
                         print_info((
-                            "epoch={} step={} lr={:.5f} loss={:.4f} acc={:.5f} mIoU={:.5f} step/sec={:.3f} | ETA {}"
+                            "epoch: {} step: {} lr: {:.5f} loss: {:.4f} acc: {:.5f} mIoU: {:.5f} step/sec: {:.3f} | ETA {}"
                         ).format(epoch, step, lr[0], avg_loss, mean_acc,
                                  mean_iou, speed,
                                  calculate_eta(all_step - step, speed)))
@@ -391,7 +391,7 @@ def train(cfg):
                         avg_loss /= args.log_steps
                         speed = args.log_steps / timer.elapsed_time()
                         print((
-                            "epoch={} step={} lr={:.5f} loss={:.4f} step/sec={:.3f} | ETA {}"
+                            "epoch: {} step: {} lr: {:.5f} loss: {:.4f} step/sec: {:.3f} | ETA {}"
                         ).format(epoch, step, lr[0], avg_loss, speed,
                                  calculate_eta(all_step - step, speed)))
                         if args.use_vdl:

@@ -111,7 +111,10 @@ class Predictor:
 
         results = np.concatenate(results, axis=0)
         for i in range(results.shape[0]):
-            result = np.argmax(results[i], axis=0)
+            if self.args.with_argmax:
+                result = np.argmax(results[i], axis=0)
+            else:
+                result = results[i]
             result = get_pseudo_color_map(result)
             basename = os.path.basename(imgs[i])
             basename, _ = os.path.splitext(basename)
@@ -158,6 +161,11 @@ def parse_args():
         dest='use_int8',
         help='Whether to use Int8 prediction when using TensorRT prediction.',
         action='store_true')
+    parser.add_argument(
+        '--with_argmax',
+        dest='with_argmax',
+        help='Perform argmax operation on the predict result.',
+        action='store_true')
 
     return parser.parse_args()
 
@@ -182,7 +190,6 @@ def main(args):
     env_info = get_sys_env()
     args.use_gpu = True if env_info['Paddle compiled with cuda'] and env_info[
         'GPUs used'] else False
-
     predictor = Predictor(args)
     predictor.run(get_images(args.image_path))
 
