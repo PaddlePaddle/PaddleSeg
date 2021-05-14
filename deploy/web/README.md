@@ -6,8 +6,12 @@
 ## 2. 使用
 
 ### 2.1 要求
-* Node >= 10.0.0
-
+* 安装 Node （https://nodejs.org/zh-cn/download/）
+* 确认是否安装成功，在命令行执行
+```sh
+# 显示所安 node 版本号，即表示成功安装
+node -v
+```
 ### 2.2 步骤
 ```sh
 # clone Paddle.js
