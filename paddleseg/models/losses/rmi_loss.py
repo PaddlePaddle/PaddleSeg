@@ -19,13 +19,13 @@ import paddle.nn.functional as F
 
 from paddleseg.cvlibs import manager
 
-_euler_num = 2.718281828 
-_pi = 3.14159265  
-_ln_2_pi = 1.837877  
-_CLIP_MIN = 1e-6 
-_CLIP_MAX = 1.0  
-_POS_ALPHA = 5e-4  
-_IS_SUM = 1  
+_euler_num = 2.718281828
+_pi = 3.14159265
+_ln_2_pi = 1.837877
+_CLIP_MIN = 1e-6
+_CLIP_MAX = 1.0
+_POS_ALPHA = 5e-4
+_IS_SUM = 1
 
 
 @manager.LOSSES.add_component
