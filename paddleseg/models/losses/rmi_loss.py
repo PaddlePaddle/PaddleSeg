@@ -216,7 +216,7 @@ class RMILoss(nn.Layer):
         chol = paddle.stack(diags, axis=0)
         chol = paddle.log(chol + 1e-8)
         return 2.0 * paddle.sum(chol, axis=-1)
-        
+
     def map_get_pairs(self, labels_4D, probs_4D, radius=3, is_combine=True):
         """
         Args:
