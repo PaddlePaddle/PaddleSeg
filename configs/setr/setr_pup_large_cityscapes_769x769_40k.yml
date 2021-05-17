@@ -1,4 +1,4 @@
-_base_: '../_base_/cityscapes_769x769.yml'
+_base_: '../_base_/cityscapes_769x769_setr.yml'
 
 model:
   type: SegmentationTransformer
@@ -8,7 +8,7 @@ model:
   num_classes: 19
   backbone_indices: [9, 14, 19, 23]
   head: pup
-  align_corners: False
+  align_corners: True
 
 optimizer:
   weight_decay: 0.0

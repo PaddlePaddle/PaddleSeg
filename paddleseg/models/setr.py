@@ -78,7 +78,7 @@ class NaiveHead(nn.Layer):
                  num_classes,
                  backbone_indices,
                  in_channels,
-                 learning_rate_coeff=20):
+                 learning_rate_coeff=10):
         super().__init__()
 
         self.cls_head_norm = nn.LayerNorm(
@@ -138,7 +138,7 @@ class PUPHead(nn.Layer):
                  num_classes,
                  backbone_indices,
                  in_channels,
-                 learning_rate_coeff=20):
+                 learning_rate_coeff=10):
         super().__init__()
 
         inter_channels = 256
