@@ -84,7 +84,7 @@ def get_reverse_list(ori_shape, transforms):
     return reverse_list
 
 
-def reverse_transform(pred, ori_shape, transforms):
+def reverse_transform(pred, ori_shape, transforms, mode='nearest'):
     """recover pred to origin shape"""
     reverse_list = get_reverse_list(ori_shape, transforms)
     for item in reverse_list[::-1]:
@@ -92,25 +92,10 @@ def reverse_transform(pred, ori_shape, transforms):
             h, w = item[1][0], item[1][1]
             if paddle.get_device() == 'cpu':
                 pred = paddle.cast(pred, 'uint8')
-                pred = F.interpolate(pred, (h, w), mode='nearest')
+                pred = F.interpolate(pred, (h, w), mode=mode)
                 pred = paddle.cast(pred, 'int32')
             else:
-                pred = F.interpolate(pred, (h, w), mode='nearest')
-        elif item[0] == 'padding':
-            h, w = item[1][0], item[1][1]
-            pred = pred[:, :, 0:h, 0:w]
-        else:
-            raise Exception("Unexpected info '{}' in im_info".format(item[0]))
-    return pred
-
-
-def reverse_transform_numpy(pred, ori_shape, transforms):
-    """recover pred to origin shape when pred is a numpy.ndarray"""
-    reverse_list = get_reverse_list(ori_shape, transforms)
-    for item in reverse_list[::-1]:
-        if item[0] == 'resize':
-            h, w = item[1][0], item[1][1]
-            pred = cv2.resize(pred, (h, w), interpolation=cv2.INTER_NEAREST)
+                pred = F.interpolate(pred, (h, w), mode=mode)
         elif item[0] == 'padding':
             h, w = item[1][0], item[1][1]
             pred = pred[:, :, 0:h, 0:w]

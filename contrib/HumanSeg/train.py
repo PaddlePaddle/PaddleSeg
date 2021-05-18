@@ -15,20 +15,19 @@
 import argparse
 
 import paddle
-
 from paddleseg.cvlibs import manager, Config
 from paddleseg.utils import get_sys_env, logger, config_check
-from paddleseg.transforms import *
-from paddleseg.models import *
-from paddleseg.models.losses import *
+
 from datasets.humanseg import HumanSeg
-from datasets.multi_dataset import MultiDataset
+from models import *
 from scripts.train import train
 
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Model training')
     # params of training
+    parser.add_argument(
+        "--config", dest="cfg", help="The config file.", default=None, type=str)
     parser.add_argument(
         '--iters',
         dest='iters',
@@ -40,6 +39,12 @@ def parse_args():
         dest='batch_size',
         help='Mini batch size of one gpu or cpu',
         type=int,
+        default=None)
+    parser.add_argument(
+        '--learning_rate',
+        dest='learning_rate',
+        help='Learning rate',
+        type=float,
         default=None)
     parser.add_argument(
         '--save_interval',
@@ -102,48 +107,16 @@ def main(args):
         'GPUs used'] else 'cpu'
 
     paddle.set_device(place)
+    if not args.cfg:
+        raise RuntimeError('No configuration file specified.')
 
-    iters = 10000
-    save_interval = 400
-    batch_size = 128
-    learning_rate = 1
-    pretrained = 'saved_model/shufflenetv2_humanseg_192x192/best_model/model.pdparams'
+    cfg = Config(
+        args.cfg,
+        learning_rate=args.learning_rate,
+        iters=args.iters,
+        batch_size=args.batch_size)
 
-    dataset_root_list = [
-        "data/portrait2600",
-        "data/matting_human_half",
-        "/ssd3/chulutao/humanseg",
-    ]
-    valset_weight = [0.2, 0.2, 0.6]
-    valset_class_weight = [0.3, 0.7]
-    data_ratio = [10, 1, 1]
-
-    train_transforms = [
-        PaddingByAspectRatio(1.77777778),
-        Resize(target_size=[398, 224]),
-        ResizeStepScaling(scale_step_size=0),
-        RandomRotation(),
-        RandomPaddingCrop(crop_size=[398, 224]),
-        RandomHorizontalFlip(),
-        RandomDistort(),
-        RandomBlur(prob=0.3),
-        Normalize()
-    ]
-
-    val_transforms = [
-        PaddingByAspectRatio(1.77777778),
-        Resize(target_size=[398, 224]),
-        Normalize()
-    ]
-
-    train_dataset = MultiDataset(
-        train_transforms,
-        dataset_root_list,
-        valset_weight,
-        valset_class_weight,
-        data_ratio=data_ratio,
-        mode='train',
-        num_classes=2)
+    train_dataset = cfg.train_dataset
     if train_dataset is None:
         raise RuntimeError(
             'The training dataset is not specified in the configuration file.')
@@ -151,75 +124,26 @@ def main(args):
         raise ValueError(
             'The length of train_dataset is 0. Please check if your dataset is valid'
         )
+    val_dataset = cfg.val_dataset if args.do_eval else None
+    losses = cfg.loss
 
-    if args.do_eval:
-        val_dataset0 = MultiDataset(
-            val_transforms,
-            dataset_root_list,
-            valset_weight,
-            valset_class_weight,
-            data_ratio=data_ratio,
-            mode='val',
-            num_classes=2,
-            val_test_set_rank=0)
-        val_dataset1 = MultiDataset(
-            val_transforms,
-            dataset_root_list,
-            valset_weight,
-            valset_class_weight,
-            data_ratio=data_ratio,
-            mode='val',
-            num_classes=2,
-            val_test_set_rank=1)
-        val_dataset2 = MultiDataset(
-            val_transforms,
-            dataset_root_list,
-            valset_weight,
-            valset_class_weight,
-            data_ratio=data_ratio,
-            mode='val',
-            num_classes=2,
-            val_test_set_rank=2)
-        val_dataset = [val_dataset0, val_dataset1, val_dataset2]
-    else:
-        val_dataset = None
+    msg = '\n---------------Config Information---------------\n'
+    msg += str(cfg)
+    msg += '------------------------------------------------'
+    logger.info(msg)
 
-    model = ShuffleNetV2(
-        align_corners=False, num_classes=2, pretrained=pretrained)
-    losses = {
-        'types': [
-            MixedLoss(
-                losses=[CrossEntropyLoss(),
-                        LovaszSoftmaxLoss()],
-                coef=[0.8, 0.2])
-        ],
-        'coef': [1]
-    }
-    lr = paddle.optimizer.lr.PolynomialDecay(
-        learning_rate=learning_rate, end_lr=0, power=0.9, decay_steps=iters)
-    optimizer = paddle.optimizer.Momentum(
-        lr, parameters=model.parameters(), momentum=0.9, weight_decay=0.0005)
-
-    logger.info('iters {}'.format(iters))
-    logger.info('save_interval {}'.format(save_interval))
-    logger.info('batch_size {}'.format(batch_size))
-    logger.info('learning_rate {}'.format(learning_rate))
-    logger.info('pretrained {}'.format(pretrained))
-    logger.info('dataset_root_list {}'.format(str(dataset_root_list)))
-    logger.info('valset_weight {}'.format(str(valset_weight)))
-    logger.info('valset_class_weight {}'.format(str(valset_class_weight)))
-    logger.info('data_ratio {}'.format(str(data_ratio)))
+    config_check(cfg, train_dataset=train_dataset, val_dataset=val_dataset)
 
     train(
-        model,
+        cfg.model,
         train_dataset,
         val_dataset=val_dataset,
-        optimizer=optimizer,
+        optimizer=cfg.optimizer,
         save_dir=args.save_dir,
-        iters=iters,
-        batch_size=batch_size,
+        iters=cfg.iters,
+        batch_size=cfg.batch_size,
         resume_model=args.resume_model,
-        save_interval=save_interval,
+        save_interval=args.save_interval,
         log_iters=args.log_iters,
         num_workers=args.num_workers,
         use_vdl=args.use_vdl,
