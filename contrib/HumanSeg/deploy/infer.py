@@ -77,16 +77,6 @@ class Predictor:
         if self.args.use_gpu:
             pred_cfg.enable_use_gpu(100, 0)
 
-            if self.args.use_trt:
-                ptype = PrecisionType.Int8 if args.use_int8 else PrecisionType.Float32
-                pred_cfg.enable_tensorrt_engine(
-                    workspace_size=1 << 30,
-                    max_batch_size=1,
-                    min_subgraph_size=3,
-                    precision_mode=ptype,
-                    use_static=False,
-                    use_calib_mode=False)
-
         self.predictor = create_predictor(pred_cfg)
 
     def preprocess(self, img):
@@ -97,7 +87,7 @@ class Predictor:
         ori_shapes.append(img.shape)
         return processed_imgs, ori_shapes
 
-    def run(self, img):
+    def run(self, img, bg):
         input_names = self.predictor.get_input_names()
         input_handle = self.predictor.get_input_handle(input_names[0])
 
@@ -112,11 +102,9 @@ class Predictor:
         output_handle = self.predictor.get_output_handle(output_names[0])
         output = output_handle.copy_to_cpu()
 
-        self.postprocess(output, img, ori_shapes[0], self.disflow,
-                         self.prev_gray, self.prev_cfd, self.is_init)
+        return self.postprocess(output, img, ori_shapes[0], bg)
 
-    def postprocess(self, pred, img, ori_shape, disflow, prev_gray, prev_cfd,
-                    is_init):
+    def postprocess(self, pred, img, ori_shape, bg):
         if not os.path.exists(self.args.save_dir):
             os.makedirs(self.args.save_dir)
         resize_w = pred.shape[3]
@@ -144,10 +132,10 @@ class Predictor:
                 ori_shape,
                 self.cfg.transforms,
                 mode='bilinear')
-            # import pdb
-            # pdb.set_trace()
-            score_map = np.transpose(score_map.numpy().squeeze(0), [1, 2, 0])
-            bg = 255 * np.ones_like(score_map)
+            score_map = np.transpose(score_map.numpy().squeeze(0),
+                                     [1, 2, 0]) / 255
+            h, w, _ = img.shape
+            bg = cv2.resize(bg, (w, h))
             result = (score_map * img + (1 - score_map) * bg).astype(np.uint8)
 
         else:

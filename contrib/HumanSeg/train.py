@@ -19,7 +19,6 @@ from paddleseg.cvlibs import manager, Config
 from paddleseg.utils import get_sys_env, logger, config_check
 
 from datasets.humanseg import HumanSeg
-from models import *
 from scripts.train import train
 
 

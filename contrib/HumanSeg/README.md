@@ -1,6 +1,6 @@
 # HumanSeg人像分割
 
-本教程基于PaddleSeg提供针对人像分割场景从预训练模型、Fine-tune的应用指南。最新发布HumanSeg-lite模型超轻量级人像分割模型，支持移动端场景的实时分割。
+本教程基于PaddleSeg提供高精度人像分割模型、从Fine-tune到推理的应用指南。最新发布超轻量级人像分割模型，支持网页端、移动端场景的实时分割。
 
 ## 环境依赖
 
@@ -8,11 +8,11 @@
 
 版本要求
 
-* PaddlePaddle >= 2.0.0
+* PaddlePaddle >= 2.0.2
 
-* Python >= 3.6+
+* Python >= 3.7+
 
-由于图像分割模型计算开销大，推荐在GPU版本的PaddlePaddle下使用PaddleSeg。推荐安装10.0以上的CUDA环境。安装教程请见[PaddlePaddle官网](https://www.paddlepaddle.org.cn/install/quick?docurl=/documentation/docs/zh/2.0/install/)。
+由于图像分割模型计算开销大，推荐在GPU版本的PaddlePaddle下使用PaddleSeg。推荐安装10.0以上的CUDA环境。安装教程请见[PaddlePaddle官网](https://www.paddlepaddle.org.cn/install/quick?docurl=/documentation/docs/zh/install/pip/linux-pip.html)。
 
 
 #### 2. 安装PaddleSeg包
@@ -27,52 +27,69 @@ pip install paddleseg
 git clone https://github.com/PaddlePaddle/PaddleSeg
 ```
 
-## 预训练模型
-HumanSeg开放了在大规模人像数据上训练的三个预训练模型，满足多种使用场景的需求
+## 人像分割模型
+HumanSeg开放了在大规模人像数据上训练的三个人像模型，满足多种使用场景的需求
 
-| 模型类型 | Checkpoint | Inference Model | Quant Inference Model | 备注 |
-| --- | --- | --- | ---| --- |
-| HumanSeg-server  | [humanseg_server_ckpt]() | [humanseg_server_inference]() | -- | 高精度模型，适用于服务端GPU且背景复杂的人像场景， 模型结构为Deeplabv3+/ResNet50, 输入大小（512， 512） |
-| HumanSeg-mobile | [humanseg_mobile_ckpt]() | [humanseg_mobile_inference]() | [humanseg_mobile_quant]() | 轻量级模型, 适用于移动端或服务端CPU的前置摄像头场景，模型结构为HRNet_w18_samll_v1，输入大小（192， 192）  |
-| HumanSeg-lite | [humanseg_lite_ckpt]() | [humanseg_lite_inference]() |  [humanseg_lite_quant]() | 超轻量级模型, 适用于手机自拍人像，且有移动端实时分割场景， 模型结构为优化的ShuffleNetV2，输入大小（192， 192） |
+| 模型类型 | Checkpoint | Inference Model | 备注 |
+| --- | --- | --- | ---|
+| HumanSeg-server  | [humanseg_server_ckpt]() | [humanseg_server_inference]() |高精度模型，适用于服务端GPU且背景复杂的人像场景， 模型结构为Deeplabv3+/ResNet50, 输入大小（512， 512） |
+| HumanSeg-mobile | [humanseg_mobile_ckpt]() | [humanseg_mobile_inference]() | 轻量级模型, 适用于移动端或服务端CPU的前置摄像头场景，模型结构为HRNet_w18_samll_v1，输入大小（192， 192）  |
+| HumanSeg-lite | [humanseg_lite_ckpt]() | [humanseg_lite_inference]() | 超轻量级模型, 适用于网页端或移动端实时分割场景，例如手机自拍、网页视频会议，模型结构为优化的ShuffleNetV2，输入大小（192， 192） |
 
-| Method | Input Size | FLOPS | Parameters |
-|-|-|-|-|
-| ShuffleNetV2 | 398x224 | 293631872(294M) | 137012(137K) |
-| ShuffleNetV2 | 192x192 | 121272192(121M) | 137012(137K) |
-| HRNet w18 small v1 | 192x192 | 584182656(584M) | 1543954(1.54M) |
+### 计算复杂度和参数量
+| 模型类型 | Network | Input Size | FLOPS | Parameters |
+|-|-|-|-|-|
+| HumanSeg-lite | ShuffleNetV2 | 192x192 | 121272192(121M) | 137012(137K) |
+| HumanSeg-mobile | HRNet w18 small v1 | 192x192 | 584182656(584M) | 1543954(1.54M) |
+| HumanSeg-server  | Deeplabv3+/ResNet50 | 512x512 | 114148802560(114G) | 26789874(26.8M)
 
-## 下载测试数据
-我们提供了[supervise.ly](https://supervise.ly/)发布人像分割数据集**Supervisely Persons**, 从中随机抽取一小部分并转化成PaddleSeg可直接加载数据格式。通过运行以下代码进行快速下载，其中包含手机前置摄像头的人像测试视频`video_test.mp4`.
+
+<!-- | ShuffleNetV2 | 398x224 | 293631872(294M) | 137012(137K) | -->
+
+## 快速体验
+### 下载测试数据
+我们提供了[supervise.ly](https://supervise.ly/)发布人像分割数据集**Supervisely Persons**, 从中随机抽取一小部分并转化成PaddleSeg可直接加载数据格式，同时提供了手机前置摄像头的人像测试视频`video_test.mp4`。通过运行以下代码进行快速下载：
 
 ```bash
 python data/download_data.py
 ```
 
-## 快速体验视频流人像分割
+### 视频流人像分割
 结合DIS（Dense Inverse Search-basedmethod）光流算法预测结果与分割结果，改善视频流人像分割
 ```bash
 # 通过电脑摄像头进行实时分割处理
-python video_infer.py --model_dir pretrained_weights/humanseg_lite_inference
+python video_infer.py \
+--cfg export_model/shufflenetv2_humanseg_192x192_with_softmax/deploy.yaml
 
 # 对人像视频进行分割处理
-python video_infer.py --model_dir pretrained_weights/humanseg_lite_inference --video_path data/video_test.mp4
+python video_infer.py \
+--cfg export_model/deeplabv3p_resnet50_os8_humanseg_512x512_100k_with_softmax/deploy.yaml \
+--video_path data/video_test.mp4
 ```
 
 视频分割结果如下：
 
 <img src="https://paddleseg.bj.bcebos.com/humanseg/data/video_test.gif" width="20%" height="20%"><img src="https://paddleseg.bj.bcebos.com/humanseg/data/result.gif" width="20%" height="20%">
 
+### 视频流背景替换
 根据所选背景进行背景替换，背景可以是一张图片，也可以是一段视频。
 ```bash
 # 通过电脑摄像头进行实时背景替换处理, 也可通过'--background_video_path'传入背景视频
-python bg_replace.py --model_dir pretrained_weights/humanseg_lite_inference --background_image_path data/background.jpg
+python bg_replace.py \
+--cfg export_model/shufflenetv2_humanseg_192x192_with_softmax/deploy.yaml \
+--background_image_path data/background.jpg
 
 # 对人像视频进行背景替换处理, 也可通过'--background_video_path'传入背景视频
-python bg_replace.py --model_dir pretrained_weights/humanseg_lite_inference --video_path data/video_test.mp4 --background_image_path data/background.jpg
+python bg_replace.py \
+--cfg export_model/deeplabv3p_resnet50_os8_humanseg_512x512_100k_with_softmax/deploy.yaml \
+--background_image_path data/background.jpg \
+--video_path data/video_test.mp4
 
 # 对单张图像进行背景替换
-python bg_replace.py --model_dir pretrained_weights/humanseg_lite_inference --image_path data/human_image.jpg --background_image_path data/background.jpg
+python bg_replace.py \
+--cfg export_model/deeplabv3p_resnet50_os8_humanseg_512x512_100k_with_softmax/deploy.yaml \
+--background_image_path data/background.jpg \
+--image_path data/human_image.jpg
 
 ```
 
@@ -88,68 +105,41 @@ python bg_replace.py --model_dir pretrained_weights/humanseg_lite_inference --im
 提供的模型适用于手机摄像头竖屏拍摄场景，宽屏效果会略差一些。
 
 ## 训练
-使用下述命令基于与训练模型进行Fine-tuning，请确保选用的模型结构`model_type`与模型参数`pretrained_weights`匹配。
+基于上述大规模数据预训练的模型进行Fine-tuning，以HRNet w18 small v1为例，训练命令如下：
 ```bash
-python train.py --model_type HumanSegMobile \
---save_dir output/ \
---data_dir data/mini_supervisely \
---train_list data/mini_supervisely/train.txt \
---val_list data/mini_supervisely/val.txt \
---pretrained_weights pretrained_weights/humanseg_mobile_ckpt \
---batch_size 8 \
---learning_rate 0.001 \
---num_epochs 10 \
---image_shape 192 192
+export CUDA_VISIBLE_DEVICES=0 # 设置1张可用的卡
+# windows下请执行以下命令
+# set CUDA_VISIBLE_DEVICES=0
+python train.py \
+--config configs/fcn_hrnetw18_small_v1_humanseg_192x192_mini_supervisely.yml \
+--save_dir saved_model/fcn_hrnetw18_small_v1_humanseg_192x192_mini_supervisely \
+--save_interval 100 --do_eval --use_vdl
 ```
-其中参数含义如下：
-* `--model_type`: 模型类型，可选项为：HumanSegServer、HumanSegMobile和HumanSegLite
-* `--save_dir`: 模型保存路径
-* `--data_dir`: 数据集路径
-* `--train_list`: 训练集列表路径
-* `--val_list`: 验证集列表路径
-* `--pretrained_weights`: 预训练模型路径
-* `--batch_size`: 批大小
-* `--learning_rate`: 初始学习率
-* `--num_epochs`: 训练轮数
-* `--image_shape`: 网络输入图像大小（w, h）
 
 更多命令行帮助可运行下述命令进行查看：
 ```bash
 python train.py --help
 ```
-**NOTE**
-可通过更换`--model_type`变量与对应的`--pretrained_weights`使用不同的模型快速尝试。
 
 ## 评估
 使用下述命令进行评估
 ```bash
-python val.py --model_dir output/best_model \
---data_dir data/mini_supervisely \
---val_list data/mini_supervisely/val.txt \
---image_shape 192 192
+python val.py \
+--config configs/fcn_hrnetw18_small_v1_humanseg_192x192_mini_supervisely.yml \
+--model_path saved_model/fcn_hrnetw18_small_v1_humanseg_192x192_mini_supervisely/best_model/model.pdparams
 ```
-其中参数含义如下：
-* `--model_dir`: 模型路径
-* `--data_dir`: 数据集路径
-* `--val_list`: 验证集列表路径
-* `--image_shape`: 网络输入图像大小（w, h）
 
 ## 预测
 使用下述命令进行预测， 预测结果默认保存在`./output/result/`文件夹中。
 ```bash
-python infer.py --model_dir output/best_model \
---data_dir data/mini_supervisely \
---test_list data/mini_supervisely/test.txt \
---save_dir output/result \
---image_shape 192 192
+python predict.py \
+--config configs/fcn_hrnetw18_small_v1_humanseg_192x192_mini_supervisely.yml \
+--model_path saved_model/fcn_hrnetw18_small_v1_humanseg_192x192_mini_supervisely/best_model/model.pdparams \
+--image_path data/human_image.jpg
 ```
-其中参数含义如下：
-* `--model_dir`: 模型路径
-* `--data_dir`: 数据集路径
-* `--test_list`: 测试集列表路径
-* `--image_shape`: 网络输入图像大小（w, h）
 
-## 将模型导出为静态图模型
+## 模型导出
+### 将模型导出为静态图模型
 
 请确保位于PaddleSeg目录下，执行以下脚本：
 
@@ -157,7 +147,11 @@ python infer.py --model_dir output/best_model \
 export CUDA_VISIBLE_DEVICES=0 # 设置1张可用的卡
 # windows下请执行以下命令
 # set CUDA_VISIBLE_DEVICES=0
-python ../../export.py --config configs/shufflenetv2_humanseg_portrait.yml --save_dir export_model/shufflenetv2_humanseg_portrait --model_path saved_model/shufflenetv2_humanseg_portrait/best_model/model.pdparams --without_argmax --with_softmax
+python ../../export.py \
+--config configs/shufflenetv2_humanseg_192x192.yml \
+--model_path saved_model/shufflenetv2_humanseg_192x192/best_model/model.pdparams \
+--save_dir export_model/shufflenetv2_humanseg_192x192_with_softmax \
+--without_argmax --with_softmax
 ```
 
 ### 导出脚本参数解释
@@ -167,8 +161,10 @@ python ../../export.py --config configs/shufflenetv2_humanseg_portrait.yml --sav
 |config|配置文件|是|-|
 |save_dir|模型和visualdl日志文件的保存根路径|否|output|
 |model_path|预训练模型参数的路径|否|配置文件中指定值|
+|with_softmax|在网络末端添加softmax算子。由于PaddleSeg组网默认返回logits，如果想要部署模型获取概率值，可以置为True|否|False|
+|without_argmax|是否不在网络末端添加argmax算子。由于PaddleSeg组网默认返回logits，为部署模型可以直接获取预测结果，我们默认在网络末端添加argmax算子|否|False|
 
-## 结果文件
+### 结果文件
 
 ```shell
 output
@@ -177,8 +173,3 @@ output
   ├── model.pdiparams.info   # 参数额外信息，一般无需关注
   └── model.pdmodel          # 静态图模型文件
 ```
-
-
-## AIStudio在线教程
-
-我们在AI Studio平台上提供了人像分割在线体验的教程，[点击体验]()

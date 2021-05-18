@@ -38,7 +38,7 @@ def parse_args():
         dest="input_shape",
         help="The image shape for net inputs.",
         nargs=2,
-        default=[224, 398],
+        default=[192, 192],
         type=int)
     parser.add_argument(
         '--video_path',
@@ -53,17 +53,6 @@ def parse_args():
         help='The directory for saving the inference results',
         type=str,
         default='./output')
-
-    parser.add_argument(
-        '--use_trt',
-        dest='use_trt',
-        help='Whether to use Nvidia TensorRT to accelerate prediction.',
-        action='store_true')
-    parser.add_argument(
-        '--use_int8',
-        dest='use_int8',
-        help='Whether to use Int8 prediction when using TensorRT prediction.',
-        action='store_true')
 
     parser.add_argument(
         '--with_argmax',
@@ -84,9 +73,6 @@ def video_infer(args):
     args.use_gpu = True if env_info['Paddle compiled with cuda'] and env_info[
         'GPUs used'] else False
     predictor = Predictor(args)
-
-    resize_h = args.input_shape[1]
-    resize_w = args.input_shape[0]
 
     if not args.video_path:
         cap = cv2.VideoCapture(0)
@@ -115,7 +101,8 @@ def video_infer(args):
         while cap.isOpened():
             ret, img = cap.read()
             if ret:
-                comb = predictor.run(img)
+                bg = 255 * np.ones_like(img)
+                comb = predictor.run(img, bg)
                 out.write(comb)
                 frame += 1
                 logger.info('Processing frame {}'.format(frame))
@@ -124,6 +111,7 @@ def video_infer(args):
         cap.release()
         out.release()
 
+    # 当没有输入预测图像和视频的时候，则打开摄像头
     else:
         while cap.isOpened():
             ret, img = cap.read()

@@ -1,5 +1,5 @@
 batch_size: 64
-iters: 20000
+iters: 2000
 
 train_dataset:
   type: Dataset
@@ -42,7 +42,7 @@ optimizer:
 
 lr_scheduler:
   type: PolynomialDecay
-  learning_rate: 0.1
+  learning_rate: 0.05
   end_lr: 0
   power: 0.9
 
@@ -57,5 +57,5 @@ model:
     type: HRNet_W18_Small_V1
     align_corners: False
   num_classes: 2
-  pretrained: Null
+  pretrained: saved_model/fcn_hrnetw18_small_v1_humanseg_192x192/best_model/model.pdparams
   backbone_indices: [-1]

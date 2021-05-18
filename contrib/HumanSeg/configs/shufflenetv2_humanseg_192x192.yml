@@ -45,7 +45,6 @@ loss:
         - type: CrossEntropyLoss
         - type: LovaszSoftmaxLoss
       coef: [0.8, 0.2]
-    # - type: CrossEntropyLoss
   coef: [1]
 
 model:

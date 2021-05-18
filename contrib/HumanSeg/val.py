@@ -22,7 +22,6 @@ from paddleseg.core import evaluate
 from paddleseg.utils import get_sys_env, logger, config_check, utils
 
 from datasets.humanseg import HumanSeg
-from models import *
 
 
 def parse_args():
