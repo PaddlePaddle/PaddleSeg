@@ -4,7 +4,7 @@ model:
   type: SegmentationTransformer
   backbone:
     type: ViT_large_patch16_384
-    pretrained: vit/ViT_large_patch16_384/model.pdparams
+    pretrained: https://bj.bcebos.com/paddleseg/dygraph/vit_large_patch16_384.tar.gz
   num_classes: 19
   backbone_indices: [9, 14, 19, 23]
   head: naive

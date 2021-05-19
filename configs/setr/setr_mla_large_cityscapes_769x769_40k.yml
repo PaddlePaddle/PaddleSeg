@@ -6,8 +6,8 @@ model:
     type: ViT_large_patch16_384
     pretrained: https://bj.bcebos.com/paddleseg/dygraph/vit_large_patch16_384.tar.gz
   num_classes: 19
-  backbone_indices: [9, 14, 19, 23]
-  head: pup
+  backbone_indices: [5, 11, 17, 23]
+  head: mla
   align_corners: True
 
 optimizer:
