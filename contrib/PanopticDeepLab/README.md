@@ -1,7 +1,7 @@
 
 # Panoptic DeepLab
 
-基于paddle实现[Panoptic Deeplab](https://arxiv.org/abs/1911.10194)全景分割算法。
+基于PaddlePaddle实现[Panoptic Deeplab](https://arxiv.org/abs/1911.10194)全景分割算法。
 
 Panoptic DeepLab首次证实了bottem-up算法能够达到state-of-the-art的效果。Panoptic DeepLab预测三个输出：Semantic Segmentation, Center Prediction 和 Center Regression。实例类别像素根据最近距离原则聚集到实例中心点得到实例分割结果。最后按照majority-vote规则融合语义分割结果和实例分割结果，得到最终的全景分割结果。
 其通过将每一个像素赋值给每一个类别或实例达到分割的效果。
