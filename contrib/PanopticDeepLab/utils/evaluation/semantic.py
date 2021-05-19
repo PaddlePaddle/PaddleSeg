@@ -28,8 +28,8 @@ class SemanticEvaluator:
 
     Args:
         num_classes (int): number of classes
-        ignore_index (int): value in semantic segmentation ground truth. Predictions for the
-        corresponding pixels should be ignored.
+        ignore_index (int, optional): value in semantic segmentation ground truth. Predictions for the
+        corresponding pixels should be ignored. Default: 255.
     """
 
     def __init__(self, num_classes, ignore_index=255):

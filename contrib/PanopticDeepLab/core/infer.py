@@ -307,7 +307,7 @@ def inference(
         threshold (float, optional): A Float, threshold applied to center heatmap score. Default: 0.1.
         nms_kernel (int, optional): An Integer, NMS max pooling kernel size. Default: 3.
         top_k (int, optional): An Integer, top k centers to keep. Default: None.
-        ori_shape (list): Origin shape of image.
+        ori_shape (list. optional): Origin shape of image. Default: None.
 
     Returns:
         list: A list of [semantic, semantic_softmax, instance, panoptic, ctr_hmp].

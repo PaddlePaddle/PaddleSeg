@@ -38,12 +38,14 @@ class PanopticDeepLab(nn.Layer):
         num_classes (int): The unique number of target classes.
         backbone (paddle.nn.Layer): Backbone network, currently support Resnet50_vd/Resnet101_vd/Xception65.
         backbone_indices (tuple, optional): Two values in the tuple indicate the indices of output of backbone.
-           Default: (0, 3).
+           Default: (2, 1, 0, 3).
         aspp_ratios (tuple, optional): The dilation rate using in ASSP module.
             If output_stride=16, aspp_ratios should be set as (1, 6, 12, 18).
             If output_stride=8, aspp_ratios is (1, 12, 24, 36).
             Default: (1, 6, 12, 18).
         aspp_out_channels (int, optional): The output channels of ASPP module. Default: 256.
+        decoder_channels (int, optional): The channels of Decoder. Default: 256.
+        low_level_channels_projects (list, opitonal). The channels of low level features to output. Defualt: None.
         align_corners (bool, optional): An argument of F.interpolate. It should be set to False when the feature size is even,
             e.g. 1024x512, otherwise it is True, e.g. 769x769. Default: False.
         pretrained (str, optional): The path or url of pretrained model. Default: None.
@@ -78,9 +80,11 @@ class PanopticDeepLab(nn.Layer):
 
     def _upsample_predictions(self, pred, input_shape):
         """Upsamples final prediction, with special handling to offset.
+
             Args:
                 pred (dict): stores all output of the segmentation model.
                 input_shape (tuple): spatial resolution of the desired shape.
+
             Returns:
                 result (OrderedDict): upsampled dictionary.
             """
@@ -132,8 +136,10 @@ class PanopticDeepLabHead(nn.Layer):
         backbone_channels (tuple): The same length with "backbone_indices". It indicates the channels of corresponding index.
         aspp_ratios (tuple): The dilation rates using in ASSP module.
         aspp_out_channels (int): The output channels of ASPP module.
-        align_corners (bool): An argument of F.interpolate. It should be set to False when the output size of feature
-            is even, e.g. 1024x512, otherwise it is True, e.g. 769x769.
+        decoder_channels (int, optional): The channels of Decoder. Default: 256.
+        align_corners (bool, optional): An argument of F.interpolate. It should be set to False when the feature size is even,
+            e.g. 1024x512, otherwise it is True, e.g. 769x769. Default: False.
+        low_level_channels_projects (list, opitonal). The channels of low level features to output. Defualt: None.
     """
 
     def __init__(self, num_classes, backbone_indices, backbone_channels,
@@ -223,6 +229,7 @@ class ASPPModule(nn.Layer):
             is even, e.g. 1024x512, otherwise it is True, e.g. 769x769.
         use_sep_conv (bool, optional): If using separable conv in ASPP module. Default: False.
         image_pooling (bool, optional): If augmented with image-level features. Default: False
+        drop_rate (float, optional): The drop rate. Default: 0.1.
     """
 
     def __init__(self,
@@ -304,7 +311,6 @@ class SinglePanopticDeepLabDecoder(nn.Layer):
     The DeepLabV3PHead implementation based on PaddlePaddle.
 
     Args:
-        num_classes (int): The unique number of target classes.
         backbone_indices (tuple): Two values in the tuple indicate the indices of output of backbone.
             the first index will be taken as a low-level feature in Decoder component;
             the second one will be taken as input of ASPP component.
@@ -315,8 +321,10 @@ class SinglePanopticDeepLabDecoder(nn.Layer):
         backbone_channels (tuple): The same length with "backbone_indices". It indicates the channels of corresponding index.
         aspp_ratios (tuple): The dilation rates using in ASSP module.
         aspp_out_channels (int): The output channels of ASPP module.
+        decoder_channels (int): The channels of decoder
         align_corners (bool): An argument of F.interpolate. It should be set to False when the output size of feature
             is even, e.g. 1024x512, otherwise it is True, e.g. 769x769.
+        low_level_channels_projects (list). The channels of low level features to output.
     """
 
     def __init__(self, backbone_indices, backbone_channels, aspp_ratios,
@@ -391,7 +399,9 @@ class SinglePanopticDeepLabHead(nn.Layer):
 
     Args:
         num_classes (int): The number of classes.
-        in_channels (int): The number of input channels in decoder module.
+        decoder_channels (int): The channels of decoder.
+        head_channels (int): The channels of head.
+        class_key (list): The key name of output by classifier.
     """
 
     def __init__(self, num_classes, decoder_channels, head_channels, class_key):

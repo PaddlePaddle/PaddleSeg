@@ -63,9 +63,9 @@ class PQStat():
 
         Args:
             num_classes (int): number of classes.
-            isthing (bool|None): calculate average pq for thing class if isthing is True,
-                for stuff class if isthing is False and for all if isthing is None. Default: None.
-            thing_list (list|None): A list of thing class. It should be provided when isthing is equal to True or False
+            isthing (bool|None, optional): calculate average pq for thing class if isthing is True,
+                for stuff class if isthing is False and for all if isthing is None. Default: None. Default: None.
+            thing_list (list|None, optional): A list of thing class. It should be provided when isthing is equal to True or False. Default: None.
         """
         pq, sq, rq, n = 0, 0, 0, 0
         per_class_results = {}

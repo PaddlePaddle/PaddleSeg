@@ -21,16 +21,16 @@ class PanopticTargetGenerator(object):
     Annotation is assumed to have Cityscapes format.
 
     Args:
-        ignore_index: Integer, the ignore label for semantic segmentation.
-        rgb2id: Function, panoptic label is encoded in a colored image, this function convert color to the
+        ignore_index (int): The ignore label for semantic segmentation.
+        rgb2id (Function): Function, panoptic label is encoded in a colored image, this function convert color to the
             corresponding panoptic label.
-        thing_list: List, a list of thing classes
-        sigma: the sigma for Gaussian kernel.
-        ignore_stuff_in_offset: Boolean, whether to ignore stuff region when training the offset branch.
-        small_instance_area: Integer, indicates largest area for small instances.
-        small_instance_weight: Integer, indicates semantic loss weights for small instances.
-        ignore_crowd_in_semantic: Boolean, whether to ignore crowd region in semantic segmentation branch,
-            crowd region is ignored in the original TensorFlow implementation.
+        thing_list (list): A list of thing classes
+        sigma (int, optional): The sigma for Gaussian kernel. Default: 8.
+        ignore_stuff_in_offset (bool, optional): Whether to ignore stuff region when training the offset branch. Default: False.
+        small_instance_area (int, optional): Indicates largest area for small instances. Default: 0.
+        small_instance_weight (int, optional): Indicates semantic loss weights for small instances. Default: 1.
+        ignore_crowd_in_semantic (bool, optional): Whether to ignore crowd region in semantic segmentation branch,
+            crowd region is ignored in the original TensorFlow implementation. Default: False.
     """
 
     def __init__(self,
@@ -63,8 +63,8 @@ class PanopticTargetGenerator(object):
         reference: https://github.com/facebookresearch/detectron2/blob/master/datasets/prepare_panoptic_fpn.py#L18
 
         Args:
-            panoptic: numpy.array, colored image encoding panoptic label.
-            segments: List, a list of dictionary containing information of every segment, it has fields:
+            panoptic (np.ndarray): Colored image encoding panoptic label.
+            segments (list): A list of dictionary containing information of every segment, it has fields:
                 - id: panoptic id, after decoding `panoptic`.
                 - category_id: semantic class id.
                 - area: segment area.
@@ -187,8 +187,8 @@ class SemanticTargetGenerator(object):
     Annotation is assumed to have Cityscapes format.
 
     Args:
-        ignore_index: Integer, the ignore label for semantic segmentation.
-        rgb2id: Function, panoptic label is encoded in a colored image, this function convert color to the
+        ignore_index (int): The ignore label for semantic segmentation.
+        rgb2id (function): Function, panoptic label is encoded in a colored image, this function convert color to the
             corresponding panoptic label.
     """
 
@@ -202,8 +202,8 @@ class SemanticTargetGenerator(object):
         reference: https://github.com/facebookresearch/detectron2/blob/master/datasets/prepare_panoptic_fpn.py#L18
 
         Args:
-            panoptic: numpy.array, colored image encoding panoptic label.
-            segments: List, a list of dictionary containing information of every segment, it has fields:
+            panoptic (np.ndarray): Colored image encoding panoptic label.
+            segments (list): A list of dictionary containing information of every segment, it has fields:
                 - id: panoptic id, after decoding `panoptic`.
                 - category_id: semantic class id.
                 - area: segment area.
@@ -229,7 +229,7 @@ class InstanceTargetGenerator(object):
     Annotation is assumed to have Cityscapes format.
 
     Args:
-        rgb2id: Function, panoptic label is encoded in a colored image, this function convert color to the
+        rgb2id (function): Function, panoptic label is encoded in a colored image, this function convert color to the
             corresponding panoptic label.
     """
 
@@ -240,7 +240,7 @@ class InstanceTargetGenerator(object):
         """Generates the instance target.
 
         Args:
-            panoptic: numpy.array, colored image encoding panoptic label.
+            panoptic (np.ndarray): Colored image encoding panoptic label.
 
         Returns:
             A dictionary with fields:
@@ -264,9 +264,10 @@ class RawPanopticTargetGenerator(object):
         11000, 11001, ..., 18000, 18001, ignore_index(general 255).
 
     Args:
-        ignore_index: Integer, the ignore label for semantic segmentation.
-        rgb2id: Function, panoptic label is encoded in a colored image, this function convert color to the
+        ignore_index (int): The ignore label for semantic segmentation.
+        rgb2id (function): Function, panoptic label is encoded in a colored image, this function convert color to the
             corresponding panoptic label.
+        label_divisor(int, optional): An Integer, used to convert panoptic id = semantic id * label_divisor + instance_id. Default: 1000.
     """
 
     def __init__(self, ignore_index, rgb2id, label_divisor=1000):

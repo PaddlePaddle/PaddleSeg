@@ -51,8 +51,8 @@ def random_color(rgb=False, maximum=255):
     Reference: https://github.com/facebookresearch/detectron2/blob/master/detectron2/utils/colormap.py#L111
 
     Args:
-        rgb (bool): whether to return RGB colors or BGR colors.
-        maximum (int): either 255 or 1
+        rgb (bool, optional): whether to return RGB colors or BGR colors. Default: False.
+        maximum (int, optional): either 255 or 1. Default: 255.
 
     Returns:
         ndarray: a vector of 3 numbers
@@ -100,7 +100,7 @@ def visualize_semantic(semantic, save_path, colormap, image=None, weight=0.5):
         colormap(np.ndarray): A color map for visualization.
         image(np.ndarray, optional): Origin image to prediction, merge semantic with
             image if provided. Default: None.
-        weight(float, optional): The image weight when merge semantic with image. Default: 0.6.
+        weight(float, optional): The image weight when merge semantic with image. Default: 0.5.
     """
     semantic = semantic.astype('uint8')
     colored_semantic = colormap[semantic]
@@ -120,7 +120,7 @@ def visualize_instance(instance, save_path, stuff_id=0, image=None, weight=0.5):
         stuff_id(int, optional): Id for background that not want to plot.
         image(np.ndarray, optional): Origin image to prediction, merge instance with
             image if provided. Default: None.
-        weight(float, optional): The image weight when merge instance with image. Default: 0.6.
+        weight(float, optional): The image weight when merge instance with image. Default: 0.5.
     """
     # Add color map for instance segmentation result.
     ids = np.unique(instance)
@@ -157,8 +157,8 @@ def visualize_panoptic(panoptic,
         colormap(np.ndarray): A color map for visualization.
         image(np.ndarray, optional): Origin image to prediction, merge panoptic with
             image if provided. Default: None.
-        weight(float, optional): The image weight when merge panoptic with image. Default: 0.6.
-        ignore_index(int, optional): Specifies a target value that is ignored.
+        weight(float, optional): The image weight when merge panoptic with image. Default: 0.5.
+        ignore_index(int, optional): Specifies a target value that is ignored. Default: 255.
     """
     colored_panoptic = np.zeros((panoptic.shape[0], panoptic.shape[1], 3),
                                 dtype=np.uint8)

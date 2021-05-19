@@ -44,8 +44,8 @@ class InstanceEvaluator(object):
 
     Args:
         num_classes (int): The unique number of target classes. Exclude background class, labeled 0 usually.
-        overlaps (float|list): The threshold of IoU.
-        thing_list (list|None): Thing class, only calculate AP for the thing class.
+        overlaps (float|list, optional): The threshold of IoU. Default: 0.5.
+        thing_list (list|None, optional): Thing class, only calculate AP for the thing class. Default: None.
     """
 
     def __init__(self, num_classes, overlaps=0.5, thing_list=None):
@@ -248,6 +248,7 @@ class InstanceEvaluator(object):
         Args:
             preds (list): Prediction of image.
             gts (list): Ground truth of image.
+            ignore_mask (np.ndarray, optional): Ignore mask. Default: None.
 
         Return:
             dict: pred_instances, the type is dict(list(dict))), e.g. {0: [{'pred_id':0, 'label':0',
