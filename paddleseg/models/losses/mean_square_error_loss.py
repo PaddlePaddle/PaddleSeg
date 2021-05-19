@@ -1,3 +1,6 @@
+# Copyright (c) 2021 PaddlePaddle Authors. All Rights Reserve.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
@@ -31,13 +34,15 @@ class MSELoss(nn.MSELoss):
     .. math::
         Out = \operatorname{sum}((input - label)^2)
     where `input` and `label` are `float32` tensors of same shape.
-    Parameters:
+
+    Args:
         reduction (string, optional): The reduction method for the output,
             could be 'none' | 'mean' | 'sum'.
             If :attr:`reduction` is ``'mean'``, the reduced mean loss is returned.
             If :attr:`size_average` is ``'sum'``, the reduced sum loss is returned.
             If :attr:`reduction` is ``'none'``, the unreduced loss is returned.
             Default is ``'mean'``.
+        ignore_index (int, optional): Specifies a target value that is ignored and does not contribute to the input gradient. Default: 255.
     Shape:
         input (Tensor): Input tensor, the data type is float32 or float64
         label (Tensor): Label tensor, the data type is float32 or float64

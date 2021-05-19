@@ -1,3 +1,6 @@
+# Copyright (c) 2021 PaddlePaddle Authors. All Rights Reserve.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
@@ -30,14 +33,15 @@ class L1Loss(nn.MSELoss):
     If `reduction` set to ``'sum'``, the loss is:
     .. math::
         Out = SUM(\lvert input - label\rvert)
-    Parameters:
+
+    Args:
         reduction (str, optional): Indicate the reduction to apply to the loss,
             the candicates are ``'none'`` | ``'mean'`` | ``'sum'``.
             If `reduction` is ``'none'``, the unreduced loss is returned;
             If `reduction` is ``'mean'``, the reduced mean loss is returned.
             If `reduction` is ``'sum'``, the reduced sum loss is returned.
             Default is ``'mean'``.
-        name (str, optional): Name for the operation (optional, default is None). For more information, please refer to :ref:`api_guide_Name`.
+        ignore_index (int, optional): Specifies a target value that is ignored and does not contribute to the input gradient. Default: 255.
     Shape:
         input (Tensor): The input tensor. The shapes is [N, *], where N is batch size and `*` means any number of additional dimensions. It's data type should be float32, float64, int32, int64.
         label (Tensor): label. The shapes is [N, *], same shape as ``input`` . It's data type should be float32, float64, int32, int64.
