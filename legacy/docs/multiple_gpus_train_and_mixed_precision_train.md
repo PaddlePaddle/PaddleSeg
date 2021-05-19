@@ -16,7 +16,7 @@ python -m paddle.distributed.launch pdseg/train.py --use_gpu \
                       --cfg configs/unet_pet.yaml \
                       BATCH_SIZE 4 \
                       TRAIN.PRETRAINED_MODEL_DIR pretrained_model/unet_bn_coco \
-                      SOLVER.LR 5e-5 
+                      SOLVER.LR 5e-5
 ```
 
 ### 混合精度训练示例
@@ -60,4 +60,3 @@ python -m paddle.distributed.launch pdseg/train.py --use_gpu \
 ### 参考
 
 - [Mixed Precision Training](https://arxiv.org/abs/1710.03740)
-

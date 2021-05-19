@@ -823,13 +823,14 @@ class RandomScaleAspect:
                     w1 = np.random.randint(0, img_width - dw)
 
                     im = im[h1:(h1 + dh), w1:(w1 + dw), :]
-                    label = label[h1:(h1 + dh), w1:(w1 + dw)]
                     im = cv2.resize(
                         im, (img_width, img_height),
                         interpolation=cv2.INTER_LINEAR)
-                    label = cv2.resize(
-                        label, (img_width, img_height),
-                        interpolation=cv2.INTER_NEAREST)
+                    if label is not None:
+                        label = label[h1:(h1 + dh), w1:(w1 + dw)]
+                        label = cv2.resize(
+                            label, (img_width, img_height),
+                            interpolation=cv2.INTER_NEAREST)
                     break
         if label is None:
             return (im, )

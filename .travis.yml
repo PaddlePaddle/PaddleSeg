@@ -11,7 +11,7 @@ install:
   - pip install -r requirements.txt
 
 script:
-  - python -c 'import paddleseg'
+  - /bin/bash legacy/test/ci/check_code_style.sh
 
 notifications:
   email:

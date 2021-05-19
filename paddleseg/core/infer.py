@@ -155,6 +155,9 @@ def slide_inference(model, im, crop_size, stride):
     # calculate the crop nums
     rows = np.int(np.ceil(1.0 * (h_im - h_crop) / h_stride)) + 1
     cols = np.int(np.ceil(1.0 * (w_im - w_crop) / w_stride)) + 1
+    # prevent negative sliding rounds when imgs after scaling << crop_size
+    rows = 1 if h_im <= h_crop else rows
+    cols = 1 if w_im <= w_crop else cols
     # TODO 'Tensor' object does not support item assignment. If support, use tensor to calculation.
     final_logit = None
     count = np.zeros([1, 1, h_im, w_im])

@@ -106,6 +106,7 @@ class DeployConfig:
             # 10. use_pr
             self.use_pr = deploy_conf.get("USE_PR", False)
 
+
 class ImageReader:
     def __init__(self, configs):
         self.config = configs
