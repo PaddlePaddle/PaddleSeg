@@ -5,15 +5,15 @@
 - [人像分割模型](#人像分割模型)
 - [安装](#安装)
 - [快速体验](#快速体验)
-  - [视频流人像分割](##视频流人像分割)
-  - [视频流背景替换](##视频流背景替换)
+  - [视频流人像分割](#视频流人像分割)
+  - [视频流背景替换](#视频流背景替换)
 - [训练评估预测](#训练评估预测)
 - [模型导出](#模型导出)
 - [Web端部署](#Web端部署)
 - [移动端部署](#移动端部署)
 
 ## 人像分割模型
-HumanSeg开放了在大规模人像数据上训练的三个人像模型，满足服务端、移动端、Web端多种使用场景的需求
+HumanSeg开放了在大规模人像数据上训练的三个人像模型，满足服务端、移动端、Web端多种使用场景的需求。
 
 | 模型类型 | 适用场景 | Checkpoint | Inference Model |
 | --- | --- | --- | ---|
@@ -65,6 +65,11 @@ git clone https://github.com/PaddlePaddle/PaddleSeg
 ```
 
 ## 快速体验
+以下所有命令均在`PaddleSeg/contrib/HumanSeg`目录下执行。
+```shell
+cd PaddleSeg/contrib/HumanSeg
+```
+
 ### 下载Inference Model
 
 执行以下脚本快速下载所有Inference Model
@@ -80,7 +85,7 @@ python data/download_data.py
 ```
 
 ### 视频流人像分割
-结合DIS（Dense Inverse Search-basedmethod）光流算法预测结果与分割结果，改善视频流人像分割
+结合DIS（Dense Inverse Search-basedmethod）光流算法预测结果与分割结果，改善视频流人像分割。
 ```bash
 # 通过电脑摄像头进行实时分割处理
 python video_infer.py \
