@@ -525,6 +525,50 @@ class Padding:
 
 
 @manager.TRANSFORMS.add_component
+class PaddingByAspectRatio:
+    """
+
+    Args:
+        aspect_ratio (int|float, optional): The aspect ratio = width / height. Default: 1.
+    """
+
+    def __init__(self,
+                 aspect_ratio=1,
+                 im_padding_value=(127.5, 127.5, 127.5),
+                 label_padding_value=255):
+        self.aspect_ratio = aspect_ratio
+        self.im_padding_value = im_padding_value
+        self.label_padding_value = label_padding_value
+
+    def __call__(self, im, label=None):
+        """
+        Args:
+            im (np.ndarray): The Image data.
+            label (np.ndarray, optional): The label data. Default: None.
+
+        Returns:
+            (tuple). When label is None, it returns (im, ), otherwise it returns (im, label).
+        """
+
+        img_height = im.shape[0]
+        img_width = im.shape[1]
+        ratio = img_width / img_height
+        if ratio == self.aspect_ratio:
+            if label is None:
+                return (im, )
+            else:
+                return (im, label)
+        elif ratio > self.aspect_ratio:
+            img_height = int(img_width / self.aspect_ratio)
+        else:
+            img_width = int(img_height * self.aspect_ratio)
+        padding = Padding((img_width, img_height),
+                          im_padding_value=self.im_padding_value,
+                          label_padding_value=self.label_padding_value)
+        return padding(im, label)
+
+
+@manager.TRANSFORMS.add_component
 class RandomPaddingCrop:
     """
     Crop a sub-image from a raw image and annotation image randomly. If the target cropping size

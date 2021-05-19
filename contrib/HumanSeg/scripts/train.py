@@ -1,4 +1,4 @@
-# Copyright (c) 2020 PaddlePaddle Authors. All Rights Reserved.
+# Copyright (c) 2021 PaddlePaddle Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -63,7 +63,6 @@ def train(model,
           keep_checkpoint_max=5):
     """
     Launch training.
-
     Args:
         model（nn.Layer): A sementic segmentation model.
         train_dataset (paddle.io.Dataset): Used to read and process training datasets.
@@ -204,7 +203,7 @@ def train(model,
             if (iter % save_interval == 0
                     or iter == iters) and (val_dataset is not None):
                 num_workers = 1 if num_workers > 0 else 0
-                mean_iou, acc, _, _, _ = evaluate(
+                mean_iou, acc, class_iou, _, _ = evaluate(
                     model, val_dataset, num_workers=num_workers)
                 model.train()
 
@@ -236,6 +235,10 @@ def train(model,
 
                     if use_vdl:
                         log_writer.add_scalar('Evaluate/mIoU', mean_iou, iter)
+                        for i, iou in enumerate(class_iou):
+                            log_writer.add_scalar('Evaluate/IoU {}'.format(i),
+                                                  float(iou), iter)
+
                         log_writer.add_scalar('Evaluate/Acc', acc, iter)
             batch_start = time.time()
 

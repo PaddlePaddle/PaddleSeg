@@ -1,4 +1,4 @@
-# Copyright (c) 2020 PaddlePaddle Authors. All Rights Reserved.
+# Copyright (c) 2021 PaddlePaddle Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,41 +18,36 @@ import os
 import paddle
 
 from paddleseg.cvlibs import manager, Config
-from paddleseg.utils import get_sys_env, logger, config_check
-from paddleseg.core import predict
+from paddleseg.core import evaluate
+from paddleseg.utils import get_sys_env, logger, config_check, utils
+
+from datasets.humanseg import HumanSeg
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description='Model prediction')
+    parser = argparse.ArgumentParser(description='Model evaluation')
 
-    # params of prediction
+    # params of evaluate
     parser.add_argument(
         "--config", dest="cfg", help="The config file.", default=None, type=str)
     parser.add_argument(
         '--model_path',
         dest='model_path',
-        help='The path of model for prediction',
+        help='The path of model for evaluation',
         type=str,
         default=None)
     parser.add_argument(
-        '--image_path',
-        dest='image_path',
-        help=
-        'The path of image, it can be a file or a directory including images',
-        type=str,
-        default=None)
-    parser.add_argument(
-        '--save_dir',
-        dest='save_dir',
-        help='The directory for saving the predicted results',
-        type=str,
-        default='./output/result')
+        '--num_workers',
+        dest='num_workers',
+        help='Num workers for data loader',
+        type=int,
+        default=0)
 
-    # augment for prediction
+    # augment for evaluation
     parser.add_argument(
-        '--aug_pred',
-        dest='aug_pred',
-        help='Whether to use mulit-scales and flip augment for prediction',
+        '--aug_eval',
+        dest='aug_eval',
+        help='Whether to use mulit-scales and flip augment for evaluation',
         action='store_true')
     parser.add_argument(
         '--scales',
@@ -72,11 +67,11 @@ def parse_args():
         help='Whether to use flip vertically augment',
         action='store_true')
 
-    # sliding window prediction
+    # sliding window evaluation
     parser.add_argument(
         '--is_slide',
         dest='is_slide',
-        help='Whether to prediction by sliding window',
+        help='Whether to evaluate by sliding window',
         action='store_true')
     parser.add_argument(
         '--crop_size',
@@ -98,45 +93,6 @@ def parse_args():
     return parser.parse_args()
 
 
-def get_image_list(image_path):
-    """Get image list"""
-    valid_suffix = [
-        '.JPEG', '.jpeg', '.JPG', '.jpg', '.BMP', '.bmp', '.PNG', '.png'
-    ]
-    image_list = []
-    image_dir = None
-    if os.path.isfile(image_path):
-        if os.path.splitext(image_path)[-1] in valid_suffix:
-            image_list.append(image_path)
-        else:
-            image_dir = os.path.dirname(image_path)
-            with open(image_path, 'r') as f:
-                for line in f:
-                    line = line.strip()
-                    if len(line.split()) > 1:
-                        raise RuntimeError(
-                            'There should be only one image path per line in `--image_path` file. Wrong line: {}'
-                            .format(line))
-                    image_list.append(os.path.join(image_dir, line))
-    elif os.path.isdir(image_path):
-        image_dir = image_path
-        for root, dirs, files in os.walk(image_path):
-            for f in files:
-                if '.ipynb_checkpoints' in root:
-                    continue
-                if os.path.splitext(f)[-1] in valid_suffix:
-                    image_list.append(os.path.join(root, f))
-    else:
-        raise FileNotFoundError(
-            '`--image_path` is not found. it should be an image file or a directory including images'
-        )
-
-    if len(image_list) == 0:
-        raise RuntimeError('There are not image file in `--image_path`')
-
-    return image_list, image_dir
-
-
 def main(args):
     env_info = get_sys_env()
     place = 'gpu' if env_info['Paddle compiled with cuda'] and env_info[
@@ -148,9 +104,13 @@ def main(args):
 
     cfg = Config(args.cfg)
     val_dataset = cfg.val_dataset
-    if not val_dataset:
+    if val_dataset is None:
         raise RuntimeError(
             'The verification dataset is not specified in the configuration file.'
+        )
+    elif len(val_dataset) == 0:
+        raise ValueError(
+            'The length of val_dataset is 0. Please check if your dataset is valid'
         )
 
     msg = '\n---------------Config Information---------------\n'
@@ -159,26 +119,23 @@ def main(args):
     logger.info(msg)
 
     model = cfg.model
-    transforms = val_dataset.transforms
-    image_list, image_dir = get_image_list(args.image_path)
-    logger.info('Number of predict images = {}'.format(len(image_list)))
+    if args.model_path:
+        utils.load_entire_model(model, args.model_path)
+        logger.info('Loaded trained params of model successfully')
 
     config_check(cfg, val_dataset=val_dataset)
 
-    predict(
+    evaluate(
         model,
-        model_path=args.model_path,
-        transforms=transforms,
-        image_list=image_list,
-        image_dir=image_dir,
-        save_dir=args.save_dir,
-        aug_pred=args.aug_pred,
+        val_dataset,
+        aug_eval=args.aug_eval,
         scales=args.scales,
         flip_horizontal=args.flip_horizontal,
         flip_vertical=args.flip_vertical,
         is_slide=args.is_slide,
         crop_size=args.crop_size,
         stride=args.stride,
+        num_workers=args.num_workers,
     )
 
 
