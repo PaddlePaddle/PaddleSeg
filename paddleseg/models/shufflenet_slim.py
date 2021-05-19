@@ -1,4 +1,4 @@
-# Copyright (c) 2020 PaddlePaddle Authors. All Rights Reserved.
+# Copyright (c) 2021 PaddlePaddle Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -239,11 +239,10 @@ if __name__ == '__main__':
     paddle.seed(100)
 
     net = ShuffleNetV2(10)
-    # img = np.random.random(size=(4, 3, 100, 100)).astype('float32')
-    # print('img', img[0, ...])
-    # img = paddle.to_tensor(img)
-    # out = net(img)
-    # print(out)
+    img = np.random.random(size=(4, 3, 100, 100)).astype('float32')
+    img = paddle.to_tensor(img)
+    out = net(img)
+    print(out)
 
     net.forward = paddle.jit.to_static(net.forward)
     save_path = os.path.join('.', 'model')

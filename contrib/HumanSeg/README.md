@@ -28,10 +28,7 @@ HumanSeg开放了在大规模人像数据上训练的三个人像模型，满足
 
 * 其中Inference Model适用于服务端的CPU和GPU预测部署，适用于通过Paddle Lite进行移动端等端侧设备部署。更多Paddle Lite部署说明查看[Paddle Lite文档](https://paddle-lite.readthedocs.io/zh/latest/)
 
-<!-- 执行以下脚本进行HumanSeg预训练模型的下载
-```bash
-python pretrained_weights/download_pretrained_weights.py
-``` -->
+
 ### 计算复杂度和参数量
 | 模型类型 | Network | Input Size | FLOPS | Parameters |
 |-|-|-|-|-|
@@ -68,6 +65,13 @@ git clone https://github.com/PaddlePaddle/PaddleSeg
 ```
 
 ## 快速体验
+### 下载Inference Model
+
+执行以下脚本快速下载所有Inference Model
+```bash
+python export_model/download_export_model.py
+```
+
 ### 下载测试数据
 我们提供了[supervise.ly](https://supervise.ly/)发布人像分割数据集**Supervisely Persons**, 从中随机抽取一小部分并转化成PaddleSeg可直接加载数据格式，同时提供了手机前置摄像头的人像测试视频`video_test.mp4`。通过运行以下代码进行快速下载：
 
@@ -126,8 +130,15 @@ python bg_replace.py \
 提供的模型适用于手机摄像头竖屏拍摄场景，宽屏效果会略差一些。
 
 ## 训练评估预测
+### 下载预训练模型
+
+执行以下脚本快速下载所有Checkpoint作为预训练模型
+```bash
+python pretrained_model/download_pretrained_model.py
+```
+
 ### 训练
-基于上述大规模数据预训练的模型进行Fine-tuning，以HRNet w18 small v1为例，训练命令如下：
+基于上述大规模数据预训练的模型，在抽取的部分[supervise.ly](https://supervise.ly/)数据集上进行Fine-tuning，以HRNet w18 small v1为例，训练命令如下：
 ```bash
 export CUDA_VISIBLE_DEVICES=0 # 设置1张可用的卡
 # windows下请执行以下命令
@@ -170,9 +181,9 @@ export CUDA_VISIBLE_DEVICES=0 # 设置1张可用的卡
 # windows下请执行以下命令
 # set CUDA_VISIBLE_DEVICES=0
 python ../../export.py \
---config configs/shufflenetv2_humanseg_192x192.yml \
---model_path saved_model/shufflenetv2_humanseg_192x192/best_model/model.pdparams \
---save_dir export_model/shufflenetv2_humanseg_192x192_with_softmax \
+--config configs/fcn_hrnetw18_small_v1_humanseg_192x192_mini_supervisely.yml \
+--model_path saved_model/fcn_hrnetw18_small_v1_humanseg_192x192_mini_supervisely/best_model/model.pdparams \
+--save_dir export_model/fcn_hrnetw18_small_v1_humanseg_192x192_mini_supervisely_with_softmax \
 --without_argmax --with_softmax
 ```
 
