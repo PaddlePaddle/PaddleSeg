@@ -21,8 +21,8 @@ from paddleseg.cvlibs import manager, Config
 from paddleseg.utils import get_sys_env, logger, config_check
 
 from core import evaluate
-from datasets import *
-from models import *
+from datasets import CityscapesPanoptic
+from models import PanopticDeepLab
 
 
 def parse_args():
