@@ -49,9 +49,11 @@ _COLORS = np.array([
 def random_color(rgb=False, maximum=255):
     """
     Reference: https://github.com/facebookresearch/detectron2/blob/master/detectron2/utils/colormap.py#L111
+
     Args:
         rgb (bool): whether to return RGB colors or BGR colors.
         maximum (int): either 255 or 1
+
     Returns:
         ndarray: a vector of 3 numbers
     """

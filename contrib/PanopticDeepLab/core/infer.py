@@ -24,9 +24,11 @@ import paddle.nn.functional as F
 def get_reverse_list(ori_shape, transforms):
     """
     get reverse list of transform.
+
     Args:
         ori_shape (list): Origin shape of image.
         transforms (list): List of transform.
+
     Returns:
         list: List of tuple, there are two format:
             ('resize', (h, w)) The image shape before resize,
@@ -91,11 +93,13 @@ def reverse_transform(pred, ori_shape, transforms):
 def find_instance_center(ctr_hmp, threshold=0.1, nms_kernel=3, top_k=None):
     """
     Find the center points from the center heatmap.
-    Arguments:
+
+    Args:
         ctr_hmp (Tensor): A Tensor of shape [1, H, W] of raw center heatmap output.
         threshold (float, optional): Threshold applied to center heatmap score. Default: 0.1.
         nms_kernel (int, optional): NMS max pooling kernel size. Default: 3.
         top_k (int, optional): An Integer, top k centers to keep. Default: None
+
     Returns:
         Tensor: A Tensor of shape [K, 2] where K is the number of center points. The order of second dim is (y, x).
     """

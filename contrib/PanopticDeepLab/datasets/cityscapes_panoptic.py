@@ -141,8 +141,10 @@ class CityscapesPanoptic(paddle.io.Dataset):
     def rgb2id(color):
         """Converts the color to panoptic label.
         Color is created by `color = [segmentId % 256, segmentId // 256, segmentId // 256 // 256]`.
+
         Args:
             color: Ndarray or a tuple, color encoded image.
+
         Returns:
             Panoptic label.
         """

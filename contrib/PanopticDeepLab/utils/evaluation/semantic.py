@@ -25,15 +25,14 @@ import numpy as np
 class SemanticEvaluator:
     """
     Evaluate semantic segmentation
+
+    Args:
+        num_classes (int): number of classes
+        ignore_index (int): value in semantic segmentation ground truth. Predictions for the
+        corresponding pixels should be ignored.
     """
 
     def __init__(self, num_classes, ignore_index=255):
-        """
-        Args:
-            num_classes (int): number of classes
-            ignore_index (int): value in semantic segmentation ground truth. Predictions for the
-            corresponding pixels should be ignored.
-        """
         self._num_classes = num_classes
         self._ignore_index = ignore_index
         self._N = num_classes + 1  # store ignore label in the last class

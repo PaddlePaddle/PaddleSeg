@@ -19,7 +19,8 @@ class PanopticTargetGenerator(object):
     """
     Generates panoptic training target for Panoptic-DeepLab.
     Annotation is assumed to have Cityscapes format.
-    Arguments:
+
+    Args:
         ignore_index: Integer, the ignore label for semantic segmentation.
         rgb2id: Function, panoptic label is encoded in a colored image, this function convert color to the
             corresponding panoptic label.
@@ -60,6 +61,7 @@ class PanopticTargetGenerator(object):
         """Generates the training target.
         reference: https://github.com/mcordts/cityscapesScripts/blob/master/cityscapesscripts/preparation/createPanopticImgs.py
         reference: https://github.com/facebookresearch/detectron2/blob/master/datasets/prepare_panoptic_fpn.py#L18
+
         Args:
             panoptic: numpy.array, colored image encoding panoptic label.
             segments: List, a list of dictionary containing information of every segment, it has fields:
@@ -68,6 +70,7 @@ class PanopticTargetGenerator(object):
                 - area: segment area.
                 - bbox: segment bounding box.
                 - iscrowd: crowd region.
+
         Returns:
             A dictionary with fields:
                 - semantic: Tensor, semantic label, shape=(H, W).
@@ -182,7 +185,8 @@ class SemanticTargetGenerator(object):
     """
     Generates semantic training target only for Panoptic-DeepLab (no instance).
     Annotation is assumed to have Cityscapes format.
-    Arguments:
+
+    Args:
         ignore_index: Integer, the ignore label for semantic segmentation.
         rgb2id: Function, panoptic label is encoded in a colored image, this function convert color to the
             corresponding panoptic label.
@@ -196,6 +200,7 @@ class SemanticTargetGenerator(object):
         """Generates the training target.
         reference: https://github.com/mcordts/cityscapesScripts/blob/master/cityscapesscripts/preparation/createPanopticImgs.py
         reference: https://github.com/facebookresearch/detectron2/blob/master/datasets/prepare_panoptic_fpn.py#L18
+
         Args:
             panoptic: numpy.array, colored image encoding panoptic label.
             segments: List, a list of dictionary containing information of every segment, it has fields:
@@ -204,6 +209,7 @@ class SemanticTargetGenerator(object):
                 - area: segment area.
                 - bbox: segment bounding box.
                 - iscrowd: crowd region.
+
         Returns:
             A dictionary with fields:
                 - semantic: Tensor, semantic label, shape=(H, W).
@@ -221,7 +227,8 @@ class InstanceTargetGenerator(object):
     """
     Generates instance target only for Panoptic-DeepLab.
     Annotation is assumed to have Cityscapes format.
-    Arguments:
+
+    Args:
         rgb2id: Function, panoptic label is encoded in a colored image, this function convert color to the
             corresponding panoptic label.
     """
@@ -231,8 +238,10 @@ class InstanceTargetGenerator(object):
 
     def __call__(self, panoptic):
         """Generates the instance target.
+
         Args:
             panoptic: numpy.array, colored image encoding panoptic label.
+
         Returns:
             A dictionary with fields:
                 - instance: Tensor, shape=(H, W). 0 is background. 1, 2, 3 ... is instance, so it is class agnostic.
@@ -253,7 +262,8 @@ class RawPanopticTargetGenerator(object):
     """
     Generator the panoptc ground truth for evaluation, where values are 0,1,2,3,...
         11000, 11001, ..., 18000, 18001, ignore_index(general 255).
-    Arguments:
+
+    Args:
         ignore_index: Integer, the ignore label for semantic segmentation.
         rgb2id: Function, panoptic label is encoded in a colored image, this function convert color to the
             corresponding panoptic label.
@@ -276,6 +286,7 @@ class RawPanopticTargetGenerator(object):
                 - area: segment area.
                 - bbox: segment bounding box.
                 - iscrowd: crowd region.
+
         Returns:
             A dictionary with fields:
                 - panoptic: Tensor, panoptic label, shape=(H, W).

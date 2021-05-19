@@ -41,6 +41,7 @@ class InstanceEvaluator(object):
       2.) remove matches that do not satisfy the overlap
       3.) mark non-matched predictions as false positive
     In the processing, 0 represent the first class of 'thing'. So the label will less 1 than the dataset.
+
     Args:
         num_classes (int): The unique number of target classes. Exclude background class, labeled 0 usually.
         overlaps (float|list): The threshold of IoU.
@@ -243,9 +244,11 @@ class InstanceEvaluator(object):
         In this method, we create two dicts of list
         - pred_instances: contains all predictions and their associated gt
         - gtInstances:   contains all gt instances and their associated predictions
+
         Args:
             preds (list): Prediction of image.
             gts (list): Ground truth of image.
+
         Return:
             dict: pred_instances, the type is dict(list(dict))), e.g. {0: [{'pred_id':0, 'label':0',
                 'pixel_count':100, 'confidence': 0.9, 'void_intersection': 0,
@@ -307,9 +310,11 @@ class InstanceEvaluator(object):
     def convert_gt_map(seg_map, ins_map):
         """
         Convet the ground truth with format (h*w) to the format that satisfies the AP calculation.
+
         Args:
             seg_map (np.ndarray): the sementic segmentation map with shape H * W. Value is 0, 1, 2, ...
             ins_map (np.ndarray): the instance segmentation map with shape H * W. Value is 0, 1, 2, ...
+
         Returns:
             list: tuple list like: [(label, mask), ...]
         """
@@ -327,9 +332,11 @@ class InstanceEvaluator(object):
     def convert_pred_map(seg_pred, pan_pred):
         """
         Convet the predictions with format (h*w) to the format that satisfies the AP calculation.
+
         Args:
             seg_pred (np.ndarray): the sementic segmentation map with shape C * H * W. Value is probability.
             pan_pred (np.ndarray): panoptic predictions, void_label, stuff_id * label_divisor, thing_id * label_divisor + ins_id , ins_id >= 1.
+
         Returns:
             list: tuple list like: [(label, score, mask), ...]
         """
