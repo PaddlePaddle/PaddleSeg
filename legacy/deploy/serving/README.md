@@ -1,4 +1,4 @@
-# PaddleSegServing 
+# PaddleSegServing
 ## 1.简介
 PaddleSegServing是基于PaddleSeg开发的实时图像分割服务的企业级解决方案。用户仅需关注模型本身，无需理解模型模型的加载、预测以及GPU/CPU资源的并发调度等细节操作，通过设置不同的参数配置，即可根据自身的业务需求定制化不同图像分割服务。目前，PaddleSegServing支持人脸分割、城市道路分割、宠物外形分割模型。本文将通过一个人脸分割服务的搭建示例，展示PaddleSeg服务通用的搭建流程。
 
@@ -55,7 +55,7 @@ yum -y update
 yum -y install libnccl-2.4.7-1+cuda9.2 libnccl-devel-2.4.7-1+cuda9.2 libnccl-static-2.4.7-1+cuda9.2
 ```
 
-### 2.2.3. 安装 cmake 3.15 
+### 2.2.3. 安装 cmake 3.15
 如果机器没有安装cmake或者已安装cmake的版本低于3.0，请执行以下步骤
 
 ```bash
@@ -78,7 +78,7 @@ cp -r Utilities/cmcurl/include/curl/ /usr/include/
 ### 2.2.4. 为依赖库增加相应的软连接
 
   现在Linux系统中大部分链接库的名称都以版本号作为后缀，如libcurl.so.4.3.0。这种命名方式最大的问题是，CMakeList.txt中find_library命令是无法识别使用这种命名方式的链接库，会导致CMake时候出错。由于本项目是用CMake构建，所以务必保证相应的链接库以 .so 或 .a为后缀命名。解决这个问题最简单的方式就是用创建一个软连接指向相应的链接库。在百度云的机器中，只有curl库的命名方式有问题。所以命令如下：（如果是其他库，解决方法也类似）：
-  
+
 ```bash
 ln -s /usr/lib64/libcurl.so.4.3.0 /usr/lib64/libcurl.so
 ```
@@ -141,7 +141,7 @@ cp -r deeplabv3p_xception65_humanseg seg-serving/bin/data/model/paddle/fluid
 ```
 
 
-#### 2.5.1.2. 配置参数文件。参数文件如下。PaddleSegServing仅新增一个配置文件seg_conf.yaml,用来指定具体分割模型的一些参数，如均值、方差、图像尺寸等。该配置文件可在gflags.conf中通过--seg_conf_file指定。其他配置文件的字段解释可参考以下链接：https://github.com/PaddlePaddle/Serving/blob/develop/doc/SERVING_CONFIGURE.md 
+#### 2.5.1.2. 配置参数文件。参数文件如下。PaddleSegServing仅新增一个配置文件seg_conf.yaml,用来指定具体分割模型的一些参数，如均值、方差、图像尺寸等。该配置文件可在gflags.conf中通过--seg_conf_file指定。其他配置文件的字段解释可参考以下链接：https://github.com/PaddlePaddle/Serving/blob/develop/doc/SERVING_CONFIGURE.md
 
 ```bash
 conf/
@@ -158,7 +158,7 @@ conf/
 ```bash
 %YAML:1.0
 # 输入到模型的图像的尺寸。会将任意图片resize到513*513尺寸的图像，再放入模型进行推测。
-SIZE: [513, 513] 
+SIZE: [513, 513]
 # 均值
 MEAN: [104.008, 116.669, 122.675]
 # 方差

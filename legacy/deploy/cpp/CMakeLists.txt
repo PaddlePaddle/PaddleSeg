@@ -102,7 +102,7 @@ if (WITH_GPU)
             message(FATAL_ERROR "please set CUDNN_LIB with -DCUDNN_LIB=/path/cudnn_v7.4/cuda/lib64")
         endif()
     endif(NOT WIN32)
-endif() 
+endif()
 
 
 if (NOT WIN32)

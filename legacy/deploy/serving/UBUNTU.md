@@ -72,5 +72,3 @@ sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.8 100
 # 查看设置结果（非必须）
 sudo update-alternatives --config gcc
 ```
-
-

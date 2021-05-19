@@ -40,7 +40,7 @@ python pretrained_model/download_model.py unet_bn_coco
 
 * 执行训练(在legacy目录下)：
 
-因为昆仑1的内存不够，在用昆仑1训练的时候，需要把./configs/unet_optic.yaml 里面的 BATCH_SIZE 
+因为昆仑1的内存不够，在用昆仑1训练的时候，需要把./configs/unet_optic.yaml 里面的 BATCH_SIZE
 修改为 1
 
 ```shell
@@ -67,7 +67,7 @@ python pretrained_model/download_model.py hrnet_w18_bn_cityscapes
 
 * 执行训练(在legacy目录下)：
 
-因为昆仑1的内存不够，在用昆仑1训练的时候，需要把./configs/fcn.yaml 里面的 BATCH_SIZE 
+因为昆仑1的内存不够，在用昆仑1训练的时候，需要把./configs/fcn.yaml 里面的 BATCH_SIZE
 修改为 1
 
 ```shell
@@ -79,4 +79,3 @@ export XPUSIM_DEVICE_MODEL=KUNLUN1
 export PYTHONPATH=`pwd`
 python3 pdseg/train.py --cfg configs/fcn.yaml --use_mpio --log_steps 1 --do_eval
 ```
-

@@ -14,7 +14,7 @@ model:
   concat_input: True
   enable_auxiliary_loss: True
   align_corners: True
-  
+
 optimizer:
   type: sgd
   momentum: 0.9

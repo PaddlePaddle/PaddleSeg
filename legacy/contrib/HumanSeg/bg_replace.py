@@ -124,11 +124,13 @@ def infer(args):
             raise Exception('The --image_path is not existed: {}'.format(
                 args.image_path))
         if args.background_image_path is None:
-            raise Exception('The --background_image_path is not set. Please set it')
+            raise Exception(
+                'The --background_image_path is not set. Please set it')
         else:
             if not osp.exists(args.background_image_path):
-                raise Exception('The --background_image_path is not existed: {}'.format(
-                    args.background_image_path))
+                raise Exception(
+                    'The --background_image_path is not existed: {}'.format(
+                        args.background_image_path))
         img = cv2.imread(args.image_path)
         score_map, im_info = predict(img, model, test_transforms)
         score_map = score_map[:, :, 1]
@@ -144,13 +146,15 @@ def infer(args):
         is_video_bg = False
         if args.background_video_path is not None:
             if not osp.exists(args.background_video_path):
-                raise Exception('The --background_video_path is not existed: {}'.format(
-                    args.background_video_path))
+                raise Exception(
+                    'The --background_video_path is not existed: {}'.format(
+                        args.background_video_path))
             is_video_bg = True
         elif args.background_image_path is not None:
             if not osp.exists(args.background_image_path):
-                raise Exception('The --background_image_path is not existed: {}'.format(
-                    args.background_image_path))
+                raise Exception(
+                    'The --background_image_path is not existed: {}'.format(
+                        args.background_image_path))
         else:
             raise Exception(
                 'Please offer backgound image or video. You should set --backbground_iamge_paht or --background_video_path'

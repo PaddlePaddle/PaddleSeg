@@ -70,7 +70,7 @@ distill_loss = l2_loss('teacher_bilinear_interp_2.tmp_0', 'bilinear_interp_0.tmp
 
 ### 执行示例
 
-下载teacher的预训练模型([deeplabv3p_xception65_bn_cityscapes.tgz](https://paddleseg.bj.bcebos.com/models/xception65_bn_cityscapes.tgz))和student的预训练模型([mobilenet_cityscapes.tgz](https://paddleseg.bj.bcebos.com/models/mobilenet_cityscapes.tgz)), 
+下载teacher的预训练模型([deeplabv3p_xception65_bn_cityscapes.tgz](https://paddleseg.bj.bcebos.com/models/xception65_bn_cityscapes.tgz))和student的预训练模型([mobilenet_cityscapes.tgz](https://paddleseg.bj.bcebos.com/models/mobilenet_cityscapes.tgz)),
 修改student config file(./slim/distillation/cityscape.yaml)中预训练模型的路径:
 ```
 TRAIN:
@@ -84,12 +84,12 @@ SLIM:
 
 执行如下命令启动训练，每间隔```cfg.TRAIN.SNAPSHOT_EPOCH```会进行一次评估。
 ```shell
-CUDA_VISIBLE_DEVICES=0,1 
+CUDA_VISIBLE_DEVICES=0,1
 python -m paddle.distributed.launch ./slim/distillation/train_distill.py \
 --log_steps 10 --cfg ./slim/distillation/cityscape.yaml \
 --teacher_cfg ./slim/distillation/cityscape_teacher.yaml \
 --use_gpu \
---do_eval 
+--do_eval
 ```
 
 注意：如需修改配置文件中的参数，请在对应的配置文件中直接修改，暂不支持命令行输入覆盖。

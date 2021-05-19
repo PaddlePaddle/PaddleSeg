@@ -13,8 +13,10 @@
 # limitations under the License.
 
 import argparse
+import random
 
 import paddle
+import numpy as np
 
 from paddleseg.cvlibs import manager, Config
 from paddleseg.utils import get_sys_env, logger, config_check
@@ -90,11 +92,23 @@ def parse_args():
         dest='use_vdl',
         help='Whether to record the data to VisualDL during training',
         action='store_true')
+    parser.add_argument(
+        '--seed',
+        dest='seed',
+        help='Set the random seed during training.',
+        default=None,
+        type=int)
 
     return parser.parse_args()
 
 
 def main(args):
+
+    if args.seed is not None:
+        paddle.seed(args.seed)
+        np.random.seed(args.seed)
+        random.seed(args.seed)
+
     env_info = get_sys_env()
     info = ['{}: {}'.format(k, v) for k, v in env_info.items()]
     info = '\n'.join(['', format('Environment Information', '-^48s')] + info +
