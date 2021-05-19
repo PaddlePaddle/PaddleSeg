@@ -6,4 +6,4 @@
 
 
 ## Performance
-Refer to [HumanSeg](contrib/HumanSeg).
+Refer to [HumanSeg](../../contrib/HumanSeg).

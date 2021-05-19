@@ -1,8 +1,48 @@
 # 人像分割HumanSeg
 
-本教程基于PaddleSeg提供高精度人像分割模型、从Fine-tune到推理的应用指南。最新发布超轻量级人像分割模型，支持网页端、移动端场景的实时分割。
+本教程基于PaddleSeg提供高精度人像分割模型，从训练到部署的全流程应用指南，以及视频流人像分割、背景替换的实际效果体验。最新发布超轻量级人像分割模型，支持Web端、移动端场景的实时分割。
 
-## 环境依赖
+- [人像分割模型](#人像分割模型)
+- [安装](#安装)
+- [快速体验](#快速体验)
+  - [视频流人像分割](##视频流人像分割)
+  - [视频流背景替换](##视频流背景替换)
+- [训练评估预测](#训练评估预测)
+- [模型导出](#模型导出)
+- [Web端部署](#Web端部署)
+- [移动端部署](#移动端部署)
+
+## 人像分割模型
+HumanSeg开放了在大规模人像数据上训练的三个人像模型，满足服务端、移动端、Web端多种使用场景的需求
+
+| 模型类型 | 适用场景 | Checkpoint | Inference Model |
+| --- | --- | --- | ---|
+| 高精度模型  | 适用于服务端GPU且背景复杂的人像场景， 模型结构为Deeplabv3+/ResNet50, 输入大小（512， 512） |[humanseg_server_ckpt](https://paddleseg.bj.bcebos.com/dygraph/humanseg/train/deeplabv3p_resnet50_os8_humanseg_512x512_100k.zip) | [humanseg_server_inference](https://paddleseg.bj.bcebos.com/dygraph/humanseg/export/deeplabv3p_resnet50_os8_humanseg_512x512_100k_with_softmax.zip) |
+| 轻量级模型 | 适用于移动端或服务端CPU的前置摄像头场景，模型结构为HRNet_w18_samll_v1，输入大小（192， 192）  | [humanseg_mobile_ckpt](https://paddleseg.bj.bcebos.com/dygraph/humanseg/train/fcn_hrnetw18_small_v1_humanseg_192x192.zip) | [humanseg_mobile_inference](https://paddleseg.bj.bcebos.com/dygraph/humanseg/export/fcn_hrnetw18_small_v1_humanseg_192x192_with_softmax.zip) |
+| 超轻量级模型 | 适用于Web端或移动端实时分割场景，例如手机自拍、Web视频会议，模型结构为优化的ShuffleNetV2，输入大小（192， 192） | [humanseg_lite_ckpt](https://paddleseg.bj.bcebos.com/dygraph/humanseg/train/shufflenetv2_humanseg_192x192.zip) | [humanseg_lite_inference](https://paddleseg.bj.bcebos.com/dygraph/humanseg/export/shufflenetv2_humanseg_192x192_with_softmax.zip) |
+
+**NOTE:**
+* 其中Checkpoint为模型权重，用于Fine-tuning场景。
+
+* Inference Model为预测部署模型，包含`model.pdmodel`计算图结构、`model.pdiparams`模型参数和`deploy.yaml`基础的模型配置信息。
+
+* 其中Inference Model适用于服务端的CPU和GPU预测部署，适用于通过Paddle Lite进行移动端等端侧设备部署。更多Paddle Lite部署说明查看[Paddle Lite文档](https://paddle-lite.readthedocs.io/zh/latest/)
+
+<!-- 执行以下脚本进行HumanSeg预训练模型的下载
+```bash
+python pretrained_weights/download_pretrained_weights.py
+``` -->
+### 计算复杂度和参数量
+| 模型类型 | Network | Input Size | FLOPS | Parameters |
+|-|-|-|-|-|
+| 超轻量级模型 | ShuffleNetV2 | 192x192 | 121272192 (121M) | 137012 (137K) |
+| 轻量级模型 | HRNet w18 small v1 | 192x192 | 584182656 (584M) | 1543954 (1.54M) |
+| 高精度模型  | Deeplabv3+/ResNet50 | 512x512 | 114148802560 (114G) | 26789874 (26.8M)
+
+
+<!-- | ShuffleNetV2 | 398x224 | 293631872(294M) | 137012(137K) | -->
+
+## 安装
 
 #### 1. 安装PaddlePaddle
 
@@ -26,25 +66,6 @@ pip install paddleseg
 ```shell
 git clone https://github.com/PaddlePaddle/PaddleSeg
 ```
-
-## 人像分割模型
-HumanSeg开放了在大规模人像数据上训练的三个人像模型，满足多种使用场景的需求
-
-| 模型类型 | Checkpoint | Inference Model | 备注 |
-| --- | --- | --- | ---|
-| HumanSeg-server  | [humanseg_server_ckpt]() | [humanseg_server_inference]() |高精度模型，适用于服务端GPU且背景复杂的人像场景， 模型结构为Deeplabv3+/ResNet50, 输入大小（512， 512） |
-| HumanSeg-mobile | [humanseg_mobile_ckpt]() | [humanseg_mobile_inference]() | 轻量级模型, 适用于移动端或服务端CPU的前置摄像头场景，模型结构为HRNet_w18_samll_v1，输入大小（192， 192）  |
-| HumanSeg-lite | [humanseg_lite_ckpt]() | [humanseg_lite_inference]() | 超轻量级模型, 适用于网页端或移动端实时分割场景，例如手机自拍、网页视频会议，模型结构为优化的ShuffleNetV2，输入大小（192， 192） |
-
-### 计算复杂度和参数量
-| 模型类型 | Network | Input Size | FLOPS | Parameters |
-|-|-|-|-|-|
-| HumanSeg-lite | ShuffleNetV2 | 192x192 | 121272192(121M) | 137012(137K) |
-| HumanSeg-mobile | HRNet w18 small v1 | 192x192 | 584182656(584M) | 1543954(1.54M) |
-| HumanSeg-server  | Deeplabv3+/ResNet50 | 512x512 | 114148802560(114G) | 26789874(26.8M)
-
-
-<!-- | ShuffleNetV2 | 398x224 | 293631872(294M) | 137012(137K) | -->
 
 ## 快速体验
 ### 下载测试数据
@@ -176,5 +197,13 @@ output
 ```
 
 ## Web端部署
-参考[Web端部署教程](deploy/web)
+
+![image](https://user-images.githubusercontent.com/10822846/118273079-127bf480-b4f6-11eb-84c0-8a0bbc7c7433.png)
+
+参见[Web端部署教程](../../deploy/web)
+
 ## 移动端部署
+
+<img src="../../deploy/lite/example/human_1.png"  width="20%" >  <img src="../../deploy/lite/example/human_2.png"  width="20%" >  <img src="../../deploy/lite/example/human_3.png"  width="20%" >
+
+参见[移动端部署教程](../../deploy/lite/)
