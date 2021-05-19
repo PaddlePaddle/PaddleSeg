@@ -48,6 +48,7 @@ PaddleSeg是基于飞桨[PaddlePaddle](https://www.paddlepaddle.org.cn)开发的
 |[ISANet](./configs/isanet)|✔|✔|-|-|
 |[DNLNet](./configs/dnlnet)|✔|✔|-|-|
 |[SFNet](./configs/sfnet)|✔|-|-|-|
+|[ShuffleNetV2](./configs/shufflenetv2)|-|-|-|-|
 
 ## 数据集
 
@@ -105,6 +106,7 @@ python train.py --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml
 
 ## 实践案例
 
+* [人像分割HumanSeg](./contrib/HumanSeg)
 * [Cityscapes SOTA](./contrib/CityscapesSOTA)
 
 ## 联系我们

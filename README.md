@@ -105,6 +105,7 @@ python train.py --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml
 
 ## Practical Cases
 
+* [HumanSeg](./contrib/HumanSeg)
 * [Cityscapes SOTA](./contrib/CityscapesSOTA)
 
 ## Feedbacks and Contact
