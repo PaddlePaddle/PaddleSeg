@@ -1,4 +1,4 @@
-# HumanSeg人像分割
+# 人像分割HumanSeg
 
 本教程基于PaddleSeg提供高精度人像分割模型、从Fine-tune到推理的应用指南。最新发布超轻量级人像分割模型，支持网页端、移动端场景的实时分割。
 
@@ -104,7 +104,8 @@ python bg_replace.py \
 
 提供的模型适用于手机摄像头竖屏拍摄场景，宽屏效果会略差一些。
 
-## 训练
+## 训练评估预测
+### 训练
 基于上述大规模数据预训练的模型进行Fine-tuning，以HRNet w18 small v1为例，训练命令如下：
 ```bash
 export CUDA_VISIBLE_DEVICES=0 # 设置1张可用的卡
@@ -121,7 +122,7 @@ python train.py \
 python train.py --help
 ```
 
-## 评估
+### 评估
 使用下述命令进行评估
 ```bash
 python val.py \
@@ -129,7 +130,7 @@ python val.py \
 --model_path saved_model/fcn_hrnetw18_small_v1_humanseg_192x192_mini_supervisely/best_model/model.pdparams
 ```
 
-## 预测
+### 预测
 使用下述命令进行预测， 预测结果默认保存在`./output/result/`文件夹中。
 ```bash
 python predict.py \
@@ -173,3 +174,7 @@ output
   ├── model.pdiparams.info   # 参数额外信息，一般无需关注
   └── model.pdmodel          # 静态图模型文件
 ```
+
+## Web端部署
+参考[Web端部署教程](deploy/web)
+## 移动端部署

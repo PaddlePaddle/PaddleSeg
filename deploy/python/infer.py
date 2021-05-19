@@ -18,15 +18,12 @@ import os
 
 import yaml
 import numpy as np
-import cv2
-import paddle
 import paddleseg.transforms as T
 from paddle.inference import create_predictor, PrecisionType
 from paddle.inference import Config as PredictConfig
 from paddleseg.cvlibs import manager
 from paddleseg.utils import get_sys_env, logger
 from paddleseg.utils.visualize import get_pseudo_color_map
-from paddleseg.core.infer import reverse_transform_numpy
 
 
 class DeployConfig:
@@ -57,14 +54,13 @@ class DeployConfig:
             ctype = t.pop('type')
             transforms.append(com[ctype](**t))
 
-        return transforms
+        return T.Compose(transforms)
 
 
 class Predictor:
     def __init__(self, args):
         self.cfg = DeployConfig(args.cfg)
         self.args = args
-        self.compose = T.Compose(self.cfg.transforms)
 
         pred_cfg = PredictConfig(self.cfg.model, self.cfg.params)
         pred_cfg.disable_glog_info()
@@ -83,15 +79,8 @@ class Predictor:
 
         self.predictor = create_predictor(pred_cfg)
 
-    def preprocess(self, imgs):
-        ori_shapes = []
-        processed_imgs = []
-        for img in imgs:
-            img = cv2.imread(img)
-            processed_img = self.compose(img)[0]
-            processed_imgs.append(processed_img)
-            ori_shapes.append(img.shape)
-        return processed_imgs, ori_shapes
+    def preprocess(self, img):
+        return self.cfg.transforms(img)[0]
 
     def run(self, imgs):
         if not isinstance(imgs, (list, tuple)):
@@ -100,59 +89,32 @@ class Predictor:
         num = len(imgs)
         input_names = self.predictor.get_input_names()
         input_handle = self.predictor.get_input_handle(input_names[0])
+        results = []
 
         for i in range(0, num, self.args.batch_size):
-            batch_imgs = imgs[i:i + self.args.batch_size]
-            processed_imgs, ori_shapes = self.preprocess(batch_imgs)
-
-            data = np.array(processed_imgs)
-            print(data.shape)
+            data = np.array([
+                self.preprocess(img) for img in imgs[i:i + self.args.batch_size]
+            ])
             input_handle.reshape(data.shape)
             input_handle.copy_from_cpu(data)
             self.predictor.run()
 
             output_names = self.predictor.get_output_names()
             output_handle = self.predictor.get_output_handle(output_names[0])
-            results = output_handle.copy_to_cpu()
+            results.append(output_handle.copy_to_cpu())
 
-            self.postprocess(results, batch_imgs, ori_shapes)
+        self.postprocess(results, imgs)
 
-    def postprocess(self, results, imgs, ori_shapes):
+    def postprocess(self, results, imgs):
         if not os.path.exists(self.args.save_dir):
             os.makedirs(self.args.save_dir)
-        results = results[np.newaxis, :]
+
+        results = np.concatenate(results, axis=0)
         for i in range(results.shape[0]):
-            # pred = paddle.to_tensor(results[i], place=paddle.CPUPlace())
-            # pred = np.array(pred)
             if self.args.with_argmax:
-                pred = reverse_transform_numpy(results[i], ori_shapes[i],
-                                               self.cfg.transforms)
-                result = np.argmax(pred, axis=0)
-            elif self.args.has_softmax:
-                pred = reverse_transform_numpy(
-                    results[i],
-                    ori_shapes[i],
-                    self.cfg.transforms,
-                    mode='bilinear')
-                bg = 255 * np.ones_like(pred)
-                import pdb
-                pdb.set_trace()
-                score_map = pred[1, np.newaxis]
-                score_map = np.transpose(score_map, (1, 2, 0))
-                score_map = np.repeat(score_map, 3, axis=2)
-
-                img = cv2.imread(imgs[i])
-                result = (score_map * img + (1 - score_map) * bg).astype(
-                    np.uint8)
-
-                basename = os.path.basename(imgs[i])
-                save_path = os.path.join(self.args.save_dir, basename)
-                cv2.imwrite(save_path, result)
-                continue
+                result = np.argmax(results[i], axis=0)
             else:
-                pred = reverse_transform_numpy(results[i], ori_shapes[i],
-                                               self.cfg.transforms)
-                result = pred
+                result = results[i]
             result = get_pseudo_color_map(result)
             basename = os.path.basename(imgs[i])
             basename, _ = os.path.splitext(basename)
@@ -204,8 +166,6 @@ def parse_args():
         dest='with_argmax',
         help='Perform argmax operation on the predict result.',
         action='store_true')
-    parser.add_argument(
-        '--has_softmax', dest='has_softmax', help='', action='store_true')
 
     return parser.parse_args()
 
