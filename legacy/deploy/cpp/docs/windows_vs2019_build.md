@@ -5,7 +5,7 @@ Windows 平台下，我们使用`Visual Studio 2015` 和 `Visual Studio 2019 Com
 你也可以使用和`VS2015`一样，通过把`CMake`项目转化成`VS`项目来编译，其中**有差别的部分**在文档中我们有说明，请参考：[使用Visual Studio 2015 编译指南](./windows_vs2015_build.md)
 
 ## 前置条件
-* Visual Studio 2019 
+* Visual Studio 2019
 * CUDA 9.0/ CUDA 10.0，cudnn 7+ （仅在使用GPU版本的预测库时需要）
 * CMake 3.0+
 
@@ -48,7 +48,7 @@ fluid_inference
 3. 配置环境变量，如下流程所示  
 	- 我的电脑->属性->高级系统设置->环境变量  
     - 在系统变量中找到Path（如没有，自行创建），并双击编辑  
-    - 新建，将opencv路径填入并保存，如`D:\projects\opencv\build\x64\vc14\bin` 
+    - 新建，将opencv路径填入并保存，如`D:\projects\opencv\build\x64\vc14\bin`
 
 ### Step4: 使用Visual Studio 2019直接编译CMake
 

@@ -148,5 +148,5 @@ D:\projects\PaddleSeg\deploy\cpp\build\Release>demo.exe --conf=D:\\projects\\Pad
 输入原图  
 ![avatar](images/humanseg/demo2.jpeg)
 
-输出预测结果   
+输出预测结果  
 ![avatar](images/humanseg/demo2_jpeg_recover.png)

@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>paddle web demo - humanseg</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <style>
+            #loading {
+                position: fixed;
+                top: 0;
+                left: 0;
+                z-index: 10;
+                width: 100vw;
+                height: 100vh;
+                line-height: 100vh;
+                background-color: rgba(0, 0, 0, .4);
+                color: #fff;
+                text-align: center;
+                font-size: 16px;
+            }
+        </style>
+    </head>
+    <body>
+        <img id="image" src="https://m.baidu.com/se/static/img/iphone/logo.png" style="max-width: 100%;" />
+        <canvas id="demo1"></canvas>
+        <canvas id="demo2"></canvas>
+        <input type="file" id="uploadImg">
+        <div id="loading">loading...</div>
+    </body>
+</html>

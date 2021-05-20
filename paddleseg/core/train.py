@@ -210,8 +210,9 @@ def train(model,
                 if test_config is None:
                     test_config = {}
 
-                mean_iou, acc = evaluate(
+                mean_iou, acc, _, _, _ = evaluate(
                     model, val_dataset, num_workers=num_workers, **test_config)
+
                 model.train()
 
             if (iter % save_interval == 0 or iter == iters) and local_rank == 0:

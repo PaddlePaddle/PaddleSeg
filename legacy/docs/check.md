@@ -34,7 +34,7 @@ python pdseg/check.py --cfg ${YAML_FILE_PATH}
 统计每种类别的像素总数和所占比例，显示以供参考。统计结果如下：
 ```
 Doing label pixel statistics:
-(label class, total pixel number, percentage) = [(0, 2048984, 0.5211), (1, 1682943, 0.428), (2, 197976, 0.0503), (3, 2257, 0.0006)] 
+(label class, total pixel number, percentage) = [(0, 2048984, 0.5211), (1, 1682943, 0.428), (2, 197976, 0.0503), (3, 2257, 0.0006)]
 ```
 ### 7 图像格式校验
 检查图片类型`DATASET.IMAGE_TYPE`是否设置正确。

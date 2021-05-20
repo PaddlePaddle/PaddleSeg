@@ -108,6 +108,16 @@ def get_image_list(image_path):
     if os.path.isfile(image_path):
         if os.path.splitext(image_path)[-1] in valid_suffix:
             image_list.append(image_path)
+        else:
+            image_dir = os.path.dirname(image_path)
+            with open(image_path, 'r') as f:
+                for line in f:
+                    line = line.strip()
+                    if len(line.split()) > 1:
+                        raise RuntimeError(
+                            'There should be only one image path per line in `--image_path` file. Wrong line: {}'
+                            .format(line))
+                    image_list.append(os.path.join(image_dir, line))
     elif os.path.isdir(image_path):
         image_dir = image_path
         for root, dirs, files in os.walk(image_path):
