@@ -15,6 +15,7 @@
 import argparse
 import codecs
 import os
+import time
 
 import yaml
 import numpy as np
@@ -24,7 +25,7 @@ from paddle.inference import Config as PredictConfig
 from paddleseg.cvlibs import manager
 from paddleseg.utils import get_sys_env, logger
 from paddleseg.utils.visualize import get_pseudo_color_map
-
+from benchmark_utils import PaddleInferBenchmark
 
 class DeployConfig:
     def __init__(self, path):
@@ -78,6 +79,7 @@ class Predictor:
                     use_calib_mode=False)
 
         self.predictor = create_predictor(pred_cfg)
+        self.config = pred_cfg
 
     def preprocess(self, img):
         return self.cfg.transforms(img)[0]
@@ -86,23 +88,26 @@ class Predictor:
         if not isinstance(imgs, (list, tuple)):
             imgs = [imgs]
 
-        num = len(imgs)
+        self.num = len(imgs)
         input_names = self.predictor.get_input_names()
         input_handle = self.predictor.get_input_handle(input_names[0])
         results = []
 
-        for i in range(0, num, self.args.batch_size):
+        self.total_infer_time = 0
+        for i in range(0, self.num, self.args.batch_size):
             data = np.array([
                 self.preprocess(img) for img in imgs[i:i + self.args.batch_size]
             ])
             input_handle.reshape(data.shape)
             input_handle.copy_from_cpu(data)
+            time1 = time.time()
             self.predictor.run()
-
             output_names = self.predictor.get_output_names()
             output_handle = self.predictor.get_output_handle(output_names[0])
+            self.total_infer_time += time.time() - time1
             results.append(output_handle.copy_to_cpu())
 
+        self.benchmark_report()
         self.postprocess(results, imgs)
 
     def postprocess(self, results, imgs):
@@ -120,6 +125,22 @@ class Predictor:
             basename, _ = os.path.splitext(basename)
             basename = f'{basename}.png'
             result.save(os.path.join(self.args.save_dir, basename))
+    
+    def benchmark_report(self):
+        perf_info = {'inference_time_s': self.total_infer_time}
+        model_info = {
+            'model_name': args.cfg.split('/')[-2],
+            'precision': "fp32"
+        }
+        data_info = {
+            'batch_size': self.args.batch_size,
+            'shape': "dynamic_shape",
+            'data_num': self.num
+        }
+        resource_info = {}
+        seg_log = PaddleInferBenchmark(
+            self.config, model_info, data_info, perf_info, resource_info)
+        seg_log('Seg')
 
 
 def parse_args():
