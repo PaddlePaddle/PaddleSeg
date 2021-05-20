@@ -36,4 +36,3 @@ python visualize.py demo.jpg demo_jpg_mask.png vis_result.png
 
 效果图(`vis_result.png`)：
 ![avatar](vis_result.png)
-

@@ -490,7 +490,7 @@
 - deeplabv3p_mobilenetv2模型，Fluid-TensorRT在原生模型的加速效果不明显，仅3%-5%的加速效果。在优化模型的加速效果可以达到20%。
 - `deeplabv3_xception`、`pspnet50` 和 `pspnet101`模型，`fp16`加速效果很明显，在`768x768` 的size下加速效果最高可达110%。
 
- 
+
 
 ### 3. 不同的EVAL_CROP_SIZE对图片性能的影响
 
@@ -511,4 +511,3 @@
 `分析`：
 - 对于同一模型，`eval_crop_size`越大，推理速度越慢
 - 同一模型，不管是 TensorRT 优化还是 OP 优化，`eval_crop_size`越大效果越明显
-

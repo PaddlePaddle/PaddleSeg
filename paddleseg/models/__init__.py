@@ -36,3 +36,4 @@ from .emanet import *
 from .isanet import *
 from .dnlnet import *
 from .sfnet import *
+from .shufflenet_slim import ShuffleNetV2
