@@ -46,4 +46,3 @@ function selectImage(file) {
 document.getElementById('uploadImg').onchange = function () {
     selectImage(this);
 };
-

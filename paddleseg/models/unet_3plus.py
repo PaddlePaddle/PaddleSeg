@@ -38,7 +38,13 @@ class UNet3Plus(nn.Layer):
         is_CGM (bool, optional): Use classification-guided module or not.
             If True, is_deepsup must be True.  Default: False.
     """
-    def __init__(self, in_channels=3, num_classes=2, is_batchnorm=True, is_deepsup=False, is_CGM=False):
+
+    def __init__(self,
+                 in_channels=3,
+                 num_classes=2,
+                 is_batchnorm=True,
+                 is_deepsup=False,
+                 is_CGM=False):
         super(UNet3Plus, self).__init__()
         # parameters
         self.is_deepsup = True if is_CGM else is_deepsup
@@ -50,23 +56,24 @@ class UNet3Plus(nn.Layer):
         self.up_channels = self.cat_channels * self.cat_blocks
         # layers
         self.encoder = Encoder(in_channels, self.filters, is_batchnorm)
-        self.decoder = Decoder(self.filters, self.cat_channels, self.up_channels)
+        self.decoder = Decoder(self.filters, self.cat_channels,
+                               self.up_channels)
         if self.is_deepsup:
             self.deepsup = DeepSup(self.up_channels, self.filters, num_classes)
             if self.is_CGM:
-                self.cls = nn.Sequential(nn.Dropout(p=0.5),
-                                         nn.Conv2D(self.filters[4], 2, 1),
-                                         nn.AdaptiveMaxPool2D(1),
-                                         nn.Sigmoid())
+                self.cls = nn.Sequential(
+                    nn.Dropout(p=0.5), nn.Conv2D(self.filters[4], 2, 1),
+                    nn.AdaptiveMaxPool2D(1), nn.Sigmoid())
         else:
-            self.outconv1 = nn.Conv2D(self.up_channels, num_classes, 3, padding=1)
+            self.outconv1 = nn.Conv2D(
+                self.up_channels, num_classes, 3, padding=1)
         # initialise weights
-        for sublayer in self.sublayers ():
+        for sublayer in self.sublayers():
             if isinstance(sublayer, nn.Conv2D):
                 kaiming_normal_init(sublayer.weight)
             elif isinstance(sublayer, (nn.BatchNorm, nn.SyncBatchNorm)):
                 kaiming_normal_init(sublayer.weight)
-                
+
     def dotProduct(self, seg, cls):
         B, N, H, W = seg.shape
         seg = seg.reshape((B, N, H * W))
@@ -75,7 +82,7 @@ class UNet3Plus(nn.Layer):
         final = seg * ecls
         final = final.reshape((B, N, H, W))
         return final
-        
+
     def forward(self, inputs):
         hs = self.encoder(inputs)
         hds = self.decoder(hs)
@@ -83,7 +90,8 @@ class UNet3Plus(nn.Layer):
             out = self.deepsup(hds)
             if self.is_CGM:
                 # classification-guided module
-                cls_branch = self.cls(hds[-1]).squeeze(3).squeeze(2)  # (B,N,1,1)->(B,N)
+                cls_branch = self.cls(hds[-1]).squeeze(3).squeeze(
+                    2)  # (B,N,1,1)->(B,N)
                 cls_branch_max = cls_branch.argmax(axis=1)
                 cls_branch_max = cls_branch_max.reshape((-1, 1)).astype('float')
                 out = [self.dotProduct(d, cls_branch_max) for d in out]
@@ -96,11 +104,11 @@ class Encoder(nn.Layer):
     def __init__(self, in_channels, filters, is_batchnorm):
         super(Encoder, self).__init__()
         self.conv1 = UnetConv2D(in_channels, filters[0], is_batchnorm)
-        self.poolconv2 = MaxPoolConv2D(filters[0],  filters[1], is_batchnorm)
-        self.poolconv3 = MaxPoolConv2D(filters[1],  filters[2], is_batchnorm)
-        self.poolconv4 = MaxPoolConv2D(filters[2],  filters[3], is_batchnorm)
-        self.poolconv5 = MaxPoolConv2D(filters[3],  filters[4], is_batchnorm)
-        
+        self.poolconv2 = MaxPoolConv2D(filters[0], filters[1], is_batchnorm)
+        self.poolconv3 = MaxPoolConv2D(filters[1], filters[2], is_batchnorm)
+        self.poolconv4 = MaxPoolConv2D(filters[2], filters[3], is_batchnorm)
+        self.poolconv5 = MaxPoolConv2D(filters[3], filters[4], is_batchnorm)
+
     def forward(self, inputs):
         h1 = self.conv1(inputs)  # h1->320*320*64
         h2 = self.poolconv2(h1)  # h2->160*160*128
@@ -190,28 +198,37 @@ class Decoder(nn.Layer):
         h4_Cat_hd4 = self.h4_Cat_hd4_cbr(h4)
         hd5_UT_hd4 = self.hd5_UT_hd4_cbr(self.hd5_UT_hd4(hd5))
         # hd4->40*40*up_channels
-        hd4 = self.cbr4d_1(paddle.concat([h1_PT_hd4, h2_PT_hd4, h3_PT_hd4, h4_Cat_hd4, hd5_UT_hd4], 1))
+        hd4 = self.cbr4d_1(
+            paddle.concat(
+                [h1_PT_hd4, h2_PT_hd4, h3_PT_hd4, h4_Cat_hd4, hd5_UT_hd4], 1))
         h1_PT_hd3 = self.h1_PT_hd3_cbr(self.h1_PT_hd3(h1))
         h2_PT_hd3 = self.h2_PT_hd3_cbr(self.h2_PT_hd3(h2))
         h3_Cat_hd3 = self.h3_Cat_hd3_cbr(h3)
         hd4_UT_hd3 = self.hd4_UT_hd3_cbr(self.hd4_UT_hd3(hd4))
         hd5_UT_hd3 = self.hd5_UT_hd3_cbr(self.hd5_UT_hd3(hd5))
         # hd3->80*80*up_channels
-        hd3 = self.cbr3d_1(paddle.concat([h1_PT_hd3, h2_PT_hd3, h3_Cat_hd3, hd4_UT_hd3, hd5_UT_hd3], 1))
+        hd3 = self.cbr3d_1(
+            paddle.concat(
+                [h1_PT_hd3, h2_PT_hd3, h3_Cat_hd3, hd4_UT_hd3, hd5_UT_hd3], 1))
         h1_PT_hd2 = self.h1_PT_hd2_cbr(self.h1_PT_hd2(h1))
         h2_Cat_hd2 = self.h2_Cat_hd2_cbr(h2)
         hd3_UT_hd2 = self.hd3_UT_hd2_cbr(self.hd3_UT_hd2(hd3))
         hd4_UT_hd2 = self.hd4_UT_hd2_cbr(self.hd4_UT_hd2(hd4))
         hd5_UT_hd2 = self.hd5_UT_hd2_cbr(self.hd5_UT_hd2(hd5))
         # hd2->160*160*up_channels
-        hd2 = self.cbr2d_1(paddle.concat([h1_PT_hd2, h2_Cat_hd2, hd3_UT_hd2, hd4_UT_hd2, hd5_UT_hd2], 1))
+        hd2 = self.cbr2d_1(
+            paddle.concat(
+                [h1_PT_hd2, h2_Cat_hd2, hd3_UT_hd2, hd4_UT_hd2, hd5_UT_hd2], 1))
         h1_Cat_hd1 = self.h1_Cat_hd1_cbr(h1)
         hd2_UT_hd1 = self.hd2_UT_hd1_cbr(self.hd2_UT_hd1(hd2))
         hd3_UT_hd1 = self.hd3_UT_hd1_cbr(self.hd3_UT_hd1(hd3))
         hd4_UT_hd1 = self.hd4_UT_hd1_cbr(self.hd4_UT_hd1(hd4))
         hd5_UT_hd1 = self.hd5_UT_hd1_cbr(self.hd5_UT_hd1(hd5))
         # hd1->320*320*up_channels
-        hd1 = self.cbr1d_1(paddle.concat([h1_Cat_hd1, hd2_UT_hd1, hd3_UT_hd1, hd4_UT_hd1, hd5_UT_hd1], 1))
+        hd1 = self.cbr1d_1(
+            paddle.concat(
+                [h1_Cat_hd1, hd2_UT_hd1, hd3_UT_hd1, hd4_UT_hd1, hd5_UT_hd1],
+                1))
         return [hd1, hd2, hd3, hd4, hd5]
 
 
@@ -238,29 +255,32 @@ class ConvBnReLU2D(nn.Sequential):
     def __init__(self, in_channels, out_channels):
         super(ConvBnReLU2D, self).__init__(
             nn.Conv2D(in_channels, out_channels, 3, padding=1),
-            nn.BatchNorm(out_channels),
-            nn.ReLU()
-        )
+            nn.BatchNorm(out_channels), nn.ReLU())
 
 
 class ConvUp2D(nn.Sequential):
     def __init__(self, in_channels, out_channels, scale_factor):
         super(ConvUp2D, self).__init__(
             nn.Conv2D(in_channels, out_channels, 3, padding=1),
-            nn.Upsample(scale_factor=scale_factor, mode='bilinear')
-        )
+            nn.Upsample(scale_factor=scale_factor, mode='bilinear'))
 
 
 class MaxPoolConv2D(nn.Sequential):
     def __init__(self, in_channels, out_channels, is_batchnorm):
-        super(MaxPoolConv2D, self).__init__( 
+        super(MaxPoolConv2D, self).__init__(
             nn.MaxPool2D(kernel_size=2),
-            UnetConv2D(in_channels, out_channels, is_batchnorm)
-        )
+            UnetConv2D(in_channels, out_channels, is_batchnorm))
 
 
 class UnetConv2D(nn.Layer):
-    def __init__(self, in_channels, out_channels, is_batchnorm, num_conv=2, kernel_size=3, stride=1, padding=1):
+    def __init__(self,
+                 in_channels,
+                 out_channels,
+                 is_batchnorm,
+                 num_conv=2,
+                 kernel_size=3,
+                 stride=1,
+                 padding=1):
         super(UnetConv2D, self).__init__()
         self.num_conv = num_conv
         for i in range(num_conv):
@@ -269,13 +289,15 @@ class UnetConv2D(nn.Layer):
                                   nn.ReLU()) \
                     if is_batchnorm else \
                     nn.Sequential(nn.Conv2D(in_channels, out_channels, kernel_size, stride, padding),
-                                  nn.ReLU()))        
+                                  nn.ReLU()))
             setattr(self, 'conv%d' % (i + 1), conv)
             in_channels = out_channels
         # initialise the blocks
         for children in self.children():
-            children.weight_attr = paddle.framework.ParamAttr(initializer=paddle.nn.initializer.KaimingNormal)
-            children.bias_attr = paddle.framework.ParamAttr(initializer=paddle.nn.initializer.KaimingNormal)
+            children.weight_attr = paddle.framework.ParamAttr(
+                initializer=paddle.nn.initializer.KaimingNormal)
+            children.bias_attr = paddle.framework.ParamAttr(
+                initializer=paddle.nn.initializer.KaimingNormal)
 
     def forward(self, inputs):
         x = inputs
