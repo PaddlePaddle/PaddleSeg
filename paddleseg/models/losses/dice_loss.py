@@ -33,29 +33,19 @@ class DiceLoss(nn.Layer):
         self.smooth = smooth  # Laplace smoothing, https://github.com/pytorch/pytorch/issues/1249#issuecomment-337999895
 
     def forward(self, logits, labels):
-        if len(labels.shape) != len(logits.shape):
-            labels = paddle.unsqueeze(labels, 1)
-        num_classes = logits.shape[1]
-
         labels = paddle.cast(labels, dtype='int32')
-        single_label_lists = []
-        for c in range(num_classes):
-            single_label = paddle.cast((labels == c), dtype='int32')
-            single_label = paddle.squeeze(single_label, axis=1)
-            if c == self.ignore_index:
-                single_label = paddle.zeros_like(single_label)
-            single_label_lists.append(single_label)
+        labels_one_hot = F.one_hot(labels, num_classes=logits.shape[1]) # B, H, W, C
+        labels_one_hot = paddle.transpose(labels_one_hot, [0, 3, 1, 2]) # B, C, H, W
+        labels_one_hot = paddle.cast(labels_one_hot, dtype='float32')
 
-        labels_one_hot = paddle.stack(tuple(single_label_lists), axis=1)
         logits = F.softmax(logits, axis=1)
 
-        mask = (labels != self.ignore_index)
+        mask = (paddle.unsqueeze(labels, 1) != self.ignore_index)
         logits = logits * mask
 
-        labels_one_hot = paddle.cast(labels_one_hot, dtype='float32')
-        dims = (0, ) + tuple(range(2, labels.ndimension()))
+        dims = (0,) + tuple(range(2, labels.ndimension() + 1))
+
         intersection = paddle.sum(logits * labels_one_hot, dims)
         cardinality = paddle.sum(logits + labels_one_hot, dims)
-        dice_loss = ((2. * intersection + self.smooth) /
-                     (cardinality + self.eps + self.smooth)).mean()
+        dice_loss = ((2. * intersection + self.smooth) / (cardinality + self.eps + self.smooth)).mean()
         return 1 - dice_loss
