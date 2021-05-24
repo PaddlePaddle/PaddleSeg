@@ -116,7 +116,8 @@ def video_infer(args):
         while cap.isOpened():
             ret, img = cap.read()
             if ret:
-                comb = predictor.run(img)
+                bg = 255 * np.ones_like(img)
+                comb = predictor.run(img, bg)
                 cv2.imshow('HumanSegmentation', comb)
                 if cv2.waitKey(1) & 0xFF == ord('q'):
                     break
