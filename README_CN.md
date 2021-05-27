@@ -63,30 +63,28 @@ PaddleSeg是基于飞桨[PaddlePaddle](https://www.paddlepaddle.org.cn)开发的
 
 * [安装](./docs/install.md)
 * [全流程跑通PaddleSeg](./docs/quick_start.md)
-* [数据处理](./docs/data)
+*  数据处理
    * [数据标注说明](./docs/data/marker/marker.md)
    * [数据格式转化](./docs/data/transform/transform.md)
    * [自定义数据集](./docs/custom/data_prepare.md)
 
-* [PaddleSeg的设计思想](./docs/design)
+*  PaddleSeg的设计思想
     * [配置文件详解](./docs/design/use/use.md)
     * [如何创造自己的模型](./docs/design/create/add_new_model.md)
-* [模型训练](/docs/train)
-    * [单卡训练](./docs/train/sigle/sigle.md)
-    * [多卡训练](./docs/train/multiple/multiple.md)
-* [模型评估](./docs/evaluate/evaluate.md)
-* [模型导出](./docs/export/model_export.md)
+* [模型训练](/docs/train/train.md)
+* [模型评估](./docs/evaluation/evaluate/evaluate.md)
+* [模型导出](./docs/export/export/model_export.md)
 
-* [模型部署](./docs/deployment/)
+*  模型部署
     * [Inference](./docs/deployment/inference/inference.md)
     * [Lite](./docs/deployment/lite/lite.md)
     * [Serving](./docs/deployment/serving/serving.md)
     * [Web](./docs/deployment/web/web.md)
-* [模型压缩](./docs/slim)
-* [API使用教程](./docs/apis)
+* [模型压缩](./docs/slim/slim/slim.md)
+*  API使用教程
     * [API文档说明](./docs/apis)
-    * [API应用案例](./api_example.md)
-* [重要模块说明](./docs/module)
+    * [API应用案例](./docs/api_example.md)
+*  重要模块说明
     * [数据增强](./docs/module/data/data.md)
     * [Loss说明](./docs/module/loss/lovasz_loss.md)
     * [Tricks](./docs/module/tricks/tricks.md)
