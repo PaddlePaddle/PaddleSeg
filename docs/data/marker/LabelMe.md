@@ -14,7 +14,7 @@
 
 4.源着目标边缘进行标注和给予目标标签。
 
-![img](../image/labelmeing.png)
+![img](../image/LabelMeing.png)
 
 5.点击保存按钮后对应图片目录下生成json文件
 
