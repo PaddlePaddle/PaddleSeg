@@ -100,7 +100,7 @@ PaddleSeg是基于飞桨[PaddlePaddle](https://www.paddlepaddle.org.cn)开发的
 
 * [人像分割](./docs/solution/human/human.md)
 * [医疗图像](./docs/solution/medical/medical.md)
-* [遥感识别](./docs/solution/remotesensing/remotesensing.md)
+* [遥感分割](./docs/solution/remotesensing/remotesensing.md)
 
 ## 代码贡献 
 
