@@ -47,3 +47,14 @@ git clone https://github.com/PaddlePaddle/PaddleSeg
 cd PaddleSeg
 pip install -r requirements.txt
 ```
+### 3.1确认环境安装成功
+
+执行下面命令，并在PaddleSeg/output文件夹中出现预测结果，则证明安装成功
+
+```python
+python predict.py \
+       --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml \
+       --model_path https://bj.bcebos.com/paddleseg/dygraph/optic_disc/bisenet_optic_disc_512x512_1k/model.pdparams\
+       --image_path docs/images/optic_test_image.jpg \
+       --save_dir output/result
+```
