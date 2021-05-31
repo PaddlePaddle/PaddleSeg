@@ -47,7 +47,7 @@ git clone https://github.com/PaddlePaddle/PaddleSeg
 cd PaddleSeg
 pip install -r requirements.txt
 ```
-### 3.1确认环境安装成功
+## 4.确认环境安装成功
 
 执行下面命令，并在PaddleSeg/output文件夹中出现预测结果，则证明安装成功
 
