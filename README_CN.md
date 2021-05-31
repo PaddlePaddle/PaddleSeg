@@ -98,9 +98,9 @@ PaddleSeg是基于飞桨[PaddlePaddle](https://www.paddlepaddle.org.cn)开发的
 
 ## 实践案例 <img src="./docs/images/anli.png" width="20"/>
 
-* [人像分割](./docs/solution/human/human.md)
+* [人像分割](https://github.com/PaddlePaddle/PaddleSeg/tree/release/2.1/contrib/HumanSeg)
 * [医疗图像](./docs/solution/medical/medical.md)
-* [遥感分割](./docs/solution/remotesensing/remotesensing.md)
+* [遥感分割](https://github.com/PaddlePaddle/PaddleSeg/tree/release/2.1/contrib/remote_sensing)
 
 ## 代码贡献 
 
