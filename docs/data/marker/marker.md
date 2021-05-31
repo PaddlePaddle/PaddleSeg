@@ -12,6 +12,7 @@ PaddleSeg采用单通道的标注图片，每一种像素值代表一种类别�
 **PaddleSeg支持伪彩色图作为标注图片，在原来的单通道图片基础上，注入调色板。在基本不增加图片大小的基础上，却可以显示出彩色的效果。** 
 
 同时PaddleSeg也兼容灰度图标注，用户原来的灰度数据集可以不做修改，直接使用。
+![](https://github.com/PaddlePaddle/PaddleSeg/blob/release/v0.8.0/docs/imgs/annotation/image-11.png)
 
 ## 灰度标注转换为伪彩色标注
 如果用户需要转换成伪彩色标注图，可使用我们的转换工具。适用于以下两种常见的情况：
