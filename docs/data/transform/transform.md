@@ -105,10 +105,9 @@ python pdseg/tools/labelme2seg.py docs/annotation/labelme_demo/
 转换得到的数据集可参考我们给出的[文件夹](https://github.com/PaddlePaddle/PaddleSeg/blob/release/v0.8.0/docs/annotation/labelme_demo)。其中，文件`class_names.txt`是数据集中所有标注类别的名称，包含背景类；文件夹`annotations`保存的是各图片的像素级别的真值信息，背景类`_background_`对应为0，其它目标类别从1开始递增，至多为255。
 
 <div align="center">
-    <img "https://github.com/PaddlePaddle/PaddleSeg/blob/release/v0.8.0/docs/imgs/annotation/image-7.png" width="600px"/>
+    <img src="https://github.com/PaddlePaddle/PaddleSeg/blob/release/v0.8.0/docs/imgs/annotation/image-7.png" width="600px"/>
     <p>图8 格式转换后的数据集各目录的内容示意图</p>
  </div>
-```
 
 
 
