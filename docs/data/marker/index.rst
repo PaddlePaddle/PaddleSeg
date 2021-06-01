@@ -5,5 +5,3 @@
    :maxdepth: 1
 
    marker.md
-   LabelMe.md
-   ITK-SNAP.md
