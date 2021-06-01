@@ -1,4 +1,4 @@
-# PaddleSeg Inference 预测本地部署方案
+# 本地Inference部署方案
 
 ## 1. 说明
 
