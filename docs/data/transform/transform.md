@@ -12,7 +12,7 @@
 
 ![](../image/image-1.png)
 
-<div align="center">
+<div align="left">
     <p>图1 LableMe交互界面的示意图</p>
  </div>
 
@@ -30,7 +30,7 @@ git clone https://github.com/wkentaro/labelme
 
 ![](../image/image-2.png)
 
-<div align="center">
+<div align="left">
     <p>图2 已标注图片的示意图</p>
  </div>
 
@@ -44,7 +44,7 @@ git clone https://github.com/wkentaro/labelme
 
 ![](../image/image-3.png)
 
-<div align="center">
+<div align="left">
     <p>图3 标注单个目标的示意图</p>
  </div>
 
@@ -54,7 +54,7 @@ git clone https://github.com/wkentaro/labelme
 
 ![](../image/image-4-2.png)
 
-<div align="center">
+<div align="left">
     <p>图4 修改标注的示意图</p>
  </div>
 
@@ -66,7 +66,7 @@ LableMe产出的真值文件可参考我们给出的[文件夹](https://github.c
 
 ![](../image/image-5.png)
 
-<div align="center">
+<div align="left">
     <p>图5 LableMe产出的真值文件的示意图</p>
  </div>
 
@@ -78,7 +78,7 @@ LableMe产出的真值文件可参考我们给出的[文件夹](https://github.c
 
 ![](../image/image-10.jpg)
 
- <div align="center">
+ <div align="left">
     <p>图6 带空洞目标的标注示意图</p>
  </div>
 
@@ -105,7 +105,7 @@ LableMe产出的真值文件可参考我们给出的[文件夹](https://github.c
 
 ![](../image/image-6.png)
 
-<div align="center">
+<div align="left">
     <p>图7 格式转换后的数据集目录的结构示意图</p>
  </div>
 
@@ -129,6 +129,6 @@ python pdseg/tools/labelme2seg.py docs/annotation/labelme_demo/
 
 ![](../image/image-7.png)
 
-<div align="center">
+<div align="left">
     <p>图8 格式转换后的数据集各目录的内容示意图</p>
  </div>
