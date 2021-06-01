@@ -45,7 +45,7 @@ python pdseg/tools/gray2pseudo_color.py <dir_or_file> <output_dir> --dataset_dir
 
 PddleSeg已支持2种标注工具：LabelMe、精灵数据标注工具。标注教程如下：
 
-- [LabelMe标注教程](../transform/transform.md)
+- [LabelMe标注教程](../transform/transform_c.md)
 - [精灵数据标注工具教程](https://github.com/PaddlePaddle/PaddleSeg/blob/release/v0.8.0/docs/annotation/jingling2seg.md)
 
 
