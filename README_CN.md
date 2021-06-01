@@ -66,7 +66,7 @@ PaddleSeg是基于飞桨[PaddlePaddle](https://www.paddlepaddle.org.cn)开发的
 * [安装](./docs/install.md)
 * [全流程跑通PaddleSeg](./docs/quick_start.md)
 *  数据处理
-   * [数据格式说明](./docs/data/marker/marker.md)
+   * [数据格式说明](./docs/data/marker/marker_c.md)
    * [数据标注和转换](./docs/data/transform/transform_c.md)
    * [自定义数据集](./docs/data/custom/data_prepare.md)
 
