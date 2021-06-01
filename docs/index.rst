@@ -21,7 +21,7 @@ PaddleSeg是基于飞桨核心框架、开发套件和工具组件的深度学�
 
 .. toctree::
    :maxdepth: 1
-   :caption: 2. 数据准备与处理
+   :caption: 2. 数据处理
    
    data/marker/index.rst
    data/transform/index.rst
