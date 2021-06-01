@@ -24,8 +24,9 @@ class DiceLoss(nn.Layer):
     Args:
         ignore_index (int64): Specifies a target value that is ignored
             and does not contribute to the input gradient. Default ``255``.
-        smooth (float32): laplace smoothing, to smooth dice loss and accelerate convergence.
-            following: https://github.com/pytorch/pytorch/issues/1249#issuecomment-337999895
+        smooth (float32): laplace smoothing,
+            to smooth dice loss and accelerate convergence. following:
+            https://github.com/pytorch/pytorch/issues/1249#issuecomment-337999895
     """
     def __init__(self, ignore_index=255, smooth=0.):
         super(DiceLoss, self).__init__()
