@@ -36,10 +36,8 @@ class DiceLoss(nn.Layer):
 
     def forward(self, logits, labels):
         labels = paddle.cast(labels, dtype='int32')
-        labels_one_hot = F.one_hot(labels,
-                                   num_classes=logits.shape[1])  # B, H, W, C
-        labels_one_hot = paddle.transpose(labels_one_hot,
-                                          [0, 3, 1, 2])  # B, C, H, W
+        labels_one_hot = F.one_hot(labels, num_classes=logits.shape[1])
+        labels_one_hot = paddle.transpose(labels_one_hot, [0, 3, 1, 2])
         labels_one_hot = paddle.cast(labels_one_hot, dtype='float32')
 
         logits = F.softmax(logits, axis=1)
