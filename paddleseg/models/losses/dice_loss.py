@@ -28,6 +28,7 @@ class DiceLoss(nn.Layer):
             to smooth dice loss and accelerate convergence. following:
             https://github.com/pytorch/pytorch/issues/1249#issuecomment-337999895
     """
+
     def __init__(self, ignore_index=255, smooth=0.):
         super(DiceLoss, self).__init__()
         self.ignore_index = ignore_index
