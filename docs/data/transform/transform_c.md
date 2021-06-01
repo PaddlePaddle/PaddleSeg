@@ -22,7 +22,7 @@ git clone https://github.com/wkentaro/labelme
 终端输入`labelme`会出现LableMe的交互界面，点击`OpenDir`打开`<path/to/labelme>/examples/semantic_segmentation/data_annotated`，其中`<path/to/labelme>`为克隆下来的`labelme`的路径，打开后示意的是语义分割的真值标注。
 
 <div align="center">
-    <img src="../image/annotation/image-2.png" width="600px"/>
+    <img src="../image/image-2.png" width="600px"/>
     <p>图2 已标注图片的示意图</p>
  </div>
 
@@ -33,24 +33,24 @@ git clone https://github.com/wkentaro/labelme
 ​		(1)   点击`OpenDir`打开待标注图片所在目录，点击`Create Polygons`，沿着目标的边缘画多边形，完成后输入目标的类别。在标注过程中，如果某个点画错了，可以按撤销快捷键可撤销该点。Mac下的撤销快捷键为`command+Z`。
 
 <div align="center">
-    <img src="../image/annotation/image-3.png" width="600px"/>
+    <img src="../image/image-3.png" width="600px"/>
     <p>图3 标注单个目标的示意图</p>
  </div>
 
 ​		(2)   右击选择`Edit Polygons`可以整体移动多边形的位置，也可以移动某个点的位置；右击选择`Edit Label`可以修改每个目标的类别。请根据自己的需要执行这一步骤，若不需要修改，可跳过。
 
 <div align="center">
-    <img src="../image/annotation/image-4-1.png" width="00px" />
-  	<img src="../image/annotation/image-4-2.png" width="600px"/>
+    <img src="../image/image-4-1.png" width="00px" />
+  	<img src="../image/image-4-2.png" width="600px"/>
     <p>图4 修改标注的示意图</p>
  </div>
 
 ​		(3)   图片中所有目标的标注都完成后，点击`Save`保存json文件，**请将json文件和图片放在同一个文件夹里**，点击`Next Image`标注下一张图片。
 
-LableMe产出的真值文件可参考我们给出的文件夹[docs/annotation/labelme_demo](labelme_demo)。
+LableMe产出的真值文件可参考我们给出的[文件夹](https://github.com/PaddlePaddle/PaddleSeg/blob/release/v0.8.0/docs/annotation/labelme_demo)。
 
 <div align="center">
-    <img src="../image/imgs/annotation/image-5.png" width="600px"/>
+    <img src="../image/image-5.png" width="600px"/>
     <p>图5 LableMe产出的真值文件的示意图</p>
  </div>
 
@@ -59,7 +59,7 @@ LableMe产出的真值文件可参考我们给出的文件夹[docs/annotation/la
  对于中间有空洞的目标的标注方法：在标注完目标轮廓后，再沿空洞区域边缘画多边形，并将其指定为其他类别，如果是背景则指定为`_background_`。如下：
 
  <div align="center">
-    <img src="../image/annotation/image-10.jpg" width="600px"/>
+    <img src="../image/image-10.jpg" width="600px"/>
     <p>图6 带空洞目标的标注示意图</p>
  </div>
 
@@ -82,7 +82,7 @@ LableMe产出的真值文件可参考我们给出的文件夹[docs/annotation/la
  ```
 
 <div align="center">
-    <img src="../image/annotation/image-6.png" width="600px"/>
+    <img src="../image/image-6.png" width="600px"/>
     <p>图7 格式转换后的数据集目录的结构示意图</p>
  </div>
 
@@ -100,9 +100,9 @@ LableMe产出的真值文件可参考我们给出的文件夹[docs/annotation/la
 python pdseg/tools/labelme2seg.py docs/annotation/labelme_demo/
 ```
 
-转换得到的数据集可参考我们给出的文件夹[docs/annotation/labelme_demo](labelme_demo)。其中，文件`class_names.txt`是数据集中所有标注类别的名称，包含背景类；文件夹`annotations`保存的是各图片的像素级别的真值信息，背景类`_background_`对应为0，其它目标类别从1开始递增，至多为255。
+转换得到的数据集可参考我们给出的[文件夹](https://github.com/PaddlePaddle/PaddleSeg/blob/release/v0.8.0/docs/annotation/labelme_demo)。其中，文件`class_names.txt`是数据集中所有标注类别的名称，包含背景类；文件夹`annotations`保存的是各图片的像素级别的真值信息，背景类`_background_`对应为0，其它目标类别从1开始递增，至多为255。
 
 <div align="center">
-    <img src="../image/annotation/image-7.png" width="600px"/>
+    <img src="../image/image-7.png" width="600px"/>
     <p>图8 格式转换后的数据集各目录的内容示意图</p>
  </div>
