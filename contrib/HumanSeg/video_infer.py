@@ -36,7 +36,7 @@ def parse_args():
     parser.add_argument(
         "--input_shape",
         dest="input_shape",
-        help="The image shape for net inputs.",
+        help="The image shape [h, w] for net inputs.",
         nargs=2,
         default=[192, 192],
         type=int)

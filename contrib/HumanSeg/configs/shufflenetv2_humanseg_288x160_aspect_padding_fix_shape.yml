@@ -1,0 +1,59 @@
+batch_size: 128
+iters: 10000 # about 38 epoch
+
+train_dataset:
+  type: HumanSeg
+  dataset_root: /ssd2/chulutao/humanseg/
+  transforms:
+    - type: PaddingByAspectRatio
+      aspect_ratio: 1.77777778 # 16:9
+    - type: Resize
+      target_size: [288, 160]
+    - type: RandomHorizontalFlip
+    - type: Normalize
+  mode: train
+
+val_dataset:
+  type: HumanSeg
+  dataset_root: /ssd2/chulutao/humanseg/
+  transforms:
+    - type: PaddingByAspectRatio
+      aspect_ratio: 1.77777778 # 16:9
+    - type: Resize
+      target_size: [288, 160]
+    - type: Normalize
+  mode: val
+
+export:
+  transforms:
+    - type: Resize
+      target_size: [288, 160]
+    - type: Normalize
+
+
+optimizer:
+  type: sgd
+  momentum: 0.9
+  weight_decay: 0.0005
+
+lr_scheduler:
+  type: PolynomialDecay
+  learning_rate: 0.01
+  end_lr: 0
+  power: 0.9
+
+loss:
+  types:
+    - type: MixedLoss
+      losses:
+        - type: CrossEntropyLoss
+        - type: LovaszSoftmaxLoss
+      coef: [0.8, 0.2]
+    # - type: CrossEntropyLoss
+  coef: [1]
+
+model:
+#   type: ShuffleNetV2
+  type: ShuffleNetV2_160x288
+  align_corners: False
+  num_classes: 2

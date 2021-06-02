@@ -96,6 +96,7 @@ class Predictor:
         data = np.array(processed_imgs)
         input_handle.reshape(data.shape)
         input_handle.copy_from_cpu(data)
+
         self.predictor.run()
 
         output_names = self.predictor.get_output_names()

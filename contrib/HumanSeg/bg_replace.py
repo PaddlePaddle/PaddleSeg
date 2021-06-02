@@ -36,7 +36,7 @@ def parse_args():
     parser.add_argument(
         "--input_shape",
         dest="input_shape",
-        help="The image shape for net inputs.",
+        help="The image shape [h, w] for net inputs.",
         nargs=2,
         default=[192, 192],
         type=int)
@@ -111,7 +111,6 @@ def background_replace(args):
         bg = cv2.imread(args.background_image_path)
 
         comb = predictor.run(img, bg)
-
         save_name = osp.basename(args.image_path)
         save_path = osp.join(args.save_dir, save_name)
         cv2.imwrite(save_path, comb)
