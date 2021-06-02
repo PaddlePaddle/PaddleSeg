@@ -7,7 +7,7 @@
 
 ## Resize  
 
-Resize步骤是指将输入图像按照某种规则讲图片重新缩放到某一个尺寸，PaddleSeg支持以下3种resize方式:
+Resize步骤指将输入图像按照某种规则讲图片重新缩放到某一个尺寸，PaddleSeg支持以下3种resize方式:
 
 ![](../images/aug_method.png)
 
