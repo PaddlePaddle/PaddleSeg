@@ -173,4 +173,3 @@ python pdseg/tools/create_dataset_list.py <your/dataset/dir> --type cityscapes -
 |--postfix|"_leftImg8bit" "_gtFine_labelTrainIds"|
 
 其余FLAG可以按需要设定。
-
