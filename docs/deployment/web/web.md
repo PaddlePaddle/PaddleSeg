@@ -28,7 +28,7 @@ npm run dev
 
 ### 2.3 效果展示
 
-![image](https://user-images.githubusercontent.com/10822846/118273079-127bf480-b4f6-11eb-84c0-8a0bbc7c7433.png)
+![image](./image/figure1.png)
 
 ## 3. 重点 API 介绍
 
