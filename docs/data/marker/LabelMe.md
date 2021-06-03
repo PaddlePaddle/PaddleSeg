@@ -99,4 +99,3 @@ if __name__ == '__main__':
 ```
 
 4. 在传入的目录下会生成'mask'和‘mask_viz’文件夹。‘mask’文件夹存放转换后mask图片。‘mask_viz’存放的是伪彩mask图片。
-
