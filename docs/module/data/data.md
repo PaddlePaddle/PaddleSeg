@@ -99,4 +99,3 @@ Random crop过程分为3种情形：
 - 当输入图像尺寸等于CROP_SIZE时，返回原图。
 - 当输入图像尺寸大于CROP_SIZE时，直接裁剪。
 - 当输入图像尺寸小于CROP_SIZE时，分别使用`DATASET.PADDING_VALUE`值和`DATASET.IGNORE_INDEX`值对图像和标签图进行填充，再进行裁剪。
-
