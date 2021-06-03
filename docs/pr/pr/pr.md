@@ -92,7 +92,7 @@ pre-commit install
 #### 5 修改与提交代码
 
 可以通过`git status`查看改动的文件。
-对PaddleClas的`README.md`做了一些修改，希望提交上去。则可以通过以下步骤
+对PaddleSeg的`README.md`做了一些修改，希望提交上去。则可以通过以下步骤
 
 ```shell
 git add README.md
