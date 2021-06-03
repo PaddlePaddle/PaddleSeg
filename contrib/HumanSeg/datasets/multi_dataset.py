@@ -77,7 +77,8 @@ class MultiDataset(paddle.io.Dataset):
                  valset_weight,
                  valset_class_weight,
                  data_ratio,
-                 mode='train',
+                 mode=None,
+                 file_list_name=None,
                  num_classes=2,
                  val_test_set_rank=0):
         self.dataset_root_list = dataset_root_list
@@ -108,7 +109,7 @@ class MultiDataset(paddle.io.Dataset):
                     raise FileNotFoundError(
                         'there is not `dataset_root`: {}.'.format(dataset_root))
 
-                train_path = os.path.join(dataset_root, 'train.txt')
+                train_path = os.path.join(dataset_root, file_list_name)
                 if not os.path.exists(train_path):
                     raise FileNotFoundError(
                         '`train_path` is not found: {}'.format(train_path))
@@ -124,7 +125,7 @@ class MultiDataset(paddle.io.Dataset):
             self.total_file_num = len(self.all_file_list)
         elif mode == 'val':
             val_path = os.path.join(dataset_root_list[val_test_set_rank],
-                                    'val.txt')
+                                    file_list_name)
             if not os.path.exists(val_path):
                 raise FileNotFoundError(
                     '`val_path` is not found: {}'.format(val_path))
@@ -134,7 +135,7 @@ class MultiDataset(paddle.io.Dataset):
             self.total_file_num = len(self.file_list)
         else:
             test_path = os.path.join(dataset_root_list[val_test_set_rank],
-                                     'test.txt')
+                                     file_list_name)
             if not os.path.exists(test_path):
                 raise FileNotFoundError(
                     '`test_path` is not found: {}'.format(test_path))
