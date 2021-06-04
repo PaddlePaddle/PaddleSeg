@@ -242,6 +242,11 @@ class Config(object):
                     self._losses['types'] = []
                     for item in args['types']:
                         if item['type'] != 'MixedLoss':
+                            if 'ignore_index' in item:
+                                assert item['ignore_index'] == self.train_dataset.ignore_index, 'If ignore_index of loss is set, '\
+                                'the ignore_index of loss and train_dataset must be the same. \nCurrently, loss ignore_index = {}, '\
+                                'train_dataset ignore_index = {}. \nIt is recommended not to set loss ignore_index, so it is consistent with '\
+                                'train_dataset by default.'.format(item['ignore_index'], self.train_dataset.ignore_index)
                             item['ignore_index'] = \
                                 self.train_dataset.ignore_index
                         self._losses['types'].append(self._load_object(item))
