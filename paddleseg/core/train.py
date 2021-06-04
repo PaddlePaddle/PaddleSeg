@@ -60,7 +60,8 @@ def train(model,
           num_workers=0,
           use_vdl=False,
           losses=None,
-          keep_checkpoint_max=5):
+          keep_checkpoint_max=5,
+          test_config=None):
     """
     Launch training.
 
@@ -77,9 +78,10 @@ def train(model,
         log_iters (int, optional): Display logging information at every log_iters. Default: 10.
         num_workers (int, optional): Num workers for data loader. Default: 0.
         use_vdl (bool, optional): Whether to record the data to VisualDL during training. Default: False.
-        losses (dict): A dict including 'types' and 'coef'. The length of coef should equal to 1 or len(losses['types']).
+        losses (dict, optional): A dict including 'types' and 'coef'. The length of coef should equal to 1 or len(losses['types']).
             The 'types' item is a list of object of paddleseg.models.losses while the 'coef' item is a list of the relevant coefficient.
         keep_checkpoint_max (int, optional): Maximum number of checkpoints to save. Default: 5.
+        test_config(dict, optional): Evaluation config.
     """
     model.train()
     nranks = paddle.distributed.ParallelEnv().nranks
@@ -204,8 +206,13 @@ def train(model,
             if (iter % save_interval == 0
                     or iter == iters) and (val_dataset is not None):
                 num_workers = 1 if num_workers > 0 else 0
+
+                if test_config is None:
+                    test_config = {}
+
                 mean_iou, acc, _, _, _ = evaluate(
-                    model, val_dataset, num_workers=num_workers)
+                    model, val_dataset, num_workers=num_workers, **test_config)
+
                 model.train()
 
             if (iter % save_interval == 0 or iter == iters) and local_rank == 0:

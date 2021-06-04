@@ -22,6 +22,27 @@ from paddleseg.core import evaluate
 from paddleseg.utils import get_sys_env, logger, config_check, utils
 
 
+def get_test_config(cfg, args):
+
+    test_config = cfg.test_config
+    if args.aug_eval:
+        test_config['aug_eval'] = args.aug_eval
+        test_config['scales'] = args.scales
+
+    if args.flip_horizontal:
+        test_config['flip_horizontal'] = args.flip_horizontal
+
+    if args.flip_vertical:
+        test_config['flip_vertical'] = args.flip_vertical
+
+    if args.is_slide:
+        test_config['is_slide'] = args.is_slide
+        test_config['crop_size'] = args.crop_size
+        test_config['stride'] = args.stride
+
+    return test_config
+
+
 def parse_args():
     parser = argparse.ArgumentParser(description='Model evaluation')
 
@@ -121,20 +142,10 @@ def main(args):
         utils.load_entire_model(model, args.model_path)
         logger.info('Loaded trained params of model successfully')
 
+    test_config = get_test_config(cfg, args)
     config_check(cfg, val_dataset=val_dataset)
 
-    evaluate(
-        model,
-        val_dataset,
-        aug_eval=args.aug_eval,
-        scales=args.scales,
-        flip_horizontal=args.flip_horizontal,
-        flip_vertical=args.flip_vertical,
-        is_slide=args.is_slide,
-        crop_size=args.crop_size,
-        stride=args.stride,
-        num_workers=args.num_workers,
-    )
+    evaluate(model, val_dataset, num_workers=args.num_workers, **test_config)
 
 
 if __name__ == '__main__':
