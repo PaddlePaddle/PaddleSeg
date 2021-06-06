@@ -14,10 +14,10 @@ PaddleSeg是基于飞桨核心框架的深度学习全流程开发工具。具�
 .. toctree::
    :maxdepth: 1
    :caption: 1. 快速了解PaddleSeg
-
-   quick_start.md
+   
    install.md
-
+   quick_start.md
+   
 
 .. toctree::
    :maxdepth: 1
