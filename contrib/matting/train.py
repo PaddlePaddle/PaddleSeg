@@ -27,6 +27,8 @@ def parse_args():
 
 
 def main(args):
+    paddle.set_device('gpu')
+
     # 一些模块的组建
     # train_dataset
     # 简单的建立一个数据读取器
@@ -73,9 +75,9 @@ def main(args):
         train_dataset=train_dataset,
         optimizer=optimizer,
         losses=losses,
-        iters=20000,
-        batch_size=4,
-        num_workers=5,
+        iters=100000,
+        batch_size=16,
+        num_workers=16,
         use_vdl=True)
 
 
