@@ -448,10 +448,10 @@ output
 
 | 端侧         | 库           | 教程   |
 | :----------- | :----------- | :----- |
-| Python端部署 | Paddle预测库 | 已完善 |
-| 移动端部署   | ONNX         | 完善中 |
+| Python端部署 | Paddle预测库 | [示例](../deploy/python/) |
+| 移动端部署   | ONNX         | [示例](../deploy/lite/) |
 | 服务端部署   | HubServing   | 完善中 |
-| 前端部署     | PaddleJS     | 完善中 |
+| 前端部署     | PaddleJS     | [示例](../deploy/web/) |
 
 ```
 #运行如下命令，会在output文件下面生成一张H0003.png的图像
@@ -471,6 +471,7 @@ python deploy/python/infer.py \
 | use_int8   | 启动TensorRT预测时，是否以int8模式运行                    | 否         | 否               |
 | batch_size | 单卡batch size                                            | 否         | 配置文件中指定值 |
 | save_dir   | 保存预测结果的目录                                        | 否         | output           |
+| with_argmax| 对预测结果进行argmax操作                                  | 否         | 否           |
 
 **9 二次开发**
 
