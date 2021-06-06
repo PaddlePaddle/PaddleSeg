@@ -33,6 +33,7 @@ python pdseg/tools/gray2pseudo_color.py <dir_or_file> <output_dir>
 ```buildoutcfg
 python pdseg/tools/gray2pseudo_color.py <dir_or_file> <output_dir> --dataset_dir <dataset directory> --file_separator <file list separator>
 ```
+
 |参数|用途|
 |-|-|
 |dir_or_file|指定文件列表路径|
