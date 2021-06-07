@@ -24,30 +24,34 @@ from paddleseg.utils import TimeAverager, calculate_eta, resume, logger
 # from core.val import evaluate
 
 
-def loss_computation(logit_dict, label_dict, losses):
+def loss_computation(logit_dict, label_dict, losses, stage=3):
     """
     Acoording the losses to select logit and label
     """
     loss_list = []
-    # raw alpha
     mask = label_dict['trimap'] == 128
-    alpha_raw_loss = losses['types'][0](logit_dict['alpha_raw'],
-                                        label_dict['alpha'] / 255, mask)
-    alpha_raw_loss = losses['coef'][0] * alpha_raw_loss
-    loss_list.append(alpha_raw_loss)
 
-    # comp loss
-    comp_pred = logit_dict['alpha_raw'] * label_dict['fg'] + (
-        1 - logit_dict['alpha_raw']) * label_dict['bg']
-    comp_loss = losses['types'][2](comp_pred, label_dict['img'], mask)
-    comp_loss = losses['coef'][2] * comp_loss
-    loss_list.append(comp_loss)
+    if stage != 2:
+        # raw alpha
+        alpha_raw_loss = losses['types'][0](logit_dict['alpha_raw'],
+                                            label_dict['alpha'] / 255, mask)
+        alpha_raw_loss = losses['coef'][0] * alpha_raw_loss
+        loss_list.append(alpha_raw_loss)
 
-    # pred alpha
-    alpha_pred_loss = losses['types'][2](logit_dict['alpha_pred'],
-                                         label_dict['alpha'] / 255, mask)
-    alpha_pred_loss = losses['coef'][2] * alpha_pred_loss
-    loss_list.append(alpha_pred_loss)
+    if stage == 1 or stage == 3:
+        # comp loss
+        comp_pred = logit_dict['alpha_raw'] * label_dict['fg'] + (
+            1 - logit_dict['alpha_raw']) * label_dict['bg']
+        comp_loss = losses['types'][2](comp_pred, label_dict['img'], mask)
+        comp_loss = losses['coef'][2] * comp_loss
+        loss_list.append(comp_loss)
+
+    if stage == 2 or stage == 3:
+        # pred alpha
+        alpha_pred_loss = losses['types'][2](logit_dict['alpha_pred'],
+                                             label_dict['alpha'] / 255, mask)
+        alpha_pred_loss = losses['coef'][2] * alpha_pred_loss
+        loss_list.append(alpha_pred_loss)
 
     return loss_list
 
@@ -65,7 +69,8 @@ def train(model,
           num_workers=0,
           use_vdl=False,
           losses=None,
-          keep_checkpoint_max=5):
+          keep_checkpoint_max=5,
+          stage=3):
     """
     Launch training.
 
@@ -147,7 +152,7 @@ def train(model,
                 logit_dict = model(data)
 
             # 获取logit_dict, label_dict
-            loss_list = loss_computation(logit_dict, data, losses)
+            loss_list = loss_computation(logit_dict, data, losses, stage=stage)
             loss = sum(loss_list)
             loss.backward()
 
@@ -179,9 +184,10 @@ def train(model,
                             avg_loss, lr, avg_train_batch_cost,
                             avg_train_reader_cost,
                             batch_cost_averager.get_ips_average(), eta))
-                logger.info(
-                    "[LOSS] loss={:.4f}, alpha_raw_loss={:.4f}, alpha_pred_loss={:.4f},"
-                    .format(avg_loss, avg_loss_list[0], avg_loss_list[1]))
+                # logger.info(
+                #     "[LOSS] loss={:.4f}, alpha_raw_loss={:.4f}, alpha_pred_loss={:.4f},"
+                #     .format(avg_loss, avg_loss_list[0], avg_loss_list[1]))
+                logger.info(avg_loss_list)
                 if use_vdl:
                     log_writer.add_scalar('Train/loss', avg_loss, iter)
                     # Record all losses if there are more than 2 losses.
@@ -203,15 +209,8 @@ def train(model,
                     ori_img = data['img'][0]
                     ori_img = paddle.transpose(ori_img, [1, 2, 0])
                     ori_img = (ori_img * 0.5 + 0.5) * 255
-
                     alpha = (data['alpha'][0]).unsqueeze(-1)
                     trimap = (data['trimap'][0]).unsqueeze(-1)
-
-                    alpha_raw = (logit_dict['alpha_raw'][0] * 255).transpose(
-                        [1, 2, 0])
-                    alpha_pred = (logit_dict['alpha_pred'][0] * 255).transpose(
-                        [1, 2, 0])
-
                     log_writer.add_image(
                         tag='ground truth/ori_img',
                         img=ori_img.numpy(),
@@ -222,14 +221,22 @@ def train(model,
                         tag='ground truth/trimap',
                         img=trimap.numpy(),
                         step=iter)
+
+                    alpha_raw = (logit_dict['alpha_raw'][0] * 255).transpose(
+                        [1, 2, 0])
                     log_writer.add_image(
                         tag='prediction/alpha_raw',
                         img=alpha_raw.numpy(),
                         step=iter)
-                    log_writer.add_image(
-                        tag='prediction/alpha_pred',
-                        img=alpha_pred.numpy(),
-                        step=iter)
+
+                    if stage >= 2:
+                        alpha_pred = (
+                            logit_dict['alpha_pred'][0] * 255).transpose(
+                                [1, 2, 0])
+                        log_writer.add_image(
+                            tag='prediction/alpha_pred',
+                            img=alpha_pred.numpy(),
+                            step=iter)
 
                 avg_loss = 0.0
                 avg_loss_list = []

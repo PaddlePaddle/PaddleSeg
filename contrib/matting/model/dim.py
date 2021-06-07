@@ -35,18 +35,28 @@ class DIM(nn.Layer):
 
     """
 
-    def __init__(self, backbone, backbone_indices=(-1, ), pretrained=None):
+    def __init__(self,
+                 backbone,
+                 backbone_indices=(-1, ),
+                 pretrained=None,
+                 stage=3):
         super().__init__()
         self.backbone = backbone
         self.backbone_indices = backbone_indices
         self.pretrained = pretrained
+        self.stage = stage
 
         self.decoder = Decoder(input_channels=512)
+        if self.stage == 2:
+            for param in self.backbone.parameters():
+                param.stop_gradient = True
+            for param in self.decoder.parameters():
+                param.stop_gradient = True
         self.refine = Refine()
         self.init_weight()
 
     def forward(self, inputs):
-        x = paddle.concat([inputs['img'], inputs['trimap'].unsqueeze(1)],
+        x = paddle.concat([inputs['img'], inputs['trimap'].unsqueeze(1) / 255],
                           axis=1)
         fea_list, ids_list = self.backbone(x)
 
@@ -56,6 +66,9 @@ class DIM(nn.Layer):
         for i in range(4):
             up_shape.append(fea_list[i].shape[-2:])
         alpha_raw = self.decoder(fea_list[self.backbone_indices[0]], up_shape)
+        logit_dict = {'alpha_raw': alpha_raw}
+        if self.stage < 2:
+            return logit_dict
 
         # refine stage
         alpha_raw_ = alpha_raw * 255
@@ -66,7 +79,7 @@ class DIM(nn.Layer):
         alpha_pred = alpha_refine + alpha_raw
         alpha_pred = paddle.clip(alpha_pred, min=0, max=1)
 
-        logit_dict = {'alpha_pred': alpha_pred, 'alpha_raw': alpha_raw}
+        logit_dict['alpha_pred'] = alpha_pred
         return logit_dict
 
     def init_weight(self):
