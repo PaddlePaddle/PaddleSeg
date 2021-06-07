@@ -90,17 +90,23 @@ class DIM(nn.Layer):
 class Up(nn.Layer):
     def __init__(self, input_channels, output_channels):
         super().__init__()
-        self.conv = layers.ConvBNReLU(
-            input_channels,
-            output_channels,
-            kernel_size=5,
-            padding=2,
-            bias_attr=False)
+        # self.conv = layers.ConvBNReLU(
+        #     input_channels,
+        #     output_channels,
+        #     kernel_size=5,
+        #     padding=2,
+        #     bias_attr=False)
+
+        self.deconv = nn.Conv2DTranspose(
+            input_channels, output_channels, kernel_size=4, stride=2, padding=1)
 
     def forward(self, x, output_shape):
-        x = F.interpolate(
-            x, size=output_shape, mode='bilinear', align_corners=False)
-        x = self.conv(x)
+        # x = F.interpolate(
+        #     x, size=output_shape, mode='bilinear', align_corners=False)
+        # x = self.conv(x)
+        x = self.deconv(x)
+        x = F.relu(x)
+
         return x
 
 
