@@ -45,6 +45,7 @@ class DiceLoss(nn.Layer):
 
         mask = (paddle.unsqueeze(labels, 1) != self.ignore_index)
         logits = logits * mask
+        labels_one_hot = labels_one_hot * mask
 
         dims = (0, ) + tuple(range(2, labels.ndimension() + 1))
 
