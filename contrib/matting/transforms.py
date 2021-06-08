@@ -61,6 +61,10 @@ class LoadImages:
         data['img'] = cv2.imread(data['img'])
         for key in data.get('gt_fields', []):
             data[key] = cv2.imread(data[key], cv2.IMREAD_UNCHANGED)
+            # if alpha and trimap has 3 channels, extract one.
+            if key in ['alpha', 'trimap']:
+                if len(data[key].shape) > 2:
+                    data[key] = data[key][:, :, 0]
 
         if self.to_rgb:
             data['img'] = cv2.cvtColor(data['img'], cv2.COLOR_BGR2RGB)
