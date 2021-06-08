@@ -23,29 +23,6 @@ from utils import get_files
 import transforms as T
 
 
-def gen_trimap(alpha, mode='train', eval_kernel=7):
-    if mode == 'train':
-        k_size = random.choice(range(2, 5))
-        iterations = np.random.randint(5, 15)
-        kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (k_size, k_size))
-        dilated = cv2.dilate(alpha, kernel, iterations=iterations)
-        eroded = cv2.erode(alpha, kernel, iterations=iterations)
-        trimap = np.zeros(alpha.shape)
-        trimap.fill(128)
-        trimap[eroded >= 255] = 255
-        trimap[dilated <= 0] = 0
-    else:
-        k_size = eval_kernel
-        kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (k_size, k_size))
-        dilated = cv2.dilate(alpha, kernel)
-        trimap = np.zeros(alpha.shape)
-        trimap.fill(128)
-        trimap[alpha >= 255] = 255
-        trimap[dilated <= 0] = 0
-
-    return trimap
-
-
 class HumanDataset(paddle.io.Dataset):
     def __init__(
             self,
@@ -90,7 +67,7 @@ class HumanDataset(paddle.io.Dataset):
         for key in data.get('gt_fields', []):
             data[key] = data[key].astype('float32')
         if 'trimap' not in data:
-            data['trimap'] = gen_trimap(
+            data['trimap'] = self.gen_trimap(
                 data['alpha'], mode=self.mode).astype('float32')
 
         return data
@@ -98,17 +75,28 @@ class HumanDataset(paddle.io.Dataset):
     def __len__(self):
         return len(self.img_list)
 
-    @property
-    def gen_trimap(alpha):
-        k_size = random.choice(range(2, 5))
-        iterations = np.random.randint(5, 15)
-        kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (k_size, k_size))
-        dilated = cv2.dilate(alpha, kernel, iterations=iterations)
-        eroded = cv2.erode(alpha, kernel, iterations=iterations)
-        trimap = np.zeros(alpha.shape)
-        trimap.fill(128)
-        trimap[eroded >= 255] = 255
-        trimap[dilated <= 0] = 0
+    @staticmethod
+    def gen_trimap(alpha, mode='train', eval_kernel=7):
+        if mode == 'train':
+            k_size = random.choice(range(2, 5))
+            iterations = np.random.randint(5, 15)
+            kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE,
+                                               (k_size, k_size))
+            dilated = cv2.dilate(alpha, kernel, iterations=iterations)
+            eroded = cv2.erode(alpha, kernel, iterations=iterations)
+            trimap = np.zeros(alpha.shape)
+            trimap.fill(128)
+            trimap[eroded > 254.5] = 255
+            trimap[dilated < 0.5] = 0
+        else:
+            k_size = eval_kernel
+            kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE,
+                                               (k_size, k_size))
+            dilated = cv2.dilate(alpha, kernel)
+            trimap = np.zeros(alpha.shape)
+            trimap.fill(128)
+            trimap[alpha >= 250] = 255
+            trimap[dilated <= 5] = 0
 
         return trimap
 
@@ -119,5 +107,9 @@ if __name__ == '__main__':
         dataset_root='/mnt/chenguowei01/datasets/matting/human_matting/',
         transforms=t,
         mode='val')
-    for data in train_dataset:
-        continue
+
+    for i in range(10):
+        idx = np.random.randint(len(train_dataset))
+        data = train_dataset[idx]
+        trimap = data['trimap']
+        cv2.imwrite(str(idx) + '.png', trimap.astype('uint8'))
