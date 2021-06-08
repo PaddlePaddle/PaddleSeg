@@ -70,20 +70,28 @@ class HumanDataset(paddle.io.Dataset):
         data['alpha'] = self.alpha_list[idx]
         data['fg'] = self.fg_list[idx]
         data['bg'] = self.bg_list[idx]
+        data['gt_field'] = []
+
         if self.mode == 'train':
             data['gt_fields'] = ['alpha', 'fg', 'bg']
         else:
             data['gt_fields'] = ['alpha']
             data['img_name'] = self.img_list[idx].lstrip(
                 self.dataset_root)  # using in save prediction results
+            # If has trimap, use it
+            trimap_path = data['alpha'].replace('alpha', 'trimap')
+            if os.path.exists(trimap_path):
+                data['trimap'] = trimap_path
+                data['gt_fields'].append('trimap')
 
         data['trans_info'] = []  # Record shape change information
         data = self.transforms(data)
         data['img'] = data['img'].astype('float32')
         for key in data.get('gt_fields', []):
             data[key] = data[key].astype('float32')
-        data['trimap'] = gen_trimap(
-            data['alpha'], mode=self.mode).astype('float32')
+        if 'trimap' not in data:
+            data['trimap'] = gen_trimap(
+                data['alpha'], mode=self.mode).astype('float32')
 
         return data
 
@@ -111,10 +119,5 @@ if __name__ == '__main__':
         dataset_root='/mnt/chenguowei01/datasets/matting/human_matting/',
         transforms=t,
         mode='val')
-    print(train_dataset.img_list[0], len(train_dataset.img_list),
-          len(train_dataset.alpha_list), len(train_dataset.fg_list),
-          len(train_dataset.bg_list))
-    data = train_dataset[0]
-    print(np.min(data['img']), np.max(data['img']))
-    print(data['img'].shape, data['fg'].shape, data['bg'].shape,
-          data['alpha'].shape, data['trimap'].shape)
+    for data in train_dataset:
+        continue
