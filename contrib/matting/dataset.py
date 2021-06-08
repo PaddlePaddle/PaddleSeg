@@ -23,43 +23,27 @@ from utils import get_files
 import transforms as T
 
 
-def gen_trimap(alpha):
-    k_size = random.choice(range(2, 5))
-    iterations = np.random.randint(5, 15)
-    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (k_size, k_size))
-    dilated = cv2.dilate(alpha, kernel, iterations=iterations)
-    eroded = cv2.erode(alpha, kernel, iterations=iterations)
-    trimap = np.zeros(alpha.shape)
-    trimap.fill(128)
-    trimap[eroded >= 255] = 255
-    trimap[dilated <= 0] = 0
+def gen_trimap(alpha, mode='train', eval_kernel=7):
+    if mode == 'train':
+        k_size = random.choice(range(2, 5))
+        iterations = np.random.randint(5, 15)
+        kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (k_size, k_size))
+        dilated = cv2.dilate(alpha, kernel, iterations=iterations)
+        eroded = cv2.erode(alpha, kernel, iterations=iterations)
+        trimap = np.zeros(alpha.shape)
+        trimap.fill(128)
+        trimap[eroded >= 255] = 255
+        trimap[dilated <= 0] = 0
+    else:
+        k_size = eval_kernel
+        kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (k_size, k_size))
+        dilated = cv2.dilate(alpha, kernel)
+        trimap = np.zeros(alpha.shape)
+        trimap.fill(128)
+        trimap[alpha >= 255] = 255
+        trimap[dilated <= 0] = 0
 
     return trimap
-
-
-class Dataset(paddle.io.Dataset):
-    def __init__(self):
-        self.png_file = '/mnt/chenguowei01/datasets/matting/PhotoMatte85/0051115Q_000001_0041.png'
-        self.background = np.zeros((3, 320, 320), dtype='float32')
-        self.background[1, :, :] = 255
-
-    def __getitem__(self, idx):
-        img_png = cv2.imread(self.png_file, cv2.IMREAD_UNCHANGED)
-        img_png = cv2.resize(img_png, (320, 320))
-        img_png = np.transpose(img_png, [2, 0, 1])
-        alpha = img_png[-1, :, :].astype('float32')
-
-        img = img_png[:-1, :, :].astype('float32')
-        img = img[::-1, :, :]
-        img = (img / 255 - 0.5) / 0.5
-        # img = (alpha/255) * img + (1-alpha/255) * self.background
-
-        trimap = gen_trimap(alpha).astype('float32')
-
-        return img, alpha, trimap
-
-    def __len__(self):
-        return 1000
 
 
 class HumanDataset(paddle.io.Dataset):
@@ -72,6 +56,7 @@ class HumanDataset(paddle.io.Dataset):
         super().__init__()
         self.dataset_root = dataset_root
         self.transforms = T.Compose(transforms)
+        self.mode = mode
 
         img_dir = os.path.join(dataset_root, mode, 'image')
         self.img_list = get_files(img_dir)  # a list
@@ -85,13 +70,20 @@ class HumanDataset(paddle.io.Dataset):
         data['alpha'] = self.alpha_list[idx]
         data['fg'] = self.fg_list[idx]
         data['bg'] = self.bg_list[idx]
-        data['gt_fields'] = ['alpha', 'fg', 'bg']
+        if self.mode == 'train':
+            data['gt_fields'] = ['alpha', 'fg', 'bg']
+        else:
+            data['gt_fields'] = ['alpha']
+            data['img_name'] = self.img_list[idx].lstrip(
+                self.dataset_root)  # using in save prediction results
 
+        data['trans_info'] = []  # Record shape change information
         data = self.transforms(data)
         data['img'] = data['img'].astype('float32')
         for key in data.get('gt_fields', []):
             data[key] = data[key].astype('float32')
-        data['trimap'] = gen_trimap(data['alpha']).astype('float32')
+        data['trimap'] = gen_trimap(
+            data['alpha'], mode=self.mode).astype('float32')
 
         return data
 

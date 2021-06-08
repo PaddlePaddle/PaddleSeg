@@ -56,6 +56,7 @@ class DIM(nn.Layer):
         self.init_weight()
 
     def forward(self, inputs):
+        input_shape = inputs['img'].shape[-2:]
         x = paddle.concat([inputs['img'], inputs['trimap'].unsqueeze(1) / 255],
                           axis=1)
         fea_list, ids_list = self.backbone(x)
@@ -66,6 +67,8 @@ class DIM(nn.Layer):
         for i in range(4):
             up_shape.append(fea_list[i].shape[-2:])
         alpha_raw = self.decoder(fea_list[self.backbone_indices[0]], up_shape)
+        alpha_raw = F.interpolate(
+            alpha_raw, input_shape, mode='bilinear', align_corners=False)
         logit_dict = {'alpha_raw': alpha_raw}
         if self.stage < 2:
             return logit_dict
@@ -78,6 +81,8 @@ class DIM(nn.Layer):
         # finally alpha
         alpha_pred = alpha_refine + alpha_raw
         alpha_pred = paddle.clip(alpha_pred, min=0, max=1)
+        alpha_pred = F.interpolate(
+            alpha_pred, input_shape, mode='bilinear', align_corners=False)
 
         logit_dict['alpha_pred'] = alpha_pred
         return logit_dict

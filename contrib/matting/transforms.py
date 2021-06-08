@@ -87,6 +87,7 @@ class Resize:
         self.target_size = target_size
 
     def __call__(self, data):
+        data['tans_info'].append(('resize', data['img'].shape[-2:]))
         data['img'] = functional.resize(data['img'], self.target_size)
         for key in data.get('gt_fields', []):
             data[key] = functional.resize(data[key], self.target_size)
