@@ -17,6 +17,7 @@ import filelock
 import math
 import os
 import tempfile
+import numpy as np
 from urllib.parse import urlparse, unquote
 
 import paddle
