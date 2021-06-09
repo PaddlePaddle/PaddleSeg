@@ -120,7 +120,7 @@ def main(args):
     ]
 
     train_dataset = HumanDataset(
-        dataset_root='/mnt/chenguowei01/datasets/matting/human_matting/',
+        dataset_root='data/matting/human_matting/',
         transforms=t,
         mode='train')
 
@@ -141,7 +141,6 @@ def main(args):
     backbone = VGG16(input_channels=4, pretrained='./VGG16_pretrained.pdparams')
     model = DIM(
         backbone=backbone, stage=args.stage, pretrained=args.pretrained_model)
-    print(model.parameters())
 
     # optimizer
     # 简单的先构建一个优化器

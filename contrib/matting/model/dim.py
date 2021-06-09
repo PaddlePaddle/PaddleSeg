@@ -37,12 +37,10 @@ class DIM(nn.Layer):
 
     def __init__(self,
                  backbone,
-                 backbone_indices=(-1, ),
                  pretrained=None,
                  stage=3):
         super().__init__()
         self.backbone = backbone
-        self.backbone_indices = backbone_indices
         self.pretrained = pretrained
         self.stage = stage
 
@@ -52,7 +50,8 @@ class DIM(nn.Layer):
                 param.stop_gradient = True
             for param in self.decoder.parameters():
                 param.stop_gradient = True
-        self.refine = Refine()
+        if self.stage >= 2:
+            self.refine = Refine()
         self.init_weight()
 
     def forward(self, inputs):
@@ -63,10 +62,9 @@ class DIM(nn.Layer):
 
         # decoder stage
         up_shape = []
-        up_shape.append(x.shape[-2:])
-        for i in range(4):
+        for i in range(5):
             up_shape.append(fea_list[i].shape[-2:])
-        alpha_raw = self.decoder(fea_list[self.backbone_indices[0]], up_shape)
+        alpha_raw = self.decoder(fea_list, up_shape)
         alpha_raw = F.interpolate(
             alpha_raw, input_shape, mode='bilinear', align_corners=False)
         logit_dict = {'alpha_raw': alpha_raw}
@@ -74,15 +72,15 @@ class DIM(nn.Layer):
             return logit_dict
 
         # refine stage
-        alpha_raw_ = alpha_raw * 255
-        refine_input = paddle.concat([x[:, :3, :, :], alpha_raw_], axis=1)
+        refine_input = paddle.concat([inputs['img'], alpha_raw], axis=1)
         alpha_refine = self.refine(refine_input)
 
         # finally alpha
         alpha_pred = alpha_refine + alpha_raw
-        alpha_pred = paddle.clip(alpha_pred, min=0, max=1)
         alpha_pred = F.interpolate(
             alpha_pred, input_shape, mode='bilinear', align_corners=False)
+        if not self.training:
+            alpha_pred = paddle.clip(alpha_pred, min=0, max=1)
 
         logit_dict['alpha_pred'] = alpha_pred
         return logit_dict
@@ -92,24 +90,44 @@ class DIM(nn.Layer):
             utils.load_entire_model(self, self.pretrained)
 
 
+# class Up(nn.Layer):
+#     def __init__(self, input_channels, output_channels):
+#         super().__init__()
+#         # self.conv = layers.ConvBNReLU(
+#         #     input_channels,
+#         #     output_channels,
+#         #     kernel_size=5,
+#         #     padding=2,
+#         #     bias_attr=False)
+
+#         self.deconv = nn.Conv2DTranspose(
+#             input_channels, output_channels, kernel_size=4, stride=2, padding=1)
+
+#     def forward(self, x, output_shape):
+#         # x = F.interpolate(
+#         #     x, size=output_shape, mode='bilinear', align_corners=False)
+#         # x = self.conv(x)
+#         x = self.deconv(x)
+#         x = F.relu(x)
+
+#         return x
+
+# bilinear interpolate skip connect
 class Up(nn.Layer):
     def __init__(self, input_channels, output_channels):
         super().__init__()
-        # self.conv = layers.ConvBNReLU(
-        #     input_channels,
-        #     output_channels,
-        #     kernel_size=5,
-        #     padding=2,
-        #     bias_attr=False)
+        self.conv = layers.ConvBNReLU(
+            input_channels,
+            output_channels,
+            kernel_size=5,
+            padding=2,
+            bias_attr=False)
 
-        self.deconv = nn.Conv2DTranspose(
-            input_channels, output_channels, kernel_size=4, stride=2, padding=1)
-
-    def forward(self, x, output_shape):
-        # x = F.interpolate(
-        #     x, size=output_shape, mode='bilinear', align_corners=False)
-        # x = self.conv(x)
-        x = self.deconv(x)
+    def forward(self, x, skip, output_shape):
+        x = F.interpolate(
+            x, size=output_shape, mode='bilinear', align_corners=False)
+        x = x + skip
+        x = self.conv(x)
         x = F.relu(x)
 
         return x
@@ -129,13 +147,14 @@ class Decoder(nn.Layer):
         self.alpha_conv = nn.Conv2D(
             64, 1, kernel_size=5, padding=2, bias_attr=False)
 
-    def forward(self, x, shape_list):
+    def forward(self, fea_list, shape_list):
+        x = fea_list[-1]
         x = self.deconv6(x)
-        x = self.deconv5(x, shape_list[4])
-        x = self.deconv4(x, shape_list[3])
-        x = self.deconv3(x, shape_list[2])
-        x = self.deconv2(x, shape_list[1])
-        x = self.deconv1(x, shape_list[0])
+        x = self.deconv5(x, fea_list[4], shape_list[4])
+        x = self.deconv4(x, fea_list[3], shape_list[3])
+        x = self.deconv3(x, fea_list[2], shape_list[2])
+        x = self.deconv2(x, fea_list[1], shape_list[1])
+        x = self.deconv1(x, fea_list[0], shape_list[0])
         alpha = self.alpha_conv(x)
         alpha = F.sigmoid(alpha)
 
@@ -159,7 +178,6 @@ class Refine(nn.Layer):
         x = self.conv2(x)
         x = self.conv3(x)
         alpha = self.alpha_pred(x)
-        alpha = F.sigmoid(alpha)
 
         return alpha
 

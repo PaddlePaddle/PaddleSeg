@@ -79,8 +79,9 @@ class ConvBlock(nn.Layer):
         if self.groups == 4:
             x = self._conv_4(x)
             x = F.relu(x)
+        skip = x
         x, max_indices = self._pool(x)
-        return x, max_indices
+        return x, max_indices, skip
 
 
 class VGGNet(nn.Layer):
@@ -117,20 +118,20 @@ class VGGNet(nn.Layer):
     def forward(self, inputs):
         fea_list = []
         ids_list = []
-        x, ids = self._conv_block_1(inputs)
-        fea_list.append(x)
-        ids_list.append(x)
-        x, ids = self._conv_block_2(x)
-        fea_list.append(x)
+        x, ids, skip = self._conv_block_1(inputs)
+        fea_list.append(skip)
         ids_list.append(ids)
-        x, ids = self._conv_block_3(x)
-        fea_list.append(x)
+        x, ids, skip = self._conv_block_2(x)
+        fea_list.append(skip)
         ids_list.append(ids)
-        x, ids = self._conv_block_4(x)
-        fea_list.append(x)
+        x, ids, skip = self._conv_block_3(x)
+        fea_list.append(skip)
         ids_list.append(ids)
-        x, ids = self._conv_block_5(x)
-        fea_list.append(x)
+        x, ids, skip = self._conv_block_4(x)
+        fea_list.append(skip)
+        ids_list.append(ids)
+        x, ids, skip = self._conv_block_5(x)
+        fea_list.append(skip)
         ids_list.append(ids)
         x = F.relu(self._conv_6(x))
         fea_list.append(x)

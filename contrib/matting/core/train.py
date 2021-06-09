@@ -42,8 +42,8 @@ def loss_computation(logit_dict, label_dict, losses, stage=3):
         # comp loss
         comp_pred = logit_dict['alpha_raw'] * label_dict['fg'] + (
             1 - logit_dict['alpha_raw']) * label_dict['bg']
-        comp_loss = losses['types'][2](comp_pred, label_dict['img'], mask)
-        comp_loss = losses['coef'][2] * comp_loss
+        comp_loss = losses['types'][1](comp_pred, label_dict['img'], mask)
+        comp_loss = losses['coef'][1] * comp_loss
         loss_list.append(comp_loss)
 
     if stage == 2 or stage == 3:
@@ -235,7 +235,7 @@ def train(model,
                                 [1, 2, 0])
                         log_writer.add_image(
                             tag='prediction/alpha_pred',
-                            img=alpha_pred.numpy(),
+                            img=alpha_pred.numpy().astype('uint8'),
                             step=iter)
 
                 avg_loss = 0.0

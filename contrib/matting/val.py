@@ -65,7 +65,7 @@ def main(args):
     t = [T.LoadImages(), T.Normalize()]
 
     eval_dataset = HumanDataset(
-        dataset_root='/mnt/chenguowei01/datasets/matting/human_matting/',
+        dataset_root='data/matting/human_matting/',
         transforms=t,
         mode='val')
 
