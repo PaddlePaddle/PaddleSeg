@@ -118,3 +118,7 @@ def resume(model, optimizer, resume_model):
                 format(resume_model))
     else:
         logger.info('No model needed to resume.')
+
+
+def worker_init_fn(worker_id):
+    np.random.seed(np.random.get_state()[1][0] + worker_id)
