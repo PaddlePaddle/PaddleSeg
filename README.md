@@ -48,6 +48,8 @@ Welcome to PaddleSeg! PaddleSeg is an end-to-end image segmentation development 
 |[ISANet](./configs/isanet)|✔|✔|-|-|
 |[DNLNet](./configs/dnlnet)|✔|✔|-|-|
 |[SFNet](./configs/sfnet)|✔|-|-|-|
+|[ShuffleNetV2](./configs/shufflenetv2)|-|-|-|-|
+
 ## Dataset
 
 - [x] Cityscapes
@@ -103,6 +105,7 @@ python train.py --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml
 
 ## Practical Cases
 
+* [HumanSeg](./contrib/HumanSeg)
 * [Cityscapes SOTA](./contrib/CityscapesSOTA)
 
 ## Feedbacks and Contact

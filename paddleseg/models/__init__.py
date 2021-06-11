@@ -35,4 +35,6 @@ from .decoupled_segnet import DecoupledSegNet
 from .emanet import *
 from .isanet import *
 from .dnlnet import *
+from .setr import *
 from .sfnet import *
+from .shufflenet_slim import ShuffleNetV2

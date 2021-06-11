@@ -79,7 +79,9 @@ class DecoupledSegNet(nn.Layer):
                 align_corners=self.align_corners) for logit in logit_list
         ]
 
-        return [seg_logit, body_logit, edge_logit, (seg_logit, edge_logit)]
+        if self.training:
+            return [seg_logit, body_logit, edge_logit, (seg_logit, edge_logit)]
+        return [seg_logit]
 
     def init_weight(self):
         if self.pretrained is not None:

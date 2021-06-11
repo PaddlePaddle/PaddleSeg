@@ -48,7 +48,7 @@ npm 库 [@paddlejs-models/humanseg](https://github.com/PaddlePaddle/Paddle.js/tr
 * drawHumanSeg
 绘制人像。给 drawHumanSeg API 传入 canvas 画布元素和推理结果，可以通过该元素传递背景信息，分割后的人像将绘制在此 canvas上。
 
-* drawMask 
+* drawMask
 绘制人像遮罩。传入 canvas 画布元素和推理结果，同时传入参数 dark 配置是否使用暗黑模式。效果将绘制在传入的 canvas 画布元素上。
 
 ## 3.2 如何使用 @paddlejs-models/humanseg

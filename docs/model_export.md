@@ -53,6 +53,7 @@ PaddleSeg目前支持以下部署方式：
 |端侧|库|教程|
 |-|-|-|
 |Python端部署|Paddle预测库|[示例](../deploy/python/)|
+|C++端部署|Paddle预测库|[示例](../deploy/cpp/)|
 |移动端部署|PaddleLite|[示例](../deploy/lite/)|
 |服务端部署|HubServing|完善中|
-|前端部署|PaddleJS|完善中|
+|前端部署|PaddleJS|[示例](../deploy/web/)|
