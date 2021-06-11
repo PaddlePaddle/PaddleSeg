@@ -49,7 +49,7 @@ int WriteJsonOp::inference() {
   // transfer seg output message into json format
   std::string err_string;
   uint32_t batch_size = seg_out->item_size();
-  LOG(INFO) << "batch_size = " << batch_size;  
+  LOG(INFO) << "batch_size = " << batch_size;
 //  LOG(INFO) << seg_out->ShortDebugString();
   for (uint32_t si = 0; si < batch_size; si++) {
     ResponseItem* ins = res->add_prediction();

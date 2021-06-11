@@ -45,7 +45,7 @@ fluid_inference
 3. 配置环境变量，如下流程所示  
 	- 我的电脑->属性->高级系统设置->环境变量  
     - 在系统变量中找到Path（如没有，自行创建），并双击编辑  
-    - 新建，将opencv路径填入并保存，如`D:\projects\opencv\build\x64\vc14\bin` 
+    - 新建，将opencv路径填入并保存，如`D:\projects\opencv\build\x64\vc14\bin`
 
 ### Step4: 以VS2015为例编译代码
 
@@ -57,7 +57,7 @@ fluid_inference
 ```
 call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" amd64
 ```
-    
+
 三个编译参数的含义说明如下（带*表示仅在使用**GPU版本**预测库时指定, 其中CUDA库版本尽量对齐，**使用9.0、10.0版本，不使用9.2、10.1等版本CUDA库**）：
 
 |  参数名   | 含义  |
