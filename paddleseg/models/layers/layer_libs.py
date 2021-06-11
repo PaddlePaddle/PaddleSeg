@@ -23,6 +23,8 @@ def SyncBatchNorm(*args, **kwargs):
     """In cpu environment nn.SyncBatchNorm does not have kernel so use nn.BatchNorm2D instead"""
     if paddle.get_device() == 'cpu' or os.environ.get('PADDLESEG_EXPORT_STAGE'):
         return nn.BatchNorm2D(*args, **kwargs)
+    elif paddle.distributed.ParallelEnv().nranks == 1:
+        return nn.BatchNorm2D(*args, **kwargs)
     else:
         return nn.SyncBatchNorm(*args, **kwargs)
 
@@ -39,7 +41,11 @@ class ConvBNReLU(nn.Layer):
         self._conv = nn.Conv2D(
             in_channels, out_channels, kernel_size, padding=padding, **kwargs)
 
-        self._batch_norm = SyncBatchNorm(out_channels)
+        if 'data_format' in kwargs:
+            data_format = kwargs['data_format']
+        else:
+            data_format = 'NCHW'
+        self._batch_norm = SyncBatchNorm(out_channels, data_format=data_format)
 
     def forward(self, x):
         x = self._conv(x)
@@ -58,7 +64,11 @@ class ConvBN(nn.Layer):
         super().__init__()
         self._conv = nn.Conv2D(
             in_channels, out_channels, kernel_size, padding=padding, **kwargs)
-        self._batch_norm = SyncBatchNorm(out_channels)
+        if 'data_format' in kwargs:
+            data_format = kwargs['data_format']
+        else:
+            data_format = 'NCHW'
+        self._batch_norm = SyncBatchNorm(out_channels, data_format=data_format)
 
     def forward(self, x):
         x = self._conv(x)
@@ -99,8 +109,16 @@ class SeparableConvBNReLU(nn.Layer):
             padding=padding,
             groups=in_channels,
             **kwargs)
+        if 'data_format' in kwargs:
+            data_format = kwargs['data_format']
+        else:
+            data_format = 'NCHW'
         self.piontwise_conv = ConvBNReLU(
-            in_channels, out_channels, kernel_size=1, groups=1)
+            in_channels,
+            out_channels,
+            kernel_size=1,
+            groups=1,
+            data_format=data_format)
 
     def forward(self, x):
         x = self.depthwise_conv(x)

@@ -26,8 +26,8 @@ val_dataset:
 model:
   type: FCN
   backbone:
-    type: HRNet_W18
-    pretrained: https://bj.bcebos.com/paddleseg/dygraph/hrnet_w18_ssld.tar.gz
+    type: HRNet_W48
+    pretrained: https://bj.bcebos.com/paddleseg/dygraph/hrnet_w48_ssld.tar.gz
   num_classes: 19
   backbone_indices: [-1]
   bias: False
@@ -36,11 +36,12 @@ optimizer:
   type: sgd
   weight_decay: 0.0005
 
-lr_scheduler:
-  type: PolynomialDecay
-  learning_rate: 0.01
-  end_lr: 0
-  power: 0.9
+learning_rate:
+  value: 0.01
+  decay:
+    type: poly
+    power: 0.9
+    end_lr: 0.0
 
 loss:
   types:

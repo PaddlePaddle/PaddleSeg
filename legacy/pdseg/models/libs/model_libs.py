@@ -17,11 +17,12 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 import paddle
-import paddle.fluid as fluid
+import paddle.static as static
+import paddle.nn.functional as F
 from utils.config import cfg
 import contextlib
 
-bn_regularizer = fluid.regularizer.L2DecayRegularizer(regularization_coeff=0.0)
+bn_regularizer = paddle.regularizer.L2Decay(coeff=0.0)
 name_scope = ""
 
 
@@ -35,22 +36,13 @@ def scope(name):
 
 
 def max_pool(input, kernel, stride, padding):
-    data = fluid.layers.pool2d(
-        input,
-        pool_size=kernel,
-        pool_type='max',
-        pool_stride=stride,
-        pool_padding=padding)
+    data = F.max_pool2d(
+        input, kernel_size=kernel, stride=stride, padding=padding)
     return data
 
 
 def avg_pool(input, kernel, stride, padding=0):
-    data = fluid.layers.pool2d(
-        input,
-        pool_size=kernel,
-        pool_type='avg',
-        pool_stride=stride,
-        pool_padding=padding)
+    data = F.avg_pool(input, kernel_size=kernel, stride=stride, padding=padding)
     return data
 
 
@@ -68,7 +60,7 @@ def group_norm(input, G, eps=1e-5, param_attr=None, bias_attr=None):
                 # print "use group size:", G
                 break
     assert C % G == 0
-    x = fluid.layers.group_norm(
+    x = static.nn.group_norm(
         input,
         groups=G,
         param_attr=param_attr,
@@ -80,13 +72,13 @@ def group_norm(input, G, eps=1e-5, param_attr=None, bias_attr=None):
 def bn(*args, **kargs):
     if cfg.MODEL.DEFAULT_NORM_TYPE == 'bn':
         with scope('BatchNorm'):
-            return fluid.layers.batch_norm(
+            return static.nn.batch_norm(
                 *args,
                 epsilon=cfg.MODEL.DEFAULT_EPSILON,
                 momentum=cfg.MODEL.BN_MOMENTUM,
-                param_attr=fluid.ParamAttr(
+                param_attr=paddle.ParamAttr(
                     name=name_scope + 'gamma', regularizer=bn_regularizer),
-                bias_attr=fluid.ParamAttr(
+                bias_attr=paddle.ParamAttr(
                     name=name_scope + 'beta', regularizer=bn_regularizer),
                 moving_mean_name=name_scope + 'moving_mean',
                 moving_variance_name=name_scope + 'moving_variance',
@@ -97,36 +89,36 @@ def bn(*args, **kargs):
                 args[0],
                 cfg.MODEL.DEFAULT_GROUP_NUMBER,
                 eps=cfg.MODEL.DEFAULT_EPSILON,
-                param_attr=fluid.ParamAttr(
+                param_attr=paddle.ParamAttr(
                     name=name_scope + 'gamma', regularizer=bn_regularizer),
-                bias_attr=fluid.ParamAttr(
+                bias_attr=paddle.ParamAttr(
                     name=name_scope + 'beta', regularizer=bn_regularizer))
     else:
         raise Exception("Unsupport norm type:" + cfg.MODEL.DEFAULT_NORM_TYPE)
 
 
 def bn_relu(data):
-    return fluid.layers.relu(bn(data))
+    return F.relu(bn(data))
 
 
 def qsigmoid(data):
-    return fluid.layers.relu6(data + 3) * 0.16667
+    return F.relu6(data + 3) * 0.16667
 
 
 def relu(data):
-    return fluid.layers.relu(data)
+    return F.relu(data)
 
 
 def conv(*args, **kargs):
     kargs['param_attr'] = name_scope + 'weights'
     if 'bias_attr' in kargs and kargs['bias_attr']:
-        kargs['bias_attr'] = fluid.ParamAttr(
+        kargs['bias_attr'] = paddle.ParamAttr(
             name=name_scope + 'biases',
             regularizer=None,
-            initializer=fluid.initializer.ConstantInitializer(value=0.0))
-    else:
+            initializer=paddle.nn.initializer.Constant(value=0.0))
+    elif 'bias_attr' not in kargs:
         kargs['bias_attr'] = False
-    return fluid.layers.conv2d(*args, **kargs)
+    return static.nn.conv2d(*args, **kargs)
 
 
 def deconv(*args, **kargs):
@@ -135,15 +127,14 @@ def deconv(*args, **kargs):
         kargs['bias_attr'] = name_scope + 'biases'
     else:
         kargs['bias_attr'] = False
-    return fluid.layers.conv2d_transpose(*args, **kargs)
+    return static.nn.conv2d_transpose(*args, **kargs)
 
 
 def separate_conv(input, channel, stride, filter, dilation=1, act=None):
-    param_attr = fluid.ParamAttr(
+    param_attr = paddle.ParamAttr(
         name=name_scope + 'weights',
-        regularizer=fluid.regularizer.L2DecayRegularizer(
-            regularization_coeff=0.0),
-        initializer=fluid.initializer.TruncatedNormal(loc=0.0, scale=0.33))
+        regularizer=paddle.regularizer.L2Decay(coeff=0.0),
+        initializer=paddle.nn.initializer.TruncatedNormal(mean=0.0, std=0.06))
     with scope('depthwise'):
         input = conv(
             input,
@@ -154,17 +145,25 @@ def separate_conv(input, channel, stride, filter, dilation=1, act=None):
             padding=(filter // 2) * dilation,
             dilation=dilation,
             use_cudnn=False,
-            param_attr=param_attr)
+            param_attr=param_attr,
+            bias_attr=None)
         input = bn(input)
         if act: input = act(input)
 
-    param_attr = fluid.ParamAttr(
+    param_attr = paddle.ParamAttr(
         name=name_scope + 'weights',
         regularizer=None,
-        initializer=fluid.initializer.TruncatedNormal(loc=0.0, scale=0.06))
+        initializer=paddle.nn.initializer.TruncatedNormal(mean=0.0, std=0.33))
     with scope('pointwise'):
         input = conv(
-            input, channel, 1, 1, groups=1, padding=0, param_attr=param_attr)
+            input,
+            channel,
+            1,
+            1,
+            groups=1,
+            padding=0,
+            param_attr=param_attr,
+            bias_attr=None)
         input = bn(input)
         if act: input = act(input)
     return input
@@ -180,7 +179,7 @@ def conv_bn_layer(input,
                   if_act=True,
                   name=None,
                   use_cudnn=True):
-    conv = fluid.layers.conv2d(
+    conv = static.nn.conv2d(
         input=input,
         num_filters=num_filters,
         filter_size=filter_size,
@@ -189,16 +188,16 @@ def conv_bn_layer(input,
         groups=num_groups,
         act=None,
         use_cudnn=use_cudnn,
-        param_attr=fluid.ParamAttr(name=name + '_weights'),
+        param_attr=paddle.ParamAttr(name=name + '_weights'),
         bias_attr=False)
     bn_name = name + '_bn'
-    bn = fluid.layers.batch_norm(
+    bn = static.nn.batch_norm(
         input=conv,
-        param_attr=fluid.ParamAttr(name=bn_name + "_scale"),
-        bias_attr=fluid.ParamAttr(name=bn_name + "_offset"),
+        param_attr=paddle.ParamAttr(name=bn_name + "_scale"),
+        bias_attr=paddle.ParamAttr(name=bn_name + "_offset"),
         moving_mean_name=bn_name + '_mean',
         moving_variance_name=bn_name + '_variance')
     if if_act:
-        return fluid.layers.relu6(bn)
+        return F.relu6(bn)
     else:
         return bn
