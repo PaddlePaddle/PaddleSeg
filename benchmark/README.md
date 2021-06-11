@@ -37,17 +37,17 @@ benchmark/deeplabv3p.yml
 ```
 cd legacy
 export CUDA_VISIBLE_DEVICES=0
-python pdseg/train.py --cfg configs/hrnetw18_cityscapes_1024x512_215.yaml --use_gpu  --use_mpio --log_steps 10 BATCH_SIZE 2 SOLVER.NUM_EPOCHS 3 MODEL.FP16 True
+python pdseg/train.py --cfg configs/benchmark/hrnetw18_cityscapes_1024x512_215.yaml --use_gpu  --use_mpio --log_steps 10 BATCH_SIZE 2 SOLVER.NUM_EPOCHS 3 MODEL.FP16 True
 ```
 
 单机多卡使用如下命令进行训练：
 ```
 export CUDA_VISIBLE_DEVICES=0,1
-fleetrun pdseg/train.py --cfg configs/hrnetw18_cityscapes_1024x512_215.yaml --use_gpu  --use_mpio --log_steps 10 BATCH_SIZE 4 SOLVER.NUM_EPOCHS 3 MODEL.FP16 True
+fleetrun pdseg/train.py --cfg configs/benchmark/hrnetw18_cityscapes_1024x512_215.yaml --use_gpu  --use_mpio --log_steps 10 BATCH_SIZE 4 SOLVER.NUM_EPOCHS 3 MODEL.FP16 True
 ```
 
 deeplabv3p模型的配置文件为：
-configs/deeplabv3p_resnet50_vd_cityscapes.yaml
+configs/benchmark/deeplabv3p_resnet50_vd_cityscapes.yaml
 
 **注意**
 静态图中的BATCH_SIZE为总的batch size。
