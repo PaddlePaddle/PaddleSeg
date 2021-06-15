@@ -26,6 +26,9 @@ from models.libs.model_libs import scope, name_scope
 from models.libs.model_libs import bn, bn_relu, relu, qsigmoid
 from models.libs.model_libs import conv
 from models.libs.model_libs import separate_conv
+from models.backbone.mobilenet_v2 import MobileNetV2 as mobilenet_v2_backbone
+from models.backbone.mobilenet_v3 import MobileNetV3 as mobilenet_v3_backbone
+from models.backbone.xception import Xception as xception_backbone
 from models.backbone.resnet_vd import ResNet as resnet_vd_backbone
 
 
@@ -273,6 +276,78 @@ def decoder(encode_data, decode_shortcut):
         return _decoder_with_concat(encode_data, decode_shortcut, param_attr)
 
 
+def mobilenet(input):
+    if 'v3' in cfg.MODEL.DEEPLAB.BACKBONE:
+        model_name = 'large' if 'large' in cfg.MODEL.DEEPLAB.BACKBONE else 'small'
+        return _mobilenetv3(input, model_name)
+    return _mobilenetv2(input)
+
+
+def _mobilenetv3(input, model_name='large'):
+    # Backbone: mobilenetv3结构配置
+    # DEPTH_MULTIPLIER: mobilenetv3的scale设置，默认1.0
+    # OUTPUT_STRIDE：下采样倍数
+    scale = cfg.MODEL.DEEPLAB.DEPTH_MULTIPLIER
+    output_stride = cfg.MODEL.DEEPLAB.OUTPUT_STRIDE
+    lr_mult_list = cfg.MODEL.DEEPLAB.BACKBONE_LR_MULT_LIST
+    if lr_mult_list is None:
+        lr_mult_list = [1.0, 1.0, 1.0, 1.0, 1.0]
+    model = mobilenet_v3_backbone(
+        scale=scale,
+        output_stride=output_stride,
+        model_name=model_name,
+        lr_mult_list=lr_mult_list)
+    data, decode_shortcut = model.net(input)
+    return data, decode_shortcut
+
+
+def _mobilenetv2(input):
+    # Backbone: mobilenetv2结构配置
+    # DEPTH_MULTIPLIER: mobilenetv2的scale设置，默认1.0
+    # OUTPUT_STRIDE：下采样倍数
+    # end_points: mobilenetv2的block数
+    # decode_point: 从mobilenetv2中引出分支所在block数, 作为decoder输入
+    if cfg.MODEL.DEEPLAB.BACKBONE_LR_MULT_LIST is not None:
+        print(
+            'mobilenetv2 backbone do not support BACKBONE_LR_MULT_LIST setting')
+
+    scale = cfg.MODEL.DEEPLAB.DEPTH_MULTIPLIER
+    output_stride = cfg.MODEL.DEEPLAB.OUTPUT_STRIDE
+    model = mobilenet_v2_backbone(scale=scale, output_stride=output_stride)
+    end_points = 18
+    decode_point = 4
+    data, decode_shortcuts = model.net(
+        input, end_points=end_points, decode_points=decode_point)
+    decode_shortcut = decode_shortcuts[decode_point]
+    return data, decode_shortcut
+
+
+def xception(input):
+    # Backbone: Xception结构配置, xception_65, xception_41, xception_71三种可选
+    # decode_point: 从Xception中引出分支所在block数，作为decoder输入
+    # end_point：Xception的block数
+    cfg.MODEL.DEFAULT_EPSILON = 1e-3
+    model = xception_backbone(cfg.MODEL.DEEPLAB.BACKBONE)
+    backbone = cfg.MODEL.DEEPLAB.BACKBONE
+    output_stride = cfg.MODEL.DEEPLAB.OUTPUT_STRIDE
+    if '65' in backbone:
+        decode_point = 2
+        end_points = 21
+    if '41' in backbone:
+        decode_point = 2
+        end_points = 13
+    if '71' in backbone:
+        decode_point = 3
+        end_points = 23
+    data, decode_shortcuts = model.net(
+        input,
+        output_stride=output_stride,
+        end_points=end_points,
+        decode_points=decode_point)
+    decode_shortcut = decode_shortcuts[decode_point]
+    return data, decode_shortcut
+
+
 def resnet_vd(input):
     # backbone: resnet_vd, 可选resnet50_vd, resnet101_vd
     # end_points: resnet终止层数
@@ -310,10 +385,19 @@ def resnet_vd(input):
 
 def deeplabv3p(img, num_classes):
     # Backbone设置：xception 或 mobilenetv2
-    if 'resnet' in cfg.MODEL.DEEPLAB.BACKBONE:
+    if 'xception' in cfg.MODEL.DEEPLAB.BACKBONE:
+        data, decode_shortcut = xception(img)
+        if cfg.MODEL.DEEPLAB.BACKBONE_LR_MULT_LIST is not None:
+            print(
+                'xception backbone do not support BACKBONE_LR_MULT_LIST setting'
+            )
+    elif 'mobilenet' in cfg.MODEL.DEEPLAB.BACKBONE:
+        data, decode_shortcut = mobilenet(img)
+    elif 'resnet' in cfg.MODEL.DEEPLAB.BACKBONE:
         data, decode_shortcut = resnet_vd(img)
     else:
-        raise Exception("deeplab only support resnet_vd backbone")
+        raise Exception(
+            "deeplab only support xception, mobilenet, and resnet_vd backbone")
 
     # 编码器解码器设置
     cfg.MODEL.DEFAULT_EPSILON = 1e-5

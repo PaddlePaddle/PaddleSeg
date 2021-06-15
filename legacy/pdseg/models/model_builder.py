@@ -24,7 +24,10 @@ from paddle.fluid.proto.framework_pb2 import VarType
 import solver
 from utils.config import cfg
 from loss import multi_softmax_with_loss
-from models.modeling import deeplab, hrnet
+from loss import multi_dice_loss
+from loss import multi_bce_loss
+from lovasz_losses import multi_lovasz_hinge_loss, multi_lovasz_softmax_loss
+from models.modeling import deeplab, unet, icnet, pspnet, hrnet, fast_scnn, ocrnet
 
 
 class ModelPhase(object):
@@ -71,10 +74,20 @@ class ModelPhase(object):
 
 def seg_model(image, class_num):
     model_name = cfg.MODEL.MODEL_NAME
-    if model_name == 'deeplabv3p':
+    if model_name == 'unet':
+        logits = unet.unet(image, class_num)
+    elif model_name == 'deeplabv3p':
         logits = deeplab.deeplabv3p(image, class_num)
+    elif model_name == 'icnet':
+        logits = icnet.icnet(image, class_num)
+    elif model_name == 'pspnet':
+        logits = pspnet.pspnet(image, class_num)
     elif model_name == 'hrnet':
         logits = hrnet.hrnet(image, class_num)
+    elif model_name == 'fast_scnn':
+        logits = fast_scnn.fast_scnn(image, class_num)
+    elif model_name == 'ocrnet':
+        logits = ocrnet.ocrnet(image, class_num)
     else:
         raise Exception(
             "unknow model name, only support unet, deeplabv3p, icnet, pspnet, hrnet, fast_scnn"
@@ -169,6 +182,24 @@ def build_model(main_prog, start_prog, phase=ModelPhase.TRAIN):
                                                 weight))
                     loss_valid = True
                     valid_loss.append("softmax_loss")
+                if "dice_loss" in loss_type:
+                    avg_loss_list.append(multi_dice_loss(logits, label, mask))
+                    loss_valid = True
+                    valid_loss.append("dice_loss")
+                if "bce_loss" in loss_type:
+                    avg_loss_list.append(multi_bce_loss(logits, label, mask))
+                    loss_valid = True
+                    valid_loss.append("bce_loss")
+                if "lovasz_hinge_loss" in loss_type:
+                    avg_loss_list.append(
+                        multi_lovasz_hinge_loss(logits, label, mask))
+                    loss_valid = True
+                    valid_loss.append("lovasz_hinge_loss")
+                if "lovasz_softmax_loss" in loss_type:
+                    avg_loss_list.append(
+                        multi_lovasz_softmax_loss(logits, label, mask))
+                    loss_valid = True
+                    valid_loss.append("lovasz_softmax_loss")
                 if not loss_valid:
                     raise Exception(
                         "SOLVER.LOSS: {} is set wrong. it should "
