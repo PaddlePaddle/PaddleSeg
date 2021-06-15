@@ -42,7 +42,7 @@ class CocoStuff(Dataset):
         dataset_root (str): Cityscapes dataset directory.
         mode (str): Which part of dataset to use. it is one of ('train', 'val'). Default: 'train'.
     """
-    NUM_CLASSES = 172
+    NUM_CLASSES = 171
 
     def __init__(self, transforms, dataset_root, mode='train'):
         self.dataset_root = dataset_root
