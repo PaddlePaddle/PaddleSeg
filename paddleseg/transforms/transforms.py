@@ -525,85 +525,94 @@ class Padding:
             return (im, label)
 
 
-# @manager.TRANSFORMS.add_component
-# class NewPadding:
-#     """
-#     Add bottom-right padding to a raw image or annotation image.
+@manager.TRANSFORMS.add_component
+class NewPadding:
+    """
+    Add bottom-right padding to a raw image or annotation image.
 
-#     Args:
-#         target_size (list|tuple): The target size after padding.
-#         im_padding_value (list, optional): The padding value of raw image.
-#             Default: [127.5, 127.5, 127.5].
-#         label_padding_value (int, optional): The padding value of annotation image. Default: 255.
+    Args:
+        target_size (list|tuple): The target size after padding.
+        center_ratio (list|tuple): (top, left)
+        im_padding_value (list, optional): The padding value of raw image.
+            Default: [127.5, 127.5, 127.5].
+        label_padding_value (int, optional): The padding value of annotation image. Default: 255.
 
-#     Raises:
-#         TypeError: When target_size is neither list nor tuple.
-#         ValueError: When the length of target_size is not 2.
-#     """
+    Raises:
+        TypeError: When target_size is neither list nor tuple.
+        ValueError: When the length of target_size is not 2.
+    """
 
-#     def __init__(self,
-#                  target_size,
-#                  im_padding_value=(127.5, 127.5, 127.5),
-#                  label_padding_value=255):
-#         if isinstance(target_size, list) or isinstance(target_size, tuple):
-#             if len(target_size) != 2:
-#                 raise ValueError(
-#                     '`target_size` should include 2 elements, but it is {}'.
-#                     format(target_size))
-#         else:
-#             raise TypeError(
-#                 "Type of target_size is invalid. It should be list or tuple, now is {}"
-#                 .format(type(target_size)))
-#         self.target_size = target_size
-#         self.im_padding_value = im_padding_value
-#         self.label_padding_value = label_padding_value
+    def __init__(self,
+                 target_size,
+                 center_ratio=(0.5, 0.5),
+                 im_padding_value=(127.5, 127.5, 127.5),
+                 label_padding_value=255):
+        if isinstance(target_size, list) or isinstance(target_size, tuple):
+            if len(target_size) != 2:
+                raise ValueError(
+                    '`target_size` should include 2 elements, but it is {}'.
+                    format(target_size))
+        else:
+            raise TypeError(
+                "Type of target_size is invalid. It should be list or tuple, now is {}"
+                .format(type(target_size)))
+        self.target_size = target_size
+        self.center_top, self.center_left = center_ratio[0], center_ratio[1]
+        self.im_padding_value = im_padding_value
+        self.label_padding_value = label_padding_value
 
-#     def __call__(self, im, label=None):
-#         """
-#         Args:
-#             im (np.ndarray): The Image data.
-#             label (np.ndarray, optional): The label data. Default: None.
+    def __call__(self, im, label=None):
+        """
+        Args:
+            im (np.ndarray): The Image data.
+            label (np.ndarray, optional): The label data. Default: None.
 
-#         Returns:
-#             (tuple). When label is None, it returns (im, ), otherwise it returns (im, label).
-#         """
+        Returns:
+            (tuple). When label is None, it returns (im, ), otherwise it returns (im, label).
+        """
 
-#         im_height, im_width = im.shape[0], im.shape[1]
-#         if isinstance(self.target_size, int):
-#             target_height = self.target_size
-#             target_width = self.target_size
-#         else:
-#             target_height = self.target_size[1]
-#             target_width = self.target_size[0]
-#         pad_height = target_height - im_height
-#         pad_width = target_width - im_width
-#         if pad_height < 0 or pad_width < 0:
-#             raise ValueError(
-#                 'The size of image should be less than `target_size`, but the size of image ({}, {}) is larger than `target_size` ({}, {})'
-#                 .format(im_width, im_height, target_width, target_height))
-#         else:
-#             im = paddle.vision.transforms.pad(im, padding)
-#             im = cv2.copyMakeBorder(
-#                 im,
-#                 top=pad_top,
-#                 bottom=pad_bottom,
-#                 left=pad_left,
-#                 right=pad_right,
-#                 cv2.BORDER_CONSTANT,
-#                 value=self.im_padding_value)
-#             if label is not None:
-#                 label = cv2.copyMakeBorder(
-#                     label,
-#                     0,
-#                     pad_height,
-#                     0,
-#                     pad_width,
-#                     cv2.BORDER_CONSTANT,
-#                     value=self.label_padding_value)
-#         if label is None:
-#             return (im, )
-#         else:
-#             return (im, label)
+        im_height, im_width = im.shape[0], im.shape[1]
+        if isinstance(self.target_size, int):
+            target_height = self.target_size
+            target_width = self.target_size
+        else:
+            target_height = self.target_size[1]
+            target_width = self.target_size[0]
+        if target_width < im_width or target_height < im_height:
+            raise ValueError(
+                'The size of image should be less than `target_size`, but the size of image ({}, {}) is larger than `target_size` ({}, {})'
+                .format(im_width, im_height, target_width, target_height))
+        pad_top = max(int(self.center_top * target_height - im_height / 2), 0)
+        pad_left = max(int(self.center_left * target_width - im_width / 2), 0)
+        pad_bottom = target_height - pad_top - im_height
+        pad_right = target_width - pad_left - im_width
+        if pad_bottom < 0:
+            pad_bottom = 0
+            pad_top = target_height - pad_bottom - im_height
+        if pad_right < 0:
+            pad_right = 0
+            pad_left = target_width - pad_right - im_width
+        im = cv2.copyMakeBorder(
+            im,
+            top=pad_top,
+            bottom=pad_bottom,
+            left=pad_left,
+            right=pad_right,
+            borderType=cv2.BORDER_CONSTANT,
+            value=self.im_padding_value)
+        if label is not None:
+            label = cv2.copyMakeBorder(
+                label,
+                top=pad_top,
+                bottom=pad_bottom,
+                left=pad_left,
+                right=pad_right,
+                borderType=cv2.BORDER_CONSTANT,
+                value=self.label_padding_value)
+        if label is None:
+            return (im, )
+        else:
+            return (im, label)
 
 
 @manager.TRANSFORMS.add_component

@@ -77,8 +77,8 @@ class MultiDataset(paddle.io.Dataset):
                  valset_weight,
                  valset_class_weight,
                  data_ratio,
-                 mode=None,
-                 file_list_name=None,
+                 mode,
+                 file_list_name,
                  num_classes=2,
                  val_test_set_rank=0):
         self.dataset_root_list = dataset_root_list
@@ -200,8 +200,9 @@ def read_file_list(file_path, separator, mode, dataset_root):
             if len(items) != 2:
                 if mode == 'train' or mode == 'val':
                     raise ValueError(
-                        "File list format incorrect! In training or evaluation task it should be"
-                        " image_name{}label_name\\n".format(separator))
+                        "File list format incorrect in {}! In training or evaluation task it should be"
+                        " image_name{}label_name\\n".format(
+                            file_path, separator))
                 image_path = os.path.join(dataset_root, items[0])
                 label_path = None
             else:

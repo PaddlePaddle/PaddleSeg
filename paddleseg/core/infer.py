@@ -222,8 +222,8 @@ def inference(model,
     else:
         logit = slide_inference(model, im, crop_size=crop_size, stride=stride)
     if ori_shape is not None:
-        pred = paddle.argmax(logit, axis=1, keepdim=True, dtype='int32')
-        pred = reverse_transform(pred, ori_shape, transforms)
+        pred = reverse_transform(logit, ori_shape, transforms, mode='bilinear')
+        pred = paddle.argmax(pred, axis=1, keepdim=True, dtype='int32')
         return pred
     else:
         return logit
@@ -284,6 +284,7 @@ def aug_inference(model,
             logit = F.softmax(logit, axis=1)
             final_logit = final_logit + logit
 
-    pred = paddle.argmax(final_logit, axis=1, keepdim=True, dtype='int32')
-    pred = reverse_transform(pred, ori_shape, transforms)
+    pred = reverse_transform(
+        final_logit, ori_shape, transforms, mode='bilinear')
+    pred = paddle.argmax(pred, axis=1, keepdim=True, dtype='int32')
     return pred
