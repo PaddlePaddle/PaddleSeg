@@ -1,9 +1,12 @@
-# PaddleSeg Benchmark with AMP
+English | [简体中文](README_CN.md)
 
-## 动态图
-数据集cityscapes 放置于data目录下, 下载链接：https://paddleseg.bj.bcebos.com/dataset/cityscapes.tar
+# PaddleSeg
 
-通过 **--fp16** 开启amp训练。
+[![Build Status](https://travis-ci.org/PaddlePaddle/PaddleSeg.svg?branch=master)](https://travis-ci.org/PaddlePaddle/PaddleSeg)
+[![License](https://img.shields.io/badge/license-Apache%202-blue.svg)](LICENSE)
+[![Version](https://img.shields.io/github/release/PaddlePaddle/PaddleSeg.svg)](https://github.com/PaddlePaddle/PaddleSeg/releases)
+![python version](https://img.shields.io/badge/python-3.6+-orange.svg)
+![support os](https://img.shields.io/badge/os-linux%2C%20win%2C%20mac-yellow.svg)
 
 <img src="./docs/images/seg_news_icon.png" width="50"/> *[2021-02-26] PaddleSeg has released the v2.0 version, which supports the dynamic graph by default. The static-graph codes have been moved to [legacy](./legacy). See detailed [release notes](./docs/release_notes.md).*
 
@@ -49,45 +52,44 @@ Welcome to PaddleSeg! PaddleSeg is an end-to-end image segmentation development 
 
 ## Dataset
 
-DeepLabv3+ 模型的配置文件为：
-benchmark/deeplabv3p.yml
+- [x] Cityscapes
+- [x] Pascal VOC
+- [x] ADE20K
+- [x] Pascal Context
+- [x] COCO stuff
 
-**注意**
+## Installation
 
-* 动态图中batch_size设置为每卡的batch_size
-* DeepLabv3+ 支持通过传入 **--data_format NHWC**进行‘NHWC’数据格式的训练。
+#### step 1. Install PaddlePaddle
+
+System Requirements:
+* PaddlePaddle >= 2.0.0
+* Python >= 3.6+
+
+Highly recommend you install the GPU version of PaddlePaddle, due to large overhead of segmentation models, otherwise it could be out of memory while running the models. For more detailed installation tutorials, please refer to the official website of [PaddlePaddle](https://www.paddlepaddle.org.cn/install/quick?docurl=/documentation/docs/zh/2.0/install/)。
 
 
+#### step 2. Install PaddleSeg
+Support to construct a customized segmentation framework with *API Calling* method for flexible development.
 
-## 静态图
-数据集cityscapes 放置于legacy/dataset目录下
-
-通过 **MODEL.FP16 True** 开启amp训练
-单机单卡使用如下命令进行训练：
-```
-cd legacy
-export CUDA_VISIBLE_DEVICES=0
-python pdseg/train.py --cfg configs/hrnetw18_cityscapes_1024x512_215.yaml --use_gpu  --use_mpio --log_steps 10 BATCH_SIZE 2 SOLVER.NUM_EPOCHS 3 MODEL.FP16 True
-```
-
-单机多卡使用如下命令进行训练：
-```
-export CUDA_VISIBLE_DEVICES=0,1
-fleetrun pdseg/train.py --cfg configs/hrnetw18_cityscapes_1024x512_215.yaml --use_gpu  --use_mpio --log_steps 10 BATCH_SIZE 4 SOLVER.NUM_EPOCHS 3 MODEL.FP16 True
+```shell
+pip install paddleseg
 ```
 
-deeplabv3p模型的配置文件为：
-configs/deeplabv3p_resnet50_vd_cityscapes.yaml
 
-**注意**
-静态图中的BATCH_SIZE为总的batch size。
+#### step 3. Download PaddleSeg repo
+Support to complete the whole process segmentation application with *Configuration Drive* method, simple and fast.
 
-## 竞品
-竞品为[mmsegmentation](https://github.com/open-mmlab/mmsegmentation)
+```shell
+git clone https://github.com/PaddlePaddle/PaddleSeg
+```
 
-对应竞品配置文件为：
+#### step 4. Verify installation
+Run the following command. If you can train normally, you have installed it successfully.
 
-configs/hrnet/fcn_hr18_512x1024_80k_cityscapes.py
+```shell
+python train.py --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml
+```
 
 ## Tutorials
 
