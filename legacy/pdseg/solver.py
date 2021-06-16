@@ -51,11 +51,10 @@ class Solver(object):
             cfg.SOLVER.LR, self.total_step, end_lr=0, power=power)
         return decayed_lr
 
-    # There is not paddle.optimizer.lr.PolynomialDecaypaddle.optimizer.lr.CosineDecay in paddle2.1 version
+    # There is not paddle.optimizer.lr.CosineDecay in paddle2.1 version
     # def cosine_decay(self):
-    #     decayed_lr = paddle.fluid.layers.cosine_decay(
+    #     decayed_lr = paddle.fluid.layers.cosine_decay()
     #         cfg.SOLVER.LR, self.step_per_epoch, self.decay_epochs)
-    #     decayed_lr = paddle.optimizer.lr.cosine_decay()
     #     return decayed_lr
 
     def get_lr(self, lr_policy):
