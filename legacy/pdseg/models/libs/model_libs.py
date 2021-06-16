@@ -130,7 +130,13 @@ def deconv(*args, **kargs):
     return static.nn.conv2d_transpose(*args, **kargs)
 
 
-def separate_conv(input, channel, stride, filter, dilation=1, act=None):
+def separate_conv(input,
+                  channel,
+                  stride,
+                  filter,
+                  dilation=1,
+                  act=None,
+                  bias_attr=False):
     param_attr = paddle.ParamAttr(
         name=name_scope + 'weights',
         regularizer=paddle.regularizer.L2Decay(coeff=0.0),
@@ -146,7 +152,7 @@ def separate_conv(input, channel, stride, filter, dilation=1, act=None):
             dilation=dilation,
             use_cudnn=False,
             param_attr=param_attr,
-            bias_attr=None)
+            bias_attr=bias_attr)
         input = bn(input)
         if act: input = act(input)
 
@@ -163,7 +169,7 @@ def separate_conv(input, channel, stride, filter, dilation=1, act=None):
             groups=1,
             padding=0,
             param_attr=param_attr,
-            bias_attr=None)
+            bias_attr=bias_attr)
         input = bn(input)
         if act: input = act(input)
     return input

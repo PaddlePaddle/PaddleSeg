@@ -32,6 +32,11 @@ MODEL:
         DECODER_USE_SEP_CONV: True
         BACKBONE: "resnet_vd_50"
         OUTPUT_STRIDE: 8
+        BIAS: null
+        ALIGN_CORNERS: False
+        BENCHMARK: True
+        DECODER:
+            ACT: False
 TRAIN:
     PRETRAINED_MODEL_DIR: u"pretrained_model/resnet50_vd_imagenet"
     MODEL_SAVE_DIR: "output/deeplabv3p_resnet50_vd_bn_cityscapes"

@@ -72,7 +72,7 @@ def encoder(input):
                 image_avg,
                 input.shape[2:],
                 mode='bilinear',
-                align_corners=False)
+                align_corners=cfg.MODEL.DEEPLAB.ALIGN_CORNERS)
             if cfg.MODEL.DEEPLAB.ENCODER.ADD_IMAGE_LEVEL_FEATURE:
                 concat_logits.append(image_avg)
 
@@ -86,16 +86,25 @@ def encoder(input):
                     groups=1,
                     padding=0,
                     param_attr=param_attr,
-                    bias_attr=None))
+                    bias_attr=cfg.MODEL.DEEPLAB.BIAS))
             aspp0 = F.interpolate(
-                aspp0, input.shape[2:], mode='bilinear', align_corners=False)
+                aspp0,
+                input.shape[2:],
+                mode='bilinear',
+                align_corners=cfg.MODEL.DEEPLAB.ALIGN_CORNERS)
             concat_logits.append(aspp0)
 
         if aspp_ratios:
             with scope("aspp1"):
                 if cfg.MODEL.DEEPLAB.ASPP_WITH_SEP_CONV:
                     aspp1 = separate_conv(
-                        input, channel, 1, 3, dilation=aspp_ratios[0], act=relu)
+                        input,
+                        channel,
+                        1,
+                        3,
+                        dilation=aspp_ratios[0],
+                        act=relu,
+                        bias_attr=cfg.MODEL.DEEPLAB.BIAS)
                 else:
                     aspp1 = bn_relu(
                         conv(
@@ -110,12 +119,18 @@ def encoder(input):
                     aspp1,
                     input.shape[2:],
                     mode='bilinear',
-                    align_corners=False)
+                    align_corners=cfg.MODEL.DEEPLAB.ALIGN_CORNERS)
                 concat_logits.append(aspp1)
             with scope("aspp2"):
                 if cfg.MODEL.DEEPLAB.ASPP_WITH_SEP_CONV:
                     aspp2 = separate_conv(
-                        input, channel, 1, 3, dilation=aspp_ratios[1], act=relu)
+                        input,
+                        channel,
+                        1,
+                        3,
+                        dilation=aspp_ratios[1],
+                        act=relu,
+                        bias_attr=cfg.MODEL.DEEPLAB.BIAS)
                 else:
                     aspp2 = bn_relu(
                         conv(
@@ -130,12 +145,18 @@ def encoder(input):
                     aspp2,
                     input.shape[2:],
                     mode='bilinear',
-                    align_corners=False)
+                    align_corners=cfg.MODEL.DEEPLAB.ALIGN_CORNERS)
                 concat_logits.append(aspp2)
             with scope("aspp3"):
                 if cfg.MODEL.DEEPLAB.ASPP_WITH_SEP_CONV:
                     aspp3 = separate_conv(
-                        input, channel, 1, 3, dilation=aspp_ratios[2], act=relu)
+                        input,
+                        channel,
+                        1,
+                        3,
+                        dilation=aspp_ratios[2],
+                        act=relu,
+                        bias_attr=cfg.MODEL.DEEPLAB.BIAS)
                 else:
                     aspp3 = bn_relu(
                         conv(
@@ -150,7 +171,7 @@ def encoder(input):
                     aspp3,
                     input.shape[2:],
                     mode='bilinear',
-                    align_corners=False)
+                    align_corners=cfg.MODEL.DEEPLAB.ALIGN_CORNERS)
                 concat_logits.append(aspp3)
 
         with scope("concat"):
@@ -165,8 +186,12 @@ def encoder(input):
                         groups=1,
                         padding=0,
                         param_attr=param_attr,
-                        bias_attr=None))
-                data = F.dropout(data, 0.1, mode='downscale_in_infer')
+                        bias_attr=cfg.MODEL.DEEPLAB.BIAS))
+
+                if cfg.MODEL.DEEPLAB.BENCHMARK:
+                    data = F.dropout(data, 0.1, mode='downscale_in_infer')
+                else:
+                    data = paddle.fluid.layers.dropout(data, 0.9)
 
         if cfg.MODEL.DEEPLAB.ENCODER.ASPP_WITH_SE:
             data = data * image_avg
@@ -178,7 +203,7 @@ def _decoder_with_sum_merge(encode_data, decode_shortcut, param_attr):
         encode_data,
         decode_shortcut.shape[2:],
         mode='bilinear',
-        align_corners=False)
+        align_corners=cfg.MODEL.DEEPLAB.ALIGN_CORNERS)
     encode_data = conv(
         encode_data,
         cfg.MODEL.DEEPLAB.DECODER.CONV_FILTERS,
@@ -212,13 +237,13 @@ def _decoder_with_concat(encode_data, decode_shortcut, param_attr):
                 groups=1,
                 padding=0,
                 param_attr=param_attr,
-                bias_attr=None))
+                bias_attr=cfg.MODEL.DEEPLAB.BIAS))
 
         encode_data = F.interpolate(
             encode_data,
             decode_shortcut.shape[2:],
             mode='bilinear',
-            align_corners=False)
+            align_corners=cfg.MODEL.DEEPLAB.ALIGN_CORNERS)
         encode_data = paddle.concat([encode_data, decode_shortcut], axis=1)
     if cfg.MODEL.DEEPLAB.DECODER_USE_SEP_CONV:
         with scope("separable_conv1"):
@@ -227,14 +252,18 @@ def _decoder_with_concat(encode_data, decode_shortcut, param_attr):
                 cfg.MODEL.DEEPLAB.DECODER.CONV_FILTERS,
                 1,
                 3,
-                dilation=1)
+                dilation=1,
+                act=relu if cfg.MODEL.DEEPLAB.DECODER.ACT else None,
+                bias_attr=cfg.MODEL.DEEPLAB.BIAS)
         with scope("separable_conv2"):
             encode_data = separate_conv(
                 encode_data,
                 cfg.MODEL.DEEPLAB.DECODER.CONV_FILTERS,
                 1,
                 3,
-                dilation=1)
+                dilation=1,
+                act=relu if cfg.MODEL.DEEPLAB.DECODER.ACT else None,
+                bias_attr=cfg.MODEL.DEEPLAB.BIAS)
     else:
         with scope("decoder_conv1"):
             encode_data = bn_relu(
@@ -372,7 +401,10 @@ def resnet_vd(input):
     if lr_mult_list is None:
         lr_mult_list = [1.0, 1.0, 1.0, 1.0, 1.0]
     model = resnet_vd_backbone(
-        layers, stem='deeplab', lr_mult_list=lr_mult_list)
+        layers,
+        stem='deeplab',
+        lr_mult_list=lr_mult_list,
+        align_corners=cfg.MODEL.DEEPLAB.ALIGN_CORNERS)
     data, decode_shortcuts = model.net(
         input,
         end_points=end_points,
@@ -427,5 +459,8 @@ def deeplabv3p(img, num_classes):
         logit = data
 
     logit = F.interpolate(
-        logit, img.shape[2:], mode='bilinear', align_corners=False)
+        logit,
+        img.shape[2:],
+        mode='bilinear',
+        align_corners=cfg.MODEL.DEEPLAB.ALIGN_CORNERS)
     return logit

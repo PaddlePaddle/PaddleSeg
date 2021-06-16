@@ -215,12 +215,16 @@ cfg.MODEL.DEEPLAB.ENABLE_DECODER = True
 cfg.MODEL.DEEPLAB.DECODER.USE_SUM_MERGE = False
 cfg.MODEL.DEEPLAB.DECODER.CONV_FILTERS = 256
 cfg.MODEL.DEEPLAB.DECODER.OUTPUT_IS_LOGITS = False
+cfg.MODEL.DEEPLAB.DECODER.ACT = True
 # ASPP是否使用可分离卷积
 cfg.MODEL.DEEPLAB.ASPP_WITH_SEP_CONV = True
 # 解码器是否使用可分离卷积
 cfg.MODEL.DEEPLAB.DECODER_USE_SEP_CONV = True
 # Backbone分阶段学习率
 cfg.MODEL.DEEPLAB.BACKBONE_LR_MULT_LIST = None
+cfg.MODEL.DEEPLAB.BIAS = False
+cfg.MODEL.DEEPLAB.ALIGN_CORNERS = True
+cfg.MODEL.DEEPLAB.BENCHMARK = False
 
 ########################## UNET模型配置 #######################################
 # 上采样方式, 默认为双线性插值
@@ -249,7 +253,8 @@ cfg.MODEL.HRNET.STAGE3.NUM_CHANNELS = [40, 80, 160]
 cfg.MODEL.HRNET.STAGE4.NUM_MODULES = 3
 cfg.MODEL.HRNET.STAGE4.NUM_CHANNELS = [40, 80, 160, 320]
 # FCN Head的卷积是否用bias
-cfg.MODEL.HRNET.BIAS = None
+cfg.MODEL.HRNET.BIAS = False
+cfg.MODEL.HRNET.ALIGN_CORNERS = True
 ########################## OCNET模型配置 ######################################
 
 cfg.MODEL.OCR.OCR_MID_CHANNELS = 512

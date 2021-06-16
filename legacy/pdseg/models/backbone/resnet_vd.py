@@ -47,7 +47,8 @@ class ResNet():
                  layers=50,
                  scale=1.0,
                  stem=None,
-                 lr_mult_list=[1.0, 1.0, 1.0, 1.0, 1.0]):
+                 lr_mult_list=[1.0, 1.0, 1.0, 1.0, 1.0],
+                 align_corners=True):
         self.params = train_parameters
         self.layers = layers
         self.scale = scale
@@ -58,6 +59,7 @@ class ResNet():
         ) == 5, "lr_mult_list length in ResNet must be 5 but got {}!!".format(
             len(self.lr_mult_list))
         self.curr_stage = 0
+        self.align_corners = align_corners
 
     def net(self,
             input,
@@ -216,7 +218,7 @@ class ResNet():
     def interp(self, input, out_shape):
         out_shape = list(out_shape.astype("int32"))
         return F.interpolate(
-            input, out_shape, mode='bilinear', align_corners=False)
+            input, out_shape, mode='bilinear', align_corners=self.align_corners)
 
     def conv_bn_layer(self,
                       input,
