@@ -70,7 +70,6 @@ class CrossEntropyLoss(nn.Layer):
                 logit,
                 label_one_hot * self.weight,
                 soft_label=True,
-                ignore_index=self.ignore_index,
                 reduction='none')
             loss = loss.squeeze(-1)
 
