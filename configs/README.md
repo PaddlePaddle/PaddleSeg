@@ -55,6 +55,7 @@
 >  * 参数
 >     * types : 损失函数列表
 >       * type : 损失函数类型，所支持值请参考损失函数库
+>       * ignore_index : 训练过程需要忽略的类别，默认取值与`train_dataset`的ignore_index一致，**推荐不用设置此项**。如果设置了此项，`loss`和`train_dataset`的ignore_index必须相同。
 >     * coef : 对应损失函数列表的系数列表
 
 ----
