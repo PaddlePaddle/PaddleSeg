@@ -60,6 +60,7 @@ class CrossEntropyLoss(nn.Layer):
             label (Tensor): Label tensor, the data type is int64. Shape is (N), where each
                 value is 0 <= label[i] <= C-1, and if shape is more than 2D, this is
                 (N, D1, D2,..., Dk), k >= 1.
+            semantic_weights (Tensor, optional): Weights about loss for each pixels, shape is the same as label. Default: None.
         """
         channel_axis = 1 if self.data_format == 'NCHW' else -1
         if self.weight is not None and logit.shape[channel_axis] != len(
