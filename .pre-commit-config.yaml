@@ -16,7 +16,6 @@
     -   id: trailing-whitespace
     -   id: detect-private-key
     -   id: check-symlinks
-    -   id: check-added-large-files
 
 -   repo: local
     hooks:
