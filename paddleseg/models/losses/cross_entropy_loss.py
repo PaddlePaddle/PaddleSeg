@@ -54,7 +54,6 @@ class CrossEntropyLoss(nn.Layer):
             label (Tensor): Label tensor, the data type is int64. Shape is (N), where each
                 value is 0 <= label[i] <= C-1, and if shape is more than 2D, this is
                 (N, D1, D2,..., Dk), k >= 1.
-            semantic_weights (Tensor, optional): Weights about loss for each pixels, shape is the same as label. Default: None.
         """
         if self.weight is not None and logit.shape[1] != len(self.weight):
             raise ValueError(
@@ -62,33 +61,38 @@ class CrossEntropyLoss(nn.Layer):
                 .format(len(self.weight), logit.shape[1]))
 
         logit = paddle.transpose(logit, [0, 2, 3, 1])
-        if self.weight is None:
-            loss = F.cross_entropy(
-                logit, label, ignore_index=self.ignore_index, reduction='none')
-        else:
-            label_one_hot = F.one_hot(label, logit.shape[-1])
-            loss = F.cross_entropy(
-                logit,
-                label_one_hot * self.weight,
-                soft_label=True,
-                ignore_index=self.ignore_index,
-                reduction='none')
-            loss = loss.squeeze(-1)
+        loss = F.cross_entropy(
+            logit,
+            label,
+            ignore_index=self.ignore_index,
+            reduction='none',
+            weight=self.weight)
 
         mask = label != self.ignore_index
         mask = paddle.cast(mask, 'float32')
+
         loss = loss * mask
         if semantic_weights is not None:
             loss = loss * semantic_weights
 
+        if self.weight is not None:
+            _one_hot = F.one_hot(label, logit.shape[-1])
+            coef = paddle.sum(_one_hot * self.weight, axis=-1)
+        else:
+            coef = paddle.ones_like(label)
+
         label.stop_gradient = True
         mask.stop_gradient = True
+
         if self.top_k_percent_pixels == 1.0:
-            avg_loss = paddle.mean(loss) / (paddle.mean(mask) + self.EPS)
+            avg_loss = paddle.mean(loss) / (paddle.mean(mask * coef) + self.EPS)
             return avg_loss
 
         loss = loss.reshape((-1, ))
         top_k_pixels = int(self.top_k_percent_pixels * loss.numel())
-        loss, _ = paddle.topk(loss, top_k_pixels)
+        loss, indices = paddle.topk(loss, top_k_pixels)
+        coef = coef.reshape((-1, ))
+        coef = paddle.gather(coef, indices)
+        coef.stop_gradient = True
 
-        return loss.mean()
+        return loss.mean() / (paddle.mean(coef) + self.EPS)
