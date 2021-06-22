@@ -101,6 +101,17 @@ def parse_args():
         dest='pretrained_model',
         help='the pretrained model',
         type=str)
+    parser.add_argument(
+        '--dataset_root',
+        dest='dataset_root',
+        help='the dataset root directory',
+        type=str)
+    parser.add_argument(
+        '--save_begin_iters',
+        dest='save_begin_iters',
+        help='The iters saving begin',
+        default=None,
+        type=int)
 
     return parser.parse_args()
 
@@ -120,9 +131,13 @@ def main(args):
     ]
 
     train_dataset = HumanDataset(
-        dataset_root='data/matting/human_matting/',
-        transforms=t,
-        mode='train')
+        dataset_root=args.dataset_root, transforms=t, mode='train')
+    if args.do_eval:
+        t = [T.LoadImages(), T.Normalize()]
+        val_dataset = HumanDataset(
+            dataset_root=args.dataset_root, transforms=t, mode='val')
+    else:
+        val_dataset = None
 
     # loss
     losses = {'types': [], 'coef': []}
@@ -153,6 +168,7 @@ def main(args):
     train(
         model=model,
         train_dataset=train_dataset,
+        val_dataset=val_dataset,
         optimizer=optimizer,
         losses=losses,
         iters=args.iters,
@@ -162,7 +178,8 @@ def main(args):
         save_interval=args.save_interval,
         resume_model=args.resume_model,
         stage=args.stage,
-        save_dir=args.save_dir)
+        save_dir=args.save_dir,
+        save_begin_iters=args.save_begin_iters)
 
 
 if __name__ == '__main__':

@@ -17,11 +17,12 @@ import time
 from collections import deque
 import shutil
 
+import numpy as np
 import paddle
 import paddle.nn.functional as F
 from paddleseg.utils import TimeAverager, calculate_eta, resume, logger
 
-# from core.val import evaluate
+from core.val import evaluate
 
 
 def loss_computation(logit_dict, label_dict, losses, stage=3):
@@ -70,7 +71,8 @@ def train(model,
           use_vdl=False,
           losses=None,
           keep_checkpoint_max=5,
-          stage=3):
+          stage=3,
+          save_begin_iters=None):
     """
     Launch training.
 
@@ -130,8 +132,8 @@ def train(model,
     avg_loss = 0.0
     avg_loss_list = []
     iters_per_epoch = len(batch_sampler)
-    # best_pq = -1.0
-    # best_model_iter = -1
+    best_sad = np.inf
+    best_model_iter = -1
     reader_cost_averager = TimeAverager()
     batch_cost_averager = TimeAverager()
     save_models = deque()
@@ -205,38 +207,42 @@ def train(model,
                     log_writer.add_scalar('Train/reader_cost',
                                           avg_train_reader_cost, iter)
 
-                    # 增加图片和alpha的显示
-                    ori_img = data['img'][0]
-                    ori_img = paddle.transpose(ori_img, [1, 2, 0])
-                    ori_img = (ori_img * 0.5 + 0.5) * 255
-                    alpha = (data['alpha'][0]).unsqueeze(-1)
-                    trimap = (data['trimap'][0]).unsqueeze(-1)
-                    log_writer.add_image(
-                        tag='ground truth/ori_img',
-                        img=ori_img.numpy(),
-                        step=iter)
-                    log_writer.add_image(
-                        tag='ground truth/alpha', img=alpha.numpy(), step=iter)
-                    log_writer.add_image(
-                        tag='ground truth/trimap',
-                        img=trimap.numpy(),
-                        step=iter)
+                    if False:  #主要为调试时候的观察，真正训练的时候可以省略
+                        # 增加图片和alpha的显示
+                        ori_img = data['img'][0]
+                        ori_img = paddle.transpose(ori_img, [1, 2, 0])
+                        ori_img = (ori_img * 0.5 + 0.5) * 255
+                        alpha = (data['alpha'][0]).unsqueeze(-1)
+                        trimap = (data['trimap'][0]).unsqueeze(-1)
+                        log_writer.add_image(
+                            tag='ground truth/ori_img',
+                            img=ori_img.numpy(),
+                            step=iter)
+                        log_writer.add_image(
+                            tag='ground truth/alpha',
+                            img=alpha.numpy(),
+                            step=iter)
+                        log_writer.add_image(
+                            tag='ground truth/trimap',
+                            img=trimap.numpy(),
+                            step=iter)
 
-                    alpha_raw = (logit_dict['alpha_raw'][0] * 255).transpose(
-                        [1, 2, 0])
-                    log_writer.add_image(
-                        tag='prediction/alpha_raw',
-                        img=alpha_raw.numpy(),
-                        step=iter)
-
-                    if stage >= 2:
-                        alpha_pred = (
-                            logit_dict['alpha_pred'][0] * 255).transpose(
+                        alpha_raw = (
+                            logit_dict['alpha_raw'][0] * 255).transpose(
                                 [1, 2, 0])
                         log_writer.add_image(
-                            tag='prediction/alpha_pred',
-                            img=alpha_pred.numpy().astype('uint8'),
+                            tag='prediction/alpha_raw',
+                            img=alpha_raw.numpy(),
                             step=iter)
+
+                        if stage >= 2:
+                            alpha_pred = (
+                                logit_dict['alpha_pred'][0] * 255).transpose(
+                                    [1, 2, 0])
+                            log_writer.add_image(
+                                tag='prediction/alpha_pred',
+                                img=alpha_pred.numpy().astype('uint8'),
+                                step=iter)
 
                 avg_loss = 0.0
                 avg_loss_list = []
@@ -257,49 +263,40 @@ def train(model,
                 if len(save_models) > keep_checkpoint_max > 0:
                     model_to_remove = save_models.popleft()
                     shutil.rmtree(model_to_remove)
-            """
+
             # eval model
+            if save_begin_iters is None:
+                save_begin_iters = iters // 2
             if (iter % save_interval == 0 or iter == iters) and (
                     val_dataset is
-                    not None) and local_rank == 0 and iter > iters // 2:
+                    not None) and local_rank == 0 and iter >= save_begin_iters:
                 num_workers = 1 if num_workers > 0 else 0
-                panoptic_results, semantic_results, instance_results = evaluate(
+                sad, mse = evaluate(
                     model,
                     val_dataset,
-                    threshold=threshold,
-                    nms_kernel=nms_kernel,
-                    top_k=top_k,
-                    num_workers=num_workers,
-                    print_detail=False)
-                pq = panoptic_results['pan_seg']['All']['pq']
-                miou = semantic_results['sem_seg']['mIoU']
-                map = instance_results['ins_seg']['mAP']
-                map50 = instance_results['ins_seg']['mAP50']
-                logger.info(
-                    "[EVAL] PQ: {:.4f}, mIoU: {:.4f}, mAP: {:.4f}, mAP50: {:.4f}"
-                    .format(pq, miou, map, map50))
+                    num_workers=0,
+                    print_detail=True,
+                    save_results=False)
                 model.train()
 
-            # save best model and add evaluate results to vdl
+            # save best model and add evaluation results to vdl
             if (iter % save_interval == 0 or iter == iters) and local_rank == 0:
-                if val_dataset is not None and iter > iters // 2:
-                    if pq > best_pq:
-                        best_pq = pq
+                if val_dataset is not None and iter >= save_begin_iters:
+                    if sad < best_sad:
+                        best_sad = sad
                         best_model_iter = iter
                         best_model_dir = os.path.join(save_dir, "best_model")
                         paddle.save(
                             model.state_dict(),
                             os.path.join(best_model_dir, 'model.pdparams'))
                     logger.info(
-                        '[EVAL] The model with the best validation pq ({:.4f}) was saved at iter {}.'
-                        .format(best_pq, best_model_iter))
+                        '[EVAL] The model with the best validation sad ({:.4f}) was saved at iter {}.'
+                        .format(best_sad, best_model_iter))
 
                     if use_vdl:
-                        log_writer.add_scalar('Evaluate/PQ', pq, iter)
-                        log_writer.add_scalar('Evaluate/mIoU', miou, iter)
-                        log_writer.add_scalar('Evaluate/mAP', map, iter)
-                        log_writer.add_scalar('Evaluate/mAP50', map50, iter)
-            """
+                        log_writer.add_scalar('Evaluate/SAD', sad, iter)
+                        log_writer.add_scalar('Evaluate/MSE', mse, iter)
+
             batch_start = time.time()
 
     # Sleep for half a second to let dataloader release resources.

@@ -51,6 +51,16 @@ def parse_args():
         type=int,
         required=True,
         choices=[0, 1, 2, 3])
+    parser.add_argument(
+        '--dataset_root',
+        dest='dataset_root',
+        help='the dataset root directory',
+        type=str)
+    parser.add_argument(
+        '--save_results',
+        dest='save_results',
+        help='save prediction alphe while evaluation',
+        action='store_true')
 
     return parser.parse_args()
 
@@ -65,9 +75,7 @@ def main(args):
     t = [T.LoadImages(), T.Normalize()]
 
     eval_dataset = HumanDataset(
-        dataset_root='data/matting/human_matting/',
-        transforms=t,
-        mode='val')
+        dataset_root=args.dataset_root, transforms=t, mode='val')
 
     # model
     backbone = VGG16(input_channels=4)
@@ -79,7 +87,7 @@ def main(args):
         eval_dataset=eval_dataset,
         num_workers=args.num_workers,
         save_dir=args.save_dir,
-        save_results=True)
+        save_results=args.save_results)
 
 
 if __name__ == '__main__':

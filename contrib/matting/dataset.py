@@ -104,12 +104,15 @@ class HumanDataset(paddle.io.Dataset):
 if __name__ == '__main__':
     t = [T.LoadImages(), T.Resize(), T.Normalize()]
     train_dataset = HumanDataset(
-        dataset_root='/mnt/chenguowei01/datasets/matting/human_matting/',
-        transforms=t,
-        mode='val')
-
-    for i in range(10):
-        idx = np.random.randint(len(train_dataset))
+        dataset_root='data/matting/composition_1k/', transforms=t, mode='val')
+    print(len(train_dataset))
+    for i in range(1065):
+        #         idx = np.random.randint(len(train_dataset))
+        idx = i
+        print(train_dataset.img_list[idx])
         data = train_dataset[idx]
-        trimap = data['trimap']
-        cv2.imwrite(str(idx) + '.png', trimap.astype('uint8'))
+        print(data['img_name'], data['img'].shape, data['alpha'].shape,
+              data['trimap'].shape)
+#         print(data)
+#         trimap = data['trimap']
+#         cv2.imwrite(str(idx) + '.png', trimap.astype('uint8'))

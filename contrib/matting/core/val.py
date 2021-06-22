@@ -128,4 +128,5 @@ def evaluate(model,
     mse = mse_metric.evaluate()
     sad = sad_metric.evaluate()
 
-    logger.info('MSE: {:.4f}, SAD: {:.4f}'.format(mse, sad))
+    logger.info('[EVAL] SAD: {:.4f}, MSE: {:.4f}'.format(sad, mse))
+    return sad, mse

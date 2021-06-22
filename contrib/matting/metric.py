@@ -31,7 +31,7 @@ class MSE():
         Args:
             pred (np.ndarray): The value range is [0., 1.].
             gt (np.ndarray): The value range is [0, 255].
-            trimap (np.ndarray, optional)L The value is in {0, 128, 255}. Default: None.
+            trimap (np.ndarray, optional) The value is in {0, 128, 255}. Default: None.
         """
         if trimap is None:
             trimap = np.ones_like(gt) * 128
@@ -50,7 +50,8 @@ class MSE():
         self.count += 1
 
     def evaluate(self):
-        return self.mse_diffs / self.count
+        mse = self.mse_diffs / self.count if self.count > 0 else 0
+        return mse
 
 
 class SAD():
@@ -88,4 +89,5 @@ class SAD():
         self.count += 1
 
     def evaluate(self):
-        return self.sad_diffs / self.count
+        sad = self.sad_diffs / self.count if self.count > 0 else 0
+        return sad
