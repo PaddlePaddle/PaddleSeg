@@ -8,7 +8,7 @@ English | [简体中文](README_CN.md)
 ![python version](https://img.shields.io/badge/python-3.6+-orange.svg)
 ![support os](https://img.shields.io/badge/os-linux%2C%20win%2C%20mac-yellow.svg)
 
-<img src="./docs/images/seg_news_icon.png" width="50"/> *[2021-06-19] PaddleSeg Team won the AutoNUE 2021 Challenge: Semantic Segmentation Track in CVPR 2021! Technical Report can be found [here](./docs/cvpr2021/autonue21_presentation_PaddleSeg.pdf). Code will be coming soon.*
+<img src="./docs/images/seg_news_icon.png" width="50"/> *[2021-06-19] PaddleSeg Team won the AutoNUE 2021 Challenge: Semantic Segmentation Track in CVPR 2021! Technical Report can be found [here](https://bj.bcebos.com/paddleseg/docs/autonue21_presentation_PaddleSeg.pdf). Code will be coming soon.*
 
 ![demo](./docs/images/cityscapes.gif)
 
