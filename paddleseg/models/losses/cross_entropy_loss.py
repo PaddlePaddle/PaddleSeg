@@ -31,10 +31,15 @@ class CrossEntropyLoss(nn.Layer):
         ignore_index (int64, optional): Specifies a target value that is ignored
             and does not contribute to the input gradient. Default ``255``.
         top_k_percent_pixels (float, optional): the value lies in [0.0, 1.0]. When its value < 1.0, only compute the loss for
-            the top k percent pixels (e.g., the top 20% pixels). This is useful for hard pixel mining.
+            the top k percent pixels (e.g., the top 20% pixels). This is useful for hard pixel mining. Default ``1.0``.
+        data_format (str, optional): The tensor format to use, 'NCHW' or 'NHWC'. Default ``'NCHW'``.
     """
 
-    def __init__(self, weight=None, ignore_index=255, top_k_percent_pixels=1.0):
+    def __init__(self,
+                 weight=None,
+                 ignore_index=255,
+                 top_k_percent_pixels=1.0,
+                 data_format='NCHW'):
         super(CrossEntropyLoss, self).__init__()
         if weight is not None:
             weight = paddle.to_tensor(weight, dtype='float32')
@@ -42,6 +47,7 @@ class CrossEntropyLoss(nn.Layer):
         self.ignore_index = ignore_index
         self.top_k_percent_pixels = top_k_percent_pixels
         self.EPS = 1e-8
+        self.data_format = data_format
 
     def forward(self, logit, label, semantic_weights=None):
         """
@@ -56,12 +62,14 @@ class CrossEntropyLoss(nn.Layer):
                 (N, D1, D2,..., Dk), k >= 1.
             semantic_weights (Tensor, optional): Weights about loss for each pixels, shape is the same as label. Default: None.
         """
-        if self.weight is not None and logit.shape[1] != len(self.weight):
+        channel_axis = 1 if self.data_format == 'NCHW' else -1
+        if self.weight is not None and logit.shape[channel_axis] != len(
+                self.weight):
             raise ValueError(
                 'The number of weights = {} must be the same as the number of classes = {}.'
                 .format(len(self.weight), logit.shape[1]))
-
-        logit = paddle.transpose(logit, [0, 2, 3, 1])
+        if channel_axis == 1:
+            logit = paddle.transpose(logit, [0, 2, 3, 1])
         if self.weight is None:
             loss = F.cross_entropy(
                 logit, label, ignore_index=self.ignore_index, reduction='none')
