@@ -1,0 +1,2 @@
+include iann/config/*
+include iann/resource/*
