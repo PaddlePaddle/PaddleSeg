@@ -35,13 +35,16 @@ def parse_args():
 
 
 def get_color_map_list(num_classes):
-    """ Returns the color map for visualizing the segmentation mask,
-        which can support arbitrary number of classes.
-    Args:
-        num_classes: Number of classes
-    Returns:
-        The color map
     """
+    Returns the color map for visualizing the segmentation mask,
+    which can support arbitrary number of classes.
+    Args:
+        num_classes (int): Number of classes.
+    Returns:
+        (list). The color map.
+    """
+
+    num_classes += 1
     color_map = num_classes * [0, 0, 0]
     for i in range(0, num_classes):
         j = 0
@@ -52,7 +55,7 @@ def get_color_map_list(num_classes):
             color_map[i * 3 + 2] |= (((lab >> 2) & 1) << (7 - j))
             j += 1
             lab >>= 3
-
+    color_map = color_map[3:]
     return color_map
 
 

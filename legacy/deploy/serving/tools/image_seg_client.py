@@ -12,6 +12,7 @@ import re
 #分割服务的地址
 IMAGE_SEG_URL = 'http://xxx.xxx.xxx.xxx:8010/ImageSegService/inference'
 
+
 class ClientThread(threading.Thread):
     def __init__(self, thread_id, image_data_repo):
         threading.Thread.__init__(self)
@@ -36,7 +37,8 @@ class ClientThread(threading.Thread):
             # 将获得的mask matrix转换成可视化图像，并在当前目录下保存为图像文件
             # 如果进行压测，可以把这句话注释掉
             for j in range(len(mask_mat_list)):
-                self.__visualization(mask_mat_list[j], image_filename, 2, input_img)
+                self.__visualization(mask_mat_list[j], image_filename, 2,
+                                     input_img)
         latency = time.time() - start
         print("total latency = %f s" % (latency))
 
@@ -73,27 +75,38 @@ class ClientThread(threading.Thread):
         try:
             response = json.loads(response.text)
             prediction_list = response["prediction"]
-            mask_response_list = [mask_response["info"] for mask_response in prediction_list]
-            mask_raw_list = [json.loads(mask_response)["mask"] for mask_response in mask_response_list]
+            mask_response_list = [
+                mask_response["info"] for mask_response in prediction_list
+            ]
+            mask_raw_list = [
+                json.loads(mask_response)["mask"]
+                for mask_response in mask_response_list
+            ]
         except Exception as err:
-            print("Exception[%s], server_message[%s]" % (str(err), response.text))
+            print(
+                "Exception[%s], server_message[%s]" % (str(err), response.text))
             return None
         # 使用 json 协议回复的包也是 base64 编码过的
-        mask_binary_list = [base64.b64decode(mask_raw) for mask_raw in mask_raw_list]
-        m = [np.fromstring(mask_binary, np.uint8) for mask_binary in mask_binary_list]
+        mask_binary_list = [
+            base64.b64decode(mask_raw) for mask_raw in mask_raw_list
+        ]
+        m = [
+            np.fromstring(mask_binary, np.uint8)
+            for mask_binary in mask_binary_list
+        ]
         return m
 
     # 请求预测服务
     # input_img 要预测的图片列表
     def __get_item_json(self, input_img):
         # 使用 http 协议请求服务时, 请使用 base64 编码发送图片
-        item_binary_b64 = str(base64.b64encode(self.__image_data_repo.get_image_binary(input_img)), 'utf-8')
+        item_binary_b64 = str(
+            base64.b64encode(
+                self.__image_data_repo.get_image_binary(input_img)), 'utf-8')
         item_size = len(item_binary_b64)
-        item_json = {
-            "image_length": item_size,
-            "image_binary": item_binary_b64
-        }
+        item_json = {"image_length": item_size, "image_binary": item_binary_b64}
         return item_json
+
 
 def create_thread_pool(thread_num, image_data_repo):
     return [ClientThread(i + 1, image_data_repo) for i in range(thread_num)]
@@ -105,6 +118,7 @@ def run_threads(thread_pool):
 
     for thread in thread_pool:
         thread.join()
+
 
 class ImageDataRepo:
     def __init__(self, dir_name):
@@ -118,10 +132,12 @@ class ImageDataRepo:
                     fp = open(full_path, mode="rb")
                     image_binary_data = fp.read()
                     image_mat_data = cv2.imread(full_path)
-                    self.__data[image_filename] = (image_binary_data, image_mat_data)
+                    self.__data[image_filename] = (image_binary_data,
+                                                   image_mat_data)
         else:
-            raise Exception("Please use directory to initialize");
+            raise Exception("Please use directory to initialize")
         print("Finish loading.")
+
     def __iter__(self):
         for filename in self.__data:
             yield filename

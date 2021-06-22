@@ -43,4 +43,3 @@ class ImageSegOp : public baidu::paddle_serving::predictor::OpWithChannel<
 }  // namespace serving
 }  // namespace paddle_serving
 }  // namespace baidu
-

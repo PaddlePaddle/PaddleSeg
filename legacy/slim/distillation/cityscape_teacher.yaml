@@ -62,4 +62,3 @@ SLIM:
     KNOWLEDGE_DISTILL_IS_TEACHER: True
     KNOWLEDGE_DISTILL: True
     KNOWLEDGE_DISTILL_TEACHER_MODEL_DIR: "pretrained_model/xception65_bn_cityscapes"
-

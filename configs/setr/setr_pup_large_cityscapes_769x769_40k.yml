@@ -1,0 +1,33 @@
+_base_: '../_base_/cityscapes_769x769_setr.yml'
+
+model:
+  type: SegmentationTransformer
+  backbone:
+    type: ViT_large_patch16_384
+    pretrained: https://bj.bcebos.com/paddleseg/dygraph/vit_large_patch16_384.tar.gz
+  num_classes: 19
+  backbone_indices: [9, 14, 19, 23]
+  head: pup
+  align_corners: True
+
+optimizer:
+  weight_decay: 0.0
+
+lr_scheduler:
+  end_lr: 1.0e-4
+
+iters: 40000
+
+loss:
+  types:
+    - type: CrossEntropyLoss
+    - type: CrossEntropyLoss
+    - type: CrossEntropyLoss
+    - type: CrossEntropyLoss
+    - type: CrossEntropyLoss
+  coef: [1, 0.4, 0.4, 0.4, 0.4]
+
+test_config:
+    is_slide: True
+    crop_size: [769, 769]
+    stride: [512, 512]

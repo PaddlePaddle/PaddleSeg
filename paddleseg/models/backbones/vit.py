@@ -103,7 +103,6 @@ class Attention(nn.Layer):
         self.proj_drop = nn.Dropout(proj_drop)
 
     def forward(self, x):
-        # B= paddle.shape(x)[0]
         N, C = x.shape[1:]
         qkv = self.qkv(x).reshape((-1, N, 3, self.num_heads,
                                    C // self.num_heads)).transpose((2, 0, 3, 1,
@@ -220,6 +219,10 @@ class VisionTransformer(nn.Layer):
             shape=(1, self.pos_w * self.pos_h + 1, embed_dim),
             default_initializer=paddle.nn.initializer.Constant(value=0.))
         self.add_parameter("pos_embed", self.pos_embed)
+        self.cls_token = self.create_parameter(
+            shape=(1, 1, embed_dim),
+            default_initializer=paddle.nn.initializer.Constant(value=0.))
+        self.add_parameter("cls_token", self.cls_token)
         self.pos_drop = nn.Dropout(p=drop_rate)
 
         dpr = np.linspace(0, drop_path_rate, depth)
@@ -247,23 +250,28 @@ class VisionTransformer(nn.Layer):
 
     def forward_features(self, x):
         x = self.patch_embed(x)
-        n, c, h, w = x.shape
+        x_shape = paddle.shape(x)
         pos_embed = self.pos_embed[:, 1:, :]
+        cls_pos_embed = self.pos_embed[:, :1, :]
+        cls_tokens = self.cls_token.expand((x_shape[0], -1, -1))
+
         pos_embed = pos_embed.transpose([0, 2, 1])
-        pos_embed = pos_embed.reshape([1, c, self.pos_h, self.pos_w])
-        pos_embed = F.interpolate(pos_embed, [h, w])
+        pos_embed = pos_embed.reshape([1, -1, self.pos_h, self.pos_w])
+        pos_embed = F.interpolate(
+            pos_embed, x_shape[2:], mode='bilinear', align_corners=False)
+
+        pos_embed = pos_embed.flatten(2).transpose([0, 2, 1])
+        pos_embed = paddle.concat([cls_pos_embed, pos_embed], axis=1)
+        x = x.flatten(2).transpose([0, 2, 1])
+        x = paddle.concat([cls_tokens, x], axis=1)
         x = x + pos_embed
 
-        x = x.flatten(2).transpose([0, 2, 1])
         x = self.pos_drop(x)
         res = []
         for idx, blk in enumerate(self.blocks):
             x = blk(x)
-            if idx < self.depth - 1:
-                res.append(x.transpose([0, 2, 1]).reshape([n, c, h, w]))
-        x = self.norm(x)
-        res.append(x.transpose([0, 2, 1]).reshape([n, c, h, w]))
-        return res
+            res.append(x[:, 1:, :])
+        return res, x_shape
 
     def forward(self, x):
         return self.forward_features(x)

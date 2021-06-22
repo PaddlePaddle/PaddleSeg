@@ -1,4 +1,4 @@
-# Copyright (c) 2020 PaddlePaddle Authors. All Rights Reserved.
+# Copyright (c) 2021 PaddlePaddle Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -128,8 +128,6 @@ class EMAHead(nn.Layer):
             out_channels=ema_channels,
             kernel_size=3)
         self.ema_mid_conv = nn.Conv2D(ema_channels, ema_channels, kernel_size=1)
-        for param in self.ema_mid_conv.parameters():
-            param.stop_gradient = True
         self.ema_out_conv = layers.ConvBNReLU(
             in_channels=ema_channels, out_channels=ema_channels, kernel_size=1)
         self.bottleneck = layers.ConvBNReLU(
@@ -184,8 +182,8 @@ class EMAU(nn.Layer):
         tmp_mu = self.create_parameter(
             shape=[1, c, k],
             default_initializer=paddle.nn.initializer.KaimingNormal(k))
-        self.mu = F.normalize(paddle.to_tensor(tmp_mu), axis=1, p=2)
-        self.register_buffer('bases', self.mu)
+        mu = F.normalize(paddle.to_tensor(tmp_mu), axis=1, p=2)
+        self.register_buffer('mu', mu)
 
     def forward(self, x):
         x_shape = paddle.shape(x)
@@ -207,9 +205,11 @@ class EMAU(nn.Layer):
 
         if self.training:
             mu = paddle.mean(mu, 0, keepdim=True)
-            if paddle.distributed.get_world_size() > 1:
-                paddle.distributed.reduce(
-                    mu / paddle.distributed.get_world_size(), 0)
             mu = F.normalize(mu, axis=1, p=2)
-            self.mu = self.mu * (1 - self.momentum) + mu * self.momentum
+            mu = self.mu * (1 - self.momentum) + mu * self.momentum
+            if paddle.distributed.get_world_size() > 1:
+                mu = paddle.distributed.all_reduce(mu)
+                mu /= paddle.distributed.get_world_size()
+            self.mu = mu
+
         return x

@@ -46,7 +46,7 @@ int ReaderOp::inference() {
   std::vector<double> pmean;
   if(sc_ptr->get_mean_vector(pmean) != 0) {
    LOG(ERROR) << "Can't load the mean items";
-   return -1; 
+   return -1;
   }
 
   std::vector<double> scale;
@@ -124,7 +124,7 @@ int ReaderOp::inference() {
     const int WW = _image_8u_tmp.cols;
     const int CC = _image_8u_tmp.channels();
 
-   //HH: cols WW:rows 
+   //HH: cols WW:rows
     in_width_vec->push_back(HH);
     in_height_vec->push_back(WW);
 
@@ -143,7 +143,7 @@ int ReaderOp::inference() {
     // BGR->RGB transformer
     //cv::cvtColor(_image_8u_tmp, _image_8u_rgb, cv::COLOR_GRAY2BGR);
     _image_8u_rgb = _image_8u_tmp;
-    
+
     const int H = _image_8u_rgb.rows;
     const int W = _image_8u_rgb.cols;
     const int C = _image_8u_rgb.channels();
@@ -165,9 +165,9 @@ int ReaderOp::inference() {
           data_ptr[W * H * c + W * h + w] =
               (p[C * w + c] - pmean[c]) / scale[c];
          //HWC->CHW
-         //data_ptr[W * H * c + w * H + h] = 
+         //data_ptr[W * H * c + w * H + h] =
          //     (p[C * w + c] - pmean[c]) / scale[c];
-         
+
         }
       }
     }
@@ -182,4 +182,3 @@ DEFINE_OP(ReaderOp);
 }  // namespace serving
 }  // namespace paddle_serving
 }  // namespace baidu
-

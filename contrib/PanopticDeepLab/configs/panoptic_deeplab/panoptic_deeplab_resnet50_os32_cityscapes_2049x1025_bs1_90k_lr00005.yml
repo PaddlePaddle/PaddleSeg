@@ -1,0 +1,23 @@
+_base_: ../_base_/cityscapes_panoptic.yml
+
+batch_size: 1
+iters: 90000
+
+model:
+  type: PanopticDeepLab
+  backbone:
+    type: ResNet50_vd
+    output_stride: 32
+    pretrained: https://bj.bcebos.com/paddleseg/dygraph/resnet50_vd_ssld_v2.tar.gz
+  backbone_indices: [2,1,0,3]
+  aspp_ratios: [1, 3, 6, 9]
+  aspp_out_channels: 256
+  decoder_channels: 256
+  low_level_channels_projects: [128, 64, 32]
+  align_corners: True
+  instance_aspp_out_channels: 256
+  instance_decoder_channels: 128
+  instance_low_level_channels_projects: [64, 32, 16]
+  instance_num_classes: [1, 2]
+  instance_head_channels: 32
+  instance_class_key: ["center", "offset"]

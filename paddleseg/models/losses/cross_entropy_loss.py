@@ -30,17 +30,20 @@ class CrossEntropyLoss(nn.Layer):
             Default ``None``.
         ignore_index (int64, optional): Specifies a target value that is ignored
             and does not contribute to the input gradient. Default ``255``.
+        top_k_percent_pixels (float, optional): the value lies in [0.0, 1.0]. When its value < 1.0, only compute the loss for
+            the top k percent pixels (e.g., the top 20% pixels). This is useful for hard pixel mining.
     """
 
-    def __init__(self, weight=None, ignore_index=255):
+    def __init__(self, weight=None, ignore_index=255, top_k_percent_pixels=1.0):
         super(CrossEntropyLoss, self).__init__()
         if weight is not None:
             weight = paddle.to_tensor(weight, dtype='float32')
         self.weight = weight
         self.ignore_index = ignore_index
+        self.top_k_percent_pixels = top_k_percent_pixels
         self.EPS = 1e-8
 
-    def forward(self, logit, label):
+    def forward(self, logit, label, semantic_weights=None):
         """
         Forward computation.
 
@@ -51,6 +54,7 @@ class CrossEntropyLoss(nn.Layer):
             label (Tensor): Label tensor, the data type is int64. Shape is (N), where each
                 value is 0 <= label[i] <= C-1, and if shape is more than 2D, this is
                 (N, D1, D2,..., Dk), k >= 1.
+            semantic_weights (Tensor, optional): Weights about loss for each pixels, shape is the same as label. Default: None.
         """
         if self.weight is not None and logit.shape[1] != len(self.weight):
             raise ValueError(
@@ -74,8 +78,17 @@ class CrossEntropyLoss(nn.Layer):
         mask = label != self.ignore_index
         mask = paddle.cast(mask, 'float32')
         loss = loss * mask
-        avg_loss = paddle.mean(loss) / (paddle.mean(mask) + self.EPS)
+        if semantic_weights is not None:
+            loss = loss * semantic_weights
 
         label.stop_gradient = True
         mask.stop_gradient = True
-        return avg_loss
+        if self.top_k_percent_pixels == 1.0:
+            avg_loss = paddle.mean(loss) / (paddle.mean(mask) + self.EPS)
+            return avg_loss
+
+        loss = loss.reshape((-1, ))
+        top_k_pixels = int(self.top_k_percent_pixels * loss.numel())
+        loss, _ = paddle.topk(loss, top_k_pixels)
+
+        return loss.mean()

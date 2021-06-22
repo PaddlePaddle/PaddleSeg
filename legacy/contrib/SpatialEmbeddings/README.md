@@ -1,4 +1,4 @@
-# SpatialEmbeddings 
+# SpatialEmbeddings
 
 ## 模型概述
 本模型是基于proposal-free的实例分割模型，快速实时，同时准确率高，适用于自动驾驶等实时场景。
@@ -41,22 +41,22 @@ python -u infer.py
 数据及模型路径等详细配置见config.py文件
 
 #### 4. 预测结果示例：
-  
+
   原图：
-  
+
   ![](imgs/kitti_0007_000518_ori.png)
-  
+
   预测结果：
-  
+
   ![](imgs/kitti_0007_000518_pred.png)
-  
+
 
 
 ## 引用
 
-**论文** 
+**论文**
 
-*Instance Segmentation by Jointly Optimizing Spatial Embeddings and Clustering Bandwidth* 
+*Instance Segmentation by Jointly Optimizing Spatial Embeddings and Clustering Bandwidth*
 
 **代码**
 

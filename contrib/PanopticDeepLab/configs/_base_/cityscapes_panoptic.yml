@@ -1,0 +1,55 @@
+train_dataset:
+  type: CityscapesPanoptic
+  dataset_root: data/cityscapes
+  transforms:
+    - type: ResizeStepScaling
+      min_scale_factor: 0.5
+      max_scale_factor: 2.0
+      scale_step_size: 0.25
+    - type: RandomPaddingCrop
+      crop_size: [2049, 1025]
+      label_padding_value: [0, 0, 0]
+    - type: RandomHorizontalFlip
+    - type: RandomDistort
+      brightness_range: 0.4
+      contrast_range: 0.4
+      saturation_range: 0.4
+    - type: Normalize
+  mode: train
+  ignore_stuff_in_offset: True
+  small_instance_area: 4096
+  small_instance_weight: 3
+
+val_dataset:
+  type: CityscapesPanoptic
+  dataset_root: data/cityscapes
+  transforms:
+    - type: Padding
+      target_size: [2049, 1025]
+      label_padding_value: [0, 0, 0]
+    - type: Normalize
+  mode: val
+  ignore_stuff_in_offset: True
+  small_instance_area: 4096
+  small_instance_weight: 3
+
+
+optimizer:
+  type: adam
+
+learning_rate:
+  value: 0.00005
+  decay:
+    type: poly
+    power: 0.9
+    end_lr: 0.0
+
+loss:
+  types:
+    - type: CrossEntropyLoss
+      top_k_percent_pixels: 0.2
+    - type: MSELoss
+      reduction: "none"
+    - type: L1Loss
+      reduction: "none"
+  coef: [1, 200, 0.001]
