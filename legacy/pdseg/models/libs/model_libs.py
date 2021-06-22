@@ -42,7 +42,7 @@ def max_pool(input, kernel, stride, padding):
 
 
 def avg_pool(input, kernel, stride, padding=0):
-    data = F.avg_pool(input, kernel_size=kernel, stride=stride, padding=padding)
+    data = F.avg_pool2d(input, kernel_size=kernel, stride=stride, padding=padding)
     return data
 
 
