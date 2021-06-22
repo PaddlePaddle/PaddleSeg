@@ -1,13 +1,13 @@
 # PaddleSeg全流程跑通
 
-下面以BiSeNetV2和医学视盘分割数据集为例介绍PaddleSeg的**配置化驱动**使用方式。如果想了解API调用的使用方法，可点击[PaddleSeg高级教程](https://aistudio.baidu.com/aistudio/projectdetail/1340052)。
+以BiSeNetV2和医学视盘分割数据集为例介绍PaddleSeg的**配置化驱动**使用方式。如果想了解API调用的使用方法，可点击[PaddleSeg高级教程](https://aistudio.baidu.com/aistudio/projectdetail/1339458?channelType=0&channel=0)。
 
 按以下几个步骤来介绍使用流程。
 
-1. 准备环境：使用PaddleSeg的软件环境，具体包括安装Python和飞桨的版本号和如何下载PaddleSeg代码库等内容
+1. 准备环境：使用PaddleSeg的软件环境
 2. 数据说明：用户如何自定义数据集
 3. 模型训练：训练配置和启动训练命令
-4. 可视化训练过程：PaddleSeg提供了一系列展示训练过程的可视化工具
+4. 可视化训练过程：使用VDL展示训练过程
 5. 模型评估：评估模型效果
 6. 效果可视化：使用训练好的模型进行预测，同时对结果进行可视化
 7. 模型导出：如何导出可进行部署的模型
@@ -24,21 +24,20 @@
 3. 下载PaddleSeg的代码库。
 
 ```
-# PaddleSeg的代码库下载，同时支持github源和gitee源，为了在国内网络环境更快下载，此处使用gitee源。  
-# git clone https://github.com/PaddlePaddle/PaddleSeg.git
+git clone https://github.com/PaddlePaddle/PaddleSeg.git
+```
+```
+#如果github下载网络较差，用户可选择gitee进行下载
 git clone https://gitee.com/paddlepaddle/PaddleSeg.git
 ```
-
+安装Paddleseg API库，在安装该库的同时，运行PaddleSeg的其他依赖项也被同时安装
 ```
-cd ~/PaddleSeg/
-```
-
-```
-#通过pip形式安装paddleseg库，不仅安装了代码运行的环境依赖，也安装了PaddleSeg的API
 pip install paddleseg
 ```
 
 **1.2确认环境安装成功**
+
+下述命令均在PaddleSeg目录下完成
 
 执行下面命令，并在PaddleSeg/output文件夹中出现预测结果，则证明安装成功
 
@@ -100,7 +99,7 @@ cd ..
 
 **模型训练**
 
-- 本项目选择BiseNetV2模型，BiseNetV2是一个轻量化模型，在Cityscapes测试集中的平均IoU达到72.6％，在一张NVIDIA GeForce GTX 1080 Ti卡上的速度为156 FPS，这比现有方法要快得多，而且可以实现更好的分割精度。
+- 在这里选择BiseNetV2模型，BiseNetV2是一个轻量化模型，在Cityscapes测试集中的平均IoU达到72.6％，在一张NVIDIA GeForce GTX 1080 Ti卡上的速度为156 FPS，这比现有方法要快得多，而且可以实现更好的分割精度。
 
 **3.1 BiseNetV2模型介绍**
 
@@ -239,13 +238,13 @@ python train.py \
 ```
 output
   ├── iter_500 #表示在500步保存一次模型
-          ├── model.pdparams  #模型参数
-          └── model.pdopt  #训练阶段的优化器参数
+    ├── model.pdparams  #模型参数
+    └── model.pdopt  #训练阶段的优化器参数
   ├── iter_1000
-          ├── model.pdparams
-          └── model.pdopt
+    ├── model.pdparams
+    └── model.pdopt
   └── best_model #在训练的时候，训练时候增加--do_eval后，每保存一次模型，都会eval一次，miou最高的模型会被另存为best_model
-          └── model.pdparams  
+    └── model.pdparams  
 ```
 
 **3.5 训练参数解释**
@@ -482,38 +481,38 @@ python deploy/python/infer.py \
 PaddleSeg
      ├──  configs #配置文件文件夹
      ├──  paddleseg #训练部署的核心代码
-              ├── core  
-              ├── cvlibs #  Config类定义在该文件夹中。它保存了数据集、模型配置、主干网络、损失函数等所有的超参数。
-                      ├── callbacks.py
-                      └── ...
-              ├── datasets #PaddleSeg支持的数据格式，包括ade、citycapes等多种格式
-                      ├── ade.py
-                      ├── citycapes.py
-                      └── ...
-              ├── models #该文件夹下包含了PaddleSeg组网的各个部分
-                      ├── backbone # paddleseg的使用的主干网络
-                                ├── hrnet.py
-                                ├── resnet_vd.py
-                                └── ...
-                      ├── layers # 一些组件，例如attention机制
-                                ├── activation.py
-                                ├── attention.py
-                                └── ...
-                      ├── losses #该文件夹下包含了PaddleSeg所用到的损失函数
-                                ├── dice_loss.py
-                                ├── lovasz_loss.py
-                                └── ...
-                      ├── ann.py #该文件表示的是PaddleSeg所支持的算法模型，这里表示ann算法。
-                      ├── deeplab.py #该文件表示的是PaddleSeg所支持的算法模型，这里表示Deeplab算法。
-                      ├── unet.py #该文件表示的是PaddleSeg所支持的算法模型，这里表示unet算法。
-                      └── ...
-              ├── transforms #进行数据预处理的操作，包括各种数据增强策略
-                      ├── functional.py
-                      └── transforms.py
-              └── utils
-                      ├── config_check.py
-                      ├── visualize.py
-                      └── ...
+        ├── core  
+        ├── cvlibs #  Config类定义在该文件夹中。它保存了数据集、模型配置、主干网络、损失函数等所有的超参数。
+            ├── callbacks.py
+            └── ...
+        ├── datasets #PaddleSeg支持的数据格式，包括ade、citycapes等多种格式
+            ├── ade.py
+            ├── citycapes.py
+            └── ...
+        ├── models #该文件夹下包含了PaddleSeg组网的各个部分
+            ├── backbone # paddleseg的使用的主干网络
+            ├── hrnet.py
+            ├── resnet_vd.py
+            └── ...
+            ├── layers # 一些组件，例如attention机制
+            ├── activation.py
+            ├── attention.py
+            └── ...
+            ├── losses #该文件夹下包含了PaddleSeg所用到的损失函数
+            ├── dice_loss.py
+            ├── lovasz_loss.py
+            └── ...
+            ├── ann.py #该文件表示的是PaddleSeg所支持的算法模型，这里表示ann算法。
+            ├── deeplab.py #该文件表示的是PaddleSeg所支持的算法模型，这里表示Deeplab算法。
+            ├── unet.py #该文件表示的是PaddleSeg所支持的算法模型，这里表示unet算法。
+            └── ...
+        ├── transforms #进行数据预处理的操作，包括各种数据增强策略
+            ├── functional.py
+            └── transforms.py
+        └── utils
+            ├── config_check.py
+            ├── visualize.py
+            └── ...
      ├──  train.py  # 训练入口文件，该文件里描述了参数的解析，训练的启动方法，以及为训练准备的资源等。
      ├──  predict.py # 预测文件
      └── ...
