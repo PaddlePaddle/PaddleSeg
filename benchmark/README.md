@@ -1,7 +1,8 @@
 # PaddleSeg Benchmark with AMP
 
 ## 动态图
-数据集cityscapes 放置于data目录下, 下载链接：https://paddleseg.bj.bcebos.com/dataset/cityscapes.tar
+
+数据集cityscapes 放置于data目录下
 
 通过 **--fp16** 开启amp训练。
 
