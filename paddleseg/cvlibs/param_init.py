@@ -58,7 +58,7 @@ def normal_init(param, **kwargs):
 
 
 def kaiming_normal_init(param, **kwargs):
-    """
+    r"""
     Initialize the input tensor with Kaiming Normal initialization.
 
     This function implements the `param` initialization from the paper
