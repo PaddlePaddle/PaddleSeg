@@ -82,7 +82,7 @@ def parse_args():
 
 
 def eval_fn(net, eval_dataset, num_workers):
-    miou, _ = evaluate(
+    miou, _, _, _, _ = evaluate(
         net, eval_dataset, num_workers=num_workers, print_detail=False)
     return miou
 

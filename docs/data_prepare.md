@@ -88,7 +88,7 @@ Pascal Context是基于PASCAL VOC 2010数据集额外标注的像素级别的语
     |
     |--trainval_merged.json
 
-其中，标注图像的标签从1，2依次取值，不可间隔。若有需要忽略的像素，则按0进行标注。在使用Pascal Context数据集时，需要安装[Detail](https://github.com/zhanghang1989/detail-api).
+其中，标注图像的标签从1，2依次取值，不可间隔。若有需要忽略的像素，则按255(默认的忽略值）进行标注。在使用Pascal Context数据集时，需要安装[Detail](https://github.com/zhanghang1989/detail-api).
 
 ## 自定义数据集
 
