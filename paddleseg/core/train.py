@@ -20,7 +20,7 @@ import shutil
 import paddle
 import paddle.nn.functional as F
 
-from paddleseg.utils import TimeAverager, calculate_eta, resume, logger
+from paddleseg.utils import TimeAverager, calculate_eta, resume, logger, worker_init_fn
 from paddleseg.core.val import evaluate
 
 
@@ -112,6 +112,7 @@ def train(model,
         batch_sampler=batch_sampler,
         num_workers=num_workers,
         return_list=True,
+        worker_init_fn=worker_init_fn,
     )
 
     # use amp
