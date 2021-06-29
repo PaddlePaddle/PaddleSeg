@@ -53,7 +53,6 @@ loss:
   coef: [1]
 
 model:
-#   type: ShuffleNetV2
-  type: ShuffleNetV2_224x398
+  type: ShuffleNetV2Slim2_224x398
   align_corners: False
   num_classes: 2

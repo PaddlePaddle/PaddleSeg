@@ -50,7 +50,9 @@ def loss_computation(logits_list, labels, losses, edges=None):
 
 def train(model,
           train_dataset,
-          val_dataset=None,
+          val_datasets=None,
+          class_weights=None,
+          dataset_weights=None,
           optimizer=None,
           save_dir='output',
           iters=10000,
@@ -68,7 +70,7 @@ def train(model,
     Args:
         model（nn.Layer): A sementic segmentation model.
         train_dataset (paddle.io.Dataset): Used to read and process training datasets.
-        val_dataset (paddle.io.Dataset, optional): Used to read and process validation datasets.
+        val_datasets (paddle.io.Dataset, optional): Used to read and process validation datasets.
         optimizer (paddle.optimizer.Optimizer): The optimizer.
         save_dir (str, optional): The directory for saving the model snapshot. Default: 'output'.
         iters (int, optional): How may iters to train the model. Defualt: 10000.
@@ -87,6 +89,9 @@ def train(model,
     local_rank = paddle.distributed.ParallelEnv().local_rank
 
     start_iter = 0
+    if val_datasets is not None:
+        assert class_weights is not None
+        assert dataset_weights is not None
     if resume_model is not None:
         start_iter = resume(model, optimizer, resume_model)
 
@@ -207,16 +212,14 @@ def train(model,
                 reader_cost_averager.reset()
                 batch_cost_averager.reset()
 
-            val_dataset0, val_dataset1, val_dataset2 = val_dataset
             if (iter % save_interval == 0
-                    or iter == iters) and (val_dataset is not None):
+                    or iter == iters) and (val_datasets is not None):
                 num_workers = 1 if num_workers > 0 else 0
-                mean_iou, acc, class_iou0, _, _ = evaluate(
-                    model, val_dataset0, num_workers=num_workers)
-                mean_iou, acc, class_iou1, _, _ = evaluate(
-                    model, val_dataset1, num_workers=num_workers)
-                mean_iou, acc, class_iou2, _, _ = evaluate(
-                    model, val_dataset2, num_workers=num_workers)
+                class_ious = []
+                for val_dataset in val_datasets:
+                    mean_iou, acc, class_iou, _, _ = evaluate(
+                        model, val_dataset, num_workers=num_workers)
+                    class_ious.append(class_iou)
                 model.train()
 
             if (iter % save_interval == 0 or iter == iters) and local_rank == 0:
@@ -233,32 +236,26 @@ def train(model,
                     model_to_remove = save_models.popleft()
                     shutil.rmtree(model_to_remove)
 
-                if val_dataset is not None:
-                    class_weight = val_dataset0.valset_class_weight
-                    dataset_weight = val_dataset0.valset_weight
-                    dataset0_iou = class_weight[0] * class_iou0[
-                        0] + class_weight[1] * class_iou0[1]
-                    dataset1_iou = class_weight[0] * class_iou1[
-                        0] + class_weight[1] * class_iou1[1]
-                    dataset2_iou = class_weight[0] * class_iou2[
-                        0] + class_weight[1] * class_iou2[1]
-                    total_iou = dataset_weight[
-                        0] * dataset0_iou + dataset_weight[
-                            1] * dataset1_iou + dataset_weight[2] * dataset2_iou
-                    logger.info("[EVAL] Dataset 0 Class IoU: \n" +
-                                str(np.round(class_iou0, 4)))
-                    logger.info("[EVAL] Dataset 1 Class IoU: \n" +
-                                str(np.round(class_iou1, 4)))
-                    logger.info("[EVAL] Dataset 2 Class IoU: \n" +
-                                str(np.round(class_iou2, 4)))
+                if val_datasets is not None:
+                    dataset_ious = []
+                    for class_iou in class_ious:
+                        dataset_iou = 0
+                        for num, class_weight in enumerate(class_weights):
+                            dataset_iou += class_weight * class_iou[num]
+                        dataset_ious.append(dataset_iou)
+                    total_iou = 0
+                    for num, dataset_iou in enumerate(dataset_ious):
+                        logger.info("[EVAL] Dataset {} Class IoU: {}\n".format(
+                            num, str(np.round(class_ious[num], 4))))
+                        logger.info("[EVAL] Dataset {} IoU: {}\n".format(
+                            num, str(np.round(dataset_iou, 4))))
+                        total_iou += dataset_weights[num] * dataset_iou
                     logger.info("[EVAL] Total IoU: \n" +
                                 str(np.round(total_iou, 4)))
 
                     if total_iou > best_total_iou:
                         best_total_iou = total_iou
-                        best_class_iou0 = class_iou0
-                        best_class_iou1 = class_iou1
-                        best_class_iou2 = class_iou2
+                        best_class_ious = class_ious
                         best_model_iter = iter
                         best_model_dir = os.path.join(save_dir, "best_model")
                         paddle.save(
@@ -267,12 +264,11 @@ def train(model,
                     logger.info(
                         '====================== best model metrics =================='
                     )
-                    logger.info("[EVAL] Dataset 0 Class IoU: \n" +
-                                str(np.round(best_class_iou0, 4)))
-                    logger.info("[EVAL] Dataset 1 Class IoU: \n" +
-                                str(np.round(best_class_iou1, 4)))
-                    logger.info("[EVAL] Dataset 2 Class IoU: \n" +
-                                str(np.round(best_class_iou2, 4)))
+                    for num, best_class_iou in enumerate(best_class_ious):
+                        logger.info("[EVAL] Dataset {} Class IoU: {}\n".format(
+                            num, str(np.round(best_class_iou, 4))))
+                        logger.info("[EVAL] Dataset {} IoU: {}\n".format(
+                            num, str(np.round(best_class_iou, 4))))
                     logger.info("[EVAL] Total IoU: \n" +
                                 str(np.round(total_iou, 4)))
                     logger.info(
@@ -285,8 +281,7 @@ def train(model,
                     if use_vdl:
                         log_writer.add_scalar('Evaluate/total IoU', total_iou,
                                               iter)
-                        for k, class_iou in enumerate(
-                            [class_iou0, class_iou1, class_iou2]):
+                        for k, class_iou in enumerate(class_ious):
                             for i, iou in enumerate(class_iou):
                                 log_writer.add_scalar(
                                     'Evaluate/Dataset {} IoU {}'.format(k, i),
