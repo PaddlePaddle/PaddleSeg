@@ -24,25 +24,25 @@ val_dataset:
   mode: val
 
 model:
-  type: DeepLabV3P
+  type: FCN
   backbone:
-    type: ResNet50_vd
-    output_stride: 8
-    multi_grid: [1, 2, 4]
-    pretrained: https://bj.bcebos.com/paddleseg/dygraph/resnet50_vd_ssld_v2.tar.gz
+    type: HRNet_W48
+    pretrained: https://bj.bcebos.com/paddleseg/dygraph/hrnet_w48_ssld.tar.gz
+    padding_same: False
   num_classes: 19
-  backbone_indices: [0, 3]
-  aspp_ratios: [1, 12, 24, 36]
+  backbone_indices: [-1]
+  bias: False
 
 optimizer:
   type: sgd
-  weight_decay: 0.00004
+  weight_decay: 0.0005
 
-lr_scheduler:
-  type: PolynomialDecay
-  learning_rate: 0.01
-  end_lr: 0
-  power: 0.9
+learning_rate:
+  value: 0.01
+  decay:
+    type: poly
+    power: 0.9
+    end_lr: 0.0
 
 loss:
   types:

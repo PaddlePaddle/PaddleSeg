@@ -18,7 +18,9 @@ from __future__ import division
 from __future__ import print_function
 import contextlib
 import paddle
-import paddle.fluid as fluid
+import paddle.static as static
+import paddle.static.nn as nn
+import paddle.nn.functional as F
 from utils.config import cfg
 from models.libs.model_libs import scope, name_scope
 from models.libs.model_libs import bn, bn_relu, relu, qsigmoid
@@ -46,30 +48,16 @@ def encoder(input):
     else:
         aspp_ratios = cfg.MODEL.DEEPLAB.ENCODER.ASPP_RATIOS
 
-    param_attr = fluid.ParamAttr(
+    param_attr = paddle.ParamAttr(
         name=name_scope + 'weights',
         regularizer=None,
-        initializer=fluid.initializer.TruncatedNormal(loc=0.0, scale=0.06))
+        initializer=paddle.nn.initializer.TruncatedNormal(mean=0.0, std=0.06))
 
     concat_logits = []
     with scope('encoder'):
         channel = cfg.MODEL.DEEPLAB.ENCODER.ASPP_CONVS_FILTERS
         with scope("image_pool"):
-            if not cfg.MODEL.DEEPLAB.ENCODER.POOLING_CROP_SIZE:
-                image_avg = fluid.layers.reduce_mean(
-                    input, [2, 3], keep_dim=True)
-            else:
-                pool_w = int((cfg.MODEL.DEEPLAB.ENCODER.POOLING_CROP_SIZE[0] -
-                              1.0) / cfg.MODEL.DEEPLAB.OUTPUT_STRIDE + 1.0)
-                pool_h = int((cfg.MODEL.DEEPLAB.ENCODER.POOLING_CROP_SIZE[1] -
-                              1.0) / cfg.MODEL.DEEPLAB.OUTPUT_STRIDE + 1.0)
-                image_avg = fluid.layers.pool2d(
-                    input,
-                    pool_size=(pool_h, pool_w),
-                    pool_stride=cfg.MODEL.DEEPLAB.ENCODER.POOLING_STRIDE,
-                    pool_type='avg',
-                    pool_padding='VALID')
-
+            image_avg = F.adaptive_avg_pool2d(input, output_size=(1, 1))
             act = qsigmoid if cfg.MODEL.DEEPLAB.ENCODER.SE_USE_QSIGMOID else bn_relu
             image_avg = act(
                 conv(
@@ -80,7 +68,11 @@ def encoder(input):
                     groups=1,
                     padding=0,
                     param_attr=param_attr))
-            image_avg = fluid.layers.resize_bilinear(image_avg, input.shape[2:])
+            image_avg = F.interpolate(
+                image_avg,
+                input.shape[2:],
+                mode='bilinear',
+                align_corners=cfg.MODEL.DEEPLAB.ALIGN_CORNERS)
             if cfg.MODEL.DEEPLAB.ENCODER.ADD_IMAGE_LEVEL_FEATURE:
                 concat_logits.append(image_avg)
 
@@ -93,14 +85,26 @@ def encoder(input):
                     1,
                     groups=1,
                     padding=0,
-                    param_attr=param_attr))
+                    param_attr=param_attr,
+                    bias_attr=cfg.MODEL.DEEPLAB.BIAS))
+            aspp0 = F.interpolate(
+                aspp0,
+                input.shape[2:],
+                mode='bilinear',
+                align_corners=cfg.MODEL.DEEPLAB.ALIGN_CORNERS)
             concat_logits.append(aspp0)
 
         if aspp_ratios:
             with scope("aspp1"):
                 if cfg.MODEL.DEEPLAB.ASPP_WITH_SEP_CONV:
                     aspp1 = separate_conv(
-                        input, channel, 1, 3, dilation=aspp_ratios[0], act=relu)
+                        input,
+                        channel,
+                        1,
+                        3,
+                        dilation=aspp_ratios[0],
+                        act=relu,
+                        bias_attr=cfg.MODEL.DEEPLAB.BIAS)
                 else:
                     aspp1 = bn_relu(
                         conv(
@@ -111,11 +115,22 @@ def encoder(input):
                             dilation=aspp_ratios[0],
                             padding=aspp_ratios[0],
                             param_attr=param_attr))
+                aspp1 = F.interpolate(
+                    aspp1,
+                    input.shape[2:],
+                    mode='bilinear',
+                    align_corners=cfg.MODEL.DEEPLAB.ALIGN_CORNERS)
                 concat_logits.append(aspp1)
             with scope("aspp2"):
                 if cfg.MODEL.DEEPLAB.ASPP_WITH_SEP_CONV:
                     aspp2 = separate_conv(
-                        input, channel, 1, 3, dilation=aspp_ratios[1], act=relu)
+                        input,
+                        channel,
+                        1,
+                        3,
+                        dilation=aspp_ratios[1],
+                        act=relu,
+                        bias_attr=cfg.MODEL.DEEPLAB.BIAS)
                 else:
                     aspp2 = bn_relu(
                         conv(
@@ -126,11 +141,22 @@ def encoder(input):
                             dilation=aspp_ratios[1],
                             padding=aspp_ratios[1],
                             param_attr=param_attr))
+                aspp2 = F.interpolate(
+                    aspp2,
+                    input.shape[2:],
+                    mode='bilinear',
+                    align_corners=cfg.MODEL.DEEPLAB.ALIGN_CORNERS)
                 concat_logits.append(aspp2)
             with scope("aspp3"):
                 if cfg.MODEL.DEEPLAB.ASPP_WITH_SEP_CONV:
                     aspp3 = separate_conv(
-                        input, channel, 1, 3, dilation=aspp_ratios[2], act=relu)
+                        input,
+                        channel,
+                        1,
+                        3,
+                        dilation=aspp_ratios[2],
+                        act=relu,
+                        bias_attr=cfg.MODEL.DEEPLAB.BIAS)
                 else:
                     aspp3 = bn_relu(
                         conv(
@@ -141,10 +167,15 @@ def encoder(input):
                             dilation=aspp_ratios[2],
                             padding=aspp_ratios[2],
                             param_attr=param_attr))
+                aspp3 = F.interpolate(
+                    aspp3,
+                    input.shape[2:],
+                    mode='bilinear',
+                    align_corners=cfg.MODEL.DEEPLAB.ALIGN_CORNERS)
                 concat_logits.append(aspp3)
 
         with scope("concat"):
-            data = fluid.layers.concat(concat_logits, axis=1)
+            data = paddle.concat(concat_logits, axis=1)
             if cfg.MODEL.DEEPLAB.ENCODER.ASPP_WITH_CONCAT_PROJECTION:
                 data = bn_relu(
                     conv(
@@ -154,8 +185,13 @@ def encoder(input):
                         1,
                         groups=1,
                         padding=0,
-                        param_attr=param_attr))
-                data = fluid.layers.dropout(data, 0.9)
+                        param_attr=param_attr,
+                        bias_attr=cfg.MODEL.DEEPLAB.BIAS))
+
+                if cfg.MODEL.DEEPLAB.BENCHMARK:
+                    data = F.dropout(data, 0.1, mode='downscale_in_infer')
+                else:
+                    data = paddle.fluid.layers.dropout(data, 0.9)
 
         if cfg.MODEL.DEEPLAB.ENCODER.ASPP_WITH_SE:
             data = data * image_avg
@@ -163,8 +199,11 @@ def encoder(input):
 
 
 def _decoder_with_sum_merge(encode_data, decode_shortcut, param_attr):
-    encode_data = fluid.layers.resize_bilinear(encode_data,
-                                               decode_shortcut.shape[2:])
+    encode_data = F.interpolate(
+        encode_data,
+        decode_shortcut.shape[2:],
+        mode='bilinear',
+        align_corners=cfg.MODEL.DEEPLAB.ALIGN_CORNERS)
     encode_data = conv(
         encode_data,
         cfg.MODEL.DEEPLAB.DECODER.CONV_FILTERS,
@@ -197,12 +236,15 @@ def _decoder_with_concat(encode_data, decode_shortcut, param_attr):
                 1,
                 groups=1,
                 padding=0,
-                param_attr=param_attr))
+                param_attr=param_attr,
+                bias_attr=cfg.MODEL.DEEPLAB.BIAS))
 
-        encode_data = fluid.layers.resize_bilinear(encode_data,
-                                                   decode_shortcut.shape[2:])
-        encode_data = fluid.layers.concat([encode_data, decode_shortcut],
-                                          axis=1)
+        encode_data = F.interpolate(
+            encode_data,
+            decode_shortcut.shape[2:],
+            mode='bilinear',
+            align_corners=cfg.MODEL.DEEPLAB.ALIGN_CORNERS)
+        encode_data = paddle.concat([encode_data, decode_shortcut], axis=1)
     if cfg.MODEL.DEEPLAB.DECODER_USE_SEP_CONV:
         with scope("separable_conv1"):
             encode_data = separate_conv(
@@ -211,7 +253,8 @@ def _decoder_with_concat(encode_data, decode_shortcut, param_attr):
                 1,
                 3,
                 dilation=1,
-                act=relu)
+                act=relu if cfg.MODEL.DEEPLAB.DECODER.ACT else None,
+                bias_attr=cfg.MODEL.DEEPLAB.BIAS)
         with scope("separable_conv2"):
             encode_data = separate_conv(
                 encode_data,
@@ -219,7 +262,8 @@ def _decoder_with_concat(encode_data, decode_shortcut, param_attr):
                 1,
                 3,
                 dilation=1,
-                act=relu)
+                act=relu if cfg.MODEL.DEEPLAB.DECODER.ACT else None,
+                bias_attr=cfg.MODEL.DEEPLAB.BIAS)
     else:
         with scope("decoder_conv1"):
             encode_data = bn_relu(
@@ -249,10 +293,10 @@ def decoder(encode_data, decode_shortcut):
     # encode_data：编码器输出
     # decode_shortcut: 从backbone引出的分支, resize后与encode_data concat
     # DECODER_USE_SEP_CONV: 默认为真，则concat后连接两个可分离卷积，否则为普通卷积
-    param_attr = fluid.ParamAttr(
+    param_attr = paddle.ParamAttr(
         name=name_scope + 'weights',
         regularizer=None,
-        initializer=fluid.initializer.TruncatedNormal(loc=0.0, scale=0.06))
+        initializer=paddle.nn.initializer.TruncatedNormal(mean=0.0, std=0.06))
     with scope('decoder'):
         if cfg.MODEL.DEEPLAB.DECODER.USE_SUM_MERGE:
             return _decoder_with_sum_merge(encode_data, decode_shortcut,
@@ -357,7 +401,10 @@ def resnet_vd(input):
     if lr_mult_list is None:
         lr_mult_list = [1.0, 1.0, 1.0, 1.0, 1.0]
     model = resnet_vd_backbone(
-        layers, stem='deeplab', lr_mult_list=lr_mult_list)
+        layers,
+        stem='deeplab',
+        lr_mult_list=lr_mult_list,
+        align_corners=cfg.MODEL.DEEPLAB.ALIGN_CORNERS)
     data, decode_shortcuts = model.net(
         input,
         end_points=end_points,
@@ -392,15 +439,14 @@ def deeplabv3p(img, num_classes):
         data = decoder(data, decode_shortcut)
 
     # 根据类别数设置最后一个卷积层输出，并resize到图片原始尺寸
-    param_attr = fluid.ParamAttr(
+    param_attr = paddle.ParamAttr(
         name=name_scope + 'weights',
-        regularizer=fluid.regularizer.L2DecayRegularizer(
-            regularization_coeff=0.0),
-        initializer=fluid.initializer.TruncatedNormal(loc=0.0, scale=0.01))
+        regularizer=paddle.regularizer.L2Decay(coeff=0.0),
+        initializer=paddle.nn.initializer.TruncatedNormal(mean=0.0, std=0.01))
 
     if not cfg.MODEL.DEEPLAB.DECODER.OUTPUT_IS_LOGITS:
         with scope('logit'):
-            with fluid.name_scope('last_conv'):
+            with static.name_scope('last_conv'):
                 logit = conv(
                     data,
                     num_classes,
@@ -412,5 +458,9 @@ def deeplabv3p(img, num_classes):
     else:
         logit = data
 
-    logit = fluid.layers.resize_bilinear(logit, img.shape[2:])
+    logit = F.interpolate(
+        logit,
+        img.shape[2:],
+        mode='bilinear',
+        align_corners=cfg.MODEL.DEEPLAB.ALIGN_CORNERS)
     return logit

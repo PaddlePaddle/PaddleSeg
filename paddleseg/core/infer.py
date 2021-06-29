@@ -212,6 +212,8 @@ def inference(model,
         Tensor: If ori_shape is not None, a prediction with shape (1, 1, h, w) is returned.
             If ori_shape is None, a logit with shape (1, num_classes, h, w) is returned.
     """
+    if hasattr(model, 'data_format') and model.data_format == 'NHWC':
+        im = im.transpose((0, 2, 3, 1))
     if not is_slide:
         logits = model(im)
         if not isinstance(logits, collections.abc.Sequence):
@@ -221,9 +223,11 @@ def inference(model,
         logit = logits[0]
     else:
         logit = slide_inference(model, im, crop_size=crop_size, stride=stride)
+    if hasattr(model, 'data_format') and model.data_format == 'NHWC':
+        logit = logit.transpose((0, 3, 1, 2))
     if ori_shape is not None:
-        pred = paddle.argmax(logit, axis=1, keepdim=True, dtype='int32')
-        pred = reverse_transform(pred, ori_shape, transforms)
+        pred = reverse_transform(logit, ori_shape, transforms, mode='bilinear')
+        pred = paddle.argmax(pred, axis=1, keepdim=True, dtype='int32')
         return pred
     else:
         return logit
@@ -284,6 +288,7 @@ def aug_inference(model,
             logit = F.softmax(logit, axis=1)
             final_logit = final_logit + logit
 
-    pred = paddle.argmax(final_logit, axis=1, keepdim=True, dtype='int32')
-    pred = reverse_transform(pred, ori_shape, transforms)
+    pred = reverse_transform(
+        final_logit, ori_shape, transforms, mode='bilinear')
+    pred = paddle.argmax(pred, axis=1, keepdim=True, dtype='int32')
     return pred

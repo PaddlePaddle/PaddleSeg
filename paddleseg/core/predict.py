@@ -121,7 +121,7 @@ def predict(model,
                 im_file = im_path.replace(image_dir, '')
             else:
                 im_file = os.path.basename(im_path)
-            if im_file[0] == '/':
+            if im_file[0] == '/' or im_file[0] == '\\':
                 im_file = im_file[1:]
 
             # save added image
