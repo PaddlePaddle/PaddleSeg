@@ -9,8 +9,11 @@ Lovasz loss基于子模损失(submodular losses)的凸Lovasz扩展，对神经�
 - （1）与cross entropy loss或bce loss(binary cross-entropy loss)加权结合使用。
 - （2）先使用cross entropy loss或bce loss进行训练，再使用lovasz softmax loss或lovasz hinge loss进行finetuning.
 
-以方式（1）为例，通过`MixedLoss`类选择训练时的损失函数， 通过`coef`参数对不同loss进行权重配比，从而灵活地进行训练调参。如下所示：
+以方式（1）为例，通过`MixedLoss`类选择训练时的损失函数， 通过`coef`参数对不同loss进行权重配比，从而灵活地进行训练调参。
 
+一般的网络仅有一个输出logit，使用示例如下：
+
+Lovasz softmax loss示例
 ```yaml
 loss:
   types:
@@ -19,8 +22,10 @@ loss:
         - type: CrossEntropyLoss
         - type: LovaszSoftmaxLoss
       coef: [0.8, 0.2]
+  coef: [1]
 ```
 
+Lovasz hinge loss示例
 ```yaml
 loss:
   types:
@@ -29,7 +34,25 @@ loss:
         - type: CrossEntropyLoss
         - type: LovaszHingeLoss
       coef: [1, 0.02]
+  coef: [1]
 ```
+
+对于多个输出logit的网络，使用示例如下（以2个输出为例）：
+```yaml
+loss:
+  types:
+    - type: MixedLoss
+      losses:
+        - type: CrossEntropyLoss
+        - type: LovaszSoftmaxLoss
+      coef: [0.8, 0.2]
+    - type: MixedLoss
+      losses:
+        - type: CrossEntropyLoss
+        - type: LovaszSoftmaxLoss
+      coef: [0.8, 0.2]
+  coef: [1, 0.4]
+  ```
 
 
 ## Lovasz softmax loss实验对比
