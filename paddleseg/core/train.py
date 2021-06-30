@@ -17,6 +17,7 @@ import time
 from collections import deque
 import shutil
 
+import numpy as np
 import paddle
 import paddle.nn.functional as F
 
@@ -136,6 +137,7 @@ def train(model,
 
     iter = start_iter
     while iter < iters:
+        np.random.seed(42 + iter)
         for data in loader:
             iter += 1
             if iter > iters:
