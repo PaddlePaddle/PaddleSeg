@@ -355,6 +355,10 @@ class Config(object):
         return component(**params)
 
     @property
+    def test_config(self) -> Dict:
+        return self.dic.get('test_config', {})
+
+    @property
     def export_config(self) -> Dict:
         return self.dic.get('export', {})
 

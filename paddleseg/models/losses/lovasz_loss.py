@@ -41,7 +41,7 @@ class LovaszSoftmaxLoss(nn.Layer):
         self.classes = classes
 
     def forward(self, logits, labels):
-        """
+        r"""
         Forward computation.
 
         Args:
@@ -68,7 +68,7 @@ class LovaszHingeLoss(nn.Layer):
         self.ignore_index = ignore_index
 
     def forward(self, logits, labels):
-        """
+        r"""
         Forward computation.
 
         Args:
@@ -111,7 +111,7 @@ def binary_channel_to_unary(logits, eps=1e-9):
 
 
 def lovasz_hinge_flat(logits, labels):
-    """
+    r"""
     Binary Lovasz hinge loss.
 
     Args:

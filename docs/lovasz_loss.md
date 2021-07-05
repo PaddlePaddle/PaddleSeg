@@ -54,7 +54,6 @@ loss:
   coef: [1, 0.4]
   ```
 
-
 ## Lovasz softmax loss实验对比
 
 接下来以经典的[Cityscapes](https://www.cityscapes-dataset.com/)数据集为例应用lovasz softmax loss. Cityscapes数据集共有19类目标，其中的类别并不均衡，例如类别`road`、`building`很常见，`fence`、`motocycle`、`wall`则较为罕见。我们将lovasz softmax loss与softmax loss进行了实验对比。这里使用OCRNet模型，backbone为HRNet w18.

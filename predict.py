@@ -137,6 +137,27 @@ def get_image_list(image_path):
     return image_list, image_dir
 
 
+def get_test_config(cfg, args):
+
+    test_config = cfg.test_config
+    if args.aug_pred:
+        test_config['aug_pred'] = args.aug_pred
+        test_config['scales'] = args.scales
+
+    if args.flip_horizontal:
+        test_config['flip_horizontal'] = args.flip_horizontal
+
+    if args.flip_vertical:
+        test_config['flip_vertical'] = args.flip_vertical
+
+    if args.is_slide:
+        test_config['is_slide'] = args.is_slide
+        test_config['crop_size'] = args.crop_size
+        test_config['stride'] = args.stride
+
+    return test_config
+
+
 def main(args):
     env_info = get_sys_env()
     place = 'gpu' if env_info['Paddle compiled with cuda'] and env_info[
@@ -163,6 +184,7 @@ def main(args):
     image_list, image_dir = get_image_list(args.image_path)
     logger.info('Number of predict images = {}'.format(len(image_list)))
 
+    test_config = get_test_config(cfg, args)
     config_check(cfg, val_dataset=val_dataset)
 
     predict(
@@ -172,14 +194,7 @@ def main(args):
         image_list=image_list,
         image_dir=image_dir,
         save_dir=args.save_dir,
-        aug_pred=args.aug_pred,
-        scales=args.scales,
-        flip_horizontal=args.flip_horizontal,
-        flip_vertical=args.flip_vertical,
-        is_slide=args.is_slide,
-        crop_size=args.crop_size,
-        stride=args.stride,
-    )
+        **test_config)
 
 
 if __name__ == '__main__':
