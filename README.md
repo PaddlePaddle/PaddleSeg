@@ -73,13 +73,13 @@ Welcome to PaddleSeg! PaddleSeg is an end-to-end image segmentation development 
 * [Installation](./docs/install.md)
 * [Get Started](./docs/quick_start.md)
 *  Data Processing
-   * [Data format description](./docs/data/marker/marker_c.md)
-   * [Data annotation and transform](./docs/data/transform/transform_c.md)
+   * [Data Format Description](./docs/data/marker/marker_c.md)
+   * [Data Annotation And Transform](./docs/data/transform/transform_c.md)
    * [Custom Dataset](./docs/data/custom/data_prepare.md)
 
-*  Design Idea of PaddleSeg
-    * [Detailed configuration file](./docs/design/use/use.md)
-    * [Create your own model](./docs/design/create/add_new_model.md)
+*  Design Idea Of PaddleSeg
+    * [Detailed Configuration File](./docs/design/use/use.md)
+    * [Create Your Own Model](./docs/design/create/add_new_model.md)
 * [Model Train](/docs/train/train.md)
 * [Model Evaluate](./docs/evaluation/evaluate/evaluate.md)
 * [Model Export](./docs/export/export/model_export.md)
@@ -91,18 +91,18 @@ Welcome to PaddleSeg! PaddleSeg is an end-to-end image segmentation development 
     * [Web](./docs/deployment/web/web.md)
 * [Model Compression](./docs/slim/slim/slim.md)
 *  API Tutorial
-    * [API documention](./docs/apis)
-    * [API application case](./docs/api_example.md)
-*  Important module description
-    * [Data enhancement](./docs/module/data/data.md)
+    * [API Documention](./docs/apis)
+    * [API Application](./docs/api_example.md)
+*  Description Of Important Modules
+    * [Data Augmentation](./docs/module/data/data.md)
     * [Loss Description](./docs/module/loss/lovasz_loss.md)
     * [Tricks](./docs/module/tricks/tricks.md)
-* Description to Classical models 
+* Description Of Classical models 
     * [DeeplabV3](./docs/models/deeplabv3.md)
     * [UNet](./docs/models/unet.md)
     * [OCRNet](./docs/models/ocrnet.md)
     * [Fast-SCNN](./docs/models/fascnn.md)
-* [Instruction about commit PR](./docs/pr/pr/pr.md)
+* [Instruction About Commit PR](./docs/pr/pr/pr.md)
 * [FAQ](./docs/faq/faq/faq.md)
 
 ## Installation
