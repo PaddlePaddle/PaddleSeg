@@ -80,8 +80,8 @@ Welcome to PaddleSeg! PaddleSeg is an end-to-end image segmentation development 
 *  Design Idea of PaddleSeg
     * [Detailed Configuration File](./docs/design/use/use.md)
     * [Create Your Own Model](./docs/design/create/add_new_model.md)
-* [Model Train](/docs/train/train.md)
-* [Model Evaluate](./docs/evaluation/evaluate/evaluate.md)
+* [Model Training](/docs/train/train.md)
+* [Model Evaluation](./docs/evaluation/evaluate/evaluate.md)
 * [Model Export](./docs/export/export/model_export.md)
 
 *  Model Deploy
@@ -97,12 +97,12 @@ Welcome to PaddleSeg! PaddleSeg is an end-to-end image segmentation development 
     * [Data Augmentation](./docs/module/data/data.md)
     * [Loss Description](./docs/module/loss/lovasz_loss.md)
     * [Tricks](./docs/module/tricks/tricks.md)
-* Description of Classical models 
+* Description of Classical Models 
     * [DeeplabV3](./docs/models/deeplabv3.md)
     * [UNet](./docs/models/unet.md)
     * [OCRNet](./docs/models/ocrnet.md)
     * [Fast-SCNN](./docs/models/fascnn.md)
-* [Instruction About Commit PR](./docs/pr/pr/pr.md)
+* [PR Instruction](./docs/pr/pr/pr.md)
 * [FAQ](./docs/faq/faq/faq.md)
 
 ## Installation
