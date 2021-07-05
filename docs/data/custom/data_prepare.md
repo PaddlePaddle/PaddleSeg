@@ -12,7 +12,7 @@
         |  |--...
         |
         |--labels
-        |  |--label1.jpg
+        |  |--label1.png
         |  |--label2.png
         |  |--...
         |
