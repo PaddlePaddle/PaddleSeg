@@ -83,7 +83,12 @@
 ## Normalize
 > CLASS paddleseg.transforms.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5))
 
-    Normalize an image.
+    Normalize an image.The specific operations are as follows:
+    1. Min_val is subtracted from the pixel value.
+    2. The pixel value is divided by (max_val-min_val) and normalized to the interval [0.0, 1.0].
+    3. Subtract the mean value and divide by the standard deviation operation on the image.
+
+    Note: In the mean and std parameters, the length of the list should be consistent with the number of image channels.
 
 > > Args
 > > > - **mean** (list, optional): The mean value of a data set. Default: [0.5, 0.5, 0.5].
@@ -97,7 +102,7 @@
                  im_padding_value=(127.5, 127.5, 127.5),
                  label_padding_value=255)
 
-    Add bottom-right padding to a raw image or annotation image.
+    Perform padding operation on the image or annotated image according to the provided value.Add bottom-right padding to a raw image or annotation image.
 
 > > Args
 > > > - **target_size** (list|tuple): The target size after padding.
@@ -141,23 +146,24 @@
                  im_padding_value=(127.5, 127.5, 127.5),
                  label_padding_value=255)
 
-    Rotate an image randomly with padding.
+    Randomly rotate the image. When there is annotated image, it will be synchronized, and the rotated image and the annotated image will be padding accordingly.
 
 > > Args
 > > > - **max_rotation** (float, optional): The maximum rotation degree. Default: 15.
 > > > - **im_padding_value** (list, optional): The padding value of raw image.
             Default: [127.5, 127.5, 127.5].
 > > > - **label_padding_value** (int, optional): The padding value of annotation image. Default: 255.
+Note: The length of the list of parameters im_padding_value and label_padding_value should be consistent with the number of image channels.
 
 ## RandomScaleAspect
 > CLASS paddleseg.transforms.RandomScaleAspect(min_scale=0.5, aspect_ratio=0.33)
 
-    Crop a sub-image from an original image with a range of area ratio and aspect and
-    then scale the sub-image back to the size of the original image.
+    Crop and resize the image back to the original size and the annotated image.
+    The image is cropped according to a certain area ratio and aspect ratio, and the reszie returns to the original image. When there is an annotated image, it is synchronized.
 
 > > Args
-> > > - **min_scale** (float, optional): The minimum area ratio of cropped image to the original image. Default: 0.5.
-> > > - **aspect_ratio** (float, optional): The minimum aspect ratio. Default: 0.33.
+> > > - **min_scale** (float, optional): The minimum value of the area ratio of the cropped image to the original image. The value range is [0, 1]. When it is equal to 0, the original image will be returned.Default: 0.5.
+> > > - **aspect_ratio** (float, optional): The minimum value of the cropped image's aspect ratio range, non-negative value, returns to the original image when it is 0.Default: 0.33.
 
 
 ## RandomDistort
