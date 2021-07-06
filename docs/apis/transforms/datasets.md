@@ -5,7 +5,7 @@
 - [ADE20K](#ADE20K)
 - [OpticDiscSeg](#OpticDiscSeg)
 
-## [Custom Dataset](../../paddleseg/datasets/dataset.py)
+## [Custom Dataset](../../../paddleseg/datasets/dataset.py)
 > CLASS paddleseg.datasets.Dataset(transforms, dataset_root, num_classes, mode='train', train_path=None, val_path=None, test_path=None, separator=' ', ignore_index=255, edge=False)
 
     Pass in a custom dataset that conforms to the format.
@@ -43,7 +43,7 @@ dataset = Dataset(transforms = transforms,
                   mode = 'train')
 ```
 
-## [Cityscapes](../../paddleseg/datasets/cityscapes.py)
+## [Cityscapes](../../../paddleseg/datasets/cityscapes.py)
 > CLASS paddleseg.datasets.Cityscapes(transforms, dataset_root, mode='train', edge=False)
 
     Cityscapes dataset `https://www.cityscapes-dataset.com/`.
@@ -70,7 +70,7 @@ dataset = Dataset(transforms = transforms,
 > > > - **edge** (bool, optional): Whether to compute edge while training. Default: False
 
 
-## [PascalVOC](../../paddleseg/datasets/voc.py)
+## [PascalVOC](../../../paddleseg/datasets/voc.py)
 > CLASS paddleseg.datasets.PascalVOC(transforms, dataset_root=None, mode='train', edge=False)
 
     PascalVOC2012 dataset `http://host.robots.ox.ac.uk/pascal/VOC/`.
@@ -83,7 +83,7 @@ dataset = Dataset(transforms = transforms,
         If you want to set mode to 'trainaug', please make sure the dataset have been augmented. Default: 'train'.
 > > > - **edge** (bool, optional): Whether to compute edge while training. Default: False
 
-## [ADE20K](../../paddleseg/datasets/ade.py)
+## [ADE20K](../../../paddleseg/datasets/ade.py)
 > CLASS paddleseg.datasets.ADE20K(transforms, dataset_root=None, mode='train', edge=False)
 
     ADE20K dataset `http://sceneparsing.csail.mit.edu/`.
@@ -94,7 +94,7 @@ dataset = Dataset(transforms = transforms,
 > > > - **mode** (str, optional): A subset of the entire dataset. It should be one of ('train', 'val'). Default: 'train'.
 > > > - **edge** (bool, optional): Whether to compute edge while training. Default: False
 
-## [OpticDiscSeg](../../paddleseg/datasets/optic_disc_seg.py)
+## [OpticDiscSeg](../../../paddleseg/datasets/optic_disc_seg.py)
 > CLASS paddleseg.datasets.OpticDiscSeg(dataset_root=None, transforms=None, mode='train', edge=False)
 
     OpticDiscSeg dataset is extraced from iChallenge-AMD `https://ai.baidu.com/broad/subordinate?dataset=amd`.
