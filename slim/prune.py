@@ -149,7 +149,7 @@ def main(args):
 
     logger.info(
         'Step 1/3: Start calculating the sensitivity of model parameters...')
-    sample_shape = [1] + list(val_dataset[0][0].shape)
+    sample_shape = [1] + list(train_dataset[0][0].shape)
     sen_file = os.path.join(args.save_dir, 'sen.pickle')
     pruner = L1NormFilterPruner(net, sample_shape)
     pruner.sensitive(
