@@ -14,13 +14,23 @@ English | [简体中文](README_CN.md)
 
 Welcome to PaddleSeg! PaddleSeg is an end-to-end image segmentation development kit developed based on [PaddlePaddle](https://www.paddlepaddle.org.cn), which covers a large number of high-quality segmentation models in different directions such as *high-performance* and *lightweight*. With the help of modular design, we provide two application methods: *Configuration Drive* and *API Calling*. So one can conveniently complete the entire image segmentation application from training to deployment through configuration calls or API calls.
 
-## Core features
+## Core Features
 
-**High performance model**: Based on the high-performance backbone trained by Baidu's self-developed [semi-supervised label knowledge distillation scheme (SSLD)](https://paddleclas.readthedocs.io/zh_CN/latest/advanced_tutorials/distillation/distillation.html#ssld), combined with the state of the art segmentation technology, we provides 50+ high-quality pre-training models, which are better than other open source implementations.
+* <img src="./docs/images/f1.png" width="20"/> **High Performance Model**: Based on the high-performance backbone trained by Baidu's self-developed [semi-supervised label knowledge distillation scheme (SSLD)](https://paddleclas.readthedocs.io/zh_CN/latest/advanced_tutorials/distillation/distillation.html#ssld), combined with the state of the art segmentation technology, we provides 50+ high-quality pre-training models, which are better than other open source implementations.
 
-**Modular design**: PaddleSeg support 15+ mainstream *segmentation networks*, developers can start based on actual application scenarios and assemble diversified training configurations combined with modular design of *data enhancement strategies*, *backbone networks*, *loss functions* and other different components to meet different performance and accuracy requirements.
+* <img src="./docs/images/f2.png" width="20"/> **Modular Design**: PaddleSeg support 15+ mainstream *segmentation networks*, developers can start based on actual application scenarios and assemble diversified training configurations combined with modular design of *data enhancement strategies*, *backbone networks*, *loss functions* and other different components to meet different performance and accuracy requirements.
 
-**High efficiency**: PaddleSeg provides multi-process asynchronous I/O, multi-card parallel training, evaluation and other acceleration strategies, combined with the memory optimization function of the PaddlePaddle, which can greatly reduce the training overhead of the segmentation model, all this allowing developers to lower cost and more efficiently train image segmentation model.
+* <img src="./docs/images/f3.png" width="20"/> **High Efficiency**: PaddleSeg provides multi-process asynchronous I/O, multi-card parallel training, evaluation and other acceleration strategies, combined with the memory optimization function of the PaddlePaddle, which can greatly reduce the training overhead of the segmentation model, all this allowing developers to lower cost and more efficiently train image segmentation model.
+
+* :heart:**You can go to  [Complete PaddleSeg Online Documentation Directory](https://paddleseg.readthedocs.io)  for more detailed documentation**:heart:
+
+## Technical Communication <img src="./docs/images/chat.png" width="30"/>
+
+* If you find any problems or have a suggestion with PaddleSeg, please send us issues through [GitHub Issues](https://github.com/PaddlePaddle/PaddleSeg/issues).
+* Welcome to Join PaddleSeg WeChat Group (left) and QQ Group (right)
+<div align="center">
+<img src="./docs/images/wechat_qq_623.png"  width = "500" />  
+</div>
 
 ## Model Zoo
 
@@ -58,6 +68,43 @@ Welcome to PaddleSeg! PaddleSeg is an end-to-end image segmentation development 
 - [x] Pascal Context
 - [x] COCO stuff
 
+## Tutorials <img src="./docs/images/teach.png" width="30"/>
+
+* [Installation](./docs/install.md)
+* [Get Started](./docs/quick_start.md)
+*  Data Processing
+   * [Data Format Description](./docs/data/marker/marker_c.md)
+   * [Data Annotation and Transform](./docs/data/transform/transform_c.md)
+   * [Custom Dataset](./docs/data/custom/data_prepare.md)
+
+*  Design Idea of PaddleSeg
+    * [Detailed Configuration File](./docs/design/use/use.md)
+    * [Create Your Own Model](./docs/design/create/add_new_model.md)
+* [Model Training](/docs/train/train.md)
+* [Model Evaluation](./docs/evaluation/evaluate/evaluate.md)
+* [Model Export](./docs/export/export/model_export.md)
+
+*  Model Deploy
+    * [Inference](./docs/deployment/inference/inference.md)
+    * [Lite](./docs/deployment/lite/lite.md)
+    * [Serving](./docs/deployment/serving/serving.md)
+    * [Web](./docs/deployment/web/web.md)
+* [Model Compression](./docs/slim/slim/slim.md)
+*  API Tutorial
+    * [API Documention](./docs/apis)
+    * [API Application](./docs/api_example.md)
+*  Description of Important Modules
+    * [Data Augmentation](./docs/module/data/data.md)
+    * [Loss Description](./docs/module/loss/lovasz_loss.md)
+    * [Tricks](./docs/module/tricks/tricks.md)
+* Description of Classical Models 
+    * [DeeplabV3](./docs/models/deeplabv3.md)
+    * [UNet](./docs/models/unet.md)
+    * [OCRNet](./docs/models/ocrnet.md)
+    * [Fast-SCNN](./docs/models/fascnn.md)
+* [PR Instruction](./docs/pr/pr/pr.md)
+* [FAQ](./docs/faq/faq/faq.md)
+
 ## Installation
 
 #### step 1. Install PaddlePaddle
@@ -77,31 +124,20 @@ pip install paddleseg
 ```
 
 
-#### step 3. Download PaddleSeg repo
+#### step 3. Download PaddleSeg Repo
 Support to complete the whole process segmentation application with *Configuration Drive* method, simple and fast.
 
 ```shell
 git clone https://github.com/PaddlePaddle/PaddleSeg
 ```
 
-#### step 4. Verify installation
+#### step 4. Verify Installation
 Run the following command. If you can train normally, you have installed it successfully.
 
 ```shell
 python train.py --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml
 ```
 
-## Tutorials
-
-* [Get Started](./docs/quick_start.md)
-* [API Tutorial](https://aistudio.baidu.com/aistudio/projectdetail/1339458)
-* [Data Preparation](./docs/data_prepare.md)
-* [Training Configuration](./configs/)
-* [Loss Usage](./docs/loss_usage.md)
-* [API References](./docs/apis)
-* [Add New Components](./docs/add_new_model.md)
-* [Model Compression](./slim)
-* [Model Deploy](./docs/model_export.md)
 
 ## Practical Cases
 

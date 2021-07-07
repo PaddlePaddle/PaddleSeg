@@ -30,7 +30,7 @@ PaddleSeg是基于飞桨[PaddlePaddle](https://www.paddlepaddle.org.cn)开发的
 * 如果你发现任何PaddleSeg存在的问题或者是建议, 欢迎通过[GitHub Issues](https://github.com/PaddlePaddle/PaddleSeg/issues)给我们提issues。
 * 欢迎加入PaddleSeg微信群（左侧）和QQ群（右侧）
 <div align="center">
-<img src="./docs/images/wechat_qq_623.png"  width = "500" />  
+<img src="./docs/images/wechat_qq_630.png"  width = "500" />  
 </div>
 
 ## 模型库  <img src="./docs/images/model.png" width="20"/>
