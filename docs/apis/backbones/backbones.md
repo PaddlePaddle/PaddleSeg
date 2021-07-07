@@ -8,7 +8,7 @@ The models subpackage contains backbones extracting features for sementic segmen
 - [XceptionDeeplab](#xceptiondeeplab)
 
 
-## [ResNet_vd](../../paddleseg/models/backbones/resnet_vd.py)
+## [ResNet_vd](../../../paddleseg/models/backbones/resnet_vd.py)
 ResNet_vd backbone from ["Bag of Tricks for Image Classification with Convolutional Neural Networks"](https://arxiv.org/pdf/1812.01187.pdf)
 ```python
 class paddleseg.models.backbones.Resnet_vd(
@@ -55,7 +55,7 @@ padddelseg.models.backbones.ResNet200_vd(**args)
 ```
 > Return a object of ResNet_vd class which layers is 200.
 
-## [HRNet](../../paddleseg/models/backbones/hrnet.py)
+## [HRNet](../../../paddleseg/models/backbones/hrnet.py)
 HRNet backbone from ["HRNet：Deep High-Resolution Representation Learning for Visual Recognition"](https://arxiv.org/pdf/1908.07919.pdf)
 ```python
 class paddleseg.models.backbones.HRNet(
@@ -146,7 +146,7 @@ paddleseg.models.backbones.HRNet_W64(**kwargs)
 
 
 
-## [MobileNetV3](../../paddleseg/models/backbones/mobilenetv3.py)
+## [MobileNetV3](../../../paddleseg/models/backbones/mobilenetv3.py)
 MobileNetV3 backbone from ["Searching for MobileNetV3"](https://arxiv.org/pdf/1905.02244.pdf).
 ```python
 class paddleseg.models.backbones.MobileNetV3(
@@ -213,7 +213,7 @@ paddleseg.models.backbones.MobileNetV3_large_x1_25(**args)
 > Return a object of MobileNetV3 class which scale is 1.25 and model_name is large.
 
 
-## [XceptionDeeplab](../../paddleseg/models/backbones/xception_deeplab.py)
+## [XceptionDeeplab](../../../paddleseg/models/backbones/xception_deeplab.py)
 Xception backbone of DeepLabV3+ from ["Encoder-Decoder with Atrous Separable Convolution for Semantic Image Segmentation"](https://arxiv.org/abs/1802.02611)
 ```python
 class paddleseg.models.backbones.XceptionDeeplab(
