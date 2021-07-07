@@ -14,6 +14,32 @@
 
 PaddleSeg是基于飞桨[PaddlePaddle](https://www.paddlepaddle.org.cn)开发的端到端图像分割开发套件，涵盖了**高精度**和**轻量级**等不同方向的大量高质量分割模型。通过模块化的设计，提供了**配置化驱动**和**API调用**两种应用方式，帮助开发者更便捷地完成从训练到部署的全流程图像分割应用。
 
+## <img src="./docs/images/love.png" width="40"/> 重要活动提醒
+
+✨直播课预告--全球冠军带你实现产业级图像分割✨  
+
+* 直播链接：http://live.bilibili.com/21689802
+
+
+
+* Day① 7.13 20:15-21:30 
+    * 主题：顶会冠军图像分割算法深度解密
+        * 语义分割全系列算法讲解
+        * CVPR冠军解析自动驾驶场景理解方案
+        * 揭秘百度全新Transformer算法
+
+* Day② 7.14 20:15-21:30 
+    * 主题：高精度人像分割算法及应用
+        * 实时人像分割技术难点及实现
+        *  Web端超轻量模型设计方案
+        * 精细化分割Matting技术详解 
+
+* Day③ 7.15 20:15-21:30 
+    * 主题：交互式分割及破圈应用
+        * 交互式分割算法及优化技巧
+        * 高效智能标注功能的实现
+        * 交互式分割的产业创新应用 
+
 ## 特性 <img src="./docs/images/feature.png" width="30"/>
 
 
@@ -103,7 +129,6 @@ PaddleSeg是基于飞桨[PaddlePaddle](https://www.paddlepaddle.org.cn)开发的
 * [人像分割](https://github.com/PaddlePaddle/PaddleSeg/tree/release/2.1/contrib/HumanSeg)
 * [医疗图像](./docs/solution/medical/medical.md)
 * [遥感分割](https://github.com/PaddlePaddle/PaddleSeg/tree/release/2.1/contrib/remote_sensing)
-* [全景分割](./contrib/PanopticDeepLab)
 
 ## 代码贡献
 
