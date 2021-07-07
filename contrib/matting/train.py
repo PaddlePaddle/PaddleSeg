@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import argparse
+import os
 
 from core import train
 from model import *
@@ -112,6 +113,13 @@ def parse_args():
         help='The iters saving begin',
         default=None,
         type=int)
+    parser.add_argument(
+        '--backbone',
+        dest='backbone',
+        help=
+        'The backbone of model. It is one of (VGG16, ResNet18_vd, ResNet34_vd, ResNet50_vd, ResNet101_vd, ResNet152_vd)',
+        required=True,
+        type=str)
 
     return parser.parse_args()
 
@@ -152,10 +160,22 @@ def main(args):
     losses['coef'].append(1)
 
     # model
+    #bulid backbone
     # vgg16预训练模型地址： 'https://paddle-imagenet-models-name.bj.bcebos.com/dygraph/VGG16_pretrained.pdparams')
-    backbone = VGG16(input_channels=4, pretrained='./VGG16_pretrained.pdparams')
+    pretrained_model = './pretrained_models/' + args.backbone + '_pretrained.pdparams'
+    if not os.path.exists(pretrained_model):
+        pretrained_model = None
+    backbone = eval(args.backbone)(
+        input_channels=4, pretrained=pretrained_model)
+
+    decoder_input_channels = 512
+    if args.backbone in ['ResNet50_vd', 'ResNet101_vd', 'ResNet152_vd']:
+        decoder_input_channels = 2048
     model = DIM(
-        backbone=backbone, stage=args.stage, pretrained=args.pretrained_model)
+        backbone=backbone,
+        stage=args.stage,
+        pretrained=args.pretrained_model,
+        decoder_input_channels=decoder_input_channels)
 
     # optimizer
     # 简单的先构建一个优化器
@@ -176,6 +196,7 @@ def main(args):
         num_workers=args.num_workers,
         use_vdl=args.use_vdl,
         save_interval=args.save_interval,
+        log_iters=args.log_iters,
         resume_model=args.resume_model,
         stage=args.stage,
         save_dir=args.save_dir,

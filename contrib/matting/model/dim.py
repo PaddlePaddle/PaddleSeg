@@ -31,20 +31,29 @@ class DIM(nn.Layer):
     (https://arxiv.org/pdf/1908.07919.pdf).
 
     Args:
-
+        backbone: backbone model.
+        pretrained(str, optional): The path of pretrianed model. Defautl: None.
+        stage (int, optional): The stage of model. Defautl: 3.
+        decoder_input_channels(int, optional): The channel os decoder input. Defautl: 512.
 
     """
 
     def __init__(self,
                  backbone,
                  pretrained=None,
-                 stage=3):
+                 stage=3,
+                 decoder_input_channels=512):
         super().__init__()
         self.backbone = backbone
         self.pretrained = pretrained
         self.stage = stage
 
-        self.decoder = Decoder(input_channels=512)
+        decoder_output_channels = [64, 128, 256, 512]
+        if backbone.__class__.__name__ == 'ResNet_vd':
+            decoder_output_channels = [64, 256, 512, 1024]
+        self.decoder = Decoder(
+            input_channels=decoder_input_channels,
+            output_channels=decoder_output_channels)
         if self.stage == 2:
             for param in self.backbone.parameters():
                 param.stop_gradient = True
@@ -58,7 +67,7 @@ class DIM(nn.Layer):
         input_shape = inputs['img'].shape[-2:]
         x = paddle.concat([inputs['img'], inputs['trimap'].unsqueeze(1) / 255],
                           axis=1)
-        fea_list, ids_list = self.backbone(x)
+        fea_list = self.backbone(x)
 
         # decoder stage
         up_shape = []
@@ -90,28 +99,6 @@ class DIM(nn.Layer):
             utils.load_entire_model(self, self.pretrained)
 
 
-# class Up(nn.Layer):
-#     def __init__(self, input_channels, output_channels):
-#         super().__init__()
-#         # self.conv = layers.ConvBNReLU(
-#         #     input_channels,
-#         #     output_channels,
-#         #     kernel_size=5,
-#         #     padding=2,
-#         #     bias_attr=False)
-
-#         self.deconv = nn.Conv2DTranspose(
-#             input_channels, output_channels, kernel_size=4, stride=2, padding=1)
-
-#     def forward(self, x, output_shape):
-#         # x = F.interpolate(
-#         #     x, size=output_shape, mode='bilinear', align_corners=False)
-#         # x = self.conv(x)
-#         x = self.deconv(x)
-#         x = F.relu(x)
-
-#         return x
-
 # bilinear interpolate skip connect
 class Up(nn.Layer):
     def __init__(self, input_channels, output_channels):
@@ -134,15 +121,15 @@ class Up(nn.Layer):
 
 
 class Decoder(nn.Layer):
-    def __init__(self, input_channels):
+    def __init__(self, input_channels, output_channels=(64, 128, 256, 512)):
         super().__init__()
         self.deconv6 = nn.Conv2D(
-            input_channels, 512, kernel_size=1, bias_attr=False)
-        self.deconv5 = Up(512, 512)
-        self.deconv4 = Up(512, 256)
-        self.deconv3 = Up(256, 128)
-        self.deconv2 = Up(128, 64)
-        self.deconv1 = Up(64, 64)
+            input_channels, input_channels, kernel_size=1, bias_attr=False)
+        self.deconv5 = Up(input_channels, output_channels[-1])
+        self.deconv4 = Up(output_channels[-1], output_channels[-2])
+        self.deconv3 = Up(output_channels[-2], output_channels[-3])
+        self.deconv2 = Up(output_channels[-3], output_channels[-4])
+        self.deconv1 = Up(output_channels[-4], 64)
 
         self.alpha_conv = nn.Conv2D(
             64, 1, kernel_size=5, padding=2, bias_attr=False)

@@ -13,5 +13,6 @@
 # limitations under the License.
 
 from .vgg import *
+from .resnet_vd import *
 from .dim import DIM
 from .loss import MRSD
