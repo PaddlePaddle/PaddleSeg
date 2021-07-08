@@ -1,0 +1,57 @@
+batch_size: 64
+iters: 46000
+
+train_dataset:
+  type: EG1800
+  dataset_root: data/EG1800
+  transforms:
+    - type: RandomAffine
+      max_rotation: 45
+      min_scale_factor: 0.5
+      max_scale_factor: 1.5
+      size: [ 224, 224 ]
+      translation_offset: 56
+    - type: RandomHorizontalFlip
+    - type: Normalize
+      mean: [0.485, 0.458, 0.408]
+      std: [0.23, 0.23, 0.23]
+  mode: train
+
+val_dataset:
+  type: EG1800
+  dataset_root: data/EG1800
+  transforms:
+    - type: Normalize
+      mean: [0.485, 0.458, 0.408]
+      std: [0.23, 0.23, 0.23]
+  mode: val
+
+optimizer:
+  type: adam
+  weight_decay: 5.0e-4
+
+learning_rate:
+  value: 0.001
+  decay:
+    type: stepdecay
+    step_size: 460
+    gamma: 0.95
+
+loss:
+  types:
+    - type: CrossEntropyLoss
+    - type: CrossEntropyLoss
+    - type: FocalLoss
+    - type: KLLoss
+
+
+  coef: [1, 1, 0.3, 2]
+
+model:
+  type: PortraitNet
+  num_classes: 2
+  add_edge: True
+  channel_ratio: 1.0
+  min_channel: 16
+  weight_init: True
+  pretrained: null
