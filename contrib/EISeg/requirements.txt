@@ -6,6 +6,6 @@ paddleseg
 albumentations
 cython
 pyyaml
-paddlepaddle
+paddlepaddle >= 2.1.0
 wget
-qpt==1.0a6
+qpt == 1.0a6
