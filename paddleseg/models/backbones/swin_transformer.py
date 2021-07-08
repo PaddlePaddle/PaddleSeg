@@ -603,12 +603,12 @@ class SwinTransformer(nn.Layer):
                 (i_layer < self.num_layers - 1) else None)
             self.layers.append(layer)
 
-        num_features = [int(embed_dim * 2**i) for i in range(self.num_layers)]
-        self.num_features = num_features
+        feat_channels = [int(embed_dim * 2**i) for i in range(self.num_layers)]
+        self.feat_channels = feat_channels
 
         # add a norm layer for each output
         for i_layer in out_indices:
-            layer = norm_layer(num_features[i_layer])
+            layer = norm_layer(feat_channels[i_layer])
             layer_name = f'norm{i_layer}'
             self.add_sublayer(layer_name, layer)
 
@@ -677,8 +677,8 @@ class SwinTransformer(nn.Layer):
                 norm_layer = getattr(self, f'norm{i}')
                 x_out = norm_layer(x_out)
 
-                out = x_out.reshape([-1, H, W, self.num_features[i]]).transpose(
-                    [0, 3, 1, 2])
+                out = x_out.reshape(
+                    [-1, H, W, self.feat_channels[i]]).transpose([0, 3, 1, 2])
                 outs.append(out)
 
         return tuple(outs)

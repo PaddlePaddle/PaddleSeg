@@ -1,0 +1,25 @@
+_base_: '../_base_/cityscapes.yml'
+
+model:
+  type: MLATransformer
+  backbone:
+    type: SwinTransformer
+    embed_dim: 128
+    depths: [2, 2, 18, 2]
+    num_heads: [4, 8, 16, 32]
+    window_size: 7
+    ape: False
+    drop_path_rate: 0.3
+    patch_norm: True
+    pretrained: SwinTransformer_base_patch4_window7_224_pretrained.pdparams
+  num_classes: 26
+  in_channels: [128, 256, 512, 1024]
+  mlahead_channels: 128
+
+iters: 160000
+
+loss:
+  types:
+    - type: CrossEntropyLoss
+    - type: CrossEntropyLoss
+  coef: [1, 0.4]
