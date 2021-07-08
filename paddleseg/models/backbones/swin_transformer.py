@@ -394,7 +394,6 @@ class BasicLayer(nn.Layer):
         drop_path (float | tuple[float], optional): Stochastic depth rate. Default: 0.0
         norm_layer (nn.Layer, optional): Normalization layer. Default: nn.LayerNorm
         downsample (nn.Layer | None, optional): Downsample layer at the end of the layer. Default: None
-        use_checkpoint (bool): Whether to use checkpointing to save memory. Default: False.
     """
 
     def __init__(self,
@@ -545,7 +544,8 @@ class SwinTransformer(nn.Layer):
                  ape=False,
                  patch_norm=True,
                  out_indices=(0, 1, 2, 3),
-                 frozen_stages=-1):
+                 frozen_stages=-1,
+                 pretrained=None):
         super().__init__()
 
         self.pretrain_img_size = pretrain_img_size
@@ -614,6 +614,9 @@ class SwinTransformer(nn.Layer):
 
         self._freeze_stages()
 
+        self.pretrained = pretrained
+        self.init_weights(self.pretrained)
+
     def _freeze_stages(self):
         if self.frozen_stages >= 0:
             self.patch_embed.eval()
@@ -647,6 +650,9 @@ class SwinTransformer(nn.Layer):
             elif isinstance(m, nn.LayerNorm):
                 nn.init.constant_(m.bias, 0)
                 nn.init.constant_(m.weight, 1.0)
+
+        if pretrained is not None:
+            utils.load_pretrained_model(self, self.pretrained)
 
     def forward(self, x):
         """Forward function."""

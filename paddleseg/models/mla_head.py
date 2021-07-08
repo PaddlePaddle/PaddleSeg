@@ -112,6 +112,7 @@ class MLAHead(nn.Layer):
                  in_channels,
                  backbone,
                  mlahead_channels=128,
+                 aux_channels=256,
                  norm_layer=nn.BatchNorm2D,
                  **kwargs):
         super(MLAHead, self).__init__()
@@ -169,6 +170,19 @@ class MLAHead(nn.Layer):
             padding=1,
             bias_attr=False)
 
+        self.aux_head = nn.Sequential(
+            layers.ConvBN(
+                in_channels=self.in_channels[2],
+                out_channels=aux_channels,
+                kernel_size=3,
+                padding=1,
+                bias_attr=False),
+            nn.Conv2D(
+                in_channels=aux_channels,
+                out_channels=self.num_classes,
+                kernel_size=1,
+            ))
+
     def forward(self, x):
         inputs = self.backbone(x)
 
@@ -210,6 +224,9 @@ class MLAHead(nn.Layer):
         feats = self.mlahead(inputs0, inputs1, inputs2, inputs3)
         logit = self.cls(feats)
         logit_list = [logit]
+
+        if self.training:
+            logit_list.append(self.aux_head(inputs[2]))
 
         logit_list = [
             F.interpolate(
