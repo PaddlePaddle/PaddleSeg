@@ -17,3 +17,4 @@ from .resnet_vd import *
 from .xception_deeplab import *
 from .mobilenetv3 import *
 from .vit import *
+from .swin_transformer import *
