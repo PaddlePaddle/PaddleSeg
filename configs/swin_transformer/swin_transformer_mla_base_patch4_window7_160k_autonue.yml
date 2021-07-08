@@ -1,7 +1,7 @@
 train_dataset:
   type: Dataset
-  dataset_root: ../Swin-Transformer-Semantic-Segmentation/data/IDD_Segmentation
-  train_path: ../Swin-Transformer-Semantic-Segmentation/data/IDD_Segmentation/train.txt
+  dataset_root: data/IDD_Segmentation
+  train_path: data/IDD_Segmentation/train.txt
   num_classes: 26
   transforms:
     - type: ResizeStepScaling
@@ -20,8 +20,8 @@ train_dataset:
 
 val_dataset:
   type: Dataset
-  dataset_root: ../Swin-Transformer-Semantic-Segmentation/data/IDD_Segmentation
-  val_path: ../Swin-Transformer-Semantic-Segmentation/data/IDD_Segmentation/val.txt
+  dataset_root: data/IDD_Segmentation
+  val_path: data/IDD_Segmentation/val.txt
   num_classes: 26
   transforms:
     - type: Resize
