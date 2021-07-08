@@ -103,7 +103,7 @@ class MLAHeads(nn.Layer):
 
 
 @manager.MODELS.add_component
-class MLAHead(nn.Layer):
+class MLATransformer(nn.Layer):
     """ Vision Transformer with support for patch or hybrid CNN input stage
     """
 
@@ -115,7 +115,7 @@ class MLAHead(nn.Layer):
                  aux_channels=256,
                  norm_layer=nn.BatchNorm2D,
                  **kwargs):
-        super(MLAHead, self).__init__()
+        super(MLATransformer, self).__init__()
 
         self.BatchNorm = norm_layer
         self.mlahead_channels = mlahead_channels

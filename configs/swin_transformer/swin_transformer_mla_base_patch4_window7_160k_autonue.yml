@@ -1,39 +1,7 @@
-train_dataset:
-  type: Dataset
-  dataset_root: data/IDD_Segmentation
-  train_path: data/IDD_Segmentation/train.txt
-  num_classes: 26
-  transforms:
-    - type: ResizeStepScaling
-      min_scale_factor: 0.5
-      max_scale_factor: 2.0
-      scale_step_size: 0.25
-    - type: RandomPaddingCrop
-      crop_size: [1024, 512]
-    - type: RandomHorizontalFlip
-    - type: RandomDistort
-      brightness_range: 0.4
-      contrast_range: 0.4
-      saturation_range: 0.4
-    - type: Normalize
-  mode: train
-
-val_dataset:
-  type: Dataset
-  dataset_root: data/IDD_Segmentation
-  val_path: data/IDD_Segmentation/val.txt
-  num_classes: 26
-  transforms:
-    - type: Resize
-      target_size: [1920, 1080]
-    - type: Normalize
-      mean: [0.485, 0.456, 0.406]
-      std: [0.229, 0.224, 0.225]
-  mode: val
-
+_base_: '../_base_/autonue.yml'
 
 model:
-  type: MLAHead
+  type: MLATransformer
   backbone:
     type: SwinTransformer
     embed_dim: 128
@@ -43,19 +11,15 @@ model:
     ape: False
     drop_path_rate: 0.3
     patch_norm: True
+    pretrained: SwinTransformer_base_patch4_window7_224_pretrained.pdparams
   num_classes: 26
   in_channels: [128, 256, 512, 1024]
   mlahead_channels: 128
 
-optimizer:
-  weight_decay: 0.0
-
-lr_scheduler:
-  end_lr: 1.0e-4
-
-iters: 40000
+iters: 160000
 
 loss:
   types:
     - type: CrossEntropyLoss
-  coef: [1]
+    - type: CrossEntropyLoss
+  coef: [1, 0.4]
