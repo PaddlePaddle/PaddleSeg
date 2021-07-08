@@ -21,7 +21,7 @@ from paddleseg.cvlibs import manager
 
 @manager.LOSSES.add_component
 class BCELoss(nn.Layer):
-    """
+    r"""
     This operator combines the sigmoid layer and the :ref:`api_nn_loss_BCELoss` layer.
     Also, we can see it as the combine of ``sigmoid_cross_entropy_with_logits``
     layer and some reduce operations.

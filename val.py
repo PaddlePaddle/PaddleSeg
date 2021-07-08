@@ -108,6 +108,13 @@ def parse_args():
         'The stride of sliding window, the first is width and the second is height.',
         type=int,
         default=None)
+    parser.add_argument(
+        '--data_format',
+        dest='data_format',
+        help=
+        'Data format that specifies the layout of input. It can be "NCHW" or "NHWC". Default: "NCHW".',
+        type=str,
+        default='NCHW')
 
     return parser.parse_args()
 
@@ -122,6 +129,17 @@ def main(args):
         raise RuntimeError('No configuration file specified.')
 
     cfg = Config(args.cfg)
+    # Only support for the DeepLabv3+ model
+    if args.data_format == 'NHWC':
+        if cfg.dic['model']['type'] != 'DeepLabV3P':
+            raise ValueError(
+                'The "NHWC" data format only support the DeepLabV3P model!')
+        cfg.dic['model']['data_format'] = args.data_format
+        cfg.dic['model']['backbone']['data_format'] = args.data_format
+        loss_len = len(cfg.dic['loss']['types'])
+        for i in range(loss_len):
+            cfg.dic['loss']['types'][i]['data_format'] = args.data_format
+
     val_dataset = cfg.val_dataset
     if val_dataset is None:
         raise RuntimeError(
