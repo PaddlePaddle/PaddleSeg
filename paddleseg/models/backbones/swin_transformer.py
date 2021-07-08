@@ -20,7 +20,7 @@ from paddle.nn.initializer import TruncatedNormal, Constant, Normal
 
 from paddleseg.cvlibs import manager
 from paddleseg.utils import utils
-from paddleseg.models.backbones.vit import to_2tuple, DropPath, Identity
+from paddleseg.models.backbones.vision_transformer import to_2tuple, DropPath, Identity
 
 trunc_normal_ = TruncatedNormal(std=.02)
 zeros_ = Constant(value=0.)
@@ -89,7 +89,8 @@ def window_reverse(windows, window_size, H, W):
 
 
 class WindowAttention(nn.Layer):
-    """ Window based multi-head self attention (W-MSA) module with relative position bias.
+    """
+    Window based multi-head self attention (W-MSA) module with relative position bias.
     It supports both of shifted and non-shifted window.
 
     Args:
@@ -154,8 +155,7 @@ class WindowAttention(nn.Layer):
         self.softmax = nn.Softmax(axis=-1)
 
     def forward(self, x, mask=None):
-        """ Forward function.
-
+        """
         Args:
             x: input features with shape of (num_windows*B, N, C)
             mask: (0/-inf) mask with shape of (num_windows, Wh*Ww, Wh*Ww) or None
@@ -199,7 +199,8 @@ class WindowAttention(nn.Layer):
 
 
 class SwinTransformerBlock(nn.Layer):
-    """ Swin Transformer Block.
+    """
+    Swin Transformer Block.
 
     Args:
         dim (int): Number of input channels.
@@ -260,8 +261,7 @@ class SwinTransformerBlock(nn.Layer):
         self.W = None
 
     def forward(self, x, mask_matrix):
-        """ Forward function.
-
+        """
         Args:
             x: Input feature, tensor size (B, H*W, C).
             H, W: Spatial resolution of the input feature.
@@ -333,7 +333,8 @@ class SwinTransformerBlock(nn.Layer):
 
 
 class PatchMerging(nn.Layer):
-    """ Patch Merging Layer
+    """
+    Patch Merging Layer
 
     Args:
         dim (int): Number of input channels.
@@ -347,8 +348,7 @@ class PatchMerging(nn.Layer):
         self.norm = norm_layer(4 * dim)
 
     def forward(self, x, H, W):
-        """ Forward function.
-
+        """
         Args:
             x: Input feature, tensor size (B, H*W, C).
             H, W: Spatial resolution of the input feature.
@@ -379,10 +379,11 @@ class PatchMerging(nn.Layer):
 
 
 class BasicLayer(nn.Layer):
-    """ A basic Swin Transformer layer for one stage.
+    """
+    A basic Swin Transformer layer for one stage.
 
     Args:
-        dim (int): Number of feature channels
+        dim (int): Number of feature channels.
         depth (int): Depths of this stage.
         num_heads (int): Number of attention head.
         window_size (int): Local window size. Default: 7.
@@ -438,8 +439,7 @@ class BasicLayer(nn.Layer):
             self.downsample = None
 
     def forward(self, x, H, W):
-        """ Forward function.
-
+        """
         Args:
             x: Input feature, tensor size (B, H*W, C).
             H, W: Spatial resolution of the input feature.
@@ -481,7 +481,8 @@ class BasicLayer(nn.Layer):
 
 
 class PatchEmbed(nn.Layer):
-    """ Image to Patch Embedding
+    """
+    Image to Patch Embedding.
 
     Args:
         patch_size (int): Patch token size. Default: 4.
@@ -526,6 +527,35 @@ class PatchEmbed(nn.Layer):
 
 @manager.BACKBONES.add_component
 class SwinTransformer(nn.Layer):
+    """
+    The SwinTransformer implementation based on PaddlePaddle.
+
+    The original article refers to
+    Liu, Ze, et al. "Swin Transformer: Hierarchical Vision Transformer using Shifted Windows"
+    (https://arxiv.org/abs/2103.14030)
+
+    Args:
+        pretrain_img_size (int): Input image size for training the pretrained model, used in absolute postion embedding. Default: 224.
+        patch_size (int | tuple(int)): Patch size. Default: 4.
+        in_chans (int): Number of input image channels. Default: 3.
+        embed_dim (int): Number of linear projection output channels. Default: 96.
+        depths (tuple[int]): Depths of each Swin Transformer stage.
+        num_heads (tuple[int]): Number of attention head of each stage.
+        window_size (int): Window size. Default: 7.
+        mlp_ratio (float): Ratio of mlp hidden dim to embedding dim. Default: 4.
+        qkv_bias (bool): If True, add a learnable bias to query, key, value. Default: True
+        qk_scale (float): Override default qk scale of head_dim ** -0.5 if set.
+        drop_rate (float): Dropout rate.
+        attn_drop_rate (float): Attention dropout rate. Default: 0.
+        drop_path_rate (float): Stochastic depth rate. Default: 0.2.
+        norm_layer (nn.Layer): Normalization layer. Default: nn.LayerNorm.
+        ape (bool): If True, add absolute position embedding to the patch embedding. Default: False.
+        patch_norm (bool): If True, add normalization after patch embedding. Default: True.
+        out_indices (Sequence[int]): Output from which stages.
+        frozen_stages (int): Stages to be frozen (stop grad and set eval mode). -1 means not freezing any parameters. Default: -1.
+        pretrained (str, optional): The path or url of pretrained model. Default: None.
+    """
+
     def __init__(self,
                  pretrain_img_size=224,
                  patch_size=4,
@@ -687,3 +717,80 @@ class SwinTransformer(nn.Layer):
         """Convert the model into training mode while keep layers freezed."""
         super(SwinTransformer, self).train()
         self._freeze_stages()
+
+
+@manager.BACKBONES.add_component
+def SwinTransformer_tiny_patch4_window7_224(**kwargs):
+    model = SwinTransformer(
+        embed_dim=96,
+        depths=[2, 2, 6, 2],
+        num_heads=[3, 6, 12, 24],
+        window_size=7,
+        drop_path_rate=0.2,
+        **kwargs)
+
+    return model
+
+
+@manager.BACKBONES.add_component
+def SwinTransformer_small_patch4_window7_224(**kwargs):
+    model = SwinTransformer(
+        embed_dim=96,
+        depths=[2, 2, 18, 2],
+        num_heads=[3, 6, 12, 24],
+        window_size=7,
+        **kwargs)
+
+    return model
+
+
+@manager.BACKBONES.add_component
+def SwinTransformer_base_patch4_window7_224(**kwargs):
+    model = SwinTransformer(
+        embed_dim=128,
+        depths=[2, 2, 18, 2],
+        num_heads=[4, 8, 16, 32],
+        window_size=7,
+        drop_path_rate=0.5,
+        **kwargs)
+
+    return model
+
+
+@manager.BACKBONES.add_component
+def SwinTransformer_base_patch4_window12_384(**kwargs):
+    model = SwinTransformer(
+        img_size=384,
+        embed_dim=128,
+        depths=[2, 2, 18, 2],
+        num_heads=[4, 8, 16, 32],
+        window_size=12,
+        drop_path_rate=0.5,  # NOTE: do not appear in offical code
+        **kwargs)
+
+    return model
+
+
+@manager.BACKBONES.add_component
+def SwinTransformer_large_patch4_window7_224(**kwargs):
+    model = SwinTransformer(
+        embed_dim=192,
+        depths=[2, 2, 18, 2],
+        num_heads=[6, 12, 24, 48],
+        window_size=7,
+        **kwargs)
+
+    return model
+
+
+@manager.BACKBONES.add_component
+def SwinTransformer_large_patch4_window12_384(**kwargs):
+    model = SwinTransformer(
+        img_size=384,
+        embed_dim=192,
+        depths=[2, 2, 18, 2],
+        num_heads=[6, 12, 24, 48],
+        window_size=12,
+        **kwargs)
+
+    return model

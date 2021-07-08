@@ -104,9 +104,6 @@ class MLAHeads(nn.Layer):
 
 @manager.MODELS.add_component
 class MLATransformer(nn.Layer):
-    """ Vision Transformer with support for patch or hybrid CNN input stage
-    """
-
     def __init__(self,
                  num_classes,
                  in_channels,
