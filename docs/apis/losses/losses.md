@@ -1,3 +1,4 @@
+English | [简体中文](losses_cn.md)
 # [paddleseg.models.losses](../../../paddleseg/models/losses)
 
 

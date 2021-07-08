@@ -1,3 +1,4 @@
+简体中文 | [English](backbones.md)
 # paddleseg.models.backbone
 
 该models子包中包含了为语义分割模型提取特征的骨干网络。
