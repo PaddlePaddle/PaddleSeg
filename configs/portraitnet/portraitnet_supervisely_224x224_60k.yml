@@ -1,0 +1,28 @@
+_base_: './portraitnet_eg8000_224x224_46k.yml'
+batch_size: 1
+iters: 60000
+
+train_dataset:
+  type: SUPERVISELY
+  dataset_root: data/Supervisely_face
+  transforms:
+    - type: RandomAffine
+      max_rotation: 45
+      min_scale_factor: 0.5
+      max_scale_factor: 1.5
+      size: [ 224, 224 ]
+      translation_offset: 56
+    - type: RandomHorizontalFlip
+    - type: Normalize
+      mean: [0.485, 0.458, 0.408]
+      std: [0.23, 0.23, 0.23]
+  mode: train
+
+val_dataset:
+  type: SUPERVISELY
+  dataset_root: data/Supervisely_face
+  transforms:
+    - type: Normalize
+      mean: [0.485, 0.458, 0.408]
+      std: [0.23, 0.23, 0.23]
+  mode: val

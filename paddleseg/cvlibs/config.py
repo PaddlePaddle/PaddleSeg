@@ -64,7 +64,6 @@ class Config(object):
         model = cfg.model
         ...
     '''
-
     def __init__(self,
                  path: str,
                  learning_rate: float = None,
@@ -83,8 +82,9 @@ class Config(object):
         else:
             raise RuntimeError('Config file should in yaml format!')
 
-        self.update(
-            learning_rate=learning_rate, batch_size=batch_size, iters=iters)
+        self.update(learning_rate=learning_rate,
+                    batch_size=batch_size,
+                    iters=iters)
 
     def _update_dic(self, dic, base_dic):
         """
@@ -176,6 +176,9 @@ class Config(object):
         elif decay_type == 'piecewise':
             values = _learning_rate
             return paddle.optimizer.lr.PiecewiseDecay(values=values, **args)
+        elif decay_type == 'stepdecay':
+            lr = _learning_rate
+            return paddle.optimizer.lr.StepDecay(lr, **args)
         else:
             raise RuntimeError('Only poly and piecewise decay support.')
 
@@ -189,11 +192,13 @@ class Config(object):
         optimizer_type = args.pop('type')
 
         if optimizer_type == 'sgd':
-            return paddle.optimizer.Momentum(
-                lr, parameters=self.model.parameters(), **args)
+            return paddle.optimizer.Momentum(lr,
+                                             parameters=self.model.parameters(),
+                                             **args)
         elif optimizer_type == 'adam':
-            return paddle.optimizer.Adam(
-                lr, parameters=self.model.parameters(), **args)
+            return paddle.optimizer.Adam(lr,
+                                         parameters=self.model.parameters(),
+                                         **args)
         else:
             raise RuntimeError('Only sgd and adam optimizer support.')
 
@@ -255,8 +260,8 @@ class Config(object):
             if len(self._losses['coef']) != len(self._losses['types']):
                 raise RuntimeError(
                     'The length of coef should equal to types in loss config: {} != {}.'
-                    .format(
-                        len(self._losses['coef']), len(self._losses['types'])))
+                    .format(len(self._losses['coef']),
+                            len(self._losses['types'])))
         return self._losses
 
     @property
