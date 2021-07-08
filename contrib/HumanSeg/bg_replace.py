@@ -80,7 +80,14 @@ def parse_args():
     parser.add_argument(
         '--not_soft_predict',
         dest='not_soft_predict',
-        help='',
+        help=
+        'If this is turned on, the prediction result will be output directly without using soft predict',
+        action='store_true')
+
+    parser.add_argument(
+        '--test_speed',
+        dest='test_speed',
+        help='Whether to test inference speed',
         action='store_true')
 
     return parser.parse_args()
@@ -110,8 +117,7 @@ def background_replace(args):
         cv2.imwrite(save_path, comb)
     # 视频背景替换
     else:
-        # 如果提供背景视频则以背景视频作为背景，否则采用提供的背景图片
-        is_video_bg = False
+        # 获取背景：如果提供背景视频则以背景视频作为背景，否则采用提供的背景图片
         if args.bg_video_path is not None:
             if not osp.exists(args.bg_video_path):
                 raise Exception('The --bg_video_path is not existed: {}'.format(
@@ -119,7 +125,9 @@ def background_replace(args):
             is_video_bg = True
         else:
             bg = get_bg_img(args.bg_img_path, args.input_shape)
+            is_video_bg = False
 
+        # 视频预测
         if args.video_path is not None:
             logger.info('Please wait. It is computing......')
             if not osp.exists(args.video_path):
@@ -209,6 +217,11 @@ def background_replace(args):
             if is_video_bg:
                 cap_bg.release()
             cap_video.release()
+    if args.test_speed:
+        timer = predictor.cost_averager
+        logger.info(
+            'Model inference time per image: {}\nFPS: {}\nNum of images: {}'.
+            format(timer.get_average(), 1 / timer.get_average(), timer._cnt))
 
 
 def get_bg_img(bg_img_path, img_shape):

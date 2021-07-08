@@ -14,6 +14,7 @@
 
 import codecs
 import os
+import time
 
 import yaml
 import numpy as np
@@ -24,6 +25,7 @@ from paddle.inference import create_predictor, PrecisionType
 from paddle.inference import Config as PredictConfig
 from paddleseg.core.infer import reverse_transform
 from paddleseg.cvlibs import manager
+from paddleseg.utils import TimeAverager
 
 from scripts.optic_flow_process import optic_flow_process
 
@@ -78,6 +80,8 @@ class Predictor:
             pred_cfg.enable_use_gpu(100, 0)
 
         self.predictor = create_predictor(pred_cfg)
+        if self.args.test_speed:
+            self.cost_averager = TimeAverager()
 
     def preprocess(self, img):
         ori_shapes = []
@@ -96,9 +100,13 @@ class Predictor:
         data = np.array(processed_imgs)
         input_handle.reshape(data.shape)
         input_handle.copy_from_cpu(data)
+        if self.args.test_speed:
+            start = time.time()
 
         self.predictor.run()
 
+        if self.args.test_speed:
+            self.cost_averager.record(time.time() - start)
         output_names = self.predictor.get_output_names()
         output_handle = self.predictor.get_output_handle(output_names[0])
         output = output_handle.copy_to_cpu()
@@ -137,6 +145,9 @@ class Predictor:
                                      [1, 2, 0]) / 255
             h, w, _ = img.shape
             bg = cv2.resize(bg, (w, h))
+            if bg.ndim == 2:
+                bg = bg[..., np.newaxis]
+
             result = (score_map * img + (1 - score_map) * bg).astype(np.uint8)
 
         else:

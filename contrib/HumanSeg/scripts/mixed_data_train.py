@@ -256,6 +256,7 @@ def train(model,
                     if total_iou > best_total_iou:
                         best_total_iou = total_iou
                         best_class_ious = class_ious
+                        best_dataset_ious = dataset_ious
                         best_model_iter = iter
                         best_model_dir = os.path.join(save_dir, "best_model")
                         paddle.save(
@@ -268,7 +269,7 @@ def train(model,
                         logger.info("[EVAL] Dataset {} Class IoU: {}\n".format(
                             num, str(np.round(best_class_iou, 4))))
                         logger.info("[EVAL] Dataset {} IoU: {}\n".format(
-                            num, str(np.round(best_class_iou, 4))))
+                            num, str(np.round(best_dataset_ious[num], 4))))
                     logger.info("[EVAL] Total IoU: \n" +
                                 str(np.round(total_iou, 4)))
                     logger.info(

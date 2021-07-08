@@ -15,11 +15,11 @@
 ## 人像分割模型
 HumanSeg开放了在大规模人像数据上训练的三个人像模型，满足服务端、移动端、Web端多种使用场景的需求。
 
-| 模型类型 | 适用场景 | Checkpoint | Inference Model |
+| 模型名 | 模型说明 | Checkpoint | Inference Model |
 | --- | --- | --- | ---|
-| 高精度模型  | 适用于服务端GPU且背景复杂的人像场景， 模型结构为Deeplabv3+/ResNet50, 输入大小（512， 512） |[humanseg_server_ckpt](https://paddleseg.bj.bcebos.com/dygraph/humanseg/train/deeplabv3p_resnet50_os8_humanseg_512x512_100k.zip) | [humanseg_server_inference](https://paddleseg.bj.bcebos.com/dygraph/humanseg/export/deeplabv3p_resnet50_os8_humanseg_512x512_100k_with_softmax.zip) |
-| 轻量级模型 | 适用于移动端或服务端CPU的前置摄像头场景，模型结构为HRNet_w18_samll_v1，输入大小（192， 192）  | [humanseg_mobile_ckpt](https://paddleseg.bj.bcebos.com/dygraph/humanseg/train/fcn_hrnetw18_small_v1_humanseg_192x192.zip) | [humanseg_mobile_inference](https://paddleseg.bj.bcebos.com/dygraph/humanseg/export/fcn_hrnetw18_small_v1_humanseg_192x192_with_softmax.zip) |
-| 超轻量级模型 | 适用于Web端或移动端实时分割场景，例如手机自拍、Web视频会议，模型结构为优化的ShuffleNetV2，输入大小（192， 192） | [humanseg_lite_ckpt](https://paddleseg.bj.bcebos.com/dygraph/humanseg/train/shufflenetv2_humanseg_192x192.zip) | [humanseg_lite_inference](https://paddleseg.bj.bcebos.com/dygraph/humanseg/export/shufflenetv2_humanseg_192x192_with_softmax.zip) |
+| PPSeg-Server | 高精度模型，适用于服务端GPU且背景复杂的人像场景， 模型结构为Deeplabv3+/ResNet50, 输入大小（512， 512） |[humanseg_server_ckpt](https://paddleseg.bj.bcebos.com/dygraph/humanseg/train/deeplabv3p_resnet50_os8_humanseg_512x512_100k.zip) | [humanseg_server_inference](https://paddleseg.bj.bcebos.com/dygraph/humanseg/export/deeplabv3p_resnet50_os8_humanseg_512x512_100k_with_softmax.zip) |
+| PPSeg-Mobile | 轻量级模型，适用于移动端或服务端CPU的前置摄像头场景，模型结构为HRNet_w18_samll_v1，输入大小（192， 192）  | [humanseg_mobile_ckpt](https://paddleseg.bj.bcebos.com/dygraph/humanseg/train/fcn_hrnetw18_small_v1_humanseg_192x192.zip) | [humanseg_mobile_inference](https://paddleseg.bj.bcebos.com/dygraph/humanseg/export/fcn_hrnetw18_small_v1_humanseg_192x192_with_softmax.zip) |
+| PPSeg-Lite | 超轻量级模型，适用于Web端或移动端实时分割场景，例如手机自拍、Web视频会议，模型结构为百度自研模型，输入大小（192， 192） | [humanseg_lite_ckpt](https://paddleseg.bj.bcebos.com/dygraph/humanseg/train/shufflenetv2_humanseg_192x192.zip) | [humanseg_lite_inference](https://paddleseg.bj.bcebos.com/dygraph/humanseg/export/shufflenetv2_humanseg_192x192_with_softmax.zip) |
 
 **NOTE:**
 * 其中Checkpoint为模型权重，用于Fine-tuning场景。
@@ -28,14 +28,21 @@ HumanSeg开放了在大规模人像数据上训练的三个人像模型，满足
 
 * 其中Inference Model适用于服务端的CPU和GPU预测部署，适用于通过Paddle Lite进行移动端等端侧设备部署。更多Paddle Lite部署说明查看[Paddle Lite文档](https://paddle-lite.readthedocs.io/zh/latest/)
 
+### 模型性能
 
-### 计算复杂度和参数量
-| 模型类型 | Network | Input Size | FLOPS | Parameters |
-|-|-|-|-|-|
-| 超轻量级模型 | ShuffleNetV2 | 192x192 | 121272192 (121M) | 137012 (137K) |
-| 轻量级模型 | HRNet w18 small v1 | 192x192 | 584182656 (584M) | 1543954 (1.54M) |
-| 高精度模型  | Deeplabv3+/ResNet50 | 512x512 | 114148802560 (114G) | 26789874 (26.8M)
+| 模型名 |Input Size | FLOPS | Parameters | 计算耗时 | 模型大小 |
+|-|-|-|-|-|-|
+| PPSeg-Server | 512x512 | 114G | 26.8M | 37.96ms | 103Mb |
+| PPSeg-Mobile | 192x192 | 584M | 1.54M | 13.17ms | 5.9Mb |
+| PPSeg-Lite | 192x192 | 121M | 137K | 10.51ms | 543Kb |
+Note: 运行环境为Nvidia Tesla V100单卡。
 
+
+| 模型名 |Input Size | FLOPS | Parameters | 计算耗时 | 模型大小 |
+|-|-|-|-|-|-|
+| PPSeg-Lite | 398x224 |  |  | 23.49ms | 543Kb |
+| PPSeg-Lite | 288x160 |  |  | 15.62ms | 543Kb |
+Note: 运行环境为AMD Radeon Pro 5300M 4 GB。
 
 <!-- | ShuffleNetV2 | 398x224 | 293631872(294M) | 137012(137K) | -->
 
