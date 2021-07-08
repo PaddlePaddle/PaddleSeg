@@ -42,8 +42,7 @@ class paddleseg.models.DeepLabV3P(
 > 基于 PaddlePaddle 实现的 DeepLabV3Plus。
 
 > 原文请参考：
-     Liang-Chieh Chen, et, al. "Encoder-Decoder with Atrous Separable Convolution for Semantic Image Segmentation"
-     (https://arxiv.org/abs/1802.02611)
+[Liang-Chieh Chen, et, al. "Encoder-Decoder with Atrous Separable Convolution for Semantic Image Segmentation"](https://arxiv.org/abs/1802.02611)
 
 ### 参数
 * **num_classes** (int): 相互独立的目标类别的数量。
@@ -74,8 +73,7 @@ class paddleseg.models.DeepLabV3(
 > 基于 PaddlePaddle 实现的 DeepLabV3。
 
 > 原文请参考：
-     Liang-Chieh Chen, et, al. "Rethinking Atrous Convolution for Semantic Image Segmentation"
-     (https://arxiv.org/pdf/1706.05587.pdf).
+[Liang-Chieh Chen, et, al. "Rethinking Atrous Convolution for Semantic Image Segmentation"](https://arxiv.org/pdf/1706.05587.pdf).
 
 ### 参数
 * **num_classes** (int): 相互独立的目标类别的数量。
@@ -104,8 +102,7 @@ class paddleseg.models.FCN(
 > 基于 PaddlePaddle 简单实现的 FCN。
 
 > 原文请参考：
-    Evan Shelhamer, et, al. "Fully Convolutional Networks for Semantic Segmentation"
-    (https://arxiv.org/abs/1411.4038).
+[Evan Shelhamer, et, al. "Fully Convolutional Networks for Semantic Segmentation"](https://arxiv.org/abs/1411.4038).
 
 ### 参数
 * **num_classes** (int): 相互独立的目标类别的数量。
@@ -136,8 +133,7 @@ class paddleseg.models.OCRNet(
 > 基于 PaddlePaddle 实现的 OCRNet。
 
 > 原文请参考：
-        Yuan, Yuhui, et al. "Object-Contextual Representations for Semantic Segmentation"
-        (https://arxiv.org/pdf/1909.11065.pdf)
+[Yuan, Yuhui, et al. "Object-Contextual Representations for Semantic Segmentation"](https://arxiv.org/pdf/1909.11065.pdf)
 
 ### 参数
 * **num_classes** (int): 相互独立的目标类别的数量。
@@ -169,8 +165,7 @@ class paddleseg.models.PSPNet(
 > 基于 PaddlePaddle 实现的 PSPNet。
 
 > 原文请参考：
-    Zhao, Hengshuang, et al. "Pyramid scene parsing network"
-    (https://openaccess.thecvf.com/content_cvpr_2017/papers/Zhao_Pyramid_Scene_Parsing_CVPR_2017_paper.pdf).
+[Zhao, Hengshuang, et al. "Pyramid scene parsing network"](https://openaccess.thecvf.com/content_cvpr_2017/papers/Zhao_Pyramid_Scene_Parsing_CVPR_2017_paper.pdf).
 
 ### 参数
 * **num_classes** (int): 相互独立的目标类别的数量。
@@ -202,8 +197,7 @@ class paddleseg.models.ANN(
 > 基于 PaddlePaddle 实现的 ANN 。
 
 > 原文请参考：
-    Zhen, Zhu, et al. "Asymmetric Non-local Neural Networks for Semantic Segmentation"
-    (https://arxiv.org/pdf/1908.07678.pdf).
+[Zhen, Zhu, et al. "Asymmetric Non-local Neural Networks for Semantic Segmentation"](https://arxiv.org/pdf/1908.07678.pdf).
 
 ### Args
 * **num_classes** (int): 相互独立的目标类别的数量。
@@ -232,8 +226,7 @@ class paddleseg.models.BiSeNetV2(
 > 基于 PaddlePaddle 实现的 BiSeNet V2。
 
 > 原文请参考：
-    Yu, Changqian, et al. "BiSeNet V2: Bilateral Network with Guided Aggregation for Real-time Semantic Segmentation"
-    (https://arxiv.org/abs/2004.02147)
+[Yu, Changqian, et al. "BiSeNet V2: Bilateral Network with Guided Aggregation for Real-time Semantic Segmentation"](https://arxiv.org/abs/2004.02147)
 
 ### 参数
 * **num_classes** (int): 相互独立的目标类别的数量。
@@ -253,8 +246,7 @@ class paddleseg.models.DANet(
 > 基于 PaddlePaddle 实现的 DANet。
 
 > 原文请参考：
-    Fu, jun, et al. "Dual Attention Network for Scene Segmentation"
-    (https://arxiv.org/pdf/1809.02983.pdf)
+[Fu, jun, et al. "Dual Attention Network for Scene Segmentation"](https://arxiv.org/pdf/1809.02983.pdf)
 
 ### 参数
 * **num_classes** (int): 相互独立的目标类别的数量。
@@ -278,8 +270,7 @@ class paddleseg.models.FastSCNN(
 > 基于 PaddlePaddle 实现的 FastSCNN。正如原论文中提到的，FastSCNN 是一种实时分割算法（123.5fps），即使对于高分辨率图像（1024x2048）也是如此。
 
 > 原文请参考：
-    Poudel, Rudra PK, et al. "Fast-scnn: Fast semantic segmentation network"
-    (https://arxiv.org/pdf/1902.04502.pdf).
+[Poudel, Rudra PK, et al. "Fast-scnn: Fast semantic segmentation network"](https://arxiv.org/pdf/1902.04502.pdf).
 
 ### 参数
 * **num_classes** (int): 相互独立的目标类别的数量。
@@ -307,8 +298,7 @@ class paddleseg.models.GCNet(
 > 基于 PaddlePaddle 实现的 GCNet。
 
 > 原文请参考：
-    Cao, Yue, et al. "GCnet: Non-local networks meet squeeze-excitation networks and beyond"
-    (https://arxiv.org/pdf/1904.11492.pdf).
+[Cao, Yue, et al. "GCnet: Non-local networks meet squeeze-excitation networks and beyond"](https://arxiv.org/pdf/1904.11492.pdf).
 
 ### 参数
 * **num_classes** (int): 相互独立的目标类别的数量。
@@ -338,8 +328,7 @@ class paddleseg.models.GSCNN(
 > 基于 PaddlePaddle 实现的 GSCNN。
 
 > 原文请参考：
-    Towaki Takikawa, et, al. "Gated-SCNN: Gated Shape CNNs for Semantic Segmentation"
-    (https://arxiv.org/pdf/1907.05740.pdf)
+[Towaki Takikawa, et, al. "Gated-SCNN: Gated Shape CNNs for Semantic Segmentation"](https://arxiv.org/pdf/1907.05740.pdf)
 
 ### 参数
 * **num_classes** (int): 相互独立的目标类别的数量。
@@ -373,8 +362,7 @@ class paddleseg.models.HarDNet(
 > [实时] 基于 PaddlePaddle 实现的 FC-HardDNet 70。
 
 > 原文请参考：
-        Chao, Ping, et al. "HarDNet: A Low Memory Traffic Network"
-        (https://arxiv.org/pdf/1909.00948.pdf)
+[Chao, Ping, et al. "HarDNet: A Low Memory Traffic Network"](https://arxiv.org/pdf/1909.00948.pdf)
 
 ### 参数
 * **num_classes** (int): 相互独立的目标类别的数量。
@@ -400,8 +388,7 @@ class paddleseg.models.UNet(
 > 基于 PaddlePaddle 实现的 UNet。
 
 > 原文请参考：
-    Olaf Ronneberger, et, al. "U-Net: Convolutional Networks for Biomedical Image Segmentation"
-    (https://arxiv.org/abs/1505.04597).
+[Olaf Ronneberger, et, al. "U-Net: Convolutional Networks for Biomedical Image Segmentation"](https://arxiv.org/abs/1505.04597).
 
 ### 参数
 * **num_classes** (int): 相互独立的目标类别的数量。
@@ -423,8 +410,7 @@ class paddleseg.models.U2Net(
 > 基于 PaddlePaddle 实现的 U^2-Net。
 
 > 原文请参考：
-    Xuebin Qin, et, al. "U^2-Net: Going Deeper with Nested U-Structure for Salient Object Detection"
-    (https://arxiv.org/abs/2005.09007).
+[Xuebin Qin, et, al. "U^2-Net: Going Deeper with Nested U-Structure for Salient Object Detection"](https://arxiv.org/abs/2005.09007).
 
 ### 参数
 * **num_classes** (int): 相互独立的目标类别的数量。
@@ -442,8 +428,7 @@ class paddleseg.models.U2Netp(
 > 基于 PaddlePaddle 实现的 U^2-Netp。
 
 > 原文请参考：
-    Xuebin Qin, et, al. "U^2-Net: Going Deeper with Nested U-Structure for Salient Object Detection"
-    (https://arxiv.org/abs/2005.09007).
+[Xuebin Qin, et, al. "U^2-Net: Going Deeper with Nested U-Structure for Salient Object Detection"](https://arxiv.org/abs/2005.09007).
 
 ### 参数
 * **num_classes** (int): 相互独立的目标类别的数量。
@@ -458,8 +443,7 @@ class paddleseg.models.AttentionUNet(num_classes, pretrained = None)
 > 基于 PaddlePaddle 实现的 Attention-UNet。正如原论文中提到的，作者提出了一种新颖的注意力门 (AG)，它可以自动学习关注不同形状和大小的目标结构。使用 AG 训练的模型隐式地学习抑制输入图像中的不相关区域，同时突出显示对特定任务有用的显著特征。
 
 > 原文请参考：
-    Oktay, O, et, al. "Attention u-net: Learning where to look for the pancreas."
-    (https://arxiv.org/pdf/1804.03999.pdf).
+[Oktay, O, et, al. "Attention u-net: Learning where to look for the pancreas."](https://arxiv.org/pdf/1804.03999.pdf).
 
 ### 参数
 * **num_classes** (int): 相互独立的目标类别的数量。
@@ -480,8 +464,7 @@ class UNetPlusPlus(
 > 基于 PaddlePaddle 实现的 UNet++。
 
 > 原文请参考：
-    Zongwei Zhou, et, al. "UNet++: A Nested U-Net Architecture for Medical Image Segmentation"
-    (https://arxiv.org/abs/1807.10165).
+[Zongwei Zhou, et, al. "UNet++: A Nested U-Net Architecture for Medical Image Segmentation"](https://arxiv.org/abs/1807.10165).
 
 ### 参数
 * **in_channels** (int): 输入图像的通道数。
@@ -509,8 +492,7 @@ class DecoupledSegNet(
 > 基于 PaddlePaddle 实现的 DecoupledSegNet。
 
 > 原文请参考：
-    Xiangtai Li, et, al. "Improving Semantic Segmentation via Decoupled Body and Edge Supervision"
-    (https://arxiv.org/pdf/2007.10035.pdf)
+[Xiangtai Li, et, al. "Improving Semantic Segmentation via Decoupled Body and Edge Supervision"](https://arxiv.org/pdf/2007.10035.pdf)
 
 ### 参数
 * **num_classes** (int): 相互独立的目标类别的数量。
@@ -544,8 +526,7 @@ class paddleseg.models.ISANet(
 > 基于 PaddlePaddle 实现的 ISANet。
 
 > 原文请参考：
-    Lang Huang, et al. "Interlaced Sparse Self-Attention for Semantic Segmentation"
-    (https://arxiv.org/abs/1907.12273).
+[Lang Huang, et al. "Interlaced Sparse Self-Attention for Semantic Segmentation"](https://arxiv.org/abs/1907.12273).
 
 ### 参数
 * **num_classes** (int): 相互独立的目标类别的数量。
@@ -580,8 +561,7 @@ class paddleseg.models.EMANet(
 > 基于 PaddlePaddle 实现的 EMANet。
 
 > 原文请参考：
-    Xia Li, et al. "Expectation-Maximization Attention Networks for Semantic Segmentation"
-    (https://arxiv.org/abs/1907.13426)
+[Xia Li, et al. "Expectation-Maximization Attention Networks for Semantic Segmentation"](https://arxiv.org/abs/1907.13426)
 
 ### 参数
 * **num_classes** (int): 相互独立的目标类别的数量。
@@ -617,8 +597,7 @@ class paddleseg.models.DNLNet(
 > 基于 PaddlePaddle 实现的 DNLNet。
 
 > 原文请参考：
-    Minghao Yin, et al. "Disentangled Non-Local Neural Networks"
-    (https://arxiv.org/abs/2006.06668)
+[Minghao Yin, et al. "Disentangled Non-Local Neural Networks"](https://arxiv.org/abs/2006.06668)
 
 ### 参数
 * **num_classes** (int): 相互独立的目标类别的数量。

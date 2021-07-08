@@ -41,8 +41,7 @@ class paddleseg.models.DeepLabV3P(
 > The DeepLabV3Plus implementation based on PaddlePaddle.
 
 > The original article refers to
-     Liang-Chieh Chen, et, al. "Encoder-Decoder with Atrous Separable Convolution for Semantic Image Segmentation"
-     (https://arxiv.org/abs/1802.02611)
+[Liang-Chieh Chen, et, al. "Encoder-Decoder with Atrous Separable Convolution for Semantic Image Segmentation"](https://arxiv.org/abs/1802.02611)
 
 ### Args
 * **num_classes** (int): The unique number of target classes.
@@ -74,8 +73,7 @@ class paddleseg.models.DeepLabV3(
 > The DeepLabV3 implementation based on PaddlePaddle.
 
 > The original article refers to
-     Liang-Chieh Chen, et, al. "Rethinking Atrous Convolution for Semantic Image Segmentation"
-     (https://arxiv.org/pdf/1706.05587.pdf).
+[Liang-Chieh Chen, et, al. "Rethinking Atrous Convolution for Semantic Image Segmentation"](https://arxiv.org/pdf/1706.05587.pdf).
 
 ### Args
 * **num_classes** (int): The unique number of target classes.
@@ -104,8 +102,7 @@ class paddleseg.models.FCN(
 > A simple implementation for FCN based on PaddlePaddle.
 
 > The original article refers to
-    Evan Shelhamer, et, al. "Fully Convolutional Networks for Semantic Segmentation"
-    (https://arxiv.org/abs/1411.4038).
+[Evan Shelhamer, et, al. "Fully Convolutional Networks for Semantic Segmentation"](https://arxiv.org/abs/1411.4038).
 
 ### Args
 * **num_classes** (int): The unique number of target classes.
@@ -134,8 +131,7 @@ class paddleseg.models.OCRNet(
 > The OCRNet implementation based on PaddlePaddle.
 
 > The original article refers to
-        Yuan, Yuhui, et al. "Object-Contextual Representations for Semantic Segmentation"
-        (https://arxiv.org/pdf/1909.11065.pdf)
+[Yuan, Yuhui, et al. "Object-Contextual Representations for Semantic Segmentation"](https://arxiv.org/pdf/1909.11065.pdf)
 
 ### Args
 * **num_classes** (int): The unique number of target classes.
@@ -167,8 +163,7 @@ class paddleseg.models.PSPNet(
 > The PSPNet implementation based on PaddlePaddle.
 
 > The original article refers to
-    Zhao, Hengshuang, et al. "Pyramid scene parsing network"
-    (https://openaccess.thecvf.com/content_cvpr_2017/papers/Zhao_Pyramid_Scene_Parsing_CVPR_2017_paper.pdf).
+[Zhao, Hengshuang, et al. "Pyramid scene parsing network"](https://openaccess.thecvf.com/content_cvpr_2017/papers/Zhao_Pyramid_Scene_Parsing_CVPR_2017_paper.pdf).
 
 ### Args
 * **num_classes** (int): The unique number of target classes.
@@ -199,8 +194,7 @@ class paddleseg.models.ANN(
 > The ANN implementation based on PaddlePaddle.
 
 > The original article refers to
-    Zhen, Zhu, et al. "Asymmetric Non-local Neural Networks for Semantic Segmentation"
-    (https://arxiv.org/pdf/1908.07678.pdf).
+[Zhen, Zhu, et al. "Asymmetric Non-local Neural Networks for Semantic Segmentation"](https://arxiv.org/pdf/1908.07678.pdf).
 
 ### Args
 * **num_classes** (int): The unique number of target classes.
@@ -228,8 +222,7 @@ class paddleseg.models.BiSeNetV2(
 > The BiSeNet V2 implementation based on PaddlePaddle.
 
 > The original article refers to
-    Yu, Changqian, et al. "BiSeNet V2: Bilateral Network with Guided Aggregation for Real-time Semantic Segmentation"
-    (https://arxiv.org/abs/2004.02147)
+[Yu, Changqian, et al. "BiSeNet V2: Bilateral Network with Guided Aggregation for Real-time Semantic Segmentation"](https://arxiv.org/abs/2004.02147)
 
 ### Args
 * **num_classes** (int): The unique number of target classes.
@@ -249,8 +242,7 @@ class paddleseg.models.DANet(
 > The DANet implementation based on PaddlePaddle.
 
 > The original article refers to
-    Fu, jun, et al. "Dual Attention Network for Scene Segmentation"
-    (https://arxiv.org/pdf/1809.02983.pdf)
+[Fu, jun, et al. "Dual Attention Network for Scene Segmentation"](https://arxiv.org/pdf/1809.02983.pdf)
 
 ### Args
 * **num_classes** (int): The unique number of target classes.
@@ -274,8 +266,7 @@ class paddleseg.models.FastSCNN(
 > The FastSCNN implementation based on PaddlePaddle.As mentioned in the original paper, FastSCNN is a real-time segmentation algorithm (123.5fps) even for high resolution images (1024x2048).
     
 > The original article refers to
-    Poudel, Rudra PK, et al. "Fast-scnn: Fast semantic segmentation network"
-    (https://arxiv.org/pdf/1902.04502.pdf).
+[Poudel, Rudra PK, et al. "Fast-scnn: Fast semantic segmentation network"](https://arxiv.org/pdf/1902.04502.pdf).
 
 ### Args
 * **num_classes** (int): The unique number of target classes.
@@ -302,8 +293,7 @@ class paddleseg.models.GCNet(
 > The GCNet implementation based on PaddlePaddle.
 
 > The original article refers to
-    Cao, Yue, et al. "GCnet: Non-local networks meet squeeze-excitation networks and beyond"
-    (https://arxiv.org/pdf/1904.11492.pdf).
+[Cao, Yue, et al. "GCnet: Non-local networks meet squeeze-excitation networks and beyond"](https://arxiv.org/pdf/1904.11492.pdf).
 
 ### Args
 * **num_classes** (int): The unique number of target classes.
@@ -333,8 +323,7 @@ class paddleseg.models.GSCNN(
 > The GSCNN implementation based on PaddlePaddle.
 
 > The original article refers to
-    Towaki Takikawa, et, al. "Gated-SCNN: Gated Shape CNNs for Semantic Segmentation"
-    (https://arxiv.org/pdf/1907.05740.pdf)
+[Towaki Takikawa, et, al. "Gated-SCNN: Gated Shape CNNs for Semantic Segmentation"](https://arxiv.org/pdf/1907.05740.pdf)
 
 ### Args
 * **num_classes** (int): The unique number of target classes.
@@ -367,8 +356,7 @@ class paddleseg.models.HarDNet(
 > [Real Time] The FC-HardDNet 70 implementation based on PaddlePaddle.
 
 > The original article refers to
-        Chao, Ping, et al. "HarDNet: A Low Memory Traffic Network"
-        (https://arxiv.org/pdf/1909.00948.pdf)
+[Chao, Ping, et al. "HarDNet: A Low Memory Traffic Network"](https://arxiv.org/pdf/1909.00948.pdf)
 
 ### Args
 * **num_classes** (int): The unique number of target classes.
@@ -394,8 +382,7 @@ class paddleseg.models.UNet(
 > The UNet implementation based on PaddlePaddle.
 
 > The original article refers to
-    Olaf Ronneberger, et, al. "U-Net: Convolutional Networks for Biomedical Image Segmentation"
-    (https://arxiv.org/abs/1505.04597).
+[Olaf Ronneberger, et, al. "U-Net: Convolutional Networks for Biomedical Image Segmentation"](https://arxiv.org/abs/1505.04597).
 
 ### Args
 * **num_classes** (int): The unique number of target classes.
@@ -417,8 +404,7 @@ class paddleseg.models.U2Net(
 > The U^2-Net implementation based on PaddlePaddle.
 
 > The original article refers to
-    Xuebin Qin, et, al. "U^2-Net: Going Deeper with Nested U-Structure for Salient Object Detection"
-    (https://arxiv.org/abs/2005.09007).
+[Xuebin Qin, et, al. "U^2-Net: Going Deeper with Nested U-Structure for Salient Object Detection"](https://arxiv.org/abs/2005.09007).
 
 ### Args
 * **num_classes** (int): The unique number of target classes.
@@ -437,8 +423,7 @@ class paddleseg.models.U2Netp(
 > The U^2-Netp implementation based on PaddlePaddle.
 
 > The original article refers to
-    Xuebin Qin, et, al. "U^2-Net: Going Deeper with Nested U-Structure for Salient Object Detection"
-    (https://arxiv.org/abs/2005.09007).
+[Xuebin Qin, et, al. "U^2-Net: Going Deeper with Nested U-Structure for Salient Object Detection"](https://arxiv.org/abs/2005.09007).
 
 ### Args
 * **num_classes** (int): The unique number of target classes.
@@ -453,8 +438,7 @@ class paddleseg.models.AttentionUNet(num_classes, pretrained = None)
 > The Attention-UNet implementation based on PaddlePaddle.As mentioned in the original paper, author proposes a novel attention gate (AG) that automatically learns to focus on target structures of varying shapes and sizes.Models trained with AGs implicitly learn to suppress irrelevant regions in an input image while highlighting salient features useful for a specific task.
 
 > The original article refers to
-    Oktay, O, et, al. "Attention u-net: Learning where to look for the pancreas."
-    (https://arxiv.org/pdf/1804.03999.pdf).
+[Oktay, O, et, al. "Attention u-net: Learning where to look for the pancreas."](https://arxiv.org/pdf/1804.03999.pdf).
 
 ### Args
 * **num_classes** (int): The unique number of target classes.
@@ -475,8 +459,7 @@ class UNetPlusPlus(
 > The UNet++ implementation based on PaddlePaddle.
 
 > The original article refers to
-    Zongwei Zhou, et, al. "UNet++: A Nested U-Net Architecture for Medical Image Segmentation"
-    (https://arxiv.org/abs/1807.10165).
+[Zongwei Zhou, et, al. "UNet++: A Nested U-Net Architecture for Medical Image Segmentation"](https://arxiv.org/abs/1807.10165).
 
 ### Args
 * **in_channels** (int): The channel number of input image.
@@ -504,8 +487,7 @@ class DecoupledSegNet(
 > The DecoupledSegNet implementation based on PaddlePaddle.
 
 > The original article refers to
-    Xiangtai Li, et, al. "Improving Semantic Segmentation via Decoupled Body and Edge Supervision"
-    (https://arxiv.org/pdf/2007.10035.pdf)
+[Xiangtai Li, et, al. "Improving Semantic Segmentation via Decoupled Body and Edge Supervision"](https://arxiv.org/pdf/2007.10035.pdf)
 
 ### Args
 * **num_classes** (int): The unique number of target classes.
@@ -537,8 +519,8 @@ class paddleseg.models.ISANet(
 
 > The ISANet implementation based on PaddlePaddle.
 
-> The original article refers to Lang Huang, et al. "Interlaced Sparse Self-Attention for Semantic Segmentation"
-    (https://arxiv.org/abs/1907.12273).
+> The original article refers to 
+[Lang Huang, et al. "Interlaced Sparse Self-Attention for Semantic Segmentation"](https://arxiv.org/abs/1907.12273).
 
 ### Args
 * **num_classes** (int): The unique number of target classes.
@@ -572,8 +554,7 @@ class paddleseg.models.EMANet(
 > The EMANet implementation based on PaddlePaddle.
 
 > The original article refers to
-    Xia Li, et al. "Expectation-Maximization Attention Networks for Semantic Segmentation"
-    (https://arxiv.org/abs/1907.13426)
+[Xia Li, et al. "Expectation-Maximization Attention Networks for Semantic Segmentation"](https://arxiv.org/abs/1907.13426)
 
 ### Args
 * **num_classes** (int): The unique number of target classes.
@@ -609,8 +590,7 @@ class paddleseg.models.DNLNet(
 > The DNLNet implementation based on PaddlePaddle.
 
 > The original article refers to
-    Minghao Yin, et al. "Disentangled Non-Local Neural Networks"
-    (https://arxiv.org/abs/2006.06668)
+[Minghao Yin, et al. "Disentangled Non-Local Neural Networks"](https://arxiv.org/abs/2006.06668)
 
 ### Args
 * **num_classes** (int): The unique number of target classes.
