@@ -38,3 +38,4 @@ from .dnlnet import *
 from .setr import *
 from .sfnet import *
 from .ppseg_lite import *
+from .mla_transformer import MLATransformer
