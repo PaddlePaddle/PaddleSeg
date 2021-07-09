@@ -1,4 +1,3 @@
-import os
 import os.path as osp
 
 
@@ -12,7 +11,6 @@ def toint(seq):
 
 
 def saveLabel(labelList, path):
-    # labelList = [[1, "人", [0, 0, 0]], [2, "车", [128, 128, 128]]]
     print("save label", labelList, path)
     print(osp.exists(osp.dirname(path)), osp.dirname(path))
     if not path or len(path) == 0 or not osp.exists(osp.dirname(path)):
@@ -25,9 +23,6 @@ def saveLabel(labelList, path):
             for idx in range(3):
                 print(l[2][idx], end=" ", file=f)
             print(file=f)
-
-
-# saveLabel("label.txt")
 
 
 def readLabel(path):
@@ -47,6 +42,3 @@ def readLabel(path):
         labelList.append(label)
     print(labelList)
     return labelList
-
-
-# readLabel("label.txt")

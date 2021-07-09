@@ -6,7 +6,9 @@ HERE = pathlib.Path(__file__).parent
 
 README = (HERE / "README.md").read_text(encoding="utf-8")
 
-
+with open("requirements.txt") as fin:
+    REQUIRED_PACKAGES = fin.read()
+    
 setup(
     name="EISeg",
     version="0.1.6",
@@ -26,16 +28,7 @@ setup(
     packages=find_packages(exclude=("test",)),
     # packages=["EISeg"],
     include_package_data=True,
-    install_requires=[
-        "pyqt5",
-        "qtpy",
-        "opencv-python",
-        "scipy",
-        "paddleseg",
-        "albumentations",
-        "cython",
-        "pyyaml",
-    ],
+    install_requires=REQUIRED_PACKAGES,
     entry_points={
         "console_scripts": [
             "eiseg=eiseg.run:main",

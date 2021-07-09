@@ -81,5 +81,3 @@ python -m eiseg
 [GT](https://github.com/GT-ZhangAcer)
 
 [ZhiLiang Yu](https://github.com/yzl19940819)
-
-<!-- [![Sparkline](https://stars.medv.io/Naereen/badges.svg)](https://stars.medv.io/PaddleCV-SIG/iseg) -->

@@ -2,9 +2,7 @@ from qtpy import QtCore, QtGui, QtWidgets
 from qtpy.QtCore import Qt
 from qtpy.QtWidgets import QGraphicsView
 
-# from models import models
 from functools import partial
-
 from models import models
 
 __APPNAME__ = "EISeg 0.1.5"
@@ -23,13 +21,10 @@ class Canvas(QGraphicsView):
 
     def wheelEvent(self, event):
         if event.modifiers() & QtCore.Qt.ControlModifier:
-            print(event.angleDelta().x(), event.angleDelta().y())
-            # self.zoom += event.angleDelta().y() / 2880
             zoom = 1 + event.angleDelta().y() / 2880
             self.zoom_all *= zoom
             oldPos = self.mapToScene(event.pos())
             if self.zoom_all >= 0.02 and self.zoom_all <= 50:  # 限制缩放的倍数
-                # print(self.zoom_all)
                 self.scale(zoom, zoom)
             newPos = self.mapToScene(event.pos())
             delta = newPos - oldPos
@@ -39,8 +34,6 @@ class Canvas(QGraphicsView):
             super(Canvas, self).wheelEvent(event)
 
     def mousePressEvent(self, ev):
-        print("view pos", ev.pos().x(), ev.pos().y())
-        print("scene pos", self.mapToScene(ev.pos()))
         pos = self.mapToScene(ev.pos())
         if ev.buttons() in [Qt.LeftButton, Qt.RightButton]:
             self.clickRequest.emit(pos.x(), pos.y(), ev.buttons() == Qt.LeftButton)
@@ -53,12 +46,9 @@ class Canvas(QGraphicsView):
             self.horizontalScrollBar().isVisible()
             or self.verticalScrollBar().isVisible()
         ):
-            # 放大到出现滚动条才能拖动，避免出现抖动
             self._endPos = ev.pos() / self.zoom_all - self._startPos / self.zoom_all
-            # 这儿不写为先减后除，这样会造成速度不一致
             self.point = self.point + self._endPos
             self._startPos = ev.pos()
-            print("move", self._endPos.x(), self._endPos.y())
             self.translate(self._endPos.x(), self._endPos.y())
 
     def mouseReleaseEvent(self, ev):
@@ -76,7 +66,6 @@ class Ui_Help(object):
         horizontalLayout.setObjectName("horizontalLayout")
         label = QtWidgets.QLabel(Dialog)
         label.setText("")
-        # label.setPixmap(QtGui.QPixmap("EISeg/resources/shortkey.jpg"))
         label.setObjectName("label")
         horizontalLayout.addWidget(label)
         QtCore.QMetaObject.connectSlotsByName(Dialog)
@@ -270,58 +259,6 @@ class Ui_EISeg(object):
         if curt is not None:
             btn.setShortcut(curt)
         return btn
-
-    ## 添加动作
-    # def add_action(self, parent, act_name, act_text="", ico_path=None, short_cut=None):
-    #     act = QtWidgets.QAction(parent)
-    #     if ico_path is not None:
-    #         icon = QtGui.QIcon()
-    #         icon.addPixmap(QtGui.QPixmap(ico_path), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-    #         act.setIcon(icon)
-    #     act.setObjectName(act_name)
-    #     act.setText(act_text)
-    #     if short_cut is not None:
-    #         act.setShortcut(short_cut)
-    #     return act
-
-    ## 创建菜单按钮
-    # def add_menu(self, parent, menu_name, menu_text, acts=None):
-    #     menu = QtWidgets.QMenu(parent)
-    #     menu.setObjectName(menu_name)
-    #     menu.setTitle(menu_text)
-    #     if acts is not None:
-    #         for act in acts:
-    #             new_act = self.add_action(parent, act[0], act[1], act[2], act[3])
-    #             menu.addAction(new_act)
-    #     return menu
-
-    ## 创建菜单栏
-    # def create_menubar(self, parent, menus):
-    #     menuBar = QtWidgets.QMenuBar(parent)
-    #     menuBar.setGeometry(QtCore.QRect(0, 0, 800, 26))
-    #     menuBar.setObjectName("menuBar")
-    #     for menu in menus:
-    #         menuBar.addAction(menu.menuAction())
-    #     return menuBar
-
-    # ## 创建工具栏
-    # def create_toolbar(self, parent, acts):
-    #     toolBar = QtWidgets.QToolBar(parent)
-    #     sizePolicy = QtWidgets.QSizePolicy(
-    #         QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Minimum
-    #     )
-    #     sizePolicy.setHorizontalStretch(0)
-    #     sizePolicy.setVerticalStretch(0)
-    #     sizePolicy.setHeightForWidth(toolBar.sizePolicy().hasHeightForWidth())
-    #     toolBar.setSizePolicy(sizePolicy)
-    #     toolBar.setMinimumSize(QtCore.QSize(0, 33))
-    #     toolBar.setMovable(True)
-    #     toolBar.setAllowedAreas(QtCore.Qt.BottomToolBarArea | QtCore.Qt.TopToolBarArea)
-    #     toolBar.setObjectName("toolBar")
-    #     for act in acts:
-    #         new_act = self.add_action(parent, act[0], act[1], act[2], act[3])
-    #         toolBar.addAction(new_act)
-    #     return toolBar
 
     ## 显示Logo
     def show_logo(self, logo_path):
