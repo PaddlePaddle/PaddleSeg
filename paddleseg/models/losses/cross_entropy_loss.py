@@ -68,34 +68,40 @@ class CrossEntropyLoss(nn.Layer):
             raise ValueError(
                 'The number of weights = {} must be the same as the number of classes = {}.'
                 .format(len(self.weight), logit.shape[1]))
-        if channel_axis == 1:
-            logit = paddle.transpose(logit, [0, 2, 3, 1])
-        if self.weight is None:
-            loss = F.cross_entropy(
-                logit, label, ignore_index=self.ignore_index, reduction='none')
-        else:
-            label_one_hot = F.one_hot(label, logit.shape[-1])
-            loss = F.cross_entropy(
-                logit,
-                label_one_hot * self.weight,
-                soft_label=True,
-                reduction='none')
-            loss = loss.squeeze(-1)
+
+        logit = paddle.transpose(logit, [0, 2, 3, 1])
+        loss = F.cross_entropy(
+            logit,
+            label,
+            ignore_index=self.ignore_index,
+            reduction='none',
+            weight=self.weight)
 
         mask = label != self.ignore_index
         mask = paddle.cast(mask, 'float32')
+
         loss = loss * mask
         if semantic_weights is not None:
             loss = loss * semantic_weights
 
+        if self.weight is not None:
+            _one_hot = F.one_hot(label, logit.shape[-1])
+            coef = paddle.sum(_one_hot * self.weight, axis=-1)
+        else:
+            coef = paddle.ones_like(label)
+
         label.stop_gradient = True
         mask.stop_gradient = True
+
         if self.top_k_percent_pixels == 1.0:
-            avg_loss = paddle.mean(loss) / (paddle.mean(mask) + self.EPS)
+            avg_loss = paddle.mean(loss) / (paddle.mean(mask * coef) + self.EPS)
             return avg_loss
 
         loss = loss.reshape((-1, ))
         top_k_pixels = int(self.top_k_percent_pixels * loss.numel())
-        loss, _ = paddle.topk(loss, top_k_pixels)
+        loss, indices = paddle.topk(loss, top_k_pixels)
+        coef = coef.reshape((-1, ))
+        coef = paddle.gather(coef, indices)
+        coef.stop_gradient = True
 
-        return loss.mean()
+        return loss.mean() / (paddle.mean(coef) + self.EPS)
