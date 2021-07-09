@@ -13,7 +13,6 @@
 # limitations under the License.
 
 from .dataset import Dataset
-from .autonue import AutoNUE
 from .cityscapes import Cityscapes
 from .voc import PascalVOC
 from .ade import ADE20K
