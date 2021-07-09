@@ -1,3 +1,4 @@
+English | [简体中文](core_cn.md)
 # paddleseg.core
 
 The interface for training, evaluation and prediction.
