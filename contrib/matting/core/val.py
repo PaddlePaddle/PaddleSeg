@@ -78,6 +78,8 @@ def evaluate(model,
     total_iters = len(loader)
     mse_metric = metric.MSE()
     sad_metric = metric.SAD()
+    grad_metric = metric.Grad()
+    conn_metric = metric.Conn()
 
     if print_detail:
         logger.info(
@@ -102,6 +104,10 @@ def evaluate(model,
             trimap = data['trimap'].numpy()
             mse_metric.update(alpha_pred.squeeze(1), alpha_gt, trimap)
             sad_metric.update(alpha_pred.squeeze(1), alpha_gt, trimap)
+            grad_metric.update(alpha_pred.squeeze(), alpha_gt.squeeze(),
+                               trimap.squeeze())
+            conn_metric.update(alpha_pred.squeeze(), alpha_gt.squeeze(),
+                               trimap.squeeze())
 
             if save_results:
                 alpha_pred_one = alpha_pred[0].squeeze()
@@ -127,6 +133,10 @@ def evaluate(model,
     # 指标输出
     mse = mse_metric.evaluate()
     sad = sad_metric.evaluate()
+    grad = grad_metric.evaluate()
+    conn = conn_metric.evaluate()
 
-    logger.info('[EVAL] SAD: {:.4f}, MSE: {:.4f}'.format(sad, mse))
-    return sad, mse
+    logger.info(
+        '[EVAL] SAD: {:.4f}, MSE: {:.4f}, Grad: {:.4f}, Conn: {:.4f}'.format(
+            sad, mse, grad, conn))
+    return sad, mse, grad, conn
