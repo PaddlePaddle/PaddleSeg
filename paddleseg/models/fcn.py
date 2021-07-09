@@ -48,19 +48,28 @@ class FCN(nn.Layer):
                  backbone_indices=(-1, ),
                  channels=None,
                  align_corners=False,
-                 pretrained=None):
+                 pretrained=None,
+                 bias=True,
+                 data_format="NCHW"):
         super(FCN, self).__init__()
 
+        if data_format != 'NCHW':
+            raise ('fcn only support NCHW data format')
         self.backbone = backbone
         backbone_channels = [
             backbone.feat_channels[i] for i in backbone_indices
         ]
 
-        self.head = FCNHead(num_classes, backbone_indices, backbone_channels,
-                            channels)
+        self.head = FCNHead(
+            num_classes,
+            backbone_indices,
+            backbone_channels,
+            channels,
+            bias=bias)
 
         self.align_corners = align_corners
         self.pretrained = pretrained
+        self.data_format = data_format
         self.init_weight()
 
     def forward(self, x):
@@ -96,7 +105,8 @@ class FCNHead(nn.Layer):
                  num_classes,
                  backbone_indices=(-1, ),
                  backbone_channels=(270, ),
-                 channels=None):
+                 channels=None,
+                 bias=True):
         super(FCNHead, self).__init__()
 
         self.num_classes = num_classes
@@ -108,14 +118,14 @@ class FCNHead(nn.Layer):
             in_channels=backbone_channels[0],
             out_channels=channels,
             kernel_size=1,
-            padding='same',
-            stride=1)
+            stride=1,
+            bias_attr=bias)
         self.cls = nn.Conv2D(
             in_channels=channels,
             out_channels=self.num_classes,
             kernel_size=1,
             stride=1,
-            padding=0)
+            bias_attr=bias)
         self.init_weight()
 
     def forward(self, feat_list):
