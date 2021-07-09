@@ -117,7 +117,6 @@ def get_image_list(image_path):
                     line = line.strip()
                     if len(line.split()) > 1:
                         line = line.split()[0]
-                        print(line)
                     image_list.append(os.path.join(image_dir, line))
     elif os.path.isdir(image_path):
         image_dir = image_path

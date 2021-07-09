@@ -23,6 +23,8 @@ sys.path.append(TEST_PATH)
 from paddleseg.utils.download import download_file_and_uncompress
 
 model_urls = {
+    "ppseg_lite_portrait_398x224":
+    "https://paddleseg.bj.bcebos.com/dygraph/ppseg/ppseg_lite_portrait_398x224.tar.gz",
     "deeplabv3p_resnet50_os8_humanseg_512x512_100k":
     "https://paddleseg.bj.bcebos.com/dygraph/humanseg/train/deeplabv3p_resnet50_os8_humanseg_512x512_100k.zip",
     "fcn_hrnetw18_small_v1_humanseg_192x192":

@@ -25,6 +25,8 @@ __all__ = ['PPSegLite']
 
 @manager.MODELS.add_component
 class PPSegLite(nn.Layer):
+    "The self-developed ultra lightweight model, is suitable for real-time scene segmentation on web or mobile terminals."
+
     def __init__(self, num_classes, pretrained=None, align_corners=False):
         super().__init__()
         self.pretrained = pretrained
@@ -34,12 +36,12 @@ class PPSegLite(nn.Layer):
         self.conv_bn0 = _ConvBNReLU(3, 36, 3, 2, 1)
         self.conv_bn1 = _ConvBNReLU(36, 18, 1, 1, 0)
 
-        self.stage1 = nn.Sequential(
+        self.block1 = nn.Sequential(
             InvertedResidual(36, stride=2, out_channels=72),
             InvertedResidual(72, stride=1), InvertedResidual(72, stride=1),
             InvertedResidual(72, stride=1))
 
-        self.stage2 = nn.Sequential(
+        self.block2 = nn.Sequential(
             InvertedResidual(72, stride=2), InvertedResidual(144, stride=1),
             InvertedResidual(144, stride=1), InvertedResidual(144, stride=1),
             InvertedResidual(144, stride=1), InvertedResidual(144, stride=1),
@@ -56,11 +58,11 @@ class PPSegLite(nn.Layer):
         # Encoder
         input_shape = paddle.shape(x)[2:]
 
-        x = self.conv_bn0(x)
+        x = self.conv_bn0(x)  # 1/2
         shortcut = self.conv_bn1(x)  # shortcut
-        x = F.max_pool2d(x, kernel_size=3, stride=2, padding=1)
-        x = self.stage1(x)
-        x = self.stage2(x)
+        x = F.max_pool2d(x, kernel_size=3, stride=2, padding=1)  # 1/4
+        x = self.block1(x)  # 1/8
+        x = self.block2(x)  # 1/16
 
         # Decoder
         x = self.depthwise_separable0(x)

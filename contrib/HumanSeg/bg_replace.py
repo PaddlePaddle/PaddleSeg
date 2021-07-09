@@ -27,7 +27,7 @@ from deploy.infer import Predictor
 def parse_args():
     parser = argparse.ArgumentParser(description='HumanSeg inference for video')
     parser.add_argument(
-        "--cfg",
+        "--config",
         dest="cfg",
         help="The config file.",
         default=None,

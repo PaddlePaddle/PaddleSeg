@@ -58,7 +58,7 @@ Welcome to PaddleSeg! PaddleSeg is an end-to-end image segmentation development 
 |[ISANet](./configs/isanet)|✔|✔|-|-|
 |[DNLNet](./configs/dnlnet)|✔|✔|-|-|
 |[SFNet](./configs/sfnet)|✔|-|-|-|
-|[ShuffleNetV2](./configs/shufflenetv2)|-|-|-|-|
+|[PPSegLite](./configs/ppseg_lite)|-|-|-|-|
 
 ## Dataset
 
