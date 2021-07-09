@@ -38,3 +38,4 @@ from .dnlnet import *
 from .setr import *
 from .sfnet import *
 from .shufflenet_slim import ShuffleNetV2
+from .mla_transformer import MLATransformer
