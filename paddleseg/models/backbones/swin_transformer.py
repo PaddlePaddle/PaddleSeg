@@ -679,10 +679,10 @@ class SwinTransformer(nn.Layer):
                     trunc_normal_(sublayer.weight)
                     if isinstance(sublayer,
                                   nn.Linear) and sublayer.bias is not None:
-                        zeros_(sublayer.bias, 0)
+                        zeros_(sublayer.bias)
                 elif isinstance(sublayer, nn.LayerNorm):
-                    zeros_(sublayer.bias, 0)
-                    ones_(sublayer.weight, 1.0)
+                    zeros_(sublayer.bias)
+                    ones_(sublayer.weight)
 
     def forward(self, x):
         """Forward function."""
