@@ -659,9 +659,9 @@ class SwinTransformer(nn.Layer):
         if self.frozen_stages >= 2:
             self.pos_drop.eval()
             for i in range(0, self.frozen_stages - 1):
-                m = self.layers[i]
-                m.eval()
-                for param in m.parameters():
+                layer = self.layers[i]
+                layer.eval()
+                for param in layer.parameters():
                     param.requires_grad = False
 
     def init_weights(self, pretrained=None):
@@ -671,18 +671,18 @@ class SwinTransformer(nn.Layer):
             pretrained (str, optional): Path to pre-trained weights.
                 Defaults to None.
         """
-
-        def _init_weights(m):
-            if isinstance(m, nn.Linear):
-                trunc_normal_(m.weight)
-                if isinstance(m, nn.Linear) and m.bias is not None:
-                    nn.init.constant_(m.bias, 0)
-            elif isinstance(m, nn.LayerNorm):
-                nn.init.constant_(m.bias, 0)
-                nn.init.constant_(m.weight, 1.0)
-
         if pretrained is not None:
             utils.load_pretrained_model(self, self.pretrained)
+        else:
+            for sublayer in self.sublayers():
+                if isinstance(sublayer, nn.Linear):
+                    trunc_normal_(sublayer.weight)
+                    if isinstance(sublayer,
+                                  nn.Linear) and sublayer.bias is not None:
+                        zeros_(sublayer.bias, 0)
+                elif isinstance(sublayer, nn.LayerNorm):
+                    zeros_(sublayer.bias, 0)
+                    ones_(sublayer.weight, 1.0)
 
     def forward(self, x):
         """Forward function."""

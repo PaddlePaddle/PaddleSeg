@@ -111,6 +111,7 @@ class MLATransformer(nn.Layer):
                  mlahead_channels=128,
                  aux_channels=256,
                  norm_layer=nn.BatchNorm2D,
+                 pretrained=None,
                  **kwargs):
         super(MLATransformer, self).__init__()
 
@@ -179,6 +180,13 @@ class MLATransformer(nn.Layer):
                 out_channels=self.num_classes,
                 kernel_size=1,
             ))
+
+        self.pretrained = pretrained
+        self.init_weight()
+
+    def init_weight(self):
+        if self.pretrained is not None:
+            utils.load_entire_model(self, self.pretrained)
 
     def forward(self, x):
         inputs = self.backbone(x)

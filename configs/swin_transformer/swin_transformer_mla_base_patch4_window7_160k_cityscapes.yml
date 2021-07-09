@@ -12,7 +12,7 @@ model:
     drop_path_rate: 0.3
     patch_norm: True
     pretrained: SwinTransformer_base_patch4_window7_224_pretrained.pdparams
-  num_classes: 26
+  num_classes: 19
   in_channels: [128, 256, 512, 1024]
   mlahead_channels: 128
 
