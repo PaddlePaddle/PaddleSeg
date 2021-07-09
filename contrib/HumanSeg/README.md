@@ -2,9 +2,9 @@
 
 人像分割是图像分割领域非常常见的应用，PaddleSeg推出了在大规模人像数据上训练的人像分割PPSeg模型，满足在服务端、移动端、Web端多种使用场景的需求。本教程提供从训练到部署的全流程应用指南，以及视频流人像分割、背景替换的实际效果体验。最新发布超轻量级人像分割模型，支持Web端、移动端场景的实时分割。
 
-近期**百度视频会议**也上线了虚拟背景功能，支持用户在视频会议时进行背景切换和背景虚化。其中人像换背景模型采用我们的超轻量级模型PPSeg-Lite。欢迎前去[百度首页](https://www.baidu.com/)右下角体验效果！
+近期**百度视频会议**也上线了虚拟背景功能，支持在网页端视频会议时进行背景切换和背景虚化。其中人像换背景模型采用我们的超轻量级模型PPSeg-Lite。欢迎前去[百度首页](https://www.baidu.com/)右下角体验效果！
 
-<img src="docs/conference.gif" width="70%" height="70%">
+<img src="https://github.com/LutaoChu/transfer_station/raw/master/conference.gif" width="70%" height="70%">
 
 - [人像分割模型](#人像分割模型)
 - [安装](#安装)
@@ -17,7 +17,7 @@
 - [移动端部署](#移动端部署)
 
 ## 人像分割模型
-### Generic Human Segmentation
+### 通用人像分割(Generic Human Segmentation)
 PPSeg开放了在大规模人像数据上训练的三个人像模型，满足服务端、移动端、Web端多种使用场景的需求。
 
 | 模型名 | 模型说明 | Checkpoint | Inference Model |
@@ -43,7 +43,7 @@ PPSeg开放了在大规模人像数据上训练的三个人像模型，满足服
 | PPSeg-Lite | 192x192 | 121M | 137K | 10.51ms | 543Kb |
 测试环境：Nvidia Tesla V100单卡。
 
-### Portrait Segmentation
+### 半身像分割(Portrait Segmentation)
 针对Portrait segmentation场景，PPSeg开放了半身像分割模型，该模型已应用于百度视频会议。
 
 | 模型名 | 模型说明 | Checkpoint | Inference Model |
