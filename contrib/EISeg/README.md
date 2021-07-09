@@ -48,6 +48,7 @@ eiseg
 
 ```shell
 conda create -n eiseg python=3.8
+conda activate eiseg
 conda install qtpy
 pip install eiseg
 eiseg
@@ -68,7 +69,7 @@ python -m eiseg
 ```
 即可开始执行。
 
-注：软件默认安装cpu版Paddle，如需使用GPU版可以按照[Paddle官网教程](https://www.paddlepaddle.org.cn/install/quick)安装。
+
 
 # 开发者
 [YuYing Hao](https://github.com/haoyuying)
