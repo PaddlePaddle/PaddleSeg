@@ -8,7 +8,7 @@
 ![python version](https://img.shields.io/badge/python-3.6+-orange.svg)
 ![support os](https://img.shields.io/badge/os-linux%2C%20win%2C%20mac-yellow.svg)
 
-<img src="./docs/images/seg_news_icon.png" width="50"/> *[2021-06-19] PaddleSeg团队获得CVPR2021 AutoNUE语义分割赛道冠军! 已发布[演讲报告](https://bj.bcebos.com/paddleseg/docs/autonue21_presentation_PaddleSeg.pdf)。详细的技术报告和源码即将在直播课期间公布。*
+<img src="./docs/images/seg_news_icon.png" width="50"/> *[2021-06-19] PaddleSeg团队获得CVPR2021 AutoNUE语义分割赛道冠军! 已发布[演讲报告](https://bj.bcebos.com/paddleseg/docs/autonue21_presentation_PaddleSeg.pdf)。详细的技术报告和源码即将在直播课公布。*
 
 ![demo](./docs/images/cityscapes.gif)
 
