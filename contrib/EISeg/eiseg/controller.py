@@ -1,8 +1,6 @@
 import time
 
 import paddle
-# from tkinter import messagebox
-
 import numpy as np
 import paddleseg.transforms as T
 
@@ -20,7 +18,7 @@ class InteractiveController:
         self.probs_history = []
         self.curr_label_number = 0
         self._result_mask = None
-        self.label_list = None  # 存标签编号和颜色的对照
+        self.label_list = None
         self._init_mask = None
 
         self.image = None
@@ -37,25 +35,13 @@ class InteractiveController:
         image :
             Description of parameter `image`.
         """
-        # TODO: 这里normalize需要按照模型改
-        # input_transform = T.Compose(
-        #     [T.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])],
-        #     to_rgb=False,
-        # )
+
         self.image = image
-        # self.image_nd = input_transform(image)[0]
         self._result_mask = np.zeros(image.shape[:2], dtype=np.uint8)
-        # self.curr_label_number = 0
         self.reset_last_object(update_image=False)
         self.update_image_callback(reset_canvas=True)
 
     def set_mask(self, mask):
-        # if self.image.shape[:2] != mask.shape[:2]:
-        #     messagebox.showwarning(
-        #         "Warning",
-        #         "A segmentation mask must have the same sizes as the current image!",
-        #     )
-        #     return
 
         if len(self.probs_history) > 0:
             self.reset_last_object()
@@ -94,15 +80,11 @@ class InteractiveController:
 
         click = clicker.Click(is_positive=is_positive, coords=(y, x))
         self.clicker.add_click(click)
-        start = time.time()
-        print(self.predictor)
         pred = self.predictor.get_prediction(self.clicker, prev_mask=self._init_mask)
         if self._init_mask is not None and len(self.clicker) == 1:
             pred = self.predictor.get_prediction(
                 self.clicker, prev_mask=self._init_mask
             )
-        end = time.time()
-        print("cost time", end - start)
 
         if self.probs_history:
             self.probs_history.append((self.probs_history[-1][0], pred))
@@ -112,11 +94,6 @@ class InteractiveController:
         self.update_image_callback()
 
     def set_label(self, label):
-        # if label is None:
-        #     return
-        # self.probs_history.append((np.zeros_like(label), label))
-        # print("len", len(self.probs_history))
-        # self.update_image_callback()
         pass
 
     def undo_click(self):
@@ -155,9 +132,7 @@ class InteractiveController:
         if object_prob is None:
             return
 
-        # self.curr_label_number += 1  # TODO: 当前是按照第几个目标给结果中的数，改成根据目标编号
         object_mask = object_prob > self.prob_thresh
-        print('curr_label_number:', self.curr_label_number)
         self._result_mask[object_mask] = self.curr_label_number
         self.reset_last_object()
 
@@ -174,7 +149,6 @@ class InteractiveController:
         self.curr_label_number = number
         if self.is_incomplete_mask:
             pass
-            # TODO: 改当前mask的编号
 
     def reset_last_object(self, update_image=True):
         """重置控制器状态
@@ -203,7 +177,6 @@ class InteractiveController:
         predictor_params : 网络权重
             新的网络权重
         """
-        # print("palette", self.palette)
         if net is not None:
             self.net = net
         if predictor_params is not None:
@@ -241,7 +214,6 @@ class InteractiveController:
         if self.image is None:
             return None
 
-        # 1. 画当前没标完的mask
         results_mask_for_vis = self.result_mask
         if self.probs_history:
             results_mask_for_vis[
@@ -257,7 +229,6 @@ class InteractiveController:
             palette=self.palette,
         )
 
-        # 2. 在图片和当前mask的基础上画之前标完的mask
         if self.probs_history:
             total_mask = self.probs_history[-1][0] > self.prob_thresh
             results_mask_for_vis[np.logical_not(total_mask)] = 0

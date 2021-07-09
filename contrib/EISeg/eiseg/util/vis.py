@@ -134,8 +134,6 @@ def draw_with_blend_and_clicks(
         )
         result = result.astype(np.uint8)
 
-        # result = (result * (1 - alpha) + alpha * rgb_mask).astype(np.uint8)
-
     if clicks_list is not None and len(clicks_list) > 0:
         pos_points = [click.coords for click in clicks_list if click.is_positive]
         neg_points = [click.coords for click in clicks_list if not click.is_positive]

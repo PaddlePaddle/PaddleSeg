@@ -43,12 +43,10 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         self.labelList = []  # 标签列表(数字，名字，颜色)
         self.config = util.parseConfigs(osp.join(here, "config/config.yaml"))
         self.maskColormap = ColorMask(color_path=osp.join(here, "config/colormap.txt"))
-        # self.labelList = [[1, "人", [0, 0, 0]], [2, "车", [128, 128, 128]]]
         self.isDirty = False
         self.settings = QtCore.QSettings(
             osp.join(here, "config/setting.ini"), QtCore.QSettings.IniFormat
         )
-        print(self.settings.fileName())
 
         self.recentFiles = self.settings.value("recent_files", [])
         self.recentParams = self.settings.value("recent_params", [])
@@ -77,7 +75,6 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         self.labelListTable.cellChanged.connect(self.labelListItemChanged)
 
         labelListFile = self.settings.value("label_list_file")
-        print(labelListFile)
         self.labelList = util.readLabel(labelListFile)
         self.refreshLabelList()
 
@@ -101,7 +98,6 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
 
         menu = self.actions.recent_files
         menu.clear()
-        print("recentFiles", self.recentFiles)
         files = [f for f in self.recentFiles if f != self.currentPath and exists(f)]
         for i, f in enumerate(files):
             if osp.exists(f):
@@ -118,7 +114,6 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
 
         menu = self.actions.recent_params
         menu.clear()
-        print("recentParams", self.recentParams)
         files = [f for f in self.recentParams if exists(f["path"])]
         for i, f in enumerate(files):
             if osp.exists(f["path"]):
@@ -181,13 +176,6 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
             "",
             self.tr("打开一个文件夹下所有的图像进行标注"),
         )
-        # model_loader = action(
-        #     self.tr("&选择模型参数"),
-        #     self.loadModel,
-        #     shortcuts["load_model"],
-        #     "Model",
-        #     self.tr("加载一个模型参数"),
-        # )
         change_output_dir = action(
             self.tr("&改变标签保存路径"),
             self.changeOutputDir,
@@ -266,7 +254,6 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
             self.tr("翻页同时自动保存"),
             checkable=True,
         )
-        # auto_save.setChecked(self.config.get("auto_save", False))
 
         recent = action(
             self.tr("&近期图片"),
@@ -412,17 +399,13 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
             self.controller = InteractiveController(
                 model,
                 predictor_params={
-                    # 'brs_mode': 'f-BRS-B',
                     "brs_mode": "NoBRS",
-                    "prob_thresh": 0.5,
                     "zoom_in_params": {
                         "skip_clicks": -1,
                         "target_size": (400, 400),
                         "expansion_ratio": 1.4,
                     },
-                    "predictor_params": {"net_clicks_limit": None, "max_size": 800},
-                    "brs_opt_func_params": {"min_iou_diff": 0.001},
-                    "lbfgs_params": {"maxfun": 20},
+                    "predictor_params": {"net_clicks_limit": None, "max_size": 800}
                 },
                 update_image_callback=self._update_image,
             )
@@ -441,25 +424,6 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
                 self.modelType, idx = findModelbyName(self.recentParams[-1]["type"])
                 self.comboModelSelect.setCurrentIndex(idx)
                 self.load_model_params(self.recentParams[-1]["path"])
-
-    # def changeModel(self, idx):
-    #     # TODO: 设置gpu还是cpu运行
-    #     self.statusbar.showMessage(f"正在加载 {models[idx].name} 模型")
-    #     model = models[idx].get_model()
-    #     if self.controller is None:
-    #         self.controller = InteractiveController(
-    #             model,
-    #             predictor_params={"brs_mode": "f-BRS-B"},
-    #             update_image_callback=self._update_image,
-    #         )
-    #         self.controller.prob_thresh = self.segThresh
-    #         # 这里如果直接加载模型会报错，先判断有没有图像
-    #         if self.image is not None:
-    #             self.controller.set_image(self.image)
-    #     else:
-    #         self.controller.reset_predictor(model)
-
-    #     self.statusbar.showMessage(f"{ models[idx].name}模型加载完成", 5000)
 
     def loadLabelList(self):
         filters = self.tr("标签配置文件 (*.txt)")
@@ -567,8 +531,6 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
             return
         table = self.labelListTable
         color = QtWidgets.QColorDialog.getColor()
-        # BUG: 判断颜色没变
-        print(color.getRgb())
         table.item(row, col).setBackground(color)
         self.labelList[row][2] = color.getRgb()[:3]
         if self.controller:
@@ -592,7 +554,6 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
                 self.controller.label_list = self.labelList
 
     def labelListItemChanged(self, row, col):
-        print("cell changed", row, col)
         if col != 1:
             return
         name = self.labelListTable.item(row, col).text()
@@ -631,7 +592,6 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
                 print(labPath)
                 break
         label = cv2.imread(path, cv2.IMREAD_UNCHANGED)
-        print("label shape", label.shape)
         return label
 
     def loadImage(self, path, update_list=False):
@@ -766,7 +726,6 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
                     self.tr("选择标签文件保存路径"),
                     osp.basename(self.imagePath).split(".")[0] + ".png",
                 )
-        print("++", savePath)
         if (
             savePath is None
             or len(savePath) == 0
@@ -775,16 +734,6 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
             return
 
         cv2.imwrite(savePath, self.controller.result_mask)
-        # 保存路径带有中文
-        # cv2.imencode('.png', self.controller.result_mask)[1].tofile(savePath)
-        # 保存带有调色板的
-        # mask_pil = Image.fromarray(self.controller.result_mask, "P")
-        # mask_map = [0, 0, 0]
-        # for lb in self.labelList:
-        #     mask_map += lb[2]
-        # mask_pil.putpalette(mask_map)
-        # mask_pil.save(savePath)
-        # self.setClean()
         self.statusbar.showMessage(f"标签成功保存至 {savePath}")
 
     def setClean(self):

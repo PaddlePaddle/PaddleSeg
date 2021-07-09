@@ -1,7 +1,6 @@
 import paddle
 import paddle.nn as nn
 import numpy as np
-import model.initializer as initializer
 
 
 class DistMaps(nn.Layer):

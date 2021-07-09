@@ -2,9 +2,6 @@ from pathlib import Path, PurePath
 import wget
 import hashlib
 
-# url = "http://182.61.31.110/model/hrnet18s_ocr48_human_f_007.pdparams"
-# url = "http://localhost/hrnet18s_ocr48_human_f_007.pdparams"
-
 
 def model_path(name, refresh=False):
     local_path = Path.home() / Path(".EISeg/model", name, name + ".pdparams")
@@ -40,6 +37,3 @@ def model_path(name, refresh=False):
             return str(local_path)
     print("error")
     return None
-
-
-# model_path("hrnet18s_ocr48_human_f_007")
