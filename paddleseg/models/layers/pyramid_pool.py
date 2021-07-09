@@ -88,10 +88,10 @@ class ASPPModule(nn.Layer):
     def forward(self, x):
         outputs = []
         if self.data_format == 'NCHW':
-            interpolate_shape = x.shape[2:]
+            interpolate_shape = paddle.shape(x)[2:]
             axis = 1
         else:
-            interpolate_shape = x.shape[1:3]
+            interpolate_shape = paddle.shape(x)[1:3]
             axis = -1
         for block in self.aspp_blocks:
             y = block(x)
