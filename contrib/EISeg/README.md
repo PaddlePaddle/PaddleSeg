@@ -72,12 +72,12 @@ python -m eiseg
 
 
 # 开发者
-[YuYing Hao](https://github.com/haoyuying)
+[Yuying Hao](https://github.com/haoyuying)
 
-[YiZhou Chen](https://github.com/geoyee)
+[Yizhou Chen](https://github.com/geoyee)
 
 [Lin Han](https://github.com/linhandev/)
 
 [GT](https://github.com/GT-ZhangAcer)
 
-[ZhiLiang Yu](https://github.com/yzl19940819)
+[Zhiliang Yu](https://github.com/yzl19940819)
