@@ -9,7 +9,7 @@
 ![support os](https://img.shields.io/badge/os-linux%2C%20win%2C%20mac-yellow.svg)
 
 
-## PaddleSeg重磅发布release v2.2版本，欢迎体验
+## PaddleSeg重磅发布2.2版本，欢迎体验
 
 * 全新升级了[人像分割](https://github.com/PaddlePaddle/PaddleSeg/tree/release/2.2/contrib/HumanSeg)功能，提供了web端超轻量模型部署方案；
 * 发布了交互式分割的智能标注工具 [EISeg](https://github.com/PaddlePaddle/PaddleSeg/tree/release/2.2/contrib/EISeg)。极大的提升了标注效率。
