@@ -11,9 +11,9 @@
 
 ## PaddleSeg重磅发布release v2.2版本，欢迎体验
 
-* 全新升级了[人像分割]()功能，提供了web端超轻量模型部署方案；
-* 开源了全景分割算法[Panoptic-DeepLab]()，丰富了模型种类；
-* 发布了交互式分割的智能标注工具 [EISeg]()。极大的提升了标注效率。
+* 全新升级了[人像分割](https://github.com/PaddlePaddle/PaddleSeg/tree/release/2.2/contrib/HumanSeg)功能，提供了web端超轻量模型部署方案；
+* 发布了交互式分割的智能标注工具 [EISeg](https://github.com/PaddlePaddle/PaddleSeg/tree/release/2.2/contrib/EISeg)。极大的提升了标注效率。
+* 开源了全景分割算法[Panoptic-DeepLab](https://github.com/PaddlePaddle/PaddleSeg/tree/release/2.2/contrib/PanopticDeepLab)，丰富了模型种类；
 * 即将推出了精细化的分割解决方案PaddleSeg-Matting；
 * PaddleSeg团队在CVPR2021 AutoNUE语义分割赛道中获得冠军! 已发布[演讲报告](https://bj.bcebos.com/paddleseg/docs/autonue21_presentation_PaddleSeg.pdf)。详细的技术报告和源码即将在直播课公布。
 
