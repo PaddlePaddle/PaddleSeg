@@ -8,6 +8,4 @@ shortcut:
   turn_next: F
   turn_prev: S
   undo: Ctrl+Z
-  del_active_polygon: Ctrl+BackSpace
-  del_active_point: BackSpace
   load_param: Ctrl+M

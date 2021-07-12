@@ -272,58 +272,6 @@ class Ui_EISeg(object):
             btn.setShortcut(curt)
         return btn
 
-    ## 添加动作
-    # def add_action(self, parent, act_name, act_text="", ico_path=None, short_cut=None):
-    #     act = QtWidgets.QAction(parent)
-    #     if ico_path is not None:
-    #         icon = QtGui.QIcon()
-    #         icon.addPixmap(QtGui.QPixmap(ico_path), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-    #         act.setIcon(icon)
-    #     act.setObjectName(act_name)
-    #     act.setText(act_text)
-    #     if short_cut is not None:
-    #         act.setShortcut(short_cut)
-    #     return act
-
-    ## 创建菜单按钮
-    # def add_menu(self, parent, menu_name, menu_text, acts=None):
-    #     menu = QtWidgets.QMenu(parent)
-    #     menu.setObjectName(menu_name)
-    #     menu.setTitle(menu_text)
-    #     if acts is not None:
-    #         for act in acts:
-    #             new_act = self.add_action(parent, act[0], act[1], act[2], act[3])
-    #             menu.addAction(new_act)
-    #     return menu
-
-    ## 创建菜单栏
-    # def create_menubar(self, parent, menus):
-    #     menuBar = QtWidgets.QMenuBar(parent)
-    #     menuBar.setGeometry(QtCore.QRect(0, 0, 800, 26))
-    #     menuBar.setObjectName("menuBar")
-    #     for menu in menus:
-    #         menuBar.addAction(menu.menuAction())
-    #     return menuBar
-
-    # ## 创建工具栏
-    # def create_toolbar(self, parent, acts):
-    #     toolBar = QtWidgets.QToolBar(parent)
-    #     sizePolicy = QtWidgets.QSizePolicy(
-    #         QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Minimum
-    #     )
-    #     sizePolicy.setHorizontalStretch(0)
-    #     sizePolicy.setVerticalStretch(0)
-    #     sizePolicy.setHeightForWidth(toolBar.sizePolicy().hasHeightForWidth())
-    #     toolBar.setSizePolicy(sizePolicy)
-    #     toolBar.setMinimumSize(QtCore.QSize(0, 33))
-    #     toolBar.setMovable(True)
-    #     toolBar.setAllowedAreas(QtCore.Qt.BottomToolBarArea | QtCore.Qt.TopToolBarArea)
-    #     toolBar.setObjectName("toolBar")
-    #     for act in acts:
-    #         new_act = self.add_action(parent, act[0], act[1], act[2], act[3])
-    #         toolBar.addAction(new_act)
-    #     return toolBar
-
     ## 显示Logo
     def show_logo(self, logo_path):
         labLogo = QtWidgets.QLabel()

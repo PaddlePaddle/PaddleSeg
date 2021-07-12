@@ -38,7 +38,6 @@ def newAction(
 ):
     """Create a new action and assign callbacks, shortcuts, etc."""
     a = QtWidgets.QAction(text, parent)
-    # a = QtWidgets.QAction("", parent)
     if icon is not None:
         a.setIconText(text.replace(" ", "\n"))
         a.setIcon(newIcon(icon))
@@ -76,24 +75,6 @@ def labelValidator():
 class struct(object):
     def __init__(self, **kwargs):
         self.__dict__.update(kwargs)
-
-
-# def distance(p):
-#     return sqrt(p.x() * p.x() + p.y() * p.y())
-
-
-# def distancetoline(point, line):
-#     p1, p2 = line
-#     p1 = np.array([p1.x(), p1.y()])
-#     p2 = np.array([p2.x(), p2.y()])
-#     p3 = np.array([point.x(), point.y()])
-#     if np.dot((p3 - p1), (p2 - p1)) < 0:
-#         return np.linalg.norm(p3 - p1)
-#     if np.dot((p3 - p2), (p1 - p2)) < 0:
-#         return np.linalg.norm(p3 - p2)
-#     if np.linalg.norm(p2 - p1) == 0:
-#         return 0
-#     return np.linalg.norm(np.cross(p2 - p1, p1 - p3)) / np.linalg.norm(p2 - p1)
 
 
 def fmtShortcut(text):

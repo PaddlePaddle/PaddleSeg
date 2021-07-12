@@ -421,17 +421,13 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
                 self.controller = InteractiveController(
                     model,
                     predictor_params={
-                        # 'brs_mode': 'f-BRS-B',
                         "brs_mode": "NoBRS",
-                        # "prob_thresh": 0.5,
                         "zoom_in_params": {
                             "skip_clicks": -1,
                             "target_size": (400, 400),
                             "expansion_ratio": 1.4,
                         },
                         "predictor_params": {"net_clicks_limit": None, "max_size": 800},
-                        # "brs_opt_func_params": {"min_iou_diff": 0.001},
-                        # "lbfgs_params": {"maxfun": 20},
                     },
                     update_image_callback=self._update_image,
                 )
@@ -791,7 +787,6 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         outputDir = QtWidgets.QFileDialog.getExistingDirectory(
             self,
             self.tr("%s - 选择标签保存路径") % __APPNAME__,
-            # osp.dirname(self.imagePath),
             ".",
             QtWidgets.QFileDialog.ShowDirsOnly
             | QtWidgets.QFileDialog.DontResolveSymlinks,
@@ -874,9 +869,6 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         if reset_canvas:
             self.resetZoom(width, height)
         self.annImage.setPixmap(QPixmap(image))
-
-        # BUG: 一直有两张图片在scene里，研究是为什么
-        # print(self.scene.items())
 
     # 界面缩放重置
     def resetZoom(self, width, height):

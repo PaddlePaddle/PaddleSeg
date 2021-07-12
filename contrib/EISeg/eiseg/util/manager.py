@@ -90,12 +90,9 @@ class ComponentManager:
             raise KeyError("{} does not exist in availabel {}".format(item, self))
         return self._components_dict[item]
 
-    # def __iter__(self):
-    #     return list(self._components_dict.values())
     def __iter__(self):
         for val in self._components_dict.values():
             yield val
-        # return self
 
     def keys(self):
         return list(self._components_dict.keys())
@@ -165,7 +162,3 @@ class ComponentManager:
 
 
 MODELS = ComponentManager("models")
-# BACKBONES = ComponentManager("backbones")
-# DATASETS = ComponentManager("datasets")
-# TRANSFORMS = ComponentManager("transforms")
-# LOSSES = ComponentManager("losses")

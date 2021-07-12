@@ -9,9 +9,6 @@ from inference import clicker
 from inference.predictor import get_predictor
 from util.vis import draw_with_blend_and_clicks
 
-# DEBUG:
-import matplotlib.pyplot as plt
-
 
 class InteractiveController:
     def __init__(self, net, predictor_params, update_image_callback, prob_thresh=0.5):
@@ -40,26 +37,12 @@ class InteractiveController:
         image :
             Description of parameter `image`.
         """
-        # TODO: 这里normalize需要按照模型改
-        # input_transform = T.Compose(
-        #     [T.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])],
-        #     to_rgb=False,
-        # )
         self.image = image
-        # self.image_nd = input_transform(image)[0]
         self._result_mask = np.zeros(image.shape[:2], dtype=np.uint8)
-        # self.curr_label_number = 0
         self.reset_last_object(update_image=False)
         self.update_image_callback(reset_canvas=True)
 
     def set_mask(self, mask):
-        # if self.image.shape[:2] != mask.shape[:2]:
-        #     messagebox.showwarning(
-        #         "Warning",
-        #         "A segmentation mask must have the same sizes as the current image!",
-        #     )
-        #     return
-
         if len(self.probs_history) > 0:
             self.reset_last_object()
 
@@ -115,11 +98,6 @@ class InteractiveController:
         self.update_image_callback()
 
     def set_label(self, label):
-        # if label is None:
-        #     return
-        # self.probs_history.append((np.zeros_like(label), label))
-        # print("len", len(self.probs_history))
-        # self.update_image_callback()
         pass
 
     def undo_click(self):
@@ -175,7 +153,6 @@ class InteractiveController:
         self.curr_label_number = number
         if self.is_incomplete_mask:
             pass
-            # TODO: 改当前mask的编号
 
     def reset_last_object(self, update_image=True):
         """重置控制器状态
@@ -191,7 +168,6 @@ class InteractiveController:
         """
         self.states = []
         self.probs_history = []
-        # self.current_object_prob = None
         self.clicker.reset_clicks()
         self.reset_predictor()
         self.reset_init_mask()
@@ -266,19 +242,6 @@ class InteractiveController:
                 alpha=alpha_blend,
                 palette=self.palette,
             )
-
-        return vis
-
-        # # 2. 正在标注的mask
-        # if self.probs_history:
-        #     total_mask = self.probs_history[-1][0] > self.prob_thresh
-        #     results_mask_for_vis[np.logical_not(total_mask)] = 0
-        #     vis = draw_with_blend_and_clicks(
-        #         vis,
-        #         mask=results_mask_for_vis,
-        #         alpha=alpha_blend,
-        #         palette=self.palette,
-        #     )
 
         return vis
 
