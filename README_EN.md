@@ -91,7 +91,7 @@ Welcome to PaddleSeg! PaddleSeg is an end-to-end image segmentation development 
     * [Web](./docs/deployment/web/web.md)
 * [Model Compression](./docs/slim/slim/slim.md)
 *  API Tutorial
-    * [API Documention](./docs/apis)
+    * [API Documention](./docs/apis/README.md)
     * [API Application](./docs/api_example.md)
 *  Description of Important Modules
     * [Data Augmentation](./docs/module/data/data.md)
