@@ -8,7 +8,14 @@
 ![python version](https://img.shields.io/badge/python-3.6+-orange.svg)
 ![support os](https://img.shields.io/badge/os-linux%2C%20win%2C%20mac-yellow.svg)
 
-<img src="./docs/images/seg_news_icon.png" width="50"/> *[2021-06-19] PaddleSeg团队获得CVPR2021 AutoNUE语义分割赛道冠军! 已发布[演讲报告](https://bj.bcebos.com/paddleseg/docs/autonue21_presentation_PaddleSeg.pdf)。详细的技术报告和源码即将公布。*
+
+## PaddleSeg重磅发布2.2版本，欢迎体验
+
+* 全新升级了[人像分割](https://github.com/PaddlePaddle/PaddleSeg/tree/release/2.2/contrib/HumanSeg)功能，提供了web端超轻量模型部署方案；
+* 发布了交互式分割的智能标注工具 [EISeg](https://github.com/PaddlePaddle/PaddleSeg/tree/release/2.2/contrib/EISeg)。极大的提升了标注效率。
+* 开源了全景分割算法[Panoptic-DeepLab](https://github.com/PaddlePaddle/PaddleSeg/tree/release/2.2/contrib/PanopticDeepLab)，丰富了模型种类；
+* 即将推出了精细化的分割解决方案PaddleSeg-Matting；
+* PaddleSeg团队在CVPR2021 AutoNUE语义分割赛道中获得冠军! 已发布[演讲报告](https://bj.bcebos.com/paddleseg/docs/autonue21_presentation_PaddleSeg.pdf)。详细的技术报告和源码即将在直播课公布。
 
 ![demo](./docs/images/cityscapes.gif)
 
@@ -56,7 +63,7 @@ PaddleSeg是基于飞桨[PaddlePaddle](https://www.paddlepaddle.org.cn)开发的
 * 如果你发现任何PaddleSeg存在的问题或者是建议, 欢迎通过[GitHub Issues](https://github.com/PaddlePaddle/PaddleSeg/issues)给我们提issues。
 * 欢迎加入PaddleSeg微信群（左侧）和QQ群（右侧）
 <div align="center">
-<img src="./docs/images/wechat_qq_630.png"  width = "500" />  
+<img src="./docs/images/wechat_qq_710.png"  width = "500" />  
 </div>
 
 ## 模型库  <img src="./docs/images/model.png" width="20"/>
