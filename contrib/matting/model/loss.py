@@ -34,14 +34,18 @@ class MRSD(nn.Layer):
             label (Tensor): Label tensor, the data type is float32, float64. The shape should equal to logit.
             mask (Tensor): The mask where the loss valid.
         """
+        if len(label.shape) == 3:
+            label = label.unsqueeze(1)
         sd = paddle.square(logit - label)
         loss = paddle.sqrt(sd + self.eps)
-        mask = mask.astype('float32')
-        if len(mask.shape) == 3:
-            mask = mask.unsqueeze(1)
-        loss = loss * mask
-        loss = loss.sum() / (mask.sum() + self.eps)
-
-        mask.stop_gradient = True
+        if mask is not None:
+            mask = mask.astype('float32')
+            if len(mask.shape) == 3:
+                mask = mask.unsqueeze(1)
+            loss = loss * mask
+            loss = loss.sum() / (mask.sum() + self.eps)
+            mask.stop_gradient = True
+        else:
+            loss = loss.mean()
 
         return loss
