@@ -36,7 +36,7 @@ def parse_args():
         '--separator',
         dest='separator',
         help='file list separator',
-        default="|",
+        default=" ",
         type=str)
     parser.add_argument(
         '--folder',
@@ -89,12 +89,20 @@ def get_files(image_or_label, dataset_split, args):
                                  dataset_split, "*", pattern)  # 包含子目录
     search_files3 = os.path.join(dataset_root, folder[image_or_label],
                                  dataset_split, "*", "*", pattern)  # 包含三级目录
+    search_files4 = os.path.join(dataset_root, folder[image_or_label],
+                                 dataset_split, "*", "*", "*",
+                                 pattern)  # 包含四级目录
+    search_files5 = os.path.join(dataset_root, folder[image_or_label],
+                                 dataset_split, "*", "*", "*", "*",
+                                 pattern)  # 包含五级目录
 
     filenames = glob.glob(search_files)
     filenames2 = glob.glob(search_files2)
     filenames3 = glob.glob(search_files3)
+    filenames4 = glob.glob(search_files4)
+    filenames5 = glob.glob(search_files5)
 
-    filenames = filenames + filenames2 + filenames3
+    filenames = filenames + filenames2 + filenames3 + filenames4 + filenames5
 
     return sorted(filenames)
 

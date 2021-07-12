@@ -59,24 +59,20 @@ class ISModel(nn.Layer):
 
     def forward(self, image, points):
         image, prev_mask = self.prepare_input(image)
-        # np.save('test_output/image.npy', image.numpy())
-        # np.save('test_output/prev_mask.npy', prev_mask.numpy())
         coord_features = self.get_coord_features(image, prev_mask, points)
-        # np.save('test_output/coord_features.npy', coord_features.numpy())
         if self.rgb_conv is not None:
             x = self.rgb_conv(paddle.concat((image, coord_features), axis=1))
             outputs = self.backbone_forward(x)
         else:
             coord_features = self.maps_transform(coord_features)
-            # np.save('test_output/coord_features.npy', coord_features.numpy())
             outputs = self.backbone_forward(image, coord_features)
         outputs['instances'] = nn.functional.interpolate(outputs['instances'], size=image.shape[2:],
                                                          mode='bilinear', align_corners=True)
-        # np.save('test_output/outputs_instances.npy', outputs['instances'].numpy())
+
         if self.with_aux_output:
             outputs['instances_aux'] = nn.functional.interpolate(outputs['instances_aux'], size=image.shape[2:],
                                                                  mode='bilinear', align_corners=True)
-        # np.save('test_output/outputs_instances_aux.npy', outputs['instances_aux'].numpy())
+
         return outputs
 
     def prepare_input(self, image):

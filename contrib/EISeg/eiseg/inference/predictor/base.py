@@ -1,4 +1,3 @@
-from numpy.lib.type_check import imag
 import paddle
 import paddle.nn.functional as F
 import numpy as np
@@ -66,28 +65,24 @@ class BasePredictor(object):
 
         if hasattr(self.net, 'with_prev_mask') and self.net.with_prev_mask:
             input_image = paddle.concat([input_image, prev_mask], axis=1)
-        # np.save('test_output/input_image.npy', input_image)
         image_nd, clicks_lists, is_image_changed = self.apply_transforms(
             input_image, [clicks_list]
         )
-        # np.save('test_output/image_nd.npy', image_nd)
         pred_logits = self._get_prediction(image_nd, clicks_lists, is_image_changed)
         prediction = F.interpolate(pred_logits, mode='bilinear', align_corners=True,
                                    size=image_nd.shape[2:])
-        # np.save('test_output/pred_logits.npy', pred_logits.numpy())
         for t in reversed(self.transforms):
             prediction = t.inv_transform(prediction)
-        # np.save('test_output/prediction_inv_transform.npy', prediction.numpy())
+       
         if self.zoom_in is not None and self.zoom_in.check_possible_recalculation():
             return self.get_prediction(clicker)
 
         self.prev_prediction = prediction
-        # np.save('test_output/prediction.npy', prediction.numpy())
+       
         return prediction.numpy()[0, 0]
 
     def _get_prediction(self, image_nd, clicks_lists, is_image_changed):
         points_nd = self.get_points_nd(clicks_lists)
-        # np.save('test_output/points_nd.npy', points_nd.numpy())
         return self.net(image_nd, points_nd)['instances']
 
     def _get_transform_states(self):
@@ -102,7 +97,6 @@ class BasePredictor(object):
         is_image_changed = False
         for t in self.transforms:
             image_nd, clicks_lists = t.transform(image_nd, clicks_lists)
-            print("trans:", image_nd.shape, '  t:', t)
             is_image_changed |= t.image_changed
 
         return image_nd, clicks_lists, is_image_changed
