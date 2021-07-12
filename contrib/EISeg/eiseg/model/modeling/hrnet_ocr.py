@@ -303,6 +303,7 @@ class HighResolutionNet(nn.Layer):
                     multi_scale_output=True):
         modules = []
         for i in range(num_modules):
+            # multi_scale_output is only used last module
             if not multi_scale_output and i == num_modules - 1:
                 reset_multi_scale_output = False
             else:
@@ -391,10 +392,6 @@ class HighResolutionNet(nn.Layer):
         model_dict = self.state_dict()
 
         if not os.path.exists(pretrained_path):
-            print(f'\nFile "{pretrained_path}" does not exist.')
-            print('You need to specify the correct path to the pre-trained weights.\n'
-                  'You can download the weights for HRNet from the repository:\n'
-                  'https://github.com/HRNet/HRNet-Image-Classification')
             exit(1)
         pretrained_dict = paddle.load(pretrained_path)
         pretrained_dict = {k.replace('last_layer', 'aux_head').replace('model.', ''): v for k, v in

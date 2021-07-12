@@ -10,5 +10,5 @@ def main():
     myWin.showMaximized()  # 全屏显示窗口
     # 加载近期模型
     QApplication.processEvents()
-    myWin.load_recent_params()
+    myWin.loadRecentModelParam()
     sys.exit(app.exec_())
