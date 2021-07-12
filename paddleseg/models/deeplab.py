@@ -82,9 +82,9 @@ class DeepLabV3P(nn.Layer):
         feat_list = self.backbone(x)
         logit_list = self.head(feat_list)
         if self.data_format == 'NCHW':
-            ori_shape = x.shape[2:]
+            ori_shape = paddle.shape(x)[2:]
         else:
-            ori_shape = x.shape[1:3]
+            ori_shape = paddle.shape(x)[1:3]
         return [
             F.interpolate(
                 logit,

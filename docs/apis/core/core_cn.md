@@ -1,3 +1,4 @@
+简体中文 | [English](core.md)
 # paddleseg.core
 
 启动模型训练，评估与预测的接口
