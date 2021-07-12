@@ -1,11 +1,17 @@
-## 数据处理与增强
+## Data Transformation (Data Augmentation)
 paddleseg.transforms
+
+## Dataset Processing
 paddleseg.datasets
-## 视觉模型集
+
+## Semantic Segmentation Model Set
 paddleseg.models
-## 骨干网络
+
+## Backbone Networks
 paddleseg.models.backbone
-## 训练、评估和预测
+
+## Training,Evaluating and Predicting
 paddleseg.core
-## 标准归一化
+
+## Computer Vision Library
 paddleseg.cvlibs
