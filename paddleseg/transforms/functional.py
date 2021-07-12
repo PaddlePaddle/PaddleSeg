@@ -42,8 +42,8 @@ def resize_long(im, long_size=224, interpolation=cv2.INTER_LINEAR):
     resized_width = int(round(im.shape[1] * scale))
     resized_height = int(round(im.shape[0] * scale))
 
-    im = cv2.resize(
-        im, (resized_width, resized_height), interpolation=interpolation)
+    im = cv2.resize(im, (resized_width, resized_height),
+                    interpolation=interpolation)
     return im
 
 
@@ -89,6 +89,12 @@ def hue(im, hue_lower, hue_upper):
     return im
 
 
+def sharpness(im, sharpness_lower, sharpness_upper):
+    sharpness_delta = np.random.uniform(sharpness_lower, sharpness_upper)
+    im = ImageEnhance.Sharpness(im).enhance(sharpness_delta)
+    return im
+
+
 def rotate(im, rotate_lower, rotate_upper):
     rotate_delta = np.random.uniform(rotate_lower, rotate_upper)
     im = im.rotate(int(rotate_delta))
@@ -128,8 +134,9 @@ def onehot_to_binary_edge(mask, radius):
 
     edge = np.zeros(mask.shape[1:])
     # pad borders
-    mask = np.pad(
-        mask, ((0, 0), (1, 1), (1, 1)), mode='constant', constant_values=0)
+    mask = np.pad(mask, ((0, 0), (1, 1), (1, 1)),
+                  mode='constant',
+                  constant_values=0)
     for i in range(num_classes):
         dist = distance_transform_edt(
             mask[i, :]) + distance_transform_edt(1.0 - mask[i, :])
