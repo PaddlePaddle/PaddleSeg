@@ -2,16 +2,15 @@ import yaml
 import os.path as osp
 
 
-def parseConfigs(path):
+def parse_configs(path):
     if not path or not osp.exists(path):
         return
     with open(path, "r", encoding="utf-8") as f:
         return yaml.load(f.read(), Loader=yaml.FullLoader)
 
 
-def saveConfigs(path, config):
+def save_configs(path, config):
     if not osp.exists(osp.basename(path)):
-        print("文件夹不存在")
         return
     with open(path, "w", encoding="utf-8") as f:
         yaml.dump(config, f)

@@ -1,4 +1,5 @@
 # Byte-compiled / optimized / DLL files
+test/
 __pycache__/
 *.py[cod]
 *$py.class
@@ -9,6 +10,8 @@ vis_temp.py
 test.txt
 *.pdparams
 output/
+temp*
+temp/
 
 # C extensions
 *.so
@@ -140,6 +143,7 @@ dmypy.json
 
 # exe
 out/
+*.7z
 eiseg/requirements_with_opt.txt
 
 # test
@@ -148,3 +152,6 @@ test_output/
 
 # qsetting
 *.ini
+
+# mask_sm
+tool/mask.png

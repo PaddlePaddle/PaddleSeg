@@ -3,6 +3,7 @@ import time
 import paddle
 import numpy as np
 import paddleseg.transforms as T
+from skimage.measure import label
 
 from inference import clicker
 from inference.predictor import get_predictor
@@ -18,13 +19,14 @@ class InteractiveController:
         self.probs_history = []
         self.curr_label_number = 0
         self._result_mask = None
-        self.label_list = None
+        self.label_list = None  # 存标签编号和颜色的对照
         self._init_mask = None
 
         self.image = None
         self.predictor = None
         self.update_image_callback = update_image_callback
         self.predictor_params = predictor_params
+        self.filterLargestCC = False
         self.reset_predictor()
 
     def set_image(self, image):
@@ -35,14 +37,12 @@ class InteractiveController:
         image :
             Description of parameter `image`.
         """
-
         self.image = image
         self._result_mask = np.zeros(image.shape[:2], dtype=np.uint8)
         self.reset_last_object(update_image=False)
         self.update_image_callback(reset_canvas=True)
 
     def set_mask(self, mask):
-
         if len(self.probs_history) > 0:
             self.reset_last_object()
 
@@ -69,7 +69,6 @@ class InteractiveController:
         """
         s = self.image.shape
         if x < 0 or y < 0 or x >= s[1] or y >= s[0]:
-            print("点击越界")
             return False
         self.states.append(
             {
@@ -191,7 +190,7 @@ class InteractiveController:
 
     @property
     def current_object_prob(self):
-        if self.probs_history:
+        if len(self.probs_history) > 0:
             current_prob_total, current_prob_additive = self.probs_history[-1]
             return np.maximum(current_prob_total, current_prob_additive)
         else:
@@ -244,11 +243,10 @@ class InteractiveController:
     @property
     def palette(self):
         if self.label_list:
-            colors = [l[2] for l in self.label_list]
+            colors = [ml.color for ml in self.label_list]
             colors.insert(0, [0, 0, 0])
         else:
             colors = [[0, 0, 0]]
-        print(colors)
         return colors
 
     @property
@@ -276,5 +274,4 @@ class InteractiveController:
 
     @property
     def img_size(self):
-        print(self.image.shape)
         return self.image.shape[1::-1]
