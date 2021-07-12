@@ -140,27 +140,6 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
             "Model",
             self.tr("加载一个模型参数"),
         )
-        quick_start = action(
-            self.tr("&快速上手"),
-            self.toBeImplemented,
-            None,
-            "Use",
-            self.tr("快速上手介绍"),
-        )
-        about = action(
-            self.tr("&关于软件"),
-            self.toBeImplemented,
-            None,
-            "About",
-            self.tr("关于这个软件和开发团队"),
-        )
-        grid_ann = action(
-            self.tr("&N²宫格标注"),
-            self.toBeImplemented,
-            None,
-            "N2",
-            self.tr("使用N²宫格进行细粒度标注"),
-        )
         finish_object = action(
             self.tr("&完成当前目标"),
             self.finishObject,
@@ -181,13 +160,6 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
             shortcuts["undo"],
             "Undo",
             self.tr("撤销一次点击"),
-        )
-        redo = action(
-            self.tr("&重做"),
-            self.toBeImplemented,
-            shortcuts["redo"],
-            "Redo",
-            self.tr("重做一次点击"),
         )
         save = action(
             self.tr("&保存"),
@@ -210,13 +182,6 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
             "AutoSave",
             self.tr("翻页同时自动保存"),
             checkable=True,
-        )
-        close = action(
-            self.tr("&关闭"),
-            self.toBeImplemented,
-            "",
-            "End",
-            self.tr("关闭当前图像"),
         )
         quit = action(
             self.tr("&退出"),
@@ -245,13 +210,6 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
             "",
             "ClearLabel",
             self.tr("清空所有的标签"),
-        )
-        shortcuts = action(
-            self.tr("&快捷键列表"),
-            self.toBeImplemented,
-            "",
-            "Shortcut",
-            self.tr("查看所有快捷键"),
         )
         clear_recent = action(
             self.tr("&清除标注记录"),
@@ -283,7 +241,6 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
                 None,
                 turn_next,
                 turn_prev,
-                close,
                 None,
                 quit,
             ),
@@ -291,22 +248,17 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
                 save_label,
                 load_label,
                 clear_label,
-                None,
-                grid_ann,
             ),
-            helpMenu=(quick_start, about, shortcuts),
             toolBar=(
                 finish_object,
                 clear,
                 undo,
-                redo,
                 turn_prev,
                 turn_next,
             ),
         )
         menu("文件", self.actions.fileMenu)
         menu("标注", self.actions.labelMenu)
-        menu("帮助", self.actions.helpMenu)
         util.addActions(self.toolBar, self.actions.toolBar)
 
     def updateRecentFile(self):
@@ -338,7 +290,6 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         if len(paths) > 15:
             del paths[0]
         self.settings.setValue("recent_files", paths)
-        print("update recent files", self.settings.value("recent_files", []))
         self.updateRecentFile()
 
     def clearRecentFile(self):
@@ -398,19 +349,16 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
                 self.settings.setValue("recent_models", self.recentModels)
 
     def loadModelParam(self, param_path, model=None):
-        print("Call load model param: ", param_path, model, type(model))
         if model is None:
             model = self.modelClass()
         if isinstance(model, str):
             try:
                 model = MODELS[model]()
             except KeyError:
-                print("Model don't exist")
                 return False
         if inspect.isclass(model):
             model = model()
         if not isinstance(model, models.EISegModel):
-            print("not a instance")
             self.warn("选择模型结构", "尚未选择模型结构，请在右侧下拉菜单进行选择")
             return False
         modelIdx = MODELS.idx(model.__name__)
@@ -465,7 +413,6 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         if not osp.exists(file_path):
             return
         self.labelList.readLabel(file_path)
-        print("Loaded label list:", self.labelList.list)
         self.refreshLabelList()
         self.settings.setValue("label_list_file", file_path)
 
@@ -483,7 +430,6 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
             self, self.tr("%s - 选择保存标签配置文件路径") % __APPNAME__, ".", filters
         )
         self.labelList.saveLabel(savePath)
-        print("Save label list:", self.labelList.list, savePath)
         self.settings.setValue("label_list_file", savePath)
 
     def addLabel(self):
@@ -492,7 +438,6 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         table.insertRow(table.rowCount())
         idx = table.rowCount() - 1
         self.labelList.add(idx + 1, "", c)
-        print("append", self.labelList)
         numberItem = QTableWidgetItem(str(idx + 1))
         numberItem.setFlags(QtCore.Qt.ItemIsEnabled)
         table.setItem(idx, 0, numberItem)
@@ -559,14 +504,12 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
             table.resizeColumnToContents(idx)
 
     def labelListDoubleClick(self, row, col):
-        print("Label list double clicked", row, col)
         if col != 2:
             return
         table = self.labelListTable
         color = QtWidgets.QColorDialog.getColor()
         if color.getRgb() == (0, 0, 0, 255):
             return
-        print("Change to new color:", color.getRgb())
         table.item(row, col).setBackground(color)
         self.labelList[row].color = color.getRgb()[:3]
         if self.controller:
@@ -579,7 +522,6 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         return self.controller.curr_label_number - 1
 
     def labelListClicked(self, row, col):
-        print("cell clicked", row, col)
         table = self.labelListTable
         if col == 3:
             table.removeRow(row)
@@ -655,7 +597,6 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         else:
             self.showWarning("未加载模型参数，请先加载模型参数！")
             self.changeParam()
-            print("please load model params first!")
             return 0
         self.controller.set_label(self.loadLabel(path))
         self.addRecentFile(path)
@@ -675,10 +616,8 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         for path in self.labelPaths:
             if getName(path) == imgName:
                 labPath = path
-                print(labPath)
                 break
         label = cv2.imread(path, cv2.IMREAD_UNCHANGED)
-        print("label shape", label.shape)
         return label
 
     def turnImg(self, delta):
@@ -741,10 +680,8 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
 
     def saveLabel(self, saveAs=False, savePath=None):
         if not self.controller:
-            print("on controller")
             return
         if self.controller.image is None:
-            print("no image")
             return
         self.completeLastMask()
         if not savePath:  # 参数没传存到哪
@@ -923,9 +860,3 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         msg.setText(text)
         msg.setStandardButtons(buttons)
         return msg.exec_()
-
-    def toBeImplemented(self):
-        self.statusbar.showMessage("功能尚在开发")
-
-    def showShortcuts(self):
-        self.toBeImplemented()

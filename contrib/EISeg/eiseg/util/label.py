@@ -15,10 +15,7 @@ def _toint(seq):
 
 
 def _saveLabel(labelList, path):
-    print("save label", labelList, path)
-    print(osp.exists(osp.dirname(path)), osp.dirname(path))
     if not path or len(path) == 0 or not osp.exists(osp.dirname(path)):
-        print("save label error")
         return
     with open(path, "w", encoding="utf-8") as f:
         for ml in labelList:
@@ -38,11 +35,9 @@ def _readLabel(path):
     for lab in labels:
         lab = lab.replace("\n", "").strip(" ").split(" ")
         if len(lab) != 2 and len(lab) != 5:
-            print("标签不合法")
             continue
         label = _MaskLabel(_toint(lab[0]), str(lab[1]), _toint(lab[2:]))
         labelList.append(label)
-    # print(labelList)
     return labelList
 
 

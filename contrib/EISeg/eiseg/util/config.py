@@ -11,7 +11,6 @@ def parse_configs(path):
 
 def save_configs(path, config):
     if not osp.exists(osp.basename(path)):
-        print("文件夹不存在")
         return
     with open(path, "w", encoding="utf-8") as f:
         yaml.dump(config, f)

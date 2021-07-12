@@ -62,7 +62,7 @@ eiseg
 
 ### Windows exe
 
-EISeg使用[QPT](https://github.com/GT-ZhangAcer/QPT)进行打包。可以从[百度云盘](https://pan.baidu.com/s/1K7cbNnlCtfEXcuiamdxjWA)（提取码：82z9）下载EISeg，也可从[Releases](https://github.com/PaddleCV-SIG/EISeg/releases/tag/v1.0.5)中进行下载。解压后双击启动程序.exe即可运行程序。程序第一次运行会初始化安装所需要的包，请稍等片刻。
+EISeg使用[QPT](https://github.com/GT-ZhangAcer/QPT)进行打包。可以从[百度云盘](https://pan.baidu.com/s/1XF_Fi6HK28XnPvfuVGj0bA)（提取码：82z9）下载最新EISeg。解压后双击启动程序.exe即可运行程序。程序第一次运行会初始化安装所需要的包，请稍等片刻。
 
 ### 运行代码
 
@@ -122,7 +122,6 @@ EISeg的界面主要有4个部分组成，分别是菜单&工具栏、状态栏�
 | Space（空格）         | 完成标注     |
 | Ctrl+Z                | 撤销         |
 | Ctrl+Shift+Z          | 清除         |
-| Ctrl+Y                | 重做         |
 | Ctrl+A                | 打开图像     |
 | Shift+A               | 打开文件夹   |
 | Ctrl+M                | 加载模型参数 |

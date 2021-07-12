@@ -69,7 +69,6 @@ class InteractiveController:
         """
         s = self.image.shape
         if x < 0 or y < 0 or x >= s[1] or y >= s[0]:
-            print("点击越界")
             return False
         self.states.append(
             {
@@ -80,15 +79,11 @@ class InteractiveController:
 
         click = clicker.Click(is_positive=is_positive, coords=(y, x))
         self.clicker.add_click(click)
-        start = time.time()
-        print(self.predictor)
         pred = self.predictor.get_prediction(self.clicker, prev_mask=self._init_mask)
         if self._init_mask is not None and len(self.clicker) == 1:
             pred = self.predictor.get_prediction(
                 self.clicker, prev_mask=self._init_mask
             )
-        end = time.time()
-        print("cost time", end - start)
 
         if self.probs_history:
             self.probs_history.append((self.probs_history[-1][0], pred))
@@ -252,7 +247,6 @@ class InteractiveController:
             colors.insert(0, [0, 0, 0])
         else:
             colors = [[0, 0, 0]]
-        print(colors)
         return colors
 
     @property
@@ -280,5 +274,4 @@ class InteractiveController:
 
     @property
     def img_size(self):
-        print(self.image.shape)
         return self.image.shape[1::-1]
