@@ -1,3 +1,4 @@
+English | [简体中文](README_CN.md)
 ## Data Transformation (Data Augmentation)
 [paddleseg.transforms](./transforms/transforms.md)
 

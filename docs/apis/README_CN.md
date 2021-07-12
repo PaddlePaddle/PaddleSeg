@@ -1,3 +1,4 @@
+简体中文 | [English](README.md)
 ## 数据变换（数据增强）
 [paddleseg.transforms](./transforms/transforms_cn.md)
 
