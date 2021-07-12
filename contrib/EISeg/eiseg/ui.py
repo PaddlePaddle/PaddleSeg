@@ -1,11 +1,14 @@
+import os.path as osp
+from enum import Enum
+from functools import partial
+
 from qtpy import QtCore, QtGui, QtWidgets
 from qtpy.QtCore import Qt
 from qtpy.QtWidgets import QGraphicsView
 
-from functools import partial
-from models import models
-
-__APPNAME__ = "EISeg 0.1.5"
+import models
+from util import MODELS
+from eiseg import pjpath, __APPNAME__
 
 
 class Canvas(QGraphicsView):
@@ -66,6 +69,7 @@ class Ui_Help(object):
         horizontalLayout.setObjectName("horizontalLayout")
         label = QtWidgets.QLabel(Dialog)
         label.setText("")
+        # label.setPixmap(QtGui.QPixmap("EISeg/resources/shortkey.jpg"))
         label.setObjectName("label")
         horizontalLayout.addWidget(label)
         QtCore.QMetaObject.connectSlotsByName(Dialog)
@@ -102,7 +106,9 @@ class Ui_EISeg(object):
         self.statusbar.setObjectName("statusbar")
         self.statusbar.setStyleSheet("QStatusBar::item {border: none;}")
         MainWindow.setStatusBar(self.statusbar)
-        self.statusbar.addPermanentWidget(self.show_logo("eiseg/resource/Paddle.png"))
+        self.statusbar.addPermanentWidget(
+            self.show_logo(osp.join(pjpath, "resource/Paddle.png"))
+        )
         ## -----
         ## -- 图形区域 --
         ImageRegion = QtWidgets.QHBoxLayout(CentralWidget)
@@ -136,7 +142,7 @@ class Ui_EISeg(object):
         sizePolicy.setHeightForWidth(self.dockWorker.sizePolicy().hasHeightForWidth())
         self.dockWorker.setSizePolicy(sizePolicy)
         self.dockWorker.setMinimumSize(QtCore.QSize(71, 42))
-        self.dockWorker.setWindowTitle("工作区")
+        self.dockWorker.setWindowTitle(" ")  # 避免拖出后显示“python”
         self.dockWorker.setFeatures(
             QtWidgets.QDockWidget.DockWidgetFloatable
             | QtWidgets.QDockWidget.DockWidgetMovable
@@ -156,21 +162,21 @@ class Ui_EISeg(object):
         # 模型加载
         ModelRegion = QtWidgets.QVBoxLayout()
         ModelRegion.setObjectName("ModelRegion")
-        labShowSet = self.create_text(CentralWidget, "labShowSet", "网络选择")
+        labShowSet = self.create_text(CentralWidget, "labShowSet", "模型选择")
         ModelRegion.addWidget(labShowSet)
         combo = QtWidgets.QComboBox(self)
-        # for model in models:
-        #     combo.addItem(model.name)
-        # 网络参数
-        combo.addItems([m.name for m in models])
+        combo.addItems([m.__name__ for m in MODELS])
         self.comboModelSelect = combo
-        ModelRegion.addWidget(self.comboModelSelect)  # 模型选择
-        self.btnParamsSelect = p_create_button("btnParamsLoad", "加载网络参数", \
-                                               "eiseg/resource/Model.png", "Ctrl+D")
+        ModelRegion.addWidget(self.comboModelSelect)
+        # 网络参数
+        self.btnParamsSelect = p_create_button(
+            "btnParamsLoad", "加载网络参数", osp.join(pjpath, "resource/Model.png"), "Ctrl+D"
+        )
         ModelRegion.addWidget(self.btnParamsSelect)  # 模型选择
         SetRegion.addLayout(ModelRegion)
         SetRegion.setStretch(0, 1)
         # 数据列表
+        # TODO: 数据列表加一个搜索功能
         listRegion = QtWidgets.QVBoxLayout()
         listRegion.setObjectName("listRegion")
         labFiles = self.create_text(CentralWidget, "labFiles", "数据列表")
@@ -184,14 +190,18 @@ class Ui_EISeg(object):
         # TODO: 改成 list widget
         self.labelListTable = QtWidgets.QTableWidget(CentralWidget)
         self.labelListTable.horizontalHeader().hide()
-        # 自适应填充
-        self.labelListTable.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.ResizeToContents)
+        # 铺满
+        self.labelListTable.horizontalHeader().setSectionResizeMode(
+            QtWidgets.QHeaderView.Stretch
+        )
         self.labelListTable.verticalHeader().hide()
         self.labelListTable.setColumnWidth(0, 10)
         # self.labelListTable.setMinimumWidth()
         self.labelListTable.setObjectName("labelListTable")
         listRegion.addWidget(self.labelListTable)
-        self.btnAddClass = p_create_button("btnAddClass", "添加标签", "eiseg/resource/Label.png")
+        self.btnAddClass = p_create_button(
+            "btnAddClass", "添加标签", osp.join(pjpath, "resource/Label.png")
+        )
         listRegion.addWidget(self.btnAddClass)
         SetRegion.addLayout(listRegion)
         SetRegion.setStretch(1, 20)
@@ -220,7 +230,9 @@ class Ui_EISeg(object):
         SetRegion.addLayout(ShowSetRegion)
         SetRegion.setStretch(2, 1)
         # 保存
-        self.btnSave = p_create_button("btnSave", "保存", "eiseg/resource/Save.png", "Ctrl+S")
+        self.btnSave = p_create_button(
+            "btnSave", "保存", osp.join(pjpath, "resource/Save.png"), "Ctrl+S"
+        )
         SetRegion.addWidget(self.btnSave)
         SetRegion.setStretch(3, 1)
         # dock设置完成
@@ -260,6 +272,58 @@ class Ui_EISeg(object):
             btn.setShortcut(curt)
         return btn
 
+    ## 添加动作
+    # def add_action(self, parent, act_name, act_text="", ico_path=None, short_cut=None):
+    #     act = QtWidgets.QAction(parent)
+    #     if ico_path is not None:
+    #         icon = QtGui.QIcon()
+    #         icon.addPixmap(QtGui.QPixmap(ico_path), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+    #         act.setIcon(icon)
+    #     act.setObjectName(act_name)
+    #     act.setText(act_text)
+    #     if short_cut is not None:
+    #         act.setShortcut(short_cut)
+    #     return act
+
+    ## 创建菜单按钮
+    # def add_menu(self, parent, menu_name, menu_text, acts=None):
+    #     menu = QtWidgets.QMenu(parent)
+    #     menu.setObjectName(menu_name)
+    #     menu.setTitle(menu_text)
+    #     if acts is not None:
+    #         for act in acts:
+    #             new_act = self.add_action(parent, act[0], act[1], act[2], act[3])
+    #             menu.addAction(new_act)
+    #     return menu
+
+    ## 创建菜单栏
+    # def create_menubar(self, parent, menus):
+    #     menuBar = QtWidgets.QMenuBar(parent)
+    #     menuBar.setGeometry(QtCore.QRect(0, 0, 800, 26))
+    #     menuBar.setObjectName("menuBar")
+    #     for menu in menus:
+    #         menuBar.addAction(menu.menuAction())
+    #     return menuBar
+
+    # ## 创建工具栏
+    # def create_toolbar(self, parent, acts):
+    #     toolBar = QtWidgets.QToolBar(parent)
+    #     sizePolicy = QtWidgets.QSizePolicy(
+    #         QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Minimum
+    #     )
+    #     sizePolicy.setHorizontalStretch(0)
+    #     sizePolicy.setVerticalStretch(0)
+    #     sizePolicy.setHeightForWidth(toolBar.sizePolicy().hasHeightForWidth())
+    #     toolBar.setSizePolicy(sizePolicy)
+    #     toolBar.setMinimumSize(QtCore.QSize(0, 33))
+    #     toolBar.setMovable(True)
+    #     toolBar.setAllowedAreas(QtCore.Qt.BottomToolBarArea | QtCore.Qt.TopToolBarArea)
+    #     toolBar.setObjectName("toolBar")
+    #     for act in acts:
+    #         new_act = self.add_action(parent, act[0], act[1], act[2], act[3])
+    #         toolBar.addAction(new_act)
+    #     return toolBar
+
     ## 显示Logo
     def show_logo(self, logo_path):
         labLogo = QtWidgets.QLabel()
@@ -280,9 +344,9 @@ class Ui_EISeg(object):
         sld_name,
         text_name,
         text,
-        default_value=5,
-        max_value=10,
-        text_rate=0.1,
+        default_value=50,
+        max_value=100,
+        text_rate=0.01,
     ):
         Region = QtWidgets.QHBoxLayout()
         lab = self.create_text(parent, None, text)
@@ -292,7 +356,7 @@ class Ui_EISeg(object):
         Region.setStretch(0, 1)
         Region.setStretch(1, 10)
         sld = QtWidgets.QSlider(parent)
-        sld.setMaximum(max_value)  # 好像只能整数的，这里是扩大了10倍，1 . 10
+        sld.setMaximum(max_value)
         sld.setProperty("value", default_value)
         sld.setOrientation(QtCore.Qt.Horizontal)
         sld.setObjectName(sld_name)
@@ -301,8 +365,7 @@ class Ui_EISeg(object):
             QSlider::sub-page:horizontal {
                 background: #9999F1
             }
-
-            QSlider::handle:horizontal 
+            QSlider::handle:horizontal
             {
                 background: #3334E3;
                 width: 12px;

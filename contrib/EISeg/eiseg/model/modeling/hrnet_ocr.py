@@ -303,6 +303,7 @@ class HighResolutionNet(nn.Layer):
                     multi_scale_output=True):
         modules = []
         for i in range(num_modules):
+            # multi_scale_output is only used last module
             if not multi_scale_output and i == num_modules - 1:
                 reset_multi_scale_output = False
             else:
@@ -323,20 +324,36 @@ class HighResolutionNet(nn.Layer):
         return nn.Sequential(*modules), num_inchannels
 
     def forward(self, x, additional_features=None):
+        # np.save('test_output/x.npy', x.numpy())
+        # np.save('test_output/additional_features.npy', additional_features.numpy())
         feats = self.compute_hrnet_feats(x, additional_features)
+        # np.save('test_output/feats.npy', feats.numpy())
         if self.ocr_width > 0:
             out_aux = self.aux_head(feats)
+            # np.save('test_output/out_aux.npy', out_aux.numpy())
             feats = self.conv3x3_ocr(feats)
+            # np.save('test_output/feats_conv3x3_ocr.npy', feats.numpy())
             context = self.ocr_gather_head(feats, out_aux)
+            # np.save('test_output/context.npy', context.numpy())
             feats = self.ocr_distri_head(feats, context)
+            # np.save('test_output/feats_ocr_distri_head.npy', feats.numpy())
+#             print('feats', feats)
             out = self.cls_head(feats)
+            # np.save('test_output/out.npy', out.numpy())
+#             for name, params in self.cls_head.named_parameters():
+#                 print(name)
+#                 print(params)
+#             print('out', out)
+#             raise Exception("***************************")
             return [out, out_aux]
         else:
             return [self.cls_head(feats), None]
 
     def compute_hrnet_feats(self, x, additional_features):
         x = self.compute_pre_stage_features(x, additional_features)
+        # np.save('test_output/x_compute_pre_stage_features.npy', x.numpy())
         x = self.layer1(x)
+        # np.save('test_output/x_layer1', x.numpy())
         x_list = []
         for i in range(self.stage2_num_branches):
             if self.transition1[i] is not None:
@@ -344,6 +361,7 @@ class HighResolutionNet(nn.Layer):
             else:
                 x_list.append(x)
         y_list = self.stage2(x_list)
+        # np.save('test_output/y_list_stage2_0.npy', y_list[0].numpy())
         x_list = []
         for i in range(self.stage3_num_branches):
             if self.transition2[i] is not None:
@@ -354,6 +372,7 @@ class HighResolutionNet(nn.Layer):
             else:
                 x_list.append(y_list[i])
         y_list = self.stage3(x_list)
+        # np.save('test_output/y_list_stage3_0.npy', y_list[0].numpy())
         x_list = []
         for i in range(self.stage4_num_branches):
             if self.transition3[i] is not None:
@@ -364,16 +383,23 @@ class HighResolutionNet(nn.Layer):
             else:
                 x_list.append(y_list[i])
         x = self.stage4(x_list)
+        # np.save('test_output/y_list_stage4_0.npy', y_list[0].numpy())
         return self.aggregate_hrnet_features(x)
 
     def compute_pre_stage_features(self, x, additional_features):
         x = self.conv1(x)
+        # np.save('test_output/x_conv1.npy', x.numpy())
         x = self.bn1(x)
+        # np.save('test_output/x_bn1.npy', x.numpy())
         x = self.relu(x)
+        # np.save('test_output/x_relu.npy', x.numpy())
         if additional_features is not None:
             x = x + additional_features
+        # np.save('test_output/x_add.npy', x.numpy())
         x = self.conv2(x)
+        # np.save('test_output/x_conv2.npy', x.numpy())
         x = self.bn2(x)
+        # np.save('test_output/x_bn2.npy', x.numpy())
         return self.relu(x)
 
     def aggregate_hrnet_features(self, x):
@@ -385,6 +411,9 @@ class HighResolutionNet(nn.Layer):
                            mode='bilinear', align_corners=self.align_corners)
         x3 = F.interpolate(x[3], size=(x0_h, x0_w),
                            mode='bilinear', align_corners=self.align_corners)
+        # np.save('test_output/x1.npy', x1.numpy())
+        # np.save('test_output/x2.npy', x2.numpy())
+        # np.save('test_output/x3.npy', x3.numpy())
         return paddle.concat([x[0], x1, x2, x3], axis=1)
 
     def load_pretrained_weights(self, pretrained_path=''):

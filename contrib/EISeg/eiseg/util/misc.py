@@ -10,6 +10,26 @@ def get_dims_with_exclusion(dim, exclude=None):
     return dims
 
 
+def save_checkpoint(net, checkpoints_path, epoch=None, prefix='', verbose=True, multi_gpu=False):
+    if epoch is None:
+        checkpoint_name = 'last_checkpoint.pdparams'
+    else:
+        checkpoint_name = f'{epoch:03d}.pdparams'
+
+    if prefix:
+        checkpoint_name = f'{prefix}_{checkpoint_name}'
+
+    if not checkpoints_path.exists():
+        checkpoints_path.mkdir(parents=True)
+
+    checkpoint_path = checkpoints_path / checkpoint_name
+
+    net = net.module if multi_gpu else net
+   
+    #model_state = {'state_dict': net.state_dict(),'config': net.__dict__}
+    paddle.save(net.state_dict(), checkpoint_path)
+
+
 def get_bbox_from_mask(mask):
     rows = np.any(mask, axis=1)
     cols = np.any(mask, axis=0)
