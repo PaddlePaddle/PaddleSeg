@@ -1,3 +1,4 @@
+简体中文 | [English](datasets.md)
 # paddleseg.datasets
 - [Custom Dataset](#custom-dataset)
 - [Cityscapes](#Cityscapes)

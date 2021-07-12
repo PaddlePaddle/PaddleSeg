@@ -1,3 +1,4 @@
+简体中文 | [English](transforms.md)
 # [paddleseg.transforms](../../../paddleseg/transforms/transforms.py)
 
 ## [Compose](../../../paddleseg/transforms/transforms.py)
