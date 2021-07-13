@@ -161,6 +161,13 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
             "Undo",
             self.tr("撤销一次点击"),
         )
+        redo = action(
+            self.tr("&重做"),
+            self.redoClick,
+            shortcuts["redo"],
+            "Redo",
+            self.tr("重做一次点击"),
+        )
         save = action(
             self.tr("&保存"),
             self.saveLabel,
@@ -253,6 +260,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
                 finish_object,
                 clear,
                 undo,
+                redo,
                 turn_prev,
                 turn_next,
             ),
@@ -774,7 +782,11 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         self.setClean()
 
     def redoClick(self):
-        self.toBeImplemented()
+        if self.image is None:
+            return
+        if not self.controller:
+            return
+        self.controller.redo_click()
 
     def canvasClick(self, x, y, isLeft):
         if self.controller is None:
