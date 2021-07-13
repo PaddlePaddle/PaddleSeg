@@ -114,7 +114,7 @@ PaddleSeg是基于飞桨[PaddlePaddle](https://www.paddlepaddle.org.cn)开发的
     * [API应用案例](./docs/api_example.md)
 *  重要模块说明
     * [数据增强](./docs/module/data/data.md)
-    * [Loss说明](./docs/module/loss/lovasz_loss.md)
+    * [Loss说明](./docs/module/loss/losses_cn.md)
     * [Tricks](./docs/module/tricks/tricks.md)
 * 经典模型说明
     * [DeeplabV3](./docs/models/deeplabv3.md)

@@ -1,5 +1,5 @@
-简体中文 | [English](losses.md)
-# 损失函数的详细说明
+English | [简体中文](losses_cn.md)
+# The Detailed description of the loss function
 
 * ## [paddleseg.models.losses.binary_cross_entropy_loss](./BCELoss_cn.md)
 
