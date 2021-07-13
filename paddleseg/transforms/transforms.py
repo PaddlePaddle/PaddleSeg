@@ -37,6 +37,7 @@ class Compose:
         TypeError: When 'transforms' is not a list.
         ValueError: when the length of 'transforms' is less than 1.
     """
+
     def __init__(self, transforms, to_rgb=True):
         if not isinstance(transforms, list):
             raise TypeError('The transforms must be a list!')
@@ -78,6 +79,7 @@ class RandomHorizontalFlip:
     Args:
         prob (float, optional): A probability of horizontally flipping. Default: 0.5.
     """
+
     def __init__(self, prob=0.5):
         self.prob = prob
 
@@ -100,6 +102,7 @@ class RandomVerticalFlip:
     Args:
         prob (float, optional): A probability of vertical flipping. Default: 0.1.
     """
+
     def __init__(self, prob=0.1):
         self.prob = prob
 
@@ -198,6 +201,7 @@ class ResizeByLong:
     Args:
         long_size (int): The target size of long side.
     """
+
     def __init__(self, long_size):
         self.long_size = long_size
 
@@ -239,6 +243,7 @@ class LimitLong:
         min_long (int, optional): If the long edge of image is smaller than min_long,
             it will be resize to min_long. Default: None.
     """
+
     def __init__(self, max_long=None, min_long=None):
         if max_long is not None:
             if not isinstance(max_long, int):
@@ -295,6 +300,7 @@ class ResizeRangeScaling:
         min_value (int, optional): The minimum value of long side after resize. Default: 400.
         max_value (int, optional): The maximum value of long side after resize. Default: 600.
     """
+
     def __init__(self, min_value=400, max_value=600):
         if min_value > max_value:
             raise ValueError('min_value must be less than max_value, '
@@ -342,6 +348,7 @@ class ResizeStepScaling:
     Raises:
         ValueError: When min_scale_factor is smaller than max_scale_factor.
     """
+
     def __init__(self,
                  min_scale_factor=0.75,
                  max_scale_factor=1.25,
@@ -405,6 +412,7 @@ class Normalize:
     Raises:
         ValueError: When mean/std is not list or any value in std is 0.
     """
+
     def __init__(self, mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5)):
         self.mean = mean
         self.std = std
@@ -452,6 +460,7 @@ class Padding:
         TypeError: When target_size is neither list nor tuple.
         ValueError: When the length of target_size is not 2.
     """
+
     def __init__(self,
                  target_size,
                  im_padding_value=(127.5, 127.5, 127.5),
@@ -493,21 +502,23 @@ class Padding:
                 'The size of image should be less than `target_size`, but the size of image ({}, {}) is larger than `target_size` ({}, {})'
                 .format(im_width, im_height, target_width, target_height))
         else:
-            im = cv2.copyMakeBorder(im,
-                                    0,
-                                    pad_height,
-                                    0,
-                                    pad_width,
-                                    cv2.BORDER_CONSTANT,
-                                    value=self.im_padding_value)
+            im = cv2.copyMakeBorder(
+                im,
+                0,
+                pad_height,
+                0,
+                pad_width,
+                cv2.BORDER_CONSTANT,
+                value=self.im_padding_value)
             if label is not None:
-                label = cv2.copyMakeBorder(label,
-                                           0,
-                                           pad_height,
-                                           0,
-                                           pad_width,
-                                           cv2.BORDER_CONSTANT,
-                                           value=self.label_padding_value)
+                label = cv2.copyMakeBorder(
+                    label,
+                    0,
+                    pad_height,
+                    0,
+                    pad_width,
+                    cv2.BORDER_CONSTANT,
+                    value=self.label_padding_value)
         if label is None:
             return (im, )
         else:
@@ -521,6 +532,7 @@ class PaddingByAspectRatio:
     Args:
         aspect_ratio (int|float, optional): The aspect ratio = width / height. Default: 1.
     """
+
     def __init__(self,
                  aspect_ratio=1,
                  im_padding_value=(127.5, 127.5, 127.5),
@@ -573,6 +585,7 @@ class RandomPaddingCrop:
         TypeError: When crop_size is neither list nor tuple.
         ValueError: When the length of crop_size is not 2.
     """
+
     def __init__(self,
                  crop_size=(512, 512),
                  im_padding_value=(127.5, 127.5, 127.5),
@@ -619,21 +632,23 @@ class RandomPaddingCrop:
             pad_height = max(crop_height - img_height, 0)
             pad_width = max(crop_width - img_width, 0)
             if (pad_height > 0 or pad_width > 0):
-                im = cv2.copyMakeBorder(im,
-                                        0,
-                                        pad_height,
-                                        0,
-                                        pad_width,
-                                        cv2.BORDER_CONSTANT,
-                                        value=self.im_padding_value)
+                im = cv2.copyMakeBorder(
+                    im,
+                    0,
+                    pad_height,
+                    0,
+                    pad_width,
+                    cv2.BORDER_CONSTANT,
+                    value=self.im_padding_value)
                 if label is not None:
-                    label = cv2.copyMakeBorder(label,
-                                               0,
-                                               pad_height,
-                                               0,
-                                               pad_width,
-                                               cv2.BORDER_CONSTANT,
-                                               value=self.label_padding_value)
+                    label = cv2.copyMakeBorder(
+                        label,
+                        0,
+                        pad_height,
+                        0,
+                        pad_width,
+                        cv2.BORDER_CONSTANT,
+                        value=self.label_padding_value)
                 img_height = im.shape[0]
                 img_width = im.shape[1]
 
@@ -641,11 +656,11 @@ class RandomPaddingCrop:
                 h_off = np.random.randint(img_height - crop_height + 1)
                 w_off = np.random.randint(img_width - crop_width + 1)
 
-                im = im[h_off:(crop_height + h_off),
-                        w_off:(w_off + crop_width), :]
+                im = im[h_off:(crop_height + h_off), w_off:(
+                    w_off + crop_width), :]
                 if label is not None:
-                    label = label[h_off:(crop_height + h_off),
-                                  w_off:(w_off + crop_width)]
+                    label = label[h_off:(crop_height + h_off), w_off:(
+                        w_off + crop_width)]
         if label is None:
             return (im, )
         else:
@@ -668,6 +683,7 @@ class ScalePadding:
             TypeError: When target_size is neither list nor tuple.
             ValueError: When the length of target_size is not 2.
     """
+
     def __init__(self,
                  target_size=(512, 512),
                  im_padding_value=(127.5, 127.5, 127.5),
@@ -719,9 +735,8 @@ class ScalePadding:
         im = functional.resize(im, self.target_size, interp=cv2.INTER_CUBIC)
         if label is not None:
             label = np.uint8(new_label)
-            label = functional.resize(label,
-                                      self.target_size,
-                                      interp=cv2.INTER_CUBIC)
+            label = functional.resize(
+                label, self.target_size, interp=cv2.INTER_CUBIC)
         if label is None:
             return (im, )
         else:
@@ -738,6 +753,7 @@ class RandomNoise:
         max_sigma(float, optional): The maximum value of standard deviation of the distribution.
             Default: 10.0.
     """
+
     def __init__(self, prob=0.5, max_sigma=10.0):
         self.prob = prob
         self.max_sigma = max_sigma
@@ -779,6 +795,7 @@ class RandomBlur:
             random represents randomly selected from above.
             Default: gaussian.
     """
+
     def __init__(self, prob=0.1, blur_type="gaussian"):
         self.prob = prob
         self.blur_type = blur_type
@@ -841,6 +858,7 @@ class RandomRotation:
             Default: [127.5, 127.5, 127.5].
         label_padding_value (int, optional): The padding value of annotation image. Default: 255.
     """
+
     def __init__(self,
                  max_rotation=15,
                  im_padding_value=(127.5, 127.5, 127.5),
@@ -875,19 +893,21 @@ class RandomRotation:
             r[0, 2] += (nw / 2) - cx
             r[1, 2] += (nh / 2) - cy
             dsize = (nw, nh)
-            im = cv2.warpAffine(im,
-                                r,
-                                dsize=dsize,
-                                flags=cv2.INTER_LINEAR,
-                                borderMode=cv2.BORDER_CONSTANT,
-                                borderValue=self.im_padding_value)
+            im = cv2.warpAffine(
+                im,
+                r,
+                dsize=dsize,
+                flags=cv2.INTER_LINEAR,
+                borderMode=cv2.BORDER_CONSTANT,
+                borderValue=self.im_padding_value)
             if label is not None:
-                label = cv2.warpAffine(label,
-                                       r,
-                                       dsize=dsize,
-                                       flags=cv2.INTER_NEAREST,
-                                       borderMode=cv2.BORDER_CONSTANT,
-                                       borderValue=self.label_padding_value)
+                label = cv2.warpAffine(
+                    label,
+                    r,
+                    dsize=dsize,
+                    flags=cv2.INTER_NEAREST,
+                    borderMode=cv2.BORDER_CONSTANT,
+                    borderValue=self.label_padding_value)
 
         if label is None:
             return (im, )
@@ -905,6 +925,7 @@ class RandomScaleAspect:
         min_scale (float, optional): The minimum area ratio of cropped image to the original image. Default: 0.5.
         aspect_ratio (float, optional): The minimum aspect ratio. Default: 0.33.
     """
+
     def __init__(self, min_scale=0.5, aspect_ratio=0.33):
         self.min_scale = min_scale
         self.aspect_ratio = aspect_ratio
@@ -940,12 +961,14 @@ class RandomScaleAspect:
                     w1 = np.random.randint(0, img_width - dw)
 
                     im = im[h1:(h1 + dh), w1:(w1 + dw), :]
-                    im = cv2.resize(im, (img_width, img_height),
-                                    interpolation=cv2.INTER_LINEAR)
+                    im = cv2.resize(
+                        im, (img_width, img_height),
+                        interpolation=cv2.INTER_LINEAR)
                     if label is not None:
                         label = label[h1:(h1 + dh), w1:(w1 + dw)]
-                        label = cv2.resize(label, (img_width, img_height),
-                                           interpolation=cv2.INTER_NEAREST)
+                        label = cv2.resize(
+                            label, (img_width, img_height),
+                            interpolation=cv2.INTER_NEAREST)
                     break
         if label is None:
             return (im, )
@@ -970,6 +993,7 @@ class RandomDistort:
         sharpness_range (float, optional): A range of sharpness. Default: 0.5.
         sharpness_prob (float, optional): A probability of adjusting saturation. Default: 0.
     """
+
     def __init__(self,
                  brightness_range=0.5,
                  brightness_prob=0.5,
@@ -1075,6 +1099,7 @@ class RandomAffine:
         im_padding_value (float, optional): The padding value of raw image. Default: (128, 128, 128).
         label_padding_value (int, optional): The padding value of annotation image. Default: (255, 255, 255).
     """
+
     def __init__(self,
                  size=(224, 224),
                  translation_offset=0,
@@ -1127,18 +1152,20 @@ class RandomAffine:
              [0, 0, 1.0]])
 
         matrix = matrix.dot(matrix_trans)[0:2, :]
-        im = cv2.warpAffine(np.uint8(im),
-                            matrix,
-                            tuple(self.size),
-                            flags=cv2.INTER_LINEAR,
-                            borderMode=cv2.BORDER_CONSTANT,
-                            borderValue=self.im_padding_value)
+        im = cv2.warpAffine(
+            np.uint8(im),
+            matrix,
+            tuple(self.size),
+            flags=cv2.INTER_LINEAR,
+            borderMode=cv2.BORDER_CONSTANT,
+            borderValue=self.im_padding_value)
         if label is not None:
-            label = cv2.warpAffine(np.uint8(label),
-                                   matrix,
-                                   tuple(self.size),
-                                   flags=cv2.INTER_NEAREST,
-                                   borderMode=cv2.BORDER_CONSTANT)
+            label = cv2.warpAffine(
+                np.uint8(label),
+                matrix,
+                tuple(self.size),
+                flags=cv2.INTER_NEAREST,
+                borderMode=cv2.BORDER_CONSTANT)
         if label is None:
             return (im, )
         else:
