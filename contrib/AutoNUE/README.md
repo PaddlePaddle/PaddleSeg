@@ -101,13 +101,21 @@ CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6,7 python -u -m paddle.distributed.launch trai
 
 ### Decoder-enhanced Swin Transformer
 
-1. Run the training script.
+1. Download pretrained weights on Mapillary.
+
+```shell
+cd pretrain
+wget https://bj.bcebos.com/paddleseg/dygraph/cityscapes/swin_mla_p4w7_mapillary/pretrained_swin.pdparams
+cd ..
+```
+
+2. Run the training script.
 ```shell
 CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6,7 python -u -m paddle.distributed.launch train.py \
 --config configs/swin_transformer_mla_base_patch4_window7_160k_autonue.yml --use_vdl \
 --save_dir saved_model/swin_transformer_mla_autonue --save_interval 2000 --num_workers 2 --do_eval
 ```
-2. Run the testing script.
+3. Run the testing script.
 ```shell
 CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6,7 python -m paddle.distributed.launch  predict.py --config configs/swin_transformer_mla_base_patch4_window7_160k_autonue.yml  --model_path saved_model/swin_transformer_mla_autonue/best_model/model.pdparams --image_path data/IDD_Segmentation/leftImg8bit/test/ --save_dir test_out_swin --aug_pred --scales 1.0 1.5 2.0 --flip_horizontal
 ```
