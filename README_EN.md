@@ -8,7 +8,10 @@ English | [简体中文](README_CN.md)
 ![python version](https://img.shields.io/badge/python-3.6+-orange.svg)
 ![support os](https://img.shields.io/badge/os-linux%2C%20win%2C%20mac-yellow.svg)
 
-<img src="./docs/images/seg_news_icon.png" width="50"/> *[2021-06-19] PaddleSeg Team won the AutoNUE 2021 Challenge: Semantic Segmentation Track in CVPR 2021! Technical Report can be found [here](https://bj.bcebos.com/paddleseg/docs/autonue21_presentation_PaddleSeg.pdf). Code will be coming soon.*
+* Our team won the AutoNUE@CVPR 2021 challenge, where the technical [report](https://bj.bcebos.com/paddleseg/docs/autonue21_presentation_PaddleSeg.pdf)和and[source code](https://github.com/PaddlePaddle/PaddleSeg/tree/release/2.2/contrib/AutoNUE) are available.
+* We released an efficient interactive annotation tool for image segmentation, named [EISeg](https://github.com/PaddlePaddle/PaddleSeg/tree/release/2.2/contrib/EISeg).
+* We introduced [Panoptic-DeepLab](https://github.com/PaddlePaddle/PaddleSeg/tree/release/2.2/contrib/PanopticDeepLab), which is a proposal-free algorithm  for panoptic segmentation.
+* We provided an ultra-lightweight [portrait segmentation](https://github.com/PaddlePaddle/PaddleSeg/tree/release/2.2/contrib/HumanSeg) solution for the mobile devices and even the web
 
 ![demo](./docs/images/cityscapes.gif)
 
