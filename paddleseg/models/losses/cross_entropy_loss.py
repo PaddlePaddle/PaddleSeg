@@ -69,7 +69,9 @@ class CrossEntropyLoss(nn.Layer):
                 'The number of weights = {} must be the same as the number of classes = {}.'
                 .format(len(self.weight), logit.shape[1]))
 
-        logit = paddle.transpose(logit, [0, 2, 3, 1])
+        if channel_axis == 1:
+            logit = paddle.transpose(logit, [0, 2, 3, 1])
+        label = label.astype('int64')
         loss = F.cross_entropy(
             logit,
             label,
@@ -103,5 +105,6 @@ class CrossEntropyLoss(nn.Layer):
         coef = coef.reshape((-1, ))
         coef = paddle.gather(coef, indices)
         coef.stop_gradient = True
+        coef = coef.astype('float32')
 
         return loss.mean() / (paddle.mean(coef) + self.EPS)
