@@ -290,10 +290,10 @@ class Decoder(nn.Layer):
     def forward(self, x, low_level_feat):
         low_level_feat = self.conv_bn_relu1(low_level_feat)
         if self.data_format == 'NCHW':
-            low_level_shape = low_level_feat.shape[-2:]
+            low_level_shape = paddle.shape(low_level_feat)[-2:]
             axis = 1
         else:
-            low_level_shape = low_level_feat.shape[1:3]
+            low_level_shape = paddle.shape(low_level_feat)[1:3]
             axis = -1
         x = F.interpolate(
             x,
