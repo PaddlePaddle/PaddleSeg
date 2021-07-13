@@ -271,7 +271,7 @@ def train(model,
                     val_dataset is
                     not None) and local_rank == 0 and iter >= save_begin_iters:
                 num_workers = 1 if num_workers > 0 else 0
-                sad, mse, grad, conn = evaluate(
+                sad, mse = evaluate(
                     model,
                     val_dataset,
                     num_workers=0,
@@ -296,8 +296,6 @@ def train(model,
                     if use_vdl:
                         log_writer.add_scalar('Evaluate/SAD', sad, iter)
                         log_writer.add_scalar('Evaluate/MSE', mse, iter)
-                        log_writer.add_scalar('Evaluate/Grad', grad, iter)
-                        log_writer.add_scalar('Evaluate/Conn', conn, iter)
 
             batch_start = time.time()
 
