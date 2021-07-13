@@ -1,3 +1,6 @@
+# Copyright (c) 2021 PaddlePaddle Authors. All Rights Reserve.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
@@ -9,11 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import numpy as np
 import paddle
 import paddle.nn as nn
 import paddle.nn.functional as F
+
 from paddleseg.cvlibs import manager
-import numpy as np
 
 
 @manager.LOSSES.add_component
@@ -26,6 +30,7 @@ class FocalLoss(nn.Layer):
         ignore_index (int64): Specifies a target value that is ignored
             and does not contribute to the input gradient. Default ``255``.
     """
+
     def __init__(self, gamma=2.0, ignore_index=255):
         super(FocalLoss, self).__init__()
         self.gamma = gamma

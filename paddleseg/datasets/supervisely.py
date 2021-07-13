@@ -1,4 +1,4 @@
-# Copyright (c) 2020 PaddlePaddle Authors. All Rights Reserved.
+# Copyright (c) 2021 PaddlePaddle Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,14 +15,13 @@
 import os
 import copy
 
+import cv2
+import numpy as np
+
 from paddleseg.cvlibs import manager
 from paddleseg.transforms import Compose
 from paddleseg.datasets import Dataset
 import paddleseg.transforms.functional as F
-
-import cv2
-import numpy as np
-from PIL import Image
 
 
 @manager.DATASETS.add_component
@@ -98,9 +97,9 @@ class SUPERVISELY(Dataset):
             im_aug = np.float32(im_aug[::-1, :, :])
             im = np.float32(im[::-1, :, :])
 
-        label = cv2.resize(np.uint8(label),
-                           (self.input_width, self.input_height),
-                           interpolation=cv2.INTER_NEAREST)
+        label = cv2.resize(
+            np.uint8(label), (self.input_width, self.input_height),
+            interpolation=cv2.INTER_NEAREST)
 
         # add mask blur
         label = np.uint8(cv2.blur(label, (5, 5)))
@@ -108,9 +107,8 @@ class SUPERVISELY(Dataset):
         label[label < 0.5] = 0
 
         # edge = show_edge(label)
-        edge_mask = F.mask_to_binary_edge(label,
-                                          radius=4,
-                                          num_classes=self.num_classes)
+        edge_mask = F.mask_to_binary_edge(
+            label, radius=4, num_classes=self.num_classes)
         edge_mask = np.transpose(edge_mask, [1, 2, 0]).squeeze(axis=-1)
         cv2.imwrite("edge.png", edge_mask * 255)
         im = np.concatenate([im_aug, im])
