@@ -106,11 +106,9 @@ class SUPERVISELY(Dataset):
         label[label >= 0.5] = 1
         label[label < 0.5] = 0
 
-        # edge = show_edge(label)
         edge_mask = F.mask_to_binary_edge(
             label, radius=4, num_classes=self.num_classes)
         edge_mask = np.transpose(edge_mask, [1, 2, 0]).squeeze(axis=-1)
-        cv2.imwrite("edge.png", edge_mask * 255)
         im = np.concatenate([im_aug, im])
         if self.mode == "train":
             return im, label, edge_mask
