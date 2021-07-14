@@ -71,6 +71,7 @@ class InteractiveController:
         """
         s = self.image.shape
         if x < 0 or y < 0 or x >= s[1] or y >= s[0]:
+            print("点击越界")
             return False
         
         if len(self.states) == 0:  # 保存最初状态
@@ -81,15 +82,11 @@ class InteractiveController:
 
         click = clicker.Click(is_positive=is_positive, coords=(y, x))
         self.clicker.add_click(click)
-        start = time.time()
-        print(self.predictor)
         pred = self.predictor.get_prediction(self.clicker, prev_mask=self._init_mask)
         if self._init_mask is not None and len(self.clicker) == 1:
             pred = self.predictor.get_prediction(
                 self.clicker, prev_mask=self._init_mask
             )
-        end = time.time()
-        print("cost time", end - start)
 
         # 保存最新状态
         self.states.append({
@@ -109,7 +106,7 @@ class InteractiveController:
 
     def undo_click(self):
         """undo一步点击"""
-        if len(self.states) == 1:  # 如果还没点
+        if len(self.states) <= 1:  # 如果还没点
             return
         self.undo_states.append(self.states.pop())
         self.clicker.set_state(self.states[-1]["clicker"])
@@ -186,6 +183,8 @@ class InteractiveController:
         """
         self.states = []
         self.probs_history = []
+        self.undo_states = []
+        self.undo_probs_history = []
         self.clicker.reset_clicks()
         self.reset_predictor()
         self.reset_init_mask()
