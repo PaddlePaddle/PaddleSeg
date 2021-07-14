@@ -522,8 +522,6 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         self.labelList[row].color = color.getRgb()[:3]
         if self.controller:
             self.controller.label_list = self.labelList
-        for p in self.scene.polygon_items:
-            p.setColor(self.labelList[p.labelIndex].color)
 
     @property
     def currLabelIdx(self):
