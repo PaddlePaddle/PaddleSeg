@@ -7,4 +7,3 @@ albumentations
 cython
 pyyaml
 wget
-qpt
