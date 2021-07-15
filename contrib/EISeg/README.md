@@ -3,7 +3,7 @@
 
 # EISeg
 
-EISeg(Efficient Interactive Segmentation)是基于飞桨开发的一个高效智能的交互式分割标注软件. 它使用了RITM(Reviving Iterative Training with Mask Guidance for Interactive Segmentation)算法，涵盖了高精度和轻量级等不同方向的高质量交互式分割模型，方便开发者快速实现语义及实例标签的标注，降低标注成本。 另外，将EISeg获取到的标注应用到PaddleSeg提供的其他分割模型进行训练，便可得到定制化场景的高精度模型，打通分割任务从数据标注到模型训练及预测的全流程。
+EISeg(Efficient Interactive Segmentation)是基于飞桨开发的一个高效智能的交互式分割标注软件。它使用了RITM(Reviving Iterative Training with Mask Guidance for Interactive Segmentation)算法，涵盖了高精度和轻量级等不同方向的高质量交互式分割模型，方便开发者快速实现语义及实例标签的标注，降低标注成本。 另外，将EISeg获取到的标注应用到PaddleSeg提供的其他分割模型进行训练，便可得到定制化场景的高精度模型，打通分割任务从数据标注到模型训练及预测的全流程。
 
 
 
@@ -62,7 +62,7 @@ eiseg
 
 ### Windows exe
 
-EISeg使用[QPT](https://github.com/GT-ZhangAcer/QPT)进行打包。可以从[百度云盘](https://pan.baidu.com/s/1XF_Fi6HK28XnPvfuVGj0bA)（提取码：82z9）下载最新EISeg。解压后双击启动程序.exe即可运行程序。程序第一次运行会初始化安装所需要的包，请稍等片刻。
+EISeg使用[QPT](https://github.com/GT-ZhangAcer/QPT)进行打包。可以从[百度云盘](https://pan.baidu.com/s/1KXJ9PYjbnBgQozZJEJE-bA)（提取码：82z9）下载最新EISeg。解压后双击启动程序.exe即可运行程序。程序第一次运行会初始化安装所需要的包，请稍等片刻。
 
 ### 运行代码
 
@@ -111,20 +111,21 @@ EISeg的界面主要有4个部分组成，分别是菜单&工具栏、状态栏�
 
 当设置完成后即可开始进行标注，默认情况下常用的按键/快捷键有：
 
-| 按键/快捷键           | 功能         |
-| --------------------- | ------------ |
-| 鼠标左键              | 增加正样本点 |
-| 鼠标右键              | 增加负样本点 |
-| 鼠标中键              | 平移图像     |
-| Ctrl+鼠标中键（滚轮） | 缩放图像     |
-| S                     | 切换上一张图 |
-| F                     | 切换下一张图 |
-| Space（空格）         | 完成标注     |
-| Ctrl+Z                | 撤销         |
-| Ctrl+Shift+Z          | 清除         |
-| Ctrl+A                | 打开图像     |
-| Shift+A               | 打开文件夹   |
-| Ctrl+M                | 加载模型参数 |
+| 按键/快捷键           | 功能             |
+| --------------------- | ---------------- |
+| **鼠标左键**          | **增加正样本点** |
+| **鼠标右键**          | **增加负样本点** |
+| 鼠标中键              | 平移图像         |
+| Ctrl+鼠标中键（滚轮） | 缩放图像         |
+| S                     | 切换上一张图     |
+| F                     | 切换下一张图     |
+| Space（空格）         | 完成标注         |
+| Ctrl+Z                | 撤销一次点击     |
+| Ctrl+Shift+Z          | 清除全部点击     |
+| Ctrl+Y                | 重做一次点击     |
+| Ctrl+A                | 打开图像         |
+| Shift+A               | 打开文件夹       |
+| Ctrl+M                | 加载模型参数     |
 
 # 开发者
 
