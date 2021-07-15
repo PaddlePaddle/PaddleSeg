@@ -1,3 +1,4 @@
+简体中文 | [English](MSELoss_en.md)
 ## [MSELoss](../../../paddleseg/models/mean_square_error_loss.py)
 Mean square error loss 即均方根误差。均方根指模型预测值与样本真实值之间距离的平方的平均值。
 

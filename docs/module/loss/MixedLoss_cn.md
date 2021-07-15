@@ -1,3 +1,4 @@
+简体中文 | [English](MixedLoss_en.md)
 ## [MixedLoss](../../../paddleseg/models/mixed_loss.py)
 ```python
 class paddleseg.models.losses.MixedLoss(losses, coef)

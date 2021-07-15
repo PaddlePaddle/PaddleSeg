@@ -1,3 +1,4 @@
+简体中文 | [English](L1Loss_en.md)
 ## [L1Loss](../../../paddleseg/models/losses/l1_loss.py)
 以输出预测值与真实标签值之间的距离作为损失函数的输出，可以选择配合使用 reduction 策略对该 loss 的直接计算结果进行一定的处理。
 

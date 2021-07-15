@@ -1,3 +1,4 @@
+简体中文 | [English](CrossEntropyLoss_en.md)
 ## [CrossEntropyLoss](../../../paddleseg/models/losses/cross_entropy_loss.py)
 
 

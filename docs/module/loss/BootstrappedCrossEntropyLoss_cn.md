@@ -1,3 +1,4 @@
+简体中文 | [English](BootstrappedCrossEntropyLoss_en.md)
 ## [BootstrappedCrossEntropyLoss](../../../paddleseg/models/losses/bootstrapped_cross_entropy.py)
 Bootstrapped 首先利用样本构造初始的分类起，然后对未标记样本进行迭代分类，进而利用扩展后的训练数据为未标记样本提取新的 seed rules。
 [参考文献](https://arxiv.org/pdf/1412.6596.pdf)

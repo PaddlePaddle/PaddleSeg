@@ -1,3 +1,4 @@
+简体中文 | [English](DualTaskLoss_en.md)
 ## [DualTaskLoss](../../../paddleseg/models/losses/gscnn_dual_task_loss.py)
 用于为半监督学习的 Dual-task 一致性以对模型进行约束。DualTaskLoss 旨在强化多个任务之间的一致性。
 

@@ -1,3 +1,4 @@
+简体中文 | [English](EdgeAttentionLoss_en.md)
 ## [EdgeAttentionLoss](../../../paddleseg/models/losses/edge_attention_loss.py)
 适合以 encoder 提取edge，以 decoder 进行加权聚合的多任务训练场景。是一种融合边缘检测与注意力机制进行多 loss 的组合输出的方法。
 

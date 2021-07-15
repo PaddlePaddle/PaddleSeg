@@ -1,3 +1,4 @@
+简体中文 | [English](RelaxBoundaryLoss_en.md)
 ## [RelaxBoundaryLoss](../../../paddleseg/models/losses/decoupledsegnet_relax_boundary_loss.py)
 为了提升分割效果，对边界的处理至关重要。通常使用神经网络预测边界图。在这种训练过程中，通常以边界为划分依据，将对边界敏感的像素划分为若干类别，最后分别计算交叉熵并将其作为损失函数输出。
 ```python

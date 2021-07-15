@@ -1,3 +1,4 @@
+简体中文 | [English](LovaszHingeLoss_en.md)
 ## [LovaszHingeLoss](../../../paddleseg/models/lovasz_loss.py)
 Hinge Loss是在不连续、不平滑的简单阶梯损失函数上改进的一种损失函数。对于正样本，Hinge Loss的输出应大于等于1；对于正样本，Hinge Loss的输出应小于等于-1。
 
