@@ -1,4 +1,5 @@
-# FAQ 常见问题与解决
+简体中文 | [English](faq.md)
+# FAQ
 
 ## Q1: PaddleSeg 如何从本地加载预训练模型的权重参数？
 
