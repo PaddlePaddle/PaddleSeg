@@ -64,8 +64,10 @@ class Predictor:
 
         pred_cfg = PredictConfig(self.cfg.model, self.cfg.params)
         pred_cfg.disable_glog_info()
+        pred_cfg.enable_memory_optim()
         if self.args.use_gpu:
             pred_cfg.enable_use_gpu(100, 0)
+            pred_cfg.switch_ir_optim(True)
 
             if self.args.use_trt:
                 ptype = PrecisionType.Int8 if args.use_int8 else PrecisionType.Float32
