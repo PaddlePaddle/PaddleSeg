@@ -85,7 +85,7 @@ PaddleSeg是基于飞桨[PaddlePaddle](https://www.paddlepaddle.org.cn)开发的
 [Model Zoo](./configs/README.md)
 
 <div align="center">
-<img src="./docs/images/xingnengtu.png"/>  
+<img src="./docs/images/xingnengtu.png"    width = "550"/>  
 </div>
 
 
