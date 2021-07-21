@@ -1,7 +1,7 @@
 English | [简体中文](RelaxBoundaryLoss_cn.md)
 ## [RelaxBoundaryLoss](../../../paddleseg/models/losses/decoupledsegnet_relax_boundary_loss.py)
 
-In order to improve the segmentation effect, the processing of the boundary is essential. Usually a neural network is used to predict the boundary map. In this training process, the boundary is usually used as the dividing basis, and the pixels sensitive to the boundary are divided into several categories, and finally the cross entropy is calculated and output as a loss function.
+Relax boundary loss is composed of multiple parts: the loss of main features, the loss of edge features, and the cross-entropy loss. RelaxBoundaryLoss is a loss function designed for DecoupleSegNet. This model makes predictions for the categories (≥2) that boundary pixels may belong to. This loss is to maximize the sum of the probabilities of each category of a single pixel under the constraint of boundary relaxation.
 
 ```python
 

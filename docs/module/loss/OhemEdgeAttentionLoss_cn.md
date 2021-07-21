@@ -1,6 +1,6 @@
 简体中文 | [English](OhemEdgeAttentionLoss_en.md)
 ## [OhemEdgeAttentionLoss](../../../paddleseg/models/ohem_edge_attention_loss.py)
-OHEM算法将根据输入到模型中的样本的损失来区分出困难样本，这些困难样本分类精度差，会产生较大的损失。将区分出来的困难样本应用在SGD方法中训练模型。
+OHEM算法将根据输入到模型中的样本的损失来区分出困难样本，这些困难样本分类精度差，会产生较大的损失。在存在困难样本的场景下，如欲提高提取边缘的性能，可以使用该损失函数。
 ```python
 class paddleseg.models.losses.OhemEdgeAttentionLoss(
                 edge_threshold = 0.8,

@@ -1,6 +1,6 @@
 简体中文 | [English](OhemCrossEntropyLoss_en.md)
 ## [OhemCrossEntropyLoss](../../../paddleseg/models/ohem_cross_entropy_loss.py)
-OHEM旨在解决处理困难样本的问题。在一些语义分割问题中，经常出现像素点难以标注或无法标注的情况，或是类别不平衡的情况，都将对模型性能产生严重的制约。OHEM算法将根据输入到模型中的样本的损失来区分出困难样本，这些困难样本分类精度差，会产生较大的损失。将区分出来的困难样本应用在SGD方法中训练模型。
+OHEM旨在解决处理困难样本的问题。在一些语义分割问题中，经常出现像素点难以标注或无法标注的情况，或是类别不平衡的情况，都将对模型性能产生严重的制约。OHEM算法将根据输入到模型中的样本的损失来区分出困难样本，这些困难样本分类精度差，会产生较大的损失。
 
 ```python
 class paddleseg.models.losses.OhemCrossEntropyLoss(

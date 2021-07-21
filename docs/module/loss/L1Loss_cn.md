@@ -1,6 +1,6 @@
 简体中文 | [English](L1Loss_en.md)
 ## [L1Loss](../../../paddleseg/models/losses/l1_loss.py)
-以输出预测值与真实标签值之间的距离作为损失函数的输出，可以选择配合使用 reduction 策略对该 loss 的直接计算结果进行一定的处理。
+L1范数损失函数用于计算最小绝对值偏差。该损失旨在将估计值与真实值之间的绝对差值的总和最小化。可以选择配合使用 reduction 策略对该 loss 的直接计算结果进行一定的处理。
 
 ```python
 class paddleseg.models.losses.L1Loss(

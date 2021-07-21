@@ -1,7 +1,7 @@
 English | [简体中文](OhemCrossEntropyLoss_cn.md)
 ## [OhemCrossEntropyLoss](../../../paddleseg/models/ohem_cross_entropy_loss.py)
 
-OHEM aims to solve the problem of handling difficult samples. In some semantic segmentation problems, it is often difficult or impossible to label pixels, or unbalanced categories, which will severely restrict the performance of the model. The OHEM algorithm will distinguish difficult samples based on the loss of the samples input to the model. These difficult samples have poor classification accuracy and will produce greater losses. Use the distinguished difficult samples to train the model in the SGD method.
+OHEM aims to handling difficult samples. In some cases, there are unbalanced classes, and labelling all pixels is difficult or even impossible, which will severely restrict the performance of the model. The OHEM algorithm will distinguish difficult samples based on the loss of the samples input to the model. These difficult samples have poor classification accuracy and will produce greater losses. 
 
 ```python
 class paddleseg.models.losses.OhemCrossEntropyLoss(

@@ -1,6 +1,9 @@
 简体中文 | [English](RelaxBoundaryLoss_en.md)
 ## [RelaxBoundaryLoss](../../../paddleseg/models/losses/decoupledsegnet_relax_boundary_loss.py)
 为了提升分割效果，对边界的处理至关重要。通常使用神经网络预测边界图。在这种训练过程中，通常以边界为划分依据，将对边界敏感的像素划分为若干类别，最后分别计算交叉熵并将其作为损失函数输出。
+
+Relax boundary loss 它由多个部分组成：主体特征的损失、边缘特征的损失、交叉熵损失。RelaxBoundaryLoss是为 DecoupleSegNet 设计的损失函数，该模型为边界像素点可能所属的类别（≥2）作出预测，该损失目的是在边界松弛约束下，使单个像素各分类的概率之和最大化。
+
 ```python
 class paddleseg.models.losses.RelaxBoundaryLoss(
                 border = 1,

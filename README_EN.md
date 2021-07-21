@@ -9,7 +9,7 @@ English | [简体中文](README_CN.md)
 ![support os](https://img.shields.io/badge/os-linux%2C%20win%2C%20mac-yellow.svg)
 ## PaddleSeg has released the new version including the following features:
 
-* Our team won the AutoNUE@CVPR 2021 challenge, where the technical [report](https://bj.bcebos.com/paddleseg/docs/autonue21_presentation_PaddleSeg.pdf)和and[source code](https://github.com/PaddlePaddle/PaddleSeg/tree/release/2.2/contrib/AutoNUE) are available.
+* Our team won the AutoNUE@CVPR 2021 challenge, where the technical [report](https://bj.bcebos.com/paddleseg/docs/autonue21_presentation_PaddleSeg.pdf) and [source code](https://github.com/PaddlePaddle/PaddleSeg/tree/release/2.2/contrib/AutoNUE) are available.
 * We released an efficient interactive annotation tool for image segmentation, named [EISeg](https://github.com/PaddlePaddle/PaddleSeg/tree/release/2.2/contrib/EISeg).
 * We introduced [Panoptic-DeepLab](https://github.com/PaddlePaddle/PaddleSeg/tree/release/2.2/contrib/PanopticDeepLab), which is a proposal-free algorithm  for panoptic segmentation.
 * We provided an ultra-lightweight [portrait segmentation](https://github.com/PaddlePaddle/PaddleSeg/tree/release/2.2/contrib/HumanSeg) solution for the mobile devices and even the web
@@ -99,7 +99,7 @@ Welcome to PaddleSeg! PaddleSeg is an end-to-end image segmentation development 
     * [API Application](./docs/api_example.md)
 *  Description of Important Modules
     * [Data Augmentation](./docs/module/data/data.md)
-    * [Loss Description](./docs/module/loss/losses.md)
+    * [Loss Description](./docs/module/loss/losses_en.md)
     * [Tricks](./docs/module/tricks/tricks.md)
 * Description of Classical Models
     * [DeeplabV3](./docs/models/deeplabv3.md)

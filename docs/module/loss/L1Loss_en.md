@@ -1,6 +1,6 @@
 English | [简体中文](L1Loss_cn.md)
 ## [L1Loss](../../../paddleseg/models/losses/l1_loss.py)
-Take the distance between the output predicted value and the true label value as the output of the loss function, and you can choose to use the 'reduction' strategy to perform certain processing on the direct calculation result of the loss.
+The L1-norm loss function is used to calculate the minimum absolute value deviation. This loss aims to minimize the sum of absolute differences between the estimated value and the true value. You can choose to use the reduction strategy to perform certain processing on the direct calculation result of the loss.
 
 ```python
 class paddleseg.models.losses.L1Loss(
