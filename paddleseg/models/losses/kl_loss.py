@@ -21,7 +21,17 @@ from paddleseg.cvlibs import manager
 @manager.LOSSES.add_component
 class KLLoss(nn.Layer):
     """
-    The Kullback-Leibler divergence Loss implement of Portrait Net.
+    The Kullback-Leibler divergence Loss implement.
+
+    Code referenced from:
+
+    https://github.com/peterliht/knowledge-distillation-pytorch/blob/master/model/net.py
+
+
+
+    Compute the knowledge-distillation (KD) loss given outputs, labels.
+
+    "Hyperparameters": temperature and alpha
 
     Args:
         ignore_index (int64): Specifies a target value that is ignored
@@ -35,7 +45,7 @@ class KLLoss(nn.Layer):
         self.kl_loss = nn.KLDivLoss(reduction="mean")
         self.temperature = temperature
 
-    def forward(self, inp, target):
-        inp = F.log_softmax(inp / self.temperature, axis=1)
-        target = F.softmax(target / self.temperature, axis=1)
-        return self.kl_loss(inp, target) * self.temperature * self.temperature
+    def forward(self, logit, label):
+        logit = F.log_softmax(logit / self.temperature, axis=1)
+        label = F.softmax(label / self.temperature, axis=1)
+        return self.kl_loss(logit, label) * self.temperature * self.temperature

@@ -4,7 +4,7 @@ iters: 46000
 train_dataset:
   type: EG1800
   dataset_root: data/EG1800
-  transforms:
+  common_transforms:
     - type: RandomAffine
       max_rotation: 45
       min_scale_factor: 0.5
@@ -12,6 +12,7 @@ train_dataset:
       size: [ 224, 224 ]
       translation_offset: 56
     - type: RandomHorizontalFlip
+  transforms1:
     - type: Normalize
       mean: [0.485, 0.458, 0.408]
       std: [0.23, 0.23, 0.23]
@@ -35,7 +36,7 @@ train_dataset:
 val_dataset:
   type: EG1800
   dataset_root: data/EG1800
-  transforms:
+  common_transforms:
     - type: ScalePadding
       target_size: [ 224, 224 ]
       im_padding_value: [127.5, 127.5, 127.5]
@@ -43,6 +44,7 @@ val_dataset:
     - type: Normalize
       mean: [0.485, 0.458, 0.408]
       std: [0.23, 0.23, 0.23]
+  transforms1: null
   transforms2: null
   mode: val
 
@@ -50,18 +52,18 @@ optimizer:
   type: adam
   weight_decay: 5.0e-4
 
-learning_rate:
-  value: 0.001
-  decay:
-    type: stepdecay
-    step_size: 460
-    gamma: 0.95
+lr_scheduler:
+  type: StepDecay
+  learning_rate: 0.001
+  step_size: 460
+  gamma: 0.95
 
 loss:
   types:
     - type: CrossEntropyLoss
     - type: CrossEntropyLoss
     - type: FocalLoss
+      edge_label: True
     - type: KLLoss
   coef: [1, 1, 0.3, 2]
 
@@ -71,6 +73,6 @@ model:
     type: MobileNetV2
     channel_ratio: 1.0
     min_channel: 16
-    pretrained: /Users/alex/Downloads/mobilev2net.pdparams
+    pretrained: null
   add_edge: True
   num_classes: 2

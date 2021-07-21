@@ -23,7 +23,10 @@ from paddleseg.cvlibs import manager
 @manager.LOSSES.add_component
 class FocalLoss(nn.Layer):
     """
-    The Focal Loss implement of Portrait Net.
+    Focal Loss.
+
+    Code referenced from:
+    https://github.com/clcarwin/focal_loss_pytorch/blob/master/focalloss.py
 
     Args:
         gamma (float): the coefficient of Focal Loss.
@@ -31,24 +34,27 @@ class FocalLoss(nn.Layer):
             and does not contribute to the input gradient. Default ``255``.
     """
 
-    def __init__(self, gamma=2.0, ignore_index=255):
+    def __init__(self, gamma=2.0, ignore_index=255, edge_label=False):
         super(FocalLoss, self).__init__()
         self.gamma = gamma
         self.ignore_index = ignore_index
+        self.edge_label = edge_label
 
-    def forward(self, inp, target):
-        inp = paddle.reshape(inp, [inp.shape[0], inp.shape[1], -1])
-        inp = paddle.transpose(inp, [0, 2, 1])
-        inp = paddle.reshape(inp, [-1, 2])
-        target = paddle.reshape(target, [-1, 1])
-        range_ = paddle.arange(0, target.shape[0])
+    def forward(self, logit, label):
+        logit = paddle.reshape(
+            logit, [logit.shape[0], logit.shape[1], -1])  # N,C,H,W => N,C,H*W
+        logit = paddle.transpose(logit, [0, 2, 1])  # N,C,H*W => N,H*W,C
+        logit = paddle.reshape(logit,
+                               [-1, logit.shape[2]])  # N,H*W,C => N*H*W,C
+        label = paddle.reshape(label, [-1, 1])
+        range_ = paddle.arange(0, label.shape[0])
         range_ = paddle.unsqueeze(range_, axis=-1)
-        target = paddle.cast(target, dtype='int64')
-        target = paddle.concat([range_, target], axis=-1)
-        logpt = F.log_softmax(inp)
-        logpt = paddle.gather_nd(logpt, target)
+        label = paddle.cast(label, dtype='int64')
+        label = paddle.concat([range_, label], axis=-1)
+        logpt = F.log_softmax(logit)
+        logpt = paddle.gather_nd(logpt, label)
 
-        pt = paddle.to_tensor(np.exp(logpt.numpy()))
+        pt = paddle.exp(logpt.detach())
         loss = -1 * (1 - pt)**self.gamma * logpt
         loss = paddle.mean(loss)
         return loss
