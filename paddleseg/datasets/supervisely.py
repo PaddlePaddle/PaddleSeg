@@ -30,31 +30,35 @@ class SUPERVISELY(Dataset):
     Supervise.ly dataset `https://supervise.ly/`.
 
     Args:
-        transforms (list): A list of image transformations.
-        dataset_root (str, optional): The ADK20K dataset directory. Default: None.
+        common_transforms (list): A list of common image transformations for two inputs of portrait net.
+        transforms1 (list): A list of image transformations for the first input of portrait net.
+        transforms2 (list): A list of image transformations for the second input of portrait net.
+        dataset_root (str, optional): The Supervise.ly dataset directory. Default: None.
         mode (str, optional): A subset of the entire dataset. It should be one of ('train', 'val'). Default: 'train'.
         edge (bool, optional): Whether to compute edge while training. Default: False
     """
     NUM_CLASSES = 2
 
     def __init__(self,
-                 transforms,
+                 common_transforms,
+                 transforms1,
                  transforms2,
                  dataset_root=None,
                  mode='train',
                  edge=False):
         self.dataset_root = dataset_root
-        self.transforms = Compose(transforms)
+        self.common_transforms = Compose(common_transforms)
+        self.transforms = self.common_transforms
+        if transforms1 is not None:
+            self.transforms1 = Compose(transforms1, to_rgb=False)
         if transforms2 is not None:
-            self.transforms2 = Compose(transforms2)
+            self.transforms2 = Compose(transforms2, to_rgb=False)
         mode = mode.lower()
         self.ignore_index = 255
         self.mode = mode
         self.num_classes = self.NUM_CLASSES
         self.input_width = 224
         self.input_height = 224
-        self.std = [0.23, 0.23, 0.23]
-        self.mean = [0.485, 0.458, 0.408]
 
         if mode == 'train':
             path = os.path.join(dataset_root, 'supervisely_face_train_easy.txt')
@@ -77,25 +81,21 @@ class SUPERVISELY(Dataset):
         image_path, label_path = self.file_list[item]
         im = cv2.imread(image_path)
         label = cv2.imread(label_path, 0)
-        label[label > 1] = 0
+        label[label > 0] = 1
 
         if self.mode == "val":
-            im, label = self.transforms(im=im, label=label)
-            im = np.float32(im[::-1, :, :])
+            common_im, label = self.common_transforms(im=im, label=label)
+            im = np.float32(common_im[::-1, :, :])  # RGB => BGR
             im_aug = copy.deepcopy(im)
         else:
-            im, label = self.transforms(im=im, label=label)
+            common_im, label = self.common_transforms(im=im, label=label)
+            common_im = np.transpose(common_im, [1, 2, 0])
             # add augmentation
-            std = np.array(self.std)[:, np.newaxis, np.newaxis]
-            mean = np.array(self.mean)[:, np.newaxis, np.newaxis]
-            im_aug = im * std + mean
-            im_aug *= 255.0
-            im_aug = np.transpose(im_aug, [1, 2, 0]).astype('uint8')
-            im_aug = im_aug[:, :, ::-1]
+            im, _ = self.transforms1(common_im)
+            im_aug, _ = self.transforms2(common_im)
 
-            im_aug, _ = self.transforms2(im_aug)
-            im_aug = np.float32(im_aug[::-1, :, :])
-            im = np.float32(im[::-1, :, :])
+            im = np.float32(im[::-1, :, :])  # RGB => BGR
+            im_aug = np.float32(im_aug[::-1, :, :])  # RGB => BGR
 
         label = cv2.resize(
             np.uint8(label), (self.input_width, self.input_height),

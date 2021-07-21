@@ -88,9 +88,9 @@ class MobileNetV2(nn.Layer):
         The MobileNetV2 implementation based on PaddlePaddle.
 
         The original article refers to
-        Song-Hai Zhanga, Xin Donga, Jia Lib, Ruilong Lia, Yong-Liang Yangc
-        "PortraitNet: Real-time Portrait Segmentation Network for Mobile Device"
-        (https://www.yongliangyang.net/docs/mobilePotrait_c&g19.pdf).
+        Mark Sandler, Andrew Howard, Menglong Zhu, Andrey Zhmoginov, Liang-Chieh Chen
+        "MobileNetV2: Inverted Residuals and Linear Bottlenecks"
+        (https://arxiv.org/abs/1801.04381).
 
         Args:
             channel_ratio (float, optional): The ratio of channel. Default: 1.0
