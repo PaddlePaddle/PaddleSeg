@@ -40,7 +40,7 @@ cd contrib/PanopticDeepLab
 
 ## 数据集准备
 
-将数据集放置于`data`目录下。
+将数据集放置于PaddleSeg/contrib/PanopticDeepLab目录下的`data`目录下。
 
 ### Cityscapes
 

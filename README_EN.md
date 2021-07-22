@@ -99,7 +99,7 @@ Welcome to PaddleSeg! PaddleSeg is an end-to-end image segmentation development 
     * [API Application](./docs/api_example.md)
 *  Description of Important Modules
     * [Data Augmentation](./docs/module/data/data.md)
-    * [Loss Description](./docs/module/loss/lovasz_loss.md)
+    * [Loss Description](./docs/module/loss/losses_en.md)
     * [Tricks](./docs/module/tricks/tricks.md)
 * Description of Classical Models
     * [DeeplabV3](./docs/models/deeplabv3.md)
