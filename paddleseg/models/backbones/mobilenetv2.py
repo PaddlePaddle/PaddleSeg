@@ -18,70 +18,6 @@ from paddleseg.cvlibs import manager
 from paddleseg import utils
 
 
-def conv_bn(inp, oup, kernel, stride):
-    return nn.Sequential(
-        nn.Conv2D(
-            in_channels=inp,
-            out_channels=oup,
-            kernel_size=kernel,
-            stride=stride,
-            padding=(kernel - 1) // 2,
-            bias_attr=False),
-        nn.BatchNorm2D(num_features=oup, epsilon=1e-05, momentum=0.1),
-        nn.ReLU())
-
-
-class InvertedResidual(nn.Layer):
-    def __init__(self, inp, oup, stride, expand_ratio, dilation=1):
-        super(InvertedResidual, self).__init__()
-        self.stride = stride
-        assert stride in [1, 2]
-        self.use_res_connect = self.stride == 1 and inp == oup
-
-        self.conv = nn.Sequential(
-            nn.Conv2D(
-                inp,
-                inp * expand_ratio,
-                kernel_size=1,
-                stride=1,
-                padding=0,
-                dilation=1,
-                groups=1,
-                bias_attr=False),
-            nn.BatchNorm2D(
-                num_features=inp * expand_ratio, epsilon=1e-05, momentum=0.1),
-            nn.ReLU(),
-            nn.Conv2D(
-                inp * expand_ratio,
-                inp * expand_ratio,
-                kernel_size=3,
-                stride=stride,
-                padding=dilation,
-                dilation=dilation,
-                groups=inp * expand_ratio,
-                bias_attr=False),
-            nn.BatchNorm2D(
-                num_features=inp * expand_ratio, epsilon=1e-05, momentum=0.1),
-            nn.ReLU(),
-            nn.Conv2D(
-                inp * expand_ratio,
-                oup,
-                kernel_size=1,
-                stride=1,
-                padding=0,
-                dilation=1,
-                groups=1,
-                bias_attr=False),
-            nn.BatchNorm2D(num_features=oup, epsilon=1e-05, momentum=0.1),
-        )
-
-    def forward(self, x):
-        if self.use_res_connect:
-            return x + self.conv(x)
-        else:
-            return self.conv(x)
-
-
 @manager.MODELS.add_component
 class MobileNetV2(nn.Layer):
     """
@@ -166,3 +102,67 @@ class MobileNetV2(nn.Layer):
     def init_weight(self):
         if self.pretrained is not None:
             utils.load_entire_model(self, self.pretrained)
+
+
+def conv_bn(inp, oup, kernel, stride):
+    return nn.Sequential(
+        nn.Conv2D(
+            in_channels=inp,
+            out_channels=oup,
+            kernel_size=kernel,
+            stride=stride,
+            padding=(kernel - 1) // 2,
+            bias_attr=False),
+        nn.BatchNorm2D(num_features=oup, epsilon=1e-05, momentum=0.1),
+        nn.ReLU())
+
+
+class InvertedResidual(nn.Layer):
+    def __init__(self, inp, oup, stride, expand_ratio, dilation=1):
+        super(InvertedResidual, self).__init__()
+        self.stride = stride
+        assert stride in [1, 2]
+        self.use_res_connect = self.stride == 1 and inp == oup
+
+        self.conv = nn.Sequential(
+            nn.Conv2D(
+                inp,
+                inp * expand_ratio,
+                kernel_size=1,
+                stride=1,
+                padding=0,
+                dilation=1,
+                groups=1,
+                bias_attr=False),
+            nn.BatchNorm2D(
+                num_features=inp * expand_ratio, epsilon=1e-05, momentum=0.1),
+            nn.ReLU(),
+            nn.Conv2D(
+                inp * expand_ratio,
+                inp * expand_ratio,
+                kernel_size=3,
+                stride=stride,
+                padding=dilation,
+                dilation=dilation,
+                groups=inp * expand_ratio,
+                bias_attr=False),
+            nn.BatchNorm2D(
+                num_features=inp * expand_ratio, epsilon=1e-05, momentum=0.1),
+            nn.ReLU(),
+            nn.Conv2D(
+                inp * expand_ratio,
+                oup,
+                kernel_size=1,
+                stride=1,
+                padding=0,
+                dilation=1,
+                groups=1,
+                bias_attr=False),
+            nn.BatchNorm2D(num_features=oup, epsilon=1e-05, momentum=0.1),
+        )
+
+    def forward(self, x):
+        if self.use_res_connect:
+            return x + self.conv(x)
+        else:
+            return self.conv(x)
