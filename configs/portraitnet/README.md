@@ -16,5 +16,5 @@ password: ajcs
 
 | Model | Backbone | Dataset | Resolution | Training Iters | mIoU |
 |-|-|-|-|-|-|-|-|
-|PortraitNet|-|EG1800|224x224|46000|96.92%|
-|PortraitNet|-|Supervise.ly|224x224|60000|93.94%|
+|PortraitNet|MobileNetV2|EG1800|224x224|46000|96.92%|
+|PortraitNet|MobileNetV2|Supervise.ly|224x224|60000|93.94%|
