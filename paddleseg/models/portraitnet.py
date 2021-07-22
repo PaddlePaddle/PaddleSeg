@@ -35,10 +35,17 @@ class PortraitNet(nn.Layer):
         pretrained (str, optional): The path or url of pretrained model. Default: None
     """
 
-    def __init__(self, num_classes, backbone, add_edge=False, pretrained=None):
+    def __init__(self,
+                 num_classes,
+                 backbone,
+                 min_channel=16,
+                 channel_ratio=1.0,
+                 add_edge=False,
+                 pretrained=None):
         super(PortraitNet, self).__init__()
         self.backbone = backbone
-        self.head = PortraitNetHead(num_classes, add_edge)
+        self.head = PortraitNetHead(num_classes, min_channel, channel_ratio,
+                                    add_edge)
         self.pretrained = pretrained
         self.init_weight()
 
@@ -63,10 +70,14 @@ class PortraitNet(nn.Layer):
 
 
 class PortraitNetHead(nn.Layer):
-    def __init__(self, num_classes, add_edge=False):
+    def __init__(self,
+                 num_classes,
+                 min_channel=16,
+                 channel_ratio=1.0,
+                 add_edge=False):
         super().__init__()
-        self.min_channel = 16
-        self.channel_ratio = 1.0
+        self.min_channel = min_channel
+        self.channel_ratio = channel_ratio
         self.add_edge = add_edge
         self.deconv1 = nn.Conv2DTranspose(
             self.depth(96),
