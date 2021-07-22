@@ -21,7 +21,11 @@ import numpy as np
 from paddleseg.cvlibs import manager
 from paddleseg.transforms import Compose
 from paddleseg.datasets import Dataset
+from paddleseg.utils.download import download_file_and_uncompress
+from paddleseg.utils import seg_env
 import paddleseg.transforms.functional as F
+
+URL = "https://paddleseg.bj.bcebos.com/dataset/Supervisely_face.zip"
 
 
 @manager.DATASETS.add_component
@@ -60,6 +64,21 @@ class SUPERVISELY(Dataset):
         self.input_width = 224
         self.input_height = 224
 
+        if self.dataset_root is None:
+            self.dataset_root = download_file_and_uncompress(
+                url=URL,
+                savepath=seg_env.DATA_HOME,
+                extrapath=seg_env.DATA_HOME)
+        elif not os.path.exists(self.dataset_root):
+            self.dataset_root = os.path.normpath(self.dataset_root)
+            savepath, extraname = self.dataset_root.rsplit(
+                sep=os.path.sep, maxsplit=1)
+            self.dataset_root = download_file_and_uncompress(
+                url=URL,
+                savepath=savepath,
+                extrapath=savepath,
+                extraname=extraname)
+            
         if mode == 'train':
             path = os.path.join(dataset_root, 'supervisely_face_train_easy.txt')
         else:
