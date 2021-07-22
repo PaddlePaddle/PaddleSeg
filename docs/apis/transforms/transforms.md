@@ -82,7 +82,7 @@ class paddleseg.transforms.ResizeStepScaling(min_scale_factor = 0.75,
     Scale an image proportionally within a range.
 
 ### Args
-* **min_scale_factor**** (float, optional): The minimum scale. Default: 0.75.
+* **min_scale_factor** (float, optional): The minimum scale. Default: 0.75.
 * **max_scale_factor** (float, optional): The maximum scale. Default: 1.25.
 * **scale_step_size** (float, optional): The scale interval. Default: 0.25.
 

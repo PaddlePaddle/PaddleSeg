@@ -81,40 +81,40 @@ PaddleSeg是基于飞桨[PaddlePaddle](https://www.paddlepaddle.org.cn)开发的
 
 ## 使用教程 <img src="./docs/images/teach.png" width="30"/>
 
-- [安装](./docs/install.md)
-- [全流程跑通PaddleSeg](./docs/quick_start.md)
--  数据处理
-   - [数据格式说明](./docs/data/marker/marker_c.md)
-   - [数据标注和转换](./docs/data/transform/transform_c.md)
-   - [自定义数据集](./docs/data/custom/data_prepare.md)
+* [安装](./docs/install.md)
+* [全流程跑通PaddleSeg](./docs/quick_start.md)
+*  数据处理
+   * [数据格式说明](./docs/data/marker/marker_c.md)
+   * [数据标注和转换](./docs/data/transform/transform_c.md)
+   * [自定义数据集](./docs/data/custom/data_prepare.md)
 
--  PaddleSeg的设计思想
-    - [配置文件详解](./docs/design/use/use_cn.md)
-    - [如何创造自己的模型](./docs/design/create/add_new_model_cn.md)
-- [模型训练](/docs/train/train.md)
-- [模型评估](./docs/evaluation/evaluate/evaluate.md)
-- [模型导出](./docs/export/export/model_export.md)
+*  PaddleSeg的设计思想
+    * [配置文件详解](./docs/design/use/use_cn.md)
+    * [如何创造自己的模型](./docs/design/create/add_new_model_cn.md)
+* [模型训练](/docs/train/train.md)
+* [模型评估](./docs/evaluation/evaluate/evaluate.md)
+* [模型导出](./docs/export/export/model_export.md)
 
--  模型部署
-    - [Inference](./docs/deployment/inference/inference.md)
-    - [Lite](./docs/deployment/lite/lite.md)
-    - [Serving](./docs/deployment/serving/serving.md)
-    - [Web](./docs/deployment/web/web.md)
-- [模型压缩](./docs/slim/slim/slim.md)
--  API使用教程
-    - [API文档说明](./docs/apis/README_CN.md)
-    - [API应用案例](./docs/api_example.md)
--  重要模块说明
-    - [数据增强](./docs/module/data/data.md)
-    - [Loss说明](./docs/module/loss/lovasz_loss.md)
-    - [Tricks](./docs/module/tricks/tricks.md)
-- 经典模型说明
-    - [DeeplabV3](./docs/models/deeplabv3.md)
-    - [UNet](./docs/models/unet.md)
-    - [OCRNet](./docs/models/ocrnet.md)
-    - [Fast-SCNN](./docs/models/fascnn.md)
-- [提交PR说明](./docs/pr/pr/pr.md)
-- [FAQ](./docs/faq/faq/faq.md)
+*  模型部署
+    * [Inference](./docs/deployment/inference/inference.md)
+    * [Lite](./docs/deployment/lite/lite.md)
+    * [Serving](./docs/deployment/serving/serving.md)
+    * [Web](./docs/deployment/web/web.md)
+* [模型压缩](./docs/slim/slim/slim.md)
+*  API使用教程
+    * [API文档说明](./docs/apis/README_CN.md)
+    * [API应用案例](./docs/api_example.md)
+*  重要模块说明
+    * [数据增强](./docs/module/data/data.md)
+    * [Loss说明](./docs/module/loss/losses_cn.md)
+    * [Tricks](./docs/module/tricks/tricks.md)
+* 经典模型说明
+    * [DeeplabV3](./docs/models/deeplabv3.md)
+    * [UNet](./docs/models/unet.md)
+    * [OCRNet](./docs/models/ocrnet.md)
+    * [Fast-SCNN](./docs/models/fascnn.md)
+* [提交PR说明](./docs/pr/pr/pr.md)
+* [FAQ](./docs/faq/faq/faq_cn.md)
 
 ## 实践案例 <img src="./docs/images/anli.png" width="20"/>
 
