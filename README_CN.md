@@ -96,7 +96,7 @@ PaddleSeg是基于飞桨[PaddlePaddle](https://www.paddlepaddle.org.cn)开发的
 * [模型导出](./docs/export/export/model_export.md)
 
 *  模型部署
-    * [Inference](./docs/deployment/inference/inference.md)
+    * [Inference](./docs/deployment/inference/inference_cn.md)
     * [Lite](./docs/deployment/lite/lite.md)
     * [Serving](./docs/deployment/serving/serving.md)
     * [Web](./docs/deployment/web/web.md)
