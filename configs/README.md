@@ -1,3 +1,47 @@
+# 模型库
+
+|模型\骨干网络|ResNet50|ResNet101|HRNetw18|HRNetw48|
+|-|-|-|-|-|
+|[ANN](./configs/ann)|✔|✔|||
+|[BiSeNetv2](./configs/bisenet)|-|-|-|-|
+|[DANet](./configs/danet)|✔|✔|||
+|[Deeplabv3](./configs/deeplabv3)|✔|✔|||
+|[Deeplabv3P](./configs/deeplabv3p)|✔|✔|||
+|[Fast-SCNN](./configs/fastscnn)|-|-|-|-|
+|[FCN](./configs/fcn)|||✔|✔|
+|[GCNet](./configs/gcnet)|✔|✔|||
+|[GSCNN](./configs/gscnn)|✔|✔|||
+|[HarDNet](./configs/hardnet)|-|-|-|-|
+|[OCRNet](./configs/ocrnet/)|||✔|✔|
+|[PSPNet](./configs/pspnet)|✔|✔|||
+|[U-Net](./configs/unet)|-|-|-|-|
+|[U<sup>2</sup>-Net](./configs/u2net)|-|-|-|-|
+|[Att U-Net](./configs/attention_unet)|-|-|-|-|
+|[U-Net++](./configs/unet_plusplus)|-|-|-|-|
+|[U-Net3+](./configs/unet_3plus)|-|-|-|-|
+|[DecoupledSegNet](./configs/decoupled_segnet)|✔|✔|||
+|[EMANet](./configs/emanet)|✔|✔|-|-|
+|[ISANet](./configs/isanet)|✔|✔|-|-|
+|[DNLNet](./configs/dnlnet)|✔|✔|-|-|
+|[SFNet](./configs/sfnet)|✔|-|-|-|
+|[PPSegLite](./configs/ppseg_lite)|-|-|-|-|
+
+# 模型说明
+
+<div align="center">
+<img src="../docs/images/xingnengtu.png"   width = "700"//>  
+</div>
+
+# 模型性能参数
+
+<div align="center">
+<img src="../docs/images/xingneng.png"/>  
+</div>
+
+- 表格展示了PaddleSeg所实现的分割模型在取得最高分类精度的配置下的一些评价参数。
+- 其中，mIoU、mIoU(flip)、mIoU(ms+flip)是对模型进行评估的结果。
+- 推理时间是使用CityScapes数据集中的图像进行100次预测取平均值的结果。
+
 # 配置项
 
 ----
