@@ -1,3 +1,4 @@
+English | [简体中文](backbones_cn.md)
 # paddleseg.models.backbone
 
 The models subpackage contains backbones extracting features for sementic segmentation models.

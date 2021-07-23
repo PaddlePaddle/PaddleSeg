@@ -114,9 +114,7 @@ def get_image_list(image_path):
                 for line in f:
                     line = line.strip()
                     if len(line.split()) > 1:
-                        raise RuntimeError(
-                            'There should be only one image path per line in `--image_path` file. Wrong line: {}'
-                            .format(line))
+                        line = line.split()[0]
                     image_list.append(os.path.join(image_dir, line))
     elif os.path.isdir(image_path):
         image_dir = image_path
