@@ -1,36 +1,68 @@
-# PaddleSeg Python 预测部署方案
+English | [简体中文](README_CN.md)
+# Local inference deployment
 
-## 1. 说明
+## 1. Instruction
 
-本方案旨在提供一个PaddlePaddle跨平台图像分割模型的Python预测部署方案作为参考，用户通过一定的配置，加上少量的代码，即可把模型集成到自己的服务中，完成图像分割的任务。
+This solution aims to provide a Python prediction deployment solution for the PaddlePaddle cross-platform image segmentation model as a reference. Users can integrate the model into their own services through a certain configuration and add a small amount of code to complete the task of image segmentation.
 
-## 2. 前置准备
 
-请使用[模型导出工具](../../docs/model_export.md)导出您的模型, 或点击下载我们的[样例模型](https://paddleseg.bj.bcebos.com/dygraph/demo/bisenet_demo_model.tar.gz)用于测试。
+## 2. Pre-preparation
 
-接着准备一张测试图片用于试验效果，我们提供了cityscapes验证集中的一张[图片](https://paddleseg.bj.bcebos.com/dygraph/demo/cityscapes_demo.png)用于演示效果，如果您的模型是使用其他数据集训练的，请自行准备测试图片。
+Please refer to [document](../../export/export/model_export.md) to export your model, or click to download our [sample model](https://paddleseg.bj.bcebos.com/dygraph/demo/bisenet_demo_model.tar.gz) is used for testing.
 
-## 3. 预测
+Then prepare a picture for the test effect, we provide a [picture] (https://paddleseg.bj.bcebos.com/dygraph/demo/cityscapes_demo.png) in the cityscapes verification set to see the effect, if your model is trained by other data sets, please prepare test images by yourself.
 
-在终端输入以下命令进行预测:
+
+## 3. Prediction
+
+Enter the following command in the terminal to make predictions:
 ```shell
 python deploy/python/infer.py --config /path/to/deploy.yaml --image_path
 ```
 
-参数说明如下:
-|参数名|用途|是否必选项|默认值|
+Parameters:
+|Parameter|Effection|Is required|Default|
 |-|-|-|-|
-|config|**导出模型时生成的配置文件**, 而非configs目录下的配置文件|是|-|
-|image_path|预测图片的路径或者目录|是|-|
-|use_trt|是否开启TensorRT来加速预测|否|否|
-|use_int8|启动TensorRT预测时，是否以int8模式运行|否|否|
-|batch_size|单卡batch size|否|配置文件中指定值|
-|save_dir|保存预测结果的目录|否|output|
-|with_argmax|对预测结果进行argmax操作|否|否|
+|config|**Configuration file generated when exporting the model**, instead of the configuration file in the configs directory|Yes|-|
+|image_path|The path or directory of the test image.|Yes|-|
+|use_trt|Whether to enable TensorRT to accelerate prediction.|No|No|
+|use_int8|Whether to run in int8 mode when starting TensorRT prediction.|No|No|
+|batch_size|Batch sizein single card.|No|The value specified in the configuration file.|
+|save_dir|The directory of prediction results.|No|output|
+|with_argmax|Perform argmax operation on the prediction results.|No|No|
 
-*测试样例和预测结果如下*
-![cityscape_predict_demo.png](../../docs/images/cityscapes_predict_demo.png)
+*The test sample and prediction result*
+![cityscape_predict_demo.png](../../../docs/images/cityscapes_predict_demo.png)
 
-*注意：*
-*1. 当使用量化模型预测时，需要同时开启TensorRT预测和int8预测才会有加速效果*
-*2. 使用TensorRT需要使用支持TRT功能的Paddle库，请参考[附录](https://www.paddlepaddle.org.cn/documentation/docs/zh/install/Tables.html#whl-release)下载对应的PaddlePaddle安装包，或者参考[源码编译](https://www.paddlepaddle.org.cn/documentation/docs/zh/install/compile/fromsource.html)自行编译*
+*Note:*
+*1. When using a quantitative model to predict, you need to turn on TensorRT prediction and int8 prediction at the same time to have an acceleration effect*
+*2. To use TensorRT, you need to use the Paddle library that supports the TRT function, please refer to [Appendix](https://www.paddlepaddle.org.cn/documentation/docs/zh/install/Tables.html#whl-release) to download the corresponding PaddlePaddle installation Package, or refer to [source code compilation](https://www.paddlepaddle.org.cn/documentation/docs/zh/install/compile/fromsource.html) to compile by yourself*
+
+## 4. Calculate inference speed
+After deploying the exported model, you may be very concerned about the inference speed of the deployed model. PaddleSeg provides a method to test the inference speed of the model. The following will introduce how to test the inference speed on your machine.
+* First, prepare the test data set (it is recommended to use more than 100 original images, do not use annotated images)
+* Execute the following commands in the terminal：
+```shell
+python deploy/python/infer_timer.py \
+--config output/BisenetV2/deploy.yaml \
+--image_path /path/to/data_dir \
+```
+> Among them, `/path/to/data_dir` refers to the path where the image is stored, please modify it according to the actual situation.
+> `data_dir` could be a single image or a directory.
+> When you do this, we recommend you using a directory containing multiple images as `data_dir` to get a more reliable average value of the inference speed.
+
+### Note
+* 1、If the `image_num` which you specify is greater than the total number of images stored in `image_path`, we will use the actual number of images.
+* 2、This method only calculates the inference speed and does not involve obtaining segmentation results. If you want to obtain the segmentation results obtained by inference, please run as indicated in `3`.
+* 3、This method only calculates the inferencing time, not include pre-processing time and post-processing time.
+* 4、The result is related to various factors such as `machine configuration`, `memory`, `image resolution`, etc. The results are for reference only.
+
+Parameter instruction:
+|Parameter|Effection|Is required|Default|
+|-|-|-|-|
+|config|**Configuration file generated when exporting the model**, instead of the configuration file in the configs directory|Yes|-|
+|image_path|The path or directory of the test image.|Yes|-|
+|image_num|The number of test images, used to calculate the average.|No|100|
+|use_trt|Whether to enable TensorRT to accelerate prediction.|No|No|
+|use_int8|Whether to run in int8 mode when starting TensorRT prediction.|No|No|
+|batch_size|Batch sizein single card.|No|The value specified in the configuration file.|
