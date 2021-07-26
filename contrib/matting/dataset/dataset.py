@@ -23,7 +23,25 @@ from utils import get_files
 import transforms as T
 
 
-class HumanDataset(paddle.io.Dataset):
+class Dataset(paddle.io.Dataset):
+    """
+    The dataset folder should be as follow:
+    root
+    |__train
+    |  |__image
+    |  |__fg
+    |  |__bg
+    |  |__alpha
+    |
+    |__val
+    |  |__image
+    |  |__fg
+    |  |__bg
+    |  |__alpha
+    |  |__[trimap]
+
+    """
+
     def __init__(
             self,
             dataset_root,
@@ -103,16 +121,6 @@ class HumanDataset(paddle.io.Dataset):
 
 if __name__ == '__main__':
     t = [T.LoadImages(), T.Resize(), T.Normalize()]
-    train_dataset = HumanDataset(
-        dataset_root='data/matting/composition_1k/', transforms=t, mode='val')
+    train_dataset = Dataset(
+        dataset_root='data/matting/human_matte/', transforms=t, mode='train')
     print(len(train_dataset))
-    for i in range(1065):
-        #         idx = np.random.randint(len(train_dataset))
-        idx = i
-        print(train_dataset.img_list[idx])
-        data = train_dataset[idx]
-        print(data['img_name'], data['img'].shape, data['alpha'].shape,
-              data['trimap'].shape)
-#         print(data)
-#         trimap = data['trimap']
-#         cv2.imwrite(str(idx) + '.png', trimap.astype('uint8'))
