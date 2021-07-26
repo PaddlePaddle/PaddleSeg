@@ -102,6 +102,8 @@ def composite(fg, alpha, ori_bg):
         resize_w = math.ceil(ori_bg_w * ratio)
         bg = cv2.resize(
             ori_bg, (resize_w, resize_h), interpolation=cv2.INTER_LINEAR)
+    else:
+        bg = ori_bg
 
     bg = bg[0:fg_h, 0:fg_w, :]
     alpha = alpha / 255
