@@ -34,7 +34,7 @@ def save_alpha_pred(alpha, path):
     if not os.path.exists(dirname):
         os.makedirs(dirname)
 
-    alpha = (alpha * 255).astype('uint8')
+    alpha = (alpha).astype('uint8')
     cv2.imwrite(path, alpha)
 
 
@@ -99,14 +99,16 @@ def evaluate(model,
             else:
                 alpha_pred = logit_dict['alpha_pred'].numpy()
             alpha_gt = data['alpha'].numpy()
-            trimap = data['trimap'].numpy()
-            mse_metric.update(alpha_pred.squeeze(1), alpha_gt, trimap)
-            sad_metric.update(alpha_pred.squeeze(1), alpha_gt, trimap)
+            trimap = data['trimap'].numpy().astype('uint8')
+            alpha_pred = alpha_pred.squeeze(1)
+            alpha_pred = (alpha_pred * 255)
+            mse_metric.update(alpha_pred, alpha_gt, trimap)
+            sad_metric.update(alpha_pred, alpha_gt, trimap)
 
             if save_results:
                 alpha_pred_one = alpha_pred[0].squeeze()
                 trimap = trimap.squeeze().astype('uint8')
-                alpha_pred_one[trimap == 255] = 1
+                alpha_pred_one[trimap == 255] = 255
                 alpha_pred_one[trimap == 0] = 0
                 save_alpha_pred(alpha_pred_one,
                                 os.path.join(save_dir, data['img_name'][0]))

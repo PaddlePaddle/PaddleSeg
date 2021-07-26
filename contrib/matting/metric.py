@@ -51,6 +51,7 @@ class MSE():
                                                     trimap.shape))
         mask = trimap == 128
         pixels = float(mask.sum())
+        pred = pred / 255.
         gt = gt / 255.
         diff = (pred - gt) * mask
         mse_diff = (diff**2).sum() / pixels if pixels > 0 else 0
@@ -90,9 +91,11 @@ class SAD():
                                                     trimap.shape))
 
         mask = trimap == 128
+        pred = pred / 255.
         gt = gt / 255.
         diff = (pred - gt) * mask
         sad_diff = (np.abs(diff)).sum()
+        sad_diff /= 1000
 
         self.sad_diffs += sad_diff
         self.count += 1
