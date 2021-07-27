@@ -1,45 +1,46 @@
-# PaddleSeg全流程跑通
+English|[简体中文](quick_start_cn.md)
+# Whole Process of PaddleSeg
 
-以BiSeNetV2和医学视盘分割数据集为例介绍PaddleSeg的**配置化驱动**使用方式。如果想了解API调用的使用方法，可点击[PaddleSeg高级教程](https://aistudio.baidu.com/aistudio/projectdetail/1339458?channelType=0&channel=0)。
+We will use `BiSeNetV2` and `Medical Video Disc Segmentation Dataset` as example to introduce PaddleSeg's **configurable driver**. If you want to know how to use API, you can click [PaddleSeg Advanced Tutorial](https://aistudio.baidu.com/aistudio/projectdetail/1339458?channelType=0&channel=0).
 
-按以下几个步骤来介绍使用流程。
+The whole process is as follows:
 
-1. 准备环境：使用PaddleSeg的软件环境
-2. 数据说明：用户如何自定义数据集
-3. 模型训练：训练配置和启动训练命令
-4. 可视化训练过程：使用VDL展示训练过程
-5. 模型评估：评估模型效果
-6. 效果可视化：使用训练好的模型进行预测，同时对结果进行可视化
-7. 模型导出：如何导出可进行部署的模型
-8. 模型部署：快速使用Python实现高效部署
+1. **Prepare the environment**: PaddleSeg's software environment.
+2. **Data preparation**: How to prepare and organize custom datasets.
+3. **Model training**: Training configuration and start training.
+4. **Visualize the training process**: Use VDL to show the training process.
+5. **Model evaluation**: Evaluate the model.
+6. **Model prediction and visualization**: Use the trained model to make predictions and visualize the results at the same time.
+7. **Model export**: How to export a model that can be deployed.
+8. **Model deployment**: Quickly use Python to achieve efficient deployment.
 
-**1. 环境安装与验证**
+**1. Environmental Installation and Verification**
 
-**1.1环境安装**
+**1.1 Environment Installation**
 
-在使用PaddleSeg训练图像分割模型之前，用户需要完成如下任务：
+Before using PaddleSeg to train an image segmentation model, users need to complete the following tasks:
 
-1. 安装[Python3.6或更高版本](https://www.python.org/downloads/)。
-2. 安装飞桨2.0或更高版本，具体安装方法请参见[快速安装](https://www.paddlepaddle.org.cn/install/quick)。由于图像分割模型计算开销大，推荐在GPU版本的PaddlePaddle下使用PaddleSeg。
-3. 下载PaddleSeg的代码库。
+1. Install [Python3.6 or higher](https://www.python.org/downloads/).
+2. Install the `PaddlePaddle 2.1` version, please refer to [Quick Installation](https://www.paddlepaddle.org.cn/install/quick) for the specific installation method. Due to the high computational cost of the image segmentation model, it is recommended to use PaddleSeg under the GPU version of PaddlePaddle.
+3. Download the code library of PaddleSeg.
 
 ```
 git clone https://github.com/PaddlePaddle/PaddleSeg.git
 ```
 ```
-#如果github下载网络较差，用户可选择gitee进行下载
+#If the github download network is poor, users can choose gitee to download
 git clone https://gitee.com/paddlepaddle/PaddleSeg.git
 ```
-安装Paddleseg API库，在安装该库的同时，运行PaddleSeg的其他依赖项也被同时安装
+Install the PaddleSeg API library, while installing the library, other dependencies for running PaddleSeg are also installed at the same time
 ```
 pip install paddleseg
 ```
 
-**1.2确认环境安装成功**
+**1.2 Confirm Installation**
 
-下述命令均在PaddleSeg目录下完成
+Run following commands in the PaddleSeg directory.
 
-执行下面命令，并在PaddleSeg/output文件夹中出现预测结果，则证明安装成功
+Execute the following command, if the predicted result appears in the PaddleSeg/output folder, the installation is successful.
 
 ```
 python predict.py \
@@ -49,22 +50,22 @@ python predict.py \
        --save_dir output/result
 ```
 
-**2. 数据集下载与说明**
+**2. Dataset Preparation**
 
-**数据集下载**
+**Dataset Download**
 
-本章节将使用视盘分割（optic disc segmentation）数据集进行训练，视盘分割是一组眼底医疗分割数据集，包含了267张训练图片、76张验证图片、38张测试图片。通过以下命令可以下载该数据集。
+This chapter will use the `optic disc segmentation dataset` for training. Optic disc segmentation is a set of fundus medical segmentation datasets, including 267 training images, 76 verification images, and 38 test images. You can download them by the following command.
 
-数据集的原图和效果图如下所示，任务是将眼球图片中的视盘区域分割出来。
+The original image and segmentation result are shown below. Our task will be to segment the optic disc area in the eyeball picture.
 
 ![](./images/fig1.png)
 
-​                                                                                            图1：数据集的原图和效果图
+​                                                                     Figure 1: Original image and segmentation result
 
 
 
 ```
-#下载并解压数据集
+# Download and unzip the dataset
 mkdir dataset
 cd dataset
 wget https://paddleseg.bj.bcebos.com/dataset/optic_disc_seg.zip
@@ -72,19 +73,19 @@ unzip optic_disc_seg.zip
 cd ..
 ```
 
-**2.1数据集说明**
+**2.1 Prepare the Dataset**
 
-如何使用自己的数据集进行训练是开发者最关心的事情，下面我们将着重说明一下如果要自定义数据集，我们该准备成什么样子？数据集准备好，如何在配置文件中进行改动。
+How to use your own dataset for training is the most concerned thing for developers. Below we will focus on explaining what we should prepare if we want to customize the dataset.And we will tell you how to make corresponding changes in the configuration file after the dataset is ready.
 
-**2.1.1数据集说明**
+**2.1.1 Organize the Dataset**
 
-- 推荐整理成如下结构
+- It is recommended to organize into the following structure.
 
-- 文件夹命名为custom_dataset、images、labels不是必须，用户可以自主进行命名。
+- It is not necessary for the folder to be named custom_dataset, images, labels, and the user can name it independently.
 
-- train.txt val.txt test.txt中文件并非要和custom_dataset文件夹在同一目录下，可以通过配置文件中的选项修改.
+- The file in train.txt val.txt test.txt does not have to be in the same directory as the custom_dataset folder, it can be modified through the options in the configuration file.
 
- 其中train.txt和val.txt的内容如下所示：
+  The contents of train.txt and val.txt are as follows:
 
   ```
 
@@ -93,103 +94,103 @@ cd ..
    ...
   ```
 
-我们刚刚下载的数据集格式也与之类似(label.txt可有可以无)，如果用户要进行数据集标注和数据划分，请参考文档。
+The format of the dataset we just downloaded is similar (label.txt is optional). If users want to label and divide the dataset, please refer to [Data Marking Document](data/marker/marker_c.md) and [ dataset division document](data/custom/data_prepare.md).
 
-我们一般推荐用户将数据集放置在PaddleSeg下的dataset文件夹下。
+We generally recommend that users place the dataset in the dataset folder under PaddleSeg.
 
-**模型训练**
+**Model Training**
 
-- 在这里选择BiseNetV2模型，BiseNetV2是一个轻量化模型，在Cityscapes测试集中的平均IoU达到72.6％，在一张NVIDIA GeForce GTX 1080 Ti卡上的速度为156 FPS，这比现有方法要快得多，而且可以实现更好的分割精度。
+-Choose the BiseNetV2 model here. BiseNetV2 is a lightweight model with an average IoU of 72.6% in the Cityscapes test set and a speed of 156 FPS on an NVIDIA GeForce GTX 1080 Ti card, which is much faster than the existing method , And can achieve better segmentation accuracy.
 
-**3.1 BiseNetV2模型介绍**
+**3.1 BiseNetV2 Model**
 
-双边分割网络(BiSeNet V2)，将低层次的网络细节和高层次的语义分类分开处理，以实现高精度和高效率的实时语义分割。它在速度和精度之间进行权衡。该体系结构包括：
+BiSeNetV2 separates low-level network details and high-level semantic classification to achieve high-precision and high-efficiency real-time semantic segmentation. It is a trade-off between speed and accuracy. The architecture includes:
 
-(1)一个细节分支，具有浅层宽通道，用于捕获低层细节并生成高分辨率的特征表示。
+(1) A detail branch, with shallow wide channels, used to capture low-level details and generate high-resolution feature representations.
 
-(2)一个语义分支，通道窄，层次深，获取高层次语义语境。语义分支是轻量级的，因为它减少了通道容量和快速下采样策略。此外，设计了一个引导聚合层来增强相互连接和融合这两种类型的特征表示。此外，还设计了一种增强型训练策略，在不增加任何推理代价的情况下提高分割性能。
+(2) A semantic branch with narrow channels and deep levels to obtain high-level semantic context. Semantic branch is lightweight because it reduces channel capacity and fast downsampling strategy. In addition, a guiding aggregation layer is designed to enhance the mutual connection and fusion of the two types of feature representation. In addition, an enhanced training strategy is also designed to improve segmentation performance without increasing any inference cost.
 
 ![](./images/fig2.png)
 
-​                                                                                                          图2：数据集的原图和效果图
+​                                                            Figure 2: Original image and segmentation result
 
-**3.2 配置文件详细解读**
+**3.2 Detailed Interpretation of Configuration Files**
 
-在了解完BiseNetV2原理后，我们便可准备进行训练了。上文中我们谈到PaddleSeg提供了**配置化驱动**进行模型训练。那么在训练之前，先来了解一下配置文件，在这里我们以`bisenet_optic_disc_512x512_1k.yml`为例子说明，该yaml格式配置文件包括模型类型、骨干网络、训练和测试、预训练数据集和配套工具（如数据增强）等信息。
+After understanding the principle of BiseNetV2, we can prepare for training. In the above, we talked about PaddleSeg providing **configurable driver** for model training. So before training, let’s take a look at the configuration file. Here we take `bisenet_optic_disc_512x512_1k.yml` as an example. The yaml format configuration file includes model type, backbone network, training and testing, pre-training dataset and supporting tools (such as Data augmentation) and other information.
 
-PaddleSeg在配置文件中详细列出了每一个可以优化的选项，用户只要修改这个配置文件就可以对模型进行定制（**所有的配置文件在PaddleSeg/configs文件夹下面**），如自定义模型使用的骨干网络、模型使用的损失函数以及关于网络结构等配置。除了定制模型之外，配置文件中还可以配置数据处理的策略，如改变尺寸、归一化和翻转等数据增强的策略。
+PaddleSeg lists every option that can be optimized in the configuration file. Users can customize the model by modifying this configuration file (**All configuration files are under the PaddleSeg/configs folder**), such as custom models The backbone network used, the loss function used by the model, and the configuration of the network structure. In addition to customizing the model, data processing strategies can be configured in the configuration file, such as data augmentation strategies such as resizing, normalization, and flipping.
 
-**重点参数说明：**
+**Key Parameter:**
 
-- 1：在PaddleSeg的配置文件给出的学习率中，除了"bisenet_optic_disc_512x512_1k.yml"中为单卡学习率外，其余配置文件中均为4卡的学习率，如果用户是单卡训练，则学习率设置应变成原来的1/4。
-- 2：在PaddleSeg中的配置文件，给出了多种损失函数：CrossEntropy Loss、BootstrappedCrossEntropy Loss、Dice Loss、BCE Loss、OhemCrossEntropyLoss、RelaxBoundaryLoss、OhemEdgeAttentionLoss、Lovasz Hinge Loss、Lovasz Softmax Loss，用户可根据自身需求进行更改。
+-1: In the learning rate given in the PaddleSeg configuration file, except for the single-card learning rate in "bisenet_optic_disc_512x512_1k.yml", the rest of the configuration files are all 4-card learning rates. If the user is training with a single card, then learn The rate setting should become 1/4 of the original.
+-2: The configuration file in PaddleSeg gives a variety of loss functions: CrossEntropy Loss, BootstrappedCrossEntropy Loss, Dice Loss, BCE Loss, OhemCrossEntropyLoss, RelaxBoundaryLoss, OhemEdgeAttentionLoss, Lovasz Hinge Loss, Lovasz Soft Loss, users can perform according to their own needs Change.
 
 ```
-batch_size: 4  #设定batch_size的值即为迭代一次送入网络的图片数量，一般显卡显存越大，batch_size的值可以越大
-iters: 1000    #模型迭代的次数
+batch_size: 4  # Set the number of pictures sent to the network at one iteration. Generally speaking, the larger the video memory of the machine you are using, the higher the batch_size value.
+iters: 1000  # Number of iterations
 
-train_dataset: #训练数据设置
-  type: OpticDiscSeg #选择数据集格式
-  dataset_root: data/optic_disc_seg #选择数据集路径
-  num_classes: 2 #指定目标的类别个数（背景也算为一类）
-  transforms: #数据预处理/增强的方式
-    - type: Resize #送入网络之前需要进行resize
-      target_size: [512, 512] #将原图resize成512*512在送入网络
-    - type: RandomHorizontalFlip #采用水平反转的方式进行数据增强
-    - type: Normalize #图像进行归一化
+train_dataset: # Training dataset
+  type: OpticDiscSeg # The name of the training dataset class
+  dataset_root: data/optic_disc_seg # The directory where the training dataset is stored
+  num_classes: 2 # Number of pixel categories
+  transforms: # Data transformation and data augmentation
+    - type: Resize Need to resize before sending to the network
+      target_size: [512, 512] # Resize the original image to 512*512 and send it to the network
+    - type: RandomHorizontalFlip # Flip the image horizontally with a certain probability
+    - type: Normalize # Normalize the image
   mode: train
 
-val_dataset: #验证数据设置
-  type: OpticDiscSeg #选择数据集格式
-  dataset_root: data/optic_disc_seg #选择数据集路径
-  num_classes: 2 #指定目标的类别个数（背景也算为一类）
-  transforms: #数据预处理/增强的方式
-    - type: Resize  #将原图resize成512*512在送入网络
-      target_size: [512, 512]  #将原图resize成512*512在送入网络
-    - type: Normalize #图像进行归一化
+val_dataset: # Validating dataset
+  type: OpticDiscSeg # The name of the training dataset class
+  dataset_root: data/optic_disc_seg # The directory where the validating dataset is stored
+  num_classes: 2 # Number of pixel categories
+  transforms: # Data transformation and data augmentation
+    - type: Resize  Need to resize before sending to the network
+      target_size: [512, 512]  # Resize the original image to 512*512 and send it to the network
+    - type: Normalize # Normalize the image
   mode: val
 
-optimizer: #设定优化器的类型
-  type: sgd #采用SGD（Stochastic Gradient Descent）随机梯度下降方法为优化器
-  momentum: 0.9 #动量
-  weight_decay: 4.0e-5 #权值衰减，使用的目的是防止过拟合
+optimizer: # Set the type of optimizer
+  type: sgd #Using SGD (Stochastic Gradient Descent) method as the optimizer
+  momentum: 0.9 
+  weight_decay: 4.0e-5 # Weight attenuation, the purpose of use is to prevent overfitting
 
-learning_rate: #设定学习率
-  value: 0.01  #初始学习率
+learning_rate: # Set learning rate
+  value: 0.01  # Initial learning rate
   decay:
-    type: poly  #采用poly作为学习率衰减方式。
-    power: 0.9  #衰减率
-    end_lr: 0   #最终学习率
+    type: poly  # Use poly as the learning rate decay method.
+    power: 0.9  # Attenuation rate
+    end_lr: 0   # Final learning rate
 
-loss: #设定损失函数的类型
+loss: # Set the type of loss function
   types:
-    - type: CrossEntropyLoss #损失函数类型
+    - type: CrossEntropyLoss # The type of loss function
   coef: [1, 1, 1, 1, 1]
-  #BiseNetV2有4个辅助loss，加上主loss共五个，1表示权重 all_loss = coef_1 * loss_1 + .... + coef_n * loss_n
+  # BiseNetV2 has 4 auxiliary losses, plus a total of five main losses, 1 means weight all_loss = coef_1 * loss_1 + .... + coef_n * loss_n
 
-model: #模型说明
-  type: BiSeNetV2  #设定模型类别
-  pretrained: Null #设定模型的预训练模型
+model: # Model description
+  type: BiSeNetV2  # Set model category
+  pretrained: Null # Set the pretrained model of the model
 ```
 **FAQ**
 
-Q：有的读者可能会有疑问，什么样的配置项是设计在配置文件中，什么样的配置项在脚本的命令行参数呢？
+Q: Some readers may have questions, what kind of configuration items are designed in the configuration file, and what kind of configuration items are in the command line parameters of the script?
 
-A：与模型方案相关的信息均在配置文件中，还包括对原始样本的数据增强策略等。除了iters、batch_size、learning_rate3种常见参数外，命令行参数仅涉及对训练过程的配置。也就是说，配置文件最终决定了使用什么模型。
+A: The information related to the model scheme is in the configuration file, and it also includes data augmentation strategies for the original sample. In addition to the three common parameters of iters, batch_size, and learning_rate, the command line parameters only involve the configuration of the training process. In other words, the configuration file ultimately determines what model to use.
 
-**3.3 修改配置文件中对应的数据配置**
+**3.3 Modify Configuration Files**
 
-当用户准备好数据集后，可以在配置文件中指定位置修改数据路径来进行进一步的训练
+When the user prepares the dataset, he can specify the location in the configuration file to modify the data path for further training
 
-在这里，我们还是以上文中谈到的"bisenet_optic_disc_512x512_1k.yml"文件为例，摘选出数据配置部分为大家说明。
+Here, we take the "bisenet_optic_disc_512x512_1k.yml" file mentioned in the above article as an example, and select the data configuration part for your explanation.
 
-主要关注这几个参数：
+Mainly focus on these parameters:
 
-- type的参数是Dataset，代表的是建议的数据格式；
-- dataset_root路径为包含label和image所在的路径；在示例中为：dataset_root: dataset/optic_disc_seg
-- train_path为txt的路径；在示例中为：train_path: dataset/optic_disc_seg/train_list.txt
-- num_classes为类别（背景也算为一类）；
-- transform是对数据的预处理的策略，用户可根据自己的实际需要改动
+- The type parameter is Dataset, which represents the recommended data format;
+- The dataset_root path contains the path where the label and image are located; in the example: dataset_root: dataset/optic_disc_seg
+- train_path is the path of txt; in the example: train_path: dataset/optic_disc_seg/train_list.txt
+- num_classes is the category (the background is also counted as a category);
+- Transform is a strategy for data preprocessing, users can change according to their actual needs
 
 ```
 train_dataset:
@@ -216,79 +217,79 @@ val_dataset:
   mode: val
 ```
 
-**3.4 正式开启训练**
+**3.4 Start Training**
 
-当我们修改好对应的配置参数后，就可以上手体验使用了
+After we modify the corresponding configuration parameters, we can get started and experience the use
 
 ```
-export CUDA_VISIBLE_DEVICES=0 # 设置1张可用的卡
+export CUDA_VISIBLE_DEVICES=0 # Set 1 usable card
 
-**windows下请执行以下命令**
+**Please execute the following command under windows**
 **set CUDA_VISIBLE_DEVICES=0**
 python train.py \
-       --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml \
-       --do_eval \
-       --use_vdl \
-       --save_interval 500 \
-       --save_dir output
+        --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml \
+        --do_eval \
+        --use_vdl \
+        --save_interval 500 \
+        --save_dir output
 ```
 
-- 结果文件
+-Result file
 
 ```
 output
-  ├── iter_500 #表示在500步保存一次模型
-    ├── model.pdparams  #模型参数
-    └── model.pdopt  #训练阶段的优化器参数
+  ├── iter_500 # Means to save the model once at 500 steps
+    ├── model.pdparams  # Model parameters
+    └── model.pdopt  # Optimizer parameters during training
   ├── iter_1000
     ├── model.pdparams
     └── model.pdopt
-  └── best_model #在训练的时候，训练时候增加--do_eval后，每保存一次模型，都会eval一次，miou最高的模型会被另存为best_model
+  └── best_model # #During training, after training, add --do_eval, every time the model is saved, it will be evaled once, and the model with the highest miou will be saved as best_model
     └── model.pdparams  
 ```
 
-**3.5 训练参数解释**
+**3.5 Training Parameters**
 
-| 参数名              | 用途                                                         | 是否必选项 | 默认值           |
+| Parameter     | Effection                               | Is Required | Default           |
 | :------------------ | :----------------------------------------------------------- | :--------- | :--------------- |
-| iters               | 训练迭代次数                                                 | 否         | 配置文件中指定值 |
-| batch_size          | 单卡batch size                                               | 否         | 配置文件中指定值 |
-| learning_rate       | 初始学习率                                                   | 否         | 配置文件中指定值 |
-| config              | 配置文件                                                     | 是         | -                |
-| save_dir            | 模型和visualdl日志文件的保存根路径                           | 否         | output           |
-| num_workers         | 用于异步读取数据的进程数量， 大于等于1时开启子进程读取数据   | 否         | 0                |
-| use_vdl             | 是否开启visualdl记录训练数据                                 | 否         | 否               |
-| save_interval_iters | 模型保存的间隔步数                                           | 否         | 1000             |
-| do_eval             | 是否在保存模型时启动评估, 启动时将会根据mIoU保存最佳模型至best_model | 否         | 否               |
-| log_iters           | 打印日志的间隔步数                                           | 否         | 10               |
-| resume_model        | 恢复训练模型路径，如：`output/iter_1000`                     | 否         | None             |
-| keep_checkpoint_max | 最新模型保存个数                                             | 否         | 5                |
+| iters               | Number of training iterations                                                 | No         | The value specified in the configuration file.| |
+| batch_size          | Batch size on a single card                                            | No         | The value specified in the configuration file.| |
+| learning_rate       | Initial learning rate                                                   | No        | The value specified in the configuration file.| |
+| config              | Configuration files                                                     | Yes         | -                |
+| save_dir            | The root path for saving model and visualdl log files                           | No         | output           |
+| num_workers         | The number of processes used to read data asynchronously, when it is greater than or equal to 1, the child process is started to read dat  | No  | 0 |
+| use_vdl             | Whether to enable visualdl to record training data                                 | No         | No               |
+| save_interval_iters | Number of steps between model saving                                           | No         | 1000             |
+| do_eval             | Whether to start the evaluation when saving the model, the best model will be saved to best_model according to mIoU at startup | No   | No  |
+| log_iters           | Interval steps for printing log                                           | No         | 10               |
+| resume_model        | Restore the training model path, such as: `output/iter_1000`                    | No        | None             |
+| keep_checkpoint_max | Number of latest models saved                                            | No        | 5                |
 
-**3.6 配置文件的深度探索**
+**3.6 In-depth Exploration of Configuration Files**
 
-- 刚刚我们拿出一个BiSeNetV2的配置文件让大家去体验一下如何数据集配置，在这里例子中，所有的参数都放置在了一个yml文件中，但是实际PaddleSeg的配置文件为了具有更好的复用性和兼容性，采用了更加耦合的设计，即一个模型需要两个以上配置文件来实现，下面我们具体一DeeplabV3p为例子来为大家说明配置文件的耦合设置。
-- 例如我们要更改deeplabv3p_resnet50_os8_cityscapes_1024x512_80k.yml 文件的配置，则会发现该文件还依赖（base）cityscapes.yml文件。此时，我们就需要同步打开 cityscapes.yml 文件进行相应参数的设置。
+- We just took out a BiSeNetV2 configuration file for everyone to experience how to configure the dataset. In this example, all the parameters are placed in a yml file, but the actual PaddleSeg configuration file is for better reuse For compatibility and compatibility, a more coupled design is adopted, that is, a model requires more than two configuration files to achieve. Below we will use DeeplabV3p as an example to illustrate the coupling settings of the configuration files.
+- For example, if we want to change the configuration of the deeplabv3p_resnet50_os8_cityscapes_1024x512_80k.yml file, we will find that the file also depends on the (base) cityscapes.yml file. At this point, we need to open the cityscapes.yml file synchronously to set the corresponding parameters.
 
 ![](./images/fig3.png)
 
 
 
-​                                                                                                                图3：配置文件深入探索
+​                                                                  ​ Figure 3: In-depth exploration of configuration files
 
-在PaddleSeg2.0模式下，用户可以发现，PaddleSeg采用了更加耦合的配置设计，将数据、优化器、损失函数等共性的配置都放在了一个单独的配置文件下面，当我们尝试换新的网络结构的是时候，只需要关注模型切换即可，避免了切换模型重新调节这些共性参数的繁琐节奏，避免用户出错。
+In PaddleSeg2.0 mode, users can find that PaddleSeg adopts a more coupled configuration design, placing common configurations such as data, optimizer, and loss function under a single configuration file. When we try to change to a new network The structure is time, you only need to pay attention to model switching, which avoids the tedious rhythm of switching models to re-adjust these common parameters and avoid user errors.
 
 **FAQ**
 
-Q：有些共同的参数，多个配置文件下都有，那么我以哪一个为准呢？
+Q: There are some common parameters in multiple configuration files, so which one shall I prevail?
 
-A：如图中序号所示，1号yml文件的参数可以覆盖2号yml文件的参数，即1号的配置文件优于2号文件
+A: As shown by the serial number in the figure, the parameters of the No. 1 yml file can cover the parameters of the No. 2 yml file, that is, the configuration file No. 1 is better than the No. 2. In addition, if the parameters appearing in the yaml file are specified in the command line, the configuration of the command line is better than the yaml file. (For example: adjust `batch_size` in the command line according to your machine configuration, no need to modify the preset yaml file in configs)
 
-**3.7 多卡训练**
+**3.7 Muti-card Training**
 
-**注意**：如果想要使用多卡训练的话，需要将环境变量CUDA_VISIBLE_DEVICES指定为多卡（不指定时默认使用所有的gpu)，并使用paddle.distributed.launch启动训练脚本（windows下由于不支持nccl，无法使用多卡训练）:
+**Note**: If you want to use multi-card training, you need to specify the environment variable `CUDA_VISIBLE_DEVICES` as `multi-card` (if not specified, all GPUs will be used by default), and use `paddle.distributed.launch` to start the training script (Can not use multi-card training under Windows, because it doesn't support nccl):
 
 ```
-export CUDA_VISIBLE_DEVICES=0,1,2,3 # 设置4张可用的卡
+export CUDA_VISIBLE_DEVICES=0,1,2,3 # Set 4 usable cards
 python -m paddle.distributed.launch train.py \
        --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml \
        --do_eval \
@@ -297,7 +298,7 @@ python -m paddle.distributed.launch train.py \
        --save_dir output
 ```
 
-**3.8 恢复训练**
+**3.8 Resume training**
 
 ```
 python train.py \
@@ -309,43 +310,44 @@ python train.py \
        --save_dir output
 ```
 
-**4. 训练过程可视化**
+**4. Training Process Visualization**
 
-- 为了更直观我们的网络训练过程，对网络进行分析从而更快速的得到更好的网络，飞桨提供了可视化分析工具：VisualDL
+- In order to make our network training process more intuitive and analyze the network to get a better network faster, PaddlePaddle provides a visual analysis tool: VisualDL
 
-当打开`use_vdl`开关后，PaddleSeg会将训练过程中的数据写入VisualDL文件，可实时查看训练过程中的日志。记录的数据包括：
+When the `use_vdl` switch is turned on, PaddleSeg will write the data during the training process into the VisualDL file, and you can view the log during the training process in real time. The recorded data includes:
 
-1. loss变化趋势
-2. 学习率变化趋势
-3. 训练时间
-4. 数据读取时间
-5. mean IoU变化趋势（当打开了`do_eval`开关后生效）
-6. mean pixel Accuracy变化趋势（当打开了`do_eval`开关后生效）
+1. Loss change trend
+2. Changes in learning rate
+3. Training time
+4. Data reading time
+5. Mean IoU change trend (takes effect when the `do_eval` switch is turned on)
+6. Change trend of mean pixel Accuracy (takes effect when the `do_eval` switch is turned on)
 
-使用如下命令启动VisualDL查看日志
+Use the following command to start VisualDL to view the log
 
 ```
-**下述命令会在127.0.0.1上启动一个服务，支持通过前端web页面查看，可以通过--host这个参数指定实际ip地址**
+**The following command will start a service on 127.0.0.1, which supports viewing through the front-end web page, and the actual ip address can be specified through the --host parameter**
+
 visualdl --logdir output/
 ```
 
-在浏览器输入提示的网址，效果如下：
+Enter the suggested URL in the browser, the effect is as follows:
 
 ![](./images/fig4.png)
 
-​                                                                                    图4：VDL效果演示
+​                                                                          Figure 4: VDL effect demonstration
 
-**5. 模型评估**
+**5. Model Evaluation**
 
-训练完成后，用户可以使用评估脚本val.py来评估模型效果。假设训练过程中迭代次数（iters）为1000，保存模型的间隔为500，即每迭代1000次数据集保存2次训练模型。因此一共会产生2个定期保存的模型，加上保存的最佳模型best_model，一共有3个模型，可以通过model_path指定期望评估的模型文件。
+After the training is completed, the user can use the evaluation script val.py to evaluate the effect of the model. Assuming that the number of iterations (iters) in the training process is 1000, the interval for saving the model is 500, that is, the training model is saved twice for every 1000 iterations of the dataset. Therefore, there will be a total of 2 regularly saved models, plus the best model best_model saved, there are a total of 3 models. You can specify the model file you want to evaluate through model_path.
 
 ```
 python val.py \
-       --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml \
-       --model_path output/iter_1000/model.pdparams
+        --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml \
+        --model_path output/iter_1000/model.pdparams
 ```
 
-如果想进行多尺度翻转评估可通过传入`--aug_eval`进行开启，然后通过`--scales`传入尺度信息， `--flip_horizontal`开启水平翻转， `flip_vertical`开启垂直翻转。使用示例如下：
+If you want to perform multi-scale flip evaluation, you can turn it on by passing in `--aug_eval`, and then passing in scale information via `--scales`, `--flip_horizontal` turns on horizontal flip, and `flip_vertical` turns on vertical flip. Examples of usage are as follows:
 
 ```
 python val.py \
@@ -356,7 +358,7 @@ python val.py \
        --flip_horizontal
 ```
 
-如果想进行滑窗评估可通过传入`--is_slide`进行开启， 通过`--crop_size`传入窗口大小， `--stride`传入步长。使用示例如下：
+If you want to perform sliding window evaluation, you can open it by passing in `--is_slide`, pass in the window size by `--crop_size`, and pass in the step size by `--stride`. Examples of usage are as follows:
 
 ```
 python val.py \
@@ -367,15 +369,15 @@ python val.py \
        --stride 128 128
 ```
 
-在图像分割领域中，评估模型质量主要是通过三个指标进行判断，准确率（acc）、平均交并比（Mean Intersection over Union，简称mIoU）、Kappa系数。
+In the field of image segmentation, evaluating model quality is mainly judged by three indicators, `accuracy` (acc), `mean intersection over union` (mIoU), and `Kappa coefficient`.
 
-- 准确率：指类别预测正确的像素占总像素的比例，准确率越高模型质量越好。
-- 平均交并比：对每个类别数据集单独进行推理计算，计算出的预测区域和实际区域交集除以预测区域和实际区域的并集，然后将所有类别得到的结果取平均。在本例中，正常情况下模型在验证集上的mIoU指标值会达到0.80以上，显示信息示例如下所示，第3行的**mIoU=0.8526**即为mIoU。
-- Kappa系数：一个用于一致性检验的指标，可以用于衡量分类的效果。kappa系数的计算是基于混淆矩阵的，取值为-1到1之间，通常大于0。其公式如下所示，P0P_0*P*0为分类器的准确率，PeP_e*P**e*为随机分类器的准确率。Kappa系数越高模型质量越好。
+- **Accuracy**: refers to the proportion of pixels with correct category prediction to the total pixels. The higher the accuracy, the better the quality of the model.
+- **Average intersection ratio**: perform inference calculations for each category dataset separately, divide the calculated intersection of the predicted area and the actual area by the union of the predicted area and the actual area, and then average the results of all categories. In this example, under normal circumstances, the mIoU index value of the model on the verification set will reach 0.80 or more. An example of the displayed information is shown below. The **mIoU=0.8526** in the third row is mIoU.
+- **Kappa coefficient**: an index used for consistency testing, which can be used to measure the effect of classification. The calculation of the kappa coefficient is based on the confusion matrix, with a value between -1 and 1, usually greater than 0. The formula is as follows, P0P_0*P*0 is the accuracy of the classifier, and PeP_e*P**e* is the accuracy of the random classifier. The higher the Kappa coefficient, the better the model quality.
 
-Kappa=P0−Pe1−PeKappa= \frac{P_0-P_e}{1-P_e}*K**a**p**p**a*=1−*P**e**P*0−*P**e*
+<a href="https://www.codecogs.com/eqnedit.php?latex=Kappa=&space;\frac{P_0-P_e}{1-P_e}" target="_blank"><img src="https://latex.codecogs.com/gif.latex?Kappa=&space;\frac{P_0-P_e}{1-P_e}" title="Kappa= \frac{P_0-P_e}{1-P_e}" /></a>
 
-随着评估脚本的运行，最终打印的评估日志如下。
+With the running of the evaluation script, the final printed evaluation log is as follows.
 
 ```
 ...
@@ -388,136 +390,139 @@ Kappa=P0−Pe1−PeKappa= \frac{P_0-P_e}{1-P_e}*K**a**p**p**a*=1−*P**e**P*0−
 [0.9959 0.8886]
 ```
 
-**6. 效果可视化**
+**6.Prediction and Visualization**
 
-除了分析模型的IOU、ACC和Kappa指标之外，我们还可以查阅一些具体样本的切割样本效果，从Bad Case启发进一步优化的思路。
+In addition to analyzing the IOU, ACC and Kappa indicators of the model, we can also check the cutting sample effect of some specific samples, and inspire further optimization ideas from Bad Case.
 
-predict.py脚本是专门用来可视化预测案例的，命令格式如下所示
+The predict.py script is specially used to visualize prediction cases. The command format is as follows
 
 ```
 python predict.py \
-       --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml \
-       --model_path output/iter_1000/model.pdparams \
-       --image_path dataset/optic_disc_seg/JPEGImages/H0003.jpg \
-       --save_dir output/result
+        --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml \
+        --model_path output/iter_1000/model.pdparams \
+        --image_path dataset/optic_disc_seg/JPEGImages/H0003.jpg \
+        --save_dir output/result
 ```
 
-其中`image_path`也可以是一个目录，这时候将对目录内的所有图片进行预测并保存可视化结果图。
+Among them, `image_path` can also be a directory. At this time, all the pictures in the directory will be predicted and the visualization results will be saved.
 
-同样的，可以通过`--aug_pred`开启多尺度翻转预测， `--is_slide`开启滑窗预测。
+Similarly, you can use `--aug_pred` to turn on multi-scale flip prediction, and `--is_slide` to turn on sliding window prediction.
 
-我们选择1张图片进行查看，效果如下。我们可以直观的看到模型的切割效果和原始标记之间的差别，从而产生一些优化的思路，比如是否切割的边界可以做规则化的处理等。
+We select 1 picture to view, the effect is as follows. We can intuitively see the difference between the cutting effect of the model and the original mark, thereby generating some optimization ideas, such as whether the cutting boundary can be processed in a regular manner.
 
 ![](./images/fig5.png)
 
 
 
-​                                                                                                  图5：预测效果展示
+​                                                                          ​ Figure 5: Prediction effect display
 
-**7 模型导出**
+**7 Model Export**
 
-为了方便用户进行工业级的部署，PaddleSeg提供了一键动转静的功能，即将训练出来的动态图模型文件转化成静态图形式。
+In order to facilitate the user's industrial-level deployment, PaddleSeg provides a one-click function of moving to static, which is to convert the trained dynamic graph model file into a static graph form.
+
 ```
 python export.py \
        --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml \
        --model_path output/iter_1000/model.pdparams
 ```
 
-- 参数说明如下
+- Parameters
 
-| 参数名     | 用途                               | 是否必选项 | 默认值           |
+| Parameter     | Effection                               | Is Required | Default           |
 | :--------- | :--------------------------------- | :--------- | :--------------- |
-| config     | 配置文件                           | 是         | -                |
-| save_dir   | 模型和visualdl日志文件的保存根路径 | 否         | output           |
-| model_path | 预训练模型参数的路径               | 否         | 配置文件中指定值 |
+| config     | Configuration file                           | Yes         | -                |
+| save_dir   | The root path for saving model and visualdl log files | No         | output           |
+| model_path | Path of pretrained model parameters             | No        | The value specified in the configuration file. |
 
 ```
-- 结果文件
+- Result Files
 
 output
-  ├── deploy.yaml            # 部署相关的配置文件
-  ├── model.pdiparams        # 静态图模型参数
-  ├── model.pdiparams.info   # 参数额外信息，一般无需关注
-  └── model.pdmodel          # 静态图模型文件
+  ├── deploy.yaml            # Deployment related configuration files
+  ├── model.pdiparams        # Static graph model parameters
+  ├── model.pdiparams.info   # Additional parameter information, generally don’t need attention
+  └── model.pdmodel          # Static graph model files
 ```
 
-**8 应用部署**
+**8 Model Deploy**
 
-- PaddleSeg目前支持以下部署方式：
+-PaddleSeg currently supports the following deployment methods:
 
-| 端侧         | 库           | 教程   |
+| Platform         | Library           | Tutorial  |
 | :----------- | :----------- | :----- |
-| Python端部署 | Paddle预测库 | [示例](../deploy/python/) |
-| C++端部署 | Paddle预测库 | [示例](../deploy/cpp/) |
-| 移动端部署   | PaddleLite   | [示例](../deploy/lite/) |
-| 服务端部署   | HubServing   | 完善中 |
-| 前端部署     | PaddleJS     | [示例](../deploy/web/) |
+| Python | Paddle prediction library | [e.g.](../deploy/python/) |
+| C++ | Paddle prediction library | [e.g.](../deploy/cpp/) |
+| Mobile | PaddleLite   | [e.g.](../deploy/lite/) |
+| Serving | HubServing   | Comming soon |
+| Front-end | PaddleJS     | [e.g.](../deploy/web/) |
 
 ```
-#运行如下命令，会在output文件下面生成一张H0003.png的图像
+#Run the following command, an image of H0003.png will be generated under the output file
 python deploy/python/infer.py \
 --config output/deploy.yaml\
 --image_path dataset/optic_disc_seg/JPEGImages/H0003.jpg\
 --save_dir output
 ```
 
-- 参数说明如下:
+- Parameters:
 
-| 参数名     | 用途                                                      | 是否必选项 | 默认值           |
-| :--------- | :-------------------------------------------------------- | :--------- | :--------------- |
-| config     | **导出模型时生成的配置文件**, 而非configs目录下的配置文件 | 是         | -                |
-| image_path | 预测图片的路径或者目录                                    | 是         | -                |
-| use_trt    | 是否开启TensorRT来加速预测                                | 否         | 否               |
-| use_int8   | 启动TensorRT预测时，是否以int8模式运行                    | 否         | 否               |
-| batch_size | 单卡batch size                                            | 否         | 配置文件中指定值 |
-| save_dir   | 保存预测结果的目录                                        | 否         | output           |
-| with_argmax| 对预测结果进行argmax操作                                  | 否         | 否           |
+|Parameter|Effection|Is required|Default|
+|-|-|-|-|
+|config|**Configuration file generated when exporting the model**, instead of the configuration file in the configs directory|Yes|-|
+|image_path|The path or directory of the test image.|Yes|-|
+|use_trt|Whether to enable TensorRT to accelerate prediction.|No|No|
+|use_int8|Whether to run in int8 mode when starting TensorRT prediction.|No|No|
+|batch_size|Batch sizein single card.|No|The value specified in the configuration file.|
+|save_dir|The directory of prediction results.|No|output|
+|with_argmax|Perform argmax operation on the prediction results.|No|No|
 
-**9 二次开发**
+**9 Custom Software Development**
 
-- 在尝试完成使用配置文件进行训练之后，肯定有小伙伴想基于PaddleSeg进行更深入的开发，在这里，我们大概介绍一下PaddleSeg代码结构，
+- After trying to complete the training with the configuration file, there must be some friends who want to develop more in-depth development based on PaddleSeg. Here, we will briefly introduce the code structure of PaddleSeg.
 
 ```
 PaddleSeg
-     ├──  configs #配置文件文件夹
-     ├──  paddleseg #训练部署的核心代码
-        ├── core  
-        ├── cvlibs #  Config类定义在该文件夹中。它保存了数据集、模型配置、主干网络、损失函数等所有的超参数。
+     ├── configs # Configuration file folder
+     ├── paddleseg # core code for training deployment
+        ├── core # Start model training, evaluation and prediction interface
+        ├── cvlibs # The Config class is defined in this folder. It saves all hyperparameters such as dataset, model configuration, backbone network, loss function, etc.
             ├── callbacks.py
             └── ...
-        ├── datasets #PaddleSeg支持的数据格式，包括ade、citycapes等多种格式
+        ├── datasets # PaddleSeg supported data formats, including ade, citycapes and other formats
             ├── ade.py
             ├── citycapes.py
             └── ...
-        ├── models #该文件夹下包含了PaddleSeg组网的各个部分
-            ├── backbone # paddleseg的使用的主干网络
+        ├── models # This folder contains the various parts of the PaddleSeg network
+            ├── backbone # The backbone network used by paddleseg
             ├── hrnet.py
             ├── resnet_vd.py
             └── ...
-            ├── layers # 一些组件，例如attention机制
+            ├── layers # Some components, such as the attention mechanism
             ├── activation.py
             ├── attention.py
             └── ...
-            ├── losses #该文件夹下包含了PaddleSeg所用到的损失函数
+            ├── losses # This folder contains the loss function used by PaddleSeg
             ├── dice_loss.py
             ├── lovasz_loss.py
             └── ...
-            ├── ann.py #该文件表示的是PaddleSeg所支持的算法模型，这里表示ann算法。
-            ├── deeplab.py #该文件表示的是PaddleSeg所支持的算法模型，这里表示Deeplab算法。
-            ├── unet.py #该文件表示的是PaddleSeg所支持的算法模型，这里表示unet算法。
+            ├── ann.py # This file represents the algorithm model supported by PaddleSeg, here represents the ann algorithm.
+            ├── deeplab.py #This file represents the algorithm model supported by PaddleSeg, here it represents the Deeplab algorithm.
+            ├── unet.py #This file represents the algorithm model supported by PaddleSeg, here it represents the unet algorithm.
             └── ...
-        ├── transforms #进行数据预处理的操作，包括各种数据增强策略
+        ├── transforms # Data preprocessing operations, including various data augmentation strategies
             ├── functional.py
             └── transforms.py
         └── utils
             ├── config_check.py
             ├── visualize.py
             └── ...
-     ├──  train.py  # 训练入口文件，该文件里描述了参数的解析，训练的启动方法，以及为训练准备的资源等。
-     ├──  predict.py # 预测文件
+     ├── train.py # The training entry file, which describes the analysis of parameters, the starting method of training, and the resources prepared for training.
+     ├── predict.py # Prediction file
      └── ...
+
+
 ```
 
-- 同学们还可以尝试使用PaddleSeg的API来自己开发，开发人员在使用pip install命令安装PaddleSeg后，仅需通过几行代码即可轻松实现图像分割模型的训练、评估和推理。 感兴趣的小伙伴们可以访问[PaddleSeg动态图API使用教程](https://aistudio.baidu.com/aistudio/projectdetail/1339458?channelType=0&channel=0)
+- You can also try to use PaddleSeg's API to develop themselves. After installing PaddleSeg using the pip install command, developers can easily implement the training, evaluation and inference of the image segmentation model with just a few lines of code. Interested friends can visit [PaddleSeg dynamic graph API usage tutorial](https://aistudio.baidu.com/aistudio/projectdetail/1339458?channelType=0&channel=0)
 
-PaddleSeg等各领域的开发套件已经为真正的工业实践提供了顶级方案，有国内的团队使用PaddleSeg的开发套件取得国际比赛的好成绩，可见开发套件提供的效果是State Of The Art的。
+PaddleSeg and other development kits in various fields have provided top-level solutions for real industrial practice. Some domestic teams have used PaddleSeg's development kits to achieve good results in international competitions. It can be seen that the effects provided by the development kits are State Of The Art.
