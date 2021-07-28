@@ -114,7 +114,7 @@ How to use your own dataset for training is the most concerned thing for develop
 
 The format of the dataset we just downloaded is similar (label.txt is optional). If users want to label and divide the dataset, please refer to [Data Marking Document](data/marker/marker_c.md) and [ dataset division document](data/custom/data_prepare.md).
 
-We generally recommend that users place the dataset in the dataset folder under PaddleSeg.
+我们一般推荐用户将数据集放置在PaddleSeg下的data文件夹下。
 
 **Model Training**
 
@@ -173,12 +173,11 @@ optimizer: # Set the type of optimizer
   momentum: 0.9 
   weight_decay: 4.0e-5 # Weight attenuation, the purpose of use is to prevent overfitting
 
-learning_rate: # Set learning rate
-  value: 0.01  # Initial learning rate
-  decay:
-    type: poly  # Use poly as the learning rate decay method.
-    power: 0.9  # Attenuation rate
-    end_lr: 0   # Final learning rate
+lr_scheduler: #设定学习率
+  type: PolynomialDecay #采用poly作为学习率衰减方式。
+  learning_rate: 0.01 #初始学习率
+  end_lr: 0 #最终学习率
+  power: 0.9 #衰减率
 
 loss: # Set the type of loss function
   types:
