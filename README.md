@@ -15,7 +15,7 @@ English | [简体中文](README_CN.md)
 * We introduced [Panoptic-DeepLab](https://github.com/PaddlePaddle/PaddleSeg/tree/release/2.2/contrib/PanopticDeepLab), which is a proposal-free algorithm  for panoptic segmentation.
 * We provided an ultra-lightweight [portrait segmentation](https://github.com/PaddlePaddle/PaddleSeg/tree/release/2.2/contrib/HumanSeg) solution for the mobile devices and even the web
 
-## PaddleSeg Introduce
+## PaddleSeg Introduction
 
 Welcome to PaddleSeg! PaddleSeg is an end-to-end image segmentation development kit developed based on [PaddlePaddle](https://www.paddlepaddle.org.cn), which covers a large number of high-quality segmentation models in different directions such as *high-performance* and *lightweight*. With the help of modular design, we provide two application methods: *Configuration Drive* and *API Calling*. So one can conveniently complete the entire image segmentation application from training to deployment through configuration calls or API calls.
 
