@@ -33,7 +33,7 @@ PaddleSeg是基于飞桨[PaddlePaddle](https://www.paddlepaddle.org.cn)开发的
  * ### PaddleSeg被广泛地应用在自动驾驶、医疗、质检、巡检、娱乐等场景。
 
 <div align="center">
-<img src="./docs/images/ability_CH.gif"  width = "2000" />  
+<img src="./docs/images/application_CH.gif"  width = "2000" />  
 </div>
 
 ----------------
@@ -67,7 +67,7 @@ PaddleSeg是基于飞桨[PaddlePaddle](https://www.paddlepaddle.org.cn)开发的
 * 如果你发现任何PaddleSeg存在的问题或者是建议, 欢迎通过[GitHub Issues](https://github.com/PaddlePaddle/PaddleSeg/issues)给我们提issues。
 * 欢迎加入PaddleSegQQ群
 <div align="center">
-<img src="./docs/images/qq_chat.png"  width = "200" />  
+<img src="./docs/images/QQ_chat.png"  width = "200" />  
 </div>
 
 ## 模型说明  <img src="./docs/images/model.png" width="20"/>
