@@ -22,7 +22,7 @@ PaddleSeg是基于飞桨[PaddlePaddle](https://www.paddlepaddle.org.cn)开发的
 * ### PaddleSeg提供了语义分割、交互式分割、全景分割、Matting四大图像分割能力。
 
 <div align="center">
-<img src="./docs/images/nengli.gif"  width = "2000" />  
+<img src="./docs/images/ability_CH.gif"  width = "2000" />  
 </div>
 
 
@@ -30,10 +30,10 @@ PaddleSeg是基于飞桨[PaddlePaddle](https://www.paddlepaddle.org.cn)开发的
 
 ---------------
 
- * ### PaddleSeg被广泛的应用在自动驾驶、医疗、质检、巡检、娱乐等场景。
+ * ### PaddleSeg被广泛地应用在自动驾驶、医疗、质检、巡检、娱乐等场景。
 
 <div align="center">
-<img src="./docs/images/changjing.gif"  width = "2000" />  
+<img src="./docs/images/ability_CH.gif"  width = "2000" />  
 </div>
 
 ----------------
@@ -65,9 +65,9 @@ PaddleSeg是基于飞桨[PaddlePaddle](https://www.paddlepaddle.org.cn)开发的
 ## 技术交流 <img src="./docs/images/chat.png" width="30"/>
 
 * 如果你发现任何PaddleSeg存在的问题或者是建议, 欢迎通过[GitHub Issues](https://github.com/PaddlePaddle/PaddleSeg/issues)给我们提issues。
-* 欢迎加入PaddleSeg微信群（左侧）和QQ群（右侧）
+* 欢迎加入PaddleSegQQ群
 <div align="center">
-<img src="./docs/images/wechat_qq_711.png"  width = "500" />  
+<img src="./docs/images/qq_chat.png"  width = "200" />  
 </div>
 
 ## 模型说明  <img src="./docs/images/model.png" width="20"/>
