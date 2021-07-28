@@ -601,7 +601,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         if self.controller:
             self.controller.set_image(self.image)
         else:
-            self.showWarning("未加载模型参数，请先加载模型参数！")
+            self.warn("模型参数未加载", "未加载模型参数，请先加载模型参数！")
             self.changeParam()
             return 0
         self.controller.set_label(self.loadLabel(path))
@@ -652,6 +652,11 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         self.setClean()
 
     def listClicked(self):
+        if not self.controller:
+            self.warn("模型未加载", "尚未加载模型，请先加载模型")
+            self.changeParam()
+            if not self.controller:
+                return
         if self.controller.is_incomplete_mask:
             self.saveLabel()
         toRow = self.listFiles.currentRow()
