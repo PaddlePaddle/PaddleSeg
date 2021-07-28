@@ -54,7 +54,7 @@ Welcome to PaddleSeg! PaddleSeg is an end-to-end image segmentation development 
 * If you find any problems or have a suggestion with PaddleSeg, please send us issues through [GitHub Issues](https://github.com/PaddlePaddle/PaddleSeg/issues).
 * Welcome to Join PaddleSeg QQ Group
 <div align="center">
-<img src="./docs/images/qq_chat.png"  width = "200" />  
+<img src="./docs/images/QQ_chat.png"  width = "200" />  
 </div>
 
 ## Model Instraction  <img src="./docs/images/model.png" width="20"/>
