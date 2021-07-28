@@ -81,6 +81,24 @@ How to use your own dataset for training is the most concerned thing for develop
 
 - It is recommended to organize into the following structure.
 
+        custom_dataset
+        |
+        |--images
+        |  |--image1.jpg
+        |  |--image2.jpg
+        |  |--...
+        |
+        |--labels
+        |  |--label1.png
+        |  |--label2.png
+        |  |--...
+        |
+        |--train.txt
+        |
+        |--val.txt
+        |
+        |--test.txt
+        
 - It is not necessary for the folder to be named custom_dataset, images, labels, and the user can name it independently.
 
 - The file in train.txt val.txt test.txt does not have to be in the same directory as the custom_dataset folder, it can be modified through the options in the configuration file.

@@ -81,6 +81,24 @@ cd ..
 
 - 推荐整理成如下结构
 
+        custom_dataset
+        |
+        |--images
+        |  |--image1.jpg
+        |  |--image2.jpg
+        |  |--...
+        |
+        |--labels
+        |  |--label1.png
+        |  |--label2.png
+        |  |--...
+        |
+        |--train.txt
+        |
+        |--val.txt
+        |
+        |--test.txt
+        
 - 文件夹命名为custom_dataset、images、labels不是必须，用户可以自主进行命名。
 
 - train.txt val.txt test.txt中文件并非要和custom_dataset文件夹在同一目录下，可以通过配置文件中的选项修改.
