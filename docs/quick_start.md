@@ -95,7 +95,7 @@ cd ..
 
 我们刚刚下载的数据集格式也与之类似(label.txt可有可以无)，如果用户要进行数据集标注和数据划分，请参考文档。
 
-我们一般推荐用户将数据集放置在PaddleSeg下的dataset文件夹下。
+我们一般推荐用户将数据集放置在PaddleSeg下的data文件夹下。
 
 **模型训练**
 
@@ -154,12 +154,11 @@ optimizer: #设定优化器的类型
   momentum: 0.9 #动量
   weight_decay: 4.0e-5 #权值衰减，使用的目的是防止过拟合
 
-learning_rate: #设定学习率
-  value: 0.01  #初始学习率
-  decay:
-    type: poly  #采用poly作为学习率衰减方式。
-    power: 0.9  #衰减率
-    end_lr: 0   #最终学习率
+lr_scheduler: #设定学习率
+  type: PolynomialDecay #采用poly作为学习率衰减方式。
+  learning_rate: 0.01 #初始学习率
+  end_lr: 0 #最终学习率
+  power: 0.9 #衰减率
 
 loss: #设定损失函数的类型
   types:
