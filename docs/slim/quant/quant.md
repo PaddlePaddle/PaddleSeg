@@ -87,6 +87,16 @@ python slim/quant/qat_train.py \
 
 训练结束后，精度最高的量化模型权重会保存到`output_quant/best_model`目录下。
 
+**测试量化模型**
+
+执行如下命令，使用`slim/quant/qat_val.py`脚本加载量化模型的权重，测试模型量化的精度。
+
+```
+python slim/quant/qat_val.py \
+       --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml \
+       --model_path output_quant/best_model/model.pdparams
+```
+
 **导出量化预测模型**
 
 基于此前训练好的量化模型权重，执行如下命令，使用`slim/quant/qat_export.py`导出预测量化模型，保存在`output_quant_infer`目录下。
@@ -100,7 +110,9 @@ python slim/quant/qat_export.py \
 
 ## 3 部署
 
-通过`量化`得到预测模型后，我们可以直接进行部署应用，相关教程请参考[Paddle Inference部署](../docs/deployment/inference/inference.md)， [PaddleLite部署](../docs/deployment/lite/lite.md)。
+得到量化预测模型后，我们可以直接进行部署应用，相关教程请参考:
+* [Paddle Inference部署](../docs/deployment/inference/inference.md)
+* [PaddleLite部署](../docs/deployment/lite/lite.md)
 
 
 ## 4 量化加速比
@@ -123,3 +135,8 @@ python slim/quant/qat_export.py \
 |deeplabv3p_resnet50_os8|147.2|89.5|39.20%|
 |gcnet_resnet50_os8|201.8|126.1|37.51%|
 |pspnet_resnet50_os8|266.8|206.8|22.49%|  
+
+## 5 参考资料
+
+* [PaddleSlim Github](https://github.com/PaddlePaddle/PaddleSlim)
+* [PaddleSlim 文档](https://paddleslim.readthedocs.io/zh_CN/latest/)
