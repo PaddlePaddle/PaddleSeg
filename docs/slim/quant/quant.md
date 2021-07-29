@@ -16,9 +16,11 @@ PaddleSeg基于PaddleSlim，集成了静态离线量化（PTQ）和量化训练�
 * 优点：量化模型的精度高；使用该量化模型预测，可以减少计算量、降低计算内存、减小模型大小。
 * 缺点：易用性稍差，需要一定时间产出量化模型
 
-使用静态离线量化和量化训练方法产出量化模型后，可以使用统一的方法部署量化模型。下面，本文以一个示例来介绍如何产出和部署量化模型。
+使用静态离线量化和量化训练方法产出量化模型后，可以使用统一的方法部署量化模型。
 
-## 环境准备
+下面，本文以一个示例来介绍如何产出和部署量化模型。
+
+## 1 环境准备
 
 首先，请确保准备好PaddleSeg的基础环境。大家可以在PaddleSeg根目录执行如下命令，如果在`PaddleSeg/output`文件夹中出现预测结果，则证明安装成功。
 
@@ -36,9 +38,9 @@ python predict.py \
 pip install paddleslim==2.0.0
 ```
 
-## 产出量化模型
+## 2 产出量化模型
 
-### 训练FP32模型
+### 2.1 训练FP32模型
 
 在产出量化模型之前，我们需要提前准备训练或者fintune好的FP32模型。
 
@@ -60,14 +62,15 @@ python train.py \
        --save_dir output_fp32
 ```
 
-### 使用静态离线量化方法产出量化模型
+### 2.2 使用静态离线量化方法产出量化模型
 
+coming soon!
 
-### 使用量化训练方法产出量化模型
+### 2.3 使用量化训练方法产出量化模型
 
-1) 训练量化模型
+**训练量化模型**
 
-基于此前训练好的FP32模型权重，执行如下命令，使用`slim/quant/qat_train.py`脚本进行量化训练。该脚本的输入参数和常规训练相似，唯一差别是使用`model_path`指定FP32模型权重。
+基于2.1步骤中训练好的FP32模型权重，执行如下命令，使用`slim/quant/qat_train.py`脚本进行量化训练。
 
 ```shell
 python slim/quant/qat_train.py \
@@ -80,9 +83,11 @@ python slim/quant/qat_train.py \
        --save_dir output_quant
 ```
 
-训练结束后，精度最高的权重会保存到`output_quant/best_model`目录下。
+上述脚本的输入参数和常规训练相似，复用2.1步骤的config文件，使用`model_path`参数指定FP32模型的权重，初始学习率相应调小。
 
-2）导出量化预测模型
+训练结束后，精度最高的量化模型权重会保存到`output_quant/best_model`目录下。
+
+**导出量化预测模型**
 
 基于此前训练好的量化模型权重，执行如下命令，使用`slim/quant/qat_export.py`导出预测量化模型，保存在`output_quant_infer`目录下。
 
@@ -93,12 +98,12 @@ python slim/quant/qat_export.py \
        --save_dir output_quant_infer
 ```
 
-## 部署
+## 3 部署
 
-通过`量化`得到的模型，我们可以直接进行部署应用，相关教程请参考[模型部署](../docs/model_export.md)。
+通过`量化`得到预测模型后，我们可以直接进行部署应用，相关教程请参考[Paddle Inference部署](../docs/deployment/inference/inference.md)， [PaddleLite部署](../docs/deployment/lite/lite.md)。
 
 
-## 量化加速比
+## 4 量化加速比
 
 测试环境：
 * GPU: V100
