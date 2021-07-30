@@ -2,7 +2,7 @@ English|[简体中文](transform_cn.md)
 # Annotating Tutorial
 
 Whether it is semantic segmentation, panoramic segmentation, or instance segmentation, we all need sufficient training data. If you want to use an unlabeled original dataset for segmentation tasks, you must first annotate the original image. If you are using a dataset with segmentation annotations such as `Cityscapes`, you can skip this step.
-- This document will provide tutorials for using 3 kinds of labeling tools: [EISeg](#1、EISeg), [LabelMe](#2、LabelMe), [Colabeler](#3、Colabeler).
+- This document will provide tutorials for using 3 kinds of labeling tools: [EISeg](#1、EISeg), [LabelMe](#2、LabelMe).
 
 # 1、EISeg
 
@@ -264,107 +264,6 @@ The converted dataset can refer to the [folder] (https://github.com/PaddlePaddle
 
 
 
-
-
-# 3、Colabeler
-# Colabeler Tutorial
-
-* 1.Installation
-
-After the user has collected the pictures for training, evaluation and prediction, he can use the [Spirit Data Annotation Tool](http://www.jinglingbiaozhu.com/) to complete the data annotation. Wizard labeling supports the use of Windows/macOS/Linux three systems. For Mac, you can search for colabeler in the MacStore and download it.
-
-* 2.Using
-
-Before starting to annotate custom datasets, you can preview the [Text Tutorial](http://www.jinglingbiaozhu.com/?type=tutorial&cat_id=4) and [Video Tutorial](http://www.jinglingbiaozhu .com/?type=tutorial&cat_id=5).
-
-   * Start Annotating
-
-Open colabeler.
-
-<div align="center">
-    <img src="../imgs/annotation/jingling-1.png" width="800px"/>
-    <p>Figure 1 : Schematic diagram of the sprite labeling interactive interface</p>
- </div>
-
-Please follow the steps below to label the dataset:
-
-(1) Click `New`, then select `Location labeling`, select `Picture folder`, modify and fill in the required `category value` (Note: separated by commas), click the `Create` button, the software will automatically Load the pictures (png, jpg, gif) in the folder and create a project.
-
-Position annotation supports three types: rectangle, polygon and curve. Select the simple and easy-to-use `polygon box`, draw a polygon along the edge of the target, and enter the target category on the right after completion.
-
-**Note: Remember to save a single picture after marking, click the tick button in the center below or use the shortcut key ctrl+s**.
-
-Then you can click the previous one on the left or directly use the left and right buttons of the keyboard to switch pictures.
-
-<div align="center">
-    <img src="../imgs/annotation/jingling-2.png" width="800px"/>
-    <p>Figure 2 : Schematic diagram of marking a single target</p>
- </div>
-
-(2) Click the target box and drag the mouse to move the position of the polygon as a whole; click the `delete marquee` on the left to delete the wrong target frame; click the `mark information` on the right to modify the target category. Please perform this step according to your own needs, if you don't need to modify it, you can skip it.
-
-<div align="center">
-  	<img src="../imgs/annotation/jingling-3.png" width="800px"/>
-    <p>Figure 3 : Schematic diagram of modified annotation</p>
- </div>
-
-(3) When the annotations of all the pictures are completed, click `Export` on the left, select `JSON` as the output method, specify the `Save location`, and click `OK Export` to save the annotation files of all the pictures.
-
-**Note: The exported annotation file is located in the `outputs` directory under the `save location`.**
-
-The truth-value files produced by the wizard can refer to the [folder](../../../legacy/docs/imgs/annotation/jingling_demo) we gave
-
-<div align="center">
-    <img src="../imgs/annotation/jingling-4.png" width="300px"/>
-    <p>Figure 4 : Schematic diagram of the truth-value file produced by the wizard</p>
- </div>
-
-**Note:** For targets with a hollow in the middle (such as a swimming ring), the marking of the hollow part is temporarily not supported. If necessary, you can use [labelme](./labelme2seg.md).
-
-* 3. Data Format Conversion
-Finally, use the data conversion script we provide to convert the data format produced by the above-mentioned annotation tool into the data format required for model training.
-
-   * The dataset directory structure after data format conversion is as follows:
-
-
- ```
- my_dataset                 # root directory
- |-- outputs                # Export directory
- |   |-- annotations            # Gound-truth
- |       |-- xxx.png            # Pixel-level truth information
- |       |...
- |   |-- class_names.txt        # The category name of the dataset
- |   |-- xxx.json               # 标注json文件
- |-- xxx.jpg(png or other)  # Original image of dataset
- |-- ...
-
- ```
-
-<div align="center">
-    <img src="../imgs/annotation/image-6-2.png" width="600px"/>
-    <p>Figure 5 Schematic diagram of the structure of the dataset catalog after format conversion</p>
- </div>
-
-* Run the following code to convert the annotated data into a dataset that meets the above format:
-
-```
-python tools/jingling2seg.py <PATH/TO/LABEL_JSON_FILE>
-```
-
-Among them, `<PATH/TO/LABEL_JSON_FILE>` is the directory of the folder where the json file marked and output by the wizard is located. Generally, it is the `outputs` directory under the `save location` in the wizard tool use (3).
-
-We have built an annotated example, you can run the following code to experience:
-
-```
-python tools/jingling2seg.py legacy/docs/annotation/jingling_demo/outputs/
-```
-
-For the converted dataset, please refer to the [folder](../../../legacy/docs/imgs/annotation/jingling_demo) we gave. Among them, the file `class_names.txt` is the name of all the annotation categories in the dataset, including the background class; the folder `annotations` saves the pixel-level truth information of each picture, the background class `_background_` corresponds to 0, and other targets The category starts from 1 and increases up to 255.
-
-<div align="center">
-    <img src="../imgs/annotation/jingling-5.png" width="600px"/>
-    <p>Figure 6 : Schematic diagram of the contents of each catalog of the dataset after format conversion</p>
- </div>
 
 
 

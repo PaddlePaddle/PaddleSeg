@@ -81,7 +81,7 @@ Welcome to PaddleSeg! PaddleSeg is an end-to-end image segmentation development 
    * [Annotating Tutorial](./docs/data/transform/transform.md)
    * [Custom Dataset](./docs/data/custom/data_prepare.md)
 
-*  Interpretation of PaddleSeg's Modules
+*  Custom Software Development of PaddleSeg
     * [Detailed Configuration File](./docs/design/use/use.md)
     * [Create Your Own Model](./docs/design/create/add_new_model.md)
 * [Model Training](/docs/train/train.md)

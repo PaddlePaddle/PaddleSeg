@@ -88,7 +88,7 @@ PaddleSeg是基于飞桨[PaddlePaddle](https://www.paddlepaddle.org.cn)开发的
    * [数据标注教程](./docs/data/transform/transform_cn.md)
    * [自定义数据集](./docs/data/custom/data_prepare_cn.md)
 
-*  PaddleSeg模块解读
+*  PaddleSeg二次开发教程
     * [配置文件详解](./docs/design/use/use_cn.md)
     * [如何创造自己的模型](./docs/design/create/add_new_model_cn.md)
 * [模型训练](/docs/train/train.md)

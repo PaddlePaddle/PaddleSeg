@@ -18,7 +18,7 @@ labelB
 ...
 ```
 
-## 2、Segment Custom Dataset
+## 2、Split Custom Dataset
 
 We all know that the training process of neural network models is usually divided into training set, validation set, and test set. If you are using a custom dataset, PaddleSeg supports splitting the dataset by running scripts. If your dataset has been divided into the above three types, you can skip this step.
 
