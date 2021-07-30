@@ -46,8 +46,8 @@ python tools/gray2pseudo_color.py <dir_or_file> <output_dir> --dataset_dir <data
 我们希望将图像的路径写入到`train.txt`，`val.txt`，`test.txt`和`labels.txt`三个文件夹中，因为PaddleSeg是通过读取这些文本文件来定位图像路径的。
 `train.txt`，`val.txt`和`test.txt`文本以空格为分割符分为两列，第一列为图像文件相对于dataset的相对路径，第二列为标注图像文件相对于dataset的相对路径。如下所示：
 ```
-images/xxx1.tif annotations/xxx1.png
-images/xxx2.tif annotations/xxx2.png
+images/xxx1.jpg (xx1.png) annotations/xxx1.png
+images/xxx2.jpg (xx2.png) annotations/xxx2.png
 ...
 ```
 `labels.txt`: 每一行为一个单独的类别，相应的行号即为类别对应的id（行号从0开始)，如下所示：
@@ -61,10 +61,9 @@ labelB
 ## 2、标注自定义数据集
 如果你想使用自定义数据集，你需预先采集好用于训练、评估和测试的图像，然后使用数据标注工具完成数据标注。若你想要使用Cityscapes、Pascal VOC等现成数据集，你可以跳过本步骤。
 
-PddleSeg已支持3种标注工具：LabelMe、精灵数据标注工具、EISeg交互式分割标注工具。标注教程如下：
+PddleSeg已支持2种标注工具：LabelMe、EISeg交互式分割标注工具。标注教程如下：
 
-- [LabelMe标注教程](../transform/transform_c.md)
-- [精灵数据标注工具教程](https://github.com/PaddlePaddle/PaddleSeg/blob/release/v0.8.0/docs/annotation/jingling2seg.md)
+- [LabelMe标注教程](../transform/transform_cn.md)
 - [EISeg交互式分割标注工具教程](../../../contrib/EISeg/README.md)
 
 经以上工具进行标注后，请将所有的标注图像统一存放在annotations文件夹内，然后进行下一步。
@@ -94,7 +93,7 @@ PddleSeg已支持3种标注工具：LabelMe、精灵数据标注工具、EISeg�
 ```
 ./dataset/  # 数据集根目录
 |--images  # 原图目录
-|  |--xxx1.tif
+|  |--xxx1.jpg (xx1.png)
 |  |--...
 |  └--...
 |
@@ -120,7 +119,7 @@ FLAGS说明：
 |-|-|-|-|
 |--split|数据集切分比例|0.7 0.3 0|3|
 |--separator|文件列表分隔符|" "|1|
-|--format|图片和标签集的数据格式|"tif"  "png"|2|
+|--format|图片和标签集的数据格式|"jpg"  "png"|2|
 |--label_class|标注类别|'\_\_background\_\_' '\_\_foreground\_\_'|若干|
 |--postfix|按文件主名（无扩展名）是否包含指定后缀对图片和标签集进行筛选|""   ""（2个空字符）|2|
 
@@ -130,7 +129,7 @@ FLAGS说明：
 
 #### 使用示例
 ```
-python tools/split_dataset_list.py <dataset_root> images annotations --split 0.6 0.2 0.2 --format tif png
+python tools/split_dataset_list.py <dataset_root> images annotations --split 0.6 0.2 0.2 --format jpg png
 ```
 
 
@@ -143,16 +142,31 @@ python tools/split_dataset_list.py <dataset_root> images annotations --split 0.6
 
 PaddleSeg采用通用的文件列表方式组织训练集、验证集和测试集。在训练、评估、可视化过程前必须准备好相应的文件列表。
 
-文件列表组织形式如下
-```
-原始图片路径 [SEP] 标注图片路径
-```
+推荐整理成如下结构：
+    custom_dataset
+        |
+        |--images
+        |  |--image1.jpg
+        |  |--image2.jpg
+        |  |--...
+        |
+        |--labels
+        |  |--label1.png
+        |  |--label2.png
+        |  |--...
+        |
+        |--train.txt
+        |
+        |--val.txt
+        |
+        |--test.txt
 
-其中`[SEP]`是文件路径分割符，可以在`DATASET.SEPARATOR`配置项中修改, 默认为空格。文件列表的路径以数据集根目录作为相对路径起始点，`DATASET.DATA_DIR`即为数据集根目录。
+其中train.txt和val.txt的内容如下所示：
 
-如下图所示，左边为原图的图片路径，右边为图片对应的标注路径。
+    images/image1.jpg labels/label1.png
+    images/image2.jpg labels/label2.png
+    ...
 
-![](../image/file_list.png)
 
 **注意事项**
 
@@ -166,7 +180,7 @@ PaddleSeg采用通用的文件列表方式组织训练集、验证集和测试�
 
 **注意事项**
 
-此时的文件列表仅可在调用`legacy/pdseg/vis.py`进行可视化展示时使用，
+此时的文件列表仅可在调用`predict.py`进行可视化展示时使用，
 即仅可在`DATASET.TEST_FILE_LIST`和`DATASET.VIS_FILE_LIST`配置项中使用。
 不可在`DATASET.TRAIN_FILE_LIST`和`DATASET.VAL_FILE_LIST`配置项中使用。
 
@@ -231,7 +245,7 @@ python tools/create_dataset_list.py <your/dataset/dir> ${FLAGS}
 
 ```
 # 生成文件列表，其分隔符为空格，图片和标签集的数据格式都为png
-python tools/create_dataset_list.py <your/dataset/dir> --separator " " --format png png
+python tools/create_dataset_list.py <your/dataset/dir> --separator " " --format jpg png
 ```
 ```
 # 生成文件列表，其图片和标签集的文件夹名为img和gt，训练和验证集的文件夹名为training和validation，不生成测试集列表
@@ -257,7 +271,7 @@ python tools/create_dataset_list.py <your/dataset/dir> --type cityscapes --separ
 |FLAG|固定值|
 |-|-|
 |--folder|"leftImg8bit" "gtFine"|
-|--format|"png" "png"|
+|--format|"jpg" "png"|
 |--postfix|"_leftImg8bit" "_gtFine_labelTrainIds"|
 
 其余FLAG可以按需要设定。

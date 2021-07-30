@@ -1,12 +1,12 @@
 简体中文|[English](data_prepare.md)
 # 自定义数据集
 
-## 1、PaddleSeg如何使用数据集
+## 1、如何使用数据集
 我们希望将图像的路径写入到`train.txt`，`val.txt`，`test.txt`和`labels.txt`三个文件夹中，因为PaddleSeg是通过读取这些文本文件来定位图像路径的。
 `train.txt`，`val.txt`和`test.txt`文本以空格为分割符分为两列，第一列为图像文件相对于dataset的相对路径，第二列为标注图像文件相对于dataset的相对路径。如下所示：
 ```
-images/xxx1.tif annotations/xxx1.png
-images/xxx2.tif annotations/xxx2.png
+images/xxx1.jpg (xx1.png) annotations/xxx1.png
+images/xxx2.jpg (xx2.png) annotations/xxx2.png
 ...
 ```
 `labels.txt`: 每一行为一个单独的类别，相应的行号即为类别对应的id（行号从0开始)，如下所示：
@@ -24,7 +24,7 @@ labelB
 原图像数据的尺寸应为(h, w, channel)，其中h, w为图像的高和宽，channel为图像的通道数。
 
 ### 2.2 标注图要求
-标注图像必须为单通道图像，像素值即为对应的类别,像素标注类别需要从0开始递增。
+标注图像必须为单通道图像，标注图应为`png`格式。像素值即为对应的类别,像素标注类别需要从0开始递增。
 例如0，1，2，3表示有4种类别，标注类别最多为256类。其中可以指定特定的像素值用于表示该值的像素不参与训练和评估（默认为255）。
 
 
@@ -37,7 +37,7 @@ labelB
 ```
 ./dataset/  # 数据集根目录
 |--images  # 原图目录
-|  |--xxx1.tif
+|  |--xxx1.jpg (xx1.png)
 |  |--...
 |  └--...
 |
@@ -63,7 +63,7 @@ FLAGS说明：
 |-|-|-|-|
 |--split|数据集切分比例|0.7 0.3 0|3|
 |--separator|文件列表分隔符|" "|1|
-|--format|图片和标签集的数据格式|"tif"  "png"|2|
+|--format|图片和标签集的数据格式|"jpg"  "png"|2|
 |--label_class|标注类别|'\_\_background\_\_' '\_\_foreground\_\_'|若干|
 |--postfix|按文件主名（无扩展名）是否包含指定后缀对图片和标签集进行筛选|""   ""（2个空字符）|2|
 

@@ -1,14 +1,14 @@
 English|[简体中文](data_prepare_cn.md)
 # Custom Dataset
 
-## 1、How PaddleSeg Use Datasets
+## 1、How to Use Datasets
 
 We want to write the path of the image to the three folders `train.txt`, `val.txt`, `test.txt` and `labels.txt`, because PaddleSeg locates the image by reading these text files Path.
 The texts of `train.txt`, `val.txt` and `test.txt` are divided into two columns with spaces as separators. The first column is the relative path of the image file relative to the dataset, and the second column is the relative path of the image file The relative path of the dataset. As follows:
 
 ```
-images/xxx1.tif annotations/xxx1.png
-images/xxx2.tif annotations/xxx2.png
+images/xxx1.jpg (xx1.png) annotations/xxx1.png
+images/xxx2.jpg (xx2.png) annotations/xxx2.png
 ...
 ```
 `labels.txt`: Each line has a separate category, and the corresponding line number is the id corresponding to the category (line number starts from 0), as shown below:
@@ -26,10 +26,10 @@ We all know that the training process of neural network models is usually divide
 The size of the original image data should be (h, w, channel), where h, w are the height and width of the image, and channel is the number of channels of the image.
 
 ### 2.2 Annotation Requirements
-The annotated image must be a single-channel image, the pixel value is the corresponding category, and the pixel annotated category needs to increase from 0.
+The annotated image must be a single-channel image, the annotated image should be in png format. The pixel value is the corresponding category, and the pixel annotated category needs to increase from 0.
 For example, 0, 1, 2, 3 means that there are 4 categories, and the maximum number of labeled categories is 256. Among them, you can specify a specific pixel value to indicate that the pixel of that value does not participate in training and evaluation (the default is 255).
 
-### 2.3 Custom Dataset Segmentation and File List Generation
+### 2.3 Spilit Custom Dataset and Generate File List
 
 For all data that is not divided into training set, validation set, and test set, PaddleSeg provides a script to generate segmented data and generate a file list.
 
@@ -38,7 +38,7 @@ The data file structure is as follows:
 ```
 ./dataset/  # Dataset root directory
 |--images  # Original image catalog
-|  |--xxx1.tif
+|  |--xxx1.jpg (xx1.png)
 |  |--...
 |  └--...
 |

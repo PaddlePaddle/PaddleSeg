@@ -48,8 +48,8 @@ We want to write the path of the image to the three folders `train.txt`, `val.tx
 The texts of `train.txt`, `val.txt` and `test.txt` are divided into two columns with spaces as separators. The first column is the relative path of the image file relative to the dataset, and the second column is the relative path of the image file The relative path of the dataset. As follows:
 
 ```
-images/xxx1.tif annotations/xxx1.png
-images/xxx2.tif annotations/xxx2.png
+images/xxx1.jpg (xx1.png) annotations/xxx1.png
+images/xxx2.jpg (xx2.png) annotations/xxx2.png
 ...
 ```
 `labels.txt`: Each row has a separate category, and the corresponding row number is the id corresponding to the category (the row number starts from 0), as shown below:
@@ -63,16 +63,15 @@ labelB
 ## 2、Annotate custom datasets
 If you want to use a custom dataset, you need to collect images for training, evaluation, and testing in advance, and then use the data annotation tool to complete the data annotation. If you want to use ready-made datasets such as Cityscapes and Pascal VOC, you can skip this step.
 
-PaddleSeg already supports 3 kinds of labeling tools: `LabelMe`, `Colabeler`, and `EISeg`. The annotation tutorial is as follows:
+PaddleSeg already supports 2 kinds of labeling tools: `LabelMe`, and `EISeg`. The annotation tutorial is as follows:
 
-- [LabelMe Tutorial](../transform/transform_c.md)
-- [Colabeler Tutorial](https://github.com/PaddlePaddle/PaddleSeg/blob/release/v0.8.0/docs/annotation/jingling2seg.md)
+- [LabelMe Tutorial](../transform/transform_cn.md)
 - [EISeg Tutorial](../../../contrib/EISeg/README.md)
 
 After annotating with the above tools, please store all annotated images in the annotations folder, and then proceed to the next step.
 
 
-## 3、Segment a custom dataset
+## 3、Split a custom dataset
 
 We all know that the training process of neural network models is usually divided into training set, validation set, and test set. If you are using a custom dataset, PaddleSeg supports splitting the dataset by running scripts. If you want to use ready-made datasets such as Cityscapes and Pascal VOC, you can skip this step.
 
@@ -95,7 +94,7 @@ The data file structure is as follows:
 ```
 ./dataset/  # Dataset root directory
 |--images  # Original image catalog
-|  |--xxx1.tif
+|  |--xxx1.jpg (xx1.png)
 |  |--...
 |  └--...
 |
@@ -135,7 +134,7 @@ After running, `train.txt`, `val.txt`, `test.txt` and `labels.txt` will be gener
 
 #### Example
 ```
-python tools/split_dataset_list.py <dataset_root> images annotations --split 0.6 0.2 0.2 --format tif png
+python tools/split_dataset_list.py <dataset_root> images annotations --split 0.6 0.2 0.2 --format jpg png
 ```
 
 
@@ -146,16 +145,30 @@ python tools/split_dataset_list.py <dataset_root> images annotations --split 0.6
 
 PaddleSeg uses a common file list method to organize training set, validation set and test set. The corresponding file list must be prepared before the training, evaluation, and visualization process.
 
-The file list is organized as follows
-```
-Original image path [SEP] Annotated image path
-```
+It is recommended to organize it into the following structure:
+    custom_dataset
+        |
+        |--images
+        |  |--image1.jpg
+        |  |--image2.jpg
+        |  |--...
+        |
+        |--labels
+        |  |--label1.png
+        |  |--label2.png
+        |  |--...
+        |
+        |--train.txt
+        |
+        |--val.txt
+        |
+        |--test.txt
 
-Among them, `[SEP]` is the file path separator, which can be modified in the `DATASET.SEPARATOR` configuration item, and the default is a space. The path of the file list uses the dataset root directory as the starting point of the relative path, and `DATASET.DATA_DIR` is the dataset root directory.
+The contents of train.txt and val.txt are as follows:
 
-As shown in the figure below, the left side is the image path of the original image, and the right side is the label path corresponding to the image.
-
-![](../image/file_list.png)
+    images/image1.jpg labels/label1.png
+    images/image2.jpg labels/label2.png
+    ...
 
 **NOTE**
 
@@ -169,7 +182,7 @@ If the dataset lacks annotated pictures, the file list does not need to include 
 
 **NOTE**
 
-The file list at this time can only be used when calling `legacy/pdseg/vis.py` for visual display.
+The file list at this time can only be used when calling `predict.py` for visual display.
 That is, it can only be used in the `DATASET.TEST_FILE_LIST` and `DATASET.VIS_FILE_LIST` configuration items.
 Cannot be used in `DATASET.TRAIN_FILE_LIST` and `DATASET.VAL_FILE_LIST` configuration items.
 
@@ -234,7 +247,7 @@ If you have organized the dataset directory structure according to the above ins
 
 ```
 # Generate a file list, the separator is a space, and the data format of the picture and the label set is png
-python tools/create_dataset_list.py <your/dataset/dir> --separator " " --format png png
+python tools/create_dataset_list.py <your/dataset/dir> --separator " " --format jpg png
 ```
 ```
 # Generate a list of files. The folders for pictures and tag sets are named img and gt, and the folders for training and validation sets are named training and validation. No test set list is generated.
@@ -260,7 +273,7 @@ Under the cityscapes type, part of the FLAG will be reset, no need to specify ma
 |FLAG|Fixed value|
 |-|-|
 |--folder|"leftImg8bit" "gtFine"|
-|--format|"png" "png"|
+|--format|"jpg" "png"|
 |--postfix|"_leftImg8bit" "_gtFine_labelTrainIds"|
 
 The remaining FLAG can be set as required.
