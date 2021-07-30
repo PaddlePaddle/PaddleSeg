@@ -20,11 +20,13 @@ from paddleseg.cvlibs import manager, param_init
 from paddleseg.models import layers
 from paddleseg.utils import utils
 
-__all__ = ['ShuffleNetV2']
+__all__ = ['PPSegLite']
 
 
 @manager.MODELS.add_component
-class ShuffleNetV2(nn.Layer):
+class PPSegLite(nn.Layer):
+    "The self-developed ultra lightweight model, is suitable for real-time scene segmentation on web or mobile terminals."
+
     def __init__(self, num_classes, pretrained=None, align_corners=False):
         super().__init__()
         self.pretrained = pretrained
@@ -35,59 +37,51 @@ class ShuffleNetV2(nn.Layer):
         self.conv_bn1 = _ConvBNReLU(36, 18, 1, 1, 0)
 
         self.block1 = nn.Sequential(
-            SFNetV2Module(36, stride=2, out_channels=72),
-            SFNetV2Module(72, stride=1), SFNetV2Module(72, stride=1),
-            SFNetV2Module(72, stride=1))
+            InvertedResidual(36, stride=2, out_channels=72),
+            InvertedResidual(72, stride=1), InvertedResidual(72, stride=1),
+            InvertedResidual(72, stride=1))
 
         self.block2 = nn.Sequential(
-            SFNetV2Module(72, stride=2), SFNetV2Module(144, stride=1),
-            SFNetV2Module(144, stride=1), SFNetV2Module(144, stride=1),
-            SFNetV2Module(144, stride=1), SFNetV2Module(144, stride=1),
-            SFNetV2Module(144, stride=1), SFNetV2Module(144, stride=1))
+            InvertedResidual(72, stride=2), InvertedResidual(144, stride=1),
+            InvertedResidual(144, stride=1), InvertedResidual(144, stride=1),
+            InvertedResidual(144, stride=1), InvertedResidual(144, stride=1),
+            InvertedResidual(144, stride=1), InvertedResidual(144, stride=1))
 
         self.depthwise_separable0 = _SeparableConvBNReLU(144, 64, 3, stride=1)
         self.depthwise_separable1 = _SeparableConvBNReLU(82, 64, 3, stride=1)
-
-        weight_attr = paddle.ParamAttr(
-            learning_rate=1.,
-            regularizer=paddle.regularizer.L2Decay(coeff=0.),
-            initializer=nn.initializer.XavierUniform())
-        self.deconv = nn.Conv2DTranspose(
-            64,
-            self.num_classes,
-            2,
-            stride=2,
-            padding=0,
-            weight_attr=weight_attr,
-            bias_attr=True)
+        self.depthwise_separable2 = _SeparableConvBNReLU(
+            64, self.num_classes, 3, stride=1)
 
         self.init_weight()
 
     def forward(self, x):
-        ## Encoder
-        conv1 = self.conv_bn0(x)  # encoder 1
-        shortcut = self.conv_bn1(conv1)  # shortcut 1
+        # Encoder
+        input_shape = paddle.shape(x)[2:]
 
-        pool = F.max_pool2d(
-            conv1, kernel_size=3, stride=2, padding=1)  # encoder 2
+        x = self.conv_bn0(x)  # 1/2
+        shortcut = self.conv_bn1(x)  # shortcut
+        x = F.max_pool2d(x, kernel_size=3, stride=2, padding=1)  # 1/4
+        x = self.block1(x)  # 1/8
+        x = self.block2(x)  # 1/16
 
-        # Block 1
-        conv = self.block1(pool)  # encoder 3
-
-        # Block 2
-        conv = self.block2(conv)  # encoder 4
-
-        ### decoder
-        conv = self.depthwise_separable0(conv)
+        # Decoder
+        x = self.depthwise_separable0(x)
         shortcut_shape = paddle.shape(shortcut)[2:]
-        conv_b = F.interpolate(
-            conv,
+        x = F.interpolate(
+            x,
             shortcut_shape,
             mode='bilinear',
             align_corners=self.align_corners)
-        concat = paddle.concat(x=[shortcut, conv_b], axis=1)
-        decode_conv = self.depthwise_separable1(concat)
-        logit = self.deconv(decode_conv)
+        x = paddle.concat(x=[shortcut, x], axis=1)
+        x = self.depthwise_separable1(x)
+
+        logit = self.depthwise_separable2(x)
+        logit = F.interpolate(
+            logit,
+            input_shape,
+            mode='bilinear',
+            align_corners=self.align_corners)
+
         return [logit]
 
     def init_weight(self):
@@ -188,7 +182,7 @@ class _SeparableConvBNReLU(nn.Layer):
         return x
 
 
-class SFNetV2Module(nn.Layer):
+class InvertedResidual(nn.Layer):
     def __init__(self, input_channels, stride, out_channels=None):
         super().__init__()
         if stride == 1:
@@ -238,7 +232,7 @@ if __name__ == '__main__':
     np.random.seed(100)
     paddle.seed(100)
 
-    net = ShuffleNetV2(10)
+    net = PPSegLite(10)
     img = np.random.random(size=(4, 3, 100, 100)).astype('float32')
     img = paddle.to_tensor(img)
     out = net(img)
