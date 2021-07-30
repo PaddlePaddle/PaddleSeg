@@ -192,7 +192,7 @@ Please use spaces as the delimiter, that is, the contents of train.txt and val.t
 
 **What is the list of compliant files?**
 
-Please refer to [Contents](../../annotation/cityscapes_demo)。
+Please use spaces as the separator (to be consistent with the [Dataset](../../../paddleseg/datasets/dataset.py) class), that is, the contents of train.txt and val.txt are organized as:
 
 ### 4.2 Organize the dataset directory structure
 
