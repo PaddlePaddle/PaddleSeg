@@ -146,6 +146,7 @@ python tools/split_dataset_list.py <dataset_root> images annotations --split 0.6
 PaddleSeg uses a common file list method to organize training set, validation set and test set. The corresponding file list must be prepared before the training, evaluation, and visualization process.
 
 It is recommended to organize it into the following structure:
+
     custom_dataset
         |
         |--images

@@ -143,6 +143,7 @@ python tools/split_dataset_list.py <dataset_root> images annotations --split 0.6
 PaddleSeg采用通用的文件列表方式组织训练集、验证集和测试集。在训练、评估、可视化过程前必须准备好相应的文件列表。
 
 推荐整理成如下结构：
+
     custom_dataset
         |
         |--images
