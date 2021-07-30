@@ -181,13 +181,16 @@ PaddleSeg采用通用的文件列表方式组织训练集、验证集和测试�
 **注意事项**
 
 此时的文件列表仅可在调用`predict.py`进行可视化展示时使用，
-即仅可在`DATASET.TEST_FILE_LIST`和`DATASET.VIS_FILE_LIST`配置项中使用。
-不可在`DATASET.TRAIN_FILE_LIST`和`DATASET.VAL_FILE_LIST`配置项中使用。
+分割符请使用空格，即train.txt和val.txt的内容整理为：
+
+    images/image1.jpg labels/label1.png
+    images/image2.jpg labels/label2.png
+    ...
 
 
 **符合规范的文件列表是什么样的呢？**
 
-请参考[目录](https://github.com/PaddlePaddle/PaddleSeg/blob/release/v0.8.0/docs/annotation/cityscapes_demo)。
+请参考[目录](../../annotation/cityscapes_demo)。
 
 ### 4.2 数据集目录结构整理
 

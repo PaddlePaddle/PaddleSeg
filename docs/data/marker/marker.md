@@ -183,13 +183,16 @@ If the dataset lacks annotated pictures, the file list does not need to include 
 **NOTE**
 
 The file list at this time can only be used when calling `predict.py` for visual display.
-That is, it can only be used in the `DATASET.TEST_FILE_LIST` and `DATASET.VIS_FILE_LIST` configuration items.
-Cannot be used in `DATASET.TRAIN_FILE_LIST` and `DATASET.VAL_FILE_LIST` configuration items.
+Please use spaces as the delimiter, that is, the contents of train.txt and val.txt are organized as follows:
+
+    images/image1.jpg labels/label1.png
+    images/image2.jpg labels/label2.png
+    ...
 
 
 **What is the list of compliant files?**
 
-Please refer to [Contents](https://github.com/PaddlePaddle/PaddleSeg/blob/release/v0.8.0/docs/annotation/cityscapes_demo)。
+Please refer to [Contents](../../annotation/cityscapes_demo)。
 
 ### 4.2 Organize the dataset directory structure
 

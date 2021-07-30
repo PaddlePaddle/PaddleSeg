@@ -173,11 +173,11 @@ optimizer: # Set the type of optimizer
   momentum: 0.9 
   weight_decay: 4.0e-5 # Weight attenuation, the purpose of use is to prevent overfitting
 
-lr_scheduler: #设定学习率
-  type: PolynomialDecay #采用poly作为学习率衰减方式。
-  learning_rate: 0.01 #初始学习率
-  end_lr: 0 #最终学习率
-  power: 0.9 #衰减率
+lr_scheduler: # Related settings for learning rate
+  type: PolynomialDecay # A type of learning rate,a total of 12 strategies are supported
+  learning_rate: 0.01
+  power: 0.9
+  end_lr: 0
 
 loss: # Set the type of loss function
   types:

@@ -173,12 +173,11 @@ optimizer: #设定优化器的类型
   momentum: 0.9 #动量
   weight_decay: 4.0e-5 #权值衰减，使用的目的是防止过拟合
 
-learning_rate: #设定学习率
-  value: 0.01  #初始学习率
-  decay:
-    type: poly  #采用poly作为学习率衰减方式。
-    power: 0.9  #衰减率
-    end_lr: 0   #最终学习率
+lr_scheduler: # 学习率的相关设置
+  type: PolynomialDecay # 一种学习率类型。共支持12种策略
+  learning_rate: 0.01
+  power: 0.9
+  end_lr: 0
 
 loss: #设定损失函数的类型
   types:
