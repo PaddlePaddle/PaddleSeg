@@ -46,8 +46,8 @@ python tools/gray2pseudo_color.py <dir_or_file> <output_dir> --dataset_dir <data
 我们希望将图像的路径写入到`train.txt`，`val.txt`，`test.txt`和`labels.txt`三个文件夹中，因为PaddleSeg是通过读取这些文本文件来定位图像路径的。
 `train.txt`，`val.txt`和`test.txt`文本以空格为分割符分为两列，第一列为图像文件相对于dataset的相对路径，第二列为标注图像文件相对于dataset的相对路径。如下所示：
 ```
-images/xxx1.jpg (xx1.png) annotations/xxx1.png
-images/xxx2.jpg (xx2.png) annotations/xxx2.png
+images/xxx1.jpg  annotations/xxx1.png
+images/xxx2.jpg  annotations/xxx2.png
 ...
 ```
 `labels.txt`: 每一行为一个单独的类别，相应的行号即为类别对应的id（行号从0开始)，如下所示：
@@ -93,7 +93,7 @@ PddleSeg已支持2种标注工具：LabelMe、EISeg交互式分割标注工具�
 ```
 ./dataset/  # 数据集根目录
 |--images  # 原图目录
-|  |--xxx1.jpg (xx1.png)
+|  |--xxx1.jpg
 |  |--...
 |  └--...
 |
@@ -164,8 +164,8 @@ PaddleSeg采用通用的文件列表方式组织训练集、验证集和测试�
 
 其中train.txt和val.txt的内容如下所示：
 
-    images/image1.jpg labels/label1.png
-    images/image2.jpg labels/label2.png
+    images/image1.jpg
+    images/image2.jpg
     ...
 
 
@@ -182,16 +182,8 @@ PaddleSeg采用通用的文件列表方式组织训练集、验证集和测试�
 **注意事项**
 
 此时的文件列表仅可在调用`predict.py`进行可视化展示时使用，
-分割符请使用空格（与[Dataset](../../../paddleseg/datasets/dataset.py)类中保持一致），即train.txt和val.txt的内容整理为：
+需要保证文件列表的分割符与你的Dataset类保持一致，默认分割符为空格。
 
-    images/image1.jpg labels/label1.png
-    images/image2.jpg labels/label2.png
-    ...
-
-
-**符合规范的文件列表是什么样的呢？**
-
-请参考[目录](../../annotation/cityscapes_demo)。
 
 ### 4.2 数据集目录结构整理
 

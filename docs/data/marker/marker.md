@@ -48,8 +48,8 @@ We want to write the path of the image to the three folders `train.txt`, `val.tx
 The texts of `train.txt`, `val.txt` and `test.txt` are divided into two columns with spaces as separators. The first column is the relative path of the image file relative to the dataset, and the second column is the relative path of the image file The relative path of the dataset. As follows:
 
 ```
-images/xxx1.jpg (xx1.png) annotations/xxx1.png
-images/xxx2.jpg (xx2.png) annotations/xxx2.png
+images/xxx1.jpg  annotations/xxx1.png
+images/xxx2.jpg  annotations/xxx2.png
 ...
 ```
 `labels.txt`: Each row has a separate category, and the corresponding row number is the id corresponding to the category (the row number starts from 0), as shown below:
@@ -94,7 +94,7 @@ The data file structure is as follows:
 ```
 ./dataset/  # Dataset root directory
 |--images  # Original image catalog
-|  |--xxx1.jpg (xx1.png)
+|  |--xxx1.jpg
 |  |--...
 |  └--...
 |
@@ -167,8 +167,8 @@ It is recommended to organize it into the following structure:
 
 The contents of train.txt and val.txt are as follows:
 
-    images/image1.jpg labels/label1.png
-    images/image2.jpg labels/label2.png
+    images/image1.jpg
+    images/image2.jpg
     ...
 
 **NOTE**
@@ -184,16 +184,8 @@ If the dataset lacks annotated pictures, the file list does not need to include 
 **NOTE**
 
 The file list at this time can only be used when calling `predict.py` for visual display.
-Please use spaces as the delimiter, that is, the contents of train.txt and val.txt are organized as follows:
+You need to ensure that the separator of the file list is consistent with your Dataset class. The default separator is a space.
 
-    images/image1.jpg labels/label1.png
-    images/image2.jpg labels/label2.png
-    ...
-
-
-**What is the list of compliant files?**
-
-Please use spaces as the separator (to be consistent with the [Dataset](../../../paddleseg/datasets/dataset.py) class), that is, the contents of train.txt and val.txt are organized as:
 
 ### 4.2 Organize the dataset directory structure
 
