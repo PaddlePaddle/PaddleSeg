@@ -1,9 +1,0 @@
-DATASET:
-    DATA_DIR: "./docs/annotation/cityscapes_demo/"
-    IMAGE_TYPE: "rgb"  # choice rgb or rgba
-    NUM_CLASSES: 19
-    TEST_FILE_LIST: "docs/annotation/cityscapes_demo/val.list"
-    TRAIN_FILE_LIST: "docs/annotation/cityscapes_demo/train.list"
-    VAL_FILE_LIST: "docs/annotation/cityscapes_demo/val.list"
-    SEPARATOR: " "
-    IGNORE_INDEX: 255
