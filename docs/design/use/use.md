@@ -1,5 +1,5 @@
 English | [简体中文](use_cn.md)
-# Configuration item
+# Configuration Items
 
 ----
 ### train_dataset

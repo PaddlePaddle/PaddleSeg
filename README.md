@@ -59,7 +59,7 @@ Welcome to PaddleSeg! PaddleSeg is an end-to-end image segmentation development 
 
 ## Model Instraction  <img src="./docs/images/model.png" width="20"/>
 
-[Model Zoo](./configs/)
+[Model Zoo](./configs/README.md)
 
 <div align="center">
 <img src="./docs/images/xingnengtu.png"    width = "700"/>  
@@ -119,7 +119,7 @@ System Requirements:
 * PaddlePaddle >= 2.0.0
 * Python >= 3.6+
 
-Highly recommend you install the GPU version of PaddlePaddle, due to large overhead of segmentation models, otherwise it could be out of memory while running the models. For more detailed installation tutorials, please refer to the official website of [PaddlePaddle](https://www.paddlepaddle.org.cn/install/quick?docurl=/documentation/docs/zh/2.0/install/)。
+Highly recommend you install the GPU version of PaddlePaddle, due to large overhead of segmentation models, otherwise it could be out of memory while running the models. For more detailed installation tutorials, please refer to the official website of [PaddlePaddle](https://www.paddlepaddle.org.cn/install/quick?docurl=/documentation/docs/zh/2.0/install/).
 
 
 #### step 2. Install PaddleSeg
