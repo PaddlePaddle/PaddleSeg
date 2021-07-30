@@ -76,7 +76,7 @@ After running, `train.txt`, `val.txt`, `test.txt` and `labels.txt` will be gener
 
 #### Example
 ```
-python tools/split_dataset_list.py <dataset_root> images annotations --split 0.6 0.2 0.2 --format tif png
+python tools/split_dataset_list.py <dataset_root> images annotations --split 0.6 0.2 0.2 --format jpg png
 ```
 
 
