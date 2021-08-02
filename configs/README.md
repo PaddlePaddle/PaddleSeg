@@ -2,29 +2,29 @@
 
 |模型\骨干网络|ResNet50|ResNet101|HRNetw18|HRNetw48|
 |-|-|-|-|-|
-|[ANN](./configs/ann)|✔|✔|||
-|[BiSeNetv2](./configs/bisenet)|-|-|-|-|
-|[DANet](./configs/danet)|✔|✔|||
-|[Deeplabv3](./configs/deeplabv3)|✔|✔|||
-|[Deeplabv3P](./configs/deeplabv3p)|✔|✔|||
-|[Fast-SCNN](./configs/fastscnn)|-|-|-|-|
-|[FCN](./configs/fcn)|||✔|✔|
-|[GCNet](./configs/gcnet)|✔|✔|||
-|[GSCNN](./configs/gscnn)|✔|✔|||
-|[HarDNet](./configs/hardnet)|-|-|-|-|
-|[OCRNet](./configs/ocrnet/)|||✔|✔|
-|[PSPNet](./configs/pspnet)|✔|✔|||
-|[U-Net](./configs/unet)|-|-|-|-|
-|[U<sup>2</sup>-Net](./configs/u2net)|-|-|-|-|
-|[Att U-Net](./configs/attention_unet)|-|-|-|-|
-|[U-Net++](./configs/unet_plusplus)|-|-|-|-|
-|[U-Net3+](./configs/unet_3plus)|-|-|-|-|
-|[DecoupledSegNet](./configs/decoupled_segnet)|✔|✔|||
-|[EMANet](./configs/emanet)|✔|✔|-|-|
-|[ISANet](./configs/isanet)|✔|✔|-|-|
-|[DNLNet](./configs/dnlnet)|✔|✔|-|-|
-|[SFNet](./configs/sfnet)|✔|-|-|-|
-|[PPSegLite](./configs/ppseg_lite)|-|-|-|-|
+|[ANN](./ann)|✔|✔|||
+|[BiSeNetv2](./bisenet)|-|-|-|-|
+|[DANet](./danet)|✔|✔|||
+|[Deeplabv3](./deeplabv3)|✔|✔|||
+|[Deeplabv3P](./deeplabv3p)|✔|✔|||
+|[Fast-SCNN](./fastscnn)|-|-|-|-|
+|[FCN](./fcn)|||✔|✔|
+|[GCNet](./gcnet)|✔|✔|||
+|[GSCNN](./gscnn)|✔|✔|||
+|[HarDNet](./hardnet)|-|-|-|-|
+|[OCRNet](./ocrnet/)|||✔|✔|
+|[PSPNet](./pspnet)|✔|✔|||
+|[U-Net](./unet)|-|-|-|-|
+|[U<sup>2</sup>-Net](./u2net)|-|-|-|-|
+|[Att U-Net](./attention_unet)|-|-|-|-|
+|[U-Net++](./unet_plusplus)|-|-|-|-|
+|[U-Net3+](./unet_3plus)|-|-|-|-|
+|[DecoupledSegNet](./decoupled_segnet)|✔|✔|||
+|[EMANet](./emanet)|✔|✔|-|-|
+|[ISANet](./isanet)|✔|✔|-|-|
+|[DNLNet](./dnlnet)|✔|✔|-|-|
+|[SFNet](./sfnet)|✔|-|-|-|
+|[PPSegLite](./ppseg_lite)|-|-|-|-|
 
 # 模型说明
 
