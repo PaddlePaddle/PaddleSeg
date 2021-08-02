@@ -61,7 +61,8 @@ def get_pseudo_color_map(pred, color_map=None):
 
     Args:
         pred (numpy.ndarray): the origin predicted image.
-        color_map (list, optional): palette color map.
+        color_map (list, optional): the palette color map. Default: None,
+            use paddleseg's default color map.
     
     Returns:
         (numpy.ndarray): the pseduo image.
