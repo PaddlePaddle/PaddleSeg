@@ -55,8 +55,21 @@ def visualize(image, result, color_map, save_dir=None, weight=0.6):
         return vis_result
 
 
-def get_pseudo_color_map(pred, color_map):
+def get_pseudo_color_map(pred, color_map=None):
+    """
+    Get the pseudo color image.
+
+    Args:
+        pred (numpy.ndarray): the origin predicted image.
+        color_map (list, optional): the palette color map. Default: None,
+            use paddleseg's default color map.
+    
+    Returns:
+        (numpy.ndarray): the pseduo image.
+    """
     pred_mask = PILImage.fromarray(pred.astype(np.uint8), mode='P')
+    if color_map is None:
+        color_map = get_color_map_list(256)
     pred_mask.putpalette(color_map)
     return pred_mask
 
