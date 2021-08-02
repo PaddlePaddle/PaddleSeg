@@ -7,6 +7,7 @@ English | [简体中文](README_CN.md)
 [![Version](https://img.shields.io/github/release/PaddlePaddle/PaddleSeg.svg)](https://github.com/PaddlePaddle/PaddleSeg/releases)
 ![python version](https://img.shields.io/badge/python-3.6+-orange.svg)
 ![support os](https://img.shields.io/badge/os-linux%2C%20win%2C%20mac-yellow.svg)
+
 ## PaddleSeg has released the new version including the following features:
 
 * Our team won the AutoNUE@CVPR 2021 challenge, where the technical [report](https://bj.bcebos.com/paddleseg/docs/autonue21_presentation_PaddleSeg.pdf) and [source code](https://github.com/PaddlePaddle/PaddleSeg/tree/release/2.2/contrib/AutoNUE) are available.
@@ -14,9 +15,29 @@ English | [简体中文](README_CN.md)
 * We introduced [Panoptic-DeepLab](https://github.com/PaddlePaddle/PaddleSeg/tree/release/2.2/contrib/PanopticDeepLab), which is a proposal-free algorithm  for panoptic segmentation.
 * We provided an ultra-lightweight [portrait segmentation](https://github.com/PaddlePaddle/PaddleSeg/tree/release/2.2/contrib/HumanSeg) solution for the mobile devices and even the web
 
-![demo](./docs/images/cityscapes.gif)
+## PaddleSeg Introduction
 
 Welcome to PaddleSeg! PaddleSeg is an end-to-end image segmentation development kit developed based on [PaddlePaddle](https://www.paddlepaddle.org.cn), which covers a large number of high-quality segmentation models in different directions such as *high-performance* and *lightweight*. With the help of modular design, we provide two application methods: *Configuration Drive* and *API Calling*. So one can conveniently complete the entire image segmentation application from training to deployment through configuration calls or API calls.
+
+* ### PaddleSeg provides four image segmentation capabilities: semantic segmentation, interactive segmentation, panoptic segmentation and Matting.
+
+<div align="center">
+<img src="./docs/images/ability_EN.gif"  width = "2000" />  
+</div>
+
+
+---------------
+
+ * ### PaddleSeg is widely used in autonomous driving, medical, quality inspection, inspection, entertainment and other scenarios.
+
+<div align="center">
+<img src="./docs/images/application_EN.gif"  width = "2000" />  
+</div>
+
+
+---------------
+
+
 
 ## Core Features
 
@@ -31,38 +52,19 @@ Welcome to PaddleSeg! PaddleSeg is an end-to-end image segmentation development 
 ## Technical Communication <img src="./docs/images/chat.png" width="30"/>
 
 * If you find any problems or have a suggestion with PaddleSeg, please send us issues through [GitHub Issues](https://github.com/PaddlePaddle/PaddleSeg/issues).
-* Welcome to Join PaddleSeg WeChat Group (left) and QQ Group (right)
+* Welcome to Join PaddleSeg QQ Group
 <div align="center">
-<img src="./docs/images/wechat_qq_623.png"  width = "500" />  
+<img src="./docs/images/QQ_chat.png"  width = "200" />  
 </div>
 
-## Model Zoo
+## Model Instraction  <img src="./docs/images/model.png" width="20"/>
 
-|Model\Backbone|ResNet50|ResNet101|HRNetw18|HRNetw48|
-|-|-|-|-|-|
-|[ANN](./configs/ann)|✔|✔|||
-|[BiSeNetv2](./configs/bisenet)|-|-|-|-|
-|[DANet](./configs/danet)|✔|✔|||
-|[Deeplabv3](./configs/deeplabv3)|✔|✔|||
-|[Deeplabv3P](./configs/deeplabv3p)|✔|✔|||
-|[Fast-SCNN](./configs/fastscnn)|-|-|-|-|
-|[FCN](./configs/fcn)|||✔|✔|
-|[GCNet](./configs/gcnet)|✔|✔|||
-|[GSCNN](./configs/gscnn)|✔|✔|||
-|[HarDNet](./configs/hardnet)|-|-|-|-|
-|[OCRNet](./configs/ocrnet/)|||✔|✔|
-|[PSPNet](./configs/pspnet)|✔|✔|||
-|[U-Net](./configs/unet)|-|-|-|-|
-|[U<sup>2</sup>-Net](./configs/u2net)|-|-|-|-|
-|[Att U-Net](./configs/attention_unet)|-|-|-|-|
-|[U-Net++](./configs/unet_plusplus)|-|-|-|-|
-|[U-Net3+](./configs/unet_3plus)|-|-|-|-|
-|[DecoupledSegNet](./configs/decoupled_segnet)|✔|✔|||
-|[EMANet](./configs/emanet)|✔|✔|-|-|
-|[ISANet](./configs/isanet)|✔|✔|-|-|
-|[DNLNet](./configs/dnlnet)|✔|✔|-|-|
-|[SFNet](./configs/sfnet)|✔|-|-|-|
-|[PPSegLite](./configs/ppseg_lite)|-|-|-|-|
+[Model Zoo](./configs/)
+
+<div align="center">
+<img src="./docs/images/xingnengtu.png"    width = "700"/>  
+</div>
+
 
 ## Dataset
 
