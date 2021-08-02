@@ -167,8 +167,8 @@ It is recommended to organize it into the following structure:
 
 The contents of train.txt and val.txt are as follows:
 
-    images/image1.jpg
-    images/image2.jpg
+    images/image1.jpg labels/label1.png
+    images/image2.jpg labels/label2.png
     ...
 
 **NOTE**
@@ -177,14 +177,7 @@ The contents of train.txt and val.txt are as follows:
 
 * Please save the file list in **UTF-8** format, PaddleSeg uses UTF-8 encoding to read file_list files by default
 
-If the dataset lacks annotated pictures, the file list does not need to include the separator and the path of the annotated pictures, as shown in the figure below.
-
-![](../image/file_list2.png)
-
-**NOTE**
-
-The file list at this time can only be used when calling `predict.py` for visual display.
-You need to ensure that the separator of the file list is consistent with your Dataset class. The default separator is a space.
+* The file list at this time can only be used when calling `predict.py` for visual display.You need to ensure that the separator of the file list is consistent with your Dataset class. The default separator is a space.
 
 
 ### 4.2 Organize the dataset directory structure

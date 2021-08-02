@@ -164,8 +164,8 @@ PaddleSeg采用通用的文件列表方式组织训练集、验证集和测试�
 
 其中train.txt和val.txt的内容如下所示：
 
-    images/image1.jpg
-    images/image2.jpg
+    images/image1.jpg labels/label1.png
+    images/image2.jpg labels/label2.png
     ...
 
 
@@ -175,14 +175,7 @@ PaddleSeg采用通用的文件列表方式组织训练集、验证集和测试�
 
 * 文件列表请使用**UTF-8**格式保存, PaddleSeg默认使用UTF-8编码读取file_list文件
 
-若数据集缺少标注图片，则文件列表不用包含分隔符和标注图片路径，如下图所示。
-
-![](../image/file_list2.png)
-
-**注意事项**
-
-此时的文件列表仅可在调用`predict.py`进行可视化展示时使用，
-需要保证文件列表的分割符与你的Dataset类保持一致，默认分割符为空格。
+* 此时的文件列表仅可在调用`predict.py`进行可视化展示时使用，需要保证文件列表的分割符与你的Dataset类保持一致，默认分割符为空格。
 
 
 ### 4.2 数据集目录结构整理
