@@ -141,8 +141,6 @@ python tools/split_dataset_list.py <dataset_root> images annotations --split 0.6
 
 ## 4、Dataset file organization
 
-### 4.1 File list specification
-
 PaddleSeg uses a common file list method to organize training set, validation set and test set. The corresponding file list must be prepared before the training, evaluation, and visualization process.
 
 It is recommended to organize it into the following structure:
@@ -165,11 +163,18 @@ It is recommended to organize it into the following structure:
         |
         |--test.txt
 
-The contents of train.txt and val.txt are as follows:
+### 4.1 File List Specification (Training, Evaluating)
+
+- During training and evaluating, since the parameters of the model are not well trained, the segmentation results obtained by performing a forward propagation are very poor, so annotated images need to be provided to adjust the model parameters.
+
+- That is, the contents of `train.txt` and `val.txt` are as follows:
+
 
     images/image1.jpg labels/label1.png
     images/image2.jpg labels/label2.png
     ...
+
+Among them, `image1.jpg` and `label1.png` are the original image and its corresponding annotated image, respectively. For the content specification in `test.txt`, please refer to [Section 4.2](#4.2-File-List-Specification-(Predicting)).
 
 **NOTE**
 
@@ -177,10 +182,21 @@ The contents of train.txt and val.txt are as follows:
 
 * Please save the file list in **UTF-8** format, PaddleSeg uses UTF-8 encoding to read file_list files by default
 
-* The file list at this time can only be used when calling `predict.py` for visual display.You need to ensure that the separator of the file list is consistent with your Dataset class. The default separator is a space.
+* You need to ensure that the separator of the file list is consistent with your Dataset class. The default separator is a `space`.
+
+### 4.2 File List Specification (Predicting)
+- During predicting, since the parameters of the model have been trained, a good segmentation result can be obtained by performing a forward propagation. Therefore, there is no need to provide corresponding annotated images.
+
+- That is, the content of `test.txt` is as follows:
+
+    images/image1.jpg
+    images/image2.jpg
+    ...
+
+* The file list at this time can only be used when calling `predict.py` for visual display.
 
 
-### 4.2 Organize the dataset directory structure
+### 4.3 Organize the dataset directory structure
 
 If the user wants to generate a file list of the dataset, it needs to be organized into the following directory structure (similar to the Cityscapes dataset). You can divide it manually, or refer to the method of automatic segmentation using scripts in Section 3.
 
@@ -209,7 +225,7 @@ If the user wants to generate a file list of the dataset, it needs to be organiz
 Note:The above directory name can be any
 ```
 
-### 4.3 Generate file list
+### 4.4 Generate file list
 PaddleSeg provides a script for generating file lists, which can be applied to custom datasets or cityscapes datasets, and supports different Flags to enable specific functions.
 ```
 python tools/create_dataset_list.py <your/dataset/dir> ${FLAGS}
