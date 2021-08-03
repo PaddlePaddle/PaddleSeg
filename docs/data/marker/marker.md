@@ -168,9 +168,11 @@ It is recommended to organize it into the following structure:
 - During training and evaluating, annotated images are required.
 
 - That is, the contents of `train.txt` and `val.txt` are as follows:
+    ```
     images/image1.jpg labels/label1.png
     images/image2.jpg labels/label2.png
     ...
+    ```
 
 Among them, `image1.jpg` and `label1.png` are the original image and its corresponding annotated image, respectively. For the content specification in `test.txt`, please refer to [Section 4.2](#4.2-File-List-Specification-(Predicting)).
 
@@ -186,9 +188,11 @@ Among them, `image1.jpg` and `label1.png` are the original image and its corresp
 - During predicting, the model uses only the original image.
 
 - That is, the content of `test.txt` is as follows:
+    ```
     images/image1.jpg
     images/image2.jpg
     ...
+    ```
 
 - When calling `predict.py` for visual display, annotated images can be included in the file list. During predicting, the model will automatically ignore the annotated images given in the file list. Therefore, you can make predictions on the training and validatsion datasets without modifying the contents of the `train.txt` and `val.txt` files mentioned in
 [Section 4.1](#4.1-File-List-Specification(Training,Evaluating)).

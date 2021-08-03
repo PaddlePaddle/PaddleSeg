@@ -162,9 +162,11 @@ PaddleSeg采用通用的文件列表方式组织训练集、验证集和测试�
 - 在训练与验证时，均需要提供标注图像。
 
 - 即 `train.txt` 和 `val.txt` 的内容如下所示：
+    ```
     images/image1.jpg labels/label1.png
     images/image2.jpg labels/label2.png
     ...
+    ```
 
 其中 `image1.jpg` 与 `label1.png` 分别为原始图像与其对应的标注图像。关于 `test.txt` 中的内容规范，请参照[4.2节](#4.2-文件列表规范（预测）)。
 
@@ -183,9 +185,11 @@ PaddleSeg采用通用的文件列表方式组织训练集、验证集和测试�
 - 在执行预测时，模型仅使用原始图像。
 
 - 即 `test.txt` 的内容如下所示：
+    ```
     images/image1.jpg
     images/image2.jpg
     ...
+    ```
 
 - 在调用`predict.py`进行可视化展示时，文件列表中可以包含标注图像。在预测时，模型将自动忽略文件列表中给出的标注图像。因此，你可以直接使用训练、验证数据集进行预测，而不必修改 [4.1节](#4.1-文件列表规范（训练、验证）)里 `train.txt` 和 `val.txt` 文件中的内容。
 
