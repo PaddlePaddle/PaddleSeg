@@ -163,12 +163,11 @@ It is recommended to organize it into the following structure:
         |
         |--test.txt
 
-### 4.1 File List Specification (Training, Evaluating)
+### 4.1 File List Specification(Training,Evaluating)
 
-- During training and evaluating, since the parameters of the model are not well trained, the segmentation results obtained by performing a forward propagation are very poor, so annotated images need to be provided to adjust the model parameters.
+- During training and evaluating, annotated images are required.
 
 - That is, the contents of `train.txt` and `val.txt` are as follows:
-
 
     images/image1.jpg labels/label1.png
     images/image2.jpg labels/label2.png
@@ -178,14 +177,14 @@ Among them, `image1.jpg` and `label1.png` are the original image and its corresp
 
 **NOTE**
 
-* Make sure that the separator exists only once per line in the file list. If there are spaces in the file name, please use "|" and other unusable characters in the file name to split
+* Make sure that the separator exists only once per line in the file list. If there are spaces in the file name, please use "|" and other unusable characters in the file name to split.
 
-* Please save the file list in **UTF-8** format, PaddleSeg uses UTF-8 encoding to read file_list files by default
+* Please save the file list in **UTF-8** format, PaddleSeg uses UTF-8 encoding to read file_list files by default.
 
 * You need to ensure that the separator of the file list is consistent with your Dataset class. The default separator is a `space`.
 
 ### 4.2 File List Specification (Predicting)
-- During predicting, since the parameters of the model have been trained, a good segmentation result can be obtained by performing a forward propagation. Therefore, there is no need to provide corresponding annotated images.
+- During predicting, the model uses only the original image.
 
 - That is, the content of `test.txt` is as follows:
 
@@ -193,7 +192,8 @@ Among them, `image1.jpg` and `label1.png` are the original image and its corresp
     images/image2.jpg
     ...
 
-* The file list at this time can only be used when calling `predict.py` for visual display.
+- When calling `predict.py` for visual display, annotated images can be included in the file list. During predicting, the model will automatically ignore the annotated images given in the file list. Therefore, you can make predictions on the training and validatsion datasets without modifying the contents of the `train.txt` and `val.txt` files mentioned in
+[Section 4.1](#4.1-File-List-Specification(Training,Evaluating)).
 
 
 ### 4.3 Organize the dataset directory structure
