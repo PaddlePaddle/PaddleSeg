@@ -25,4 +25,6 @@ from .decoupledsegnet_relax_boundary_loss import RelaxBoundaryLoss
 from .ohem_edge_attention_loss import OhemEdgeAttentionLoss
 from .l1_loss import L1Loss
 from .mean_square_error_loss import MSELoss
+from .focal_loss import FocalLoss
+from .kl_loss import KLLoss
 from .rmi_loss import RMILoss
