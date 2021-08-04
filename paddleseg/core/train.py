@@ -139,7 +139,11 @@ def train(model,
         for data in loader:
             iter += 1
             if iter > iters:
-                break
+                version = paddle.__version__
+                if version == '2.1.2' or version == '0.0.0':
+                    continue
+                else:
+                    break
             reader_cost_averager.record(time.time() - batch_start)
             images = data[0]
             labels = data[1].astype('int64')
