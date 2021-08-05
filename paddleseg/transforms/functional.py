@@ -89,6 +89,12 @@ def hue(im, hue_lower, hue_upper):
     return im
 
 
+def sharpness(im, sharpness_lower, sharpness_upper):
+    sharpness_delta = np.random.uniform(sharpness_lower, sharpness_upper)
+    im = ImageEnhance.Sharpness(im).enhance(sharpness_delta)
+    return im
+
+
 def rotate(im, rotate_lower, rotate_upper):
     rotate_delta = np.random.uniform(rotate_lower, rotate_upper)
     im = im.rotate(int(rotate_delta))

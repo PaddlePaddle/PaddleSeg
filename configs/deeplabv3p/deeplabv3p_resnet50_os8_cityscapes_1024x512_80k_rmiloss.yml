@@ -1,0 +1,9 @@
+_base_: 'deeplabv3p_resnet50_os8_cityscapes_1024x512_80k.yml'
+
+loss:
+  types:
+    - type: MixedLoss
+      losses:
+        - type: CrossEntropyLoss
+        - type: RMILoss
+      coef: [0.5, 0.5]
