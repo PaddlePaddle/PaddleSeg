@@ -69,11 +69,13 @@ class Predictor:
 
         pred_cfg = PredictConfig(self.cfg.model, self.cfg.params)
         # pred_cfg.disable_glog_info() # turn on if you don't want log info
+        pred_cfg.enable_memory_optim()
 
         if args.device == 'gpu':
             # set GPU configs accordingly
             # such as intialize the gpu memory, enable tensorrt
             pred_cfg.enable_use_gpu(100, 0)
+            pred_cfg.switch_ir_optim(True)
             precision_map = {
                 "fp16": PrecisionType.Half,
                 "fp32": PrecisionType.Float32,
@@ -192,7 +194,7 @@ def parse_args():
     parser.add_argument(
         '--image_path',
         dest='image_path',
-        help='The directory or path of the image to be predicted.',
+        help='The directory or path or file list of the images to be predicted.',
         type=str,
         default=None,
         required=True)
@@ -224,7 +226,7 @@ def parse_args():
         "--precision",
         default="fp32",
         type=str,
-        choices=["fp32", "int8"],
+        choices=["fp32", "fp16", "int8"],
         help='The tensorrt precision.')
 
     parser.add_argument(
@@ -243,7 +245,9 @@ def parse_args():
         "--benchmark",
         type=eval,
         default=False,
-        help="To log some information about environment and running.")
+        help=
+        "Whether to log some information about environment, model, configuration and performance."
+    )
     parser.add_argument(
         "--save_log_path",
         type=str,

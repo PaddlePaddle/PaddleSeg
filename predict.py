@@ -95,6 +95,16 @@ def parse_args():
         type=int,
         default=None)
 
+    # custom color map
+    parser.add_argument(
+        '--custom_color',
+        dest='custom_color',
+        nargs='+',
+        help=
+        'Save images with a custom color map. Default: None, use paddleseg\'s default color map.',
+        type=int,
+        default=None)
+
     return parser.parse_args()
 
 
@@ -115,6 +125,9 @@ def get_test_config(cfg, args):
         test_config['is_slide'] = args.is_slide
         test_config['crop_size'] = args.crop_size
         test_config['stride'] = args.stride
+
+    if args.custom_color:
+        test_config['custom_color'] = args.custom_color
 
     return test_config
 

@@ -36,40 +36,6 @@ if [ ${MODE} = "infer" ];then
     wget -nc -P $model_path https://paddleseg.bj.bcebos.com/dygraph/humanseg/train/fcn_hrnetw18_small_v1_humanseg_192x192.zip
     cd $model_path && unzip fcn_hrnetw18_small_v1_humanseg_192x192.zip && mv fcn_hrnetw18_small_v1_humanseg_192x192/model.pdparams . && cd ../../../
 fi
-# rm -rf ./tests/data/
-# wget -nc -P ./tests/data/ https://paddleseg.bj.bcebos.com/humanseg/data/mini_supervisely.zip
-# cd ./tests/data/ && unzip mini_supervisely.zip && cd ../../
-
-# if [ ${MODE} = "lite_train_infer" ];then
-#     # pretrain lite train data
-#     wget -nc -P  ./pretrain_models/ https://paddle-imagenet-models-name.bj.bcebos.com/dygraph/MobileNetV3_large_x0_5_pretrained.pdparams
-#     rm -rf ./train_data/icdar2015
-#     wget -nc -P ./train_data/ https://paddleocr.bj.bcebos.com/dygraph_v2.0/test/icdar2015_lite.tar
-#     cd ./train_data/ && tar xf icdar2015_lite.tar
-#     ln -s ./icdar2015_lite ./icdar2015
-#     cd ../
-# elif [ ${MODE} = "whole_train_infer" ];then
-#     wget -nc -P  ./pretrain_models/ https://paddle-imagenet-models-name.bj.bcebos.com/dygraph/MobileNetV3_large_x0_5_pretrained.pdparams
-#     rm -rf ./train_data/icdar2015
-#     wget -nc -P ./train_data/ https://paddleocr.bj.bcebos.com/dygraph_v2.0/test/icdar2015.tar
-#     cd ./train_data/ && tar xf icdar2015.tar && cd ../
-# elif [ ${MODE} = "whole_infer" ];then
-#     wget -nc -P  ./pretrain_models/ https://paddle-imagenet-models-name.bj.bcebos.com/dygraph/MobileNetV3_large_x0_5_pretrained.pdparams
-#     rm -rf ./train_data/icdar2015
-#     wget -nc -P ./train_data/ https://paddleocr.bj.bcebos.com/dygraph_v2.0/test/icdar2015_infer.tar
-#     cd ./train_data/ && tar xf icdar2015_infer.tar
-#     ln -s ./icdar2015_infer ./icdar2015
-#     cd ../
-# else
-#     rm -rf ./train_data/icdar2015
-#     if [[ ${model_name} = "ocr_det" ]]; then
-#         wget -nc -P ./inference https://paddleocr.bj.bcebos.com/dygraph_v2.0/test/ch_det_data_50.tar
-#         eval_model_name="ch_ppocr_mobile_v2.0_det_infer"
-#         wget -nc  -P ./inference https://paddleocr.bj.bcebos.com/dygraph_v2.0/ch/ch_ppocr_mobile_v2.0_det_infer.tar
-#         cd ./inference && tar xf ${eval_model_name}.tar && tar xf ch_det_data_50.tar && cd ../
-#     else
-#         eval_model_name="ch_ppocr_mobile_v2.0_rec_train"
-#         wget -nc  -P ./inference https://paddleocr.bj.bcebos.com/dygraph_v2.0/ch/ch_ppocr_mobile_v2.0_rec_train.tar
-#         cd ./inference && tar xf ${eval_model_name}.tar && cd ../
-#     fi
-# fi
+rm -rf ./tests/data/
+wget -nc -P ./tests/data/ https://paddleseg.bj.bcebos.com/humanseg/data/mini_supervisely.zip
+cd ./tests/data/ && unzip mini_supervisely.zip && cd ../../

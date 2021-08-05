@@ -59,7 +59,7 @@ def main(args):
             mask[binary_mask] = v
         new_mask = Image.fromarray(mask.astype(np.uint8)).convert('P')
         new_mask.putpalette(color_map)
-        file_split = file.split('/')
+        file_split = file.split(os.sep)
         path = os.path.join(dataset_root, 'convert_autolabelled',
                             file_split[-2])
         if not os.path.exists(path):

@@ -43,7 +43,7 @@ inference:deploy/python/infer.py
 --cpu_threads:1|6
 --batch_size:1
 --use_trt:False|True
---precision:fp32|int8
+--precision:fp32|int8|fp16
 null:
 --image_path:./tests/data/mini_supervisely/test.txt
 --save_log_path:null
