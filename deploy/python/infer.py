@@ -68,7 +68,8 @@ class Predictor:
         self.args = args
 
         pred_cfg = PredictConfig(self.cfg.model, self.cfg.params)
-        pred_cfg.disable_glog_info()
+        # pred_cfg.disable_glog_info() # turn on if you don't want log info
+
         if args.device == 'gpu':
             # set GPU configs accordingly
             # such as intialize the gpu memory, enable tensorrt
@@ -84,10 +85,15 @@ class Predictor:
                 pred_cfg.enable_tensorrt_engine(
                     workspace_size=1 << 30,
                     max_batch_size=1,
-                    min_subgraph_size=3,
+                    min_subgraph_size=50,
                     precision_mode=precision_mode,
                     use_static=False,
                     use_calib_mode=False)
+                min_input_shape = {"x": [1, 3, 100, 100]}
+                max_input_shape = {"x": [1, 3, 2000, 2000]}
+                opt_input_shape = {"x": [1, 3, 192, 192]}
+                pred_cfg.set_trt_dynamic_shape_info(
+                    min_input_shape, max_input_shape, opt_input_shape)
         else:
             # set CPU configs accordingly,
             # such as enable_mkldnn, set_cpu_math_library_num_threads
