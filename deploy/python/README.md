@@ -2,7 +2,9 @@
 
 ## 1. 说明
 
-本方案旨在提供一个PaddlePaddle跨平台图像分割模型的Python预测部署方案作为参考，用户通过一定的配置，加上少量的代码，即可把模型集成到自己的服务中，完成图像分割的任务。
+本文档介绍使用飞桨推理的Python接口在服务器端部署分割模型。大家通过一定的配置，加上少量的代码，即可把模型集成到自己的服务中，完成图像分割的任务。
+
+飞桨推理的[官网文档](https://paddleinference.paddlepaddle.org.cn/product_introduction/summary.html)介绍了部署模型的步骤、多种API接口、示例等等，大家可以根据实际需求进行使用。
 
 ## 2. 前置准备
 
@@ -36,6 +38,8 @@ python deploy/python/infer.py --config /path/to/deploy.yaml --image_path /path/t
 *测试样例和预测结果如下*
 ![cityscape_predict_demo.png](../../docs/images/cityscapes_predict_demo.png)
 
-*注意：*
+**注意**
+
 *1. 当使用量化模型预测时，需要同时开启TensorRT预测和int8预测才会有加速效果*
+
 *2. 使用TensorRT需要使用支持TRT功能的Paddle库，请参考[附录](https://www.paddlepaddle.org.cn/documentation/docs/zh/install/Tables.html#whl-release)下载对应的PaddlePaddle安装包，或者参考[源码编译](https://www.paddlepaddle.org.cn/documentation/docs/zh/install/compile/fromsource.html)自行编译*
