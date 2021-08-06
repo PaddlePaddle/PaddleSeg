@@ -51,6 +51,43 @@ class DiceLoss(nn.Layer):
 
         intersection = paddle.sum(logits * labels_one_hot, dims)
         cardinality = paddle.sum(logits + labels_one_hot, dims)
-        dice_loss = ((2. * intersection + self.smooth) /
-                     (cardinality + self.eps + self.smooth)).mean()
+        dice_loss = (2. * intersection.sum() + self.smooth) /
+                         (cardinality.sum() + self.eps + self.smooth)
+        return 1 - dice_loss
+
+
+@manager.LOSSES.add_component
+class GeneralizedDiceLoss(nn.Layer):
+    """
+    Implements the generalized dice loss function.
+
+    Args:
+        ignore_index (int64): Specifies a target value that is ignored
+            and does not contribute to the input gradient. Default ``255``.
+    """
+
+    def __init__(self, ignore_index=255):
+        super(GeneralizedDiceLoss, self).__init__()
+        self.ignore_index = ignore_index
+        self.eps = 1e-5
+
+    def forward(self, logits, labels):
+        labels = paddle.cast(labels, dtype='int32')
+        labels_one_hot = F.one_hot(labels, num_classes=logits.shape[1])
+        labels_one_hot = paddle.transpose(labels_one_hot, [0, 3, 1, 2])
+        labels_one_hot = paddle.cast(labels_one_hot, dtype='float32')
+
+        logits = F.softmax(logits, axis=1)
+
+        mask = (paddle.unsqueeze(labels, 1) != self.ignore_index)
+        logits = logits * mask
+        labels_one_hot = labels_one_hot * mask
+
+        dims = (0, ) + tuple(range(2, labels.ndimension() + 1))
+
+        weight = 1 / (paddle.sum(labels_one_hot, dims) ** 2).clip(min=self.eps)
+        intersection = paddle.sum(logits * labels_one_hot, dims) * weight
+        cardinality = paddle.sum(logits + labels_one_hot, dims) * weight
+
+        dice_loss = 2 * (intersection.sum() / cardinality.sum())
         return 1 - dice_loss
