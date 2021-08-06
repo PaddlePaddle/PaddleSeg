@@ -2,7 +2,7 @@ English|[简体中文](transform_cn.md)
 # Annotating Tutorial
 
 Whether it is semantic segmentation, panoramic segmentation, or instance segmentation, we all need sufficient training data. If you want to use an unlabeled original dataset for segmentation tasks, you must first annotate the original image. If you are using a dataset with segmentation annotations such as `Cityscapes`, you can skip this step.
-- This document will provide tutorials for using 3 kinds of labeling tools: [EISeg](#1、EISeg), [LabelMe](#2、LabelMe).
+- This document will provide tutorials for using 2 kinds of labeling tools: [EISeg](#1、EISeg), [LabelMe](#2、LabelMe).
 
 # 1、EISeg
 
@@ -261,10 +261,3 @@ The converted dataset can refer to the [folder] (https://github.com/PaddlePaddle
 <div align="left">
     <p>Figure 8 : Schematic diagram of the contents of each catalog of the dataset after format conversion</p>
  </div>
-
-
-
-
-
-
-

@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import random
+import math
 
 import cv2
 import numpy as np
@@ -667,16 +668,137 @@ class RandomPaddingCrop:
 
 
 @manager.TRANSFORMS.add_component
+class ScalePadding:
+    """
+        Add center padding to a raw image or annotation image,then scale the
+        image to target size.
+
+        Args:
+            target_size (list|tuple, optional): The target size of image. Default: (512, 512).
+            im_padding_value (list, optional): The padding value of raw image.
+                Default: [127.5, 127.5, 127.5].
+            label_padding_value (int, optional): The padding value of annotation image. Default: 255.
+
+        Raises:
+            TypeError: When target_size is neither list nor tuple.
+            ValueError: When the length of target_size is not 2.
+    """
+
+    def __init__(self,
+                 target_size=(512, 512),
+                 im_padding_value=(127.5, 127.5, 127.5),
+                 label_padding_value=255):
+        if isinstance(target_size, list) or isinstance(target_size, tuple):
+            if len(target_size) != 2:
+                raise ValueError(
+                    '`target_size` should include 2 elements, but it is {}'.
+                    format(target_size))
+        else:
+            raise TypeError(
+                "Type of `target_size` is invalid. It should be list or tuple, but it is {}"
+                .format(type(target_size)))
+
+        self.target_size = target_size
+        self.im_padding_value = im_padding_value
+        self.label_padding_value = label_padding_value
+
+    def __call__(self, im, label=None):
+        """
+        Args:
+            im (np.ndarray): The Image data.
+            label (np.ndarray, optional): The label data. Default: None.
+
+        Returns:
+            (tuple). When label is None, it returns (im, ), otherwise it returns (im, label).
+        """
+        height = im.shape[0]
+        width = im.shape[1]
+
+        new_im = np.zeros(
+            (max(height, width), max(height, width), 3)) + self.im_padding_value
+        if label is not None:
+            new_label = np.zeros((max(height, width), max(
+                height, width))) + self.label_padding_value
+
+        if height > width:
+            padding = int((height - width) / 2)
+            new_im[:, padding:padding + width, :] = im
+            if label is not None:
+                new_label[:, padding:padding + width] = label
+        else:
+            padding = int((width - height) / 2)
+            new_im[padding:padding + height, :, :] = im
+            if label is not None:
+                new_label[padding:padding + height, :] = label
+
+        im = np.uint8(new_im)
+        im = functional.resize(im, self.target_size, interp=cv2.INTER_CUBIC)
+        if label is not None:
+            label = np.uint8(new_label)
+            label = functional.resize(
+                label, self.target_size, interp=cv2.INTER_CUBIC)
+        if label is None:
+            return (im, )
+        else:
+            return (im, label)
+
+
+@manager.TRANSFORMS.add_component
+class RandomNoise:
+    """
+    Superimposing noise on an image with a certain probability.
+
+    Args:
+        prob (float, optional): A probability of blurring an image. Default: 0.5.
+        max_sigma(float, optional): The maximum value of standard deviation of the distribution.
+            Default: 10.0.
+    """
+
+    def __init__(self, prob=0.5, max_sigma=10.0):
+        self.prob = prob
+        self.max_sigma = max_sigma
+
+    def __call__(self, im, label=None):
+        """
+        Args:
+            im (np.ndarray): The Image data.
+            label (np.ndarray, optional): The label data. Default: None.
+
+        Returns:
+            (tuple). When label is None, it returns (im, ), otherwise it returns (im, label).
+        """
+        if random.random() < self.prob:
+            mu = 0
+            sigma = random.random() * self.max_sigma
+            im = np.array(im, dtype=np.float32)
+            im += np.random.normal(mu, sigma, im.shape)
+            im[im > 255] = 255
+            im[im < 0] = 0
+
+        if label is None:
+            return (im, )
+        else:
+            return (im, label)
+
+
+@manager.TRANSFORMS.add_component
 class RandomBlur:
     """
     Blurring an image by a Gaussian function with a certain probability.
 
     Args:
         prob (float, optional): A probability of blurring an image. Default: 0.1.
+        blur_type(str, optional): A type of blurring an image,
+            gaussian stands for cv2.GaussianBlur,
+            median stands for cv2.medianBlur,
+            blur stands for cv2.blur,
+            random represents randomly selected from above.
+            Default: gaussian.
     """
 
-    def __init__(self, prob=0.1):
+    def __init__(self, prob=0.1, blur_type="gaussian"):
         self.prob = prob
+        self.blur_type = blur_type
 
     def __call__(self, im, label=None):
         """
@@ -701,8 +823,24 @@ class RandomBlur:
                     radius = radius + 1
                 if radius > 9:
                     radius = 9
-                im = cv2.GaussianBlur(im, (radius, radius), 0, 0)
-
+                im = np.array(im, dtype='uint8')
+                if self.blur_type == "gaussian":
+                    im = cv2.GaussianBlur(im, (radius, radius), 0, 0)
+                elif self.blur_type == "median":
+                    im = cv2.medianBlur(im, radius)
+                elif self.blur_type == "blur":
+                    im = cv2.blur(im, (radius, radius))
+                elif self.blur_type == "random":
+                    select = random.random()
+                    if select < 0.3:
+                        im = cv2.GaussianBlur(im, (radius, radius), 0)
+                    elif select < 0.6:
+                        im = cv2.medianBlur(im, radius)
+                    else:
+                        im = cv2.blur(im, (radius, radius))
+                else:
+                    im = cv2.GaussianBlur(im, (radius, radius), 0, 0)
+        im = np.array(im, dtype='float32')
         if label is None:
             return (im, )
         else:
@@ -852,6 +990,8 @@ class RandomDistort:
         saturation_prob (float, optional): A probability of adjusting saturation. Default: 0.5.
         hue_range (int, optional): A range of hue. Default: 18.
         hue_prob (float, optional): A probability of adjusting hue. Default: 0.5.
+        sharpness_range (float, optional): A range of sharpness. Default: 0.5.
+        sharpness_prob (float, optional): A probability of adjusting saturation. Default: 0.
     """
 
     def __init__(self,
@@ -862,7 +1002,9 @@ class RandomDistort:
                  saturation_range=0.5,
                  saturation_prob=0.5,
                  hue_range=18,
-                 hue_prob=0.5):
+                 hue_prob=0.5,
+                 sharpness_range=0.5,
+                 sharpness_prob=0):
         self.brightness_range = brightness_range
         self.brightness_prob = brightness_prob
         self.contrast_range = contrast_range
@@ -871,6 +1013,8 @@ class RandomDistort:
         self.saturation_prob = saturation_prob
         self.hue_range = hue_range
         self.hue_prob = hue_prob
+        self.sharpness_range = sharpness_range
+        self.sharpness_prob = sharpness_prob
 
     def __call__(self, im, label=None):
         """
@@ -890,9 +1034,11 @@ class RandomDistort:
         saturation_upper = 1 + self.saturation_range
         hue_lower = -self.hue_range
         hue_upper = self.hue_range
+        sharpness_lower = 1 - self.sharpness_range
+        sharpness_upper = 1 + self.sharpness_range
         ops = [
             functional.brightness, functional.contrast, functional.saturation,
-            functional.hue
+            functional.hue, functional.sharpness
         ]
         random.shuffle(ops)
         params_dict = {
@@ -911,13 +1057,18 @@ class RandomDistort:
             'hue': {
                 'hue_lower': hue_lower,
                 'hue_upper': hue_upper
+            },
+            'sharpness': {
+                'sharpness_lower': sharpness_lower,
+                'sharpness_upper': sharpness_upper,
             }
         }
         prob_dict = {
             'brightness': self.brightness_prob,
             'contrast': self.contrast_prob,
             'saturation': self.saturation_prob,
-            'hue': self.hue_prob
+            'hue': self.hue_prob,
+            'sharpness': self.sharpness_prob
         }
         im = im.astype('uint8')
         im = Image.fromarray(im)
@@ -928,6 +1079,93 @@ class RandomDistort:
             if np.random.uniform(0, 1) < prob:
                 im = ops[id](**params)
         im = np.asarray(im).astype('float32')
+        if label is None:
+            return (im, )
+        else:
+            return (im, label)
+
+
+@manager.TRANSFORMS.add_component
+class RandomAffine:
+    """
+    Affine transform an image with random configurations.
+
+    Args:
+        size (tuple, optional): The target size after affine transformation. Default: (224, 224).
+        translation_offset (float, optional): The maximum translation offset. Default: 0.
+        max_rotation (float, optional): The maximum rotation degree. Default: 15.
+        min_scale_factor (float, optional): The minimum scale. Default: 0.75.
+        max_scale_factor (float, optional): The maximum scale. Default: 1.25.
+        im_padding_value (float, optional): The padding value of raw image. Default: (128, 128, 128).
+        label_padding_value (int, optional): The padding value of annotation image. Default: (255, 255, 255).
+    """
+
+    def __init__(self,
+                 size=(224, 224),
+                 translation_offset=0,
+                 max_rotation=15,
+                 min_scale_factor=0.75,
+                 max_scale_factor=1.25,
+                 im_padding_value=(128, 128, 128),
+                 label_padding_value=(255, 255, 255)):
+        self.size = size
+        self.translation_offset = translation_offset
+        self.max_rotation = max_rotation
+        self.min_scale_factor = min_scale_factor
+        self.max_scale_factor = max_scale_factor
+        self.im_padding_value = im_padding_value
+        self.label_padding_value = label_padding_value
+
+    def __call__(self, im, label=None):
+        """
+        Args:
+            im (np.ndarray): The Image data.
+            label (np.ndarray, optional): The label data. Default: None.
+
+        Returns:
+            (tuple). When label is None, it returns (im, ), otherwise it returns (im, label).
+        """
+
+        w, h = self.size
+        bbox = [0, 0, im.shape[1] - 1, im.shape[0] - 1]
+        x_offset = (random.random() - 0.5) * 2 * self.translation_offset
+        y_offset = (random.random() - 0.5) * 2 * self.translation_offset
+        dx = (w - (bbox[2] + bbox[0])) / 2.0
+        dy = (h - (bbox[3] + bbox[1])) / 2.0
+
+        matrix_trans = np.array([[1.0, 0, dx], [0, 1.0, dy], [0, 0, 1.0]])
+
+        angle = random.random() * 2 * self.max_rotation - self.max_rotation
+        scale = random.random() * (self.max_scale_factor - self.min_scale_factor
+                                   ) + self.min_scale_factor
+        scale *= np.mean(
+            [float(w) / (bbox[2] - bbox[0]),
+             float(h) / (bbox[3] - bbox[1])])
+        alpha = scale * math.cos(angle / 180.0 * math.pi)
+        beta = scale * math.sin(angle / 180.0 * math.pi)
+
+        centerx = w / 2.0 + x_offset
+        centery = h / 2.0 + y_offset
+        matrix = np.array(
+            [[alpha, beta, (1 - alpha) * centerx - beta * centery],
+             [-beta, alpha, beta * centerx + (1 - alpha) * centery],
+             [0, 0, 1.0]])
+
+        matrix = matrix.dot(matrix_trans)[0:2, :]
+        im = cv2.warpAffine(
+            np.uint8(im),
+            matrix,
+            tuple(self.size),
+            flags=cv2.INTER_LINEAR,
+            borderMode=cv2.BORDER_CONSTANT,
+            borderValue=self.im_padding_value)
+        if label is not None:
+            label = cv2.warpAffine(
+                np.uint8(label),
+                matrix,
+                tuple(self.size),
+                flags=cv2.INTER_NEAREST,
+                borderMode=cv2.BORDER_CONSTANT)
         if label is None:
             return (im, )
         else:

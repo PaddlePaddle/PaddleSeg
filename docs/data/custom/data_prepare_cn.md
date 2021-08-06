@@ -73,7 +73,7 @@ FLAGS说明：
 
 #### 使用示例
 ```
-python tools/split_dataset_list.py <dataset_root> images annotations --split 0.6 0.2 0.2 --format tif png
+python tools/split_dataset_list.py <dataset_root> images annotations --split 0.6 0.2 0.2 --format jpg png
 ```
 
 

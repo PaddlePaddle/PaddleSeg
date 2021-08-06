@@ -2,7 +2,7 @@
 # 数据标注教程
 
 无论是语义分割，全景分割，还是实例分割，我们都需要充足的训练数据。如果你想使用没有标注的原始数据集做分割任务，你必须先为原始图像作出标注。如果你使用的是Cityscapes等已有分割标注的数据集，你可以跳过本步骤。
-- 本文档将提供3种标注工具的使用教程：[EISeg](#一、EISeg)、[LabelMe](#二、LabelMe)。
+- 本文档将提供2种标注工具的使用教程：[EISeg](#一、EISeg)、[LabelMe](#二、LabelMe)。
 
 # 一、EISeg
 # EISeg
@@ -262,9 +262,3 @@ python tools/labelme2seg.py docs/annotation/labelme_demo/
 <div align="left">
     <p>图8 格式转换后的数据集各目录的内容示意图</p>
  </div>
-
-
-
-
-
-
