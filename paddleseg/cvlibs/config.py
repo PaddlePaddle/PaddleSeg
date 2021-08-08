@@ -149,15 +149,18 @@ class Config(object):
         if decay_type == 'poly':
             lr = _learning_rate
             return paddle.optimizer.lr.PolynomialDecay(lr, **args)
+        elif decay_type == 'piecewise':
+            values = _learning_rate
+            return paddle.optimizer.lr.PiecewiseDecay(values=values, **args)
         else:
-            raise RuntimeError('Only poly decay support.')
+            raise RuntimeError('Only poly and piecewise decay support.')
 
     @property
     def optimizer(self) -> paddle.optimizer.Optimizer:
         lr = self.learning_rate
         args = self.optimizer_args
         optimizer_type = args.pop('type')
-        
+
         if optimizer_type == 'sgd':
             return paddle.optimizer.Momentum(
                 lr, parameters=self.model.parameters(), **args)
@@ -211,7 +214,9 @@ class Config(object):
                 if key == 'types':
                     self._losses['types'] = []
                     for item in args['types']:
-                        item['ignore_index'] = self.train_dataset.ignore_index
+                        if item['type'] != 'MixedLoss':
+                            item['ignore_index'] = \
+                                self.train_dataset.ignore_index
                         self._losses['types'].append(self._load_object(item))
                 else:
                     self._losses[key] = val
@@ -225,24 +230,33 @@ class Config(object):
     @property
     def model(self) -> paddle.nn.Layer:
         model_cfg = self.dic.get('model').copy()
-        model_cfg['num_classes'] = self.train_dataset.num_classes
-
         if not model_cfg:
             raise RuntimeError('No model specified in the configuration file.')
+        if not 'num_classes' in model_cfg:
+            if self.train_dataset and hasattr(self.train_dataset,
+                                              'num_classes'):
+                model_cfg['num_classes'] = self.train_dataset.num_classes
+            elif self.val_dataset and hasattr(self.val_dataset, 'num_classes'):
+                model_cfg['num_classes'] = self.val_dataset.num_classes
+            else:
+                raise ValueError(
+                    '`num_classes` is not found. Please set it in model, train_dataset or val_dataset'
+                )
+
         if not self._model:
             self._model = self._load_object(model_cfg)
         return self._model
 
     @property
     def train_dataset(self) -> paddle.io.Dataset:
-        _train_dataset = self.dic.get('train_dataset').copy()
+        _train_dataset = self.dic.get('train_dataset', {}).copy()
         if not _train_dataset:
             return None
         return self._load_object(_train_dataset)
 
     @property
     def val_dataset(self) -> paddle.io.Dataset:
-        _val_dataset = self.dic.get('val_dataset').copy()
+        _val_dataset = self.dic.get('val_dataset', {}).copy()
         if not _val_dataset:
             return None
         return self._load_object(_val_dataset)

@@ -70,8 +70,7 @@ def predict(model,
             It should be provided when `is_slide` is True.
 
     """
-    para_state_dict = paddle.load(model_path)
-    model.set_dict(para_state_dict)
+    utils.utils.load_entire_model(model, model_path)
     model.eval()
     nranks = paddle.distributed.get_world_size()
     local_rank = paddle.distributed.get_rank()

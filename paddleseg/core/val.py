@@ -15,10 +15,11 @@
 import os
 
 import numpy as np
+import time
 import paddle
 import paddle.nn.functional as F
 
-from paddleseg.utils import metrics, Timer, calculate_eta, logger, progbar
+from paddleseg.utils import metrics, TimeAverager, calculate_eta, logger, progbar
 from paddleseg.core import infer
 
 np.set_printoptions(suppress=True)
@@ -33,7 +34,8 @@ def evaluate(model,
              is_slide=False,
              stride=None,
              crop_size=None,
-             num_workers=0):
+             num_workers=0,
+             print_detail=True):
     """
     Launch evalution.
 
@@ -50,6 +52,7 @@ def evaluate(model,
         crop_size (tuple|list, optional):  The crop size of sliding window, the first is width and the second is height.
             It should be provided when `is_slide` is True.
         num_workers (int, optional): Num workers for data loader. Default: 0.
+        print_detail (bool, optional): Whether to print detailed information about the evaluation process. Default: True.
 
     Returns:
         float: The mIoU of validation datasets.
@@ -77,13 +80,17 @@ def evaluate(model,
     pred_area_all = 0
     label_area_all = 0
 
-    logger.info("Start evaluating (total_samples={}, total_iters={})...".format(
-        len(eval_dataset), total_iters))
+    if print_detail:
+        logger.info(
+            "Start evaluating (total_samples={}, total_iters={})...".format(
+                len(eval_dataset), total_iters))
     progbar_val = progbar.Progbar(target=total_iters, verbose=1)
-    timer = Timer()
+    reader_cost_averager = TimeAverager()
+    batch_cost_averager = TimeAverager()
+    batch_start = time.time()
     with paddle.no_grad():
         for iter, (im, label) in enumerate(loader):
-            reader_cost = timer.elapsed_time()
+            reader_cost_averager.record(time.time() - batch_start)
             label = label.astype('int64')
 
             ori_shape = label.shape[-2:]
@@ -120,7 +127,8 @@ def evaluate(model,
                 intersect_area_list = []
                 pred_area_list = []
                 label_area_list = []
-                paddle.distributed.all_gather(intersect_area_list, intersect_area)
+                paddle.distributed.all_gather(intersect_area_list,
+                                              intersect_area)
                 paddle.distributed.all_gather(pred_area_list, pred_area)
                 paddle.distributed.all_gather(label_area_list, label_area)
 
@@ -132,27 +140,35 @@ def evaluate(model,
                     label_area_list = label_area_list[:valid]
 
                 for i in range(len(intersect_area_list)):
-                    intersect_area_all = intersect_area_all + intersect_area_list[i]
+                    intersect_area_all = intersect_area_all + intersect_area_list[
+                        i]
                     pred_area_all = pred_area_all + pred_area_list[i]
                     label_area_all = label_area_all + label_area_list[i]
             else:
                 intersect_area_all = intersect_area_all + intersect_area
                 pred_area_all = pred_area_all + pred_area
                 label_area_all = label_area_all + label_area
-            batch_cost = timer.elapsed_time()
-            timer.restart()
+            batch_cost_averager.record(
+                time.time() - batch_start, num_samples=len(label))
+            batch_cost = batch_cost_averager.get_average()
+            reader_cost = reader_cost_averager.get_average()
 
-            if local_rank == 0:
+            if local_rank == 0 and print_detail:
                 progbar_val.update(iter + 1, [('batch_cost', batch_cost),
                                               ('reader cost', reader_cost)])
+            reader_cost_averager.reset()
+            batch_cost_averager.reset()
+            batch_start = time.time()
 
     class_iou, miou = metrics.mean_iou(intersect_area_all, pred_area_all,
                                        label_area_all)
     class_acc, acc = metrics.accuracy(intersect_area_all, pred_area_all)
     kappa = metrics.kappa(intersect_area_all, pred_area_all, label_area_all)
 
-    logger.info("[EVAL] #Images={} mIoU={:.4f} Acc={:.4f} Kappa={:.4f} ".format(
-        len(eval_dataset), miou, acc, kappa))
-    logger.info("[EVAL] Class IoU: \n" + str(np.round(class_iou, 4)))
-    logger.info("[EVAL] Class Acc: \n" + str(np.round(class_acc, 4)))
+    if print_detail:
+        logger.info(
+            "[EVAL] #Images={} mIoU={:.4f} Acc={:.4f} Kappa={:.4f} ".format(
+                len(eval_dataset), miou, acc, kappa))
+        logger.info("[EVAL] Class IoU: \n" + str(np.round(class_iou, 4)))
+        logger.info("[EVAL] Class Acc: \n" + str(np.round(class_acc, 4)))
     return miou, acc
