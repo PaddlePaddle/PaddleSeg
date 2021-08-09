@@ -61,12 +61,12 @@ class EMA(object):
 
         self._model = model
         self._decay = decay
-        self.ema_data = {}
+        self._ema_data = {}
         self._backup_data = {}
 
         for name, param in self._model.named_parameters():
             if not param.stop_gradient:
-                self.ema_data[name] = param.numpy()
+                self._ema_data[name] = param.numpy()
 
     def step(self):
         """
@@ -74,9 +74,9 @@ class EMA(object):
         """
         for name, param in self._model.named_parameters():
             if not param.stop_gradient:
-                assert name in self.ema_data, \
+                assert name in self._ema_data, \
                     "The param ({}) isn't in the model".format(name)
-                self.ema_data[name] = self._decay * self.ema_data[name] \
+                self._ema_data[name] = self._decay * self._ema_data[name] \
                     + (1.0 - self._decay) * param.numpy()
 
     def apply(self):
@@ -85,10 +85,10 @@ class EMA(object):
         """
         for name, param in self._model.named_parameters():
             if not param.stop_gradient:
-                assert name in self.ema_data, \
+                assert name in self._ema_data, \
                     "The param ({}) isn't in the model".format(name)
                 self._backup_data[name] = param.numpy()
-                param.set_value(self.ema_data[name])
+                param.set_value(self._ema_data[name])
 
     def restore(self):
         """
