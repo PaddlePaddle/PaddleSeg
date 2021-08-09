@@ -41,13 +41,17 @@ class CrossEntropyLoss(nn.Layer):
                  top_k_percent_pixels=1.0,
                  data_format='NCHW'):
         super(CrossEntropyLoss, self).__init__()
-        if weight is not None:
-            weight = paddle.to_tensor(weight, dtype='float32')
-        self.weight = weight
         self.ignore_index = ignore_index
         self.top_k_percent_pixels = top_k_percent_pixels
         self.EPS = 1e-8
         self.data_format = data_format
+        if weight is not None:
+            self.weight = paddle.to_tensor(weight, dtype='float32')
+            long_weight = weight + [0] * (256 - len(weight))
+            self.long_weight = paddle.to_tensor(long_weight, dtype='float32')
+        else:
+            self.weight = None
+            self.long_weight = None
 
     def forward(self, logit, label, semantic_weights=None):
         """
@@ -75,7 +79,7 @@ class CrossEntropyLoss(nn.Layer):
             label,
             ignore_index=self.ignore_index,
             reduction='none',
-            weight=self.weight)
+            weight=self.long_weight)
 
         mask = label != self.ignore_index
         mask = paddle.cast(mask, 'float32')
