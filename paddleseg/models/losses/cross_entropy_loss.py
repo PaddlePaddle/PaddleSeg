@@ -68,8 +68,8 @@ class CrossEntropyLoss(nn.Layer):
             raise ValueError(
                 'The number of weights = {} must be the same as the number of classes = {}.'
                 .format(len(self.weight), logit.shape[1]))
-
-        logit = paddle.transpose(logit, [0, 2, 3, 1])
+        if channel_axis == 1:
+            logit = paddle.transpose(logit, [0, 2, 3, 1])
         loss = F.cross_entropy(
             logit,
             label,
