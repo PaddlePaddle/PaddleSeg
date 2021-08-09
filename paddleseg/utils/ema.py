@@ -17,7 +17,7 @@ import paddle
 
 class EMA(object):
     """
-    The implement of Exponential Moving Average for the trainable parameters.
+    The implementation of Exponential Moving Average for the trainable parameters.
 
     Args:
         model (nn.Layer): The model for applying EMA.
