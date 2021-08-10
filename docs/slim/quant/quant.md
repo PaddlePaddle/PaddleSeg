@@ -97,8 +97,8 @@ python slim/quant/qat_export.py \
 ## 3 部署
 
 得到量化预测模型后，我们可以直接进行部署应用，相关教程请参考:
-* [Paddle Inference部署](../docs/deployment/inference/inference.md)
-* [PaddleLite部署](../docs/deployment/lite/lite.md)
+* [Paddle Inference部署](../../deployment/inference/inference.md)
+* [PaddleLite部署](../../deployment/lite/lite.md)
 
 ## 4 量化加速比
 
