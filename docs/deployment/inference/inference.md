@@ -32,7 +32,6 @@ python deploy/python/infer.py --config /path/to/deploy.yaml --image_path /path/t
 |cpu_threads|使用cpu预测的线程数|否|10|
 |enable_mkldnn|是否使用MKL-DNN加速cpu预测|否|False|
 |benchmark|是否产出日志，包含环境、模型、配置、性能信息|否|False|
-|save_log_path|保存日志的路径|否|"./log_output/"|
 |with_argmax|对预测结果进行argmax操作|否|否|
 
 *测试样例和预测结果如下*
@@ -43,3 +42,5 @@ python deploy/python/infer.py --config /path/to/deploy.yaml --image_path /path/t
 1. 当使用量化模型预测时，需要同时开启TensorRT预测和int8预测才会有加速效果
 
 2. 使用TensorRT需要使用支持TRT功能的Paddle库，请参考[附录](https://www.paddlepaddle.org.cn/documentation/docs/zh/install/Tables.html#whl-release)下载对应的PaddlePaddle安装包，或者参考[源码编译](https://www.paddlepaddle.org.cn/documentation/docs/zh/install/compile/fromsource.html)自行编译。
+
+3. 要开启`--benchmark`的话需要安装auto_log。[安装方式](https://github.com/LDOUBLEV/AutoLog)

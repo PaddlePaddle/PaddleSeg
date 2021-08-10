@@ -116,7 +116,7 @@ class Predictor:
                 model_precision=args.precision,
                 batch_size=args.batch_size,
                 data_shape="dynamic",
-                save_path=args.save_log_path,
+                save_path=None,
                 inference_config=pred_cfg,
                 pids=pid,
                 process_name=None,
@@ -248,11 +248,6 @@ def parse_args():
         help=
         "Whether to log some information about environment, model, configuration and performance."
     )
-    parser.add_argument(
-        "--save_log_path",
-        type=str,
-        default="./log_output/",
-        help="The file path to save log.")
 
     parser.add_argument(
         '--with_argmax',
