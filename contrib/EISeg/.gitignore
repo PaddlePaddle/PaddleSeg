@@ -13,6 +13,7 @@ output/
 temp*
 temp/
 
+
 # C extensions
 *.so
 
@@ -143,10 +144,10 @@ dmypy.json
 
 # exe
 out/
-*.7z
 eiseg/requirements_with_opt.txt
 
 # test
+test/
 test_output/
 *.npy
 
