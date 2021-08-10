@@ -1,9 +1,0 @@
-pyqt5
-qtpy
-opencv-python
-scipy
-paddleseg
-albumentations
-cython
-pyyaml
-wget
