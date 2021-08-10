@@ -1500,7 +1500,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
 
     def toggleLargestCC(self, on):
         try:
-            self.controller.filterLargestCC = on
+            self.controller.filterLargestCC(on)
         except:
             pass
 
