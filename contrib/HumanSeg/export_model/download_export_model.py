@@ -23,6 +23,8 @@ sys.path.append(TEST_PATH)
 from paddleseg.utils.download import download_file_and_uncompress
 
 model_urls = {
+    "ppseg_lite_portrait_398x224_with_softmax":
+    "https://paddleseg.bj.bcebos.com/dygraph/ppseg/ppseg_lite_portrait_398x224_with_softmax.tar.gz",
     "deeplabv3p_resnet50_os8_humanseg_512x512_100k_with_softmax":
     "https://paddleseg.bj.bcebos.com/dygraph/humanseg/export/deeplabv3p_resnet50_os8_humanseg_512x512_100k_with_softmax.zip",
     "fcn_hrnetw18_small_v1_humanseg_192x192_with_softmax":

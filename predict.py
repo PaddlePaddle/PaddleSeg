@@ -95,6 +95,16 @@ def parse_args():
         type=int,
         default=None)
 
+    # custom color map
+    parser.add_argument(
+        '--custom_color',
+        dest='custom_color',
+        nargs='+',
+        help=
+        'Save images with a custom color map. Default: None, use paddleseg\'s default color map.',
+        type=int,
+        default=None)
+
     return parser.parse_args()
 
 
@@ -114,9 +124,7 @@ def get_image_list(image_path):
                 for line in f:
                     line = line.strip()
                     if len(line.split()) > 1:
-                        raise RuntimeError(
-                            'There should be only one image path per line in `--image_path` file. Wrong line: {}'
-                            .format(line))
+                        line = line.split()[0]
                     image_list.append(os.path.join(image_dir, line))
     elif os.path.isdir(image_path):
         image_dir = image_path
@@ -154,6 +162,9 @@ def get_test_config(cfg, args):
         test_config['is_slide'] = args.is_slide
         test_config['crop_size'] = args.crop_size
         test_config['stride'] = args.stride
+
+    if args.custom_color:
+        test_config['custom_color'] = args.custom_color
 
     return test_config
 

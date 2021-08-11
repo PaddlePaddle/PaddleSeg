@@ -22,23 +22,23 @@ PaddleSeg是基于飞桨[PaddlePaddle](https://www.paddlepaddle.org.cn)开发的
 
 
 
-* Day① 7.13 20:15-21:30 
+* Day① 7.13 20:15-21:30
     * 主题：顶会冠军图像分割算法深度解密
         * 语义分割全系列算法讲解
         * CVPR冠军解析自动驾驶场景理解方案
         * 揭秘百度全新Transformer算法
 
-* Day② 7.14 20:15-21:30 
+* Day② 7.14 20:15-21:30
     * 主题：高精度人像分割算法及应用
         * 实时人像分割技术难点及实现
         *  Web端超轻量模型设计方案
-        * 精细化分割Matting技术详解 
+        * 精细化分割Matting技术详解
 
-* Day③ 7.15 20:15-21:30 
+* Day③ 7.15 20:15-21:30
     * 主题：交互式分割及破圈应用
         * 交互式分割算法及优化技巧
         * 高效智能标注功能的实现
-        * 交互式分割的产业创新应用 
+        * 交互式分割的产业创新应用
 
 ## 特性 <img src="./docs/images/feature.png" width="30"/>
 
@@ -85,7 +85,7 @@ PaddleSeg是基于飞桨[PaddlePaddle](https://www.paddlepaddle.org.cn)开发的
 |[ISANet](./configs/isanet)|✔|✔|-|-|
 |[DNLNet](./configs/dnlnet)|✔|✔|-|-|
 |[SFNet](./configs/sfnet)|✔|-|-|-|
-|[ShuffleNetV2](./configs/shufflenetv2)|-|-|-|-|
+|[PPSegLite](./configs/ppseg_lite)|-|-|-|-|
 
 ## 使用教程 <img src="./docs/images/teach.png" width="30"/>
 
@@ -108,7 +108,9 @@ PaddleSeg是基于飞桨[PaddlePaddle](https://www.paddlepaddle.org.cn)开发的
     * [Lite](./docs/deployment/lite/lite.md)
     * [Serving](./docs/deployment/serving/serving.md)
     * [Web](./docs/deployment/web/web.md)
-* [模型压缩](./docs/slim/slim/slim.md)
+* 模型压缩
+    * [量化](./docs/slim/quant/quant.md)
+    * [裁剪](./docs/slim/prune/prune.md)
 *  API使用教程
     * [API文档说明](./docs/apis)
     * [API应用案例](./docs/api_example.md)

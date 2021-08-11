@@ -27,7 +27,7 @@ from deploy.infer import Predictor
 def parse_args():
     parser = argparse.ArgumentParser(description='HumanSeg inference for video')
     parser.add_argument(
-        "--cfg",
+        "--config",
         dest="cfg",
         help="The config file.",
         default=None,
@@ -36,20 +36,14 @@ def parse_args():
     parser.add_argument(
         "--input_shape",
         dest="input_shape",
-        help="The image shape for net inputs.",
+        help="The image shape [h, w] for net inputs.",
         nargs=2,
         default=[192, 192],
         type=int)
     parser.add_argument(
-        '--image_path',
-        dest='image_path',
+        '--img_path',
+        dest='img_path',
         help='Image including human',
-        type=str,
-        default=None)
-    parser.add_argument(
-        '--background_image_path',
-        dest='background_image_path',
-        help='Background image for replacing',
         type=str,
         default=None)
     parser.add_argument(
@@ -59,8 +53,15 @@ def parse_args():
         type=str,
         default=None)
     parser.add_argument(
-        '--background_video_path',
-        dest='background_video_path',
+        '--bg_img_path',
+        dest='bg_img_path',
+        help=
+        'Background image path for replacing. If not specified, a white background is used',
+        type=str,
+        default=None)
+    parser.add_argument(
+        '--bg_video_path',
+        dest='bg_video_path',
         help='Background video path for replacing',
         type=str,
         default=None)
@@ -79,7 +80,14 @@ def parse_args():
     parser.add_argument(
         '--not_soft_predict',
         dest='not_soft_predict',
-        help='',
+        help=
+        'If this is turned on, the prediction result will be output directly without using soft predict',
+        action='store_true')
+
+    parser.add_argument(
+        '--test_speed',
+        dest='test_speed',
+        help='Whether to test inference speed',
         action='store_true')
 
     return parser.parse_args()
@@ -95,47 +103,31 @@ def background_replace(args):
         os.makedirs(args.save_dir)
 
     # 图像背景替换
-    if args.image_path is not None:
-        if not osp.exists(args.image_path):
-            raise Exception('The --image_path is not existed: {}'.format(
-                args.image_path))
-        if args.background_image_path is None:
-            raise Exception(
-                'The --background_image_path is not set. Please set it')
-        else:
-            if not osp.exists(args.background_image_path):
-                raise Exception(
-                    'The --background_image_path is not existed: {}'.format(
-                        args.background_image_path))
-        img = cv2.imread(args.image_path)
-        bg = cv2.imread(args.background_image_path)
+    if args.img_path is not None:
+        if not osp.exists(args.img_path):
+            raise Exception('The --img_path is not existed: {}'.format(
+                args.img_path))
+        img = cv2.imread(args.img_path)
+        bg = get_bg_img(args.bg_img_path, img.shape)
 
         comb = predictor.run(img, bg)
 
-        save_name = osp.basename(args.image_path)
+        save_name = osp.basename(args.img_path)
         save_path = osp.join(args.save_dir, save_name)
         cv2.imwrite(save_path, comb)
-
     # 视频背景替换
     else:
-        # 如果提供背景视频则以背景视频作为背景，否则采用提供的背景图片
-        is_video_bg = False
-        if args.background_video_path is not None:
-            if not osp.exists(args.background_video_path):
-                raise Exception(
-                    'The --background_video_path is not existed: {}'.format(
-                        args.background_video_path))
+        # 获取背景：如果提供背景视频则以背景视频作为背景，否则采用提供的背景图片
+        if args.bg_video_path is not None:
+            if not osp.exists(args.bg_video_path):
+                raise Exception('The --bg_video_path is not existed: {}'.format(
+                    args.bg_video_path))
             is_video_bg = True
-        elif args.background_image_path is not None:
-            if not osp.exists(args.background_image_path):
-                raise Exception(
-                    'The --background_image_path is not existed: {}'.format(
-                        args.background_image_path))
         else:
-            raise Exception(
-                'Please offer backgound image or video. You should set --backbground_iamge_paht or --background_video_path'
-            )
+            bg = get_bg_img(args.bg_img_path, args.input_shape)
+            is_video_bg = False
 
+        # 视频预测
         if args.video_path is not None:
             logger.info('Please wait. It is computing......')
             if not osp.exists(args.video_path):
@@ -155,28 +147,25 @@ def background_replace(args):
                 (width, height))
 
             if is_video_bg:
-                cap_bg = cv2.VideoCapture(args.background_video_path)
+                cap_bg = cv2.VideoCapture(args.bg_video_path)
                 frames_bg = cap_bg.get(cv2.CAP_PROP_FRAME_COUNT)
-                current_frame_bg = 1
-            else:
-                img_bg = cv2.imread(args.background_image_path)
+                current_bg = 1
             frame_num = 0
             while cap_video.isOpened():
                 ret, frame = cap_video.read()
                 if ret:
-                    #循环读取背景帧
+                    #读取背景帧
                     if is_video_bg:
-                        ret_bg, frame_bg = cap_bg.read()
+                        ret_bg, bg = cap_bg.read()
                         if ret_bg:
-                            if current_frame_bg == frames_bg:
-                                current_frame_bg = 1
+                            if current_bg == frames_bg:
+                                current_bg = 1
                                 cap_bg.set(cv2.CAP_PROP_POS_FRAMES, 0)
                         else:
                             break
-                        current_frame_bg += 1
-                        comb = predictor.run(frame, frame_bg)
-                    else:
-                        comb = predictor.run(frame, img_bg)
+                        current_bg += 1
+
+                    comb = predictor.run(frame, bg)
 
                     cap_out.write(comb)
                     frame_num += 1
@@ -200,28 +189,26 @@ def background_replace(args):
                 return
 
             if is_video_bg:
-                cap_bg = cv2.VideoCapture(args.background_video_path)
+                cap_bg = cv2.VideoCapture(args.bg_video_path)
                 frames_bg = cap_bg.get(cv2.CAP_PROP_FRAME_COUNT)
-                current_frame_bg = 1
-            else:
-                img_bg = cv2.imread(args.background_image_path)
+                current_bg = 1
 
             while cap_video.isOpened():
                 ret, frame = cap_video.read()
                 if ret:
-                    #循环读取背景帧
+                    #读取背景帧
                     if is_video_bg:
-                        ret_bg, frame_bg = cap_bg.read()
+                        ret_bg, bg = cap_bg.read()
                         if ret_bg:
-                            if current_frame_bg == frames_bg:
-                                current_frame_bg = 1
+                            if current_bg == frames_bg:
+                                current_bg = 1
                                 cap_bg.set(cv2.CAP_PROP_POS_FRAMES, 0)
                         else:
                             break
-                        current_frame_bg += 1
-                        comb = predictor.run(frame, frame_bg)
-                    else:
-                        comb = predictor.run(frame, img_bg)
+                        current_bg += 1
+
+                    comb = predictor.run(frame, bg)
+
                     cv2.imshow('HumanSegmentation', comb)
                     if cv2.waitKey(1) & 0xFF == ord('q'):
                         break
@@ -230,6 +217,22 @@ def background_replace(args):
             if is_video_bg:
                 cap_bg.release()
             cap_video.release()
+    if args.test_speed:
+        timer = predictor.cost_averager
+        logger.info(
+            'Model inference time per image: {}\nFPS: {}\nNum of images: {}'.
+            format(timer.get_average(), 1 / timer.get_average(), timer._cnt))
+
+
+def get_bg_img(bg_img_path, img_shape):
+    if bg_img_path is None:
+        bg = 255 * np.ones(img_shape)
+    elif not osp.exists(bg_img_path):
+        raise Exception(
+            'The --bg_img_path is not existed: {}'.format(bg_img_path))
+    else:
+        bg = cv2.imread(bg_img_path)
+    return bg
 
 
 if __name__ == "__main__":
