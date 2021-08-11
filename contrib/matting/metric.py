@@ -38,7 +38,7 @@ class MSE():
         update metric.
 
         Args:
-            pred (np.ndarray): The value range is [0., 1.].
+            pred (np.ndarray): The value range is [0., 255.].
             gt (np.ndarray): The value range is [0, 255].
             trimap (np.ndarray, optional) The value is in {0, 128, 255}. Default: None.
         """
@@ -78,8 +78,8 @@ class SAD():
         update metric.
 
         Args:
-            pred (np.ndarray): The value range is [0., 1.].
-            gt (np.ndarray): The value range is [0, 255].
+            pred (np.ndarray): The value range is [0., 255.].
+            gt (np.ndarray): The value range is [0., 255.].
             trimap (np.ndarray, optional)L The value is in {0, 128, 255}. Default: None.
         """
         if trimap is None:

@@ -20,11 +20,10 @@ import numpy as np
 import random
 import paddle
 
-from utils import get_files
 import transforms as T
 
 
-class HumanMatteDataset(paddle.io.Dataset):
+class HumanMattingDataset(paddle.io.Dataset):
     """
     human_matting
     |__Composition-1k（origin dataset name）
@@ -61,11 +60,13 @@ class HumanMatteDataset(paddle.io.Dataset):
                  transforms,
                  mode='train',
                  train_file=None,
-                 val_file=None):
+                 val_file=None,
+                 get_trimap=True):
         super().__init__()
         self.dataset_root = dataset_root
         self.transforms = T.Compose(transforms)
         self.mode = mode
+        self.get_trimap = get_trimap
 
         # check file
         if mode == 'train' or mode == 'trainval':
@@ -101,12 +102,13 @@ class HumanMatteDataset(paddle.io.Dataset):
         data = {}
         fg_bg_file = self.fg_bg_list[idx]
         fg_bg_file = fg_bg_file.split(' ')
+        data['img_name'] = fg_bg_file[0]  # using in save prediction results
         fg_file = os.path.join(self.dataset_root, fg_bg_file[0])
         alpha_file = fg_file.replace('fg', 'alpha')
         fg = cv2.imread(fg_file)
         alpha = cv2.imread(alpha_file, 0)
         data['alpha'] = alpha
-        data['gt_fields'] = ['alpha']
+        data['gt_fields'] = []
 
         if len(fg_bg_file) == 2:
             bg_file = os.path.join(self.dataset_root, fg_bg_file[1])
@@ -116,15 +118,34 @@ class HumanMatteDataset(paddle.io.Dataset):
             if self.mode in ['train', 'trainval']:
                 data['gt_fields'].append('fg')
                 data['gt_fields'].append('bg')
-
+                data['gt_fields'].append('alpha')
         else:
-            data['img'] = data['fg']
+            data['img'] = fg
 
         data['trans_info'] = []  # Record shape change information
         data = self.transforms(data)
+
+        # When evaluation, gt should not be transforms.
+        if self.mode == 'val':
+            data['gt_fields'].append('alpha')
+
         data['img'] = data['img'].astype('float32')
         for key in data.get('gt_fields', []):
             data[key] = data[key].astype('float32')
+        if self.get_trimap:
+            # Trimap read from file only happening in evaluation.
+            if self.mode == 'val':
+                trimap_path = alpha_file.replace('alpha', 'trimap')
+                if os.path.exists(trimap_path):
+                    data['trimap'] = trimap_path
+                    data['gt_fields'].append('trimap')
+
+            if 'trimap' not in data:
+                data['trimap'] = self.gen_trimap(
+                    data['alpha'], mode=self.mode).astype('float32')
+            data['trimap'] = data['trimap'][np.newaxis, :, :]
+
+        data['alpha'] = data['alpha'][np.newaxis, :, :] / 255.
 
         return data
 
@@ -155,16 +176,41 @@ class HumanMatteDataset(paddle.io.Dataset):
         image = image.astype(np.uint8)
         return image, bg
 
+    @staticmethod
+    def gen_trimap(alpha, mode='train', eval_kernel=7):
+        if mode == 'train':
+            k_size = random.choice(range(2, 5))
+            iterations = np.random.randint(5, 15)
+            kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE,
+                                               (k_size, k_size))
+            dilated = cv2.dilate(alpha, kernel, iterations=iterations)
+            eroded = cv2.erode(alpha, kernel, iterations=iterations)
+            trimap = np.zeros(alpha.shape)
+            trimap.fill(128)
+            trimap[eroded > 254.5] = 255
+            trimap[dilated < 0.5] = 0
+        else:
+            k_size = eval_kernel
+            kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE,
+                                               (k_size, k_size))
+            dilated = cv2.dilate(alpha, kernel)
+            trimap = np.zeros(alpha.shape)
+            trimap.fill(128)
+            trimap[alpha >= 250] = 255
+            trimap[dilated <= 5] = 0
+
+        return trimap
+
 
 if __name__ == '__main__':
     t = [T.LoadImages(to_rgb=False), T.Resize(), T.Normalize()]
-    train_dataset = HumanMatteDataset(
+    train_dataset = HumanMattingDataset(
         dataset_root='../data/matting/human_matte/',
         transforms=t,
         mode='val',
         train_file=['Composition-1k_train.txt', 'Distinctions-646_train.txt'],
         val_file=['Composition-1k_val.txt', 'Distinctions-646_val.txt'])
-    data = train_dataset[21]
+    data = train_dataset[81]
     print(data.keys())
     print(data['gt_fields'])
 
@@ -183,3 +229,5 @@ if __name__ == '__main__':
     cv2.imwrite('img.png', data['img'])
     for key in data['gt_fields']:
         cv2.imwrite(key + '.png', data[key])
+
+    cv2.imwrite('trimap.png', data['trimap'].astype('uint8'))

@@ -88,6 +88,8 @@ class Dataset(paddle.io.Dataset):
             data['trimap'] = self.gen_trimap(
                 data['alpha'], mode=self.mode).astype('float32')
 
+        data['alpha'] = data['alpha'] / 255.
+
         return data
 
     def __len__(self):

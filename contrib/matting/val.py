@@ -16,7 +16,7 @@ import argparse
 
 from core import evaluate
 from model import *
-from dataset import HumanDataset
+from dataset import HumanMattingDataset
 import transforms as T
 
 
@@ -45,17 +45,23 @@ def parse_args():
         type=int,
         default=0)
     parser.add_argument(
-        '--stage',
-        dest='stage',
-        help='training stage: 0(simple loss), 1, 2, 3(whole net)',
-        type=int,
+        '--backbone',
+        dest='backbone',
+        help='The backbone of model. It is one of (MobileNetV2)',
         required=True,
-        choices=[0, 1, 2, 3])
+        type=str)
     parser.add_argument(
         '--dataset_root',
         dest='dataset_root',
         help='the dataset root directory',
         type=str)
+    parser.add_argument(
+        '--val_file',
+        dest='val_file',
+        nargs='+',
+        help='Image list for evaluation',
+        type=str,
+        default='val.txt')
     parser.add_argument(
         '--save_results',
         dest='save_results',
@@ -67,21 +73,23 @@ def parse_args():
 
 def main(args):
     paddle.set_device('gpu')
+    #     T.ResizeByLong(long_size=1024),
+    t = [T.LoadImages(), T.ResizeToIntMult(mult_int=32), T.Normalize()]
+    #     t = [T.LoadImages(), T.LimitLong(max_long=2048), T.ResizeToIntMult(mult_int=32), T.Normalize()]
 
-    # 一些模块的组建
-    # train_dataset
-    # 简单的建立一个数据读取器
-    # train_dataset = Dataset()
-    t = [T.LoadImages(), T.Normalize()]
-
-    eval_dataset = HumanDataset(
-        dataset_root=args.dataset_root, transforms=t, mode='val')
+    eval_dataset = HumanMattingDataset(
+        dataset_root=args.dataset_root,
+        transforms=t,
+        mode='val',
+        val_file=args.val_file,
+        get_trimap=False)
 
     # model
-    backbone = VGG16(input_channels=4)
-    model = DIM(backbone=backbone, stage=args.stage, pretrained=args.model_path)
+    backbone = eval(args.backbone)(input_channels=3)
 
-    # 调用train函数进行训练
+    model = MODNet(backbone=backbone, pretrained=args.model_path)
+
+    # 调用evaluate函数进行训练
     evaluate(
         model=model,
         eval_dataset=eval_dataset,

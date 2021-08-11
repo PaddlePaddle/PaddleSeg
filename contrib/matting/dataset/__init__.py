@@ -12,9 +12,5 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .vgg import *
-from .resnet_vd import *
-from .mobilenet_v2 import *
-from .dim import DIM
-from .loss import MRSD
-from .modnet import MODNet
+from .dataset import Dataset
+from .human_matting_dataset import HumanMattingDataset

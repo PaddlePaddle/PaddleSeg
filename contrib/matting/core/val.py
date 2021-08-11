@@ -41,10 +41,10 @@ def save_alpha_pred(alpha, path):
 def reverse_transform(alpha, trans_info):
     """recover pred to origin shape"""
     for item in trans_info[::-1]:
-        if item[0] == 'resize':
+        if item[0][0] == 'resize':
             h, w = item[1][0], item[1][1]
-            alpha = F.interpolate(alpha, (h, w), mode='bilinear')
-        elif item[0] == 'padding':
+            alpha = F.interpolate(alpha, [h, w], mode='bilinear')
+        elif item[0][0] == 'padding':
             h, w = item[1][0], item[1][1]
             alpha = alpha[:, :, 0:h, 0:w]
         else:
@@ -91,25 +91,25 @@ def evaluate(model,
     with paddle.no_grad():
         for iter, data in enumerate(loader):
             reader_cost_averager.record(time.time() - batch_start)
-            logit_dict = model(data)
+            alpha_pred = model(data)
 
-            # 指标计算 结果保存 先实现单卡的
-            if model.stage <= 1:
-                alpha_pred = logit_dict['alpha_raw'].numpy()
-            else:
-                alpha_pred = logit_dict['alpha_pred'].numpy()
-            alpha_gt = data['alpha'].numpy()
-            trimap = data['trimap'].numpy().astype('uint8')
-            alpha_pred = alpha_pred.squeeze(1)
-            alpha_pred = (alpha_pred * 255)
+            alpha_pred = reverse_transform(alpha_pred, data['trans_info'])
+            alpha_pred = alpha_pred.numpy()
+
+            alpha_gt = data['alpha'].numpy() * 255
+            trimap = data.get('trimap')
+            if trimap is not None:
+                trimap = data['trimap'].numpy().astype('uint8')
+            alpha_pred = np.round(alpha_pred * 255)
             mse_metric.update(alpha_pred, alpha_gt, trimap)
             sad_metric.update(alpha_pred, alpha_gt, trimap)
 
             if save_results:
                 alpha_pred_one = alpha_pred[0].squeeze()
-                trimap = trimap.squeeze().astype('uint8')
-                alpha_pred_one[trimap == 255] = 255
-                alpha_pred_one[trimap == 0] = 0
+                if trimap is not None:
+                    trimap = trimap.squeeze().astype('uint8')
+                    alpha_pred_one[trimap == 255] = 255
+                    alpha_pred_one[trimap == 0] = 0
                 save_alpha_pred(alpha_pred_one,
                                 os.path.join(save_dir, data['img_name'][0]))
 

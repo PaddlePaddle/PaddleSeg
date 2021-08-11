@@ -14,10 +14,15 @@
 
 import argparse
 import os
+from collections import defaultdict
+
+import paddle
+import paddle.nn as nn
+import paddleseg
 
 from core import train
 from model import *
-from dataset import HumanDataset
+from dataset import HumanMattingDataset
 import transforms as T
 
 
@@ -91,13 +96,6 @@ def parse_args():
         help='Whether to record the data to VisualDL during training',
         action='store_true')
     parser.add_argument(
-        '--stage',
-        dest='stage',
-        help='training stage: 0(simple loss), 1, 2, 3(whole net)',
-        type=int,
-        required=True,
-        choices=[0, 1, 2, 3])
-    parser.add_argument(
         '--pretrained_model',
         dest='pretrained_model',
         help='the pretrained model',
@@ -116,10 +114,23 @@ def parse_args():
     parser.add_argument(
         '--backbone',
         dest='backbone',
-        help=
-        'The backbone of model. It is one of (VGG16, ResNet18_vd, ResNet34_vd, ResNet50_vd, ResNet101_vd, ResNet152_vd)',
+        help='The backbone of model. It is one of (MobileNetV2)',
         required=True,
         type=str)
+    parser.add_argument(
+        '--train_file',
+        dest='train_file',
+        nargs='+',
+        help='Image list for traiing',
+        type=str,
+        default='train.txt')
+    parser.add_argument(
+        '--val_file',
+        dest='val_file',
+        nargs='+',
+        help='Image list for evaluation',
+        type=str,
+        default='val.txt')
 
     return parser.parse_args()
 
@@ -133,56 +144,64 @@ def main(args):
     # train_dataset = Dataset()
     t = [
         T.LoadImages(),
-        T.RandomCropByAlpha(crop_size=((320, 320), (480, 480), (640, 640))),
-        T.Resize(target_size=(320, 320)),
+        T.RandomCropByAlpha(crop_size=((512, 512), (640, 640), (800, 800))),
+        T.Resize(target_size=(512, 512)),
         T.Normalize()
     ]
 
-    train_dataset = HumanDataset(
-        dataset_root=args.dataset_root, transforms=t, mode='train')
+    train_dataset = HumanMattingDataset(
+        dataset_root=args.dataset_root,
+        transforms=t,
+        mode='train',
+        train_file=args.train_file)
     if args.do_eval:
-        t = [T.LoadImages(), T.Normalize()]
-        val_dataset = HumanDataset(
-            dataset_root=args.dataset_root, transforms=t, mode='val')
+        t = [T.LoadImages(), T.ResizeToIntMult(mult_int=32), T.Normalize()]
+        val_dataset = HumanMattingDataset(
+            dataset_root=args.dataset_root,
+            transforms=t,
+            mode='val',
+            val_file=args.val_file,
+            get_trimap=False)
     else:
         val_dataset = None
 
     # loss
-    losses = {'types': [], 'coef': []}
-    # encoder-decoder alpha loss
-    losses['types'].append(MRSD())
-    losses['coef'].append(0.5)
-    # compositionnal loss
-    losses['types'].append(MRSD())
-    losses['coef'].append(0.5)
-    # refine alpha loss
-    losses['types'].append(MRSD())
-    losses['coef'].append(1)
+    losses = defaultdict(list)
+    losses['semantic'].append(paddleseg.models.MSELoss())
+    losses['detail'].append(paddleseg.models.L1Loss())
+    losses['fusion'].append(paddleseg.models.L1Loss())
+    losses['fusion'].append(paddleseg.models.L1Loss())
 
     # model
     #bulid backbone
-    # vgg16预训练模型地址： 'https://paddle-imagenet-models-name.bj.bcebos.com/dygraph/VGG16_pretrained.pdparams')
     pretrained_model = './pretrained_models/' + args.backbone + '_pretrained.pdparams'
     if not os.path.exists(pretrained_model):
         pretrained_model = None
     backbone = eval(args.backbone)(
-        input_channels=4, pretrained=pretrained_model)
+        input_channels=3, pretrained=pretrained_model)
 
-    decoder_input_channels = 512
-    if args.backbone in ['ResNet50_vd', 'ResNet101_vd', 'ResNet152_vd']:
-        decoder_input_channels = 2048
-    model = DIM(
-        backbone=backbone,
-        stage=args.stage,
-        pretrained=args.pretrained_model,
-        decoder_input_channels=decoder_input_channels)
+    model = MODNet(backbone=backbone, pretrained=args.pretrained_model)
 
     # optimizer
     # 简单的先构建一个优化器
     # lr = paddle.optimizer.lr.PolynomialDecay(
     #     0.001, decay_steps=200000, end_lr=0.0, power=0.9)
-    optimizer = paddle.optimizer.Adam(
-        learning_rate=args.learning_rate, parameters=model.parameters())
+    # use adam
+    #     optimizer = paddle.optimizer.Adam(
+    #         learning_rate=args.learning_rate, parameters=model.parameters())
+
+    #     lr = paddle.optimizer.lr.StepDecay(args.learning_rate, step_size=1000, gamma=0.1, last_epoch=-1, verbose=False)
+    boundaries = [50000, 100000, 200000]
+    values = [
+        args.learning_rate * 0.1**scale for scale in range(len(boundaries) + 1)
+    ]
+    lr = paddle.optimizer.lr.PiecewiseDecay(
+        boundaries=boundaries, values=values, last_epoch=-1, verbose=False)
+    optimizer = paddle.optimizer.Momentum(
+        learning_rate=lr,
+        momentum=0.9,
+        parameters=model.parameters(),
+        weight_decay=4e-5)
 
     # 调用train函数进行训练
     train(
@@ -198,11 +217,11 @@ def main(args):
         save_interval=args.save_interval,
         log_iters=args.log_iters,
         resume_model=args.resume_model,
-        stage=args.stage,
         save_dir=args.save_dir,
         save_begin_iters=args.save_begin_iters)
 
 
 if __name__ == '__main__':
     args = parse_args()
+    print(args)
     main(args)

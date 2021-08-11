@@ -93,10 +93,50 @@ class Resize:
         self.target_size = target_size
 
     def __call__(self, data):
-        data['trans_info'].append(('resize', data['img'].shape[-2:]))
+        data['trans_info'].append(('resize', data['img'].shape[0:2]))
         data['img'] = functional.resize(data['img'], self.target_size)
         for key in data.get('gt_fields', []):
             data[key] = functional.resize(data[key], self.target_size)
+        return data
+
+
+class ResizeByLong:
+    """
+    Resize the long side of an image to given size, and then scale the other side proportionally.
+
+    Args:
+        long_size (int): The target size of long side.
+    """
+
+    def __init__(self, long_size):
+        self.long_size = long_size
+
+    def __call__(self, data):
+        data['trans_info'].append(('resize', data['img'].shape[0:2]))
+        data['img'] = functional.resize_long(data['img'], self.long_size)
+        for key in data.get('gt_fields', []):
+            data[key] = functional.resize_long(data[key], self.long_size)
+        return data
+
+
+class ResizeToIntMult:
+    """
+    Resize to some int muitple, d.g. 32.
+    """
+
+    def __init__(self, mult_int=32):
+        self.mult_int = mult_int
+
+    def __call__(self, data):
+        data['trans_info'].append(('resize', data['img'].shape[0:2]))
+
+        h, w = data['img'].shape[0:2]
+        rw = w - w % 32
+        rh = h - h % 32
+        data['img'] = functional.resize(data['img'], (rw, rh))
+        for key in data.get('gt_fields', []):
+            data[key] = functional.resize(data[key], (rw, rh))
+
         return data
 
 
@@ -138,7 +178,57 @@ class Normalize:
 
 class RandomCropByAlpha:
     """
-    Randomly crop with uncertain area as the center
+    Randomly crop while centered on uncertain area by a certain probability.
+
+    Args:
+        crop_size (tuple|list): The size you want to crop from image.
+        p (float): The probability centered on uncertain area.
+
+    """
+
+    def __init__(self, crop_size=((320, 320), (480, 480), (640, 640)), p=0.5):
+        self.crop_size = crop_size
+        self.p = p
+
+    def __call__(self, data):
+        idex = np.random.randint(low=0, high=len(self.crop_size))
+        crop_w, crop_h = self.crop_size[idex]
+
+        img_h = data['img'].shape[0]
+        img_w = data['img'].shape[1]
+        if np.random.rand() < self.p:
+            crop_center = np.where((data['alpha'] > 0) & (data['alpha'] < 255))
+            center_h_array, center_w_array = crop_center
+            if len(center_h_array) == 0:
+                return data
+            rand_ind = np.random.randint(len(center_h_array))
+            center_h = center_h_array[rand_ind]
+            center_w = center_w_array[rand_ind]
+            delta_h = crop_h // 2
+            delta_w = crop_w // 2
+            start_h = max(0, center_h - delta_h)
+            start_w = max(0, center_w - delta_w)
+        else:
+            start_h = 0
+            start_w = 0
+            if img_h > crop_h:
+                start_h = np.random.randint(img_h - crop_h + 1)
+            if img_w > crop_w:
+                start_w = np.random.randint(img_w - crop_w + 1)
+
+        end_h = min(img_h, start_h + crop_h)
+        end_w = min(img_w, start_w + crop_w)
+
+        data['img'] = data['img'][start_h:end_h, start_w:end_w]
+        for key in data.get('gt_fields', []):
+            data[key] = data[key][start_h:end_h, start_w:end_w]
+
+        return data
+
+
+class RandomCrop:
+    """
+    Randomly crop
 
     Args:
     crop_size (tuple|list): The size you want to crop from image.
@@ -149,23 +239,18 @@ class RandomCropByAlpha:
 
     def __call__(self, data):
         idex = np.random.randint(low=0, high=len(self.crop_size))
-        crop_size = self.crop_size[idex]
-        crop_center = np.where((data['alpha'] > 0) & (data['alpha'] < 255))
-        center_h_array, center_w_array = crop_center
-        delta_h = crop_size[1] // 2
-        delta_w = crop_size[0] // 2
+        crop_w, crop_h = self.crop_size[idex]
+        img_h, img_w = data['img'].shape[0:2]
 
-        if len(center_h_array) == 0:
-            return data
+        start_h = 0
+        start_w = 0
+        if img_h > crop_h:
+            start_h = np.random.randint(img_h - crop_h + 1)
+        if img_w > crop_w:
+            start_w = np.random.randint(img_w - crop_w + 1)
 
-        rand_ind = np.random.randint(len(center_h_array))
-        center_h = center_h_array[rand_ind]
-        center_w = center_w_array[rand_ind]
-
-        start_h = max(0, center_h - delta_h)
-        start_w = max(0, center_w - delta_w)
-        end_h = min(data['img'].shape[0], start_h + crop_size[1])
-        end_w = min(data['img'].shape[1], start_w + crop_size[0])
+        end_h = min(img_h, start_h + crop_h)
+        end_w = min(img_w, start_w + crop_w)
 
         data['img'] = data['img'][start_h:end_h, start_w:end_w]
         for key in data.get('gt_fields', []):
@@ -174,10 +259,67 @@ class RandomCropByAlpha:
         return data
 
 
+class LimitLong:
+    """
+    Limit the long edge of image.
+
+    If the long edge is larger than max_long, resize the long edge
+    to max_long, while scale the short edge proportionally.
+
+    If the long edge is smaller than min_long, resize the long edge
+    to min_long, while scale the short edge proportionally.
+
+    Args:
+        max_long (int, optional): If the long edge of image is larger than max_long,
+            it will be resize to max_long. Default: None.
+        min_long (int, optional): If the long edge of image is smaller than min_long,
+            it will be resize to min_long. Default: None.
+    """
+
+    def __init__(self, max_long=None, min_long=None):
+        if max_long is not None:
+            if not isinstance(max_long, int):
+                raise TypeError(
+                    "Type of `max_long` is invalid. It should be int, but it is {}"
+                    .format(type(max_long)))
+        if min_long is not None:
+            if not isinstance(min_long, int):
+                raise TypeError(
+                    "Type of `min_long` is invalid. It should be int, but it is {}"
+                    .format(type(min_long)))
+        if (max_long is not None) and (min_long is not None):
+            if min_long > max_long:
+                raise ValueError(
+                    '`max_long should not smaller than min_long, but they are {} and {}'
+                    .format(max_long, min_long))
+        self.max_long = max_long
+        self.min_long = min_long
+
+    def __call__(self, data):
+        h, w = data['img'].shape[:2]
+        long_edge = max(h, w)
+        target = long_edge
+        if (self.max_long is not None) and (long_edge > self.max_long):
+            target = self.max_long
+        elif (self.min_long is not None) and (long_edge < self.min_long):
+            target = self.min_long
+
+        if target != long_edge:
+            data['trans_info'].append(('resize', data['img'].shape[0:2]))
+            data['img'] = functional.resize_long(data['img'], target)
+            for key in data.get('gt_fields', []):
+                data[key] = functional.resize_long(data[key], self.long_size)
+
+        return data
+
+
 if __name__ == "__main__":
-    transforms = [LoadImages(), RandomCropByAlpha()]
+    transforms = [
+        LoadImages(),
+        RandomCropByAlpha(((640, 640), (1280, 1280)), p=0.5)
+    ]
     transforms = Compose(transforms)
-    img_path = '/mnt/chenguowei01/github/PaddleSeg/data/matting/human_matting/train/image/0051115Q_000001_0062_001.png'
+    img_path = '/ssd1/home/chenguowei01/github/PaddleSeg/contrib/matting/data/matting/human_matting_old/train/image/0051115Q_000001_0062_001.png'
     bg_path = img_path.replace('image', 'bg')
     fg_path = img_path.replace('image', 'fg')
     alpha_path = img_path.replace('image', 'alpha')

@@ -14,7 +14,7 @@
 
 import os
 import time
-from collections import deque
+from collections import deque, defaultdict
 import shutil
 
 import numpy as np
@@ -23,38 +23,6 @@ import paddle.nn.functional as F
 from paddleseg.utils import TimeAverager, calculate_eta, resume, logger
 
 from core.val import evaluate
-
-
-def loss_computation(logit_dict, label_dict, losses, stage=3):
-    """
-    Acoording the losses to select logit and label
-    """
-    loss_list = []
-    mask = label_dict['trimap'] == 128
-
-    if stage != 2:
-        # raw alpha
-        alpha_raw_loss = losses['types'][0](logit_dict['alpha_raw'],
-                                            label_dict['alpha'] / 255, mask)
-        alpha_raw_loss = losses['coef'][0] * alpha_raw_loss
-        loss_list.append(alpha_raw_loss)
-
-    if stage == 1 or stage == 3:
-        # comp loss
-        comp_pred = logit_dict['alpha_raw'] * label_dict['fg'] + (
-            1 - logit_dict['alpha_raw']) * label_dict['bg']
-        comp_loss = losses['types'][1](comp_pred, label_dict['img'], mask)
-        comp_loss = losses['coef'][1] * comp_loss
-        loss_list.append(comp_loss)
-
-    if stage == 2 or stage == 3:
-        # pred alpha
-        alpha_pred_loss = losses['types'][2](logit_dict['alpha_pred'],
-                                             label_dict['alpha'] / 255, mask)
-        alpha_pred_loss = losses['coef'][2] * alpha_pred_loss
-        loss_list.append(alpha_pred_loss)
-
-    return loss_list
 
 
 def train(model,
@@ -71,11 +39,9 @@ def train(model,
           use_vdl=False,
           losses=None,
           keep_checkpoint_max=5,
-          stage=3,
           save_begin_iters=None):
     """
     Launch training.
-
     Args:
         model（nn.Layer): A sementic segmentation model.
         train_dataset (paddle.io.Dataset): Used to read and process training datasets.
@@ -129,8 +95,7 @@ def train(model,
         from visualdl import LogWriter
         log_writer = LogWriter(save_dir)
 
-    avg_loss = 0.0
-    avg_loss_list = []
+    avg_loss = defaultdict(float)
     iters_per_epoch = len(batch_sampler)
     best_sad = np.inf
     best_model_iter = -1
@@ -150,13 +115,12 @@ def train(model,
             # model input
             if nranks > 1:
                 logit_dict = ddp_model(data)
+                loss_dict = ddp_model.loss(logit_dict, data, losses)
             else:
                 logit_dict = model(data)
+                loss_dict = model.loss(logit_dict, data, losses)
 
-            # 获取logit_dict, label_dict
-            loss_list = loss_computation(logit_dict, data, losses, stage=stage)
-            loss = sum(loss_list)
-            loss.backward()
+            loss_dict['all'].backward()
 
             optimizer.step()
             lr = optimizer.get_lr()
@@ -164,18 +128,15 @@ def train(model,
                           paddle.optimizer.lr.LRScheduler):
                 optimizer._learning_rate.step()
             model.clear_gradients()
-            avg_loss += loss.numpy()[0]
-            if not avg_loss_list:
-                avg_loss_list = [l.numpy() for l in loss_list]
-            else:
-                for i in range(len(loss_list)):
-                    avg_loss_list[i] += loss_list[i].numpy()
+
+            for key, value in loss_dict.items():
+                avg_loss[key] += value.numpy()[0]
             batch_cost_averager.record(
                 time.time() - batch_start, num_samples=batch_size)
 
             if (iter) % log_iters == 0 and local_rank == 0:
-                avg_loss /= log_iters
-                avg_loss_list = [l[0] / log_iters for l in avg_loss_list]
+                for key, value in avg_loss.items():
+                    avg_loss[key] = value / log_iters
                 remain_iters = iters - iter
                 avg_train_batch_cost = batch_cost_averager.get_average()
                 avg_train_reader_cost = reader_cost_averager.get_average()
@@ -183,23 +144,21 @@ def train(model,
                 logger.info(
                     "[TRAIN] epoch={}, iter={}/{}, loss={:.4f}, lr={:.6f}, batch_cost={:.4f}, reader_cost={:.5f}, ips={:.4f} samples/sec | ETA {}"
                     .format((iter - 1) // iters_per_epoch + 1, iter, iters,
-                            avg_loss, lr, avg_train_batch_cost,
+                            avg_loss['all'], lr, avg_train_batch_cost,
                             avg_train_reader_cost,
                             batch_cost_averager.get_ips_average(), eta))
-                # logger.info(
-                #     "[LOSS] loss={:.4f}, alpha_raw_loss={:.4f}, alpha_pred_loss={:.4f},"
-                #     .format(avg_loss, avg_loss_list[0], avg_loss_list[1]))
-                logger.info(avg_loss_list)
+                # print loss
+                loss_str = '[TRAIN] [LOSS] '
+                loss_str = loss_str + 'all={:.4f}'.format(avg_loss['all'])
+                for key, value in avg_loss.items():
+                    if key != 'all':
+                        loss_str = loss_str + ' ' + key + '={:.4f}'.format(
+                            value)
+                logger.info(loss_str)
                 if use_vdl:
-                    log_writer.add_scalar('Train/loss', avg_loss, iter)
-                    # Record all losses if there are more than 2 losses.
-                    if len(avg_loss_list) > 1:
-                        avg_loss_dict = {}
-                        for i, value in enumerate(avg_loss_list):
-                            avg_loss_dict['loss_' + str(i)] = value
-                        for key, value in avg_loss_dict.items():
-                            log_tag = 'Train/' + key
-                            log_writer.add_scalar(log_tag, value, iter)
+                    for key, value in avg_loss.items():
+                        log_tag = 'Train/' + key
+                        log_writer.add_scalar(log_tag, value, iter)
 
                     log_writer.add_scalar('Train/lr', lr, iter)
                     log_writer.add_scalar('Train/batch_cost',
@@ -207,13 +166,15 @@ def train(model,
                     log_writer.add_scalar('Train/reader_cost',
                                           avg_train_reader_cost, iter)
 
-                    if False:  #主要为调试时候的观察，真正训练的时候可以省略
+                    if True:  #主要为调试时候的观察，真正训练的时候可以省略
                         # 增加图片和alpha的显示
                         ori_img = data['img'][0]
                         ori_img = paddle.transpose(ori_img, [1, 2, 0])
                         ori_img = (ori_img * 0.5 + 0.5) * 255
-                        alpha = (data['alpha'][0]).unsqueeze(-1)
-                        trimap = (data['trimap'][0]).unsqueeze(-1)
+                        alpha = (data['alpha'][0])
+                        alpha = paddle.transpose(alpha, [1, 2, 0]) * 255
+                        trimap = (data['trimap'][0])
+                        trimap = paddle.transpose(trimap, [1, 2, 0])
                         log_writer.add_image(
                             tag='ground truth/ori_img',
                             img=ori_img.numpy(),
@@ -227,25 +188,26 @@ def train(model,
                             img=trimap.numpy(),
                             step=iter)
 
-                        alpha_raw = (
-                            logit_dict['alpha_raw'][0] * 255).transpose(
-                                [1, 2, 0])
+                        semantic = (logit_dict['semantic'][0] * 255).transpose(
+                            [1, 2, 0])
                         log_writer.add_image(
-                            tag='prediction/alpha_raw',
-                            img=alpha_raw.numpy(),
+                            tag='prediction/semantic',
+                            img=semantic.numpy().astype('uint8'),
+                            step=iter)
+                        detail = (logit_dict['detail'][0] * 255).transpose(
+                            [1, 2, 0])
+                        log_writer.add_image(
+                            tag='prediction/detail',
+                            img=detail.numpy().astype('uint8'),
+                            step=iter)
+                        cm = (logit_dict['matte'][0] * 255).transpose([1, 2, 0])
+                        log_writer.add_image(
+                            tag='prediction/alpha',
+                            img=cm.numpy().astype('uint8'),
                             step=iter)
 
-                        if stage >= 2:
-                            alpha_pred = (
-                                logit_dict['alpha_pred'][0] * 255).transpose(
-                                    [1, 2, 0])
-                            log_writer.add_image(
-                                tag='prediction/alpha_pred',
-                                img=alpha_pred.numpy().astype('uint8'),
-                                step=iter)
-
-                avg_loss = 0.0
-                avg_loss_list = []
+                for key in avg_loss.keys():
+                    avg_loss[key] = 0.
                 reader_cost_averager.reset()
                 batch_cost_averager.reset()
 
