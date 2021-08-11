@@ -125,10 +125,6 @@ class MODNetHead(nn.Layer):
         for layer in self.sublayers():
             if isinstance(layer, nn.Conv2D):
                 param_init.kaiming_uniform(layer.weight)
-            elif isinstance(
-                    layer, (nn.BatchNorm, nn.InstanceNorm2D, nn.SyncBatchNorm)):
-                param_init.constant_init(layer.weight, value=1.0)
-                param_init.constant_init(layer.bias, value=0.0)
 
 
 class FusionBranch(nn.Layer):
@@ -193,9 +189,9 @@ class HRBranch(nn.Layer):
                 stride=1,
                 padding=1),
             Conv2dIBNormRelu(
-                2 * hr_channels, hr_channels, 3, stride=1, padding=1),
-            Conv2dIBNormRelu(hr_channels, hr_channels, 3, stride=1, padding=1),
-            Conv2dIBNormRelu(hr_channels, hr_channels, 3, stride=1, padding=1))
+                2 * hr_channels, 2 * hr_channels, 3, stride=1, padding=1),
+            Conv2dIBNormRelu(
+                2 * hr_channels, hr_channels, 3, stride=1, padding=1))
 
         self.conv_hr2x = nn.Sequential(
             Conv2dIBNormRelu(
@@ -445,15 +441,10 @@ if __name__ == '__main__':
     model = MODNet(backbone=backbone)
     model.eval()
 
-    x = paddle.randint(0, 256, (1, 3, 320, 320)).astype('float32')
+    x = paddle.randint(0, 256, (1, 3, 512, 512)).astype('float32')
 
     inputs = {}
     inputs['img'] = x / 255.
 
     logit = model(inputs)
     print(logit)
-
-#     for name, param in blurer.named_parameters():
-#         print(name, param)
-#     print(blurer.op[1].weight)
-#         print(blurer.op.1.weight)
