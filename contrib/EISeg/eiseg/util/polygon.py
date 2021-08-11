@@ -9,7 +9,6 @@ class Instructions(Enum):
     Polygon_Instruction = 1
 
 
-# BUG: 多孔洞报错
 def get_polygon(label, sample=2):
     results = cv2.findContours(
         image=label, mode=cv2.RETR_TREE, method=cv2.CHAIN_APPROX_TC89_KCOS

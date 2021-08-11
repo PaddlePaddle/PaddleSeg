@@ -22,7 +22,6 @@ class AnnotationScene(QtWidgets.QGraphicsScene):
 
     def mousePressEvent(self, ev):
         pos = ev.scenePos()
-        print("creating, Hovering", self.creating, self.item_hovering)
         if not self.creating and not self.hovering:
             if ev.buttons() in [Qt.LeftButton, Qt.RightButton]:
                 self.clickRequest.emit(
@@ -67,5 +66,4 @@ class AnnotationScene(QtWidgets.QGraphicsScene):
 
     @property
     def hovering(self):
-        print(self.item_hovering, self.polygon_hovering)
         return self.item_hovering or self.polygon_hovering or self.line_hovering

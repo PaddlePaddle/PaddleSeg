@@ -192,7 +192,7 @@ class InteractiveController:
             self.states.append(
                 {
                     "clicker": self.clicker.get_state(),
-                    "predictor": self.predictor.get_state(),
+                    "predictor": self.predictor.get_states(),
                 }
             )
 
@@ -205,7 +205,7 @@ class InteractiveController:
         self.states.append(
             {
                 "clicker": self.clicker.get_state(),
-                "predictor": self.predictor.get_state(),
+                "predictor": self.predictor.get_states(),
             }
         )
         if self.probs_history:

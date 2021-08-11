@@ -89,7 +89,6 @@ class ShortcutWindow(QWidget):
         self.currentAction = action
 
     def setShortcut(self, key):
-        print("setting shortcut", key.toString())
         self.recorder.close()
 
         for a in self.actions:

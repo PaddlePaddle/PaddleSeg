@@ -45,7 +45,6 @@ class GripItem(QtWidgets.QGraphicsPathItem):
         self.setPath(self.square if self.hovering else self.circle)
 
     def hoverEnterEvent(self, ev):
-        print("hover grip ", self.m_index, self.pos(), self.scene().scale)
         self.setPath(self.square)
         self.setBrush(QtGui.QColor(0, 0, 0, 0))
         self.m_annotation_item.item_hovering = True

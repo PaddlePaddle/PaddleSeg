@@ -19,7 +19,6 @@ class AnnotationView(QtWidgets.QGraphicsView):
 
     def wheelEvent(self, ev):
         if ev.modifiers() & QtCore.Qt.ControlModifier:
-            # print(ev.angleDelta().x(), ev.angleDelta().y())
             zoom = 1 + ev.angleDelta().y() / 2880
             self.zoom_all *= zoom
             oldPos = self.mapToScene(ev.pos())
@@ -43,7 +42,6 @@ class AnnotationView(QtWidgets.QGraphicsView):
             # 这儿不写为先减后除，这样会造成速度不一致
             self.point = self.point + self._endPos
             self._startPos = ev.pos()
-            print("move", self._endPos.x(), self._endPos.y())
             self.translate(self._endPos.x(), self._endPos.y())
         super(AnnotationView, self).mouseMoveEvent(ev)
 

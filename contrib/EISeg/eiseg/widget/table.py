@@ -45,7 +45,6 @@ class TableWidget(QtWidgets.QTableWidget):
         index = self.indexAt(event.pos())
         if not index.isValid():
             return self.rowCount()
-            print("drop_on_return:",self.rowCount())
 
         return index.row() + 1 if self.is_below(event.pos(), index) else index.row()
 

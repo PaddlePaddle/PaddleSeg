@@ -1,4 +1,3 @@
-from numpy.lib.type_check import imag
 import paddle
 import paddle.nn.functional as F
 import numpy as np
@@ -74,20 +73,22 @@ class BasePredictor(object):
                                    size=image_nd.shape[2:])
         for t in reversed(self.transforms):
             prediction = t.inv_transform(prediction)
+       
         if self.zoom_in is not None and self.zoom_in.check_possible_recalculation():
             return self.get_prediction(clicker)
 
         self.prev_prediction = prediction
+       
         return prediction.numpy()[0, 0]
 
     def _get_prediction(self, image_nd, clicks_lists, is_image_changed):
         points_nd = self.get_points_nd(clicks_lists)
         return self.net(image_nd, points_nd)['instances']
 
-    def _get_transform_state(self):
+    def _get_transform_states(self):
         return [x.get_state() for x in self.transforms]
 
-    def _set_transform_state(self, states):
+    def _set_transform_states(self, states):
         assert len(states) == len(self.transforms)
         for state, transform in zip(states, self.transforms):
             transform.set_state(state)
@@ -96,7 +97,6 @@ class BasePredictor(object):
         is_image_changed = False
         for t in self.transforms:
             image_nd, clicks_lists = t.transform(image_nd, clicks_lists)
-            # print("trans:", image_nd.shape, '  t:', t)
             is_image_changed |= t.image_changed
 
         return image_nd, clicks_lists, is_image_changed
@@ -121,10 +121,10 @@ class BasePredictor(object):
 
         return paddle.to_tensor(total_clicks)
 
-    def get_state(self):
-        return {'transform_states': self._get_transform_state(),
+    def get_states(self):
+        return {'transform_states': self._get_transform_states(),
                 'prev_prediction': self.prev_prediction}
 
-    def set_state(self, states):
-        self._set_transform_state(states['transform_states'])
+    def set_states(self, states):
+        self._set_transform_states(states['transform_states'])
         self.prev_prediction = states['prev_prediction']

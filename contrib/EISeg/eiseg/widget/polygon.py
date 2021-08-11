@@ -155,7 +155,6 @@ class PolygonAnnotation(QtWidgets.QGraphicsPolygonItem):
                 self.mapToScene(self.points[(focusIdx - 1) % len(self)]),
                 self.mapToScene(self.points[focusIdx % len(self)]),
             )
-            # print((focusIdx - 1) % len(self), len(self.m_lines), len(self))
             self.m_lines[(focusIdx - 1) % len(self)].setLine(line)
             for line in self.m_lines[focusIdx:]:
                 line.idx -= 1
@@ -170,7 +169,6 @@ class PolygonAnnotation(QtWidgets.QGraphicsPolygonItem):
             del it
 
     def movePoint(self, i, p):
-        # print("Move point", i, p)
         if 0 <= i < len(self.points):
             p = self.mapFromScene(p)
             self.points[i] = p
@@ -178,7 +176,6 @@ class PolygonAnnotation(QtWidgets.QGraphicsPolygonItem):
             self.moveLine(i)
 
     def moveLine(self, i):
-        # print("Moving line: ", i, self.noMove)
         if self.noMove:
             return
         points = self.points
@@ -191,7 +188,6 @@ class PolygonAnnotation(QtWidgets.QGraphicsPolygonItem):
         line = QtCore.QLineF(
             self.mapToScene(points[(i - 1) % len(self)]), self.mapToScene(points[i])
         )
-        # print((i - 1) % len(self), len(self.m_lines), len(self))
         self.m_lines[(i - 1) % len(self)].setLine(line)
 
     def move_item(self, i, pos):

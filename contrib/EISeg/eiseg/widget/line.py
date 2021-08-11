@@ -32,7 +32,6 @@ class LineItem(QtWidgets.QGraphicsLineItem):
         self.setPen(QtGui.QPen(self.color, self.width))
 
     def hoverEnterEvent(self, ev):
-        print("Hover line: ", self.idx)
         self.polygon_item.line_hovering = True
         self.setPen(QtGui.QPen(self.color, self.width * 3))
         super(LineItem, self).hoverEnterEvent(ev)
@@ -43,7 +42,6 @@ class LineItem(QtWidgets.QGraphicsLineItem):
         super(LineItem, self).hoverLeaveEvent(ev)
 
     def mouseDoubleClickEvent(self, ev):
-        print("Double click line: ", self.idx, ev.pos())
         self.setPen(QtGui.QPen(self.color, self.width))
         self.polygon_item.addPointMiddle(self.idx, ev.pos())
         super(LineItem, self).mouseDoubleClickEvent(ev)
