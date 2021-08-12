@@ -13,6 +13,7 @@ from paddle.nn.initializer import TruncatedNormal
 
 from paddleseg.cvlibs import manager
 from paddleseg.models.backbones.vision_transformer import to_2tuple, DropPath, Identity
+from paddleseg.utils import utils
 
 trunc_normal_ = TruncatedNormal(std=.02)
 
@@ -77,6 +78,7 @@ class Attention(nn.Layer):
         self.num_heads = num_heads
         head_dim = dim // num_heads
         self.scale = qk_scale or head_dim**-0.5
+        self.dim = dim
 
         self.q = nn.Linear(dim, dim, bias_attr=qkv_bias)
         self.kv = nn.Linear(dim, dim * 2, bias_attr=qkv_bias)
@@ -108,7 +110,10 @@ class Attention(nn.Layer):
 #                 m.bias.data.zero_()
 
     def forward(self, x, H, W):
-        B, N, C = x.shape
+        x_shape = paddle.shape(x)
+        B, N = x_shape[0], x_shape[1]
+        C = self.dim
+
         q = self.q(x).reshape([B, N, self.num_heads,
                                C // self.num_heads]).transpose([0, 2, 1, 3])
 
@@ -241,7 +246,8 @@ class OverlapPatchEmbed(nn.Layer):
 
     def forward(self, x):
         x = self.proj(x)
-        _, _, H, W = x.shape
+        x_shape = paddle.shape(x)
+        H, W = x_shape[2], x_shape[3]
         x = x.flatten(2).transpose([0, 2, 1])
         x = self.norm(x)
 
@@ -264,7 +270,8 @@ class MixVisionTransformer(nn.Layer):
                  drop_path_rate=0.,
                  norm_layer=nn.LayerNorm,
                  depths=[3, 4, 6, 3],
-                 sr_ratios=[8, 4, 2, 1]):
+                 sr_ratios=[8, 4, 2, 1],
+                 pretrained=None):
         super().__init__()
         self.num_classes = num_classes
         self.depths = depths
@@ -364,6 +371,12 @@ class MixVisionTransformer(nn.Layer):
         ])
         self.norm4 = norm_layer(embed_dims[3])
 
+        self.pretrained = pretrained
+        self.init_weight()
+
+    def init_weight(self):
+        utils.load_pretrained_model(self, self.pretrained)
+
         # classification head
         # self.head = nn.Linear(embed_dims[3], num_classes) if num_classes > 0 else nn.Identity()
 
@@ -426,15 +439,16 @@ class MixVisionTransformer(nn.Layer):
             self.embed_dim, num_classes) if num_classes > 0 else nn.Identity()
 
     def forward_features(self, x):
-        B = x.shape[0]
+        B = paddle.shape(x)[0]
         outs = []
 
         # stage 1
         x, H, W = self.patch_embed1(x)
         for i, blk in enumerate(self.block1):
             x = blk(x, H, W)
+
         x = self.norm1(x)
-        x = x.reshape([B, H, W, -1]).transpose([0, 3, 1, 2])
+        x = x.reshape([B, H, W, self.feat_channels[0]]).transpose([0, 3, 1, 2])
         outs.append(x)
 
         # stage 2
@@ -442,7 +456,7 @@ class MixVisionTransformer(nn.Layer):
         for i, blk in enumerate(self.block2):
             x = blk(x, H, W)
         x = self.norm2(x)
-        x = x.reshape([B, H, W, -1]).transpose([0, 3, 1, 2])
+        x = x.reshape([B, H, W, self.feat_channels[1]]).transpose([0, 3, 1, 2])
         outs.append(x)
 
         # stage 3
@@ -450,7 +464,7 @@ class MixVisionTransformer(nn.Layer):
         for i, blk in enumerate(self.block3):
             x = blk(x, H, W)
         x = self.norm3(x)
-        x = x.reshape([B, H, W, -1]).transpose([0, 3, 1, 2])
+        x = x.reshape([B, H, W, self.feat_channels[2]]).transpose([0, 3, 1, 2])
         outs.append(x)
 
         # stage 4
@@ -458,7 +472,7 @@ class MixVisionTransformer(nn.Layer):
         for i, blk in enumerate(self.block4):
             x = blk(x, H, W)
         x = self.norm4(x)
-        x = x.reshape([B, H, W, -1]).transpose([0, 3, 1, 2])
+        x = x.reshape([B, H, W, self.feat_channels[3]]).transpose([0, 3, 1, 2])
         outs.append(x)
 
         return outs
@@ -473,11 +487,13 @@ class MixVisionTransformer(nn.Layer):
 class DWConv(nn.Layer):
     def __init__(self, dim=768):
         super(DWConv, self).__init__()
+        self.dim = dim
         self.dwconv = nn.Conv2D(dim, dim, 3, 1, 1, bias_attr=True, groups=dim)
 
     def forward(self, x, H, W):
-        B, N, C = x.shape
-        x = x.transpose([0, 2, 1]).reshape([B, C, H, W])
+        x_shape = paddle.shape(x)
+        B, N = x_shape[0], x_shape[1]
+        x = x.transpose([0, 2, 1]).reshape([B, self.dim, H, W])
         x = self.dwconv(x)
         x = x.flatten(2).transpose([0, 2, 1])
 
@@ -497,7 +513,8 @@ class mit_b0(MixVisionTransformer):
             depths=[2, 2, 2, 2],
             sr_ratios=[8, 4, 2, 1],
             drop_rate=0.0,
-            drop_path_rate=0.1)
+            drop_path_rate=0.1,
+            **kwargs)
 
 
 @manager.BACKBONES.add_component
@@ -513,7 +530,8 @@ class mit_b1(MixVisionTransformer):
             depths=[2, 2, 2, 2],
             sr_ratios=[8, 4, 2, 1],
             drop_rate=0.0,
-            drop_path_rate=0.1)
+            drop_path_rate=0.1,
+            **kwargs)
 
 
 @manager.BACKBONES.add_component
@@ -529,7 +547,8 @@ class mit_b2(MixVisionTransformer):
             depths=[3, 4, 6, 3],
             sr_ratios=[8, 4, 2, 1],
             drop_rate=0.0,
-            drop_path_rate=0.1)
+            drop_path_rate=0.1,
+            **kwargs)
 
 
 @manager.BACKBONES.add_component
@@ -545,7 +564,8 @@ class mit_b3(MixVisionTransformer):
             depths=[3, 4, 18, 3],
             sr_ratios=[8, 4, 2, 1],
             drop_rate=0.0,
-            drop_path_rate=0.1)
+            drop_path_rate=0.1,
+            **kwargs)
 
 
 @manager.BACKBONES.add_component
@@ -561,7 +581,8 @@ class mit_b4(MixVisionTransformer):
             depths=[3, 8, 27, 3],
             sr_ratios=[8, 4, 2, 1],
             drop_rate=0.0,
-            drop_path_rate=0.1)
+            drop_path_rate=0.1,
+            **kwargs)
 
 
 @manager.BACKBONES.add_component
@@ -573,8 +594,9 @@ class mit_b5(MixVisionTransformer):
             num_heads=[1, 2, 5, 8],
             mlp_ratios=[4, 4, 4, 4],
             qkv_bias=True,
-            norm_layer=partial(nn.LayerNorm, eps=1e-6),
+            norm_layer=partial(nn.LayerNorm, epsilon=1e-6),
             depths=[3, 6, 40, 3],
             sr_ratios=[8, 4, 2, 1],
             drop_rate=0.0,
-            drop_path_rate=0.1)
+            drop_path_rate=0.1,
+            **kwargs)

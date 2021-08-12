@@ -64,28 +64,37 @@ class SegFormer(nn.Layer):
         c1, c2, c3, c4 = feats
 
         ############## MLP decoder on C1-C4 ###########
-        n, _, h, w = c4.shape
+        c1_shape = paddle.shape(c1)
+        c2_shape = paddle.shape(c2)
+        c3_shape = paddle.shape(c3)
+        c4_shape = paddle.shape(c4)
 
         _c4 = self.linear_c4(c4).transpose([0, 2, 1]).reshape(
-            [n, -1, c4.shape[2], c4.shape[3]])
+            [0, 0, c4_shape[2], c4_shape[3]])
         _c4 = F.interpolate(
-            _c4, size=c1.shape[2:], mode='bilinear', align_corners=False)
+            _c4, size=c1_shape[2:], mode='bilinear', align_corners=False)
 
         _c3 = self.linear_c3(c3).transpose([0, 2, 1]).reshape(
-            [n, -1, c3.shape[2], c3.shape[3]])
+            [0, 0, c3_shape[2], c3_shape[3]])
         _c3 = F.interpolate(
-            _c3, size=c1.shape[2:], mode='bilinear', align_corners=False)
+            _c3, size=c1_shape[2:], mode='bilinear', align_corners=False)
 
         _c2 = self.linear_c2(c2).transpose([0, 2, 1]).reshape(
-            [n, -1, c2.shape[2], c2.shape[3]])
+            [0, 0, c2_shape[2], c2_shape[3]])
         _c2 = F.interpolate(
-            _c2, size=c1.shape[2:], mode='bilinear', align_corners=False)
+            _c2, size=c1_shape[2:], mode='bilinear', align_corners=False)
 
         _c1 = self.linear_c1(c1).transpose([0, 2, 1]).reshape(
-            [n, -1, c1.shape[2], c1.shape[3]])
+            [0, 0, c1_shape[2], c1_shape[3]])
 
         _c = self.linear_fuse(paddle.concat([_c4, _c3, _c2, _c1], axis=1))
 
         logit = self.dropout(_c)
         logit = self.linear_pred(logit)
-        return [F.interpolate(logit, size=x.shape[2:])]
+        return [
+            F.interpolate(
+                logit,
+                size=paddle.shape(x)[2:],
+                mode='bilinear',
+                align_corners=False)
+        ]

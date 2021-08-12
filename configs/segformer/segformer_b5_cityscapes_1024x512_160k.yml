@@ -6,8 +6,8 @@ iters: 160000
 model:
   type: SegFormer
   backbone:
-    type: mit_b0
-    pretrained: mit_b0.pdparams
+    type: mit_b5
+    pretrained: mit_b5.pdparams
   embedding_dim: 256
   num_classes: 19
 
