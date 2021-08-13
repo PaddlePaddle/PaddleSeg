@@ -191,7 +191,7 @@ def main(args):
     #         learning_rate=args.learning_rate, parameters=model.parameters())
 
     #     lr = paddle.optimizer.lr.StepDecay(args.learning_rate, step_size=1000, gamma=0.1, last_epoch=-1, verbose=False)
-    boundaries = [50000, 100000, 200000]
+    boundaries = [20000, 500000, 80000]
     values = [
         args.learning_rate * 0.1**scale for scale in range(len(boundaries) + 1)
     ]

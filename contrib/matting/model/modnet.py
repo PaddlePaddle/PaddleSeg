@@ -78,15 +78,48 @@ class MODNet(nn.Layer):
         alpha = label_dict['alpha']
         transition_mask = label_dict['trimap'] == 128
         matte_boundary = paddle.where(transition_mask, matte, alpha)
+        # l1 loss
         loss_fusion_l1 = loss_func_dict['fusion'][0](
             matte,
             alpha) + 4 * loss_func_dict['fusion'][0](matte_boundary, alpha)
+        # composition loss
         loss_fusion_comp = loss_func_dict['fusion'][1](
             matte * label_dict['img'],
             alpha * label_dict['img']) + 4 * loss_func_dict['fusion'][1](
                 matte_boundary * label_dict['img'], alpha * label_dict['img'])
-        loss_fusion = loss_fusion_l1 + loss_fusion_comp
+        # consisten loss with semantic
+        transition_mask = F.interpolate(
+            label_dict['trimap'],
+            scale_factor=1 / 16,
+            mode='nearest',
+            align_corners=False)
+        transition_mask = transition_mask == 128
+        matte_con_sem = F.interpolate(
+            matte, scale_factor=1 / 16, mode='bilinear', align_corners=False)
+        matte_con_sem = self.blurer(matte_con_sem)
+        matte_con_sem = paddle.where(transition_mask, logit_dict['semantic'],
+                                     matte_con_sem)
+        if False:
+            import cv2
+            matte_con_sem_num = matte_con_sem.numpy()
+            matte_con_sem_num = matte_con_sem_num[0].squeeze()
+            matte_con_sem_num = (matte_con_sem_num * 255).astype('uint8')
+            semantic = logit_dict['semantic'].numpy()
+            semantic = semantic[0].squeeze()
+            semantic = (semantic * 255).astype('uint8')
+            transition_mask = transition_mask.astype('uint8')
+            transition_mask = transition_mask.numpy()
+            transition_mask = (transition_mask[0].squeeze()) * 255
+            cv2.imwrite('matte_con.png', matte_con_sem_num)
+            cv2.imwrite('semantic.png', semantic)
+            cv2.imwrite('transition.png', transition_mask)
+        mse_loss = paddleseg.models.MSELoss()
+        loss_fusion_con_sem = mse_loss(matte_con_sem, logit_dict['semantic'])
+        loss_fusion = loss_fusion_l1 + loss_fusion_comp + loss_fusion_con_sem
         loss['fusion'] = loss_fusion
+        loss['fusion_l1'] = loss_fusion_l1
+        loss['fusion_comp'] = loss_fusion_comp
+        loss['fusion_con_sem'] = loss_fusion_con_sem
 
         loss['all'] = loss['semantic'] + loss['detail'] + loss['fusion']
 

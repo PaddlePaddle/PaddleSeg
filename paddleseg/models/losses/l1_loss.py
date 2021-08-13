@@ -20,7 +20,7 @@ from paddleseg.cvlibs import manager
 
 
 @manager.LOSSES.add_component
-class L1Loss(nn.MSELoss):
+class L1Loss(nn.L1Loss):
     r"""
     This interface is used to construct a callable object of the ``L1Loss`` class.
     The L1Loss layer calculates the L1 Loss of ``input`` and ``label`` as follows.
