@@ -208,9 +208,10 @@ class COCO:
         if not id:
             self.maxAnnId += 1
             id = self.maxAnnId
-        # TODO: cal bbox
         if not bbox:
             x, y, width, height = 0, 0, 0, 0
+        else:
+            x, y, width, height = bbox[:]
         # TODO: cal area
         if not area:
             area = 0
@@ -242,17 +243,20 @@ class COCO:
             if ann["id"] == annId:
                 del self.imgToAnns[imgId][idx]
 
-    def updateAnnotation(self, id, imgId, points):
+    def updateAnnotation(self, id, imgId, points, bbox=None):
         self.anns[id]["segmentation"] = [points]
 
         for rec in self.dataset["annotations"]:
             if rec["id"] == id:
                 rec["segmentation"] = [points]
+                if bbox is not None:
+                    rec["bbox"] = bbox
                 break
 
         for rec in self.dataset["annotations"]:
             if rec["id"] == id:
-                print("record point", rec["segmentation"][0][0])
+                # @todo TODO move into debug codes or controls
+                print("record point : ", rec["segmentation"][0][0], rec["segmentation"][0][1])
                 break
 
         for rec in self.imgToAnns[imgId]:

@@ -1238,10 +1238,10 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
                         points.append(val)
 
                 if not polygon.coco_id:
-                    annId = self.coco.addAnnotation(imgId, polygon.labelIndex, points)
+                    annId = self.coco.addAnnotation(imgId, polygon.labelIndex, points, polygon.bbox.to_array())
                     polygon.coco_id = annId
                 else:
-                    self.coco.updateAnnotation(polygon.coco_id, imgId, points)
+                    self.coco.updateAnnotation(polygon.coco_id, imgId, points, polygon.bbox.to_array())
             for lab in self.controller.labelList:
                 if self.coco.hasCat(lab.idx):
                     self.coco.updateCategory(lab.idx, lab.name, lab.color)
