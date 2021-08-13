@@ -22,7 +22,7 @@ EISeg(Efficient Interactive Segmentation)是基于飞桨开发的一个高效智
 
 ## 安装使用
 
-EISeg提供多种安装方式，其中使用[pip](#PIP)，[conda](#Conda)和[运行代码](#运行代码)方式可兼容Windows，Mac OS和Linux。为了避免环境冲突，推荐在conda创建的虚拟环境中安装。
+EISeg提供多种安装方式，其中使用[pip](#PIP)和[运行代码](#运行代码)方式可兼容Windows，Mac OS和Linux。为了避免环境冲突，推荐在conda创建的虚拟环境中安装。
 
 版本要求:
 
@@ -42,17 +42,6 @@ pip会自动安装依赖。安装完成后命令行输入：
 eiseg
 ```
 即可运行软件。
-
-#### Conda
-首先安装Anaconda或Miniconda，过程参考[清华镜像教程](https://mirrors.tuna.tsinghua.edu.cn/help/anaconda/)。
-
-```shell
-conda create -n eiseg python=3.8
-conda activate eiseg
-conda install qtpy
-pip install eiseg
-eiseg
-```
 
 #### Windows exe
 
@@ -125,5 +114,3 @@ EISeg使用[QPT](https://github.com/GT-ZhangAcer/QPT)进行打包。可以从[�
 # 开发者
 
 [Yuying Hao](https://github.com/haoyuying), [Yizhou Chen](https://github.com/geoyee), [Lin Han](https://github.com/linhandev/), [GT](https://github.com/GT-ZhangAcer), [Zhiliang Yu](https://github.com/yzl19940819)
-
-<!-- pip install 'git+https://github.com/openvinotoolkit/datumaro' -->

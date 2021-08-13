@@ -26,20 +26,6 @@ def visualize_instances(
 @lru_cache(maxsize=16)
 def get_palette(num_cls):
     return np.array([[0, 0, 0], [128, 0, 0], [0, 128, 0], [0, 0, 128]])
-    palette = np.zeros(3 * num_cls, dtype=np.int32)
-
-    for j in range(0, num_cls):
-        lab = j
-        i = 0
-
-        while lab > 0:
-            palette[j * 3 + 0] |= ((lab >> 0) & 1) << (7 - i)
-            palette[j * 3 + 1] |= ((lab >> 1) & 1) << (7 - i)
-            palette[j * 3 + 2] |= ((lab >> 2) & 1) << (7 - i)
-            i = i + 1
-            lab >>= 3
-
-    return palette.reshape((-1, 3))
 
 
 def visualize_mask(mask, num_cls):
@@ -133,8 +119,6 @@ def draw_with_blend_and_clicks(
             + alpha * rgb_mask
         )
         result = result.astype(np.uint8)
-
-        # result = (result * (1 - alpha) + alpha * rgb_mask).astype(np.uint8)
 
     if clicks_list is not None and len(clicks_list) > 0:
         pos_points = [click.coords for click in clicks_list if click.is_positive]
