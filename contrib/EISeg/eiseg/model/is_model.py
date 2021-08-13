@@ -68,11 +68,9 @@ class ISModel(nn.Layer):
             outputs = self.backbone_forward(image, coord_features)
         outputs['instances'] = nn.functional.interpolate(outputs['instances'], size=image.shape[2:],
                                                          mode='bilinear', align_corners=True)
-
         if self.with_aux_output:
             outputs['instances_aux'] = nn.functional.interpolate(outputs['instances_aux'], size=image.shape[2:],
                                                                  mode='bilinear', align_corners=True)
-
         return outputs
 
     def prepare_input(self, image):

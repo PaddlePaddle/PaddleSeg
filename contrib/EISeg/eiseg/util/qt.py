@@ -3,15 +3,22 @@ import os.path as osp
 
 import numpy as np
 
+from eiseg import pjpath
 from qtpy import QtCore
 from qtpy import QtGui
 from qtpy import QtWidgets
+from .config import parse_configs
 
-
+shortcuts = parse_configs(osp.join(pjpath, "config/config.yaml"))["shortcut"]
 here = osp.dirname(osp.abspath(__file__))
 
 
 def newIcon(icon):
+    if isinstance(icon, list) or isinstance(icon, tuple):
+        pixmap = QtGui.QPixmap(100, 100)
+        c = icon
+        pixmap.fill(QtGui.QColor(c[0], c[1], c[2]))
+        return QtGui.QIcon(pixmap)
     icons_dir = osp.join(here, "../resource")
     return QtGui.QIcon(osp.join(":/", icons_dir, f"{icon}.png"))
 
@@ -29,7 +36,7 @@ def newAction(
     parent,
     text,
     slot=None,
-    shortcut=None,
+    shortcutName=None,
     icon=None,
     tip=None,
     checkable=False,
@@ -38,9 +45,12 @@ def newAction(
 ):
     """Create a new action and assign callbacks, shortcuts, etc."""
     a = QtWidgets.QAction(text, parent)
+    a.setData(shortcutName)
+    # a = QtWidgets.QAction("", parent)
     if icon is not None:
         a.setIconText(text.replace(" ", "\n"))
         a.setIcon(newIcon(icon))
+    shortcut = shortcuts.get(shortcutName, None)
     if shortcut is not None:
         if isinstance(shortcut, (list, tuple)):
             a.setShortcuts(shortcut)
@@ -75,6 +85,22 @@ def labelValidator():
 class struct(object):
     def __init__(self, **kwargs):
         self.__dict__.update(kwargs)
+
+    def __len__(self):
+        return len(self.__dict__)
+
+    def append(self, action):
+        if isinstance(action, QtWidgets.QAction):
+            self.__dict__.update({action.data(): action})
+
+    def __iter__(self):
+        return list(self.__dict__.values()).__iter__()
+
+    def __getitem__(self, idx):
+        return list(self.__dict__.values())[idx]
+
+    def get(self, name):
+        return self.__dict__[name]
 
 
 def fmtShortcut(text):

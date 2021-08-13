@@ -1,5 +1,6 @@
 import paddle
-
+import numpy as np
+from inference.clicker import Click
 from util.misc import get_bbox_iou, get_bbox_from_mask, expand_bbox, clamp_bbox
 from .base import BaseTransform
 

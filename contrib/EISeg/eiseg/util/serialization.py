@@ -1,8 +1,8 @@
 from functools import wraps
 from copy import deepcopy
 import inspect
-
 import paddle.nn as nn
+
 
 
 def serialize(init):

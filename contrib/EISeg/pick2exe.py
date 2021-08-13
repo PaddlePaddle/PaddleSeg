@@ -1,9 +1,8 @@
-from qpt.executor import CreateExecutableModule
+from qpt.executor import CreateExecutableModule as CEM
 
-if __name__ == "__main__":
-    module = CreateExecutableModule(
-        work_dir="contrib/EISeg", 
-        launcher_py_path="contrib/EISeg/eiseg/exe.py", 
-        save_path="contrib/out"
-    )
-    module.make()
+module = CEM(work_dir="eiseg",
+             launcher_py_path="eiseg/exe.py",
+             save_path="out")
+
+# 开始打包
+module.make()
