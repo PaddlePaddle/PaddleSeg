@@ -14,6 +14,7 @@
 
 from .mixed_loss import MixedLoss
 from .cross_entropy_loss import CrossEntropyLoss
+from .cross_entropy_loss import DistillCrossEntropyLoss
 from .binary_cross_entropy_loss import BCELoss
 from .lovasz_loss import LovaszSoftmaxLoss, LovaszHingeLoss
 from .gscnn_dual_task_loss import DualTaskLoss
