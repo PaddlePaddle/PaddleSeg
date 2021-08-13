@@ -226,7 +226,7 @@ class InteractiveController:
             return
         self.undo_states.append(self.states.pop())
         self.clicker.set_state(self.states[-1]["clicker"])
-        self.predictor.set_state(self.states[-1]["predictor"])
+        self.predictor.set_states(self.states[-1]["predictor"])
         self.undo_probs_history.append(self.probs_history.pop())
         if not self.probs_history:
             self.reset_init_mask()
@@ -241,7 +241,7 @@ class InteractiveController:
             next_state = self.undo_states.pop()
             self.states.append(next_state)
             self.clicker.set_state(next_state["clicker"])
-            self.predictor.set_state(next_state["predictor"])
+            self.predictor.set_states(next_state["predictor"])
             self.probs_history.append(self.undo_probs_history.pop())
 
     def finishObject(self):
