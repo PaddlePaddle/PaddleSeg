@@ -108,8 +108,11 @@ def distill_train(distill_model,
         distill_losses (dict): A dict including 'types' and 'coef'. The format of distill_losses is the same as losses.
         keep_checkpoint_max (int, optional): Maximum number of checkpoints to save. Default: 5.
         test_config(dict, optional): Evaluation config.
-        fp16 (bool, optional): Whether to use amp.
+        fp16 (bool, optional): Whether to use amp. Not support for now.
     """
+    if fp16:
+        raise RuntimeError("Distillation doesn't support amp training.")
+
     nranks = paddle.distributed.ParallelEnv().nranks
     local_rank = paddle.distributed.ParallelEnv().local_rank
     student_model = distill_model._student_models
@@ -211,13 +214,6 @@ def distill_train(distill_model,
                 else:
                     s_logits_list, t_logits_list, feature_distill_loss = distill_model(
                         images)
-                '''
-                if nranks > 1:
-                    s_logits_list, t_logits_list = ddp_distill_model(images)
-                else:
-                    s_logits_list, t_logits_list = distill_model(images)
-                feature_distill_loss = paddle.to_tensor(0)
-                '''
 
                 out_loss_list = loss_computation(
                     logits_list=s_logits_list,

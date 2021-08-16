@@ -54,7 +54,7 @@ def prepare_distill_config():
         's_feature_idx': 0,
         't_feature_idx': 0,
         'feature_type': 'hidden',
-        'loss_function': 'SegPairWiseLoss',
+        'loss_function': 'SegChannelwiseLoss',
         'weight': 1.0
     }]
     return distill_config

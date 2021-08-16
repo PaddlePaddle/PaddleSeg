@@ -37,13 +37,14 @@ from paddleslim.dygraph.dist import Distill
 def parse_args():
     parser = argparse.ArgumentParser(description='Model training')
     parser.add_argument(
-        "--teather_config",
-        help="The config file of the teacher model.",
+        "--student_config",
+        help="The config file of the student model.",
         default=None,
         type=str)
     parser.add_argument(
-        "--student_config",
-        help="The config file of the student model.",
+        "--teather_config",
+        help="The config file of the teacher model. Distillation only uses "
+        "the model in this config.",
         default=None,
         type=str)
 
