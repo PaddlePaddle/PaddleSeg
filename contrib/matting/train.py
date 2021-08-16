@@ -155,7 +155,12 @@ def main(args):
         mode='train',
         train_file=args.train_file)
     if args.do_eval:
-        t = [T.LoadImages(), T.ResizeToIntMult(mult_int=32), T.Normalize()]
+        t = [
+            T.LoadImages(),
+            T.LimitLong(2048),
+            T.ResizeToIntMult(mult_int=32),
+            T.Normalize()
+        ]
         val_dataset = HumanMattingDataset(
             dataset_root=args.dataset_root,
             transforms=t,
@@ -164,6 +169,7 @@ def main(args):
             get_trimap=False)
     else:
         val_dataset = None
+    print(len(train_dataset))
 
     # loss
     losses = defaultdict(list)
@@ -191,7 +197,7 @@ def main(args):
     #         learning_rate=args.learning_rate, parameters=model.parameters())
 
     #     lr = paddle.optimizer.lr.StepDecay(args.learning_rate, step_size=1000, gamma=0.1, last_epoch=-1, verbose=False)
-    boundaries = [20000, 500000, 80000]
+    boundaries = [50000, 100000, 150000]
     values = [
         args.learning_rate * 0.1**scale for scale in range(len(boundaries) + 1)
     ]
