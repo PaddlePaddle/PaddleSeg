@@ -121,6 +121,8 @@ class HumanMattingDataset(paddle.io.Dataset):
                 data['gt_fields'].append('alpha')
         else:
             data['img'] = fg
+            if self.mode in ['train', 'trainval']:
+                data['gt_fields'].append('alpha')
 
         data['trans_info'] = []  # Record shape change information
         data = self.transforms(data)
