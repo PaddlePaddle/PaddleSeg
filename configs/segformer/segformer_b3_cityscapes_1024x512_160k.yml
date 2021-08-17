@@ -1,6 +1,6 @@
 _base_: '../_base_/cityscapes.yml'
 
-batch_size: 2
+batch_size: 1
 iters: 160000
 
 model:
@@ -12,13 +12,15 @@ model:
   num_classes: 19
 
 optimizer:
-  type: sgd
+  type: AdamW
+  beta1: 0.9
+  beta2: 0.999
+  weight_decay: 0.01
 
 lr_scheduler:
   type: PolynomialDecay
-  learning_rate: 0.01
-  power: 0.9
-
+  learning_rate: 0.00006
+  power: 1
 
 loss:
   types:

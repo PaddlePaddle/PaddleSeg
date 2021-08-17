@@ -6,8 +6,8 @@ iters: 160000
 model:
   type: SegFormer
   backbone:
-    type: mit_b0
-    pretrained: mit_b0.pdparams
+    type: mit_b3
+    pretrained: mit_b3.pdparams
   embedding_dim: 256
   num_classes: 19
 
@@ -22,8 +22,12 @@ lr_scheduler:
   learning_rate: 0.00006
   power: 1
 
-
 loss:
   types:
     - type: CrossEntropyLoss
   coef: [1]
+
+test_config:
+    is_slide: True
+    crop_size: [1024, 1024]
+    stride: [768, 768]

@@ -54,7 +54,8 @@ class SegFormer(nn.Layer):
         self.linear_fuse = layers.ConvBNReLU(
             in_channels=embedding_dim * 4,
             out_channels=embedding_dim,
-            kernel_size=1)
+            kernel_size=1,
+            bias_attr=False)
 
         self.linear_pred = nn.Conv2D(
             embedding_dim, self.num_classes, kernel_size=1)

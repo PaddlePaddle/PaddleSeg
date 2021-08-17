@@ -1,4 +1,4 @@
-_base_: '../_base_/cityscapes.yml'
+_base_: '../_base_/cityscapes_1024x1024.yml'
 
 batch_size: 1
 iters: 160000
@@ -27,3 +27,8 @@ loss:
   types:
     - type: CrossEntropyLoss
   coef: [1]
+
+test_config:
+    is_slide: True
+    crop_size: [1024, 1024]
+    stride: [768, 768]
