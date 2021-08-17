@@ -14,8 +14,8 @@
 """
 File: convert_voc2010.py
 This file is based on https://www.cs.stanford.edu/~roozbeh/pascal-context/ to generate PASCAL-Context Dataset.
-Before running, you should download the PASCAL VOC2010 from http://host.robots.ox.ac.uk/pascal/VOC/voc2010/VOCtrainval_03-May-2010.tar, PASCAL-Context Dataset from https://www.cs.stanford.edu/~roozbeh/pascal-context/ and annotation file from https://codalabuser.blob.core.windows.net/public/trainval_merged.json. Then, make the folder
-structure as follow:
+Before running, you should download the PASCAL VOC2010 from http://host.robots.ox.ac.uk/pascal/VOC/voc2010/VOCtrainval_03-May-2010.tar, PASCAL-Context label id from https://www.cs.stanford.edu/~roozbeh/pascal-context/ and annotation file from https://codalabuser.blob.core.windows.net/public/trainval_merged.json. In segmentation map annotation for PascalContext, 0 stands for background, which is included in 60 categories. Then, make the folder structure as follow:
+
 VOC2010
 |
 |--Annotations
@@ -38,9 +38,6 @@ import tqdm
 import numpy as np
 from detail import Detail
 from PIL import Image
-from paddleseg.utils.download import _download_file
-
-JSON_URL = 'https://codalabuser.blob.core.windows.net/public/trainval_merged.json'
 
 
 def parse_args():
@@ -66,12 +63,6 @@ class PascalContextGenerator(object):
         self.annFile = os.path.join(self.annotation_path,
                                     'trainval_merged.json')
 
-        if not os.path.exists(self.annFile):
-            _download_file(
-                url=JSON_URL,
-                savepath=self.annotation_path,
-                print_progress=True)
-
         self._mapping = np.sort(
             np.array([
                 0, 2, 259, 260, 415, 324, 9, 258, 144, 18, 19, 22, 23, 397, 25,
@@ -80,7 +71,7 @@ class PascalContextGenerator(object):
                 34, 207, 80, 355, 85, 347, 220, 349, 360, 98, 187, 104, 105,
                 366, 189, 368, 113, 115
             ]))
-        self._key = np.array(range(len(self._mapping))).astype('uint8') - 1
+        self._key = np.array(range(len(self._mapping))).astype('uint8')
 
         self.train_detail = Detail(self.annFile, self._image_dir, 'train')
         self.train_ids = self.train_detail.getImgs()
