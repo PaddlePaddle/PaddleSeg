@@ -41,6 +41,7 @@ class SegFormer(nn.Layer):
                  pretrained=None):
         super(SegFormer, self).__init__()
 
+        self.align_corners = align_corners
         self.backbone = backbone
         self.num_classes = num_classes
         c1_in_channels, c2_in_channels, c3_in_channels, c4_in_channels = self.backbone.feat_channels
@@ -73,17 +74,26 @@ class SegFormer(nn.Layer):
         _c4 = self.linear_c4(c4).transpose([0, 2, 1]).reshape(
             [0, 0, c4_shape[2], c4_shape[3]])
         _c4 = F.interpolate(
-            _c4, size=c1_shape[2:], mode='bilinear', align_corners=False)
+            _c4,
+            size=c1_shape[2:],
+            mode='bilinear',
+            align_corners=self.align_corners)
 
         _c3 = self.linear_c3(c3).transpose([0, 2, 1]).reshape(
             [0, 0, c3_shape[2], c3_shape[3]])
         _c3 = F.interpolate(
-            _c3, size=c1_shape[2:], mode='bilinear', align_corners=False)
+            _c3,
+            size=c1_shape[2:],
+            mode='bilinear',
+            align_corners=self.align_corners)
 
         _c2 = self.linear_c2(c2).transpose([0, 2, 1]).reshape(
             [0, 0, c2_shape[2], c2_shape[3]])
         _c2 = F.interpolate(
-            _c2, size=c1_shape[2:], mode='bilinear', align_corners=False)
+            _c2,
+            size=c1_shape[2:],
+            mode='bilinear',
+            align_corners=self.align_corners)
 
         _c1 = self.linear_c1(c1).transpose([0, 2, 1]).reshape(
             [0, 0, c1_shape[2], c1_shape[3]])
@@ -97,7 +107,7 @@ class SegFormer(nn.Layer):
                 logit,
                 size=paddle.shape(x)[2:],
                 mode='bilinear',
-                align_corners=False)
+                align_corners=self.align_corners)
         ]
 
 
