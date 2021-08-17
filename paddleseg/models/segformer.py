@@ -13,12 +13,13 @@
 # limitations under the License.
 
 import paddle
-import numpy as np
 import paddle.nn as nn
 import paddle.nn.functional as F
+import numpy as np
 
 from paddleseg.cvlibs import manager
 from paddleseg.models import layers
+from paddleseg.utils import utils
 
 
 class MLP(nn.Layer):
@@ -61,6 +62,7 @@ class SegFormer(nn.Layer):
                  pretrained=None):
         super(SegFormer, self).__init__()
 
+        self.pretrained = pretrained
         self.align_corners = align_corners
         self.backbone = backbone
         self.num_classes = num_classes
@@ -80,6 +82,12 @@ class SegFormer(nn.Layer):
 
         self.linear_pred = nn.Conv2D(
             embedding_dim, self.num_classes, kernel_size=1)
+
+        self.init_weight()
+
+    def init_weight(self):
+        if self.pretrained is not None:
+            utils.load_entire_model(self, self.pretrained)
 
     def forward(self, x):
         feats = self.backbone(x)
