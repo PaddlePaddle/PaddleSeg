@@ -9,13 +9,15 @@ from functools import partial
 import paddle
 import paddle.nn as nn
 import paddle.nn.functional as F
-from paddle.nn.initializer import TruncatedNormal
+from paddle.nn.initializer import TruncatedNormal, Constant, Normal, Normal
 
 from paddleseg.cvlibs import manager
 from paddleseg.models.backbones.vision_transformer import to_2tuple, DropPath, Identity
 from paddleseg.utils import utils
 
 trunc_normal_ = TruncatedNormal(std=.02)
+zeros_ = Constant(value=0.)
+ones_ = Constant(value=1.)
 
 
 class Mlp(nn.Layer):
@@ -34,23 +36,22 @@ class Mlp(nn.Layer):
         self.fc2 = nn.Linear(hidden_features, out_features)
         self.drop = nn.Dropout(drop)
 
+        self.apply(self._init_weights)
 
-#         self.apply(self._init_weights)
-
-#     def _init_weights(self, m):
-#         if isinstance(m, nn.Linear):
-#             trunc_normal_(m.weight, std=.02)
-#             if isinstance(m, nn.Linear) and m.bias is not None:
-#                 nn.init.constant_(m.bias, 0)
-#         elif isinstance(m, nn.LayerNorm):
-#             nn.init.constant_(m.bias, 0)
-#             nn.init.constant_(m.weight, 1.0)
-#         elif isinstance(m, nn.Conv2D):
-#             fan_out = m._kernel_size[0] * m._kernel_size[1] * m._out_channels
-#             fan_out //= m.groups
-#             m.weight.data.normal_(0, math.sqrt(2.0 / fan_out))
-#             if m.bias is not None:
-#                 m.bias.data.zero_()
+    def _init_weights(self, m):
+        if isinstance(m, nn.Linear):
+            trunc_normal_(m.weight)
+            if isinstance(m, nn.Linear) and m.bias is not None:
+                zeros_(m.bias)
+        elif isinstance(m, nn.LayerNorm):
+            zeros_(m.bias)
+            ones_(m.weight)
+        elif isinstance(m, nn.Conv2D):
+            fan_out = m._kernel_size[0] * m._kernel_size[1] * m._out_channels
+            fan_out //= m._groups
+            Normal(0, math.sqrt(2.0 / fan_out))(m.weight)
+            if m.bias is not None:
+                zeros_(m.bias)
 
     def forward(self, x, H, W):
         x = self.fc1(x)
@@ -91,23 +92,22 @@ class Attention(nn.Layer):
             self.sr = nn.Conv2D(dim, dim, kernel_size=sr_ratio, stride=sr_ratio)
             self.norm = nn.LayerNorm(dim)
 
+        self.apply(self._init_weights)
 
-#         self.apply(self._init_weights)
-
-#     def _init_weights(self, m):
-#         if isinstance(m, nn.Linear):
-#             trunc_normal_(m.weight, std=.02)
-#             if isinstance(m, nn.Linear) and m.bias is not None:
-#                 nn.init.constant_(m.bias, 0)
-#         elif isinstance(m, nn.LayerNorm):
-#             nn.init.constant_(m.bias, 0)
-#             nn.init.constant_(m.weight, 1.0)
-#         elif isinstance(m, nn.Conv2D):
-#             fan_out = m._kernel_size[0] * m._kernel_size[1] * m._out_channels
-#             fan_out //= m.groups
-#             m.weight.data.normal_(0, math.sqrt(2.0 / fan_out))
-#             if m.bias is not None:
-#                 m.bias.data.zero_()
+    def _init_weights(self, m):
+        if isinstance(m, nn.Linear):
+            trunc_normal_(m.weight)
+            if isinstance(m, nn.Linear) and m.bias is not None:
+                zeros_(m.bias)
+        elif isinstance(m, nn.LayerNorm):
+            zeros_(m.bias)
+            ones_(m.weight)
+        elif isinstance(m, nn.Conv2D):
+            fan_out = m._kernel_size[0] * m._kernel_size[1] * m._out_channels
+            fan_out //= m._groups
+            Normal(0, math.sqrt(2.0 / fan_out))(m.weight)
+            if m.bias is not None:
+                zeros_(m.bias)
 
     def forward(self, x, H, W):
         x_shape = paddle.shape(x)
@@ -174,23 +174,22 @@ class Block(nn.Layer):
             act_layer=act_layer,
             drop=drop)
 
+        self.apply(self._init_weights)
 
-#         self.apply(self._init_weights)
-
-#     def _init_weights(self, m):
-#         if isinstance(m, nn.Linear):
-#             trunc_normal_(m.weight, std=.02)
-#             if isinstance(m, nn.Linear) and m.bias is not None:
-#                 nn.init.constant_(m.bias, 0)
-#         elif isinstance(m, nn.LayerNorm):
-#             nn.init.constant_(m.bias, 0)
-#             nn.init.constant_(m.weight, 1.0)
-#         elif isinstance(m, nn.Conv2D):
-#             fan_out = m._kernel_size[0] * m._kernel_size[1] * m._out_channels
-#             fan_out //= m.groups
-#             m.weight.data.normal_(0, math.sqrt(2.0 / fan_out))
-#             if m.bias is not None:
-#                 m.bias.data.zero_()
+    def _init_weights(self, m):
+        if isinstance(m, nn.Linear):
+            trunc_normal_(m.weight)
+            if isinstance(m, nn.Linear) and m.bias is not None:
+                zeros_(m.bias)
+        elif isinstance(m, nn.LayerNorm):
+            zeros_(m.bias)
+            ones_(m.weight)
+        elif isinstance(m, nn.Conv2D):
+            fan_out = m._kernel_size[0] * m._kernel_size[1] * m._out_channels
+            fan_out //= m._groups
+            Normal(0, math.sqrt(2.0 / fan_out))(m.weight)
+            if m.bias is not None:
+                zeros_(m.bias)
 
     def forward(self, x, H, W):
         x = x + self.drop_path(self.attn(self.norm1(x), H, W))
@@ -226,23 +225,22 @@ class OverlapPatchEmbed(nn.Layer):
             padding=(patch_size[0] // 2, patch_size[1] // 2))
         self.norm = nn.LayerNorm(embed_dim)
 
+        self.apply(self._init_weights)
 
-#         self.apply(self._init_weights)
-
-#     def _init_weights(self, m):
-#         if isinstance(m, nn.Linear):
-#             trunc_normal_(m.weight, std=.02)
-#             if isinstance(m, nn.Linear) and m.bias is not None:
-#                 nn.init.constant_(m.bias, 0)
-#         elif isinstance(m, nn.LayerNorm):
-#             nn.init.constant_(m.bias, 0)
-#             nn.init.constant_(m.weight, 1.0)
-#         elif isinstance(m, nn.Conv2D):
-#             fan_out = m._kernel_size[0] * m._kernel_size[1] * m._out_channels
-#             fan_out //= m.groups
-#             m.weight.data.normal_(0, math.sqrt(2.0 / fan_out))
-#             if m.bias is not None:
-#                 m.bias.data.zero_()
+    def _init_weights(self, m):
+        if isinstance(m, nn.Linear):
+            trunc_normal_(m.weight)
+            if isinstance(m, nn.Linear) and m.bias is not None:
+                zeros_(m.bias)
+        elif isinstance(m, nn.LayerNorm):
+            zeros_(m.bias)
+            ones_(m.weight)
+        elif isinstance(m, nn.Conv2D):
+            fan_out = m._kernel_size[0] * m._kernel_size[1] * m._out_channels
+            fan_out //= m._groups
+            Normal(0, math.sqrt(2.0 / fan_out))(m.weight)
+            if m.bias is not None:
+                zeros_(m.bias)
 
     def forward(self, x):
         x = self.proj(x)
@@ -375,31 +373,25 @@ class MixVisionTransformer(nn.Layer):
         self.init_weight()
 
     def init_weight(self):
-        utils.load_pretrained_model(self, self.pretrained)
+        if self.pretrained is not None:
+            utils.load_pretrained_model(self, self.pretrained)
+        else:
+            self.apply(self._init_weights)
 
-        # classification head
-        # self.head = nn.Linear(embed_dims[3], num_classes) if num_classes > 0 else nn.Identity()
-
-#         self.apply(self._init_weights)
-
-#     def _init_weights(self, m):
-#         if isinstance(m, nn.Linear):
-#             trunc_normal_(m.weight, std=.02)
-#             if isinstance(m, nn.Linear) and m.bias is not None:
-#                 nn.init.constant_(m.bias, 0)
-#         elif isinstance(m, nn.LayerNorm):
-#             nn.init.constant_(m.bias, 0)
-#             nn.init.constant_(m.weight, 1.0)
-#         elif isinstance(m, nn.Conv2D):
-#             fan_out = m._kernel_size[0] * m._kernel_size[1] * m._out_channels
-#             fan_out //= m.groups
-#             m.weight.data.normal_(0, math.sqrt(2.0 / fan_out))
-#             if m.bias is not None:
-#                 m.bias.data.zero_()
-
-#     def init_weights(self, pretrained=None):
-#         if isinstance(pretrained, str):
-#             load_checkpoint(self, pretrained, map_location='cpu', strict=False, logger=logger)
+    def _init_weights(self, m):
+        if isinstance(m, nn.Linear):
+            trunc_normal_(m.weight)
+            if isinstance(m, nn.Linear) and m.bias is not None:
+                zeros_(m.bias)
+        elif isinstance(m, nn.LayerNorm):
+            zeros_(m.bias)
+            ones_(m.weight)
+        elif isinstance(m, nn.Conv2D):
+            fan_out = m._kernel_size[0] * m._kernel_size[1] * m._out_channels
+            fan_out //= m._groups
+            Normal(0, math.sqrt(2.0 / fan_out))(m.weight)
+            if m.bias is not None:
+                zeros_(m.bias)
 
     def reset_drop_path(self, drop_path_rate):
         dpr = [
@@ -424,11 +416,6 @@ class MixVisionTransformer(nn.Layer):
 
     def freeze_patch_emb(self):
         self.patch_embed1.requires_grad = False
-
-
-#     @torch.jit.ignore
-#     def no_weight_decay(self):
-#         return {'pos_embed1', 'pos_embed2', 'pos_embed3', 'pos_embed4', 'cls_token'}  # has pos_embed may be better
 
     def get_classifier(self):
         return self.head
