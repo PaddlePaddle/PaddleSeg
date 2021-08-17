@@ -9,15 +9,11 @@ from functools import partial
 import paddle
 import paddle.nn as nn
 import paddle.nn.functional as F
-from paddle.nn.initializer import TruncatedNormal, Constant, Normal, Normal
+import paddle.nn.initializer as paddle_init
 
 from paddleseg.cvlibs import manager
-from paddleseg.models.backbones.vision_transformer import to_2tuple, DropPath, Identity
 from paddleseg.utils import utils
-
-trunc_normal_ = TruncatedNormal(std=.02)
-zeros_ = Constant(value=0.)
-ones_ = Constant(value=1.)
+from paddleseg.models.backbones.transformer_utils import *
 
 
 class Mlp(nn.Layer):
@@ -49,7 +45,7 @@ class Mlp(nn.Layer):
         elif isinstance(m, nn.Conv2D):
             fan_out = m._kernel_size[0] * m._kernel_size[1] * m._out_channels
             fan_out //= m._groups
-            Normal(0, math.sqrt(2.0 / fan_out))(m.weight)
+            paddle_init.Normal(0, math.sqrt(2.0 / fan_out))(m.weight)
             if m.bias is not None:
                 zeros_(m.bias)
 
@@ -105,7 +101,7 @@ class Attention(nn.Layer):
         elif isinstance(m, nn.Conv2D):
             fan_out = m._kernel_size[0] * m._kernel_size[1] * m._out_channels
             fan_out //= m._groups
-            Normal(0, math.sqrt(2.0 / fan_out))(m.weight)
+            paddle_init.Normal(0, math.sqrt(2.0 / fan_out))(m.weight)
             if m.bias is not None:
                 zeros_(m.bias)
 
@@ -187,7 +183,7 @@ class Block(nn.Layer):
         elif isinstance(m, nn.Conv2D):
             fan_out = m._kernel_size[0] * m._kernel_size[1] * m._out_channels
             fan_out //= m._groups
-            Normal(0, math.sqrt(2.0 / fan_out))(m.weight)
+            paddle_init.Normal(0, math.sqrt(2.0 / fan_out))(m.weight)
             if m.bias is not None:
                 zeros_(m.bias)
 
@@ -238,7 +234,7 @@ class OverlapPatchEmbed(nn.Layer):
         elif isinstance(m, nn.Conv2D):
             fan_out = m._kernel_size[0] * m._kernel_size[1] * m._out_channels
             fan_out //= m._groups
-            Normal(0, math.sqrt(2.0 / fan_out))(m.weight)
+            paddle_init.Normal(0, math.sqrt(2.0 / fan_out))(m.weight)
             if m.bias is not None:
                 zeros_(m.bias)
 
@@ -389,7 +385,7 @@ class MixVisionTransformer(nn.Layer):
         elif isinstance(m, nn.Conv2D):
             fan_out = m._kernel_size[0] * m._kernel_size[1] * m._out_channels
             fan_out //= m._groups
-            Normal(0, math.sqrt(2.0 / fan_out))(m.weight)
+            paddle_init.Normal(0, math.sqrt(2.0 / fan_out))(m.weight)
             if m.bias is not None:
                 zeros_(m.bias)
 
