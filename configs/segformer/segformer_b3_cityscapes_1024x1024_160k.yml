@@ -12,6 +12,7 @@ model:
   num_classes: 19
 
 optimizer:
+  _inherited_: False
   type: AdamW
   beta1: 0.9
   beta2: 0.999
