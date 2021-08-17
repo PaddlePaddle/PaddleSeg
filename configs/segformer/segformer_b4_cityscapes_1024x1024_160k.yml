@@ -4,11 +4,7 @@ batch_size: 1
 iters: 160000
 
 model:
-  type: SegFormer
-  backbone:
-    type: mit_b4
-    pretrained: mit_b4.pdparams
-  embedding_dim: 256
+  type: SegFormer_B4
   num_classes: 19
 
 optimizer:
