@@ -1055,35 +1055,36 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         if not self.controller or self.image is None:
             return
         current_mask, curr_polygon = self.controller.finishObject()
-        self.updateImage()
-        if current_mask is not None:
-            color = self.controller.labelList[self.currLabelIdx].color
-            for points in curr_polygon:
-                if len(points) < 3:
-                    continue
-                poly = PolygonAnnotation(
-                    self.controller.labelList[self.currLabelIdx].idx,
-                    self.controller.image.shape,
-                    self.delPolygon,
-                    color,
-                    color,
-                    self.opacity,
-                )
-                poly.labelIndex = self.controller.labelList[self.currLabelIdx].idx
-                self.scene.addItem(poly)
-                self.scene.polygon_items.append(poly)
-                for p in points:
-                    poly.addPointLast(QtCore.QPointF(p[0], p[1]))
-                self.setDirty()
-        if self.status == self.EDITING:
-            self.anning = True
-            for p in self.scene.polygon_items:
-                p.setAnning(isAnning=True)
-        else:
-            self.anning = False
-            for p in self.scene.polygon_items:
-                p.setAnning(isAnning=False)
-        self.getMask()
+        if curr_polygon is not None:
+            self.updateImage()
+            if current_mask is not None:
+                color = self.controller.labelList[self.currLabelIdx].color
+                for points in curr_polygon:
+                    if len(points) < 3:
+                        continue
+                    poly = PolygonAnnotation(
+                        self.controller.labelList[self.currLabelIdx].idx,
+                        self.controller.image.shape,
+                        self.delPolygon,
+                        color,
+                        color,
+                        self.opacity,
+                    )
+                    poly.labelIndex = self.controller.labelList[self.currLabelIdx].idx
+                    self.scene.addItem(poly)
+                    self.scene.polygon_items.append(poly)
+                    for p in points:
+                        poly.addPointLast(QtCore.QPointF(p[0], p[1]))
+                    self.setDirty()
+            if self.status == self.EDITING:
+                self.anning = True
+                for p in self.scene.polygon_items:
+                    p.setAnning(isAnning=True)
+            else:
+                self.anning = False
+                for p in self.scene.polygon_items:
+                    p.setAnning(isAnning=False)
+            self.getMask()
 
     def completeLastMask(self):
         # 返回最后一个标签是否完成，false就是还有带点的
