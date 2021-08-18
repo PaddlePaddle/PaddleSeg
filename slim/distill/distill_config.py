@@ -12,35 +12,31 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# TODO(jc): delete the path
-import sys
-sys.path.append("/work/PaddleSlim")
 from paddleslim.dygraph.dist import AdaptorBase
 
 
 def prepare_distill_adaptor():
     """
     Prepare the distill adaptors for student and teacher model.
+    The adaptors set the intermediate feature tensors that used for distillation.
     """
 
     class StudentAdaptor(AdaptorBase):
         def mapping_layers(self):
             mapping_layers = {}
-            mapping_layers['hidden_0'] = 'head.psp_module'
-            '''
+            # mapping_layers['hidden_0'] = 'layer_name'
             if self.add_tensor:
-                mapping_layers["hidden_0"] = self.model.logit_list
-            '''
+                # mapping_layers["hidden_0"] = self.model.logit_list
+                pass
             return mapping_layers
 
     class TeatherAdaptor(AdaptorBase):
         def mapping_layers(self):
             mapping_layers = {}
-            mapping_layers['hidden_0'] = 'head.psp_module'
-            '''
+            # mapping_layers['hidden_0'] = 'layer_name'
             if self.add_tensor:
-                mapping_layers["hidden_0"] = self.model.logit_list
-            '''
+                # mapping_layers["hidden_0"] = self.model.logit_list
+                pass
             return mapping_layers
 
     return StudentAdaptor, TeatherAdaptor
@@ -50,6 +46,7 @@ def prepare_distill_config():
     """
     Prepare the distill config.
     """
+    '''
     distill_config = [{
         's_feature_idx': 0,
         't_feature_idx': 0,
@@ -57,4 +54,6 @@ def prepare_distill_config():
         'loss_function': 'SegChannelwiseLoss',
         'weight': 1.0
     }]
+    '''
+    distill_config = {}
     return distill_config

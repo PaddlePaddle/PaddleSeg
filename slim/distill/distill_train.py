@@ -29,8 +29,6 @@ from paddleseg.utils import get_sys_env, logger, config_check, utils
 from distill_utils import distill_train
 from distill_config import prepare_distill_adaptor, prepare_distill_config
 
-# TODO(jc): delete the path
-sys.path.append("/work/PaddleSlim")
 from paddleslim.dygraph.dist import Distill
 
 
