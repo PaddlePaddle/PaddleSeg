@@ -3,6 +3,12 @@
 [![Python 3.6](https://img.shields.io/badge/python-3.6+-blue.svg)](https://www.python.org/downloads/release/python-360/) [![License](https://img.shields.io/badge/license-Apache%202-blue.svg)](LICENSE)
 <!-- [![GitHub release](https://img.shields.io/github/release/Naereen/StrapDown.js.svg)](https://github.com/PaddleCV-SIG/iseg/releases) -->
 
+## 最新动向
+
+- 支持多边形编辑，上线更多功能，最新EISeg 0.3.0推出。
+
+## 介绍
+
 EISeg(Efficient Interactive Segmentation)是基于飞桨开发的一个高效智能的交互式分割标注软件。在交互式上使用了RITM(Reviving Iterative Training with Mask Guidance for Interactive Segmentation)算法，涵盖了高精度和轻量级等不同方向的高质量交互式分割模型，方便开发者快速实现语义及实例标签的标注，降低标注成本。 另外，将EISeg获取到的标注应用到PaddleSeg提供的其他分割模型进行训练，便可得到定制化场景的高精度模型，打通分割任务从数据标注到模型训练及预测的全流程。
 
 ![eiseg_demo](../../docs/images/eiseg_demo.gif)
@@ -88,29 +94,34 @@ EISeg使用[QPT](https://github.com/GT-ZhangAcer/QPT)进行打包。可以从[�
 | 鼠标双击（点）        | 删除点            |
 | 鼠标双击（边）        | 添加点            |
 
-## 使用说明
+## 新功能使用说明
 
-### 多边形
+### 1. 多边形
 
 1. 交互完成后使用Space（空格）完成交互标注，此时出现多边形边界；当需要在多边形内部继续进行交互，则使用空格切换为交互模式，此时多边形无法选中和更改。
 2. 多边形可以拖动和删除，使用鼠标左边可以对锚点进行拖动，鼠标左键双击锚点可以删除锚点，双击两点之间的边则可在此边添加一个锚点。
 3. 打开`保留最大连通块`后，所有的点击只会在图像中保留面积最大的区域，其余小区域将不会显示和保存。
 
-### 格式保存
+### 2. 格式保存
 
 1. 打开保存`JSON保存`或`COCO保存`后，多边形会被记录，加载时会自动加载。
 2. 若不设置保存路径，默认保存至当前图像文件夹下的label文件夹中。
 3. 如果有图像之间名称相同但后缀名不同，可以打开`标签和图像使用相同扩展名`。
 4. 还可设置灰度保存、伪彩色保存和抠图保存，见工具栏中7-9号工具。
 
-### 生成mask
+### 3. 生成mask
 
 1. 标签按住第二列可以进行拖动，最后生成mask时会根据标签列表从上往下进行覆盖。
 
-### 界面模块
+### 4. 界面模块
 
 1. 可在`显示`中选择需要显示的界面模块，正常退出时将会记录界面模块的状态和位置，下次打开自动加载。
 
-# 开发者
+## 版本更新
+
+- 待发版  **0.3.0**：【1】初步完成多边形编辑功能，支持对交互标注的结果进行编辑；【2】支持中/英界面；【3】支持保存为灰度/伪彩色标签和COCO格式；【4】界面拖动更加灵活；【5】标签栏可拖动，生成mask的覆盖顺序由上往下覆盖。
+- 2021.07.07  **0.2.0**：新增contrib：EISeg，可实现人像和通用图像的快速交互式标注。
+
+## 开发者
 
 [Yuying Hao](https://github.com/haoyuying), [Lin Han](https://github.com/linhandev/), [Yizhou Chen](https://github.com/geoyee), [Yiakwy](https://github.com/yiakwy), [GT](https://github.com/GT-ZhangAcer), [Zhiliang Yu](https://github.com/yzl19940819)

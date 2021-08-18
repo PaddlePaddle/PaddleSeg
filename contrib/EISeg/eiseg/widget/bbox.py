@@ -75,11 +75,11 @@ class BBoxAnnotation(QtWidgets.QGraphicsPathItem):
 
     def update(self):
         l = len(self.polyline.points)
-        if l < 4:
+        if l < 3:  # 最少三个点
             if self.is_added:
                 self.remove_from_scene()
 
-        if l >= 4:
+        if l >= 3:
             if not self.is_added:
                 self.add_to_scene()
             else:
