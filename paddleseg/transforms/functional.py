@@ -47,6 +47,17 @@ def resize_long(im, long_size=224, interpolation=cv2.INTER_LINEAR):
     return im
 
 
+def resize_short(im, short_size=224, interpolation=cv2.INTER_LINEAR):
+    value = min(im.shape[0], im.shape[1])
+    scale = float(short_size) / float(value)
+    resized_width = int(round(im.shape[1] * scale))
+    resized_height = int(round(im.shape[0] * scale))
+
+    im = cv2.resize(
+        im, (resized_width, resized_height), interpolation=interpolation)
+    return im
+
+
 def horizontal_flip(im):
     if len(im.shape) == 3:
         im = im[:, ::-1, :]
