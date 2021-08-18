@@ -63,10 +63,12 @@ python train.py \
     --do_eval \
     --use_vdl \
     --save_interval 250 \
+    --num_workers 3 \
+    --seed 0 \
     --save_dir output/deeplabv3p_resnet50
 ```
 
-训练结束后，教师模型的mIou为91.57%(实际可能有点差异)，对应的权重保存在`output/deeplabv3p_resnet50/best_model/model.pdparams`。
+训练结束后，教师模型的mIou为91.54%(实际可能有点差异)，对应的权重保存在`output/deeplabv3p_resnet50/best_model/model.pdparams`。
 
 ### 2.4 训练学生模型
 
@@ -80,10 +82,12 @@ python train.py \
     --do_eval \
     --use_vdl \
     --save_interval 250 \
+    --num_workers 3 \
+    --seed 0 \
     --save_dir output/deeplabv3p_resnet18
 ```
 
-训练结束后，教师模型的mIou为84.61%(实际可能有点差异)，对应的权重保存在`output/deeplabv3p_resnet18/best_model/model.pdparams`。
+训练结束后，教师模型的mIou为83.93%(实际可能有点差异)，对应的权重保存在`output/deeplabv3p_resnet18/best_model/model.pdparams`。
 
 ### 2.5 蒸馏配置
 
@@ -115,7 +119,7 @@ loss:
 distill_loss:
   types:
     - type: KLLoss
-  coef: [1]
+  coef: [3]
 ```
 
 ### 2.6 蒸馏训练
@@ -129,6 +133,8 @@ python slim/distill/distill_train.py \
        --do_eval \
        --use_vdl \
        --save_interval 250 \
+       --num_workers 3 \
+       --seed 0 \
        --save_dir output/deeplabv3p_resnet18_distill
 ```
 
@@ -136,9 +142,9 @@ python slim/distill/distill_train.py \
 
 注意，蒸馏训练会加载两个模型，显存占用较大，所以大家需要根据实际情况调整batch_size。
 
-蒸馏训练结束后，学生模型的mIoU是86.78%(实际可能有点差异)，对应权重保存在`output/deeplabv3p_resnet18_distill/best_model`。
+蒸馏训练结束后，学生模型的mIoU是85.79%(实际可能有点差异)，对应权重保存在`output/deeplabv3p_resnet18_distill/best_model`。
 
-对比发现，单独训练的学生模型mIoU是84.61%，蒸馏训练的学生模型mIoU是86.78%，mIoU提高了2.17%。
+对比发现，单独训练的学生模型mIoU是83.93%，蒸馏训练的学生模型mIoU是85.79%，mIoU提高了1.86%。
 
 ## 3 高阶使用方法
 
@@ -155,6 +161,8 @@ python -m paddle.distributed.launch slim/distill/distill_train.py \
        --do_eval \
        --use_vdl \
        --save_interval 250 \
+       --num_workers 3 \
+       --seed 0 \
        --save_dir output/deeplabv3p_resnet18_distill
 ```
 
