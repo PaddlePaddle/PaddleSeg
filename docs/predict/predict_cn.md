@@ -109,7 +109,7 @@ predict(
 
 ## 4.自定义color map
 经过预测后，我们得到的是默认color map配色的预测分割结果。以视盘分割为例：
-![](./color_map/before_mapped.png)
+![](./color_map/before_mapped.jpeg)
 
 ​                                                                                            伪彩色标注图/叠加图
 
@@ -123,7 +123,7 @@ python predict.py \
        --custom_color 0 0 0 255 255 255
 ```
 分割预测结果如下：
-![](./color_map/after_mapped.png)
+![](./color_map/after_mapped.jpeg)
 
 ​                                                                                            伪彩色标注图/叠加图
 
