@@ -35,7 +35,7 @@ class PascalContext(Dataset):
     """
     NUM_CLASSES = 60
 
-    def __init__(self, transforms=None, dataset_root=None, mode='train',edge=False):
+    def __init__(self, transforms=None, dataset_root=None, mode='train', edge=False):
         self.dataset_root = dataset_root
         self.transforms = Compose(transforms)
         mode = mode.lower()
