@@ -6,7 +6,6 @@
 ## 最新动向
 
 - 支持多边形编辑，上线更多功能，最新EISeg 0.3.0推出。
-- :heart::heart::heart:EISeg相关论文中刊ICCV2021 Workshop。
 
 ## 介绍
 
