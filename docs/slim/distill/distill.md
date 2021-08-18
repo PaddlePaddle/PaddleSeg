@@ -104,7 +104,7 @@ model:
   pretrained: output/deeplabv3p_resnet50/best_model/model.pdparams
 ```
 
-学生模型DeepLabV3P_ResNet18_vd的config文件在`PaddleSeg/configs/quick_start/deeplabv3p_resnet518_os8_optic_disc_512x512_1k.yml`，其中除了常规loss，还新增了distill_loss，如下所示。常规loss是配置学生模型输出和真实label的损失计算，distill_loss是配置学生模型输出和教师模型输出的损失计算，type表示loss类型，coef是loss的比例系数。
+学生模型DeepLabV3P_ResNet18_vd的config文件在`PaddleSeg/configs/quick_start/deeplabv3p_resnet18_os8_optic_disc_512x512_1k.yml`，其中除了常规loss，还新增了distill_loss，如下所示。常规loss是配置学生模型输出和真实label的损失计算，distill_loss是配置学生模型输出和教师模型输出的损失计算，type表示loss类型，coef是loss的比例系数。
 ```
 loss:
   types:
