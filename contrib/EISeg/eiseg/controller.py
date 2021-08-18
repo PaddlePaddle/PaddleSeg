@@ -252,13 +252,13 @@ class InteractiveController:
         if object_prob is None:
             return None, None
         object_mask = object_prob > self.prob_thresh
-        if self.lccFilter:
-            object_mask = self.getLargestCC(object_mask)
-        self._result_mask[object_mask] = self.curr_label_number
-        self.resetLastObject()
-
         polygon = util.get_polygon(object_mask.astype(np.uint8) * 255)
-        self.polygons.append([self.curr_label_number, polygon])
+        if polygon is not None:
+            if self.lccFilter:
+                object_mask = self.getLargestCC(object_mask)
+            self._result_mask[object_mask] = self.curr_label_number
+            self.resetLastObject()
+            self.polygons.append([self.curr_label_number, polygon])
         return object_mask, polygon
 
     # 多边形
