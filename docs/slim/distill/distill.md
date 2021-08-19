@@ -6,7 +6,7 @@
 
 常规的模型训练中，模型前向计算的输出和真实label计算得到常规loss，再进行梯度反向传播。
 常见的模型蒸馏训练中，教师模型只有前向计算，学生模型有前向计算和反向传播，有多个loss指导学生模型进行训练：学生模型前向计算的输出和真实label计算得到常规loss；学生模型前向计算的输出和教师模型前向计算的输出计算得到蒸馏loss。
-更多模型蒸馏的介绍，请参考[Survey](https://arxiv.org/abs/2006.05525)和[博客](https://cloud.tencent.com/developer/article/1763873)。
+更多模型蒸馏的介绍，请参考[Survey](https://arxiv.org/abs/2006.05525)。
 
 PaddleSeg基于PaddleSlim，集成了模型蒸馏的功能，主要使用步骤是：
 * 选定学生模型和教师模型；
@@ -20,15 +20,7 @@ PaddleSeg基于PaddleSlim，集成了模型蒸馏的功能，主要使用步骤�
 
 ### 2.1 环境准备
 
-请参考[安装文档](../../install.md)准备好PaddleSeg的基础环境。大家可以在PaddleSeg根目录执行如下命令，如果在`PaddleSeg/output`文件夹中出现预测结果，则证明安装成功。
-
-```
-python predict.py \
-       --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml \
-       --model_path https://bj.bcebos.com/paddleseg/dygraph/optic_disc/bisenet_optic_disc_512x512_1k/model.pdparams\
-       --image_path docs/images/optic_test_image.jpg \
-       --save_dir output/result
-```
+请参考[安装文档](../../install.md)准备好PaddleSeg的基础环境，测试是否安装成功。
 
 安装最新版本的PaddleSlim。
 
@@ -43,7 +35,7 @@ python setup.py install
 
 ### 2.3 训练教师模型
 
-教师模型DeepLabV3P_ResNet50_vd的config文件在`PaddleSeg/configs/quick_start/deeplabv3p_resnet50_os8_optic_disc_512x512_1k.yml`，具体参数不再赘述。
+教师模型DeepLabV3P_ResNet50_vd的config文件在`PaddleSeg/configs/quick_start/deeplabv3p_resnet50_os8_optic_disc_512x512_1k_teacher.yml`，具体参数不再赘述。
 
 执行如下命令，指定使用的GPU卡。
 
@@ -59,7 +51,7 @@ export CUDA_VISIBLE_DEVICES=0
 
 ```
 python train.py \
-    --config configs/quick_start/deeplabv3p_resnet50_os8_optic_disc_512x512_1k.yml \
+    --config configs/quick_start/deeplabv3p_resnet50_os8_optic_disc_512x512_1k_teacher.yml \
     --do_eval \
     --use_vdl \
     --save_interval 250 \
@@ -74,11 +66,13 @@ python train.py \
 
 为了和蒸馏训练对比学生模型的精度，这里先单独训练学生模型。此步骤非必须，只是为了对比观察，大家可以视情况跳过。
 
+学生模型DeepLabV3P_ResNet18_vd的config文件在`PaddleSeg/configs/quick_start/deeplabv3p_resnet18_os8_optic_disc_512x512_1k_student.yml`。
+
 在PaddleSeg根目录下执行如下命令，训练学生模型。
 
 ```
 python train.py \
-    --config configs/quick_start/deeplabv3p_resnet18_os8_optic_disc_512x512_1k.yml \
+    --config configs/quick_start/deeplabv3p_resnet18_os8_optic_disc_512x512_1k_student.yml \
     --do_eval \
     --use_vdl \
     --save_interval 250 \
@@ -91,7 +85,8 @@ python train.py \
 
 ### 2.5 蒸馏配置
 
-修改教师模型的config文件（`PaddleSeg/configs/quick_start/deeplabv3p_resnet50_os8_optic_disc_512x512_1k.yml`），将文件中最后一行pretrained字段设置为”训练教师模型”步骤中的权重路径，如下所示。
+修改教师模型的config文件（`PaddleSeg/configs/quick_start/deeplabv3p_resnet50_os8_optic_disc_512x512_1k_teacher.yml`），将文件中最后一行pretrained字段设置为”训练教师模型”步骤中的权重路径，如下所示。
+
 ```
 model:
   type: DeepLabV3P
@@ -99,7 +94,7 @@ model:
     type: ResNet50_vd
     output_stride: 8
     multi_grid: [1, 2, 4]
-    pretrained: https://bj.bcebos.com/paddleseg/dygraph/resnet50_vd_ssld_v2.tar.gz
+    pretrained: Null
   num_classes: 2
   backbone_indices: [0, 3]
   aspp_ratios: [1, 12, 24, 36]
@@ -108,7 +103,7 @@ model:
   pretrained: output/deeplabv3p_resnet50/best_model/model.pdparams
 ```
 
-学生模型DeepLabV3P_ResNet18_vd的config文件在`PaddleSeg/configs/quick_start/deeplabv3p_resnet18_os8_optic_disc_512x512_1k.yml`，其中除了常规loss，还新增了distill_loss，如下所示。常规loss是配置学生模型输出和真实label的损失计算，distill_loss是配置学生模型输出和教师模型输出的损失计算，type表示loss类型，coef是loss的比例系数。
+学生模型的config文件中，除了常规loss，还新增了distill_loss，如下所示。常规loss是配置学生模型输出和真实label的损失计算，distill_loss是配置学生模型输出和教师模型输出的损失计算，type表示loss类型，coef是loss的比例系数。
 ```
 loss:
   types:
@@ -128,8 +123,8 @@ distill_loss:
 
 ```
 python slim/distill/distill_train.py \
-       --teather_config ./configs/quick_start/deeplabv3p_resnet50_os8_optic_disc_512x512_1k.yml \
-       --student_config ./configs/quick_start/deeplabv3p_resnet18_os8_optic_disc_512x512_1k.yml \
+       --teather_config ./configs/quick_start/deeplabv3p_resnet50_os8_optic_disc_512x512_1k_teacher.yml \
+       --student_config ./configs/quick_start/deeplabv3p_resnet18_os8_optic_disc_512x512_1k_student.yml \
        --do_eval \
        --use_vdl \
        --save_interval 250 \
@@ -140,7 +135,7 @@ python slim/distill/distill_train.py \
 
 在蒸馏训练中，使用教师模型配置文件中model配置信息创建教师模型，使用学生模型配置文件中model配置信息创建学生模型，使用学生模型中dataset、loss、optimizer等配置信息执行训练。
 
-注意，蒸馏训练会加载两个模型，显存占用较大，所以大家需要根据实际情况调整batch_size。
+注意，蒸馏训练会加载两个模型，显存占用较大(9G)，所以大家需要根据实际情况调整batch_size。
 
 蒸馏训练结束后，学生模型的mIoU是85.79%(实际可能有点差异)，对应权重保存在`output/deeplabv3p_resnet18_distill/best_model`。
 
@@ -156,8 +151,8 @@ python slim/distill/distill_train.py \
 export CUDA_VISIBLE_DEVICES=0,1,2,3 # 设置4张可用的卡
 
 python -m paddle.distributed.launch slim/distill/distill_train.py \
-       --teather_config ./configs/quick_start/deeplabv3p_resnet50_os8_optic_disc_512x512_1k.yml \
-       --student_config ./configs/quick_start/deeplabv3p_resnet18_os8_optic_disc_512x512_1k.yml \
+       --teather_config ./configs/quick_start/deeplabv3p_resnet50_os8_optic_disc_512x512_1k_teacher.yml \
+       --student_config ./configs/quick_start/deeplabv3p_resnet18_os8_optic_disc_512x512_1k_student.yml \
        --do_eval \
        --use_vdl \
        --save_interval 250 \

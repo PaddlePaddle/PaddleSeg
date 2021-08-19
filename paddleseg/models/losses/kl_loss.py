@@ -23,6 +23,7 @@ from paddleseg.cvlibs import manager
 class KLLoss(nn.Layer):
     """
     The implementation of Kullback-Leibler divergence Loss.
+    Refer to https://en.wikipedia.org/wiki/Kullback%E2%80%93Leibler_divergence.
 
     Args:
         ignore_index (int64): Specifies a target value that is ignored
