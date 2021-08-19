@@ -91,7 +91,7 @@ PaddleSeg是基于飞桨[PaddlePaddle](https://www.paddlepaddle.org.cn)开发的
 *  PaddleSeg二次开发教程
     * [配置文件详解](./docs/design/use/use_cn.md)
     * [如何创造自己的模型](./docs/design/create/add_new_model_cn.md)
-* [模型训练](/docs/train/train.md)
+* [模型训练](/docs/train/train_cn.md)
 * [模型评估](./docs/evaluation/evaluate/evaluate.md)
 * [模型导出](./docs/export/export/model_export.md)
 
