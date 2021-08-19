@@ -5,7 +5,7 @@ English|[简体中文](evaluate_cn.md)
 
 #### Evaluating
 
-After the training is completed, the user can use the evaluation script val.py to evaluate the effect of the model. Assuming that the number of iterations (iters) in the training process is 1000, the interval for saving the model is 500, that is, the training model is saved twice for every 1000 iterations of the data set. Therefore, a total of 2 regularly saved models will be generated, plus the best saved model `best_model`, there are a total of 3 models, and the model file that you want to evaluate can be specified by `model_path`.
+After the training, the user can use the evaluation script val.py to evaluate the effect of the model. Assuming that the number of iterations (iters) in the training process is 1000, the interval for saving the model is 500, that is, the training model is saved twice for every 1000 iterations of the data set. Therefore, a total of 2 regularly saved models will be generated, plus the best saved model `best_model`, there are a total of 3 models, and the model file that you want to evaluate can be specified by `model_path`.
 
 ```
 !python val.py \
