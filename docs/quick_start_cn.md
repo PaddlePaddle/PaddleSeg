@@ -112,7 +112,7 @@ cd ..
    ...
   ```
 
-我们刚刚下载的数据集格式也与之类似(label.txt可有可以无)，如果用户要进行数据集标注和数据划分，请参考[数据标注文档](data/marker/marker_c.md)与[数据集划分文档](data/custom/data_prepare.md)。
+我们刚刚下载的数据集格式也与之类似(label.txt可有可以无)，如果用户要进行数据集标注和数据划分，请参考[数据标注文档](data/marker/marker_cn.md)与[数据集划分文档](data/custom/data_prepare_cn.md)。
 
 我们一般推荐用户将数据集放置在PaddleSeg下的dataset文件夹下。
 

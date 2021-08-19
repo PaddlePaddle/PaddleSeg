@@ -112,7 +112,7 @@ How to use your own dataset for training is the most concerned thing for develop
    ...
   ```
 
-The format of the dataset we just downloaded is similar (label.txt is optional). If users want to label and divide the dataset, please refer to [Data Marking Document](data/marker/marker_c.md) and [ dataset division document](data/custom/data_prepare.md).
+The format of the dataset we just downloaded is similar (label.txt is optional). If users want to label and divide the dataset, please refer to [Data Marking Document](data/marker/marker.md) and [ dataset division document](data/custom/data_prepare.md).
 
 我们一般推荐用户将数据集放置在PaddleSeg下的data文件夹下。
 
