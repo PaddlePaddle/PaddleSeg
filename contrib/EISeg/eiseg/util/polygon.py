@@ -1,6 +1,7 @@
 from enum import Enum
 
 import cv2
+from math import sqrt
 import matplotlib.pyplot as plt
 
 
@@ -42,6 +43,15 @@ def get_polygon(label, sample=2):
             if relas[i][1] != None:  # 有父母
                 for j in range(len(relas)):
                     if relas[j][0] == relas[i][1]:  # i的父母就是j（i是j的内圈）
+                        min_i, min_o = _find_min_point(polygons[i], polygons[j])
+                        # 改变顺序
+                        s_pj = polygons[j][: min_o]
+                        polygons[j] = polygons[j][min_o:]
+                        polygons[j].extend(s_pj)
+                        s_pi = polygons[i][: min_i]
+                        polygons[i] = polygons[i][min_i:]
+                        polygons[i].extend(s_pi)
+                        # 连接
                         polygons[j].append(polygons[j][0])  # 闭合
                         polygons[j].extend(polygons[i])
                         polygons[j].append(polygons[i][0])  # 闭合
@@ -51,3 +61,18 @@ def get_polygon(label, sample=2):
     else:
         print("没有标签范围，无法生成边界")
         return None
+
+
+def _find_min_point(i_list, o_list):
+    min_dis = 1e7
+    idx_i = -1
+    idx_o = -1
+    for i in range(len(i_list)):
+        for o in range(len(o_list)):
+            dis = sqrt((i_list[i][0] - o_list[o][0]) ** 2 + \
+                       (i_list[i][1] - o_list[o][1]) ** 2)
+            if dis < min_dis:
+                min_dis = dis
+                idx_i = i
+                idx_o = o
+    return idx_i, idx_o
