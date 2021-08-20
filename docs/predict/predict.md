@@ -1,6 +1,6 @@
 English|[简体中文](predict_cn.md)
 
-# Predicting
+# Prediction
 
 In addition to analyzing the `IOU`, `ACC` and `Kappa`, we can also check the segmentation effect of some specific samples, and inspire further optimization ideas from Bad Case.
 
