@@ -1,4 +1,8 @@
 #!/bin/bash
+
+set -o errexit
+set -o nounset
+
 FILENAME=$1
 # MODE be one of ['lite_train_infer' 'whole_infer' 'whole_train_infer', 'infer']
 MODE=$2
@@ -144,6 +148,8 @@ benchmark_key=$(func_parser_key "${lines[49]}")
 benchmark_value=$(func_parser_value "${lines[49]}")
 infer_key1=$(func_parser_key "${lines[50]}")
 infer_value1=$(func_parser_value "${lines[50]}")
+infer_key2=$(func_parser_key "${lines[51]}")
+infer_value2=$(func_parser_value "${lines[51]}")
 
 LOG_PATH="./tests/output"
 mkdir -p ${LOG_PATH}
@@ -174,7 +180,8 @@ function func_inference(){
                         set_cpu_threads=$(func_set_params "${cpu_threads_key}" "${threads}")
                         set_model_dir=$(func_set_params "${infer_model_key}" "${_model_dir}")
                         set_infer_params1=$(func_set_params "${infer_key1}" "${infer_value1}")
-                        command="${_python} ${_script} ${use_gpu_key}=${use_gpu} ${use_mkldnn_key}=${use_mkldnn} ${set_cpu_threads} ${set_model_dir} ${set_batchsize} ${set_infer_data} ${set_benchmark} ${set_infer_params1} > ${_save_log_path} 2>&1 "
+                        set_infer_params2=$(func_set_params "${infer_key2}" "${infer_value2}")
+                        command="${_python} ${_script} ${use_gpu_key}=${use_gpu} ${use_mkldnn_key}=${use_mkldnn} ${set_cpu_threads} ${set_model_dir} ${set_batchsize} ${set_infer_data} ${set_benchmark} ${set_infer_params1} ${set_infer_params2}> ${_save_log_path} 2>&1 "
                         eval $command
                         last_status=${PIPESTATUS[0]}
                         eval "cat ${_save_log_path}"
@@ -200,7 +207,8 @@ function func_inference(){
                         set_precision=$(func_set_params "${precision_key}" "${precision}")
                         set_model_dir=$(func_set_params "${infer_model_key}" "${_model_dir}")
                         set_infer_params1=$(func_set_params "${infer_key1}" "${infer_value1}")
-                        command="${_python} ${_script} ${use_gpu_key}=${use_gpu} ${set_tensorrt} ${set_precision} ${set_model_dir} ${set_batchsize} ${set_infer_data} ${set_benchmark} ${set_infer_params1} > ${_save_log_path} 2>&1 "
+                        set_infer_params2=$(func_set_params "${infer_key2}" "${infer_value2}")
+                        command="${_python} ${_script} ${use_gpu_key}=${use_gpu} ${set_tensorrt} ${set_precision} ${set_model_dir} ${set_batchsize} ${set_infer_data} ${set_benchmark} ${set_infer_params1} ${set_infer_params2}> ${_save_log_path} 2>&1 "
                         eval $command
                         last_status=${PIPESTATUS[0]}
                         eval "cat ${_save_log_path}"

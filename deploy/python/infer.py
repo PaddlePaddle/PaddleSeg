@@ -68,7 +68,8 @@ class Predictor:
         self.args = args
 
         pred_cfg = PredictConfig(self.cfg.model, self.cfg.params)
-        # pred_cfg.disable_glog_info() # turn on if you don't want log info
+        if not args.print_detail:
+            pred_cfg.disable_glog_info()
         pred_cfg.enable_memory_optim()
 
         if args.device == 'gpu':
@@ -112,7 +113,7 @@ class Predictor:
             import auto_log
             pid = os.getpid()
             self.autolog = auto_log.AutoLogger(
-                model_name="hrnet_w18_small_v1",
+                model_name=args.model_name,
                 model_precision=args.precision,
                 batch_size=args.batch_size,
                 data_shape="dynamic",
@@ -248,11 +249,23 @@ def parse_args():
         help=
         "Whether to log some information about environment, model, configuration and performance."
     )
+    parser.add_argument(
+        "--model_name",
+        default="",
+        type=str,
+        help='When `--benchmark` is True, the specified model name is displayed.'
+    )
 
     parser.add_argument(
         '--with_argmax',
         dest='with_argmax',
         help='Perform argmax operation on the predict result.',
+        action='store_true')
+
+    parser.add_argument(
+        '--print_detail',
+        dest='print_detail',
+        help='Print GLOG information of Paddle Inference.',
         action='store_true')
 
     return parser.parse_args()

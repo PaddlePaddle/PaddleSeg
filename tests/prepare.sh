@@ -1,4 +1,8 @@
 #!/bin/bash
+
+set -o errexit
+set -o nounset
+
 FILENAME=$1
 # MODE be one of ['lite_train_infer' 'whole_infer' 'whole_train_infer', 'infer']
 MODE=$2

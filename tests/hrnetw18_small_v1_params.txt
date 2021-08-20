@@ -49,3 +49,4 @@ null:
 --save_log_path:null
 --benchmark:True
 --config:./tests/output/norm_gpus_0_autocast_null/deploy.yaml
+--model_name:hrnetw18_small_v1
