@@ -87,6 +87,7 @@ Welcome to PaddleSeg! PaddleSeg is an end-to-end image segmentation development 
     * [Create Your Own Model](./docs/design/create/add_new_model.md)
 * [Model Training](/docs/train/train.md)
 * [Model Evaluation](./docs/evaluation/evaluate/evaluate.md)
+* [Prediction](./docs/predict/predict.md)
 * [Model Export](./docs/export/export/model_export.md)
 
 *  Model Deploy
