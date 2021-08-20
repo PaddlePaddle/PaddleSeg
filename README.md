@@ -87,6 +87,7 @@ Welcome to PaddleSeg! PaddleSeg is an end-to-end image segmentation development 
     * [Create Your Own Model](./docs/design/create/add_new_model.md)
 * [Model Training](/docs/train/train.md)
 * [Model Evaluation](./docs/evaluation/evaluate/evaluate.md)
+* [Prediction](./docs/predict/predict.md)
 * [Model Export](./docs/export/export/model_export.md)
 
 *  Model Deploy
@@ -150,7 +151,7 @@ python train.py --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml
 
 * [HumanSeg](./contrib/HumanSeg)
 * [Cityscapes SOTA](./contrib/CityscapesSOTA)
-* [PanopticSegmentation](./contrib/PanopticDeepLab)
+* [Panoptic Segmentation](./contrib/PanopticDeepLab)
 
 ## Feedbacks and Contact
 * The dynamic version is still under development, if you find any issue or have an idea on new features, please don't hesitate to contact us via [GitHub Issues](https://github.com/PaddlePaddle/PaddleSeg/issues).

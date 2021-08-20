@@ -29,7 +29,7 @@ python train.py \
 | save_dir            | The root path for saving model and visualdl log files                           | No         | output           |
 | num_workers         | The number of processes used to read data asynchronously, when it is greater than or equal to 1, the child process is started to read dat  | No  | 0 |
 | use_vdl             | Whether to enable visualdl to record training data                                 | No         | No               |
-| save_interval_iters | Number of steps between model saving                                           | No         | 1000             |
+| save_interval       | Number of steps between model saving                                           | No         | 1000             |
 | do_eval             | Whether to start the evaluation when saving the model, the best model will be saved to best_model according to mIoU at startup | No   | No  |
 | log_iters           | Interval steps for printing log                                           | No         | 10               |
 | resume_model        | Restore the training model path, such as: `output/iter_1000`                    | No        | None             |
