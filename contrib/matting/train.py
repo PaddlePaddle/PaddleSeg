@@ -144,8 +144,8 @@ def main(args):
     # train_dataset = Dataset()
     t = [
         T.LoadImages(),
-        T.RandomCropByAlpha(crop_size=((512, 512), (640, 640), (800, 800))),
-        T.Resize(target_size=(512, 512)),
+        T.RandomCrop(crop_size=((512, 512), )),
+        T.RandomHorizontalFlip(),
         T.Normalize()
     ]
 
@@ -157,7 +157,7 @@ def main(args):
     if args.do_eval:
         t = [
             T.LoadImages(),
-            T.LimitLong(2048),
+            T.ResizeByShort(512),
             T.ResizeToIntMult(mult_int=32),
             T.Normalize()
         ]
@@ -188,15 +188,6 @@ def main(args):
 
     model = MODNet(backbone=backbone, pretrained=args.pretrained_model)
 
-    # optimizer
-    # 简单的先构建一个优化器
-    # lr = paddle.optimizer.lr.PolynomialDecay(
-    #     0.001, decay_steps=200000, end_lr=0.0, power=0.9)
-    # use adam
-    #     optimizer = paddle.optimizer.Adam(
-    #         learning_rate=args.learning_rate, parameters=model.parameters())
-
-    #     lr = paddle.optimizer.lr.StepDecay(args.learning_rate, step_size=1000, gamma=0.1, last_epoch=-1, verbose=False)
     boundaries = [50000, 100000, 150000]
     values = [
         args.learning_rate * 0.1**scale for scale in range(len(boundaries) + 1)

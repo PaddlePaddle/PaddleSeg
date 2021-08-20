@@ -119,6 +119,25 @@ class ResizeByLong:
         return data
 
 
+class ResizeByShort:
+    """
+    Resize the short side of an image to given size, and then scale the other side proportionally.
+
+    Args:
+        short_size (int): The target size of short side.
+    """
+
+    def __init__(self, short_size):
+        self.short_size = short_size
+
+    def __call__(self, data):
+        data['trans_info'].append(('resize', data['img'].shape[0:2]))
+        data['img'] = functional.resize_short(data['img'], self.short_size)
+        for key in data.get('gt_fields', []):
+            data[key] = functional.resize_short(data[key], self.short_size)
+        return data
+
+
 class ResizeToIntMult:
     """
     Resize to some int muitple, d.g. 32.
@@ -186,9 +205,10 @@ class RandomCropByAlpha:
 
     """
 
-    def __init__(self, crop_size=((320, 320), (480, 480), (640, 640)), p=0.5):
+    def __init__(self, crop_size=((320, 320), (480, 480), (640, 640)),
+                 prob=0.5):
         self.crop_size = crop_size
-        self.p = p
+        self.prob = prob
 
     def __call__(self, data):
         idex = np.random.randint(low=0, high=len(self.crop_size))
@@ -196,7 +216,7 @@ class RandomCropByAlpha:
 
         img_h = data['img'].shape[0]
         img_w = data['img'].shape[1]
-        if np.random.rand() < self.p:
+        if np.random.rand() < self.prob:
             crop_center = np.where((data['alpha'] > 0) & (data['alpha'] < 255))
             center_h_array, center_w_array = crop_center
             if len(center_h_array) == 0:
@@ -309,6 +329,26 @@ class LimitLong:
             data['img'] = functional.resize_long(data['img'], target)
             for key in data.get('gt_fields', []):
                 data[key] = functional.resize_long(data[key], self.long_size)
+
+        return data
+
+
+class RandomHorizontalFlip:
+    """
+    Flip an image horizontally with a certain probability.
+
+    Args:
+        prob (float, optional): A probability of horizontally flipping. Default: 0.5.
+    """
+
+    def __init__(self, prob=0.5):
+        self.prob = prob
+
+    def __call__(self, data):
+        if random.random() < self.prob:
+            data['img'] = functional.horizontal_flip(data['img'])
+            for key in data.get('gt_fields', []):
+                data[key] = functional.horizontal_flip(data[key])
 
         return data
 
