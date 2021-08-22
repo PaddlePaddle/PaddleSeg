@@ -53,6 +53,12 @@ eiseg
 
 EISeg使用[QPT](https://github.com/GT-ZhangAcer/QPT)进行打包。可以从[这里](http://cloud.a-boat.cn:2021/share/egI4T3tB)或[百度云盘](https://pan.baidu.com/s/1bHVZgUj4u3trhfvPrjYlQw)（提取码：82z9）下载最新EISeg。解压后双击启动程序.exe即可运行程序。程序第一次运行会初始化安装所需要的包，请稍等片刻。
 
+#### *其他
+
+##### COCO tool
+
+若在Windows下安装coco tool时报错，则可能缺少Microsoft Visual C++，可在[微软官方下载网页](https://visualstudio.microsoft.com/zh-hans/visual-cpp-build-tools/)进行下载安装后重启，即可解决。
+
 ## 使用
 
 打开软件后，在对项目进行标注前，需要进行如下设置：
