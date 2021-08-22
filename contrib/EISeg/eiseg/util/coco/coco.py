@@ -57,9 +57,9 @@ class COCO:
             print("Done (t={:0.2f}s)".format(time.time() - tic))
             self.dataset = dataset
             self.createIndex()
-        print(
-            f"load coco with {len(self.dataset['images'])} images and {len(self.dataset['annotations'])}"
-        )
+            print(
+                f"load coco with {len(self.dataset['images'])} images and {len(self.dataset['annotations'])} annotations."
+            )
 
     def hasImage(self, imageName):
         imgId = self.imgNameToId.get(imageName, None)
