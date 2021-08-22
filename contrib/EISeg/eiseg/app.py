@@ -1076,15 +1076,16 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
                     for p in points:
                         poly.addPointLast(QtCore.QPointF(p[0], p[1]))
                     self.setDirty()
-            if self.status == self.EDITING:
-                self.anning = True
-                for p in self.scene.polygon_items:
-                    p.setAnning(isAnning=True)
-            else:
-                self.anning = False
-                for p in self.scene.polygon_items:
-                    p.setAnning(isAnning=False)
-            self.getMask()
+        # 状态改变
+        if self.status == self.EDITING:
+            self.anning = True
+            for p in self.scene.polygon_items:
+                p.setAnning(isAnning=True)
+        else:
+            self.anning = False
+            for p in self.scene.polygon_items:
+                p.setAnning(isAnning=False)
+        self.getMask()
 
     def completeLastMask(self):
         # 返回最后一个标签是否完成，false就是还有带点的
