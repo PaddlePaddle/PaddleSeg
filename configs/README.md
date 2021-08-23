@@ -34,21 +34,9 @@
 
 # 模型性能参数
 
-|模型\骨干网络|ResNet50|ResNet101|HRNetw18|HRNetw48|
-|-|-|-|-|-|
-|[ANN](./ann)|✔|✔|||
-|[BiSeNetv2](./bisenet)|-|-|-|-|
-|[DANet](./danet)|✔|✔|||
-|[Deeplabv3](./deeplabv3)|✔|✔|||
-|[Deeplabv3P](./deeplabv3p)|✔|✔|||
-|[Fast-SCNN](./fastscnn)|-|-|-|-|
-|[FCN](./fcn)|||✔|✔|
-|[GCNet](./gcnet)|✔|✔|||
-|[GSCNN](./gscnn)|✔|✔|||
-
 
 |Model|Backbone|Resolution|Training Iters|mIoU|mIoU(flip)|mIoU(ms+flip)|predict_time(ms)|
-|-|-|-|-|-|-|-|-|-|
+|-|-|-|-|-|-|-|-|
 |ANN|ResNet101|1024x512|80000|79.50%|79.77%|79.69%|365|
 |BiSeNetv2|/|1024x1024|160000|73.19%|74.19%|74.43%|12|
 |DANet|ResNet50|1024x512|80000|80.27%|80.53%|/|475|
