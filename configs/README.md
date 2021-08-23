@@ -64,6 +64,7 @@
 - 表格展示了PaddleSeg所实现的分割模型在取得最高分类精度的配置下的一些评价参数。
 - 其中，mIoU、mIoU(flip)、mIoU(ms+flip)是对模型进行评估的结果。`ms` 表示**multi-scale**，即使用三种scale [0.75, 1.0, 1.25]；`flip`表示水平翻转。
 - 推理时间是使用CityScapes数据集中的图像进行100次预测取平均值的结果。
+- 测试条件为Tesla V100 16GB。
 
 # 配置项
 
