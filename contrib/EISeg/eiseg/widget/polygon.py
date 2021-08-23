@@ -26,14 +26,18 @@ class PolygonAnnotation(QtWidgets.QGraphicsPolygonItem):
         self.labelIndex = labelIndex
         self.item_hovering = False
         self.polygon_hovering = False
+        self.anning = False  # 是否标注模式
         self.line_hovering = False
         self.noMove = False
+        self.last_focse = False  # 之前是不是焦点在
 
         self.setZValue(10)
+        self.opacity = opacity
         i = insideColor
         self.insideColor = QtGui.QColor(i[0], i[1], i[2])
         self.insideColor.setAlphaF(opacity)
-        self.opacity = opacity
+        self.halfInsideColor = QtGui.QColor(i[0], i[1], i[2])
+        self.halfInsideColor.setAlphaF(opacity / 2)
         b = borderColor
         self.borderColor = QtGui.QColor(b[0], b[1], b[2])
         self.borderColor.setAlphaF(0.8)
@@ -62,7 +66,9 @@ class PolygonAnnotation(QtWidgets.QGraphicsPolygonItem):
     def setAnning(self, isAnning=True):
         if isAnning:
             self.setAcceptHoverEvents(False)
+            self.last_focse = self.polygon_hovering
             self.polygon_hovering = False
+            self.anning = True
             self.setBrush(QtGui.QBrush(QtCore.Qt.NoBrush))
             self.setFlag(QtWidgets.QGraphicsItem.ItemIsSelectable, False)
             self.setFlag(QtWidgets.QGraphicsItem.ItemIsMovable, False)
@@ -71,6 +77,12 @@ class PolygonAnnotation(QtWidgets.QGraphicsPolygonItem):
             self.setCursor(QtGui.QCursor(QtCore.Qt.ArrowCursor))
         else:
             self.setAcceptHoverEvents(True)
+            self.anning = False
+            if self.last_focse:
+                self.polygon_hovering = True
+                self.setBrush(self.insideColor)
+            else:
+                self.setBrush(self.halfInsideColor)
             self.setFlag(QtWidgets.QGraphicsItem.ItemIsSelectable, True)
             self.setFlag(QtWidgets.QGraphicsItem.ItemIsMovable, True)
             self.setFlag(QtWidgets.QGraphicsItem.ItemSendsGeometryChanges, True)
@@ -227,25 +239,24 @@ class PolygonAnnotation(QtWidgets.QGraphicsPolygonItem):
     def hoverLeaveEvent(self, ev):
         self.polygon_hovering = False
         if not self.hasFocus():
-            self.setBrush(QtGui.QBrush(QtCore.Qt.NoBrush))
+            self.setBrush(self.halfInsideColor)
         super(PolygonAnnotation, self).hoverLeaveEvent(ev)
 
     def focusInEvent(self, ev):
-        self.setBrush(self.insideColor)
+        if not self.anning:
+            self.setBrush(self.insideColor)
 
     def focusOutEvent(self, ev):
-        if not self.polygon_hovering:
-            self.setBrush(QtGui.QBrush(QtCore.Qt.NoBrush))
-
-    def setOpacity(self, opacity):
-        self.opacity = opacity
-        self.insideColor.setAlphaF(opacity)
+        if not self.polygon_hovering and not self.anning:
+            self.setBrush(self.halfInsideColor)
 
     def setColor(self, insideColor, borderColor):
         i = insideColor
         self.insideColor = QtGui.QColor(i[0], i[1], i[2])
         self.insideColor.setAlphaF(self.opacity)
-        self.setBrush(self.insideColor)
+        self.halfInsideColor = QtGui.QColor(i[0], i[1], i[2])
+        self.halfInsideColor.setAlphaF(self.opacity / 2)
+        self.setBrush(self.halfInsideColor)
         b = borderColor
         self.borderColor = QtGui.QColor(b[0], b[1], b[2])
         self.borderColor.setAlphaF(0.8)

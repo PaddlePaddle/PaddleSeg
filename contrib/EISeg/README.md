@@ -9,7 +9,7 @@
 
 ## 介绍
 
-EISeg(Efficient Interactive Segmentation)是基于飞桨开发的一个高效智能的交互式分割标注软件。在交互式上使用了RITM(Reviving Iterative Training with Mask Guidance for Interactive Segmentation)算法，涵盖了高精度和轻量级等不同方向的高质量交互式分割模型，方便开发者快速实现语义及实例标签的标注，降低标注成本。 另外，将EISeg获取到的标注应用到PaddleSeg提供的其他分割模型进行训练，便可得到定制化场景的高精度模型，打通分割任务从数据标注到模型训练及预测的全流程。
+EISeg(Efficient Interactive Segmentation)是基于飞桨开发的一个高效智能的交互式分割标注软件。涵盖了高精度和轻量级等不同方向的高质量交互式分割模型，方便开发者快速实现语义及实例标签的标注，降低标注成本。 另外，将EISeg获取到的标注应用到PaddleSeg提供的其他分割模型进行训练，便可得到定制化场景的高精度模型，打通分割任务从数据标注到模型训练及预测的全流程。
 
 ![eiseg_demo](../../docs/images/eiseg_demo.gif)
 
@@ -36,7 +36,29 @@ EISeg提供多种安装方式，其中使用[pip](#PIP)和[运行代码](#运行
 
 PaddlePaddle安装请参考[官网](https://www.paddlepaddle.org.cn/install/quick?docurl=/documentation/docs/zh/install/pip/windows-pip.html)。
 
-#### PIP
+### 克隆到本地
+
+通过git将PaddleSeg克隆到本地：
+
+```shell
+git clone https://github.com/PaddlePaddle/PaddleSeg.git
+```
+
+安装好所需环境后，进入EISeg，可通过直接运行eiseg打开EISeg：
+
+```shell
+cd PaddleSeg\contrib\EISeg
+python -m eiseg
+```
+
+或进入eiseg，运行exe.py打开EISeg：
+
+```shell
+cd PaddleSeg\contrib\EISeg\eiseg
+python exe.py
+```
+
+### PIP
 
 pip安装方式如下：
 
@@ -49,17 +71,17 @@ eiseg
 ```
 即可运行软件。
 
-#### Windows exe
+### Windows exe
 
-EISeg使用[QPT](https://github.com/GT-ZhangAcer/QPT)进行打包。可以从[百度云盘]()（提取码：xxxx）下载最新EISeg。解压后双击启动程序.exe即可运行程序。程序第一次运行会初始化安装所需要的包，请稍等片刻。
+EISeg使用[QPT](https://github.com/GT-ZhangAcer/QPT)进行打包。可以从[这里](http://cloud.a-boat.cn:2021/share/egI4T3tB)或[百度云盘](https://pan.baidu.com/s/1bHVZgUj4u3trhfvPrjYlQw)（提取码：82z9）下载最新EISeg。解压后双击启动程序.exe即可运行程序。程序第一次运行会初始化安装所需要的包，请稍等片刻。
 
 ## 使用
 
 打开软件后，在对项目进行标注前，需要进行如下设置：
 
-1.  **模型参数加载**
+1. **模型参数加载**
 
-   选择合适的网络，并加载对应的模型参数。在EISeg中，目前网络分为`HRNet18s_OCR48`和`HRNet18_OCR64`，并分别提供了人像和通用两种模型参数。在正确加载模型参数后，右下角状态栏会给予说明。若网络参数与模型参数不符，将会弹出警告，此时加载失败需重新加载。正确加载的模型参数会记录在`近期模型参数`中，可以方便切换，并且下次打开软件时自动加载退出时的模型参数。
+   选择合适的网络，并加载对应的模型参数。目前在EISeg中，网络分为`HRNet18s_OCR48`和`HRNet18_OCR64`，并分别提供了人像和通用两种模型参数。在正确加载模型参数后，右下角状态栏会给予说明。若网络参数与模型参数不符，将会弹出警告，此时加载失败需重新加载。正确加载的模型参数会记录在`近期模型参数`中，可以方便切换，并且下次打开软件时自动加载退出时的模型参数。
 
 2. **图像加载**
 
@@ -96,26 +118,32 @@ EISeg使用[QPT](https://github.com/GT-ZhangAcer/QPT)进行打包。可以从[�
 
 ## 新功能使用说明
 
-### 1. 多边形
+- **多边形**
 
 1. 交互完成后使用Space（空格）完成交互标注，此时出现多边形边界；当需要在多边形内部继续进行交互，则使用空格切换为交互模式，此时多边形无法选中和更改。
 2. 多边形可以拖动和删除，使用鼠标左边可以对锚点进行拖动，鼠标左键双击锚点可以删除锚点，双击两点之间的边则可在此边添加一个锚点。
 3. 打开`保留最大连通块`后，所有的点击只会在图像中保留面积最大的区域，其余小区域将不会显示和保存。
 
-### 2. 格式保存
+- **格式保存**
 
 1. 打开保存`JSON保存`或`COCO保存`后，多边形会被记录，加载时会自动加载。
 2. 若不设置保存路径，默认保存至当前图像文件夹下的label文件夹中。
 3. 如果有图像之间名称相同但后缀名不同，可以打开`标签和图像使用相同扩展名`。
 4. 还可设置灰度保存、伪彩色保存和抠图保存，见工具栏中7-9号工具。
 
-### 3. 生成mask
+- **生成mask**
 
 1. 标签按住第二列可以进行拖动，最后生成mask时会根据标签列表从上往下进行覆盖。
 
-### 4. 界面模块
+- **界面模块**
 
 1. 可在`显示`中选择需要显示的界面模块，正常退出时将会记录界面模块的状态和位置，下次打开自动加载。
+
+## 常见问题
+
+1. **COCO tools安装失败**
+
+   若在Windows下安装coco tool时报错，则可能缺少Microsoft Visual C++，可在[微软官方下载网页](https://visualstudio.microsoft.com/zh-hans/visual-cpp-build-tools/)进行下载安装后重启，即可解决。
 
 ## 版本更新
 

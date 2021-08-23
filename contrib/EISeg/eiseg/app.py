@@ -700,6 +700,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         delItem.setFlags(QtCore.Qt.ItemIsEnabled)
         table.setItem(idx, 3, delItem)
         self.adjustTableSize()
+        self.labelListClicked(self.labelListTable.rowCount() - 1, 0)
 
     def adjustTableSize(self):
         self.labelListTable.horizontalHeader().setDefaultSectionSize(25)
@@ -773,6 +774,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         for p in self.scene.polygon_items:
             color = self.controller.labelList.getLabelById(p.labelIndex).color
             p.setColor(color, color)
+        self.labelListClicked(row, 0)
 
     @property
     def currLabelIdx(self):
@@ -786,11 +788,11 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
             table.removeRow(row)
 
         if col == 0 or col == 1:
-            for idx in range(len(self.controller.labelList)):
-                table.item(idx, 0).setBackground(QtGui.QColor(255, 255, 255))
-            table.item(row, 0).setBackground(QtGui.QColor(48, 140, 198))
-            for idx in range(3):
-                table.item(row, idx).setSelected(True)
+            for cl in range(2):
+                for idx in range(len(self.controller.labelList)):
+                    table.item(idx, cl).setBackground(QtGui.QColor(255, 255, 255))
+                table.item(row, cl).setBackground(QtGui.QColor(48, 140, 198))
+                table.item(row, 0).setSelected(True)
             if self.controller:
                 self.controller.setCurrLabelIdx(int(table.item(row, 0).text()))
                 self.controller.label_list = self.controller.labelList
@@ -1076,15 +1078,16 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
                     for p in points:
                         poly.addPointLast(QtCore.QPointF(p[0], p[1]))
                     self.setDirty()
-            if self.status == self.EDITING:
-                self.anning = True
-                for p in self.scene.polygon_items:
-                    p.setAnning(isAnning=True)
-            else:
-                self.anning = False
-                for p in self.scene.polygon_items:
-                    p.setAnning(isAnning=False)
-            self.getMask()
+        # 状态改变
+        if self.status == self.EDITING:
+            self.anning = True
+            for p in self.scene.polygon_items:
+                p.setAnning(isAnning=True)
+        else:
+            self.anning = False
+            for p in self.scene.polygon_items:
+                p.setAnning(isAnning=False)
+        self.getMask()
 
     def completeLastMask(self):
         # 返回最后一个标签是否完成，false就是还有带点的
