@@ -874,6 +874,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         )
         if len(file_path) == 0:
             return
+        self.saveImage(True)  # 清除
         self.queueEvent(partial(self.loadImage, file_path))
         self.listFiles.addItems([file_path.replace("\\", "/")])
         self.imagePaths.append(file_path)

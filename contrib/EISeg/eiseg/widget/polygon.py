@@ -38,6 +38,7 @@ class PolygonAnnotation(QtWidgets.QGraphicsPolygonItem):
         self.insideColor.setAlphaF(opacity)
         self.halfInsideColor = QtGui.QColor(i[0], i[1], i[2])
         self.halfInsideColor.setAlphaF(opacity / 2)
+        self.setBrush(self.halfInsideColor)
         b = borderColor
         self.borderColor = QtGui.QColor(b[0], b[1], b[2])
         self.borderColor.setAlphaF(0.8)
