@@ -21,7 +21,7 @@ Welcome to PaddleSeg! PaddleSeg is an end-to-end image segmentation development 
 * ### PaddleSeg provides four image segmentation capabilities: semantic segmentation, interactive segmentation, panoptic segmentation and Matting.
 
 <div align="center">
-<img src="./docs/images/ability_EN.gif"  width = "2000" />  
+<img src="https://user-images.githubusercontent.com/53808988/130562378-64d0c84a-9c3f-4ae4-93f7-bdc0c8e0238e.gif"  width = "2000" />  
 </div>
 
 
@@ -30,7 +30,7 @@ Welcome to PaddleSeg! PaddleSeg is an end-to-end image segmentation development 
  * ### PaddleSeg is widely used in autonomous driving, medical, quality inspection, inspection, entertainment and other scenarios.
 
 <div align="center">
-<img src="./docs/images/application_EN.gif"  width = "2000" />  
+<img src="https://user-images.githubusercontent.com/53808988/130562234-bdf79d76-8566-4e06-a3a9-db7719e63385.gif"  width = "2000" />  
 </div>
 
 
