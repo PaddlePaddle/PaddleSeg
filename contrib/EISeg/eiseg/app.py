@@ -43,7 +43,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
             "pseudo_color": True,
             "json": False,
             "coco": True,
-            "matting": True,
+            "foreground": True,
         }  # 是否保存这几个格式
 
         self.image = None  # 可能先加载图片后加载模型，只用于暂存图片
@@ -314,13 +314,13 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         )
         save_matting = action(
             tr("&抠图保存"),
-            partial(self.toggleSave, "matting"),
+            partial(self.toggleSave, "foreground"),
             "save_matting",
             "SaveMatting",
             tr("只保留前景，背景设置为背景色"),
             checkable=True,
         )
-        save_matting.setChecked(self.save_status["matting"])
+        save_matting.setChecked(self.save_status["foreground"])
         set_matting_background = action(
             tr("&设置抠图背景色"),
             self.setMattingBackground,
@@ -487,7 +487,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         menu(tr("显示"), self.menus.showMenu)
         menu(tr("帮助"), self.menus.helpMenu)
         util.addActions(self.toolBar, self.menus.toolBar)
-        # matting backgroud
+        # foreground backgroud
         if self.settings.value("matting_color"):
             self.mattingBackground = [
                 int(c) for c in self.settings.value("matting_color")
@@ -1199,9 +1199,9 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
             cv2.imencode(ext, pseudo)[1].tofile(pseudoPath)
 
         # 4.3 保存前景抠图
-        if self.save_status["matting"]:
+        if self.save_status["foreground"]:
             mattingPath, ext = osp.splitext(savePath)
-            mattingPath = mattingPath + "_matting" + ext
+            mattingPath = mattingPath + "_foreground" + ext
             img = self.controller.image.copy()
             img = img[:, :, ::-1]
             img[self.getMask() == 0] = self.mattingBackground[::-1]
