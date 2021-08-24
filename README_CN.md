@@ -22,7 +22,7 @@ PaddleSeg是基于飞桨[PaddlePaddle](https://www.paddlepaddle.org.cn)开发的
 * ### PaddleSeg提供了语义分割、交互式分割、全景分割、Matting四大图像分割能力。
 
 <div align="center">
-<img src="./docs/images/ability_CH.gif"  width = "2000" />  
+<img src="https://user-images.githubusercontent.com/53808988/130562440-1ea5cbf5-4caf-424c-a9a7-55d56b7d7776.gif"  width = "2000" />  
 </div>
 
 
@@ -33,7 +33,7 @@ PaddleSeg是基于飞桨[PaddlePaddle](https://www.paddlepaddle.org.cn)开发的
  * ### PaddleSeg被广泛地应用在自动驾驶、医疗、质检、巡检、娱乐等场景。
 
 <div align="center">
-<img src="./docs/images/application_CH.gif"  width = "2000" />  
+<img src="https://user-images.githubusercontent.com/53808988/130562530-ae45c2cd-5dd7-48f0-a080-c0e843eea49d.gif"  width = "2000" />  
 </div>
 
 ----------------
