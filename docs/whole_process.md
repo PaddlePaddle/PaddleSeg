@@ -267,19 +267,19 @@ output
 
 ### **3.5 Training Parameters**
 
-| Parameter     | Effection                               | Is Required | Default           |
+| Parameter           | Effection                               | Is Required                   | Default           |
 | :------------------ | :----------------------------------------------------------- | :--------- | :--------------- |
-| iters               | Number of training iterations                                                 | No         | The value specified in the configuration file.| |
-| batch_size          | Batch size on a single card                                            | No         | The value specified in the configuration file.| |
-| learning_rate       | Initial learning rate                                                   | No        | The value specified in the configuration file.| |
+| iters               | Number of training iterations          | No         | The value specified in the configuration file.| |
+| batch_size          | Batch size on a single card               | No         | The value specified in the configuration file.| |
+| learning_rate       | Initial learning rate                | No        | The value specified in the configuration file.| |
 | config              | Configuration files                                                     | Yes         | -                |
-| save_dir            | The root path for saving model and visualdl log files                           | No         | output           |
+| save_dir            | The root path for saving model and visualdl log files           | No         | output           |
 | num_workers         | The number of processes used to read data asynchronously, when it is greater than or equal to 1, the child process is started to read dat  | No  | 0 |
-| use_vdl             | Whether to enable visualdl to record training data                                 | No         | No               |
-| save_interval_iters | Number of steps between model saving                                           | No         | 1000             |
-| do_eval             | Whether to start the evaluation when saving the model, the best model will be saved to best_model according to mIoU at startup | No   | No  |
-| log_iters           | Interval steps for printing log                                           | No         | 10               |
-| resume_model        | Restore the training model path, such as: `output/iter_1000`                    | No        | None             |
+| use_vdl             | Whether to enable visualdl to record training data          | No         | No               |
+| save_interval       | Number of steps between model saving             | No         | 1000             |
+| do_eval             | Whether to do evaluation when saving the model, the best model will be saved according to mIoU | No   | No  |
+| log_iters           | Interval steps for printing log          | No         | 10               |
+| resume_model        | Restore the training model path, such as: `output/iter_1000`     | No        | None             |
 | keep_checkpoint_max | Number of latest models saved                                            | No        | 5                |
 
 ### **3.6 In-depth Exploration of Configuration Files**
