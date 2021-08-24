@@ -139,12 +139,6 @@ EISeg使用[QPT](https://github.com/GT-ZhangAcer/QPT)进行打包。可以从[�
 
 1. 可在`显示`中选择需要显示的界面模块，正常退出时将会记录界面模块的状态和位置，下次打开自动加载。
 
-## 常见问题
-
-1. **COCO tools安装失败**
-
-   若在Windows下安装coco tool时报错，则可能缺少Microsoft Visual C++，可在[微软官方下载网页](https://visualstudio.microsoft.com/zh-hans/visual-cpp-build-tools/)进行下载安装后重启，即可解决。
-
 ## 版本更新
 
 - 待发版  **0.3.0**：【1】初步完成多边形编辑功能，支持对交互标注的结果进行编辑；【2】支持中/英界面；【3】支持保存为灰度/伪彩色标签和COCO格式；【4】界面拖动更加灵活；【5】标签栏可拖动，生成mask的覆盖顺序由上往下覆盖。
