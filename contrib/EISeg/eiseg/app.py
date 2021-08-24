@@ -13,6 +13,7 @@ import cv2
 import numpy as np
 
 from eiseg import pjpath, __APPNAME__
+from models import ModelsNick
 from widget import ShortcutWindow, PolygonAnnotation
 from controller import InteractiveController
 from ui import Ui_EISeg
@@ -583,8 +584,8 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         self.settings.setValue("recent_params", self.recentModels)
 
     def setModelParam(self, modelName, paramPath):
-        if self.changeModel(modelName):
-            self.comboModelSelect.setCurrentText(modelName)  # 更改显示
+        if self.changeModel(ModelsNick[modelName][1]):
+            self.comboModelSelect.setCurrentText(self.tr(ModelsNick[modelName][0]))  # 更改显示
             res = self.changeParam(paramPath)
             if res:
                 return True
