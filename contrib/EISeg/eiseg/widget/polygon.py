@@ -45,7 +45,7 @@ class PolygonAnnotation(QtWidgets.QGraphicsPolygonItem):
         self.setAcceptHoverEvents(True)
 
         self.setFlag(QtWidgets.QGraphicsItem.ItemIsSelectable, True)
-        self.setFlag(QtWidgets.QGraphicsItem.ItemIsMovable, True)
+        self.setFlag(QtWidgets.QGraphicsItem.ItemIsMovable, False)
         self.setFlag(QtWidgets.QGraphicsItem.ItemSendsGeometryChanges, True)
         self.setFlag(QtWidgets.QGraphicsItem.ItemIsFocusable, True)
 
@@ -71,7 +71,7 @@ class PolygonAnnotation(QtWidgets.QGraphicsPolygonItem):
             self.anning = True
             self.setBrush(QtGui.QBrush(QtCore.Qt.NoBrush))
             self.setFlag(QtWidgets.QGraphicsItem.ItemIsSelectable, False)
-            self.setFlag(QtWidgets.QGraphicsItem.ItemIsMovable, False)
+            # self.setFlag(QtWidgets.QGraphicsItem.ItemIsMovable, False)
             self.setFlag(QtWidgets.QGraphicsItem.ItemSendsGeometryChanges, False)
             self.setFlag(QtWidgets.QGraphicsItem.ItemIsFocusable, False)
             self.setCursor(QtGui.QCursor(QtCore.Qt.ArrowCursor))
@@ -84,7 +84,7 @@ class PolygonAnnotation(QtWidgets.QGraphicsPolygonItem):
             else:
                 self.setBrush(self.halfInsideColor)
             self.setFlag(QtWidgets.QGraphicsItem.ItemIsSelectable, True)
-            self.setFlag(QtWidgets.QGraphicsItem.ItemIsMovable, True)
+            # self.setFlag(QtWidgets.QGraphicsItem.ItemIsMovable, True)
             self.setFlag(QtWidgets.QGraphicsItem.ItemSendsGeometryChanges, True)
             self.setFlag(QtWidgets.QGraphicsItem.ItemIsFocusable, True)
             self.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
