@@ -7,6 +7,7 @@ class BBoxAnnotation(QtWidgets.QGraphicsPathItem):
     def __init__(self,
                  labelIndex,
                  polyline,
+                 borderColor=[0, 0, 255],
                  cocoIndex=None,
                  parent=None,
                  ):
@@ -24,10 +25,14 @@ class BBoxAnnotation(QtWidgets.QGraphicsPathItem):
             self.is_added = True
         self.labelIndex = labelIndex
         self.coco_id = cocoIndex
+        self.bbox_hovering = True
 
+        # set rendering attributes
         self.setZValue(10)
 
-        self.borderColor = QtGui.QColor(128, 128, 128)
+        # b = borderColor
+        # self.borderColor = QtGui.QColor(b[0], b[1], b[2])
+        self.borderColor = QtGui.QColor(128,128,128)
         self.borderColor.setAlphaF(0.8)
         pen = QtGui.QPen(self.borderColor, 1.2)
         pen.setStyle(Qt.DashDotLine)
@@ -66,6 +71,7 @@ class BBoxAnnotation(QtWidgets.QGraphicsPathItem):
         ])
         self.w = self.corner_points[3].x() - self.corner_points[1].x()
         self.h = self.corner_points[3].y() - self.corner_points[1].y()
+
         if self.corner_points[1].x() > 512 or self.corner_points[1].x() + self.w > 512:
             pass
         if self.corner_points[1].y() > 512 or self.corner_points[1].y() + self.h > 512:
@@ -79,19 +85,19 @@ class BBoxAnnotation(QtWidgets.QGraphicsPathItem):
 
     def update(self):
         l = len(self.polyline.points)
-        if l < 3:  # 最少三个点
+        # print("up L:", l, " is_added:", self.is_added)
+        if l < 3:
             if self.is_added:
                 self.remove_from_scene()
-
-        if l >= 3:
-            if not self.is_added:
+        else:  # 大于三个点就可以更新，小于三个点删除多边形
+            if self.is_added:
                 self.add_to_scene()
             else:
                 path_geo = QtGui.QPainterPath()
                 self.create_corners()
                 path_geo.moveTo(self.corner_points[0])
                 for i in range(4):
-                    path_geo.lineTo(self.corner_points[(i+1) % 4])
+                    path_geo.lineTo(self.corner_points[(i + 1) % 4])
                 self.setPath(QtGui.QPainterPath(path_geo))
                 pass
             pass
@@ -111,14 +117,17 @@ class BBoxAnnotation(QtWidgets.QGraphicsPathItem):
 
     # @return : [x, y, w, h]
     def to_array(self):
-        np_array = [self.corner_points[1].x(), self.corner_points[1].y(),  # topLeft
-                    self.w, self.h]
+        np_array = [self._round(self.corner_points[1].x()), 
+                    self._round(self.corner_points[1].y()),  # topLeft
+                    self._round(self.w), self._round(self.h)]
         return np_array
+
+    def _round(self, number, ind=0):
+        nint, ndec = str(number).split(".")
+        res = float(nint + "." + ndec[:ind])
+        if res <= 0:
+            res = .0
+        return res
 
     def __del__(self):
         self.corner_points.clear()
-
-
-
-
-
