@@ -161,7 +161,6 @@ class Predictor:
             results = output_handle.copy_to_cpu()
             if args.benchmark and i > 0:
                 self.autolog.times.stamp()
-            print(np.mean(results))
 
             results = self.postprocess(results)
 

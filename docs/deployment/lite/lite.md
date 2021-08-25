@@ -1,11 +1,12 @@
 # 移动端Lite部署
 
+## 1.介绍
+
 飞桨针对不同场景，提供了多个预测引擎部署模型（如下图），更多详细信息请参考[文档](https://paddleinference.paddlepaddle.org.cn/product_introduction/summary.html)。
 
 ![inference_ecosystem](https://user-images.githubusercontent.com/52520497/130720374-26947102-93ec-41e2-8207-38081dcc27aa.png)
 
-## 1.介绍
-以人像分割在安卓端的部署为例，介绍如何使用[Paddle-Lite](https://github.com/PaddlePaddle/Paddle-Lite)对分割模型进行移动端的部署。文档第2章介绍如何使用人像分割安卓端的demo，第3章介绍如何进行二次开发，更新Paddle-Lite预测库，或将新的PaddleSeg模型部署到安卓设备。
+本文以人像分割在安卓端的部署为例，介绍如何使用[Paddle-Lite](https://github.com/PaddlePaddle/Paddle-Lite)对分割模型进行移动端的部署。文档第2章介绍如何使用人像分割安卓端的demo，第3章介绍如何进行二次开发，更新Paddle-Lite预测库，或将新的PaddleSeg模型部署到安卓设备。
 
 ## 2.安卓Demo使用
 
