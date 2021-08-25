@@ -90,6 +90,7 @@ Welcome to PaddleSeg! PaddleSeg is an end-to-end image segmentation development 
     * [Serving](./docs/deployment/serving/serving.md)
     * [Web](./docs/deployment/web/web.md)
 * Model Compression
+    * [Distillation](./docs/slim/distill/distill.md)
     * [Quantization](./docs/slim/quant/quant.md)
     * [Prune](./docs/slim/prune/prune.md)
 *  API Tutorial

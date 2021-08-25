@@ -109,6 +109,7 @@ PaddleSeg是基于飞桨[PaddlePaddle](https://www.paddlepaddle.org.cn)开发的
     * [Serving](./docs/deployment/serving/serving.md)
     * [Web](./docs/deployment/web/web.md)
 * 模型压缩
+    * [蒸馏](./docs/slim/distill/distill.md)
     * [量化](./docs/slim/quant/quant.md)
     * [裁剪](./docs/slim/prune/prune.md)
 *  API使用教程
