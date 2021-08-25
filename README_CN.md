@@ -82,7 +82,7 @@ PaddleSeg是基于飞桨[PaddlePaddle](https://www.paddlepaddle.org.cn)开发的
 ## 使用教程 <img src="./docs/images/teach.png" width="30"/>
 
 * [安装](./docs/install_cn.md)
-* [全流程跑通PaddleSeg](./docs/quick_start_cn.md)
+* [全流程跑通PaddleSeg](./docs/whole_process_cn.md)
 *  准备数据集
    * [标注数据的准备](./docs/data/marker/marker_cn.md)
    * [数据标注教程](./docs/data/transform/transform_cn.md)

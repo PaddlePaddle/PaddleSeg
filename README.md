@@ -76,7 +76,7 @@ Welcome to PaddleSeg! PaddleSeg is an end-to-end image segmentation development 
 ## Tutorials <img src="./docs/images/teach.png" width="30"/>
 
 * [Installation](./docs/install.md)
-* [Get Started](./docs/quick_start.md)
+* [Get Started](./docs/whole_process.md)
 *  Prepare Datasets
    * [Preparation of Annotation Data](./docs/data/marker/marker.md)
    * [Annotating Tutorial](./docs/data/transform/transform.md)

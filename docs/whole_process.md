@@ -1,4 +1,4 @@
-English|[简体中文](quick_start_cn.md)
+English | [简体中文](whole_process_cn.md)
 # Whole Process of PaddleSeg
 
 We will use `BiSeNetV2` and `Medical Video Disc Segmentation Dataset` as example to introduce PaddleSeg's **configurable driver**. If you want to know how to use API, you can click [PaddleSeg Advanced Tutorial](https://aistudio.baidu.com/aistudio/projectdetail/1339458?channelType=0&channel=0).
@@ -14,9 +14,9 @@ The whole process is as follows:
 7. **Model export**: How to export a model that can be deployed.
 8. **Model deployment**: Quickly use Python to achieve efficient deployment.
 
-**1. Environmental Installation and Verification**
+## **1. Environmental Installation and Verification**
 
-**1.1 Environment Installation**
+### **1.1 Environment Installation**
 
 Before using PaddleSeg to train an image segmentation model, users need to complete the following tasks:
 
@@ -36,7 +36,7 @@ Install the PaddleSeg API library, while installing the library, other dependenc
 pip install paddleseg
 ```
 
-**1.2 Confirm Installation**
+### **1.2 Confirm Installation**
 
 Run following commands in the PaddleSeg directory.
 
@@ -50,7 +50,7 @@ python predict.py \
        --save_dir output/result
 ```
 
-**2. Dataset Preparation**
+## **2. Dataset Preparation**
 
 **Dataset Download**
 
@@ -73,11 +73,11 @@ unzip optic_disc_seg.zip
 cd ..
 ```
 
-**2.1 Prepare the Dataset**
+### **2.1 Prepare the Dataset**
 
 How to use your own dataset for training is the most concerned thing for developers. Below we will focus on explaining what we should prepare if we want to customize the dataset.And we will tell you how to make corresponding changes in the configuration file after the dataset is ready.
 
-**2.1.1 Organize the Dataset**
+### **2.1.1 Organize the Dataset**
 
 - It is recommended to organize into the following structure.
 
@@ -98,7 +98,7 @@ How to use your own dataset for training is the most concerned thing for develop
         |--val.txt
         |
         |--test.txt
-        
+
 - It is not necessary for the folder to be named custom_dataset, images, labels, and the user can name it independently.
 
 - The file in train.txt val.txt test.txt does not have to be in the same directory as the custom_dataset folder, it can be modified through the options in the configuration file.
@@ -116,11 +116,11 @@ The format of the dataset we just downloaded is similar (label.txt is optional).
 
 我们一般推荐用户将数据集放置在PaddleSeg下的data文件夹下。
 
-**Model Training**
+## **3. Model Training**
 
 -Choose the BiseNetV2 model here. BiseNetV2 is a lightweight model with an average IoU of 72.6% in the Cityscapes test set and a speed of 156 FPS on an NVIDIA GeForce GTX 1080 Ti card, which is much faster than the existing method , And can achieve better segmentation accuracy.
 
-**3.1 BiseNetV2 Model**
+### **3.1 BiseNetV2 Model**
 
 BiSeNetV2 separates low-level network details and high-level semantic classification to achieve high-precision and high-efficiency real-time semantic segmentation. It is a trade-off between speed and accuracy. The architecture includes:
 
@@ -132,7 +132,7 @@ BiSeNetV2 separates low-level network details and high-level semantic classifica
 
 ​                                                            Figure 2: Original image and segmentation result
 
-**3.2 Detailed Interpretation of Configuration Files**
+### **3.2 Detailed Interpretation of Configuration Files**
 
 After understanding the principle of BiseNetV2, we can prepare for training. In the above, we talked about PaddleSeg providing **configurable driver** for model training. So before training, let’s take a look at the configuration file. Here we take `bisenet_optic_disc_512x512_1k.yml` as an example. The yaml format configuration file includes model type, backbone network, training and testing, pre-training dataset and supporting tools (such as Data augmentation) and other information.
 
@@ -170,7 +170,7 @@ val_dataset: # Validating dataset
 
 optimizer: # Set the type of optimizer
   type: sgd #Using SGD (Stochastic Gradient Descent) method as the optimizer
-  momentum: 0.9 
+  momentum: 0.9
   weight_decay: 4.0e-5 # Weight attenuation, the purpose of use is to prevent overfitting
 
 lr_scheduler: # Related settings for learning rate
@@ -195,7 +195,7 @@ Q: Some readers may have questions, what kind of configuration items are designe
 
 A: The information related to the model scheme is in the configuration file, and it also includes data augmentation strategies for the original sample. In addition to the three common parameters of iters, batch_size, and learning_rate, the command line parameters only involve the configuration of the training process. In other words, the configuration file ultimately determines what model to use.
 
-**3.3 Modify Configuration Files**
+### **3.3 Modify Configuration Files**
 
 When the user prepares the dataset, he can specify the location in the configuration file to modify the data path for further training
 
@@ -234,7 +234,7 @@ val_dataset:
   mode: val
 ```
 
-**3.4 Start Training**
+### **3.4 Start Training**
 
 After we modify the corresponding configuration parameters, we can get started and experience the use
 
@@ -265,24 +265,24 @@ output
     └── model.pdparams  
 ```
 
-**3.5 Training Parameters**
+### **3.5 Training Parameters**
 
-| Parameter     | Effection                               | Is Required | Default           |
+| Parameter           | Effection                               | Is Required                   | Default           |
 | :------------------ | :----------------------------------------------------------- | :--------- | :--------------- |
-| iters               | Number of training iterations                                                 | No         | The value specified in the configuration file.| |
-| batch_size          | Batch size on a single card                                            | No         | The value specified in the configuration file.| |
-| learning_rate       | Initial learning rate                                                   | No        | The value specified in the configuration file.| |
+| iters               | Number of training iterations          | No         | The value specified in the configuration file.| |
+| batch_size          | Batch size on a single card               | No         | The value specified in the configuration file.| |
+| learning_rate       | Initial learning rate                | No        | The value specified in the configuration file.| |
 | config              | Configuration files                                                     | Yes         | -                |
-| save_dir            | The root path for saving model and visualdl log files                           | No         | output           |
+| save_dir            | The root path for saving model and visualdl log files           | No         | output           |
 | num_workers         | The number of processes used to read data asynchronously, when it is greater than or equal to 1, the child process is started to read dat  | No  | 0 |
-| use_vdl             | Whether to enable visualdl to record training data                                 | No         | No               |
-| save_interval_iters | Number of steps between model saving                                           | No         | 1000             |
-| do_eval             | Whether to start the evaluation when saving the model, the best model will be saved to best_model according to mIoU at startup | No   | No  |
-| log_iters           | Interval steps for printing log                                           | No         | 10               |
-| resume_model        | Restore the training model path, such as: `output/iter_1000`                    | No        | None             |
+| use_vdl             | Whether to enable visualdl to record training data          | No         | No               |
+| save_interval       | Number of steps between model saving             | No         | 1000             |
+| do_eval             | Whether to do evaluation when saving the model, the best model will be saved according to mIoU | No   | No  |
+| log_iters           | Interval steps for printing log          | No         | 10               |
+| resume_model        | Restore the training model path, such as: `output/iter_1000`     | No        | None             |
 | keep_checkpoint_max | Number of latest models saved                                            | No        | 5                |
 
-**3.6 In-depth Exploration of Configuration Files**
+### **3.6 In-depth Exploration of Configuration Files**
 
 - We just took out a BiSeNetV2 configuration file for everyone to experience how to configure the dataset. In this example, all the parameters are placed in a yml file, but the actual PaddleSeg configuration file is for better reuse For compatibility and compatibility, a more coupled design is adopted, that is, a model requires more than two configuration files to achieve. Below we will use DeeplabV3p as an example to illustrate the coupling settings of the configuration files.
 - For example, if we want to change the configuration of the deeplabv3p_resnet50_os8_cityscapes_1024x512_80k.yml file, we will find that the file also depends on the (base) cityscapes.yml file. At this point, we need to open the cityscapes.yml file synchronously to set the corresponding parameters.
@@ -301,7 +301,7 @@ Q: There are some common parameters in multiple configuration files, so which on
 
 A: As shown by the serial number in the figure, the parameters of the No. 1 yml file can cover the parameters of the No. 2 yml file, that is, the configuration file No. 1 is better than the No. 2. In addition, if the parameters appearing in the yaml file are specified in the command line, the configuration of the command line is better than the yaml file. (For example: adjust `batch_size` in the command line according to your machine configuration, no need to modify the preset yaml file in configs)
 
-**3.7 Muti-card Training**
+### **3.7 Muti-card Training**
 
 **Note**: If you want to use multi-card training, you need to specify the environment variable `CUDA_VISIBLE_DEVICES` as `multi-card` (if not specified, all GPUs will be used by default), and use `paddle.distributed.launch` to start the training script (Can not use multi-card training under Windows, because it doesn't support nccl):
 
@@ -315,7 +315,7 @@ python -m paddle.distributed.launch train.py \
        --save_dir output
 ```
 
-**3.8 Resume training**
+### **3.8 Resume training**
 
 ```
 python train.py \
@@ -327,7 +327,7 @@ python train.py \
        --save_dir output
 ```
 
-**4. Training Process Visualization**
+## **4. Training Process Visualization**
 
 - In order to make our network training process more intuitive and analyze the network to get a better network faster, PaddlePaddle provides a visual analysis tool: VisualDL
 
@@ -354,7 +354,7 @@ Enter the suggested URL in the browser, the effect is as follows:
 
 ​                                                                          Figure 4: VDL effect demonstration
 
-**5. Model Evaluation**
+## **5. Model Evaluation**
 
 After the training is completed, the user can use the evaluation script val.py to evaluate the effect of the model. Assuming that the number of iterations (iters) in the training process is 1000, the interval for saving the model is 500, that is, the training model is saved twice for every 1000 iterations of the dataset. Therefore, there will be a total of 2 regularly saved models, plus the best model best_model saved, there are a total of 3 models. You can specify the model file you want to evaluate through model_path.
 
@@ -407,7 +407,7 @@ With the running of the evaluation script, the final printed evaluation log is a
 [0.9959 0.8886]
 ```
 
-**6.Prediction and Visualization**
+## **6.Prediction and Visualization**
 
 In addition to analyzing the IOU, ACC and Kappa indicators of the model, we can also check the cutting sample effect of some specific samples, and inspire further optimization ideas from Bad Case.
 
@@ -433,7 +433,7 @@ We select 1 picture to view, the effect is as follows. We can intuitively see th
 
 ​                                                                          ​ Figure 5: Prediction effect display
 
-**7 Model Export**
+## **7 Model Export**
 
 In order to facilitate the user's industrial-level deployment, PaddleSeg provides a one-click function of moving to static, which is to convert the trained dynamic graph model file into a static graph form.
 
@@ -461,7 +461,7 @@ output
   └── model.pdmodel          # Static graph model files
 ```
 
-**8 Model Deploy**
+## **8 Model Deploy**
 
 -PaddleSeg currently supports the following deployment methods:
 
@@ -493,7 +493,7 @@ python deploy/python/infer.py \
 |save_dir|The directory of prediction results.|No|output|
 |with_argmax|Perform argmax operation on the prediction results.|No|No|
 
-**9 Custom Software Development**
+## **9 Custom Software Development**
 
 - After trying to complete the training with the configuration file, there must be some friends who want to develop more in-depth development based on PaddleSeg. Here, we will briefly introduce the code structure of PaddleSeg.
 
