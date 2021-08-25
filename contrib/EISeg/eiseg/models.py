@@ -50,6 +50,9 @@ class EISegModel:
         return params
 
 
+ModelsNick = {"HRNet18s_OCR48": ["轻量级模型", 0],
+              "HRNet18_OCR64": ["高精度模型", 1]}
+
 @MODELS.add_component
 class HRNet18s_OCR48(EISegModel):
     __name__ = "HRNet18s_OCR48"
