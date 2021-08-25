@@ -90,9 +90,9 @@ git clone https://github.com/PaddlePaddle/PaddleSeg
 ```
 
 ## 快速体验
-以下所有命令均在`PaddleSeg/contrib/HumanSeg`目录下执行。
+以下所有命令均在`PaddleSeg/contrib/PPSeg`目录下执行。
 ```shell
-cd PaddleSeg/contrib/HumanSeg
+cd PaddleSeg/contrib/PPSeg
 ```
 
 ### 下载Inference Model

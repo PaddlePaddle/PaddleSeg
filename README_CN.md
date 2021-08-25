@@ -121,7 +121,7 @@ PaddleSeg是基于飞桨[PaddlePaddle](https://www.paddlepaddle.org.cn)开发的
 
 ## 实践案例 <img src="./docs/images/anli.png" width="20"/>
 
-- [人像分割](https://github.com/PaddlePaddle/PaddleSeg/tree/release/2.1/contrib/HumanSeg)
+- [人像分割](./contrib/PPSeg)
 - [医疗图像](./docs/solution/medical/medical.md)
 - [遥感分割](https://github.com/PaddlePaddle/PaddleSeg/tree/release/2.1/contrib/remote_sensing)
 - [全景分割](./contrib/PanopticDeepLab)
