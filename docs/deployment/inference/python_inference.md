@@ -1,10 +1,12 @@
-# 本地Inference部署
+# Python Inference部署
 
 ## 1. 说明
 
-本文档介绍使用飞桨推理的Python接口在服务器端部署分割模型。大家通过一定的配置，加上少量的代码，即可把模型集成到自己的服务中，完成图像分割的任务。
+飞桨针对不同场景，提供了多个预测引擎部署模型（如下图），更多详细信息请参考[文档](https://paddleinference.paddlepaddle.org.cn/product_introduction/summary.html)。
 
-飞桨推理的[官网文档](https://paddleinference.paddlepaddle.org.cn/product_introduction/summary.html)介绍了部署模型的步骤、多种API接口、示例等等，大家可以根据实际需求进行使用。
+![inference_ecosystem](https://user-images.githubusercontent.com/52520497/130720374-26947102-93ec-41e2-8207-38081dcc27aa.png)
+
+本文档介绍使用Paddle Inference的Python接口在服务器端(NV GPU或者X86 CPU)部署分割模型。大家通过一定的配置，加上少量的代码，即可把模型集成到自己的服务中，完成图像分割的任务。
 
 ## 2. 前置准备
 

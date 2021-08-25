@@ -85,7 +85,8 @@ Welcome to PaddleSeg! PaddleSeg is an end-to-end image segmentation development 
 * [Model Export](./docs/export/export/model_export.md)
 
 *  Model Deploy
-    * [Inference](./docs/deployment/inference/inference.md)
+    * [Python Inference](./docs/deployment/inference/python_inference.md)
+    * [C++ Inference](./docs/deployment/inference/cpp_inference.md)
     * [Lite](./docs/deployment/lite/lite.md)
     * [Serving](./docs/deployment/serving/serving.md)
     * [Web](./docs/deployment/web/web.md)
