@@ -12,7 +12,7 @@ English | [简体中文](README_CN.md)
 * Our team won the AutoNUE@CVPR 2021 challenge, where the technical [report](https://bj.bcebos.com/paddleseg/docs/autonue21_presentation_PaddleSeg.pdf) and [source code](https://github.com/PaddlePaddle/PaddleSeg/tree/release/2.2/contrib/AutoNUE) are available.
 * We released an efficient interactive annotation tool for image segmentation, named [EISeg](https://github.com/PaddlePaddle/PaddleSeg/tree/release/2.2/contrib/EISeg).
 * We introduced [Panoptic-DeepLab](https://github.com/PaddlePaddle/PaddleSeg/tree/release/2.2/contrib/PanopticDeepLab), which is a proposal-free algorithm  for panoptic segmentation.
-* We provided an ultra-lightweight [portrait segmentation](./contrib/PPSeg) solution for the mobile devices and even the web
+* We provided an ultra-lightweight [portrait segmentation](./contrib/PP-HumanSeg) solution for the mobile devices and even the web
 
 ## PaddleSeg Introduction
 
@@ -149,7 +149,7 @@ python train.py --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml
 
 ## Practical Cases
 
-* [PPSeg](./contrib/PPSeg)
+* [PP-HumanSeg](./contrib/PP-HumanSeg)
 * [Cityscapes SOTA](./contrib/CityscapesSOTA)
 * [Panoptic Segmentation](./contrib/PanopticDeepLab)
 

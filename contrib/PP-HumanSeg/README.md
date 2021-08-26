@@ -1,6 +1,6 @@
-# 人像分割PPSeg
+# 人像分割PP-HumanSeg
 
-人像分割是图像分割领域非常常见的应用，PaddleSeg推出了在大规模人像数据上训练的人像分割PPSeg模型，满足在服务端、移动端、Web端多种使用场景的需求。本教程提供从训练到部署的全流程应用指南，以及视频流人像分割、背景替换的实际效果体验。最新发布超轻量级人像分割模型，支持Web端、移动端场景的实时分割。
+人像分割是图像分割领域非常常见的应用，PaddleSeg推出了在大规模人像数据上训练的人像分割PP-HumanSeg模型，满足在服务端、移动端、Web端多种使用场景的需求。本教程提供从训练到部署的全流程应用指南，以及视频流人像分割、背景替换的实际效果体验。最新发布超轻量级人像分割模型，支持Web端、移动端场景的实时分割。
 
 近期 **百度视频会议** 上线了虚拟背景功能，支持在网页端视频会议时进行背景切换和背景虚化。其中人像换背景模型采用我们的**超轻量级模型PPSeg-Lite**。欢迎前去[百度首页](https://www.baidu.com/)右下角体验效果！
 
@@ -21,11 +21,11 @@
 
 ## 人像分割模型
 ### 通用人像分割(Generic Human Segmentation)
-PPSeg开放了在大规模人像数据上训练的三个人像模型，满足服务端、移动端、Web端多种使用场景的需求。
+PP-HumanSeg开放了在大规模人像数据上训练的三个人像模型，满足服务端、移动端、Web端多种使用场景的需求。
 
 | 模型名 | 模型说明 | Checkpoint | Inference Model |
 | --- | --- | --- | ---|
-| PPSeg-Server | 高精度模型，适用于服务端GPU且背景复杂的人像场景， 模型结构为Deeplabv3+/ResNet50, 输入大小（512， 512） |[ppseg_server_ckpt](https://paddleseg.bj.bcebos.com/dygraph/humanseg/train/deeplabv3p_resnet50_os8_humanseg_512x512_100k.zip) | [ppseg_server_inference](https://paddleseg.bj.bcebos.com/dygraph/humanseg/export/deeplabv3p_resnet50_os8_humanseg_512x512_100k_with_softmax.zip) |
+| PP-HumanSeg-Server | 高精度模型，适用于服务端GPU且背景复杂的人像场景， 模型结构为Deeplabv3+/ResNet50, 输入大小（512， 512） |[ppseg_server_ckpt](https://paddleseg.bj.bcebos.com/dygraph/humanseg/train/deeplabv3p_resnet50_os8_humanseg_512x512_100k.zip) | [ppseg_server_inference](https://paddleseg.bj.bcebos.com/dygraph/humanseg/export/deeplabv3p_resnet50_os8_humanseg_512x512_100k_with_softmax.zip) |
 | PPSeg-Mobile | 轻量级模型，适用于移动端或服务端CPU的前置摄像头场景，模型结构为HRNet_w18_samll_v1，输入大小（192， 192）  | [ppseg_mobile_ckpt](https://paddleseg.bj.bcebos.com/dygraph/humanseg/train/fcn_hrnetw18_small_v1_humanseg_192x192.zip) | [ppseg_mobile_inference](https://paddleseg.bj.bcebos.com/dygraph/humanseg/export/fcn_hrnetw18_small_v1_humanseg_192x192_with_softmax.zip) |
 | PPSeg-Lite | 超轻量级模型，适用于Web端或移动端实时分割场景，例如手机自拍、Web视频会议，模型结构为百度自研模型，输入大小（192， 192） | [ppseg_lite_ckpt]() | [ppseg_lite_inference]() |
 
@@ -48,7 +48,7 @@ NOTE:
 测试环境：Nvidia Tesla V100单卡。
 
 ### 半身像分割(Portrait Segmentation)
-针对Portrait segmentation场景，PPSeg开放了半身像分割模型，该模型已应用于百度视频会议。
+针对Portrait segmentation场景，PP-HumanSeg开放了半身像分割模型，该模型已应用于百度视频会议。
 
 | 模型名 | 模型说明 | Checkpoint | Inference Model |
 | --- | --- | --- | ---|
@@ -90,9 +90,9 @@ git clone https://github.com/PaddlePaddle/PaddleSeg
 ```
 
 ## 快速体验
-以下所有命令均在`PaddleSeg/contrib/PPSeg`目录下执行。
+以下所有命令均在`PaddleSeg/contrib/PP-HumanSeg`目录下执行。
 ```shell
-cd PaddleSeg/contrib/PPSeg
+cd PaddleSeg/contrib/PP-HumanSeg
 ```
 
 ### 下载Inference Model
