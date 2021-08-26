@@ -223,7 +223,7 @@ python ../../export.py \
 
 ```shell
 python ../../export.py \
---config ../../configs/pp_humanseg_lite/ppseg_lite_export_398x224.yml \
+--config ../../configs/pp_humanseg_lite/pp_humanseg_lite_export_398x224.yml \
 --save_dir export_model/pp_humanseg_lite_portrait_398x224_with_softmax \
 --model_path pretrained_model/ppseg_lite_portrait_398x224/model.pdparams \
 --without_argmax --with_softmax
