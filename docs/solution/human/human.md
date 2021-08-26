@@ -13,13 +13,13 @@
 - [移动端部署](#移动端部署)
 
 ## 人像分割模型
-HumanSeg开放了在大规模人像数据上训练的三个人像模型，满足服务端、移动端、Web端多种使用场景的需求。
+PP-HumanSeg开放了在大规模人像数据上训练的三个人像模型，满足服务端、移动端、Web端多种使用场景的需求。
 
 | 模型类型 | 适用场景 | Checkpoint | Inference Model |
 | --- | --- | --- | ---|
-| 高精度模型  | 适用于服务端GPU且背景复杂的人像场景， 模型结构为Deeplabv3+/ResNet50, 输入大小（512， 512） |[humanseg_server_ckpt](https://paddleseg.bj.bcebos.com/dygraph/humanseg/train/deeplabv3p_resnet50_os8_humanseg_512x512_100k.zip) | [humanseg_server_inference](https://paddleseg.bj.bcebos.com/dygraph/humanseg/export/deeplabv3p_resnet50_os8_humanseg_512x512_100k_with_softmax.zip) |
-| 轻量级模型 | 适用于移动端或服务端CPU的前置摄像头场景，模型结构为HRNet_w18_samll_v1，输入大小（192， 192）  | [humanseg_mobile_ckpt](https://paddleseg.bj.bcebos.com/dygraph/humanseg/train/fcn_hrnetw18_small_v1_humanseg_192x192.zip) | [humanseg_mobile_inference](https://paddleseg.bj.bcebos.com/dygraph/humanseg/export/fcn_hrnetw18_small_v1_humanseg_192x192_with_softmax.zip) |
-| 超轻量级模型 | 适用于Web端或移动端实时分割场景，例如手机自拍、Web视频会议，模型结构为优化的ShuffleNetV2，输入大小（192， 192） | [humanseg_lite_ckpt](https://paddleseg.bj.bcebos.com/dygraph/humanseg/train/shufflenetv2_humanseg_192x192.zip) | [humanseg_lite_inference](https://paddleseg.bj.bcebos.com/dygraph/humanseg/export/shufflenetv2_humanseg_192x192_with_softmax.zip) |
+| 高精度模型  | 适用于服务端GPU且背景复杂的人像场景， 模型结构为Deeplabv3+/ResNet50, 输入大小（512， 512） |[pp_humanseg_server_ckpt](https://paddleseg.bj.bcebos.com/dygraph/humanseg/train/deeplabv3p_resnet50_os8_humanseg_512x512_100k.zip) | [pp_humanseg_server_inference](https://paddleseg.bj.bcebos.com/dygraph/humanseg/export/deeplabv3p_resnet50_os8_humanseg_512x512_100k_with_softmax.zip) |
+| 轻量级模型 | 适用于移动端或服务端CPU的前置摄像头场景，模型结构为HRNet_w18_samll_v1，输入大小（192， 192）  | [pp_humanseg_mobile_ckpt](https://paddleseg.bj.bcebos.com/dygraph/humanseg/train/fcn_hrnetw18_small_v1_humanseg_192x192.zip) | [pp_humanseg_mobile_inference](https://paddleseg.bj.bcebos.com/dygraph/humanseg/export/fcn_hrnetw18_small_v1_humanseg_192x192_with_softmax.zip) |
+| 超轻量级模型 | 适用于Web端或移动端实时分割场景，例如手机自拍、Web视频会议，模型结构为优化的ShuffleNetV2，输入大小（192， 192） | [pp_humanseg_lite_ckpt](https://paddleseg.bj.bcebos.com/dygraph/humanseg/train/shufflenetv2_humanseg_192x192.zip) | [pp_humanseg_lite_inference](https://paddleseg.bj.bcebos.com/dygraph/humanseg/export/shufflenetv2_humanseg_192x192_with_softmax.zip) |
 
 **NOTE:**
 * 其中Checkpoint为模型权重，用于Fine-tuning场景。
@@ -65,9 +65,9 @@ git clone https://github.com/PaddlePaddle/PaddleSeg
 ```
 
 ## 快速体验
-以下所有命令均在`PaddleSeg/contrib/HumanSeg`目录下执行。
+以下所有命令均在`PaddleSeg/contrib/PP-HumanSeg`目录下执行。
 ```shell
-cd PaddleSeg/contrib/HumanSeg
+cd PaddleSeg/contrib/PP-HumanSeg
 ```
 
 ### 下载Inference Model
