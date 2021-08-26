@@ -17,6 +17,7 @@ import os
 import paddle
 import paddle.nn as nn
 import paddle.nn.functional as F
+from paddleseg.models import layers
 
 
 def SyncBatchNorm(*args, **kwargs):
@@ -46,11 +47,12 @@ class ConvBNReLU(nn.Layer):
         else:
             data_format = 'NCHW'
         self._batch_norm = SyncBatchNorm(out_channels, data_format=data_format)
+        self._relu = layers.Activation("relu")
 
     def forward(self, x):
         x = self._conv(x)
         x = self._batch_norm(x)
-        x = F.relu(x)
+        x = self._relu(x)
         return x
 
 
@@ -86,11 +88,13 @@ class ConvReLUPool(nn.Layer):
             stride=1,
             padding=1,
             dilation=1)
+        self._relu = layers.Activation("relu")
+        self._max_pool = nn.MaxPool2D(kernel_size=2, stride=2)
 
     def forward(self, x):
         x = self.conv(x)
-        x = F.relu(x)
-        x = F.pool2d(x, pool_size=2, pool_type="max", pool_stride=2)
+        x = self._relu(x)
+        x = self._max_pool(x)
         return x
 
 

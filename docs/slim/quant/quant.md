@@ -12,20 +12,18 @@ PaddleSeg基于PaddleSlim，集成了量化训练（QAT）方法，特点如下�
 
 ## 1 环境准备
 
-首先，请确保准备好PaddleSeg的基础环境。大家可以在PaddleSeg根目录执行如下命令，如果在`PaddleSeg/output`文件夹中出现预测结果，则证明安装成功。
+请参考[安装文档](../../install.md)准备好PaddleSeg的基础环境，测试是否安装成功。
 
-```
-python predict.py \
-       --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml \
-       --model_path https://bj.bcebos.com/paddleseg/dygraph/optic_disc/bisenet_optic_disc_512x512_1k/model.pdparams\
-       --image_path docs/images/optic_test_image.jpg \
-       --save_dir output/result
-```
-
-然后，大家需要再安装最新版本的PaddleSlim。
+安装PaddleSlim。
 
 ```shell
-pip install paddleslim -i https://pypi.tuna.tsinghua.edu.cn/simple
+git clone https://github.com/PaddlePaddle/PaddleSlim.git
+
+# 切换到特定commit id
+git reset --hard 15ef0c7dcee5a622787b7445f21ad9d1dea0a933
+
+# 安装
+python setup.py install
 ```
 
 ## 2 产出量化模型
@@ -40,7 +38,7 @@ pip install paddleslim -i https://pypi.tuna.tsinghua.edu.cn/simple
 
 ```shell
 # 设置1张可用的GPU卡
-export CUDA_VISIBLE_DEVICES=0 
+export CUDA_VISIBLE_DEVICES=0
 # windows下请执行以下命令
 # set CUDA_VISIBLE_DEVICES=0
 

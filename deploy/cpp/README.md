@@ -1,8 +1,8 @@
 # PaddleSeg C++ 预测部署方案
 
-## 使用Paddle Inference部署PaddleSeg模型
+## 使用Paddle Inference C++部署PaddleSeg模型
 
-使用Paddle Inference部署PaddleSeg模型，请参考[教程](../../docs/deployment/inference/cpp_inference.md)。
+使用Paddle Inference C++部署PaddleSeg模型，请参考[教程](../../docs/deployment/inference/cpp_inference.md)。
 
 ## 使用PaddleX部署PaddleSeg模型
 

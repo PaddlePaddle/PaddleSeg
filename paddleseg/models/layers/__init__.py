@@ -17,3 +17,4 @@ from .activation import Activation
 from .pyramid_pool import ASPPModule, PPModule
 from .attention import AttentionBlock
 from .nonlocal2d import NonLocal2D
+from .wrap_function import *

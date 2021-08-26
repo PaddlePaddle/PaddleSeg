@@ -120,6 +120,9 @@ class BottleneckBlock(nn.Layer):
                 data_format=data_format)
 
         self.shortcut = shortcut
+        # NOTE: Use the wrap layer for quantization training
+        self.add = layers.add()
+        self.relu = layers.Activation(act="relu")
 
     def forward(self, inputs):
         y = self.conv0(inputs)
@@ -131,8 +134,8 @@ class BottleneckBlock(nn.Layer):
         else:
             short = self.short(inputs)
 
-        y = paddle.add(x=short, y=conv2)
-        y = F.relu(y)
+        y = self.add(x=short, y=conv2)
+        y = self.relu(y)
         return y
 
 
@@ -174,6 +177,8 @@ class BasicBlock(nn.Layer):
         self.shortcut = shortcut
         self.dilation = dilation
         self.data_format = data_format
+        self.add = layers.add()
+        self.relu = layers.Activation(act="relu")
 
     def forward(self, inputs):
         y = self.conv0(inputs)
@@ -183,8 +188,8 @@ class BasicBlock(nn.Layer):
             short = inputs
         else:
             short = self.short(inputs)
-        y = paddle.add(x=short, y=conv1)
-        y = F.relu(y)
+        y = self.add(x=short, y=conv1)
+        y = self.relu(y)
 
         return y
 

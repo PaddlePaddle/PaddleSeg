@@ -75,6 +75,7 @@ class Predictor:
         if args.device == 'gpu':
             # set GPU configs accordingly
             # such as intialize the gpu memory, enable tensorrt
+            logger.info("Use GPU")
             pred_cfg.enable_use_gpu(100, 0)
             pred_cfg.switch_ir_optim(True)
             precision_map = {
@@ -100,6 +101,7 @@ class Predictor:
         else:
             # set CPU configs accordingly,
             # such as enable_mkldnn, set_cpu_math_library_num_threads
+            logger.info("Use CPU")
             pred_cfg.disable_gpu()
             if args.enable_mkldnn:
                 # cache 10 different shapes for mkldnn to avoid memory leak
@@ -109,7 +111,7 @@ class Predictor:
 
         self.predictor = create_predictor(pred_cfg)
 
-        if args.benchmark:
+        if hasattr(self.args, 'benchmark') and self.args.benchmark:
             import auto_log
             pid = os.getpid()
             self.autolog = auto_log.AutoLogger(
