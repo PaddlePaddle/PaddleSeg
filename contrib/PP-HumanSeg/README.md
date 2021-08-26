@@ -2,7 +2,7 @@
 
 人像分割是图像分割领域非常常见的应用，PaddleSeg推出了在大规模人像数据上训练的人像分割PP-HumanSeg模型，满足在服务端、移动端、Web端多种使用场景的需求。本教程提供从训练到部署的全流程应用指南，以及视频流人像分割、背景替换的实际效果体验。最新发布超轻量级人像分割模型，支持Web端、移动端场景的实时分割。
 
-近期 **百度视频会议** 上线了虚拟背景功能，支持在网页端视频会议时进行背景切换和背景虚化。其中人像换背景模型采用我们的**超轻量级模型PPSeg-Lite**。欢迎前去[百度首页](https://www.baidu.com/)右下角体验效果！
+近期 **百度视频会议** 上线了虚拟背景功能，支持在网页端视频会议时进行背景切换和背景虚化。其中人像换背景模型采用我们的**超轻量级模型PP-HumanSeg-Lite**。欢迎前去[百度首页](https://www.baidu.com/)右下角体验效果！
 
 <p align="center">
 <img src="https://github.com/LutaoChu/transfer_station/raw/master/conference.gif" width="70%" height="70%">
@@ -25,9 +25,9 @@ PP-HumanSeg开放了在大规模人像数据上训练的三个人像模型，满
 
 | 模型名 | 模型说明 | Checkpoint | Inference Model |
 | --- | --- | --- | ---|
-| PP-HumanSeg-Server | 高精度模型，适用于服务端GPU且背景复杂的人像场景， 模型结构为Deeplabv3+/ResNet50, 输入大小（512， 512） |[ppseg_server_ckpt](https://paddleseg.bj.bcebos.com/dygraph/humanseg/train/deeplabv3p_resnet50_os8_humanseg_512x512_100k.zip) | [ppseg_server_inference](https://paddleseg.bj.bcebos.com/dygraph/humanseg/export/deeplabv3p_resnet50_os8_humanseg_512x512_100k_with_softmax.zip) |
-| PPSeg-Mobile | 轻量级模型，适用于移动端或服务端CPU的前置摄像头场景，模型结构为HRNet_w18_samll_v1，输入大小（192， 192）  | [ppseg_mobile_ckpt](https://paddleseg.bj.bcebos.com/dygraph/humanseg/train/fcn_hrnetw18_small_v1_humanseg_192x192.zip) | [ppseg_mobile_inference](https://paddleseg.bj.bcebos.com/dygraph/humanseg/export/fcn_hrnetw18_small_v1_humanseg_192x192_with_softmax.zip) |
-| PPSeg-Lite | 超轻量级模型，适用于Web端或移动端实时分割场景，例如手机自拍、Web视频会议，模型结构为百度自研模型，输入大小（192， 192） | [ppseg_lite_ckpt]() | [ppseg_lite_inference]() |
+| PP-HumanSeg-Server | 高精度模型，适用于服务端GPU且背景复杂的人像场景， 模型结构为Deeplabv3+/ResNet50, 输入大小（512， 512） |[pp_humanseg_server_ckpt](https://paddleseg.bj.bcebos.com/dygraph/humanseg/train/deeplabv3p_resnet50_os8_humanseg_512x512_100k.zip) | [pp_humanseg_server_inference](https://paddleseg.bj.bcebos.com/dygraph/humanseg/export/deeplabv3p_resnet50_os8_humanseg_512x512_100k_with_softmax.zip) |
+| PP-HumanSeg-Mobile | 轻量级模型，适用于移动端或服务端CPU的前置摄像头场景，模型结构为HRNet_w18_samll_v1，输入大小（192， 192）  | [pp_humanseg_mobile_ckpt](https://paddleseg.bj.bcebos.com/dygraph/humanseg/train/fcn_hrnetw18_small_v1_humanseg_192x192.zip) | [pp_humanseg_mobile_inference](https://paddleseg.bj.bcebos.com/dygraph/humanseg/export/fcn_hrnetw18_small_v1_humanseg_192x192_with_softmax.zip) |
+| PP-HumanSeg-Lite | 超轻量级模型，适用于Web端或移动端实时分割场景，例如手机自拍、Web视频会议，模型结构为百度自研模型，输入大小（192， 192） | [pp-humanseg_lite_ckpt]() | [pp-humanseg_lite_inference]() |
 
 
 NOTE:
@@ -41,9 +41,9 @@ NOTE:
 
 | 模型名 |Input Size | FLOPS | Parameters | 计算耗时 | 模型大小 |
 |-|-|-|-|-|-|
-| PPSeg-Server | 512x512 | 114G | 26.8M | 37.96ms | 103Mb |
-| PPSeg-Mobile | 192x192 | 584M | 1.54M | 13.17ms | 5.9Mb |
-| PPSeg-Lite | 192x192 | 121M | 137K | 10.51ms | 543Kb |
+| PP-HumanSeg-Server | 512x512 | 114G | 26.8M | 37.96ms | 103Mb |
+| PP-HumanSeg-Mobile | 192x192 | 584M | 1.54M | 13.17ms | 5.9Mb |
+| PP-HumanSeg-Lite | 192x192 | 121M | 137K | 10.51ms | 543Kb |
 
 测试环境：Nvidia Tesla V100单卡。
 
@@ -52,14 +52,14 @@ NOTE:
 
 | 模型名 | 模型说明 | Checkpoint | Inference Model |
 | --- | --- | --- | ---|
-| PPSeg-Lite | 超轻量级模型，适用于Web端或移动端实时分割场景，例如手机自拍、Web视频会议，模型结构为百度自研模型，推荐输入大小（398，224） | [ppseg_lite_portrait_ckpt](https://paddleseg.bj.bcebos.com/dygraph/ppseg/ppseg_lite_portrait_398x224.tar.gz) | [ppseg_lite_portrait_inference](https://paddleseg.bj.bcebos.com/dygraph/ppseg/ppseg_lite_portrait_398x224_with_softmax.tar.gz) |
+| PP-HumanSeg-Lite | 超轻量级模型，适用于Web端或移动端实时分割场景，例如手机自拍、Web视频会议，模型结构为百度自研模型，推荐输入大小（398，224） | [pp_humanseg_lite_portrait_ckpt](https://paddleseg.bj.bcebos.com/dygraph/ppseg/ppseg_lite_portrait_398x224.tar.gz) | [pp_human_seg_lite_portrait_inference](https://paddleseg.bj.bcebos.com/dygraph/ppseg/ppseg_lite_portrait_398x224_with_softmax.tar.gz) |
 
 #### 模型性能
 
 | 模型名 |Input Size | FLOPS | Parameters | 计算耗时 | 模型大小 |
 |-|-|-|-|-|-|
-| PPSeg-Lite | 398x224 | 266M | 137K | 23.49ms | 543Kb |
-| PPSeg-Lite | 288x162 | 138M | 137K | 15.62ms | 543Kb |
+| PP-HumanSeg-Lite | 398x224 | 266M | 137K | 23.49ms | 543Kb |
+| PP-HumanSeg-Lite | 288x162 | 138M | 137K | 15.62ms | 543Kb |
 
 测试环境: 使用Paddle.js converter优化图结构，部署于Web端，显卡型号AMD Radeon Pro 5300M 4 GB。
 
@@ -219,13 +219,13 @@ python ../../export.py \
 --without_argmax --with_softmax
 ```
 
-导出PPSeg-Lite模型：
+导出PP-HumanSeg-Lite模型：
 
 ```shell
 python ../../export.py \
---config ../../configs/ppseg_lite/ppseg_lite_export_398x224.yml \
---save_dir export_model/ppseg_lite_portrait_398x224_with_softmax \
---model_path pretrained_model/ppseg_lite_portrait_398x224/model.pdparams \
+--config ../../configs/pp_humanseg_lite/pp_humanseg_lite_export_398x224.yml \
+--save_dir export_model/pp_humanseg_lite_portrait_398x224_with_softmax \
+--model_path pretrained_model/pp_humanseg_lite_portrait_398x224/model.pdparams \
 --without_argmax --with_softmax
 ```
 
