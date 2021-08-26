@@ -24,8 +24,3 @@ loss:
   types:
     - type: CrossEntropyLoss
   coef: [1]
-
-test_config:
-    is_slide: True
-    crop_size: [1024, 1024]
-    stride: [768, 768]
