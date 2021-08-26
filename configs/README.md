@@ -24,7 +24,7 @@
 |[ISANet](./isanet)|✔|✔|-|-|
 |[DNLNet](./dnlnet)|✔|✔|-|-|
 |[SFNet](./sfnet)|✔|-|-|-|
-|[PPSegLite](./ppseg_lite)|-|-|-|-|
+|[PP-HumanSeg-Lite](./pp_humanseg_lite)|-|-|-|-|
 
 # 模型说明
 
