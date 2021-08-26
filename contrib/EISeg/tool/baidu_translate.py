@@ -49,10 +49,17 @@ class BaiduTranslate:
         except Exception as e:
             return False, e
 
+def read_ts(ts_path):
+    xml = open(ts_path, "r", encoding="utf-8").read()
+    xml = bs(xml, "xml")
+    return xml
 
+
+pre_ts_path = "tool/ts/English.ts"  # Russia
 ts_path = "tool/ts/out.ts"
-xml = open(ts_path, "r", encoding="utf-8").read()
-xml = bs(xml, "xml")
+pre_xml = read_ts(pre_ts_path)
+xml = read_ts(ts_path)
+pre_messages = pre_xml.find_all("message")
 messages = xml.find_all("message")
 bd_trans = BaiduTranslate("zh", "en")  # ru
 trans = bd_trans.trans
@@ -60,20 +67,33 @@ trans = bd_trans.trans
 translated = 0
 failed = 0
 for msg in messages:
-    msg.location["filename"] = "../../app.py"
     type = msg.translation.get("type", None)
     source = msg.source.string
     trans = msg.translation.string
     if type == "unfinished" and trans is None and source is not None:
-        res = bd_trans.trans(source)
-        if res[0]:
-            msg.translation.string = res[1]
-            translated += 1
-        else:
-            failed += 1
-        print(
-            f"{translated + failed} / {len(messages)}:{source} \t {msg.translation.string}"
-        )
+        in_pre = False
+        for pmsg in pre_messages:
+            if pmsg.source.string == source:
+                try:
+                    msg.translation.string = pmsg.translation.string
+                    translated += 1
+                    print(
+                        f"{translated + failed} / {len(messages)}:{source} \t {msg.translation.string}"
+                    )
+                    in_pre = True
+                except:
+                    pass
+                break
+        if in_pre is False:
+            res = bd_trans.trans(source)
+            if res[0]:
+                msg.translation.string = res[1]
+                translated += 1
+            else:
+                failed += 1
+            print(
+                f"{translated + failed} / {len(messages)}:{source} \t {msg.translation.string}"
+            )
 
 for name in xml.find_all("name"):
     name.string = "APP_EISeg"
