@@ -134,7 +134,7 @@ class BottleneckBlock(nn.Layer):
         else:
             short = self.short(inputs)
 
-        y = self.add(x=short, y=conv2)
+        y = self.add(short, conv2)
         y = self.relu(y)
         return y
 
@@ -188,7 +188,7 @@ class BasicBlock(nn.Layer):
             short = inputs
         else:
             short = self.short(inputs)
-        y = self.add(x=short, y=conv1)
+        y = self.add(short, conv1)
         y = self.relu(y)
 
         return y

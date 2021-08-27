@@ -86,6 +86,7 @@ class Predictor:
             precision_mode = precision_map[args.precision]
 
             if args.use_trt:
+                logger.info("Use TRT")
                 pred_cfg.enable_tensorrt_engine(
                     workspace_size=1 << 30,
                     max_batch_size=1,
