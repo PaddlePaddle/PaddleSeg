@@ -45,6 +45,7 @@ class BaseNet(nn.Layer):
         # bilinear upsample options
         self._up_kwargs = {'mode': 'bilinear', 'align_corners': True}
         self.backbone = backbone
+        self.backbone_indices = backbone_indices
         self.jpu = JPU([512, 1024, 2048],
                        width=512,
                        norm_layer=norm_layer,
