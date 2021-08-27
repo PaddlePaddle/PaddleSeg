@@ -77,7 +77,7 @@ def main(args):
     #     t = [T.LoadImages(), T.ResizeToIntMult(mult_int=32), T.Normalize()]
     t = [
         T.LoadImages(),
-        T.ResizeByShort(640),
+        T.ResizeByShort(512),
         T.ResizeToIntMult(mult_int=32),
         T.Normalize()
     ]

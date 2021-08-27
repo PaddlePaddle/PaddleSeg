@@ -71,7 +71,7 @@ class MODNet(nn.Layer):
         label_detail = label_dict['alpha'] * mask
         loss_detail = loss_func_dict['detail'][0](logit_detail, label_detail)
         loss_detail = loss_detail / mask.mean()
-        loss['detail'] = loss_detail
+        loss['detail'] = 10 * loss_detail
 
         # fusion loss
         matte = logit_dict['matte']
@@ -97,7 +97,9 @@ class MODNet(nn.Layer):
         matte_con_sem = F.interpolate(
             matte, scale_factor=1 / 16, mode='bilinear', align_corners=False)
         matte_con_sem = self.blurer(matte_con_sem)
-        matte_con_sem = paddle.where(transition_mask, logit_dict['semantic'],
+        logit_semantic = logit_dict['semantic'].clone()
+        logit_semantic.stop_gradient = True
+        matte_con_sem = paddle.where(transition_mask, logit_semantic,
                                      matte_con_sem)
         if False:
             import cv2
