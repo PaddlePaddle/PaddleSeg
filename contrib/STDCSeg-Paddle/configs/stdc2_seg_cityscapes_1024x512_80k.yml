@@ -7,7 +7,7 @@ model:
   type: STDCSeg
   backbone: 'STDCNet1446'
   num_classes: 19
-  pretrain_model: 'pretrained/STDCNet1446_76.47.pdiparams'
+  pretrain_backbone_model: 'pretrained/STDCNet1446_76.47.pdiparams'
 
 
 train_dataset:
