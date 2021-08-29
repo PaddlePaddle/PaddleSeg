@@ -55,7 +55,7 @@ class BaseNet(nn.Layer):
         feat_list = self.backbone(x)
         c1, c2, c3, c4 = [feat_list[i]
                           for i in self.backbone_indices]  ## didnt come here
-        print('c1,c2,c3,c4', c1, c2, c3, c4)
+        # print('c1,c2,c3,c4', c1, c2, c3, c4)
 
         if self.jpu:
             return self.jpu(c1, c2, c3, c4)
@@ -197,7 +197,7 @@ class Global_Reason_Unit(nn.Layer):
 
 
         weight_attr = paddle.ParamAttr(name="weight", initializer=\
-                            paddle.nn.initializer.Constant(value=0.0))
+                            paddle.nn.initializer.Constant(value=1.0))
         bias_attr = paddle.ParamAttr(name="bias", initializer=\
                             paddle.nn.initializer.Constant(value=0.0))
         self.bn = nn.BatchNorm2D(
