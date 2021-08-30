@@ -41,3 +41,4 @@ from .ppseg_lite import *
 from .mla_transformer import MLATransformer
 from .portraitnet import PortraitNet
 from .stdcseg import STDCSeg
+from .segformer import SegFormer
