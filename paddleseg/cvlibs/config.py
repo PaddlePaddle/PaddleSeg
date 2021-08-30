@@ -91,6 +91,12 @@ class Config(object):
         Update config from dic based base_dic
         """
         base_dic = base_dic.copy()
+        dic = dic.copy()
+
+        if dic.get('_inherited_', True) == False:
+            dic.pop('_inherited_')
+            return dic
+
         for key, val in dic.items():
             if isinstance(val, dict) and key in base_dic:
                 base_dic[key] = self._update_dic(val, base_dic[key])
@@ -197,8 +203,11 @@ class Config(object):
         elif optimizer_type == 'adam':
             return paddle.optimizer.Adam(
                 lr, parameters=self.model.parameters(), **args)
-        else:
-            raise RuntimeError('Only sgd and adam optimizer support.')
+        elif optimizer_type in paddle.optimizer.__all__:
+            return getattr(paddle.optimizer, optimizer_type)(
+                lr, parameters=self.model.parameters(), **args)
+
+        raise RuntimeError('Unknown optimizer type {}.'.format(optimizer_type))
 
     @property
     def optimizer_args(self) -> dict:

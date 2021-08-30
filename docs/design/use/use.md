@@ -28,9 +28,9 @@
 ### optimizer
 > 训练优化器
 >  * 参数
->     * type : 优化器类型，目前只支持'sgd'和'adam'
->     * momentum : 动量
+>     * type : 优化器类型，支持目前Paddle官方所有优化器
 >     * weight_decay : L2正则化的值
+>     * **others** : 请参考[Paddle官方Optimizer文档](https://www.paddlepaddle.org.cn/documentation/docs/zh/api/paddle/optimizer/Overview_cn.html)
 
 ----
 ### lr_scheduler
