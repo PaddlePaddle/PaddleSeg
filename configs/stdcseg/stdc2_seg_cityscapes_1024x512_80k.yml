@@ -1,0 +1,60 @@
+_base_: '../_base_/cityscapes.yml'
+
+batch_size: 36
+iters: 80000
+
+model:
+  type: STDCSeg
+  backbone_type: 'STDCNet1446'
+  pretrained_backbone: 'pretrained/STDCNet1446_76.47.pdiparams'
+  num_classes: 19
+
+
+train_dataset:
+  type: Cityscapes
+  dataset_root: data/cityscapes
+  transforms:
+    - type: ResizeStepScaling
+      min_scale_factor: 0.125
+      max_scale_factor: 1.5
+      scale_step_size: 0.125
+    - type: RandomPaddingCrop
+      crop_size: [1024, 512]
+    - type: RandomHorizontalFlip
+    - type: RandomDistort
+      brightness_range: 0.5
+      contrast_range: 0.5
+      saturation_range: 0.5
+    - type: Normalize
+      mean: (0.485, 0.456, 0.406)
+      std: (0.229, 0.224, 0.225)
+  mode: train
+
+val_dataset:
+  type: Cityscapes
+  dataset_root: data/cityscapes
+  transforms:
+    - type: Normalize
+      mean: (0.485, 0.456, 0.406)
+      std: (0.229, 0.224, 0.225)
+  mode: val
+
+
+optimizer:
+  type: sgd
+  momentum: 0.9
+  weight_decay: 4.0e-5
+
+loss:
+  types:
+    - type: OhemCrossEntropyLoss
+    - type: OhemCrossEntropyLoss
+    - type: OhemCrossEntropyLoss
+    - type: DetailAggregateLoss
+  coef: [1, 1, 1, 1]
+
+lr_scheduler:
+  type: PolynomialDecay
+  learning_rate: 0.01
+  end_lr: 0
+  power: 0.9
