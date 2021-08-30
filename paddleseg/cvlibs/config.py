@@ -91,6 +91,8 @@ class Config(object):
         Update config from dic based base_dic
         """
         base_dic = base_dic.copy()
+        dic = dic.copy()
+
         if dic.get('_inherited_', True) == False:
             dic.pop('_inherited_')
             return dic
