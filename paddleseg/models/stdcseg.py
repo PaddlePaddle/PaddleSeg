@@ -598,18 +598,3 @@ class STDCSeg(nn.Layer):
                 wd_params += child_wd_params
                 nowd_params += child_nowd_params
         return wd_params, nowd_params, lr_mul_wd_params, lr_mul_nowd_params
-
-
-if __name__ == "__main__":
-    net = STDCSeg('STDCNet813', 19)
-    # net.cuda()
-    net.training=True
-    in_ten = paddle.randn((1, 3, 768, 1536))
-    # import torch
-    # xx = torch.randn(1,3,768,1536)
-    # print(xx.size())
-    # print('---------------------------')
-    # print(in_ten.shape)
-    # out, out16, out32 = net(in_ten)
-    # print(out16.shape)
-    # paddle.save(net.state_dict(), 'STDCNet813.pth')
