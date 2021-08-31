@@ -4,19 +4,19 @@
 
 飞桨针对不同场景，提供了多个预测引擎部署模型（如下图），更多详细信息请参考[文档](https://paddleinference.paddlepaddle.org.cn/product_introduction/summary.html)。
 
-![inference_ecosystem](https://user-images.githubusercontent.com/52520497/130720374-26947102-93ec-41e2-8207-38081dcc27aa.png)
+本文档介绍使用Paddle Inference的Python接口在服务器端(Nvidia GPU或者X86 CPU)部署分割模型。
 
-本文档介绍使用Paddle Inference的Python接口在服务器端(NV GPU或者X86 CPU)部署分割模型。大家通过一定的配置，加上少量的代码，即可把模型集成到自己的服务中，完成图像分割的任务。
+![inference_ecosystem](https://user-images.githubusercontent.com/52520497/130720374-26947102-93ec-41e2-8207-38081dcc27aa.png)
 
 ## 2. 前置准备
 
 请使用[模型导出工具](../../model_export.md)导出您的模型, 或点击下载我们的[样例模型](https://paddleseg.bj.bcebos.com/dygraph/demo/bisenet_demo_model.tar.gz)用于测试。
 
-接着准备一张测试图片用于试验效果，我们提供了cityscapes验证集中的一张[图片](https://paddleseg.bj.bcebos.com/dygraph/demo/cityscapes_demo.png)用于演示效果，如果您的模型是使用其他数据集训练的，请自行准备测试图片。
+接着准备一张测试图片用于试验效果，我们提供了cityscapes验证集中的一张[图片](https://paddleseg.bj.bcebos.com/dygraph/demo/cityscapes_demo.png)用于演示效果。如果您的模型是使用其他数据集训练的，请自行准备测试图片。
 
 ## 3. 预测
 
-在终端输入以下命令进行预测:
+在PaddleSeg根目录，执行以下命令进行预测:
 ```shell
 python deploy/python/infer.py --config /path/to/deploy.yaml --image_path /path/to/image/path/or/dir
 ```
@@ -36,13 +36,14 @@ python deploy/python/infer.py --config /path/to/deploy.yaml --image_path /path/t
 |benchmark|是否产出日志，包含环境、模型、配置、性能信息|否|False|
 |with_argmax|对预测结果进行argmax操作|否|否|
 
-*测试样例和预测结果如下*
+测试样例的预测结果如下。
+
 ![cityscape_predict_demo.png](../../images/cityscapes_predict_demo.png)
 
 **注意**
 
-1. 当使用量化模型预测时，需要同时开启TensorRT预测和int8预测才会有加速效果
+1. 使用TensorRT需要使用支持TRT功能的Paddle库，请参考[附录](https://www.paddlepaddle.org.cn/documentation/docs/zh/install/Tables.html#whl-release)下载带有trt的PaddlePaddle安装包，或者参考[源码编译](https://www.paddlepaddle.org.cn/documentation/docs/zh/install/compile/fromsource.html)自行编译。
 
-2. 使用TensorRT需要使用支持TRT功能的Paddle库，请参考[附录](https://www.paddlepaddle.org.cn/documentation/docs/zh/install/Tables.html#whl-release)下载对应的PaddlePaddle安装包，或者参考[源码编译](https://www.paddlepaddle.org.cn/documentation/docs/zh/install/compile/fromsource.html)自行编译。
+2. 当使用量化模型在GPU上预测时，需要设置device=gpu、use_trt=True、precision=int8
 
-3. 要开启`--benchmark`的话需要安装auto_log。[安装方式](https://github.com/LDOUBLEV/AutoLog)
+3. 要开启`--benchmark`的话需要安装auto_log，请参考[安装方式](https://github.com/LDOUBLEV/AutoLog)。

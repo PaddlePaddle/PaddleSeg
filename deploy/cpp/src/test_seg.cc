@@ -52,7 +52,8 @@ std::shared_ptr<paddle_infer::Predictor> create_predictor(const YamlConfig& yaml
   if (FLAGS_use_cpu) {
     LOG(INFO) << "Use CPU";
     if (FLAGS_use_mkldnn) {
-      infer_config.EnableMKLDNN();
+      // TODO(jc): fix the bug
+      //infer_config.EnableMKLDNN();
       infer_config.SetCpuMathLibraryNumThreads(5);
     }
   } else {
@@ -122,14 +123,21 @@ int main(int argc, char *argv[]) {
   // Get output
   auto output_names = predictor->GetOutputNames();
   auto output_t = predictor->GetOutputHandle(output_names[0]);
-  std::vector<int> output_shape = output_t->shape();
+  std::vector<int> output_shape = output_t->shape();  // n * h * w
   int out_num = std::accumulate(output_shape.begin(), output_shape.end(), 1,
                                 std::multiplies<int>());
-  std::vector<int64_t> out_data;
-  out_data.resize(out_num);
+  std::vector<int64_t> out_data(out_num);
   output_t->CopyToCpu(out_data.data());
 
   // Get pseudo image
-
+  std::vector<uint8_t> out_data_u8(out_num);
+  for (int i = 0; i < out_num; i++) {
+    out_data_u8[i] = static_cast<uint8_t>(out_data[i]);
+  }
+  cv::Mat out_gray_img(output_shape[1], output_shape[2], CV_8UC1, out_data_u8.data());
+  cv::Mat out_eq_img;
+  cv::equalizeHist(out_gray_img, out_eq_img);
+  cv::imwrite("out_img.jpg", out_eq_img);
+  
   LOG(INFO) << "Finish";
 }
