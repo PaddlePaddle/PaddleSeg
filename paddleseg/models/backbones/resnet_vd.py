@@ -121,7 +121,7 @@ class BottleneckBlock(nn.Layer):
 
         self.shortcut = shortcut
         # NOTE: Use the wrap layer for quantization training
-        self.add = layers.add()
+        self.add = layers.Add()
         self.relu = layers.Activation(act="relu")
 
     def forward(self, inputs):
@@ -177,7 +177,7 @@ class BasicBlock(nn.Layer):
         self.shortcut = shortcut
         self.dilation = dilation
         self.data_format = data_format
-        self.add = layers.add()
+        self.add = layers.Add()
         self.relu = layers.Activation(act="relu")
 
     def forward(self, inputs):

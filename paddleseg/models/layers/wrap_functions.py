@@ -19,7 +19,7 @@ Warp the functon api, so the normal and quantization training can use the same n
 """
 
 
-class add(nn.Layer):
+class Add(nn.Layer):
     def __init__(self):
         super().__init__()
 
@@ -27,7 +27,7 @@ class add(nn.Layer):
         return paddle.add(x, y, name)
 
 
-class subtract(nn.Layer):
+class Subtract(nn.Layer):
     def __init__(self):
         super().__init__()
 
@@ -35,7 +35,7 @@ class subtract(nn.Layer):
         return paddle.subtract(x, y, name)
 
 
-class multiply(nn.Layer):
+class Multiply(nn.Layer):
     def __init__(self):
         super().__init__()
 
@@ -43,7 +43,7 @@ class multiply(nn.Layer):
         return paddle.multiply(x, y, name)
 
 
-class divide(nn.Layer):
+class Divide(nn.Layer):
     def __init__(self):
         super().__init__()
 
@@ -51,7 +51,7 @@ class divide(nn.Layer):
         return paddle.divide(x, y, name)
 
 
-class reshape(nn.Layer):
+class Reshape(nn.Layer):
     def __init__(self):
         super().__init__()
 
@@ -59,7 +59,7 @@ class reshape(nn.Layer):
         return paddle.reshape(x, shape, name)
 
 
-class transpose(nn.Layer):
+class Transpose(nn.Layer):
     def __init__(self):
         super().__init__()
 
@@ -67,7 +67,7 @@ class transpose(nn.Layer):
         return paddle.transpose(x, perm, name)
 
 
-class concat(nn.Layer):
+class Concat(nn.Layer):
     def __init__(self):
         super().__init__()
 
@@ -75,7 +75,7 @@ class concat(nn.Layer):
         return paddle.concat(x, axis, name)
 
 
-class flatten(nn.Layer):
+class Flatten(nn.Layer):
     def __init__(self):
         super().__init__()
 

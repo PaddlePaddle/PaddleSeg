@@ -360,7 +360,7 @@ class BottleneckBlock(nn.Layer):
                 reduction_ratio=16,
                 name=name + '_fc')
 
-        self.add = layers.add()
+        self.add = layers.Add()
         self.relu = layers.Activation("relu")
 
     def forward(self, x):
@@ -422,7 +422,7 @@ class BasicBlock(nn.Layer):
                 reduction_ratio=16,
                 name=name + '_fc')
 
-        self.add = layers.add()
+        self.add = layers.Add()
         self.relu = layers.Activation("relu")
 
     def forward(self, x):

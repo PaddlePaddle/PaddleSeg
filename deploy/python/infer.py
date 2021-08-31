@@ -95,7 +95,7 @@ class Predictor:
                     use_static=False,
                     use_calib_mode=False)
                 min_input_shape = {"x": [1, 3, 100, 100]}
-                max_input_shape = {"x": [1, 3, 2000, 2000]}
+                max_input_shape = {"x": [1, 3, 2000, 3000]}
                 opt_input_shape = {"x": [1, 3, 192, 192]}
                 pred_cfg.set_trt_dynamic_shape_info(
                     min_input_shape, max_input_shape, opt_input_shape)
