@@ -23,329 +23,34 @@ from paddleseg.models import layers
 from paddleseg.cvlibs import manager
 from paddleseg.utils import utils
 
-class ConvX(nn.Layer):
-    def __init__(self, in_planes, out_planes, kernel=3, stride=1):
-        super(ConvX, self).__init__()
-        self.conv = nn.Conv2D(in_planes, out_planes, kernel_size=kernel, stride=stride, padding=kernel // 2,bias_attr=None)
-        self.bn = nn.BatchNorm2D(out_planes)
-        self.relu = nn.ReLU()
-
-    def forward(self, x):
-        out = self.relu(self.bn(self.conv(x)))
-        return out
-
-
-class AddBottleneck(nn.Layer):
-    def __init__(self, in_planes, out_planes, block_num=3, stride=1):
-        super(AddBottleneck, self).__init__()
-        assert block_num > 1, print("block number should be larger than 1.")
-        self.conv_list = nn.LayerList()
-        self.stride = stride
-        if stride == 2:
-            self.avd_layer = nn.Sequential(
-                nn.Conv2D(out_planes // 2, out_planes // 2, kernel_size=3, stride=2, padding=1, groups=out_planes // 2,bias_attr=None),
-                nn.BatchNorm2D(out_planes // 2),
-            )
-            self.skip = nn.Sequential(
-                nn.Conv2D(in_planes, in_planes, kernel_size=3, stride=2, padding=1, groups=in_planes,bias_attr=None),
-                nn.BatchNorm2D(in_planes),
-                nn.Conv2D(in_planes, out_planes, kernel_size=1,bias_attr=None),
-                nn.BatchNorm2D(out_planes),
-            )
-            stride = 1
-
-        for idx in range(block_num):
-            if idx == 0:
-                self.conv_list.append(ConvX(in_planes, out_planes // 2, kernel=1))
-            elif idx == 1 and block_num == 2:
-                self.conv_list.append(ConvX(out_planes // 2, out_planes // 2, stride=stride))
-            elif idx == 1 and block_num > 2:
-                self.conv_list.append(ConvX(out_planes // 2, out_planes // 4, stride=stride))
-            elif idx < block_num - 1:
-                self.conv_list.append(
-                    ConvX(out_planes // int(math.pow(2, idx)), out_planes // int(math.pow(2, idx + 1))))
-            else:
-                self.conv_list.append(ConvX(out_planes // int(math.pow(2, idx)), out_planes // int(math.pow(2, idx))))
-
-    def forward(self, x):
-        out_list = []
-        out = x
-
-        for idx, conv in enumerate(self.conv_list):
-            if idx == 0 and self.stride == 2:
-                out = self.avd_layer(conv(out))
-            else:
-                out = conv(out)
-            out_list.append(out)
-
-        if self.stride == 2:
-            x = self.skip(x)
-
-        return paddle.concat(out_list, axis=1) + x
-
-
-class CatBottleneck(nn.Layer):
-    def __init__(self, in_planes, out_planes, block_num=3, stride=1):
-        super(CatBottleneck, self).__init__()
-        assert block_num > 1, print("block number should be larger than 1.")
-        self.conv_list = nn.LayerList()
-        self.stride = stride
-        if stride == 2:
-            self.avd_layer = nn.Sequential(
-                nn.Conv2D(out_planes // 2, out_planes // 2, kernel_size=3, stride=2, padding=1, groups=out_planes // 2,bias_attr=None
-                          ),
-                nn.BatchNorm2D(out_planes // 2),
-            )
-            self.skip = nn.AvgPool2D(kernel_size=3, stride=2, padding=1)
-            stride = 1
-
-        for idx in range(block_num):
-            if idx == 0:
-                self.conv_list.append(ConvX(in_planes, out_planes // 2, kernel=1))
-            elif idx == 1 and block_num == 2:
-                self.conv_list.append(ConvX(out_planes // 2, out_planes // 2, stride=stride))
-            elif idx == 1 and block_num > 2:
-                self.conv_list.append(ConvX(out_planes // 2, out_planes // 4, stride=stride))
-            elif idx < block_num - 1:
-                self.conv_list.append(
-                    ConvX(out_planes // int(math.pow(2, idx)), out_planes // int(math.pow(2, idx + 1))))
-            else:
-                self.conv_list.append(ConvX(out_planes // int(math.pow(2, idx)), out_planes // int(math.pow(2, idx))))
-
-    def forward(self, x):
-        out_list = []
-        out1 = self.conv_list[0](x)
-
-        for idx, conv in enumerate(self.conv_list[1:]):
-            if idx == 0:
-                if self.stride == 2:
-                    out = conv(self.avd_layer(out1))
-                else:
-                    out = conv(out1)
-            else:
-                out = conv(out)
-            out_list.append(out)
-
-        if self.stride == 2:
-            out1 = self.skip(out1)
-        out_list.insert(0, out1)
-
-        out = paddle.concat(out_list, axis=1)
-        return out
-
-
-# STDC2Net
-class STDCNet1446(nn.Layer):
-    def __init__(self, base=64, layers=[4, 5, 3], block_num=4, type="cat", num_classes=1000, dropout=0.20,
-                 pretrain_model='', use_conv_last=False):
-        super(STDCNet1446, self).__init__()
-        if type == "cat":
-            block = CatBottleneck
-        elif type == "add":
-            block = AddBottleneck
-        self.use_conv_last = use_conv_last
-        self.features = self._make_layers(base, layers, block_num, block)
-        self.conv_last = ConvX(base * 16, max(1024, base * 16), 1, 1)
-        self.gap = nn.AdaptiveAvgPool2D(1)
-        self.fc = nn.Linear(max(1024, base * 16), max(1024, base * 16),bias_attr=None)
-        self.bn = nn.BatchNorm1D(max(1024, base * 16))
-        self.relu = nn.ReLU()
-        self.dropout = nn.Dropout(p=dropout)
-        self.linear = nn.Linear(max(1024, base * 16), num_classes, bias_attr=None)
-
-        self.x2 = nn.Sequential(self.features[:1])
-        self.x4 = nn.Sequential(self.features[1:2])
-        self.x8 = nn.Sequential(self.features[2:6])
-        self.x16 = nn.Sequential(self.features[6:11])
-        self.x32 = nn.Sequential(self.features[11:])
-
-        if pretrain_model:
-            print('use pretrain model {}'.format(pretrain_model))
-            self.init_weight(pretrain_model)
-
-    def init_weight(self, pretrain_model):
-
-        state_dict = paddle.load(pretrain_model)
-        self.set_dict(state_dict)
-    #
-    # def init_params(self):
-    #     for m in self.modules():
-    #         if isinstance(m, nn.Conv2D):
-    #             init.kaiming_normal_(m.weight, mode='fan_out')
-    #             if m.bias is not None:
-    #                 init.constant_(m.bias, 0)
-    #         elif isinstance(m, nn.nn.BatchNorm2D):
-    #             init.constant_(m.weight, 1)
-    #             init.constant_(m.bias, 0)
-    #         elif isinstance(m, nn.Linear):
-    #             init.normal_(m.weight, std=0.001)
-    #             if m.bias is not None:
-    #                 init.constant_(m.bias, 0)
-
-    def _make_layers(self, base, layers, block_num, block):
-        features = []
-        features += [ConvX(3, base // 2, 3, 2)]
-        features += [ConvX(base // 2, base, 3, 2)]
-
-        for i, layer in enumerate(layers):
-            for j in range(layer):
-                if i == 0 and j == 0:
-                    features.append(block(base, base * 4, block_num, 2))
-                elif j == 0:
-                    features.append(block(base * int(math.pow(2, i + 1)), base * int(math.pow(2, i + 2)), block_num, 2))
-                else:
-                    features.append(block(base * int(math.pow(2, i + 2)), base * int(math.pow(2, i + 2)), block_num, 1))
-
-        return nn.Sequential(*features)
-
-    def forward(self, x):
-        feat2 = self.x2(x)
-        feat4 = self.x4(feat2)
-        feat8 = self.x8(feat4)
-        feat16 = self.x16(feat8)
-        feat32 = self.x32(feat16)
-        if self.use_conv_last:
-            feat32 = self.conv_last(feat32)
-
-        return feat2, feat4, feat8, feat16, feat32
-
-    def forward_impl(self, x):
-        out = self.features(x)
-        out = self.conv_last(out).pow(2)
-        out = self.gap(out).flatten(1)
-        out = self.fc(out)
-        # out = self.bn(out)
-        out = self.relu(out)
-        # out = self.relu(self.bn(self.fc(out)))
-        out = self.dropout(out)
-        out = self.linear(out)
-        return out
-
-
-# STDC1Net
-class STDCNet813(nn.Layer):
-    def __init__(self, base=64, layers=[2, 2, 2], block_num=4, type="cat", num_classes=1000, dropout=0.20,
-                 pretrain_model='', use_conv_last=False):
-        super(STDCNet813, self).__init__()
-        if type == "cat":
-            block = CatBottleneck
-        elif type == "add":
-            block = AddBottleneck
-        self.use_conv_last = use_conv_last
-        self.features = self._make_layers(base, layers, block_num, block)
-        self.conv_last = ConvX(base * 16, max(1024, base * 16), 1, 1)
-        self.gap = nn.AdaptiveAvgPool2D(1)
-        self.fc = nn.Linear(max(1024, base * 16), max(1024, base * 16), bias_attr=None)
-        self.bn = nn.BatchNorm1D(max(1024, base * 16))
-        self.relu = nn.ReLU()
-        self.dropout = nn.Dropout(p=dropout)
-        self.linear = nn.Linear(max(1024, base * 16), num_classes, bias_attr=None)
-
-        self.x2 = nn.Sequential(self.features[:1])
-        self.x4 = nn.Sequential(self.features[1:2])
-        self.x8 = nn.Sequential(self.features[2:4])
-        self.x16 = nn.Sequential(self.features[4:6])
-        self.x32 = nn.Sequential(self.features[6:])
-
-        if pretrain_model:
-            print('use pretrain model {}'.format(pretrain_model))
-            self.init_weight(pretrain_model)
-
-    def init_weight(self, pretrain_model):
-
-        state_dict = paddle.load(pretrain_model)
-        self.set_dict(state_dict)
-
-    # def init_params(self):
-    #     for m in self.modules():
-    #         if isinstance(m, nn.Conv2D):
-    #             init.kaiming_normal_(m.weight, mode='fan_out')
-    #             if m.bias is not None:
-    #                 init.constant_(m.bias, 0)
-    #         elif isinstance(m, nn.nn.BatchNorm2D):
-    #             init.constant_(m.weight, 1)
-    #             init.constant_(m.bias, 0)
-    #         elif isinstance(m, nn.Linear):
-    #             init.normal_(m.weight, std=0.001)
-    #             if m.bias is not None:
-    #                 init.constant_(m.bias, 0)
-
-    def _make_layers(self, base, layers, block_num, block):
-        features = []
-        features += [ConvX(3, base // 2, 3, 2)]
-        features += [ConvX(base // 2, base, 3, 2)]
-
-        for i, layer in enumerate(layers):
-            for j in range(layer):
-                if i == 0 and j == 0:
-                    features.append(block(base, base * 4, block_num, 2))
-                elif j == 0:
-                    features.append(block(base * int(math.pow(2, i + 1)), base * int(math.pow(2, i + 2)), block_num, 2))
-                else:
-                    features.append(block(base * int(math.pow(2, i + 2)), base * int(math.pow(2, i + 2)), block_num, 1))
-
-        return nn.Sequential(*features)
-
-    def forward(self, x):
-        feat2 = self.x2(x)
-        feat4 = self.x4(feat2)
-        feat8 = self.x8(feat4)
-        feat16 = self.x16(feat8)
-        feat32 = self.x32(feat16)
-        if self.use_conv_last:
-            feat32 = self.conv_last(feat32)
-
-        return feat2, feat4, feat8, feat16, feat32
-
-    def forward_impl(self, x):
-        out = self.features(x)
-        out = self.conv_last(out).pow(2)
-        out = self.gap(out).flatten(1)
-        out = self.fc(out)
-        # out = self.bn(out)
-        out = self.relu(out)
-        # out = self.relu(self.bn(self.fc(out)))
-        out = self.dropout(out)
-        out = self.linear(out)
-        return out
-
-class ConvBNReLU(nn.Layer):
-    def __init__(self, in_chan, out_chan, ks=3, stride=1, padding=1, *args, **kwargs):
-        super(ConvBNReLU, self).__init__()
-        self.conv = nn.Conv2D(in_chan,
-                              out_chan,
-                              kernel_size=ks,
-                              stride=stride,
-                              padding=padding,
-                              bias_attr=None)
-        self.bn = nn.BatchNorm2D(out_chan)
-        self.relu = nn.ReLU()
-
-    def forward(self, x):
-        x = self.conv(x)
-        x = self.bn(x)
-        x = self.relu(x)
-        return x
-
-
+# class ConvBNReLU(nn.Layer):
+#     def __init__(self, in_chan, out_chan, ks=3, stride=1, padding=1, *args, **kwargs):
+#         super(ConvBNReLU, self).__init__()
+#         self.conv = nn.Conv2D(in_chan,
+#                               out_chan,
+#                               kernel_size=ks,
+#                               stride=stride,
+#                               padding=padding,
+#                               bias_attr=None)
+#         self.bn = nn.BatchNorm2D(out_chan)
+#         self.relu = nn.ReLU()
+#
+#     def forward(self, x):
+#         x = self.conv(x)
+#         x = self.bn(x)
+#         x = self.relu(x)
+#         return x
 
 class BiSeNetOutput(nn.Layer):
-    def __init__(self, in_chan, mid_chan, n_classes, *args, **kwargs):
+    def __init__(self, in_chan, mid_chan, n_classes):
         super(BiSeNetOutput, self).__init__()
-        self.conv = ConvBNReLU(in_chan, mid_chan, ks=3, stride=1, padding=1)
+        self.conv = layers.ConvBNReLU(in_chan, mid_chan, kernel_size=3, stride=1, padding=1)
         self.conv_out = nn.Conv2D(mid_chan, n_classes, kernel_size=1, bias_attr=None)
-        # self.init_weight()
 
     def forward(self, x):
         x = self.conv(x)
         x = self.conv_out(x)
         return x
-
-    # def init_weight(self):
-    #     for ly in self.children():
-    #         if isinstance(ly, nn.Conv2d):
-    #             nn.init.kaiming_normal_(ly.weight, a=1)
-    #             if not ly.bias is None: nn.init.constant_(ly.bias, 0)
 
     def get_params(self):
         wd_params, nowd_params = [], []
@@ -360,9 +65,9 @@ class BiSeNetOutput(nn.Layer):
 
 
 class AttentionRefinementModule(nn.Layer):
-    def __init__(self, in_chan, out_chan, *args, **kwargs):
+    def __init__(self, in_chan, out_chan):
         super(AttentionRefinementModule, self).__init__()
-        self.conv = ConvBNReLU(in_chan, out_chan, ks=3, stride=1, padding=1)
+        self.conv = layers.ConvBNReLU(in_chan, out_chan, kernel_size=3, stride=1, padding=1)
         self.conv_atten = nn.Conv2D(out_chan, out_chan, kernel_size=1, bias_attr=None)
         self.bn_atten = nn.BatchNorm2D(out_chan)
         self.sigmoid_atten = nn.Sigmoid()
@@ -388,9 +93,9 @@ class ContextPath(nn.Layer):
             if use_conv_last:
                 inplanes = 1024
             self.arm32 = AttentionRefinementModule(inplanes, 128)
-            self.conv_head32 = ConvBNReLU(128, 128, ks=3, stride=1, padding=1)
-            self.conv_head16 = ConvBNReLU(128, 128, ks=3, stride=1, padding=1)
-            self.conv_avg = ConvBNReLU(inplanes, 128, ks=1, stride=1, padding=0)
+            self.conv_head32 = layers.ConvBNReLU(128, 128, kernel_size=3, stride=1, padding=1)
+            self.conv_head16 = layers.ConvBNReLU(128, 128, kernel_size=3, stride=1, padding=1)
+            self.conv_avg = layers.ConvBNReLU(inplanes, 128, kernel_size=1, stride=1, padding=0)
 
         elif backbone == 'STDCNet813':
             self.backbone = STDCNet813(pretrain_model=pretrain_model, use_conv_last=use_conv_last)
@@ -399,9 +104,9 @@ class ContextPath(nn.Layer):
             if use_conv_last:
                 inplanes = 1024
             self.arm32 = AttentionRefinementModule(inplanes, 128)
-            self.conv_head32 = ConvBNReLU(128, 128, ks=3, stride=1, padding=1)
-            self.conv_head16 = ConvBNReLU(128, 128, ks=3, stride=1, padding=1)
-            self.conv_avg = ConvBNReLU(inplanes, 128, ks=1, stride=1, padding=0)
+            self.conv_head32 = layers.ConvBNReLU(128, 128, kernel_size=3, stride=1, padding=1)
+            self.conv_head16 = layers.ConvBNReLU(128, 128, kernel_size=3, stride=1, padding=1)
+            self.conv_avg = layers.ConvBNReLU(inplanes, 128, kernel_size=1, stride=1, padding=0)
         else:
             print("backbone is not in backbone lists")
             exit(0)
@@ -445,9 +150,9 @@ class ContextPath(nn.Layer):
 
 
 class FeatureFusionModule(nn.Layer):
-    def __init__(self, in_chan, out_chan, *args, **kwargs):
+    def __init__(self, in_chan, out_chan):
         super(FeatureFusionModule, self).__init__()
-        self.convblk = ConvBNReLU(in_chan, out_chan, ks=1, stride=1, padding=0)
+        self.convblk = layers.ConvBNReLU(in_chan, out_chan, kernel_size=1, stride=1, padding=0)
         self.conv1 = nn.Conv2D(out_chan,
                                out_chan // 4,
                                kernel_size=1,
@@ -462,7 +167,6 @@ class FeatureFusionModule(nn.Layer):
                                bias_attr=None)
         self.relu = nn.ReLU()
         self.sigmoid = nn.Sigmoid()
-        # self.init_weight()
 
     def forward(self, fsp, fcp):
         fcat = paddle.concat([fsp, fcp], axis=1)

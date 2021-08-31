@@ -33,12 +33,16 @@ class STDCNet(nn.Layer):
     (https://arxiv.org/abs/2104.13188)
 
     Args:
-        pretrained (str, optional): The path of pretrained model.
         base (int, optional): base channels . Default: 64.
-        layers (list, optional): layers numbers list. It determines STDC block numbers of STDCNet. Defualt:[4, 5, 3].
-        output_stride (int, optional): The stride of output features compared to input images. The value should be one of (2, 4, 8, 16, 32). Default: None.
+        layers (list, optional): layers numbers list. It determines STDC block numbers of STDCNet's stage3\4\5. Defualt:[4, 5, 3].
+        block_num(int,optional): block_num of features block. Default: 4.
+        type(str,optional): feature fusion method "cat"/"add".Default:"cat".
+        num_classes (int, optional): class number for image classification. Default: 1000.
+        dropout(float,optional): dropout ratio. if >0,use dropout ratio.  Default: 0.20.
+        pretrained (str, optional): The path of pretrained model.
 
     """
+
     def __init__(self, base=64,
                  layers=[4, 5, 3],
                  block_num=4,
