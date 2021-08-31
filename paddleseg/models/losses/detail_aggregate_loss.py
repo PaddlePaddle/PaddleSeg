@@ -1,36 +1,54 @@
+# Copyright (c) 2020 PaddlePaddle Authors. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 import paddle
 import paddle.nn as nn
 import paddle.nn.functional as F
 from paddleseg.cvlibs import manager
 
-def dice_loss_func(input, target):
-    smooth = 1.
-    n = input.shape[0]
-    iflat = paddle.reshape(input, [n, -1])
-    tflat = paddle.reshape(target,[n,-1])
-    intersection = paddle.sum((iflat * tflat),axis=1)
-    loss = 1 - ((2. * intersection + smooth) /
-                (paddle.sum(iflat,axis=1) + paddle.sum(tflat,axis=1) + smooth))
-    return paddle.mean(loss)
-
 @manager.LOSSES.add_component
 class DetailAggregateLoss(nn.Layer):
     """
-    Loss for Rethinking BiSeNet (CVPR2021) implementation based on PaddlePaddle.
-    paper: Rethinking BiSeNet For Real-time Semantic Segmentation.(https://arxiv.org/abs/2104.13188)
+    DetailAggregateLoss's implementation based on PaddlePaddle.
+
+    The original article refers to Meituan
+    Fan, Mingyuan, et al. "Rethinking BiSeNet For Real-time Semantic Segmentation."
+    (https://arxiv.org/abs/2104.13188)
+
     """
-    def __init__(self, *args, **kwargs):
+    def __init__(self):
         super(DetailAggregateLoss, self).__init__()
         self.laplacian_kernel = paddle.to_tensor([-1, -1, -1, -1, 8, -1, -1, -1, -1],dtype='float32').reshape((1,1,3,3))
         self.fuse_kernel = paddle.create_parameter([1,3,1,1],dtype='float32')
 
+    def fixed_dice_loss_func(self,input, target):
+        smooth = 1.
+        n = input.shape[0]
+        iflat = paddle.reshape(input, [n, -1])
+        tflat = paddle.reshape(target, [n, -1])
+        intersection = paddle.sum((iflat * tflat), axis=1)
+        loss = 1 - ((2. * intersection + smooth) /
+                    (paddle.sum(iflat, axis=1) + paddle.sum(tflat, axis=1) + smooth))
+        return paddle.mean(loss)
+
     def forward(self, boundary_logits, gtmasks):
         """
         Args:
-            logit (Tensor): Logit tensor, the data type is float32, float64. Shape is
+            boundary_logits (Tensor): Logit tensor, the data type is float32, float64. Shape is
                 (N, C), where C is number of classes, and if shape is more than 2D, this
                 is (N, C, D1, D2,..., Dk), k >= 1.
-            label (Tensor): Label tensor, the data type is int64. Shape is (N), where each
+            gtmasks (Tensor): Label tensor, the data type is int64. Shape is (N), where each
                 value is 0 <= label[i] <= C-1, and if shape is more than 2D, this is
                 (N, D1, D2,..., Dk), k >= 1.
         Returns: loss
@@ -78,7 +96,7 @@ class DetailAggregateLoss(nn.Layer):
                 boundary_logits, boundary_targets.shape[2:], mode='bilinear', align_corners=True)
 
         bce_loss = F.binary_cross_entropy_with_logits(boundary_logits, boudary_targets_pyramid)
-        dice_loss = dice_loss_func(F.sigmoid(boundary_logits), boudary_targets_pyramid)
+        dice_loss = self.fixed_dice_loss_func(F.sigmoid(boundary_logits), boudary_targets_pyramid)
         detail_loss = bce_loss + dice_loss
         gtmasks.stop_gradient = True
         return detail_loss

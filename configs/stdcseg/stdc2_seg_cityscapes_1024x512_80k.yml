@@ -5,9 +5,11 @@ iters: 80000
 
 model:
   type: STDCSeg
-  backbone_type: 'STDCNet1446'
-  pretrained_backbone: 'pretrained/STDCNet1446_76.47.pdiparams'
+  backbone:
+    type: STDCNet1446
+    pretrained: 'path/STDCNet1446_76.47.pdiparams'
   num_classes: 19
+  pretrained: null
 
 
 train_dataset:

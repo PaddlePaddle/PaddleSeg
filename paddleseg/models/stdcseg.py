@@ -11,35 +11,110 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-import math
 import paddle
 from paddleseg import utils
-from paddleseg.cvlibs import manager, param_init
 import paddle.nn as nn
 import paddle.nn.functional as F
-import numpy as np
 from paddleseg.models import layers
 from paddleseg.cvlibs import manager
 from paddleseg.utils import utils
 
-# class ConvBNReLU(nn.Layer):
-#     def __init__(self, in_chan, out_chan, ks=3, stride=1, padding=1, *args, **kwargs):
-#         super(ConvBNReLU, self).__init__()
-#         self.conv = nn.Conv2D(in_chan,
-#                               out_chan,
-#                               kernel_size=ks,
-#                               stride=stride,
-#                               padding=padding,
-#                               bias_attr=None)
-#         self.bn = nn.BatchNorm2D(out_chan)
-#         self.relu = nn.ReLU()
-#
-#     def forward(self, x):
-#         x = self.conv(x)
-#         x = self.bn(x)
-#         x = self.relu(x)
-#         return x
+
+@manager.MODELS.add_component
+class STDCSeg(nn.Layer):
+    """
+    The STDCSeg implementation based on PaddlePaddle.
+
+    The original article refers to Meituan
+    Fan, Mingyuan, et al. "Rethinking BiSeNet For Real-time Semantic Segmentation."
+    (https://arxiv.org/abs/2104.13188)
+
+    Args:
+        backbone(nn.Layer): Backbone network, STDCNet1446/STDCNet813. STDCNet1446->STDC2,STDCNet813->STDC813.
+        num_classes(int,optional): The unique number of target classes.
+        use_boundary_8(bool,non-optional): Whether to use detail loss. it should be True accroding to paper for best metric. Default: True.
+        Actually,if you want to use _boundary_2/_boundary_4/_boundary_16,you should append loss function number of DetailAggregateLoss.It should work properly.
+        use_conv_last(bool,optional): Determine ContextPath 's inplanes variable according to whether to use bockbone's last conv. Default: False.
+        pretrained (str, optional): The path or url of pretrained model. Default: None.
+    """
+    def __init__(self, backbone, num_classes, use_boundary_2=False, use_boundary_4=False,
+                 use_boundary_8=True, use_boundary_16=False, use_conv_last=False, pretrained=None):
+        super(STDCSeg, self).__init__()
+
+        self.use_boundary_2 = use_boundary_2
+        self.use_boundary_4 = use_boundary_4
+        self.use_boundary_8 = use_boundary_8
+        self.use_boundary_16 = use_boundary_16
+        self.cp = ContextPath(backbone, use_conv_last=use_conv_last)
+        self.pretrained = pretrained
+
+        self.ffm = FeatureFusionModule(384, 256)
+        self.conv_out = BiSeNetOutput(256, 256, num_classes)
+        self.conv_out16 = BiSeNetOutput(128, 64, num_classes)
+        self.conv_out32 = BiSeNetOutput(128, 64, num_classes)
+
+        self.conv_out_sp16 = BiSeNetOutput(512, 64, 1)
+
+        self.conv_out_sp8 = BiSeNetOutput(256, 64, 1)
+        self.conv_out_sp4 = BiSeNetOutput(64, 64, 1)
+        self.conv_out_sp2 = BiSeNetOutput(32, 64, 1)
+
+        if self.pretrained is not None:
+            utils.load_entire_model(self, self.pretrained)
+
+    def forward(self, x):
+        H, W = x.shape[2:]
+
+        feat_res2, feat_res4, feat_res8, feat_res16, feat_cp8, feat_cp16 = self.cp(x)
+
+        if self.training:
+
+            feat_out_sp2 = self.conv_out_sp2(feat_res2)
+
+            feat_out_sp4 = self.conv_out_sp4(feat_res4)
+
+            feat_out_sp8 = self.conv_out_sp8(feat_res8)
+
+            feat_out_sp16 = self.conv_out_sp16(feat_res16)
+
+            feat_fuse = self.ffm(feat_res8, feat_cp8)
+
+            feat_out = self.conv_out(feat_fuse)
+            feat_out16 = self.conv_out16(feat_cp8)
+            feat_out32 = self.conv_out32(feat_cp16)
+
+            feat_out = F.interpolate(feat_out, (H, W), mode='bilinear', align_corners=True)
+            feat_out16 = F.interpolate(feat_out16, (H, W), mode='bilinear', align_corners=True)
+            feat_out32 = F.interpolate(feat_out32, (H, W), mode='bilinear', align_corners=True)
+
+            if self.use_boundary_2 and self.use_boundary_4 and self.use_boundary_8:
+                return feat_out, feat_out16, feat_out32, feat_out_sp2, feat_out_sp4, feat_out_sp8
+
+            if (not self.use_boundary_2) and self.use_boundary_4 and self.use_boundary_8:
+                return feat_out, feat_out16, feat_out32, feat_out_sp4, feat_out_sp8
+
+            if (not self.use_boundary_2) and (not self.use_boundary_4) and self.use_boundary_8:
+                return feat_out, feat_out16, feat_out32, feat_out_sp8
+
+            if (not self.use_boundary_2) and (not self.use_boundary_4) and (not self.use_boundary_8):
+                return feat_out, feat_out16, feat_out32
+        else:
+            feat_fuse = self.ffm(feat_res8, feat_cp8)
+            feat_out = self.conv_out(feat_fuse)
+            feat_out = F.interpolate(feat_out, (H, W), mode='bilinear', align_corners=True)
+            return [feat_out]
+
+    def get_params(self):
+        wd_params, nowd_params, lr_mul_wd_params, lr_mul_nowd_params = [], [], [], []
+        for name, child in self.named_children():
+            child_wd_params, child_nowd_params = child.get_params()
+            if isinstance(child, (FeatureFusionModule, BiSeNetOutput)):
+                lr_mul_wd_params += child_wd_params
+                lr_mul_nowd_params += child_nowd_params
+            else:
+                wd_params += child_wd_params
+                nowd_params += child_nowd_params
+        return wd_params, nowd_params, lr_mul_wd_params, lr_mul_nowd_params
 
 class BiSeNetOutput(nn.Layer):
     def __init__(self, in_chan, mid_chan, n_classes):
@@ -82,34 +157,18 @@ class AttentionRefinementModule(nn.Layer):
         return out
 
 class ContextPath(nn.Layer):
-    def __init__(self, backbone='CatNetSmall', pretrain_model='', use_conv_last=False, *args, **kwargs):
+    def __init__(self, backbone, use_conv_last=False):
         super(ContextPath, self).__init__()
 
-        self.backbone_name = backbone
-        if backbone == 'STDCNet1446':
-            self.backbone = STDCNet1446(pretrain_model=pretrain_model, use_conv_last=use_conv_last)
-            self.arm16 = AttentionRefinementModule(512, 128)
+        self.backbone = backbone
+        self.arm16 = AttentionRefinementModule(512, 128)
+        inplanes = 1024
+        if use_conv_last:
             inplanes = 1024
-            if use_conv_last:
-                inplanes = 1024
-            self.arm32 = AttentionRefinementModule(inplanes, 128)
-            self.conv_head32 = layers.ConvBNReLU(128, 128, kernel_size=3, stride=1, padding=1)
-            self.conv_head16 = layers.ConvBNReLU(128, 128, kernel_size=3, stride=1, padding=1)
-            self.conv_avg = layers.ConvBNReLU(inplanes, 128, kernel_size=1, stride=1, padding=0)
-
-        elif backbone == 'STDCNet813':
-            self.backbone = STDCNet813(pretrain_model=pretrain_model, use_conv_last=use_conv_last)
-            self.arm16 = AttentionRefinementModule(512, 128)
-            inplanes = 1024
-            if use_conv_last:
-                inplanes = 1024
-            self.arm32 = AttentionRefinementModule(inplanes, 128)
-            self.conv_head32 = layers.ConvBNReLU(128, 128, kernel_size=3, stride=1, padding=1)
-            self.conv_head16 = layers.ConvBNReLU(128, 128, kernel_size=3, stride=1, padding=1)
-            self.conv_avg = layers.ConvBNReLU(inplanes, 128, kernel_size=1, stride=1, padding=0)
-        else:
-            print("backbone is not in backbone lists")
-            exit(0)
+        self.arm32 = AttentionRefinementModule(inplanes, 128)
+        self.conv_head32 = layers.ConvBNReLU(128, 128, kernel_size=3, stride=1, padding=1)
+        self.conv_head16 = layers.ConvBNReLU(128, 128, kernel_size=3, stride=1, padding=1)
+        self.conv_avg = layers.ConvBNReLU(inplanes, 128, kernel_size=1, stride=1, padding=0)
 
     def forward(self, x):
         H0, W0 = x.shape[2:]
@@ -192,113 +251,3 @@ class FeatureFusionModule(nn.Layer):
                 nowd_params += list(module.parameters())
         return wd_params, nowd_params
 
-@manager.MODELS.add_component
-class STDCSeg(nn.Layer):
-    """
-    Rethinking BiSeNet (CVPR2021) implementation based on PaddlePaddle.
-    paper: Rethinking BiSeNet For Real-time Semantic Segmentation.(https://arxiv.org/abs/2104.13188)
-    Args:
-        backbone_type(str,optional): Backbone network discription, 'STDCNet1446'/'STDCNet813'. STDCNet1446->STDC2,STDCNet813->STDC813.
-        num_classes(int,optional): The unique number of target classes.
-        pretrained_backbone(str,optional): Backbone's pre-trained model params path. only for training,it should be needed. it should be None at EVAL Mode.
-        use_boundary_8(bool,non-optional): Whether to use detail loss. it should be True accroding to paper for best metric. Default: True.
-        Actually,if you want to use _boundary_2/_boundary_4/_boundary_16,you should append loss function number of DetailAggregateLoss.It should work properly.
-        pretrained (str, optional): The path or url of pretrained model. Default: None.
-    """
-    def __init__(self, backbone_type, num_classes, pretrained_backbone=None, use_boundary_2=False, use_boundary_4=False,
-                 use_boundary_8=True, use_boundary_16=False, use_conv_last=False, pretrained=None,heat_map=False, *args, **kwargs):
-        super(STDCSeg, self).__init__()
-
-        self.use_boundary_2 = use_boundary_2
-        self.use_boundary_4 = use_boundary_4
-        self.use_boundary_8 = use_boundary_8
-        self.use_boundary_16 = use_boundary_16
-        self.cp = ContextPath(backbone_type, pretrained_backbone, use_conv_last=use_conv_last)
-        self.pretrained = pretrained
-        if backbone_type == 'STDCNet1446':
-            conv_out_inplanes = 128
-            sp2_inplanes = 32
-            sp4_inplanes = 64
-            sp8_inplanes = 256
-            sp16_inplanes = 512
-            inplane = sp8_inplanes + conv_out_inplanes
-
-        elif backbone_type == 'STDCNet813':
-            conv_out_inplanes = 128
-            sp2_inplanes = 32
-            sp4_inplanes = 64
-            sp8_inplanes = 256
-            sp16_inplanes = 512
-            inplane = sp8_inplanes + conv_out_inplanes
-
-        else:
-            print("backbone is not in backbone lists")
-            exit(0)
-
-        self.ffm = FeatureFusionModule(inplane, 256)
-        self.conv_out = BiSeNetOutput(256, 256, num_classes)
-        self.conv_out16 = BiSeNetOutput(conv_out_inplanes, 64, num_classes)
-        self.conv_out32 = BiSeNetOutput(conv_out_inplanes, 64, num_classes)
-
-        self.conv_out_sp16 = BiSeNetOutput(sp16_inplanes, 64, 1)
-
-        self.conv_out_sp8 = BiSeNetOutput(sp8_inplanes, 64, 1)
-        self.conv_out_sp4 = BiSeNetOutput(sp4_inplanes, 64, 1)
-        self.conv_out_sp2 = BiSeNetOutput(sp2_inplanes, 64, 1)
-
-        if self.pretrained is not None:
-            utils.load_entire_model(self, self.pretrained)
-
-    def forward(self, x):
-        H, W = x.shape[2:]
-
-        feat_res2, feat_res4, feat_res8, feat_res16, feat_cp8, feat_cp16 = self.cp(x)
-
-        if self.training:
-
-            feat_out_sp2 = self.conv_out_sp2(feat_res2)
-
-            feat_out_sp4 = self.conv_out_sp4(feat_res4)
-
-            feat_out_sp8 = self.conv_out_sp8(feat_res8)
-
-            feat_out_sp16 = self.conv_out_sp16(feat_res16)
-
-            feat_fuse = self.ffm(feat_res8, feat_cp8)
-
-            feat_out = self.conv_out(feat_fuse)
-            feat_out16 = self.conv_out16(feat_cp8)
-            feat_out32 = self.conv_out32(feat_cp16)
-
-            feat_out = F.interpolate(feat_out, (H, W), mode='bilinear', align_corners=True)
-            feat_out16 = F.interpolate(feat_out16, (H, W), mode='bilinear', align_corners=True)
-            feat_out32 = F.interpolate(feat_out32, (H, W), mode='bilinear', align_corners=True)
-
-            if self.use_boundary_2 and self.use_boundary_4 and self.use_boundary_8:
-                return feat_out, feat_out16, feat_out32, feat_out_sp2, feat_out_sp4, feat_out_sp8
-
-            if (not self.use_boundary_2) and self.use_boundary_4 and self.use_boundary_8:
-                return feat_out, feat_out16, feat_out32, feat_out_sp4, feat_out_sp8
-
-            if (not self.use_boundary_2) and (not self.use_boundary_4) and self.use_boundary_8:
-                return feat_out, feat_out16, feat_out32, feat_out_sp8
-
-            if (not self.use_boundary_2) and (not self.use_boundary_4) and (not self.use_boundary_8):
-                return feat_out, feat_out16, feat_out32
-        else:
-            feat_fuse = self.ffm(feat_res8, feat_cp8)
-            feat_out = self.conv_out(feat_fuse)
-            feat_out = F.interpolate(feat_out, (H, W), mode='bilinear', align_corners=True)
-            return [feat_out]
-
-    def get_params(self):
-        wd_params, nowd_params, lr_mul_wd_params, lr_mul_nowd_params = [], [], [], []
-        for name, child in self.named_children():
-            child_wd_params, child_nowd_params = child.get_params()
-            if isinstance(child, (FeatureFusionModule, BiSeNetOutput)):
-                lr_mul_wd_params += child_wd_params
-                lr_mul_nowd_params += child_nowd_params
-            else:
-                wd_params += child_wd_params
-                nowd_params += child_nowd_params
-        return wd_params, nowd_params, lr_mul_wd_params, lr_mul_nowd_params

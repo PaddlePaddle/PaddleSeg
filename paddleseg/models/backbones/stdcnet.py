@@ -14,11 +14,9 @@
 
 import paddle
 import paddle.nn as nn
-import paddle.nn.functional as F
 import math
 from paddleseg.cvlibs import manager
 from paddleseg.utils import utils
-from paddleseg.models import layers
 
 __all__ = [
     "STDCNet813", "STDCNet1446",
