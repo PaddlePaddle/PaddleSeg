@@ -4,12 +4,12 @@
 
 飞桨针对不同场景，提供了多个预测引擎部署模型（如下图），详细信息请参考[文档](https://paddleinference.paddlepaddle.org.cn/product_introduction/summary.html)。
 
-![inference_ecosystem](https://user-images.githubusercontent.com/52520497/130720374-26947102-93ec-41e2-8207-38081dcc27aa.png)
-
 本文档介绍使用Paddle Inference的C++接口在Linux服务器端(NV GPU或者X86 CPU)部署分割模型的示例，主要步骤包括：
 * 准备环境
 * 准备模型和图片
 * 编译、执行
+
+![inference_ecosystem](https://user-images.githubusercontent.com/52520497/130720374-26947102-93ec-41e2-8207-38081dcc27aa.png)
 
 ## 2. 准备环境
 
@@ -85,4 +85,8 @@ PaddleSeg/deploy/cpp
 
 执行`sh run_seg_cpu.sh`，会进行编译，然后在X86 CPU上执行预测。
 
-执行`sh run_seg_gpu.sh`，会进行编译，然后在NV GPU上执行预测。
+执行`sh run_seg_gpu.sh`，会进行编译，然后在Nvidia GPU上执行预测。
+
+分割结果会保存在当前目录的“out_img.jpg“图片，如下图。注意，该图片是使用了直方图均衡化，便于可视化。
+
+![out_img](https://user-images.githubusercontent.com/52520497/131456277-260352b5-4047-46d5-a38f-c50bbcfb6fd0.jpg)
