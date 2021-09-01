@@ -14,7 +14,7 @@
 - [快速体验](#快速体验)
   - [视频流人像分割](#视频流人像分割)
   - [视频流背景替换](#视频流背景替换)
-- [训练评估预测](#训练评估预测)
+- [训练评估预测演示](#训练评估预测演示)
 - [模型导出](#模型导出)
 - [Web端部署](#Web端部署)
 - [移动端部署](#移动端部署)
@@ -103,7 +103,7 @@ python export_model/download_export_model.py
 ```
 
 ### 下载测试数据
-我们提供了[supervise.ly](https://supervise.ly/)发布人像分割数据集**Supervisely Persons**, 从中随机抽取一小部分并转化成PaddleSeg可直接加载数据格式，同时提供了手机前置摄像头的人像测试视频`video_test.mp4`。通过运行以下代码进行快速下载：
+我们提供了一些测试数据，从人像分割数据集 [Supervise.ly Person](https://app.supervise.ly/ecosystem/projects/persons) 中随机抽取一小部分并转化成PaddleSeg可直接加载数据格式，以下称为mini_supervisely，同时提供了手机前置摄像头的人像测试视频`video_test.mp4`。通过运行以下代码进行快速下载：
 
 ```bash
 python data/download_data.py
@@ -161,7 +161,9 @@ python bg_replace.py \
 
 Portrait模型适用于宽屏拍摄场景，竖屏效果会略差一些。
 
-## 训练评估预测
+## 训练评估预测演示
+如果上述大规模数据预训练的模型不能满足您的精度需要，可以基于上述模型在您的场景中进行Fine-tuning，以更好地适应您的使用场景。
+
 ### 下载预训练模型
 
 执行以下脚本快速下载所有Checkpoint作为预训练模型
@@ -170,7 +172,7 @@ python pretrained_model/download_pretrained_model.py
 ```
 
 ### 训练
-基于上述大规模数据预训练的模型，在抽取的部分[supervise.ly](https://supervise.ly/)数据集上进行Fine-tuning，以HRNet w18 small v1为例，训练命令如下：
+演示基于上述模型进行Fine-tuning。我们使用抽取的mini_supervisely数据集作为示例数据集，以PP-HumanSeg-Mobile为例，训练命令如下：
 ```bash
 export CUDA_VISIBLE_DEVICES=0 # 设置1张可用的卡
 # windows下请执行以下命令
