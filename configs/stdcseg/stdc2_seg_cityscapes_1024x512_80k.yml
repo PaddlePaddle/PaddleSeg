@@ -7,7 +7,7 @@ model:
   type: STDCSeg
   backbone:
     type: STDCNet1446
-    pretrained: 'path/STDCNet1446_76.47.pdiparams'
+    pretrained: '/home/path/STDCNet1446_76.47.pdiparams'
   num_classes: 19
   pretrained: null
 
@@ -28,8 +28,8 @@ train_dataset:
       contrast_range: 0.5
       saturation_range: 0.5
     - type: Normalize
-      mean: (0.485, 0.456, 0.406)
-      std: (0.229, 0.224, 0.225)
+      mean: [0.485, 0.456, 0.406]
+      std: [0.229, 0.224, 0.225]
   mode: train
 
 val_dataset:
@@ -37,8 +37,8 @@ val_dataset:
   dataset_root: data/cityscapes
   transforms:
     - type: Normalize
-      mean: (0.485, 0.456, 0.406)
-      std: (0.229, 0.224, 0.225)
+      mean: [0.485, 0.456, 0.406]
+      std: [0.229, 0.224, 0.225]
   mode: val
 
 

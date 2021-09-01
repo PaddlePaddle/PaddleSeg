@@ -17,6 +17,7 @@ import paddle.nn as nn
 import paddle.nn.functional as F
 from paddleseg.cvlibs import manager
 
+
 @manager.LOSSES.add_component
 class DetailAggregateLoss(nn.Layer):
     """
@@ -26,13 +27,20 @@ class DetailAggregateLoss(nn.Layer):
     Fan, Mingyuan, et al. "Rethinking BiSeNet For Real-time Semantic Segmentation."
     (https://arxiv.org/abs/2104.13188)
 
-    """
-    def __init__(self):
-        super(DetailAggregateLoss, self).__init__()
-        self.laplacian_kernel = paddle.to_tensor([-1, -1, -1, -1, 8, -1, -1, -1, -1],dtype='float32').reshape((1,1,3,3))
-        self.fuse_kernel = paddle.create_parameter([1,3,1,1],dtype='float32')
+    Args:
+        ignore_index (int64, optional): Specifies a target value that is ignored
+            and does not contribute to the input gradient. Default ``255``.
 
-    def fixed_dice_loss_func(self,input, target):
+    """
+
+    def __init__(self, ignore_index=255):
+        super(DetailAggregateLoss, self).__init__()
+        self.ignore_index = ignore_index
+        self.laplacian_kernel = paddle.to_tensor([-1, -1, -1, -1, 8, -1, -1, -1, -1], dtype='float32').reshape(
+            (1, 1, 3, 3))
+        self.fuse_kernel = paddle.create_parameter([1, 3, 1, 1], dtype='float32')
+
+    def fixed_dice_loss_func(self, input, target):
         smooth = 1.
         n = input.shape[0]
         iflat = paddle.reshape(input, [n, -1])
@@ -53,42 +61,43 @@ class DetailAggregateLoss(nn.Layer):
                 (N, D1, D2,..., Dk), k >= 1.
         Returns: loss
         """
-        boundary_targets = F.conv2d(paddle.unsqueeze(gtmasks,axis=1).astype('float32'),self.laplacian_kernel, padding=1)
-        boundary_targets =paddle.clip(boundary_targets,min=0)
-        boundary_targets = boundary_targets>0.1
+        boundary_targets = F.conv2d(paddle.unsqueeze(gtmasks, axis=1).astype('float32'), self.laplacian_kernel,
+                                    padding=1)
+        boundary_targets = paddle.clip(boundary_targets, min=0)
+        boundary_targets = boundary_targets > 0.1
         boundary_targets = boundary_targets.astype('float32')
 
-        boundary_targets_x2 = F.conv2d(paddle.unsqueeze(gtmasks,axis=1).astype('float32'), self.laplacian_kernel,
+        boundary_targets_x2 = F.conv2d(paddle.unsqueeze(gtmasks, axis=1).astype('float32'), self.laplacian_kernel,
                                        stride=2, padding=1)
-        boundary_targets_x2 =paddle.clip(boundary_targets_x2,min=0)
-        boundary_targets_x4 = F.conv2d(paddle.unsqueeze(gtmasks,axis=1).astype('float32'), self.laplacian_kernel,
+        boundary_targets_x2 = paddle.clip(boundary_targets_x2, min=0)
+        boundary_targets_x4 = F.conv2d(paddle.unsqueeze(gtmasks, axis=1).astype('float32'), self.laplacian_kernel,
                                        stride=4, padding=1)
-        boundary_targets_x4 =paddle.clip(boundary_targets_x4,min=0)
+        boundary_targets_x4 = paddle.clip(boundary_targets_x4, min=0)
 
-        boundary_targets_x8 = F.conv2d(paddle.unsqueeze(gtmasks,axis=1).astype('float32'), self.laplacian_kernel,
+        boundary_targets_x8 = F.conv2d(paddle.unsqueeze(gtmasks, axis=1).astype('float32'), self.laplacian_kernel,
                                        stride=8, padding=1)
-        boundary_targets_x8 =paddle.clip(boundary_targets_x8,min=0)
+        boundary_targets_x8 = paddle.clip(boundary_targets_x8, min=0)
 
         boundary_targets_x8_up = F.interpolate(boundary_targets_x8, boundary_targets.shape[2:], mode='nearest')
         boundary_targets_x4_up = F.interpolate(boundary_targets_x4, boundary_targets.shape[2:], mode='nearest')
         boundary_targets_x2_up = F.interpolate(boundary_targets_x2, boundary_targets.shape[2:], mode='nearest')
 
-        boundary_targets_x2_up = boundary_targets_x2_up>0.1
+        boundary_targets_x2_up = boundary_targets_x2_up > 0.1
         boundary_targets_x2_up = boundary_targets_x2_up.astype('float32')
 
-        boundary_targets_x4_up = boundary_targets_x4_up>0.1
+        boundary_targets_x4_up = boundary_targets_x4_up > 0.1
         boundary_targets_x4_up = boundary_targets_x4_up.astype('float32')
 
-        boundary_targets_x8_up = boundary_targets_x8_up>0.1
+        boundary_targets_x8_up = boundary_targets_x8_up > 0.1
         boundary_targets_x8_up = boundary_targets_x8_up.astype('float32')
 
         boudary_targets_pyramids = paddle.stack((boundary_targets, boundary_targets_x2_up, boundary_targets_x4_up),
-                                               axis=1)
+                                                axis=1)
 
-        boudary_targets_pyramids = paddle.squeeze(boudary_targets_pyramids,axis=2)
+        boudary_targets_pyramids = paddle.squeeze(boudary_targets_pyramids, axis=2)
         boudary_targets_pyramid = F.conv2d(boudary_targets_pyramids, self.fuse_kernel)
 
-        boudary_targets_pyramid = boudary_targets_pyramid>0.1
+        boudary_targets_pyramid = boudary_targets_pyramid > 0.1
         boudary_targets_pyramid = boudary_targets_pyramid.astype('float32')
 
         if boundary_logits.shape[-1] != boundary_targets.shape[-1]:
