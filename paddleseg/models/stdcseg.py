@@ -46,43 +46,31 @@ class STDCSeg(nn.Layer):
         self.use_boundary_8 = use_boundary_8
         self.use_boundary_16 = use_boundary_16
         self.cp = ContextPath(backbone, use_conv_last=use_conv_last)
-        self.pretrained = pretrained
-
         self.ffm = FeatureFusionModule(384, 256)
         self.conv_out = BiSeNetOutput(256, 256, num_classes)
         self.conv_out16 = BiSeNetOutput(128, 64, num_classes)
         self.conv_out32 = BiSeNetOutput(128, 64, num_classes)
-
         self.conv_out_sp16 = BiSeNetOutput(512, 64, 1)
-
         self.conv_out_sp8 = BiSeNetOutput(256, 64, 1)
         self.conv_out_sp4 = BiSeNetOutput(64, 64, 1)
         self.conv_out_sp2 = BiSeNetOutput(32, 64, 1)
+        self.pretrained = pretrained
 
         if self.pretrained is not None:
             utils.load_entire_model(self, self.pretrained)
 
     def forward(self, x):
         H, W = x.shape[2:]
-
         feat_res2, feat_res4, feat_res8, feat_res16, feat_cp8, feat_cp16 = self.cp(x)
-
         if self.training:
-
             feat_out_sp2 = self.conv_out_sp2(feat_res2)
-
             feat_out_sp4 = self.conv_out_sp4(feat_res4)
-
             feat_out_sp8 = self.conv_out_sp8(feat_res8)
-
             feat_out_sp16 = self.conv_out_sp16(feat_res16)
-
             feat_fuse = self.ffm(feat_res8, feat_cp8)
-
             feat_out = self.conv_out(feat_fuse)
             feat_out16 = self.conv_out16(feat_cp8)
             feat_out32 = self.conv_out32(feat_cp16)
-
             feat_out = F.interpolate(feat_out, (H, W), mode='bilinear', align_corners=True)
             feat_out16 = F.interpolate(feat_out16, (H, W), mode='bilinear', align_corners=True)
             feat_out32 = F.interpolate(feat_out32, (H, W), mode='bilinear', align_corners=True)
@@ -115,6 +103,7 @@ class STDCSeg(nn.Layer):
                 wd_params += child_wd_params
                 nowd_params += child_nowd_params
         return wd_params, nowd_params, lr_mul_wd_params, lr_mul_nowd_params
+
 
 class BiSeNetOutput(nn.Layer):
     def __init__(self, in_chan, mid_chan, n_classes):
@@ -156,10 +145,10 @@ class AttentionRefinementModule(nn.Layer):
         out = paddle.multiply(feat,atten)
         return out
 
+
 class ContextPath(nn.Layer):
     def __init__(self, backbone, use_conv_last=False):
         super(ContextPath, self).__init__()
-
         self.backbone = backbone
         self.arm16 = AttentionRefinementModule(512, 128)
         inplanes = 1024
@@ -172,29 +161,22 @@ class ContextPath(nn.Layer):
 
     def forward(self, x):
         H0, W0 = x.shape[2:]
-
         feat2, feat4, feat8, feat16, feat32 = self.backbone(x)
         H8, W8 = feat8.shape[2:]
         H16, W16 = feat16.shape[2:]
         H32, W32 = feat32.shape[2:]
-
         avg = F.avg_pool2d(feat32, feat32.shape[2:])
-
         avg = self.conv_avg(avg)
         avg_up = F.interpolate(avg, (H32, W32), mode='nearest')
-
         feat32_arm = self.arm32(feat32)
         feat32_sum = feat32_arm + avg_up
         feat32_up = F.interpolate(feat32_sum, (H16, W16), mode='nearest')
         feat32_up = self.conv_head32(feat32_up)
-
         feat16_arm = self.arm16(feat16)
         feat16_sum = feat16_arm + feat32_up
         feat16_up = F.interpolate(feat16_sum, (H8, W8), mode='nearest')
         feat16_up = self.conv_head16(feat16_up)
-
         return feat2, feat4, feat8, feat16, feat16_up, feat32_up  # x8, x16
-
 
     def get_params(self):
         wd_params, nowd_params = [], []
@@ -238,7 +220,6 @@ class FeatureFusionModule(nn.Layer):
         feat_atten = paddle.multiply(feat, atten)
         feat_out = feat_atten + feat
         return feat_out
-
 
     def get_params(self):
         wd_params, nowd_params = [], []
