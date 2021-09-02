@@ -12,7 +12,7 @@ PaddleSeg基于PaddleSlim，集成了量化训练（QAT）方法，特点如下�
 
 ## 1 环境准备
 
-请参考[安装文档](../../install.md)准备好PaddleSeg的基础环境，测试是否安装成功。
+请参考[安装文档](../../install.md)准备好PaddleSeg的基础环境。由于量化功能要求最新的PaddlePaddle版本，所以请参考[文档](https://www.paddlepaddle.org.cn/install/quick?docurl=/documentation/docs/zh/install/pip/linux-pip.html)安装develop(Nightly build)版本。
 
 安装PaddleSlim。
 
@@ -94,8 +94,9 @@ python slim/quant/qat_export.py \
 
 ## 3 部署
 
-得到量化预测模型后，我们可以直接进行部署应用，相关教程请参考:
-* [Paddle Inference部署](../../deployment/inference/inference.md)
+得到量化预测模型后，我们可以进行部署应用。
+* [Paddle Inference Python部署](../../deployment/inference/python_inference.md)
+* [Paddle Inference C++部署](../../deployment/inference/cpp_inference.md)
 * [PaddleLite部署](../../deployment/lite/lite.md)
 
 ## 4 量化加速比
