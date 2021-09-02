@@ -29,6 +29,11 @@ from paddleseg.core import train
 from qat_config import quant_config
 
 from paddleslim import QAT
+"""
+Apply quantization to segmentation model.
+NOTE: Only conv2d and linear in backbone are quantized.
+"""
+
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Model training')
@@ -114,6 +119,23 @@ def parse_args():
 
     return parser.parse_args()
 
+
+def skip_quant(model):
+    """
+    If the model has backbone and head, we skip quantizing the conv2d and linear ops
+    that belongs the head.
+    """
+    if not hasattr(model, 'backbone'):
+        logger.info("Quantize all target ops")
+        return
+
+    logger.info("Quantize all target ops in backbone")
+    for name, cur_layer in model.named_sublayers():
+        if isinstance(cur_layer, (paddle.nn.Conv2D, paddle.nn.Linear)) \
+            and "backbone" not in name:
+            cur_layer.skip_quant = True
+
+
 def main(args):
 
     if args.seed is not None:
@@ -162,7 +184,8 @@ def main(args):
     if args.model_path:
         utils.load_entire_model(model, args.model_path)
         logger.info('Loaded trained params of model successfully')
-    
+
+    skip_quant(model)
     quantizer = QAT(config=quant_config)
     quant_model = quantizer.quantize(model)
     logger.info('Quantize the model successfully')
