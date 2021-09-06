@@ -2,12 +2,12 @@
 
 ## 1. 说明
 
-飞桨针对不同场景，提供了多个预测引擎部署模型（如下图），详细信息请参考[文档](https://paddleinference.paddlepaddle.org.cn/product_introduction/summary.html)。
-
 本文档介绍使用Paddle Inference的C++接口在Linux服务器端(NV GPU或者X86 CPU)部署分割模型的示例，主要步骤包括：
 * 准备环境
 * 准备模型和图片
 * 编译、执行
+
+飞桨针对不同场景，提供了多个预测引擎部署模型（如下图），详细信息请参考[文档](https://paddleinference.paddlepaddle.org.cn/product_introduction/summary.html)。
 
 ![inference_ecosystem](https://user-images.githubusercontent.com/52520497/130720374-26947102-93ec-41e2-8207-38081dcc27aa.png)
 
@@ -15,7 +15,9 @@
 
 ### 准备Paddle Inference C++预测库
 
-大家可以从[链接](https://paddleinference.paddlepaddle.org.cn/user_guides/download_lib.html)下载Paddle Inference C++预测库。注意根据机器的CUDA版本、cudnn版本、使用MKLDNN或者OpenBlas、是否使用TenorRT等信息，选择准确版本。建议选择版本>=2.0.1的预测库。
+大家可以从[链接](https://paddleinference.paddlepaddle.org.cn/user_guides/download_lib.html)下载Paddle Inference C++预测库。
+
+注意根据机器的CUDA版本、cudnn版本、使用MKLDNN或者OpenBlas、是否使用TenorRT等信息，选择准确版本。建议选择版本>=2.0.1的预测库。
 
 下载`paddle_inference.tgz`压缩文件后进行解压，将解压的paddle_inference文件保存到`PaddleSeg/deploy/cpp/`下。
 
@@ -66,7 +68,7 @@ wget https://paddleseg.bj.bcebos.com/dygraph/demo/bisenet_demo_model.tar.gz
 tar xzf bisenet_demo_model.tar.gz
 ```
 
-下载一张cityscapes验证集中的[图片](https://paddleseg.bj.bcebos.com/dygraph/demo/cityscapes_demo.png)。
+下载cityscapes验证集中的一张[图片](https://paddleseg.bj.bcebos.com/dygraph/demo/cityscapes_demo.png)。
 
 ```
 wget https://paddleseg.bj.bcebos.com/dygraph/demo/cityscapes_demo.png
@@ -74,7 +76,7 @@ wget https://paddleseg.bj.bcebos.com/dygraph/demo/cityscapes_demo.png
 
 ## 4. 编译、执行
 
-请检查，`PaddleSeg/deploy/cpp/`下存放了预测库、模型、图片，如下。
+请检查`PaddleSeg/deploy/cpp/`下存放了预测库、模型、图片，如下。
 
 ```
 PaddleSeg/deploy/cpp
