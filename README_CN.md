@@ -101,14 +101,15 @@ PaddleSeg是基于飞桨[PaddlePaddle](https://www.paddlepaddle.org.cn)开发的
     * [如何创造自己的模型](./docs/design/create/add_new_model.md)
 * [模型训练](/docs/train/train.md)
 * [模型评估](./docs/evaluation/evaluate/evaluate.md)
-* [模型导出](./docs/export/export/model_export.md)
 
 *  模型部署
+    * [导出预测模型](./docs/model_export.md)
     * [Python Inference部署](./docs/deployment/inference/python_inference.md)
     * [C++ Inference部署](./docs/deployment/inference/cpp_inference.md)
     * [Lite部署](./docs/deployment/lite/lite.md)
     * [Serving部署](./docs/deployment/serving/serving.md)
     * [Web部署](./docs/deployment/web/web.md)
+    * [导出ONNX模型](./docs/model_export_onnx.md)
 * 模型压缩
     * [蒸馏](./docs/slim/distill/distill.md)
     * [量化](./docs/slim/quant/quant.md)
