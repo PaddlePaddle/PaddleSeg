@@ -2,23 +2,35 @@
 
 ## 1. 说明
 
-飞桨针对不同场景，提供了多个预测引擎部署模型（如下图），更多详细信息请参考[文档](https://paddleinference.paddlepaddle.org.cn/product_introduction/summary.html)。
-
 本文档介绍使用Paddle Inference的Python接口在服务器端(Nvidia GPU或者X86 CPU)部署分割模型。
+
+飞桨针对不同场景，提供了多个预测引擎部署模型（如下图），更多详细信息请参考[文档](https://paddleinference.paddlepaddle.org.cn/product_introduction/summary.html)。
 
 ![inference_ecosystem](https://user-images.githubusercontent.com/52520497/130720374-26947102-93ec-41e2-8207-38081dcc27aa.png)
 
 ## 2. 前置准备
 
-请使用[模型导出工具](../../model_export.md)导出您的模型, 或点击下载我们的[样例模型](https://paddleseg.bj.bcebos.com/dygraph/demo/bisenet_demo_model.tar.gz)用于测试。
+下载[样例模型](https://paddleseg.bj.bcebos.com/dygraph/demo/bisenet_demo_model.tar.gz)用于测试。如果要使用其他模型，大家可以使用[模型导出工具](../../model_export.md)。
 
-接着准备一张测试图片用于试验效果，我们提供了cityscapes验证集中的一张[图片](https://paddleseg.bj.bcebos.com/dygraph/demo/cityscapes_demo.png)用于演示效果。如果您的模型是使用其他数据集训练的，请自行准备测试图片。
+```shell
+wget https://paddleseg.bj.bcebos.com/dygraph/demo/bisenet_demo_model.tar.gz
+tar zxvf bisenet_demo_model.tar.gz
+```
+
+下载cityscapes验证集中的一张[图片](https://paddleseg.bj.bcebos.com/dygraph/demo/cityscapes_demo.png)用于演示效果。如果大家的模型是使用其他数据集训练的，请自行准备测试图片。
+
+```
+wget https://paddleseg.bj.bcebos.com/dygraph/demo/cityscapes_demo.png
+```
 
 ## 3. 预测
 
 在PaddleSeg根目录，执行以下命令进行预测:
+
 ```shell
-python deploy/python/infer.py --config /path/to/deploy.yaml --image_path /path/to/image/path/or/dir
+python deploy/python/infer.py \
+    --config /path/to/deploy.yaml \
+    --image_path /path/to/image/path/or/dir
 ```
 
 参数说明如下:
