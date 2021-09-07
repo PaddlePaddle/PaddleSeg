@@ -20,7 +20,7 @@ import shutil
 import paddle
 import paddle.nn.functional as F
 
-from paddleseg.utils import TimeAverager, calculate_eta, resume, logger
+from paddleseg.utils import TimeAverager, calculate_eta, resume, logger, worker_init_fn
 from paddleseg.core.val import evaluate
 
 
@@ -40,8 +40,12 @@ def loss_computation(logits_list, labels, losses, edges=None):
         logits = logits_list[i]
         loss_i = losses['types'][i]
         # Whether to use edges as labels According to loss type.
-        if loss_i.__class__.__name__ in ('BCELoss', ) and loss_i.edge_label:
+        if loss_i.__class__.__name__ in ('BCELoss',
+                                         'FocalLoss') and loss_i.edge_label:
             loss_list.append(losses['coef'][i] * loss_i(logits, edges))
+        elif loss_i.__class__.__name__ in ("KLLoss", ):
+            loss_list.append(losses['coef'][i] * loss_i(
+                logits_list[0], logits_list[1].detach()))
         else:
             loss_list.append(losses['coef'][i] * loss_i(logits, labels))
     return loss_list
@@ -60,7 +64,9 @@ def train(model,
           num_workers=0,
           use_vdl=False,
           losses=None,
-          keep_checkpoint_max=5):
+          keep_checkpoint_max=5,
+          test_config=None,
+          fp16=False):
     """
     Launch training.
 
@@ -77,9 +83,11 @@ def train(model,
         log_iters (int, optional): Display logging information at every log_iters. Default: 10.
         num_workers (int, optional): Num workers for data loader. Default: 0.
         use_vdl (bool, optional): Whether to record the data to VisualDL during training. Default: False.
-        losses (dict): A dict including 'types' and 'coef'. The length of coef should equal to 1 or len(losses['types']).
+        losses (dict, optional): A dict including 'types' and 'coef'. The length of coef should equal to 1 or len(losses['types']).
             The 'types' item is a list of object of paddleseg.models.losses while the 'coef' item is a list of the relevant coefficient.
         keep_checkpoint_max (int, optional): Maximum number of checkpoints to save. Default: 5.
+        test_config(dict, optional): Evaluation config.
+        fp16 (bool, optional): Whether to use amp.
     """
     model.train()
     nranks = paddle.distributed.ParallelEnv().nranks
@@ -95,13 +103,10 @@ def train(model,
         os.makedirs(save_dir)
 
     if nranks > 1:
-        # Initialize parallel environment if not done.
-        if not paddle.distributed.parallel.parallel_helper._is_parallel_ctx_initialized(
-        ):
-            paddle.distributed.init_parallel_env()
-            ddp_model = paddle.DataParallel(model)
-        else:
-            ddp_model = paddle.DataParallel(model)
+        paddle.distributed.fleet.init(is_collective=True)
+        optimizer = paddle.distributed.fleet.distributed_optimizer(
+            optimizer)  # The return is Fleet object
+        ddp_model = paddle.distributed.fleet.distributed_model(model)
 
     batch_sampler = paddle.io.DistributedBatchSampler(
         train_dataset, batch_size=batch_size, shuffle=True, drop_last=True)
@@ -111,7 +116,13 @@ def train(model,
         batch_sampler=batch_sampler,
         num_workers=num_workers,
         return_list=True,
+        worker_init_fn=worker_init_fn,
     )
+
+    # use amp
+    if fp16:
+        logger.info('use amp to train')
+        scaler = paddle.amp.GradScaler(init_loss_scaling=1024)
 
     if use_vdl:
         from visualdl import LogWriter
@@ -132,31 +143,68 @@ def train(model,
         for data in loader:
             iter += 1
             if iter > iters:
-                break
+                version = paddle.__version__
+                if version == '2.1.2' or version == '0.0.0':
+                    continue
+                else:
+                    break
             reader_cost_averager.record(time.time() - batch_start)
             images = data[0]
             labels = data[1].astype('int64')
             edges = None
             if len(data) == 3:
                 edges = data[2].astype('int64')
+            if hasattr(model, 'data_format') and model.data_format == 'NHWC':
+                images = images.transpose((0, 2, 3, 1))
 
-            if nranks > 1:
-                logits_list = ddp_model(images)
+            if fp16:
+                with paddle.amp.auto_cast(
+                        enable=True,
+                        custom_white_list={
+                            "elementwise_add", "batch_norm", "sync_batch_norm"
+                        },
+                        custom_black_list={'bilinear_interp_v2'}):
+                    if nranks > 1:
+                        logits_list = ddp_model(images)
+                    else:
+                        logits_list = model(images)
+                    loss_list = loss_computation(
+                        logits_list=logits_list,
+                        labels=labels,
+                        losses=losses,
+                        edges=edges)
+                    loss = sum(loss_list)
+
+                scaled = scaler.scale(loss)  # scale the loss
+                scaled.backward()  # do backward
+                if isinstance(optimizer, paddle.distributed.fleet.Fleet):
+                    scaler.minimize(optimizer.user_defined_optimizer, scaled)
+                else:
+                    scaler.minimize(optimizer, scaled)  # update parameters
             else:
-                logits_list = model(images)
-            loss_list = loss_computation(
-                logits_list=logits_list,
-                labels=labels,
-                losses=losses,
-                edges=edges)
-            loss = sum(loss_list)
-            loss.backward()
+                if nranks > 1:
+                    logits_list = ddp_model(images)
+                else:
+                    logits_list = model(images)
+                loss_list = loss_computation(
+                    logits_list=logits_list,
+                    labels=labels,
+                    losses=losses,
+                    edges=edges)
+                loss = sum(loss_list)
+                loss.backward()
+                optimizer.step()
 
-            optimizer.step()
             lr = optimizer.get_lr()
-            if isinstance(optimizer._learning_rate,
-                          paddle.optimizer.lr.LRScheduler):
-                optimizer._learning_rate.step()
+
+            # update lr
+            if isinstance(optimizer, paddle.distributed.fleet.Fleet):
+                lr_sche = optimizer.user_defined_optimizer._learning_rate
+            else:
+                lr_sche = optimizer._learning_rate
+            if isinstance(lr_sche, paddle.optimizer.lr.LRScheduler):
+                lr_sche.step()
+
             model.clear_gradients()
             avg_loss += loss.numpy()[0]
             if not avg_loss_list:
@@ -175,7 +223,7 @@ def train(model,
                 avg_train_reader_cost = reader_cost_averager.get_average()
                 eta = calculate_eta(remain_iters, avg_train_batch_cost)
                 logger.info(
-                    "[TRAIN] epoch={}, iter={}/{}, loss={:.4f}, lr={:.6f}, batch_cost={:.4f}, reader_cost={:.5f}, ips={:.4f} samples/sec | ETA {}"
+                    "[TRAIN] epoch: {}, iter: {}/{}, loss: {:.4f}, lr: {:.6f}, batch_cost: {:.4f}, reader_cost: {:.5f}, ips: {:.4f} samples/sec | ETA {}"
                     .format((iter - 1) // iters_per_epoch + 1, iter, iters,
                             avg_loss, lr, avg_train_batch_cost,
                             avg_train_reader_cost,
@@ -204,8 +252,13 @@ def train(model,
             if (iter % save_interval == 0
                     or iter == iters) and (val_dataset is not None):
                 num_workers = 1 if num_workers > 0 else 0
-                mean_iou, acc = evaluate(
-                    model, val_dataset, num_workers=num_workers)
+
+                if test_config is None:
+                    test_config = {}
+
+                mean_iou, acc, _, _, _ = evaluate(
+                    model, val_dataset, num_workers=num_workers, **test_config)
+
                 model.train()
 
             if (iter % save_interval == 0 or iter == iters) and local_rank == 0:

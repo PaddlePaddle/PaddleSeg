@@ -49,8 +49,7 @@ export PYTHONPATH=`pwd`
 其涵盖了150个语义类别，包括训练集20210张，验证集2000张。
 
 ## 关于Coco Stuff数据集
-Coco Stuff是基于Coco数据集的像素级别语义分割数据集。它主要覆盖172个类别，包含80个'thing'，91个'stuff'和1个'unlabeled',
-其中训练集118k, 验证集5k.
+Coco Stuff是基于Coco数据集的像素级别语义分割数据集。它主要覆盖172个类别，包含80个'thing'，91个'stuff'和1个'unlabeled',我们忽略'unlabeled'类别，并将其index设为255，不记录损失。因此提供的训练版本为171个类别。其中，训练集118k, 验证集5k.
 
 在使用Coco Stuff数据集前， 请自行前往[COCO-Stuff主页](https://github.com/nightrome/cocostuff)下载数据集，或者下载[coco2017训练集原图](http://images.cocodataset.org/zips/train2017.zip), [coco2017验证集原图](http://images.cocodataset.org/zips/val2017.zip)及[标注图](http://calvin.inf.ed.ac.uk/wp-content/uploads/data/cocostuffdataset/stuffthingmaps_trainval2017.zip)
 我们建议您将数据集存放于`PaddleSeg/data`中，以便与我们配置文件完全兼容。数据集下载后请组织成如下结构：
@@ -64,16 +63,24 @@ Coco Stuff是基于Coco数据集的像素级别语义分割数据集。它主要
     |--annotations
     |  |--train2017
     |  |--val2017
-    
+
+运行下列命令进行标签转换：
+
+```shell
+python tools/convert_cocostuff.py --annotation_path /PATH/TO/ANNOTATIONS --save_path /PATH/TO/CONVERT_ANNOTATIONS
+```
+其中`annotation_path`应根据下载cocostuff/annotations文件夹的实际路径填写。 `save_path`决定转换后标签的存放位置。
+
+
 其中，标注图像的标签从0,1依次取值，不可间隔。若有需要忽略的像素，则按255进行标注。
 
 ## 关于Pascal Context数据集
-Pascal Context是基于PASCAL VOC 2010数据集额外标注的像素级别的语义分割数据集。我们提供的转换脚本支持59个类别，其中训练集4996, 验证集5104张.
+Pascal Context是基于PASCAL VOC 2010数据集额外标注的像素级别的语义分割数据集。我们提供的转换脚本支持60个类别，index为0是背景类别。该数据集中中训练集4996, 验证集5104张. 
 
 
 在使用Pascal Context数据集前， 请先下载[VOC2010](http://host.robots.ox.ac.uk/pascal/VOC/voc2010/VOCtrainval_03-May-2010.tar)，随后自行前往[Pascal-Context主页](https://www.cs.stanford.edu/~roozbeh/pascal-context/)下载数据集及[标注](https://codalabuser.blob.core.windows.net/public/trainval_merged.json)
 我们建议您将数据集存放于`PaddleSeg/data`中，以便与我们配置文件完全兼容。数据集下载后请组织成如下结构：
-    
+
     VOC2010
     |
     |--Annotations
@@ -88,7 +95,17 @@ Pascal Context是基于PASCAL VOC 2010数据集额外标注的像素级别的语
     |
     |--trainval_merged.json
     
-其中，标注图像的标签从1，2依次取值，不可间隔。若有需要忽略的像素，则按0进行标注。在使用Pascal Context数据集时，需要安装[Detail](https://github.com/zhanghang1989/detail-api).
+ 
+运行下列命令进行标签转换：
+
+```shell
+python tools/convert_voc2010.py --voc_path /PATH/TO/VOC ----annotation_path /PATH/TO/JSON
+```
+其中`voc_path`应根据下载VOC2010文件夹的实际路径填写。 `annotation_path`决定下载trainval_merged.json的存放位置。
+
+
+
+其中，标注图像的标签从0，1，2依次取值，不可间隔。若有需要忽略的像素，则按255(默认的忽略值）进行标注。在使用Pascal Context数据集时，需要安装[Detail](https://github.com/zhanghang1989/detail-api).
 
 ## 自定义数据集
 

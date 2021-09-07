@@ -60,4 +60,3 @@ SLIM.NAS_SPACE_NAME "MobileNetV2SpaceSeg" \
 - 运行报错：`socket.error: [Errno 98] Address already in use`。
 
 解决方法：当前端口被占用，请修改`SLIM.NAS_PORT`端口。
-

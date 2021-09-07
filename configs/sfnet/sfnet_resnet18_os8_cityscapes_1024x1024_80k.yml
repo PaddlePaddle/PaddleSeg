@@ -1,0 +1,37 @@
+_base_: '../_base_/cityscapes_1024x1024.yml'
+
+batch_size: 4
+iters: 80000
+
+model:
+  type: SFNet
+  backbone:
+    type: ResNet18_vd
+    output_stride: 8
+    pretrained: https://bj.bcebos.com/paddleseg/dygraph/resnet18_vd_ssld_v2.tar.gz
+  backbone_indices: [0, 1, 2, 3]
+
+train_dataset:
+  transforms:
+    - type: ResizeStepScaling
+      min_scale_factor: 0.5
+      max_scale_factor: 2.0
+      scale_step_size: 0.25
+    - type: RandomPaddingCrop
+      crop_size: [1024, 1024]
+    - type: RandomHorizontalFlip
+    - type: RandomDistort
+      brightness_range: 0.4
+      contrast_range: 0.4
+      saturation_range: 0.4
+    - type: Normalize
+
+loss:
+  types:
+    - type: OhemCrossEntropyLoss
+  coef: [1]
+
+optimizer:
+  type: sgd
+  momentum: 0.9
+  weight_decay: 0.0005

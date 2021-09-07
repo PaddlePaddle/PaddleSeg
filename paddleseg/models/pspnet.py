@@ -15,6 +15,7 @@
 import paddle.nn as nn
 import paddle.nn.functional as F
 
+import paddle
 from paddleseg.cvlibs import manager
 from paddleseg.models import layers
 from paddleseg.utils import utils
@@ -70,7 +71,7 @@ class PSPNet(nn.Layer):
         return [
             F.interpolate(
                 logit,
-                x.shape[2:],
+                paddle.shape(x)[2:],
                 mode='bilinear',
                 align_corners=self.align_corners) for logit in logit_list
         ]

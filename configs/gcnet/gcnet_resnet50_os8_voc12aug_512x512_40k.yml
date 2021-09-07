@@ -1,8 +1,10 @@
 _base_: '../_base_/pascal_voc12aug.yml'
 
-learning_rate:
-  decay:
-    end_lr: 1.0e-5
+lr_scheduler:
+  type: PolynomialDecay
+  learning_rate: 0.01
+  power: 0.9
+  end_lr: 1.0e-5
 
 loss:
   types:

@@ -26,14 +26,16 @@ import argparse
 import pprint
 import random
 import shutil
+import time
 
-import paddle
 import numpy as np
-import paddle.fluid as fluid
+import paddle
+import paddle.static as static
 from paddle.fluid import profiler
+import paddle.distributed.fleet as fleet
 
 from utils.config import cfg
-from utils.timer import Timer, calculate_eta
+from utils.timer import TimeAverager, calculate_eta
 from metrics import ConfusionMatrix
 from reader import SegDataset
 from models.model_builder import build_model
@@ -77,11 +79,6 @@ def parse_args():
         help='Display logging information at every log_steps',
         default=10,
         type=int)
-    parser.add_argument(
-        '--debug',
-        dest='debug',
-        help='debug mode, display detail information of training',
-        action='store_true')
     parser.add_argument(
         '--use_vdl',
         dest='use_vdl',
@@ -133,7 +130,7 @@ def save_checkpoint(program, ckpt_name):
     if not os.path.isdir(ckpt_dir):
         os.makedirs(ckpt_dir)
 
-    fluid.save(program, os.path.join(ckpt_dir, 'model'))
+    static.save(program, os.path.join(ckpt_dir, 'model'))
 
     return ckpt_dir
 
@@ -147,7 +144,7 @@ def load_checkpoint(exe, program):
     if not os.path.exists(model_path):
         raise ValueError(
             "TRAIN.PRETRAIN_MODEL {} not exist!".format(model_path))
-    fluid.load(program, os.path.join(model_path, 'model'), exe)
+    static.load(program, os.path.join(model_path, 'model'), exe)
 
     # Check is path ended by path spearator
     if model_path[-1] == os.sep:
@@ -188,9 +185,10 @@ def print_info(*msg):
 
 
 def train(cfg):
-    startup_prog = fluid.Program()
-    train_prog = fluid.Program()
-    test_prog = fluid.Program()
+    # Use the default program for fleetrun
+    startup_prog = static.default_startup_program()
+    train_prog = static.default_main_program()
+    test_prog = static.Program()
     if args.enable_ce:
         startup_prog.random_seed = 1000
         train_prog.random_seed = 1000
@@ -227,14 +225,14 @@ def train(cfg):
     gpu_id = int(os.environ.get('FLAGS_selected_gpus', 0))
     xpu_id = int(os.environ.get('FLAGS_selected_xpus', 0))
     if args.use_gpu:
-        place = fluid.CUDAPlace(gpu_id)
-        places = fluid.cuda_places()
+        place = paddle.CUDAPlace(gpu_id)
+        places = static.cuda_places()
     elif args.use_xpu:
-        place = fluid.XPUPlace(xpu_id)
+        place = paddle.XPUPlace(xpu_id)
         places = [place]
     else:
-        place = fluid.CPUPlace()
-        places = fluid.cpu_places()
+        place = paddle.CPUPlace()
+        places = static.cpu_places()
 
     # Get number of GPU
     dev_count = cfg.NUM_TRAINERS if cfg.NUM_TRAINERS > 1 else len(places)
@@ -248,25 +246,18 @@ def train(cfg):
     batch_size_per_dev = cfg.BATCH_SIZE // dev_count
     print_info("batch_size_per_dev: {}".format(batch_size_per_dev))
 
-    data_loader, avg_loss, lr, pred, grts, masks = build_model(
+    data_loader, avg_loss, lr, pred, grts, masks, optimizer, _new_generator = build_model(
         train_prog, startup_prog, phase=ModelPhase.TRAIN)
-    build_model(test_prog, fluid.Program(), phase=ModelPhase.EVAL)
+    build_model(test_prog, static.Program(), phase=ModelPhase.EVAL)
     data_loader.set_sample_generator(
         data_generator, batch_size=batch_size_per_dev, drop_last=drop_last)
 
-    exe = fluid.Executor(place)
-    exe.run(startup_prog)
-
-    exec_strategy = fluid.ExecutionStrategy()
+    exec_strategy = static.ExecutionStrategy()
     # Clear temporary variables every 100 iteration
     if args.use_gpu:
-        exec_strategy.num_threads = fluid.core.get_cuda_device_count()
+        exec_strategy.num_threads = len(paddle.get_cuda_rng_state())
     exec_strategy.num_iteration_per_drop_scope = 100
-    build_strategy = fluid.BuildStrategy()
-
-    if cfg.NUM_TRAINERS > 1 and args.use_gpu:
-        dist_utils.prepare_for_multi_process(exe, build_strategy, train_prog)
-        exec_strategy.num_threads = 1
+    build_strategy = static.BuildStrategy()
 
     if cfg.TRAIN.SYNC_BATCH_NORM and args.use_gpu:
         if dev_count > 1:
@@ -277,13 +268,40 @@ def train(cfg):
             print_info(
                 "Sync BatchNorm strategy will not be effective if GPU device"
                 " count <= 1")
-    if args.use_xpu:
+
+    if cfg.NUM_TRAINERS > 1 and args.use_gpu:
+        strategy = fleet.DistributedStrategy()
+        strategy.sync_batch_norm = True
+        exec_strategy.num_threads = 1
+        strategy.execution_strategy = exec_strategy
+        strategy.build_strategy = build_strategy
+        strategy.cudnn_exhaustive_search = False
+        strategy.cudnn_batchnorm_spatial_persistent = False
+        strategy.conv_workspace_size_limit = 512
+        fleet.init(is_collective=True, strategy=strategy)
+        optimizer = paddle.distributed.fleet.distributed_optimizer(optimizer)
+
+    with paddle.utils.unique_name.guard(_new_generator):
+        optimizer.minimize(avg_loss)
+    # if cfg.NUM_TRAINERS > 1 and args.use_gpu:
+    #     dist_utils.prepare_for_multi_process(exe, build_strategy, train_prog)
+    #     exec_strategy.num_threads = 1
+
+    with open("train_prog_{}".format(cfg.NUM_TRAINERS), "w") as f:
+        if cfg.TRAINER_ID == 0:
+            f.writelines(str(train_prog))
+
+    if args.use_xpu or (cfg.NUM_TRAINERS > 1 and args.use_gpu):
         compiled_train_prog = train_prog
     else:
-        compiled_train_prog = fluid.CompiledProgram(train_prog).with_data_parallel(
-            loss_name=avg_loss.name,
-            exec_strategy=exec_strategy,
-            build_strategy=build_strategy)
+        compiled_train_prog = static.CompiledProgram(
+            train_prog).with_data_parallel(
+                loss_name=avg_loss.name,
+                exec_strategy=exec_strategy,
+                build_strategy=build_strategy)
+
+    exe = static.Executor(place)
+    exe.run(startup_prog)
 
     # Resume training
     begin_epoch = cfg.SOLVER.BEGIN_EPOCH
@@ -297,14 +315,7 @@ def train(cfg):
             'Pretrained model dir {} not exists, training from scratch...'.
             format(cfg.TRAIN.PRETRAINED_MODEL_DIR))
 
-    fetch_list = [avg_loss.name, lr.name]
-    if args.debug:
-        # Fetch more variable info and use streaming confusion matrix to
-        # calculate IoU results if in debug mode
-        np.set_printoptions(
-            precision=4, suppress=True, linewidth=160, floatmode="fixed")
-        fetch_list.extend([pred.name, grts.name, masks.name])
-        cm = ConfusionMatrix(cfg.DATASET.NUM_CLASSES, streaming=True)
+    fetch_list = [avg_loss.name]
 
     if args.use_vdl:
         if not args.vdl_log_dir:
@@ -324,9 +335,10 @@ def train(cfg):
 
     avg_loss = 0.0
     best_mIoU = 0.0
+    reader_cost_averager = TimeAverager()
+    batch_cost_averager = TimeAverager()
 
-    timer = Timer()
-    timer.start()
+    batch_start = time.time()
     if begin_epoch > cfg.SOLVER.NUM_EPOCHS:
         raise ValueError(
             ("begin epoch[{}] is larger than cfg.SOLVER.NUM_EPOCHS[{}]").format(
@@ -341,74 +353,49 @@ def train(cfg):
         data_loader.start()
         while True:
             try:
-                if args.debug:
-                    # Print category IoU and accuracy to check whether the
-                    # traning process is corresponed to expectation
-                    loss, lr, pred, grts, masks = exe.run(
-                        program=compiled_train_prog,
-                        fetch_list=fetch_list,
-                        return_numpy=True)
-                    cm.calculate(pred, grts, masks)
-                    avg_loss += np.mean(np.array(loss))
-                    step += 1
+                reader_cost_averager.record(time.time() - batch_start)
+                loss = exe.run(
+                    program=compiled_train_prog,
+                    fetch_list=fetch_list,
+                    return_numpy=True)
+                avg_loss += np.mean(np.array(loss))
+                step += 1
+                batch_cost_averager.record(
+                    time.time() - batch_start,
+                    num_samples=cfg.BATCH_SIZE / dev_count)
 
-                    if step % args.log_steps == 0:
-                        speed = args.log_steps / timer.elapsed_time()
-                        avg_loss /= args.log_steps
-                        category_acc, mean_acc = cm.accuracy()
-                        category_iou, mean_iou = cm.mean_iou()
+                if step % args.log_steps == 0 and cfg.TRAINER_ID == 0:
+                    avg_train_batch_cost = batch_cost_averager.get_average()
+                    avg_train_reader_cost = reader_cost_averager.get_average()
+                    eta = calculate_eta(all_step - step, avg_train_batch_cost)
+                    avg_loss /= args.log_steps
+                    print(
+                        "epoch: {} step: {} lr: {:.5f} loss: {:.4f} batch_cost: {:.4f}, reader_cost: {:.5f}, ips: {:.4f} samples/sec | ETA {}"
+                        .format(epoch, step, lr.get_lr(), avg_loss,
+                                avg_train_batch_cost, avg_train_reader_cost,
+                                batch_cost_averager.get_ips_average(), eta))
+                    if args.use_vdl:
+                        log_writer.add_scalar('Train/loss', avg_loss, step)
+                        log_writer.add_scalar('Train/lr', lr.get_lr(), step)
+                        log_writer.add_scalar('Train/batch_cost',
+                                              avg_train_batch_cost, step)
+                        log_writer.add_scalar('Train/reader_cost',
+                                              avg_train_reader_cost, step)
+                    sys.stdout.flush()
+                    avg_loss = 0.0
+                    reader_cost_averager.reset()
+                    batch_cost_averager.reset()
+                batch_start = time.time()
 
-                        print_info((
-                            "epoch={} step={} lr={:.5f} loss={:.4f} acc={:.5f} mIoU={:.5f} step/sec={:.3f} | ETA {}"
-                        ).format(epoch, step, lr[0], avg_loss, mean_acc,
-                                 mean_iou, speed,
-                                 calculate_eta(all_step - step, speed)))
-                        print_info("Category IoU: ", category_iou)
-                        print_info("Category Acc: ", category_acc)
-                        if args.use_vdl:
-                            log_writer.add_scalar('Train/mean_iou', mean_iou,
-                                                  step)
-                            log_writer.add_scalar('Train/mean_acc', mean_acc,
-                                                  step)
-                            log_writer.add_scalar('Train/loss', avg_loss, step)
-                            log_writer.add_scalar('Train/lr', lr[0], step)
-                            log_writer.add_scalar('Train/step/sec', speed, step)
-                        sys.stdout.flush()
-                        avg_loss = 0.0
-                        cm.zero_matrix()
-                        timer.restart()
-                else:
-                    # If not in debug mode, avoid unnessary log and calculate
-                    loss, lr = exe.run(
-                        program=compiled_train_prog,
-                        fetch_list=fetch_list,
-                        return_numpy=True)
-                    avg_loss += np.mean(np.array(loss))
-                    step += 1
+                # NOTE : used for benchmark, profiler tools
+                if args.is_profiler and epoch == 1 and step == args.log_steps:
+                    profiler.start_profiler("All")
+                elif args.is_profiler and epoch == 1 and step == args.log_steps + 5:
+                    profiler.stop_profiler("total", args.profiler_path)
+                    return
+                lr.step()
 
-                    if step % args.log_steps == 0 and cfg.TRAINER_ID == 0:
-                        avg_loss /= args.log_steps
-                        speed = args.log_steps / timer.elapsed_time()
-                        print((
-                            "epoch={} step={} lr={:.5f} loss={:.4f} step/sec={:.3f} | ETA {}"
-                        ).format(epoch, step, lr[0], avg_loss, speed,
-                                 calculate_eta(all_step - step, speed)))
-                        if args.use_vdl:
-                            log_writer.add_scalar('Train/loss', avg_loss, step)
-                            log_writer.add_scalar('Train/lr', lr[0], step)
-                            log_writer.add_scalar('Train/speed', speed, step)
-                        sys.stdout.flush()
-                        avg_loss = 0.0
-                        timer.restart()
-
-                    # NOTE : used for benchmark, profiler tools
-                    if args.is_profiler and epoch == 1 and step == args.log_steps:
-                        profiler.start_profiler("All")
-                    elif args.is_profiler and epoch == 1 and step == args.log_steps + 5:
-                        profiler.stop_profiler("total", args.profiler_path)
-                        return
-
-            except fluid.core.EOFException:
+            except paddle.fluid.core.EOFException:
                 data_loader.reset()
                 break
             except Exception as e:
@@ -420,6 +407,8 @@ def train(cfg):
             save_infer_program(test_prog, ckpt_dir)
 
             if args.do_eval:
+                tmp = cfg.BATCH_SIZE
+                cfg.BATCH_SIZE = batch_size_per_dev
                 print("Evaluation start")
                 _, mean_iou, _, mean_acc = evaluate(
                     cfg=cfg,
@@ -438,6 +427,7 @@ def train(cfg):
                         ckpt_dir,
                         os.path.join(cfg.TRAIN.MODEL_SAVE_DIR, 'best_model'),
                         mean_iou))
+                cfg.BATCH_SIZE = tmp
 
             # Use VisualDL to visualize results
             if args.use_vdl and cfg.DATASET.VIS_FILE_LIST is not None:
@@ -466,6 +456,7 @@ def main(args):
 
     cfg.TRAINER_ID = int(os.getenv("PADDLE_TRAINER_ID", 0))
     cfg.NUM_TRAINERS = int(os.environ.get('PADDLE_TRAINERS_NUM', 1))
+    print('************NUM_TRAINERS**********', cfg.NUM_TRAINERS)
 
     cfg.check_and_infer()
     print_info(pprint.pformat(cfg))
@@ -475,7 +466,7 @@ def main(args):
 if __name__ == '__main__':
     paddle_utils.enable_static()
     args = parse_args()
-    if fluid.core.is_compiled_with_cuda() != True and args.use_gpu == True:
+    if paddle.is_compiled_with_cuda() != True and args.use_gpu == True:
         print(
             "You can not set use_gpu = True in the model because you are using paddlepaddle-cpu."
         )

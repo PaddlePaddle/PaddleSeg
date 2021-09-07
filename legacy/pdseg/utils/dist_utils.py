@@ -80,8 +80,8 @@ def prepare_for_multi_process(exe, build_strategy, train_prog):
     # prepare for multi-process
     trainer_id = int(os.environ.get('PADDLE_TRAINER_ID', 0))
     num_trainers = int(os.environ.get('PADDLE_TRAINERS_NUM', 1))
+    print(num_trainers, '***************')
     if num_trainers < 2: return
-
     build_strategy.num_trainers = num_trainers
     build_strategy.trainer_id = trainer_id
     # NOTE(zcd): use multi processes to train the model,

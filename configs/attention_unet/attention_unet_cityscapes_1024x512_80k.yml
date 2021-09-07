@@ -3,12 +3,11 @@ _base_: '../_base_/cityscapes.yml'
 batch_size: 2
 iters: 80000
 
-learning_rate:
-  value: 0.05
-  decay:
-    type: poly
-    power: 0.9
-    end_lr: 0.0
+lr_scheduler:
+  type: PolynomialDecay
+  learning_rate: 0.05
+  end_lr: 0.0
+  power: 0.9
 
 model:
   type: AttentionUNet

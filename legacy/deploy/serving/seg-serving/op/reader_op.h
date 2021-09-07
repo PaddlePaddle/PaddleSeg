@@ -48,7 +48,7 @@ struct ReaderOutput {
     }
     tensors.clear();
     width_vec.clear();
-    height_vec.clear();    
+    height_vec.clear();
   }
   std::string ShortDebugString() const { return "Not implemented!"; }
 };
@@ -71,4 +71,3 @@ class ReaderOp
 }  // namespace serving
 }  // namespace paddle_serving
 }  // namespace baidu
-

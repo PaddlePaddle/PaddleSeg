@@ -1,6 +1,6 @@
 EVAL_CROP_SIZE: (512, 256) # (width, height), for unpadding rangescaling and stepscaling
 TRAIN_CROP_SIZE: (512, 256) # (width, height), for unpadding rangescaling and stepscaling
-AUG: 
+AUG:
     AUG_METHOD: u"unpadding" # choice unpadding rangescaling and stepscaling
     FIX_RESIZE_SIZE: (512, 256) # (width, height), for unpadding
     INF_RESIZE_VALUE: 500  # for rangescaling
@@ -10,15 +10,15 @@ AUG:
     MIN_SCALE_FACTOR: 0.5  # for stepscaling
     SCALE_STEP_SIZE: 0.25  # for stepscaling
     MIRROR: False
-    RICH_CROP: 
-        ENABLE: False 
+    RICH_CROP:
+        ENABLE: False
 
 BATCH_SIZE: 4
 
-DATALOADER: 
+DATALOADER:
     BUF_SIZE: 256
     NUM_WORKERS: 4
-DATASET: 
+DATASET:
     DATA_DIR: "./dataset/tusimple_lane_detection"
     IMAGE_TYPE: "rgb"  # choice rgb or rgba
     NUM_CLASSES: 2
@@ -49,4 +49,3 @@ SOLVER:
     LR_POLICY: "poly"
     OPTIMIZER: "sgd"
     WEIGHT_DECAY: 0.001
-
