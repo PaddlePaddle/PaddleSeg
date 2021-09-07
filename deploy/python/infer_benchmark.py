@@ -155,7 +155,8 @@ class DatasetPredictor(Predictor):
             total_time += (end_time - start_time)
 
             pred = output_handle.copy_to_cpu()
-            pred = self.postprocess(paddle.to_tensor(pred))
+            pred = self.postprocess(pred)
+            pred = paddle.to_tensor(pred, dtype='int64')
             label = paddle.to_tensor(label, dtype="int32")
 
             intersect_area, pred_area, label_area = metrics.calculate_area(
