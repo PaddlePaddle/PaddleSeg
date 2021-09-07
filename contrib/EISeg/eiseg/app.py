@@ -550,6 +550,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         self.settings.setValue("recent_files", files)
 
     def addRecentFile(self, path):
+        path = osp.normcase(path)
         if not osp.exists(path):
             return
         paths = self.settings.value("recent_files", QVariant([]), type=list)
@@ -625,14 +626,18 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         success, res = self.controller.setParam(param_path)
         if success:
             model_dict = {
-                "param_path": param_path,
+                "param_path": osp.normcase(param_path),
                 "model_name": self.controller.modelName,
             }
             if model_dict not in self.recentModels:
                 self.recentModels.append(model_dict)
-                if len(self.recentModels) > 10:
-                    del self.recentModels[0]
-                self.settings.setValue("recent_models", self.recentModels)
+            else:
+                # 移动位置确保自动加载的正确
+                self.recentModels.remove(model_dict)
+                self.recentModels.append(model_dict)
+            if len(self.recentModels) > 10:
+                del self.recentModels[0]
+            self.settings.setValue("recent_models", self.recentModels)
             # self.status = self.ANNING
             return True
         else:
@@ -658,6 +663,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
                 ".",
                 filters,
             )
+        file_path = osp.normcase(file_path)
         if not osp.exists(file_path):
             return
         labelJson = open(file_path, "r").read()
@@ -854,8 +860,10 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         return img
 
     def openRecentImage(self, file_path):
+        file_path = osp.normcase(file_path)
+        self.saveImage(True)  # 清除
         self.queueEvent(partial(self.loadImage, file_path))
-        self.listFiles.addItems([file_path.replace("\\", "/")])
+        self.listFiles.addItems([file_path])
         self.imagePaths.append(file_path)
 
     def openImage(self):
@@ -879,9 +887,10 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         )
         if len(file_path) == 0:
             return
+        file_path = osp.normcase(file_path)
         self.saveImage(True)  # 清除
         self.queueEvent(partial(self.loadImage, file_path))
-        self.listFiles.addItems([file_path.replace("\\", "/")])
+        self.listFiles.addItems([file_path])
         self.imagePaths.append(file_path)
 
     def openFolder(self):
@@ -930,7 +939,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         for p in imagePaths:
             if p not in self.imagePaths:
                 self.imagePaths.append(p)
-                self.listFiles.addItem(p.replace("\\", "/"))
+                self.listFiles.addItem(osp.normcase(p))
 
         # 3.4 加载已有的标注
         if self.outputDir is not None and osp.exists(self.outputDir):
