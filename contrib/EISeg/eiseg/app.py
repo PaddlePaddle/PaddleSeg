@@ -726,16 +726,17 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         )
         self.labelListTable.setColumnWidth(2, 50)
 
-    def clearLabelList(self):
+    def clearLabelList(self, display=True):
         if len(self.controller.labelList) == 0:
             return True
-        res = self.warn(
-            self.tr("清空标签列表?"),
-            self.tr("请确认是否要清空标签列表"),
-            QMessageBox.Yes | QMessageBox.Cancel,
-        )
-        if res == QMessageBox.Cancel:
-            return False
+        if display:
+            res = self.warn(
+                self.tr("清空标签列表?"),
+                self.tr("请确认是否要清空标签列表"),
+                QMessageBox.Yes | QMessageBox.Cancel,
+            )
+            if res == QMessageBox.Cancel:
+                return False
         self.controller.labelList.clear()
         if self.controller:
             self.controller.label_list = []
@@ -1479,7 +1480,8 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
                 if not osp.exists(coco_path):
                     coco_path = None
         self.coco = COCO(coco_path)
-        if self.clearLabelList():
+        # 不用选择，自动清空重新加载列表，避免选择否后加载多边形报错
+        if self.clearLabelList(False):
             self.controller.labelList = util.LabelList(self.coco.dataset["categories"])
             self.refreshLabelList()
 
