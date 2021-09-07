@@ -499,8 +499,12 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
 
     def setMattingBackground(self):
         c = self.mattingBackground
-        color = QtWidgets.QColorDialog.getColor(QtGui.QColor(c[0], c[1], c[2]), self)
-        self.mattingBackground = color.getRgb()[:3]
+        # 添加alpha可选择
+        if len(c) == 3:  # RBG保存的ini避免报错，后期可以取消
+            c += tuple([255])
+        color = QtWidgets.QColorDialog.getColor(QtGui.QColor(c[0], c[1], c[2], c[3]), self, 
+                                                options=QtWidgets.QColorDialog.ShowAlphaChannel)
+        self.mattingBackground = color.getRgb()
         self.settings.setValue(
             "matting_color", [int(c) for c in self.mattingBackground]
         )
@@ -546,6 +550,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         self.settings.setValue("recent_files", files)
 
     def addRecentFile(self, path):
+        path = osp.normcase(path)
         if not osp.exists(path):
             return
         paths = self.settings.value("recent_files", QVariant([]), type=list)
@@ -621,14 +626,18 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         success, res = self.controller.setParam(param_path)
         if success:
             model_dict = {
-                "param_path": param_path,
+                "param_path": osp.normcase(param_path),
                 "model_name": self.controller.modelName,
             }
             if model_dict not in self.recentModels:
                 self.recentModels.append(model_dict)
-                if len(self.recentModels) > 10:
-                    del self.recentModels[0]
-                self.settings.setValue("recent_models", self.recentModels)
+            else:
+                # 移动位置确保自动加载的正确
+                self.recentModels.remove(model_dict)
+                self.recentModels.append(model_dict)
+            if len(self.recentModels) > 10:
+                del self.recentModels[0]
+            self.settings.setValue("recent_models", self.recentModels)
             # self.status = self.ANNING
             return True
         else:
@@ -654,6 +663,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
                 ".",
                 filters,
             )
+        file_path = osp.normcase(file_path)
         if not osp.exists(file_path):
             return
         labelJson = open(file_path, "r").read()
@@ -716,16 +726,17 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         )
         self.labelListTable.setColumnWidth(2, 50)
 
-    def clearLabelList(self):
+    def clearLabelList(self, display=True):
         if len(self.controller.labelList) == 0:
             return True
-        res = self.warn(
-            self.tr("清空标签列表?"),
-            self.tr("请确认是否要清空标签列表"),
-            QMessageBox.Yes | QMessageBox.Cancel,
-        )
-        if res == QMessageBox.Cancel:
-            return False
+        if display:
+            res = self.warn(
+                self.tr("清空标签列表?"),
+                self.tr("请确认是否要清空标签列表"),
+                QMessageBox.Yes | QMessageBox.Cancel,
+            )
+            if res == QMessageBox.Cancel:
+                return False
         self.controller.labelList.clear()
         if self.controller:
             self.controller.label_list = []
@@ -850,8 +861,10 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         return img
 
     def openRecentImage(self, file_path):
+        file_path = osp.normcase(file_path)
+        self.saveImage(True)  # 清除
         self.queueEvent(partial(self.loadImage, file_path))
-        self.listFiles.addItems([file_path.replace("\\", "/")])
+        self.listFiles.addItems([file_path])
         self.imagePaths.append(file_path)
 
     def openImage(self):
@@ -875,9 +888,10 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         )
         if len(file_path) == 0:
             return
+        file_path = osp.normcase(file_path)
         self.saveImage(True)  # 清除
         self.queueEvent(partial(self.loadImage, file_path))
-        self.listFiles.addItems([file_path.replace("\\", "/")])
+        self.listFiles.addItems([file_path])
         self.imagePaths.append(file_path)
 
     def openFolder(self):
@@ -926,7 +940,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         for p in imagePaths:
             if p not in self.imagePaths:
                 self.imagePaths.append(p)
-                self.listFiles.addItem(p.replace("\\", "/"))
+                self.listFiles.addItem(osp.normcase(p))
 
         # 3.4 加载已有的标注
         if self.outputDir is not None and osp.exists(self.outputDir):
@@ -1203,9 +1217,14 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         if self.save_status["foreground"]:
             mattingPath, ext = osp.splitext(savePath)
             mattingPath = mattingPath + "_foreground" + ext
-            img = self.controller.image.copy()
-            img = img[:, :, ::-1]
-            img[self.getMask() == 0] = self.mattingBackground[::-1]
+            h, w = self.controller.image.shape[:2]
+            img = np.ones([h, w, 4], dtype="uint8") * 255
+            img[:, :, :3] = self.controller.image.copy()
+            # 适用以前的RGB三参数版本不报错，后面都用之后这个可以取消
+            if len(self.mattingBackground) == 3:
+                self.mattingBackground += tuple([255])
+            img[self.getMask() == 0] = self.mattingBackground
+            img = cv2.cvtColor(img, cv2.COLOR_RGBA2BGRA)
             cv2.imencode(ext, img)[1].tofile(mattingPath)
 
         # 4.4 保存json
@@ -1461,7 +1480,9 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
                 if not osp.exists(coco_path):
                     coco_path = None
         self.coco = COCO(coco_path)
-        if self.clearLabelList():
+        # 避免有coco时不重新加载标签导致报错
+        display_cll = False if coco_path is not None else True
+        if self.clearLabelList(display_cll):
             self.controller.labelList = util.LabelList(self.coco.dataset["categories"])
             self.refreshLabelList()
 

@@ -10,7 +10,10 @@ class Instructions(Enum):
     Polygon_Instruction = 1
 
 
-def get_polygon(label, sample=2):
+def get_polygon(label, sample="Dynamic"):
+    '''
+        sample(int/float/str): 简化系数，设置为"Dynamic"表示根据面积简化，不可设置其他的str
+    '''
     results = cv2.findContours(
         image=label, mode=cv2.RETR_TREE, method=cv2.CHAIN_APPROX_TC89_KCOS
     )  # 获取内外边界，用RETR_TREE更好表示
@@ -21,7 +24,10 @@ def get_polygon(label, sample=2):
         polygons = []
         relas = []
         for contour, hierarchy in zip(contours, hierarchys[0]):
-            out = cv2.approxPolyDP(contour, sample, True)
+            epsilon = 0.0005 * cv2.arcLength(contour, True) if sample == "Dynamic" else sample
+            if not isinstance(epsilon, float) and not isinstance(epsilon, int):
+                epsilon = 0
+            out = cv2.approxPolyDP(contour, epsilon, True)
             # 判断自己，如果是子对象就不管自己是谁
             if hierarchy[2] == -1:
                 own = None
