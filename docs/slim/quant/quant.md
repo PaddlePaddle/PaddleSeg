@@ -38,7 +38,11 @@ python setup.py install
 
 ```shell
 # 设置1张可用的GPU卡
+<<<<<<< HEAD
 export CUDA_VISIBLE_DEVICES=0
+=======
+export CUDA_VISIBLE_DEVICES=0 
+>>>>>>> release/2.2
 # windows下请执行以下命令
 # set CUDA_VISIBLE_DEVICES=0
 
@@ -94,9 +98,14 @@ python slim/quant/qat_export.py \
 
 ## 3 部署
 
+<<<<<<< HEAD
 得到量化预测模型后，我们可以进行部署应用。
 * [Paddle Inference Python部署](../../deployment/inference/python_inference.md)
 * [Paddle Inference C++部署](../../deployment/inference/cpp_inference.md)
+=======
+得到量化预测模型后，我们可以直接进行部署应用，相关教程请参考:
+* [Paddle Inference部署](../../deployment/inference/inference.md)
+>>>>>>> release/2.2
 * [PaddleLite部署](../../deployment/lite/lite.md)
 
 ## 4 量化加速比

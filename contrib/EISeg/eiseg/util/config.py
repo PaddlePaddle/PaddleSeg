@@ -1,18 +1,31 @@
 import yaml
 import os.path as osp
+import os
+
+from eiseg import pjpath
 
 
-def parseConfigs(path):
+def parse_configs(path):
     if not path or not osp.exists(path):
         return
     with open(path, "r", encoding="utf-8") as f:
         return yaml.load(f.read(), Loader=yaml.FullLoader)
 
 
-def saveConfigs(path, config):
-    if not osp.exists(osp.basename(path)):
-        print("文件夹不存在")
-        return
+def save_configs(path=None, config=None, actions=None):
+    if not path:
+        path = osp.join(pjpath, "config/config.yaml")
+    if not osp.exists(path):
+        # os.makedirs(osp.basename(path))
+        # windows无法使用mknod
+        f = open(path, 'w+')
+        f.close()
+    if not config:
+        config = {}
+    if actions:
+        config["shortcut"] = {}
+        for action in actions:
+            config["shortcut"][action.data()] = action.shortcut().toString()
     with open(path, "w", encoding="utf-8") as f:
         yaml.dump(config, f)
 

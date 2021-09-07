@@ -1,88 +1,23 @@
-from qtpy import QtCore, QtGui, QtWidgets
-from qtpy.QtCore import Qt
-from qtpy.QtWidgets import QGraphicsView
-
-# from models import models
+from eiseg.widget.create import creat_dock, create_button, create_slider, create_text
+import os.path as osp
 from functools import partial
 
-from models import models
+from qtpy import QtCore, QtGui, QtWidgets
+from qtpy.QtCore import Qt
 
-__APPNAME__ = "EISeg 0.1.5"
-
-
-class Canvas(QGraphicsView):
-    clickRequest = QtCore.Signal(int, int, bool)
-
-    def __init__(self, *args):
-        super(Canvas, self).__init__(*args)
-        self.setTransformationAnchor(QGraphicsView.NoAnchor)
-        self.setResizeAnchor(QGraphicsView.NoAnchor)
-        self.point = QtCore.QPoint(0, 0)
-        self.middle_click = False
-        self.zoom_all = 1
-
-    def wheelEvent(self, event):
-        if event.modifiers() & QtCore.Qt.ControlModifier:
-            print(event.angleDelta().x(), event.angleDelta().y())
-            # self.zoom += event.angleDelta().y() / 2880
-            zoom = 1 + event.angleDelta().y() / 2880
-            self.zoom_all *= zoom
-            oldPos = self.mapToScene(event.pos())
-            if self.zoom_all >= 0.02 and self.zoom_all <= 50:  # 限制缩放的倍数
-                # print(self.zoom_all)
-                self.scale(zoom, zoom)
-            newPos = self.mapToScene(event.pos())
-            delta = newPos - oldPos
-            self.translate(delta.x(), delta.y())
-            event.ignore()
-        else:
-            super(Canvas, self).wheelEvent(event)
-
-    def mousePressEvent(self, ev):
-        print("view pos", ev.pos().x(), ev.pos().y())
-        print("scene pos", self.mapToScene(ev.pos()))
-        pos = self.mapToScene(ev.pos())
-        if ev.buttons() in [Qt.LeftButton, Qt.RightButton]:
-            self.clickRequest.emit(pos.x(), pos.y(), ev.buttons() == Qt.LeftButton)
-        elif ev.buttons() == Qt.MiddleButton:
-            self.middle_click = True
-            self._startPos = ev.pos()
-
-    def mouseMoveEvent(self, ev):
-        if self.middle_click and (
-            self.horizontalScrollBar().isVisible()
-            or self.verticalScrollBar().isVisible()
-        ):
-            # 放大到出现滚动条才能拖动，避免出现抖动
-            self._endPos = ev.pos() / self.zoom_all - self._startPos / self.zoom_all
-            # 这儿不写为先减后除，这样会造成速度不一致
-            self.point = self.point + self._endPos
-            self._startPos = ev.pos()
-            print("move", self._endPos.x(), self._endPos.y())
-            self.translate(self._endPos.x(), self._endPos.y())
-
-    def mouseReleaseEvent(self, ev):
-        if ev.button() == Qt.MiddleButton:
-            self.middle_click = False
-
-
-class Ui_Help(object):
-    def setupUi(self, Dialog):
-        Dialog.setObjectName("Dialog")
-        Dialog.setWindowTitle("Help")
-        Dialog.resize(650, 560)
-        Dialog.setStyleSheet("background-color: rgb(255, 255, 255);")
-        horizontalLayout = QtWidgets.QHBoxLayout(Dialog)
-        horizontalLayout.setObjectName("horizontalLayout")
-        label = QtWidgets.QLabel(Dialog)
-        label.setText("")
-        # label.setPixmap(QtGui.QPixmap("EISeg/resources/shortkey.jpg"))
-        label.setObjectName("label")
-        horizontalLayout.addWidget(label)
-        QtCore.QMetaObject.connectSlotsByName(Dialog)
+from eiseg import pjpath, __APPNAME__
+from models import ModelsNick
+from util import MODELS
+from widget import AnnotationScene, AnnotationView
+from widget.create import *
+from widget.table import TableWidget
 
 
 class Ui_EISeg(object):
+    def __init__(self):
+        super(Ui_EISeg, self).__init__()
+        self.tr = partial(QtCore.QCoreApplication.translate, "APP_EISeg")
+
     def setupUi(self, MainWindow):
         ## -- 主窗体设置 --
         MainWindow.setObjectName("MainWindow")
@@ -113,7 +48,9 @@ class Ui_EISeg(object):
         self.statusbar.setObjectName("statusbar")
         self.statusbar.setStyleSheet("QStatusBar::item {border: none;}")
         MainWindow.setStatusBar(self.statusbar)
-        self.statusbar.addPermanentWidget(self.show_logo("eiseg/resource/Paddle.png"))
+        self.statusbar.addPermanentWidget(
+            self.show_logo(osp.join(pjpath, "resource/Paddle.png"))
+        )
         ## -----
         ## -- 图形区域 --
         ImageRegion = QtWidgets.QHBoxLayout(CentralWidget)
@@ -124,9 +61,9 @@ class Ui_EISeg(object):
         self.scrollArea.setObjectName("scrollArea")
         ImageRegion.addWidget(self.scrollArea)
         # 图形显示
-        self.scene = QtWidgets.QGraphicsScene()
+        self.scene = AnnotationScene()
         self.scene.addPixmap(QtGui.QPixmap())
-        self.canvas = Canvas(self.scene, self)
+        self.canvas = AnnotationView(self.scene, self)
         sizePolicy = QtWidgets.QSizePolicy(
             QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding
         )
@@ -138,190 +75,119 @@ class Ui_EISeg(object):
         self.scrollArea.setWidget(self.canvas)
         ## -----
         ## -- 工作区 --
-        self.dockWorker = QtWidgets.QDockWidget(MainWindow)
-        sizePolicy = QtWidgets.QSizePolicy(
-            QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Preferred
-        )
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.dockWorker.sizePolicy().hasHeightForWidth())
-        self.dockWorker.setSizePolicy(sizePolicy)
-        self.dockWorker.setMinimumSize(QtCore.QSize(71, 42))
-        self.dockWorker.setWindowTitle("工作区")
-        self.dockWorker.setFeatures(
-            QtWidgets.QDockWidget.DockWidgetFloatable
-            | QtWidgets.QDockWidget.DockWidgetMovable
-        )
-        self.dockWorker.setAllowedAreas(
-            QtCore.Qt.LeftDockWidgetArea | QtCore.Qt.RightDockWidgetArea
-        )
-        self.dockWorker.setObjectName("dockWorker")
+        p_create_dock = partial(self.creat_dock, MainWindow)
         p_create_button = partial(self.create_button, CentralWidget)
-        # 设置区设置
-        DockRegion = QtWidgets.QWidget()
-        DockRegion.setObjectName("DockRegion")
-        horizontalLayout = QtWidgets.QHBoxLayout(DockRegion)
-        horizontalLayout.setObjectName("horizontalLayout")
-        SetRegion = QtWidgets.QVBoxLayout()
-        SetRegion.setObjectName("SetRegion")
         # 模型加载
+        widget = QtWidgets.QWidget()
+        horizontalLayout = QtWidgets.QHBoxLayout(widget)
         ModelRegion = QtWidgets.QVBoxLayout()
         ModelRegion.setObjectName("ModelRegion")
-        labShowSet = self.create_text(CentralWidget, "labShowSet", "网络选择")
-        ModelRegion.addWidget(labShowSet)
+        # labShowSet = self.create_text(CentralWidget, "labShowSet", "模型选择")
+        # ModelRegion.addWidget(labShowSet)
         combo = QtWidgets.QComboBox(self)
-        # for model in models:
-        #     combo.addItem(model.name)
-        # 网络参数
-        combo.addItems([m.name for m in models])
+        combo.addItems([self.tr(ModelsNick[m.__name__][0]) for m in MODELS])
         self.comboModelSelect = combo
-        ModelRegion.addWidget(self.comboModelSelect)  # 模型选择
-        self.btnParamsSelect = p_create_button("btnParamsLoad", "加载网络参数", \
-                                               "eiseg/resource/Model.png", "Ctrl+D")
+        ModelRegion.addWidget(self.comboModelSelect)
+        # 网络参数
+        self.btnParamsSelect = p_create_button(
+            "btnParamsLoad",
+            self.tr("加载网络参数"),
+            osp.join(pjpath, "resource/Model.png"),
+            "Ctrl+D",
+        )
         ModelRegion.addWidget(self.btnParamsSelect)  # 模型选择
-        SetRegion.addLayout(ModelRegion)
-        SetRegion.setStretch(0, 1)
+        horizontalLayout.addLayout(ModelRegion)
+        self.ModelDock = p_create_dock("ModelDock", self.tr("模型选择"), widget)
+        MainWindow.addDockWidget(QtCore.Qt.DockWidgetArea(2), self.ModelDock)
         # 数据列表
-        listRegion = QtWidgets.QVBoxLayout()
-        listRegion.setObjectName("listRegion")
-        labFiles = self.create_text(CentralWidget, "labFiles", "数据列表")
-        listRegion.addWidget(labFiles)
+        # TODO: 数据列表加一个搜索功能
+        widget = QtWidgets.QWidget()
+        horizontalLayout = QtWidgets.QHBoxLayout(widget)
+        ListRegion = QtWidgets.QVBoxLayout()
+        ListRegion.setObjectName("ListRegion")
+        # labFiles = self.create_text(CentralWidget, "labFiles", "数据列表")
+        # ListRegion.addWidget(labFiles)
         self.listFiles = QtWidgets.QListWidget(CentralWidget)
-        self.listFiles.setObjectName("listFiles")
-        listRegion.addWidget(self.listFiles)
+        self.listFiles.setObjectName("ListFiles")
+        ListRegion.addWidget(self.listFiles)
+        # 保存
+        self.btnSave = p_create_button(
+            "btnSave",
+            self.tr("保存"),
+            osp.join(pjpath, "resource/Save.png"),
+            "Ctrl+S",
+        )
+        ListRegion.addWidget(self.btnSave)
+        horizontalLayout.addLayout(ListRegion)
+        self.DataDock = p_create_dock("DataDock", self.tr("数据列表"), widget)
+        MainWindow.addDockWidget(QtCore.Qt.DockWidgetArea(2), self.DataDock)
         # 标签列表
-        labelListLab = self.create_text(CentralWidget, "labelListLab", "标签列表")
-        listRegion.addWidget(labelListLab)
-        # TODO: 改成 list widget
-        self.labelListTable = QtWidgets.QTableWidget(CentralWidget)
+        widget = QtWidgets.QWidget()
+        horizontalLayout = QtWidgets.QHBoxLayout(widget)
+        LabelRegion = QtWidgets.QVBoxLayout()
+        LabelRegion.setObjectName("LabelRegion")
+        self.labelListTable = TableWidget(CentralWidget)  # QtWidgets.QTableWidget(CentralWidget)
         self.labelListTable.horizontalHeader().hide()
-        # 自适应填充
-        self.labelListTable.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.ResizeToContents)
+        # 铺满
+        self.labelListTable.horizontalHeader().setSectionResizeMode(
+            QtWidgets.QHeaderView.Stretch
+        )
         self.labelListTable.verticalHeader().hide()
         self.labelListTable.setColumnWidth(0, 10)
         # self.labelListTable.setMinimumWidth()
         self.labelListTable.setObjectName("labelListTable")
-        listRegion.addWidget(self.labelListTable)
-        self.btnAddClass = p_create_button("btnAddClass", "添加标签", "eiseg/resource/Label.png")
-        listRegion.addWidget(self.btnAddClass)
-        SetRegion.addLayout(listRegion)
-        SetRegion.setStretch(1, 20)
-        # 滑块设置
+        self.labelListTable.clearContents()
+        self.labelListTable.setRowCount(0)
+        self.labelListTable.setColumnCount(4)
+
+        LabelRegion.addWidget(self.labelListTable)
+        self.btnAddClass = p_create_button(
+            "btnAddClass", self.tr("添加标签"), osp.join(pjpath, "resource/Label.png")
+        )
+        LabelRegion.addWidget(self.btnAddClass)
+        horizontalLayout.addLayout(LabelRegion)
+        self.LabelDock = p_create_dock("LabelDock", self.tr("标签列表"), widget)
+        MainWindow.addDockWidget(QtCore.Qt.DockWidgetArea(2), self.LabelDock)
+        ## 滑块设置
         # 分割阈值
         p_create_slider = partial(self.create_slider, CentralWidget)
+        widget = QtWidgets.QWidget()
+        horizontalLayout = QtWidgets.QHBoxLayout(widget)
         ShowSetRegion = QtWidgets.QVBoxLayout()
         ShowSetRegion.setObjectName("ShowSetRegion")
         self.sldThresh, SegShowRegion = p_create_slider(
-            "sldThresh", "labThresh", "分割阈值："
+            "sldThresh", "labThresh", self.tr("分割阈值：")
         )
         ShowSetRegion.addLayout(SegShowRegion)
         ShowSetRegion.addWidget(self.sldThresh)
         # 透明度
         self.sldOpacity, MaskShowRegion = p_create_slider(
-            "sldOpacity", "labOpacity", "标签透明度："
+            "sldOpacity", "labOpacity", self.tr("标签透明度："), 75
         )
         ShowSetRegion.addLayout(MaskShowRegion)
         ShowSetRegion.addWidget(self.sldOpacity)
         # 点大小
         self.sldClickRadius, PointShowRegion = p_create_slider(
-            "sldClickRadius", "labClickRadius", "点击可视化半径：", 3, 10, 1
+            "sldClickRadius", "labClickRadius", self.tr("点击可视化半径："), 3, 10, 1
         )
         ShowSetRegion.addLayout(PointShowRegion)
         ShowSetRegion.addWidget(self.sldClickRadius)
-        SetRegion.addLayout(ShowSetRegion)
-        SetRegion.setStretch(2, 1)
-        # 保存
-        self.btnSave = p_create_button("btnSave", "保存", "eiseg/resource/Save.png", "Ctrl+S")
-        SetRegion.addWidget(self.btnSave)
-        SetRegion.setStretch(3, 1)
-        # dock设置完成
-        horizontalLayout.addLayout(SetRegion)
-        self.dockWorker.setWidget(DockRegion)
-        MainWindow.addDockWidget(QtCore.Qt.DockWidgetArea(2), self.dockWorker)
-        ## -----
+        horizontalLayout.addLayout(ShowSetRegion)
+        self.ShowSetDock = p_create_dock("ShowSetDock", self.tr("分割设置"), widget)
+        MainWindow.addDockWidget(QtCore.Qt.DockWidgetArea(2), self.ShowSetDock)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     ## 创建文本
     def create_text(self, parent, text_name=None, text_text=None):
-        text = QtWidgets.QLabel(parent)
-        if text_name is not None:
-            text.setObjectName(text_name)
-        if text_text is not None:
-            text.setText(text_text)
-        return text
+        return create_text(parent, text_name, text_text)
 
     ## 创建按钮
     def create_button(self, parent, btn_name, btn_text, ico_path=None, curt=None):
-        # 创建和设置按钮
-        sizePolicy = QtWidgets.QSizePolicy(
-            QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Fixed
-        )
-        min_size = QtCore.QSize(0, 40)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        btn = QtWidgets.QPushButton(parent)
-        sizePolicy.setHeightForWidth(btn.sizePolicy().hasHeightForWidth())
-        btn.setSizePolicy(sizePolicy)
-        btn.setMinimumSize(min_size)
-        btn.setObjectName(btn_name)
-        if ico_path is not None:
-            btn.setIcon(QtGui.QIcon(ico_path))
-        btn.setText(btn_text)
-        if curt is not None:
-            btn.setShortcut(curt)
-        return btn
+        return create_button(parent, btn_name, btn_text, ico_path, curt)
 
-    ## 添加动作
-    # def add_action(self, parent, act_name, act_text="", ico_path=None, short_cut=None):
-    #     act = QtWidgets.QAction(parent)
-    #     if ico_path is not None:
-    #         icon = QtGui.QIcon()
-    #         icon.addPixmap(QtGui.QPixmap(ico_path), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-    #         act.setIcon(icon)
-    #     act.setObjectName(act_name)
-    #     act.setText(act_text)
-    #     if short_cut is not None:
-    #         act.setShortcut(short_cut)
-    #     return act
-
-    ## 创建菜单按钮
-    # def add_menu(self, parent, menu_name, menu_text, acts=None):
-    #     menu = QtWidgets.QMenu(parent)
-    #     menu.setObjectName(menu_name)
-    #     menu.setTitle(menu_text)
-    #     if acts is not None:
-    #         for act in acts:
-    #             new_act = self.add_action(parent, act[0], act[1], act[2], act[3])
-    #             menu.addAction(new_act)
-    #     return menu
-
-    ## 创建菜单栏
-    # def create_menubar(self, parent, menus):
-    #     menuBar = QtWidgets.QMenuBar(parent)
-    #     menuBar.setGeometry(QtCore.QRect(0, 0, 800, 26))
-    #     menuBar.setObjectName("menuBar")
-    #     for menu in menus:
-    #         menuBar.addAction(menu.menuAction())
-    #     return menuBar
-
-    # ## 创建工具栏
-    # def create_toolbar(self, parent, acts):
-    #     toolBar = QtWidgets.QToolBar(parent)
-    #     sizePolicy = QtWidgets.QSizePolicy(
-    #         QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Minimum
-    #     )
-    #     sizePolicy.setHorizontalStretch(0)
-    #     sizePolicy.setVerticalStretch(0)
-    #     sizePolicy.setHeightForWidth(toolBar.sizePolicy().hasHeightForWidth())
-    #     toolBar.setSizePolicy(sizePolicy)
-    #     toolBar.setMinimumSize(QtCore.QSize(0, 33))
-    #     toolBar.setMovable(True)
-    #     toolBar.setAllowedAreas(QtCore.Qt.BottomToolBarArea | QtCore.Qt.TopToolBarArea)
-    #     toolBar.setObjectName("toolBar")
-    #     for act in acts:
-    #         new_act = self.add_action(parent, act[0], act[1], act[2], act[3])
-    #         toolBar.addAction(new_act)
-    #     return toolBar
+    ## 创建dock
+    def creat_dock(self, parent, name, text, layout):
+        return creat_dock(parent, name, text, layout)
 
     ## 显示Logo
     def show_logo(self, logo_path):
@@ -343,35 +209,16 @@ class Ui_EISeg(object):
         sld_name,
         text_name,
         text,
-        default_value=5,
-        max_value=10,
-        text_rate=0.1,
+        default_value=50,
+        max_value=100,
+        text_rate=0.01,
     ):
-        Region = QtWidgets.QHBoxLayout()
-        lab = self.create_text(parent, None, text)
-        Region.addWidget(lab)
-        labShow = self.create_text(parent, text_name, str(default_value * text_rate))
-        Region.addWidget(labShow)
-        Region.setStretch(0, 1)
-        Region.setStretch(1, 10)
-        sld = QtWidgets.QSlider(parent)
-        sld.setMaximum(max_value)  # 好像只能整数的，这里是扩大了10倍，1 . 10
-        sld.setProperty("value", default_value)
-        sld.setOrientation(QtCore.Qt.Horizontal)
-        sld.setObjectName(sld_name)
-        sld.setStyleSheet(
-            """
-            QSlider::sub-page:horizontal {
-                background: #9999F1
-            }
-
-            QSlider::handle:horizontal 
-            {
-                background: #3334E3;
-                width: 12px;
-                border-radius: 4px;
-            }
-            """
+        return create_slider(
+            parent,
+            sld_name,
+            text_name,
+            text,
+            default_value,
+            max_value,
+            text_rate,
         )
-        sld.textLab = labShow
-        return sld, Region

@@ -65,7 +65,8 @@ class Attention(nn.Layer):
         self.proj_drop = nn.Dropout(proj_drop)
 
     def forward(self, x):
-        N, C = x.shape[1:]
+        x_shape = paddle.shape(x)
+        N, C = x_shape[1], x_shape[2]
         qkv = self.qkv(x).reshape((-1, N, 3, self.num_heads,
                                    C // self.num_heads)).transpose((2, 0, 3, 1,
                                                                     4))

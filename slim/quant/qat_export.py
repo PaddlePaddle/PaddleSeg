@@ -30,7 +30,6 @@ from export import SavedSegmentationNet
 
 from paddleslim import QAT
 
-
 def parse_args():
     parser = argparse.ArgumentParser(description='Model export.')
     parser.add_argument(

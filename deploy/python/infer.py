@@ -260,6 +260,16 @@ def parse_args():
     )
 
     parser.add_argument(
+        '--use_cpu',
+        dest='use_cpu',
+        help='Whether to use X86 CPU for inference. Uses GPU in default.',
+        action='store_true')
+    parser.add_argument(
+        '--use_mkldnn',
+        dest='use_mkldnn',
+        help='Whether to use MKLDNN to accelerate prediction.',
+        action='store_true')
+    parser.add_argument(
         '--with_argmax',
         dest='with_argmax',
         help='Perform argmax operation on the predict result.',

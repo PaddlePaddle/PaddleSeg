@@ -53,7 +53,7 @@ Paddle-Lite的编译目前支持Docker，Linux和Mac OS开发环境，建议使�
 准备好上述文件，即可参考[java_api](https://paddle-lite.readthedocs.io/zh/release-v2.8/api_reference/java_api_doc.html)在安卓端进行推理。具体使用预测库的方法可参考[Paddle-Lite-Demo](https://github.com/PaddlePaddle/Paddle-Lite-Demo)中更新预测库部分的文档。
 
 ### 3.2 模型导出
-此demo的人像分割模型为基于HRNet w18 small v1的humanseg模型（[下载链接](https://bj.bcebos.com/paddleseg/deploy/lite/android/hrnet_w18_small.tar.gz)），更多的分割模型导出可参考：[模型导出](../../docs/model_export.md)
+此demo的人像分割模型为基于HRNet w18 small v1的PP-HumanSeg模型（[下载链接](https://bj.bcebos.com/paddleseg/deploy/lite/android/hrnet_w18_small.tar.gz)），更多的分割模型导出可参考：[模型导出](../../docs/model_export.md)
 
 ### 3.3 模型转换
 

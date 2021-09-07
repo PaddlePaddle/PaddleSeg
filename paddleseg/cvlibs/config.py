@@ -182,12 +182,9 @@ class Config(object):
         elif decay_type == 'piecewise':
             values = _learning_rate
             return paddle.optimizer.lr.PiecewiseDecay(values=values, **args)
-<<<<<<< HEAD
-=======
         elif decay_type == 'stepdecay':
             lr = _learning_rate
             return paddle.optimizer.lr.StepDecay(lr, **args)
->>>>>>> 723da4b40addea4f71d5980c5042a49b8ca4aa44
         else:
             raise RuntimeError('Only poly and piecewise decay support.')
 
