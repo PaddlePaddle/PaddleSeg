@@ -392,6 +392,10 @@ class HighResolutionNet(nn.Layer):
         model_dict = self.state_dict()
 
         if not os.path.exists(pretrained_path):
+            print(f'\nFile "{pretrained_path}" does not exist.')
+            print('You need to specify the correct path to the pre-trained weights.\n'
+                  'You can download the weights for HRNet from the repository:\n'
+                  'https://github.com/HRNet/HRNet-Image-Classification')
             exit(1)
         pretrained_dict = paddle.load(pretrained_path)
         pretrained_dict = {k.replace('last_layer', 'aux_head').replace('model.', ''): v for k, v in

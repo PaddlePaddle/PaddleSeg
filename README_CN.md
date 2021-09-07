@@ -14,7 +14,7 @@
 * PaddleSeg团队在CVPR2021 AutoNUE语义分割赛道中获得冠军! 已发布[演讲报告](https://bj.bcebos.com/paddleseg/docs/autonue21_presentation_PaddleSeg.pdf)和[源代码](https://github.com/PaddlePaddle/PaddleSeg/tree/release/2.2/contrib/AutoNUE)。
 * 发布了交互式分割的智能标注工具 [EISeg](https://github.com/PaddlePaddle/PaddleSeg/tree/release/2.2/contrib/EISeg)。极大的提升了标注效率；
 * 开源了全景分割算法[Panoptic-DeepLab](https://github.com/PaddlePaddle/PaddleSeg/tree/release/2.2/contrib/PanopticDeepLab)丰富了模型种类；
-* 全新升级了[人像分割](https://github.com/PaddlePaddle/PaddleSeg/tree/release/2.2/contrib/HumanSeg)功能，提供了web端超轻量模型部署方案
+* 全新升级了[人像分割](./contrib/PP-HumanSeg)功能，提供了web端超轻量模型部署方案
 
 ## PaddleSeg介绍
 PaddleSeg是基于飞桨[PaddlePaddle](https://www.paddlepaddle.org.cn)开发的端到端图像分割开发套件，涵盖了**高精度**和**轻量级**等不同方向的大量高质量分割模型。通过模块化的设计，提供了**配置化驱动**和**API调用**两种应用方式，帮助开发者更便捷地完成从训练到部署的全流程图像分割应用。
@@ -22,7 +22,7 @@ PaddleSeg是基于飞桨[PaddlePaddle](https://www.paddlepaddle.org.cn)开发的
 * ### PaddleSeg提供了语义分割、交互式分割、全景分割、Matting四大图像分割能力。
 
 <div align="center">
-<img src="./docs/images/nengli.gif"  width = "2000" />  
+<img src="https://user-images.githubusercontent.com/53808988/130562440-1ea5cbf5-4caf-424c-a9a7-55d56b7d7776.gif"  width = "2000" />  
 </div>
 
 
@@ -30,10 +30,10 @@ PaddleSeg是基于飞桨[PaddlePaddle](https://www.paddlepaddle.org.cn)开发的
 
 ---------------
 
- * ### PaddleSeg被广泛的应用在自动驾驶、医疗、质检、巡检、娱乐等场景。
+ * ### PaddleSeg被广泛地应用在自动驾驶、医疗、质检、巡检、娱乐等场景。
 
 <div align="center">
-<img src="./docs/images/changjing.gif"  width = "2000" />  
+<img src="https://user-images.githubusercontent.com/53808988/130562530-ae45c2cd-5dd7-48f0-a080-c0e843eea49d.gif"  width = "2000" />  
 </div>
 
 ----------------
@@ -65,9 +65,9 @@ PaddleSeg是基于飞桨[PaddlePaddle](https://www.paddlepaddle.org.cn)开发的
 ## 技术交流 <img src="./docs/images/chat.png" width="30"/>
 
 * 如果你发现任何PaddleSeg存在的问题或者是建议, 欢迎通过[GitHub Issues](https://github.com/PaddlePaddle/PaddleSeg/issues)给我们提issues。
-* 欢迎加入PaddleSeg微信群（左侧）和QQ群（右侧）
+* 欢迎加入PaddleSegQQ群
 <div align="center">
-<img src="./docs/images/wechat_qq_711.png"  width = "500" />  
+<img src="./docs/images/QQ_chat.png"  width = "200" />  
 </div>
 
 ## 模型说明  <img src="./docs/images/model.png" width="20"/>
@@ -81,18 +81,19 @@ PaddleSeg是基于飞桨[PaddlePaddle](https://www.paddlepaddle.org.cn)开发的
 
 ## 使用教程 <img src="./docs/images/teach.png" width="30"/>
 
-* [安装](./docs/install.md)
-* [全流程跑通PaddleSeg](./docs/quick_start.md)
-*  数据处理
-   * [数据格式说明](./docs/data/marker/marker_c.md)
-   * [数据标注和转换](./docs/data/transform/transform_c.md)
-   * [自定义数据集](./docs/data/custom/data_prepare.md)
+* [安装](./docs/install_cn.md)
+* [全流程跑通PaddleSeg](./docs/whole_process_cn.md)
+*  准备数据集
+   * [标注数据的准备](./docs/data/marker/marker_cn.md)
+   * [数据标注教程](./docs/data/transform/transform_cn.md)
+   * [自定义数据集](./docs/data/custom/data_prepare_cn.md)
 
-*  PaddleSeg的设计思想
+*  PaddleSeg二次开发教程
     * [配置文件详解](./docs/design/use/use_cn.md)
     * [如何创造自己的模型](./docs/design/create/add_new_model_cn.md)
-* [模型训练](/docs/train/train.md)
+* [模型训练](/docs/train/train_cn.md)
 * [模型评估](./docs/evaluation/evaluate/evaluate.md)
+* [预测与可视化](./docs/predict/predict_cn.md)
 * [模型导出](./docs/export/export/model_export.md)
 
 *  模型部署
@@ -100,7 +101,9 @@ PaddleSeg是基于飞桨[PaddlePaddle](https://www.paddlepaddle.org.cn)开发的
     * [Lite](./docs/deployment/lite/lite.md)
     * [Serving](./docs/deployment/serving/serving.md)
     * [Web](./docs/deployment/web/web.md)
-* [模型压缩](./docs/slim/slim/slim.md)
+* 模型压缩
+    * [量化](./docs/slim/quant/quant.md)
+    * [裁剪](./docs/slim/prune/prune.md)
 *  API使用教程
     * [API文档说明](./docs/apis/README_CN.md)
     * [API应用案例](./docs/api_example.md)
@@ -118,7 +121,7 @@ PaddleSeg是基于飞桨[PaddlePaddle](https://www.paddlepaddle.org.cn)开发的
 
 ## 实践案例 <img src="./docs/images/anli.png" width="20"/>
 
-- [人像分割](https://github.com/PaddlePaddle/PaddleSeg/tree/release/2.1/contrib/HumanSeg)
+- [人像分割](./contrib/PP-HumanSeg)
 - [医疗图像](./docs/solution/medical/medical.md)
 - [遥感分割](https://github.com/PaddlePaddle/PaddleSeg/tree/release/2.1/contrib/remote_sensing)
 - [全景分割](./contrib/PanopticDeepLab)

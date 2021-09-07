@@ -2,29 +2,29 @@
 
 |模型\骨干网络|ResNet50|ResNet101|HRNetw18|HRNetw48|
 |-|-|-|-|-|
-|[ANN](./configs/ann)|✔|✔|||
-|[BiSeNetv2](./configs/bisenet)|-|-|-|-|
-|[DANet](./configs/danet)|✔|✔|||
-|[Deeplabv3](./configs/deeplabv3)|✔|✔|||
-|[Deeplabv3P](./configs/deeplabv3p)|✔|✔|||
-|[Fast-SCNN](./configs/fastscnn)|-|-|-|-|
-|[FCN](./configs/fcn)|||✔|✔|
-|[GCNet](./configs/gcnet)|✔|✔|||
-|[GSCNN](./configs/gscnn)|✔|✔|||
-|[HarDNet](./configs/hardnet)|-|-|-|-|
-|[OCRNet](./configs/ocrnet/)|||✔|✔|
-|[PSPNet](./configs/pspnet)|✔|✔|||
-|[U-Net](./configs/unet)|-|-|-|-|
-|[U<sup>2</sup>-Net](./configs/u2net)|-|-|-|-|
-|[Att U-Net](./configs/attention_unet)|-|-|-|-|
-|[U-Net++](./configs/unet_plusplus)|-|-|-|-|
-|[U-Net3+](./configs/unet_3plus)|-|-|-|-|
-|[DecoupledSegNet](./configs/decoupled_segnet)|✔|✔|||
-|[EMANet](./configs/emanet)|✔|✔|-|-|
-|[ISANet](./configs/isanet)|✔|✔|-|-|
-|[DNLNet](./configs/dnlnet)|✔|✔|-|-|
-|[SFNet](./configs/sfnet)|✔|-|-|-|
-|[PPSegLite](./configs/ppseg_lite)|-|-|-|-|
+|[ANN](./ann)|✔|✔|||
+|[BiSeNetv2](./bisenet)|-|-|-|-|
+|[DANet](./danet)|✔|✔|||
+|[Deeplabv3](./deeplabv3)|✔|✔|||
+|[Deeplabv3P](./deeplabv3p)|✔|✔|||
+|[Fast-SCNN](./fastscnn)|-|-|-|-|
+|[FCN](./fcn)|||✔|✔|
+|[GCNet](./gcnet)|✔|✔|||
+|[GSCNN](./gscnn)|✔|✔|||
+|[HarDNet](./hardnet)|-|-|-|-|
+|[OCRNet](./ocrnet/)|||✔|✔|
+|[PSPNet](./pspnet)|✔|✔|||
+|[U-Net](./unet)|-|-|-|-|
+|[U<sup>2</sup>-Net](./u2net)|-|-|-|-|
+|[Att U-Net](./attention_unet)|-|-|-|-|
+|[U-Net++](./unet_plusplus)|-|-|-|-|
+|[U-Net3+](./unet_3plus)|-|-|-|-|
+|[DecoupledSegNet](./decoupled_segnet)|✔|✔|||
+|[EMANet](./emanet)|✔|✔|-|-|
+|[ISANet](./isanet)|✔|✔|-|-|
+|[DNLNet](./dnlnet)|✔|✔|-|-|
+|[SFNet](./sfnet)|✔|-|-|-|
+|[PP-HumanSeg-Lite](./pp_humanseg_lite)|-|-|-|-|
 
 # 模型说明
 
@@ -34,13 +34,37 @@
 
 # 模型性能参数
 
-<div align="center">
-<img src="../docs/images/xingneng.png"/>  
-</div>
+
+|Model|Backbone|Resolution|Training Iters|mIoU|mIoU(flip)|mIoU(ms+flip)|predict_time(ms)|
+|-|-|-|-|-|-|-|-|
+|ANN|ResNet101|1024x512|80000|79.50%|79.77%|79.69%|365|
+|BiSeNetv2|/|1024x1024|160000|73.19%|74.19%|74.43%|12|
+|DANet|ResNet50|1024x512|80000|80.27%|80.53%|/|475|
+|Deeplabv3|ResNet101_OS8|1024x512|80000|80.85%|81.09%|81.54%|314|
+|Deeplabv3P|ResNet50_OS8|1024x512|80000|81.10%|81.38%|81.24%|157|
+|Fast-SCNN|/|1024x1024|160000|69.31%|/|/|28|
+|FCN|HRNet_W48|1024x512|80000|80.70%|81.24%|81.56%|49|
+|GCNet|ResNet101_OS8|1024x512|80000|81.01%|81.30%|81.64%|339|
+|GSCNN|ResNet50_OS8|1024x512|80000|80.67%|80.88%|80.88%|/|
+|HarDNet|/|1024x1024|160000|79.03%|79.49%|79.76%|30|
+|OCRNet|HRNet_W48|1024x512|160000|82.15%|82.59%|82.85%|79|
+|PSPNet|ResNet101_OS8|1024x512|80000|80.48%|80.74%|81.04%|415|
+|U-Net|/|1024x512|160000|65.00%|66.02%|66.89%|63|
+|U^2-Net|/|1024x512|160000|71.65%|/|148|
+|Att U-Net|/|/|1024x512|/|/|/|/|/|
+|U-Net++|/|1024x512|/|/|/|/|/|
+|DecoupledSegNet|ResNet50_OS8|1024x512|80000|81.26%|81.56%|81.80%|239|
+|EMANet|ResNet101_OS8|1024x512|80000|80.00%|80.23%|80.53%|303|
+|ISANet|ResNet101_OS8|769x769|80000|80.10%|80.30%|80.26%|304|
+|DNLNet|ResNet101_OS8|1024x512|80000|81.03%|81.38%|/|303|
+|SFNet|ResNet18_OS8|1024x1024|80000|81.49%|81.63%|81.85%|28|
+
+
 
 - 表格展示了PaddleSeg所实现的分割模型在取得最高分类精度的配置下的一些评价参数。
-- 其中，mIoU、mIoU(flip)、mIoU(ms+flip)是对模型进行评估的结果。
+- 其中，mIoU、mIoU(flip)、mIoU(ms+flip)是对模型进行评估的结果。`ms` 表示**multi-scale**，即使用三种scale [0.75, 1.0, 1.25]；`flip`表示水平翻转。
 - 推理时间是使用CityScapes数据集中的图像进行100次预测取平均值的结果。
+- 测试条件为Tesla V100 16GB。
 
 # 配置项
 
@@ -114,56 +138,4 @@
 >  * 参数
 >    * transforms : 预测时的预处理操作，支持配置的transforms与`train_dataset`、`val_dataset`等相同。如果不填写该项，默认只会对数据进行归一化标准化操作。
 
-# 示例
-
-```yaml
-batch_size: 4
-iters: 80000
-
-train_dataset:
-  type: Cityscapes
-  dataset_root: data/cityscapes
-  transforms:
-    - type: ResizeStepScaling
-      min_scale_factor: 0.5
-      max_scale_factor: 2.0
-      scale_step_size: 0.25
-    - type: RandomPaddingCrop
-      crop_size: [1024, 512]
-    - type: RandomHorizontalFlip
-    - type: Normalize
-  mode: train
-
-val_dataset:
-  type: Cityscapes
-  dataset_root: data/cityscapes
-  transforms:
-    - type: Normalize
-  mode: val
-
-optimizer:
-  type: sgd
-  momentum: 0.9
-  weight_decay: 4.0e-5
-
-lr_scheduler:
-  type: PolynomialDecay
-  learning_rate: 0.01
-  power: 0.9
-  end_lr: 0
-
-loss:
-  types:
-    - type: CrossEntropyLoss
-  coef: [1]
-
-model:
-  type: FCN
-  backbone:
-    type: HRNet_W18
-    pretrained: pretrained_model/hrnet_w18_ssld
-  num_classes: 19
-  pretrained: Null
-  backbone_indices: [-1]
-
-```
+具体配置文件说明请参照[配置文件详解](../docs/design/use/use_cn.md)

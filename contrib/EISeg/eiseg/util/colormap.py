@@ -1,26 +1,26 @@
 import os.path as osp
 import random
 
+from eiseg import pjpath
 
-class ColorMask(object):
-    def __init__(
-        self, color_path, shuffle=False
-    ):
-        self.color_maps = []
+
+class ColorMap(object):
+    def __init__(self, color_path, shuffle=False):
+        self.colors = []
         self.index = 0
-        with open(color_path, "r") as f:
-            self.color_maps = f.readlines()
+        self.usedColors = []
+        colors = open(color_path, "r").readlines()
         if shuffle:
-            random.shuffle(self.color_maps)
-        self.color_map_nums = len(self.color_maps)
+            random.shuffle(colors)
+        self.colors = [[int(x) for x in c.strip().split(",")] for c in colors]
 
     def get_color(self):
-        color = self.color_maps[self.index].strip()
-        self.index += 1
-        if self.index == self.color_map_nums:
-            self.index = 0
-        return self.to_list(color)
+        color = self.colors[self.index]
+        self.index = (self.index + 1) % len(self)
+        return color
 
-    def to_list(self, color):
-        r, g, b = color.split(",")
-        return [int(r), int(g), int(b)]
+    def __len__(self):
+        return len(self.colors)
+
+
+colorMap = ColorMap(osp.join(pjpath, "config/colormap.txt"))

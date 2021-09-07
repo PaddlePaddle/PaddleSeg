@@ -64,9 +64,12 @@ class Predictor:
 
         pred_cfg = PredictConfig(self.cfg.model, self.cfg.params)
         pred_cfg.disable_glog_info()
-        if self.args.use_gpu:
+        pred_cfg.enable_memory_optim()
+        if args.use_cpu:
+            if args.use_mkldnn:
+                pred_cfg.enable_mkldnn()
+        else:
             pred_cfg.enable_use_gpu(100, 0)
-
             if self.args.use_trt:
                 ptype = PrecisionType.Int8 if args.use_int8 else PrecisionType.Float32
                 pred_cfg.enable_tensorrt_engine(
@@ -162,6 +165,16 @@ def parse_args():
         help='Whether to use Int8 prediction when using TensorRT prediction.',
         action='store_true')
     parser.add_argument(
+        '--use_cpu',
+        dest='use_cpu',
+        help='Whether to use X86 CPU for inference. Uses GPU in default.',
+        action='store_true')
+    parser.add_argument(
+        '--use_mkldnn',
+        dest='use_mkldnn',
+        help='Whether to use MKLDNN to accelerate prediction.',
+        action='store_true')
+    parser.add_argument(
         '--with_argmax',
         dest='with_argmax',
         help='Perform argmax operation on the predict result.',
@@ -188,8 +201,11 @@ def get_images(image_path, support_ext=".jpg|.jpeg|.png"):
 
 def main(args):
     env_info = get_sys_env()
-    args.use_gpu = True if env_info['Paddle compiled with cuda'] and env_info[
-        'GPUs used'] else False
+    support_gpu = env_info['Paddle compiled with cuda'] and env_info['GPUs used']
+    if not support_gpu and not args.use_cpu:
+        raise RuntimeError("The installed Paddle doesn't support GPU."
+            "Please change to use CPU or reinstall Paddle.")
+
     predictor = Predictor(args)
     predictor.run(get_images(args.image_path))
 
