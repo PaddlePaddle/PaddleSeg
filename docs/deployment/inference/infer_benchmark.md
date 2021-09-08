@@ -15,6 +15,7 @@ GPU上分割模型的测试方法:
 3. 运行耗时为纯模型预测时间
 4. 使用Paddle Inference的[Python API](./python_inference.md)测试，通过use_trt参数设置是否使用TRT，使用precision参数设置预测类型
 
+GPU上推理Benchmark：
 
 |       模型                |  使用TRT   |   预测类型  |  mIoU  |   耗时(s/img)   |
 |        -                 |   :-:      |   :-:     |   :-:   |   :-:           |

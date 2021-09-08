@@ -26,7 +26,9 @@ PaddleSeg基于PaddleSlim，集成了量化训练（QAT）方法，特点如下�
 2. 使用cityspcaes的全量验证数据集(1024x2048)进行测试
 3. 单GPU，Batchsize为1
 4. 运行耗时为纯模型预测时间
-5. 使用Paddle Inference的[Python API](../../depolyment/inference/python_inference.md)测试，通过use_trt参数设置是否使用TRT，使用precision参数设置预测类型。
+5. 使用Paddle Inference的[Python API](../../deployment/inference/python_inference.md)测试，通过use_trt参数设置是否使用TRT，使用precision参数设置预测类型。
+
+模型量化前后的精度和性能：
 
 | 模型 | 类型 | mIoU |  耗时(s/img） | 量化加速比 |
 | - | :-: | :-: | :-: | :-: |
