@@ -73,7 +73,7 @@ eiseg
 
 ### Windows exe
 
-EISeg使用[QPT](https://github.com/GT-ZhangAcer/QPT)进行打包。可以从[这里](http://cloud.a-boat.cn:2021/share/egI4T3tB)或[百度云盘](https://pan.baidu.com/s/19kUUQBJamL0xY5UKzlNBzg)（提取码：82z9）下载最新EISeg。解压后双击启动程序.exe即可运行程序。程序第一次运行会初始化安装所需要的包，请稍等片刻。
+EISeg使用[QPT](https://github.com/GT-ZhangAcer/QPT)进行打包。可以从[这里](https://cloud.a-boat.cn:2021/share/piXA7QyA)或[百度云盘](https://pan.baidu.com/s/1AD1E1QQq-ejyPPSMq3a81w)（提取码：82z9）下载最新EISeg。解压后双击启动程序.exe即可运行程序。程序第一次运行会初始化安装所需要的包，请稍等片刻。
 
 ## 使用
 
