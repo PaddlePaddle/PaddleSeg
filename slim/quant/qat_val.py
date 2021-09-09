@@ -25,8 +25,10 @@ from paddleseg.cvlibs import manager, Config
 from paddleseg.core import evaluate
 from paddleseg.utils import get_sys_env, logger, config_check, utils
 from qat_config import quant_config
+from qat_train import skip_quant
 
 from paddleslim import QAT
+
 
 def get_test_config(cfg, args):
 
@@ -163,6 +165,7 @@ def main(args):
 
     model = cfg.model
 
+    skip_quant(model)
     quantizer = QAT(config=quant_config)
     quant_model = quantizer.quantize(model)
     logger.info('Quantize the model successfully')
@@ -174,7 +177,8 @@ def main(args):
     test_config = get_test_config(cfg, args)
     config_check(cfg, val_dataset=val_dataset)
 
-    evaluate(quant_model, val_dataset, num_workers=args.num_workers, **test_config)
+    evaluate(
+        quant_model, val_dataset, num_workers=args.num_workers, **test_config)
 
 
 if __name__ == '__main__':

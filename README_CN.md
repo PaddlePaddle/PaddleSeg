@@ -109,6 +109,7 @@ PaddleSeg是基于飞桨[PaddlePaddle](https://www.paddlepaddle.org.cn)开发的
     * [Lite部署](./docs/deployment/lite/lite.md)
     * [Serving部署](./docs/deployment/serving/serving.md)
     * [Web部署](./docs/deployment/web/web.md)
+    * [推理Benchmark](./docs/deployment/inference/infer_benchmark.md)
     * [导出ONNX模型](./docs/model_export_onnx.md)
 * 模型压缩
     * [蒸馏](./docs/slim/distill/distill.md)
