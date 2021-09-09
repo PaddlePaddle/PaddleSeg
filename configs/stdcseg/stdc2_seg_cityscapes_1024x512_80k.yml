@@ -6,7 +6,7 @@ iters: 80000
 model:
   type: STDCSeg
   backbone:
-    type: STDCNet1446
+    type: STDC2
     pretrained: '/home/path/STDCNet1446_76.47.pdiparams'
   num_classes: 19
   pretrained: null

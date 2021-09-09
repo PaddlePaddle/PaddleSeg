@@ -237,11 +237,11 @@ class CatBottleneck(nn.Layer):
 
 
 @manager.BACKBONES.add_component
-def STDCNet1446(**kwargs):
+def STDC2(**kwargs):
     model = STDCNet(base=64,layers=[4,5,3],**kwargs)
     return model
 
 @manager.BACKBONES.add_component
-def STDCNet813(**kwargs):
+def STDC1(**kwargs):
     model = STDCNet(base=64,layers=[2,2,2],**kwargs)
     return model
