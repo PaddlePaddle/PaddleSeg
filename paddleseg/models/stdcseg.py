@@ -11,10 +11,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 import paddle
-from paddleseg import utils
 import paddle.nn as nn
 import paddle.nn.functional as F
+
+from paddleseg import utils
 from paddleseg.models import layers
 from paddleseg.cvlibs import manager
 from paddleseg.utils import utils
@@ -30,14 +32,14 @@ class STDCSeg(nn.Layer):
     (https://arxiv.org/abs/2104.13188)
 
     Args:
-        backbone(nn.Layer): Backbone network, STDCNet1446/STDCNet813. STDCNet1446->STDC2,STDCNet813->STDC813.
         num_classes(int,optional): The unique number of target classes.
+        backbone(nn.Layer): Backbone network, STDCNet1446/STDCNet813. STDCNet1446->STDC2,STDCNet813->STDC813.
         use_boundary_8(bool,non-optional): Whether to use detail loss. it should be True accroding to paper for best metric. Default: True.
         Actually,if you want to use _boundary_2/_boundary_4/_boundary_16,you should append loss function number of DetailAggregateLoss.It should work properly.
         use_conv_last(bool,optional): Determine ContextPath 's inplanes variable according to whether to use bockbone's last conv. Default: False.
         pretrained (str, optional): The path or url of pretrained model. Default: None.
     """
-    def __init__(self, backbone, num_classes, use_boundary_2=False, use_boundary_4=False,
+    def __init__(self, num_classes, backbone, use_boundary_2=False, use_boundary_4=False,
                  use_boundary_8=True, use_boundary_16=False, use_conv_last=False, pretrained=None):
         super(STDCSeg, self).__init__()
 
@@ -55,13 +57,12 @@ class STDCSeg(nn.Layer):
         self.conv_out_sp4 = BiSeNetOutput(64, 64, 1)
         self.conv_out_sp2 = BiSeNetOutput(32, 64, 1)
         self.pretrained = pretrained
-
-        if self.pretrained is not None:
-            utils.load_entire_model(self, self.pretrained)
+        self.init_weight()
 
     def forward(self, x):
         H, W = x.shape[2:]
         feat_res2, feat_res4, feat_res8, feat_res16, feat_cp8, feat_cp16 = self.cp(x)
+
         if self.training:
             feat_out_sp2 = self.conv_out_sp2(feat_res2)
             feat_out_sp4 = self.conv_out_sp4(feat_res4)
@@ -92,18 +93,9 @@ class STDCSeg(nn.Layer):
             feat_out = F.interpolate(feat_out, (H, W), mode='bilinear', align_corners=True)
             return [feat_out]
 
-    def get_params(self):
-        wd_params, nowd_params, lr_mul_wd_params, lr_mul_nowd_params = [], [], [], []
-        for name, child in self.named_children():
-            child_wd_params, child_nowd_params = child.get_params()
-            if isinstance(child, (FeatureFusionModule, BiSeNetOutput)):
-                lr_mul_wd_params += child_wd_params
-                lr_mul_nowd_params += child_nowd_params
-            else:
-                wd_params += child_wd_params
-                nowd_params += child_nowd_params
-        return wd_params, nowd_params, lr_mul_wd_params, lr_mul_nowd_params
-
+    def init_weight(self):
+        if self.pretrained is not None:
+            utils.load_entire_model(self, self.pretrained)
 
 class BiSeNetOutput(nn.Layer):
     def __init__(self, in_chan, mid_chan, n_classes):
@@ -115,17 +107,6 @@ class BiSeNetOutput(nn.Layer):
         x = self.conv(x)
         x = self.conv_out(x)
         return x
-
-    def get_params(self):
-        wd_params, nowd_params = [], []
-        for name, module in self.named_modules():
-            if isinstance(module, (nn.Linear, nn.Conv2D)):
-                wd_params.append(module.weight)
-                if not module.bias is None:
-                    nowd_params.append(module.bias)
-            elif isinstance(module, nn.BatchNorm2D):
-                nowd_params += list(module.parameters())
-        return wd_params, nowd_params
 
 
 class AttentionRefinementModule(nn.Layer):
@@ -160,7 +141,6 @@ class ContextPath(nn.Layer):
         self.conv_avg = layers.ConvBNReLU(inplanes, 128, kernel_size=1, stride=1, padding=0)
 
     def forward(self, x):
-        H0, W0 = x.shape[2:]
         feat2, feat4, feat8, feat16, feat32 = self.backbone(x)
         H8, W8 = feat8.shape[2:]
         H16, W16 = feat16.shape[2:]
@@ -177,17 +157,6 @@ class ContextPath(nn.Layer):
         feat16_up = F.interpolate(feat16_sum, (H8, W8), mode='nearest')
         feat16_up = self.conv_head16(feat16_up)
         return feat2, feat4, feat8, feat16, feat16_up, feat32_up  # x8, x16
-
-    def get_params(self):
-        wd_params, nowd_params = [], []
-        for name, module in self.named_modules():
-            if isinstance(module, (nn.Linear, nn.Conv2D)):
-                wd_params.append(module.weight)
-                if not module.bias is None:
-                    nowd_params.append(module.bias)
-            elif isinstance(module, nn.BatchNorm2D):
-                nowd_params += list(module.parameters())
-        return wd_params, nowd_params
 
 
 class FeatureFusionModule(nn.Layer):
@@ -220,15 +189,4 @@ class FeatureFusionModule(nn.Layer):
         feat_atten = paddle.multiply(feat, atten)
         feat_out = feat_atten + feat
         return feat_out
-
-    def get_params(self):
-        wd_params, nowd_params = [], []
-        for name, module in self.named_modules():
-            if isinstance(module, (nn.Linear, nn.Conv2D)):
-                wd_params.append(module.weight)
-                if not module.bias is None:
-                    nowd_params.append(module.bias)
-            elif isinstance(module, nn.BatchNorm2D):
-                nowd_params += list(module.parameters())
-        return wd_params, nowd_params
 

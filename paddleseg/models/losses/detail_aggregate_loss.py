@@ -1,4 +1,4 @@
-# Copyright (c) 2020 PaddlePaddle Authors. All Rights Reserved.
+# copyright (c) 2021 PaddlePaddle Authors. All Rights Reserve.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
 import paddle
 import paddle.nn as nn
 import paddle.nn.functional as F
+
 from paddleseg.cvlibs import manager
 
 
@@ -40,41 +41,31 @@ class DetailAggregateLoss(nn.Layer):
             (1, 1, 3, 3))
         self.fuse_kernel = paddle.create_parameter([1, 3, 1, 1], dtype='float32')
 
-    def fixed_dice_loss_func(self, input, target):
-        smooth = 1.
-        n = input.shape[0]
-        iflat = paddle.reshape(input, [n, -1])
-        tflat = paddle.reshape(target, [n, -1])
-        intersection = paddle.sum((iflat * tflat), axis=1)
-        loss = 1 - ((2. * intersection + smooth) /
-                    (paddle.sum(iflat, axis=1) + paddle.sum(tflat, axis=1) + smooth))
-        return paddle.mean(loss)
-
-    def forward(self, boundary_logits, gtmasks):
+    def forward(self, logits, label):
         """
         Args:
-            boundary_logits (Tensor): Logit tensor, the data type is float32, float64. Shape is
+            logits (Tensor): Logit tensor, the data type is float32, float64. Shape is
                 (N, C), where C is number of classes, and if shape is more than 2D, this
                 is (N, C, D1, D2,..., Dk), k >= 1.
-            gtmasks (Tensor): Label tensor, the data type is int64. Shape is (N), where each
+            label (Tensor): Label tensor, the data type is int64. Shape is (N), where each
                 value is 0 <= label[i] <= C-1, and if shape is more than 2D, this is
                 (N, D1, D2,..., Dk), k >= 1.
         Returns: loss
         """
-        boundary_targets = F.conv2d(paddle.unsqueeze(gtmasks, axis=1).astype('float32'), self.laplacian_kernel,
+        boundary_targets = F.conv2d(paddle.unsqueeze(label, axis=1).astype('float32'), self.laplacian_kernel,
                                     padding=1)
         boundary_targets = paddle.clip(boundary_targets, min=0)
         boundary_targets = boundary_targets > 0.1
         boundary_targets = boundary_targets.astype('float32')
 
-        boundary_targets_x2 = F.conv2d(paddle.unsqueeze(gtmasks, axis=1).astype('float32'), self.laplacian_kernel,
+        boundary_targets_x2 = F.conv2d(paddle.unsqueeze(label, axis=1).astype('float32'), self.laplacian_kernel,
                                        stride=2, padding=1)
         boundary_targets_x2 = paddle.clip(boundary_targets_x2, min=0)
-        boundary_targets_x4 = F.conv2d(paddle.unsqueeze(gtmasks, axis=1).astype('float32'), self.laplacian_kernel,
+        boundary_targets_x4 = F.conv2d(paddle.unsqueeze(label, axis=1).astype('float32'), self.laplacian_kernel,
                                        stride=4, padding=1)
         boundary_targets_x4 = paddle.clip(boundary_targets_x4, min=0)
 
-        boundary_targets_x8 = F.conv2d(paddle.unsqueeze(gtmasks, axis=1).astype('float32'), self.laplacian_kernel,
+        boundary_targets_x8 = F.conv2d(paddle.unsqueeze(label, axis=1).astype('float32'), self.laplacian_kernel,
                                        stride=8, padding=1)
         boundary_targets_x8 = paddle.clip(boundary_targets_x8, min=0)
 
@@ -100,18 +91,26 @@ class DetailAggregateLoss(nn.Layer):
         boudary_targets_pyramid = boudary_targets_pyramid > 0.1
         boudary_targets_pyramid = boudary_targets_pyramid.astype('float32')
 
-        if boundary_logits.shape[-1] != boundary_targets.shape[-1]:
-            boundary_logits = F.interpolate(
-                boundary_logits, boundary_targets.shape[2:], mode='bilinear', align_corners=True)
+        if logits.shape[-1] != boundary_targets.shape[-1]:
+            logits = F.interpolate(
+                logits, boundary_targets.shape[2:], mode='bilinear', align_corners=True)
 
-        bce_loss = F.binary_cross_entropy_with_logits(boundary_logits, boudary_targets_pyramid)
-        dice_loss = self.fixed_dice_loss_func(F.sigmoid(boundary_logits), boudary_targets_pyramid)
+        bce_loss = F.binary_cross_entropy_with_logits(logits, boudary_targets_pyramid)
+        dice_loss = self.fixed_dice_loss_func(F.sigmoid(logits), boudary_targets_pyramid)
         detail_loss = bce_loss + dice_loss
-        gtmasks.stop_gradient = True
+
+        label.stop_gradient = True
         return detail_loss
 
-    def get_params(self):
-        wd_params, nowd_params = [], []
-        for name, module in self.named_modules():
-            nowd_params += list(module.parameters())
-        return nowd_params
+    def fixed_dice_loss_func(self, input, target):
+        """
+            simplified diceloss for DetailAggregateLoss.
+        """
+        smooth = 1.
+        n = input.shape[0]
+        iflat = paddle.reshape(input, [n, -1])
+        tflat = paddle.reshape(target, [n, -1])
+        intersection = paddle.sum((iflat * tflat), axis=1)
+        loss = 1 - ((2. * intersection + smooth) /
+                    (paddle.sum(iflat, axis=1) + paddle.sum(tflat, axis=1) + smooth))
+        return paddle.mean(loss)
