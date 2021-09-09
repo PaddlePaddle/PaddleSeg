@@ -54,8 +54,18 @@ python deploy/python/infer.py \
 
 **注意**
 
-1. 使用TensorRT需要使用支持TRT功能的Paddle库，请参考[附录](https://www.paddlepaddle.org.cn/documentation/docs/zh/install/Tables.html#whl-release)下载带有trt的PaddlePaddle安装包，或者参考[源码编译](https://www.paddlepaddle.org.cn/documentation/docs/zh/install/compile/fromsource.html)自行编译。
+1. 如果使用TensorRT预测，需要安装支持TRT功能的Paddle库。Paddle支持`cuda10.1+cudnn7+trt6.0.1.5`和`cuda10.2+cudnn8.1+trt7.1.3.4`两种环境下使用TRT。大家可以根据实际情况选择，通过如下链接下载Cuda、cudnn和TRT。
+```
+https://paddle-inference-dist.bj.bcebos.com/tensorrt_test/cuda10.1-cudnn7.6-trt6.0.tar
+https://paddle-inference-dist.bj.bcebos.com/tensorrt_test/cuda10.2-cudnn8.0-trt7.1.tgz
+```
 
-2. 当使用量化模型在GPU上预测时，需要设置device=gpu、use_trt=True、precision=int8
+* 配置安装cuda和cudnn。
+* 下载TRT，设置`export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:<tensorrt_path>`。
+* 在[文档](https://www.paddlepaddle.org.cn/documentation/docs/zh/install/Tables.html#whl-release)下载带有trt的PaddlePaddle安装包或者参考[文档](https://www.paddlepaddle.org.cn/documentation/docs/zh/install/compile/fromsource.html)编译PaddlePaddle安装包。
+* 安装PaddlePaddle。
+* 部署模型。
+
+2. 当使用量化模型在GPU上预测时，需要设置device=gpu、use_trt=True、precision=int8。
 
 3. 要开启`--benchmark`的话需要安装auto_log，请参考[安装方式](https://github.com/LDOUBLEV/AutoLog)。

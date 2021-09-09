@@ -71,13 +71,13 @@ class Predictor:
         if not args.print_detail:
             pred_cfg.disable_glog_info()
         pred_cfg.enable_memory_optim()
+        pred_cfg.switch_ir_optim(True)
 
         if args.device == 'gpu':
             # set GPU configs accordingly
             # such as intialize the gpu memory, enable tensorrt
             logger.info("Use GPU")
             pred_cfg.enable_use_gpu(100, 0)
-            pred_cfg.switch_ir_optim(True)
             precision_map = {
                 "fp16": PrecisionType.Half,
                 "fp32": PrecisionType.Float32,
@@ -96,7 +96,7 @@ class Predictor:
                     use_calib_mode=False)
                 min_input_shape = {"x": [1, 3, 100, 100]}
                 max_input_shape = {"x": [1, 3, 2000, 3000]}
-                opt_input_shape = {"x": [1, 3, 192, 192]}
+                opt_input_shape = {"x": [1, 3, 512, 1024]}
                 pred_cfg.set_trt_dynamic_shape_info(
                     min_input_shape, max_input_shape, opt_input_shape)
         else:
@@ -105,6 +105,7 @@ class Predictor:
             logger.info("Use CPU")
             pred_cfg.disable_gpu()
             if args.enable_mkldnn:
+                logger.info("Use MKLDNN")
                 # cache 10 different shapes for mkldnn to avoid memory leak
                 pred_cfg.set_mkldnn_cache_capacity(10)
                 pred_cfg.enable_mkldnn()

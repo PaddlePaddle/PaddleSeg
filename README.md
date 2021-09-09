@@ -96,6 +96,8 @@ Welcome to PaddleSeg! PaddleSeg is an end-to-end image segmentation development 
     * [Lite](./docs/deployment/lite/lite.md)
     * [Serving](./docs/deployment/serving/serving.md)
     * [Web](./docs/deployment/web/web.md)
+    * [Benchmark](./docs/deployment/inference/infer_benchmark.md)
+    * [Export ONNX Model](./docs/model_export_onnx.md)
 * Model Compression
     * [Quantization](./docs/slim/quant/quant.md)
     * [Prune](./docs/slim/prune/prune.md)
