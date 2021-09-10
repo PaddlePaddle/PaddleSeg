@@ -188,11 +188,6 @@ python slim/quant/qat_export.py \
 |deeplabv3p_resnet50_os8|147.2|89.5|39.20%|
 |gcnet_resnet50_os8|201.8|126.1|37.51%|
 |pspnet_resnet50_os8|266.8|206.8|22.49%|  
-=======
-* [Paddle Inference Python部署](../../deployment/inference/python_inference.md)
-* [Paddle Inference C++部署](../../deployment/inference/cpp_inference.md)
-* [PaddleLite部署](../../deployment/lite/lite.md)  
->>>>>>> 515bf9392c88ab1c96a335f80178aa602599e19d
 
 ### 3.4 参考资料
 
