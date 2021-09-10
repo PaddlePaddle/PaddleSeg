@@ -164,9 +164,15 @@ python slim/quant/qat_export.py \
 
 得到量化预测模型后，我们可以进行部署应用，请参考如下教程。
 
+
 * [Paddle Inference Python部署](../../deployment/inference/python_inference.md)
 * [Paddle Inference C++部署](../../deployment/inference/cpp_inference.md)
 * [PaddleLite部署](../../deployment/lite/lite.md)
+
+### 3.4 参考资料
+
+* [PaddleSlim Github](https://github.com/PaddlePaddle/PaddleSlim)
+* [PaddleSlim 文档](https://paddleslim.readthedocs.io/zh_CN/latest/)
 
 ## 4 量化加速比
 
@@ -189,7 +195,4 @@ python slim/quant/qat_export.py \
 |gcnet_resnet50_os8|201.8|126.1|37.51%|
 |pspnet_resnet50_os8|266.8|206.8|22.49%|  
 
-### 3.4 参考资料
 
-* [PaddleSlim Github](https://github.com/PaddlePaddle/PaddleSlim)
-* [PaddleSlim 文档](https://paddleslim.readthedocs.io/zh_CN/latest/)

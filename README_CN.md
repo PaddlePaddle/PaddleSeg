@@ -120,6 +120,7 @@ PaddleSeg是基于飞桨[PaddlePaddle](https://www.paddlepaddle.org.cn)开发的
     * [UNet](./docs/models/unet.md)
     * [OCRNet](./docs/models/ocrnet.md)
     * [Fast-SCNN](./docs/models/fascnn.md)
+* [静态图版本](./docs/static/static_cn.md)
 * [提交PR说明](./docs/pr/pr/pr.md)
 * [FAQ](./docs/faq/faq/faq_cn.md)
 
