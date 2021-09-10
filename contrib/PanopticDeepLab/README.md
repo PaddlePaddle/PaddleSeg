@@ -40,7 +40,7 @@ cd contrib/PanopticDeepLab
 
 ## 数据集准备
 
-将数据集放置于`data`目录下。
+将数据集放置于PaddleSeg/contrib/PanopticDeepLab目录下的`data`目录下。
 
 ### Cityscapes
 
@@ -117,7 +117,7 @@ python val.py --help
 ```shell
 export CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6,7 # 根据实际情况进行显卡数量的设置
 python -m paddle.distributed.launch predict.py \
-    --config configs/panoptic_deeplab/panoptic_deeplab_resnet50_os32_cityscapes_1025x513_120k.yml \
+    --config configs/panoptic_deeplab/panoptic_deeplab_resnet50_os32_cityscapes_1025x513_bs8_90k_lr00005.yml \
     --model_path output/iter_90000/model.pdparams \
     --image_path data/cityscapes/leftImg8bit/val/ \
     --save_dir ./output/result
