@@ -21,7 +21,7 @@ from paddleseg.utils import utils
 from paddleseg.cvlibs import manager,param_init
 from paddleseg.models.layers import ConvBNReLU
 
-__all__ = ["STDCNet813", "STDCNet1446"]
+__all__ = ["STDC1", "STDC2"]
 
 
 class STDCNet(nn.Layer):
