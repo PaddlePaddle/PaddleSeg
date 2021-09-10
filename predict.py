@@ -141,8 +141,6 @@ def get_image_list(image_path):
     if len(image_list) == 0:
         raise RuntimeError('There are not image file in `--image_path`')
 
-    return parser.parse_args()
-
 
 def get_test_config(cfg, args):
 
