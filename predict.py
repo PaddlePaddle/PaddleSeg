@@ -104,7 +104,6 @@ def parse_args():
         'Save images with a custom color map. Default: None, use paddleseg\'s default color map.',
         type=int,
         default=None)
-<<<<<<< HEAD
     return parser.parse_args()
 
 
@@ -141,10 +140,6 @@ def get_image_list(image_path):
 
     if len(image_list) == 0:
         raise RuntimeError('There are not image file in `--image_path`')
-
-=======
->>>>>>> cb8d12b75a46d4ff0a02b2261e2ac3a0ec3ae5fd
-    return parser.parse_args()
 
 
 def get_image_list(image_path):
