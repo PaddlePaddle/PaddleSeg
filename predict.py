@@ -142,7 +142,6 @@ def get_image_list(image_path):
         raise RuntimeError('There are not image file in `--image_path`')
 
 
-
 def get_test_config(cfg, args):
 
     test_config = cfg.test_config
