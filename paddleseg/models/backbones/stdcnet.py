@@ -97,19 +97,6 @@ class STDCNet(nn.Layer):
             feat32 = self.conv_last(feat32)
         return feat2, feat4, feat8, feat16, feat32
 
-    def forward_impl(self, x):
-        """
-        forward function for classification.
-        """
-        out = self.features(x)
-        out = self.conv_last(out).pow(2)
-        out = self.gap(out).flatten(1)
-        out = self.fc(out)
-        out = self.relu(out)
-        out = self.dropout(out)
-        out = self.linear(out)
-        return out
-
     def _make_layers(self, base, layers, block_num, block):
         features = []
         features += [ConvBNRelu(3, base // 2, 3, 2)]

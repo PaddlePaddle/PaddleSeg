@@ -97,6 +97,7 @@ class STDCSeg(nn.Layer):
         if self.pretrained is not None:
             utils.load_entire_model(self, self.pretrained)
 
+
 class BiSeNetOutput(nn.Layer):
     def __init__(self, in_chan, mid_chan, n_classes):
         super(BiSeNetOutput, self).__init__()
