@@ -113,6 +113,7 @@ Welcome to PaddleSeg! PaddleSeg is an end-to-end image segmentation development 
     * [UNet](./docs/models/unet.md)
     * [OCRNet](./docs/models/ocrnet.md)
     * [Fast-SCNN](./docs/models/fascnn.md)
+* [Static Graph Version](./docs/static/static.md)
 * [PR Instruction](./docs/pr/pr/pr.md)
 * [FAQ](./docs/faq/faq/faq.md)
 
