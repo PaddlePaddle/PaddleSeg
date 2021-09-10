@@ -21,7 +21,11 @@ from paddleseg.cvlibs import manager
 @manager.LOSSES.add_component
 class PointCrossEntropyLoss(nn.Layer):
     """
-    Implements the cross entropy loss function.
+    Implements the point cross entropy loss function.
+
+    The original article refers to
+    Kirillov A, Wu Y, He K, et al. "PointRend: Image Segmentation As Rendering."
+    (https://arxiv.org/abs/1912.08193).
 
     Args:
         weight (tuple|list|ndarray|Tensor, optional): A manual rescaling weight
@@ -70,7 +74,7 @@ class PointCrossEntropyLoss(nn.Layer):
             points,
             mode='nearest',
             align_corners=self.align_corners) # [N, 1, point_num]
-        label = paddle.squeeze(label,axis=1).astype('int64') # [N, 2048]
+        label = paddle.squeeze(label,axis=1).astype('int64') # [N, xx]
 
         channel_axis = 1 if self.data_format == 'NCHW' else -1
         if self.weight is not None and logit.shape[channel_axis] != len(
