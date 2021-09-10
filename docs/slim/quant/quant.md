@@ -164,15 +164,9 @@ python slim/quant/qat_export.py \
 
 得到量化预测模型后，我们可以进行部署应用，请参考如下教程。
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-得到量化预测模型后，我们可以进行部署应用。
+
 * [Paddle Inference Python部署](../../deployment/inference/python_inference.md)
 * [Paddle Inference C++部署](../../deployment/inference/cpp_inference.md)
-=======
-得到量化预测模型后，我们可以直接进行部署应用，相关教程请参考:
-* [Paddle Inference部署](../../deployment/inference/inference.md)
->>>>>>> release/2.2
 * [PaddleLite部署](../../deployment/lite/lite.md)
 
 ## 4 量化加速比
@@ -198,8 +192,33 @@ python slim/quant/qat_export.py \
 =======
 * [Paddle Inference Python部署](../../deployment/inference/python_inference.md)
 * [Paddle Inference C++部署](../../deployment/inference/cpp_inference.md)
+<<<<<<< HEAD
 * [PaddleLite部署](../../deployment/lite/lite.md)  
 >>>>>>> 515bf9392c88ab1c96a335f80178aa602599e19d
+=======
+* [PaddleLite部署](../../deployment/lite/lite.md)
+
+## 4 量化加速比
+
+测试环境：
+* GPU: V100
+* CPU: Intel(R) Xeon(R) Gold 6148 CPU @ 2.40GHz
+* CUDA: 10.2
+* cuDNN: 7.6
+* TensorRT: 6.0.1.5
+
+测试方法:
+1. 运行耗时为纯模型预测时间，测试图片cityspcaes(1024x2048)
+2. 预测10次作为热启动，连续预测50次取平均得到预测时间
+3. 使用GPU + TensorRT测试
+
+|模型|未量化运行耗时(ms)|量化运行耗时(ms)|加速比|
+|-|-|-|-|
+|deeplabv3_resnet50_os8|204.2|150.1|26.49%|
+|deeplabv3p_resnet50_os8|147.2|89.5|39.20%|
+|gcnet_resnet50_os8|201.8|126.1|37.51%|
+|pspnet_resnet50_os8|266.8|206.8|22.49%|  
+>>>>>>> cb8d12b75a46d4ff0a02b2261e2ac3a0ec3ae5fd
 
 ### 3.4 参考资料
 
