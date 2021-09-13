@@ -58,6 +58,8 @@ class BaseNet(nn.Layer):
         feat_list = self.backbone(x)
         c1, c2, c3, c4 = [feat_list[i]
                           for i in self.backbone_indices]
+        c1,c2,c3,c4 = paddle.ones([1, 256, 25, 25]), paddle.ones([1, 512, 13, 13]), \
+            paddle.ones([1, 1024, 13, 13]), paddle.ones([1, 2048, 13, 13])
 
         if self.jpu:
             return self.jpu(c1, c2, c3, c4)
@@ -96,18 +98,27 @@ class GINet(BaseNet):
     def forward(self, x):
         _, _, h, w = x.shape
         _, _, c3, c4 = self.base_forward(x)  ## use sync_bn in resnet
+        # print('c3.mean(), c4.mean()', c3.mean(), c4.mean())
+        c3, c4 = paddle.ones([1, 1024, 7, 7]), paddle.ones([1, 2048, 13, 13]) 
+        c3.stop_gradient=False
+        c4.stop_gradient=False
+        c3.register_hook(lambda grad: print('c3 grad', grad.sum()))
+        c4.register_hook(lambda grad: print('c4 grad', grad.sum()))
 
         outputs = []
         x, se_out = self.head(c4)
         x = upsample(x, (h, w), **self._up_kwargs)
         outputs.append(x)
 
+        # se_out.register_hook(lambda grad: print('se_out grad %.7f'% grad.sum()))
         if self.sc_loss:
             outputs.append(se_out)
 
         if self.aux:
             auxout = self.auxlayer(c3)
+            # auxout.register_hook(lambda grad: print('auxout grad 1 %.7f'% grad.sum()))
             auxout = upsample(auxout, (h, w), **self._up_kwargs)
+            # auxout.register_hook(lambda grad: print('auxout grad 2 %.7f'% grad.sum()))
 
             outputs.append(auxout)
         
@@ -121,7 +132,7 @@ class FCNHead(nn.Layer):
         self.conv5 = nn.Sequential(
             nn.Conv2D(
                 in_channels, inter_channels, 3, padding=1, bias_attr=False),
-            norm_layer(inter_channels), nn.ReLU(), nn.Dropout2D(0.1),
+            norm_layer(inter_channels), nn.ReLU(), # nn.Dropout2D(0.1),
             nn.Conv2D(inter_channels, out_channels, 1))
 
     def forward(self, x):
@@ -159,7 +170,7 @@ class GIHead(nn.Layer):
             num_state=256,
             num_node=84,
             nclass=nclass)
-        self.conv6 = nn.Sequential(nn.Dropout(0.1),
+        self.conv6 = nn.Sequential(# nn.Dropout(0.1),
          nn.Conv2D(inter_channels, nclass, 1))
 
     def forward(self, x):
@@ -171,6 +182,8 @@ class GIHead(nn.Layer):
                            .expand((B, 256, self.nclass))
 
         out = self.conv5(x)
+        # out.register_hook(lambda grad: print('out grad', grad.sum()))
+        # inp.register_hook(lambda grad: print('inp grad', grad.sum()))
 
         out, se_out = self.gloru(out, inp)
         out = self.conv6(out)
@@ -441,16 +454,18 @@ if __name__ == '__main__':
     model = GINet(59, backbone=backbone)
     N, C, H, W = 1, 3, 100, 100
     x = paddle.ones((N,C,H,W))
-    # out = model(x)
-    # print(out[0].mean(), out[0].shape)
     # paddle.save(model.state_dict(), "init_model.pdparams")
     model.load_dict(paddle.load('torch_transfer.pdparams'))
     out = model(x)
     res = 0
     for item in out:
         res += item.sum() 
-    # res = out[0].sum()+out[1].sum()+out[2].sum()
+    res = out[0].sum()+out[1].sum()+out[2].sum()
     res.backward()
-    print(out[0].mean()) # 
-    print(out[1].mean()) # 
-    print(out[2].mean()) # 
+    # print(out[0].mean()) # 
+    # print(out[1].mean()) # 
+    # print(out[2].mean()) # 
+
+
+
+

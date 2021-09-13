@@ -1,6 +1,6 @@
-_base_: '../_base_/pascal_context.yml'
+_base_: '../_base_/ade20k.yml'
 batch_size: 4
-iters: 40000
+iters: 150000
 
 loss:
   types:
@@ -11,7 +11,7 @@ loss:
 
 model:
   type: GINet
-  num_classes: 60
+  num_classes: 150
   backbone:
     type: ResNet101_vd
     output_stride: 8
@@ -30,11 +30,11 @@ model:
 optimizer:
   type: sgd
   momentum: 0.9
-  weight_decay: 1.0e-4
+  weight_decay: 4.0e-5
 
 
 lr_scheduler:
   type: PolynomialDecay
-  learning_rate: 0.001
+  learning_rate: 0.005
   end_lr: 0
   power: 0.9

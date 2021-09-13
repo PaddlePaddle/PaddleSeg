@@ -1,12 +1,14 @@
 _base_: '../_base_/pascal_context.yml'
 batch_size: 4
-iters: 40000
+iters: 80000
 
 loss:
   types:
     - type: CrossEntropyLoss
     - type: CrossEntropyLoss
-  coef: [1, 0.4]
+    - type: SCLoss
+  coef: [1, 0.4, 0.2]
+
 
 
 model:
@@ -17,9 +19,9 @@ model:
     output_stride: 8
     pretrained: https://bj.bcebos.com/paddleseg/dygraph/resnet101_vd_ssld.tar.gz
   aux: True
-  se_loss: False
-  sc_loss: False
   backbone_indices: [0, 1, 2, 3]
+  se_loss: False
+  sc_loss: True
   jpu: True
   base_size: 520
   crop_size: 480
@@ -31,7 +33,6 @@ optimizer:
   type: sgd
   momentum: 0.9
   weight_decay: 1.0e-4
-
 
 lr_scheduler:
   type: PolynomialDecay

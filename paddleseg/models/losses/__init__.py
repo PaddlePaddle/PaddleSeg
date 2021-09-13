@@ -29,3 +29,4 @@ from .mean_square_error_loss import MSELoss
 from .focal_loss import FocalLoss
 from .kl_loss import KLLoss
 from .rmi_loss import RMILoss
+from .sc_loss import SCLoss
