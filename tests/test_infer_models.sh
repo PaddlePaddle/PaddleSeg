@@ -5,12 +5,13 @@
 #   2. `export CUDA_VISIBLE_DEVICES=id`
 #   3. `cd ./PaddleSeg && bash ./tests/test_infer_models.sh /path/to/cityscapes`
 
-if [ $# != 2 ] ; then
+if [ $# != 1 ] ; then
     echo "USAGE: $0 cityscapes_dataset_path"
     exit 1;
 fi
 
 dataset_path=$1 # Dataset path for infer_benchmark.py
+echo "dataset_path: ${dataset_path}"
 dataset_type="Cityscapes"   # Dataset type for infer_benchmark.py
 
 pretrained_root_path="./pretrained_model"   # the root path for saving pretrained model
