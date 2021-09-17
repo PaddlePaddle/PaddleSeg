@@ -20,7 +20,8 @@ import shutil
 import paddle
 import paddle.nn.functional as F
 
-from paddleseg.utils import TimeAverager, calculate_eta, resume, logger, worker_init_fn
+from paddleseg.utils import (TimeAverager, calculate_eta, resume, logger,
+                             worker_init_fn, train_profiler)
 from paddleseg.core.val import evaluate
 
 
@@ -66,7 +67,8 @@ def train(model,
           losses=None,
           keep_checkpoint_max=5,
           test_config=None,
-          fp16=False):
+          fp16=False,
+          profiler_options=None):
     """
     Launch training.
 
@@ -88,6 +90,7 @@ def train(model,
         keep_checkpoint_max (int, optional): Maximum number of checkpoints to save. Default: 5.
         test_config(dict, optional): Evaluation config.
         fp16 (bool, optional): Whether to use amp.
+        profiler_options (str, optional): The option of train profiler.
     """
     model.train()
     nranks = paddle.distributed.ParallelEnv().nranks
@@ -204,6 +207,8 @@ def train(model,
                 lr_sche = optimizer._learning_rate
             if isinstance(lr_sche, paddle.optimizer.lr.LRScheduler):
                 lr_sche.step()
+
+            train_profiler.add_profiler_step(profiler_options)
 
             model.clear_gradients()
             avg_loss += loss.numpy()[0]
