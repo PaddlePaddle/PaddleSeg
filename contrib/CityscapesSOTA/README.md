@@ -8,7 +8,7 @@ Based on the above work, we made some optimizations:
 
 We achieve mIoU of **87%** on Cityscapes validation set.
 
-![demo](../../docs/images/cityscapes.gif)
+![demo](https://user-images.githubusercontent.com/53808988/130719591-3e0d44b4-59a8-4633-bff2-7ce7da1c52fc.gif)
 
 
 ## Installation

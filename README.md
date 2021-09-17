@@ -2,17 +2,40 @@ English | [简体中文](README_CN.md)
 
 # PaddleSeg
 
-[![Build Status](https://travis-ci.org/PaddlePaddle/PaddleSeg.svg?branch=master)](https://travis-ci.org/PaddlePaddle/PaddleSeg)
 [![License](https://img.shields.io/badge/license-Apache%202-blue.svg)](LICENSE)
 [![Version](https://img.shields.io/github/release/PaddlePaddle/PaddleSeg.svg)](https://github.com/PaddlePaddle/PaddleSeg/releases)
 ![python version](https://img.shields.io/badge/python-3.6+-orange.svg)
 ![support os](https://img.shields.io/badge/os-linux%2C%20win%2C%20mac-yellow.svg)
+## PaddleSeg has released the new version including the following features:
 
-<img src="./docs/images/seg_news_icon.png" width="50"/> *[2021-06-19] PaddleSeg Team won the AutoNUE 2021 Challenge: Semantic Segmentation Track in CVPR 2021! Technical Report can be found [here](https://bj.bcebos.com/paddleseg/docs/autonue21_presentation_PaddleSeg.pdf). Code will be coming soon.*
+* Our team won the AutoNUE@CVPR 2021 challenge, where the technical [report](https://bj.bcebos.com/paddleseg/docs/autonue21_presentation_PaddleSeg.pdf) and [source code](https://github.com/PaddlePaddle/PaddleSeg/tree/release/2.2/contrib/AutoNUE) are available.
+* We released an efficient interactive annotation tool for image segmentation, named [EISeg](https://github.com/PaddlePaddle/PaddleSeg/tree/release/2.2/contrib/EISeg).
+* We introduced [Panoptic-DeepLab](https://github.com/PaddlePaddle/PaddleSeg/tree/release/2.2/contrib/PanopticDeepLab), which is a proposal-free algorithm  for panoptic segmentation.
+* We provided an ultra-lightweight [portrait segmentation](./contrib/PP-HumanSeg) solution for the mobile devices and even the web
 
-![demo](./docs/images/cityscapes.gif)
+## PaddleSeg Introduction
 
 Welcome to PaddleSeg! PaddleSeg is an end-to-end image segmentation development kit developed based on [PaddlePaddle](https://www.paddlepaddle.org.cn), which covers a large number of high-quality segmentation models in different directions such as *high-performance* and *lightweight*. With the help of modular design, we provide two application methods: *Configuration Drive* and *API Calling*. So one can conveniently complete the entire image segmentation application from training to deployment through configuration calls or API calls.
+
+* ### PaddleSeg provides four image segmentation capabilities: semantic segmentation, interactive segmentation, panoptic segmentation and Matting.
+
+<div align="center">
+<img src="https://user-images.githubusercontent.com/53808988/130562378-64d0c84a-9c3f-4ae4-93f7-bdc0c8e0238e.gif"  width = "2000" />  
+</div>
+
+
+---------------
+
+ * ### PaddleSeg is widely used in autonomous driving, medical, quality inspection, inspection, entertainment and other scenarios.
+
+<div align="center">
+<img src="https://user-images.githubusercontent.com/53808988/130562234-bdf79d76-8566-4e06-a3a9-db7719e63385.gif"  width = "2000" />  
+</div>
+
+
+---------------
+
+
 
 ## Core Features
 
@@ -27,38 +50,19 @@ Welcome to PaddleSeg! PaddleSeg is an end-to-end image segmentation development 
 ## Technical Communication <img src="./docs/images/chat.png" width="30"/>
 
 * If you find any problems or have a suggestion with PaddleSeg, please send us issues through [GitHub Issues](https://github.com/PaddlePaddle/PaddleSeg/issues).
-* Welcome to Join PaddleSeg WeChat Group (left) and QQ Group (right)
+* Welcome to Join PaddleSeg QQ Group
 <div align="center">
-<img src="./docs/images/wechat_qq_623.png"  width = "500" />  
+<img src="./docs/images/QQ_chat.png"  width = "200" />  
 </div>
 
-## Model Zoo
+## Model Instraction  <img src="./docs/images/model.png" width="20"/>
 
-|Model\Backbone|ResNet50|ResNet101|HRNetw18|HRNetw48|
-|-|-|-|-|-|
-|[ANN](./configs/ann)|✔|✔|||
-|[BiSeNetv2](./configs/bisenet)|-|-|-|-|
-|[DANet](./configs/danet)|✔|✔|||
-|[Deeplabv3](./configs/deeplabv3)|✔|✔|||
-|[Deeplabv3P](./configs/deeplabv3p)|✔|✔|||
-|[Fast-SCNN](./configs/fastscnn)|-|-|-|-|
-|[FCN](./configs/fcn)|||✔|✔|
-|[GCNet](./configs/gcnet)|✔|✔|||
-|[GSCNN](./configs/gscnn)|✔|✔|||
-|[HarDNet](./configs/hardnet)|-|-|-|-|
-|[OCRNet](./configs/ocrnet/)|||✔|✔|
-|[PSPNet](./configs/pspnet)|✔|✔|||
-|[U-Net](./configs/unet)|-|-|-|-|
-|[U<sup>2</sup>-Net](./configs/u2net)|-|-|-|-|
-|[Att U-Net](./configs/attention_unet)|-|-|-|-|
-|[U-Net++](./configs/unet_plusplus)|-|-|-|-|
-|[U-Net3+](./configs/unet_3plus)|-|-|-|-|
-|[DecoupledSegNet](./configs/decoupled_segnet)|✔|✔|||
-|[EMANet](./configs/emanet)|✔|✔|-|-|
-|[ISANet](./configs/isanet)|✔|✔|-|-|
-|[DNLNet](./configs/dnlnet)|✔|✔|-|-|
-|[SFNet](./configs/sfnet)|✔|-|-|-|
-|[PPSegLite](./configs/ppseg_lite)|-|-|-|-|
+[Model Zoo](./configs/)
+
+<div align="center">
+<img src="./docs/images/xingnengtu.png"    width = "700"/>  
+</div>
+
 
 ## Dataset
 
@@ -71,43 +75,49 @@ Welcome to PaddleSeg! PaddleSeg is an end-to-end image segmentation development 
 ## Tutorials <img src="./docs/images/teach.png" width="30"/>
 
 * [Installation](./docs/install.md)
-* [Get Started](./docs/quick_start.md)
-*  Data Processing
-   * [Data Format Description](./docs/data/marker/marker_c.md)
-   * [Data Annotation and Transform](./docs/data/transform/transform_c.md)
+* [Get Started](./docs/whole_process.md)
+*  Prepare Datasets
+   * [Preparation of Annotation Data](./docs/data/marker/marker.md)
+   * [Annotating Tutorial](./docs/data/transform/transform.md)
    * [Custom Dataset](./docs/data/custom/data_prepare.md)
 
-*  Design Idea of PaddleSeg
+*  Custom Software Development of PaddleSeg
     * [Detailed Configuration File](./docs/design/use/use.md)
     * [Create Your Own Model](./docs/design/create/add_new_model.md)
 * [Model Training](/docs/train/train.md)
 * [Model Evaluation](./docs/evaluation/evaluate/evaluate.md)
+* [Prediction](./docs/predict/predict.md)
+
+* Model Export
+    * [Export Inference Model](./docs/model_export.md)
+    * [Export ONNX Model](./docs/model_export_onnx.md)
 
 *  Model Deploy
-    * [Export Model](./docs/model_export.md)
-    * [Python Inference](./docs/deployment/inference/python_inference.md)
-    * [C++ Inference](./docs/deployment/inference/cpp_inference.md)
-    * [Lite](./docs/deployment/lite/lite.md)
-    * [Serving](./docs/deployment/serving/serving.md)
-    * [Web](./docs/deployment/web/web.md)
+    * [Paddle Inference (Python)](./docs/deployment/inference/python_inference.md)
+    * [Paddle Inference (C++)](./docs/deployment/inference/cpp_inference.md)
+    * [Paddle Lite](./docs/deployment/lite/lite.md)
+    * [Paddle Serving](./docs/deployment/serving/serving.md)
+    * [Paddle JS](./docs/deployment/web/web.md)
     * [Benchmark](./docs/deployment/inference/infer_benchmark.md)
-    * [Export ONNX Model](./docs/model_export_onnx.md)
+
 * Model Compression
-    * [Distillation](./docs/slim/distill/distill.md)
     * [Quantization](./docs/slim/quant/quant.md)
+    * [Distillation](./docs/slim/distill/distill.md)
     * [Prune](./docs/slim/prune/prune.md)
+
 *  API Tutorial
-    * [API Documention](./docs/apis)
+    * [API Documention](./docs/apis/README.md)
     * [API Application](./docs/api_example.md)
 *  Description of Important Modules
     * [Data Augmentation](./docs/module/data/data.md)
-    * [Loss Description](./docs/module/loss/lovasz_loss.md)
+    * [Loss Description](./docs/module/loss/losses_en.md)
     * [Tricks](./docs/module/tricks/tricks.md)
 * Description of Classical Models
     * [DeeplabV3](./docs/models/deeplabv3.md)
     * [UNet](./docs/models/unet.md)
     * [OCRNet](./docs/models/ocrnet.md)
     * [Fast-SCNN](./docs/models/fascnn.md)
+* [Static Graph Version](./docs/static/static.md)
 * [PR Instruction](./docs/pr/pr/pr.md)
 * [FAQ](./docs/faq/faq/faq.md)
 
@@ -147,9 +157,9 @@ python train.py --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml
 
 ## Practical Cases
 
-* [HumanSeg](./contrib/HumanSeg)
+* [PP-HumanSeg](./contrib/PP-HumanSeg)
 * [Cityscapes SOTA](./contrib/CityscapesSOTA)
-* [PanopticSegmentation](./contrib/PanopticDeepLab)
+* [Panoptic Segmentation](./contrib/PanopticDeepLab)
 
 ## Feedbacks and Contact
 * The dynamic version is still under development, if you find any issue or have an idea on new features, please don't hesitate to contact us via [GitHub Issues](https://github.com/PaddlePaddle/PaddleSeg/issues).

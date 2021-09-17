@@ -1,7 +1,0 @@
-%YAML:1.0
-SIZE: [500, 500] # (width, height) crop size for test eval
-MEAN: [127.5, 127.5, 127.5, 127.5]
-STD: [1.0, 1.0, 1.0, 1.0]
-CHANNELS: 4
-CLASS_NUM: 2
-MODEL_NAME: "image_segmentation"

@@ -84,7 +84,9 @@ def evaluate(model,
         logger.info(
             "Start evaluating (total_samples: {}, total_iters: {})...".format(
                 len(eval_dataset), total_iters))
-    progbar_val = progbar.Progbar(target=total_iters, verbose=1)
+    #TODO(chenguowei): fix log print error with multi-gpus
+    progbar_val = progbar.Progbar(
+        target=total_iters, verbose=1 if nranks < 2 else 2)
     reader_cost_averager = TimeAverager()
     batch_cost_averager = TimeAverager()
     batch_start = time.time()
