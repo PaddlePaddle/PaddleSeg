@@ -111,8 +111,8 @@ def parse_args():
         '--profiler_options',
         type=str,
         default=None,
-        help=
-        'The option of train profiler, which should be in format \"key1=value1;key2=value2;key3=value3\".'
+        help='The option of train profiler. If profiler_options is not None, the train ' \
+            'profiler is enabled. Refer to the paddleseg/utils/train_profiler.py for details.'
     )
 
     return parser.parse_args()

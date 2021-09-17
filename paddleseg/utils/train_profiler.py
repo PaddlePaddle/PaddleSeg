@@ -54,7 +54,9 @@ class ProfilerOptions(object):
             'profile_path': '/tmp/profile',
             'exit_on_finished': True
         }
-        self._parse_from_string(options_str)
+
+        if options_str != "":
+            self._parse_from_string(options_str)
 
     def _parse_from_string(self, options_str):
         for kv in options_str.replace(' ', '').split(';'):
