@@ -107,6 +107,13 @@ def parse_args():
         'Data format that specifies the layout of input. It can be "NCHW" or "NHWC". Default: "NCHW".',
         type=str,
         default='NCHW')
+    parser.add_argument(
+        '--profiler_options',
+        type=str,
+        default=None,
+        help=
+        'The option of train profiler, which should be in format \"key1=value1;key2=value2;key3=value3\".'
+    )
 
     return parser.parse_args()
 
@@ -182,7 +189,8 @@ def main(args):
         losses=losses,
         keep_checkpoint_max=args.keep_checkpoint_max,
         test_config=cfg.test_config,
-        fp16=args.fp16)
+        fp16=args.fp16,
+        profiler_options=args.profiler_options)
 
 
 if __name__ == '__main__':
