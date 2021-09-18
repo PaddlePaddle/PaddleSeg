@@ -21,7 +21,7 @@ import paddle
 import paddle.nn.functional as F
 
 from paddleseg.utils import (TimeAverager, calculate_eta, resume, logger,
-                             worker_init_fn, train_profiler)
+                             worker_init_fn, train_profiler, op_flops_funs)
 from paddleseg.core.val import evaluate
 
 
@@ -299,16 +299,10 @@ def train(model,
 
     # Calculate flops.
     if local_rank == 0:
-
-        def count_syncbn(m, x, y):
-            x = x[0]
-            nelements = x.numel()
-            m.total_ops += int(2 * nelements)
-
         _, c, h, w = images.shape
-        flops = paddle.flops(
+        _ = paddle.flops(
             model, [1, c, h, w],
-            custom_ops={paddle.nn.SyncBatchNorm: count_syncbn})
+            custom_ops={paddle.nn.SyncBatchNorm: op_flops_funs.count_syncbn})
 
     # Sleep for half a second to let dataloader release resources.
     time.sleep(0.5)
