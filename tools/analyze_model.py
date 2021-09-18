@@ -14,7 +14,7 @@
 """
 Analyze the FLOPs and Params of the model.
 Usually, just call paddle.flops to output the model information.
-This file
+We use this file for output flops clearly.
 """
 
 import argparse
