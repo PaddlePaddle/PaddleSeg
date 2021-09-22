@@ -188,7 +188,7 @@ def main(args):
 
     model = MODNet(backbone=backbone, pretrained=args.pretrained_model)
 
-    boundaries = [100000, 150000]
+    boundaries = [10000, 30000]
     values = [
         args.learning_rate * 0.1**scale for scale in range(len(boundaries) + 1)
     ]

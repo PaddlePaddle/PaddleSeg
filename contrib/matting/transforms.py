@@ -353,24 +353,55 @@ class RandomHorizontalFlip:
         return data
 
 
+class RandomBlur:
+    """
+    Blurring an image by a Gaussian function with a certain probability.
+
+    Args:
+        prob (float, optional): A probability of blurring an image. Default: 0.1.
+    """
+
+    def __init__(self, prob=0.1):
+        self.prob = prob
+
+    def __call__(self, data):
+        if self.prob <= 0:
+            n = 0
+        elif self.prob >= 1:
+            n = 1
+        else:
+            n = int(1.0 / self.prob)
+        if n > 0:
+            if np.random.randint(0, n) == 0:
+                radius = np.random.randint(3, 10)
+                if radius % 2 != 1:
+                    radius = radius + 1
+                if radius > 9:
+                    radius = 9
+                data['img'] = cv2.GaussianBlur(data['img'], (radius, radius), 0,
+                                               0)
+                for key in data.get('gt_fields', []):
+                    data[key] = cv2.GaussianBlur(data[key], (radius, radius), 0,
+                                                 0)
+        return data
+
+
 if __name__ == "__main__":
-    transforms = [
-        LoadImages(),
-        RandomCropByAlpha(((640, 640), (1280, 1280)), p=0.5)
-    ]
+    transforms = [RandomBlur(prob=1)]
     transforms = Compose(transforms)
-    img_path = '/ssd1/home/chenguowei01/github/PaddleSeg/contrib/matting/data/matting/human_matting_old/train/image/0051115Q_000001_0062_001.png'
-    bg_path = img_path.replace('image', 'bg')
-    fg_path = img_path.replace('image', 'fg')
-    alpha_path = img_path.replace('image', 'alpha')
+    fg_path = '/ssd1/home/chenguowei01/github/PaddleSeg/contrib/matting/data/matting/human_matting/Distinctions-646/train/fg/13(2).png'
+    alpha_path = fg_path.replace('fg', 'alpha')
+    bg_path = '/ssd1/home/chenguowei01/github/PaddleSeg/contrib/matting/data/matting/human_matting/bg/unsplash_bg/attic/photo-1443884590026-2e4d21aee71c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MnwxMjA3fDB8MXxzZWFyY2h8Nzh8fGF0dGljfGVufDB8fHx8MTYyOTY4MDcxNQ&ixlib=rb-1.2.1&q=80&w=400.jpg'
     data = {}
-    data['img'] = img_path
-    data['fg'] = fg_path
-    data['bg'] = bg_path
-    data['alpha'] = alpha_path
+    data['fg'] = cv2.imread(fg_path)
+    data['bg'] = cv2.imread(bg_path)
+    h, w, c = data['fg'].shape
+    data['bg'] = cv2.resize(data['bg'], (w, h))
+    alpha = cv2.imread(alpha_path)
+    data['alpha'] = alpha[:, :, 0]
+    alpha = alpha / 255.
+    data['img'] = alpha * data['fg'] + (1 - alpha) * data['bg']
+
     data['gt_fields'] = ['fg', 'bg', 'alpha']
     data = transforms(data)
-    print(np.min(data['img']), np.max(data['img']))
-    print(data['img'].shape, data['fg'].shape, data['bg'].shape,
-          data['alpha'].shape)
-    cv2.imwrite('crop_img.png', data['img'].transpose((1, 2, 0)))
+    cv2.imwrite('blur_alpha.png', data['alpha'])

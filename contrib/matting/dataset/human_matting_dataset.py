@@ -104,7 +104,7 @@ class HumanMattingDataset(paddle.io.Dataset):
         fg_bg_file = fg_bg_file.split(' ')
         data['img_name'] = fg_bg_file[0]  # using in save prediction results
         fg_file = os.path.join(self.dataset_root, fg_bg_file[0])
-        alpha_file = fg_file.replace('fg', 'alpha')
+        alpha_file = fg_file.replace('/fg', '/alpha')
         fg = cv2.imread(fg_file)
         alpha = cv2.imread(alpha_file, 0)
         data['alpha'] = alpha
