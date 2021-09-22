@@ -25,6 +25,10 @@
 |[DNLNet](./dnlnet)|✔|✔|-|-|
 |[SFNet](./sfnet)|✔|-|-|-|
 |[PP-HumanSeg-Lite](./pp_humanseg_lite)|-|-|-|-|
+|[PortraitNet](./portraitnet)|-|-|-|-|
+|[SETR](./setr)|-|-|-|-|
+|[SegFormer](./segformer)|-|-|-|-|
+|[STDC](./stdcseg)|-|-|-|-|
 
 # 模型说明
 
