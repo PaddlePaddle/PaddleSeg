@@ -1,4 +1,4 @@
-# Copyright (c) 2020 PaddlePaddle Authors. All Rights Reserved.
+# Copyright (c) 2021 PaddlePaddle Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,48 +11,40 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import numpy
+
 import paddle
+from paddle import create_parameter
 import paddle.nn as nn
 from paddle.nn.functional import upsample
 from paddle.nn.functional import interpolate
-from paddle import create_parameter
-from paddleseg.cvlibs import manager
 
-from paddleseg.models.backbones.resnet_vd import ResNet50_vd
-# from paddleseg.models.backbones.resnet import resnet101
+from paddleseg.utils import utils
+from paddleseg.cvlibs import manager, param_init
+
 
 class BaseNet(nn.Layer):
     def __init__(self,
-                 nclass,
+                 num_classes,
                  backbone,
-                 aux,
-                 se_loss,
-                 sc_loss,
-                 backbone_indices,
+                 backbone_indices=[0, 1, 2, 3],
+                 aux=True,
                  jpu=True,
-                 norm_layer=None,
-                 base_size=520,
-                 crop_size=480,
-                 mean=[.485, .456, .406],
-                 std=[.229, .224, .225],
-                 **kwargs):
+                 norm_layer=nn.BatchNorm2D,
+                 pretrained=None):
         super(BaseNet, self).__init__()
-        self.nclass = nclass
+        self.nclass = num_classes
         self.aux = aux
-        self.se_loss = se_loss
-        self.mean = mean
-        self.std = std
-        self.base_size = base_size
-        self.crop_size = crop_size
-        # bilinear upsample options
-        self._up_kwargs = {'mode': 'bilinear', 'align_corners': True}
+        self.jpu = jpu
+
         self.backbone = backbone
         self.backbone_indices = backbone_indices
+        
+        self._up_kwargs = {'mode': 'bilinear', 'align_corners': True}
         self.jpu = JPU([512, 1024, 2048],
                        width=512,
                        norm_layer=norm_layer,
                        up_kwargs=self._up_kwargs) if jpu else None
-        self.pretrained = backbone
 
     def base_forward(self, x):
         feat_list = self.backbone(x)
@@ -67,43 +59,55 @@ class BaseNet(nn.Layer):
 
 @manager.MODELS.add_component
 class GINet(BaseNet):
+    """
+    The GINet implementation based on PaddlePaddle.
+
+    The original article refers to
+    Wu, Tianyi, Yu Lu, Yu Zhu, Chuang Zhang, Ming Wu, Zhanyu Ma, and Guodong Guo. "GINet: Graph interaction network for scene parsing." In European Conference on Computer Vision, pp. 34-51. Springer, Cham, 2020.
+    (https://arxiv.org/pdf/2009.06160).
+
+    Args:
+        num_classes (int): The unique number of target classes.
+        backbone (Paddle.nn.Layer): Backbone network.
+        backbone_indices (tuple, optional): Two values in the tuple indicate the indices of output of backbone.
+        aux (bool, optional)): whether to use another branch to optimize. Default:True.
+        jpu (bool, optional)): whether to use jpu unit in the base forward. Default:True.
+        norm_layer(Paddle.nn.Layer, optional)): The kind of normalization in the network. Default: nn.BatchNorm2D.
+        pretrained (str, optional): The path or url of pretrained model. Default: None.
+    """
     def __init__(self,
                  num_classes,
                  backbone,
-                 aux=True,
-                 se_loss=False,
                  backbone_indices=[0, 1, 2, 3],
-                 sc_loss=True,
+                 aux=True,
+                 jpu=True,
                  norm_layer=nn.BatchNorm2D,
-                 **kwargs):
+                 pretrained=None):
         super(GINet, self).__init__(
             num_classes,
             backbone,
-            aux,
-            se_loss,
-            sc_loss,
             backbone_indices,
-            norm_layer=norm_layer,
-            **kwargs)
+            aux,jpu,
+            norm_layer,
+            pretrained)
 
         self.head = GIHead(
             in_channels=2048, nclass=num_classes, up_kwargs=self._up_kwargs)
-        self.sc_loss = sc_loss
 
-        if aux:
+        if self.aux:
             self.auxlayer = FCNHead(1024, num_classes, norm_layer)
+
+        self.pretrained = pretrained
+        self.init_weight()
 
     def forward(self, x):
         _, _, h, w = x.shape
-        _, _, c3, c4 = self.base_forward(x)  ## use sync_bn in resnet
+        _, _, c3, c4 = self.base_forward(x) 
 
         outputs = []
         x, se_out = self.head(c4)
         x = upsample(x, (h, w), **self._up_kwargs)
         outputs.append(x)
-
-        if self.sc_loss:
-            outputs.append(se_out)
 
         if self.aux:
             auxout = self.auxlayer(c3)
@@ -113,6 +117,15 @@ class GINet(BaseNet):
         
         return outputs
 
+    def init_weight(self):
+        for layer in self.sublayers():
+            if isinstance(layer, nn.Conv2D):
+                param_init.normal_init(layer.weight, std=0.001)
+            elif isinstance(layer, (nn.BatchNorm, nn.SyncBatchNorm)):
+                param_init.constant_init(layer.weight, value=1.0)
+                param_init.constant_init(layer.bias, value=0.0)
+        if self.pretrained is not None:
+            utils.load_pretrained_model(self, self.pretrained)
 
 class FCNHead(nn.Layer):
     def __init__(self, in_channels, out_channels, norm_layer):
@@ -133,9 +146,7 @@ class GIHead(nn.Layer):
         super().__init__()
         self.nclass = nclass
         inter_channels = in_channels // 4
-
-        self.inp = paddle.zeros([nclass, 300],
-                                dtype='float32')  ### move class 60 out of sight
+        self.inp = paddle.zeros(shape=(nclass, 300), dtype='float32')
         self.inp = create_parameter(
             shape=self.inp.shape,
             dtype=str(self.inp.numpy().dtype),
@@ -187,7 +198,7 @@ class Global_Reason_Unit(nn.Layer):
     """
 
     def __init__(self, in_channels, num_state=256, num_node=84,
-                 nclass=59):  ### 19 -> 59
+                 nclass=59):  
         super().__init__()
         self.num_state = num_state
         self.conv_theta = nn.Conv2D(
@@ -433,24 +444,3 @@ class SeparableConv2d(nn.Layer):
         x = self.bn(x)
         x = self.pointwise(x)
         return x
-
-
-if __name__ == '__main__':
-    backbone = ResNet50_vd(output_stride=8, pretrained='https://bj.bcebos.com/paddleseg/dygraph/resnet50_vd_ssld_v2.tar.gz')
-    # backbone = resnet101(pretrained=True, dilated=False, norm_layer=nn.BatchNorm2D)
-    model = GINet(59, backbone=backbone)
-    N, C, H, W = 1, 3, 100, 100
-    x = paddle.ones((N,C,H,W))
-    # out = model(x)
-    # print(out[0].mean(), out[0].shape)
-    # paddle.save(model.state_dict(), "init_model.pdparams")
-    model.load_dict(paddle.load('torch_transfer.pdparams'))
-    out = model(x)
-    res = 0
-    for item in out:
-        res += item.sum() 
-    # res = out[0].sum()+out[1].sum()+out[2].sum()
-    res.backward()
-    print(out[0].mean()) # 
-    print(out[1].mean()) # 
-    print(out[2].mean()) # 
