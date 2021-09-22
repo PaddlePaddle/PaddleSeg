@@ -96,20 +96,24 @@ PaddleSeg是基于飞桨[PaddlePaddle](https://www.paddlepaddle.org.cn)开发的
 * [模型训练](/docs/train/train_cn.md)
 * [模型评估](./docs/evaluation/evaluate/evaluate.md)
 * [预测与可视化](./docs/predict/predict_cn.md)
-* [模型导出](./docs/export/export/model_export.md)
 
-*  模型部署
+* 模型导出
     * [导出预测模型](./docs/model_export.md)
-    * [Python Inference部署](./docs/deployment/inference/python_inference.md)
-    * [C++ Inference部署](./docs/deployment/inference/cpp_inference.md)
-    * [Lite部署](./docs/deployment/lite/lite.md)
-    * [Serving部署](./docs/deployment/serving/serving.md)
-    * [Web部署](./docs/deployment/web/web.md)
-    * [推理Benchmark](./docs/deployment/inference/infer_benchmark.md)
     * [导出ONNX模型](./docs/model_export_onnx.md)
+
+* 模型部署
+    * [Paddle Inference部署(Python)](./docs/deployment/inference/python_inference.md)
+    * [Paddle Inference部署(C++)](./docs/deployment/inference/cpp_inference.md)
+    * [Paddle Lite部署](./docs/deployment/lite/lite.md)
+    * [Paddle Serving部署](./docs/deployment/serving/serving.md)
+    * [Paddle JS部署](./docs/deployment/web/web.md)
+    * [推理Benchmark](./docs/deployment/inference/infer_benchmark.md)
+
 * 模型压缩
     * [量化](./docs/slim/quant/quant.md)
+    * [蒸馏](./docs/slim/distill/distill.md)
     * [裁剪](./docs/slim/prune/prune.md)
+
 *  API使用教程
     * [API文档说明](./docs/apis/README_CN.md)
     * [API应用案例](./docs/api_example.md)

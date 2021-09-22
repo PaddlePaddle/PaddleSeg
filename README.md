@@ -89,20 +89,24 @@ Welcome to PaddleSeg! PaddleSeg is an end-to-end image segmentation development 
 * [Model Training](/docs/train/train.md)
 * [Model Evaluation](./docs/evaluation/evaluate/evaluate.md)
 * [Prediction](./docs/predict/predict.md)
-* [Model Export](./docs/export/export/model_export.md)
+
+* Model Export
+    * [Export Inference Model](./docs/model_export.md)
+    * [Export ONNX Model](./docs/model_export_onnx.md)
 
 *  Model Deploy
-    * [Export Model](./docs/model_export.md)
-    * [Python Inference](./docs/deployment/inference/python_inference.md)
-    * [C++ Inference](./docs/deployment/inference/cpp_inference.md)
-    * [Lite](./docs/deployment/lite/lite.md)
-    * [Serving](./docs/deployment/serving/serving.md)
-    * [Web](./docs/deployment/web/web.md)
+    * [Paddle Inference (Python)](./docs/deployment/inference/python_inference.md)
+    * [Paddle Inference (C++)](./docs/deployment/inference/cpp_inference.md)
+    * [Paddle Lite](./docs/deployment/lite/lite.md)
+    * [Paddle Serving](./docs/deployment/serving/serving.md)
+    * [Paddle JS](./docs/deployment/web/web.md)
     * [Benchmark](./docs/deployment/inference/infer_benchmark.md)
-    * [Export ONNX Model](./docs/model_export_onnx.md)
+
 * Model Compression
     * [Quantization](./docs/slim/quant/quant.md)
+    * [Distillation](./docs/slim/distill/distill.md)
     * [Prune](./docs/slim/prune/prune.md)
+
 *  API Tutorial
     * [API Documention](./docs/apis/README.md)
     * [API Application](./docs/api_example.md)
