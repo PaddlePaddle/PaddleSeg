@@ -91,6 +91,8 @@ PaddleSeg是基于飞桨[PaddlePaddle](https://www.paddlepaddle.org.cn)开发的
 *  PaddleSeg二次开发教程
     * [配置文件详解](./docs/design/use/use_cn.md)
     * [如何创造自己的模型](./docs/design/create/add_new_model_cn.md)
+    * [提交PR说明](./docs/pr/pr/pr.md)
+    * [模型PR规范](./docs/pr/pr/style_cn.md)
 * [模型训练](/docs/train/train_cn.md)
 * [模型评估](./docs/evaluation/evaluate/evaluate.md)
 * [预测与可视化](./docs/predict/predict_cn.md)
@@ -125,8 +127,7 @@ PaddleSeg是基于飞桨[PaddlePaddle](https://www.paddlepaddle.org.cn)开发的
     * [OCRNet](./docs/models/ocrnet.md)
     * [Fast-SCNN](./docs/models/fascnn.md)
 * [静态图版本](./docs/static/static_cn.md)
-* [提交PR说明](./docs/pr/pr/pr.md)
-* [FAQ](./docs/faq/faq/faq_cn.md)
+* [常见问题汇总](./docs/faq/faq/faq_cn.md)
 
 ## 实践案例 <img src="./docs/images/anli.png" width="20"/>
 
