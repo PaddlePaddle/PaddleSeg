@@ -125,14 +125,9 @@ class GIHead(nn.Layer):
             nn.Linear(300, 128), nn.BatchNorm1D(128), nn.ReLU())
         self.fc2 = nn.Sequential(
             nn.Linear(128, 256), nn.BatchNorm1D(256), nn.ReLU())
-        self.conv5 = nn.Sequential(
-            nn.Conv2D(
-                in_channels,
-                inter_channels,
-                kernel_size=3,
-                stride=1,
-                padding=1,
-                bias_attr=False), nn.BatchNorm2D(inter_channels), nn.ReLU())
+        self.conv5 = layer_libs.ConvBNReLU(
+            in_channels, inter_channels, 3, padding=1, bias_attr=False)
+
         self.gloru = GlobalReasonUnit(
             in_channels=inter_channels,
             num_state=256,
@@ -176,13 +171,7 @@ class GlobalReasonUnit(nn.Layer):
         self.extend_dim = nn.Conv2D(
             num_state, in_channels, kernel_size=1, bias_attr=False)
 
-
-        weight_attr = paddle.ParamAttr(name="weight", initializer=\
-                            paddle.nn.initializer.Constant(value=1.0))
-        bias_attr = paddle.ParamAttr(name="bias", initializer=\
-                            paddle.nn.initializer.Constant(value=0.0))
-        self.bn = nn.BatchNorm2D(
-            in_channels, weight_attr=weight_attr, bias_attr=bias_attr)
+        self.bn = layer_libs.SyncBatchNorm(in_channels)
 
     def forward(self, x, inp):
         """
