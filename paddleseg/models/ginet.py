@@ -11,53 +11,19 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import numpy
 
+import numpy
 import paddle
-from paddle import create_parameter
 import paddle.nn as nn
-from paddle.nn.functional import upsample
-from paddle.nn.functional import interpolate
+from paddle.nn import functional as F
 
 from paddleseg.utils import utils
+from paddleseg.models.layers import layer_libs
 from paddleseg.cvlibs import manager, param_init
 
 
-class BaseNet(nn.Layer):
-    def __init__(self,
-                 num_classes,
-                 backbone,
-                 backbone_indices=[0, 1, 2, 3],
-                 aux=True,
-                 jpu=True,
-                 norm_layer=nn.BatchNorm2D,
-                 pretrained=None):
-        super().__init__()
-        self.nclass = num_classes
-        self.aux = aux
-        self.jpu = jpu
-
-        self.backbone = backbone
-        self.backbone_indices = backbone_indices
-
-        self._up_kwargs = {'mode': 'bilinear', 'align_corners': True}
-        self.jpu = JPU([512, 1024, 2048],
-                       width=512,
-                       norm_layer=norm_layer,
-                       up_kwargs=self._up_kwargs) if jpu else None
-
-    def base_forward(self, x):
-        feat_list = self.backbone(x)
-        c1, c2, c3, c4 = [feat_list[i] for i in self.backbone_indices]
-
-        if self.jpu:
-            return self.jpu(c1, c2, c3, c4)
-        else:
-            return c1, c2, c3, c4
-
-
 @manager.MODELS.add_component
-class GINet(BaseNet):
+class GINet(nn.Layer):
     """
     The GINet implementation based on PaddlePaddle.
 
@@ -69,9 +35,11 @@ class GINet(BaseNet):
         num_classes (int): The unique number of target classes.
         backbone (Paddle.nn.Layer): Backbone network.
         backbone_indices (tuple, optional): Two values in the tuple indicate the indices of output of backbone.
-        aux (bool, optional)): whether to use another branch to optimize. Default:True.
+        enable_auxiliary_loss (bool, optional): A bool value indicates whether adding auxiliary loss.
+            If true, auxiliary loss will be added after LearningToDownsample module. Default: False.
+        align_corners (bool): An argument of F.interpolate. It should be set to False when the output size of feature
+            is even, e.g. 1024x512, otherwise it is True, e.g. 769x769.. Default: False.
         jpu (bool, optional)): whether to use jpu unit in the base forward. Default:True.
-        norm_layer(Paddle.nn.Layer, optional)): The kind of normalization in the network. Default: nn.BatchNorm2D.
         pretrained (str, optional): The path or url of pretrained model. Default: None.
     """
 
@@ -79,21 +47,36 @@ class GINet(BaseNet):
                  num_classes,
                  backbone,
                  backbone_indices=[0, 1, 2, 3],
-                 aux=True,
+                 enable_auxiliary_loss=True,
+                 align_corners=True,
                  jpu=True,
-                 norm_layer=nn.BatchNorm2D,
                  pretrained=None):
-        super(GINet, self).__init__(num_classes, backbone, backbone_indices,
-                                    aux, jpu, norm_layer, pretrained)
+        super().__init__()
+        self.nclass = num_classes
+        self.aux = enable_auxiliary_loss
+        self.jpu = jpu
 
-        self.head = GIHead(
-            in_channels=2048, nclass=num_classes, up_kwargs=self._up_kwargs)
+        self.backbone = backbone
+        self.backbone_indices = backbone_indices
+        self.align_corners = align_corners
+
+        self.jpu = JPU([512, 1024, 2048], width=512) if jpu else None
+        self.head = GIHead(in_channels=2048, nclass=num_classes)
 
         if self.aux:
-            self.auxlayer = FCNHead(1024, num_classes, norm_layer)
+            self.auxlayer = layer_libs.AuxLayer(1024, 1024 // 4, num_classes)
 
         self.pretrained = pretrained
         self.init_weight()
+
+    def base_forward(self, x):
+        feat_list = self.backbone(x)
+        c1, c2, c3, c4 = [feat_list[i] for i in self.backbone_indices]
+
+        if self.jpu:
+            return self.jpu(c1, c2, c3, c4)
+        else:
+            return c1, c2, c3, c4
 
     def forward(self, x):
         _, _, h, w = x.shape
@@ -101,12 +84,16 @@ class GINet(BaseNet):
 
         outputs = []
         x, _ = self.head(c4)
-        x = upsample(x, (h, w), **self._up_kwargs)
+        x = F.interpolate(
+            x, (h, w), mode='bilinear', align_corners=self.align_corners)
         outputs.append(x)
 
         if self.aux:
             auxout = self.auxlayer(c3)
-            auxout = upsample(auxout, (h, w), **self._up_kwargs)
+            auxout = F.interpolate(
+                auxout, (h, w),
+                mode='bilinear',
+                align_corners=self.align_corners)
 
             outputs.append(auxout)
 
@@ -123,27 +110,13 @@ class GINet(BaseNet):
             utils.load_pretrained_model(self, self.pretrained)
 
 
-class FCNHead(nn.Layer):
-    def __init__(self, in_channels, out_channels, norm_layer):
-        super().__init__()
-        inter_channels = in_channels // 4
-        self.conv5 = nn.Sequential(
-            nn.Conv2D(
-                in_channels, inter_channels, 3, padding=1, bias_attr=False),
-            norm_layer(inter_channels), nn.ReLU(), nn.Dropout2D(0.1),
-            nn.Conv2D(inter_channels, out_channels, 1))
-
-    def forward(self, x):
-        return self.conv5(x)
-
-
 class GIHead(nn.Layer):
-    def __init__(self, in_channels, nclass, up_kwargs):
+    def __init__(self, in_channels, nclass):
         super().__init__()
         self.nclass = nclass
         inter_channels = in_channels // 4
         self.inp = paddle.zeros(shape=(nclass, 300), dtype='float32')
-        self.inp = create_parameter(
+        self.inp = paddle.create_parameter(
             shape=self.inp.shape,
             dtype=str(self.inp.numpy().dtype),
             default_initializer=paddle.nn.initializer.Assign(self.inp))
@@ -160,7 +133,7 @@ class GIHead(nn.Layer):
                 stride=1,
                 padding=1,
                 bias_attr=False), nn.BatchNorm2D(inter_channels), nn.ReLU())
-        self.gloru = Global_Reason_Unit(
+        self.gloru = GlobalReasonUnit(
             in_channels=inter_channels,
             num_state=256,
             num_node=84,
@@ -183,7 +156,7 @@ class GIHead(nn.Layer):
         return out, se_out
 
 
-class Global_Reason_Unit(nn.Layer):
+class GlobalReasonUnit(nn.Layer):
     """
         Graph G = (V, \sigma), |V| is the number of vertext,
         denoted as num_node, each vertex feature is d-dim vector,
@@ -199,7 +172,7 @@ class Global_Reason_Unit(nn.Layer):
             in_channels, num_node, kernel_size=1, stride=1, padding=0)
         self.conv_phi = nn.Conv2D(
             in_channels, num_state, kernel_size=1, stride=1, padding=0)
-        self.graph = Graph_layer(num_state, num_node, nclass)
+        self.graph = GraphLayer(num_state, num_node, nclass)
         self.extend_dim = nn.Conv2D(
             num_state, in_channels, kernel_size=1, bias_attr=False)
 
@@ -241,19 +214,19 @@ class Global_Reason_Unit(nn.Layer):
         return out, class_node
 
 
-class Graph_layer(nn.Layer):
+class GraphLayer(nn.Layer):
     def __init__(self, num_state, num_node, num_class):
         super().__init__()
         self.vis_gcn = GCN(num_state, num_node)
         self.word_gcn = GCN(num_state, num_class)
-        self.transfer = Graph_transfer(num_state)
+        self.transfer = GraphTransfer(num_state)
         self.gamma_vis = paddle.zeros([num_node])
         self.gamma_word = paddle.zeros([num_class])
-        self.gamma_vis = create_parameter(
+        self.gamma_vis = paddle.create_parameter(
             shape=self.gamma_vis.shape,
             dtype=str(self.gamma_vis.numpy().dtype),
             default_initializer=paddle.nn.initializer.Assign(self.gamma_vis))
-        self.gamma_word = create_parameter(
+        self.gamma_word = paddle.create_parameter(
             shape=self.gamma_word.shape,
             dtype=str(self.gamma_word.numpy().dtype),
             default_initializer=paddle.nn.initializer.Assign(self.gamma_word))
@@ -297,7 +270,7 @@ class GCN(nn.Layer):
         return h
 
 
-class Graph_transfer(nn.Layer):
+class GraphTransfer(nn.Layer):
     """
         Transfer vis graph to class node
         Transfer class node to vis feature
@@ -346,39 +319,24 @@ class Graph_transfer(nn.Layer):
 
 
 class JPU(nn.Layer):
-    def __init__(self,
-                 in_channels,
-                 width=512,
-                 norm_layer=nn.BatchNorm2D,
-                 **kwargs):
+    def __init__(self, in_channels, width=512):
         super().__init__()
 
-        self.conv5 = nn.Sequential(
-            nn.Conv2D(in_channels[-1], width, 3, padding=1, bias_attr=False),
-            norm_layer(width), nn.ReLU())
-        self.conv4 = nn.Sequential(
-            nn.Conv2D(in_channels[-2], width, 3, padding=1, bias_attr=False),
-            norm_layer(width), nn.ReLU())
-        self.conv3 = nn.Sequential(
-            nn.Conv2D(in_channels[-3], width, 3, padding=1, bias_attr=False),
-            norm_layer(width), nn.ReLU())
+        self.conv5 = layer_libs.ConvBNReLU(
+            in_channels[-1], width, 3, padding=1, bias_attr=False)
+        self.conv4 = layer_libs.ConvBNReLU(
+            in_channels[-2], width, 3, padding=1, bias_attr=False)
+        self.conv3 = layer_libs.ConvBNReLU(
+            in_channels[-3], width, 3, padding=1, bias_attr=False)
 
-        self.dilation1 = nn.Sequential(
-            SeparableConv2d(
-                3 * width, width, 3, padding=1, dilation=1, bias=False),
-            norm_layer(width), nn.ReLU())
-        self.dilation2 = nn.Sequential(
-            SeparableConv2d(
-                3 * width, width, 3, padding=2, dilation=2, bias=False),
-            norm_layer(width), nn.ReLU())
-        self.dilation3 = nn.Sequential(
-            SeparableConv2d(
-                3 * width, width, 3, padding=4, dilation=4, bias=False),
-            norm_layer(width), nn.ReLU())
-        self.dilation4 = nn.Sequential(
-            SeparableConv2d(
-                3 * width, width, 3, padding=8, dilation=8, bias=False),
-            norm_layer(width), nn.ReLU())
+        self.dilation1 = layer_libs.SeparableConvBNReLU(
+            3 * width, width, 3, padding=1, dilation=1, bias_attr=False)
+        self.dilation2 = layer_libs.SeparableConvBNReLU(
+            3 * width, width, 3, padding=2, dilation=2, bias_attr=False)
+        self.dilation3 = layer_libs.SeparableConvBNReLU(
+            3 * width, width, 3, padding=4, dilation=4, bias_attr=False)
+        self.dilation4 = layer_libs.SeparableConvBNReLU(
+            3 * width, width, 3, padding=8, dilation=8, bias_attr=False)
 
     def forward(self, *inputs):
         feats = [
@@ -387,9 +345,9 @@ class JPU(nn.Layer):
             self.conv3(inputs[-3])
         ]
         size = feats[-1].shape[2:]
-        feats[-2] = interpolate(
+        feats[-2] = F.interpolate(
             feats[-2], size, mode='bilinear', align_corners=True)
-        feats[-3] = interpolate(
+        feats[-3] = F.interpolate(
             feats[-3], size, mode='bilinear', align_corners=True)
 
         feat = paddle.concat(feats, axis=1)
@@ -402,35 +360,3 @@ class JPU(nn.Layer):
                              axis=1)
 
         return inputs[0], inputs[1], inputs[2], feat
-
-
-class SeparableConv2d(nn.Layer):
-    def __init__(self,
-                 inplanes,
-                 planes,
-                 kernel_size=3,
-                 stride=1,
-                 padding=1,
-                 dilation=1,
-                 bias=False,
-                 norm_layer=nn.BatchNorm2D):
-        super().__init__()
-
-        self.conv1 = nn.Conv2D(
-            inplanes,
-            inplanes,
-            kernel_size,
-            stride,
-            padding,
-            dilation,
-            groups=inplanes,
-            bias_attr=bias)
-        self.bn = norm_layer(inplanes)
-        self.pointwise = nn.Conv2D(
-            inplanes, planes, 1, 1, 0, 1, 1, bias_attr=bias)
-
-    def forward(self, x):
-        x = self.conv1(x)
-        x = self.bn(x)
-        x = self.pointwise(x)
-        return x

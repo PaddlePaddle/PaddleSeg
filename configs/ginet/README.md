@@ -7,7 +7,7 @@
 
 ## Performance
 
-### CityScapes
+### ADE20K
 
 | Model | Backbone | Resolution | Training Iters | mIoU | mIoU (flip) | mIoU (ms+flip) | Links |
 |---|---|---|---|---|---|---|---|
