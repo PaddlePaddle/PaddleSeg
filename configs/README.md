@@ -27,6 +27,7 @@
 |[PP-HumanSeg-Lite](./pp_humanseg_lite)|-|-|-|-|
 |[PortraitNet](./portraitnet)|-|-|-|-|
 |[SETR](./setr)|-|-|-|-|
+|[MLATransformer]()|-|-|-|-|
 |[SegFormer](./segformer)|-|-|-|-|
 |[STDC](./stdcseg)|-|-|-|-|
 
