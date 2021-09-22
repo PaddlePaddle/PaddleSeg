@@ -32,14 +32,14 @@ class BaseNet(nn.Layer):
                  jpu=True,
                  norm_layer=nn.BatchNorm2D,
                  pretrained=None):
-        super(BaseNet, self).__init__()
+        super().__init__()
         self.nclass = num_classes
         self.aux = aux
         self.jpu = jpu
 
         self.backbone = backbone
         self.backbone_indices = backbone_indices
-        
+
         self._up_kwargs = {'mode': 'bilinear', 'align_corners': True}
         self.jpu = JPU([512, 1024, 2048],
                        width=512,
@@ -48,8 +48,7 @@ class BaseNet(nn.Layer):
 
     def base_forward(self, x):
         feat_list = self.backbone(x)
-        c1, c2, c3, c4 = [feat_list[i]
-                          for i in self.backbone_indices]
+        c1, c2, c3, c4 = [feat_list[i] for i in self.backbone_indices]
 
         if self.jpu:
             return self.jpu(c1, c2, c3, c4)
@@ -75,6 +74,7 @@ class GINet(BaseNet):
         norm_layer(Paddle.nn.Layer, optional)): The kind of normalization in the network. Default: nn.BatchNorm2D.
         pretrained (str, optional): The path or url of pretrained model. Default: None.
     """
+
     def __init__(self,
                  num_classes,
                  backbone,
@@ -83,13 +83,8 @@ class GINet(BaseNet):
                  jpu=True,
                  norm_layer=nn.BatchNorm2D,
                  pretrained=None):
-        super(GINet, self).__init__(
-            num_classes,
-            backbone,
-            backbone_indices,
-            aux,jpu,
-            norm_layer,
-            pretrained)
+        super(GINet, self).__init__(num_classes, backbone, backbone_indices,
+                                    aux, jpu, norm_layer, pretrained)
 
         self.head = GIHead(
             in_channels=2048, nclass=num_classes, up_kwargs=self._up_kwargs)
@@ -102,10 +97,10 @@ class GINet(BaseNet):
 
     def forward(self, x):
         _, _, h, w = x.shape
-        _, _, c3, c4 = self.base_forward(x) 
+        _, _, c3, c4 = self.base_forward(x)
 
         outputs = []
-        x, se_out = self.head(c4)
+        x, _ = self.head(c4)
         x = upsample(x, (h, w), **self._up_kwargs)
         outputs.append(x)
 
@@ -114,7 +109,7 @@ class GINet(BaseNet):
             auxout = upsample(auxout, (h, w), **self._up_kwargs)
 
             outputs.append(auxout)
-        
+
         return outputs
 
     def init_weight(self):
@@ -126,6 +121,7 @@ class GINet(BaseNet):
                 param_init.constant_init(layer.bias, value=0.0)
         if self.pretrained is not None:
             utils.load_pretrained_model(self, self.pretrained)
+
 
 class FCNHead(nn.Layer):
     def __init__(self, in_channels, out_channels, norm_layer):
@@ -163,21 +159,20 @@ class GIHead(nn.Layer):
                 kernel_size=3,
                 stride=1,
                 padding=1,
-                bias_attr=False), nn.BatchNorm2D(inter_channels),
-            nn.ReLU())  
+                bias_attr=False), nn.BatchNorm2D(inter_channels), nn.ReLU())
         self.gloru = Global_Reason_Unit(
             in_channels=inter_channels,
             num_state=256,
             num_node=84,
             nclass=nclass)
-        self.conv6 = nn.Sequential(nn.Dropout(0.1),
-         nn.Conv2D(inter_channels, nclass, 1))
+        self.conv6 = nn.Sequential(
+            nn.Dropout(0.1), nn.Conv2D(inter_channels, nclass, 1))
 
     def forward(self, x):
         B, C, H, W = x.shape
         inp = self.inp.detach()
 
-        inp = self.fc1(inp) ## almost all zeros input into fc
+        inp = self.fc1(inp)  ## almost all zeros input into fc
         inp = self.fc2(inp).unsqueeze(axis=0).transpose((0, 2, 1))\
                            .expand((B, 256, self.nclass))
 
@@ -197,8 +192,7 @@ class Global_Reason_Unit(nn.Layer):
             Chen, Yunpeng, et al. "Graph-Based Global Reasoning Networks" (https://arxiv.org/abs/1811.12814)
     """
 
-    def __init__(self, in_channels, num_state=256, num_node=84,
-                 nclass=59):  
+    def __init__(self, in_channels, num_state=256, num_node=84, nclass=59):
         super().__init__()
         self.num_state = num_state
         self.conv_theta = nn.Conv2D(
@@ -296,7 +290,6 @@ class GCN(nn.Layer):
             bias_attr=bias)
 
     def forward(self, x):
-        # h = self.conv1(x.transpose((0,2,1)).contiguous()).transpose((0,2,1)) ##
         h = self.conv1(x.transpose((0, 2, 1))).transpose((0, 2, 1))
         h = h + x
         h = self.relu(h)
@@ -321,8 +314,8 @@ class Graph_transfer(nn.Layer):
             in_channels=in_dim, out_channels=in_dim, kernel_size=1)
         self.value_conv_word = nn.Conv1D(
             in_channels=in_dim, out_channels=in_dim, kernel_size=1)
-        self.softmax_vis = nn.Softmax(axis=-1)  #for node
-        self.softmax_word = nn.Softmax(axis=-2)  #for class
+        self.softmax_vis = nn.Softmax(axis=-1)
+        self.softmax_word = nn.Softmax(axis=-2)
 
     def forward(self, word, vis_node):
         """
@@ -335,15 +328,12 @@ class Graph_transfer(nn.Layer):
         m_batchsize, C, Nn = vis_node.shape
 
         proj_query = self.query_conv(word).reshape((m_batchsize, -1, Nc))\
-                                          .transpose((0, 2, 1)) #B, nclass, C
-        proj_key = self.key_conv(vis_node).reshape((m_batchsize, -1,
-                                                    Nn))  #B, C, num_node
+                                          .transpose((0, 2, 1))
+        proj_key = self.key_conv(vis_node).reshape((m_batchsize, -1, Nn))
 
-        energy = paddle.bmm(proj_query, proj_key)  #B, nclass, num_node
-        attention_vis = self.softmax_vis(energy).transpose(
-            (0, 2, 1))  #B, num_node, nclass; normalized by node
-        attention_word = self.softmax_word(
-            energy)  #B, nclass, num_node; normalized by class
+        energy = paddle.bmm(proj_query, proj_key)
+        attention_vis = self.softmax_vis(energy).transpose((0, 2, 1))
+        attention_word = self.softmax_word(energy)
 
         proj_value_vis = self.value_conv_vis(vis_node).reshape(
             (m_batchsize, -1, Nn))  #B, C, num_node
