@@ -1,0 +1,37 @@
+# The fastscnn config for train benchmark
+_base_: './cityscapes_30imgs.yml'
+
+batch_size: 2
+iters: 500
+
+loss:
+  types:
+    - type: CrossEntropyLoss
+  coef: [1.0, 0.4]
+
+lr_scheduler:
+  type: PolynomialDecay
+  learning_rate: 0.05
+  end_lr: 1.0e-4
+  power: 0.9
+
+model:
+  type: FastSCNN
+  num_classes: 19
+  enable_auxiliary_loss: True
+  pretrained: null
+
+train_dataset:
+  transforms:
+    - type: ResizeStepScaling
+      min_scale_factor: 0.5
+      max_scale_factor: 2.0
+      scale_step_size: 0.25
+    - type: RandomPaddingCrop
+      crop_size: [1024, 1024]
+    - type: RandomHorizontalFlip
+    - type: RandomDistort
+      brightness_range: 0.4
+      contrast_range: 0.4
+      saturation_range: 0.4
+    - type: Normalize

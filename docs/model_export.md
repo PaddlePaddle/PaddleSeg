@@ -1,29 +1,34 @@
-# 模型导出
+# 导出预测模型
 
-本教程提供了一个将训练好的动态图模型转化为静态图模型并进行部署的例子
+PaddleSeg训练好模型后，需要将模型导出为预测模型，才可以进行模型部署。
 
-*注意：如果已经通过量化或者剪枝优化过模型，则模型已经保存为静态图模型，可以直接查看[部署](#模型部署预测)*
+本教程提供一个示例介绍模型导出的方法。
 
-## 获取预训练模型
+## 1. 获取预训练权重
 
-*注意：下述例子为Linux或者Mac上执行的例子，windows请自行在浏览器下载[参数](https://paddleseg.bj.bcebos.com/dygraph/cityscapes/bisenet_cityscapes_1024x1024_160k/model.pdparams)并存放到所创建的目录*
+大家使用PaddleSeg训练好模型后，输出目录下的best_model文件保存测试精度最高的预训练权重。
+
+本示例中，我们使用BiseNetV2模型，大家执行如下命令或者点击[链接](https://paddleseg.bj.bcebos.com/dygraph/cityscapes/bisenet_cityscapes_1024x1024_160k/model.pdparams)下载模型预训练权重。
+
 ```shell
 mkdir bisenet && cd bisenet
 wget https://paddleseg.bj.bcebos.com/dygraph/cityscapes/bisenet_cityscapes_1024x1024_160k/model.pdparams
 cd ..
 ```
 
-## 将模型导出为静态图模型
+## 2. 导出预测模型
 
-请确保完成了PaddleSeg的安装工作，并且位于PaddleSeg目录下，执行以下脚本：
+确保正确安装PaddleSeg后，在PaddleSeg目录下执行如下命令，则预测模型会保存在output文件夹。
 
 ```shell
-export CUDA_VISIBLE_DEVICES=0 # 设置1张可用的卡
+# 设置1张可用的卡
+export CUDA_VISIBLE_DEVICES=0
 # windows下请执行以下命令
 # set CUDA_VISIBLE_DEVICES=0
 python export.py \
        --config configs/bisenet/bisenet_cityscapes_1024x1024_160k.yml \
-       --model_path bisenet/model.pdparams
+       --model_path bisenet/model.pdparams \
+       --save_dir output
 ```
 
 ### 导出脚本参数解释
@@ -31,29 +36,30 @@ python export.py \
 |参数名|用途|是否必选项|默认值|
 |-|-|-|-|
 |config|配置文件|是|-|
-|save_dir|模型和visualdl日志文件的保存根路径|否|output|
-|model_path|预训练模型参数的路径|否|配置文件中指定值|
+|model_path|预训练权重的路径|否|配置文件中指定的预训练权重路径|
+|save_dir|保存预测模型的路径|否|output|
+|input_shape| 设置导出模型的输入shape，比如传入`--input_shape 1 3 1024 1024`。如果不设置input_shape，默认导出模型的输入shape是[-1, 3, -1, -1] | 否 | None |
 |with_softmax|在网络末端添加softmax算子。由于PaddleSeg组网默认返回logits，如果想要部署模型获取概率值，可以置为True|否|False|
 |without_argmax|是否不在网络末端添加argmax算子。由于PaddleSeg组网默认返回logits，为部署模型可以直接获取预测结果，我们默认在网络末端添加argmax算子|否|False|
 
-## 结果文件
+## 3. 预训练模型文件
+
+如下是导出的预测模型文件。
 
 ```shell
 output
-  ├── deploy.yaml            # 部署相关的配置文件
-  ├── model.pdiparams        # 静态图模型参数
-  ├── model.pdiparams.info   # 参数额外信息，一般无需关注
-  └── model.pdmodel          # 静态图模型文件
+  ├── deploy.yaml            # 部署相关的配置文件，主要说明数据预处理的方式
+  ├── model.pdmodel          # 预测模型的拓扑结构文件
+  ├── model.pdiparams        # 预测模型的权重文件
+  └── model.pdiparams.info   # 参数额外信息，一般无需关注
 ```
 
-# 模型部署预测
+导出预测模型后，我们可以使用以下方式部署模型：
 
-PaddleSeg目前支持以下部署方式：
-
-|端侧|库|教程|
+|部署场景|使用预测库|教程|
 |-|-|-|
-|Python端部署|Paddle预测库|[示例](../deploy/python/)|
-|C++端部署|Paddle预测库|[示例](../deploy/cpp/)|
-|移动端部署|PaddleLite|[示例](../deploy/lite/)|
-|服务端部署|HubServing|完善中|
-|前端部署|PaddleJS|[示例](../deploy/web/)|
+|服务器端(Nvidia GPU和X86 CPU) Python部署|Paddle Inference|[文档](../deploy/python/)|
+|服务器端(Nvidia GPU和X86 CPU) C++端部署|Paddle Inference|[文档](../deploy/cpp/)|
+|移动端部署|Paddle Lite|[文档](../deploy/lite/)|
+|服务化部署|Paddle Serving|[文档](../deploy/serving/)|
+|前端部署|Paddle JS|[文档](../deploy/web/)|

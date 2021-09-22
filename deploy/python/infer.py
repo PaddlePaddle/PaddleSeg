@@ -71,12 +71,13 @@ class Predictor:
         if not args.print_detail:
             pred_cfg.disable_glog_info()
         pred_cfg.enable_memory_optim()
+        pred_cfg.switch_ir_optim(True)
 
         if args.device == 'gpu':
             # set GPU configs accordingly
             # such as intialize the gpu memory, enable tensorrt
+            logger.info("Use GPU")
             pred_cfg.enable_use_gpu(100, 0)
-            pred_cfg.switch_ir_optim(True)
             precision_map = {
                 "fp16": PrecisionType.Half,
                 "fp32": PrecisionType.Float32,
@@ -85,6 +86,7 @@ class Predictor:
             precision_mode = precision_map[args.precision]
 
             if args.use_trt:
+                logger.info("Use TRT")
                 pred_cfg.enable_tensorrt_engine(
                     workspace_size=1 << 30,
                     max_batch_size=1,
@@ -93,15 +95,17 @@ class Predictor:
                     use_static=False,
                     use_calib_mode=False)
                 min_input_shape = {"x": [1, 3, 100, 100]}
-                max_input_shape = {"x": [1, 3, 2000, 2000]}
-                opt_input_shape = {"x": [1, 3, 192, 192]}
+                max_input_shape = {"x": [1, 3, 2000, 3000]}
+                opt_input_shape = {"x": [1, 3, 512, 1024]}
                 pred_cfg.set_trt_dynamic_shape_info(
                     min_input_shape, max_input_shape, opt_input_shape)
         else:
             # set CPU configs accordingly,
             # such as enable_mkldnn, set_cpu_math_library_num_threads
+            logger.info("Use CPU")
             pred_cfg.disable_gpu()
             if args.enable_mkldnn:
+                logger.info("Use MKLDNN")
                 # cache 10 different shapes for mkldnn to avoid memory leak
                 pred_cfg.set_mkldnn_cache_capacity(10)
                 pred_cfg.enable_mkldnn()
@@ -109,7 +113,7 @@ class Predictor:
 
         self.predictor = create_predictor(pred_cfg)
 
-        if args.benchmark:
+        if hasattr(self.args, 'benchmark') and self.args.benchmark:
             import auto_log
             pid = os.getpid()
             self.autolog = auto_log.AutoLogger(
@@ -256,6 +260,16 @@ def parse_args():
         help='When `--benchmark` is True, the specified model name is displayed.'
     )
 
+    parser.add_argument(
+        '--use_cpu',
+        dest='use_cpu',
+        help='Whether to use X86 CPU for inference. Uses GPU in default.',
+        action='store_true')
+    parser.add_argument(
+        '--use_mkldnn',
+        dest='use_mkldnn',
+        help='Whether to use MKLDNN to accelerate prediction.',
+        action='store_true')
     parser.add_argument(
         '--with_argmax',
         dest='with_argmax',

@@ -104,8 +104,8 @@ def parse_args():
         'Save images with a custom color map. Default: None, use paddleseg\'s default color map.',
         type=int,
         default=None)
-
     return parser.parse_args()
+
 
 
 def get_test_config(cfg, args):

@@ -1,7 +1,12 @@
 # Web 端部署
 
 ## 1.介绍
-以人像分割在 MacOS Chrome 的部署为例，介绍如何使用前端推理引擎 [Paddle.js](https://github.com/PaddlePaddle/Paddle.js) 对分割模型进行部署。文档第二部分介绍如何使用人像分割模型 js 库 [@paddlejs-models/humanseg](https://github.com/PaddlePaddle/Paddle.js/tree/master/packages/paddlejs-models/humanseg)，第三部分介绍重点 API。
+
+飞桨针对不同场景，提供了多个预测引擎部署模型（如下图），更多详细信息请参考[文档](https://paddleinference.paddlepaddle.org.cn/product_introduction/summary.html)。
+
+![inference_ecosystem](https://user-images.githubusercontent.com/52520497/130720374-26947102-93ec-41e2-8207-38081dcc27aa.png)
+
+本文以人像分割在 MacOS Chrome 的部署为例，介绍如何使用前端推理引擎 [Paddle.js](https://github.com/PaddlePaddle/Paddle.js) 对分割模型进行部署。文档第二部分介绍如何使用人像分割模型 js 库 [@paddlejs-models/humanseg](https://github.com/PaddlePaddle/Paddle.js/tree/master/packages/paddlejs-models/humanseg)，第三部分介绍重点 API。
 
 ## 2. 使用
 

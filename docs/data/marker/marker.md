@@ -1,100 +1,210 @@
-# 数据格式说明
+English|[简体中文](marker_cn.md)
+# Preparation of Annotation Data
 
-## 数据标注
+## 1、Pre-knowledge
 
-### 标注协议
-PaddleSeg采用单通道的标注图片，每一种像素值代表一种类别，像素标注类别需要从0开始递增，例如0，1，2，3表示有4种类别。
+### 1.1 Annotation Protocal
+PaddleSeg uses a single-channel annotated image, and each pixel value represents a category, and the pixel label category needs to increase from 0. For example, 0, 1, 2, 3 indicate that there are 4 categories.
 
-**NOTE:** 标注图像请使用PNG无损压缩格式的图片。标注类别最多为256类。
+**NOTE:** Please use PNG lossless compression format for annotated images. The maximum number of label categories is 256.
 
-### 灰度标注vs伪彩色标注
-一般的分割库使用单通道灰度图作为标注图片，往往显示出来是全黑的效果。灰度标注图的弊端：
-1. 对图像标注后，无法直接观察标注是否正确。
-2. 模型测试过程无法直接判断分割的实际效果。
+### 1.2 Grayscale Annotation VS Pseudo-color Annotation
+The general segmentation library uses a single-channel grayscale image as the annotated image, and it often shows a completely black effect. Disadvantages of gray scale annotated map:
+1. After annotating an image, it is impossible to directly observe whether the annotation is correct.
+2. The actual effect of segmentation cannot be directly judged during the model testing process.
 
-**PaddleSeg支持伪彩色图作为标注图片，在原来的单通道图片基础上，注入调色板。在基本不增加图片大小的基础上，却可以显示出彩色的效果。**
+**PaddleSeg supports pseudo-color images as annotated images, and injects palettes on the basis of the original single-channel images. On the basis of basically not increasing the size of the picture, it can show a colorful effect.**
 
-同时PaddleSeg也兼容灰度图标注，用户原来的灰度数据集可以不做修改，直接使用。
+At the same time, PaddleSeg is also compatible with gray-scale icon annotations. The user's original gray-scale dataset can be used directly without modification.
 ![](../image/image-11.png)
 
-### 灰度标注转换为伪彩色标注
-如果用户需要转换成伪彩色标注图，可使用我们的转换工具。适用于以下两种常见的情况：
-1. 如果您希望将指定目录下的所有灰度标注图转换为伪彩色标注图，则执行以下命令，指定灰度标注所在的目录即可。
+### 1.3 Convert grayscale annotations to pseudo-color annotations
+If users need to convert to pseudo-color annotation maps, they can use our conversion tool. Applies to the following two common situations:
+1. If you want to convert all grayscale annotation images in a specified directory to pseudo-color annotation images, execute the following command to specify the directory where the grayscale annotations are located.
 ```buildoutcfg
-python pdseg/tools/gray2pseudo_color.py <dir_or_file> <output_dir>
+python tools/gray2pseudo_color.py <dir_or_file> <output_dir>
 ```
 
-|参数|用途|
+|Parameter|Effection|
 |-|-|
-|dir_or_file|指定灰度标注所在目录|
-|output_dir|彩色标注图片的输出目录|
+|dir_or_file|Specify the directory where gray scale labels are located|
+|output_dir|Output directory of color-labeled pictures|
 
-2. 如果您仅希望将指定数据集中的部分灰度标注图转换为伪彩色标注图，则执行以下命令，需要已有文件列表，按列表读取指定图片。
+2. If you only want to convert part of the gray scale annotated image in the specified dataset to pseudo-color annotated image, execute the following command, you need an existing file list, and read the specified image according to the list.
 ```buildoutcfg
-python pdseg/tools/gray2pseudo_color.py <dir_or_file> <output_dir> --dataset_dir <dataset directory> --file_separator <file list separator>
+python tools/gray2pseudo_color.py <dir_or_file> <output_dir> --dataset_dir <dataset directory> --file_separator <file list separator>
 ```
-
-|参数|用途|
+|Parameter|Effection|
 |-|-|
-|dir_or_file|指定文件列表路径|
-|output_dir|彩色标注图片的输出目录|
-|--dataset_dir|数据集所在根目录|
-|--file_separator|文件列表分隔符|
-
-### 标注教程
-用户需预先采集好用于训练、评估和测试的图片，然后使用数据标注工具完成数据标注。
-
-PddleSeg已支持2种标注工具：LabelMe、精灵数据标注工具。标注教程如下：
-
-- [LabelMe标注教程](../transform/transform.md)
-- [精灵数据标注工具教程](https://github.com/PaddlePaddle/PaddleSeg/blob/release/v0.8.0/docs/annotation/jingling2seg.md)
+|dir_or_file|Specify the directory where gray scale labels are located|
+|output_dir|Output directory of color-labeled pictures|
+|--dataset_dir|The root directory where the dataset is located|
+|--file_separator|File list separator|
 
 
-## 文件列表
+### 1.4 How PaddleSeg uses datasets
+We want to write the path of the image to the three folders `train.txt`, `val.txt`, `test.txt` and `labels.txt`, because PaddleSeg locates the image by reading these text files Path.
 
-### 文件列表规范
-
-PaddleSeg采用通用的文件列表方式组织训练集、验证集和测试集。在训练、评估、可视化过程前必须准备好相应的文件列表。
-
-文件列表组织形式如下
-```
-原始图片路径 [SEP] 标注图片路径
-```
-
-其中`[SEP]`是文件路径分割符，可以在`DATASET.SEPARATOR`配置项中修改, 默认为空格。文件列表的路径以数据集根目录作为相对路径起始点，`DATASET.DATA_DIR`即为数据集根目录。
-
-如下图所示，左边为原图的图片路径，右边为图片对应的标注路径。
-
-![](../image/file_list.png)
-
-**注意事项**
-
-* 务必保证分隔符在文件列表中每行只存在一次, 如文件名中存在空格，请使用"|"等文件名不可用字符进行切分
-
-* 文件列表请使用**UTF-8**格式保存, PaddleSeg默认使用UTF-8编码读取file_list文件
-
-若数据集缺少标注图片，则文件列表不用包含分隔符和标注图片路径，如下图所示。
-
-![](../image/file_list2.png)
-
-**注意事项**
-
-此时的文件列表仅可在调用`pdseg/vis.py`进行可视化展示时使用，
-即仅可在`DATASET.TEST_FILE_LIST`和`DATASET.VIS_FILE_LIST`配置项中使用。
-不可在`DATASET.TRAIN_FILE_LIST`和`DATASET.VAL_FILE_LIST`配置项中使用。
-
-
-**符合规范的文件列表是什么样的呢？**
-
-请参考[目录](https://github.com/PaddlePaddle/PaddleSeg/blob/release/v0.8.0/docs/annotation/cityscapes_demo)。
-
-### 数据集目录结构整理
-
-如果用户想要生成数据集的文件列表，需要整理成如下的目录结构（类似于Cityscapes数据集）：
+The texts of `train.txt`, `val.txt` and `test.txt` are divided into two columns with spaces as separators. The first column is the relative path of the image file relative to the dataset, and the second column is the relative path of the image file The relative path of the dataset. As follows:
 
 ```
-./dataset/   # 数据集根目录
-├── annotations      # 标注目录
+images/xxx1.jpg  annotations/xxx1.png
+images/xxx2.jpg  annotations/xxx2.png
+...
+```
+`labels.txt`: Each row has a separate category, and the corresponding row number is the id corresponding to the category (the row number starts from 0), as shown below:
+```
+labelA
+labelB
+...
+```
+
+
+## 2、Annotate custom datasets
+If you want to use a custom dataset, you need to collect images for training, evaluation, and testing in advance, and then use the data annotation tool to complete the data annotation. If you want to use ready-made datasets such as Cityscapes and Pascal VOC, you can skip this step.
+
+PaddleSeg already supports 2 kinds of labeling tools: `LabelMe`, and `EISeg`. The annotation tutorial is as follows:
+
+- [LabelMe Tutorial](../transform/transform_cn.md)
+- [EISeg Tutorial](../../../contrib/EISeg/README.md)
+
+After annotating with the above tools, please store all annotated images in the annotations folder, and then proceed to the next step.
+
+
+## 3、Split a custom dataset
+
+We all know that the training process of neural network models is usually divided into training set, validation set, and test set. If you are using a custom dataset, PaddleSeg supports splitting the dataset by running scripts. If you want to use ready-made datasets such as Cityscapes and Pascal VOC, you can skip this step.
+
+### 3.1 Original image requirements
+The size of the original image data should be (h, w, channel), where h, w are the height and width of the image, and channel is the number of channels of the image.
+
+### 3.2 Annotation image requirements
+The annotated image must be a single-channel image, the pixel value is the corresponding category, and the pixel annotated category needs to increase from 0.
+For example, 0, 1, 2, 3 means that there are 4 categories, and the maximum number of labeled categories is 256. Among them, you can specify a specific pixel value to indicate that the pixel of that value does not participate in training and evaluation (the default is 255).
+
+
+### 3.3 Custom dataset segmentation and file list generation
+
+For all data that is not divided into training set, validation set, and test set, PaddleSeg provides a script to generate segmented data and generate a file list.
+If your dataset has been segmented like Cityscapes, Pascal VOC, etc., please skip to section 4. Otherwise, please refer to the following tutorials:
+
+
+### Use scripts to randomly split the custom dataset proportionally and generate a file list
+The data file structure is as follows:
+```
+./dataset/  # Dataset root directory
+|--images  # Original image catalog
+|  |--xxx1.jpg
+|  |--...
+|  └--...
+|
+|--annotations  # Annotated image catalog
+|  |--xxx1.png
+|  |--...
+|  └--...
+```
+
+
+Among them, the corresponding file name can be defined according to needs.
+
+The commands used are as follows, which supports enabling specific functions through different Flags.
+```
+python tools/split_dataset_list.py <dataset_root> <images_dir_name> <labels_dir_name> ${FLAGS}
+```
+Parameters:
+- dataset_root: Dataset root directory
+- images_dir_name: Original image catalog
+- labels_dir_name: Annotated image catalog
+
+FLAGS:
+
+|FLAG|Meaning|Default|Parameter numbers|
+|-|-|-|-|
+|--split|Dataset segmentation ratio|0.7 0.3 0|3|
+|--separator|File list separator|"&#124;"|1|
+|--format|Data format of pictures and label sets|"jpg"  "png"|2|
+|--label_class|Label category|'\_\_background\_\_' '\_\_foreground\_\_'|several|
+|--postfix|Filter pictures and label sets according to whether the main file name (without extension) contains the specified suffix|""   ""（2 null characters）|2|
+
+
+
+After running, `train.txt`, `val.txt`, `test.txt` and `labels.txt` will be generated in the root directory of the dataset.
+
+**Note:** Requirements for generating the file list: either the original image and the number of annotated images are the same, or there is only the original image without annotated images. If the dataset lacks annotated images, a file list without separators and annotated image paths will be generated.
+
+#### Example
+```
+python tools/split_dataset_list.py <dataset_root> images annotations --split 0.6 0.2 0.2 --format jpg png
+```
+
+
+
+## 4、Dataset file organization
+
+PaddleSeg uses a common file list method to organize training set, validation set and test set. The corresponding file list must be prepared before the training, evaluation, and visualization process.
+
+It is recommended to organize it into the following structure:
+
+    custom_dataset
+        |
+        |--images
+        |  |--image1.jpg
+        |  |--image2.jpg
+        |  |--...
+        |
+        |--labels
+        |  |--label1.png
+        |  |--label2.png
+        |  |--...
+        |
+        |--train.txt
+        |
+        |--val.txt
+        |
+        |--test.txt
+
+### 4.1 File List Specification(Training,Evaluating)
+
+- During training and evaluating, annotated images are required.
+
+- That is, the contents of `train.txt` and `val.txt` are as follows:
+    ```
+    images/image1.jpg labels/label1.png
+    images/image2.jpg labels/label2.png
+    ...
+    ```
+
+Among them, `image1.jpg` and `label1.png` are the original image and its corresponding annotated image, respectively. For the content specification in `test.txt`, please refer to [Section 4.2](#4.2-File-List-Specification-(Predicting)).
+
+**NOTE**
+
+* Make sure that the separator exists only once per line in the file list. If there are spaces in the file name, please use "|" and other unusable characters in the file name to split.
+
+* Please save the file list in **UTF-8** format, PaddleSeg uses UTF-8 encoding to read file_list files by default.
+
+* You need to ensure that the separator of the file list is consistent with your Dataset class. The default separator is a `space`.
+
+### 4.2 File List Specification (Predicting)
+- During predicting, the model uses only the original image.
+
+- That is, the content of `test.txt` is as follows:
+    ```
+    images/image1.jpg
+    images/image2.jpg
+    ...
+    ```
+
+- When calling `predict.py` for visual display, annotated images can be included in the file list. During predicting, the model will automatically ignore the annotated images given in the file list. Therefore, you can make predictions on the training and validatsion datasets without modifying the contents of the `train.txt` and `val.txt` files mentioned in
+[Section 4.1](#4.1-File-List-Specification(Training,Evaluating)).
+
+
+### 4.3 Organize the dataset directory structure
+
+If the user wants to generate a file list of the dataset, it needs to be organized into the following directory structure (similar to the Cityscapes dataset). You can divide it manually, or refer to the method of automatic segmentation using scripts in Section 3.
+
+```
+./dataset/   # Dataset root directory
+├── annotations      # Annotated image catalog
 │   ├── test
 │   │   ├── ...
 │   │   └── ...
@@ -104,7 +214,7 @@ PaddleSeg采用通用的文件列表方式组织训练集、验证集和测试�
 │   └── val
 │       ├── ...
 │       └── ...
-└── images       # 原图目录
+└── images       # Original image catalog
     ├── test
     │   ├── ...
     │   └── ...
@@ -114,63 +224,66 @@ PaddleSeg采用通用的文件列表方式组织训练集、验证集和测试�
     └── val
         ├── ...
         └── ...
-Note：以上目录名可任意
+Note:The above directory name can be any
 ```
 
-### 文件列表生成
-PaddleSeg提供了生成文件列表的使用脚本，可适用于自定义数据集或cityscapes数据集，并支持通过不同的Flags来开启特定功能。
+### 4.4 Generate file list
+PaddleSeg provides a script for generating file lists, which can be applied to custom datasets or cityscapes datasets, and supports different Flags to enable specific functions.
 ```
-python pdseg/tools/create_dataset_list.py <your/dataset/dir> ${FLAGS}
+python tools/create_dataset_list.py <your/dataset/dir> ${FLAGS}
 ```
-运行后将在数据集根目录下生成训练/验证/测试集的文件列表（文件主名与`--second_folder`一致，扩展名为`.txt`）。
+After running, a file list of the training/validation/test set will be generated in the root directory of the dataset (the main name of the file is the same as `--second_folder`, and the extension is `.txt`).
 
-**Note:** 生成文件列表要求：要么原图和标注图片数量一致，要么只有原图，没有标注图片。若数据集缺少标注图片，仍可自动生成不含分隔符和标注图片路径的文件列表。
+**Note:** Requirements for generating the file list: either the original image and the number of annotated images are the same, or there is only the original image without annotated images. If the dataset lacks annotated images, a file list without separators and annotated image paths can still be automatically generated.
 
-#### 命令行FLAGS列表
+#### FLAGS list
 
-|FLAG|用途|默认值|参数数目|
+|FLAG|Effection|Default|Parameter numbers|
 |-|-|-|-|
-|--type|指定数据集类型，`cityscapes`或`自定义`|`自定义`|1|
-|--separator|文件列表分隔符|"&#124;"|1|
-|--folder|图片和标签集的文件夹名|"images" "annotations"|2|
-|--second_folder|训练/验证/测试集的文件夹名|"train" "val" "test"|若干|
-|--format|图片和标签集的数据格式|"jpg"  "png"|2|
-|--postfix|按文件主名（无扩展名）是否包含指定后缀对图片和标签集进行筛选|""   ""（2个空字符）|2|
+|--type|Specify the dataset type, `cityscapes` or `custom`|`custom`|1|
+|--separator|File list separator|"&#124;"|1|
+|--folder|Folder name for pictures and label sets|"images" "annotations"|2|
+|--second_folder|The folder name of the training/validation/test set|"train" "val" "test"|several|
+|--format|Data format of pictures and label sets|"jpg"  "png"|2|
+|--postfix|Filter pictures and label sets according to whether the main file name (without extension) contains the specified suffix|""   ""（2 null characters）|2|
 
-#### 使用示例
-- **对于自定义数据集**
+#### Example
+- **For custom datasets**
 
-若您已经按上述说明整理好了数据集目录结构，可以运行下面的命令生成文件列表。
+If you have organized the dataset directory structure according to the above instructions, you can run the following command to generate a file list.
 
 ```
-# 生成文件列表，其分隔符为空格，图片和标签集的数据格式都为png
-python pdseg/tools/create_dataset_list.py <your/dataset/dir> --separator " " --format png png
+# Generate a file list, the separator is a space, and the data format of the picture and the label set is png
+python tools/create_dataset_list.py <your/dataset/dir> --separator " " --format jpg png
 ```
 ```
-# 生成文件列表，其图片和标签集的文件夹名为img和gt，训练和验证集的文件夹名为training和validation，不生成测试集列表
-python pdseg/tools/create_dataset_list.py <your/dataset/dir> \
+# Generate a list of files. The folders for pictures and tag sets are named img and gt, and the folders for training and validation sets are named training and validation. No test set list is generated.
+python tools/create_dataset_list.py <your/dataset/dir> \
         --folder img gt --second_folder training validation
 ```
-**Note:** 必须指定自定义数据集目录，可以按需要设定FLAG。无需指定`--type`。
+**Note:** A custom dataset directory must be specified, and FLAG can be set as needed. There is no need to specify `--type`.
 
-- **对于cityscapes数据集**
+- **For the cityscapes dataset**
 
-若您使用的是cityscapes数据集，可以运行下面的命令生成文件列表。
+If you are using the cityscapes dataset, you can run the following command to generate a file list.
 
 ```
-# 生成cityscapes文件列表，其分隔符为逗号
-python pdseg/tools/create_dataset_list.py <your/dataset/dir> --type cityscapes --separator ","
+# Generate a list of cityscapes files with a comma as the separator
+python tools/create_dataset_list.py <your/dataset/dir> --type cityscapes --separator ","
 ```
 **Note:**
 
-必须指定cityscapes数据集目录，`--type`必须为`cityscapes`。
+The cityscapes dataset directory must be specified, and `--type` must be `cityscapes`.
 
-在cityscapes类型下，部分FLAG将被重新设定，无需手动指定，具体如下：
+Under the cityscapes type, part of the FLAG will be reset, no need to specify manually, as follows:
 
-|FLAG|固定值|
+|FLAG|Fixed value|
 |-|-|
 |--folder|"leftImg8bit" "gtFine"|
-|--format|"png" "png"|
+|--format|"jpg" "png"|
 |--postfix|"_leftImg8bit" "_gtFine_labelTrainIds"|
 
-其余FLAG可以按需要设定。
+The remaining FLAG can be set as required.
+
+
+After running, `train.txt`, `val.txt`, `test.txt` and `labels.txt` will be generated in the root directory of the dataset. PaddleSeg locates the image path by reading these text files.

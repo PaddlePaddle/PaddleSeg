@@ -16,15 +16,10 @@ import paddle
 import paddle.nn as nn
 import paddle.nn.functional as F
 import numpy as np
-from paddle.nn.initializer import TruncatedNormal, Constant, Normal
 
 from paddleseg.cvlibs import manager
 from paddleseg.utils import utils
-from paddleseg.models.backbones.vision_transformer import to_2tuple, DropPath, Identity
-
-trunc_normal_ = TruncatedNormal(std=.02)
-zeros_ = Constant(value=0.)
-ones_ = Constant(value=1.)
+from paddleseg.models.backbones.transformer_utils import *
 
 
 class Mlp(nn.Layer):
