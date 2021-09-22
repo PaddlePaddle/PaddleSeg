@@ -18,7 +18,7 @@ import paddle.nn as nn
 from paddle.nn import functional as F
 
 from paddleseg.utils import utils
-from paddleseg.models.layers import layer_libs
+from paddleseg.models import layers
 from paddleseg.cvlibs import manager, param_init
 
 
@@ -64,7 +64,7 @@ class GINet(nn.Layer):
         self.head = GIHead(in_channels=2048, nclass=num_classes)
 
         if self.aux:
-            self.auxlayer = layer_libs.AuxLayer(1024, 1024 // 4, num_classes)
+            self.auxlayer = layers.AuxLayer(1024, 1024 // 4, num_classes)
 
         self.pretrained = pretrained
         self.init_weight()
@@ -125,7 +125,7 @@ class GIHead(nn.Layer):
             nn.Linear(300, 128), nn.BatchNorm1D(128), nn.ReLU())
         self.fc2 = nn.Sequential(
             nn.Linear(128, 256), nn.BatchNorm1D(256), nn.ReLU())
-        self.conv5 = layer_libs.ConvBNReLU(
+        self.conv5 = layers.ConvBNReLU(
             in_channels, inter_channels, 3, padding=1, bias_attr=False)
 
         self.gloru = GlobalReasonUnit(
@@ -140,7 +140,7 @@ class GIHead(nn.Layer):
         B, C, H, W = x.shape
         inp = self.inp.detach()
 
-        inp = self.fc1(inp)  ## almost all zeros input into fc
+        inp = self.fc1(inp)
         inp = self.fc2(inp).unsqueeze(axis=0).transpose((0, 2, 1))\
                            .expand((B, 256, self.nclass))
 
@@ -171,7 +171,7 @@ class GlobalReasonUnit(nn.Layer):
         self.extend_dim = nn.Conv2D(
             num_state, in_channels, kernel_size=1, bias_attr=False)
 
-        self.bn = layer_libs.SyncBatchNorm(in_channels)
+        self.bn = layers.SyncBatchNorm(in_channels)
 
     def forward(self, x, inp):
         """
@@ -297,13 +297,13 @@ class GraphTransfer(nn.Layer):
         attention_vis = self.softmax_vis(energy).transpose((0, 2, 1))
         attention_word = self.softmax_word(energy)
 
-        proj_value_vis = self.value_conv_vis(vis_node).reshape(
-            (m_batchsize, -1, Nn))  #B, C, num_node
-        proj_value_word = self.value_conv_word(word).reshape(
-            (m_batchsize, -1, Nc))  #B, C, num_class
+        proj_value_vis = self.value_conv_vis(vis_node).reshape((m_batchsize, -1,
+                                                                Nn))
+        proj_value_word = self.value_conv_word(word).reshape((m_batchsize, -1,
+                                                              Nc))
 
-        class_out = paddle.bmm(proj_value_vis, attention_vis)  #B, C, nclass
-        node_out = paddle.bmm(proj_value_word, attention_word)  #B, C, node
+        class_out = paddle.bmm(proj_value_vis, attention_vis)
+        node_out = paddle.bmm(proj_value_word, attention_word)
         return class_out, node_out
 
 
@@ -311,20 +311,20 @@ class JPU(nn.Layer):
     def __init__(self, in_channels, width=512):
         super().__init__()
 
-        self.conv5 = layer_libs.ConvBNReLU(
+        self.conv5 = layers.ConvBNReLU(
             in_channels[-1], width, 3, padding=1, bias_attr=False)
-        self.conv4 = layer_libs.ConvBNReLU(
+        self.conv4 = layers.ConvBNReLU(
             in_channels[-2], width, 3, padding=1, bias_attr=False)
-        self.conv3 = layer_libs.ConvBNReLU(
+        self.conv3 = layers.ConvBNReLU(
             in_channels[-3], width, 3, padding=1, bias_attr=False)
 
-        self.dilation1 = layer_libs.SeparableConvBNReLU(
+        self.dilation1 = layers.SeparableConvBNReLU(
             3 * width, width, 3, padding=1, dilation=1, bias_attr=False)
-        self.dilation2 = layer_libs.SeparableConvBNReLU(
+        self.dilation2 = layers.SeparableConvBNReLU(
             3 * width, width, 3, padding=2, dilation=2, bias_attr=False)
-        self.dilation3 = layer_libs.SeparableConvBNReLU(
+        self.dilation3 = layers.SeparableConvBNReLU(
             3 * width, width, 3, padding=4, dilation=4, bias_attr=False)
-        self.dilation4 = layer_libs.SeparableConvBNReLU(
+        self.dilation4 = layers.SeparableConvBNReLU(
             3 * width, width, 3, padding=8, dilation=8, bias_attr=False)
 
     def forward(self, *inputs):
