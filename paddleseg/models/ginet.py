@@ -82,22 +82,21 @@ class GINet(nn.Layer):
         _, _, h, w = x.shape
         _, _, c3, c4 = self.base_forward(x)
 
-        outputs = []
+        logit_list = []
         x, _ = self.head(c4)
-        x = F.interpolate(
-            x, (h, w), mode='bilinear', align_corners=self.align_corners)
-        outputs.append(x)
+        logit_list.append(x)
 
         if self.aux:
             auxout = self.auxlayer(c3)
-            auxout = F.interpolate(
-                auxout, (h, w),
+
+            logit_list.append(auxout)
+
+        return [
+            F.interpolate(
+                logit, (h, w),
                 mode='bilinear',
-                align_corners=self.align_corners)
-
-            outputs.append(auxout)
-
-        return outputs
+                align_corners=self.align_corners) for logit in logit_list
+        ]
 
     def init_weight(self):
         if self.pretrained is not None:
