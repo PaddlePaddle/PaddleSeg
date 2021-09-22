@@ -3,7 +3,7 @@ iters: 40000
 
 train_dataset:
   type: PascalContext
-  dataset_root: ../data/VOC2010/
+  dataset_root: data/VOC2010/
   transforms:
     - type: ResizeStepScaling
       min_scale_factor: 0.5
@@ -21,7 +21,7 @@ train_dataset:
 
 val_dataset:
   type: PascalContext
-  dataset_root: ../data/VOC2010/
+  dataset_root: data/VOC2010/
   transforms:
     - type: Padding
       target_size: [520, 520]
