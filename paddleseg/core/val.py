@@ -84,7 +84,9 @@ def evaluate(model,
         logger.info(
             "Start evaluating (total_samples: {}, total_iters: {})...".format(
                 len(eval_dataset), total_iters))
-    progbar_val = progbar.Progbar(target=total_iters, verbose=1)
+    #TODO(chenguowei): fix log print error with multi-gpus
+    progbar_val = progbar.Progbar(
+        target=total_iters, verbose=1 if nranks < 2 else 2)
     reader_cost_averager = TimeAverager()
     batch_cost_averager = TimeAverager()
     batch_start = time.time()
@@ -171,4 +173,4 @@ def evaluate(model,
                 len(eval_dataset), miou, acc, kappa))
         logger.info("[EVAL] Class IoU: \n" + str(np.round(class_iou, 4)))
         logger.info("[EVAL] Class Acc: \n" + str(np.round(class_acc, 4)))
-    return miou, acc
+    return miou, acc, class_iou, class_acc, kappa

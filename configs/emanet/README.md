@@ -11,8 +11,8 @@ Expectation-Maximization Attention Networks for Semantic Segmentation. ICCV 2019
 
 | Model | Backbone | Resolution | Training Iters | mIoU | mIoU (flip) | mIoU (ms+flip) |Links |
 |-|-|-|-|-|-|-|-|
-|EMANet|ResNet50_OS8|1024x512|80000|77.64%|77.98%|78.23%|[model](https://bj.bcebos.com/paddleseg/dygraph/cityscapes/emanet_resnet50_os8_cityscapes_1024x512_80k/model.pdparams) \| [log](https://bj.bcebos.com/paddleseg/dygraph/cityscapes/emanet_resnet50_os8_cityscapes_1024x512_80k/train.log) \| [vdl](https://paddlepaddle.org.cn/paddle/visualdl/service/app?id=3e053a214d60822d6e65445b8614d052)|
-|EMANet|ResNet101_OS8|1024x512|80000|79.41%|79.83%|80.33%|[model](https://bj.bcebos.com/paddleseg/dygraph/cityscapes/emanet_resnet101_os8_cityscapes_1024x512_80k/model.pdparams) \| [log](https://bj.bcebos.com/paddleseg/dygraph/cityscapes/emanet_resnet101_os8_cityscapes_1024x512_80k/train.log) \| [vdl](https://paddlepaddle.org.cn/paddle/visualdl/service/app?id=87be6389cdada711f5c6ada21d9ef6cd)|
+|EMANet|ResNet50_OS8|1024x512|80000|79.05%|79.34%|79.69%|[model](https://bj.bcebos.com/paddleseg/dygraph/cityscapes/emanet_resnet50_os8_cityscapes_1024x512_80k/model.pdparams) \| [log](https://bj.bcebos.com/paddleseg/dygraph/cityscapes/emanet_resnet50_os8_cityscapes_1024x512_80k/train.log) \| [vdl](https://paddlepaddle.org.cn/paddle/visualdl/service/app?id=0a05a0c4cd7d785b9707bdc59f55f585)|
+|EMANet|ResNet101_OS8|1024x512|80000|80.00%|80.23%|80.53%|[model](https://bj.bcebos.com/paddleseg/dygraph/cityscapes/emanet_resnet101_os8_cityscapes_1024x512_80k/model.pdparams) \| [log](https://bj.bcebos.com/paddleseg/dygraph/cityscapes/emanet_resnet101_os8_cityscapes_1024x512_80k/train.log) \| [vdl](https://paddlepaddle.org.cn/paddle/visualdl/service/app?id=ee6926322b8e292ce23ce62ecdaa3439)|
 
 ### Pascal VOC 2012 + Aug
 

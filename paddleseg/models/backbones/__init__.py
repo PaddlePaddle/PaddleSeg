@@ -16,3 +16,8 @@ from .hrnet import *
 from .resnet_vd import *
 from .xception_deeplab import *
 from .mobilenetv3 import *
+from .vision_transformer import *
+from .swin_transformer import *
+from .mobilenetv2 import *
+from .mix_transformer import *
+from .stdcnet import *

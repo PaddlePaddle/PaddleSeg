@@ -68,17 +68,21 @@ class BiSeNetV2(nn.Layer):
     def forward(self, x):
         dfm = self.db(x)
         feat1, feat2, feat3, feat4, sfm = self.sb(x)
-        logit1 = self.aux_head1(feat1)
-        logit2 = self.aux_head2(feat2)
-        logit3 = self.aux_head3(feat3)
-        logit4 = self.aux_head4(feat4)
         logit = self.head(self.bga(dfm, sfm))
 
-        logit_list = [logit, logit1, logit2, logit3, logit4]
+        if not self.training:
+            logit_list = [logit]
+        else:
+            logit1 = self.aux_head1(feat1)
+            logit2 = self.aux_head2(feat2)
+            logit3 = self.aux_head3(feat3)
+            logit4 = self.aux_head4(feat4)
+            logit_list = [logit, logit1, logit2, logit3, logit4]
+
         logit_list = [
             F.interpolate(
                 logit,
-                x.shape[2:],
+                paddle.shape(x)[2:],
                 mode='bilinear',
                 align_corners=self.align_corners) for logit in logit_list
         ]
@@ -127,12 +131,13 @@ class ContextEmbeddingBlock(nn.Layer):
         self.bn = layers.SyncBatchNorm(in_dim)
 
         self.conv_1x1 = layers.ConvBNReLU(in_dim, out_dim, 1)
+        self.add = layers.Add()
         self.conv_3x3 = nn.Conv2D(out_dim, out_dim, 3, 1, 1)
 
     def forward(self, x):
         gap = self.gap(x)
         bn = self.bn(gap)
-        conv1 = self.conv_1x1(bn) + x
+        conv1 = self.add(self.conv_1x1(bn), x)
         return self.conv_3x3(conv1)
 
 
@@ -148,9 +153,10 @@ class GatherAndExpansionLayer1(nn.Layer):
             layers.ConvBNReLU(in_dim, in_dim, 3),
             layers.DepthwiseConvBN(in_dim, expand_dim, 3),
             layers.ConvBN(expand_dim, out_dim, 1))
+        self.relu = layers.Activation("relu")
 
     def forward(self, x):
-        return F.relu(self.conv(x) + x)
+        return self.relu(self.conv(x) + x)
 
 
 class GatherAndExpansionLayer2(nn.Layer):
@@ -171,8 +177,10 @@ class GatherAndExpansionLayer2(nn.Layer):
             layers.DepthwiseConvBN(in_dim, in_dim, 3, stride=2),
             layers.ConvBN(in_dim, out_dim, 1))
 
+        self.relu = layers.Activation("relu")
+
     def forward(self, x):
-        return F.relu(self.branch_1(x) + self.branch_2(x))
+        return self.relu(self.branch_1(x) + self.branch_2(x))
 
 
 class DetailBranch(nn.Layer):
@@ -267,7 +275,7 @@ class BGA(nn.Layer):
         sb_feat_up = self.sb_branch_up(sfm)
         sb_feat_up = F.interpolate(
             sb_feat_up,
-            db_feat_keep.shape[2:],
+            paddle.shape(db_feat_keep)[2:],
             mode='bilinear',
             align_corners=self.align_corners)
 
@@ -277,7 +285,7 @@ class BGA(nn.Layer):
         sb_feat = db_feat_down * sb_feat_keep
         sb_feat = F.interpolate(
             sb_feat,
-            db_feat.shape[2:],
+            paddle.shape(db_feat)[2:],
             mode='bilinear',
             align_corners=self.align_corners)
 

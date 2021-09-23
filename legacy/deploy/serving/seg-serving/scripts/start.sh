@@ -1,1 +1,0 @@
-/home/work/image-class/bin/image_class --workflow_path=/home/work/image-class/conf/ --inferservice_path=/home/work/image-class/conf/ --logger_path=/home/work/image-class/conf/ --resource_path=/home/work/image-class/conf/

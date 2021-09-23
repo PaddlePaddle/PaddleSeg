@@ -71,10 +71,13 @@ class OCRNet(nn.Layer):
         feats = self.backbone(x)
         feats = [feats[i] for i in self.backbone_indices]
         logit_list = self.head(feats)
+        if not self.training:
+            logit_list = [logit_list[0]]
+
         logit_list = [
             F.interpolate(
                 logit,
-                x.shape[2:],
+                paddle.shape(x)[2:],
                 mode='bilinear',
                 align_corners=self.align_corners) for logit in logit_list
         ]
@@ -104,7 +107,7 @@ class OCRHead(nn.Layer):
         super().__init__()
 
         self.num_classes = num_classes
-        self.spatial_gather = SpatialGatherBlock()
+        self.spatial_gather = SpatialGatherBlock(ocr_mid_channels, num_classes)
         self.spatial_ocr = SpatialOCRModule(ocr_mid_channels, ocr_key_channels,
                                             ocr_mid_channels)
 
@@ -146,16 +149,18 @@ class OCRHead(nn.Layer):
 class SpatialGatherBlock(nn.Layer):
     """Aggregation layer to compute the pixel-region representation."""
 
-    def forward(self, pixels, regions):
-        n, c, h, w = pixels.shape
-        _, k, _, _ = regions.shape
+    def __init__(self, pixels_channels, regions_channels):
+        super().__init__()
+        self.pixels_channels = pixels_channels
+        self.regions_channels = regions_channels
 
+    def forward(self, pixels, regions):
         # pixels: from (n, c, h, w) to (n, h*w, c)
-        pixels = paddle.reshape(pixels, (n, c, h * w))
+        pixels = paddle.reshape(pixels, (0, self.pixels_channels, -1))
         pixels = paddle.transpose(pixels, (0, 2, 1))
 
         # regions: from (n, k, h, w) to (n, k, h*w)
-        regions = paddle.reshape(regions, (n, k, h * w))
+        regions = paddle.reshape(regions, (0, self.regions_channels, -1))
         regions = F.softmax(regions, axis=2)
 
         # feats: from (n, k, c) to (n, c, k, 1)
@@ -211,20 +216,19 @@ class ObjectAttentionBlock(nn.Layer):
         self.f_up = layers.ConvBNReLU(key_channels, in_channels, 1)
 
     def forward(self, x, proxy):
-        n, _, h, w = x.shape
-
+        x_shape = paddle.shape(x)
         # query : from (n, c1, h1, w1) to (n, h1*w1, key_channels)
         query = self.f_pixel(x)
-        query = paddle.reshape(query, (n, self.key_channels, -1))
+        query = paddle.reshape(query, (0, self.key_channels, -1))
         query = paddle.transpose(query, (0, 2, 1))
 
         # key : from (n, c2, h2, w2) to (n, key_channels, h2*w2)
         key = self.f_object(proxy)
-        key = paddle.reshape(key, (n, self.key_channels, -1))
+        key = paddle.reshape(key, (0, self.key_channels, -1))
 
         # value : from (n, c2, h2, w2) to (n, h2*w2, key_channels)
         value = self.f_down(proxy)
-        value = paddle.reshape(value, (n, self.key_channels, -1))
+        value = paddle.reshape(value, (0, self.key_channels, -1))
         value = paddle.transpose(value, (0, 2, 1))
 
         # sim_map (n, h1*w1, h2*w2)
@@ -235,7 +239,8 @@ class ObjectAttentionBlock(nn.Layer):
         # context from (n, h1*w1, key_channels) to (n , out_channels, h1, w1)
         context = paddle.bmm(sim_map, value)
         context = paddle.transpose(context, (0, 2, 1))
-        context = paddle.reshape(context, (n, self.key_channels, h, w))
+        context = paddle.reshape(context,
+                                 (0, self.key_channels, x_shape[2], x_shape[3]))
         context = self.f_up(context)
 
         return context

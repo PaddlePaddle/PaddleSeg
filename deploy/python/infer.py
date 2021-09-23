@@ -15,14 +15,19 @@
 import argparse
 import codecs
 import os
+import sys
+
+LOCAL_PATH = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(os.path.join(LOCAL_PATH, '..', '..'))
 
 import yaml
 import numpy as np
-import paddleseg.transforms as T
 from paddle.inference import create_predictor, PrecisionType
 from paddle.inference import Config as PredictConfig
+
+import paddleseg.transforms as T
 from paddleseg.cvlibs import manager
-from paddleseg.utils import get_sys_env, logger
+from paddleseg.utils import get_sys_env, logger, get_image_list
 from paddleseg.utils.visualize import get_pseudo_color_map
 
 
@@ -63,21 +68,69 @@ class Predictor:
         self.args = args
 
         pred_cfg = PredictConfig(self.cfg.model, self.cfg.params)
-        pred_cfg.disable_glog_info()
-        if self.args.use_gpu:
-            pred_cfg.enable_use_gpu(100, 0)
+        if not args.print_detail:
+            pred_cfg.disable_glog_info()
+        pred_cfg.enable_memory_optim()
+        pred_cfg.switch_ir_optim(True)
 
-            if self.args.use_trt:
-                ptype = PrecisionType.Int8 if args.use_int8 else PrecisionType.Float32
+        if args.device == 'gpu':
+            # set GPU configs accordingly
+            # such as intialize the gpu memory, enable tensorrt
+            logger.info("Use GPU")
+            pred_cfg.enable_use_gpu(100, 0)
+            precision_map = {
+                "fp16": PrecisionType.Half,
+                "fp32": PrecisionType.Float32,
+                "int8": PrecisionType.Int8
+            }
+            precision_mode = precision_map[args.precision]
+
+            if args.use_trt:
+                logger.info("Use TRT")
                 pred_cfg.enable_tensorrt_engine(
                     workspace_size=1 << 30,
                     max_batch_size=1,
-                    min_subgraph_size=3,
-                    precision_mode=ptype,
+                    min_subgraph_size=50,
+                    precision_mode=precision_mode,
                     use_static=False,
                     use_calib_mode=False)
+                min_input_shape = {"x": [1, 3, 100, 100]}
+                max_input_shape = {"x": [1, 3, 2000, 3000]}
+                opt_input_shape = {"x": [1, 3, 512, 1024]}
+                pred_cfg.set_trt_dynamic_shape_info(
+                    min_input_shape, max_input_shape, opt_input_shape)
+        else:
+            # set CPU configs accordingly,
+            # such as enable_mkldnn, set_cpu_math_library_num_threads
+            logger.info("Use CPU")
+            pred_cfg.disable_gpu()
+            if args.enable_mkldnn:
+                logger.info("Use MKLDNN")
+                # cache 10 different shapes for mkldnn to avoid memory leak
+                pred_cfg.set_mkldnn_cache_capacity(10)
+                pred_cfg.enable_mkldnn()
+            pred_cfg.set_cpu_math_library_num_threads(args.cpu_threads)
 
         self.predictor = create_predictor(pred_cfg)
+
+        if hasattr(self.args, 'benchmark') and self.args.benchmark:
+            import auto_log
+            pid = os.getpid()
+            self.autolog = auto_log.AutoLogger(
+                model_name=args.model_name,
+                model_precision=args.precision,
+                batch_size=args.batch_size,
+                data_shape="dynamic",
+                save_path=None,
+                inference_config=pred_cfg,
+                pids=pid,
+                process_name=None,
+                gpu_ids=0,
+                time_keys=[
+                    'preprocess_time', 'inference_time', 'postprocess_time'
+                ],
+                warmup=0,
+                logger=logger)
 
     def preprocess(self, img):
         return self.cfg.transforms(img)[0]
@@ -89,30 +142,44 @@ class Predictor:
         num = len(imgs)
         input_names = self.predictor.get_input_names()
         input_handle = self.predictor.get_input_handle(input_names[0])
+        output_names = self.predictor.get_output_names()
+        output_handle = self.predictor.get_output_handle(output_names[0])
         results = []
-
-        for i in range(0, num, self.args.batch_size):
-            data = np.array([
-                self.preprocess(img) for img in imgs[i:i + self.args.batch_size]
-            ])
-            input_handle.reshape(data.shape)
-            input_handle.copy_from_cpu(data)
-            self.predictor.run()
-
-            output_names = self.predictor.get_output_names()
-            output_handle = self.predictor.get_output_handle(output_names[0])
-            results.append(output_handle.copy_to_cpu())
-
-        self.postprocess(results, imgs)
-
-    def postprocess(self, results, imgs):
         if not os.path.exists(self.args.save_dir):
             os.makedirs(self.args.save_dir)
 
-        results = np.concatenate(results, axis=0)
+        for i in range(0, num, self.args.batch_size):
+            if args.benchmark and i > 0:
+                self.autolog.times.start()
+            data = np.array([
+                self.preprocess(img) for img in imgs[i:i + self.args.batch_size]
+            ])
+
+            input_handle.reshape(data.shape)
+            input_handle.copy_from_cpu(data)
+            if args.benchmark and i > 0:
+                self.autolog.times.stamp()
+
+            self.predictor.run()
+
+            results = output_handle.copy_to_cpu()
+            if args.benchmark and i > 0:
+                self.autolog.times.stamp()
+
+            results = self.postprocess(results)
+
+            if args.benchmark and i > 0:
+                self.autolog.times.end(stamp=True)
+            self.save_imgs(results, imgs)
+
+    def postprocess(self, results):
+        if self.args.with_argmax:
+            results = np.argmax(results, axis=1)
+        return results
+
+    def save_imgs(self, results, imgs):
         for i in range(results.shape[0]):
-            result = np.argmax(results[i], axis=0)
-            result = get_pseudo_color_map(result)
+            result = get_pseudo_color_map(results[i])
             basename = os.path.basename(imgs[i])
             basename, _ = os.path.splitext(basename)
             basename = f'{basename}.png'
@@ -132,7 +199,7 @@ def parse_args():
     parser.add_argument(
         '--image_path',
         dest='image_path',
-        help='The directory or path of the image to be predicted.',
+        help='The directory or path or file list of the images to be predicted.',
         type=str,
         default=None,
         required=True)
@@ -149,42 +216,81 @@ def parse_args():
         type=str,
         default='./output')
     parser.add_argument(
+        '--device',
+        choices=['cpu', 'gpu'],
+        default="gpu",
+        help="Select which device to inference, defaults to gpu.")
+
+    parser.add_argument(
         '--use_trt',
-        dest='use_trt',
-        help='Whether to use Nvidia TensorRT to accelerate prediction.',
+        default=False,
+        type=eval,
+        choices=[True, False],
+        help='Whether to use Nvidia TensorRT to accelerate prediction.')
+    parser.add_argument(
+        "--precision",
+        default="fp32",
+        type=str,
+        choices=["fp32", "fp16", "int8"],
+        help='The tensorrt precision.')
+
+    parser.add_argument(
+        '--cpu_threads',
+        default=10,
+        type=int,
+        help='Number of threads to predict when using cpu.')
+    parser.add_argument(
+        '--enable_mkldnn',
+        default=False,
+        type=eval,
+        choices=[True, False],
+        help='Enable to use mkldnn to speed up when using cpu.')
+
+    parser.add_argument(
+        "--benchmark",
+        type=eval,
+        default=False,
+        help=
+        "Whether to log some information about environment, model, configuration and performance."
+    )
+    parser.add_argument(
+        "--model_name",
+        default="",
+        type=str,
+        help='When `--benchmark` is True, the specified model name is displayed.'
+    )
+
+    parser.add_argument(
+        '--use_cpu',
+        dest='use_cpu',
+        help='Whether to use X86 CPU for inference. Uses GPU in default.',
         action='store_true')
     parser.add_argument(
-        '--use_int8',
-        dest='use_int8',
-        help='Whether to use Int8 prediction when using TensorRT prediction.',
+        '--use_mkldnn',
+        dest='use_mkldnn',
+        help='Whether to use MKLDNN to accelerate prediction.',
+        action='store_true')
+    parser.add_argument(
+        '--with_argmax',
+        dest='with_argmax',
+        help='Perform argmax operation on the predict result.',
+        action='store_true')
+
+    parser.add_argument(
+        '--print_detail',
+        dest='print_detail',
+        help='Print GLOG information of Paddle Inference.',
         action='store_true')
 
     return parser.parse_args()
 
 
-def get_images(image_path, support_ext=".jpg|.jpeg|.png"):
-    if not os.path.exists(image_path):
-        raise Exception(f"Image path {image_path} invalid")
-
-    if os.path.isfile(image_path):
-        return [image_path]
-
-    imgs = []
-    for item in os.listdir(image_path):
-        ext = os.path.splitext(item)[1][1:].strip().lower()
-        if (len(ext) > 0 and ext in support_ext):
-            item_path = os.path.join(image_path, item)
-            imgs.append(item_path)
-    return imgs
-
-
 def main(args):
-    env_info = get_sys_env()
-    args.use_gpu = True if env_info['Paddle compiled with cuda'] and env_info[
-        'GPUs used'] else False
-
     predictor = Predictor(args)
-    predictor.run(get_images(args.image_path))
+    imgs_list, _ = get_image_list(args.image_path)
+    predictor.run(imgs_list)
+    if args.benchmark:
+        predictor.autolog.report()
 
 
 if __name__ == '__main__':

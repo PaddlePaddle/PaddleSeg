@@ -22,6 +22,7 @@ from paddleseg.utils import utils
 
 __all__ = ['U2Net', 'U2Netp']
 
+
 @manager.MODELS.add_component
 class U2Net(nn.Layer):
     """
@@ -260,6 +261,7 @@ class U2Netp(nn.Layer):
         if self.pretrained is not None:
             utils.load_entire_model(self, self.pretrained)
 
+
 class REBNCONV(nn.Layer):
     def __init__(self, in_ch=3, out_ch=3, dirate=1):
         super(REBNCONV, self).__init__()
@@ -280,7 +282,7 @@ class REBNCONV(nn.Layer):
 ## upsample tensor 'src' to have the same spatial size with tensor 'tar'
 def _upsample_like(src, tar):
 
-    src = F.upsample(src, size=tar.shape[2:], mode='bilinear')
+    src = F.upsample(src, size=paddle.shape(tar)[2:], mode='bilinear')
 
     return src
 

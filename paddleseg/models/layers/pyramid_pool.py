@@ -39,10 +39,12 @@ class ASPPModule(nn.Layer):
                  out_channels,
                  align_corners,
                  use_sep_conv=False,
-                 image_pooling=False):
+                 image_pooling=False,
+                 data_format='NCHW'):
         super().__init__()
 
         self.align_corners = align_corners
+        self.data_format = data_format
         self.aspp_blocks = nn.LayerList()
 
         for ratio in aspp_ratios:
@@ -56,36 +58,43 @@ class ASPPModule(nn.Layer):
                 out_channels=out_channels,
                 kernel_size=1 if ratio == 1 else 3,
                 dilation=ratio,
-                padding=0 if ratio == 1 else ratio)
+                padding=0 if ratio == 1 else ratio,
+                data_format=data_format)
             self.aspp_blocks.append(block)
 
         out_size = len(self.aspp_blocks)
 
         if image_pooling:
             self.global_avg_pool = nn.Sequential(
-                nn.AdaptiveAvgPool2D(output_size=(1, 1)),
+                nn.AdaptiveAvgPool2D(
+                    output_size=(1, 1), data_format=data_format),
                 layers.ConvBNReLU(
-                    in_channels, out_channels, kernel_size=1, bias_attr=False))
+                    in_channels,
+                    out_channels,
+                    kernel_size=1,
+                    bias_attr=False,
+                    data_format=data_format))
             out_size += 1
         self.image_pooling = image_pooling
 
         self.conv_bn_relu = layers.ConvBNReLU(
             in_channels=out_channels * out_size,
             out_channels=out_channels,
-            kernel_size=1)
+            kernel_size=1,
+            data_format=data_format)
 
         self.dropout = nn.Dropout(p=0.1)  # drop rate
 
     def forward(self, x):
         outputs = []
-        interpolate_shape = x.shape[2:]
+        if self.data_format == 'NCHW':
+            interpolate_shape = paddle.shape(x)[2:]
+            axis = 1
+        else:
+            interpolate_shape = paddle.shape(x)[1:3]
+            axis = -1
         for block in self.aspp_blocks:
             y = block(x)
-            y = F.interpolate(
-                y,
-                interpolate_shape,
-                mode='bilinear',
-                align_corners=self.align_corners)
             outputs.append(y)
 
         if self.image_pooling:
@@ -94,10 +103,11 @@ class ASPPModule(nn.Layer):
                 img_avg,
                 interpolate_shape,
                 mode='bilinear',
-                align_corners=self.align_corners)
+                align_corners=self.align_corners,
+                data_format=self.data_format)
             outputs.append(img_avg)
 
-        x = paddle.concat(outputs, axis=1)
+        x = paddle.concat(outputs, axis=axis)
         x = self.conv_bn_relu(x)
         x = self.dropout(x)
 
@@ -171,7 +181,7 @@ class PPModule(nn.Layer):
             x = stage(input)
             x = F.interpolate(
                 x,
-                input.shape[2:],
+                paddle.shape(input)[2:],
                 mode='bilinear',
                 align_corners=self.align_corners)
             cat_layers.append(x)

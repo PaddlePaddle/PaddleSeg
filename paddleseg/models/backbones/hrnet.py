@@ -70,7 +70,8 @@ class HRNet(nn.Layer):
                  stage4_num_blocks=(4, 4, 4, 4),
                  stage4_num_channels=(18, 36, 72, 144),
                  has_se=False,
-                 align_corners=False):
+                 align_corners=False,
+                 padding_same=True):
         super(HRNet, self).__init__()
         self.pretrained = pretrained
         self.stage1_num_modules = stage1_num_modules
@@ -94,7 +95,7 @@ class HRNet(nn.Layer):
             out_channels=64,
             kernel_size=3,
             stride=2,
-            padding='same',
+            padding=1 if not padding_same else 'same',
             bias_attr=False)
 
         self.conv_layer1_2 = layers.ConvBNReLU(
@@ -102,7 +103,7 @@ class HRNet(nn.Layer):
             out_channels=64,
             kernel_size=3,
             stride=2,
-            padding='same',
+            padding=1 if not padding_same else 'same',
             bias_attr=False)
 
         self.la1 = Layer1(
@@ -110,12 +111,14 @@ class HRNet(nn.Layer):
             num_blocks=self.stage1_num_blocks[0],
             num_filters=self.stage1_num_channels[0],
             has_se=has_se,
-            name="layer2")
+            name="layer2",
+            padding_same=padding_same)
 
         self.tr1 = TransitionLayer(
             in_channels=[self.stage1_num_channels[0] * 4],
             out_channels=self.stage2_num_channels,
-            name="tr1")
+            name="tr1",
+            padding_same=padding_same)
 
         self.st2 = Stage(
             num_channels=self.stage2_num_channels,
@@ -124,12 +127,14 @@ class HRNet(nn.Layer):
             num_filters=self.stage2_num_channels,
             has_se=self.has_se,
             name="st2",
-            align_corners=align_corners)
+            align_corners=align_corners,
+            padding_same=padding_same)
 
         self.tr2 = TransitionLayer(
             in_channels=self.stage2_num_channels,
             out_channels=self.stage3_num_channels,
-            name="tr2")
+            name="tr2",
+            padding_same=padding_same)
         self.st3 = Stage(
             num_channels=self.stage3_num_channels,
             num_modules=self.stage3_num_modules,
@@ -137,12 +142,14 @@ class HRNet(nn.Layer):
             num_filters=self.stage3_num_channels,
             has_se=self.has_se,
             name="st3",
-            align_corners=align_corners)
+            align_corners=align_corners,
+            padding_same=padding_same)
 
         self.tr3 = TransitionLayer(
             in_channels=self.stage3_num_channels,
             out_channels=self.stage4_num_channels,
-            name="tr3")
+            name="tr3",
+            padding_same=padding_same)
         self.st4 = Stage(
             num_channels=self.stage4_num_channels,
             num_modules=self.stage4_num_modules,
@@ -150,7 +157,9 @@ class HRNet(nn.Layer):
             num_filters=self.stage4_num_channels,
             has_se=self.has_se,
             name="st4",
-            align_corners=align_corners)
+            align_corners=align_corners,
+            padding_same=padding_same)
+
         self.init_weight()
 
     def forward(self, x):
@@ -168,19 +177,13 @@ class HRNet(nn.Layer):
         tr3 = self.tr3(st3)
         st4 = self.st4(tr3)
 
-        x0_h, x0_w = st4[0].shape[2:]
+        size = paddle.shape(st4[0])[2:]
         x1 = F.interpolate(
-            st4[1], (x0_h, x0_w),
-            mode='bilinear',
-            align_corners=self.align_corners)
+            st4[1], size, mode='bilinear', align_corners=self.align_corners)
         x2 = F.interpolate(
-            st4[2], (x0_h, x0_w),
-            mode='bilinear',
-            align_corners=self.align_corners)
+            st4[2], size, mode='bilinear', align_corners=self.align_corners)
         x3 = F.interpolate(
-            st4[3], (x0_h, x0_w),
-            mode='bilinear',
-            align_corners=self.align_corners)
+            st4[3], size, mode='bilinear', align_corners=self.align_corners)
         x = paddle.concat([st4[0], x1, x2, x3], axis=1)
 
         return [x]
@@ -202,7 +205,8 @@ class Layer1(nn.Layer):
                  num_filters,
                  num_blocks,
                  has_se=False,
-                 name=None):
+                 name=None,
+                 padding_same=True):
         super(Layer1, self).__init__()
 
         self.bottleneck_block_list = []
@@ -216,7 +220,8 @@ class Layer1(nn.Layer):
                     has_se=has_se,
                     stride=1,
                     downsample=True if i == 0 else False,
-                    name=name + '_' + str(i + 1)))
+                    name=name + '_' + str(i + 1),
+                    padding_same=padding_same))
             self.bottleneck_block_list.append(bottleneck_block)
 
     def forward(self, x):
@@ -227,7 +232,7 @@ class Layer1(nn.Layer):
 
 
 class TransitionLayer(nn.Layer):
-    def __init__(self, in_channels, out_channels, name=None):
+    def __init__(self, in_channels, out_channels, name=None, padding_same=True):
         super(TransitionLayer, self).__init__()
 
         num_in = len(in_channels)
@@ -243,7 +248,7 @@ class TransitionLayer(nn.Layer):
                             in_channels=in_channels[i],
                             out_channels=out_channels[i],
                             kernel_size=3,
-                            padding='same',
+                            padding=1 if not padding_same else 'same',
                             bias_attr=False))
             else:
                 residual = self.add_sublayer(
@@ -253,7 +258,7 @@ class TransitionLayer(nn.Layer):
                         out_channels=out_channels[i],
                         kernel_size=3,
                         stride=2,
-                        padding='same',
+                        padding=1 if not padding_same else 'same',
                         bias_attr=False))
             self.conv_bn_func_list.append(residual)
 
@@ -276,7 +281,8 @@ class Branches(nn.Layer):
                  in_channels,
                  out_channels,
                  has_se=False,
-                 name=None):
+                 name=None,
+                 padding_same=True):
         super(Branches, self).__init__()
 
         self.basic_block_list = []
@@ -292,7 +298,8 @@ class Branches(nn.Layer):
                         num_filters=out_channels[i],
                         has_se=has_se,
                         name=name + '_branch_layer_' + str(i + 1) + '_' +
-                        str(j + 1)))
+                        str(j + 1),
+                        padding_same=padding_same))
                 self.basic_block_list[i].append(basic_block_func)
 
     def forward(self, x):
@@ -312,7 +319,8 @@ class BottleneckBlock(nn.Layer):
                  has_se,
                  stride=1,
                  downsample=False,
-                 name=None):
+                 name=None,
+                 padding_same=True):
         super(BottleneckBlock, self).__init__()
 
         self.has_se = has_se
@@ -322,7 +330,6 @@ class BottleneckBlock(nn.Layer):
             in_channels=num_channels,
             out_channels=num_filters,
             kernel_size=1,
-            padding='same',
             bias_attr=False)
 
         self.conv2 = layers.ConvBNReLU(
@@ -330,14 +337,13 @@ class BottleneckBlock(nn.Layer):
             out_channels=num_filters,
             kernel_size=3,
             stride=stride,
-            padding='same',
+            padding=1 if not padding_same else 'same',
             bias_attr=False)
 
         self.conv3 = layers.ConvBN(
             in_channels=num_filters,
             out_channels=num_filters * 4,
             kernel_size=1,
-            padding='same',
             bias_attr=False)
 
         if self.downsample:
@@ -345,7 +351,6 @@ class BottleneckBlock(nn.Layer):
                 in_channels=num_channels,
                 out_channels=num_filters * 4,
                 kernel_size=1,
-                padding='same',
                 bias_attr=False)
 
         if self.has_se:
@@ -354,6 +359,9 @@ class BottleneckBlock(nn.Layer):
                 num_filters=num_filters * 4,
                 reduction_ratio=16,
                 name=name + '_fc')
+
+        self.add = layers.Add()
+        self.relu = layers.Activation("relu")
 
     def forward(self, x):
         residual = x
@@ -367,8 +375,8 @@ class BottleneckBlock(nn.Layer):
         if self.has_se:
             conv3 = self.se(conv3)
 
-        y = conv3 + residual
-        y = F.relu(y)
+        y = self.add(conv3, residual)
+        y = self.relu(y)
         return y
 
 
@@ -379,7 +387,8 @@ class BasicBlock(nn.Layer):
                  stride=1,
                  has_se=False,
                  downsample=False,
-                 name=None):
+                 name=None,
+                 padding_same=True):
         super(BasicBlock, self).__init__()
 
         self.has_se = has_se
@@ -390,13 +399,13 @@ class BasicBlock(nn.Layer):
             out_channels=num_filters,
             kernel_size=3,
             stride=stride,
-            padding='same',
+            padding=1 if not padding_same else 'same',
             bias_attr=False)
         self.conv2 = layers.ConvBN(
             in_channels=num_filters,
             out_channels=num_filters,
             kernel_size=3,
-            padding='same',
+            padding=1 if not padding_same else 'same',
             bias_attr=False)
 
         if self.downsample:
@@ -404,7 +413,6 @@ class BasicBlock(nn.Layer):
                 in_channels=num_channels,
                 out_channels=num_filters,
                 kernel_size=1,
-                padding='same',
                 bias_attr=False)
 
         if self.has_se:
@@ -413,6 +421,9 @@ class BasicBlock(nn.Layer):
                 num_filters=num_filters,
                 reduction_ratio=16,
                 name=name + '_fc')
+
+        self.add = layers.Add()
+        self.relu = layers.Activation("relu")
 
     def forward(self, x):
         residual = x
@@ -425,8 +436,8 @@ class BasicBlock(nn.Layer):
         if self.has_se:
             conv2 = self.se(conv2)
 
-        y = conv2 + residual
-        y = F.relu(y)
+        y = self.add(conv2, residual)
+        y = self.relu(y)
         return y
 
 
@@ -475,7 +486,8 @@ class Stage(nn.Layer):
                  has_se=False,
                  multi_scale_output=True,
                  name=None,
-                 align_corners=False):
+                 align_corners=False,
+                 padding_same=True):
         super(Stage, self).__init__()
 
         self._num_modules = num_modules
@@ -492,7 +504,8 @@ class Stage(nn.Layer):
                         has_se=has_se,
                         multi_scale_output=False,
                         name=name + '_' + str(i + 1),
-                        align_corners=align_corners))
+                        align_corners=align_corners,
+                        padding_same=padding_same))
             else:
                 stage_func = self.add_sublayer(
                     "stage_{}_{}".format(name, i + 1),
@@ -502,7 +515,8 @@ class Stage(nn.Layer):
                         num_filters=num_filters,
                         has_se=has_se,
                         name=name + '_' + str(i + 1),
-                        align_corners=align_corners))
+                        align_corners=align_corners,
+                        padding_same=padding_same))
 
             self.stage_func_list.append(stage_func)
 
@@ -521,7 +535,8 @@ class HighResolutionModule(nn.Layer):
                  has_se=False,
                  multi_scale_output=True,
                  name=None,
-                 align_corners=False):
+                 align_corners=False,
+                 padding_same=True):
         super(HighResolutionModule, self).__init__()
 
         self.branches_func = Branches(
@@ -529,14 +544,16 @@ class HighResolutionModule(nn.Layer):
             in_channels=num_channels,
             out_channels=num_filters,
             has_se=has_se,
-            name=name)
+            name=name,
+            padding_same=padding_same)
 
         self.fuse_func = FuseLayers(
             in_channels=num_filters,
             out_channels=num_filters,
             multi_scale_output=multi_scale_output,
             name=name,
-            align_corners=align_corners)
+            align_corners=align_corners,
+            padding_same=padding_same)
 
     def forward(self, x):
         out = self.branches_func(x)
@@ -550,7 +567,8 @@ class FuseLayers(nn.Layer):
                  out_channels,
                  multi_scale_output=True,
                  name=None,
-                 align_corners=False):
+                 align_corners=False,
+                 padding_same=True):
         super(FuseLayers, self).__init__()
 
         self._actual_ch = len(in_channels) if multi_scale_output else 1
@@ -567,7 +585,6 @@ class FuseLayers(nn.Layer):
                             in_channels=in_channels[j],
                             out_channels=out_channels[i],
                             kernel_size=1,
-                            padding='same',
                             bias_attr=False))
                     self.residual_func_list.append(residual_func)
                 elif j < i:
@@ -582,7 +599,7 @@ class FuseLayers(nn.Layer):
                                     out_channels=out_channels[i],
                                     kernel_size=3,
                                     stride=2,
-                                    padding='same',
+                                    padding=1 if not padding_same else 'same',
                                     bias_attr=False))
                             pre_num_filters = out_channels[i]
                         else:
@@ -594,7 +611,7 @@ class FuseLayers(nn.Layer):
                                     out_channels=out_channels[j],
                                     kernel_size=3,
                                     stride=2,
-                                    padding='same',
+                                    padding=1 if not padding_same else 'same',
                                     bias_attr=False))
                             pre_num_filters = out_channels[j]
                         self.residual_func_list.append(residual_func)
@@ -604,7 +621,7 @@ class FuseLayers(nn.Layer):
         residual_func_idx = 0
         for i in range(self._actual_ch):
             residual = x[i]
-            residual_shape = residual.shape[-2:]
+            residual_shape = paddle.shape(residual)[-2:]
             for j in range(len(self._in_channels)):
                 if j > i:
                     y = self.residual_func_list[residual_func_idx](x[j])
