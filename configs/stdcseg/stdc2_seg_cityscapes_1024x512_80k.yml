@@ -1,0 +1,7 @@
+_base_: 'stdc1_seg_cityscapes_1024x512_80k.yml'
+
+
+model:
+  backbone:
+    type: STDC2
+    pretrained: https://bj.bcebos.com/paddleseg/dygraph/STDCNet2.tar.gz

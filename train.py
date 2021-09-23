@@ -98,6 +98,22 @@ def parse_args():
         help='Set the random seed during training.',
         default=None,
         type=int)
+    parser.add_argument(
+        '--fp16', dest='fp16', help='Whther to use amp', action='store_true')
+    parser.add_argument(
+        '--data_format',
+        dest='data_format',
+        help=
+        'Data format that specifies the layout of input. It can be "NCHW" or "NHWC". Default: "NCHW".',
+        type=str,
+        default='NCHW')
+    parser.add_argument(
+        '--profiler_options',
+        type=str,
+        default=None,
+        help='The option of train profiler. If profiler_options is not None, the train ' \
+            'profiler is enabled. Refer to the paddleseg/utils/train_profiler.py for details.'
+    )
 
     return parser.parse_args()
 
@@ -127,6 +143,17 @@ def main(args):
         learning_rate=args.learning_rate,
         iters=args.iters,
         batch_size=args.batch_size)
+
+    # Only support for the DeepLabv3+ model
+    if args.data_format == 'NHWC':
+        if cfg.dic['model']['type'] != 'DeepLabV3P':
+            raise ValueError(
+                'The "NHWC" data format only support the DeepLabV3P model!')
+        cfg.dic['model']['data_format'] = args.data_format
+        cfg.dic['model']['backbone']['data_format'] = args.data_format
+        loss_len = len(cfg.dic['loss']['types'])
+        for i in range(loss_len):
+            cfg.dic['loss']['types'][i]['data_format'] = args.data_format
 
     train_dataset = cfg.train_dataset
     if train_dataset is None:
@@ -161,7 +188,9 @@ def main(args):
         use_vdl=args.use_vdl,
         losses=losses,
         keep_checkpoint_max=args.keep_checkpoint_max,
-        test_config=cfg.test_config)
+        test_config=cfg.test_config,
+        fp16=args.fp16,
+        profiler_options=args.profiler_options)
 
 
 if __name__ == '__main__':

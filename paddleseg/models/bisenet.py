@@ -131,12 +131,13 @@ class ContextEmbeddingBlock(nn.Layer):
         self.bn = layers.SyncBatchNorm(in_dim)
 
         self.conv_1x1 = layers.ConvBNReLU(in_dim, out_dim, 1)
+        self.add = layers.Add()
         self.conv_3x3 = nn.Conv2D(out_dim, out_dim, 3, 1, 1)
 
     def forward(self, x):
         gap = self.gap(x)
         bn = self.bn(gap)
-        conv1 = self.conv_1x1(bn) + x
+        conv1 = self.add(self.conv_1x1(bn), x)
         return self.conv_3x3(conv1)
 
 
@@ -152,9 +153,10 @@ class GatherAndExpansionLayer1(nn.Layer):
             layers.ConvBNReLU(in_dim, in_dim, 3),
             layers.DepthwiseConvBN(in_dim, expand_dim, 3),
             layers.ConvBN(expand_dim, out_dim, 1))
+        self.relu = layers.Activation("relu")
 
     def forward(self, x):
-        return F.relu(self.conv(x) + x)
+        return self.relu(self.conv(x) + x)
 
 
 class GatherAndExpansionLayer2(nn.Layer):
@@ -175,8 +177,10 @@ class GatherAndExpansionLayer2(nn.Layer):
             layers.DepthwiseConvBN(in_dim, in_dim, 3, stride=2),
             layers.ConvBN(in_dim, out_dim, 1))
 
+        self.relu = layers.Activation("relu")
+
     def forward(self, x):
-        return F.relu(self.branch_1(x) + self.branch_2(x))
+        return self.relu(self.branch_1(x) + self.branch_2(x))
 
 
 class DetailBranch(nn.Layer):

@@ -31,10 +31,11 @@ class PascalContext(Dataset):
         dataset_root (str): The dataset directory. Default: None
         mode (str): Which part of dataset to use. it is one of ('train', 'trainval', 'context', 'val').
             If you want to set mode to 'context', please make sure the dataset have been augmented. Default: 'train'.
+        edge (bool, optional): Whether to compute edge while training. Default: False
     """
-    NUM_CLASSES = 59
+    NUM_CLASSES = 60
 
-    def __init__(self, transforms=None, dataset_root=None, mode='train'):
+    def __init__(self, transforms=None, dataset_root=None, mode='train', edge=False):
         self.dataset_root = dataset_root
         self.transforms = Compose(transforms)
         mode = mode.lower()
@@ -42,6 +43,7 @@ class PascalContext(Dataset):
         self.file_list = list()
         self.num_classes = self.NUM_CLASSES
         self.ignore_index = 255
+        self.edge = edge
 
         if mode not in ['train', 'trainval', 'val']:
             raise ValueError(
