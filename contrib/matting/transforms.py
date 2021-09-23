@@ -17,6 +17,7 @@ import random
 import cv2
 import numpy as np
 from paddleseg.transforms import functional
+from PIL import Image
 
 
 class Compose:
@@ -386,8 +387,104 @@ class RandomBlur:
         return data
 
 
+class RandomDistort:
+    """
+    Distort an image with random configurations.
+
+    Args:
+        brightness_range (float, optional): A range of brightness. Default: 0.5.
+        brightness_prob (float, optional): A probability of adjusting brightness. Default: 0.5.
+        contrast_range (float, optional): A range of contrast. Default: 0.5.
+        contrast_prob (float, optional): A probability of adjusting contrast. Default: 0.5.
+        saturation_range (float, optional): A range of saturation. Default: 0.5.
+        saturation_prob (float, optional): A probability of adjusting saturation. Default: 0.5.
+        hue_range (int, optional): A range of hue. Default: 18.
+        hue_prob (float, optional): A probability of adjusting hue. Default: 0.5.
+    """
+
+    def __init__(self,
+                 brightness_range=0.5,
+                 brightness_prob=0.5,
+                 contrast_range=0.5,
+                 contrast_prob=0.5,
+                 saturation_range=0.5,
+                 saturation_prob=0.5,
+                 hue_range=18,
+                 hue_prob=0.5):
+        self.brightness_range = brightness_range
+        self.brightness_prob = brightness_prob
+        self.contrast_range = contrast_range
+        self.contrast_prob = contrast_prob
+        self.saturation_range = saturation_range
+        self.saturation_prob = saturation_prob
+        self.hue_range = hue_range
+        self.hue_prob = hue_prob
+
+    def __call__(self, data):
+        brightness_lower = 1 - self.brightness_range
+        brightness_upper = 1 + self.brightness_range
+        contrast_lower = 1 - self.contrast_range
+        contrast_upper = 1 + self.contrast_range
+        saturation_lower = 1 - self.saturation_range
+        saturation_upper = 1 + self.saturation_range
+        hue_lower = -self.hue_range
+        hue_upper = self.hue_range
+        ops = [
+            functional.brightness, functional.contrast, functional.saturation,
+            functional.hue
+        ]
+        random.shuffle(ops)
+        params_dict = {
+            'brightness': {
+                'brightness_lower': brightness_lower,
+                'brightness_upper': brightness_upper
+            },
+            'contrast': {
+                'contrast_lower': contrast_lower,
+                'contrast_upper': contrast_upper
+            },
+            'saturation': {
+                'saturation_lower': saturation_lower,
+                'saturation_upper': saturation_upper
+            },
+            'hue': {
+                'hue_lower': hue_lower,
+                'hue_upper': hue_upper
+            }
+        }
+        prob_dict = {
+            'brightness': self.brightness_prob,
+            'contrast': self.contrast_prob,
+            'saturation': self.saturation_prob,
+            'hue': self.hue_prob
+        }
+
+        im = data['img'].astype('uint8')
+        im = Image.fromarray(im)
+        for id in range(len(ops)):
+            params = params_dict[ops[id].__name__]
+            params['im'] = im
+            prob = prob_dict[ops[id].__name__]
+            if np.random.uniform(0, 1) < prob:
+                im = ops[id](**params)
+        data['img'] = np.asarray(im)
+
+        for key in data.get('gt_fields', []):
+            if key != 'alpha':
+                im = data[key].astype('uint8')
+                im = Image.fromarray(im)
+                for id in range(len(ops)):
+                    params = params_dict[ops[id].__name__]
+                    params['im'] = im
+                    prob = prob_dict[ops[id].__name__]
+                    if np.random.uniform(0, 1) < prob:
+                        im = ops[id](**params)
+                data[key] = np.asarray(im)
+        return data
+
+
 if __name__ == "__main__":
-    transforms = [RandomBlur(prob=1)]
+    transforms = [RandomDistort()]
     transforms = Compose(transforms)
     fg_path = '/ssd1/home/chenguowei01/github/PaddleSeg/contrib/matting/data/matting/human_matting/Distinctions-646/train/fg/13(2).png'
     alpha_path = fg_path.replace('fg', 'alpha')
@@ -402,6 +499,12 @@ if __name__ == "__main__":
     alpha = alpha / 255.
     data['img'] = alpha * data['fg'] + (1 - alpha) * data['bg']
 
-    data['gt_fields'] = ['fg', 'bg', 'alpha']
+    data['gt_fields'] = ['fg', 'bg']
+    print(data['img'].shape)
+    for key in data['gt_fields']:
+        print(data[key].shape)
+#     import pdb
+#     pdb.set_trace()
     data = transforms(data)
-    cv2.imwrite('blur_alpha.png', data['alpha'])
+    print(data['img'].dtype, data['img'].shape)
+    cv2.imwrite('distort_img.jpg', data['img'].transpose([1, 2, 0]))
