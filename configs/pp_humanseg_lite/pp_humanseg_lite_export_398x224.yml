@@ -1,6 +1,6 @@
 
 model:
-  type: PPSegLite
+  type: PPHumanSegLite
   align_corners: False
   num_classes: 2
 
