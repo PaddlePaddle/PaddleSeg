@@ -104,6 +104,7 @@ class SeparableConvBNReLU(nn.Layer):
                  out_channels,
                  kernel_size,
                  padding='same',
+                 pointwise_bias=None,
                  **kwargs):
         super().__init__()
         self.depthwise_conv = ConvBN(
@@ -123,7 +124,7 @@ class SeparableConvBNReLU(nn.Layer):
             kernel_size=1,
             groups=1,
             data_format=data_format,
-            bias_attr=kwargs['bias_attr'])
+            bias_attr=pointwise_bias)
 
     def forward(self, x):
         x = self.depthwise_conv(x)

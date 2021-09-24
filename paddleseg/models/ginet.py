@@ -12,14 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import numpy
 import paddle
 import paddle.nn as nn
 from paddle.nn import functional as F
 
 from paddleseg.utils import utils
 from paddleseg.models import layers
-from paddleseg.cvlibs import manager, param_init
+from paddleseg.cvlibs import manager
 
 
 @manager.MODELS.add_component
@@ -34,7 +33,7 @@ class GINet(nn.Layer):
     Args:
         num_classes (int): The unique number of target classes.
         backbone (Paddle.nn.Layer): Backbone network.
-        backbone_indices (tuple, optional): Two values in the tuple indicate the indices of output of backbone.
+        backbone_indices (tuple, optional): Values in the tuple indicate the indices of output of backbone.
         enable_auxiliary_loss (bool, optional): A bool value indicates whether adding auxiliary loss.
             If true, auxiliary loss will be added after LearningToDownsample module. Default: False.
         align_corners (bool): An argument of F.interpolate. It should be set to False when the output size of feature
@@ -178,7 +177,7 @@ class GlobalReasonUnit(nn.Layer):
 
         sizex = x.shape
         x_reduce = self.conv_phi(x)
-        x_reduce = x_reduce.reshape((sizex[0], -1, sizex[2]*sizex[3]))\
+        x_reduce = x_reduce.reshape((sizex[0], -1, sizex[2] * sizex[3]))\
                            .transpose((0, 2, 1))
 
         V = paddle.bmm(B, x_reduce).transpose((0, 2, 1))
@@ -314,14 +313,17 @@ class JPU(nn.Layer):
             width,
             3,
             padding=1,
+            pointwise_bias=False,
             dilation=1,
             bias_attr=False,
-            stride=1)
+            stride=1,
+        )
         self.dilation2 = layers.SeparableConvBNReLU(
             3 * width,
             width,
             3,
             padding=2,
+            pointwise_bias=False,
             dilation=2,
             bias_attr=False,
             stride=1)
@@ -330,6 +332,7 @@ class JPU(nn.Layer):
             width,
             3,
             padding=4,
+            pointwise_bias=False,
             dilation=4,
             bias_attr=False,
             stride=1)
@@ -338,6 +341,7 @@ class JPU(nn.Layer):
             width,
             3,
             padding=8,
+            pointwise_bias=False,
             dilation=8,
             bias_attr=False,
             stride=1)
