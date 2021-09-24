@@ -122,7 +122,8 @@ class SeparableConvBNReLU(nn.Layer):
             out_channels,
             kernel_size=1,
             groups=1,
-            data_format=data_format)
+            data_format=data_format,
+            bias_attr=kwargs['bias_attr'])
 
     def forward(self, x):
         x = self.depthwise_conv(x)
@@ -166,14 +167,16 @@ class AuxLayer(nn.Layer):
                  in_channels,
                  inter_channels,
                  out_channels,
-                 dropout_prob=0.1):
+                 dropout_prob=0.1,
+                 **kwargs):
         super().__init__()
 
         self.conv_bn_relu = ConvBNReLU(
             in_channels=in_channels,
             out_channels=inter_channels,
             kernel_size=3,
-            padding=1)
+            padding=1,
+            **kwargs)
 
         self.dropout = nn.Dropout(p=dropout_prob)
 

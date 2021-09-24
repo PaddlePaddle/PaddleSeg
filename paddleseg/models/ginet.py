@@ -64,7 +64,8 @@ class GINet(nn.Layer):
         self.head = GIHead(in_channels=2048, nclass=num_classes)
 
         if self.aux:
-            self.auxlayer = layers.AuxLayer(1024, 1024 // 4, num_classes)
+            self.auxlayer = layers.AuxLayer(
+                1024, 1024 // 4, num_classes, bias_attr=False)
 
         self.pretrained = pretrained
         self.init_weight()
@@ -101,16 +102,11 @@ class GINet(nn.Layer):
     def init_weight(self):
         if self.pretrained is not None:
             utils.load_entire_model(self, self.pretrained)
-        else:
-            for layer in self.sublayers():
-                if isinstance(layer, nn.Conv2D):
-                    param_init.normal_init(layer.weight, std=0.001)
-                elif isinstance(layer, (nn.BatchNorm, nn.SyncBatchNorm)):
-                    param_init.constant_init(layer.weight, value=1.0)
-                    param_init.constant_init(layer.bias, value=0.0)
 
 
 class GIHead(nn.Layer):
+    """The Graph Interaction Network head."""
+
     def __init__(self, in_channels, nclass):
         super().__init__()
         self.nclass = nclass
@@ -126,7 +122,12 @@ class GIHead(nn.Layer):
         self.fc2 = nn.Sequential(
             nn.Linear(128, 256), nn.BatchNorm1D(256), nn.ReLU())
         self.conv5 = layers.ConvBNReLU(
-            in_channels, inter_channels, 3, padding=1, bias_attr=False)
+            in_channels,
+            inter_channels,
+            3,
+            padding=1,
+            bias_attr=False,
+            stride=1)
 
         self.gloru = GlobalReasonUnit(
             in_channels=inter_channels,
@@ -153,10 +154,7 @@ class GIHead(nn.Layer):
 
 class GlobalReasonUnit(nn.Layer):
     """
-        Graph G = (V, \sigma), |V| is the number of vertext,
-        denoted as num_node, each vertex feature is d-dim vector,
-        d is equal to num_state
-        Reference:
+        The original paper refers to:
             Chen, Yunpeng, et al. "Graph-Based Global Reasoning Networks" (https://arxiv.org/abs/1811.12814)
     """
 
@@ -174,10 +172,6 @@ class GlobalReasonUnit(nn.Layer):
         self.bn = layers.SyncBatchNorm(in_channels)
 
     def forward(self, x, inp):
-        """
-            input: x shape is B x C x H x W
-            output: x_new shape is B x C x H x W
-        """
         B = self.conv_theta(x)
         sizeB = B.shape
         B = B.reshape((sizeB[0], sizeB[1], -1))
@@ -260,10 +254,7 @@ class GCN(nn.Layer):
 
 
 class GraphTransfer(nn.Layer):
-    """
-        Transfer vis graph to class node
-        Transfer class node to vis feature
-    """
+    """Transfer vis graph to class node, transfer class node to vis feature"""
 
     def __init__(self, in_dim):
         super().__init__()
@@ -280,12 +271,6 @@ class GraphTransfer(nn.Layer):
         self.softmax_word = nn.Softmax(axis=-2)
 
     def forward(self, word, vis_node):
-        """
-            inputs :
-                word : input feature maps( B X C X Nclass)
-                vis_node: B, C, num_node
-            returns :
-        """
         m_batchsize, C, Nc = word.shape
         m_batchsize, C, Nn = vis_node.shape
 
@@ -308,6 +293,12 @@ class GraphTransfer(nn.Layer):
 
 
 class JPU(nn.Layer):
+    """
+    Joint Pyramid Upsampling of FCN.
+    The original paper refers to
+        Wu, Huikai, et al. "Fastfcn: Rethinking dilated convolution in the backbone for semantic segmentation." arXiv preprint arXiv:1903.11816 (2019).
+    """
+
     def __init__(self, in_channels, width=512):
         super().__init__()
 
@@ -319,13 +310,37 @@ class JPU(nn.Layer):
             in_channels[-3], width, 3, padding=1, bias_attr=False)
 
         self.dilation1 = layers.SeparableConvBNReLU(
-            3 * width, width, 3, padding=1, dilation=1, bias_attr=False)
+            3 * width,
+            width,
+            3,
+            padding=1,
+            dilation=1,
+            bias_attr=False,
+            stride=1)
         self.dilation2 = layers.SeparableConvBNReLU(
-            3 * width, width, 3, padding=2, dilation=2, bias_attr=False)
+            3 * width,
+            width,
+            3,
+            padding=2,
+            dilation=2,
+            bias_attr=False,
+            stride=1)
         self.dilation3 = layers.SeparableConvBNReLU(
-            3 * width, width, 3, padding=4, dilation=4, bias_attr=False)
+            3 * width,
+            width,
+            3,
+            padding=4,
+            dilation=4,
+            bias_attr=False,
+            stride=1)
         self.dilation4 = layers.SeparableConvBNReLU(
-            3 * width, width, 3, padding=8, dilation=8, bias_attr=False)
+            3 * width,
+            width,
+            3,
+            padding=8,
+            dilation=8,
+            bias_attr=False,
+            stride=1)
 
     def forward(self, *inputs):
         feats = [

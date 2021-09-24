@@ -28,7 +28,6 @@ model:
   enable_auxiliary_loss: True
   jpu: True
   align_corners: True
-  jpu: True
   pretrained: null
 
 lr_scheduler:
