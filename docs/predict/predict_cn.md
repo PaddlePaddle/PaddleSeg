@@ -107,36 +107,4 @@ predict(
         |  |--...
 
 
-## 4.自定义color map
-经过预测后，我们得到的是默认color map配色的预测分割结果。以视盘分割为例：
-![](./color_map/before_mapped.jpeg)
 
-​                                                                                            伪彩色标注图/叠加图
-
-在该分割结果中，前景以红色标明，背景以黑色标明。如果你想要使用其他颜色，可以参考如下命令：
-```python
-python predict.py \
-       --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml \
-       --model_path output/iter_1000/model.pdparams \
-       --image_path data/optic_disc_seg/JPEGImages/H0003.jpg \
-       --save_dir output/result \
-       --custom_color 0 0 0 255 255 255
-```
-分割预测结果如下：
-![](./color_map/after_mapped.jpeg)
-
-​                                                                                            伪彩色标注图/叠加图
-
-- 参数解析
-- 可以看到我们在最后添加了 `--custom_color 0 0 0 255 255 255`，这是什么意思呢？在RGB图像中，每个像素最终呈现出来的颜色是由RGB三个通道的分量共同决定的，因此该命令行参数后每三位代表一种像素的颜色，位置与`label.txt`中各类像素点一一对应。
-- 如果使用自定义color map，输入的`color值`的个数应该等于`3 * 像素种类`（取决于你所使用的数据集）。比如，你的数据集有 3 种像素，则可考虑执行:
-```python
-python predict.py \
-       --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml \
-       --model_path output/iter_1000/model.pdparams \
-       --image_path data/optic_disc_seg/JPEGImages/H0003.jpg \
-       --save_dir output/result \
-       --custom_color 0 0 0 100 100 100 200 200 200
-```
-
-我们建议你参照RGB颜色数值对照表来设置`--custom_color`。
