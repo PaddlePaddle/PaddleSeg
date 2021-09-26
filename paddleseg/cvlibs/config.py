@@ -168,6 +168,11 @@ class Config(object):
             lr_scheduler:
                 type: PolynomialDecay
                 learning_rate: 0.01''')
+
+        lr = self.dic.get('learning_rate', {})
+        if isinstance(lr, float):
+            return lr
+
         _learning_rate = self.dic.get('learning_rate', {}).get('value')
         if not _learning_rate:
             raise RuntimeError(
