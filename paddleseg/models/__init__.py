@@ -42,3 +42,4 @@ from .mla_transformer import MLATransformer
 from .portraitnet import PortraitNet
 from .stdcseg import STDCSeg
 from .segformer import SegFormer
+from .ginet import GINet
