@@ -53,5 +53,5 @@ def update_vgg16_params(model_path):
 
 if __name__ == "__main__":
     paddle.set_device('cpu')
-    model_path = '/mnt/chenguowei01/.paddleseg/pretrained_model/dygraph/VGG16_pretrained.pdparams'
+    model_path = '~/.paddleseg/pretrained_model/dygraph/VGG16_pretrained.pdparams'
     update_vgg16_params(model_path)
