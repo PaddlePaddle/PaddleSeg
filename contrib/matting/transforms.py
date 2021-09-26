@@ -17,9 +17,11 @@ import random
 import cv2
 import numpy as np
 from paddleseg.transforms import functional
+from paddleseg.cvlibs import manager
 from PIL import Image
 
 
+@manager.TRANSFORMS.add_component
 class Compose:
     """
     Do transformation on input data with corresponding pre-processing and augmentation operations.
@@ -54,6 +56,7 @@ class Compose:
         return data
 
 
+@manager.TRANSFORMS.add_component
 class LoadImages:
     def __init__(self, to_rgb=True):
         self.to_rgb = to_rgb
@@ -79,6 +82,7 @@ class LoadImages:
         return data
 
 
+@manager.TRANSFORMS.add_component
 class Resize:
     def __init__(self, target_size=(512, 512)):
         if isinstance(target_size, list) or isinstance(target_size, tuple):
@@ -101,6 +105,7 @@ class Resize:
         return data
 
 
+@manager.TRANSFORMS.add_component
 class ResizeByLong:
     """
     Resize the long side of an image to given size, and then scale the other side proportionally.
@@ -120,6 +125,7 @@ class ResizeByLong:
         return data
 
 
+@manager.TRANSFORMS.add_component
 class ResizeByShort:
     """
     Resize the short side of an image to given size, and then scale the other side proportionally.
@@ -139,6 +145,7 @@ class ResizeByShort:
         return data
 
 
+@manager.TRANSFORMS.add_component
 class ResizeToIntMult:
     """
     Resize to some int muitple, d.g. 32.
@@ -160,6 +167,7 @@ class ResizeToIntMult:
         return data
 
 
+@manager.TRANSFORMS.add_component
 class Normalize:
     """
     Normalize an image.
@@ -196,6 +204,7 @@ class Normalize:
         return data
 
 
+@manager.TRANSFORMS.add_component
 class RandomCropByAlpha:
     """
     Randomly crop while centered on uncertain area by a certain probability.
@@ -247,6 +256,7 @@ class RandomCropByAlpha:
         return data
 
 
+@manager.TRANSFORMS.add_component
 class RandomCrop:
     """
     Randomly crop
@@ -256,6 +266,8 @@ class RandomCrop:
     """
 
     def __init__(self, crop_size=((320, 320), (480, 480), (640, 640))):
+        if not isinstance(crop_size[0], (list, tuple)):
+            crop_size = [crop_size]
         self.crop_size = crop_size
 
     def __call__(self, data):
@@ -280,6 +292,7 @@ class RandomCrop:
         return data
 
 
+@manager.TRANSFORMS.add_component
 class LimitLong:
     """
     Limit the long edge of image.
@@ -334,6 +347,7 @@ class LimitLong:
         return data
 
 
+@manager.TRANSFORMS.add_component
 class RandomHorizontalFlip:
     """
     Flip an image horizontally with a certain probability.
@@ -354,6 +368,7 @@ class RandomHorizontalFlip:
         return data
 
 
+@manager.TRANSFORMS.add_component
 class RandomBlur:
     """
     Blurring an image by a Gaussian function with a certain probability.
@@ -387,6 +402,7 @@ class RandomBlur:
         return data
 
 
+@manager.TRANSFORMS.add_component
 class RandomDistort:
     """
     Distort an image with random configurations.

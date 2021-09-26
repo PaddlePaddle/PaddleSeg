@@ -14,18 +14,20 @@
 
 import argparse
 
+import paddle
+import paddleseg
+from paddleseg.cvlibs import manager, Config
+from paddleseg.utils import get_sys_env, logger, config_check, utils
+
 from core import evaluate
 from model import *
 from dataset import HumanMattingDataset
-import transforms as T
 
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Model training')
-    # params of training
-    # parser.add_argument(
-    #     "--config", dest="cfg", help="The config file.", default=None, type=str)
-
+    parser.add_argument(
+        "--config", dest="cfg", help="The config file.", default=None, type=str)
     parser.add_argument(
         '--model_path',
         dest='model_path',
@@ -45,24 +47,6 @@ def parse_args():
         type=int,
         default=0)
     parser.add_argument(
-        '--backbone',
-        dest='backbone',
-        help='The backbone of model. It is one of (MobileNetV2)',
-        required=True,
-        type=str)
-    parser.add_argument(
-        '--dataset_root',
-        dest='dataset_root',
-        help='the dataset root directory',
-        type=str)
-    parser.add_argument(
-        '--val_file',
-        dest='val_file',
-        nargs='+',
-        help='Image list for evaluation',
-        type=str,
-        default='val.txt')
-    parser.add_argument(
         '--save_results',
         dest='save_results',
         help='save prediction alphe while evaluation',
@@ -72,30 +56,39 @@ def parse_args():
 
 
 def main(args):
-    paddle.set_device('gpu')
-    t = [
-        T.LoadImages(),
-        T.ResizeByShort(512),
-        T.ResizeToIntMult(mult_int=32),
-        T.Normalize()
-    ]
+    env_info = get_sys_env()
+    place = 'gpu' if env_info['Paddle compiled with cuda'] and env_info[
+        'GPUs used'] else 'cpu'
 
-    eval_dataset = HumanMattingDataset(
-        dataset_root=args.dataset_root,
-        transforms=t,
-        mode='val',
-        val_file=args.val_file,
-        get_trimap=False)
+    paddle.set_device(place)
+    if not args.cfg:
+        raise RuntimeError('No configuration file specified.')
 
-    # model
-    backbone = eval(args.backbone)(input_channels=3)
+    cfg = Config(args.cfg)
+    val_dataset = cfg.val_dataset
+    if val_dataset is None:
+        raise RuntimeError(
+            'The verification dataset is not specified in the configuration file.'
+        )
+    elif len(val_dataset) == 0:
+        raise ValueError(
+            'The length of val_dataset is 0. Please check if your dataset is valid'
+        )
 
-    model = MODNet(backbone=backbone, pretrained=args.model_path)
+    msg = '\n---------------Config Information---------------\n'
+    msg += str(cfg)
+    msg += '------------------------------------------------'
+    logger.info(msg)
+
+    model = cfg.model
+    if args.model_path:
+        utils.load_entire_model(model, args.model_path)
+        logger.info('Loaded trained params of model successfully')
 
     # 调用evaluate函数进行训练
     evaluate(
-        model=model,
-        eval_dataset=eval_dataset,
+        model,
+        val_dataset,
         num_workers=args.num_workers,
         save_dir=args.save_dir,
         save_results=args.save_results)

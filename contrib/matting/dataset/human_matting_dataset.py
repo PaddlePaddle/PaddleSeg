@@ -19,10 +19,12 @@ import cv2
 import numpy as np
 import random
 import paddle
+from paddleseg.cvlibs import manager
 
 import transforms as T
 
 
+@manager.DATASETS.add_component
 class HumanMattingDataset(paddle.io.Dataset):
     """
     human_matting

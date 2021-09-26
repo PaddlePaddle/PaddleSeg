@@ -48,9 +48,9 @@ class MODNet(nn.Layer):
         if loss_func_dict is None:
             loss_func_dict = defaultdict(list)
             loss_func_dict['semantic'].append(paddleseg.models.MSELoss())
-            loss_func_dict['detail'].append(paddleseg.modells.L1Loss())
-            loss_func_dict['fusion'].append(paddleseg.modells.L1Loss())
-            loss_func_dict['fusion'].append(paddleseg.modells.L1Loss())
+            loss_func_dict['detail'].append(paddleseg.models.L1Loss())
+            loss_func_dict['fusion'].append(paddleseg.models.L1Loss())
+            loss_func_dict['fusion'].append(paddleseg.models.L1Loss())
 
         loss = {}
         # semantic loss

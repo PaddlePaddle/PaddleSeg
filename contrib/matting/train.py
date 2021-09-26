@@ -18,7 +18,8 @@ from collections import defaultdict
 
 import paddle
 import paddle.nn as nn
-import paddleseg
+from paddleseg.cvlibs import manager, Config
+from paddleseg.utils import get_sys_env, logger
 
 from core import train
 from model import *
@@ -29,8 +30,8 @@ import transforms as T
 def parse_args():
     parser = argparse.ArgumentParser(description='Model training')
     # params of training
-    # parser.add_argument(
-    #     "--config", dest="cfg", help="The config file.", default=None, type=str)
+    parser.add_argument(
+        "--config", dest="cfg", help="The config file.", default=None, type=str)
     parser.add_argument(
         '--iters',
         dest='iters',
@@ -96,119 +97,70 @@ def parse_args():
         help='Whether to record the data to VisualDL during training',
         action='store_true')
     parser.add_argument(
-        '--pretrained_model',
-        dest='pretrained_model',
-        help='the pretrained model',
-        type=str)
-    parser.add_argument(
-        '--dataset_root',
-        dest='dataset_root',
-        help='the dataset root directory',
-        type=str)
-    parser.add_argument(
         '--save_begin_iters',
         dest='save_begin_iters',
         help='The iters saving begin',
         default=None,
         type=int)
     parser.add_argument(
-        '--backbone',
-        dest='backbone',
-        help='The backbone of model. It is one of (MobileNetV2)',
-        required=True,
-        type=str)
-    parser.add_argument(
-        '--train_file',
-        dest='train_file',
-        nargs='+',
-        help='Image list for traiing',
-        type=str,
-        default='train.txt')
-    parser.add_argument(
-        '--val_file',
-        dest='val_file',
-        nargs='+',
-        help='Image list for evaluation',
-        type=str,
-        default='val.txt')
+        '--seed',
+        dest='seed',
+        help='Set the random seed during training.',
+        default=None,
+        type=int)
 
     return parser.parse_args()
 
 
 def main(args):
-    paddle.set_device('gpu')
+    if args.seed is not None:
+        paddle.seed(args.seed)
+        np.random.seed(args.seed)
+        random.seed(args.seed)
 
-    # 一些模块的组建
-    # train_dataset
-    # 简单的建立一个数据读取器
-    # train_dataset = Dataset()
-    t = [
-        T.LoadImages(),
-        T.RandomCrop(crop_size=((512, 512), )),
-        T.RandomHorizontalFlip(),
-        T.Normalize()
-    ]
+    env_info = get_sys_env()
+    info = ['{}: {}'.format(k, v) for k, v in env_info.items()]
+    info = '\n'.join(['', format('Environment Information', '-^48s')] + info +
+                     ['-' * 48])
+    logger.info(info)
 
-    train_dataset = HumanMattingDataset(
-        dataset_root=args.dataset_root,
-        transforms=t,
-        mode='train',
-        train_file=args.train_file)
-    if args.do_eval:
-        t = [
-            T.LoadImages(),
-            T.ResizeByShort(512),
-            T.ResizeToIntMult(mult_int=32),
-            T.Normalize()
-        ]
-        val_dataset = HumanMattingDataset(
-            dataset_root=args.dataset_root,
-            transforms=t,
-            mode='val',
-            val_file=args.val_file,
-            get_trimap=False)
-    else:
-        val_dataset = None
-    print(len(train_dataset))
+    place = 'gpu' if env_info['Paddle compiled with cuda'] and env_info[
+        'GPUs used'] else 'cpu'
 
-    # loss
-    losses = defaultdict(list)
-    losses['semantic'].append(paddleseg.models.MSELoss())
-    losses['detail'].append(paddleseg.models.L1Loss())
-    losses['fusion'].append(paddleseg.models.L1Loss())
-    losses['fusion'].append(paddleseg.models.L1Loss())
+    paddle.set_device(place)
+    if not args.cfg:
+        raise RuntimeError('No configuration file specified.')
 
-    # model
-    #bulid backbone
-    pretrained_model = './pretrained_models/' + args.backbone + '_pretrained.pdparams'
-    if not os.path.exists(pretrained_model):
-        pretrained_model = None
-    backbone = eval(args.backbone)(
-        input_channels=3, pretrained=pretrained_model)
+    cfg = Config(
+        args.cfg,
+        learning_rate=args.learning_rate,
+        iters=args.iters,
+        batch_size=args.batch_size)
 
-    model = MODNet(backbone=backbone, pretrained=args.pretrained_model)
+    train_dataset = cfg.train_dataset
+    if train_dataset is None:
+        raise RuntimeError(
+            'The training dataset is not specified in the configuration file.')
+    elif len(train_dataset) == 0:
+        raise ValueError(
+            'The length of train_dataset is 0. Please check if your dataset is valid'
+        )
 
-    boundaries = [10000, 30000]
-    values = [
-        args.learning_rate * 0.1**scale for scale in range(len(boundaries) + 1)
-    ]
-    lr = paddle.optimizer.lr.PiecewiseDecay(
-        boundaries=boundaries, values=values, last_epoch=-1, verbose=False)
-    optimizer = paddle.optimizer.Momentum(
-        learning_rate=lr,
-        momentum=0.9,
-        parameters=model.parameters(),
-        weight_decay=4e-5)
+    val_dataset = cfg.val_dataset if args.do_eval else None
+
+    msg = '\n---------------Config Information---------------\n'
+    msg += str(cfg)
+    msg += '------------------------------------------------'
+    logger.info(msg)
 
     # 调用train函数进行训练
     train(
-        model=model,
+        model=cfg.model,
         train_dataset=train_dataset,
         val_dataset=val_dataset,
-        optimizer=optimizer,
-        losses=losses,
-        iters=args.iters,
-        batch_size=args.batch_size,
+        optimizer=cfg.optimizer,
+        iters=cfg.iters,
+        batch_size=cfg.batch_size,
         num_workers=args.num_workers,
         use_vdl=args.use_vdl,
         save_interval=args.save_interval,
@@ -220,5 +172,4 @@ def main(args):
 
 if __name__ == '__main__':
     args = parse_args()
-    print(args)
     main(args)

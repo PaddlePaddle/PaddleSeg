@@ -307,11 +307,11 @@ class Config(object):
                     num_classes = self.val_dataset.num_classes
 
             if not num_classes:
-                raise ValueError(
-                    '`num_classes` is not found. Please set it in model, train_dataset or val_dataset'
+                logger.warning(
+                    '`num_classes` is not found. Please confirm whether you need it !!!'
                 )
-
-            model_cfg['num_classes'] = num_classes
+            else:
+                model_cfg['num_classes'] = num_classes
 
         if not self._model:
             self._model = self._load_object(model_cfg)

@@ -1,4 +1,4 @@
-# copyright (c) 2020 PaddlePaddle Authors. All Rights Reserve.
+# copyright (c) 2021 PaddlePaddle Authors. All Rights Reserve.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ from paddle.nn import Conv2D, BatchNorm, Linear, Dropout
 from paddle.nn import AdaptiveAvgPool2D, MaxPool2D, AvgPool2D
 
 from paddleseg import utils
+from paddleseg.cvlibs import manager
 
 MODEL_URLS = {
     "MobileNetV2_x0_25":
@@ -39,7 +40,7 @@ MODEL_URLS = {
     "https://paddle-imagenet-models-name.bj.bcebos.com/dygraph/MobileNetV2_x2_0_pretrained.pdparams"
 }
 
-__all__ = list(MODEL_URLS.keys())
+__all__ = ["MobileNetV2"]
 
 
 class ConvBNLayer(nn.Layer):
@@ -234,31 +235,7 @@ class MobileNet(nn.Layer):
         utils.load_pretrained_model(self, self.pretrained)
 
 
-def MobileNetV2_x0_25(**kwargs):
-    model = MobileNet(scale=0.25, **kwargs)
-    return model
-
-
-def MobileNetV2_x0_5(**kwargs):
-    model = MobileNet(scale=0.5, **kwargs)
-    return model
-
-
-def MobileNetV2_x0_75(**kwargs):
-    model = MobileNet(scale=0.75, **kwargs)
-    return model
-
-
+@manager.BACKBONES.add_component
 def MobileNetV2(**kwargs):
     model = MobileNet(scale=1.0, **kwargs)
-    return model
-
-
-def MobileNetV2_x1_5(**kwargs):
-    model = MobileNet(scale=1.5, **kwargs)
-    return model
-
-
-def MobileNetV2_x2_0(**kwargs):
-    model = MobileNet(scale=2.0, **kwargs)
     return model
