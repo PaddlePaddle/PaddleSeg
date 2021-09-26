@@ -24,11 +24,6 @@ __all__ = [
     "ResNet18_vd", "ResNet34_vd", "ResNet50_vd", "ResNet101_vd", "ResNet152_vd"
 ]
 
-# delete the compoment in manager.BACKBONED if existing.
-for i in __all__:
-    if i in manager.BACKBONES._components_dict:
-        manager.BACKBONES._components_dict.pop(i)
-
 
 class ConvBNLayer(nn.Layer):
     def __init__(

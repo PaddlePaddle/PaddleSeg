@@ -51,8 +51,6 @@ class DIM(nn.Layer):
         self.stage = stage
 
         decoder_output_channels = [64, 128, 256, 512]
-        if backbone.__class__.__name__ == 'ResNet_vd':
-            decoder_output_channels = [64, 256, 512, 1024]
         self.decoder = Decoder(
             input_channels=decoder_input_channels,
             output_channels=decoder_output_channels)
@@ -203,16 +201,3 @@ class Refine(nn.Layer):
         alpha = self.alpha_pred(x)
 
         return alpha
-
-
-if __name__ == "__main__":
-    from vgg import VGG16
-    backbone = VGG16(input_channels=4)
-    model = DIM(backbone=backbone)
-
-    model_input = paddle.randint(0, 256, (1, 4, 320, 320)).astype('float32')
-    alpha_pred, alpha_raw = model(model_input)
-
-    print(model)
-
-    print(alpha_pred.shape, alpha_raw.shape)
