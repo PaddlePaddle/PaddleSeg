@@ -21,7 +21,7 @@ from paddleseg.utils import get_sys_env, logger, config_check, utils
 
 from core import evaluate
 from model import *
-from dataset import HumanMattingDataset
+from dataset import MattingDataset
 
 
 def parse_args():

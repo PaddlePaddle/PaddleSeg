@@ -25,7 +25,7 @@ import transforms as T
 
 
 @manager.DATASETS.add_component
-class HumanMattingDataset(paddle.io.Dataset):
+class MattingDataset(paddle.io.Dataset):
     """
     human_matting
     |__Composition-1k（origin dataset name）
@@ -213,34 +213,3 @@ class HumanMattingDataset(paddle.io.Dataset):
             trimap[dilated <= 5] = 0
 
         return trimap
-
-
-if __name__ == '__main__':
-    t = [T.LoadImages(to_rgb=False), T.Resize(), T.Normalize()]
-    train_dataset = HumanMattingDataset(
-        dataset_root='../data/matting/human_matte/',
-        transforms=t,
-        mode='val',
-        train_file=['Composition-1k_train.txt', 'Distinctions-646_train.txt'],
-        val_file=['Composition-1k_val.txt', 'Distinctions-646_val.txt'])
-    data = train_dataset[81]
-    print(data.keys())
-    print(data['gt_fields'])
-
-    data['img'] = np.transpose(data['img'], (1, 2, 0))
-    for key in data.get('gt_fields', []):
-        if len(data[key].shape) == 2:
-            continue
-        data[key] = np.transpose(data[key], (1, 2, 0))
-
-    data['img'] = ((data['img'] * 0.5 + 0.5) * 255).astype('uint8')
-    for key in data['gt_fields']:
-        if key == 'alpha':
-            continue
-        data[key] = ((data[key] * 0.5 + 0.5) * 255).astype('uint8')
-
-    cv2.imwrite('img.png', data['img'])
-    for key in data['gt_fields']:
-        cv2.imwrite(key + '.png', data[key])
-
-    cv2.imwrite('trimap.png', data['trimap'].astype('uint8'))

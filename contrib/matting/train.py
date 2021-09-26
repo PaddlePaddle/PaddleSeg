@@ -23,8 +23,7 @@ from paddleseg.utils import get_sys_env, logger
 
 from core import train
 from model import *
-from dataset import HumanMattingDataset
-import transforms as T
+from dataset import MattingDataset
 
 
 def parse_args():

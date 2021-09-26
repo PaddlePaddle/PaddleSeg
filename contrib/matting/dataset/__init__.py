@@ -12,5 +12,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .dataset import Dataset
-from .human_matting_dataset import HumanMattingDataset
+from .matting_dataset import MattingDataset
