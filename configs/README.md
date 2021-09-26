@@ -30,6 +30,7 @@
 |[MLATransformer]()|-|-|-|-|
 |[SegFormer](./segformer)|-|-|-|-|
 |[STDC](./stdcseg)|-|-|-|-|
+|[GINet](./ginet)|-|-|-|-|
 
 # 模型说明
 
