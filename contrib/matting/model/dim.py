@@ -12,13 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from collections import defaultdict
 import paddle
 import paddle.nn as nn
 import paddle.nn.functional as F
-
 from paddleseg.models import layers
 from paddleseg import utils
 from paddleseg.cvlibs import manager
+
+from .loss import MRSD
 
 
 @manager.MODELS.add_component
@@ -34,7 +36,7 @@ class DIM(nn.Layer):
         backbone: backbone model.
         pretrained(str, optional): The path of pretrianed model. Defautl: None.
         stage (int, optional): The stage of model. Defautl: 3.
-        decoder_input_channels(int, optional): The channel os decoder input. Defautl: 512.
+        decoder_input_channels(int, optional): The channel of decoder input. Defautl: 512.
 
     """
 
@@ -65,8 +67,7 @@ class DIM(nn.Layer):
 
     def forward(self, inputs):
         input_shape = inputs['img'].shape[-2:]
-        x = paddle.concat([inputs['img'], inputs['trimap'].unsqueeze(1) / 255],
-                          axis=1)
+        x = paddle.concat([inputs['img'], inputs['trimap'] / 255], axis=1)
         fea_list = self.backbone(x)
 
         # decoder stage
@@ -80,19 +81,54 @@ class DIM(nn.Layer):
         if self.stage < 2:
             return logit_dict
 
-        # refine stage
-        refine_input = paddle.concat([inputs['img'], alpha_raw], axis=1)
-        alpha_refine = self.refine(refine_input)
+        if self.stage >= 2:
+            # refine stage
+            refine_input = paddle.concat([inputs['img'], alpha_raw], axis=1)
+            alpha_refine = self.refine(refine_input)
 
-        # finally alpha
-        alpha_pred = alpha_refine + alpha_raw
-        alpha_pred = F.interpolate(
-            alpha_pred, input_shape, mode='bilinear', align_corners=False)
-        if not self.training:
-            alpha_pred = paddle.clip(alpha_pred, min=0, max=1)
+            # finally alpha
+            alpha_pred = alpha_refine + alpha_raw
+            alpha_pred = F.interpolate(
+                alpha_pred, input_shape, mode='bilinear', align_corners=False)
+            if not self.training:
+                alpha_pred = paddle.clip(alpha_pred, min=0, max=1)
+            logit_dict['alpha_pred'] = alpha_pred
+        if self.training:
+            return logit_dict
+        else:
+            return alpha_pred
 
-        logit_dict['alpha_pred'] = alpha_pred
-        return logit_dict
+    def loss(self, logit_dict, label_dict, loss_func_dict=None):
+        if loss_func_dict is None:
+            loss_func_dict = defaultdict(list)
+            loss_func_dict['alpha_raw'].append(MRSD())
+            loss_func_dict['comp'].append(MRSD())
+            loss_func_dict['alpha_pred'].append(MRSD())
+
+        loss = {}
+        mask = label_dict['trimap'] == 128
+        loss['all'] = 0
+
+        if self.stage != 2:
+            loss['alpha_raw'] = loss_func_dict['alpha_raw'][0](
+                logit_dict['alpha_raw'], label_dict['alpha'], mask)
+            loss['alpha_raw'] = 0.5 * loss['alpha_raw']
+            loss['all'] = loss['all'] + loss['alpha_raw']
+
+        if self.stage == 1 or self.stage == 3:
+            comp_pred = logit_dict['alpha_raw'] * label_dict['fg'] + \
+                (1 - logit_dict['alpha_raw']) * label_dict['bg']
+            loss['comp'] = loss_func_dict['comp'][0](comp_pred,
+                                                     label_dict['img'], mask)
+            loss['comp'] = 0.5 * loss['comp']
+            loss['all'] = loss['all'] + loss['comp']
+
+        if self.stage == 2 or self.stage == 3:
+            loss['alpha_pred'] = loss_func_dict['alpha_pred'][0](
+                logit_dict['alpha_pred'], label_dict['alpha'], mask)
+            loss['all'] = loss['all'] + loss['alpha_pred']
+
+        return loss
 
     def init_weight(self):
         if self.pretrained is not None:

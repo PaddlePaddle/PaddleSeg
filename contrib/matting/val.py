@@ -73,8 +73,6 @@ def parse_args():
 
 def main(args):
     paddle.set_device('gpu')
-    #     T.ResizeByLong(long_size=1024),
-    #     t = [T.LoadImages(), T.ResizeToIntMult(mult_int=32), T.Normalize()]
     t = [
         T.LoadImages(),
         T.ResizeByShort(512),

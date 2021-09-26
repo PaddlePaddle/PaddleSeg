@@ -61,12 +61,14 @@ class HumanMattingDataset(paddle.io.Dataset):
                  mode='train',
                  train_file=None,
                  val_file=None,
-                 get_trimap=True):
+                 get_trimap=True,
+                 separator=' '):
         super().__init__()
         self.dataset_root = dataset_root
         self.transforms = T.Compose(transforms)
         self.mode = mode
         self.get_trimap = get_trimap
+        self.separator = separator
 
         # check file
         if mode == 'train' or mode == 'trainval':
@@ -101,7 +103,7 @@ class HumanMattingDataset(paddle.io.Dataset):
     def __getitem__(self, idx):
         data = {}
         fg_bg_file = self.fg_bg_list[idx]
-        fg_bg_file = fg_bg_file.split(' ')
+        fg_bg_file = fg_bg_file.split(self.separator)
         data['img_name'] = fg_bg_file[0]  # using in save prediction results
         fg_file = os.path.join(self.dataset_root, fg_bg_file[0])
         alpha_file = fg_file.replace('/fg', '/alpha')
@@ -110,7 +112,8 @@ class HumanMattingDataset(paddle.io.Dataset):
         data['alpha'] = alpha
         data['gt_fields'] = []
 
-        if len(fg_bg_file) == 2:
+        # lineis: fg [bg] [trimap]
+        if len(fg_bg_file) >= 2:
             bg_file = os.path.join(self.dataset_root, fg_bg_file[1])
             bg = cv2.imread(bg_file)
             data['img'], data['bg'] = self.composite(fg, alpha, bg)
@@ -119,6 +122,15 @@ class HumanMattingDataset(paddle.io.Dataset):
                 data['gt_fields'].append('fg')
                 data['gt_fields'].append('bg')
                 data['gt_fields'].append('alpha')
+            if len(fg_bg_file) == 3 and self.get_trimap:
+                if self.mode == 'val':
+                    trimap_path = os.path.join(self.dataset_root, fg_bg_file[2])
+                    if os.path.exists(trimap_path):
+                        data['trimap'] = trimap_path
+                        data['gt_fields'].append('trimap')
+                    else:
+                        raise FileNotFoundError(
+                            'trimap is not Found: {}'.format(fg_bg_file[2]))
         else:
             data['img'] = fg
             if self.mode in ['train', 'trainval']:
@@ -139,13 +151,6 @@ class HumanMattingDataset(paddle.io.Dataset):
         for key in data.get('gt_fields', []):
             data[key] = data[key].astype('float32')
         if self.get_trimap:
-            # Trimap read from file only happening in evaluation.
-            if self.mode == 'val':
-                trimap_path = alpha_file.replace('alpha', 'trimap')
-                if os.path.exists(trimap_path):
-                    data['trimap'] = trimap_path
-                    data['gt_fields'].append('trimap')
-
             if 'trimap' not in data:
                 data['trimap'] = self.gen_trimap(
                     data['alpha'], mode=self.mode).astype('float32')

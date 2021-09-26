@@ -166,7 +166,7 @@ def train(model,
                     log_writer.add_scalar('Train/reader_cost',
                                           avg_train_reader_cost, iter)
 
-                    if True:  #主要为调试时候的观察，真正训练的时候可以省略
+                    if False:  #主要为调试时候的观察，真正训练的时候可以省略
                         # 增加图片和alpha的显示
                         ori_img = data['img'][0]
                         ori_img = paddle.transpose(ori_img, [1, 2, 0])
