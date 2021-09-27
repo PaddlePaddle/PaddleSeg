@@ -172,6 +172,8 @@ class Predictor:
                 self.autolog.times.end(stamp=True)
             self.save_imgs(results, imgs)
 
+        logger.info("Finish")
+
     def postprocess(self, results):
         if self.args.with_argmax:
             results = np.argmax(results, axis=1)

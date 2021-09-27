@@ -1,9 +1,12 @@
 # This file tests all pretrained inference model on GPU, outputs the accuracy and speed.
-#
+# Use tests/analyze_infer_models_log.py to analyze the output logs.
+
 # Usage:
 #   1. Install PaddlePaddle that supports TenorRT
 #   2. `export CUDA_VISIBLE_DEVICES=id`
-#   3. `cd ./PaddleSeg && bash ./tests/test_infer_models.sh /path/to/cityscapes`
+#   3. `cd ./PaddleSeg`
+#   4. `nohup bash ./tests/test_infer_models.sh /path/to/cityscapes 2>&1 >logs.txt`
+#   5. `python tests/analyze_infer_models_log.py --log_path ./logs.txt --save_path ./info.txt`
 
 if [ $# != 1 ] ; then
     echo "USAGE: $0 cityscapes_dataset_path"

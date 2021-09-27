@@ -81,9 +81,11 @@ Welcome to PaddleSeg! PaddleSeg is an end-to-end image segmentation development 
    * [Annotating Tutorial](./docs/data/transform/transform.md)
    * [Custom Dataset](./docs/data/custom/data_prepare.md)
 
-*  Custom Software Development of PaddleSeg
+*  Custom Development
     * [Detailed Configuration File](./docs/design/use/use.md)
     * [Create Your Own Model](./docs/design/create/add_new_model.md)
+    * [PR Tutorial](./docs/pr/pr/pr.md)
+    * [Model Guideline](./docs/pr/pr/style_cn.md)
 * [Model Training](/docs/train/train.md)
 * [Model Evaluation](./docs/evaluation/evaluate/evaluate.md)
 * [Prediction](./docs/predict/predict.md)
@@ -118,7 +120,6 @@ Welcome to PaddleSeg! PaddleSeg is an end-to-end image segmentation development 
     * [OCRNet](./docs/models/ocrnet.md)
     * [Fast-SCNN](./docs/models/fascnn.md)
 * [Static Graph Version](./docs/static/static.md)
-* [PR Instruction](./docs/pr/pr/pr.md)
 * [FAQ](./docs/faq/faq/faq.md)
 
 ## Installation
@@ -170,6 +171,7 @@ python train.py --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml
 * Thanks [zjhellofss](https://github.com/zjhellofss) (Fu Shenshen) for contributing Attention U-Net, and Dice Loss.
 * Thanks [liuguoyu666](https://github.com/liguoyu666), [geoyee](https://github.com/geoyee) for contributing U-Net++ and U-Net3+.
 * Thanks [yazheng0307](https://github.com/yazheng0307) (LIU Zheng) for contributing quick-start document.
+* Thanks [CuberrChen](https://github.com/CuberrChen) for contributing STDC (rethink BiSeNet) and DetailAggregateLoss.
 
 ## Citation
 If you find our project useful in your research, please consider citing:

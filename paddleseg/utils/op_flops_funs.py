@@ -1,4 +1,4 @@
-# Copyright (c) 2020 PaddlePaddle Authors. All Rights Reserved.
+# Copyright (c) 2021 PaddlePaddle Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,10 +11,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""
+Implement the counting flops functions for some ops.
+"""
 
-from .layer_libs import ConvBNReLU, ConvBN, SeparableConvBNReLU, DepthwiseConvBN, AuxLayer, SyncBatchNorm, JPU
-from .activation import Activation
-from .pyramid_pool import ASPPModule, PPModule
-from .attention import AttentionBlock
-from .nonlocal2d import NonLocal2D
-from .wrap_functions import *
+
+def count_syncbn(m, x, y):
+    x = x[0]
+    nelements = x.numel()
+    m.total_ops += int(2 * nelements)
