@@ -10,13 +10,15 @@
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
-# limitations under the License.
+# limitations under the License. 
 
 import paddle
 import paddle.nn as nn
 import paddle.nn.functional as F
 
 from paddleseg.cvlibs import manager, param_init
+from paddleseg.models import layers
+
 
 @manager.MODELS.add_component
 class SegNet(nn.Layer):
@@ -28,59 +30,36 @@ class SegNet(nn.Layer):
     (https://arxiv.org/pdf/1511.00561.pdf).
 
     Args:
-        num_classes (int): The unique number of target classes. Default: 12
+        num_classes (int): The unique number of target classes.
     """
-    def __init__(self, num_classes=12):
+    def __init__(self, num_classes):
         super(SegNet, self).__init__()
 
         self.weights_new = self.state_dict()
         self.encoder = Encoder(input_channels=3)
 
         self.deco1 = nn.Sequential(
-            nn.Conv2D(512, 512, kernel_size=3, stride=1, padding=1),
-            nn.BatchNorm2D(512),
-            nn.ReLU(),
-            nn.Conv2D(512, 512, kernel_size=3, stride=1, padding=1),
-            nn.BatchNorm2D(512),
-            nn.ReLU(),
-            nn.Conv2D(512, 512, kernel_size=3, stride=1, padding=1),
-            nn.BatchNorm2D(512),
-            nn.ReLU()
+            layers.ConvBNReLU(512,512,3,stride=1,paddling=1),
+            layers.ConvBNReLU(512,512,3,stride=1,paddling=1),
+            layers.ConvBNReLU(512,512,3,stride=1,paddling=1)
         )
         self.deco2 = nn.Sequential(
-            nn.Conv2D(512, 512, kernel_size=3, stride=1, padding=1),
-            nn.BatchNorm2D(512),
-            nn.ReLU(),
-            nn.Conv2D(512, 512, kernel_size=3, stride=1, padding=1),
-            nn.BatchNorm2D(512),
-            nn.ReLU(),
-            nn.Conv2D(512, 256, kernel_size=3, stride=1, padding=1),
-            nn.BatchNorm2D(256),
-            nn.ReLU()
+            layers.ConvBNReLU(512,512,3,stride=1,paddling=1),
+            layers.ConvBNReLU(512,512,3,stride=1,paddling=1),
+            layers.ConvBNReLU(512,256,3,stride=1,paddling=1)
         )
         self.deco3 = nn.Sequential(
-            nn.Conv2D(256, 256, kernel_size=3, stride=1, padding=1),
-            nn.BatchNorm2D(256),
-            nn.ReLU(),
-            nn.Conv2D(256, 256, kernel_size=3, stride=1, padding=1),
-            nn.BatchNorm2D(256),
-            nn.ReLU(),
-            nn.Conv2D(256, 128, kernel_size=3, stride=1, padding=1),
-            nn.BatchNorm2D(128),
-            nn.ReLU()
+            layers.ConvBNReLU(256,256,3,stride=1,paddling=1),
+            layers.ConvBNReLU(256,256,3,stride=1,paddling=1),
+            layers.ConvBNReLU(256,128,3,stride=1,paddling=1)
         )
         self.deco4 = nn.Sequential(
-            nn.Conv2D(128, 128, kernel_size=3, stride=1, padding=1),
-            nn.BatchNorm2D(128),
-            nn.ReLU(),
-            nn.Conv2D(128, 64, kernel_size=3, stride=1, padding=1),
-            nn.BatchNorm2D(64),
-            nn.ReLU()
+            layers.ConvBNReLU(128,128,3,stride=1,paddling=1),
+            layers.ConvBNReLU(128,128,3,stride=1,paddling=1),
+            layers.ConvBNReLU(128,64,3,stride=1,paddling=1)
         )
         self.deco5 = nn.Sequential(
-            nn.Conv2D(64, 64, kernel_size=3, stride=1, padding=1),
-            nn.BatchNorm2D(64),
-            nn.ReLU(),
+            layers.ConvBNReLU(64,64,3,stride=1,paddling=1),
             nn.Conv2D(64, num_classes, kernel_size=3, stride=1, padding=1),
         )
         self.init_weight()
@@ -117,53 +96,27 @@ class Encoder(nn.Layer):
         super(Encoder, self).__init__()
 
         self.enco1 = nn.Sequential(
-            nn.Conv2D(input_channels, 64, kernel_size=3, stride=1, padding=1),
-            nn.BatchNorm2D(64),
-            nn.ReLU(),
-            nn.Conv2D(64, 64, kernel_size=3, stride=1, padding=1),
-            nn.BatchNorm2D(64),
-            nn.ReLU()
+            layers.ConvBNReLU(input_channels,64,3,stride=1,paddling=1),
+            layers.ConvBNReLU(64,64,3,stride=1,paddling=1)
         )
         self.enco2 = nn.Sequential(
-            nn.Conv2D(64, 128, kernel_size=3, stride=1, padding=1),
-            nn.BatchNorm2D(128),
-            nn.ReLU(),
-            nn.Conv2D(128, 128, kernel_size=3, stride=1, padding=1),
-            nn.BatchNorm2D(128),
-            nn.ReLU()
+            layers.ConvBNReLU(64,128,3,stride=1,paddling=1),
+            layers.ConvBNReLU(128,128,3,stride=1,paddling=1)
         )
         self.enco3 = nn.Sequential(
-            nn.Conv2D(128, 256, kernel_size=3, stride=1, padding=1),
-            nn.BatchNorm2D(256),
-            nn.ReLU(),
-            nn.Conv2D(256, 256, kernel_size=3, stride=1, padding=1),
-            nn.BatchNorm2D(256),
-            nn.ReLU(),
-            nn.Conv2D(256, 256, kernel_size=3, stride=1, padding=1),
-            nn.BatchNorm2D(256),
-            nn.ReLU()
+            layers.ConvBNReLU(128,256,3,stride=1,paddling=1),
+            layers.ConvBNReLU(256,256,3,stride=1,paddling=1),
+            layers.ConvBNReLU(256,256,3,stride=1,paddling=1)
         )
         self.enco4 = nn.Sequential(
-            nn.Conv2D(256, 512, kernel_size=3, stride=1, padding=1),
-            nn.BatchNorm2D(512),
-            nn.ReLU(),
-            nn.Conv2D(512, 512, kernel_size=3, stride=1, padding=1),
-            nn.BatchNorm2D(512),
-            nn.ReLU(),
-            nn.Conv2D(512, 512, kernel_size=3, stride=1, padding=1),
-            nn.BatchNorm2D(512),
-            nn.ReLU()
+            layers.ConvBNReLU(256,512,3,stride=1,paddling=1),
+            layers.ConvBNReLU(512,512,3,stride=1,paddling=1),
+            layers.ConvBNReLU(512,512,3,stride=1,paddling=1)
         )
         self.enco5 = nn.Sequential(
-            nn.Conv2D(512, 512, kernel_size=3, stride=1, padding=1),
-            nn.BatchNorm2D(512),
-            nn.ReLU(),
-            nn.Conv2D(512, 512, kernel_size=3, stride=1, padding=1),
-            nn.BatchNorm2D(512),
-            nn.ReLU(),
-            nn.Conv2D(512, 512, kernel_size=3, stride=1, padding=1),
-            nn.BatchNorm2D(512),
-            nn.ReLU()
+            layers.ConvBNReLU(512,512,3,stride=1,paddling=1),
+            layers.ConvBNReLU(512,512,3,stride=1,paddling=1),
+            layers.ConvBNReLU(512,512,3,stride=1,paddling=1)
         )
 
     def forward(self, x):
