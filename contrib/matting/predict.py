@@ -15,19 +15,18 @@
 import argparse
 import os
 
-from paddleseg.utils import logger
+from paddleseg.cvlibs import manager, Config
+from paddleseg.utils import get_sys_env, logger
 
 from core import predict
 from model import *
-from dataset import HumanMattingDataset
-import transforms as T
+from dataset import MattingDataset
 
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Model training')
-    # params of training
-    # parser.add_argument(
-    #     "--config", dest="cfg", help="The config file.", default=None, type=str)
+    parser.add_argument(
+        "--config", dest="cfg", help="The config file.", default=None, type=str)
 
     parser.add_argument(
         '--model_path',
@@ -43,18 +42,19 @@ def parse_args():
         type=str,
         default=None)
     parser.add_argument(
+        '--trimap_path',
+        dest='trimap_path',
+        help=
+        'The path of trimap, it can be a file or a directory including images. '
+        'The image should be the same as image when it is a directory.',
+        type=str,
+        default=None)
+    parser.add_argument(
         '--save_dir',
         dest='save_dir',
         help='The directory for saving the model snapshot',
         type=str,
         default='./output/results')
-
-    parser.add_argument(
-        '--backbone',
-        dest='backbone',
-        help='The backbone of model. It is one of (MobileNetV2)',
-        required=True,
-        type=str)
 
     return parser.parse_args()
 
@@ -76,7 +76,7 @@ def get_image_list(image_path):
                     line = line.strip()
                     if len(line.split()) > 1:
                         raise RuntimeError(
-                            'There should be only one image path per line in `--image_path` file. Wrong line: {}'
+                            'There should be only one image path per line in `image_path` file. Wrong line: {}'
                             .format(line))
                     image_list.append(os.path.join(image_dir, line))
     elif os.path.isdir(image_path):
@@ -87,35 +87,51 @@ def get_image_list(image_path):
                     continue
                 if os.path.splitext(f)[-1] in valid_suffix:
                     image_list.append(os.path.join(root, f))
+        image_list.sort()
     else:
         raise FileNotFoundError(
-            '`--image_path` is not found. it should be an image file or a directory including images'
+            '`image_path` is not found. it should be an image file or a directory including images'
         )
 
     if len(image_list) == 0:
-        raise RuntimeError('There are not image file in `--image_path`')
+        raise RuntimeError('There are not image file in `image_path`')
 
     return image_list, image_dir
 
 
 def main(args):
-    paddle.set_device('gpu')
+    env_info = get_sys_env()
+    place = 'gpu' if env_info['Paddle compiled with cuda'] and env_info[
+        'GPUs used'] else 'cpu'
 
-    t = [
-        T.LoadImages(),
-        #         T.ResizeByShort(512),
-        T.Resize((512, 512)),
-        T.ResizeToIntMult(mult_int=32),
-        T.Normalize()
-    ]
+    paddle.set_device(place)
+    if not args.cfg:
+        raise RuntimeError('No configuration file specified.')
 
-    transforms = T.Compose(t)
+    cfg = Config(args.cfg)
+    val_dataset = cfg.val_dataset
+    if val_dataset is None:
+        raise RuntimeError(
+            'The verification dataset is not specified in the configuration file.'
+        )
+    elif len(val_dataset) == 0:
+        raise ValueError(
+            'The length of val_dataset is 0. Please check if your dataset is valid'
+        )
 
-    # model
-    backbone = eval(args.backbone)(input_channels=3)
-    model = MODNet(backbone=backbone, pretrained=args.model_path)
+    msg = '\n---------------Config Information---------------\n'
+    msg += str(cfg)
+    msg += '------------------------------------------------'
+    logger.info(msg)
+
+    model = cfg.model
+    transforms = val_dataset.transforms
 
     image_list, image_dir = get_image_list(args.image_path)
+    if args.trimap_path is None:
+        trimap_list = None
+    else:
+        trimap_list, _ = get_image_list(args.trimap_path)
     logger.info('Number of predict images = {}'.format(len(image_list)))
 
     predict(
@@ -124,6 +140,7 @@ def main(args):
         transforms=transforms,
         image_list=image_list,
         image_dir=image_dir,
+        trimap_list=trimap_list,
         save_dir=args.save_dir)
 
 

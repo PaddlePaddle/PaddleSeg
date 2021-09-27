@@ -1,4 +1,4 @@
-# Copyright (c) 2020 PaddlePaddle Authors. All Rights Reserved.
+# Copyright (c) 2021 PaddlePaddle Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -38,7 +38,7 @@ def partition_list(arr, m):
     return [arr[i:i + n] for i in range(0, len(arr), n)]
 
 
-def save_alpha_pred(alpha, path):
+def save_alpha_pred(alpha, path, trimap=None):
     """
     The value of alpha is range [0, 1], shape should be [h,w]
     """
@@ -46,6 +46,9 @@ def save_alpha_pred(alpha, path):
     if not os.path.exists(dirname):
         os.makedirs(dirname)
 
+    trimap = cv2.imread(trimap, 0)
+    alpha[trimap == 0] = 0
+    alpha[trimap == 255] = 255
     alpha = (alpha).astype('uint8')
     cv2.imwrite(path, alpha)
 
@@ -67,10 +70,16 @@ def reverse_transform(alpha, trans_info):
 def preprocess(img, transforms, trimap=None):
     data = {}
     data['img'] = img
+    if trimap is not None:
+        data['trimap'] = trimap
+        data['gt_fields'] = ['trimap']
     data['trans_info'] = []
     data = transforms(data)
     data['img'] = paddle.to_tensor(data['img'])
     data['img'] = data['img'].unsqueeze(0)
+    if trimap is not None:
+        data['trimap'] = paddle.to_tensor(data['trimap'])
+        data['trimap'] = data['trimap'].unsqueeze((0, 1))
 
     return data
 
@@ -80,6 +89,7 @@ def predict(model,
             transforms,
             image_list,
             image_dir=None,
+            trimap_list=None,
             save_dir='output'):
     """
     predict and visualize the image_list.
@@ -89,6 +99,7 @@ def predict(model,
         transforms (transform.Compose): Preprocess for input image.
         image_list (list): A list of image path to be predicted.
         image_dir (str, optional): The root directory of the images predicted. Default: None.
+        trimap_list (list): A list of trimap of image_list. Default: None.
         save_dir (str, optional): The directory to save the visualized results. Default: 'output'.
     """
     utils.utils.load_entire_model(model, model_path)
@@ -97,11 +108,11 @@ def predict(model,
     local_rank = paddle.distributed.get_rank()
     if nranks > 1:
         img_lists = partition_list(image_list, nranks)
+        trimap_lists = partition_list(
+            trimap_list, nranks) if trimap_list is not None else None
     else:
         img_lists = [image_list]
-
-    added_saved_dir = os.path.join(save_dir, 'added_prediction')
-    pred_saved_dir = os.path.join(save_dir, 'pseudo_color_prediction')
+        trimap_lists = [trimap_list] if trimap_list is not None else None
 
     logger.info("Start to predict...")
     progbar_pred = progbar.Progbar(target=len(img_lists[0]), verbose=1)
@@ -112,7 +123,9 @@ def predict(model,
     with paddle.no_grad():
         for i, im_path in enumerate(img_lists[local_rank]):
             preprocess_start = time.time()
-            data = preprocess(img=im_path, transforms=transforms)
+            trimap = trimap_lists[local_rank][
+                i] if trimap_list is not None else None
+            data = preprocess(img=im_path, transforms=transforms, trimap=trimap)
             preprocess_cost_averager.record(time.time() - preprocess_start)
 
             infer_start = time.time()
@@ -134,7 +147,7 @@ def predict(model,
 
             save_path = os.path.join(save_dir, im_file)
             mkdir(save_path)
-            save_alpha_pred(alpha_pred, save_path)
+            save_alpha_pred(alpha_pred, save_path, trimap=trimap)
 
             postprocess_cost_averager.record(time.time() - postprocess_start)
 

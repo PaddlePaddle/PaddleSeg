@@ -17,7 +17,7 @@ import argparse
 import paddle
 import paddleseg
 from paddleseg.cvlibs import manager, Config
-from paddleseg.utils import get_sys_env, logger, config_check, utils
+from paddleseg.utils import get_sys_env, logger, utils
 
 from core import evaluate
 from model import *
@@ -85,7 +85,6 @@ def main(args):
         utils.load_entire_model(model, args.model_path)
         logger.info('Loaded trained params of model successfully')
 
-    # 调用evaluate函数进行训练
     evaluate(
         model,
         val_dataset,

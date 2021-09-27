@@ -169,9 +169,9 @@ class Config(object):
                 type: PolynomialDecay
                 learning_rate: 0.01''')
 
-        lr = self.dic.get('learning_rate', {})
-        if isinstance(lr, float):
-            return lr
+        _learning_rate = self.dic.get('learning_rate', {})
+        if isinstance(_learning_rate, float):
+            return _learning_rate
 
         _learning_rate = self.dic.get('learning_rate', {}).get('value')
         if not _learning_rate:
@@ -311,11 +311,7 @@ class Config(object):
                 elif hasattr(self.val_dataset, 'num_classes'):
                     num_classes = self.val_dataset.num_classes
 
-            if not num_classes:
-                logger.warning(
-                    '`num_classes` is not found. Please confirm whether you need it !!!'
-                )
-            else:
+            if num_classes is not None:
                 model_cfg['num_classes'] = num_classes
 
         if not self._model:

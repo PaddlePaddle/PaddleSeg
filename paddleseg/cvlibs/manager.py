@@ -15,7 +15,7 @@
 import inspect
 from collections.abc import Sequence
 
-from paddleseg.utils import logger
+import warnings
 
 
 class ComponentManager:
@@ -111,8 +111,8 @@ class ComponentManager:
 
         # Check whether the component was added already
         if component_name in self._components_dict.keys():
-            logger.warning(
-                "{} exists already!. it is now update to {} !!!".format(
+            warnings.warn(
+                "{} exists already! It is now updated to {} !!!".format(
                     component_name, component))
             self._components_dict[component_name] = component
 
