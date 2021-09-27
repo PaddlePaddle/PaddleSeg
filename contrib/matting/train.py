@@ -96,9 +96,10 @@ def parse_args():
         help='Whether to record the data to VisualDL during training',
         action='store_true')
     parser.add_argument(
-        '--save_begin_iters',
-        dest='save_begin_iters',
-        help='The iters saving begin',
+        '--eval_begin_iters',
+        dest='eval_begin_iters',
+        help=
+        'The iters begin evaluation. It will evaluate at iters/2 if it is None.',
         default=None,
         type=int)
     parser.add_argument(
@@ -166,7 +167,7 @@ def main(args):
         log_iters=args.log_iters,
         resume_model=args.resume_model,
         save_dir=args.save_dir,
-        save_begin_iters=args.save_begin_iters)
+        eval_begin_iters=args.eval_begin_iters)
 
 
 if __name__ == '__main__':

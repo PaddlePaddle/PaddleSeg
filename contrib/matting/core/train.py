@@ -39,7 +39,7 @@ def train(model,
           use_vdl=False,
           losses=None,
           keep_checkpoint_max=5,
-          save_begin_iters=None):
+          eval_begin_iters=None):
     """
     Launch training.
     Args:
@@ -58,6 +58,7 @@ def train(model,
         losses (dict): A dict including 'types' and 'coef'. The length of coef should equal to 1 or len(losses['types']).
             The 'types' item is a list of object of paddleseg.models.losses while the 'coef' item is a list of the relevant coefficient.
         keep_checkpoint_max (int, optional): Maximum number of checkpoints to save. Default: 5.
+        eval_begin_iters (int): The iters begin evaluation. It will evaluate at iters/2 if it is None. Defalust: None.
     """
     model.train()
     nranks = paddle.distributed.ParallelEnv().nranks
@@ -227,11 +228,11 @@ def train(model,
                     shutil.rmtree(model_to_remove)
 
             # eval model
-            if save_begin_iters is None:
-                save_begin_iters = iters // 2
+            if eval_begin_iters is None:
+                eval_begin_iters = iters // 2
             if (iter % save_interval == 0 or iter == iters) and (
                     val_dataset is
-                    not None) and local_rank == 0 and iter >= save_begin_iters:
+                    not None) and local_rank == 0 and iter >= eval_begin_iters:
                 num_workers = 1 if num_workers > 0 else 0
                 sad, mse = evaluate(
                     model,
@@ -243,7 +244,7 @@ def train(model,
 
             # save best model and add evaluation results to vdl
             if (iter % save_interval == 0 or iter == iters) and local_rank == 0:
-                if val_dataset is not None and iter >= save_begin_iters:
+                if val_dataset is not None and iter >= eval_begin_iters:
                     if sad < best_sad:
                         best_sad = sad
                         best_model_iter = iter
