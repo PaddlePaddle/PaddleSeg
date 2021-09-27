@@ -464,22 +464,3 @@ class GaussianBlurLayer(nn.Layer):
         kernel = kernel.astype('float32')
         kernel = kernel[np.newaxis, np.newaxis, :, :]
         paddle.assign(kernel, self.op[1].weight)
-
-
-if __name__ == '__main__':
-    paddle.set_device('cpu')
-    from mobilenet_v2 import MobileNetV2
-    from paddleseg import utils
-
-    backbone = MobileNetV2(
-        pretrained="../pretrained_models/MobileNetV2_pretrained.pdparams")
-    model = MODNet(backbone=backbone)
-    model.eval()
-
-    x = paddle.randint(0, 256, (1, 3, 512, 512)).astype('float32')
-
-    inputs = {}
-    inputs['img'] = x / 255.
-
-    logit = model(inputs)
-    print(logit)
