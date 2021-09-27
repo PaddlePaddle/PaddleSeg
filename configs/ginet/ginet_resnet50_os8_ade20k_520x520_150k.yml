@@ -1,0 +1,43 @@
+_base_: '../_base_/ade20k.yml'
+batch_size: 4
+iters: 150000
+
+train_dataset:
+  transforms:
+    - type: ResizeStepScaling
+      min_scale_factor: 0.5
+      max_scale_factor: 2.0
+      scale_step_size: 0.25
+    - type: RandomPaddingCrop
+      crop_size: [520, 520]
+      im_padding_value: [0, 0, 0]
+    - type: RandomHorizontalFlip
+    - type: RandomDistort
+      brightness_range: 0.4
+      contrast_range: 0.4
+      saturation_range: 0.4
+    - type: Normalize
+
+model:
+  type: GINet
+  backbone:
+    type: ResNet50_vd
+    output_stride: 8
+    pretrained: https://bj.bcebos.com/paddleseg/dygraph/resnet50_vd_ssld_v2.tar.gz
+  backbone_indices: [0, 1, 2, 3]
+  enable_auxiliary_loss: True
+  jpu: True
+  align_corners: True
+  pretrained: null
+
+lr_scheduler:
+  type: PolynomialDecay
+  learning_rate: 0.005
+  end_lr: 0
+  power: 0.9
+
+loss:
+  types:
+    - type: CrossEntropyLoss
+    - type: CrossEntropyLoss
+  coef: [1, 0.4]
