@@ -20,12 +20,12 @@ from paddleseg.cvlibs import manager, param_init
 from paddleseg.models import layers
 from paddleseg.utils import utils
 
-__all__ = ['PPSegLite']
+__all__ = ['PPHumanSegLite']
 
 
 @manager.MODELS.add_component
-class PPSegLite(nn.Layer):
-    "The self-developed ultra lightweight model, is suitable for real-time scene segmentation on web or mobile terminals."
+class PPHumanSegLite(nn.Layer):
+    "A self-developed ultra lightweight model from PaddleSeg, is suitable for real-time scene segmentation on web or mobile terminals."
 
     def __init__(self, num_classes, pretrained=None, align_corners=False):
         super().__init__()
@@ -232,7 +232,7 @@ if __name__ == '__main__':
     np.random.seed(100)
     paddle.seed(100)
 
-    net = PPSegLite(10)
+    net = PPHumanSegLite(10)
     img = np.random.random(size=(4, 3, 100, 100)).astype('float32')
     img = paddle.to_tensor(img)
     out = net(img)

@@ -159,7 +159,7 @@ def train(model,
             iter += 1
             if iter > iters:
                 version = paddle.__version__
-                if version == '2.1.2' or version == '0.0.0':
+                if version == '2.1.2':
                     continue
                 else:
                     break
