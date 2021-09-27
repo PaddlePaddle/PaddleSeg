@@ -176,7 +176,7 @@ def auto_tune(args, dataset, img_nums):
     input_names = predictor.get_input_names()
     input_handle = predictor.get_input_handle(input_names[0])
 
-    for idx, (img, label) in enumerate(dataset):
+    for idx, (img, _) in enumerate(dataset):
         data = np.array([img])
         input_handle.reshape(data.shape)
         input_handle.copy_from_cpu(data)
@@ -235,9 +235,6 @@ class DatasetPredictor(Predictor):
             label_area_all = label_area_all + label_area
 
             progbar_val.update(idx + 1)
-
-            if idx >= 5:
-                break
 
         class_iou, miou = metrics.mean_iou(intersect_area_all, pred_area_all,
                                            label_area_all)

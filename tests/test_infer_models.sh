@@ -22,6 +22,7 @@ download_root_path="https://bj.bcebos.com/paddleseg/dygraph/cityscapes"
 config_root_path="./configs"
 save_root_path="./output_tmp"  # the root path for saving inference model
 save_basename="fp32_infer" # the basename for saving inference model
+enable_auto_tune=True   # Use auto tune for GPU TRT inference
 
 mkdir -p ${pretrained_root_path}
 mkdir -p ${save_root_path}
@@ -87,6 +88,7 @@ do
         --device gpu \
         --use_trt True \
         --precision fp32 \
+        --enable_auto_tune ${enable_auto_tune} \
         --config ${export_path}/deploy.yaml
 
     echo -e "\n Test ${model_name} TRT fp16"
@@ -96,6 +98,7 @@ do
         --device gpu \
         --use_trt True \
         --precision fp16 \
+        --enable_auto_tune ${enable_auto_tune} \
         --config ${export_path}/deploy.yaml
 
     echo -e "\n\n"

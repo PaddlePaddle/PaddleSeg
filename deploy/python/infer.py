@@ -184,7 +184,7 @@ class Predictor:
                 use_static=False,
                 use_calib_mode=False)
 
-            if self.args.enable_auto_tune and use_auto_tune(self.args):
+            if use_auto_tune(self.args):
                 logger.info("Use auto tuned dynamic shape")
                 shape_file = self.args.auto_tuned_shape_file
                 allow_build_at_runtime = True
