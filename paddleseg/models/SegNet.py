@@ -35,7 +35,6 @@ class SegNet(nn.Layer):
     def __init__(self, num_classes):
         super(SegNet, self).__init__()
 
-        self.weights_new = self.state_dict()
         self.encoder = Encoder(input_channels=3)
 
         self.deco1 = nn.Sequential(
