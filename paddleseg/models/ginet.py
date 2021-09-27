@@ -59,7 +59,7 @@ class GINet(nn.Layer):
         self.backbone_indices = backbone_indices
         self.align_corners = align_corners
 
-        self.jpu = JPU([512, 1024, 2048], width=512) if jpu else None
+        self.jpu = layers.JPU([512, 1024, 2048], width=512) if jpu else None
         self.head = GIHead(in_channels=2048, nclass=num_classes)
 
         if self.aux:
@@ -289,82 +289,3 @@ class GraphTransfer(nn.Layer):
         class_out = paddle.bmm(proj_value_vis, attention_vis)
         node_out = paddle.bmm(proj_value_word, attention_word)
         return class_out, node_out
-
-
-class JPU(nn.Layer):
-    """
-    Joint Pyramid Upsampling of FCN.
-    The original paper refers to
-        Wu, Huikai, et al. "Fastfcn: Rethinking dilated convolution in the backbone for semantic segmentation." arXiv preprint arXiv:1903.11816 (2019).
-    """
-
-    def __init__(self, in_channels, width=512):
-        super().__init__()
-
-        self.conv5 = layers.ConvBNReLU(
-            in_channels[-1], width, 3, padding=1, bias_attr=False)
-        self.conv4 = layers.ConvBNReLU(
-            in_channels[-2], width, 3, padding=1, bias_attr=False)
-        self.conv3 = layers.ConvBNReLU(
-            in_channels[-3], width, 3, padding=1, bias_attr=False)
-
-        self.dilation1 = layers.SeparableConvBNReLU(
-            3 * width,
-            width,
-            3,
-            padding=1,
-            pointwise_bias=False,
-            dilation=1,
-            bias_attr=False,
-            stride=1,
-        )
-        self.dilation2 = layers.SeparableConvBNReLU(
-            3 * width,
-            width,
-            3,
-            padding=2,
-            pointwise_bias=False,
-            dilation=2,
-            bias_attr=False,
-            stride=1)
-        self.dilation3 = layers.SeparableConvBNReLU(
-            3 * width,
-            width,
-            3,
-            padding=4,
-            pointwise_bias=False,
-            dilation=4,
-            bias_attr=False,
-            stride=1)
-        self.dilation4 = layers.SeparableConvBNReLU(
-            3 * width,
-            width,
-            3,
-            padding=8,
-            pointwise_bias=False,
-            dilation=8,
-            bias_attr=False,
-            stride=1)
-
-    def forward(self, *inputs):
-        feats = [
-            self.conv5(inputs[-1]),
-            self.conv4(inputs[-2]),
-            self.conv3(inputs[-3])
-        ]
-        size = feats[-1].shape[2:]
-        feats[-2] = F.interpolate(
-            feats[-2], size, mode='bilinear', align_corners=True)
-        feats[-3] = F.interpolate(
-            feats[-3], size, mode='bilinear', align_corners=True)
-
-        feat = paddle.concat(feats, axis=1)
-        feat = paddle.concat([
-            self.dilation1(feat),
-            self.dilation2(feat),
-            self.dilation3(feat),
-            self.dilation4(feat)
-        ],
-                             axis=1)
-
-        return inputs[0], inputs[1], inputs[2], feat

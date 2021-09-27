@@ -20,8 +20,7 @@ import shutil
 import paddle
 import paddle.nn.functional as F
 
-from paddleseg.utils import (TimeAverager, calculate_eta, resume, logger,
-                             worker_init_fn, train_profiler, op_flops_funs)
+from paddleseg.utils import TimeAverager, calculate_eta, resume, logger, worker_init_fn
 from paddleseg.core.val import evaluate
 
 
@@ -53,8 +52,7 @@ def loss_computation(logits_list, labels, losses, edges=None):
 
 
 def train(model,
-          train_dataset_src,
-          train_dataset_tgt,
+          train_dataset,
           val_dataset=None,
           optimizer=None,
           save_dir='output',
@@ -68,8 +66,7 @@ def train(model,
           losses=None,
           keep_checkpoint_max=5,
           test_config=None,
-          fp16=False,
-          profiler_options=None):
+          fp16=False):
     """
     Launch training.
 
@@ -91,7 +88,6 @@ def train(model,
         keep_checkpoint_max (int, optional): Maximum number of checkpoints to save. Default: 5.
         test_config(dict, optional): Evaluation config.
         fp16 (bool, optional): Whether to use amp.
-        profiler_options (str, optional): The option of train profiler.
     """
     model.train()
     nranks = paddle.distributed.ParallelEnv().nranks
@@ -112,23 +108,12 @@ def train(model,
             optimizer)  # The return is Fleet object
         ddp_model = paddle.distributed.fleet.distributed_model(model)
 
-    batch_sampler_src = paddle.io.DistributedBatchSampler(
-        train_dataset_src, batch_size=batch_size, shuffle=True, drop_last=True)
+    batch_sampler = paddle.io.DistributedBatchSampler(
+        train_dataset, batch_size=batch_size, shuffle=True, drop_last=True)
 
-    loader_src = paddle.io.DataLoader(
-        train_dataset_src,
-        batch_sampler=batch_sampler_src,
-        num_workers=num_workers,
-        return_list=True,
-        worker_init_fn=worker_init_fn,
-    )
-
-    batch_sampler_tgt = paddle.io.DistributedBatchSampler(
-        train_dataset_tgt, batch_size=batch_size, shuffle=True, drop_last=True)
-
-    loader_tgt = paddle.io.DataLoader(
-        train_dataset_tgt,
-        batch_sampler=batch_sampler_tgt,
+    loader = paddle.io.DataLoader(
+        train_dataset,
+        batch_sampler=batch_sampler,
         num_workers=num_workers,
         return_list=True,
         worker_init_fn=worker_init_fn,
@@ -145,7 +130,7 @@ def train(model,
 
     avg_loss = 0.0
     avg_loss_list = []
-    iters_per_epoch = len(batch_sampler_src)
+    iters_per_epoch = len(batch_sampler)
     best_mean_iou = -1.0
     best_model_iter = -1
     reader_cost_averager = TimeAverager()
@@ -155,7 +140,7 @@ def train(model,
 
     iter = start_iter
     while iter < iters:
-        for data in loader_src:
+        for data in loader:
             iter += 1
             if iter > iters:
                 version = paddle.__version__
@@ -219,8 +204,6 @@ def train(model,
                 lr_sche = optimizer._learning_rate
             if isinstance(lr_sche, paddle.optimizer.lr.LRScheduler):
                 lr_sche.step()
-
-            train_profiler.add_profiler_step(profiler_options)
 
             model.clear_gradients()
             avg_loss += loss.numpy()[0]
@@ -311,10 +294,16 @@ def train(model,
 
     # Calculate flops.
     if local_rank == 0:
+
+        def count_syncbn(m, x, y):
+            x = x[0]
+            nelements = x.numel()
+            m.total_ops += int(2 * nelements)
+
         _, c, h, w = images.shape
-        _ = paddle.flops(
+        flops = paddle.flops(
             model, [1, c, h, w],
-            custom_ops={paddle.nn.SyncBatchNorm: op_flops_funs.count_syncbn})
+            custom_ops={paddle.nn.SyncBatchNorm: count_syncbn})
 
     # Sleep for half a second to let dataloader release resources.
     time.sleep(0.5)
