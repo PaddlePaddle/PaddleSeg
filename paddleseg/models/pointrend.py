@@ -33,33 +33,33 @@ class PointRend(nn.Layer):
     (https://arxiv.org/abs/1912.08193).
 
     Args:
-        num_classes (int,optional): The unique number of target classes.
+        num_classes (int): The unique number of target classes.
         backbone (Paddle.nn.Layer): Backbone network, currently support Resnet50/101.
-        backbone_indices (tuple): Four values in the tuple indicate the indices of output of backbone.
-        fpn_inplanes (list): Input channels list(the feature channels from backbone) for lateral_conv constraction in FPN. Default: [256, 512, 1024, 2048].
-        fpn_outplanes (int): The output channels in FPN. Default: 256.
-        point_num_fcs (int,optional): Number of fc layers in the head in PointHead. Default: 3.
-        point_in_channels (list(int)): input channels of fc block in PointHead. Default: [256].
-        point_out_channels (int,optional): Fc block's output channels in PointHead. Default: 256.
-        point_in_index (list(int): The indexs of input features to use in PointHead. Default: [0].
-        point_num_points (int,optional): The number of point in training mode in PointHead. Default: 2048.
-        point_oversample_ratio (int,optional): The sample ratio of points when in training mode in PointHead.
+        backbone_indices (tuple, optional): Four values in the tuple indicate the indices of output of backbone.
+        fpn_inplanes (list, optional): Input channels list(the feature channels from backbone) for lateral_conv constraction in FPN. Default: [256, 512, 1024, 2048].
+        fpn_outplanes (int, optional): The output channels in FPN. Default: 256.
+        point_num_fcs (int, optional): Number of fc layers in the head in PointHead. Default: 3.
+        point_in_channels (list, optional): input channels of fc block in PointHead. Default: [256].
+        point_out_channels (int, optional): Fc block's output channels in PointHead. Default: 256.
+        point_in_index (list, optional): The indexs of input features to use in PointHead. Default: [0].
+        point_num_points (int, optional): The number of point in training mode in PointHead. Default: 2048.
+        point_oversample_ratio (int, optional): The sample ratio of points when in training mode in PointHead.
             sampled_point = num_points * oversample_ratio. Default: 3.
-        point_importance_sample_ratio (float,optional): The importance sample ratio for compute num_uncertain_points in PointHead. Default: 0.75.
-        point_scale_factor(int,optinal): The scale factor of F.interpolate in refine seg logits stage when in inference in PointHead. Default: 2.
-        point_subdivision_steps(int,optional): Then refine steps in refine seg logits stage when in inference in PointHead. Default: 2.
-        point_subdivision_num_points(int,optional): The points number for refine seg logits when in inference in PointHead. Default: 8196.
-        point_dropout_ratio(float,optional): If the dropout_ratio >0, to use Dropout before output and the p of dropout is dropout_ratio in PointHead. Default: 0.1.
-        point_coarse_pred_each_layer (bool): Whether concatenate coarse feature with
+        point_importance_sample_ratio (float, optional): The importance sample ratio for compute num_uncertain_points in PointHead. Default: 0.75.
+        point_scale_factor(int, optinal): The scale factor of F.interpolate in refine seg logits stage when in inference in PointHead. Default: 2.
+        point_subdivision_steps(int, optional): Then refine steps in refine seg logits stage when in inference in PointHead. Default: 2.
+        point_subdivision_num_points(int, optional): The points number for refine seg logits when in inference in PointHead. Default: 8196.
+        point_dropout_ratio(float, optional): If the dropout_ratio >0, to use Dropout before output and the p of dropout is dropout_ratio in PointHead. Default: 0.1.
+        point_coarse_pred_each_layer(bool, optional): Whether concatenate coarse feature with
             the output of each fc layer in PointHead. Default: True.
         point_conv_cfg(str): The config of Conv in PointHead. Default: 'Conv1D'.
         point_input_transform(str): The features transform method of inputs in PointHead.
             it can be found in function '_transform_inputs'. Defalut: 'multiple_select'.
-        PFN_feature_strides(list(int)): The strides for input feature maps and all strides suppose to be power of 2 in FPNHead. The first
+        PFN_feature_strides(list): The strides for input feature maps and all strides suppose to be power of 2 in FPNHead. The first
             one is of largest resolution. Default: [4, 8, 16, 32].
-        PFN_in_channels(list(int)): The input feature's channels list in FPNHead. Default: [256, 256, 256, 256].
+        PFN_in_channels(list): The input feature's channels list in FPNHead. Default: [256, 256, 256, 256].
         PFN_channels(int,optional): The output channels of scale_head's Conv before Upsample block in FPNHead. Default: 128.
-        PFN_in_index(list(int): The indexs of input features to use. it's shape should keep with in_channels in FPNHead. Default: [0, 1, 2, 3].
+        PFN_in_index(list): The indexs of input features to use. it's shape should keep with in_channels in FPNHead. Default: [0, 1, 2, 3].
         PFN_dropout_ratio(float,optional): If the dropout_ratio >0, to use Dropout before output and the p of dropout is dropout_ratio in FPNHead. Default: 0.1.
         PFN_conv_cfg(str): The config of Conv. Default: 'Conv2D'.
         PFN_input_transform(str): The features transform method of inputs. it can be found in function '_transform_inputs' in FPNHead. Defalut: 'multiple_select'.
@@ -179,20 +179,20 @@ class PointHead(nn.Layer):
     (https://arxiv.org/abs/1912.08193)
 
     Args:
-        num_classes (int,optional): Number of classes for logits. Default: 19.
-        num_fcs (int,optional): Number of fc layers in the head. Default: 3.
-        in_channels (list(int)): input channels of fc block. Default: [256].
-        out_channels (int,optional): Fc block's output channels. Default: 256.
-        in_index (list(int)): The indexs of input features to use. Default: [0].
-        num_points (int,optional): The number of point in training mode. Default: 2048.
-        oversample_ratio (int,optional): The sample ratio of points when in training mode.
+        num_classes (int): Number of classes for logits. Default: 19.
+        num_fcs (int, optional): Number of fc layers in the head. Default: 3.
+        in_channels (list): input channels of fc block. Default: [256].
+        out_channels (int, optional): Fc block's output channels. Default: 256.
+        in_index (list): The indexs of input features to use. Default: [0].
+        num_points (int, optional): The number of point in training mode. Default: 2048.
+        oversample_ratio (int, optional): The sample ratio of points when in training mode.
             sampled_point = num_points * oversample_ratio. Default: 3.
-        importance_sample_ratio (float,optional): The importance sample ratio for compute num_uncertain_points. Default: 0.75.
-        scale_factor(int,optional): The scale factor of F.interpolate in refine seg logits stage when in inference. Default: 2.
-        subdivision_steps(int,optional): Then refine steps in refine seg logits stage when in inference. Default: 2.
-        subdivision_num_points(int,optional): The points number for refine seg logits when in inference. Default: 8196.
-        dropout_ratio(float,optional): If the dropout_ratio >0, to use Dropout before output and the p of dropout is dropout_ratio. Default: 0.1.
-        coarse_pred_each_layer (bool): Whether concatenate coarse feature with
+        importance_sample_ratio(float, optional): The importance sample ratio for compute num_uncertain_points. Default: 0.75.
+        scale_factor(int, optional): The scale factor of F.interpolate in refine seg logits stage when in inference. Default: 2.
+        subdivision_steps(int, optional): Then refine steps in refine seg logits stage when in inference. Default: 2.
+        subdivision_num_points(int, optional): The points number for refine seg logits when in inference. Default: 8196.
+        dropout_ratio(float, optional): If the dropout_ratio >0, to use Dropout before output and the p of dropout is dropout_ratio. Default: 0.1.
+        coarse_pred_each_layer(bool, optional): Whether concatenate coarse feature with
             the output of each fc layer. Default: True.
         conv_cfg(str): The config of Conv. Default: 'Conv1D'.
         input_transform(str): The features transform method of inputs.
@@ -519,13 +519,13 @@ class FPNHead(nn.Layer):
     (https://arxiv.org/abs/1901.02446)
 
     Args:
-        num_classes(int,optional): The unique number of target classes. Default: 19.
-        feature_strides(list(int)): The strides for input feature maps and all strides suppose to be power of 2. The first
+        num_classes(int): The unique number of target classes. Default: 19.
+        feature_strides(list): The strides for input feature maps and all strides suppose to be power of 2. The first
             one is of largest resolution. Default: [4, 8, 16, 32].
-        in_channels(list(int)): The input feature's channels list. Default: [256, 256, 256, 256].
-        channels(int,optional): The output channels of scale_head's Conv before Upsample block. Default: 128.
-        in_index(list(int): The indexs of input features to use. it's shape should keep with in_channels. Default: [0, 1, 2, 3].
-        dropout_ratio(float,optional): If the dropout_ratio >0, to use Dropout before output and the p of dropout is dropout_ratio. Default: 0.1.
+        in_channels(list): The input feature's channels list. Default: [256, 256, 256, 256].
+        channels(int, optional): The output channels of scale_head's Conv before Upsample block. Default: 128.
+        in_index(list): The indexs of input features to use. it's shape should keep with in_channels. Default: [0, 1, 2, 3].
+        dropout_ratio(float, optional): If the dropout_ratio >0, to use Dropout before output and the p of dropout is dropout_ratio. Default: 0.1.
         conv_cfg(str): The config of Conv. Default: 'Conv2D'.
         input_transform(str): The features transform method of inputs. it can be found in function '_transform_inputs'. Defalut: 'multiple_select'.
         align_corners (bool, optional): An argument of F.interpolate. It should be set to False when the feature size is even,
@@ -637,8 +637,8 @@ class FPNNeck(nn.Layer):
     The FPN Neck implementation in paddle.
 
     Args:
-        fpn_inplanes (list): Input channels list(the feature channels from backbone) for lateral_conv constraction. Default: [256, 512, 1024, 2048].
-        fpn_outplanes (int): The output channels. Default: 256.
+        fpn_inplanes (list, optional): Input channels list(the feature channels from backbone) for lateral_conv constraction. Default: [256, 512, 1024, 2048].
+        fpn_outplanes (int, optional): The output channels. Default: 256.
     """
 
     def __init__(self,
@@ -792,18 +792,3 @@ def calculate_uncertainty(seg_logits):
 
     top2_scores = paddle.topk(seg_logits, k=2, axis=1)[0]
     return paddle.unsqueeze(top2_scores[:, 1] - top2_scores[:, 0], axis=1)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
