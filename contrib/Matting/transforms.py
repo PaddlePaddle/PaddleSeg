@@ -342,7 +342,7 @@ class LimitLong:
             data['trans_info'].append(('resize', data['img'].shape[0:2]))
             data['img'] = functional.resize_long(data['img'], target)
             for key in data.get('gt_fields', []):
-                data[key] = functional.resize_long(data[key], self.long_size)
+                data[key] = functional.resize_long(data[key], target)
 
         return data
 
@@ -486,7 +486,9 @@ class RandomDistort:
         data['img'] = np.asarray(im)
 
         for key in data.get('gt_fields', []):
-            if key != 'alpha':
+            if key in ['alpha', 'trimap']:
+                continue
+            else:
                 im = data[key].astype('uint8')
                 im = Image.fromarray(im)
                 for id in range(len(ops)):

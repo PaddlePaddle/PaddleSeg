@@ -117,7 +117,7 @@ class MattingDataset(paddle.io.Dataset):
         data['alpha'] = alpha
         data['gt_fields'] = []
 
-        # lineis: fg [bg] [trimap]
+        # line is: fg [bg] [trimap]
         if len(fg_bg_file) >= 2:
             bg_file = os.path.join(self.dataset_root, fg_bg_file[1])
             bg = cv2.imread(bg_file)
@@ -133,6 +133,7 @@ class MattingDataset(paddle.io.Dataset):
                     if os.path.exists(trimap_path):
                         data['trimap'] = trimap_path
                         data['gt_fields'].append('trimap')
+                        data['ori_trimap'] = cv2.imread(trimap_path, 0)
                     else:
                         raise FileNotFoundError(
                             'trimap is not Found: {}'.format(fg_bg_file[2]))
@@ -146,6 +147,16 @@ class MattingDataset(paddle.io.Dataset):
                 data['gt_fields'].append('alpha')
 
         data['trans_info'] = []  # Record shape change information
+
+        # Generate trimap from alpha if no trimap file provided
+        if self.get_trimap:
+            if 'trimap' not in data:
+                data['trimap'] = self.gen_trimap(
+                    data['alpha'], mode=self.mode).astype('float32')
+                data['gt_fields'].append('trimap')
+                if self.mode == 'val':
+                    data['ori_trimap'] = data['trimap'].copy()
+
         data = self.transforms(data)
 
         # When evaluation, gt should not be transforms.
@@ -155,11 +166,11 @@ class MattingDataset(paddle.io.Dataset):
         data['img'] = data['img'].astype('float32')
         for key in data.get('gt_fields', []):
             data[key] = data[key].astype('float32')
-        if self.get_trimap:
-            if 'trimap' not in data:
-                data['trimap'] = self.gen_trimap(
-                    data['alpha'], mode=self.mode).astype('float32')
+
+        if 'trimap' in data:
             data['trimap'] = data['trimap'][np.newaxis, :, :]
+        if 'ori_trimap' in data:
+            data['ori_trimap'] = data['ori_trimap'][np.newaxis, :, :]
 
         data['alpha'] = data['alpha'][np.newaxis, :, :] / 255.
 

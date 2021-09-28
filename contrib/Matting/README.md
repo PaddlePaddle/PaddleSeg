@@ -130,9 +130,9 @@ python val.py --help
 export CUDA_VISIBLE_DEVICES=0
 python predict.py \
     --config configs/modnet/modnet_movilenetv2.yml \
-    --model_path output/iter_90000/model.pdparams \
-    --image_path data/cityscapes/leftImg8bit/val/ \
-    --save_dir ./output/result
+    --model_path output/best_model/model.pdparams \
+    --image_path data/PPM-100/val/fg/ \
+    --save_dir ./output/results
 ```
 如模型需要trimap信息，需要通过`--trimap_path`传入trimap路径。
 

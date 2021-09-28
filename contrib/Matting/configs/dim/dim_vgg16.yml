@@ -24,6 +24,8 @@ val_dataset:
   val_file: val.txt
   transforms:
     - type: LoadImages
+    - type: LimitLong
+      max_long: 3840
     - type: Normalize
   mode: val
   get_trimap: True

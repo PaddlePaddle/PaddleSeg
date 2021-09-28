@@ -97,9 +97,9 @@ def evaluate(model,
             alpha_pred = alpha_pred.numpy()
 
             alpha_gt = data['alpha'].numpy() * 255
-            trimap = data.get('trimap')
+            trimap = data.get('ori_trimap')
             if trimap is not None:
-                trimap = data['trimap'].numpy().astype('uint8')
+                trimap = trimap.numpy().astype('uint8')
             alpha_pred = np.round(alpha_pred * 255)
             mse_metric.update(alpha_pred, alpha_gt, trimap)
             sad_metric.update(alpha_pred, alpha_gt, trimap)
@@ -126,7 +126,6 @@ def evaluate(model,
             batch_cost_averager.reset()
             batch_start = time.time()
 
-    # 指标输出
     mse = mse_metric.evaluate()
     sad = sad_metric.evaluate()
 
