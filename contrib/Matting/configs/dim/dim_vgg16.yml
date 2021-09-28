@@ -35,7 +35,7 @@ model:
   backbone:
     type: VGG16
     input_channels: 4
-    pretrained: pretrained_models/VGG16_pretrained.pdparams
+    pretrained: https://paddleseg.bj.bcebos.com/matting/models/DIM_VGG16_pretrained/model.pdparams
   pretrained: Null
 
 optimizer:
