@@ -1,12 +1,12 @@
 English | [简体中文](OhemCrossEntropyLoss_cn.md)
-## [OhemCrossEntropyLoss](../../../paddleseg/models/ohem_cross_entropy_loss.py)
+## [OhemCrossEntropyLoss](../../../paddleseg/models/losses/ohem_cross_entropy_loss.py)
 
-OHEM aims to handling difficult samples. In some cases, there are unbalanced classes, and labelling all pixels is difficult or even impossible, which will severely restrict the performance of the model. The OHEM algorithm will distinguish difficult samples based on the loss of the samples input to the model. These difficult samples have poor classification accuracy and will produce greater losses. 
+OHEM aims to handling difficult samples. In some cases, there are unbalanced classes, and labelling all pixels is difficult or even impossible, which will severely restrict the performance of the model. The OHEM algorithm will distinguish difficult samples based on the loss of the samples input to the model. These difficult samples have poor classification accuracy and will produce greater losses.
 
 ```python
 class paddleseg.models.losses.OhemCrossEntropyLoss(
-                thresh = 0.7, 
-                min_kept = 10000, 
+                thresh = 0.7,
+                min_kept = 10000,
                 ignore_index = 255
 )
 ```

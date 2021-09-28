@@ -1,12 +1,12 @@
 简体中文 | [English](LovaszSoftmaxLoss_en.md)
-## [LovaszSoftmaxLoss](../../../paddleseg/models/lovasz_loss.py)
+## [LovaszSoftmaxLoss](../../../paddleseg/models/losses/lovasz_loss.py)
 
 lovasz softmax loss适用于多分类问题。该工作发表在CVPR 2018上。
 [参考文献](https://openaccess.thecvf.com/content_cvpr_2018/html/Berman_The_LovaSz-Softmax_Loss_CVPR_2018_paper.html)
 
 ```python
 class paddleseg.models.losses.LovaszSoftmaxLoss(
-            ignore_index = 255, 
+            ignore_index = 255,
             classes = 'present'
 )
 ```

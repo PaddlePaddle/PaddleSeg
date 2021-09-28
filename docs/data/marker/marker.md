@@ -66,7 +66,7 @@ If you want to use a custom dataset, you need to collect images for training, ev
 PaddleSeg already supports 2 kinds of labeling tools: `LabelMe`, and `EISeg`. The annotation tutorial is as follows:
 
 - [LabelMe Tutorial](../transform/transform_cn.md)
-- [EISeg Tutorial](../../../contrib/EISeg/README.md)
+- [EISeg Tutorial](../../../EISeg/README.md)
 
 After annotating with the above tools, please store all annotated images in the annotations folder, and then proceed to the next step.
 
