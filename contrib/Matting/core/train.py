@@ -115,10 +115,9 @@ def train(model,
             # model input
             if nranks > 1:
                 logit_dict = ddp_model(data)
-                loss_dict = ddp_model.loss(logit_dict, data, losses)
             else:
                 logit_dict = model(data)
-                loss_dict = model.loss(logit_dict, data, losses)
+            loss_dict = model.loss(logit_dict, data, losses)
 
             loss_dict['all'].backward()
 
