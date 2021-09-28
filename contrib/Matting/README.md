@@ -7,11 +7,40 @@ Matting（精细化分割/影像去背/抠图）是指借由计算前景的颜�
 </p>
 
 ## 目录
+- [环境配置](#环境配置)
 - [模型下载](#模型下载)
 - [数据准备](#数据准备)
 - [训练](#训练)
 - [评估](#评估)
 - [预测及可视化结果保存](#预测及可视化结果保存)
+
+
+## 环境配置
+
+#### 1. 安装PaddlePaddle
+
+版本要求
+
+* PaddlePaddle >= 2.0.2
+
+* Python >= 3.7+
+
+由于图像分割模型计算开销大，推荐在GPU版本的PaddlePaddle下使用PaddleSeg。推荐安装10.0以上的CUDA环境。安装教程请见[PaddlePaddle官网](https://www.paddlepaddle.org.cn/install/quick?docurl=/documentation/docs/zh/install/pip/linux-pip.html)。
+
+#### 2. 下载PaddleSeg仓库
+
+```shell
+git clone https://github.com/PaddlePaddle/PaddleSeg
+```
+
+#### 3. 安装
+
+```shell
+cd PaddleSeg
+pip install -e .
+pip install scikit-image
+cd contrib/Matting
+```
 
 ## 模型下载
 
@@ -84,7 +113,6 @@ val/fg/fg2.jpg bg/bg2.jpg val/trimap/trimap2.jpg
 val/fg/fg3.jpg bg/bg3.jpg val/trimap/trimap3.jpg
 ...
 ```
-
 
 ## 训练
 ```shell
