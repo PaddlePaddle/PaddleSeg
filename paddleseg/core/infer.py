@@ -102,10 +102,14 @@ def reverse_transform(pred, ori_shape, transforms, mode='nearest'):
     for item in reverse_list[::-1]:
         if item[0] == 'resize':
             h, w = item[1][0], item[1][1]
-            if paddle.get_device() == 'cpu':
-                pred = paddle.cast(pred, 'uint8')
+            intTypeList = [
+                paddle.int8, paddle.int16, paddle.int32, paddle.int64
+            ]
+            dtype = pred.dtype
+            if paddle.get_device() == 'cpu' and dtype in intTypeList:
+                pred = paddle.cast(pred, 'float32')
                 pred = F.interpolate(pred, (h, w), mode=mode)
-                pred = paddle.cast(pred, 'int32')
+                pred = paddle.cast(pred, dtype)
             else:
                 pred = F.interpolate(pred, (h, w), mode=mode)
         elif item[0] == 'padding':
