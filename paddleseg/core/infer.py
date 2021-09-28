@@ -99,13 +99,11 @@ def get_reverse_list(ori_shape, transforms):
 def reverse_transform(pred, ori_shape, transforms, mode='nearest'):
     """recover pred to origin shape"""
     reverse_list = get_reverse_list(ori_shape, transforms)
+    intTypeList = [paddle.int8, paddle.int16, paddle.int32, paddle.int64]
+    dtype = pred.dtype
     for item in reverse_list[::-1]:
         if item[0] == 'resize':
             h, w = item[1][0], item[1][1]
-            intTypeList = [
-                paddle.int8, paddle.int16, paddle.int32, paddle.int64
-            ]
-            dtype = pred.dtype
             if paddle.get_device() == 'cpu' and dtype in intTypeList:
                 pred = paddle.cast(pred, 'float32')
                 pred = F.interpolate(pred, (h, w), mode=mode)
