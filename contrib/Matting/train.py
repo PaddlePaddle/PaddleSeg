@@ -97,9 +97,8 @@ def parse_args():
     parser.add_argument(
         '--eval_begin_iters',
         dest='eval_begin_iters',
-        help=
-        'The iters begin evaluation. It will begin evaluating at iters/2 if it is None.',
-        default=None,
+        help='The iters begin evaluation.',
+        default=0,
         type=int)
     parser.add_argument(
         '--seed',
