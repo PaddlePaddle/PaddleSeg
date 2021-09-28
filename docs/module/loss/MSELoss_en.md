@@ -1,10 +1,10 @@
 English | [简体中文](MSELoss_en.md)
-## [MSELoss](../../../paddleseg/models/mean_square_error_loss.py)
+## [MSELoss](../../../paddleseg/models/losses/mean_square_error_loss.py)
 The root mean square refers to the average of the square of the distance between the model's predicted value and the sample's true value.
 
 ```python
 class paddleseg.models.losses.MSELoss(
-            reduction = 'mean', 
+            reduction = 'mean',
             ignore_index = 255
 )
 ```

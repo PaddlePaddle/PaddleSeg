@@ -25,10 +25,13 @@ import paddle
 LOCAL_PATH = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(LOCAL_PATH, '..', '..'))
 
+from paddle.inference import create_predictor, PrecisionType
+from paddle.inference import Config as PredictConfig
+
 from paddleseg.cvlibs import manager
 from paddleseg.utils import logger, metrics, progbar
 
-from infer import Predictor
+from infer import Predictor, DeployConfig, use_auto_tune
 
 
 def parse_args():
@@ -87,6 +90,20 @@ def parse_args():
         type=str,
         choices=["fp32", "fp16", "int8"],
         help='The tensorrt precision.')
+    parser.add_argument(
+        '--enable_auto_tune',
+        default=False,
+        type=eval,
+        choices=[True, False],
+        help=
+        'Whether to enable tuned dynamic shape. We uses some images to collect '
+        'the dynamic shape for trt sub graph, which avoids setting dynamic shape manually.'
+    )
+    parser.add_argument(
+        '--auto_tuned_shape_file',
+        type=str,
+        default="auto_tune_tmp.pbtxt",
+        help='The temp file to save tuned dynamic shape.')
 
     parser.add_argument(
         '--cpu_threads',
@@ -115,23 +132,80 @@ def parse_args():
     return parser.parse_args()
 
 
+def get_dataset(args):
+    comp = manager.DATASETS
+    if args.dataset_type not in comp.components_dict:
+        raise RuntimeError("The dataset is not supported.")
+
+    cfg = DeployConfig(args.cfg)
+    kwargs = {
+        'transforms': cfg.transforms.transforms,
+        'dataset_root': args.dataset_path,
+        'mode': args.dataset_mode
+    }
+    dataset = comp[args.dataset_type](**kwargs)
+    return dataset
+
+
+def auto_tune(args, dataset, img_nums):
+    """
+    Use images to auto tune the dynamic shape for trt sub graph.
+    The tuned shape saved in args.auto_tuned_shape_file.
+
+    Args:
+        args(dict): input args.
+        dataset(dataset): an dataset.
+        img_nums(int): the nums of images used for auto tune.
+    Returns:
+        None
+    """
+    logger.info("Auto tune the dynamic shape for GPU TRT.")
+
+    assert use_auto_tune(args)
+
+    num = min(len(dataset), img_nums)
+
+    cfg = DeployConfig(args.cfg)
+    pred_cfg = PredictConfig(cfg.model, cfg.params)
+    pred_cfg.enable_use_gpu(100, 0)
+    if not args.print_detail:
+        pred_cfg.disable_glog_info()
+    pred_cfg.collect_shape_range_info(args.auto_tuned_shape_file)
+
+    predictor = create_predictor(pred_cfg)
+    input_names = predictor.get_input_names()
+    input_handle = predictor.get_input_handle(input_names[0])
+
+    for idx, (img, _) in enumerate(dataset):
+        data = np.array([img])
+        input_handle.reshape(data.shape)
+        input_handle.copy_from_cpu(data)
+        try:
+            predictor.run()
+        except:
+            logger.info(
+                "Auto tune fail. Usually, the error is out of GPU memory, "
+                "because the model and image is too large. \n")
+            del predictor
+            if os.path.exists(args.auto_tuned_shape_file):
+                os.remove(args.auto_tuned_shape_file)
+            return
+
+        if idx + 1 >= num:
+            break
+
+    logger.info("Auto tune success.\n")
+
+
 class DatasetPredictor(Predictor):
     def __init__(self, args):
         super().__init__(args)
 
-    def test_dataset(self):
+    def run_dataset(self):
         """
         Read the data from dataset and calculate the accurary of the inference model.
         """
-        comp = manager.DATASETS
-        if self.args.dataset_type not in comp.components_dict:
-            raise RuntimeError("The dataset is not supported.")
-        kwargs = {
-            'transforms': self.cfg.transforms.transforms,
-            'dataset_root': self.args.dataset_path,
-            'mode': self.args.dataset_mode
-        }
-        dataset = comp[self.args.dataset_type](**kwargs)
+        dataset = get_dataset(self.args)
 
         input_names = self.predictor.get_input_names()
         input_handle = self.predictor.get_input_handle(input_names[0])
@@ -155,7 +229,7 @@ class DatasetPredictor(Predictor):
             total_time += (end_time - start_time)
 
             pred = output_handle.copy_to_cpu()
-            pred = self.postprocess(pred)
+            pred = self._postprocess(pred)
             pred = paddle.to_tensor(pred, dtype='int64')
             label = paddle.to_tensor(label, dtype="int32")
 
@@ -186,11 +260,16 @@ class DatasetPredictor(Predictor):
 
 
 def main(args):
+    if use_auto_tune(args):
+        dataset = get_dataset(args)
+        tune_img_nums = 10
+        auto_tune(args, dataset, tune_img_nums)
+
     predictor = DatasetPredictor(args)
-    if args.dataset_type and args.dataset_path:
-        predictor.test_dataset()
-    else:
-        raise RuntimeError("Please set dataset_type and dataset_path.")
+    predictor.run_dataset()
+
+    if use_auto_tune(args):
+        os.remove(args.auto_tuned_shape_file)
 
 
 if __name__ == '__main__':
@@ -203,6 +282,14 @@ if __name__ == '__main__':
         --config path/to/bisenetv2/deploy.yaml \
         --dataset_type Cityscapes \
         --dataset_path path/to/cityscapes
+
+    python deploy/python/infer_benchmark.py \
+        --config path/to/bisenetv2/deploy.yaml \
+        --dataset_type Cityscapes \
+        --dataset_path path/to/cityscapes \
+        --device gpu \
+        --use_trt True \
+        --enable_auto_tune True
     """
     args = parse_args()
     main(args)
