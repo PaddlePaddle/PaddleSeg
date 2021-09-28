@@ -5,7 +5,7 @@
 #   1. Install PaddlePaddle that supports TenorRT
 #   2. `export CUDA_VISIBLE_DEVICES=id`
 #   3. `cd ./PaddleSeg`
-#   4. `nohup bash ./tests/test_infer_models.sh /path/to/cityscapes 2>&1 >logs.txt`
+#   4. `nohup bash ./tests/test_infer_models.sh /path/to/cityscapes 2>&1 >logs.txt &`
 #   5. `python tests/analyze_infer_models_log.py --log_path ./logs.txt --save_path ./info.txt`
 
 if [ $# != 1 ] ; then
@@ -20,13 +20,15 @@ dataset_type="Cityscapes"   # Dataset type for infer_benchmark.py
 pretrained_root_path="./pretrained_model"   # the root path for saving pretrained model
 download_root_path="https://bj.bcebos.com/paddleseg/dygraph/cityscapes"
 config_root_path="./configs"
-save_root_path="./output"  # the root path for saving inference model
+save_root_path="./output_tmp"  # the root path for saving inference model
 save_basename="fp32_infer" # the basename for saving inference model
+enable_auto_tune=True   # Use auto tune for GPU TRT inference
 
 mkdir -p ${pretrained_root_path}
 mkdir -p ${save_root_path}
 
 # collect model configs_path that have pretrained weights of cityscapes dataset
+echo -e "Collect model configs"
 configs_path=()
 all_files=`find  $config_root_path -name "*.yml"`
 all_files=$(echo ${all_files[*]} | tr ' ' '\n' | sort -n)
@@ -39,6 +41,7 @@ do
         configs_path[${#configs_path[@]}]=${config_path}
     fi
 done
+echo -e "configs_path: ${configs_path[*]} \n"
 
 # test all models
 for config_path in ${configs_path[@]}
@@ -54,6 +57,10 @@ do
         echo -e "\n Download pretrained weights"
         wget ${download_path} -O ${pretrained_path}
     fi
+
+    echo -e "\n Analyze model"
+    python tools/analyze_model.py \
+        --config ${config_path}
 
     echo -e "\n Export inference model"
     export_path=${save_root_path}/${model_name}/${save_basename}
@@ -81,6 +88,7 @@ do
         --device gpu \
         --use_trt True \
         --precision fp32 \
+        --enable_auto_tune ${enable_auto_tune} \
         --config ${export_path}/deploy.yaml
 
     echo -e "\n Test ${model_name} TRT fp16"
@@ -90,6 +98,7 @@ do
         --device gpu \
         --use_trt True \
         --precision fp16 \
+        --enable_auto_tune ${enable_auto_tune} \
         --config ${export_path}/deploy.yaml
 
     echo -e "\n\n"

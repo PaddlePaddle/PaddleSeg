@@ -110,7 +110,7 @@ def _dynamic_flops(model, inputs, custom_ops=None, print_detail=False):
         handler.remove()
 
     table = Table(
-        ["Layer Name", "Input Shape", "Output Shape", "Params", "Flops(G)"])
+        ["Layer Name", "Input Shape", "Output Shape", "Params(M)", "Flops(G)"])
 
     for n, m in model.named_sublayers():
         if len(list(m.children())) > 0:
@@ -121,8 +121,8 @@ def _dynamic_flops(model, inputs, custom_ops=None, print_detail=False):
                 m.full_name(),
                 list(m.input_shape.numpy()),
                 list(m.output_shape.numpy()),
-                int(m.total_params),
-                round(float(m.total_ops / 1e9), 2)
+                round(float(m.total_params / 1e6), 3),
+                round(float(m.total_ops / 1e9), 3)
             ])
             m._buffers.pop("total_ops")
             m._buffers.pop("total_params")
@@ -130,8 +130,8 @@ def _dynamic_flops(model, inputs, custom_ops=None, print_detail=False):
             m._buffers.pop('output_shape')
     if print_detail:
         table.print_table()
-    print('Total Flops: {}     Total Params: {}'.format(
-        round(float(total_ops / 1e9), 2), int(total_params)))
+    print('Total Flops: {}G     Total Params: {}M'.format(
+        round(float(total_ops / 1e9), 3), round(float(total_params / 1e6), 3)))
     return int(total_ops)
 
 

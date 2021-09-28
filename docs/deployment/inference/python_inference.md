@@ -79,10 +79,11 @@ python deploy/python/infer.py \
 |batch_size|单卡batch size|否|1|
 |save_dir|保存预测结果的目录|否|output|
 |device|预测执行设备，可选项有'cpu','gpu'|否|'gpu'|
-|use_trt|是否开启TensorRT来加速预测|否|False|
-|precision|启动TensorRT预测时的数值精度，可选项有'fp32','fp16','int8'|否|'fp32'|
-|cpu_threads|使用cpu预测的线程数|否|10|
-|enable_mkldnn|是否使用MKL-DNN加速cpu预测|否|False|
+|use_trt|是否开启TensorRT来加速预测（当device=gpu才生效）|否|False|
+|precision|启动TensorRT预测时的数值精度，可选项有'fp32','fp16','int8'（当device=gpu才生效）|否|'fp32'|
+|enable_auto_tune|开启Auto Tune，会使用部分测试数据离线收集动态shape，用于TRT部署（当device=gpu、use_trt=True、paddle版本>=2.2才生效）| 否 | False |
+|cpu_threads|使用cpu预测的线程数（当device=cpu才生效）|否|10|
+|enable_mkldnn|是否使用MKL-DNN加速cpu预测（当device=cpu才生效）|否|False|
 |benchmark|是否产出日志，包含环境、模型、配置、性能信息|否|False|
 |with_argmax|对预测结果进行argmax操作|否|否|
 
