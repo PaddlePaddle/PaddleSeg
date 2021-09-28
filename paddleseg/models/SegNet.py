@@ -74,7 +74,7 @@ class SegNet(nn.Layer):
 
     def forward(self, x):
         x = self.encoder(x)
-        y = []
+        logit_list = []
         x = F.interpolate(x, paddle.to_tensor([[22],[30]],dtype='float32'), mode='bicubic')
         x = self.deco1(x)
         x = F.interpolate(x, paddle.to_tensor([[45],[60]],dtype='float32'), mode='bicubic')
@@ -85,9 +85,9 @@ class SegNet(nn.Layer):
         x = self.deco4(x)
         x = F.interpolate(x, paddle.to_tensor([[360],[480]],dtype='float32'), mode='bicubic')
         x = self.deco5(x)
-        y.append(x)
+        logit_list.append(x)
 
-        return y
+        return logit_list
 
 
 class Encoder(nn.Layer):
