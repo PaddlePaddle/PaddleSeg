@@ -24,6 +24,20 @@ import scipy
 
 @manager.MODELS.add_component
 class MODNet(nn.Layer):
+    """
+    The MODNet implementation based on PaddlePaddle.
+
+    The original article refers to
+    Zhanghan Ke, et, al. "Is a Green Screen Really Necessary for Real-Time Portrait Matting?"
+    (https://arxiv.org/pdf/2011.11961.pdf).
+
+    Args:
+        backbone: backbone model.
+        hr(int, optional): The channels of high resolutions branch. Defautl: None.
+        pretrained(str, optional): The path of pretrianed model. Defautl: None.
+
+    """
+
     def __init__(self, backbone, hr_channels=32, pretrained=None):
         super().__init__()
         self.backbone = backbone

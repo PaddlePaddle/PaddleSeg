@@ -32,7 +32,7 @@ class MRSD(nn.Layer):
         Args:
             logit (Tensor): Logit tensor, the data type is float32, float64.
             label (Tensor): Label tensor, the data type is float32, float64. The shape should equal to logit.
-            mask (Tensor): The mask where the loss valid.
+            mask (Tensor, optional): The mask where the loss valid. Default： None.
         """
         if len(label.shape) == 3:
             label = label.unsqueeze(1)

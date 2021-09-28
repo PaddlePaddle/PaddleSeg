@@ -28,7 +28,6 @@ from dataset import MattingDataset
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Model training')
-    # params of training
     parser.add_argument(
         "--config", dest="cfg", help="The config file.", default=None, type=str)
     parser.add_argument(
@@ -99,7 +98,7 @@ def parse_args():
         '--eval_begin_iters',
         dest='eval_begin_iters',
         help=
-        'The iters begin evaluation. It will evaluate at iters/2 if it is None.',
+        'The iters begin evaluation. It will begin evaluating at iters/2 if it is None.',
         default=None,
         type=int)
     parser.add_argument(
@@ -153,7 +152,6 @@ def main(args):
     msg += '------------------------------------------------'
     logger.info(msg)
 
-    # 调用train函数进行训练
     train(
         model=cfg.model,
         train_dataset=train_dataset,

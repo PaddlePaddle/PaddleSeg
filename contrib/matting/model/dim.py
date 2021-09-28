@@ -34,17 +34,17 @@ class DIM(nn.Layer):
 
     Args:
         backbone: backbone model.
-        pretrained(str, optional): The path of pretrianed model. Defautl: None.
         stage (int, optional): The stage of model. Defautl: 3.
-        decoder_input_channels(int, optional): The channel of decoder input. Defautl: 512.
+        decoder_input_channels(int, optional): The channel of decoder input. Default: 512.
+        pretrained(str, optional): The path of pretrianed model. Defautl: None.
 
     """
 
     def __init__(self,
                  backbone,
-                 pretrained=None,
                  stage=3,
-                 decoder_input_channels=512):
+                 decoder_input_channels=512,
+                 pretrained=None):
         super().__init__()
         self.backbone = backbone
         self.pretrained = pretrained

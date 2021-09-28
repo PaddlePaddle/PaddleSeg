@@ -139,9 +139,6 @@ class VGGNet(nn.Layer):
 
     def init_weight(self):
         if self.pretrained is not None:
-            # 初始化需要特殊操作一下
-            # self.load_pretrained_model(self.pretrained)
-            # 在那时不利用fc14进行初始化
             utils.load_pretrained_model(self, self.pretrained)
 
 

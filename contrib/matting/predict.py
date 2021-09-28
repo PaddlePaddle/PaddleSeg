@@ -31,7 +31,7 @@ def parse_args():
     parser.add_argument(
         '--model_path',
         dest='model_path',
-        help='The path of model for evaluation',
+        help='The path of model for prediction',
         type=str,
         default=None)
     parser.add_argument(

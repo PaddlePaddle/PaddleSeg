@@ -93,13 +93,14 @@ def predict(model,
             save_dir='output'):
     """
     predict and visualize the image_list.
+
     Args:
         model (nn.Layer): Used to predict for input image.
         model_path (str): The path of pretrained model.
-        transforms (transform.Compose): Preprocess for input image.
+        transforms (transforms.Compose): Preprocess for input image.
         image_list (list): A list of image path to be predicted.
         image_dir (str, optional): The root directory of the images predicted. Default: None.
-        trimap_list (list): A list of trimap of image_list. Default: None.
+        trimap_list (list, optional): A list of trimap of image_list. Default: None.
         save_dir (str, optional): The directory to save the visualized results. Default: 'output'.
     """
     utils.utils.load_entire_model(model, model_path)

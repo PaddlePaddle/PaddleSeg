@@ -27,34 +27,35 @@ import transforms as T
 @manager.DATASETS.add_component
 class MattingDataset(paddle.io.Dataset):
     """
-    human_matting
-    |__Composition-1k（origin dataset name）
-    |    |__train
-    |    |    |__fg
-    |    |    |__alpha
-    |    |__val
-    |         |__fg
-    |         |__alpha
-    |         |__trimap
-    |__Distinctions-646
-    |
-    |__bg (background）
-    |    |__coco_17
-    |    |__pascal_voc12
-    |
-    |__train.txt
-    |__val.tat
-
+    Pass in a dataset that conforms to the format.
+        matting_dataset/
+        |--bg/
+        |
+        |--train/
+        |  |--fg/
+        |  |--alpha/
+        |
+        |--val/
+        |  |--fg/
+        |  |--alpha/
+        |  |--trimap/ (如果存在)
+        |
+        |--train.txt
+        |
+        |--val.txt
+    See README.md for more information of dataset.
 
     Args:
-        dataset_root(str): The root path of dataset
+        dataset_root(str): The root path of dataset.
         transforms(list):  Transforms for image.
         mode (str, optional): which part of dataset to use. it is one of ('train', 'val', 'trainval'). Default: 'train'.
         train_file (str|list, optional): File list is used to train. It should be `foreground_image.png background_image.png`
             or `foreground_image.png`. It shold be provided if mode equal to 'train'. Default: None.
         val_file (str|list, optional): File list is used to evaluation. It should be `foreground_image.png background_image.png`
-            or `foreground_image.png`. It shold be provided if mode equal to 'val'. Default: None.
-
+            or `foreground_image.png` or ``foreground_image.png background_image.png trimap_image.png`.
+            It shold be provided if mode equal to 'val'. Default: None.
+        get_trimap (bool, optional): Whether to get triamp. Default: True.
+        separator (str, optional): The separator of train_file or val_file. If file name contains ' ', '|' may be perfect. Default: ' '.
     """
 
     def __init__(self,
@@ -76,7 +77,8 @@ class MattingDataset(paddle.io.Dataset):
         if mode == 'train' or mode == 'trainval':
             if train_file is None:
                 raise ValueError(
-                    "When `mode` is 'train', `train_file must be provided!")
+                    "When `mode` is 'train' or 'trainval', `train_file must be provided!"
+                )
             if isinstance(train_file, str):
                 train_file = [train_file]
             file_list = train_file
@@ -84,7 +86,8 @@ class MattingDataset(paddle.io.Dataset):
         if mode == 'val' or mode == 'trainval':
             if val_file is None:
                 raise ValueError(
-                    "When `mode` is 'val', `val_file must be provided!")
+                    "When `mode` is 'val' or 'trainval', `val_file must be provided!"
+                )
             if isinstance(val_file, str):
                 val_file = [val_file]
             file_list = val_file

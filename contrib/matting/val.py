@@ -49,7 +49,7 @@ def parse_args():
     parser.add_argument(
         '--save_results',
         dest='save_results',
-        help='save prediction alphe while evaluation',
+        help='save prediction alpha while evaluating',
         action='store_true')
 
     return parser.parse_args()

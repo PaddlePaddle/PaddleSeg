@@ -43,7 +43,7 @@ def train(model,
     """
     Launch training.
     Args:
-        model（nn.Layer): A sementic segmentation model.
+        model（nn.Layer): A matting model.
         train_dataset (paddle.io.Dataset): Used to read and process training datasets.
         val_dataset (paddle.io.Dataset, optional): Used to read and process validation datasets.
         optimizer (paddle.optimizer.Optimizer): The optimizer.
@@ -55,8 +55,7 @@ def train(model,
         log_iters (int, optional): Display logging information at every log_iters. Default: 10.
         num_workers (int, optional): Num workers for data loader. Default: 0.
         use_vdl (bool, optional): Whether to record the data to VisualDL during training. Default: False.
-        losses (dict): A dict including 'types' and 'coef'. The length of coef should equal to 1 or len(losses['types']).
-            The 'types' item is a list of object of paddleseg.models.losses while the 'coef' item is a list of the relevant coefficient.
+        losses (dict, optional): A dict of loss, refer to the loss function of the model for details. Default: None.
         keep_checkpoint_max (int, optional): Maximum number of checkpoints to save. Default: 5.
         eval_begin_iters (int): The iters begin evaluation. It will evaluate at iters/2 if it is None. Defalust: None.
     """
@@ -166,46 +165,6 @@ def train(model,
                                           avg_train_batch_cost, iter)
                     log_writer.add_scalar('Train/reader_cost',
                                           avg_train_reader_cost, iter)
-
-                    if False:  #主要为调试时候的观察，真正训练的时候可以省略
-                        # 增加图片和alpha的显示
-                        ori_img = data['img'][0]
-                        ori_img = paddle.transpose(ori_img, [1, 2, 0])
-                        ori_img = (ori_img * 0.5 + 0.5) * 255
-                        alpha = (data['alpha'][0])
-                        alpha = paddle.transpose(alpha, [1, 2, 0]) * 255
-                        trimap = (data['trimap'][0])
-                        trimap = paddle.transpose(trimap, [1, 2, 0])
-                        log_writer.add_image(
-                            tag='ground truth/ori_img',
-                            img=ori_img.numpy(),
-                            step=iter)
-                        log_writer.add_image(
-                            tag='ground truth/alpha',
-                            img=alpha.numpy(),
-                            step=iter)
-                        log_writer.add_image(
-                            tag='ground truth/trimap',
-                            img=trimap.numpy(),
-                            step=iter)
-
-                        semantic = (logit_dict['semantic'][0] * 255).transpose(
-                            [1, 2, 0])
-                        log_writer.add_image(
-                            tag='prediction/semantic',
-                            img=semantic.numpy().astype('uint8'),
-                            step=iter)
-                        detail = (logit_dict['detail'][0] * 255).transpose(
-                            [1, 2, 0])
-                        log_writer.add_image(
-                            tag='prediction/detail',
-                            img=detail.numpy().astype('uint8'),
-                            step=iter)
-                        cm = (logit_dict['matte'][0] * 255).transpose([1, 2, 0])
-                        log_writer.add_image(
-                            tag='prediction/alpha',
-                            img=cm.numpy().astype('uint8'),
-                            step=iter)
 
                 for key in avg_loss.keys():
                     avg_loss[key] = 0.
