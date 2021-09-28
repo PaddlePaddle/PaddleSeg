@@ -171,7 +171,7 @@ class paddleseg.models.losses.L1Loss(
 
 
 
-## [MSELoss](../../../paddleseg/models/mean_square_error_loss.py)
+## [MSELoss](../../../paddleseg/models/losses/mean_square_error_loss.py)
 ```python
 class paddleseg.models.losses.MSELoss(
             reduction = 'mean', 
@@ -196,7 +196,7 @@ class paddleseg.models.losses.MSELoss(
 
 
 
-## [OhemCrossEntropyLoss](../../../paddleseg/models/ohem_cross_entropy_loss.py)
+## [OhemCrossEntropyLoss](../../../paddleseg/models/losses/ohem_cross_entropy_loss.py)
 ```python
 class paddleseg.models.losses.OhemCrossEntropyLoss(
                 thresh = 0.7, 
@@ -215,7 +215,7 @@ class paddleseg.models.losses.OhemCrossEntropyLoss(
 
 
 
-## [OhemEdgeAttentionLoss](../../../paddleseg/models/ohem_edge_attention_loss.py)
+## [OhemEdgeAttentionLoss](../../../paddleseg/models/losses/ohem_edge_attention_loss.py)
 ```python
 class paddleseg.models.losses.OhemEdgeAttentionLoss(
                 edge_threshold = 0.8,
@@ -235,7 +235,7 @@ class paddleseg.models.losses.OhemEdgeAttentionLoss(
             and does not contribute to the input gradient.When there are pixels that cannot be marked (or difficult to be marked) in the marked image, they can be marked as a specific gray value. When calculating the loss value, the pixel corresponding to the original image will not be used as the independent variable of the loss function. *Default:``255``*
 
 
-## [LovaszSoftmaxLoss](../../../paddleseg/models/lovasz_loss.py)
+## [LovaszSoftmaxLoss](../../../paddleseg/models/losses/lovasz_loss.py)
 ```python
 class paddleseg.models.losses.LovaszSoftmaxLoss(
             ignore_index = 255, 
@@ -251,7 +251,7 @@ class paddleseg.models.losses.LovaszSoftmaxLoss(
 * **classes** (str|list): 'all' for all, 'present' for classes present in labels, or a list of classes to average.
 
 
-## [LovaszHingeLoss](../../../paddleseg/models/lovasz_loss.py)
+## [LovaszHingeLoss](../../../paddleseg/models/losses/lovasz_loss.py)
 ```python
 class paddleseg.models.losses.LovaszHingeLoss(ignore_index = 255)
 ```
@@ -263,7 +263,7 @@ class paddleseg.models.losses.LovaszHingeLoss(ignore_index = 255)
             and does not contribute to the input gradient.When there are pixels that cannot be marked (or difficult to be marked) in the marked image, they can be marked as a specific gray value. When calculating the loss value, the pixel corresponding to the original image will not be used as the independent variable of the loss function. *Default:``255``*
 
 
-## [MixedLoss](../../../paddleseg/models/mixed_loss.py)
+## [MixedLoss](../../../paddleseg/models/losses/mixed_loss.py)
 ```python
 class paddleseg.models.losses.MixedLoss(losses, coef)
 ```
