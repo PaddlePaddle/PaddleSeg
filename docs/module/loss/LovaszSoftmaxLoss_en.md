@@ -1,12 +1,12 @@
 English | [简体中文](LovaszSoftmaxLoss_cn.md)
-## [LovaszSoftmaxLoss](../../../paddleseg/models/lovasz_loss.py)
+## [LovaszSoftmaxLoss](../../../paddleseg/models/losses/lovasz_loss.py)
 
 Lovasz softmax loss is suitable for multi-classification problems. The work was published on CVPR 2018.
 [paper](https://openaccess.thecvf.com/content_cvpr_2018/html/Berman_The_LovaSz-Softmax_Loss_CVPR_2018_paper.html)
 
 ```python
 class paddleseg.models.losses.LovaszSoftmaxLoss(
-            ignore_index = 255, 
+            ignore_index = 255,
             classes = 'present'
 )
 ```
