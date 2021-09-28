@@ -227,6 +227,39 @@ class ResizeByLong:
 
 
 @manager.TRANSFORMS.add_component
+class ResizeByShort:
+    """
+    Resize the short side of an image to given size, and then scale the other side proportionally.
+
+    Args:
+        short_size (int): The target size of short side.
+    """
+
+    def __init__(self, short_size):
+        self.short_size = short_size
+
+    def __call__(self, im, label=None):
+        """
+        Args:
+            im (np.ndarray): The Image data.
+            label (np.ndarray, optional): The label data. Default: None.
+
+        Returns:
+            (tuple). When label is None, it returns (im, ), otherwise it returns (im, label).
+        """
+
+        im = functional.resize_short(im, self.short_size)
+        if label is not None:
+            label = functional.resize_short(label, self.short_size,
+                                            cv2.INTER_NEAREST)
+
+        if label is None:
+            return (im, )
+        else:
+            return (im, label)
+
+
+@manager.TRANSFORMS.add_component
 class LimitLong:
     """
     Limit the long edge of image.
