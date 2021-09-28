@@ -137,7 +137,4 @@ python tools/labelme2seg.py docs/annotation/labelme_demo/
 
 
 # 二、EISeg
-EISeg的使用请参考[文档](../../../contrib/EISeg/README.md)
-
-
-
+EISeg的使用请参考[文档](../../../EISeg/README.md)

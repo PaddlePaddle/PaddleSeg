@@ -168,7 +168,6 @@ def forward(self, x):
 def init_weight(self):
     if self.pretrained is not None:
         utils.load_entire_model(self, self.pretrained)
-
 # 不带 backbone 的自身模型初始化
 def init_weight(self):
       """Initialize the parameters of model parts."""
@@ -178,7 +177,6 @@ def init_weight(self):
         elif isinstance(sublayer, (nn.BatchNorm, nn.SyncBatchNorm)):
           param_init.constant_init(sublayer.weight, value=1.0)
           param_init.constant_init(sublayer.bias, value=0.0)
-
 ```
 
 ### II、分割头

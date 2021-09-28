@@ -1,5 +1,5 @@
 English| [简体中文](LovaszHingeLoss_cn.md)
-## [LovaszHingeLoss](../../../paddleseg/models/lovasz_loss.py)
+## [LovaszHingeLoss](../../../paddleseg/models/losses/lovasz_loss.py)
 
 Hinge Loss is a loss function improved on the simple step loss function that is not continuous and smooth. For positive samples, the output of Hinge Loss should be greater than or equal to 1; for positive samples, the output of Hinge Loss should be less than or equal to -1.
 

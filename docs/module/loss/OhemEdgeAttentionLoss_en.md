@@ -1,5 +1,5 @@
 English | [简体中文](OhemEdgeAttentionLoss_cn.md)
-## [OhemEdgeAttentionLoss](../../../paddleseg/models/ohem_edge_attention_loss.py)
+## [OhemEdgeAttentionLoss](../../../paddleseg/models/losses/ohem_edge_attention_loss.py)
 The OHEM algorithm will distinguish difficult samples based on the loss of the samples input to the model. These difficult samples have poor classification accuracy and will produce greater losses. In the above cases, if you want to improve the performance of edge extraction, you can use this loss function.
 ```python
 class paddleseg.models.losses.OhemEdgeAttentionLoss(
