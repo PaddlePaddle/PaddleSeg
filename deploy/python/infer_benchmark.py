@@ -180,7 +180,16 @@ def auto_tune(args, dataset, img_nums):
         data = np.array([img])
         input_handle.reshape(data.shape)
         input_handle.copy_from_cpu(data)
-        predictor.run()
+        try:
+            predictor.run()
+        except:
+            logger.info(
+                "Auto tune fail. Usually, the error is out of GPU memory, "
+                "because the model and image is too large. \n")
+            del predictor
+            if os.path.exists(args.auto_tuned_shape_file):
+                os.remove(args.auto_tuned_shape_file)
+            return
 
         if idx + 1 >= num:
             break

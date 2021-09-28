@@ -103,13 +103,27 @@ def auto_tune(args, imgs, img_nums):
         data = np.array([cfg.transforms(imgs[i])[0]])
         input_handle.reshape(data.shape)
         input_handle.copy_from_cpu(data)
-        predictor.run()
+        try:
+            predictor.run()
+        except:
+            logger.info(
+                "Auto tune fail. Usually, the error is out of GPU memory, "
+                "because the model and image is too large. \n")
+            del predictor
+            if os.path.exists(args.auto_tuned_shape_file):
+                os.remove(args.auto_tuned_shape_file)
+            return
 
     logger.info("Auto tune success.\n")
 
 
 class Predictor:
     def __init__(self, args):
+        """
+        Prepare for prediction.
+        The usage and docs of paddle inference, please refer to
+        https://paddleinference.paddlepaddle.org.cn/product_introduction/summary.html
+        """
         self.args = args
         self.cfg = DeployConfig(args.cfg)
 
@@ -184,12 +198,12 @@ class Predictor:
                 use_static=False,
                 use_calib_mode=False)
 
-            if use_auto_tune(self.args):
+            if use_auto_tune(self.args) and \
+                os.path.exists(self.args.auto_tuned_shape_file):
                 logger.info("Use auto tuned dynamic shape")
-                shape_file = self.args.auto_tuned_shape_file
                 allow_build_at_runtime = True
                 self.pred_cfg.enable_tuned_tensorrt_dynamic_shape(
-                    shape_file, allow_build_at_runtime)
+                    self.args.auto_tuned_shape_file, allow_build_at_runtime)
             else:
                 logger.info("Use manual set dynamic shape")
                 min_input_shape = {"x": [1, 3, 100, 100]}
