@@ -1,4 +1,4 @@
-# Copyright (c) 2020 PaddlePaddle Authors. All Rights Reserved.
+# Copyright (c) 2021 PaddlePaddle Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,8 +18,11 @@ import random
 
 import paddle
 from cvlibs import Config
-from core import train
-from paddleseg.utils import logger, config_check
+from script.train import Trainer
+from paddleseg.utils import logger, get_sys_env
+
+import datasets
+import utils
 
 
 def parse_args():
@@ -116,6 +119,17 @@ def main(args):
         np.random.seed(args.seed)
         random.seed(args.seed)
 
+    env_info = get_sys_env()
+    info = ['{}: {}'.format(k, v) for k, v in env_info.items()]
+    info = '\n'.join(['', format('Environment Information', '-^48s')] + info +
+                     ['-' * 48])
+    logger.info(info)
+
+    place = 'gpu' if env_info['Paddle compiled with cuda'] and env_info[
+        'GPUs used'] else 'cpu'
+
+    paddle.set_device(place)
+
     if not args.cfg:
         raise RuntimeError('No configuration file specified.')
 
@@ -134,21 +148,21 @@ def main(args):
         raise ValueError(
             'The length of train_dataset is 0. Please check if your dataset is valid'
         )
-    val_dataset = cfg.val_dataset if args.do_eval else None
-    losses = cfg.loss
+    val_dataset_tgt = cfg.val_dataset_tgt if args.do_eval else None
 
     msg = '\n---------------Config Information---------------\n'
     msg += str(cfg)
     msg += '------------------------------------------------'
     logger.info(msg)
 
-    config_check(cfg, train_dataset=train_dataset_src, val_dataset=val_dataset)
+    utils.config_check(
+        cfg, train_dataset=train_dataset_src, val_dataset=val_dataset_tgt)
 
-    train(
-        cfg.model,
+    trainer = Trainer(cfg.model, ema_decay=cfg.dic['ema_decay'])
+    trainer.train(
         train_dataset_src,
         train_dataset_tgt,
-        val_dataset=val_dataset,
+        val_dataset_tgt=val_dataset_tgt,
         optimizer=cfg.optimizer,
         save_dir=args.save_dir,
         iters=cfg.iters,
@@ -158,7 +172,6 @@ def main(args):
         log_iters=args.log_iters,
         num_workers=args.num_workers,
         use_vdl=args.use_vdl,
-        losses=losses,
         keep_checkpoint_max=args.keep_checkpoint_max,
         test_config=cfg.test_config,
         fp16=args.fp16)

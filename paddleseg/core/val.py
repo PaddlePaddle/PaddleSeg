@@ -118,6 +118,16 @@ def evaluate(model,
                     stride=stride,
                     crop_size=crop_size)
 
+            # todo: visualdl images
+            # vis_imgs = 2
+            # images_inv = inv_preprocess(x.clone().cpu(), vis_imgs, numpy_transform=True)
+            # labels_colors = decode_labels(label, vis_imgs)
+            # preds_colors = decode_labels(argpred, vis_imgs)
+            # for index, (img, lab, predc) in enumerate(zip(images_inv, labels_colors, preds_colors)):
+            #     self.writer.add_image(str(index) + '/images', img, self.epoch)
+            #     self.writer.add_image(str(index) + '/labels', lab, self.epoch)
+            #     self.writer.add_image(str(index) + '/preds', predc, self.epoch)
+
             intersect_area, pred_area, label_area = metrics.calculate_area(
                 pred,
                 label,

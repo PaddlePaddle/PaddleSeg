@@ -12,9 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .backbones import *
+from .train import Trainer
 
-from .deeplabv2 import DeepLabV2
-from .ema import EMA
-
-from .gscnn import GSCNNHead
+__all__ = ['Trainer']

@@ -21,6 +21,7 @@ import yaml
 
 from paddleseg.cvlibs import manager
 from paddleseg.utils import logger
+from models import EMA
 
 
 class Config(object):
@@ -317,6 +318,10 @@ class Config(object):
             self._model = self._load_object(model_cfg)
         return self._model
 
+    # @property
+    # def ema_model(self) -> paddle.nn.Layer:
+    #     return EMA(self._model, self.dic['ema_decay'])
+
     @property
     def train_dataset_src_config(self) -> Dict:
         return self.dic.get('train_dataset_src', {}).copy()
@@ -326,8 +331,8 @@ class Config(object):
         return self.dic.get('train_dataset_tgt', {}).copy()
 
     @property
-    def val_dataset_config(self) -> Dict:
-        return self.dic.get('val_dataset', {}).copy()
+    def val_dataset_tgt_config(self) -> Dict:
+        return self.dic.get('val_dataset_tgt', {}).copy()
 
     @property
     def train_dataset_class(self) -> Generic:
@@ -336,7 +341,7 @@ class Config(object):
 
     @property
     def val_dataset_class(self) -> Generic:
-        dataset_type = self.val_dataset_config['type']
+        dataset_type = self.val_dataset_src_config['type']
         return self._load_component(dataset_type)
 
     @property
@@ -354,8 +359,8 @@ class Config(object):
         return self._load_object(_train_dataset_tgt)
 
     @property
-    def val_dataset(self) -> paddle.io.Dataset:
-        _val_dataset = self.val_dataset_config
+    def val_dataset_tgt(self) -> paddle.io.Dataset:
+        _val_dataset = self.val_dataset_tgt_config
         if not _val_dataset:
             return None
         return self._load_object(_val_dataset)

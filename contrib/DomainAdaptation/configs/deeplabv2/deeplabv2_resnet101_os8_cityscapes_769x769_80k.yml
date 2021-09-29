@@ -1,9 +1,9 @@
-batch_size: 2
+batch_size: 1
 iters: 80000
 
 train_dataset_src:
   type: GTA5
-  dataset_root: data/GTA5
+  dataset_root: ../../../data/GTA5
   transforms:
     - type: RandomVerticalFlip
       prob: 0.5
@@ -13,12 +13,13 @@ train_dataset_src:
     - type: RandomHorizontalFlip
     - type: RandomBlur
       prob: 0.5
-    - type: Normalize
+    # - type: Normalize
   mode: train
+  edge: True
 
 train_dataset_tgt:
   type: Cityscapes
-  dataset_root: data/cityscapes
+  dataset_root: ../../../data/cityscapes
   transforms:
     - type: RandomVerticalFlip
       prob: 0.5
@@ -28,24 +29,41 @@ train_dataset_tgt:
     - type: RandomHorizontalFlip
     - type: RandomBlur
       prob: 0.5
-    - type: Normalize
+    # - type: Normalize
   mode: train
+  # edge: True
 
-val_dataset:
+val_dataset_tgt:
   type: Cityscapes
-  dataset_root: data/cityscapes
+  dataset_root: ../../../data/cityscapes
   transforms:
-    - type: Normalize
+    - type: Resize
+      target_size: [1280, 720]
+      interp: CUBIC
+    # - type: Normalize
   mode: val
 
 model:
   type: DeepLabV2
   backbone:
     type: ResNet101
+    num_classes: 19
+  # backbone:
+  #   type: ResNet50_vd
+  #   output_stride: 8
+  #   multi_grid: [1, 2, 4]
+  #   pretrained: https://bj.bcebos.com/paddleseg/dygraph/resnet50_vd_ssld_v2.tar.gz
   num_classes: 19
-  backbone_indices: [0, 1]
+  backbone_indices: [0, 1, 2, 3]
   align_corners: True
   pretrained: models/torch_transfer_gta5source.pdparams  # gta5 source/ others get from model
+  shape_stream: False
+
+ema_decay: 0.999
+pseudolabel_threshold: 0.0
+edgeconstrain: False
+edgepullin: False
+featurepullin: False
 
 optimizer:
   type: sgd
@@ -57,10 +75,3 @@ lr_scheduler:
   learning_rate: 1e-4
   end_lr: 0
   power: 0.9
-
-loss:
-  types:
-    - type: CrossEntropyLoss
-    - type: CrossEntropyLoss # aug
-    - type: AugLoss
-  coef: [1, 0.1]

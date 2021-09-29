@@ -1,4 +1,4 @@
-# Copyright (c) 2020 PaddlePaddle Authors. All Rights Reserved.
+# Copyright (c) 2021 PaddlePaddle Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -21,6 +21,8 @@ import paddle.nn.functional as F
 from paddleseg.cvlibs import manager
 from paddleseg.models import layers
 from paddleseg.utils import utils, logger
+
+from .gscnn import GSCNNHead
 
 __all__ = [
     'DeepLabV2',
@@ -53,20 +55,46 @@ class DeepLabV2(nn.Layer):
     def __init__(self,
                  num_classes,
                  backbone,
-                 backbone_indices=(0, 1),
+                 backbone_indices=(0, 1, 2, 3),
+                 aspp_ratios=(1, 6, 12, 18),
+                 aspp_out_channels=256,
                  align_corners=False,
-                 pretrained=None):
+                 pretrained=None,
+                 shape_stream=False):
         super().__init__()
 
         self.backbone = backbone
+        self.shape_stream = shape_stream
+        backbone_channels = self.backbone.feat_channels
+        self.head = GSCNNHead(num_classes, backbone_indices, backbone_channels,
+                              aspp_ratios, aspp_out_channels, align_corners)
 
         self.align_corners = align_corners  # should be true
         self.pretrained = pretrained  # should not load layer5
         self.init_weight()
 
     def forward(self, x):
-        logit_list = self.backbone(x)
-        return logit_list
+        feat_list = self.backbone(x)
+        if self.shape_stream:
+            logit_list = self.head(x, feat_list[:4], self.backbone.conv1_logit)
+            logit_list.append(feat_list[-1])
+            seg_logit, edge_logit, aug_logit = [
+                F.interpolate(
+                    logit,
+                    x.shape[2:],
+                    mode='bilinear',
+                    align_corners=self.align_corners) for logit in logit_list
+            ]
+            return [seg_logit, aug_logit, edge_logit]
+        else:
+            return [
+                F.interpolate(
+                    logit,
+                    x.shape[2:],
+                    mode='bilinear',
+                    align_corners=self.align_corners)
+                for logit in feat_list[-2:]
+            ]
 
     def init_weight(self):
         if self.pretrained is not None:

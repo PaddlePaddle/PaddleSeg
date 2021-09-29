@@ -24,7 +24,7 @@ from .fcn import *
 from .gcnet import *
 from .ocrnet import *
 from .pspnet import *
-from .gscnn import GSCNN
+from .gscnn import GSCNN, GSCNNHead
 from .unet import UNet
 from .hardnet import HarDNet
 from .u2net import U2Net, U2Netp

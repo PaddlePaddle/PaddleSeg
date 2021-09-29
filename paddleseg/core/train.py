@@ -53,8 +53,7 @@ def loss_computation(logits_list, labels, losses, edges=None):
 
 
 def train(model,
-          train_dataset_src,
-          train_dataset_tgt,
+          train_dataset,
           val_dataset=None,
           optimizer=None,
           save_dir='output',
@@ -112,23 +111,12 @@ def train(model,
             optimizer)  # The return is Fleet object
         ddp_model = paddle.distributed.fleet.distributed_model(model)
 
-    batch_sampler_src = paddle.io.DistributedBatchSampler(
-        train_dataset_src, batch_size=batch_size, shuffle=True, drop_last=True)
+    batch_sampler = paddle.io.DistributedBatchSampler(
+        train_dataset, batch_size=batch_size, shuffle=True, drop_last=True)
 
-    loader_src = paddle.io.DataLoader(
-        train_dataset_src,
-        batch_sampler=batch_sampler_src,
-        num_workers=num_workers,
-        return_list=True,
-        worker_init_fn=worker_init_fn,
-    )
-
-    batch_sampler_tgt = paddle.io.DistributedBatchSampler(
-        train_dataset_tgt, batch_size=batch_size, shuffle=True, drop_last=True)
-
-    loader_tgt = paddle.io.DataLoader(
-        train_dataset_tgt,
-        batch_sampler=batch_sampler_tgt,
+    loader = paddle.io.DataLoader(
+        train_dataset,
+        batch_sampler=batch_sampler,
         num_workers=num_workers,
         return_list=True,
         worker_init_fn=worker_init_fn,
@@ -145,7 +133,7 @@ def train(model,
 
     avg_loss = 0.0
     avg_loss_list = []
-    iters_per_epoch = len(batch_sampler_src)
+    iters_per_epoch = len(batch_sampler)
     best_mean_iou = -1.0
     best_model_iter = -1
     reader_cost_averager = TimeAverager()
@@ -155,11 +143,11 @@ def train(model,
 
     iter = start_iter
     while iter < iters:
-        for data in loader_src:
+        for data in loader:
             iter += 1
             if iter > iters:
                 version = paddle.__version__
-                if version == '2.1.2':
+                if version == '2.1.2' or version == '0.0.0':
                     continue
                 else:
                     break

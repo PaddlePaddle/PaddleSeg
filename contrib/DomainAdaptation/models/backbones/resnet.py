@@ -162,6 +162,10 @@ class ResNetMulti(nn.Layer):
                                             [6, 12, 18, 24], [6, 12, 18, 24],
                                             num_classes)
 
+        # for channels of four returned stages
+        num_filters = [64, 128, 256, 512]
+        self.feat_channels = [c * 4 for c in num_filters]
+
         # New! Rotation prediction head
         # self.rotation_prediction_head = nn.Identity()
 
@@ -203,23 +207,24 @@ class ResNetMulti(nn.Layer):
         x = self.conv1(x)
         x = self.bn1(x)
         x = self.relu(x)
+        self.conv1_logit = x.clone()
         x = self.maxpool(x)
-        x = self.layer1(x)
-        x = self.layer2(x)
-        x = self.layer3(x)
+        x1 = self.layer1(x)
+        x2 = self.layer2(x1)
+        x3 = self.layer3(x2)
 
         # Resolution 1
-        x1 = self.layer5(x)
-        x1 = F.interpolate(
-            x1, size=input_size, mode='bilinear', align_corners=True)
+        x_aug = self.layer5(x3)
+        x_aug = F.interpolate(
+            x_aug, size=input_size, mode='bilinear', align_corners=True)
 
         # Resolution 2
-        x2 = self.layer4(x)
-        x2 = self.layer6(x2)
-        x2 = F.interpolate(
-            x2, size=input_size, mode='bilinear', align_corners=True)
+        x4 = self.layer4(x3)
+        x4 = self.layer6(x4)
+        x4 = F.interpolate(
+            x4, size=input_size, mode='bilinear', align_corners=True)
 
-        return x2, x1  # changed! low resolution first
+        return x1, x2, x3, x4, x_aug  # changed! resolution 2 first
 
     def get_1x_lr_params_NOscale(self):
         """

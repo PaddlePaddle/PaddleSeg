@@ -67,6 +67,10 @@ class Compose:
             im = outputs[0]
             if len(outputs) == 2:
                 label = outputs[1]
+        im = im[:, :, ::-1]  # change to BGR
+        IMG_MEAN = np.array((104.00698793, 116.66876762, 122.67891434),
+                            dtype=np.float32)
+        im -= IMG_MEAN
         im = np.transpose(im, (2, 0, 1))
         return (im, label)
 
