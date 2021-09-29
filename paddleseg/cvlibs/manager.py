@@ -15,6 +15,8 @@
 import inspect
 from collections.abc import Sequence
 
+import warnings
+
 
 class ComponentManager:
     """
@@ -109,7 +111,11 @@ class ComponentManager:
 
         # Check whether the component was added already
         if component_name in self._components_dict.keys():
-            raise KeyError("{} exists already!".format(component_name))
+            warnings.warn(
+                "{} exists already! It is now updated to {} !!!".format(
+                    component_name, component))
+            self._components_dict[component_name] = component
+
         else:
             # Take the internal name of the component as its key
             self._components_dict[component_name] = component

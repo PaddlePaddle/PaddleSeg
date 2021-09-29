@@ -17,22 +17,17 @@ import time
 from collections import deque
 import shutil
 import tqdm
-import random
-import numpy as np
 
 import paddle
 import paddle.nn.functional as F
 
-from paddleseg.utils import TimeAverager, calculate_eta, resume, logger
+from paddleseg.utils import TimeAverager, calculate_eta, resume, logger, worker_init_fn
 from paddleseg.core.val import evaluate
 from paddleseg.models import losses
 import paddleseg.transforms.functional as Func
 from models import EMA
 from utils import augmentation
-
-
-def worker_init_fn(worker_id):
-    np.random.seed(random.randint(0, 100000))
+from models.losses import KLLoss
 
 
 class Trainer():
@@ -42,7 +37,7 @@ class Trainer():
         self.ema_decay = ema_decay
         self.ema = EMA(self.model, ema_decay)
         self.celoss = losses.CrossEntropyLoss()
-        self.klloss = losses.KLLoss()
+        self.klloss = KLLoss()
 
     def train(self,
               train_dataset_src,
@@ -146,9 +141,7 @@ class Trainer():
             for batch_idx, (data_src, data_tgt) in enumerate(
                     tqdm(
                         zip(loader_src, loader_tgt),
-                        total=min(
-                            len(self.source_dataloader),
-                            len(self.target_dataloader)))):
+                        total=min(len(loader_src), len(loader_tgt)))):
                 reader_cost_averager.record(time.time() - batch_start)
 
                 #### training #####

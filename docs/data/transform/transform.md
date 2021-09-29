@@ -137,7 +137,4 @@ The converted dataset can refer to the [folder] (https://github.com/PaddlePaddle
 
 # 2、EISeg
 
-For the use of EISeg, please refer to [Document](../../../contrib/EISeg/README.md)
-
-
-
+For the use of EISeg, please refer to [Document](../../../EISeg/README.md)

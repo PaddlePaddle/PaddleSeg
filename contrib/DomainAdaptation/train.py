@@ -173,8 +173,7 @@ def main(args):
         num_workers=args.num_workers,
         use_vdl=args.use_vdl,
         keep_checkpoint_max=args.keep_checkpoint_max,
-        test_config=cfg.test_config,
-        fp16=args.fp16)
+        test_config=cfg.test_config)
 
 
 if __name__ == '__main__':
