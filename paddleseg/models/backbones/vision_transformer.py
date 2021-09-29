@@ -145,6 +145,7 @@ class PatchEmbed(nn.Layer):
         return x
 
 
+@manager.BACKBONES.add_component
 class VisionTransformer(nn.Layer):
     """ Vision Transformer with support for patch input
     """
@@ -214,26 +215,29 @@ class VisionTransformer(nn.Layer):
     def forward_features(self, x):
         x = self.patch_embed(x)
         x_shape = paddle.shape(x)
-        pos_embed = self.pos_embed[:, 1:, :]
-        cls_pos_embed = self.pos_embed[:, :1, :]
-        cls_tokens = self.cls_token.expand((x_shape[0], -1, -1))
 
+        cls_pos_embed = self.pos_embed[:, :1, :]
+        pos_embed = self.pos_embed[:, 1:, :]
+
+        # TODO(jc): interpolate the pos_embed when load weights
         pos_embed = pos_embed.transpose([0, 2, 1])
         pos_embed = pos_embed.reshape([1, -1, self.pos_h, self.pos_w])
         pos_embed = F.interpolate(
             pos_embed, x_shape[2:], mode='bilinear', align_corners=False)
-
         pos_embed = pos_embed.flatten(2).transpose([0, 2, 1])
         pos_embed = paddle.concat([cls_pos_embed, pos_embed], axis=1)
+
         x = x.flatten(2).transpose([0, 2, 1])
+        cls_tokens = self.cls_token.expand((x_shape[0], -1, -1))
         x = paddle.concat([cls_tokens, x], axis=1)
         x = x + pos_embed
-
         x = self.pos_drop(x)
+
         res = []
-        for idx, blk in enumerate(self.blocks):
+        for _, blk in enumerate(self.blocks):
             x = blk(x)
             res.append(x[:, 1:, :])
+
         return res, x_shape
 
     def forward(self, x):

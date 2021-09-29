@@ -1,0 +1,54 @@
+_base_: '../_base_/cityscapes.yml'
+
+model:
+  type: Segmenter
+  backbone:
+    type: ViT_large_patch16_384   # patch_size=16, embed_dim=1024, depth=24, num_heads=16, mlp_ratio=4
+    pretrained: https://bj.bcebos.com/paddleseg/dygraph/vit_large_patch16_384.tar.gz
+  head:
+    type: SegmenterMTD
+    num_classes: 19
+    in_dim: 1024
+    embed_dim: 1024
+    depth: 2
+    num_heads: 16   # embed_dim // 64
+    mlp_ratio: 4
+    drop_rate: 0.1
+    drop_path_rate: 0.0
+
+batch_size: 1
+iters: 80000
+
+train_dataset:
+  transforms:
+    - type: ResizeStepScaling
+      min_scale_factor: 0.25
+      max_scale_factor: 2.0
+      scale_step_size: 0.25
+    - type: RandomPaddingCrop
+      crop_size: [768, 768]
+    - type: RandomHorizontalFlip
+    - type: RandomDistort
+      brightness_range: 0.5
+      contrast_range: 0.5
+      saturation_range: 0.5
+    - type: Normalize
+
+val_dataset:
+  transforms:
+    - type: Padding
+      target_size: [2048, 1024]
+    - type: Normalize
+
+optimizer:
+  weight_decay: 0.0
+
+loss:
+  types:
+    - type: CrossEntropyLoss
+  coef: [1]
+
+test_config:
+    is_slide: True
+    crop_size: [768, 768]
+    stride: [512, 512]
