@@ -168,6 +168,11 @@ class Config(object):
             lr_scheduler:
                 type: PolynomialDecay
                 learning_rate: 0.01''')
+
+        _learning_rate = self.dic.get('learning_rate', {})
+        if isinstance(_learning_rate, float):
+            return _learning_rate
+
         _learning_rate = self.dic.get('learning_rate', {}).get('value')
         if not _learning_rate:
             raise RuntimeError(
@@ -306,12 +311,8 @@ class Config(object):
                 elif hasattr(self.val_dataset, 'num_classes'):
                     num_classes = self.val_dataset.num_classes
 
-            if not num_classes:
-                raise ValueError(
-                    '`num_classes` is not found. Please set it in model, train_dataset or val_dataset'
-                )
-
-            model_cfg['num_classes'] = num_classes
+            if num_classes is not None:
+                model_cfg['num_classes'] = num_classes
 
         if not self._model:
             self._model = self._load_object(model_cfg)

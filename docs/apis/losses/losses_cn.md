@@ -155,7 +155,7 @@ class paddleseg.models.losses.L1Loss(
 
 
 
-## [MSELoss](../../../paddleseg/models/mean_square_error_loss.py)
+## [MSELoss](../../../paddleseg/models/losses/mean_square_error_loss.py)
 ```python
 class paddleseg.models.losses.MSELoss(
             reduction = 'mean', 
@@ -176,7 +176,7 @@ class paddleseg.models.losses.MSELoss(
 
 
 
-## [OhemCrossEntropyLoss](../../../paddleseg/models/ohem_cross_entropy_loss.py)
+## [OhemCrossEntropyLoss](../../../paddleseg/models/losses/ohem_cross_entropy_loss.py)
 ```python
 class paddleseg.models.losses.OhemCrossEntropyLoss(
                 thresh = 0.7, 
@@ -194,7 +194,7 @@ class paddleseg.models.losses.OhemCrossEntropyLoss(
 
 
 
-## [OhemEdgeAttentionLoss](../../../paddleseg/models/ohem_edge_attention_loss.py)
+## [OhemEdgeAttentionLoss](../../../paddleseg/models/losses/ohem_edge_attention_loss.py)
 ```python
 class paddleseg.models.losses.OhemEdgeAttentionLoss(
                 edge_threshold = 0.8,
@@ -213,7 +213,7 @@ class paddleseg.models.losses.OhemEdgeAttentionLoss(
 * **ignore_index** (int64, optional): 指定一个在标注图中要忽略的像素值，其对输入梯度不产生贡献。当标注图中存在无法标注（或很难标注）的像素时，可以将其标注为某特定灰度值。在计算损失值时，其与原图像对应位置的像素将不作为损失函数的自变量。 *默认:``255``*
 
 
-## [LovaszSoftmaxLoss](../../../paddleseg/models/lovasz_loss.py)
+## [LovaszSoftmaxLoss](../../../paddleseg/models/losses/lovasz_loss.py)
 ```python
 class paddleseg.models.losses.LovaszSoftmaxLoss(
             ignore_index = 255, 
