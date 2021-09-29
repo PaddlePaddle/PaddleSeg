@@ -16,7 +16,7 @@ import os
 import time
 from collections import deque
 import shutil
-import tqdm
+from tqdm import tqdm
 
 import paddle
 import paddle.nn.functional as F
@@ -142,6 +142,7 @@ class Trainer():
                     tqdm(
                         zip(loader_src, loader_tgt),
                         total=min(len(loader_src), len(loader_tgt)))):
+
                 reader_cost_averager.record(time.time() - batch_start)
 
                 #### training #####
@@ -158,23 +159,22 @@ class Trainer():
 
                 #### target pseudo label  ####
                 with paddle.no_grad():
-                    pred_P_1 = F.softmax(logits_list_tgt[0], dim=1)
-                    labels_tgt = paddle.argmax(pred_P_1.detach(), dim=1)
-                    maxpred_1 = paddle.max(pred_P_1.detach(), dim=1)
-                    mask_1 = (maxpred_1 > pseudolabel_threshold)
-                    ignore_tensor = paddle.ones(
-                        1) * train_dataset_tgt.ignore_index
-                    labels_tgt = paddle.where(mask_1, labels_tgt,
-                                              ignore_tensor)  # threshold
+                    pred_P_1 = F.softmax(logits_list_tgt[0], axis=1)
+                    labels_tgt = paddle.argmax(pred_P_1.detach(), axis=1)
+                    # maxpred_1 = paddle.max(pred_P_1.detach(), axis=1)
+                    # mask_1 = (maxpred_1 > pseudolabel_threshold)
+                    # ignore_tensor = paddle.to_tensor([train_dataset_tgt.ignore_index])
+                    # labels_tgt = paddle.where(mask_1, labels_tgt,
+                    #                           ignore_tensor)  # threshold
                     # aux label
-                    pred_P_2 = F.softmax(logits_list_tgt[1], dim=1)
-                    maxpred_2 = paddle.max(pred_P_2.detach(), dim=1)
+                    pred_P_2 = F.softmax(logits_list_tgt[1], axis=1)
+                    # maxpred_2 = paddle.max(pred_P_2.detach(), axis=1)
                     pred_c = (pred_P_1 + pred_P_2) / 2
-                    labels_tgt_aux = paddle.argmax(pred_c.detach(), dim=1)
-                    mask = (maxpred_1 > pseudolabel_threshold) | (
-                        maxpred_2 > pseudolabel_threshold)
-                    labels_tgt_aux = paddle.where(mask, labels_tgt_aux,
-                                                  ignore_tensor)
+                    labels_tgt_aux = paddle.argmax(pred_c.detach(), axis=1)
+                    # mask = (maxpred_1 > pseudolabel_threshold) | (
+                    # maxpred_2 > pseudolabel_threshold)
+                    # labels_tgt_aux = paddle.where(mask, labels_tgt_aux,
+                    #   ignore_tensor)
 
                 edges_src = None
                 if len(data_src) == 3:

@@ -1,4 +1,4 @@
-export CUDA_VISIBLE_DEVICES=0,1,2,3
+export CUDA_VISIBLE_DEVICES=2,3
 
 yml=deeplabv2_resnet101_os8_cityscapes_769x769_80k
 save_dir=saved_model/${yml}
