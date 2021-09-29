@@ -68,35 +68,36 @@ class PointRend(nn.Layer):
         pretrained (str, optional): The path or url of pretrained model. Default: None.
     """
 
-    def __init__(self,
-                 num_classes,
-                 backbone,
-                 backbone_indices,
-                 fpn_inplanes=[256, 512, 1024, 2048],
-                 fpn_outplanes=256,
-                 point_in_channels=[256],
-                 point_out_channels=256,
-                 point_in_index=[0],
-                 point_num_fcs=3,
-                 point_num_points=2048,
-                 point_oversample_ratio=3,
-                 point_importance_sample_ratio=0.75,
-                 point_scale_factor=2,
-                 point_subdivision_steps=2,
-                 point_subdivision_num_points=8196,
-                 point_dropout_ratio=0,
-                 point_coarse_pred_each_layer=True,
-                 point_input_transform='multiple_select',  # resize_concat
-                 point_conv_cfg='Conv1D',
-                 PFN_feature_strides=[4, 8, 16, 32],
-                 PFN_in_channels=[256, 256, 256, 256],
-                 PFN_channels=128,
-                 PFN_in_index=[0, 1, 2, 3],
-                 PFN_dropout_ratio=0,
-                 PFN_conv_cfg='Conv2D',
-                 PFN_input_transform='multiple_select',
-                 align_corners=False,
-                 pretrained=None):
+    def __init__(
+            self,
+            num_classes,
+            backbone,
+            backbone_indices,
+            fpn_inplanes=[256, 512, 1024, 2048],
+            fpn_outplanes=256,
+            point_in_channels=[256],
+            point_out_channels=256,
+            point_in_index=[0],
+            point_num_fcs=3,
+            point_num_points=2048,
+            point_oversample_ratio=3,
+            point_importance_sample_ratio=0.75,
+            point_scale_factor=2,
+            point_subdivision_steps=2,
+            point_subdivision_num_points=8196,
+            point_dropout_ratio=0,
+            point_coarse_pred_each_layer=True,
+            point_input_transform='multiple_select',  # resize_concat
+            point_conv_cfg='Conv1D',
+            PFN_feature_strides=[4, 8, 16, 32],
+            PFN_in_channels=[256, 256, 256, 256],
+            PFN_channels=128,
+            PFN_in_index=[0, 1, 2, 3],
+            PFN_dropout_ratio=0,
+            PFN_conv_cfg='Conv2D',
+            PFN_input_transform='multiple_select',
+            align_corners=False,
+            pretrained=None):
         super(PointRend, self).__init__()
         self.backbone = backbone
         self.backbone_indices = backbone_indices
@@ -104,34 +105,35 @@ class PointRend(nn.Layer):
             self.backbone.feat_channels[i] for i in backbone_indices
         ]
 
-        self.neck = FPNNeck(fpn_inplanes=fpn_inplanes,
-                            fpn_outplanes=fpn_outplanes
-                            )
-        self.pointhead = PointHead(in_channels=point_in_channels,
-                                   out_channels=point_out_channels,
-                                   num_classes=num_classes,
-                                   in_index=point_in_index,
-                                   num_fcs=point_num_fcs,
-                                   num_points=point_num_points,
-                                   oversample_ratio=point_oversample_ratio,
-                                   importance_sample_ratio=point_importance_sample_ratio,
-                                   scale_factor=point_scale_factor,
-                                   subdivision_steps=point_subdivision_steps,
-                                   subdivision_num_points=point_subdivision_num_points,
-                                   dropout_ratio=point_dropout_ratio,
-                                   align_corners=align_corners,
-                                   coarse_pred_each_layer=point_coarse_pred_each_layer,
-                                   input_transform=point_input_transform,  # resize_concat
-                                   conv_cfg=point_conv_cfg)
-        self.fpnhead = FPNHead(feature_strides=PFN_feature_strides,
-                               in_channels=PFN_in_channels,
-                               channels=PFN_channels,
-                               num_class=num_classes,
-                               in_index=PFN_in_index,
-                               dropout_ratio=PFN_dropout_ratio,
-                               conv_cfg=PFN_conv_cfg,
-                               input_transform=PFN_input_transform,
-                               align_corners=align_corners)
+        self.neck = FPNNeck(
+            fpn_inplanes=fpn_inplanes, fpn_outplanes=fpn_outplanes)
+        self.pointhead = PointHead(
+            in_channels=point_in_channels,
+            out_channels=point_out_channels,
+            num_classes=num_classes,
+            in_index=point_in_index,
+            num_fcs=point_num_fcs,
+            num_points=point_num_points,
+            oversample_ratio=point_oversample_ratio,
+            importance_sample_ratio=point_importance_sample_ratio,
+            scale_factor=point_scale_factor,
+            subdivision_steps=point_subdivision_steps,
+            subdivision_num_points=point_subdivision_num_points,
+            dropout_ratio=point_dropout_ratio,
+            align_corners=align_corners,
+            coarse_pred_each_layer=point_coarse_pred_each_layer,
+            input_transform=point_input_transform,  # resize_concat
+            conv_cfg=point_conv_cfg)
+        self.fpnhead = FPNHead(
+            feature_strides=PFN_feature_strides,
+            in_channels=PFN_in_channels,
+            channels=PFN_channels,
+            num_class=num_classes,
+            in_index=PFN_in_index,
+            dropout_ratio=PFN_dropout_ratio,
+            conv_cfg=PFN_conv_cfg,
+            input_transform=PFN_input_transform,
+            align_corners=align_corners)
 
         self.align_corners = align_corners
         self.pretrained = pretrained
@@ -141,8 +143,11 @@ class PointRend(nn.Layer):
         feats = self.backbone(x)
         feats = [feats[i] for i in self.backbone_indices]
         fpn_feats = self.neck(feats)  # [n,256,64,128]*3 & [n,256,128,256]
-        pfn_logits = self.fpnhead(fpn_feats)  # segmainoutput decode_head[0] 512*1024->[n, 19, 64, 128]
-        point_logits = self.pointhead(fpn_feats, pfn_logits)  # segpointoutput decode_head[1]
+        pfn_logits = self.fpnhead(
+            fpn_feats
+        )  # segmainoutput decode_head[0] 512*1024->[n, 19, 64, 128]
+        point_logits = self.pointhead(
+            fpn_feats, pfn_logits)  # segpointoutput decode_head[1]
 
         if self.training:
             logit_list = [
@@ -150,7 +155,8 @@ class PointRend(nn.Layer):
                     logit,
                     paddle.shape(x)[2:],
                     mode='bilinear',
-                    align_corners=self.align_corners) for logit in pfn_logits]
+                    align_corners=self.align_corners) for logit in pfn_logits
+            ]
             logit_list.append(point_logits)
         else:
             logit_list = [
@@ -158,7 +164,8 @@ class PointRend(nn.Layer):
                     logit,
                     paddle.shape(x)[2:],
                     mode='bilinear',
-                    align_corners=self.align_corners) for logit in point_logits]
+                    align_corners=self.align_corners) for logit in point_logits
+            ]
         return logit_list
 
     def init_weight(self):
@@ -201,24 +208,24 @@ class PointHead(nn.Layer):
             e.g. 1024x512, otherwise it is True, e.g. 769x769. Default: False.
     """
 
-    def __init__(self,
-                 num_classes=19,
-                 num_fcs=3,
-                 in_channels=[256],
-                 out_channels=256,
-                 in_index=[0],
-                 num_points=2048,
-                 oversample_ratio=3,
-                 importance_sample_ratio=0.75,
-                 scale_factor=2,
-                 subdivision_steps=2,
-                 subdivision_num_points=8196,
-                 dropout_ratio=0.1,
-                 coarse_pred_each_layer=True,
-                 conv_cfg='Conv1D',
-                 input_transform='multiple_select',  # resize_concat
-                 align_corners=False
-                 ):
+    def __init__(
+            self,
+            num_classes=19,
+            num_fcs=3,
+            in_channels=[256],
+            out_channels=256,
+            in_index=[0],
+            num_points=2048,
+            oversample_ratio=3,
+            importance_sample_ratio=0.75,
+            scale_factor=2,
+            subdivision_steps=2,
+            subdivision_num_points=8196,
+            dropout_ratio=0.1,
+            coarse_pred_each_layer=True,
+            conv_cfg='Conv1D',
+            input_transform='multiple_select',  # resize_concat
+            align_corners=False):
         super(PointHead, self).__init__()
 
         self.in_channels = in_channels
@@ -285,8 +292,7 @@ class PointHead(nn.Layer):
         """
 
         fine_grained_feats_list = [
-            point_sample(_, points, align_corners=self.align_corners)
-            for _ in x
+            point_sample(_, points, align_corners=self.align_corners) for _ in x
         ]
         if len(fine_grained_feats_list) > 1:
             fine_grained_feats = paddle.concat(fine_grained_feats_list, axis=1)
@@ -382,12 +388,14 @@ class PointHead(nn.Layer):
         shift = num_sampled * paddle.arange(batch_size, dtype='int64')
         idx += shift.unsqueeze([-1])
         idx = idx.reshape([-1])
-        point_coords = paddle.index_select(point_coords.reshape([-1, 2]), idx, axis=0)
-        point_coords = point_coords.reshape([
-            batch_size, num_uncertain_points, 2])
+        point_coords = paddle.index_select(
+            point_coords.reshape([-1, 2]), idx, axis=0)
+        point_coords = point_coords.reshape(
+            [batch_size, num_uncertain_points, 2])
         if num_random_points > 0:
             rand_point_coords = paddle.rand([batch_size, num_random_points, 2])
-            point_coords = paddle.concat((point_coords, rand_point_coords), axis=1)
+            point_coords = paddle.concat((point_coords, rand_point_coords),
+                                         axis=1)
         return point_coords
 
     def get_points_test(self, seg_logits, uncertainty_func):  # finish
@@ -418,14 +426,15 @@ class PointHead(nn.Layer):
         uncertainty_map = uncertainty_map.reshape([batch_size, height * width])
         num_points = min(height * width, num_points)
         point_indices = paddle.topk(uncertainty_map, num_points, axis=1)[1]
-        point_coords = paddle.zeros([batch_size, num_points, 2], dtype='float32')
-        point_coords[:, :, 0] = w_step / 2.0 + (point_indices %
-                                                width).astype('float32') * w_step
-        point_coords[:, :, 1] = h_step / 2.0 + (point_indices //
-                                                width).astype('float32') * h_step
+        point_coords = paddle.zeros([batch_size, num_points, 2],
+                                    dtype='float32')
+        point_coords[:, :, 0] = w_step / 2.0 + (
+            point_indices % width).astype('float32') * w_step
+        point_coords[:, :, 1] = h_step / 2.0 + (
+            point_indices // width).astype('float32') * h_step
         return point_indices, point_coords
 
-    def scatter_paddle(self,refined_seg_logits, point_indices, point_logits):
+    def scatter_paddle(self, refined_seg_logits, point_indices, point_logits):
         """
         paddle version scatter : equal to pytorch version scatter(-1,point_indices,point_logits).
 
@@ -439,7 +448,8 @@ class PointHead(nn.Layer):
 
         original_shape = refined_seg_logits.shape  # [batch_size, channels, height * width]
         new_refined_seg_logits = refined_seg_logits.flatten(0, 1)  # [N*C,H*W]
-        offsets = (paddle.arange(new_refined_seg_logits.shape[0]) * new_refined_seg_logits.shape[1]).unsqueeze(-1)  # [N*C,1]
+        offsets = (paddle.arange(new_refined_seg_logits.shape[0]) *
+                   new_refined_seg_logits.shape[1]).unsqueeze(-1)  # [N*C,1]
         point_indices = point_indices.flatten(0, 1)  # [N*C,H*W]
         new_point_indices = (point_indices + offsets).flatten()
         point_logits = point_logits.flatten()  # [N*C*H*W]
@@ -466,16 +476,21 @@ class PointHead(nn.Layer):
         x = self._transform_inputs(inputs)
         if self.training:
             with paddle.no_grad():
-                points = self.get_points_train(prev_output, calculate_uncertainty)
+                points = self.get_points_train(prev_output,
+                                               calculate_uncertainty)
 
-            fine_grained_point_feats = self._get_fine_grained_point_feats(x, points)  # [2, 256, 2048]
-            coarse_point_feats = self._get_coarse_point_feats(prev_output, points)  # [2, 19, 2048]
+            fine_grained_point_feats = self._get_fine_grained_point_feats(
+                x, points)  # [2, 256, 2048]
+            coarse_point_feats = self._get_coarse_point_feats(
+                prev_output, points)  # [2, 19, 2048]
             # forward for train
-            fusion_point_feats = paddle.concat([fine_grained_point_feats, coarse_point_feats], axis=1)
+            fusion_point_feats = paddle.concat(
+                [fine_grained_point_feats, coarse_point_feats], axis=1)
             for fc in self.fcs:
                 fusion_point_feats = fc(fusion_point_feats)
                 if self.coarse_pred_each_layer:
-                    fusion_point_feats = paddle.concat((fusion_point_feats, coarse_point_feats), axis=1)
+                    fusion_point_feats = paddle.concat(
+                        (fusion_point_feats, coarse_point_feats), axis=1)
             point_logits = self.cls_seg(fusion_point_feats)
             return [point_logits, points]  # for points loss
         else:
@@ -494,19 +509,23 @@ class PointHead(nn.Layer):
                 coarse_point_feats = self._get_coarse_point_feats(
                     prev_output, points)
                 # forward for inference
-                fusion_point_feats = paddle.concat([fine_grained_point_feats, coarse_point_feats], axis=1)
+                fusion_point_feats = paddle.concat(
+                    [fine_grained_point_feats, coarse_point_feats], axis=1)
                 for fc in self.fcs:
                     fusion_point_feats = fc(fusion_point_feats)
                     if self.coarse_pred_each_layer:
-                        fusion_point_feats = paddle.concat((fusion_point_feats, coarse_point_feats), axis=1)
+                        fusion_point_feats = paddle.concat(
+                            (fusion_point_feats, coarse_point_feats), axis=1)
                 point_logits = self.cls_seg(fusion_point_feats)
                 point_indices = paddle.unsqueeze(point_indices, axis=1)
                 point_indices = paddle.expand(point_indices, [-1, channels, -1])
                 refined_seg_logits = refined_seg_logits.reshape(
                     [batch_size, channels, height * width])
-                refined_seg_logits = self.scatter_paddle(refined_seg_logits,
-                                                    point_indices, point_logits)  # 2->height * width dim
-                refined_seg_logits = refined_seg_logits.reshape([batch_size, channels, height, width])
+                refined_seg_logits = self.scatter_paddle(
+                    refined_seg_logits, point_indices,
+                    point_logits)  # 2->height * width dim
+                refined_seg_logits = refined_seg_logits.reshape(
+                    [batch_size, channels, height, width])
             return [refined_seg_logits]
 
 
@@ -532,17 +551,18 @@ class FPNHead(nn.Layer):
             e.g. 1024x512, otherwise it is True, e.g. 769x769. Default: False.
     """
 
-    def __init__(self,
-                 num_class=19,
-                 feature_strides=[4, 8, 16, 32],
-                 in_channels=[256, 256, 256, 256],
-                 channels=128,
-                 in_index=[0, 1, 2, 3],
-                 dropout_ratio=0.1,
-                 conv_cfg='Conv2D',
-                 input_transform='multiple_select',
-                 align_corners=False,
-                 ):
+    def __init__(
+            self,
+            num_class=19,
+            feature_strides=[4, 8, 16, 32],
+            in_channels=[256, 256, 256, 256],
+            channels=128,
+            in_index=[0, 1, 2, 3],
+            dropout_ratio=0.1,
+            conv_cfg='Conv2D',
+            input_transform='multiple_select',
+            align_corners=False,
+    ):
         super(FPNHead, self).__init__()
         assert len(feature_strides) == len(in_channels)
         assert min(feature_strides) == feature_strides[0]
@@ -569,8 +589,7 @@ class FPNHead(nn.Layer):
                         self.channels,
                         3,
                         padding=1,
-                        conv_cfg=self.conv_cfg
-                    ))
+                        conv_cfg=self.conv_cfg))
                 if feature_strides[i] != feature_strides[0]:
                     scale_head.append(
                         Upsample(
@@ -641,10 +660,11 @@ class FPNNeck(nn.Layer):
         fpn_outplanes (int, optional): The output channels. Default: 256.
     """
 
-    def __init__(self,
-                 fpn_inplanes=[256, 512, 1024, 2048],
-                 fpn_outplanes=256,
-                 ):
+    def __init__(
+            self,
+            fpn_inplanes=[256, 512, 1024, 2048],
+            fpn_outplanes=256,
+    ):
         super(FPNNeck, self).__init__()
         self.lateral_convs = []
         self.fpn_out = []
@@ -657,7 +677,8 @@ class FPNNeck(nn.Layer):
                     layers.SyncBatchNorm(fpn_outplanes), nn.ReLU()))
             self.fpn_out.append(
                 nn.Sequential(
-                    layers.ConvBNReLU(fpn_outplanes, fpn_outplanes, 3, bias_attr=False)))
+                    layers.ConvBNReLU(
+                        fpn_outplanes, fpn_outplanes, 3, bias_attr=False)))
 
         self.lateral_convs = nn.LayerList(self.lateral_convs)
         self.fpn_out = nn.LayerList(self.fpn_out)
@@ -670,7 +691,8 @@ class FPNNeck(nn.Layer):
             conv_x = conv_out[i]
             conv_x = self.lateral_convs[i](conv_x)
             prev_shape = paddle.shape(conv_x)[2:]
-            f = conv_x + F.interpolate(f, prev_shape, mode='bilinear', align_corners=True)
+            f = conv_x + F.interpolate(
+                f, prev_shape, mode='bilinear', align_corners=True)
             fpn_feature_list.append(self.fpn_out[i](f))
         return fpn_feature_list
 
@@ -679,6 +701,7 @@ class ConvModule(nn.Layer):
     """
     ConvModule includes Conv1/Conv2D.
     """
+
     def __init__(self,
                  in_channels,
                  out_channels,
@@ -691,16 +714,27 @@ class ConvModule(nn.Layer):
         super().__init__()
         if (conv_cfg == 'Conv1D'):
             self._conv = nn.Conv1D(
-                in_channels, out_channels, kernel_size, stride=stride, padding=padding, **kwargs)
+                in_channels,
+                out_channels,
+                kernel_size,
+                stride=stride,
+                padding=padding,
+                **kwargs)
         if (conv_cfg == 'Conv2D'):
             self._conv = nn.Conv2D(
-                in_channels, out_channels, kernel_size, stride=stride, padding=padding, **kwargs)
+                in_channels,
+                out_channels,
+                kernel_size,
+                stride=stride,
+                padding=padding,
+                **kwargs)
         if 'data_format' in kwargs:
             data_format = kwargs['data_format']
         else:
             data_format = 'NCHW'
         if (norm_cfg != 'None'):
-            self._batch_norm = layers.SyncBatchNorm(out_channels, data_format=data_format)
+            self._batch_norm = layers.SyncBatchNorm(
+                out_channels, data_format=data_format)
         else:
             self._batch_norm = None
 
@@ -716,6 +750,7 @@ class Upsample(nn.Layer):
     """
     Upsample Module.
     """
+
     def __init__(self,
                  size=None,
                  scale_factor=None,
