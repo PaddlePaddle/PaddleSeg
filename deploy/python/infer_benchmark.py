@@ -268,7 +268,8 @@ def main(args):
     predictor = DatasetPredictor(args)
     predictor.run_dataset()
 
-    if use_auto_tune(args):
+    if use_auto_tune(args) and \
+        os.path.exists(args.auto_tuned_shape_file):
         os.remove(args.auto_tuned_shape_file)
 
 
