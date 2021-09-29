@@ -391,7 +391,8 @@ def main(args):
     predictor = Predictor(args)
     predictor.run(imgs_list)
 
-    if use_auto_tune(args):
+    if use_auto_tune(args) and \
+        os.path.exists(args.auto_tuned_shape_file):
         os.remove(args.auto_tuned_shape_file)
 
     if args.benchmark:
