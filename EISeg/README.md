@@ -1,10 +1,14 @@
 # EISeg
 
-[![Python 3.6](https://img.shields.io/badge/python-3.6+-blue.svg)](https://www.python.org/downloads/release/python-360/) [![License](https://img.shields.io/badge/license-Apache%202-blue.svg)](LICENSE)
+[![Python 3.6](https://img.shields.io/badge/python-3.6+-blue.svg)](https://www.python.org/downloads/release/python-360/) 
+[![License](https://img.shields.io/badge/license-Apache%202-blue.svg)](LICENSE)
+[![Downloads](https://pepy.tech/badge/eiseg)](https://pepy.tech/project/eiseg)
 <!-- [![GitHub release](https://img.shields.io/github/release/Naereen/StrapDown.js.svg)](https://github.com/PaddleCV-SIG/iseg/releases) -->
+
 
 ## 最新动向
 
+- 交互式分割论文[EdgeFlow](https://arxiv.org/abs/2109.09406)被ICCV 2021 Workshop接受。
 - 支持多边形编辑，上线更多功能，最新EISeg 0.3.0推出。
 
 ## 介绍

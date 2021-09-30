@@ -110,7 +110,6 @@ python data/download_data.py
 ```
 
 ### 视频流人像分割
-结合DIS（Dense Inverse Search-basedmethod）光流算法预测结果与分割结果，改善视频流人像分割。
 ```bash
 # 通过电脑摄像头进行实时分割处理
 python bg_replace.py \
@@ -125,6 +124,14 @@ python bg_replace.py \
 视频分割结果如下：
 
 <img src="https://paddleseg.bj.bcebos.com/humanseg/data/video_test.gif" width="20%" height="20%"><img src="https://paddleseg.bj.bcebos.com/humanseg/data/result.gif" width="20%" height="20%">
+
+我们也支持使用 DIS（Dense Inverse Search-basedmethod）光流后处理算法，通过结合光流结果与分割结果，减少视频预测前后帧闪烁的问题。只要使用`--use_optic_flow`即可开启光流后处理，例如
+```bash
+# 增加光流后处理
+python bg_replace.py \
+--config export_model/ppseg_lite_portrait_398x224_with_softmax/deploy.yaml \
+--use_optic_flow
+```
 
 ### 视频流背景替换
 根据所选背景进行背景替换，背景可以是一张图片，也可以是一段视频。
@@ -172,7 +179,7 @@ python pretrained_model/download_pretrained_model.py
 ```
 
 ### 训练
-演示基于上述模型进行Fine-tuning。我们使用抽取的mini_supervisely数据集作为示例数据集，以PP-HumanSeg-Mobile为例，训练命令如下：
+演示如何基于上述模型进行Fine-tuning。我们使用抽取的mini_supervisely数据集作为示例数据集，以PP-HumanSeg-Mobile为例，训练命令如下：
 ```bash
 export CUDA_VISIBLE_DEVICES=0 # 设置1张可用的卡
 # windows下请执行以下命令
