@@ -25,7 +25,8 @@ from deploy.infer import Predictor
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description='PP-HumanSeg inference for video')
+    parser = argparse.ArgumentParser(
+        description='PP-HumanSeg inference for video')
     parser.add_argument(
         "--config",
         dest="cfg",
@@ -73,15 +74,21 @@ def parse_args():
         default='./output')
 
     parser.add_argument(
-        '--with_argmax',
-        dest='with_argmax',
-        help='Perform argmax operation on the predict result.',
+        '--use_optic_flow',
+        dest='use_optic_flow',
+        help='Use optical flow for post-processing.',
         action='store_true')
     parser.add_argument(
-        '--not_soft_predict',
-        dest='not_soft_predict',
-        help=
-        'If this is turned on, the prediction result will be output directly without using soft predict',
+        '--soft_predict',
+        dest='soft_predict',
+        default=True,
+        type=eval,
+        choices=[True, False],
+        help='Whether to use predict results with transparency')
+    parser.add_argument(
+        '--add_argmax',
+        dest='add_argmax',
+        help='Perform argmax operation on the predict result.',
         action='store_true')
 
     parser.add_argument(
