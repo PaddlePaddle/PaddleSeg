@@ -23,8 +23,8 @@
 - [移动端部署](#移动端部署)
 
 ## 人像分割模型
-### 通用人像分割(Generic Human Segmentation)
-PP-HumanSeg开放了在大规模人像数据上训练的三个人像模型，满足服务端、移动端、Web端多种使用场景的需求。
+### 通用人像分割
+针对通用人像分割任务，PP-HumanSeg开放了在大规模人像数据上训练的三个人像模型，满足服务端、移动端、Web端多种使用场景的需求。
 
 | 模型名 | 模型说明 | Checkpoint | Inference Model |
 | --- | --- | --- | ---|
@@ -50,8 +50,8 @@ NOTE:
 
 测试环境：Nvidia Tesla V100单卡。
 
-### 肖像分割(Portrait Segmentation)
-针对Portrait segmentation场景，PP-HumanSeg开放了肖像分割模型，该模型已应用于百度视频会议。
+### 肖像分割
+针对肖像分割(Portrait Segmentation)任务，PP-HumanSeg开放了肖像分割模型，该模型已应用于百度视频会议。
 
 | 模型名 | 模型说明 | Checkpoint | Inference Model |
 | --- | --- | --- | ---|
