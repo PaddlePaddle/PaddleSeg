@@ -10,24 +10,27 @@
 
 ## 目录
 - [人像分割模型](#人像分割模型)
+  - [通用人像分割](#通用人像分割)
+  - [肖像分割](#肖像分割)
 - [安装](#安装)
 - [快速体验](#快速体验)
   - [视频流人像分割](#视频流人像分割)
   - [视频流背景替换](#视频流背景替换)
+  - [在线运行教程](#在线运行教程)
 - [训练评估预测演示](#训练评估预测演示)
 - [模型导出](#模型导出)
 - [Web端部署](#Web端部署)
 - [移动端部署](#移动端部署)
 
 ## 人像分割模型
-### 通用人像分割(Generic Human Segmentation)
-PP-HumanSeg开放了在大规模人像数据上训练的三个人像模型，满足服务端、移动端、Web端多种使用场景的需求。
+### 通用人像分割
+针对通用人像分割任务，PP-HumanSeg开放了在大规模人像数据上训练的三个人像模型，满足服务端、移动端、Web端多种使用场景的需求。
 
 | 模型名 | 模型说明 | Checkpoint | Inference Model |
 | --- | --- | --- | ---|
-| PP-HumanSeg-Server | 高精度模型，适用于服务端GPU且背景复杂的人像场景， 模型结构为Deeplabv3+/ResNet50, 输入大小（512， 512） |[pp_humanseg_server_ckpt](https://paddleseg.bj.bcebos.com/dygraph/humanseg/train/deeplabv3p_resnet50_os8_humanseg_512x512_100k.zip) | [pp_humanseg_server_inference](https://paddleseg.bj.bcebos.com/dygraph/humanseg/export/deeplabv3p_resnet50_os8_humanseg_512x512_100k_with_softmax.zip) |
-| PP-HumanSeg-Mobile | 轻量级模型，适用于移动端或服务端CPU的前置摄像头场景，模型结构为HRNet_w18_samll_v1，输入大小（192， 192）  | [pp_humanseg_mobile_ckpt](https://paddleseg.bj.bcebos.com/dygraph/humanseg/train/fcn_hrnetw18_small_v1_humanseg_192x192.zip) | [pp_humanseg_mobile_inference](https://paddleseg.bj.bcebos.com/dygraph/humanseg/export/fcn_hrnetw18_small_v1_humanseg_192x192_with_softmax.zip) |
-| PP-HumanSeg-Lite | 超轻量级模型，适用于Web端或移动端实时分割场景，例如手机自拍、Web视频会议，模型结构为百度自研模型，输入大小（192， 192） | [pp-humanseg_lite_ckpt]() | [pp-humanseg_lite_inference]() |
+| PP-HumanSeg-Server | 高精度模型，适用于服务端GPU且背景复杂的人像场景， 模型结构为Deeplabv3+/ResNet50, 输入大小（512， 512） |[server_ckpt](https://paddleseg.bj.bcebos.com/dygraph/humanseg/train/deeplabv3p_resnet50_os8_humanseg_512x512_100k.zip) | [server_inference](https://paddleseg.bj.bcebos.com/dygraph/humanseg/export/deeplabv3p_resnet50_os8_humanseg_512x512_100k_with_softmax.zip) |
+| PP-HumanSeg-Mobile | 轻量级模型，适用于移动端或服务端CPU的前置摄像头场景，模型结构为HRNet_w18_samll_v1，输入大小（192， 192）  | [mobile_ckpt](https://paddleseg.bj.bcebos.com/dygraph/humanseg/train/fcn_hrnetw18_small_v1_humanseg_192x192.zip) | [mobile_inference](https://paddleseg.bj.bcebos.com/dygraph/humanseg/export/fcn_hrnetw18_small_v1_humanseg_192x192_with_softmax.zip) |
+| PP-HumanSeg-Lite | 超轻量级模型，适用于Web端或移动端实时分割场景，例如手机自拍、Web视频会议，模型结构为[百度自研模型](../../configs/pp_humanseg_lite/README.md)，输入大小（192， 192） | [lite_ckpt](https://paddleseg.bj.bcebos.com/dygraph/humanseg/train/pphumanseg_lite_generic_192x192.zip) | [lite_inference](https://paddleseg.bj.bcebos.com/dygraph/humanseg/export/pphumanseg_lite_generic_192x192_with_softmax.zip) |
 
 
 NOTE:
@@ -47,12 +50,12 @@ NOTE:
 
 测试环境：Nvidia Tesla V100单卡。
 
-### 半身像分割(Portrait Segmentation)
-针对Portrait segmentation场景，PP-HumanSeg开放了半身像分割模型，该模型已应用于百度视频会议。
+### 肖像分割
+针对肖像分割(Portrait Segmentation)任务，PP-HumanSeg开放了肖像分割模型，该模型已应用于百度视频会议。
 
 | 模型名 | 模型说明 | Checkpoint | Inference Model |
 | --- | --- | --- | ---|
-| PP-HumanSeg-Lite | 超轻量级模型，适用于Web端或移动端实时分割场景，例如手机自拍、Web视频会议，模型结构为百度自研模型，推荐输入大小（398，224） | [pp_humanseg_lite_portrait_ckpt](https://paddleseg.bj.bcebos.com/dygraph/ppseg/ppseg_lite_portrait_398x224.tar.gz) | [pp_humanseg_lite_portrait_inference](https://paddleseg.bj.bcebos.com/dygraph/ppseg/ppseg_lite_portrait_398x224_with_softmax.tar.gz) |
+| PP-HumanSeg-Lite | 超轻量级模型，适用于Web端或移动端实时分割场景，例如手机自拍、Web视频会议，模型结构为[百度自研模型](../../configs/pp_humanseg_lite/README.md)，推荐输入大小（398，224） | [lite_portrait_ckpt](https://paddleseg.bj.bcebos.com/dygraph/ppseg/ppseg_lite_portrait_398x224.tar.gz) | [lite_portrait_inference](https://paddleseg.bj.bcebos.com/dygraph/ppseg/ppseg_lite_portrait_398x224_with_softmax.tar.gz) |
 
 #### 模型性能
 
@@ -110,7 +113,6 @@ python data/download_data.py
 ```
 
 ### 视频流人像分割
-结合DIS（Dense Inverse Search-basedmethod）光流算法预测结果与分割结果，改善视频流人像分割。
 ```bash
 # 通过电脑摄像头进行实时分割处理
 python bg_replace.py \
@@ -125,6 +127,14 @@ python bg_replace.py \
 视频分割结果如下：
 
 <img src="https://paddleseg.bj.bcebos.com/humanseg/data/video_test.gif" width="20%" height="20%"><img src="https://paddleseg.bj.bcebos.com/humanseg/data/result.gif" width="20%" height="20%">
+
+我们也支持使用 DIS（Dense Inverse Search-basedmethod）光流后处理算法，通过结合光流结果与分割结果，减少视频预测前后帧闪烁的问题。只要使用`--use_optic_flow`即可开启光流后处理，例如
+```bash
+# 增加光流后处理
+python bg_replace.py \
+--config export_model/ppseg_lite_portrait_398x224_with_softmax/deploy.yaml \
+--use_optic_flow
+```
 
 ### 视频流背景替换
 根据所选背景进行背景替换，背景可以是一张图片，也可以是一段视频。
@@ -161,6 +171,9 @@ python bg_replace.py \
 
 Portrait模型适用于宽屏拍摄场景，竖屏效果会略差一些。
 
+### 在线运行教程
+我们提供了基于AI Studio的[在线运行教程](https://aistudio.baidu.com/aistudio/projectdetail/2189481)，方便您进行实践体验。
+
 ## 训练评估预测演示
 如果上述大规模数据预训练的模型不能满足您的精度需要，可以基于上述模型在您的场景中进行Fine-tuning，以更好地适应您的使用场景。
 
@@ -172,7 +185,7 @@ python pretrained_model/download_pretrained_model.py
 ```
 
 ### 训练
-演示基于上述模型进行Fine-tuning。我们使用抽取的mini_supervisely数据集作为示例数据集，以PP-HumanSeg-Mobile为例，训练命令如下：
+演示如何基于上述模型进行Fine-tuning。我们使用抽取的mini_supervisely数据集作为示例数据集，以PP-HumanSeg-Mobile为例，训练命令如下：
 ```bash
 export CUDA_VISIBLE_DEVICES=0 # 设置1张可用的卡
 # windows下请执行以下命令

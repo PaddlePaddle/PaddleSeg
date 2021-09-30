@@ -1,5 +1,7 @@
 # 模型库
 
+### CNN系列
+
 |模型\骨干网络|ResNet50|ResNet101|HRNetw18|HRNetw48|
 |-|-|-|-|-|
 |[ANN](./ann)|✔|✔|||
@@ -26,10 +28,14 @@
 |[SFNet](./sfnet)|✔|-|-|-|
 |[PP-HumanSeg-Lite](./pp_humanseg_lite)|-|-|-|-|
 |[PortraitNet](./portraitnet)|-|-|-|-|
-|[SETR](./setr)|-|-|-|-|
-|[MLATransformer]()|-|-|-|-|
-|[SegFormer](./segformer)|-|-|-|-|
 |[STDC](./stdcseg)|-|-|-|-|
+|[GINet](./ginet)|✔|✔|-|-|
+|[PointRend](./pointrend)|✔|✔|-|
+
+### Transformer系列
+* [SETR](./setr)
+* [MLATransformer](../contrib/AutoNUE/configs)
+* [SegFormer](./segformer)
 
 # 模型说明
 
@@ -62,7 +68,7 @@
 |EMANet|ResNet101_OS8|1024x512|80000|80.00%|80.23%|80.53%|303|
 |ISANet|ResNet101_OS8|769x769|80000|80.10%|80.30%|80.26%|304|
 |DNLNet|ResNet101_OS8|1024x512|80000|81.03%|81.38%|/|303|
-|SFNet|ResNet18_OS8|1024x1024|80000|81.49%|81.63%|81.85%|28|
+|SFNet|ResNet50_OS8|1024x1024|80000|81.49%|81.63%|81.85%|28|
 
 
 

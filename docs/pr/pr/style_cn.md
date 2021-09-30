@@ -59,9 +59,9 @@ from paddleseg.utils import utils
 
 - [ ] 分行：每个语句都要独立一行，不要使用分号。
 
-- [ ] 命名：模块名写法: `module_name` ;包名写法: `package_name` ;类名: `ClassName` ;方法名: `method_name` ;异常名: `ExceptionName` ;函数名: `function_name` ;全局常量名: `GLOBAL_CONSTANT_NAME` ;全局变量名: `global_var_name` ;实例名: `instance_var_name` ;函数参数名: `function_parameter_name` ;局部变量名: `local_var_name` 
+- [ ] 命名：模块名写法: `module_name` ;包名写法: `package_name` ;类名: `ClassName` ;方法名: `method_name` ;异常名: `ExceptionName` ;函数名: `function_name` ;全局常量名: `GLOBAL_CONSTANT_NAME` ;全局变量名: `global_var_name` ;实例名: `instance_var_name` ;函数参数名: `function_parameter_name` ;局部变量名: `local_var_name`
 
-  
+
 
 ## 二、可拓展模块编码规范
 
@@ -119,7 +119,7 @@ class PSPNet(nn.Layer):
     """
 ```
 
-#### 2）__init__规范 
+#### 2）__init__规范
 
 1. ```__init__```中参数全部显式写出，**不能**包括变长参数比如:`*args, **kwargs`；
 2. ```super().__init__()```保持空参数；
@@ -143,6 +143,7 @@ def __init__(self,
 
 1. 逻辑尽量简洁，以组件式的调用呈现；
 2. `resize`到原图大小按列表形式返回，第一个元素为主输出，其他为辅助输出。
+3. 如果模型训练和预测时执行分支不同，则forward只允许有一个return（示例参考bisnetv2模型）
 
 ```python
 def forward(self, x):
@@ -167,7 +168,6 @@ def forward(self, x):
 def init_weight(self):
     if self.pretrained is not None:
         utils.load_entire_model(self, self.pretrained)
-       
 # 不带 backbone 的自身模型初始化
 def init_weight(self):
       """Initialize the parameters of model parts."""
@@ -177,7 +177,6 @@ def init_weight(self):
         elif isinstance(sublayer, (nn.BatchNorm, nn.SyncBatchNorm)):
           param_init.constant_init(sublayer.weight, value=1.0)
           param_init.constant_init(sublayer.bias, value=0.0)
-        
 ```
 
 ### II、分割头
@@ -279,7 +278,7 @@ class Cityscapes(Dataset):
     """
 ```
 
-#### 2）**init**规范 
+#### 2）**init**规范
 
 1. ```__init__```中参数全部显式写出，**不能**包括变长参数比如:```*args, **kwargs```；
 2. ```super().__init__()```保持空参数；

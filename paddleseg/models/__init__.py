@@ -37,8 +37,10 @@ from .isanet import *
 from .dnlnet import *
 from .setr import *
 from .sfnet import *
-from .ppseg_lite import *
+from .pphumanseg_lite import *
 from .mla_transformer import MLATransformer
 from .portraitnet import PortraitNet
 from .stdcseg import STDCSeg
 from .segformer import SegFormer
+from .pointrend import PointRend
+from .ginet import GINet

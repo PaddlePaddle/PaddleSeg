@@ -64,7 +64,7 @@ labelB
 PddleSeg已支持2种标注工具：LabelMe、EISeg交互式分割标注工具。标注教程如下：
 
 - [LabelMe标注教程](../transform/transform_cn.md)
-- [EISeg交互式分割标注工具教程](../../../contrib/EISeg/README.md)
+- [EISeg交互式分割标注工具教程](../../../EISeg/README.md)
 
 经以上工具进行标注后，请将所有的标注图像统一存放在annotations文件夹内，然后进行下一步。
 

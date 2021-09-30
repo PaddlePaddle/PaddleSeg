@@ -110,48 +110,65 @@ class Predictor:
         output_names = self.predictor.get_output_names()
         output_handle = self.predictor.get_output_handle(output_names[0])
         output = output_handle.copy_to_cpu()
-
         return self.postprocess(output, img, ori_shapes[0], bg)
 
     def postprocess(self, pred, img, ori_shape, bg):
         if not os.path.exists(self.args.save_dir):
             os.makedirs(self.args.save_dir)
-        resize_w = pred.shape[3]
-        resize_h = pred.shape[2]
-        if self.args.with_argmax:
-            pred = reverse_transform(
-                paddle.to_tensor(pred), ori_shape, self.cfg.transforms)
-            result = np.argmax(np.array(pred), axis=0)
-        elif not self.args.not_soft_predict:
-            score_map = pred[:, 1, :, :].squeeze(0)
-            score_map = 255 * score_map
+        resize_w = pred.shape[-1]
+        resize_h = pred.shape[-2]
+        if self.args.soft_predict:
+            if self.args.use_optic_flow:
+                score_map = pred[:, 1, :, :].squeeze(0)
+                score_map = 255 * score_map
+                cur_gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+                cur_gray = cv2.resize(cur_gray, (resize_w, resize_h))
+                optflow_map = optic_flow_process(cur_gray, score_map, self.prev_gray, self.prev_cfd, \
+                        self.disflow, self.is_init)
+                self.prev_gray = cur_gray.copy()
+                self.prev_cfd = optflow_map.copy()
+                self.is_init = False
 
-            cur_gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-            cur_gray = cv2.resize(cur_gray, (resize_w, resize_h))
-            optflow_map = optic_flow_process(cur_gray, score_map, self.prev_gray, self.prev_cfd, \
-                    self.disflow, self.is_init)
-            self.prev_gray = cur_gray.copy()
-            self.prev_cfd = optflow_map.copy()
-            self.is_init = False
+                score_map = np.repeat(optflow_map[:, :, np.newaxis], 3, axis=2)
+                score_map = np.transpose(score_map, [2, 0, 1])[np.newaxis, ...]
+                score_map = reverse_transform(
+                    paddle.to_tensor(score_map),
+                    ori_shape,
+                    self.cfg.transforms,
+                    mode='bilinear')
+                alpha = np.transpose(score_map.numpy().squeeze(0),
+                                     [1, 2, 0]) / 255
+            else:
+                score_map = pred[:, 1, :, :]
+                score_map = score_map[np.newaxis, ...]
+                score_map = reverse_transform(
+                    paddle.to_tensor(score_map),
+                    ori_shape,
+                    self.cfg.transforms,
+                    mode='bilinear')
+                alpha = np.transpose(score_map.numpy().squeeze(0), [1, 2, 0])
 
-            score_map = np.repeat(optflow_map[:, :, np.newaxis], 3, axis=2)
-            score_map = np.transpose(score_map, [2, 0, 1])[np.newaxis, ...]
-            score_map = reverse_transform(
-                paddle.to_tensor(score_map),
+        else:
+            if pred.ndim == 3:
+                pred = pred[:, np.newaxis, ...]
+            result = reverse_transform(
+                paddle.to_tensor(pred, dtype='float32'),
                 ori_shape,
                 self.cfg.transforms,
                 mode='bilinear')
-            score_map = np.transpose(score_map.numpy().squeeze(0),
-                                     [1, 2, 0]) / 255
-            h, w, _ = img.shape
-            bg = cv2.resize(bg, (w, h))
-            if bg.ndim == 2:
-                bg = bg[..., np.newaxis]
 
-            result = (score_map * img + (1 - score_map) * bg).astype(np.uint8)
+            result = np.array(result)
+            if self.args.add_argmax:
+                result = np.argmax(result, axis=1)
+            else:
+                result = result.squeeze(1)
+            alpha = np.transpose(result, [1, 2, 0])
 
-        else:
-            result = reverse_transform(
-                paddle.to_tensor(pred), ori_shape, self.cfg.transforms)
+        # background replace
+        h, w, _ = img.shape
+        bg = cv2.resize(bg, (w, h))
+        if bg.ndim == 2:
+            bg = bg[..., np.newaxis]
 
-        return result
+        comb = (alpha * img + (1 - alpha) * bg).astype(np.uint8)
+        return comb
