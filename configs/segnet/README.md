@@ -1,4 +1,4 @@
-# U-Net: Convolutional Networks for Biomedical Image Segmentation
+# SegNet: A Deep Convolutional Encoder-Decoder Architecture for Image Segmentation
 
 ## Reference
 > Badrinarayanan, Vijay, Alex Kendall, and Roberto Cipolla. "Segnet: A deep convolutional encoder-decoder architecture for image segmentation." IEEE transactions on pattern analysis and machine intelligence 39, no. 12 (2017): 2481-2495.
