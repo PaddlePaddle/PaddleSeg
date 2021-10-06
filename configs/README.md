@@ -31,7 +31,7 @@
 |[STDC](./stdcseg)|-|-|-|-|
 |[GINet](./ginet)|✔|✔|-|-|
 |[PointRend](./pointrend)|✔|✔|-|-|
-|[SegNet](./segnet)|✔|✔|-|-|
+|[SegNet](./segnet)|-|-|-|-|
 
 ### Transformer系列
 * [SETR](./setr)
