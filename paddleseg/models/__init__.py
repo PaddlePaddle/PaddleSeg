@@ -42,4 +42,6 @@ from .mla_transformer import MLATransformer
 from .portraitnet import PortraitNet
 from .stdcseg import STDCSeg
 from .segformer import SegFormer
+from .pointrend import PointRend
 from .ginet import GINet
+from .segnet import SegNet

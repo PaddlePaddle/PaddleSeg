@@ -1,5 +1,7 @@
 # 模型库
 
+### CNN系列
+
 |模型\骨干网络|ResNet50|ResNet101|HRNetw18|HRNetw48|
 |-|-|-|-|-|
 |[ANN](./ann)|✔|✔|||
@@ -26,11 +28,15 @@
 |[SFNet](./sfnet)|✔|-|-|-|
 |[PP-HumanSeg-Lite](./pp_humanseg_lite)|-|-|-|-|
 |[PortraitNet](./portraitnet)|-|-|-|-|
-|[SETR](./setr)|-|-|-|-|
-|[MLATransformer]()|-|-|-|-|
-|[SegFormer](./segformer)|-|-|-|-|
 |[STDC](./stdcseg)|-|-|-|-|
 |[GINet](./ginet)|✔|✔|-|-|
+|[PointRend](./pointrend)|✔|✔|-|-|
+|[SegNet](./segnet)|-|-|-|-|
+
+### Transformer系列
+* [SETR](./setr)
+* [MLATransformer](../contrib/AutoNUE/configs)
+* [SegFormer](./segformer)
 
 # 模型说明
 

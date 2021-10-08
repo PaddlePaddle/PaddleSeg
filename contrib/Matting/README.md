@@ -142,6 +142,7 @@ export CUDA_VISIBLE_DEVICES=0
 python val.py \
        --config configs/modnet/modnet_mobilenetv2.yml \
        --model_path output/best_model/model.pdparams \
+       --save_dir ./output/results \
        --save_results
 ```
 `--save_result` 开启会保留图片的预测结果，可选择关闭以加快评估速度。
@@ -157,7 +158,7 @@ python val.py --help
 ```shell
 export CUDA_VISIBLE_DEVICES=0
 python predict.py \
-    --config configs/modnet/modnet_movilenetv2.yml \
+    --config configs/modnet/modnet_mobilenetv2.yml \
     --model_path output/best_model/model.pdparams \
     --image_path data/PPM-100/val/fg/ \
     --save_dir ./output/results

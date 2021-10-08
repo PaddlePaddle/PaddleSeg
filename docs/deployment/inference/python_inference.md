@@ -79,11 +79,11 @@ python deploy/python/infer.py \
 |batch_size|单卡batch size|否|1|
 |save_dir|保存预测结果的目录|否|output|
 |device|预测执行设备，可选项有'cpu','gpu'|否|'gpu'|
-|use_trt|是否开启TensorRT来加速预测（当device=gpu才生效）|否|False|
-|precision|启动TensorRT预测时的数值精度，可选项有'fp32','fp16','int8'（当device=gpu才生效）|否|'fp32'|
-|enable_auto_tune|开启Auto Tune，会使用部分测试数据离线收集动态shape，用于TRT部署（当device=gpu、use_trt=True、paddle版本>=2.2才生效）| 否 | False |
-|cpu_threads|使用cpu预测的线程数（当device=cpu才生效）|否|10|
-|enable_mkldnn|是否使用MKL-DNN加速cpu预测（当device=cpu才生效）|否|False|
+|use_trt|是否开启TensorRT来加速预测（当device=gpu，该参数才生效）|否|False|
+|precision|启动TensorRT预测时的数值精度，可选项有'fp32','fp16','int8'（当device=gpu，该参数才生效）|否|'fp32'|
+|enable_auto_tune|开启Auto Tune，会使用部分测试数据离线收集动态shape，用于TRT部署（当device=gpu、use_trt=True、paddle版本>=2.2，该参数才生效）| 否 | False |
+|cpu_threads|使用cpu预测的线程数（当device=cpu，该参数才生效）|否|10|
+|enable_mkldnn|是否使用MKL-DNN加速cpu预测（当device=cpu，该参数才生效）|否|False|
 |benchmark|是否产出日志，包含环境、模型、配置、性能信息|否|False|
 |with_argmax|对预测结果进行argmax操作|否|否|
 
@@ -94,6 +94,7 @@ python deploy/python/infer.py \
     * 加载常规预测模型，设置precision为fp32，此时执行fp32数值精度
     * 加载常规预测模型，设置precision为fp16，此时执行fp16数值精度，可以加快推理速度
     * 加载量化预测模型，设置precision为int8，此时执行int8数值精度，可以加快推理速度
+* 如果在Nvidia GPU上使用TensorRT方式部署模型，出现错误信息`(InvalidArgument) some trt inputs dynamic shape inof not set`，可以设置enable_auto_tune参数为True。此时，使用部分测试数据离线收集动态shape，使用收集到的动态shape用于TRT部署。
 * 如果要开启`--benchmark`的话需要安装auto_log，请参考[安装方式](https://github.com/LDOUBLEV/AutoLog)。
 
 测试样例的预测结果如下。

@@ -171,7 +171,7 @@ python train.py --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml
 * Thanks [zjhellofss](https://github.com/zjhellofss) (Fu Shenshen) for contributing Attention U-Net, and Dice Loss.
 * Thanks [liuguoyu666](https://github.com/liguoyu666), [geoyee](https://github.com/geoyee) for contributing U-Net++ and U-Net3+.
 * Thanks [yazheng0307](https://github.com/yazheng0307) (LIU Zheng) for contributing quick-start document.
-* Thanks [CuberrChen](https://github.com/CuberrChen) for contributing STDC (rethink BiSeNet) and DetailAggregateLoss.
+* Thanks [CuberrChen](https://github.com/CuberrChen) for contributing STDC (rethink BiSeNet), PointRend and DetailAggregateLoss.
 
 ## Citation
 If you find our project useful in your research, please consider citing:
