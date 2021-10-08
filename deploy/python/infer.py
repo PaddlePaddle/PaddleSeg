@@ -228,25 +228,25 @@ class Predictor:
             os.makedirs(args.save_dir)
 
         for i in range(0, num, args.batch_size):
-            if args.benchmark and i > 0:
+            if args.benchmark:
                 self.autolog.times.start()
             data = np.array(
                 [self._preprocess(img) for img in imgs[i:i + args.batch_size]])
 
             input_handle.reshape(data.shape)
             input_handle.copy_from_cpu(data)
-            if args.benchmark and i > 0:
+            if args.benchmark:
                 self.autolog.times.stamp()
 
             self.predictor.run()
 
             results = output_handle.copy_to_cpu()
-            if args.benchmark and i > 0:
+            if args.benchmark:
                 self.autolog.times.stamp()
 
             results = self._postprocess(results)
 
-            if args.benchmark and i > 0:
+            if args.benchmark:
                 self.autolog.times.end(stamp=True)
             self._save_imgs(results, imgs)
 
