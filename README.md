@@ -8,10 +8,9 @@ English | [简体中文](README_CN.md)
 ![support os](https://img.shields.io/badge/os-linux%2C%20win%2C%20mac-yellow.svg)
 ## PaddleSeg has released the new version including the following features:
 
-* Our team won the AutoNUE@CVPR 2021 challenge, where the technical [report](https://bj.bcebos.com/paddleseg/docs/autonue21_presentation_PaddleSeg.pdf) and [source code](https://github.com/PaddlePaddle/PaddleSeg/tree/release/2.2/contrib/AutoNUE) are available.
-* We released an efficient interactive annotation tool for image segmentation, named [EISeg](https://github.com/PaddlePaddle/PaddleSeg/tree/release/2.2/contrib/EISeg).
-* We introduced [Panoptic-DeepLab](https://github.com/PaddlePaddle/PaddleSeg/tree/release/2.2/contrib/PanopticDeepLab), which is a proposal-free algorithm  for panoptic segmentation.
-* We provided an ultra-lightweight [portrait segmentation](./contrib/PP-HumanSeg) solution for the mobile devices and even the web
+* We published a reserach paper on interactive segmentation named [EdgeFlow](https://arxiv.org/abs/2109.0406), in which the proposed approach achieved SOTA performance on serveral well-known datasets, and upgraded the interactive annotation tool, [EISeg](./EISeg).
+* We released two popular [Matting]((./contrib/Matting)) algorithms, DIM and MODNet, which achieve extremely fine-grained segmentation.
+* We provided advanced features on segmentation model compression, [Knowlede Distillation]((./slim/distill)) and [Model Quantization]([模型量化]), which accelerate model inference on multi-devices deployment.
 
 ## PaddleSeg Introduction
 
@@ -55,7 +54,7 @@ Welcome to PaddleSeg! PaddleSeg is an end-to-end image segmentation development 
 <img src="./docs/images/QQ_chat.png"  width = "200" />  
 </div>
 
-## Model Instraction  <img src="./docs/images/model.png" width="20"/>
+## Model Instruction  <img src="./docs/images/model.png" width="20"/>
 
 [Model Zoo](./configs/)
 

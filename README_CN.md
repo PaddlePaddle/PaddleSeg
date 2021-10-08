@@ -9,12 +9,11 @@
 ![support os](https://img.shields.io/badge/os-linux%2C%20win%2C%20mac-yellow.svg)
 
 
-## PaddleSeg重磅发布2.2版本，欢迎体验
+## PaddleSeg重磅发布2.3版本，欢迎
 
-* PaddleSeg团队在CVPR2021 AutoNUE语义分割赛道中获得冠军! 已发布[演讲报告](https://bj.bcebos.com/paddleseg/docs/autonue21_presentation_PaddleSeg.pdf)和[源代码](https://github.com/PaddlePaddle/PaddleSeg/tree/release/2.2/contrib/AutoNUE)。
-* 发布了交互式分割的智能标注工具 [EISeg](https://github.com/PaddlePaddle/PaddleSeg/tree/release/2.2/contrib/EISeg)。极大的提升了标注效率；
-* 开源了全景分割算法[Panoptic-DeepLab](https://github.com/PaddlePaddle/PaddleSeg/tree/release/2.2/contrib/PanopticDeepLab)丰富了模型种类；
-* 全新升级了[人像分割](./contrib/PP-HumanSeg)功能，提供了web端超轻量模型部署方案
+* PaddleSeg团队发表交互式分割论文[EdgeFlow](https://arxiv.org/abs/2109.0406)，已在多个数据集实现SOTA性能，并升级了交互式分割工具[EISeg](./EISeg)。
+* 开源两种[Matting](./contrib/Matting)算法，经典方法DIM，和实时性方法MODNet，实现精细化人像分割。
+* 发布图像分割高阶功能，[模型蒸馏](./slim/distill)和[模型量化](./slim/quant)方案，进一步提升模型的部署效率。
 
 ## PaddleSeg介绍
 PaddleSeg是基于飞桨[PaddlePaddle](https://www.paddlepaddle.org.cn)开发的端到端图像分割开发套件，涵盖了**高精度**和**轻量级**等不同方向的大量高质量分割模型。通过模块化的设计，提供了**配置化驱动**和**API调用**两种应用方式，帮助开发者更便捷地完成从训练到部署的全流程图像分割应用。
