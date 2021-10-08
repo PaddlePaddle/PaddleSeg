@@ -16,21 +16,29 @@ import os
 import glob
 
 from paddleseg.cvlibs import manager
-from .dataset import Dataset_DA
 from transforms import Compose_DA
+import datasets
 
 
 @manager.DATASETS.add_component
-class GTA5(Dataset_DA):
+class Cityscapes_DA(datasets.Dataset_DA):
     """
-    Cityscapes dataset `https://download.visinf.tu-darmstadt.de/data/from_games/`.
+    Cityscapes dataset `https://www.cityscapes-dataset.com/`.
     The folder structure is as follow:
 
         cityscapes
         |
-        |--images
+        |--leftImg8bit
+        |  |--train
+        |  |--val
+        |  |--test
         |
-        |--labels
+        |--gtFine
+        |  |--train
+        |  |--val
+        |  |--test
+
+    Make sure there are **labelTrainIds.png in gtFine directory. If not, please run the conver_cityscapes.py in tools.
 
     Args:
         transforms (list): Transforms for image.
@@ -58,36 +66,22 @@ class GTA5(Dataset_DA):
         if self.transforms is None:
             raise ValueError("`transforms` is necessary, but it is None.")
 
-        img_dir = os.path.join(self.dataset_root, 'images')
-        label_dir = os.path.join(self.dataset_root, 'labels')
+        img_dir = os.path.join(self.dataset_root, 'leftImg8bit')
+        label_dir = os.path.join(self.dataset_root, 'gtFine')
         if self.dataset_root is None or not os.path.isdir(
                 self.dataset_root) or not os.path.isdir(
                     img_dir) or not os.path.isdir(label_dir):
-            print(
-                os.path.isdir(img_dir), os.path.isdir(label_dir),
-                os.path.isdir(self.dataset_root))
             raise ValueError(
                 "The dataset is not Found or the folder structure is nonconfoumance."
             )
-        modelist_path = os.path.join(self.dataset_root, 'gta5_list',
-                                     mode + '.txt')
-        items = [int(imgid.strip()) for imgid in open(modelist_path)]
 
+        label_files = sorted(
+            glob.glob(
+                os.path.join(label_dir, mode, '*',
+                             '*_gtFine_labelTrainIds.png')))
         img_files = sorted(
-            [os.path.join(img_dir, f"{imgid:0>5d}.png") for imgid in items])
-        label_files = sorted([
-            os.path.join(label_dir, f"{imgid:0>5d}color19.png")
-            for imgid in items
-        ])
+            glob.glob(os.path.join(img_dir, mode, '*', '*_leftImg8bit.png')))
 
         self.file_list = [[
             img_path, label_path
         ] for img_path, label_path in zip(img_files, label_files)]
-
-
-if __name__ == '__main__':
-    import paddleseg
-    transforms = [paddleseg.transforms.Normalize()]
-    trainset = GTA5(transforms, '/ssd1/tangshiyu/data/GTA5', edge=True)
-    print(trainset.file_list[0], trainset[0])
-    # ['/ssd1/tangshiyu/data/GTA5/images/00001.png', '/ssd1/tangshiyu/data/GTA5/labels/00001color19.png']

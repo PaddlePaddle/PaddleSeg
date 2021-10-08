@@ -40,10 +40,10 @@ class EMA(object):
 
     def apply_shadow(self):
         self.backup = self.get_model_state()
-        self.model.load_state_dict(self.shadow)
+        self.model.set_dict(self.shadow)
 
     def restore(self):
-        self.model.load_state_dict(self.backup)
+        self.model.load_dict(self.backup)
 
     def get_model_state(self):
         """get model current statre """

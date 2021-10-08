@@ -8,12 +8,11 @@ train_dataset_src:
     - type: RandomVerticalFlip
       prob: 0.5
     - type: Resize
-      target_size: [1280, 720]
+      target_size: [1280, 640]
       interp: CUBIC
     - type: RandomHorizontalFlip
     - type: RandomBlur
       prob: 0.5
-    # - type: Normalize
   mode: train
   edge: True
 
@@ -24,12 +23,11 @@ train_dataset_tgt:
     - type: RandomVerticalFlip
       prob: 0.5
     - type: Resize
-      target_size: [1280, 720]
+      target_size: [1280, 640]
       interp: CUBIC
     - type: RandomHorizontalFlip
     - type: RandomBlur
       prob: 0.5
-    # - type: Normalize
   mode: train
   # edge: True
 
@@ -38,9 +36,8 @@ val_dataset_tgt:
   dataset_root: ../../../../data/cityscapes
   transforms:
     - type: Resize
-      target_size: [1280, 720]
+      target_size: [1280, 640]
       interp: CUBIC
-    # - type: Normalize
   mode: val
 
 model:

@@ -2,6 +2,7 @@ import numpy as np
 import cv2
 import paddle
 import albumentations as al
+import paddleseg.transforms as trans
 
 
 def get_augmentation():
@@ -15,6 +16,25 @@ def get_augmentation():
         al.ToGray(p=0.2),
         al.GaussianBlur(5, p=0.5),
     ])
+
+
+def get_augmentation_paddle():
+    return trans.Compose([
+        trans.RandomScaleAspect(
+            min_scale=0.2,
+            aspect_ratio=0.75),  # not to 512, 512, but the origin size
+        trans.RandomDistort(
+            brightness_range=0.2,
+            brightness_prob=0.8,
+            contrast_range=0.2,
+            contrast_prob=0.8,
+            hue_range=20,
+            hue_prob=0.8,
+            saturation_prob=0.8,
+            saturation_range=0.2),  # skip to gray
+        trans.RandomBlur(prob=0.5)
+    ]  # maxkernel should be 5
+                         )
 
 
 def augment(images, labels, aug):
@@ -37,16 +57,23 @@ def augment(images, labels, aug):
             cv2.COLOR_BGR2RGB).astype(
                 np.uint8)  # todo: check shape cmp with pixmatch
         label = label.numpy()  # convert to np
+        label = label.astype('uint8')
 
         # Step 2: Perform transformations on numpy images
+        # print('unnorm img', image.sum(axis=(0, 1)), image.shape)
+        # print('unnorm label', label.sum(axis=(0, 1)), label.shape)
+
         data = aug(image=image, mask=label)
         image, label = data['image'], data['mask']
+        # print('aug img', image.sum(axis=(0, 1)), image.shape)
+        # print('aug label', label.sum(axis=(0, 1)), label.shape)
+        # image, label = aug(im=image, label=label)
 
         # Step 3: Convert back to PyTorch tensors
-        image = paddle.from_numpy((cv2.cvtColor(
+        image = paddle.to_tensor((cv2.cvtColor(
             image.astype(np.float32), cv2.COLOR_RGB2BGR) - IMG_MEAN).transpose(
                 2, 0, 1))
-        label = paddle.from_numpy(label)
+        label = paddle.to_tensor(label)
         if not labels_are_3d:
             label = label.astype('int64')
 

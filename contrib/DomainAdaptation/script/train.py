@@ -22,9 +22,9 @@ import paddle
 import paddle.nn.functional as F
 
 from paddleseg.utils import TimeAverager, calculate_eta, resume, logger, worker_init_fn
-from paddleseg.core.val import evaluate
 from paddleseg.models import losses
-import paddleseg.transforms.functional as Func
+import transforms.functional as Func
+from script import val
 from models import EMA
 from utils import augmentation
 from models.losses import KLLoss
@@ -181,9 +181,16 @@ class Trainer():
                     edges_src = data_src[2].astype('int64')
 
                 #### source seg & edge loss ####
+                print('source img', images_src.sum(axis=[0, 2, 3]),
+                      images_src.shape)
                 loss_list = []
                 loss_src_seg = self.celoss(logits_list_src[0], labels_src) \
                                 + 0.1* self.celoss(logits_list_src[1], labels_src)
+                print('pred1', logits_list_src[0].mean(axis=[0, 2, 3]))
+                print('pred2', logits_list_src[1].mean(axis=[0, 2, 3]))
+                print('loss_source', loss_src_seg,
+                      self.celoss(logits_list_src[0], labels_src),
+                      0.1 * self.celoss(logits_list_src[1], labels_src))
 
                 if edgeconstrain:
                     edges_tgt = F.mask_to_binary_edge(
@@ -202,6 +209,9 @@ class Trainer():
                         [loss_src_edge, loss_tgt_seg, loss_tgt_edge])
 
                 #### aug loss #######
+                print('tgt img', images_tgt.sum(axis=[0, 2, 3]),
+                      images_tgt.shape)
+                # augs = augmentation.get_augmentation_paddle()
                 augs = augmentation.get_augmentation()
                 images_tgt_aug, labels_tgt_aug = augmentation.augment(
                     images=images_tgt.cpu(),
@@ -209,6 +219,7 @@ class Trainer():
                     aug=augs)
                 images_tgt_aug = images_tgt_aug.cuda()
                 labels_tgt_aug = labels_tgt_aug.cuda()
+
                 _, labels_tgt_aug_aux = augmentation.augment(
                     images=images_tgt.cpu(),
                     labels=labels_tgt_aux.detach().cpu(),
@@ -222,7 +233,9 @@ class Trainer():
 
                 loss_tgt_aug = 0.1 * (self.celoss(logits_list_tgt_aug[0], labels_tgt_aug) \
                                 + 0.1 * self.celoss(logits_list_tgt_aug[1], labels_tgt_aug_aux))
-
+                # print('tgt pred1', logits_list_tgt_aug[0].mean(axis=[0, 2, 3]))
+                # print('tgt pred2', logits_list_tgt_aug[1].mean(axis=[0, 2, 3]))
+                print('loss_aug', loss_tgt_aug)
                 #### edge input seg; src & tgt edge pull in ######
                 if edgepullin:
                     if nranks > 1:
@@ -248,6 +261,7 @@ class Trainer():
 
                 loss_list.extend([loss_src_seg, loss_tgt_aug])
                 loss = sum(loss_list)
+                print('total loss', loss)
                 loss.backward()
                 optimizer.step()
 
@@ -317,9 +331,8 @@ class Trainer():
                         test_config = {}
                     self.ema.apply_shadow()
                     self.ema.model.eval()
-                    # self.ema.model.cuda()
 
-                    mean_iou, acc, _, _, _ = evaluate(
+                    mean_iou, acc, _, _, _ = val.evaluate(
                         self.model,
                         val_dataset_tgt,
                         num_workers=num_workers,
@@ -362,8 +375,10 @@ class Trainer():
                                                   iter)
                             log_writer.add_scalar('Evaluate/Acc', acc, iter)
                 batch_start = time.time()
+                break
 
             self.ema.update_buffer()
+            break
 
         # Calculate flops.
         if local_rank == 0:
