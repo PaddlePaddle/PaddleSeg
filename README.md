@@ -158,7 +158,7 @@ python train.py --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml
 * [PP-HumanSeg](./contrib/PP-HumanSeg)
 * [Cityscapes SOTA](./contrib/CityscapesSOTA)
 * [Panoptic Segmentation](./contrib/PanopticDeepLab)
-* [CVPR Champion Solution](./contrib/AutoNUE))
+* [CVPR Champion Solution](./contrib/AutoNUE)
 * [Interactive Segmentation](./EISeg)
 * [Matting](./contrib/Matting)
 
