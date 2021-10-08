@@ -12,12 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import numpy as np
+
+import paddle
 import paddle.nn as nn
 import paddle.nn.functional as F
 
-import paddle
 from paddleseg.cvlibs import manager, param_init
-from paddleseg.models import layers
 from paddleseg.utils import utils
 from paddleseg.models.backbones.vision_transformer import Block
 
@@ -70,7 +71,11 @@ class SegmenterMTD(nn.Layer):
         num_classes (int): The unique number of target classes.
         in_dim (int): The embed dim of input.
         embed_dim (int): Embedding dim of mask transformer.
-
+        depth (int): The num of layers in Transformer.
+        num_heads (int): The num of heads in MSA.
+        mlp_ratio (int): Ratio of MLP dim.
+        drop_rate (float): Drop rate of MLP in MSA.
+        drop_path_rate (float): Drop path rate in MSA.
     """
 
     def __init__(self, num_classes, in_dim, embed_dim, depth, num_heads,
@@ -82,16 +87,16 @@ class SegmenterMTD(nn.Layer):
 
         self.cls_token = self.create_parameter(
             shape=(1, num_classes, embed_dim),
-            default_initializer=paddle.nn.initializer.Constant(value=0.))
+            default_initializer=paddle.nn.initializer.Normal())
 
-        # TODO(jc): add range drop_path_rate
+        dpr = [x for x in np.linspace(0, drop_path_rate, depth)]
         self.blocks = nn.LayerList([
             Block(
                 dim=embed_dim,
                 num_heads=num_heads,
                 mlp_ratio=mlp_ratio,
                 drop=drop_rate,
-                drop_path=drop_path_rate) for i in range(depth)
+                drop_path=dpr[i]) for i in range(depth)
         ])
 
         initializer = nn.initializer.Normal(std=embed_dim**-0.5)
@@ -110,6 +115,13 @@ class SegmenterMTD(nn.Layer):
         self.mask_norm = nn.LayerNorm(num_classes)
 
     def forward(self, x, patch_embed_size):
+        """ Forward function.
+        Args:
+            x (Tensor): Input tensor of decoder.
+            patch_embed_size (list): The size of patch embed tensor, such as (n, h, w, c).
+        Returns:
+            list[Tensor]: Segmentation results.
+        """
         x = self.proj_input(x)
 
         cls_token = self.cls_token.expand((x.shape[0], -1, -1))
@@ -124,12 +136,13 @@ class SegmenterMTD(nn.Layer):
         masks = self.proj_class(masks)
         patches = patches / paddle.norm(patches, axis=-1, keepdim=True)
         masks = masks / paddle.norm(masks, axis=-1, keepdim=True)
+
         masks = patches @ masks.transpose((0, 2, 1))
         masks = self.mask_norm(masks)
 
         #[b, (h w), c] -> [b, c, h, w]
-        H, W = patch_embed_size
-        masks = masks.reshape((masks.shape[0], H, W, masks.shape[-1]))
+        h, w = patch_embed_size
+        masks = masks.reshape((masks.shape[0], h, w, masks.shape[-1]))
         masks = masks.transpose((0, 3, 1, 2))
 
         return [masks]

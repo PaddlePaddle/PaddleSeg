@@ -1,5 +1,8 @@
 _base_: '../_base_/cityscapes.yml'
 
+batch_size: 1
+iters: 80000
+
 model:
   type: Segmenter
   backbone:
@@ -10,14 +13,11 @@ model:
     num_classes: 19
     in_dim: 1024
     embed_dim: 1024
-    depth: 2
-    num_heads: 16   # embed_dim // 64
+    depth: 1
+    num_heads: 16
     mlp_ratio: 4
     drop_rate: 0.1
     drop_path_rate: 0.0
-
-batch_size: 1
-iters: 80000
 
 train_dataset:
   transforms:
@@ -43,10 +43,9 @@ val_dataset:
 optimizer:
   weight_decay: 0.0
 
-loss:
-  types:
-    - type: CrossEntropyLoss
-  coef: [1]
+lr_scheduler:
+  learning_rate: 0.01
+  end_lr: 1.0e-05
 
 test_config:
     is_slide: True
