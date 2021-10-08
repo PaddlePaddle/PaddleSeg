@@ -13,5 +13,7 @@
 # limitations under the License.
 
 from .train import Trainer
+from .val import evaluate
+from . import infer
 
 __all__ = ['Trainer']

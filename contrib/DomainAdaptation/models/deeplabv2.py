@@ -75,6 +75,7 @@ class DeepLabV2(nn.Layer):
 
     def forward(self, x):
         feat_list = self.backbone(x)
+        assert len(feat_list[-2:]) == 2, print('the length isn\'t equal to 2')
         if self.shape_stream:
             logit_list = self.head(x, feat_list[:4], self.backbone.conv1_logit)
             logit_list.append(feat_list[-1])
