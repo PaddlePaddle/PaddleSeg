@@ -131,9 +131,11 @@ PaddleSeg是基于飞桨[PaddlePaddle](https://www.paddlepaddle.org.cn)开发的
 ## 实践案例 <img src="./docs/images/anli.png" width="20"/>
 
 - [人像分割](./contrib/PP-HumanSeg)
-- [医疗图像](./docs/solution/medical/medical.md)
-- [遥感分割](https://github.com/PaddlePaddle/PaddleSeg/tree/release/2.1/contrib/remote_sensing)
+- [Cityscapes打榜模型](./contrib/CityscapesSOTA)
+- [CVPR冠军模型](./contrib/AutoNUE)
 - [全景分割](./contrib/PanopticDeepLab)
+- [交互式分割](./EISeg)
+- [深度抠图](./contrib/Matting)
 
 ## 代码贡献
 
