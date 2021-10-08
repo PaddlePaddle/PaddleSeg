@@ -44,8 +44,6 @@ Welcome to PaddleSeg! PaddleSeg is an end-to-end image segmentation development 
 
 * <img src="./docs/images/f3.png" width="20"/> **High Efficiency**: PaddleSeg provides multi-process asynchronous I/O, multi-card parallel training, evaluation and other acceleration strategies, combined with the memory optimization function of the PaddlePaddle, which can greatly reduce the training overhead of the segmentation model, all this allowing developers to lower cost and more efficiently train image segmentation model.
 
-* :heart:**You can go to  [Complete PaddleSeg Online Documentation Directory](https://paddleseg.readthedocs.io)  for more detailed documentation**:heart:
-
 ## Technical Communication <img src="./docs/images/chat.png" width="30"/>
 
 * If you find any problems or have a suggestion with PaddleSeg, please send us issues through [GitHub Issues](https://github.com/PaddlePaddle/PaddleSeg/issues).
