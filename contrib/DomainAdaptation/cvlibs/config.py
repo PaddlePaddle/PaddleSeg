@@ -198,9 +198,18 @@ class Config(object):
         args = self.optimizer_args
         optimizer_type = args.pop('type')
 
+        # if optimizer_type == 'sgd':
+        #     return paddle.optimizer.Momentum(
+        #         lr, parameters=self.model.parameters(), **args)
+        # elif optimizer_type == 'adam':
+        #     return paddle.optimizer.Adam(
+        #         lr, parameters=self.model.parameters(), **args)
+        # elif optimizer_type in paddle.optimizer.__all__:
+        #     return getattr(paddle.optimizer, optimizer_type)(
+        #         lr, parameters=self.model.parameters(), **args)
         if optimizer_type == 'sgd':
             return paddle.optimizer.Momentum(
-                lr, parameters=self.model.parameters(), **args)
+                lr, parameters=self.model.optim_parameters(), **args)
         elif optimizer_type == 'adam':
             return paddle.optimizer.Adam(
                 lr, parameters=self.model.parameters(), **args)

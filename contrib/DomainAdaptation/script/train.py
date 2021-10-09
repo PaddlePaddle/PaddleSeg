@@ -180,17 +180,17 @@ class Trainer():
                 if len(data_src) == 3:
                     edges_src = data_src[2].astype('int64')
 
-                #### source seg & edge loss ####
-                print('source img', images_src.sum(axis=[0, 2, 3]),
-                      images_src.shape)
+                # #### source seg & edge loss ####
+                # print('source img', images_src.sum(axis=[0, 2, 3]),
+                #       images_src.shape)
                 loss_list = []
                 loss_src_seg = self.celoss(logits_list_src[0], labels_src) \
                                 + 0.1* self.celoss(logits_list_src[1], labels_src)
-                print('pred1', logits_list_src[0].mean(axis=[0, 2, 3]))
-                print('pred2', logits_list_src[1].mean(axis=[0, 2, 3]))
-                print('loss_source', loss_src_seg,
-                      self.celoss(logits_list_src[0], labels_src),
-                      0.1 * self.celoss(logits_list_src[1], labels_src))
+                # print('pred1', logits_list_src[0].mean(axis=[0, 2, 3]))
+                # print('pred2', logits_list_src[1].mean(axis=[0, 2, 3]))
+                # print('loss_source', loss_src_seg,
+                #       self.celoss(logits_list_src[0], labels_src),
+                #       0.1 * self.celoss(logits_list_src[1], labels_src))
 
                 if edgeconstrain:
                     edges_tgt = F.mask_to_binary_edge(
@@ -209,8 +209,8 @@ class Trainer():
                         [loss_src_edge, loss_tgt_seg, loss_tgt_edge])
 
                 #### aug loss #######
-                print('tgt img', images_tgt.sum(axis=[0, 2, 3]),
-                      images_tgt.shape)
+                # print('tgt img', images_tgt.sum(axis=[0, 2, 3]),
+                #       images_tgt.shape)
                 # augs = augmentation.get_augmentation_paddle()
                 augs = augmentation.get_augmentation()
                 images_tgt_aug, labels_tgt_aug = augmentation.augment(
@@ -235,7 +235,7 @@ class Trainer():
                                 + 0.1 * self.celoss(logits_list_tgt_aug[1], labels_tgt_aug_aux))
                 # print('tgt pred1', logits_list_tgt_aug[0].mean(axis=[0, 2, 3]))
                 # print('tgt pred2', logits_list_tgt_aug[1].mean(axis=[0, 2, 3]))
-                print('loss_aug', loss_tgt_aug)
+                # print('loss_aug', loss_tgt_aug)
                 #### edge input seg; src & tgt edge pull in ######
                 if edgepullin:
                     if nranks > 1:
@@ -261,7 +261,7 @@ class Trainer():
 
                 loss_list.extend([loss_src_seg, loss_tgt_aug])
                 loss = sum(loss_list)
-                print('total loss', loss)
+                # print('total loss', loss)
                 loss.backward()
                 optimizer.step()
 
@@ -375,10 +375,8 @@ class Trainer():
                                                   iter)
                             log_writer.add_scalar('Evaluate/Acc', acc, iter)
                 batch_start = time.time()
-                break
 
             self.ema.update_buffer()
-            break
 
         # Calculate flops.
         if local_rank == 0:

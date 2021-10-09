@@ -106,7 +106,8 @@ class Classifier_Module(nn.Layer):
         self.conv2d_list = nn.LayerList()
         for dilation, padding in zip(dilation_series, padding_series):
             weight_attr = paddle.ParamAttr(
-                initializer=nn.initializer.Normal(std=0.01))
+                initializer=nn.initializer.Normal(std=0.01), learning_rate=10.0)
+            bias_attr = paddle.ParamAttr(initializer=nn.initializer.Constant(value=0.0) ,learning_rate=10.0)
             self.conv2d_list.append(
                 nn.Conv2D(
                     inplanes,
@@ -115,7 +116,8 @@ class Classifier_Module(nn.Layer):
                     stride=1,
                     padding=padding,
                     dilation=dilation,
-                    weight_attr=weight_attr))
+                    weight_attr=weight_attr,
+                    bias_attr=bias_attr))
 
     def forward(self, x):
         out = self.conv2d_list[0](x)
@@ -220,35 +222,12 @@ class ResNetMulti(nn.Layer):
 
         # Resolution 2
         x4 = self.layer4(x3)
-        x4 = self.layer6(x4)
-        x4 = F.interpolate(
-            x4, size=input_size, mode='bilinear', align_corners=True)
+        x6 = self.layer6(x4)
+        x6 = F.interpolate(
+            x6, size=input_size, mode='bilinear', align_corners=True)
 
-        return x1, x2, x3, x4, x_aug  # changed! resolution 2 first
+        return  x1, x2, x3, x4, x6, x_aug  # changed! resolution 2 first
 
-    def get_1x_lr_params_NOscale(self):
-        """
-        This generator returns all the parameters of the net except for
-        the last classification layer. Note that for each batchnorm layer,
-        requires_grad is set to False in deeplab_resnet.py, therefore this function does not return
-        any batchnorm parameter
-        """
-        b = []
-
-        b.append(self.conv1)
-        b.append(self.bn1)
-        b.append(self.layer1)
-        b.append(self.layer2)
-        b.append(self.layer3)
-        b.append(self.layer4)
-
-        for i in range(len(b)):
-            for j in b[i].modules():
-                jj = 0
-                for k in j.parameters():
-                    jj += 1
-                    if k.requires_grad:
-                        yield k
 
     def get_10x_lr_params(self):
         """
@@ -262,15 +241,6 @@ class ResNetMulti(nn.Layer):
         for j in range(len(b)):
             for i in b[j]:
                 yield i
-
-    def optim_parameters(self, lr):  # 不支持不同模块分
-        return [{
-            'params': self.get_1x_lr_params_NOscale(),
-            'lr': lr
-        }, {
-            'params': self.get_10x_lr_params(),
-            'lr': 10 * lr
-        }]
 
 
 @manager.BACKBONES.add_component

@@ -75,7 +75,6 @@ class DeepLabV2(nn.Layer):
 
     def forward(self, x):
         feat_list = self.backbone(x)
-        assert len(feat_list[-2:]) == 2, print('the length isn\'t equal to 2')
         if self.shape_stream:
             logit_list = self.head(x, feat_list[:4], self.backbone.conv1_logit)
             logit_list.append(feat_list[-1])
@@ -123,8 +122,7 @@ class DeepLabV2(nn.Layer):
             logger.info("There are {}/{} variables loaded into {}.".format(
                 num_params_loaded, len(model_state_dict),
                 self.backbone.__class__.__name__))
-
-
+   
 if __name__ == '__main__':
     import sys
     from backbones import ResNet101
