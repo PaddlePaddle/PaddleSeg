@@ -45,3 +45,4 @@ from .segformer import SegFormer
 from .pointrend import PointRend
 from .ginet import GINet
 from .segmenter import Segmenter, SegmenterMTD
+from .segnet import SegNet
