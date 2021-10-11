@@ -78,3 +78,13 @@ class KLLoss(nn.Layer):
             loss = loss * mask
             avg_loss = paddle.mean(loss) / (paddle.mean(mask) + self.EPS)
         return avg_loss
+
+
+if __name__ == '__main__':
+    import paddle
+    loss = KLLoss()
+    a = paddle.randn((10,3,2,2))
+    b = paddle.randn((10,3,2,2))
+    c = loss(a,b)
+    print(c)
+    print(c.numpy())

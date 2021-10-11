@@ -38,6 +38,7 @@ class Trainer():
         self.ema = EMA(self.model, ema_decay)
         self.celoss = losses.CrossEntropyLoss()
         self.klloss = KLLoss()
+        self.bceloss = losses.BCELoss()
 
     def train(self,
               train_dataset_src,
@@ -146,16 +147,19 @@ class Trainer():
                 reader_cost_averager.record(time.time() - batch_start)
 
                 #### training #####
-                images_src = data_src[0]
                 images_tgt = data_tgt[0]
+                images_src = data_src[0]
                 labels_src = data_src[1].astype('int64')
-
+                edges_src = None
+                if len(data_src) == 3:
+                    edges_src = data_src[2].astype('int64')
+                        
                 if nranks > 1:
-                    logits_list_src = ddp_model(images_src)
                     logits_list_tgt = ddp_model(images_tgt)
+                    logits_list_src = ddp_model(images_src)
                 else:
-                    logits_list_src = self.model(images_src)
                     logits_list_tgt = self.model(images_tgt)
+                    logits_list_src = self.model(images_src)
 
                 #### target pseudo label  ####
                 with paddle.no_grad():
@@ -175,38 +179,25 @@ class Trainer():
                     # maxpred_2 > pseudolabel_threshold)
                     # labels_tgt_aux = paddle.where(mask, labels_tgt_aux,
                     #   ignore_tensor)
-
-                edges_src = None
-                if len(data_src) == 3:
-                    edges_src = data_src[2].astype('int64')
-
+                    del pred_P_1, pred_P_2, pred_c, data_src
+                    
                 # #### source seg & edge loss ####
-                # print('source img', images_src.sum(axis=[0, 2, 3]),
-                #       images_src.shape)
                 loss_list = []
                 loss_src_seg = self.celoss(logits_list_src[0], labels_src) \
                                 + 0.1* self.celoss(logits_list_src[1], labels_src)
+                
+                # loss_src_seg.backward()
+                # loss_list.append(loss_src_seg.numpy()[0])
+                del images_src
+                # del loss_src_seg, images_src
+
+                # print('source img', images_src.sum(axis=[0, 2, 3]),
+                #       images_src.shape)               
                 # print('pred1', logits_list_src[0].mean(axis=[0, 2, 3]))
                 # print('pred2', logits_list_src[1].mean(axis=[0, 2, 3]))
                 # print('loss_source', loss_src_seg,
                 #       self.celoss(logits_list_src[0], labels_src),
                 #       0.1 * self.celoss(logits_list_src[1], labels_src))
-
-                if edgeconstrain:
-                    edges_tgt = F.mask_to_binary_edge(
-                        labels_tgt,
-                        radius=2,
-                        num_classes=train_dataset_tgt.num_classes)
-
-                    ####  target seg & edge loss ####
-                    loss_tgt_seg = self.celoss(logits_list_tgt[0], labels_tgt) \
-                                    + 0.1 * self.celoss(logits_list_tgt[1], labels_tgt_aux)
-                    loss_tgt_edge = losses.BCELoss(logits_list_tgt[2],
-                                                   edges_tgt)
-                    loss_src_edge = losses.BCELoss(logits_list_src[2],
-                                                   edges_src)
-                    loss_list.extend(
-                        [loss_src_edge, loss_tgt_seg, loss_tgt_edge])
 
                 #### aug loss #######
                 # print('tgt img', images_tgt.sum(axis=[0, 2, 3]),
@@ -233,9 +224,40 @@ class Trainer():
 
                 loss_tgt_aug = 0.1 * (self.celoss(logits_list_tgt_aug[0], labels_tgt_aug) \
                                 + 0.1 * self.celoss(logits_list_tgt_aug[1], labels_tgt_aug_aux))
+                # loss_tgt_aug.backward()
+                # loss_list.append(loss_tgt_aug.numpy()[0])
+                del images_tgt_aug, labels_tgt_aug, labels_tgt_aug_aux, images_tgt
+                loss_list.extend([loss_src_seg, loss_tgt_aug])
+                
+                # del loss_tgt_aug, images_tgt_aug, logits_list_tgt_aug, labels_tgt_aug, \
+                #     labels_tgt_aug_aux, images_tgt, 
+                
                 # print('tgt pred1', logits_list_tgt_aug[0].mean(axis=[0, 2, 3]))
                 # print('tgt pred2', logits_list_tgt_aug[1].mean(axis=[0, 2, 3]))
                 # print('loss_aug', loss_tgt_aug)
+                
+                ####  target seg & edge loss ####
+                if edgeconstrain:
+                    edges_tgt = F.mask_to_binary_edge(
+                        labels_tgt,
+                        radius=2,
+                        num_classes=train_dataset_tgt.num_classes)
+                    if iter > 60000:
+                        loss_tgt_seg = self.celoss(logits_list_tgt[0], labels_tgt) \
+                                        + 0.1 * self.celoss(logits_list_tgt[1], labels_tgt_aux)
+                        loss_tgt_edge = self.bceloss(logits_list_tgt[2], edges_tgt)
+                    else:
+                        loss_tgt_seg = paddle.zeros([1])
+                        loss_tgt_edge = paddle.zeros([1])
+                    loss_src_edge = self.bceloss(logits_list_src[2], edges_src)
+                    # loss_src_edge = loss_src_edge + loss_tgt_edge + loss_src_edge
+                    # loss_src_edge.backward()
+                    # loss_list.extend(
+                    #     [loss_src_edge.numpy()[0], loss_tgt_seg.numpy()[0], loss_tgt_edge.numpy()[0]])
+                    # del loss_src_edge, loss_tgt_edge, loss_src_edge
+                    loss_list.extend(
+                        [loss_src_edge, loss_tgt_seg, loss_tgt_edge])
+                    
                 #### edge input seg; src & tgt edge pull in ######
                 if edgepullin:
                     if nranks > 1:
@@ -250,6 +272,12 @@ class Trainer():
                                     + 0.1 * self.celoss(logits_list_edge_tgt[1], labels_tgt_aux)
                     loss_edge_pullin = self.kl_loss(logits_list_edge_tgt[2], (logits_list_edge_tgt[2]+logits_list_edge_src[2])/2) \
                                     + self.kl_loss(logits_list_edge_src[2], (logits_list_edge_tgt[2]+logits_list_edge_src[2])/2)
+                    # loss_src_edge_seg = loss_src_edge_seg + loss_tgt_edge_seg + loss_edge_pullin
+                    # loss_src_edge_seg.backward()
+                    # loss_list.extend([
+                    #     loss_src_edge_seg.numpy()[0], loss_tgt_edge_seg.numpy()[0], loss_edge_pullin.numpy()[0]
+                    # ])
+                    # del loss_src_edge_seg, loss_tgt_edge_seg, loss_edge_pullin
                     loss_list.extend([
                         loss_src_edge_seg, loss_tgt_edge_seg, loss_edge_pullin
                     ])
@@ -259,7 +287,6 @@ class Trainer():
                     print(1)
                     # labels_src_onehot = F.one_hot(labels_src, train_dataset_src.num_classes)
 
-                loss_list.extend([loss_src_seg, loss_tgt_aug])
                 loss = sum(loss_list)
                 # print('total loss', loss)
                 loss.backward()
@@ -279,10 +306,13 @@ class Trainer():
 
                 self.model.clear_gradients()
                 avg_loss += loss.numpy()[0]
+                # avg_loss += loss
                 if not avg_loss_list:
+                    # avg_loss_list = [l for l in loss_list]
                     avg_loss_list = [l.numpy() for l in loss_list]
                 else:
                     for i in range(len(loss_list)):
+                        # avg_loss_list[i] += loss_list[i]
                         avg_loss_list[i] += loss_list[i].numpy()
 
                 batch_cost_averager.record(
@@ -379,17 +409,17 @@ class Trainer():
             self.ema.update_buffer()
 
         # Calculate flops.
-        if local_rank == 0:
+        # if local_rank == 0:
 
-            def count_syncbn(m, x, y):
-                x = x[0]
-                nelements = x.numel()
-                m.total_ops += int(2 * nelements)
+        #     def count_syncbn(m, x, y):
+        #         x = x[0]
+        #         nelements = x.numel()
+        #         m.total_ops += int(2 * nelements)
 
-            _, c, h, w = images_src.shape
-            flops = paddle.flops(
-                self.model, [1, c, h, w],
-                custom_ops={paddle.nn.SyncBatchNorm: count_syncbn})
+        #     _, c, h, w = images_src.shape
+        #     flops = paddle.flops(
+        #         self.model, [1, c, h, w],
+        #         custom_ops={paddle.nn.SyncBatchNorm: count_syncbn})
 
         # Sleep for half a second to let dataloader release resources.
         time.sleep(0.5)

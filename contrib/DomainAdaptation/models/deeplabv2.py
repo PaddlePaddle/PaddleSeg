@@ -65,6 +65,8 @@ class DeepLabV2(nn.Layer):
 
         self.backbone = backbone
         self.shape_stream = shape_stream
+        if shape_stream:
+            print('####### ADD GSCNN HEAD ########')
         backbone_channels = self.backbone.feat_channels
         self.head = GSCNNHead(num_classes, backbone_indices, backbone_channels,
                               aspp_ratios, aspp_out_channels, align_corners)

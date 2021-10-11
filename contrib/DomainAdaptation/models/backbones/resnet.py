@@ -105,9 +105,12 @@ class Classifier_Module(nn.Layer):
         super(Classifier_Module, self).__init__()
         self.conv2d_list = nn.LayerList()
         for dilation, padding in zip(dilation_series, padding_series):
+            # weight_attr = paddle.ParamAttr(
+            #     initializer=nn.initializer.Normal(std=0.01), learning_rate=10.0)
+            # bias_attr = paddle.ParamAttr(initializer=nn.initializer.Constant(value=0.0) ,learning_rate=10.0)
             weight_attr = paddle.ParamAttr(
-                initializer=nn.initializer.Normal(std=0.01), learning_rate=10.0)
-            bias_attr = paddle.ParamAttr(initializer=nn.initializer.Constant(value=0.0) ,learning_rate=10.0)
+                initializer=nn.initializer.Normal(std=0.01), learning_rate=1.0)
+            bias_attr = paddle.ParamAttr(initializer=nn.initializer.Constant(value=0.0) ,learning_rate=1.0)
             self.conv2d_list.append(
                 nn.Conv2D(
                     inplanes,
@@ -227,20 +230,6 @@ class ResNetMulti(nn.Layer):
             x6, size=input_size, mode='bilinear', align_corners=True)
 
         return  x1, x2, x3, x4, x6, x_aug  # changed! resolution 2 first
-
-
-    def get_10x_lr_params(self):
-        """
-        This generator returns all the parameters for the last layer of the net,
-        which does the classification of pixel into classes
-        """
-        b = []
-        b.append(self.layer5.parameters())
-        b.append(self.layer6.parameters())
-
-        for j in range(len(b)):
-            for i in b[j]:
-                yield i
 
 
 @manager.BACKBONES.add_component
