@@ -8,7 +8,7 @@
 
 ## 最新动向
 
-- 交互式分割论文[EdgeFlow](https://arxiv.org/abs/2109.09406)被ICCV 2021 Workshop接受。
+- 交互式分割论文[EdgeFlow](https://arxiv.org/abs/2109.09406)被ICCV 2021 Workshop接收。
 - 支持多边形编辑，上线更多功能，最新EISeg 0.3.0推出。
 
 ## 介绍
@@ -151,3 +151,16 @@ EISeg使用[QPT](https://github.com/GT-ZhangAcer/QPT)进行打包。可以从[�
 ## 开发者
 
 [Yuying Hao](https://github.com/haoyuying), [Lin Han](https://github.com/linhandev/), [Yizhou Chen](https://github.com/geoyee), [Yiakwy](https://github.com/yiakwy), [GT](https://github.com/GT-ZhangAcer), [Zhiliang Yu](https://github.com/yzl19940819)
+
+## 学术引用
+
+如果我们的项目在学术上帮助到你，请考虑以下引用：
+
+```latex
+@article{hao2021edgeflow,
+  title={EdgeFlow: Achieving Practical Interactive Segmentation with Edge-Guided Flow},
+  author={Hao, Yuying and Liu, Yi and Wu, Zewu and Han, Lin and Chen, Yizhou and Chen, Guowei and Chu, Lutao and Tang, Shiyu and Yu, Zhiliang and Chen, Zeyu and others},
+  journal={arXiv preprint arXiv:2109.09406},
+  year={2021}
+}
+```
