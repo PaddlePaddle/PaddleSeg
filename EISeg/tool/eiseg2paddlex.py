@@ -7,10 +7,10 @@ from qtpy import QtGui
 import argparse
 
 
-# 参考paddlex数据准备文档
+# refer to the paddlex
 # https://github.com/PaddlePaddle/PaddleX/blob/release/2.0.0/docs/data/format/README.md
 
-# 支持的图像格式
+# supported image formats
 FORMATS = [".{}".format(fmt.data().decode()) 
             for fmt in QtGui.QImageReader.supportedImageFormats()]
 FORMATS.append(".dcm")
@@ -21,7 +21,7 @@ def mkdirp(path):
         os.mkdir(path)
 
 
-# 语义分割
+# semantic segmentation
 def Eiseg2Semantic(save_folder, imgs_folder, lab_folder=None, split_rate=0.9):
     """Convert the data marked by eiseg into the semantic segmentation data of paddlex.
 
@@ -64,7 +64,7 @@ def Eiseg2Semantic(save_folder, imgs_folder, lab_folder=None, split_rate=0.9):
             for i in range(len(tmps)):
                 lab = tmps[i].split(" ")[1]
                 wf.write(lab + "\n")
-    print("===== create label finished! =====")
+    print("===== create labels.txt finished! =====")
     # create list
     train_list_path = osp.join(save_folder, "train_list.txt")
     eval_list_path = osp.join(save_folder, "val_list.txt")
@@ -85,15 +85,15 @@ def Eiseg2Semantic(save_folder, imgs_folder, lab_folder=None, split_rate=0.9):
                     tf.write(new_img_path + " " + new_lab_path + "\n")
                 else:
                     ef.write(new_img_path + " " + new_lab_path + "\n")
-    print("===== create data list finished! =====")
+    print("===== create data_list.txt finished! =====")
     print("===== all done! =====")
 
 
 parser = argparse.ArgumentParser(description='Save path, image path, label path and split rate')
-parser.add_argument('--save_path', '-d', help='保存文件夹路径，必要参数', required=True)
-parser.add_argument('--image_path', '-o', help='图像文件夹路径，必要参数', required=True)
-parser.add_argument('--label_path', '-l', help='标签文件夹路径', default=None)
-parser.add_argument('--split_rate', '-s', help='分割参数', default=0.9)
+parser.add_argument('--save_path', '-d', help='Save folder path, required', required=True)
+parser.add_argument('--image_path', '-o', help='Image folder path, required', required=True)
+parser.add_argument('--label_path', '-l', help='Label folder path, optional', default=None)
+parser.add_argument('--split_rate', '-s', help='Proportion of training set and verification set, optional', default=0.9)
 args = parser.parse_args()
 
 if __name__ == "__main__":
