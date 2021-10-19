@@ -155,7 +155,8 @@ python bg_replace.py \
 python bg_replace.py \
 --config export_model/ppseg_lite_portrait_398x224_with_softmax/deploy.yaml \
 --input_shape 224 398 \
---img_path data/human_image.jpg
+--img_path data/human_image.jpg \
+--bg_img_path data/background.jpg
 
 ```
 
