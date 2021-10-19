@@ -9,7 +9,7 @@ Mating is the technique of extracting foreground from an image by calculating it
 
 ## Contents
 - [Instruction of Installation](#Instruction-of-Installation)
-- [Model download](#Model-download)
+- [Models](#Models)
 - [Dataset preparation](#Dataset-preparation)
 - [Training](#Training)
 - [Evaluation](#Evaluation)
@@ -43,11 +43,16 @@ pip install scikit-image
 cd contrib/Matting
 ```
 
-## Model download
-
-[MODNet-MobileNetV2](https://paddleseg.bj.bcebos.com/matting/models/modnet-mobilenetv2.pdparams)
-
+## Models
 [DIM-VGG16](https://paddleseg.bj.bcebos.com/matting/models/dim-vgg16.pdparams)
+
+MODNet performance on [PPM-100](https://github.com/ZHKKKe/PPM).
+
+| Backbone | SAD | MSE | Link |
+|-|-|-|-|
+|MobileNetV2|112.73|0.0098|[model](https://paddleseg.bj.bcebos.com/matting/models/modnet-mobilenetv2.pdparams)|
+|ResNet50_vd|104.14|0.0090|[model](https://paddleseg.bj.bcebos.com/matting/models/modnet-resnet50_vd.pdparams)|
+|HRNet_W18|77.96|0.0054|[model](https://paddleseg.bj.bcebos.com/matting/models/modnet-hrnet_w18.pdparams)|
 
 ## Dataset preparation
 
