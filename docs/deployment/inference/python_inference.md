@@ -10,14 +10,18 @@
 
 ## 2. 准备模型和数据
 
-下载[样例模型](https://paddleseg.bj.bcebos.com/dygraph/demo/bisenet_demo_model.tar.gz)用于测试。如果要使用其他模型，大家可以使用[模型导出工具](../../model_export.md)。
+下载[样例模型](https://paddleseg.bj.bcebos.com/dygraph/demo/bisenet_demo_model.tar.gz)用于测试。
+
+如果要使用其他模型，大家可以参考[文档](../../model_export.md)导出预测模型，再进行测试。
 
 ```shell
 wget https://paddleseg.bj.bcebos.com/dygraph/demo/bisenet_demo_model.tar.gz
 tar zxvf bisenet_demo_model.tar.gz
 ```
 
-下载cityscapes验证集中的一张[图片](https://paddleseg.bj.bcebos.com/dygraph/demo/cityscapes_demo.png)用于演示效果。如果大家的模型是使用其他数据集训练的，请自行准备测试图片。
+下载cityscapes验证集中的一张[图片](https://paddleseg.bj.bcebos.com/dygraph/demo/cityscapes_demo.png)用于演示效果。
+
+如果模型是使用其他数据集训练的，请自行准备测试图片。
 
 ```
 wget https://paddleseg.bj.bcebos.com/dygraph/demo/cityscapes_demo.png
@@ -67,7 +71,7 @@ wget https://paddle-inference-dist.bj.bcebos.com/tensorrt_test/cuda10.2-cudnn8.0
 
 ```shell
 python deploy/python/infer.py \
-    --config /path/to/deploy.yaml \
+    --config /path/to/model/deploy.yaml \
     --image_path /path/to/image/path/or/dir
 ```
 
@@ -94,7 +98,7 @@ python deploy/python/infer.py \
     * 加载常规预测模型，设置precision为fp32，此时执行fp32数值精度
     * 加载常规预测模型，设置precision为fp16，此时执行fp16数值精度，可以加快推理速度
     * 加载量化预测模型，设置precision为int8，此时执行int8数值精度，可以加快推理速度
-* 如果在Nvidia GPU上使用TensorRT方式部署模型，出现错误信息`(InvalidArgument) some trt inputs dynamic shape inof not set`，可以设置enable_auto_tune参数为True。此时，使用部分测试数据离线收集动态shape，使用收集到的动态shape用于TRT部署。
+* 如果在Nvidia GPU上使用TensorRT方式部署模型，出现错误信息`(InvalidArgument) some trt inputs dynamic shape inof not set`，可以设置enable_auto_tune参数为True。此时，使用部分测试数据离线收集动态shape，使用收集到的动态shape用于TRT部署。（注意，少部分模型暂时不支持在Nvidia GPU上使用TensorRT方式部署）。
 * 如果要开启`--benchmark`的话需要安装auto_log，请参考[安装方式](https://github.com/LDOUBLEV/AutoLog)。
 
 测试样例的预测结果如下。
