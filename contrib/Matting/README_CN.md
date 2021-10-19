@@ -10,7 +10,7 @@ Matting（精细化分割/影像去背/抠图）是指借由计算前景的颜�
 
 ## 目录
 - [环境配置](#环境配置)
-- [模型下载](#模型下载)
+- [模型](#模型)
 - [数据准备](#数据准备)
 - [训练](#训练)
 - [评估](#评估)
@@ -44,11 +44,17 @@ pip install scikit-image
 cd contrib/Matting
 ```
 
-## 模型下载
-
-[MODNet-MobileNetV2](https://paddleseg.bj.bcebos.com/matting/models/modnet-mobilenetv2.pdparams)
+## 模型
 
 [DIM-VGG16](https://paddleseg.bj.bcebos.com/matting/models/dim-vgg16.pdparams)
+
+MODNet在[PPM-100](https://github.com/ZHKKKe/PPM)数据集上的性能
+
+| Backbone | SAD | MSE | Link |
+|-|-|-|-|
+|MobileNetV2|112.73|0.0098|[model](https://paddleseg.bj.bcebos.com/matting/models/modnet-mobilenetv2.pdparams)|
+|ResNet50_vd|104.14|0.0090|[model](https://paddleseg.bj.bcebos.com/matting/models/modnet-resnet50_vd.pdparams)|
+|HRNet_W18|77.96|0.0054|[model](https://paddleseg.bj.bcebos.com/matting/models/modnet-hrnet_w18.pdparams)|
 
 ## 数据准备
 
