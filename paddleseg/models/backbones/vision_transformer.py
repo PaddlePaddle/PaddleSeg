@@ -16,9 +16,11 @@ import paddle
 import paddle.nn as nn
 import paddle.nn.functional as F
 import numpy as np
+import os
+import math
 
 from paddleseg.cvlibs import manager
-from paddleseg.utils import utils
+from paddleseg.utils import utils, logger
 from paddleseg.models.backbones.transformer_utils import *
 
 
@@ -168,7 +170,7 @@ class VisionTransformer(nn.Layer):
                  pretrained=None,
                  **args):
         super().__init__()
-        self.depth = depth
+        self.img_size = img_size
         self.embed_dim = embed_dim
 
         self.patch_embed = PatchEmbed(
@@ -181,12 +183,10 @@ class VisionTransformer(nn.Layer):
 
         self.pos_embed = self.create_parameter(
             shape=(1, self.pos_w * self.pos_h + 1, embed_dim),
-            default_initializer=paddle.nn.initializer.Constant(value=0.))
-        self.add_parameter("pos_embed", self.pos_embed)
+            default_initializer=paddle.nn.initializer.TruncatedNormal(std=.02))
         self.cls_token = self.create_parameter(
             shape=(1, 1, embed_dim),
             default_initializer=paddle.nn.initializer.Constant(value=0.))
-        self.add_parameter("cls_token", self.cls_token)
         self.pos_drop = nn.Dropout(p=drop_rate)
 
         dpr = np.linspace(0, drop_path_rate, depth)
@@ -212,25 +212,58 @@ class VisionTransformer(nn.Layer):
     def init_weight(self):
         utils.load_pretrained_model(self, self.pretrained)
 
-    def forward_features(self, x):
-        x = self.patch_embed(x)
-        x_shape = paddle.shape(x)
+        # load and resize pos_embed
+        pretrained_model_path = utils.download_pretrained_model(self.pretrained)
 
-        cls_pos_embed = self.pos_embed[:, :1, :]
-        pos_embed = self.pos_embed[:, 1:, :]
+        if os.path.exists(pretrained_model_path):
+            load_state_dict = paddle.load(pretrained_model_path)
+            model_state_dict = self.state_dict()
+            pos_embed_name = "pos_embed"
+            if pos_embed_name in load_state_dict.keys():
+                load_pos_embed = paddle.to_tensor(load_state_dict[pos_embed_name], dtype="float32")
+                if self.pos_embed.shape != load_pos_embed.shape:
+                    pos_size = int(math.sqrt(load_pos_embed.shape[1] - 1))
+                    model_state_dict[pos_embed_name] = self.resize_pos_embed(
+                        load_pos_embed, (pos_size, pos_size), (self.pos_h, self.pos_w))
+                    self.set_dict(model_state_dict)
+                    logger.info("Load pos_embed and resize it from {} to {} .".format(
+                        load_pos_embed.shape, self.pos_embed.shape))
 
-        # TODO(jc): interpolate the pos_embed when load weights
+    def resize_pos_embed(self, pos_embed, old_hw, new_hw):
+        """
+        Resize pos_embed weight.
+        Args:
+            pos_embed (Tensor): the pos_embed weight
+            old_hw (list[int]): the height and width of old pos_embed
+            new_hw (list[int]): the height and width of new pos_embed
+        Returns:
+            Tensor: the resized pos_embed weight
+        """
+        cls_pos_embed = pos_embed[:, :1, :]
+        pos_embed = pos_embed[:, 1:, :]
+
         pos_embed = pos_embed.transpose([0, 2, 1])
-        pos_embed = pos_embed.reshape([1, -1, self.pos_h, self.pos_w])
+        pos_embed = pos_embed.reshape([1, -1, old_hw[0], old_hw[1]])
         pos_embed = F.interpolate(
-            pos_embed, x_shape[2:], mode='bilinear', align_corners=False)
+            pos_embed, new_hw, mode='bicubic', align_corners=False)
         pos_embed = pos_embed.flatten(2).transpose([0, 2, 1])
         pos_embed = paddle.concat([cls_pos_embed, pos_embed], axis=1)
 
-        x = x.flatten(2).transpose([0, 2, 1])
+        return pos_embed
+
+    def forward(self, x):
+        x = self.patch_embed(x)
+        x_shape = paddle.shape(x)   # b * c * h * w
+
         cls_tokens = self.cls_token.expand((x_shape[0], -1, -1))
+        x = x.flatten(2).transpose([0, 2, 1])   # b * hw * c
         x = paddle.concat([cls_tokens, x], axis=1)
-        x = x + pos_embed
+
+        if paddle.shape(x)[1] == self.pos_embed.shape[1]:
+            x = x + self.pos_embed
+        else:
+            x = x + self.resize_pos_embed(self.pos_embed,
+                (self.pos_h, self.pos_w), x_shape[2:])
         x = self.pos_drop(x)
 
         res = []
@@ -239,9 +272,6 @@ class VisionTransformer(nn.Layer):
             res.append(x[:, 1:, :])
 
         return res, x_shape
-
-    def forward(self, x):
-        return self.forward_features(x)
 
 
 @manager.BACKBONES.add_component
@@ -368,3 +398,4 @@ def ViT_huge_patch32_384(**kwargs):
         mlp_ratio=4,
         **kwargs)
     return model
+
