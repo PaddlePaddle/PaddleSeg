@@ -38,11 +38,12 @@ class ZiYan(nn.Layer):
         self.backbone = backbone
         self.pretrained = pretrained
 
+        self.backbone_channels = backbone.feat_channels
         ######################
         ### Decoder part - Glance
         ######################
         self.psp_module = layers.PPModule(
-            512,
+            self.backbone_channels[-1],
             512,
             bin_sizes=(1, 3, 5),
             dim_reduction=False,
@@ -53,7 +54,8 @@ class ZiYan(nn.Layer):
         self.psp1 = conv_up_psp(512, 64, 16)
         # stage 5g
         self.decoder5_g = nn.Sequential(
-            layers.ConvBNReLU(1024, 512, 3, padding=1),
+            layers.ConvBNReLU(
+                512 + self.backbone_channels[-1], 512, 3, padding=1),
             layers.ConvBNReLU(512, 512, 3, padding=2, dilation=2),
             layers.ConvBNReLU(512, 256, 3, padding=2, dilation=2),
             nn.Upsample(scale_factor=2, mode='bilinear', align_corners=False))
@@ -91,36 +93,42 @@ class ZiYan(nn.Layer):
         ### Decoder part - FOCUS
         ##########################
         self.bridge_block = nn.Sequential(
-            layers.ConvBNReLU(512, 512, 3, dilation=2, padding=2),
+            layers.ConvBNReLU(
+                self.backbone_channels[-1], 512, 3, dilation=2, padding=2),
             layers.ConvBNReLU(512, 512, 3, dilation=2, padding=2),
             layers.ConvBNReLU(512, 512, 3, dilation=2, padding=2))
         # stage 5f
         self.decoder5_f = nn.Sequential(
-            layers.ConvBNReLU(1024, 512, 3, padding=1),
+            layers.ConvBNReLU(
+                512 + self.backbone_channels[-1], 512, 3, padding=1),
             layers.ConvBNReLU(512, 512, 3, padding=2, dilation=2),
             layers.ConvBNReLU(512, 256, 3, padding=2, dilation=2),
             nn.Upsample(scale_factor=2, mode='bilinear', align_corners=False))
         # stage 4f
         self.decoder4_f = nn.Sequential(
-            layers.ConvBNReLU(512, 256, 3, padding=1),
+            layers.ConvBNReLU(
+                256 + self.backbone_channels[-2], 256, 3, padding=1),
             layers.ConvBNReLU(256, 256, 3, padding=1),
             layers.ConvBNReLU(256, 128, 3, padding=1),
             nn.Upsample(scale_factor=2, mode='bilinear', align_corners=False))
         # stage 3f
         self.decoder3_f = nn.Sequential(
-            layers.ConvBNReLU(256, 128, 3, padding=1),
+            layers.ConvBNReLU(
+                128 + self.backbone_channels[-3], 128, 3, padding=1),
             layers.ConvBNReLU(128, 128, 3, padding=1),
             layers.ConvBNReLU(128, 64, 3, padding=1),
             nn.Upsample(scale_factor=2, mode='bilinear', align_corners=False))
         # stage 2f
         self.decoder2_f = nn.Sequential(
-            layers.ConvBNReLU(128, 128, 3, padding=1),
+            layers.ConvBNReLU(
+                64 + self.backbone_channels[-4], 128, 3, padding=1),
             layers.ConvBNReLU(128, 128, 3, padding=1),
             layers.ConvBNReLU(128, 64, 3, padding=1),
             nn.Upsample(scale_factor=2, mode='bilinear', align_corners=False))
         # stage 1f
         self.decoder1_f = nn.Sequential(
-            layers.ConvBNReLU(128, 64, 3, padding=1),
+            layers.ConvBNReLU(
+                64 + self.backbone_channels[-5], 64, 3, padding=1),
             layers.ConvBNReLU(64, 64, 3, padding=1),
             layers.ConvBNReLU(64, 64, 3, padding=1),
             nn.Upsample(scale_factor=2, mode='bilinear', align_corners=False))
@@ -129,6 +137,8 @@ class ZiYan(nn.Layer):
             layers.ConvBNReLU(64, 64, 3, padding=1),
             layers.ConvBNReLU(64, 64, 3, padding=1),
             nn.Conv2D(64, 1, 3, padding=1))
+
+        self.init_weight()
 
     def forward(self, inputs):
         x = inputs['img']
@@ -238,6 +248,10 @@ class ZiYan(nn.Layer):
         fg = (index == 0).astype('float32')
         fusion_sigmoid = focus_sigmoid * transition_mask + fg
         return fusion_sigmoid
+
+    def init_weight(self):
+        if self.pretrained is not None:
+            utils.load_entire_model(self, self.pretrained)
 
 
 if __name__ == '__main__':
