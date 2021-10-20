@@ -14,13 +14,15 @@
 
 import os
 import glob
+import sys
+sys.path.append('..')
 
 from paddleseg.cvlibs import manager
 from transforms import Compose_DA
 import datasets
 
 
-@manager.DATASETS.add_component
+# @manager.DATASETS.add_component
 class Cityscapes_DA(datasets.Dataset_DA):
     """
     Cityscapes dataset `https://www.cityscapes-dataset.com/`.
@@ -48,7 +50,7 @@ class Cityscapes_DA(datasets.Dataset_DA):
     """
     NUM_CLASSES = 19
 
-    def __init__(self, transforms, dataset_root, mode='train', edge=False):
+    def __init__(self, transforms, dataset_root, mode='train', edge=False, logger=None):
         self.dataset_root = dataset_root
         self.transforms = Compose_DA(transforms)
         self.file_list = list()
@@ -57,6 +59,8 @@ class Cityscapes_DA(datasets.Dataset_DA):
         self.num_classes = self.NUM_CLASSES
         self.ignore_index = 255
         self.edge = edge
+        if logger:
+            self.logger = logger
 
         if mode not in ['train', 'val', 'test']:
             raise ValueError(
@@ -85,3 +89,26 @@ class Cityscapes_DA(datasets.Dataset_DA):
         self.file_list = [[
             img_path, label_path
         ] for img_path, label_path in zip(img_files, label_files)]
+
+
+if __name__=="__main__":
+    import numpy as np
+    import reprod_log 
+    import transforms
+    import paddleseg.transforms as tf
+    t = [
+        tf.RandomVerticalFlip(0.5),
+        tf.Resize(target_size=[1280,640], interp="CUBIC"),
+        tf.RandomBlur(prob=0.5)
+    ]
+    dataset = Cityscapes_DA(dataset_root="/ssd2/tangshiyu/data/cityscapes", 
+                           transforms=t)
+    
+    reprod_logger = reprod_log.ReprodLogger()
+    for idx in range(5):
+        np.random.seed(42)
+        rnd_idx = [np.random.randint(0, len(dataset)) for i in range(5)]
+        reprod_logger.add(f"dataset_tgt_{idx}",
+                                dataset[rnd_idx[idx]][0])
+    print(rnd_idx)
+    reprod_logger.save("/ssd2/tangshiyu/Code/pixmatch/models/tgtds_paddle.npy")

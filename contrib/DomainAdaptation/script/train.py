@@ -16,7 +16,6 @@ import os
 import time
 from collections import deque
 import shutil
-from tqdm import tqdm
 
 import paddle
 import paddle.nn.functional as F
@@ -34,8 +33,8 @@ class Trainer():
     def __init__(self, model, ema_decay):
         '''model（nn.Layer): A sementic segmentation model.'''
         self.model = model
-        self.ema_decay = ema_decay
-        self.ema = EMA(self.model, ema_decay)
+        # self.ema_decay = ema_decay
+        # self.ema = EMA(self.model, ema_decay)
         self.celoss = losses.CrossEntropyLoss()
         self.klloss = KLLoss()
         self.bceloss = losses.BCELoss()
@@ -58,7 +57,8 @@ class Trainer():
               pseudolabel_threshold=0.0,
               edgeconstrain=False,
               edgepullin=False,
-              featurepullin=False):
+              featurepullin=False,
+              reprod_logger=None):
         """
         Launch training.
 
@@ -122,13 +122,25 @@ class Trainer():
             return_list=True,
             worker_init_fn=worker_init_fn,
         )
+        import numpy as np
+
+        # reprod_logger.add("length_src_train", np.array(len(train_dataset_src)))
+        # reprod_logger.add("length_tgt_train", np.array(len(train_dataset_tgt)))
+        # reprod_logger.add("length_tgt_val", np.array(len(val_dataset_tgt)))
+        
+        # for idx in range(5):
+        #     np.random.seed(0)
+        #     rnd_idx = [np.random.randint(0, len(train_dataset_tgt)) for i in range(5)]
+        #     # reprod_logger.add(f"dataset_src_{train_dataset_src[rnd_idx[idx]][2]}",
+        #                         train_dataset_src[rnd_idx[idx]][0].numpy())
+        #     # reprod_logger.add(f"dataset_tgt_{train_dataset_tgt[rnd_idx[idx]][2]}",
+        #                         train_dataset_tgt[rnd_idx[idx]][0].numpy())
+        # print(rnd_idx)
 
         if use_vdl:
             from visualdl import LogWriter
             log_writer = LogWriter(save_dir)
 
-        avg_loss = 0.0
-        avg_loss_list = []
         iters_per_epoch = len(batch_sampler_tgt)
         best_mean_iou = -1.0
         best_model_iter = -1
@@ -139,21 +151,28 @@ class Trainer():
 
         iter = start_iter
         while iter < iters:
-            for batch_idx, (data_src, data_tgt) in enumerate(
-                    tqdm(
-                        zip(loader_src, loader_tgt),
-                        total=min(len(loader_src), len(loader_tgt)))):
+            for _, (data_src, data_tgt) in enumerate(
+                        zip(loader_src, loader_tgt)):
 
                 reader_cost_averager.record(time.time() - batch_start)
 
                 #### training #####
                 images_tgt = data_tgt[0]
+                labels_tgt = data_tgt[1].astype('int64')
                 images_src = data_src[0]
                 labels_src = data_src[1].astype('int64')
+                
+                # images_src, labels_src = paddle.to_tensor(np.load('/ssd2/tangshiyu/Code/fake_data_src.npy')), \
+                #             paddle.to_tensor(np.load('/ssd2/tangshiyu/Code/fake_label_src.npy')).astype('int64')
+                # images_tgt, labels_tgt = paddle.to_tensor(np.load('/ssd2/tangshiyu/Code/fake_data_tgt.npy')), \
+                #             paddle.to_tensor(np.load('/ssd2/tangshiyu/Code/fake_label_tgt.npy')).astype('int64')
+                # reprod_logger.add("images_tgt_{}".format(data_tgt[2].numpy()[0]), images_tgt.cpu().detach().numpy())
+                # reprod_logger.add("images_src_{}".format(data_src[2].numpy()[0]), images_src.cpu().detach().numpy())
+
                 edges_src = None
                 if len(data_src) == 3:
                     edges_src = data_src[2].astype('int64')
-                        
+   
                 if nranks > 1:
                     logits_list_tgt = ddp_model(images_tgt)
                     logits_list_src = ddp_model(images_src)
@@ -161,102 +180,101 @@ class Trainer():
                     logits_list_tgt = self.model(images_tgt)
                     logits_list_src = self.model(images_src)
 
+                # res_src = logits_list_src[0] + logits_list_src[1]
+                # res_tgt = logits_list_tgt[0] + logits_list_tgt[1]
+                # reprod_logger.add("res_src_{}".format(data_src[2].numpy()[0]), res_src.cpu().detach().numpy())
+                # reprod_logger.add("res_tgt_{}".format(data_tgt[2].numpy()[0]), res_tgt.cpu().detach().numpy())
+
                 #### target pseudo label  ####
                 with paddle.no_grad():
                     pred_P_1 = F.softmax(logits_list_tgt[0], axis=1)
-                    labels_tgt = paddle.argmax(pred_P_1.detach(), axis=1)
-                    # maxpred_1 = paddle.max(pred_P_1.detach(), axis=1)
-                    # mask_1 = (maxpred_1 > pseudolabel_threshold)
-                    # ignore_tensor = paddle.to_tensor([train_dataset_tgt.ignore_index])
-                    # labels_tgt = paddle.where(mask_1, labels_tgt,
-                    #                           ignore_tensor)  # threshold
+                    labels_tgt_psu = paddle.argmax(pred_P_1.detach(), axis=1)
+                    # reprod_logger.add("labels_tgt_psu_{}".format(data_tgt[2].numpy()[0]), labels_tgt_psu.cpu().detach().numpy())
+                    
                     # aux label
                     pred_P_2 = F.softmax(logits_list_tgt[1], axis=1)
-                    # maxpred_2 = paddle.max(pred_P_2.detach(), axis=1)
                     pred_c = (pred_P_1 + pred_P_2) / 2
-                    labels_tgt_aux = paddle.argmax(pred_c.detach(), axis=1)
-                    # mask = (maxpred_1 > pseudolabel_threshold) | (
-                    # maxpred_2 > pseudolabel_threshold)
-                    # labels_tgt_aux = paddle.where(mask, labels_tgt_aux,
-                    #   ignore_tensor)
+                    labels_tgt_psu_aux = paddle.argmax(pred_c.detach(), axis=1)
+                    # reprod_logger.add("labels_tgt_psu_aux_{}".format(data_tgt[2].numpy()[0]), labels_tgt_psu_aux.cpu().detach().numpy())
+
                     del pred_P_1, pred_P_2, pred_c, data_src
                     
                 # #### source seg & edge loss ####
-                loss_list = []
-                loss_src_seg = self.celoss(logits_list_src[0], labels_src) \
-                                + 0.1* self.celoss(logits_list_src[1], labels_src)
-                
-                # loss_src_seg.backward()
-                # loss_list.append(loss_src_seg.numpy()[0])
-                del images_src
-                # del loss_src_seg, images_src
+                loss_dict = {}
+                loss_src_seg_main = self.celoss(logits_list_src[0], labels_src)
+                loss_src_seg_aux = 0.1 * self.celoss(logits_list_src[1], labels_src)
+                # reprod_logger.add("loss_src_seg_{}".format(data_tgt[2].numpy()[0]), loss_src_seg.cpu().detach().numpy())
+                loss_src_seg = loss_src_seg_main + loss_src_seg_aux
+                loss_src_seg.backward()
 
-                # print('source img', images_src.sum(axis=[0, 2, 3]),
-                #       images_src.shape)               
-                # print('pred1', logits_list_src[0].mean(axis=[0, 2, 3]))
-                # print('pred2', logits_list_src[1].mean(axis=[0, 2, 3]))
-                # print('loss_source', loss_src_seg,
-                #       self.celoss(logits_list_src[0], labels_src),
-                #       0.1 * self.celoss(logits_list_src[1], labels_src))
+                loss_dict["source_main"] = loss_src_seg_main.numpy()[0]
+                loss_dict["source_aux"] = loss_src_seg_aux.numpy()[0]
+                del loss_src_seg, images_src, loss_src_seg_aux, loss_src_seg_main
 
                 #### aug loss #######
-                # print('tgt img', images_tgt.sum(axis=[0, 2, 3]),
-                #       images_tgt.shape)
-                # augs = augmentation.get_augmentation_paddle()
                 augs = augmentation.get_augmentation()
                 images_tgt_aug, labels_tgt_aug = augmentation.augment(
                     images=images_tgt.cpu(),
-                    labels=labels_tgt.detach().cpu(),
-                    aug=augs)
+                    labels=labels_tgt_psu.detach().cpu(),
+                    aug=augs, logger=reprod_logger)
                 images_tgt_aug = images_tgt_aug.cuda()
                 labels_tgt_aug = labels_tgt_aug.cuda()
 
                 _, labels_tgt_aug_aux = augmentation.augment(
                     images=images_tgt.cpu(),
-                    labels=labels_tgt_aux.detach().cpu(),
-                    aug=augs)
+                    labels=labels_tgt_psu_aux.detach().cpu(),
+                    aug=augs, logger=reprod_logger)
                 labels_tgt_aug_aux = labels_tgt_aug_aux.cuda()
+                
+                # reprod_logger.add("images_tgt_aug_{}".format(data_tgt[2].numpy()[0]), images_tgt_aug.cpu().detach().numpy())
+                # reprod_logger.add("labels_tgt_aug_{}".format(data_tgt[2].numpy()[0]), labels_tgt_aug.cpu().detach().numpy())
+                # reprod_logger.add("labels_tgt_aug_aux_{}".format(data_tgt[2].numpy()[0]), labels_tgt_aug_aux.cpu().detach().numpy())
 
                 if nranks > 1:
                     logits_list_tgt_aug = ddp_model(images_tgt_aug)
                 else:
                     logits_list_tgt_aug = self.model(images_tgt_aug)
 
-                loss_tgt_aug = 0.1 * (self.celoss(logits_list_tgt_aug[0], labels_tgt_aug) \
-                                + 0.1 * self.celoss(logits_list_tgt_aug[1], labels_tgt_aug_aux))
-                # loss_tgt_aug.backward()
-                # loss_list.append(loss_tgt_aug.numpy()[0])
-                del images_tgt_aug, labels_tgt_aug, labels_tgt_aug_aux, images_tgt
-                loss_list.extend([loss_src_seg, loss_tgt_aug])
+                loss_tgt_aug_main = 0.1 * (self.celoss(logits_list_tgt_aug[0], labels_tgt_aug)) 
+                loss_tgt_aug_aux =  0.1 * (0.1 * self.celoss(logits_list_tgt_aug[1], labels_tgt_aug_aux))
+                loss_tgt_aug = loss_tgt_aug_aux + loss_tgt_aug_main
+                loss_tgt_aug.backward()
                 
-                # del loss_tgt_aug, images_tgt_aug, logits_list_tgt_aug, labels_tgt_aug, \
-                #     labels_tgt_aug_aux, images_tgt, 
+                # res_tgt_aug = logits_list_tgt_aug[0] + logits_list_tgt_aug[1]
+                # reprod_logger.add("res_tgt_aug_{}".format(data_tgt[2].numpy()[0]), res_tgt_aug.cpu().detach().numpy())
+                # reprod_logger.add("loss_tgt_aug_{}".format(data_tgt[2].numpy()[0]), loss_tgt_aug.cpu().detach().numpy())
                 
-                # print('tgt pred1', logits_list_tgt_aug[0].mean(axis=[0, 2, 3]))
-                # print('tgt pred2', logits_list_tgt_aug[1].mean(axis=[0, 2, 3]))
-                # print('loss_aug', loss_tgt_aug)
-                
+                loss_dict['target_aug_main'] = loss_tgt_aug_main.numpy()[0]
+                loss_dict['target_aug_aux'] = loss_tgt_aug_aux.numpy()[0]
+                del images_tgt_aug, labels_tgt_aug, labels_tgt_aug_aux, images_tgt, \
+                    logits_list_tgt_aug, loss_tgt_aug, loss_tgt_aug_aux, loss_tgt_aug_main
+     
                 ####  target seg & edge loss ####
                 if edgeconstrain:
                     edges_tgt = F.mask_to_binary_edge(
-                        labels_tgt,
+                        labels_tgt_psu,
                         radius=2,
                         num_classes=train_dataset_tgt.num_classes)
+                    loss_src_edge = self.bceloss(logits_list_src[2], edges_src)
+
                     if iter > 60000:
                         loss_tgt_seg = self.celoss(logits_list_tgt[0], labels_tgt) \
-                                        + 0.1 * self.celoss(logits_list_tgt[1], labels_tgt_aux)
+                                        + 0.1 * self.celoss(logits_list_tgt[1], labels_tgt_psu_aux)
                         loss_tgt_edge = self.bceloss(logits_list_tgt[2], edges_tgt)
+                        loss_edge = loss_tgt_seg + loss_tgt_edge + loss_src_edge
                     else:
                         loss_tgt_seg = paddle.zeros([1])
                         loss_tgt_edge = paddle.zeros([1])
-                    loss_src_edge = self.bceloss(logits_list_src[2], edges_src)
-                    # loss_src_edge = loss_src_edge + loss_tgt_edge + loss_src_edge
-                    # loss_src_edge.backward()
-                    # loss_list.extend(
-                    #     [loss_src_edge.numpy()[0], loss_tgt_seg.numpy()[0], loss_tgt_edge.numpy()[0]])
-                    # del loss_src_edge, loss_tgt_edge, loss_src_edge
-                    loss_list.extend(
-                        [loss_src_edge, loss_tgt_seg, loss_tgt_edge])
+                        loss_edge = loss_src_edge
+                    
+                    loss_edge.backward()
+
+                    loss_dict['target_seg'] = loss_tgt_seg.numpy()[0]
+                    loss_dict['target_edge'] = loss_tgt_edge.numpy()[0]
+                    loss_dict['source_edge'] = loss_src_edge.numpy()[0]
+
+                    del loss_src_edge, loss_tgt_edge, loss_src_edge
+
                     
                 #### edge input seg; src & tgt edge pull in ######
                 if edgepullin:
@@ -266,160 +284,164 @@ class Trainer():
                     else:
                         logits_list_edge_src = self.model(logits_list_src[2])
                         logits_list_edge_tgt = self.model(logits_list_tgt[2])
+                    
                     loss_src_edge_seg = self.celoss(logits_list_edge_src[0], labels_src) \
                                     + 0.1 * self.celoss(logits_list_edge_src[1], labels_src)
                     loss_tgt_edge_seg = self.celoss(logits_list_edge_tgt[0], labels_tgt) \
-                                    + 0.1 * self.celoss(logits_list_edge_tgt[1], labels_tgt_aux)
-                    loss_edge_pullin = self.kl_loss(logits_list_edge_tgt[2], (logits_list_edge_tgt[2]+logits_list_edge_src[2])/2) \
-                                    + self.kl_loss(logits_list_edge_src[2], (logits_list_edge_tgt[2]+logits_list_edge_src[2])/2)
-                    # loss_src_edge_seg = loss_src_edge_seg + loss_tgt_edge_seg + loss_edge_pullin
-                    # loss_src_edge_seg.backward()
-                    # loss_list.extend([
-                    #     loss_src_edge_seg.numpy()[0], loss_tgt_edge_seg.numpy()[0], loss_edge_pullin.numpy()[0]
-                    # ])
-                    # del loss_src_edge_seg, loss_tgt_edge_seg, loss_edge_pullin
-                    loss_list.extend([
-                        loss_src_edge_seg, loss_tgt_edge_seg, loss_edge_pullin
-                    ])
+                                    + 0.1 * self.celoss(logits_list_edge_tgt[1], labels_tgt_psu_aux)
+                    loss_edge_pullin = self.klloss(logits_list_edge_tgt[2], (logits_list_edge_tgt[2]+logits_list_edge_src[2])/2) \
+                                    + self.klloss(logits_list_edge_src[2], (logits_list_edge_tgt[2]+logits_list_edge_src[2])/2)
+                    
+                    loss_src_edge_seg = loss_src_edge_seg + loss_tgt_edge_seg + loss_edge_pullin
+                    loss_src_edge_seg.backward()
+                    loss_dict['source_edge_seg'] = loss_src_edge_seg.numpy()[0]
+                    loss_dict['target_edge_seg'] = loss_tgt_edge_seg.numpy()[0]
+                    loss_dict['tgt_src_edge_pullin'] = loss_edge_pullin.numpy()[0]
+
+                    del loss_src_edge_seg, loss_tgt_edge_seg, loss_edge_pullin
+
 
                 #### mask input feature & pullin  ######
                 if featurepullin:
                     print(1)
                     # labels_src_onehot = F.one_hot(labels_src, train_dataset_src.num_classes)
 
-                loss = sum(loss_list)
-                # print('total loss', loss)
-                loss.backward()
+                # reprod_logger.add("loss_total_{}".format(data_tgt[2].numpy()[0]), loss.cpu().detach().numpy())
+                # for name, tensor in self.model.named_parameters():
+                #     if not tensor.stop_gradient:
+                #         grad = tensor.grad  
+                #         try:
+                #             self.reprod_logger.add(name, np.array([grad]))
+                #         except AttributeError:
+                #             print(name, "does not have grad but stop gradients=", tensor.stop_gradient)
+    
+                loss = sum(loss_dict.values())
                 optimizer.step()
 
-                self.ema.update_params()
+                with paddle.no_grad():
+                    # self.ema.update_params()
 
-                ##### log & save #####
-                lr = optimizer.get_lr()
-                # update lr
-                if isinstance(optimizer, paddle.distributed.fleet.Fleet):
-                    lr_sche = optimizer.user_defined_optimizer._learning_rate
-                else:
-                    lr_sche = optimizer._learning_rate
-                if isinstance(lr_sche, paddle.optimizer.lr.LRScheduler):
-                    lr_sche.step()
+                    ##### log & save #####
+                    lr = optimizer.get_lr()
+                    # reprod_logger.add("lr_{}".format(data_tgt[2].numpy()[0]), np.array([lr]))
 
-                self.model.clear_gradients()
-                avg_loss += loss.numpy()[0]
-                # avg_loss += loss
-                if not avg_loss_list:
-                    # avg_loss_list = [l for l in loss_list]
-                    avg_loss_list = [l.numpy() for l in loss_list]
-                else:
-                    for i in range(len(loss_list)):
-                        # avg_loss_list[i] += loss_list[i]
-                        avg_loss_list[i] += loss_list[i].numpy()
+                    # update lr
+                    if isinstance(optimizer, paddle.distributed.fleet.Fleet):
+                        lr_sche = optimizer.user_defined_optimizer._learning_rate
+                    else:
+                        lr_sche = optimizer._learning_rate
+                    if isinstance(lr_sche, paddle.optimizer.lr.LRScheduler):
+                        lr_sche.step()
 
-                batch_cost_averager.record(
-                    time.time() - batch_start, num_samples=batch_size)
+                    self.model.clear_gradients()
 
-                iter += 1
-                if (iter) % log_iters == 0 and local_rank == 0:
-                    avg_loss /= log_iters
-                    avg_loss_list = [l[0] / log_iters for l in avg_loss_list]
-                    remain_iters = iters - iter
-                    avg_train_batch_cost = batch_cost_averager.get_average()
-                    avg_train_reader_cost = reader_cost_averager.get_average()
-                    eta = calculate_eta(remain_iters, avg_train_batch_cost)
-                    logger.info(
-                        "[TRAIN] epoch: {}, iter: {}/{}, loss: {:.4f}, lr: {:.6f}, batch_cost: {:.4f}, reader_cost: {:.5f}, ips: {:.4f} samples/sec | ETA {}"
-                        .format((iter - 1) // iters_per_epoch + 1, iter, iters,
-                                avg_loss, lr, avg_train_batch_cost,
-                                avg_train_reader_cost,
-                                batch_cost_averager.get_ips_average(), eta))
-                    if use_vdl:
-                        log_writer.add_scalar('Train/loss', avg_loss, iter)
-                        # Record all losses if there are more than 2 losses.
-                        if len(avg_loss_list) > 1:
-                            avg_loss_dict = {}
-                            for i, value in enumerate(avg_loss_list):
-                                avg_loss_dict['loss_' + str(i)] = value
-                            for key, value in avg_loss_dict.items():
-                                log_tag = 'Train/' + key
-                                log_writer.add_scalar(log_tag, value, iter)
+                    batch_cost_averager.record(
+                        time.time() - batch_start, num_samples=batch_size)
 
-                        log_writer.add_scalar('Train/lr', lr, iter)
-                        log_writer.add_scalar('Train/batch_cost',
-                                              avg_train_batch_cost, iter)
-                        log_writer.add_scalar('Train/reader_cost',
-                                              avg_train_reader_cost, iter)
-                    avg_loss = 0.0
-                    avg_loss_list = []
-                    reader_cost_averager.reset()
-                    batch_cost_averager.reset()
+                    iter += 1
+                    if (iter) % log_iters == 0 and local_rank == 0:
+                        import functools 
+                        label_tgt_acc = ((labels_tgt == labels_tgt_psu).numpy().sum().astype('float32')\
+                                            /functools.reduce(lambda a, b: a * b, labels_tgt_psu.shape))*100
 
-                if (iter % save_interval == 0
-                        or iter == iters) and (val_dataset_tgt is not None):
-                    num_workers = 1 if num_workers > 0 else 0
-
-                    if test_config is None:
-                        test_config = {}
-                    self.ema.apply_shadow()
-                    self.ema.model.eval()
-
-                    mean_iou, acc, _, _, _ = val.evaluate(
-                        self.model,
-                        val_dataset_tgt,
-                        num_workers=num_workers,
-                        **test_config)
-
-                    self.ema.restore()
-                    self.model.train()
-
-                if (iter % save_interval == 0
-                        or iter == iters) and local_rank == 0:
-                    current_save_dir = os.path.join(save_dir,
-                                                    "iter_{}".format(iter))
-                    if not os.path.isdir(current_save_dir):
-                        os.makedirs(current_save_dir)
-                    paddle.save(
-                        self.model.state_dict(),
-                        os.path.join(current_save_dir, 'model.pdparams'))
-                    paddle.save(optimizer.state_dict(),
-                                os.path.join(current_save_dir, 'model.pdopt'))
-                    save_models.append(current_save_dir)
-                    if len(save_models) > keep_checkpoint_max > 0:
-                        model_to_remove = save_models.popleft()
-                        shutil.rmtree(model_to_remove)
-
-                    if val_dataset_tgt is not None:
-                        if mean_iou > best_mean_iou:
-                            best_mean_iou = mean_iou
-                            best_model_iter = iter
-                            best_model_dir = os.path.join(
-                                save_dir, "best_model")
-                            paddle.save(
-                                self.model.state_dict(),
-                                os.path.join(best_model_dir, 'model.pdparams'))
+                        remain_iters = iters - iter
+                        avg_train_batch_cost = batch_cost_averager.get_average()
+                        avg_train_reader_cost = reader_cost_averager.get_average()
+                        eta = calculate_eta(remain_iters, avg_train_batch_cost)
                         logger.info(
-                            '[EVAL] The model with the best validation mIoU ({:.4f}) was saved at iter {}.'
-                            .format(best_mean_iou, best_model_iter))
-
+                            "[TRAIN] epoch: {}, iter: {}/{}, loss: {:.4f}, pix_acc: {:.4f}, lr: {:.6f}, batch_cost: {:.4f}, reader_cost: {:.5f}, ips: {:.4f} samples/sec | ETA {}"
+                            .format((iter - 1) // iters_per_epoch + 1, iter, iters,
+                                    loss, label_tgt_acc, lr, avg_train_batch_cost,
+                                    avg_train_reader_cost,
+                                    batch_cost_averager.get_ips_average(), eta))
+                        
                         if use_vdl:
-                            log_writer.add_scalar('Evaluate/mIoU', mean_iou,
-                                                  iter)
-                            log_writer.add_scalar('Evaluate/Acc', acc, iter)
-                batch_start = time.time()
+                            log_writer.add_scalar('Train/loss', loss, iter)
+                            # Record all losses if there are more than 2 losses.
+                            if len(loss_dict) > 1:
+                                for name, loss in loss_dict.items():
+                                    log_writer.add_scalar('Train/loss_' + name, loss, iter)
 
-            self.ema.update_buffer()
+                            log_writer.add_scalar('Train/lr', lr, iter)
+                            log_writer.add_scalar('Train/batch_cost',
+                                                avg_train_batch_cost, iter)
+                            log_writer.add_scalar('Train/reader_cost',
+                                                avg_train_reader_cost, iter)
+                            log_writer.add_scalar('Train/tgt_label_acc', label_tgt_acc, iter)
+                        
+                        reader_cost_averager.reset()
+                        batch_cost_averager.reset()
+
+                    if (iter % save_interval == 0
+                            or iter == iters) and (val_dataset_tgt is not None):
+                        num_workers = 1 if num_workers > 0 else 0
+
+                        if test_config is None:
+                            test_config = {}
+                        # self.ema.apply_shadow()
+                        # self.ema.model.eval()
+
+                        PA, _, MIoU, _ = val.evaluate(
+                            self.model,
+                            val_dataset_tgt,
+                            num_workers=num_workers,
+                            **test_config)
+
+                        # self.ema.restore()
+                        self.model.train()
+
+                    if (iter % save_interval == 0
+                            or iter == iters) and local_rank == 0:
+                        current_save_dir = os.path.join(save_dir,
+                                                        "iter_{}".format(iter))
+                        if not os.path.isdir(current_save_dir):
+                            os.makedirs(current_save_dir)
+                        paddle.save(
+                            self.model.state_dict(),
+                            os.path.join(current_save_dir, 'model.pdparams'))
+                        paddle.save(optimizer.state_dict(),
+                                    os.path.join(current_save_dir, 'model.pdopt'))
+                        save_models.append(current_save_dir)
+                        if len(save_models) > keep_checkpoint_max > 0:
+                            model_to_remove = save_models.popleft()
+                            shutil.rmtree(model_to_remove)
+
+                        if val_dataset_tgt is not None:
+                            if MIoU > best_mean_iou:
+                                best_mean_iou = MIoU
+                                best_model_iter = iter
+                                best_model_dir = os.path.join(
+                                    save_dir, "best_model")
+                                paddle.save(
+                                    self.model.state_dict(),
+                                    os.path.join(best_model_dir, 'model.pdparams'))
+                            logger.info(
+                                '[EVAL] The model with the best validation mIoU ({:.4f}) was saved at iter {}.'
+                                .format(best_mean_iou, best_model_iter))
+
+                            if use_vdl:
+                                log_writer.add_scalar('Evaluate/mIoU', MIoU,
+                                                    iter)
+                                log_writer.add_scalar('Evaluate/PA', PA, iter)
+                    batch_start = time.time()
+            #     if iter > 5:
+            #         break            
+            # reprod_logger.save("/ssd2/tangshiyu/Code/pixmatch/models/train_paddle.npy")
+            # break
+            # self.ema.update_buffer()
 
         # Calculate flops.
-        # if local_rank == 0:
+        if local_rank == 0:
 
-        #     def count_syncbn(m, x, y):
-        #         x = x[0]
-        #         nelements = x.numel()
-        #         m.total_ops += int(2 * nelements)
+            def count_syncbn(m, x, y):
+                x = x[0]
+                nelements = x.numel()
+                m.total_ops += int(2 * nelements)
 
-        #     _, c, h, w = images_src.shape
-        #     flops = paddle.flops(
-        #         self.model, [1, c, h, w],
-        #         custom_ops={paddle.nn.SyncBatchNorm: count_syncbn})
+            _, c, h, w = images_src.shape
+            flops = paddle.flops(
+                self.model, [1, c, h, w],
+                custom_ops={paddle.nn.SyncBatchNorm: count_syncbn})
 
         # Sleep for half a second to let dataloader release resources.
         time.sleep(0.5)

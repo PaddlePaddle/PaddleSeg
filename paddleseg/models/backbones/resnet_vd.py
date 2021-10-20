@@ -357,6 +357,7 @@ class ResNet_vd(nn.Layer):
         for stage in self.stage_list:
             for block in stage:
                 y = block(y)
+                y.register_hook(lambda grad: print('y grad', grad.mean()*10**5))
             feat_list.append(y)
 
         return feat_list

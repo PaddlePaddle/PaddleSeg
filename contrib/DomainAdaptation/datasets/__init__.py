@@ -15,3 +15,6 @@
 from .dataset import Dataset_DA
 from .gta5 import GTA5
 from .cityscapes import Cityscapes_DA
+from .cityscapes_noconfig import City_Dataset
+from .gta5_noconfig import GTA5_Dataset
+from .synthia import SYNTHIA_Dataset

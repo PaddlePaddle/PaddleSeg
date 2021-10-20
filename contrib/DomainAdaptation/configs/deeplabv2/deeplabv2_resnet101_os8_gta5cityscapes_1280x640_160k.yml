@@ -10,7 +10,6 @@ train_dataset_src:
     - type: Resize
       target_size: [1280, 640]
       interp: CUBIC
-    - type: RandomHorizontalFlip
     - type: RandomBlur
       prob: 0.5
   mode: train
@@ -25,7 +24,6 @@ train_dataset_tgt:
     - type: Resize
       target_size: [1280, 640]
       interp: CUBIC
-    - type: RandomHorizontalFlip
     - type: RandomBlur
       prob: 0.5
   mode: train
@@ -65,7 +63,7 @@ featurepullin: False
 optimizer:
   type: sgd
   momentum: 0.9
-  weight_decay: 5.0e-4
+  weight_decay: 0.0005
 
 lr_scheduler:
   type: PolynomialDecay

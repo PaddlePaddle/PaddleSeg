@@ -143,20 +143,16 @@ class Dataset_DA(paddle.io.Dataset):
     def __getitem__(self, idx):
         image_path, label_path = self.file_list[idx]
         if self.mode == 'test':
-            # print('get image from test')
             im, _ = self.transforms(im=image_path)
             im = im[np.newaxis, ...]
             return im, image_path
         elif self.mode == 'val':
             # im, _ = self.transforms(im=image_path)
             # label = np.asarray(Image.open(label_path))
-            # print('get image from val')
             im, label = self.transforms(im=image_path, label=label_path)
             label = label[np.newaxis, :, :]
             return im, label
         else:
-            # print('get image from train')
-
             im, label = self.transforms(im=image_path, label=label_path)
             if self.edge:
                 edge_mask = F.mask_to_binary_edge(

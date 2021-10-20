@@ -95,7 +95,7 @@ class DeepLabV2(nn.Layer):
                     x.shape[2:],
                     mode='bilinear',
                     align_corners=self.align_corners)
-                for logit in feat_list[-2:]
+                for logit in feat_list
             ]
 
     def init_weight(self):
@@ -127,23 +127,31 @@ class DeepLabV2(nn.Layer):
    
 if __name__ == '__main__':
     import sys
+    import numpy as np
     from backbones import ResNet101
-    sys.path.append(
-        '/ssd1/tangshiyu/PaddleSeg/contrib/DomainAdaptation/models/deeplabv2.py'
-    )
+    import reprod_log
+    
+    paddle.set_printoptions(precision=10)
+
     model = DeepLabV2(
         num_classes=19,
         backbone=ResNet101(num_classes=19),
-        pretrained='torch_transfer_gta5source.pdparams')
-    N, C, H, W = 1, 3, 100, 100
-    x = paddle.ones((N, C, H, W))
-    # paddle.save(model.state_dict(), "init_model.pdparams")
-    # model.load_dict(paddle.load())
-    out = model(x)
-    res = 0
-    for item in out:
-        res += item.sum()
-    res = out[0].sum() + out[1].sum()
-    res.backward()
-    print(out[0].sum())  #
-    print(out[1].sum())  #
+        pretrained='/ssd2/tangshiyu/Code/PaddleSeg/contrib/DomainAdaptation/models/torch_transfer_trained.pdparams')
+    model.eval()
+
+    src_data, src_label = paddle.to_tensor(np.load('/ssd2/tangshiyu/Code/fake_data_src.npy')), np.load('/ssd2/tangshiyu/Code/fake_label_src.npy')
+    tgt_data, tgt_label = paddle.to_tensor(np.load('/ssd2/tangshiyu/Code/fake_data_tgt.npy')), np.load('/ssd2/tangshiyu/Code/fake_label_tgt.npy')
+    
+    out = model(src_data)
+    res_src = out[0].mean()+out[1].mean()
+    out = model(tgt_data)
+    res_tgt = out[0].mean()+out[1].mean()
+
+    reprod_logger = reprod_log.ReprodLogger()
+    reprod_logger.add("res_src", res_src.cpu().detach().numpy())
+    reprod_logger.add("res_tgt", res_tgt.cpu().detach().numpy())
+    reprod_logger.save("/ssd2/tangshiyu/Code/pixmatch/models/forward_paddle.npy")
+
+    # res.backward()
+    # print(out[0].mean())  # [-616.42187500]
+    # print(out[1].mean())  # [4520.48437500]

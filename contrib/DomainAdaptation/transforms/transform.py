@@ -43,7 +43,6 @@ class Compose_DA:
             raise TypeError('The transforms must be a list!')
         self.transforms = transforms
         self.to_rgb = to_rgb
-        print('init compose DA')
 
     def __call__(self, im, label=None):
         """
@@ -62,7 +61,8 @@ class Compose_DA:
             raise ValueError('Can\'t read The image file {}!'.format(im))
         if self.to_rgb:
             im = cv2.cvtColor(im, cv2.COLOR_BGR2RGB)
-
+        logger.add()
+        
         for op in self.transforms:
             outputs = op(im, label)
             im = outputs[0]

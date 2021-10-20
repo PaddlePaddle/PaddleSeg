@@ -37,22 +37,22 @@ class Bottleneck(nn.Layer):
         self.padding = dilation
         self.stride = stride
         self.downsample = downsample
-        self.weight_attr = paddle.ParamAttr(
-            initializer=paddle.nn.initializer.Constant(value=1))
-        self.bias_attr = paddle.ParamAttr(
-            initializer=paddle.nn.initializer.Constant(value=0))
-        self.weight_attr_conv = paddle.ParamAttr(
-            initializer=paddle.nn.initializer.Normal(std=0.01))
+        # self.weight_attr = paddle.ParamAttr(
+        #     initializer=paddle.nn.initializer.Constant(value=1))
+        # self.bias_attr = paddle.ParamAttr(
+        #     initializer=paddle.nn.initializer.Constant(value=0))
+        # self.weight_attr_conv = paddle.ParamAttr(
+        #     initializer=paddle.nn.initializer.Normal(std=0.01))
 
         self.conv1 = nn.Conv2D(
             inplanes,
             planes,
             kernel_size=1,
             stride=stride,
-            bias_attr=False,
-            weight_attr=self.weight_attr_conv)
-        self.bn1 = nn.BatchNorm2D(
-            planes, bias_attr=self.bias_attr, weight_attr=self.weight_attr)
+            bias_attr=False)
+            # weight_attr=self.weight_attr_conv)
+        self.bn1 = nn.BatchNorm2D(planes)
+            # planes, bias_attr=self.bias_attr, weight_attr=self.weight_attr)
 
         self.conv2 = nn.Conv2D(
             planes,
@@ -61,19 +61,19 @@ class Bottleneck(nn.Layer):
             stride=1,
             padding=self.padding,
             bias_attr=False,
-            dilation=dilation,
-            weight_attr=self.weight_attr_conv)
-        self.bn2 = nn.BatchNorm2D(
-            planes, bias_attr=self.bias_attr, weight_attr=self.weight_attr)
+            # weight_attr=self.weight_attr_conv,
+            dilation=dilation)
+        self.bn2 = nn.BatchNorm2D(planes)
+            # planes, bias_attr=self.bias_attr, weight_attr=self.weight_attr)
 
         self.conv3 = nn.Conv2D(
             planes,
             planes * 4,
-            kernel_size=1,
             bias_attr=False,
-            weight_attr=self.weight_attr_conv)
-        self.bn3 = nn.BatchNorm2D(
-            planes * 4, bias_attr=self.bias_attr, weight_attr=self.weight_attr)
+            # weight_attr=self.weight_attr_conv, 
+            kernel_size=1)
+        self.bn3 = nn.BatchNorm2D(planes * 4)
+            # bias_attr=self.bias_attr, weight_attr=self.weight_attr)
 
         self.relu = nn.ReLU()
 
@@ -105,12 +105,12 @@ class Classifier_Module(nn.Layer):
         super(Classifier_Module, self).__init__()
         self.conv2d_list = nn.LayerList()
         for dilation, padding in zip(dilation_series, padding_series):
-            # weight_attr = paddle.ParamAttr(
-            #     initializer=nn.initializer.Normal(std=0.01), learning_rate=10.0)
-            # bias_attr = paddle.ParamAttr(initializer=nn.initializer.Constant(value=0.0) ,learning_rate=10.0)
             weight_attr = paddle.ParamAttr(
-                initializer=nn.initializer.Normal(std=0.01), learning_rate=1.0)
-            bias_attr = paddle.ParamAttr(initializer=nn.initializer.Constant(value=0.0) ,learning_rate=1.0)
+                initializer=nn.initializer.Normal(std=0.01), learning_rate=10.0)
+            bias_attr = paddle.ParamAttr(initializer=nn.initializer.Constant(value=0.0) ,learning_rate=10.0)
+            # weight_attr = paddle.ParamAttr(
+            #     initializer=nn.initializer.Normal(std=0.01), learning_rate=1.0)
+            # bias_attr = paddle.ParamAttr(initializer=nn.initializer.Constant(value=0.0) ,learning_rate=1.0)
             self.conv2d_list.append(
                 nn.Conv2D(
                     inplanes,
@@ -130,10 +130,10 @@ class Classifier_Module(nn.Layer):
 
 
 class ResNetMulti(nn.Layer):
-    def __init__(self, block, layers, num_classes):
+    def __init__(self, block, num_layers, num_classes):
         super(ResNetMulti, self).__init__()
         self.weight_attr = paddle.ParamAttr(
-            initializer=paddle.nn.initializer.Constant(value=1))
+            initializer=paddle.nn.initializer.Constant(value=1), learning_rate=0.1)
         self.bias_attr = paddle.ParamAttr(
             initializer=paddle.nn.initializer.Constant(value=0))
         self.weight_attr_conv = paddle.ParamAttr(
@@ -154,12 +154,12 @@ class ResNetMulti(nn.Layer):
         self.relu = nn.ReLU()
         self.maxpool = nn.MaxPool2D(
             kernel_size=3, stride=2, padding=1, ceil_mode=True)
-        self.layer1 = self._make_layer(block, 64, layers[0])
-        self.layer2 = self._make_layer(block, 128, layers[1], stride=2)
+        self.layer1 = self._make_layer(block, 64, num_layers[0])
+        self.layer2 = self._make_layer(block, 128, num_layers[1], stride=2)
         self.layer3 = self._make_layer(
-            block, 256, layers[2], stride=1, dilation=2)
+            block, 256, num_layers[2], stride=1, dilation=2)
         self.layer4 = self._make_layer(
-            block, 512, layers[3], stride=1, dilation=4)
+            block, 512, num_layers[3], stride=1, dilation=4)
         self.layer5 = self._make_pred_layer(Classifier_Module, 1024,
                                             [6, 12, 18, 24], [6, 12, 18, 24],
                                             num_classes)
@@ -170,9 +170,6 @@ class ResNetMulti(nn.Layer):
         # for channels of four returned stages
         num_filters = [64, 128, 256, 512]
         self.feat_channels = [c * 4 for c in num_filters]
-
-        # New! Rotation prediction head
-        # self.rotation_prediction_head = nn.Identity()
 
     def _make_layer(self, block, planes, blocks, stride=1, dilation=1):
         downsample = None
@@ -189,8 +186,8 @@ class ResNetMulti(nn.Layer):
                     planes * block.expansion,
                     bias_attr=self.bias_attr,
                     weight_attr=self.weight_attr))
-        layers = []
-        layers.append(
+        nnlayers = nn.LayerList()
+        nnlayers.append(
             block(
                 self.inplanes,
                 planes,
@@ -198,10 +195,11 @@ class ResNetMulti(nn.Layer):
                 dilation=dilation,
                 downsample=downsample))
         self.inplanes = planes * block.expansion
+        
         for i in range(1, blocks):
-            layers.append(block(self.inplanes, planes, dilation=dilation))
+            nnlayers.append(block(self.inplanes, planes, dilation=dilation))
 
-        return nn.Sequential(*layers)
+        return nn.Sequential(*nnlayers)
 
     def _make_pred_layer(self, block, inplanes, dilation_series, padding_series,
                          num_classes):
@@ -210,13 +208,20 @@ class ResNetMulti(nn.Layer):
     def forward(self, x):
         input_size = x.shape[2:]
         x = self.conv1(x)
+        # x.register_hook(lambda grad: print('conv grad', grad.abs().sum()))
         x = self.bn1(x)
+        # x.register_hook(lambda grad: print('bn grad', grad.abs().sum()))
         x = self.relu(x)
-        self.conv1_logit = x.clone()
+        # x.register_hook(lambda grad: print('relu grad', grad.abs().sum()))
+        # self.conv1_logit = x.clone()
         x = self.maxpool(x)
+        # x.register_hook(lambda grad: print('x grad', grad.abs().sum()))
         x1 = self.layer1(x)
+        # x1.register_hook(lambda grad: print('x1 grad', grad.abs().sum()))
         x2 = self.layer2(x1)
+        # x2.register_hook(lambda grad: print('x2 grad', grad.abs().sum()))
         x3 = self.layer3(x2)
+        # x3.register_hook(lambda grad: print('x3 grad', grad.abs().sum()))
 
         # Resolution 1
         x_aug = self.layer5(x3)
@@ -225,15 +230,58 @@ class ResNetMulti(nn.Layer):
 
         # Resolution 2
         x4 = self.layer4(x3)
+        # x4.register_hook(lambda grad: print('x4 grad', grad.abs().sum()))
         x6 = self.layer6(x4)
         x6 = F.interpolate(
             x6, size=input_size, mode='bilinear', align_corners=True)
 
-        return  x1, x2, x3, x4, x6, x_aug  # changed! resolution 2 first
+        return x6, x_aug  #  resolution 2 first  x1, x2, x3, x4, 
+
+
+    def get_1x_lr_params_NOscale(self):
+        """
+        This generator returns all the parameters of the net except for
+        the last classification layer. Note that for each batchnorm layer,
+        requires_grad is set to False in deeplab_resnet.py, therefore this function does not return
+        any batchnorm parameter
+        """
+        b = []
+
+        b.append(self.conv1)
+        b.append(self.bn1)
+        b.append(self.layer1)
+        b.append(self.layer2)
+        b.append(self.layer3)
+        b.append(self.layer4)
+
+        for i in range(len(b)):
+            for j in b[i].modules():
+                jj = 0
+                for k in j.parameters():
+                    jj += 1
+                    if not k.stop_gradient:
+                        yield k
+
+    def get_10x_lr_params(self):
+        """
+        This generator returns all the parameters for the last layer of the net,
+        which does the classification of pixel into classes
+        """
+        b = []
+        b.append(self.layer5.parameters())
+        b.append(self.layer6.parameters())
+
+        for j in range(len(b)):
+            for i in b[j]:
+                yield i
+
+    def optim_parameters(self, lr):  
+        return [{'params': self.get_1x_lr_params_NOscale(), 'lr': lr},
+                {'params': self.get_10x_lr_params(), 'lr': 10 * lr}]
 
 
 @manager.BACKBONES.add_component
 def ResNet101(**args):
     model = ResNetMulti(
-        Bottleneck, layers=[3, 4, 23, 3], **args)  # add pretrain
+        Bottleneck, num_layers=[3, 4, 23, 3], **args)  # add pretrain
     return model

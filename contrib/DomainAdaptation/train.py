@@ -21,7 +21,7 @@ from cvlibs import Config
 from script.train import Trainer
 from paddleseg.utils import logger, get_sys_env
 
-import datasets
+from datasets import City_Dataset, GTA5_Dataset, SYNTHIA_Dataset
 import utils
 
 
@@ -98,7 +98,7 @@ def parse_args():
         '--seed',
         dest='seed',
         help='Set the random seed during training.',
-        default=42,
+        default=0,
         type=int)
     parser.add_argument(
         '--fp16', dest='fp16', help='Whther to use amp', action='store_true')
@@ -135,15 +135,33 @@ def main(args):
 
     if not args.cfg:
         raise RuntimeError('No configuration file specified.')
-
+ 
+    import reprod_log
+    reprod_logger = reprod_log.ReprodLogger()
+  
     cfg = Config(
         args.cfg,
         learning_rate=args.learning_rate,
         iters=args.iters,
         batch_size=args.batch_size)
+    
+    if cfg.dic["data"]["source"]["dataset"] == 'synthia':
+        train_dataset_src = SYNTHIA_Dataset(split='train', **cfg.dic["data"]["source"]["kwargs"])
+        val_dataset_src = SYNTHIA_Dataset(split='val', **cfg.dic["data"]["source"]["kwargs"])
+    elif cfg.dic["data"]["source"]["dataset"] == 'gta5':
+        train_dataset_src = GTA5_Dataset(split='train', **cfg.dic["data"]["source"]["kwargs"])
+        val_dataset_src = GTA5_Dataset(split='val', **cfg.dic["data"]["source"]["kwargs"])
+    else:
+        raise NotImplementedError()
+    if cfg.dic["data"]["target"]["dataset"] == 'cityscapes':
+        train_dataset_tgt = City_Dataset(split='train', **cfg.dic["data"]["target"]["kwargs"])
+        val_dataset_tgt = City_Dataset(split='val', **cfg.dic["data"]["target"]["kwargs"])
+    else:
+        raise NotImplementedError()
+    
+    val_dataset_tgt = val_dataset_tgt if args.do_eval else None
+    val_dataset_src = val_dataset_src if args.do_eval else None
 
-    train_dataset_src = cfg.train_dataset_src
-    train_dataset_tgt = cfg.train_dataset_tgt
     if train_dataset_src is None:
         raise RuntimeError(
             'The training dataset is not specified in the configuration file.')
@@ -151,15 +169,11 @@ def main(args):
         raise ValueError(
             'The length of train_dataset is 0. Please check if your dataset is valid'
         )
-    val_dataset_tgt = cfg.val_dataset_tgt if args.do_eval else None
 
     msg = '\n---------------Config Information---------------\n'
     msg += str(cfg)
     msg += '------------------------------------------------'
     logger.info(msg)
-
-    utils.config_check(
-        cfg, train_dataset=train_dataset_src, val_dataset=val_dataset_tgt)
 
     trainer = Trainer(cfg.model, ema_decay=cfg.dic['ema_decay'])
     trainer.train(
@@ -176,7 +190,8 @@ def main(args):
         num_workers=args.num_workers,
         use_vdl=args.use_vdl,
         keep_checkpoint_max=args.keep_checkpoint_max,
-        test_config=cfg.test_config)
+        test_config=cfg.test_config,
+        reprod_logger=reprod_logger)
 
 
 if __name__ == '__main__':

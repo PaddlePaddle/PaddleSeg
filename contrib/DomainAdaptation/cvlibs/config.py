@@ -79,6 +79,7 @@ class Config(object):
 
         self._model = None
         self._losses = None
+        self.logger = logger
         if path.endswith('yml') or path.endswith('yaml'):
             self.dic = self._parse_from_yaml(path)
         else:
@@ -157,6 +158,7 @@ class Config(object):
         lr_type = params.pop('type')
         if lr_type == 'PolynomialDecay':
             params.setdefault('decay_steps', self.iters)
+            # params.setdefault('decay_steps', 400000)
             params.setdefault('end_lr', 0)
             params.setdefault('power', 0.9)
 
@@ -201,6 +203,7 @@ class Config(object):
         if optimizer_type == 'sgd':
             return paddle.optimizer.Momentum(
                 lr, parameters=self.model.parameters(), **args)
+                # lr, parameters=self.model.backbone.optim_parameters(lr=lr.base_lr), **args)
         elif optimizer_type == 'adam':
             return paddle.optimizer.Adam(
                 lr, parameters=self.model.parameters(), **args)
@@ -294,25 +297,6 @@ class Config(object):
         model_cfg = self.dic.get('model').copy()
         if not model_cfg:
             raise RuntimeError('No model specified in the configuration file.')
-        if not 'num_classes' in model_cfg:
-            num_classes = None
-            if self.train_dataset_config:
-                if hasattr(self.train_dataset_class, 'NUM_CLASSES'):
-                    num_classes = self.train_dataset_class.NUM_CLASSES
-                elif hasattr(self.train_dataset, 'num_classes'):
-                    num_classes = self.train_dataset.num_classes
-            elif self.val_dataset_config:
-                if hasattr(self.val_dataset_class, 'NUM_CLASSES'):
-                    num_classes = self.val_dataset_class.NUM_CLASSES
-                elif hasattr(self.val_dataset, 'num_classes'):
-                    num_classes = self.val_dataset.num_classes
-
-            if not num_classes:
-                raise ValueError(
-                    '`num_classes` is not found. Please set it in model, train_dataset or val_dataset'
-                )
-
-            model_cfg['num_classes'] = num_classes
 
         if not self._model:
             self._model = self._load_object(model_cfg)
@@ -322,48 +306,48 @@ class Config(object):
     # def ema_model(self) -> paddle.nn.Layer:
     #     return EMA(self._model, self.dic['ema_decay'])
 
-    @property
-    def train_dataset_src_config(self) -> Dict:
-        return self.dic.get('train_dataset_src', {}).copy()
+    # @property
+    # def train_dataset_src_config(self) -> Dict:
+    #     return self.dic.get('train_dataset_src', {}).copy()
 
-    @property
-    def train_dataset_tgt_config(self) -> Dict:
-        return self.dic.get('train_dataset_tgt', {}).copy()
+    # @property
+    # def train_dataset_tgt_config(self) -> Dict:
+    #     return self.dic.get('train_dataset_tgt', {}).copy()
 
-    @property
-    def val_dataset_tgt_config(self) -> Dict:
-        return self.dic.get('val_dataset_tgt', {}).copy()
+    # @property
+    # def val_dataset_tgt_config(self) -> Dict:
+    #     return self.dic.get('val_dataset_tgt', {}).copy()
 
-    @property
-    def train_dataset_class(self) -> Generic:
-        dataset_type = self.train_dataset_src_config['type']
-        return self._load_component(dataset_type)
+    # @property
+    # def train_dataset_class(self) -> Generic:
+    #     dataset_type = self.train_dataset_src_config['type']
+    #     return self._load_component(dataset_type)
 
-    @property
-    def val_dataset_class(self) -> Generic:
-        dataset_type = self.val_dataset_src_config['type']
-        return self._load_component(dataset_type)
+    # @property
+    # def val_dataset_class(self) -> Generic:
+    #     dataset_type = self.val_dataset_src_config['type']
+    #     return self._load_component(dataset_type)
 
-    @property
-    def train_dataset_src(self) -> paddle.io.Dataset:
-        _train_dataset_src = self.train_dataset_src_config
-        if not _train_dataset_src:
-            return None
-        return self._load_object(_train_dataset_src)
+    # @property
+    # def train_dataset_src(self) -> paddle.io.Dataset:
+    #     _train_dataset_src = self.train_dataset_src_config
+    #     if not _train_dataset_src:
+    #         return None
+    #     return self._load_object(_train_dataset_src)
 
-    @property
-    def train_dataset_tgt(self) -> paddle.io.Dataset:
-        _train_dataset_tgt = self.train_dataset_tgt_config
-        if not _train_dataset_tgt:
-            return None
-        return self._load_object(_train_dataset_tgt)
+    # @property
+    # def train_dataset_tgt(self) -> paddle.io.Dataset:
+    #     _train_dataset_tgt = self.train_dataset_tgt_config
+    #     if not _train_dataset_tgt:
+    #         return None
+    #     return self._load_object(_train_dataset_tgt)
 
-    @property
-    def val_dataset_tgt(self) -> paddle.io.Dataset:
-        _val_dataset = self.val_dataset_tgt_config
-        if not _val_dataset:
-            return None
-        return self._load_object(_val_dataset)
+    # @property
+    # def val_dataset_tgt(self) -> paddle.io.Dataset:
+    #     _val_dataset = self.val_dataset_tgt_config
+    #     if not _val_dataset:
+    #         return None
+    #     return self._load_object(_val_dataset)
 
     def _load_component(self, com_name: str) -> Any:
         com_list = [
