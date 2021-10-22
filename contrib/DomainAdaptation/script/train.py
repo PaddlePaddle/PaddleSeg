@@ -420,10 +420,10 @@ class Trainer():
                         paddle.save(
                             self.model.state_dict(),
                             os.path.join(current_save_dir, 'model.pdparams'))
-                        paddle.save(
-                            # self.ema.model.state_dict(),
-                            os.path.join(current_save_dir,
-                                         'model_ema.pdparams'))
+                        # paddle.save(
+                        #     self.ema.model.state_dict(),
+                        #     os.path.join(current_save_dir,
+                        #                  'model_ema.pdparams'))
                         paddle.save(
                             optimizer.state_dict(),
                             os.path.join(current_save_dir, 'model.pdopt'))
