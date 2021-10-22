@@ -23,6 +23,7 @@ from paddleseg.utils import utils
 from paddleseg.models.backbones.vision_transformer import Block
 from paddleseg.models.backbones.transformer_utils import *
 
+__all__ = ['Segmenter', 'SegmenterLinearDecoder', 'SegmenterMaskTransformerDecoder']
 
 @manager.MODELS.add_component
 class Segmenter(nn.Layer):
@@ -76,7 +77,7 @@ class SegmenterLinearDecoder(nn.Layer):
         self.head = nn.Linear(in_dim, num_classes)
         self.apply(init_weights)
 
-    def forward(x, patch_embed_size):
+    def forward(self, x, patch_embed_size):
         """ Forward function.
         Args:
             x (Tensor): Input tensor of decoder.
@@ -96,7 +97,7 @@ class SegmenterLinearDecoder(nn.Layer):
 
 @manager.MODELS.add_component
 class SegmenterMaskTransformerDecoder(nn.Layer):
-    """ Segmenter Mask Transformer Decoder.
+    """ The Mask Transformer Decoder of Segmenter.
     Args:
         num_classes (int): The unique number of target classes.
         in_dim (int): The embed dim of input.

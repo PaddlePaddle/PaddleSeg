@@ -19,7 +19,7 @@ model:
     final_norm: True
     pretrained: https://bj.bcebos.com/paddleseg/dygraph/pretrained_models/vit_base_patch16_384_v1.tar.gz
   head:
-    type: SegmenterMaskTransformerDecoder
+    type: SegmenterLinearDecoder
     num_classes: 150
     in_dim: 768
 
