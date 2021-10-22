@@ -66,11 +66,11 @@ def evaluate(model,
         if not paddle.distributed.parallel.parallel_helper._is_parallel_ctx_initialized(
         ):
             paddle.distributed.init_parallel_env()
-    batch_sampler = paddle.io.DistributedBatchSampler(
-        eval_dataset, batch_size=1, shuffle=False, drop_last=False)
+
     loader = paddle.io.DataLoader(
         eval_dataset,
-        batch_sampler=batch_sampler,
+        batch_size=1,
+        drop_last=False,
         num_workers=num_workers,
         return_list=True,
     )
