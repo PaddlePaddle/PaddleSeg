@@ -57,7 +57,7 @@ Welcome to PaddleSeg! PaddleSeg is an end-to-end image segmentation development 
 [Model Zoo](./configs/)
 
 <div align="center">
-<img src="./docs/images/xingnengtu.png"    width = "700"/>  
+<img src="./docs/images/model_perference.png"    width = "700"/>  
 </div>
 
 
