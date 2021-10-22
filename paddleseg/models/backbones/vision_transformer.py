@@ -167,6 +167,7 @@ class VisionTransformer(nn.Layer):
                  drop_path_rate=0.,
                  norm_layer='nn.LayerNorm',
                  epsilon=1e-5,
+                 final_norm=False,
                  pretrained=None,
                  **args):
         super().__init__()
@@ -205,7 +206,9 @@ class VisionTransformer(nn.Layer):
                 epsilon=epsilon) for i in range(depth)
         ])
 
-        self.norm = eval(norm_layer)(embed_dim, epsilon=epsilon)
+        self.final_norm = final_norm
+        if self.final_norm:
+            self.norm = eval(norm_layer)(embed_dim, epsilon=epsilon)
         self.pretrained = pretrained
         self.init_weight()
 
@@ -213,21 +216,22 @@ class VisionTransformer(nn.Layer):
         utils.load_pretrained_model(self, self.pretrained)
 
         # load and resize pos_embed
-        pretrained_model_path = utils.download_pretrained_model(self.pretrained)
+        model_path = self.pretrained
+        if not os.path.exists(model_path):
+            model_path = utils.download_pretrained_model(model_path)
 
-        if os.path.exists(pretrained_model_path):
-            load_state_dict = paddle.load(pretrained_model_path)
-            model_state_dict = self.state_dict()
-            pos_embed_name = "pos_embed"
-            if pos_embed_name in load_state_dict.keys():
-                load_pos_embed = paddle.to_tensor(load_state_dict[pos_embed_name], dtype="float32")
-                if self.pos_embed.shape != load_pos_embed.shape:
-                    pos_size = int(math.sqrt(load_pos_embed.shape[1] - 1))
-                    model_state_dict[pos_embed_name] = self.resize_pos_embed(
-                        load_pos_embed, (pos_size, pos_size), (self.pos_h, self.pos_w))
-                    self.set_dict(model_state_dict)
-                    logger.info("Load pos_embed and resize it from {} to {} .".format(
-                        load_pos_embed.shape, self.pos_embed.shape))
+        load_state_dict = paddle.load(model_path)
+        model_state_dict = self.state_dict()
+        pos_embed_name = "pos_embed"
+        if pos_embed_name in load_state_dict.keys():
+            load_pos_embed = paddle.to_tensor(load_state_dict[pos_embed_name], dtype="float32")
+            if self.pos_embed.shape != load_pos_embed.shape:
+                pos_size = int(math.sqrt(load_pos_embed.shape[1] - 1))
+                model_state_dict[pos_embed_name] = self.resize_pos_embed(
+                    load_pos_embed, (pos_size, pos_size), (self.pos_h, self.pos_w))
+                self.set_dict(model_state_dict)
+                logger.info("Load pos_embed and resize it from {} to {} .".format(
+                    load_pos_embed.shape, self.pos_embed.shape))
 
     def resize_pos_embed(self, pos_embed, old_hw, new_hw):
         """
@@ -267,8 +271,10 @@ class VisionTransformer(nn.Layer):
         x = self.pos_drop(x)
 
         res = []
-        for _, blk in enumerate(self.blocks):
+        for idx, blk in enumerate(self.blocks):
             x = blk(x)
+            if self.final_norm and idx == len(self.blocks) - 1:
+                x = self.norm(x)
             res.append(x[:, 1:, :])
 
         return res, x_shape

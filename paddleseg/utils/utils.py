@@ -49,6 +49,8 @@ def download_pretrained_model(pretrained_model):
     Returns:
         str: the path of pretrained weight
     """
+    assert urlparse(pretrained_model).netloc, "The url is not valid."
+
     pretrained_model = unquote(pretrained_model)
     savename = pretrained_model.split('/')[-1]
     if not savename.endswith(('tgz', 'tar.gz', 'tar', 'zip')):

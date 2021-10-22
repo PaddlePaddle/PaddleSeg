@@ -21,6 +21,7 @@ import paddle.nn.functional as F
 from paddleseg.cvlibs import manager, param_init
 from paddleseg.utils import utils
 from paddleseg.models.backbones.vision_transformer import Block
+from paddleseg.models.backbones.transformer_utils import *
 
 
 @manager.MODELS.add_component
@@ -63,9 +64,38 @@ class Segmenter(nn.Layer):
             for _logit in logits
         ]
 
+@manager.MODELS.add_component
+class SegmenterLinearDecoder(nn.Layer):
+    """ The linear decoder of Segmenter.
+    Args:
+        in_dim (int): The embed dim of input.
+        num_classes (int): The unique number of target classes.
+    """
+    def __init__(self, in_dim, num_classes):
+        super().__init__()
+        self.head = nn.Linear(in_dim, num_classes)
+        self.apply(init_weights)
+
+    def forward(x, patch_embed_size):
+        """ Forward function.
+        Args:
+            x (Tensor): Input tensor of decoder.
+            patch_embed_size (list): The size of patch embed tensor, such as (n, h, w, c).
+        Returns:
+            list[Tensor]: Segmentation results.
+        """
+        masks = self.head(x)
+        
+        #[b, (h w), c] -> [b, c, h, w]
+        h, w = patch_embed_size
+        masks = masks.reshape((0, h, w, paddle.shape(masks)[-1]))
+        masks = masks.transpose((0, 3, 1, 2))
+
+        return [masks]
+
 
 @manager.MODELS.add_component
-class SegmenterMTD(nn.Layer):
+class SegmenterMaskTransformerDecoder(nn.Layer):
     """ Segmenter Mask Transformer Decoder.
     Args:
         num_classes (int): The unique number of target classes.
@@ -76,10 +106,21 @@ class SegmenterMTD(nn.Layer):
         mlp_ratio (int): Ratio of MLP dim.
         drop_rate (float): Drop rate of MLP in MSA.
         drop_path_rate (float): Drop path rate in MSA.
+        attn_drop_rate (float): Attenation drop rate in MSA.
+        qkv_bias (bool): Whether add bias in qkv linear.
     """
 
-    def __init__(self, num_classes, in_dim, embed_dim, depth, num_heads,
-                 mlp_ratio, drop_rate, drop_path_rate):
+    def __init__(self,
+                 num_classes,
+                 in_dim,
+                 embed_dim,
+                 depth,
+                 num_heads,
+                 mlp_ratio=4,
+                 drop_rate=0.0,
+                 drop_path_rate=0.0,
+                 attn_drop_rate=0.0,
+                 qkv_bias=False):
         super().__init__()
         self.num_classes = num_classes
 
@@ -87,7 +128,7 @@ class SegmenterMTD(nn.Layer):
 
         self.cls_token = self.create_parameter(
             shape=(1, num_classes, embed_dim),
-            default_initializer=paddle.nn.initializer.Normal())
+            default_initializer=paddle.nn.initializer.TruncatedNormal(std=0.02))
 
         dpr = [x for x in np.linspace(0, drop_path_rate, depth)]
         self.blocks = nn.LayerList([
@@ -96,10 +137,12 @@ class SegmenterMTD(nn.Layer):
                 num_heads=num_heads,
                 mlp_ratio=mlp_ratio,
                 drop=drop_rate,
-                drop_path=dpr[i]) for i in range(depth)
+                drop_path=dpr[i],
+                attn_drop=attn_drop_rate,
+                qkv_bias=qkv_bias) for i in range(depth)
         ])
 
-        initializer = nn.initializer.Normal(std=embed_dim**-0.5)
+        initializer = paddle.nn.initializer.TruncatedNormal(std=0.02)
         self.proj_patch = nn.Linear(
             embed_dim,
             embed_dim,
@@ -113,6 +156,8 @@ class SegmenterMTD(nn.Layer):
 
         self.decoder_norm = nn.LayerNorm(embed_dim)
         self.mask_norm = nn.LayerNorm(num_classes)
+
+        self.apply(init_weights)
 
     def forward(self, x, patch_embed_size):
         """ Forward function.
@@ -142,7 +187,8 @@ class SegmenterMTD(nn.Layer):
 
         #[b, (h w), c] -> [b, c, h, w]
         h, w = patch_embed_size
-        masks = masks.reshape((masks.shape[0], h, w, masks.shape[-1]))
+        masks = masks.reshape((0, h, w, paddle.shape(masks)[-1]))
         masks = masks.transpose((0, 3, 1, 2))
 
         return [masks]
+
