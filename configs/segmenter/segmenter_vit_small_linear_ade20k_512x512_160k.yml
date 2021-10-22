@@ -9,25 +9,19 @@ model:
     type: VisionTransformer
     img_size: 512
     patch_size: 16
-    embed_dim: 768
+    embed_dim: 384
     depth: 12
-    num_heads: 12
+    num_heads: 6
     mlp_ratio: 4
     qkv_bias: True
     drop_rate: 0.0
     drop_path_rate: 0.1
     final_norm: True
-    pretrained: https://bj.bcebos.com/paddleseg/dygraph/pretrained_models/vit_base_patch16_384_augreg.tar.gz
+    pretrained: https://bj.bcebos.com/paddleseg/dygraph/pretrained_models/vit_small_patch16_384_augreg.tar.gz
   head:
-    type: SegmenterMaskTransformerDecoder
+    type: SegmenterLinearDecoder
     num_classes: 150
-    in_dim: 768
-    embed_dim: 768
-    depth: 2
-    num_heads: 12
-    mlp_ratio: 4
-    drop_rate: 0.1
-    drop_path_rate: 0.0
+    in_dim: 384
 
 val_dataset:
   transforms:
