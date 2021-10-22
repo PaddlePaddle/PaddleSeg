@@ -4,15 +4,29 @@ import paddle
 import albumentations as al
 import paddleseg.transforms as trans
 
+# def get_augmentation():
+#     return al.Compose([
+#         # al.RandomResizedCrop(512, 512, scale=(0.2, 1.)),
+#         # al.Compose([
+#         #     al.RandomBrightnessContrast(p=1),
+#         #     al.HueSaturationValue(p=1),
+#         # ],
+#         #            p=0.8),
+#         al.ToGray(p=1.0),
+#         al.GaussianBlur(5, p=1.0),
+#     ])
+
 
 def get_augmentation():
     return al.Compose([
         al.RandomResizedCrop(512, 512, scale=(0.2, 1.)),
-        al.Compose([
-            al.RandomBrightnessContrast(p=1),
-            al.HueSaturationValue(p=1),
-        ],
-                   p=0.8),
+        al.Compose(
+            [
+                # NOTE: RandomBrightnessContrast replaces ColorJitter
+                al.RandomBrightnessContrast(p=1),
+                al.HueSaturationValue(p=1),
+            ],
+            p=0.8),
         al.ToGray(p=0.2),
         al.GaussianBlur(5, p=0.5),
     ])
@@ -37,14 +51,14 @@ def get_augmentation():
 #                          )
 
 
-def augment(images, labels, aug, logger):
+def augment(images, labels, aug, logger, iters):
     """Augments both image and label. Assumes input is a tensor with
        a batch dimension and values normalized to N(0,1)."""
     IMG_MEAN = np.array((104.00698793, 116.66876762, 122.67891434),
                         dtype=np.float32)
     # Transform label shape: B, C, W, H ==> B, W, H, C
     labels_are_3d = (len(labels.shape) == 4)
-    # logger.add("olabel", labels.cpu().detach().numpy())
+    # # logger.add("olabel", labels.cpu().detach().numpy())
     if labels_are_3d:
         labels = labels.permute(0, 2, 3, 1)
 
@@ -59,14 +73,14 @@ def augment(images, labels, aug, logger):
                 np.uint8)  # todo: check shape cmp with pixmatch
         label = label.numpy()  # convert to np
         label = label.astype('int64')
-        # logger.add("uimage", image)
-        # logger.add("ulabel", label)
+        # logger.add("uimage_{}".format(iters), image)
+        # # logger.add("ulabel", label)
 
         # Step 2: Perform transformations on numpy images
         data = aug(image=image, mask=label)
         image, label = data['image'], data['mask']
-        # logger.add("augimage", image)
-        # logger.add("auglabel", label)
+        # logger.add("augimage_{}".format(iters), image)
+        # # logger.add("auglabel", label)
 
         # Step 3: Convert back to PyTorch tensors
         image = paddle.to_tensor((cv2.cvtColor(
@@ -76,8 +90,8 @@ def augment(images, labels, aug, logger):
         label = paddle.to_tensor(label)
         if not labels_are_3d:
             label = label.astype('int64')
-        # logger.add("tensorimage", image.cpu().detach().numpy())
-        # logger.add("tensorlabel", label.cpu().detach().numpy())
+        # logger.add("tensorimage_{}".format(iters), image.cpu().detach().numpy())
+        # # logger.add("tensorlabel", label.cpu().detach().numpy())
 
         # Add to list
         aug_images.append(image)
@@ -85,9 +99,11 @@ def augment(images, labels, aug, logger):
 
     # Stack
     images = paddle.stack(aug_images, axis=0)
+    # logger.add("stack image_{}".format(iters), image.cpu().detach().numpy())
     labels = paddle.stack(aug_labels, axis=0)
 
     # Transform label shape back: B, W, H, C ==> B, C, W, H
     if labels_are_3d:
         labels = labels.permute(0, 3, 1, 2)
+
     return images, labels

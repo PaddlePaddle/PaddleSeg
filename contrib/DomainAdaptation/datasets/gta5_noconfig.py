@@ -8,21 +8,19 @@ ImageFile.LOAD_TRUNCATED_IMAGES = True
 
 
 class GTA5_Dataset(City_Dataset):
-    def __init__(
-        self,
-        root='./datasets/GTA5',
-        list_path='./datasets/GTA5/list',
-        split='train',
-        base_size=769,
-        crop_size=769,
-        training=True,
-        random_mirror=False,
-        random_crop=False,
-        resize=False,
-        gaussian_blur=False,
-        class_16=False,
-        edge=True
-    ):
+    def __init__(self,
+                 root='./datasets/GTA5',
+                 list_path='./datasets/GTA5/list',
+                 split='train',
+                 base_size=769,
+                 crop_size=769,
+                 training=True,
+                 random_mirror=False,
+                 random_crop=False,
+                 resize=False,
+                 gaussian_blur=False,
+                 class_16=False,
+                 edge=True):
 
         # Args
         self.data_path = root
@@ -33,7 +31,10 @@ class GTA5_Dataset(City_Dataset):
         self.training = training
         self.class_16 = False
         self.class_13 = False
+        self.NUM_CLASSES = 19
+        self.ignore_label = 255
         self.edge = edge
+
         assert class_16 == False
 
         # Augmentation
@@ -53,8 +54,25 @@ class GTA5_Dataset(City_Dataset):
 
         # Label map
         self.id_to_trainid = {
-            7: 0, 8: 1, 11: 2, 12: 3, 13: 4, 17: 5, 19: 6, 20: 7, 21: 8,
-            22: 9, 23: 10, 24: 11, 25: 12, 26: 13, 27: 14, 28: 15, 31: 16, 32: 17, 33: 18
+            7: 0,
+            8: 1,
+            11: 2,
+            12: 3,
+            13: 4,
+            17: 5,
+            19: 6,
+            20: 7,
+            21: 8,
+            22: 9,
+            23: 10,
+            24: 11,
+            25: 12,
+            26: 13,
+            27: 14,
+            28: 15,
+            31: 16,
+            32: 17,
+            33: 18
         }
 
         # Print
@@ -73,10 +91,11 @@ class GTA5_Dataset(City_Dataset):
         gt_image = Image.open(gt_image_path)
 
         # Augmentation
-        if (self.split == "train" or self.split == "trainval" or self.split == "all") and self.training:
-            image, gt_image = self._train_sync_transform(image, gt_image)
+        if (self.split == "train" or self.split == "trainval"
+                or self.split == "all") and self.training:
+            image, gt_image, edge_mask = self._train_sync_transform(
+                image, gt_image)
         else:
-            image, gt_image = self._val_sync_transform(image, gt_image)
-        return image, gt_image, item
-
-
+            image, gt_image, edge_mask = self._val_sync_transform(
+                image, gt_image)
+        return image, gt_image, edge_mask

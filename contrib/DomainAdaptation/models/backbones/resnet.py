@@ -45,14 +45,10 @@ class Bottleneck(nn.Layer):
         #     initializer=paddle.nn.initializer.Normal(std=0.01))
 
         self.conv1 = nn.Conv2D(
-            inplanes,
-            planes,
-            kernel_size=1,
-            stride=stride,
-            bias_attr=False)
-            # weight_attr=self.weight_attr_conv)
+            inplanes, planes, kernel_size=1, stride=stride, bias_attr=False)
+        # weight_attr=self.weight_attr_conv)
         self.bn1 = nn.BatchNorm2D(planes)
-            # planes, bias_attr=self.bias_attr, weight_attr=self.weight_attr)
+        # planes, bias_attr=self.bias_attr, weight_attr=self.weight_attr)
 
         self.conv2 = nn.Conv2D(
             planes,
@@ -64,16 +60,16 @@ class Bottleneck(nn.Layer):
             # weight_attr=self.weight_attr_conv,
             dilation=dilation)
         self.bn2 = nn.BatchNorm2D(planes)
-            # planes, bias_attr=self.bias_attr, weight_attr=self.weight_attr)
+        # planes, bias_attr=self.bias_attr, weight_attr=self.weight_attr)
 
         self.conv3 = nn.Conv2D(
             planes,
             planes * 4,
             bias_attr=False,
-            # weight_attr=self.weight_attr_conv, 
+            # weight_attr=self.weight_attr_conv,
             kernel_size=1)
         self.bn3 = nn.BatchNorm2D(planes * 4)
-            # bias_attr=self.bias_attr, weight_attr=self.weight_attr)
+        # bias_attr=self.bias_attr, weight_attr=self.weight_attr)
 
         self.relu = nn.ReLU()
 
@@ -107,7 +103,9 @@ class Classifier_Module(nn.Layer):
         for dilation, padding in zip(dilation_series, padding_series):
             weight_attr = paddle.ParamAttr(
                 initializer=nn.initializer.Normal(std=0.01), learning_rate=10.0)
-            bias_attr = paddle.ParamAttr(initializer=nn.initializer.Constant(value=0.0) ,learning_rate=10.0)
+            bias_attr = paddle.ParamAttr(
+                initializer=nn.initializer.Constant(value=0.0),
+                learning_rate=10.0)
             # weight_attr = paddle.ParamAttr(
             #     initializer=nn.initializer.Normal(std=0.01), learning_rate=1.0)
             # bias_attr = paddle.ParamAttr(initializer=nn.initializer.Constant(value=0.0) ,learning_rate=1.0)
@@ -133,7 +131,8 @@ class ResNetMulti(nn.Layer):
     def __init__(self, block, num_layers, num_classes):
         super(ResNetMulti, self).__init__()
         self.weight_attr = paddle.ParamAttr(
-            initializer=paddle.nn.initializer.Constant(value=1), learning_rate=0.1)
+            initializer=paddle.nn.initializer.Constant(value=1),
+            learning_rate=0.1)
         self.bias_attr = paddle.ParamAttr(
             initializer=paddle.nn.initializer.Constant(value=0))
         self.weight_attr_conv = paddle.ParamAttr(
@@ -166,6 +165,9 @@ class ResNetMulti(nn.Layer):
         self.layer6 = self._make_pred_layer(Classifier_Module, 2048,
                                             [6, 12, 18, 24], [6, 12, 18, 24],
                                             num_classes)
+        import numpy as np
+        import reprod_log
+        self.reprod_logger = reprod_log.ReprodLogger()
 
         # for channels of four returned stages
         num_filters = [64, 128, 256, 512]
@@ -195,7 +197,7 @@ class ResNetMulti(nn.Layer):
                 dilation=dilation,
                 downsample=downsample))
         self.inplanes = planes * block.expansion
-        
+
         for i in range(1, blocks):
             nnlayers.append(block(self.inplanes, planes, dilation=dilation))
 
@@ -208,20 +210,29 @@ class ResNetMulti(nn.Layer):
     def forward(self, x):
         input_size = x.shape[2:]
         x = self.conv1(x)
-        # x.register_hook(lambda grad: print('conv grad', grad.abs().sum()))
+        # if not x.stop_gradient:
+        #     x.register_hook(lambda grad: print('conv grad', grad.abs().mean()))
+        # x.register_hook(lambda grad: self.reprod_logger.add('conv grad', grad.cpu().detach().numpy()))
         x = self.bn1(x)
-        # x.register_hook(lambda grad: print('bn grad', grad.abs().sum()))
+        # x.register_hook(lambda grad: print('bn grad', grad.abs().mean()))
+        # # x.register_hook(lambda grad: self.reprod_logger.add('bn grad', grad.cpu().detach().numpy()))
         x = self.relu(x)
-        # x.register_hook(lambda grad: print('relu grad', grad.abs().sum()))
+        # x.register_hook(lambda grad: print('relu grad', grad.abs().mean()))
+        # # x.register_hook(lambda grad: self.reprod_logger.add('relu grad', grad.cpu().detach().numpy()))
         # self.conv1_logit = x.clone()
         x = self.maxpool(x)
-        # x.register_hook(lambda grad: print('x grad', grad.abs().sum()))
+        # x.register_hook(lambda grad: print('x grad', grad.abs().mean()))
+        # # x.register_hook(lambda grad: self.reprod_logger.add('x grad', grad.cpu().detach().numpy()))
         x1 = self.layer1(x)
-        # x1.register_hook(lambda grad: print('x1 grad', grad.abs().sum()))
+        # x1.register_hook(lambda grad: print('x1 grad', grad.abs().mean()))
+        # x1.register_hook(lambda grad: self.reprod_logger.add('x1 grad', grad.cpu().detach().numpy()))
         x2 = self.layer2(x1)
-        # x2.register_hook(lambda grad: print('x2 grad', grad.abs().sum()))
+        # if not x2.stop_gradient:
+        #     x2.register_hook(lambda grad: print('x2 grad', grad.abs().mean()))
+        # x2.register_hook(lambda grad: self.reprod_logger.add('x2 grad', grad.cpu().detach().numpy()))
         x3 = self.layer3(x2)
-        # x3.register_hook(lambda grad: print('x3 grad', grad.abs().sum()))
+        # x3.register_hook(lambda grad: print('x3 grad', grad.abs().mean()))
+        # x3.register_hook(lambda grad: self.reprod_logger.add('x3 grad', grad.cpu().detach().numpy()))
 
         # Resolution 1
         x_aug = self.layer5(x3)
@@ -230,13 +241,14 @@ class ResNetMulti(nn.Layer):
 
         # Resolution 2
         x4 = self.layer4(x3)
-        # x4.register_hook(lambda grad: print('x4 grad', grad.abs().sum()))
+        # x4.register_hook(lambda grad: print('x4 grad', grad.abs().mean()))
+        # x4.register_hook(lambda grad: self.reprod_logger.add('x4 grad', grad.cpu().detach().numpy()))
         x6 = self.layer6(x4)
         x6 = F.interpolate(
             x6, size=input_size, mode='bilinear', align_corners=True)
+        # self.reprod_logger.save('/ssd2/tangshiyu/Code/pixmatch/models/model_bp_paddle.npy')
 
-        return x6, x_aug  #  resolution 2 first  x1, x2, x3, x4, 
-
+        return x6, x_aug  #  resolution 2 first  x1, x2, x3, x4,
 
     def get_1x_lr_params_NOscale(self):
         """
@@ -275,9 +287,14 @@ class ResNetMulti(nn.Layer):
             for i in b[j]:
                 yield i
 
-    def optim_parameters(self, lr):  
-        return [{'params': self.get_1x_lr_params_NOscale(), 'lr': lr},
-                {'params': self.get_10x_lr_params(), 'lr': 10 * lr}]
+    def optim_parameters(self, lr):
+        return [{
+            'params': self.get_1x_lr_params_NOscale(),
+            'lr': lr
+        }, {
+            'params': self.get_10x_lr_params(),
+            'lr': 10 * lr
+        }]
 
 
 @manager.BACKBONES.add_component

@@ -1,7 +1,7 @@
 export CUDA_VISIBLE_DEVICES=2
 
-yml=deeplabv2_resnet101_os8_gta5cityscapes_1280x640_160k_newds_gta5src
-save_dir=saved_model_develop/${yml}_develop_1021_noema_test
+yml=deeplabv2_resnet101_os8_gta5cityscapes_1280x640_160k_newds
+save_dir=saved_model_develop/${yml}_test
 mkdir -p ${save_dir}
 
 python train.py \
