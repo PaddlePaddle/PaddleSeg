@@ -30,7 +30,8 @@
 |[PortraitNet](./portraitnet)|-|-|-|-|
 |[STDC](./stdcseg)|-|-|-|-|
 |[GINet](./ginet)|✔|✔|-|-|
-|[PointRend](./pointrend)|✔|✔|-|
+|[PointRend](./pointrend)|✔|✔|-|-|
+|[SegNet](./segnet)|-|-|-|-|
 
 ### Transformer系列
 * [SETR](./setr)
