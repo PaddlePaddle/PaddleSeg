@@ -36,7 +36,7 @@ class Trainer():
         '''model（nn.Layer): A sementic segmentation model.'''
         self.model = model
         self.ema_decay = ema_decay
-        # self.ema = EMA(self.model, ema_decay)
+        self.ema = EMA(self.model, ema_decay)
         self.celoss = losses.CrossEntropyLoss()
         self.klloss = KLLoss()
         self.bceloss = losses.BCELoss()
@@ -335,7 +335,7 @@ class Trainer():
                 #             print(name, "does not have grad but stop gradients=", tensor.stop_gradient)
 
                 optimizer.step()
-                # self.ema.update_params()
+                self.ema.update_params()
 
                 with paddle.no_grad():
 
@@ -399,8 +399,8 @@ class Trainer():
 
                         if test_config is None:
                             test_config = {}
-                        # self.ema.apply_shadow()
-                        # self.ema.model.eval()
+                        self.ema.apply_shadow()
+                        self.ema.model.eval()
 
                         PA, _, MIoU, _ = val.evaluate(
                             self.model,
@@ -408,7 +408,7 @@ class Trainer():
                             num_workers=num_workers,
                             **test_config)
 
-                        # self.ema.restore()
+                        self.ema.restore()
                         self.model.train()
 
                     if (iter % save_interval == 0
@@ -455,7 +455,7 @@ class Trainer():
             #         break
             # reprod_logger.save("/ssd2/tangshiyu/Code/pixmatch/models/train_paddle.npy")
             # break
-            # self.ema.update_buffer()
+            self.ema.update_buffer()
 
         # # Calculate flops.
         # if local_rank == 0:
