@@ -78,8 +78,8 @@ class DeepLabV2(nn.Layer):
     def forward(self, x):
         feat_list = self.backbone(x)
         if self.shape_stream:
-            logit_list = self.head(x, feat_list[:4], self.backbone.conv1_logit)
-            logit_list.append(feat_list[-1])
+            logit_list = self.head(x, feat_list[2:], self.backbone.conv1_logit)
+            logit_list.append(feat_list[1])
             seg_logit, edge_logit, aug_logit = [
                 F.interpolate(
                     logit,
@@ -94,7 +94,7 @@ class DeepLabV2(nn.Layer):
                     logit,
                     x.shape[2:],
                     mode='bilinear',
-                    align_corners=self.align_corners) for logit in feat_list
+                    align_corners=self.align_corners) for logit in feat_list[:2]
             ]
 
     def init_weight(self):

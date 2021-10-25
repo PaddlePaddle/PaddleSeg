@@ -135,30 +135,36 @@ def main(args):
 
     if not args.cfg:
         raise RuntimeError('No configuration file specified.')
- 
+
     import reprod_log
     reprod_logger = reprod_log.ReprodLogger()
-  
+
     cfg = Config(
         args.cfg,
         learning_rate=args.learning_rate,
         iters=args.iters,
         batch_size=args.batch_size)
-    
+
     if cfg.dic["data"]["source"]["dataset"] == 'synthia':
-        train_dataset_src = SYNTHIA_Dataset(split='train', **cfg.dic["data"]["source"]["kwargs"])
-        val_dataset_src = SYNTHIA_Dataset(split='val', **cfg.dic["data"]["source"]["kwargs"])
+        train_dataset_src = SYNTHIA_Dataset(
+            split='train', **cfg.dic["data"]["source"]["kwargs"])
+        val_dataset_src = SYNTHIA_Dataset(
+            split='val', **cfg.dic["data"]["source"]["kwargs"])
     elif cfg.dic["data"]["source"]["dataset"] == 'gta5':
-        train_dataset_src = GTA5_Dataset(split='train', **cfg.dic["data"]["source"]["kwargs"])
-        val_dataset_src = GTA5_Dataset(split='val', **cfg.dic["data"]["source"]["kwargs"])
+        train_dataset_src = GTA5_Dataset(
+            split='train', **cfg.dic["data"]["source"]["kwargs"])
+        val_dataset_src = GTA5_Dataset(
+            split='val', **cfg.dic["data"]["source"]["kwargs"])
     else:
         raise NotImplementedError()
     if cfg.dic["data"]["target"]["dataset"] == 'cityscapes':
-        train_dataset_tgt = City_Dataset(split='train', **cfg.dic["data"]["target"]["kwargs"])
-        val_dataset_tgt = City_Dataset(split='val', **cfg.dic["data"]["target"]["kwargs"])
+        train_dataset_tgt = City_Dataset(
+            split='train', **cfg.dic["data"]["target"]["kwargs"])
+        val_dataset_tgt = City_Dataset(
+            split='val', **cfg.dic["data"]["target"]["kwargs"])
     else:
         raise NotImplementedError()
-    
+
     val_dataset_tgt = val_dataset_tgt if args.do_eval else None
     val_dataset_src = val_dataset_src if args.do_eval else None
 
@@ -175,7 +181,7 @@ def main(args):
     msg += '------------------------------------------------'
     logger.info(msg)
 
-    trainer = Trainer(cfg.model, ema_decay=cfg.dic['ema_decay'])
+    trainer = Trainer(model=cfg.model, ema_decay=cfg.dic['ema_decay'])
     trainer.train(
         train_dataset_src,
         train_dataset_tgt,

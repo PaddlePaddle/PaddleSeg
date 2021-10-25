@@ -1,0 +1,64 @@
+batch_size: 1
+iters: 400000
+
+data:
+  num_classes: 19
+  source:
+    dataset: 'gta5'
+    kwargs:
+      root: /ssd2/tangshiyu/data/GTA5
+      list_path: /ssd2/tangshiyu/Code/pixmatch/datasets/gta5_list
+      base_size: [1280, 640]
+      crop_size: [1280, 640]
+      random_mirror: True
+      random_crop: False
+      resize: True
+      gaussian_blur: True
+      class_16: False
+
+  target:
+    dataset: 'cityscapes'
+    kwargs:
+      root: /ssd2/tangshiyu/data/cityscapes
+      list_path: /ssd2/tangshiyu/Code/pixmatch/datasets/city_list
+      base_size: [1280, 640]
+      crop_size: [1280, 640]
+      random_mirror: True
+      random_crop: False
+      resize: True
+      gaussian_blur: True
+      class_16: False
+      class_13: False
+
+  source_val_iterations: 100
+
+
+model:
+  type: DeepLabV2
+  num_classes: 19
+  backbone:
+    type: ResNet101
+    num_classes: 19
+  num_classes: 19
+  backbone_indices: [0, 1, 2, 3]
+  align_corners: True
+  pretrained: models/torch_transfer_gta5source.pdparams  # gta5 source/ others get from model
+  shape_stream: False
+
+
+ema_decay: 0.999
+pseudolabel_threshold: 0.0
+edgeconstrain: True
+edgepullin: False
+featurepullin: False
+
+optimizer:
+  type: sgd
+  momentum: 0.9
+  weight_decay: 0.0005
+
+lr_scheduler:
+  type: PolynomialDecay
+  learning_rate: 0.0001
+  end_lr: 0
+  power: 0.9

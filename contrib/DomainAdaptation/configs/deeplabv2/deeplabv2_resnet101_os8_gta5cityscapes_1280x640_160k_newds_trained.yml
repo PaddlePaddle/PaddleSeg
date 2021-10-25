@@ -31,7 +31,7 @@ data:
       gaussian_blur: True
       class_16: False
       class_13: False
-      
+
   source_val_iterations: 100
 
 

@@ -37,18 +37,10 @@ class Bottleneck(nn.Layer):
         self.padding = dilation
         self.stride = stride
         self.downsample = downsample
-        # self.weight_attr = paddle.ParamAttr(
-        #     initializer=paddle.nn.initializer.Constant(value=1))
-        # self.bias_attr = paddle.ParamAttr(
-        #     initializer=paddle.nn.initializer.Constant(value=0))
-        # self.weight_attr_conv = paddle.ParamAttr(
-        #     initializer=paddle.nn.initializer.Normal(std=0.01))
 
         self.conv1 = nn.Conv2D(
             inplanes, planes, kernel_size=1, stride=stride, bias_attr=False)
-        # weight_attr=self.weight_attr_conv)
         self.bn1 = nn.BatchNorm2D(planes)
-        # planes, bias_attr=self.bias_attr, weight_attr=self.weight_attr)
 
         self.conv2 = nn.Conv2D(
             planes,
@@ -57,19 +49,12 @@ class Bottleneck(nn.Layer):
             stride=1,
             padding=self.padding,
             bias_attr=False,
-            # weight_attr=self.weight_attr_conv,
             dilation=dilation)
         self.bn2 = nn.BatchNorm2D(planes)
-        # planes, bias_attr=self.bias_attr, weight_attr=self.weight_attr)
 
         self.conv3 = nn.Conv2D(
-            planes,
-            planes * 4,
-            bias_attr=False,
-            # weight_attr=self.weight_attr_conv,
-            kernel_size=1)
+            planes, planes * 4, bias_attr=False, kernel_size=1)
         self.bn3 = nn.BatchNorm2D(planes * 4)
-        # bias_attr=self.bias_attr, weight_attr=self.weight_attr)
 
         self.relu = nn.ReLU()
 
@@ -219,7 +204,7 @@ class ResNetMulti(nn.Layer):
         x = self.relu(x)
         # x.register_hook(lambda grad: print('relu grad', grad.abs().mean()))
         # # x.register_hook(lambda grad: self.reprod_logger.add('relu grad', grad.cpu().detach().numpy()))
-        # self.conv1_logit = x.clone()
+        self.conv1_logit = x.clone()
         x = self.maxpool(x)
         # x.register_hook(lambda grad: print('x grad', grad.abs().mean()))
         # # x.register_hook(lambda grad: self.reprod_logger.add('x grad', grad.cpu().detach().numpy()))
@@ -248,7 +233,7 @@ class ResNetMulti(nn.Layer):
             x6, size=input_size, mode='bilinear', align_corners=True)
         # self.reprod_logger.save('/ssd2/tangshiyu/Code/pixmatch/models/model_bp_paddle.npy')
 
-        return x6, x_aug  #  resolution 2 first  x1, x2, x3, x4,
+        return x6, x_aug, x1, x2, x3, x4,  #  resolution 2 first
 
     def get_1x_lr_params_NOscale(self):
         """

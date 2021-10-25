@@ -27,6 +27,7 @@ from models import EMA
 from script import val
 from utils import augmentation
 from models.losses import KLLoss
+import numpy as np
 
 paddle.set_printoptions(precision=15)
 
@@ -124,7 +125,6 @@ class Trainer():
             return_list=True,
             worker_init_fn=worker_init_fn,
         )
-        import numpy as np
 
         # reprod_logger.add("length_src_train", np.array(len(train_dataset_src)))
         # reprod_logger.add("length_tgt_train", np.array(len(train_dataset_tgt)))
@@ -162,8 +162,8 @@ class Trainer():
                 # if iter == 0:
                 #     data_src_0, data_tgt_0 = data_src, data_tgt
 
-                loss_dict = {}
                 reader_cost_averager.record(time.time() - batch_start)
+                loss_dict = {}
 
                 #### training #####
                 images_tgt = data_tgt[0]

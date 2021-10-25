@@ -1,12 +1,10 @@
 # -*- coding: utf-8 -*-
 import os
-import sys
 import random
 import numpy as np
 from collections.abc import Iterable
 from PIL import Image, ImageOps, ImageFilter, ImageFile
 
-sys.path.append('..')
 import paddle
 from paddle import io
 import transforms.functional as F
@@ -15,8 +13,6 @@ ImageFile.LOAD_TRUNCATED_IMAGES = True
 
 IMG_MEAN = np.array((104.00698793, 116.66876762, 122.67891434),
                     dtype=np.float32)
-
-paddle.disable_static()
 
 # For visualization
 label_colours = list(
@@ -172,6 +168,7 @@ class City_Dataset(io.Dataset):
         image_filename = filename + "_leftImg8bit.png"
         image_path = os.path.join(image_filepath, image_filename)
         image = Image.open(image_path).convert("RGB")
+        # image = self._img_transform(image)
         # self.logger.add("org_tgt_{}".format(item), np.array(image))
 
         gt_filepath = os.path.join(self.gt_filepath,
@@ -180,6 +177,7 @@ class City_Dataset(io.Dataset):
         gt_filename = filename + "_gtFine_labelIds.png"
         gt_image_path = os.path.join(gt_filepath, gt_filename)
         gt_image = Image.open(gt_image_path)
+        # gt_image, _ = self._mask_transform(gt_image)
 
         if (self.split == "train"
                 or self.split == "trainval") and self.training:
@@ -295,7 +293,6 @@ class City_Dataset(io.Dataset):
         image = image[:, :, ::-1]  # change to BGR
         image -= IMG_MEAN
         image = image.transpose((2, 0, 1)).copy()  # (C x H x W)
-        paddle.disable_static()
 
         new_image = paddle.to_tensor(image)
 
@@ -309,10 +306,9 @@ class City_Dataset(io.Dataset):
             edge_mask = F.mask_to_binary_edge(
                 target, radius=2, num_classes=self.NUM_CLASSES)
 
-        paddle.disable_static()
         target = paddle.to_tensor(target)
 
-        return target, edge_mask
+        return target, edge_mask  # 不能返回 None
 
     def __len__(self):
         return len(self.items)
@@ -322,21 +318,26 @@ if __name__ == "__main__":
     import numpy as np
     import reprod_log
     random.seed(0)
-    for i in range(25):
-        a = random.random()
-        b = random.random()
-        c = random.random()
-        print(a, b, c)
-    # reprod_logger = reprod_log.ReprodLogger()
-    # dataset = City_Dataset(root="/ssd2/tangshiyu/data/cityscapes",
-    #                        list_path="/ssd2/tangshiyu/Code/pixmatch/datasets/city_list",
-    #                        base_size=(1280,640), crop_size=(1280, 640), random_mirror=True,
-    #                        resize=True, gaussian_blur=True, logger=reprod_logger)
+    # for i in range(5):
+    #     a = random.random()
+    #     b = random.random()
+    #     c = random.random()
+    #     print(a,b,c)
+    reprod_logger = reprod_log.ReprodLogger()
+    dataset = City_Dataset(
+        root="/ssd2/tangshiyu/data/cityscapes",
+        list_path="/ssd2/tangshiyu/Code/pixmatch/datasets/city_list",
+        base_size=(1280, 640),
+        crop_size=(1280, 640),
+        random_mirror=True,
+        resize=True,
+        gaussian_blur=True,
+        logger=reprod_logger)
 
-    # for idx in range(5):
-    #     np.random.seed(0)
-    #     rnd_idx = [np.random.randint(0, len(dataset)) for i in range(5)]
-    #     reprod_logger.add(f"dataset_tgt_{idx}",
-    #                             dataset[rnd_idx[idx]][0].numpy())
-    # print(rnd_idx)
-    # reprod_logger.save("/ssd2/tangshiyu/Code/pixmatch/models/tgtds_paddle.npy")
+    for idx in range(5):
+        np.random.seed(0)
+        rnd_idx = [np.random.randint(0, len(dataset)) for i in range(5)]
+        reprod_logger.add(f"dataset_tgt_{idx}",
+                          dataset[rnd_idx[idx]][0].numpy())
+    print(rnd_idx)
+    reprod_logger.save("/ssd2/tangshiyu/Code/pixmatch/models/tgtds_paddle.npy")

@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
+import numpy as np
 from PIL import Image, ImageFile
 from datasets.cityscapes_noconfig import City_Dataset, to_tuple
 
@@ -80,7 +81,6 @@ class GTA5_Dataset(City_Dataset):
             len(self.items), self.split))
 
     def __getitem__(self, item):
-        paddle.disable_static()
         id = int(self.items[item])
         name = f"{id:0>5d}.png"
 
@@ -89,6 +89,10 @@ class GTA5_Dataset(City_Dataset):
         gt_image_path = os.path.join(self.gt_filepath, name)
         image = Image.open(image_path).convert("RGB")
         gt_image = Image.open(gt_image_path)
+        # image = self._img_transform(image)
+        # gt_image, _ = self._mask_transform(gt_image)
+
+        # return image, gt_image, id
 
         # Augmentation
         if (self.split == "train" or self.split == "trainval"
