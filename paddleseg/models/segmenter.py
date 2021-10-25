@@ -93,7 +93,8 @@ class SegmenterLinearDecoder(nn.Layer):
         masks = self.head(x)
 
         #[b, (h w), c] -> [b, c, h, w]
-        h, w = patch_embed_size
+        h = patch_embed_size[0]
+        w = patch_embed_size[1]
         masks = masks.reshape((0, h, w, paddle.shape(masks)[-1]))
         masks = masks.transpose((0, 3, 1, 2))
 
@@ -194,7 +195,8 @@ class SegmenterMaskTransformerDecoder(nn.Layer):
         masks = self.mask_norm(masks)
 
         #[b, (h w), c] -> [b, c, h, w]
-        h, w = patch_embed_size
+        h = patch_embed_size[0]
+        w = patch_embed_size[1]
         masks = masks.reshape((0, h, w, paddle.shape(masks)[-1]))
         masks = masks.transpose((0, 3, 1, 2))
 
