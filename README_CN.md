@@ -74,7 +74,7 @@ PaddleSeg是基于飞桨[PaddlePaddle](https://www.paddlepaddle.org.cn)开发的
 [Model Zoo](./configs/)
 
 <div align="center">
-<img src="./docs/images/model_perference.png"    width = "700"/>  
+<img src="./docs/images/model_perference.png"   />  
 </div>
 
 
