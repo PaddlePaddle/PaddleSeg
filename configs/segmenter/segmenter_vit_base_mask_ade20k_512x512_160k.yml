@@ -26,8 +26,8 @@ model:
     depth: 2
     num_heads: 12
     mlp_ratio: 4
-    drop_rate: 0.1
-    drop_path_rate: 0.0
+    drop_rate: 0.0
+    drop_path_rate: 0.1
 
 val_dataset:
   transforms:
@@ -46,4 +46,3 @@ test_config:
   is_slide: True
   crop_size: [512, 512]
   stride: [512, 512]
-

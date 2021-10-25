@@ -23,7 +23,10 @@ from paddleseg.utils import utils
 from paddleseg.models.backbones.vision_transformer import Block
 from paddleseg.models.backbones.transformer_utils import *
 
-__all__ = ['Segmenter', 'SegmenterLinearDecoder', 'SegmenterMaskTransformerDecoder']
+__all__ = [
+    'Segmenter', 'SegmenterLinearDecoder', 'SegmenterMaskTransformerDecoder'
+]
+
 
 @manager.MODELS.add_component
 class Segmenter(nn.Layer):
@@ -65,6 +68,7 @@ class Segmenter(nn.Layer):
             for _logit in logits
         ]
 
+
 @manager.MODELS.add_component
 class SegmenterLinearDecoder(nn.Layer):
     """ The linear decoder of Segmenter.
@@ -72,6 +76,7 @@ class SegmenterLinearDecoder(nn.Layer):
         in_dim (int): The embed dim of input.
         num_classes (int): The unique number of target classes.
     """
+
     def __init__(self, in_dim, num_classes):
         super().__init__()
         self.head = nn.Linear(in_dim, num_classes)
@@ -86,7 +91,7 @@ class SegmenterLinearDecoder(nn.Layer):
             list[Tensor]: Segmentation results.
         """
         masks = self.head(x)
-        
+
         #[b, (h w), c] -> [b, c, h, w]
         h, w = patch_embed_size
         masks = masks.reshape((0, h, w, paddle.shape(masks)[-1]))
@@ -170,7 +175,7 @@ class SegmenterMaskTransformerDecoder(nn.Layer):
         """
         x = self.proj_input(x)
 
-        cls_token = self.cls_token.expand((x.shape[0], -1, -1))
+        cls_token = self.cls_token.expand((paddle.shape(x)[0], -1, -1))
         x = paddle.concat([x, cls_token], axis=1)
 
         for block in self.blocks:
@@ -184,6 +189,8 @@ class SegmenterMaskTransformerDecoder(nn.Layer):
         masks = masks / paddle.norm(masks, axis=-1, keepdim=True)
 
         masks = patches @ masks.transpose((0, 2, 1))
+        masks = masks.reshape((0, 0,
+                               self.num_classes))  # For export inference model
         masks = self.mask_norm(masks)
 
         #[b, (h w), c] -> [b, c, h, w]
@@ -192,4 +199,3 @@ class SegmenterMaskTransformerDecoder(nn.Layer):
         masks = masks.transpose((0, 3, 1, 2))
 
         return [masks]
-
