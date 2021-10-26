@@ -18,38 +18,32 @@ import paddle
 import paddle.nn as nn
 import paddle.nn.functional as F
 
-from paddleseg.cvlibs import manager, param_init
 from paddleseg.utils import utils
+from paddleseg.cvlibs import manager, param_init
 from paddleseg.models.backbones.vision_transformer import Block
 from paddleseg.models.backbones.transformer_utils import *
 
-__all__ = [
-    'Segmenter', 'SegmenterLinearDecoder', 'SegmenterMaskTransformerDecoder'
-]
+__all__ = ['LinearSegmenter', 'MaskSegmenter']
 
 
 @manager.MODELS.add_component
-class Segmenter(nn.Layer):
+class LinearSegmenter(nn.Layer):
     '''
-    The Segmenter implementation based on PaddlePaddle.
+    The implementation of segmenter with linear head based on PaddlePaddle.
 
-    The original article refers to
-    Strudel, Robin, et al. "Segmenter: Transformer for Semantic Segmentation."
-    arXiv preprint arXiv:2105.05633 (2021).
+    The original article refers to Strudel, Robin, et al. "Segmenter: Transformer
+    for Semantic Segmentation." arXiv preprint arXiv:2105.05633 (2021).
 
     Args:
-        backbone (Paddle.nn.Layer): Backbone transformer network.
-        head (Paddle.nn.Layer): Head network, such as mask_transformer.
-        num_classes (int): The unique number of target classes. Default: None.
+        num_classes (int): The unique number of target classes.
+        backbone (nn.Layer): The backbone transformer network.
         pretrained (str, optional): The path or url of pretrained model. Default: None.
     '''
 
-    def __init__(self, backbone, head, num_classes=None, pretrained=None):
-
+    def __init__(self, num_classes, backbone, pretrained=None):
         super().__init__()
         self.backbone = backbone
-        self.head = head
-
+        self.head = SegmenterLinearHead(num_classes, backbone.embed_dim)
         self.pretrained = pretrained
         self.init_weight()
 
@@ -60,8 +54,8 @@ class Segmenter(nn.Layer):
     def forward(self, x):
         x_shape = paddle.shape(x)
 
-        feats, _shape = self.backbone(x)
-        logits = self.head(feats[-1], _shape[2:])
+        feats, shape = self.backbone(x)
+        logits = self.head(feats[-1], shape[2:])
 
         return [
             F.interpolate(_logit, x_shape[2:], mode='bilinear')
@@ -70,14 +64,73 @@ class Segmenter(nn.Layer):
 
 
 @manager.MODELS.add_component
-class SegmenterLinearDecoder(nn.Layer):
-    """ The linear decoder of Segmenter.
-    Args:
-        in_dim (int): The embed dim of input.
-        num_classes (int): The unique number of target classes.
-    """
+class MaskSegmenter(nn.Layer):
+    '''
+    The implementation of segmenter with mask head based on PaddlePaddle.
 
-    def __init__(self, in_dim, num_classes):
+    The original article refers to Strudel, Robin, et al. "Segmenter: Transformer
+    for Semantic Segmentation." arXiv preprint arXiv:2105.05633 (2021).
+
+    Args:
+        num_classes (int): The unique number of target classes.
+        backbone (nn.Layer): The backbone transformer network.
+        h_embed_dim (int): The embedding dim in mask head.
+        h_depth (int): The num of layers in mask head.
+        h_num_heads (int): The num of heads of MSA in mask head.
+        h_mlp_ratio (int, optional): Ratio of MLP dim in mask head. Default: 4.
+        h_drop_rate (float, optional): Drop rate of MLP in mask head. Default: 0.0.
+        h_drop_path_rate (float, optional): Drop path rate in mask head. Default: 0.0.
+        h_attn_drop_rate (float, optional): Attenation drop rate in mask head. Default: 0.0.
+        h_qkv_bias (bool, optional): Whether add bias in mask head. Default: False.
+        pretrained (str, optional): The path or url of pretrained model. Default: None.
+    '''
+
+    def __init__(self,
+                 num_classes,
+                 backbone,
+                 h_embed_dim,
+                 h_depth,
+                 h_num_heads,
+                 h_mlp_ratio=4,
+                 h_drop_rate=0.0,
+                 h_drop_path_rate=0.0,
+                 h_attn_drop_rate=0.0,
+                 h_qkv_bias=False,
+                 pretrained=None):
+        super().__init__()
+        self.backbone = backbone
+        self.head = SegmenterMaskHead(
+            num_classes, backbone.embed_dim, h_embed_dim, h_depth, h_num_heads,
+            h_mlp_ratio, h_drop_rate, h_drop_path_rate, h_attn_drop_rate,
+            h_qkv_bias)
+        self.pretrained = pretrained
+        self.init_weight()
+
+    def init_weight(self):
+        if self.pretrained is not None:
+            utils.load_entire_model(self, self.pretrained)
+
+    def forward(self, x):
+        x_shape = paddle.shape(x)
+
+        feats, shape = self.backbone(x)
+        logits = self.head(feats[-1], shape[2:])
+
+        return [
+            F.interpolate(_logit, x_shape[2:], mode='bilinear')
+            for _logit in logits
+        ]
+
+
+class SegmenterLinearHead(nn.Layer):
+    '''
+    The linear head of Segmenter.
+    Args:
+        num_classes (int): The unique number of target classes.
+        in_dim (int): The embed dim of input.
+    '''
+
+    def __init__(self, num_classes, in_dim):
         super().__init__()
         self.head = nn.Linear(in_dim, num_classes)
         self.apply(init_weights)
@@ -86,35 +139,35 @@ class SegmenterLinearDecoder(nn.Layer):
         """ Forward function.
         Args:
             x (Tensor): Input tensor of decoder.
-            patch_embed_size (list): The size of patch embed tensor, such as (n, h, w, c).
+            patch_embed_size (Tensor): The height and width of the patch embed tensor.
         Returns:
             list[Tensor]: Segmentation results.
         """
         masks = self.head(x)
 
         #[b, (h w), c] -> [b, c, h, w]
-        h, w = patch_embed_size
+        h, w = patch_embed_size[0], patch_embed_size[1]
         masks = masks.reshape((0, h, w, paddle.shape(masks)[-1]))
         masks = masks.transpose((0, 3, 1, 2))
 
         return [masks]
 
 
-@manager.MODELS.add_component
-class SegmenterMaskTransformerDecoder(nn.Layer):
-    """ The Mask Transformer Decoder of Segmenter.
+class SegmenterMaskHead(nn.Layer):
+    '''
+    The mask head of segmenter.
     Args:
         num_classes (int): The unique number of target classes.
         in_dim (int): The embed dim of input.
         embed_dim (int): Embedding dim of mask transformer.
         depth (int): The num of layers in Transformer.
         num_heads (int): The num of heads in MSA.
-        mlp_ratio (int): Ratio of MLP dim.
-        drop_rate (float): Drop rate of MLP in MSA.
-        drop_path_rate (float): Drop path rate in MSA.
-        attn_drop_rate (float): Attenation drop rate in MSA.
-        qkv_bias (bool): Whether add bias in qkv linear.
-    """
+        mlp_ratio (int, optional): Ratio of MLP dim. Default: 4.
+        drop_rate (float, optional): Drop rate of MLP in MSA. Default: 0.0.
+        drop_path_rate (float, optional): Drop path rate in MSA. Default: 0.0.
+        attn_drop_rate (float, optional): Attenation drop rate in MSA. Default: 0.0.
+        qkv_bias (bool, optional): Whether add bias in qkv linear. Default: False.
+    '''
 
     def __init__(self,
                  num_classes,
@@ -169,7 +222,7 @@ class SegmenterMaskTransformerDecoder(nn.Layer):
         """ Forward function.
         Args:
             x (Tensor): Input tensor of decoder.
-            patch_embed_size (list): The size of patch embed tensor, such as (n, h, w, c).
+            patch_embed_size (Tensor): The height and width of the patch embed tensor.
         Returns:
             list[Tensor]: Segmentation results.
         """
@@ -194,7 +247,7 @@ class SegmenterMaskTransformerDecoder(nn.Layer):
         masks = self.mask_norm(masks)
 
         #[b, (h w), c] -> [b, c, h, w]
-        h, w = patch_embed_size
+        h, w = patch_embed_size[0], patch_embed_size[1]
         masks = masks.reshape((0, h, w, paddle.shape(masks)[-1]))
         masks = masks.transpose((0, 3, 1, 2))
 

@@ -4,7 +4,14 @@ batch_size: 2
 iters: 160000
 
 model:
-  type: Segmenter
+  type: MaskSegmenter
+  num_classes: 150
+  h_embed_dim: 384
+  h_depth: 2
+  h_num_heads: 6
+  h_mlp_ratio: 4
+  h_drop_rate: 0.0
+  h_drop_path_rate: 0.1
   backbone:
     type: VisionTransformer
     img_size: 512
@@ -18,16 +25,6 @@ model:
     drop_path_rate: 0.1
     final_norm: True
     pretrained: https://bj.bcebos.com/paddleseg/dygraph/pretrained_models/vit_small_patch16_384_augreg.tar.gz
-  head:
-    type: SegmenterMaskTransformerDecoder
-    num_classes: 150
-    in_dim: 384
-    embed_dim: 384
-    depth: 2
-    num_heads: 6
-    mlp_ratio: 4
-    drop_rate: 0.0
-    drop_path_rate: 0.1
 
 val_dataset:
   transforms:
