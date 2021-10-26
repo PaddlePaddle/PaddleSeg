@@ -1,6 +1,6 @@
 # PaddleSeg模型开发规范
 
-模型规范主要分为新增文件自查，可拓展模块编码规范，和新增`PR checklist`。
+模型规范主要分为新增文件自查，可拓展模块编码规范，新增`PR checklist`，导出和测试预测模型。
 
 
 ## 一、新增文件自查
@@ -141,9 +141,11 @@ def __init__(self,
 
 #### 3）forward规范
 
-1. 逻辑尽量简洁，以组件式的调用呈现；
+1. 逻辑尽量简洁，以组件式的调用呈现。
 2. `resize`到原图大小按列表形式返回，第一个元素为主输出，其他为辅助输出。
-3. 如果模型训练和预测时执行分支不同，则forward只允许有一个return（示例参考bisnetv2模型）
+3. 如果模型训练和预测时执行分支不同，使用self.training变量作为if判断，实现不同分支（示例参考bisnetv2模型）。
+4. 获取Tensor的shape，建议使用`paddle.shape(x)`，不要使用`x.shape`。
+5. 组网代码统一使用Paddle API，不支持嵌入numpy操作，即不支持tensor->numpy->tensor转换。
 
 ```python
 def forward(self, x):
@@ -300,3 +302,20 @@ class Cityscapes(Dataset):
 ||||||||[model]() \| [log]() \| [vdl]()|
 
 5. 在PR里提供一个下载链接包括三个部分：训练好的模型参数，训练日志，训练vdl：
+
+
+## 四、导出和测试预测模型
+
+开发模型，我们不仅要关注模型精度的正确性，还需要检查模型导出和预测部署的正确性。只有模型可以顺利部署，才算真正开发完成一个模型。
+
+1. 导出预测模型
+
+开发模型是使用PaddlePaddle的动态图模式，我们需要将动态图的模型导出为静态图的预测模型。
+
+将动态图的模型导出为静态图的预测模型，使用的是动转静技术，此处不展开介绍，具体说明请参考[文档](https://www.paddlepaddle.org.cn/documentation/docs/zh/guides/04_dygraph_to_static/index_cn.html)。
+
+请参考[文档](../../model_export.md)导出静态图预测模型。如果没有报错，静态图的预测模型会保存到指定目录。如果报错，根据log修改组网代码，再次导出。
+
+2. 测试预测模型
+
+请参考[文档](../../deployment/inference/python_inference.md)，在X86 CPU或者NV GPU上使用Paddle Inference Python API加载预测模型，读取图片进行测试，查看分割结果图片是否正确。
