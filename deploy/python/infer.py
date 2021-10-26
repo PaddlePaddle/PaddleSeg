@@ -228,6 +228,19 @@ class Predictor:
             os.makedirs(args.save_dir)
 
         for i in range(0, num, args.batch_size):
+            # warm up
+            if i == 0 and args.benchmark:
+                for j in range(5):
+                    data = np.array([
+                        self._preprocess(img) for img in imgs[0:args.batch_size]
+                    ])
+                    input_handle.reshape(data.shape)
+                    input_handle.copy_from_cpu(data)
+                    self.predictor.run()
+                    results = output_handle.copy_to_cpu()
+                    results = self._postprocess(results)
+
+            # inference
             if args.benchmark:
                 self.autolog.times.start()
             data = np.array(
