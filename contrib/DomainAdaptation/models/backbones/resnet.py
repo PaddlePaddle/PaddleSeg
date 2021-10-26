@@ -91,9 +91,6 @@ class Classifier_Module(nn.Layer):
             bias_attr = paddle.ParamAttr(
                 initializer=nn.initializer.Constant(value=0.0),
                 learning_rate=10.0)
-            # weight_attr = paddle.ParamAttr(
-            #     initializer=nn.initializer.Normal(std=0.01), learning_rate=1.0)
-            # bias_attr = paddle.ParamAttr(initializer=nn.initializer.Constant(value=0.0) ,learning_rate=1.0)
             self.conv2d_list.append(
                 nn.Conv2D(
                     inplanes,

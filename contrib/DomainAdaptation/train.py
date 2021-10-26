@@ -98,7 +98,7 @@ def parse_args():
         '--seed',
         dest='seed',
         help='Set the random seed during training.',
-        default=0,
+        default=42,
         type=int)
     parser.add_argument(
         '--fp16', dest='fp16', help='Whther to use amp', action='store_true')
@@ -181,11 +181,12 @@ def main(args):
     msg += '------------------------------------------------'
     logger.info(msg)
 
-    trainer = Trainer(model=cfg.model, ema_decay=cfg.dic['ema_decay'])
+    trainer = Trainer(model=cfg.model, cfg=cfg.dic)
     trainer.train(
         train_dataset_src,
         train_dataset_tgt,
         val_dataset_tgt=val_dataset_tgt,
+        val_dataset_src=val_dataset_src,
         optimizer=cfg.optimizer,
         save_dir=args.save_dir,
         iters=cfg.iters,

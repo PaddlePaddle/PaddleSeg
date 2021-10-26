@@ -19,6 +19,7 @@ import shutil
 
 import paddle
 import paddle.nn.functional as F
+import paddleseg.transforms.functional as Func
 
 from paddleseg.utils import TimeAverager, calculate_eta, resume, logger, worker_init_fn
 from paddleseg.models import losses
@@ -33,11 +34,17 @@ paddle.set_printoptions(precision=15)
 
 
 class Trainer():
-    def __init__(self, model, ema_decay):
+    def __init__(self, model, cfg):
         '''model（nn.Layer): A sementic segmentation model.'''
+        self.ema_decay = cfg['ema_decay']
+        self.edgeconstrain = cfg['edgeconstrain']
+        self.edgepullin = cfg['edgepullin']
+        self.src_only = cfg['src_only']
+        self.featurepullin = cfg['featurepullin']
+        # print('self.featurepullin', self.featurepullin)
+
         self.model = model
-        self.ema_decay = ema_decay
-        self.ema = EMA(self.model, ema_decay)
+        self.ema = EMA(self.model, self.ema_decay)
         self.celoss = losses.CrossEntropyLoss()
         self.klloss = KLLoss()
         self.bceloss = losses.BCELoss()
@@ -46,6 +53,7 @@ class Trainer():
               train_dataset_src,
               train_dataset_tgt,
               val_dataset_tgt=None,
+              val_dataset_src=None,
               optimizer=None,
               save_dir='output',
               iters=10000,
@@ -57,10 +65,6 @@ class Trainer():
               use_vdl=False,
               keep_checkpoint_max=5,
               test_config=None,
-              pseudolabel_threshold=0.0,
-              edgeconstrain=False,
-              edgepullin=False,
-              featurepullin=False,
               reprod_logger=None):
         """
         Launch training.
@@ -183,10 +187,8 @@ class Trainer():
                 # reprod_logger.add("images_src_{}".format(data_src[2].numpy()[0]), images_src.cpu().detach().numpy())
 
                 if nranks > 1:
-                    # logits_list_tgt = ddp_model(images_tgt)
                     logits_list_src = ddp_model(images_src)
                 else:
-                    # logits_list_tgt = self.model(images_tgt)
                     logits_list_src = self.model(images_src)
 
                 # res_src = logits_list_src[0] + logits_list_src[1]
@@ -202,7 +204,11 @@ class Trainer():
                     pred_P_1 = F.softmax(logits_list_tgt[0], axis=1)
                     labels_tgt_psu = paddle.argmax(pred_P_1.detach(), axis=1)
                     # reprod_logger.add("labels_tgt_psu_{}".format(data_tgt[2].numpy()[0]), labels_tgt_psu.cpu().detach().numpy())
-
+                    edges_tgt = Func.mask_to_binary_edge(
+                        labels_tgt_psu,
+                        radius=2,
+                        num_classes=train_dataset_tgt.NUM_CLASSES)
+                    edges_tgt = paddle.to_tensor(edges_tgt, dtype='int64')
                     # aux label
                     pred_P_2 = F.softmax(logits_list_tgt[1], axis=1)
                     pred_c = (pred_P_1 + pred_P_2) / 2
@@ -216,86 +222,93 @@ class Trainer():
                 loss_src_seg_aux = 0.1 * self.celoss(logits_list_src[1],
                                                      labels_src)
                 loss_src_seg = loss_src_seg_main + loss_src_seg_aux
-                loss_src_seg.backward()
-                # reprod_logger.add("loss_src_seg_{}".format(iter), loss_src_seg.cpu().detach().numpy())
-
                 loss_dict["source_main"] = loss_src_seg_main.numpy()[0]
                 loss_dict["source_aux"] = loss_src_seg_aux.numpy()[0]
-                del loss_src_seg, images_src, loss_src_seg_aux, loss_src_seg_main
 
-                #### aug loss #######
-                # reprod_logger.add("images_tgt_{}".format(iter), images_tgt.cpu().detach().numpy())
-                augs = augmentation.get_augmentation()
-                images_tgt_aug, labels_tgt_aug = augmentation.augment(
-                    images=images_tgt.cpu(),
-                    labels=labels_tgt_psu.detach().cpu(),
-                    aug=augs,
-                    logger=reprod_logger,
-                    iters="{}_1".format(iter))
-                # reprod_logger.add("images_tgt_aug_{}".format(iter), images_tgt_aug.cpu().detach().numpy())
-                # reprod_logger.add("labels_tgt_aug_{}".format(iter), labels_tgt_aug.cpu().detach().numpy())
-                # reprod_logger.add("labels_tgt_aug_aux_{}".format(iter), labels_tgt_aug_aux.cpu().detach().numpy())
-                images_tgt_aug = images_tgt_aug.cuda()
-                labels_tgt_aug = labels_tgt_aug.cuda()
+                if not self.edgeconstrain:
+                    loss_src_seg.backward()
+                    # reprod_logger.add("loss_src_seg_{}".format(iter), loss_src_seg.cpu().detach().numpy())
 
-                _, labels_tgt_aug_aux = augmentation.augment(
-                    images=images_tgt.cpu(),
-                    labels=labels_tgt_psu_aux.detach().cpu(),
-                    aug=augs,
-                    logger=reprod_logger,
-                    iters="{}_2".format(iter))
-                labels_tgt_aug_aux = labels_tgt_aug_aux.cuda()
-
-                if nranks > 1:
-                    logits_list_tgt_aug = ddp_model(images_tgt_aug)
+                    del loss_src_seg, images_src, loss_src_seg_aux, loss_src_seg_main
+                    ####  target seg & edge loss ####
                 else:
-                    logits_list_tgt_aug = self.model(images_tgt_aug)
-
-                loss_tgt_aug_main = 0.1 * (self.celoss(logits_list_tgt_aug[0],
-                                                       labels_tgt_aug))
-                loss_tgt_aug_aux = 0.1 * (0.1 * self.celoss(
-                    logits_list_tgt_aug[1], labels_tgt_aug_aux))
-                loss_tgt_aug = loss_tgt_aug_aux + loss_tgt_aug_main
-                loss_tgt_aug.backward()
-
-                # res_tgt_aug = logits_list_tgt_aug[0] + logits_list_tgt_aug[1]
-                # reprod_logger.add("res_tgt_aug_{}".format(iter), res_tgt_aug.cpu().detach().numpy())
-                # reprod_logger.add("loss_tgt_aug_{}".format(iter), loss_tgt_aug.cpu().detach().numpy())
-
-                loss_dict['target_aug_main'] = loss_tgt_aug_main.numpy()[0]
-                loss_dict['target_aug_aux'] = loss_tgt_aug_aux.numpy()[0]
-                del images_tgt_aug, labels_tgt_aug, labels_tgt_aug_aux, images_tgt, \
-                    logits_list_tgt_aug, loss_tgt_aug, loss_tgt_aug_aux, loss_tgt_aug_main
-
-                ####  target seg & edge loss ####
-                if edgeconstrain:
-                    edges_tgt = F.mask_to_binary_edge(
-                        labels_tgt_psu,
-                        radius=2,
-                        num_classes=train_dataset_tgt.num_classes)
+                    # logger.info("Add source edge loss")
+                    # print(edges_src)
                     loss_src_edge = self.bceloss(logits_list_src[2], edges_src)
 
-                    if iter > 60000:
-                        loss_tgt_seg = self.celoss(logits_list_tgt[0], labels_tgt) \
-                                        + 0.1 * self.celoss(logits_list_tgt[1], labels_tgt_psu_aux)
+                    if (not self.src_only
+                        ):  # and (iter > 60000): # target 部分同时加入约束
+                        # logger.info("Add target edege loss")
+                        # loss_tgt_seg = self.celoss(logits_list_tgt[0], labels_tgt) \
+                        #                 + 0.1 * self.celoss(logits_list_tgt[1], labels_tgt_psu_aux)
                         loss_tgt_edge = self.bceloss(logits_list_tgt[2],
                                                      edges_tgt)
-                        loss_edge = loss_tgt_seg + loss_tgt_edge + loss_src_edge
+                        # loss_edgenseg = loss_tgt_seg + loss_tgt_edge + loss_src_edge + loss_src_seg
+                        loss_edgenseg = loss_tgt_edge + loss_src_edge + loss_src_seg
                     else:
-                        loss_tgt_seg = paddle.zeros([1])
+                        # loss_tgt_seg = paddle.zeros([1])
                         loss_tgt_edge = paddle.zeros([1])
-                        loss_edge = loss_src_edge
+                        loss_edgenseg = loss_src_edge + loss_src_seg
 
-                    loss_edge.backward()
+                    loss_edgenseg.backward()
 
-                    loss_dict['target_seg'] = loss_tgt_seg.numpy()[0]
+                    # loss_dict['target_seg'] = loss_tgt_seg.numpy()[0]
                     loss_dict['target_edge'] = loss_tgt_edge.numpy()[0]
                     loss_dict['source_edge'] = loss_src_edge.numpy()[0]
 
-                    del loss_src_edge, loss_tgt_edge, loss_src_edge
+                    del loss_edgenseg, loss_tgt_edge, loss_src_edge
+                    del loss_src_seg, images_src, loss_src_seg_aux, loss_src_seg_main
+
+                #### target aug loss #######
+                if not self.src_only:
+                    # logger.info("Add target augmentation loss")
+                    augs = augmentation.get_augmentation()
+                    images_tgt_aug, labels_tgt_aug = augmentation.augment(
+                        images=images_tgt.cpu(),
+                        labels=labels_tgt_psu.detach().cpu(),
+                        aug=augs,
+                        logger=reprod_logger,
+                        iters="{}_1".format(iter))
+                    # reprod_logger.add("images_tgt_{}".format(iter), images_tgt.cpu().detach().numpy())
+                    # reprod_logger.add("images_tgt_aug_{}".format(iter), images_tgt_aug.cpu().detach().numpy())
+                    # reprod_logger.add("labels_tgt_aug_{}".format(iter), labels_tgt_aug.cpu().detach().numpy())
+                    # reprod_logger.add("labels_tgt_aug_aux_{}".format(iter), labels_tgt_aug_aux.cpu().detach().numpy())
+                    images_tgt_aug = images_tgt_aug.cuda()
+                    labels_tgt_aug = labels_tgt_aug.cuda()
+
+                    _, labels_tgt_aug_aux = augmentation.augment(
+                        images=images_tgt.cpu(),
+                        labels=labels_tgt_psu_aux.detach().cpu(),
+                        aug=augs,
+                        logger=reprod_logger,
+                        iters="{}_2".format(iter))
+                    labels_tgt_aug_aux = labels_tgt_aug_aux.cuda()
+
+                    if nranks > 1:
+                        logits_list_tgt_aug = ddp_model(images_tgt_aug)
+                    else:
+                        logits_list_tgt_aug = self.model(images_tgt_aug)
+
+                    loss_tgt_aug_main = 0.1 * (self.celoss(
+                        logits_list_tgt_aug[0], labels_tgt_aug))
+                    loss_tgt_aug_aux = 0.1 * (0.1 * self.celoss(
+                        logits_list_tgt_aug[1], labels_tgt_aug_aux))
+                    loss_tgt_aug = loss_tgt_aug_aux + loss_tgt_aug_main
+                    loss_tgt_aug.backward()
+
+                    # res_tgt_aug = logits_list_tgt_aug[0] + logits_list_tgt_aug[1]
+                    # reprod_logger.add("res_tgt_aug_{}".format(iter), res_tgt_aug.cpu().detach().numpy())
+                    # reprod_logger.add("loss_tgt_aug_{}".format(iter), loss_tgt_aug.cpu().detach().numpy())
+
+                    loss_dict['target_aug_main'] = loss_tgt_aug_main.numpy()[0]
+                    loss_dict['target_aug_aux'] = loss_tgt_aug_aux.numpy()[0]
+                    del images_tgt_aug, labels_tgt_aug, labels_tgt_aug_aux, images_tgt, \
+                        logits_list_tgt_aug, loss_tgt_aug, loss_tgt_aug_aux, loss_tgt_aug_main
 
                 #### edge input seg; src & tgt edge pull in ######
-                if edgepullin:
+                if self.edgepullin:
+                    logger.info("Add edge_seg loss")
+                    logger.info("Add edge_seg loss")
                     if nranks > 1:
                         logits_list_edge_src = ddp_model(logits_list_src[2])
                         logits_list_edge_tgt = ddp_model(logits_list_tgt[2])
@@ -320,9 +333,9 @@ class Trainer():
                     del loss_src_edge_seg, loss_tgt_edge_seg, loss_edge_pullin
 
                 #### mask input feature & pullin  ######
-                if featurepullin:
-                    print(1)
-                    # labels_src_onehot = F.one_hot(labels_src, train_dataset_src.num_classes)
+                if self.featurepullin:
+                    logger.info("Add 3-level content pullin loss")
+                    # labels_src_onehot = Func.one_hot(labels_src, train_dataset_src.num_classes)
 
                 loss = sum(loss_dict.values())
                 # reprod_logger.add("loss_total_{}".format(iter), np.array([loss]))
@@ -341,7 +354,6 @@ class Trainer():
 
                     ##### log & save #####
                     lr = optimizer.get_lr()
-                    # reprod_logger.add("lr_{}".format(iter), np.array([lr]))
 
                     # update lr
                     if isinstance(optimizer, paddle.distributed.fleet.Fleet):
@@ -395,18 +407,25 @@ class Trainer():
 
                     if (iter % save_interval == 0
                             or iter == iters) and (val_dataset_tgt is not None):
-                        num_workers = 1 if num_workers > 0 else 0
+                        num_workers = 4 if num_workers > 0 else 0  # adjust num_worker=4
 
                         if test_config is None:
                             test_config = {}
                         self.ema.apply_shadow()
                         self.ema.model.eval()
 
-                        PA, _, MIoU, _ = val.evaluate(
+                        PA_tgt, _, MIoU_tgt, _ = val.evaluate(
                             self.model,
                             val_dataset_tgt,
                             num_workers=num_workers,
                             **test_config)
+
+                        # if (iter % (save_interval * 30)) == 0:  # add evaluate on src
+                        #     PA_src, _, MIoU_src, _ = val.evaluate(
+                        #         self.model,
+                        #         val_dataset_src,
+                        #         num_workers=num_workers,
+                        #         **test_config)
 
                         self.ema.restore()
                         self.model.train()
@@ -420,10 +439,10 @@ class Trainer():
                         paddle.save(
                             self.model.state_dict(),
                             os.path.join(current_save_dir, 'model.pdparams'))
-                        # paddle.save(
-                        #     self.ema.model.state_dict(),
-                        #     os.path.join(current_save_dir,
-                        #                  'model_ema.pdparams'))
+                        paddle.save(
+                            self.ema.shadow,
+                            os.path.join(current_save_dir,
+                                         'model_ema.pdparams'))
                         paddle.save(
                             optimizer.state_dict(),
                             os.path.join(current_save_dir, 'model.pdopt'))
@@ -433,8 +452,8 @@ class Trainer():
                             shutil.rmtree(model_to_remove)
 
                         if val_dataset_tgt is not None:
-                            if MIoU > best_mean_iou:
-                                best_mean_iou = MIoU
+                            if MIoU_tgt > best_mean_iou:
+                                best_mean_iou = MIoU_tgt
                                 best_model_iter = iter
                                 best_model_dir = os.path.join(
                                     save_dir, "best_model")
@@ -445,11 +464,17 @@ class Trainer():
                             logger.info(
                                 '[EVAL] The model with the best validation mIoU ({:.4f}) was saved at iter {}.'
                                 .format(best_mean_iou, best_model_iter))
+                            # logger.info(
+                            #     '[EVAL] The source mIoU is ({:.4f}) at iter {}.'.format(MIoU_src, iter))
 
                             if use_vdl:
-                                log_writer.add_scalar('Evaluate/mIoU', MIoU,
+                                log_writer.add_scalar('Evaluate/mIoU', MIoU_tgt,
                                                       iter)
-                                log_writer.add_scalar('Evaluate/PA', PA, iter)
+                                log_writer.add_scalar('Evaluate/PA', PA_tgt,
+                                                      iter)
+                                # log_writer.add_scalar('Evaluate/mIoU_src', MIoU_src,
+                                #                       iter)
+                                # log_writer.add_scalar('Evaluate/PA_src', PA_src, iter)
                     batch_start = time.time()
             #     if iter > 3:
             #         break

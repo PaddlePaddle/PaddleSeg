@@ -27,32 +27,14 @@ import datasets
 
 np.set_printoptions(suppress=True)
 
-
 np.seterr(divide='ignore', invalid='ignore')
 
 # Names
 name_classes = [
-    'road',
-    'sidewalk',
-    'building',
-    'wall',
-    'fence',
-    'pole',
-    'trafflight',
-    'traffsign',
-    'vegetation',
-    'terrain',
-    'sky',
-    'person',
-    'rider',
-    'car',
-    'truck',
-    'bus',
-    'train',
-    'motorcycle',
-    'bicycle',
-    'unlabeled']
-
+    'road', 'sidewalk', 'building', 'wall', 'fence', 'pole', 'trafflight',
+    'traffsign', 'vegetation', 'terrain', 'sky', 'person', 'rider', 'car',
+    'truck', 'bus', 'train', 'motorcycle', 'bicycle', 'unlabeled'
+]
 
 synthia_set_16 = [0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 12, 13, 15, 17, 18]
 synthia_set_13 = [0, 1, 2, 6, 7, 8, 10, 11, 12, 13, 15, 17, 18]
@@ -62,7 +44,7 @@ synthia_set_16_to_13 = [0, 1, 2, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
 class Eval():
     def __init__(self, num_class):
         self.num_class = num_class
-        self.confusion_matrix = np.zeros((self.num_class,) * 2)
+        self.confusion_matrix = np.zeros((self.num_class, ) * 2)
         self.ignore_index = None
         self.synthia = True if num_class == 16 else False
 
@@ -71,7 +53,8 @@ class Eval():
             print("Attention: pixel_total is zero!!!")
             PA = 0
         else:
-            PA = np.diag(self.confusion_matrix).sum() / self.confusion_matrix.sum()
+            PA = np.diag(
+                self.confusion_matrix).sum() / self.confusion_matrix.sum()
 
         return PA
 
@@ -91,8 +74,8 @@ class Eval():
 
     def Mean_Intersection_over_Union(self, out_16_13=False):
         MIoU = np.diag(self.confusion_matrix) / (
-            np.sum(self.confusion_matrix, axis=1) + np.sum(self.confusion_matrix, axis=0) -
-            np.diag(self.confusion_matrix))
+            np.sum(self.confusion_matrix, axis=1) + np.sum(
+                self.confusion_matrix, axis=0) - np.diag(self.confusion_matrix))
         if self.synthia:
             MIoU_16 = np.nanmean(MIoU[:self.ignore_index])
             MIoU_13 = np.nanmean(MIoU[synthia_set_16_to_13])
@@ -106,23 +89,34 @@ class Eval():
         return MIoU
 
     def Frequency_Weighted_Intersection_over_Union(self, out_16_13=False):
-        FWIoU = np.multiply(np.sum(self.confusion_matrix, axis=1), np.diag(self.confusion_matrix))
-        FWIoU = FWIoU / (np.sum(self.confusion_matrix, axis=1) + np.sum(self.confusion_matrix, axis=0) -
-                         np.diag(self.confusion_matrix))
+        FWIoU = np.multiply(
+            np.sum(self.confusion_matrix, axis=1),
+            np.diag(self.confusion_matrix))
+        FWIoU = FWIoU / (np.sum(self.confusion_matrix, axis=1) + np.sum(
+            self.confusion_matrix, axis=0) - np.diag(self.confusion_matrix))
         if self.synthia:
-            FWIoU_16 = np.sum(i for i in FWIoU if not np.isnan(i)) / np.sum(self.confusion_matrix)
-            FWIoU_13 = np.sum(i for i in FWIoU[synthia_set_16_to_13] if not np.isnan(i)) / np.sum(self.confusion_matrix)
+            FWIoU_16 = np.sum(i for i in FWIoU if not np.isnan(i)) / np.sum(
+                self.confusion_matrix)
+            FWIoU_13 = np.sum(i for i in FWIoU[synthia_set_16_to_13]
+                              if not np.isnan(i)) / np.sum(
+                                  self.confusion_matrix)
             return FWIoU_16, FWIoU_13
         if out_16_13:
-            FWIoU_16 = np.sum(i for i in FWIoU[synthia_set_16] if not np.isnan(i)) / np.sum(self.confusion_matrix)
-            FWIoU_13 = np.sum(i for i in FWIoU[synthia_set_13] if not np.isnan(i)) / np.sum(self.confusion_matrix)
+            FWIoU_16 = np.sum(
+                i for i in FWIoU[synthia_set_16] if not np.isnan(i)) / np.sum(
+                    self.confusion_matrix)
+            FWIoU_13 = np.sum(
+                i for i in FWIoU[synthia_set_13] if not np.isnan(i)) / np.sum(
+                    self.confusion_matrix)
             return FWIoU_16, FWIoU_13
-        FWIoU = np.sum(i for i in FWIoU if not np.isnan(i)) / np.sum(self.confusion_matrix)
+        FWIoU = np.sum(i for i in FWIoU if not np.isnan(i)) / np.sum(
+            self.confusion_matrix)
 
         return FWIoU
 
     def Mean_Precision(self, out_16_13=False):
-        Precision = np.diag(self.confusion_matrix) / self.confusion_matrix.sum(axis=0)
+        Precision = np.diag(
+            self.confusion_matrix) / self.confusion_matrix.sum(axis=0)
         if self.synthia:
             Precision_16 = np.nanmean(Precision[:self.ignore_index])
             Precision_13 = np.nanmean(Precision[synthia_set_16_to_13])
@@ -136,22 +130,33 @@ class Eval():
 
     def Print_Every_class_Eval(self, out_16_13=False, logger=None):
         MIoU = np.diag(self.confusion_matrix) / (
-            np.sum(self.confusion_matrix, axis=1) + np.sum(self.confusion_matrix, axis=0) -
-            np.diag(self.confusion_matrix))
+            np.sum(self.confusion_matrix, axis=1) + np.sum(
+                self.confusion_matrix, axis=0) - np.diag(self.confusion_matrix))
         MPA = np.diag(self.confusion_matrix) / self.confusion_matrix.sum(axis=1)
-        Precision = np.diag(self.confusion_matrix) / self.confusion_matrix.sum(axis=0)
-        Class_ratio = np.sum(self.confusion_matrix, axis=1) / np.sum(self.confusion_matrix)
-        Pred_retio = np.sum(self.confusion_matrix, axis=0) / np.sum(self.confusion_matrix)
+        Precision = np.diag(
+            self.confusion_matrix) / self.confusion_matrix.sum(axis=0)
+        Class_ratio = np.sum(
+            self.confusion_matrix, axis=1) / np.sum(self.confusion_matrix)
+        Pred_retio = np.sum(
+            self.confusion_matrix, axis=0) / np.sum(self.confusion_matrix)
         log_fn = print if logger is None else logger.info
-        log_fn('===>Everyclass:\t' + 'MPA\t' + 'MIoU\t' + 'PC\t' + 'Ratio\t' + 'Pred_Retio')
+        log_fn('===>Everyclass:\t' + 'MPA\t' + 'MIoU\t' + 'PC\t' + 'Ratio\t' +
+               'Pred_Retio')
         # if out_16_13: MIoU = MIoU[synthia_set_16]
         for ind_class in range(len(MIoU)):
-            pa = str(round(MPA[ind_class] * 100, 2)) if not np.isnan(MPA[ind_class]) else 'nan'
-            iou = str(round(MIoU[ind_class] * 100, 2)) if not np.isnan(MIoU[ind_class]) else 'nan'
-            pc = str(round(Precision[ind_class] * 100, 2)) if not np.isnan(Precision[ind_class]) else 'nan'
-            cr = str(round(Class_ratio[ind_class] * 100, 2)) if not np.isnan(Class_ratio[ind_class]) else 'nan'
-            pr = str(round(Pred_retio[ind_class] * 100, 2)) if not np.isnan(Pred_retio[ind_class]) else 'nan'
-            log_fn('===>' + name_classes[ind_class] + ':\t' + pa + '\t' + iou + '\t' + pc + '\t' + cr + '\t' + pr)
+            pa = str(round(MPA[ind_class] * 100,
+                           2)) if not np.isnan(MPA[ind_class]) else 'nan'
+            iou = str(round(MIoU[ind_class] * 100,
+                            2)) if not np.isnan(MIoU[ind_class]) else 'nan'
+            pc = str(round(Precision[ind_class] * 100,
+                           2)) if not np.isnan(Precision[ind_class]) else 'nan'
+            cr = str(
+                round(Class_ratio[ind_class] * 100,
+                      2)) if not np.isnan(Class_ratio[ind_class]) else 'nan'
+            pr = str(round(Pred_retio[ind_class] * 100,
+                           2)) if not np.isnan(Pred_retio[ind_class]) else 'nan'
+            log_fn('===>' + name_classes[ind_class] + ':\t' + pa + '\t' + iou +
+                   '\t' + pc + '\t' + cr + '\t' + pr)
 
     # generate confusion matrix
     def __generate_matrix(self, gt_image, pre_image):
@@ -168,14 +173,10 @@ class Eval():
         self.confusion_matrix += self.__generate_matrix(gt_image, pre_image)
 
     def reset(self):
-        self.confusion_matrix = np.zeros((self.num_class,) * 2)
+        self.confusion_matrix = np.zeros((self.num_class, ) * 2)
 
 
-
-def evaluate(model,
-             eval_dataset,
-             num_workers=0,
-             print_detail=True):
+def evaluate(model, eval_dataset, num_workers=0, print_detail=True):
     """
     Launch evalution.
 
@@ -192,7 +193,9 @@ def evaluate(model,
     logger.info('Validating')
     evaluator = Eval(eval_dataset.NUM_CLASSES)
     evaluator.reset()
+
     model.eval()
+
     nranks = paddle.distributed.ParallelEnv().nranks
     local_rank = paddle.distributed.ParallelEnv().local_rank
     if nranks > 1:
@@ -200,6 +203,7 @@ def evaluate(model,
         if not paddle.distributed.parallel.parallel_helper._is_parallel_ctx_initialized(
         ):
             paddle.distributed.init_parallel_env()
+
     batch_sampler = paddle.io.DistributedBatchSampler(
         eval_dataset, batch_size=1, shuffle=False, drop_last=False)
     loader = paddle.io.DataLoader(
@@ -212,17 +216,19 @@ def evaluate(model,
 
     progbar_val = progbar.Progbar(
         target=total_iters, verbose=1 if nranks < 2 else 2)
+
     reader_cost_averager = TimeAverager()
     batch_cost_averager = TimeAverager()
     batch_start = time.time()
+
     with paddle.no_grad():
-        for __, (x, y, _) in enumerate(loader):
+        for idx, (x, y, _) in enumerate(loader):
             reader_cost_averager.record(time.time() - batch_start)
 
             # Forward
             y = y.astype('int64')
             pred = model(x)
-            if len(pred)>1:
+            if len(pred) > 1:
                 pred = pred[0]
 
             # Convert to numpy
@@ -231,6 +237,18 @@ def evaluate(model,
 
             # Add to evaluator
             evaluator.add_batch(label, argpred)
+
+            batch_cost_averager.record(
+                time.time() - batch_start, num_samples=len(label))
+            batch_cost = batch_cost_averager.get_average()
+            reader_cost = reader_cost_averager.get_average()
+
+            if local_rank == 0 and print_detail and idx % 10 == 0:
+                progbar_val.update(idx + 1, [('batch_cost', batch_cost),
+                                             ('reader cost', reader_cost)])
+            reader_cost_averager.reset()
+            batch_cost_averager.reset()
+            batch_start = time.time()
 
         # todo: visualdl images
         # vis_imgs = 2
@@ -247,7 +265,8 @@ def evaluate(model,
         MIoU = evaluator.Mean_Intersection_over_Union()
         FWIoU = evaluator.Frequency_Weighted_Intersection_over_Union()
         PC = evaluator.Mean_Precision()
-        logger.info('PA1:{:.3f}, MPA1:{:.3f}, MIoU1:{:.3f}, FWIoU1:{:.3f}, PC:{:.3f}'.format(
-            PA, MPA, MIoU, FWIoU, PC))
+        logger.info(
+            'PA1:{:.3f}, MPA1:{:.3f}, MIoU1:{:.3f}, FWIoU1:{:.3f}, PC:{:.3f}'.
+            format(PA, MPA, MIoU, FWIoU, PC))
 
     return PA, MPA, MIoU, FWIoU

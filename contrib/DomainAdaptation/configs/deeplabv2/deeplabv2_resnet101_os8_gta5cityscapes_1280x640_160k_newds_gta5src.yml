@@ -1,7 +1,5 @@
-batch_size: 1
+gitbatch_size: 1
 iters: 400000
-root: /ssd2/tangshiyu/Code/pixmatch
-alroot: /ssd2/tangshiyu
 
 data:
   num_classes: 19
@@ -17,6 +15,7 @@ data:
       resize: True
       gaussian_blur: True
       class_16: False
+      edge: True
 
   target:
     dataset: 'cityscapes'
@@ -32,20 +31,12 @@ data:
       class_16: False
       class_13: False
 
-  source_val_iterations: 100
-
-
 model:
   type: DeepLabV2
   num_classes: 19
   backbone:
     type: ResNet101
     num_classes: 19
-  # backbone:
-  #   type: ResNet50_vd
-  #   output_stride: 8
-  #   multi_grid: [1, 2, 4]
-  #   pretrained: https://bj.bcebos.com/paddleseg/dygraph/resnet50_vd_ssld_v2.tar.gz
   num_classes: 19
   backbone_indices: [0, 1, 2, 3]
   align_corners: True
@@ -54,7 +45,7 @@ model:
 
 
 ema_decay: 0.999
-pseudolabel_threshold: 0.0
+src_only: False
 edgeconstrain: False
 edgepullin: False
 featurepullin: False

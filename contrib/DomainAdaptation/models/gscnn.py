@@ -154,18 +154,21 @@ class GSCNNHead(nn.Layer):
             input_shape[2:],
             mode='bilinear',
             align_corners=self.align_corners)
-        edge_out = F.sigmoid(cs)  # Ouput of shape stream
+        cs = F.sigmoid(cs)  # Ouput of shape stream
 
-        cat = paddle.concat([edge_out, canny], axis=1)
-        acts = self.cw(cat)
-        acts = F.sigmoid(acts)  # Input of fusion module
+        # cat = paddle.concat([cs, canny], axis=1) # cs is edge_out
+        # cat = self.cw(cat)
+        # cat = F.sigmoid(cat)  # Input of fusion module
 
-        x = self.aspp(l3, acts)
+        # x = self.aspp(l3, cat)
 
-        low_level_feat = feat_list[self.backbone_indices[0]]
-        logit = self.decoder(x, low_level_feat)
-        logit_list = [logit, edge_out]
-        return logit_list
+        # # low_level_feat = feat_list[self.backbone_indices[0]]
+        # logit = self.decoder(x, feat_list[self.backbone_indices[0]])
+        # logit_list = [logit, cs]
+        # return logit_list
+        return [
+            cs,
+        ]
 
 
 class GatedSpatailConv2d(nn.Layer):
