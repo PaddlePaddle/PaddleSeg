@@ -12,16 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import numpy as np
-
 import paddle
 import paddle.nn as nn
 import paddle.nn.functional as F
+import numpy as np
 
 from paddleseg.utils import utils
 from paddleseg.cvlibs import manager, param_init
-from paddleseg.models.backbones.vision_transformer import Block
-from paddleseg.models.backbones.transformer_utils import *
+from paddleseg.models.backbones import vision_transformer
+from paddleseg.models.backbones import transformer_utils
 
 __all__ = ['LinearSegmenter', 'MaskSegmenter']
 
@@ -133,7 +132,7 @@ class SegmenterLinearHead(nn.Layer):
     def __init__(self, num_classes, in_dim):
         super().__init__()
         self.head = nn.Linear(in_dim, num_classes)
-        self.apply(init_weights)
+        self.apply(transformer_utils.init_weights)
 
     def forward(self, x, patch_embed_size):
         """ Forward function.
@@ -191,7 +190,7 @@ class SegmenterMaskHead(nn.Layer):
 
         dpr = [x for x in np.linspace(0, drop_path_rate, depth)]
         self.blocks = nn.LayerList([
-            Block(
+            vision_transformer.Block(
                 dim=embed_dim,
                 num_heads=num_heads,
                 mlp_ratio=mlp_ratio,
@@ -216,7 +215,7 @@ class SegmenterMaskHead(nn.Layer):
         self.decoder_norm = nn.LayerNorm(embed_dim)
         self.mask_norm = nn.LayerNorm(num_classes)
 
-        self.apply(init_weights)
+        self.apply(transformer_utils.init_weights)
 
     def forward(self, x, patch_embed_size):
         """ Forward function.
