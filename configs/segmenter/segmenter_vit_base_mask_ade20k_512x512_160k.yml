@@ -2,23 +2,9 @@ _base_: './segmenter_vit_base_linear_ade20k_512x512_160k.yml'
 
 model:
   type: MaskSegmenter
-  num_classes: 150
   h_embed_dim: 768
   h_depth: 2
   h_num_heads: 12
   h_mlp_ratio: 4
   h_drop_rate: 0.0
   h_drop_path_rate: 0.1
-  backbone:
-    type: VisionTransformer
-    img_size: 512
-    patch_size: 16
-    embed_dim: 768
-    depth: 12
-    num_heads: 12
-    mlp_ratio: 4
-    qkv_bias: True
-    drop_rate: 0.0
-    drop_path_rate: 0.1
-    final_norm: True
-    pretrained: https://bj.bcebos.com/paddleseg/dygraph/pretrained_models/vit_base_patch16_384_augreg.tar.gz

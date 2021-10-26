@@ -5,7 +5,6 @@ iters: 160000
 
 model:
   type: LinearSegmenter
-  num_classes: 150
   backbone:
     type: VisionTransformer
     img_size: 512

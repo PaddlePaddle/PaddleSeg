@@ -2,7 +2,7 @@
 
 ## Reference
 
-> Strudel, Robin, Ricardo Garcia, Ivan Laptev, and Cordelia Schmid. "Segmenter: Transformer for Semantic Segmentation." arXiv preprint arXiv:2105.05633 (2021).
+> Strudel, Robin, Ricardo Garcia, Ivan Laptev, and Cordelia Schmid. "Segmenter: Transformer for Semantic Segmentation." In Proceedings of the IEEE International Conference on Computer Vision, pp. 7262-7272. 2021..
 
 ## Performance
 

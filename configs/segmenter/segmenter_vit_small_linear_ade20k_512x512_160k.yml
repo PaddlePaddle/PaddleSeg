@@ -2,7 +2,6 @@ _base_: './segmenter_vit_base_linear_ade20k_512x512_160k.yml'
 
 model:
   type: LinearSegmenter
-  num_classes: 150
   backbone:
     type: VisionTransformer
     img_size: 512
