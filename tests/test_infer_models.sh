@@ -23,6 +23,8 @@ config_root_path="./configs"
 save_root_path="./output_tmp"  # the root path for saving inference model
 save_basename="fp32_infer" # the basename for saving inference model
 enable_auto_tune=True   # Use auto tune for GPU TRT inference
+resize_width=0  # 0 means not use resize
+resize_height=0  # 0 means not use resize
 
 mkdir -p ${pretrained_root_path}
 mkdir -p ${save_root_path}
@@ -72,16 +74,18 @@ do
         --model_path ${pretrained_path} \
         --save_dir ${export_path}
 
-    echo -e "\n Test ${model_name} Naive fp32"
+    echo -e "\n Test ${model_name} GPU Naive fp32"
     python deploy/python/infer_benchmark.py \
         --dataset_type ${dataset_type} \
         --dataset_path ${dataset_path} \
-        --device gpu \
+        --device cpu \
         --use_trt False \
         --precision fp32 \
+        --resize_width ${resize_width} \
+        --resize_height ${resize_height} \
         --config ${export_path}/deploy.yaml
 
-    echo -e "\n Test ${model_name} TRT fp32"
+    echo -e "\n Test ${model_name} GPU TRT fp32"
     python deploy/python/infer_benchmark.py \
         --dataset_type ${dataset_type} \
         --dataset_path ${dataset_path} \
@@ -89,9 +93,11 @@ do
         --use_trt True \
         --precision fp32 \
         --enable_auto_tune ${enable_auto_tune} \
+        --resize_width ${resize_width} \
+        --resize_height ${resize_height} \
         --config ${export_path}/deploy.yaml
 
-    echo -e "\n Test ${model_name} TRT fp16"
+    echo -e "\n Test ${model_name} GPU TRT fp16"
     python deploy/python/infer_benchmark.py \
         --dataset_type ${dataset_type} \
         --dataset_path ${dataset_path} \
@@ -99,6 +105,28 @@ do
         --use_trt True \
         --precision fp16 \
         --enable_auto_tune ${enable_auto_tune} \
+        --resize_width ${resize_width} \
+        --resize_height ${resize_height} \
+        --config ${export_path}/deploy.yaml
+
+    echo -e "\n Test ${model_name} CPU Naive"
+    python deploy/python/infer_benchmark.py \
+        --dataset_type ${dataset_type} \
+        --dataset_path ${dataset_path} \
+        --device cpu \
+        --enable_mkldnn False \
+        --resize_width ${resize_width} \
+        --resize_height ${resize_height} \
+        --config ${export_path}/deploy.yaml
+
+    echo -e "\n Test ${model_name} CPU MKLDNN"
+    python deploy/python/infer_benchmark.py \
+        --dataset_type ${dataset_type} \
+        --dataset_path ${dataset_path} \
+        --device cpu \
+        --enable_mkldnn True \
+        --resize_width ${resize_width} \
+        --resize_height ${resize_height} \
         --config ${export_path}/deploy.yaml
 
     echo -e "\n\n"
