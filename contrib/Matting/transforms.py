@@ -106,6 +106,56 @@ class Resize:
 
 
 @manager.TRANSFORMS.add_component
+class RandomResize:
+    """
+    Resize image to a size determinned by `scale` and `size`.
+
+    Args:
+        size(tuple|list): The reference size to resize. A tuple or list with length 2.
+        scale(tupel|list, optional): A range of scale base on `size`. A tuple or list with length 2. Default: None.
+    """
+
+    def __init__(self, size, scale=None):
+        if isinstance(size, list) or isinstance(size, tuple):
+            if len(size) != 2:
+                raise ValueError(
+                    '`size` should include 2 elements, but it is {}'.format(
+                        size))
+        else:
+            raise TypeError(
+                "Type of `size` is invalid. It should be list or tuple, but it is {}"
+                .format(type(size)))
+
+        if scale is not None:
+            if isinstance(scale, list) or isinstance(scale, tuple):
+                if len(scale) != 2:
+                    raise ValueError(
+                        '`scale` should include 2 elements, but it is {}'.
+                        format(scale))
+            else:
+                raise TypeError(
+                    "Type of `scale` is invalid. It should be list or tuple, but it is {}"
+                    .format(type(scale)))
+        self.size = size
+        self.scale = scale
+
+    def __call__(self, data):
+        h, w = data['img'].shape[:2]
+        scale = np.random.uniform(self.scale[0], self.scale[1])
+        scale_factor = max(self.size[0] / w, self.size[1] / h)
+        print(scale)
+        print(scale_factor)
+        scale = scale * scale_factor
+
+        w = int(round(w * scale))
+        h = int(round(h * scale))
+        data['img'] = functional.resize(data['img'], (w, h))
+        for key in data.get('gt_fields', []):
+            data[key] = functional.resize(data[key], (w, h))
+        return data
+
+
+@manager.TRANSFORMS.add_component
 class ResizeByLong:
     """
     Resize the long side of an image to given size, and then scale the other side proportionally.
@@ -502,11 +552,11 @@ class RandomDistort:
 
 
 if __name__ == "__main__":
-    transforms = [RandomDistort()]
+    transforms = [RandomResize(size=(512, 512), scale=(0.5, 1.0))]
     transforms = Compose(transforms)
-    fg_path = '/ssd1/home/chenguowei01/github/PaddleSeg/contrib/matting/data/matting/human_matting/Distinctions-646/train/fg/13(2).png'
+    fg_path = '/ssd1/home/chenguowei01/github/PaddleSeg/contrib/Matting/data/matting/human_matting/Distinctions-646/train/fg/13(2).png'
     alpha_path = fg_path.replace('fg', 'alpha')
-    bg_path = '/ssd1/home/chenguowei01/github/PaddleSeg/contrib/matting/data/matting/human_matting/bg/unsplash_bg/attic/photo-1443884590026-2e4d21aee71c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MnwxMjA3fDB8MXxzZWFyY2h8Nzh8fGF0dGljfGVufDB8fHx8MTYyOTY4MDcxNQ&ixlib=rb-1.2.1&q=80&w=400.jpg'
+    bg_path = '/ssd1/home/chenguowei01/github/PaddleSeg/contrib/Matting/data/matting/human_matting/bg/unsplash_bg/attic/photo-1443884590026-2e4d21aee71c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MnwxMjA3fDB8MXxzZWFyY2h8Nzh8fGF0dGljfGVufDB8fHx8MTYyOTY4MDcxNQ&ixlib=rb-1.2.1&q=80&w=400.jpg'
     data = {}
     data['fg'] = cv2.imread(fg_path)
     data['bg'] = cv2.imread(bg_path)
