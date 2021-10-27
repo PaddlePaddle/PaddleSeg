@@ -42,7 +42,7 @@ class DeployConfig:
         with codecs.open(path, 'r', 'utf-8') as file:
             self.dic = yaml.load(file, Loader=yaml.FullLoader)
 
-        self._transforms = self._load_transforms(
+        self._transforms = self.load_transforms(
             self.dic['Deploy']['transforms'])
         self._dir = os.path.dirname(path)
 
@@ -58,7 +58,8 @@ class DeployConfig:
     def params(self):
         return os.path.join(self._dir, self.dic['Deploy']['params'])
 
-    def _load_transforms(self, t_list):
+    @staticmethod
+    def load_transforms(t_list):
         com = manager.TRANSFORMS
         transforms = []
         for t in t_list:
@@ -240,9 +241,9 @@ class Predictor:
 
             self.predictor.run()
 
-            results = output_handle.copy_to_cpu()
             if args.benchmark:
                 self.autolog.times.stamp()
+            results = output_handle.copy_to_cpu()
 
             results = self._postprocess(results)
 
@@ -357,21 +358,10 @@ def parse_args():
     )
 
     parser.add_argument(
-        '--use_cpu',
-        dest='use_cpu',
-        help='Whether to use X86 CPU for inference. Uses GPU in default.',
-        action='store_true')
-    parser.add_argument(
-        '--use_mkldnn',
-        dest='use_mkldnn',
-        help='Whether to use MKLDNN to accelerate prediction.',
-        action='store_true')
-    parser.add_argument(
         '--with_argmax',
         dest='with_argmax',
         help='Perform argmax operation on the predict result.',
         action='store_true')
-
     parser.add_argument(
         '--print_detail',
         dest='print_detail',
