@@ -29,14 +29,14 @@ class EMA(object):
         state = self.model.state_dict()  # current params
         for name in self.param_keys:
             self.shadow[name] = decay * self.shadow[name] + (
-                1 - decay) * state[name]
+                1 - decay) * state[name].detach().clone()
         self.step += 1
 
     def update_buffer(self):
         # No EMA for buffer values (for now)
         state = self.model.state_dict()
         for name in self.buffer_keys:
-            self.shadow[name] = state[name]
+            self.shadow[name] = state[name].detach().clone()
 
     def apply_shadow(self):
         self.backup = self.get_model_state()

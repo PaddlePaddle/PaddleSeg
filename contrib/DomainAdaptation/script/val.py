@@ -267,6 +267,5 @@ def evaluate(model, eval_dataset, num_workers=0, print_detail=True):
         logger.info(
             'PA1:{:.3f}, MPA1:{:.3f}, MIoU1:{:.3f}, FWIoU1:{:.3f}, PC:{:.3f}'.
             format(PA, MPA, MIoU, FWIoU, PC))
-        evaluator.reset()
 
     return PA, MPA, MIoU, FWIoU
