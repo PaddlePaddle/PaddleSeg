@@ -48,6 +48,8 @@ class Trainer():
         self.celoss = losses.CrossEntropyLoss()
         self.klloss = KLLoss()
         self.bceloss = losses.BCELoss()
+        # self.src_centers = [paddle.zeros((19,)) for _ in range(19)]
+        # self.tgt_centers = [paddle.zeros((19,)) for _ in range(19)]
 
     def train(self,
               train_dataset_src,
@@ -162,9 +164,6 @@ class Trainer():
         while iter < iters:
             for _, (data_src, data_tgt) in enumerate(
                     zip(loader_src, loader_tgt)):
-                # print('iter', iter)
-                # if iter == 0:
-                #     data_src_0, data_tgt_0 = data_src, data_tgt
 
                 reader_cost_averager.record(time.time() - batch_start)
                 loss_dict = {}
@@ -335,7 +334,41 @@ class Trainer():
                 #### mask input feature & pullin  ######
                 if self.featurepullin:
                     logger.info("Add 3-level content pullin loss")
-                    # labels_src_onehot = Func.one_hot(labels_src, train_dataset_src.num_classes)
+                    # # inner-class loss
+                    # AvgPool2D = paddle.nn.AvgPool2D(kernel_size=(logits_list_src.shape[2:]))
+                    # total_pixs = logits_list_src.shape[2]*logits_list_src[3]
+
+                    # for i in range(train_dataset_tgt.NUM_CLASSES):
+                    #     pred = paddle.argmax(logits_list_src, axis=1) # 1,
+                    #     center_src = AvgPool2D(logits_list_src[pred==i])/(sum(pred==i)/total_pixs) # 1, C
+                    #     assert center_src.shape == [1, 19], print('the center_src shape should be 1, 19 ', center_src.shape)
+                    #     if sum(center_src) > 1e-6:
+                    #         self.src_centers[i] = 0.99 * self.src_centers[i] + (1 - 0.99) * center_src
+
+                    #     pred = paddle.argmax(logits_list_tgt, axis=1) # 1,
+                    #     center_tgt = AvgPool2D(logits_list_tgt[pred==i])/(sum(pred==i)/total_pixs)
+                    #     assert center_tgt.shape == [1, 19], print('the center_tgt shape should be 1, 19 ', center_tgt.shape)
+                    #     if sum(center_tgt) > 1e-6:
+                    #         self.tgt_centers[i] = 0.99 * self.tgt_centers[i] + (1 - 0.99) * center_tgt
+
+                    #     if iter>=3000:
+                    #         if iter == 0:
+                    #             loss_pix_align = paddle.zeros((0))
+                    #         else:
+                    #             loss_pix_align += paddle.nn.MSELoss(center_src, self.src_centers[i])
+                    #             loss_pix_align += paddle.nn.MSELoss(center_tgt, self.tgt_centers[i])
+
+                    # if iter >= 3000:
+                    #     src_centers = paddle.concat(self.src_centers, axis=0)
+                    #     tgt_centers = paddle.concat(self.tgt_centers, axis=0)
+
+                    #     relatmat_src = paddle.matmul(src_centers, src_centers, transpose_y=True)
+                    #     relatmat_tgt = paddle.matmul(tgt_centers, tgt_centers, transpose_y=True)
+
+                    #     loss_intra_relate = paddle.nn.MSELoss(relatmat_src, relatmat_tgt)
+
+                    # # intra-class loss
+                    # # pixel level loss
 
                 loss = sum(loss_dict.values())
                 # reprod_logger.add("loss_total_{}".format(iter), np.array([loss]))
@@ -351,10 +384,8 @@ class Trainer():
                 self.ema.update_params()
 
                 with paddle.no_grad():
-
                     ##### log & save #####
                     lr = optimizer.get_lr()
-
                     # update lr
                     if isinstance(optimizer, paddle.distributed.fleet.Fleet):
                         lr_sche = optimizer.user_defined_optimizer._learning_rate
@@ -414,11 +445,11 @@ class Trainer():
                         self.ema.apply_shadow()
                         self.ema.model.eval()
 
-                        PA_tgt, _, MIoU_tgt, _ = val.evaluate(
-                            self.model,
-                            val_dataset_tgt,
-                            num_workers=num_workers,
-                            **test_config)
+                        # PA_tgt, _, MIoU_tgt, _ = val.evaluate(
+                        #     self.model,
+                        #     val_dataset_tgt,
+                        #     num_workers=num_workers,
+                        #     **test_config)
 
                         # if (iter % (save_interval * 30)) == 0:  # add evaluate on src
                         #     PA_src, _, MIoU_src, _ = val.evaluate(
@@ -451,30 +482,30 @@ class Trainer():
                             model_to_remove = save_models.popleft()
                             shutil.rmtree(model_to_remove)
 
-                        if val_dataset_tgt is not None:
-                            if MIoU_tgt > best_mean_iou:
-                                best_mean_iou = MIoU_tgt
-                                best_model_iter = iter
-                                best_model_dir = os.path.join(
-                                    save_dir, "best_model")
-                                paddle.save(
-                                    self.model.state_dict(),
-                                    os.path.join(best_model_dir,
-                                                 'model.pdparams'))
-                            logger.info(
-                                '[EVAL] The model with the best validation mIoU ({:.4f}) was saved at iter {}.'
-                                .format(best_mean_iou, best_model_iter))
-                            # logger.info(
-                            #     '[EVAL] The source mIoU is ({:.4f}) at iter {}.'.format(MIoU_src, iter))
+                        # if val_dataset_tgt is not None:
+                        #     if MIoU_tgt > best_mean_iou:
+                        #         best_mean_iou = MIoU_tgt
+                        #         best_model_iter = iter
+                        #         best_model_dir = os.path.join(
+                        #             save_dir, "best_model")
+                        #         paddle.save(
+                        #             self.model.state_dict(),
+                        #             os.path.join(best_model_dir,
+                        #                          'model.pdparams'))
+                        #     logger.info(
+                        #         '[EVAL] The model with the best validation mIoU ({:.4f}) was saved at iter {}.'
+                        #         .format(best_mean_iou, best_model_iter))
+                        # logger.info(
+                        #     '[EVAL] The source mIoU is ({:.4f}) at iter {}.'.format(MIoU_src, iter))
 
-                            if use_vdl:
-                                log_writer.add_scalar('Evaluate/mIoU', MIoU_tgt,
-                                                      iter)
-                                log_writer.add_scalar('Evaluate/PA', PA_tgt,
-                                                      iter)
-                                # log_writer.add_scalar('Evaluate/mIoU_src', MIoU_src,
-                                #                       iter)
-                                # log_writer.add_scalar('Evaluate/PA_src', PA_src, iter)
+                        # if use_vdl:
+                        #     log_writer.add_scalar('Evaluate/mIoU', MIoU_tgt,
+                        #                           iter)
+                        #     log_writer.add_scalar('Evaluate/PA', PA_tgt,
+                        #                           iter)
+                        # log_writer.add_scalar('Evaluate/mIoU_src', MIoU_src,
+                        #                       iter)
+                        # log_writer.add_scalar('Evaluate/PA_src', PA_src, iter)
                     batch_start = time.time()
             #     if iter > 3:
             #         break

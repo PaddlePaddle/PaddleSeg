@@ -212,10 +212,9 @@ def evaluate(model, eval_dataset, num_workers=0, print_detail=True):
         num_workers=num_workers,
         return_list=True,
     )
-    total_iters = len(loader)
 
     progbar_val = progbar.Progbar(
-        target=total_iters, verbose=1 if nranks < 2 else 2)
+        target=len(loader), verbose=0 if nranks < 2 else 2)
 
     reader_cost_averager = TimeAverager()
     batch_cost_averager = TimeAverager()
@@ -268,5 +267,6 @@ def evaluate(model, eval_dataset, num_workers=0, print_detail=True):
         logger.info(
             'PA1:{:.3f}, MPA1:{:.3f}, MIoU1:{:.3f}, FWIoU1:{:.3f}, PC:{:.3f}'.
             format(PA, MPA, MIoU, FWIoU, PC))
+        evaluator.reset()
 
     return PA, MPA, MIoU, FWIoU

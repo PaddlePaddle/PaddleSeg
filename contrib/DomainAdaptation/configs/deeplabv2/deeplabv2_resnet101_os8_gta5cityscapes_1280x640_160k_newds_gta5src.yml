@@ -1,4 +1,4 @@
-gitbatch_size: 1
+batch_size: 1
 iters: 400000
 
 data:
