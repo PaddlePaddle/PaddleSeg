@@ -143,8 +143,6 @@ class RandomResize:
         h, w = data['img'].shape[:2]
         scale = np.random.uniform(self.scale[0], self.scale[1])
         scale_factor = max(self.size[0] / w, self.size[1] / h)
-        print(scale)
-        print(scale_factor)
         scale = scale * scale_factor
 
         w = int(round(w * scale))
@@ -551,8 +549,74 @@ class RandomDistort:
         return data
 
 
+@manager.TRANSFORMS.add_component
+class Padding:
+    """
+    Add bottom-right padding to a raw image or annotation image.
+
+    Args:
+        target_size (list|tuple): The target size after padding.
+        im_padding_value (list, optional): The padding value of raw image.
+            Default: [127.5, 127.5, 127.5].
+        label_padding_value (int, optional): The padding value of annotation image. Default: 255.
+
+    Raises:
+        TypeError: When target_size is neither list nor tuple.
+        ValueError: When the length of target_size is not 2.
+    """
+
+    def __init__(self, target_size, im_padding_value=(127.5, 127.5, 127.5)):
+        if isinstance(target_size, list) or isinstance(target_size, tuple):
+            if len(target_size) != 2:
+                raise ValueError(
+                    '`target_size` should include 2 elements, but it is {}'.
+                    format(target_size))
+        else:
+            raise TypeError(
+                "Type of target_size is invalid. It should be list or tuple, now is {}"
+                .format(type(target_size)))
+
+        self.target_size = target_size
+        self.im_padding_value = im_padding_value
+
+    def __call__(self, data):
+        im_height, im_width = data['img'].shape[0], data['img'].shape[1]
+        target_height = self.target_size[1]
+        target_width = self.target_size[0]
+        pad_height = target_height - im_height
+        pad_width = target_width - im_width
+        if pad_height < 0 or pad_width < 0:
+            raise ValueError(
+                'The size of image should be less than `target_size`, but the size of image ({}, {}) is larger than `target_size` ({}, {})'
+                .format(im_width, im_height, target_width, target_height))
+        else:
+            data['img'] = cv2.copyMakeBorder(
+                data['img'],
+                0,
+                pad_height,
+                0,
+                pad_width,
+                cv2.BORDER_CONSTANT,
+                value=self.im_padding_value)
+            for key in data.get('gt_fields', []):
+                if key in ['trimap', 'alpha']:
+                    value = 0
+                else:
+                    value = self.im_padding_value
+                data[key] = cv2.copyMakeBorder(
+                    data[key],
+                    0,
+                    pad_height,
+                    0,
+                    pad_width,
+                    cv2.BORDER_CONSTANT,
+                    value=self.im_padding_value)
+
+        return data
+
+
 if __name__ == "__main__":
-    transforms = [RandomResize(size=(512, 512), scale=(0.5, 1.0))]
+    transforms = [Padding(target_size=(1200, 1200))]
     transforms = Compose(transforms)
     fg_path = '/ssd1/home/chenguowei01/github/PaddleSeg/contrib/Matting/data/matting/human_matting/Distinctions-646/train/fg/13(2).png'
     alpha_path = fg_path.replace('fg', 'alpha')
@@ -575,4 +639,6 @@ if __name__ == "__main__":
 #     pdb.set_trace()
     data = transforms(data)
     print(data['img'].dtype, data['img'].shape)
+    for key in data['gt_fields']:
+        print(data[key].shape)
     cv2.imwrite('distort_img.jpg', data['img'].transpose([1, 2, 0]))
