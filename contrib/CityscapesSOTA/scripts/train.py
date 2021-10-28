@@ -207,7 +207,7 @@ def train(model,
             if (iter % save_interval == 0
                     or iter == iters) and (val_dataset is not None):
                 num_workers = 1 if num_workers > 0 else 0
-                mean_iou, acc = evaluate(
+                mean_iou, acc, class_iou, class_acc, kappa = evaluate(
                     model,
                     val_dataset,
                     aug_eval=aug_eval,
