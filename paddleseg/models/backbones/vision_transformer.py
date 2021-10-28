@@ -12,16 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
+import math
+
 import paddle
 import paddle.nn as nn
 import paddle.nn.functional as F
 import numpy as np
-import os
-import math
 
 from paddleseg.cvlibs import manager
 from paddleseg.utils import utils, logger
-from paddleseg.models.backbones.transformer_utils import *
+from paddleseg.models.backbones.transformer_utils import to_2tuple, DropPath, Identity
 
 
 class Mlp(nn.Layer):
@@ -224,14 +225,17 @@ class VisionTransformer(nn.Layer):
         model_state_dict = self.state_dict()
         pos_embed_name = "pos_embed"
         if pos_embed_name in load_state_dict.keys():
-            load_pos_embed = paddle.to_tensor(load_state_dict[pos_embed_name], dtype="float32")
+            load_pos_embed = paddle.to_tensor(
+                load_state_dict[pos_embed_name], dtype="float32")
             if self.pos_embed.shape != load_pos_embed.shape:
                 pos_size = int(math.sqrt(load_pos_embed.shape[1] - 1))
                 model_state_dict[pos_embed_name] = self.resize_pos_embed(
-                    load_pos_embed, (pos_size, pos_size), (self.pos_h, self.pos_w))
+                    load_pos_embed, (pos_size, pos_size),
+                    (self.pos_h, self.pos_w))
                 self.set_dict(model_state_dict)
-                logger.info("Load pos_embed and resize it from {} to {} .".format(
-                    load_pos_embed.shape, self.pos_embed.shape))
+                logger.info(
+                    "Load pos_embed and resize it from {} to {} .".format(
+                        load_pos_embed.shape, self.pos_embed.shape))
 
     def resize_pos_embed(self, pos_embed, old_hw, new_hw):
         """
@@ -257,17 +261,17 @@ class VisionTransformer(nn.Layer):
 
     def forward(self, x):
         x = self.patch_embed(x)
-        x_shape = paddle.shape(x)   # b * c * h * w
+        x_shape = paddle.shape(x)  # b * c * h * w
 
         cls_tokens = self.cls_token.expand((x_shape[0], -1, -1))
-        x = x.flatten(2).transpose([0, 2, 1])   # b * hw * c
+        x = x.flatten(2).transpose([0, 2, 1])  # b * hw * c
         x = paddle.concat([cls_tokens, x], axis=1)
 
         if paddle.shape(x)[1] == self.pos_embed.shape[1]:
             x = x + self.pos_embed
         else:
             x = x + self.resize_pos_embed(self.pos_embed,
-                (self.pos_h, self.pos_w), x_shape[2:])
+                                          (self.pos_h, self.pos_w), x_shape[2:])
         x = self.pos_drop(x)
 
         res = []
@@ -404,4 +408,3 @@ def ViT_huge_patch32_384(**kwargs):
         mlp_ratio=4,
         **kwargs)
     return model
-

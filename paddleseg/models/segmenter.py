@@ -55,10 +55,12 @@ class LinearSegmenter(nn.Layer):
         feats, shape = self.backbone(x)
         logits = self.head(feats[-1], shape[2:])
 
-        return [
-            F.interpolate(_logit, x_shape[2:], mode='bilinear')
-            for _logit in logits
+        logit_list = [
+            F.interpolate(logit, x_shape[2:], mode='bilinear')
+            for logit in logits
         ]
+
+        return logit_list
 
 
 @manager.MODELS.add_component
@@ -114,10 +116,12 @@ class MaskSegmenter(nn.Layer):
         feats, shape = self.backbone(x)
         logits = self.head(feats[-1], shape[2:])
 
-        return [
-            F.interpolate(_logit, x_shape[2:], mode='bilinear')
-            for _logit in logits
+        logit_list = [
+            F.interpolate(logit, x_shape[2:], mode='bilinear')
+            for logit in logits
         ]
+
+        return logit_list
 
 
 class SegmenterLinearHead(nn.Layer):
