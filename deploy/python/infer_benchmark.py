@@ -21,6 +21,7 @@ import time
 import yaml
 import numpy as np
 import paddle
+import paddle.nn.functional as F
 
 LOCAL_PATH = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(LOCAL_PATH, '..', '..'))
@@ -46,14 +47,12 @@ def parse_args():
 
     parser.add_argument(
         '--dataset_type',
-        dest='dataset_type',
         help='The name of dataset, such as Cityscapes, PascalVOC and ADE20K.',
         type=str,
         default=None,
         required=True)
     parser.add_argument(
         '--dataset_path',
-        dest='dataset_path',
         help='The directory of the dataset to be predicted. If set dataset_path, '
         'it use the test and label images to calculate the mIoU.',
         type=str,
@@ -61,13 +60,23 @@ def parse_args():
         required=True)
     parser.add_argument(
         '--dataset_mode',
-        dest='dataset_mode',
         help='The dataset mode, such as train, val.',
         type=str,
         default="val")
     parser.add_argument(
+        '--resize_width',
+        help='Set the resize width to acclerate the test. In default, it is 0, '
+        'which means use the origin width.',
+        type=int,
+        default=0)
+    parser.add_argument(
+        '--resize_height',
+        help='Set the resize height to acclerate the test. In default, it is 0, '
+        'which means use the origin height.',
+        type=int,
+        default=0)
+    parser.add_argument(
         '--batch_size',
-        dest='batch_size',
         help='Mini batch size of one gpu or cpu.',
         type=int,
         default=1)
@@ -119,13 +128,10 @@ def parse_args():
 
     parser.add_argument(
         '--with_argmax',
-        dest='with_argmax',
         help='Perform argmax operation on the predict result.',
         action='store_true')
-
     parser.add_argument(
         '--print_detail',
-        dest='print_detail',
         help='Print GLOG information of Paddle Inference.',
         action='store_true')
 
@@ -138,8 +144,24 @@ def get_dataset(args):
         raise RuntimeError("The dataset is not supported.")
 
     cfg = DeployConfig(args.cfg)
+
+    if args.resize_width == 0 and args.resize_height == 0:
+        transforms = cfg.transforms.transforms
+    else:
+        # load and add resize to transforms
+        assert args.resize_width > 0 and args.resize_height > 0
+        with codecs.open(args.cfg, 'r', 'utf-8') as file:
+            dic = yaml.load(file, Loader=yaml.FullLoader)
+        transforms_dic = dic['Deploy']['transforms']
+        transforms_dic.insert(
+            0, {
+                "type": "Resize",
+                'target_size': [args.resize_width, args.resize_height]
+            })
+        transforms = DeployConfig.load_transforms(transforms_dic).transforms
+
     kwargs = {
-        'transforms': cfg.transforms.transforms,
+        'transforms': transforms,
         'dataset_root': args.dataset_path,
         'mode': args.dataset_mode
     }
@@ -232,6 +254,10 @@ class DatasetPredictor(Predictor):
             pred = self._postprocess(pred)
             pred = paddle.to_tensor(pred, dtype='int64')
             label = paddle.to_tensor(label, dtype="int32")
+            if pred.shape != label.shape:
+                label = paddle.unsqueeze(label, 0)
+                label = F.interpolate(label, pred.shape[-2:])
+                label = paddle.squeeze(label, 0)
 
             intersect_area, pred_area, label_area = metrics.calculate_area(
                 pred,
