@@ -206,8 +206,8 @@ class ResizeToIntMult:
         data['trans_info'].append(('resize', data['img'].shape[0:2]))
 
         h, w = data['img'].shape[0:2]
-        rw = w - w % 32
-        rh = h - h % 32
+        rw = w - w % self.mult_int
+        rh = h - h % self.mult_int
         data['img'] = functional.resize(data['img'], (rw, rh))
         for key in data.get('gt_fields', []):
             data[key] = functional.resize(data[key], (rw, rh))

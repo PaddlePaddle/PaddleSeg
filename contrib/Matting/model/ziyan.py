@@ -275,21 +275,25 @@ class ZiYanRefine(ZiYan):
                     .format(backbone_scale))
         else:
             backbone_scale = 1
-        super().__init__(backbone, pretrained)
+        super().__init__(backbone)
 
         self.backbone_scale = backbone_scale
+        self.pretrained = pretrained
         self.if_refine = if_refine
-        self.refiner = Refiner(
-            mode=refine_mode,
-            sample_pixels=refine_sample_pixels,
-            threshold=refine_threshold,
-            kernel_size=refine_kernel_size,
-            prevent_oversampling=refine_prevent_oversampling)
+        if if_refine:
+            self.refiner = Refiner(
+                mode=refine_mode,
+                sample_pixels=refine_sample_pixels,
+                threshold=refine_threshold,
+                kernel_size=refine_kernel_size,
+                prevent_oversampling=refine_prevent_oversampling)
+
         # stage 0f recontain
         self.decoder0_f = nn.Sequential(
             layers.ConvBNReLU(64, 64, 3, padding=1),
             layers.ConvBNReLU(64, 64, 3, padding=1),
             nn.Conv2D(64, 1 + 1 + 32, 3, padding=1))
+        self.init_weight()
 
     def forward(self, data):
         src = data['img']
@@ -432,7 +436,7 @@ class ZiYanRefine(ZiYan):
 
         # refine loss
         if self.if_refine:
-            loss_refine = loss_func_dict['refine'][0](logit_dict['alpha'],
+            loss_refine = loss_func_dict['refine'][0](logit_dict['refine'],
                                                       label_dict['alpha'])
             loss['refine'] = loss_refine
             loss_all = loss_all + loss_refine
