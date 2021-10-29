@@ -69,13 +69,13 @@ PaddleSeg是基于飞桨[PaddlePaddle](https://www.paddlepaddle.org.cn)开发的
 <img src="./docs/images/QQ_chat.png"  width = "200" />  
 </div>
 
-## 模型说明  <img src="./docs/images/model.png" width="20"/>
-
-[Model Zoo](./configs/)
+## 模型库总览  <img src="./docs/images/model.png" width="20"/>
 
 <div align="center">
-<img src="./docs/images/model_perference.png"   />  
+<img src="./docs/images/perf_large_models_speed.png"   />  
 </div>
+
+更多信息参见[Model Zoo Overview](./docs/model_zoo_overview.md)
 
 
 ## 使用教程 <img src="./docs/images/teach.png" width="30"/>
