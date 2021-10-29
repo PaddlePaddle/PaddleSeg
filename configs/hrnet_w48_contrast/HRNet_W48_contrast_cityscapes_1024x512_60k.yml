@@ -1,0 +1,59 @@
+train_dataset:
+  type: Cityscapes
+  dataset_root: cityscapes
+  transforms:
+    - type: ResizeStepScaling
+      min_scale_factor: 0.5
+      max_scale_factor: 2.0
+      scale_step_size: 0.25
+    - type: RandomPaddingCrop
+      crop_size: [1024, 512]
+    - type: RandomHorizontalFlip
+    - type: RandomDistort
+      brightness_range: 0.4
+      contrast_range: 0.4
+      saturation_range: 0.4
+    - type: Normalize
+  mode: train
+
+val_dataset:
+  type: Cityscapes
+  dataset_root: cityscapes
+  transforms:
+    - type: Normalize
+  mode: val
+
+model:
+  type: HRNetW48Contrast
+  backbone:
+    type: HRNet_W48
+    pretrained: https://bj.bcebos.com/paddleseg/dygraph/hrnet_w48_ssld.tar.gz
+  in_channels: 720
+  num_classes: 19
+  drop_prob: 0.1
+  proj_dim: 720
+
+optimizer:
+  type: sgd
+  weight_decay: 0.0002
+
+lr_scheduler:
+  type: PolynomialDecay
+  learning_rate: 0.01
+  end_lr: 0.0
+  power: 0.9
+
+iters: 60000
+batch_size: 2
+
+loss:
+  types:
+    - type: CrossEntropyLoss
+    - type: PixelContrastCrossEntropyLoss
+      temperature: 0.1
+      base_temperature: 0.07
+      ignore_index: 255
+      max_samples: 1024
+      max_views: 100
+  coef: [1, 0.1]
+  

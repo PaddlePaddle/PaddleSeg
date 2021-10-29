@@ -45,3 +45,4 @@ from .segformer import SegFormer
 from .pointrend import PointRend
 from .ginet import GINet
 from .segnet import SegNet
+from .hrnet_contrast import HRNetW48Contrast
