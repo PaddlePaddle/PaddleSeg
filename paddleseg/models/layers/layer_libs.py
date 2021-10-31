@@ -271,52 +271,46 @@ class JPU(nn.Layer):
 
         return inputs[0], inputs[1], inputs[2], feat
 
+
 class ConvBNPReLU(nn.Layer):
     def __init__(self,
                  in_channels,
                  out_channels,
-                 kernel_size=1,
-                 stride=1,
-                 groups=1):
-        super().__init__()
-
-        self._conv = nn.Conv2D(in_channels, out_channels, kernel_size, padding='same', stride=stride, groups=groups, bias_attr=False)
-        self._bn = SyncBatchNorm(out_channels)
-        self._act = nn.PReLU()
-
-    def forward(self, x):
-        x = self._conv(x)
-        x = self._bn(x)
-        x = self._act(x)
-        return x
-
-
-class ConvBN(nn.Layer):
-    def __init__(self,
-                 in_channels,
-                 out_channels,
                  kernel_size,
-                 stride=1,
-                 groups=1):
+                 padding='same',
+                 **kwargs):
         super().__init__()
-        self._conv = nn.Conv2D(in_channels, out_channels, kernel_size, padding='same', stride=stride, groups=groups, bias_attr=False)
-        self._bn = SyncBatchNorm(out_channels)
+
+        self._conv = nn.Conv2D(
+            in_channels, out_channels, kernel_size, padding=padding, **kwargs)
+
+        if 'data_format' in kwargs:
+            data_format = kwargs['data_format']
+        else:
+            data_format = 'NCHW'
+        self._batch_norm = SyncBatchNorm(out_channels, data_format=data_format)
+        self._prelu = layers.Activation("prelu")
 
     def forward(self, x):
         x = self._conv(x)
-        x = self._bn(x)
+        x = self._batch_norm(x)
+        x = self._prelu(x)
         return x
 
 
 class BNPReLU(nn.Layer):
-    def __init__(self, out_channels):
+    def __init__(self, out_channels, **kwargs):
         super().__init__()
-        self._bn = SyncBatchNorm(out_channels)
-        self._act = nn.PReLU()
+        if 'data_format' in kwargs:
+            data_format = kwargs['data_format']
+        else:
+            data_format = 'NCHW'
+        self._batch_norm = SyncBatchNorm(out_channels, data_format=data_format)
+        self._prelu = layers.Activation("prelu")
 
     def forward(self, x):
-        x = self._bn(x)
-        x = self._act(x)
+        x = self._batch_norm(x)
+        x = self._prelu(x)
         return x
 
 
@@ -346,7 +340,7 @@ class EESP(nn.Layer):
         self.stride = stride
 
         in_branch_channels = int(out_channels / branches)
-        self.group_conv_in = ConvBNPReLU(in_channels, in_branch_channels, 1, stride=1, groups=branches)
+        self.group_conv_in = ConvBNPReLU(in_channels, in_branch_channels, 1, stride=1, groups=branches, bias_attr=False)
 
         map_ksize_dilation = {3: 1, 5: 2, 7: 3, 9: 4, 11: 5, 13: 6, 15: 7, 17: 8}
         self.kernel_sizes = []
@@ -369,29 +363,27 @@ class EESP(nn.Layer):
                           groups=in_branch_channels,
                           bias_attr=False)
             )
-        self.group_conv_out = ConvBN(out_channels, out_channels, kernel_size=1, stride=1, groups=branches)
+        self.group_conv_out = ConvBN(out_channels, out_channels, kernel_size=1, stride=1, groups=branches, bias_attr=False)
         self.bn_act = BNPReLU(out_channels)
         self._act = nn.PReLU()
         self.downAvg = True if down_method == 'avg' else False
 
     def forward(self, x):
-        group_out = self.group_conv_in(x)  # reduce feature map dimensions
+        group_out = self.group_conv_in(x)  
         output = [self.spp_modules[0](group_out)]
 
-        # compute the output for each branch and hierarchically fuse them
         for k in range(1, len(self.spp_modules)):
             output_k = self.spp_modules[k](group_out)
-            output_k = output_k + output[k - 1]     # HFF
+            output_k = output_k + output[k - 1]     
             output.append(output_k)
 
-        group_merge = self.group_conv_out(self.bn_act(paddle.concat(output, axis=1)))   # merge
+        group_merge = self.group_conv_out(self.bn_act(paddle.concat(output, axis=1))) 
         del output
 
-        # if down-sampling, then return the merged feature map.
         if self.stride == 2 and self.downAvg:
             return group_merge
 
-        # residual link
         if group_merge.shape == x.shape:
             group_merge = group_merge + x
-        return self._act(group_merge)
+        out = self._act(group_merge)
+        return out

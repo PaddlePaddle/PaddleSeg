@@ -46,8 +46,8 @@ class DownSampler(nn.Layer):
         self.avg = nn.AvgPool2D(kernel_size=3, padding=1, stride=2)
         if shortcut:
             self.shortcut_layer = nn.Sequential(
-                layers.ConvBNReLU(3, 3, 3, 1),
-                layers.ConvBN(3, out_channels, 1, 1),
+                layers.ConvBNPReLU(3, 3, 3, stride=1, bias_attr=False),
+                layers.ConvBN(3, out_channels, 1, stride=1, bias_attr=False),
             )
         self._act = nn.PReLU()
 
@@ -101,7 +101,7 @@ class EESPNet(nn.Layer):
             else:
                 channels_config[i] = channels * pow(2, i)
 
-        self.level1 = layers.ConvBNPReLU(in_channels, channels_config[0], 3, 2)
+        self.level1 = layers.ConvBNPReLU(in_channels, channels_config[0], 3, stride=2, bias_attr=False)
 
         self.level2 = DownSampler(channels_config[0],
                                   channels_config[1],

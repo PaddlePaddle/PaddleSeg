@@ -35,7 +35,7 @@ class PSPModule(nn.Layer):
                           bias_attr=False) for size in sizes
             ]
         )
-        self.project = layers.ConvBNPReLU(in_channels * (len(sizes) + 1), out_channels, 1, 1)
+        self.project = layers.ConvBNPReLU(in_channels * (len(sizes) + 1), out_channels, 1, stride=1, bias_attr=False)
 
     def forward(self, feats):
         h, w = feats.shape[2], feats.shape[3]
@@ -60,12 +60,13 @@ class EESPNetV2(nn.Layer):
         num_classes (int): The unique number of target classes.
         backbone (paddle.nn.Layer): Backbone network, currently support ESPNet.
         drop_prob (float): The probability of dropout.
+        pretrained (str, optional): The path or url of pretrained model. Default: None.
     """
-    def __init__(self, num_classes, backbone, drop_prob=0.1):
+    def __init__(self, num_classes, backbone, drop_prob=0.1, pretrained=None):
         super().__init__()
         self.backbone = backbone
         self.in_channels = self.backbone.out_channels
-        self.proj_l4_c = layers.ConvBNPReLU(self.in_channels[3], self.in_channels[2], 1, 1)
+        self.proj_l4_c = layers.ConvBNPReLU(self.in_channels[3], self.in_channels[2], 1, stride=1, bias_attr=False)
         psp_size = 2 * self.in_channels[2]
         self.eesp_psp = nn.Sequential(
             layers.EESP(psp_size, psp_size // 2, stride=1, branches=4, kernel_size_maximum=7),
@@ -78,11 +79,19 @@ class EESPNetV2(nn.Layer):
             nn.Conv2D(psp_size // 2, num_classes, 1, 1, bias_attr=False),
         )
         self.act_l3 = layers.BNPReLU(num_classes)
-        self.project_l2 = layers.ConvBNPReLU(self.in_channels[1] + num_classes, num_classes, 1, 1)
+        self.project_l2 = layers.ConvBNPReLU(self.in_channels[1] + num_classes, num_classes, 1, stride=1, bias_attr=False)
         self.project_l1 = nn.Sequential(
             nn.Dropout2D(p=drop_prob),
             nn.Conv2D(self.in_channels[0] + num_classes, num_classes, 1, 1, bias_attr=False),
         )
+
+        self.pretrained = pretrained
+
+        self.init_weight()
+
+    def init_weight(self):
+        if self.pretrained is not None:
+            utils.load_entire_model(self, self.pretrained)
 
     def hierarchicalUpsample(self, x, factor=3):
         for i in range(factor):
