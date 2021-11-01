@@ -304,7 +304,7 @@ class City_Dataset(io.Dataset):
         edge_mask = None
         if self.edge:
             edge_mask = F.mask_to_binary_edge(
-                target, radius=2, num_classes=self.NUM_CLASSES)
+                target, radius=1, num_classes=self.NUM_CLASSES)
 
         target = paddle.to_tensor(target)
 

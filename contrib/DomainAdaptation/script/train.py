@@ -26,7 +26,7 @@ from paddleseg.models import losses
 import transforms.functional as Func
 from models import EMA
 from script import val
-from utils import augmentation
+from utils import augmentation, load_ema_model
 from models.losses import KLLoss
 import numpy as np
 
@@ -41,15 +41,18 @@ class Trainer():
         self.edgepullin = cfg['edgepullin']
         self.src_only = cfg['src_only']
         self.featurepullin = cfg['featurepullin']
-        # print('self.featurepullin', self.featurepullin)
 
         self.model = model
         self.ema = EMA(self.model, self.ema_decay)
         self.celoss = losses.CrossEntropyLoss()
         self.klloss = KLLoss()
+        self.mseloss = losses.MSELoss()
         self.bceloss = losses.BCELoss()
         self.src_centers = [paddle.zeros((19, )) for _ in range(19)]
         self.tgt_centers = [paddle.zeros((19, )) for _ in range(19)]
+        self.resume_ema = eval(
+            cfg['resume_ema']
+        )  #'saved_model_develop/deeplabv2_resnet101_os8_gta5cityscapes_1280x640_160k_newds_edgestream_edgeranch1027_ema/iter_60000/'
 
     def train(self,
               train_dataset_src,
@@ -93,6 +96,7 @@ class Trainer():
 
         if resume_model is not None:
             start_iter = resume(self.model, optimizer, resume_model)
+        load_ema_model(self.model, self.resume_ema)
 
         if not os.path.isdir(save_dir):
             if os.path.exists(save_dir):
@@ -132,22 +136,6 @@ class Trainer():
             worker_init_fn=worker_init_fn,
         )
 
-        # reprod_logger.add("length_src_train", np.array(len(train_dataset_src)))
-        # reprod_logger.add("length_tgt_train", np.array(len(train_dataset_tgt)))
-        # reprod_logger.add("length_tgt_val", np.array(len(val_dataset_tgt)))
-
-        # for idx in range(3):
-        #     import random
-        #     np.random.seed(0)
-        #     random.seed(0)
-        #     print('############dataeval')
-        #     rnd_idx = [np.random.randint(0, len(train_dataset_tgt)) for i in range(5)]
-        #     reprod_logger.add(f"dataset_src_{train_dataset_src[rnd_idx[idx]][2]}",
-        #                         train_dataset_src[rnd_idx[idx]][0].numpy())
-        #     reprod_logger.add(f"dataset_tgt_{train_dataset_tgt[rnd_idx[idx]][2]}",
-        #                         train_dataset_tgt[rnd_idx[idx]][0].numpy())
-        # print(rnd_idx)
-
         if use_vdl:
             from visualdl import LogWriter
             log_writer = LogWriter(save_dir)
@@ -177,24 +165,21 @@ class Trainer():
 
                 edges_src = None
                 if len(data_src) == 3:
-                    edges_src = data_src[2].astype('int64')
+                    edges_src = data_src[2].astype('int64')  # 1,1,640,1280
+                    # import imageio # save image
 
-                # images_src, labels_src = paddle.to_tensor(np.load('/ssd2/tangshiyu/Code/fake_data_src.npy')), \
-                #             paddle.to_tensor(np.load('/ssd2/tangshiyu/Code/fake_label_src.npy')).astype('int64')
-                # images_tgt, labels_tgt = paddle.to_tensor(np.load('/ssd2/tangshiyu/Code/fake_data_tgt.npy')), \
-                #             paddle.to_tensor(np.load('/ssd2/tangshiyu/Code/fake_label_tgt.npy')).astype('int64')
-                # reprod_logger.add("images_tgt_{}".format(data_tgt[2].numpy()[0]), images_tgt.cpu().detach().numpy())
-                # reprod_logger.add("images_src_{}".format(data_src[2].numpy()[0]), images_src.cpu().detach().numpy())
+                    # tmp = edges_src.detach().clone().squeeze().numpy()
+                    # tmp_label = labels_src.detach().clone().squeeze().numpy()
+                    # tmp[tmp==1]==255
+                    # imageio.imwrite('edge_pics/edge_{}.png'.format(iter), tmp)
+                    # imageio.imwrite('edge_pics/label_{}.png'.format(iter), tmp_label)
 
                 if nranks > 1:
                     logits_list_src = ddp_model(images_src)
                 else:
                     logits_list_src = self.model(images_src)
 
-                # res_src = logits_list_src[0] + logits_list_src[1]
-                # reprod_logger.add("res_src_{}".format(iter), res_src.cpu().detach().numpy())
-
-                #### target pseudo label  ####
+                #### generate target pseudo label  ####
                 with paddle.no_grad():
                     if nranks > 1:
                         logits_list_tgt = ddp_model(images_tgt)
@@ -203,17 +188,15 @@ class Trainer():
 
                     pred_P_1 = F.softmax(logits_list_tgt[0], axis=1)
                     labels_tgt_psu = paddle.argmax(pred_P_1.detach(), axis=1)
-                    # reprod_logger.add("labels_tgt_psu_{}".format(data_tgt[2].numpy()[0]), labels_tgt_psu.cpu().detach().numpy())
 
                     # aux label
                     pred_P_2 = F.softmax(logits_list_tgt[1], axis=1)
                     pred_c = (pred_P_1 + pred_P_2) / 2
                     labels_tgt_psu_aux = paddle.argmax(pred_c.detach(), axis=1)
-                    # reprod_logger.add("labels_tgt_psu_aux_{}".format(data_tgt[2].numpy()[0]), labels_tgt_psu_aux.cpu().detach().numpy())
 
                     del pred_P_1, pred_P_2, pred_c, data_src
 
-                # #### source seg & edge loss ####
+                ##### source seg & edge loss ####
                 loss_src_seg_main = self.celoss(logits_list_src[0], labels_src)
                 loss_src_seg_aux = 0.1 * self.celoss(logits_list_src[1],
                                                      labels_src)
@@ -223,34 +206,31 @@ class Trainer():
                 time2 = time.time()  # src forward time
 
                 if not self.edgeconstrain:
-                    loss_src_seg.backward()
-                    # reprod_logger.add("loss_src_seg_{}".format(iter), loss_src_seg.cpu().detach().numpy())
-
-                    del loss_src_seg, images_src, loss_src_seg_aux, loss_src_seg_main
-                    ####  target seg & edge loss ####
+                    pass
+                    # loss_src_seg.backward()
+                    # del loss_src_seg, images_src, loss_src_seg_aux, loss_src_seg_main
                 else:
                     # logger.info("Add source edge loss")
                     loss_src_edge = self.bceloss(logits_list_src[2], edges_src)
-                    time3 = time.time()  # tgt gen pseudo label
 
-                    if (not self.src_only) and (iter >
-                                                60000):  # target 部分同时加入约束
+                    if (not self.src_only) and (iter > 200000):
+                        ####  target seg & edge loss ####
                         logger.info("Add target edege loss")
                         edges_tgt = Func.mask_to_binary_edge(
-                            labels_tgt_psu,
-                            radius=2,
+                            labels_tgt_psu.detach().clone().numpy(),
+                            radius=1,
                             num_classes=train_dataset_tgt.NUM_CLASSES)
                         edges_tgt = paddle.to_tensor(edges_tgt, dtype='int64')
                         # loss_tgt_seg = self.celoss(logits_list_tgt[0], labels_tgt) \
                         #                 + 0.1 * self.celoss(logits_list_tgt[1], labels_tgt_psu_aux)
                         loss_tgt_edge = self.bceloss(logits_list_tgt[2],
                                                      edges_tgt)
-                        # loss_edgenseg = loss_tgt_seg + loss_tgt_edge + loss_src_edge + loss_src_seg
                         loss_edgenseg = loss_tgt_edge + loss_src_edge + loss_src_seg
                     else:
                         # loss_tgt_seg = paddle.zeros([1])
                         loss_tgt_edge = paddle.zeros([1])
                         loss_edgenseg = loss_src_edge + loss_src_seg
+                    time3 = time.time()  # tgt gen pseudo label
 
                     loss_edgenseg.backward()
 
@@ -264,7 +244,6 @@ class Trainer():
 
                 #### target aug loss #######
                 if not self.src_only:
-                    # logger.info("Add target augmentation loss")
                     augs = augmentation.get_augmentation()
                     images_tgt_aug, labels_tgt_aug = augmentation.augment(
                         images=images_tgt.cpu(),
@@ -272,10 +251,6 @@ class Trainer():
                         aug=augs,
                         logger=reprod_logger,
                         iters="{}_1".format(iter))
-                    # reprod_logger.add("images_tgt_{}".format(iter), images_tgt.cpu().detach().numpy())
-                    # reprod_logger.add("images_tgt_aug_{}".format(iter), images_tgt_aug.cpu().detach().numpy())
-                    # reprod_logger.add("labels_tgt_aug_{}".format(iter), labels_tgt_aug.cpu().detach().numpy())
-                    # reprod_logger.add("labels_tgt_aug_aux_{}".format(iter), labels_tgt_aug_aux.cpu().detach().numpy())
                     images_tgt_aug = images_tgt_aug.cuda()
                     labels_tgt_aug = labels_tgt_aug.cuda()
 
@@ -300,10 +275,6 @@ class Trainer():
                     loss_tgt_aug = loss_tgt_aug_aux + loss_tgt_aug_main
                     loss_tgt_aug.backward()
 
-                    # res_tgt_aug = logits_list_tgt_aug[0] + logits_list_tgt_aug[1]
-                    # reprod_logger.add("res_tgt_aug_{}".format(iter), res_tgt_aug.cpu().detach().numpy())
-                    # reprod_logger.add("loss_tgt_aug_{}".format(iter), loss_tgt_aug.cpu().detach().numpy())
-
                     loss_dict['target_aug_main'] = loss_tgt_aug_main.numpy()[0]
                     loss_dict['target_aug_aux'] = loss_tgt_aug_aux.numpy()[0]
                     del images_tgt_aug, labels_tgt_aug, labels_tgt_aug_aux, images_tgt, \
@@ -313,71 +284,109 @@ class Trainer():
 
                 #### edge input seg; src & tgt edge pull in ######
                 if self.edgepullin:
-                    logger.info("Add edge_seg loss")
-                    logger.info("Add edge_seg loss")
-                    if nranks > 1:
-                        logits_list_edge_src = ddp_model(logits_list_src[2])
-                        logits_list_edge_tgt = ddp_model(logits_list_tgt[2])
-                    else:
-                        logits_list_edge_src = self.model(logits_list_src[2])
-                        logits_list_edge_tgt = self.model(logits_list_tgt[2])
+                    feat_src = paddle.concat(
+                        [logits_list_src[0], logits_list_src[2]],
+                        axis=1).detach()
+                    out_src = self.model.fusion(feat_src)
+                    loss_src_edge_rec = self.celoss(out_src, labels_src)
 
-                    loss_src_edge_seg = self.celoss(logits_list_edge_src[0], labels_src) \
-                                    + 0.1 * self.celoss(logits_list_edge_src[1], labels_src)
-                    loss_tgt_edge_seg = self.celoss(logits_list_edge_tgt[0], labels_tgt) \
-                                    + 0.1 * self.celoss(logits_list_edge_tgt[1], labels_tgt_psu_aux)
+                    feat_tgt = paddle.concat(
+                        [logits_list_tgt[0], logits_list_tgt[2]],
+                        axis=1).detach()
+                    out_tgt = self.model.fusion(feat_tgt)
+                    loss_tgt_edge_rec = self.celoss(out_tgt, labels_tgt)
+
+                    loss_edge_rec = loss_src_edge_rec + loss_tgt_edge_rec  # + loss_edge_pullin
+                    loss_edge_rec.backward()
+
+                    loss_dict['src_edge_rec'] = loss_src_edge_rec.numpy()[0]
+                    loss_dict['tgt_edge_rec'] = loss_tgt_edge_rec.numpy()[0]
+                    # loss_dict['tgt_src_edge_pullin'] = loss_edge_pullin.numpy()[0]
+
+                    del loss_src_edge_rec, loss_tgt_edge_rec  #, loss_edge_pullin
+                    # logger.info("Add edge_seg loss")
+                    # logger.info("Add edge_seg loss")
+                    # if nranks > 1:
+                    #     logits_list_edge_src = ddp_model(logits_list_src[2]) # 1 2 640 1280
+                    #     logits_list_edge_tgt = ddp_model(logits_list_tgt[2])
+                    # else:
+                    #     logits_list_edge_src = self.model(logits_list_src[2])
+                    #     logits_list_edge_tgt = self.model(logits_list_tgt[2])
+
+                    # loss_src_edge_seg = self.celoss(logits_list_edge_src[0], labels_src) \
+                    #                 + 0.1 * self.celoss(logits_list_edge_src[1], labels_src)
+                    # loss_tgt_edge_seg = self.celoss(logits_list_edge_tgt[0], labels_tgt) \
+                    #                 + 0.1 * self.celoss(logits_list_edge_tgt[1], labels_tgt_psu_aux)
 
                     # todo: 对齐形状特征，就是对齐输出？ 参考一些其他特征对齐的方法？
                     # loss_edge_pullin = self.klloss(logits_list_edge_tgt[2], (logits_list_edge_tgt[2]+logits_list_edge_src[2])/2) \
                     #                 + self.klloss(logits_list_edge_src[2], (logits_list_edge_tgt[2]+logits_list_edge_src[2])/2)
 
-                    loss_src_edge_seg = loss_src_edge_seg + loss_tgt_edge_seg  #+ loss_edge_pullin
-                    loss_src_edge_seg.backward()
-                    loss_dict['source_edge_seg'] = loss_src_edge_seg.numpy()[0]
-                    loss_dict['target_edge_seg'] = loss_tgt_edge_seg.numpy()[0]
+                    # loss_src_edge_seg = loss_src_edge_seg + loss_tgt_edge_seg #+ loss_edge_pullin
+                    # loss_src_edge_seg.backward()
+                    # loss_dict['source_edge_seg'] = loss_src_edge_seg.numpy()[0]
+                    # loss_dict['target_edge_seg'] = loss_tgt_edge_seg.numpy()[0]
                     # loss_dict['tgt_src_edge_pullin'] = loss_edge_pullin.numpy()[0]
 
-                    del loss_src_edge_seg, loss_tgt_edge_seg  #, loss_edge_pullin
+                    # del loss_src_edge_seg, loss_tgt_edge_seg#, loss_edge_pullin
 
                 #### mask input feature & pullin  ######
                 if self.featurepullin:
-                    logger.info("Add 3-level content pullin loss")
+                    loss_src_seg.backward()
+                    del loss_src_seg, images_src, loss_src_seg_aux, loss_src_seg_main
+
+                    # logger.info("Add 3-level content pullin loss")
                     # # inner-class loss
+                    feat_src = logits_list_src[-1]
+                    feat_tgt = logits_list_tgt[-1]
                     AvgPool2D = paddle.nn.AvgPool2D(
-                        kernel_size=(logits_list_src.shape[2:]))
-                    total_pixs = logits_list_src.shape[2] * logits_list_src[3]
+                        kernel_size=(logits_list_src[0].shape[2:]))
+                    total_pixs = logits_list_src[0].shape[2] * logits_list_src[
+                        0].shape[3]
 
                     for i in range(train_dataset_tgt.NUM_CLASSES):
-                        pred = paddle.argmax(logits_list_src, axis=1)  # 1,
-                        center_src = AvgPool2D(logits_list_src[pred == i]) / (
-                            sum(pred == i) / total_pixs)  # 1, C
-                        assert center_src.shape == [1, 19], print(
-                            'the center_src shape should be 1, 19 ',
-                            center_src.shape)
-                        if sum(center_src) > 1e-6:
+                        pred = paddle.argmax(
+                            logits_list_src[0],
+                            axis=1).unsqueeze(0)  # 1, 1, 640, 1280
+                        print('pred, feat_src', pred.shape, (pred == i).shape,
+                              feat_src.shape, logits_list_src[0].shape)
+                        if paddle.sum(
+                            (pred == i).astype('float32')
+                        ) > 0:  # ignore tensor that do not have features in this img
+                            feat_sel_src = feat_src[(
+                                pred == i).expand_as(feat_src)]
+                            center_src = AvgPool2D(feat_sel_src) / (
+                                paddle.sum(pred == i) / total_pixs)  # 1, C
+                            assert center_src.shape == [1, 19], print(
+                                'the center_src shape should be 1, 19 ',
+                                center_src.shape)
                             self.src_centers[i] = 0.99 * self.src_centers[i] + (
                                 1 - 0.99) * center_src
 
-                        pred = paddle.argmax(logits_list_tgt, axis=1)  # 1,
-                        center_tgt = AvgPool2D(logits_list_tgt[pred == i]) / (
-                            sum(pred == i) / total_pixs)
-                        assert center_tgt.shape == [1, 19], print(
-                            'the center_tgt shape should be 1, 19 ',
-                            center_tgt.shape)
-                        if sum(center_tgt) > 1e-6:
+                        pred = paddle.argmax(
+                            logits_list_tgt[0], axis=1).unsqueeze(0)  # 1,
+                        if paddle.sum((pred == i).astype('float32')) > 0:
+                            feat_sel_tgt = feat_tgt[(
+                                pred == i).expand_as(feat_tgt)]
+                            center_tgt = AvgPool2D(feat_sel_tgt[pred == i]) / (
+                                paddle.sum(pred == i) / total_pixs)
+                            assert center_tgt.shape == [1, 19], print(
+                                'the center_tgt shape should be 1, 19 ',
+                                center_tgt.shape)
                             self.tgt_centers[i] = 0.99 * self.tgt_centers[i] + (
                                 1 - 0.99) * center_tgt
 
                         if iter >= 3000:
                             if iter == 0:
-                                loss_pix_align = paddle.zeros((0))
+                                loss_pix_align_src = paddle.zeros((0))
+                                loss_pix_align_tgt = paddle.zeros((0))
                             else:
-                                loss_pix_align += paddle.nn.MSELoss(
+                                loss_pix_align_src += self.mseloss(
                                     center_src, self.src_centers[i])
-                                loss_pix_align += paddle.nn.MSELoss(
+                                loss_pix_align_tgt += self.mseloss(
                                     center_tgt, self.tgt_centers[i])
 
-                    if iter >= 3000:
+                    if iter >= 3000:  # average center structure alignment
                         src_centers = paddle.concat(self.src_centers, axis=0)
                         tgt_centers = paddle.concat(self.tgt_centers, axis=0)
 
@@ -386,21 +395,24 @@ class Trainer():
                         relatmat_tgt = paddle.matmul(
                             tgt_centers, tgt_centers, transpose_y=True)
 
-                        loss_intra_relate = paddle.nn.MSELoss(
+                        loss_intra_relate = self.mseloss(
                             relatmat_src, relatmat_tgt)
 
-                    # # intra-class loss
-                    # # pixel level loss
+                        loss_feat_align = loss_pix_align_src + loss_pix_align_tgt + loss_intra_relate
+                        loss_feat_align.backward()
+
+                        loss_dict[
+                            'loss_pix_align_src'] = loss_pix_align_src.numpy(
+                            )[0]
+                        loss_dict[
+                            'loss_pix_align_tgt'] = loss_pix_align_tgt.numpy(
+                            )[0]
+                        loss_dict[
+                            'loss_intra_relate'] = loss_intra_relate.numpy()[0]
+
+                        del loss_pix_align_tgt, loss_pix_align_src, loss_intra_relate
 
                 loss = sum(loss_dict.values())
-                # reprod_logger.add("loss_total_{}".format(iter), np.array([loss]))
-                # for name, tensor in self.model.named_parameters():
-                #     if not tensor.stop_gradient:
-                #         grad = tensor.grad
-                #         try:
-                #             self.reprod_logger.add(name, np.array([grad]))
-                #         except AttributeError:
-                #             print(name, "does not have grad but stop gradients=", tensor.stop_gradient)
 
                 optimizer.step()
                 time7 = time.time()  # optimizer step
@@ -541,10 +553,7 @@ class Trainer():
                         #                       iter)
                         # log_writer.add_scalar('Evaluate/PA_src', PA_src, iter)
                     batch_start = time.time()
-            #     if iter > 3:
-            #         break
-            # reprod_logger.save("/ssd2/tangshiyu/Code/pixmatch/models/train_paddle.npy")
-            # break
+
             self.ema.update_buffer()
 
         # # Calculate flops.

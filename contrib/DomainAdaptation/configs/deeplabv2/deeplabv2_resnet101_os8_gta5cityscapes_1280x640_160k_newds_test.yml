@@ -41,12 +41,12 @@ model:
   backbone_indices: [0, 1, 2, 3]
   align_corners: True
   pretrained: models/torch_transfer_gta5source.pdparams  # gta5 source/ others get from model
-  shape_stream: False
+  shape_stream: True
 
 
 ema_decay: 0.999
 src_only: False
-edgeconstrain: False
+edgeconstrain: True
 edgepullin: False
 featurepullin: False
 

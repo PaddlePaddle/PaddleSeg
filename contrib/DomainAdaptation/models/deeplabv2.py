@@ -23,6 +23,7 @@ from paddleseg.models import layers
 from paddleseg.utils import utils, logger
 
 from .gscnn import GSCNNHead
+from .backbones.resnet import Classifier_Module
 
 __all__ = [
     'DeepLabV2',
@@ -78,35 +79,38 @@ class DeepLabV2(nn.Layer):
             padding_series=[6, 12, 18, 24],
             num_classes=2)
 
+        self.fusion = Classifier_Module(21, [3, 9, 18, 24], [3, 9, 18, 24], 19)
         self.align_corners = align_corners  # should be true
         self.pretrained = pretrained  # should not load layer5
         self.init_weight()
 
     def forward(self, x):
-        feat_list = self.backbone(x)
+        feat_list = self.backbone(x)  # x6, x_aug, x1, x2, x3, x4
         # for item in feat_list:
         #     print('feat shape', item.shape) # align should be true, true, false
 
         if self.shape_stream:
-            # logit_list = self.head(x, feat_list[2:], self.backbone.conv1_logit)
             logit_list = self.head(self.backbone.conv1_logit, *feat_list[2:])
             logit_list.extend(feat_list[:2])
-            edge_logit, seg_logit, aug_logit = [
+            logit_list.append(feat_list[-1])
+            edge_logit, seg_logit, aug_logit, x4 = [
                 F.interpolate(
                     logit,
                     x.shape[2:],
                     mode='bilinear',
                     align_corners=self.align_corners) for logit in logit_list
             ]
-            return [seg_logit, aug_logit, edge_logit]
+            return [seg_logit, aug_logit, edge_logit, x4]
         else:
+            logit_list = feat_list[:2]
+            logit_list.append(feat_list[-1])
             return [
                 F.interpolate(
                     logit,
                     x.shape[2:],
                     mode='bilinear',
-                    align_corners=self.align_corners) for logit in feat_list[:2]
-            ]
+                    align_corners=self.align_corners) for logit in logit_list
+            ]  # x6, x_aug, x4
 
     def init_weight(self):
         if self.pretrained is not None:
