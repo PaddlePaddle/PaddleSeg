@@ -218,11 +218,3 @@ class DistillCrossEntropyLoss(CrossEntropyLoss):
 
         return self._post_process_loss(student_logit, label, semantic_weights,
                                        loss)
-
-
-if __name__ == '__main__':
-
-    print(1)
-    loss = CrossEntropyLoss()
-    l = loss(paddle.ones((3, 2, 4, 4)), paddle.ones((3, 4, 4)))
-    print(l)
