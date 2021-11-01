@@ -354,6 +354,7 @@ class ZiYanRefine(ZiYan):
         focus_sigmoid = F.sigmoid(d0_f[:, 0:1, :, :])
         pha_sm = self.fusion(glance_sigmoid, focus_sigmoid)
         err_sm = d0_f[:, 1:2, :, :]
+        err_sm = paddle.clip(err_sm, 0., 1.)
         hid_sm = F.relu(d0_f[:, 2:, :, :])
 
         # Refiner
@@ -614,16 +615,15 @@ class Refiner(nn.Layer):
             patch: (P, C, h, w), where h = w = size + 2 * padding.
         """
         b, c, h, w = x.shape
-        #         if padding != 0:
-        #             x = F.pad(x, (padding,) * 4)
         kernel_size = size + 2 * padding
         x = F.unfold(
             x, kernel_sizes=kernel_size, strides=size, paddings=padding)
         hout = int((h + 2 * padding - kernel_size) / size + 1)
         wout = int((w + 2 * padding - kernel_size) / size + 1)
         x = x.reshape((b, c, kernel_size, kernel_size, hout, wout))
-        x = x.transpose((0, 4, 5, 1, 2, 3))
-        patchs = []
+        x = paddle.transpose(
+            x, (0, 4, 5, 1, 2, 3)
+        )  # If size is lager （4, 512, 512, 36, 8, 8), it will result OSError: (External)  Cuda error(700), an illegal memory access was encountered. idx will illgegal.
         patchs = paddle.gather_nd(x, idx)
         return patchs
 
@@ -673,17 +673,10 @@ if __name__ == '__main__':
         refine_kernel_size=3,
         refine_prevent_oversampling=True,
         if_refine=True)
-    model.eval()
-    start = time.time()
-    times = 0
-    for i in range(10):
-        #         x = paddle.randint(0, 256, (1, 3, 2048, 2048)).astype('float32')
-        #         inputs = {}
-        #         inputs['img'] = x
-        time_refien = model(inputs)
-        times += time_refien
-    print('model infer time: ', (time.time() - start) / 10)
-    print('model refine time: ', times / 10)
+    #     model.eval()
+    for i in range(1):
+        pha = model(inputs)
+    print(pha)
 #     for k, v in output.items():
 #         print(k)
 #         print(v)
