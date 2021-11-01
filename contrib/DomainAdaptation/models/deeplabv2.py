@@ -86,8 +86,6 @@ class DeepLabV2(nn.Layer):
 
     def forward(self, x):
         feat_list = self.backbone(x)  # x6, x_aug, x1, x2, x3, x4
-        # for item in feat_list:
-        #     print('feat shape', item.shape) # align should be true, true, false
 
         if self.shape_stream:
             logit_list = self.head(self.backbone.conv1_logit, *feat_list[2:])
