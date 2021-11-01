@@ -397,8 +397,8 @@ class ZiYanRefine(ZiYan):
         glance_label_trans = (glance_label == 128).astype('int64')
         glance_label_bg = (glance_label == 0).astype('int64')
         glance_label = glance_label_trans + glance_label_bg * 2
-        loss_glance = loss_func_dict['glance'][0](paddle.log(
-            logit_dict['glance']), glance_label.squeeze(1))
+        loss_glance = loss_func_dict['glance'][0](
+            paddle.log(logit_dict['glance'] + 1e-6), glance_label.squeeze(1))
         loss['glance'] = loss_glance
         # TODO glance label 的验证
 
@@ -515,23 +515,18 @@ class Refiner(nn.Layer):
                 err, (h_quat, w_quat), mode='bilinear', align_corners=False)
             ref = self.select_refinement_regions(err)
             idx = paddle.nonzero(ref.squeeze(1))
-            idx = idx[:, 0], idx[:, 1], idx[:, 2]
 
-            if idx[0].shape[0] > 0:
+            if idx.shape[0] > 0:
                 x = paddle.concat([hid, pha, tri], axis=1)
                 x = F.interpolate(
                     x, (h_half, w_half), mode='bilinear', align_corners=False)
-                start = time.time()
                 x = self.crop_patch(x, idx, 2,
                                     3 if self.kernel_size == 3 else 0)
-                print('first crop_patch time:', time.time() - start)
 
                 y = F.interpolate(
                     src, (h_half, w_half), mode='bilinear', align_corners=False)
-                start = time.time()
                 y = self.crop_patch(y, idx, 2,
                                     3 if self.kernel_size == 3 else 0)
-                print('second crop_patch time:', time.time() - start)
 
                 x = self.conv1(paddle.concat([x, y], axis=1))
                 x = self.conv2(x)
@@ -539,19 +534,15 @@ class Refiner(nn.Layer):
                 x = F.interpolate(
                     x, (8, 8) if self.kernel_size == 3 else (4, 4),
                     mode='nearest')
-                start = time.time()
                 y = self.crop_patch(src, idx, 4,
                                     2 if self.kernel_size == 3 else 0)
-                print('third crop_patch time:', time.time() - start)
 
                 x = self.conv3(paddle.concat([x, y], axis=1))
                 x = self.conv4(x)
 
                 pha = F.interpolate(
                     pha, (h_full, w_full), mode='bilinear', align_corners=False)
-                start = time.time()
                 pha = self.replace_patch(pha, x, idx)
-                print('replace_patch:', time.time() - start)
             else:
                 pha = F.interpolate(
                     pha, (h_full, w_full), mode='bilinear', align_corners=False)
@@ -616,7 +607,7 @@ class Refiner(nn.Layer):
 
         Inputs:
             x: image (B, C, H, W).
-            idx: selection indices Tuple[(P,), (P,), (P,),], where the 3 values are (B, H, W) index.
+            idx: selection indices shape is (p, 3), where the 3 values are (B, H, W) index.
             size: center size of the patch, also stride of the crop.
             padding: expansion size of the patch.
         Output:
@@ -633,11 +624,8 @@ class Refiner(nn.Layer):
         x = x.reshape((b, c, kernel_size, kernel_size, hout, wout))
         x = x.transpose((0, 4, 5, 1, 2, 3))
         patchs = []
-        start = time.time()
-        for i, j, k in zip(idx[0], idx[1], idx[2]):
-            patchs.append(x[i, j, k])
-        print('crop for loop: ', time.time() - start)
-        return paddle.to_tensor(patchs)
+        patchs = paddle.gather_nd(x, idx)
+        return patchs
 
     def replace_patch(self, x, y, idx):
         '''
@@ -646,7 +634,7 @@ class Refiner(nn.Layer):
         Args:
             x: image (B, C, H, W)
             y: patches (P, C, h, w)
-            idx: selection indices Tuple[(P,), (P,), (P,)] where the 3 values are (B, H, W) index.
+            idx: selection indices shape is (p, 3), where the 3 values are (B, H, W) index.
 
         Returns:
             Tensor: (B, C, H, W), where patches at idx locations are replaced with y.
@@ -656,10 +644,11 @@ class Refiner(nn.Layer):
 
         x = x.reshape((bx, cx, hx // hy, hy, wx // wy, wy))
         x = x.transpose((0, 2, 4, 1, 3, 5))
-        start = time.time()
-        for numy, (i, j, k) in enumerate(zip(idx[0], idx[1], idx[2])):
-            x[i, j, k] = y[numy]
-        print('replace for loop: ', time.time() - start)
+        ones = paddle.ones((idx.shape[0], cx, hy, wy))
+        flag = paddle.scatter_nd(
+            idx, ones, shape=x.shape)  # Get the index which should be replace
+        x = x * (1 - flag)
+        x = paddle.scatter_nd_add(x, idx, y)
         x = x.transpose((0, 3, 1, 4, 2, 5))
         x = x.reshape((bx, cx, hx, wx))
         return x
@@ -670,7 +659,7 @@ if __name__ == '__main__':
     import time
     from resnet_vd import ResNet34_vd
     backbone = ResNet34_vd(output_stride=32)
-    x = paddle.randint(0, 256, (2, 3, 1024, 1024)).astype('float32')
+    x = paddle.randint(0, 256, (1, 3, 2048, 2048)).astype('float32')
     inputs = {}
     inputs['img'] = x
 
@@ -679,40 +668,57 @@ if __name__ == '__main__':
         pretrained=None,
         backbone_scale=0.25,
         refine_mode='sampling',
-        refine_sample_pixels=5000,
+        refine_sample_pixels=80000,
         refine_threshold=0.1,
         refine_kernel_size=3,
         refine_prevent_oversampling=True,
-        if_refine=False)
+        if_refine=True)
+    model.eval()
     start = time.time()
-    output = model(inputs)
-    print('model infer time: ', time.time() - start)
-    for k, v in output.items():
-        print(k)
-        print(v)
+    times = 0
+    for i in range(10):
+        #         x = paddle.randint(0, 256, (1, 3, 2048, 2048)).astype('float32')
+        #         inputs = {}
+        #         inputs['img'] = x
+        time_refien = model(inputs)
+        times += time_refien
+    print('model infer time: ', (time.time() - start) / 10)
+    print('model refine time: ', times / 10)
+#     for k, v in output.items():
+#         print(k)
+#         print(v)
 
-#     refiner = Refiner(mode='thresholding',
-#                      sample_pixels=80,
+#     refiner = Refiner(mode='sampling',
+#                      sample_pixels=5000,
 #                      threshold=0.1,
 #                      kernel_size=3,
 #                      prevent_oversampling=True)
-#     # check select_refinement_regions, succeed
-#     err = paddle.rand((2, 1, 5, 5))
-#     ref = refiner.select_refinement_regions(err)
+# check select_refinement_regions, succeed
+#     err = paddle.rand((2, 1, 512, 512))
+#     start = time.time()
+#     ref = refiner.select_refinement_regions_(err)
+#     print('old time comsumn: ',time.time() - start)
+#     print('old err')
 #     print(err)
+#     print('old ref')
 #     print(ref)
 
 # check crop_patch, succeed
-#     x = paddle.rand((1, 1, 12, 12))
-#     idx = ((0, 0, 0), (0 ,1, 2), (0, 1, 2))
-#     size = 4
-#     padding= 2
+#     x = paddle.rand((2, 3, 256, 256))
+#     err = paddle.rand((2, 1, 128, 128))
+#     ref = refiner.select_refinement_regions(err)
+#     idx = paddle.nonzero(ref.squeeze(1))
+#     idx = idx[:, 0], idx[:, 1], idx[:, 2]
+#     size = 2
+#     padding= 3
 #     p = refiner.crop_patch(x, idx, size, padding)
 
 # check replace_patch, succeed
 #     p = p+1
-#     p = p[:, :, 2:6, 2:6]
+#     p = p[:, :, 3:5, 3:5]
+#     start = time.time()
 #     refinement = refiner.replace_patch(x, p, idx)
+#     print('replace_patch time:', time.time() - start)
 #     print(refinement)
 
 #     # check refine, succeed
