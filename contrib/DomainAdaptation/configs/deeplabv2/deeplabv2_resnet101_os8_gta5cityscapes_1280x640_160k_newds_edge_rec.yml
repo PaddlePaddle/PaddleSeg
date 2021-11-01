@@ -1,7 +1,5 @@
 batch_size: 1
 iters: 400000
-root: /ssd2/tangshiyu/Code/pixmatch
-alroot: /ssd2/tangshiyu
 
 data:
   num_classes: 19
@@ -44,9 +42,9 @@ model:
   pretrained: models/torch_transfer_gta5source.pdparams  # gta5 source/ others get from model
   shape_stream: True
 
-
 ema_decay: 0.999
-pseudolabel_threshold: 0.0
+resume_ema: None
+# flow control
 src_only: False
 edgeconstrain: True
 edgepullin: True

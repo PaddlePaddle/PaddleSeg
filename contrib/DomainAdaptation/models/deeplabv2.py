@@ -79,7 +79,7 @@ class DeepLabV2(nn.Layer):
             padding_series=[6, 12, 18, 24],
             num_classes=2)
 
-        self.fusion = Classifier_Module(21, [3, 9, 18, 24], [3, 9, 18, 24], 19)
+        # self.fusion = Classifier_Module(21, [3, 9, 18, 24], [3, 9, 18, 24], 19)
         self.align_corners = align_corners  # should be true
         self.pretrained = pretrained  # should not load layer5
         self.init_weight()
@@ -92,18 +92,18 @@ class DeepLabV2(nn.Layer):
         if self.shape_stream:
             logit_list = self.head(self.backbone.conv1_logit, *feat_list[2:])
             logit_list.extend(feat_list[:2])
-            logit_list.append(feat_list[-1])
-            edge_logit, seg_logit, aug_logit, x4 = [
+            # logit_list.append(feat_list[-1])
+            edge_logit, seg_logit, aug_logit = [
                 F.interpolate(
                     logit,
                     x.shape[2:],
                     mode='bilinear',
                     align_corners=self.align_corners) for logit in logit_list
             ]
-            return [seg_logit, aug_logit, edge_logit, x4]
+            return [seg_logit, aug_logit, edge_logit]  #, x4]
         else:
             logit_list = feat_list[:2]
-            logit_list.append(feat_list[-1])
+            # logit_list.append(feat_list[-1])
             return [
                 F.interpolate(
                     logit,

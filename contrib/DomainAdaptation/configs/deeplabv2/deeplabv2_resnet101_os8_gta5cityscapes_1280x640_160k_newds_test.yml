@@ -45,6 +45,8 @@ model:
 
 
 ema_decay: 0.999
+resume_ema: None
+# flow control
 src_only: False
 edgeconstrain: True
 edgepullin: False

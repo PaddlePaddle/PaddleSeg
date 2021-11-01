@@ -44,7 +44,8 @@ model:
   shape_stream: True
 
 ema_decay: 0.999
-pseudolabel_threshold: 0.0
+resume_ema: None
+# flow control
 src_only: False
 edgeconstrain: True
 edgepullin: False

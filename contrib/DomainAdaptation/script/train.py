@@ -206,9 +206,8 @@ class Trainer():
                 time2 = time.time()  # src forward time
 
                 if not self.edgeconstrain:
-                    pass
-                    # loss_src_seg.backward()
-                    # del loss_src_seg, images_src, loss_src_seg_aux, loss_src_seg_main
+                    loss_src_seg.backward()
+                    del loss_src_seg, images_src, loss_src_seg_aux, loss_src_seg_main
                 else:
                     # logger.info("Add source edge loss")
                     loss_src_edge = self.bceloss(logits_list_src[2], edges_src)

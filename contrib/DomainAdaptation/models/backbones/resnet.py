@@ -222,15 +222,15 @@ class ResNetMulti(nn.Layer):
             x_aug, size=input_size, mode='bilinear', align_corners=True)
 
         # Resolution 2
-        self.x4 = self.layer4(x3)
+        x4 = self.layer4(x3)
         # x4.register_hook(lambda grad: print('x4 grad', grad.abs().mean()))
         # x4.register_hook(lambda grad: self.reprod_logger.add('x4 grad', grad.cpu().detach().numpy()))
-        x6 = self.layer6(self.x4)
+        x6 = self.layer6(x4)
         x6 = F.interpolate(
             x6, size=input_size, mode='bilinear', align_corners=True)
         # self.reprod_logger.save('/ssd2/tangshiyu/Code/pixmatch/models/model_bp_paddle.npy')
 
-        return [x6, x_aug, x1, x2, x3, self.x4]  #  resolution 2 first
+        return [x6, x_aug, x1, x2, x3, x4]  #  resolution 2 first
 
     def get_1x_lr_params_NOscale(self):
         """
