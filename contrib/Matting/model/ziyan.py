@@ -216,8 +216,8 @@ class ZiYan(nn.Layer):
         glance_label_trans = (glance_label == 128).astype('int64')
         glance_label_bg = (glance_label == 0).astype('int64')
         glance_label = glance_label_trans + glance_label_bg * 2
-        loss_glance = loss_func_dict['glance'][0](paddle.log(
-            logit_dict['glance']), glance_label.squeeze(1))
+        loss_glance = loss_func_dict['glance'][0](
+            paddle.log(logit_dict['glance'] + 1e-6), glance_label.squeeze(1))
         loss['glance'] = loss_glance
         # TODO glance label 的验证
 
