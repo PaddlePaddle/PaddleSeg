@@ -386,11 +386,66 @@ class LimitLong:
         elif (self.min_long is not None) and (long_edge < self.min_long):
             target = self.min_long
 
+        data['trans_info'].append(('resize', data['img'].shape[0:2]))
         if target != long_edge:
-            data['trans_info'].append(('resize', data['img'].shape[0:2]))
             data['img'] = functional.resize_long(data['img'], target)
             for key in data.get('gt_fields', []):
                 data[key] = functional.resize_long(data[key], target)
+
+        return data
+
+
+@manager.TRANSFORMS.add_component
+class LimitShort:
+    """
+    Limit the short edge of image.
+
+    If the short edge is larger than max_short, resize the short edge
+    to max_short, while scale the long edge proportionally.
+
+    If the short edge is smaller than min_short, resize the short edge
+    to min_short, while scale the long edge proportionally.
+
+    Args:
+        max_short (int, optional): If the short edge of image is larger than max_short,
+            it will be resize to max_short. Default: None.
+        min_short (int, optional): If the short edge of image is smaller than min_short,
+            it will be resize to min_short. Default: None.
+    """
+
+    def __init__(self, max_short=None, min_short=None):
+        if max_short is not None:
+            if not isinstance(max_short, int):
+                raise TypeError(
+                    "Type of `max_short` is invalid. It should be int, but it is {}"
+                    .format(type(max_short)))
+        if min_short is not None:
+            if not isinstance(min_short, int):
+                raise TypeError(
+                    "Type of `min_short` is invalid. It should be int, but it is {}"
+                    .format(type(min_short)))
+        if (max_short is not None) and (min_short is not None):
+            if min_short > max_short:
+                raise ValueError(
+                    '`max_short should not smaller than min_short, but they are {} and {}'
+                    .format(max_short, min_short))
+        self.max_short = max_short
+        self.min_short = min_short
+
+    def __call__(self, data):
+        h, w = data['img'].shape[:2]
+        short_edge = min(h, w)
+        target = short_edge
+        if (self.max_short is not None) and (short_edge > self.max_short):
+            target = self.max_short
+        elif (self.min_short is not None) and (short_edge < self.min_short):
+            target = self.min_short
+
+        data['trans_info'].append(('resize', data['img'].shape[0:2]))
+        if target != short_edge:
+            data['img'] = functional.resize_short(data['img'], target)
+            for key in data.get('gt_fields', []):
+                data[key] = functional.resize_short(data[key], target)
 
         return data
 
@@ -614,12 +669,13 @@ class Padding:
 
 
 if __name__ == "__main__":
-    transforms = [Padding(target_size=(1200, 1200))]
+    transforms = [LimitShort(min_short=256, max_short=512)]
     transforms = Compose(transforms)
     fg_path = '/ssd1/home/chenguowei01/github/PaddleSeg/contrib/Matting/data/matting/human_matting/Distinctions-646/train/fg/13(2).png'
     alpha_path = fg_path.replace('fg', 'alpha')
     bg_path = '/ssd1/home/chenguowei01/github/PaddleSeg/contrib/Matting/data/matting/human_matting/bg/unsplash_bg/attic/photo-1443884590026-2e4d21aee71c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MnwxMjA3fDB8MXxzZWFyY2h8Nzh8fGF0dGljfGVufDB8fHx8MTYyOTY4MDcxNQ&ixlib=rb-1.2.1&q=80&w=400.jpg'
     data = {}
+    data['trans_info'] = []
     data['fg'] = cv2.imread(fg_path)
     data['bg'] = cv2.imread(bg_path)
     h, w, c = data['fg'].shape
@@ -639,4 +695,4 @@ if __name__ == "__main__":
     print(data['img'].dtype, data['img'].shape)
     for key in data['gt_fields']:
         print(data[key].shape)
-    cv2.imwrite('distort_img.jpg', data['img'].transpose([1, 2, 0]))
+#     cv2.imwrite('distort_img.jpg', data['img'].transpose([1, 2, 0]))
