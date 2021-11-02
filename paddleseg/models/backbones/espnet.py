@@ -33,12 +33,19 @@ class DownSampler(nn.Layer):
         kernel_size_maximum (int): A maximum value of kernel_size for EESP block.
         shortcut (bool): Use shortcut or not. Default: True.
     """
-    def __init__(self, in_channels, out_channels, branches=4, kernel_size_maximum=9, shortcut=True):
+    def __init__(self,
+                 in_channels,
+                 out_channels,
+                 branches=4,
+                 kernel_size_maximum=9,
+                 shortcut=True):
         super().__init__()
-        eesp_down_channels = out_channels - in_channels
-        assert eesp_down_channels >= 0, "DownSampler"
+        if out_channels < in_channels:
+            raise RuntimeError(
+                "The out_channes for DownSampler should be bigger than in_channels, but got in_channles={}, out_channels={}"
+                .format(in_channels, out_channels))
         self.eesp = layers.EESP(in_channels,
-                                eesp_down_channels,
+                                out_channels - in_channels,
                                 stride=2,
                                 branches=branches,
                                 kernel_size_maximum=kernel_size_maximum,
@@ -56,19 +63,21 @@ class DownSampler(nn.Layer):
         eesp_out = self.eesp(x)
         output = paddle.concat([avg_out, eesp_out], axis=1)
 
-        if inputs is not None:
+        if inputs:
             w1 = avg_out.shape[2]
-            while True:
-                inputs = F.avg_pool2d(inputs, kernel_size=3, padding=1, stride=2)
+            w2 = inputs.shape[2]
+            while w2 != w1:
+                inputs = F.avg_pool2d(inputs,
+                                      kernel_size=3,
+                                      padding=1,
+                                      stride=2)
                 w2 = inputs.shape[2]
-                if w2 == w1:
-                    break
             output = output + self.shortcut_layer(inputs)
         return self._act(output)
 
 
 @manager.BACKBONES.add_component
-class EESPNet(nn.Layer):
+class EESPNet_backbone(nn.Layer):
     """
     The ESPNetV2 implementation based on PaddlePaddle.
 
@@ -85,55 +94,65 @@ class EESPNet(nn.Layer):
         super().__init__()
         reps = [0, 3, 7, 3]
 
-        num_level = 4   # 1/2, 1/4, 1/8, 1/16
-        kernel_size_limitations = [13, 11, 9, 7]     # kernel size limitation
-        branch_list = [4] * len(kernel_size_limitations)    # branches at different levels
+        num_level = 4  # 1/2, 1/4, 1/8, 1/16
+        kernel_size_limitations = [13, 11, 9, 7]  # kernel size limitation
+        branch_list = [4] * len(
+            kernel_size_limitations)  # branches at different levels
 
         base_channels = 32  # first conv output channels
         channels_config = [base_channels] * num_level
 
-        channels = 0
         for i in range(num_level):
             if i == 0:
                 channels = int(base_channels * scale)
                 channels = math.ceil(channels / branch_list[0]) * branch_list[0]
-                channels_config[i] = base_channels if channels > base_channels else channels
+                channels_config[
+                    i] = base_channels if channels > base_channels else channels
             else:
                 channels_config[i] = channels * pow(2, i)
 
-        self.level1 = layers.ConvBNPReLU(in_channels, channels_config[0], 3, stride=2, bias_attr=False)
+        self.level1 = layers.ConvBNPReLU(in_channels,
+                                         channels_config[0],
+                                         3,
+                                         stride=2,
+                                         bias_attr=False)
 
-        self.level2 = DownSampler(channels_config[0],
-                                  channels_config[1],
-                                  branches=branch_list[0],
-                                  kernel_size_maximum=kernel_size_limitations[0],
-                                  shortcut=True)
+        self.level2 = DownSampler(
+            channels_config[0],
+            channels_config[1],
+            branches=branch_list[0],
+            kernel_size_maximum=kernel_size_limitations[0],
+            shortcut=True)
 
-        self.level3_0 = DownSampler(channels_config[1],
-                                    channels_config[2],
-                                    branches=branch_list[1],
-                                    kernel_size_maximum=kernel_size_limitations[1],
-                                    shortcut=True)
+        self.level3_0 = DownSampler(
+            channels_config[1],
+            channels_config[2],
+            branches=branch_list[1],
+            kernel_size_maximum=kernel_size_limitations[1],
+            shortcut=True)
         self.level3 = nn.LayerList()
         for i in range(reps[1]):
             self.level3.append(
-                layers.EESP(
-                    channels_config[2], channels_config[2], stride=1, branches=branch_list[2], kernel_size_maximum=kernel_size_limitations[2]
-                )
-            )
+                layers.EESP(channels_config[2],
+                            channels_config[2],
+                            stride=1,
+                            branches=branch_list[2],
+                            kernel_size_maximum=kernel_size_limitations[2]))
 
-        self.level4_0 = DownSampler(channels_config[2],
-                                    channels_config[3],
-                                    branches=branch_list[2],
-                                    kernel_size_maximum=kernel_size_limitations[2],
-                                    shortcut=True)
+        self.level4_0 = DownSampler(
+            channels_config[2],
+            channels_config[3],
+            branches=branch_list[2],
+            kernel_size_maximum=kernel_size_limitations[2],
+            shortcut=True)
         self.level4 = nn.LayerList()
         for i in range(reps[2]):
             self.level4.append(
-                layers.EESP(
-                    channels_config[3], channels_config[3], stride=1, branches=branch_list[3], kernel_size_maximum=kernel_size_limitations[3]
-                )
-            )
+                layers.EESP(channels_config[3],
+                            channels_config[3],
+                            stride=1,
+                            branches=branch_list[3],
+                            kernel_size_maximum=kernel_size_limitations[3]))
 
         self.out_channels = channels_config
 
@@ -156,53 +175,10 @@ class EESPNet(nn.Layer):
     def forward(self, x):
         out_l1 = self.level1(x)
         out_l2 = self.level2(out_l1, x)
-        out_l3_0 = self.level3_0(out_l2, x)
+        out_l3 = self.level3_0(out_l2, x)
         for i, layer in enumerate(self.level3):
-            if i == 0:
-                out_l3 = layer(out_l3_0)
-            else:
-                out_l3 = layer(out_l3)
-        out_l4_0 = self.level4_0(out_l3, x)
+            out_l3 = layer(out_l3)
+        out_l4 = self.level4_0(out_l3, x)
         for i, layer in enumerate(self.level4):
-            if i == 0:
-                out_l4 = layer(out_l4_0)
-            else:
-                out_l4 = layer(out_l4)
+            out_l4 = layer(out_l4)
         return out_l1, out_l2, out_l3, out_l4
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

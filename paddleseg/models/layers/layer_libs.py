@@ -39,8 +39,11 @@ class ConvBNReLU(nn.Layer):
                  **kwargs):
         super().__init__()
 
-        self._conv = nn.Conv2D(
-            in_channels, out_channels, kernel_size, padding=padding, **kwargs)
+        self._conv = nn.Conv2D(in_channels,
+                               out_channels,
+                               kernel_size,
+                               padding=padding,
+                               **kwargs)
 
         if 'data_format' in kwargs:
             data_format = kwargs['data_format']
@@ -64,8 +67,11 @@ class ConvBN(nn.Layer):
                  padding='same',
                  **kwargs):
         super().__init__()
-        self._conv = nn.Conv2D(
-            in_channels, out_channels, kernel_size, padding=padding, **kwargs)
+        self._conv = nn.Conv2D(in_channels,
+                               out_channels,
+                               kernel_size,
+                               padding=padding,
+                               **kwargs)
         if 'data_format' in kwargs:
             data_format = kwargs['data_format']
         else:
@@ -81,13 +87,12 @@ class ConvBN(nn.Layer):
 class ConvReLUPool(nn.Layer):
     def __init__(self, in_channels, out_channels):
         super().__init__()
-        self.conv = nn.Conv2D(
-            in_channels,
-            out_channels,
-            kernel_size=3,
-            stride=1,
-            padding=1,
-            dilation=1)
+        self.conv = nn.Conv2D(in_channels,
+                              out_channels,
+                              kernel_size=3,
+                              stride=1,
+                              padding=1,
+                              dilation=1)
         self._relu = layers.Activation("relu")
         self._max_pool = nn.MaxPool2D(kernel_size=2, stride=2)
 
@@ -107,24 +112,22 @@ class SeparableConvBNReLU(nn.Layer):
                  pointwise_bias=None,
                  **kwargs):
         super().__init__()
-        self.depthwise_conv = ConvBN(
-            in_channels,
-            out_channels=in_channels,
-            kernel_size=kernel_size,
-            padding=padding,
-            groups=in_channels,
-            **kwargs)
+        self.depthwise_conv = ConvBN(in_channels,
+                                     out_channels=in_channels,
+                                     kernel_size=kernel_size,
+                                     padding=padding,
+                                     groups=in_channels,
+                                     **kwargs)
         if 'data_format' in kwargs:
             data_format = kwargs['data_format']
         else:
             data_format = 'NCHW'
-        self.piontwise_conv = ConvBNReLU(
-            in_channels,
-            out_channels,
-            kernel_size=1,
-            groups=1,
-            data_format=data_format,
-            bias_attr=pointwise_bias)
+        self.piontwise_conv = ConvBNReLU(in_channels,
+                                         out_channels,
+                                         kernel_size=1,
+                                         groups=1,
+                                         data_format=data_format,
+                                         bias_attr=pointwise_bias)
 
     def forward(self, x):
         x = self.depthwise_conv(x)
@@ -140,13 +143,12 @@ class DepthwiseConvBN(nn.Layer):
                  padding='same',
                  **kwargs):
         super().__init__()
-        self.depthwise_conv = ConvBN(
-            in_channels,
-            out_channels=out_channels,
-            kernel_size=kernel_size,
-            padding=padding,
-            groups=in_channels,
-            **kwargs)
+        self.depthwise_conv = ConvBN(in_channels,
+                                     out_channels=out_channels,
+                                     kernel_size=kernel_size,
+                                     padding=padding,
+                                     groups=in_channels,
+                                     **kwargs)
 
     def forward(self, x):
         x = self.depthwise_conv(x)
@@ -163,7 +165,6 @@ class AuxLayer(nn.Layer):
         out_channels (int): The number of output channels, and usually it is num_classes.
         dropout_prob (float, optional): The drop rate. Default: 0.1.
     """
-
     def __init__(self,
                  in_channels,
                  inter_channels,
@@ -172,19 +173,17 @@ class AuxLayer(nn.Layer):
                  **kwargs):
         super().__init__()
 
-        self.conv_bn_relu = ConvBNReLU(
-            in_channels=in_channels,
-            out_channels=inter_channels,
-            kernel_size=3,
-            padding=1,
-            **kwargs)
+        self.conv_bn_relu = ConvBNReLU(in_channels=in_channels,
+                                       out_channels=inter_channels,
+                                       kernel_size=3,
+                                       padding=1,
+                                       **kwargs)
 
         self.dropout = nn.Dropout(p=dropout_prob)
 
-        self.conv = nn.Conv2D(
-            in_channels=inter_channels,
-            out_channels=out_channels,
-            kernel_size=1)
+        self.conv = nn.Conv2D(in_channels=inter_channels,
+                              out_channels=out_channels,
+                              kernel_size=1)
 
     def forward(self, x):
         x = self.conv_bn_relu(x)
@@ -199,16 +198,24 @@ class JPU(nn.Layer):
     The original paper refers to
         Wu, Huikai, et al. "Fastfcn: Rethinking dilated convolution in the backbone for semantic segmentation." arXiv preprint arXiv:1903.11816 (2019).
     """
-
     def __init__(self, in_channels, width=512):
         super().__init__()
 
-        self.conv5 = ConvBNReLU(
-            in_channels[-1], width, 3, padding=1, bias_attr=False)
-        self.conv4 = ConvBNReLU(
-            in_channels[-2], width, 3, padding=1, bias_attr=False)
-        self.conv3 = ConvBNReLU(
-            in_channels[-3], width, 3, padding=1, bias_attr=False)
+        self.conv5 = ConvBNReLU(in_channels[-1],
+                                width,
+                                3,
+                                padding=1,
+                                bias_attr=False)
+        self.conv4 = ConvBNReLU(in_channels[-2],
+                                width,
+                                3,
+                                padding=1,
+                                bias_attr=False)
+        self.conv3 = ConvBNReLU(in_channels[-3],
+                                width,
+                                3,
+                                padding=1,
+                                bias_attr=False)
 
         self.dilation1 = SeparableConvBNReLU(
             3 * width,
@@ -220,33 +227,30 @@ class JPU(nn.Layer):
             bias_attr=False,
             stride=1,
         )
-        self.dilation2 = SeparableConvBNReLU(
-            3 * width,
-            width,
-            3,
-            padding=2,
-            pointwise_bias=False,
-            dilation=2,
-            bias_attr=False,
-            stride=1)
-        self.dilation3 = SeparableConvBNReLU(
-            3 * width,
-            width,
-            3,
-            padding=4,
-            pointwise_bias=False,
-            dilation=4,
-            bias_attr=False,
-            stride=1)
-        self.dilation4 = SeparableConvBNReLU(
-            3 * width,
-            width,
-            3,
-            padding=8,
-            pointwise_bias=False,
-            dilation=8,
-            bias_attr=False,
-            stride=1)
+        self.dilation2 = SeparableConvBNReLU(3 * width,
+                                             width,
+                                             3,
+                                             padding=2,
+                                             pointwise_bias=False,
+                                             dilation=2,
+                                             bias_attr=False,
+                                             stride=1)
+        self.dilation3 = SeparableConvBNReLU(3 * width,
+                                             width,
+                                             3,
+                                             padding=4,
+                                             pointwise_bias=False,
+                                             dilation=4,
+                                             bias_attr=False,
+                                             stride=1)
+        self.dilation4 = SeparableConvBNReLU(3 * width,
+                                             width,
+                                             3,
+                                             padding=8,
+                                             pointwise_bias=False,
+                                             dilation=8,
+                                             bias_attr=False,
+                                             stride=1)
 
     def forward(self, *inputs):
         feats = [
@@ -255,10 +259,14 @@ class JPU(nn.Layer):
             self.conv3(inputs[-3])
         ]
         size = feats[-1].shape[2:]
-        feats[-2] = F.interpolate(
-            feats[-2], size, mode='bilinear', align_corners=True)
-        feats[-3] = F.interpolate(
-            feats[-3], size, mode='bilinear', align_corners=True)
+        feats[-2] = F.interpolate(feats[-2],
+                                  size,
+                                  mode='bilinear',
+                                  align_corners=True)
+        feats[-3] = F.interpolate(feats[-3],
+                                  size,
+                                  mode='bilinear',
+                                  align_corners=True)
 
         feat = paddle.concat(feats, axis=1)
         feat = paddle.concat([
@@ -281,8 +289,11 @@ class ConvBNPReLU(nn.Layer):
                  **kwargs):
         super().__init__()
 
-        self._conv = nn.Conv2D(
-            in_channels, out_channels, kernel_size, padding=padding, **kwargs)
+        self._conv = nn.Conv2D(in_channels,
+                               out_channels,
+                               kernel_size,
+                               padding=padding,
+                               **kwargs)
 
         if 'data_format' in kwargs:
             data_format = kwargs['data_format']
@@ -334,15 +345,35 @@ class EESP(nn.Layer):
                  kernel_size_maximum=7,
                  down_method='esp'):
         super(EESP, self).__init__()
-        assert out_channels % branches == 0, "out_channels should be a multiple of branches."
-        assert down_method in ['avg', 'esp'], "down_method only support 'avg' or 'esp'."
+        if out_channels % branches != 0:
+            raise RuntimeError(
+                "The out_channes for EESP should be factorized by branches, but out_channels={} cann't be factorized by branches={}"
+                .format(out_channels, branches))
+        assert down_method in [
+            'avg', 'esp'
+        ], "The down_method for EESP only support 'avg' or 'esp', but got down_method={}".format(
+            down_method)
         self.in_channels = in_channels
         self.stride = stride
 
         in_branch_channels = int(out_channels / branches)
-        self.group_conv_in = ConvBNPReLU(in_channels, in_branch_channels, 1, stride=1, groups=branches, bias_attr=False)
+        self.group_conv_in = ConvBNPReLU(in_channels,
+                                         in_branch_channels,
+                                         1,
+                                         stride=1,
+                                         groups=branches,
+                                         bias_attr=False)
 
-        map_ksize_dilation = {3: 1, 5: 2, 7: 3, 9: 4, 11: 5, 13: 6, 15: 7, 17: 8}
+        map_ksize_dilation = {
+            3: 1,
+            5: 2,
+            7: 3,
+            9: 4,
+            11: 5,
+            13: 6,
+            15: 7,
+            17: 8
+        }
         self.kernel_sizes = []
         for i in range(branches):
             kernel_size = 3 + 2 * i
@@ -361,26 +392,30 @@ class EESP(nn.Layer):
                           stride=stride,
                           dilation=dilation,
                           groups=in_branch_channels,
-                          bias_attr=False)
-            )
-        self.group_conv_out = ConvBN(out_channels, out_channels, kernel_size=1, stride=1, groups=branches, bias_attr=False)
+                          bias_attr=False))
+        self.group_conv_out = ConvBN(out_channels,
+                                     out_channels,
+                                     kernel_size=1,
+                                     stride=1,
+                                     groups=branches,
+                                     bias_attr=False)
         self.bn_act = BNPReLU(out_channels)
         self._act = nn.PReLU()
-        self.downAvg = True if down_method == 'avg' else False
+        self.down_method = True if down_method == 'avg' else False
 
     def forward(self, x):
-        group_out = self.group_conv_in(x)  
+        group_out = self.group_conv_in(x)
         output = [self.spp_modules[0](group_out)]
 
         for k in range(1, len(self.spp_modules)):
             output_k = self.spp_modules[k](group_out)
-            output_k = output_k + output[k - 1]     
+            output_k = output_k + output[k - 1]
             output.append(output_k)
 
-        group_merge = self.group_conv_out(self.bn_act(paddle.concat(output, axis=1))) 
-        del output
+        group_merge = self.group_conv_out(
+            self.bn_act(paddle.concat(output, axis=1)))
 
-        if self.stride == 2 and self.downAvg:
+        if self.stride == 2 and self.down_method:
             return group_merge
 
         if group_merge.shape == x.shape:

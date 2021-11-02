@@ -22,27 +22,32 @@ from paddleseg.models import layers
 
 
 class PSPModule(nn.Layer):
-    def __init__(self, in_channels, out_channels, sizes=(1, 2, 4, 8)):
+    def __init__(self, in_channels, out_channels, sizes=4):
         super().__init__()
-        self.stages = nn.LayerList(
-            [
-                nn.Conv2D(in_channels,
-                          in_channels,
-                          kernel_size=3,
-                          stride=1,
-                          groups=in_channels,
-                          padding='same',
-                          bias_attr=False) for size in sizes
-            ]
-        )
-        self.project = layers.ConvBNPReLU(in_channels * (len(sizes) + 1), out_channels, 1, stride=1, bias_attr=False)
+        self.stages = nn.LayerList([
+            nn.Conv2D(in_channels,
+                      in_channels,
+                      kernel_size=3,
+                      stride=1,
+                      groups=in_channels,
+                      padding='same',
+                      bias_attr=False) for _ in range(sizes)
+        ])
+        self.project = layers.ConvBNPReLU(in_channels * (sizes + 1),
+                                          out_channels,
+                                          1,
+                                          stride=1,
+                                          bias_attr=False)
 
     def forward(self, feats):
         h, w = feats.shape[2], feats.shape[3]
         out = [feats]
         for stage in self.stages:
             feats = F.avg_pool2d(feats, kernel_size=3, stride=2, padding='same')
-            upsampled = F.interpolate(stage(feats), size=(h, w), mode='bilinear', align_corners=True)
+            upsampled = F.interpolate(stage(feats),
+                                      size=(h, w),
+                                      mode='bilinear',
+                                      align_corners=True)
             out.append(upsampled)
         return self.project(paddle.concat(out, axis=1))
 
@@ -66,23 +71,38 @@ class EESPNetV2(nn.Layer):
         super().__init__()
         self.backbone = backbone
         self.in_channels = self.backbone.out_channels
-        self.proj_l4_c = layers.ConvBNPReLU(self.in_channels[3], self.in_channels[2], 1, stride=1, bias_attr=False)
+        self.proj_l4_c = layers.ConvBNPReLU(self.in_channels[3],
+                                            self.in_channels[2],
+                                            1,
+                                            stride=1,
+                                            bias_attr=False)
         psp_size = 2 * self.in_channels[2]
         self.eesp_psp = nn.Sequential(
-            layers.EESP(psp_size, psp_size // 2, stride=1, branches=4, kernel_size_maximum=7),
+            layers.EESP(psp_size,
+                        psp_size // 2,
+                        stride=1,
+                        branches=4,
+                        kernel_size_maximum=7),
             PSPModule(psp_size // 2, psp_size // 2),
         )
-
 
         self.project_l3 = nn.Sequential(
             nn.Dropout2D(p=drop_prob),
             nn.Conv2D(psp_size // 2, num_classes, 1, 1, bias_attr=False),
         )
         self.act_l3 = layers.BNPReLU(num_classes)
-        self.project_l2 = layers.ConvBNPReLU(self.in_channels[1] + num_classes, num_classes, 1, stride=1, bias_attr=False)
+        self.project_l2 = layers.ConvBNPReLU(self.in_channels[1] + num_classes,
+                                             num_classes,
+                                             1,
+                                             stride=1,
+                                             bias_attr=False)
         self.project_l1 = nn.Sequential(
             nn.Dropout2D(p=drop_prob),
-            nn.Conv2D(self.in_channels[0] + num_classes, num_classes, 1, 1, bias_attr=False),
+            nn.Conv2D(self.in_channels[0] + num_classes,
+                      num_classes,
+                      1,
+                      1,
+                      bias_attr=False),
         )
 
         self.pretrained = pretrained
@@ -95,52 +115,48 @@ class EESPNetV2(nn.Layer):
 
     def hierarchicalUpsample(self, x, factor=3):
         for i in range(factor):
-            x = F.interpolate(x, scale_factor=2, mode='bilinear', align_corners=True)
+            x = F.interpolate(x,
+                              scale_factor=2,
+                              mode='bilinear',
+                              align_corners=True)
         return x
 
     def forward(self, x):
         out_l1, out_l2, out_l3, out_l4 = self.backbone(x)
 
         out_l4_proj = self.proj_l4_c(out_l4)
-        l4_to_l3 = F.interpolate(out_l4_proj, scale_factor=2, mode='bilinear', align_corners=True)
+        l4_to_l3 = F.interpolate(out_l4_proj,
+                                 scale_factor=2,
+                                 mode='bilinear',
+                                 align_corners=True)
         merged_l3 = self.eesp_psp(paddle.concat([out_l3, l4_to_l3], axis=1))
         proj_merge_l3 = self.project_l3(merged_l3)
         proj_merge_l3 = self.act_l3(proj_merge_l3)
 
-        l3_to_l2 = F.interpolate(proj_merge_l3, scale_factor=2, mode='bilinear', align_corners=True)
+        l3_to_l2 = F.interpolate(proj_merge_l3,
+                                 scale_factor=2,
+                                 mode='bilinear',
+                                 align_corners=True)
         merged_l2 = self.project_l2(paddle.concat([out_l2, l3_to_l2], axis=1))
 
-        l2_to_l1 = F.interpolate(merged_l2, scale_factor=2, mode='bilinear', align_corners=True)
+        l2_to_l1 = F.interpolate(merged_l2,
+                                 scale_factor=2,
+                                 mode='bilinear',
+                                 align_corners=True)
         merged_l1 = self.project_l1(paddle.concat([out_l1, l2_to_l1], axis=1))
 
         if self.training:
             return [
-                F.interpolate(merged_l1, scale_factor=2, mode='bilinear', align_corners=True),
+                F.interpolate(merged_l1,
+                              scale_factor=2,
+                              mode='bilinear',
+                              align_corners=True),
                 self.hierarchicalUpsample(proj_merge_l3),
             ]
         else:
-            return [F.interpolate(merged_l1, scale_factor=2, mode='bilinear', align_corners=True)]
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+            return [
+                F.interpolate(merged_l1,
+                              scale_factor=2,
+                              mode='bilinear',
+                              align_corners=True)
+            ]

@@ -1,37 +1,8 @@
+_base_: '../_base_/cityscapes.yml'
 
-train_dataset:
-  type: Cityscapes
-  dataset_root: cityscapes
-  transforms:
-    - type: ResizeStepScaling
-      min_scale_factor: 0.5
-      max_scale_factor: 2.0
-      scale_step_size: 0.25
-    - type: RandomPaddingCrop
-      crop_size: [1024, 512]
-    - type: RandomHorizontalFlip
-    - type: RandomDistort
-      brightness_range: 0.4
-      contrast_range: 0.4
-      saturation_range: 0.4
-    - type: Normalize
-  mode: train
+batch_size: 8
+iters: 120000
 
-val_dataset:
-  type: Cityscapes
-  dataset_root: cityscapes
-  transforms:
-    - type: Normalize
-  mode: val
-
-model:
-  type: EESPNetV2
-  backbone:
-    type: EESPNet
-    drop_prob: 0.0
-    scale: 2.0
-  num_classes: 19
-  drop_prob: 0.0
 
 optimizer:
   type: adam
@@ -43,11 +14,17 @@ lr_scheduler:
   end_lr: 0.0
   power: 0.9
 
-iters: 120000
-batch_size: 8
-
 loss:
   types:
     - type: CrossEntropyLoss
       weight: [2.79834108 ,6.92945723 ,3.84068512 ,9.94349362 ,9.77098823 ,9.51484 ,10.30981624 ,9.94307377 ,4.64933892 ,9.55759938 ,7.86692178 ,9.53126629 ,10.3496365 ,6.67234062 ,10.26054204 ,10.28785275 ,10.28988296 ,10.40546021 ,10.13848367]
   coef: [1, 1]
+
+model:
+  type: EESPNetV2
+  backbone:
+    type: EESPNet_backbone
+    drop_prob: 0.0
+    scale: 2.0
+  num_classes: 19
+  drop_prob: 0.0
