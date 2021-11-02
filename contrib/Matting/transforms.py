@@ -583,12 +583,11 @@ class Padding:
         im_height, im_width = data['img'].shape[0], data['img'].shape[1]
         target_height = self.target_size[1]
         target_width = self.target_size[0]
-        pad_height = target_height - im_height
-        pad_width = target_width - im_width
-        if pad_height < 0 or pad_width < 0:
-            raise ValueError(
-                'The size of image should be less than `target_size`, but the size of image ({}, {}) is larger than `target_size` ({}, {})'
-                .format(im_width, im_height, target_width, target_height))
+        pad_height = max(0, target_height - im_height)
+        pad_width = max(0, target_width - im_width)
+        data['trans_info'].append(('padding', data['img'].shape[0:2]))
+        if (pad_height == 0) and (pad_width == 0):
+            return data
         else:
             data['img'] = cv2.copyMakeBorder(
                 data['img'],
@@ -611,7 +610,6 @@ class Padding:
                     pad_width,
                     cv2.BORDER_CONSTANT,
                     value=self.im_padding_value)
-
         return data
 
 
