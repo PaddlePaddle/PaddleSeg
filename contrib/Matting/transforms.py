@@ -115,13 +115,13 @@ class RandomResize:
         scale(tupel|list, optional): A range of scale base on `size`. A tuple or list with length 2. Default: None.
     """
 
-    def __init__(self, size, scale=None):
+    def __init__(self, size=None, scale=None):
         if isinstance(size, list) or isinstance(size, tuple):
             if len(size) != 2:
                 raise ValueError(
                     '`size` should include 2 elements, but it is {}'.format(
                         size))
-        else:
+        elif size is not None:
             raise TypeError(
                 "Type of `size` is invalid. It should be list or tuple, but it is {}"
                 .format(type(size)))
@@ -141,8 +141,14 @@ class RandomResize:
 
     def __call__(self, data):
         h, w = data['img'].shape[:2]
-        scale = np.random.uniform(self.scale[0], self.scale[1])
-        scale_factor = max(self.size[0] / w, self.size[1] / h)
+        if self.scale is not None:
+            scale = np.random.uniform(self.scale[0], self.scale[1])
+        else:
+            scale = 1.
+        if self.size is not None:
+            scale_factor = max(self.size[0] / w, self.size[1] / h)
+        else:
+            scale_factor = 1
         scale = scale * scale_factor
 
         w = int(round(w * scale))
@@ -669,7 +675,7 @@ class Padding:
 
 
 if __name__ == "__main__":
-    transforms = [LimitShort(min_short=256, max_short=512)]
+    transforms = [RandomResize(size=(512, 512), scale=None)]
     transforms = Compose(transforms)
     fg_path = '/ssd1/home/chenguowei01/github/PaddleSeg/contrib/Matting/data/matting/human_matting/Distinctions-646/train/fg/13(2).png'
     alpha_path = fg_path.replace('fg', 'alpha')
