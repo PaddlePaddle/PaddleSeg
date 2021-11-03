@@ -69,17 +69,14 @@ class DeepLabV2(nn.Layer):
         if shape_stream:
             print('####### ADD SHAPE STREAM ########')
         # backbone_channels = self.backbone.feat_channels
-        # self.head = GSCNNHead(num_classes, backbone_indices, backbone_channels,
-        #                       aspp_ratios, aspp_out_channels, align_corners)
         self.head = edge_branch(
             inplanes=(256, 2048),
-            # inplanes=(64, 256, 512, 1024, 2048),
             out_channels=1024,
             dilation_series=[6, 12, 18, 24],
             padding_series=[6, 12, 18, 24],
             num_classes=2)
 
-        # self.fusion = Classifier_Module(21, [3, 9, 18, 24], [3, 9, 18, 24], 19)
+        self.fusion = Classifier_Module(21, [3, 9, 18, 24], [3, 9, 18, 24], 19)
         self.align_corners = align_corners  # should be true
         self.pretrained = pretrained  # should not load layer5
         self.init_weight()
@@ -90,7 +87,7 @@ class DeepLabV2(nn.Layer):
         if self.shape_stream:
             logit_list = self.head(self.backbone.conv1_logit, *feat_list[2:])
             logit_list.extend(feat_list[:2])
-            # logit_list.append(feat_list[-1])
+            # logit_list.append(feat_list[-1])  # remove x4
             edge_logit, seg_logit, aug_logit = [
                 F.interpolate(
                     logit,
@@ -145,10 +142,7 @@ class edge_branch(nn.Layer):
     def __init__(self, inplanes, out_channels, dilation_series, padding_series,
                  num_classes):
         super(edge_branch, self).__init__()
-        # self.conv_logit = nn.Conv2D(inplanes[0], 512, kernel_size=3)
         self.conv_x1 = nn.Conv2D(inplanes[0], 512, kernel_size=3)
-        # self.conv_x2 = nn.Conv2D(inplanes[2], 512, kernel_size=3)
-        # self.conv_x3 = nn.Conv2D(inplanes[3], 512, kernel_size=3)
         self.conv_x4 = nn.Conv2D(inplanes[1], 512, kernel_size=3)
 
         self.conv0 = ConvBNLayer(
@@ -186,17 +180,11 @@ class edge_branch(nn.Layer):
     def forward(self, conv1_logit, x1, x2, x3, x4):
         H = paddle.shape(x4)[2]
         W = paddle.shape(x4)[3]
-        # conv1_logit = F.interpolate(
-        #     conv1_logit, size=[H, W], mode='bilinear', align_corners=False)
         x1 = F.interpolate(x1, size=[H, W], mode='bilinear', align_corners=True)
 
-        # conv1_logit = self.conv_logit(conv1_logit)
         x1 = self.conv_x1(x1)
-        # x2 = self.conv_x2(x2)
-        # x3 = self.conv_x3(x3)
         x4 = self.conv_x4(x4)  # 1, 512, 81,161
 
-        # feats = paddle.concat([conv1_logit, x1, x2, x3, x4], axis=1)
         feats = paddle.concat([x1, x4], axis=1)
         y = self.conv0(feats)
         y = self.conv1(y)

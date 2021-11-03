@@ -155,7 +155,7 @@ class Trainer():
                 time1 = time.time()
                 reader_cost_averager.record(time1 - batch_start)
                 loss_dict = {}
-                logger.info('iters: {}'.format(iter))
+                # logger.info('iters: {}'.format(iter))
 
                 #### training #####
                 images_tgt = data_tgt[0]
@@ -165,14 +165,7 @@ class Trainer():
 
                 edges_src = None
                 if len(data_src) == 3:
-                    edges_src = data_src[2].astype('int64')  # 1,1,640,1280
-                    # import imageio # save image
-
-                    # tmp = edges_src.detach().clone().squeeze().numpy()
-                    # tmp_label = labels_src.detach().clone().squeeze().numpy()
-                    # tmp[tmp==1]==255
-                    # imageio.imwrite('edge_pics/edge_{}.png'.format(iter), tmp)
-                    # imageio.imwrite('edge_pics/label_{}.png'.format(iter), tmp_label)
+                    edges_src = data_src[2].astype('int64')  # 1, 1, 640, 1280
 
                 if nranks > 1:
                     logits_list_src = ddp_model(images_src)
@@ -203,13 +196,10 @@ class Trainer():
                 loss_src_seg = loss_src_seg_main + loss_src_seg_aux
                 loss_dict["source_main"] = loss_src_seg_main.numpy()[0]
                 loss_dict["source_aux"] = loss_src_seg_aux.numpy()[0]
-                time2 = time.time()  # src forward time
+                loss = loss_src_seg
+                del loss_src_seg, images_src, loss_src_seg_aux, loss_src_seg_main
 
-                if (not self.edgeconstrain):
-                    loss_src_seg.backward()
-                    del loss_src_seg, images_src, loss_src_seg_aux, loss_src_seg_main
-                else:
-                    # logger.info("Add source edge loss")
+                if self.edgeconstrain:
                     loss_src_edge = self.bceloss(logits_list_src[2], edges_src)
 
                     if (not self.src_only) and (iter > 200000):
@@ -222,21 +212,18 @@ class Trainer():
                         edges_tgt = paddle.to_tensor(edges_tgt, dtype='int64')
                         loss_tgt_edge = self.bceloss(logits_list_tgt[2],
                                                      edges_tgt)
-                        loss_edgenseg = loss_tgt_edge + loss_src_edge + loss_src_seg
+                        loss_edge = loss_tgt_edge + loss_src_edge
                     else:
                         loss_tgt_edge = paddle.zeros([1])
-                        loss_edgenseg = loss_src_edge + loss_src_seg
-                    time3 = time.time()  # tgt gen pseudo label
+                        loss_edge = loss_src_edge
 
-                    loss_edgenseg.backward()
+                    # loss_edgenseg.backward()
+                    loss += loss_edge
 
-                    # loss_dict['target_seg'] = loss_tgt_seg.numpy()[0]
                     loss_dict['target_edge'] = loss_tgt_edge.numpy()[0]
                     loss_dict['source_edge'] = loss_src_edge.numpy()[0]
 
-                    del loss_edgenseg, loss_tgt_edge, loss_src_edge
-                    del loss_src_seg, images_src, loss_src_seg_aux, loss_src_seg_main
-                    time4 = time.time()  # src_edge loss
+                    del loss_edge, loss_tgt_edge, loss_src_edge
 
                 #### target aug loss #######
                 augs = augmentation.get_augmentation()
@@ -256,7 +243,6 @@ class Trainer():
                     logger=reprod_logger,
                     iters="{}_2".format(iter))
                 labels_tgt_aug_aux = labels_tgt_aug_aux.cuda()
-                time5 = time.time()  # tgt aug
 
                 if nranks > 1:
                     logits_list_tgt_aug = ddp_model(images_tgt_aug)
@@ -267,15 +253,15 @@ class Trainer():
                                                        labels_tgt_aug))
                 loss_tgt_aug_aux = 0.1 * (0.1 * self.celoss(
                     logits_list_tgt_aug[1], labels_tgt_aug_aux))
+
                 loss_tgt_aug = loss_tgt_aug_aux + loss_tgt_aug_main
-                loss_tgt_aug.backward()
+                # loss_tgt_aug.backward()
+                loss += loss_tgt_aug
 
                 loss_dict['target_aug_main'] = loss_tgt_aug_main.numpy()[0]
                 loss_dict['target_aug_aux'] = loss_tgt_aug_aux.numpy()[0]
                 del images_tgt_aug, labels_tgt_aug_aux, images_tgt, \
                     loss_tgt_aug, loss_tgt_aug_aux, loss_tgt_aug_main
-
-                time6 = time.time()  # tgt forward loss delete
 
                 #### edge input seg; src & tgt edge pull in ######
                 if self.edgepullin:
@@ -293,7 +279,8 @@ class Trainer():
                     loss_tgt_edge_rec = self.celoss(out_tgt, labels_tgt_aug)
 
                     loss_edge_rec = loss_src_edge_rec + loss_tgt_edge_rec  # + loss_edge_pullin
-                    loss_edge_rec.backward()
+                    # loss_edge_rec.backward()
+                    loss += loss_edge_rec
 
                     loss_dict['src_edge_rec'] = loss_src_edge_rec.numpy()[0]
                     loss_dict['tgt_edge_rec'] = loss_tgt_edge_rec.numpy()[0]
@@ -302,25 +289,20 @@ class Trainer():
 
                 #### mask input feature & pullin  ######
                 if self.featurepullin:
-                    if iter == 0:
-                        loss_pix_align_src = paddle.zeros((1, 1))
-                        loss_pix_align_tgt = paddle.zeros((1, 1))
-
-                    # logger.info("Add 3-level content pullin loss")
                     # inner-class loss
                     feat_src = logits_list_src[0]
                     feat_tgt = logits_list_tgt_aug[0]
+                    center_src_s, center_tgt_s = [], []
 
-                    total_pixs = logits_list_src[0].shape[2] * logits_list_src[
-                        0].shape[3]
+                    total_pixs = logits_list_src[0].shape[2] * \
+                                    logits_list_src[0].shape[3]
 
                     for i in range(train_dataset_tgt.NUM_CLASSES):
                         pred = paddle.argmax(
-                            logits_list_src[0].detach(),
+                            logits_list_src[0].detach().clone(),
                             axis=1).unsqueeze(0)  # 1, 1, 640, 1280
-
-                        # ignore tensor that do not have features in this img
                         sel_num = paddle.sum((pred == i).astype('float32'))
+                        # ignore tensor that do not have features in this img
                         if sel_num > 0:
                             feat_sel_src = paddle.where(
                                 (pred == i).expand_as(feat_src), feat_src,
@@ -328,31 +310,26 @@ class Trainer():
                             center_src = paddle.mean(
                                 feat_sel_src, axis=[2, 3]) / (
                                     sel_num / total_pixs)  # 1, C
-                            center_src = center_src.reshape((1, 19))
 
-                            self.src_centers[i] = 0.99 * self.src_centers[
-                                i].detach() + (1 - 0.99) * center_src
+                            self.src_centers[i] = 0.99 * self.src_centers[i] + (
+                                1 - 0.99) * center_src
 
-                        pred = labels_tgt_aug.unsqueeze(0)  # 1, 1,  640, 1280
-                        if paddle.sum((pred == i).astype('float32')) > 0:
+                        pred = labels_tgt_aug.unsqueeze(0)  # 1, 1,  512, 512
+                        sel_num = paddle.sum((pred == i).astype('float32'))
+                        if sel_num > 0:
                             feat_sel_tgt = paddle.where(
                                 (pred == i).expand_as(feat_tgt), feat_tgt,
                                 paddle.zeros(feat_tgt.shape))
                             center_tgt = paddle.mean(
-                                feat_sel_tgt, axis=[2, 3]) / (
-                                    paddle.sum(pred == i) / total_pixs)
-                            center_tgt = center_tgt.reshape((1, 19))
+                                feat_sel_tgt, axis=[2, 3
+                                                    ]) / (sel_num / total_pixs)
 
-                            self.tgt_centers[i] = 0.99 * self.tgt_centers[
-                                i].detach() + (1 - 0.99) * center_tgt
+                            self.tgt_centers[i] = 0.99 * self.tgt_centers[i] + (
+                                1 - 0.99) * center_tgt
+                        center_src_s.append(center_src)
+                        center_tgt_s.append(center_tgt)
 
-                        if iter >= 30:  #000:
-                            loss_pix_align_src += self.mseloss(
-                                center_src, self.src_centers[i])
-                            loss_pix_align_tgt += self.mseloss(
-                                center_tgt, self.tgt_centers[i])
-
-                    if iter >= 30:  #000:  # average center structure alignment
+                    if iter >= 3000:  # average center structure alignment
                         src_centers = paddle.concat(self.src_centers, axis=0)
                         tgt_centers = paddle.concat(
                             self.tgt_centers, axis=0)  # 19， 2048
@@ -365,24 +342,39 @@ class Trainer():
                         loss_intra_relate = self.klloss(relatmat_src, (relatmat_tgt+relatmat_src)/2) \
                                             + self.klloss(relatmat_tgt, (relatmat_tgt+relatmat_src)/2)
 
-                        loss_feat_align = loss_pix_align_src + loss_pix_align_tgt + loss_intra_relate
-                        loss_feat_align.backward()
+                        loss_pix_align_src = self.mseloss(
+                            paddle.to_tensor(center_src_s),
+                            paddle.to_tensor(self.src_centers).detach().clone())
+                        loss_pix_align_tgt = self.mseloss(
+                            paddle.to_tensor(center_tgt_s),
+                            paddle.to_tensor(self.tgt_centers).detach().clone())
 
-                        loss_dict[
-                            'loss_pix_align_src'] = loss_pix_align_src.numpy(
-                            )[0]
-                        loss_dict[
-                            'loss_pix_align_tgt'] = loss_pix_align_tgt.numpy(
-                            )[0]
-                        loss_dict[
-                            'loss_intra_relate'] = loss_intra_relate.numpy()[0]
+                        loss_feat_align = loss_pix_align_src + loss_pix_align_tgt + loss_intra_relate
+
+                        # loss_feat_align.backward()
+                        loss += loss_feat_align
+
+                        loss_dict['loss_pix_align_src'] = \
+                                loss_pix_align_src.numpy()[0]
+                        loss_dict['loss_pix_align_tgt'] = \
+                                loss_pix_align_tgt.numpy()[0]
+                        loss_dict['loss_intra_relate'] = \
+                                loss_intra_relate.numpy()[0]
 
                         del loss_pix_align_tgt, loss_pix_align_src, loss_intra_relate,
 
+                    self.tgt_centers = [
+                        item.detach().clone() for item in self.tgt_centers
+                    ]
+                    self.src_centers = [
+                        item.detach().clone() for item in self.src_centers
+                    ]
+
+                loss.backward()
+                del loss
                 loss = sum(loss_dict.values())
 
                 optimizer.step()
-                time7 = time.time()  # optimizer step
                 self.ema.update_params()
 
                 with paddle.no_grad():
@@ -418,18 +410,6 @@ class Trainer():
                                     iters, loss, label_tgt_acc, lr,
                                     avg_train_batch_cost, avg_train_reader_cost,
                                     batch_cost_averager.get_ips_average(), eta))
-                        # logger.info(
-                        #     "[TRAIN] batch_cost: {:.4f}, srctgt_forward: {:.4f}, src_edge_loss: {:.4f}, src_loss_del: {:.4f}, \
-                        #      tgt_aug: {:.4f}, tgt_loss_del: {:.4f}, optim_step: {:.4f},"
-                        #     .format(
-                        #         avg_train_batch_cost,
-                        #         time2 - time1,
-                        #         time3 - time2,  # 分支选择会影响这个
-                        #         time4 - time3,
-                        #         time5 - time4,
-                        #         time6 - time5,
-                        #         time7 - time6,
-                        #     ))
 
                         if use_vdl:
                             log_writer.add_scalar('Train/loss', loss, iter)
