@@ -178,3 +178,31 @@ Run the following command to view more parameters.
 ```shell
 python predict.py --help
 ```
+
+## Model Export
+```shell
+python export.py \
+    --config configs/modnet/modnet_mobilenetv2.yml \
+    --model_path output/best_model/model.pdparams \
+    --save_dir output/export
+```
+If the model requires trimap information, `--trimap` is need.
+
+Run the following command to view more parameters.
+```shell
+python export.py --help
+```
+
+## Model Deploy
+```shell
+python deploy/python/infer.py \
+    --config output/export/deploy.yaml \
+    --image_path data/PPM-100/val/fg/ \
+    --save_dir ouput/results
+```
+If the model requires trimap information, pass the trimap path through '--trimap_path'.
+
+Run the following command to view more parameters.
+```shell
+python deploy/python/infer.py --help
+```

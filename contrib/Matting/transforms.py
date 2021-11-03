@@ -42,6 +42,8 @@ class Compose:
         Returns:
             dict: Data after transformation
         """
+        if 'trans_info' not in data:
+            data['trans_info'] = []
         for op in self.transforms:
             data = op(data)
             if data is None:
