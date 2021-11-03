@@ -5,6 +5,7 @@ iters: 120000
 
 
 optimizer:
+  _inherited_: False
   type: adam
   weight_decay: 0.0002
 
