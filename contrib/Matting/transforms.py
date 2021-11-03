@@ -101,7 +101,11 @@ class Resize:
         data['trans_info'].append(('resize', data['img'].shape[0:2]))
         data['img'] = functional.resize(data['img'], self.target_size)
         for key in data.get('gt_fields', []):
-            data[key] = functional.resize(data[key], self.target_size)
+            if key == 'trimap':
+                data[key] = functional.resize(data[key], self.target_size,
+                                              cv2.INTER_NEAREST)
+            else:
+                data[key] = functional.resize(data[key], self.target_size)
         return data
 
 
@@ -155,7 +159,11 @@ class RandomResize:
         h = int(round(h * scale))
         data['img'] = functional.resize(data['img'], (w, h))
         for key in data.get('gt_fields', []):
-            data[key] = functional.resize(data[key], (w, h))
+            if key == 'trimap':
+                data[key] = functional.resize(data[key], (w, h),
+                                              cv2.INTER_NEAREST)
+            else:
+                data[key] = functional.resize(data[key], (w, h))
         return data
 
 
@@ -175,7 +183,11 @@ class ResizeByLong:
         data['trans_info'].append(('resize', data['img'].shape[0:2]))
         data['img'] = functional.resize_long(data['img'], self.long_size)
         for key in data.get('gt_fields', []):
-            data[key] = functional.resize_long(data[key], self.long_size)
+            if key == 'trimap':
+                data[key] = functional.resize_long(data[key], self.long_size,
+                                                   cv2.INTER_NEAREST)
+            else:
+                data[key] = functional.resize_long(data[key], self.long_size)
         return data
 
 
@@ -195,7 +207,11 @@ class ResizeByShort:
         data['trans_info'].append(('resize', data['img'].shape[0:2]))
         data['img'] = functional.resize_short(data['img'], self.short_size)
         for key in data.get('gt_fields', []):
-            data[key] = functional.resize_short(data[key], self.short_size)
+            if key == 'trimap':
+                data[key] = functional.resize_short(data[key], self.short_size,
+                                                    cv2.INTER_NEAREST)
+            else:
+                data[key] = functional.resize_short(data[key], self.short_size)
         return data
 
 
@@ -216,7 +232,11 @@ class ResizeToIntMult:
         rh = h - h % self.mult_int
         data['img'] = functional.resize(data['img'], (rw, rh))
         for key in data.get('gt_fields', []):
-            data[key] = functional.resize(data[key], (rw, rh))
+            if key == 'trimap':
+                data[key] = functional.resize(data[key], (rw, rh),
+                                              cv2.INTER_NEAREST)
+            else:
+                data[key] = functional.resize(data[key], (rw, rh))
 
         return data
 
@@ -396,7 +416,11 @@ class LimitLong:
         if target != long_edge:
             data['img'] = functional.resize_long(data['img'], target)
             for key in data.get('gt_fields', []):
-                data[key] = functional.resize_long(data[key], target)
+                if key == 'trimap':
+                    data[key] = functional.resize_long(data[key], target,
+                                                       cv2.INTER_NEAREST)
+                else:
+                    data[key] = functional.resize_long(data[key], target)
 
         return data
 
@@ -451,7 +475,11 @@ class LimitShort:
         if target != short_edge:
             data['img'] = functional.resize_short(data['img'], target)
             for key in data.get('gt_fields', []):
-                data[key] = functional.resize_short(data[key], target)
+                if key == 'trimap':
+                    data[key] = functional.resize_short(data[key], target,
+                                                        cv2.INTER_NEAREST)
+                else:
+                    data[key] = functional.resize_short(data[key], target)
 
         return data
 
@@ -670,7 +698,7 @@ class Padding:
                     0,
                     pad_width,
                     cv2.BORDER_CONSTANT,
-                    value=self.im_padding_value)
+                    value=value)
         return data
 
 
