@@ -87,18 +87,6 @@ def parse_args():
         choices=[True, False],
         help='Enable to use mkldnn to speed up when using cpu.')
 
-    #     parser.add_argument(
-    #         "--benchmark",
-    #         type=eval,
-    #         default=False,
-    #         help=
-    #         "Whether to log some information about environment, model, configuration and performance.")
-    #     parser.add_argument(
-    #         "--model_name",
-    #         default="",
-    #         type=str,
-    #         help='When `--benchmark` is True, the specified model name is displayed.')
-
     parser.add_argument(
         '--print_detail',
         dest='print_detail',
