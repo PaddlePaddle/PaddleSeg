@@ -63,7 +63,7 @@ class DownSampler(nn.Layer):
         eesp_out = self.eesp(x)
         output = paddle.concat([avg_out, eesp_out], axis=1)
 
-        if inputs:
+        if inputs is not None:
             w1 = avg_out.shape[2]
             w2 = inputs.shape[2]
             while w2 != w1:
