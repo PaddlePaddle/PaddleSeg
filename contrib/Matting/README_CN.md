@@ -15,6 +15,8 @@ Matting（精细化分割/影像去背/抠图）是指借由计算前景的颜�
 - [训练](#训练)
 - [评估](#评估)
 - [预测及可视化结果保存](#预测及可视化结果保存)
+- [模型导出](#模型导出)
+- [应用部署](#应用部署)
 
 
 ## 环境配置
@@ -178,4 +180,32 @@ python predict.py \
 更多参数信息请运行如下命令进行查看:
 ```shell
 python predict.py --help
+```
+
+## 模型导出
+```shell
+python export.py \
+    --config configs/modnet/modnet_mobilenetv2.yml \
+    --model_path output/best_model/model.pdparams \
+    --save_dir output/export
+```
+如果模型（比如：DIM）需要trimap的输入，需要增加参数`--trimap`
+
+更多参数信息请运行如下命令进行查看:
+```shell
+python export.py --help
+```
+
+## 应用部署
+```shell
+python deploy/python/infer.py \
+    --config output/export/deploy.yaml \
+    --image_path data/PPM-100/val/fg/ \
+    --save_dir ouput/results
+```
+如模型需要trimap信息，需要通过`--trimap_path`传入trimap路径。
+
+更多参数信息请运行如下命令进行查看:
+```shell
+python deploy/python/infer.py --help
 ```
