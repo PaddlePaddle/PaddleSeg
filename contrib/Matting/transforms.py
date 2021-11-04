@@ -534,6 +534,8 @@ class RandomBlur:
                 data['img'] = cv2.GaussianBlur(data['img'], (radius, radius), 0,
                                                0)
                 for key in data.get('gt_fields', []):
+                    if key == 'trimap':
+                        continue
                     data[key] = cv2.GaussianBlur(data[key], (radius, radius), 0,
                                                  0)
         return data
