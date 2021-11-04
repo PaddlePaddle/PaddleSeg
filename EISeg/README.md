@@ -150,8 +150,7 @@ EISeg使用[QPT](https://github.com/GT-ZhangAcer/QPT)进行打包。可以从[�
 
 ## 贡献者
 
-感谢[Yuying Hao](https://github.com/haoyuying), [Lin Han](https://github.com/linhandev/), [Yizhou Chen](https://github.com/geoyee), [Yiakwy](https://github.com/yiakwy), [GT](https://github.com/GT-ZhangAcer), [Zhiliang Yu](https://github.com/yzl19940819)等开发者；
-感谢[RITM](https://github.com/saic-vul/ritm_interactive_segmentation)算法支持。
+感谢[Yuying Hao](https://github.com/haoyuying), [Lin Han](https://github.com/linhandev/), [Yizhou Chen](https://github.com/geoyee), [Yiakwy](https://github.com/yiakwy), [GT](https://github.com/GT-ZhangAcer), [Zhiliang Yu](https://github.com/yzl19940819)等开发者及[RITM](https://github.com/saic-vul/ritm_interactive_segmentation)算法支持。
 
 ## 学术引用
 
