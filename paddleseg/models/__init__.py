@@ -45,4 +45,4 @@ from .segformer import SegFormer
 from .pointrend import PointRend
 from .ginet import GINet
 from .segnet import SegNet
-from .espnet import EESPNetV2
+from .espnet import ESPNetV2

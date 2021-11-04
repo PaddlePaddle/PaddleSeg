@@ -22,10 +22,8 @@ loss:
   coef: [1, 1]
 
 model:
-  type: EESPNetV2
-  backbone:
-    type: EESPNet_backbone
-    drop_prob: 0.0
-    scale: 2.0
+  type: ESPNetV2
+  in_channels: 3
+  scale: 2.0
   num_classes: 19
   drop_prob: 0.0
