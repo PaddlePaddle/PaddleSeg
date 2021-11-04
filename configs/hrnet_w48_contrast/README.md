@@ -2,7 +2,7 @@
 
 ## Reference
 
-> Wenguan Wang, Tianfei Zhou, Fisher Yu , Jifeng Dai, Ender Konukoglu, Luc Van Gool. Exploring Cross-Image Pixel Contrast for Semantic Segmentation.
+> Wenguan Wang, Tianfei Zhou, Fisher Yu , Jifeng Dai, Ender Konukoglu, Luc Van Gool. "Exploring Cross-Image Pixel Contrast for Semantic Segmentation." In Proceedings of the IEEE International Conference on Computer Vision. 2021.
 
 
 ## Performance

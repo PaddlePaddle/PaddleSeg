@@ -29,11 +29,11 @@ class PixelContrastCrossEntropyLoss(nn.Layer):
     (https://arxiv.org/abs/2101.11939).
 
     Args:
-        temperature (float, optional): Controling the numerical similarity of features. Default: 0.1.
-        base_temperature (float, optional): Controling the numerical range of contrast loss. Default: 0.07.
-        ignore_index (int, optional): Specifies a target value that is ignored
-            and does not contribute to the input gradient. Default ``255``.
-        max_samples (str, optional): Max sampling anchors. Default: 1024.
+        temperature (float|optional): Controling the numerical similarity of features. Default: 0.1.
+        base_temperature (float|optional): Controling the numerical range of contrast loss. Default: 0.07.
+        ignore_index (int|optional): Specifies a target value that is ignored
+            and does not contribute to the input gradient. Default 255.
+        max_samples (int|optional): Max sampling anchors. Default: 1024.
         max_views (int): Sampled samplers of a class. Default: 100.
     """
     def __init__(self,
@@ -52,9 +52,9 @@ class PixelContrastCrossEntropyLoss(nn.Layer):
     def _hard_anchor_sampling(self, X, y_hat, y):
         """
         Args:
-            X: reshaped feats, shape = [N, H*W, feat_channels]
-            y_hat: reshaped label, shape = [N, H*W]
-            y: reshaped predict, shape = [N, H*W]
+            X(Tensor): reshaped feats, shape = [N, H*W, feat_channels]
+            y_hat(Tensor): reshaped label, shape = [N, H*W]
+            y(Tensor): reshaped predict, shape = [N, H*W]
         """
         batch_size, feat_dim = X.shape[0], X.shape[-1]
         classes = []

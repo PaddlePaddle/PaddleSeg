@@ -26,8 +26,8 @@ class ProjectionHead(nn.Layer):
     The projection head used by contrast learning.
     Args:
         dim_in (int): The dimensions of input features.
-        proj_dim (int): The output dimensions of projection head. Default: 256.
-        proj (str): The type of projection head, only support 'linear' and 'convmlp'. Default: 'convmlp'
+        proj_dim (int|optional): The output dimensions of projection head. Default: 256.
+        proj (str|optional): The type of projection head, only support 'linear' and 'convmlp'. Default: 'convmlp'
     """
     def __init__(self, dim_in, proj_dim=256, proj='convmlp'):
         super(ProjectionHead, self).__init__()
@@ -63,8 +63,16 @@ class HRNetW48Contrast(nn.Layer):
         proj_dim (int): The projection dimensions.
         align_corners (bool, optional): An argument of F.interpolate. It should be set to False when the feature size is even,
             e.g. 1024x512, otherwise it is True, e.g. 769x769. Default: False.
+        pretrained (str, optional): The path or url of pretrained model. Default: None.
     """
-    def __init__(self, in_channels, num_classes, backbone, drop_prob, proj_dim, align_corners=False, pretrained=None):
+    def __init__(self,
+                 in_channels,
+                 num_classes,
+                 backbone,
+                 drop_prob,
+                 proj_dim,
+                 align_corners=False,
+                 pretrained=None):
         super().__init__()
         self.in_channels = in_channels
         self.backbone = backbone
@@ -74,14 +82,23 @@ class HRNetW48Contrast(nn.Layer):
         self.pretrained = pretrained
 
         self.cls_head = nn.Sequential(
-            nn.Conv2D(in_channels, in_channels, kernel_size=3, stride=1, padding=1),
+            nn.Conv2D(in_channels,
+                      in_channels,
+                      kernel_size=3,
+                      stride=1,
+                      padding=1),
             layers.SyncBatchNorm(in_channels),
             nn.ReLU(),
             nn.Dropout2D(drop_prob),
-            nn.Conv2D(in_channels, num_classes, kernel_size=1, stride=1, bias_attr=False),
+            nn.Conv2D(in_channels,
+                      num_classes,
+                      kernel_size=1,
+                      stride=1,
+                      bias_attr=False),
         )
-        self.proj_head = ProjectionHead(dim_in=in_channels, proj_dim=self.proj_dim)
-        
+        self.proj_head = ProjectionHead(dim_in=in_channels,
+                                        proj_dim=self.proj_dim)
+
     def init_weight(self):
         if self.pretrained is not None:
             utils.load_entire_model(self, self.pretrained)
@@ -91,6 +108,19 @@ class HRNetW48Contrast(nn.Layer):
         out = self.cls_head(feats)
         if self.training:
             emb = self.proj_head(feats)
-            return [F.interpolate(out, x.shape[2:], mode='bilinear', align_corners=self.align_corners), {'seg': out, 'embed': emb}]
+            return [
+                F.interpolate(out,
+                              x.shape[2:],
+                              mode='bilinear',
+                              align_corners=self.align_corners), {
+                                  'seg': out,
+                                  'embed': emb
+                              }
+            ]
         else:
-            return [F.interpolate(out, x.shape[2:], mode='bilinear', align_corners=self.align_corners)]
+            return [
+                F.interpolate(out,
+                              x.shape[2:],
+                              mode='bilinear',
+                              align_corners=self.align_corners)
+            ]

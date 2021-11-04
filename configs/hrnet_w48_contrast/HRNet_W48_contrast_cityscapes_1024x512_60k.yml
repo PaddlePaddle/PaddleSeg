@@ -8,7 +8,6 @@ optimizer:
   type: sgd
   weight_decay: 0.0002
 
-
 loss:
   types:
     - type: CrossEntropyLoss
