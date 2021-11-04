@@ -64,7 +64,7 @@ class EESPNetV2(nn.Layer):
     Args:
         num_classes (int): The unique number of target classes.
         backbone (paddle.nn.Layer): Backbone network, currently support ESPNet.
-        drop_prob (float): The probability of dropout.
+        drop_prob (float|optional): The probability of dropout. Default: 0.1.
         pretrained (str, optional): The path or url of pretrained model. Default: None.
     """
     def __init__(self, num_classes, backbone, drop_prob=0.1, pretrained=None):

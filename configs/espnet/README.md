@@ -2,8 +2,7 @@
 
 ## Reference
 
-> Sachin Mehta, Mohammad Rastegari, Linda Shapiro, and Hannaneh Hajishirzi. "ESPNetv2: A Light-weight, Power Efficient, and General Purpose Convolutional Neural Network."
-
+> Mehta, Sachin, Mohammad Rastegari, Linda Shapiro, and Hannaneh Hajishirzi. "Espnetv2: A light-weight, power efficient, and general purpose convolutional neural network." In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition, pp. 9190-9200. 2019.
 
 ## Performance
 

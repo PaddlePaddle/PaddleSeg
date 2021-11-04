@@ -29,9 +29,9 @@ class DownSampler(nn.Layer):
     Args:
         in_channels (int): Number of input channels.
         out_channels (int): Number of output channels.
-        branches (int): Number of branches.
-        kernel_size_maximum (int): A maximum value of kernel_size for EESP block.
-        shortcut (bool): Use shortcut or not. Default: True.
+        branches (int|optional): Number of branches. Default: 9.
+        kernel_size_maximum (int|optional): A maximum value of kernel_size for EESP block. Default: 9.
+        shortcut (bool|optional): Use shortcut or not. Default: True.
     """
     def __init__(self,
                  in_channels,
@@ -86,8 +86,8 @@ class EESPNet_backbone(nn.Layer):
     (https://arxiv.org/abs/1811.11431).
 
     Args:
-        in_channels (int): Number of input channels.
-        drop_prob (float): The probability of dropout.
+        in_channels (int|optional): Number of input channels. Default: 3.
+        drop_prob (float|optional): The probability of dropout. Default: 3.
         scale (float, optional): The scale of channels, only support scale <= 1.5 and scale == 2. Default: 1.0.
     """
     def __init__(self, in_channels=3, drop_prob=0.1, scale=1.0):
