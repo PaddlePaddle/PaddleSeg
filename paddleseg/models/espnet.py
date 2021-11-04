@@ -47,10 +47,10 @@ class EESP(nn.Layer):
     Args:
         in_channels (int): Number of input channels.
         out_channels (int): Number of output channels.
-        stride (int): Factor by which we should skip (useful for down-sampling). If 2, then down-samples the feature map by 2.
-        branches (int): Number of branches.
-        kernel_size_maximum (int): A maximum value of receptive field allowed for EESP block.
-        down_method (str): Down sample or not, only support 'avg' and 'esp'. (equivalent to stride is 2 or not)
+        stride (int|optional): Factor by which we should skip (useful for down-sampling). If 2, then down-samples the feature map by 2. Default: 1.
+        branches (int|optional): Number of branches. Default: 4.
+        kernel_size_maximum (int|optional): A maximum value of receptive field allowed for EESP block. Default: 7.
+        down_method (str|optional): Down sample or not, only support 'avg' and 'esp'(equivalent to stride is 2 or not). Default: 'esp'.
     """
     def __init__(self,
                  in_channels,
