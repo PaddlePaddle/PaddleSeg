@@ -52,10 +52,10 @@ Welcome to PaddleSeg! PaddleSeg is an end-to-end image segmentation development 
 <img src="./docs/images/QQ_chat.png"  width = "200" />  
 </div>
 
-## Model Instruction  <img src="./docs/images/model.png" width="20"/>
+## Model Zoo Overview  <img src="./docs/images/model.png" width="20"/>
 
 <div align="center">
-<img src="./docs/images/perf_large_models_speed.png"   />  
+<img src=https://user-images.githubusercontent.com/30695251/140323107-02ce9de4-c8f4-4f18-88b2-59bd0055a70b.png   />  
 </div>
 
 See [Model Zoo Overview](./docs/model_zoo_overview.md) for more infomation.
