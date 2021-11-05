@@ -396,3 +396,11 @@ def ResNet152_vd(**args):
 def ResNet200_vd(**args):
     model = ResNet_vd(layers=200, **args)
     return model
+
+
+if __name__ == '__main__':
+    net = ResNet50_vd()
+    x = paddle.rand([2, 3, 1024, 512])
+    y = net(x)
+    for i in range(len(y)):
+        print(y[i].shape)

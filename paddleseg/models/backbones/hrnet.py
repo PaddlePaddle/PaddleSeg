@@ -835,3 +835,10 @@ def HRNet_W64(**kwargs):
         stage4_num_channels=[64, 128, 256, 512],
         **kwargs)
     return model
+
+
+if __name__ == '__main__':
+    net = HRNet_W48()
+    x = paddle.rand([2, 3, 1024, 512])
+    y = net(x)
+    print(y[0].shape)

@@ -48,11 +48,8 @@ class CrossEntropyLoss(nn.Layer):
         self.data_format = data_format
         if weight is not None:
             self.weight = paddle.to_tensor(weight, dtype='float32')
-            long_weight = weight + [0] * (256 - len(weight))
-            self.long_weight = paddle.to_tensor(long_weight, dtype='float32')
         else:
             self.weight = None
-            self.long_weight = None
 
     def forward(self, logit, label, semantic_weights=None):
         """
@@ -87,7 +84,7 @@ class CrossEntropyLoss(nn.Layer):
             label,
             ignore_index=self.ignore_index,
             reduction='none',
-            weight=self.long_weight)
+            weight=self.weight)
 
         return self._post_process_loss(logit, label, semantic_weights, loss)
 
