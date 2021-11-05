@@ -255,7 +255,7 @@ class DatasetPredictor(Predictor):
                 len(dataset), miou, acc, kappa))
         logger.info("[EVAL] Class IoU: \n" + str(np.round(class_iou, 4)))
         logger.info("[EVAL] Class Acc: \n" + str(np.round(class_acc, 4)))
-        logger.info("[EVAL] Average time: %.3f second/img" %
+        logger.info("[EVAL] Average time: %.5f second/img" %
                     (total_time / len(dataset)))
 
 
