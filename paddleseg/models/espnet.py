@@ -23,6 +23,122 @@ from paddleseg.cvlibs import manager, param_init
 from paddleseg.models import layers
 
 
+@manager.MODELS.add_component
+class ESPNetV2(nn.Layer):
+    """
+    The ESPNetV2 implementation based on PaddlePaddle.
+
+    The original article refers to
+    Sachin Mehta, Mohammad Rastegari, Linda Shapiro, and Hannaneh Hajishirzi. "ESPNetv2: A Light-weight, Power Efficient, and General Purpose Convolutional Neural Network"
+    (https://arxiv.org/abs/1811.11431).
+
+    Args:
+        num_classes (int): The unique number of target classes.
+        in_channels (int|optional): Number of input channels. Default: 3.
+        scale (float, optional): The scale of channels, only support scale <= 1.5 and scale == 2. Default: 1.0.
+        drop_prob (float|optional): The probability of dropout. Default: 0.1.
+        pretrained (str, optional): The path or url of pretrained model. Default: None.
+    """
+    def __init__(self,
+                 num_classes,
+                 in_channels=3,
+                 scale=1.0,
+                 drop_prob=0.1,
+                 pretrained=None):
+        super().__init__()
+        self.backbone = EESPNet_backbone(in_channels, drop_prob, scale)
+        self.in_channels = self.backbone.out_channels
+        self.proj_l4_c = layers.ConvBNPReLU(self.in_channels[3],
+                                            self.in_channels[2],
+                                            1,
+                                            stride=1,
+                                            bias_attr=False)
+        psp_size = 2 * self.in_channels[2]
+        self.eesp_psp = nn.Sequential(
+            EESP(psp_size,
+                 psp_size // 2,
+                 stride=1,
+                 branches=4,
+                 kernel_size_maximum=7),
+            PSPModule(psp_size // 2, psp_size // 2),
+        )
+
+        self.project_l3 = nn.Sequential(
+            nn.Dropout2D(p=drop_prob),
+            nn.Conv2D(psp_size // 2, num_classes, 1, 1, bias_attr=False),
+        )
+        self.act_l3 = BNPReLU(num_classes)
+        self.project_l2 = layers.ConvBNPReLU(self.in_channels[1] + num_classes,
+                                             num_classes,
+                                             1,
+                                             stride=1,
+                                             bias_attr=False)
+        self.project_l1 = nn.Sequential(
+            nn.Dropout2D(p=drop_prob),
+            nn.Conv2D(self.in_channels[0] + num_classes,
+                      num_classes,
+                      1,
+                      1,
+                      bias_attr=False),
+        )
+
+        self.pretrained = pretrained
+
+        self.init_weight()
+
+    def init_weight(self):
+        if self.pretrained is not None:
+            utils.load_entire_model(self, self.pretrained)
+
+    def hierarchicalUpsample(self, x, factor=3):
+        for i in range(factor):
+            x = F.interpolate(x,
+                              scale_factor=2,
+                              mode='bilinear',
+                              align_corners=True)
+        return x
+
+    def forward(self, x):
+        out_l1, out_l2, out_l3, out_l4 = self.backbone(x)
+
+        out_l4_proj = self.proj_l4_c(out_l4)
+        l4_to_l3 = F.interpolate(out_l4_proj,
+                                 scale_factor=2,
+                                 mode='bilinear',
+                                 align_corners=True)
+        merged_l3 = self.eesp_psp(paddle.concat([out_l3, l4_to_l3], axis=1))
+        proj_merge_l3 = self.project_l3(merged_l3)
+        proj_merge_l3 = self.act_l3(proj_merge_l3)
+
+        l3_to_l2 = F.interpolate(proj_merge_l3,
+                                 scale_factor=2,
+                                 mode='bilinear',
+                                 align_corners=True)
+        merged_l2 = self.project_l2(paddle.concat([out_l2, l3_to_l2], axis=1))
+
+        l2_to_l1 = F.interpolate(merged_l2,
+                                 scale_factor=2,
+                                 mode='bilinear',
+                                 align_corners=True)
+        merged_l1 = self.project_l1(paddle.concat([out_l1, l2_to_l1], axis=1))
+
+        if self.training:
+            return [
+                F.interpolate(merged_l1,
+                              scale_factor=2,
+                              mode='bilinear',
+                              align_corners=True),
+                self.hierarchicalUpsample(proj_merge_l3),
+            ]
+        else:
+            return [
+                F.interpolate(merged_l1,
+                              scale_factor=2,
+                              mode='bilinear',
+                              align_corners=True)
+            ]
+
+
 class BNPReLU(nn.Layer):
     def __init__(self, out_channels, **kwargs):
         super().__init__()
@@ -328,119 +444,3 @@ class EESPNet_backbone(nn.Layer):
         for i, layer in enumerate(self.level4):
             out_l4 = layer(out_l4)
         return out_l1, out_l2, out_l3, out_l4
-
-
-@manager.MODELS.add_component
-class ESPNetV2(nn.Layer):
-    """
-    The ESPNetV2 implementation based on PaddlePaddle.
-
-    The original article refers to
-    Sachin Mehta, Mohammad Rastegari, Linda Shapiro, and Hannaneh Hajishirzi. "ESPNetv2: A Light-weight, Power Efficient, and General Purpose Convolutional Neural Network"
-    (https://arxiv.org/abs/1811.11431).
-
-    Args:
-        num_classes (int): The unique number of target classes.
-        in_channels (int|optional): Number of input channels. Default: 3.
-        scale (float, optional): The scale of channels, only support scale <= 1.5 and scale == 2. Default: 1.0.
-        drop_prob (float|optional): The probability of dropout. Default: 0.1.
-        pretrained (str, optional): The path or url of pretrained model. Default: None.
-    """
-    def __init__(self,
-                 num_classes,
-                 in_channels=3,
-                 scale=1.0,
-                 drop_prob=0.1,
-                 pretrained=None):
-        super().__init__()
-        self.backbone = EESPNet_backbone(in_channels, drop_prob, scale)
-        self.in_channels = self.backbone.out_channels
-        self.proj_l4_c = layers.ConvBNPReLU(self.in_channels[3],
-                                            self.in_channels[2],
-                                            1,
-                                            stride=1,
-                                            bias_attr=False)
-        psp_size = 2 * self.in_channels[2]
-        self.eesp_psp = nn.Sequential(
-            EESP(psp_size,
-                 psp_size // 2,
-                 stride=1,
-                 branches=4,
-                 kernel_size_maximum=7),
-            PSPModule(psp_size // 2, psp_size // 2),
-        )
-
-        self.project_l3 = nn.Sequential(
-            nn.Dropout2D(p=drop_prob),
-            nn.Conv2D(psp_size // 2, num_classes, 1, 1, bias_attr=False),
-        )
-        self.act_l3 = BNPReLU(num_classes)
-        self.project_l2 = layers.ConvBNPReLU(self.in_channels[1] + num_classes,
-                                             num_classes,
-                                             1,
-                                             stride=1,
-                                             bias_attr=False)
-        self.project_l1 = nn.Sequential(
-            nn.Dropout2D(p=drop_prob),
-            nn.Conv2D(self.in_channels[0] + num_classes,
-                      num_classes,
-                      1,
-                      1,
-                      bias_attr=False),
-        )
-
-        self.pretrained = pretrained
-
-        self.init_weight()
-
-    def init_weight(self):
-        if self.pretrained is not None:
-            utils.load_entire_model(self, self.pretrained)
-
-    def hierarchicalUpsample(self, x, factor=3):
-        for i in range(factor):
-            x = F.interpolate(x,
-                              scale_factor=2,
-                              mode='bilinear',
-                              align_corners=True)
-        return x
-
-    def forward(self, x):
-        out_l1, out_l2, out_l3, out_l4 = self.backbone(x)
-
-        out_l4_proj = self.proj_l4_c(out_l4)
-        l4_to_l3 = F.interpolate(out_l4_proj,
-                                 scale_factor=2,
-                                 mode='bilinear',
-                                 align_corners=True)
-        merged_l3 = self.eesp_psp(paddle.concat([out_l3, l4_to_l3], axis=1))
-        proj_merge_l3 = self.project_l3(merged_l3)
-        proj_merge_l3 = self.act_l3(proj_merge_l3)
-
-        l3_to_l2 = F.interpolate(proj_merge_l3,
-                                 scale_factor=2,
-                                 mode='bilinear',
-                                 align_corners=True)
-        merged_l2 = self.project_l2(paddle.concat([out_l2, l3_to_l2], axis=1))
-
-        l2_to_l1 = F.interpolate(merged_l2,
-                                 scale_factor=2,
-                                 mode='bilinear',
-                                 align_corners=True)
-        merged_l1 = self.project_l1(paddle.concat([out_l1, l2_to_l1], axis=1))
-
-        if self.training:
-            return [
-                F.interpolate(merged_l1,
-                              scale_factor=2,
-                              mode='bilinear',
-                              align_corners=True),
-                self.hierarchicalUpsample(proj_merge_l3),
-            ]
-        else:
-            return [
-                F.interpolate(merged_l1,
-                              scale_factor=2,
-                              mode='bilinear',
-                              align_corners=True)
-            ]
