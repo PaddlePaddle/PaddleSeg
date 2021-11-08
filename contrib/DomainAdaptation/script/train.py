@@ -16,6 +16,7 @@ import os
 import time
 from collections import deque
 import shutil
+import functools
 
 import paddle
 import paddle.nn.functional as F
@@ -26,7 +27,7 @@ from paddleseg.models import losses
 import transforms.functional as Func
 from models import EMA
 from script import val
-from utils import augmentation, load_ema_model
+from utils import augmentation, load_ema_model, save_edge
 import numpy as np
 
 paddle.set_printoptions(precision=15)
@@ -35,6 +36,7 @@ paddle.set_printoptions(precision=15)
 class Trainer():
     def __init__(self, model, cfg):
         '''model（nn.Layer): A sementic segmentation model.'''
+        self.cfg = cfg
         self.ema_decay = cfg['ema_decay']
         self.edgeconstrain = cfg['edgeconstrain']
         self.edgepullin = cfg['edgepullin']
@@ -49,9 +51,11 @@ class Trainer():
         self.bceloss = losses.BCELoss()
         self.src_centers = [paddle.zeros((1, 19)) for _ in range(19)]
         self.tgt_centers = [paddle.zeros((1, 19)) for _ in range(19)]
-        self.resume_ema = eval(
-            cfg['resume_ema']
-        )  #'saved_model_develop/deeplabv2_resnet101_os8_gta5cityscapes_1280x640_160k_newds_edgestream_edgeranch1027_ema/iter_60000/'
+
+        if 'None' in cfg['resume_ema']:
+            self.resume_ema = None
+        else:
+            self.resume_ema = cfg['resume_ema']
 
     def train(self,
               train_dataset_src,
@@ -94,6 +98,7 @@ class Trainer():
         local_rank = paddle.distributed.ParallelEnv().local_rank
 
         if resume_model is not None:
+            logger.info(resume_model)
             start_iter = resume(self.model, optimizer, resume_model)
         load_ema_model(self.model, self.resume_ema)
 
@@ -152,8 +157,7 @@ class Trainer():
             for _, (data_src, data_tgt) in enumerate(
                     zip(loader_src, loader_tgt)):
 
-                time1 = time.time()
-                reader_cost_averager.record(time1 - batch_start)
+                reader_cost_averager.record(time.time() - batch_start)
                 loss_dict = {}
                 # logger.info('iters: {}'.format(iter))
 
@@ -166,6 +170,7 @@ class Trainer():
                 edges_src = None
                 if len(data_src) == 3:
                     edges_src = data_src[2].astype('int64')  # 1, 1, 640, 1280
+                    save_edge(edges_src, 'src_gt_{}'.format(iter))
 
                 if nranks > 1:
                     logits_list_src = ddp_model(images_src)
@@ -197,10 +202,18 @@ class Trainer():
                 loss_dict["source_main"] = loss_src_seg_main.numpy()[0]
                 loss_dict["source_aux"] = loss_src_seg_aux.numpy()[0]
                 loss = loss_src_seg
-                del loss_src_seg, images_src, loss_src_seg_aux, loss_src_seg_main
+                del loss_src_seg, loss_src_seg_aux, loss_src_seg_main
 
                 if self.edgeconstrain:
-                    loss_src_edge = self.bceloss(logits_list_src[2], edges_src)
+                    loss_src_edge = self.bceloss(logits_list_src[2],
+                                                 edges_src)  # 1, 2 640, 1280
+                    src_edge = paddle.argmax(
+                        logits_list_src[2].detach().clone(),
+                        axis=1)  # 1, 1, 640,1280
+                    src_edge_acc = ((src_edge == edges_src).numpy().sum().astype('float32')\
+                                            /functools.reduce(lambda a, b: a * b, src_edge.shape))*100
+                    save_edge(src_edge, 'src_pred_{}_{}'.format(
+                        iter, src_edge_acc))
 
                     if (not self.src_only) and (iter > 200000):
                         ####  target seg & edge loss ####
@@ -210,6 +223,7 @@ class Trainer():
                             radius=1,
                             num_classes=train_dataset_tgt.NUM_CLASSES)
                         edges_tgt = paddle.to_tensor(edges_tgt, dtype='int64')
+
                         loss_tgt_edge = self.bceloss(logits_list_tgt[2],
                                                      edges_tgt)
                         loss_edge = loss_tgt_edge + loss_src_edge
@@ -218,7 +232,7 @@ class Trainer():
                         loss_edge = loss_src_edge
 
                     # loss_edgenseg.backward()
-                    loss += loss_edge
+                    loss = loss_edge
 
                     loss_dict['target_edge'] = loss_tgt_edge.numpy()[0]
                     loss_dict['source_edge'] = loss_src_edge.numpy()[0]
@@ -255,6 +269,12 @@ class Trainer():
                     logits_list_tgt_aug[1], labels_tgt_aug_aux))
 
                 loss_tgt_aug = loss_tgt_aug_aux + loss_tgt_aug_main
+
+                tgt_edge = paddle.argmax(
+                    logits_list_tgt_aug[2].detach().clone(),
+                    axis=1)  # 1, 1, 640,1280
+                save_edge(tgt_edge, 'tgt_pred_{}'.format(iter))
+
                 # loss_tgt_aug.backward()
                 loss += loss_tgt_aug
 
@@ -395,9 +415,10 @@ class Trainer():
 
                     iter += 1
                     if (iter) % log_iters == 0 and local_rank == 0:
-                        import functools
                         label_tgt_acc = ((labels_tgt == labels_tgt_psu).numpy().sum().astype('float32')\
                                             /functools.reduce(lambda a, b: a * b, labels_tgt_psu.shape))*100
+                        src_edge_acc = ((src_edge == edges_src).numpy().sum().astype('float32')\
+                                            /functools.reduce(lambda a, b: a * b, src_edge.shape))*100
 
                         remain_iters = iters - iter
                         avg_train_batch_cost = batch_cost_averager.get_average()
@@ -405,10 +426,11 @@ class Trainer():
                         )
                         eta = calculate_eta(remain_iters, avg_train_batch_cost)
                         logger.info(
-                            "[TRAIN] epoch: {}, iter: {}/{}, loss: {:.4f}, pix_acc: {:.4f}, lr: {:.6f}, batch_cost: {:.4f}, reader_cost: {:.5f}, ips: {:.4f} samples/sec | ETA {}"
+                            "[TRAIN] epoch: {}, iter: {}/{}, loss: {:.4f}, tgt_pix_acc: {:.4f}, src_edge_acc: {:.4f}, lr: {:.6f}, batch_cost: {:.4f}, reader_cost: {:.5f}, ips: {:.4f} samples/sec | ETA {}"
                             .format((iter - 1) // iters_per_epoch + 1, iter,
-                                    iters, loss, label_tgt_acc, lr,
-                                    avg_train_batch_cost, avg_train_reader_cost,
+                                    iters, loss, label_tgt_acc, src_edge_acc,
+                                    lr, avg_train_batch_cost,
+                                    avg_train_reader_cost,
                                     batch_cost_averager.get_ips_average(), eta))
 
                         if use_vdl:
@@ -445,12 +467,17 @@ class Trainer():
                             num_workers=num_workers,
                             **test_config)
 
-                        # if (iter % (save_interval * 30)) == 0:  # add evaluate on src
-                        #     PA_src, _, MIoU_src, _ = val.evaluate(
-                        #         self.model,
-                        #         val_dataset_src,
-                        #         num_workers=num_workers,
-                        #         **test_config)
+                        if (
+                                iter % (save_interval * 30)
+                        ) == 0 and self.cfg['eval_src']:  # add evaluate on src
+                            PA_src, _, MIoU_src, _ = val.evaluate(
+                                self.model,
+                                val_dataset_src,
+                                num_workers=num_workers,
+                                **test_config)
+                            logger.info(
+                                '[EVAL] The source mIoU is ({:.4f}) at iter {}.'
+                                .format(MIoU_src, iter))
 
                         self.ema.restore()
                         self.model.train()
@@ -486,35 +513,40 @@ class Trainer():
                                     self.model.state_dict(),
                                     os.path.join(best_model_dir,
                                                  'model.pdparams'))
+
                             logger.info(
                                 '[EVAL] The model with the best validation mIoU ({:.4f}) was saved at iter {}.'
                                 .format(best_mean_iou, best_model_iter))
-                        # logger.info(
-                        #     '[EVAL] The source mIoU is ({:.4f}) at iter {}.'.format(MIoU_src, iter))
 
                         if use_vdl:
                             log_writer.add_scalar('Evaluate/mIoU', MIoU_tgt,
                                                   iter)
                             log_writer.add_scalar('Evaluate/PA', PA_tgt, iter)
-                        # log_writer.add_scalar('Evaluate/mIoU_src', MIoU_src,
-                        #                       iter)
-                        # log_writer.add_scalar('Evaluate/PA_src', PA_src, iter)
+                            log_writer.add_scalar('Evaluate/SRC_Edge_Acc',
+                                                  src_edge_acc, iter)
+
+                            if self.cfg['eval_src']:
+                                log_writer.add_scalar('Evaluate/mIoU_src',
+                                                      MIoU_src, iter)
+                                log_writer.add_scalar('Evaluate/PA_src', PA_src,
+                                                      iter)
+
                     batch_start = time.time()
 
             self.ema.update_buffer()
 
         # # Calculate flops.
-        # if local_rank == 0:
+        if local_rank == 0:
 
-        #     def count_syncbn(m, x, y):
-        #         x = x[0]
-        #         nelements = x.numel()
-        #         m.total_ops += int(2 * nelements)
+            def count_syncbn(m, x, y):
+                x = x[0]
+                nelements = x.numel()
+                m.total_ops += int(2 * nelements)
 
-        #     _, c, h, w = images_src.shape
-        #     flops = paddle.flops(
-        #         self.model, [1, c, h, w],
-        #         custom_ops={paddle.nn.SyncBatchNorm: count_syncbn})
+            _, c, h, w = images_src.shape
+            flops = paddle.flops(
+                self.model, [1, c, h, w],
+                custom_ops={paddle.nn.SyncBatchNorm: count_syncbn})
 
         # Sleep for half a second to let dataloader release resources.
         time.sleep(0.5)

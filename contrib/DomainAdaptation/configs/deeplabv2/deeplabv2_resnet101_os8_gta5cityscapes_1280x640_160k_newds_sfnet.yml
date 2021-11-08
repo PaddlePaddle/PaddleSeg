@@ -32,20 +32,20 @@ data:
       class_13: False
 
 model:
-  type: DeepLabV2
+  type: SFNet
+  num_classes: 2
   backbone:
-    type: ResNet101
-    num_classes: 19
+    type: ResNet18_vd
+    output_stride: 8
+    pretrained: https://bj.bcebos.com/paddleseg/dygraph/resnet18_vd_ssld_v2.tar.gz
   backbone_indices: [0, 1, 2, 3]
-  align_corners: True
-  pretrained: models/torch_transfer_gta5source.pdparams  # gta5 source/ others get from model
-  shape_stream: False
+
 
 ema_decay: 0.999
 resume_ema: None
 # flow control
-src_only: False
-edgeconstrain: False
+src_only: True
+edgeconstrain: True
 edgepullin: False
 featurepullin: False
 

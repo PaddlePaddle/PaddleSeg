@@ -33,7 +33,6 @@ data:
 
 model:
   type: DeepLabV2
-  num_classes: 19
   backbone:
     type: ResNet101
     num_classes: 19

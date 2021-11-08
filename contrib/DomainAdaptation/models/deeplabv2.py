@@ -20,6 +20,7 @@ import paddle.nn.functional as F
 
 from paddleseg.cvlibs import manager
 from paddleseg.models import layers
+from paddleseg.models.backbones import resnet_vd
 from paddleseg.utils import utils, logger
 
 from .gscnn import GSCNNHead
@@ -38,7 +39,6 @@ class DeepLabV2(nn.Layer):
     The original article refers to:
 
     Args:
-        num_classes (int): The unique number of target classes.
         backbone (paddle.nn.Layer): Backbone network, currently support Resnet50_vd/Resnet101_vd/Xception65.
         backbone_indices (tuple, optional): Two values in the tuple indicate the indices of output of backbone.
            Default: (0, 3).
@@ -54,7 +54,6 @@ class DeepLabV2(nn.Layer):
     """
 
     def __init__(self,
-                 num_classes,
                  backbone,
                  backbone_indices=(0, 1, 2, 3),
                  aspp_ratios=(1, 6, 12, 18),
@@ -70,7 +69,7 @@ class DeepLabV2(nn.Layer):
             print('####### ADD SHAPE STREAM ########')
         # backbone_channels = self.backbone.feat_channels
         self.head = edge_branch(
-            inplanes=(256, 2048),
+            inplanes=(64, 2048),  #(256, 2048),
             out_channels=1024,
             dilation_series=[6, 12, 18, 24],
             padding_series=[6, 12, 18, 24],
@@ -85,7 +84,8 @@ class DeepLabV2(nn.Layer):
         feat_list = self.backbone(x)  # x6, x_aug, x1, x2, x3, x4
 
         if self.shape_stream:
-            logit_list = self.head(self.backbone.conv1_logit, *feat_list[2:])
+            logit_list = self.head(self.backbone.conv1_logit,
+                                   feat_list[-1])  #*feat_list[2:])
             logit_list.extend(feat_list[:2])
             # logit_list.append(feat_list[-1])  # remove x4
             edge_logit, seg_logit, aug_logit = [
@@ -135,9 +135,6 @@ class DeepLabV2(nn.Layer):
                 self.backbone.__class__.__name__))
 
 
-from paddleseg.models.backbones.resnet_vd import ConvBNLayer
-
-
 class edge_branch(nn.Layer):
     def __init__(self, inplanes, out_channels, dilation_series, padding_series,
                  num_classes):
@@ -145,12 +142,12 @@ class edge_branch(nn.Layer):
         self.conv_x1 = nn.Conv2D(inplanes[0], 512, kernel_size=3)
         self.conv_x4 = nn.Conv2D(inplanes[1], 512, kernel_size=3)
 
-        self.conv0 = ConvBNLayer(
+        self.conv0 = resnet_vd.ConvBNLayer(
             in_channels=512 * 2,
             out_channels=out_channels,
             kernel_size=3,
             act='relu')
-        self.conv1 = ConvBNLayer(
+        self.conv1 = resnet_vd.ConvBNLayer(
             in_channels=out_channels,
             out_channels=out_channels,
             kernel_size=3,
@@ -176,16 +173,19 @@ class edge_branch(nn.Layer):
                     dilation=dilation,
                     weight_attr=weight_attr,
                     bias_attr=bias_attr))
+        self.classifier = nn.Conv2D(
+            out_channels, num_classes, kernel_size=3, stride=1)
 
-    def forward(self, conv1_logit, x1, x2, x3, x4):
+    def forward(self, conv1_logit, x4):
         H = paddle.shape(x4)[2]
         W = paddle.shape(x4)[3]
-        x1 = F.interpolate(x1, size=[H, W], mode='bilinear', align_corners=True)
+        conv1_logit = F.interpolate(
+            conv1_logit, size=[H, W], mode='bilinear', align_corners=True)
 
-        x1 = self.conv_x1(x1)
+        conv1_logit = self.conv_x1(conv1_logit)
         x4 = self.conv_x4(x4)  # 1, 512, 81,161
 
-        feats = paddle.concat([x1, x4], axis=1)
+        feats = paddle.concat([conv1_logit, x4], axis=1)
         y = self.conv0(feats)
         y = self.conv1(y)
 
@@ -199,40 +199,3 @@ class edge_branch(nn.Layer):
         return [
             out,
         ]
-
-
-if __name__ == '__main__':
-    import numpy as np
-    from backbones import ResNet101
-    import reprod_log
-
-    paddle.set_printoptions(precision=15)
-
-    model = DeepLabV2(
-        num_classes=19,
-        backbone=ResNet101(num_classes=19),
-        pretrained=
-        '/ssd2/tangshiyu/Code/PaddleSeg/contrib/DomainAdaptation/models/torch_transfer_trained.pdparams',
-        shape_stream=True)
-
-    src_data, src_label = paddle.to_tensor(
-        np.load('/ssd2/tangshiyu/Code/fake_data_src.npy')), np.load(
-            '/ssd2/tangshiyu/Code/fake_label_src.npy')
-    print(src_data.shape)
-    # tgt_data, tgt_label = paddle.to_tensor(np.load('/ssd2/tangshiyu/Code/fake_data_tgt.npy')), np.load('/ssd2/tangshiyu/Code/fake_label_tgt.npy')
-
-    out = model(src_data)
-    for item in out:
-        print(item.shape)  # 回归 640， 1280，
-    # res_src = out[0].mean() + out[1].mean()
-    # res_src.backward()
-    # out = model(tgt_data)
-    # res_tgt = out[0].mean()+out[1].mean()
-
-    # reprod_logger = reprod_log.ReprodLogger()
-    # reprod_logger.add("res_src", res_src.cpu().detach().numpy())
-    # reprod_logger.add("res_tgt", res_tgt.cpu().detach().numpy())
-    # reprod_logger.save("/ssd2/tangshiyu/Code/pixmatch/models/forward_paddle.npy")
-
-    # print(out[0].mean())  # [-616.42187500]
-    # print(out[1].mean())  # [4520.48437500]

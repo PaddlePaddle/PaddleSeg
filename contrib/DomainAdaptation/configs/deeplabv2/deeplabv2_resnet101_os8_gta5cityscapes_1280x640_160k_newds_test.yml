@@ -33,21 +33,18 @@ data:
 
 model:
   type: DeepLabV2
-  num_classes: 19
   backbone:
     type: ResNet101
     num_classes: 19
-  num_classes: 19
   backbone_indices: [0, 1, 2, 3]
   align_corners: True
   pretrained: models/torch_transfer_gta5source.pdparams  # gta5 source/ others get from model
   shape_stream: True
 
-
 ema_decay: 0.999
 resume_ema: None
 # flow control
-src_only: False
+src_only: True
 edgeconstrain: True
 edgepullin: False
 featurepullin: False

@@ -284,3 +284,10 @@ def ResNet101(**args):
     model = ResNetMulti(
         Bottleneck, num_layers=[3, 4, 23, 3], **args)  # add pretrain
     return model
+
+
+# @manager.BACKBONES.add_component
+# def ResNet18(**args):
+#     model = ResNetMulti(
+#         Bottleneck, num_layers=[3, 4, 23, 3], **args)  # add pretrain
+#     return model
