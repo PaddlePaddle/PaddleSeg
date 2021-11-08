@@ -21,7 +21,6 @@ import paddle
 import paddle.nn.functional as F
 
 from paddleseg.utils import metrics, TimeAverager, calculate_eta, logger, progbar
-from script import infer
 from PIL import Image
 import datasets
 

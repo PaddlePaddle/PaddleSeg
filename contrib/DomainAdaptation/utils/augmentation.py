@@ -2,7 +2,6 @@ import numpy as np
 import cv2
 import paddle
 import albumentations as al
-import paddleseg.transforms as trans
 
 
 def get_augmentation():
@@ -27,7 +26,6 @@ def augment(images, labels, aug, logger, iters):
                         dtype=np.float32)
     # Transform label shape: B, C, W, H ==> B, W, H, C
     labels_are_3d = (len(labels.shape) == 4)
-    # # logger.add("olabel", labels.cpu().detach().numpy())
     if labels_are_3d:
         labels = labels.permute(0, 2, 3, 1)
 

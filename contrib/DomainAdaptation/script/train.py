@@ -24,7 +24,7 @@ import paddleseg.transforms.functional as Func
 
 from paddleseg.utils import TimeAverager, calculate_eta, resume, logger, worker_init_fn
 from paddleseg.models import losses
-import transforms.functional as Func
+# import transforms.functional as Func
 from models import EMA
 from script import val
 from utils import augmentation, load_ema_model, save_edge
@@ -159,7 +159,7 @@ class Trainer():
 
                 reader_cost_averager.record(time.time() - batch_start)
                 loss_dict = {}
-                # logger.info('iters: {}'.format(iter))
+                logger.info('iters: {}'.format(iter))
 
                 #### training #####
                 images_tgt = data_tgt[0]
@@ -170,7 +170,6 @@ class Trainer():
                 edges_src = None
                 if len(data_src) == 3:
                     edges_src = data_src[2].astype('int64')  # 1, 1, 640, 1280
-                    save_edge(edges_src, 'src_gt_{}'.format(iter))
 
                 if nranks > 1:
                     logits_list_src = ddp_model(images_src)
@@ -212,8 +211,6 @@ class Trainer():
                         axis=1)  # 1, 1, 640,1280
                     src_edge_acc = ((src_edge == edges_src).numpy().sum().astype('float32')\
                                             /functools.reduce(lambda a, b: a * b, src_edge.shape))*100
-                    save_edge(src_edge, 'src_pred_{}_{}'.format(
-                        iter, src_edge_acc))
 
                     if (not self.src_only) and (iter > 200000):
                         ####  target seg & edge loss ####
@@ -270,12 +267,6 @@ class Trainer():
 
                 loss_tgt_aug = loss_tgt_aug_aux + loss_tgt_aug_main
 
-                tgt_edge = paddle.argmax(
-                    logits_list_tgt_aug[2].detach().clone(),
-                    axis=1)  # 1, 1, 640,1280
-                save_edge(tgt_edge, 'tgt_pred_{}'.format(iter))
-
-                # loss_tgt_aug.backward()
                 loss += loss_tgt_aug
 
                 loss_dict['target_aug_main'] = loss_tgt_aug_main.numpy()[0]
@@ -299,7 +290,6 @@ class Trainer():
                     loss_tgt_edge_rec = self.celoss(out_tgt, labels_tgt_aug)
 
                     loss_edge_rec = loss_src_edge_rec + loss_tgt_edge_rec  # + loss_edge_pullin
-                    # loss_edge_rec.backward()
                     loss += loss_edge_rec
 
                     loss_dict['src_edge_rec'] = loss_src_edge_rec.numpy()[0]
@@ -371,7 +361,6 @@ class Trainer():
 
                         loss_feat_align = loss_pix_align_src + loss_pix_align_tgt + loss_intra_relate
 
-                        # loss_feat_align.backward()
                         loss += loss_feat_align
 
                         loss_dict['loss_pix_align_src'] = \
@@ -407,6 +396,15 @@ class Trainer():
                         lr_sche = optimizer._learning_rate
                     if isinstance(lr_sche, paddle.optimizer.lr.LRScheduler):
                         lr_sche.step()
+
+                    if self.edgeconstrain and self.cfg['save_edge']:
+                        tgt_edge = paddle.argmax(
+                            logits_list_tgt_aug[2].detach().clone(),
+                            axis=1)  # 1, 1, 640,1280
+                        save_edge(tgt_edge, 'tgt_pred_{}'.format(iter))
+                        save_edge(src_edge, 'src_pred_{}_{}'.format(
+                            iter, src_edge_acc))
+                        save_edge(edges_src, 'src_gt_{}'.format(iter))
 
                     self.model.clear_gradients()
 

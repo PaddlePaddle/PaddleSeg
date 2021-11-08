@@ -1,4 +1,17 @@
-# -*- coding: utf-8 -*-
+# Copyright (c) 2021 PaddlePaddle Authors. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 import os
 import random
 import numpy as np
@@ -7,7 +20,7 @@ from PIL import Image, ImageOps, ImageFilter, ImageFile
 
 import paddle
 from paddle import io
-import transforms.functional as F
+import paddleseg.transforms.functional as F
 
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 
@@ -312,32 +325,3 @@ class City_Dataset(io.Dataset):
 
     def __len__(self):
         return len(self.items)
-
-
-if __name__ == "__main__":
-    import numpy as np
-    import reprod_log
-    random.seed(0)
-    # for i in range(5):
-    #     a = random.random()
-    #     b = random.random()
-    #     c = random.random()
-    #     print(a,b,c)
-    reprod_logger = reprod_log.ReprodLogger()
-    dataset = City_Dataset(
-        root="/ssd2/tangshiyu/data/cityscapes",
-        list_path="/ssd2/tangshiyu/Code/pixmatch/datasets/city_list",
-        base_size=(1280, 640),
-        crop_size=(1280, 640),
-        random_mirror=True,
-        resize=True,
-        gaussian_blur=True,
-        logger=reprod_logger)
-
-    for idx in range(5):
-        np.random.seed(0)
-        rnd_idx = [np.random.randint(0, len(dataset)) for i in range(5)]
-        reprod_logger.add(f"dataset_tgt_{idx}",
-                          dataset[rnd_idx[idx]][0].numpy())
-    print(rnd_idx)
-    reprod_logger.save("/ssd2/tangshiyu/Code/pixmatch/models/tgtds_paddle.npy")

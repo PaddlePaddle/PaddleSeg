@@ -51,16 +51,3 @@ class EMA(object):
             k: v.clone().detach()
             for k, v in self.model.state_dict().items()
         }
-
-
-if __name__ == '__main__':
-    import paddle
-    model = paddle.nn.Sequential(
-        paddle.nn.Linear(5, 5), paddle.nn.BatchNorm1d(5))
-    ema = EMA(model, 0.9, 0.02, 0.002)
-    inten = paddle.randn(10, 5)
-    out = model(inten)
-    ema.update_params()
-    print(model.state_dict())
-    ema.update_buffer()
-    print(model.state_dict())

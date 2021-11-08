@@ -2,7 +2,6 @@ batch_size: 1
 iters: 400000
 
 data:
-  num_classes: 19
   source:
     dataset: 'gta5'
     kwargs:
@@ -48,6 +47,8 @@ src_only: False
 edgeconstrain: False
 edgepullin: False
 featurepullin: True
+eval_src: False
+save_edge: False
 
 optimizer:
   type: sgd

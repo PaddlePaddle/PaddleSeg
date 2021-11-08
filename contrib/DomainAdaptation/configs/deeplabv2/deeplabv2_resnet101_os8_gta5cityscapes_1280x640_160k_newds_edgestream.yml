@@ -48,6 +48,7 @@ edgeconstrain: True
 edgepullin: False
 featurepullin: False
 eval_src: False
+save_edge: False
 
 optimizer:
   type: sgd

@@ -147,9 +147,6 @@ class ResNetMulti(nn.Layer):
         self.layer6 = self._make_pred_layer(Classifier_Module, 2048,
                                             [6, 12, 18, 24], [6, 12, 18, 24],
                                             num_classes)
-        import numpy as np
-        import reprod_log
-        self.reprod_logger = reprod_log.ReprodLogger()
 
         # for channels of four returned stages
         num_filters = [64, 128, 256, 512]
@@ -192,29 +189,13 @@ class ResNetMulti(nn.Layer):
     def forward(self, x):
         input_size = x.shape[2:]
         x = self.conv1(x)
-        # if not x.stop_gradient:
-        #     x.register_hook(lambda grad: print('conv grad', grad.abs().mean()))
-        # x.register_hook(lambda grad: self.reprod_logger.add('conv grad', grad.cpu().detach().numpy()))
         x = self.bn1(x)
-        # x.register_hook(lambda grad: print('bn grad', grad.abs().mean()))
-        # # x.register_hook(lambda grad: self.reprod_logger.add('bn grad', grad.cpu().detach().numpy()))
         x = self.relu(x)
-        # x.register_hook(lambda grad: print('relu grad', grad.abs().mean()))
-        # # x.register_hook(lambda grad: self.reprod_logger.add('relu grad', grad.cpu().detach().numpy()))
         self.conv1_logit = x.clone()
         x = self.maxpool(x)
-        # x.register_hook(lambda grad: print('x grad', grad.abs().mean()))
-        # # x.register_hook(lambda grad: self.reprod_logger.add('x grad', grad.cpu().detach().numpy()))
         x1 = self.layer1(x)
-        # x1.register_hook(lambda grad: print('x1 grad', grad.abs().mean()))
-        # x1.register_hook(lambda grad: self.reprod_logger.add('x1 grad', grad.cpu().detach().numpy()))
         x2 = self.layer2(x1)
-        # if not x2.stop_gradient:
-        #     x2.register_hook(lambda grad: print('x2 grad', grad.abs().mean()))
-        # x2.register_hook(lambda grad: self.reprod_logger.add('x2 grad', grad.cpu().detach().numpy()))
         x3 = self.layer3(x2)
-        # x3.register_hook(lambda grad: print('x3 grad', grad.abs().mean()))
-        # x3.register_hook(lambda grad: self.reprod_logger.add('x3 grad', grad.cpu().detach().numpy()))
 
         # Resolution 1
         x_aug = self.layer5(x3)
@@ -223,12 +204,9 @@ class ResNetMulti(nn.Layer):
 
         # Resolution 2
         x4 = self.layer4(x3)
-        # x4.register_hook(lambda grad: print('x4 grad', grad.abs().mean()))
-        # x4.register_hook(lambda grad: self.reprod_logger.add('x4 grad', grad.cpu().detach().numpy()))
         x6 = self.layer6(x4)
         x6 = F.interpolate(
             x6, size=input_size, mode='bilinear', align_corners=True)
-        # self.reprod_logger.save('/ssd2/tangshiyu/Code/pixmatch/models/model_bp_paddle.npy')
 
         return [x6, x_aug, x1, x2, x3, x4]  #  resolution 2 first
 

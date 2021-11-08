@@ -23,7 +23,5 @@ def save_edge(edges_src, name):
     import imageio  # save image
 
     tmp = edges_src.detach().clone().squeeze().numpy()
-    # tmp_label = labels_src.detach().clone().squeeze().numpy()
     tmp[tmp == 1] == 255
     imageio.imwrite('edge_pics/edge_{}.png'.format(name), tmp)
-    # imageio.imwrite('edge_pics/label_{}.png'.format(name), tmp_label)
