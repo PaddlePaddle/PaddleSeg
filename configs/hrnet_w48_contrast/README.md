@@ -11,5 +11,5 @@
 
 |Model|Backbone|Resolution|Training Iters|mIou|Links|
 | :---: | :---: | :---: | :---: | :---: | :---: |
-|HRNet_W48_contrast|HRNet_W48|1024x512|60000|0.8266|[model(提取码:hwq7)](https://pan.baidu.com/s/1JiWDSGUOczS4WLDGINN3vg)|
+|HRNet_W48_contrast|HRNet_W48|1024x512|60000|0.8230|[model](https://bj.bcebos.com/paddleseg/dygraph/cityscapes/HRNet_W48_contrast_cityscapes_1024x512_60k/model.pdparams) \| [log](https://bj.bcebos.com/paddleseg/dygraph/cityscapes/HRNet_W48_contrast_cityscapes_1024x512_60k/train.log) \| [vdl](https://www.paddlepaddle.org.cn/paddle/visualdl/service/app/index?id=72e4a587e52c8d6923a63dcb736d79b4)
 
