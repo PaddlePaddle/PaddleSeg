@@ -10,9 +10,9 @@
 
 | Model | Backbone | Resolution | Training Iters | mIoU | Links |
 |:---:|:---:|:---:|:---:|:---:|:---:|
-|ESPNetV2|ESPNetV2|1024x512|120000|69.02%|[model 提取码：sd4e](https://pan.baidu.com/s/1zNXUF2n1QSx7ayDqqGocTA)|
+|ESPNetV2|ESPNetV2|1024x512|120000|70.88%|[model](https://bj.bcebos.com/paddleseg/dygraph/cityscapes/espnet_cityscapes_1024x512_120k/model.pdparams) \| [log](https://bj.bcebos.com/paddleseg/dygraph/cityscapes/espnet_cityscapes_1024x512_120k/train.log) \|[vdl](https://www.paddlepaddle.org.cn/paddle/visualdl/service/app/scalar?id=c717bd8c2b5a083de759492158c14ffd)
 
 
 # 其他说明
-1、paddlepaddle==2.1.2版本交叉熵损失函数有bug，请在develop版本运行；  
-2、paddleseg=develop 在paddlepaddle==2.1.2交叉熵损失函数传入weight时有bug，请更换为paddleseg-release2.2下的交叉熵损失。  
+1、paddlepaddle==2.1.2 版本交叉熵损失函数有 bug，请在 develop 版本运行；  
+2、paddleseg=develop 在 paddlepaddle==2.1.2 交叉熵损失函数传入 weight 时有 bug，请更换为 paddleseg-release2.2 下的交叉熵损失。  
