@@ -34,9 +34,9 @@ class ESPNetV2(nn.Layer):
 
     Args:
         num_classes (int): The unique number of target classes.
-        in_channels (int|optional): Number of input channels. Default: 3.
+        in_channels (int, optional): Number of input channels. Default: 3.
         scale (float, optional): The scale of channels, only support scale <= 1.5 and scale == 2. Default: 1.0.
-        drop_prob (float|optional): The probability of dropout. Default: 0.1.
+        drop_prob (floa, optional): The probability of dropout. Default: 0.1.
         pretrained (str, optional): The path or url of pretrained model. Default: None.
     """
     def __init__(self,
@@ -46,7 +46,7 @@ class ESPNetV2(nn.Layer):
                  drop_prob=0.1,
                  pretrained=None):
         super().__init__()
-        self.backbone = EESPNet_backbone(in_channels, drop_prob, scale)
+        self.backbone = EESPNetBackbone(in_channels, drop_prob, scale)
         self.in_channels = self.backbone.out_channels
         self.proj_l4_c = layers.ConvBNPReLU(self.in_channels[3],
                                             self.in_channels[2],
@@ -90,7 +90,7 @@ class ESPNetV2(nn.Layer):
         if self.pretrained is not None:
             utils.load_entire_model(self, self.pretrained)
 
-    def hierarchicalUpsample(self, x, factor=3):
+    def hierarchical_upsample(self, x, factor=3):
         for i in range(factor):
             x = F.interpolate(x,
                               scale_factor=2,
@@ -128,7 +128,7 @@ class ESPNetV2(nn.Layer):
                               scale_factor=2,
                               mode='bilinear',
                               align_corners=True),
-                self.hierarchicalUpsample(proj_merge_l3),
+                self.hierarchical_upsample(proj_merge_l3),
             ]
         else:
             return [
@@ -163,10 +163,10 @@ class EESP(nn.Layer):
     Args:
         in_channels (int): Number of input channels.
         out_channels (int): Number of output channels.
-        stride (int|optional): Factor by which we should skip (useful for down-sampling). If 2, then down-samples the feature map by 2. Default: 1.
-        branches (int|optional): Number of branches. Default: 4.
-        kernel_size_maximum (int|optional): A maximum value of receptive field allowed for EESP block. Default: 7.
-        down_method (str|optional): Down sample or not, only support 'avg' and 'esp'(equivalent to stride is 2 or not). Default: 'esp'.
+        stride (int, optional): Factor by which we should skip (useful for down-sampling). If 2, then down-samples the feature map by 2. Default: 1.
+        branches (int, optional): Number of branches. Default: 4.
+        kernel_size_maximum (int, optional): A maximum value of receptive field allowed for EESP block. Default: 7.
+        down_method (str, optional): Down sample or not, only support 'avg' and 'esp'(equivalent to stride is 2 or not). Default: 'esp'.
     """
     def __init__(self,
                  in_channels,
@@ -292,9 +292,9 @@ class DownSampler(nn.Layer):
     Args:
         in_channels (int): Number of input channels.
         out_channels (int): Number of output channels.
-        branches (int|optional): Number of branches. Default: 9.
-        kernel_size_maximum (int|optional): A maximum value of kernel_size for EESP block. Default: 9.
-        shortcut (bool|optional): Use shortcut or not. Default: True.
+        branches (int, optional): Number of branches. Default: 9.
+        kernel_size_maximum (int, optional): A maximum value of kernel_size for EESP block. Default: 9.
+        shortcut (bool, optional): Use shortcut or not. Default: True.
     """
     def __init__(self,
                  in_channels,
@@ -339,17 +339,17 @@ class DownSampler(nn.Layer):
         return self._act(output)
 
 
-class EESPNet_backbone(nn.Layer):
+class EESPNetBackbone(nn.Layer):
     """
-    The ESPNetV2 implementation based on PaddlePaddle.
+    The EESPNetBackbone implementation based on PaddlePaddle.
 
     The original article refers to
     Sachin Mehta, Mohammad Rastegari, Linda Shapiro, and Hannaneh Hajishirzi. "ESPNetv2: A Light-weight, Power Efficient, and General Purpose Convolutional Neural Network"
     (https://arxiv.org/abs/1811.11431).
 
     Args:
-        in_channels (int|optional): Number of input channels. Default: 3.
-        drop_prob (float|optional): The probability of dropout. Default: 3.
+        in_channels (int, optional): Number of input channels. Default: 3.
+        drop_prob (float, optional): The probability of dropout. Default: 3.
         scale (float, optional): The scale of channels, only support scale <= 1.5 and scale == 2. Default: 1.0.
     """
     def __init__(self, in_channels=3, drop_prob=0.1, scale=1.0):
