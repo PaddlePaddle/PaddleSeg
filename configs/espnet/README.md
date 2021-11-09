@@ -10,7 +10,7 @@
 
 | Model | Backbone | Resolution | Training Iters | mIoU | Links |
 |:---:|:---:|:---:|:---:|:---:|:---:|
-|ESPNetV2|ESPNetV2|1024x512|120000|70.88%|[model](https://bj.bcebos.com/paddleseg/dygraph/cityscapes/espnet_cityscapes_1024x512_120k/model.pdparams) \| [log](https://bj.bcebos.com/paddleseg/dygraph/cityscapes/espnet_cityscapes_1024x512_120k/train.log) \|[vdl](https://www.paddlepaddle.org.cn/paddle/visualdl/service/app/scalar?id=c717bd8c2b5a083de759492158c14ffd)
+|ESPNetV2|-|1024x512|120000|70.88%|[model](https://bj.bcebos.com/paddleseg/dygraph/cityscapes/espnet_cityscapes_1024x512_120k/model.pdparams) \| [log](https://bj.bcebos.com/paddleseg/dygraph/cityscapes/espnet_cityscapes_1024x512_120k/train.log) \|[vdl](https://www.paddlepaddle.org.cn/paddle/visualdl/service/app/scalar?id=c717bd8c2b5a083de759492158c14ffd)
 
 
 # 其他说明
