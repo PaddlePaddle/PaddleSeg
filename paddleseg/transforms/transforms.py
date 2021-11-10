@@ -704,78 +704,63 @@ class RandomPaddingCrop:
 class RandomCenterCrop:
     """
     Crops the given the input data at the center.
-
     Args:
-        crop_ration (tuple or list or float, optional): Clipping range. Default: 0.8.
+        crop_ration (tuple or list, optional): Clipping range. Default:the crop range is 0.5-1.
     Raises:
-        TypeError: When crop_ration is neither list nor tuple or float. Default:None.
+        TypeError: When crop_ration is neither list nor tuple. Default:None.
         ValueError: When the value of crop_ration is not in [0-1].
-        ValueError: When the length of crop_ration is not 2 if the type of crop_ration is a list or tuple.
     """
 
     def __init__(self,
-                 crop_ration = 0.8):
-        if isinstance(crop_ration, int):
-            crop_ration = float(crop_ration)
-
+                 crop_ration=(0.5, 0.5)):
         if isinstance(crop_ration, list) or isinstance(crop_ration, tuple):
             if len(crop_ration) != 2:
                 raise ValueError(
-                    'When type of `crop_ration` is list or tuple, it shoule include 2 elements, but it is {}'.format(crop_ration)
+                    'When type of `crop_ration` is list or tuple, it shoule include 2 elements, but it is {}'.format(
+                        crop_ration)
                 )
             if crop_ration[0] > 1 or crop_ration[1] > 1 or crop_ration[0] < 0 or crop_ration[1] < 0:
                 raise ValueError(
-                     'Value of `crop_ration` should be in [0, 1], but it is {}'.format(crop_ration)
-                )
-        elif isinstance(crop_ration, float):
-            if crop_ration > 1 or crop_ration < 0:
-                raise ValueError(
-                     'Value of `crop_ration` should be in [0, 1], but it is {}'.format(crop_ration)
+                    'Value of `crop_ration` should be in [0, 1], but it is {}'.format(crop_ration)
                 )
 
         else:
             raise TypeError(
-                "The type of `crop_ration` is invalid. It should be list or tuple or float, but it is {}"
-                .format(type(crop_ration)))
+                "The type of `crop_ration` is invalid. It should be list or tuple, but it is {}"
+                    .format(type(crop_ration)))
         self.crop_ration = crop_ration
-
 
     def __call__(self, im, label=None):
         """
         Args:
-            crop_ration (tuple or list or float, optional): Clipping range. Default: (0.8-1).
-
+            crop_ration (tuple or list or float, optional): Clipping range. Default: (0.5-1).
         Returns:
             (tuple). When label is None, it returns (im, ), otherwise it returns (im, label).
         """
-
-        if isinstance(self.crop_ration, float):
-            crop_width = self.crop_ration
-            crop_height = self.crop_ration
-        else:
-            crop_width = self.crop_ration[0]
-            crop_height = self.crop_ration[1]
+        crop_width = self.crop_ration[0]
+        crop_height = self.crop_ration[1]
 
         img_height = im.shape[0]
         img_width = im.shape[1]
 
         if crop_width == 1. and crop_height == 1.:
             if label is None:
-                return (im, )
+                return (im,)
             else:
                 return (im, label)
         else:
-            randw = np.random.randint(img_width * (1-crop_width))
-            randh = np.random.randint(img_height * (1-crop_height))
+            randw = np.random.randint(img_width * (1 - crop_width))
+            randh = np.random.randint(img_height * (1 - crop_height))
             offsetw = 0 if randw == 0 else np.random.randint(randw)
             offseth = 0 if randh == 0 else np.random.randint(randh)
             p0, p1, p2, p3 = offseth, img_height + offseth - randh, offsetw, img_width + offsetw - randw
             im = im[p0:p1, p2:p3, :]
-            if label != None:
+            print(label.shape)
+            if label is not None:
                 label = label[p0:p1, p2:p3, :]
 
         if label is None:
-            return (im, )
+            return (im,)
         else:
             return (im, label)
         
