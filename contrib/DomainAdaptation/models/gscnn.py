@@ -1,4 +1,4 @@
-# Copyright (c) 2020 PaddlePaddle Authors. All Rights Reserved.
+# Copyright (c) 2021 PaddlePaddle Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -156,16 +156,6 @@ class GSCNNHead(nn.Layer):
             align_corners=self.align_corners)
         cs = F.sigmoid(cs)  # Ouput of shape stream
 
-        # cat = paddle.concat([cs, canny], axis=1) # cs is edge_out
-        # cat = self.cw(cat)
-        # cat = F.sigmoid(cat)  # Input of fusion module
-
-        # x = self.aspp(l3, cat)
-
-        # # low_level_feat = feat_list[self.backbone_indices[0]]
-        # logit = self.decoder(x, feat_list[self.backbone_indices[0]])
-        # logit_list = [logit, cs]
-        # return logit_list
         return [
             cs,
         ]
@@ -263,7 +253,7 @@ class ASPPModule(nn.Layer):
             out_channels=out_channels,
             kernel_size=1)
 
-        self.dropout = nn.Dropout(p=0.1)  # drop rate
+        self.dropout = nn.Dropout(p=0.1)
 
     def forward(self, x, edge):
         outputs = []

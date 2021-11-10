@@ -1,6 +1,6 @@
-import numpy as np
 import cv2
 import paddle
+import numpy as np
 import albumentations as al
 
 
@@ -19,26 +19,25 @@ def get_augmentation():
     ])
 
 
-def augment(images, labels, aug, logger, iters):
+def augment(images, labels, aug, iters):
     """Augments both image and label. Assumes input is a tensor with
        a batch dimension and values normalized to N(0,1)."""
     IMG_MEAN = np.array((104.00698793, 116.66876762, 122.67891434),
                         dtype=np.float32)
+
     # Transform label shape: B, C, W, H ==> B, W, H, C
     labels_are_3d = (len(labels.shape) == 4)
     if labels_are_3d:
         labels = labels.permute(0, 2, 3, 1)
 
-    # Transform each image independently. This is slow, but whatever.
+    # Transform each image independently.
     aug_images, aug_labels = [], []
     for image, label in zip(images, labels):
 
         # Step 1: Undo normalization transformation, convert to numpy
-        image = cv2.cvtColor(
-            image.numpy().transpose(1, 2, 0) + IMG_MEAN,
-            cv2.COLOR_BGR2RGB).astype(
-                np.uint8)  # todo: check shape cmp with pixmatch
-        label = label.numpy()  # convert to np
+        image = cv2.cvtColor(image.numpy().transpose(1, 2, 0) + IMG_MEAN,
+                             cv2.COLOR_BGR2RGB).astype(np.uint8)
+        label = label.numpy()
         label = label.astype('int64')
 
         # Step 2: Perform transformations on numpy images

@@ -67,7 +67,6 @@ class DeepLabV2(nn.Layer):
         self.shape_stream = shape_stream
         if shape_stream:
             print('####### ADD SHAPE STREAM ########')
-        # backbone_channels = self.backbone.feat_channels
         self.head = edge_branch(
             inplanes=(64, 2048),  #(256, 2048),
             out_channels=1024,
@@ -76,8 +75,8 @@ class DeepLabV2(nn.Layer):
             num_classes=2)
 
         self.fusion = Classifier_Module(21, [3, 9, 18, 24], [3, 9, 18, 24], 19)
-        self.align_corners = align_corners  # should be true
-        self.pretrained = pretrained  # should not load layer5
+        self.align_corners = align_corners
+        self.pretrained = pretrained
         self.init_weight()
 
     def forward(self, x):
@@ -85,9 +84,8 @@ class DeepLabV2(nn.Layer):
 
         if self.shape_stream:
             logit_list = self.head(self.backbone.conv1_logit,
-                                   feat_list[-1])  #*feat_list[2:])
+                                   feat_list[-1])  # *feat_list[2:])
             logit_list.extend(feat_list[:2])
-            # logit_list.append(feat_list[-1])  # remove x4
             edge_logit, seg_logit, aug_logit = [
                 F.interpolate(
                     logit,
@@ -95,17 +93,16 @@ class DeepLabV2(nn.Layer):
                     mode='bilinear',
                     align_corners=self.align_corners) for logit in logit_list
             ]
-            return [seg_logit, aug_logit, edge_logit]  #, x4]
+            return [seg_logit, aug_logit, edge_logit]
         else:
             logit_list = feat_list[:2]
-            # logit_list.append(feat_list[-1])
             return [
                 F.interpolate(
                     logit,
                     x.shape[2:],
                     mode='bilinear',
                     align_corners=self.align_corners) for logit in logit_list
-            ]  # x6, x_aug, x4
+            ]  # x6, x_aug
 
     def init_weight(self):
         if self.pretrained is not None:

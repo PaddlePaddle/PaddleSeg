@@ -1,4 +1,4 @@
-# Copyright (c) 2020 PaddlePaddle Authors. All Rights Reserved.
+# Copyright (c) 2021 PaddlePaddle Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,16 +13,15 @@
 # limitations under the License.
 
 import os
-
-import numpy as np
 import time
 import tqdm
+import numpy as np
+from PIL import Image
 import paddle
 import paddle.nn.functional as F
 
-from paddleseg.utils import metrics, TimeAverager, calculate_eta, logger, progbar
-from PIL import Image
 import datasets
+from paddleseg.utils import metrics, TimeAverager, calculate_eta, logger, progbar
 
 np.set_printoptions(suppress=True)
 
@@ -247,16 +246,6 @@ def evaluate(model, eval_dataset, num_workers=0, print_detail=True):
             reader_cost_averager.reset()
             batch_cost_averager.reset()
             batch_start = time.time()
-
-        # todo: visualdl images
-        # vis_imgs = 2
-        # images_inv = inv_preprocess(x.clone().cpu(), vis_imgs, numpy_transform=True)
-        # labels_colors = decode_labels(label, vis_imgs)
-        # preds_colors = decode_labels(argpred, vis_imgs)
-        # for index, (img, lab, predc) in enumerate(zip(images_inv, labels_colors, preds_colors)):
-        #     self.writer.add_image(str(index) + '/images', img, self.epoch)
-        #     self.writer.add_image(str(index) + '/labels', lab, self.epoch)
-        #     self.writer.add_image(str(index) + '/preds', predc, self.epoch)
 
         PA = evaluator.Pixel_Accuracy()
         MPA = evaluator.Mean_Pixel_Accuracy()

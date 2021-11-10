@@ -89,23 +89,18 @@ class GTA5_Dataset(City_Dataset):
             33: 18
         }
 
-        # Print
         print("{} num images in GTA5 {} set have been loaded.".format(
             len(self.items), self.split))
 
     def __getitem__(self, item):
-        id = int(self.items[item])
-        name = f"{id:0>5d}.png"
+        idx = int(self.items[item])
+        name = f"{idx:0>5d}.png"
 
         # Open image and label
         image_path = os.path.join(self.image_filepath, name)
         gt_image_path = os.path.join(self.gt_filepath, name)
         image = Image.open(image_path).convert("RGB")
         gt_image = Image.open(gt_image_path)
-        # image = self._img_transform(image)
-        # gt_image, _ = self._mask_transform(gt_image)
-
-        # return image, gt_image, id
 
         # Augmentation
         if (self.split == "train" or self.split == "trainval"
@@ -115,4 +110,5 @@ class GTA5_Dataset(City_Dataset):
         else:
             image, gt_image, edge_mask = self._val_sync_transform(
                 image, gt_image)
+
         return image, gt_image, edge_mask

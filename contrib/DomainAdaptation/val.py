@@ -1,4 +1,4 @@
-# Copyright (c) 2020 PaddlePaddle Authors. All Rights Reserved.
+# Copyright (c) 2021 PaddlePaddle Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,21 +12,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import argparse
 import os
+import argparse
 
 import paddle
 
+import utils as ut
+from cvlibs import Config
+from script import evaluate
 from paddleseg.cvlibs import manager
 from paddleseg.core import evaluate
 from paddleseg.utils import get_sys_env, logger, utils
-from cvlibs import Config
-from script import evaluate
-import utils as ut
 
 
 def get_test_config(cfg, args):
-
     test_config = cfg.test_config
     if args.aug_eval:
         test_config['aug_eval'] = args.aug_eval
@@ -132,7 +131,6 @@ def main(args):
         raise RuntimeError('No configuration file specified.')
 
     cfg = Config(args.cfg)
-    # Only support for the DeepLabv3+ model
 
     val_dataset = cfg.val_dataset_tgt
     if len(val_dataset) < 500:

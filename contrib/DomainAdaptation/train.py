@@ -12,21 +12,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import random
 import argparse
 import numpy as np
-import random
-
 import paddle
-from cvlibs import Config
-from script.train import Trainer
+
 from paddleseg.utils import logger, get_sys_env
 
-from datasets import City_Dataset, GTA5_Dataset, SYNTHIA_Dataset
 import utils
+from cvlibs import Config
+from script.train import Trainer
+from datasets import City_Dataset, GTA5_Dataset, SYNTHIA_Dataset
 
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Model training')
+
     # params of training
     parser.add_argument(
         "--config", dest="cfg", help="The config file.", default=None, type=str)
@@ -136,9 +137,6 @@ def main(args):
     if not args.cfg:
         raise RuntimeError('No configuration file specified.')
 
-    import reprod_log
-    reprod_logger = reprod_log.ReprodLogger()
-
     cfg = Config(
         args.cfg,
         learning_rate=args.learning_rate,
@@ -197,8 +195,7 @@ def main(args):
         num_workers=args.num_workers,
         use_vdl=args.use_vdl,
         keep_checkpoint_max=args.keep_checkpoint_max,
-        test_config=cfg.test_config,
-        reprod_logger=reprod_logger)
+        test_config=cfg.test_config)
 
 
 if __name__ == '__main__':

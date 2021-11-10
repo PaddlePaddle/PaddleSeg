@@ -37,13 +37,14 @@ model:
     num_classes: 19
   backbone_indices: [0, 1, 2, 3]
   align_corners: True
-  pretrained: models/torch_transfer_gta5source.pdparams  # gta5 source/ others get from model
+  pretrained: models/torch_transfer_gta5source.pdparams
   shape_stream: True
 
 ema_decay: 0.999
 resume_ema: None
+save_edge: True
 # flow control
-src_only: True
+src_only: False
 edgeconstrain: True
 edgepullin: False
 featurepullin: False

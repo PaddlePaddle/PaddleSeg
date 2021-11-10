@@ -1,4 +1,4 @@
-# Copyright (c) 2020 PaddlePaddle Authors. All Rights Reserved.
+# Copyright (c) 2021 PaddlePaddle Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,21 +14,20 @@
 
 import os
 import time
-from collections import deque
+import numpy as np
 import shutil
 import functools
+from collections import deque
 
 import paddle
 import paddle.nn.functional as F
-import paddleseg.transforms.functional as Func
 
+import paddleseg.transforms.functional as Func
 from paddleseg.utils import TimeAverager, calculate_eta, resume, logger, worker_init_fn
 from paddleseg.models import losses
-# import transforms.functional as Func
 from models import EMA
 from script import val
 from utils import augmentation, load_ema_model, save_edge
-import numpy as np
 
 paddle.set_printoptions(precision=15)
 
@@ -48,7 +47,8 @@ class Trainer():
         self.celoss = losses.CrossEntropyLoss()
         self.klloss = losses.KLLoss()
         self.mseloss = losses.MSELoss()
-        self.bceloss = losses.BCELoss()
+        self.bceloss_src = losses.BCELoss(weight='dynamic')
+        self.bceloss_tgt = losses.BCELoss(weight='dynamic')
         self.src_centers = [paddle.zeros((1, 19)) for _ in range(19)]
         self.tgt_centers = [paddle.zeros((1, 19)) for _ in range(19)]
 
@@ -72,8 +72,7 @@ class Trainer():
               num_workers=0,
               use_vdl=False,
               keep_checkpoint_max=5,
-              test_config=None,
-              reprod_logger=None):
+              test_config=None):
         """
         Launch training.
 
@@ -159,7 +158,7 @@ class Trainer():
 
                 reader_cost_averager.record(time.time() - batch_start)
                 loss_dict = {}
-                logger.info('iters: {}'.format(iter))
+                # logger.info('iters: {}'.format(iter))
 
                 #### training #####
                 images_tgt = data_tgt[0]
@@ -167,14 +166,24 @@ class Trainer():
                 images_src = data_src[0]
                 labels_src = data_src[1].astype('int64')
 
-                edges_src = None
-                if len(data_src) == 3:
-                    edges_src = data_src[2].astype('int64')  # 1, 1, 640, 1280
+                edges_src = data_src[2].astype('int64')
+                edges_tgt = data_tgt[2].astype('int64')
 
                 if nranks > 1:
                     logits_list_src = ddp_model(images_src)
                 else:
                     logits_list_src = self.model(images_src)
+
+                ##### source seg & edge loss ####
+                loss_src_seg_main = self.celoss(logits_list_src[0], labels_src)
+                loss_src_seg_aux = 0.1 * self.celoss(logits_list_src[1],
+                                                     labels_src)
+
+                loss_src_seg = loss_src_seg_main + loss_src_seg_aux
+                loss_dict["source_main"] = loss_src_seg_main.numpy()[0]
+                loss_dict["source_aux"] = loss_src_seg_aux.numpy()[0]
+                loss = loss_src_seg
+                del loss_src_seg, loss_src_seg_aux, loss_src_seg_main
 
                 #### generate target pseudo label  ####
                 with paddle.no_grad():
@@ -191,21 +200,9 @@ class Trainer():
                     pred_c = (pred_P_1 + pred_P_2) / 2
                     labels_tgt_psu_aux = paddle.argmax(pred_c.detach(), axis=1)
 
-                    del pred_P_1, pred_P_2, pred_c, data_src
-
-                ##### source seg & edge loss ####
-                loss_src_seg_main = self.celoss(logits_list_src[0], labels_src)
-                loss_src_seg_aux = 0.1 * self.celoss(logits_list_src[1],
-                                                     labels_src)
-                loss_src_seg = loss_src_seg_main + loss_src_seg_aux
-                loss_dict["source_main"] = loss_src_seg_main.numpy()[0]
-                loss_dict["source_aux"] = loss_src_seg_aux.numpy()[0]
-                loss = loss_src_seg
-                del loss_src_seg, loss_src_seg_aux, loss_src_seg_main
-
                 if self.edgeconstrain:
-                    loss_src_edge = self.bceloss(logits_list_src[2],
-                                                 edges_src)  # 1, 2 640, 1280
+                    loss_src_edge = self.bceloss_src(
+                        logits_list_src[2], edges_src)  # 1, 2 640, 1280
                     src_edge = paddle.argmax(
                         logits_list_src[2].detach().clone(),
                         axis=1)  # 1, 1, 640,1280
@@ -217,19 +214,18 @@ class Trainer():
                         logger.info("Add target edege loss")
                         edges_tgt = Func.mask_to_binary_edge(
                             labels_tgt_psu.detach().clone().numpy(),
-                            radius=1,
+                            radius=2,
                             num_classes=train_dataset_tgt.NUM_CLASSES)
                         edges_tgt = paddle.to_tensor(edges_tgt, dtype='int64')
 
-                        loss_tgt_edge = self.bceloss(logits_list_tgt[2],
-                                                     edges_tgt)
+                        loss_tgt_edge = self.bceloss_tgt(
+                            logits_list_tgt[2], edges_tgt)
                         loss_edge = loss_tgt_edge + loss_src_edge
                     else:
                         loss_tgt_edge = paddle.zeros([1])
                         loss_edge = loss_src_edge
 
-                    # loss_edgenseg.backward()
-                    loss = loss_edge
+                    loss += loss_edge
 
                     loss_dict['target_edge'] = loss_tgt_edge.numpy()[0]
                     loss_dict['source_edge'] = loss_src_edge.numpy()[0]
@@ -242,7 +238,6 @@ class Trainer():
                     images=images_tgt.cpu(),
                     labels=labels_tgt_psu.detach().cpu(),
                     aug=augs,
-                    logger=reprod_logger,
                     iters="{}_1".format(iter))
                 images_tgt_aug = images_tgt_aug.cuda()
                 labels_tgt_aug = labels_tgt_aug.cuda()
@@ -251,7 +246,6 @@ class Trainer():
                     images=images_tgt.cpu(),
                     labels=labels_tgt_psu_aux.detach().cpu(),
                     aug=augs,
-                    logger=reprod_logger,
                     iters="{}_2".format(iter))
                 labels_tgt_aug_aux = labels_tgt_aug_aux.cuda()
 
@@ -276,18 +270,28 @@ class Trainer():
 
                 #### edge input seg; src & tgt edge pull in ######
                 if self.edgepullin:
-                    feat_src = paddle.concat(
-                        [logits_list_src[0], logits_list_src[2]],
-                        axis=1).detach()
+                    # src_edge_logit = logits_list_src[2]
+                    # pass in (H, W) np array
+                    src_edge_logit = paddle.to_tensor(
+                        Func.mask_to_onehot(edges_src.squeeze().numpy(), 2))
+                    feat_src = paddle.concat([
+                        logits_list_src[0],
+                        src_edge_logit.unsqueeze(0).astype('float32')
+                    ],
+                                             axis=1).detach()
                     out_src = self.model.fusion(feat_src)
                     loss_src_edge_rec = self.celoss(out_src, labels_src)
 
-                    feat_tgt = paddle.concat(
-                        [logits_list_tgt_aug[0], logits_list_tgt_aug[2]
-                         ],  # 修改为aug fusion
-                        axis=1).detach()
+                    # tgt_edge_logit = logits_list_tgt_aug[2]
+                    tgt_edge_logit = paddle.to_tensor(
+                        Func.mask_to_onehot(edges_tgt.squeeze().numpy(), 2))
+                    feat_tgt = paddle.concat([
+                        logits_list_tgt[0],
+                        tgt_edge_logit.unsqueeze(0).astype('float32')
+                    ],
+                                             axis=1).detach()
                     out_tgt = self.model.fusion(feat_tgt)
-                    loss_tgt_edge_rec = self.celoss(out_tgt, labels_tgt_aug)
+                    loss_tgt_edge_rec = self.celoss(out_tgt, labels_tgt)
 
                     loss_edge_rec = loss_src_edge_rec + loss_tgt_edge_rec  # + loss_edge_pullin
                     loss += loss_edge_rec
@@ -405,6 +409,7 @@ class Trainer():
                         save_edge(src_edge, 'src_pred_{}_{}'.format(
                             iter, src_edge_acc))
                         save_edge(edges_src, 'src_gt_{}'.format(iter))
+                        save_edge(edges_tgt, 'tgt_gt_{}'.format(iter))
 
                     self.model.clear_gradients()
 
@@ -465,9 +470,8 @@ class Trainer():
                             num_workers=num_workers,
                             **test_config)
 
-                        if (
-                                iter % (save_interval * 30)
-                        ) == 0 and self.cfg['eval_src']:  # add evaluate on src
+                        if (iter % (save_interval * 30)) == 0 \
+                            and self.cfg['eval_src']:  # add evaluate on src
                             PA_src, _, MIoU_src, _ = val.evaluate(
                                 self.model,
                                 val_dataset_src,

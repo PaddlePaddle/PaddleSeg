@@ -37,14 +37,14 @@ model:
     num_classes: 19
   backbone_indices: [0, 1, 2, 3]
   align_corners: True
-  pretrained: models/torch_transfer_gta5source.pdparams  # gta5 source/ others get from model
+  pretrained: models/torch_transfer_gta5source.pdparams
   shape_stream: True
 
 ema_decay: 0.999
-resume_ema: saved_model_develop/deeplabv2_resnet101_os8_gta5cityscapes_1280x640_160k_newds_edge_rec_1028/iter_113000/
+resume_ema: None # saved_model_develop/deeplabv2_resnet101_os8_gta5cityscapes_1280x640_160k_newds_edge_rec_1028/iter_113000/
 # flow control
 src_only: False
-edgeconstrain: True
+edgeconstrain: False
 edgepullin: True
 featurepullin: False
 eval_src: False

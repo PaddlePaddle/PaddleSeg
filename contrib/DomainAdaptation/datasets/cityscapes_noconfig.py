@@ -17,9 +17,9 @@ import random
 import numpy as np
 from collections.abc import Iterable
 from PIL import Image, ImageOps, ImageFilter, ImageFile
-
 import paddle
 from paddle import io
+
 import paddleseg.transforms.functional as F
 
 ImageFile.LOAD_TRUNCATED_IMAGES = True
@@ -27,7 +27,6 @@ ImageFile.LOAD_TRUNCATED_IMAGES = True
 IMG_MEAN = np.array((104.00698793, 116.66876762, 122.67891434),
                     dtype=np.float32)
 
-# For visualization
 label_colours = list(
     map(
         tuple,
@@ -181,8 +180,6 @@ class City_Dataset(io.Dataset):
         image_filename = filename + "_leftImg8bit.png"
         image_path = os.path.join(image_filepath, image_filename)
         image = Image.open(image_path).convert("RGB")
-        # image = self._img_transform(image)
-        # self.logger.add("org_tgt_{}".format(item), np.array(image))
 
         gt_filepath = os.path.join(self.gt_filepath,
                                    id.split("_")[0],
@@ -190,7 +187,6 @@ class City_Dataset(io.Dataset):
         gt_filename = filename + "_gtFine_labelIds.png"
         gt_image_path = os.path.join(gt_filepath, gt_filename)
         gt_image = Image.open(gt_image_path)
-        # gt_image, _ = self._mask_transform(gt_image)
 
         if (self.split == "train"
                 or self.split == "trainval") and self.training:

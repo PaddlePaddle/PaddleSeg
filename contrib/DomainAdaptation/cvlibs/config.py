@@ -1,4 +1,4 @@
-# Copyright (c) 2020 PaddlePaddle Authors. All Rights Reserved.
+# Copyright (c) 2021 PaddlePaddle Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,12 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import codecs
 import os
-from typing import Any, Dict, Generic
-
-import paddle
 import yaml
+import paddle
+import codecs
+from typing import Any, Dict, Generic
 
 from paddleseg.cvlibs import manager
 from paddleseg.utils import logger
@@ -203,7 +202,7 @@ class Config(object):
         if optimizer_type == 'sgd':
             return paddle.optimizer.Momentum(
                 lr, parameters=self.model.parameters(), **args)
-                # lr, parameters=self.model.backbone.optim_parameters(lr=lr.base_lr), **args)
+            # lr, parameters=self.model.backbone.optim_parameters(lr=lr.base_lr), **args)
         elif optimizer_type == 'adam':
             return paddle.optimizer.Adam(
                 lr, parameters=self.model.parameters(), **args)
@@ -301,53 +300,6 @@ class Config(object):
         if not self._model:
             self._model = self._load_object(model_cfg)
         return self._model
-
-    # @property
-    # def ema_model(self) -> paddle.nn.Layer:
-    #     return EMA(self._model, self.dic['ema_decay'])
-
-    # @property
-    # def train_dataset_src_config(self) -> Dict:
-    #     return self.dic.get('train_dataset_src', {}).copy()
-
-    # @property
-    # def train_dataset_tgt_config(self) -> Dict:
-    #     return self.dic.get('train_dataset_tgt', {}).copy()
-
-    # @property
-    # def val_dataset_tgt_config(self) -> Dict:
-    #     return self.dic.get('val_dataset_tgt', {}).copy()
-
-    # @property
-    # def train_dataset_class(self) -> Generic:
-    #     dataset_type = self.train_dataset_src_config['type']
-    #     return self._load_component(dataset_type)
-
-    # @property
-    # def val_dataset_class(self) -> Generic:
-    #     dataset_type = self.val_dataset_src_config['type']
-    #     return self._load_component(dataset_type)
-
-    # @property
-    # def train_dataset_src(self) -> paddle.io.Dataset:
-    #     _train_dataset_src = self.train_dataset_src_config
-    #     if not _train_dataset_src:
-    #         return None
-    #     return self._load_object(_train_dataset_src)
-
-    # @property
-    # def train_dataset_tgt(self) -> paddle.io.Dataset:
-    #     _train_dataset_tgt = self.train_dataset_tgt_config
-    #     if not _train_dataset_tgt:
-    #         return None
-    #     return self._load_object(_train_dataset_tgt)
-
-    # @property
-    # def val_dataset_tgt(self) -> paddle.io.Dataset:
-    #     _val_dataset = self.val_dataset_tgt_config
-    #     if not _val_dataset:
-    #         return None
-    #     return self._load_object(_val_dataset)
 
     def _load_component(self, com_name: str) -> Any:
         com_list = [

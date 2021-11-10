@@ -1,4 +1,4 @@
-# copyright (c) 2020 PaddlePaddle Authors. All Rights Reserve.
+# Copyright (c) 2021 PaddlePaddle Authors. All Rights Reserve.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -130,8 +130,6 @@ class ResNetMulti(nn.Layer):
             weight_attr=self.weight_attr_conv)
         self.bn1 = nn.BatchNorm2D(
             64, bias_attr=self.bias_attr, weight_attr=self.weight_attr)
-        # for i in self.bn1.parameters():
-        #     i.requires_grad = False
         self.relu = nn.ReLU()
         self.maxpool = nn.MaxPool2D(
             kernel_size=3, stride=2, padding=1, ceil_mode=True)
@@ -208,7 +206,7 @@ class ResNetMulti(nn.Layer):
         x6 = F.interpolate(
             x6, size=input_size, mode='bilinear', align_corners=True)
 
-        return [x6, x_aug, x1, x2, x3, x4]  #  resolution 2 first
+        return [x6, x_aug, x1, x2, x3, x4]
 
     def get_1x_lr_params_NOscale(self):
         """
@@ -262,10 +260,3 @@ def ResNet101(**args):
     model = ResNetMulti(
         Bottleneck, num_layers=[3, 4, 23, 3], **args)  # add pretrain
     return model
-
-
-# @manager.BACKBONES.add_component
-# def ResNet18(**args):
-#     model = ResNetMulti(
-#         Bottleneck, num_layers=[3, 4, 23, 3], **args)  # add pretrain
-#     return model
