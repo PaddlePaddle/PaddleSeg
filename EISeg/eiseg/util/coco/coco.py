@@ -6,18 +6,10 @@ from matplotlib.patches import Polygon
 import numpy as np
 import copy
 import itertools
-
-# from . import mask as maskUtils
 import os
 from collections import defaultdict
 import sys
 from datetime import datetime
-
-PYTHON_VERSION = sys.version_info[0]
-if PYTHON_VERSION == 2:
-    from urllib import urlretrieve
-elif PYTHON_VERSION == 3:
-    from urllib.request import urlretrieve
 
 
 def _isArrayLike(obj):
