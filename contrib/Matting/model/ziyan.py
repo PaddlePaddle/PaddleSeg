@@ -590,7 +590,9 @@ class Refiner(nn.Layer):
         if self.mode == 'sampling':
             b, _, h, w = err.shape
             err = paddle.reshape(err, (b, -1))
-            _, idx = err.topk(self.sample_pixels // 16, axis=1, sorted=False)
+            num_total = err.shape[-1] * err.shape[-2]
+            k = min(num_total, self.sample_pixels // 16)
+            _, idx = err.topk(k, axis=1, sorted=False)
             ref = paddle.zeros_like(err)
             update = paddle.ones_like(idx, dtype='float32')
             for i in range(b):
