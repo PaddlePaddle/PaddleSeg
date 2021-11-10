@@ -25,6 +25,5 @@ model:
     type: HRNet_W48
     pretrained: https://bj.bcebos.com/paddleseg/dygraph/hrnet_w48_ssld.tar.gz
   in_channels: 720
-  num_classes: 19
   drop_prob: 0.1
   proj_dim: 720

@@ -29,11 +29,11 @@ class PixelContrastCrossEntropyLoss(nn.Layer):
     (https://arxiv.org/abs/2101.11939).
 
     Args:
-        temperature (float|optional): Controling the numerical similarity of features. Default: 0.1.
-        base_temperature (float|optional): Controling the numerical range of contrast loss. Default: 0.07.
-        ignore_index (int|optional): Specifies a target value that is ignored
+        temperature (float, optional): Controling the numerical similarity of features. Default: 0.1.
+        base_temperature (float, optional): Controling the numerical range of contrast loss. Default: 0.07.
+        ignore_index (int, optional): Specifies a target value that is ignored
             and does not contribute to the input gradient. Default 255.
-        max_samples (int|optional): Max sampling anchors. Default: 1024.
+        max_samples (int, optional): Max sampling anchors. Default: 1024.
         max_views (int): Sampled samplers of a class. Default: 100.
     """
     def __init__(self,
@@ -42,7 +42,7 @@ class PixelContrastCrossEntropyLoss(nn.Layer):
                  ignore_index=255,
                  max_samples=1024,
                  max_views=100):
-        super(PixelContrastCrossEntropyLoss, self).__init__()
+        super().__init__()
         self.temperature = temperature
         self.base_temperature = base_temperature
         self.ignore_index = ignore_index
@@ -52,24 +52,26 @@ class PixelContrastCrossEntropyLoss(nn.Layer):
     def _hard_anchor_sampling(self, X, y_hat, y):
         """
         Args:
-            X(Tensor): reshaped feats, shape = [N, H*W, feat_channels]
-            y_hat(Tensor): reshaped label, shape = [N, H*W]
-            y(Tensor): reshaped predict, shape = [N, H*W]
+            X (Tensor): reshaped feats, shape = [N, H * W, feat_channels]
+            y_hat (Tensor): reshaped label, shape = [N, H * W]
+            y (Tensor): reshaped predict, shape = [N, H * W]
         """
-        batch_size, feat_dim = X.shape[0], X.shape[-1]
+        batch_size, feat_dim = paddle.shape(X)[0], paddle.shape(X)[-1]
         classes = []
         total_classes = 0
-        for ii in range(batch_size):
-            this_y = y_hat[ii]
-            this_classes = paddle.unique(this_y)
-            this_classes = [x for x in this_classes if x != self.ignore_index]
-            this_classes = [
-                x for x in this_classes
-                if (this_y == x).nonzero().shape[0] > self.max_views
+        for i in range(batch_size):
+            current_y = y_hat[i]
+            current_classes = paddle.unique(current_y)
+            current_classes = [
+                x for x in current_classes if x != self.ignore_index
+            ]
+            current_classes = [
+                x for x in current_classes
+                if (current_y == x).nonzero().shape[0] > self.max_views
             ]
 
-            classes.append(this_classes)
-            total_classes += len(this_classes)
+            classes.append(current_classes)
+            total_classes += len(current_classes)
 
         n_view = self.max_samples // total_classes
         n_view = min(n_view, self.max_views)
@@ -78,16 +80,16 @@ class PixelContrastCrossEntropyLoss(nn.Layer):
         y_ = paddle.zeros([total_classes], dtype='float32')
 
         X_ptr = 0
-        for ii in range(batch_size):
-            this_y_hat = y_hat[ii]
-            this_y = y[ii]
-            this_classes = classes[ii]
+        for i in range(batch_size):
+            this_y_hat = y_hat[i]
+            current_y = y[i]
+            current_classes = classes[i]
 
-            for cls_id in this_classes:
-                hard_indices = paddle.logical_and((this_y_hat == cls_id),
-                                                  (this_y != cls_id)).nonzero()
-                easy_indices = paddle.logical_and((this_y_hat == cls_id),
-                                                  (this_y == cls_id)).nonzero()
+            for cls_id in current_classes:
+                hard_indices = paddle.logical_and(
+                    (this_y_hat == cls_id), (current_y != cls_id)).nonzero()
+                easy_indices = paddle.logical_and(
+                    (this_y_hat == cls_id), (current_y == cls_id)).nonzero()
 
                 num_hard = hard_indices.shape[0]
                 num_easy = easy_indices.shape[0]
@@ -119,7 +121,7 @@ class PixelContrastCrossEntropyLoss(nn.Layer):
                 if indices is None:
                     raise UserWarning('hard sampling indice error')
 
-                X_.append(paddle.index_select(X[ii, :, :], indices.squeeze(1)))
+                X_.append(paddle.index_select(X[i, :, :], indices.squeeze(1)))
                 y_[X_ptr] = float(cls_id)
                 X_ptr += 1
         X_ = paddle.stack(X_, axis=0)
