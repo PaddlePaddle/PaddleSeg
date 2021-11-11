@@ -79,7 +79,7 @@ def main(args):
         transforms = cfg.export_config.get('transforms',
                                            [{
                                                'type': 'Resize',
-                                               'target_size': [512, 256]
+                                               'target_size': [640, 368]
                                            }, {
                                                'type': 'Normalize'
                                            }])

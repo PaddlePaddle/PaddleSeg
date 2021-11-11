@@ -92,8 +92,6 @@ int main(int argc, char *argv[]) {
     LOG(FATAL) << "The model_dir should not be empty.";
     }
     
-    LanePostProcess* laneNet = new LanePostProcess();
-
     // Load yaml
     std::string yaml_path = FLAGS_model_dir + "/deploy.yaml";
     YamlConfig yaml_config = load_yaml(yaml_path);
@@ -139,71 +137,41 @@ int main(int argc, char *argv[]) {
     cv::Size size = cv::Size(cols, rows);
     int skip_index = size.height * size.width;
     
-    auto lane_coords = laneNet->lane_process(7,  size ,out_num,  skip_index);
-    cv::Scalar colors[] = {cv::Scalar(255,0,0),cv::Scalar(0,255,0),
-        cv::Scalar(0,0,255), cv::Scalar(255,255,0),
-        cv::Scalar(255,0,255), cv::Scalar(0,255,255),
-        cv::Scalar(50, 100, 50), cv::Scalar(100, 50, 100)};
-    int lane_id = 0;
-    for(auto& coords: lane_coords) {
-        for(auto& coord: coords) {
-            int x = coord.first;
-            int y = coord.second;
-            if (x <= 0 || y <= 0)
-                continue;
-            cv::circle(image_ori, cv::Point(x, y), 4, colors[lane_id % 6], 2);
-        }
-        lane_id++;
-    }
-    cv::imshow("ttt", image_ori);
-    cv::waitKey();
-    return;
     const int num_class = 7;
     cv::Mat seg_result;
     seg_result.create(size, CV_32FC(num_class));
 
-    cv::Mat ins_planes[num_class];
+    cv::Mat seg_planes[num_class];
     for(int i = 0; i < num_class; i++) {
-       ins_planes[i].create(size, CV_32FC(1));
+        seg_planes[i].create(size, CV_32FC(1));
     }
 
     for(int i = 0; i < num_class; i++) {
-        ::memcpy(ins_planes[i].data, out_data.data() + i*skip_index, skip_index * sizeof(float)); //内存拷贝
+        ::memcpy(seg_planes[i].data, out_data.data() + i*skip_index, skip_index * sizeof(float)); //内存拷贝
     }
-    cv::merge(ins_planes, num_class, seg_result);
+    cv::merge(seg_planes, num_class, seg_result);
     
-    cv::Size output_size = cv::Size(1280, 560);
+    cv::Size output_size = cv::Size(input_width, input_height-cut_height);
     int output_nums = output_size.width * output_size.height;
   
     cv::Mat image_final;
     cv::resize(seg_result, image_final, output_size);
 
     cv::Mat binary_image=cv::Mat::zeros(output_size, CV_8UC1);
-    vector<int> result(output_nums, 0);
-    int i = 0;
     for (int y = 0; y < image_final.rows; y++){
         for (int x = 0; x< image_final.cols; x++) {
             vector<float> tmp(num_class, 0);
             for (int idx = 0; idx < num_class; idx++) {
                 tmp[idx] = image_final.at<cv::Vec<float, num_class>>(y,x)[idx];
             }
-            int aa = max_element(tmp.begin(),tmp.end()) - tmp.begin();
-            binary_image.at<uchar>(y,x)= aa;
-            result[i++] = aa;
+            int index = max_element(tmp.begin(),tmp.end()) - tmp.begin();
+            binary_image.at<uchar>(y,x)= index;
         }
     }
 
-    cv::imshow("test", binary_image * 255);
-    cv::waitKey();
-
     // Get pseudo image
-    std::vector<uint8_t> out_data_u8(output_nums);
-    for (int i = 0; i < output_nums; i++) {
-        out_data_u8[i] = static_cast<uint8_t>(result[i]);
-    }
-    cv::Mat out_gray_img(output_size, CV_8UC1, out_data_u8.data());
     cv::Mat out_eq_img;
-    cv::equalizeHist(out_gray_img, out_eq_img);
+    cv::equalizeHist(binary_image, out_eq_img);
     cv::imwrite("out_img.jpg", out_eq_img);
 
     LOG(INFO) << "Finish";
