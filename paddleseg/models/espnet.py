@@ -234,6 +234,13 @@ class EESP(nn.Layer):
         self._act = nn.PReLU()
         self.down_method = True if down_method == 'avg' else False
 
+    @paddle.jit.not_to_static
+    def convert_group_x(self, group_merge, x):
+        if x.shape == group_merge.shape:
+            group_merge += x
+
+        return group_merge
+
     def forward(self, x):
         group_out = self.group_conv_in(x)
         output = [self.spp_modules[0](group_out)]
@@ -249,8 +256,7 @@ class EESP(nn.Layer):
         if self.stride == 2 and self.down_method:
             return group_merge
 
-        if group_merge.shape == x.shape:
-            group_merge = group_merge + x
+        group_merge = self.convert_group_x(group_merge, x)
         out = self._act(group_merge)
         return out
 
@@ -274,7 +280,7 @@ class PSPModule(nn.Layer):
                                           bias_attr=False)
 
     def forward(self, feats):
-        h, w = feats.shape[2], feats.shape[3]
+        h, w = paddle.shape(feats)[2:4]
         out = [feats]
         for stage in self.stages:
             feats = F.avg_pool2d(feats, kernel_size=3, stride=2, padding='same')
@@ -327,14 +333,17 @@ class DownSampler(nn.Layer):
         output = paddle.concat([avg_out, eesp_out], axis=1)
 
         if inputs is not None:
-            w1 = avg_out.shape[2]
-            w2 = inputs.shape[2]
+            w1 = paddle.shape(avg_out)[2]
+            w2 = paddle.shape(inputs)[2]
+            
             while w2 != w1:
                 inputs = F.avg_pool2d(inputs,
                                       kernel_size=3,
                                       padding=1,
                                       stride=2)
-                w2 = inputs.shape[2]
+                w2 = paddle.shape(inputs)[2]
+            # import pdb
+            # pdb.set_trace()
             output = output + self.shortcut_layer(inputs)
         return self._act(output)
 
@@ -444,3 +453,25 @@ class EESPNetBackbone(nn.Layer):
         for i, layer in enumerate(self.level4):
             out_l4 = layer(out_l4)
         return out_l1, out_l2, out_l3, out_l4
+
+
+if __name__ == '__main__':
+    import paddle
+    import numpy as np
+
+    paddle.enable_static()
+
+    startup_prog = paddle.static.default_startup_program()
+
+    exe = paddle.static.Executor(paddle.CPUPlace())
+    exe.run(startup_prog)
+    path_prefix = "./output/model"
+
+    [inference_program, feed_target_names, fetch_targets] = (
+        paddle.static.load_inference_model(path_prefix, exe))
+    print('inference_program:', inference_program)
+
+    tensor_img = np.array(np.random.random((1, 3, 1024, 2048)), dtype=np.float32)
+    results = exe.run(inference_program,
+                feed={feed_target_names[0]: tensor_img},
+                fetch_list=fetch_targets)
