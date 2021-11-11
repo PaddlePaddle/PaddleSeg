@@ -54,9 +54,9 @@ LaneSeg
   * Batch大小
   * ...
 
-数据集，包括训练数据集和验证数据集，数据集的配置和数据路径有关，在本教程中，数据存放在`dataset/tusimple_lane_detection`中
+数据集，包括训练数据集和验证数据集，数据集的配置和数据路径有关，在本教程中，数据存放在`data/tusimple`中
 
-其他配置则根据数据集和机器环境的情况进行调节，最终我们保存一个如下内容的yaml配置文件，存放路径为**configs/lanenet.yaml**
+其他配置则根据数据集和机器环境的情况进行调节，最终我们保存一个如下内容的yaml配置文件，存放路径为**configs/lane_tusimple_seg.yml.yaml**
 
 ```yaml
 batch_size: 4
@@ -168,7 +168,6 @@ python val.py \
 ```
 
 ## 五. 可视化
-需要先下载一个车前视角和鸟瞰图视角转换所需文件，点击[链接](https://paddleseg.bj.bcebos.com/resources/tusimple_ipm_remap.tar)，下载后放在```./utils```下。
 
 ```shell
 python predict.py \
