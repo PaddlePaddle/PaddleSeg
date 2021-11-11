@@ -31,11 +31,11 @@ LaneSeg
             |-- 0530
             |-- 0531
             |-- 0601
-       |-- label_data_0313.json
-       |-- label_data_0531.json
-       |-- label_data_0601.json
-       |-- test_label.json
-       |-- test_tasks_0627.json
+        |-- label_data_0313.json
+        |-- label_data_0531.json
+        |-- label_data_0601.json
+        |-- test_label.json
+        |-- test_tasks_0627.json
 ```
 
 ## 二. 准备配置
