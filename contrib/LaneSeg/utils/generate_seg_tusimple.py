@@ -65,12 +65,10 @@ def gen_label_for_json(args, image_set):
             for i in range(len(lanes)):
                 coords = lanes[i]
                 if len(coords) < 4:
-                    list_str.append('0')
                     continue
                 for j in range(len(coords) - 1):
                     cv2.line(seg_img, coords[j], coords[j + 1],
                              (i + 1, i + 1, i + 1), SEG_WIDTH // 2)
-                list_str.append('1')
 
             seg_path = img_path.split("/")
             seg_path, img_name = os.path.join(
