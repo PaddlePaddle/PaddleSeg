@@ -25,13 +25,13 @@ from paddleseg.utils import logger
 def parse_args():
     parser = argparse.ArgumentParser(description='Model export.')
     # params of training
-    parser.add_argument(
-        "--config",
-        dest="cfg",
-        help="The config file.",
-        default=None,
-        type=str,
-        required=True)
+    # parser.add_argument(
+    #     "--config",
+    #     dest="cfg",
+    #     help="The config file.",
+    #     default=None,
+    #     type=str,
+    #     required=True)
     parser.add_argument(
         '--save_dir',
         dest='save_dir',
@@ -95,8 +95,18 @@ class PostPorcesser(paddle.nn.Layer):
 
 def main(args):
     os.environ['PADDLESEG_EXPORT_STAGE'] = 'True'
-    cfg = Config(args.cfg)
-    net = cfg.model
+    # cfg = Config(args.cfg)
+    # net = cfg.model
+    from paddleseg.models.pphumansegv2_lite import PPHumanSegV1Lite
+
+    from paddleseg.models.backbones.lcnet import PPLCNet_x1_0
+    backbone = PPLCNet_x1_0()
+    net = PPHumanSegV1Lite(2, backbone)
+    # print(net)
+    # print(backbone)
+
+    # from paddleseg.models.bisenet import BiSeNetV2
+    # net = BiSeNetV2(2)
 
     if args.model_path:
         para_state_dict = paddle.load(args.model_path)
@@ -123,9 +133,10 @@ def main(args):
 
     yml_file = os.path.join(args.save_dir, 'deploy.yaml')
     with open(yml_file, 'w') as file:
-        transforms = cfg.export_config.get('transforms', [{
-            'type': 'Normalize'
-        }])
+        # transforms = cfg.export_config.get('transforms', [{
+        #     'type': 'Normalize'
+        # }])
+        transforms = [{'type': 'Normalize'}]
         data = {
             'Deploy': {
                 'transforms': transforms,
