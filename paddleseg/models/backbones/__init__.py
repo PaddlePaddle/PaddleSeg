@@ -20,4 +20,4 @@ from .vision_transformer import *
 from .swin_transformer import *
 from .mobilenetv2 import *
 from .mix_transformer import *
-from .stdcnet import * 
+from .stdcnet import *

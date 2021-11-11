@@ -42,7 +42,7 @@ class DeployConfig:
         with codecs.open(path, 'r', 'utf-8') as file:
             self.dic = yaml.load(file, Loader=yaml.FullLoader)
 
-        self._transforms = self._load_transforms(
+        self._transforms = self.load_transforms(
             self.dic['Deploy']['transforms'])
         self._dir = os.path.dirname(path)
 
@@ -58,7 +58,8 @@ class DeployConfig:
     def params(self):
         return os.path.join(self._dir, self.dic['Deploy']['params'])
 
-    def _load_transforms(self, t_list):
+    @staticmethod
+    def load_transforms(t_list):
         com = manager.TRANSFORMS
         transforms = []
         for t in t_list:
@@ -212,11 +213,10 @@ class Predictor:
                 self.pred_cfg.set_trt_dynamic_shape_info(
                     min_input_shape, max_input_shape, opt_input_shape)
 
-    def run(self, imgs):
-        if not isinstance(imgs, (list, tuple)):
-            imgs = [imgs]
+    def run(self, imgs_path):
+        if not isinstance(imgs_path, (list, tuple)):
+            imgs_path = [imgs_path]
 
-        num = len(imgs)
         input_names = self.predictor.get_input_names()
         input_handle = self.predictor.get_input_handle(input_names[0])
         output_names = self.predictor.get_output_names()
@@ -227,28 +227,43 @@ class Predictor:
         if not os.path.exists(args.save_dir):
             os.makedirs(args.save_dir)
 
-        for i in range(0, num, args.batch_size):
-            if args.benchmark and i > 0:
-                self.autolog.times.start()
-            data = np.array(
-                [self._preprocess(img) for img in imgs[i:i + args.batch_size]])
+        for i in range(0, len(imgs_path), args.batch_size):
+            # warm up
+            if i == 0 and args.benchmark:
+                for j in range(5):
+                    data = np.array([
+                        self._preprocess(img)
+                        for img in imgs_path[0:args.batch_size]
+                    ])
+                    input_handle.reshape(data.shape)
+                    input_handle.copy_from_cpu(data)
+                    self.predictor.run()
+                    results = output_handle.copy_to_cpu()
+                    results = self._postprocess(results)
 
+            # inference
+            if args.benchmark:
+                self.autolog.times.start()
+
+            data = np.array(
+                [self._preprocess(p) for p in imgs_path[i:i + args.batch_size]])
             input_handle.reshape(data.shape)
             input_handle.copy_from_cpu(data)
-            if args.benchmark and i > 0:
+
+            if args.benchmark:
                 self.autolog.times.stamp()
 
             self.predictor.run()
 
-            results = output_handle.copy_to_cpu()
-            if args.benchmark and i > 0:
+            if args.benchmark:
                 self.autolog.times.stamp()
 
+            results = output_handle.copy_to_cpu()
             results = self._postprocess(results)
+            self._save_imgs(results, imgs_path[i:i + args.batch_size])
 
-            if args.benchmark and i > 0:
+            if args.benchmark:
                 self.autolog.times.end(stamp=True)
-            self._save_imgs(results, imgs)
 
         logger.info("Finish")
 
@@ -260,10 +275,10 @@ class Predictor:
             results = np.argmax(results, axis=1)
         return results
 
-    def _save_imgs(self, results, imgs):
+    def _save_imgs(self, results, imgs_path):
         for i in range(results.shape[0]):
             result = get_pseudo_color_map(results[i])
-            basename = os.path.basename(imgs[i])
+            basename = os.path.basename(imgs_path[i])
             basename, _ = os.path.splitext(basename)
             basename = f'{basename}.png'
             result.save(os.path.join(self.args.save_dir, basename))
@@ -357,21 +372,10 @@ def parse_args():
     )
 
     parser.add_argument(
-        '--use_cpu',
-        dest='use_cpu',
-        help='Whether to use X86 CPU for inference. Uses GPU in default.',
-        action='store_true')
-    parser.add_argument(
-        '--use_mkldnn',
-        dest='use_mkldnn',
-        help='Whether to use MKLDNN to accelerate prediction.',
-        action='store_true')
-    parser.add_argument(
         '--with_argmax',
         dest='with_argmax',
         help='Perform argmax operation on the predict result.',
         action='store_true')
-
     parser.add_argument(
         '--print_detail',
         dest='print_detail',
@@ -391,7 +395,8 @@ def main(args):
     predictor = Predictor(args)
     predictor.run(imgs_list)
 
-    if use_auto_tune(args):
+    if use_auto_tune(args) and \
+        os.path.exists(args.auto_tuned_shape_file):
         os.remove(args.auto_tuned_shape_file)
 
     if args.benchmark:

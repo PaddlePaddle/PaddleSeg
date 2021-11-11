@@ -1,4 +1,4 @@
-# copyright (c) 2020 PaddlePaddle Authors. All Rights Reserve.
+# copyright (c) 2021 PaddlePaddle Authors. All Rights Reserve.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -194,7 +194,7 @@ class ResNet_vd(nn.Layer):
     def __init__(self,
                  input_channels=3,
                  layers=50,
-                 output_stride=8,
+                 output_stride=32,
                  multi_grid=(1, 1, 1),
                  pretrained=None):
         super(ResNet_vd, self).__init__()
@@ -223,6 +223,7 @@ class ResNet_vd(nn.Layer):
         # for channels of four returned stages
         self.feat_channels = [c * 4 for c in num_filters
                               ] if layers >= 50 else num_filters
+        self.feat_channels = [64] + self.feat_channels
 
         dilation_dict = None
         if output_stride == 8:
@@ -314,15 +315,15 @@ class ResNet_vd(nn.Layer):
         self.init_weight()
 
     def forward(self, inputs):
+        feat_list = []
         y = self.conv1_1(inputs)
         y = self.conv1_2(y)
         y = self.conv1_3(y)
-        self.conv1_logit = y.clone()
+        feat_list.append(y)
+
         y = self.pool2d_max(y)
 
         # A feature list saves the output feature map of each stage.
-        feat_list = []
-        feat_list.append(y)
         for stage in self.stage_list:
             for block in stage:
                 y = block(y)
