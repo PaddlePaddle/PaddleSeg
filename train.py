@@ -190,7 +190,8 @@ def main(args):
         keep_checkpoint_max=args.keep_checkpoint_max,
         test_config=cfg.test_config,
         fp16=args.fp16,
-        profiler_options=args.profiler_options)
+        profiler_options=args.profiler_options,
+        support_to_static=cfg.to_static)
 
 
 if __name__ == '__main__':

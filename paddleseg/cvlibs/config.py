@@ -392,6 +392,10 @@ class Config(object):
     def export_config(self) -> Dict:
         return self.dic.get('export', {})
 
+    @property
+    def to_static(self) -> bool:
+        return self.dic.get('to_static', False)
+
     def _is_meta_type(self, item: Any) -> bool:
         return isinstance(item, dict) and 'type' in item
 
