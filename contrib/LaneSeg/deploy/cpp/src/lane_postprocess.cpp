@@ -127,22 +127,8 @@ vector<vector<pair<int, int>>> LanePostProcess::probmap2lane(int num_classes, cv
     return coordinates;
 }
 
-vector<vector<pair<int, int>>> LanePostProcess::lane_process(int num_classes, cv::Size size,
-                  int out_num, int skip_index)
+vector<vector<pair<int, int>>> LanePostProcess::lane_process(int num_classes, cv::Mat seg_planes[])
 {
-    vector<float> seg_pred(out_num, 0);
-    std::ifstream ifs("", std::ios::binary | std::ios::in);
-    ifs.read(reinterpret_cast<char *>(&seg_pred[0]), sizeof(float) * out_num);
-    ifs.close();
-
-    cv::Mat seg_planes[num_classes];
-    for(int i = 0; i < num_classes; i++) {
-        seg_planes[i].create(size, CV_32FC(1));
-    }
-
-    for(int i = 0; i < num_classes; i++) {
-        ::memcpy(seg_planes[i].data, seg_pred.data() + i *skip_index, skip_index * sizeof(float)); //内存拷贝
-    }
     auto lane_coords = probmap2lane(num_classes, seg_planes);
     return lane_coords;
 }
