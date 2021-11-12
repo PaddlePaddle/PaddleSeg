@@ -48,7 +48,7 @@ PaddleSeg是基于飞桨[PaddlePaddle](https://www.paddlepaddle.org.cn)开发的
 ----------
 
 
-## <img src="./docs/images/love.png" width="40"/> 直播课回放
+## 直播课回放 <img src="./docs/images/love.png" width="40"/> 
 
 ✨直播课回放--全球冠军带你实现产业级图像分割✨  
 
@@ -71,11 +71,12 @@ PaddleSeg是基于飞桨[PaddlePaddle](https://www.paddlepaddle.org.cn)开发的
 
 ## 模型库总览  <img src="./docs/images/model.png" width="20"/>
 
+更多信息参见[Model Zoo Overview](./docs/model_zoo_overview.md)
+
 <div align="center">
 <img src=https://user-images.githubusercontent.com/30695251/140323107-02ce9de4-c8f4-4f18-88b2-59bd0055a70b.png   />  
 </div>
 
-更多信息参见[Model Zoo Overview](./docs/model_zoo_overview.md)
 
 
 ## 使用教程 <img src="./docs/images/teach.png" width="30"/>
