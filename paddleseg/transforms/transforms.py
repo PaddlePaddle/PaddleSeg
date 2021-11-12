@@ -705,57 +705,59 @@ class RandomCenterCrop:
     """
     Crops the given the input data at the center.
     Args:
-        crop_ration (tuple or list, optional): Clipping range. Default:the crop range is 0.5-1.
+        retain_ratio (tuple or list, optional): The length of the input list or tuple must be 2. default:(0.5, 0.5).
+        the first value is used for width and the second is for height.
+        In addition, The minimum size of the cropped image is [width * retain_ratio[0], height * retain_ratio[1].
     Raises:
-        TypeError: When crop_ration is neither list nor tuple. Default:None.
-        ValueError: When the value of crop_ration is not in [0-1].
+        TypeError: When retain_ratio is neither list nor tuple. Default:None.
+        ValueError: When the value of retain_ratio is not in [0-1].
     """
 
     def __init__(self,
-                 crop_ration=(0.5, 0.5)):
-        if isinstance(crop_ration, list) or isinstance(crop_ration, tuple):
-            if len(crop_ration) != 2:
+                 retain_ratio=(0.5, 0.5)):
+        if isinstance(retain_ratio, list) or isinstance(retain_ratio, tuple):
+            if len(retain_ratio) != 2:
                 raise ValueError(
-                    'When type of `crop_ration` is list or tuple, it shoule include 2 elements, but it is {}'.format(
-                        crop_ration)
+                    'When type of `retain_ratio` is list or tuple, it shoule include 2 elements, but it is {}'.format(
+                        retain_ratio)
                 )
-            if crop_ration[0] > 1 or crop_ration[1] > 1 or crop_ration[0] < 0 or crop_ration[1] < 0:
+            if retain_ratio[0] > 1 or retain_ratio[1] > 1 or retain_ratio[0] < 0 or retain_ratio[1] < 0:
                 raise ValueError(
-                    'Value of `crop_ration` should be in [0, 1], but it is {}'.format(crop_ration)
+                    'Value of `retain_ratio` should be in [0, 1], but it is {}'.format(retain_ratio)
                 )
 
         else:
             raise TypeError(
-                "The type of `crop_ration` is invalid. It should be list or tuple, but it is {}"
-                    .format(type(crop_ration)))
-        self.crop_ration = crop_ration
+                "The type of `retain_ratio` is invalid. It should be list or tuple, but it is {}"
+                    .format(type(retain_ratio)))
+        self.retain_ratio = retain_ratio
 
     def __call__(self, im, label=None):
         """
         Args:
-            crop_ration (tuple or list or float, optional): Clipping range. Default: (0.5-1).
+            im (np.ndarray): The Image data.
+            label (np.ndarray, optional): The label data. Default: None.
         Returns:
             (tuple). When label is None, it returns (im, ), otherwise it returns (im, label).
         """
-        crop_width = self.crop_ration[0]
-        crop_height = self.crop_ration[1]
+        retain_width = self.retain_ratio[0]
+        retain_height = self.retain_ratio[1]
 
         img_height = im.shape[0]
         img_width = im.shape[1]
 
-        if crop_width == 1. and crop_height == 1.:
+        if retain_width == 1. and retain_height == 1.:
             if label is None:
                 return (im,)
             else:
                 return (im, label)
         else:
-            randw = np.random.randint(img_width * (1 - crop_width))
-            randh = np.random.randint(img_height * (1 - crop_height))
+            randw = np.random.randint(img_width * (1 - retain_width))
+            randh = np.random.randint(img_height * (1 - retain_height))
             offsetw = 0 if randw == 0 else np.random.randint(randw)
             offseth = 0 if randh == 0 else np.random.randint(randh)
             p0, p1, p2, p3 = offseth, img_height + offseth - randh, offsetw, img_width + offsetw - randw
             im = im[p0:p1, p2:p3, :]
-            print(label.shape)
             if label is not None:
                 label = label[p0:p1, p2:p3, :]
 
