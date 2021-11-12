@@ -8,10 +8,16 @@
 ![python version](https://img.shields.io/badge/python-3.6+-orange.svg)
 ![support os](https://img.shields.io/badge/os-linux%2C%20win%2C%20mac-yellow.svg)
 
+# 近期活动
+PaddleSeg团队将举办主题为《产业图像分割应用与实战》的两日课向大家分析在**交互式智能标注工具**和**精细化分割Matting**方向的研究工作。
+<div align="center">
+<img src="docs/images/activate.png"  width = "2000" />  
+</div>
+
 
 ## PaddleSeg发布2.3版本，欢迎体验
 
-* PaddleSeg团队发表交互式分割论文[EdgeFlow](https://arxiv.org/abs/2109.0406)，已在多个数据集实现SOTA性能，并升级了交互式分割工具[EISeg](./EISeg)。
+* PaddleSeg团队发表交互式分割论文[EdgeFlow](https://arxiv.org/abs/2109.0406)，已在多个数据集实现SOTA性能，并升级了交互式分割工具[EISeg](./EISeg),新增医疗和遥感垂类模型，支持多通道、大尺幅数据切片处理。
 * 开源两种[Matting](./contrib/Matting)算法，经典方法DIM，和实时性方法MODNet，实现精细化人像分割。
 * 发布图像分割高阶功能，[模型蒸馏](./slim/distill)和[模型量化](./slim/quant)方案，进一步提升模型的部署效率。
 
@@ -46,19 +52,6 @@ PaddleSeg是基于飞桨[PaddlePaddle](https://www.paddlepaddle.org.cn)开发的
 * <img src="./docs/images/f3.png" width="20"/> **高性能**：支持多进程异步I/O、多卡并行训练、评估等加速策略，结合飞桨核心框架的显存优化功能，可大幅度减少分割模型的训练开销，让开发者更低成本、更高效地完成图像分割训练。
 
 ----------
-
-
-## <img src="./docs/images/love.png" width="40"/> 直播课回放
-
-✨直播课回放--全球冠军带你实现产业级图像分割✨  
-
-* 学习链接：https://aistudio.baidu.com/aistudio/education/group/info/24590
-
-* Day① 顶会冠军图像分割算法深度解密
-
-* Day② 高精度人像分割算法及应用
-
-* Day③ 交互式分割及破圈应用
 
 
 ## 技术交流 <img src="./docs/images/chat.png" width="30"/>
