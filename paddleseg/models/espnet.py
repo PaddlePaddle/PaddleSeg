@@ -285,7 +285,7 @@ class PSPModule(nn.Layer):
         for stage in self.stages:
             feats = F.avg_pool2d(feats, kernel_size=3, stride=2, padding='same')
             upsampled = F.interpolate(stage(feats),
-                                      size=(h, w),
+                                      size=[h, w],
                                       mode='bilinear',
                                       align_corners=True)
             out.append(upsampled)
