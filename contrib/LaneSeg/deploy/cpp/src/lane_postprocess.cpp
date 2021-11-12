@@ -7,35 +7,37 @@
 
 #include "lane_postprocess.hpp"
 
-LanePostProcess::LanePostProcess() {
-
+LanePostProcess::LanePostProcess(int src_height, int src_width, int rows, int cols, int num_classes):num_classes(num_classes) {
+    src_height = src_height;
+    src_width = src_width;
+    input_height = rows;
+    input_width = cols;
 }
 
-vector<int> LanePostProcess::get_lane(cv::Mat& prob_map, int y_px_gap, int pts, float thresh,
-              int H, int W, int h, int w, int cut_height) {
-    H -= cut_height;
+vector<int> LanePostProcess::get_lane(cv::Mat& prob_map) {
+    int dst_height = src_height - cut_height;
     int pointCount = 0;
-    vector<int> coords(pts, -1);
-    for(int k = 0; k < pts; ++k) {
-        int y = int((H - 10 - k * y_px_gap) * h / H);
+    vector<int> coords(points_nums, -1);
+    for(int k = 0; k < points_nums; ++k) {
+        int y = int((dst_height - 10 - k * y_pixel_gap) * input_height / dst_height);
         if (y < 0)
             break;
         const float* p = prob_map.ptr<float>(y);
         int id = max_element(p, p + prob_map.cols) - p;
         float val = *max_element(p, p + prob_map.cols);
         if (val > thresh) {
-            coords[k] = int(id * 1.0 / w * W);
+            coords[k] = int(id * 1.0 / input_width * src_width);
             pointCount++;
         }
     }
     if (pointCount < 2) {
         std::fill(coords.begin(), coords.end(), 0);
     }
-    fix_gap(coords);
+    process_gap(coords);
     return coords;
 }
 
-void LanePostProcess::fix_gap(vector<int>& coordinate) {
+void LanePostProcess::process_gap(vector<int>& coordinate) {
     int start = -1;
     int end = -1;
     int len = coordinate.size();
@@ -97,50 +99,80 @@ void LanePostProcess::fix_gap(vector<int>& coordinate) {
     }
 }
 
-vector<vector<pair<int, int>>> LanePostProcess::probmap2lane(int num_classes, cv::Mat seg_planes[]) {
-    int y_px_gap = 10;
-    int pts = 56;
-    float thresh = 0.6;
-    int H = 720, W = 1280;
-    int h = 368, w = 640;
-    int cut_height = 160;
+vector<vector<pair<int, int>>> LanePostProcess::heatmap2lane(int num_classes, cv::Mat seg_planes[]) {
     vector<vector<pair<int, int>>> coordinates;
-    vector<int> coords(pts, -1);
+    vector<int> coords(points_nums, -1);
     for(int i = 0; i < num_classes - 1; i++) {
         cv::Mat prob_map = seg_planes[i+1];
         if (true) {
             cv::blur(prob_map, prob_map, Size(9, 9), Point(-1,-1), BORDER_REPLICATE );
         }
-        coords = get_lane(prob_map,  y_px_gap,  pts, thresh, H,  W,  h,  w, cut_height);
+        coords = get_lane(prob_map);
         int sum = accumulate(coords.begin(), coords.end(), 0);
 
         if (sum == 0) {
             continue;
         }
-         add_coords( coordinates, coords,  H, y_px_gap);
+         add_coords(coordinates, coords);
 
     }
     if (coordinates.size() == 0) {
         std::fill(coords.begin(), coords.end(), 0);
-        add_coords( coordinates, coords, H,  y_px_gap);
+        add_coords(coordinates, coords);
     }
     return coordinates;
 }
 
-vector<vector<pair<int, int>>> LanePostProcess::lane_process(int num_classes, cv::Mat seg_planes[])
+vector<vector<pair<int, int>>> LanePostProcess::lane_process(vector<float>& out_data, int cut_height)
 {
-    auto lane_coords = probmap2lane(num_classes, seg_planes);
+    cut_height = cut_height;
+    cv::Size size = cv::Size(input_width, input_height);
+    cv::Mat softmax_mat;
+    softmax_mat.create(size, CV_32FC(num_classes));
+
+    for (int i = 0; i < input_height; ++i) {
+        for(int j = 0; j < input_width; ++j) {
+            vector<float> src(num_classes, 0);
+            vector<float> dst(num_classes, 0);
+            for(int idx = 0; idx < num_classes; ++idx) {
+                src[idx] = out_data[i * input_width + j + input_height * input_width * idx];
+            }
+            softmax(&src[0], &dst[0], num_classes);
+            for(int idx = 0; idx < num_classes; ++idx) {
+                softmax_mat.at<cv::Vec<float, 7>>(i,j)[idx] = dst[idx];
+            }
+        }
+    }
+
+    cv::Mat seg_planes[num_classes];
+    for(int i = 0; i < num_classes; i++) {
+        seg_planes[i].create(size, CV_32FC(1));
+    }
+
+    cv::split(softmax_mat, seg_planes);
+    auto lane_coords = heatmap2lane(num_classes, seg_planes);
     return lane_coords;
 }
 
-void LanePostProcess::add_coords(vector<vector<pair<int, int>>> & coordinates, vector<int> & coords, int H, int y_px_gap) {
+void LanePostProcess::add_coords(vector<vector<pair<int, int>>>& coordinates, vector<int>& coords) {
     vector<pair<int, int>> sub_lanes;
-    for (int j = 0; j < 56; ++j) {
+    for (int j = 0; j < points_nums; ++j) {
         if (coords[j] > 0) {
-            sub_lanes.push_back({coords[j], H - 10 - j * y_px_gap});
+            sub_lanes.push_back({coords[j], src_height - 10 - j * y_pixel_gap});
         } else {
-            sub_lanes.push_back({-1, H - 10 - j * y_px_gap});
+            sub_lanes.push_back({-1, src_height - 10 - j * y_pixel_gap});
         }
     }
     coordinates.push_back(sub_lanes);
+}
+
+void LanePostProcess::softmax(float* src, float* dst, int length) {
+    float sum = 0.0f;
+    for(int i = 0; i < length; ++i) {
+        dst[i] = exp(src[i]);
+        sum += dst[i];
+    }
+    for(int i = 0; i <length; ++i) {
+        dst[i] = dst[i] / sum;
+    }
 }

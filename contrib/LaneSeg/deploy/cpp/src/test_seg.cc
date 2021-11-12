@@ -86,17 +86,6 @@ void process_image(const YamlConfig& yaml_config, cv::Mat& img) {
     }
 }
 
-void softmax(float* src, float* dst, int length) {
-    float sum = 0.0f;
-    for(int i = 0; i < length; ++i) {
-        dst[i] = exp(src[i]);
-        sum += dst[i];
-    }
-    for(int i = 0; i <length; ++i) {
-        dst[i] = dst[i] / sum;
-    }
-}
-
 int main(int argc, char *argv[]) {
     google::ParseCommandLineFlags(&argc, &argv, true);
     if (FLAGS_model_dir == "") {
@@ -149,32 +138,9 @@ int main(int argc, char *argv[]) {
     int skip_index = size.height * size.width;
     
     const int num_classes = 7;
-    cv::Mat softmax_mat;
-    softmax_mat.create(size, CV_32FC(num_classes));
-    
-    for (int i = 0; i < rows; ++i) {
-        for(int j = 0; j < cols; ++j) {
-            vector<float> tmp(num_classes, 0);
-            vector<float> tmp1(num_classes, 0);
-            for(int idx = 0; idx < num_classes; ++idx) {
-                tmp[idx] = out_data[i*cols + j + rows*cols*idx];
-            }
-            softmax(&tmp[0], &tmp1[0], num_classes);
-            for(int idx = 0; idx < num_classes; ++idx) {
-                softmax_mat.at<cv::Vec<float, num_classes>>(i,j)[idx] = tmp1[idx];
-            }
-        }
-    }
-    
-    cv::Mat seg_planes[num_classes];
-    for(int i = 0; i < num_classes; i++) {
-        seg_planes[i].create(size, CV_32FC(1));
-    }
-    
-    cv::split(softmax_mat, seg_planes);
-    
-    LanePostProcess* laneNet = new LanePostProcess();
-    auto lane_coords = laneNet->lane_process(7, seg_planes);
+    LanePostProcess* laneNet = new LanePostProcess(input_height, input_width, rows, cols, num_classes);
+    auto lane_coords = laneNet->lane_process(out_data, cut_height);
+
     cv::Scalar colors[] = {cv::Scalar(255,0,0),cv::Scalar(0,255,0),
                             cv::Scalar(0,0,255), cv::Scalar(255,255,0),
                             cv::Scalar(255,0,255), cv::Scalar(0,255,255),
@@ -190,31 +156,29 @@ int main(int argc, char *argv[]) {
         }
         lane_id++;
     }
+    
     cv::imshow("image lane", image_ori);
     cv::waitKey();
     
-    cv::Mat seg_result;
-    seg_result.create(size, CV_32FC(num_classes));
+    cv::Mat seg_planes[num_classes];
+    for(int i = 0; i < num_classes; i++) {
+        seg_planes[i].create(size, CV_32FC(1));
+    }
 
     for(int i = 0; i < num_classes; i++) {
-        ::memcpy(seg_planes[i].data, out_data.data() + i*skip_index, skip_index * sizeof(float)); //内存拷贝
+        ::memcpy(seg_planes[i].data, out_data.data() + i * skip_index, skip_index * sizeof(float)); //内存拷贝
     }
     
+    cv::Mat seg_result;
     cv::merge(seg_planes, num_classes, seg_result);
-    cv::Size output_size = cv::Size(input_width, input_height-cut_height);
-    int output_nums = output_size.width * output_size.height;
-  
     cv::Mat image_final;
-    cv::resize(seg_result, image_final, output_size);
-
-    cv::Mat binary_image=cv::Mat::zeros(output_size, CV_8UC1);
-    for (int y = 0; y < image_final.rows; y++){
+    cv::resize(seg_result, image_final, cv::Size(input_width, input_height-cut_height));
+    
+    cv::Mat binary_image=cv::Mat::zeros(cv::Size(input_width, input_height), CV_8UC1);
+    for (int y = cut_height; y < image_final.rows + cut_height; y++){
         for (int x = 0; x< image_final.cols; x++) {
-            vector<float> tmp(num_classes, 0);
-            for (int idx = 0; idx < num_classes; idx++) {
-                tmp[idx] = image_final.at<cv::Vec<float, num_classes>>(y,x)[idx];
-            }
-            int index = max_element(tmp.begin(),tmp.end()) - tmp.begin();
+            cv::Vec<float, num_classes> elem = image_final.at<cv::Vec<float, num_classes>>(y - cut_height, x);
+            int index = std::distance(&elem[0], max_element(&elem[0], &elem[0] + num_classes));
             binary_image.at<uchar>(y,x)= index;
         }
     }
@@ -222,9 +186,7 @@ int main(int argc, char *argv[]) {
     // Get pseudo image
     cv::Mat out_eq_img;
     cv::equalizeHist(binary_image, out_eq_img);
-    cv::imshow("out_img", out_eq_img);
-    cv::waitKey();
-    cv::imwrite("out_img.jpg", out_eq_img);
+    cv::imwrite("out_img.jpg", binary_image*255);
 
     LOG(INFO) << "Finish";
 }
