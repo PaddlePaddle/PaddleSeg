@@ -3,7 +3,7 @@
 [![Python 3.6](https://img.shields.io/badge/python-3.6+-blue.svg)](https://www.python.org/downloads/release/python-360/) [![License](https://img.shields.io/badge/license-Apache%202-blue.svg)](LICENSE) [![Downloads](https://pepy.tech/badge/eiseg)](https://pepy.tech/project/eiseg)
 <!-- [![GitHub release](https://img.shields.io/github/release/Naereen/StrapDown.js.svg)](https://github.com/PaddleCV-SIG/iseg/releases) -->
 
-English | [简体中文](README.md)
+[简体中文](README.md)| English 
 
 ## Latest Developments
 
@@ -13,7 +13,7 @@ English | [简体中文](README.md)
 ## Introduction
 
 EISeg (Efficient Interactive Segmentation) is an efficient and intelligent interactive segmentation annotation software developed based on PaddlePaddle. It relies on the interactivate image segmentation methods [RITM](https://github.com/saic-vul/ritm_interactive_segmentation) and [EdgeFlow](https://arxiv.org/abs/2109.09406) .It covers a large number of high-quality segmentation models in different directions such as *high-performance* and *lightweight*, providing convenience to the rapid annotation of  semantic and instance labels with reduced cost. In addition, by applying the annotations obtained by EISeg to other segmentation models provided by PaddleSeg for training, high-performance models with customized scenarios can be created, integrating the whole process of segmentation tasks from data annotation to model training and prediction.
- 
+
 ![eiseg_demo](../docs/images/eiseg_demo.gif)
 
 ## Model Preparation

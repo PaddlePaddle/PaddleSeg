@@ -40,14 +40,14 @@ if IPT_GDAL:
 
 
 def open_tif(geoimg_path):
-    '''
-        打开tif文件
-    '''
+    """
+    打开tif文件
+    """
     if IPT_GDAL == True:
         geoimg = gdal.Open(geoimg_path)
         return __tif2arr(geoimg), get_geoinfo(geoimg)
     else:
-        raise ImportError('can\'t import gdal!')
+        raise ImportError("can't import gdal!")
 
 
 def __tif2arr(geoimg):
@@ -57,32 +57,36 @@ def __tif2arr(geoimg):
             tifarr = tifarr.transpose((1, 2, 0))  # 多波段图像默认是[c, h, w]
         return tifarr
     else:
-        raise ImportError('can\'t import gdal!')
+        raise ImportError("can't import gdal!")
 
 
 def get_geoinfo(geoimg):
-    '''
-        获取tif图像的信息，输入为dgal读取的数据
-    '''
+    """
+    获取tif图像的信息，输入为dgal读取的数据
+    """
     if IPT_GDAL == True:
         geoinfo = {
-            'count': geoimg.RasterCount,
-            'xsize': geoimg.RasterXSize,
-            'ysize': geoimg.RasterYSize,
-            'proj': geoimg.GetProjection(),
-            'proj2': geoimg.GetSpatialRef(),
-            'geotf': geoimg.GetGeoTransform()
+            "count": geoimg.RasterCount,
+            "xsize": geoimg.RasterXSize,
+            "ysize": geoimg.RasterYSize,
+            "proj": geoimg.GetProjection(),
+            "proj2": geoimg.GetSpatialRef(),
+            "geotf": geoimg.GetGeoTransform(),
         }
         return geoinfo
     else:
-        raise ImportError('can\'t import gdal!')
+        raise ImportError("can't import gdal!")
 
 
 def show_geoinfo(geo_info, type):
     return str(
         "● 波段数：{0}\n● 数据类型：{1}\n● 行数：{2}\n● 列数：{3}\n{4}".format(
-            geo_info["count"], type, geo_info["xsize"], geo_info["ysize"], 
-            __analysis_proj2(geo_info["proj2"].ExportToProj4()))
+            geo_info["count"],
+            type,
+            geo_info["xsize"],
+            geo_info["ysize"],
+            __analysis_proj2(geo_info["proj2"].ExportToProj4()),
+        )
     )
 
 
@@ -96,25 +100,27 @@ def __analysis_proj2(proj2):
             ap_dict[k] = v
     return str(
         "● 投影：{0}\n● 基准：{1}\n● 单位：{2}".format(
-            ap_dict["proj"], ap_dict["datum"], ap_dict["units"])
+            ap_dict["proj"], ap_dict["datum"], ap_dict["units"]
+        )
     )
 
 
 def save_tif(img, geoinfo, save_path):
-    '''
-        保存分割的图像并使其空间信息保持一致
-    '''
+    """
+    保存分割的图像并使其空间信息保持一致
+    """
     if IPT_GDAL == True:
-        driver = gdal.GetDriverByName('GTiff')
+        driver = gdal.GetDriverByName("GTiff")
         datatype = gdal.GDT_Byte
         dataset = driver.Create(
-            save_path, 
-            geoinfo['xsize'], 
-            geoinfo['ysize'], 
-            1,  # geoinfo['count'],  # 保存tif目前仅用于保存mask，波段为1就OK 
-            datatype)
-        dataset.SetProjection(geoinfo['proj'])  # 写入投影
-        dataset.SetGeoTransform(geoinfo['geotf'])  # 写入仿射变换参数
+            save_path,
+            geoinfo["xsize"],
+            geoinfo["ysize"],
+            1,  # geoinfo['count'],  # 保存tif目前仅用于保存mask，波段为1就OK
+            datatype,
+        )
+        dataset.SetProjection(geoinfo["proj"])  # 写入投影
+        dataset.SetGeoTransform(geoinfo["geotf"])  # 写入仿射变换参数
         # 同上
         # C = img.shape[-1] if len(img.shape) == 3 else 1
         # if C == 1:
@@ -125,4 +131,4 @@ def save_tif(img, geoinfo, save_path):
         dataset.GetRasterBand(1).WriteArray(img)
         del dataset  # 删除与tif的连接
     else:
-        raise ImportError('can\'t import gdal!')
+        raise ImportError("can't import gdal!")
