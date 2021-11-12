@@ -49,10 +49,10 @@ def __bound2wkt(bounds, tform, ct):
         p = bd["points"]
         for i in range(len(p)):
             x, y = convert_coord(p[i], tform)  # 仿射变换
-            lon, lat = ct.TransformPoint(x, y)[: 2]  # 转换到经纬度坐标
+            lon, lat = ct.TransformPoint(x, y)[:2]  # 转换到经纬度坐标
             gl["polygon"] += (str(lat) + " " + str(lon)) + ","
         x, y = convert_coord(p[0], tform)  # 仿射变换
-        lon, lat = ct.TransformPoint(x, y)[: 2]  # 转换到经纬度坐标
+        lon, lat = ct.TransformPoint(x, y)[:2]  # 转换到经纬度坐标
         gl["polygon"] += (str(lat) + " " + str(lon)) + "))"
         # gl["polygon"] = gl["polygon"][:-1] + "))"
         geo_list.append(gl)
@@ -108,7 +108,7 @@ def save_shp(shp_path, geocode_list, geo_info):
         oDS.Destroy()
         return "数据集创建完成！"
     else:
-        raise ImportError('can\'t import gdal, osr, ogr!')
+        raise ImportError("can't import gdal, osr, ogr!")
 
 
 # test

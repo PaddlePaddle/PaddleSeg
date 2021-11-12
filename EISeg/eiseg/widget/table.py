@@ -41,7 +41,7 @@ class TableWidget(QtWidgets.QTableWidget):
                 targetRow = self.rowCount()
             for _ in range(len(rows)):
                 self.insertRow(targetRow)
-            rowMapping = dict() # Src row to target row.
+            rowMapping = dict()  # Src row to target row.
             for idx, row in enumerate(rows):
                 if row < targetRow:
                     rowMapping[row] = targetRow + idx
@@ -71,5 +71,8 @@ class TableWidget(QtWidgets.QTableWidget):
         elif rect.bottom() - pos.y() < margin:
             return True
         # noinspection PyTypeChecker
-        return rect.contains(pos, True) and not (
-                    int(self.model().flags(index)) & Qt.ItemIsDropEnabled) and pos.y() >= rect.center().y()
+        return (
+            rect.contains(pos, True)
+            and not (int(self.model().flags(index)) & Qt.ItemIsDropEnabled)
+            and pos.y() >= rect.center().y()
+        )

@@ -25,12 +25,7 @@ here = osp.dirname(osp.abspath(__file__))
 
 class EISegModel:
     @abstractmethod
-    def __init__(
-        self,
-        model_path,
-        param_path,
-        use_gpu=False
-    ):
+    def __init__(self, model_path, param_path, use_gpu=False):
         model_path, param_path = self.check_param(model_path, param_path)
         try:
             config = paddle_infer.Config(model_path, param_path)
@@ -68,4 +63,3 @@ class EISegModel:
         if param_path is None or not osp.exists(param_path):
             raise Exception(f"权重路径{param_path}不存在。请指定正确的权重路径")
         return model_path, param_path
-
