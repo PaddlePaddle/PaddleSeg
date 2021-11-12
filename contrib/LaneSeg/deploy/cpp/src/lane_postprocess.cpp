@@ -102,7 +102,7 @@ vector<vector<pair<int, int>>> LanePostProcess::probmap2lane(int num_classes, cv
     int pts = 56;
     float thresh = 0.6;
     int H = 720, W = 1280;
-    int h = 256, w = 512;
+    int h = 368, w = 640;
     int cut_height = 160;
     vector<vector<pair<int, int>>> coordinates;
     vector<int> coords(pts, -1);

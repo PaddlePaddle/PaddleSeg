@@ -28,8 +28,8 @@ public:
 
     vector<vector<pair<int, int>>> probmap2lane(int num_classes, cv::Mat seg_planes[]);
 
-    vector<vector<pair<int, int>>> lane_process(int num_classes = 7, cv::Size size = cv::Size(256, 512),
-                                                                 int out_num = 2, int skip_index=2);
+    vector<vector<pair<int, int>>> lane_process(int num_classes = 7, cv::Size size = cv::Size(368, 640),
+                                                                 int out_num = 2, int skip_index=2, vector<float> in = vector<float>());
 
     void add_coords(vector<vector<pair<int, int>>> & coordinates, vector<int> & coords, int H, int y_px_gap);
     ~LanePostProcess(){}
