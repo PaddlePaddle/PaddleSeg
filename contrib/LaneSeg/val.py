@@ -50,13 +50,13 @@ def parse_args():
 
     # params of evaluate
     parser.add_argument(
-        "--config", dest="cfg", help="The config file.", default='configs/lane_tusimple_seg.yml', type=str)
+        "--config", dest="cfg", help="The config file.", default=None, type=str)
     parser.add_argument(
         '--model_path',
         dest='model_path',
         help='The path of model for evaluation',
         type=str,
-        default='/Users/huangshenghui/Downloads/model.pdparams')
+        default=None)
     parser.add_argument(
         '--num_workers',
         dest='num_workers',

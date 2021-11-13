@@ -29,7 +29,7 @@ def parse_args():
     parser = argparse.ArgumentParser(description='Model training')
     # params of training
     parser.add_argument(
-        "--config", dest="cfg", help="The config file.", default='configs/lane_tusimple_seg.yml', type=str)
+        "--config", dest="cfg", help="The config file.", default=None, type=str)
     parser.add_argument(
         '--iters',
         dest='iters',
@@ -87,7 +87,7 @@ def parse_args():
         '--log_iters',
         dest='log_iters',
         help='Display logging information at every log_iters',
-        default=1,
+        default=10,
         type=int)
     parser.add_argument(
         '--use_vdl',

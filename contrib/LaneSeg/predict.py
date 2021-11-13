@@ -18,10 +18,10 @@ import os
 import paddle
 
 from paddleseg.cvlibs import manager, Config
+from paddleseg.utils import get_sys_env, logger, config_check, get_image_list
 from core import predict
 from datasets import *
 from models import *
-from paddleseg.utils import get_sys_env, logger, config_check, get_image_list
 
 
 def parse_args():
@@ -29,20 +29,20 @@ def parse_args():
 
     # params of prediction
     parser.add_argument(
-        "--config", dest="cfg", help="The config file.", default='configs/lane_tusimple_seg.yml', type=str)
+        "--config", dest="cfg", help="The config file.", default=None, type=str)
     parser.add_argument(
         '--model_path',
         dest='model_path',
         help='The path of model for prediction',
         type=str,
-        default='/Users/huangshenghui/Downloads/model.pdparams')
+        default=None)
     parser.add_argument(
         '--image_path',
         dest='image_path',
         help=
         'The path of image, it can be a file or a directory including images',
         type=str,
-        default='/Users/huangshenghui/Downloads/test_set/clips/0530/1492626126171818168_0/20.jpg')
+        default=None)
     parser.add_argument(
         '--save_dir',
         dest='save_dir',
