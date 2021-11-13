@@ -29,7 +29,7 @@ def parse_args():
     parser = argparse.ArgumentParser(description='Model training')
     # params of training
     parser.add_argument(
-        "--config", dest="cfg", help="The config file.", default=None, type=str)
+        "--config", dest="cfg", help="The config file.", default='configs/lane_tusimple_seg.yml', type=str)
     parser.add_argument(
         '--iters',
         dest='iters',
@@ -109,6 +109,13 @@ def parse_args():
         'Data format that specifies the layout of input. It can be "NCHW" or "NHWC". Default: "NCHW".',
         type=str,
         default='NCHW')
+    parser.add_argument(
+        '--profiler_options',
+        type=str,
+        default=None,
+        help='The option of train profiler. If profiler_options is not None, the train ' \
+            'profiler is enabled. Refer to the paddleseg/utils/train_profiler.py for details.'
+    )
 
     return parser.parse_args()
 
@@ -158,7 +165,7 @@ def main(args):
         raise ValueError(
             'The length of train_dataset is 0. Please check if your dataset is valid'
         )
-    val_dataset = cfg.val_dataset  # if args.do_eval else None
+    val_dataset = cfg.val_dataset if args.do_eval else None
     losses = cfg.loss
 
     msg = '\n---------------Config Information---------------\n'
@@ -184,7 +191,8 @@ def main(args):
         losses=losses,
         keep_checkpoint_max=args.keep_checkpoint_max,
         test_config=cfg.test_config,
-        fp16=args.fp16)
+        fp16=args.fp16,
+        profiler_options=args.profiler_options)
 
 
 if __name__ == '__main__':

@@ -18,10 +18,10 @@ import os
 import paddle
 
 from paddleseg.cvlibs import manager, Config
-from paddleseg.utils import get_sys_env, logger, config_check
 from core import predict
 from datasets import *
 from models import *
+from paddleseg.utils import get_sys_env, logger, config_check, get_image_list
 
 
 def parse_args():
@@ -29,20 +29,20 @@ def parse_args():
 
     # params of prediction
     parser.add_argument(
-        "--config", dest="cfg", help="The config file.", default=None, type=str)
+        "--config", dest="cfg", help="The config file.", default='configs/lane_tusimple_seg.yml', type=str)
     parser.add_argument(
         '--model_path',
         dest='model_path',
         help='The path of model for prediction',
         type=str,
-        default=None)
+        default='/Users/huangshenghui/Downloads/model.pdparams')
     parser.add_argument(
         '--image_path',
         dest='image_path',
         help=
         'The path of image, it can be a file or a directory including images',
         type=str,
-        default=None)
+        default='/Users/huangshenghui/Downloads/test_set/clips/0530/1492626126171818168_0/20.jpg')
     parser.add_argument(
         '--save_dir',
         dest='save_dir',
@@ -50,44 +50,88 @@ def parse_args():
         type=str,
         default='./output/result')
 
+    # augment for prediction
+    parser.add_argument(
+        '--aug_pred',
+        dest='aug_pred',
+        help='Whether to use mulit-scales and flip augment for prediction',
+        action='store_true')
+    parser.add_argument(
+        '--scales',
+        dest='scales',
+        nargs='+',
+        help='Scales for augment',
+        type=float,
+        default=1.0)
+    parser.add_argument(
+        '--flip_horizontal',
+        dest='flip_horizontal',
+        help='Whether to use flip horizontally augment',
+        action='store_true')
+    parser.add_argument(
+        '--flip_vertical',
+        dest='flip_vertical',
+        help='Whether to use flip vertically augment',
+        action='store_true')
+
+    # sliding window prediction
+    parser.add_argument(
+        '--is_slide',
+        dest='is_slide',
+        help='Whether to prediction by sliding window',
+        action='store_true')
+    parser.add_argument(
+        '--crop_size',
+        dest='crop_size',
+        nargs=2,
+        help=
+        'The crop size of sliding window, the first is width and the second is height.',
+        type=int,
+        default=None)
+    parser.add_argument(
+        '--stride',
+        dest='stride',
+        nargs=2,
+        help=
+        'The stride of sliding window, the first is width and the second is height.',
+        type=int,
+        default=None)
+
+    # custom color map
+    parser.add_argument(
+        '--custom_color',
+        dest='custom_color',
+        nargs='+',
+        help=
+        'Save images with a custom color map. Default: None, use paddleseg\'s default color map.',
+        type=int,
+        default=None)
     return parser.parse_args()
 
 
-def get_image_list(image_path):
-    """Get image list"""
-    valid_suffix = [
-        '.JPEG', '.jpeg', '.JPG', '.jpg', '.BMP', '.bmp', '.PNG', '.png'
-    ]
-    image_list = []
-    image_dir = None
-    if os.path.isfile(image_path):
-        if os.path.splitext(image_path)[-1] in valid_suffix:
-            image_list.append(image_path)
-        else:
-            image_dir = os.path.dirname(image_path)
-            with open(image_path, 'r') as f:
-                for line in f:
-                    line = line.strip()
-                    if len(line.split()) > 1:
-                        line = line.split()[0]
-                    image_list.append(os.path.join(image_dir, line))
-    elif os.path.isdir(image_path):
-        image_dir = image_path
-        for root, dirs, files in os.walk(image_path):
-            for f in files:
-                if '.ipynb_checkpoints' in root:
-                    continue
-                if os.path.splitext(f)[-1] in valid_suffix:
-                    image_list.append(os.path.join(root, f))
-    else:
-        raise FileNotFoundError(
-            '`--image_path` is not found. it should be an image file or a directory including images'
-        )
 
-    if len(image_list) == 0:
-        raise RuntimeError('There are not image file in `--image_path`')
+def get_test_config(cfg, args):
 
-    return image_list, image_dir
+    test_config = cfg.test_config
+    if args.aug_pred:
+        test_config['aug_pred'] = args.aug_pred
+        test_config['scales'] = args.scales
+
+    if args.flip_horizontal:
+        test_config['flip_horizontal'] = args.flip_horizontal
+
+    if args.flip_vertical:
+        test_config['flip_vertical'] = args.flip_vertical
+
+    if args.is_slide:
+        test_config['is_slide'] = args.is_slide
+        test_config['crop_size'] = args.crop_size
+        test_config['stride'] = args.stride
+
+    if args.custom_color:
+        test_config['custom_color'] = args.custom_color
+
+    return test_config
 
 
 def main(args):
@@ -115,6 +159,7 @@ def main(args):
     image_list, image_dir = get_image_list(args.image_path)
     logger.info('Number of predict images = {}'.format(len(image_list)))
 
+    test_config = get_test_config(cfg, args)
     config_check(cfg, val_dataset=val_dataset)
 
     predict(
@@ -123,7 +168,8 @@ def main(args):
         val_dataset=val_dataset,
         image_list=image_list,
         image_dir=image_dir,
-        save_dir=args.save_dir)
+        save_dir=args.save_dir,
+        **test_config)
 
 
 if __name__ == '__main__':

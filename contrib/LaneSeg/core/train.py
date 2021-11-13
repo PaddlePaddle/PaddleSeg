@@ -18,9 +18,11 @@ from collections import deque
 import shutil
 
 import paddle
+import paddle.nn.functional as F
 
-from paddleseg.utils import TimeAverager, calculate_eta, resume, logger, worker_init_fn
 from .val import evaluate
+from paddleseg.utils import (TimeAverager, calculate_eta, resume, logger,
+                             worker_init_fn, train_profiler, op_flops_funs)
 
 
 def check_logits_losses(logits_list, losses):
@@ -32,38 +34,41 @@ def check_logits_losses(logits_list, losses):
             .format(len_logits, len_losses))
 
 
-def loss_computation(logits_list, labels, losses):
+def loss_computation(logits_list, labels, losses, edges=None):
     check_logits_losses(logits_list, losses)
     loss_list = []
     for i in range(len(logits_list)):
         logits = logits_list[i]
         loss_i = losses['types'][i]
-        loss_name = loss_i.__class__.__name__
-
-        if loss_name in "LaneCrossEntropyLoss":
-            loss_list.append(losses['coef'][i] * loss_i(logits, labels))
+        # Whether to use edges as labels According to loss type.
+        if loss_i.__class__.__name__ in ('BCELoss',
+                                         'FocalLoss') and loss_i.edge_label:
+            loss_list.append(losses['coef'][i] * loss_i(logits, edges))
+        elif loss_i.__class__.__name__ in ("KLLoss", ):
+            loss_list.append(losses['coef'][i] * loss_i(
+                logits_list[0], logits_list[1].detach()))
         else:
             loss_list.append(losses['coef'][i] * loss_i(logits, labels))
     return loss_list
 
 
-def train(
-        model,
-        train_dataset,
-        val_dataset=None,
-        optimizer=None,
-        save_dir='output',
-        iters=10000,
-        batch_size=2,  # batch size
-        resume_model=None,
-        save_interval=1000,
-        log_iters=10,
-        num_workers=0,
-        use_vdl=False,
-        losses=None,
-        keep_checkpoint_max=5,
-        test_config=None,
-        fp16=False):
+def train(model,
+          train_dataset,
+          val_dataset=None,
+          optimizer=None,
+          save_dir='output',
+          iters=10000,
+          batch_size=2,
+          resume_model=None,
+          save_interval=1000,
+          log_iters=10,
+          num_workers=0,
+          use_vdl=False,
+          losses=None,
+          keep_checkpoint_max=5,
+          test_config=None,
+          fp16=False,
+          profiler_options=None):
     """
     Launch training.
 
@@ -85,6 +90,7 @@ def train(
         keep_checkpoint_max (int, optional): Maximum number of checkpoints to save. Default: 5.
         test_config(dict, optional): Evaluation config.
         fp16 (bool, optional): Whether to use amp.
+        profiler_options (str, optional): The option of train profiler.
     """
     model.train()
     nranks = paddle.distributed.ParallelEnv().nranks
@@ -128,29 +134,29 @@ def train(
     avg_loss = 0.0
     avg_loss_list = []
     iters_per_epoch = len(batch_sampler)
-    best_mean_iou = -1.0
-    best_acc_lane = -1.0
+    best_acc = -1.0
     best_model_iter = -1
-
     reader_cost_averager = TimeAverager()
     batch_cost_averager = TimeAverager()
     save_models = deque()
     batch_start = time.time()
 
     iter = start_iter
-    while iter < iters:  # iters = EPOCH_NUMS * iters_per_epoch
+    while iter < iters:
         for data in loader:
             iter += 1
             if iter > iters:
                 version = paddle.__version__
-                if version == '2.1.2' or version == '0.0.0':
+                if version == '2.1.2':
                     continue
                 else:
                     break
             reader_cost_averager.record(time.time() - batch_start)
-
             images = data[0]
             labels = data[1].astype('int64')
+            edges = None
+            if len(data) == 3:
+                edges = data[2].astype('int64')
             if hasattr(model, 'data_format') and model.data_format == 'NHWC':
                 images = images.transpose((0, 2, 3, 1))
 
@@ -166,7 +172,10 @@ def train(
                     else:
                         logits_list = model(images)
                     loss_list = loss_computation(
-                        logits_list=logits_list, labels=labels, losses=losses)
+                        logits_list=logits_list,
+                        labels=labels,
+                        losses=losses,
+                        edges=edges)
                     loss = sum(loss_list)
 
                 scaled = scaler.scale(loss)  # scale the loss
@@ -180,9 +189,11 @@ def train(
                     logits_list = ddp_model(images)
                 else:
                     logits_list = model(images)
-
                 loss_list = loss_computation(
-                    logits_list=logits_list, labels=labels, losses=losses)
+                    logits_list=logits_list,
+                    labels=labels,
+                    losses=losses,
+                    edges=edges)
                 loss = sum(loss_list)
                 loss.backward()
                 optimizer.step()
@@ -196,6 +207,8 @@ def train(
                 lr_sche = optimizer._learning_rate
             if isinstance(lr_sche, paddle.optimizer.lr.LRScheduler):
                 lr_sche.step()
+
+            train_profiler.add_profiler_step(profiler_options)
 
             model.clear_gradients()
             avg_loss += loss.numpy()[0]
@@ -245,8 +258,12 @@ def train(
                     or iter == iters) and (val_dataset is not None):
                 num_workers = 1 if num_workers > 0 else 0
 
-                acc_lane, fn_lane, fp_lane = evaluate(
-                    model, val_dataset, num_workers=num_workers)
+                if test_config is None:
+                    test_config = {}
+
+                acc, fp, fn = evaluate(
+                    model, val_dataset, num_workers=num_workers, **test_config)
+
                 model.train()
 
             if (iter % save_interval == 0 or iter == iters) and local_rank == 0:
@@ -264,38 +281,29 @@ def train(
                     shutil.rmtree(model_to_remove)
 
                 if val_dataset is not None:
-                    if acc_lane > best_acc_lane:
-                        best_acc_lane = acc_lane
+                    if acc > best_acc:
+                        best_acc = acc
                         best_model_iter = iter
                         best_model_dir = os.path.join(save_dir, "best_model")
                         paddle.save(
                             model.state_dict(),
                             os.path.join(best_model_dir, 'model.pdparams'))
                     logger.info(
-                        '[EVAL] The model with the best validation acc_lane ({:.4f}) was saved at iter {}.'
-                        .format(best_acc_lane, best_model_iter))
+                        '[EVAL] The model with the best validation mIoU ({:.4f}) was saved at iter {}.'
+                        .format(best_acc, best_model_iter))
 
                     if use_vdl:
-                        log_writer.add_scalar('Evaluate/Avg_acc_lane', acc_lane,
-                                              iter)
-                        log_writer.add_scalar('Evaluate/Avg_fn_lane', fn_lane,
-                                              iter)
-                        log_writer.add_scalar('Evaluate/avg_fp_lane', fp_lane,
-                                              iter)
+                        log_writer.add_scalar('Evaluate/Acc', acc, iter)
+                        log_writer.add_scalar('Evaluate/Fp', fp, iter)
+                        log_writer.add_scalar('Evaluate/Fn', fn, iter)
             batch_start = time.time()
 
     # Calculate flops.
     if local_rank == 0:
-
-        def count_syncbn(m, x, y):
-            x = x[0]
-            nelements = x.numel()
-            m.total_ops += int(2 * nelements)
-
         _, c, h, w = images.shape
-        flops = paddle.flops(
+        _ = paddle.flops(
             model, [1, c, h, w],
-            custom_ops={paddle.nn.SyncBatchNorm: count_syncbn})
+            custom_ops={paddle.nn.SyncBatchNorm: op_flops_funs.count_syncbn})
 
     # Sleep for half a second to let dataloader release resources.
     time.sleep(0.5)

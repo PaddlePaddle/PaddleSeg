@@ -63,7 +63,7 @@ class DeployConfig:
             ctype = t.pop('type')
             transforms.append(com[ctype](**t))
 
-        return T.Compose(transforms, cut_height=160, to_rgb=False)
+        return T.Compose(transforms, to_rgb=False)
 
 
 class Predictor:
@@ -140,13 +140,13 @@ class Predictor:
 def parse_args():
     parser = argparse.ArgumentParser(description='Test')
     parser.add_argument(
-        "--config", dest="cfg", help="The config file.", default=None, type=str)
+        "--config", dest="cfg", help="The config file.", default='/Users/huangshenghui/PaddleSeg/contrib/LaneSeg/output/deploy.yaml', type=str)
     parser.add_argument(
         '--image_path',
         dest='image_path',
         help='The directory or path or file list of the images to be predicted.',
         type=str,
-        default=None)
+        default='/Users/huangshenghui/PP/PaddleSeg/contrib/LaneNet/data/test_images')
     parser.add_argument(
         '--save_dir',
         dest='save_dir',

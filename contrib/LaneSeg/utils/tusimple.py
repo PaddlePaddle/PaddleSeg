@@ -5,11 +5,29 @@ import cv2
 import numpy as np
 
 from .lane import LaneEval
-from .utils import split_path, mkdir
 
 # this code heavily base on
 # https://github.com/ZJULearning/resa/blob/main/runner/evaluator/tusimple/tusimple.py
 # https://github.com/ZJULearning/resa/blob/main/datasets/tusimple.py
+
+def split_path(path):
+    """split path tree into list"""
+    folders = []
+    while True:
+        path, folder = os.path.split(path)
+        if folder != "":
+            folders.insert(0, folder)
+        else:
+            if path != "":
+                folders.insert(0, path)
+            break
+    return folders
+
+
+def mkdir(path):
+    sub_dir = os.path.dirname(path)
+    if not os.path.exists(sub_dir):
+        os.makedirs(sub_dir)
 
 
 class Tusimple:
@@ -195,6 +213,8 @@ class Tusimple:
                 coords[i] = int(id / w * W)
         if (coords > 0).sum() < 2:
             coords = np.zeros(self.pts)
+        self.process_gap(coords)
+        self.fix_outliers(coords)
         self.process_gap(coords)
         return coords
 

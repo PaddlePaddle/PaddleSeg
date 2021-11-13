@@ -12,4 +12,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .tusimpleseg import TusimpleSeg
+from .tusimple_seg import TusimpleSeg

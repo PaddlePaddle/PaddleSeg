@@ -32,7 +32,7 @@ class TusimpleSeg(paddle.io.Dataset):
                  cut_height=0,
                  mode='train'):
         self.dataset_root = dataset_root
-        self.transforms = Compose(transforms, cut_height, to_rgb=False)
+        self.transforms = Compose(transforms, to_rgb=False)
         mode = mode.lower()
         self.mode = mode
         self.file_list = list()

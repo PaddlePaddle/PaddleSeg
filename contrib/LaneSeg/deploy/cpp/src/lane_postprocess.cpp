@@ -129,11 +129,12 @@ vector<vector<pair<int, int>>> LanePostProcess::lane_process(vector<float>& out_
     cv::Size size = cv::Size(input_width, input_height);
     cv::Mat softmax_mat;
     softmax_mat.create(size, CV_32FC(num_classes));
-
+   
+    vector<float> src(num_classes, 0);
+    vector<float> dst(num_classes, 0);
+    
     for (int i = 0; i < input_height; ++i) {
         for(int j = 0; j < input_width; ++j) {
-            vector<float> src(num_classes, 0);
-            vector<float> dst(num_classes, 0);
             for(int idx = 0; idx < num_classes; ++idx) {
                 src[idx] = out_data[i * input_width + j + input_height * input_width * idx];
             }
