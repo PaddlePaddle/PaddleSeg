@@ -23,7 +23,7 @@ from transforms.transforms import Compose
 
 
 @manager.DATASETS.add_component
-class TusimpleSeg(paddle.io.Dataset):
+class Tusimple(paddle.io.Dataset):
     NUM_CLASSES = 7
 
     def __init__(self,
