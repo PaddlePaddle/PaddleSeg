@@ -303,4 +303,4 @@ def aug_inference(model,
     pred = reverse_transform(
         final_logit, ori_shape, transforms, mode='bilinear')
     pred = paddle.argmax(pred, axis=1, keepdim=True, dtype='int32')
-    return pred
+    return pred, final_logit
