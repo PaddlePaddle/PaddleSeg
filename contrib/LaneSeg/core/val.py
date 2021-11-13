@@ -138,6 +138,9 @@ def evaluate(model,
             reader_cost_averager.reset()
             batch_cost_averager.reset()
             batch_start = time.time()
-        acc, fp, fn, eval_result = postprocessor.calculate_eval()
+
+    acc, fp, fn, eval_result = postprocessor.calculate_eval()
+
+    if print_detail:
         logger.info(eval_result)
     return acc, fp, fn
