@@ -198,6 +198,31 @@ class Tusimple:
         self.process_gap(coords)
         return coords
 
+    def fix_outliers(self, coords):
+        data = [x for i, x in enumerate(coords) if x > 0]
+        index = [i for i, x in enumerate(coords) if x > 0]
+        if len(data) == 0:
+            return coords
+        diff = []
+        is_outlier = False
+        n = 1
+        x_gap = abs((data[-1] - data[0]) / (1.0 * (len(data) - 1)))
+        for idx, dt in enumerate(data):
+            if is_outlier == False:
+                t = idx - 1
+                n = 1
+            if idx == 0:
+                diff.append(0)
+            else:
+                diff.append(abs(data[idx] - data[t]))
+                if abs(data[idx] - data[t]) > n * (x_gap * 1.5):
+                    n = n + 1
+                    is_outlier = True
+                    ind = index[idx]
+                    coords[ind] = -1
+                else:
+                    is_outlier = False
+
     def heatmap2lane(self, seg_pred, target_shape=(720, 1280)):
         """
         Arguments:
