@@ -35,21 +35,21 @@ class Tusimple:
                  num_classes=2,
                  cut_height=0,
                  thresh=0.6,
-                 is_show=False,
+                 is_view=False,
                  test_gt_json=None,
                  save_dir='output/eval'):
         super(Tusimple, self).__init__()
         self.num_classes = num_classes
         self.cut_height = cut_height
         self.dump_to_json = []
-        self.thresh = thresh  # probability threshold
+        self.thresh = thresh
 
         self.save_dir = save_dir
-        self.is_show = is_show
+        self.is_view = is_view
         self.test_gt_json = test_gt_json
-        self.smooth = True  # whether to smooth the probability or not
-        self.y_px_gap = 10  # y pixel gap for sampling
-        self.pts = 56  # y pixel gap for sampling
+        self.smooth = True
+        self.y_px_gap = 10
+        self.pts = 56
         self.target_shape = (720, 1280)
         self.color_map = [(255, 0, 0), (0, 255, 0), (0, 0, 255), (255, 255, 0),
                           (255, 0, 255), (0, 255, 125), (50, 100, 50),
@@ -121,7 +121,7 @@ class Tusimple:
             for (x, y) in lane_coords[0]:
                 json_dict['h_sample'].append(y)
             self.dump_to_json.append(json.dumps(json_dict))
-            if self.is_show:
+            if self.is_view:
                 img = cv2.imread(img_path[batch])
                 new_img_name = '_'.join(
                     [x for x in split_path(img_path[batch])[-4:]])
