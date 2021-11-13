@@ -33,8 +33,8 @@ class Tusimple:
         self.y_px_gap = 10  # y pixel gap for sampling
         self.pts = 56  # y pixel gap for sampling
         self.target_shape = (720, 1280)
-        self.color_map = [(255, 0, 0), (0, 255, 0), (0, 0, 255), (125, 125, 0),
-                          (0, 125, 125), (125, 0, 125), (50, 100, 50),
+        self.color_map = [(255, 0, 0), (0, 255, 0), (0, 0, 255), (255, 255, 0),
+                          (255, 0, 255), (0, 255, 125), (50, 100, 50),
                           (100, 50, 100)]
 
     def evaluate(self, output, im_path):
@@ -115,14 +115,14 @@ class Tusimple:
         lane_coords_list = []
         for batch in range(len(seg_pred)):
             seg = seg_pred[batch]
-            lane_coords = self.get_lane_from_seg(seg, self.target_shape)
+            lane_coords = self.heatmap2lane(seg, self.target_shape)
             for i in range(len(lane_coords)):
                 lane_coords[i] = sorted(
                     lane_coords[i], key=lambda pair: pair[1])
             lane_coords_list.append(lane_coords)
         return lane_coords_list
 
-    def deal_gap(self, coordinate):
+    def process_gap(self, coordinate):
         if any(x > 0 for x in coordinate):
             start = [i for i, x in enumerate(coordinate) if x > 0][0]
             end = [
@@ -165,7 +165,7 @@ class Tusimple:
         else:
             return 0
 
-    def get_coords(self, prob_map, target_shape=None):
+    def get_lane(self, prob_map, target_shape=None):
         """
         Arguments:
         ----------
@@ -195,10 +195,10 @@ class Tusimple:
                 coords[i] = int(id / w * W)
         if (coords > 0).sum() < 2:
             coords = np.zeros(self.pts)
-        self.deal_gap(coords)
+        self.process_gap(coords)
         return coords
 
-    def get_lane_from_seg(self, seg_pred, target_shape=(720, 1280)):
+    def heatmap2lane(self, seg_pred, target_shape=(720, 1280)):
         """
         Arguments:
         ----------
@@ -220,7 +220,7 @@ class Tusimple:
             if self.smooth:
                 prob_map = cv2.blur(
                     prob_map, (9, 9), borderType=cv2.BORDER_REPLICATE)
-            coords = self.get_coords(prob_map, target_shape)
+            coords = self.get_lane(prob_map, target_shape)
             if self.is_short(coords):
                 continue
             self.add_coords(coordinates, coords, H)
