@@ -2181,7 +2181,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         try:  # 那种jpg什么格式的医疗图像调整窗宽等会造成崩溃
             self.textWw.selectAll()
             self.controller.image = med.windowlize(
-                self.controller.rawImage, self.ww, self.wc
+                self.grids.rawimg, self.ww, self.wc
             )
             self.updateImage()
         except:
@@ -2193,7 +2193,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         try:
             self.textWc.selectAll()
             self.controller.image = med.windowlize(
-                self.controller.rawImage, self.ww, self.wc
+                self.grids.rawimg, self.ww, self.wc
             )
             self.updateImage()
         except:
