@@ -22,20 +22,38 @@ python tools/generate_seg_tusimple.py.py --root path/to/your/unzipped/file
 
 解压得到的train_set和test_set数据，组织成如下目录结构
 ```
-LaneSeg
-|-- data
-    |-- tusimple
-        |-- clips
-            |-- 0313-1
-            |-- 0313-2
-            |-- 0530
-            |-- 0531
-            |-- 0601
-        |-- label_data_0313.json
-        |-- label_data_0531.json
-        |-- label_data_0601.json
-        |-- test_label.json
-        |-- test_tasks_0627.json
+ The folder structure is as follow:
+
+ LaneSeg
+ |-- data
+     |-- tusimple
+        |-- train_set
+            |-- clips
+                |-- 0313-1
+                |-- 0313-2
+                |-- 0531
+                |-- 0601
+            |-- labels [need to generate label dir]
+                |-- 0313-1
+                |-- 0313-2
+                |-- 0531
+                |-- 0601
+            |-- train_list.txt [need to generate]
+            |-- label_data_0313.json
+            |-- label_data_0531.json
+            |-- label_data_0601.json
+        |-- test_set
+            |-- clips
+                |-- 0530
+                |-- 0531
+                |-- 0601
+            |-- labels [need to generate label dir]
+                |-- 0530
+                |-- 0531
+                |-- 0601
+            |-- train_list.txt [need to generate]
+            |-- test_tasks_0627.json
+            |-- test_label.json
 ```
 
 ## 二. 准备配置

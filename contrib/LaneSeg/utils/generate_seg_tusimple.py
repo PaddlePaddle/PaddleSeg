@@ -97,9 +97,9 @@ def generate_label(args, src_dir, label_dir, image_set, mode="train"):
 
 def process_tusimple_dataset(args):
     print("generating train set...")
-    generate_label(args, "train_set", "label", TRAIN_SET, mode="train")
+    generate_label(args, "train_set", "labels", TRAIN_SET, mode="train")
     print("generating test set...")
-    generate_label(args, "test_set", "label", TEST_SET, mode="test")
+    generate_label(args, "test_set", "labels", TEST_SET, mode="test")
     print("generate finish!")
 
 

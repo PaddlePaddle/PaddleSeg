@@ -35,7 +35,7 @@ class Tusimple(paddle.io.Dataset):
                 |-- 0313-2
                 |-- 0531
                 |-- 0601
-            |-- label [need to generate label dir]
+            |-- labels [need to generate label dir]
                 |-- 0313-1
                 |-- 0313-2
                 |-- 0531
@@ -49,7 +49,7 @@ class Tusimple(paddle.io.Dataset):
                 |-- 0530
                 |-- 0531
                 |-- 0601
-            |-- label [need to generate label dir]
+            |-- labels [need to generate label dir]
                 |-- 0530
                 |-- 0531
                 |-- 0601
@@ -57,7 +57,7 @@ class Tusimple(paddle.io.Dataset):
             |-- test_tasks_0627.json
             |-- test_label.json
 
-    Make sure test_label.json is in test_set directory, and there are label directory in train_set and test_set directory.
+    Make sure test_label.json is in test_set directory, and there are labels directory in train_set and test_set directory.
     If not, please run the generate_seg_tusimple.py in utils.
 
     Args:
