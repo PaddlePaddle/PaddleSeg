@@ -56,13 +56,12 @@ def cleanSortLanes(label):
     return seg_img
 
 
-def generate_label(args, root, save_dir, image_set, mode="train"):
-    os.makedirs(os.path.join(args.root, root, save_dir), exist_ok=True)
+def generate_label(args, src_dir, label_dir, image_set, mode="train"):
+    os.makedirs(os.path.join(args.root, src_dir, label_dir), exist_ok=True)
     list_f = open(
-        os.path.join(args.root, root, save_dir, "{}_list.txt".format(mode)),
-        "w")
+        os.path.join(args.root, src_dir, "{}_list.txt".format(mode)), "w")
     for json_name in (image_set):
-        with open(os.path.join(args.root, root, json_name)) as infile:
+        with open(os.path.join(args.root, src_dir, json_name)) as infile:
             for line in infile:
                 label = json.loads(line)
                 # ---------- clean and sort lanes -------------
@@ -71,16 +70,16 @@ def generate_label(args, root, save_dir, image_set, mode="train"):
 
                 img_path = label['raw_file']
                 seg_path = img_path.split("/")
-                seg_path, img_name = os.path.join(args.root, root, save_dir,
+                seg_path, img_name = os.path.join(args.root, src_dir, label_dir,
                                                   seg_path[1],
                                                   seg_path[2]), seg_path[3]
                 os.makedirs(seg_path, exist_ok=True)
                 seg_path = os.path.join(seg_path, img_name[:-3] + "png")
                 cv2.imwrite(seg_path, seg_img)
 
-                img_path = "/".join([root, img_path])
+                img_path = "/".join([src_dir, img_path])
                 seg_path = "/".join([
-                    root, save_dir, *img_path.split("/")[2:4],
+                    src_dir, label_dir, *img_path.split("/")[2:4],
                     img_name[:-3] + "png"
                 ])
                 if seg_path[0] != '/':

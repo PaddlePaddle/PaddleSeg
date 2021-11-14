@@ -96,13 +96,13 @@ class Tusimple(paddle.io.Dataset):
 
         if mode == 'train':
             file_path = os.path.join(self.dataset_root,
-                                     'train_set/label/train_list.txt')
+                                     'train_set/train_list.txt')
         elif mode == 'val':
             file_path = os.path.join(self.dataset_root,
-                                     'test_set/label/test_list.txt')
+                                     'test_set/test_list.txt')
         else:
             file_path = os.path.join(self.dataset_root,
-                                     'test_set/label/test_list.txt')
+                                     'test_set/test_list.txt')
 
         with open(file_path, 'r') as f:
             for line in f:
