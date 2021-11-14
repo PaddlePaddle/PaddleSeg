@@ -40,7 +40,7 @@ class Tusimple(paddle.io.Dataset):
                 |-- 0313-2
                 |-- 0531
                 |-- 0601
-                |-- train_list.txt
+            |-- train_list.txt [need to generate]
             |-- label_data_0313.json
             |-- label_data_0531.json
             |-- label_data_0601.json
@@ -53,7 +53,7 @@ class Tusimple(paddle.io.Dataset):
                 |-- 0530
                 |-- 0531
                 |-- 0601
-                |-- train_list.txt
+            |-- train_list.txt [need to generate]
             |-- test_tasks_0627.json
             |-- test_label.json
 
