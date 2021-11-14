@@ -25,13 +25,54 @@ from paddleseg.transforms.transforms import Compose
 
 @manager.DATASETS.add_component
 class Tusimple(paddle.io.Dataset):
+    """
+    Tusimple dataset `https://github.com/TuSimple/tusimple-benchmark/issues/3`.
+    The folder structure is as follow:
+     |-- tusimple
+        |-- train_set
+            |-- clips
+                |-- 0313-1
+                |-- 0313-2
+                |-- 0531
+                |-- 0601
+            |-- label [need to generate label dir]
+                |-- 0313-1
+                |-- 0313-2
+                |-- 0531
+                |-- 0601
+                |-- train_list.txt
+            |-- label_data_0313.json
+            |-- label_data_0531.json
+            |-- label_data_0601.json
+        |-- test_set
+            |-- clips
+                |-- 0530
+                |-- 0531
+                |-- 0601
+            |-- label [need to generate label dir]
+                |-- 0530
+                |-- 0531
+                |-- 0601
+                |-- train_list.txt
+            |-- test_tasks_0627.json
+            |-- test_label.json
+
+    Make sure test_label.json is in test_set directory, and there are label directory in train_set and test_set directory.
+    If not, please run the generate_seg_tusimple.py in utils.
+
+    Args:
+        transforms (list): Transforms for image.
+        dataset_root (str): Cityscapes dataset directory.
+        mode (str, optional): Which part of dataset to use. it is one of ('train', 'val', 'test'). Default: 'train'.
+        cut_height (int, optional): Whether to cut image height while training. Default: 0
+    """
     NUM_CLASSES = 7
 
     def __init__(self,
-                 dataset_root=None,
                  transforms=None,
-                 cut_height=0,
-                 mode='train'):
+                 dataset_root=None,
+                 mode='train',
+                 cut_height=0):
         self.dataset_root = dataset_root
         self.transforms = Compose(transforms, to_rgb=False)
         mode = mode.lower()
@@ -55,12 +96,13 @@ class Tusimple(paddle.io.Dataset):
 
         if mode == 'train':
             file_path = os.path.join(self.dataset_root,
-                                     'seg_label/list/train_val_gt.txt')
+                                     'train_set/label/train_list.txt')
         elif mode == 'val':
             file_path = os.path.join(self.dataset_root,
-                                     'seg_label/list/test_gt.txt')
+                                     'test_set/label/test_list.txt')
         else:
-            file_path = os.path.join(self.dataset_root, 'training/test_gt.txt')
+            file_path = os.path.join(self.dataset_root,
+                                     'test_set/label/test_list.txt')
 
         with open(file_path, 'r') as f:
             for line in f:
