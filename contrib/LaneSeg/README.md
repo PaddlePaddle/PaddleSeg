@@ -16,7 +16,7 @@
 在这个[页面](https://github.com/TuSimple/tusimple-benchmark/issues/3)下载原始数据集。通过以下代码执行生成。
 
 ```shell
-python tools/generate_seg_tusimple.py.py --root path/to/your/unzipped/file
+python utils/generate_seg_tusimple.py.py --root path/to/your/unzipped/file
 
 ```
 
@@ -147,7 +147,7 @@ export CUDA_VISIBLE_DEVICES=0 # 设置1张可用的卡
 **windows下请执行以下命令**
 **set CUDA_VISIBLE_DEVICES=0**
 python train.py \
-       --config configs/lane_tusimple_seg.yml \
+       --config configs/bisenet_tusimple_640x368_300k.yml \
        --do_eval \
        --use_vdl \
        --save_interval 2000 \
@@ -158,7 +158,7 @@ python train.py \
 ```shell
 export CUDA_VISIBLE_DEVICES=0,1 # 设置2张可用的卡
 python -m paddle.distributed.launch train.py \
-       --config configs/lane_tusimple_seg.yml \
+       --config configs/bisenet_tusimple_640x368_300k.yml \
        --do_eval \
        --use_vdl \
        --save_interval 2000 \
@@ -169,7 +169,7 @@ python -m paddle.distributed.launch train.py \
 
 ```shell
 python train.py \
-       --config configs/lane_tusimple_seg.yml \
+       --config configs/bisenet_tusimple_640x368_300k.yml \
        --resume_model output/iter_20000 \
        --do_eval \
        --use_vdl \
@@ -183,18 +183,16 @@ python train.py \
 
 ```shell
 python val.py \
-       --config configs/lane_tusimple_seg.yml \
-       --model_path output/iter_320000/model.pdparams
-
+       --config configs/bisenet_tusimple_640x368_300k.yml \
+       --model_path output/best_model/model.pdparams
 ```
 
 ## 五. 可视化
 
 ```shell
 python predict.py \
-       --config configs/lanenet.yml \
-       --model_path output/iter_20000/model.pdparams \
+       --config configs/bisenet_tusimple_640x368_300k.yml \
+       --model_path output/best_model/model.pdparams \
        --image_path data/test_images/0.jpg \
        --save_dir output/result
-
 ```
