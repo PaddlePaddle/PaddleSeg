@@ -81,10 +81,12 @@ batch_size: 4
 iters: 320000
 
 train_dataset:
-  type: TusimpleSeg
-  dataset_root: ./data/tusimple/
+  type: Tusimple
+  dataset_root: ./data/tusimple
   cut_height: 160
   transforms:
+    - type: CutHeight
+      cut_height: 160
     - type: LaneRandomRotation
     - type: RandomHorizontalFlip
     - type: Resize
@@ -102,10 +104,12 @@ train_dataset:
   mode: train
 
 val_dataset:
-  type: TusimpleSeg
-  dataset_root: ./data/tusimple/
+  type: Tusimple
+  dataset_root: ./data/tusimple
   cut_height: 160
   transforms:
+    - type: CutHeight
+      cut_height: 160
     - type: Resize
       target_size: [640, 368]
     - type: Normalize
@@ -118,7 +122,7 @@ optimizer:
 
 lr_scheduler:
   type: PolynomialDecay
-  learning_rate: 0.001
+  learning_rate: 0.01
   end_lr: 0
   power: 0.9
 
@@ -130,7 +134,6 @@ loss:
 model:
   type: BiSeNetLane
   pretrained: Null
-
 ```
 
 

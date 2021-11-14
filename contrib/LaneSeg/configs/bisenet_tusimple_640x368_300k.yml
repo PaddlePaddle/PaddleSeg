@@ -3,7 +3,7 @@ iters: 320000
 
 train_dataset:
   type: Tusimple
-  dataset_root: /Users/huangshenghui/PP/PaddleSeg/contrib/LaneNet/data/tusimple/
+  dataset_root: ./data/tusimple
   cut_height: 160
   transforms:
     - type: CutHeight
@@ -26,7 +26,7 @@ train_dataset:
 
 val_dataset:
   type: Tusimple
-  dataset_root: /Users/huangshenghui/PP/PaddleSeg/contrib/LaneNet/data/tusimple/
+  dataset_root: ./data/tusimple
   cut_height: 160
   transforms:
     - type: CutHeight
@@ -43,7 +43,7 @@ optimizer:
 
 lr_scheduler:
   type: PolynomialDecay
-  learning_rate: 0.001
+  learning_rate: 0.01
   end_lr: 0
   power: 0.9
 
