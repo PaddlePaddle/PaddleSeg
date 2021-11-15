@@ -109,6 +109,7 @@ python val.py \
 ```
 
 ## 四. 可视化
+使用下述命令进行预测， 预测结果默认保存在`./output/result/`文件夹中。
 
 ```shell
 python predict.py \
@@ -127,6 +128,9 @@ python predict.py \
   ![](data/images/added_prediction/3.jpg)
 
 ## 五. 模型导出
+### 将模型导出为静态图模型
+
+请确保位于PaddleSeg/contrib/LaneSeg目录下，执行以下脚本：
 
 ```shell
 python export.py \
@@ -138,6 +142,7 @@ python export.py \
 
 模型的部署，完成，使用下述命令启动评估
 
+### python端部署
 ```shell
 #运行如下命令，会在output文件下面生成一张3.jpg的图像
 python deploy/infer.py \
@@ -145,3 +150,9 @@ python deploy/infer.py \
 --image_path data/test_images/3.jpg\
 --save_dir output
 ```
+
+### Paddle Inference部署（C++）
+参见[Paddle Inference部署教程](../../deploy/cpp/)
+
+### 移动端部署
+参见[移动端部署教程](../../deploy/lite/)
