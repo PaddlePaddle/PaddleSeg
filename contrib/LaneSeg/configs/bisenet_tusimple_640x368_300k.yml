@@ -6,8 +6,8 @@ train_dataset:
   dataset_root: ./data/tusimple
   cut_height: 160
   transforms:
-    - type: CutHeight
-      cut_height: 160
+    - type: Crop
+      up_h_off: 160
     - type: RandomRotation
       max_rotation: 10
       im_padding_value: [0, 0, 0]
@@ -33,8 +33,8 @@ val_dataset:
   dataset_root: ./data/tusimple
   cut_height: 160
   transforms:
-    - type: CutHeight
-      cut_height: 160
+    - type: Crop
+      up_h_off: 160
     - type: Resize
       target_size: [640, 368]
     - type: Normalize

@@ -1211,21 +1211,45 @@ class RandomAffine:
 
 
 @manager.TRANSFORMS.add_component
-class CutHeight:
+class Crop:
     """
-    change an image height with cut height.
+    crop an image from four forwards.
 
     Args:
-        cut_height (int, optional): The cut height from image. Default: 0.
+        up_h_off (int, optional): The cut height for image from up to down. Default: 0.
+        down_h_off (int, optional): The cut height for image from down to up . Default: 0.
+        left_w_off (int, optional): The cut height for image from left to right. Default: 0.
+        right_w_off (int, optional): The cut width for image from right to left. Default: 0.
     """
 
-    def __init__(self, cut_height=0):
-        self.cut_height = cut_height
+    def __init__(self, up_h_off=0, down_h_off=0, left_w_off=0, right_w_off=0):
+        self.up_h_off = up_h_off
+        self.down_h_off = down_h_off
+        self.left_w_off = left_w_off
+        self.right_w_off = right_w_off
 
     def __call__(self, im, label=None):
-        im = im[self.cut_height:, :, :]
+        if self.up_h_off > 0 and self.up_h_off < im.shape[0]:
+            im = im[self.up_h_off:, :, :]
+            if label is not None:
+                label = label[self.up_h_off:, :]
+
+        if self.down_h_off > 0 and self.down_h_off < im.shape[0]:
+            im = im[:-self.down_h_off, :, :]
+            if label is not None:
+                label = label[:-self.down_h_off, :]
+
+        if self.left_w_off > 0 and self.left_w_off < im.shape[1]:
+            im = im[:, self.left_w_off:, :]
+            if label is not None:
+                label = label[:, self.left_w_off:]
+
+        if self.right_w_off > 0 and self.right_w_off < im.shape[1]:
+            im = im[:, :-self.right_w_off, :]
+            if label is not None:
+                label = label[:, :-self.right_w_off]
+
         if label is None:
             return (im, )
         else:
-            label = label[self.cut_height:, :]
             return (im, label)
