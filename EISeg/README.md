@@ -7,13 +7,13 @@
 
 
 ## 最新动向
-
+- EISeg 0.4.0新品尝鲜请移步[develop](https://github.com/PaddlePaddle/PaddleSeg/tree/develop/EISeg)。
 - 交互式分割论文[EdgeFlow](https://arxiv.org/abs/2109.09406)被ICCV 2021 Workshop接收。
 - 支持多边形编辑，上线更多功能，最新EISeg 0.3.0推出。
 
 ## 介绍
 
-EISeg(Efficient Interactive Segmentation)是基于飞桨开发的一个高效智能的交互式分割标注软件。涵盖了高精度和轻量级等不同方向的高质量交互式分割模型，方便开发者快速实现语义及实例标签的标注，降低标注成本。 另外，将EISeg获取到的标注应用到PaddleSeg提供的其他分割模型进行训练，便可得到定制化场景的高精度模型，打通分割任务从数据标注到模型训练及预测的全流程。
+EISeg(Efficient Interactive Segmentation)是以[RITM](https://github.com/saic-vul/ritm_interactive_segmentation)为基础，基于飞桨开发的一个高效智能的交互式分割标注软件。涵盖了高精度和轻量级等不同方向的高质量交互式分割模型，方便开发者快速实现语义及实例标签的标注，降低标注成本。 另外，将EISeg获取到的标注应用到PaddleSeg提供的其他分割模型进行训练，便可得到定制化场景的高精度模型，打通分割任务从数据标注到模型训练及预测的全流程。
 
 ![eiseg_demo](../docs/images/eiseg_demo.gif)
 
@@ -148,9 +148,9 @@ EISeg使用[QPT](https://github.com/GT-ZhangAcer/QPT)进行打包。可以从[�
 - 2021.09.16  **0.3.0**：【1】初步完成多边形编辑功能，支持对交互标注的结果进行编辑；【2】支持中/英界面；【3】支持保存为灰度/伪彩色标签和COCO格式；【4】界面拖动更加灵活；【5】标签栏可拖动，生成mask的覆盖顺序由上往下覆盖。
 - 2021.07.07  **0.2.0**：新增contrib：EISeg，可实现人像和通用图像的快速交互式标注。
 
-## 开发者
+## 贡献者
 
-[Yuying Hao](https://github.com/haoyuying), [Lin Han](https://github.com/linhandev/), [Yizhou Chen](https://github.com/geoyee), [Yiakwy](https://github.com/yiakwy), [GT](https://github.com/GT-ZhangAcer), [Zhiliang Yu](https://github.com/yzl19940819)
+感谢[Yuying Hao](https://github.com/haoyuying), [Lin Han](https://github.com/linhandev/), [Yizhou Chen](https://github.com/geoyee), [Yiakwy](https://github.com/yiakwy), [GT](https://github.com/GT-ZhangAcer), [Zhiliang Yu](https://github.com/yzl19940819)等开发者及[RITM](https://github.com/saic-vul/ritm_interactive_segmentation)算法支持。
 
 ## 学术引用
 
