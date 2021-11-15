@@ -4,7 +4,7 @@ English | [简体中文](README_CN.md)
 Mating is the technique of extracting foreground from an image by calculating its color and transparency. It is widely used in the film industry to replace background, image composition, and visual effects. Each pixel in the image will have a value that represents its foreground transparency, called Alpha. The set of all Alpha values in an image is called Alpha Matte. The part of the image covered by the mask can be extracted to complete foreground separation.
 
 <p align="center">
-<img src="https://user-images.githubusercontent.com/30919197/134927938-802eed44-9392-4abc-9fe7-8441777921d5.png" width="70%" height="70%">
+<img src="https://user-images.githubusercontent.com/30919197/141714637-be8af7b1-ccd0-49df-a4f9-10423705802e.jpg" width="100%" height="100%">
 </p>
 
 ## Contents
@@ -14,7 +14,9 @@ Mating is the technique of extracting foreground from an image by calculating it
 - [Training](#Training)
 - [Evaluation](#Evaluation)
 - [Prediction and visualization results preservation](#Prediction-and-visualization-results-preservation)
-
+- [Background Replacement](#Background-Replacement)
+- [Model Export](#Model-Export)
+- [Model Deploy](#Model-Deploy)
 
 ## Instruction of Installation
 
@@ -48,11 +50,13 @@ cd contrib/Matting
 
 MODNet performance on [PPM-100](https://github.com/ZHKKKe/PPM).
 
-| Backbone | SAD | MSE | Link |
-|-|-|-|-|
-|MobileNetV2|112.73|0.0098|[model](https://paddleseg.bj.bcebos.com/matting/models/modnet-mobilenetv2.pdparams)|
-|ResNet50_vd|104.14|0.0090|[model](https://paddleseg.bj.bcebos.com/matting/models/modnet-resnet50_vd.pdparams)|
-|HRNet_W18|77.96|0.0054|[model](https://paddleseg.bj.bcebos.com/matting/models/modnet-hrnet_w18.pdparams)|
+| Backbone | SAD | MSE | Params(M) | FLOPs(G) | FPS | Link |
+|-|-|-|-|-|-|-|
+|MobileNetV2|112.73|0.0098|6.5|15.7|67.5|[model](https://paddleseg.bj.bcebos.com/matting/models/modnet-mobilenetv2.pdparams)|
+|ResNet50_vd|104.14|0.0090|92.2|151.6|28.6|[model](https://paddleseg.bj.bcebos.com/matting/models/modnet-resnet50_vd.pdparams)|
+|HRNet_W18|77.96|0.0054|10.2|28.5|10.9|[model](https://paddleseg.bj.bcebos.com/matting/models/modnet-hrnet_w18.pdparams)|
+
+Note: The model input size is (512, 512) and the GPU is Tesla V100 32G.
 
 ## Dataset preparation
 
@@ -161,7 +165,7 @@ Run the following command to view more parameters.
 python val.py --help
 ```
 
-## Prediction and visualization results preservation
+## Prediction and Visualization Results Preservation
 ```shell
 export CUDA_VISIBLE_DEVICES=0
 python predict.py \
@@ -177,6 +181,27 @@ You can directly download the provided model for evaluation.
 Run the following command to view more parameters.
 ```shell
 python predict.py --help
+```
+
+## Background Replacement
+```shell
+export CUDA_VISIBLE_DEVICES=0
+python bg_replace.py \
+    --config configs/modnet/modnet_mobilenetv2.yml \
+    --model_path output/best_model/model.pdparams \
+    --image_path path/to/your/image \
+    --bg_path path/to/your/background/image \
+    --save_dir ./output/results
+```
+If the model requires trimap information, pass the trimap path through '--trimap_path'.
+
+If `--bg_path` is not provided, green background is used。
+
+You can directly download the provided model for background replacement.
+
+Run the following command to view more parameters.
+```shell
+python bg_replace.py --help
 ```
 
 ## Model Export
