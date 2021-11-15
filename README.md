@@ -16,7 +16,7 @@ PaddleSeg团队将举办主题为《产业图像分割应用与实战》的两�
 
 ## PaddleSeg发布2.3版本，欢迎体验
 
-* PaddleSeg团队发表交互式分割论文[EdgeFlow](https://arxiv.org/abs/2109.0406)，已在多个数据集实现SOTA性能，并升级了交互式分割工具[EISeg](./EISeg)。
+* PaddleSeg团队发表交互式分割论文[EdgeFlow](https://arxiv.org/abs/2109.0406)，升级了交互式分割工具[EISeg](./EISeg)。
 * 开源两种[Matting](./contrib/Matting)算法，经典方法DIM，和实时性方法MODNet，实现精细化人像分割。
 * 发布图像分割高阶功能，[模型蒸馏](./slim/distill)和[模型量化](./slim/quant)方案，进一步提升模型的部署效率。
 
