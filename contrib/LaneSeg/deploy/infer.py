@@ -32,7 +32,7 @@ from paddleseg.utils import get_sys_env, logger, get_image_list
 
 sys.path.append('..')
 from utils import tusimple
-import transforms.transforms as T
+import paddleseg.transforms.transforms as T
 
 
 class DeployConfig:
@@ -140,13 +140,13 @@ class Predictor:
 def parse_args():
     parser = argparse.ArgumentParser(description='Test')
     parser.add_argument(
-        "--config", dest="cfg", help="The config file.", default='/Users/huangshenghui/PaddleSeg/contrib/LaneSeg/output/deploy.yaml', type=str)
+        "--config", dest="cfg", help="The config file.", default=None, type=str)
     parser.add_argument(
         '--image_path',
         dest='image_path',
         help='The directory or path or file list of the images to be predicted.',
         type=str,
-        default='/Users/huangshenghui/PP/PaddleSeg/contrib/LaneNet/data/test_images')
+        default=None)
     parser.add_argument(
         '--save_dir',
         dest='save_dir',
