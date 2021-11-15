@@ -23,11 +23,20 @@ from distutils.util import strtobool
 import imghdr
 import webbrowser
 from datetime import datetime
+from eiseg.plugin.remotesensing.shape import save_shp
 
 from qtpy import QtGui, QtCore, QtWidgets
 from qtpy.QtWidgets import QMainWindow, QMessageBox, QTableWidgetItem
 from qtpy.QtGui import QImage, QPixmap
-from qtpy.QtCore import Qt, QByteArray, QVariant, QCoreApplication, QThread, Signal
+from qtpy.QtCore import (
+    Qt,
+    QByteArray,
+    QVariant,
+    QCoreApplication,
+    QThread,
+    Signal,
+    QSize,
+)
 import cv2
 import numpy as np
 
@@ -52,7 +61,7 @@ class ModelThread(QThread):
         self.param_path = param_path
 
     def run(self):
-        success, res = self.controller.setModel(self.param_path)
+        success, res = self.controller.setModel(self.param_path, False)
         self._signal.emit(
             {"success": success, "res": res, "param_path": self.param_path}
         )
@@ -180,6 +189,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         # 遥感参数
         self.rsRGB = [0, 0, 0]  # 遥感RGB索引
         self.geoinfo = None
+        self.rawSize = None
 
         # 医疗参数
         self.midx = 0  # 医疗切片索引
@@ -781,13 +791,12 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
                     del self.recentModels[-1]
             else:  # 如果存在移动位置，确保加载最近模型的正确
                 self.recentModels.remove(model_dict)
-                self.recentModels.insert(0, model_dict)    
+                self.recentModels.insert(0, model_dict)
             self.settings.setValue("recent_models", self.recentModels)
             # self.status = self.ANNING
             self.statusbar.showMessage(
                 osp.basename(param_path) + self.tr(" 模型加载成功"), 10000
             )
-            print(res)
             return True
         else:
             self.warnException(res)
@@ -937,8 +946,10 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         if self.controller:
             self.controller.label_list = self.controller.labelList
         for p in self.scene.polygon_items:
-            color = self.controller.labelList.getLabelById(p.labelIndex).color
-            p.setColor(color, color)
+            idlab = self.controller.labelList.getLabelById(p.labelIndex)
+            if idlab is not None:
+                color = idlab.color
+                p.setColor(color, color)
         self.labelListClicked(row, 0)
 
     @property
@@ -982,6 +993,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
                 self.controller.labelList[self.currLabelIdx].idx,
                 self.controller.image.shape,
                 self.delPolygon,
+                self.setDirty,
                 color,
                 color,
                 self.opacity,
@@ -991,7 +1003,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
             self.scene.polygon_items.append(poly)
             for p in points:
                 poly.addPointLast(QtCore.QPointF(p[0], p[1]))
-            self.setDirty()
+            self.setDirty(True)
 
     def delActivePolygon(self):
         for idx, polygon in enumerate(self.scene.polygon_items):
@@ -1012,7 +1024,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
                     polygon.coco_id,
                     self.coco.imgNameToId[osp.basename(self.imagePath)],
                 )
-        self.setDirty()
+        self.setDirty(True)
 
     def delAllPolygon(self):
         for p in self.scene.polygon_items[::-1]:  # 删除所有多边形
@@ -1035,7 +1047,6 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         len_lab = self.labelListTable.rowCount()
         for i in range(len_lab - 1, -1, -1):
             idx = int(self.labelListTable.item(len_lab - i - 1, 0).text())
-            color = self.controller.labelList.getLabelById(idx).color
             for poly in self.scene.polygon_items:
                 if poly.labelIndex == idx:
                     pts = np.int32([np.array(poly.scnenePoints)])
@@ -1184,7 +1195,9 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
                 self.warn("医学影像打开错误", "暂不支持打开多层医学影像")
                 return False
 
-            self.controller.rawImage = self.image = image
+            # self.controller.rawImage = self.image = image
+            self.image = image
+            self.grids.rawimg = image
             image = med.windowlize(image, self.ww, self.wc)
 
         # 遥感图像
@@ -1215,13 +1228,14 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
             # self.updateSlideSld(True)
         else:
             self.edtGeoinfo.setText(self.tr("无"))
-        
+
         # 如果没找到图片的reader
         if image is None:
             self.warn("打开图像失败", f"未找到{path}文件对应的读取程序")
             return
 
         self.grids.detimg = image
+        self.rawSize = image.shape[:2]  # 未压缩的大小
 
         thumbnail, resize = rs.get_thumbnail(image)  # 图像太大就显示缩略图
         if resize:
@@ -1282,6 +1296,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
                     labelIdx,
                     self.controller.image.shape,
                     self.delPolygon,
+                    self.setDirty,
                     color,
                     color,
                     self.opacity,
@@ -1303,20 +1318,23 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
                 for idx in range(0, len(xys), 2):
                     points.append([xys[idx], xys[idx + 1]])
                 labelIdx = ann["category_id"]
-                color = self.controller.labelList.getLabelById(labelIdx).color
-                poly = PolygonAnnotation(
-                    ann["category_id"],
-                    self.controller.image.shape,
-                    self.delPolygon,
-                    color,
-                    color,
-                    self.opacity,
-                    ann["id"],
-                )
-                self.scene.addItem(poly)
-                self.scene.polygon_items.append(poly)
-                for p in points:
-                    poly.addPointLast(QtCore.QPointF(p[0], p[1]))
+                idlab = self.controller.labelList.getLabelById(labelIdx)
+                if idlab is not None:
+                    color = idlab.color
+                    poly = PolygonAnnotation(
+                        ann["category_id"],
+                        self.controller.image.shape,
+                        self.delPolygon,
+                        self.setDirty,
+                        color,
+                        color,
+                        self.opacity,
+                        ann["id"],
+                    )
+                    self.scene.addItem(poly)
+                    self.scene.polygon_items.append(poly)
+                    for p in points:
+                        poly.addPointLast(QtCore.QPointF(p[0], p[1]))
 
     def turnImg(self, delta):
         if self.grids.gridInit is False:
@@ -1337,9 +1355,9 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
             self.geoinfo = None
             self.loadImage(self.imagePaths[self.currIdx])
             self.listFiles.setCurrentRow(self.currIdx)
-            self.setClean()
         else:
             self.turnGrid(delta)
+        self.setDirty(False)
 
     def imageListClicked(self):
         if not self.controller:
@@ -1389,7 +1407,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         )
         if res == QMessageBox.Yes:
             self.finishObject()
-            self.setDirty()
+            self.setDirty(False)
             return True
         return False
 
@@ -1409,7 +1427,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
                     )
                     if res == QMessageBox.Yes:
                         self.exportLabel()
-                self.setClean()
+                self.setDirty(False)
             if close:
                 # 3. 清空多边形标注，删掉图片
                 for p in self.scene.polygon_items[::-1]:
@@ -1441,26 +1459,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
                 )
             else:
                 # 3.3 没有指定标签存到哪，或者是另存为：弹框让用户选
-                formats = [
-                    "*.{}".format(fmt.data().decode())
-                    for fmt in QtGui.QImageReader.supportedImageFormats()
-                ]
-                filters = "Label file (%s)" % " ".join(formats)
-                dlg = QtWidgets.QFileDialog(
-                    self,
-                    self.tr("保存标签文件路径"),
-                    osp.dirname(self.imagePath),
-                    filters,
-                )
-                dlg.setDefaultSuffix("png")
-                dlg.setAcceptMode(QtWidgets.QFileDialog.AcceptSave)
-                dlg.setOption(QtWidgets.QFileDialog.DontConfirmOverwrite, False)
-                dlg.setOption(QtWidgets.QFileDialog.DontUseNativeDialog, False)
-                savePath, _ = dlg.getSaveFileName(
-                    self,
-                    self.tr("选择标签文件保存路径"),
-                    osp.splitext(osp.basename(self.imagePath))[0] + ".png",
-                )
+                savePath = self.chooseSavePath()
         if savePath is None or not osp.exists(osp.dirname(savePath)):
             return
 
@@ -1468,6 +1467,9 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
             self.labelPaths.append(savePath)
 
         mask_output = self.getMask() if lab_input is None else lab_input
+        s = self.rawSize
+        if self.rawSize is not None:
+            mask_output = cv2.resize(mask_output, dsize=self.rawSize[::-1], interpolation=cv2.INTER_NEAREST)
 
         # BUG: 如果用了多边形标注从多边形生成mask
         # 4.1 保存灰度图
@@ -1480,20 +1482,17 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
                 if self.shpSave.isChecked():
                     shpPath = pathHead + ".shp"
                     ## -- test --
-                    if lab_input is not None:  # 用了grid
-                        in_poly = util.get_polygon(lab_input)
-                        if self.currLabelIdx != -1:
-                            # TODO:标签颜色怎么与原来对应
-                            color = self.controller.labelList[self.currLabelIdx].color
-                            self.createPoly(in_poly, color)
-                    polygons = self.scene.polygon_items
-                    geocode_list = []
-                    for polygon in polygons:
-                        l = self.controller.labelList[polygon.labelIndex - 1]
-                        label = {"name": l.name, "points": []}
-                        for p in polygon.scnenePoints:
-                            label["points"].append(p)
-                        geocode_list.append(label)
+                    if self.rawSize != self.image.shape[:2]:  # 需要重新生成（宫格/缩略图）
+                        geocode_list = self.mask2poly(mask_output, False)
+                    else:
+                        polygons = self.scene.polygon_items
+                        geocode_list = []
+                        for polygon in polygons:
+                            l = self.controller.labelList[polygon.labelIndex - 1]
+                            label = {"name": l.name, "points": []}
+                            for p in polygon.scnenePoints:
+                                label["points"].append(p)
+                            geocode_list.append(label)
                     ## ----------
                     print(rs.save_shp(shpPath, geocode_list, self.geoinfo))
             ext = osp.splitext(savePath)[1]
@@ -1504,8 +1503,8 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         if self.save_status["pseudo_color"]:
             pseudoPath, ext = osp.splitext(savePath)
             pseudoPath = pseudoPath + "_pseudo" + ext
-            s = self.controller.imgShape
-            pseudo = np.zeros([s[1], s[0], 3])
+            # s = self.controller.imgShape
+            pseudo = np.zeros([s[0], s[1], 3])
             # mask = self.controller.result_mask
             mask = mask_output
             for lab in self.controller.labelList:
@@ -1516,9 +1515,13 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         if self.save_status["cutout"]:
             mattingPath, ext = osp.splitext(savePath)
             mattingPath = mattingPath + "_cutout" + ext
-            h, w = self.controller.image.shape[:2]
-            img = np.ones([h, w, 4], dtype="uint8") * 255
-            img[:, :, :3] = self.controller.image.copy()
+            # h, w = self.controller.image.shape[:2]
+            # img = np.ones([h, w, 4], dtype="uint8") * 255
+            img = np.ones([s[0], s[1], 4], dtype="uint8") * 255
+            if self.grids.detimg is None:
+                img[:, :, :3] = self.controller.image.copy()
+            else:
+                img[:, :, :3] = self.grids.detimg
             img[mask_output == 0] = self.cutoutBackground
             img = cv2.cvtColor(img, cv2.COLOR_RGBA2BGRA)
             cv2.imencode(ext, img)[1].tofile(mattingPath)
@@ -1548,7 +1551,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         # 4.5 保存coco
         if self.save_status["coco"]:
             if not self.coco.hasImage(osp.basename(self.imagePath)):
-                s = self.controller.imgShape
+                # s = self.controller.imgShape
                 imgId = self.coco.addImage(osp.basename(self.imagePath), s[0], s[1])
             else:
                 imgId = self.coco.imgNameToId[osp.basename(self.imagePath)]
@@ -1574,8 +1577,31 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
             cocoPath = osp.join(saveDir, "annotations.json")
             open(cocoPath, "w", encoding="utf-8").write(json.dumps(self.coco.dataset))
 
-        self.setClean()
+        self.setDirty(False)
         self.statusbar.showMessage(self.tr("标签成功保存至") + " " + savePath, 5000)
+
+    def chooseSavePath(self):
+        formats = [
+                    "*.{}".format(fmt.data().decode())
+                    for fmt in QtGui.QImageReader.supportedImageFormats()
+                ]
+        filters = "Label file (%s)" % " ".join(formats)
+        dlg = QtWidgets.QFileDialog(
+            self,
+            self.tr("保存标签文件路径"),
+            osp.dirname(self.imagePath),
+            filters,
+        )
+        dlg.setDefaultSuffix("png")
+        dlg.setAcceptMode(QtWidgets.QFileDialog.AcceptSave)
+        dlg.setOption(QtWidgets.QFileDialog.DontConfirmOverwrite, False)
+        dlg.setOption(QtWidgets.QFileDialog.DontUseNativeDialog, False)
+        savePath, _ = dlg.getSaveFileName(
+            self,
+            self.tr("选择标签文件保存路径"),
+            osp.splitext(osp.basename(self.imagePath))[0] + ".png",
+        )
+        return savePath
 
     def eximgsInit(self):
         self.gridTable.setRowCount(0)
@@ -1583,11 +1609,8 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         # 清零
         self.grids.clear()
 
-    def setClean(self):
-        self.isDirty = False
-
-    def setDirty(self):
-        self.isDirty = True
+    def setDirty(self, isDirty):
+        self.isDirty = isDirty
 
     def changeOutputDir(self, outputDir=None):
         # 1. 弹框选择标签路径
@@ -1666,14 +1689,14 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         self.controller.undoClick()
         self.updateImage()
         if not self.controller.is_incomplete_mask:
-            self.setClean()
+            self.setDirty(False)
 
     def clearAll(self):
         if not self.controller or self.controller.image is None:
             return
         self.controller.resetLastObject()
         self.updateImage()
-        self.setClean()
+        self.setDirty(False)
 
     def redoClick(self):
         if self.image is None:
@@ -1858,6 +1881,12 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
             self.rsRGB[i] = self.bandCombos[i].currentIndex()
         image = rs.selec_band(self.grids.rawimg, self.rsRGB)
         self.test_show(image)
+        if self.grids.gridInit:
+            currIdx = self.grids.currIdx
+            # print("currIdx:", currIdx)
+            self.initGrid()
+            if currIdx:
+                self.changeGrid(currIdx[0], currIdx[1])
 
     # def miSlideSet(self):
     #     image = rs.slice_img(self.grids.rawimg, self.midx)
@@ -1960,22 +1989,52 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
             self.gridTable.item(row, col).setBackground(self.GRID_COLOR["current"])
         else:
             self.gridTable.item(row, col).setBackground(self.GRID_COLOR["overlying"])
-            curr_polygon = util.get_polygon(mask.astype(np.uint8) * 255)
-            if self.currLabelIdx != -1:
-                # TODO:标签颜色怎么与原来对应
-                color = self.controller.labelList[self.currLabelIdx].color
-                self.createPoly(curr_polygon, color)
-                for p in self.scene.polygon_items:
-                    p.setAnning(isAnning=False)
+            self.mask2poly(mask)
         # 刷新
         self.updateImage(True)
+
+    def mask2poly(self, mask, show=True):
+        labs = np.unique(mask)[1:]
+        colors = []
+        for i in range(len(labs)):
+            idx = int(labs[i]) - 1
+            if idx < len(self.controller.labelList):
+                c = self.controller.labelList[idx].color
+            else:
+                if self.currLabelIdx != -1:
+                    c = self.controller.labelList[self.currLabelIdx].color
+                else:
+                    c = None
+            colors.append(c)
+        geocode_list = []
+        for idx, (l, c) in enumerate(zip(labs, colors)):
+            if c is not None:
+                curr_polygon = util.get_polygon((mask == l).astype(np.uint8) * 255)
+                if show == True:
+                    self.createPoly(curr_polygon, c)
+                    for p in self.scene.polygon_items:
+                        p.setAnning(isAnning=False)
+                else:
+                    for g in curr_polygon:
+                        points = [gi.tolist() for gi in g]
+                        geocode_list.append({
+                            "name": self.controller.labelList[idx].name,
+                            "points": points
+                        })
+        return geocode_list
 
     def saveGrid(self):
         row, col = self.grids.currIdx
         if self.grids.currIdx is None:
             return
         self.gridTable.item(row, col).setBackground(self.GRID_COLOR["overlying"])
-        self.grids.masksGrid[row][col] = np.array(self.getMask())
+        if len(np.unique(self.grids.masksGrid[row][col])) == 1:
+            self.grids.masksGrid[row][col] = np.array(self.getMask())
+        # print(
+        #     "[{0}-{1}] mask unique: {2}".format(
+        #         row, col, np.unique(self.grids.masksGrid[row][col])
+        #     )
+        # )
 
     def turnGrid(self, delta):
         # 切换下一个宫格
@@ -1996,7 +2055,19 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
     def saveGridLabel(self):
         if self.grids.gridInit is False or self.grids.detimg is None:
             return
+        if self.outputDir is not None:
+            name, ext = osp.splitext(osp.basename(self.imagePath))
+            if not self.origExt:
+                ext = ".png"
+            save_path = osp.join(
+                self.outputDir,
+                name + ext)
+        else:
+            save_path = self.chooseSavePath()
+            if save_path is "":
+                return
         try:
+            self.finishObject()
             self.saveGrid()  # 先保存当前
         except:
             pass
@@ -2008,13 +2079,21 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         self.image = rs.get_thumbnail(self.grids.detimg)[0]
         self.controller.image = self.grids.detimg
         self.controller._result_mask = mask
-        self.exportLabel(lab_input=mask)
-        if self.currLabelIdx == -1:
-            return
-        # TODO：标签颜色怎么与原来对应（仍需处理）
+        self.exportLabel(savePath=save_path, lab_input=mask)
         # 刷新
+        grid_row_count = self.gridTable.rowCount()
+        grid_col_count = self.gridTable.colorCount()
+        for r in range(grid_row_count):
+            for c in range(grid_col_count):
+                try:
+                    self.gridTable.item(r, c).setBackground(self.GRID_COLOR["idle"])
+                except:
+                    pass
         self.grids.currIdx = None
+        self.controller.setImage(self.image)
+        # self.delAllPolygon()  # 清理
         self.updateImage(True)
+        self.setDirty(False)
 
     @property
     def opacity(self):
@@ -2039,7 +2118,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
 
     def warn(self, title, text, buttons=QMessageBox.Yes):
         msg = QMessageBox()
-        msg.setIcon(QMessageBox.Warning)
+        # msg.setIcon(QMessageBox.Warning)
         msg.setWindowTitle(title)
         msg.setText(text)
         msg.setStandardButtons(buttons)
@@ -2072,6 +2151,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         #     self.exportLabelList(osp.join(self.outputDir, "autosave_label.txt"))
 
     def closeEvent(self, event):
+        self.saveImage()
         self.saveLayout()
         QCoreApplication.quit()
         # sys.exit(0)
@@ -2098,20 +2178,26 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
     def wwChanged(self):
         if not self.controller or self.image is None:
             return
-        self.textWw.selectAll()
-        self.controller.image = med.windowlize(
-            self.controller.rawImage, self.ww, self.wc
-        )
-        self.updateImage()
+        try:  # 那种jpg什么格式的医疗图像调整窗宽等会造成崩溃
+            self.textWw.selectAll()
+            self.controller.image = med.windowlize(
+                self.grids.rawimg, self.ww, self.wc
+            )
+            self.updateImage()
+        except:
+            pass
 
     def wcChanged(self):
         if not self.controller or self.image is None:
             return
-        self.textWc.selectAll()
-        self.controller.image = med.windowlize(
-            self.controller.rawImage, self.ww, self.wc
-        )
-        self.updateImage()
+        try:
+            self.textWc.selectAll()
+            self.controller.image = med.windowlize(
+                self.grids.rawimg, self.ww, self.wc
+            )
+            self.updateImage()
+        except:
+            pass
 
     @property
     def ww(self):

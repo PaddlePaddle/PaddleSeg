@@ -43,18 +43,18 @@ conda install gdal
 
 当使用EISeg打开GTiff图像时，会获取当前波段数，可通过波段设置的下拉列表进行设置。默认为[b1, b1, b1]。下例展示的是天宫一号多光谱数据设置真彩色：
 
-![](https://user-images.githubusercontent.com/35907364/140917802-6b2a15f2-c8ce-4c8e-b89c-41ec9039f59c.gif)
+![yd6fa-hqvvb](https://user-images.githubusercontent.com/71769312/141137443-a327309e-0987-4b2a-88fd-f698e08d3294.gif)
 
 ### 2.2 大幅数据切片
 
 目前EISeg对于大幅遥感图像（目前最大尝试为900M，17000*10000大小三通道图像），支持切片预测后合并，其中切片的重叠区域overlap为24。
 
-![overlap](https://user-images.githubusercontent.com/35907364/140916007-86076366-62ce-49ba-b1d9-18239baafc90.png)
+![140916007-86076366-62ce-49ba-b1d9-18239baafc90](https://user-images.githubusercontent.com/71769312/141139282-854dcb4f-bcab-4ccc-aa3c-577cc52ca385.png)
 
 
 下面是一副来自谷歌地球的重庆部分地区的切片演示：
 
-![](https://user-images.githubusercontent.com/35907364/140921859-d927dea5-1fc4-4f6a-b467-3c139dab697e.gif)
+![7kevx-q90hv](https://user-images.githubusercontent.com/71769312/141137447-60b305b1-a8ef-4b06-a45e-6db0b1ef2516.gif)
 
 ### 2.3 地理数据保存
 
@@ -63,7 +63,7 @@ conda install gdal
 - GTiff：已成为GIS和卫星遥感应用的行业图像标准文件。
 - ESRI Shapefile：是最常见的的矢量数据格式，Shapefile文件是美国环境系统研究所（ESRI）所研制的GIS文件系统格式文件，是工业标准的矢量数据文件。 所有的商业和开源GIS软件都支持。无处不在的它已成为行业标准。
 
-![](https://user-images.githubusercontent.com/35907364/140917817-0626a53b-970e-4a7f-a34e-f2bc38c8d422.gif)
+![82jlu-no59o](https://user-images.githubusercontent.com/71769312/141137726-76457454-5e9c-4ad0-85d6-d03f658ee63c.gif)
 
 ### 2.4 遥感标注模型选择
 

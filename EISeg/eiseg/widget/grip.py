@@ -17,13 +17,15 @@ from qtpy import QtWidgets, QtGui, QtCore
 
 # BUG: item 不能移出图片的范围，需要限制起来
 class GripItem(QtWidgets.QGraphicsPathItem):
-    fixedSize = 6
+    maxSize = 1.5
+    minSize = 0.8
 
     def __init__(self, annotation_item, index, color):
         super(GripItem, self).__init__()
         self.m_annotation_item = annotation_item
         self.hovering = False
         self.m_index = index
+        self.anning = True
         color.setAlphaF(1)
         self.color = color
 
@@ -44,12 +46,19 @@ class GripItem(QtWidgets.QGraphicsPathItem):
         self.setPen(QtGui.QPen(color, 1))
         self.color = color
 
+    def setAnning(self, anning=True):
+        self.anning = anning
+        self.setEnabled(anning)
+
     @property
     def size(self):
         if not self.scene():
-            return 2
+            return GripItem.minSize
         else:
-            return GripItem.fixedSize / self.scene().scale
+            maxi, mini = GripItem.maxSize, GripItem.minSize
+            exp = 1 - mini / maxi
+            size = maxi * (1 - exp ** self.scene().scale)
+            return size
 
     def updateSize(self, size=2):
         size = self.size
@@ -80,12 +89,15 @@ class GripItem(QtWidgets.QGraphicsPathItem):
     def itemChange(self, change, value):
         if change == QtWidgets.QGraphicsItem.ItemPositionChange and self.isEnabled():
             self.m_annotation_item.movePoint(self.m_index, value)
+            self.m_annotation_item.setDirty(True)
         return super(GripItem, self).itemChange(change, value)
 
     def shape(self):
-        s = super(GripItem, self).shape().boundingRect().x() * 3
         path = QtGui.QPainterPath()
-        path.addRect(QtCore.QRectF(-s, -s, 2 * s, 2 * s))
+        p = self.mapFromScene(self.pos())
+        x, y = p.x(), p.y()
+        s = self.size
+        path.addEllipse(p, s + GripItem.minSize, s + GripItem.minSize)
         return path
 
     def mouseDoubleClickEvent(self, ev):

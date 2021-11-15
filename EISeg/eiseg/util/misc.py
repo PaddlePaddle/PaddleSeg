@@ -2,6 +2,7 @@ import paddle
 import numpy as np
 import pickle
 
+
 def get_dims_with_exclusion(dim, exclude=None):
     dims = list(range(dim))
     if exclude is not None:
@@ -10,14 +11,16 @@ def get_dims_with_exclusion(dim, exclude=None):
     return dims
 
 
-def save_checkpoint(net, checkpoints_path, epoch=None, prefix='', verbose=True, multi_gpu=False):
+def save_checkpoint(
+    net, checkpoints_path, epoch=None, prefix="", verbose=True, multi_gpu=False
+):
     if epoch is None:
-        checkpoint_name = 'last_checkpoint.pdparams'
+        checkpoint_name = "last_checkpoint.pdparams"
     else:
-        checkpoint_name = f'{epoch:03d}.pdparams'
+        checkpoint_name = f"{epoch:03d}.pdparams"
 
     if prefix:
-        checkpoint_name = f'{prefix}_{checkpoint_name}'
+        checkpoint_name = f"{prefix}_{checkpoint_name}"
 
     if not checkpoints_path.exists():
         checkpoints_path.mkdir(parents=True)
@@ -25,8 +28,8 @@ def save_checkpoint(net, checkpoints_path, epoch=None, prefix='', verbose=True, 
     checkpoint_path = checkpoints_path / checkpoint_name
 
     net = net.module if multi_gpu else net
-   
-    #model_state = {'state_dict': net.state_dict(),'config': net.__dict__}
+
+    # model_state = {'state_dict': net.state_dict(),'config': net.__dict__}
     paddle.save(net.state_dict(), checkpoint_path)
 
 
@@ -58,8 +61,12 @@ def expand_bbox(bbox, expand_ratio, min_crop_size=None):
 
 
 def clamp_bbox(bbox, rmin, rmax, cmin, cmax):
-    return (max(rmin, bbox[0]), min(rmax, bbox[1]),
-            max(cmin, bbox[2]), min(cmax, bbox[3]))
+    return (
+        max(rmin, bbox[0]),
+        min(rmax, bbox[1]),
+        max(cmin, bbox[2]),
+        min(cmax, bbox[3]),
+    )
 
 
 def get_bbox_iou(b1, b2):
