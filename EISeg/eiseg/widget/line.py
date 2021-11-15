@@ -111,8 +111,8 @@ class LineItem(QtWidgets.QGraphicsLineItem):
                 dy,
                 norm,
             )
-        dx /= norm
-        dy /= norm
+        dx /= (norm + 1e-16)
+        dy /= (norm + 1e-16)
         if debug:
             print("dir", dx, dy)
         p = QtCore.QPointF(dx * w, dy * w)

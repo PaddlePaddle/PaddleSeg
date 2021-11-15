@@ -189,6 +189,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         # 遥感参数
         self.rsRGB = [0, 0, 0]  # 遥感RGB索引
         self.geoinfo = None
+        self.rawSize = None
 
         # 医疗参数
         self.midx = 0  # 医疗切片索引
@@ -796,7 +797,6 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
             self.statusbar.showMessage(
                 osp.basename(param_path) + self.tr(" 模型加载成功"), 10000
             )
-            print(res)
             return True
         else:
             self.warnException(res)
@@ -1235,10 +1235,10 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
             return
 
         self.grids.detimg = image
+        self.rawSize = image.shape[:2]  # 未压缩的大小
 
         thumbnail, resize = rs.get_thumbnail(image)  # 图像太大就显示缩略图
         if resize:
-            # , w = image.shape  # 未压缩的大小  # TODO: 保存拉伸缩略图
             self.warn(self.tr("图像过大"), self.tr("图像过大，已压缩显示，若想高品质标注请使用宫格标注功能！"))
             # 打开宫格功能
             if self.dockWidgets["grid"].isVisible() is False:
@@ -1467,6 +1467,9 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
             self.labelPaths.append(savePath)
 
         mask_output = self.getMask() if lab_input is None else lab_input
+        s = self.rawSize
+        if self.rawSize is not None:
+            mask_output = cv2.resize(mask_output, dsize=self.rawSize[::-1], interpolation=cv2.INTER_NEAREST)
 
         # BUG: 如果用了多边形标注从多边形生成mask
         # 4.1 保存灰度图
@@ -1479,16 +1482,17 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
                 if self.shpSave.isChecked():
                     shpPath = pathHead + ".shp"
                     ## -- test --
-                    if lab_input is not None:  # 用了grid
-                        self.mask2poly(lab_input)
-                    polygons = self.scene.polygon_items
-                    geocode_list = []
-                    for polygon in polygons:
-                        l = self.controller.labelList[polygon.labelIndex - 1]
-                        label = {"name": l.name, "points": []}
-                        for p in polygon.scnenePoints:
-                            label["points"].append(p)
-                        geocode_list.append(label)
+                    if self.rawSize != self.image.shape[:2]:  # 需要重新生成（宫格/缩略图）
+                        geocode_list = self.mask2poly(mask_output, False)
+                    else:
+                        polygons = self.scene.polygon_items
+                        geocode_list = []
+                        for polygon in polygons:
+                            l = self.controller.labelList[polygon.labelIndex - 1]
+                            label = {"name": l.name, "points": []}
+                            for p in polygon.scnenePoints:
+                                label["points"].append(p)
+                            geocode_list.append(label)
                     ## ----------
                     print(rs.save_shp(shpPath, geocode_list, self.geoinfo))
             ext = osp.splitext(savePath)[1]
@@ -1499,8 +1503,8 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         if self.save_status["pseudo_color"]:
             pseudoPath, ext = osp.splitext(savePath)
             pseudoPath = pseudoPath + "_pseudo" + ext
-            s = self.controller.imgShape
-            pseudo = np.zeros([s[1], s[0], 3])
+            # s = self.controller.imgShape
+            pseudo = np.zeros([s[0], s[1], 3])
             # mask = self.controller.result_mask
             mask = mask_output
             for lab in self.controller.labelList:
@@ -1511,9 +1515,13 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         if self.save_status["cutout"]:
             mattingPath, ext = osp.splitext(savePath)
             mattingPath = mattingPath + "_cutout" + ext
-            h, w = self.controller.image.shape[:2]
-            img = np.ones([h, w, 4], dtype="uint8") * 255
-            img[:, :, :3] = self.controller.image.copy()
+            # h, w = self.controller.image.shape[:2]
+            # img = np.ones([h, w, 4], dtype="uint8") * 255
+            img = np.ones([s[0], s[1], 4], dtype="uint8") * 255
+            if self.grids.detimg is None:
+                img[:, :, :3] = self.controller.image.copy()
+            else:
+                img[:, :, :3] = self.grids.detimg
             img[mask_output == 0] = self.cutoutBackground
             img = cv2.cvtColor(img, cv2.COLOR_RGBA2BGRA)
             cv2.imencode(ext, img)[1].tofile(mattingPath)
@@ -1543,7 +1551,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         # 4.5 保存coco
         if self.save_status["coco"]:
             if not self.coco.hasImage(osp.basename(self.imagePath)):
-                s = self.controller.imgShape
+                # s = self.controller.imgShape
                 imgId = self.coco.addImage(osp.basename(self.imagePath), s[0], s[1])
             else:
                 imgId = self.coco.imgNameToId[osp.basename(self.imagePath)]
@@ -1985,7 +1993,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         # 刷新
         self.updateImage(True)
 
-    def mask2poly(self, mask):
+    def mask2poly(self, mask, show=True):
         labs = np.unique(mask)[1:]
         colors = []
         for i in range(len(labs)):
@@ -1998,12 +2006,22 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
                 else:
                     c = None
             colors.append(c)
-        for l, c in zip(labs, colors):
+        geocode_list = []
+        for idx, (l, c) in enumerate(zip(labs, colors)):
             if c is not None:
                 curr_polygon = util.get_polygon((mask == l).astype(np.uint8) * 255)
-                self.createPoly(curr_polygon, c)
-                for p in self.scene.polygon_items:
-                    p.setAnning(isAnning=False)
+                if show == True:
+                    self.createPoly(curr_polygon, c)
+                    for p in self.scene.polygon_items:
+                        p.setAnning(isAnning=False)
+                else:
+                    for g in curr_polygon:
+                        points = [gi.tolist() for gi in g]
+                        geocode_list.append({
+                            "name": self.controller.labelList[idx].name,
+                            "points": points
+                        })
+        return geocode_list
 
     def saveGrid(self):
         row, col = self.grids.currIdx
@@ -2073,7 +2091,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
                     pass
         self.grids.currIdx = None
         self.controller.setImage(self.image)
-        self.delAllPolygon()  # 清理
+        # self.delAllPolygon()  # 清理
         self.updateImage(True)
         self.setDirty(False)
 
@@ -2163,7 +2181,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         try:  # 那种jpg什么格式的医疗图像调整窗宽等会造成崩溃
             self.textWw.selectAll()
             self.controller.image = med.windowlize(
-                self.controller.rawImage, self.ww, self.wc
+                self.grids.rawimg, self.ww, self.wc
             )
             self.updateImage()
         except:
@@ -2175,7 +2193,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         try:
             self.textWc.selectAll()
             self.controller.image = med.windowlize(
-                self.controller.rawImage, self.ww, self.wc
+                self.grids.rawimg, self.ww, self.wc
             )
             self.updateImage()
         except:
