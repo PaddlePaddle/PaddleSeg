@@ -887,6 +887,7 @@ class RandomRotation:
 
     Args:
         max_rotation (float, optional): The maximum rotation degree. Default: 15.
+        holding_size (bool, optional): Whether or not to holding image size. Default: False.
         im_padding_value (list, optional): The padding value of raw image.
             Default: [127.5, 127.5, 127.5].
         label_padding_value (int, optional): The padding value of annotation image. Default: 255.
@@ -894,9 +895,11 @@ class RandomRotation:
 
     def __init__(self,
                  max_rotation=15,
+                 holding_size=False,
                  im_padding_value=(127.5, 127.5, 127.5),
                  label_padding_value=255):
         self.max_rotation = max_rotation
+        self.holding_size = holding_size
         self.im_padding_value = im_padding_value
         self.label_padding_value = label_padding_value
 
@@ -916,16 +919,18 @@ class RandomRotation:
                                             self.max_rotation)
             pc = (w // 2, h // 2)
             r = cv2.getRotationMatrix2D(pc, do_rotation, 1.0)
-            cos = np.abs(r[0, 0])
-            sin = np.abs(r[0, 1])
+            if self.holding_size:
+                dsize = (w, h)
+            else:
+                cos = np.abs(r[0, 0])
+                sin = np.abs(r[0, 1])
 
-            nw = int((h * sin) + (w * cos))
-            nh = int((h * cos) + (w * sin))
-
-            (cx, cy) = pc
-            r[0, 2] += (nw / 2) - cx
-            r[1, 2] += (nh / 2) - cy
-            dsize = (nw, nh)
+                nw = int((h * sin) + (w * cos))
+                nh = int((h * cos) + (w * sin))
+                (cx, cy) = pc
+                r[0, 2] += (nw / 2) - cx
+                r[1, 2] += (nh / 2) - cy
+                dsize = (nw, nh)
             im = cv2.warpAffine(
                 im,
                 r,
@@ -1202,4 +1207,25 @@ class RandomAffine:
         if label is None:
             return (im, )
         else:
+            return (im, label)
+
+
+@manager.TRANSFORMS.add_component
+class CutHeight:
+    """
+    change an image height with cut height.
+
+    Args:
+        cut_height (int, optional): The cut height from image. Default: 0.
+    """
+
+    def __init__(self, cut_height=0):
+        self.cut_height = cut_height
+
+    def __call__(self, im, label=None):
+        im = im[self.cut_height:, :, :]
+        if label is None:
+            return (im, )
+        else:
+            label = label[self.cut_height:, :]
             return (im, label)
