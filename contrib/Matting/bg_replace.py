@@ -1,4 +1,4 @@
-# Copyright (c) 2021 PaddlePaddle Authors. All Rights Reserved.
+# Copyright (c) 2021 PaddlePaddle Authors. All Rights Reserve.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,20 +15,28 @@
 import argparse
 import os
 
+import cv2
+import numpy as np
+import paddle
 from paddleseg.cvlibs import manager, Config
 from paddleseg.utils import get_sys_env, logger
 
 from core import predict
-from model import *
+import model
 from dataset import MattingDataset
 from utils import get_image_list
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description='Model training')
+    parser = argparse.ArgumentParser(
+        description='PP-HumanSeg inference for video')
     parser.add_argument(
-        "--config", dest="cfg", help="The config file.", default=None, type=str)
-
+        "--config",
+        dest="cfg",
+        help="The config file.",
+        default=None,
+        type=str,
+        required=True)
     parser.add_argument(
         '--model_path',
         dest='model_path',
@@ -38,24 +46,28 @@ def parse_args():
     parser.add_argument(
         '--image_path',
         dest='image_path',
-        help=
-        'The path of image, it can be a file or a directory including images',
+        help='Image including human',
         type=str,
         default=None)
     parser.add_argument(
         '--trimap_path',
         dest='trimap_path',
+        help='The path of trimap',
+        type=str,
+        default=None)
+    parser.add_argument(
+        '--bg_path',
+        dest='bg_path',
         help=
-        'The path of trimap, it can be a file or a directory including images. '
-        'The image should be the same as image when it is a directory.',
+        'Background image path for replacing. If not specified, a white background is used',
         type=str,
         default=None)
     parser.add_argument(
         '--save_dir',
         dest='save_dir',
-        help='The directory for saving the model snapshot',
+        help='The directory for saving the inference results',
         type=str,
-        default='./output/results')
+        default='./output')
 
     return parser.parse_args()
 
@@ -64,7 +76,6 @@ def main(args):
     env_info = get_sys_env()
     place = 'gpu' if env_info['Paddle compiled with cuda'] and env_info[
         'GPUs used'] else 'cpu'
-
     paddle.set_device(place)
     if not args.cfg:
         raise RuntimeError('No configuration file specified.')
@@ -88,23 +99,38 @@ def main(args):
     model = cfg.model
     transforms = val_dataset.transforms
 
-    image_list, image_dir = get_image_list(args.image_path)
-    if args.trimap_path is None:
-        trimap_list = None
-    else:
-        trimap_list, _ = get_image_list(args.trimap_path)
-    logger.info('Number of predict images = {}'.format(len(image_list)))
-
-    predict(
+    alpha = predict(
         model,
         model_path=args.model_path,
         transforms=transforms,
-        image_list=image_list,
-        image_dir=image_dir,
-        trimap_list=trimap_list,
+        image_list=[args.image_path],
+        trimap_list=[args.trimap_path],
         save_dir=args.save_dir)
 
+    img_ori = cv2.imread(args.image_path)
+    bg = get_bg(args.bg_path, img_ori.shape)
+    alpha = alpha / 255
+    alpha = alpha[:, :, np.newaxis]
+    com = alpha * img_ori + (1 - alpha) * bg
+    com = com.astype('uint8')
+    com_save_path = os.path.join(args.save_dir,
+                                 os.path.basename(args.image_path))
+    cv2.imwrite(com_save_path, com)
 
-if __name__ == '__main__':
+
+def get_bg(bg_path, img_shape):
+    if bg_path is None:
+        bg = np.zeros(img_shape)
+        bg[:, :, 1] = 255
+
+    elif not os.path.exists(bg_path):
+        raise Exception('The --bg_path is not existed: {}'.format(bg_path))
+    else:
+        bg = cv2.imread(bg_path)
+        bg = cv2.resize(bg, (img_shape[1], img_shape[0]))
+    return bg
+
+
+if __name__ == "__main__":
     args = parse_args()
     main(args)
