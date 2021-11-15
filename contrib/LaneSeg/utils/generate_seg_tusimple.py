@@ -11,8 +11,9 @@ TRAIN_SET = [
 ]
 TEST_SET = ['test_label.json']
 
-H, W = 720, 1280
-SEG_WIDTH = 30
+Image_Height, Image_Width = 720, 1280
+# lane width (pixel)
+LANE_SEG_WIDTH = 30
 
 
 def cleanSortLanes(label):
@@ -44,14 +45,14 @@ def cleanSortLanes(label):
     for i in range(6):
         lanes.append([] if idx[i] is None else _lanes[idx[i]])
 
-    seg_img = np.zeros([H, W], np.uint8)
+    seg_img = np.zeros([Image_Height, Image_Width], np.uint8)
 
     for i in range(len(lanes)):
         coords = lanes[i]
         if len(coords) < 4:
             continue
         for j in range(len(coords) - 1):
-            cv2.line(seg_img, coords[j], coords[j + 1], i + 1, SEG_WIDTH // 2)
+            cv2.line(seg_img, coords[j], coords[j + 1], i + 1, LANE_SEG_WIDTH // 2)
 
     return seg_img
 
