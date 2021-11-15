@@ -21,7 +21,7 @@ import paddle
 
 from paddleseg import utils
 from . import infer
-from utils import tusimple
+from utils import tusimple_processor
 from paddleseg.utils import logger, progbar, visualize
 
 
@@ -86,7 +86,7 @@ def predict(model,
     pred_saved_dir = os.path.join(save_dir, 'pseudo_color_prediction')
     transforms = val_dataset.transforms
     cut_height = val_dataset.cut_height
-    postprocessor = tusimple.Tusimple(
+    postprocessor = tusimple_processor.TusimpleProcessor(
         num_classes=val_dataset.num_classes,
         cut_height=cut_height,
         save_dir=save_dir)

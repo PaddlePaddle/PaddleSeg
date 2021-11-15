@@ -31,7 +31,7 @@ from paddleseg.cvlibs import manager
 from paddleseg.utils import get_sys_env, logger, get_image_list
 
 sys.path.append('..')
-from utils import tusimple
+from utils import tusimple_processor
 import paddleseg.transforms.transforms as T
 
 
@@ -113,13 +113,15 @@ class Predictor:
         args = self.args
         if not os.path.exists(args.save_dir):
             os.makedirs(args.save_dir)
-
-        postprocessor = tusimple.Tusimple(num_classes=7, cut_height=160)
+        cut_height = 160
+        num_classes = 7
+        postprocessor = tusimple_processor.TusimpleProcessor(
+            num_classes=num_classes, cut_height=cut_height)
 
         for i, im_path in enumerate(imgs):
             im = cv2.imread(im_path)
             gt_image = im
-            im = im[160:, :, :]
+            im = im[cut_height:, :, :]
             im = im.astype('float32')
             im, _ = self.cfg.transforms(im)
             im = im[np.newaxis, ...]

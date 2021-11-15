@@ -21,7 +21,7 @@ import paddle.nn.functional as F
 
 from paddleseg.utils import metrics, TimeAverager, calculate_eta, logger, progbar
 from . import infer
-from utils import tusimple
+from utils import tusimple_processor
 
 np.set_printoptions(suppress=True)
 
@@ -76,7 +76,7 @@ def evaluate(model,
         return_list=True,
     )
 
-    postprocessor = tusimple.Tusimple(
+    postprocessor = tusimple_processor.TusimpleProcessor(
         num_classes=eval_dataset.num_classes,
         cut_height=eval_dataset.cut_height,
         test_gt_json=eval_dataset.test_gt_json,
@@ -101,8 +101,7 @@ def evaluate(model,
             ori_shape = None
             if aug_eval:
                 raise RuntimeError(
-                    'aug_eval mode this not to valiation, so far not support !'
-                )
+                    'aug_eval mode this not to valiation, so far not support !')
 
             if aug_eval:
                 pred = infer.aug_inference(

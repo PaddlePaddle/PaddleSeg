@@ -10,6 +10,7 @@ from .lane import LaneEval
 # https://github.com/ZJULearning/resa/blob/main/runner/evaluator/tusimple/tusimple.py
 # https://github.com/ZJULearning/resa/blob/main/datasets/tusimple.py
 
+
 def split_path(path):
     """split path tree into list"""
     folders = []
@@ -30,7 +31,7 @@ def mkdir(path):
         os.makedirs(sub_dir)
 
 
-class Tusimple:
+class TusimpleProcessor:
     def __init__(self,
                  num_classes=2,
                  cut_height=0,
@@ -38,7 +39,7 @@ class Tusimple:
                  is_view=False,
                  test_gt_json=None,
                  save_dir='output/eval'):
-        super(Tusimple, self).__init__()
+        super(TusimpleProcessor, self).__init__()
         self.num_classes = num_classes
         self.cut_height = cut_height
         self.dump_to_json = []
