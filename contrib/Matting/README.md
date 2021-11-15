@@ -50,11 +50,13 @@ cd contrib/Matting
 
 MODNet performance on [PPM-100](https://github.com/ZHKKKe/PPM).
 
-| Backbone | SAD | MSE | Link |
-|-|-|-|-|
-|MobileNetV2|112.73|0.0098|[model](https://paddleseg.bj.bcebos.com/matting/models/modnet-mobilenetv2.pdparams)|
-|ResNet50_vd|104.14|0.0090|[model](https://paddleseg.bj.bcebos.com/matting/models/modnet-resnet50_vd.pdparams)|
-|HRNet_W18|77.96|0.0054|[model](https://paddleseg.bj.bcebos.com/matting/models/modnet-hrnet_w18.pdparams)|
+| Backbone | SAD | MSE | Params(M) | FLOPs(G) | FPS | Link |
+|-|-|-|-|-|-|-|
+|MobileNetV2|112.73|0.0098|6.5|15.7|67.5|[model](https://paddleseg.bj.bcebos.com/matting/models/modnet-mobilenetv2.pdparams)|
+|ResNet50_vd|104.14|0.0090|92.2|151.6|28.6|[model](https://paddleseg.bj.bcebos.com/matting/models/modnet-resnet50_vd.pdparams)|
+|HRNet_W18|77.96|0.0054|10.2|28.5|10.9|[model](https://paddleseg.bj.bcebos.com/matting/models/modnet-hrnet_w18.pdparams)|
+
+Note: The model input size is (512, 512) and the GPU is Tesla V100 32G.
 
 ## Dataset preparation
 
