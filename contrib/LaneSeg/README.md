@@ -1,6 +1,8 @@
 # LaneSeg 模型训练教程
 
-* 本教程旨在介绍如何通过使用PaddleSeg进行车道线检测
+* 车道线检测是属于自动驾驶算法范畴的一部分，可以用来辅助进行车辆定位和进行决策，本教程旨在介绍如何通过使用PaddleSeg进行车道线检测，本项目主要参考了resa[页面](https://github.com/ZJULearning/resa)
+
+
 
 * 在阅读本教程前，请确保您已经了解过PaddleSeg的[快速入门](../../README.md#快速入门)和[基础功能](../../README.md#基础功能)等章节，以便对PaddleSeg有一定的了解
 
@@ -56,88 +58,7 @@ python utils/generate_seg_tusimple.py.py --root path/to/your/unzipped/file
             |-- test_label.json
 ```
 
-## 二. 准备配置
-
-接着我们需要确定相关配置，从本教程的角度，配置分为三部分：
-
-* 数据集
-  * 数据集类型
-  * 数据集根目录
-  * 数据增强
-* 损失函数
-  * 损失函数类型
-  * 损失函数系数
-* 其他
-  * 学习率
-  * Batch大小
-  * ...
-
-数据集，包括训练数据集和验证数据集，数据集的配置和数据路径有关，在本教程中，数据存放在`data/tusimple`中
-
-其他配置则根据数据集和机器环境的情况进行调节，最终我们保存一个如下内容的yaml配置文件，存放路径为**configs/bisenet_tusimple_640x368_300k.yml**
-
-```yaml
-batch_size: 4
-iters: 320000
-
-train_dataset:
-  type: Tusimple
-  dataset_root: ./data/tusimple
-  cut_height: 160
-  transforms:
-    - type: CutHeight
-      cut_height: 160
-    - type: LaneRandomRotation
-    - type: RandomHorizontalFlip
-    - type: Resize
-      target_size: [640, 368]
-    - type: RandomDistort
-      brightness_range: 0.25
-      brightness_prob: 1
-      contrast_range: 0.25
-      contrast_prob: 1
-      saturation_range: 0.25
-      saturation_prob: 1
-      hue_range: 63
-      hue_prob: 1
-    - type: Normalize
-  mode: train
-
-val_dataset:
-  type: Tusimple
-  dataset_root: ./data/tusimple
-  cut_height: 160
-  transforms:
-    - type: CutHeight
-      cut_height: 160
-    - type: Resize
-      target_size: [640, 368]
-    - type: Normalize
-  mode: val
-
-optimizer:
-  type: sgd
-  momentum: 0.9
-  weight_decay: 4.0e-5
-
-lr_scheduler:
-  type: PolynomialDecay
-  learning_rate: 0.01
-  end_lr: 0
-  power: 0.9
-
-loss:
-  types:
-    - type: LaneCrossEntropyLoss
-  coef: [1]
-
-model:
-  type: BiSeNetLane
-  pretrained: Null
-```
-
-
-## 三. 开始训练
+## 二. 开始训练
 
 使用下述命令启动训练
 
@@ -177,7 +98,7 @@ python train.py \
        --save_dir output
 ```
 
-## 四. 进行评估
+## 三. 进行评估
 
 模型训练完成，使用下述命令启动评估
 
@@ -187,7 +108,7 @@ python val.py \
        --model_path output/best_model/model.pdparams
 ```
 
-## 五. 可视化
+## 四. 可视化
 
 ```shell
 python predict.py \
@@ -195,4 +116,26 @@ python predict.py \
        --model_path output/best_model/model.pdparams \
        --image_path data/test_images/0.jpg \
        --save_dir output/result
+```
+
+## 五. 模型导出
+
+模型的部署，完成，使用下述命令启动评估
+
+```shell
+python export.py \
+       --config configs/quick_start/bisenet_tusimple_640x368_300k.yml \
+       --model_path output/best_model/model.pdparams
+```
+
+## 六. 应用部署
+
+模型的部署，完成，使用下述命令启动评估
+
+```shell
+#运行如下命令，会在output文件下面生成一张3.jpg的图像
+python deploy/infer.py \
+--config output/deploy.yaml\
+--image_path data/test_images/3.jpg\
+--save_dir output
 ```
