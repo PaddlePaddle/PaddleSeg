@@ -1,17 +1,17 @@
 # human_matting_android_demo
 基于[PaddleSeg](https://github.com/paddlepaddle/paddleseg/tree/develop)的[MODNet](https://github.com/PaddlePaddle/PaddleSeg/tree/develop/contrib/Matting)算法实现人像抠图（安卓版demo）。
 
-可以直接下载安装本示例工程中的[apk](./app-debug.apk)进行体验。
+可以直接下载安装本示例工程中的[apk](https://paddleseg.bj.bcebos.com/matting/models/deploy/app-debug.apk.1)进行体验。
 
 ## 1. 效果展示
 <div align="center">
-<img src="figures/human.jpg"  width="50%"> 
+<img src=https://user-images.githubusercontent.com/14087480/141755673-0e6e6a58-6f13-4534-9eae-0c10874a12ca.jpg  width="50%"> 
 
 原图
 </div>
 
 <div align="center">
-<img src="figures/bg.jpg"  width="50%" >
+<img src=https://user-images.githubusercontent.com/14087480/141755700-b314d11e-0998-48cc-9bde-18190dbbc1ad.jpg  width="50%" >
 
 新背景
 
@@ -20,7 +20,7 @@
 在手机上进行人像抠图然后再替换背景：
 
 <div align="center">
-<img src="figures/demo.jpg"  width="50%" >
+<img src=https://user-images.githubusercontent.com/14087480/141755723-733b0f68-4119-402a-a7b3-854dd6676031.jpg  width="50%" >
 </div>
 
 
