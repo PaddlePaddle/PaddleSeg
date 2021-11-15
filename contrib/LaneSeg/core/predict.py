@@ -21,7 +21,7 @@ import paddle
 
 from paddleseg import utils
 from . import infer
-from utils import tusimple_processor
+from third_party import tusimple_processor
 from paddleseg.utils import logger, progbar, visualize
 
 

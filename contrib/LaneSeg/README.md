@@ -117,6 +117,14 @@ python predict.py \
        --image_path data/test_images/0.jpg \
        --save_dir output/result
 ```
+可视化结果示例：
+
+  预测结果：<br/>
+  ![](data/images/points/3.jpg)<br/>
+  分割结果：<br/>
+  ![](data/images/pseudo_color_prediction/3.png)<br/>
+  车道线预测结果：<br/>
+  ![](data/images/added_prediction/3.jpg)
 
 ## 五. 模型导出
 

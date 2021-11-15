@@ -31,7 +31,7 @@ from paddleseg.cvlibs import manager
 from paddleseg.utils import get_sys_env, logger, get_image_list
 
 sys.path.append('..')
-from utils import tusimple_processor
+from third_party import tusimple_processor
 import paddleseg.transforms.transforms as T
 
 

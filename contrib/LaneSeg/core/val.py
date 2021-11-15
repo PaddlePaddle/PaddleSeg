@@ -21,7 +21,7 @@ import paddle.nn.functional as F
 
 from paddleseg.utils import metrics, TimeAverager, calculate_eta, logger, progbar
 from . import infer
-from utils import tusimple_processor
+from third_party import tusimple_processor
 
 np.set_printoptions(suppress=True)
 
