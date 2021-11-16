@@ -49,7 +49,7 @@ PaddlePaddle安装请参考[官网](https://www.paddlepaddle.org.cn/install/quic
 git clone -b develop https://github.com/PaddlePaddle/PaddleSeg.git
 ```
 
-安装所需环境（若需要使用到GDAL和SimpleITK请参考**垂类分割**进行安装）：
+安装所需环境（若需要使用到GDAL和SimpleITK请参考[**垂类分割**](https://github.com/PaddlePaddle/PaddleSeg/tree/develop/EISeg/docs)进行安装）：
 
 ```shell
 pip install -r requirements.txt
