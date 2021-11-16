@@ -104,7 +104,7 @@ class InteractiveController:
             if not osp.exists(model_path):
                 raise Exception(f"未在 {model_path} 找到模型文件")
             if use_gpu is None:
-                if paddle.is_compiled_with_cuda():
+                if paddle.device.is_compiled_with_cuda():  # TODO: 可以使用GPU却返回False
                     use_gpu = True
                 else:
                     use_gpu = False

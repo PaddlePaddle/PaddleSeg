@@ -1,6 +1,6 @@
 pyqt5>=5.13
 qtpy
-opencv-python
+opencv-python==4.5.2.54
 scipy
 paddleseg
 albumentations==0.5.2

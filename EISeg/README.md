@@ -43,11 +43,16 @@ EISeg提供多种安装方式，其中使用[pip](#PIP)和[运行代码](#运行
 PaddlePaddle安装请参考[官网](https://www.paddlepaddle.org.cn/install/quick?docurl=/documentation/docs/zh/install/pip/windows-pip.html)。
 
 ### 克隆到本地
-
 通过git将PaddleSeg克隆到本地：
 
 ```shell
 git clone https://github.com/PaddlePaddle/PaddleSeg.git
+```
+
+安装所需环境（若需要使用到GDAL和SimpleITK请参考**垂类分割**进行安装）：
+
+```shell
+pip install -r requirements.txt
 ```
 
 安装好所需环境后，进入EISeg，可通过直接运行eiseg打开EISeg：
@@ -63,6 +68,7 @@ python -m eiseg
 cd PaddleSeg\EISeg\eiseg
 python exe.py
 ```
+
 
 ### PIP
 
