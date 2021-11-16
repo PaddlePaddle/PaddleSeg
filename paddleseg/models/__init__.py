@@ -46,4 +46,5 @@ from .pointrend import PointRend
 from .ginet import GINet
 from .segmenter import *
 from .segnet import SegNet
+from .hrnet_contrast import HRNetW48Contrast
 from .espnet import ESPNetV2
