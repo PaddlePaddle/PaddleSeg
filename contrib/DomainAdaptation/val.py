@@ -23,6 +23,8 @@ from script import evaluate
 from paddleseg.cvlibs import manager
 from paddleseg.core import evaluate
 from paddleseg.utils import get_sys_env, logger, utils
+from datasets import City_Dataset
+from script import val
 
 
 def get_test_config(cfg, args):
@@ -132,7 +134,12 @@ def main(args):
 
     cfg = Config(args.cfg)
 
-    val_dataset = cfg.val_dataset_tgt
+    if cfg.dic["data"]["target"]["dataset"] == 'cityscapes':
+        val_dataset = City_Dataset(
+            split='val', **cfg.dic["data"]["target"]["kwargs"])
+    else:
+        raise NotImplementedError()
+
     if len(val_dataset) < 500:
         print(len(val_dataset))
         for i in range(len(val_dataset)):
@@ -158,9 +165,9 @@ def main(args):
         logger.info('Loaded trained params of model successfully')
 
     test_config = get_test_config(cfg, args)
-    ut.config_check(cfg, val_dataset=val_dataset)
 
-    evaluate(model, val_dataset, num_workers=args.num_workers, **test_config)
+    val.evaluate(
+        model, val_dataset, num_workers=args.num_workers, **test_config)
 
 
 if __name__ == '__main__':

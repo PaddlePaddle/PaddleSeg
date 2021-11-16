@@ -158,7 +158,6 @@ class Trainer():
 
                 reader_cost_averager.record(time.time() - batch_start)
                 loss_dict = {}
-                # logger.info('iters: {}'.format(iter))
 
                 #### training #####
                 images_tgt = data_tgt[0]
@@ -207,7 +206,7 @@ class Trainer():
                         logits_list_src[2].detach().clone(),
                         axis=1)  # 1, 1, 640,1280
                     src_edge_acc = ((src_edge == edges_src).numpy().sum().astype('float32')\
-                                            /functools.reduce(lambda a, b: a * b, src_edge.shape))*100
+                                                /functools.reduce(lambda a, b: a * b, src_edge.shape))*100
 
                     if (not self.src_only) and (iter > 200000):
                         ####  target seg & edge loss ####
@@ -270,36 +269,30 @@ class Trainer():
 
                 #### edge input seg; src & tgt edge pull in ######
                 if self.edgepullin:
-                    # src_edge_logit = logits_list_src[2]
-                    # pass in (H, W) np array
-                    src_edge_logit = paddle.to_tensor(
-                        Func.mask_to_onehot(edges_src.squeeze().numpy(), 2))
-                    feat_src = paddle.concat([
-                        logits_list_src[0],
-                        src_edge_logit.unsqueeze(0).astype('float32')
-                    ],
-                                             axis=1).detach()
+                    src_edge_logit = logits_list_src[2]
+                    feat_src = paddle.concat(
+                        [logits_list_src[0], src_edge_logit], axis=1).detach()
+
                     out_src = self.model.fusion(feat_src)
                     loss_src_edge_rec = self.celoss(out_src, labels_src)
 
-                    # tgt_edge_logit = logits_list_tgt_aug[2]
-                    tgt_edge_logit = paddle.to_tensor(
-                        Func.mask_to_onehot(edges_tgt.squeeze().numpy(), 2))
-                    feat_tgt = paddle.concat([
-                        logits_list_tgt[0],
-                        tgt_edge_logit.unsqueeze(0).astype('float32')
-                    ],
-                                             axis=1).detach()
+                    tgt_edge_logit = logits_list_tgt_aug[2]
+                    # tgt_edge_logit = paddle.to_tensor(
+                    #     Func.mask_to_onehot(edges_tgt.squeeze().numpy(), 2)
+                    #     ).unsqueeze(0).astype('float32')
+                    feat_tgt = paddle.concat(
+                        [logits_list_tgt[0], tgt_edge_logit], axis=1).detach()
+
                     out_tgt = self.model.fusion(feat_tgt)
                     loss_tgt_edge_rec = self.celoss(out_tgt, labels_tgt)
 
-                    loss_edge_rec = loss_src_edge_rec + loss_tgt_edge_rec  # + loss_edge_pullin
+                    loss_edge_rec = loss_tgt_edge_rec + loss_src_edge_rec
                     loss += loss_edge_rec
 
                     loss_dict['src_edge_rec'] = loss_src_edge_rec.numpy()[0]
                     loss_dict['tgt_edge_rec'] = loss_tgt_edge_rec.numpy()[0]
 
-                    del loss_src_edge_rec, loss_tgt_edge_rec  #, loss_edge_pullin
+                    del loss_tgt_edge_rec, loss_src_edge_rec
 
                 #### mask input feature & pullin  ######
                 if self.featurepullin:
@@ -401,10 +394,22 @@ class Trainer():
                     if isinstance(lr_sche, paddle.optimizer.lr.LRScheduler):
                         lr_sche.step()
 
-                    if self.edgeconstrain and self.cfg['save_edge']:
+                    if self.cfg['save_edge']:
                         tgt_edge = paddle.argmax(
                             logits_list_tgt_aug[2].detach().clone(),
                             axis=1)  # 1, 1, 640,1280
+                        src_feed_gt = paddle.argmax(
+                            src_edge_logit.astype('float32'), axis=1)
+                        tgt_feed_gt = paddle.argmax(
+                            tgt_edge_logit.astype('float32'), axis=1)
+                        logger.info('src_feed_gt_{}_{}_{}'.format(
+                            src_feed_gt.shape, src_feed_gt.max(),
+                            src_feed_gt.min()))
+                        logger.info('tgt_feed_gt_{}_{}_{}'.format(
+                            tgt_feed_gt.shape, max(tgt_feed_gt),
+                            min(tgt_feed_gt)))
+                        save_edge(src_feed_gt, 'src_feed_gt_{}'.format(iter))
+                        save_edge(tgt_feed_gt, 'tgt_feed_gt_{}'.format(iter))
                         save_edge(tgt_edge, 'tgt_pred_{}'.format(iter))
                         save_edge(src_edge, 'src_pred_{}_{}'.format(
                             iter, src_edge_acc))
@@ -420,8 +425,6 @@ class Trainer():
                     if (iter) % log_iters == 0 and local_rank == 0:
                         label_tgt_acc = ((labels_tgt == labels_tgt_psu).numpy().sum().astype('float32')\
                                             /functools.reduce(lambda a, b: a * b, labels_tgt_psu.shape))*100
-                        src_edge_acc = ((src_edge == edges_src).numpy().sum().astype('float32')\
-                                            /functools.reduce(lambda a, b: a * b, src_edge.shape))*100
 
                         remain_iters = iters - iter
                         avg_train_batch_cost = batch_cost_averager.get_average()
@@ -429,11 +432,10 @@ class Trainer():
                         )
                         eta = calculate_eta(remain_iters, avg_train_batch_cost)
                         logger.info(
-                            "[TRAIN] epoch: {}, iter: {}/{}, loss: {:.4f}, tgt_pix_acc: {:.4f}, src_edge_acc: {:.4f}, lr: {:.6f}, batch_cost: {:.4f}, reader_cost: {:.5f}, ips: {:.4f} samples/sec | ETA {}"
+                            "[TRAIN] epoch: {}, iter: {}/{}, loss: {:.4f}, tgt_pix_acc: {:.4f}, lr: {:.6f}, batch_cost: {:.4f}, reader_cost: {:.5f}, ips: {:.4f} samples/sec | ETA {}"
                             .format((iter - 1) // iters_per_epoch + 1, iter,
-                                    iters, loss, label_tgt_acc, src_edge_acc,
-                                    lr, avg_train_batch_cost,
-                                    avg_train_reader_cost,
+                                    iters, loss, label_tgt_acc, lr,
+                                    avg_train_batch_cost, avg_train_reader_cost,
                                     batch_cost_averager.get_ips_average(), eta))
 
                         if use_vdl:
@@ -524,8 +526,6 @@ class Trainer():
                             log_writer.add_scalar('Evaluate/mIoU', MIoU_tgt,
                                                   iter)
                             log_writer.add_scalar('Evaluate/PA', PA_tgt, iter)
-                            log_writer.add_scalar('Evaluate/SRC_Edge_Acc',
-                                                  src_edge_acc, iter)
 
                             if self.cfg['eval_src']:
                                 log_writer.add_scalar('Evaluate/mIoU_src',

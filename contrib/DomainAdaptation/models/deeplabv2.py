@@ -74,7 +74,8 @@ class DeepLabV2(nn.Layer):
             padding_series=[6, 12, 18, 24],
             num_classes=2)
 
-        self.fusion = Classifier_Module(21, [3, 9, 18, 24], [3, 9, 18, 24], 19)
+        self.fusion = Classifier_Module(21, [6, 18, 30, 42], [6, 18, 30, 42],
+                                        19)
         self.align_corners = align_corners
         self.pretrained = pretrained
         self.init_weight()

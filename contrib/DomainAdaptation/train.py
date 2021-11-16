@@ -116,12 +116,10 @@ def parse_args():
 
 def main(args):
     if args.seed is not None:
-        import torch
         paddle.seed(args.seed)
         np.random.seed(args.seed)
         random.seed(args.seed)
-        torch.random.manual_seed(args.seed)
-        print('set seed to ', args.seed)
+        logger.info('Set seed to {}'.format(args.seed))
 
     env_info = get_sys_env()
     info = ['{}: {}'.format(k, v) for k, v in env_info.items()]
