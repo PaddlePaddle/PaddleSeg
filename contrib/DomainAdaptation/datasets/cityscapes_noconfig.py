@@ -1,3 +1,7 @@
+# This file is made available under Apache License, Version 2.0
+# This file is based on code available under the MIT License here:
+#  https://github.com/ZJULearning/MaxSquareLoss/blob/master/datasets/cityscapes_Dataset.py
+#
 # Copyright (c) 2021 PaddlePaddle Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");

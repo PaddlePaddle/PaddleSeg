@@ -12,7 +12,7 @@ In addition to reproduce pixmatch, we also tried something new. Major adjustment
 2. Use edge as prior information to fix segmentation result (negative results, still needs to adjust)
 3. Align features' structure across domain (positve result, reached mIOU=48.0%)
 
-## Model performance
+## Model performance (GTA5 -> Cityscapes)
 
 |        Model        | Backbone  | Resolution | Training Iters | mIoU  |                            Links                             |
 | :-----------------: | :-------: | :--------: | :------------: | :---: | :----------------------------------------------------------: |
