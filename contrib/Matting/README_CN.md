@@ -9,7 +9,7 @@ Matting（精细化分割/影像去背/抠图）是指借由计算前景的颜�
 </p>
 
 ## 更新动态
-2021.11 新增contrib: Matting, 实现图象抠图功能。
+2021.11 Matting项目开源, 实现图像抠图功能。
 【1】支持Matting模型：DIM， MODNet。
 【2】支持模型导出及Python部署。
 【3】支持背景替换功能。
@@ -246,7 +246,6 @@ python deploy/python/infer.py --help
 
 感谢
 [wuyefeilin](https://github.com/wuyefeilin)、
-[Yi Liu](https://github.com/michaelowenliu)、
 [钱彬(Qianbin)](https://github.com/qianbin1989228)、
 [yzl19940819](https://github.com/yzl19940819)
 等开发者的贡献
