@@ -239,7 +239,7 @@ python deploy/python/infer.py --help
 ```
 ## Contributors
 
-Thanks to the developers of
+Thanks
 [wuyefeilin](https://github.com/wuyefeilin),
 [Qian bin](https://github.com/qianbin1989228),
 [yzl19940819](https://github.com/yzl19940819)
