@@ -18,7 +18,7 @@ Mating is the technique of extracting foreground from an image by calculating it
 - [Instruction of Installation](#Instruction-of-Installation)
 - [Models](#Models)
 - [Dataset Preparation](#Dataset-Preparation)
-- [Training, Evaluation and Prediction](#Training,-Evaluation-and-Prediction)
+- [Training, Evaluation and Prediction](#Training-Evaluation-and-Prediction)
 - [Background Replacement](#Background-Replacement)
 - [Export and Deploy](#Export-and-Deploy)
 - [Human Matting Deployment in Android](./deploy/human_matting_android_demo/README.md)
