@@ -191,20 +191,37 @@ def main(args):
     else:
         val_datasets = None
 
-    from paddleseg.models.backbones.lcnet import PPLCNet_x1_0
-    backbone = PPLCNet_x1_0()
+    from paddleseg.models.stdcseg import STDCSeg
+    from paddleseg.models.backbones import STDC1, STDC2
+    backbone = STDC2(
+        pretrained='https://bj.bcebos.com/paddleseg/dygraph/STDCNet2.tar.gz')
     model_class = manager.MODELS[args.model_name]
     model = model_class(2, backbone)
-
     losses = {
         'types': [
-            MixedLoss(
-                losses=[CrossEntropyLoss(),
-                        LovaszSoftmaxLoss()],
-                coef=[0.8, 0.2])
+            OhemCrossEntropyLoss(),
+            OhemCrossEntropyLoss(),
+            OhemCrossEntropyLoss(),
+            DetailAggregateLoss()
         ],
-        'coef': [1]
+        'coef': [1, 1, 1, 1]
     }
+
+    # from paddleseg.models.backbones.lcnet import PPLCNet_x1_0
+    # backbone = PPLCNet_x1_0()
+    # model_class = manager.MODELS[args.model_name]
+    # model = model_class(2, backbone)
+
+    # losses = {
+    #     'types': [
+    #         MixedLoss(
+    #             losses=[CrossEntropyLoss(),
+    #                     LovaszSoftmaxLoss()],
+    #             coef=[0.8, 0.2])
+    #     ],
+    #     'coef': [1]
+    # }
+
     lr = paddle.optimizer.lr.PolynomialDecay(
         learning_rate=learning_rate, end_lr=0, power=0.9, decay_steps=iters)
     optimizer = paddle.optimizer.Momentum(

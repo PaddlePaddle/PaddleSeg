@@ -94,8 +94,15 @@ def main(args):
     # val_datasets = [val_dataset0]
     #====================================================================================
 
-    from paddleseg.models.backbones.lcnet import PPLCNet_x1_0
-    backbone = PPLCNet_x1_0()
+    # from paddleseg.models.backbones.lcnet import PPLCNet_x1_0
+    # backbone = PPLCNet_x1_0()
+    # model_class = manager.MODELS[args.model_name]
+    # model = model_class(2, backbone)
+
+    from paddleseg.models.stdcseg import STDCSeg
+    from paddleseg.models.backbones import STDC1, STDC2
+    backbone = STDC2(
+        pretrained='https://bj.bcebos.com/paddleseg/dygraph/STDCNet2.tar.gz')
     model_class = manager.MODELS[args.model_name]
     model = model_class(2, backbone)
 
