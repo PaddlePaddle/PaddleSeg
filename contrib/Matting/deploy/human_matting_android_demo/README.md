@@ -1,4 +1,4 @@
-# human_matting_android_demo
+# Human Matting Android Demo
 基于[PaddleSeg](https://github.com/paddlepaddle/paddleseg/tree/develop)的[MODNet](https://github.com/PaddlePaddle/PaddleSeg/tree/develop/contrib/Matting)算法实现人像抠图（安卓版demo）。
 
 可以直接下载安装本示例工程中的[apk](https://paddleseg.bj.bcebos.com/matting/models/deploy/app-debug.apk)进行体验。
