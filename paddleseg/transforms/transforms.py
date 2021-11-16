@@ -705,11 +705,11 @@ class RandomCenterCrop:
     """
     Crops the given the input data at the center.
     Args:
-        retain_ratio (tuple or list, optional): The length of the input list or tuple must be 2. default:(0.5, 0.5).
+        retain_ratio (tuple or list, optional): The length of the input list or tuple must be 2. Default: (0.5, 0.5).
         the first value is used for width and the second is for height.
-        In addition, The minimum size of the cropped image is [width * retain_ratio[0], height * retain_ratio[1]].
+        In addition, the minimum size of the cropped image is [width * retain_ratio[0], height * retain_ratio[1]].
     Raises:
-        TypeError: When retain_ratio is neither list nor tuple. Default:None.
+        TypeError: When retain_ratio is neither list nor tuple. Default: None.
         ValueError: When the value of retain_ratio is not in [0-1].
     """
 
