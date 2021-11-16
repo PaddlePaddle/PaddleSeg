@@ -1229,6 +1229,11 @@ class Crop:
         self.right_w_off = right_w_off
 
     def __call__(self, im, label=None):
+        if self.up_h_off < 0 or self.down_h_off < 0 or self.left_w_off < 0 or self.right_w_off < 0:
+            raise Exception(
+                "up_h_off, down_h_off, left_w_off,  right_w_off must equal or greater zero"
+            )
+
         if self.up_h_off > 0 and self.up_h_off < im.shape[0]:
             im = im[self.up_h_off:, :, :]
             if label is not None:

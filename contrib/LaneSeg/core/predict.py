@@ -97,8 +97,7 @@ def predict(model,
     with paddle.no_grad():
         for i, im_path in enumerate(img_lists[local_rank]):
             im = cv2.imread(im_path)
-            ori_img = im
-            cut_shape = im[cut_height:, :, :].shape[:2]
+            ori_shape = im.shape[:2]
             im, _ = transforms(im)
             im = im[np.newaxis, ...]
             im = paddle.to_tensor(im)
@@ -107,7 +106,7 @@ def predict(model,
                 pred = infer.aug_inference(
                     model,
                     im,
-                    ori_shape=cut_shape,
+                    ori_shape=ori_shape,
                     transforms=transforms.transforms,
                     scales=scales,
                     flip_horizontal=flip_horizontal,
@@ -119,7 +118,7 @@ def predict(model,
                 pred = infer.inference(
                     model,
                     im,
-                    ori_shape=cut_shape,
+                    ori_shape=ori_shape,
                     transforms=transforms.transforms,
                     is_slide=is_slide,
                     stride=stride,
@@ -132,9 +131,6 @@ def predict(model,
             pred = paddle.squeeze(pred[0])
             pred = pred.numpy().astype('uint8')
 
-            mask = np.zeros(shape=ori_img.shape[:2], dtype=np.uint8)
-            mask[cut_height:, :] = pred
-            pred = mask
             # get the saved name
             if image_dir is not None:
                 im_file = im_path.replace(image_dir, '')
