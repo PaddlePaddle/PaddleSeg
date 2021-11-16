@@ -8,7 +8,7 @@ Mating is the technique of extracting foreground from an image by calculating it
 </p>
 
 ## update dynamics
-2021.11 Added contrib: Matting。 Implement image matting.
+2021.11 Matting Project is released.
 [1] Support Matting models: DIM, MODNet.
 [2] Support model export and python deployment.
 [3] Support background replacement function.
@@ -241,7 +241,6 @@ python deploy/python/infer.py --help
 
 Thanks to the developers of
 [wuyefeilin](https://github.com/wuyefeilin),
-[Yi Liu](https://github.com/michaelowenliu),
-[钱彬(Qianbin)](https://github.com/qianbin1989228),
+[Qian bin](https://github.com/qianbin1989228),
 [yzl19940819](https://github.com/yzl19940819)
 for their contributons.
