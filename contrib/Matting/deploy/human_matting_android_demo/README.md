@@ -5,22 +5,8 @@
 
 ## 1. 效果展示
 <div align="center">
-<img src=https://user-images.githubusercontent.com/14087480/141755723-733b0f68-4119-402a-a7b3-854dd6676031.jpg  width="50%"> 
+<img src=https://user-images.githubusercontent.com/14087480/141890516-6aad4691-9ab3-4baf-99e5-f1afa1b21281.png  width="50%"> 
 
-原图
-</div>
-
-<div align="center">
-<img src=https://user-images.githubusercontent.com/14087480/141755673-0e6e6a58-6f13-4534-9eae-0c10874a12ca.jpg  width="50%" >
-
-新背景
-
-</div>
-
-在手机上进行人像抠图然后再替换背景：
-
-<div align="center">
-<img src=https://user-images.githubusercontent.com/14087480/141755700-b314d11e-0998-48cc-9bde-18190dbbc1ad.jpg  width="50%" >
 </div>
 
 
@@ -151,3 +137,4 @@ models/modnet下面的文件即可。
 1,3,256,256分别表示图像对应的batchsize、channel、height、width，我们一般修改height和width即可，这里的height和width需要和静态图导出时设置的尺寸一致。
 
 整个安卓demo采用java实现，没有内嵌C++代码，构建和执行比较简单。未来也可以将本demo移植到java web项目中实现web版人像抠图。
+
