@@ -46,7 +46,7 @@ PaddlePaddle安装请参考[官网](https://www.paddlepaddle.org.cn/install/quic
 通过git将PaddleSeg克隆到本地：
 
 ```shell
-git clone https://github.com/PaddlePaddle/PaddleSeg.git
+git clone -b develop https://github.com/PaddlePaddle/PaddleSeg.git
 ```
 
 安装所需环境（若需要使用到GDAL和SimpleITK请参考**垂类分割**进行安装）：
