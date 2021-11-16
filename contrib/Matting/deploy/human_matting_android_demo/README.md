@@ -31,8 +31,7 @@
 * Android手机；
 
 ### 2.2 一键安装
-* git clone https://github.com/qianbin1989228/human_matting_android_demo.git ;
-* 打开Android Studio，在"Welcome to Android Studio"窗口点击"Open an existing Android Studio project"，在弹出的路径选择窗口中选择刚git下来的文件夹，然后点击右下角的"Open"按钮即可导入工程，构建工程的过程中会自动下载demo需要的Lite预测库；
+* 打开Android Studio，在"Welcome to Android Studio"窗口点击"Open an existing Android Studio project"，在弹出的路径选择窗口中选择本安卓demo对应的文件夹，然后点击右下角的"Open"按钮即可导入工程，构建工程的过程中会自动下载demo需要的Lite预测库；
 * 通过USB连接Android手机；
 * 载入工程后，点击菜单栏的Run->Run 'App'按钮，在弹出的"Select Deployment Target"窗口选择已经连接的Android设备，然后点击"OK"按钮；
 
