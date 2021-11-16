@@ -19,7 +19,7 @@ Matting（精细化分割/影像去背/抠图）是指借由计算前景的颜�
 - [环境配置](#环境配置)
 - [模型](#模型)
 - [数据准备](#数据准备)
-- [训练、评估和预测](#训练、评估和预测)
+- [训练评估预测](#训练评估预测)
 - [背景替换](#背景替换)
 - [导出部署](#导出部署)
 - [人像抠图Android部署](./deploy/human_matting_android_demo/README.md)
@@ -132,7 +132,7 @@ val/fg/fg3.jpg bg/bg3.jpg val/trimap/trimap3.jpg
 ...
 ```
 
-## 训练、评估和预测
+## 训练评估预测
 ### 训练
 ```shell
 export CUDA_VISIBLE_DEVICES=0
