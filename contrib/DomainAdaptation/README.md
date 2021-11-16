@@ -2,7 +2,7 @@
 
 Domain adpataion is a kind of algorithms that dedicate to minimize the performance drop when we apply the model trained from one domain on anther. Normally, this happens when we want to apply models which is trained with dataset A on a similar dataset B. Specifically, Unsupervised domain adaptation(UDA) dedicate to achieve satisfactory performance on dataset B that we do not have label on. Following image from [pixmatch](https://arxiv.org/abs/2105.08128) shows the performance of UDA algorithms on semantic segmentaion. When we compare the segmentaiton results between "source only"(without DA) and "ours", we can observe a great performance lift.
 
-![image-20211116171626323](./docs/domain_adaptation.png)
+![image-20211116171626323](https://github.com/PaddlePaddle/PaddleSeg/blob/c5f21a1a61ce7be926284a5c3920318ff2f95356/contrib/DomainAdaptation/docs/domain_adaptation.png)
 
 This project includes the reproduction of pixmatch [[Paper](https://arxiv.org/abs/2105.08128)|[Code](https://github.com/lukemelas/pixmatch)] based on PaddlePaddle and PaddleSeg, which reaches mIOU = 47.8% on Cityscapes Dataset.
 
