@@ -725,7 +725,6 @@ class RandomCenterCrop:
                 raise ValueError(
                     'Value of `retain_ratio` should be in [0, 1], but it is {}'.format(retain_ratio)
                 )
-
         else:
             raise TypeError(
                 "The type of `retain_ratio` is invalid. It should be list or tuple, but it is {}"
