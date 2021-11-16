@@ -8,16 +8,21 @@ Matting（精细化分割/影像去背/抠图）是指借由计算前景的颜�
 <img src="https://user-images.githubusercontent.com/30919197/141714637-be8af7b1-ccd0-49df-a4f9-10423705802e.jpg" width="100%" height="100%">
 </p>
 
+## 更新动态
+2021.11 新增contrib: Matting, 实现图象抠图功能。
+【1】支持Matting模型：DIM， MODNet。
+【2】支持模型导出及Python部署。
+【3】支持背景替换功能。
+【4】支持人像抠图Android部署
+
 ## 目录
 - [环境配置](#环境配置)
 - [模型](#模型)
 - [数据准备](#数据准备)
-- [训练](#训练)
-- [评估](#评估)
-- [预测及可视化结果保存](#预测及可视化结果保存)
+- [训练、评估和预测](#训练、评估和预测)
 - [背景替换](#背景替换)
-- [模型导出](#模型导出)
-- [应用部署](#应用部署)
+- [导出部署](#导出部署)
+- [人像抠图Android部署](./deploy/human_matting_android_demo/README.md)
 
 
 ## 环境配置
@@ -127,7 +132,8 @@ val/fg/fg3.jpg bg/bg3.jpg val/trimap/trimap3.jpg
 ...
 ```
 
-## 训练
+## 训练、评估和预测
+### 训练
 ```shell
 export CUDA_VISIBLE_DEVICES=0
 python train.py \
@@ -149,7 +155,7 @@ python train.py --help
 ```
 如需使用多卡，请用`python -m paddle.distributed.launch`进行启动
 
-## 评估
+### 评估
 ```shell
 export CUDA_VISIBLE_DEVICES=0
 python val.py \
@@ -167,7 +173,7 @@ python val.py \
 python val.py --help
 ```
 
-## 预测及可视化结果保存
+### 预测
 ```shell
 export CUDA_VISIBLE_DEVICES=0
 python predict.py \
@@ -207,8 +213,8 @@ python bg_replace.py \
 python bg_replace.py --help
 ```
 
-
-## 模型导出
+## 导出部署
+### 模型导出
 ```shell
 python export.py \
     --config configs/modnet/modnet_mobilenetv2.yml \
@@ -222,7 +228,7 @@ python export.py \
 python export.py --help
 ```
 
-## 应用部署
+### 应用部署
 ```shell
 python deploy/python/infer.py \
     --config output/export/deploy.yaml \
@@ -235,3 +241,12 @@ python deploy/python/infer.py \
 ```shell
 python deploy/python/infer.py --help
 ```
+
+## 贡献者
+
+感谢
+[wuyefeilin](https://github.com/wuyefeilin)、
+[Yi Liu](https://github.com/michaelowenliu)、
+[钱彬(Qianbin)](https://github.com/qianbin1989228)、
+[yzl19940819](https://github.com/yzl19940819)
+等开发者的贡献

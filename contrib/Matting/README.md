@@ -7,16 +7,21 @@ Mating is the technique of extracting foreground from an image by calculating it
 <img src="https://user-images.githubusercontent.com/30919197/141714637-be8af7b1-ccd0-49df-a4f9-10423705802e.jpg" width="100%" height="100%">
 </p>
 
+## update dynamics
+2021.11 Added contrib: Matting。 Implement image matting.
+[1] Support Matting models: DIM, MODNet.
+[2] Support model export and python deployment.
+[3] Support background replacement function.
+[4] Support human matting deployment in Android.
+
 ## Contents
 - [Instruction of Installation](#Instruction-of-Installation)
 - [Models](#Models)
-- [Dataset preparation](#Dataset-preparation)
-- [Training](#Training)
-- [Evaluation](#Evaluation)
-- [Prediction](#Prediction)
+- [Dataset Preparation](#Dataset-Preparation)
+- [Training, Evaluation and Prediction](#Training,-Evaluation-and-Prediction)
 - [Background Replacement](#Background-Replacement)
-- [Model Export](#Model-Export)
-- [Model Deploy](#Model-Deploy)
+- [Export and Deploy](#Export-and-Deploy)
+- [Human Matting Deployment in Android](./deploy/human_matting_android_demo/README.md)
 
 ## Instruction of Installation
 
@@ -124,8 +129,8 @@ val/fg/fg2.jpg bg/bg2.jpg val/trimap/trimap2.jpg
 val/fg/fg3.jpg bg/bg3.jpg val/trimap/trimap3.jpg
 ...
 ```
-
-## Training
+## Training, Evaluation and Prediction
+### Training
 ```shell
 export CUDA_VISIBLE_DEVICES=0
 python train.py \
@@ -147,7 +152,7 @@ python train.py --help
 ```
 If you want to use multiple GPUs，please use `python -m paddle.distributed.launch` to run.
 
-## Evaluation
+### Evaluation
 ```shell
 export CUDA_VISIBLE_DEVICES=0
 python val.py \
@@ -165,7 +170,7 @@ Run the following command to view more parameters.
 python val.py --help
 ```
 
-## Prediction
+### Prediction
 ```shell
 export CUDA_VISIBLE_DEVICES=0
 python predict.py \
@@ -204,7 +209,8 @@ Run the following command to view more parameters.
 python bg_replace.py --help
 ```
 
-## Model Export
+## Export and Deploy
+### Model Export
 ```shell
 python export.py \
     --config configs/modnet/modnet_mobilenetv2.yml \
@@ -218,7 +224,7 @@ Run the following command to view more parameters.
 python export.py --help
 ```
 
-## Model Deploy
+### Deploy
 ```shell
 python deploy/python/infer.py \
     --config output/export/deploy.yaml \
@@ -231,3 +237,11 @@ Run the following command to view more parameters.
 ```shell
 python deploy/python/infer.py --help
 ```
+## Contributors
+
+Thanks to the developers of
+[wuyefeilin](https://github.com/wuyefeilin),
+[Yi Liu](https://github.com/michaelowenliu),
+[钱彬(Qianbin)](https://github.com/qianbin1989228),
+[yzl19940819](https://github.com/yzl19940819)
+for their contributons.
