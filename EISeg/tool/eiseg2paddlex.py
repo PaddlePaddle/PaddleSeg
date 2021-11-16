@@ -1,3 +1,18 @@
+# Copyright (c) 2021 PaddlePaddle Authors. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+
 import os
 import os.path as osp
 import shutil
@@ -7,10 +22,10 @@ from qtpy import QtGui
 import argparse
 
 
-# refer to the paddlex
+# 参考paddlex数据准备文档
 # https://github.com/PaddlePaddle/PaddleX/blob/release/2.0.0/docs/data/format/README.md
 
-# supported image formats
+# 支持的图像格式
 FORMATS = [".{}".format(fmt.data().decode()) 
             for fmt in QtGui.QImageReader.supportedImageFormats()]
 FORMATS.append(".dcm")
@@ -21,7 +36,7 @@ def mkdirp(path):
         os.mkdir(path)
 
 
-# semantic segmentation
+# 语义分割
 def Eiseg2Semantic(save_folder, imgs_folder, lab_folder=None, split_rate=0.9):
     """Convert the data marked by eiseg into the semantic segmentation data of paddlex.
 
@@ -64,7 +79,7 @@ def Eiseg2Semantic(save_folder, imgs_folder, lab_folder=None, split_rate=0.9):
             for i in range(len(tmps)):
                 lab = tmps[i].split(" ")[1]
                 wf.write(lab + "\n")
-    print("===== create labels.txt finished! =====")
+    print("===== create label finished! =====")
     # create list
     train_list_path = osp.join(save_folder, "train_list.txt")
     eval_list_path = osp.join(save_folder, "val_list.txt")
@@ -85,15 +100,15 @@ def Eiseg2Semantic(save_folder, imgs_folder, lab_folder=None, split_rate=0.9):
                     tf.write(new_img_path + " " + new_lab_path + "\n")
                 else:
                     ef.write(new_img_path + " " + new_lab_path + "\n")
-    print("===== create data_list.txt finished! =====")
+    print("===== create data list finished! =====")
     print("===== all done! =====")
 
 
 parser = argparse.ArgumentParser(description='Save path, image path, label path and split rate')
-parser.add_argument('--save_path', '-d', help='Save folder path, required', required=True)
-parser.add_argument('--image_path', '-o', help='Image folder path, required', required=True)
-parser.add_argument('--label_path', '-l', help='Label folder path, optional', default=None)
-parser.add_argument('--split_rate', '-s', help='Proportion of training set and verification set, optional', default=0.9)
+parser.add_argument('--save_path', '-d', help='保存文件夹路径，必要参数', required=True)
+parser.add_argument('--image_path', '-o', help='图像文件夹路径，必要参数', required=True)
+parser.add_argument('--label_path', '-l', help='标签文件夹路径', default=None)
+parser.add_argument('--split_rate', '-s', help='分割参数', default=0.9)
 args = parser.parse_args()
 
 if __name__ == "__main__":

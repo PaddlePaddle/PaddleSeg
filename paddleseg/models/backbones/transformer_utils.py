@@ -17,7 +17,8 @@ import paddle.nn as nn
 import paddle.nn.initializer as paddle_init
 
 __all__ = [
-    'to_2tuple', 'DropPath', 'Identity', 'trunc_normal_', 'zeros_', 'ones_'
+    'to_2tuple', 'DropPath', 'Identity', 'trunc_normal_', 'zeros_', 'ones_',
+    'init_weights'
 ]
 
 
@@ -63,3 +64,20 @@ class Identity(nn.Layer):
 trunc_normal_ = paddle_init.TruncatedNormal(std=.02)
 zeros_ = paddle_init.Constant(value=0.)
 ones_ = paddle_init.Constant(value=1.)
+
+
+def init_weights(layer):
+    """
+    Init the weights of transformer.
+    Args:
+        layer(nn.Layer): The layer to init weights.
+    Returns:
+        None
+    """
+    if isinstance(layer, nn.Linear):
+        trunc_normal_(layer.weight)
+        if layer.bias is not None:
+            zeros_(layer.bias)
+    elif isinstance(layer, nn.LayerNorm):
+        zeros_(layer.bias)
+        ones_(layer.weight)
