@@ -173,6 +173,9 @@ python train.py --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml
 * Thanks [liuguoyu666](https://github.com/liguoyu666), [geoyee](https://github.com/geoyee) for contributing U-Net++ and U-Net3+.
 * Thanks [yazheng0307](https://github.com/yazheng0307) (LIU Zheng) for contributing quick-start document.
 * Thanks [CuberrChen](https://github.com/CuberrChen) for contributing STDC (rethink BiSeNet), PointRend and DetailAggregateLoss.
+* Thanks [justld](https://github.com/justld)(Lang Du) for contributing ESPNet，HRNet_W48_Contrast and PixelContrastCrossEntropyLoss.
+* Thanks [Herman-Hu-saber](https://github.com/Herman-Hu-saber)(Hu Huiming) for contributing ESPNet.
+* Thanks [zhangjin12138](https://github.com/zhangjin12138) for contributing RandomCenterCrop.
 
 ## Citation
 If you find our project useful in your research, please consider citing:
