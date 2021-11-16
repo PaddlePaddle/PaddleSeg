@@ -13,7 +13,7 @@ Mating is the technique of extracting foreground from an image by calculating it
 - [Dataset preparation](#Dataset-preparation)
 - [Training](#Training)
 - [Evaluation](#Evaluation)
-- [Prediction and visualization results preservation](#Prediction-and-visualization-results-preservation)
+- [Prediction](#Prediction)
 - [Background Replacement](#Background-Replacement)
 - [Model Export](#Model-Export)
 - [Model Deploy](#Model-Deploy)
@@ -165,7 +165,7 @@ Run the following command to view more parameters.
 python val.py --help
 ```
 
-## Prediction and Visualization Results Preservation
+## Prediction
 ```shell
 export CUDA_VISIBLE_DEVICES=0
 python predict.py \
