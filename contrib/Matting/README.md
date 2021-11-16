@@ -7,7 +7,7 @@ Mating is the technique of extracting foreground from an image by calculating it
 <img src="https://user-images.githubusercontent.com/30919197/141714637-be8af7b1-ccd0-49df-a4f9-10423705802e.jpg" width="100%" height="100%">
 </p>
 
-## update dynamics
+## Update Notes
 2021.11 Matting Project is released.
 [1] Support Matting models: DIM, MODNet.
 [2] Support model export and python deployment.
@@ -15,7 +15,7 @@ Mating is the technique of extracting foreground from an image by calculating it
 [4] Support human matting deployment in Android.
 
 ## Contents
-- [Instruction of Installation](#Instruction-of-Installation)
+- [Installation](#Installation)
 - [Models](#Models)
 - [Dataset Preparation](#Dataset-Preparation)
 - [Training, Evaluation and Prediction](#Training-Evaluation-and-Prediction)
@@ -23,7 +23,7 @@ Mating is the technique of extracting foreground from an image by calculating it
 - [Export and Deploy](#Export-and-Deploy)
 - [Human Matting Deployment in Android](./deploy/human_matting_android_demo/README.md)
 
-## Instruction of Installation
+## Installation
 
 #### 1. Install PaddlePaddle
 
