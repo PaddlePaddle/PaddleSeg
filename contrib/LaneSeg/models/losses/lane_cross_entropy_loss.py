@@ -21,14 +21,15 @@ from paddleseg.cvlibs import manager
 
 @manager.LOSSES.add_component
 class LaneCrossEntropyLoss(nn.Layer):
-    def __init__(self, ignore_index=255, data_format='NCHW'):
+    def __init__(self, ignore_index=255, weights=None, data_format='NCHW'):
         super(LaneCrossEntropyLoss, self).__init__()
         self.ignore_index = ignore_index
-        self.weights = paddle.to_tensor([0.4, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0])
+        self.weights = weights
 
     def forward(self, logit, label, semantic_weights=None):
         temp = F.log_softmax(logit, axis=1)
         loss_func = nn.NLLLoss(
-            ignore_index=self.ignore_index, weight=self.weights)
+            ignore_index=self.ignore_index,
+            weight=paddle.to_tensor(self.weights))
         loss = loss_func(temp, label)
         return loss

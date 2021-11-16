@@ -27,7 +27,7 @@ from paddleseg.models import BiSeNetV2
 @manager.MODELS.add_component
 class BiSeNetLane(nn.Layer):
     """
-    The BiSeNetLane use BiseNet V2 to process lane task .
+    The BiSeNetLane use BiseNet V2 to process lane detection .
 
     Args:
         num_classes (int): The unique number of target classes.

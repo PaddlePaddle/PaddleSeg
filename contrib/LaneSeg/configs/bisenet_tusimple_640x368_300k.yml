@@ -54,7 +54,9 @@ lr_scheduler:
 loss:
   types:
     - type: LaneCrossEntropyLoss
+      weights: [0.4, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
   coef: [1]
+
 
 model:
   type: BiSeNetLane

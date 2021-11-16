@@ -8,7 +8,7 @@
 
 ## 环境依赖
 
-* PaddlePaddle >= 2.1.2 或develop版本
+* PaddlePaddle >= 2.1.2 版本
 * Python 3.6+
 
 
@@ -142,7 +142,7 @@ python export.py \
 
 模型的部署，完成，使用下述命令启动评估
 
-### python端部署
+### Paddle Inference部署 (python)
 ```shell
 #运行如下命令，会在output文件下面生成一张3.jpg的图像
 python deploy/infer.py \
@@ -154,5 +154,4 @@ python deploy/infer.py \
 ### Paddle Inference部署（C++）
 参见[Paddle Inference部署教程](../../deploy/cpp/)
 
-### 移动端部署
-参见[移动端部署教程](../../deploy/lite/)
+本文使用的C++源文件在PaddleSeg/contrib/LaneSeg/deploy/cpp目录下
