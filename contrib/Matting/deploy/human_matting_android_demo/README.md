@@ -5,7 +5,7 @@
 
 ## 1. 效果展示
 <div align="center">
-<img src=https://user-images.githubusercontent.com/14087480/141755700-b314d11e-0998-48cc-9bde-18190dbbc1ad.jpg  width="50%"> 
+<img src=https://user-images.githubusercontent.com/14087480/141755723-733b0f68-4119-402a-a7b3-854dd6676031.jpg  width="50%"> 
 
 原图
 </div>
@@ -20,7 +20,7 @@
 在手机上进行人像抠图然后再替换背景：
 
 <div align="center">
-<img src=https://user-images.githubusercontent.com/14087480/141755723-733b0f68-4119-402a-a7b3-854dd6676031.jpg  width="50%" >
+<img src=https://user-images.githubusercontent.com/14087480/141755700-b314d11e-0998-48cc-9bde-18190dbbc1ad  width="50%" >
 </div>
 
 
