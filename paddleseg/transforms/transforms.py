@@ -699,7 +699,73 @@ class RandomPaddingCrop:
         else:
             return (im, label)
 
+        
+@manager.TRANSFORMS.add_component
+class RandomCenterCrop:
+    """
+    Crops the given the input data at the center.
+    Args:
+        retain_ratio (tuple or list, optional): The length of the input list or tuple must be 2. Default: (0.5, 0.5).
+        the first value is used for width and the second is for height.
+        In addition, the minimum size of the cropped image is [width * retain_ratio[0], height * retain_ratio[1]].
+    Raises:
+        TypeError: When retain_ratio is neither list nor tuple. Default: None.
+        ValueError: When the value of retain_ratio is not in [0-1].
+    """
 
+    def __init__(self,
+                 retain_ratio=(0.5, 0.5)):
+        if isinstance(retain_ratio, list) or isinstance(retain_ratio, tuple):
+            if len(retain_ratio) != 2:
+                raise ValueError(
+                    'When type of `retain_ratio` is list or tuple, it shoule include 2 elements, but it is {}'.format(
+                        retain_ratio)
+                )
+            if retain_ratio[0] > 1 or retain_ratio[1] > 1 or retain_ratio[0] < 0 or retain_ratio[1] < 0:
+                raise ValueError(
+                    'Value of `retain_ratio` should be in [0, 1], but it is {}'.format(retain_ratio)
+                )
+        else:
+            raise TypeError(
+                "The type of `retain_ratio` is invalid. It should be list or tuple, but it is {}"
+                    .format(type(retain_ratio)))
+        self.retain_ratio = retain_ratio
+
+    def __call__(self, im, label=None):
+        """
+        Args:
+            im (np.ndarray): The Image data.
+            label (np.ndarray, optional): The label data. Default: None.
+        Returns:
+            (tuple). When label is None, it returns (im, ), otherwise it returns (im, label).
+        """
+        retain_width = self.retain_ratio[0]
+        retain_height = self.retain_ratio[1]
+
+        img_height = im.shape[0]
+        img_width = im.shape[1]
+
+        if retain_width == 1. and retain_height == 1.:
+            if label is None:
+                return (im,)
+            else:
+                return (im, label)
+        else:
+            randw = np.random.randint(img_width * (1 - retain_width))
+            randh = np.random.randint(img_height * (1 - retain_height))
+            offsetw = 0 if randw == 0 else np.random.randint(randw)
+            offseth = 0 if randh == 0 else np.random.randint(randh)
+            p0, p1, p2, p3 = offseth, img_height + offseth - randh, offsetw, img_width + offsetw - randw
+            im = im[p0:p1, p2:p3, :]
+            if label is not None:
+                label = label[p0:p1, p2:p3, :]
+
+        if label is None:
+            return (im,)
+        else:
+            return (im, label)
+        
+        
 @manager.TRANSFORMS.add_component
 class ScalePadding:
     """
