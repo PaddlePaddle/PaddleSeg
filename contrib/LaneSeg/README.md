@@ -18,7 +18,7 @@
 在这个[页面](https://github.com/TuSimple/tusimple-benchmark/issues/3)下载原始数据集。通过以下代码执行生成。
 
 ```shell
-python utils/generate_seg_tusimple.py.py --root path/to/your/unzipped/file
+python third_party/generate_seg_tusimple.py.py --root path/to/your/unzipped/file
 
 ```
 
