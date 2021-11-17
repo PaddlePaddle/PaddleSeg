@@ -2064,7 +2064,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
                 name + ext)
         else:
             save_path = self.chooseSavePath()
-            if save_path is "":
+            if save_path == "":
                 return
         try:
             self.finishObject()
