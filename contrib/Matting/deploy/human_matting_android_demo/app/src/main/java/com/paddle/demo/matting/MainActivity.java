@@ -28,6 +28,8 @@ import android.view.Display;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -37,8 +39,8 @@ import com.paddle.demo.matting.preprocess.Preprocess;
 import com.paddle.demo.matting.visual.Visualize;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -83,10 +85,15 @@ public class MainActivity extends AppCompatActivity {
     //定义图像存储路径
     Uri photoUri;
 
+    private Button btnSaveImg;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        //绑定保存图像按钮
+        btnSaveImg = (Button) findViewById(R.id.save_img);
 
         //定义消息接收线程
         receiver = new Handler() {
@@ -369,10 +376,22 @@ public class MainActivity extends AppCompatActivity {
                         ContentResolver resolver = getContentResolver();
                         Uri uri = data.getData();
                         Bitmap image = MediaStore.Images.Media.getBitmap(resolver, uri);
+                        //判断图像尺寸（如果图像过大推理会奔溃）
+                        int width = image.getWidth();
+                        int height = image.getHeight();
+                        Bitmap scaleImage;
+                        if(width > 800) {
+                            int new_width = 800;
+                            int new_height = (int)(height*1.0/width*new_width);
+                            scaleImage = Bitmap.createScaledBitmap(image, new_width, new_height,true);
+                        }
+                        else{
+                            scaleImage = image.copy(Bitmap.Config.ARGB_8888, true);
+                        }
                         String[] proj = {MediaStore.Images.Media.DATA};
                         Cursor cursor = managedQuery(uri, proj, null, null, null);
                         cursor.moveToFirst();
-                        onImageChanged(image);
+                        onImageChanged(scaleImage);
                     } catch (IOException e) {
                         Log.e(TAG, e.toString());
                     }
@@ -500,5 +519,44 @@ public class MainActivity extends AppCompatActivity {
         }
         worker.quit();
         super.onDestroy();
+    }
+
+    //保存图像
+    public void clickSaveImg(View view){
+        //取出图像
+        Bitmap outputImage = predictor.outputImage();
+        if(outputImage==null) {
+            Toast.makeText(getApplicationContext(),"当前没有图像",Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        //保存图像
+        File f = new File(Environment.getExternalStorageDirectory() + "/newphoto.jpg");
+        if (f.exists()) {
+            f.delete();
+        }
+        try {
+            FileOutputStream out = new FileOutputStream(f);
+            outputImage.compress(Bitmap.CompressFormat.JPEG, 80, out);
+            out.flush();
+            out.close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        // 把文件插入到系统图库
+        try {
+            MediaStore.Images.Media.insertImage(this.getContentResolver(),
+                    f.getAbsolutePath(), Environment.getExternalStorageDirectory() + "/newphoto.jpg", null);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        // 通知图库更新
+        sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE,
+                Uri.parse("file://" + "/sdcard/matting/")));
+
+        Toast.makeText(getApplicationContext(),"保存成功",Toast.LENGTH_SHORT).show();
     }
 }
