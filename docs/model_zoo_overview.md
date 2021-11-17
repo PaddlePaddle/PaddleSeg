@@ -33,6 +33,8 @@
 |[GINet](../configs/ginet)|✔|✔|-|-|
 |[PointRend](../configs/pointrend)|✔|✔|-|-|
 |[SegNet](../configs/segnet)|-|-|-|-|
+|[ESPNetV2](../configs/espnet)|-|-|-|-|
+|[HRNetW48Contrast](../configs/hrnet_w48_contrast)|-|-|-|✔|
 
 ### Transformer系列
 * [SETR](../configs/setr)
