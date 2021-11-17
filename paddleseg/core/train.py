@@ -69,7 +69,7 @@ def train(model,
           test_config=None,
           fp16=False,
           profiler_options=None,
-          support_to_static=False):
+          to_static_training=False):
     """
     Launch training.
 
@@ -92,7 +92,7 @@ def train(model,
         test_config(dict, optional): Evaluation config.
         fp16 (bool, optional): Whether to use amp.
         profiler_options (str, optional): The option of train profiler.
-        support_to_static (bool, optional): Whether to use dy2stat.
+        to_static_training (bool, optional): Whether to use @to_static for training.
     """
     model.train()
     nranks = paddle.distributed.ParallelEnv().nranks
@@ -133,7 +133,7 @@ def train(model,
         from visualdl import LogWriter
         log_writer = LogWriter(save_dir)
 
-    if support_to_static:
+    if to_static_training:
         model = paddle.jit.to_static(model)
         logger.info("Successfully to apply @to_static")
 
