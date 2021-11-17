@@ -34,7 +34,7 @@
 |[PointRend](../configs/pointrend)|✔|✔|-|-|
 |[SegNet](../configs/segnet)|-|-|-|-|
 |[ESPNetV2](../configs/espnet)|-|-|-|-|
-|[HRNetW48Contrast](../configs/hrnet_w48_contrast)|-|-|-|-|
+|[HRNetW48Contrast](../configs/hrnet_w48_contrast)|-|-|✔|✔|
 
 ### Transformer系列
 * [SETR](../configs/setr)
