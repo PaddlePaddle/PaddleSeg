@@ -40,7 +40,7 @@ EISeg提供多种安装方式，其中使用[pip](#PIP)和[运行代码](#运行
 
 * PaddlePaddle >= 2.2.0
 
-PaddlePaddle安装请参考[官网](https://www.paddlepaddle.org.cn/install/quick?docurl=/documentation/docs/zh/install/pip/windows-pip.html)。
+PaddlePaddle安装请参考[官网](https://www.paddlepaddle.org.cn/install/quick?docurl=/documentation/docs/zh/install/pip/windows-pip.html)。**在安装EISeg前，请先安装Paddle**。注意：下面提供的所有安装EISeg的方法都需要先安装Paddle才能使用。
 
 ### 克隆到本地
 通过git将PaddleSeg克隆到本地：
