@@ -47,7 +47,7 @@ optimizer:
 
 lr_scheduler:
   type: PolynomialDecay
-  learning_rate: 0.01
+  learning_rate: 0.001
   end_lr: 0
   power: 0.9
 
@@ -60,4 +60,4 @@ loss:
 
 model:
   type: BiSeNetLane
-  pretrained: Null
+  pretrained: /home/work/PP1109/PaddleSeg/contrib/LaneNet/output11-09-13-01/best_model/model.pdparams
