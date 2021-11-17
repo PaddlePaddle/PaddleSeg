@@ -1,9 +1,9 @@
 pyqt5>=5.13
 qtpy
-opencv-python==4.5.2.54
+opencv-python
 scipy
 paddleseg
-albumentations==0.5.2
+albumentations
 cython
 pyyaml
 wget
