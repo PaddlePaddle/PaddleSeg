@@ -60,4 +60,4 @@ loss:
 
 model:
   type: BiSeNetLane
-  pretrained: /home/work/PP1109/PaddleSeg/contrib/LaneNet/output11-09-13-01/best_model/model.pdparams
+  pretrained: Null
