@@ -11,7 +11,7 @@
 ## 近期活动
 PaddleSeg团队将举办主题为《产业图像分割应用与实战》的两日课向大家分析在**交互式智能标注工具**和**精细化分割Matting**方向的研究工作。
 <div align="center">
-<img src="docs/images/activate.png"  width = "2000" />  
+<img src=https://user-images.githubusercontent.com/14087480/142155222-97b7b93d-3f2a-433a-be70-6b2a565e936b.png  width = "2000" />  
 </div>
 
 ## PaddleSeg发布2.3版本，欢迎体验
