@@ -95,12 +95,6 @@ class ASPPModule(nn.Layer):
             axis = -1
         for block in self.aspp_blocks:
             y = block(x)
-            y = F.interpolate(
-                y,
-                interpolate_shape,
-                mode='bilinear',
-                align_corners=self.align_corners,
-                data_format=self.data_format)
             outputs.append(y)
 
         if self.image_pooling:

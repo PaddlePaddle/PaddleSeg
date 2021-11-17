@@ -38,7 +38,7 @@ def parse_args():
         '--image_path',
         dest='image_path',
         help=
-        'The path of image, it can be a file or a directory including images',
+        'The image to predict, which can be a path of image, or a file list containing image paths, or a directory including images',
         type=str,
         default=None)
     parser.add_argument(
@@ -104,7 +104,6 @@ def parse_args():
         'Save images with a custom color map. Default: None, use paddleseg\'s default color map.',
         type=int,
         default=None)
-
     return parser.parse_args()
 
 

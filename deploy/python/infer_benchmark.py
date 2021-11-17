@@ -16,23 +16,26 @@ import argparse
 import codecs
 import os
 import sys
-
 import time
-import yaml
-import numpy as np
-import paddle
 
 LOCAL_PATH = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(LOCAL_PATH, '..', '..'))
 
-from paddleseg.cvlibs import manager
-from paddleseg.utils import logger, metrics, progbar
+import yaml
+import numpy as np
+from paddle.inference import create_predictor, PrecisionType
+from paddle.inference import Config as PredictConfig
 
-from infer import Predictor
+import paddleseg.transforms as T
+from paddleseg.cvlibs import manager
+from paddleseg.utils import get_sys_env, logger, get_image_list
+from paddleseg.utils.visualize import get_pseudo_color_map
+
+from infer import use_auto_tune, auto_tune, DeployConfig, Predictor
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description='Model Infer')
+    parser = argparse.ArgumentParser(description='Test')
     parser.add_argument(
         "--config",
         dest="cfg",
@@ -40,40 +43,36 @@ def parse_args():
         default=None,
         type=str,
         required=True)
-
     parser.add_argument(
-        '--dataset_type',
-        dest='dataset_type',
-        help='The name of dataset, such as Cityscapes, PascalVOC and ADE20K.',
+        '--image_path',
+        dest='image_path',
+        help='The directory or path or file list of the images to be predicted.',
         type=str,
         default=None,
         required=True)
     parser.add_argument(
-        '--dataset_path',
-        dest='dataset_path',
-        help='The directory of the dataset to be predicted. If set dataset_path, '
-        'it use the test and label images to calculate the mIoU.',
+        '--save_dir',
+        dest='save_dir',
+        help='The directory for saving the predict result.',
         type=str,
-        default=None,
-        required=True)
-    parser.add_argument(
-        '--dataset_mode',
-        dest='dataset_mode',
-        help='The dataset mode, such as train, val.',
-        type=str,
-        default="val")
-    parser.add_argument(
-        '--batch_size',
-        dest='batch_size',
-        help='Mini batch size of one gpu or cpu.',
-        type=int,
-        default=1)
-
+        default='./output')
     parser.add_argument(
         '--device',
         choices=['cpu', 'gpu'],
         default="gpu",
         help="Select which device to inference, defaults to gpu.")
+    parser.add_argument(
+        '--resize_width',
+        help='Set the resize width to acclerate the test. In default, it is 0, '
+        'which means use the origin width.',
+        type=int,
+        default=0)
+    parser.add_argument(
+        '--resize_height',
+        help='Set the resize height to acclerate the test. In default, it is 0, '
+        'which means use the origin height.',
+        type=int,
+        default=0)
 
     parser.add_argument(
         '--use_trt',
@@ -87,6 +86,20 @@ def parse_args():
         type=str,
         choices=["fp32", "fp16", "int8"],
         help='The tensorrt precision.')
+    parser.add_argument(
+        '--enable_auto_tune',
+        default=False,
+        type=eval,
+        choices=[True, False],
+        help=
+        'Whether to enable tuned dynamic shape. We uses some images to collect '
+        'the dynamic shape for trt sub graph, which avoids setting dynamic shape manually.'
+    )
+    parser.add_argument(
+        '--auto_tuned_shape_file',
+        type=str,
+        default="auto_tune_tmp.pbtxt",
+        help='The temp file to save tuned dynamic shape.')
 
     parser.add_argument(
         '--cpu_threads',
@@ -100,12 +113,14 @@ def parse_args():
         choices=[True, False],
         help='Enable to use mkldnn to speed up when using cpu.')
 
+    parser.add_argument('--warmup', default=50, type=int, help='')
+    parser.add_argument('--repeats', default=100, type=int, help='')
+
     parser.add_argument(
         '--with_argmax',
         dest='with_argmax',
         help='Perform argmax operation on the predict result.',
         action='store_true')
-
     parser.add_argument(
         '--print_detail',
         dest='print_detail',
@@ -115,93 +130,77 @@ def parse_args():
     return parser.parse_args()
 
 
-class DatasetPredictor(Predictor):
-    def __init__(self, args):
-        super().__init__(args)
-
-    def test_dataset(self):
-        """
-        Read the data from dataset and calculate the accurary of the inference model.
-        """
-        comp = manager.DATASETS
-        if self.args.dataset_type not in comp.components_dict:
-            raise RuntimeError("The dataset is not supported.")
-        kwargs = {
-            'transforms': self.cfg.transforms.transforms,
-            'dataset_root': self.args.dataset_path,
-            'mode': self.args.dataset_mode
-        }
-        dataset = comp[self.args.dataset_type](**kwargs)
-
+class PredictorBenchmark(Predictor):
+    def run(self, img_path):
+        args = self.args
         input_names = self.predictor.get_input_names()
         input_handle = self.predictor.get_input_handle(input_names[0])
         output_names = self.predictor.get_output_names()
         output_handle = self.predictor.get_output_handle(output_names[0])
 
-        intersect_area_all = 0
-        pred_area_all = 0
-        label_area_all = 0
-        total_time = 0
-        progbar_val = progbar.Progbar(target=len(dataset), verbose=1)
+        img_data = np.array([self._preprocess(img_path)])
+        print(img_data.shape)
+        input_handle.reshape(img_data.shape)
+        input_handle.copy_from_cpu(img_data)
 
-        for idx, (img, label) in enumerate(dataset):
-            data = np.array([img])
-            input_handle.reshape(data.shape)
-            input_handle.copy_from_cpu(data)
-
-            start_time = time.time()
+        logger.info("Warmup")
+        for _ in range(args.warmup):
             self.predictor.run()
-            end_time = time.time()
-            total_time += (end_time - start_time)
 
-            pred = output_handle.copy_to_cpu()
-            pred = self.postprocess(paddle.to_tensor(pred))
-            label = paddle.to_tensor(label, dtype="int32")
+        logger.info("Infer")
+        start_time = time.time()
+        for _ in range(args.repeats):
+            self.predictor.run()
+        end_time = time.time()
 
-            intersect_area, pred_area, label_area = metrics.calculate_area(
-                pred,
-                label,
-                dataset.num_classes,
-                ignore_index=dataset.ignore_index)
+        results = output_handle.copy_to_cpu()
+        results = self._postprocess(results)
 
-            intersect_area_all = intersect_area_all + intersect_area
-            pred_area_all = pred_area_all + pred_area
-            label_area_all = label_area_all + label_area
+        self._save_imgs(results)
 
-            progbar_val.update(idx + 1)
+        avg_time = (end_time - start_time) * 1000 / args.repeats
+        logger.info("Avg Time: {:.3}ms".format(avg_time))
 
-        class_iou, miou = metrics.mean_iou(intersect_area_all, pred_area_all,
-                                           label_area_all)
-        class_acc, acc = metrics.accuracy(intersect_area_all, pred_area_all)
-        kappa = metrics.kappa(intersect_area_all, pred_area_all, label_area_all)
+    def _preprocess(self, img_path):
+        if self.args.resize_width == 0 and self.args.resize_height == 0:
+            return self.cfg.transforms(img_path)[0]
+        else:
+            assert args.resize_width > 0 and args.resize_height > 0
+            with codecs.open(args.cfg, 'r', 'utf-8') as file:
+                dic = yaml.load(file, Loader=yaml.FullLoader)
+            transforms_dic = dic['Deploy']['transforms']
+            transforms_dic.insert(
+                0, {
+                    "type": "Resize",
+                    'target_size': [args.resize_width, args.resize_height]
+                })
+            transforms = DeployConfig.load_transforms(transforms_dic)
+            return transforms(img_path)[0]
 
-        logger.info(
-            "[EVAL] #Images: {} mIoU: {:.4f} Acc: {:.4f} Kappa: {:.4f} ".format(
-                len(dataset), miou, acc, kappa))
-        logger.info("[EVAL] Class IoU: \n" + str(np.round(class_iou, 4)))
-        logger.info("[EVAL] Class Acc: \n" + str(np.round(class_acc, 4)))
-        logger.info("[EVAL] Average time: %.3f second/img" %
-                    (total_time / len(dataset)))
+    def _save_imgs(self, results):
+        for i in range(results.shape[0]):
+            img = get_pseudo_color_map(results[i])
+            basename = os.path.basename(self.args.image_path)
+            basename, _ = os.path.splitext(basename)
+            basename = f'{basename}.png'
+            img.save(os.path.join(self.args.save_dir, basename))
 
 
 def main(args):
-    predictor = DatasetPredictor(args)
-    if args.dataset_type and args.dataset_path:
-        predictor.test_dataset()
-    else:
-        raise RuntimeError("Please set dataset_type and dataset_path.")
+    if not os.path.exists(args.save_dir):
+        os.makedirs(args.save_dir)
+
+    if use_auto_tune(args):
+        auto_tune(args, args.image_path, 1)
+
+    predictor = PredictorBenchmark(args)
+    predictor.run(args.image_path)
+
+    if use_auto_tune(args) and \
+        os.path.exists(args.auto_tuned_shape_file):
+        os.remove(args.auto_tuned_shape_file)
 
 
 if __name__ == '__main__':
-    """
-    Based on the infer config and dataset, this program read the test and
-    label images, applys the transfors, run the predictor, ouput the accuracy.
-
-    For example:
-    python deploy/python/infer_benchmark.py \
-        --config path/to/bisenetv2/deploy.yaml \
-        --dataset_type Cityscapes \
-        --dataset_path path/to/cityscapes
-    """
     args = parse_args()
     main(args)

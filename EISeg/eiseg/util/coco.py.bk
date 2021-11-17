@@ -1,0 +1,144 @@
+cocoDict = {
+    "info": info,
+    "images": [image],
+    "annotations": [annotation],
+    "categories": [
+        {
+            "id": int,
+            "name": str,
+            "supercategory": str,
+        }
+    ],
+    "licenses": [license],
+}
+license = {
+    "id": int,
+    "name": str,
+    "url": str,
+}
+image = {
+    "id": int,
+    "width": int,
+    "height": int,
+    "file_name": str,
+    "license": int,
+    "flickr_url": str,
+    "coco_url": str,
+    "date_captured": datetime,
+}
+annotation = {
+    "id": int,
+    "image_id": int,
+    "category_id": int,
+    "segmentation": [polygon],
+    "area": float,
+    "bbox": [x, y, width, height],
+}
+info = {
+    "year": int,
+    "version": str,
+    "description": str,
+    "contributor": str,
+    "url": str,
+    "date_created": datetime,
+}
+import datetime
+
+
+class CoCoAnn:
+    def __init__(self, cocoFile=None):
+        self.dict = {
+            "info": {},
+            "images": [],
+            "annotations": [],
+            "categories": [],
+            "licenses": [],
+        }
+        self.annId = 0
+
+    def setInfo(
+        self,
+        year: int = "",
+        version="",
+        description="",
+        contributor="",
+        url="",
+        date_created="",
+    ):
+        # if not year:
+        #     now = datetime.now()
+        #     year = now.strftime("%Y")
+        # # TODO: datetime
+        # if not date_created:
+        #     pass
+        self.dict["info"] = {
+            "year": year,
+            "version": version,
+            "description": description,
+            "contributor": contributor,
+            "url": url,
+            "date_created": date_created,
+        }
+
+    def setCategories(self, categories):
+        self.dict["categories"] = categories
+
+    def addCategory(self, id, name, supercategory=""):
+        cat = {
+            "id": int,
+            "name": str,
+            "supercategory": str,
+        }
+        self.dict["categories"].append(cat)
+
+    def setLicenses(self, licenses):
+        self.licenses = licenses
+
+    def addLicense(self, id, name, url):
+        license = {
+            "id": int,
+            "name": str,
+            "url": str,
+        }
+        self.dict["licenses"].append(license)
+
+    def addImage(
+        self,
+        id,
+        width,
+        height,
+        file_name,
+        license="",
+        flickr_url="",
+        coco_url="",
+        date_captured="",
+    ):
+        image = {
+            "id": id,
+            "width": width,
+            "height": height,
+            "file_name": file_name,
+            "license": license,
+            "flickr_url": flickr_url,
+            "coco_url": coco_url,
+            "date_captured": date_captured,
+        }
+        self.dict["images"].append(image)
+
+    def addAnnotation(
+        self,
+        image_id,
+        category_id,
+        segmentation,
+        bbox,
+        area,
+        id,
+    ):
+        {
+            "id": int,
+            "image_id": int,
+            "category_id": int,
+            "segmentation": [polygon],
+            "area": float,
+            "bbox": [x, y, width, height],
+        }

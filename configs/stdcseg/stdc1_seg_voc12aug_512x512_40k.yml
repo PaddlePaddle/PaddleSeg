@@ -1,0 +1,17 @@
+_base_: '../_base_/pascal_voc12aug.yml'
+
+
+model:
+  type: STDCSeg
+  backbone:
+    type: STDC1
+    pretrained: https://bj.bcebos.com/paddleseg/dygraph/STDCNet1.tar.gz
+  pretrained: null
+
+loss:
+  types:
+    - type: OhemCrossEntropyLoss
+    - type: OhemCrossEntropyLoss
+    - type: OhemCrossEntropyLoss
+    - type: DetailAggregateLoss
+  coef: [1, 1, 1, 1]
