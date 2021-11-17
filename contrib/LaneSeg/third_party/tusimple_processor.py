@@ -79,6 +79,8 @@ class TusimpleProcessor:
 
     def calculate_eval(self):
         output_file = os.path.join(self.save_dir, 'predict_test.json')
+        if output_file is not None:
+            mkdir(output_file)
         with open(output_file, "w+") as f:
             for line in self.dump_to_json:
                 print(line, end="\n", file=f)
