@@ -79,7 +79,7 @@ class Tusimple(paddle.io.Dataset):
         self.num_classes = self.NUM_CLASSES
         self.ignore_index = 255
         self.cut_height = cut_height
-        self.test_gt_json = os.path.join(self.dataset_root, 'test_label.json')
+        self.test_gt_json = os.path.join(self.dataset_root, 'test_set/test_label.json')
 
         if mode not in ['train', 'val', 'test']:
             raise ValueError(
