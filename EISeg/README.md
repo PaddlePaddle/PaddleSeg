@@ -83,9 +83,6 @@ eiseg
 ```
 即可运行软件。
 
-### Windows exe
-
-EISeg使用[QPT](https://github.com/GT-ZhangAcer/QPT)进行打包。可以从[这里](https://paddleseg.bj.bcebos.com/eiseg/EISeg0.4.0.zip)下载最新EISeg。解压后双击启动程序.exe即可运行程序。程序第一次运行会初始化安装所需要的包，请稍等片刻。
 
 ## 使用
 
