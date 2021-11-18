@@ -1,0 +1,204 @@
+English | [简体中文](README_CN.md)
+
+# LaneSeg
+Lane detection is a category of automatic driving algorithms, which can be used to assist vehicle positioning and decision-making. In the early days, there were lane detection methods based on traditional image processing, but with the evolution of technology, the scenes that lane detection tasks deal with More and more diversified, and more methods are currently seeking to detect the location of lane semantically. This project mainly uses PaddleSeg for lane line detection
+
+## Contents
+- [Installation](#Installation)
+- [Models](#Models)
+- [Dataset Preparation](#Dataset-Preparation)
+- [Training, Evaluation and Prediction](#Training-Evaluation-and-Prediction)
+- [Background Replacement](#Background-Replacement)
+- [Export and Deploy](#Export-and-Deploy)
+
+## Installation
+
+#### 1. Install PaddlePaddle
+
+Versions
+
+* PaddlePaddle >= 2.0.2
+
+* Python >= 3.7+
+
+Due to the high computational cost of model, PaddleSeg is recommended for GPU version PaddlePaddle. CUDA 10.0 or later is recommended. See [PaddlePaddle official website](https://www.paddlepaddle.org.cn/install/quick?docurl=/documentation/docs/zh/install/pip/linux-pip.html) for the installation tutorial.
+
+#### 2. Download the PaddleSeg repository
+
+```shell
+git clone https://github.com/PaddlePaddle/PaddleSeg
+```
+
+#### 3. Installation
+
+```shell
+cd PaddleSeg
+pip install -e .
+pip install scikit-image
+cd contrib/Matting
+```
+
+## Models
+[BiseNetLane](https://paddleseg.bj.bcebos.com/laneseg/models/*.pdparams)
+
+BiseNetLane performance on [Tusimple](https://github.com/TuSimple/tusimple-benchmark/issues/3).
+
+| Backbone | Acc | FN | FP | Link|
+|-|-|-|-|-|
+|BiseNetV2|96.04%|0.0477|0.04221|[model](https://paddleseg.bj.bcebos.com/laneseg/models/*.pdparams)|
+
+Note: The model input size is (512, 640) and the GPU is Tesla V100 32G.
+
+## Dataset preparation
+
+Using Tusimple's open source [Tusimple](https://github.com/TuSimple/tusimple-benchmark/issues/3)dataset as our demo dataset for the tutorial.
+
+Organize the dataset into the following structure and place the dataset under the `data` directory.
+
+```
+ The folder structure is as follow:
+
+ LaneSeg
+ |-- data
+     |-- tusimple
+        |-- train_set
+            |-- clips
+                |-- 0313-1
+                |-- 0313-2
+                |-- 0531
+                |-- 0601
+            |-- labels [need to generate label dir]
+                |-- 0313-1
+                |-- 0313-2
+                |-- 0531
+                |-- 0601
+            |-- train_list.txt [need to generate]
+            |-- label_data_0313.json
+            |-- label_data_0531.json
+            |-- label_data_0601.json
+        |-- test_set
+            |-- clips
+                |-- 0530
+                |-- 0531
+                |-- 0601
+            |-- labels [need to generate label dir]
+                |-- 0530
+                |-- 0531
+                |-- 0601
+            |-- train_list.txt [need to generate]
+            |-- test_tasks_0627.json
+            |-- test_label.json
+```
+
+The contents of train_list.txt is as follows:
+```
+/train_set/clips/0313-1/6040/20.jpg /train_set/labels/0313-1/6040/20.png
+/train_set/clips/0313-1/5320/20.jpg /train_set/labels/0313-1/5320/20.png
+/train_set/clips/0313-1/23700/20.jpg /train_set/labels/0313-1/23700/20.png
+...
+```
+
+The contents of test_list.txt is as follows:
+```
+/test_set/clips/0530/1492626760788443246_0/20.jpg /test_set/labels/0530/1492626760788443246_0/20.png
+/test_set/clips/0530/1492627171538356342_0/20.jpg /test_set/labels/0530/1492627171538356342_0/20.png
+/test_set/clips/0530/1492627288467128445_0/20.jpg /test_set/labels/0530/1492627288467128445_0/20.png
+...
+```
+
+## Training, Evaluation and Prediction
+### Training
+```shell
+export CUDA_VISIBLE_DEVICES=0
+python train.py \
+       --config configs/modnet/bisenet_tusimple_640x368_300k.yml \
+       --do_eval \
+       --use_vdl \
+       --save_interval 5000 \
+       --num_workers 5 \
+       --save_dir output
+```
+
+**note:** Using `--do_eval` will affect training speed and increase memory consumption, turning on and off according to needs.
+
+`--num_workers` Read data in multi-process mode. Speed up data preprocessing.
+
+Run the following command to view more parameters.
+```shell
+python train.py --help
+```
+If you want to use multiple GPUs，please use `python -m paddle.distributed.launch` to run.
+
+### Evaluation
+```shell
+export CUDA_VISIBLE_DEVICES=0
+python val.py \
+       --config configs/modnet/bisenet_tusimple_640x368_300k.yml \
+       --model_path output/best_model/model.pdparams \
+       --save_dir ./output/results \
+       --save_results
+```
+`--save_result` The prediction results will be saved if turn on. If it is off, it will speed up the evaluation.
+
+You can directly download the provided model for evaluation.
+
+Run the following command to view more parameters.
+```shell
+python val.py --help
+```
+
+### Prediction
+```shell
+export CUDA_VISIBLE_DEVICES=0
+python predict.py \
+    --config configs/modnet/bisenet_tusimple_640x368_300k.yml \
+    --model_path output/best_model/model.pdparams \
+    --image_path data/test_images/3.jpg \
+    --save_dir ./output/results
+```
+
+You can directly download the provided model for evaluation.
+
+Run the following command to view more parameters.
+```shell
+python predict.py --help
+```
+  prediction：<br/>
+  ![](data/images/points/3.jpg)<br/>
+  pseudo_color_prediction：<br/>
+  ![](data/images/pseudo_color_prediction/3.png)<br/>
+  added_prediction：<br/>
+  ![](data/images/added_prediction/3.jpg)
+
+## Export and Deploy
+### Model Export
+```shell
+python export.py \
+    --config configs/modnet/bisenet_tusimple_640x368_300k.yml \
+    --model_path output/best_model/model.pdparams \
+    --save_dir output/export
+```
+
+Run the following command to view more parameters.
+```shell
+python export.py --help
+```
+
+### Deploy
+#### Paddle Inference (python)
+```shell
+python deploy/python/infer.py \
+    --config output/export/deploy.yaml \
+    --image_path data/PPM-100/val/fg/ \
+    --save_dir ouput/results
+```
+
+Run the following command to view more parameters.
+```shell
+python deploy/python/infer.py --help
+```
+
+#### Paddle Inference（C++）
+reference [Paddle Inference tutorial](../../deploy/cpp/)
+
+the C++ sources files of the project is in PaddleSeg/contrib/LaneSeg/deploy/cpp

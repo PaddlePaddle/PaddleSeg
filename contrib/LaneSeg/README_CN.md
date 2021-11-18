@@ -1,4 +1,4 @@
-简体中文
+简体中文 | [English](README.md)
 
 # LaneSeg
 车道线检测是自动驾驶算法的一个范畴，可以用来辅助进行车辆定位和进行决策，早期已有基于传统图像处理的车道线检测方法，但是随着技术的演进，车道线检测任务所应对的场景越来越多样化，目前更多的方式是寻求在语义上对车道线存在位置的检测。本项目主要使用PaddleSeg进行车道线检测
@@ -154,7 +154,7 @@ export CUDA_VISIBLE_DEVICES=0
 python predict.py \
        --config configs/bisenet_tusimple_640x368_300k.yml \
        --model_path output/best_model/model.pdparams \
-       --image_path data/test_images/0.jpg \
+       --image_path data/test_images/3.jpg \
        --save_dir output/result
 ```
 
@@ -165,7 +165,6 @@ python predict.py \
 python predict.py --help
 ```
 
-结果示例：
   预测结果：<br/>
   ![](data/images/points/3.jpg)<br/>
   分割结果：<br/>
@@ -191,7 +190,6 @@ python export.py --help
 
 #### Paddle Inference部署 (python)
 ```shell
-#运行如下命令，会在output文件下面生成一张3.jpg的图像
 python deploy/python/infer.py \
     --config output/export/deploy.yaml \
     --image_path  data/test_images/3.jpg \
