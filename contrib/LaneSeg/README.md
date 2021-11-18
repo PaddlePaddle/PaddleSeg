@@ -38,13 +38,13 @@ cd contrib/LaneSeg
 ```
 
 ## Models
-[BiseNetLane](https://paddleseg.bj.bcebos.com/laneseg/models/*.pdparams)
+[BiseNetLane](https://paddleseg.bj.bcebos.com/models/bisenet_lan.pdparams)
 
 BiseNetLane performance on [Tusimple](https://github.com/TuSimple/tusimple-benchmark/issues/3).
 
 | Backbone | Acc | FN | FP | Link|
 |-|-|-|-|-|
-|BiseNetV2|96.09%|0.04643|0.041606|[model](https://paddleseg.bj.bcebos.com/laneseg/models/*.pdparams)|
+|BiseNetV2|96.09%|0.04643|0.041606|[model](https://paddleseg.bj.bcebos.com/models/bisenet_lan.pdparams)|
 
 Note: The model input size is (640, 368) and the GPU is Tesla V100 32G.
 
