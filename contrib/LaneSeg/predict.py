@@ -50,29 +50,6 @@ def parse_args():
         type=str,
         default='./output/result')
 
-    # sliding window prediction
-    parser.add_argument(
-        '--is_slide',
-        dest='is_slide',
-        help='Whether to prediction by sliding window',
-        action='store_true')
-    parser.add_argument(
-        '--crop_size',
-        dest='crop_size',
-        nargs=2,
-        help=
-        'The crop size of sliding window, the first is width and the second is height.',
-        type=int,
-        default=None)
-    parser.add_argument(
-        '--stride',
-        dest='stride',
-        nargs=2,
-        help=
-        'The stride of sliding window, the first is width and the second is height.',
-        type=int,
-        default=None)
-
     # custom color map
     parser.add_argument(
         '--custom_color',
@@ -88,11 +65,6 @@ def parse_args():
 def get_test_config(cfg, args):
 
     test_config = cfg.test_config
-    if args.is_slide:
-        test_config['is_slide'] = args.is_slide
-        test_config['crop_size'] = args.crop_size
-        test_config['stride'] = args.stride
-
     if args.custom_color:
         test_config['custom_color'] = args.custom_color
 

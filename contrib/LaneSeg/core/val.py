@@ -28,9 +28,6 @@ np.set_printoptions(suppress=True)
 
 def evaluate(model,
              eval_dataset,
-             is_slide=False,
-             stride=None,
-             crop_size=None,
              num_workers=0,
              print_detail=True):
     """
@@ -39,11 +36,6 @@ def evaluate(model,
     Args:
         model（nn.Layer): A sementic segmentation model.
         eval_dataset (paddle.io.Dataset): Used to read and process validation datasets.
-        is_slide (bool, optional): Whether to evaluate by sliding window. Default: False.
-        stride (tuple|list, optional): The stride of sliding window, the first is width and the second is height.
-            It should be provided when `is_slide` is True.
-        crop_size (tuple|list, optional):  The crop size of sliding window, the first is width and the second is height.
-            It should be provided when `is_slide` is True.
         num_workers (int, optional): Num workers for data loader. Default: 0.
         print_detail (bool, optional): Whether to print detailed information about the evaluation process. Default: True.
 
@@ -96,10 +88,7 @@ def evaluate(model,
                 model,
                 im,
                 ori_shape=ori_shape,
-                transforms=eval_dataset.transforms.transforms,
-                is_slide=is_slide,
-                stride=stride,
-                crop_size=crop_size)
+                transforms=eval_dataset.transforms.transforms)
 
             postprocessor.evaluate(pred[1], im_path)
             batch_cost_averager.record(

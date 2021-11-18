@@ -43,9 +43,6 @@ def predict(model,
             image_list,
             image_dir=None,
             save_dir='output',
-            is_slide=False,
-            stride=None,
-            crop_size=None,
             custom_color=None):
     """
     predict and visualize the image_list.
@@ -57,11 +54,6 @@ def predict(model,
         image_list (list): A list of image path to be predicted.
         image_dir (str, optional): The root directory of the images predicted. Default: None.
         save_dir (str, optional): The directory to save the visualized results. Default: 'output'.
-        is_slide (bool, optional): Whether to predict by sliding window. Default: False.
-        stride (tuple|list, optional): The stride of sliding window, the first is width and the second is height.
-            It should be provided when `is_slide` is True.
-        crop_size (tuple|list, optional):  The crop size of sliding window, the first is width and the second is height.
-            It should be provided when `is_slide` is True.
         custom_color (list, optional): Save images with a custom color map. Default: None, use paddleseg's default color map.
 
     """
@@ -98,10 +90,7 @@ def predict(model,
                 model,
                 im,
                 ori_shape=ori_shape,
-                transforms=transforms.transforms,
-                is_slide=is_slide,
-                stride=stride,
-                crop_size=crop_size)
+                transforms=transforms.transforms)
 
             # get lane points
             postprocessor.predict(pred[1], im_path)
