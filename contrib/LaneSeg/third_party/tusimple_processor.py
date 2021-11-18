@@ -217,8 +217,8 @@ class TusimpleProcessor:
         if (coords > 0).sum() < 2:
             coords = np.zeros(self.pts)
         self.process_gap(coords)
-        self.fix_outliers(coords)
-        self.process_gap(coords)
+        # self.fix_outliers(coords)
+        # self.process_gap(coords)
         return coords
 
     def fix_outliers(self, coords):
