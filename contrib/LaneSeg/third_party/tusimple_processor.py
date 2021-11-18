@@ -104,8 +104,8 @@ class TusimpleProcessor:
         pointCount = 0
         coords = np.zeros(self.points_nums)
         for i in range(self.points_nums):
-            y = int((dst_height - 10 - i * self.y_pixel_gap) * prob_map.shape[0]
-                    / dst_height)
+            y = int((dst_height - self.y_pixel_gap * (1 + i)) *
+                    prob_map.shape[0] / dst_height)
             if y < 0:
                 break
             line = prob_map[y, :]
@@ -184,9 +184,9 @@ class TusimpleProcessor:
         sub_lanes = []
         for j in range(self.points_nums):
             if coords[j] > 0:
-                val = [coords[j], self.src_height - 10 - j * self.y_pixel_gap]
+                val = [coords[j], self.src_height - self.y_pixel_gap * (1 + j)]
             else:
-                val = [-2, self.src_height - 10 - j * self.y_pixel_gap]
+                val = [-2, self.src_height - self.y_pixel_gap * (1 + j)]
             sub_lanes.append(val)
         coordinates.append(sub_lanes)
 
