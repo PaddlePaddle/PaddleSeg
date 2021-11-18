@@ -30,7 +30,7 @@ from paddle.inference import Config as PredictConfig
 from paddleseg.cvlibs import manager
 from paddleseg.utils import get_sys_env, logger, get_image_list
 
-sys.path.append('..')
+sys.path.append('../..')
 from third_party import tusimple_processor
 import paddleseg.transforms.transforms as T
 
@@ -120,7 +120,6 @@ class Predictor:
 
         for i, im_path in enumerate(imgs):
             im = cv2.imread(im_path)
-            gt_image = im
             im = im[cut_height:, :, :]
             im = im.astype('float32')
             im, _ = self.cfg.transforms(im)
