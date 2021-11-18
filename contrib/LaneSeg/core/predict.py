@@ -43,10 +43,6 @@ def predict(model,
             image_list,
             image_dir=None,
             save_dir='output',
-            aug_pred=False,
-            scales=1.0,
-            flip_horizontal=True,
-            flip_vertical=False,
             is_slide=False,
             stride=None,
             crop_size=None,
@@ -61,10 +57,6 @@ def predict(model,
         image_list (list): A list of image path to be predicted.
         image_dir (str, optional): The root directory of the images predicted. Default: None.
         save_dir (str, optional): The directory to save the visualized results. Default: 'output'.
-        aug_pred (bool, optional): Whether to use mulit-scales and flip augment for predition. Default: False.
-        scales (list|float, optional): Scales for augment. It is valid when `aug_pred` is True. Default: 1.0.
-        flip_horizontal (bool, optional): Whether to use flip horizontally augment. It is valid when `aug_pred` is True. Default: True.
-        flip_vertical (bool, optional): Whether to use flip vertically augment. It is valid when `aug_pred` is True. Default: False.
         is_slide (bool, optional): Whether to predict by sliding window. Default: False.
         stride (tuple|list, optional): The stride of sliding window, the first is width and the second is height.
             It should be provided when `is_slide` is True.
@@ -102,31 +94,17 @@ def predict(model,
             im = im[np.newaxis, ...]
             im = paddle.to_tensor(im)
 
-            if aug_pred:
-                pred = infer.aug_inference(
-                    model,
-                    im,
-                    ori_shape=ori_shape,
-                    transforms=transforms.transforms,
-                    scales=scales,
-                    flip_horizontal=flip_horizontal,
-                    flip_vertical=flip_vertical,
-                    is_slide=is_slide,
-                    stride=stride,
-                    crop_size=crop_size)
-            else:
-                pred = infer.inference(
-                    model,
-                    im,
-                    ori_shape=ori_shape,
-                    transforms=transforms.transforms,
-                    is_slide=is_slide,
-                    stride=stride,
-                    crop_size=crop_size)
+            pred = infer.inference(
+                model,
+                im,
+                ori_shape=ori_shape,
+                transforms=transforms.transforms,
+                is_slide=is_slide,
+                stride=stride,
+                crop_size=crop_size)
 
             # get lane points
-            if not aug_pred:
-                postprocessor.predict(pred[1], im_path)
+            postprocessor.predict(pred[1], im_path)
 
             pred = paddle.squeeze(pred[0])
             pred = pred.numpy().astype('uint8')

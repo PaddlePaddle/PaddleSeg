@@ -50,30 +50,6 @@ def parse_args():
         type=str,
         default='./output/result')
 
-    # augment for prediction
-    parser.add_argument(
-        '--aug_pred',
-        dest='aug_pred',
-        help='Whether to use mulit-scales and flip augment for prediction',
-        action='store_true')
-    parser.add_argument(
-        '--scales',
-        dest='scales',
-        nargs='+',
-        help='Scales for augment',
-        type=float,
-        default=1.0)
-    parser.add_argument(
-        '--flip_horizontal',
-        dest='flip_horizontal',
-        help='Whether to use flip horizontally augment',
-        action='store_true')
-    parser.add_argument(
-        '--flip_vertical',
-        dest='flip_vertical',
-        help='Whether to use flip vertically augment',
-        action='store_true')
-
     # sliding window prediction
     parser.add_argument(
         '--is_slide',
@@ -109,20 +85,9 @@ def parse_args():
     return parser.parse_args()
 
 
-
 def get_test_config(cfg, args):
 
     test_config = cfg.test_config
-    if args.aug_pred:
-        test_config['aug_pred'] = args.aug_pred
-        test_config['scales'] = args.scales
-
-    if args.flip_horizontal:
-        test_config['flip_horizontal'] = args.flip_horizontal
-
-    if args.flip_vertical:
-        test_config['flip_vertical'] = args.flip_vertical
-
     if args.is_slide:
         test_config['is_slide'] = args.is_slide
         test_config['crop_size'] = args.crop_size
