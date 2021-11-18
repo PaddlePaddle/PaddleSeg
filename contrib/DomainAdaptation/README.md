@@ -1,16 +1,16 @@
 # Unsupervised Domain Adaptation on Semantic Segmentation
 
-Domain adpataion is a kind of algorithms that dedicate to minimize the performance drop when we apply the model trained from one domain on anther. Normally, this happens when we want to apply models which is trained with dataset A on a similar dataset B. Specifically, Unsupervised domain adaptation(UDA) dedicate to achieve satisfactory performance on dataset B that we do not have label on. Following image from [pixmatch](https://arxiv.org/abs/2105.08128) shows the performance of UDA algorithms on semantic segmentaion. When we compare the segmentaiton results between "source only"(without DA) and "ours", we can observe a great performance lift.
+Domain adaptation is a kind of algorithms that dedicate to minimizing the performance drop when we apply the model trained from one domain to another. Usually, this happens when we want to apply models trained with dataset A on a similar dataset B. Specifically, Unsupervised domain adaptation(UDA) dedicate to achieving satisfactory performance on dataset B that we do not have labels. The following image is the result of our model. It shows the performance gain of the UDA algorithms on semantic segmentation. When we compare the segmentation results between "without DA" and "with DA", we can observe a notable performance lift.
 
 ![image-20211116171626323](https://github.com/PaddlePaddle/PaddleSeg/blob/0012de96c95fe9fddac1dd98284cfcaa4bae3842/contrib/DomainAdaptation/docs/domain_adaptation.png)
 
 This project includes the reproduction of pixmatch [[Paper](https://arxiv.org/abs/2105.08128)|[Code](https://github.com/lukemelas/pixmatch)] based on PaddlePaddle and PaddleSeg, which reaches mIOU = 47.8% on Cityscapes Dataset.
 
-In addition to reproduce pixmatch, we also tried something new. Major adjustment including:
+In addition to reproducing pixmatch, we also tried something new. Major adjustments include:
 
 1. Add edge constrain branch to improve edge accuracy (negative results, still needs to adjust)
 2. Use edge as prior information to fix segmentation result (negative results, still needs to adjust)
-3. Align features' structure across domain (positve result, reached mIOU=48.0%)
+3. Align features' structure across domain (positive result, reached mIOU=48.0%)
 
 ## Model performance (GTA5 -> Cityscapes)
 
@@ -64,13 +64,13 @@ python -m pip install paddlepaddle-gpu==2.2.0 -i https://mirror.baidu.com/pypi/s
 1. Train on one GPU
 
    1. Try the project as the reproduction of pixmatch:  `sh run-DA_src.sh`
-   2. Try the project for other experiment:  change to another config file in the training script
+   2. Try the project for other experiments:  change to another config file in the training script
 
 2. Validate on one GPU:
 
    1. Download the [trained model](https://bj.bcebos.com/paddleseg/domain_adaptation/gta5_to_cityscapes/pixmatch/model.pdparams) on cityscapes, and save it to models/model.pdparams:
 
-   2. Validate with following script. Since we forget to save the ema model, the validation result is 46% :
+   2. Validate with the following script. Since we forget to save the ema model, the validation result is 46% :
 
       ```
       python3 -m paddle.distributed.launch val.py --config configs/deeplabv2/deeplabv2_resnet101_os8_gta5cityscapes_1280x640_160k_newds_gta5src.yml --model_path models/model.pdparams --num_workers 4
