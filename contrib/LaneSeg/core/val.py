@@ -28,10 +28,6 @@ np.set_printoptions(suppress=True)
 
 def evaluate(model,
              eval_dataset,
-             aug_eval=False,
-             scales=1.0,
-             flip_horizontal=True,
-             flip_vertical=False,
              is_slide=False,
              stride=None,
              crop_size=None,
@@ -43,10 +39,6 @@ def evaluate(model,
     Args:
         model（nn.Layer): A sementic segmentation model.
         eval_dataset (paddle.io.Dataset): Used to read and process validation datasets.
-        aug_eval (bool, optional): Whether to use mulit-scales and flip augment for evaluation. Default: False.
-        scales (list|float, optional): Scales for augment. It is valid when `aug_eval` is True. Default: 1.0.
-        flip_horizontal (bool, optional): Whether to use flip horizontally augment. It is valid when `aug_eval` is True. Default: True.
-        flip_vertical (bool, optional): Whether to use flip vertically augment. It is valid when `aug_eval` is True. Default: False.
         is_slide (bool, optional): Whether to evaluate by sliding window. Default: False.
         stride (tuple|list, optional): The stride of sliding window, the first is width and the second is height.
             It should be provided when `is_slide` is True.
@@ -99,31 +91,15 @@ def evaluate(model,
             label = label.astype('int64')
 
             ori_shape = None
-            if aug_eval:
-                raise RuntimeError(
-                    'aug_eval mode this not to valiation, so far not support !')
 
-            if aug_eval:
-                pred = infer.aug_inference(
-                    model,
-                    im,
-                    ori_shape=ori_shape,
-                    transforms=eval_dataset.transforms.transforms,
-                    scales=scales,
-                    flip_horizontal=flip_horizontal,
-                    flip_vertical=flip_vertical,
-                    is_slide=is_slide,
-                    stride=stride,
-                    crop_size=crop_size)
-            else:
-                pred = infer.inference(
-                    model,
-                    im,
-                    ori_shape=ori_shape,
-                    transforms=eval_dataset.transforms.transforms,
-                    is_slide=is_slide,
-                    stride=stride,
-                    crop_size=crop_size)
+            pred = infer.inference(
+                model,
+                im,
+                ori_shape=ori_shape,
+                transforms=eval_dataset.transforms.transforms,
+                is_slide=is_slide,
+                stride=stride,
+                crop_size=crop_size)
 
             postprocessor.evaluate(pred[1], im_path)
             batch_cost_averager.record(
