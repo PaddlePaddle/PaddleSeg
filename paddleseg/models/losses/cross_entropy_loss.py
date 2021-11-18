@@ -49,7 +49,8 @@ class CrossEntropyLoss(nn.Layer):
         if weight is not None:
             self.weight = paddle.to_tensor(weight, dtype='float32')
         else:
-            self.weight = None
+            self.weight = paddle.ones(shape=[1001], dtype='float32')
+            self.weight[1000] = 0.1
 
     def forward(self, logit, label, semantic_weights=None):
         """
