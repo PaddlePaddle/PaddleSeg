@@ -262,7 +262,11 @@ def train(model,
                     test_config = {}
 
                 acc, fp, fn = evaluate(
-                    model, val_dataset, num_workers=num_workers, **test_config)
+                    model,
+                    val_dataset,
+                    num_workers=num_workers,
+                    save_dir=save_dir,
+                    **test_config)
 
                 model.train()
 

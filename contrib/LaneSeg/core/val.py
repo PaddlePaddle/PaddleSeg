@@ -29,6 +29,8 @@ np.set_printoptions(suppress=True)
 def evaluate(model,
              eval_dataset,
              num_workers=0,
+             is_view=False,
+             save_dir='output',
              print_detail=True):
     """
     Launch evalution.
@@ -37,11 +39,14 @@ def evaluate(model,
         model（nn.Layer): A sementic segmentation model.
         eval_dataset (paddle.io.Dataset): Used to read and process validation datasets.
         num_workers (int, optional): Num workers for data loader. Default: 0.
+        is_view (bool, optional): Whether to visualize results. Default: False.
+        save_dir (str, optional): The directory to save the json or visualized results. Default: 'output'.
         print_detail (bool, optional): Whether to print detailed information about the evaluation process. Default: True.
 
     Returns:
-        float: The mIoU of validation datasets.
-        float: The accuracy of validation datasets.
+        float: The acc of validation datasets.
+        float: The fp of validation datasets.
+        float: The fn of validation datasets.
     """
     model.eval()
     nranks = paddle.distributed.ParallelEnv().nranks
@@ -64,6 +69,8 @@ def evaluate(model,
         num_classes=eval_dataset.num_classes,
         cut_height=eval_dataset.cut_height,
         test_gt_json=eval_dataset.test_gt_json,
+        is_view=is_view,
+        save_dir=save_dir,
     )
     total_iters = len(loader)
 

@@ -38,7 +38,7 @@ class TusimpleProcessor:
                  thresh=0.6,
                  is_view=False,
                  test_gt_json=None,
-                 save_dir='output/eval'):
+                 save_dir='output/'):
         super(TusimpleProcessor, self).__init__()
         self.num_classes = num_classes
         self.cut_height = cut_height
@@ -129,7 +129,7 @@ class TusimpleProcessor:
                 new_img_name = '_'.join(
                     [x for x in split_path(img_path[batch])[-4:]])
 
-                saved_path = os.path.join(self.save_dir, 'vis', new_img_name)
+                saved_path = os.path.join(self.save_dir, 'visual', new_img_name)
                 self.draw(img, lane_coords, saved_path)
 
     def get_lane_coords(self, seg_pred):

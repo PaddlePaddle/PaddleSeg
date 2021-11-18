@@ -57,6 +57,20 @@ def parse_args():
         type=str,
         default='NCHW')
 
+    parser.add_argument(
+        '--is_view',
+        dest='is_view',
+        help='Whether to visualize results.',
+        type=str,
+        default=False)
+
+    parser.add_argument(
+        '--save_dir',
+        dest='save_dir',
+        help='The directory for saving the predicted results',
+        type=str,
+        default='./output/result')
+
     return parser.parse_args()
 
 
@@ -104,7 +118,13 @@ def main(args):
     test_config = get_test_config(cfg, args)
     config_check(cfg, val_dataset=val_dataset)
 
-    evaluate(model, val_dataset, num_workers=args.num_workers, **test_config)
+    evaluate(
+        model,
+        val_dataset,
+        num_workers=args.num_workers,
+        is_view=args.is_view,
+        save_dir=args.save_dir,
+        **test_config)
 
 
 if __name__ == '__main__':
