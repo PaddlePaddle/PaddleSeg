@@ -49,11 +49,17 @@ BiseNetLane在[Tusimple](https://github.com/TuSimple/tusimple-benchmark/issues/3
 |-|-|-|-|-|
 |BiseNetV2|96.04%|0.0477|0.04221|[model](https://paddleseg.bj.bcebos.com/laneseg/models/*.pdparams)|
 
-注意：模型输入大小为(368, 640), GPU为Tesla V100 32G。
+注意：模型输入大小为(640, 368), GPU为Tesla V100 32G。
 
 ## 数据准备
 
 利用Tusimple开源的[Tusimple](https://github.com/TuSimple/tusimple-benchmark/issues/3)数据集作为我们教程的示例数据集
+
+执行如下命令：
+```shell
+python third_party/generate_seg_tusimple.py.py --root path/to/your/unzipped/file
+
+```
 
 将数据集整理为如下结构， 并将数据集置于data目录下。
 

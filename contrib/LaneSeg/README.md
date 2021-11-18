@@ -1,14 +1,13 @@
 English | [简体中文](README_CN.md)
 
 # LaneSeg
-Lane detection is a category of automatic driving algorithms, which can be used to assist vehicle positioning and decision-making. In the early days, there were lane detection methods based on traditional image processing, but with the evolution of technology, the scenes that lane detection tasks deal with More and more diversified, and more methods are currently seeking to detect the location of lane semantically. This project mainly uses PaddleSeg for lane line detection
+Lane detection is a category of automatic driving algorithms, which can be used to assist vehicle positioning and decision-making. In the early days, there were lane detection methods based on traditional image processing, but with the evolution of technology, the scenes that lane detection tasks deal with More and more diversified, and more methods are currently seeking to detect the location of lane semantically. This project mainly uses PaddleSeg for lane detection
 
 ## Contents
 - [Installation](#Installation)
 - [Models](#Models)
 - [Dataset Preparation](#Dataset-Preparation)
 - [Training, Evaluation and Prediction](#Training-Evaluation-and-Prediction)
-- [Background Replacement](#Background-Replacement)
 - [Export and Deploy](#Export-and-Deploy)
 
 ## Installation
@@ -35,7 +34,7 @@ git clone https://github.com/PaddlePaddle/PaddleSeg
 cd PaddleSeg
 pip install -e .
 pip install scikit-image
-cd contrib/Matting
+cd contrib/LaneSeg
 ```
 
 ## Models
@@ -47,11 +46,17 @@ BiseNetLane performance on [Tusimple](https://github.com/TuSimple/tusimple-bench
 |-|-|-|-|-|
 |BiseNetV2|96.04%|0.0477|0.04221|[model](https://paddleseg.bj.bcebos.com/laneseg/models/*.pdparams)|
 
-Note: The model input size is (512, 640) and the GPU is Tesla V100 32G.
+Note: The model input size is (640, 368) and the GPU is Tesla V100 32G.
 
 ## Dataset preparation
 
-Using Tusimple's open source [Tusimple](https://github.com/TuSimple/tusimple-benchmark/issues/3)dataset as our demo dataset for the tutorial.
+Using Tusimple's open source [Tusimple](https://github.com/TuSimple/tusimple-benchmark/issues/3) dataset as our demo dataset for the tutorial.
+
+Run the following command ：
+```shell
+python third_party/generate_seg_tusimple.py.py --root path/to/your/unzipped/file
+
+```
 
 Organize the dataset into the following structure and place the dataset under the `data` directory.
 
@@ -189,7 +194,7 @@ python export.py --help
 ```shell
 python deploy/python/infer.py \
     --config output/export/deploy.yaml \
-    --image_path data/PPM-100/val/fg/ \
+    --image_path data/test_images/3.jpg \
     --save_dir ouput/results
 ```
 
