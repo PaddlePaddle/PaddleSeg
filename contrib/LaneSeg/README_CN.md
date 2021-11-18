@@ -45,9 +45,9 @@ cd contrib/LaneSeg
 
 BiseNetLane在[Tusimple](https://github.com/TuSimple/tusimple-benchmark/issues/3)数据集上的性能
 
-| Backbone | Acc | FN | FP | Link|
+| Backbone | Acc | FP| FN | Link|
 |-|-|-|-|-|
-|BiseNetV2|96.04%|0.0477|0.04221|[model](https://paddleseg.bj.bcebos.com/laneseg/models/*.pdparams)|
+|BiseNetV2|96.09%|0.04643|0.041606|[model](https://paddleseg.bj.bcebos.com/laneseg/models/*.pdparams)|
 
 注意：模型输入大小为(640, 368), GPU为Tesla V100 32G。
 
