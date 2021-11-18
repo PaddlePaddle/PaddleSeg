@@ -5,8 +5,8 @@ data:
   source:
     dataset: 'gta5'
     kwargs:
-      root: /ssd2/tangshiyu/data/GTA5
-      list_path: /ssd2/tangshiyu/Code/pixmatch/datasets/gta5_list
+      root: data/GTA5
+      list_path: data/gta5_list
       base_size: [1280, 640]
       crop_size: [1280, 640]
       random_mirror: True
@@ -19,8 +19,8 @@ data:
   target:
     dataset: 'cityscapes'
     kwargs:
-      root: /ssd2/tangshiyu/data/cityscapes
-      list_path: /ssd2/tangshiyu/Code/pixmatch/datasets/city_list
+      root: data/cityscapes
+      list_path: data/city_list
       base_size: [1280, 640]
       crop_size: [1280, 640]
       random_mirror: True

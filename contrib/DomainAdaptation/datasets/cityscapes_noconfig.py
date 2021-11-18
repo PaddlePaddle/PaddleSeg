@@ -19,8 +19,9 @@
 import os
 import random
 import numpy as np
-from collections.abc import Iterable
+import collections.abc as abc
 from PIL import Image, ImageOps, ImageFilter, ImageFile
+
 import paddle
 from paddle import io
 
@@ -99,7 +100,7 @@ cityscapes_id_to_trainid = {
 
 
 def to_tuple(x):
-    return x if isinstance(x, Iterable) else (x, x)
+    return x if isinstance(x, abc.Iterable) else (x, x)
 
 
 class City_Dataset(io.Dataset):
@@ -200,7 +201,7 @@ class City_Dataset(io.Dataset):
         else:
             image, gt_image, edge_mask = self._val_sync_transform(
                 image, gt_image)
-            return image, gt_image, edge_mask
+            return image, gt_image, edge_mask, id
 
     def _train_sync_transform(self, img, mask):
         '''

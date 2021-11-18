@@ -20,8 +20,9 @@ from PIL import Image
 import paddle
 import paddle.nn.functional as F
 
-import datasets
 from paddleseg.utils import metrics, TimeAverager, calculate_eta, logger, progbar
+import datasets
+from utils import save_imgs
 
 np.set_printoptions(suppress=True)
 
@@ -174,7 +175,11 @@ class Eval():
         self.confusion_matrix = np.zeros((self.num_class, ) * 2)
 
 
-def evaluate(model, eval_dataset, num_workers=0, print_detail=True):
+def evaluate(model,
+             eval_dataset,
+             num_workers=0,
+             print_detail=True,
+             save_img=True):
     """
     Launch evalution.
 
@@ -203,7 +208,7 @@ def evaluate(model, eval_dataset, num_workers=0, print_detail=True):
             paddle.distributed.init_parallel_env()
 
     batch_sampler = paddle.io.DistributedBatchSampler(
-        eval_dataset, batch_size=1, shuffle=False, drop_last=False)
+        eval_dataset, batch_size=1, shuffle=False, drop_last=True)
     loader = paddle.io.DataLoader(
         eval_dataset,
         batch_sampler=batch_sampler,
@@ -219,18 +224,20 @@ def evaluate(model, eval_dataset, num_workers=0, print_detail=True):
     batch_start = time.time()
 
     with paddle.no_grad():
-        for idx, (x, y, _) in enumerate(loader):
+        for idx, (x, y, _, item) in enumerate(loader):
             reader_cost_averager.record(time.time() - batch_start)
 
             # Forward
             y = y.astype('int64')
-            pred = model(x)
+            pred = model(x)  # 1, c, h, w
             if len(pred) > 1:
                 pred = pred[0]
 
             # Convert to numpy
-            label = y.squeeze(axis=1).numpy()
-            argpred = np.argmax(pred.numpy(), axis=1)
+            label = y.squeeze(axis=1).numpy()  #
+            argpred = np.argmax(pred.numpy(), axis=1)  # 1, 1, H, W
+            if save_img:
+                save_imgs(argpred, item, './output/')
 
             # Add to evaluator
             evaluator.add_batch(label, argpred)

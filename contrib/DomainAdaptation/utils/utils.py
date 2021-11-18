@@ -19,6 +19,7 @@ import imageio
 import numpy as np
 
 from paddleseg.utils import logger
+import PIL
 
 
 def load_ema_model(model, resume_model):
@@ -41,3 +42,46 @@ def save_edge(edges_src, name):
     tmp = edges_src.detach().clone().squeeze().numpy()
     tmp[tmp == 1] == 255
     imageio.imwrite('edge_pics/edge_{}.png'.format(name), tmp)
+
+
+def get_color_map_list(num_classes):
+    colormap = [
+        128, 64, 128, 244, 35, 232, 70, 70, 70, 102, 102, 156, 190, 153, 153,
+        153, 153, 153, 250, 170, 30, 220, 220, 0, 107, 142, 35, 152, 251, 152,
+        0, 130, 180, 220, 20, 60, 255, 0, 0, 0, 0, 142, 0, 0, 70, 0, 60, 100, 0,
+        80, 100, 0, 0, 230, 119, 11, 32
+    ] + [0, 0, 0] * (256 - num_classes)
+
+    return colormap
+
+
+def get_pseudo_color_map(pred, color_map=None):
+    """
+    Get the pseudo color image.
+
+    Args:
+        pred (numpy.ndarray): the origin predicted image, H*W .
+        color_map (list, optional): the palette color map. Default: None,
+            use paddleseg's default color map.
+
+    Returns:
+        (numpy.ndarray): the pseduo image.
+    """
+    if len(pred.shape) > 2:
+        pred = np.squeeze(pred)
+
+    pred_mask = PIL.Image.fromarray(pred.astype(np.uint8), mode='P')
+    color_map = get_color_map_list(19)
+    pred_mask.putpalette(color_map)
+    return pred_mask
+
+
+def save_imgs(results, imgs, save_dir='.'):
+    for i in range(results.shape[0]):
+        result = get_pseudo_color_map(results[i])
+        basename = imgs[i] + 'val'
+        basename = f'{basename}.png'
+        if not os.path.exists(save_dir):
+            os.mkdir(save_dir)
+
+        result.save(os.path.join(save_dir, basename))

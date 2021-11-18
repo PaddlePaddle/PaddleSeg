@@ -73,5 +73,5 @@ python -m pip install paddlepaddle-gpu==2.2.0 -i https://mirror.baidu.com/pypi/s
    2. Validate with following script. Since we forget to save the ema model, the validation result is 46% :
 
       ```
-      python3 -m paddle.distributed.launch val.py --config configs/deeplabv2_resnet101_os8_gta5cityscapes_1280x640_160k_newds_gta5src.yml --model_path models/model.pdparams --num_workers 4
+      python3 -m paddle.distributed.launch val.py --config configs/deeplabv2/deeplabv2_resnet101_os8_gta5cityscapes_1280x640_160k_newds_gta5src.yml --model_path models/model.pdparams --num_workers 4
       ```
