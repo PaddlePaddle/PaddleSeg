@@ -894,9 +894,11 @@ class RandomRotation:
 
     def __init__(self,
                  max_rotation=15,
+                 holding_size=False,
                  im_padding_value=(127.5, 127.5, 127.5),
                  label_padding_value=255):
         self.max_rotation = max_rotation
+        self.holding_size = holding_size
         self.im_padding_value = im_padding_value
         self.label_padding_value = label_padding_value
 
@@ -916,16 +918,18 @@ class RandomRotation:
                                             self.max_rotation)
             pc = (w // 2, h // 2)
             r = cv2.getRotationMatrix2D(pc, do_rotation, 1.0)
-            cos = np.abs(r[0, 0])
-            sin = np.abs(r[0, 1])
+            if self.holding_size:
+                dsize = (w, h)
+            else:
+                cos = np.abs(r[0, 0])
+                sin = np.abs(r[0, 1])
 
-            nw = int((h * sin) + (w * cos))
-            nh = int((h * cos) + (w * sin))
-
-            (cx, cy) = pc
-            r[0, 2] += (nw / 2) - cx
-            r[1, 2] += (nh / 2) - cy
-            dsize = (nw, nh)
+                nw = int((h * sin) + (w * cos))
+                nh = int((h * cos) + (w * sin))
+                (cx, cy) = pc
+                r[0, 2] += (nw / 2) - cx
+                r[1, 2] += (nh / 2) - cy
+                dsize = (nw, nh)
             im = cv2.warpAffine(
                 im,
                 r,
@@ -1199,6 +1203,56 @@ class RandomAffine:
                 tuple(self.size),
                 flags=cv2.INTER_NEAREST,
                 borderMode=cv2.BORDER_CONSTANT)
+        if label is None:
+            return (im, )
+        else:
+            return (im, label)
+
+
+@manager.TRANSFORMS.add_component
+class Crop:
+    """
+    crop an image from four forwards.
+
+    Args:
+        up_h_off (int, optional): The cut height for image from up to down. Default: 0.
+        down_h_off (int, optional): The cut height for image from down to up . Default: 0.
+        left_w_off (int, optional): The cut height for image from left to right. Default: 0.
+        right_w_off (int, optional): The cut width for image from right to left. Default: 0.
+    """
+
+    def __init__(self, up_h_off=0, down_h_off=0, left_w_off=0, right_w_off=0):
+        self.up_h_off = up_h_off
+        self.down_h_off = down_h_off
+        self.left_w_off = left_w_off
+        self.right_w_off = right_w_off
+
+    def __call__(self, im, label=None):
+        if self.up_h_off < 0 or self.down_h_off < 0 or self.left_w_off < 0 or self.right_w_off < 0:
+            raise Exception(
+                "up_h_off, down_h_off, left_w_off,  right_w_off must equal or greater zero"
+            )
+
+        if self.up_h_off > 0 and self.up_h_off < im.shape[0]:
+            im = im[self.up_h_off:, :, :]
+            if label is not None:
+                label = label[self.up_h_off:, :]
+
+        if self.down_h_off > 0 and self.down_h_off < im.shape[0]:
+            im = im[:-self.down_h_off, :, :]
+            if label is not None:
+                label = label[:-self.down_h_off, :]
+
+        if self.left_w_off > 0 and self.left_w_off < im.shape[1]:
+            im = im[:, self.left_w_off:, :]
+            if label is not None:
+                label = label[:, self.left_w_off:]
+
+        if self.right_w_off > 0 and self.right_w_off < im.shape[1]:
+            im = im[:, :-self.right_w_off, :]
+            if label is not None:
+                label = label[:, :-self.right_w_off]
+
         if label is None:
             return (im, )
         else:

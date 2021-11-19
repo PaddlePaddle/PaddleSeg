@@ -40,6 +40,13 @@ def get_reverse_list(ori_shape, transforms):
         if op.__class__.__name__ in ['Resize']:
             reverse_list.append(('resize', (h, w)))
             h, w = op.target_size[0], op.target_size[1]
+        if op.__class__.__name__ in ['Crop']:
+            reverse_list.append(('crop', (op.up_h_off, op.down_h_off),
+                                 (op.left_w_off, op.right_w_off)))
+            h = h - op.up_h_off
+            h = h - op.down_h_off
+            w = w - op.left_w_off
+            w = w - op.right_w_off
         if op.__class__.__name__ in ['ResizeByLong']:
             reverse_list.append(('resize', (h, w)))
             long_edge = max(h, w)
@@ -108,6 +115,14 @@ def reverse_transform(pred, ori_shape, transforms, mode='nearest'):
                 pred = paddle.cast(pred, 'int32')
             else:
                 pred = F.interpolate(pred, (h, w), mode=mode)
+        elif item[0] == 'crop':
+            up_h_off, down_h_off = item[1][0], item[1][1]
+            left_w_off, right_w_off = item[2][0], item[2][1]
+            pred = F.pad(
+                pred, [left_w_off, right_w_off, up_h_off, down_h_off],
+                value=0,
+                mode='constant',
+                data_format="NCHW")
         elif item[0] == 'padding':
             h, w = item[1][0], item[1][1]
             pred = pred[:, :, 0:h, 0:w]
