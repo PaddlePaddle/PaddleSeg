@@ -49,9 +49,10 @@ class TusimpleProcessor:
         self.is_view = is_view
         self.test_gt_json = test_gt_json
         self.smooth = True
-        self.y_px_gap = 10
-        self.pts = 56
-        self.target_shape = (720, 1280)
+        self.y_pixel_gap = 10
+        self.points_nums = 56
+        self.src_height = 720
+        self.src_width = 1280
         self.color_map = [(255, 0, 0), (0, 255, 0), (0, 0, 255), (255, 255, 0),
                           (255, 0, 255), (0, 255, 125), (50, 100, 50),
                           (100, 50, 100)]
@@ -136,7 +137,7 @@ class TusimpleProcessor:
         lane_coords_list = []
         for batch in range(len(seg_pred)):
             seg = seg_pred[batch]
-            lane_coords = self.heatmap2lane(seg, self.target_shape)
+            lane_coords = self.heatmap2lane(seg)
             for i in range(len(lane_coords)):
                 lane_coords[i] = sorted(
                     lane_coords[i], key=lambda pair: pair[1])
@@ -186,39 +187,23 @@ class TusimpleProcessor:
         else:
             return 0
 
-    def get_lane(self, prob_map, target_shape=None):
-        """
-        Arguments:
-        ----------
-        prob_map: prob map for single lane, np array size (h, w)
-        target_shape:  reshape size target, (H, W)
+    def get_lane(self, prob_map):
+        dst_height = self.src_height - self.cut_height
 
-        Return:
-        ----------
-        coords: x coords bottom up every y_px_gap px, 0 for non-exist, in resized shape
-        """
-        if target_shape is None:
-            target_shape = prob_map.shape
-        h, w = prob_map.shape
-        H, W = target_shape
-        H -= self.cut_height
-
-        coords = np.zeros(self.pts)
+        coords = np.zeros(self.points_nums)
         coords[:] = -1.0
-        for i in range(self.pts):
-            y = int((H - 10 - i * self.y_px_gap) * h / H)
+        for i in range(self.points_nums):
+            y = int((dst_height - 10 - i * self.y_pixel_gap) * prob_map.shape[0] / dst_height)
             if y < 0:
                 break
             line = prob_map[y, :]
             id = np.argmax(line)
             val = line[id]
             if val > self.thresh:
-                coords[i] = int(id / w * W)
+                coords[i] = int(id / prob_map.shape[1] * self.src_width)
         if (coords > 0).sum() < 2:
-            coords = np.zeros(self.pts)
+            coords = np.zeros(self.points_nums)
         self.process_gap(coords)
-        # self.fix_outliers(coords)
-        # self.process_gap(coords)
         return coords
 
     def fix_outliers(self, coords):
@@ -247,43 +232,28 @@ class TusimpleProcessor:
                     is_outlier = False
 
     def heatmap2lane(self, seg_pred, target_shape=(720, 1280)):
-        """
-        Arguments:
-        ----------
-        seg_pred:      np.array size (5, h, w)
-        target_shape:  reshape size target, (H, W)
-
-        Return:
-        ----------
-        coordinates: [x, y] list of lanes, e.g.: [ [[9, 569], [50, 549]] ,[[630, 569], [647, 549]] ]
-        """
-        if target_shape is None:
-            target_shape = seg_pred.shape[1:]  # seg_pred (5, h, w)
-        _, h, w = seg_pred.shape
-        H, W = target_shape
         coordinates = []
-
         for i in range(self.num_classes - 1):
             prob_map = seg_pred[i + 1]
             if self.smooth:
                 prob_map = cv2.blur(
                     prob_map, (9, 9), borderType=cv2.BORDER_REPLICATE)
-            coords = self.get_lane(prob_map, target_shape)
+            coords = self.get_lane(prob_map)
             if self.is_short(coords):
                 continue
-            self.add_coords(coordinates, coords, H)
+            self.add_coords(coordinates, coords)
 
         if len(coordinates) == 0:
             coords = np.zeros(self.pts)
-            self.add_coords(coordinates, coords, H)
+            self.add_coords(coordinates, coords)
         return coordinates
 
-    def add_coords(self, coordinates, coords, H):
+    def add_coords(self, coordinates, coords):
         sub_lanes = []
-        for j in range(self.pts):
+        for j in range(self.points_nums):
             if coords[j] > 0:
-                val = [coords[j], H - 10 - j * self.y_px_gap]
+                val = [coords[j], self.src_height - 10 - j * self.y_pixel_gap]
             else:
-                val = [-1, H - 10 - j * self.y_px_gap]
+                val = [-1, self.src_height - 10 - j * self.y_pixel_gap]
             sub_lanes.append(val)
         coordinates.append(sub_lanes)
