@@ -25,6 +25,7 @@ train_dataset:
       saturation_prob: 1
       hue_range: 63
       hue_prob: 1
+    - type: RandomNoise
     - type: Normalize
   mode: train
 
@@ -60,4 +61,4 @@ loss:
 
 model:
   type: BiSeNetLane
-  pretrained: Null
+  pretrained: /home/work/PP1117/PaddleSeg/contrib/LaneDetection/output11-17-20-15/best_model/model.pdparams
