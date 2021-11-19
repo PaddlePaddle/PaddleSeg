@@ -189,9 +189,9 @@ class TusimpleProcessor:
 
     def get_lane(self, prob_map):
         dst_height = self.src_height - self.cut_height
-
         coords = np.zeros(self.points_nums)
         coords[:] = -1.0
+        pointCount = 0
         for i in range(self.points_nums):
             y = int((dst_height - 10 - i * self.y_pixel_gap) * prob_map.shape[0] / dst_height)
             if y < 0:
@@ -201,7 +201,8 @@ class TusimpleProcessor:
             val = line[id]
             if val > self.thresh:
                 coords[i] = int(id / prob_map.shape[1] * self.src_width)
-        if (coords > 0).sum() < 2:
+                pointCount = pointCount + 1
+        if pointCount < 2:
             coords = np.zeros(self.points_nums)
         self.process_gap(coords)
         return coords
