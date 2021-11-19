@@ -245,7 +245,7 @@ class TusimpleProcessor:
             self.add_coords(coordinates, coords)
 
         if len(coordinates) == 0:
-            coords = np.zeros(self.pts)
+            coords = np.zeros(self.points_nums)
             self.add_coords(coordinates, coords)
         return coordinates
 
