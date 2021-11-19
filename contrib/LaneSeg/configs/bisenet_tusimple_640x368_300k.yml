@@ -61,4 +61,4 @@ loss:
 
 model:
   type: BiSeNetLane
-  pretrained: /home/work/PP1117/PaddleSeg/contrib/LaneDetection/output11-17-20-15/best_model/model.pdparams
+  pretrained: https://bj.bcebos.com/paddleseg/dygraph/cityscapes/bisenet_cityscapes_1024x1024_160k/model.pdparams
