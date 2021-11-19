@@ -29,11 +29,8 @@ def get_test_config(cfg, args):
         test_config['aug_eval'] = args.aug_eval
         test_config['scales'] = args.scales
 
-    if args.flip_horizontal:
-        test_config['flip_horizontal'] = args.flip_horizontal
-
-    if args.flip_vertical:
-        test_config['flip_vertical'] = args.flip_vertical
+    test_config['flip_horizontal'] = args.flip_horizontal
+    test_config['flip_vertical'] = args.flip_vertical
 
     if args.is_slide:
         test_config['is_slide'] = args.is_slide
