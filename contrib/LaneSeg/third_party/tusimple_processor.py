@@ -56,28 +56,27 @@ class TusimpleProcessor:
                           (255, 0, 255), (0, 255, 125), (50, 100, 50),
                           (100, 50, 100)]
 
-    def evaluate(self, output, im_path):
+    def evaluate(self, output, img_path):
         seg_pred = output[0]
         seg_pred = nn.functional.softmax(seg_pred, axis=1)
         seg_pred = seg_pred.numpy()
-        self.generate_files(seg_pred, im_path)
+        self.generate_data_to_json(seg_pred, img_path)
 
-    def predict(self, output, im_path):
+    def predict(self, output, img_path):
         seg_pred = output[0]
         seg_pred = nn.functional.softmax(seg_pred, axis=1)
         seg_pred = seg_pred.numpy()
-        img_path = im_path
         lane_coords_list = self.get_lane_coords(seg_pred)
 
         for batch in range(len(seg_pred)):
             lane_coords = lane_coords_list[batch]
             img = cv2.imread(img_path)
-            im_file = os.path.basename(im_path)
-            saved_path = os.path.join(self.save_dir, 'visual_points', im_file)
+            img_name = os.path.basename(img_path)
+            saved_path = os.path.join(self.save_dir, 'visual_points', img_name)
             self.draw(img, lane_coords, saved_path)
 
     def bench_one_submit(self):
-        output_file = os.path.join(self.save_dir, 'predict_test.json')
+        output_file = os.path.join(self.save_dir, 'pred.json')
         if output_file is not None:
             mkdir(output_file)
         with open(output_file, "w+") as f:
@@ -101,31 +100,31 @@ class TusimpleProcessor:
             mkdir(file_path)
             cv2.imwrite(file_path, img)
 
-    def generate_files(self, seg_pred, im_path):
-        img_path = im_path
+    def generate_data_to_json(self, seg_pred, img_path):
         lane_coords_list = self.get_lane_coords(seg_pred)
 
         for batch in range(len(seg_pred)):
             lane_coords = lane_coords_list[batch]
-            json_dict = {}
-            json_dict['lanes'] = []
-            json_dict['h_sample'] = []
+            json_pred = {}
+            json_pred['lanes'] = []
+            json_pred['run_time'] = 0
+            json_pred['h_sample'] = []
             path_list = img_path[batch].split("/")
-            json_dict['raw_file'] = os.path.join(*path_list[-4:])
-            json_dict['run_time'] = 0
+            json_pred['raw_file'] = os.path.join(*path_list[-4:])
             for l in lane_coords:
                 if len(l) == 0:
                     continue
-                json_dict['lanes'].append([])
+                json_pred['lanes'].append([])
                 for (x, y) in l:
-                    json_dict['lanes'][-1].append(int(x))
+                    json_pred['lanes'][-1].append(int(x))
             for (x, y) in lane_coords[0]:
-                json_dict['h_sample'].append(y)
-            self.dump_to_json.append(json.dumps(json_dict))
+                json_pred['h_sample'].append(y)
+            self.dump_to_json.append(json.dumps(json_pred))
+
             if self.is_view:
                 img = cv2.imread(img_path[batch])
-                new_img_name = '_'.join([x for x in path_list[-4:]])
-                saved_path = os.path.join(self.save_dir, 'visual', new_img_name)
+                img_name = '_'.join([x for x in path_list[-4:]])
+                saved_path = os.path.join(self.save_dir, 'visual', img_name)
                 self.draw(img, lane_coords, saved_path)
 
     def get_lane_coords(self, seg_pred):
