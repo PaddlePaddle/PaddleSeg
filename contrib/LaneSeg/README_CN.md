@@ -43,6 +43,8 @@ cd contrib/LaneSeg
 
 [BiseNetLane](https://paddleseg.bj.bcebos.com/models/bisenet_lan.pdparams)
 
+基于TuSimple评估方法的评估，您可以从[TuSimple exampe](https://github.com/TuSimple/tusimple-benchmark/blob/master/example/lane_demo.ipynb) 获取更多信息
+
 BiseNetLane在[Tusimple](https://github.com/TuSimple/tusimple-benchmark/issues/3)数据集上的性能
 
 | Backbone | Acc | FP| FN | Link|
