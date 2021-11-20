@@ -11,8 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# this code heavily base on
-# https://github.com/ZJULearning/resa/blob/main/runner/evaluator/tusimple/tusimple.py
+# this code is based on
 # https://github.com/ZJULearning/resa/blob/main/datasets/tusimple.py
 
 import paddle.nn as nn
@@ -129,7 +128,7 @@ class TusimpleProcessor:
         lane_coords_list = []
         for batch in range(len(seg_pred)):
             seg = seg_pred[batch]
-            lane_coords = self.heatmap2lane(seg)
+            lane_coords = self.heatmap2coords(seg)
             for i in range(len(lane_coords)):
                 lane_coords[i] = sorted(
                     lane_coords[i], key=lambda pair: pair[1])
@@ -172,28 +171,20 @@ class TusimpleProcessor:
                 coordinate[start:end + 1] = lane
         return coordinate
 
-    def is_short(self, lane):
-        start = [i for i, x in enumerate(lane) if x > 0]
-        if not start:
-            return 1
-        else:
-            return 0
-
-    def get_lane(self, heat_map):
+    def get_coords(self, heat_map):
         dst_height = self.src_height - self.cut_height
         coords = np.zeros(self.points_nums)
-        coords[:] = -1.0
         pointCount = 0
         for i in range(self.points_nums):
-            y_lane = dst_height - 10 - i * self.y_pixel_gap
-            y = int(y_lane * heat_map.shape[0] / dst_height)
+            y_coord = dst_height - 10 - i * self.y_pixel_gap
+            y = int(y_coord / dst_height * heat_map.shape[0])
             if y < 0:
                 break
-            line = heat_map[y, :]
-            id = np.argmax(line)
-            val = line[id]
-            if val > self.thresh:
-                coords[i] = int(id / heat_map.shape[1] * self.src_width)
+            prob_line = heat_map[y, :]
+            x = np.argmax(prob_line)
+            prob = prob_line[x]
+            if prob > self.thresh:
+                coords[i] = int(x / heat_map.shape[1] * self.src_width)
                 pointCount = pointCount + 1
         if pointCount < 2:
             coords = np.zeros(self.points_nums)
@@ -225,15 +216,15 @@ class TusimpleProcessor:
                 else:
                     is_outlier = False
 
-    def heatmap2lane(self, seg_pred):
+    def heatmap2coords(self, seg_pred):
         coordinates = []
         for i in range(self.num_classes - 1):
             heat_map = seg_pred[i + 1]
             if self.smooth:
                 heat_map = cv2.blur(
                     heat_map, (9, 9), borderType=cv2.BORDER_REPLICATE)
-            coords = self.get_lane(heat_map)
-            if self.is_short(coords):
+            coords = self.get_coords(heat_map)
+            if np.sum(coords) < 1e-8:
                 continue
             self.add_coords(coordinates, coords)
 
