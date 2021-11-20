@@ -71,13 +71,12 @@ class TusimpleProcessor:
 
         for batch in range(len(seg_pred)):
             lane_coords = lane_coords_list[batch]
-            if True:
-                img = cv2.imread(img_path)
-                im_file = os.path.basename(im_path)
-                saved_path = os.path.join(self.save_dir, 'points', im_file)
-                self.draw(img, lane_coords, saved_path)
+            img = cv2.imread(img_path)
+            im_file = os.path.basename(im_path)
+            saved_path = os.path.join(self.save_dir, 'visual_points', im_file)
+            self.draw(img, lane_coords, saved_path)
 
-    def calculate_eval(self):
+    def bench_one_submit(self):
         output_file = os.path.join(self.save_dir, 'predict_test.json')
         if output_file is not None:
             mkdir(output_file)
@@ -95,9 +94,8 @@ class TusimpleProcessor:
             for x, y in coord:
                 if x <= 0 or y <= 0:
                     continue
-                x, y = int(x), int(y)
-                cv2.circle(img, (x, y), 4, self.color_map[i % self.num_classes],
-                           2)
+                cv2.circle(img, (int(x), int(y)), 4,
+                           self.color_map[i % self.num_classes], 2)
 
         if file_path is not None:
             mkdir(file_path)

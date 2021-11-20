@@ -110,7 +110,7 @@ def evaluate(model,
             batch_cost_averager.reset()
             batch_start = time.time()
 
-    acc, fp, fn, eval_result = postprocessor.calculate_eval()
+    acc, fp, fn, eval_result = postprocessor.bench_one_submit()
 
     if print_detail:
         logger.info(eval_result)
