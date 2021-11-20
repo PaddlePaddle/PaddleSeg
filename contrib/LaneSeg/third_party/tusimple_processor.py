@@ -56,13 +56,38 @@ class TusimpleProcessor:
                           (255, 0, 255), (0, 255, 125), (50, 100, 50),
                           (100, 50, 100)]
 
-    def evaluate(self, output, img_path):
+    def dump_data_to_json(self, output, im_path, run_time):
         seg_pred = output[0]
         seg_pred = nn.functional.softmax(seg_pred, axis=1)
         seg_pred = seg_pred.numpy()
-        self.generate_data_to_json(seg_pred, img_path)
 
-    def predict(self, output, img_path):
+        lane_coords_list = self.get_lane_coords(seg_pred)
+
+        for batch in range(len(seg_pred)):
+            lane_coords = lane_coords_list[batch]
+            json_pred = {}
+            json_pred['lanes'] = []
+            json_pred['run_time'] = run_time * 1000
+            json_pred['h_sample'] = []
+            path_list = im_path[batch].split("/")
+            json_pred['raw_file'] = os.path.join(*path_list[-4:])
+            for l in lane_coords:
+                if len(l) == 0:
+                    continue
+                json_pred['lanes'].append([])
+                for (x, y) in l:
+                    json_pred['lanes'][-1].append(int(x))
+            for (x, y) in lane_coords[0]:
+                json_pred['h_sample'].append(y)
+            self.dump_to_json.append(json.dumps(json_pred))
+
+            if self.is_view:
+                img = cv2.imread(im_path[batch])
+                img_name = '_'.join([x for x in path_list[-4:]])
+                saved_path = os.path.join(self.save_dir, 'visual', img_name)
+                self.draw(img, lane_coords, saved_path)
+
+    def predict(self, output, im_path):
         seg_pred = output[0]
         seg_pred = nn.functional.softmax(seg_pred, axis=1)
         seg_pred = seg_pred.numpy()
@@ -70,8 +95,8 @@ class TusimpleProcessor:
 
         for batch in range(len(seg_pred)):
             lane_coords = lane_coords_list[batch]
-            img = cv2.imread(img_path)
-            img_name = os.path.basename(img_path)
+            img = cv2.imread(im_path)
+            img_name = os.path.basename(im_path)
             saved_path = os.path.join(self.save_dir, 'visual_points', img_name)
             self.draw(img, lane_coords, saved_path)
 
@@ -99,33 +124,6 @@ class TusimpleProcessor:
         if file_path is not None:
             mkdir(file_path)
             cv2.imwrite(file_path, img)
-
-    def generate_data_to_json(self, seg_pred, img_path):
-        lane_coords_list = self.get_lane_coords(seg_pred)
-
-        for batch in range(len(seg_pred)):
-            lane_coords = lane_coords_list[batch]
-            json_pred = {}
-            json_pred['lanes'] = []
-            json_pred['run_time'] = 0
-            json_pred['h_sample'] = []
-            path_list = img_path[batch].split("/")
-            json_pred['raw_file'] = os.path.join(*path_list[-4:])
-            for l in lane_coords:
-                if len(l) == 0:
-                    continue
-                json_pred['lanes'].append([])
-                for (x, y) in l:
-                    json_pred['lanes'][-1].append(int(x))
-            for (x, y) in lane_coords[0]:
-                json_pred['h_sample'].append(y)
-            self.dump_to_json.append(json.dumps(json_pred))
-
-            if self.is_view:
-                img = cv2.imread(img_path[batch])
-                img_name = '_'.join([x for x in path_list[-4:]])
-                saved_path = os.path.join(self.save_dir, 'visual', img_name)
-                self.draw(img, lane_coords, saved_path)
 
     def get_lane_coords(self, seg_pred):
         lane_coords_list = []

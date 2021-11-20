@@ -91,13 +91,16 @@ def evaluate(model,
 
             ori_shape = None
 
+            time_start = time.time()
             pred = infer.inference(
                 model,
                 im,
                 ori_shape=ori_shape,
                 transforms=eval_dataset.transforms.transforms)
+            time_end = time.time()
 
-            postprocessor.evaluate(pred[1], im_path)
+            postprocessor.dump_data_to_json(pred[1], im_path,
+                                            time_end - time_start)
             batch_cost_averager.record(
                 time.time() - batch_start, num_samples=len(label))
             batch_cost = batch_cost_averager.get_average()
