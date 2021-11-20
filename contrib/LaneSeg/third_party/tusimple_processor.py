@@ -224,7 +224,8 @@ class TusimpleProcessor:
                 heat_map = cv2.blur(
                     heat_map, (9, 9), borderType=cv2.BORDER_REPLICATE)
             coords = self.get_coords(heat_map)
-            if np.sum(coords) < 1e-8:
+            start = [i for i, x in enumerate(coords) if x > 0]
+            if not start:
                 continue
             self.add_coords(coordinates, coords)
 
