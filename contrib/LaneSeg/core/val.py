@@ -69,7 +69,6 @@ def evaluate(model,
         num_classes=eval_dataset.num_classes,
         cut_height=eval_dataset.cut_height,
         test_gt_json=eval_dataset.test_gt_json,
-        is_view=is_view,
         save_dir=save_dir,
     )
     total_iters = len(loader)
@@ -99,8 +98,12 @@ def evaluate(model,
                 transforms=eval_dataset.transforms.transforms)
             time_end = time.time()
 
-            postprocessor.dump_data_to_json(pred[1], im_path,
-                                            time_end - time_start)
+            postprocessor.dump_data_to_json(
+                pred[1],
+                im_path,
+                run_time=time_end - time_start,
+                is_dump_json=True,
+                is_view=is_view)
             batch_cost_averager.record(
                 time.time() - batch_start, num_samples=len(label))
             batch_cost = batch_cost_averager.get_average()

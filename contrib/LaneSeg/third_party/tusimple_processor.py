@@ -34,14 +34,12 @@ class TusimpleProcessor:
                  ori_shape=(720, 1280),
                  cut_height=0,
                  thresh=0.6,
-                 is_view=False,
                  test_gt_json=None,
                  save_dir='output/'):
         super(TusimpleProcessor, self).__init__()
         self.num_classes = num_classes
         self.dump_to_json = []
         self.save_dir = save_dir
-        self.is_view = is_view
         self.test_gt_json = test_gt_json
         self.color_map = [(255, 0, 0), (0, 255, 0), (0, 0, 255), (255, 255, 0),
                           (255, 0, 255), (0, 255, 125), (50, 100, 50),
@@ -55,7 +53,12 @@ class TusimpleProcessor:
             thresh=thresh,
             smooth=True)
 
-    def dump_data_to_json(self, output, im_path, run_time):
+    def dump_data_to_json(self,
+                          output,
+                          im_path,
+                          run_time=0,
+                          is_dump_json=True,
+                          is_view=False):
         seg_pred = output[0]
         seg_pred = nn.functional.softmax(seg_pred, axis=1)
         seg_pred = seg_pred.numpy()
@@ -63,40 +66,38 @@ class TusimpleProcessor:
 
         for batch in range(len(seg_pred)):
             lane_coords = lane_coords_list[batch]
-            json_pred = {}
-            json_pred['lanes'] = []
-            json_pred['run_time'] = run_time * 1000
-            json_pred['h_sample'] = []
             path_list = im_path[batch].split("/")
-            json_pred['raw_file'] = os.path.join(*path_list[-4:])
-            for l in lane_coords:
-                if len(l) == 0:
-                    continue
-                json_pred['lanes'].append([])
-                for (x, y) in l:
-                    json_pred['lanes'][-1].append(int(x))
-            for (x, y) in lane_coords[0]:
-                json_pred['h_sample'].append(y)
-            self.dump_to_json.append(json.dumps(json_pred))
+            if is_dump_json:
+                json_pred = {}
+                json_pred['lanes'] = []
+                json_pred['run_time'] = run_time * 1000
+                json_pred['h_sample'] = []
 
-            if self.is_view:
+                json_pred['raw_file'] = os.path.join(*path_list[-4:])
+                for l in lane_coords:
+                    if len(l) == 0:
+                        continue
+                    json_pred['lanes'].append([])
+                    for (x, y) in l:
+                        json_pred['lanes'][-1].append(int(x))
+                for (x, y) in lane_coords[0]:
+                    json_pred['h_sample'].append(y)
+                self.dump_to_json.append(json.dumps(json_pred))
+
+            if is_view:
                 img = cv2.imread(im_path[batch])
-                img_name = '_'.join([x for x in path_list[-4:]])
-                saved_path = os.path.join(self.save_dir, 'visual', img_name)
+                if is_dump_json:
+                    img_name = '_'.join([x for x in path_list[-4:]])
+                    sub_dir = 'visual_eval'
+                else:
+                    img_name = os.path.basename(im_path[batch])
+                    sub_dir = 'visual_points'
+                saved_path = os.path.join(self.save_dir, sub_dir, img_name)
                 self.draw(img, lane_coords, saved_path)
 
     def predict(self, output, im_path):
-        seg_pred = output[0]
-        seg_pred = nn.functional.softmax(seg_pred, axis=1)
-        seg_pred = seg_pred.numpy()
-        lane_coords_list = self.laneProcessor.get_lane_coords(seg_pred)
-
-        for batch in range(len(seg_pred)):
-            lane_coords = lane_coords_list[batch]
-            img = cv2.imread(im_path)
-            img_name = os.path.basename(im_path)
-            saved_path = os.path.join(self.save_dir, 'visual_points', img_name)
-            self.draw(img, lane_coords, saved_path)
+        self.dump_data_to_json(
+            output, [im_path], is_dump_json=False, is_view=True)
 
     def bench_one_submit(self):
         output_file = os.path.join(self.save_dir, 'pred.json')
