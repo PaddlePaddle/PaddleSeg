@@ -54,7 +54,7 @@ Using Tusimple's open source [Tusimple](https://github.com/TuSimple/tusimple-ben
 
 Run the following command ：
 ```shell
-python third_party/generate_seg_tusimple.py.py --root path/to/your/unzipped/file
+python third_party/generate_tusimple_dataset.py.py --root path/to/your/unzipped/file
 
 ```
 

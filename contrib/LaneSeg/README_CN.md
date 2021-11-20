@@ -57,7 +57,7 @@ BiseNetLane在[Tusimple](https://github.com/TuSimple/tusimple-benchmark/issues/3
 
 执行如下命令：
 ```shell
-python third_party/generate_seg_tusimple.py.py --root path/to/your/unzipped/file
+python third_party/generate_tusimple_dataset.py.py --root path/to/your/unzipped/file
 
 ```
 
@@ -98,7 +98,7 @@ python third_party/generate_seg_tusimple.py.py --root path/to/your/unzipped/file
             |-- test_label.json
 ```
 
-train_list.tx内容如下:
+train_list.txt的内容如下:
 ```
 /train_set/clips/0313-1/6040/20.jpg /train_set/labels/0313-1/6040/20.png
 /train_set/clips/0313-1/5320/20.jpg /train_set/labels/0313-1/5320/20.png

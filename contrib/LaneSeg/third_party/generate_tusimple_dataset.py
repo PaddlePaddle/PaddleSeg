@@ -121,7 +121,7 @@ if __name__ == '__main__':
     parser.add_argument(
         '--root',
         type=str,
-        default=None,
+        default='/Users/huangshenghui/PaddleSeg/contrib/LaneSeg/data/tusimple',
         help='The origin path of unzipped tusimple dataset')
     args = parser.parse_args()
 
