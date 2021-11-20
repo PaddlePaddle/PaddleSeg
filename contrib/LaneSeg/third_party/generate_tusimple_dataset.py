@@ -14,8 +14,8 @@
 
 import os
 
-import json
 import cv2
+import json
 import argparse
 import numpy as np
 
