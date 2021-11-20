@@ -245,9 +245,7 @@ class TusimpleProcessor:
     def add_coords(self, coordinates, coords):
         sub_lanes = []
         for j in range(self.points_nums):
-            if coords[j] > 0:
-                val = [coords[j], self.src_height - 10 - j * self.y_pixel_gap]
-            else:
-                val = [-1, self.src_height - 10 - j * self.y_pixel_gap]
-            sub_lanes.append(val)
+            y_lane = self.src_height - 10 - j * self.y_pixel_gap
+            x_lane = coords[j] if coords[j] > 0 else -2
+            sub_lanes.append([x_lane, y_lane])
         coordinates.append(sub_lanes)
