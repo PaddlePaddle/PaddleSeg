@@ -12,11 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import json
-import numpy as np
-import cv2
 import os
+
+import json
+import cv2
 import argparse
+import numpy as np
 
 TRAIN_DATA_SET = [
     'label_data_0313.json', 'label_data_0601.json', 'label_data_0531.json'
