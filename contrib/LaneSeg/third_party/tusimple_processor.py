@@ -179,21 +179,21 @@ class TusimpleProcessor:
         else:
             return 0
 
-    def get_lane(self, prob_map):
+    def get_lane(self, heat_map):
         dst_height = self.src_height - self.cut_height
         coords = np.zeros(self.points_nums)
         coords[:] = -1.0
         pointCount = 0
         for i in range(self.points_nums):
-            y = int((dst_height - 10 - i * self.y_pixel_gap) * prob_map.shape[0]
-                    / dst_height)
+            y_lane = dst_height - 10 - i * self.y_pixel_gap
+            y = int(y_lane * heat_map.shape[0] / dst_height)
             if y < 0:
                 break
-            line = prob_map[y, :]
+            line = heat_map[y, :]
             id = np.argmax(line)
             val = line[id]
             if val > self.thresh:
-                coords[i] = int(id / prob_map.shape[1] * self.src_width)
+                coords[i] = int(id / heat_map.shape[1] * self.src_width)
                 pointCount = pointCount + 1
         if pointCount < 2:
             coords = np.zeros(self.points_nums)
@@ -228,11 +228,11 @@ class TusimpleProcessor:
     def heatmap2lane(self, seg_pred):
         coordinates = []
         for i in range(self.num_classes - 1):
-            prob_map = seg_pred[i + 1]
+            heat_map = seg_pred[i + 1]
             if self.smooth:
-                prob_map = cv2.blur(
-                    prob_map, (9, 9), borderType=cv2.BORDER_REPLICATE)
-            coords = self.get_lane(prob_map)
+                heat_map = cv2.blur(
+                    heat_map, (9, 9), borderType=cv2.BORDER_REPLICATE)
+            coords = self.get_lane(heat_map)
             if self.is_short(coords):
                 continue
             self.add_coords(coordinates, coords)
