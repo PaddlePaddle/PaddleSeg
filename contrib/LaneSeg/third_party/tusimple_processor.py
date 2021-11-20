@@ -1,3 +1,20 @@
+#   Copyright (c) 2021 PaddlePaddle Authors. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# this code heavily base on
+# https://github.com/ZJULearning/resa/blob/main/runner/evaluator/tusimple/tusimple.py
+# https://github.com/ZJULearning/resa/blob/main/datasets/tusimple.py
+
 import paddle.nn as nn
 import json
 import os
@@ -5,24 +22,6 @@ import cv2
 import numpy as np
 
 from .lane import LaneEval
-
-# this code heavily base on
-# https://github.com/ZJULearning/resa/blob/main/runner/evaluator/tusimple/tusimple.py
-# https://github.com/ZJULearning/resa/blob/main/datasets/tusimple.py
-
-
-def split_path(path):
-    """split path tree into list"""
-    folders = []
-    while True:
-        path, folder = os.path.split(path)
-        if folder != "":
-            folders.insert(0, folder)
-        else:
-            if path != "":
-                folders.insert(0, path)
-            break
-    return folders
 
 
 def mkdir(path):
@@ -113,8 +112,8 @@ class TusimpleProcessor:
             json_dict = {}
             json_dict['lanes'] = []
             json_dict['h_sample'] = []
-            json_dict['raw_file'] = os.path.join(
-                *split_path(img_path[batch])[-4:])
+            path_list = img_path[batch].split("/")
+            json_dict['raw_file'] = os.path.join(*path_list[-4:])
             json_dict['run_time'] = 0
             for l in lane_coords:
                 if len(l) == 0:
@@ -127,9 +126,7 @@ class TusimpleProcessor:
             self.dump_to_json.append(json.dumps(json_dict))
             if self.is_view:
                 img = cv2.imread(img_path[batch])
-                new_img_name = '_'.join(
-                    [x for x in split_path(img_path[batch])[-4:]])
-
+                new_img_name = '_'.join([x for x in path_list[-4:]])
                 saved_path = os.path.join(self.save_dir, 'visual', new_img_name)
                 self.draw(img, lane_coords, saved_path)
 
@@ -193,7 +190,8 @@ class TusimpleProcessor:
         coords[:] = -1.0
         pointCount = 0
         for i in range(self.points_nums):
-            y = int((dst_height - 10 - i * self.y_pixel_gap) * prob_map.shape[0] / dst_height)
+            y = int((dst_height - 10 - i * self.y_pixel_gap) * prob_map.shape[0]
+                    / dst_height)
             if y < 0:
                 break
             line = prob_map[y, :]
@@ -232,7 +230,7 @@ class TusimpleProcessor:
                 else:
                     is_outlier = False
 
-    def heatmap2lane(self, seg_pred, target_shape=(720, 1280)):
+    def heatmap2lane(self, seg_pred):
         coordinates = []
         for i in range(self.num_classes - 1):
             prob_map = seg_pred[i + 1]
