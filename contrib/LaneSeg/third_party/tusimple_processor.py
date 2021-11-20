@@ -174,7 +174,7 @@ class TusimpleProcessor:
     def get_coords(self, heat_map):
         dst_height = self.src_height - self.cut_height
         coords = np.zeros(self.points_nums)
-        coords[:] = -1
+        coords[:] = -2
         pointCount = 0
         for i in range(self.points_nums):
             y_coord = dst_height - 10 - i * self.y_pixel_gap
@@ -188,7 +188,7 @@ class TusimpleProcessor:
                 coords[i] = int(x / heat_map.shape[1] * self.src_width)
                 pointCount = pointCount + 1
         if pointCount < 2:
-            coords = np.zeros(self.points_nums)
+            coords[:] = -2
         self.process_gap(coords)
         return coords
 
@@ -225,8 +225,8 @@ class TusimpleProcessor:
                 heat_map = cv2.blur(
                     heat_map, (9, 9), borderType=cv2.BORDER_REPLICATE)
             coords = self.get_coords(heat_map)
-            start = [i for i, x in enumerate(coords) if x > 0]
-            if not start:
+            indexes = [i for i, x in enumerate(coords) if x > 0]
+            if not indexes:
                 continue
             self.add_coords(coordinates, coords)
 
