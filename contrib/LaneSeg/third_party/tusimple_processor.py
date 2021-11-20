@@ -174,6 +174,7 @@ class TusimpleProcessor:
     def get_coords(self, heat_map):
         dst_height = self.src_height - self.cut_height
         coords = np.zeros(self.points_nums)
+        coords[:] = -1
         pointCount = 0
         for i in range(self.points_nums):
             y_coord = dst_height - 10 - i * self.y_pixel_gap
