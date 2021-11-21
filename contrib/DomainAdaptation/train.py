@@ -22,7 +22,7 @@ from paddleseg.utils import logger, get_sys_env
 import utils
 from cvlibs import Config
 from script.train import Trainer
-from datasets import City_Dataset, GTA5_Dataset, SYNTHIA_Dataset
+from datasets import CityDataset, GTA5Dataset, SYNTHIADataset
 
 
 def parse_args():
@@ -142,21 +142,21 @@ def main(args):
         batch_size=args.batch_size)
 
     if cfg.dic["data"]["source"]["dataset"] == 'synthia':
-        train_dataset_src = SYNTHIA_Dataset(
+        train_dataset_src = SYNTHIADataset(
             split='train', **cfg.dic["data"]["source"]["kwargs"])
-        val_dataset_src = SYNTHIA_Dataset(
+        val_dataset_src = SYNTHIADataset(
             split='val', **cfg.dic["data"]["source"]["kwargs"])
     elif cfg.dic["data"]["source"]["dataset"] == 'gta5':
-        train_dataset_src = GTA5_Dataset(
+        train_dataset_src = GTA5Dataset(
             split='train', **cfg.dic["data"]["source"]["kwargs"])
-        val_dataset_src = GTA5_Dataset(
+        val_dataset_src = GTA5Dataset(
             split='val', **cfg.dic["data"]["source"]["kwargs"])
     else:
         raise NotImplementedError()
     if cfg.dic["data"]["target"]["dataset"] == 'cityscapes':
-        train_dataset_tgt = City_Dataset(
+        train_dataset_tgt = CityDataset(
             split='train', **cfg.dic["data"]["target"]["kwargs"])
-        val_dataset_tgt = City_Dataset(
+        val_dataset_tgt = CityDataset(
             split='val', **cfg.dic["data"]["target"]["kwargs"])
     else:
         raise NotImplementedError()

@@ -35,7 +35,6 @@ model:
   backbone:
     type: ResNet101
     num_classes: 19
-  backbone_indices: [0, 1, 2, 3]
   align_corners: True
   pretrained: models/gta5_pretrained.pdparams
   shape_stream: False

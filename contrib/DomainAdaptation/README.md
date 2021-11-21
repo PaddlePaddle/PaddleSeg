@@ -1,6 +1,6 @@
 # Unsupervised Domain Adaptation on Semantic Segmentation
 
-Domain adaptation is a kind of algorithms that dedicate to minimizing the performance drop when we apply the model trained from one domain to another. Usually, this happens when we want to apply models trained with dataset A on a similar dataset B. Specifically, Unsupervised domain adaptation(UDA) dedicate to achieving satisfactory performance on dataset B that we do not have labels. The following image is the result of our model. It shows the performance gain of the UDA algorithms on semantic segmentation. When we compare the segmentation results between "without DA" and "with DA", we can observe a notable performance lift.
+Domain adaptation is the ability to apply an algorithm trained in one or more "source domains" to a different (but related) "target domain. If we do not apply domain adaptation algorithms, models' perfomance will drop when we want to apply models trained with dataset A on a similar dataset B. Specifically, Unsupervised domain adaptation(UDA) dedicate to achieving satisfactory performance on dataset B that we do not have labels. The following image is the result of our model. It shows the performance gain of the UDA algorithms on semantic segmentation. When we compare the segmentation results between "without DA" and "with DA", we can observe a notable performance lift.
 
 ![image-20211116171626323](https://github.com/PaddlePaddle/PaddleSeg/blob/0012de96c95fe9fddac1dd98284cfcaa4bae3842/contrib/DomainAdaptation/docs/domain_adaptation.png)
 

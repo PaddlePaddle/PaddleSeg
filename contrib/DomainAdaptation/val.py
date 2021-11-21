@@ -23,7 +23,7 @@ from script import evaluate
 from paddleseg.cvlibs import manager
 from paddleseg.core import evaluate
 from paddleseg.utils import get_sys_env, logger, utils
-from datasets import City_Dataset
+from datasets import CityDataset
 from script import val
 
 
@@ -135,7 +135,7 @@ def main(args):
     cfg = Config(args.cfg)
 
     if cfg.dic["data"]["target"]["dataset"] == 'cityscapes':
-        val_dataset = City_Dataset(
+        val_dataset = CityDataset(
             split='val', **cfg.dic["data"]["target"]["kwargs"])
     else:
         raise NotImplementedError()

@@ -24,7 +24,7 @@ from paddleseg.models.backbones import resnet_vd
 from paddleseg.utils import utils, logger
 
 from .gscnn import GSCNNHead
-from .backbones.resnet import Classifier_Module
+from .backbones.resnet import ClassifierModule
 
 __all__ = [
     'DeepLabV2',
@@ -37,16 +37,10 @@ class DeepLabV2(nn.Layer):
     The DeepLabV2 implementation based on PaddlePaddle.
 
     The original article refers to:
+        Chen, L. C., Papandreou, G., Kokkinos, I., Murphy, K., & Yuille, A. L. (2017). Deeplab: Semantic image segmentation with deep convolutional nets, atrous convolution, and fully connected crfs. IEEE transactions on pattern analysis and machine intelligence, 40(4), 834-848.
 
     Args:
-        backbone (paddle.nn.Layer): Backbone network, currently support Resnet50_vd/Resnet101_vd/Xception65.
-        backbone_indices (tuple, optional): Two values in the tuple indicate the indices of output of backbone.
-           Default: (0, 3).
-        aspp_ratios (tuple, optional): The dilation rate using in ASSP module.
-            If output_stride=16, aspp_ratios should be set as (1, 6, 12, 18).
-            If output_stride=8, aspp_ratios is (1, 12, 24, 36).
-            Default: (1, 6, 12, 18).
-        aspp_out_channels (int, optional): The output channels of ASPP module. Default: 256.
+        backbone (paddle.nn.Layer): Backbone network, currently support Resnet101.
         align_corners (bool, optional): An argument of F.interpolate. It should be set to False when the feature size is even,
             e.g. 1024x512, otherwise it is True, e.g. 769x769. Default: False.
         pretrained (str, optional): The path or url of pretrained model. Default: None.
@@ -55,9 +49,6 @@ class DeepLabV2(nn.Layer):
 
     def __init__(self,
                  backbone,
-                 backbone_indices=(0, 1, 2, 3),
-                 aspp_ratios=(1, 6, 12, 18),
-                 aspp_out_channels=256,
                  align_corners=False,
                  pretrained=None,
                  shape_stream=False):
@@ -65,27 +56,23 @@ class DeepLabV2(nn.Layer):
 
         self.backbone = backbone
         self.shape_stream = shape_stream
-        if shape_stream:
-            print('####### ADD SHAPE STREAM ########')
         self.head = edge_branch(
-            inplanes=(64, 2048),  #(256, 2048),
+            inplanes=(64, 2048),
             out_channels=1024,
             dilation_series=[6, 12, 18, 24],
             padding_series=[6, 12, 18, 24],
             num_classes=2)
 
-        self.fusion = Classifier_Module(21, [6, 18, 30, 42], [6, 18, 30, 42],
-                                        19)
+        self.fusion = ClassifierModule(21, [6, 18, 30, 42], [6, 18, 30, 42], 19)
         self.align_corners = align_corners
         self.pretrained = pretrained
         self.init_weight()
 
     def forward(self, x):
-        feat_list = self.backbone(x)  # x6, x_aug, x1, x2, x3, x4
+        feat_list = self.backbone(x)
 
         if self.shape_stream:
-            logit_list = self.head(self.backbone.conv1_logit,
-                                   feat_list[-1])  # *feat_list[2:])
+            logit_list = self.head(self.backbone.conv1_logit, feat_list[-1])
             logit_list.extend(feat_list[:2])
             edge_logit, seg_logit, aug_logit = [
                 F.interpolate(
@@ -194,6 +181,4 @@ class edge_branch(nn.Layer):
         for i in range(len(self.conv2d_list) - 1):
             out += self.conv2d_list[i + 1](y)
 
-        return [
-            out,
-        ]
+        return out

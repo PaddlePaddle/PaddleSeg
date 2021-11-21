@@ -81,9 +81,9 @@ class Bottleneck(nn.Layer):
         return out
 
 
-class Classifier_Module(nn.Layer):
+class ClassifierModule(nn.Layer):
     def __init__(self, inplanes, dilation_series, padding_series, num_classes):
-        super(Classifier_Module, self).__init__()
+        super(ClassifierModule, self).__init__()
         self.conv2d_list = nn.LayerList()
         for dilation, padding in zip(dilation_series, padding_series):
             weight_attr = paddle.ParamAttr(
@@ -139,10 +139,10 @@ class ResNetMulti(nn.Layer):
             block, 256, num_layers[2], stride=1, dilation=2)
         self.layer4 = self._make_layer(
             block, 512, num_layers[3], stride=1, dilation=4)
-        self.layer5 = self._make_pred_layer(Classifier_Module, 1024,
+        self.layer5 = self._make_pred_layer(ClassifierModule, 1024,
                                             [6, 12, 18, 24], [6, 12, 18, 24],
                                             num_classes)
-        self.layer6 = self._make_pred_layer(Classifier_Module, 2048,
+        self.layer6 = self._make_pred_layer(ClassifierModule, 2048,
                                             [6, 12, 18, 24], [6, 12, 18, 24],
                                             num_classes)
 

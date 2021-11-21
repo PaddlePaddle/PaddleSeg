@@ -1,6 +1,6 @@
 # This file is made available under Apache License, Version 2.0
 # This file is based on code available under the MIT License here:
-#  https://github.com/ZJULearning/MaxSquareLoss/blob/master/datasets/gta5_Dataset.py
+#  https://github.com/ZJULearning/MaxSquareLoss/blob/master/datasets/GTA5Dataset.py
 #
 # Copyright (c) 2021 PaddlePaddle Authors. All Rights Reserved.
 #
@@ -19,13 +19,13 @@
 import os
 import numpy as np
 from PIL import Image, ImageFile
-from datasets.cityscapes_noconfig import City_Dataset, to_tuple
+from datasets.cityscapes_noconfig import CityDataset, to_tuple
 
 import paddle
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 
 
-class GTA5_Dataset(City_Dataset):
+class GTA5Dataset(CityDataset):
     def __init__(self,
                  root='./datasets/GTA5',
                  list_path='./datasets/GTA5/list',

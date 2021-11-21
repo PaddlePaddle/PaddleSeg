@@ -12,6 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .cityscapes_noconfig import City_Dataset
-from .gta5_noconfig import GTA5_Dataset
-from .synthia import SYNTHIA_Dataset
+from .cityscapes_noconfig import CityDataset
+from .gta5_noconfig import GTA5Dataset
+from .synthia import SYNTHIADataset

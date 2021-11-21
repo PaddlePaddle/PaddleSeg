@@ -1,6 +1,6 @@
 # This file is made available under Apache License, Version 2.0
 # This file is based on code available under the MIT License here:
-#  https://github.com/ZJULearning/MaxSquareLoss/blob/master/datasets/synthia_Dataset.py
+#  https://github.com/ZJULearning/MaxSquareLoss/blob/master/datasets/SYNTHIADataset.py
 #
 # Copyright (c) 2021 PaddlePaddle Authors. All Rights Reserved.
 #
@@ -21,13 +21,13 @@ import imageio
 import numpy as np
 from PIL import Image
 
-from datasets.cityscapes_noconfig import City_Dataset, to_tuple
+from datasets.cityscapes_noconfig import CityDataset, to_tuple
 
 imageio.plugins.freeimage.download()
 synthia_set_16 = [0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 12, 13, 15, 17, 18]
 
 
-class SYNTHIA_Dataset(City_Dataset):
+class SYNTHIADataset(CityDataset):
     def __init__(
             self,
             root='./datasets/SYNTHIA',

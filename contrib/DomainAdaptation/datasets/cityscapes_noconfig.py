@@ -103,7 +103,7 @@ def to_tuple(x):
     return x if isinstance(x, abc.Iterable) else (x, x)
 
 
-class City_Dataset(io.Dataset):
+class CityDataset(io.Dataset):
     def __init__(self,
                  root,
                  list_path,
@@ -322,7 +322,7 @@ class City_Dataset(io.Dataset):
 
         target = paddle.to_tensor(target)
 
-        return target, edge_mask  # 不能返回 None
+        return target, edge_mask
 
     def __len__(self):
         return len(self.items)

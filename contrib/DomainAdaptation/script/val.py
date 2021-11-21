@@ -47,7 +47,7 @@ class Eval():
         self.ignore_index = None
         self.synthia = True if num_class == 16 else False
 
-    def Pixel_Accuracy(self):
+    def pixel_accuracy(self):
         if np.sum(self.confusion_matrix) == 0:
             print("Attention: pixel_total is zero!!!")
             PA = 0
@@ -57,7 +57,7 @@ class Eval():
 
         return PA
 
-    def Mean_Pixel_Accuracy(self, out_16_13=False):
+    def mean_pixel_accuracy(self, out_16_13=False):
         MPA = np.diag(self.confusion_matrix) / self.confusion_matrix.sum(axis=1)
         if self.synthia:
             MPA_16 = np.nanmean(MPA[:self.ignore_index])
@@ -71,7 +71,7 @@ class Eval():
 
         return MPA
 
-    def Mean_Intersection_over_Union(self, out_16_13=False):
+    def mean_iou(self, out_16_13=False):
         MIoU = np.diag(self.confusion_matrix) / (
             np.sum(self.confusion_matrix, axis=1) + np.sum(
                 self.confusion_matrix, axis=0) - np.diag(self.confusion_matrix))
@@ -87,7 +87,7 @@ class Eval():
 
         return MIoU
 
-    def Frequency_Weighted_Intersection_over_Union(self, out_16_13=False):
+    def fwiou(self, out_16_13=False):
         FWIoU = np.multiply(
             np.sum(self.confusion_matrix, axis=1),
             np.diag(self.confusion_matrix))
@@ -113,7 +113,7 @@ class Eval():
 
         return FWIoU
 
-    def Mean_Precision(self, out_16_13=False):
+    def mean_precision(self, out_16_13=False):
         Precision = np.diag(
             self.confusion_matrix) / self.confusion_matrix.sum(axis=0)
         if self.synthia:
@@ -127,7 +127,7 @@ class Eval():
         Precision = np.nanmean(Precision[:self.ignore_index])
         return Precision
 
-    def Print_Every_class_Eval(self, out_16_13=False, logger=None):
+    def print_every_class_eval(self, out_16_13=False, logger=None):
         MIoU = np.diag(self.confusion_matrix) / (
             np.sum(self.confusion_matrix, axis=1) + np.sum(
                 self.confusion_matrix, axis=0) - np.diag(self.confusion_matrix))
@@ -254,11 +254,11 @@ def evaluate(model,
             batch_cost_averager.reset()
             batch_start = time.time()
 
-        PA = evaluator.Pixel_Accuracy()
-        MPA = evaluator.Mean_Pixel_Accuracy()
-        MIoU = evaluator.Mean_Intersection_over_Union()
-        FWIoU = evaluator.Frequency_Weighted_Intersection_over_Union()
-        PC = evaluator.Mean_Precision()
+        PA = evaluator.pixel_accuracy()
+        MPA = evaluator.mean_pixel_accuracy()
+        MIoU = evaluator.mean_iou()
+        FWIoU = evaluator.fwiou()
+        PC = evaluator.mean_precision()
         logger.info(
             'PA1:{:.3f}, MPA1:{:.3f}, MIoU1:{:.3f}, FWIoU1:{:.3f}, PC:{:.3f}'.
             format(PA, MPA, MIoU, FWIoU, PC))

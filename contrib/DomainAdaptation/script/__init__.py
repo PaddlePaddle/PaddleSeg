@@ -14,5 +14,3 @@
 
 from .train import Trainer
 from .val import evaluate
-
-__all__ = ['Trainer']
