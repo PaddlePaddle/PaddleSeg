@@ -71,9 +71,6 @@ class GINet(nn.Layer):
 
     def base_forward(self, x):
         feat_list = self.backbone(x)
-        import pdb
-        pdb.set_trace()
-
         c1, c2, c3, c4 = [feat_list[i] for i in self.backbone_indices]
 
         if self.jpu:
