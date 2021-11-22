@@ -12,8 +12,8 @@ export:
 
 val_dataset:
   type: Dataset
-  dataset_root: data/mini_supervisely
-  val_path: data/mini_supervisely/val.txt
+  dataset_root: test/data/mini_supervisely
+  val_path: tests/data/mini_supervisely/val.txt
   num_classes: 2
   transforms:
     - type: Resize
