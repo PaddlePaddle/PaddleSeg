@@ -1,0 +1,17 @@
+_base_: '../_base_/imagenet_pseudo_seg.yml'
+
+batch_size: 8  # gpu=3, epoch=6
+iters: 250000
+
+model:
+  type: STDCSeg
+  backbone:
+    type: STDC1
+    pretrained: https://bj.bcebos.com/paddleseg/dygraph/STDCNet1.tar.gz
+  pretrained: null
+  use_boundary_8: False
+
+loss:
+  types:
+    - type: CrossEntropyLoss
+  coef: [1]

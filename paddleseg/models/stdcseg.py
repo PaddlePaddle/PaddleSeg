@@ -78,7 +78,7 @@ class STDCSeg(nn.Layer):
             feat_out8 = self.conv_out8(feat_cp8)
             feat_out16 = self.conv_out16(feat_cp16)
 
-            logit_list = [feat_out, feat_out8, feat_out16]
+            logit_list = [feat_out]
             logit_list = [
                 F.interpolate(x, x_hw, mode='bilinear', align_corners=True)
                 for x in logit_list
