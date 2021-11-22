@@ -46,7 +46,21 @@ class BiSeNetLane(nn.Layer):
             num_classes=num_classes,
             lambd=lambd,
             align_corners=align_corners,
-            pretrained=pretrained)
+            pretrained=None)
+
+        self.pretrained = pretrained
+        self.init_weight()
+
+    def init_weight(self):
+        if self.pretrained is not None:
+            utils.load_entire_model(self, self.pretrained)
+        else:
+            for sublayer in self.sublayers():
+                if isinstance(sublayer, nn.Conv2D):
+                    param_init.kaiming_normal_init(sublayer.weight)
+                elif isinstance(sublayer, (nn.BatchNorm, nn.SyncBatchNorm)):
+                    param_init.constant_init(sublayer.weight, value=1.0)
+                    param_init.constant_init(sublayer.bias, value=0.0)
 
     def forward(self, x):
         logit_list = self.net(x)
