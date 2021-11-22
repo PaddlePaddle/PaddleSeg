@@ -38,7 +38,7 @@ cd contrib/LaneSeg
 ```
 
 ## Models
-[BiseNetLane](https://paddleseg.bj.bcebos.com/models/bisenet_lan.pdparams)
+[BiseNetLane](https://paddleseg.bj.bcebos.com/lane_seg/bisenet_lan.pdparams)
 
 The evaluation base on TuSimple challenge evaluation method you can get more information from [TuSimple exampe](https://github.com/TuSimple/tusimple-benchmark/blob/master/example/lane_demo.ipynb)
 
@@ -46,7 +46,7 @@ BiseNetLane performance on [Tusimple](https://github.com/TuSimple/tusimple-bench
 
 | Backbone | Acc | FN | FP | Link|
 |-|-|-|-|-|
-|BiseNetV2|96.09%|0.04643|0.041606|[model](https://paddleseg.bj.bcebos.com/models/bisenet_lan.pdparams)|
+|BiseNetV2|96.09%|0.04643|0.041606|[model](https://paddleseg.bj.bcebos.com/lane_seg/bisenet_lan.pdparams)|
 
 Note: The model input size is (640, 368) and the GPU is Tesla V100 32G.
 

@@ -41,7 +41,7 @@ cd contrib/LaneSeg
 
 ## 模型
 
-[BiseNetLane](https://paddleseg.bj.bcebos.com/models/bisenet_lan.pdparams)
+[BiseNetLane](https://paddleseg.bj.bcebos.com/lane_seg/bisenet_lan.pdparams)
 
 基于TuSimple评估方法的评估，您可以从[TuSimple exampe](https://github.com/TuSimple/tusimple-benchmark/blob/master/example/lane_demo.ipynb) 获取更多信息
 
@@ -49,7 +49,7 @@ BiseNetLane在[Tusimple](https://github.com/TuSimple/tusimple-benchmark/issues/3
 
 | Backbone | Acc | FP| FN | Link|
 |-|-|-|-|-|
-|BiseNetV2|96.09%|0.04643|0.041606|[model](https://paddleseg.bj.bcebos.com/models/bisenet_lan.pdparams)|
+|BiseNetV2|96.09%|0.04643|0.041606|[model](https://paddleseg.bj.bcebos.com/lane_seg/bisenet_lan.pdparams)|
 
 注意：模型输入大小为(640, 368), GPU为Tesla V100 32G。
 
