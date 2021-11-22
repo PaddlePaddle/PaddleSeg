@@ -1,14 +1,14 @@
 # Unsupervised Domain Adaptation on Semantic Segmentation
 
-Domain adaptation is the ability to apply an algorithm trained in one or more "source domains" to a different (but related) "target domain. If we do not apply domain adaptation algorithms, models' perfomance will drop when we want to apply models trained with dataset A on a similar dataset B. Specifically, Unsupervised domain adaptation(UDA) dedicate to achieving satisfactory performance on dataset B that we do not have labels. The following image is the result of our model. It shows the performance gain of the UDA algorithms on semantic segmentation. When we compare the segmentation results between "without DA" and "with DA", we can observe a notable performance lift.
+Domain adaptation is the ability to apply an algorithm trained in one or more "source domains" to a different (but related) "target domain". With domain adaptation algorithms, performance drop caused by [domain shift](https://en.wikipedia.org/wiki/Domain_adaptation#:~:text=A%20domain%20shift%2C%20or%20distributional,practical%20applications%20of%20artificial%20intelligence.) can be alleviated. Specifically, none of the manually labeled images will be used in unsupervised domain adaptation(UDA). The following picture shows the result of applying our  unsupervised domain adaptation algorithms on semantic segmentation task. By comparing the segmentation results between "without DA" and "with DA", we can observe a remarkable performance gain.
 
 <p align="center">
 <img src="https://raw.githubusercontent.com/PaddlePaddle/PaddleSeg/a73f874019afb5a36aa5cb60131b834282a91c25/contrib/DomainAdaptation/docs/domain_adaptation.png" width="100%" height="100%">
 </p>
 
-This project includes the reproduction of pixmatch [[Paper](https://arxiv.org/abs/2105.08128)|[Code](https://github.com/lukemelas/pixmatch)] based on PaddlePaddle and PaddleSeg, which reaches mIOU = 47.8% on Cityscapes Dataset.
+This project includes the reproduction of PixMatch [[Paper](https://arxiv.org/abs/2105.08128)|[Code](https://github.com/lukemelas/pixmatch)] based on PaddlePaddle, which reaches mIOU = 47.8% on Cityscapes Dataset.
 
-In addition to reproducing pixmatch, we also tried something new. Major adjustments include:
+In addition to reproducing PixMatch, we also tried something new. Major adjustments include:
 
 1. Add edge constrain branch to improve edge accuracy (negative results, still needs to adjust)
 2. Use edge as prior information to fix segmentation result (negative results, still needs to adjust)
@@ -65,7 +65,7 @@ python -m pip install paddlepaddle-gpu==2.2.0 -i https://mirror.baidu.com/pypi/s
 
 1. Train on one GPU
 
-   1. Try the project as the reproduction of pixmatch:  `sh run-DA_src.sh`
+   1. Try the project as the reproduction of PixMatch:  `sh run-DA_src.sh`
    2. Try the project for other experiments:  change to another config file in the training script
 
 2. Validate on one GPU:
