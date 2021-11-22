@@ -6,9 +6,9 @@ Domain adaptation is the ability to apply an algorithm trained in one or more "s
 <img src="https://raw.githubusercontent.com/PaddlePaddle/PaddleSeg/a73f874019afb5a36aa5cb60131b834282a91c25/contrib/DomainAdaptation/docs/domain_adaptation.png" width="100%" height="100%">
 </p>
 
-This project includes the reproduction of PixMatch [[Paper](https://arxiv.org/abs/2105.08128)|[Code](https://github.com/lukemelas/pixmatch)] based on PaddlePaddle, which reaches mIOU = 47.8% on Cityscapes Dataset.
+In this project, we reproduce PixMatch [[Paper](https://arxiv.org/abs/2105.08128)|[Code](https://github.com/lukemelas/pixmatch)] with PaddlePaddle and reaches mIOU = 47.8% on Cityscapes Dataset.
 
-In addition to reproducing PixMatch, we also tried something new. Major adjustments include:
+On top of that, we also tried several adjustments including:
 
 1. Add edge constrain branch to improve edge accuracy (negative results, still needs to adjust)
 2. Use edge as prior information to fix segmentation result (negative results, still needs to adjust)
