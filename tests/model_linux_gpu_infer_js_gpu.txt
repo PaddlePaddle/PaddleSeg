@@ -1,0 +1,5 @@
+===========================infer_params===========================
+model_name:ppseg_lite_portrait_398x224
+infer_model:./tests/output/paddlejs/ppseg_lite_portrait_398x224_with_softmax/model.pdmodel
+source_code:github.com/PaddlePaddle/Paddle.js/archive/refs/tags/v2.1.0.tar.gz
+dependencies:express webpack webpack-dev-middleware jest-puppeteer
