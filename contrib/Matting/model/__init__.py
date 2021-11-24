@@ -20,3 +20,4 @@ from .dim import DIM
 from .loss import MRSD
 from .modnet import MODNet
 from .ziyan import ZiYanAM
+from .ziyan_gate import ZiYanGate
