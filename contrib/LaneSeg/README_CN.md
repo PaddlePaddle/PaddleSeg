@@ -55,19 +55,9 @@ BiseNetLane在[Tusimple](https://github.com/TuSimple/tusimple-benchmark/issues/3
 
 ## 数据准备
 
-利用Tusimple开源的[Tusimple](https://github.com/TuSimple/tusimple-benchmark/issues/3)数据集作为我们教程的示例数据集
-
-执行如下命令：
-```shell
-python third_party/generate_tusimple_dataset.py.py --root path/to/your/unzipped/file
-
+利用Tusimple开源的[Tusimple](https://github.com/TuSimple/tusimple-benchmark/issues/3)数据集作为我们教程的示例数据集，需要下载的数据有train_set.zip, test_set.zip, test_label.json,
+分别将train_set.zip，test_set.zip解压， 并将数据集置于data目录下，同时将test_label.json放置在test_set目录下。数据集整理为如下结构，
 ```
-
-将数据集整理为如下结构， 并将数据集置于data目录下。
-
-```
- The folder structure is as follow:
-
  LaneSeg
  |-- data
      |-- tusimple
@@ -77,12 +67,6 @@ python third_party/generate_tusimple_dataset.py.py --root path/to/your/unzipped/
                 |-- 0313-2
                 |-- 0531
                 |-- 0601
-            |-- labels [need to generate label dir]
-                |-- 0313-1
-                |-- 0313-2
-                |-- 0531
-                |-- 0601
-            |-- train_list.txt [need to generate]
             |-- label_data_0313.json
             |-- label_data_0531.json
             |-- label_data_0601.json
@@ -91,13 +75,37 @@ python third_party/generate_tusimple_dataset.py.py --root path/to/your/unzipped/
                 |-- 0530
                 |-- 0531
                 |-- 0601
+            |-- test_tasks_0627.json
+            |-- test_label.json
+```
+
+执行如下命令：
+```shell
+python third_party/generate_tusimple_dataset.py.py --root path/to/your/unzipped/file
+
+```
+
+数据生成结果如下。
+
+```
+ LaneSeg
+ |-- data
+     |-- tusimple
+        |-- train_set
+            ...
+            |-- labels [need to generate label dir]
+                |-- 0313-1
+                |-- 0313-2
+                |-- 0531
+                |-- 0601
+            |-- train_list.txt [need to generate]
+        |-- test_set
+            ...
             |-- labels [need to generate label dir]
                 |-- 0530
                 |-- 0531
                 |-- 0601
             |-- train_list.txt [need to generate]
-            |-- test_tasks_0627.json
-            |-- test_label.json
 ```
 
 train_list.txt的内容如下:
