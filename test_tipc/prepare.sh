@@ -25,7 +25,7 @@ model_path=test_tipc/output/${model_name}/
 # download pretrained model
 if [ ${MODE} = "whole_infer" ] || [ ${MODE} = "klquant_whole_infer" ]; then
     rm -rf $model_path
-    if [ ${model_name} == "hrnetw18_small_v1" ];then
+    if [ ${model_name} == "fcn_hrnetw18_small" ];then
         wget -nc -P $model_path https://paddleseg.bj.bcebos.com/dygraph/humanseg/train/fcn_hrnetw18_small_v1_humanseg_192x192.zip
         cd $model_path && unzip fcn_hrnetw18_small_v1_humanseg_192x192.zip  &&  cd -
     elif [ ${model_name} == "pphumanseg_lite" ];then
@@ -38,7 +38,7 @@ if [ ${MODE} = "whole_infer" ] || [ ${MODE} = "klquant_whole_infer" ]; then
     fi
 fi
 # download data
-if [ ${model_name} == "hrnetw18_small_v1" ] || [ ${model_name} == "pphumanseg_lite" ] || [ ${model_name} == "deeplabv3p_resnet50" ];then
+if [ ${model_name} == "fcn_hrnetw18_small" ] || [ ${model_name} == "pphumanseg_lite" ] || [ ${model_name} == "deeplabv3p_resnet50" ];then
     rm -rf ./test_tipc/data/mini_supervisely
     wget -nc -P ./test_tipc/data/ https://paddleseg.bj.bcebos.com/humanseg/data/mini_supervisely.zip
     cd ./test_tipc/data/ && unzip mini_supervisely.zip && cd -
