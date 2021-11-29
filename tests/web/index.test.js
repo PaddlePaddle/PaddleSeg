@@ -18,7 +18,7 @@ describe('e2e test humanseg model', () => {
 
             const humanseg = paddlejs['humanseg'];
 
-            await humanseg.load();
+            await humanseg.load(true, false, './models/ppseg/model.json');
             const {
                 data
             } = await humanseg.getGrayValue(human);
