@@ -98,6 +98,22 @@ class ZiYanGate(nn.Layer):
         self.dsn1 = nn.Conv2D(256, 1, kernel_size=1)
         self.dsn2 = nn.Conv2D(64, 1, kernel_size=1)
         self.dsn3 = nn.Conv2D(64, 1, kernel_size=1)
+        self.dsn_backbone1 = nn.Conv2D(
+            self.backbone_channels[2], 1, kernel_size=1)
+        self.dsn_backbone2 = nn.Conv2D(
+            self.backbone_channels[3], 1, kernel_size=1)
+        self.dsn_backbone3 = nn.Conv2D(
+            self.backbone_channels[4], 1, kernel_size=1)
+
+        self.res_backbone1 = resnet_vd.BasicBlock(64, 64, stride=1)
+        self.d_backbone1 = nn.Conv2D(64, 64, kernel_size=1)
+        self.gate_backbone1 = GatedSpatailConv2d(64, 64, stride=1)
+        self.res_backbone2 = resnet_vd.BasicBlock(64, 64, stride=1)
+        self.d_backbone2 = nn.Conv2D(64, 64, kernel_size=1)
+        self.gate_backbone2 = GatedSpatailConv2d(64, 64, stride=1)
+        self.res_backbone3 = resnet_vd.BasicBlock(64, 64, stride=1)
+        self.d_backbone3 = nn.Conv2D(64, 64, kernel_size=1)
+        self.gate_backbone3 = GatedSpatailConv2d(64, 64, stride=1)
 
         self.res1 = resnet_vd.BasicBlock(64, 64, stride=1)
         self.d1 = nn.Conv2D(64, 32, kernel_size=1)
@@ -158,9 +174,36 @@ class ZiYanGate(nn.Layer):
             input_shape[2:],
             mode='bilinear',
             align_corners=False)
+        s_backbone1 = F.interpolate(
+            self.dsn_backbone1(fea_list[2]),
+            input_shape[2:],
+            mode='bilinear',
+            align_corners=False)
+        s_backbone2 = F.interpolate(
+            self.dsn_backbone2(fea_list[3]),
+            input_shape[2:],
+            mode='bilinear',
+            align_corners=False)
+        s_backbone3 = F.interpolate(
+            self.dsn_backbone3(fea_list[4]),
+            input_shape[2:],
+            mode='bilinear',
+            align_corners=False)
 
         df = F.interpolate(
             fea_list[0], input_shape[2:], mode='bilinear', align_corners=False)
+        df = self.res_backbone1(df)
+        df = self.d_backbone1(df)
+        df = self.gate_backbone1(df, s_backbone1)
+
+        df = self.res_backbone2(df)
+        df = self.d_backbone2(df)
+        df = self.gate_backbone2(df, s_backbone2)
+
+        df = self.res_backbone3(df)
+        df = self.d_backbone3(df)
+        df = self.gate_backbone3(df, s_backbone3)
+
         df = self.res1(df)
         df = self.d1(df)
         df = self.gate1(df, s1)
