@@ -20,14 +20,26 @@ model_name=$(func_parser_value "${lines[1]}")
 
 trainer_list=$(func_parser_value "${lines[14]}")
 
-# MODE be one of ['lite_train_infer' 'whole_infer' 'whole_train_infer']
-MODE=$2
-if [ ${MODE} = "infer" ];then
-    model_path=test_tipc/output/norm_gpus_0_autocast_null/
+model_path=test_tipc/output/${model_name}/
+
+# download pretrained model
+if [ ${MODE} = "whole_infer" ] || [ ${MODE} = "klquant_whole_infer" ]; then
     rm -rf $model_path
-    wget -nc -P $model_path https://paddleseg.bj.bcebos.com/dygraph/humanseg/train/fcn_hrnetw18_small_v1_humanseg_192x192.zip
-    cd $model_path && unzip fcn_hrnetw18_small_v1_humanseg_192x192.zip && mv fcn_hrnetw18_small_v1_humanseg_192x192/model.pdparams . && cd ../../../
+    if [ ${model_name} == "fcn_hrnetw18_small" ];then
+        wget -nc -P $model_path https://paddleseg.bj.bcebos.com/dygraph/humanseg/train/fcn_hrnetw18_small_v1_humanseg_192x192.zip
+        cd $model_path && unzip fcn_hrnetw18_small_v1_humanseg_192x192.zip  &&  cd -
+    elif [ ${model_name} == "pphumanseg_lite" ];then
+        wget -nc -P $model_path https://paddleseg.bj.bcebos.com/dygraph/humanseg/train/pphumanseg_lite_generic_192x192.zip
+        cd $model_path && unzip pphumanseg_lite_generic_192x192.zip  &&  cd -
+    elif [ ${model_name} == "deeplabv3p_resnet50" ];then
+        wget -nc -P $model_path https://paddleseg.bj.bcebos.com/dygraph/humanseg/train/deeplabv3p_resnet50_os8_humanseg_512x512_100k.zip
+        cd $model_path && unzip deeplabv3p_resnet50_os8_humanseg_512x512_100k.zip && cd -
+
+    fi
 fi
-rm -rf ./test_tipc/data/mini_supervisely
-wget -nc -P ./test_tipc/data/ https://paddleseg.bj.bcebos.com/humanseg/data/mini_supervisely.zip
-cd ./test_tipc/data/ && unzip mini_supervisely.zip && cd ../../
+# download data
+if [ ${model_name} == "fcn_hrnetw18_small" ] || [ ${model_name} == "pphumanseg_lite" ] || [ ${model_name} == "deeplabv3p_resnet50" ];then
+    rm -rf ./test_tipc/data/mini_supervisely
+    wget -nc -P ./test_tipc/data/ https://paddleseg.bj.bcebos.com/humanseg/data/mini_supervisely.zip
+    cd ./test_tipc/data/ && unzip mini_supervisely.zip && cd -
+fi
