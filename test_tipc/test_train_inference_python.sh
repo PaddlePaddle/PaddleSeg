@@ -124,17 +124,17 @@ if [ ${MODE} = "klquant_whole_infer" ]; then
     infer_value1=$(func_parser_value "${lines[17]}")
 fi
 
-LOG_PATH="./test_tipc/output"
+LOG_PATH="./test_tipc/output/${model_name}"  ##
 mkdir -p ${LOG_PATH}
 status_log="${LOG_PATH}/results_python.log"
-rm -f status_log
+echo "------------------------ ${MODE} ------------------------" >> $status_log
 
 
 function func_inference(){
     IFS='|'
     _python=$1
     _script=$2
-    _model_dir=$3
+    _model_dir="$3/deploy.yaml"
     _log_path=$4
     _img_dir=$5
     _flag_quant=$6
@@ -162,8 +162,8 @@ function func_inference(){
                             set_batchsize=$(func_set_params "${batch_size_key}" "${batch_size}")
                             set_cpu_threads=$(func_set_params "${cpu_threads_key}" "${threads}")
                             set_model_dir=$(func_set_params "${infer_model_key}" "${_model_dir}")
-                            set_infer_params1=$(func_set_params "${infer_key1}" "${infer_value1}")
-                            command="${_python} ${_script} ${use_gpu_key}=${use_gpu} ${use_mkldnn_key}=${use_mkldnn} ${set_cpu_threads} ${set_model_dir} ${set_batchsize} ${set_infer_data} ${set_benchmark} ${set_precision} ${set_infer_params1} > ${_save_log_path} 2>&1 "
+                            set_infer_params2=$(func_set_params "${infer_key2}" "${infer_value2}")  ##
+                            command="${_python} ${_script} ${use_gpu_key}=${use_gpu} ${use_mkldnn_key}=${use_mkldnn} ${set_cpu_threads} ${set_model_dir} ${set_batchsize} ${set_infer_data} ${set_benchmark} ${set_precision} ${set_infer_params2} > ${_save_log_path} 2>&1 "
                             eval $command
                             last_status=${PIPESTATUS[0]}
                             eval "cat ${_save_log_path}"
@@ -192,9 +192,8 @@ function func_inference(){
                         set_tensorrt=$(func_set_params "${use_trt_key}" "${use_trt}")
                         set_precision=$(func_set_params "${precision_key}" "${precision}")
                         set_model_dir=$(func_set_params "${infer_model_key}" "${_model_dir}")
-                        set_infer_params1=$(func_set_params "${infer_key1}" "${infer_value1}")
                         set_infer_params2=$(func_set_params "${infer_key2}" "${infer_value2}")  ##
-                        command="${_python} ${_script} ${use_gpu_key}=${use_gpu} ${set_tensorrt} ${set_precision} ${set_model_dir} ${set_batchsize} ${set_infer_data} ${set_benchmark} ${set_infer_params1} ${set_infer_params2} > ${_save_log_path} 2>&1 " ##
+                        command="${_python} ${_script} ${use_gpu_key}=${use_gpu} ${set_tensorrt} ${set_precision} ${set_model_dir} ${set_batchsize} ${set_infer_data} ${set_benchmark} ${set_infer_params2} > ${_save_log_path} 2>&1 " ##
                         eval $command
                         last_status=${PIPESTATUS[0]}
                         eval "cat ${_save_log_path}"
@@ -230,7 +229,6 @@ if [ ${MODE} = "whole_infer" ] || [ ${MODE} = "klquant_whole_infer" ]; then
             set_save_infer_key=$(func_set_params "${save_infer_key}" "${save_infer_dir}")
             export_cmd="${python} ${infer_run_exports[Count]} ${set_export_weight} ${set_save_infer_key}"
             echo ${infer_run_exports[Count]}
-            echo  $export_cmd
             eval $export_cmd
             status_export=$?
             status_check $status_export "${export_cmd}" "${status_log}"
@@ -334,7 +332,6 @@ else
                     cmd="${python} -m paddle.distributed.launch --ips=${ips} --gpus=${gpu} ${run_train} ${set_use_gpu} ${set_save_model} ${set_pretrain} ${set_epoch} ${set_autocast} ${set_batchsize} ${set_train_params1} ${set_amp_config}"
                 fi
                 # run train
-                eval "unset CUDA_VISIBLE_DEVICES"
                 eval $cmd
                 status_check $? "${cmd}" "${status_log}"
 
