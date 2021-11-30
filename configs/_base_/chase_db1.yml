@@ -46,4 +46,3 @@ loss:
 
 test_config:
   auc_roc: True
-  

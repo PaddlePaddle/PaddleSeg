@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 import os
 
 from paddleseg.utils.download import download_file_and_uncompress
@@ -21,7 +20,8 @@ from paddleseg.cvlibs import manager
 from paddleseg.transforms import Compose
 from paddleseg.datasets import Dataset
 
-URL = '' # todo: add url of the stare dataset
+URL = 'https://bj.bcebos.com/paddleseg/dataset/hrf/hrf.zip'
+
 
 @manager.DATASETS.add_component
 class HRF(Dataset):
@@ -92,5 +92,4 @@ class HRF(Dataset):
                 else:
                     image_path = os.path.join(self.dataset_root, items[0])
                     grt_path = os.path.join(self.dataset_root, items[1])
-                self.file_list.append([image_path, grt_path])   
-
+                self.file_list.append([image_path, grt_path])

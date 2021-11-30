@@ -8,4 +8,3 @@ model:
   num_classes: 2
   use_deconv: False
   pretrained: Null
-

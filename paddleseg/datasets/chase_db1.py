@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 import os
 
 from paddleseg.utils.download import download_file_and_uncompress
@@ -21,13 +20,14 @@ from paddleseg.cvlibs import manager
 from paddleseg.transforms import Compose
 from paddleseg.datasets import Dataset
 
-URL = '' # todo: add url of the stare dataset
+URL = 'https://bj.bcebos.com/paddleseg/dataset/chase_db1/chase_db1.zip'
+
 
 @manager.DATASETS.add_component
 class CHASEDB1(Dataset):
     """
-    CHASE_DB1 dataset is a dataset for retinal vessel segmentation which contains 28 color retina images with the size of 999×960 pixels which are collected from both left and right eyes of 14 school children. 
-    Each image is annotated by two independent human experts, and we choose the labels from 1st expert. 
+    CHASE_DB1 dataset is a dataset for retinal vessel segmentation which contains 28 color retina images with the size of 999×960 pixels which are collected from both left and right eyes of 14 school children.
+    Each image is annotated by two independent human experts, and we choose the labels from 1st expert.
     (https://blogs.kingston.ac.uk/retinal/chasedb1/)
 
     Args:
@@ -93,4 +93,4 @@ class CHASEDB1(Dataset):
                 else:
                     image_path = os.path.join(self.dataset_root, items[0])
                     grt_path = os.path.join(self.dataset_root, items[1])
-                self.file_list.append([image_path, grt_path])   
+                self.file_list.append([image_path, grt_path])

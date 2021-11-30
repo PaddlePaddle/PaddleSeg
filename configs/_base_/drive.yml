@@ -39,6 +39,7 @@ lr_scheduler:
   end_lr: 0
   power: 0.9
 
+
 loss:
   types:
     - type: DiceLoss
@@ -46,4 +47,3 @@ loss:
 
 test_config:
   auc_roc: True
-  

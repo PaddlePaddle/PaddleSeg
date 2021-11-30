@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 import os
 
 from paddleseg.utils.download import download_file_and_uncompress
@@ -21,13 +20,14 @@ from paddleseg.cvlibs import manager
 from paddleseg.transforms import Compose
 from paddleseg.datasets import Dataset
 
-URL = '' # todo: add url of the dataset and test it without local dataset
+URL = 'https://bj.bcebos.com/paddleseg/dataset/drive/drive.zip'  # todo: add url of the dataset and test it without local dataset
+
 
 @manager.DATASETS.add_component
 class DRIVE(Dataset):
     """
-    The Digital Retinal Images for Vessel Extraction (DRIVE) dataset is a dataset for retinal vessel segmentation. 
-    It consists of a total of JPEG 40 color fundus images which is of size (584, 565); including 7 abnormal pathology cases.  
+    The Digital Retinal Images for Vessel Extraction (DRIVE) dataset is a dataset for retinal vessel segmentation.
+    It consists of a total of JPEG 40 color fundus images which is of size (584, 565); including 7 abnormal pathology cases.
     (http://www.isi.uu.nl/Research/Databases/DRIVE/)
 
     Args:
@@ -93,4 +93,4 @@ class DRIVE(Dataset):
                 else:
                     image_path = os.path.join(self.dataset_root, items[0])
                     grt_path = os.path.join(self.dataset_root, items[1])
-                self.file_list.append([image_path, grt_path])   
+                self.file_list.append([image_path, grt_path])

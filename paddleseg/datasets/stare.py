@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 import os
 
 from paddleseg.utils.download import download_file_and_uncompress
@@ -21,7 +20,8 @@ from paddleseg.cvlibs import manager
 from paddleseg.transforms import Compose
 from paddleseg.datasets import Dataset
 
-URL = '' # add url of the stare dataset
+URL = 'https://bj.bcebos.com/paddleseg/dataset/stare/stare.zip'
+
 
 @manager.DATASETS.add_component
 class STARE(Dataset):
@@ -49,7 +49,7 @@ class STARE(Dataset):
         self.edge = edge
         self.file_list = list()
         self.num_classes = self.NUM_CLASSES
-        self.ignore_index = 255  # labels only have 1/0, thus ignore_index is not necessary
+        self.ignore_index = 255
 
         if mode not in ['train', 'val', 'test']:
             raise ValueError(
@@ -67,7 +67,7 @@ class STARE(Dataset):
         elif not os.path.exists(self.dataset_root):
             self.dataset_root = os.path.normpath(self.dataset_root)
             savepath, extraname = self.dataset_root.rsplit(
-                sep=os.path.sep, maxsplit=1)
+                sep=os.path.sep, maxsplit=1)  # data  STARE
             self.dataset_root = download_file_and_uncompress(
                 url=URL,
                 savepath=savepath,
@@ -92,4 +92,4 @@ class STARE(Dataset):
                 else:
                     image_path = os.path.join(self.dataset_root, items[0])
                     grt_path = os.path.join(self.dataset_root, items[1])
-                self.file_list.append([image_path, grt_path])   
+                self.file_list.append([image_path, grt_path])
