@@ -24,8 +24,13 @@
 | 算法论文 | 模型名称 | 基础<br>训练预测 | 更多<br>训练方式 | 模型压缩 |  其他预测部署  |
 | :--- | :--- |  :----:  |  :----  |   :----  |   :----  |
 | DeepLabv3p     |PP-HumanSeg-Server (DeepLabv3p_resnet50) | 支持 | 混合精度 | - | - |
-| HRNet     |PP-HumanSeg-mobile (HRNet_W18_small)                | 支持  | 混合精度 | - | - |
+| HRNet     |PP-HumanSeg-Mobile (HRNet_W18_small)    | 支持  | 混合精度 | - | - |
 | ConnectNet | PP-HumanSeg-Lite | 支持 | - | - | - |
+| BiSeNetV2 | BiSeNetV2 | 支持 | - | - | - |
+| OCRNet | OCRNet_HRNetW18 | 支持 | - | - | - |
+| Segformer | Segformer_B0 | 支持 | - | - | - |
+| STDC | STDC_STDC1 | 支持 | - | - | - |
+| MODNet | PP-Matting | 支持 | - | - | - |
 
 
 
