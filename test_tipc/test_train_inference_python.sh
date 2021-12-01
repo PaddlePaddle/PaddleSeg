@@ -154,16 +154,22 @@ function func_inference(){
                             if [ ${_flag_quant} = "True" ] && [ ${precision} != "int8" ]; then
                                 continue
                             fi # skip when quant model inference but precision is not int8
+                            if [ ${_flag_quant} = "False" ] && [ ${precision} != "fp32" ]; then ##
+                                continue
+                            fi # skip when not quant model inference and precision is not fp32
+
                             set_precision=$(func_set_params "${precision_key}" "${precision}")
 
                             _save_log_path="${_log_path}/python_infer_cpu_usemkldnn_${use_mkldnn}_threads_${threads}_precision_${precision}_batchsize_${batch_size}.log"
+                            infer_value1="${_log_path}/python_infer_cpu_usemkldnn_${use_mkldnn}_threads_${threads}_precision_${precision}_batchsize_${batch_size}_results"
                             set_infer_data=$(func_set_params "${image_dir_key}" "${_img_dir}")
                             set_benchmark=$(func_set_params "${benchmark_key}" "${benchmark_value}")
                             set_batchsize=$(func_set_params "${batch_size_key}" "${batch_size}")
                             set_cpu_threads=$(func_set_params "${cpu_threads_key}" "${threads}")
                             set_model_dir=$(func_set_params "${infer_model_key}" "${_model_dir}")
+                            set_infer_params1=$(func_set_params "${infer_key1}" "${infer_value1}")  ##
                             set_infer_params2=$(func_set_params "${infer_key2}" "${infer_value2}")  ##
-                            command="${_python} ${_script} ${use_gpu_key}=${use_gpu} ${use_mkldnn_key}=${use_mkldnn} ${set_cpu_threads} ${set_model_dir} ${set_batchsize} ${set_infer_data} ${set_benchmark} ${set_precision} ${set_infer_params2} > ${_save_log_path} 2>&1 "
+                            command="${_python} ${_script} ${use_gpu_key}=${use_gpu} ${use_mkldnn_key}=${use_mkldnn} ${set_cpu_threads} ${set_model_dir} ${set_batchsize} ${set_infer_data} ${set_benchmark} ${set_precision} ${set_infer_params1} ${set_infer_params2} > ${_save_log_path} 2>&1 " ##
                             eval $command
                             last_status=${PIPESTATUS[0]}
                             eval "cat ${_save_log_path}"
@@ -186,12 +192,14 @@ function func_inference(){
                     fi
                     for batch_size in ${batch_size_list[*]}; do
                         _save_log_path="${_log_path}/python_infer_gpu_usetrt_${use_trt}_precision_${precision}_batchsize_${batch_size}.log"
+                        infer_value1="${_log_path}/python_infer_gpu_usetrt_${use_trt}_precision_${precision}_batchsize_${batch_size}_results"
                         set_infer_data=$(func_set_params "${image_dir_key}" "${_img_dir}")
                         set_benchmark=$(func_set_params "${benchmark_key}" "${benchmark_value}")
                         set_batchsize=$(func_set_params "${batch_size_key}" "${batch_size}")
                         set_tensorrt=$(func_set_params "${use_trt_key}" "${use_trt}")
                         set_precision=$(func_set_params "${precision_key}" "${precision}")
                         set_model_dir=$(func_set_params "${infer_model_key}" "${_model_dir}")
+                        set_infer_params1=$(func_set_params "${infer_key1}" "${infer_value1}")  ##
                         set_infer_params2=$(func_set_params "${infer_key2}" "${infer_value2}")  ##
                         command="${_python} ${_script} ${use_gpu_key}=${use_gpu} ${set_tensorrt} ${set_precision} ${set_model_dir} ${set_batchsize} ${set_infer_data} ${set_benchmark} ${set_infer_params2} > ${_save_log_path} 2>&1 " ##
                         eval $command
@@ -360,7 +368,7 @@ else
                     #run inference
                     eval $env
                     save_infer_path="${save_log}"
-                    if [ ${inference_dir} != "null" ] && [ ${inference_dir} != '##' ]; then
+                    if [[ ${inference_dir} != "null" ]] && [[ ${inference_dir} != '##' ]]; then ##
                         infer_model_dir="${save_infer_path}/${inference_dir}"
                     else
                         infer_model_dir=${save_infer_path}
