@@ -75,13 +75,12 @@ class Dataset(paddle.io.Dataset):
         self.dataset_root = dataset_root
         self.transforms = Compose(transforms)
         self.file_list = list()
-        mode = mode.lower()
-        self.mode = mode
+        self.mode = mode.lower()
         self.num_classes = num_classes
         self.ignore_index = ignore_index
         self.edge = edge
 
-        if mode.lower() not in ['train', 'val', 'test']:
+        if self.mode not in ['train', 'val', 'test']:
             raise ValueError(
                 "mode should be 'train', 'val' or 'test', but got {}.".format(
                     mode))
