@@ -89,7 +89,6 @@ class Dataset(paddle.io.Dataset):
         if self.transforms is None:
             raise ValueError("`transforms` is necessary, but it is None.")
 
-        self.dataset_root = dataset_root
         if not os.path.exists(self.dataset_root):
             raise FileNotFoundError('there is not `dataset_root`: {}.'.format(
                 self.dataset_root))
