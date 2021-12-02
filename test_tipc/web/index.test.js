@@ -3,7 +3,7 @@ describe('e2e test humanseg model', () => {
         await page.goto(PATH);
     });
 
-    it('humanseg predict', async () => {
+    it('humanseg infer and diff test', async () => {
         page.on('console', msg => console.log('PAGE LOG:', msg.text()));
         const mAP = await page.evaluate(async () => {
             const human = document.querySelector('#human');

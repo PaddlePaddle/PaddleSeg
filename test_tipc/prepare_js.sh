@@ -26,11 +26,8 @@ if ! type npm >/dev/null 2>&1; then
     exit
 fi
 
-
-
-FILENAME=$1
 # MODE be 'js_infer'
-MODE=$2
+MODE=$1
 # js_infer MODE , load model file and convert model to js_infer
 if [ ${MODE} != "js_infer" ];then
     echo "Please change mode to 'js_infer'"
