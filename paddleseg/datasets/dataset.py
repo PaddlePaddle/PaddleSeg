@@ -83,7 +83,7 @@ class Dataset(paddle.io.Dataset):
         if self.mode not in ['train', 'val', 'test']:
             raise ValueError(
                 "mode should be 'train', 'val' or 'test', but got {}.".format(
-                    mode))
+                    self.mode))
 
         if self.transforms is None:
             raise ValueError("`transforms` is necessary, but it is None.")
@@ -92,7 +92,7 @@ class Dataset(paddle.io.Dataset):
             raise FileNotFoundError('there is not `dataset_root`: {}.'.format(
                 self.dataset_root))
 
-        if mode == 'train':
+        if self.mode == 'train':
             if train_path is None:
                 raise ValueError(
                     'When `mode` is "train", `train_path` is necessary, but it is None.'
@@ -102,7 +102,7 @@ class Dataset(paddle.io.Dataset):
                     '`train_path` is not found: {}'.format(train_path))
             else:
                 file_path = train_path
-        elif mode == 'val':
+        elif self.mode == 'val':
             if val_path is None:
                 raise ValueError(
                     'When `mode` is "val", `val_path` is necessary, but it is None.'
@@ -127,7 +127,7 @@ class Dataset(paddle.io.Dataset):
             for line in f:
                 items = line.strip().split(separator)
                 if len(items) != 2:
-                    if mode == 'train' or mode == 'val':
+                    if self.mode == 'train' or self.mode == 'val':
                         raise ValueError(
                             "File list format incorrect! In training or evaluation task it should be"
                             " image_name{}label_name\\n".format(separator))
