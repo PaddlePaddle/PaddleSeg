@@ -26,7 +26,7 @@ URL = 'https://bj.bcebos.com/paddleseg/dataset/stare/stare.zip'
 @manager.DATASETS.add_component
 class STARE(Dataset):
     """
-    STARE dataset is processed from the STARE(STructured Analysis of the Retina) project
+    STARE dataset is processed from the STARE(STructured Analysis of the Retina) project.
     (https://cecas.clemson.edu/~ahoover/stare/)
 
     Args:

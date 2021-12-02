@@ -209,8 +209,7 @@ def inference(model,
               transforms=None,
               is_slide=False,
               stride=None,
-              crop_size=None,
-              two_output=False):
+              crop_size=None):
     """
     Inference for image.
 
@@ -222,7 +221,6 @@ def inference(model,
         is_slide (bool): Whether to infer by sliding window. Default: False.
         crop_size (tuple|list). The size of sliding window, (w, h). It should be probided if is_slide is True.
         stride (tuple|list). The size of stride, (w, h). It should be probided if is_slide is True.
-        two_output (bool): output both pred afer argmax and logit. 
 
     Returns:
         Tensor: If ori_shape is not None, a prediction with shape (1, 1, h, w) is returned.
@@ -241,7 +239,6 @@ def inference(model,
         logit = slide_inference(model, im, crop_size=crop_size, stride=stride)
     if hasattr(model, 'data_format') and model.data_format == 'NHWC':
         logit = logit.transpose((0, 3, 1, 2))
-   
     if ori_shape is not None:
         logit = reverse_transform(logit, ori_shape, transforms, mode='bilinear')
         pred = paddle.argmax(logit, axis=1, keepdim=True, dtype='int32')
@@ -308,5 +305,5 @@ def aug_inference(model,
     final_logit = reverse_transform(
         final_logit, ori_shape, transforms, mode='bilinear')
     pred = paddle.argmax(final_logit, axis=1, keepdim=True, dtype='int32')
-    
+
     return pred, final_logit

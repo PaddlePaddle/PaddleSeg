@@ -26,7 +26,9 @@ URL = 'https://bj.bcebos.com/paddleseg/dataset/chase_db1/chase_db1.zip'
 @manager.DATASETS.add_component
 class CHASEDB1(Dataset):
     """
-    CHASE_DB1 dataset is a dataset for retinal vessel segmentation which contains 28 color retina images with the size of 999×960 pixels which are collected from both left and right eyes of 14 school children.
+    CHASE_DB1 dataset is a dataset for retinal vessel segmentation
+    which contains 28 color retina images with the size of 999×960 pixels.
+    It is collected from both left and right eyes of 14 school children.
     Each image is annotated by two independent human experts, and we choose the labels from 1st expert.
     (https://blogs.kingston.ac.uk/retinal/chasedb1/)
 

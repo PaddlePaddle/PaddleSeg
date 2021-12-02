@@ -20,7 +20,7 @@ from paddleseg.cvlibs import manager
 from paddleseg.transforms import Compose
 from paddleseg.datasets import Dataset
 
-URL = 'https://bj.bcebos.com/paddleseg/dataset/drive/drive.zip'  # todo: add url of the dataset and test it without local dataset
+URL = 'https://bj.bcebos.com/paddleseg/dataset/drive/drive.zip'
 
 
 @manager.DATASETS.add_component
