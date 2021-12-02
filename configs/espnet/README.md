@@ -1,4 +1,4 @@
-# ESPNetv2: A Light-weight, Power Efficient, and General Purpose Convolutional Neural Network
+# ESPNetV2: A Light-weight, Power Efficient, and General Purpose Convolutional Neural Network
 
 ## Reference
 
@@ -14,4 +14,5 @@
 
 
 #### Additional Requirement
-paddlepaddle >= 2.2.0  
+- paddlepaddle >= 2.2.0  
+- ESPNetV2 does not support exporting.

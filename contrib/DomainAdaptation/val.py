@@ -1,4 +1,4 @@
-# Copyright (c) 2020 PaddlePaddle Authors. All Rights Reserved.
+# Copyright (c) 2021 PaddlePaddle Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,23 +12,31 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import argparse
 import os
+import argparse
 
 import paddle
 
-from paddleseg.cvlibs import manager, Config
+import utils as ut
+from cvlibs import Config
+from script import evaluate
+from paddleseg.cvlibs import manager
 from paddleseg.core import evaluate
-from paddleseg.utils import get_sys_env, logger, config_check, utils
+from paddleseg.utils import get_sys_env, logger, utils
+from datasets import CityDataset
+from script import val
 
 
 def get_test_config(cfg, args):
-
     test_config = cfg.test_config
     if args.aug_eval:
         test_config['aug_eval'] = args.aug_eval
         test_config['scales'] = args.scales
+
+    if args.flip_horizontal:
         test_config['flip_horizontal'] = args.flip_horizontal
+
+    if args.flip_vertical:
         test_config['flip_vertical'] = args.flip_vertical
 
     if args.is_slide:
@@ -125,18 +133,18 @@ def main(args):
         raise RuntimeError('No configuration file specified.')
 
     cfg = Config(args.cfg)
-    # Only support for the DeepLabv3+ model
-    if args.data_format == 'NHWC':
-        if cfg.dic['model']['type'] != 'DeepLabV3P':
-            raise ValueError(
-                'The "NHWC" data format only support the DeepLabV3P model!')
-        cfg.dic['model']['data_format'] = args.data_format
-        cfg.dic['model']['backbone']['data_format'] = args.data_format
-        loss_len = len(cfg.dic['loss']['types'])
-        for i in range(loss_len):
-            cfg.dic['loss']['types'][i]['data_format'] = args.data_format
 
-    val_dataset = cfg.val_dataset
+    if cfg.dic["data"]["target"]["dataset"] == 'cityscapes':
+        val_dataset = CityDataset(
+            split='val', **cfg.dic["data"]["target"]["kwargs"])
+    else:
+        raise NotImplementedError()
+
+    if len(val_dataset) < 500:
+        print(len(val_dataset))
+        for i in range(len(val_dataset)):
+            print(val_dataset[i])
+
     if val_dataset is None:
         raise RuntimeError(
             'The verification dataset is not specified in the configuration file.'
@@ -157,9 +165,9 @@ def main(args):
         logger.info('Loaded trained params of model successfully')
 
     test_config = get_test_config(cfg, args)
-    config_check(cfg, val_dataset=val_dataset)
 
-    evaluate(model, val_dataset, num_workers=args.num_workers, **test_config)
+    val.evaluate(
+        model, val_dataset, num_workers=args.num_workers, **test_config)
 
 
 if __name__ == '__main__':
