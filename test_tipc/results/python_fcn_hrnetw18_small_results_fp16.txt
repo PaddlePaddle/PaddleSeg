@@ -1,0 +1,6 @@
+#Images: 50
+mIoU: 0.8725
+Acc: 0.9449
+Kappa: 0.9449
+Class IoU: [0.9267 0.8184]
+Class Acc: [0.9744 0.8708]

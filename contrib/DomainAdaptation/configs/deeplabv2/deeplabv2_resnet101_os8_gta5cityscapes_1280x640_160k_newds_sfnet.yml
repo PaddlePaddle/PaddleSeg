@@ -1,0 +1,62 @@
+batch_size: 1
+iters: 400000
+
+data:
+  source:
+    dataset: 'gta5'
+    kwargs:
+      root: data/GTA5
+      list_path: data/gta5_list
+      base_size: [1280, 640]
+      crop_size: [1280, 640]
+      random_mirror: True
+      random_crop: False
+      resize: True
+      gaussian_blur: True
+      class_16: False
+      edge: True
+
+  target:
+    dataset: 'cityscapes'
+    kwargs:
+      root: data/cityscapes
+      list_path: data/city_list
+      base_size: [1280, 640]
+      crop_size: [1280, 640]
+      random_mirror: True
+      random_crop: False
+      resize: True
+      gaussian_blur: True
+      class_16: False
+      class_13: False
+
+model:
+  type: SFNet
+  num_classes: 2
+  backbone:
+    type: ResNet18_vd
+    output_stride: 8
+    pretrained: https://bj.bcebos.com/paddleseg/dygraph/resnet18_vd_ssld_v2.tar.gz
+  backbone_indices: [0, 1, 2, 3]
+
+
+ema_decay: 0.999
+resume_ema: None
+# flow control
+src_only: True
+edgeconstrain: True
+edgepullin: False
+featurepullin: False
+eval_src: False
+save_edge: False
+
+optimizer:
+  type: sgd
+  momentum: 0.9
+  weight_decay: 0.0005
+
+lr_scheduler:
+  type: PolynomialDecay
+  learning_rate: 0.0001
+  end_lr: 0
+  power: 0.9

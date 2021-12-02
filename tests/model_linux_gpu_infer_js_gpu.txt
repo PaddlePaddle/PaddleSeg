@@ -1,4 +1,0 @@
-===========================infer_params===========================
-saved_model_name:ppseg
-infer_model:./tests/output/paddlejs/ppseg_lite_portrait_398x224_with_softmax/model.pdmodel
-source_code:github.com/PaddlePaddle/Paddle.js/archive/refs/tags/v2.1.0.tar.gz
