@@ -251,7 +251,7 @@ class ENet(nn.Layer):
         return [x]
 
     def init_weight(self):
-        if self.pretained is not None:
+        if self.pretrained is not None:
             utils.load_pretrained_model(self, self.pretrained)
 
 
@@ -560,6 +560,47 @@ class DownsamplingBottleneck(nn.Layer):
         return self.out_activation(out), max_indices
 
 
+class MaxUnpool2D(nn.Layer):
+    def __init__(self,
+                 kernel_size,
+                 stride=None,
+                 padding=0,
+                 align_corners=False):
+        super(MaxUnpool2D, self).__init__()
+        if isinstance(stride, int):
+            self.kernel_size = (kernel_size, kernel_size)
+        else:
+            self.kernel_size = kernel_size
+        if stride is None:
+            self.stride = self.kernel_size
+        else:
+            if isinstance(stride, int):
+                self.stride = (stride, stride)
+            else:
+                self.stride = stride
+        if isinstance(padding, int):
+            self.padding = (padding, padding)
+        else:
+            self.padding = padding
+        self.align_corners = align_corners
+
+    def forward(self, input, indices, output_size=None):
+
+        if output_size is None:
+            n, c, h, w = input.shape
+            out_h = (h - 1) * self.stride[0] - 2 * \
+                self.padding[0] + self.kernel_size[0]
+            out_w = (w - 1) * self.stride[1] - 2 * \
+                self.padding[1] + self.kernel_size[1]
+            output_size = (n, c, out_h, out_w)
+        out = F.interpolate(input,
+                            output_size[2:],
+                            mode='bilinear',
+                            align_corners=self.align_corners)
+
+        return out
+
+
 class UpsamplingBottleneck(nn.Layer):
     """
     The upsampling bottlenecks upsample the feature map resolution using max
@@ -621,7 +662,7 @@ class UpsamplingBottleneck(nn.Layer):
 
         # Remember that the stride is the same as the kernel_size, just like
         # the max pooling layers
-        self.main_unpool1 = nn.MaxUnpool2D(kernel_size=2)
+        self.main_unpool1 = MaxUnpool2D(kernel_size=2)
 
         # 1x1 projection convolution with stride 1
         self.ext_conv1 = nn.Sequential(
