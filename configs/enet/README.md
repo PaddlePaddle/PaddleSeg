@@ -10,4 +10,4 @@ Real-Time Semantic Segmentation." arXiv preprint arXiv:1606.02147(2016).
 
 | Model | Backbone | Resolution | Training Iters | mIoU | mIoU (flip) | mIoU (ms+flip) | Links |
 |:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
-|ENet|-|1024x512|80000|58.3%|-|-|[model](-) \| [log](-) \| [vdl](-)|
+|ENet|-|1024x512|80000|-|-|58.3%|[model](-) \| [log](-) \| [vdl](-)|
