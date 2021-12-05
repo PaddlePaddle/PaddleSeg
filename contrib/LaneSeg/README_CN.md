@@ -222,4 +222,4 @@ python deploy/python/infer.py --help
 #### Paddle Inference部署（C++）
 参见[Paddle Inference部署教程](../../deploy/cpp/)
 
-本项目使用的C++源文件在PaddleSeg/contrib/LaneSeg/deploy/cpp目录下
+本项目使用的C++源文件在LaneSeg/deploy/cpp目录下

@@ -218,4 +218,4 @@ python deploy/python/infer.py --help
 #### Paddle Inference（C++）
 reference [Paddle Inference tutorial](../../deploy/cpp/)
 
-the C++ sources files of the project is in PaddleSeg/contrib/LaneSeg/deploy/cpp
+the C++ sources files of the project is in LaneSeg/deploy/cpp
