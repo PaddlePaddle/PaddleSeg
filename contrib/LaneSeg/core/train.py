@@ -293,7 +293,7 @@ def train(model,
                             model.state_dict(),
                             os.path.join(best_model_dir, 'model.pdparams'))
                     logger.info(
-                        '[EVAL] The model with the best validation mIoU ({:.4f}) was saved at iter {}.'
+                        '[EVAL] The model with the best validation Acc ({:.4f}) was saved at iter {}.'
                         .format(best_acc, best_model_iter))
 
                     if use_vdl:
