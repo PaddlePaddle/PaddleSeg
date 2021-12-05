@@ -1,7 +1,7 @@
 简体中文 | [English](README.md)
 
 # LaneSeg
-车道线检测是自动驾驶算法的一个范畴，可以用来辅助进行车辆定位和进行决策，早期已有基于传统图像处理的车道线检测方法，但是随着技术的演进，车道线检测任务所应对的场景越来越多样化，目前更多的方式是寻求在语义上对车道线存在位置的检测。本项目主要使用PaddleSeg进行车道线检测
+车道线检测是自动驾驶算法的一个范畴，可以用来辅助进行车辆定位和进行决策，早期已有基于传统图像处理的车道线检测方法，但是随着技术的演进，车道线检测任务所应对的场景越来越多样化，目前更多的方式是寻求在语义上对车道线存在位置的检测。本项目主要使用PaddleSeg进行车道线检测。
 
 
 ## 目录
@@ -41,7 +41,7 @@ cd contrib/LaneSeg
 
 ## 模型
 
-[BiseNetLane](https://paddleseg.bj.bcebos.com/lane_seg/bisenet_lan.pdparams)
+BiseNetLane
 
 基于TuSimple评估方法的评估，您可以从[TuSimple exampe](https://github.com/TuSimple/tusimple-benchmark/blob/master/example/lane_demo.ipynb) 获取更多信息
 
@@ -81,7 +81,7 @@ BiseNetLane在[Tusimple](https://github.com/TuSimple/tusimple-benchmark/issues/3
 
 执行如下命令：
 ```shell
-python third_party/generate_tusimple_dataset.py.py --root path/to/your/unzipped/file
+python third_party/generate_tusimple_dataset.py --root path/to/your/unzipped/file
 
 ```
 

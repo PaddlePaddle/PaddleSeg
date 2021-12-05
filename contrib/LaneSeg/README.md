@@ -38,7 +38,7 @@ cd contrib/LaneSeg
 ```
 
 ## Models
-[BiseNetLane](https://paddleseg.bj.bcebos.com/lane_seg/bisenet_lan.pdparams)
+BiseNetLane
 
 The evaluation base on TuSimple challenge evaluation method you can get more information from [TuSimple exampe](https://github.com/TuSimple/tusimple-benchmark/blob/master/example/lane_demo.ipynb)
 
@@ -56,7 +56,7 @@ Using Tusimple's open source [Tusimple](https://github.com/TuSimple/tusimple-ben
 
 Run the following command ：
 ```shell
-python third_party/generate_tusimple_dataset.py.py --root path/to/your/unzipped/file
+python third_party/generate_tusimple_dataset.py --root path/to/your/unzipped/file
 
 ```
 
