@@ -76,7 +76,7 @@ Using Tusimple's open source [Tusimple](https://github.com/TuSimple/tusimple-ben
 ```
 
 
-Run the following command ：
+Run the following command:
 ```shell
 python third_party/generate_tusimple_dataset.py --root path/to/your/unzipped/file
 
