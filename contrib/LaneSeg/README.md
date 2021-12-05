@@ -1,7 +1,7 @@
 English | [简体中文](README_CN.md)
 
 # LaneSeg
-Lane detection is a category of automatic driving algorithms, which can be used to assist vehicle positioning and decision-making. In the early days, there were lane detection methods based on traditional image processing, but with the evolution of technology, the scenes that lane detection tasks deal with More and more diversified, and more methods are currently seeking to detect the location of lane semantically. This project mainly uses PaddleSeg for lane detection
+Lane detection is a category of automatic driving algorithms, which can be used to assist vehicle positioning and decision-making. In the early days, there were lane detection methods based on traditional image processing, but with the evolution of technology, the scenes that lane detection tasks deal with More and more diversified, and more methods are currently seeking to detect the location of lane semantically. This project mainly uses PaddleSeg for lane detection.
 
 ## Contents
 - [Installation](#Installation)
@@ -38,7 +38,7 @@ cd contrib/LaneSeg
 ```
 
 ## Models
-BiseNetLane
+#### BiseNetLane
 
 The evaluation base on TuSimple challenge evaluation method you can get more information from [TuSimple exampe](https://github.com/TuSimple/tusimple-benchmark/blob/master/example/lane_demo.ipynb)
 
@@ -52,7 +52,29 @@ Note: The model input size is (640, 368) and the GPU is Tesla V100 32G.
 
 ## Dataset preparation
 
-Using Tusimple's open source [Tusimple](https://github.com/TuSimple/tusimple-benchmark/issues/3) dataset as our demo dataset for the tutorial.
+Using Tusimple's open source [Tusimple](https://github.com/TuSimple/tusimple-benchmark/issues/3) dataset as our demo dataset for the tutorial. we should download train_set.zip, test_set.zip, test_label.json, and unzip train_set.zip，test_set.zip to `data` directory, meanwhile, we should place test_label.json to `test_set` directory. The folder structure is as follow:
+```
+ LaneSeg
+ |-- data
+     |-- tusimple
+        |-- train_set
+            |-- clips
+                |-- 0313-1
+                |-- 0313-2
+                |-- 0531
+                |-- 0601
+            |-- label_data_0313.json
+            |-- label_data_0531.json
+            |-- label_data_0601.json
+        |-- test_set
+            |-- clips
+                |-- 0530
+                |-- 0531
+                |-- 0601
+            |-- test_tasks_0627.json
+            |-- test_label.json
+```
+
 
 Run the following command ：
 ```shell
@@ -69,32 +91,20 @@ Organize the dataset into the following structure and place the dataset under th
  |-- data
      |-- tusimple
         |-- train_set
-            |-- clips
+            ...
+            |-- labels
                 |-- 0313-1
                 |-- 0313-2
                 |-- 0531
                 |-- 0601
-            |-- labels [need to generate label dir]
-                |-- 0313-1
-                |-- 0313-2
-                |-- 0531
-                |-- 0601
-            |-- train_list.txt [need to generate]
-            |-- label_data_0313.json
-            |-- label_data_0531.json
-            |-- label_data_0601.json
+            |-- train_list.txt
         |-- test_set
-            |-- clips
+            ...
+            |-- labels
                 |-- 0530
                 |-- 0531
                 |-- 0601
-            |-- labels [need to generate label dir]
-                |-- 0530
-                |-- 0531
-                |-- 0601
-            |-- train_list.txt [need to generate]
-            |-- test_tasks_0627.json
-            |-- test_label.json
+            |-- train_list.txt
 ```
 
 The contents of train_list.txt is as follows:

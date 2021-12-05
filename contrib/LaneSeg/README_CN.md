@@ -41,7 +41,7 @@ cd contrib/LaneSeg
 
 ## 模型
 
-BiseNetLane
+#### BiseNetLane
 
 基于TuSimple评估方法的评估，您可以从[TuSimple exampe](https://github.com/TuSimple/tusimple-benchmark/blob/master/example/lane_demo.ipynb) 获取更多信息
 
@@ -88,24 +88,26 @@ python third_party/generate_tusimple_dataset.py --root path/to/your/unzipped/fil
 数据生成结果如下。
 
 ```
+ The folder structure is as follow:
+
  LaneSeg
  |-- data
      |-- tusimple
         |-- train_set
             ...
-            |-- labels [need to generate label dir]
+            |-- labels
                 |-- 0313-1
                 |-- 0313-2
                 |-- 0531
                 |-- 0601
-            |-- train_list.txt [need to generate]
+            |-- train_list.txt
         |-- test_set
             ...
-            |-- labels [need to generate label dir]
+            |-- labels
                 |-- 0530
                 |-- 0531
                 |-- 0601
-            |-- train_list.txt [need to generate]
+            |-- train_list.txt
 ```
 
 train_list.txt的内容如下:
