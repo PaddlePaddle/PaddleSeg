@@ -52,7 +52,7 @@ Note: The model input size is (640, 368) and the GPU is Tesla V100 32G.
 
 ## Dataset preparation
 
-Using Tusimple's open source [Tusimple](https://github.com/TuSimple/tusimple-benchmark/issues/3) dataset as our demo dataset for the tutorial. we should download train_set.zip, test_set.zip, test_label.json, and unzip train_set.zip，test_set.zip to `data` directory, meanwhile, we should place test_label.json to `test_set` directory. The folder structure is as follow:
+Using Tusimple's open source [Tusimple](https://github.com/TuSimple/tusimple-benchmark/issues/3) dataset as our demo dataset for the tutorial. we should download train_set.zip, test_set.zip, test_label.json, and unzip train_set.zip，test_set.zip to `data/tusimple` directory, meanwhile, we should place test_label.json to `test_set` directory. The folder structure is as follow:
 ```
  LaneSeg
  |-- data
@@ -79,7 +79,8 @@ Using Tusimple's open source [Tusimple](https://github.com/TuSimple/tusimple-ben
 Run the following command:
 ```shell
 python third_party/generate_tusimple_dataset.py --root path/to/your/unzipped/file
-
+eg.
+python third_party/generate_tusimple_dataset.py --root data/tusimple
 ```
 
 Organize the dataset into the following structure and place the dataset under the `data` directory.

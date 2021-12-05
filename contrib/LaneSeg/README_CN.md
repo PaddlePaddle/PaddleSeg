@@ -56,7 +56,7 @@ BiseNetLane在[Tusimple](https://github.com/TuSimple/tusimple-benchmark/issues/3
 ## 数据准备
 
 利用Tusimple开源的[Tusimple](https://github.com/TuSimple/tusimple-benchmark/issues/3)数据集作为我们教程的示例数据集，需要下载的数据有train_set.zip, test_set.zip, test_label.json,
-分别将train_set.zip，test_set.zip解压， 并将数据集置于data目录下，同时将test_label.json放置在test_set目录下。数据集整理结构如下:
+分别将train_set.zip，test_set.zip解压， 并将数据集置于data/tusimple目录下，同时将test_label.json放置在test_set目录下。数据集整理结构如下:
 ```
  LaneSeg
  |-- data
@@ -82,6 +82,8 @@ BiseNetLane在[Tusimple](https://github.com/TuSimple/tusimple-benchmark/issues/3
 执行如下命令：
 ```shell
 python third_party/generate_tusimple_dataset.py --root path/to/your/unzipped/file
+eg.
+python third_party/generate_tusimple_dataset.py --root data/tusimple
 
 ```
 
