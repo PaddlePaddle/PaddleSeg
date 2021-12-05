@@ -82,9 +82,10 @@ BiseNetLane在[Tusimple](https://github.com/TuSimple/tusimple-benchmark/issues/3
 执行如下命令：
 ```shell
 python third_party/generate_tusimple_dataset.py --root path/to/your/unzipped/file
-eg.
+```
+```shell
+for example:
 python third_party/generate_tusimple_dataset.py --root data/tusimple
-
 ```
 
 数据生成结果如下:
