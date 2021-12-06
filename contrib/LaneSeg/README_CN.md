@@ -49,14 +49,15 @@ BiseNetLane在[Tusimple](https://github.com/TuSimple/tusimple-benchmark/issues/3
 
 | Backbone | Acc | FP| FN | Link|
 |-|-|-|-|-|
-|BiseNetV2|96.09%|0.04643|0.041606|[model](https://paddleseg.bj.bcebos.com/lane_seg/bisenet_lan.pdparams)|
+|BiseNetV2|96.09%|0.04643|0.041606|[model](https://paddleseg.bj.bcebos.com/lane_seg/model.pdparams)|
 
 注意：模型输入大小为(640, 368), GPU为Tesla V100 32G。
 
 ## 数据准备
 
 利用Tusimple开源的[Tusimple](https://github.com/TuSimple/tusimple-benchmark/issues/3)数据集作为我们教程的示例数据集，需要下载的数据有train_set.zip, test_set.zip, test_label.json,
-分别将train_set.zip，test_set.zip解压， 并将数据集置于data/tusimple目录下，同时将test_label.json放置在test_set目录下。数据集整理结构如下:
+分别将train_set.zip，test_set.zip解压， 并将数据集置于data/tusimple目录下，同时将test_label.json放置在test_set目录下。
+数据集整理结构如下:
 ```
  LaneSeg
  |-- data
