@@ -1,0 +1,24 @@
+_base_: '../_base_/imagenet_pseudo_seg.yml'
+
+batch_size: 8  # gpu=8, epoch=32
+iters: 500000
+
+lr_scheduler:
+  _inherited_: False
+  type: StepDecay
+  learning_rate: 0.01
+  step_size: 300000 
+
+# The model does not have auxiliary seg head and loss
+model:
+  type: STDCSeg_pseudo_prtrained
+  backbone:
+    type: STDC1
+    pretrained: https://bj.bcebos.com/paddleseg/dygraph/STDCNet1.tar.gz
+  pretrained: null
+  use_boundary_8: False
+
+loss:
+  types:
+    - type: CrossEntropyLoss
+  coef: [1]

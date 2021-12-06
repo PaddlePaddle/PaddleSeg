@@ -63,7 +63,7 @@ class ImagenetPseudoSeg(Dataset):
         self.edge = edge
 
         self.num_classes = self.NUM_CLASSES
-        self.ignore_index = self.num_classes + 1   # 1002
+        self.ignore_index = -1
         self.file_list = []
         self.class_id_dict = {}
 

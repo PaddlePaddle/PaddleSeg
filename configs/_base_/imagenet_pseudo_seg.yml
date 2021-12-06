@@ -1,6 +1,23 @@
-# As img nums = 100w, when bs=64, iters=50w, the epoch = 32  
-batch_size: 64
+# img_nums = 100w, when bs=64, iters=50w, the epoch = 32  
+batch_size: 8  # gpu=8
 iters: 500000
+
+lr_scheduler:
+  _inherited_: False
+  type: StepDecay
+  learning_rate: 0.01
+  step_size: 300000
+
+optimizer:
+  type: sgd
+  momentum: 0.9
+  weight_decay: 4.0e-5
+
+# 把背景的权重设成了0.1。
+loss:
+  types:
+    - type: CrossEntropyLoss
+  coef: [1]
 
 # ImagenetPseudoSeg only has train dataset.
 train_dataset:
@@ -8,38 +25,23 @@ train_dataset:
   dataset_root: /ssd3/pengjuncai/dataset/imagenet
   transforms:
     - type: ResizeByLong
-      long_size: 256
+      long_size: 272
     - type: ResizeStepScaling
       min_scale_factor: 0.5
       max_scale_factor: 2.0
+      scale_step_size: 0.25
     - type: RandomRotation
       max_rotation: 10
-      label_padding_value: 1002
+      label_padding_value: 1000
     - type: RandomPaddingCrop
       crop_size: [256, 256]
-      label_padding_value: 1002
+      label_padding_value: 1000
     - type: RandomHorizontalFlip
-    - type: RandomDistort
-      brightness_range: 0.2
-      contrast_range: 0.2
-      saturation_range: 0.2
+      prob: 0.5
+    - type: RandomBlur
+      prob: 0.5
     - type: Normalize
+      mean: [0.485, 0.456, 0.406]
+      std: [0.229, 0.224, 0.225]
   mode: train
-
-optimizer:
-  type: sgd
-  momentum: 0.9
-  weight_decay: 4.0e-5
-
-lr_scheduler:
-  type: PolynomialDecay
-  learning_rate: 0.01
-  end_lr: 0
-  power: 0.9
-
-# 把背景的权重设成了0.1。
-loss:
-  types:
-    - type: CrossEntropyLoss
-  coef: [1]
   
