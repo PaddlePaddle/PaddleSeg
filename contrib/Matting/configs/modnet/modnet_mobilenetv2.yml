@@ -7,6 +7,8 @@ train_dataset:
   train_file: train.txt
   transforms:
     - type: LoadImages
+    - type: ResizeByShort
+      short_size: 512
     - type: RandomCrop
       crop_size: [512, 512]
     - type: RandomDistort
