@@ -196,5 +196,5 @@ def scale_as(x, y, align_corners=False):
     '''
     y_shape = paddle.shape(y)
     x_scaled = nn.functional.interpolate(
-        x, size=(y_shape[2], y_shape[3]), mode='bilinear', align_corners=align_corners)
+        x, size=y_shape[2:], mode='bilinear', align_corners=align_corners)
     return x_scaled
