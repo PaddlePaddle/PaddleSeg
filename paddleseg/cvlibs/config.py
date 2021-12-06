@@ -91,6 +91,12 @@ class Config(object):
         Update config from dic based base_dic
         """
         base_dic = base_dic.copy()
+        dic = dic.copy()
+
+        if dic.get('_inherited_', True) == False:
+            dic.pop('_inherited_')
+            return dic
+
         for key, val in dic.items():
             if isinstance(val, dict) and key in base_dic:
                 base_dic[key] = self._update_dic(val, base_dic[key])
@@ -162,6 +168,11 @@ class Config(object):
             lr_scheduler:
                 type: PolynomialDecay
                 learning_rate: 0.01''')
+
+        _learning_rate = self.dic.get('learning_rate', {})
+        if isinstance(_learning_rate, float):
+            return _learning_rate
+
         _learning_rate = self.dic.get('learning_rate', {}).get('value')
         if not _learning_rate:
             raise RuntimeError(
@@ -197,8 +208,11 @@ class Config(object):
         elif optimizer_type == 'adam':
             return paddle.optimizer.Adam(
                 lr, parameters=self.model.parameters(), **args)
-        else:
-            raise RuntimeError('Only sgd and adam optimizer support.')
+        elif optimizer_type in paddle.optimizer.__all__:
+            return getattr(paddle.optimizer, optimizer_type)(
+                lr, parameters=self.model.parameters(), **args)
+
+        raise RuntimeError('Unknown optimizer type {}.'.format(optimizer_type))
 
     @property
     def optimizer_args(self) -> dict:
@@ -223,7 +237,26 @@ class Config(object):
 
     @property
     def loss(self) -> dict:
-        args = self.dic.get('loss', {}).copy()
+        if self._losses is None:
+            self._losses = self._prepare_loss('loss')
+        return self._losses
+
+    @property
+    def distill_loss(self) -> dict:
+        if not hasattr(self, '_distill_losses'):
+            self._distill_losses = self._prepare_loss('distill_loss')
+        return self._distill_losses
+
+    def _prepare_loss(self, loss_name):
+        """
+        Parse the loss parameters and load the loss layers.
+
+        Args:
+            loss_name (str): The root name of loss in the yaml file.
+        Returns:
+            dict: A dict including the loss parameters and layers.
+        """
+        args = self.dic.get(loss_name, {}).copy()
         if 'types' in args and 'coef' in args:
             len_types = len(args['types'])
             len_coef = len(args['coef'])
@@ -238,29 +271,27 @@ class Config(object):
             raise ValueError(
                 'Loss config should contain keys of "types" and "coef"')
 
-        if not self._losses:
-            self._losses = dict()
-            for key, val in args.items():
-                if key == 'types':
-                    self._losses['types'] = []
-                    for item in args['types']:
-                        if item['type'] != 'MixedLoss':
-                            if 'ignore_index' in item:
-                                assert item['ignore_index'] == self.train_dataset.ignore_index, 'If ignore_index of loss is set, '\
-                                'the ignore_index of loss and train_dataset must be the same. \nCurrently, loss ignore_index = {}, '\
-                                'train_dataset ignore_index = {}. \nIt is recommended not to set loss ignore_index, so it is consistent with '\
-                                'train_dataset by default.'.format(item['ignore_index'], self.train_dataset.ignore_index)
-                            item['ignore_index'] = \
-                                self.train_dataset.ignore_index
-                        self._losses['types'].append(self._load_object(item))
-                else:
-                    self._losses[key] = val
-            if len(self._losses['coef']) != len(self._losses['types']):
-                raise RuntimeError(
-                    'The length of coef should equal to types in loss config: {} != {}.'
-                    .format(
-                        len(self._losses['coef']), len(self._losses['types'])))
-        return self._losses
+        losses = dict()
+        for key, val in args.items():
+            if key == 'types':
+                losses['types'] = []
+                for item in args['types']:
+                    if item['type'] != 'MixedLoss':
+                        if 'ignore_index' in item:
+                            assert item['ignore_index'] == self.train_dataset.ignore_index, 'If ignore_index of loss is set, '\
+                            'the ignore_index of loss and train_dataset must be the same. \nCurrently, loss ignore_index = {}, '\
+                            'train_dataset ignore_index = {}. \nIt is recommended not to set loss ignore_index, so it is consistent with '\
+                            'train_dataset by default.'.format(item['ignore_index'], self.train_dataset.ignore_index)
+                        item['ignore_index'] = \
+                            self.train_dataset.ignore_index
+                    losses['types'].append(self._load_object(item))
+            else:
+                losses[key] = val
+        if len(losses['coef']) != len(losses['types']):
+            raise RuntimeError(
+                'The length of coef should equal to types in loss config: {} != {}.'
+                .format(len(losses['coef']), len(losses['types'])))
+        return losses
 
     @property
     def model(self) -> paddle.nn.Layer:
@@ -280,12 +311,8 @@ class Config(object):
                 elif hasattr(self.val_dataset, 'num_classes'):
                     num_classes = self.val_dataset.num_classes
 
-            if not num_classes:
-                raise ValueError(
-                    '`num_classes` is not found. Please set it in model, train_dataset or val_dataset'
-                )
-
-            model_cfg['num_classes'] = num_classes
+            if num_classes is not None:
+                model_cfg['num_classes'] = num_classes
 
         if not self._model:
             self._model = self._load_object(model_cfg)
@@ -364,6 +391,11 @@ class Config(object):
     @property
     def export_config(self) -> Dict:
         return self.dic.get('export', {})
+
+    @property
+    def to_static_training(self) -> bool:
+        '''Whether to use @to_static for training'''
+        return self.dic.get('to_static_training', False)
 
     def _is_meta_type(self, item: Any) -> bool:
         return isinstance(item, dict) and 'type' in item

@@ -1,0 +1,19 @@
+_base_: '../_base_/pascal_voc12aug.yml'
+
+
+model:
+  type: GINet
+  backbone:
+    type: ResNet50_vd
+    output_stride: 8
+    pretrained: https://bj.bcebos.com/paddleseg/dygraph/resnet50_vd_ssld_v2.tar.gz
+  backbone_indices: [0, 1, 2, 3]
+  enable_auxiliary_loss: True
+  jpu: True
+  align_corners: True
+  pretrained: null
+
+loss:
+  types:
+    - type: CrossEntropyLoss
+  coef: [1, 0.4]

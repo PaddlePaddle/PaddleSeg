@@ -20,7 +20,8 @@ import shutil
 import paddle
 import paddle.nn.functional as F
 
-from paddleseg.utils import TimeAverager, calculate_eta, resume, logger, worker_init_fn
+from paddleseg.utils import (TimeAverager, calculate_eta, resume, logger,
+                             worker_init_fn, train_profiler, op_flops_funs)
 from paddleseg.core.val import evaluate
 
 
@@ -66,7 +67,9 @@ def train(model,
           losses=None,
           keep_checkpoint_max=5,
           test_config=None,
-          fp16=False):
+          fp16=False,
+          profiler_options=None,
+          to_static_training=False):
     """
     Launch training.
 
@@ -88,6 +91,8 @@ def train(model,
         keep_checkpoint_max (int, optional): Maximum number of checkpoints to save. Default: 5.
         test_config(dict, optional): Evaluation config.
         fp16 (bool, optional): Whether to use amp.
+        profiler_options (str, optional): The option of train profiler.
+        to_static_training (bool, optional): Whether to use @to_static for training.
     """
     model.train()
     nranks = paddle.distributed.ParallelEnv().nranks
@@ -128,6 +133,10 @@ def train(model,
         from visualdl import LogWriter
         log_writer = LogWriter(save_dir)
 
+    if to_static_training:
+        model = paddle.jit.to_static(model)
+        logger.info("Successfully to apply @to_static")
+
     avg_loss = 0.0
     avg_loss_list = []
     iters_per_epoch = len(batch_sampler)
@@ -144,7 +153,7 @@ def train(model,
             iter += 1
             if iter > iters:
                 version = paddle.__version__
-                if version == '2.1.2' or version == '0.0.0':
+                if version == '2.1.2':
                     continue
                 else:
                     break
@@ -204,6 +213,8 @@ def train(model,
                 lr_sche = optimizer._learning_rate
             if isinstance(lr_sche, paddle.optimizer.lr.LRScheduler):
                 lr_sche.step()
+
+            train_profiler.add_profiler_step(profiler_options)
 
             model.clear_gradients()
             avg_loss += loss.numpy()[0]
@@ -294,16 +305,10 @@ def train(model,
 
     # Calculate flops.
     if local_rank == 0:
-
-        def count_syncbn(m, x, y):
-            x = x[0]
-            nelements = x.numel()
-            m.total_ops += int(2 * nelements)
-
         _, c, h, w = images.shape
-        flops = paddle.flops(
+        _ = paddle.flops(
             model, [1, c, h, w],
-            custom_ops={paddle.nn.SyncBatchNorm: count_syncbn})
+            custom_ops={paddle.nn.SyncBatchNorm: op_flops_funs.count_syncbn})
 
     # Sleep for half a second to let dataloader release resources.
     time.sleep(0.5)

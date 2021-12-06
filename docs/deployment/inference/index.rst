@@ -4,4 +4,5 @@
 .. toctree::
    :maxdepth: 1
 
-   inference.md
+   python_inference.md
+   cpp_inference.md

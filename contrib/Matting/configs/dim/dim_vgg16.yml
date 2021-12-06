@@ -1,0 +1,45 @@
+batch_size: 16
+iters: 100000
+
+train_dataset:
+  type: MattingDataset
+  dataset_root: data/PPM-100
+  train_file: train.txt
+  transforms:
+    - type: LoadImages
+    - type: RandomCropByAlpha
+      crop_size: [[320, 320], [480, 480], [640, 640]]
+    - type: Resize
+      target_size: [320, 320]
+    - type: RandomDistort
+    - type: RandomBlur
+    - type: RandomHorizontalFlip
+    - type: Normalize
+  mode: train
+  get_trimap: True
+
+val_dataset:
+  type: MattingDataset
+  dataset_root: data/PPM-100
+  val_file: val.txt
+  transforms:
+    - type: LoadImages
+    - type: LimitLong
+      max_long: 3840
+    - type: Normalize
+  mode: val
+  get_trimap: True
+
+model:
+  type: DIM
+  backbone:
+    type: VGG16
+    input_channels: 4
+    pretrained: https://paddleseg.bj.bcebos.com/matting/models/DIM_VGG16_pretrained/model.pdparams
+  pretrained: Null
+
+optimizer:
+  type: adam
+
+learning_rate:
+  value: 0.001
