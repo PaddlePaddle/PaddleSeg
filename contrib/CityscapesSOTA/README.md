@@ -8,8 +8,11 @@ Based on the above work, we made some optimizations:
 
 We achieve mIoU of **87%** on Cityscapes validation set.
 
-![demo](https://user-images.githubusercontent.com/53808988/130719591-3e0d44b4-59a8-4633-bff2-7ce7da1c52fc.gif)
+The actual effect is as follows (for high-definition pictures, please click [here](https://github.com/PaddlePaddle/PaddleSeg/blob/release/v2.0/docs/images/cityscapes.gif)).
 
+<div align="center">
+<img src=https://user-images.githubusercontent.com/30695251/144982303-51d40188-c00d-46b7-9012-41955c4e2156.gif  width = "500" />  
+</div>
 
 ## Installation
 
