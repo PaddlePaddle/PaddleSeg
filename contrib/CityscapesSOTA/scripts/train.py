@@ -207,7 +207,7 @@ def train(model,
             if (iter % save_interval == 0
                     or iter == iters) and (val_dataset is not None):
                 num_workers = 1 if num_workers > 0 else 0
-                mean_iou, acc = evaluate(
+                metrics = evaluate(
                     model,
                     val_dataset,
                     aug_eval=aug_eval,
@@ -218,6 +218,7 @@ def train(model,
                     stride=None,
                     crop_size=None,
                     num_workers=num_workers)
+                mean_iou, acc = metrics[0], metrics[1]
                 model.train()
 
             if (iter % save_interval == 0 or iter == iters) and local_rank == 0:
