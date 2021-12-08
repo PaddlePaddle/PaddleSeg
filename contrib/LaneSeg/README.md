@@ -46,7 +46,7 @@ BiseNetV2 performance on [Tusimple](https://github.com/TuSimple/tusimple-benchma
 
 | Method | Acc | FN | FP | Link|
 |-|-|-|-|-|
-|BiseNetV2|96.38%|0.04545|0.03363|[model](https://paddleseg.bj.bcebos.com/lane_seg/model.pdparams)|
+|BiseNetV2|96.38%|0.04545|0.03363|[model](https://paddleseg.bj.bcebos.com/lane_seg/bisenet/model.pdparams)|
 
 Note: The model input size is (640, 368) and the GPU is Tesla V100 32G.
 

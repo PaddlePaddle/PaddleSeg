@@ -49,7 +49,7 @@ BiseNetV2在[Tusimple](https://github.com/TuSimple/tusimple-benchmark/issues/3)�
 
 | Method | Acc | FP| FN | Link|
 |-|-|-|-|-|
-|BiseNetV2|96.38%|0.04545|0.03363|[model](https://paddleseg.bj.bcebos.com/lane_seg/model.pdparams)|
+|BiseNetV2|96.38%|0.04545|0.03363|[model](https://paddleseg.bj.bcebos.com/lane_seg/bisenet/model.pdparams)|
 
 注意：模型输入大小为(640, 368), GPU为Tesla V100 32G。
 
