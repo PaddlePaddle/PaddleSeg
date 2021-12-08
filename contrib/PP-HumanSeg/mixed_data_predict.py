@@ -17,22 +17,39 @@ import os
 
 import paddle
 
-from paddleseg.cvlibs import manager, Config
+from paddleseg.cvlibs import manager
 from paddleseg.utils import get_sys_env, logger, config_check
 from paddleseg.core import predict
 from paddleseg.transforms import *
 from paddleseg.models import *
 
 from datasets.humanseg import HumanSeg
-from datasets.humanseg import HumanSeg
+from scripts.config import Config
 
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Model predict')
     # params of training
     parser.add_argument(
-        '--model_name', dest='model_name', type=str, default=None)
-    parser.add_argument('--model_dir', dest='model_dir', type=str, default=None)
+        "--config", dest="cfg", help="The config file.", default=None, type=str)
+    parser.add_argument(
+        '--model_path',
+        dest='model_path',
+        help='The path of model for evaluation',
+        type=str,
+        default=None)
+    parser.add_argument(
+        '--file_list',
+        dest='file_list',
+        help='file list, e.g. test.txt, val.txt',
+        type=str,
+        default=None)
+    parser.add_argument(
+        '--save_dir',
+        dest='save_dir',
+        help='The directory for saving the predicted results',
+        type=str,
+        default='./output/result')
     return parser.parse_args()
 
 
@@ -53,7 +70,6 @@ def get_image_list(image_path):
                     line = line.strip()
                     if len(line.split()) > 1:
                         line = line.split()[0]
-                    print(line)
                     image_list.append(os.path.join(image_dir, line))
     elif os.path.isdir(image_path):
         image_dir = image_path
@@ -81,31 +97,17 @@ def main(args):
 
     paddle.set_device(place)
 
-    transforms = Compose([
-        PaddingByAspectRatio(1.77777778),
-        Resize(target_size=[398, 224]),
-        Normalize()
-    ])
+    cfg = Config(args.cfg)
+    transforms = Compose(cfg.val_transforms)
+    model = cfg.model
 
-    # from paddleseg.models.backbones.lcnet import PPLCNet_x1_0
-    # backbone = PPLCNet_x1_0()
-    # model_class = manager.MODELS[args.model_name]
-    # model = model_class(2, backbone)
+    save_dir_ = args.save_dir
+    model_path = args.model_path
 
-    from paddleseg.models.stdcseg import STDCSeg
-    from paddleseg.models.backbones import STDC1, STDC2
-    backbone = STDC2(
-        pretrained='https://bj.bcebos.com/paddleseg/dygraph/STDCNet2.tar.gz')
-    model_class = manager.MODELS[args.model_name]
-    model = model_class(2, backbone)
-
-    save_dir_ = args.model_dir
-    model_path = os.path.join(save_dir_, 'best_model/model.pdparams')
-
-    image_path0 = "data/portrait14k/small_test.txt"
+    image_path0 = "data/portrait14k/{}".format(args.file_list)
     image_list, image_dir = get_image_list(image_path0)
     logger.info('Number of predict images = {}'.format(len(image_list)))
-    save_dir = os.path.join(save_dir_, 'predict_portrait14k')
+    save_dir = os.path.join(save_dir_, 'portrait14k')
     predict(
         model,
         model_path=model_path,
@@ -115,8 +117,7 @@ def main(args):
         save_dir=save_dir,
     )
 
-    image_path1 = "data/matting_human_half/small_test.txt"
-    # image_path1 = "data/matting_human_half/test.txt"
+    image_path1 = "data/matting_human_half/{}".format(args.file_list)
     image_list, image_dir = get_image_list(image_path1)
     logger.info('Number of predict images = {}'.format(len(image_list)))
     save_dir = os.path.join(save_dir_, 'matting_human_half')
@@ -129,7 +130,7 @@ def main(args):
         save_dir=save_dir,
     )
 
-    image_path2 = "/ssd2/chulutao/humanseg/small_test.txt"
+    image_path2 = "data/humanseg/{}".format(args.file_list)
     image_list, image_dir = get_image_list(image_path2)
     logger.info('Number of predict images = {}'.format(len(image_list)))
     save_dir = os.path.join(save_dir_, 'vis')

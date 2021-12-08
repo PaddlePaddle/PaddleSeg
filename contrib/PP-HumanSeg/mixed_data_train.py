@@ -17,7 +17,7 @@ import os
 
 import paddle
 
-from paddleseg.cvlibs import manager, Config
+from paddleseg.cvlibs import manager
 from paddleseg.utils import get_sys_env, logger, config_check
 from paddleseg.transforms import *
 from paddleseg.models import *
@@ -26,11 +26,14 @@ from datasets.humanseg import HumanSeg
 from paddleseg.datasets import Dataset
 from datasets.mixed_dataset import MixedDataset
 from scripts.mixed_data_train import train
+from scripts.config import Config
 
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Model training')
     # params of training
+    parser.add_argument(
+        "--config", dest="cfg", help="The config file.", default=None, type=str)
     parser.add_argument(
         '--iters',
         dest='iters',
@@ -44,22 +47,17 @@ def parse_args():
         type=int,
         default=None)
     parser.add_argument(
-        '--train_roots', dest='train_roots', nargs='+', type=str)
-    parser.add_argument(
-        '--train_file_lists', dest='train_file_lists', nargs='+', type=str)
-    parser.add_argument(
-        '--train_data_ratio', dest='train_data_ratio', nargs='+', type=float)
-    parser.add_argument('--val_roots', dest='val_roots', nargs='+', type=str)
-    parser.add_argument(
-        '--dataset_weights', dest='dataset_weights', nargs='+', type=float)
+        '--learning_rate',
+        dest='learning_rate',
+        help='Learning rate',
+        type=float,
+        default=None)
     parser.add_argument(
         '--save_interval',
         dest='save_interval',
         help='How many iters to save a model snapshot once during training.',
         type=int,
         default=1000)
-    parser.add_argument(
-        '--model_name', dest='model_name', type=str, default=None)
     parser.add_argument(
         '--resume_model',
         dest='resume_model',
@@ -116,41 +114,29 @@ def main(args):
 
     paddle.set_device(place)
 
-    #========================================= config ======================================
-    iters = 10000  # 2gpu 15epoch
-    save_interval = 400
-    batch_size = 128
-    learning_rate = 0.01
-    # pretrained = None
-    # pretrained = 'saved_model/shufflenetv2_humanseg_192x192/best_model/model.pdparams'
+    cfg = Config(
+        args.cfg,
+        learning_rate=args.learning_rate,
+        iters=args.iters,
+        batch_size=args.batch_size,
+        save_interval=args.save_interval)
 
-    train_roots = args.train_roots
-    train_file_lists = args.train_file_lists
-    train_data_ratio = args.train_data_ratio
-    val_roots = args.val_roots
-    dataset_weights = args.dataset_weights
-    class_weights = [0.3, 0.7]
+    train_data_ratio = cfg.train_data_ratio
+    val_roots = cfg.val_roots
+    dataset_weights = cfg.dataset_weights
+    class_weights = cfg.class_weights
+    train_file_lists = cfg.train_file_lists
+    train_transforms = cfg.train_transforms
+    val_transforms = cfg.val_transforms
+    losses = cfg.loss
 
-    train_transforms = [
-        PaddingByAspectRatio(1.77777778),
-        Resize(target_size=[398, 224]),
-        ResizeStepScaling(scale_step_size=0),
-        RandomRotation(),
-        RandomPaddingCrop(crop_size=[398, 224]),
-        RandomHorizontalFlip(),
-        RandomDistort(),
-        RandomBlur(prob=0.3),
-        Normalize()
-    ]
+    msg = '\n---------------Config Information---------------\n'
+    msg += str(cfg)
+    msg += '------------------------------------------------'
+    logger.info(msg)
 
-    val_transforms = [
-        PaddingByAspectRatio(1.77777778),
-        Resize(target_size=[398, 224]),
-        Normalize()
-    ]
-    #========================================================================================
     train_datasets = []
-    for i, train_root in enumerate(train_roots):
+    for i, train_root in enumerate(cfg.train_roots):
         train_datasets.append(
             Dataset(
                 train_transforms,
@@ -191,65 +177,18 @@ def main(args):
     else:
         val_datasets = None
 
-    from paddleseg.models.stdcseg import STDCSeg
-    from paddleseg.models.backbones import STDC1, STDC2
-    backbone = STDC2(
-        pretrained='https://bj.bcebos.com/paddleseg/dygraph/STDCNet2.tar.gz')
-    model_class = manager.MODELS[args.model_name]
-    model = model_class(2, backbone)
-    losses = {
-        'types': [
-            OhemCrossEntropyLoss(),
-            OhemCrossEntropyLoss(),
-            OhemCrossEntropyLoss(),
-            DetailAggregateLoss()
-        ],
-        'coef': [1, 1, 1, 1]
-    }
-
-    # from paddleseg.models.backbones.lcnet import PPLCNet_x1_0
-    # backbone = PPLCNet_x1_0()
-    # model_class = manager.MODELS[args.model_name]
-    # model = model_class(2, backbone)
-
-    # losses = {
-    #     'types': [
-    #         MixedLoss(
-    #             losses=[CrossEntropyLoss(),
-    #                     LovaszSoftmaxLoss()],
-    #             coef=[0.8, 0.2])
-    #     ],
-    #     'coef': [1]
-    # }
-
-    lr = paddle.optimizer.lr.PolynomialDecay(
-        learning_rate=learning_rate, end_lr=0, power=0.9, decay_steps=iters)
-    optimizer = paddle.optimizer.Momentum(
-        lr, parameters=model.parameters(), momentum=0.9, weight_decay=0.0005)
-
-    logger.info('iters {}'.format(iters))
-    logger.info('save_interval {}'.format(save_interval))
-    logger.info('batch_size {}'.format(batch_size))
-    logger.info('learning_rate {}'.format(learning_rate))
-    # logger.info('pretrained {}'.format(pretrained))
-    logger.info('train_roots {}'.format(str(train_roots)))
-    logger.info('val_roots {}'.format(str(val_roots)))
-    logger.info('dataset_weights {}'.format(str(dataset_weights)))
-    logger.info('class_weights {}'.format(str(class_weights)))
-    logger.info('train_data_ratio {}'.format(str(train_data_ratio)))
-
     train(
-        model,
+        cfg.model,
         mixed_train_dataset,
         val_datasets=val_datasets,
         class_weights=class_weights,
         dataset_weights=dataset_weights,
-        optimizer=optimizer,
+        optimizer=cfg.optimizer,
         save_dir=args.save_dir,
-        iters=iters,
-        batch_size=batch_size,
+        iters=cfg.iters,
+        batch_size=cfg.batch_size,
         resume_model=args.resume_model,
-        save_interval=save_interval,
+        save_interval=cfg.save_interval,
         log_iters=args.log_iters,
         num_workers=args.num_workers,
         use_vdl=args.use_vdl,

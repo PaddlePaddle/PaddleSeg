@@ -18,13 +18,14 @@ import os
 import numpy as np
 import paddle
 
-from paddleseg.cvlibs import manager, Config
+from paddleseg.cvlibs import manager
 from paddleseg.core import evaluate
 from paddleseg.models import *
 from paddleseg.utils import get_sys_env, logger, config_check, utils
 from paddleseg.transforms import *
 from paddleseg.datasets import Dataset
 from datasets.humanseg import HumanSeg
+from scripts.config import Config
 
 
 def parse_args():
@@ -32,11 +33,17 @@ def parse_args():
 
     # params of evaluate
     parser.add_argument(
-        '--model_name', dest='model_name', type=str, default=None)
+        "--config", dest="cfg", help="The config file.", default=None, type=str)
     parser.add_argument(
         '--model_path',
         dest='model_path',
         help='The path of model for evaluation',
+        type=str,
+        default=None)
+    parser.add_argument(
+        '--file_list',
+        dest='file_list',
+        help='file list, e.g. test.txt, val.txt',
         type=str,
         default=None)
     parser.add_argument(
@@ -45,10 +52,6 @@ def parse_args():
         help='Num workers for data loader',
         type=int,
         default=0)
-    parser.add_argument('--val_roots', dest='val_roots', nargs='+', type=str)
-    parser.add_argument(
-        '--dataset_weights', dest='dataset_weights', nargs='+', type=float)
-
     return parser.parse_args()
 
 
@@ -59,61 +62,45 @@ def main(args):
 
     paddle.set_device(place)
 
-    #========================================= config ======================================
-    file_list_name = 'test.txt'
-    # file_list_name = 'val.txt'
-    val_roots = args.val_roots
-    dataset_weights = args.dataset_weights
-    class_weights = [0.3, 0.7]
+    cfg = Config(args.cfg)
 
-    val_transforms = [
-        PaddingByAspectRatio(1.77777778),
-        Resize(target_size=[398, 224]),
-        Normalize()
-    ]
+    val_roots = cfg.val_roots
+    dataset_weights = cfg.dataset_weights
+    class_weights = cfg.class_weights
+    val_transforms = cfg.val_transforms
+
+    msg = '\n---------------Config Information---------------\n'
+    msg += str(cfg)
+    msg += '------------------------------------------------'
+    logger.info(msg)
+    file_list = args.file_list
+    logger.info('file_list {}'.format(file_list))
 
     val_dataset0 = Dataset(
         val_transforms,
         val_roots[0],
         2,
         mode='val',
-        val_path=os.path.join(val_roots[0], file_list_name))
+        val_path=os.path.join(val_roots[0], file_list))
     val_dataset1 = Dataset(
         val_transforms,
         val_roots[1],
         2,
         mode='val',
-        val_path=os.path.join(val_roots[1], file_list_name))
+        val_path=os.path.join(val_roots[1], file_list))
     val_dataset2 = Dataset(
         val_transforms,
         val_roots[2],
         2,
         mode='val',
-        val_path=os.path.join(val_roots[2], file_list_name))
+        val_path=os.path.join(val_roots[2], file_list))
     val_datasets = [val_dataset0, val_dataset1, val_dataset2]
     # val_datasets = [val_dataset0]
-    #====================================================================================
-
-    # from paddleseg.models.backbones.lcnet import PPLCNet_x1_0
-    # backbone = PPLCNet_x1_0()
-    # model_class = manager.MODELS[args.model_name]
-    # model = model_class(2, backbone)
-
-    from paddleseg.models.stdcseg import STDCSeg
-    from paddleseg.models.backbones import STDC1, STDC2
-    backbone = STDC2(
-        pretrained='https://bj.bcebos.com/paddleseg/dygraph/STDCNet2.tar.gz')
-    model_class = manager.MODELS[args.model_name]
-    model = model_class(2, backbone)
+    model = cfg.model
 
     if args.model_path:
         utils.load_entire_model(model, args.model_path)
         logger.info('Loaded trained params of model successfully')
-
-    logger.info('val_roots {}'.format(str(val_roots)))
-    logger.info('dataset_weights {}'.format(str(dataset_weights)))
-    logger.info('class_weights {}'.format(str(class_weights)))
-    logger.info('file_list_name {}'.format(file_list_name))
 
     class_ious = []
     for val_dataset in val_datasets:
