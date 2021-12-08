@@ -1,5 +1,5 @@
 ===========================train_params===========================
-model_name:fcn_hrnetw18_small
+model_name:bisenetv2
 python:python3.7
 gpu_list:0|0,1
 Global.use_gpu:null|null
@@ -9,11 +9,11 @@ Global.auto_cast:null
 --batch_size:lite_train_lite_infer=2|lite_train_whole_infer=2|whole_train_whole_infer=8
 Global.pretrained_model:null
 train_model_name:best_model/model.pdparams
-train_infer_img_dir:test_tipc/data/mini_supervisely/test.txt
+train_infer_img_dir:test_tipc/data/cityscapes/val.list
 null:null
 ##
 trainer:norm
-norm_train:train.py --config test_tipc/configs/fcn_hrnetw18_small/fcn_hrnetw18_small_v1_humanseg_192x192_mini_supervisely.yml --do_eval --save_interval 500 --seed 100
+norm_train:train.py --config test_tipc/configs/bisenetv2/bisenet_cityscapes_1024x1024_160k.yml --do_eval --save_interval 500 --seed 100
 pact_train:null
 fpgm_train:null
 distill_train:null
@@ -27,26 +27,26 @@ null:null
 ===========================export_params===========================
 --save_dir:
 --model_path:
-norm_export:export.py --config test_tipc/configs/fcn_hrnetw18_small/fcn_hrnetw18_small_v1_humanseg_192x192_mini_supervisely.yml
+norm_export:export.py --config test_tipc/configs/bisenetv2/bisenet_cityscapes_1024x1024_160k.yml
 quant_export:null
 fpgm_export:null
 distill_export:null
 export1:null
 export2:null
 ===========================infer_params===========================
-infer_model:./test_tipc/output/fcn_hrnetw18_small/fcn_hrnetw18_small_v1_humanseg_192x192/model.pdparams
-infer_export:export.py --config test_tipc/configs/fcn_hrnetw18_small/fcn_hrnetw18_small_v1_humanseg_192x192_mini_supervisely.yml
+infer_model:./test_tipc/output/bisenetv2/model.pdparams
+infer_export:export.py --config test_tipc/configs/bisenetv2/bisenet_cityscapes_1024x1024_160k.yml
 infer_quant:False
-inference:deploy/python/infer.py
+inference:deploy/python/infer.py --save_dir ./test_tipc/output/bisenetv2/
 --device:cpu|gpu
 --enable_mkldnn:True|False
 --cpu_threads:1|6
 --batch_size:1
---use_trt:False|True
+--use_trt:False
 --precision:fp32|int8|fp16
 --config:
---image_path:./test_tipc/data/mini_supervisely/test.txt
+--image_path:./test_tipc/data/cityscapes/val.list
 --save_log_path:null
 --benchmark:True
 --save_dir:
---model_name:fcn_hrnetw18_small
+--model_name:bisenetv2
