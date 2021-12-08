@@ -338,16 +338,23 @@ def train(args,
                     shutil.rmtree(model_to_remove)
 
                 if val_dataset is not None:
-                    if mean_iou > best_mean_iou:
-                        best_mean_iou = mean_iou
-                        best_model_iter = iter
-                        best_model_dir = os.path.join(save_dir, "best_model")
-                        paddle.save(
-                            model.state_dict(),
-                            os.path.join(best_model_dir, 'model.pdparams'))
-                    logger.info(
-                        '[EVAL] The model with the best validation mIoU ({:.4f}) was saved at iter {}.'
-                        .format(best_mean_iou, best_model_iter))
+                    if args.pruning_strategy == 'gmp':
+                        save_best = iter >= configs[
+                            'stable_iterations'] + configs['pruning_iterations']
+                    else:
+                        save_best = True
+                    if save_best:
+                        if mean_iou > best_mean_iou:
+                            best_mean_iou = mean_iou
+                            best_model_iter = iter
+                            best_model_dir = os.path.join(
+                                save_dir, "best_model")
+                            paddle.save(
+                                model.state_dict(),
+                                os.path.join(best_model_dir, 'model.pdparams'))
+                        logger.info(
+                            '[EVAL] The model with the best validation mIoU ({:.4f}) was saved at iter {}.'
+                            .format(best_mean_iou, best_model_iter))
 
                     if use_vdl:
                         log_writer.add_scalar('Evaluate/mIoU', mean_iou, iter)
