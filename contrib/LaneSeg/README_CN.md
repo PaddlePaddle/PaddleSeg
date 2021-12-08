@@ -41,15 +41,15 @@ cd contrib/LaneSeg
 
 ## 模型
 
-#### BiseNetLane
+#### BiseNetV2
 
 基于TuSimple评估方法的评估，您可以从[TuSimple exampe](https://github.com/TuSimple/tusimple-benchmark/blob/master/example/lane_demo.ipynb) 获取更多信息
 
-BiseNetLane在[Tusimple](https://github.com/TuSimple/tusimple-benchmark/issues/3)数据集上的性能
+BiseNetV2在[Tusimple](https://github.com/TuSimple/tusimple-benchmark/issues/3)数据集上的性能
 
-| Backbone | Acc | FP| FN | Link|
+| Method | Acc | FP| FN | Link|
 |-|-|-|-|-|
-|BiseNetV2|96.09%|0.04643|0.041606|[model](https://paddleseg.bj.bcebos.com/lane_seg/model.pdparams)|
+|BiseNetV2|96.38%|0.04545|0.03363|[model](https://paddleseg.bj.bcebos.com/lane_seg/model.pdparams)|
 
 注意：模型输入大小为(640, 368), GPU为Tesla V100 32G。
 
@@ -134,10 +134,10 @@ test_list.txt的内容如下:
 ```shell
 export CUDA_VISIBLE_DEVICES=0
 python train.py \
-       --config configs/modnet/bisenet_tusimple_640x368_300k.yml \
+       --config configs/modnet/bisenetV2_tusimple_640x368_300k.yml \
        --do_eval \
        --use_vdl \
-       --save_interval 5000 \
+       --save_interval 2000 \
        --num_workers 5 \
        --save_dir output
 ```
@@ -156,7 +156,7 @@ python train.py --help
 ```shell
 export CUDA_VISIBLE_DEVICES=0
 python val.py \
-       --config configs/modnet/bisenet_tusimple_640x368_300k.yml \
+       --config configs/modnet/bisenetV2_tusimple_640x368_300k.yml \
        --model_path output/best_model/model.pdparams \
        --save_dir ./output/results \
        --save_results
@@ -174,7 +174,7 @@ python val.py --help
 ```shell
 export CUDA_VISIBLE_DEVICES=0
 python predict.py \
-       --config configs/bisenet_tusimple_640x368_300k.yml \
+       --config configs/bisenetV2_tusimple_640x368_300k.yml \
        --model_path output/best_model/model.pdparams \
        --image_path data/test_images/3.jpg \
        --save_dir output/result
@@ -198,7 +198,7 @@ python predict.py --help
 ### 模型导出
 ```shell
 python export.py \
-    --config configs/modnet/bisenet_tusimple_640x368_300k.yml \
+    --config configs/modnet/bisenetV2_tusimple_640x368_300k.yml \
     --model_path output/best_model/model.pdparams \
     --save_dir output/export
 ```

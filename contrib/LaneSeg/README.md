@@ -38,15 +38,15 @@ cd contrib/LaneSeg
 ```
 
 ## Models
-#### BiseNetLane
+#### BiseNetV2
 
 The evaluation base on TuSimple challenge evaluation method you can get more information from [TuSimple exampe](https://github.com/TuSimple/tusimple-benchmark/blob/master/example/lane_demo.ipynb)
 
 BiseNetLane performance on [Tusimple](https://github.com/TuSimple/tusimple-benchmark/issues/3).
 
-| Backbone | Acc | FN | FP | Link|
+| Method | Acc | FN | FP | Link|
 |-|-|-|-|-|
-|BiseNetV2|96.09%|0.04643|0.041606|[model](https://paddleseg.bj.bcebos.com/lane_seg/model.pdparams)|
+|BiseNetV2|96.38%|0.04545|0.03363|[model](https://paddleseg.bj.bcebos.com/lane_seg/model.pdparams)|
 
 Note: The model input size is (640, 368) and the GPU is Tesla V100 32G.
 
@@ -131,10 +131,10 @@ The contents of test_list.txt is as follows:
 ```shell
 export CUDA_VISIBLE_DEVICES=0
 python train.py \
-       --config configs/modnet/bisenet_tusimple_640x368_300k.yml \
+       --config configs/modnet/bisenetV2_tusimple_640x368_300k.yml \
        --do_eval \
        --use_vdl \
-       --save_interval 5000 \
+       --save_interval 2000 \
        --num_workers 5 \
        --save_dir output
 ```
@@ -153,7 +153,7 @@ If you want to use multiple GPUs，please use `python -m paddle.distributed.laun
 ```shell
 export CUDA_VISIBLE_DEVICES=0
 python val.py \
-       --config configs/modnet/bisenet_tusimple_640x368_300k.yml \
+       --config configs/modnet/bisenetV2_tusimple_640x368_300k.yml \
        --model_path output/best_model/model.pdparams \
        --save_dir ./output/results \
        --save_results
@@ -171,7 +171,7 @@ python val.py --help
 ```shell
 export CUDA_VISIBLE_DEVICES=0
 python predict.py \
-    --config configs/modnet/bisenet_tusimple_640x368_300k.yml \
+    --config configs/modnet/bisenetV2_tusimple_640x368_300k.yml \
     --model_path output/best_model/model.pdparams \
     --image_path data/test_images/3.jpg \
     --save_dir ./output/results
@@ -194,7 +194,7 @@ python predict.py --help
 ### Model Export
 ```shell
 python export.py \
-    --config configs/modnet/bisenet_tusimple_640x368_300k.yml \
+    --config configs/modnet/bisenetV2_tusimple_640x368_300k.yml \
     --model_path output/best_model/model.pdparams \
     --save_dir output/export
 ```
