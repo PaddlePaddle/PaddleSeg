@@ -3,12 +3,12 @@ iters: 2000
 
 train_dataset:
   type: Dataset
-  dataset_root: tests/data/mini_supervisely
-  train_path: tests/data/mini_supervisely/train.txt
+  dataset_root: test_tipc/data/mini_supervisely
+  train_path: test_tipc/data/mini_supervisely/train.txt
   num_classes: 2
   transforms:
     - type: Resize
-      target_size: [192, 192]
+      target_size: [398, 224]
     - type: RandomHorizontalFlip
     - type: RandomDistort
       brightness_range: 0.4
@@ -19,21 +19,20 @@ train_dataset:
 
 val_dataset:
   type: Dataset
-  dataset_root: tests/data/mini_supervisely
-  val_path: tests/data/mini_supervisely/val.txt
+  dataset_root: test_tipc/data/mini_supervisely
+  val_path: test_tipc/data/mini_supervisely/val.txt
   num_classes: 2
   transforms:
     - type: Resize
-      target_size: [192, 192]
+      target_size: [398, 224]
     - type: Normalize
   mode: val
 
 export:
   transforms:
     - type: Resize
-      target_size: [192, 192]
+      target_size: [398, 224]
     - type: Normalize
-
 
 optimizer:
   type: sgd
@@ -52,10 +51,6 @@ loss:
   coef: [1]
 
 model:
-  type: FCN
-  backbone:
-    type: HRNet_W18_Small_V1
-    align_corners: False
+  type: PPHumanSegLite
+  align_corners: False
   num_classes: 2
-  # pretrained: pretrained_model/fcn_hrnetw18_small_v1_humanseg_192x192/model.pdparams
-  backbone_indices: [-1]

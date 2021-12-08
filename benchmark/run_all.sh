@@ -22,7 +22,7 @@ tar -zxf data/cityscapes_30imgs.tar.gz -C data/
 
 model_name_list=(fastscnn segformer_b0 ocrnet_hrnetw48)
 fp_item_list=(fp32)     # set fp32 or fp16, segformer_b0 doesn't support fp16 with Paddle2.1.2
-bs_list=(2 4)
+bs_list=(2)
 max_iters=500           # control the test time
 num_workers=5           # num_workers for dataloader
 
