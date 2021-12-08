@@ -4,7 +4,7 @@ save_interval: 400
 
 model:
   type: PPHumanSegLite
-  pretrained:
+  pretrained: pretrained_model/pphumanseg_lite_portrait_398x224/model.pdparams
   align_corners: False
   num_classes: 2
 
