@@ -12,25 +12,116 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import argparse
 import os
+import argparse
+import random
 
 import paddle
+import numpy as np
 
 from paddleseg.cvlibs import manager
 from paddleseg.utils import get_sys_env, logger, config_check
-from paddleseg.transforms import *
-from paddleseg.models import *
-from paddleseg.models.losses import *
 from datasets.humanseg import HumanSeg
 from paddleseg.datasets import Dataset
 from datasets.mixed_dataset import MixedDataset
-from scripts.mixed_data_train import train
 from scripts.config import Config
+from scripts.unstructured_prune_mixed_utils import train
+
+# python unstructured_prune_mixed_train.py --ratio=0.75 --prune_params_type=conv1x1_only \
+# --local_sparsity=True --pruning_strategy=gmp \
+# --config ${cfg} --do_eval --num_workers 4 \
+# --save_interval 30
+
+# assume inital lr=0.1, lr piecewise_decay, pruning iter lr=0.01, tunning iter lr=[0.001,0.0001]
 
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Model training')
+    # params of pruning
+    parser.add_argument(
+        '--pruning_mode',
+        dest='pruning_mode',
+        help=
+        'the pruning mode: whether by ratio or by threshold. Default: ratio',
+        type=str,
+        default='ratio')
+    parser.add_argument(
+        '--ratio',
+        dest='ratio',
+        help=
+        'The ratio to set zeros, the smaller part bounded by the ratio will be zeros. Default: 0.55',
+        type=float,
+        default=0.55)
+    parser.add_argument(
+        '--threshold',
+        dest='threshold',
+        help='The threshold to set zeros. Default: 0.01',
+        type=float,
+        default=0.01)
+    parser.add_argument(
+        '--prune_params_type',
+        dest='prune_params_type',
+        help=
+        'Which kind of params should be pruned, we only support None (all but norms) and conv1x1_only for now. Default: None',
+        type=str,
+        default=None)
+    parser.add_argument(
+        '--local_sparsity',
+        dest='local_sparsity',
+        help=
+        'Whether to prune all the parameter matrix at the same ratio or not. Default: False',
+        type=bool,
+        default=False)
+
+    parser.add_argument(
+        '--pruning_strategy',
+        dest='pruning_strategy',
+        help=
+        'Which training strategy to use in pruning, we only support base and gmp for now. Default: base',
+        type=str,
+        default='base')
+    parser.add_argument(
+        '--stable_epochs',
+        dest='stable_epochs',
+        help=
+        "The epoch numbers used to stablize the model before pruning. Default: 0",
+        type=int,
+        default=0)
+    parser.add_argument(
+        '--pruning_epochs',
+        dest='pruning_epochs',
+        help=
+        'The epoch numbers used to prune the model by a ratio step. Default: 60',
+        type=int,
+        default=60)
+    parser.add_argument(
+        '--tunning_epochs',
+        dest='tunning_epochs',
+        help=
+        'The epoch numbers used to tune the after-pruned models. Default: 60',
+        type=int,
+        default=60)
+    parser.add_argument(
+        '--last_epoch',
+        dest='last_epoch',
+        help="The last epoch we'll train from. Default: -1",
+        type=int,
+        default=-1)
+    parser.add_argument(
+        '--pruning_steps',
+        dest='pruning_steps',
+        help=
+        'How many times you want to increase your ratio during training. Default: 100',
+        type=int,
+        default=100)
+    parser.add_argument(
+        '--initial_ratio',
+        dest='initial_ratio',
+        help=
+        'The initial pruning ratio used at the start of pruning stage. Default: 0.15',
+        type=float,
+        default=0.15)
+
     # params of training
     parser.add_argument(
         "--config", dest="cfg", help="The config file.", default=None, type=str)
@@ -98,11 +189,39 @@ def parse_args():
         dest='use_vdl',
         help='Whether to record the data to VisualDL during training',
         action='store_true')
+    parser.add_argument(
+        '--seed',
+        dest='seed',
+        help='Set the random seed during training.',
+        default=None,
+        type=int)
+    parser.add_argument(
+        '--fp16', dest='fp16', help='Whther to use amp', action='store_true')
+    parser.add_argument(
+        '--data_format',
+        dest='data_format',
+        help=
+        'Data format that specifies the layout of input. It can be "NCHW" or "NHWC". Default: "NCHW".',
+        type=str,
+        default='NCHW')
+    parser.add_argument(
+        '--profiler_options',
+        type=str,
+        default=None,
+        help='The option of train profiler. If profiler_options is not None, the train ' \
+            'profiler is enabled. Refer to the paddleseg/utils/train_profiler.py for details.'
+    )
 
     return parser.parse_args()
 
 
 def main(args):
+
+    if args.seed is not None:
+        paddle.seed(args.seed)
+        np.random.seed(args.seed)
+        random.seed(args.seed)
+
     env_info = get_sys_env()
     info = ['{}: {}'.format(k, v) for k, v in env_info.items()]
     info = '\n'.join(['', format('Environment Information', '-^48s')] + info +
@@ -113,6 +232,8 @@ def main(args):
         'GPUs used'] else 'cpu'
 
     paddle.set_device(place)
+    if not args.cfg:
+        raise RuntimeError('No configuration file specified.')
 
     cfg = Config(
         args.cfg,
@@ -178,6 +299,7 @@ def main(args):
         val_datasets = None
 
     train(
+        args,
         cfg.model,
         mixed_train_dataset,
         val_datasets=val_datasets,
