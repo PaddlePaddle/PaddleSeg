@@ -42,7 +42,7 @@ cd contrib/LaneSeg
 
 The evaluation base on TuSimple challenge evaluation method you can get more information from [TuSimple exampe](https://github.com/TuSimple/tusimple-benchmark/blob/master/example/lane_demo.ipynb)
 
-BiseNetLane performance on [Tusimple](https://github.com/TuSimple/tusimple-benchmark/issues/3).
+BiseNetV2 performance on [Tusimple](https://github.com/TuSimple/tusimple-benchmark/issues/3).
 
 | Method | Acc | FN | FP | Link|
 |-|-|-|-|-|
