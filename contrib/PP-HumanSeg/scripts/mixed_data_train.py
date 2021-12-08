@@ -21,7 +21,7 @@ import numpy as np
 import paddle
 import paddle.nn.functional as F
 
-from paddleseg.utils import TimeAverager, calculate_eta, resume, logger
+from paddleseg.utils import TimeAverager, calculate_eta, resume, logger, worker_init_fn
 from paddleseg.core.val import evaluate
 
 
@@ -101,13 +101,10 @@ def train(model,
         os.makedirs(save_dir)
 
     if nranks > 1:
-        # Initialize parallel environment if not done.
-        if not paddle.distributed.parallel.parallel_helper._is_parallel_ctx_initialized(
-        ):
-            paddle.distributed.init_parallel_env()
-            ddp_model = paddle.DataParallel(model)
-        else:
-            ddp_model = paddle.DataParallel(model)
+        paddle.distributed.fleet.init(is_collective=True)
+        optimizer = paddle.distributed.fleet.distributed_optimizer(
+            optimizer)  # The return is Fleet object
+        ddp_model = paddle.distributed.fleet.distributed_model(model)
 
     batch_sampler = paddle.io.DistributedBatchSampler(
         train_dataset, batch_size=batch_size, shuffle=True, drop_last=True)
@@ -117,6 +114,7 @@ def train(model,
         batch_sampler=batch_sampler,
         num_workers=num_workers,
         return_list=True,
+        worker_init_fn=worker_init_fn,
     )
 
     if use_vdl:
@@ -134,8 +132,8 @@ def train(model,
     batch_cost_averager = TimeAverager()
     save_models = deque()
     batch_start = time.time()
-
     iter = start_iter
+
     while iter < iters:
         for data in loader:
             iter += 1
@@ -167,10 +165,16 @@ def train(model,
 
             optimizer.step()
             lr = optimizer.get_lr()
-            if isinstance(optimizer._learning_rate,
-                          paddle.optimizer.lr.LRScheduler):
-                optimizer._learning_rate.step()
+            # update lr
+            if isinstance(optimizer, paddle.distributed.fleet.Fleet):
+                lr_sche = optimizer.user_defined_optimizer._learning_rate
+            else:
+                lr_sche = optimizer._learning_rate
+            if isinstance(lr_sche, paddle.optimizer.lr.LRScheduler):
+                lr_sche.step()
+
             model.clear_gradients()
+
             avg_loss += loss.numpy()[0]
             if not avg_loss_list:
                 avg_loss_list = [l.numpy() for l in loss_list]
@@ -268,7 +272,7 @@ def train(model,
                         '====================== best model metrics =================='
                     )
                     for num, best_class_iou in enumerate(best_class_ious):
-                        logger.info("[EVAL] Dataset {} Class IoU: {}\n".format(
+                        logger.info("[EVAL] Dataset {} Class IoU: {}".format(
                             num, str(np.round(best_class_iou, 4))))
                         logger.info("[EVAL] Dataset {} IoU: {}\n".format(
                             num, str(np.round(best_dataset_ious[num], 4))))
