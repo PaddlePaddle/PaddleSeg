@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta http-equiv="X-UA-Compatible" content="ie=edge">
+        <title>pphumanseg_lite test</title>
+        <style>
+            body img {
+                width: 300px;
+                border: 2px black solid;
+            }
+            canvas {
+                border: 2px black solid;
+            }
+            .test {
+                display: flex;
+            }
+            .test div.item {
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+            }
+        </style>
+    </head>
+    <body >
+        <div class="test">
+            <div class="item">
+                <img id="human" src="./imgs/human.jpg"/>
+                <div> origin img </div>
+            </div>
+            <div class="item">
+                <img id="seg" src="./imgs/seg.png"/>
+                <div> expect img </div>
+            </div>
+        </div>
+        <canvas id="back_canvas"></canvas>
+    </body>
+    <script src="./node_modules/@paddlejs-models/humanseg/lib/index.js"></script>
+</html>
