@@ -23,14 +23,14 @@ sys.path.append(TEST_PATH)
 from paddleseg.utils.download import download_file_and_uncompress
 
 model_urls = {
-    "ppseg_lite_portrait_398x224":
+    "pphumanseg_lite_portrait_398x224":
     "https://paddleseg.bj.bcebos.com/dygraph/ppseg/ppseg_lite_portrait_398x224.tar.gz",
     "deeplabv3p_resnet50_os8_humanseg_512x512_100k":
     "https://paddleseg.bj.bcebos.com/dygraph/humanseg/train/deeplabv3p_resnet50_os8_humanseg_512x512_100k.zip",
     "fcn_hrnetw18_small_v1_humanseg_192x192":
     "https://paddleseg.bj.bcebos.com/dygraph/humanseg/train/fcn_hrnetw18_small_v1_humanseg_192x192.zip",
-    "shufflenetv2_humanseg_192x192":
-    "https://paddleseg.bj.bcebos.com/dygraph/humanseg/train/shufflenetv2_humanseg_192x192.zip",
+    "pphumanseg_lite_generic_human_192x192":
+    "https://paddleseg.bj.bcebos.com/dygraph/humanseg/train/pphumanseg_lite_generic_192x192.zip",
 }
 
 if __name__ == "__main__":
