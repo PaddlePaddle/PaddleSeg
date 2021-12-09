@@ -1,0 +1,17 @@
+_base_: './segmenter_vit_base_linear_ade20k_512x512_160k.yml'
+
+model:
+  type: LinearSegmenter
+  backbone:
+    type: VisionTransformer
+    img_size: 512
+    patch_size: 16
+    embed_dim: 384
+    depth: 12
+    num_heads: 6
+    mlp_ratio: 4
+    qkv_bias: True
+    drop_rate: 0.0
+    drop_path_rate: 0.1
+    final_norm: True
+    pretrained: https://bj.bcebos.com/paddleseg/dygraph/pretrained_models/vit_small_patch16_384_augreg.tar.gz

@@ -14,7 +14,7 @@ python predict.py \
        --save_dir output/result
 ```
 
-Among them, `image_path` can also be a directory. At this time, all the images in the directory will be predicted and the visualization results will be saved.
+Where `image_path` can be the path of a picture, a file list containing image paths, or a directory. At this time, that image or all images in file list or directory will be predicted and the visualization results will be saved.
 
 Similarly, you can use `--aug_pred` to turn on multi-scale flip prediction, and `--is_slide` to turn on sliding window prediction.
 
@@ -35,10 +35,8 @@ Similarly, you can use `--aug_pred` to turn on multi-scale flip prediction, and 
     ...
     ```
 
-* At this point, you can specify `image_list` as `train.txt` and `image_dir` as the directory where the training data is located when predicting. The robustness of PaddleSeg allows you to do this, and the output will be the prediction result of the **original training data**.
-
 ## 2.API
-Parameter Analysis of Forecast API 
+Parameter Analysis of Forecast API
 
 ```
 paddleseg.core.predict(

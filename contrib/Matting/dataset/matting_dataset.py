@@ -38,7 +38,7 @@ class MattingDataset(paddle.io.Dataset):
         |--val/
         |  |--fg/
         |  |--alpha/
-        |  |--trimap/ (如果存在)
+        |  |--trimap/ (if existing)
         |
         |--train.txt
         |

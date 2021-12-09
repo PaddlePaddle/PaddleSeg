@@ -67,16 +67,6 @@ def evaluate(model,
         ):
             paddle.distributed.init_parallel_env()
 
-
-#     batch_sampler = paddle.io.DistributedBatchSampler(
-#         eval_dataset, batch_size=1, shuffle=False, drop_last=False)
-#     loader = paddle.io.DataLoader(
-#         eval_dataset,
-#         batch_sampler=batch_sampler,
-#         num_workers=num_workers,
-#         return_list=True,
-#     )
-#   eval not distributed
     loader = paddle.io.DataLoader(
         eval_dataset,
         batch_size=1,

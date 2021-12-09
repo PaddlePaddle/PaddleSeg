@@ -1,10 +1,31 @@
+# Copyright (c) 2021 PaddlePaddle Authors. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+"""
+This code is based on https://github.com/saic-vul/ritm_interactive_segmentation
+Ths copyright of saic-vul/ritm_interactive_segmentation is as follows:
+MIT License [see LICENSE for details]
+"""
+
 import cv2
 import numpy as np
 from copy import deepcopy
 
 
 class Clicker(object):
-    def __init__(self, gt_mask=None, init_clicks=None, ignore_label=-1, click_indx_offset=0):
+    def __init__(
+        self, gt_mask=None, init_clicks=None, ignore_label=-1, click_indx_offset=0
+    ):
         self.click_indx_offset = click_indx_offset
         if gt_mask is not None:
             self.gt_mask = gt_mask == 1
@@ -27,12 +48,18 @@ class Clicker(object):
         return self.clicks_list[:clicks_limit]
 
     def _get_next_click(self, pred_mask, padding=True):
-        fn_mask = np.logical_and(np.logical_and(self.gt_mask, np.logical_not(pred_mask)), self.not_ignore_mask)
-        fp_mask = np.logical_and(np.logical_and(np.logical_not(self.gt_mask), pred_mask), self.not_ignore_mask)
+        fn_mask = np.logical_and(
+            np.logical_and(self.gt_mask, np.logical_not(pred_mask)),
+            self.not_ignore_mask,
+        )
+        fp_mask = np.logical_and(
+            np.logical_and(np.logical_not(self.gt_mask), pred_mask),
+            self.not_ignore_mask,
+        )
 
         if padding:
-            fn_mask = np.pad(fn_mask, ((1, 1), (1, 1)), 'constant')
-            fp_mask = np.pad(fp_mask, ((1, 1), (1, 1)), 'constant')
+            fn_mask = np.pad(fn_mask, ((1, 1), (1, 1)), "constant")
+            fp_mask = np.pad(fp_mask, ((1, 1), (1, 1)), "constant")
 
         fn_mask_dt = cv2.distanceTransform(fn_mask.astype(np.uint8), cv2.DIST_L2, 0)
         fp_mask_dt = cv2.distanceTransform(fp_mask.astype(np.uint8), cv2.DIST_L2, 0)

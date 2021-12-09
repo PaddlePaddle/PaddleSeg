@@ -7,3 +7,4 @@ albumentations
 cython
 pyyaml
 wget
+requests
