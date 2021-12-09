@@ -95,7 +95,7 @@ pip3.7 install -U paddlepaddle_gpu-2.1.1-cp37-cp37m-linux_x86_64.whl
 git clone https://github.com/PaddlePaddle/PaddleSeg
 
 cd PaddleSeg
-pip3.7 install -r requirements.txt
+pip3.7 install -r test_tipc/requirements.txt
 pip install -e .
 cd ..
 ```
