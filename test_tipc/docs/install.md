@@ -97,7 +97,6 @@ git clone https://github.com/PaddlePaddle/PaddleSeg
 cd PaddleSeg
 pip3.7 install -r requirements.txt
 pip install -e .
-pip install scikit-image
 cd ..
 ```
 
