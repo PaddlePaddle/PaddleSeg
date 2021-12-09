@@ -29,13 +29,14 @@ def evaluate(model,
              eval_dataset,
              aug_eval=False,
              scales=1.0,
-             flip_horizontal=True,
+             flip_horizontal=False,
              flip_vertical=False,
              is_slide=False,
              stride=None,
              crop_size=None,
              num_workers=0,
-             print_detail=True):
+             print_detail=True,
+             auc_roc=False):
     """
     Launch evalution.
 
@@ -53,6 +54,7 @@ def evaluate(model,
             It should be provided when `is_slide` is True.
         num_workers (int, optional): Num workers for data loader. Default: 0.
         print_detail (bool, optional): Whether to print detailed information about the evaluation process. Default: True.
+        auc_roc(bool, optional): whether add auc_roc metric
 
     Returns:
         float: The mIoU of validation datasets.
@@ -79,6 +81,8 @@ def evaluate(model,
     intersect_area_all = 0
     pred_area_all = 0
     label_area_all = 0
+    logits_all = None
+    label_all = None
 
     if print_detail:
         logger.info(
@@ -97,7 +101,7 @@ def evaluate(model,
 
             ori_shape = label.shape[-2:]
             if aug_eval:
-                pred = infer.aug_inference(
+                pred, logits = infer.aug_inference(
                     model,
                     im,
                     ori_shape=ori_shape,
@@ -109,7 +113,7 @@ def evaluate(model,
                     stride=stride,
                     crop_size=crop_size)
             else:
-                pred = infer.inference(
+                pred, logits = infer.inference(
                     model,
                     im,
                     ori_shape=ori_shape,
@@ -150,6 +154,17 @@ def evaluate(model,
                 intersect_area_all = intersect_area_all + intersect_area
                 pred_area_all = pred_area_all + pred_area
                 label_area_all = label_area_all + label_area
+
+                if auc_roc:
+                    logits = F.softmax(logits, axis=1)
+                    if logits_all is None:
+                        logits_all = logits.numpy()
+                        label_all = label.numpy()
+                    else:
+                        logits_all = np.concatenate(
+                            [logits_all, logits.numpy()])  # (KN, C, H, W)
+                        label_all = np.concatenate([label_all, label.numpy()])
+
             batch_cost_averager.record(
                 time.time() - batch_start, num_samples=len(label))
             batch_cost = batch_cost_averager.get_average()
@@ -166,11 +181,19 @@ def evaluate(model,
                                        label_area_all)
     class_acc, acc = metrics.accuracy(intersect_area_all, pred_area_all)
     kappa = metrics.kappa(intersect_area_all, pred_area_all, label_area_all)
+    class_dice, mdice = metrics.dice(intersect_area_all, pred_area_all,
+                                     label_area_all)
+
+    if auc_roc:
+        auc_roc = metrics.auc_roc(
+            logits_all, label_all, num_classes=eval_dataset.num_classes)
+        auc_infor = ' Auc_roc: {:.4f}'.format(auc_roc)
 
     if print_detail:
-        logger.info(
-            "[EVAL] #Images: {} mIoU: {:.4f} Acc: {:.4f} Kappa: {:.4f} ".format(
-                len(eval_dataset), miou, acc, kappa))
+        infor = "[EVAL] #Images: {} mIoU: {:.4f} Acc: {:.4f} Kappa: {:.4f} Dice: {:.4f}".format(
+            len(eval_dataset), miou, acc, kappa, mdice)
+        infor = infor + auc_infor if auc_roc else infor
+        logger.info(infor)
         logger.info("[EVAL] Class IoU: \n" + str(np.round(class_iou, 4)))
         logger.info("[EVAL] Class Acc: \n" + str(np.round(class_acc, 4)))
     return miou, acc, class_iou, class_acc, kappa

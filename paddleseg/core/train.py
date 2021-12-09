@@ -68,7 +68,8 @@ def train(model,
           keep_checkpoint_max=5,
           test_config=None,
           fp16=False,
-          profiler_options=None):
+          profiler_options=None,
+          to_static_training=False):
     """
     Launch training.
 
@@ -91,6 +92,7 @@ def train(model,
         test_config(dict, optional): Evaluation config.
         fp16 (bool, optional): Whether to use amp.
         profiler_options (str, optional): The option of train profiler.
+        to_static_training (bool, optional): Whether to use @to_static for training.
     """
     model.train()
     nranks = paddle.distributed.ParallelEnv().nranks
@@ -130,6 +132,10 @@ def train(model,
     if use_vdl:
         from visualdl import LogWriter
         log_writer = LogWriter(save_dir)
+
+    if to_static_training:
+        model = paddle.jit.to_static(model)
+        logger.info("Successfully to apply @to_static")
 
     avg_loss = 0.0
     avg_loss_list = []

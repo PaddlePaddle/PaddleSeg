@@ -16,6 +16,8 @@ import argparse
 import os
 from collections import defaultdict
 
+import numpy as np
+import random
 import paddle
 import paddle.nn as nn
 from paddleseg.cvlibs import manager, Config
