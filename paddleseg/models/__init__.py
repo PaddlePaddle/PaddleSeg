@@ -50,3 +50,4 @@ from .hrnet_contrast import HRNetW48Contrast
 from .espnet import ESPNetV2
 from .enet import ENet
 from .encnet import ENCNet
+from .fastfcn import FastFCN

@@ -1,0 +1,68 @@
+batch_size: 64
+iters: 2000
+
+train_dataset:
+  type: Dataset
+  dataset_root: test_tipc/data/mini_supervisely
+  train_path: test_tipc/data/mini_supervisely/train.txt
+  num_classes: 2
+  transforms:
+    - type: Resize
+      target_size: [192, 192]
+    - type: RandomHorizontalFlip
+    - type: RandomDistort
+      brightness_range: 0.4
+      contrast_range: 0.4
+      saturation_range: 0.4
+    - type: Normalize
+  mode: train
+
+val_dataset:
+  type: Dataset
+  dataset_root: test_tipc/data/mini_supervisely
+  val_path: test_tipc/data/mini_supervisely/val.txt
+  num_classes: 2
+  transforms:
+    - type: Resize
+      target_size: [192, 192]
+    - type: Normalize
+  mode: val
+
+export:
+  transforms:
+    - type: Resize
+      target_size: [192, 192]
+    - type: Normalize
+
+
+optimizer:
+  type: sgd
+  momentum: 0.9
+  weight_decay: 0.0005
+
+lr_scheduler:
+  type: PolynomialDecay
+  learning_rate: 0.05
+  end_lr: 0
+  power: 0.9
+
+loss:
+  types:
+    - type: CrossEntropyLoss # output
+    - type: CrossEntropyLoss # fcn out
+    - type: SeCrossEntropyLoss # se out
+      num_classes: 2
+  coef: [1, 0.4, 0.2]
+
+model:
+  type: FastFCN
+  backbone:
+    type: ResNet50_vd
+    output_stride: 8
+    pretrained: https://bj.bcebos.com/paddleseg/dygraph/resnet50_vd_ssld_v2.tar.gz
+  num_codes: 32
+  mid_channels: 512
+  jpu: True
+  aux_loss: True
+  use_se_loss: True
+  add_lateral: True
