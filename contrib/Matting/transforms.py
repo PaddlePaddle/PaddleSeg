@@ -704,33 +704,3 @@ class Padding:
                     cv2.BORDER_CONSTANT,
                     value=value)
         return data
-
-
-if __name__ == "__main__":
-    transforms = [RandomResize(size=(512, 512), scale=None)]
-    transforms = Compose(transforms)
-    fg_path = '/ssd1/home/chenguowei01/github/PaddleSeg/contrib/Matting/data/matting/human_matting/Distinctions-646/train/fg/13(2).png'
-    alpha_path = fg_path.replace('fg', 'alpha')
-    bg_path = '/ssd1/home/chenguowei01/github/PaddleSeg/contrib/Matting/data/matting/human_matting/bg/unsplash_bg/attic/photo-1443884590026-2e4d21aee71c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MnwxMjA3fDB8MXxzZWFyY2h8Nzh8fGF0dGljfGVufDB8fHx8MTYyOTY4MDcxNQ&ixlib=rb-1.2.1&q=80&w=400.jpg'
-    data = {}
-    data['trans_info'] = []
-    data['fg'] = cv2.imread(fg_path)
-    data['bg'] = cv2.imread(bg_path)
-    h, w, c = data['fg'].shape
-    data['bg'] = cv2.resize(data['bg'], (w, h))
-    alpha = cv2.imread(alpha_path)
-    data['alpha'] = alpha[:, :, 0]
-    alpha = alpha / 255.
-    data['img'] = alpha * data['fg'] + (1 - alpha) * data['bg']
-
-    data['gt_fields'] = ['fg', 'bg']
-    print(data['img'].shape)
-    for key in data['gt_fields']:
-        print(data[key].shape)
-#     import pdb
-#     pdb.set_trace()
-    data = transforms(data)
-    print(data['img'].dtype, data['img'].shape)
-    for key in data['gt_fields']:
-        print(data[key].shape)
-#     cv2.imwrite('distort_img.jpg', data['img'].transpose([1, 2, 0]))
