@@ -12,8 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pdb
-
 import paddle
 import paddle.nn as nn
 import paddle.nn.functional as F
@@ -21,14 +19,6 @@ import paddle.nn.functional as F
 from paddleseg import utils
 from paddleseg.models import layers
 from paddleseg.cvlibs import manager, param_init
-
-TYPE_MAPPER = {
-    "fp16": "float16",
-    "fp32": "float32",
-    "fp64": "float64",
-    "float32": "float32",
-    "float64": "float64"
-}
 
 __all__ = ['ENet']
 
@@ -284,9 +274,6 @@ class InitialBlock(nn.Layer):
         else:
             activation = nn.PReLU
 
-        # Main branch - As stated above the number of output channels for this
-        # branch is the total minus 3, since the remaining channels come from
-        # the extension branch
         self.main_branch = nn.Conv2D(in_channels,
                                      out_channels - 3,
                                      kernel_size=3,
@@ -318,10 +305,10 @@ class RegularBottleneck(nn.Layer):
     1. Shortcut connection.
     Extension branch:
     1. 1x1 convolution which decreases the number of channels by
-    ``internal_ratio``, also called a projection;
+        ``internal_ratio``, also called a projection;
     2. regular, dilated or asymmetric convolution;
     3. 1x1 convolution which increases the number of channels back to
-    ``channels``, also called an expansion;
+        ``channels``, also called an expansion;
     4. dropout as a regularizer.
     Args:
         channels (int): the number of input and output channels.
@@ -358,8 +345,6 @@ class RegularBottleneck(nn.Layer):
                  relu=True):
         super(RegularBottleneck, self).__init__()
 
-        # Check in the internal_scale parameter is within the expected range
-        # [1, channels]
         if internal_ratio <= 1 or internal_ratio > channels:
             raise RuntimeError(
                 "Value out of range. Expected value in the "
@@ -373,8 +358,6 @@ class RegularBottleneck(nn.Layer):
         else:
             activation = nn.PReLU
 
-        # Main branch - shortcut connection
-
         self.ext_conv1 = nn.Sequential(
             nn.Conv2D(channels,
                       internal_channels,
@@ -383,9 +366,6 @@ class RegularBottleneck(nn.Layer):
                       bias_attr=bias), layers.SyncBatchNorm(internal_channels),
             activation())
 
-        # If the convolution is asymmetric we split the main convolution in
-        # two. Eg. for a 5x5 asymmetric convolution we have two convolution:
-        # the first is 5x1 and the second is 1x5.
         if asymmetric:
             self.ext_conv2 = nn.Sequential(
                 nn.Conv2D(internal_channels,
@@ -446,13 +426,13 @@ class DownsamplingBottleneck(nn.Layer):
     Downsampling bottlenecks further downsample the feature map size.
     Main branch:
     1. max pooling with stride 2; indices are saved to be used for
-    unpooling later.
+        unpooling later.
     Extension branch:
     1. 2x2 convolution with stride 2 that decreases the number of channels
-    by ``internal_ratio``, also called a projection;
+        by ``internal_ratio``, also called a projection;
     2. regular convolution (by default, 3x3);
     3. 1x1 convolution which increases the number of channels to
-    ``out_channels``, also called an expansion;
+        ``out_channels``, also called an expansion;
     4. dropout as a regularizer.
     Args:
         in_channels (int): the number of input channels.
@@ -480,11 +460,8 @@ class DownsamplingBottleneck(nn.Layer):
                  relu=True):
         super(DownsamplingBottleneck, self).__init__()
 
-        # Store parameters that are needed later
         self.return_indices = return_indices
 
-        # Check in the internal_scale parameter is within the expected range
-        # [1, channels]
         if internal_ratio <= 1 or internal_ratio > in_channels:
             raise RuntimeError(
                 "Value out of range. Expected value in the "
@@ -498,10 +475,8 @@ class DownsamplingBottleneck(nn.Layer):
         else:
             activation = nn.PReLU
 
-        # Main branch - max pooling followed by feature map (channels) padding
         self.main_max1 = nn.MaxPool2D(2, stride=2, return_mask=return_indices)
 
-        # 2x2 projection convolution with stride 2
         self.ext_conv1 = nn.Sequential(
             nn.Conv2D(in_channels,
                       internal_channels,
@@ -548,11 +523,6 @@ class DownsamplingBottleneck(nn.Layer):
         ch_main = main.shape[1]
         padding = paddle.zeros((n, ch_ext - ch_main, h, w))
 
-        # Before concatenating, check if main is on the CPU or GPU and
-        # convert padding accordingly
-        # if main.is_cuda:
-        # padding = padding.cuda()
-
         main = paddle.concat((main, padding), 1)
 
         out = main + ext
@@ -560,62 +530,21 @@ class DownsamplingBottleneck(nn.Layer):
         return self.out_activation(out), max_indices
 
 
-class MaxUnpool2D(nn.Layer):
-    def __init__(self,
-                 kernel_size,
-                 stride=None,
-                 padding=0,
-                 align_corners=False):
-        super(MaxUnpool2D, self).__init__()
-        if isinstance(stride, int):
-            self.kernel_size = (kernel_size, kernel_size)
-        else:
-            self.kernel_size = kernel_size
-        if stride is None:
-            self.stride = self.kernel_size
-        else:
-            if isinstance(stride, int):
-                self.stride = (stride, stride)
-            else:
-                self.stride = stride
-        if isinstance(padding, int):
-            self.padding = (padding, padding)
-        else:
-            self.padding = padding
-        self.align_corners = align_corners
-
-    def forward(self, input, indices, output_size=None):
-
-        if output_size is None:
-            n, c, h, w = input.shape
-            out_h = (h - 1) * self.stride[0] - 2 * \
-                self.padding[0] + self.kernel_size[0]
-            out_w = (w - 1) * self.stride[1] - 2 * \
-                self.padding[1] + self.kernel_size[1]
-            output_size = (n, c, out_h, out_w)
-        out = F.interpolate(input,
-                            output_size[2:],
-                            mode='bilinear',
-                            align_corners=self.align_corners)
-
-        return out
-
-
 class UpsamplingBottleneck(nn.Layer):
     """
     The upsampling bottlenecks upsample the feature map resolution using max
-    pooling indices stored from the corresponding downsampling bottleneck.
+        pooling indices stored from the corresponding downsampling bottleneck.
     Main branch:
     1. 1x1 convolution with stride 1 that decreases the number of channels by
-    ``internal_ratio``, also called a projection;
+        ``internal_ratio``, also called a projection;
     2. max unpool layer using the max pool indices from the corresponding
-    downsampling max pool layer.
+        downsampling max pool layer.
     Extension branch:
     1. 1x1 convolution with stride 1 that decreases the number of channels by
-    ``internal_ratio``, also called a projection;
+        ``internal_ratio``, also called a projection;
     2. transposed convolution (by default, 3x3);
     3. 1x1 convolution which increases the number of channels to
-    ``out_channels``, also called an expansion;
+        ``out_channels``, also called an expansion;
     4. dropout as a regularizer.
     Args:
         in_channels (int): the number of input channels.
@@ -640,8 +569,6 @@ class UpsamplingBottleneck(nn.Layer):
                  relu=True):
         super(UpsamplingBottleneck, self).__init__()
 
-        # Check in the internal_scale parameter is within the expected range
-        # [1, channels]
         if internal_ratio <= 1 or internal_ratio > in_channels:
             raise RuntimeError(
                 "Value out of range. Expected value in the "
@@ -655,16 +582,10 @@ class UpsamplingBottleneck(nn.Layer):
         else:
             activation = nn.PReLU
 
-        # Main branch - max pooling followed by feature map (channels) padding
         self.main_conv1 = nn.Sequential(
             nn.Conv2D(in_channels, out_channels, kernel_size=1, bias_attr=bias),
             layers.SyncBatchNorm(out_channels))
 
-        # Remember that the stride is the same as the kernel_size, just like
-        # the max pooling layers
-        self.main_unpool1 = MaxUnpool2D(kernel_size=2)
-
-        # 1x1 projection convolution with stride 1
         self.ext_conv1 = nn.Sequential(
             nn.Conv2D(in_channels,
                       internal_channels,
@@ -672,7 +593,6 @@ class UpsamplingBottleneck(nn.Layer):
                       bias_attr=bias), layers.SyncBatchNorm(internal_channels),
             activation())
 
-        # Transposed convolution
         self.ext_tconv1 = nn.Conv2DTranspose(internal_channels,
                                              internal_channels,
                                              kernel_size=2,
@@ -694,7 +614,10 @@ class UpsamplingBottleneck(nn.Layer):
     def forward(self, x, max_indices, output_size):
         # Main branch shortcut
         main = self.main_conv1(x)
-        main = self.main_unpool1(main, max_indices, output_size=output_size)
+        main = F.max_unpool2d(main,
+                              max_indices,
+                              kernel_size=2,
+                              output_size=output_size)
 
         ext = self.ext_conv1(x)
         ext = self.ext_tconv1(ext, output_size=output_size[2:])
