@@ -11,6 +11,23 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import os.path as osp
+
+from qtpy.QtWidgets import QWidget, QLabel, QHBoxLayout
+from qtpy.QtGui import QIcon, QMovie
+from qtpy import QtCore
+
+from eiseg import pjpath
 
 
-from .rs_grid import RSGrids
+class LoadingWidget(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.setWindowFlags(QtCore.Qt.FramelessWindowHint)
+        layout = QHBoxLayout(self)
+        self.label = QLabel()
+        layout.addWidget(self.label)
+        self.setLayout(layout)
+        self.movie = QMovie(osp.join(pjpath, "resource", "loading.gif"))
+        self.label.setMovie(self.movie)
+        self.movie.start()

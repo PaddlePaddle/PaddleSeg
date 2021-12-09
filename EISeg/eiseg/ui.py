@@ -115,7 +115,7 @@ class Ui_EISeg(object):
         )
         ModelRegion.addWidget(self.btnParamsSelect)  # 模型选择
         self.cheWithMask = QtWidgets.QCheckBox(self)
-        self.cheWithMask.setText("使用掩膜")
+        self.cheWithMask.setText(self.tr("使用掩膜"))
         self.cheWithMask.setChecked(True)
         ModelRegion.addWidget(self.cheWithMask)  # with_mask
         horizontalLayout.addLayout(ModelRegion)
@@ -223,9 +223,9 @@ class Ui_EISeg(object):
             bandRegion.addLayout(hbandLayout)
         resultSave = create_text(CentralWidget, "resultSave", self.tr("保存设置"))
         bandRegion.addWidget(resultSave)
-        self.rsSave = QtWidgets.QCheckBox(self.tr("额外保存为GTiff"))
-        self.rsSave.setObjectName("rsSave")
-        bandRegion.addWidget(self.rsSave)
+        self.boundaryRegular = QtWidgets.QCheckBox(self.tr("使用建筑边界简化"))
+        self.boundaryRegular.setObjectName("boundaryRegular")
+        bandRegion.addWidget(self.boundaryRegular)
         self.shpSave = QtWidgets.QCheckBox(self.tr("额外保存为ESRI Shapefile"))
         self.shpSave.setObjectName("shpSave")
         bandRegion.addWidget(self.shpSave)
@@ -276,12 +276,12 @@ class Ui_EISeg(object):
         horizontalLayout = QtWidgets.QHBoxLayout(widget)
         GridRegion = QtWidgets.QVBoxLayout()
         GridRegion.setObjectName("GridRegion")
-        self.btnInitGrid = p_create_button(
-            "btnInitGrid",
-            self.tr("创建宫格"),
-            osp.join(pjpath, "resource/N2.png"),
-            "",
-        )
+        # self.btnInitGrid = p_create_button(
+        #     "btnInitGrid",
+        #     self.tr("创建宫格"),
+        #     osp.join(pjpath, "resource/N2.png"),
+        #     "",
+        # )
         self.btnFinishedGrid = p_create_button(
             "btnFinishedGrid",
             self.tr("完成宫格"),
@@ -290,9 +290,13 @@ class Ui_EISeg(object):
         )
         hbandLayout = QtWidgets.QHBoxLayout()
         hbandLayout.setObjectName("hbandLayout")
-        hbandLayout.addWidget(self.btnInitGrid)
+        # hbandLayout.addWidget(self.btnInitGrid)
         hbandLayout.addWidget(self.btnFinishedGrid)
         GridRegion.addLayout(hbandLayout)  # 创建宫格
+        self.cheSaveEvery = QtWidgets.QCheckBox(self)
+        self.cheSaveEvery.setText("保存每个宫格的标签")
+        self.cheSaveEvery.setChecked(False)
+        GridRegion.addWidget(self.cheSaveEvery)
         self.gridTable = QtWidgets.QTableWidget(CentralWidget)
         self.gridTable.horizontalHeader().hide()
         self.gridTable.verticalHeader().hide()
