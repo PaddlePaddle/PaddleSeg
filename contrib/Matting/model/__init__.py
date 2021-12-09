@@ -19,4 +19,4 @@ from .hrnet import *
 from .dim import DIM
 from .loss import MRSD
 from .modnet import MODNet
-from .ziyan import ZiYan, ZiYanRefine
+from .human_matting import HumanMatting
