@@ -1,9 +1,9 @@
+batch_size: 2
 iters: 80000
-batch_size: 8
 
 train_dataset:
   type: Cityscapes
-  dataset_root: data/cityscapes
+  dataset_root: test_tipc/data/cityscapes
   transforms:
     - type: ResizeStepScaling
       min_scale_factor: 0.5
@@ -21,23 +21,25 @@ train_dataset:
 
 val_dataset:
   type: Cityscapes
-  dataset_root: data/cityscapes
+  dataset_root: test_tipc/data/cityscapes
   transforms:
     - type: Normalize
   mode: val
 
-model:
-  type: ENet
-  num_classes: 19
-  pretrained: Null
+export:
+  transforms:
+    - type: Resize
+      target_size: [512, 512]
+    - type: Normalize
 
 optimizer:
-  type: adam
-  weight_decay: 0.0002
+  type: sgd
+  momentum: 0.9
+  weight_decay: 4.0e-5
 
 lr_scheduler:
   type: PolynomialDecay
-  learning_rate: 0.001
+  learning_rate: 0.01
   end_lr: 0
   power: 0.9
 
