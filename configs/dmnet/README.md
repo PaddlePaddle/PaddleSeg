@@ -1,4 +1,4 @@
-# Rethinking Atrous Convolution for Semantic Image Segmentation
+# Dynamic Multi-scale Filters for Semantic Segmentation
 
 ## Reference
 
