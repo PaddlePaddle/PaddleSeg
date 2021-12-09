@@ -98,10 +98,19 @@ class GripItem(QtWidgets.QGraphicsPathItem):
         tmp_val = value
         if change == QtWidgets.QGraphicsItem.ItemPositionChange and self.isEnabled():
             # TODO: item不能移出图片的范围，需要限制起来
-            x = self.img_size[1] if value.x() > self.img_size[1] else value.x()
-            x = 0 if value.x() < 0 else value.x()
-            y = self.img_size[0] if value.y() > self.img_size[0] else value.y()
-            y = 0 if value.y() < 0 else value.y()
+            print(self.img_size, value)
+            if value.x() > self.img_size[1]:
+                x = self.img_size[1]
+            elif value.x() < 0:
+                x = 0
+            else:
+                x = value.x()
+            if value.y() > self.img_size[0]:
+                y = self.img_size[0]
+            elif value.y() < 0:
+                y = 0
+            else:
+                y = value.y()
             tmp_val = QPointF(x, y)
             self.m_annotation_item.movePoint(self.m_index, tmp_val)
             self.m_annotation_item.setDirty(True)
