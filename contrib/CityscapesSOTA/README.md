@@ -8,8 +8,11 @@ Based on the above work, we made some optimizations:
 
 We achieve mIoU of **87%** on Cityscapes validation set.
 
-![demo](https://user-images.githubusercontent.com/53808988/130719591-3e0d44b4-59a8-4633-bff2-7ce7da1c52fc.gif)
+The actual effect is as follows (for high-definition pictures, please click [here](https://github.com/PaddlePaddle/PaddleSeg/blob/release/v2.0/docs/images/cityscapes.gif)).
 
+<div align="center">
+<img src=https://user-images.githubusercontent.com/30695251/144982303-51d40188-c00d-46b7-9012-41955c4e2156.gif  width = "500" />  
+</div>
 
 ## Installation
 
@@ -37,9 +40,9 @@ mkdir -p data/cityscapes
 ```
 
 Firstly please download 3 files from [Cityscapes dataset](https://www.cityscapes-dataset.com/downloads/)
-- leftImg8bit_trainvaltest.zip
-- gtFine_trainvaltest.zip
-- leftImg8bit_trainextra.zip
+- leftImg8bit_trainvaltest.zip (11GB)
+- gtFine_trainvaltest.zip (241MB)
+- leftImg8bit_trainextra.zip (44GB)
 
 Run the following commands to do the label conversion:
 ```shell
@@ -48,8 +51,13 @@ python ../../tools/convert_cityscapes.py --cityscapes_path data/cityscapes --num
 ```
 Where 'cityscapes_path' should be adjusted according to the actual dataset path. 'num_workers' determines the number of processes started and the size can be adjusted according to the actual situation.
 
-Then download Autolabelled-Data from [google drive](https://drive.google.com/file/d/1DtPo-WP-hjaOwsbj6ZxTtOo_7R_4TKRG/view?usp=sharing)
-- refinement_final_v0.zip
+Then download and uncompress Autolabelled-Data from [google drive](https://drive.google.com/file/d/1DtPo-WP-hjaOwsbj6ZxTtOo_7R_4TKRG/view?usp=sharing)
+- refinement_final_v0.zip # This file is needed for autolabelled training for recreating SOTA
+
+Delete useless `tmp` directory in `refinement_final` directory.
+```
+rm -r tmp/
+```
 
 Convert autolabelled data according to PaddleSeg data format:
 ```shell

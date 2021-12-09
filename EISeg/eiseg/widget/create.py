@@ -1,3 +1,18 @@
+# Copyright (c) 2021 PaddlePaddle Authors. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+
 from qtpy.QtWidgets import QDockWidget
 from qtpy import QtCore, QtGui, QtWidgets
 from qtpy.QtCore import Qt
@@ -81,8 +96,7 @@ class DockWidget(QDockWidget):
         self.setAllowedAreas(Qt.RightDockWidgetArea | Qt.LeftDockWidgetArea)
         # 感觉不给关闭好点。可以在显示里面取消显示。有关闭的话显示里面的enable还能判断修改，累了
         self.setFeatures(
-            QDockWidget.DockWidgetMovable | 
-            QDockWidget.DockWidgetFloatable
+            QDockWidget.DockWidgetMovable | QDockWidget.DockWidgetFloatable
         )
         sizePolicy = QtWidgets.QSizePolicy(
             QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Preferred
@@ -101,6 +115,7 @@ class DockWidget(QDockWidget):
             self.setStyleSheet("QDockWidget { background-color:rgb(255,255,255); }")
         else:
             self.setStyleSheet("QDockWidget { background-color:rgb(204,204,248); }")
+
 
 ## 创建dock
 def creat_dock(parent, name, text, widget):
