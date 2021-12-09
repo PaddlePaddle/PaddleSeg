@@ -97,8 +97,6 @@ class GripItem(QtWidgets.QGraphicsPathItem):
     def itemChange(self, change, value):
         tmp_val = value
         if change == QtWidgets.QGraphicsItem.ItemPositionChange and self.isEnabled():
-            # TODO: item不能移出图片的范围，需要限制起来
-            print(self.img_size, value)
             if value.x() > self.img_size[1]:
                 x = self.img_size[1]
             elif value.x() < 0:
