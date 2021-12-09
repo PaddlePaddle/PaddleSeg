@@ -104,6 +104,7 @@ def parse_args():
         'The stride of sliding window, the first is width and the second is height.',
         type=int,
         default=None)
+
     parser.add_argument(
         '--data_format',
         dest='data_format',
@@ -111,6 +112,13 @@ def parse_args():
         'Data format that specifies the layout of input. It can be "NCHW" or "NHWC". Default: "NCHW".',
         type=str,
         default='NCHW')
+    
+    parser.add_argument(
+        '--auc_roc',
+        dest='add auc_roc metric',
+        help='Whether to use auc_roc metric',
+        type=bool,
+        default=False)
 
     return parser.parse_args()
 
