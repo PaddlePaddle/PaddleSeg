@@ -8,3 +8,4 @@ tqdm
 filelock
 scipy
 prettytable
+sklearn
