@@ -466,7 +466,7 @@
     <message>
         <location filename="../../eiseg/app.py" line="761"/>
         <source>Paddle静态模型权重文件(*.pdiparams)</source>
-        <translation>بادل نموذج ثابت الوزن الملف ( * . pdiparams ) .</translation>
+        <translation>بادل نموذج ثابت الوزن الملف (*.pdiparams)</translation>
     </message>
     <message>
         <location filename="../../eiseg/app.py" line="768"/>

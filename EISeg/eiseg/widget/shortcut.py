@@ -71,7 +71,7 @@ class ShortcutWidget(QWidget):
             grid.addWidget(QLabel(action.iconText()[1:]), idx // 3, idx % 3 * 3)
             shortcut = action.shortcut().toString()
             if len(shortcut) == 0:
-                shortcut = self.tr("无")
+                shortcut = self.tr("-")
             button = QPushButton(shortcut)
             button.setFixedWidth(150)
             button.setFixedHeight(30)
@@ -87,7 +87,7 @@ class ShortcutWidget(QWidget):
         for idx, action in enumerate(actions):
             shortcut = action.shortcut().toString()
             if len(shortcut) == 0:
-                shortcut = self.tr("无")
+                shortcut = self.tr("-")
             self.layout().itemAtPosition(
                 idx // 3,
                 idx % 3 * 3 + 1,

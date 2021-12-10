@@ -466,7 +466,7 @@
     <message>
         <location filename="../../eiseg/app.py" line="761"/>
         <source>Paddle静态模型权重文件(*.pdiparams)</source>
-        <translation>Paddle static model weight files (*. Pdiparams)</translation>
+        <translation>Paddle static model weight files (*.pdiparams)</translation>
     </message>
     <message>
         <location filename="../../eiseg/app.py" line="768"/>
