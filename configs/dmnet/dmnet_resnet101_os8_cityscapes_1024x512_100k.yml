@@ -1,5 +1,8 @@
 _base_: '../_base_/cityscapes.yml'
 
+batch_size: 2
+iters: 100000
+
 model:
   type: DMNet
   backbone:
@@ -16,9 +19,6 @@ loss:
     - type: CrossEntropyLoss
     - type: CrossEntropyLoss
   coef: [1, 0.4]
-
-batch_size: 2
-iters: 100000
 
 lr_scheduler:
   type: PolynomialDecay
