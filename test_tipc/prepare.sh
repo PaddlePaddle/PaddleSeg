@@ -46,7 +46,7 @@ if [ ${MODE} = "whole_infer" ] || [ ${MODE} = "klquant_whole_infer" ]; then
     fi
 fi
 # download data
-if [ ${model_name} == "fcn_hrnetw18_small" ] || [ ${model_name} == "pphumanseg_lite" ] || [ ${model_name} == "deeplabv3p_resnet50" ] || [ ${model_name} == "encnet_small" ] || [ ${model_name} == "fastfcn_small" ];then
+if [ ${model_name} == "fcn_hrnetw18_small" ] || [ ${model_name} == "pphumanseg_lite" ] || [ ${model_name} == "deeplabv3p_resnet50" ] || [ ${model_name} == "encnet_small" ] || [ ${model_name} == "fastfcn_small" ] || [ ${model_name} == "dmnet_small" ];then
     rm -rf ./test_tipc/data/mini_supervisely
     wget -nc -P ./test_tipc/data/ https://paddleseg.bj.bcebos.com/humanseg/data/mini_supervisely.zip
     cd ./test_tipc/data/ && unzip mini_supervisely.zip && cd -
