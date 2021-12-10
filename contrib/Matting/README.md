@@ -51,6 +51,8 @@ cd contrib/Matting
 ```
 
 ## Models
+[PP-HumanMatting](https://paddleseg.bj.bcebos.com/matting/models/human_matting-resnet34_vd.pdparams)
+
 [DIM-VGG16](https://paddleseg.bj.bcebos.com/matting/models/dim-vgg16.pdparams)
 
 MODNet performance on [PPM-100](https://github.com/ZHKKKe/PPM).
