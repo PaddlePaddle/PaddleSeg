@@ -51,8 +51,7 @@ class MixedLoss(nn.Layer):
 
     def forward(self, logits, labels):
         loss_list = []
-        final_output = 0
         for i, loss in enumerate(self.losses):
             output = loss(logits, labels)
-            final_output += output * self.coef[i]
-        return final_output
+            loss_list.append(output * self.coef[i])
+        return loss_list
