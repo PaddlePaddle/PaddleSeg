@@ -341,6 +341,7 @@ def ResNet18_vd(**args):
     return model
 
 
+@manager.BACKBONES.add_component
 def ResNet34_vd(**args):
     model = ResNet_vd(layers=34, **args)
     return model
