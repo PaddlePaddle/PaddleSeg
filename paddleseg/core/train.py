@@ -46,7 +46,7 @@ def loss_computation(logits_list, labels, losses, edges=None):
             loss_list.append(losses['coef'][i] * loss_i(logits, edges))
         elif loss_i.__class__.__name__ in ("KLLoss", ):
             loss_list.append(losses['coef'][i] * loss_i(
-                logits_list[0], logits_list[1].detach()))
+                logits_list[i], logits_list[0].detach(), labels))
         else:
             loss_list.append(losses['coef'][i] * loss_i(logits, labels))
     return loss_list
@@ -239,6 +239,7 @@ def train(model,
                             avg_loss, lr, avg_train_batch_cost,
                             avg_train_reader_cost,
                             batch_cost_averager.get_ips_average(), eta))
+                logger.info(avg_loss_list)
                 if use_vdl:
                     log_writer.add_scalar('Train/loss', avg_loss, iter)
                     # Record all losses if there are more than 2 losses.
