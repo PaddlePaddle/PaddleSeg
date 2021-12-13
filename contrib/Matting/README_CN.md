@@ -54,6 +54,8 @@ cd contrib/Matting
 
 ## 模型
 
+[PP-HumanMatting](https://paddleseg.bj.bcebos.com/matting/models/human_matting-resnet34_vd.pdparams)
+
 [DIM-VGG16](https://paddleseg.bj.bcebos.com/matting/models/dim-vgg16.pdparams)
 
 MODNet在[PPM-100](https://github.com/ZHKKKe/PPM)数据集上的性能
