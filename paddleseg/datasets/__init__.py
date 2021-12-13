@@ -21,6 +21,7 @@ from .pascal_context import PascalContext
 from .mini_deep_globe_road_extraction import MiniDeepGlobeRoadExtraction
 from .eg1800 import EG1800
 from .supervisely import SUPERVISELY
+from .cocostuff import CocoStuff
 from .stare import STARE
 from .drive import DRIVE
 from .hrf import HRF
