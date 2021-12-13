@@ -1682,7 +1682,7 @@ class CatBottleneck_conv5(nn.Layer):
         return out
 
 
-class STDCNet_pp(nn.Layer):
+class STDCNet_pp_0(nn.Layer):
     def __init__(self,
                  base=64,
                  layers=[4, 5, 3],
@@ -1715,7 +1715,7 @@ class STDCNet_pp(nn.Layer):
             "conv5": CatBottleneck_conv5,
         }
 
-        print(block_type)
+        print("block_type:" + block_type)
         assert block_type in block_dict
         block = block_dict[block_type]
         self.feat_channels = [1024]
@@ -1765,6 +1765,92 @@ class STDCNet_pp(nn.Layer):
                         block(base * int(math.pow(2, i + 2)),
                               base * int(math.pow(2, i + 2)), block_num, 1))
         '''
+
+        features.append(block(base, base * 4, block_num, 2))
+        features.append(block(base * 4, base * 4, block_num, 1))
+
+        features.append(block(base * 4, base * 8, block_num, 2))
+        features.append(block(base * 8, base * 8, block_num, 1))
+
+        features.append(block(base * 8, base * 16, block_num, 2))
+        features.append(block(base * 16, base * 16, block_num, 1))
+
+        return nn.Sequential(*features)
+
+    def init_weight(self):
+        for layer in self.sublayers():
+            if isinstance(layer, nn.Conv2D):
+                param_init.normal_init(layer.weight, std=0.001)
+            elif isinstance(layer, (nn.BatchNorm, nn.SyncBatchNorm)):
+                param_init.constant_init(layer.weight, value=1.0)
+                param_init.constant_init(layer.bias, value=0.0)
+        if self.pretrained is not None:
+            utils.load_pretrained_model(self, self.pretrained)
+
+
+class STDCNet_pp_1(nn.Layer):
+    """"Return all feature maps"""
+
+    def __init__(self,
+                 base=64,
+                 layers=[4, 5, 3],
+                 block_num=4,
+                 block_type="cat",
+                 num_classes=1000,
+                 dropout=0.20,
+                 use_conv_last=False,
+                 pretrained=None):
+        super().__init__()
+
+        block_dict = {
+            "cat": CatBottleneck,
+            "add": AddBottleneck,
+            "dilation_2": CatBottleneck_dilation_2,
+            "gap_no_conv": CatBottleneck_gap_no_conv,
+            "shuffle": CatBottleneck_shuffle,
+            "split": CatBottleneck_split,
+            "repvgg": None,
+            "last_se": CatBottleneck_last_se,
+            "dilation_pool": CatBottleneck_dilation_pool,
+            "dw": CatBottleneck_dw,
+            "last_pool": CatBottleneck_last_pool,
+            "dilation_1": CatBottleneck_dilation_1,
+            "dw_pool3": CatBottleneck_dw_pool3,
+            "dw_pool5": CatBottleneck_dw_pool5,
+            "dw_pool7": CatBottleneck_dw_pool7,
+            "dw_dilation": CatBottleneck_dw_dilation,
+            "dw_dilation_pool": CatBottleneck_dw_dilation_pool,
+            "conv5": CatBottleneck_conv5,
+        }
+
+        print("block_type:" + block_type)
+        assert block_type in block_dict
+        block = block_dict[block_type]
+        self.feat_channels = [1024]
+
+        self.use_conv_last = use_conv_last
+        self.features = self._make_layers(base, layers, block_num, block)
+        self.conv_last = ConvBNRelu(base * 16, max(1024, base * 16), 1, 1)
+
+        assert layers == [2, 2, 2]
+        self.pretrained = pretrained
+        self.init_weight()
+
+    def forward(self, x):
+        x2 = self.features[0](x)
+        x4 = self.features[1](x2)
+        x8_1 = self.features[2](x4)
+        x8_2 = self.features[3](x8_1)
+        x16_1 = self.features[4](x8_2)
+        x16_2 = self.features[5](x16_1)
+        x32_1 = self.features[6](x16_2)
+        x32_2 = self.features[7](x32_1)
+        return x2, x4, x8_1, x8_2, x16_1, x16_2, x32_1, x32_2
+
+    def _make_layers(self, base, layers, block_num, block):
+        features = []
+        features += [ConvBNRelu(3, base // 2, 3, 2)]
+        features += [ConvBNRelu(base // 2, base, 3, 2)]
 
         features.append(block(base, base * 4, block_num, 2))
         features.append(block(base * 4, base * 4, block_num, 1))
@@ -1885,14 +1971,14 @@ def STDC1(**kwargs):
 
 
 @manager.BACKBONES.add_component
-def STDC2_pp(**kwargs):
-    model = STDCNet_pp(base=64, layers=[4, 5, 3], **kwargs)
+def STDC1_pp_0(**kwargs):
+    model = STDCNet_pp_0(base=64, layers=[2, 2, 2], **kwargs)
     return model
 
 
 @manager.BACKBONES.add_component
-def STDC1_pp(**kwargs):
-    model = STDCNet_pp(base=64, layers=[2, 2, 2], **kwargs)
+def STDC1_pp_1(**kwargs):
+    model = STDCNet_pp_1(base=64, layers=[2, 2, 2], **kwargs)
     return model
 
 

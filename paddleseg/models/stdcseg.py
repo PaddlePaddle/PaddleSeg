@@ -121,9 +121,9 @@ class SegHead(nn.Layer):
         return x
 
 
-class AttentionRefinementModule(nn.Layer):
+class ARM(nn.Layer):
     def __init__(self, in_chan, out_chan):
-        super(AttentionRefinementModule, self).__init__()
+        super(ARM, self).__init__()
         self.conv = layers.ConvBNReLU(
             in_chan, out_chan, kernel_size=3, stride=1, padding=1)
         self.conv_atten = nn.Conv2D(
@@ -145,11 +145,11 @@ class ContextPath(nn.Layer):
     def __init__(self, backbone, use_conv_last=False):
         super(ContextPath, self).__init__()
         self.backbone = backbone
-        self.arm16 = AttentionRefinementModule(512, 128)
+        self.arm16 = ARM(512, 128)
         inplanes = 1024
         if use_conv_last:
             inplanes = 1024
-        self.arm32 = AttentionRefinementModule(inplanes, 128)
+        self.arm32 = ARM(inplanes, 128)
         self.conv_head32 = layers.ConvBNReLU(
             128, 128, kernel_size=3, stride=1, padding=1)
         self.conv_head16 = layers.ConvBNReLU(
@@ -216,13 +216,17 @@ class FeatureFusionModule(nn.Layer):
         return feat_out
 
 
-class AttentionRefinementModule_0(nn.Layer):
+class ARM_0(nn.Layer):
     '''no attention'''
 
-    def __init__(self, in_chan, out_chan):
+    def __init__(self, x_chan, y_chan, out_chan, first_ksize=3):
         super().__init__()
         self.conv = layers.ConvBNReLU(
-            in_chan, out_chan, kernel_size=3, stride=1, padding=1)
+            x_chan,
+            out_chan,
+            kernel_size=first_ksize,
+            stride=1,
+            padding=first_ksize // 2)
 
     def forward(self, x, y):
         x = self.conv(x)
@@ -230,13 +234,17 @@ class AttentionRefinementModule_0(nn.Layer):
         return out
 
 
-class AttentionRefinementModule_0_1(nn.Layer):
+class ARM_0_1(nn.Layer):
     '''no attention'''
 
-    def __init__(self, in_chan, out_chan):
+    def __init__(self, x_chan, y_chan, out_chan, first_ksize=3):
         super().__init__()
         self.conv = layers.ConvBNReLU(
-            in_chan, out_chan, kernel_size=3, stride=1, padding=1)
+            x_chan,
+            out_chan,
+            kernel_size=first_ksize,
+            stride=1,
+            padding=first_ksize // 2)
         k1 = self.create_parameter([1])
         self.add_parameter("k1", k1)
         k2 = self.create_parameter([1])
@@ -248,13 +256,17 @@ class AttentionRefinementModule_0_1(nn.Layer):
         return out
 
 
-class AttentionRefinementModule_0_2(nn.Layer):
+class ARM_0_2(nn.Layer):
     '''no attention'''
 
-    def __init__(self, in_chan, out_chan):
+    def __init__(self, x_chan, y_chan, out_chan, first_ksize=3):
         super().__init__()
         self.conv = layers.ConvBNReLU(
-            in_chan, out_chan, kernel_size=3, stride=1, padding=1)
+            x_chan,
+            out_chan,
+            kernel_size=first_ksize,
+            stride=1,
+            padding=first_ksize // 2)
         k1 = self.create_parameter([out_chan, 1, 1])
         self.add_parameter("k1", k1)
         k2 = self.create_parameter([out_chan, 1, 1])
@@ -266,13 +278,17 @@ class AttentionRefinementModule_0_2(nn.Layer):
         return out
 
 
-class AttentionRefinementModule_1(nn.Layer):
+class ARM_1(nn.Layer):
     '''use x to attention x (base)'''
 
-    def __init__(self, in_chan, out_chan):
+    def __init__(self, x_chan, y_chan, out_chan, first_ksize=3):
         super().__init__()
         self.conv = layers.ConvBNReLU(
-            in_chan, out_chan, kernel_size=3, stride=1, padding=1)
+            x_chan,
+            out_chan,
+            kernel_size=first_ksize,
+            stride=1,
+            padding=first_ksize // 2)
         self.conv_atten = nn.Conv2D(
             out_chan, out_chan, kernel_size=1, bias_attr=None)
         self.bn_atten = nn.BatchNorm2D(out_chan)
@@ -289,13 +305,17 @@ class AttentionRefinementModule_1(nn.Layer):
         return out
 
 
-class AttentionRefinementModule_1_1(nn.Layer):
+class ARM_1_1(nn.Layer):
     '''use x to attention x (base)'''
 
-    def __init__(self, in_chan, out_chan):
+    def __init__(self, x_chan, y_chan, out_chan, first_ksize=3):
         super().__init__()
         self.conv = layers.ConvBNReLU(
-            in_chan, out_chan, kernel_size=3, stride=1, padding=1)
+            x_chan,
+            out_chan,
+            kernel_size=first_ksize,
+            stride=1,
+            padding=first_ksize // 2)
         self.conv_atten = nn.Conv2D(
             out_chan, out_chan, kernel_size=1, bias_attr=None)
         self.bn_atten = nn.BatchNorm2D(out_chan)
@@ -317,13 +337,17 @@ class AttentionRefinementModule_1_1(nn.Layer):
         return out
 
 
-class AttentionRefinementModule_1_2(nn.Layer):
+class ARM_1_2(nn.Layer):
     '''use x to attention x (base)'''
 
-    def __init__(self, in_chan, out_chan):
+    def __init__(self, x_chan, y_chan, out_chan, first_ksize=3):
         super().__init__()
         self.conv = layers.ConvBNReLU(
-            in_chan, out_chan, kernel_size=3, stride=1, padding=1)
+            x_chan,
+            out_chan,
+            kernel_size=first_ksize,
+            stride=1,
+            padding=first_ksize // 2)
         self.conv_atten = nn.Conv2D(
             out_chan, out_chan, kernel_size=1, bias_attr=None)
         self.bn_atten = nn.BatchNorm2D(out_chan)
@@ -345,13 +369,17 @@ class AttentionRefinementModule_1_2(nn.Layer):
         return out
 
 
-class AttentionRefinementModule_1_3(nn.Layer):
+class ARM_1_3(nn.Layer):
     '''use x to attention x (base)'''
 
-    def __init__(self, in_chan, out_chan):
+    def __init__(self, x_chan, y_chan, out_chan, first_ksize=3):
         super().__init__()
         self.conv = layers.ConvBNReLU(
-            in_chan, out_chan, kernel_size=3, stride=1, padding=1)
+            x_chan,
+            out_chan,
+            kernel_size=first_ksize,
+            stride=1,
+            padding=first_ksize // 2)
         self.conv_atten = nn.Conv2D(
             out_chan, out_chan, kernel_size=1, bias_attr=None)
         self.bn_atten = nn.BatchNorm2D(out_chan)
@@ -377,13 +405,17 @@ class AttentionRefinementModule_1_3(nn.Layer):
         return out
 
 
-class AttentionRefinementModule_1_4(nn.Layer):
+class ARM_1_4(nn.Layer):
     '''use x to attention x (base)'''
 
-    def __init__(self, in_chan, out_chan):
+    def __init__(self, x_chan, y_chan, out_chan, first_ksize=3):
         super().__init__()
         self.conv = layers.ConvBNReLU(
-            in_chan, out_chan, kernel_size=3, stride=1, padding=1)
+            x_chan,
+            out_chan,
+            kernel_size=first_ksize,
+            stride=1,
+            padding=first_ksize // 2)
         self.conv_atten = nn.Conv2D(
             out_chan, out_chan, kernel_size=1, bias_attr=None)
         self.bn_atten = nn.BatchNorm2D(out_chan)
@@ -400,13 +432,17 @@ class AttentionRefinementModule_1_4(nn.Layer):
         return out
 
 
-class AttentionRefinementModule_1_5(nn.Layer):
+class ARM_1_5(nn.Layer):
     '''use x to attention x (base)'''
 
-    def __init__(self, in_chan, out_chan):
+    def __init__(self, x_chan, y_chan, out_chan, first_ksize=3):
         super().__init__()
         self.conv = layers.ConvBNReLU(
-            in_chan, out_chan, kernel_size=3, stride=1, padding=1)
+            x_chan,
+            out_chan,
+            kernel_size=first_ksize,
+            stride=1,
+            padding=first_ksize // 2)
         self.conv_atten = nn.Conv2D(
             out_chan, out_chan, kernel_size=1, bias_attr=None)
         self.bn_atten = nn.BatchNorm2D(out_chan)
@@ -428,16 +464,20 @@ class AttentionRefinementModule_1_5(nn.Layer):
         return out
 
 
-class AttentionRefinementModule_2(nn.Layer):
+class ARM_2(nn.Layer):
     '''use y to attention y'''
 
-    def __init__(self, in_chan, out_chan):
+    def __init__(self, x_chan, y_chan, out_chan, first_ksize=3):
         super().__init__()
         self.conv = layers.ConvBNReLU(
-            in_chan, out_chan, kernel_size=3, stride=1, padding=1)
+            x_chan,
+            out_chan,
+            kernel_size=first_ksize,
+            stride=1,
+            padding=first_ksize // 2)
         self.conv_atten = nn.Conv2D(
-            out_chan, out_chan, kernel_size=1, bias_attr=None)
-        self.bn_atten = nn.BatchNorm2D(out_chan)
+            y_chan, y_chan, kernel_size=1, bias_attr=None)
+        self.bn_atten = nn.BatchNorm2D(y_chan)
         self.sigmoid_atten = nn.Sigmoid()
 
     def forward(self, x, y):
@@ -451,17 +491,21 @@ class AttentionRefinementModule_2(nn.Layer):
         return out
 
 
-class AttentionRefinementModule_2_1(nn.Layer):
+class ARM_2_1(nn.Layer):
     '''use y to attention y'''
 
-    def __init__(self, in_chan, out_chan):
+    def __init__(self, x_chan, y_chan, out_chan, first_ksize=3):
         super().__init__()
         self.conv = layers.ConvBNReLU(
-            in_chan, out_chan, kernel_size=3, stride=1, padding=1)
+            x_chan,
+            out_chan,
+            kernel_size=first_ksize,
+            stride=1,
+            padding=first_ksize // 2)
 
         self.conv_atten = nn.Conv2D(
-            out_chan, out_chan, kernel_size=1, bias_attr=None)
-        self.bn_atten = nn.BatchNorm2D(out_chan)
+            y_chan, y_chan, kernel_size=1, bias_attr=None)
+        self.bn_atten = nn.BatchNorm2D(y_chan)
         self.sigmoid_atten = nn.Sigmoid()
 
         k1 = self.create_parameter([1])
@@ -482,13 +526,17 @@ class AttentionRefinementModule_2_1(nn.Layer):
         return out
 
 
-class AttentionRefinementModule_3(nn.Layer):
+class ARM_3(nn.Layer):
     '''use x to attention x and y'''
 
-    def __init__(self, in_chan, out_chan):
+    def __init__(self, x_chan, y_chan, out_chan, first_ksize=3):
         super().__init__()
         self.conv = layers.ConvBNReLU(
-            in_chan, out_chan, kernel_size=3, stride=1, padding=1)
+            x_chan,
+            out_chan,
+            kernel_size=first_ksize,
+            stride=1,
+            padding=first_ksize // 2)
         self.conv_atten = nn.Conv2D(
             out_chan, out_chan, kernel_size=1, bias_attr=None)
         self.bn_atten = nn.BatchNorm2D(out_chan)
@@ -504,16 +552,20 @@ class AttentionRefinementModule_3(nn.Layer):
         return out
 
 
-class AttentionRefinementModule_4(nn.Layer):
+class ARM_4(nn.Layer):
     '''use y to attention x and y'''
 
-    def __init__(self, in_chan, out_chan):
+    def __init__(self, x_chan, y_chan, out_chan, first_ksize=3):
         super().__init__()
         self.conv = layers.ConvBNReLU(
-            in_chan, out_chan, kernel_size=3, stride=1, padding=1)
+            x_chan,
+            out_chan,
+            kernel_size=first_ksize,
+            stride=1,
+            padding=first_ksize // 2)
         self.conv_atten = nn.Conv2D(
-            out_chan, out_chan, kernel_size=1, bias_attr=None)
-        self.bn_atten = nn.BatchNorm2D(out_chan)
+            y_chan, y_chan, kernel_size=1, bias_attr=None)
+        self.bn_atten = nn.BatchNorm2D(y_chan)
         self.sigmoid_atten = nn.Sigmoid()
 
     def forward(self, x, y):
@@ -526,13 +578,17 @@ class AttentionRefinementModule_4(nn.Layer):
         return out
 
 
-class AttentionRefinementModule_5(nn.Layer):
+class ARM_5(nn.Layer):
     '''use x + y to attention x + y'''
 
-    def __init__(self, in_chan, out_chan):
+    def __init__(self, x_chan, y_chan, out_chan, first_ksize=3):
         super().__init__()
         self.conv = layers.ConvBNReLU(
-            in_chan, out_chan, kernel_size=3, stride=1, padding=1)
+            x_chan,
+            out_chan,
+            kernel_size=first_ksize,
+            stride=1,
+            padding=first_ksize // 2)
         self.conv_atten = nn.Conv2D(
             out_chan, out_chan, kernel_size=1, bias_attr=None)
         self.bn_atten = nn.BatchNorm2D(out_chan)
@@ -549,13 +605,17 @@ class AttentionRefinementModule_5(nn.Layer):
         return out
 
 
-class AttentionRefinementModule_6(nn.Layer):
+class ARM_6(nn.Layer):
     '''use x + y to attention x and y'''
 
-    def __init__(self, in_chan, out_chan):
+    def __init__(self, x_chan, y_chan, out_chan, first_ksize=3):
         super().__init__()
         self.conv = layers.ConvBNReLU(
-            in_chan, out_chan, kernel_size=3, stride=1, padding=1)
+            x_chan,
+            out_chan,
+            kernel_size=first_ksize,
+            stride=1,
+            padding=first_ksize // 2)
         self.conv_atten = nn.Conv2D(
             out_chan, out_chan, kernel_size=1, bias_attr=None)
         self.bn_atten = nn.BatchNorm2D(out_chan)
@@ -572,15 +632,19 @@ class AttentionRefinementModule_6(nn.Layer):
         return out
 
 
-class AttentionRefinementModule_7(nn.Layer):
+class ARM_7(nn.Layer):
     '''use cat(x,y) to attention x and y'''
 
-    def __init__(self, in_chan, out_chan):
+    def __init__(self, x_chan, y_chan, out_chan, first_ksize=3):
         super().__init__()
         self.conv = layers.ConvBNReLU(
-            in_chan, out_chan, kernel_size=3, stride=1, padding=1)
+            x_chan,
+            out_chan,
+            kernel_size=first_ksize,
+            stride=1,
+            padding=first_ksize // 2)
         self.conv_atten = nn.Conv2D(
-            2 * out_chan, out_chan, kernel_size=1, bias_attr=None)
+            out_chan + y_chan, out_chan, kernel_size=1, bias_attr=None)
         self.bn_atten = nn.BatchNorm2D(out_chan)
         self.sigmoid_atten = nn.Sigmoid()
 
@@ -595,15 +659,19 @@ class AttentionRefinementModule_7(nn.Layer):
         return out
 
 
-class AttentionRefinementModule_7_1(nn.Layer):
+class ARM_7_1(nn.Layer):
     '''the afm of attanet'''
 
-    def __init__(self, in_chan, out_chan):
+    def __init__(self, x_chan, y_chan, out_chan, first_ksize=3):
         super().__init__()
         self.conv = layers.ConvBNReLU(
-            in_chan, out_chan, kernel_size=3, stride=1, padding=1)
+            x_chan,
+            out_chan,
+            kernel_size=first_ksize,
+            stride=1,
+            padding=first_ksize // 2)
         self.conv_atten_1 = nn.Conv2D(
-            2 * out_chan, out_chan, kernel_size=1, bias_attr=None)
+            out_chan + y_chan, out_chan, kernel_size=1, bias_attr=None)
         self.conv_atten_2 = nn.Conv2D(
             out_chan, out_chan, kernel_size=1, bias_attr=None)
         self.bn_atten = nn.BatchNorm2D(out_chan)
@@ -621,15 +689,19 @@ class AttentionRefinementModule_7_1(nn.Layer):
         return out
 
 
-class AttentionRefinementModule_7_2(nn.Layer):
+class ARM_7_2(nn.Layer):
     '''add atten and shift'''
 
-    def __init__(self, in_chan, out_chan):
+    def __init__(self, x_chan, y_chan, out_chan, first_ksize=3):
         super().__init__()
         self.conv = layers.ConvBNReLU(
-            in_chan, out_chan, kernel_size=3, stride=1, padding=1)
+            x_chan,
+            out_chan,
+            kernel_size=first_ksize,
+            stride=1,
+            padding=first_ksize // 2)
         self.conv_atten = nn.Conv2D(
-            2 * out_chan, out_chan, kernel_size=1, bias_attr=None)
+            out_chan + y_chan, out_chan, kernel_size=1, bias_attr=None)
         self.bn_atten = nn.BatchNorm2D(out_chan)
         self.sigmoid_atten = nn.Sigmoid()
 
@@ -649,15 +721,19 @@ class AttentionRefinementModule_7_2(nn.Layer):
         return out
 
 
-class AttentionRefinementModule_8(nn.Layer):
+class ARM_8(nn.Layer):
     '''adjust conv for x'''
 
-    def __init__(self, in_chan, out_chan):
+    def __init__(self, x_chan, y_chan, out_chan, first_ksize=3):
         super().__init__()
         self.conv = layers.ConvBNReLU(
-            in_chan, out_chan, kernel_size=3, stride=1, padding=1)
+            x_chan,
+            out_chan,
+            kernel_size=first_ksize,
+            stride=1,
+            padding=first_ksize // 2)
         self.conv_atten = nn.Conv2D(
-            in_chan + out_chan, out_chan, kernel_size=1, bias_attr=None)
+            out_chan + y_chan, out_chan, kernel_size=1, bias_attr=None)
         self.bn_atten = nn.BatchNorm2D(out_chan)
         self.sigmoid_atten = nn.Sigmoid()
 
@@ -672,15 +748,19 @@ class AttentionRefinementModule_8(nn.Layer):
         return out
 
 
-class AttentionRefinementModule_9(nn.Layer):
+class ARM_9(nn.Layer):
     '''combine atten in channel and spatic'''
 
-    def __init__(self, in_chan, out_chan):
+    def __init__(self, x_chan, y_chan, out_chan, first_ksize=3):
         super().__init__()
         self.conv = layers.ConvBNReLU(
-            in_chan, out_chan, kernel_size=3, stride=1, padding=1)
+            x_chan,
+            out_chan,
+            kernel_size=first_ksize,
+            stride=1,
+            padding=first_ksize // 2)
         self.conv_atten = nn.Conv2D(
-            2 * out_chan, out_chan, kernel_size=1, bias_attr=None)
+            out_chan + y_chan, out_chan, kernel_size=1, bias_attr=None)
         self.bn_atten = nn.BatchNorm2D(out_chan)
         self.sigmoid_atten = nn.Sigmoid()
 
@@ -699,16 +779,20 @@ class AttentionRefinementModule_9(nn.Layer):
         return out
 
 
-class AttentionRefinementModule_9_1(nn.Layer):
+class ARM_9_1(nn.Layer):
     '''combine atten in channel and spatic'''
 
-    def __init__(self, in_chan, out_chan):
+    def __init__(self, x_chan, y_chan, out_chan, first_ksize=3):
         super().__init__()
         self.conv = layers.ConvBNReLU(
-            in_chan, out_chan, kernel_size=3, stride=1, padding=1)
+            x_chan,
+            out_chan,
+            kernel_size=first_ksize,
+            stride=1,
+            padding=first_ksize // 2)
 
         self.conv_atten = nn.Conv2D(
-            2 * out_chan, out_chan, kernel_size=1, bias_attr=None)
+            out_chan + y_chan, out_chan, kernel_size=1, bias_attr=None)
         self.bn_atten = nn.BatchNorm2D(out_chan)
         self.sigmoid_atten = nn.Sigmoid()
 
@@ -716,7 +800,7 @@ class AttentionRefinementModule_9_1(nn.Layer):
             out_chan, 1, kernel_size=3, padding=1, bias_attr=False)
         self.bn_x = nn.BatchNorm2D(1)
         self.conv_y = nn.Conv2D(
-            out_chan, 1, kernel_size=3, padding=1, bias_attr=False)
+            y_chan, 1, kernel_size=3, padding=1, bias_attr=False)
         self.bn_y = nn.BatchNorm2D(1)
 
     def forward(self, x, y):
@@ -734,15 +818,19 @@ class AttentionRefinementModule_9_1(nn.Layer):
         return out
 
 
-class AttentionRefinementModule_10(nn.Layer):
+class ARM_10(nn.Layer):
     '''use cat(x,y) to attention x and y'''
 
-    def __init__(self, in_chan, out_chan):
+    def __init__(self, x_chan, y_chan, out_chan, first_ksize=3):
         super().__init__()
         self.conv = layers.ConvBNReLU(
-            in_chan, out_chan, kernel_size=3, stride=1, padding=1)
+            x_chan,
+            out_chan,
+            kernel_size=first_ksize,
+            stride=1,
+            padding=first_ksize // 2)
         self.conv_atten = nn.Conv2D(
-            2 * out_chan, out_chan, kernel_size=1, bias_attr=None)
+            out_chan + y_chan, out_chan, kernel_size=1, bias_attr=None)
         self.bn_atten = nn.BatchNorm2D(out_chan)
         self.sigmoid_atten = nn.Sigmoid()
 
@@ -761,13 +849,17 @@ class AttentionRefinementModule_10(nn.Layer):
         return out
 
 
-class AttentionRefinementModule_11(nn.Layer):
+class ARM_11(nn.Layer):
     '''add spatic atten by mean'''
 
-    def __init__(self, in_chan, out_chan):
+    def __init__(self, x_chan, y_chan, out_chan, first_ksize=3):
         super().__init__()
         self.conv = layers.ConvBNReLU(
-            in_chan, out_chan, kernel_size=3, stride=1, padding=1)
+            x_chan,
+            out_chan,
+            kernel_size=first_ksize,
+            stride=1,
+            padding=first_ksize // 2)
 
     def forward(self, x, y):
         x = self.conv(x)
@@ -777,13 +869,17 @@ class AttentionRefinementModule_11(nn.Layer):
         return out
 
 
-class AttentionRefinementModule_11_1(nn.Layer):
+class ARM_11_1(nn.Layer):
     '''add spatic atten by max'''
 
-    def __init__(self, in_chan, out_chan):
+    def __init__(self, x_chan, y_chan, out_chan, first_ksize=3):
         super().__init__()
         self.conv = layers.ConvBNReLU(
-            in_chan, out_chan, kernel_size=3, stride=1, padding=1)
+            x_chan,
+            out_chan,
+            kernel_size=first_ksize,
+            stride=1,
+            padding=first_ksize // 2)
 
     def forward(self, x, y):
         x = self.conv(x)
@@ -793,18 +889,22 @@ class AttentionRefinementModule_11_1(nn.Layer):
         return out
 
 
-class AttentionRefinementModule_11_2(nn.Layer):
+class ARM_11_2(nn.Layer):
     '''add spatic atten by conv'''
 
-    def __init__(self, in_chan, out_chan):
+    def __init__(self, x_chan, y_chan, out_chan, first_ksize=3):
         super().__init__()
         self.conv = layers.ConvBNReLU(
-            in_chan, out_chan, kernel_size=3, stride=1, padding=1)
+            x_chan,
+            out_chan,
+            kernel_size=first_ksize,
+            stride=1,
+            padding=first_ksize // 2)
         self.conv_x = nn.Conv2D(
             out_chan, 1, kernel_size=3, padding=1, bias_attr=False)
         self.bn_x = nn.BatchNorm2D(1)
         self.conv_y = nn.Conv2D(
-            out_chan, 1, kernel_size=3, padding=1, bias_attr=False)
+            y_chan, 1, kernel_size=3, padding=1, bias_attr=False)
         self.bn_y = nn.BatchNorm2D(1)
 
     def forward(self, x, y):
@@ -815,20 +915,23 @@ class AttentionRefinementModule_11_2(nn.Layer):
         return out
 
 
-class AttentionRefinementModule_11_3(nn.Layer):
+class ARM_11_3(nn.Layer):
     '''add spatic atten by conv and sigmoid'''
 
-    def __init__(self, in_chan, out_chan):
+    def __init__(self, x_chan, y_chan, out_chan, first_ksize=3):
         super().__init__()
         self.conv = layers.ConvBNReLU(
-            in_chan, out_chan, kernel_size=3, stride=1, padding=1)
+            x_chan,
+            out_chan,
+            kernel_size=first_ksize,
+            stride=1,
+            padding=first_ksize // 2)
         self.conv_x = nn.Conv2D(
             out_chan, 1, kernel_size=3, padding=1, bias_attr=False)
         self.bn_x = nn.BatchNorm2D(1)
         self.conv_y = nn.Conv2D(
-            out_chan, 1, kernel_size=3, padding=1, bias_attr=False)
+            y_chan, 1, kernel_size=3, padding=1, bias_attr=False)
         self.bn_y = nn.BatchNorm2D(1)
-        self.sigmoid_atten = nn.Sigmoid()
 
     def forward(self, x, y):
         x = self.conv(x)
@@ -838,13 +941,17 @@ class AttentionRefinementModule_11_3(nn.Layer):
         return out
 
 
-class AttentionRefinementModule_11_4(nn.Layer):
+class ARM_11_4(nn.Layer):
     '''add spatic atten by conv'''
 
-    def __init__(self, in_chan, out_chan):
+    def __init__(self, x_chan, y_chan, out_chan, first_ksize=3):
         super().__init__()
         self.conv = layers.ConvBNReLU(
-            in_chan, out_chan, kernel_size=3, stride=1, padding=1)
+            x_chan,
+            out_chan,
+            kernel_size=first_ksize,
+            stride=1,
+            padding=first_ksize // 2)
         self.conv_x = nn.Conv2D(2, 1, kernel_size=3, padding=1, bias_attr=False)
         self.bn_x = nn.BatchNorm2D(1)
         self.conv_y = nn.Conv2D(2, 1, kernel_size=3, padding=1, bias_attr=False)
@@ -867,13 +974,17 @@ class AttentionRefinementModule_11_4(nn.Layer):
         return out
 
 
-class AttentionRefinementModule_11_5(nn.Layer):
+class ARM_11_5(nn.Layer):
     '''add spatic atten by conv'''
 
-    def __init__(self, in_chan, out_chan):
+    def __init__(self, x_chan, y_chan, out_chan, first_ksize=3):
         super().__init__()
         self.conv = layers.ConvBNReLU(
-            in_chan, out_chan, kernel_size=3, stride=1, padding=1)
+            x_chan,
+            out_chan,
+            kernel_size=first_ksize,
+            stride=1,
+            padding=first_ksize // 2)
         self.conv_x = nn.Conv2D(2, 1, kernel_size=3, padding=1, bias_attr=False)
         self.conv_y = nn.Conv2D(2, 1, kernel_size=3, padding=1, bias_attr=False)
 
@@ -894,13 +1005,17 @@ class AttentionRefinementModule_11_5(nn.Layer):
         return out
 
 
-class AttentionRefinementModule_11_6(nn.Layer):
+class ARM_11_6(nn.Layer):
     '''add spatic atten by conv'''
 
-    def __init__(self, in_chan, out_chan):
+    def __init__(self, x_chan, y_chan, out_chan, first_ksize=3):
         super().__init__()
         self.conv = layers.ConvBNReLU(
-            in_chan, out_chan, kernel_size=3, stride=1, padding=1)
+            x_chan,
+            out_chan,
+            kernel_size=first_ksize,
+            stride=1,
+            padding=first_ksize // 2)
         self.conv_x = nn.Conv2D(2, 1, kernel_size=7, padding=3, bias_attr=False)
         self.conv_y = nn.Conv2D(2, 1, kernel_size=7, padding=3, bias_attr=False)
 
@@ -921,26 +1036,130 @@ class AttentionRefinementModule_11_6(nn.Layer):
         return out
 
 
-class ContextPath_pp(nn.Layer):
+class ARM_12_1(nn.Layer):
+    '''combined spatial attention '''
+
+    def __init__(self, x_chan, y_chan, out_chan, first_ksize=3):
+        super().__init__()
+        self.conv = layers.ConvBNReLU(
+            x_chan,
+            out_chan,
+            kernel_size=first_ksize,
+            stride=1,
+            padding=first_ksize // 2)
+        self.conv_atten = nn.Conv2D(
+            out_chan + y_chan, 1, kernel_size=3, padding=1, bias_attr=False)
+        self.bn_atten = nn.BatchNorm2D(1)
+
+    def forward(self, x, y):
+        x = self.conv(x)
+        cat_xy = paddle.concat([x, y], axis=1)  # n * 2c * h * w
+        atten = self.conv_atten(cat_xy)  # n * 1 * h * w
+        atten = self.bn_atten(atten)
+        out = x * atten + y * (1 - atten)
+        return out
+
+
+class ARM_12_2(nn.Layer):
+    '''combined spatial attention '''
+
+    def __init__(self, x_chan, y_chan, out_chan, first_ksize=3):
+        super().__init__()
+        self.conv = layers.ConvBNReLU(
+            x_chan,
+            out_chan,
+            kernel_size=first_ksize,
+            stride=1,
+            padding=first_ksize // 2)
+        self.conv_atten = nn.Conv2D(
+            out_chan + y_chan, 1, kernel_size=3, padding=1, bias_attr=False)
+
+    def forward(self, x, y):
+        x = self.conv(x)
+        cat_xy = paddle.concat([x, y], axis=1)  # n * 2c * h * w
+        atten = self.conv_atten(cat_xy)  # n * 1 * h * w
+        atten = F.sigmoid(atten)
+        out = x * atten + y * (1 - atten)
+        return out
+
+
+class ARM_12_3(nn.Layer):
+    '''combined spatial attention '''
+
+    def __init__(self, x_chan, y_chan, out_chan, first_ksize=3):
+        super().__init__()
+        self.conv = layers.ConvBNReLU(
+            x_chan,
+            out_chan,
+            kernel_size=first_ksize,
+            stride=1,
+            padding=first_ksize // 2)
+        self.conv_atten = nn.Conv2D(
+            2, 1, kernel_size=3, padding=1, bias_attr=False)
+        self.bn_atten = nn.BatchNorm2D(1)
+
+    def forward(self, x, y):
+        x = self.conv(x)
+
+        xy_cat = paddle.concat([x, y], axis=1)  # n * 2c * h * w
+        xy_mean = paddle.mean(xy_cat, axis=1, keepdim=True)
+        xy_max = paddle.max(xy_cat, axis=1, keepdim=True)
+        mean_max_cat = paddle.concat([xy_mean, xy_max], axis=1)
+        atten = self.bn_atten(self.conv_atten(mean_max_cat))  # n * 1 * h * w
+
+        out = x * atten + y * (1 - atten)
+        return out
+
+
+class ARM_12_4(nn.Layer):
+    '''combined spatial attention '''
+
+    def __init__(self, x_chan, y_chan, out_chan, first_ksize=3):
+        super().__init__()
+        self.conv = layers.ConvBNReLU(
+            x_chan,
+            out_chan,
+            kernel_size=first_ksize,
+            stride=1,
+            padding=first_ksize // 2)
+        self.conv_atten = nn.Conv2D(
+            2, 1, kernel_size=3, padding=1, bias_attr=False)
+
+    def forward(self, x, y):
+        x = self.conv(x)
+
+        xy_cat = paddle.concat([x, y], axis=1)  # n * 2c * h * w
+        xy_mean = paddle.mean(xy_cat, axis=1, keepdim=True)
+        xy_max = paddle.max(xy_cat, axis=1, keepdim=True)
+        mean_max_cat = paddle.concat([xy_mean, xy_max], axis=1)
+        atten = F.sigmoid(self.conv_atten(mean_max_cat))  # n * 1 * h * w
+
+        out = x * atten + y * (1 - atten)
+        return out
+
+
+class ContextPath_pp_0(nn.Layer):
+    """The base cpp from stdcseg"""
+
     def __init__(self,
                  backbone,
+                 arm_type,
                  use_conv_last=False,
-                 arm_type=None,
                  resize_mode='nearest'):
         super().__init__()
+
+        support_backbone = ["STDCNet_pp_0"]
+        assert backbone.__class__.__name__ in support_backbone
         self.backbone = backbone
         self.resize_mode = resize_mode
 
-        arm = AttentionRefinementModule_1  # base
-        if arm_type is not None:
-            arm = eval(arm_type)
-            print("arm type: " + arm_type)
+        arm = eval(arm_type)
+        print("arm type: " + arm_type)
 
-        self.arm16 = arm(512, 128)
         inplanes = 1024
-        if use_conv_last:
-            inplanes = 1024
-        self.arm32 = arm(inplanes, 128)
+        self.arm32 = arm(inplanes, 128, 128, first_ksize=3)
+        self.arm16 = arm(512, 128, 128, first_ksize=3)
+
         self.conv_head32 = layers.ConvBNReLU(
             128, 128, kernel_size=3, stride=1, padding=1)
         self.conv_head16 = layers.ConvBNReLU(
@@ -968,6 +1187,110 @@ class ContextPath_pp(nn.Layer):
         feat16_up = self.conv_head16(feat16_up)
 
         return feat2, feat4, feat8, feat16, feat16_up, feat32_up  # x8, x16
+
+
+class ContextPath_pp_0_sf(nn.Layer):
+    """The cpp support the fusion of sf_net"""
+
+    def __init__(self,
+                 backbone,
+                 arm_type,
+                 use_conv_last=False,
+                 resize_mode='nearest'):
+        super().__init__()
+
+        support_backbone = ["STDCNet_pp_0"]
+        assert backbone.__class__.__name__ in support_backbone
+        self.backbone = backbone
+        self.resize_mode = resize_mode
+
+        arm = eval(arm_type)
+        print("arm type: " + arm_type)
+
+        inplanes = 1024
+        self.arm32 = arm(inplanes, 128, 128, first_ksize=3)
+        self.arm16 = arm(512, 128, 128, first_ksize=3)
+
+        self.conv_head32 = layers.ConvBNReLU(
+            128, 128, kernel_size=3, stride=1, padding=1)
+        self.conv_head16 = layers.ConvBNReLU(
+            128, 128, kernel_size=3, stride=1, padding=1)
+        self.conv_avg = layers.ConvBNReLU(
+            inplanes, 128, kernel_size=1, stride=1, padding=0)
+
+    def forward(self, x):
+        feat2, feat4, feat8, feat16, feat32 = self.backbone(x)
+
+        feat8_hw = paddle.shape(feat8)[2:]
+        feat16_hw = paddle.shape(feat16)[2:]
+        feat32_hw = paddle.shape(feat32)[2:]
+
+        avg = F.adaptive_avg_pool2d(feat32, 1)
+        avg = self.conv_avg(avg)
+        avg_up = F.interpolate(avg, feat32_hw, mode=self.resize_mode)
+
+        feat32_sum = self.arm32(feat32, avg_up)
+        feat32_up = F.interpolate(feat32_sum, feat16_hw, mode=self.resize_mode)
+        feat32_up = self.conv_head32(feat32_up)
+
+        feat16_sum = self.arm16(feat16, feat32_up)
+        feat16_up = F.interpolate(feat16_sum, feat8_hw, mode=self.resize_mode)
+        feat16_up = self.conv_head16(feat16_up)
+
+        return feat2, feat4, feat8, feat16, feat16_up, feat32_up  # x8, x16
+
+
+class ContextPath_pp_1(nn.Layer):
+    """Consider all feature map from encoder"""
+
+    def __init__(self,
+                 backbone,
+                 arm_type,
+                 use_conv_last=False,
+                 resize_mode='nearest'):
+        super().__init__()
+
+        support_backbone = ["STDCNet_pp_1"]
+        assert backbone.__class__.__name__ in support_backbone
+        self.backbone = backbone
+        self.resize_mode = resize_mode
+
+        arm = eval(arm_type)
+        print("arm type: " + arm_type)
+
+        inplanes = 1024
+        self.arm32 = arm(2 * inplanes, 128, 128, first_ksize=1)
+        self.arm16 = arm(2 * 512, 128, 128, first_ksize=1)
+
+        self.conv_avg = layers.ConvBNReLU(
+            inplanes, 128, kernel_size=1, stride=1, padding=0)
+        self.conv_head16 = layers.ConvBNReLU(
+            128, 128, kernel_size=3, stride=1, padding=1)
+        self.conv_head32 = layers.ConvBNReLU(
+            128, 128, kernel_size=3, stride=1, padding=1)
+
+    def forward(self, x):
+        x2, x4, x8_1, x8_2, x16_1, x16_2, x32_1, x32_2 = self.backbone(x)
+        x16_cat = paddle.concat([x16_1, x16_2], axis=1)
+        x32_cat = paddle.concat([x32_1, x32_2], axis=1)
+
+        x8_hw = paddle.shape(x8_1)[2:]
+        x16_hw = paddle.shape(x16_1)[2:]
+        x32_hw = paddle.shape(x32_1)[2:]
+
+        avg = F.adaptive_avg_pool2d(x32_2, 1)
+        avg = self.conv_avg(avg)
+        avg_up = F.interpolate(avg, x32_hw, mode=self.resize_mode)
+
+        x32_sum = self.arm32(x32_cat, avg_up)
+        x32_up = F.interpolate(x32_sum, x16_hw, mode=self.resize_mode)
+        x32_up = self.conv_head32(x32_up)
+
+        x16_sum = self.arm16(x16_cat, x32_up)
+        x16_up = F.interpolate(x16_sum, x8_hw, mode=self.resize_mode)
+        x16_up = self.conv_head16(x16_up)
+
+        return x2, x4, x8_2, x16_2, x16_up, x32_up  # x8, x16
 
 
 class FeatureFusionModule_process_feat4(nn.Layer):
@@ -1194,7 +1517,8 @@ class STDCSeg_pp(nn.Layer):
                  use_boundary_8=True,
                  use_boundary_16=False,
                  use_conv_last=False,
-                 arm_type='AttentionRefinementModule_1',
+                 cpp_type='ContextPath_pp_0',
+                 arm_type='ARM_1',
                  resize_mode='nearest',
                  pretrained=None):
         super().__init__()
@@ -1203,7 +1527,8 @@ class STDCSeg_pp(nn.Layer):
         self.use_boundary_4 = use_boundary_4
         self.use_boundary_8 = use_boundary_8
         self.use_boundary_16 = use_boundary_16
-        self.cp = ContextPath_pp(backbone, use_conv_last, arm_type, resize_mode)
+        print("cpp type:" + cpp_type)
+        self.cp = eval(cpp_type)(backbone, arm_type, use_conv_last, resize_mode)
         self.ffm = FeatureFusionModule(384, 256)
         self.conv_out = SegHead(256, 256, num_classes)
         self.conv_out8 = SegHead(128, 64, num_classes)
