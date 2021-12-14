@@ -21,23 +21,16 @@ from paddleseg.models import layers
 from paddleseg.cvlibs import manager
 from paddleseg.utils import utils
 
-def SyncBatchNorm(*args, **kwargs):
-    """In cpu environment nn.SyncBatchNorm does not have kernel so use nn.BatchNorm2D instead"""
-    if paddle.get_device() == 'cpu' or os.environ.get('PADDLESEG_EXPORT_STAGE'):
-        return nn.BatchNorm2D(*args, **kwargs)
-    elif paddle.distributed.ParallelEnv().nranks == 1:
-        return nn.BatchNorm2D(*args, **kwargs)
-    else:
-        return nn.SyncBatchNorm(*args, **kwargs)
-
  
 @manager.MODELS.add_component
 class ESPNetV1(nn.Layer):
     """
     The ESPNetV1 implementation based on PaddlePaddle.
+    
     The original article refers to
-    Sachin Mehta1, Mohammad Rastegari, Anat Caspi, Linda Shapiro, and Hannaneh Hajishirzi. "ESPNet: Efficient Spatial Pyramid of Dilated Convolutions for Semantic Segmentation"
-    (https://arxiv.org/abs/1803.06815).
+     Sachin Mehta1, Mohammad Rastegari, Anat Caspi, Linda Shapiro, and Hannaneh Hajishirzi. "ESPNet: Efficient Spatial Pyramid of Dilated Convolutions for Semantic Segmentation"
+     (https://arxiv.org/abs/1803.06815).
+    
     Args:
         num_classes (int): The unique number of target classes.
         in_channels (int, optional): Number of input channels. Default: 3.
@@ -50,7 +43,7 @@ class ESPNetV1(nn.Layer):
         self.encoder = ESPNetEncoder(num_classes, in_channels, level2_depth, level3_depth)
 
         self.level3_up = nn.Conv2DTranspose(num_classes, num_classes, 2, stride=2, padding=0, output_padding=0, bias_attr=False)
-        self.br3 = SyncBatchNorm(num_classes)
+        self.br3 = layers.SyncBatchNorm(num_classes)
         self.level2_proj = Conv(in_channels + 128, num_classes, 1, 1)
         self.combine_l2_l3 = nn.Sequential(
             BNPReLU(2 * num_classes),
@@ -64,13 +57,13 @@ class ESPNetV1(nn.Layer):
         self.out_up = nn.Conv2DTranspose(num_classes, num_classes, 2, stride=2, padding=0, output_padding=0, bias_attr=False)
     
     def forward(self, x):
-        p1, p2, p3 = self.encoder(x) # shape [N, C, H/2, W/2]  [N, C, H/4, W/4]  [N, C, H/8, W/8] 
-        up_p3 = self.level3_up(p3) # [N, C, H/4, W/4]
+        p1, p2, p3 = self.encoder(x)
+        up_p3 = self.level3_up(p3)
 
         combine = self.combine_l2_l3(paddle.concat([up_p3, p2], axis=1))
-        up_p2 = self.level2_up(combine)  # [N, C, H/2, W/2]
+        up_p2 = self.level2_up(combine)
 
-        combine = self.out_proj(paddle.concat([up_p2, p1], axis=1))  # shape [N, C, H/2, W/2]
+        combine = self.out_proj(paddle.concat([up_p2, p1], axis=1))
         out = self.out_up(combine)
         return [out]
 
@@ -80,7 +73,7 @@ class ConvBNPReLU(nn.Layer):
         super().__init__()
         padding = int((kernel_size - 1) / 2)
         self.conv = nn.Conv2D(in_channels, out_channels, kernel_size, stride=stride, padding=padding, bias_attr=False)
-        self.bn = SyncBatchNorm(out_channels)
+        self.bn = layers.SyncBatchNorm(out_channels)
         self.act = nn.PReLU(out_channels)
 
     def forward(self, x):
@@ -93,7 +86,7 @@ class ConvBNPReLU(nn.Layer):
 class BNPReLU(nn.Layer):
     def __init__(self, channels):
         super().__init__()
-        self.bn = SyncBatchNorm(channels)
+        self.bn = layers.SyncBatchNorm(channels)
         self.act = nn.PReLU(channels)
 
     def forward(self, x):
@@ -107,7 +100,7 @@ class ConvBN(nn.Layer):
         super().__init__()
         padding = int((kernel_size - 1) / 2)
         self.conv = nn.Conv2D(in_channels, out_channels, kernel_size, stride=stride, padding=padding, bias_attr=False)
-        self.bn = SyncBatchNorm(out_channels)
+        self.bn = layers.SyncBatchNorm(out_channels)
 
     def forward(self, x):
         x = self.conv(x)
@@ -154,7 +147,7 @@ class DownSampler(nn.Layer):
         self.d_conv4 = ConvDilated(branch_channels, branch_channels, 3, 1, 4)
         self.d_conv8 = ConvDilated(branch_channels, branch_channels, 3, 1, 8)
         self.d_conv16 = ConvDilated(branch_channels, branch_channels, 3, 1, 16)
-        self.bn = SyncBatchNorm(out_channels)
+        self.bn = layers.SyncBatchNorm(out_channels)
         self.act = nn.PReLU(out_channels)
 
     def forward(self, x):
@@ -250,21 +243,21 @@ class ESPNetEncoder(nn.Layer):
     def forward(self, x):
         f1 = self.level1(x)
         down2 = F.adaptive_avg_pool2d(x, output_size=f1.shape[2:])
-        feat1 = paddle.concat([f1, down2], axis=1)  # N, 19, H, W
+        feat1 = paddle.concat([f1, down2], axis=1)
         feat1 = self.br1(feat1)
         p1 = self.proj1(feat1)
 
         f2_res = self.level2_0(feat1)
         f2 = self.level2(f2_res)
         down4 = F.adaptive_avg_pool2d(x, output_size=f2.shape[2:])
-        feat2 = paddle.concat([f2, f2_res, down4], axis=1)  # N, 3 + 128, H, W
+        feat2 = paddle.concat([f2, f2_res, down4], axis=1)
         feat2 = self.br2(feat2)
         p2 = self.proj2(feat2)
 
         f3_res = self.level3_0(feat2)
         f3 = self.level3(f3_res)
         down8 = F.adaptive_avg_pool2d(x, output_size=f3.shape[2:])
-        feat3 = paddle.concat([f3, f3_res], axis=1)   # N, 256, H, W
+        feat3 = paddle.concat([f3, f3_res], axis=1)
         feat3 = self.br3(feat3)
         p3 = self.proj3(feat3)
 
