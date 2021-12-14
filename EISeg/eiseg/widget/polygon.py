@@ -1,3 +1,18 @@
+# Copyright (c) 2021 PaddlePaddle Authors. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+
 from qtpy import QtWidgets, QtGui, QtCore
 
 from . import GripItem, LineItem, BBoxAnnotation
@@ -9,6 +24,7 @@ class PolygonAnnotation(QtWidgets.QGraphicsPolygonItem):
         labelIndex,
         shape,
         delPolygon,
+        setDirty,
         insideColor=[255, 0, 0],
         borderColor=[0, 255, 0],
         opacity=0.5,
@@ -22,6 +38,7 @@ class PolygonAnnotation(QtWidgets.QGraphicsPolygonItem):
         self.coco_id = cocoIndex
         self.height, self.width = shape[:2]
         self.delPolygon = delPolygon
+        self.setDirty = setDirty
 
         self.labelIndex = labelIndex
         self.item_hovering = False
@@ -76,6 +93,10 @@ class PolygonAnnotation(QtWidgets.QGraphicsPolygonItem):
             self.setFlag(QtWidgets.QGraphicsItem.ItemSendsGeometryChanges, False)
             self.setFlag(QtWidgets.QGraphicsItem.ItemIsFocusable, False)
             self.setCursor(QtGui.QCursor(QtCore.Qt.ArrowCursor))
+            for line in self.m_lines:
+                line.setAnning(False)
+            for grip in self.m_items:
+                grip.setAnning(False)
         else:
             self.setAcceptHoverEvents(True)
             self.anning = False
@@ -89,9 +110,13 @@ class PolygonAnnotation(QtWidgets.QGraphicsPolygonItem):
             self.setFlag(QtWidgets.QGraphicsItem.ItemSendsGeometryChanges, True)
             self.setFlag(QtWidgets.QGraphicsItem.ItemIsFocusable, True)
             self.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+            for line in self.m_lines:
+                line.setAnning(True)
+            for grip in self.m_items:
+                grip.setAnning(True)
 
     def addPointMiddle(self, lineIdx, point):
-        gripItem = GripItem(self, lineIdx + 1, self.borderColor)
+        gripItem = GripItem(self, lineIdx + 1, self.borderColor, (self.height, self.width))
         gripItem.setEnabled(False)
         gripItem.setPos(point)
         self.scene().addItem(gripItem)
@@ -115,9 +140,10 @@ class PolygonAnnotation(QtWidgets.QGraphicsPolygonItem):
         lineItem.setLine(line)
         self.m_lines.insert(lineIdx + 1, lineItem)
         self.scene().addItem(lineItem)
+        lineItem.updateWidth()
 
     def addPointLast(self, p):
-        grip = GripItem(self, len(self), self.borderColor)
+        grip = GripItem(self, len(self), self.borderColor, (self.height, self.width))
         self.scene().addItem(grip)
         self.m_items.append(grip)
         grip.updateSize()

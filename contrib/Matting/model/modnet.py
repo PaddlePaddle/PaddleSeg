@@ -85,7 +85,7 @@ class MODNet(nn.Layer):
         logit_detail = logit_dict['detail'] * mask
         label_detail = label_dict['alpha'] * mask
         loss_detail = loss_func_dict['detail'][0](logit_detail, label_detail)
-        loss_detail = loss_detail / mask.mean()
+        loss_detail = loss_detail / (mask.mean() + 1e-6)
         loss['detail'] = 10 * loss_detail
 
         # fusion loss

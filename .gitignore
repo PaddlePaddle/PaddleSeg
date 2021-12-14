@@ -115,3 +115,5 @@ package-lock.json
 contrib/PP-HumanSeg/export_model/
 contrib/PP-HumanSeg/pretrained_model/
 contrib/PP-HumanSeg/data/
+
+test_tipc/web/models/

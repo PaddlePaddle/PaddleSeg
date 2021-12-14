@@ -1,0 +1,10 @@
+_base_: '../_base_/drive.yml'
+
+batch_size: 4
+iters: 40000
+
+model:
+  type: UNet
+  num_classes: 2
+  use_deconv: False
+  pretrained: Null

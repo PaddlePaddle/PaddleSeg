@@ -42,6 +42,8 @@ class Compose:
         Returns:
             dict: Data after transformation
         """
+        if 'trans_info' not in data:
+            data['trans_info'] = []
         for op in self.transforms:
             data = op(data)
             if data is None:
@@ -101,7 +103,69 @@ class Resize:
         data['trans_info'].append(('resize', data['img'].shape[0:2]))
         data['img'] = functional.resize(data['img'], self.target_size)
         for key in data.get('gt_fields', []):
-            data[key] = functional.resize(data[key], self.target_size)
+            if key == 'trimap':
+                data[key] = functional.resize(data[key], self.target_size,
+                                              cv2.INTER_NEAREST)
+            else:
+                data[key] = functional.resize(data[key], self.target_size)
+        return data
+
+
+@manager.TRANSFORMS.add_component
+class RandomResize:
+    """
+    Resize image to a size determinned by `scale` and `size`.
+
+    Args:
+        size(tuple|list): The reference size to resize. A tuple or list with length 2.
+        scale(tupel|list, optional): A range of scale base on `size`. A tuple or list with length 2. Default: None.
+    """
+
+    def __init__(self, size=None, scale=None):
+        if isinstance(size, list) or isinstance(size, tuple):
+            if len(size) != 2:
+                raise ValueError(
+                    '`size` should include 2 elements, but it is {}'.format(
+                        size))
+        elif size is not None:
+            raise TypeError(
+                "Type of `size` is invalid. It should be list or tuple, but it is {}"
+                .format(type(size)))
+
+        if scale is not None:
+            if isinstance(scale, list) or isinstance(scale, tuple):
+                if len(scale) != 2:
+                    raise ValueError(
+                        '`scale` should include 2 elements, but it is {}'.
+                        format(scale))
+            else:
+                raise TypeError(
+                    "Type of `scale` is invalid. It should be list or tuple, but it is {}"
+                    .format(type(scale)))
+        self.size = size
+        self.scale = scale
+
+    def __call__(self, data):
+        h, w = data['img'].shape[:2]
+        if self.scale is not None:
+            scale = np.random.uniform(self.scale[0], self.scale[1])
+        else:
+            scale = 1.
+        if self.size is not None:
+            scale_factor = max(self.size[0] / w, self.size[1] / h)
+        else:
+            scale_factor = 1
+        scale = scale * scale_factor
+
+        w = int(round(w * scale))
+        h = int(round(h * scale))
+        data['img'] = functional.resize(data['img'], (w, h))
+        for key in data.get('gt_fields', []):
+            if key == 'trimap':
+                data[key] = functional.resize(data[key], (w, h),
+                                              cv2.INTER_NEAREST)
+            else:
+                data[key] = functional.resize(data[key], (w, h))
         return data
 
 
@@ -121,7 +185,11 @@ class ResizeByLong:
         data['trans_info'].append(('resize', data['img'].shape[0:2]))
         data['img'] = functional.resize_long(data['img'], self.long_size)
         for key in data.get('gt_fields', []):
-            data[key] = functional.resize_long(data[key], self.long_size)
+            if key == 'trimap':
+                data[key] = functional.resize_long(data[key], self.long_size,
+                                                   cv2.INTER_NEAREST)
+            else:
+                data[key] = functional.resize_long(data[key], self.long_size)
         return data
 
 
@@ -141,7 +209,11 @@ class ResizeByShort:
         data['trans_info'].append(('resize', data['img'].shape[0:2]))
         data['img'] = functional.resize_short(data['img'], self.short_size)
         for key in data.get('gt_fields', []):
-            data[key] = functional.resize_short(data[key], self.short_size)
+            if key == 'trimap':
+                data[key] = functional.resize_short(data[key], self.short_size,
+                                                    cv2.INTER_NEAREST)
+            else:
+                data[key] = functional.resize_short(data[key], self.short_size)
         return data
 
 
@@ -158,11 +230,15 @@ class ResizeToIntMult:
         data['trans_info'].append(('resize', data['img'].shape[0:2]))
 
         h, w = data['img'].shape[0:2]
-        rw = w - w % 32
-        rh = h - h % 32
+        rw = w - w % self.mult_int
+        rh = h - h % self.mult_int
         data['img'] = functional.resize(data['img'], (rw, rh))
         for key in data.get('gt_fields', []):
-            data[key] = functional.resize(data[key], (rw, rh))
+            if key == 'trimap':
+                data[key] = functional.resize(data[key], (rw, rh),
+                                              cv2.INTER_NEAREST)
+            else:
+                data[key] = functional.resize(data[key], (rw, rh))
 
         return data
 
@@ -338,11 +414,74 @@ class LimitLong:
         elif (self.min_long is not None) and (long_edge < self.min_long):
             target = self.min_long
 
+        data['trans_info'].append(('resize', data['img'].shape[0:2]))
         if target != long_edge:
-            data['trans_info'].append(('resize', data['img'].shape[0:2]))
             data['img'] = functional.resize_long(data['img'], target)
             for key in data.get('gt_fields', []):
-                data[key] = functional.resize_long(data[key], target)
+                if key == 'trimap':
+                    data[key] = functional.resize_long(data[key], target,
+                                                       cv2.INTER_NEAREST)
+                else:
+                    data[key] = functional.resize_long(data[key], target)
+
+        return data
+
+
+@manager.TRANSFORMS.add_component
+class LimitShort:
+    """
+    Limit the short edge of image.
+
+    If the short edge is larger than max_short, resize the short edge
+    to max_short, while scale the long edge proportionally.
+
+    If the short edge is smaller than min_short, resize the short edge
+    to min_short, while scale the long edge proportionally.
+
+    Args:
+        max_short (int, optional): If the short edge of image is larger than max_short,
+            it will be resize to max_short. Default: None.
+        min_short (int, optional): If the short edge of image is smaller than min_short,
+            it will be resize to min_short. Default: None.
+    """
+
+    def __init__(self, max_short=None, min_short=None):
+        if max_short is not None:
+            if not isinstance(max_short, int):
+                raise TypeError(
+                    "Type of `max_short` is invalid. It should be int, but it is {}"
+                    .format(type(max_short)))
+        if min_short is not None:
+            if not isinstance(min_short, int):
+                raise TypeError(
+                    "Type of `min_short` is invalid. It should be int, but it is {}"
+                    .format(type(min_short)))
+        if (max_short is not None) and (min_short is not None):
+            if min_short > max_short:
+                raise ValueError(
+                    '`max_short should not smaller than min_short, but they are {} and {}'
+                    .format(max_short, min_short))
+        self.max_short = max_short
+        self.min_short = min_short
+
+    def __call__(self, data):
+        h, w = data['img'].shape[:2]
+        short_edge = min(h, w)
+        target = short_edge
+        if (self.max_short is not None) and (short_edge > self.max_short):
+            target = self.max_short
+        elif (self.min_short is not None) and (short_edge < self.min_short):
+            target = self.min_short
+
+        data['trans_info'].append(('resize', data['img'].shape[0:2]))
+        if target != short_edge:
+            data['img'] = functional.resize_short(data['img'], target)
+            for key in data.get('gt_fields', []):
+                if key == 'trimap':
+                    data[key] = functional.resize_short(data[key], target,
+                                                        cv2.INTER_NEAREST)
+                else:
+                    data[key] = functional.resize_short(data[key], target)
 
         return data
 
@@ -397,6 +536,8 @@ class RandomBlur:
                 data['img'] = cv2.GaussianBlur(data['img'], (radius, radius), 0,
                                                0)
                 for key in data.get('gt_fields', []):
+                    if key == 'trimap':
+                        continue
                     data[key] = cv2.GaussianBlur(data[key], (radius, radius), 0,
                                                  0)
         return data
@@ -501,28 +642,65 @@ class RandomDistort:
         return data
 
 
-if __name__ == "__main__":
-    transforms = [RandomDistort()]
-    transforms = Compose(transforms)
-    fg_path = '/ssd1/home/chenguowei01/github/PaddleSeg/contrib/matting/data/matting/human_matting/Distinctions-646/train/fg/13(2).png'
-    alpha_path = fg_path.replace('fg', 'alpha')
-    bg_path = '/ssd1/home/chenguowei01/github/PaddleSeg/contrib/matting/data/matting/human_matting/bg/unsplash_bg/attic/photo-1443884590026-2e4d21aee71c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MnwxMjA3fDB8MXxzZWFyY2h8Nzh8fGF0dGljfGVufDB8fHx8MTYyOTY4MDcxNQ&ixlib=rb-1.2.1&q=80&w=400.jpg'
-    data = {}
-    data['fg'] = cv2.imread(fg_path)
-    data['bg'] = cv2.imread(bg_path)
-    h, w, c = data['fg'].shape
-    data['bg'] = cv2.resize(data['bg'], (w, h))
-    alpha = cv2.imread(alpha_path)
-    data['alpha'] = alpha[:, :, 0]
-    alpha = alpha / 255.
-    data['img'] = alpha * data['fg'] + (1 - alpha) * data['bg']
+@manager.TRANSFORMS.add_component
+class Padding:
+    """
+    Add bottom-right padding to a raw image or annotation image.
 
-    data['gt_fields'] = ['fg', 'bg']
-    print(data['img'].shape)
-    for key in data['gt_fields']:
-        print(data[key].shape)
-#     import pdb
-#     pdb.set_trace()
-    data = transforms(data)
-    print(data['img'].dtype, data['img'].shape)
-    cv2.imwrite('distort_img.jpg', data['img'].transpose([1, 2, 0]))
+    Args:
+        target_size (list|tuple): The target size after padding.
+        im_padding_value (list, optional): The padding value of raw image.
+            Default: [127.5, 127.5, 127.5].
+        label_padding_value (int, optional): The padding value of annotation image. Default: 255.
+
+    Raises:
+        TypeError: When target_size is neither list nor tuple.
+        ValueError: When the length of target_size is not 2.
+    """
+
+    def __init__(self, target_size, im_padding_value=(127.5, 127.5, 127.5)):
+        if isinstance(target_size, list) or isinstance(target_size, tuple):
+            if len(target_size) != 2:
+                raise ValueError(
+                    '`target_size` should include 2 elements, but it is {}'.
+                    format(target_size))
+        else:
+            raise TypeError(
+                "Type of target_size is invalid. It should be list or tuple, now is {}"
+                .format(type(target_size)))
+
+        self.target_size = target_size
+        self.im_padding_value = im_padding_value
+
+    def __call__(self, data):
+        im_height, im_width = data['img'].shape[0], data['img'].shape[1]
+        target_height = self.target_size[1]
+        target_width = self.target_size[0]
+        pad_height = max(0, target_height - im_height)
+        pad_width = max(0, target_width - im_width)
+        data['trans_info'].append(('padding', data['img'].shape[0:2]))
+        if (pad_height == 0) and (pad_width == 0):
+            return data
+        else:
+            data['img'] = cv2.copyMakeBorder(
+                data['img'],
+                0,
+                pad_height,
+                0,
+                pad_width,
+                cv2.BORDER_CONSTANT,
+                value=self.im_padding_value)
+            for key in data.get('gt_fields', []):
+                if key in ['trimap', 'alpha']:
+                    value = 0
+                else:
+                    value = self.im_padding_value
+                data[key] = cv2.copyMakeBorder(
+                    data[key],
+                    0,
+                    pad_height,
+                    0,
+                    pad_width,
+                    cv2.BORDER_CONSTANT,
+                    value=value)
+        return data

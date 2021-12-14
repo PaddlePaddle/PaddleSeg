@@ -52,13 +52,14 @@ Welcome to PaddleSeg! PaddleSeg is an end-to-end image segmentation development 
 <img src="./docs/images/QQ_chat.png"  width = "200" />  
 </div>
 
-## Model Instruction  <img src="./docs/images/model.png" width="20"/>
+## Model Zoo Overview  <img src="./docs/images/model.png" width="20"/>
 
-[Model Zoo](./configs/)
+See [Model Zoo Overview](./docs/model_zoo_overview.md) for more infomation.
 
 <div align="center">
-<img src="./docs/images/xingnengtu.png"    width = "700"/>  
+<img src=https://user-images.githubusercontent.com/30695251/140323107-02ce9de4-c8f4-4f18-88b2-59bd0055a70b.png   />  
 </div>
+
 
 
 ## Dataset
@@ -172,6 +173,9 @@ python train.py --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml
 * Thanks [liuguoyu666](https://github.com/liguoyu666), [geoyee](https://github.com/geoyee) for contributing U-Net++ and U-Net3+.
 * Thanks [yazheng0307](https://github.com/yazheng0307) (LIU Zheng) for contributing quick-start document.
 * Thanks [CuberrChen](https://github.com/CuberrChen) for contributing STDC (rethink BiSeNet), PointRend and DetailAggregateLoss.
+* Thanks [justld](https://github.com/justld) (Lang Du) for contributing ESPNet，HRNet_W48_Contrast and PixelContrastCrossEntropyLoss.
+* Thanks [Herman-Hu-saber](https://github.com/Herman-Hu-saber) (Hu Huiming) for contributing ESPNet.
+* Thanks [zhangjin12138](https://github.com/zhangjin12138) for contributing RandomCenterCrop.
 
 ## Citation
 If you find our project useful in your research, please consider citing:

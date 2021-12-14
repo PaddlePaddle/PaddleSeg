@@ -156,3 +156,8 @@ test_output/
 
 # mask_sm
 tool/mask.png
+
+# static_weights
+*.pdiparams
+*.pdiparams.info
+*.pdmodel
