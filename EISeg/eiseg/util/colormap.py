@@ -23,7 +23,8 @@ class ColorMap(object):
         self.colors = []
         self.index = 0
         self.usedColors = []
-        colors = open(color_path, "r").readlines()
+        with open(color_path, "r") as f:
+            colors = f.readlines()
         if shuffle:
             random.shuffle(colors)
         self.colors = [[int(x) for x in c.strip().split(",")] for c in colors]

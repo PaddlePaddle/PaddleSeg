@@ -45,15 +45,21 @@ class LineItem(QtWidgets.QGraphicsLineItem):
         self.setEnabled(anning)
         self.updateWidth()
 
+    # BUG: Scaling causes a crash
     @property
     def width(self):
-        if not self.scene():
-            width = LineItem.minWidth
-        else:
-            maxi, mini = LineItem.maxWidth, LineItem.minWidth
-            exp = 1 - mini / maxi
-            width = maxi * (1 - exp ** self.scene().scale)
-        return width
+        return LineItem.minWidth
+        # if not self.scene():
+        #     width = LineItem.minWidth
+        # else:
+        #     maxi, mini = LineItem.maxWidth, LineItem.minWidth
+        #     exp = 1 - mini / maxi
+        #     width = maxi * (1 - exp ** self.scene().scale)
+        #     if width > LineItem.maxWidth:
+        #         width = LineItem.maxWidth
+        #     if width < LineItem.minWidth:
+        #         width = LineItem.minWidth
+        # return width
 
     def updateWidth(self):
         self.setPen(QtGui.QPen(self.color, self.width))

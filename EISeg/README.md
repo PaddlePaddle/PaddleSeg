@@ -40,16 +40,16 @@ EISeg提供多种安装方式，其中使用[pip](#PIP)和[运行代码](#运行
 
 * PaddlePaddle >= 2.2.0
 
-PaddlePaddle安装请参考[官网](https://www.paddlepaddle.org.cn/install/quick?docurl=/documentation/docs/zh/install/pip/windows-pip.html)。**在安装EISeg前，请先安装Paddle**。注意：下面提供的所有安装EISeg的方法都需要先安装Paddle才能使用。
+PaddlePaddle安装请参考[官网](https://www.paddlepaddle.org.cn/install/quick?docurl=/documentation/docs/zh/install/pip/windows-pip.html)。
 
 ### 克隆到本地
 通过git将PaddleSeg克隆到本地：
 
 ```shell
-git clone -b develop https://github.com/PaddlePaddle/PaddleSeg.git
+git clone https://github.com/PaddlePaddle/PaddleSeg.git
 ```
 
-安装所需环境（若需要使用到GDAL和SimpleITK请参考[**垂类分割**](https://github.com/PaddlePaddle/PaddleSeg/tree/develop/EISeg/docs)进行安装）：
+安装所需环境（若需要使用到GDAL和SimpleITK请参考**垂类分割**进行安装）：
 
 ```shell
 pip install -r requirements.txt
@@ -162,7 +162,7 @@ eiseg
 
 ## 版本更新
 
-- 2021.11.17  **0.4.0**：【1】将动态图预测转换成静态图预测，单次点击速度提升3-7倍；【2】新增遥感图像标注功能，支持多光谱数据通道的选择；【3】支持大尺幅数据的切片（多宫格）处理；【4】新增医疗图像标注功能，支持读取dicom的数据格式，支持选择窗宽和窗位。
+- 2021.11.16  **0.4.0**：【1】将动态图预测转换成静态图预测，单次点击速度提升十倍；【2】新增遥感图像标注功能，支持多光谱数据通道的选择；【3】支持大尺幅数据的切片（多宫格）处理；【4】新增医疗图像标注功能，支持读取dicom的数据格式，支持选择窗宽和窗位。
 - 2021.09.16  **0.3.0**：【1】初步完成多边形编辑功能，支持对交互标注的结果进行编辑；【2】支持中/英界面；【3】支持保存为灰度/伪彩色标签和COCO格式；【4】界面拖动更加灵活；【5】标签栏可拖动，生成mask的覆盖顺序由上往下覆盖。
 - 2021.07.07  **0.2.0**：新增contrib：EISeg，可实现人像和通用图像的快速交互式标注。
 
@@ -171,7 +171,7 @@ eiseg
 
 ## 贡献者
 
-感谢[Yuying Hao](https://github.com/haoyuying), [Lin Han](https://github.com/linhandev/), [Yizhou Chen](https://github.com/geoyee), [Yiakwy](https://github.com/yiakwy), [GT](https://github.com/GT-ZhangAcer), [Zhiliang Yu](https://github.com/yzl19940819) 等开发者及[RITM](https://github.com/saic-vul/ritm_interactive_segmentation) 算法支持。
+感谢[Yuying Hao](https://github.com/haoyuying), [Lin Han](https://github.com/linhandev), [Yizhou Chen](https://github.com/geoyee), [Yiakwy](https://github.com/yiakwy), [GT](https://github.com/GT-ZhangAcer), [Youssef Harby](https://github.com/Youssef-Harby), [Zhiliang Yu](https://github.com/yzl19940819), [Nick Nie](https://github.com/niecongchong) 等开发者及[RITM](https://github.com/saic-vul/ritm_interactive_segmentation) 算法支持。
 
 ## 学术引用
 

@@ -13,14 +13,15 @@
 # limitations under the License.
 
 
+from PyQt5.QtCore import QPointF
 from qtpy import QtWidgets, QtGui, QtCore
 
-# BUG: item 不能移出图片的范围，需要限制起来
+
 class GripItem(QtWidgets.QGraphicsPathItem):
     maxSize = 1.5
     minSize = 0.8
 
-    def __init__(self, annotation_item, index, color):
+    def __init__(self, annotation_item, index, color, img_size):
         super(GripItem, self).__init__()
         self.m_annotation_item = annotation_item
         self.hovering = False
@@ -28,6 +29,7 @@ class GripItem(QtWidgets.QGraphicsPathItem):
         self.anning = True
         color.setAlphaF(1)
         self.color = color
+        self.img_size = img_size
 
         self.updateSize()
         self.setPath(self.circle)
@@ -50,22 +52,28 @@ class GripItem(QtWidgets.QGraphicsPathItem):
         self.anning = anning
         self.setEnabled(anning)
 
+    # BUG: Scaling causes a crash
     @property
     def size(self):
-        if not self.scene():
-            return GripItem.minSize
-        else:
-            maxi, mini = GripItem.maxSize, GripItem.minSize
-            exp = 1 - mini / maxi
-            size = maxi * (1 - exp ** self.scene().scale)
-            return size
+        return GripItem.minSize
+        # if not self.scene():
+        #     return GripItem.minSize
+        # else:
+        #     maxi, mini = GripItem.maxSize, GripItem.minSize
+        #     exp = 1 - mini / maxi
+        #     size = maxi * (1 - exp ** self.scene().scale)
+        #     if size > GripItem.maxSize:
+        #         size = GripItem.maxSize
+        #     if size < GripItem.minSize:
+        #         size = GripItem.minSize
+        #     return size
 
-    def updateSize(self, size=2):
+    def updateSize(self, s=2):
         size = self.size
         self.circle = QtGui.QPainterPath()
-        self.circle.addEllipse(QtCore.QRectF(-size, -size, size * 2, size * 2))
+        self.circle.addEllipse(QtCore.QRectF(-size, -size, size * s, size * s))
         self.square = QtGui.QPainterPath()
-        self.square.addRect(QtCore.QRectF(-size, -size, size * 2, size * 2))
+        self.square.addRect(QtCore.QRectF(-size, -size, size * s, size * s))
         self.setPath(self.square if self.hovering else self.circle)
 
     def hoverEnterEvent(self, ev):
@@ -87,10 +95,24 @@ class GripItem(QtWidgets.QGraphicsPathItem):
         super(GripItem, self).mouseReleaseEvent(ev)
 
     def itemChange(self, change, value):
+        tmp_val = value
         if change == QtWidgets.QGraphicsItem.ItemPositionChange and self.isEnabled():
-            self.m_annotation_item.movePoint(self.m_index, value)
+            if value.x() > self.img_size[1]:
+                x = self.img_size[1]
+            elif value.x() < 0:
+                x = 0
+            else:
+                x = value.x()
+            if value.y() > self.img_size[0]:
+                y = self.img_size[0]
+            elif value.y() < 0:
+                y = 0
+            else:
+                y = value.y()
+            tmp_val = QPointF(x, y)
+            self.m_annotation_item.movePoint(self.m_index, tmp_val)
             self.m_annotation_item.setDirty(True)
-        return super(GripItem, self).itemChange(change, value)
+        return super(GripItem, self).itemChange(change, tmp_val)
 
     def shape(self):
         path = QtGui.QPainterPath()

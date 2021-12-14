@@ -1,1 +1,2 @@
-GDAL
+GDAL>=3.3.0
+rasterio>=1.2.4
