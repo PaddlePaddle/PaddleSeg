@@ -27,6 +27,7 @@ __all__ = ['ENet']
 class ENet(nn.Layer):
     """
     The ENet implementation based on PaddlePaddle.
+
     The original article refers to
         Adam Paszke, Abhishek Chaurasia, Sangpil Kim, Eugenio Culurciello, et al."ENet: A Deep Neural Network Architecture for Real-Time Semantic Segmentation"
         (https://arxiv.org/abs/1606.02147).
@@ -49,7 +50,6 @@ class ENet(nn.Layer):
         self.numclasses = num_classes
         self.initial_block = InitialBlock(3, 16, relu=encoder_relu)
 
-        # Stage 1 - Encoder
         self.downsample1_0 = DownsamplingBottleneck(16,
                                                     64,
                                                     return_indices=True,
@@ -72,7 +72,6 @@ class ENet(nn.Layer):
                                             dropout_prob=0.01,
                                             relu=encoder_relu)
 
-        # Stage 2 - Encoder
         self.downsample2_0 = DownsamplingBottleneck(64,
                                                     128,
                                                     return_indices=True,
@@ -119,7 +118,6 @@ class ENet(nn.Layer):
                                             dropout_prob=0.1,
                                             relu=encoder_relu)
 
-        # Stage 3 - Encoder
         self.regular3_0 = RegularBottleneck(128,
                                             padding=1,
                                             dropout_prob=0.1,
@@ -161,7 +159,6 @@ class ENet(nn.Layer):
                                             dropout_prob=0.1,
                                             relu=encoder_relu)
 
-        # Stage 4 - Decoder
         self.upsample4_0 = UpsamplingBottleneck(128,
                                                 64,
                                                 dropout_prob=0.1,
@@ -175,7 +172,6 @@ class ENet(nn.Layer):
                                             dropout_prob=0.1,
                                             relu=decoder_relu)
 
-        # Stage 5 - Decoder
         self.upsample5_0 = UpsamplingBottleneck(64,
                                                 16,
                                                 dropout_prob=0.1,
@@ -199,7 +195,6 @@ class ENet(nn.Layer):
         input_size = x.shape
         x = self.initial_block(x)
 
-        # Stage 1 - Encoder
         stage1_input_size = x.shape
         x, max_indices1_0 = self.downsample1_0(x)
         x = self.regular1_1(x)
@@ -207,7 +202,6 @@ class ENet(nn.Layer):
         x = self.regular1_3(x)
         x = self.regular1_4(x)
 
-        # Stage 2 - Encoder
         stage2_input_size = x.shape
         x, max_indices2_0 = self.downsample2_0(x)
         x = self.regular2_1(x)
@@ -219,7 +213,6 @@ class ENet(nn.Layer):
         x = self.asymmetric2_7(x)
         x = self.dilated2_8(x)
 
-        # Stage 3 - Encoder
         x = self.regular3_0(x)
         x = self.dilated3_1(x)
         x = self.asymmetric3_2(x)
@@ -229,12 +222,10 @@ class ENet(nn.Layer):
         x = self.asymmetric3_6(x)
         x = self.dilated3_7(x)
 
-        # Stage 4 - Decoder
         x = self.upsample4_0(x, max_indices2_0, output_size=stage2_input_size)
         x = self.regular4_1(x)
         x = self.regular4_2(x)
 
-        # Stage 5 - Decoder
         x = self.upsample5_0(x, max_indices1_0, output_size=stage1_input_size)
         x = self.regular5_1(x)
         x = self.transposed_conv(x, output_size=input_size[2:])
@@ -254,6 +245,7 @@ class InitialBlock(nn.Layer):
     allows for efficient downsampling and expansion. The main branch
     outputs 13 feature maps while the extension branch outputs 3, for a
     total of 16 feature maps after concatenation.
+
     Args:
         in_channels (int): the number of input channels.
         out_channels (int): the number output channels.
@@ -310,6 +302,7 @@ class RegularBottleneck(nn.Layer):
     3. 1x1 convolution which increases the number of channels back to
         ``channels``, also called an expansion;
     4. dropout as a regularizer.
+
     Args:
         channels (int): the number of input and output channels.
         internal_ratio (int, optional): a scale factor applied to
@@ -408,7 +401,6 @@ class RegularBottleneck(nn.Layer):
         self.out_activation = activation()
 
     def forward(self, x):
-        # Main branch shortcut
         main = x
 
         ext = self.ext_conv1(x)
@@ -434,6 +426,7 @@ class DownsamplingBottleneck(nn.Layer):
     3. 1x1 convolution which increases the number of channels to
         ``out_channels``, also called an expansion;
     4. dropout as a regularizer.
+
     Args:
         in_channels (int): the number of input channels.
         out_channels (int): the number of output channels.
@@ -507,7 +500,6 @@ class DownsamplingBottleneck(nn.Layer):
         self.out_activation = activation()
 
     def forward(self, x):
-        # Main branch shortcut
         if self.return_indices:
             main, max_indices = self.main_max1(x)
         else:
@@ -518,7 +510,6 @@ class DownsamplingBottleneck(nn.Layer):
         ext = self.ext_conv3(ext)
         ext = self.ext_regul(ext)
 
-        # Main branch channel padding
         n, ch_ext, h, w = ext.shape
         ch_main = main.shape[1]
         padding = paddle.zeros((n, ch_ext - ch_main, h, w))
@@ -546,6 +537,7 @@ class UpsamplingBottleneck(nn.Layer):
     3. 1x1 convolution which increases the number of channels to
         ``out_channels``, also called an expansion;
     4. dropout as a regularizer.
+
     Args:
         in_channels (int): the number of input channels.
         out_channels (int): the number of output channels.
@@ -612,7 +604,6 @@ class UpsamplingBottleneck(nn.Layer):
         self.out_activation = activation()
 
     def forward(self, x, max_indices, output_size):
-        # Main branch shortcut
         main = self.main_conv1(x)
         main = F.max_unpool2d(main,
                               max_indices,

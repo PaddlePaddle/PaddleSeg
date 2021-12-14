@@ -1,4 +1,5 @@
-iters: 80000
+_base_: '../_base_/cityscapes.yml'
+
 batch_size: 8
 
 train_dataset:
@@ -14,13 +15,6 @@ train_dataset:
     - type: Normalize
   mode: train
 
-val_dataset:
-  type: Cityscapes
-  dataset_root: data/cityscapes
-  transforms:
-    - type: Normalize
-  mode: val
-
 model:
   type: ENet
   num_classes: 19
@@ -29,14 +23,3 @@ model:
 optimizer:
   type: adam
   weight_decay: 0.0002
-
-lr_scheduler:
-  type: PolynomialDecay
-  learning_rate: 0.001
-  end_lr: 0
-  power: 0.9
-
-loss:
-  types:
-    - type: CrossEntropyLoss
-  coef: [1]
