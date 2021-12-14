@@ -69,6 +69,12 @@ See [Model Zoo Overview](./docs/model_zoo_overview.md) for more infomation.
 - [x] ADE20K
 - [x] Pascal Context
 - [x] COCO stuff
+- [x] CHASE_DB1
+- [x] HRF
+- [x] DRIVE
+- [x] STARE
+- [x] EG1800
+- [x] SUPERVISELY
 
 ## Tutorials <img src="./docs/images/teach.png" width="30"/>
 
@@ -173,6 +179,7 @@ python train.py --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml
 * Thanks [liuguoyu666](https://github.com/liguoyu666), [geoyee](https://github.com/geoyee) for contributing U-Net++ and U-Net3+.
 * Thanks [yazheng0307](https://github.com/yazheng0307) (LIU Zheng) for contributing quick-start document.
 * Thanks [CuberrChen](https://github.com/CuberrChen) for contributing STDC (rethink BiSeNet), PointRend and DetailAggregateLoss.
+* Thanks [stuartchen1949](https://github.com/stuartchen1949) for contributing SegNet.
 * Thanks [justld](https://github.com/justld) (Lang Du) for contributing ESPNet，HRNet_W48_Contrast and PixelContrastCrossEntropyLoss.
 * Thanks [Herman-Hu-saber](https://github.com/Herman-Hu-saber) (Hu Huiming) for contributing ESPNet.
 * Thanks [zhangjin12138](https://github.com/zhangjin12138) for contributing RandomCenterCrop.
