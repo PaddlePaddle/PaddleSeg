@@ -20,16 +20,11 @@ import cv2
 import numpy as np
 import paddle
 import paddle.nn.functional as F
-
 from paddleseg import utils
 from paddleseg.core import infer
 from paddleseg.utils import logger, progbar, TimeAverager
 
-
-def mkdir(path):
-    sub_dir = os.path.dirname(path)
-    if not os.path.exists(sub_dir):
-        os.makedirs(sub_dir)
+from utils import mkdir
 
 
 def partition_list(arr, m):
@@ -164,3 +159,4 @@ def predict(model,
             preprocess_cost_averager.reset()
             infer_cost_averager.reset()
             postprocess_cost_averager.reset()
+    return alpha_pred

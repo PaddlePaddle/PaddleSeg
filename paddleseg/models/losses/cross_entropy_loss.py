@@ -79,6 +79,7 @@ class CrossEntropyLoss(nn.Layer):
         label = label.astype('int64')
 
         # In F.cross_entropy, the ignore_index is invalid, which needs to be fixed.
+        # When there is 255 in the label and paddle version <= 2.1.3, the cross_entropy OP will report an error, which is fixed in paddle develop version.
         loss = F.cross_entropy(
             logit,
             label,

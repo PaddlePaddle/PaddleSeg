@@ -6,3 +6,4 @@ from .manager import MODELS
 from .language import TransUI
 from .coco.coco import COCO
 from .label import LabelList
+from .opath import check_cn, normcase

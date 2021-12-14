@@ -32,3 +32,4 @@ from .rmi_loss import RMILoss
 from .detail_aggregate_loss import DetailAggregateLoss
 from .point_cross_entropy_loss import PointCrossEntropyLoss
 from .semantic_connectivity_learning import SemanticConnectivityLearning
+from .pixel_contrast_cross_entropy_loss import PixelContrastCrossEntropyLoss
