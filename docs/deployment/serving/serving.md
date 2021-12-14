@@ -4,7 +4,7 @@
 
 PaddleSeg训练出来的模型，大家可以使用[Paddle Serving](https://github.com/PaddlePaddle/Serving)进行服务化部署。
 
-本文以一个示例介绍使用Paddle Serving部署的方法，更多使用教程请参考[文档](https://github.com/PaddlePaddle/Serving/blob/v0.6.0/README_CN.md)。
+本文以一个示例说明Linux系统下使用Paddle Serving部署的方法，更多使用教程请参考[文档](https://github.com/PaddlePaddle/Serving/blob/v0.6.0/README_CN.md)。
 
 
 ## 环境准备
