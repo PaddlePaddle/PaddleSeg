@@ -28,8 +28,8 @@ class ESPNetV1(nn.Layer):
     The ESPNetV1 implementation based on PaddlePaddle.
     
     The original article refers to
-     Sachin Mehta1, Mohammad Rastegari, Anat Caspi, Linda Shapiro, and Hannaneh Hajishirzi. "ESPNet: Efficient Spatial Pyramid of Dilated Convolutions for Semantic Segmentation"
-     (https://arxiv.org/abs/1803.06815).
+      Sachin Mehta1, Mohammad Rastegari, Anat Caspi, Linda Shapiro, and Hannaneh Hajishirzi. "ESPNet: Efficient Spatial Pyramid of Dilated Convolutions for Semantic Segmentation"
+      (https://arxiv.org/abs/1803.06815).
     
     Args:
         num_classes (int): The unique number of target classes.
