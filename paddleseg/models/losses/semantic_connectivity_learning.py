@@ -27,8 +27,15 @@ class SemanticConnectivityLearning(nn.Layer):
     SCL (Semantic Connectivity-aware Learning) framework, which introduces a SC Loss (Semantic Connectivity-aware Loss)
     to improve the quality of segmentation results from the perspective of connectivity. Support multi-class segmentation.
 
-    Step 1: Connected Components Calculation
-    Step 2: Connected Components Matching and SC Loss Calculation
+    The original article refers to
+        Lutao Chu, Yi Liu, Zewu Wu, Shiyu Tang, Guowei Chen, Yuying Hao, Juncai Peng, Zhiliang Yu, Zeyu Chen, Baohua Lai, Haoyi Xiong.
+        "PP-HumanSeg: Connectivity-Aware Portrait Segmentation with a Large-Scale Teleconferencing Video Dataset"
+        In WACV 2022 workshop
+        https://arxiv.org/abs/2112.07146
+
+    Running process:
+    Step 1. Connected Components Calculation
+    Step 2. Connected Components Matching and SC Loss Calculation
     '''
 
     def __init__(self, ignore_index=255, max_pred_num_conn=10, use_argmax=True):
