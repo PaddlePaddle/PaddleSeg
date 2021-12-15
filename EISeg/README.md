@@ -51,7 +51,7 @@ git clone https://github.com/PaddlePaddle/PaddleSeg.git
 安装好所需环境后，进入EISeg，可通过直接运行eiseg打开EISeg：
 
 ```shell
-cd PaddleSeg\contrib\EISeg
+cd PaddleSeg\EISeg
 python -m eiseg
 ```
 
