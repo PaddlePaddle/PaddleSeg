@@ -58,7 +58,7 @@ python -m eiseg
 或进入eiseg，运行exe.py打开EISeg：
 
 ```shell
-cd PaddleSeg\contrib\EISeg\eiseg
+cd PaddleSeg\EISeg\eiseg
 python exe.py
 ```
 
