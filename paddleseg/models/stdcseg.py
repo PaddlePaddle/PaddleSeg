@@ -234,6 +234,11 @@ class ARM_0(nn.Layer):
         return out
 
 
+class ARM_0_fk1(ARM_0):
+    def __init__(self, x_chan, y_chan, out_chan, first_ksize=1):
+        super().__init__(x_chan, y_chan, out_chan, first_ksize)
+
+
 class ARM_0_1(nn.Layer):
     '''no attention'''
 
@@ -303,6 +308,13 @@ class ARM_1(nn.Layer):
         x = paddle.multiply(x, atten)
         out = x + y
         return out
+
+
+class ARM_1_fk1(ARM_1):
+    '''no attention'''
+
+    def __init__(self, x_chan, y_chan, out_chan, first_ksize=1):
+        super().__init__(x_chan, y_chan, out_chan, first_ksize)
 
 
 class ARM_1_1(nn.Layer):
@@ -464,6 +476,55 @@ class ARM_1_5(nn.Layer):
         return out
 
 
+class ARM_1_6(nn.Layer):
+    '''use x to attention x'''
+
+    def __init__(self, x_chan, y_chan, out_chan, first_ksize=3):
+        super().__init__()
+        self.conv = layers.ConvBNReLU(
+            x_chan,
+            out_chan,
+            kernel_size=first_ksize,
+            stride=1,
+            padding=first_ksize // 2)
+        self.conv_atten = nn.Conv2D(
+            out_chan, out_chan, kernel_size=1, bias_attr=None)
+        self.bn_atten = nn.BatchNorm2D(out_chan)
+
+    def forward(self, x, y):
+        x = self.conv(x)
+        atten = F.adaptive_avg_pool2d(x, 1)
+        atten = self.conv_atten(atten)
+        atten = self.bn_atten(atten)
+        x = paddle.multiply(x, atten)
+        out = x + y
+        return out
+
+
+class ARM_1_7(nn.Layer):
+    '''use x to attention x'''
+
+    def __init__(self, x_chan, y_chan, out_chan, first_ksize=3):
+        super().__init__()
+        self.conv = layers.ConvBNReLU(
+            x_chan,
+            out_chan,
+            kernel_size=first_ksize,
+            stride=1,
+            padding=first_ksize // 2)
+        self.conv_atten = nn.Conv2D(
+            out_chan, out_chan, kernel_size=1, bias_attr=None)
+
+    def forward(self, x, y):
+        x = self.conv(x)
+        atten = F.adaptive_avg_pool2d(x, 1)
+        atten = self.conv_atten(atten)
+        atten = F.sigmoid(atten)
+        x = paddle.multiply(x, atten)
+        out = x + y
+        return out
+
+
 class ARM_2(nn.Layer):
     '''use y to attention y'''
 
@@ -489,6 +550,11 @@ class ARM_2(nn.Layer):
         y = paddle.multiply(y, atten)
         out = x + y
         return out
+
+
+class ARM_2_fk1(ARM_2):
+    def __init__(self, x_chan, y_chan, out_chan, first_ksize=1):
+        super().__init__(x_chan, y_chan, out_chan, first_ksize)
 
 
 class ARM_2_1(nn.Layer):
@@ -1036,6 +1102,39 @@ class ARM_11_6(nn.Layer):
         return out
 
 
+class ARM_11_7(nn.Layer):
+    '''add spatic atten by conv'''
+
+    def __init__(self, x_chan, y_chan, out_chan, first_ksize=3):
+        super().__init__()
+        self.conv = layers.ConvBNReLU(
+            x_chan,
+            out_chan,
+            kernel_size=first_ksize,
+            stride=1,
+            padding=first_ksize // 2)
+        self.conv_x = nn.Conv2D(2, 1, kernel_size=7, padding=3, bias_attr=False)
+        self.bn_x = nn.BatchNorm2D(1)
+        self.conv_y = nn.Conv2D(2, 1, kernel_size=7, padding=3, bias_attr=False)
+        self.bn_y = nn.BatchNorm2D(1)
+
+    def forward(self, x, y):
+        x = self.conv(x)
+
+        x_mean = paddle.mean(x, axis=1, keepdim=True)
+        x_max = paddle.max(x, axis=1, keepdim=True)
+        x_cat = paddle.concat([x_mean, x_max], axis=1)
+        xf = self.bn_x(self.conv_x(x_cat))
+
+        y_mean = paddle.mean(y, axis=1, keepdim=True)
+        y_max = paddle.max(y, axis=1, keepdim=True)
+        y_cat = paddle.concat([y_mean, y_max], axis=1)
+        yf = self.bn_y(self.conv_y(y_cat))
+
+        out = xf * x + yf * y
+        return out
+
+
 class ARM_12_1(nn.Layer):
     '''combined spatial attention '''
 
@@ -1138,110 +1237,150 @@ class ARM_12_4(nn.Layer):
         return out
 
 
-class ContextPath_pp_0(nn.Layer):
-    """The base cpp from stdcseg"""
+class ARM_12_5(nn.Layer):
+    '''combined spatial attention '''
+
+    def __init__(self, x_chan, y_chan, out_chan, first_ksize=3):
+        super().__init__()
+        self.conv = layers.ConvBNReLU(
+            x_chan,
+            out_chan,
+            kernel_size=first_ksize,
+            stride=1,
+            padding=first_ksize // 2)
+        self.conv_atten = nn.Conv2D(
+            2, 1, kernel_size=7, padding=3, bias_attr=False)
+
+    def forward(self, x, y):
+        x = self.conv(x)
+
+        xy_cat = paddle.concat([x, y], axis=1)  # n * 2c * h * w
+        xy_mean = paddle.mean(xy_cat, axis=1, keepdim=True)
+        xy_max = paddle.max(xy_cat, axis=1, keepdim=True)
+        mean_max_cat = paddle.concat([xy_mean, xy_max], axis=1)
+        atten = F.sigmoid(self.conv_atten(mean_max_cat))  # n * 1 * h * w
+
+        out = x * atten + y * (1 - atten)
+        return out
+
+
+class ARM_13_1(nn.Layer):
+    '''The fusion in sf_net '''
+
+    from paddleseg.models.sfnet import AlignedModule
+
+    class SFAlign(AlignedModule):
+        def __init__(self, h_ch, l_ch, out_ch, kernel_size=3):
+            super().__init__(h_ch, l_ch, kernel_size)
+            self.down_h = nn.Conv2D(h_ch, out_ch // 2, 1, bias_attr=False)
+            self.down_l = nn.Conv2D(l_ch, out_ch // 2, 1, bias_attr=False)
+            self.flow_make = nn.Conv2D(
+                out_ch,
+                2,
+                kernel_size=kernel_size,
+                padding=kernel_size // 2,
+                bias_attr=False)
 
     def __init__(self,
-                 backbone,
-                 arm_type,
-                 use_conv_last=False,
+                 x_chan,
+                 y_chan,
+                 out_chan,
+                 first_ksize=1,
                  resize_mode='nearest'):
         super().__init__()
+        self.conv = layers.ConvBNReLU(
+            x_chan, out_chan, kernel_size=first_ksize, padding=first_ksize // 2)
+        self.align = self.SFAlign(out_chan, y_chan, out_chan)
 
-        support_backbone = ["STDCNet_pp_0"]
-        assert backbone.__class__.__name__ in support_backbone
-        self.backbone = backbone
-        self.resize_mode = resize_mode
-
-        arm = eval(arm_type)
-        print("arm type: " + arm_type)
-
-        inplanes = 1024
-        self.arm32 = arm(inplanes, 128, 128, first_ksize=3)
-        self.arm16 = arm(512, 128, 128, first_ksize=3)
-
-        self.conv_head32 = layers.ConvBNReLU(
-            128, 128, kernel_size=3, stride=1, padding=1)
-        self.conv_head16 = layers.ConvBNReLU(
-            128, 128, kernel_size=3, stride=1, padding=1)
-        self.conv_avg = layers.ConvBNReLU(
-            inplanes, 128, kernel_size=1, stride=1, padding=0)
-
-    def forward(self, x):
-        feat2, feat4, feat8, feat16, feat32 = self.backbone(x)
-
-        feat8_hw = paddle.shape(feat8)[2:]
-        feat16_hw = paddle.shape(feat16)[2:]
-        feat32_hw = paddle.shape(feat32)[2:]
-
-        avg = F.adaptive_avg_pool2d(feat32, 1)
-        avg = self.conv_avg(avg)
-        avg_up = F.interpolate(avg, feat32_hw, mode=self.resize_mode)
-
-        feat32_sum = self.arm32(feat32, avg_up)
-        feat32_up = F.interpolate(feat32_sum, feat16_hw, mode=self.resize_mode)
-        feat32_up = self.conv_head32(feat32_up)
-
-        feat16_sum = self.arm16(feat16, feat32_up)
-        feat16_up = F.interpolate(feat16_sum, feat8_hw, mode=self.resize_mode)
-        feat16_up = self.conv_head16(feat16_up)
-
-        return feat2, feat4, feat8, feat16, feat16_up, feat32_up  # x8, x16
+    def forward(self, x, y):
+        x = self.conv(x)
+        y = self.align([x, y])
+        out = x + y
+        return out
 
 
-class ContextPath_pp_0_sf(nn.Layer):
-    """The cpp support the fusion of sf_net"""
+class ARM_13_2(nn.Layer):
+    '''The fusion in attanet'''
 
     def __init__(self,
-                 backbone,
-                 arm_type,
-                 use_conv_last=False,
+                 x_chan,
+                 y_chan,
+                 out_chan,
+                 first_ksize=3,
                  resize_mode='nearest'):
         super().__init__()
-
-        support_backbone = ["STDCNet_pp_0"]
-        assert backbone.__class__.__name__ in support_backbone
-        self.backbone = backbone
         self.resize_mode = resize_mode
+        self.conv_x = layers.ConvBNReLU(
+            x_chan, out_chan, kernel_size=first_ksize, padding=first_ksize // 2)
 
-        arm = eval(arm_type)
-        print("arm type: " + arm_type)
+        self.conv_cat = layers.ConvBNReLU(
+            out_chan + y_chan, out_chan, kernel_size=1, padding=0)
+        self.conv_atten = nn.Conv2D(out_chan, out_chan, 1, bias_attr=False)
+        self.bn_atten = nn.BatchNorm2D(out_chan)
 
-        inplanes = 1024
-        self.arm32 = arm(inplanes, 128, 128, first_ksize=3)
-        self.arm16 = arm(512, 128, 128, first_ksize=3)
+        self.conv_y = layers.ConvBNReLU(
+            y_chan, out_chan, kernel_size=3, padding=1)
+        self.conv_out = layers.ConvBNReLU(
+            out_chan, out_chan, kernel_size=3, padding=1)
 
-        self.conv_head32 = layers.ConvBNReLU(
-            128, 128, kernel_size=3, stride=1, padding=1)
-        self.conv_head16 = layers.ConvBNReLU(
-            128, 128, kernel_size=3, stride=1, padding=1)
-        self.conv_avg = layers.ConvBNReLU(
-            inplanes, 128, kernel_size=1, stride=1, padding=0)
+    def forward(self, x, y):
+        x = self.conv_x(x)
+        x_hw = paddle.shape(x)[2:]
 
-    def forward(self, x):
-        feat2, feat4, feat8, feat16, feat32 = self.backbone(x)
+        # get atten
+        y_up = F.interpolate(y, x_hw, mode=self.resize_mode)
+        xy = paddle.concat([x, y_up], axis=1)
+        xy = self.conv_cat(xy)
 
-        feat8_hw = paddle.shape(feat8)[2:]
-        feat16_hw = paddle.shape(feat16)[2:]
-        feat32_hw = paddle.shape(feat32)[2:]
+        atten = F.adaptive_avg_pool2d(xy, 1)
+        atten = self.bn_atten(self.conv_atten(atten))
+        atten = F.sigmoid(atten)
 
-        avg = F.adaptive_avg_pool2d(feat32, 1)
-        avg = self.conv_avg(avg)
-        avg_up = F.interpolate(avg, feat32_hw, mode=self.resize_mode)
+        y = self.conv_y(x)
+        y = atten * y
+        y_up = F.interpolate(y, x_hw, mode=self.resize_mode)
 
-        feat32_sum = self.arm32(feat32, avg_up)
-        feat32_up = F.interpolate(feat32_sum, feat16_hw, mode=self.resize_mode)
-        feat32_up = self.conv_head32(feat32_up)
+        x = (1 - atten) * x
+        out = x + y_up
+        out = self.conv_out(out)
 
-        feat16_sum = self.arm16(feat16, feat32_up)
-        feat16_up = F.interpolate(feat16_sum, feat8_hw, mode=self.resize_mode)
-        feat16_up = self.conv_head16(feat16_up)
+        return out
 
-        return feat2, feat4, feat8, feat16, feat16_up, feat32_up  # x8, x16
+
+class ARM_14_1(nn.Layer):
+    '''channel attention + combined spatial attention'''
+
+    def __init__(self, x_chan, y_chan, out_chan, first_ksize=3):
+        super().__init__()
+        self.conv = layers.ConvBNReLU(
+            x_chan,
+            out_chan,
+            kernel_size=first_ksize,
+            stride=1,
+            padding=first_ksize // 2)
+        self.sp_atten = nn.Conv2D(
+            2, 1, kernel_size=7, padding=3, bias_attr=False)
+        self.ch_atten = nn.Conv2D(
+            out_chan + y_chan, out_chan, kernel_size=1, bias_attr=False)
+
+    def forward(self, x, y):
+        x = self.conv(x)
+        xy_cat = paddle.concat([x, y], axis=1)  # n * 2c * h * w
+
+        xy_mean = paddle.mean(xy_cat, axis=1, keepdim=True)
+        xy_max = paddle.max(xy_cat, axis=1, keepdim=True)
+        xy_mean_max_cat = paddle.concat([xy_mean, xy_max], axis=1)
+        sp_atten = F.sigmoid(self.sp_atten(xy_mean_max_cat))  # n * 1 * h * w
+
+        xy_pool = F.adaptive_avg_pool2d(xy_cat, 1)
+        ch_atten = F.sigmoid(self.ch_atten(xy_pool))  # n * c * 1 * 1
+
+        out = sp_atten * ch_atten * x + (1 - sp_atten) * (1 - ch_atten) * y
+        return out
 
 
 class ContextPath_pp_1(nn.Layer):
-    """Consider all feature map from encoder"""
+    """The base cpp from stdcseg"""
 
     def __init__(self,
                  backbone,
@@ -1252,6 +1391,7 @@ class ContextPath_pp_1(nn.Layer):
 
         support_backbone = ["STDCNet_pp_1"]
         assert backbone.__class__.__name__ in support_backbone
+        print("backbone type:" + backbone.__class__.__name__)
         self.backbone = backbone
         self.resize_mode = resize_mode
 
@@ -1259,8 +1399,60 @@ class ContextPath_pp_1(nn.Layer):
         print("arm type: " + arm_type)
 
         inplanes = 1024
-        self.arm32 = arm(2 * inplanes, 128, 128, first_ksize=1)
-        self.arm16 = arm(2 * 512, 128, 128, first_ksize=1)
+        self.arm32 = arm(inplanes, 128, 128, first_ksize=3)
+        self.arm16 = arm(512, 128, 128, first_ksize=3)
+
+        self.conv_head32 = layers.ConvBNReLU(
+            128, 128, kernel_size=3, stride=1, padding=1)
+        self.conv_head16 = layers.ConvBNReLU(
+            128, 128, kernel_size=3, stride=1, padding=1)
+        self.conv_avg = layers.ConvBNReLU(
+            inplanes, 128, kernel_size=1, stride=1, padding=0)
+
+    def forward(self, x):
+        feat2, feat4, feat8, feat16, feat32 = self.backbone(x)
+
+        feat8_hw = paddle.shape(feat8)[2:]
+        feat16_hw = paddle.shape(feat16)[2:]
+        feat32_hw = paddle.shape(feat32)[2:]
+
+        avg = F.adaptive_avg_pool2d(feat32, 1)
+        avg = self.conv_avg(avg)
+        avg_up = F.interpolate(avg, feat32_hw, mode=self.resize_mode)
+
+        feat32_sum = self.arm32(feat32, avg_up)
+        feat32_up = F.interpolate(feat32_sum, feat16_hw, mode=self.resize_mode)
+        feat32_up = self.conv_head32(feat32_up)
+
+        feat16_sum = self.arm16(feat16, feat32_up)
+        feat16_up = F.interpolate(feat16_sum, feat8_hw, mode=self.resize_mode)
+        feat16_up = self.conv_head16(feat16_up)
+
+        return feat2, feat4, feat8, feat16, feat16_up, feat32_up  # x8, x16
+
+
+class ContextPath_pp_2(nn.Layer):
+    """Consider all feature map from encoder"""
+
+    def __init__(self,
+                 backbone,
+                 arm_type,
+                 use_conv_last=False,
+                 resize_mode='nearest'):
+        super().__init__()
+
+        support_backbone = ["STDCNet_pp_2"]
+        assert backbone.__class__.__name__ in support_backbone
+        print("backbone type:" + backbone.__class__.__name__)
+        self.backbone = backbone
+        self.resize_mode = resize_mode
+
+        arm = eval(arm_type)
+        print("arm type: " + arm_type)
+
+        inplanes = 1024
+        self.arm32 = arm(2 * inplanes, 128, 128)
+        self.arm16 = arm(2 * 512, 128, 128)
 
         self.conv_avg = layers.ConvBNReLU(
             inplanes, 128, kernel_size=1, stride=1, padding=0)
@@ -1291,6 +1483,49 @@ class ContextPath_pp_1(nn.Layer):
         x16_up = self.conv_head16(x16_up)
 
         return x2, x4, x8_2, x16_2, x16_up, x32_up  # x8, x16
+
+
+class ContextPath_pp_3(nn.Layer):
+    """The cpp support the fusion of sf_net and attanet"""
+
+    def __init__(self,
+                 backbone,
+                 arm_type,
+                 use_conv_last=False,
+                 resize_mode='nearest'):
+        super().__init__()
+        self.resize_mode = resize_mode
+
+        support_backbone = ["STDCNet_pp_1"]
+        assert backbone.__class__.__name__ in support_backbone
+        print("backbone type:" + backbone.__class__.__name__)
+        self.backbone = backbone
+
+        support_arm = ["ARM_13_1", "ARM_13_2"]
+        assert arm_type in support_arm
+        print("arm type: " + arm_type)
+        arm = eval(arm_type)
+
+        inplanes = 1024
+        self.arm32 = arm(inplanes, 128, 128, resize_mode=self.resize_mode)
+        self.arm16 = arm(512, 128, 128, resize_mode=self.resize_mode)
+
+        self.conv_avg = layers.ConvBNReLU(
+            inplanes, 128, kernel_size=1, stride=1, padding=0)
+
+    def forward(self, x):
+        feat2, feat4, feat8, feat16, feat32 = self.backbone(x)
+
+        feat8_hw = paddle.shape(feat8)[2:]
+
+        avg = F.adaptive_avg_pool2d(feat32, 1)
+        avg = self.conv_avg(avg)
+
+        feat32_sum = self.arm32(feat32, avg)
+        feat16_sum = self.arm16(feat16, feat32_sum)
+        feat16_up = F.interpolate(feat16_sum, feat8_hw, mode=self.resize_mode)
+
+        return feat2, feat4, feat8, feat16, feat16_up, feat32_sum
 
 
 class FeatureFusionModule_process_feat4(nn.Layer):
@@ -1508,7 +1743,7 @@ class STDCSeg_feat4_conv(STDCSeg_feat4):
 
 
 @manager.MODELS.add_component
-class STDCSeg_pp(nn.Layer):
+class STDCSeg_pp_1(nn.Layer):
     def __init__(self,
                  num_classes,
                  backbone,
@@ -1517,7 +1752,7 @@ class STDCSeg_pp(nn.Layer):
                  use_boundary_8=True,
                  use_boundary_16=False,
                  use_conv_last=False,
-                 cpp_type='ContextPath_pp_0',
+                 cpp_type='ContextPath_pp_1',
                  arm_type='ARM_1',
                  resize_mode='nearest',
                  pretrained=None):

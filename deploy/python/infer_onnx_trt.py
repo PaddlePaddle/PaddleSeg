@@ -151,7 +151,7 @@ class TRTPredictorV2(object):
                 bindings=bindings, stream_handle=stream.handle)
         elapsed_time = time.time() - t_start
         latency = elapsed_time / args.repeats * 1000
-        print("trt avg latency: {} ms".format(latency))
+        print("trt avg latency: {:.3f} ms".format(latency))
 
         # Transfer predictions back from the GPU.
         [
@@ -241,7 +241,6 @@ class TRTPredictorV2(object):
 def run_paddle(paddle_model, input_data):
     paddle_model.eval()
     paddle_outs = paddle_model(paddle.to_tensor(input_data))
-    print("The paddle model has been predicted by PaddlePaddle.")
     return paddle_outs[0].numpy()
 
 
@@ -283,27 +282,28 @@ def main(args):
 
     # 2. run paddle
     paddle_out = run_paddle(model, input_data)
+    print("The paddle model has been predicted by PaddlePaddle.\n")
 
     # 3. export onnx
     input_spec = paddle.static.InputSpec(input_size, 'float32', 'x')
     onnx_model_path = os.path.join(args.save_dir, model_name + "_model")
     paddle.onnx.export(
         model, onnx_model_path, input_spec=[input_spec], opset_version=11)
-    print("Completed export onnx model")
+    print("Completed export onnx model.\n")
 
     # 4. run and check onnx
     onnx_model_path = onnx_model_path + ".onnx"
     onnx_out = check_and_run_onnx(onnx_model_path, input_data)
     assert onnx_out.shape == paddle_out.shape
     np.testing.assert_allclose(onnx_out, paddle_out, rtol=0, atol=1e-03)
-    print("The paddle and onnx models have the same outputs.")
+    print("The paddle and onnx models have the same outputs.\n")
 
     # 5. run and check trt
     trt_out = TRTPredictorV2().run_trt(args, onnx_model_path, input_data)
     assert trt_out.size == paddle_out.size
     trt_out = trt_out.reshape(paddle_out.shape)
     np.testing.assert_allclose(trt_out, paddle_out, rtol=0, atol=1e-03)
-    print("The paddle and trt models have the same outputs.")
+    print("The paddle and trt models have the same outputs.\n")
 
 
 if __name__ == '__main__':

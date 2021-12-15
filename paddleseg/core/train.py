@@ -239,7 +239,6 @@ def train(model,
                             avg_loss, lr, avg_train_batch_cost,
                             avg_train_reader_cost,
                             batch_cost_averager.get_ips_average(), eta))
-                logger.info(avg_loss_list)
                 if use_vdl:
                     log_writer.add_scalar('Train/loss', avg_loss, iter)
                     # Record all losses if there are more than 2 losses.

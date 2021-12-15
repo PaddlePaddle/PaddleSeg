@@ -1682,7 +1682,7 @@ class CatBottleneck_conv5(nn.Layer):
         return out
 
 
-class STDCNet_pp_0(nn.Layer):
+class STDCNet_pp_1(nn.Layer):
     def __init__(self,
                  base=64,
                  layers=[4, 5, 3],
@@ -1788,7 +1788,7 @@ class STDCNet_pp_0(nn.Layer):
             utils.load_pretrained_model(self, self.pretrained)
 
 
-class STDCNet_pp_1(nn.Layer):
+class STDCNet_pp_2(nn.Layer):
     """"Return all feature maps"""
 
     def __init__(self,
@@ -1971,14 +1971,14 @@ def STDC1(**kwargs):
 
 
 @manager.BACKBONES.add_component
-def STDC1_pp_0(**kwargs):
-    model = STDCNet_pp_0(base=64, layers=[2, 2, 2], **kwargs)
+def STDC1_pp_1(**kwargs):
+    model = STDCNet_pp_1(base=64, layers=[2, 2, 2], **kwargs)
     return model
 
 
 @manager.BACKBONES.add_component
-def STDC1_pp_1(**kwargs):
-    model = STDCNet_pp_1(base=64, layers=[2, 2, 2], **kwargs)
+def STDC1_pp_2(**kwargs):
+    model = STDCNet_pp_2(base=64, layers=[2, 2, 2], **kwargs)
     return model
 
 
