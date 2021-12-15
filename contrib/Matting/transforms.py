@@ -12,12 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
 import random
+import string
 
 import cv2
 import numpy as np
 from paddleseg.transforms import functional
 from paddleseg.cvlibs import manager
+from paddleseg.utils import seg_env
 from PIL import Image
 
 
@@ -704,8 +707,79 @@ class Padding:
         return data
 
 
+class RandomSharpen:
+    def __init__(self, prob=0.1):
+        if prob < 0:
+            self.prob = 0
+        elif prob > 1:
+            self.prob = 1
+        else:
+            self.prob = prob
+
+    def __call__(self, data):
+        if np.random.rand() > self.prob:
+            return data
+
+        radius = np.random.choice([0, 3, 5, 7, 9])
+        w = np.random.uniform(0.1, 0.5)
+        blur_img = cv2.GaussianBlur(data['img'], (radius, radius), 5)
+        data['img'] = cv2.addWeighted(data['img'], 1 + w, blur_img, -w, 0)
+        for key in data.get('gt_fields', []):
+            if key == 'trimap' or key == 'alpha':
+                continue
+            blur_img = cv2.GaussianBlur(data[key], (0, 0), 5)
+            data[key] = cv2.addWeighted(data[key], 1.5, blur_img, -0.5, 0)
+
+        return data
+
+
+class RandomNoise:
+    def __init__(self, prob=0.1):
+        if prob < 0:
+            self.prob = 0
+        elif prob > 1:
+            self.prob = 1
+        else:
+            self.prob = prob
+
+    def __call__(self, data):
+        if np.random.rand() > self.prob:
+            return data
+        mean = np.random.uniform(0, 0.04)
+        var = np.random.uniform(0, 0.001)
+        noise = np.random.normal(mean, var**0.5, data['img'].shape) * 255
+        data['img'] = data['img'] + noise
+        data['img'] = np.clip(data['img'], 0, 255)
+
+        return data
+
+
+class RandomReJpeg:
+    def __init__(self, prob=0.1):
+        if prob < 0:
+            self.prob = 0
+        elif prob > 1:
+            self.prob = 1
+        else:
+            self.prob = prob
+
+    def __call__(self, data):
+        if np.random.rand() > self.prob:
+            return data
+        q = np.random.randint(70, 95)
+        img = data['img'].astype('uint8')
+
+        # Ensure no conflicts between processes
+        tmp_name = str(os.getpid()) + '.jpg'
+        tmp_name = os.path.join(seg_env.TMP_HOME, tmp_name)
+        cv2.imwrite(tmp_name, img, [int(cv2.IMWRITE_JPEG_QUALITY), q])
+        data['img'] = cv2.imread(tmp_name)
+
+        return data
+
+
 if __name__ == "__main__":
-    transforms = [RandomResize(size=(512, 512), scale=None)]
+    transforms = [RandomReJpeg(prob=1)]
     transforms = Compose(transforms)
     fg_path = '/ssd1/home/chenguowei01/github/PaddleSeg/contrib/Matting/data/matting/human_matting/Distinctions-646/train/fg/13(2).png'
     alpha_path = fg_path.replace('fg', 'alpha')
@@ -727,8 +801,10 @@ if __name__ == "__main__":
         print(data[key].shape)
 #     import pdb
 #     pdb.set_trace()
+
+    cv2.imwrite('ori.png', data['img'])
     data = transforms(data)
     print(data['img'].dtype, data['img'].shape)
     for key in data['gt_fields']:
         print(data[key].shape)
-#     cv2.imwrite('distort_img.jpg', data['img'].transpose([1, 2, 0]))
+    cv2.imwrite('rejpeg.png', data['img'].transpose([1, 2, 0]))
