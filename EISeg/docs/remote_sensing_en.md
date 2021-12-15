@@ -1,7 +1,5 @@
 # Remote Sensing
 
-以下内容为EISeg中遥感垂类相关的文档，主要包括环境配置和功能介绍两大方面。
-
 This part presents documents related to remote sensing in EISeg, including its environment configuration and functions.
 
 ## 1 Environment Configuration
