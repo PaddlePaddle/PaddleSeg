@@ -16,7 +16,7 @@
 
 EISeg (Efficient Interactive Segmentation) is an efficient and intelligent interactive segmentation annotation software developed based on PaddlePaddle. It covers a large number of high-quality segmentation models in different directions such as *high-performance* and *lightweight*, providing convenience to the rapid annotation of  semantic and instance labels with reduced cost. In addition, by applying the annotations obtained by EISeg to other segmentation models provided by PaddleSeg for training, high-performance models with customized scenarios can be created, integrating the whole process of segmentation tasks from data annotation to model training and prediction.
 
-![eiseg_demo](C:\Users\zhengleyi\Documents\GitHub\PaddleSeg\docs\images\eiseg_demo.gif)
+![eiseg_demo](../docs/images/eiseg_demo.gif)
 
 ## Model Preparation
 
