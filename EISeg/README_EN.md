@@ -52,14 +52,14 @@ git clone https://github.com/PaddlePaddle/PaddleSeg.git
 Enable EISeg by running eiseg after installing the needed environment:
 
 ```shell
-cd PaddleSeg\contrib\EISeg
+cd PaddleSeg\EISeg
 python -m eiseg
 ```
 
 Or you can run exe.py in eiseg:
 
 ```shell
-cd PaddleSeg\contrib\EISeg\eiseg
+cd PaddleSeg\EISeg\eiseg
 python exe.py
 ```
 
