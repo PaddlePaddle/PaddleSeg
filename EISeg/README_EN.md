@@ -1,8 +1,11 @@
+English | [简体中文](README.md)
+
+
 # EISeg
 
 [![Python 3.6](https://camo.githubusercontent.com/75b8738e1bdfe8a832711925abbc3bd449c1e7e9260c870153ec761cad8dde40/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f707974686f6e2d332e362b2d626c75652e737667)](https://www.python.org/downloads/release/python-360/) [![PaddlePaddle 2.2](https://camo.githubusercontent.com/f792707056617d58db17dca769c9a62832156e183b6eb29dde812b34123c2b18/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f706164646c65706164646c652d322e322d626c75652e737667)](https://www.python.org/downloads/release/python-360/) [![License](https://camo.githubusercontent.com/9330efc6e55b251db7966bffaec1bd48e3aae79348121f596d541991cfec8858/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f6c6963656e73652d417061636865253230322d626c75652e737667)](https://github.com/PaddlePaddle/PaddleSeg/blob/develop/EISeg/LICENSE) [![Downloads](https://camo.githubusercontent.com/d3d7e08bac205f34cee998959f85ffcbe6a9aca4129c20d7a5ec449848826d48/68747470733a2f2f706570792e746563682f62616467652f6569736567)](https://pepy.tech/project/eiseg)
 
-[Chinese (Simplified)](https://github.com/PaddlePaddle/PaddleSeg/blob/develop/EISeg/README.md) | English
+
 ## Latest Developments
 
 - Our paper on interactive segmentation named [EdgeFlow](https://arxiv.org/abs/2109.09406) is accepted by ICCV 2021 Workshop.
