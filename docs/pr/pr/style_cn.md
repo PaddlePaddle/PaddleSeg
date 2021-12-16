@@ -290,11 +290,11 @@ class Cityscapes(Dataset):
 
 
 ## 三、新增 PR checklist
-
-1. 在```configs```目录下创建以模型名命名的子目录```pspnet```；
-2. 创建一个`yml`配置文件，`yml`文件命名方式为模型名+`backbone + out_stride`+数据集+训练分辨率+训练单卡iters.yml，不含部分就略去。详细参考[配置项文档](../../design/use/use_cn.md)。
-3. 模型原文参考文献，reference风格采用Chicago，即全部作者名。```Zhao, Hengshuang, Jianping Shi, Xiaojuan Qi, Xiaogang Wang, and Jiaya Jia. "Pyramid scene parsing network." In Proceedings of the IEEE conference on computer vision and pattern recognition, pp. 2881-2890. 2017.```
-4. 至少提供在一个数据集上的测试精度，格式如下。其中，`mIoU、mIoU(flip)、mIoU(ms+flip)`是对模型进行评估的结果。`ms` 表示`multi-scale`，即使用三种`scale` [0.75, 1.0, 1.25]；`flip`表示水平翻转。详细评估参考[模型评估](../../evaluation/evaluate/evaluate_cn.md)
+1. 根据[代码提交规范](https://github.com/PaddlePaddle/PaddleSeg/blob/develop/docs/pr/pr/pr.md)进行代码提交前的准备，包含拉取最新内容、切换分支等。
+2. 在```configs```目录下创建以模型名命名的子目录```pspnet```；
+3. 创建一个`yml`配置文件，`yml`文件命名方式为模型名+`backbone + out_stride`+数据集+训练分辨率+训练单卡iters.yml，不含部分就略去。详细参考[配置项文档](../../design/use/use_cn.md)。
+4. 模型原文参考文献，reference风格采用Chicago，即全部作者名。```Zhao, Hengshuang, Jianping Shi, Xiaojuan Qi, Xiaogang Wang, and Jiaya Jia. "Pyramid scene parsing network." In Proceedings of the IEEE conference on computer vision and pattern recognition, pp. 2881-2890. 2017.```
+5. 至少提供在一个数据集上的测试精度，格式如下。其中，`mIoU、mIoU(flip)、mIoU(ms+flip)`是对模型进行评估的结果。`ms` 表示`multi-scale`，即使用三种`scale` [0.75, 1.0, 1.25]；`flip`表示水平翻转。详细评估参考[模型评估](../../evaluation/evaluate/evaluate_cn.md)
 
 
 | Model | Backbone | Resolution | Training Iters | mIoU | mIoU (flip) | mIoU (ms+flip) | Links |

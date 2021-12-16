@@ -11,7 +11,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""
+This code is based on https://github.com/niecongchong/RS-building-regularization
+Ths copyright of niecongchong/RS-building-regularization is as follows:
+Apache License [see LICENSE for details]
+"""
 
-from .imgtools import *
-from .shape import *
-from .raster import *
+
+from .rs_regularization import boundary_regularization
