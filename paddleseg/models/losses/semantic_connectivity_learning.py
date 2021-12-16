@@ -64,7 +64,7 @@ class SemanticConnectivityLearning(nn.Layer):
         labels_np = labels.astype('uint8').numpy()
         preds = paddle.to_tensor(preds, 'float32', stop_gradient=False)
         multi_class_sc_loss = paddle.zeros([preds.shape[0]])
-        zero = paddle.to_tensor([0.])
+        zero = paddle.to_tensor([0.])  # for accelerating
 
         # Traverse each image
         for i in range(preds.shape[0]):
@@ -101,7 +101,8 @@ class SemanticConnectivityLearning(nn.Layer):
                         pred_i, real_label_num, real_pred_num, zero)
                     sc_loss += 1 - img_connectivity
                 elif real_label_num == 0 and real_pred_num == 0:
-                    sc_loss += paddle.to_tensor([0.], stop_gradient=False)
+                    # if no connected component, SC Loss = 0, so pass
+                    pass
                 else:
                     preds_class = pred_i == int(class_)
                     not_preds_class = paddle.bitwise_not(preds_class)
