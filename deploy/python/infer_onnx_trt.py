@@ -72,6 +72,8 @@ def parse_args():
     parser.add_argument('--height', help='height', type=int, default=512)
     parser.add_argument('--warmup', default=500, type=int, help='')
     parser.add_argument('--repeats', default=5000, type=int, help='')
+    parser.add_argument(
+        '--enable_profile', action='store_true', help='enable trt profile')
 
     return parser.parse_args()
 
@@ -164,7 +166,7 @@ class TRTPredictorV2(object):
         return [out.host for out in outputs]
 
     @staticmethod
-    def get_engine(onnx_file_path, input_size, engine_file_path=""):
+    def get_engine(onnx_file_path, input_shape, engine_file_path=""):
         TRT_LOGGER = trt.Logger()
         EXPLICIT_BATCH = 1 << (int)(
             trt.NetworkDefinitionCreationFlag.EXPLICIT_BATCH)
@@ -193,7 +195,7 @@ class TRTPredictorV2(object):
                             print(parser.get_error(error))
                         return None
 
-                network.get_input(0).shape = input_size
+                network.get_input(0).shape = input_shape
                 #network.get_output(0).shape = [1, 19, 512, 1024]
                 print('Completed parsing of ONNX file')
                 print(
@@ -220,11 +222,14 @@ class TRTPredictorV2(object):
     @staticmethod
     def run_trt(args, onnx_file_path, input_data):
         engine_file_path = onnx_file_path[0:-5] + ".trt"
-        input_size = input_data.shape
-        with TRTPredictorV2.get_engine(onnx_file_path, input_size) as engine, \
+        input_shape = input_data.shape
+        with TRTPredictorV2.get_engine(onnx_file_path, input_shape) as engine, \
             engine.create_execution_context() as context:
             inputs, outputs, bindings, stream = TRTPredictorV2.allocate_buffers(
                 engine)
+            if args.enable_profile:
+                context.profiler = trt.Profiler()
+
             # Do inference
             # Set host input to the image. The common.do_inference function will copy the input to the GPU before executing.
             inputs[0].host = input_data
@@ -241,7 +246,10 @@ class TRTPredictorV2(object):
 def run_paddle(paddle_model, input_data):
     paddle_model.eval()
     paddle_outs = paddle_model(paddle.to_tensor(input_data))
-    return paddle_outs[0].numpy()
+    out = paddle_outs[0].numpy()
+    if out.ndim == 3:
+        out = out[np.newaxis, :]
+    return out
 
 
 def check_and_run_onnx(onnx_model_path, input_data):
@@ -275,17 +283,18 @@ def main(args):
     #model = SavedSegmentationNet(model)  # add argmax to the last layer
     model.eval()
 
-    input_size = [1, 3, args.height, args.width]
-    print("input_size:", input_size)
-    input_data = np.random.random(input_size).astype('float32')
+    input_shape = [1, 3, args.height, args.width]
+    print("input shape:", input_shape)
+    input_data = np.random.random(input_shape).astype('float32')
     model_name = os.path.basename(args.config).split(".")[0]
 
     # 2. run paddle
     paddle_out = run_paddle(model, input_data)
+    print("out shape:", paddle_out.shape)
     print("The paddle model has been predicted by PaddlePaddle.\n")
 
     # 3. export onnx
-    input_spec = paddle.static.InputSpec(input_size, 'float32', 'x')
+    input_spec = paddle.static.InputSpec(input_shape, 'float32', 'x')
     onnx_model_path = os.path.join(args.save_dir, model_name + "_model")
     paddle.onnx.export(
         model, onnx_model_path, input_spec=[input_spec], opset_version=11)

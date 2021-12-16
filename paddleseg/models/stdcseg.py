@@ -755,6 +755,40 @@ class ARM_7_1(nn.Layer):
         return out
 
 
+class ARM_7_1_1(nn.Layer):
+    '''the modified afm of attanet'''
+
+    def __init__(self, x_chan, y_chan, out_chan, first_ksize=3):
+        super().__init__()
+        self.conv = layers.ConvBNReLU(
+            x_chan,
+            out_chan,
+            kernel_size=first_ksize,
+            stride=1,
+            padding=first_ksize // 2)
+        self.conv_atten_1 = nn.Conv2D(
+            out_chan + y_chan,
+            out_chan,
+            kernel_size=3,
+            padding=1,
+            bias_attr=False)
+        self.conv_atten_2 = nn.Conv2D(
+            out_chan, out_chan, kernel_size=1, bias_attr=False)
+        self.bn_atten = nn.BatchNorm2D(out_chan)
+        self.sigmoid_atten = nn.Sigmoid()
+
+    def forward(self, x, y):
+        x = self.conv(x)
+        cat_xy = paddle.concat([x, y], axis=1)
+        atten = self.conv_atten_1(cat_xy)
+        atten = F.adaptive_avg_pool2d(atten, 1)
+        atten = self.conv_atten_2(atten)
+        atten = self.bn_atten(atten)
+        atten = self.sigmoid_atten(atten)
+        out = x * atten + y * (1 - atten)
+        return out
+
+
 class ARM_7_2(nn.Layer):
     '''add atten and shift'''
 
@@ -784,6 +818,33 @@ class ARM_7_2(nn.Layer):
         atten = self.bn_atten(atten)
         atten = self.sigmoid_atten(atten)
         out = (x * atten) * self.k1 + (y * (1 - atten)) * self.k2
+        return out
+
+
+class ARM_7_3(nn.Layer):
+    '''use cat(x,y) to attention x and y'''
+
+    def __init__(self, x_chan, y_chan, out_chan, first_ksize=3):
+        super().__init__()
+        self.conv = layers.ConvBNReLU(
+            x_chan,
+            out_chan,
+            kernel_size=first_ksize,
+            stride=1,
+            padding=first_ksize // 2)
+        self.conv_atten = nn.Conv2D(
+            2 * (out_chan + y_chan), out_chan, kernel_size=1, bias_attr=None)
+        self.bn_atten = nn.BatchNorm2D(out_chan)
+
+    def forward(self, x, y):
+        x = self.conv(x)
+        xy = paddle.concat([x, y], axis=1)
+        xy_avg_pool = F.adaptive_avg_pool2d(xy, 1)
+        xy_max_pool = F.adaptive_max_pool2d(xy, 1)
+        atten = paddle.concat([xy_avg_pool, xy_max_pool], axis=1)
+        atten = self.conv_atten(atten)
+        atten = F.sigmoid(self.bn_atten(atten))
+        out = x * atten + y * (1 - atten)
         return out
 
 
@@ -1348,7 +1409,7 @@ class ARM_13_2(nn.Layer):
 
 
 class ARM_14_1(nn.Layer):
-    '''channel attention + combined spatial attention'''
+    '''combined channel attention + combined spatial attention'''
 
     def __init__(self, x_chan, y_chan, out_chan, first_ksize=3):
         super().__init__()
@@ -1379,7 +1440,80 @@ class ARM_14_1(nn.Layer):
         return out
 
 
-class ContextPath_pp_1(nn.Layer):
+class ARM_14_2(nn.Layer):
+    '''combined channel attention + combined spatial attention'''
+
+    def __init__(self, x_chan, y_chan, out_chan, first_ksize=3):
+        super().__init__()
+        self.conv = layers.ConvBNReLU(
+            x_chan,
+            out_chan,
+            kernel_size=first_ksize,
+            stride=1,
+            padding=first_ksize // 2)
+        self.sp_atten = nn.Conv2D(
+            2, 1, kernel_size=3, padding=1, bias_attr=False)
+        self.ch_atten = nn.Conv2D(
+            out_chan + y_chan, out_chan, kernel_size=1, bias_attr=False)
+
+    def forward(self, x, y):
+        x = self.conv(x)
+        xy_cat = paddle.concat([x, y], axis=1)  # n * 2c * h * w
+
+        xy_mean = paddle.mean(xy_cat, axis=1, keepdim=True)
+        xy_max = paddle.max(xy_cat, axis=1, keepdim=True)
+        xy_mean_max_cat = paddle.concat([xy_mean, xy_max], axis=1)
+        sp_atten = F.sigmoid(self.sp_atten(xy_mean_max_cat))  # n * 1 * h * w
+
+        xy_pool = F.adaptive_avg_pool2d(xy_cat, 1)
+        ch_atten = F.sigmoid(self.ch_atten(xy_pool))  # n * c * 1 * 1
+
+        out = sp_atten * ch_atten * x + (1 - sp_atten) * (1 - ch_atten) * y
+        return out
+
+
+class ARM_15_1(nn.Layer):
+    '''channel attention + combined spatial attention'''
+
+    def __init__(self, x_chan, y_chan, out_chan, first_ksize=3):
+        super().__init__()
+        self.conv = layers.ConvBNReLU(
+            x_chan,
+            out_chan,
+            kernel_size=first_ksize,
+            stride=1,
+            padding=first_ksize // 2)
+
+        self.conv_x_atten = nn.Conv2D(
+            out_chan, out_chan, kernel_size=1, bias_attr=False)
+        self.conv_y_atten = nn.Conv2D(
+            y_chan, y_chan, kernel_size=1, bias_attr=False)
+
+        self.sp_atten = nn.Conv2D(
+            2, 1, kernel_size=3, padding=1, bias_attr=False)
+
+    def forward(self, x, y):
+        x = self.conv(x)
+
+        x_atten = F.adaptive_avg_pool2d(x, 1)
+        x_atten = F.sigmoid(self.conv_x_atten(x_atten))
+        x = x * x_atten
+
+        y_atten = F.adaptive_avg_pool2d(y, 1)
+        y_atten = F.sigmoid(self.conv_y_atten(y_atten))
+        y = y * y_atten
+
+        xy_cat = paddle.concat([x, y], axis=1)  # n * 2c * h * w
+        xy_mean = paddle.mean(xy_cat, axis=1, keepdim=True)
+        xy_max = paddle.max(xy_cat, axis=1, keepdim=True)
+        xy_mean_max_cat = paddle.concat([xy_mean, xy_max], axis=1)
+        sp_atten = F.sigmoid(self.sp_atten(xy_mean_max_cat))  # n * 1 * h * w
+
+        out = sp_atten * x + (1 - sp_atten) * y
+        return out
+
+
+class ContextPath_1(nn.Layer):
     """The base cpp from stdcseg"""
 
     def __init__(self,
@@ -1431,7 +1565,7 @@ class ContextPath_pp_1(nn.Layer):
         return feat2, feat4, feat8, feat16, feat16_up, feat32_up  # x8, x16
 
 
-class ContextPath_pp_2(nn.Layer):
+class ContextPath_2(nn.Layer):
     """Consider all feature map from encoder"""
 
     def __init__(self,
@@ -1485,7 +1619,7 @@ class ContextPath_pp_2(nn.Layer):
         return x2, x4, x8_2, x16_2, x16_up, x32_up  # x8, x16
 
 
-class ContextPath_pp_3(nn.Layer):
+class ContextPath_3(nn.Layer):
     """The cpp support the fusion of sf_net and attanet"""
 
     def __init__(self,
@@ -1743,7 +1877,7 @@ class STDCSeg_feat4_conv(STDCSeg_feat4):
 
 
 @manager.MODELS.add_component
-class STDCSeg_pp_1(nn.Layer):
+class STDCSeg_1(nn.Layer):
     def __init__(self,
                  num_classes,
                  backbone,
@@ -1752,7 +1886,7 @@ class STDCSeg_pp_1(nn.Layer):
                  use_boundary_8=True,
                  use_boundary_16=False,
                  use_conv_last=False,
-                 cpp_type='ContextPath_pp_1',
+                 cpp_type='ContextPath_1',
                  arm_type='ARM_1',
                  resize_mode='nearest',
                  pretrained=None):
@@ -1762,9 +1896,11 @@ class STDCSeg_pp_1(nn.Layer):
         self.use_boundary_4 = use_boundary_4
         self.use_boundary_8 = use_boundary_8
         self.use_boundary_16 = use_boundary_16
+
         print("cpp type:" + cpp_type)
         self.cp = eval(cpp_type)(backbone, arm_type, use_conv_last, resize_mode)
         self.ffm = FeatureFusionModule(384, 256)
+
         self.conv_out = SegHead(256, 256, num_classes)
         self.conv_out8 = SegHead(128, 64, num_classes)
         self.conv_out16 = SegHead(128, 64, num_classes)
@@ -1772,6 +1908,9 @@ class STDCSeg_pp_1(nn.Layer):
         self.conv_out_sp8 = SegHead(256, 64, 1)
         self.conv_out_sp4 = SegHead(64, 64, 1)
         self.conv_out_sp2 = SegHead(32, 64, 1)
+
+        self.resize_mode = resize_mode
+        self.align_corners = resize_mode == 'bilinear'
         self.pretrained = pretrained
         self.init_weight()
 
@@ -1788,8 +1927,11 @@ class STDCSeg_pp_1(nn.Layer):
 
             logit_list = [feat_out, feat_out8, feat_out16]
             logit_list = [
-                F.interpolate(x, x_hw, mode='bilinear', align_corners=True)
-                for x in logit_list
+                F.interpolate(
+                    x,
+                    x_hw,
+                    mode=self.resize_mode,
+                    align_corners=self.align_corners) for x in logit_list
             ]
 
             if self.use_boundary_2:
@@ -1805,7 +1947,10 @@ class STDCSeg_pp_1(nn.Layer):
             feat_fuse = self.ffm(feat_res8, feat_cp8)
             feat_out = self.conv_out(feat_fuse)
             feat_out = F.interpolate(
-                feat_out, x_hw, mode='bilinear', align_corners=True)
+                feat_out,
+                x_hw,
+                mode=self.resize_mode,
+                align_corners=self.align_corners)
             logit_list = [feat_out]
 
         return logit_list
