@@ -1,3 +1,5 @@
+简体中文 | [English](README_EN.md)
+
 # EISeg
 
 [![Python 3.6](https://img.shields.io/badge/python-3.6+-blue.svg)](https://www.python.org/downloads/release/python-360/) 
@@ -51,14 +53,14 @@ git clone https://github.com/PaddlePaddle/PaddleSeg.git
 安装好所需环境后，进入EISeg，可通过直接运行eiseg打开EISeg：
 
 ```shell
-cd PaddleSeg\contrib\EISeg
+cd PaddleSeg\EISeg
 python -m eiseg
 ```
 
 或进入eiseg，运行exe.py打开EISeg：
 
 ```shell
-cd PaddleSeg\contrib\EISeg\eiseg
+cd PaddleSeg\EISeg\eiseg
 python exe.py
 ```
 
