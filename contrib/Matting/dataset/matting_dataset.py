@@ -190,6 +190,12 @@ class MattingDataset(paddle.io.Dataset):
         return len(self.fg_bg_list)
 
     def composite(self, fg, alpha, ori_bg):
+        if np.random.rand() < 0.5:
+            fg = cv2.fastNlMeansDenoisingColored(fg, None, 3, 3, 7, 21)
+            ori_bg = cv2.fastNlMeansDenoisingColored(ori_bg, None, 3, 3, 7, 21)
+        if np.random.rand() < 0.5:
+            radius = np.random.choice([19, 29, 39, 49, 59])
+            ori_bg = cv2.GaussianBlur(ori_bg, (radius, radius), 0, 0)
         fg_h, fg_w = fg.shape[:2]
         ori_bg_h, ori_bg_w = ori_bg.shape[:2]
 
