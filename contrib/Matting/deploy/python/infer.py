@@ -128,9 +128,10 @@ def parse_args():
     )
     parser.add_argument(
         '--print_detail',
-        dest='print_detail',
-        help='Print GLOG information of Paddle Inference.',
-        action='store_true')
+        default=True,
+        type=eval,
+        choices=[True, False],
+        help='Print GLOG information of Paddle Inference.')
 
     return parser.parse_args()
 
@@ -292,13 +293,11 @@ class Predictor:
         precision_mode = precision_map[self.args.precision]
 
         if self.args.use_trt:
-
-            print('++++++++++++++')
             logger.info("Use TRT")
             self.pred_cfg.enable_tensorrt_engine(
                 workspace_size=1 << 30,
                 max_batch_size=1,
-                min_subgraph_size=50,
+                min_subgraph_size=300,
                 precision_mode=precision_mode,
                 use_static=False,
                 use_calib_mode=False)
@@ -310,7 +309,6 @@ class Predictor:
                 self.pred_cfg.enable_tuned_tensorrt_dynamic_shape(
                     self.args.auto_tuned_shape_file, allow_build_at_runtime)
             else:
-                print('===============')
                 logger.info("Use manual set dynamic shape")
                 min_input_shape = {"x": [1, 3, 100, 100]}
                 max_input_shape = {"x": [1, 3, 2000, 3000]}
