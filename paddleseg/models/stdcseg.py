@@ -1516,11 +1516,7 @@ class ARM_15_1(nn.Layer):
 class ContextPath_1(nn.Layer):
     """The base cpp from stdcseg"""
 
-    def __init__(self,
-                 backbone,
-                 arm_type,
-                 use_conv_last=False,
-                 resize_mode='nearest'):
+    def __init__(self, backbone, arm_type, resize_mode='nearest'):
         super().__init__()
 
         support_backbone = ["STDCNet_pp_1"]
@@ -1532,16 +1528,19 @@ class ContextPath_1(nn.Layer):
         arm = eval(arm_type)
         print("arm type: " + arm_type)
 
-        inplanes = 1024
-        self.arm32 = arm(inplanes, 128, 128, first_ksize=3)
-        self.arm16 = arm(512, 128, 128, first_ksize=3)
+        fpn_ch = 128
+        _, ch16, ch_32 = backbone.feat_channels
+
+        self.conv_avg = layers.ConvBNReLU(
+            ch_32, fpn_ch, kernel_size=1, stride=1, padding=0)
+
+        self.arm32 = arm(ch_32, fpn_ch, fpn_ch, first_ksize=3)
+        self.arm16 = arm(ch16, fpn_ch, fpn_ch, first_ksize=3)
 
         self.conv_head32 = layers.ConvBNReLU(
-            128, 128, kernel_size=3, stride=1, padding=1)
+            fpn_ch, fpn_ch, kernel_size=3, stride=1, padding=1)
         self.conv_head16 = layers.ConvBNReLU(
-            128, 128, kernel_size=3, stride=1, padding=1)
-        self.conv_avg = layers.ConvBNReLU(
-            inplanes, 128, kernel_size=1, stride=1, padding=0)
+            fpn_ch, fpn_ch, kernel_size=3, stride=1, padding=1)
 
     def forward(self, x):
         feat2, feat4, feat8, feat16, feat32 = self.backbone(x)
@@ -1568,11 +1567,7 @@ class ContextPath_1(nn.Layer):
 class ContextPath_2(nn.Layer):
     """Consider all feature map from encoder"""
 
-    def __init__(self,
-                 backbone,
-                 arm_type,
-                 use_conv_last=False,
-                 resize_mode='nearest'):
+    def __init__(self, backbone, arm_type, resize_mode='nearest'):
         super().__init__()
 
         support_backbone = ["STDCNet_pp_2"]
@@ -1584,16 +1579,19 @@ class ContextPath_2(nn.Layer):
         arm = eval(arm_type)
         print("arm type: " + arm_type)
 
-        inplanes = 1024
-        self.arm32 = arm(2 * inplanes, 128, 128)
-        self.arm16 = arm(2 * 512, 128, 128)
+        fpn_ch = 128
+        _, ch16, ch_32 = backbone.feat_channels
 
         self.conv_avg = layers.ConvBNReLU(
-            inplanes, 128, kernel_size=1, stride=1, padding=0)
-        self.conv_head16 = layers.ConvBNReLU(
-            128, 128, kernel_size=3, stride=1, padding=1)
+            ch_32, fpn_ch, kernel_size=1, stride=1, padding=0)
+
+        self.arm32 = arm(2 * ch_32, fpn_ch, fpn_ch, first_ksize=3)
+        self.arm16 = arm(2 * ch16, fpn_ch, fpn_ch, first_ksize=3)
+
         self.conv_head32 = layers.ConvBNReLU(
-            128, 128, kernel_size=3, stride=1, padding=1)
+            fpn_ch, fpn_ch, kernel_size=3, stride=1, padding=1)
+        self.conv_head16 = layers.ConvBNReLU(
+            fpn_ch, fpn_ch, kernel_size=3, stride=1, padding=1)
 
     def forward(self, x):
         x2, x4, x8_1, x8_2, x16_1, x16_2, x32_1, x32_2 = self.backbone(x)
@@ -1622,11 +1620,7 @@ class ContextPath_2(nn.Layer):
 class ContextPath_3(nn.Layer):
     """The cpp support the fusion of sf_net and attanet"""
 
-    def __init__(self,
-                 backbone,
-                 arm_type,
-                 use_conv_last=False,
-                 resize_mode='nearest'):
+    def __init__(self, backbone, arm_type, resize_mode='nearest'):
         super().__init__()
         self.resize_mode = resize_mode
 
@@ -1885,10 +1879,10 @@ class STDCSeg_1(nn.Layer):
                  use_boundary_4=False,
                  use_boundary_8=True,
                  use_boundary_16=False,
-                 use_conv_last=False,
                  cpp_type='ContextPath_1',
                  arm_type='ARM_1',
                  resize_mode='nearest',
+                 out_seg_head_ch=256,
                  pretrained=None):
         super().__init__()
 
@@ -1898,10 +1892,12 @@ class STDCSeg_1(nn.Layer):
         self.use_boundary_16 = use_boundary_16
 
         print("cpp type:" + cpp_type)
-        self.cp = eval(cpp_type)(backbone, arm_type, use_conv_last, resize_mode)
+        print("resize_mode:" + resize_mode)
+        self.cp = eval(cpp_type)(backbone, arm_type, resize_mode)
         self.ffm = FeatureFusionModule(384, 256)
 
-        self.conv_out = SegHead(256, 256, num_classes)
+        print("out_seg_head_ch:" + str(out_seg_head_ch))
+        self.conv_out = SegHead(256, out_seg_head_ch, num_classes)
         self.conv_out8 = SegHead(128, 64, num_classes)
         self.conv_out16 = SegHead(128, 64, num_classes)
         self.conv_out_sp16 = SegHead(512, 64, 1)
@@ -1909,8 +1905,6 @@ class STDCSeg_1(nn.Layer):
         self.conv_out_sp4 = SegHead(64, 64, 1)
         self.conv_out_sp2 = SegHead(32, 64, 1)
 
-        self.resize_mode = resize_mode
-        self.align_corners = resize_mode == 'bilinear'
         self.pretrained = pretrained
         self.init_weight()
 
@@ -1927,11 +1921,8 @@ class STDCSeg_1(nn.Layer):
 
             logit_list = [feat_out, feat_out8, feat_out16]
             logit_list = [
-                F.interpolate(
-                    x,
-                    x_hw,
-                    mode=self.resize_mode,
-                    align_corners=self.align_corners) for x in logit_list
+                F.interpolate(x, x_hw, mode='bilinear', align_corners=True)
+                for x in logit_list
             ]
 
             if self.use_boundary_2:
@@ -1947,10 +1938,7 @@ class STDCSeg_1(nn.Layer):
             feat_fuse = self.ffm(feat_res8, feat_cp8)
             feat_out = self.conv_out(feat_fuse)
             feat_out = F.interpolate(
-                feat_out,
-                x_hw,
-                mode=self.resize_mode,
-                align_corners=self.align_corners)
+                feat_out, x_hw, mode='bilinear', align_corners=True)
             logit_list = [feat_out]
 
         return logit_list

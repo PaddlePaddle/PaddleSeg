@@ -20,7 +20,6 @@ import paddle.nn.functional as F
 
 from paddleseg.utils import utils
 from paddleseg.cvlibs import manager, param_init
-from paddleseg.models.layers.layer_libs import SyncBatchNorm
 
 __all__ = ["STDC1", "STDC2"]
 
@@ -144,8 +143,20 @@ class ConvBNRelu(nn.Layer):
             dilation=dilation,
             bias_attr=False,
             groups=groups)
-        self.bn = SyncBatchNorm(out_planes, data_format='NCHW')
+        self.bn = self.SyncBatchNorm(out_planes, data_format='NCHW')
         self.act = act()
+
+    @staticmethod
+    def SyncBatchNorm(*args, **kwargs):
+        """In cpu environment nn.SyncBatchNorm does not have kernel so use nn.BatchNorm2D instead"""
+        import os
+        if paddle.get_device() == 'cpu' or os.environ.get(
+                'PADDLESEG_EXPORT_STAGE'):
+            return nn.BatchNorm2D(*args, **kwargs)
+        elif paddle.distributed.ParallelEnv().nranks == 1:
+            return nn.BatchNorm2D(*args, **kwargs)
+        else:
+            return nn.SyncBatchNorm(*args, **kwargs)
 
     def forward(self, x):
         out = self.act(self.bn(self.conv(x)))
@@ -1683,14 +1694,16 @@ class CatBottleneck_conv5(nn.Layer):
 
 
 class STDCNet_pp_1(nn.Layer):
+    """support all block type"""
+
     def __init__(self,
                  base=64,
-                 layers=[4, 5, 3],
+                 layers=[2, 2, 2],
+                 layers_expand=[4, 8, 16],
                  block_num=4,
                  block_type="cat",
                  num_classes=1000,
                  dropout=0.20,
-                 use_conv_last=False,
                  pretrained=None):
         super().__init__()
 
@@ -1718,11 +1731,10 @@ class STDCNet_pp_1(nn.Layer):
         print("block_type:" + block_type)
         assert block_type in block_dict
         block = block_dict[block_type]
-        self.feat_channels = [1024]
+        self.feat_channels = [v * base for v in layers_expand]
 
-        self.use_conv_last = use_conv_last
-        self.features = self._make_layers(base, layers, block_num, block)
-        self.conv_last = ConvBNRelu(base * 16, max(1024, base * 16), 1, 1)
+        self.features = self._make_layers(base, layers, layers_expand,
+                                          block_num, block)
 
         self.x2 = nn.Sequential(self.features[:1])
         self.x4 = nn.Sequential(self.features[1:2])
@@ -1743,37 +1755,25 @@ class STDCNet_pp_1(nn.Layer):
         feat8 = self.x8(feat4)
         feat16 = self.x16(feat8)
         feat32 = self.x32(feat16)
-        if self.use_conv_last:
-            feat32 = self.conv_last(feat32)
         return feat2, feat4, feat8, feat16, feat32
 
-    def _make_layers(self, base, layers, block_num, block):
+    def _make_layers(self, base, layers, layers_expand, block_num, block):
+        assert layers == [2, 2, 2]
+        assert len(layers) == len(layers_expand)
+
         features = []
         features += [ConvBNRelu(3, base // 2, 3, 2)]
         features += [ConvBNRelu(base // 2, base, 3, 2)]
-        '''
-        for i, layer in enumerate(layers):
-            for j in range(layer):
-                if i == 0 and j == 0:
-                    features.append(block(base, base * 4, block_num, 2))
-                elif j == 0:
-                    features.append(
-                        block(base * int(math.pow(2, i + 1)),
-                              base * int(math.pow(2, i + 2)), block_num, 2))
-                else:
-                    features.append(
-                        block(base * int(math.pow(2, i + 2)),
-                              base * int(math.pow(2, i + 2)), block_num, 1))
-        '''
 
-        features.append(block(base, base * 4, block_num, 2))
-        features.append(block(base * 4, base * 4, block_num, 1))
+        r0, r1, r2 = layers_expand[0], layers_expand[1], layers_expand[2]
+        features.append(block(base, base * r0, block_num, 2))
+        features.append(block(base * r0, base * r0, block_num, 1))
 
-        features.append(block(base * 4, base * 8, block_num, 2))
-        features.append(block(base * 8, base * 8, block_num, 1))
+        features.append(block(base * r0, base * r1, block_num, 2))
+        features.append(block(base * r1, base * r1, block_num, 1))
 
-        features.append(block(base * 8, base * 16, block_num, 2))
-        features.append(block(base * 16, base * 16, block_num, 1))
+        features.append(block(base * r1, base * r2, block_num, 2))
+        features.append(block(base * r2, base * r2, block_num, 1))
 
         return nn.Sequential(*features)
 
@@ -1793,12 +1793,12 @@ class STDCNet_pp_2(nn.Layer):
 
     def __init__(self,
                  base=64,
-                 layers=[4, 5, 3],
+                 layers=[2, 2, 2],
+                 layers_expand=[4, 8, 16],
                  block_num=4,
                  block_type="cat",
                  num_classes=1000,
                  dropout=0.20,
-                 use_conv_last=False,
                  pretrained=None):
         super().__init__()
 
@@ -1826,11 +1826,10 @@ class STDCNet_pp_2(nn.Layer):
         print("block_type:" + block_type)
         assert block_type in block_dict
         block = block_dict[block_type]
-        self.feat_channels = [1024]
+        self.feat_channels = [v * base for v in layers_expand]
 
-        self.use_conv_last = use_conv_last
-        self.features = self._make_layers(base, layers, block_num, block)
-        self.conv_last = ConvBNRelu(base * 16, max(1024, base * 16), 1, 1)
+        self.features = self._make_layers(base, layers, layers_expand,
+                                          block_num, block)
 
         assert layers == [2, 2, 2]
         self.pretrained = pretrained
@@ -1847,19 +1846,23 @@ class STDCNet_pp_2(nn.Layer):
         x32_2 = self.features[7](x32_1)
         return x2, x4, x8_1, x8_2, x16_1, x16_2, x32_1, x32_2
 
-    def _make_layers(self, base, layers, block_num, block):
+    def _make_layers(self, base, layers, layers_expand, block_num, block):
+        assert layers == [2, 2, 2]
+        assert len(layers) == len(layers_expand)
+
         features = []
         features += [ConvBNRelu(3, base // 2, 3, 2)]
         features += [ConvBNRelu(base // 2, base, 3, 2)]
 
-        features.append(block(base, base * 4, block_num, 2))
-        features.append(block(base * 4, base * 4, block_num, 1))
+        r0, r1, r2 = layers_expand[0], layers_expand[1], layers_expand[2]
+        features.append(block(base, base * r0, block_num, 2))
+        features.append(block(base * r0, base * r0, block_num, 1))
 
-        features.append(block(base * 4, base * 8, block_num, 2))
-        features.append(block(base * 8, base * 8, block_num, 1))
+        features.append(block(base * r0, base * r1, block_num, 2))
+        features.append(block(base * r1, base * r1, block_num, 1))
 
-        features.append(block(base * 8, base * 16, block_num, 2))
-        features.append(block(base * 16, base * 16, block_num, 1))
+        features.append(block(base * r1, base * r2, block_num, 2))
+        features.append(block(base * r2, base * r2, block_num, 1))
 
         return nn.Sequential(*features)
 
@@ -1971,14 +1974,28 @@ def STDC1(**kwargs):
 
 
 @manager.BACKBONES.add_component
-def STDC1_pp_1(**kwargs):
-    model = STDCNet_pp_1(base=64, layers=[2, 2, 2], **kwargs)
+def STDC_pp_1(**kwargs):
+    """ base backbone
+    """
+    model = STDCNet_pp_1(
+        base=64, layers=[2, 2, 2], layers_expand=[4, 8, 16], **kwargs)
     return model
 
 
 @manager.BACKBONES.add_component
-def STDC1_pp_2(**kwargs):
+def STDC_pp_2(**kwargs):
+    """ Return all feature map
+    """
     model = STDCNet_pp_2(base=64, layers=[2, 2, 2], **kwargs)
+    return model
+
+
+@manager.BACKBONES.add_component
+def STDC_pp_3(**kwargs):
+    """The channel of last stage is 512
+    """
+    model = STDCNet_pp_1(
+        base=64, layers=[2, 2, 2], layers_expand=[4, 8, 8], **kwargs)
     return model
 
 
