@@ -18,11 +18,9 @@ import paddle
 import paddle.nn as nn
 import paddle.nn.functional as F
 
-from paddle.nn import layer
 from paddleseg.models import layers
 from paddleseg.cvlibs import manager
 from paddleseg.utils import utils
-from paddle.fluid.layers.nn import scale
 
 
 @manager.MODELS.add_component
@@ -75,14 +73,13 @@ class PFPNNet(nn.Layer):
         feats = self.backbone(x)
         feats = [feats[i] for i in self.backbone_indices]
         logit_list = self.head(feats)
-        logit_list = [
+        return [
             F.interpolate(logit,
                           paddle.shape(x)[2:],
                           mode='bilinear',
                           align_corners=self.align_corners)
             for logit in logit_list
         ]
-        return logit_list
 
     def init_weight(self):
         if self.pretrained is not None:
@@ -146,26 +143,24 @@ class PFPNHead(nn.Layer):
             self.scale_heads.append(nn.Sequential(*scale_head))
         self.scale_heads = nn.LayerList(self.scale_heads)
 
-        if self.enable_auxiliary_loss:
-            if dropout_ratio is not None:
+        if dropout_ratio:
+            self.dropout = nn.Dropout2D(dropout_ratio)
+            if self.enable_auxiliary_loss:
                 self.dsn = nn.Sequential(
                     layers.ConvBNReLU(fpn_inplanes[2],
                                       fpn_inplanes[2],
                                       3,
                                       padding=1), nn.Dropout2D(dropout_ratio),
                     nn.Conv2D(fpn_inplanes[2], num_class, kernel_size=1))
-            else:
+        else:
+            self.dropout = None
+            if self.enable_auxiliary_loss:
                 self.dsn = nn.Sequential(
                     layers.ConvBNReLU(fpn_inplanes[2],
                                       fpn_inplanes[2],
                                       3,
                                       padding=1),
                     nn.Conv2D(fpn_inplanes[2], num_class, kernel_size=1))
-
-        if dropout_ratio is not None:
-            self.dropout = nn.Dropout2D(dropout_ratio)
-        else:
-            self.dropout = None
 
         self.conv_last = nn.Sequential(
             layers.ConvBNReLU(len(fpn_inplanes) * fpn_dim,
@@ -185,7 +180,6 @@ class PFPNHead(nn.Layer):
         last_out = self.lateral_convs[-1](conv_out[-1])
         f = last_out
         fpn_feature_list = [last_out]
-        out = []
         for i in reversed(range(len(conv_out) - 1)):
             conv_x = conv_out[i]
             conv_x = self.lateral_convs[i](conv_x)
@@ -206,8 +200,6 @@ class PFPNHead(nn.Layer):
         x = self.cls_seg(x)
         if self.enable_auxiliary_loss:
             dsn = self.dsn(conv_out[2])
-            out.append(x)
-            out.append(dsn)
-            return out
+            return [x, dsn]
         else:
             return [x]
