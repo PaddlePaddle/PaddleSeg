@@ -46,3 +46,4 @@ from .pointrend import PointRend
 from .ginet import GINet
 from .segmenter import *
 from .segnet import SegNet
+from .encnet import ENCNet
