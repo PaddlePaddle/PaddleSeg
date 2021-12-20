@@ -44,6 +44,7 @@ class SFNet(nn.Layer):
                  num_classes,
                  backbone,
                  backbone_indices,
+                 align_type='AlignedModule_origin',
                  enable_auxiliary_loss=False,
                  align_corners=False,
                  pretrained=None):
@@ -70,6 +71,7 @@ class SFNet(nn.Layer):
             num_class=num_classes,
             fpn_inplanes=fpn_inplanes,
             fpn_dim=fpn_dim,
+            align_type=align_type,
             enable_auxiliary_loss=self.enable_auxiliary_loss)
         self.init_weight()
 
@@ -108,6 +110,7 @@ class SFNetHead(nn.Layer):
                  num_class,
                  fpn_inplanes,
                  fpn_dim=256,
+                 align_type='AlignedModule_origin',
                  enable_auxiliary_loss=False):
         super(SFNetHead, self).__init__()
         self.ppm = layers.PPModule(
@@ -129,12 +132,13 @@ class SFNetHead(nn.Layer):
         self.fpn_out = []
         self.fpn_out_align = []
         self.dsn = []
+        align_model = eval(align_type)
         for i in range(len(fpn_inplanes) - 1):
             self.fpn_out.append(
                 nn.Sequential(
                     layers.ConvBNReLU(fpn_dim, fpn_dim, 3, bias_attr=False)))
             self.fpn_out_align.append(
-                AlignedModule(inplane=fpn_dim, outplane=fpn_dim // 2))
+                align_model(inplane=fpn_dim, outplane=fpn_dim // 2))
             if self.enable_auxiliary_loss:
                 self.dsn.append(
                     nn.Sequential(layers.AuxLayer(fpn_dim, fpn_dim, num_class)))
@@ -159,7 +163,7 @@ class SFNetHead(nn.Layer):
             conv_x = conv_out[i]
             conv_x = self.fpn_in[i](conv_x)
             f = self.fpn_out_align[i]([conv_x, f])
-            f = conv_x + f
+            #f = conv_x + f
             fpn_feature_list.append(self.fpn_out[i](f))
             if self.enable_auxiliary_loss:
                 out.append(self.dsn[i](f))
@@ -231,3 +235,131 @@ class AlignedModule(nn.Layer):
         flow = self.flow_make(paddle.concat([h_feature, low_feature], 1))
         h_feature = self.flow_warp(h_feature_orign, flow, size=size)
         return h_feature
+
+
+class AlignedModule_origin(AlignedModule):
+    def __init__(self, inplane, outplane, kernel_size=3):
+        super(AlignedModule_origin, self).__init__(inplane, outplane,
+                                                   kernel_size)
+
+    def forward(self, x):
+        low_feature, h_feature = x
+        up_feature = super().forward(x)
+        out = low_feature + up_feature
+        return out
+
+
+class AlignedModule_add(nn.Layer):
+    def __init__(self, inplane, outplane, kernel_size=3):
+        super().__init__()
+
+    def forward(self, x):
+        low_feature, h_feature = x
+        size = paddle.shape(low_feature)[2:]
+        up_feature = F.interpolate(h_feature, size=size, mode='bilinear')
+        out = low_feature + up_feature
+        return out
+
+
+class AlignedModule_cat_conv(nn.Layer):
+    def __init__(self, inplane, outplane, kernel_size=3):
+        super().__init__()
+        self.conv = layers.ConvBNReLU(
+            2 * inplane, inplane, kernel_size=3, stride=1, padding=1)
+
+    def forward(self, x):
+        low_feature, h_feature = x
+        size = paddle.shape(low_feature)[2:]
+        h_feature = F.interpolate(h_feature, size=size, mode='bilinear')
+        out = paddle.concat([low_feature, h_feature], axis=1)
+        out = self.conv(out)
+        return out
+
+
+class AlignedModule_ch_atten_1(nn.Layer):
+    '''combined ch atten'''
+
+    def __init__(self, inplane, outplane, kernel_size=3):
+        super().__init__()
+
+        self.conv_atten = nn.Conv2D(
+            4 * inplane, inplane, kernel_size=1, bias_attr=None)
+        self.bn_atten = nn.BatchNorm2D(inplane)
+
+    def forward(self, inputs):
+        x, y = inputs
+
+        size = paddle.shape(x)[2:]
+        y = F.interpolate(y, size=size, mode='bilinear')
+
+        xy = paddle.concat([x, y], axis=1)  # n*2c*1*1
+        xy_avg_pool = F.adaptive_avg_pool2d(xy, 1)
+        xy_max_pool = F.adaptive_max_pool2d(xy, 1)
+
+        atten = paddle.concat([xy_avg_pool, xy_max_pool], axis=1)  # n*4c*1*1
+        atten = self.conv_atten(atten)
+        atten = F.sigmoid(self.bn_atten(atten))
+        out = x * atten + y * (1 - atten)
+        return out
+
+
+class AlignedModule_sp_atten_1(nn.Layer):
+    '''combined sp atten'''
+
+    def __init__(self, inplane, outplane, kernel_size=3):
+        super().__init__()
+        self.conv_atten = nn.Conv2D(
+            2, 1, kernel_size=3, padding=1, bias_attr=False)
+
+    def forward(self, inputs):
+        x, y = inputs
+
+        size = paddle.shape(x)[2:]
+        y = F.interpolate(y, size=size, mode='bilinear')
+
+        xy_cat = paddle.concat([x, y], axis=1)  # n * 2c * h * w
+        xy_mean = paddle.mean(xy_cat, axis=1, keepdim=True)
+        xy_max = paddle.max(xy_cat, axis=1, keepdim=True)
+        mean_max_cat = paddle.concat([xy_mean, xy_max], axis=1)
+        atten = F.sigmoid(self.conv_atten(mean_max_cat))  # n * 1 * h * w
+
+        out = x * atten + y * (1 - atten)
+        return out
+
+
+class AlignedModule_ch_sp_atten_1(nn.Layer):
+    '''ch atten + combined sp atten'''
+
+    def __init__(self, inplane, outplane, kernel_size=3):
+        super().__init__()
+
+        self.conv_x_atten = nn.Conv2D(
+            inplane, inplane, kernel_size=1, bias_attr=False)
+        self.conv_y_atten = nn.Conv2D(
+            inplane, inplane, kernel_size=1, bias_attr=False)
+
+        self.sp_atten = nn.Conv2D(
+            2, 1, kernel_size=3, padding=1, bias_attr=False)
+
+    def forward(self, inputs):
+        x, y = inputs
+
+        size = paddle.shape(x)[2:]
+        y = F.interpolate(y, size=size, mode='bilinear')
+
+        x_atten = F.adaptive_avg_pool2d(x, 1)
+        x_atten = F.sigmoid(self.conv_x_atten(x_atten))
+        x = x * x_atten
+
+        y_atten = F.adaptive_avg_pool2d(y, 1)
+        y_atten = F.sigmoid(self.conv_y_atten(y_atten))
+        y = y * y_atten
+
+        xy_cat = paddle.concat([x, y], axis=1)  # n * 2c * h * w
+        xy_mean = paddle.mean(xy_cat, axis=1, keepdim=True)
+        xy_max = paddle.max(xy_cat, axis=1, keepdim=True)
+        xy_mean_max_cat = paddle.concat([xy_mean, xy_max], axis=1)
+        sp_atten = F.sigmoid(self.sp_atten(xy_mean_max_cat))  # n * 1 * h * w
+
+        out = sp_atten * x + (1 - sp_atten) * y
+        return out

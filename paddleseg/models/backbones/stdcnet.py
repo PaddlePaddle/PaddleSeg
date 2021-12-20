@@ -1693,6 +1693,68 @@ class CatBottleneck_conv5(nn.Layer):
         return out
 
 
+class AttenNone(nn.Layer):
+    def __init__(self, in_ch):
+        super().__init__()
+
+    def forward(self, x):
+        return x
+
+
+class AttenSE_conv(nn.Layer):
+    def __init__(self, ch, ratio=16):
+        super().__init__()
+        self.fc1 = nn.Conv2D(ch, ch // ratio, 1, bias_attr=False)
+        self.fc2 = nn.Conv2D(ch // ratio, ch, 1, bias_attr=False)
+
+    def forward(self, x):
+        atten = F.adaptive_avg_pool2d(x, 1)
+        atten = F.relu(self.fc1(atten))
+        atten = F.sigmoid(self.fc2(atten))
+        out = atten * x
+        return out
+
+
+class AttenSE_linear(nn.Layer):
+    def __init__(self, ch, ratio=16):
+        super().__init__()
+        self.fc1 = nn.Linear(ch, ch // ratio, bias_attr=False)
+        self.fc2 = nn.Linear(ch // ratio, ch, bias_attr=False)
+
+    def forward(self, x):
+        atten = F.adaptive_avg_pool2d(x, 1)
+        atten = paddle.squeeze(atten, axis=(2, 3))
+        atten = F.relu(self.fc1(atten))
+        atten = F.sigmoid(self.fc2(atten))
+        atten = paddle.unsqueeze(atten, axis=(2, 3))
+        out = atten * x
+        return out
+
+
+class AttenSESimple_1(nn.Layer):
+    def __init__(self, ch):
+        super().__init__()
+        self.fc = nn.Conv2D(ch, ch, 1, bias_attr=False)
+
+    def forward(self, x):
+        atten = F.adaptive_avg_pool2d(x, 1)
+        atten = F.sigmoid(self.fc(atten))
+        out = x + atten * x
+        return out
+
+
+class AttenSESimple_2(nn.Layer):
+    def __init__(self, ch):
+        super().__init__()
+        self.fc = nn.Conv2D(ch, ch, 1, bias_attr=False)
+
+    def forward(self, x):
+        atten = F.adaptive_avg_pool2d(x, 1)
+        atten = F.sigmoid(self.fc(atten))
+        out = atten * x
+        return out
+
+
 class STDCNet_pp_1(nn.Layer):
     """support all block type"""
 
@@ -1704,6 +1766,7 @@ class STDCNet_pp_1(nn.Layer):
                  block_type="cat",
                  num_classes=1000,
                  dropout=0.20,
+                 atten_type='AttenNone',
                  pretrained=None):
         super().__init__()
 
@@ -1726,6 +1789,7 @@ class STDCNet_pp_1(nn.Layer):
             "dw_dilation": CatBottleneck_dw_dilation,
             "dw_dilation_pool": CatBottleneck_dw_dilation_pool,
             "conv5": CatBottleneck_conv5,
+            "short_cut": CatBottleneck_add_short_cut,
         }
 
         print("block_type:" + block_type)
@@ -1743,6 +1807,13 @@ class STDCNet_pp_1(nn.Layer):
         self.x16 = nn.Sequential(self.features[idx[0]:idx[1]])
         self.x32 = nn.Sequential(self.features[idx[1]:])
 
+        print("atten_type:" + atten_type)
+        atten = eval(atten_type)
+        self.f4_atten = atten(base)
+        self.f8_atten = atten(self.feat_channels[0])
+        self.f16_atten = atten(self.feat_channels[1])
+        self.f32_atten = atten(self.feat_channels[2])
+
         self.pretrained = pretrained
         self.init_weight()
 
@@ -1751,10 +1822,19 @@ class STDCNet_pp_1(nn.Layer):
         forward function for feature extract.
         """
         feat2 = self.x2(x)
+
         feat4 = self.x4(feat2)
+        feat4 = self.f4_atten(feat4)
+
         feat8 = self.x8(feat4)
+        feat8 = self.f8_atten(feat8)
+
         feat16 = self.x16(feat8)
+        feat16 = self.f16_atten(feat16)
+
         feat32 = self.x32(feat16)
+        feat32 = self.f32_atten(feat32)
+
         return feat2, feat4, feat8, feat16, feat32
 
     def _make_layers(self, base, layers, layers_expand, block_num, block):
@@ -1799,6 +1879,7 @@ class STDCNet_pp_2(nn.Layer):
                  block_type="cat",
                  num_classes=1000,
                  dropout=0.20,
+                 atten_type='AttenNone',
                  pretrained=None):
         super().__init__()
 
@@ -1821,6 +1902,7 @@ class STDCNet_pp_2(nn.Layer):
             "dw_dilation": CatBottleneck_dw_dilation,
             "dw_dilation_pool": CatBottleneck_dw_dilation_pool,
             "conv5": CatBottleneck_conv5,
+            "short_cut": CatBottleneck_add_short_cut,
         }
 
         print("block_type:" + block_type)
@@ -1830,20 +1912,36 @@ class STDCNet_pp_2(nn.Layer):
 
         self.features = self._make_layers(base, layers, layers_expand,
                                           block_num, block)
-
         assert layers == [2, 2, 2]
+
+        print("atten_type:" + atten_type)
+        atten = eval(atten_type)
+        self.f4_atten = atten(base)
+        self.f8_atten = atten(self.feat_channels[0])
+        self.f16_atten = atten(self.feat_channels[1])
+        self.f32_atten = atten(self.feat_channels[2])
+
         self.pretrained = pretrained
         self.init_weight()
 
     def forward(self, x):
         x2 = self.features[0](x)
+
         x4 = self.features[1](x2)
+        x4 = self.f4_atten(x4)
+
         x8_1 = self.features[2](x4)
         x8_2 = self.features[3](x8_1)
+        x8_2 = self.f8_atten(x8_2)
+
         x16_1 = self.features[4](x8_2)
         x16_2 = self.features[5](x16_1)
+        x16_2 = self.f16_atten(x16_2)
+
         x32_1 = self.features[6](x16_2)
         x32_2 = self.features[7](x32_1)
+        x32_2 = self.f32_atten(x32_2)
+
         return x2, x4, x8_1, x8_2, x16_1, x16_2, x32_1, x32_2
 
     def _make_layers(self, base, layers, layers_expand, block_num, block):
@@ -1975,27 +2073,24 @@ def STDC1(**kwargs):
 
 @manager.BACKBONES.add_component
 def STDC_pp_1(**kwargs):
-    """ base backbone
-    """
+    '''base backbone'''
     model = STDCNet_pp_1(
         base=64, layers=[2, 2, 2], layers_expand=[4, 8, 16], **kwargs)
     return model
 
 
 @manager.BACKBONES.add_component
-def STDC_pp_2(**kwargs):
-    """ Return all feature map
-    """
-    model = STDCNet_pp_2(base=64, layers=[2, 2, 2], **kwargs)
+def STDC_pp_1_s4_ch_512(**kwargs):
+    '''The channel of last stage is 512'''
+    model = STDCNet_pp_1(
+        base=64, layers=[2, 2, 2], layers_expand=[4, 8, 8], **kwargs)
     return model
 
 
 @manager.BACKBONES.add_component
-def STDC_pp_3(**kwargs):
-    """The channel of last stage is 512
-    """
-    model = STDCNet_pp_1(
-        base=64, layers=[2, 2, 2], layers_expand=[4, 8, 8], **kwargs)
+def STDC_pp_2(**kwargs):
+    '''Return all feature map'''
+    model = STDCNet_pp_2(base=64, layers=[2, 2, 2], **kwargs)
     return model
 
 

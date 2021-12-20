@@ -173,6 +173,8 @@ def main(args):
 
     config_check(cfg, train_dataset=train_dataset, val_dataset=val_dataset)
 
+    print(cfg.model)
+
     train(
         cfg.model,
         train_dataset,

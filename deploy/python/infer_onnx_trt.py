@@ -282,6 +282,7 @@ def main(args):
 
     #model = SavedSegmentationNet(model)  # add argmax to the last layer
     model.eval()
+    print(model)
 
     input_shape = [1, 3, args.height, args.width]
     print("input shape:", input_shape)
