@@ -108,8 +108,8 @@ class PFPNHead(nn.Layer):
         super(PFPNHead, self).__init__()
         self.enable_auxiliary_loss = enable_auxiliary_loss
         self.align_corners = align_corners
-        self.lateral_convs = []
-        self.fpn_out = []
+        self.lateral_convs = nn.LayerList()
+        self.fpn_out = nn.LayerList()
 
         for fpn_inplane in fpn_inplanes:
             self.lateral_convs.append(
@@ -119,14 +119,11 @@ class PFPNHead(nn.Layer):
                 nn.Sequential(
                     layers.ConvBNReLU(fpn_dim, fpn_dim, 3, bias_attr=False)))
 
-        self.lateral_convs = nn.LayerList(self.lateral_convs)
-        self.fpn_out = nn.LayerList(self.fpn_out)
-
-        self.scale_heads = []
+        self.scale_heads = nn.LayerList()
         for index in range(len(fpn_inplanes)):
             head_length = max(
                 1, int(np.log2(fpn_inplanes[index]) - np.log2(fpn_inplanes[0])))
-            scale_head = []
+            scale_head = nn.LayerList()
             for head_index in range(head_length):
                 scale_head.append(
                     layers.ConvBNReLU(
@@ -141,7 +138,6 @@ class PFPNHead(nn.Layer):
                                     mode='bilinear',
                                     align_corners=align_corners))
             self.scale_heads.append(nn.Sequential(*scale_head))
-        self.scale_heads = nn.LayerList(self.scale_heads)
 
         if dropout_ratio:
             self.dropout = nn.Dropout2D(dropout_ratio)
