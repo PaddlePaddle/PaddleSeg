@@ -10,5 +10,5 @@
 
 | Model | Backbone | Resolution | Training Iters | mIoU | Links |
 |:-:|:-:|:-:|:-:|:-:|:-:|
-|DMNet|ResNet101_vd|1024x512|80000|79.67%|[model](https://bj.bcebos.com/paddleseg/dygraph/cityscapes/dmnet_resnet101_os8_cityscapes_1024x512_80k/model.pdparams)| [log](https://bj.bcebos.com/paddleseg/dygraph/cityscapes/dmnet_resnet101_os8_cityscapes_1024x512_80k/train.log)| [vdl](https://www.paddlepaddle.org.cn/paddle/visualdl/service/app/scalar?id=d5bac108e3ff90136771b677d8459d17)|
+|DMNet|ResNet101_vd|1024x512|80000|79.67%|[model](https://bj.bcebos.com/paddleseg/dygraph/cityscapes/dmnet_resnet101_os8_cityscapes_1024x512_80k/model.pdparams) \| [log](https://bj.bcebos.com/paddleseg/dygraph/cityscapes/dmnet_resnet101_os8_cityscapes_1024x512_80k/train.log) \| [vdl](https://www.paddlepaddle.org.cn/paddle/visualdl/service/app/scalar?id=d5bac108e3ff90136771b677d8459d17)
 
