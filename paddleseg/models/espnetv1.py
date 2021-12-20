@@ -12,10 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
 import paddle
 import paddle.nn as nn
 import paddle.nn.functional as F
-import os
 
 from paddleseg.models import layers
 from paddleseg.cvlibs import manager
@@ -44,7 +44,7 @@ class ESPNetV1(nn.Layer):
 
         self.level3_up = nn.Conv2DTranspose(num_classes, num_classes, 2, stride=2, padding=0, output_padding=0, bias_attr=False)
         self.br3 = layers.SyncBatchNorm(num_classes)
-        self.level2_proj = Conv(in_channels + 128, num_classes, 1, 1)
+        self.level2_proj = nn.Conv2D(in_channels + 128, num_classes, 1, bias_attr=False)
         self.combine_l2_l3 = nn.Sequential(
             BNPReLU(2 * num_classes),
             DilatedResidualBlock(2 * num_classes, num_classes, residual=False),
@@ -95,41 +95,6 @@ class BNPReLU(nn.Layer):
         return x
 
 
-class ConvBN(nn.Layer):
-    def __init__(self, in_channels, out_channels, kernel_size, stride=1):
-        super().__init__()
-        padding = int((kernel_size - 1) / 2)
-        self.conv = nn.Conv2D(in_channels, out_channels, kernel_size, stride=stride, padding=padding, bias_attr=False)
-        self.bn = layers.SyncBatchNorm(out_channels)
-
-    def forward(self, x):
-        x = self.conv(x)
-        x = self.bn(x)
-        return x
-
-
-class Conv(nn.Layer):
-    def __init__(self, in_channels, out_channels, kernel_size, stride=1):
-        super().__init__()
-        padding = int((kernel_size - 1) / 2)
-        self.conv = nn.Conv2D(in_channels, out_channels, kernel_size, stride=stride, padding=padding, bias_attr=False)
-
-    def forward(self, x):
-        x = self.conv(x)
-        return x
-
-
-class ConvDilated(nn.Layer):
-    def __init__(self, in_channels, out_channels, kernel_size, stride=1, dilation=1):
-        super().__init__()
-        padding = int((kernel_size - 1) / 2) * dilation
-        self.conv = nn.Conv2D(in_channels, out_channels, kernel_size, stride=stride, padding=padding, dilation=dilation, bias_attr=False)
-
-    def forward(self, x):
-        x = self.conv(x)
-        return x
-
-
 class DownSampler(nn.Layer):
     """
     Down sampler.
@@ -141,12 +106,12 @@ class DownSampler(nn.Layer):
         super().__init__()
         branch_channels = out_channels // 5
         remain_channels = out_channels - branch_channels * 4
-        self.conv1 = Conv(in_channels, branch_channels, 3, 2)
-        self.d_conv1 = ConvDilated(branch_channels, remain_channels, 3, 1, 1)
-        self.d_conv2 = ConvDilated(branch_channels, branch_channels, 3, 1, 2)
-        self.d_conv4 = ConvDilated(branch_channels, branch_channels, 3, 1, 4)
-        self.d_conv8 = ConvDilated(branch_channels, branch_channels, 3, 1, 8)
-        self.d_conv16 = ConvDilated(branch_channels, branch_channels, 3, 1, 16)
+        self.conv1 = nn.Conv2D(in_channels, branch_channels, 3, stride=2, padding=1, bias_attr=False)
+        self.d_conv1 = nn.Conv2D(branch_channels, remain_channels, 3, padding=1, bias_attr=False)
+        self.d_conv2 = nn.Conv2D(branch_channels, branch_channels, 3, padding=2, dilation=2, bias_attr=False)
+        self.d_conv4 = nn.Conv2D(branch_channels, branch_channels, 3, padding=4, dilation=4, bias_attr=False)
+        self.d_conv8 = nn.Conv2D(branch_channels, branch_channels, 3, padding=8, dilation=8, bias_attr=False)
+        self.d_conv16 = nn.Conv2D(branch_channels, branch_channels, 3, padding=16, dilation=16, bias_attr=False)
         self.bn = layers.SyncBatchNorm(out_channels)
         self.act = nn.PReLU(out_channels)
 
@@ -181,12 +146,13 @@ class DilatedResidualBlock(nn.Layer):
         super().__init__()
         branch_channels = out_channels // 5
         remain_channels = out_channels - branch_channels * 4
-        self.conv1 = Conv(in_channels, branch_channels, 1, 1)
-        self.d_conv1 = ConvDilated(branch_channels, remain_channels, 3, 1, 1)
-        self.d_conv2 = ConvDilated(branch_channels, branch_channels, 3, 1, 2)
-        self.d_conv4 = ConvDilated(branch_channels, branch_channels, 3, 1, 4)
-        self.d_conv8 = ConvDilated(branch_channels, branch_channels, 3, 1, 8)
-        self.d_conv16 = ConvDilated(branch_channels, branch_channels, 3, 1, 16)
+        self.conv1 = nn.Conv2D(in_channels, branch_channels, 1, bias_attr=False)
+        self.d_conv1 = nn.Conv2D(branch_channels, remain_channels, 3, padding=1, bias_attr=False)
+        self.d_conv2 = nn.Conv2D(branch_channels, branch_channels, 3, padding=2, dilation=2, bias_attr=False)
+        self.d_conv4 = nn.Conv2D(branch_channels, branch_channels, 3, padding=4, dilation=4, bias_attr=False)
+        self.d_conv8 = nn.Conv2D(branch_channels, branch_channels, 3, padding=8, dilation=8, bias_attr=False)
+        self.d_conv16 = nn.Conv2D(branch_channels, branch_channels, 3, padding=16, dilation=16, bias_attr=False)
+
         self.bn = BNPReLU(out_channels)
         self.residual = residual
 
@@ -262,8 +228,3 @@ class ESPNetEncoder(nn.Layer):
         p3 = self.proj3(feat3)
 
         return p1, p2, p3
-
-
-if __name__ == '__main__':
-    model = ESPNetV1(19, 3, 2, 8)
-    paddle.summary(model, (4, 3, 256, 256))
