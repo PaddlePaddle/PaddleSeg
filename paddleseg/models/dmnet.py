@@ -28,7 +28,6 @@ class DMNet(nn.Layer):
 
     The original article refers to
      Junjun He, Zhongying Deng, Yu Qiao. "Dynamic Multi-scale Filters for Semantic Segmentation"
-     (https://openaccess.thecvf.com/content_ICCV_2019/papers/He_Dynamic_Multi-Scale_Filters_for_Semantic_Segmentation_ICCV_2019_paper.pdf)
 
     Args:
         num_classes (int): The unique number of target classes.
