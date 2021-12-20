@@ -312,9 +312,13 @@ def train(args,
 
                 # GMP pruner step 3: update params before summrizing sparsity, saving model or evaluation.
                 pruner.update_params()
+                if args.prune_params_type == 'conv1x1_only':
+                    sparse = UnstructuredPruner.total_sparse_conv1x1(model)
+                else:
+                    sparse = UnstructuredPruner.total_sparse(model)
                 logger.info(
                     "The current sparsity of the pruned model is: {}%".format(
-                        round(100 * UnstructuredPruner.total_sparse(model), 2)))
+                        round(100 * sparse, 2)))
                 mean_iou, acc, _, _, _ = evaluate(
                     model, val_dataset, num_workers=num_workers, **test_config)
 
