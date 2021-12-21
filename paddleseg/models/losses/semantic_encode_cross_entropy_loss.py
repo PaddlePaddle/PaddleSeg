@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import paddle
-from paddle import nn
+import paddle.nn as nn
 import paddle.nn.functional as F
 
 from paddleseg.cvlibs import manager
@@ -30,14 +30,11 @@ class SECrossEntropyLoss(nn.Layer):
 
     def forward(self, logit, label):
         if logit.ndim == 4:
-            logit_ = logit.squeeze(2).squeeze(3)
-            assert logit_.ndim == 2, "The shape of logit should be [N, C, 1, 1] or [N, C], but got {}.".format(
+            logit = logit.squeeze(2).squeeze(3)
+        assert logit.ndim == 2, "The shape of logit should be [N, C, 1, 1] or [N, C], but the logit dim is  {}.".format(
                 logit.ndim)
-            logit = logit_
-        assert logit.ndim == 2, "The dimension of logit should be 2, but got {}.".format(
-            logit.ndim)
-        num_classes = logit.shape[1]
-        batch_size = paddle.shape(label)[0]
+        
+        batch_size, num_classes = paddle.shape(logit)
         se_label = paddle.zeros([batch_size, num_classes])
         for i in range(batch_size):
             hist = paddle.histogram(label[i],
