@@ -12,10 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import paddle
 import paddle.nn as nn
 import paddle.nn.functional as F
 
-import paddle
 from paddleseg.cvlibs import manager
 from paddleseg.models import layers
 from paddleseg.utils import utils
@@ -28,7 +28,6 @@ class ENCNet(nn.Layer):
 
     The original article refers to
     Hang Zhang, Kristin Dana, et, al. "Context Encoding for Semantic Segmentation".
-    (https://paperswithcode.com/paper/context-encoding-for-semantic-segmentation)
 
     Args:
         num_classes (int): The unique number of target classes.

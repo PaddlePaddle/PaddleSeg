@@ -1,0 +1,27 @@
+_base_: '../_base_/cityscapes.yml'
+
+batch_size: 2
+iters: 160000
+
+model:
+  type: OCRNet
+  backbone:
+    type: HRNet_W18
+    pretrained: https://bj.bcebos.com/paddleseg/dygraph/hrnet_w18_ssld.tar.gz
+  num_classes: 19
+  backbone_indices: [0]
+
+optimizer:
+  type: sgd
+
+lr_scheduler:
+  type: PolynomialDecay
+  learning_rate: 0.01
+  power: 0.9
+
+
+loss:
+  types:
+    - type: CrossEntropyLoss
+    - type: CrossEntropyLoss
+  coef: [1, 0.4]

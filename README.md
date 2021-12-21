@@ -8,7 +8,7 @@ English | [简体中文](README_CN.md)
 ![support os](https://img.shields.io/badge/os-linux%2C%20win%2C%20mac-yellow.svg)
 ## PaddleSeg has released the new version including the following features:
 
-* We published a paper on interactive segmentation named [EdgeFlow](https://arxiv.org/abs/2109.09406), in which the proposed approach achieved SOTA performance on serveral well-known datasets, and upgraded the interactive annotation tool, [EISeg](./EISeg).
+* We published a paper on interactive segmentation named [EdgeFlow](https://arxiv.org/abs/2109.09406), in which the proposed approach achieved SOTA performance on several well-known datasets, and upgraded the interactive annotation tool, [EISeg](./EISeg).
 * We released two [Matting](./contrib/Matting) algorithms, DIM and MODNet, which achieve extremely fine-grained segmentation.
 * We provided advanced features on segmentation model compression, [Knowlede Distillation](./slim/distill) and [Model Quantization](./slim/quant), which accelerate model inference on multi-devices deployment.
 
@@ -25,7 +25,7 @@ Welcome to PaddleSeg! PaddleSeg is an end-to-end image segmentation development 
 
 ---------------
 
- * ### PaddleSeg is widely used in autonomous driving, medical, quality inspection, inspection, entertainment and other scenarios.
+ * ### PaddleSeg is widely used in autonomous driving, medical, quality inspection, inspection, entertainment, and other scenarios.
 
 <div align="center">
 <img src="https://user-images.githubusercontent.com/53808988/130562234-bdf79d76-8566-4e06-a3a9-db7719e63385.gif"  width = "2000" />  
@@ -38,11 +38,11 @@ Welcome to PaddleSeg! PaddleSeg is an end-to-end image segmentation development 
 
 ## Core Features
 
-* <img src="./docs/images/f1.png" width="20"/> **High Performance Model**: Based on the high-performance backbone trained by Baidu's self-developed [semi-supervised label knowledge distillation scheme (SSLD)](https://paddleclas.readthedocs.io/zh_CN/latest/advanced_tutorials/distillation/distillation.html#ssld), combined with the state of the art segmentation technology, we provides 50+ high-quality pre-training models, which are better than other open source implementations.
+* <img src="./docs/images/f1.png" width="20"/> **High-Performance Model**: Based on the high-performance backbone trained by Baidu's self-developed [semi-supervised label knowledge distillation scheme (SSLD)](https://paddleclas.readthedocs.io/zh_CN/latest/advanced_tutorials/distillation/distillation.html#ssld), combined with the state of the art segmentation technology, we provide 50+ high-quality pre-training models, which are better than other open-source implementations.
 
 * <img src="./docs/images/f2.png" width="20"/> **Modular Design**: PaddleSeg support 15+ mainstream *segmentation networks*, developers can start based on actual application scenarios and assemble diversified training configurations combined with modular design of *data enhancement strategies*, *backbone networks*, *loss functions* and other different components to meet different performance and accuracy requirements.
 
-* <img src="./docs/images/f3.png" width="20"/> **High Efficiency**: PaddleSeg provides multi-process asynchronous I/O, multi-card parallel training, evaluation and other acceleration strategies, combined with the memory optimization function of the PaddlePaddle, which can greatly reduce the training overhead of the segmentation model, all this allowing developers to lower cost and more efficiently train image segmentation model.
+* <img src="./docs/images/f3.png" width="20"/> **High Efficiency**: PaddleSeg provides multi-process asynchronous I/O, multi-card parallel training, evaluation, and other acceleration strategies, combined with the memory optimization function of the PaddlePaddle, which can greatly reduce the training overhead of the segmentation model, all this allowing developers to lower cost and more efficiently train image segmentation model.
 
 ## Technical Communication <img src="./docs/images/chat.png" width="30"/>
 
@@ -52,13 +52,14 @@ Welcome to PaddleSeg! PaddleSeg is an end-to-end image segmentation development 
 <img src="./docs/images/QQ_chat.png"  width = "200" />  
 </div>
 
-## Model Instruction  <img src="./docs/images/model.png" width="20"/>
+## Model Zoo Overview  <img src="./docs/images/model.png" width="20"/>
 
-[Model Zoo](./configs/)
+See [Model Zoo Overview](./docs/model_zoo_overview.md) for more infomation.
 
 <div align="center">
-<img src="./docs/images/xingnengtu.png"    width = "700"/>  
+<img src=https://user-images.githubusercontent.com/30695251/140323107-02ce9de4-c8f4-4f18-88b2-59bd0055a70b.png   />  
 </div>
+
 
 
 ## Dataset
@@ -68,6 +69,12 @@ Welcome to PaddleSeg! PaddleSeg is an end-to-end image segmentation development 
 - [x] ADE20K
 - [x] Pascal Context
 - [x] COCO stuff
+- [x] CHASE_DB1
+- [x] HRF
+- [x] DRIVE
+- [x] STARE
+- [x] EG1800
+- [x] SUPERVISELY
 
 ## Tutorials <img src="./docs/images/teach.png" width="30"/>
 
@@ -127,11 +134,11 @@ System Requirements:
 * PaddlePaddle >= 2.0.0
 * Python >= 3.6+
 
-Highly recommend you install the GPU version of PaddlePaddle, due to large overhead of segmentation models, otherwise it could be out of memory while running the models. For more detailed installation tutorials, please refer to the official website of [PaddlePaddle](https://www.paddlepaddle.org.cn/install/quick?docurl=/documentation/docs/zh/2.0/install/)。
+Highly recommend you install the GPU version of PaddlePaddle, due to the large overhead of segmentation models, otherwise, it could be out of memory while running the models. For more detailed installation tutorials, please refer to the official website of [PaddlePaddle](https://www.paddlepaddle.org.cn/install/quick?docurl=/documentation/docs/zh/2.0/install/)。
 
 
 #### step 2. Install PaddleSeg
-Support to construct a customized segmentation framework with *API Calling* method for flexible development.
+Support to construct a customized segmentation framework with the *API Calling* method for flexible development.
 
 ```shell
 pip install paddleseg
@@ -172,6 +179,10 @@ python train.py --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml
 * Thanks [liuguoyu666](https://github.com/liguoyu666), [geoyee](https://github.com/geoyee) for contributing U-Net++ and U-Net3+.
 * Thanks [yazheng0307](https://github.com/yazheng0307) (LIU Zheng) for contributing quick-start document.
 * Thanks [CuberrChen](https://github.com/CuberrChen) for contributing STDC (rethink BiSeNet), PointRend and DetailAggregateLoss.
+* Thanks [stuartchen1949](https://github.com/stuartchen1949) for contributing SegNet.
+* Thanks [justld](https://github.com/justld) (Lang Du) for contributing ESPNet，HRNet_W48_Contrast and PixelContrastCrossEntropyLoss.
+* Thanks [Herman-Hu-saber](https://github.com/Herman-Hu-saber) (Hu Huiming) for contributing ESPNet.
+* Thanks [zhangjin12138](https://github.com/zhangjin12138) for contributing RandomCenterCrop.
 
 ## Citation
 If you find our project useful in your research, please consider citing:

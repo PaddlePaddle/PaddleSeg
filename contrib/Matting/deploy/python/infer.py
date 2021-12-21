@@ -86,14 +86,60 @@ def parse_args():
         type=eval,
         choices=[True, False],
         help='Enable to use mkldnn to speed up when using cpu.')
+    parser.add_argument(
+        '--use_trt',
+        default=False,
+        type=eval,
+        choices=[True, False],
+        help='Whether to use Nvidia TensorRT to accelerate prediction.')
+    parser.add_argument(
+        "--precision",
+        default="fp32",
+        type=str,
+        choices=["fp32", "fp16", "int8"],
+        help='The tensorrt precision.')
+    parser.add_argument(
+        '--enable_auto_tune',
+        default=False,
+        type=eval,
+        choices=[True, False],
+        help=
+        'Whether to enable tuned dynamic shape. We uses some images to collect '
+        'the dynamic shape for trt sub graph, which avoids setting dynamic shape manually.'
+    )
+    parser.add_argument(
+        '--auto_tuned_shape_file',
+        type=str,
+        default="auto_tune_tmp.pbtxt",
+        help='The temp file to save tuned dynamic shape.')
 
     parser.add_argument(
+        "--benchmark",
+        type=eval,
+        default=False,
+        help=
+        "Whether to log some information about environment, model, configuration and performance."
+    )
+    parser.add_argument(
+        "--model_name",
+        default="",
+        type=str,
+        help='When `--benchmark` is True, the specified model name is displayed.'
+    )
+    parser.add_argument(
         '--print_detail',
-        dest='print_detail',
-        help='Print GLOG information of Paddle Inference.',
-        action='store_true')
+        default=True,
+        type=eval,
+        choices=[True, False],
+        help='Print GLOG information of Paddle Inference.')
 
     return parser.parse_args()
+
+
+def use_auto_tune(args):
+    return hasattr(PredictConfig, "collect_shape_range_info") \
+        and hasattr(PredictConfig, "enable_tuned_tensorrt_dynamic_shape") \
+        and args.device == "gpu" and args.use_trt and args.enable_auto_tune
 
 
 class DeployConfig:
@@ -126,6 +172,55 @@ class DeployConfig:
         return T.Compose(transforms)
 
 
+def auto_tune(args, imgs, img_nums):
+    """
+    Use images to auto tune the dynamic shape for trt sub graph.
+    The tuned shape saved in args.auto_tuned_shape_file.
+
+    Args:
+        args(dict): input args.
+        imgs(str, list[str]): the path for images.
+        img_nums(int): the nums of images used for auto tune.
+    Returns:
+        None
+    """
+    logger.info("Auto tune the dynamic shape for GPU TRT.")
+
+    assert use_auto_tune(args)
+
+    if not isinstance(imgs, (list, tuple)):
+        imgs = [imgs]
+    num = min(len(imgs), img_nums)
+
+    cfg = DeployConfig(args.cfg)
+    pred_cfg = PredictConfig(cfg.model, cfg.params)
+    pred_cfg.enable_use_gpu(100, 0)
+    if not args.print_detail:
+        pred_cfg.disable_glog_info()
+    pred_cfg.collect_shape_range_info(args.auto_tuned_shape_file)
+
+    predictor = create_predictor(pred_cfg)
+    input_names = predictor.get_input_names()
+    input_handle = predictor.get_input_handle(input_names[0])
+
+    for i in range(0, num):
+        data = np.array([cfg.transforms(imgs[i])[0]])
+        input_handle.reshape(data.shape)
+        input_handle.copy_from_cpu(data)
+        try:
+            predictor.run()
+        except:
+            logger.info(
+                "Auto tune fail. Usually, the error is out of GPU memory, "
+                "because the model and image is too large. \n")
+            del predictor
+            if os.path.exists(args.auto_tuned_shape_file):
+                os.remove(args.auto_tuned_shape_file)
+            return
+
+    logger.info("Auto tune success.\n")
+
+
 class Predictor:
     def __init__(self, args):
         """
@@ -144,6 +239,25 @@ class Predictor:
             self._init_gpu_config()
 
         self.predictor = create_predictor(self.pred_cfg)
+
+        if hasattr(args, 'benchmark') and args.benchmark:
+            import auto_log
+            pid = os.getpid()
+            self.autolog = auto_log.AutoLogger(
+                model_name=args.model_name,
+                model_precision=args.precision,
+                batch_size=args.batch_size,
+                data_shape="dynamic",
+                save_path=None,
+                inference_config=self.pred_cfg,
+                pids=pid,
+                process_name=None,
+                gpu_ids=0,
+                time_keys=[
+                    'preprocess_time', 'inference_time', 'postprocess_time'
+                ],
+                warmup=0,
+                logger=logger)
 
     def _init_base_config(self):
         self.pred_cfg = PredictConfig(self.cfg.model, self.cfg.params)
@@ -171,6 +285,36 @@ class Predictor:
         """
         logger.info("using GPU")
         self.pred_cfg.enable_use_gpu(100, 0)
+        precision_map = {
+            "fp16": PrecisionType.Half,
+            "fp32": PrecisionType.Float32,
+            "int8": PrecisionType.Int8
+        }
+        precision_mode = precision_map[self.args.precision]
+
+        if self.args.use_trt:
+            logger.info("Use TRT")
+            self.pred_cfg.enable_tensorrt_engine(
+                workspace_size=1 << 30,
+                max_batch_size=1,
+                min_subgraph_size=300,
+                precision_mode=precision_mode,
+                use_static=False,
+                use_calib_mode=False)
+
+            if use_auto_tune(self.args) and \
+                os.path.exists(self.args.auto_tuned_shape_file):
+                logger.info("Use auto tuned dynamic shape")
+                allow_build_at_runtime = True
+                self.pred_cfg.enable_tuned_tensorrt_dynamic_shape(
+                    self.args.auto_tuned_shape_file, allow_build_at_runtime)
+            else:
+                logger.info("Use manual set dynamic shape")
+                min_input_shape = {"x": [1, 3, 100, 100]}
+                max_input_shape = {"x": [1, 3, 2000, 3000]}
+                opt_input_shape = {"x": [1, 3, 512, 1024]}
+                self.pred_cfg.set_trt_dynamic_shape_info(
+                    min_input_shape, max_input_shape, opt_input_shape)
 
     def run(self, imgs, trimaps=None, imgs_dir=None):
         self.imgs_dir = imgs_dir
@@ -186,6 +330,44 @@ class Predictor:
         args = self.args
 
         for i in tqdm.tqdm(range(0, num, args.batch_size)):
+            # warm up
+            if i == 0 and args.benchmark:
+                for _ in range(5):
+                    img_inputs = []
+                    if trimaps is not None:
+                        trimap_inputs = []
+                    trans_info = []
+                    for j in range(i, i + args.batch_size):
+                        img = imgs[i]
+                        trimap = trimaps[i] if trimaps is not None else None
+                        data = self._preprocess(img=img, trimap=trimap)
+                        img_inputs.append(data['img'])
+                        if trimaps is not None:
+                            trimap_inputs.append(
+                                data['trimap'][np.newaxis, :, :])
+                        trans_info.append(data['trans_info'])
+                    img_inputs = np.array(img_inputs)
+                    if trimaps is not None:
+                        trimap_inputs = (
+                            np.array(trimap_inputs)).astype('float32')
+
+                    input_handle['img'].copy_from_cpu(img_inputs)
+                    if trimaps is not None:
+                        input_handle['trimap'].copy_from_cpu(trimap_inputs)
+                    self.predictor.run()
+                    results = output_handle.copy_to_cpu()
+
+                    results = results.squeeze(1)
+                    for j in range(args.batch_size):
+                        trimap = trimap_inputs[
+                            j] if trimaps is not None else None
+                        result = self._postprocess(
+                            results[j], trans_info[j], trimap=trimap)
+
+            # inference
+            if args.benchmark:
+                self.autolog.times.start()
+
             img_inputs = []
             if trimaps is not None:
                 trimap_inputs = []
@@ -205,7 +387,15 @@ class Predictor:
             input_handle['img'].copy_from_cpu(img_inputs)
             if trimaps is not None:
                 input_handle['trimap'].copy_from_cpu(trimap_inputs)
+
+            if args.benchmark:
+                self.autolog.times.stamp()
+
             self.predictor.run()
+
+            if args.benchmark:
+                self.autolog.times.stamp()
+
             results = output_handle.copy_to_cpu()
 
             results = results.squeeze(1)
@@ -214,6 +404,9 @@ class Predictor:
                 result = self._postprocess(
                     results[j], trans_info[j], trimap=trimap)
                 self._save_imgs(result, imgs[i + j])
+
+            if args.benchmark:
+                self.autolog.times.end(stamp=True)
         logger.info("Finish")
 
     def _preprocess(self, img, trimap=None):
@@ -274,8 +467,19 @@ def main(args):
     else:
         trimaps_list, _ = get_image_list(args.trimap_path)
 
+    if use_auto_tune(args):
+        tune_img_nums = 10
+        auto_tune(args, imgs_list, tune_img_nums)
+
     predictor = Predictor(args)
     predictor.run(imgs=imgs_list, trimaps=trimaps_list, imgs_dir=imgs_dir)
+
+    if use_auto_tune(args) and \
+        os.path.exists(args.auto_tuned_shape_file):
+        os.remove(args.auto_tuned_shape_file)
+
+    if args.benchmark:
+        predictor.autolog.report()
 
 
 if __name__ == '__main__':

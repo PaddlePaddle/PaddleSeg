@@ -4,7 +4,6 @@ import inspect
 import paddle.nn as nn
 
 
-
 def serialize(init):
     parameters = list(inspect.signature(init).parameters)
 
@@ -14,10 +13,7 @@ def serialize(init):
         for pname, value in zip(parameters[1:], args):
             params[pname] = value
 
-        config = {
-            'class': get_classname(self.__class__),
-            'params': dict()
-        }
+        config = {"class": get_classname(self.__class__), "params": dict()}
         specified_params = set(params.keys())
 
         for pname, param in get_default_params(self.__class__).items():
@@ -25,38 +21,38 @@ def serialize(init):
                 params[pname] = param.default
 
         for name, value in list(params.items()):
-            param_type = 'builtin'
+            param_type = "builtin"
             if inspect.isclass(value):
-                param_type = 'class'
+                param_type = "class"
                 value = get_classname(value)
 
-            config['params'][name] = {
-                'type': param_type,
-                'value': value,
-                'specified': name in specified_params
+            config["params"][name] = {
+                "type": param_type,
+                "value": value,
+                "specified": name in specified_params,
             }
 
-        setattr(self, '_config', config)
+        setattr(self, "_config", config)
         init(self, *args, **kwargs)
 
     return new_init
 
 
 def load_model(config, **kwargs):
-    model_class = get_class_from_str(config['class'])
+    model_class = get_class_from_str(config["class"])
     model_default_params = get_default_params(model_class)
 
     model_args = dict()
-    for pname, param in config['params'].items():
-        value = param['value']
-        if param['type'] == 'class':
+    for pname, param in config["params"].items():
+        value = param["value"]
+        if param["type"] == "class":
             value = get_class_from_str(value)
 
-        if pname not in model_default_params and not param['specified']:
+        if pname not in model_default_params and not param["specified"]:
             continue
 
         assert pname in model_default_params
-        if not param['specified'] and model_default_params[pname].default == value:
+        if not param["specified"] and model_default_params[pname].default == value:
             continue
         model_args[pname] = value
 
@@ -67,14 +63,14 @@ def load_model(config, **kwargs):
 
 def get_config_repr(config):
     config_str = f'Model: {config["class"]}\n'
-    for pname, param in config['params'].items():
+    for pname, param in config["params"].items():
         value = param["value"]
-        if param['type'] == 'class':
-            value = value.split('.')[-1]
-        param_str = f'{pname:<22} = {str(value):<12}'
-        if not param['specified']:
-            param_str += ' (default)'
-        config_str += param_str + '\n'
+        if param["type"] == "class":
+            value = value.split(".")[-1]
+        param_str = f"{pname:<22} = {str(value):<12}"
+        if not param["specified"]:
+            param_str += " (default)"
+        config_str += param_str + "\n"
     return config_str
 
 
@@ -101,8 +97,8 @@ def get_classname(cls):
 
 
 def get_class_from_str(class_str):
-    components = class_str.split('.')
-    mod = __import__('.'.join(components[:-1]))
+    components = class_str.split(".")
+    mod = __import__(".".join(components[:-1]))
     for comp in components[1:]:
         mod = getattr(mod, comp)
     return mod
