@@ -308,7 +308,7 @@ class MixVisionTransformer(nn.Layer):
 
         # transformer encoder
         dpr = [
-            x.item() for x in paddle.linspace(0, drop_path_rate, sum(depths))
+            x.numpy() for x in paddle.linspace(0, drop_path_rate, sum(depths))
         ]  # stochastic depth decay rule
         cur = 0
         self.block1 = nn.LayerList([

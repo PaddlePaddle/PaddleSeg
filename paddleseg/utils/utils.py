@@ -41,6 +41,7 @@ def load_entire_model(model, pretrained):
         logger.warning('Not all pretrained params of {} are loaded, ' \
                        'training from scratch or a pretrained backbone.'.format(model.__class__.__name__))
 
+
 def download_pretrained_model(pretrained_model):
     """
     Download pretrained model from url.
@@ -59,16 +60,15 @@ def download_pretrained_model(pretrained_model):
         savename = savename.split('.')[0]
 
     with generate_tempdir() as _dir:
-        with filelock.FileLock(
-                os.path.join(seg_env.TMP_HOME, savename)):
+        with filelock.FileLock(os.path.join(seg_env.TMP_HOME, savename)):
             pretrained_model = download_file_and_uncompress(
                 pretrained_model,
                 savepath=_dir,
                 extrapath=seg_env.PRETRAINED_MODEL_HOME,
                 extraname=savename)
-            pretrained_model = os.path.join(pretrained_model,
-                                            'model.pdparams')
+            pretrained_model = os.path.join(pretrained_model, 'model.pdparams')
     return pretrained_model
+
 
 def load_pretrained_model(model, pretrained_model):
     if pretrained_model is not None:
@@ -165,10 +165,11 @@ def get_image_list(image_path):
                     image_list.append(os.path.join(root, f))
     else:
         raise FileNotFoundError(
-            '`--image_path` is not found. it should be an image file or a directory including images'
+            '`--image_path` is not found. it should be a path of image, or a file list containing image paths, or a directory including images.'
         )
 
     if len(image_list) == 0:
-        raise RuntimeError('There are not image file in `--image_path`')
+        raise RuntimeError(
+            'There are not image file in `--image_path`={}'.format(image_path))
 
     return image_list, image_dir

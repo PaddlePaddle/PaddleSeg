@@ -159,3 +159,4 @@ def predict(model,
             preprocess_cost_averager.reset()
             infer_cost_averager.reset()
             postprocess_cost_averager.reset()
+    return alpha_pred

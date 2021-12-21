@@ -57,57 +57,42 @@ class STDCSeg(nn.Layer):
         self.use_boundary_16 = use_boundary_16
         self.cp = ContextPath(backbone, use_conv_last=use_conv_last)
         self.ffm = FeatureFusionModule(384, 256)
-        self.conv_out = BiSeNetOutput(256, 256, num_classes)
-        self.conv_out16 = BiSeNetOutput(128, 64, num_classes)
-        self.conv_out32 = BiSeNetOutput(128, 64, num_classes)
-        self.conv_out_sp16 = BiSeNetOutput(512, 64, 1)
-        self.conv_out_sp8 = BiSeNetOutput(256, 64, 1)
-        self.conv_out_sp4 = BiSeNetOutput(64, 64, 1)
-        self.conv_out_sp2 = BiSeNetOutput(32, 64, 1)
+        self.conv_out = SegHead(256, 256, num_classes)
+        self.conv_out8 = SegHead(128, 64, num_classes)
+        self.conv_out16 = SegHead(128, 64, num_classes)
+        self.conv_out_sp16 = SegHead(512, 64, 1)
+        self.conv_out_sp8 = SegHead(256, 64, 1)
+        self.conv_out_sp4 = SegHead(64, 64, 1)
+        self.conv_out_sp2 = SegHead(32, 64, 1)
         self.pretrained = pretrained
         self.init_weight()
 
     def forward(self, x):
         x_hw = paddle.shape(x)[2:]
-        feat_res2, feat_res4, feat_res8, feat_res16, feat_cp8, feat_cp16 = self.cp(
-            x)
+        feat_res2, feat_res4, feat_res8, _, feat_cp8, feat_cp16 = self.cp(x)
 
         logit_list = []
         if self.training:
-            feat_out_sp2 = self.conv_out_sp2(feat_res2)
-            feat_out_sp4 = self.conv_out_sp4(feat_res4)
-            feat_out_sp8 = self.conv_out_sp8(feat_res8)
-            feat_out_sp16 = self.conv_out_sp16(feat_res16)
             feat_fuse = self.ffm(feat_res8, feat_cp8)
             feat_out = self.conv_out(feat_fuse)
-            feat_out16 = self.conv_out16(feat_cp8)
-            feat_out32 = self.conv_out32(feat_cp16)
-            feat_out = F.interpolate(
-                feat_out, x_hw, mode='bilinear', align_corners=True)
-            feat_out16 = F.interpolate(
-                feat_out16, x_hw, mode='bilinear', align_corners=True)
-            feat_out32 = F.interpolate(
-                feat_out32, x_hw, mode='bilinear', align_corners=True)
+            feat_out8 = self.conv_out8(feat_cp8)
+            feat_out16 = self.conv_out16(feat_cp16)
 
-            if self.use_boundary_2 and self.use_boundary_4 and self.use_boundary_8:
-                logit_list = [
-                    feat_out, feat_out16, feat_out32, feat_out_sp2,
-                    feat_out_sp4, feat_out_sp8
-                ]
+            logit_list = [feat_out, feat_out8, feat_out16]
+            logit_list = [
+                F.interpolate(x, x_hw, mode='bilinear', align_corners=True)
+                for x in logit_list
+            ]
 
-            if (not self.use_boundary_2
-                ) and self.use_boundary_4 and self.use_boundary_8:
-                logit_list = [
-                    feat_out, feat_out16, feat_out32, feat_out_sp4, feat_out_sp8
-                ]
-
-            if (not self.use_boundary_2) and (
-                    not self.use_boundary_4) and self.use_boundary_8:
-                logit_list = [feat_out, feat_out16, feat_out32, feat_out_sp8]
-
-            if (not self.use_boundary_2) and (not self.use_boundary_4) and (
-                    not self.use_boundary_8):
-                logit_list = [feat_out, feat_out16, feat_out32]
+            if self.use_boundary_2:
+                feat_out_sp2 = self.conv_out_sp2(feat_res2)
+                logit_list.append(feat_out_sp2)
+            if self.use_boundary_4:
+                feat_out_sp4 = self.conv_out_sp4(feat_res4)
+                logit_list.append(feat_out_sp4)
+            if self.use_boundary_8:
+                feat_out_sp8 = self.conv_out_sp8(feat_res8)
+                logit_list.append(feat_out_sp8)
         else:
             feat_fuse = self.ffm(feat_res8, feat_cp8)
             feat_out = self.conv_out(feat_fuse)
@@ -122,9 +107,9 @@ class STDCSeg(nn.Layer):
             utils.load_entire_model(self, self.pretrained)
 
 
-class BiSeNetOutput(nn.Layer):
+class SegHead(nn.Layer):
     def __init__(self, in_chan, mid_chan, n_classes):
-        super(BiSeNetOutput, self).__init__()
+        super(SegHead, self).__init__()
         self.conv = layers.ConvBNReLU(
             in_chan, mid_chan, kernel_size=3, stride=1, padding=1)
         self.conv_out = nn.Conv2D(

@@ -1,34 +1,38 @@
+简体中文 | [English](README_EN.md)
+
 # EISeg
 
-[![Python 3.6](https://img.shields.io/badge/python-3.6+-blue.svg)](https://www.python.org/downloads/release/python-360/) 
-[![License](https://img.shields.io/badge/license-Apache%202-blue.svg)](LICENSE)
-[![Downloads](https://pepy.tech/badge/eiseg)](https://pepy.tech/project/eiseg)
+[![Python 3.6](https://img.shields.io/badge/python-3.6+-blue.svg)](https://www.python.org/downloads/release/python-360/) [![PaddlePaddle 2.2](https://img.shields.io/badge/paddlepaddle-2.2-blue.svg)](https://www.python.org/downloads/release/python-360/) [![License](https://img.shields.io/badge/license-Apache%202-blue.svg)](LICENSE) [![Downloads](https://pepy.tech/badge/eiseg)](https://pepy.tech/project/eiseg)
 <!-- [![GitHub release](https://img.shields.io/github/release/Naereen/StrapDown.js.svg)](https://github.com/PaddleCV-SIG/iseg/releases) -->
+
 
 
 ## 最新动向
 
 - 交互式分割论文[EdgeFlow](https://arxiv.org/abs/2109.09406)被ICCV 2021 Workshop接收。
-- 支持多边形编辑，上线更多功能，最新EISeg 0.3.0推出。
+- 支持静态图预测，全面提升交互速度；新增遥感、医疗标注垂类方向，上线宫格标注，最新EISeg 0.4.0推出。
 
 ## 介绍
 
-EISeg(Efficient Interactive Segmentation)是基于飞桨开发的一个高效智能的交互式分割标注软件。涵盖了高精度和轻量级等不同方向的高质量交互式分割模型，方便开发者快速实现语义及实例标签的标注，降低标注成本。 另外，将EISeg获取到的标注应用到PaddleSeg提供的其他分割模型进行训练，便可得到定制化场景的高精度模型，打通分割任务从数据标注到模型训练及预测的全流程。
+EISeg(Efficient Interactive Segmentation)是以[RITM](https://github.com/saic-vul/ritm_interactive_segmentation)及[EdgeFlow](https://arxiv.org/abs/2109.09406)算法为基础，基于飞桨开发的一个高效智能的交互式分割标注软件。涵盖了通用、人像、遥感、医疗等不同方向的高质量交互式分割模型，方便开发者快速实现语义及实例标签的标注，降低标注成本。 另外，将EISeg获取到的标注应用到PaddleSeg提供的其他分割模型进行训练，便可得到定制化场景的高精度模型，打通分割任务从数据标注到模型训练及预测的全流程。
 
-![eiseg_demo](../docs/images/eiseg_demo.gif)
+![4a9ed-a91y1](https://user-images.githubusercontent.com/71769312/141130688-e1529c27-aba8-4bf7-aad8-dda49808c5c7.gif)
 
 ## 模型准备
 
-在使用EIseg前，请先下载模型参数。EISeg开放了在COCO+LVIS和大规模人像数据上训练的四个标注模型，满足通用场景和人像场景的标注需求。其中模型结构对应EISeg交互工具中的网络选择模块，用户需要根据自己的场景需求选择不同的网络结构和加载参数。
+在使用EIseg前，请先下载模型参数。EISeg 0.4.0版本开放了在COCO+LVIS、大规模人像数据、mapping_challenge及LiTS(Liver Tumor Segmentation Challenge)上训练的四个垂类方向模型，满足通用场景、人像场景、建筑物标注及医疗影像肝脏的标注需求。其中模型结构对应EISeg交互工具中的网络选择模块，用户需要根据自己的场景需求选择不同的网络结构和加载参数。
 
-| 模型类型 | 适用场景 | 模型结构 | 下载地址|
-| --- | --- | --- | ---|
-| 高精度模型  | 适用于通用场景的图像标注。 |HRNet18_OCR64 | [hrnet18_ocr64_cocolvis](https://bj.bcebos.com/paddleseg/dygraph/interactive_segmentation/ritm/hrnet18_ocr64_cocolvis.pdparams) |
-| 轻量化模型  | 适用于通用场景的图像标注。 |HRNet18s_OCR48 | [hrnet18s_ocr48_cocolvis](https://bj.bcebos.com/paddleseg/dygraph/interactive_segmentation/ritm/hrnet18s_ocr48_cocolvis.pdparams) |
-| 高精度模型  | 适用于人像标注场景。 |HRNet18_OCR64 | [hrnet18_ocr64_human](https://bj.bcebos.com/paddleseg/dygraph/interactive_segmentation/ritm/hrnet18_ocr64_human.pdparams) |
-| 轻量化模型  | 适用于人像标注场景。 |HRNet18s_OCR48 | [hrnet18s_ocr48_human](https://bj.bcebos.com/paddleseg/dygraph/interactive_segmentation/ritm/hrnet18s_ocr48_human.pdparams) |
+| 模型类型   | 适用场景                   | 模型结构       | 模型下载地址                                                     |
+| ---------- | -------------------------- | -------------- | ------------------------------------------------------------ |
+| 高精度模型 | 适用于通用场景的图像标注。 | HRNet18_OCR64  | [static_hrnet18_ocr64_cocolvis](https://paddleseg.bj.bcebos.com/eiseg/0.4/static_hrnet18_ocr64_cocolvis.zip) |
+| 轻量化模型 | 适用于通用场景的图像标注。 | HRNet18s_OCR48 | [static_hrnet18s_ocr48_cocolvis](https://paddleseg.bj.bcebos.com/eiseg/0.4/static_hrnet18s_ocr48_cocolvis.zip) |
+| 高精度模型 | 适用于人像标注场景。       | HRNet18_OCR64  | [static_hrnet18_ocr64_human](https://paddleseg.bj.bcebos.com/eiseg/0.4/static_hrnet18_ocr64_human.zip) |
+| 轻量化模型 | 适用于人像标注场景。       | HRNet18s_OCR48 | [static_hrnet18s_ocr48_human](https://paddleseg.bj.bcebos.com/eiseg/0.4/static_hrnet18s_ocr48_human.zip) |
+| 高精度模型 | 适用于通用图像标注场景。       | EdgeFlow | [static_edgeflow_cocolvis](https://paddleseg.bj.bcebos.com/eiseg/0.4/static_edgeflow_cocolvis.zip) |
+| 轻量化模型 | 适用于遥感建筑物标注场景。    | HRNet18s_OCR48 | [static_hrnet18_ocr48_rsbuilding_instance](https://paddleseg.bj.bcebos.com/eiseg/0.4/static_hrnet18_ocr48_rsbuilding_instance.zip) |
+| 轻量化模型 | 适用于医疗肝脏标注场景。       | HRNet18s_OCR48 | [static_hrnet18s_ocr48_lits](https://paddleseg.bj.bcebos.com/eiseg/0.4/static_hrnet18s_ocr48_lits.zip) |
 
-
+****NOTE****： 将下载的模型结构`*.pdmodel`及相应的模型参数`*.pdiparams`需要放到同一个目录下，加载模型时只需选择`*.pdiparams`结尾的模型参数位置即可， `*.pdmodel`会自动加载。在使用`EdgeFlow`模型时，请将`使用掩膜`关闭，其他模型使用时请勾选`使用掩膜`。
 
 ## 安装使用
 
@@ -36,31 +40,37 @@ EISeg提供多种安装方式，其中使用[pip](#PIP)和[运行代码](#运行
 
 版本要求:
 
-* PaddlePaddle >= 2.1.0
+* PaddlePaddle >= 2.2.0
 
 PaddlePaddle安装请参考[官网](https://www.paddlepaddle.org.cn/install/quick?docurl=/documentation/docs/zh/install/pip/windows-pip.html)。
 
 ### 克隆到本地
-
 通过git将PaddleSeg克隆到本地：
 
 ```shell
 git clone https://github.com/PaddlePaddle/PaddleSeg.git
 ```
 
+安装所需环境（若需要使用到GDAL和SimpleITK请参考**垂类分割**进行安装）：
+
+```shell
+pip install -r requirements.txt
+```
+
 安装好所需环境后，进入EISeg，可通过直接运行eiseg打开EISeg：
 
 ```shell
-cd PaddleSeg\contrib\EISeg
+cd PaddleSeg\EISeg
 python -m eiseg
 ```
 
 或进入eiseg，运行exe.py打开EISeg：
 
 ```shell
-cd PaddleSeg\contrib\EISeg\eiseg
+cd PaddleSeg\EISeg\eiseg
 python exe.py
 ```
+
 
 ### PIP
 
@@ -75,9 +85,6 @@ eiseg
 ```
 即可运行软件。
 
-### Windows exe
-
-EISeg使用[QPT](https://github.com/GT-ZhangAcer/QPT)进行打包。可以从[这里](https://paddleseg.bj.bcebos.com/eiseg/EISeg0.3.0.1.7z)下载最新EISeg。解压后双击启动程序.exe即可运行程序。程序第一次运行会初始化安装所需要的包，请稍等片刻。
 
 ## 使用
 
@@ -85,7 +92,7 @@ EISeg使用[QPT](https://github.com/GT-ZhangAcer/QPT)进行打包。可以从[�
 
 1. **模型参数加载**
 
-   选择合适的网络，并加载对应的模型参数。目前在EISeg中，网络分为`HRNet18s_OCR48`和`HRNet18_OCR64`，并分别提供了人像和通用两种模型参数。在正确加载模型参数后，右下角状态栏会给予说明。若网络参数与模型参数不符，将会弹出警告，此时加载失败需重新加载。正确加载的模型参数会记录在`近期模型参数`中，可以方便切换，并且下次打开软件时自动加载退出时的模型参数。
+   根据标注场景，选择合适的网络模型及参数进行加载。目前在EISeg0.4.0中，已经将动态图预测转为静态图预测，全面提升单次点击的预测速度。选择合适的模型及参数下载解压后，模型结构`*.pdmodel`及相应的模型参数`*.pdiparams`需要放到同一个目录下，加载模型时只需选择`*.pdiparams`结尾的模型参数位置即可。静态图模型初始化时间稍长，请耐心等待模型加载完成后进行下一步操作。正确加载的模型参数会记录在`近期模型参数`中，可以方便切换，并且下次打开软件时自动加载退出时的模型参数。
 
 2. **图像加载**
 
@@ -120,43 +127,53 @@ EISeg使用[QPT](https://github.com/GT-ZhangAcer/QPT)进行打包。可以从[�
 | 鼠标双击（点）        | 删除点            |
 | 鼠标双击（边）        | 添加点            |
 
-## 新功能使用说明
+## 特色功能使用说明
 
 - **多边形**
 
-1. 交互完成后使用Space（空格）完成交互标注，此时出现多边形边界；当需要在多边形内部继续进行交互，则使用空格切换为交互模式，此时多边形无法选中和更改。
-2. 多边形可以拖动和删除，使用鼠标左边可以对锚点进行拖动，鼠标左键双击锚点可以删除锚点，双击两点之间的边则可在此边添加一个锚点。
-3. 打开`保留最大连通块`后，所有的点击只会在图像中保留面积最大的区域，其余小区域将不会显示和保存。
+    - 交互完成后使用Space（空格）完成交互标注，此时出现多边形边界；
+    - 当需要在多边形内部继续进行交互，则使用空格切换为交互模式，此时多边形无法选中和更改。
+    - 多边形可以删除，使用鼠标左边可以对锚点进行拖动，鼠标左键双击锚点可以删除锚点，双击两点之间的边则可在此边添加一个锚点。
+    - 打开`保留最大连通块`后，所有的点击只会在图像中保留面积最大的区域，其余小区域将不会显示和保存。
 
-- **格式保存**
+- **保存格式**
 
-1. 打开保存`JSON保存`或`COCO保存`后，多边形会被记录，加载时会自动加载。
-2. 若不设置保存路径，默认保存至当前图像文件夹下的label文件夹中。
-3. 如果有图像之间名称相同但后缀名不同，可以打开`标签和图像使用相同扩展名`。
-4. 还可设置灰度保存、伪彩色保存和抠图保存，见工具栏中7-9号工具。
+    - 打开保存`JSON保存`或`COCO保存`后，多边形会被记录，加载时会自动加载。
+    - 若不设置保存路径，默认保存至当前图像文件夹下的label文件夹中。
+    - 如果有图像之间名称相同但后缀名不同，可以打开`标签和图像使用相同扩展名`。
+    - 还可设置灰度保存、伪彩色保存和抠图保存，见工具栏中7-9号工具。
 
 - **生成mask**
 
-1. 标签按住第二列可以进行拖动，最后生成mask时会根据标签列表从上往下进行覆盖。
+    - 标签按住第二列可以进行拖动，最后生成mask时会根据标签列表从上往下进行覆盖。
 
 - **界面模块**
 
-1. 可在`显示`中选择需要显示的界面模块，正常退出时将会记录界面模块的状态和位置，下次打开自动加载。
+    - 可在`显示`中选择需要显示的界面模块，正常退出时将会记录界面模块的状态和位置，下次打开自动加载。
 
-## 工具
+- **垂类分割**
 
-有关工具使用参考[这里](tool/README.md)，目前包括：
+    EISeg目前已添加对遥感图像和医学影像分割的支持，使用相关功能需要安装额外依赖。
 
-1. 将EISeg标注的语义分割数据转为PaddleX支持数据组织形式，打通标注与训练的中间过程。
+    - 分割遥感图像请安装GDAL，相关安装及介绍具体详见[遥感标注垂类建设](docs/remote_sensing.md)。
+    - 分割医学影像请安装SimpleITK，相关安装及介绍具体详见[医疗标注垂类建设](docs/medical.md)。
+    
+- **脚本工具使用**
+
+    EISeg目前提供包括标注转PaddleX数据集、划分COCO格式以及语义标签转实例标签等脚本工具，相关使用方式详见[脚本工具使用](docs/tools.md)。
 
 ## 版本更新
-
+- 2021.12.14  **0.4.1**：【1】修复闪退问题； 【2】新增建筑物遥感标注后处理操作。
+- 2021.11.16  **0.4.0**：【1】将动态图预测转换成静态图预测，单次点击速度提升十倍；【2】新增遥感图像标注功能，支持多光谱数据通道的选择；【3】支持大尺幅数据的切片（多宫格）处理；【4】新增医疗图像标注功能，支持读取dicom的数据格式，支持选择窗宽和窗位。
 - 2021.09.16  **0.3.0**：【1】初步完成多边形编辑功能，支持对交互标注的结果进行编辑；【2】支持中/英界面；【3】支持保存为灰度/伪彩色标签和COCO格式；【4】界面拖动更加灵活；【5】标签栏可拖动，生成mask的覆盖顺序由上往下覆盖。
 - 2021.07.07  **0.2.0**：新增contrib：EISeg，可实现人像和通用图像的快速交互式标注。
 
-## 开发者
 
-[Yuying Hao](https://github.com/haoyuying), [Lin Han](https://github.com/linhandev/), [Yizhou Chen](https://github.com/geoyee), [Yiakwy](https://github.com/yiakwy), [GT](https://github.com/GT-ZhangAcer), [Zhiliang Yu](https://github.com/yzl19940819)
+
+
+## 贡献者
+
+感谢[Yuying Hao](https://github.com/haoyuying), [Lin Han](https://github.com/linhandev), [Yizhou Chen](https://github.com/geoyee), [Yiakwy](https://github.com/yiakwy), [GT](https://github.com/GT-ZhangAcer), [Youssef Harby](https://github.com/Youssef-Harby), [Zhiliang Yu](https://github.com/yzl19940819), [Nick Nie](https://github.com/niecongchong) 等开发者及[RITM](https://github.com/saic-vul/ritm_interactive_segmentation) 算法支持。
 
 ## 学术引用
 

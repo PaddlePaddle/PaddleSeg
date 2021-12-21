@@ -1,0 +1,19 @@
+_base_: '../_base_/cityscapes.yml'
+
+batch_size: 12
+iters: 80000
+
+model:
+  type: STDCSeg
+  backbone:
+    type: STDC1
+    pretrained: https://bj.bcebos.com/paddleseg/dygraph/STDCNet1.tar.gz
+  pretrained: null
+
+loss:
+  types:
+    - type: OhemCrossEntropyLoss
+    - type: OhemCrossEntropyLoss
+    - type: OhemCrossEntropyLoss
+    - type: DetailAggregateLoss
+  coef: [1, 1, 1, 1]

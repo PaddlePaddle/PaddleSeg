@@ -8,10 +8,15 @@
 ![python version](https://img.shields.io/badge/python-3.6+-orange.svg)
 ![support os](https://img.shields.io/badge/os-linux%2C%20win%2C%20mac-yellow.svg)
 
+## 近期活动
+PaddleSeg团队将举办主题为《产业图像分割应用与实战》的两日课向大家分析在**交互式智能标注工具**和**精细化分割Matting**方向的研究工作。
+<div align="center">
+<img src=https://user-images.githubusercontent.com/14087480/142155222-97b7b93d-3f2a-433a-be70-6b2a565e936b.png  width = "2000" />  
+</div>
 
 ## PaddleSeg发布2.3版本，欢迎体验
 
-* PaddleSeg团队发表交互式分割论文[EdgeFlow](https://arxiv.org/abs/2109.0406)，已在多个数据集实现SOTA性能，并升级了交互式分割工具[EISeg](./EISeg)。
+* PaddleSeg团队发表交互式分割论文[EdgeFlow](https://arxiv.org/abs/2109.09406)，已在多个数据集实现SOTA性能，并升级了交互式分割工具[EISeg](./EISeg)。
 * 开源两种[Matting](./contrib/Matting)算法，经典方法DIM，和实时性方法MODNet，实现精细化人像分割。
 * 发布图像分割高阶功能，[模型蒸馏](./slim/distill)和[模型量化](./slim/quant)方案，进一步提升模型的部署效率。
 
@@ -47,20 +52,6 @@ PaddleSeg是基于飞桨[PaddlePaddle](https://www.paddlepaddle.org.cn)开发的
 
 ----------
 
-
-## <img src="./docs/images/love.png" width="40"/> 直播课回放
-
-✨直播课回放--全球冠军带你实现产业级图像分割✨  
-
-* 学习链接：https://aistudio.baidu.com/aistudio/education/group/info/24590
-
-* Day① 顶会冠军图像分割算法深度解密
-
-* Day② 高精度人像分割算法及应用
-
-* Day③ 交互式分割及破圈应用
-
-
 ## 技术交流 <img src="./docs/images/chat.png" width="30"/>
 
 * 如果你发现任何PaddleSeg存在的问题或者是建议, 欢迎通过[GitHub Issues](https://github.com/PaddlePaddle/PaddleSeg/issues)给我们提issues。
@@ -69,14 +60,28 @@ PaddleSeg是基于飞桨[PaddlePaddle](https://www.paddlepaddle.org.cn)开发的
 <img src="./docs/images/QQ_chat.png"  width = "200" />  
 </div>
 
-## 模型说明  <img src="./docs/images/model.png" width="20"/>
+## 模型库总览  <img src="./docs/images/model.png" width="20"/>
 
-[Model Zoo](./configs/)
+更多信息参见[Model Zoo Overview](./docs/model_zoo_overview.md)
 
 <div align="center">
-<img src="./docs/images/xingnengtu.png"    width = "700"/>  
+<img src=https://user-images.githubusercontent.com/30695251/140323107-02ce9de4-c8f4-4f18-88b2-59bd0055a70b.png   />  
 </div>
 
+
+## 数据集
+
+- [x] Cityscapes
+- [x] Pascal VOC
+- [x] ADE20K
+- [x] Pascal Context
+- [x] COCO stuff
+- [x] CHASE_DB1
+- [x] HRF
+- [x] DRIVE
+- [x] STARE
+- [x] EG1800
+- [x] SUPERVISELY
 
 ## 使用教程 <img src="./docs/images/teach.png" width="30"/>
 
@@ -144,6 +149,11 @@ PaddleSeg是基于飞桨[PaddlePaddle](https://www.paddlepaddle.org.cn)开发的
 - 非常感谢[liuguoyu666](https://github.com/liguoyu666)贡献U-Net++模型。
 - 非常感谢[yazheng0307](https://github.com/yazheng0307) (刘正)贡献快速开始教程文档。
 - 非常感谢[CuberrChen](https://github.com/CuberrChen)贡献STDC (rethink BiSeNet) PointRend，和 Detail Aggregate损失函数。
+- 非常感谢[stuartchen1949](https://github.com/stuartchen1949)贡献 SegNet。
+- 非常感谢[justld](https://github.com/justld)(郎督)贡献 ESPNet，HRNet_W48_Contrast 和 PixelContrastCrossEntropyLoss 损失函数。
+- 非常感谢[Herman-Hu-saber](https://github.com/Herman-Hu-saber)(胡慧明)参与贡献 ESPNet。
+- 非常感谢[zhangjin12138](https://github.com/zhangjin12138)贡献数据增强方法 RandomCenterCrop。
+
 
 ## 学术引用 <img src="./docs/images/yinyong.png" width="30"/>
 

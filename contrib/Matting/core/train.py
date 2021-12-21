@@ -25,6 +25,34 @@ from paddleseg.utils import TimeAverager, calculate_eta, resume, logger
 from core.val import evaluate
 
 
+def visual_in_traning(log_writer, vis_dict, step):
+    """
+    Visual in vdl
+
+    Args:
+        log_writer (LogWriter): The log writer of vdl.
+        vis_dict (dict): Dict of tensor. The shape of thesor is (C, H, W)
+    """
+    for key, value in vis_dict.items():
+        value_shape = value.shape
+        if value_shape[0] not in [1, 3]:
+            value = value[0]
+            value = value.unsqueeze(0)
+        value = paddle.transpose(value, (1, 2, 0))
+        min_v = paddle.min(value)
+        max_v = paddle.max(value)
+        if (min_v > 0) and (max_v < 1):
+            value = value * 255
+        elif (min_v < 0 and min_v >= -1) and (max_v <= 1):
+            value = (1 + value) / 2 * 255
+        else:
+            value = (value - min_v) / (max_v - min_v) * 255
+
+        value = value.astype('uint8')
+        value = value.numpy()
+        log_writer.add_image(tag=key, img=value, step=step)
+
+
 def train(model,
           train_dataset,
           val_dataset=None,
@@ -35,6 +63,7 @@ def train(model,
           resume_model=None,
           save_interval=1000,
           log_iters=10,
+          log_image_iters=1000,
           num_workers=0,
           use_vdl=False,
           losses=None,
@@ -53,6 +82,7 @@ def train(model,
         resume_model (str, optional): The path of resume model.
         save_interval (int, optional): How many iters to save a model snapshot once during training. Default: 1000.
         log_iters (int, optional): Display logging information at every log_iters. Default: 10.
+        log_image_iters (int, optional): Log image to vdl. Default: 1000.
         num_workers (int, optional): Num workers for data loader. Default: 0.
         use_vdl (bool, optional): Whether to record the data to VisualDL during training. Default: False.
         losses (dict, optional): A dict of loss, refer to the loss function of the model for details. Default: None.
@@ -164,6 +194,20 @@ def train(model,
                                           avg_train_batch_cost, iter)
                     log_writer.add_scalar('Train/reader_cost',
                                           avg_train_reader_cost, iter)
+                    if iter % log_image_iters == 0:
+                        vis_dict = {}
+                        # ground truth
+                        vis_dict['ground truth/img'] = data['img'][0]
+                        for key in data['gt_fields']:
+                            key = key[0]
+                            vis_dict['/'.join(['ground truth',
+                                               key])] = data[key][0]
+                        # predict
+                        for key, value in logit_dict.items():
+                            vis_dict['/'.join(['predict',
+                                               key])] = logit_dict[key][0]
+                        visual_in_traning(
+                            log_writer=log_writer, vis_dict=vis_dict, step=iter)
 
                 for key in avg_loss.keys():
                     avg_loss[key] = 0.
