@@ -82,7 +82,7 @@ class ENCNet(nn.Layer):
             )
 
         self.enc_module = EncModule(mid_channels, num_codes)
-        self.head = nn.Sequential(nn.Conv2D(mid_channels, num_classes, 1), )
+        self.head = nn.Conv2D(mid_channels, num_classes, 1)
 
         self.fcn_head = layers.AuxLayer(self.backbone.feat_channels[2],
                                         mid_channels, num_classes)
@@ -103,10 +103,7 @@ class ENCNet(nn.Layer):
         feats = self.backbone(inputs)
         fcn_feat = feats[2]
 
-        temp_feats = []
-        for i in self.backbone_indices:
-            temp_feats.append(feats[i])
-        feats = temp_feats
+        feats = [feats[i] for i in self.backbone_indices]
         feat = self.bottleneck(feats[-1])
 
         if self.add_lateral:
@@ -214,14 +211,13 @@ class EncModule(nn.Layer):
             nn.Sigmoid(),
         )
         self.in_channels = in_channels
-        self.num_codes = num_codes
 
     def forward(self, x):
         encoding_projection = self.encoding_project(x)
         encoding_feat = self.encoding(encoding_projection)
 
         encoding_feat = encoding_feat.mean(axis=1)
-        batch_size, channels, _, _ = paddle.shape(x)
+        batch_size, _, _, _ = paddle.shape(x)
 
         gamma = self.fc(encoding_feat)
         y = gamma.reshape([batch_size, self.in_channels, 1, 1])
