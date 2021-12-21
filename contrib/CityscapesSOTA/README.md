@@ -145,3 +145,15 @@ CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6,7 python -u -m paddle.distributed.launch trai
 ```
 Note that this requires 32GB of GPU memory. You can remove argument `--do_eval` to turn off evaluation during training, thus it only requires 25GB of GPU memory.
 If you run out of memory, try to lower the crop size.
+
+## Deploy
+
+- Inference with TensorRT in C++
+- Inference with ONNX Runtime in Python
+- Inference with TensorFlow Lite in Python
+
+Please refer to
+- https://github.com/PINTO0309/PINTO_model_zoo/tree/main/201_CityscapesSOTA/demo
+- https://github.com/iwatake2222/play_with_tensorrt/tree/master/pj_tensorrt_seg_paddleseg_cityscapessota
+
+Thanks for their contributions!
