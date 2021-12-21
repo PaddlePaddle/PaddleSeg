@@ -69,6 +69,19 @@ PaddleSeg是基于飞桨[PaddlePaddle](https://www.paddlepaddle.org.cn)开发的
 </div>
 
 
+## 数据集
+
+- [x] Cityscapes
+- [x] Pascal VOC
+- [x] ADE20K
+- [x] Pascal Context
+- [x] COCO stuff
+- [x] CHASE_DB1
+- [x] HRF
+- [x] DRIVE
+- [x] STARE
+- [x] EG1800
+- [x] SUPERVISELY
 
 ## 使用教程 <img src="./docs/images/teach.png" width="30"/>
 
@@ -136,6 +149,7 @@ PaddleSeg是基于飞桨[PaddlePaddle](https://www.paddlepaddle.org.cn)开发的
 - 非常感谢[liuguoyu666](https://github.com/liguoyu666)贡献U-Net++模型。
 - 非常感谢[yazheng0307](https://github.com/yazheng0307) (刘正)贡献快速开始教程文档。
 - 非常感谢[CuberrChen](https://github.com/CuberrChen)贡献STDC (rethink BiSeNet) PointRend，和 Detail Aggregate损失函数。
+- 非常感谢[stuartchen1949](https://github.com/stuartchen1949)贡献 SegNet。
 - 非常感谢[justld](https://github.com/justld)(郎督)贡献 ESPNet，HRNet_W48_Contrast 和 PixelContrastCrossEntropyLoss 损失函数。
 - 非常感谢[Herman-Hu-saber](https://github.com/Herman-Hu-saber)(胡慧明)参与贡献 ESPNet。
 - 非常感谢[zhangjin12138](https://github.com/zhangjin12138)贡献数据增强方法 RandomCenterCrop。
