@@ -152,7 +152,7 @@ Start the annotation when the above are all set up. Here are the commonly used k
 
 ## Contributors
 
-Our gratitude goes to Developers including [Yuying Hao](https://github.com/haoyuying), [Lin Han](https://github.com/linhandev/), [Yizhou Chen](https://github.com/geoyee), [Yiakwy](https://github.com/yiakwy), [GT](https://github.com/GT-ZhangAcer), [Zhiliang Yu](https://github.com/yzl19940819) and the support of [RITM](https://github.com/saic-vul/ritm_interactive_segmentation).
+Our gratitude goes to Developers including [Lin Han](https://github.com/linhandev/), [Yizhou Chen](https://github.com/geoyee), [Yiakwy](https://github.com/yiakwy), [GT](https://github.com/GT-ZhangAcer) and the support of [RITM](https://github.com/saic-vul/ritm_interactive_segmentation).
 
 ## Citation
 
