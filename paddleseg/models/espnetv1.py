@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import os
+
 import paddle
 import paddle.nn as nn
 import paddle.nn.functional as F
@@ -53,8 +54,13 @@ class ESPNetV1(nn.Layer):
             nn.Conv2DTranspose(num_classes, num_classes, 2, stride=2, padding=0, output_padding=0, bias_attr=False),
             BNPReLU(num_classes),
         ) 
-        self.out_proj = ConvBNPReLU(16 + in_channels + num_classes, num_classes, 3, 1)
+        self.out_proj = layers.ConvBNPReLU(16 + in_channels + num_classes, num_classes, 3, padding='same', stride=1)
         self.out_up = nn.Conv2DTranspose(num_classes, num_classes, 2, stride=2, padding=0, output_padding=0, bias_attr=False)
+        self.pretrained = pretrained
+    
+    def init_weight(self):
+        if self.pretrained is not None:
+            utils.load_entire_model(self, self.pretrained)
     
     def forward(self, x):
         p1, p2, p3 = self.encoder(x)
@@ -66,21 +72,6 @@ class ESPNetV1(nn.Layer):
         combine = self.out_proj(paddle.concat([up_p2, p1], axis=1))
         out = self.out_up(combine)
         return [out]
-
-
-class ConvBNPReLU(nn.Layer):
-    def __init__(self, in_channels, out_channels, kernel_size, stride=1):
-        super().__init__()
-        padding = int((kernel_size - 1) / 2)
-        self.conv = nn.Conv2D(in_channels, out_channels, kernel_size, stride=stride, padding=padding, bias_attr=False)
-        self.bn = layers.SyncBatchNorm(out_channels)
-        self.act = nn.PReLU(out_channels)
-
-    def forward(self, x):
-        x = self.conv(x)
-        x = self.bn(x)
-        x = self.act(x)
-        return x
 
 
 class BNPReLU(nn.Layer):
@@ -188,23 +179,23 @@ class ESPNetEncoder(nn.Layer):
     '''
     def __init__(self, num_classes, in_channels=3, level2_depth=5, level3_depth=3):
         super().__init__()
-        self.level1 = ConvBNPReLU(in_channels, 16, 3, 2)
+        self.level1 = layers.ConvBNPReLU(in_channels, 16, 3, padding='same', stride=2)
         self.br1 = BNPReLU(in_channels + 16)
-        self.proj1 = ConvBNPReLU(in_channels + 16, num_classes, 1)
+        self.proj1 = layers.ConvBNPReLU(in_channels + 16, num_classes, 1)
 
         self.level2_0 = DownSampler(in_channels + 16, 64)
         self.level2 = nn.Sequential(
             *[DilatedResidualBlock(64, 64) for i in range(level2_depth)]
         )
         self.br2 = BNPReLU(in_channels + 128)
-        self.proj2 = ConvBNPReLU(in_channels + 128, num_classes, 1)
+        self.proj2 = layers.ConvBNPReLU(in_channels + 128, num_classes, 1)
 
         self.level3_0 = DownSampler(in_channels + 128, 128)
         self.level3 = nn.Sequential(
             *[DilatedResidualBlock(128, 128) for i in range(level3_depth)]
         )
         self.br3 = BNPReLU(256)
-        self.proj3 = ConvBNPReLU(256, num_classes, 1)
+        self.proj3 = layers.ConvBNPReLU(256, num_classes, 1)
 
     def forward(self, x):
         f1 = self.level1(x)
@@ -228,3 +219,4 @@ class ESPNetEncoder(nn.Layer):
         p3 = self.proj3(feat3)
 
         return p1, p2, p3
+        
