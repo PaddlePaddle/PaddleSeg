@@ -26,4 +26,3 @@ model:
   num_classes: 19
   level2_depth: 2
   level3_depth: 8
-  
