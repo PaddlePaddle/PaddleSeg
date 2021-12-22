@@ -57,6 +57,7 @@ class MattingDataset(paddle.io.Dataset):
         get_trimap (bool, optional): Whether to get triamp. Default: True.
         separator (str, optional): The separator of train_file or val_file. If file name contains ' ', '|' may be perfect. Default: ' '.
         key_del (tuple|list, optional): The key which is not need will be delete to accellect data reader. Default: None.
+        if_rssn (bool, optional): Whether to use RSSN while Compositing image. Including denoise and blur. Default: False.
     """
 
     def __init__(self,
@@ -67,7 +68,8 @@ class MattingDataset(paddle.io.Dataset):
                  val_file=None,
                  get_trimap=True,
                  separator=' ',
-                 key_del=None):
+                 key_del=None,
+                 if_rssn=False):
         super().__init__()
         self.dataset_root = dataset_root
         self.transforms = T.Compose(transforms)
@@ -75,6 +77,7 @@ class MattingDataset(paddle.io.Dataset):
         self.get_trimap = get_trimap
         self.separator = separator
         self.key_del = key_del
+        self.if_rssn = if_rssn
 
         # check file
         if mode == 'train' or mode == 'trainval':
@@ -190,12 +193,14 @@ class MattingDataset(paddle.io.Dataset):
         return len(self.fg_bg_list)
 
     def composite(self, fg, alpha, ori_bg):
-        if np.random.rand() < 0.5:
-            fg = cv2.fastNlMeansDenoisingColored(fg, None, 3, 3, 7, 21)
-            ori_bg = cv2.fastNlMeansDenoisingColored(ori_bg, None, 3, 3, 7, 21)
-        if np.random.rand() < 0.5:
-            radius = np.random.choice([19, 29, 39, 49, 59])
-            ori_bg = cv2.GaussianBlur(ori_bg, (radius, radius), 0, 0)
+        if self.if_rssn:
+            if np.random.rand() < 0.5:
+                fg = cv2.fastNlMeansDenoisingColored(fg, None, 3, 3, 7, 21)
+                ori_bg = cv2.fastNlMeansDenoisingColored(
+                    ori_bg, None, 3, 3, 7, 21)
+            if np.random.rand() < 0.5:
+                radius = np.random.choice([19, 29, 39, 49, 59])
+                ori_bg = cv2.GaussianBlur(ori_bg, (radius, radius), 0, 0)
         fg_h, fg_w = fg.shape[:2]
         ori_bg_h, ori_bg_w = ori_bg.shape[:2]
 
