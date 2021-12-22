@@ -25,15 +25,15 @@ class SECrossEntropyLoss(nn.Layer):
     The Semantic Encoding Loss implementation based on PaddlePaddle.
 
     """
-    def __init__(self):
+    def __init__(self, *args, **kwargs):
         super(SECrossEntropyLoss, self).__init__()
 
     def forward(self, logit, label):
         if logit.ndim == 4:
             logit = logit.squeeze(2).squeeze(3)
         assert logit.ndim == 2, "The shape of logit should be [N, C, 1, 1] or [N, C], but the logit dim is  {}.".format(
-                logit.ndim)
-        
+            logit.ndim)
+
         batch_size, num_classes = paddle.shape(logit)
         se_label = paddle.zeros([batch_size, num_classes])
         for i in range(batch_size):

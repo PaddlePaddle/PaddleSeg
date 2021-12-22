@@ -117,14 +117,14 @@ class ENCNet(nn.Layer):
         encode_feat, feat = self.enc_module(feat)
         out = self.head(feat)
         out = F.interpolate(out,
-                            size=(H, W),
+                            size=[H, W],
                             mode='bilinear',
                             align_corners=False)
         output = [out]
         if self.training:
             fcn_out = self.fcn_head(fcn_feat)
             fcn_out = F.interpolate(fcn_out,
-                                    size=(H, W),
+                                    size=[H, W],
                                     mode='bilinear',
                                     align_corners=False)
             output.append(fcn_out)
