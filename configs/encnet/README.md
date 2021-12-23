@@ -9,4 +9,4 @@
 
 | Model | Backbone | Resolution | Training Iters | mIoU | mIoU (flip) | mIoU (ms+flip) | Links |
 |:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
-|ENCNet|ResNet101_vd|1024x512|80000|-|-|-|[model]| [log]| [vdl]|
+|ENCNet|ResNet101_vd|1024x512|80000|79.42%|80.02%|-|[model](https://bj.bcebos.com/paddleseg/dygraph/cityscapes/encnet_resnet101_os8_cityscapes_1024x512_80k/model.pdparams) \| [log](https://bj.bcebos.com/paddleseg/dygraph/cityscapes/encnet_resnet101_os8_cityscapes_1024x512_80k/train.log )\| [vdl](https://www.paddlepaddle.org.cn/paddle/visualdl/service/app/index?id=c2b819e6b666e4e50bba4b525f515d41)|
