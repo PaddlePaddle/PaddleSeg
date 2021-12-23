@@ -229,7 +229,9 @@ class ZiYanGate(nn.Layer):
         # composion loss
         comp_pred = logit_dict['fusion'] * label_dict['fg'] + (
             1 - logit_dict['fusion']) * label_dict['bg']
-        loss_cm = loss_cm + loss_cm_func[1](comp_pred, label_dict['img'])
+        comp_gt = label_dict['alpha'] * label_dict['fg'] + (
+            1 - label_dict['alpha']) * label_dict['bg']
+        loss_cm = loss_cm + loss_cm_func[1](comp_pred, comp_gt)
         loss['cm'] = loss_cm
 
         loss['all'] = 0.25 * loss_glance + 0.25 * loss_focus + 0.25 * loss['cm']
