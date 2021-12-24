@@ -23,7 +23,7 @@ from paddleseg.models import layers
 from paddleseg import utils
 from paddleseg.cvlibs import manager
 
-from model import MRSD
+from model import MRSD, GradientLoss
 from model import resnet_vd
 
 
@@ -36,10 +36,14 @@ def conv_up_psp(in_channels, out_channels, up_sample):
 
 @manager.MODELS.add_component
 class ZiYanGate(nn.Layer):
-    def __init__(self, backbone, pretrained=None):
+    def __init__(self, backbone, pretrained=None, loss_func_dict=None):
         super().__init__()
         self.backbone = backbone
         self.pretrained = pretrained
+        if loss_func_dict is not None:
+            self.loss_func_dict = loss_func_dict
+        else:
+            self.loss_func_dict = self.get_loss_func_dict()
 
         self.backbone_channels = backbone.feat_channels
         ######################
@@ -194,15 +198,19 @@ class ZiYanGate(nn.Layer):
             return logit_dict
         else:
             return fusion_sigmoid
+    
+    def get_loss_func_dict(self):
+        loss_func_dict = defaultdict(list)
+        loss_func_dict['glance'].append(nn.NLLLoss())
+        loss_func_dict['focus'].append(MRSD())
+        loss_func_dict['focus'].append(GradientLoss())
+        loss_func_dict['cm'].append(MRSD())
+        loss_func_dict['cm'].append(MRSD())
+        loss_func_dict['cm'].append(GradientLoss())
+        return loss_func_dict
 
     def loss(self, logit_dict, label_dict, loss_func_dict=None):
-        if loss_func_dict is None:
-            loss_func_dict = defaultdict(list)
-            loss_func_dict['glance'].append(nn.NLLLoss())
-            loss_func_dict['focus'].append(MRSD())
-            loss_func_dict['cm'].append(MRSD())
-            loss_func_dict['cm'].append(MRSD())
-
+        loss_func_dict = self.loss_func_dict
         loss = {}
 
         # glance loss computation
@@ -217,24 +225,40 @@ class ZiYanGate(nn.Layer):
         # TODO glance label 的验证
 
         # focus loss computation
-        loss_focus = loss_func_dict['focus'][0](logit_dict['focus'],
+        transparent = label_dict['trimap'] == 128
+        focus_alpha_loss = loss_func_dict['focus'][0](logit_dict['focus'],
                                                 label_dict['alpha'],
-                                                label_dict['trimap'] == 128)
+                                                transparent)
+        # gradient loss
+        focus_gradient_loss = loss_func_dict['focus'][1](logit_dict['focus'],
+                                                        label_dict['alpha'],
+                                                        transparent)
+        loss_focus = focus_alpha_loss + focus_gradient_loss
         loss['focus'] = loss_focus
+        loss['focus_alpha'] = focus_alpha_loss
+        loss['focus_gradient'] = focus_gradient_loss
 
         # collaborative matting loss
         loss_cm_func = loss_func_dict['cm']
         # fusion_sigmoid loss
-        loss_cm = loss_cm_func[0](logit_dict['fusion'], label_dict['alpha'])
+        cm_alpha_loss = loss_cm_func[0](logit_dict['fusion'], label_dict['alpha'])
         # composion loss
         comp_pred = logit_dict['fusion'] * label_dict['fg'] + (
             1 - logit_dict['fusion']) * label_dict['bg']
         comp_gt = label_dict['alpha'] * label_dict['fg'] + (
             1 - label_dict['alpha']) * label_dict['bg']
-        loss_cm = loss_cm + loss_cm_func[1](comp_pred, comp_gt)
+        cm_composition_loss = loss_cm_func[1](comp_pred, comp_gt)
+        # grandient loss
+        cm_grad_loss = loss_cm_func[2](logit_dict['fusion'], label_dict['alpha'])
+        # cm loss
+        loss_cm = cm_alpha_loss + cm_composition_loss + cm_grad_loss
         loss['cm'] = loss_cm
+        loss['cm_alpha'] = cm_alpha_loss
+        loss['cm_composition'] = cm_composition_loss
+        loss['cm_gradient'] = cm_grad_loss
 
-        loss['all'] = 0.25 * loss_glance + 0.25 * loss_focus + 0.25 * loss['cm']
+
+        loss['all'] = 0.25 * loss_glance + 0.25 * loss_focus + 0.25 * loss_cm
 
         return loss
 

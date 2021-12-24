@@ -17,7 +17,7 @@ from .resnet_vd import *
 from .mobilenet_v2 import *
 from .hrnet import *
 from .dim import DIM
-from .loss import MRSD
+from .loss import MRSD, GradientLoss
 from .modnet import MODNet
 from .ziyan import ZiYanAM
 from .ziyan_gate import ZiYanGate
