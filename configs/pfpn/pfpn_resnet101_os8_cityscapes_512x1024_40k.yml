@@ -29,7 +29,7 @@ train_dataset:
 
 lr_scheduler:
   type: PolynomialDecay
-  learning_rate: 0.005
+  learning_rate: 0.01
   end_lr: 0
   power: 0.9
 
