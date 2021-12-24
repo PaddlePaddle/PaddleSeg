@@ -11,4 +11,4 @@
 
 | Model | Backbone | Resolution | Training Iters | mIoU | mIoU (flip) | mIoU (ms+flip) | Links |
 |:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
-|ESPNetV2|-|1024x512|120000|-|-|-|-|
+|ESPNetV2|-|1024x512|120000|61.82%|62.20%|62.89%|-|
