@@ -41,10 +41,10 @@ Export the Paddle model to ONNX, deploy the ONNX model by TRT.
 
 Prepare:
 * install PaddlePaddle
-* install the requirements of PaddleSeg
-* download and install TensorRT 7 by tar file
-* pip install 'pycuda>=2019.1.1'
-* pip install paddle2onnx onnx onnxruntime
+* install PaddleSeg and the the requirements
+* download TensorRT 7 by tar file, install trt whle, export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:TensorRT-7/lib
+* run `pip install 'pycuda>=2019.1.1'`
+* run `pip install paddle2onnx onnx onnxruntime`
 
 Note:
 * Some models are not supported exporting to ONNX.

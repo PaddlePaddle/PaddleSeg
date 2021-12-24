@@ -607,8 +607,8 @@ class ARM_2_1(nn.Layer):
         return out
 
 
-class ARM_3(nn.Layer):
-    '''use x to attention x and y'''
+class ARM_3_1(nn.Layer):
+    '''concat + conv'''
 
     def __init__(self, x_chan, y_chan, out_chan, first_ksize=3):
         super().__init__()
@@ -618,18 +618,34 @@ class ARM_3(nn.Layer):
             kernel_size=first_ksize,
             stride=1,
             padding=first_ksize // 2)
-        self.conv_atten = nn.Conv2D(
-            out_chan, out_chan, kernel_size=1, bias_attr=None)
-        self.bn_atten = nn.BatchNorm2D(out_chan)
-        self.sigmoid_atten = nn.Sigmoid()
+        self.conv_out = layers.ConvBNReLU(
+            out_chan + y_chan, out_chan, kernel_size=1, stride=1, padding=0)
 
     def forward(self, x, y):
         x = self.conv(x)
-        atten = F.adaptive_avg_pool2d(x, 1)
-        atten = self.conv_atten(atten)
-        atten = self.bn_atten(atten)
-        atten = self.sigmoid_atten(atten)
-        out = paddle.multiply(x, atten) + paddle.multiply(y, 1 - atten)
+        xy_cat = paddle.concat([x, y], axis=1)
+        out = self.conv_out(xy_cat)
+        return out
+
+
+class ARM_3_2(nn.Layer):
+    '''concat + conv'''
+
+    def __init__(self, x_chan, y_chan, out_chan, first_ksize=3):
+        super().__init__()
+        self.conv = layers.ConvBNReLU(
+            x_chan,
+            out_chan,
+            kernel_size=first_ksize,
+            stride=1,
+            padding=first_ksize // 2)
+        self.conv_out = layers.ConvBNReLU(
+            out_chan + y_chan, out_chan, kernel_size=3, stride=1, padding=1)
+
+    def forward(self, x, y):
+        x = self.conv(x)
+        xy_cat = paddle.concat([x, y], axis=1)
+        out = self.conv_out(xy_cat)
         return out
 
 
@@ -855,10 +871,47 @@ class ARM_7_3(nn.Layer):
         x = self.conv(x)
         xy = paddle.concat([x, y], axis=1)
         xy_avg_pool = F.adaptive_avg_pool2d(xy, 1)
-        xy_max_pool = F.adaptive_max_pool2d(xy, 1)
+        if self.training:
+            xy_max_pool = F.adaptive_max_pool2d(xy, 1)
+        else:
+            xy_max_pool = paddle.max(xy, axis=[2, 3], keepdim=True)
         atten = paddle.concat([xy_avg_pool, xy_max_pool], axis=1)
-        atten = self.conv_atten(atten)
-        atten = F.sigmoid(self.bn_atten(atten))
+        atten = F.sigmoid(self.bn_atten(self.conv_atten(atten)))
+        out = x * atten + y * (1 - atten)
+        return out
+
+
+class ARM_7_4(nn.Layer):
+    '''use cat(x,y) to attention x and y'''
+
+    def __init__(self, x_chan, y_chan, out_chan, first_ksize=3):
+        super().__init__()
+        self.conv = layers.ConvBNReLU(
+            x_chan,
+            out_chan,
+            kernel_size=first_ksize,
+            stride=1,
+            padding=first_ksize // 2)
+
+        self.ch_atten = nn.Sequential(
+            layers.ConvBNReLU(
+                2 * (out_chan + y_chan),
+                out_chan,
+                kernel_size=1,
+                bias_attr=False),
+            nn.Conv2D(out_chan, out_chan, kernel_size=1, bias_attr=False),
+            nn.BatchNorm2D(out_chan))
+
+    def forward(self, x, y):
+        x = self.conv(x)
+        xy = paddle.concat([x, y], axis=1)
+        xy_avg_pool = F.adaptive_avg_pool2d(xy, 1)
+        if self.training:
+            xy_max_pool = F.adaptive_max_pool2d(xy, 1)
+        else:
+            xy_max_pool = paddle.max(xy, axis=[2, 3], keepdim=True)
+        atten = paddle.concat([xy_avg_pool, xy_max_pool], axis=1)
+        atten = F.sigmoid(self.ch_atten(atten))
         out = x * atten + y * (1 - atten)
         return out
 
@@ -1340,6 +1393,37 @@ class ARM_12_5(nn.Layer):
         return out
 
 
+class ARM_12_6(nn.Layer):
+    '''combined spatial attention '''
+
+    def __init__(self, x_chan, y_chan, out_chan, first_ksize=3):
+        super().__init__()
+        self.conv = layers.ConvBNReLU(
+            x_chan,
+            out_chan,
+            kernel_size=first_ksize,
+            stride=1,
+            padding=first_ksize // 2)
+        self.sp_atten = nn.Sequential(
+            layers.ConvBNReLU(
+                out_chan + y_chan,
+                out_chan,
+                kernel_size=3,
+                padding=1,
+                bias_attr=False),
+            layers.ConvBNReLU(
+                out_chan, out_chan, kernel_size=3, padding=1, bias_attr=False),
+            nn.Conv2D(out_chan, 1, kernel_size=1, padding=0, bias_attr=False),
+            nn.BatchNorm2D(1))
+
+    def forward(self, x, y):
+        x = self.conv(x)
+        xy_cat = paddle.concat([x, y], axis=1)  # n * 2c * h * w
+        atten = F.sigmoid(self.sp_atten(xy_cat))  # n * 1 * h * w
+        out = x * atten + y * (1 - atten)
+        return out
+
+
 class ARM_13_1(nn.Layer):
     '''The fusion in sf_net '''
 
@@ -1500,6 +1584,39 @@ class ARM_14_2_dw(ARM_14_2):
             layers.ConvBNReLU(out_chan, out_chan, kernel_size=1))
 
 
+class ARM_14_2_1(nn.Layer):
+    '''combined channel attention + combined spatial attention'''
+
+    def __init__(self, x_chan, y_chan, out_chan, first_ksize=3):
+        super().__init__()
+        self.conv = layers.ConvBNReLU(
+            x_chan,
+            out_chan,
+            kernel_size=first_ksize,
+            stride=1,
+            padding=first_ksize // 2)
+        self.sp_atten = nn.Conv2D(
+            2, 1, kernel_size=3, padding=1, bias_attr=False)
+        self.ch_atten = nn.Conv2D(
+            out_chan + y_chan, out_chan, kernel_size=1, bias_attr=False)
+
+    def forward(self, x, y):
+        x = self.conv(x)
+        xy_cat = paddle.concat([x, y], axis=1)  # n * 2c * h * w
+
+        xy_mean = paddle.mean(xy_cat, axis=1, keepdim=True)
+        xy_max = paddle.max(xy_cat, axis=1, keepdim=True)
+        xy_mean_max_cat = paddle.concat([xy_mean, xy_max], axis=1)
+        sp_atten = F.sigmoid(self.sp_atten(xy_mean_max_cat))  # n * 1 * h * w
+
+        xy_pool = F.adaptive_avg_pool2d(xy_cat, 1)
+        ch_atten = F.sigmoid(self.ch_atten(xy_pool))  # n * c * 1 * 1
+
+        atten = sp_atten * ch_atten
+        out = atten * x + (1 - atten) * y
+        return out
+
+
 class ARM_14_3(nn.Layer):
     '''combined channel attention + combined spatial attention'''
 
@@ -1521,8 +1638,10 @@ class ARM_14_3(nn.Layer):
         x = self.conv(x)
         xy_cat = paddle.concat([x, y], axis=1)  # n * 2c * h * w
 
-        xy_avg_pool = F.adaptive_avg_pool2d(xy_cat, 1)
-        xy_max_pool = F.adaptive_max_pool2d(xy_cat, 1)
+        # xy_avg_pool = F.adaptive_avg_pool2d(xy_cat, 1)
+        # xy_max_pool = F.adaptive_max_pool2d(xy_cat, 1)
+        xy_avg_pool = paddle.mean(xy_cat, axis=[2, 3], keepdim=True)
+        xy_max_pool = paddle.max(xy_cat, axis=[2, 3], keepdim=True)
         pool_cat = paddle.concat([xy_avg_pool, xy_max_pool],
                                  axis=1)  # n * 4c * 1 * 1
         ch_atten = F.sigmoid(self.ch_atten(pool_cat))  # n * c * 1 * 1
@@ -1588,6 +1707,841 @@ class ARM_15_1(nn.Layer):
         sp_atten = F.sigmoid(self.sp_atten(xy_mean_max_cat))  # n * 1 * h * w
 
         out = sp_atten * x + (1 - sp_atten) * y
+        return out
+
+
+class ARM_16_1(nn.Layer):
+    '''combined channel attention + combined spatial attention, the right atten, two sigmoid'''
+
+    def __init__(self, x_chan, y_chan, out_chan, first_ksize=3):
+        super().__init__()
+        self.conv = layers.ConvBNReLU(
+            x_chan,
+            out_chan,
+            kernel_size=first_ksize,
+            stride=1,
+            padding=first_ksize // 2)
+
+        self.ch_atten = nn.Conv2D(
+            2 * (out_chan + y_chan), out_chan, kernel_size=1, bias_attr=False)
+        self.sp_atten = nn.Conv2D(
+            2, 1, kernel_size=3, padding=1, bias_attr=False)
+
+    def forward(self, x, y):
+        x = self.conv(x)
+        xy_cat = paddle.concat([x, y], axis=1)  # n * 2c * h * w
+
+        # adaptive_max_pool2d is not support by paddle2onnx, paddle.mean has error in training
+        if self.training:
+            xy_avg_pool = F.adaptive_avg_pool2d(xy_cat, 1)
+            xy_max_pool = F.adaptive_max_pool2d(xy_cat, 1)
+        else:
+            xy_avg_pool = paddle.mean(xy_cat, axis=[2, 3], keepdim=True)
+            xy_max_pool = paddle.max(xy_cat, axis=[2, 3], keepdim=True)
+        pool_cat = paddle.concat([xy_avg_pool, xy_max_pool],
+                                 axis=1)  # n * 4c * 1 * 1
+        ch_atten = F.sigmoid(self.ch_atten(pool_cat))  # n * c * 1 * 1
+
+        xy_mean = paddle.mean(xy_cat, axis=1, keepdim=True)
+        xy_max = paddle.max(xy_cat, axis=1, keepdim=True)
+        xy_mean_max_cat = paddle.concat([xy_mean, xy_max],
+                                        axis=1)  # n * 2 * h * w
+        sp_atten = F.sigmoid(self.sp_atten(xy_mean_max_cat))  # n * 1 * h * w
+
+        atten = sp_atten * ch_atten
+        out = atten * x + (1 - atten) * y
+        return out
+
+
+class ARM_16_2(nn.Layer):
+    '''sp atten use conv5, two sigmoid'''
+
+    def __init__(self, x_chan, y_chan, out_chan, first_ksize=3):
+        super().__init__()
+        self.conv = layers.ConvBNReLU(
+            x_chan,
+            out_chan,
+            kernel_size=first_ksize,
+            stride=1,
+            padding=first_ksize // 2)
+
+        self.ch_atten = nn.Conv2D(
+            2 * (out_chan + y_chan), out_chan, kernel_size=1, bias_attr=False)
+        self.sp_atten = nn.Conv2D(
+            2, 1, kernel_size=5, padding=2, bias_attr=False)
+
+    def forward(self, x, y):
+        x = self.conv(x)
+        xy_cat = paddle.concat([x, y], axis=1)  # n * 2c * h * w
+
+        if self.training:
+            xy_avg_pool = F.adaptive_avg_pool2d(xy_cat, 1)
+            xy_max_pool = F.adaptive_max_pool2d(xy_cat, 1)
+        else:
+            xy_avg_pool = paddle.mean(xy_cat, axis=[2, 3], keepdim=True)
+            xy_max_pool = paddle.max(xy_cat, axis=[2, 3], keepdim=True)
+        pool_cat = paddle.concat([xy_avg_pool, xy_max_pool],
+                                 axis=1)  # n * 4c * 1 * 1
+        ch_atten = F.sigmoid(self.ch_atten(pool_cat))  # n * c * 1 * 1
+
+        xy_mean = paddle.mean(xy_cat, axis=1, keepdim=True)
+        xy_max = paddle.max(xy_cat, axis=1, keepdim=True)
+        xy_mean_max_cat = paddle.concat([xy_mean, xy_max],
+                                        axis=1)  # n * 2 * h * w
+        sp_atten = F.sigmoid(self.sp_atten(xy_mean_max_cat))  # n * 1 * h * w
+
+        atten = sp_atten * ch_atten
+        out = atten * x + (1 - atten) * y
+        return out
+
+
+class ARM_16_3(nn.Layer):
+    '''ch and sp atten use bn, two sigmoid'''
+
+    def __init__(self, x_chan, y_chan, out_chan, first_ksize=3):
+        super().__init__()
+        self.conv = layers.ConvBNReLU(
+            x_chan,
+            out_chan,
+            kernel_size=first_ksize,
+            stride=1,
+            padding=first_ksize // 2)
+
+        self.ch_atten = nn.Conv2D(
+            2 * (out_chan + y_chan), out_chan, kernel_size=1, bias_attr=False)
+        self.ch_bn = nn.BatchNorm2D(out_chan)
+        self.sp_atten = nn.Conv2D(
+            2, 1, kernel_size=3, padding=1, bias_attr=False)
+        self.sp_bn = nn.BatchNorm2D(1)
+
+    def forward(self, x, y):
+        x = self.conv(x)
+        xy_cat = paddle.concat([x, y], axis=1)  # n * 2c * h * w
+
+        if self.training:
+            xy_avg_pool = F.adaptive_avg_pool2d(xy_cat, 1)
+            xy_max_pool = F.adaptive_max_pool2d(xy_cat, 1)
+        else:
+            xy_avg_pool = paddle.mean(xy_cat, axis=[2, 3], keepdim=True)
+            xy_max_pool = paddle.max(xy_cat, axis=[2, 3], keepdim=True)
+        pool_cat = paddle.concat([xy_avg_pool, xy_max_pool],
+                                 axis=1)  # n * 4c * 1 * 1
+        ch_atten = F.sigmoid(self.ch_bn(
+            self.ch_atten(pool_cat)))  # n * c * 1 * 1
+
+        xy_mean = paddle.mean(xy_cat, axis=1, keepdim=True)
+        xy_max = paddle.max(xy_cat, axis=1, keepdim=True)
+        xy_mean_max_cat = paddle.concat([xy_mean, xy_max],
+                                        axis=1)  # n * 2 * h * w
+        sp_atten = F.sigmoid(self.sp_bn(
+            self.sp_atten(xy_mean_max_cat)))  # n * 1 * h * w
+
+        atten = sp_atten * ch_atten
+        out = atten * x + (1 - atten) * y
+        return out
+
+
+class ARM_16_4(nn.Layer):
+    '''apply conv1 to xy_cat, two sigmoid'''
+
+    def __init__(self, x_chan, y_chan, out_chan, first_ksize=3):
+        super().__init__()
+        self.conv = layers.ConvBNReLU(
+            x_chan,
+            out_chan,
+            kernel_size=first_ksize,
+            stride=1,
+            padding=first_ksize // 2)
+
+        self.conv_cat = layers.ConvBNReLU(
+            out_chan + y_chan,
+            out_chan,
+            kernel_size=3,
+            padding=1,
+            bias_attr=False)
+        self.ch_atten = nn.Conv2D(
+            2 * out_chan, out_chan, kernel_size=1, bias_attr=False)
+        self.sp_atten = nn.Conv2D(
+            2, 1, kernel_size=1, padding=0, bias_attr=False)
+
+    def forward(self, x, y):
+        x = self.conv(x)
+        xy_cat = paddle.concat([x, y], axis=1)  # n * 2c * h * w
+        xy_cat = self.conv_cat(xy_cat)
+
+        if self.training:
+            xy_avg_pool = F.adaptive_avg_pool2d(xy_cat, 1)
+            xy_max_pool = F.adaptive_max_pool2d(xy_cat, 1)
+        else:
+            xy_avg_pool = paddle.mean(xy_cat, axis=[2, 3], keepdim=True)
+            xy_max_pool = paddle.max(xy_cat, axis=[2, 3], keepdim=True)
+        pool_cat = paddle.concat([xy_avg_pool, xy_max_pool],
+                                 axis=1)  # n * 2c * 1 * 1
+        ch_atten = F.sigmoid(self.ch_atten(pool_cat))  # n * c * 1 * 1
+
+        xy_mean = paddle.mean(xy_cat, axis=1, keepdim=True)
+        xy_max = paddle.max(xy_cat, axis=1, keepdim=True)
+        xy_mean_max_cat = paddle.concat([xy_mean, xy_max],
+                                        axis=1)  # n * 2 * h * w
+        sp_atten = F.sigmoid(self.sp_atten(xy_mean_max_cat))  # n * 1 * h * w
+
+        atten = sp_atten * ch_atten
+        out = atten * x + (1 - atten) * y
+        return out
+
+
+class ARM_16_5(nn.Layer):
+    '''apply conv3 to xy_cat, two sigmoid'''
+
+    def __init__(self, x_chan, y_chan, out_chan, first_ksize=3):
+        super().__init__()
+        self.conv = layers.ConvBNReLU(
+            x_chan,
+            out_chan,
+            kernel_size=first_ksize,
+            stride=1,
+            padding=first_ksize // 2)
+
+        self.conv_cat = layers.ConvBNReLU(
+            out_chan + y_chan,
+            out_chan,
+            kernel_size=3,
+            padding=1,
+            bias_attr=False)
+        self.ch_atten = nn.Conv2D(
+            2 * out_chan, out_chan, kernel_size=1, bias_attr=False)
+        self.sp_atten = nn.Conv2D(
+            2, 1, kernel_size=1, padding=0, bias_attr=False)
+
+    def forward(self, x, y):
+        x = self.conv(x)
+        xy_cat = paddle.concat([x, y], axis=1)  # n * 2c * h * w
+        xy_cat = self.conv_cat(xy_cat)
+
+        if self.training:
+            xy_avg_pool = F.adaptive_avg_pool2d(xy_cat, 1)
+            xy_max_pool = F.adaptive_max_pool2d(xy_cat, 1)
+        else:
+            xy_avg_pool = paddle.mean(xy_cat, axis=[2, 3], keepdim=True)
+            xy_max_pool = paddle.max(xy_cat, axis=[2, 3], keepdim=True)
+        pool_cat = paddle.concat([xy_avg_pool, xy_max_pool],
+                                 axis=1)  # n * 2c * 1 * 1
+        ch_atten = F.sigmoid(self.ch_atten(pool_cat))  # n * c * 1 * 1
+
+        xy_mean = paddle.mean(xy_cat, axis=1, keepdim=True)
+        xy_max = paddle.max(xy_cat, axis=1, keepdim=True)
+        xy_mean_max_cat = paddle.concat([xy_mean, xy_max],
+                                        axis=1)  # n * 2 * h * w
+        sp_atten = F.sigmoid(self.sp_atten(xy_mean_max_cat))  # n * 1 * h * w
+
+        atten = sp_atten * ch_atten
+        out = atten * x + (1 - atten) * y
+        return out
+
+
+class ARM_16_6(nn.Layer):
+    '''use x and y alone, two sigmoid'''
+
+    def __init__(self, x_chan, y_chan, out_chan, first_ksize=3):
+        super().__init__()
+        self.conv = layers.ConvBNReLU(
+            x_chan,
+            out_chan,
+            kernel_size=first_ksize,
+            stride=1,
+            padding=first_ksize // 2)
+
+        self.ch_atten = nn.Conv2D(
+            2 * (out_chan + y_chan), out_chan, kernel_size=1, bias_attr=False)
+        self.sp_atten = nn.Conv2D(
+            4, 1, kernel_size=3, padding=1, bias_attr=False)
+
+    def forward(self, x, y):
+        x = self.conv(x)
+
+        if self.training:
+            x_avg_pool = F.adaptive_avg_pool2d(x, 1)
+            y_avg_pool = F.adaptive_max_pool2d(y, 1)
+        else:
+            x_avg_pool = paddle.mean(x, axis=[2, 3], keepdim=True)
+            y_avg_pool = paddle.mean(y, axis=[2, 3], keepdim=True)
+
+        x_max_pool = paddle.max(x, axis=[2, 3], keepdim=True)
+        y_max_pool = paddle.max(y, axis=[2, 3], keepdim=True)
+        ch_cat = paddle.concat([x_avg_pool, y_avg_pool, x_max_pool, y_max_pool],
+                               axis=1)  # n * 4c * 1 * 1
+        ch_atten = F.sigmoid(self.ch_atten(ch_cat))  # n * c * 1 * 1
+
+        x_mean = paddle.mean(x, axis=1, keepdim=True)
+        y_mean = paddle.mean(y, axis=1, keepdim=True)
+        x_max = paddle.max(x, axis=1, keepdim=True)
+        y_max = paddle.max(y, axis=1, keepdim=True)
+        sp_cat = paddle.concat([x_mean, y_mean, x_max, y_max],
+                               axis=1)  # n * 4 * h * w
+        sp_atten = F.sigmoid(self.sp_atten(sp_cat))  # n * 1 * h * w
+
+        atten = sp_atten * ch_atten
+        out = atten * x + (1 - atten) * y
+        return out
+
+
+class ARM_16_7(nn.Layer):
+    '''add avg_pool and max_pool, two sigmoid'''
+
+    def __init__(self, x_chan, y_chan, out_chan, first_ksize=3):
+        super().__init__()
+        self.conv = layers.ConvBNReLU(
+            x_chan,
+            out_chan,
+            kernel_size=first_ksize,
+            stride=1,
+            padding=first_ksize // 2)
+
+        self.ch_atten = nn.Conv2D(
+            out_chan + y_chan, out_chan, kernel_size=1, bias_attr=False)
+        self.sp_atten = nn.Conv2D(
+            2, 1, kernel_size=3, padding=1, bias_attr=False)
+
+    def forward(self, x, y):
+        x = self.conv(x)
+        xy_cat = paddle.concat([x, y], axis=1)  # n * 2c * h * w
+
+        if self.training:
+            xy_avg_pool = F.adaptive_avg_pool2d(xy_cat, 1)
+            xy_max_pool = F.adaptive_max_pool2d(xy_cat, 1)
+        else:
+            xy_avg_pool = paddle.mean(xy_cat, axis=[2, 3], keepdim=True)
+            xy_max_pool = paddle.max(xy_cat, axis=[2, 3], keepdim=True)
+        pool_cat = xy_avg_pool + xy_max_pool  # n * 4c * 1 * 1
+        ch_atten = F.sigmoid(self.ch_atten(pool_cat))  # n * c * 1 * 1
+
+        xy_mean = paddle.mean(xy_cat, axis=1, keepdim=True)
+        xy_max = paddle.max(xy_cat, axis=1, keepdim=True)
+        xy_mean_max_cat = paddle.concat([xy_mean, xy_max],
+                                        axis=1)  # n * 2 * h * w
+        sp_atten = F.sigmoid(self.sp_atten(xy_mean_max_cat))  # n * 1 * h * w
+
+        atten = sp_atten * ch_atten
+        out = atten * x + (1 - atten) * y
+        return out
+
+
+class ARM_17_1(nn.Layer):
+    '''combined channel attention + combined spatial attention, only one sigmoid'''
+
+    def __init__(self, x_chan, y_chan, out_chan, first_ksize=3):
+        super().__init__()
+        self.conv = layers.ConvBNReLU(
+            x_chan,
+            out_chan,
+            kernel_size=first_ksize,
+            stride=1,
+            padding=first_ksize // 2)
+
+        self.ch_atten = nn.Conv2D(
+            2 * (out_chan + y_chan), out_chan, kernel_size=1, bias_attr=False)
+        self.sp_atten = nn.Conv2D(
+            2, 1, kernel_size=3, padding=1, bias_attr=False)
+
+    def forward(self, x, y):
+        x = self.conv(x)
+        xy_cat = paddle.concat([x, y], axis=1)  # n * 2c * h * w
+
+        if self.training:
+            xy_avg_pool = F.adaptive_avg_pool2d(xy_cat, 1)
+            xy_max_pool = F.adaptive_max_pool2d(xy_cat, 1)
+        else:
+            xy_avg_pool = paddle.mean(xy_cat, axis=[2, 3], keepdim=True)
+            xy_max_pool = paddle.max(xy_cat, axis=[2, 3], keepdim=True)
+        pool_cat = paddle.concat([xy_avg_pool, xy_max_pool],
+                                 axis=1)  # n * 4c * 1 * 1
+        ch_atten = self.ch_atten(pool_cat)  # n * c * 1 * 1
+
+        xy_mean = paddle.mean(xy_cat, axis=1, keepdim=True)
+        xy_max = paddle.max(xy_cat, axis=1, keepdim=True)
+        xy_mean_max_cat = paddle.concat([xy_mean, xy_max],
+                                        axis=1)  # n * 2 * h * w
+        sp_atten = self.sp_atten(xy_mean_max_cat)  # n * 1 * h * w
+
+        atten = F.sigmoid(sp_atten * ch_atten)
+        out = atten * x + (1 - atten) * y
+        return out
+
+
+class ARM_17_2(nn.Layer):
+    '''one sigmoid, sp atten use conv5'''
+
+    def __init__(self, x_chan, y_chan, out_chan, first_ksize=3):
+        super().__init__()
+        self.conv = layers.ConvBNReLU(
+            x_chan,
+            out_chan,
+            kernel_size=first_ksize,
+            stride=1,
+            padding=first_ksize // 2)
+
+        self.ch_atten = nn.Conv2D(
+            2 * (out_chan + y_chan), out_chan, kernel_size=1, bias_attr=False)
+        self.sp_atten = nn.Conv2D(
+            2, 1, kernel_size=5, padding=2, bias_attr=False)
+
+    def forward(self, x, y):
+        x = self.conv(x)
+        xy_cat = paddle.concat([x, y], axis=1)  # n * 2c * h * w
+
+        if self.training:
+            xy_avg_pool = F.adaptive_avg_pool2d(xy_cat, 1)
+            xy_max_pool = F.adaptive_max_pool2d(xy_cat, 1)
+        else:
+            xy_avg_pool = paddle.mean(xy_cat, axis=[2, 3], keepdim=True)
+            xy_max_pool = paddle.max(xy_cat, axis=[2, 3], keepdim=True)
+        pool_cat = paddle.concat([xy_avg_pool, xy_max_pool],
+                                 axis=1)  # n * 4c * 1 * 1
+        ch_atten = self.ch_atten(pool_cat)  # n * c * 1 * 1
+
+        xy_mean = paddle.mean(xy_cat, axis=1, keepdim=True)
+        xy_max = paddle.max(xy_cat, axis=1, keepdim=True)
+        xy_mean_max_cat = paddle.concat([xy_mean, xy_max],
+                                        axis=1)  # n * 2 * h * w
+        sp_atten = self.sp_atten(xy_mean_max_cat)  # n * 1 * h * w
+
+        atten = F.sigmoid(sp_atten * ch_atten)
+        out = atten * x + (1 - atten) * y
+        return out
+
+
+class ARM_17_3(nn.Layer):
+    '''add bn'''
+
+    def __init__(self, x_chan, y_chan, out_chan, first_ksize=3):
+        super().__init__()
+        self.conv = layers.ConvBNReLU(
+            x_chan,
+            out_chan,
+            kernel_size=first_ksize,
+            stride=1,
+            padding=first_ksize // 2)
+
+        self.ch_atten = nn.Conv2D(
+            2 * (out_chan + y_chan), out_chan, kernel_size=1, bias_attr=False)
+        self.sp_atten = nn.Conv2D(
+            2, 1, kernel_size=3, padding=1, bias_attr=False)
+        self.ch_bn = nn.BatchNorm2D(out_chan)
+        self.sp_bn = nn.BatchNorm2D(1)
+
+    def forward(self, x, y):
+        x = self.conv(x)
+        xy_cat = paddle.concat([x, y], axis=1)  # n * 2c * h * w
+
+        if self.training:
+            xy_avg_pool = F.adaptive_avg_pool2d(xy_cat, 1)
+            xy_max_pool = F.adaptive_max_pool2d(xy_cat, 1)
+        else:
+            xy_avg_pool = paddle.mean(xy_cat, axis=[2, 3], keepdim=True)
+            xy_max_pool = paddle.max(xy_cat, axis=[2, 3], keepdim=True)
+        pool_cat = paddle.concat([xy_avg_pool, xy_max_pool],
+                                 axis=1)  # n * 4c * 1 * 1
+        ch_atten = self.ch_bn(self.ch_atten(pool_cat))  # n * c * 1 * 1
+
+        xy_mean = paddle.mean(xy_cat, axis=1, keepdim=True)
+        xy_max = paddle.max(xy_cat, axis=1, keepdim=True)
+        xy_mean_max_cat = paddle.concat([xy_mean, xy_max],
+                                        axis=1)  # n * 2 * h * w
+        sp_atten = self.sp_bn(self.sp_atten(xy_mean_max_cat))  # n * 1 * h * w
+
+        atten = F.sigmoid(sp_atten * ch_atten)
+        out = atten * x + (1 - atten) * y
+        return out
+
+
+class ARM_17_6(nn.Layer):
+    '''one sigmoid, use x and y alone'''
+
+    def __init__(self, x_chan, y_chan, out_chan, first_ksize=3):
+        super().__init__()
+        self.conv = layers.ConvBNReLU(
+            x_chan,
+            out_chan,
+            kernel_size=first_ksize,
+            stride=1,
+            padding=first_ksize // 2)
+
+        self.ch_atten = nn.Conv2D(
+            2 * (out_chan + y_chan), out_chan, kernel_size=1, bias_attr=False)
+        self.sp_atten = nn.Conv2D(
+            4, 1, kernel_size=3, padding=1, bias_attr=False)
+
+    def forward(self, x, y):
+        x = self.conv(x)
+
+        if self.training:
+            x_avg_pool = F.adaptive_avg_pool2d(x, 1)
+            x_max_pool = F.adaptive_max_pool2d(x, 1)
+            y_avg_pool = F.adaptive_avg_pool2d(y, 1)
+            y_max_pool = F.adaptive_max_pool2d(y, 1)
+        else:
+            x_avg_pool = paddle.mean(x, axis=[2, 3], keepdim=True)
+            x_max_pool = paddle.max(x, axis=[2, 3], keepdim=True)
+            y_avg_pool = paddle.mean(y, axis=[2, 3], keepdim=True)
+            y_max_pool = paddle.max(y, axis=[2, 3], keepdim=True)
+        ch_cat = paddle.concat([x_avg_pool, y_avg_pool, x_max_pool, y_max_pool],
+                               axis=1)  # n * 4c * 1 * 1
+        ch_atten = self.ch_atten(ch_cat)  # n * c * 1 * 1
+
+        x_mean = paddle.mean(x, axis=1, keepdim=True)
+        y_mean = paddle.mean(y, axis=1, keepdim=True)
+        x_max = paddle.max(x, axis=1, keepdim=True)
+        y_max = paddle.max(y, axis=1, keepdim=True)
+        sp_cat = paddle.concat([x_mean, y_mean, x_max, y_max],
+                               axis=1)  # n * 4 * h * w
+        sp_atten = self.sp_atten(sp_cat)  # n * 1 * h * w
+
+        atten = F.sigmoid(sp_atten * ch_atten)
+        out = atten * x + (1 - atten) * y
+        return out
+
+
+class ARM_17_7_0(nn.Layer):
+    '''reference bam, only one sigmoid'''
+
+    def __init__(self, x_chan, y_chan, out_chan, first_ksize=3):
+        super().__init__()
+        self.conv = layers.ConvBNReLU(
+            x_chan,
+            out_chan,
+            kernel_size=first_ksize,
+            stride=1,
+            padding=first_ksize // 2)
+
+        inter_ch = out_chan // 1
+        self.ch_atten = nn.Sequential(
+            layers.ConvBNReLU(
+                out_chan + y_chan, inter_ch, kernel_size=1, bias_attr=False),
+            nn.Conv2D(inter_ch, out_chan, kernel_size=1, bias_attr=False),
+        )
+
+        inter_ch = out_chan // 1
+        self.sp_atten = nn.Sequential(
+            layers.ConvBNReLU(
+                out_chan + y_chan,
+                inter_ch,
+                kernel_size=3,
+                padding=1,
+                bias_attr=False),
+            layers.ConvBNReLU(
+                inter_ch, inter_ch, kernel_size=3, padding=1, bias_attr=False),
+            nn.Conv2D(inter_ch, 1, kernel_size=1, padding=0, bias_attr=False))
+
+    def forward(self, x, y):
+        x = self.conv(x)
+        xy_cat = paddle.concat([x, y], axis=1)  # n * 2c * h * w
+
+        if self.training:
+            xy_avg_pool = F.adaptive_avg_pool2d(xy_cat, 1)
+        else:
+            xy_avg_pool = paddle.mean(xy_cat, axis=[2, 3], keepdim=True)
+        ch_atten = self.ch_atten(xy_avg_pool)  # n * c * 1 * 1
+
+        sp_atten = self.sp_atten(xy_cat)  # n * 1 * h * w
+
+        atten = F.sigmoid(sp_atten * ch_atten)
+        out = atten * x + (1 - atten) * y
+        return out
+
+
+class ARM_17_7_1(ARM_17_7_0):
+    '''lite bam, only one sigmoid'''
+
+    def __init__(self, x_chan, y_chan, out_chan, first_ksize=3):
+        super().__init__(x_chan, y_chan, out_chan, first_ksize)
+        self.conv = layers.ConvBNReLU(
+            x_chan,
+            out_chan,
+            kernel_size=first_ksize,
+            stride=1,
+            padding=first_ksize // 2)
+
+        inter_ch = out_chan // 4
+        self.ch_atten = nn.Sequential(
+            layers.ConvBNReLU(
+                out_chan + y_chan, inter_ch, kernel_size=1, bias_attr=False),
+            nn.Conv2D(inter_ch, out_chan, kernel_size=1, bias_attr=False),
+        )
+
+        inter_ch = out_chan // 8
+        self.sp_atten = nn.Sequential(
+            layers.ConvBNReLU(
+                out_chan + y_chan,
+                inter_ch,
+                kernel_size=3,
+                padding=1,
+                bias_attr=False),
+            layers.ConvBNReLU(
+                inter_ch, inter_ch, kernel_size=3, padding=1, bias_attr=False),
+            nn.Conv2D(inter_ch, 1, kernel_size=3, padding=1, bias_attr=False))
+
+
+class ARM_17_7_2(ARM_17_7_0):
+    '''lite bam, only one sigmoid'''
+
+    def __init__(self, x_chan, y_chan, out_chan, first_ksize=3):
+        super().__init__(x_chan, y_chan, out_chan, first_ksize)
+        self.conv = layers.ConvBNReLU(
+            x_chan,
+            out_chan,
+            kernel_size=first_ksize,
+            stride=1,
+            padding=first_ksize // 2)
+
+        inter_ch = out_chan // 8
+        self.ch_atten = nn.Sequential(
+            layers.ConvBNReLU(
+                out_chan + y_chan, inter_ch, kernel_size=1, bias_attr=False),
+            nn.Conv2D(inter_ch, out_chan, kernel_size=1, bias_attr=False),
+        )
+
+        inter_ch = out_chan // 16
+        self.sp_atten = nn.Sequential(
+            layers.ConvBNReLU(
+                out_chan + y_chan,
+                inter_ch,
+                kernel_size=3,
+                padding=1,
+                bias_attr=False),
+            layers.ConvBNReLU(
+                inter_ch, inter_ch, kernel_size=3, padding=1, bias_attr=False),
+            nn.Conv2D(inter_ch, 1, kernel_size=3, padding=1, bias_attr=False))
+
+
+class ARM_17_7_3(ARM_17_7_0):
+    '''add abs to Wc'''
+
+    def __init__(self, x_chan, y_chan, out_chan, first_ksize=3):
+        super().__init__(x_chan, y_chan, out_chan, first_ksize)
+
+    def forward(self, x, y):
+        x = self.conv(x)
+        xy_cat = paddle.concat([x, y], axis=1)  # n * 2c * h * w
+        xy_cat_abs = paddle.abs(xy_cat)
+
+        if self.training:
+            xy_avg_pool = F.adaptive_avg_pool2d(xy_cat_abs, 1)
+        else:
+            xy_avg_pool = paddle.mean(xy_cat_abs, axis=[2, 3], keepdim=True)
+        ch_atten = self.ch_atten(xy_avg_pool)  # n * c * 1 * 1
+
+        sp_atten = self.sp_atten(xy_cat)  # n * 1 * h * w
+
+        atten = F.sigmoid(sp_atten * ch_atten)
+        out = atten * x + (1 - atten) * y
+        return out
+
+
+class ARM_17_7_4(ARM_17_7_0):
+    '''lite bam (one conv), only one sigmoid'''
+
+    def __init__(self, x_chan, y_chan, out_chan, first_ksize=3):
+        super().__init__(x_chan, y_chan, out_chan, first_ksize)
+        self.conv = layers.ConvBNReLU(
+            x_chan,
+            out_chan,
+            kernel_size=first_ksize,
+            stride=1,
+            padding=first_ksize // 2)
+
+        self.ch_atten = nn.Sequential(
+            nn.Conv2D(
+                out_chan + y_chan, out_chan, kernel_size=1, bias_attr=False), )
+
+        self.sp_atten = nn.Sequential(
+            nn.Conv2D(
+                out_chan + y_chan, 1, kernel_size=3, padding=1,
+                bias_attr=False))
+
+
+class ARM_17_7_5(ARM_17_7_0):
+    '''use leaky_relu and bn'''
+
+    def __init__(self, x_chan, y_chan, out_chan, first_ksize=3):
+        super().__init__(x_chan, y_chan, out_chan, first_ksize)
+        self.conv = layers.ConvBNReLU(
+            x_chan,
+            out_chan,
+            kernel_size=first_ksize,
+            stride=1,
+            padding=first_ksize // 2)
+
+        inter_ch = out_chan // 1
+        self.ch_atten = nn.Sequential(
+            layers.ConvBNAct(
+                out_chan + y_chan,
+                inter_ch,
+                kernel_size=1,
+                act_type='leakyrelu',
+                bias_attr=False),
+            layers.ConvBN(inter_ch, out_chan, kernel_size=1, bias_attr=False))
+
+        inter_ch = out_chan // 1
+        self.sp_atten = nn.Sequential(
+            layers.ConvBNAct(
+                out_chan + y_chan,
+                inter_ch,
+                kernel_size=3,
+                padding=1,
+                act_type='leakyrelu',
+                bias_attr=False),
+            layers.ConvBNAct(
+                inter_ch,
+                inter_ch,
+                kernel_size=3,
+                padding=1,
+                act_type='leakyrelu',
+                bias_attr=False),
+            layers.ConvBN(
+                inter_ch, 1, kernel_size=1, padding=0, bias_attr=False))
+
+
+class ARM_17_8(nn.Layer):
+    '''use max_pool in calculating Wc in bam'''
+
+    def __init__(self, x_chan, y_chan, out_chan, first_ksize=3):
+        super().__init__()
+        self.conv = layers.ConvBNReLU(
+            x_chan,
+            out_chan,
+            kernel_size=first_ksize,
+            stride=1,
+            padding=first_ksize // 2)
+
+        inter_ch = out_chan // 1
+        self.ch_atten = nn.Sequential(
+            layers.ConvBNReLU(
+                2 * (out_chan + y_chan),
+                inter_ch,
+                kernel_size=1,
+                bias_attr=False),
+            nn.Conv2D(inter_ch, out_chan, kernel_size=1, bias_attr=False),
+            nn.BatchNorm2D(out_chan))
+
+        inter_ch = out_chan // 1
+        self.sp_atten = nn.Sequential(
+            layers.ConvBNReLU(
+                out_chan + y_chan,
+                inter_ch,
+                kernel_size=3,
+                padding=1,
+                bias_attr=False),
+            layers.ConvBNReLU(
+                inter_ch, inter_ch, kernel_size=3, padding=1, bias_attr=False),
+            nn.Conv2D(inter_ch, 1, kernel_size=1, padding=0, bias_attr=False),
+            nn.BatchNorm2D(1))
+
+    def forward(self, x, y):
+        x = self.conv(x)
+        xy_cat = paddle.concat([x, y], axis=1)  # n * 2c * h * w
+
+        if self.training:
+            xy_avg_pool = F.adaptive_avg_pool2d(xy_cat, 1)
+            xy_max_pool = F.adaptive_max_pool2d(xy_cat, 1)
+        else:
+            xy_avg_pool = paddle.mean(xy_cat, axis=[2, 3], keepdim=True)
+            xy_max_pool = paddle.max(xy_cat, axis=[2, 3], keepdim=True)
+        pool_cat = paddle.concat([xy_avg_pool, xy_max_pool],
+                                 axis=1)  # n * 4c * 1 * 1
+        ch_atten = self.ch_atten(pool_cat)  # n * c * 1 * 1
+
+        sp_atten = self.sp_atten(xy_cat)  # n * 1 * h * w
+
+        atten = F.sigmoid(sp_atten * ch_atten)
+        out = atten * x + (1 - atten) * y
+        return out
+
+
+class ARM_18_1(nn.Layer):
+    ''''''
+
+    def __init__(self, x_chan, y_chan, out_chan, first_ksize=3):
+        super().__init__()
+        self.conv = layers.ConvBNReLU(
+            x_chan,
+            out_chan,
+            kernel_size=first_ksize,
+            stride=1,
+            padding=first_ksize // 2)
+
+        self.ch_atten = nn.Conv2D(
+            2 * (out_chan + y_chan), out_chan, kernel_size=1, bias_attr=False)
+        self.sp_atten = nn.Conv2D(
+            2, 1, kernel_size=3, padding=1, bias_attr=False)
+
+    def forward(self, x, y):
+        x = self.conv(x)
+        xy_cat = paddle.concat([x, y], axis=1)  # n * 2c * h * w
+
+        if self.training:
+            xy_avg_pool = F.adaptive_avg_pool2d(xy_cat, 1)
+            xy_max_pool = F.adaptive_max_pool2d(xy_cat, 1)
+        else:
+            xy_avg_pool = paddle.mean(xy_cat, axis=[2, 3], keepdim=True)
+            xy_max_pool = paddle.max(xy_cat, axis=[2, 3], keepdim=True)
+        pool_cat = paddle.concat([xy_avg_pool, xy_max_pool],
+                                 axis=1)  # n * 4c * 1 * 1
+        ch_atten = F.sigmoid(self.ch_atten(pool_cat))  # n * c * 1 * 1
+
+        xy_mean = paddle.mean(xy_cat, axis=1, keepdim=True)
+        xy_max = paddle.max(xy_cat, axis=1, keepdim=True)
+        xy_mean_max_cat = paddle.concat([xy_mean, xy_max],
+                                        axis=1)  # n * 2 * h * w
+        sp_atten = F.sigmoid(self.sp_atten(xy_mean_max_cat))  # n * 1 * h * w
+
+        out = ch_atten * x + (1 - ch_atten) * y + sp_atten * x + (
+            1 - sp_atten) * y
+        return out
+
+
+class ARM_18_2(nn.Layer):
+    ''''''
+
+    def __init__(self, x_chan, y_chan, out_chan, first_ksize=3):
+        super().__init__()
+        self.conv = layers.ConvBNReLU(
+            x_chan,
+            out_chan,
+            kernel_size=first_ksize,
+            stride=1,
+            padding=first_ksize // 2)
+
+        inter_ch = out_chan // 1
+        self.ch_atten = nn.Sequential(
+            layers.ConvBNReLU(
+                out_chan + y_chan, inter_ch, kernel_size=1, bias_attr=False),
+            nn.Conv2D(inter_ch, out_chan, kernel_size=1, bias_attr=False),
+        )
+
+        inter_ch = out_chan // 1
+        self.sp_atten = nn.Sequential(
+            layers.ConvBNReLU(
+                out_chan + y_chan,
+                inter_ch,
+                kernel_size=3,
+                padding=1,
+                bias_attr=False),
+            layers.ConvBNReLU(
+                inter_ch, inter_ch, kernel_size=3, padding=1, bias_attr=False),
+            nn.Conv2D(inter_ch, 1, kernel_size=1, padding=0, bias_attr=False))
+
+    def forward(self, x, y):
+        x = self.conv(x)
+        xy_cat = paddle.concat([x, y], axis=1)  # n * 2c * h * w
+
+        if self.training:
+            xy_avg_pool = F.adaptive_avg_pool2d(xy_cat, 1)
+        else:
+            xy_avg_pool = paddle.mean(xy_cat, axis=[2, 3], keepdim=True)
+        ch_atten = F.sigmoid(self.ch_atten(xy_avg_pool))  # n * c * 1 * 1
+        sp_atten = F.sigmoid(self.sp_atten(xy_cat))  # n * 1 * h * w
+        out = ch_atten * x + (1 - ch_atten) * y + sp_atten * x + (
+            1 - sp_atten) * y
         return out
 
 
