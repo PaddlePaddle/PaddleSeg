@@ -8,6 +8,6 @@
 
 ### Cityscapes
 
-| Model | Backbone | Resolution | Training Iters | mIoU | Links |
-|-|-|-|-|-|-|
-|PFPNNet|ResNet101_vd|512x1024|40000|79.5%|[提取码：PFPN](https://pan.baidu.com/s/1MZPLol53e2CryEjeT1a_yg)|
+| Model | Backbone | Resolution | Training Iters | mIoU | mIoU (flip) | mIoU (ms+flip) | Links |
+|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
+|PFPNNet|ResNet101_vd|1024x512|40000|79.07%|79.46%|79.75%|[model](https://bj.bcebos.com/paddleseg/dygraph/cityscapes/pfpn_resnet101_os8_cityscapes_512x1024_40k/model.pdparams) \| [log](https://bj.bcebos.com/paddleseg/dygraph/cityscapes/pfpn_resnet101_os8_cityscapes_512x1024_40k/train.log )\| [vdl](https://www.paddlepaddle.org.cn/paddle/visualdl/service/app/index?id=)|
