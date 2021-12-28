@@ -87,7 +87,7 @@ class LoadImages:
 
 @manager.TRANSFORMS.add_component
 class Resize:
-    def __init__(self, target_size=(512, 512)):
+    def __init__(self, target_size=(512, 512), random_interp=False):
         if isinstance(target_size, list) or isinstance(target_size, tuple):
             if len(target_size) != 2:
                 raise ValueError(
@@ -99,16 +99,23 @@ class Resize:
                 .format(type(target_size)))
 
         self.target_size = target_size
+        self.random_interp = random_interp
+        self.interps = [cv2.INTER_NEAREST, cv2.INTER_LINEAR, cv2.INTER_CUBIC]
 
     def __call__(self, data):
+        if self.random_interp:
+            interp = np.random.choice(self.interps)
+        else:
+            interp = cv2.INTER_LINEAR
         data['trans_info'].append(('resize', data['img'].shape[0:2]))
-        data['img'] = functional.resize(data['img'], self.target_size)
+        data['img'] = functional.resize(data['img'], self.target_size, interp)
         for key in data.get('gt_fields', []):
             if key == 'trimap':
                 data[key] = functional.resize(data[key], self.target_size,
                                               cv2.INTER_NEAREST)
             else:
-                data[key] = functional.resize(data[key], self.target_size)
+                data[key] = functional.resize(data[key], self.target_size,
+                                              interp)
         return data
 
 
@@ -779,11 +786,11 @@ class RandomReJpeg:
 
 
 if __name__ == "__main__":
-    transforms = [RandomReJpeg(prob=1)]
+    transforms = [Resize((512, 512), random_interp=False)]
     transforms = Compose(transforms)
-    fg_path = '/ssd1/home/chenguowei01/github/PaddleSeg/contrib/Matting/data/matting/human_matting/Distinctions-646/train/fg/13(2).png'
+    fg_path = 'data/matting/Distinctions-646/val/fg/test_0.png'
     alpha_path = fg_path.replace('fg', 'alpha')
-    bg_path = '/ssd1/home/chenguowei01/github/PaddleSeg/contrib/Matting/data/matting/human_matting/bg/unsplash_bg/attic/photo-1443884590026-2e4d21aee71c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MnwxMjA3fDB8MXxzZWFyY2h8Nzh8fGF0dGljfGVufDB8fHx8MTYyOTY4MDcxNQ&ixlib=rb-1.2.1&q=80&w=400.jpg'
+    bg_path = 'data/matting/Distinctions-646/bg/VOC2012/2012_004331.jpg'
     data = {}
     data['trans_info'] = []
     data['fg'] = cv2.imread(fg_path)
@@ -807,4 +814,5 @@ if __name__ == "__main__":
     print(data['img'].dtype, data['img'].shape)
     for key in data['gt_fields']:
         print(data[key].shape)
-    cv2.imwrite('rejpeg.png', data['img'].transpose([1, 2, 0]))
+    print('sum after resize: ', np.sum(data['img']))
+    cv2.imwrite('resize.png', data['img'].transpose([1, 2, 0]))
