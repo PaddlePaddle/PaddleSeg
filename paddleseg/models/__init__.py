@@ -49,3 +49,4 @@ from .segnet import SegNet
 from .hrnet_contrast import HRNetW48Contrast
 from .espnet import ESPNetV2
 from .dmnet import DMNet
+from .espnetv1 import ESPNetV1
