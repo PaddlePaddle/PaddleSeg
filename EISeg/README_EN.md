@@ -170,9 +170,13 @@ Start the annotation when the above are all set up. Here are the commonly used k
 - 2021.09.16  **0.3.0**：【1】Complete the function of polygon editing with support for editing the results of interactive annotation；【2】Support CH/EN interface；【3】Support saving as grayscale/pseudo-color labels and COCO format；【4】More flexible interface dragging；【5】Achieve the dragging of label bar, and the generated mask is overwritten from top to bottom.
 - 2021.07.07  **0.2.0**: Newly added contrib：EISeg，which enables rapid interactive annotation of portrait and generic images.
 
-## Contributors
+## Acknowledgement
 
-Our gratitude goes to Developers including [Yuying Hao](https://github.com/haoyuying), [Lin Han](https://github.com/linhandev), [Yizhou Chen](https://github.com/geoyee), [Yiakwy](https://github.com/yiakwy), [GT](https://github.com/GT-ZhangAcer), [Youssef Harby](https://github.com/Youssef-Harby), [Zhiliang Yu](https://github.com/yzl19940819), [Nick Nie](https://github.com/niecongchong) and the support of [RITM](https://github.com/saic-vul/ritm_interactive_segmentation).
+Thanks [Lin Han](https://github.com/linhandev), [Yizhou Chen](https://github.com/geoyee), [Yiakwy](https://github.com/yiakwy), [GT](https://github.com/GT-ZhangAcer), [Youssef Harby](https://github.com/Youssef-Harby), [Nick Nie](https://github.com/niecongchong) for their contributions.
+
+Thanks for the algorithm support of [RITM](https://github.com/saic-vul/ritm_interactive_segmentation).
+
+Thanks for the labelling deisgn of [LabelMe](https://github.com/wkentaro/labelme) and [LabelImg](https://github.com/tzutalin/labelImg).
 
 ## Citation
 
