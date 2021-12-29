@@ -208,7 +208,11 @@ def train(model,
                     edges=edges)
                 loss = sum(loss_list)
                 loss.backward()
-                optimizer.step()
+                # if the optimizer is ReduceOnPlateau, the loss is the one which has been pass into step.
+                if isinstance(optimizer, paddle.optimizer.lr.ReduceOnPlateau):
+                    optimizer.step(loss)
+                else:
+                    optimizer.step()
 
             lr = optimizer.get_lr()
 
