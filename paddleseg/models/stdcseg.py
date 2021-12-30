@@ -1477,6 +1477,41 @@ class ARM_12_7(nn.Layer):
         return out
 
 
+class ARM_12_8(nn.Layer):
+    ''' '''
+
+    def __init__(self, x_chan, y_chan, out_chan, first_ksize=3):
+        super().__init__()
+        self.conv = layers.ConvBNReLU(
+            x_chan,
+            out_chan,
+            kernel_size=first_ksize,
+            stride=1,
+            padding=first_ksize // 2)
+
+        self.conv_atten = nn.Sequential(
+            layers.ConvBNAct(
+                2,
+                2,
+                kernel_size=3,
+                padding=1,
+                act_type='leakyrelu',
+                bias_attr=False),
+            layers.ConvBN(2, 1, kernel_size=3, padding=1, bias_attr=False))
+
+    def forward(self, x, y):
+        x = self.conv(x)
+
+        xy_cat = paddle.concat([x, y], axis=1)  # n * 2c * h * w
+        xy_mean = paddle.mean(xy_cat, axis=1, keepdim=True)
+        xy_max = paddle.max(xy_cat, axis=1, keepdim=True)
+        mean_max_cat = paddle.concat([xy_mean, xy_max], axis=1)
+        atten = F.sigmoid(self.conv_atten(mean_max_cat))  # n * 1 * h * w
+
+        out = x * atten + y * (1 - atten)
+        return out
+
+
 class ARM_13_1(nn.Layer):
     '''The fusion in sf_net '''
 
@@ -2619,6 +2654,72 @@ class ARM_17_9(ARM_17_8):
                 bias_attr=False),
             nn.Conv2D(inter_ch, 1, kernel_size=1, padding=0, bias_attr=False),
             nn.BatchNorm2D(1))
+
+
+class ARM_17_10(nn.Layer):
+    ''''''
+
+    def __init__(self, x_chan, y_chan, out_chan, first_ksize=3):
+        super().__init__()
+        self.conv = layers.ConvBNReLU(
+            x_chan,
+            out_chan,
+            kernel_size=first_ksize,
+            stride=1,
+            padding=first_ksize // 2)
+
+        inter_ch = out_chan // 1
+        self.ch_atten = nn.Sequential(
+            layers.ConvBNAct(
+                2 * (out_chan + y_chan),
+                inter_ch,
+                kernel_size=1,
+                act_type='leakyrelu',
+                bias_attr=False),
+            layers.ConvBN(inter_ch, out_chan, kernel_size=1, bias_attr=False))
+
+        inter_ch = out_chan // 1
+        self.sp_atten = nn.Sequential(
+            layers.ConvBNAct(
+                out_chan + y_chan,
+                inter_ch,
+                kernel_size=3,
+                padding=1,
+                act_type='leakyrelu',
+                bias_attr=False),
+            layers.ConvBNAct(
+                inter_ch,
+                inter_ch,
+                kernel_size=3,
+                padding=1,
+                act_type='leakyrelu',
+                bias_attr=False),
+            layers.ConvBN(
+                inter_ch, 1, kernel_size=1, padding=0, bias_attr=False))
+
+        self.conv_atten = layers.ConvBN(
+            out_chan, out_chan, kernel_size=3, padding=1, bias_attr=False)
+
+    def forward(self, x, y):
+        x = self.conv(x)
+        xy_cat = paddle.concat([x, y], axis=1)  # n * 2c * h * w
+
+        if self.training:
+            xy_avg_pool = F.adaptive_avg_pool2d(xy_cat, 1)
+            xy_max_pool = F.adaptive_max_pool2d(xy_cat, 1)
+        else:
+            xy_avg_pool = paddle.mean(xy_cat, axis=[2, 3], keepdim=True)
+            xy_max_pool = paddle.max(xy_cat, axis=[2, 3], keepdim=True)
+        pool_cat = paddle.concat([xy_avg_pool, xy_max_pool],
+                                 axis=1)  # n * 4c * 1 * 1
+        ch_atten = self.ch_atten(pool_cat)  # n * c * 1 * 1
+
+        sp_atten = self.sp_atten(xy_cat)  # n * 1 * h * w
+
+        atten = self.conv_atten(sp_atten * ch_atten)
+        atten = F.sigmoid(atten)
+        out = atten * x + (1 - atten) * y
+        return out
 
 
 class ARM_18_1(nn.Layer):

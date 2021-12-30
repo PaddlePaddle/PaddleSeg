@@ -37,7 +37,8 @@ from paddleseg.utils import logger, get_image_list, utils
 from paddleseg.utils.visualize import get_pseudo_color_map
 from export import SavedSegmentationNet
 """
-Export the Paddle model to ONNX, deploy the ONNX model by TRT.
+Export the Paddle model to ONNX, infer the ONNX model by TRT.
+Or, load the ONNX model and infer it by TRT.
 
 Prepare:
 * install PaddlePaddle
@@ -64,6 +65,11 @@ def parse_args():
     parser.add_argument(
         "--model_path", help="The pretrained weights file.", type=str)
     parser.add_argument(
+        "--onnx_model_path",
+        help="If set onnx_model_path, it loads the onnx "
+        "model and infer it by TRT",
+        type=str)
+    parser.add_argument(
         '--save_dir',
         help='The directory for saving the predict result.',
         type=str,
@@ -71,7 +77,7 @@ def parse_args():
     parser.add_argument('--width', help='width', type=int, default=1024)
     parser.add_argument('--height', help='height', type=int, default=512)
     parser.add_argument('--warmup', default=500, type=int, help='')
-    parser.add_argument('--repeats', default=5000, type=int, help='')
+    parser.add_argument('--repeats', default=2000, type=int, help='')
     parser.add_argument(
         '--enable_profile', action='store_true', help='enable trt profile')
 
@@ -265,14 +271,10 @@ def check_and_run_onnx(onnx_model_path, input_data):
     return ort_outs[0]
 
 
-def main(args):
+def export_load_infer(args):
+    # Export the ONNX model from PaddlePaddle, infer it by TRT
+
     cfg = Config(args.config)
-    '''
-    msg = '\n---------------Config Information---------------\n'
-    msg += str(cfg)
-    msg += '------------------------------------------------'
-    logger.info(msg)
-    '''
 
     # 1. prepare
     model = cfg.model
@@ -316,6 +318,28 @@ def main(args):
     print("The paddle and trt models have the same outputs.\n")
 
 
+def load_infer(args):
+    # Load the ONNX model and infer it by TRT
+
+    input_shape = [1, 3, args.height, args.width]
+    print("input shape:", input_shape)
+    input_data = np.random.random(input_shape).astype('float32')
+
+    # 1. check and run onnx
+    onnx_model_path = args.onnx_model_path
+    onnx_out = check_and_run_onnx(onnx_model_path, input_data)
+    print("output shape:", onnx_out.shape, "\n")
+
+    # 2. run and check trt
+    trt_out = TRTPredictorV2().run_trt(args, onnx_model_path, input_data)
+    trt_out = trt_out.reshape(onnx_out.shape)
+    np.testing.assert_allclose(trt_out, onnx_out, rtol=0, atol=1e-03)
+    print("The onnx and trt models have the same outputs.\n")
+
+
 if __name__ == '__main__':
     args = parse_args()
-    main(args)
+    if args.onnx_model_path is None:
+        export_load_infer(args)
+    else:
+        load_infer(args)

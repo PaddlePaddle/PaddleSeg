@@ -237,11 +237,18 @@ class ARM_1(ARM_0):
 
     def __init__(self, x_chan, y_chan, out_chan, first_ksize=3):
         super().__init__(x_chan, y_chan, out_chan, first_ksize)
+        self.conv_cat = layers.ConvBNReLU(
+            y_chan + out_chan,
+            out_chan,
+            kernel_size=3,
+            padding=1,
+            bias_attr=False)
 
     def forward(self, x, y):
         x = self.conv_x(x)
         y_up = F.interpolate(y, paddle.shape(x)[2:], mode='bilinear')
         xy = paddle.concat([x, y_up], axis=1)
+        xy = self.conv_cat(xy)
         out = self.conv_out(xy)
         return out
 
@@ -296,7 +303,7 @@ class ARM_12_4(ARM_0):
 
 
 class ARM_17_1(ARM_0):
-    '''one sigmoid to combined ch and sp attention'''
+    '''atten = F.sigmoid(sp_atten * ch_atten)'''
 
     def __init__(self, x_chan, y_chan, out_chan, first_ksize=3):
         super().__init__(x_chan, y_chan, out_chan, first_ksize)
@@ -306,11 +313,7 @@ class ARM_17_1(ARM_0):
         self.sp_atten = layers.ConvBN(
             2, 1, kernel_size=3, padding=1, bias_attr=False)
 
-    def forward(self, x, y):
-        x = self.conv_x(x)
-        y_up = F.interpolate(y, paddle.shape(x)[2:], mode='bilinear')
-        xy = paddle.concat([x, y_up], axis=1)
-
+    def get_atten(self, xy):
         if self.training:
             xy_avg_pool = F.adaptive_avg_pool2d(xy, 1)
             xy_max_pool = F.adaptive_max_pool2d(xy, 1)
@@ -326,6 +329,15 @@ class ARM_17_1(ARM_0):
         xy_mean_max_cat = paddle.concat([xy_mean, xy_max],
                                         axis=1)  # n * 2 * h * w
         sp_atten = self.sp_atten(xy_mean_max_cat)  # n * 1 * h * w
+
+        return (ch_atten, sp_atten)
+
+    def forward(self, x, y):
+        x = self.conv_x(x)
+        y_up = F.interpolate(y, paddle.shape(x)[2:], mode='bilinear')
+        xy = paddle.concat([x, y_up], axis=1)
+
+        ch_atten, sp_atten = self.get_atten(xy)
 
         atten = F.sigmoid(sp_atten * ch_atten)
         out = x * atten + y_up * (1 - atten)
@@ -333,22 +345,172 @@ class ARM_17_1(ARM_0):
         return out
 
 
-class ARM_18_1(ARM_0):
-    '''one sigmoid to combined ch and sp attention'''
+class ARM_17_2(ARM_17_1):
+    '''atten = F.sigmoid(self.conv_atten(sp_atten * ch_atten))'''
 
     def __init__(self, x_chan, y_chan, out_chan, first_ksize=3):
         super().__init__(x_chan, y_chan, out_chan, first_ksize)
-
-        self.ch_atten = layers.ConvBN(
-            2 * (out_chan + y_chan), out_chan, kernel_size=1, bias_attr=False)
-        self.sp_atten = layers.ConvBN(
-            2, 1, kernel_size=3, padding=1, bias_attr=False)
+        self.conv_atten = layers.ConvBN(
+            out_chan, out_chan, kernel_size=3, padding=1, bias_attr=False)
 
     def forward(self, x, y):
         x = self.conv_x(x)
         y_up = F.interpolate(y, paddle.shape(x)[2:], mode='bilinear')
         xy = paddle.concat([x, y_up], axis=1)
 
+        ch_atten, sp_atten = self.get_atten(xy)
+
+        atten = F.sigmoid(self.conv_atten(sp_atten * ch_atten))
+        out = x * atten + y_up * (1 - atten)
+        out = self.conv_out(out)
+        return out
+
+
+class ARM_18_1(ARM_17_1):
+    '''out = ch_atten * x + (1 - ch_atten) * y_up + sp_atten * x + (
+            1 - sp_atten) * y_up'''
+
+    def __init__(self, x_chan, y_chan, out_chan, first_ksize=3):
+        super().__init__(x_chan, y_chan, out_chan, first_ksize)
+
+    def forward(self, x, y):
+        x = self.conv_x(x)
+        y_up = F.interpolate(y, paddle.shape(x)[2:], mode='bilinear')
+        xy = paddle.concat([x, y_up], axis=1)
+
+        ch_atten, sp_atten = self.get_atten(xy)
+        ch_atten = F.sigmoid(ch_atten)
+        sp_atten = F.sigmoid(sp_atten)
+
+        out = ch_atten * x + (1 - ch_atten) * y_up + sp_atten * x + (
+            1 - sp_atten) * y_up
+        out = self.conv_out(out)
+        return out
+
+
+class ARM_19_1(ARM_17_1):
+    '''atten = F.sigmoid(sp_atten + ch_atten)'''
+
+    def __init__(self, x_chan, y_chan, out_chan, first_ksize=3):
+        super().__init__(x_chan, y_chan, out_chan, first_ksize)
+
+    def forward(self, x, y):
+        x = self.conv_x(x)
+        y_up = F.interpolate(y, paddle.shape(x)[2:], mode='bilinear')
+        xy = paddle.concat([x, y_up], axis=1)
+
+        ch_atten, sp_atten = self.get_atten(xy)
+
+        atten = F.sigmoid(sp_atten + ch_atten)
+        out = x * atten + y_up * (1 - atten)
+        out = self.conv_out(out)
+        return out
+
+
+class ARM_19_2(ARM_19_1):
+    '''atten = F.sigmoid(self.conv_atten(sp_atten + ch_atten))'''
+
+    def __init__(self, x_chan, y_chan, out_chan, first_ksize=3):
+        super().__init__(x_chan, y_chan, out_chan, first_ksize)
+        self.conv_atten = layers.ConvBN(
+            out_chan, out_chan, kernel_size=3, padding=1, bias_attr=False)
+
+    def forward(self, x, y):
+        x = self.conv_x(x)
+        y_up = F.interpolate(y, paddle.shape(x)[2:], mode='bilinear')
+        xy = paddle.concat([x, y_up], axis=1)
+
+        ch_atten, sp_atten = self.get_atten(xy)
+
+        atten = F.sigmoid(self.conv_atten(sp_atten + ch_atten))
+        out = x * atten + y_up * (1 - atten)
+        out = self.conv_out(out)
+        return out
+
+
+class ARM_20_1(ARM_0):
+    '''atten = F.sigmoid(self.conv_atten(xy))'''
+
+    def __init__(self, x_chan, y_chan, out_chan, first_ksize=3):
+        super().__init__(x_chan, y_chan, out_chan, first_ksize)
+        self.conv_atten = nn.Sequential(
+            layers.ConvBNAct(
+                out_chan + y_chan,
+                out_chan,
+                kernel_size=3,
+                padding=1,
+                act_type='leakyrelu',
+                bias_attr=False),
+            layers.ConvBN(
+                out_chan, out_chan, kernel_size=3, padding=1, bias_attr=False))
+
+    def forward(self, x, y):
+        x = self.conv_x(x)
+        y_up = F.interpolate(y, paddle.shape(x)[2:], mode='bilinear')
+        xy = paddle.concat([x, y_up], axis=1)
+
+        atten = F.sigmoid(self.conv_atten(xy))
+        out = x * atten + y_up * (1 - atten)
+        out = self.conv_out(out)
+        return out
+
+
+class ARM_21_1(ARM_0):
+    '''sfnet fuse, x is bigger feature map, y is smaller feature map'''
+
+    def __init__(self, x_chan, y_chan, out_chan, first_ksize=3):
+        super().__init__(x_chan, y_chan, out_chan, first_ksize)
+        assert y_chan == out_chan
+
+        self.down_x = nn.Conv2D(out_chan, out_chan // 2, 1, bias_attr=False)
+        self.down_y = nn.Conv2D(out_chan, out_chan // 2, 1, bias_attr=False)
+        self.flow_make = nn.Conv2D(
+            out_chan, 2, kernel_size=3, padding=1, bias_attr=False)
+
+    def flow_warp(self, input, flow, size):
+        input_shape = paddle.shape(input)
+        norm = size[::-1].reshape([1, 1, 1, -1])
+        norm.stop_gradient = True
+        h_grid = paddle.linspace(-1.0, 1.0, size[0]).reshape([-1, 1])
+        h_grid = h_grid.tile([size[1]])
+        w_grid = paddle.linspace(-1.0, 1.0, size[1]).reshape([-1, 1])
+        w_grid = w_grid.tile([size[0]]).transpose([1, 0])
+        grid = paddle.concat([w_grid.unsqueeze(2), h_grid.unsqueeze(2)], axis=2)
+        grid.unsqueeze(0).tile([input_shape[0], 1, 1, 1])
+        grid = grid + paddle.transpose(flow, (0, 2, 3, 1)) / norm
+
+        output = F.grid_sample(input, grid)
+        return output
+
+    def forward(self, x, y):
+        x = self.conv_x(x)
+        x_size = paddle.shape(x)[2:]
+
+        x_flow = self.down_x(x)
+        y_flow = self.down_y(y)
+        y_flow = F.interpolate(
+            y_flow, size=x_size, mode='bilinear', align_corners=True)
+        flow = self.flow_make(paddle.concat([x_flow, y_flow], 1))
+        y_refine = self.flow_warp(y, flow, size=x_size)
+
+        out = x + y_refine
+        out = self.conv_out(out)
+        return out
+
+
+class ARM_21_2(ARM_21_1):
+    '''sfnet fuse + ch & sp attention'''
+
+    def __init__(self, x_chan, y_chan, out_chan, first_ksize=3):
+        super().__init__(x_chan, y_chan, out_chan, first_ksize)
+        assert y_chan == out_chan
+
+        self.ch_atten = layers.ConvBN(
+            2 * (out_chan + y_chan), out_chan, kernel_size=1, bias_attr=False)
+        self.sp_atten = layers.ConvBN(
+            2, 1, kernel_size=3, padding=1, bias_attr=False)
+
+    def get_atten(self, xy):
         if self.training:
             xy_avg_pool = F.adaptive_avg_pool2d(xy, 1)
             xy_max_pool = F.adaptive_max_pool2d(xy, 1)
@@ -365,7 +527,23 @@ class ARM_18_1(ARM_0):
                                         axis=1)  # n * 2 * h * w
         sp_atten = self.sp_atten(xy_mean_max_cat)  # n * 1 * h * w
 
-        out = ch_atten * x + (1 - ch_atten) * y_up + sp_atten * x + (
-            1 - sp_atten) * y_up
+        return (ch_atten, sp_atten)
+
+    def forward(self, x, y):
+        x = self.conv_x(x)
+        x_size = paddle.shape(x)[2:]
+
+        x_flow = self.down_x(x)
+        y_flow = self.down_y(y)
+        y_flow = F.interpolate(
+            y_flow, size=x_size, mode='bilinear', align_corners=True)
+        flow = self.flow_make(paddle.concat([x_flow, y_flow], 1))
+        y_refine = self.flow_warp(y, flow, size=x_size)
+
+        xy = paddle.concat([x, y_refine], axis=1)
+        ch_atten, sp_atten = self.get_atten(xy)
+
+        atten = F.sigmoid(sp_atten * ch_atten)
+        out = x * atten + y_refine * (1 - atten)
         out = self.conv_out(out)
         return out
