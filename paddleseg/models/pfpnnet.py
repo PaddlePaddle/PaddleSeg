@@ -184,7 +184,7 @@ class PFPNHead(nn.Layer):
                 f, prev_shape, mode='bilinear', align_corners=True)
             fpn_feature_list.append(self.fpn_out[i](f))
 
-        output_size = fpn_feature_list[-1].shape[2:]
+        output_size = paddle.shape(fpn_feature_list[-1])[2:]
 
         x = self.scale_heads[0](fpn_feature_list[-1])
         for index in range(len(self.scale_heads) - 2, 0, -1):
