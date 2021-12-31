@@ -16,6 +16,7 @@ from .backbones import *
 from .losses import *
 
 from .ann import *
+from .attanet import *
 from .bisenet import *
 from .danet import *
 from .deeplab import *
