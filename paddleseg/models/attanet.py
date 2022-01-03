@@ -51,6 +51,8 @@ class AttaNet(nn.Layer):
                  backbone_indices=(-1, -2, -3),
                  fpn_channels=128,
                  head_resize_mode='nearest',
+                 afm_type='AttentionFusionModule',
+                 sam_type='StripAttentionModule',
                  align_corners=False,
                  pretrained=None):
         super().__init__()
@@ -63,7 +65,8 @@ class AttaNet(nn.Layer):
         ]
 
         self.head = AttaNetHead(backbone_indices, backbone_channels,
-                                fpn_channels, head_resize_mode)
+                                fpn_channels, head_resize_mode, afm_type,
+                                sam_type)
 
         self.conv_out = AttaNetOutput(fpn_channels, fpn_channels, num_classes)
         self.conv_aux1 = AttaNetOutput(fpn_channels, fpn_channels // 2,
@@ -115,7 +118,7 @@ class AttaNetHead(nn.Layer):
     """
 
     def __init__(self, backbone_indices, backbone_channels, fpn_channels,
-                 resize_mode):
+                 resize_mode, afm_type, sam_type):
         super().__init__()
         assert len(backbone_indices) == 3
         assert len(backbone_channels) == 3
@@ -123,9 +126,24 @@ class AttaNetHead(nn.Layer):
         self.backbone_indices = backbone_indices
         f32_chan, f16_chan, _ = backbone_channels
 
-        self.afm = AttentionFusionModule(f16_chan, f32_chan, fpn_channels,
-                                         resize_mode)
-        self.sam = StripAttentionModule(fpn_channels, fpn_channels)
+        print('afm_type:', afm_type)
+        if afm_type == 'AttentionFusionModule':
+            self.afm = AttentionFusionModule(f16_chan, f32_chan, fpn_channels,
+                                             resize_mode)
+        else:
+            self.conv_f32 = layers.ConvBNReLU(
+                f32_chan,
+                fpn_channels,
+                kernel_size=3,
+                padding=1,
+                bias_attr=False)
+            afm_class = getattr(layers, afm_type)
+            self.afm = afm_class(f16_chan, fpn_channels, fpn_channels, 3,
+                                 resize_mode)
+
+        print('sam_type:', sam_type)
+        if sam_type is not None:
+            self.sam = eval(sam_type)(fpn_channels, fpn_channels)
         self.conv_f16_up = layers.ConvBNReLU(
             fpn_channels,
             fpn_channels,
@@ -141,13 +159,19 @@ class AttaNetHead(nn.Layer):
         feat16 = feat_list[self.backbone_indices[1]]
         feat8 = feat_list[self.backbone_indices[2]]
 
-        feat16_sum, feat32_up = self.afm(feat16, feat32)
-        feat16_sum = self.sam(feat16_sum)
+        if hasattr(self, 'conv_f32'):
+            feat32 = self.conv_f32(feat32)
+
+        feat16_sum = self.afm(feat16, feat32)
+
+        if hasattr(self, 'sam'):
+            feat16_sum = self.sam(feat16_sum)
+
         feat16_up = F.interpolate(
             feat16_sum, paddle.shape(feat8)[2:], mode=self.resize_mode)
         feat16_up = self.conv_f16_up(feat16_up)
 
-        logit_list = [feat16_up, feat32_up, feat8]  # x8, x16, x8
+        logit_list = [feat16_up, feat16_sum, feat8]  # x8, x16, x8
         return logit_list
 
 
@@ -206,7 +230,7 @@ class AttentionFusionModule(nn.Layer):
 
         feat16_sum = feat16 + feat32_up
         feat16_sum = self.conv_f16_sum(feat16_sum)
-        return [feat16_sum, feat32_up]
+        return feat16_sum
 
 
 class StripAttentionModule(nn.Layer):

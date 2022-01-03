@@ -336,7 +336,7 @@ class FusionSF(FusionBase):
         x_flow = self.down_x(x)
         y_flow = self.down_y(y)
         y_flow = F.interpolate(
-            y_flow, size=x_size, mode=self.resize_mode, align_corners=True)
+            y_flow, size=x_size, mode=self.resize_mode, align_corners=False)
         flow = self.flow_make(paddle.concat([x_flow, y_flow], 1))
         y_refine = self.flow_warp(y, flow, size=x_size)
 
