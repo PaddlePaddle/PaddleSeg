@@ -1,4 +1,4 @@
-# Copyright (c) 2021 PaddlePaddle Authors. All Rights Reserved.
+# Copyright (c) 2022 PaddlePaddle Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -27,14 +27,24 @@ class SemanticConnectivityLearning(nn.Layer):
     SCL (Semantic Connectivity-aware Learning) framework, which introduces a SC Loss (Semantic Connectivity-aware Loss)
     to improve the quality of segmentation results from the perspective of connectivity. Support multi-class segmentation.
 
-    Step 1: Connected Components Calculation
-    Step 2: Connected Components Matching and SC Loss Calculation
+    The original article refers to
+        Lutao Chu, Yi Liu, Zewu Wu, Shiyu Tang, Guowei Chen, Yuying Hao, Juncai Peng, Zhiliang Yu, Zeyu Chen, Baohua Lai, Haoyi Xiong.
+        "PP-HumanSeg: Connectivity-Aware Portrait Segmentation with a Large-Scale Teleconferencing Video Dataset"
+        In WACV 2022 workshop
+        https://arxiv.org/abs/2112.07146
+
+    Running process:
+    Step 1. Connected Components Calculation
+    Step 2. Connected Components Matching and SC Loss Calculation
     '''
 
     def __init__(self, ignore_index=255, max_pred_num_conn=10, use_argmax=True):
         '''
         Args:
-            ignore_index (int): The class needed to ignore.
+            ignore_index (int): Specify a pixel value to be ignored in the annotated image and does not contribute to
+                the input gradient.When there are pixels that cannot be marked (or difficult to be marked) in the marked
+                image, they can be marked as a specific gray value. When calculating the loss value, the pixel corresponding
+                to the original image will not be used as the independent variable of the loss function. *Default:``255``*
             max_pred_num_conn (int): Maximum number of predicted connected components. At the beginning of training,
                 there will be a large number of connected components, and the calculation is very time-consuming.
                 Therefore, it is necessary to limit the maximum number of predicted connected components,
@@ -57,7 +67,7 @@ class SemanticConnectivityLearning(nn.Layer):
         labels_np = labels.astype('uint8').numpy()
         preds = paddle.to_tensor(preds, 'float32', stop_gradient=False)
         multi_class_sc_loss = paddle.zeros([preds.shape[0]])
-        zero = paddle.to_tensor([0.])
+        zero = paddle.to_tensor([0.])  # for accelerating
 
         # Traverse each image
         for i in range(preds.shape[0]):
@@ -94,7 +104,8 @@ class SemanticConnectivityLearning(nn.Layer):
                         pred_i, real_label_num, real_pred_num, zero)
                     sc_loss += 1 - img_connectivity
                 elif real_label_num == 0 and real_pred_num == 0:
-                    sc_loss += paddle.to_tensor([0.], stop_gradient=False)
+                    # if no connected component, SC Loss = 0, so pass
+                    pass
                 else:
                     preds_class = pred_i == int(class_)
                     not_preds_class = paddle.bitwise_not(preds_class)
