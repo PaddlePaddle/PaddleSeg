@@ -1,5 +1,5 @@
-# Connectivity-Aware Portrait Segmentation With a Large-Scale Teleconferencing Video Dataset
-Official resource for the paper PP-HumanSeg: Connectivity-Aware Portrait Segmentation With a Large-Scale Teleconferencing Video Dataset. [[Paper](https://arxiv.org/abs/2112.07146) | [Poster](https://paddleseg.bj.bcebos.com/dygraph/humanseg/paper/12-HAD-poster.pdf) | [YouTube](https://www.youtube.com/watch?v=FlK8R5cdD7E)]
+# Semantic Connectivity-aware Segmentation With a Large-Scale Teleconferencing Video Dataset
+Official resource for the paper *PP-HumanSeg: Connectivity-Aware Portrait Segmentation With a Large-Scale Teleconferencing Video Dataset*. [[Paper](https://arxiv.org/abs/2112.07146) | [Poster](https://paddleseg.bj.bcebos.com/dygraph/humanseg/paper/12-HAD-poster.pdf) | [YouTube](https://www.youtube.com/watch?v=FlK8R5cdD7E)]
 
 ## Semantic Connectivity-aware Learning
 SCL (Semantic Connectivity-aware Learning) framework, which introduces a SC Loss (Semantic Connectivity-aware Loss) to improve the quality of segmentation results from the perspective of connectivity. Support multi-class segmentation. [[Source code](../../paddleseg/models/losses/semantic_connectivity_learning.py)]
