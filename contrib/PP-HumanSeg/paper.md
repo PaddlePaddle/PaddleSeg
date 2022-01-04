@@ -7,14 +7,14 @@ SCL (Semantic Connectivity-aware Learning) framework, which introduces a SC Loss
 SCL can improve the integrity of segmentation objects and increase segmentation accuracy. The experimental results on our Teleconferencing Video Dataset are shown in paper, and the experimental results on Cityscapes are as follows:
 
 ### Perfermance on Cityscapes
-| Model | Backbone | Learning Strategy | Batch Size | Training Iters | mIoU (%) |
-|:-:|:-:|:-:|:-:|:-:|:-:|
-|OCRNet|HRNet-W48|-|4|40000|76.23|
-|OCRNet|HRNet-W48|SCL|4|40000|78.29(**+2.06**)|
-|FCN|HRNet-W18|-|8|80000|77.81|
-|FCN|HRNet-W18|SCL|8|80000|78.68(**+0.87**)|
-|Fast SCNN|-|-|8|40000|56.41|
-|Fast SCNN|-|SCL|8|40000|57.37(**+0.96**)|
+| Model | Backbone | Learning Strategy | GPUs * Batch Size(Per Card)| Training Iters | mIoU (%) | Config |
+|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
+|OCRNet|HRNet-W48|-|2*2|40000|76.23| [config](../../configs/ocrnet/ocrnet_hrnetw48_cityscapes_1024x512_40k.yml) |
+|OCRNet|HRNet-W48|SCL|2*2|40000|78.29(**+2.06**)|[config](../../configs/ocrnet/ocrnet_hrnetw48_cityscapes_1024x512_40k_SCL.yml) |
+|FCN|HRNet-W18|-|2*4|80000|77.81|[config](../../configs/fcn/fcn_hrnetw18_cityscapes_1024x512_80k_bs4.yml)|
+|FCN|HRNet-W18|SCL|2*4|80000|78.68(**+0.87**)|[config](../../configs/fcn/fcn_hrnetw18_cityscapes_1024x512_80k_bs4_SCL.yml)|
+|Fast SCNN|-|-|2*4|40000|56.41|[config](../../configs/fastscnn/fastscnn_cityscapes_1024x1024_40k.yml)|
+|Fast SCNN|-|SCL|2*4|40000|57.37(**+0.96**)|[config](../../configs/fastscnn/fastscnn_cityscapes_1024x1024_40k_SCL.yml)|
 
 ## Large-Scale Teleconferencing Video Dataset
 A large-scale video portrait dataset that contains 291 videos from 23 conference scenes with 14K fine-labeled frames. The data can be obtained by sending an application email to chulutao@baidu.com.
