@@ -35,7 +35,6 @@ Welcome to PaddleSeg! PaddleSeg is an end-to-end image segmentation development 
 ---------------
 
 
-
 ## Core Features
 
 * <img src="./docs/images/f1.png" width="20"/> **High-Performance Model**: Based on the high-performance backbone trained by Baidu's self-developed [semi-supervised label knowledge distillation scheme (SSLD)](https://paddleclas.readthedocs.io/zh_CN/latest/advanced_tutorials/distillation/distillation.html#ssld), combined with the state of the art segmentation technology, we provide 50+ high-quality pre-training models, which are better than other open-source implementations.
@@ -168,6 +167,7 @@ python train.py --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml
 * [CVPR Champion Solution](./contrib/AutoNUE)
 * [Interactive Segmentation](./EISeg)
 * [Matting](./contrib/Matting)
+* [Domain Adaptation](./contrib/DomainAdaptation)
 
 ## Feedbacks and Contact
 * The dynamic version is still under development, if you find any issue or have an idea on new features, please don't hesitate to contact us via [GitHub Issues](https://github.com/PaddlePaddle/PaddleSeg/issues).
@@ -178,11 +178,13 @@ python train.py --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml
 * Thanks [zjhellofss](https://github.com/zjhellofss) (Fu Shenshen) for contributing Attention U-Net, and Dice Loss.
 * Thanks [liuguoyu666](https://github.com/liguoyu666), [geoyee](https://github.com/geoyee) for contributing U-Net++ and U-Net3+.
 * Thanks [yazheng0307](https://github.com/yazheng0307) (LIU Zheng) for contributing quick-start document.
-* Thanks [CuberrChen](https://github.com/CuberrChen) for contributing STDC (rethink BiSeNet), PointRend and DetailAggregateLoss.
+* Thanks [CuberrChen](https://github.com/CuberrChen) for contributing STDC(rethink BiSeNet), PointRend and DetailAggregateLoss.
 * Thanks [stuartchen1949](https://github.com/stuartchen1949) for contributing SegNet.
-* Thanks [justld](https://github.com/justld) (Lang Du) for contributing ESPNet，HRNet_W48_Contrast and PixelContrastCrossEntropyLoss.
+* Thanks [justld](https://github.com/justld) (Lang Du) for contributing ESPNetV2, DMNet, ENCNet, HRNet_W48_Contrast, SECrossEntropyLoss and PixelContrastCrossEntropyLoss.
 * Thanks [Herman-Hu-saber](https://github.com/Herman-Hu-saber) (Hu Huiming) for contributing ESPNet.
 * Thanks [zhangjin12138](https://github.com/zhangjin12138) for contributing RandomCenterCrop.
+* Thanks [simuler](https://github.com/simuler) for contributing ESPNetV1.
+* Thanks [ETTR123](https://github.com/ETTR123)(Zhang Kai) for contributing PFPNNet.
 
 ## Citation
 If you find our project useful in your research, please consider citing:
