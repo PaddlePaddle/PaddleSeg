@@ -107,9 +107,9 @@ class ENCNet(nn.Layer):
 
         if self.add_lateral:
             laterals = []
-            for i, lateral_conv in enumerate(self.lateral_convs):
+            for j, lateral_conv in enumerate(self.lateral_convs):
                 laterals.append(
-                    F.interpolate(lateral_conv(feats[i]),
+                    F.interpolate(lateral_conv(feats[j]),
                                   size=paddle.shape(feat)[2:],
                                   mode='bilinear',
                                   align_corners=False))
