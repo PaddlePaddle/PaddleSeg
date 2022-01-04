@@ -8,6 +8,7 @@ English | [简体中文](README_CN.md)
 ![support os](https://img.shields.io/badge/os-linux%2C%20win%2C%20mac-yellow.svg)
 ## PaddleSeg has released the new version including the following features:
 
+* We published a paper on portrait segmentation named [PP-HumanSeg](https://github.com/PaddlePaddle/PaddleSeg/blob/develop/contrib/PP-HumanSeg/paper.md), and release Semantic Connectivity-aware Learning (SCL) framework and a Large-Scale Teleconferencing Video Dataset.
 * We published a paper on interactive segmentation named [EdgeFlow](https://arxiv.org/abs/2109.09406), in which the proposed approach achieved SOTA performance on several well-known datasets, and upgraded the interactive annotation tool, [EISeg](./EISeg).
 * We released two [Matting](./contrib/Matting) algorithms, DIM and MODNet, which achieve extremely fine-grained segmentation.
 * We provided advanced features on segmentation model compression, [Knowlede Distillation](./slim/distill) and [Model Quantization](./slim/quant), which accelerate model inference on multi-devices deployment.
