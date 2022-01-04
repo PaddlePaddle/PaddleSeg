@@ -14,33 +14,46 @@
 
 
 import os.path as osp
-from collections import defaultdict
 import numpy as np
-from .rstools import check_gdal
+from collections import defaultdict
+from typing import List, Dict
 
 
-IPT_GDAL = check_gdal()
-if IPT_GDAL:
+def check_gdal() -> bool:
+    try:
+        import gdal
+    except:
+        try:
+            from osgeo import gdal
+        except ImportError:
+            return False
+    return True
+
+
+IMPORT_STATE = False
+if check_gdal():
     try:
         import gdal
         import osr
         import ogr
     except:
         from osgeo import gdal, osr, ogr
+    IMPORT_STATE = True
 
 
-def convert_coord(point, g):
-    tform = np.zeros((3, 3))
-    tform[0, :] = np.array([g[1], g[2], g[0]])
-    tform[1, :] = np.array([g[4], g[5], g[3]])
-    tform[2, :] = np.array([0, 0, 1])
+# 坐标系转换
+def __convert_coord(point: List[float], g: List[float]) -> np.array:
+    tform = np.array(g).reshape((3, 3))
     olp = np.ones((1, 3))
     olp[0, :2] = np.array(point)
     nwp = np.dot(tform, olp.T)
     return nwp.T[0, :2]
 
 
-def __bound2wkt(bounds, tform, ct):
+# 边界转为wkt格式
+def __bound2wkt(bounds: List[Dict], 
+                tform: List[float], 
+                ct: osr.CoordinateTransformation) -> List[str]:
     geo_list = []
     for bd in bounds:
         gl = defaultdict()
@@ -48,10 +61,10 @@ def __bound2wkt(bounds, tform, ct):
         gl["polygon"] = "Polygon (("
         p = bd["points"]
         for i in range(len(p)):
-            x, y = convert_coord(p[i], tform)  # 仿射变换
+            x, y = __convert_coord(p[i], tform)  # 仿射变换
             lon, lat = ct.TransformPoint(x, y)[:2]  # 转换到经纬度坐标
             gl["polygon"] += (str(lat) + " " + str(lon)) + ","
-        x, y = convert_coord(p[0], tform)  # 仿射变换
+        x, y = __convert_coord(p[0], tform)  # 仿射变换
         lon, lat = ct.TransformPoint(x, y)[:2]  # 转换到经纬度坐标
         gl["polygon"] += (str(lat) + " " + str(lon)) + "))"
         # gl["polygon"] = gl["polygon"][:-1] + "))"
@@ -59,8 +72,9 @@ def __bound2wkt(bounds, tform, ct):
     return geo_list
 
 
-def save_shp(shp_path, geocode_list, geo_info):
-    if IPT_GDAL == True:
+# 保存shp文件
+def save_shp(shp_path: str, geocode_list: List[Dict], geo_info: Dict) -> str:
+    if IMPORT_STATE == True:
         # 支持中文路径
         gdal.SetConfigOption("GDAL_FILENAME_IS_UTF8", "YES")
         # 属性表字段支持中文
@@ -78,10 +92,10 @@ def save_shp(shp_path, geocode_list, geo_info):
             return "创建文件失败：" + shp_path
         # 创建一个多边形图层
         prosrs = osr.SpatialReference()
-        prosrs.ImportFromWkt(geo_info["proj"])
+        prosrs.ImportFromWkt(geo_info.crs_wkt)
         geosrs = prosrs.CloneGeogCS()
         ct = osr.CoordinateTransformation(prosrs, geosrs)
-        geocode_list = __bound2wkt(geocode_list, geo_info["geotf"], ct)
+        geocode_list = __bound2wkt(geocode_list, geo_info.geotf, ct)
         ogr_type = ogr.wkbPolygon
         shpe_name = osp.splitext(osp.split(shp_path)[-1])[0]
         oLayer = oDS.CreateLayer(shpe_name, geosrs, ogr_type)
@@ -109,18 +123,3 @@ def save_shp(shp_path, geocode_list, geo_info):
         return "数据集创建完成！"
     else:
         raise ImportError("can't import gdal, osr, ogr!")
-
-
-# test
-if __name__ == "__main__":
-    from rstools import open_tif
-
-    tif_path = r"C:\Users\Geoyee\Desktop\jpg1.tif"
-    img, geo_info = open_tif(tif_path)
-    print("proj:", geo_info["proj"])
-    # shp_path = r"E:\PdCVSIG\github\images\test.shp"
-    # geocode_list = [
-    #     {"clas": "build1", "polygon": "Polygon ((1 1,5 1,5 5,1 5,1 1))"},
-    #     {"clas": "build2", "polygon": "Polygon ((6 3,9 2,9 4,6 3))"},
-    #     ]
-    # save_shp(shp_path, geocode_list, geo_info["proj"])

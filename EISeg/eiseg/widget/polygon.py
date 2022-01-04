@@ -116,7 +116,7 @@ class PolygonAnnotation(QtWidgets.QGraphicsPolygonItem):
                 grip.setAnning(True)
 
     def addPointMiddle(self, lineIdx, point):
-        gripItem = GripItem(self, lineIdx + 1, self.borderColor)
+        gripItem = GripItem(self, lineIdx + 1, self.borderColor, (self.height, self.width))
         gripItem.setEnabled(False)
         gripItem.setPos(point)
         self.scene().addItem(gripItem)
@@ -143,7 +143,7 @@ class PolygonAnnotation(QtWidgets.QGraphicsPolygonItem):
         lineItem.updateWidth()
 
     def addPointLast(self, p):
-        grip = GripItem(self, len(self), self.borderColor)
+        grip = GripItem(self, len(self), self.borderColor, (self.height, self.width))
         self.scene().addItem(grip)
         self.m_items.append(grip)
         grip.updateSize()

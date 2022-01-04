@@ -40,6 +40,7 @@
 * [SETR](../configs/setr)
 * [MLATransformer](../contrib/AutoNUE/configs)
 * [SegFormer](../configs/segformer)
+* [SegMenter](../configs/segmenter)
 
 # 模型库Benchmark
 基于Cityscapes数据集，PaddleSeg支持22+系列分割算法以及对应的30+个图像分割预训练模型，性能评估如下。
