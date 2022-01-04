@@ -81,6 +81,7 @@ python tools/split_dataset_list.py <dataset_root> images annotations --split 0.6
 ## 3.数据集文件整理
 
 * 如果你需要使用自定义数据集进行训练，推荐整理成如下结构：
+```
     custom_dataset
         |
         |--images
@@ -98,6 +99,7 @@ python tools/split_dataset_list.py <dataset_root> images annotations --split 0.6
         |--val.txt
         |
         |--test.txt
+```
 
 其中train.txt和val.txt的内容如下所示：
 
