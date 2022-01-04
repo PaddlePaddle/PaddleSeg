@@ -99,4 +99,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-#/mnt/haoyuying/data/cocostuff/convert_annotations/val2017/000000086336.png
