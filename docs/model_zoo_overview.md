@@ -35,6 +35,7 @@
 |[SegNet](../configs/segnet)|-|-|-|-|
 |[ESPNetV2](../configs/espnet)|-|-|-|-|
 |[HRNetW48Contrast](../configs/hrnet_w48_contrast)|-|-|-|✔|
+|[DMNet](../configs/dmnet)|-|✔|-|-|
 
 ### Transformer系列
 * [SETR](../configs/setr)
