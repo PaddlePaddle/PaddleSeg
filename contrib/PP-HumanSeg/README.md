@@ -8,6 +8,9 @@
 <img src="https://github.com/LutaoChu/transfer_station/raw/master/conference.gif" width="70%" height="70%">
 </p>
 
+## 最新动向
+- [2022-1-4] 人像分割论文[PP-HumanSeg](./paper.md)发表于WACV 2022 Workshop，并开源连通性学习（SCL）方法和大规模视频会议数据集。
+
 ## 目录
 - [人像分割模型](#人像分割模型)
   - [通用人像分割](#通用人像分割)
