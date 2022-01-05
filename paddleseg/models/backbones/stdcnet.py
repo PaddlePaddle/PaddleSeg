@@ -1838,22 +1838,26 @@ class STDCNet_pp_1(nn.Layer):
         return feat2, feat4, feat8, feat16, feat32
 
     def _make_layers(self, base, layers, layers_expand, block_num, block):
-        assert layers == [2, 2, 2]
-        assert len(layers) == len(layers_expand)
+        assert len(layers) == 3 and len(layers_expand) == 3
 
         features = []
         features += [ConvBNRelu(3, base // 2, 3, 2)]
         features += [ConvBNRelu(base // 2, base, 3, 2)]
 
+        l0, l1, l2 = layers[0], layers[1], layers[2]
         r0, r1, r2 = layers_expand[0], layers_expand[1], layers_expand[2]
+
         features.append(block(base, base * r0, block_num, 2))
-        features.append(block(base * r0, base * r0, block_num, 1))
+        for i in range(l0 - 1):
+            features.append(block(base * r0, base * r0, block_num, 1))
 
         features.append(block(base * r0, base * r1, block_num, 2))
-        features.append(block(base * r1, base * r1, block_num, 1))
+        for i in range(l1 - 1):
+            features.append(block(base * r1, base * r1, block_num, 1))
 
         features.append(block(base * r1, base * r2, block_num, 2))
-        features.append(block(base * r2, base * r2, block_num, 1))
+        for i in range(l2 - 1):
+            features.append(block(base * r2, base * r2, block_num, 1))
 
         return nn.Sequential(*features)
 

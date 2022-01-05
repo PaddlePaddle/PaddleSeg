@@ -144,3 +144,257 @@ class AttentionBlock(nn.Layer):
         if self.out_project is not None:
             context = self.out_project(context)
         return context
+
+
+class DualAttentionModule(nn.Layer):
+    """
+    The Dual attention.
+
+    Args:
+        in_channels (tuple): The number of input channels.
+    """
+
+    def __init__(self, in_channels, out_channels):
+        super().__init__()
+        inter_channels = in_channels // 4
+
+        self.channel_conv = layers.ConvBNReLU(in_channels, inter_channels, 1)
+        self.position_conv = layers.ConvBNReLU(in_channels, inter_channels, 1)
+        self.pam = PAM(inter_channels)
+        self.cam = CAM(inter_channels)
+        self.conv1 = layers.ConvBNReLU(inter_channels, inter_channels, 3)
+        self.conv2 = layers.ConvBNReLU(inter_channels, inter_channels, 3)
+        self.conv3 = layers.ConvBNReLU(inter_channels, out_channels, 3)
+
+    def forward(self, feats):
+        channel_feats = self.channel_conv(feats)
+        channel_feats = self.cam(channel_feats)
+        channel_feats = self.conv1(channel_feats)
+
+        position_feats = self.position_conv(feats)
+        position_feats = self.pam(position_feats)
+        position_feats = self.conv2(position_feats)
+
+        feats_sum = position_feats + channel_feats
+        out = self.conv3(feats_sum)
+        return out
+
+
+class PAM(nn.Layer):
+    """Position attention module."""
+
+    def __init__(self, in_channels):
+        super().__init__()
+        mid_channels = in_channels // 8
+        self.mid_channels = mid_channels
+        self.in_channels = in_channels
+
+        self.query_conv = nn.Conv2D(in_channels, mid_channels, 1, 1)
+        self.key_conv = nn.Conv2D(in_channels, mid_channels, 1, 1)
+        self.value_conv = nn.Conv2D(in_channels, in_channels, 1, 1)
+
+        self.gamma = self.create_parameter(
+            shape=[1],
+            dtype='float32',
+            default_initializer=nn.initializer.Constant(0))
+
+    def forward(self, x):
+        x_shape = paddle.shape(x)
+
+        # query: n, h * w, c1
+        query = self.query_conv(x)
+        query = paddle.reshape(query, (0, self.mid_channels, -1))
+        query = paddle.transpose(query, (0, 2, 1))
+
+        # key: n, c1, h * w
+        key = self.key_conv(x)
+        key = paddle.reshape(key, (0, self.mid_channels, -1))
+
+        # sim: n, h * w, h * w
+        sim = paddle.bmm(query, key)
+        sim = F.softmax(sim, axis=-1)
+
+        value = self.value_conv(x)
+        value = paddle.reshape(value, (0, self.in_channels, -1))
+        sim = paddle.transpose(sim, (0, 2, 1))
+
+        # feat: from (n, c2, h * w) -> (n, c2, h, w)
+        feat = paddle.bmm(value, sim)
+        feat = paddle.reshape(feat,
+                              (0, self.in_channels, x_shape[2], x_shape[3]))
+
+        out = self.gamma * feat + x
+        return out
+
+
+class CAM(nn.Layer):
+    """Channel attention module."""
+
+    def __init__(self, channels):
+        super().__init__()
+
+        self.channels = channels
+        self.gamma = self.create_parameter(
+            shape=[1],
+            dtype='float32',
+            default_initializer=nn.initializer.Constant(0))
+
+    def forward(self, x):
+        x_shape = paddle.shape(x)
+        # query: n, c, h * w
+        query = paddle.reshape(x, (0, self.channels, -1))
+        # key: n, h * w, c
+        key = paddle.reshape(x, (0, self.channels, -1))
+        key = paddle.transpose(key, (0, 2, 1))
+
+        # sim: n, c, c
+        sim = paddle.bmm(query, key)
+        # The danet author claims that this can avoid gradient divergence
+        sim = paddle.max(
+            sim, axis=-1, keepdim=True).tile([1, 1, self.channels]) - sim
+        sim = F.softmax(sim, axis=-1)
+
+        # feat: from (n, c, h * w) to (n, c, h, w)
+        value = paddle.reshape(x, (0, self.channels, -1))
+        feat = paddle.bmm(sim, value)
+        feat = paddle.reshape(feat, (0, self.channels, x_shape[2], x_shape[3]))
+
+        out = self.gamma * feat + x
+        return out
+
+
+class NonLocal2DModule(nn.Layer):
+    """Basic Non-local module.
+    This model is the implementation of "Non-local Neural Networks"
+    (https://arxiv.org/abs/1711.07971)
+
+    Args:
+        in_channels (int): Channels of the input feature map.
+        reduction (int): Channel reduction ratio. Default: 2.
+        use_scale (bool): Whether to scale pairwise_weight by `1/sqrt(inter_channels)` when the mode is `embedded_gaussian`. Default: True.
+        sub_sample (bool): Whether to utilize max pooling after pairwise function. Default: False.
+        mode (str): Options are `gaussian`, `concatenation`, `embedded_gaussian` and `dot_product`. Default: embedded_gaussian.
+    """
+
+    def __init__(self,
+                 in_channels,
+                 out_channels,
+                 reduction=2,
+                 use_scale=True,
+                 sub_sample=False,
+                 mode='embedded_gaussian'):
+        super().__init__()
+        self.in_channels = in_channels
+        self.out_channels = out_channels
+        self.reduction = reduction
+        self.use_scale = use_scale
+        self.sub_sample = sub_sample
+        self.mode = mode
+        if mode not in [
+                'gaussian', 'embedded_gaussian', 'dot_product', 'concatenation'
+        ]:
+            raise ValueError(
+                "Mode should be in 'gaussian', 'concatenation','embedded_gaussian' or 'dot_product'."
+            )
+
+        self.inter_channels = max(in_channels // reduction, 1)
+
+        self.g = nn.Conv2D(
+            in_channels=self.in_channels,
+            out_channels=self.inter_channels,
+            kernel_size=1)
+        self.conv_out = layers.ConvBNReLU(
+            in_channels=self.inter_channels,
+            out_channels=self.out_channels,
+            kernel_size=1,
+            bias_attr=False)
+
+        if self.mode != "gaussian":
+            self.theta = nn.Conv2D(
+                in_channels=self.in_channels,
+                out_channels=self.inter_channels,
+                kernel_size=1)
+            self.phi = nn.Conv2D(
+                in_channels=self.in_channels,
+                out_channels=self.inter_channels,
+                kernel_size=1)
+
+        if self.mode == "concatenation":
+            self.concat_project = layers.ConvBNReLU(
+                in_channels=self.inter_channels * 2,
+                out_channels=1,
+                kernel_size=1,
+                bias_attr=False)
+
+        if self.sub_sample:
+            max_pool_layer = nn.MaxPool2D(kernel_size=(2, 2))
+            self.g = nn.Sequential(self.g, max_pool_layer)
+            if self.mode != 'gaussian':
+                self.phi = nn.Sequential(self.phi, max_pool_layer)
+            else:
+                self.phi = max_pool_layer
+
+    def gaussian(self, theta_x, phi_x):
+        pairwise_weight = paddle.matmul(theta_x, phi_x)
+        pairwise_weight = F.softmax(pairwise_weight, axis=-1)
+        return pairwise_weight
+
+    def embedded_gaussian(self, theta_x, phi_x):
+        pairwise_weight = paddle.matmul(theta_x, phi_x)
+        if self.use_scale:
+            pairwise_weight /= theta_x.shape[-1]**0.5
+        pairwise_weight = F.softmax(pairwise_weight, -1)
+        return pairwise_weight
+
+    def dot_product(self, theta_x, phi_x):
+        pairwise_weight = paddle.matmul(theta_x, phi_x)
+        pairwise_weight /= pairwise_weight.shape[-1]
+        return pairwise_weight
+
+    def concatenation(self, theta_x, phi_x):
+        h = theta_x.shape[2]
+        w = phi_x.shape[3]
+        theta_x = paddle.tile(theta_x, [1, 1, 1, w])
+        phi_x = paddle.tile(phi_x, [1, 1, h, 1])
+
+        concat_feature = paddle.concat([theta_x, phi_x], axis=1)
+        pairwise_weight = self.concat_project(concat_feature)
+        n, _, h, w = pairwise_weight.shape
+        pairwise_weight = paddle.reshape(pairwise_weight, [n, h, w])
+        pairwise_weight /= pairwise_weight.shape[-1]
+        return pairwise_weight
+
+    def forward(self, x):
+        n, c, h, w = x.shape
+        g_x = paddle.reshape(self.g(x), [n, self.inter_channels, -1])
+        g_x = paddle.transpose(g_x, [0, 2, 1])
+
+        if self.mode == 'gaussian':
+            theta_x = paddle.reshape(x, [n, self.inter_channels, -1])
+            theta_x = paddle.transpose(theta_x, [0, 2, 1])
+            if self.sub_sample:
+                phi_x = paddle.reshape(
+                    self.phi(x), [n, self.inter_channels, -1])
+            else:
+                phi_x = paddle.reshape(x, [n, self.in_channels, -1])
+
+        elif self.mode == 'concatenation':
+            theta_x = paddle.reshape(
+                self.theta(x), [n, self.inter_channels, -1, 1])
+            phi_x = paddle.reshape(self.phi(x), [n, self.inter_channels, 1, -1])
+
+        else:
+            theta_x = paddle.reshape(
+                self.theta(x), [n, self.inter_channels, -1])
+            theta_x = paddle.transpose(theta_x, [0, 2, 1])
+            phi_x = paddle.reshape(self.phi(x), [n, self.inter_channels, -1])
+
+        pairwise_func = getattr(self, self.mode)
+        pairwise_weight = pairwise_func(theta_x, phi_x)
+        y = paddle.matmul(pairwise_weight, g_x)
+        y = paddle.transpose(y, [0, 2, 1])
+        y = paddle.reshape(y, [n, self.inter_channels, h, w])
+
+        output = x + self.conv_out(y)
+
+        return output
