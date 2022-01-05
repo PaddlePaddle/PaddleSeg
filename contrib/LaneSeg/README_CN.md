@@ -52,6 +52,7 @@ cd contrib/LaneSeg
 |-|-|-|-|-|
 |BiseNetV2|96.38%|0.04545|0.03363|[model](https://paddleseg.bj.bcebos.com/lane_seg/bisenet/model.pdparams)|
 |FastScnn|96.04% |0.04909|0.04058|[model](https://paddleseg.bj.bcebos.com/lane_seg/fastscnn/model.pdparams)|
+
 注意：模型输入大小为(640, 368), GPU为Tesla V100 32G。
 
 ## 数据准备
