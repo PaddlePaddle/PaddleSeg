@@ -16,6 +16,7 @@ PaddleSeg团队将举办主题为《产业图像分割应用与实战》的两�
 
 ## PaddleSeg发布2.3版本，欢迎体验
 
+* PaddleSeg团队发表人像分割论文[PP-HumanSeg](./contrib/PP-HumanSeg/paper.md)，并开源连通性学习（SCL）方法和大规模视频会议数据集。
 * PaddleSeg团队发表交互式分割论文[EdgeFlow](https://arxiv.org/abs/2109.09406)，已在多个数据集实现SOTA性能，并升级了交互式分割工具[EISeg](./EISeg)。
 * 开源两种[Matting](./contrib/Matting)算法，经典方法DIM，和实时性方法MODNet，实现精细化人像分割。
 * 发布图像分割高阶功能，[模型蒸馏](./slim/distill)和[模型量化](./slim/quant)方案，进一步提升模型的部署效率。
@@ -141,6 +142,7 @@ PaddleSeg是基于飞桨[PaddlePaddle](https://www.paddlepaddle.org.cn)开发的
 - [全景分割](./contrib/PanopticDeepLab)
 - [交互式分割](./EISeg)
 - [深度抠图](./contrib/Matting)
+- [领域自适应](./contrib/DomainAdaptation)
 
 ## 代码贡献
 
@@ -150,9 +152,11 @@ PaddleSeg是基于飞桨[PaddlePaddle](https://www.paddlepaddle.org.cn)开发的
 - 非常感谢[yazheng0307](https://github.com/yazheng0307) (刘正)贡献快速开始教程文档。
 - 非常感谢[CuberrChen](https://github.com/CuberrChen)贡献STDC (rethink BiSeNet) PointRend，和 Detail Aggregate损失函数。
 - 非常感谢[stuartchen1949](https://github.com/stuartchen1949)贡献 SegNet。
-- 非常感谢[justld](https://github.com/justld)(郎督)贡献 ESPNet，HRNet_W48_Contrast 和 PixelContrastCrossEntropyLoss 损失函数。
+- 非常感谢[justld](https://github.com/justld)(郎督)贡献 ESPNetV2, DMNet, ENCNet, HRNet_W48_Contrast, SECrossEntropyLoss 和PixelContrastCrossEntropyLoss。
 - 非常感谢[Herman-Hu-saber](https://github.com/Herman-Hu-saber)(胡慧明)参与贡献 ESPNet。
 - 非常感谢[zhangjin12138](https://github.com/zhangjin12138)贡献数据增强方法 RandomCenterCrop。
+- 非常感谢[simuler](https://github.com/simuler) 贡献 ESPNetV1。
+- 非常感谢[ETTR123](https://github.com/ETTR123)(张恺) 贡献 PFPNNet。
 
 
 ## 学术引用 <img src="./docs/images/yinyong.png" width="30"/>
