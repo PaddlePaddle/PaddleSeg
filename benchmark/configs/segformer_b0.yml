@@ -3,9 +3,6 @@ _base_: './cityscapes_30imgs.yml'
 batch_size: 2
 iters: 500
 
-# Conv config
-export FLAGS_cudnn_exhaustive_search=True
-
 model:
   type: SegFormer_B0
   num_classes: 19
