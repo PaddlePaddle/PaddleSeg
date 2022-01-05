@@ -31,5 +31,5 @@ cd ..
 ./build/test_seg \
     --model_dir=./bisenetv2_demo_model \
     --img_path=./cityscapes_demo.png \
-    --use_cpu=true \
+    --devices=CPU \
     --use_mkldnn=true

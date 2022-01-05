@@ -16,8 +16,9 @@
 DEFINE_string(model_dir, "", "Directory of the inference model. "
                              "It constains deploy.yaml and infer models");
 DEFINE_string(img_path, "", "Path of the test image.");
-DEFINE_bool(use_cpu, false, "Wether use CPU. Default: use GPU.");
+DEFINE_string(devices, "GPU", "Use GPU or CPU devices. Default: GPU");
 DEFINE_bool(use_trt, false, "Wether enable TensorRT when use GPU. Defualt: false.");
+DEFINE_string(trt_precision, "fp32", "The precision of TensorRT, support fp32, fp16 and int8. Default: fp32");
 DEFINE_bool(use_mkldnn, false, "Wether enable MKLDNN when use CPU. Defualt: false.");
 DEFINE_string(save_dir, "", "Directory of the output image.");
 
@@ -60,20 +61,35 @@ std::shared_ptr<paddle_infer::Predictor> create_predictor(
                   model_dir + "/" + yaml_config.params_file);
   infer_config.EnableMemoryOptim();
 
-  if (FLAGS_use_cpu) {
+  if (FLAGS_devices == "CPU") {
     LOG(INFO) << "Use CPU";
     if (FLAGS_use_mkldnn) {
       // TODO(jc): fix the bug
       //infer_config.EnableMKLDNN();
       infer_config.SetCpuMathLibraryNumThreads(5);
     }
-  } else {
+  } else if(FLAGS_devices == "GPU") {
     LOG(INFO) << "Use GPU";
     infer_config.EnableUseGpu(100, 0);
     if (FLAGS_use_trt) {
-      infer_config.EnableTensorRtEngine(1 << 20, 1, 3,
-        paddle_infer::PrecisionType::kFloat32, false, false);
+      // TODO(jc): use the dynamic shape that collected offline
+      LOG(INFO) << "Use TRT";
+      LOG(INFO) << "trt_precision:" << FLAGS_trt_precision;
+      if (FLAGS_trt_precision == "fp32") {
+        infer_config.EnableTensorRtEngine(1 << 20, 1, 300,
+          paddle_infer::PrecisionType::kFloat32, false, false);
+      } else if (FLAGS_trt_precision == "fp16") {
+        infer_config.EnableTensorRtEngine(1 << 20, 1, 3,
+          paddle_infer::PrecisionType::kHalf, false, false);
+      } else if (FLAGS_trt_precision == "int8") {
+        infer_config.EnableTensorRtEngine(1 << 20, 1, 3,
+          paddle_infer::PrecisionType::kInt8, false, false);
+      } else {
+        LOG(FATAL) << "The trt_precision should be fp32, fp16 or int8.";
+      }
     }
+  } else {
+    LOG(FATAL) << "The devices should be GPU or CPU";
   }
 
   auto predictor = paddle_infer::CreatePredictor(infer_config);
