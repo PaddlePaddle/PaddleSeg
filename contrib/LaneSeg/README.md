@@ -158,7 +158,6 @@ python val.py \
        --config configs/bisenetV2_tusimple_640x368_300k.yml \
        --model_path output/best_model/model.pdparams \
        --save_dir ./output/results \
-       --save_results
 ```
 `--save_result` The prediction results will be saved if turn on. If it is off, it will speed up the evaluation.
 
