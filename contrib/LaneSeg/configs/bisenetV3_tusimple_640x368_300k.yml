@@ -7,7 +7,7 @@ train_dataset:
   cut_height: 160
   transforms:
     - type: SubImgCrop
-      up_h_off: 160
+      offset_top: 160
     - type: RandomRotation
       max_rotation: 10
       im_padding_value: [0, 0, 0]
@@ -35,7 +35,7 @@ val_dataset:
   cut_height: 160
   transforms:
     - type: SubImgCrop
-      up_h_off: 160
+      offset_top: 160
     - type: Resize
       target_size: [640, 368]
     - type: Normalize
