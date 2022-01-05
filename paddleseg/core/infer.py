@@ -40,7 +40,7 @@ def get_reverse_list(ori_shape, transforms):
         if op.__class__.__name__ in ['Resize']:
             reverse_list.append(('resize', (h, w)))
             h, w = op.target_size[0], op.target_size[1]
-        if op.__class__.__name__ in ['SubImgCrop']:
+        if op.__class__.__name__ in ['Crop']:
             reverse_list.append(('crop', (op.up_h_off, op.down_h_off),
                                  (op.left_w_off, op.right_w_off)))
             h = h - op.up_h_off
@@ -117,7 +117,7 @@ def reverse_transform(pred, ori_shape, transforms, mode='nearest'):
                 pred = paddle.cast(pred, dtype)
             else:
                 pred = F.interpolate(pred, (h, w), mode=mode)
-        elif item[0] == 'SubImgCrop':
+        elif item[0] == 'crop':
             up_h_off, down_h_off = item[1][0], item[1][1]
             left_w_off, right_w_off = item[2][0], item[2][1]
             pred = F.pad(
@@ -255,9 +255,9 @@ def inference(model,
     if hasattr(model, 'data_format') and model.data_format == 'NHWC':
         logit = logit.transpose((0, 3, 1, 2))
     if ori_shape is not None:
-        logit = reverse_transform(logit, ori_shape, transforms, mode='bilinear')
-        pred = paddle.argmax(logit, axis=1, keepdim=True, dtype='int32')
-        return pred, logit
+        pred = reverse_transform(logit, ori_shape, transforms, mode='bilinear')
+        pred = paddle.argmax(pred, axis=1, keepdim=True, dtype='int32')
+        return pred
     else:
         return logit
 
@@ -317,8 +317,7 @@ def aug_inference(model,
             logit = F.softmax(logit, axis=1)
             final_logit = final_logit + logit
 
-    final_logit = reverse_transform(
+    pred = reverse_transform(
         final_logit, ori_shape, transforms, mode='bilinear')
-    pred = paddle.argmax(final_logit, axis=1, keepdim=True, dtype='int32')
-
-    return pred, final_logit
+    pred = paddle.argmax(pred, axis=1, keepdim=True, dtype='int32')
+    return pred

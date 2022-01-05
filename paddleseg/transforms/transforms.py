@@ -699,73 +699,7 @@ class RandomPaddingCrop:
         else:
             return (im, label)
 
-        
-@manager.TRANSFORMS.add_component
-class RandomCenterCrop:
-    """
-    Crops the given the input data at the center.
-    Args:
-        retain_ratio (tuple or list, optional): The length of the input list or tuple must be 2. Default: (0.5, 0.5).
-        the first value is used for width and the second is for height.
-        In addition, the minimum size of the cropped image is [width * retain_ratio[0], height * retain_ratio[1]].
-    Raises:
-        TypeError: When retain_ratio is neither list nor tuple. Default: None.
-        ValueError: When the value of retain_ratio is not in [0-1].
-    """
 
-    def __init__(self,
-                 retain_ratio=(0.5, 0.5)):
-        if isinstance(retain_ratio, list) or isinstance(retain_ratio, tuple):
-            if len(retain_ratio) != 2:
-                raise ValueError(
-                    'When type of `retain_ratio` is list or tuple, it shoule include 2 elements, but it is {}'.format(
-                        retain_ratio)
-                )
-            if retain_ratio[0] > 1 or retain_ratio[1] > 1 or retain_ratio[0] < 0 or retain_ratio[1] < 0:
-                raise ValueError(
-                    'Value of `retain_ratio` should be in [0, 1], but it is {}'.format(retain_ratio)
-                )
-        else:
-            raise TypeError(
-                "The type of `retain_ratio` is invalid. It should be list or tuple, but it is {}"
-                    .format(type(retain_ratio)))
-        self.retain_ratio = retain_ratio
-
-    def __call__(self, im, label=None):
-        """
-        Args:
-            im (np.ndarray): The Image data.
-            label (np.ndarray, optional): The label data. Default: None.
-        Returns:
-            (tuple). When label is None, it returns (im, ), otherwise it returns (im, label).
-        """
-        retain_width = self.retain_ratio[0]
-        retain_height = self.retain_ratio[1]
-
-        img_height = im.shape[0]
-        img_width = im.shape[1]
-
-        if retain_width == 1. and retain_height == 1.:
-            if label is None:
-                return (im,)
-            else:
-                return (im, label)
-        else:
-            randw = np.random.randint(img_width * (1 - retain_width))
-            randh = np.random.randint(img_height * (1 - retain_height))
-            offsetw = 0 if randw == 0 else np.random.randint(randw)
-            offseth = 0 if randh == 0 else np.random.randint(randh)
-            p0, p1, p2, p3 = offseth, img_height + offseth - randh, offsetw, img_width + offsetw - randw
-            im = im[p0:p1, p2:p3, :]
-            if label is not None:
-                label = label[p0:p1, p2:p3, :]
-
-        if label is None:
-            return (im,)
-        else:
-            return (im, label)
-        
-        
 @manager.TRANSFORMS.add_component
 class ScalePadding:
     """
@@ -953,7 +887,7 @@ class RandomRotation:
 
     Args:
         max_rotation (float, optional): The maximum rotation degree. Default: 15.
-        keeping_size (bool, optional): Whether or not to holding image size. Default: False.
+        holding_size (bool, optional): Whether or not to holding image size. Default: False.
         im_padding_value (list, optional): The padding value of raw image.
             Default: [127.5, 127.5, 127.5].
         label_padding_value (int, optional): The padding value of annotation image. Default: 255.
@@ -961,11 +895,11 @@ class RandomRotation:
 
     def __init__(self,
                  max_rotation=15,
-                 keeping_size=False,
+                 holding_size=False,
                  im_padding_value=(127.5, 127.5, 127.5),
                  label_padding_value=255):
         self.max_rotation = max_rotation
-        self.keeping_size = keeping_size
+        self.holding_size = holding_size
         self.im_padding_value = im_padding_value
         self.label_padding_value = label_padding_value
 
@@ -985,7 +919,7 @@ class RandomRotation:
                                             self.max_rotation)
             pc = (w // 2, h // 2)
             r = cv2.getRotationMatrix2D(pc, do_rotation, 1.0)
-            if self.keeping_size:
+            if self.holding_size:
                 dsize = (w, h)
             else:
                 cos = np.abs(r[0, 0])
@@ -1277,52 +1211,48 @@ class RandomAffine:
 
 
 @manager.TRANSFORMS.add_component
-class SubImgCrop:
+class Crop:
     """
     crop an image from four forwards.
 
     Args:
-        offset_top (int, optional): The cut height for image from top to down. Default: 0.
-        offset_bottom (int, optional): The cut height for image from down to top . Default: 0.
-        offset_left (int, optional): The cut height for image from left to right. Default: 0.
-        offset_right (int, optional): The cut width for image from right to left. Default: 0.
+        up_h_off (int, optional): The cut height for image from up to down. Default: 0.
+        down_h_off (int, optional): The cut height for image from down to up . Default: 0.
+        left_w_off (int, optional): The cut height for image from left to right. Default: 0.
+        right_w_off (int, optional): The cut width for image from right to left. Default: 0.
     """
 
-    def __init__(self,
-                 offset_top=0,
-                 offset_bottom=0,
-                 offset_left=0,
-                 offset_right=0):
-        self.offset_top = offset_top
-        self.offset_bottom = offset_bottom
-        self.offset_left = offset_left
-        self.offset_right = offset_right
+    def __init__(self, up_h_off=0, down_h_off=0, left_w_off=0, right_w_off=0):
+        self.up_h_off = up_h_off
+        self.down_h_off = down_h_off
+        self.left_w_off = left_w_off
+        self.right_w_off = right_w_off
 
     def __call__(self, im, label=None):
-        if self.offset_top < 0 or self.offset_bottom < 0 or self.offset_left < 0 or self.offset_right < 0:
+        if self.up_h_off < 0 or self.down_h_off < 0 or self.left_w_off < 0 or self.right_w_off < 0:
             raise Exception(
-                "offset_top, offset_bottom, offset_left,  offset_right must equal or greater zero"
+                "up_h_off, down_h_off, left_w_off,  right_w_off must equal or greater zero"
             )
 
-        if self.offset_top > 0 and self.offset_top < im.shape[0]:
-            im = im[self.offset_top:, :, :]
+        if self.up_h_off > 0 and self.up_h_off < im.shape[0]:
+            im = im[self.up_h_off:, :, :]
             if label is not None:
-                label = label[self.offset_top:, :]
+                label = label[self.up_h_off:, :]
 
-        if self.offset_bottom > 0 and self.offset_bottom < im.shape[0]:
-            im = im[:-self.offset_bottom, :, :]
+        if self.down_h_off > 0 and self.down_h_off < im.shape[0]:
+            im = im[:-self.down_h_off, :, :]
             if label is not None:
-                label = label[:-self.offset_bottom, :]
+                label = label[:-self.down_h_off, :]
 
-        if self.offset_left > 0 and self.offset_left < im.shape[1]:
-            im = im[:, self.offset_left:, :]
+        if self.left_w_off > 0 and self.left_w_off < im.shape[1]:
+            im = im[:, self.left_w_off:, :]
             if label is not None:
-                label = label[:, self.offset_left:]
+                label = label[:, self.left_w_off:]
 
-        if self.offset_right > 0 and self.offset_right < im.shape[1]:
-            im = im[:, :-self.offset_right, :]
+        if self.right_w_off > 0 and self.right_w_off < im.shape[1]:
+            im = im[:, :-self.right_w_off, :]
             if label is not None:
-                label = label[:, :-self.offset_right]
+                label = label[:, :-self.right_w_off]
 
         if label is None:
             return (im, )
