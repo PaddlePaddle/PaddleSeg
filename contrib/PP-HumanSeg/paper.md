@@ -17,7 +17,7 @@ SCL can improve the integrity of segmentation objects and increase segmentation 
 |Fast SCNN|-|SCL|2*4|40000|57.37(**+0.96**)|[config](../../configs/fastscnn/fastscnn_cityscapes_1024x1024_40k_SCL.yml)|
 
 ## Large-Scale Teleconferencing Video Dataset
-A large-scale video portrait dataset that contains 291 videos from 23 conference scenes with 14K fine-labeled frames. The data can be obtained by sending an application email to chulutao@baidu.com.
+A large-scale video portrait dataset that contains 291 videos from 23 conference scenes with 14K fine-labeled frames. The data can be obtained by sending an application email to paddleseg@baidu.com.
 
 
 ## Citation
