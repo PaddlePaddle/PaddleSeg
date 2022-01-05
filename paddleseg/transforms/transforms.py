@@ -1276,7 +1276,7 @@ class RandomAffine:
 
 
 @manager.TRANSFORMS.add_component
-class Crop:
+class SubImgCrop:
     """
     crop an image from four forwards.
 

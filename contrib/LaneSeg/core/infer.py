@@ -40,7 +40,7 @@ def get_reverse_list(ori_shape, transforms):
         if op.__class__.__name__ in ['Resize']:
             reverse_list.append(('resize', (h, w)))
             h, w = op.target_size[0], op.target_size[1]
-        if op.__class__.__name__ in ['Crop']:
+        if op.__class__.__name__ in ['SubImgCrop']:
             reverse_list.append(('crop', (op.up_h_off, op.down_h_off),
                                  (op.left_w_off, op.right_w_off)))
             h = h - op.up_h_off
@@ -115,7 +115,7 @@ def reverse_transform(pred, ori_shape, transforms, mode='nearest'):
                 pred = paddle.cast(pred, 'int32')
             else:
                 pred = F.interpolate(pred, (h, w), mode=mode)
-        elif item[0] == 'crop':
+        elif item[0] == 'SubImgCrop':
             up_h_off, down_h_off = item[1][0], item[1][1]
             left_w_off, right_w_off = item[2][0], item[2][1]
             pred = F.pad(
@@ -131,10 +131,7 @@ def reverse_transform(pred, ori_shape, transforms, mode='nearest'):
     return pred
 
 
-def inference(model,
-              im,
-              ori_shape=None,
-              transforms=None):
+def inference(model, im, ori_shape=None, transforms=None):
     """
     Inference for image.
 

@@ -6,7 +6,7 @@ train_dataset:
   dataset_root: ./data/tusimple
   cut_height: 160
   transforms:
-    - type: Crop
+    - type: SubImgCrop
       up_h_off: 160
     - type: RandomRotation
       max_rotation: 10
@@ -34,7 +34,7 @@ val_dataset:
   dataset_root: ./data/tusimple
   cut_height: 160
   transforms:
-    - type: Crop
+    - type: SubImgCrop
       up_h_off: 160
     - type: Resize
       target_size: [640, 368]
