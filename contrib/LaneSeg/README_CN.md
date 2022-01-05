@@ -36,6 +36,7 @@ git clone https://github.com/PaddlePaddle/PaddleSeg
 cd PaddleSeg
 pip install -e .
 pip install scikit-image
+pip install scikit-learn
 cd contrib/LaneSeg
 ```
 
@@ -134,7 +135,7 @@ test_list.txt的内容如下:
 ```shell
 export CUDA_VISIBLE_DEVICES=0
 python train.py \
-       --config configs/modnet/bisenetV2_tusimple_640x368_300k.yml \
+       --config configs/bisenetV2_tusimple_640x368_300k.yml \
        --do_eval \
        --use_vdl \
        --save_interval 2000 \
@@ -156,7 +157,7 @@ python train.py --help
 ```shell
 export CUDA_VISIBLE_DEVICES=0
 python val.py \
-       --config configs/modnet/bisenetV2_tusimple_640x368_300k.yml \
+       --config configs/bisenetV2_tusimple_640x368_300k.yml \
        --model_path output/best_model/model.pdparams \
        --save_dir ./output/results \
        --save_results
@@ -198,7 +199,7 @@ python predict.py --help
 ### 模型导出
 ```shell
 python export.py \
-    --config configs/modnet/bisenetV2_tusimple_640x368_300k.yml \
+    --config configs/bisenetV2_tusimple_640x368_300k.yml \
     --model_path output/best_model/model.pdparams \
     --save_dir output/export
 ```
