@@ -161,8 +161,9 @@ python val.py \
        --config configs/bisenetV2_tusimple_640x368_300k.yml \
        --model_path output/best_model/model.pdparams \
        --save_dir ./output/results \
+       --is_view True
 ```
-`--save_result` 开启会保留图片的预测结果，可选择关闭以加快评估速度。
+`--is_view` 开启会保留图片的预测结果，可选择关闭以加快评估速度。
 
 你可以直接下载我们提供的模型进行评估。
 
