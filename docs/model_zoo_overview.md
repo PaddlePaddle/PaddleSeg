@@ -5,39 +5,46 @@
 
 |模型\骨干网络|ResNet50|ResNet101|HRNetw18|HRNetw48|
 |-|-|-|-|-|
-|[ANN](./ann)|✔|✔|||
-|[BiSeNetv2](./bisenet)|-|-|-|-|
-|[DANet](./danet)|✔|✔|||
-|[Deeplabv3](./deeplabv3)|✔|✔|||
-|[Deeplabv3P](./deeplabv3p)|✔|✔|||
-|[Fast-SCNN](./fastscnn)|-|-|-|-|
-|[FCN](./fcn)|||✔|✔|
-|[GCNet](./gcnet)|✔|✔|||
-|[GSCNN](./gscnn)|✔|✔|||
-|[HarDNet](./hardnet)|-|-|-|-|
-|[OCRNet](./ocrnet/)|||✔|✔|
-|[PSPNet](./pspnet)|✔|✔|||
-|[U-Net](./unet)|-|-|-|-|
-|[U<sup>2</sup>-Net](./u2net)|-|-|-|-|
-|[Att U-Net](./attention_unet)|-|-|-|-|
-|[U-Net++](./unet_plusplus)|-|-|-|-|
-|[U-Net3+](./unet_3plus)|-|-|-|-|
-|[DecoupledSegNet](./decoupled_segnet)|✔|✔|||
-|[EMANet](./emanet)|✔|✔|-|-|
-|[ISANet](./isanet)|✔|✔|-|-|
-|[DNLNet](./dnlnet)|✔|✔|-|-|
-|[SFNet](./sfnet)|✔|-|-|-|
-|[PP-HumanSeg-Lite](./pp_humanseg_lite)|-|-|-|-|
-|[PortraitNet](./portraitnet)|-|-|-|-|
-|[STDC](./stdcseg)|-|-|-|-|
-|[GINet](./ginet)|✔|✔|-|-|
-|[PointRend](./pointrend)|✔|✔|-|-|
-|[SegNet](./segnet)|-|-|-|-|
+|[ANN](../configs/ann)|✔|✔|||
+|[BiSeNetv2](../configs/bisenet)|-|-|-|-|
+|[DANet](../configs/danet)|✔|✔|||
+|[Deeplabv3](../configs/deeplabv3)|✔|✔|||
+|[Deeplabv3P](../configs/deeplabv3p)|✔|✔|||
+|[Fast-SCNN](../configs/fastscnn)|-|-|-|-|
+|[FCN](../configs/fcn)|||✔|✔|
+|[GCNet](../configs/gcnet)|✔|✔|||
+|[GSCNN](../configs/gscnn)|✔|✔|||
+|[HarDNet](../configs/hardnet)|-|-|-|-|
+|[OCRNet](../configs/ocrnet/)|||✔|✔|
+|[PSPNet](../configs/pspnet)|✔|✔|||
+|[U-Net](../configs/unet)|-|-|-|-|
+|[U<sup>2</sup>-Net](../configs/u2net)|-|-|-|-|
+|[Att U-Net](../configs/attention_unet)|-|-|-|-|
+|[U-Net++](../configs/unet_plusplus)|-|-|-|-|
+|[U-Net3+](../configs/unet_3plus)|-|-|-|-|
+|[DecoupledSegNet](../configs/decoupled_segnet)|✔|✔|||
+|[EMANet](../configs/emanet)|✔|✔|-|-|
+|[ISANet](../configs/isanet)|✔|✔|-|-|
+|[DNLNet](../configs/dnlnet)|✔|✔|-|-|
+|[SFNet](../configs/sfnet)|✔|-|-|-|
+|[PP-HumanSeg-Lite](../configs/pp_humanseg_lite)|-|-|-|-|
+|[PortraitNet](../configs/portraitnet)|-|-|-|-|
+|[STDC](../configs/stdcseg)|-|-|-|-|
+|[GINet](../configs/ginet)|✔|✔|-|-|
+|[PointRend](../configs/pointrend)|✔|✔|-|-|
+|[SegNet](../configs/segnet)|-|-|-|-|
+|[ESPNetV2](../configs/espnet)|-|-|-|-|
+|[HRNetW48Contrast](../configs/hrnet_w48_contrast)|-|-|-|✔|
+|[DMNet](../configs/dmnet)|-|✔|-|-|
+|[ESPNetV1](../configs/espnetv1)|-|-|-|-|
+|[ENCNet](../configs/encnet)|-|✔|-|-|
+|[PFPNNet](../configs/pfpn)|-|✔|-|-|
 
 ### Transformer系列
-* [SETR](./setr)
+* [SETR](../configs/setr)
 * [MLATransformer](../contrib/AutoNUE/configs)
-* [SegFormer](./segformer)
+* [SegFormer](../configs/segformer)
+* [SegMenter](../configs/segmenter)
 
 # 模型库Benchmark
 基于Cityscapes数据集，PaddleSeg支持22+系列分割算法以及对应的30+个图像分割预训练模型，性能评估如下。

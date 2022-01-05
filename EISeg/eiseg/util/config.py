@@ -18,7 +18,7 @@ def save_configs(path=None, config=None, actions=None):
     if not osp.exists(path):
         # os.makedirs(osp.basename(path))
         # windows无法使用mknod
-        f = open(path, 'w+')
+        f = open(path, "w+")
         f.close()
     if not config:
         config = {}

@@ -104,7 +104,7 @@ class InteractiveController:
             if not osp.exists(model_path):
                 raise Exception(f"未在 {model_path} 找到模型文件")
             if use_gpu is None:
-                if paddle.is_compiled_with_cuda():
+                if paddle.device.is_compiled_with_cuda():  # TODO: 可以使用GPU却返回False
                     use_gpu = True
                 else:
                     use_gpu = False
@@ -259,7 +259,7 @@ class InteractiveController:
             self.predictor.set_states(next_state["predictor"])
             self.probs_history.append(self.undo_probs_history.pop())
 
-    def finishObject(self):
+    def finishObject(self, building=False):
         """
         结束当前物体标注，准备标下一个
         """
@@ -269,7 +269,8 @@ class InteractiveController:
         object_mask = object_prob > self.prob_thresh
         if self.lccFilter:
             object_mask = self.getLargestCC(object_mask)
-        polygon = util.get_polygon(object_mask.astype(np.uint8) * 255)
+        polygon = util.get_polygon((object_mask.astype(np.uint8) * 255), 
+                                   building=building)
         if polygon is not None:
             self._result_mask[object_mask] = self.curr_label_number
             self.resetLastObject()
@@ -401,7 +402,7 @@ class InteractiveController:
 
     @property
     def imgShape(self):
-        return self.image.shape[1::-1]
+        return self.image.shape  # [1::-1]
 
     @property
     def modelSet(self):

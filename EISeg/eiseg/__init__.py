@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+
 import sys
 import os
 import os.path as osp
@@ -22,7 +23,7 @@ from qtpy import QtCore
 import cv2
 
 __APPNAME__ = "EISeg"
-__VERSION__ = "0.4.0"
+__VERSION__ = "0.4.1"
 
 
 pjpath = osp.dirname(osp.realpath(__file__))

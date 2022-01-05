@@ -24,6 +24,7 @@ class PolygonAnnotation(QtWidgets.QGraphicsPolygonItem):
         labelIndex,
         shape,
         delPolygon,
+        setDirty,
         insideColor=[255, 0, 0],
         borderColor=[0, 255, 0],
         opacity=0.5,
@@ -37,6 +38,7 @@ class PolygonAnnotation(QtWidgets.QGraphicsPolygonItem):
         self.coco_id = cocoIndex
         self.height, self.width = shape[:2]
         self.delPolygon = delPolygon
+        self.setDirty = setDirty
 
         self.labelIndex = labelIndex
         self.item_hovering = False
@@ -91,6 +93,10 @@ class PolygonAnnotation(QtWidgets.QGraphicsPolygonItem):
             self.setFlag(QtWidgets.QGraphicsItem.ItemSendsGeometryChanges, False)
             self.setFlag(QtWidgets.QGraphicsItem.ItemIsFocusable, False)
             self.setCursor(QtGui.QCursor(QtCore.Qt.ArrowCursor))
+            for line in self.m_lines:
+                line.setAnning(False)
+            for grip in self.m_items:
+                grip.setAnning(False)
         else:
             self.setAcceptHoverEvents(True)
             self.anning = False
@@ -104,9 +110,13 @@ class PolygonAnnotation(QtWidgets.QGraphicsPolygonItem):
             self.setFlag(QtWidgets.QGraphicsItem.ItemSendsGeometryChanges, True)
             self.setFlag(QtWidgets.QGraphicsItem.ItemIsFocusable, True)
             self.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+            for line in self.m_lines:
+                line.setAnning(True)
+            for grip in self.m_items:
+                grip.setAnning(True)
 
     def addPointMiddle(self, lineIdx, point):
-        gripItem = GripItem(self, lineIdx + 1, self.borderColor)
+        gripItem = GripItem(self, lineIdx + 1, self.borderColor, (self.height, self.width))
         gripItem.setEnabled(False)
         gripItem.setPos(point)
         self.scene().addItem(gripItem)
@@ -130,9 +140,10 @@ class PolygonAnnotation(QtWidgets.QGraphicsPolygonItem):
         lineItem.setLine(line)
         self.m_lines.insert(lineIdx + 1, lineItem)
         self.scene().addItem(lineItem)
+        lineItem.updateWidth()
 
     def addPointLast(self, p):
-        grip = GripItem(self, len(self), self.borderColor)
+        grip = GripItem(self, len(self), self.borderColor, (self.height, self.width))
         self.scene().addItem(grip)
         self.m_items.append(grip)
         grip.updateSize()

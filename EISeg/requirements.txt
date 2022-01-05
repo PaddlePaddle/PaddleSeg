@@ -1,9 +1,9 @@
-pyqt5>=5.13
+pyqt5
 qtpy
 opencv-python
 scipy
 paddleseg
-albumentations==0.5.2
+albumentations
 cython
 pyyaml
 wget

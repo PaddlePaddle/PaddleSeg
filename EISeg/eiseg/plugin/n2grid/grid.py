@@ -35,7 +35,7 @@ class Grids:
         # self.imagesGrid = []  # 图像宫格
         self.masksGrid = []  # 标签宫格
         self.gridCount = None  # (row count, col count)
-        self.currIdx = None  # (current row, current col, current idx)
+        self.currIdx = None  # (current row, current col)
 
     def createGrids(self, img):
         if self.detimg is None:

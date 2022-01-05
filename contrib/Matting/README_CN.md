@@ -5,18 +5,24 @@ Matting（精细化分割/影像去背/抠图）是指借由计算前景的颜�
 
 
 <p align="center">
-<img src="https://user-images.githubusercontent.com/30919197/134927938-802eed44-9392-4abc-9fe7-8441777921d5.png" width="70%" height="70%">
+<img src="https://user-images.githubusercontent.com/30919197/141714637-be8af7b1-ccd0-49df-a4f9-10423705802e.jpg" width="100%" height="100%">
 </p>
+
+## 更新动态
+2021.11 Matting项目开源, 实现图像抠图功能。
+【1】支持Matting模型：DIM， MODNet。
+【2】支持模型导出及Python部署。
+【3】支持背景替换功能。
+【4】支持人像抠图Android部署
 
 ## 目录
 - [环境配置](#环境配置)
 - [模型](#模型)
 - [数据准备](#数据准备)
-- [训练](#训练)
-- [评估](#评估)
-- [预测及可视化结果保存](#预测及可视化结果保存)
-- [模型导出](#模型导出)
-- [应用部署](#应用部署)
+- [训练评估预测](#训练评估预测)
+- [背景替换](#背景替换)
+- [导出部署](#导出部署)
+- [人像抠图Android部署](./deploy/human_matting_android_demo/README.md)
 
 
 ## 环境配置
@@ -48,15 +54,19 @@ cd contrib/Matting
 
 ## 模型
 
+[PP-HumanMatting](https://paddleseg.bj.bcebos.com/matting/models/human_matting-resnet34_vd.pdparams)
+
 [DIM-VGG16](https://paddleseg.bj.bcebos.com/matting/models/dim-vgg16.pdparams)
 
 MODNet在[PPM-100](https://github.com/ZHKKKe/PPM)数据集上的性能
 
-| Backbone | SAD | MSE | Link |
-|-|-|-|-|
-|MobileNetV2|112.73|0.0098|[model](https://paddleseg.bj.bcebos.com/matting/models/modnet-mobilenetv2.pdparams)|
-|ResNet50_vd|104.14|0.0090|[model](https://paddleseg.bj.bcebos.com/matting/models/modnet-resnet50_vd.pdparams)|
-|HRNet_W18|77.96|0.0054|[model](https://paddleseg.bj.bcebos.com/matting/models/modnet-hrnet_w18.pdparams)|
+| Backbone | SAD | MSE | Params(M) | FLOPs(G) | FPS | Link |
+|-|-|-|-|-|-|-|
+|MobileNetV2|112.73|0.0098|6.5|15.7|67.5|[model](https://paddleseg.bj.bcebos.com/matting/models/modnet-mobilenetv2.pdparams)|
+|ResNet50_vd|104.14|0.0090|92.2|151.6|28.6|[model](https://paddleseg.bj.bcebos.com/matting/models/modnet-resnet50_vd.pdparams)|
+|HRNet_W18|77.96|0.0054|10.2|28.5|10.9|[model](https://paddleseg.bj.bcebos.com/matting/models/modnet-hrnet_w18.pdparams)|
+
+注意：模型输入大小为(512, 512), GPU为Tesla V100 32G。
 
 ## 数据准备
 
@@ -124,7 +134,8 @@ val/fg/fg3.jpg bg/bg3.jpg val/trimap/trimap3.jpg
 ...
 ```
 
-## 训练
+## 训练评估预测
+### 训练
 ```shell
 export CUDA_VISIBLE_DEVICES=0
 python train.py \
@@ -146,7 +157,7 @@ python train.py --help
 ```
 如需使用多卡，请用`python -m paddle.distributed.launch`进行启动
 
-## 评估
+### 评估
 ```shell
 export CUDA_VISIBLE_DEVICES=0
 python val.py \
@@ -164,7 +175,7 @@ python val.py \
 python val.py --help
 ```
 
-## 预测及可视化结果保存
+### 预测
 ```shell
 export CUDA_VISIBLE_DEVICES=0
 python predict.py \
@@ -182,7 +193,30 @@ python predict.py \
 python predict.py --help
 ```
 
-## 模型导出
+
+## 背景替换
+```shell
+export CUDA_VISIBLE_DEVICES=0
+python bg_replace.py \
+    --config configs/modnet/modnet_mobilenetv2.yml \
+    --model_path output/best_model/model.pdparams \
+    --image_path path/to/your/image \
+    --bg_path path/to/your/background/image \
+    --save_dir ./output/results
+```
+如模型需要trimap信息，需要通过`--trimap_path`传入trimap路径。
+
+若不提供`--bg_path`, 则采用绿色作为背景。
+
+你可以直接下载我们提供的模型进行背景替换。
+
+更多参数信息请运行如下命令进行查看:
+```shell
+python bg_replace.py --help
+```
+
+## 导出部署
+### 模型导出
 ```shell
 python export.py \
     --config configs/modnet/modnet_mobilenetv2.yml \
@@ -196,7 +230,7 @@ python export.py \
 python export.py --help
 ```
 
-## 应用部署
+### 应用部署
 ```shell
 python deploy/python/infer.py \
     --config output/export/deploy.yaml \
@@ -209,3 +243,11 @@ python deploy/python/infer.py \
 ```shell
 python deploy/python/infer.py --help
 ```
+
+## 贡献者
+
+感谢
+[wuyefeilin](https://github.com/wuyefeilin)、
+[钱彬(Qianbin)](https://github.com/qianbin1989228)、
+[yzl19940819](https://github.com/yzl19940819)
+等开发者的贡献

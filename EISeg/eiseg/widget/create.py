@@ -96,8 +96,7 @@ class DockWidget(QDockWidget):
         self.setAllowedAreas(Qt.RightDockWidgetArea | Qt.LeftDockWidgetArea)
         # 感觉不给关闭好点。可以在显示里面取消显示。有关闭的话显示里面的enable还能判断修改，累了
         self.setFeatures(
-            QDockWidget.DockWidgetMovable | 
-            QDockWidget.DockWidgetFloatable
+            QDockWidget.DockWidgetMovable | QDockWidget.DockWidgetFloatable
         )
         sizePolicy = QtWidgets.QSizePolicy(
             QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Preferred
@@ -116,6 +115,7 @@ class DockWidget(QDockWidget):
             self.setStyleSheet("QDockWidget { background-color:rgb(255,255,255); }")
         else:
             self.setStyleSheet("QDockWidget { background-color:rgb(204,204,248); }")
+
 
 ## 创建dock
 def creat_dock(parent, name, text, widget):

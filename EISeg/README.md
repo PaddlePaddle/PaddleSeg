@@ -1,9 +1,11 @@
+简体中文 | [English](README_EN.md)
+
 # EISeg
 
-[![Python 3.6](https://img.shields.io/badge/python-3.6+-blue.svg)](https://www.python.org/downloads/release/python-360/) [![License](https://img.shields.io/badge/license-Apache%202-blue.svg)](LICENSE) [![Downloads](https://pepy.tech/badge/eiseg)](https://pepy.tech/project/eiseg)
+[![Python 3.6](https://img.shields.io/badge/python-3.6+-blue.svg)](https://www.python.org/downloads/release/python-360/) [![PaddlePaddle 2.2](https://img.shields.io/badge/paddlepaddle-2.2-blue.svg)](https://www.python.org/downloads/release/python-360/) [![License](https://img.shields.io/badge/license-Apache%202-blue.svg)](LICENSE) [![Downloads](https://pepy.tech/badge/eiseg)](https://pepy.tech/project/eiseg)
 <!-- [![GitHub release](https://img.shields.io/github/release/Naereen/StrapDown.js.svg)](https://github.com/PaddleCV-SIG/iseg/releases) -->
 
-[English](README_EN.md) | 简体中文
+
 
 ## 最新动向
 
@@ -14,7 +16,7 @@
 
 EISeg(Efficient Interactive Segmentation)是以[RITM](https://github.com/saic-vul/ritm_interactive_segmentation)及[EdgeFlow](https://arxiv.org/abs/2109.09406)算法为基础，基于飞桨开发的一个高效智能的交互式分割标注软件。涵盖了通用、人像、遥感、医疗等不同方向的高质量交互式分割模型，方便开发者快速实现语义及实例标签的标注，降低标注成本。 另外，将EISeg获取到的标注应用到PaddleSeg提供的其他分割模型进行训练，便可得到定制化场景的高精度模型，打通分割任务从数据标注到模型训练及预测的全流程。
 
-![eiseg_demo](https://user-images.githubusercontent.com/35907364/140914032-c3c3efc8-33ce-4125-b16e-9930ecd49458.gif)
+![4a9ed-a91y1](https://user-images.githubusercontent.com/71769312/141130688-e1529c27-aba8-4bf7-aad8-dda49808c5c7.gif)
 
 ## 模型准备
 
@@ -27,9 +29,8 @@ EISeg(Efficient Interactive Segmentation)是以[RITM](https://github.com/saic-vu
 | 高精度模型 | 适用于人像标注场景。       | HRNet18_OCR64  | [static_hrnet18_ocr64_human](https://paddleseg.bj.bcebos.com/eiseg/0.4/static_hrnet18_ocr64_human.zip) |
 | 轻量化模型 | 适用于人像标注场景。       | HRNet18s_OCR48 | [static_hrnet18s_ocr48_human](https://paddleseg.bj.bcebos.com/eiseg/0.4/static_hrnet18s_ocr48_human.zip) |
 | 高精度模型 | 适用于通用图像标注场景。       | EdgeFlow | [static_edgeflow_cocolvis](https://paddleseg.bj.bcebos.com/eiseg/0.4/static_edgeflow_cocolvis.zip) |
-| 轻量化模型 | 适用于遥感标注场景。       | HRNet18s_OCR48 | [static_hrnet18_ocr48_rsbuilding_instance](https://paddleseg.bj.bcebos.com/eiseg/0.4/static_hrnet18_ocr48_rsbuilding_instance.zip) |
+| 轻量化模型 | 适用于遥感建筑物标注场景。    | HRNet18s_OCR48 | [static_hrnet18_ocr48_rsbuilding_instance](https://paddleseg.bj.bcebos.com/eiseg/0.4/static_hrnet18_ocr48_rsbuilding_instance.zip) |
 | 轻量化模型 | 适用于医疗肝脏标注场景。       | HRNet18s_OCR48 | [static_hrnet18s_ocr48_lits](https://paddleseg.bj.bcebos.com/eiseg/0.4/static_hrnet18s_ocr48_lits.zip) |
-
 
 ****NOTE****： 将下载的模型结构`*.pdmodel`及相应的模型参数`*.pdiparams`需要放到同一个目录下，加载模型时只需选择`*.pdiparams`结尾的模型参数位置即可， `*.pdmodel`会自动加载。在使用`EdgeFlow`模型时，请将`使用掩膜`关闭，其他模型使用时请勾选`使用掩膜`。
 
@@ -44,11 +45,16 @@ EISeg提供多种安装方式，其中使用[pip](#PIP)和[运行代码](#运行
 PaddlePaddle安装请参考[官网](https://www.paddlepaddle.org.cn/install/quick?docurl=/documentation/docs/zh/install/pip/windows-pip.html)。
 
 ### 克隆到本地
-
 通过git将PaddleSeg克隆到本地：
 
 ```shell
 git clone https://github.com/PaddlePaddle/PaddleSeg.git
+```
+
+安装所需环境（若需要使用到GDAL和SimpleITK请参考**垂类分割**进行安装）：
+
+```shell
+pip install -r requirements.txt
 ```
 
 安装好所需环境后，进入EISeg，可通过直接运行eiseg打开EISeg：
@@ -65,6 +71,7 @@ cd PaddleSeg\EISeg\eiseg
 python exe.py
 ```
 
+
 ### PIP
 
 pip安装方式如下：
@@ -78,9 +85,6 @@ eiseg
 ```
 即可运行软件。
 
-### Windows exe
-
-EISeg使用[QPT](https://github.com/GT-ZhangAcer/QPT)进行打包。可以从[这里](https://paddleseg.bj.bcebos.com/eiseg/EISeg0.3.0.1.7z)下载最新EISeg。解压后双击启动程序.exe即可运行程序。程序第一次运行会初始化安装所需要的包，请稍等片刻。
 
 ## 使用
 
@@ -149,15 +153,18 @@ EISeg使用[QPT](https://github.com/GT-ZhangAcer/QPT)进行打包。可以从[�
 
 - **垂类分割**
 
-    EISeg目前已添加对遥感图像和医学影像分割的支持。使用相关功能需要安装额外依赖。
+    EISeg目前已添加对遥感图像和医学影像分割的支持，使用相关功能需要安装额外依赖。
 
-    - 分割遥感图像请安装GDAL，具体详见[遥感标注垂类建设](docs/RS.md).
+    - 分割遥感图像请安装GDAL，相关安装及介绍具体详见[遥感标注垂类建设](docs/remote_sensing.md)。
+    - 分割医学影像请安装SimpleITK，相关安装及介绍具体详见[医疗标注垂类建设](docs/medical.md)。
+    
+- **脚本工具使用**
 
-    - 分割医学影像请安装SimpleITK,具体详见[医疗标注垂类建设](docs/medical.md).
+    EISeg目前提供包括标注转PaddleX数据集、划分COCO格式以及语义标签转实例标签等脚本工具，相关使用方式详见[脚本工具使用](docs/tools.md)。
 
 ## 版本更新
-
-- 2021.11.16  **0.4.0**：【1】将动态图预测转换成静态图预测，单次点击速度加快三倍；【2】新增遥感图像标注功能，支持高光谱 多光谱数据通道的选择；【3】支持大尺幅数据的切片（多宫格）处理；【4】新增医疗图像标注功能，支持读取dcom的数据格式，支持选择窗宽和窗位。
+- 2021.12.14  **0.4.1**：【1】修复闪退问题； 【2】新增建筑物遥感标注后处理操作。
+- 2021.11.16  **0.4.0**：【1】将动态图预测转换成静态图预测，单次点击速度提升十倍；【2】新增遥感图像标注功能，支持多光谱数据通道的选择；【3】支持大尺幅数据的切片（多宫格）处理；【4】新增医疗图像标注功能，支持读取dicom的数据格式，支持选择窗宽和窗位。
 - 2021.09.16  **0.3.0**：【1】初步完成多边形编辑功能，支持对交互标注的结果进行编辑；【2】支持中/英界面；【3】支持保存为灰度/伪彩色标签和COCO格式；【4】界面拖动更加灵活；【5】标签栏可拖动，生成mask的覆盖顺序由上往下覆盖。
 - 2021.07.07  **0.2.0**：新增contrib：EISeg，可实现人像和通用图像的快速交互式标注。
 
@@ -166,7 +173,7 @@ EISeg使用[QPT](https://github.com/GT-ZhangAcer/QPT)进行打包。可以从[�
 
 ## 贡献者
 
-感谢[Yuying Hao](https://github.com/haoyuying), [Lin Han](https://github.com/linhandev/), [Yizhou Chen](https://github.com/geoyee), [Yiakwy](https://github.com/yiakwy), [GT](https://github.com/GT-ZhangAcer), [Zhiliang Yu](https://github.com/yzl19940819) 等开发者及[RITM](https://github.com/saic-vul/ritm_interactive_segmentation) 算法支持。
+感谢[Lin Han](https://github.com/linhandev), [Yizhou Chen](https://github.com/geoyee), [Yiakwy](https://github.com/yiakwy), [GT](https://github.com/GT-ZhangAcer), [Youssef Harby](https://github.com/Youssef-Harby), [Nick Nie](https://github.com/niecongchong) 等开发者及[RITM](https://github.com/saic-vul/ritm_interactive_segmentation) 算法支持。
 
 ## 学术引用
 

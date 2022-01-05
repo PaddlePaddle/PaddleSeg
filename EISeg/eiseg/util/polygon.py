@@ -1,8 +1,23 @@
+# Copyright (c) 2021 PaddlePaddle Authors. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 from enum import Enum
 
 import cv2
 import numpy as np
 import math
+from .regularization import boundary_regularization
 
 
 class Instructions(Enum):
@@ -10,7 +25,7 @@ class Instructions(Enum):
     Polygon_Instruction = 1
 
 
-def get_polygon(label, sample="Dynamic"):
+def get_polygon(label, sample="Dynamic", building=False):
     results = cv2.findContours(
         image=label, mode=cv2.RETR_TREE, method=cv2.CHAIN_APPROX_TC89_KCOS
     )  # 获取内外边界，用RETR_TREE更好表示
@@ -24,20 +39,25 @@ def get_polygon(label, sample="Dynamic"):
         for idx, (contour, hierarchy) in enumerate(zip(contours, hierarchys[0])):
             # print(hierarchy)
             # opencv实现边界简化
-            epsilon = 0.0005 * cv2.arcLength(contour, True) if sample == "Dynamic" else sample
+            epsilon = (
+                0.005 * cv2.arcLength(contour, True) if sample == "Dynamic" else sample
+            )
             if not isinstance(epsilon, float) and not isinstance(epsilon, int):
                 epsilon = 0
             # print("epsilon:", epsilon)
-            out = cv2.approxPolyDP(contour, epsilon, True)  # 自然图像简化
-            # 自定义边界简化
-            '''
-                TODO: 内圈太简单有可能简化没有了，造成下面的索引超出界限，
-                      目前会筛选掉这些空内圈避免错误
-            '''
-            out = approx_poly_DP(out)
+            if building is False:
+                # -- Douglas-Peucker算法边界简化
+                contour = cv2.approxPolyDP(contour, epsilon / 10, True)
+            else:
+                # -- 建筑边界简化（https://github.com/niecongchong/RS-building-regularization）
+                contour = boundary_regularization(contour, img_shape, epsilon)
+            # -- 自定义（角度和距离）边界简化
+            out = approx_poly_DIY(contour)
             # 给出关系
-            rela = (idx,  # own
-                    hierarchy[-1] if hierarchy[-1] != -1 else None)  # parent
+            rela = (
+                idx,  # own
+                hierarchy[-1] if hierarchy[-1] != -1 else None,
+            )  # parent
             polygon = []
             for p in out:
                 polygon.append(p[0])
@@ -66,7 +86,7 @@ def get_polygon(label, sample="Dynamic"):
 def __change_list(polygons, idx):
     if idx == -1:
         return polygons
-    s_p = polygons[: idx]
+    s_p = polygons[:idx]
     polygons = polygons[idx:]
     polygons.extend(s_p)
     polygons.append(polygons[0])  # 闭合圈
@@ -79,8 +99,9 @@ def __find_min_point(i_list, o_list):
     idx_o = -1
     for i in range(len(i_list)):
         for o in range(len(o_list)):
-            dis = math.sqrt((i_list[i][0] - o_list[o][0]) ** 2 + \
-                            (i_list[i][1] - o_list[o][1]) ** 2)
+            dis = math.sqrt(
+                (i_list[i][0] - o_list[o][0]) ** 2 + (i_list[i][1] - o_list[o][1]) ** 2
+            )
             if dis <= min_dis:
                 min_dis = dis
                 idx_i = i
@@ -94,7 +115,9 @@ def __cal_ang(p1, p2, p3):
     a = math.sqrt((p2[0] - p3[0]) * (p2[0] - p3[0]) + (p2[1] - p3[1]) * (p2[1] - p3[1]))
     b = math.sqrt((p1[0] - p3[0]) * (p1[0] - p3[0]) + (p1[1] - p3[1]) * (p1[1] - p3[1]))
     c = math.sqrt((p1[0] - p2[0]) * (p1[0] - p2[0]) + (p1[1] - p2[1]) * (p1[1] - p2[1]))
-    ang = math.degrees(math.acos((b**2 - a**2 - c**2) / (-2 * a * c + eps)))  # p2对应
+    ang = math.degrees(
+        math.acos((b ** 2 - a ** 2 - c ** 2) / (-2 * a * c + eps))
+    )  # p2对应
     return ang
 
 
@@ -104,23 +127,10 @@ def __cal_dist(p1, p2):
 
 
 # 边界点简化
-def approx_poly_DP(contour, min_dist=10, ang_err=5):
+def approx_poly_DIY(contour, min_dist=10, ang_err=5):
     # print(contour.shape)  # N, 1, 2
     cs = [contour[i][0] for i in range(contour.shape[0])]
-    ## 1. 先删除夹角接近180度的点
-    i = 0
-    while i < len(cs):
-        try:
-            last = (i - 1) if (i != 0) else (len(cs) - 1)
-            next = (i + 1) if (i != len(cs) - 1) else 0
-            ang_i = __cal_ang(cs[last], cs[i], cs[next])
-            if abs(ang_i) > (180 - ang_err):
-                del cs[i]
-            else:
-                i += 1
-        except:
-            i += 1
-    ## 2. 再删除两个相近点与前后两个点角度接近的点
+    ## 1. 先删除两个相近点与前后两个点角度接近的点
     i = 0
     while i < len(cs):
         try:
@@ -145,5 +155,19 @@ def approx_poly_DP(contour, min_dist=10, ang_err=5):
                 i += 1
         except:
             i += 1
+    ## 2. 再删除夹角接近180度的点
+    i = 0
+    while i < len(cs):
+        try:
+            last = (i - 1) if (i != 0) else (len(cs) - 1)
+            next = (i + 1) if (i != len(cs) - 1) else 0
+            ang_i = __cal_ang(cs[last], cs[i], cs[next])
+            if abs(ang_i) > (180 - ang_err):
+                del cs[i]
+            else:
+                i += 1
+        except:
+            # i += 1
+            del cs[i]
     res = np.array(cs).reshape([-1, 1, 2])
     return res
