@@ -887,7 +887,7 @@ class RandomRotation:
 
     Args:
         max_rotation (float, optional): The maximum rotation degree. Default: 15.
-        holding_size (bool, optional): Whether or not to holding image size. Default: False.
+        keeping_size (bool, optional): Whether or not to holding image size. Default: False.
         im_padding_value (list, optional): The padding value of raw image.
             Default: [127.5, 127.5, 127.5].
         label_padding_value (int, optional): The padding value of annotation image. Default: 255.
@@ -895,11 +895,11 @@ class RandomRotation:
 
     def __init__(self,
                  max_rotation=15,
-                 holding_size=False,
+                 keeping_size=False,
                  im_padding_value=(127.5, 127.5, 127.5),
                  label_padding_value=255):
         self.max_rotation = max_rotation
-        self.holding_size = holding_size
+        self.keeping_size = keeping_size
         self.im_padding_value = im_padding_value
         self.label_padding_value = label_padding_value
 
@@ -919,7 +919,7 @@ class RandomRotation:
                                             self.max_rotation)
             pc = (w // 2, h // 2)
             r = cv2.getRotationMatrix2D(pc, do_rotation, 1.0)
-            if self.holding_size:
+            if self.keeping_size:
                 dsize = (w, h)
             else:
                 cos = np.abs(r[0, 0])
@@ -1211,48 +1211,52 @@ class RandomAffine:
 
 
 @manager.TRANSFORMS.add_component
-class Crop:
+class SubImgCrop:
     """
     crop an image from four forwards.
 
     Args:
-        up_h_off (int, optional): The cut height for image from up to down. Default: 0.
-        down_h_off (int, optional): The cut height for image from down to up . Default: 0.
-        left_w_off (int, optional): The cut height for image from left to right. Default: 0.
-        right_w_off (int, optional): The cut width for image from right to left. Default: 0.
+        offset_top (int, optional): The cut height for image from top to down. Default: 0.
+        offset_bottom (int, optional): The cut height for image from down to top . Default: 0.
+        offset_left (int, optional): The cut height for image from left to right. Default: 0.
+        offset_right (int, optional): The cut width for image from right to left. Default: 0.
     """
 
-    def __init__(self, up_h_off=0, down_h_off=0, left_w_off=0, right_w_off=0):
-        self.up_h_off = up_h_off
-        self.down_h_off = down_h_off
-        self.left_w_off = left_w_off
-        self.right_w_off = right_w_off
+    def __init__(self,
+                 offset_top=0,
+                 offset_bottom=0,
+                 offset_left=0,
+                 offset_right=0):
+        self.offset_top = offset_top
+        self.offset_bottom = offset_bottom
+        self.offset_left = offset_left
+        self.offset_right = offset_right
 
     def __call__(self, im, label=None):
-        if self.up_h_off < 0 or self.down_h_off < 0 or self.left_w_off < 0 or self.right_w_off < 0:
+        if self.offset_top < 0 or self.offset_bottom < 0 or self.offset_left < 0 or self.offset_right < 0:
             raise Exception(
-                "up_h_off, down_h_off, left_w_off,  right_w_off must equal or greater zero"
+                "offset_top, offset_bottom, offset_left,  offset_right must equal or greater zero"
             )
 
-        if self.up_h_off > 0 and self.up_h_off < im.shape[0]:
-            im = im[self.up_h_off:, :, :]
+        if self.offset_top > 0 and self.offset_top < im.shape[0]:
+            im = im[self.offset_top:, :, :]
             if label is not None:
-                label = label[self.up_h_off:, :]
+                label = label[self.offset_top:, :]
 
-        if self.down_h_off > 0 and self.down_h_off < im.shape[0]:
-            im = im[:-self.down_h_off, :, :]
+        if self.offset_bottom > 0 and self.offset_bottom < im.shape[0]:
+            im = im[:-self.offset_bottom, :, :]
             if label is not None:
-                label = label[:-self.down_h_off, :]
+                label = label[:-self.offset_bottom, :]
 
-        if self.left_w_off > 0 and self.left_w_off < im.shape[1]:
-            im = im[:, self.left_w_off:, :]
+        if self.offset_left > 0 and self.offset_left < im.shape[1]:
+            im = im[:, self.offset_left:, :]
             if label is not None:
-                label = label[:, self.left_w_off:]
+                label = label[:, self.offset_left:]
 
-        if self.right_w_off > 0 and self.right_w_off < im.shape[1]:
-            im = im[:, :-self.right_w_off, :]
+        if self.offset_right > 0 and self.offset_right < im.shape[1]:
+            im = im[:, :-self.offset_right, :]
             if label is not None:
-                label = label[:, :-self.right_w_off]
+                label = label[:, :-self.offset_right]
 
         if label is None:
             return (im, )
