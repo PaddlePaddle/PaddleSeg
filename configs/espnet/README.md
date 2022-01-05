@@ -14,5 +14,4 @@
 
 
 #### Additional Requirement
-- paddlepaddle >= 2.2.0  
-- ESPNetV2 does not support exporting.
+- paddlepaddle develop version after 20211230
