@@ -98,7 +98,7 @@ class FastFCN(nn.Layer):
             )
 
         self.enc_module = EncModule(mid_channels, num_codes)
-        self.cls_seg = nn.Sequential(nn.Conv2D(mid_channels, num_classes, 1), )
+        self.cls_seg = nn.Conv2D(mid_channels, num_classes, 1)
 
         self.aux_loss = aux_loss
         if self.aux_loss:

@@ -33,9 +33,9 @@ model:
 
 loss:
   types:
-    - type: CrossEntropyLoss # output loss
-    - type: CrossEntropyLoss # auxiliary head loss
-    - type: SECrossEntropyLoss  # semantic encoding loss
+    - type: CrossEntropyLoss
+    - type: CrossEntropyLoss
+    - type: SECrossEntropyLoss
   coef: [1, 0.4, 0.2]
 
 lr_scheduler:
