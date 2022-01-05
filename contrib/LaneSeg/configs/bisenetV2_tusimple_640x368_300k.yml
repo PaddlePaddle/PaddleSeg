@@ -12,7 +12,7 @@ train_dataset:
       max_rotation: 10
       im_padding_value: [0, 0, 0]
       label_padding_value: 0
-      holding_size: True
+      keeping_size: True
     - type: RandomHorizontalFlip
     - type: Resize
       target_size: [640, 368]

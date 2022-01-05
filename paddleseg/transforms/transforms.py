@@ -952,7 +952,7 @@ class RandomRotation:
 
     Args:
         max_rotation (float, optional): The maximum rotation degree. Default: 15.
-        holding_size (bool, optional): Whether or not to holding image size. Default: False.
+        keeping_size (bool, optional): Whether or not to holding image size. Default: False.
         im_padding_value (list, optional): The padding value of raw image.
             Default: [127.5, 127.5, 127.5].
         label_padding_value (int, optional): The padding value of annotation image. Default: 255.
@@ -960,11 +960,11 @@ class RandomRotation:
 
     def __init__(self,
                  max_rotation=15,
-                 holding_size=False,
+                 keeping_size=False,
                  im_padding_value=(127.5, 127.5, 127.5),
                  label_padding_value=255):
         self.max_rotation = max_rotation
-        self.holding_size = holding_size
+        self.keeping_size = keeping_size
         self.im_padding_value = im_padding_value
         self.label_padding_value = label_padding_value
 
@@ -984,7 +984,7 @@ class RandomRotation:
                                             self.max_rotation)
             pc = (w // 2, h // 2)
             r = cv2.getRotationMatrix2D(pc, do_rotation, 1.0)
-            if self.holding_size:
+            if self.keeping_size:
                 dsize = (w, h)
             else:
                 cos = np.abs(r[0, 0])
