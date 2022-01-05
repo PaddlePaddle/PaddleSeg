@@ -46,12 +46,12 @@ cd contrib/LaneSeg
 
 基于TuSimple评估方法的评估，您可以从[TuSimple exampe](https://github.com/TuSimple/tusimple-benchmark/blob/master/example/lane_demo.ipynb) 获取更多信息
 
-BiseNetV2在[Tusimple](https://github.com/TuSimple/tusimple-benchmark/issues/3)数据集上的性能
+车道线检测模型在[Tusimple](https://github.com/TuSimple/tusimple-benchmark/issues/3)数据集上的性能
 
 | Method | Acc | FP| FN | Link|
 |-|-|-|-|-|
 |BiseNetV2|96.38%|0.04545|0.03363|[model](https://paddleseg.bj.bcebos.com/lane_seg/bisenet/model.pdparams)|
-
+|FastScnn|96.04% |0.04909|0.04058|[model](https://paddleseg.bj.bcebos.com/lane_seg/fastscnn/model.pdparams)|
 注意：模型输入大小为(640, 368), GPU为Tesla V100 32G。
 
 ## 数据准备

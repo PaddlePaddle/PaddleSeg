@@ -43,11 +43,12 @@ cd contrib/LaneSeg
 
 The evaluation base on TuSimple challenge evaluation method you can get more information from [TuSimple exampe](https://github.com/TuSimple/tusimple-benchmark/blob/master/example/lane_demo.ipynb)
 
-BiseNetV2 performance on [Tusimple](https://github.com/TuSimple/tusimple-benchmark/issues/3).
+Lane detection model performance on [Tusimple](https://github.com/TuSimple/tusimple-benchmark/issues/3).
 
 | Method | Acc | FN | FP | Link|
 |-|-|-|-|-|
 |BiseNetV2|96.38%|0.04545|0.03363|[model](https://paddleseg.bj.bcebos.com/lane_seg/bisenet/model.pdparams)|
+|FastScnn|96.04% |0.04909|0.04058|[model](https://paddleseg.bj.bcebos.com/lane_seg/fastscnn/model.pdparams)|
 
 Note: The model input size is (640, 368) and the GPU is Tesla V100 32G.
 
