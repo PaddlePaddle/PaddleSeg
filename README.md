@@ -44,6 +44,163 @@ Welcome to PaddleSeg! PaddleSeg is an end-to-end image segmentation development 
 
 * <img src="./docs/images/f3.png" width="20"/> **High Efficiency**: PaddleSeg provides multi-process asynchronous I/O, multi-card parallel training, evaluation, and other acceleration strategies, combined with the memory optimization function of the PaddlePaddle, which can greatly reduce the training overhead of the segmentation model, all this allowing developers to lower cost and more efficiently train image segmentation model.
 
+#### Overview of Kit Structures
+
+<table align="center">
+  <tbody>
+    <tr align="center" valign="bottom">
+      <td>
+        <b>Architectures</b>
+      </td>
+      <td>
+        <b>Components</b>
+      </td>
+      <td>
+        <b>Data Augmentation</b>
+      </td>
+    </tr>
+    <tr valign="top">
+      <td>
+        <ul>
+          <li><b>Semantic Segmentation</b></li>
+          <ul>
+            <li>ANN</li>
+            <li>BiSeNetV2</li>
+            <li>DANet</li>
+            <li>DeepLabV3</li>
+            <li>DeepLabV3P</li>
+            <li>Fast-SCNN</li>
+            <li>HRNet-FCN</li>
+            <li>GCNet</li>
+            <li>GSCNN</li>  
+            <li>HarDNet</li>
+            <li>OCRNet</li>
+            <li>PSPNet</li>
+            <li>U-Net</li>
+            <li>U<sup>2</sup>-Net</li>  
+            <li>Att U-Net</li>
+            <li>U-Net++</li>
+            <li>U-Net3+</li>
+            <li>DecoupledSegNet</li>
+            <li>EMANet</li>
+            <li>ISANet</li>
+            <li>DNLNet</li>
+            <li>SFNet</li>
+            <li>PP-HumanSeg-Lite</li>
+            <li>PortraitNet</li>
+            <li>STDC</li>
+            <li>GINet</li>
+            <li>PointRend</li>
+            <li>SegNet</li>
+            <li>ESPNetV2</li>
+            <li>HRNetW48Contrast</li>
+            <li>DMNet</li>
+            <li>ESPNetV1</li>
+            <li>ENCNet</li>
+            <li>PFPNNet</li>
+            <li>SETR</li>
+            <li>MLATransformer</li>
+            <li>SegFormer</li>
+            <li>SegMenter</li>
+        </ul>
+        <li><b>Interactive Segmentation</b></li>
+        <ul>
+            <li>RITM</li>
+            <li>EdgeFlow</li>
+        </ul>
+        <li><b>Panoptic Segmentation</b></li>
+        <ul>
+            <li>Panoptic-DeepLab</li>
+        </ul>
+        <li><b>Image Matting</b></li>
+        <ul>
+            <li>DIM</li>
+            <li>MODNet</li>
+            <li>PP-HumanMatting</li>
+        </ul>
+      </ul>
+      </td>
+      <td>
+        <ul><li><b>Backbones</b></li>
+          <ul>
+            <li>HRNet</li>
+            <li>MobileNetV2</li>
+            <li>MobileNetV3</li>
+            <li>ResNet</li>
+            <li>STDCNet</li>
+            <li>XCeption</li>
+            <li>VIT</li>
+            <li>MixVIT</li>
+            <li>Swin Transformer</li>
+          </ul>  
+        </ul>
+        <ul><li><b>Losses</b></li>
+          <ul>
+            <li>Cross Entropy</li>
+            <li>Binary CE</li>
+            <li>Bootstrapped CE</li> 
+            <li>Point CE</li>
+            <li>OHEM CE</li>
+            <li>Pixel Contrast CE</li>
+            <li>Focal</li>
+            <li>Dice</li>
+            <li>RMI</li>
+            <li>KL</li>
+            <li>L1</li>
+            <li>Lovasz</li>
+            <li>MSE</li>
+            <li>OHEM Edge Attention</li>
+            <li>Relax Boundary</li>
+            <li>Semantic Connectivity</li>
+          </ul>  
+        </ul>  
+        <ul><li><b>Datasets</b></li>
+          <ul>
+            <li>Cityscapes</li>
+            <li>Pascal VOC</li>
+            <li>ADE20K</li>  
+            <li>Pascal Context</li>  
+            <li>COCO Stuff</li>
+            <li>SUPERVISELY</li>
+            <li>EG1800</li>
+            <li>CHASE_DB1</li>
+            <li>HRF</li>
+            <li>DRIVE</li>
+            <li>STARE</li>
+          </ul>  
+        </ul>
+      </td>
+      <td>
+        <ul>
+          <li>Flipping</li>  
+          <li>Resize</li>  
+          <li>ResizeByLong</li>
+          <li>ResizeByShort</li>
+          <li>LimitLong</li>  
+          <li>ResizeRangeScaling</li>  
+          <li>ResizeStepScaling</li>
+          <li>Normalize</li>
+          <li>Padding</li>
+          <li>PaddingByAspectRatio</li>
+          <li>RandomPaddingCrop</li>  
+          <li>RandomCenterCrop</li>
+          <li>ScalePadding</li> 
+          <li>RandomNoise</li>  
+          <li>RandomBlur</li>  
+          <li>RandomRotation</li>  
+          <li>RandomScaleAspect</li>  
+          <li>RandomDistort</li>  
+          <li>RandomAffine</li>  
+        </ul>  
+      </td>  
+    </tr>
+
+
+</td>
+    </tr>
+  </tbody>
+</table>
+
 ## Technical Communication <img src="./docs/images/chat.png" width="30"/>
 
 * If you find any problems or have a suggestion with PaddleSeg, please send us issues through [GitHub Issues](https://github.com/PaddlePaddle/PaddleSeg/issues).
