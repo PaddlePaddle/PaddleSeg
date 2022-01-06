@@ -49,7 +49,6 @@ def evaluate(model,
         float: The fn of validation datasets.
     """
     model.eval()
-    nranks = 1
     local_rank = 0
     loader = paddle.io.DataLoader(
         eval_dataset,
@@ -72,9 +71,7 @@ def evaluate(model,
         logger.info(
             "Start evaluating (total_samples: {}, total_iters: {})...".format(
                 len(eval_dataset), total_iters))
-    #TODO(chenguowei): fix log print error with multi-gpus
-    progbar_val = progbar.Progbar(
-        target=total_iters, verbose=1 if nranks < 2 else 2)
+    progbar_val = progbar.Progbar(target=total_iters, verbose=1)
     reader_cost_averager = TimeAverager()
     batch_cost_averager = TimeAverager()
     batch_start = time.time()
