@@ -116,7 +116,7 @@ Welcome to PaddleSeg! PaddleSeg is an end-to-end image segmentation development 
             <li>MixVIT</li>
             <li>Swin Transformer</li>
           </ul>  
-        <ul><li><b>Losses</b></li>
+        <li><b>Losses</b></li>
           <ul>
             <li>Cross Entropy</li>
             <li>Binary CE</li>
@@ -135,8 +135,7 @@ Welcome to PaddleSeg! PaddleSeg is an end-to-end image segmentation development 
             <li>Relax Boundary</li>
             <li>Semantic Connectivity</li>
           </ul>  
-        </ul>  
-        <ul><li><b>Datasets</b></li>
+        <li><b>Datasets</b></li>
           <ul>
             <li>Cityscapes</li>
             <li>Pascal VOC</li>
@@ -150,7 +149,6 @@ Welcome to PaddleSeg! PaddleSeg is an end-to-end image segmentation development 
             <li>DRIVE</li>
             <li>STARE</li>
           </ul>  
-        </ul>
       </td>
       <td>
         <ul>
