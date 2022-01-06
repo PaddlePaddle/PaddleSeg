@@ -32,14 +32,14 @@ git clone https://github.com/PaddlePaddle/PaddleSeg
 
 ```shell
 cd PaddleSeg
-pip install -e .
-pip install scikit-image
 pip install scikit-learn
+pip install opencv-python
+pip install scikit-image
+pip install -e .
 cd contrib/LaneSeg
 ```
 
 ## Models
-#### BiseNetV2
 
 The evaluation base on TuSimple challenge evaluation method you can get more information from [TuSimple exampe](https://github.com/TuSimple/tusimple-benchmark/blob/master/example/lane_demo.ipynb)
 
@@ -54,7 +54,19 @@ Note: The model input size is (640, 368) and the GPU is Tesla V100 32G.
 
 ## Dataset preparation
 
-Using Tusimple's open source [Tusimple](https://github.com/TuSimple/tusimple-benchmark/issues/3) dataset as our demo dataset for the tutorial. we should download train_set.zip, test_set.zip, test_label.json, and unzip train_set.zip，test_set.zip to `data/tusimple` directory, meanwhile, we should place test_label.json to `test_set` directory. The folder structure is as follow:
+Using Tusimple's open source [Tusimple](https://github.com/TuSimple/tusimple-benchmark/issues/3) dataset as our demo dataset for the tutorial. we should download train_set.zip, test_set.zip, test_label.json, and unzip train_set.zip，test_set.zip to `data/tusimple` directory, meanwhile, we should place test_label.json to `test_set` directory.
+
+```shell
+cd data
+mkdir tusimple && cd tusimple
+unzip -d train_set train_set.zip
+unzip -d test_set test_set.zip
+cd test_set
+wget https://s3.us-east-2.amazonaws.com/benchmark-frontend/truth/1/test_label.json
+cd ../../../
+```
+
+The folder structure is as follow:
 ```
  LaneSeg
  |-- data

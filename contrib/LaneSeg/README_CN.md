@@ -34,15 +34,14 @@ git clone https://github.com/PaddlePaddle/PaddleSeg
 
 ```shell
 cd PaddleSeg
-pip install -e .
-pip install scikit-image
 pip install scikit-learn
+pip install opencv-python
+pip install scikit-image
+pip install -e .
 cd contrib/LaneSeg
 ```
 
 ## 模型
-
-#### BiseNetV2
 
 基于TuSimple评估方法的评估，您可以从[TuSimple exampe](https://github.com/TuSimple/tusimple-benchmark/blob/master/example/lane_demo.ipynb) 获取更多信息
 
@@ -59,6 +58,17 @@ cd contrib/LaneSeg
 
 利用Tusimple开源的[Tusimple](https://github.com/TuSimple/tusimple-benchmark/issues/3)数据集作为我们教程的示例数据集，需要下载的数据有train_set.zip, test_set.zip, test_label.json,
 分别将train_set.zip，test_set.zip解压， 并将数据集置于data/tusimple目录下，同时将test_label.json放置在test_set目录下。
+
+```shell
+cd data
+mkdir tusimple && cd tusimple
+unzip -d train_set train_set.zip
+unzip -d test_set test_set.zip
+cd test_set
+wget https://s3.us-east-2.amazonaws.com/benchmark-frontend/truth/1/test_label.json
+cd ../../../
+```
+
 数据集整理结构如下:
 ```
  LaneSeg
@@ -84,10 +94,6 @@ cd contrib/LaneSeg
 
 执行如下命令：
 ```shell
-python third_party/generate_tusimple_dataset.py --root path/to/your/unzipped/file
-```
-```shell
-for example:
 python third_party/generate_tusimple_dataset.py --root data/tusimple
 ```
 
@@ -134,14 +140,14 @@ test_list.txt的内容如下:
 ## 训练评估预测
 ### 训练
 ```shell
-export CUDA_VISIBLE_DEVICES=0
+export CUDA_VISIBLE_DEVICES=3
 python train.py \
        --config configs/bisenetV2_tusimple_640x368_300k.yml \
        --do_eval \
        --use_vdl \
        --save_interval 2000 \
        --num_workers 5 \
-       --save_dir output
+       --save_dir output1
 ```
 
 **note:** 使用--do_eval会影响训练速度及增加显存消耗，根据需求进行开闭。
@@ -156,7 +162,7 @@ python train.py --help
 
 ### 评估
 ```shell
-export CUDA_VISIBLE_DEVICES=0
+export CUDA_VISIBLE_DEVICES=3
 python val.py \
        --config configs/bisenetV2_tusimple_640x368_300k.yml \
        --model_path output/best_model/model.pdparams \
