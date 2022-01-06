@@ -50,7 +50,7 @@ Welcome to PaddleSeg! PaddleSeg is an end-to-end image segmentation development 
   <tbody>
     <tr align="center" valign="bottom">
       <td>
-        <b>Segmentation Models</b>
+        <b>Models</b>
       </td>
       <td>
         <b>Components</b>
