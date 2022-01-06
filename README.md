@@ -195,7 +195,22 @@ Welcome to PaddleSeg! PaddleSeg is an end-to-end image segmentation development 
             <li>MODNet</li>
             <li>PP-HumanMatting</li>
         </ul>
-        </ul>  
+        <b>HumanSeg</b><br>
+        <ul>
+            <li>PP-HumanSeg</li>
+        </ul>
+        <b>Cityscapes SOTA</b><br>
+        <ul>
+            <li>HMSA</li>
+        </ul>
+        <b>CVPR Champion Solution</b><br>
+        <ul>
+            <li>MLA Transformer</li>
+        </ul>
+        <b>Domain Adaption</b><br>
+        <ul>
+            <li>PixMatch</li>
+        </ul>
       </td>  
     </tr>
 
