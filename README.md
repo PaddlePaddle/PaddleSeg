@@ -59,7 +59,7 @@ Welcome to PaddleSeg! PaddleSeg is an end-to-end image segmentation development 
         <b>Data Augmentation</b>
       </td>
       <td>
-        <b>Applications</b>
+        <b>Seg Areas</b>
       </td>
     </tr>
     <tr valign="top">
