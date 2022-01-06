@@ -22,7 +22,7 @@ from paddleseg.cvlibs import manager, Config
 from paddleseg.utils import get_sys_env, logger, config_check
 from core.train import train
 from datasets import *
-from models.losses import *
+from losses import *
 
 
 def parse_args():

@@ -21,7 +21,6 @@ from paddleseg.cvlibs import manager, Config
 from core import evaluate
 from paddleseg.utils import get_sys_env, logger, config_check, utils
 from datasets import *
-from models import *
 
 
 def get_test_config(cfg, args):

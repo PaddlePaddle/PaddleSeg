@@ -21,7 +21,6 @@ from paddleseg.cvlibs import manager, Config
 from paddleseg.utils import get_sys_env, logger, config_check, get_image_list
 from core import predict
 from datasets import *
-from models import *
 
 
 def parse_args():
