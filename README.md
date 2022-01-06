@@ -96,7 +96,7 @@ Welcome to PaddleSeg! PaddleSeg is an end-to-end image segmentation development 
             <li>ENCNet</li>
             <li>PFPNNet</li>
             <li>SETR</li>
-            <li>MLATransformer</li>
+            <li>MLA Transformer</li>
             <li>SegFormer</li>
             <li>SegMenter</li>
       </td>
