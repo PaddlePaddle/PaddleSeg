@@ -109,14 +109,14 @@ PaddleSeg是基于飞桨[PaddlePaddle](https://www.paddlepaddle.org.cn)开发的
 * 模型部署
     * [Paddle Inference部署(Python)](./docs/deployment/inference/python_inference.md)
     * [Paddle Inference部署(C++)](./docs/deployment/inference/cpp_inference.md)
-    * [Paddle Lite部署](./docs/deployment/lite/lite.md)
+    * [Paddle Lite部署](./docs/deployment/lite/lite_cn.md)
     * [Paddle Serving部署](./docs/deployment/serving/serving.md)
     * [Paddle JS部署](./docs/deployment/web/web.md)
     * [推理Benchmark](./docs/deployment/inference/infer_benchmark.md)
 
 * 模型压缩
-    * [量化](./docs/slim/quant/quant.md)
-    * [蒸馏](./docs/slim/distill/distill.md)
+    * [量化](./docs/slim/quant/quant_cn.md)
+    * [蒸馏](./docs/slim/distill/distill_cn.md)
     * [裁剪](./docs/slim/prune/prune.md)
 
 *  API使用教程
