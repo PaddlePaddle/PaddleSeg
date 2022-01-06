@@ -1,5 +1,5 @@
 batch_size: 4
-iters: 320000
+iters: 300000
 
 train_dataset:
   type: Tusimple

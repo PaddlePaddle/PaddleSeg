@@ -45,7 +45,7 @@ cd contrib/LaneSeg
 
 基于TuSimple评估方法的评估，您可以从[TuSimple exampe](https://github.com/TuSimple/tusimple-benchmark/blob/master/example/lane_demo.ipynb) 获取更多信息
 
-车道线检测模型在[Tusimple](https://github.com/TuSimple/tusimple-benchmark/issues/3)数据集上的性能
+车道线检测模型在Tusimple数据集上的性能
 
 | Method | Acc | FP| FN | Link|
 |-|-|-|-|-|
@@ -56,7 +56,7 @@ cd contrib/LaneSeg
 
 ## 数据准备
 
-利用Tusimple开源的[Tusimple](https://github.com/TuSimple/tusimple-benchmark/issues/3)数据集作为我们教程的示例数据集，需要下载的数据有train_set.zip, test_set.zip, test_label.json,
+利用Tusimple开源的[Tusimple](https://github.com/TuSimple/tusimple-benchmark/issues/3)数据集作为我们教程的示例数据集，百度网盘[下载](https://pan.baidu.com/s/1RuDUne5CpaNxVLVLmpEg-w), 提取码: 9568。需要下载的数据有train_set.zip, test_set.zip, test_label.json,
 分别将train_set.zip，test_set.zip解压， 并将数据集置于data/tusimple目录下，同时将test_label.json放置在test_set目录下。
 
 ```shell
