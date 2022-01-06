@@ -92,10 +92,6 @@ The folder structure is as follow:
 
 Run the following command:
 ```shell
-python third_party/generate_tusimple_dataset.py --root path/to/your/unzipped/file
-```
-```shell
-for example:
 python third_party/generate_tusimple_dataset.py --root data/tusimple
 ```
 
