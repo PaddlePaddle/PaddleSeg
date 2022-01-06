@@ -81,7 +81,7 @@ Welcome to PaddleSeg! PaddleSeg is an end-to-end image segmentation development 
             <li>Att U-Net</li>
             <li>U-Net++</li>
             <li>U-Net3+</li>
-            <li>DecoupledSegNet</li>
+            <li>DecoupledSeg</li>
             <li>EMANet</li>
             <li>ISANet</li>
             <li>DNLNet</li>
