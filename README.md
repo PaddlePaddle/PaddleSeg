@@ -106,21 +106,6 @@ Welcome to PaddleSeg! PaddleSeg is an end-to-end image segmentation development 
             <li>SegFormer</li>
             <li>SegMenter</li>
         </ul>
-        <li><b>Interactive Segmentation</b></li>
-        <ul>
-            <li>RITM</li>
-            <li>EdgeFlow</li>
-        </ul>
-        <li><b>Panoptic Segmentation</b></li>
-        <ul>
-            <li>Panoptic-DeepLab</li>
-        </ul>
-        <li><b>Image Matting</b></li>
-        <ul>
-            <li>DIM</li>
-            <li>MODNet</li>
-            <li>PP-HumanMatting</li>
-        </ul>
       </ul>
       </td>
       <td>
@@ -194,6 +179,25 @@ Welcome to PaddleSeg! PaddleSeg is an end-to-end image segmentation development 
           <li>RandomScaleAspect</li>  
           <li>RandomDistort</li>  
           <li>RandomAffine</li>  
+        </ul>  
+      </td>
+      <td>
+        <ul>
+           <li><b>Interactive Segmentation</b></li>
+        <ul>
+            <li>RITM</li>
+            <li>EdgeFlow</li>
+        </ul>
+        <li><b>Panoptic Segmentation</b></li>
+        <ul>
+            <li>Panoptic-DeepLab</li>
+        </ul>
+        <li><b>Image Matting</b></li>
+        <ul>
+            <li>DIM</li>
+            <li>MODNet</li>
+            <li>PP-HumanMatting</li>
+        </ul>
         </ul>  
       </td>  
     </tr>
