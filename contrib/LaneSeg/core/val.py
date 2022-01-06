@@ -57,7 +57,7 @@ def evaluate(model,
         ):
             paddle.distributed.init_parallel_env()
     batch_sampler = paddle.io.DistributedBatchSampler(
-        eval_dataset, batch_size=4, shuffle=False, drop_last=False)
+        eval_dataset, batch_size=1, shuffle=False, drop_last=False)
     loader = paddle.io.DataLoader(
         eval_dataset,
         batch_sampler=batch_sampler,
@@ -72,6 +72,7 @@ def evaluate(model,
         save_dir=save_dir,
     )
     total_iters = len(loader)
+    dump_to_json_all = []
 
     if print_detail:
         logger.info(
@@ -98,12 +99,28 @@ def evaluate(model,
                 transforms=eval_dataset.transforms.transforms)
             time_end = time.time()
 
-            postprocessor.dump_data_to_json(
+            dump_to_json = postprocessor.dump_data_to_json(
                 pred[1],
                 im_path,
                 run_time=time_end - time_start,
                 is_dump_json=True,
                 is_view=is_view)
+
+            # Gather from all ranks
+            if nranks > 1:
+                dump_to_json_list = []
+                paddle.distributed.all_gather(dump_to_json_list, dump_to_json)
+
+                # Some image has been evaluated and should be eliminated in last iter
+                if (iter + 1) * nranks > len(eval_dataset):
+                    valid = len(eval_dataset) - iter * nranks
+                    dump_to_json_list = dump_to_json_list[:valid]
+
+                for i in range(len(dump_to_json_list)):
+                    dump_to_json_all = dump_to_json_all + dump_to_json_list[i]
+            else:
+                dump_to_json_all = dump_to_json_all + dump_to_json
+
             batch_cost_averager.record(
                 time.time() - batch_start, num_samples=len(label))
             batch_cost = batch_cost_averager.get_average()
@@ -116,7 +133,7 @@ def evaluate(model,
             batch_cost_averager.reset()
             batch_start = time.time()
 
-    acc, fp, fn, eval_result = postprocessor.bench_one_submit()
+    acc, fp, fn, eval_result = postprocessor.bench_one_submit(dump_to_json_all)
 
     if print_detail:
         logger.info(eval_result)
