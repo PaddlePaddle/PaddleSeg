@@ -22,7 +22,7 @@ import paddle.nn.functional as F
 
 from paddleseg.utils import (TimeAverager, calculate_eta, resume, logger,
                              worker_init_fn, train_profiler, op_flops_funs)
-from paddleseg.core.val import evaluate
+from .val import evaluate
 
 
 def check_logits_losses(logits_list, losses):
@@ -40,21 +40,15 @@ def loss_computation(logits_list, labels, losses, edges=None):
     for i in range(len(logits_list)):
         logits = logits_list[i]
         loss_i = losses['types'][i]
-        coef_i = losses['coef'][i]
-
+        # Whether to use edges as labels According to loss type.
         if loss_i.__class__.__name__ in ('BCELoss',
                                          'FocalLoss') and loss_i.edge_label:
-            # If use edges as labels According to loss type.
-            loss_list.append(coef_i * loss_i(logits, edges))
-        elif loss_i.__class__.__name__ == 'MixedLoss':
-            mixed_loss_list = loss_i(logits, labels)
-            for mixed_loss in mixed_loss_list:
-                loss_list.append(coef_i * mixed_loss)
+            loss_list.append(losses['coef'][i] * loss_i(logits, edges))
         elif loss_i.__class__.__name__ in ("KLLoss", ):
-            loss_list.append(
-                coef_i * loss_i(logits_list[0], logits_list[1].detach()))
+            loss_list.append(losses['coef'][i] * loss_i(
+                logits_list[0], logits_list[1].detach()))
         else:
-            loss_list.append(coef_i * loss_i(logits, labels))
+            loss_list.append(losses['coef'][i] * loss_i(logits, labels))
     return loss_list
 
 
@@ -74,8 +68,7 @@ def train(model,
           keep_checkpoint_max=5,
           test_config=None,
           fp16=False,
-          profiler_options=None,
-          to_static_training=False):
+          profiler_options=None):
     """
     Launch training.
 
@@ -98,7 +91,6 @@ def train(model,
         test_config(dict, optional): Evaluation config.
         fp16 (bool, optional): Whether to use amp.
         profiler_options (str, optional): The option of train profiler.
-        to_static_training (bool, optional): Whether to use @to_static for training.
     """
     model.train()
     nranks = paddle.distributed.ParallelEnv().nranks
@@ -139,14 +131,10 @@ def train(model,
         from visualdl import LogWriter
         log_writer = LogWriter(save_dir)
 
-    if to_static_training:
-        model = paddle.jit.to_static(model)
-        logger.info("Successfully to apply @to_static")
-
     avg_loss = 0.0
     avg_loss_list = []
     iters_per_epoch = len(batch_sampler)
-    best_mean_iou = -1.0
+    best_acc = -1.0
     best_model_iter = -1
     reader_cost_averager = TimeAverager()
     batch_cost_averager = TimeAverager()
@@ -208,11 +196,7 @@ def train(model,
                     edges=edges)
                 loss = sum(loss_list)
                 loss.backward()
-                # if the optimizer is ReduceOnPlateau, the loss is the one which has been pass into step.
-                if isinstance(optimizer, paddle.optimizer.lr.ReduceOnPlateau):
-                    optimizer.step(loss)
-                else:
-                    optimizer.step()
+                optimizer.step()
 
             lr = optimizer.get_lr()
 
@@ -277,8 +261,12 @@ def train(model,
                 if test_config is None:
                     test_config = {}
 
-                mean_iou, acc, _, _, _ = evaluate(
-                    model, val_dataset, num_workers=num_workers, **test_config)
+                acc, fp, fn = evaluate(
+                    model,
+                    val_dataset,
+                    num_workers=num_workers,
+                    save_dir=save_dir,
+                    **test_config)
 
                 model.train()
 
@@ -297,20 +285,21 @@ def train(model,
                     shutil.rmtree(model_to_remove)
 
                 if val_dataset is not None:
-                    if mean_iou > best_mean_iou:
-                        best_mean_iou = mean_iou
+                    if acc > best_acc:
+                        best_acc = acc
                         best_model_iter = iter
                         best_model_dir = os.path.join(save_dir, "best_model")
                         paddle.save(
                             model.state_dict(),
                             os.path.join(best_model_dir, 'model.pdparams'))
                     logger.info(
-                        '[EVAL] The model with the best validation mIoU ({:.4f}) was saved at iter {}.'
-                        .format(best_mean_iou, best_model_iter))
+                        '[EVAL] The model with the best validation Acc ({:.4f}) was saved at iter {}.'
+                        .format(best_acc, best_model_iter))
 
                     if use_vdl:
-                        log_writer.add_scalar('Evaluate/mIoU', mean_iou, iter)
                         log_writer.add_scalar('Evaluate/Acc', acc, iter)
+                        log_writer.add_scalar('Evaluate/Fp', fp, iter)
+                        log_writer.add_scalar('Evaluate/Fn', fn, iter)
             batch_start = time.time()
 
     # Calculate flops.
