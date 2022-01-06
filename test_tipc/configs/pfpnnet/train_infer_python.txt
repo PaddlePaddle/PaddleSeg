@@ -1,7 +1,7 @@
 ===========================train_params===========================
 model_name:pfpnnet
 python:python3.7
-gpu_list:0
+gpu_list:0|0,1
 Global.use_gpu:null|null
 Global.auto_cast:null
 --iters:lite_train_lite_infer=50|lite_train_whole_infer=50|whole_train_whole_infer=1000
