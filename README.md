@@ -128,9 +128,9 @@ Welcome to PaddleSeg! PaddleSeg is an end-to-end image segmentation development 
             <li>L1</li>
             <li>Lovasz</li>
             <li>MSE</li>
-            <li>OHEM Edge Attention</li>
+            <li>Edge Attention</li>
             <li>Relax Boundary</li>
-            <li>Semantic Connectivity</li>
+            <li>Connectivity</li>
           </ul>  
       </td>
       <td>
