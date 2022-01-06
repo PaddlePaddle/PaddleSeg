@@ -1,4 +1,4 @@
-# Model Quantiataion Tutorial
+# Model Quantization Tutorial
 
 
 ## 1. Introduction
