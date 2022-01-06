@@ -65,44 +65,44 @@ Welcome to PaddleSeg! PaddleSeg is an end-to-end image segmentation development 
     <tr valign="top">
       <td>
         <ul>
-            <li>ANN</li>
-            <li>BiSeNetV2</li>
-            <li>DANet</li>
-            <li>DeepLabV3</li>
-            <li>DeepLabV3P</li>
-            <li>Fast-SCNN</li>
-            <li>HRNet-FCN</li>
-            <li>GCNet</li>
-            <li>GSCNN</li>  
-            <li>HarDNet</li>
-            <li>OCRNet</li>
-            <li>PSPNet</li>
-            <li>U-Net</li>
-            <li>U<sup>2</sup>-Net</li>  
-            <li>Att U-Net</li>
-            <li>U-Net++</li>
-            <li>U-Net3+</li>
-            <li>DecoupledSegNet</li>
-            <li>EMANet</li>
-            <li>ISANet</li>
-            <li>DNLNet</li>
-            <li>SFNet</li>
-            <li>PP-HumanSeg</li>
-            <li>PortraitNet</li>
-            <li>STDC</li>
-            <li>GINet</li>
-            <li>PointRend</li>
-            <li>SegNet</li>
-            <li>ESPNetV2</li>
-            <li>HRNet-Contrast</li>
-            <li>DMNet</li>
-            <li>ESPNetV1</li>
-            <li>ENCNet</li>
-            <li>PFPNNet</li>
-            <li>SETR</li>
-            <li>MLATransformer</li>
-            <li>SegFormer</li>
-            <li>SegMenter</li>
+            ANN <br>
+            BiSeNetV2 <br>
+            DANet <br>
+            DeepLabV3 <br>
+            DeepLabV3P <br>
+            Fast-SCNN <br>
+            HRNet-FCN <br>
+            GCNet <br>
+            GSCNN <br> 
+            HarDNet <br>
+            OCRNet <br>
+            PSPNet <br>
+            U-Net <br>
+            U<sup>2</sup>-Net <br> 
+            Att U-Net <br>
+            U-Net++ <br>
+            U-Net3+ <br>
+            DecoupledSegNet <br>
+            EMANet <br>
+            ISANet <br>
+            DNLNet <br>
+            SFNet <br>
+            PP-HumanSeg <br>
+            PortraitNet <br>
+            STDC <br>
+            GINet <br>
+            PointRend <br>
+            SegNet <br>
+            ESPNetV2 <br>
+            HRNet-Contrast <br>
+            DMNet <br>
+            ESPNetV1 <br>
+            ENCNet <br>
+            PFPNNet <br>
+            SETR <br>
+            MLATransformer <br>
+            SegFormer <br>
+            SegMenter
       </ul>
       </td>
       <td>
