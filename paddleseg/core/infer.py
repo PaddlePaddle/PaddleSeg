@@ -41,7 +41,8 @@ def get_reverse_list(ori_shape, transforms):
             reverse_list.append(('resize', (h, w)))
             h, w = op.target_size[0], op.target_size[1]
         if op.__class__.__name__ in ['SubImgCrop']:
-            reverse_list.append(('crop', (op.offset_top, op.offset_bottom),
+            reverse_list.append(('SubImgCrop', (op.offset_top,
+                                                op.offset_bottom),
                                  (op.offset_left, op.offset_right)))
             h = h - op.offset_top
             h = h - op.offset_bottom
