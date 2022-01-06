@@ -52,11 +52,8 @@ Welcome to PaddleSeg! PaddleSeg is an end-to-end image segmentation development 
       <td>
         <b>Models</b>
       </td>
-      <td>
+      <td colspan="2">
         <b>Components</b>
-      </td>
-      <td>
-        <b>Data Augmentation</b>
       </td>
       <td>
         <b>Seg Areas</b>
@@ -135,6 +132,8 @@ Welcome to PaddleSeg! PaddleSeg is an end-to-end image segmentation development 
             <li>Relax Boundary</li>
             <li>Semantic Connectivity</li>
           </ul>  
+      </td>
+      <td>
         <b>Datasets</b><br>
           <ul>
             <li>Cityscapes</li>
@@ -148,9 +147,8 @@ Welcome to PaddleSeg! PaddleSeg is an end-to-end image segmentation development 
             <li>HRF</li>
             <li>DRIVE</li>
             <li>STARE</li>
-          </ul>  
-      </td>
-      <td>
+          </ul> 
+        <b>Data Augmentation</b><br>
         <ul>
           <li>Flipping</li>  
           <li>Resize</li>  
