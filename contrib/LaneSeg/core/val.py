@@ -51,11 +51,10 @@ def evaluate(model,
     model.eval()
     nranks = 1
     local_rank = 0
-    batch_sampler = paddle.io.DistributedBatchSampler(
-        eval_dataset, batch_size=1, shuffle=False, drop_last=False)
     loader = paddle.io.DataLoader(
         eval_dataset,
-        batch_sampler=batch_sampler,
+        batch_size=1,
+        drop_last=False,
         num_workers=num_workers,
         return_list=True,
     )
