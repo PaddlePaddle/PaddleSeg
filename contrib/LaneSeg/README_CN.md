@@ -140,14 +140,14 @@ test_list.txt的内容如下:
 ## 训练评估预测
 ### 训练
 ```shell
-export CUDA_VISIBLE_DEVICES=3
+export CUDA_VISIBLE_DEVICES=0
 python train.py \
        --config configs/bisenetV2_tusimple_640x368_300k.yml \
        --do_eval \
        --use_vdl \
        --save_interval 2000 \
        --num_workers 5 \
-       --save_dir output1
+       --save_dir output
 ```
 
 **note:** 使用--do_eval会影响训练速度及增加显存消耗，根据需求进行开闭。
@@ -162,7 +162,7 @@ python train.py --help
 
 ### 评估
 ```shell
-export CUDA_VISIBLE_DEVICES=3
+export CUDA_VISIBLE_DEVICES=0
 python val.py \
        --config configs/bisenetV2_tusimple_640x368_300k.yml \
        --model_path output/best_model/model.pdparams \
