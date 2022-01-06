@@ -56,7 +56,7 @@ Welcome to PaddleSeg! PaddleSeg is an end-to-end image segmentation development 
         <b>Components</b>
       </td>
       <td>
-        <b>Seg Areas</b>
+        <b>Segmentation Fields</b>
       </td>
     </tr>
     <tr valign="top">
@@ -131,6 +131,14 @@ Welcome to PaddleSeg! PaddleSeg is an end-to-end image segmentation development 
             <li>Edge Attention</li>
             <li>Relax Boundary</li>
             <li>Connectivity</li>
+          </ul>
+        <b>Metrics</b><br>
+          <ul>
+            <li>mIoU</li>
+            <li>Accuracy</li>
+            <li>Kappa</li>
+            <li>Dice</li>
+            <li>AUC_ROC</li>
           </ul>  
       </td>
       <td>
