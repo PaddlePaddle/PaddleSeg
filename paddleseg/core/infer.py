@@ -256,7 +256,7 @@ def inference(model,
     if hasattr(model, 'data_format') and model.data_format == 'NHWC':
         logit = logit.transpose((0, 3, 1, 2))
     if ori_shape is not None:
-        logit = reverse_transform(logit, ori_shape, transforms, mode='bilinear')
+        # logit = reverse_transform(logit, ori_shape, transforms, mode='bilinear')
         pred = paddle.argmax(logit, axis=1, keepdim=True, dtype='int32')
         return pred, logit
     else:

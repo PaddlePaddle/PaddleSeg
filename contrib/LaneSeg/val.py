@@ -18,14 +18,24 @@ import os
 import paddle
 
 from paddleseg.cvlibs import manager, Config
-from core import evaluate
+from paddleseg.core import evaluate
 from paddleseg.utils import get_sys_env, logger, config_check, utils
-from datasets import *
 
 
 def get_test_config(cfg, args):
 
     test_config = cfg.test_config
+    if args.aug_eval:
+        test_config['aug_eval'] = args.aug_eval
+        test_config['scales'] = args.scales
+        test_config['flip_horizontal'] = args.flip_horizontal
+        test_config['flip_vertical'] = args.flip_vertical
+
+    if args.is_slide:
+        test_config['is_slide'] = args.is_slide
+        test_config['crop_size'] = args.crop_size
+        test_config['stride'] = args.stride
+
     return test_config
 
 
@@ -48,6 +58,53 @@ def parse_args():
         type=int,
         default=0)
 
+    # augment for evaluation
+    parser.add_argument(
+        '--aug_eval',
+        dest='aug_eval',
+        help='Whether to use mulit-scales and flip augment for evaluation',
+        action='store_true')
+    parser.add_argument(
+        '--scales',
+        dest='scales',
+        nargs='+',
+        help='Scales for augment',
+        type=float,
+        default=1.0)
+    parser.add_argument(
+        '--flip_horizontal',
+        dest='flip_horizontal',
+        help='Whether to use flip horizontally augment',
+        action='store_true')
+    parser.add_argument(
+        '--flip_vertical',
+        dest='flip_vertical',
+        help='Whether to use flip vertically augment',
+        action='store_true')
+
+    # sliding window evaluation
+    parser.add_argument(
+        '--is_slide',
+        dest='is_slide',
+        help='Whether to evaluate by sliding window',
+        action='store_true')
+    parser.add_argument(
+        '--crop_size',
+        dest='crop_size',
+        nargs=2,
+        help=
+        'The crop size of sliding window, the first is width and the second is height.',
+        type=int,
+        default=None)
+    parser.add_argument(
+        '--stride',
+        dest='stride',
+        nargs=2,
+        help=
+        'The stride of sliding window, the first is width and the second is height.',
+        type=int,
+        default=None)
+
     parser.add_argument(
         '--data_format',
         dest='data_format',
@@ -57,18 +114,11 @@ def parse_args():
         default='NCHW')
 
     parser.add_argument(
-        '--is_view',
-        dest='is_view',
-        help='Whether to visualize results.',
-        type=str,
+        '--auc_roc',
+        dest='add auc_roc metric',
+        help='Whether to use auc_roc metric',
+        type=bool,
         default=False)
-
-    parser.add_argument(
-        '--save_dir',
-        dest='save_dir',
-        help='The directory for saving the predicted results',
-        type=str,
-        default='./output/result')
 
     return parser.parse_args()
 
@@ -117,13 +167,7 @@ def main(args):
     test_config = get_test_config(cfg, args)
     config_check(cfg, val_dataset=val_dataset)
 
-    evaluate(
-        model,
-        val_dataset,
-        num_workers=args.num_workers,
-        is_view=args.is_view,
-        save_dir=args.save_dir,
-        **test_config)
+    evaluate(model, val_dataset, num_workers=args.num_workers, **test_config)
 
 
 if __name__ == '__main__':

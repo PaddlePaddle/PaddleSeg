@@ -95,7 +95,7 @@ def evaluate(model,
     batch_cost_averager = TimeAverager()
     batch_start = time.time()
     with paddle.no_grad():
-        for iter, (im, label) in enumerate(loader):
+        for iter, (im, label, _) in enumerate(loader):
             reader_cost_averager.record(time.time() - batch_start)
             label = label.astype('int64')
 
