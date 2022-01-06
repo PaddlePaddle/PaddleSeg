@@ -182,20 +182,17 @@ Welcome to PaddleSeg! PaddleSeg is an end-to-end image segmentation development 
       <td>
         <b>Interactive Segmentation</b><br>
           <ul>
+            <li>EISeg</li>
             <li>RITM</li>
             <li>EdgeFlow</li>
            </ul>
-        <b>Panoptic Segmentation</b><br>
-          <ul>
-            <li>Panoptic-DeepLab</li>
-          </ul>
        <b>Image Matting</b><br>
         <ul>
             <li>DIM</li>
             <li>MODNet</li>
             <li>PP-HumanMatting</li>
         </ul>
-        <b>HumanSeg</b><br>
+        <b>Human Segmentation</b><br>
         <ul>
             <li>PP-HumanSeg</li>
         </ul>
@@ -203,7 +200,11 @@ Welcome to PaddleSeg! PaddleSeg is an end-to-end image segmentation development 
         <ul>
             <li>HMSA</li>
         </ul>
-        <b>CVPR Champion Solution</b><br>
+        <b>Panoptic Segmentation</b><br>
+          <ul>
+            <li>Panoptic-DeepLab</li>
+          </ul>
+        <b>CVPR Champion</b><br>
         <ul>
             <li>MLA Transformer</li>
         </ul>
