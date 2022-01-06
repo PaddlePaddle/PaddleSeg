@@ -172,17 +172,16 @@ Welcome to PaddleSeg! PaddleSeg is an end-to-end image segmentation development 
         </ul>  
       </td>
       <td>
-        <ul>
-           <li><b>Interactive Segmentation</b></li>
-        <ul>
+        <b>Interactive Segmentation</b><br>
+          <ul>
             <li>RITM</li>
             <li>EdgeFlow</li>
-        </ul>
-        <li><b>Panoptic Segmentation</b></li>
-        <ul>
+           </ul>
+        <b>Panoptic Segmentation</b><br>
+          <ul>
             <li>Panoptic-DeepLab</li>
-        </ul>
-        <li><b>Image Matting</b></li>
+          </ul>
+       <b>Image Matting</b><br>
         <ul>
             <li>DIM</li>
             <li>MODNet</li>
