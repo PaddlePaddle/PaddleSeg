@@ -54,7 +54,7 @@ Note: The model input size is (640, 368) and the GPU is Tesla V100 32G.
 
 ## Dataset preparation
 
-Using Tusimple's open source [Tusimple](https://github.com/TuSimple/tusimple-benchmark/issues/3) dataset as our demo dataset for the tutorial. Baidu Yun[download](https://pan.baidu.com/s/1RuDUne5CpaNxVLVLmpEg-w), code: 9568. we should download train_set.zip, test_set.zip, test_label.json, and unzip train_set.zip，test_set.zip to `data/tusimple` directory, meanwhile, we should place test_label.json to `test_set` directory.
+Using Tusimple's open source [Tusimple](https://github.com/TuSimple/tusimple-benchmark/issues/3) dataset as our demo dataset for the tutorial. Baidu Yun [download](https://pan.baidu.com/s/1RuDUne5CpaNxVLVLmpEg-w), code: 9568. we should download train_set.zip, test_set.zip, test_label.json, and unzip train_set.zip，test_set.zip to `data/tusimple` directory, meanwhile, we should place test_label.json to `test_set` directory.
 
 ```shell
 cd data
