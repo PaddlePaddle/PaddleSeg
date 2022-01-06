@@ -50,7 +50,7 @@ Welcome to PaddleSeg! PaddleSeg is an end-to-end image segmentation development 
   <tbody>
     <tr align="center" valign="bottom">
       <td>
-        <b>Architectures</b>
+        <b>Semantic Segmentation</b>
       </td>
       <td>
         <b>Components</b>
@@ -183,12 +183,12 @@ Welcome to PaddleSeg! PaddleSeg is an end-to-end image segmentation development 
       </td>
       <td>
         <ul>
-           <li><b>Interactive Segmentation</b></li>
+           <li><b>Interactive Seg</b></li>
         <ul>
             <li>RITM</li>
             <li>EdgeFlow</li>
         </ul>
-        <li><b>Panoptic Segmentation</b></li>
+        <li><b>Panoptic Seg</b></li>
         <ul>
             <li>Panoptic-DeepLab</li>
         </ul>
