@@ -50,7 +50,7 @@ Welcome to PaddleSeg! PaddleSeg is an end-to-end image segmentation development 
   <tbody>
     <tr align="center" valign="bottom">
       <td>
-        <b>Semantic Segmentation</b>
+        <b>Segmentation Models</b>
       </td>
       <td>
         <b>Components</b>
@@ -65,8 +65,6 @@ Welcome to PaddleSeg! PaddleSeg is an end-to-end image segmentation development 
     <tr valign="top">
       <td>
         <ul>
-          <li><b>Semantic Segmentation</b></li>
-          <ul>
             <li>ANN</li>
             <li>BiSeNetV2</li>
             <li>DANet</li>
@@ -89,14 +87,14 @@ Welcome to PaddleSeg! PaddleSeg is an end-to-end image segmentation development 
             <li>ISANet</li>
             <li>DNLNet</li>
             <li>SFNet</li>
-            <li>PP-HumanSeg-Lite</li>
+            <li>PP-HumanSeg</li>
             <li>PortraitNet</li>
             <li>STDC</li>
             <li>GINet</li>
             <li>PointRend</li>
             <li>SegNet</li>
             <li>ESPNetV2</li>
-            <li>HRNetW48Contrast</li>
+            <li>HRNet-Contrast</li>
             <li>DMNet</li>
             <li>ESPNetV1</li>
             <li>ENCNet</li>
@@ -105,7 +103,6 @@ Welcome to PaddleSeg! PaddleSeg is an end-to-end image segmentation development 
             <li>MLATransformer</li>
             <li>SegFormer</li>
             <li>SegMenter</li>
-        </ul>
       </ul>
       </td>
       <td>
@@ -183,12 +180,12 @@ Welcome to PaddleSeg! PaddleSeg is an end-to-end image segmentation development 
       </td>
       <td>
         <ul>
-           <li><b>Interactive Seg</b></li>
+           <li><b>Interactive Segmentation</b></li>
         <ul>
             <li>RITM</li>
             <li>EdgeFlow</li>
         </ul>
-        <li><b>Panoptic Seg</b></li>
+        <li><b>Panoptic Segmentation</b></li>
         <ul>
             <li>Panoptic-DeepLab</li>
         </ul>
