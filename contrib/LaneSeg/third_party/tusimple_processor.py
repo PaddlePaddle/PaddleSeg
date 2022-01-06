@@ -38,6 +38,7 @@ class TusimpleProcessor:
                  save_dir='output/'):
         super(TusimpleProcessor, self).__init__()
         self.num_classes = num_classes
+        self.dump_to_json = []
         self.save_dir = save_dir
         self.test_gt_json = test_gt_json
         self.color_map = [(255, 0, 0), (0, 255, 0), (0, 0, 255), (255, 255, 0),
@@ -62,7 +63,7 @@ class TusimpleProcessor:
         seg_pred = nn.functional.softmax(seg_pred, axis=1)
         seg_pred = seg_pred.numpy()
         lane_coords_list = self.laneProcessor.get_lane_coords(seg_pred)
-        dump_to_json_ret = []
+
         for batch in range(len(seg_pred)):
             lane_coords = lane_coords_list[batch]
             path_list = im_path[batch].split("/")
@@ -81,7 +82,7 @@ class TusimpleProcessor:
                         json_pred['lanes'][-1].append(int(x))
                 for (x, y) in lane_coords[0]:
                     json_pred['h_sample'].append(y)
-                dump_to_json_ret.append(json.dumps(json_pred))
+                self.dump_to_json.append(json.dumps(json_pred))
 
             if is_view:
                 img = cv2.imread(im_path[batch])
@@ -93,23 +94,22 @@ class TusimpleProcessor:
                     sub_dir = 'visual_points'
                 saved_path = os.path.join(self.save_dir, sub_dir, img_name)
                 self.draw(img, lane_coords, saved_path)
-        return dump_to_json_ret
 
     def predict(self, output, im_path):
         self.dump_data_to_json(
             output, [im_path], is_dump_json=False, is_view=True)
 
-    def bench_one_submit(self, dump_to_json_all):
+    def bench_one_submit(self):
         output_file = os.path.join(self.save_dir, 'pred.json')
         if output_file is not None:
             mkdir(output_file)
         with open(output_file, "w+") as f:
-            for line in dump_to_json_all:
+            for line in self.dump_to_json:
                 print(line, end="\n", file=f)
 
         eval_rst, acc, fp, fn = LaneEval.bench_one_submit(
             output_file, self.test_gt_json)
-        dump_to_json_all = []
+        self.dump_to_json = []
         return acc, fp, fn, eval_rst
 
     def draw(self, img, coords, file_path=None):

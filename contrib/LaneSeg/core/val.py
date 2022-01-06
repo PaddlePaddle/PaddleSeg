@@ -50,9 +50,10 @@ def evaluate(model,
     """
     model.eval()
     local_rank = 0
+
     loader = paddle.io.DataLoader(
         eval_dataset,
-        batch_size=1,
+        batch_size=4,
         drop_last=False,
         num_workers=num_workers,
         return_list=True,
@@ -65,7 +66,6 @@ def evaluate(model,
         save_dir=save_dir,
     )
     total_iters = len(loader)
-    dump_to_json_all = []
 
     if print_detail:
         logger.info(
@@ -90,14 +90,12 @@ def evaluate(model,
                 transforms=eval_dataset.transforms.transforms)
             time_end = time.time()
 
-            dump_to_json = postprocessor.dump_data_to_json(
+            postprocessor.dump_data_to_json(
                 pred[1],
                 im_path,
                 run_time=time_end - time_start,
                 is_dump_json=True,
                 is_view=is_view)
-            dump_to_json_all = dump_to_json_all + dump_to_json
-
             batch_cost_averager.record(
                 time.time() - batch_start, num_samples=len(label))
             batch_cost = batch_cost_averager.get_average()
@@ -110,7 +108,7 @@ def evaluate(model,
             batch_cost_averager.reset()
             batch_start = time.time()
 
-    acc, fp, fn, eval_result = postprocessor.bench_one_submit(dump_to_json_all)
+    acc, fp, fn, eval_result = postprocessor.bench_one_submit()
 
     if print_detail:
         logger.info(eval_result)
