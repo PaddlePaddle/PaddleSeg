@@ -44,7 +44,7 @@ Welcome to PaddleSeg! PaddleSeg is an end-to-end image segmentation development 
 
 * <img src="./docs/images/f3.png" width="20"/> **High Efficiency**: PaddleSeg provides multi-process asynchronous I/O, multi-card parallel training, evaluation, and other acceleration strategies, combined with the memory optimization function of the PaddlePaddle, which can greatly reduce the training overhead of the segmentation model, all this allowing developers to lower cost and more efficiently train image segmentation model.
 
-#### Overview of Kit Structures
+## Overview <img src="./docs/images/model.png" width="20"/>
 
 <table align="center">
   <tbody>
@@ -221,15 +221,7 @@ Welcome to PaddleSeg! PaddleSeg is an end-to-end image segmentation development 
   </tbody>
 </table>
 
-## Technical Communication <img src="./docs/images/chat.png" width="30"/>
 
-* If you find any problems or have a suggestion with PaddleSeg, please send us issues through [GitHub Issues](https://github.com/PaddlePaddle/PaddleSeg/issues).
-* Welcome to Join PaddleSeg QQ Group
-<div align="center">
-<img src="./docs/images/QQ_chat.png"  width = "200" />  
-</div>
-
-## Model Zoo Overview  <img src="./docs/images/model.png" width="20"/>
 
 See [Model Zoo Overview](./docs/model_zoo_overview.md) for more infomation.
 
@@ -238,20 +230,6 @@ See [Model Zoo Overview](./docs/model_zoo_overview.md) for more infomation.
 </div>
 
 
-
-## Dataset
-
-- [x] Cityscapes
-- [x] Pascal VOC
-- [x] ADE20K
-- [x] Pascal Context
-- [x] COCO stuff
-- [x] CHASE_DB1
-- [x] HRF
-- [x] DRIVE
-- [x] STARE
-- [x] EG1800
-- [x] SUPERVISELY
 
 ## Tutorials <img src="./docs/images/teach.png" width="30"/>
 
@@ -347,9 +325,13 @@ python train.py --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml
 * [Matting](./contrib/Matting)
 * [Domain Adaptation](./contrib/DomainAdaptation)
 
-## Feedbacks and Contact
-* The dynamic version is still under development, if you find any issue or have an idea on new features, please don't hesitate to contact us via [GitHub Issues](https://github.com/PaddlePaddle/PaddleSeg/issues).
-* PaddleSeg User Group (QQ): 1004738029 or 850378321 or 793114768
+## Technical Communication <img src="./docs/images/chat.png" width="30"/>
+
+* If you find any problems or have a suggestion with PaddleSeg, please send us issues through [GitHub Issues](https://github.com/PaddlePaddle/PaddleSeg/issues).
+* Welcome to Join PaddleSeg QQ Group
+<div align="center">
+<img src="./docs/images/QQ_chat.png"  width = "200" />  
+</div>
 
 ## Acknowledgement
 * Thanks [jm12138](https://github.com/jm12138) for contributing U<sup>2</sup>-Net.
