@@ -49,13 +49,8 @@ def evaluate(model,
         float: The fn of validation datasets.
     """
     model.eval()
-    nranks = 1  # paddle.distributed.ParallelEnv().nranks
-    local_rank = 0  # paddle.distributed.ParallelEnv().local_rank
-    # if nranks > 1:
-    #     # Initialize parallel environment if not done.
-    #     if not paddle.distributed.parallel.parallel_helper._is_parallel_ctx_initialized(
-    #     ):
-    #         paddle.distributed.init_parallel_env()
+    nranks = 1
+    local_rank = 0
     batch_sampler = paddle.io.DistributedBatchSampler(
         eval_dataset, batch_size=1, shuffle=False, drop_last=False)
     loader = paddle.io.DataLoader(
@@ -105,21 +100,6 @@ def evaluate(model,
                 run_time=time_end - time_start,
                 is_dump_json=True,
                 is_view=is_view)
-            dump_to_json = paddle.to_tensor(dump_to_json)
-
-            # Gather from all ranks
-            # if nranks > 1:
-            #     dump_to_json_list = []
-            #     paddle.distributed.all_gather(dump_to_json_list, dump_to_json)
-            #
-            #     # Some image has been evaluated and should be eliminated in last iter
-            #     if (iter + 1) * nranks > len(eval_dataset):
-            #         valid = len(eval_dataset) - iter * nranks
-            #         dump_to_json_list = dump_to_json_list[:valid]
-            #
-            #     for i in range(len(dump_to_json_list)):
-            #         dump_to_json_all = dump_to_json_all + dump_to_json_list[i]
-            # else:
             dump_to_json_all = dump_to_json_all + dump_to_json
 
             batch_cost_averager.record(
