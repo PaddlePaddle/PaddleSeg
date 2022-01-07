@@ -8,7 +8,7 @@ train_dataset:
   transforms:
     - type: SubImgCrop
       offset_top: 160
-    - type: RandomRotation
+    - type: LaneRandomRotation
       max_rotation: 10
       im_padding_value: [0, 0, 0]
       label_padding_value: 0
