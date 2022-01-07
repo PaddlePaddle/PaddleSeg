@@ -333,6 +333,10 @@ python train.py --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml
 <img src="./docs/images/QQ_chat.png"  width = "200" />  
 </div>
 
+## License
+
+PaddleSeg is released under the [Apache 2.0 license](LICENSE).
+
 ## Acknowledgement
 * Thanks [jm12138](https://github.com/jm12138) for contributing U<sup>2</sup>-Net.
 * Thanks [zjhellofss](https://github.com/zjhellofss) (Fu Shenshen) for contributing Attention U-Net, and Dice Loss.
