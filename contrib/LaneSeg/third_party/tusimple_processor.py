@@ -99,8 +99,8 @@ class TusimpleProcessor:
         self.dump_data_to_json(
             output, [im_path], is_dump_json=False, is_view=True)
 
-    def bench_one_submit(self):
-        output_file = os.path.join(self.save_dir, 'pred.json')
+    def bench_one_submit(self, local_rank):
+        output_file = os.path.join(self.save_dir, str(local_rank), 'pred.json')
         if output_file is not None:
             mkdir(output_file)
         with open(output_file, "w+") as f:

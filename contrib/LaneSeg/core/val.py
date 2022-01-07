@@ -49,7 +49,7 @@ def evaluate(model,
         float: The fn of validation datasets.
     """
     model.eval()
-    local_rank = 0
+    local_rank = paddle.distributed.ParallelEnv().local_rank
 
     loader = paddle.io.DataLoader(
         eval_dataset,
@@ -108,7 +108,7 @@ def evaluate(model,
             batch_cost_averager.reset()
             batch_start = time.time()
 
-    acc, fp, fn, eval_result = postprocessor.bench_one_submit()
+    acc, fp, fn, eval_result = postprocessor.bench_one_submit(local_rank)
 
     if print_detail:
         logger.info(eval_result)
