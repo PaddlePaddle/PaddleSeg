@@ -952,7 +952,6 @@ class RandomRotation:
 
     Args:
         max_rotation (float, optional): The maximum rotation degree. Default: 15.
-        keeping_size (bool, optional): Whether or not to holding image size. Default: False.
         im_padding_value (list, optional): The padding value of raw image.
             Default: [127.5, 127.5, 127.5].
         label_padding_value (int, optional): The padding value of annotation image. Default: 255.
@@ -960,11 +959,9 @@ class RandomRotation:
 
     def __init__(self,
                  max_rotation=15,
-                 keeping_size=False,
                  im_padding_value=(127.5, 127.5, 127.5),
                  label_padding_value=255):
         self.max_rotation = max_rotation
-        self.keeping_size = keeping_size
         self.im_padding_value = im_padding_value
         self.label_padding_value = label_padding_value
 
@@ -984,18 +981,16 @@ class RandomRotation:
                                             self.max_rotation)
             pc = (w // 2, h // 2)
             r = cv2.getRotationMatrix2D(pc, do_rotation, 1.0)
-            if self.keeping_size:
-                dsize = (w, h)
-            else:
-                cos = np.abs(r[0, 0])
-                sin = np.abs(r[0, 1])
+            cos = np.abs(r[0, 0])
+            sin = np.abs(r[0, 1])
 
-                nw = int((h * sin) + (w * cos))
-                nh = int((h * cos) + (w * sin))
-                (cx, cy) = pc
-                r[0, 2] += (nw / 2) - cx
-                r[1, 2] += (nh / 2) - cy
-                dsize = (nw, nh)
+            nw = int((h * sin) + (w * cos))
+            nh = int((h * cos) + (w * sin))
+
+            (cx, cy) = pc
+            r[0, 2] += (nw / 2) - cx
+            r[1, 2] += (nh / 2) - cy
+            dsize = (nw, nh)
             im = cv2.warpAffine(
                 im,
                 r,
@@ -1269,60 +1264,6 @@ class RandomAffine:
                 tuple(self.size),
                 flags=cv2.INTER_NEAREST,
                 borderMode=cv2.BORDER_CONSTANT)
-        if label is None:
-            return (im, )
-        else:
-            return (im, label)
-
-
-@manager.TRANSFORMS.add_component
-class SubImgCrop:
-    """
-    crop an image from four forwards.
-
-    Args:
-        offset_top (int, optional): The cut height for image from up to down. Default: 0.
-        offset_bottom (int, optional): The cut height for image from down to up . Default: 0.
-        offset_left (int, optional): The cut height for image from left to right. Default: 0.
-        offset_right (int, optional): The cut width for image from right to left. Default: 0.
-    """
-
-    def __init__(self,
-                 offset_top=0,
-                 offset_bottom=0,
-                 offset_left=0,
-                 offset_right=0):
-        self.offset_top = offset_top
-        self.offset_bottom = offset_bottom
-        self.offset_left = offset_left
-        self.offset_right = offset_right
-
-    def __call__(self, im, label=None):
-        if self.offset_top < 0 or self.offset_bottom < 0 or self.offset_left < 0 or self.offset_right < 0:
-            raise Exception(
-                "offset_top, offset_bottom, offset_left,  offset_right must equal or greater zero"
-            )
-
-        if self.offset_top > 0 and self.offset_top < im.shape[0]:
-            im = im[self.offset_top:, :, :]
-            if label is not None:
-                label = label[self.offset_top:, :]
-
-        if self.offset_bottom > 0 and self.offset_bottom < im.shape[0]:
-            im = im[:-self.offset_bottom, :, :]
-            if label is not None:
-                label = label[:-self.offset_bottom, :]
-
-        if self.offset_left > 0 and self.offset_left < im.shape[1]:
-            im = im[:, self.offset_left:, :]
-            if label is not None:
-                label = label[:, self.left_w_off:]
-
-        if self.offset_right > 0 and self.offset_right < im.shape[1]:
-            im = im[:, :-self.offset_right, :]
-            if label is not None:
-                label = label[:, :-self.offset_right]
-
         if label is None:
             return (im, )
         else:
