@@ -27,19 +27,12 @@ English | [简体中文](use_cn.md)
 
 ----
 ### optimizer
-<<<<<<< HEAD
-> 训练优化器
->  * 参数
->     * type : 优化器类型，支持目前Paddle官方所有优化器
->     * weight_decay : L2正则化的值
->     * **others** : 请参考[Paddle官方Optimizer文档](https://www.paddlepaddle.org.cn/documentation/docs/zh/api/paddle/optimizer/Overview_cn.html)
-=======
 * Optimizer in training
 >  * Args
 >     * type : Optimizer type, currently only supports'sgd' and'adam'
 >     * momentum : Momentum optimization.
 >     * weight_decay : L2 regularized value.
->>>>>>> release/2.2
+
 
 ----
 ### lr_scheduler
