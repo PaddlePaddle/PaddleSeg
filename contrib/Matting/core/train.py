@@ -15,6 +15,7 @@
 import os
 import time
 from collections import deque, defaultdict
+import pickle
 import shutil
 
 import numpy as np
@@ -51,6 +52,18 @@ def visual_in_traning(log_writer, vis_dict, step):
         value = value.astype('uint8')
         value = value.numpy()
         log_writer.add_image(tag=key, img=value, step=step)
+
+
+def get_best(best_file, resume_model=None):
+    '''Get best sad, mse, grad, conn adn iter from file'''
+    if os.path.exists(best_file) and (resume_model is not None):
+        with open(best_file, 'rb') as f:
+            best_sad, best_sad_mse, best_sad_grad, best_sad_conn, best_iter = pickle.load(
+                f)
+    else:
+        best_sad = best_sad_mse = best_sad_grad = best_sad_conn = np.inf
+        best_iter = -1
+    return best_sad, best_sad_mse, best_sad_grad, best_sad_conn, best_iter
 
 
 def train(model,
@@ -125,10 +138,11 @@ def train(model,
         from visualdl import LogWriter
         log_writer = LogWriter(save_dir)
 
+    best_sad, best_sad_mse, best_sad_grad, best_sad_conn, best_iter = get_best(
+        os.path.join(save_dir, 'best_model', 'best_sad.txt'),
+        resume_model=resume_model)
     avg_loss = defaultdict(float)
     iters_per_epoch = len(batch_sampler)
-    best_sad = np.inf
-    best_model_iter = -1
     reader_cost_averager = TimeAverager()
     batch_cost_averager = TimeAverager()
     save_models = deque()
@@ -236,7 +250,7 @@ def train(model,
                     val_dataset is
                     not None) and local_rank == 0 and iter >= eval_begin_iters:
                 num_workers = 1 if num_workers > 0 else 0
-                sad, mse = evaluate(
+                sad, mse, grad, conn = evaluate(
                     model,
                     val_dataset,
                     num_workers=0,
@@ -249,18 +263,29 @@ def train(model,
                 if val_dataset is not None and iter >= eval_begin_iters:
                     if sad < best_sad:
                         best_sad = sad
-                        best_model_iter = iter
+                        best_iter = iter
+                        best_sad_mse = mse
+                        best_sad_grad = grad
+                        best_sad_conn = conn
                         best_model_dir = os.path.join(save_dir, "best_model")
                         paddle.save(
                             model.state_dict(),
                             os.path.join(best_model_dir, 'model.pdparams'))
+                        with open(
+                                os.path.join(best_model_dir, 'best_sad.txt'),
+                                'wb') as f:
+                            pickle.dump((best_sad, best_sad_mse, best_sad_grad,
+                                         best_sad_conn, best_iter), f)
                     logger.info(
-                        '[EVAL] The model with the best validation sad ({:.4f}) was saved at iter {}.'
-                        .format(best_sad, best_model_iter))
+                        '[EVAL] The model with the best validation SAD ({:.4f}) was saved at iter {}. While MSE: {:.4f}, Grad: {:.4f}, Conn: {:.4f}'
+                        .format(best_sad, best_iter, best_sad_mse,
+                                best_sad_grad, best_sad_conn))
 
                     if use_vdl:
                         log_writer.add_scalar('Evaluate/SAD', sad, iter)
                         log_writer.add_scalar('Evaluate/MSE', mse, iter)
+                        log_writer.add_scalar('Evaluate/Grad', grad, iter)
+                        log_writer.add_scalar('Evaluate/Conn', conn, iter)
 
             batch_start = time.time()
 

@@ -18,9 +18,10 @@
 # So do not report results calculated by these functions in your paper.
 # Evaluate your inference with the MATLAB file `DIM_evaluation_code/evaluate.m`.
 
+import cv2
 import numpy as np
-import scipy.ndimage
-import numpy as np
+from scipy.ndimage.filters import convolve
+from scipy.special import gamma
 from skimage.measure import label
 
 
@@ -49,6 +50,11 @@ class MSE():
                 'The shape of `pred`, `gt` and `trimap` should be equal. '
                 'but they are {}, {} and {}'.format(pred.shape, gt.shape,
                                                     trimap.shape))
+        if not ((pred[trimap == 0] == 0).all() and
+                (pred[trimap == 255] == 255).all()):
+            raise ValueError(
+                'pred should be masked by trimap before evaluation')
+
         mask = trimap == 128
         pixels = float(mask.sum())
         pred = pred / 255.
@@ -58,6 +64,8 @@ class MSE():
 
         self.mse_diffs += mse_diff
         self.count += 1
+
+        return mse_diff
 
     def evaluate(self):
         mse = self.mse_diffs / self.count if self.count > 0 else 0
@@ -89,16 +97,22 @@ class SAD():
                 'The shape of `pred`, `gt` and `trimap` should be equal. '
                 'but they are {}, {} and {}'.format(pred.shape, gt.shape,
                                                     trimap.shape))
+        if not ((pred[trimap == 0] == 0).all() and
+                (pred[trimap == 255] == 255).all()):
+            raise ValueError(
+                'pred should be masked by trimap before evaluation')
 
         mask = trimap == 128
         pred = pred / 255.
         gt = gt / 255.
         diff = (pred - gt) * mask
         sad_diff = (np.abs(diff)).sum()
-        sad_diff /= 1000
 
+        sad_diff /= 1000
         self.sad_diffs += sad_diff
         self.count += 1
+
+        return sad_diff
 
     def evaluate(self):
         sad = self.sad_diffs / self.count if self.count > 0 else 0
@@ -109,41 +123,48 @@ class Grad():
     """
     Only calculate the unknown region if trimap provided.
 
-    Refer to: https://github.com/yucornetto/MGMatting/blob/main/code-base/utils/evaluate.py#L46
+    Refer to: https://github.com/open-mlab/mmediting/blob/master/mmedit/core/evaluation/metrics.py
     """
 
     def __init__(self):
         self.grad_diffs = 0
         self.count = 0
 
-    def gauss(self, x, sigma):
-        y = np.exp(-x**2 / (2 * sigma**2)) / (sigma * np.sqrt(2 * np.pi))
-        return y
+    def gaussian(self, x, sigma):
+        return np.exp(-x**2 / (2 * sigma**2)) / (sigma * np.sqrt(2 * np.pi))
 
-    def dgauss(self, x, sigma):
-        y = -x * self.gauss(x, sigma) / (sigma**2)
-        return y
+    def dgaussian(self, x, sigma):
+        return -x * self.gaussian(x, sigma) / sigma**2
 
-    def gaussgradient(self, im, sigma):
-        epsilon = 1e-2
-        halfsize = np.ceil(sigma * np.sqrt(
-            -2 * np.log(np.sqrt(2 * np.pi) * sigma * epsilon))).astype(np.int32)
-        size = 2 * halfsize + 1
-        hx = np.zeros((size, size))
-        for i in range(0, size):
-            for j in range(0, size):
-                u = [i - halfsize, j - halfsize]
-                hx[i, j] = self.gauss(u[0], sigma) * self.dgauss(u[1], sigma)
+    def gauss_filter(self, sigma, epsilon=1e-2):
+        half_size = np.ceil(
+            sigma * np.sqrt(-2 * np.log(np.sqrt(2 * np.pi) * sigma * epsilon)))
+        size = int(2 * half_size + 1)
 
-        hx = hx / np.sqrt(np.sum(np.abs(hx) * np.abs(hx)))
-        hy = hx.transpose()
+        # create filter in x axis
+        filter_x = np.zeros((size, size))
+        for i in range(size):
+            for j in range(size):
+                filter_x[i, j] = self.gaussian(i - half_size,
+                                               sigma) * self.dgaussian(
+                                                   j - half_size, sigma)
 
-        gx = scipy.ndimage.convolve(im, hx, mode='nearest')
-        gy = scipy.ndimage.convolve(im, hy, mode='nearest')
+        # normalize filter
+        norm = np.sqrt((filter_x**2).sum())
+        filter_x = filter_x / norm
+        filter_y = np.transpose(filter_x)
 
-        return gx, gy
+        return filter_x, filter_y
 
-    def update(self, pred, gt, trimap=None):
+    def gauss_gradient(self, img, sigma):
+        filter_x, filter_y = self.gauss_filter(sigma)
+        img_filtered_x = cv2.filter2D(
+            img, -1, filter_x, borderType=cv2.BORDER_REPLICATE)
+        img_filtered_y = cv2.filter2D(
+            img, -1, filter_y, borderType=cv2.BORDER_REPLICATE)
+        return np.sqrt(img_filtered_x**2 + img_filtered_y**2)
+
+    def update(self, pred, gt, trimap=None, sigma=1.4):
         """
         update metric.
 
@@ -151,6 +172,7 @@ class Grad():
             pred (np.ndarray): The value range is [0., 1.].
             gt (np.ndarray): The value range is [0, 255].
             trimap (np.ndarray, optional)L The value is in {0, 128, 255}. Default: None.
+            sigma (float, optional): Standard deviation of the gaussian kernel. Default: 1.4.
         """
         if trimap is None:
             trimap = np.ones_like(gt) * 128
@@ -159,21 +181,30 @@ class Grad():
                 'The shape of `pred`, `gt` and `trimap` should be equal. '
                 'but they are {}, {} and {}'.format(pred.shape, gt.shape,
                                                     trimap.shape))
+        if not ((pred[trimap == 0] == 0).all() and
+                (pred[trimap == 255] == 255).all()):
+            raise ValueError(
+                'pred should be masked by trimap before evaluation')
 
-        mask = trimap == 128
-        gt = gt / 255.
+        gt = gt.squeeze()
+        pred = pred.squeeze()
+        gt = gt.astype(np.float64)
+        pred = pred.astype(np.float64)
+        gt_normed = np.zeros_like(gt)
+        pred_normed = np.zeros_like(pred)
+        cv2.normalize(gt, gt_normed, 1., 0., cv2.NORM_MINMAX)
+        cv2.normalize(pred, pred_normed, 1., 0., cv2.NORM_MINMAX)
 
-        pred_x, pred_y = self.gaussgradient(pred, 1.4)
-        gt_x, gt_y = self.gaussgradient(gt, 1.4)
+        gt_grad = self.gauss_gradient(gt_normed, sigma).astype(np.float32)
+        pred_grad = self.gauss_gradient(pred_normed, sigma).astype(np.float32)
 
-        pred_amp = np.sqrt(pred_x**2 + pred_y**2)
-        gt_amp = np.sqrt(gt_x**2 + gt_y**2)
+        grad_diff = ((gt_grad - pred_grad)**2 * (trimap == 128)).sum()
 
-        error_map = (pred_amp - gt_amp)**2
-        diff = np.sum(error_map[mask])
-
-        self.grad_diffs += diff / 1000.
+        grad_diff /= 1000
+        self.grad_diffs += grad_diff
         self.count += 1
+
+        return grad_diff
 
     def evaluate(self):
         grad = self.grad_diffs / self.count if self.count > 0 else 0
@@ -184,17 +215,12 @@ class Conn():
     """
     Only calculate the unknown region if trimap provided.
 
-    Refer to: https://github.com/yucornetto/MGMatting/blob/main/code-base/utils/evaluate.py#L69
+    Refer to: Refer to: https://github.com/open-mlab/mmediting/blob/master/mmedit/core/evaluation/metrics.py
     """
 
     def __init__(self):
         self.conn_diffs = 0
         self.count = 0
-
-    def getLargestCC(self, segmentation):
-        labels = label(segmentation, connectivity=1)
-        largestCC = labels == np.argmax(np.bincount(labels.flat))
-        return largestCC
 
     def update(self, pred, gt, trimap=None, step=0.1):
         """
@@ -204,6 +230,8 @@ class Conn():
             pred (np.ndarray): The value range is [0., 1.].
             gt (np.ndarray): The value range is [0, 255].
             trimap (np.ndarray, optional)L The value is in {0, 128, 255}. Default: None.
+            step (float, optional): Step of threshold when computing intersection between
+            `gt` and `pred`. Default: 0.1.
         """
         if trimap is None:
             trimap = np.ones_like(gt) * 128
@@ -212,32 +240,53 @@ class Conn():
                 'The shape of `pred`, `gt` and `trimap` should be equal. '
                 'but they are {}, {} and {}'.format(pred.shape, gt.shape,
                                                     trimap.shape))
+        if not ((pred[trimap == 0] == 0).all() and
+                (pred[trimap == 255] == 255).all()):
+            raise ValueError(
+                'pred should be masked by trimap before evaluation')
 
-        mask = trimap == 128
-        gt = gt / 255.
-        h, w = pred.shape
+        gt = gt.squeeze()
+        pred = pred.squeeze()
+        gt = gt.astype(np.float32) / 255
+        pred = pred.astype(np.float32) / 255
 
-        thresh_steps = list(np.arange(0, 1 + step, step))
-        l_map = np.ones_like(pred, dtype=np.float) * -1
+        thresh_steps = np.arange(0, 1 + step, step)
+        round_down_map = -np.ones_like(gt)
         for i in range(1, len(thresh_steps)):
-            pred_alpha_thresh = (pred >= thresh_steps[i]).astype(np.int)
-            gt_alpha_thresh = (gt >= thresh_steps[i]).astype(np.int)
+            gt_thresh = gt >= thresh_steps[i]
+            pred_thresh = pred >= thresh_steps[i]
+            intersection = (gt_thresh & pred_thresh).astype(np.uint8)
 
-            omega = self.getLargestCC(
-                pred_alpha_thresh * gt_alpha_thresh).astype(np.int)
-            flag = ((l_map == -1) & (omega == 0)).astype(np.int)
-            l_map[flag == 1] = thresh_steps[i - 1]
+            # connected components
+            _, output, stats, _ = cv2.connectedComponentsWithStats(
+                intersection, connectivity=4)
+            # start from 1 in dim 0 to exclude background
+            size = stats[1:, -1]
 
-        l_map[l_map == -1] = 1
+            # largest connected component of the intersection
+            omega = np.zeros_like(gt)
+            if len(size) != 0:
+                max_id = np.argmax(size)
+                # plus one to include background
+                omega[output == max_id + 1] = 1
 
-        pred_d = pred - l_map
-        gt_d = gt - l_map
-        pred_phi = 1 - pred_d * (pred_d >= 0.15).astype(np.int)
-        gt_phi = 1 - gt_d * (gt_d >= 0.15).astype(np.int)
-        diff = np.sum(np.abs(pred_phi - gt_phi)[mask])
+            mask = (round_down_map == -1) & (omega == 0)
+            round_down_map[mask] = thresh_steps[i - 1]
+        round_down_map[round_down_map == -1] = 1
 
-        self.conn_diffs += diff / 1000.
+        gt_diff = gt - round_down_map
+        pred_diff = pred - round_down_map
+        # only calculate difference larger than or equal to 0.15
+        gt_phi = 1 - gt_diff * (gt_diff >= 0.15)
+        pred_phi = 1 - pred_diff * (pred_diff >= 0.15)
+
+        conn_diff = np.sum(np.abs(gt_phi - pred_phi) * (trimap == 128))
+
+        conn_diff /= 1000
+        self.conn_diffs += conn_diff
         self.count += 1
+
+        return conn_diff
 
     def evaluate(self):
         conn = self.conn_diffs / self.count if self.count > 0 else 0

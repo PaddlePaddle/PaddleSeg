@@ -67,16 +67,6 @@ def evaluate(model,
         ):
             paddle.distributed.init_parallel_env()
 
-
-#     batch_sampler = paddle.io.DistributedBatchSampler(
-#         eval_dataset, batch_size=1, shuffle=False, drop_last=False)
-#     loader = paddle.io.DataLoader(
-#         eval_dataset,
-#         batch_sampler=batch_sampler,
-#         num_workers=num_workers,
-#         return_list=True,
-#     )
-#   eval not distributed
     loader = paddle.io.DataLoader(
         eval_dataset,
         batch_size=1,
@@ -88,6 +78,8 @@ def evaluate(model,
     total_iters = len(loader)
     mse_metric = metric.MSE()
     sad_metric = metric.SAD()
+    grad_metric = metric.Grad()
+    conn_metric = metric.Conn()
 
     if print_detail:
         logger.info(
@@ -98,6 +90,8 @@ def evaluate(model,
     batch_cost_averager = TimeAverager()
     batch_start = time.time()
 
+    img_name = ''
+    i = 0
     with paddle.no_grad():
         for iter, data in enumerate(loader):
             reader_cost_averager.record(time.time() - batch_start)
@@ -111,8 +105,10 @@ def evaluate(model,
             if trimap is not None:
                 trimap = trimap.numpy().astype('uint8')
             alpha_pred = np.round(alpha_pred * 255)
-            mse_metric.update(alpha_pred, alpha_gt, trimap)
-            sad_metric.update(alpha_pred, alpha_gt, trimap)
+            mse = mse_metric.update(alpha_pred, alpha_gt, trimap)
+            sad = sad_metric.update(alpha_pred, alpha_gt, trimap)
+            grad = grad_metric.update(alpha_pred, alpha_gt, trimap)
+            conn = conn_metric.update(alpha_pred, alpha_gt, trimap)
 
             if save_results:
                 alpha_pred_one = alpha_pred[0].squeeze()
@@ -120,8 +116,19 @@ def evaluate(model,
                     trimap = trimap.squeeze().astype('uint8')
                     alpha_pred_one[trimap == 255] = 255
                     alpha_pred_one[trimap == 0] = 0
-                save_alpha_pred(alpha_pred_one,
-                                os.path.join(save_dir, data['img_name'][0]))
+
+                save_name = data['img_name'][0]
+                name, ext = os.path.splitext(save_name)
+                if save_name == img_name:
+                    save_name = name + '_' + str(i) + ext
+                    i += 1
+                else:
+                    img_name = save_name
+                    save_name = name + '_' + str(i) + ext
+                    i = 1
+
+                save_alpha_pred(alpha_pred_one, os.path.join(
+                    save_dir, save_name))
 
             batch_cost_averager.record(
                 time.time() - batch_start, num_samples=len(alpha_gt))
@@ -129,7 +136,9 @@ def evaluate(model,
             reader_cost = reader_cost_averager.get_average()
 
             if local_rank == 0 and print_detail:
-                progbar_val.update(iter + 1, [('batch_cost', batch_cost),
+                progbar_val.update(iter + 1, [('SAD', sad), ('MSE', mse),
+                                              ('Grad', grad), ('Conn', conn),
+                                              ('batch_cost', batch_cost),
                                               ('reader cost', reader_cost)])
 
             reader_cost_averager.reset()
@@ -138,6 +147,10 @@ def evaluate(model,
 
     mse = mse_metric.evaluate()
     sad = sad_metric.evaluate()
+    grad = grad_metric.evaluate()
+    conn = conn_metric.evaluate()
 
-    logger.info('[EVAL] SAD: {:.4f}, MSE: {:.4f}'.format(sad, mse))
-    return sad, mse
+    logger.info(
+        '[EVAL] SAD: {:.4f}, MSE: {:.4f}, Grad: {:.4f}, Conn: {:.4f}'.format(
+            sad, mse, grad, conn))
+    return sad, mse, grad, conn
