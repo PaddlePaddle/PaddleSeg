@@ -233,18 +233,18 @@ See [Model Zoo Overview](./docs/model_zoo_overview.md) for more infomation.
 
 ## Tutorials <img src="./docs/images/teach.png" width="30"/>
 
-- [Installation](./docs/install.md)
-- [Get Started](./docs/whole_process.md)
--  Prepare Datasets
-   - [Preparation of Annotation Data](./docs/data/marker/marker.md)
-   - [Annotating Tutorial](./docs/data/transform/transform.md)
-   - [Custom Dataset](./docs/data/custom/data_prepare.md)
+* [Installation](./docs/install.md)
+* [Get Started](./docs/whole_process.md)
+*  Prepare Datasets
+   * [Preparation of Annotation Data](./docs/data/marker/marker.md)
+   * [Annotating Tutorial](./docs/data/transform/transform.md)
+   * [Custom Dataset](./docs/data/custom/data_prepare.md)
 
--  Custom Development
-    - [Detailed Configuration File](./docs/design/use/use.md)
-    - [Create Your Own Model](./docs/design/create/add_new_model.md)
-    - [PR Tutorial](./docs/pr/pr/pr.md)
-    - [Model Guideline](./docs/pr/pr/style_cn.md)
+*  Custom Development
+    * [Detailed Configuration File](./docs/design/use/use.md)
+    * [Create Your Own Model](./docs/design/create/add_new_model.md)
+    * [PR Tutorial](./docs/pr/pr/pr.md)
+    * [Model Guideline](./docs/pr/pr/style_cn.md)
 * [Model Training](/docs/train/train.md)
 * [Model Evaluation](./docs/evaluation/evaluate/evaluate.md)
 * [Prediction](./docs/predict/predict.md)
@@ -272,7 +272,7 @@ See [Model Zoo Overview](./docs/model_zoo_overview.md) for more infomation.
 *  Description of Important Modules
     * [Data Augmentation](./docs/module/data/data.md)
     * [Loss Description](./docs/module/loss/losses_en.md)
-    * [Tricks](./docs/module/tricks/tricks.md)
+
 * Description of Classical Models
     * [DeeplabV3](./docs/models/deeplabv3.md)
     * [UNet](./docs/models/unet.md)
