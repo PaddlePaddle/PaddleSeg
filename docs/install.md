@@ -1,29 +1,31 @@
 English|[简体中文](install_cn.md)
-# Instruction of Installation
+# Installation Guide
+
 
 
 ## Environment Requirements
 
-- PaddlePaddle 2.1 (Get API support)
-- OS: 64-bit（Going to run 64-bit programs）
+- PaddlePaddle 2.1
+- OS: 64-bit
 - Python 3(3.5.1+/3.6/3.7/3.8/3.9)，64-bit version
-- pip/pip3(9.0.1+)，64-bit version （Get environment support）
-- CUDA >= 10.1 （NVIDIA GPU Parallel Computing Framework）
-- cuDNN >= 7.6 （NVIDIA GPU acceleration library）
+- pip/pip3(9.0.1+)，64-bit version 
+- CUDA >= 10.1 
+- cuDNN >= 7.6 
 
-## Instruction of Installation
 
 ### 1. Install PaddlePaddle
 
+Highly recommend you install the GPU version of PaddlePaddle, due to the large overhead of segmentation models, otherwise, it could be out of memory while running the models.
+
 ```
 # CUDA10.1
-python -m pip install paddlepaddle-gpu==2.1.0.post101 -i https://paddlepaddle.org.cn/whl/mkl/stable.html
+python -m pip install paddlepaddle-gpu==2.2.1.post101 -f https://www.paddlepaddle.org.cn/whl/linux/mkl/avx/stable.html
 
 # CPU
-python -m pip install paddlepaddle -i https://mirror.baidu.com/pypi/simple
+python -m pip install paddlepaddle==2.2.1 -i https://mirror.baidu.com/pypi/simple
 ```
--For quick installation of more CUDA versions or environments, please refer to [PaddlePaddle Quick Installation Document](https://www.paddlepaddle.org.cn/install/quick)
--For more installation methods such as conda or source code compilation and installation methods, please refer to [PaddlePaddle Installation Document](https://www.paddlepaddle.org.cn/documentation/docs/zh/install/index_cn.html)
+- For quick installation of more CUDA versions or environments, please refer to [PaddlePaddle Quick Installation Document](https://www.paddlepaddle.org.cn/install/quick)
+- For more installation methods such as conda or source code compilation and installation methods, please refer to [PaddlePaddle Installation Document](https://www.paddlepaddle.org.cn/documentation/docs/zh/install/index_en.html)
 
 Please make sure that your PaddlePaddle is installed successfully and the version is not lower than the required version. Use the following command to verify.
 
@@ -41,25 +43,25 @@ python -c "import paddle; print(paddle.__version__)"
 
 
 
-## 2.Install PaddlePaddle Code
+## 2. Install PaddleSeg
+Support API method for flexible development.
+```
+pip install paddleseg
+```
+
+## 3. Download Repo
+Support Configuration Drive for simple and fast development.
+
 ```
 git clone https://github.com/PaddlePaddle/PaddleSeg
-```
-## 3.Install PaddleSeg Requirements
-```
 cd PaddleSeg
 pip install -r requirements.txt
 
 #If a version error occurs during installation, you can try to delete the old version and re-run the script.
 ```
-## 4.Confirm Installation
+## 4. Verify Installation
 
-Execute the following command, and the predicted result appears in the PaddleSeg/output folder, it proves that the installation is successful.
-
+Run the following command to verify PaddleSeg installation.
 ```python
-python predict.py \
-       --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml \
-       --model_path https://bj.bcebos.com/paddleseg/dygraph/optic_disc/bisenet_optic_disc_512x512_1k/model.pdparams\
-       --image_path docs/images/optic_test_image.jpg \
-       --save_dir output/result
+python train.py --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml
 ```
