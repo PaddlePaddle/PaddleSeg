@@ -52,12 +52,16 @@ Support Configuration Drive for simple and fast development.
 
 ```
 git clone https://github.com/PaddlePaddle/PaddleSeg
+```
+
+## 4. Install Dependencies
+```
 cd PaddleSeg
 pip install -r requirements.txt
 
 #If a version error occurs during installation, you can try to delete the old version and re-run the script.
 ```
-## 4. Verify Installation
+## 5. Verify Installation
 
 Run the following command to verify PaddleSeg installation. The predicted results will be in output/result if successful.
 
