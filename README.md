@@ -26,7 +26,7 @@ Welcome to PaddleSeg! PaddleSeg is an end-to-end image segmentation development 
 
 ---------------
 
- * ### Various applications in autonomous driving, medical, quality inspection, inspection, entertainment, and other scenarios.
+ * ### Various applications in autonomous driving, medical segmentation, remote sensing, quality inspection, and other scenarios.
 
 <div align="center">
 <img src="https://user-images.githubusercontent.com/53808988/130562234-bdf79d76-8566-4e06-a3a9-db7719e63385.gif"  width = "2000" />  
