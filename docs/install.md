@@ -59,7 +59,12 @@ pip install -r requirements.txt
 ```
 ## 4. Verify Installation
 
-Run the following command to verify PaddleSeg installation.
+Run the following command to verify PaddleSeg installation. The predicted results will be in output/result if successful.
+
 ```python
-python train.py --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml
+python predict.py \
+       --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml \
+       --model_path https://bj.bcebos.com/paddleseg/dygraph/optic_disc/bisenet_optic_disc_512x512_1k/model.pdparams\
+       --image_path docs/images/optic_test_image.jpg \
+       --save_dir output/result
 ```

@@ -10,12 +10,12 @@ English | [简体中文](README_CN.md)
 ## News <img src="./docs/images/seg_news_icon.png" width="50"/>
 
 * [2022-01-04] We published a paper on portrait segmentation named [PP-HumanSeg](./contrib/PP-HumanSeg/paper.md), and released Semantic Connectivity-aware Learning (SCL) framework and a Large-Scale Teleconferencing Video Dataset.
-* [2021-10-11] We released PaddleSeg v2.3 with the improved interactive segmentation tool ([EISeg v0.3]((./EISeg))), two [matting]((./contrib/Matting)) algorithms, and segmentation model compression.
+* [2021-10-11] We released PaddleSeg v2.3 with the improved interactive segmentation tool ([EISeg v0.3](./EISeg)), two [matting](./contrib/Matting) algorithms, and segmentation model compression.
 * For more information please refer to [Release Note](https://github.com/PaddlePaddle/PaddleSeg/releases).
 
 ## Introduction
 
-PaddleSeg is an end-to-end image segmentation development kit developed based on [PaddlePaddle](https://www.paddlepaddle.org.cn), which covers a large number of high-quality segmentation models in different directions such as *high-performance* and *lightweight*. With the help of modular design, we provide two application methods: *Configuration Drive* and *API Calling*, which allow developers to complete segmentation application from training to deployment through either configuration calls or API calls.
+PaddleSeg is an end-to-end high-efficent development toolkit for image segmentation based on PaddlePaddle, which  helps both developers and researchers in the whole process of designing segmentation models, training models, optimizing performance and inference speed, and deploying models. A lot of well-trained models and various real-world applications in both industry and academia help users conveniently build hands-on experiences in image segmentation.
 
 * #### Four segmentation areas: semantic segmentation, interactive segmentation, panoptic segmentation and image matting.
 
@@ -43,6 +43,8 @@ PaddleSeg is an end-to-end image segmentation development kit developed based on
 * <img src="./docs/images/f2.png" width="20"/> **Modular Design**: PaddleSeg supports 40+ mainstream *segmentation networks*, developers can start based on actual application scenarios and assemble diversified training configurations combined with modular design of *data enhancement strategies*, *backbone networks*, *loss functions* and other different components to meet different performance and accuracy requirements.
 
 * <img src="./docs/images/f3.png" width="20"/> **High Efficiency**: PaddleSeg provides multi-process asynchronous I/O, multi-card parallel training, evaluation, and other acceleration strategies, combined with the memory optimization function of the PaddlePaddle, which can greatly reduce the training overhead of the segmentation model, all this allowing developers to lower cost and more efficiently train image segmentation model.
+
+
 
 ## Overview <img src="./docs/images/model.png" width="20"/>
 
@@ -276,6 +278,7 @@ The relationship between mIoU and FLOPs of representative architectures and back
     * [PR Style](./docs/pr/pr/style_cn.md)
 
 * [Static Graph Version](./docs/static/static.md)
+* [Community](#Community)
 * [FAQ](./docs/faq/faq/faq.md)
 
 ## Practical Projects
@@ -290,7 +293,7 @@ The relationship between mIoU and FLOPs of representative architectures and back
 
 ## Community <img src="./docs/images/chat.png" width="30"/>
 
-* If you find any problems or have a suggestion with PaddleSeg, please send us issues through [GitHub Issues](https://github.com/PaddlePaddle/PaddleSeg/issues).
+* If you have any problem or suggestion on PaddleSeg, please send us issues through [GitHub Issues](https://github.com/PaddlePaddle/PaddleSeg/issues).
 * Welcome to Join PaddleSeg QQ Group
 <div align="center">
 <img src="./docs/images/QQ_chat.png"  width = "200" />  
