@@ -15,9 +15,9 @@ English | [简体中文](README_CN.md)
 
 ## Introduction
 
-Welcome to PaddleSeg! PaddleSeg is an end-to-end image segmentation development kit developed based on [PaddlePaddle](https://www.paddlepaddle.org.cn), which covers a large number of high-quality segmentation models in different directions such as *high-performance* and *lightweight*. With the help of modular design, we provide two application methods: *Configuration Drive* and *API Calling*. So one can conveniently complete the entire image segmentation application from training to deployment through configuration calls or API calls.
+PaddleSeg is an end-to-end image segmentation development kit developed based on [PaddlePaddle](https://www.paddlepaddle.org.cn), which covers a large number of high-quality segmentation models in different directions such as *high-performance* and *lightweight*. With the help of modular design, we provide two application methods: *Configuration Drive* and *API Calling*, which allow developers to complete segmentation application from training to deployment through either configuration calls or API calls.
 
-* ### Four segmentation areas: semantic segmentation, interactive segmentation, panoptic segmentation and image matting.
+* #### Four segmentation areas: semantic segmentation, interactive segmentation, panoptic segmentation and image matting.
 
 <div align="center">
 <img src="https://user-images.githubusercontent.com/53808988/130562378-64d0c84a-9c3f-4ae4-93f7-bdc0c8e0238e.gif"  width = "2000" />  
@@ -26,7 +26,7 @@ Welcome to PaddleSeg! PaddleSeg is an end-to-end image segmentation development 
 
 ---------------
 
- * ### Various applications in autonomous driving, medical segmentation, remote sensing, quality inspection, and other scenarios.
+ * #### Various applications in autonomous driving, medical segmentation, remote sensing, quality inspection, and other scenarios.
 
 <div align="center">
 <img src="https://user-images.githubusercontent.com/53808988/130562234-bdf79d76-8566-4e06-a3a9-db7719e63385.gif"  width = "2000" />  
@@ -236,9 +236,9 @@ The relationship between mIoU and FLOPs of representative architectures and back
 * [Installation Guide](./docs/install.md)
 * [Quick Start](./docs/whole_process.md)
 
-*  Prepare Datasets
-   * [Preparation of Annotation Data](./docs/data/marker/marker.md)
-   * [Annotating Tutorial](./docs/data/transform/transform.md)
+*  Data Preparation
+   * [Annotated Data Preparation](./docs/data/marker/marker.md)
+   * [Annotation Tutorial](./docs/data/transform/transform.md)
    * [Custom Dataset](./docs/data/custom/data_prepare.md)
 
 * [Model Training](/docs/train/train.md)
