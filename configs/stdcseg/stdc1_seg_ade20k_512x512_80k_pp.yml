@@ -1,6 +1,6 @@
-_base_: '../_base_/cityscapes.yml'
+_base_: '../_base_/ade20k.yml'
 
-batch_size: 12
+batch_size: 8   # total: 16
 iters: 80000
 
 model:
@@ -10,15 +10,15 @@ model:
     # STDC_pp_2:returns all features,
     type: STDC_pp_1
     block_type: cat # base cat
-    #pretrained: https://bj.bcebos.com/paddleseg/dygraph/STDCNet1.tar.gz    # ori cat weights
+    #pretrained: https://bj.bcebos.com/paddleseg/dygraph/STDCNet1.tar.gz  # ori cat weights
     #pretrained: pretrained_model/stdc1net_class_pretrained_cat_pp.pdparams # pp cat weights
-    pretrained: pretrained_model/stdc1net_class_pretrained_cat_pp_distill_resnet50_stdc1net_img500w_gpu4_bs64_ep50_lr0.001.pdparams  # distill_2 weights
-    #pretrained: pretrained_model/stdc1net_class_pretrained_cat_pp_distill_resnet50_stdc1net_img500w_gpu4_bs64_ep50_lr0.01.pdparams  # distill_3 weights
+    #pretrained: pretrained_model/stdc1net_class_pretrained_cat_pp_distill_resnet50_stdc1net_img500w_gpu4_bs64_ep50_lr0.001.pdparams  # distill_2 weights
+    pretrained: pretrained_model/stdc1net_class_pretrained_cat_pp_distill_resnet50_stdc1net_img500w_gpu4_bs64_ep50_lr0.01.pdparams  # distill_3 weights
     atten_type: AttenNone # base: AttenNone
   # ContextPath_1: base, process some features, ContextPath_1_1: arm block self contained
   # ContextPath_2:process all features
   cpp_type: ContextPath_1
-  arm_type: ARM_17_4
+  arm_type: ARM_0
   resize_mode: nearest  # base: nearest, support:nearest and bilinear
   out_seg_head_ch: 256  # base: 256, support: 64, 128, 256
 
@@ -29,3 +29,9 @@ loss:
     - type: OhemCrossEntropyLoss
     - type: DetailAggregateLoss
   coef: [1, 1, 1, 1]
+
+val_dataset:
+  transforms:
+    - type: ResizeByShort
+      short_size: 512
+    - type: Normalize
