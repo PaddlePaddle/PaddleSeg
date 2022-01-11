@@ -1,4 +1,4 @@
-# API应用案例
+# API application case
 
 Through this tutorial, you will quickly learn the API calls of PaddleSeg, and easily train, evaluate and predict semantic segmentation models. We will take BiSeNetV2 and optic disc segmentation datasets as examples to teach you step by step how to call the API to build models, datasets, loss functions, optimizers and other modules.
 
@@ -69,7 +69,7 @@ val_dataset = OpticDiscSeg(
 
 ```python
 import paddle
-# 设置学习率
+# set learning rate
 base_lr = 0.01
 lr = paddle.optimizer.lr.PolynomialDecay(base_lr, power=0.9, decay_steps=1000, end_lr=0)
 
@@ -133,14 +133,14 @@ else:
 ### 3. Bulid validation dataset
 
 ```python
-# 构建验证用的transforms
+# config transforms for validation
 import paddleseg.transforms as T
 transforms = [
     T.Resize(target_size=(512, 512)),
     T.Normalize()
 ]
 
-# 构建验证集
+# bulid validation dataset
 from paddleseg.datasets import OpticDiscSeg
 val_dataset = OpticDiscSeg(
     dataset_root='data/optic_disc_seg',
