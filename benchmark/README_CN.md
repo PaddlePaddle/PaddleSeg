@@ -1,9 +1,8 @@
-English | [简体中文](README_CN.md)
+简体中文 | [English](README.md)
 
-# Benchmark Introduction
+# Benchmark说明
 
-The content is as follow:
-
+目录结构如下：
 ```
 ├── README.md  
 ├── configs  
@@ -17,24 +16,24 @@ The content is as follow:
 ├── run_all.sh  
 ├── run_benchmark.sh  
 ├── run_fp16.sh  
-└── run_fp32.sh  
+└── run_fp32.sh
 ```
-
-## Environment
-Use Docker to configure the environment.
+## 环境
+使用Docker配置环境。
 * docker image: paddlepaddle/paddle:latest-gpu-cuda10.1-cudnn7
 * CUDA 10.1 + cudnn7
 * paddle=2.1.2
 * py=37
 
-## Test
-### Training Test
+## 测试
+
+### 训练测试
 
 ```
 git clone https://github.com/PaddlePaddle/PaddleSeg.git
 cd PaddleSeg
 bash benchmark/run_all.sh
 ```
-### How to Open Profiling
- Add the following parameter when training.
+### Profiling开关使用方式
+训练时添加如下参数
  `--profiler_options="batch_range=[50, 60]; profile_path=model.profile`
