@@ -1,67 +1,69 @@
+English | [简体中文](README_CN.md)
+
 # Human Matting Android Demo
-基于[PaddleSeg](https://github.com/paddlepaddle/paddleseg/tree/develop)的[MODNet](https://github.com/PaddlePaddle/PaddleSeg/tree/develop/contrib/Matting)算法实现人像抠图（安卓版demo）。
+Based on [PaddleSeg](https://github.com/paddlepaddle/paddleseg/tree/develop)[MODNet](https://github.com/PaddlePaddle/PaddleSeg/tree/develop/contrib/Matting) algorithm to realise human matting（Android demo).
 
-可以直接下载安装本示例工程中的[apk](https://paddleseg.bj.bcebos.com/matting/models/deploy/app-debug.apk)进行体验。
+You can directly download and install the example project [apk](https://paddleseg.bj.bcebos.com/matting/models/deploy/app-debug.apk) to experience。
 
-## 1. 效果展示
+## 1. Results Exhibition
 <div align="center">
-<img src=https://user-images.githubusercontent.com/14087480/141890516-6aad4691-9ab3-4baf-99e5-f1afa1b21281.png  width="50%"> 
+<img src=https://user-images.githubusercontent.com/14087480/141890516-6aad4691-9ab3-4baf-99e5-f1afa1b21281.png  width="50%">
 
 </div>
 
 
-## 2. 安卓Demo使用说明
+## 2. Android Demo Instructions
 
-### 2.1 要求
+### 2.1 Reruirements
 * Android Studio 3.4；
-* Android手机；
+* Android mobile phone；
 
-### 2.2 一键安装
-* 打开Android Studio，在"Welcome to Android Studio"窗口点击"Open an existing Android Studio project"，在弹出的路径选择窗口中选择本安卓demo对应的文件夹，然后点击右下角的"Open"按钮即可导入工程，构建工程的过程中会自动下载demo需要的Lite预测库；
-* 通过USB连接Android手机；
-* 载入工程后，点击菜单栏的Run->Run 'App'按钮，在弹出的"Select Deployment Target"窗口选择已经连接的Android设备，然后点击"OK"按钮；
+### 2.2 Installation
+* open Android Studio and on "Welcome to Android Studio" window, click "Open an existing Android Studio project". In the path selection window that is displayed, select the folder corresponding to the Android Demo. Then click the "Open" button in the lower right corner to import the project. The Lite prediction library required by demo will be automatically downloaded during the construction process.
+* Connect Android phone via USB;
+* After loading the project, click the Run->Run 'App' button on the menu bar, Select the connected Android device in the "Select Deployment Target" window, and then click the "OK" button;
 
-*注：此安卓demo基于[Paddle-Lite](https://paddlelite.paddlepaddle.org.cn/)开发，PaddleLite版本为2.8.0。*
+*Note：this Android demo is based on [Paddle-Lite](https://paddlelite.paddlepaddle.org.cn/)，PaddleLite version is 2.8.0*
 
-### 2.3 预测
-* 在人像抠图Demo中，默认会载入一张人像图像，并会在图像下方给出CPU的预测结果和预测时延；
-* 在人像抠图Demo中，你还可以通过右上角的"打开本地相册"和"打开摄像头拍照"按钮分别从相册或相机中加载测试图像然后进行预测推理；
+### 2.3 Prediction
+* In human matting demo, a human image will be loaded by default, and the CPU prediction result and prediction delay will be given below the image;
+* In the human matting demo, you can also load test images from the album or camera by clicking the "Open local album" and "Open camera to take photos" buttons in the upper right corner, and then perform prediction.
 
-*注意：demo中拍照时照片会自动压缩，想测试拍照原图效果，可使用手机相机拍照后从相册中打开进行预测。*
+*Note：When taking a photo in demo, the photo will be compressed automatically. If you want to test the effect of the original photo, you can use the mobile phone camera to take a photo and open it from the album for prediction.*
 
-## 3. 二次开发
-可按需要更新预测库或模型进行二次开发，其中更新模型分为模型导出和模型转换两个步骤。
+## 3. Secondary Development
+The inference library or model can be updated according to the need for secondary development. The updated model can be divided into two steps: model export and model transformation.
 
-### 3.1 更新预测库
-[Paddle-Lite官网](https://paddlelite.paddlepaddle.org.cn/)提供了预编译版本的安卓预测库，也可以参考官网自行编译。
+### 3.1 Update Inference Library
+[Paddle-Lite website](https://paddlelite.paddlepaddle.org.cn/) probides a pre-compiled version of Android inference library, which can also be compiled by referring to the official website.
 
-Paddle-Lite在安卓端的预测库主要包括三个文件：
+The Paddle-Lite inference library on Android mainly contains three files:
 
 * PaddlePredictor.jar；
 * arm64-v8a/libpaddle_lite_jni.so；
 * armeabi-v7a/libpaddle_lite_jni.so；
 
-下面分别介绍两种方法：
+Two methods will be introduced in the following：
 
-* 使用预编译版本的预测库，最新的预编译文件参考：[release](https://github.com/PaddlePaddle/Paddle-Lite/releases/)，此demo使用的[版本](https://paddlelite-demo.bj.bcebos.com/libs/android/paddle_lite_libs_v2_8_0.tar.gz)
+* Use a precompiled version of the inference library. Latest precompiled file reference：[release](https://github.com/PaddlePaddle/Paddle-Lite/releases/). This demo uses the [version](https://paddlelite-demo.bj.bcebos.com/libs/android/paddle_lite_libs_v2_8_0.tar.gz)
 
-	解压上面文件，PaddlePredictor.jar位于：java/PaddlePredictor.jar；
+	Uncompress the above files and the PaddlePredictor.jar is in java/PaddlePredictor.jar;
 
-	arm64-v8a相关so位于：java/libs/arm64-v8a；
+	The so file about arm64-v8a is in java/libs/arm64-v8a;
 
-	armeabi-v7a相关so位于：java/libs/armeabi-v7a；
+	The so file about armeabi-v7a is in java/libs/armeabi-v7a;
 
-* 手动编译Paddle-Lite预测库
-开发环境的准备和编译方法参考：[Paddle-Lite源码编译](https://paddle-lite.readthedocs.io/zh/release-v2.8/source_compile/compile_env.html)。
+* Manually compile the paddle-Lite inference library
+Development environment preparation and compilation methods refer to [paddle-Lite source code compilation](https://paddle-lite.readthedocs.io/zh/release-v2.8/source_compile/compile_env.html).
 
-准备好上述文件，即可参考[java_api](https://paddle-lite.readthedocs.io/zh/release-v2.8/api_reference/java_api_doc.html)在安卓端进行推理。具体使用预测库的方法可参考[Paddle-Lite-Demo](https://github.com/PaddlePaddle/Paddle-Lite-Demo)中更新预测库部分的文档。
+Prepare the above documents, then refer [java_api](https://paddle-lite.readthedocs.io/zh/release-v2.8/api_reference/java_api_doc.html)to have a inference on Android. Refer to the documentation in the Update Inference Library section of [Paddle-Lite-Demo](https://github.com/PaddlePaddle/Paddle-Lite-Demo) for details on how to use the inference library.
 
-### 3.2 模型导出
-此demo的人像抠图采用Backbone为HRNet_W18的MODNet模型，模型[训练教程](https://github.com/PaddlePaddle/PaddleSeg/tree/develop/contrib/Matting)请参考官网，官网提供了3种不同性能的Backone：MobileNetV2、ResNet50_vd和HRNet_W18。本安卓demo综合考虑精度和速度要求，采用了HRNet_W18作为Backone。可以直接从官网下载训练好的动态图模型进行算法验证。
+### 3.2 Model Export
+This demo uses the MODNet with HRNet_W18 backbone to perform human matting. Please refer to official websit to get model [training tutorial](https://github.com/PaddlePaddle/PaddleSeg/tree/develop/contrib/Matting). There are 3 models provided with different backbones: MobileNetV2、ResNet50_vd and HRNet_W18. This Android demo considers the accuracy and speed, using HRNet_W18 as the Backone. The trained dynamic graph model can be downloaded directly from the official website for algorithm verification.
 
-为了能够在安卓手机上进行推理，需要将动态图模型导出为静态图模型，导出时固定图像输入尺寸即可。
+In order to be able to infer on Android phones, the dynamic graph model needs to be exported as a static graph model, and the input size of the image should be fixed when exporting.
 
-首先git最新的[PaddleSeg](https://github.com/paddlepaddle/paddleseg/tree/develop)项目，然后cd进入到PaddleSeg/contrib/Matting目录。将下载下来的modnet-hrnet_w18.pdparams动态图模型文件（也可以自行训练得到）放置在当前文件夹（PaddleSeg/contrib/Matting）下面。然后修改配置文件 configs/modnet_mobilenetv2.yml(注意：虽然采用hrnet18模型，但是该模型依赖的配置文件modnet_hrnet_w18.yml本身依赖modnet_mobilenetv2.yml),修改其中的val_dataset字段如下：
+First, update the [PaddleSeg](https://github.com/paddlepaddle/paddleseg/tree/develop) repository. Then `cd` to the `PaddleSeg/contrib/Matting` directory. Then put the downloaded modnet-hrnet_w18.pdparams (traing by youself is ok) on current directory（`PaddleSeg/contrib/Matting`). After that, fix the config file `configs/modnet_mobilenetv2.yml`(note: hrnet18 is used, but the config file `modnet_hrnet_w18.yml` is based on `modnet_mobilenetv2.yml`), where,modify the val_dataset field as follows:
 
 ``` yml
 val_dataset:
@@ -78,9 +80,9 @@ val_dataset:
   mode: val
   get_trimap: False
 ```
-上述修改中尤其注意short_size: 256这个字段，这个值直接决定我们最终的推理图像采用的尺寸大小。这个字段值设置太小会影响预测精度，设置太大会影响手机推理速度（甚至造成手机因性能问题无法完成推理而奔溃）。经过实际测试，对于hrnet18，该字段设置为256较好。
+In the above modification, pay special attention to the short_size: 256 field which directly determines the size of our final inferential image. If the value of this field is set too small, the prediction accuracy will be affected; if the value is set too high, the inference speed of the phone will be affected (or even the phone will crash due to performance problems). In practical testing, this field is set to 256 for HRnet18.
 
-完成配置文件修改后，采用下面的命令进行静态图导出：
+After modifying the configuration file, run the following command to export the static graph:
 ``` shell
 python export.py \
     --config configs/modnet/modnet_hrnet_w18.yml \
@@ -88,53 +90,51 @@ python export.py \
     --save_dir output
 ```
 
-转换完成后在当前目录下会生成output文件夹，该文件夹中的文件即为转出来的静态图文件。
+After the conversion, the `output` folder will be generated in the current directory, and the files in the folder are the static graph files.
 
-### 3.3 模型转换
+### 3.3 Model Conversion
 
-#### 3.3.1 模型转换工具
-准备好PaddleSeg导出来的静态图模型和参数文件后，需要使用Paddle-Lite提供的opt对模型进行优化，并转换成Paddle-Lite支持的文件格式。
+#### 3.3.1 Model Conversion Tool
+Once you have the static diagram model and parameter files exported from PaddleSeg ready, you need to optimize the model using the opt provided with Paddle-Lite and convert to the file format supported by Paddle-Lite.
 
-首先安装PaddleLite：
+Firstly, install PaddleLite:
 
 ``` shell
 pip install paddlelite==2.8.0
 ```
 
-然后使用下面的python脚本进行转换：
+Then use the following Python script to convert:
 
 ``` python
-# 引用Paddlelite预测库
+# Reference the Paddlelite inference library
 from paddlelite.lite import *
 
-# 1. 创建opt实例
+# 1. Create opt instance
 opt=Opt()
 
-# 2. 指定静态模型路径 
+# 2. Specify the static model path
 opt.set_model_file('./output/model.pdmodel')
 opt.set_param_file('./output/model.pdiparams')
 
-# 3. 指定转化类型： arm、x86、opencl、npu
+# 3. Specify conversion type: arm, x86, opencl or npu
 opt.set_valid_places("arm")
-# 4. 指定模型转化类型： naive_buffer、protobuf
+# 4. Specifies the model transformation type: naive_buffer or protobuf
 opt.set_model_type("naive_buffer")
-# 5. 输出模型地址
+# 5. Address of output model
 opt.set_optimize_out("./output/hrnet_w18")
-# 6. 执行模型优化
+# 6. Perform model optimization
 opt.run()
 ```
 
-转换完成后在output目录下会生成对应的hrnet_w18.nb文件。
+After conversion, the `hrnet_w18.nb` file will be generated in the `output` directory.
 
-#### 3.3.2 更新模型
-将优化好的`.nb`文件，替换安卓程序中的 app/src/main/assets/image_matting/
-models/modnet下面的文件即可。
+#### 3.3.2 Update Model
+Using the optimized `. Nb ` file to replace the file in `app/SRC/main/assets/image_matting/models/modnet` in android applications.
 
-然后在工程中修改图像输入尺寸：打开string.xml文件，修改示例如下：
+Then change the image input size in the project: open the string.xml file and follow the under example:
 ``` xml
 <string name="INPUT_SHAPE_DEFAULT">1,3,256,256</string>
 ```
-1,3,256,256分别表示图像对应的batchsize、channel、height、width，我们一般修改height和width即可，这里的height和width需要和静态图导出时设置的尺寸一致。
+1,3,256,256 represent the corresponding batchsize, channel, height and width respectively. Generally, height and width are modified to the size which set during model export.
 
-整个安卓demo采用java实现，没有内嵌C++代码，构建和执行比较简单。未来也可以将本demo移植到java web项目中实现web版人像抠图。
-
+The entire android demo is implemented in Java, without embedded C++ code, which is relatively easy to build and execute. In the future, you can also move this demo to Java Web projects for human matting in the Web.
