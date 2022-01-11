@@ -61,7 +61,7 @@ class Tusimple(paddle.io.Dataset):
 
     Args:
         transforms (list): Transforms for image.
-        dataset_root (str): Cityscapes dataset directory.
+        dataset_root (str): tusimple dataset directory.
         mode (str, optional): Which part of dataset to use. it is one of ('train', 'val', 'test'). Default: 'train'.
         cut_height (int, optional): Whether to cut image height while training. Default: 0
     """

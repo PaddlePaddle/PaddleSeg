@@ -61,9 +61,7 @@ cd data
 mkdir tusimple && cd tusimple
 unzip -d train_set train_set.zip
 unzip -d test_set test_set.zip
-cd test_set
-wget https://s3.us-east-2.amazonaws.com/benchmark-frontend/truth/1/test_label.json
-cd ../../../
+cd ../../
 ```
 
 The folder structure is as follow:

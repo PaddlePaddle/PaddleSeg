@@ -20,8 +20,7 @@ import yaml
 
 from paddleseg.cvlibs import Config
 from paddleseg.utils import logger
-from models import *
-from datasets import *
+from datasets import tusimple
 
 
 def parse_args():
@@ -45,7 +44,7 @@ def parse_args():
         dest='model_path',
         help='The path of model for export',
         type=str,
-        default='/Users/huangshenghui/Downloads/bisenet_lan.pdparams')
+        default=None)
     parser.add_argument(
         "--input_shape",
         nargs='+',
