@@ -19,7 +19,7 @@ import paddle
 
 from paddleseg.cvlibs import manager
 from paddleseg.transforms.transforms import Compose
-from transforms.lane_transforms import *
+from transforms.lane_transforms import LaneRandomRotation, SubImgCrop
 
 
 @manager.DATASETS.add_component

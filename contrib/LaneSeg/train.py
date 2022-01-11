@@ -21,8 +21,8 @@ import numpy as np
 from paddleseg.cvlibs import manager, Config
 from paddleseg.utils import get_sys_env, logger, config_check
 from core.train import train
-from datasets import *
-from losses import *
+from datasets import tusimple
+from losses import lane_cross_entropy_loss
 
 
 def parse_args():
