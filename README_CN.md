@@ -1,6 +1,13 @@
 简体中文 | [English](README.md)
 
-# PaddleSeg
+<div align="center">
+
+<p align="center">
+  <img src="./docs/images/paddleseg_logo.png" align="middle" width = "500" />
+</p>
+
+**飞桨高性能图像分割开发套件，端到端地完成从训练到部署的全流程图像分割应用。**
+</div>
 
 [![Build Status](https://travis-ci.org/PaddlePaddle/PaddleSeg.svg?branch=release/2.1)](https://travis-ci.org/PaddlePaddle/PaddleSeg)
 [![License](https://img.shields.io/badge/license-Apache%202-blue.svg)](LICENSE)

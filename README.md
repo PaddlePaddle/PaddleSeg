@@ -1,6 +1,13 @@
 English | [简体中文](README_CN.md)
 
-# PaddleSeg
+<div align="center">
+
+<p align="center">
+  <img src="./docs/images/paddleseg_logo.png" align="middle" width = "500" />
+</p>
+
+**A High-Efficent Development Toolkit for Image Segmentation based on [PaddlePaddle](https://github.com/paddlepaddle/paddle).**
+</div>
 
 [![License](https://img.shields.io/badge/license-Apache%202-blue.svg)](LICENSE)
 [![Version](https://img.shields.io/github/release/PaddlePaddle/PaddleSeg.svg)](https://github.com/PaddlePaddle/PaddleSeg/releases)
