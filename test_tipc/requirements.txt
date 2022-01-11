@@ -1,0 +1,12 @@
+pre-commit
+yapf == 0.26.0
+flake8
+pyyaml >= 5.1
+visualdl >= 2.0.0
+opencv-python == 4.5.2.54
+tqdm
+filelock
+scipy
+prettytable
+paddleseg
+scikit-image

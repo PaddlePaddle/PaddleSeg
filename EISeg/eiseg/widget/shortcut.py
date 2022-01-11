@@ -1,3 +1,18 @@
+# Copyright (c) 2021 PaddlePaddle Authors. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+
 import os.path as osp
 import math
 from functools import partial
@@ -21,7 +36,7 @@ from qtpy.QtCore import Qt
 from util import save_configs
 
 
-class RecordShortcutWindow(QKeySequenceEdit):
+class RecordShortcutWidget(QKeySequenceEdit):
     def __init__(self, finishCallback, location):
         super().__init__()
         self.finishCallback = finishCallback
@@ -35,10 +50,10 @@ class RecordShortcutWindow(QKeySequenceEdit):
         self.finishCallback(self.keySequence())
 
 
-class ShortcutWindow(QWidget):
+class ShortcutWidget(QWidget):
     def __init__(self, actions, pjpath):
         super().__init__()
-        self.tr = partial(QtCore.QCoreApplication.translate, "ShortcutWindow")
+        self.tr = partial(QtCore.QCoreApplication.translate, "ShortcutWidget")
         self.setWindowTitle(self.tr("编辑快捷键"))
         self.setWindowIcon(QIcon(osp.join(pjpath, "resource/Shortcut.png")))
         # self.setFixedSize(self.width(), self.height())
@@ -56,7 +71,7 @@ class ShortcutWindow(QWidget):
             grid.addWidget(QLabel(action.iconText()[1:]), idx // 3, idx % 3 * 3)
             shortcut = action.shortcut().toString()
             if len(shortcut) == 0:
-                shortcut = self.tr("无")
+                shortcut = self.tr("-")
             button = QPushButton(shortcut)
             button.setFixedWidth(150)
             button.setFixedHeight(30)
@@ -72,7 +87,7 @@ class ShortcutWindow(QWidget):
         for idx, action in enumerate(actions):
             shortcut = action.shortcut().toString()
             if len(shortcut) == 0:
-                shortcut = self.tr("无")
+                shortcut = self.tr("-")
             self.layout().itemAtPosition(
                 idx // 3,
                 idx % 3 * 3 + 1,
@@ -85,7 +100,7 @@ class ShortcutWindow(QWidget):
         rect = self.geometry()
         x = rect.x()
         y = rect.y() + rect.height()
-        self.recorder = RecordShortcutWindow(self.setShortcut, QPoint(x, y))
+        self.recorder = RecordShortcutWidget(self.setShortcut, QPoint(x, y))
         self.currentAction = action
 
     def setShortcut(self, key):

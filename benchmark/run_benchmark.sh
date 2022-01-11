@@ -10,14 +10,23 @@ function _set_params(){
     batch_size=${2:-"2"}
     fp_item=${3:-"fp32"}        # fp32 or fp16
     max_iter=${4:-"100"}
-    model_name=${5:-"model_name"}
+    model_item=${5:-"model_item"}   # fastscnn|segformer_b0| ocrnet_hrnetw48
     num_workers=${6:-"3"}
     run_log_path=${TRAIN_LOG_DIR:-$(pwd)}
+    base_batch_size=${batch_size}
+    mission_name="图像分割"
+    direction_id="0"
+    ips_unit="samples/sec"
+    skip_steps=10                     # 解析日志，有些模型前几个step耗时长，需要跳过                                    (必填)
+    keyword="ips:"                 # 解析日志，筛选出数据所在行的关键字                                             (必填)
+    keyword_loss="loss:" #选填
+    index="1"
+    model_name=${model_item}_bs${batch_size}_${fp_item}  # 模型的不同bs、fp配置模型应不一样,避免入库会混乱
 
     device=${CUDA_VISIBLE_DEVICES//,/ }
     arr=(${device})
     num_gpu_devices=${#arr[*]}
-    log_file=${run_log_path}/${model_name}_${run_mode}_bs${batch_size}_${fp_item}_${num_gpu_devices}
+    log_file=${run_log_path}/${model_item}_${run_mode}_bs${batch_size}_${fp_item}_${num_gpu_devices}
 }
 
 function _train(){
@@ -27,7 +36,7 @@ function _train(){
     if [ $fp_item = "fp16" ]; then
         use_fp16_cmd="--fp16"
     fi
-    train_cmd="--config=benchmark/configs/${model_name}.yml \
+    train_cmd="--config=benchmark/configs/${model_item}.yml \
                --batch_size=${batch_size} \
                --iters=${max_iter} \
                --num_workers=${num_workers} ${use_fp16_cmd}"
@@ -56,5 +65,8 @@ function _train(){
     fi
 }
 
+source ${BENCHMARK_ROOT}/scripts/run_model.sh   # 在该脚本中会对符合benchmark规范的log使用analysis.py 脚本进行性能数据解析;该脚本在连调时可从benchmark repo中下载https://github.com/PaddlePaddle/benchmark/blob/master/scripts/run_model.sh;如果不联调只想要产出训练log可以注掉本行,提交时需打开
 _set_params $@
-_train
+# _train       # 如果只想产出训练log,不解析,可取消注释
+_run     # 该函数在run_model.sh中,执行时会调用_train; 如果不联调只想要产出训练log可以注掉本行,提交时需打开
+

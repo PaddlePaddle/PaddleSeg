@@ -25,11 +25,9 @@ from paddleseg.cvlibs import manager
 class GINet(nn.Layer):
     """
     The GINet implementation based on PaddlePaddle.
-
     The original article refers to
     Wu, Tianyi, Yu Lu, Yu Zhu, Chuang Zhang, Ming Wu, Zhanyu Ma, and Guodong Guo. "GINet: Graph interaction network for scene parsing." In European Conference on Computer Vision, pp. 34-51. Springer, Cham, 2020.
     (https://arxiv.org/pdf/2009.06160).
-
     Args:
         num_classes (int): The unique number of target classes.
         backbone (Paddle.nn.Layer): Backbone network.
@@ -71,6 +69,7 @@ class GINet(nn.Layer):
 
     def base_forward(self, x):
         feat_list = self.backbone(x)
+
         c1, c2, c3, c4 = [feat_list[i] for i in self.backbone_indices]
 
         if self.jpu:
@@ -79,7 +78,7 @@ class GINet(nn.Layer):
             return c1, c2, c3, c4
 
     def forward(self, x):
-        _, _, h, w = x.shape
+        _, _, h, w = paddle.shape(x)
         _, _, c3, c4 = self.base_forward(x)
 
         logit_list = []
@@ -115,6 +114,7 @@ class GIHead(nn.Layer):
             shape=self.inp.shape,
             dtype=str(self.inp.numpy().dtype),
             default_initializer=paddle.nn.initializer.Assign(self.inp))
+        self.inp.stop_gradient = True
 
         self.fc1 = nn.Sequential(
             nn.Linear(300, 128), nn.BatchNorm1D(128), nn.ReLU())
@@ -137,8 +137,9 @@ class GIHead(nn.Layer):
             nn.Dropout(0.1), nn.Conv2D(inter_channels, nclass, 1))
 
     def forward(self, x):
-        B, C, H, W = x.shape
-        inp = self.inp.detach()
+
+        B, C, H, W = paddle.shape(x)
+        inp = self.inp
 
         inp = self.fc1(inp)
         inp = self.fc2(inp).unsqueeze(axis=0).transpose((0, 2, 1))\
@@ -172,20 +173,19 @@ class GlobalReasonUnit(nn.Layer):
 
     def forward(self, x, inp):
         B = self.conv_theta(x)
-        sizeB = B.shape
-        B = B.reshape((sizeB[0], sizeB[1], -1))
+        sizeB = paddle.shape(B)
+        B = paddle.flatten(B, 2, 3)
 
-        sizex = x.shape
+        sizex = paddle.shape(x)
         x_reduce = self.conv_phi(x)
-        x_reduce = x_reduce.reshape((sizex[0], -1, sizex[2] * sizex[3]))\
-                           .transpose((0, 2, 1))
+
+        x_reduce = paddle.flatten(x_reduce, 2, 3).transpose((0, 2, 1))
 
         V = paddle.bmm(B, x_reduce).transpose((0, 2, 1))
-        V = paddle.divide(
-            V, paddle.to_tensor([sizex[2] * sizex[3]], dtype='float32'))
+        V = paddle.divide(V, (sizex[2] * sizex[3]).astype('float32'))
 
         class_node, new_V = self.graph(inp, V)
-        D = B.reshape((sizeB[0], -1, sizeB[2] * sizeB[3])).transpose((0, 2, 1))
+        D = B.transpose((0, 2, 1))
         Y = paddle.bmm(D, new_V.transpose((0, 2, 1)))
         Y = Y.transpose((0, 2, 1)).reshape((sizex[0], self.num_state, \
                                             sizex[2], -1))
@@ -205,11 +205,11 @@ class GraphLayer(nn.Layer):
         self.gamma_vis = paddle.zeros([num_node])
         self.gamma_word = paddle.zeros([num_class])
         self.gamma_vis = paddle.create_parameter(
-            shape=self.gamma_vis.shape,
+            shape=paddle.shape(self.gamma_vis),
             dtype=str(self.gamma_vis.numpy().dtype),
             default_initializer=paddle.nn.initializer.Assign(self.gamma_vis))
         self.gamma_word = paddle.create_parameter(
-            shape=self.gamma_word.shape,
+            shape=paddle.shape(self.gamma_word),
             dtype=str(self.gamma_word.numpy().dtype),
             default_initializer=paddle.nn.initializer.Assign(self.gamma_word))
 
@@ -270,8 +270,8 @@ class GraphTransfer(nn.Layer):
         self.softmax_word = nn.Softmax(axis=-2)
 
     def forward(self, word, vis_node):
-        m_batchsize, C, Nc = word.shape
-        m_batchsize, C, Nn = vis_node.shape
+        m_batchsize, C, Nc = paddle.shape(word)
+        m_batchsize, C, Nn = paddle.shape(vis_node)
 
         proj_query = self.query_conv(word).reshape((m_batchsize, -1, Nc))\
                                           .transpose((0, 2, 1))

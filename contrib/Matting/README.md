@@ -1,22 +1,29 @@
 English | [简体中文](README_CN.md)
 
 # Matting
-Mating is the technique of extracting foreground from an image by calculating its color and transparency. It is widely used in the film industry to replace background, image composition, and visual effects. Each pixel in the image will have a value that represents its foreground transparency, called Alpha. The set of all Alpha values in an image is called Alpha Matte. The part of the image covered by the mask can be extracted to complete foreground separation.
+Image Matting is the technique of extracting foreground from an image by calculating its color and transparency. It is widely used in the film industry to replace background, image composition, and visual effects. Each pixel in the image will have a value that represents its foreground transparency, called Alpha. The set of all Alpha values in an image is called Alpha Matte. The part of the image covered by the mask can be extracted to complete foreground separation.
 
 <p align="center">
-<img src="https://user-images.githubusercontent.com/30919197/134927938-802eed44-9392-4abc-9fe7-8441777921d5.png" width="70%" height="70%">
+<img src="https://user-images.githubusercontent.com/30919197/141714637-be8af7b1-ccd0-49df-a4f9-10423705802e.jpg" width="100%" height="100%">
 </p>
 
+## Update Notes
+2021.11 Matting Project is released.
+[1] Support Matting models: DIM, MODNet.
+[2] Support model export and python deployment.
+[3] Support background replacement function.
+[4] Support human matting deployment in Android.
+
 ## Contents
-- [Instruction of Installation](#Instruction-of-Installation)
+- [Installation](#Installation)
 - [Models](#Models)
-- [Dataset preparation](#Dataset-preparation)
-- [Training](#Training)
-- [Evaluation](#Evaluation)
-- [Prediction and visualization results preservation](#Prediction-and-visualization-results-preservation)
+- [Dataset Preparation](#Dataset-Preparation)
+- [Training, Evaluation and Prediction](#Training-Evaluation-and-Prediction)
+- [Background Replacement](#Background-Replacement)
+- [Export and Deploy](#Export-and-Deploy)
+- [Human Matting Deployment in Android](./deploy/human_matting_android_demo/README.md)
 
-
-## Instruction of Installation
+## Installation
 
 #### 1. Install PaddlePaddle
 
@@ -44,15 +51,19 @@ cd contrib/Matting
 ```
 
 ## Models
+[PP-HumanMatting](https://paddleseg.bj.bcebos.com/matting/models/human_matting-resnet34_vd.pdparams)
+
 [DIM-VGG16](https://paddleseg.bj.bcebos.com/matting/models/dim-vgg16.pdparams)
 
 MODNet performance on [PPM-100](https://github.com/ZHKKKe/PPM).
 
-| Backbone | SAD | MSE | Link |
-|-|-|-|-|
-|MobileNetV2|112.73|0.0098|[model](https://paddleseg.bj.bcebos.com/matting/models/modnet-mobilenetv2.pdparams)|
-|ResNet50_vd|104.14|0.0090|[model](https://paddleseg.bj.bcebos.com/matting/models/modnet-resnet50_vd.pdparams)|
-|HRNet_W18|77.96|0.0054|[model](https://paddleseg.bj.bcebos.com/matting/models/modnet-hrnet_w18.pdparams)|
+| Backbone | SAD | MSE | Params(M) | FLOPs(G) | FPS | Link |
+|-|-|-|-|-|-|-|
+|MobileNetV2|112.73|0.0098|6.5|15.7|67.5|[model](https://paddleseg.bj.bcebos.com/matting/models/modnet-mobilenetv2.pdparams)|
+|ResNet50_vd|104.14|0.0090|92.2|151.6|28.6|[model](https://paddleseg.bj.bcebos.com/matting/models/modnet-resnet50_vd.pdparams)|
+|HRNet_W18|77.96|0.0054|10.2|28.5|10.9|[model](https://paddleseg.bj.bcebos.com/matting/models/modnet-hrnet_w18.pdparams)|
+
+Note: The model input size is (512, 512) and the GPU is Tesla V100 32G.
 
 ## Dataset preparation
 
@@ -120,8 +131,8 @@ val/fg/fg2.jpg bg/bg2.jpg val/trimap/trimap2.jpg
 val/fg/fg3.jpg bg/bg3.jpg val/trimap/trimap3.jpg
 ...
 ```
-
-## Training
+## Training, Evaluation and Prediction
+### Training
 ```shell
 export CUDA_VISIBLE_DEVICES=0
 python train.py \
@@ -143,7 +154,7 @@ python train.py --help
 ```
 If you want to use multiple GPUs，please use `python -m paddle.distributed.launch` to run.
 
-## Evaluation
+### Evaluation
 ```shell
 export CUDA_VISIBLE_DEVICES=0
 python val.py \
@@ -161,7 +172,7 @@ Run the following command to view more parameters.
 python val.py --help
 ```
 
-## Prediction and visualization results preservation
+### Prediction
 ```shell
 export CUDA_VISIBLE_DEVICES=0
 python predict.py \
@@ -178,3 +189,60 @@ Run the following command to view more parameters.
 ```shell
 python predict.py --help
 ```
+
+## Background Replacement
+```shell
+export CUDA_VISIBLE_DEVICES=0
+python bg_replace.py \
+    --config configs/modnet/modnet_mobilenetv2.yml \
+    --model_path output/best_model/model.pdparams \
+    --image_path path/to/your/image \
+    --bg_path path/to/your/background/image \
+    --save_dir ./output/results
+```
+If the model requires trimap information, pass the trimap path through '--trimap_path'.
+
+If `--bg_path` is not provided, green background is used。
+
+You can directly download the provided model for background replacement.
+
+Run the following command to view more parameters.
+```shell
+python bg_replace.py --help
+```
+
+## Export and Deploy
+### Model Export
+```shell
+python export.py \
+    --config configs/modnet/modnet_mobilenetv2.yml \
+    --model_path output/best_model/model.pdparams \
+    --save_dir output/export
+```
+If the model requires trimap information, `--trimap` is need.
+
+Run the following command to view more parameters.
+```shell
+python export.py --help
+```
+
+### Deploy
+```shell
+python deploy/python/infer.py \
+    --config output/export/deploy.yaml \
+    --image_path data/PPM-100/val/fg/ \
+    --save_dir ouput/results
+```
+If the model requires trimap information, pass the trimap path through '--trimap_path'.
+
+Run the following command to view more parameters.
+```shell
+python deploy/python/infer.py --help
+```
+## Contributors
+
+Thanks
+[wuyefeilin](https://github.com/wuyefeilin),
+[Qian bin](https://github.com/qianbin1989228),
+[yzl19940819](https://github.com/yzl19940819)
+for their contributons.

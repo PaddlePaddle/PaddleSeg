@@ -6,18 +6,10 @@ from matplotlib.patches import Polygon
 import numpy as np
 import copy
 import itertools
-
-# from . import mask as maskUtils
 import os
 from collections import defaultdict
 import sys
 from datetime import datetime
-
-PYTHON_VERSION = sys.version_info[0]
-if PYTHON_VERSION == 2:
-    from urllib import urlretrieve
-elif PYTHON_VERSION == 3:
-    from urllib.request import urlretrieve
 
 
 def _isArrayLike(obj):
@@ -37,8 +29,8 @@ class COCO:
             "categories": [],
             "images": [],
             "annotations": [],
-            "info": "info",
-            "licenses": "licenses",
+            "info": "",
+            "licenses": [],
         }  # the complete json
         self.anns = dict()  # anns[annId]={}
         self.cats = dict()  # cats[catId] = {}
@@ -48,7 +40,7 @@ class COCO:
         self.imgNameToId = defaultdict(list)  # imgNameToId[name] = imgId
         self.maxAnnId = 0
         self.maxImgId = 0
-        if annotation_file is not None:
+        if annotation_file is not None and os.path.exists(annotation_file):
             print("loading annotations into memory...")
             tic = time.time()
             dataset = json.load(open(annotation_file, "r"))
@@ -194,12 +186,23 @@ class COCO:
         self.imgNameToId[file_name] = id
         return id
 
+    def getBB(self, segmentation):
+        x = segmentation[::2]
+        y = segmentation[1::2]
+        maxx, minx, maxy, miny = max(x), min(x), max(y), min(y)
+        return [minx, miny, maxx - minx, maxy - miny]
+
+    def getArea(self, segmentation):
+        x = segmentation[::2]
+        y = segmentation[1::2]
+
+        return 0.5 * np.abs(np.dot(x, np.roll(y, 1)) - np.dot(y, np.roll(x, 1)))
+
     def addAnnotation(
         self,
         image_id: int,
         category_id: int,
         segmentation: list,
-        bbox: list = None,
         area: float = None,
         id: int = None,
     ):
@@ -209,21 +212,15 @@ class COCO:
         if not id:
             self.maxAnnId += 1
             id = self.maxAnnId
-        if not bbox:
-            x, y, width, height = 0, 0, 0, 0
-        else:
-            x, y, width, height = bbox[:]
-        # TODO: cal area
-        if not area:
-            area = 0
 
         ann = {
             "id": id,
+            "iscrowd": 0,
             "image_id": image_id,
             "category_id": category_id,
             "segmentation": [segmentation],
-            "area": area,
-            "bbox": [x, y, width, height],
+            "area": self.getArea(segmentation),
+            "bbox": self.getBB(segmentation),
         }
 
         self.dataset["annotations"].append(ann)
@@ -244,14 +241,13 @@ class COCO:
             if ann["id"] == annId:
                 del self.imgToAnns[imgId][idx]
 
-    def updateAnnotation(self, id, imgId, points, bbox=None):
-        self.anns[id]["segmentation"] = [points]
-
+    def updateAnnotation(self, id, imgId, segmentation):
+        self.anns[id]["segmentation"] = [segmentation]
+        self.anns[id]["bbox"] = self.getBB(segmentation)
+        self.anns[id]["area"] = self.getArea(segmentation)
         for rec in self.dataset["annotations"]:
             if rec["id"] == id:
-                rec["segmentation"] = [points]
-                if bbox is not None:
-                    rec["bbox"] = bbox
+                rec = self.anns[id]
                 break
 
         for rec in self.dataset["annotations"]:
@@ -266,7 +262,7 @@ class COCO:
 
         for rec in self.imgToAnns[imgId]:
             if rec["id"] == id:
-                rec["segmentation"] = [points]
+                rec["segmentation"] = [segmentation]
                 break
 
     def info(self):

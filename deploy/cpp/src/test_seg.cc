@@ -25,23 +25,34 @@ typedef struct YamlConfig {
   std::string model_file;
   std::string params_file;
   bool is_normalize;
+  bool is_resize;
+  int resize_width;
+  int resize_height;
 }YamlConfig;
 
 YamlConfig load_yaml(const std::string& yaml_path) {
   YAML::Node node = YAML::LoadFile(yaml_path);
   std::string model_file = node["Deploy"]["model"].as<std::string>();
   std::string params_file = node["Deploy"]["params"].as<std::string>();
-  bool is_normalize = false;
-  if (node["Deploy"]["transforms"] && 
-    node["Deploy"]["transforms"][0]["type"].as<std::string>() == "Normalize") {
-      is_normalize = true;
+  YamlConfig yaml_config = {model_file, params_file};
+  if (node["Deploy"]["transforms"]) {
+    const YAML::Node& transforms = node["Deploy"]["transforms"];
+    for (size_t i = 0; i < transforms.size(); i++) {
+      if (transforms[i]["type"].as<std::string>() == "Normalize") {
+        yaml_config.is_normalize = true;
+      } else if (transforms[i]["type"].as<std::string>() == "Resize") {
+        yaml_config.is_resize = true;
+        const YAML::Node& target_size = transforms[i]["target_size"];
+        yaml_config.resize_width = target_size[0].as<int>();
+        yaml_config.resize_height = target_size[1].as<int>();
+      }
+    }
   }
-
-  YamlConfig yaml_config = {model_file, params_file, is_normalize};
   return yaml_config;
 }
 
-std::shared_ptr<paddle_infer::Predictor> create_predictor(const YamlConfig& yaml_config) {
+std::shared_ptr<paddle_infer::Predictor> create_predictor(
+    const YamlConfig& yaml_config) {
   std::string& model_dir = FLAGS_model_dir;
 
   paddle_infer::Config infer_config;
@@ -78,10 +89,13 @@ void hwc_img_2_chw_data(const cv::Mat& hwc_img, float* data) {
   }
 }
 
-cv::Mat read_process_image(bool is_normalize) {
+cv::Mat read_process_image(const YamlConfig& yaml_config) {
   cv::Mat img = cv::imread(FLAGS_img_path, cv::IMREAD_COLOR);
   cv::cvtColor(img, img, cv::COLOR_BGR2RGB);
-  if (is_normalize) {
+  if (yaml_config.is_resize) {
+    cv::resize(img, img, cv::Size(yaml_config.resize_width, yaml_config.resize_height));
+  }
+  if (yaml_config.is_normalize) {
     img.convertTo(img, CV_32F, 1.0 / 255, 0);
     img = (img - 0.5) / 0.5;
   }
@@ -100,7 +114,7 @@ int main(int argc, char *argv[]) {
   YamlConfig yaml_config = load_yaml(yaml_path);
 
   // Prepare data
-  cv::Mat img = read_process_image(yaml_config.is_normalize);
+  cv::Mat img = read_process_image(yaml_config);
   int rows = img.rows;
   int cols = img.cols;
   int chs = img.channels();
@@ -123,7 +137,7 @@ int main(int argc, char *argv[]) {
   // Get output
   auto output_names = predictor->GetOutputNames();
   auto output_t = predictor->GetOutputHandle(output_names[0]);
-  std::vector<int> output_shape = output_t->shape();  // n * h * w
+  std::vector<int> output_shape = output_t->shape();
   int out_num = std::accumulate(output_shape.begin(), output_shape.end(), 1,
                                 std::multiplies<int>());
   std::vector<int64_t> out_data(out_num);

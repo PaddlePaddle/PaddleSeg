@@ -238,7 +238,7 @@ class PointHead(nn.Layer):
         self.importance_sample_ratio = importance_sample_ratio
         self.scale_factor = scale_factor
         self.subdivision_steps = subdivision_steps
-        self.subdivision_num_points = subdivision_num_points
+        self.subdivision_num_points = paddle.to_tensor(subdivision_num_points, dtype="int32")
         self.dropout_ratio = dropout_ratio
         self.coarse_pred_each_layer = coarse_pred_each_layer
         self.align_corners = align_corners
@@ -332,7 +332,7 @@ class PointHead(nn.Layer):
             upsampled_inputs = [
                 F.interpolate(
                     x,
-                    size=inputs[0].shape[2:],
+                    size=paddle.shape(inputs[0])[2:],
                     mode='bilinear',
                     align_corners=self.align_corners) for x in inputs
             ]
@@ -367,7 +367,7 @@ class PointHead(nn.Layer):
         importance_sample_ratio = self.importance_sample_ratio
         assert oversample_ratio >= 1
         assert 0 <= importance_sample_ratio <= 1
-        batch_size = seg_logits.shape[0]
+        batch_size = paddle.shape(seg_logits)[0]
         num_sampled = int(num_points * oversample_ratio)
         point_coords = paddle.rand([batch_size, num_sampled, 2])
         point_logits = point_sample(seg_logits, point_coords)
@@ -419,12 +419,14 @@ class PointHead(nn.Layer):
 
         num_points = self.subdivision_num_points
         uncertainty_map = uncertainty_func(seg_logits)
-        batch_size, _, height, width = uncertainty_map.shape
+        batch_size = paddle.shape(uncertainty_map)[0]
+        height = paddle.shape(uncertainty_map)[2]
+        width = paddle.shape(uncertainty_map)[3]
         h_step = 1.0 / height
         w_step = 1.0 / width
 
         uncertainty_map = uncertainty_map.reshape([batch_size, height * width])
-        num_points = min(height * width, num_points)
+        num_points = paddle.min(paddle.concat([height * width, num_points]))
         point_indices = paddle.topk(uncertainty_map, num_points, axis=1)[1]
         point_coords = paddle.zeros([batch_size, num_points, 2],
                                     dtype='float32')
@@ -446,10 +448,10 @@ class PointHead(nn.Layer):
             scattered refined_seg_logits(Tensor).
         """
 
-        original_shape = refined_seg_logits.shape  # [batch_size, channels, height * width]
+        original_shape = paddle.shape(refined_seg_logits)  # [batch_size, channels, height * width]
         new_refined_seg_logits = refined_seg_logits.flatten(0, 1)  # [N*C,H*W]
-        offsets = (paddle.arange(new_refined_seg_logits.shape[0]) *
-                   new_refined_seg_logits.shape[1]).unsqueeze(-1)  # [N*C,1]
+        offsets = (paddle.arange(paddle.shape(new_refined_seg_logits)[0]) *
+                   paddle.shape(new_refined_seg_logits)[1]).unsqueeze(-1)  # [N*C,1]
         point_indices = point_indices.flatten(0, 1)  # [N*C,H*W]
         new_point_indices = (point_indices + offsets).flatten()
         point_logits = point_logits.flatten()  # [N*C*H*W]
@@ -459,6 +461,25 @@ class PointHead(nn.Layer):
             point_logits,
             overwrite=True)
         return refined_seg_logits.reshape(shape=original_shape)
+
+    def forward_train(self, x, prev_output):
+        with paddle.no_grad():
+            points = self.get_points_train(prev_output, calculate_uncertainty)
+
+        fine_grained_point_feats = self._get_fine_grained_point_feats(
+            x, points)  # [2, 256, 2048]
+        coarse_point_feats = self._get_coarse_point_feats(
+            prev_output, points)  # [2, 19, 2048]
+        # forward for train
+        fusion_point_feats = paddle.concat(
+            [fine_grained_point_feats, coarse_point_feats], axis=1)
+        for fc in self.fcs:
+            fusion_point_feats = fc(fusion_point_feats)
+            if self.coarse_pred_each_layer:
+                fusion_point_feats = paddle.concat(
+                    (fusion_point_feats, coarse_point_feats), axis=1)
+        point_logits = self.cls_seg(fusion_point_feats)
+        return [point_logits, points]  # for points loss
 
     def forward(self, inputs, prev_output):
         """
@@ -475,24 +496,7 @@ class PointHead(nn.Layer):
         prev_output = prev_output[0]
         x = self._transform_inputs(inputs)
         if self.training:
-            with paddle.no_grad():
-                points = self.get_points_train(prev_output,
-                                               calculate_uncertainty)
-
-            fine_grained_point_feats = self._get_fine_grained_point_feats(
-                x, points)  # [2, 256, 2048]
-            coarse_point_feats = self._get_coarse_point_feats(
-                prev_output, points)  # [2, 19, 2048]
-            # forward for train
-            fusion_point_feats = paddle.concat(
-                [fine_grained_point_feats, coarse_point_feats], axis=1)
-            for fc in self.fcs:
-                fusion_point_feats = fc(fusion_point_feats)
-                if self.coarse_pred_each_layer:
-                    fusion_point_feats = paddle.concat(
-                        (fusion_point_feats, coarse_point_feats), axis=1)
-            point_logits = self.cls_seg(fusion_point_feats)
-            return [point_logits, points]  # for points loss
+            return self.forward_train(x, prev_output)
         else:
             refined_seg_logits = prev_output.clone()
             for _ in range(self.subdivision_steps):
@@ -501,7 +505,8 @@ class PointHead(nn.Layer):
                     scale_factor=self.scale_factor,
                     mode='bilinear',
                     align_corners=self.align_corners)
-                batch_size, channels, height, width = refined_seg_logits.shape
+
+                save_shape = paddle.shape(refined_seg_logits)
                 point_indices, points = self.get_points_test(
                     refined_seg_logits, calculate_uncertainty)
                 fine_grained_point_feats = self._get_fine_grained_point_feats(
@@ -518,14 +523,13 @@ class PointHead(nn.Layer):
                             (fusion_point_feats, coarse_point_feats), axis=1)
                 point_logits = self.cls_seg(fusion_point_feats)
                 point_indices = paddle.unsqueeze(point_indices, axis=1)
-                point_indices = paddle.expand(point_indices, [-1, channels, -1])
-                refined_seg_logits = refined_seg_logits.reshape(
-                    [batch_size, channels, height * width])
+                point_indices = paddle.expand(point_indices, [-1, save_shape[1], -1])
+
+                refined_seg_logits = paddle.flatten(refined_seg_logits, 2)
                 refined_seg_logits = self.scatter_paddle(
                     refined_seg_logits, point_indices,
                     point_logits)  # 2->height * width dim
-                refined_seg_logits = refined_seg_logits.reshape(
-                    [batch_size, channels, height, width])
+                refined_seg_logits = refined_seg_logits.reshape(save_shape)
             return [refined_seg_logits]
 
 
@@ -626,7 +630,7 @@ class FPNHead(nn.Layer):
             upsampled_inputs = [
                 F.interpolate(
                     x,
-                    size=inputs[0].shape[2:],
+                    size=paddle.shape(inputs[0])[2:],
                     mode='bilinear',
                     align_corners=self.align_corners) for x in inputs
             ]
@@ -644,7 +648,7 @@ class FPNHead(nn.Layer):
         for i in range(1, len(self.feature_strides)):
             output = output + F.interpolate(
                 self.scale_heads[i](x[i]),
-                size=output.shape[2:],
+                size=paddle.shape(output)[2:],
                 mode='bilinear',
                 align_corners=self.align_corners)
         output = self.cls_seg(output)
@@ -767,10 +771,9 @@ class Upsample(nn.Layer):
 
     def forward(self, x):
         if not self.size:
-            size = [int(t * self.scale_factor) for t in x.shape[-2:]]
+            return F.interpolate(x, None, self.scale_factor, self.mode, self.align_corners)
         else:
-            size = self.size
-        return F.interpolate(x, size, None, self.mode, self.align_corners)
+            return F.interpolate(x, self.size, None, self.mode, self.align_corners)
 
 
 def point_sample(input, points, align_corners=False, **kwargs):

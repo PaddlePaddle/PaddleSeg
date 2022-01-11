@@ -11,6 +11,8 @@
 
 ![inference_ecosystem](https://user-images.githubusercontent.com/52520497/130720374-26947102-93ec-41e2-8207-38081dcc27aa.png)
 
+此外，PaddleX也提供了C++部署的示例和文档，具体参考[链接](https://github.com/PaddlePaddle/PaddleX/tree/develop/deploy/cpp)。
+
 ## 2. 准备环境
 
 ### 准备Paddle Inference C++预测库

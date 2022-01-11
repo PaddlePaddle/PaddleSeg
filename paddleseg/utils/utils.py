@@ -42,28 +42,40 @@ def load_entire_model(model, pretrained):
                        'training from scratch or a pretrained backbone.'.format(model.__class__.__name__))
 
 
+def download_pretrained_model(pretrained_model):
+    """
+    Download pretrained model from url.
+    Args:
+        pretrained_model (str): the url of pretrained weight
+    Returns:
+        str: the path of pretrained weight
+    """
+    assert urlparse(pretrained_model).netloc, "The url is not valid."
+
+    pretrained_model = unquote(pretrained_model)
+    savename = pretrained_model.split('/')[-1]
+    if not savename.endswith(('tgz', 'tar.gz', 'tar', 'zip')):
+        savename = pretrained_model.split('/')[-2]
+    else:
+        savename = savename.split('.')[0]
+
+    with generate_tempdir() as _dir:
+        with filelock.FileLock(os.path.join(seg_env.TMP_HOME, savename)):
+            pretrained_model = download_file_and_uncompress(
+                pretrained_model,
+                savepath=_dir,
+                extrapath=seg_env.PRETRAINED_MODEL_HOME,
+                extraname=savename)
+            pretrained_model = os.path.join(pretrained_model, 'model.pdparams')
+    return pretrained_model
+
+
 def load_pretrained_model(model, pretrained_model):
     if pretrained_model is not None:
         logger.info('Loading pretrained model from {}'.format(pretrained_model))
-        # download pretrained model from url
-        if urlparse(pretrained_model).netloc:
-            pretrained_model = unquote(pretrained_model)
-            savename = pretrained_model.split('/')[-1]
-            if not savename.endswith(('tgz', 'tar.gz', 'tar', 'zip')):
-                savename = pretrained_model.split('/')[-2]
-            else:
-                savename = savename.split('.')[0]
-            with generate_tempdir() as _dir:
-                with filelock.FileLock(
-                        os.path.join(seg_env.TMP_HOME, savename)):
-                    pretrained_model = download_file_and_uncompress(
-                        pretrained_model,
-                        savepath=_dir,
-                        extrapath=seg_env.PRETRAINED_MODEL_HOME,
-                        extraname=savename)
 
-                    pretrained_model = os.path.join(pretrained_model,
-                                                    'model.pdparams')
+        if urlparse(pretrained_model).netloc:
+            pretrained_model = download_pretrained_model(pretrained_model)
 
         if os.path.exists(pretrained_model):
             para_state_dict = paddle.load(pretrained_model)
@@ -153,10 +165,11 @@ def get_image_list(image_path):
                     image_list.append(os.path.join(root, f))
     else:
         raise FileNotFoundError(
-            '`--image_path` is not found. it should be an image file or a directory including images'
+            '`--image_path` is not found. it should be a path of image, or a file list containing image paths, or a directory including images.'
         )
 
     if len(image_list) == 0:
-        raise RuntimeError('There are not image file in `--image_path`')
+        raise RuntimeError(
+            'There are not image file in `--image_path`={}'.format(image_path))
 
     return image_list, image_dir
