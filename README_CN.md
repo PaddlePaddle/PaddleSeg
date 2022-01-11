@@ -17,7 +17,7 @@
 
 
 
-## 最新动态 <img src="./docs/images/seg_news_icon.png" width="50"/>
+## 最新动态 <img src="./docs/images/seg_news_icon.png" width="40"/>
 
 * [2022-01-04] PaddleSeg团队发表人像分割论文[PP-HumanSeg](./contrib/PP-HumanSeg/paper.md)，并开源连通性学习（SCL）方法和大规模视频会议数据集。
 * [2021-10-11] PaddleSeg 2.3版本发布交互式分割工具([EISeg v0.3](./EISeg)), 开源两种 [Matting](./contrib/Matting) 算法, 以及分割高阶功能[模型蒸馏](./slim/distill)和[模型量化](./slim/quant)方案。
