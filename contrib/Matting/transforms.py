@@ -714,6 +714,7 @@ class Padding:
         return data
 
 
+@manager.TRANSFORMS.add_component
 class RandomSharpen:
     def __init__(self, prob=0.1):
         if prob < 0:
@@ -740,6 +741,7 @@ class RandomSharpen:
         return data
 
 
+@manager.TRANSFORMS.add_component
 class RandomNoise:
     def __init__(self, prob=0.1):
         if prob < 0:
@@ -761,6 +763,7 @@ class RandomNoise:
         return data
 
 
+@manager.TRANSFORMS.add_component
 class RandomReJpeg:
     def __init__(self, prob=0.1):
         if prob < 0:
