@@ -1,11 +1,12 @@
+简体中文|[English](infer_benchmark.md)
 # PaddleSeg模型开发规范
 
-模型规范主要分为新增文件自查，可拓展模块编码规范，新增`PR checklist`，导出和测试预测模型。
+模型规范主要分为新增文件自查，可拓展模块编码规范，新增PR checklist，导出和测试预测模型。
 
 
 ## 一、新增文件自查
 
-新增文件部分在拓展任意模块时，都需要进行自查，主要包含`copyright，import`，和编码规范`checklist`。
+新增文件都需要进行自查，主要包含`copyright，import`，和编码规范`checklist`。
 
 ### 1. `copyright`
 
@@ -139,7 +140,7 @@ def __init__(self,
     self.init_weight()
 ```
 
-#### 3）forward规范
+#### 3）forward 规范
 
 1. 逻辑尽量简洁，以组件式的调用呈现。
 2. `resize`到原图大小按列表形式返回，第一个元素为主输出，其他为辅助输出。
@@ -207,9 +208,9 @@ from .pspnet import *
 
 ### 2. loss 开发规范
 
-损失开发的规范以`paddleseg/models/losses/cross_entropy_loss.py`为例，文件中仅声明一个和数据集名字一致的类。建立新的数据集文件，则在`paddleseg/dataset`中创建对应数据集名字的文件。
+损失开发的规范以`paddleseg/models/losses/cross_entropy_loss.py`为例:
 
-### 1) 模型声明规范
+### 1) 损失声明规范
 
 1. 在损失头使用`manager`装饰器；
 2. 继承`nn.Layer`；
@@ -222,6 +223,7 @@ from .pspnet import *
 class CrossEntropyLoss(nn.Layer):
     """
     Implements the cross entropy loss function.
+
     Args:
         weight (tuple|list|ndarray|Tensor, optional): A manual rescaling weight
             given to each class. Its length must be equal to the number of classes.
@@ -240,7 +242,7 @@ class CrossEntropyLoss(nn.Layer):
 
 数据集开发的规范以`paddleseg/dataset/cityscapes.py`为例，文件中仅声明一个和数据集名字一致的类。建立新的数据集文件，则在`paddleseg/dataset`中创建对应数据集名字的文件。
 
-#### 1）模型声明规范
+#### 1）数据集声明规范
 
 1. 在类头部添加装饰器；
 
@@ -280,12 +282,12 @@ class Cityscapes(Dataset):
     """
 ```
 
-#### 2）**init**规范
+#### 2）__init__规范
 
 1. ```__init__```中参数全部显式写出，**不能**包括变长参数比如:```*args, **kwargs```；
 2. ```super().__init__()```保持空参数；
 3. 参数顺序和上述参数顺序一致；
-4. 通过在在```__init__```方法中建立 ```self.file_list```，之后就可以根据其中元素的路径读取对应图片。
+4. 通过在在```__init__```方法中建立 ```self.file_list```，之后就根据其中元素的路径读取对应图片。
 
 
 
