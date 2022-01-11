@@ -33,7 +33,6 @@ English | [简体中文](use_cn.md)
 >     * momentum : Momentum optimization.
 >     * weight_decay : L2 regularized value.
 
-
 ----
 ### lr_scheduler
 * Learning rate
