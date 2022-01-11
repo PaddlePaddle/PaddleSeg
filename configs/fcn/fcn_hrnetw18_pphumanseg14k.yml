@@ -1,0 +1,53 @@
+train_dataset:
+  type: PPHumanSeg14K
+  dataset_root: data/PP-HumanSeg14K
+  transforms:
+    - type: ResizeStepScaling
+      min_scale_factor: 0.5
+      max_scale_factor: 2.0
+      scale_step_size: 0.25
+    - type: RandomPaddingCrop
+      crop_size: [398, 224]
+    - type: RandomHorizontalFlip
+    - type: RandomDistort
+      brightness_range: 0.4
+      contrast_range: 0.4
+      saturation_range: 0.4
+    - type: Normalize
+  mode: train
+
+val_dataset:
+  type: PPHumanSeg14K
+  dataset_root: data/PP-HumanSeg14K
+  transforms:
+    - type: Normalize
+  mode: val
+
+model:
+  type: FCN
+  backbone:
+    type: HRNet_W18
+    align_corners: False
+    pretrained: https://bj.bcebos.com/paddleseg/dygraph/hrnet_w18_ssld.tar.gz
+  num_classes: 2
+  pretrained: Null
+  backbone_indices: [-1]
+
+optimizer:
+  type: sgd
+  momentum: 0.9
+  weight_decay: 0.0005
+
+lr_scheduler:
+  type: PolynomialDecay
+  learning_rate: 0.05
+  end_lr: 0
+  power: 0.9
+
+loss:
+  types:
+    - type: CrossEntropyLoss
+  coef: [1]
+
+iters: 10000
+batch_size: 64

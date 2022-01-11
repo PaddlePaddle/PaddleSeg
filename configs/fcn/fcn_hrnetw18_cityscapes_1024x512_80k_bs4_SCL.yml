@@ -21,6 +21,6 @@ loss:
     - type: MixedLoss
       losses:
         - type: CrossEntropyLoss
-        - type: SemanticConnectivityLearning
+        - type: SemanticConnectivityLoss
       coef: [1, 0.05]
   coef: [1]

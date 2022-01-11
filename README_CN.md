@@ -129,7 +129,7 @@ PaddleSeg是基于飞桨PaddlePaddle开发的端到端图像分割开发套件�
           <ul>
             <li>Cross Entropy</li>
             <li>Binary CE</li>
-            <li>Bootstrapped CE</li> 
+            <li>Bootstrapped CE</li>
             <li>Point CE</li>
             <li>OHEM CE</li>
             <li>Pixel Contrast CE</li>
@@ -167,7 +167,8 @@ PaddleSeg是基于飞桨PaddlePaddle开发的端到端图像分割开发套件�
             <li>HRF</li>
             <li>DRIVE</li>
             <li>STARE</li>
-          </ul> 
+            <li>PP-HumanSeg14K</li>
+          </ul>
         <b>数据增强</b><br>
         <ul>
           <li>Flipping</li>  
@@ -182,7 +183,7 @@ PaddleSeg是基于飞桨PaddlePaddle开发的端到端图像分割开发套件�
           <li>PaddingByAspectRatio</li>
           <li>RandomPaddingCrop</li>  
           <li>RandomCenterCrop</li>
-          <li>ScalePadding</li> 
+          <li>ScalePadding</li>
           <li>RandomNoise</li>  
           <li>RandomBlur</li>  
           <li>RandomRotation</li>  
