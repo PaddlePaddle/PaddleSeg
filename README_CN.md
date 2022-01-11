@@ -278,7 +278,7 @@ PaddleSeg是基于飞桨PaddlePaddle开发的端到端图像分割开发套件�
 * 模型压缩
     * [量化](./docs/slim/quant/quant_cn.md)
     * [蒸馏](./docs/slim/distill/distill_cn.md)
-    * [裁剪](./docs/slim/prune/prune.md)
+    * [裁剪](./docs/slim/prune/prune_cn.md)
 
 *  API使用教程
     * [API文档说明](./docs/apis/README_CN.md)
