@@ -1,1 +1,1 @@
-模型量化教程，请参考[文档](../../docs/slim/quant/quant.md)。
+Please refer to the [tutorial](../../docs/slim/quant/quant.md) for model quant.
