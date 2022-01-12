@@ -41,7 +41,7 @@ cd contrib/LaneSeg
 
 ## Models
 
-The evaluation base on TuSimple challenge evaluation method you can get more information from [TuSimple exampe](https://github.com/TuSimple/tusimple-benchmark/blob/master/example/lane_demo.ipynb)
+The evaluation is base on TuSimple challenge evaluation method. You can get more information from [TuSimple example](https://github.com/TuSimple/tusimple-benchmark/blob/master/example/lane_demo.ipynb)
 
 Lane detection model performance on Tusimple.
 
