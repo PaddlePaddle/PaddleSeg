@@ -50,3 +50,4 @@ from .segnet import SegNet
 from .hrnet_contrast import HRNetW48Contrast
 from .espnet import ESPNetV2
 from .stdcseg_slim import STDCSeg_slim
+from .ppseg import PPSeg

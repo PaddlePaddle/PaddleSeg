@@ -1795,7 +1795,8 @@ class STDCNet_pp_1(nn.Layer):
         print("block_type:" + block_type)
         assert block_type in block_dict
         block = block_dict[block_type]
-        self.feat_channels = [v * base for v in layers_expand]
+        self.feat_channels = [base // 2, base]
+        self.feat_channels.extend([v * base for v in layers_expand])
 
         self.features = self._make_layers(base, layers, layers_expand,
                                           block_num, block)

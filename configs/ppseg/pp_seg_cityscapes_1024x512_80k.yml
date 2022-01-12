@@ -1,0 +1,31 @@
+_base_: '../_base_/cityscapes.yml'
+
+batch_size: 12  # total: 24
+iters: 80000
+
+model:
+  type: PPSeg # base: STDCSeg_1
+  backbone:
+    # STDC_pp_1:ruturns some features, STDC_pp_1_s4_ch_512: The channel of last stage is 512
+    # STDC_pp_2:returns all features,
+    type: STDC_pp_1
+    block_type: cat # base cat
+    #pretrained: https://bj.bcebos.com/paddleseg/dygraph/STDCNet1.tar.gz    # ori cat weights
+    #pretrained: pretrained_model/stdc1net_class_pretrained_cat_pp.pdparams # pp cat weights
+    pretrained: pretrained_model/stdc1net_class_pretrained_cat_pp_distill_resnet50_stdc1net_img500w_gpu4_bs64_ep50_lr0.001.pdparams  # distill_2 weights
+    #pretrained: pretrained_model/stdc1net_class_pretrained_cat_pp_distill_resnet50_stdc1net_img500w_gpu4_bs64_ep50_lr0.01.pdparams  # distill_3 weights
+    atten_type: AttenNone # base: AttenNone
+  backbone_indices: [2,3,4]
+  head_type: PPSegHead_1
+  arm_type: FusionAdd
+  fpn_ch: 128
+  seg_head_mid_chs: [256, 64, 64]
+  resize_mode: bilinear # base: nearest, support:nearest and bilinear
+
+loss:
+  types:
+    - type: OhemCrossEntropyLoss
+    - type: OhemCrossEntropyLoss
+    - type: OhemCrossEntropyLoss
+    #- type: DetailAggregateLoss
+  coef: [1, 1, 1]
