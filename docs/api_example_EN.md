@@ -1,20 +1,21 @@
 # API application case
+api_example_EN.md for English doc, api_example.md for Chinese doc.
 
 Through this tutorial, you will quickly learn the API calls of PaddleSeg, and easily train, evaluate and predict semantic segmentation models. We will take BiSeNetV2 and optic disc segmentation datasets as examples to teach you step by step how to call the API to build models, datasets, loss functions, optimizers and other modules.
 
-If you are more interested in the configuration call method, you can refer to[10分钟上手PaddleSeg](https://aistudio.baidu.com/aistudio/projectdetail/1672610)tutorial。
+If you are more interested in the configuration call method, you can refer to the [tutorial](https://aistudio.baidu.com/aistudio/projectdetail/1672610)。
 
 **Note**：Please fork the latest version of this project on AI studio, and then run it.
 
-**Note**：For more details of PaddleSeg API，please refer to[API文档](https://github.com/PaddlePaddle/PaddleSeg/tree/develop/docs/apis)
+**Note**：For more details of PaddleSeg API，please refer to the [tutorial](https://github.com/PaddlePaddle/PaddleSeg/tree/develop/docs/apis)
 
-## Installation and environment configuration of PaddleSeg 
+## Installation 
 
 ```python
 !pip install paddleseg
 ```
 
-## Model training
+## Model Training
 
 ### 1. Bulid the model
 
@@ -106,7 +107,7 @@ train(
     use_vdl=True)
 ```
 
-## Model evaluation
+## Model Evaluation
 
 ### 1. Bulid model
 
@@ -118,7 +119,7 @@ model = BiSeNetV2(num_classes=2,
                  pretrained=None)
 ```
 
-### 2. Load model parameters
+### 2. Load pretrained model
 
 ```python
 model_path = 'output/best_model/model.pdparams'
@@ -149,7 +150,7 @@ val_dataset = OpticDiscSeg(
 )
 ```
 
-### 4. Evaluating
+### 4. Evaluation
 
 ```python
 from paddleseg.core import evaluate
@@ -225,7 +226,7 @@ image_path = 'data/optic_disc_seg/JPEGImages/N0010.jpg' # 也可以输入一个�
 image_list, image_dir = get_image_list('data/optic_disc_seg/JPEGImages/N0010.jpg')
 ```
 
-### 4. Predict
+### 4. Prediction
 
 The image prediction result will be output to the save path `save_dir`. Two directories will be generated under this path. `pseudo_color_prediction` saves the pseudo-color prediction result graph, you can directly view the prediction effect of each category, and `added_prediction` saves the pseudo-color prediction result and the superimposed effect graph of the original image.
 

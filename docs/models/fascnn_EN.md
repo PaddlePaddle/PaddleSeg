@@ -4,6 +4,6 @@ Fast-SCNN is a real-time oriented semantic segmentation network. Based on the du
 
 ![img](./images/Fast-SCNN.png)
 
-<div align = "center">Fast-SCNN结构图</div>
+<div align = "center">Fast-SCNN</div>
 
 For details, please refer to[Fast-SCNN: Fast Semantic Segmentation Network](https://arxiv.org/abs/1902.04502)
