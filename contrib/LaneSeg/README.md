@@ -1,7 +1,7 @@
 English | [简体中文](README_CN.md)
 
 # LaneSeg
-Lane detection is a category of automatic driving algorithms, which can be used to assist vehicle positioning and decision-making. In the early days, there were lane detection methods based on traditional image processing, but with the evolution of technology, the scenes that lane detection tasks deal with More and more diversified, and more methods are currently seeking to detect the location of lane semantically. This project mainly uses PaddleSeg for lane detection.
+Lane detection is a category of automatic driving algorithms, which can be used to assist vehicle positioning and decision-making. In the early days, there were lane detection methods based on traditional image processing, but with the evolution of technology, the scenes that lane detection tasks deal with are more and more diversified, and more methods are currently seeking to detect the location of lane semantically. This project mainly uses PaddleSeg for lane detection.
 
 ## Contents
 - [Installation](#Installation)
