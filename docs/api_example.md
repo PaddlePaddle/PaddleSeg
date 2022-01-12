@@ -222,7 +222,7 @@ def get_image_list(image_path):
         raise RuntimeError('There are not image file in `--image_path`')
 
     return image_list, image_dir
-image_path = 'data/optic_disc_seg/JPEGImages/N0010.jpg' # 也可以输入一个包含图像的目录
+image_path = 'data/optic_disc_seg/JPEGImages/N0010.jpg' # You can also enter a directory containing images
 image_list, image_dir = get_image_list('data/optic_disc_seg/JPEGImages/N0010.jpg')
 ```
 
