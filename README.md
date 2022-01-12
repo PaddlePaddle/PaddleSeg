@@ -266,7 +266,7 @@ The relationship between mIoU and FLOPs of representative architectures and back
 
 *  Easy API
     * [API Documention](./docs/apis/README.md)
-    * [API Tutorial](./docs/api_example_cn.md)
+    * [API Tutorial](./docs/api_example.md)
 *  Baisc Knowledge
     * [Data Augmentation](./docs/module/data/data.md)
     * [Loss Description](./docs/module/loss/losses_en.md)
