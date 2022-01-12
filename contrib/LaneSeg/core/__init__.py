@@ -12,18 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .dataset import Dataset
-from .cityscapes import Cityscapes
-from .voc import PascalVOC
-from .ade import ADE20K
-from .optic_disc_seg import OpticDiscSeg
-from .pascal_context import PascalContext
-from .mini_deep_globe_road_extraction import MiniDeepGlobeRoadExtraction
-from .eg1800 import EG1800
-from .supervisely import SUPERVISELY
-from .cocostuff import CocoStuff
-from .stare import STARE
-from .drive import DRIVE
-from .hrf import HRF
-from .chase_db1 import CHASEDB1
-from .pp_humanseg14k import PPHumanSeg14K
+from .train import train
+from .val import evaluate
+from .predict import predict
+from . import infer
+
+__all__ = ['train', 'evaluate', 'predict']

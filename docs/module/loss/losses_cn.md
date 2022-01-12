@@ -25,4 +25,4 @@
 
 * ## [paddleseg.models.losses.ohem_edge_attention_loss](./OhemEdgeAttentionLoss_cn.md)
 
-* ## [paddleseg.models.losses.semantic_connectivity_learning](./SemanticConnectivityLearning_cn.md)
+* ## [paddleseg.models.losses.semantic_connectivity_loss](./SemanticConnectivityLoss_cn.md)

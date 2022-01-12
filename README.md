@@ -1,13 +1,23 @@
 English | [简体中文](README_CN.md)
 
-# PaddleSeg
+<div align="center">
+
+<p align="center">
+  <img src="./docs/images/paddleseg_logo.png" align="middle" width = "500" />
+</p>
+
+**A High-Efficient Development Toolkit for Image Segmentation based on [PaddlePaddle](https://github.com/paddlepaddle/paddle).**
 
 [![License](https://img.shields.io/badge/license-Apache%202-blue.svg)](LICENSE)
 [![Version](https://img.shields.io/github/release/PaddlePaddle/PaddleSeg.svg)](https://github.com/PaddlePaddle/PaddleSeg/releases)
 ![python version](https://img.shields.io/badge/python-3.6+-orange.svg)
 ![support os](https://img.shields.io/badge/os-linux%2C%20win%2C%20mac-yellow.svg)
 
-## News <img src="./docs/images/seg_news_icon.png" width="50"/>
+</div>
+
+
+
+## News <img src="./docs/images/seg_news_icon.png" width="40"/>
 
 * [2022-01-04] We published a paper on portrait segmentation named [PP-HumanSeg](./contrib/PP-HumanSeg/paper.md), and released Semantic Connectivity-aware Learning (SCL) framework and a Large-Scale Teleconferencing Video Dataset.
 * [2021-10-11] We released PaddleSeg v2.3 with the improved interactive segmentation tool ([EISeg v0.3](./EISeg)), two [matting]((./contrib/Matting)) algorithms, and segmentation model compression.
@@ -119,7 +129,7 @@ PaddleSeg is an end-to-end high-efficent development toolkit for image segmentat
           <ul>
             <li>Cross Entropy</li>
             <li>Binary CE</li>
-            <li>Bootstrapped CE</li> 
+            <li>Bootstrapped CE</li>
             <li>Point CE</li>
             <li>OHEM CE</li>
             <li>Pixel Contrast CE</li>
@@ -157,7 +167,8 @@ PaddleSeg is an end-to-end high-efficent development toolkit for image segmentat
             <li>HRF</li>
             <li>DRIVE</li>
             <li>STARE</li>
-          </ul> 
+            <li>PP-HumanSeg14K</li>
+          </ul>
         <b>Data Augmentation</b><br>
         <ul>
           <li>Flipping</li>  
@@ -172,7 +183,7 @@ PaddleSeg is an end-to-end high-efficent development toolkit for image segmentat
           <li>PaddingByAspectRatio</li>
           <li>RandomPaddingCrop</li>  
           <li>RandomCenterCrop</li>
-          <li>ScalePadding</li> 
+          <li>ScalePadding</li>
           <li>RandomNoise</li>  
           <li>RandomBlur</li>  
           <li>RandomRotation</li>  

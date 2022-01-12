@@ -8,7 +8,7 @@ loss:
     - type: MixedLoss
       losses:
         - type: CrossEntropyLoss
-        - type: SemanticConnectivityLearning
+        - type: SemanticConnectivityLoss
       coef: [1, 0.01]
     - type: CrossEntropyLoss
   coef: [1.0, 0.4]
