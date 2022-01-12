@@ -8,4 +8,4 @@ The network also uses skip connections, that is, every time the decoder upsample
 
 <div align = "center">U-Net</div>
 
-For details, please refer to[U-Net:Convolutional Networks for Biomedical Image Segmentation](https://arxiv.org/abs/1505.04597)。
+For details, please refer to[U-Net:Convolutional Networks for Biomedical Image Segmentation](https://arxiv.org/abs/1505.04597).

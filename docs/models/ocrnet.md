@@ -6,4 +6,4 @@ FCN (Fully Convolutional Network for Semantic Segmentation) can classify images 
 
 <div align = "center">OCRNet</div>
 
-For details, please refer to[Object-Contextual Representations for SemanticSegmentation](https://arxiv.org/pdf/1909.11065.pdf)。
+For details, please refer to[Object-Contextual Representations for SemanticSegmentation](https://arxiv.org/pdf/1909.11065.pdf).

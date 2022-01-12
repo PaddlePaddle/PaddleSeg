@@ -25,4 +25,4 @@ The overall structure is shown below. The main body of the Encoder is the backbo
 
 <div align = "center">DeepLabv3+</div>
 
-For details, please refer to[Encoder-Decoder with Atrous Separable Convolution for Semantic Image Segmentation](https://arxiv.org/abs/1802.02611)。
+For details, please refer to[Encoder-Decoder with Atrous Separable Convolution for Semantic Image Segmentation](https://arxiv.org/abs/1802.02611).
