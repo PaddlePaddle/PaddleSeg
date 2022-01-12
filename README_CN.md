@@ -1,15 +1,23 @@
 简体中文 | [English](README.md)
 
-# PaddleSeg
+<div align="center">
+
+<p align="center">
+  <img src="./docs/images/paddleseg_logo.png" align="middle" width = "500" />
+</p>
+
+**飞桨高性能图像分割开发套件，端到端地完成从训练到部署的全流程图像分割应用。**
 
 [![Build Status](https://travis-ci.org/PaddlePaddle/PaddleSeg.svg?branch=release/2.1)](https://travis-ci.org/PaddlePaddle/PaddleSeg)
 [![License](https://img.shields.io/badge/license-Apache%202-blue.svg)](LICENSE)
 [![Version](https://img.shields.io/github/release/PaddlePaddle/PaddleSeg.svg)](https://github.com/PaddlePaddle/PaddleSeg/releases)
 ![python version](https://img.shields.io/badge/python-3.6+-orange.svg)
 ![support os](https://img.shields.io/badge/os-linux%2C%20win%2C%20mac-yellow.svg)
+</div>
 
 
-## 最新动态 <img src="./docs/images/seg_news_icon.png" width="50"/>
+
+## 最新动态 <img src="./docs/images/seg_news_icon.png" width="40"/>
 
 * [2022-01-04] PaddleSeg团队发表人像分割论文[PP-HumanSeg](./contrib/PP-HumanSeg/paper.md)，并开源连通性学习（SCL）方法和大规模视频会议数据集。
 * [2021-10-11] PaddleSeg 2.3版本发布交互式分割工具([EISeg v0.3](./EISeg)), 开源两种 [Matting](./contrib/Matting) 算法, 以及分割高阶功能[模型蒸馏](./slim/distill)和[模型量化](./slim/quant)方案。
@@ -270,7 +278,7 @@ PaddleSeg是基于飞桨PaddlePaddle开发的端到端图像分割开发套件�
 * 模型压缩
     * [量化](./docs/slim/quant/quant_cn.md)
     * [蒸馏](./docs/slim/distill/distill_cn.md)
-    * [裁剪](./docs/slim/prune/prune.md)
+    * [裁剪](./docs/slim/prune/prune_cn.md)
 
 *  API使用教程
     * [API文档说明](./docs/apis/README_CN.md)
