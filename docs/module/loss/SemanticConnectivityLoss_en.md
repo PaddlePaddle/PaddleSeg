@@ -1,5 +1,5 @@
-English | [简体中文](SemanticConnectivityLearning_cn.md)
-## [SemanticConnectivityLearning](../../../paddleseg/models/losses/semantic_connectivity_learning.py)
+English | [简体中文](SemanticConnectivityLoss_cn.md)
+## [SemanticConnectivityLoss](../../../paddleseg/models/losses/semantic_connectivity_loss.py)
 SCL (Semantic Connectivity-aware Learning) framework, which introduces a SC Loss (Semantic Connectivity-aware Loss)
 to improve the quality of segmentation results from the perspective of connectivity. Support multi-class segmentation.
 
@@ -14,7 +14,7 @@ Step 1. Connected Components Calculation
 Step 2. Connected Components Matching and SC Loss Calculation
 
 ```python
-class paddleseg.models.losses.SemanticConnectivityLearning(
+class paddleseg.models.losses.SemanticConnectivityLoss(
             ignore_index = 255,
             max_pred_num_conn = 10,
             use_argmax = True

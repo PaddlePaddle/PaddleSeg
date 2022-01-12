@@ -1,5 +1,5 @@
-简体中文 | [English](SemanticConnectivityLearning_en.md)
-## [SemanticConnectivityLearning](../../../paddleseg/models/losses/semantic_connectivity_learning.py)
+简体中文 | [English](SemanticConnectivityLoss_en.md)
+## [SemanticConnectivityLoss](../../../paddleseg/models/losses/semantic_connectivity_loss.py)
 SCL（Semantic Connectivity-aware Learning）框架，它引入了SC Loss (Semantic Connectivity-aware Loss)，从连通性的角度提升分割结果的质量。支持多类别分割。
 
 论文信息：
@@ -12,7 +12,7 @@ SCL（Semantic Connectivity-aware Learning）框架，它引入了SC Loss (Seman
 步骤1，连通域计算
 步骤2，连通域匹配与SC Loss计算
 ```python
-class paddleseg.models.losses.SemanticConnectivityLearning(
+class paddleseg.models.losses.SemanticConnectivityLoss(
             ignore_index = 255,
             max_pred_num_conn = 10,
             use_argmax = True
