@@ -274,7 +274,7 @@ PaddleSeg是基于飞桨PaddlePaddle开发的端到端图像分割开发套件�
 
 *  API使用教程
     * [API文档说明](./docs/apis/README_CN.md)
-    * [API应用案例](./docs/api_example.md)
+    * [API应用案例](./docs/api_example_cn.md)
 *  重要模块说明
     * [数据增强](./docs/module/data/data.md)
     * [Loss说明](./docs/module/loss/losses_cn.md)
