@@ -30,3 +30,7 @@ loss:
     - type: OhemCrossEntropyLoss
     #- type: DetailAggregateLoss
   coef: [1, 1, 1]
+
+test_config:
+  aug_eval: True
+  scales: 0.5
