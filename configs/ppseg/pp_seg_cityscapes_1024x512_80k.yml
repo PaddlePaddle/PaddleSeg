@@ -10,16 +10,16 @@ model:
     # STDC_pp_2:returns all features,
     type: STDC_pp_1
     block_type: cat # base cat
-    #pretrained: https://bj.bcebos.com/paddleseg/dygraph/STDCNet1.tar.gz    # ori cat weights
+    pretrained: https://bj.bcebos.com/paddleseg/dygraph/STDCNet1.tar.gz    # ori cat weights
     #pretrained: pretrained_model/stdc1net_class_pretrained_cat_pp.pdparams # pp cat weights
-    pretrained: pretrained_model/stdc1net_class_pretrained_cat_pp_distill_resnet50_stdc1net_img500w_gpu4_bs64_ep50_lr0.001.pdparams  # distill_2 weights
+    #pretrained: pretrained_model/stdc1net_class_pretrained_cat_pp_distill_resnet50_stdc1net_img500w_gpu4_bs64_ep50_lr0.001.pdparams  # distill_2 weights
     #pretrained: pretrained_model/stdc1net_class_pretrained_cat_pp_distill_resnet50_stdc1net_img500w_gpu4_bs64_ep50_lr0.01.pdparams  # distill_3 weights
     atten_type: AttenNone # base: AttenNone
   backbone_indices: [2,3,4]
   head_type: PPSegHead_1
   arm_type: FusionAdd
   fpn_ch: 128
-  seg_head_mid_chs: [256, 64, 64]
+  seg_head_mid_chs: [64]
   resize_mode: bilinear # base: nearest, support:nearest and bilinear
 
 loss:
