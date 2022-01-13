@@ -1,5 +1,4 @@
-# API application case
-api_example.md for English doc, api_example_cn.md for Chinese doc.
+# API Tutorial
 
 Through this tutorial, you will quickly learn the API calls of PaddleSeg, and easily train, evaluate and predict semantic segmentation models. We will take BiSeNetV2 and optic disc segmentation datasets as examples to teach you step by step how to call the API to build models, datasets, loss functions, optimizers and other modules.
 
