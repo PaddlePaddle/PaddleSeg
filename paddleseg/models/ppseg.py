@@ -28,7 +28,7 @@ class PPSeg(nn.Layer):
                  num_classes,
                  backbone,
                  backbone_indices,
-                 head_type='PPSegHead_1',
+                 head_type='PPSegHead',
                  arm_type='FusionAdd',
                  cp_out_ch=128,
                  arm_out_chs=[128],
@@ -146,26 +146,7 @@ class PPSeg(nn.Layer):
             utils.load_entire_model(self, self.pretrained)
 
 
-class SegHead(nn.Layer):
-    def __init__(self, in_chan, mid_chan, n_classes):
-        super().__init__()
-        self.conv = layers.ConvBNReLU(
-            in_chan,
-            mid_chan,
-            kernel_size=3,
-            stride=1,
-            padding=1,
-            bias_attr=False)
-        self.conv_out = nn.Conv2D(
-            mid_chan, n_classes, kernel_size=1, bias_attr=False)
-
-    def forward(self, x):
-        x = self.conv(x)
-        x = self.conv_out(x)
-        return x
-
-
-class PPSegHead_1(nn.Layer):
+class PPSegHead(nn.Layer):
     '''
     The head of PPSeg.
     '''
@@ -221,3 +202,22 @@ class PPSegHead_1(nn.Layer):
             out_feat_list.insert(0, high_feat)
 
         return out_feat_list
+
+
+class SegHead(nn.Layer):
+    def __init__(self, in_chan, mid_chan, n_classes):
+        super().__init__()
+        self.conv = layers.ConvBNReLU(
+            in_chan,
+            mid_chan,
+            kernel_size=3,
+            stride=1,
+            padding=1,
+            bias_attr=False)
+        self.conv_out = nn.Conv2D(
+            mid_chan, n_classes, kernel_size=1, bias_attr=False)
+
+    def forward(self, x):
+        x = self.conv(x)
+        x = self.conv_out(x)
+        return x

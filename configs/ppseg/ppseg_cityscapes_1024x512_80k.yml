@@ -16,7 +16,7 @@ model:
     #pretrained: pretrained_model/stdc1net_class_pretrained_cat_pp_distill_resnet50_stdc1net_img500w_gpu4_bs64_ep50_lr0.01.pdparams  # distill_3 weights
     atten_type: AttenNone # base: AttenNone
   backbone_indices: [2,3,4]   # [x2, x4, x8, x16, x32]
-  head_type: PPSegHead_1
+  head_type: PPSegHead
   arm_type: FusionAdd
   cp_out_ch: 128
   arm_out_chs: [128, 128, 128]
