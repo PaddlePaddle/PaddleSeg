@@ -360,6 +360,9 @@ class BottleneckBlock(nn.Layer):
                 reduction_ratio=16,
                 name=name + '_fc')
 
+        self.add = layers.Add()
+        self.relu = layers.Activation("relu")
+
     def forward(self, x):
         residual = x
         conv1 = self.conv1(x)
@@ -372,8 +375,8 @@ class BottleneckBlock(nn.Layer):
         if self.has_se:
             conv3 = self.se(conv3)
 
-        y = conv3 + residual
-        y = F.relu(y)
+        y = self.add(conv3, residual)
+        y = self.relu(y)
         return y
 
 
@@ -419,6 +422,9 @@ class BasicBlock(nn.Layer):
                 reduction_ratio=16,
                 name=name + '_fc')
 
+        self.add = layers.Add()
+        self.relu = layers.Activation("relu")
+
     def forward(self, x):
         residual = x
         conv1 = self.conv1(x)
@@ -430,8 +436,8 @@ class BasicBlock(nn.Layer):
         if self.has_se:
             conv2 = self.se(conv2)
 
-        y = conv2 + residual
-        y = F.relu(y)
+        y = self.add(conv2, residual)
+        y = self.relu(y)
         return y
 
 

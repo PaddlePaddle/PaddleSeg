@@ -1,0 +1,61 @@
+batch_size: 1
+iters: 400000
+
+data:
+  source:
+    dataset: 'gta5'
+    kwargs:
+      root: data/GTA5
+      list_path: data/gta5_list
+      base_size: [1280, 640]
+      crop_size: [1280, 640]
+      random_mirror: True
+      random_crop: False
+      resize: True
+      gaussian_blur: True
+      class_16: False
+      edge: True
+
+  target:
+    dataset: 'cityscapes'
+    kwargs:
+      root: data/cityscapes
+      list_path: data/city_list
+      base_size: [1280, 640]
+      crop_size: [1280, 640]
+      random_mirror: True
+      random_crop: False
+      resize: True
+      gaussian_blur: True
+      class_16: False
+      class_13: False
+
+model:
+  type: DeepLabV2
+  backbone:
+    type: ResNet101
+    num_classes: 19
+  align_corners: True
+  pretrained: models/gta5_pretrained.pdparams
+  shape_stream: False
+
+ema_decay: 0.999
+resume_ema: None
+# flow control
+src_only: False
+edgeconstrain: False
+edgepullin: False
+featurepullin: False
+eval_src: False
+save_edge: False
+
+optimizer:
+  type: sgd
+  momentum: 0.9
+  weight_decay: 0.0005
+
+lr_scheduler:
+  type: PolynomialDecay
+  learning_rate: 0.0001
+  end_lr: 0
+  power: 0.9

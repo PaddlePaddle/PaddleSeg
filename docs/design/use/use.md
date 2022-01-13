@@ -1,123 +1,124 @@
-# 配置项
+English | [简体中文](use_cn.md)
+# Configuration item
 
 ----
 ### train_dataset
->  训练数据集
+* Training dataset
 >
->  * 参数
->     * type : 数据集类型，所支持值请参考训练配置文件
->     * **others** : 请参考对应模型训练配置文件
+>  * Args
+>     * type : Dataset type, please refer to [Data Set Document](../../apis/datasets/datasets.md) for the supported values
+>     * **others** : Please refer to [Training Configuration File of Corresponding Model](../../../configs)
 
 ----
 ### val_dataset
->  评估数据集
->  * 参数
->     * type : 数据集类型，所支持值请参考训练配置文件
->     * **others** : 请参考对应模型训练配置文件
+* Validation dataset
+>  * Args
+>     * type : Dataset type, please refer to [Data Set Document](../../apis/datasets/datasets.md) for the supported values
+>     * **others** : Please refer to [Training Configuration File of Corresponding Model](../../../configs)
 >
 
 ----
 ### batch_size
->  单张卡上，每步迭代训练时的数据量
+* On a single card, the amount of data during each iteration of training. Generally speaking, the larger the video memory of the machine you are using, the larger the batch_size value.
 
 ----
 ### iters
->  训练步数
+* The process of using a batch of data to update the parameters of the semantic segmentation model is called one training, that is, one iteration. Iters is the number of iterations in the training process.
 
 ----
 ### optimizer
-> 训练优化器
->  * 参数
->     * type : 优化器类型，目前只支持'sgd'和'adam'
->     * momentum : 动量
->     * weight_decay : L2正则化的值
+* Optimizer in training
+>  * Args
+>     * type : Optimizer type, currently only supports'sgd' and'adam'
+>     * momentum : Momentum optimization.
+>     * weight_decay : L2 regularized value.
 
 ----
 ### lr_scheduler
-> 学习率
->  * 参数
->     * type : 学习率类型，支持10种策略，分别是'PolynomialDecay', 'PiecewiseDecay', 'StepDecay', 'CosineAnnealingDecay', 'ExponentialDecay', 'InverseTimeDecay', 'LinearWarmup', 'MultiStepDecay', 'NaturalExpDecay', 'NoamDecay'.
->     * **others** : 请参考[Paddle官方LRScheduler文档](https://www.paddlepaddle.org.cn/documentation/docs/zh/api/paddle/optimizer/lr/LRScheduler_cn.html)
+* Learning rate
+>  * Args
+>     * type : Learning rate type, supports 12 strategies: 'PolynomialDecay', 'PiecewiseDecay', 'StepDecay', 'CosineAnnealingDecay', 'ExponentialDecay', 'InverseTimeDecay', 'LinearWarmup', 'MultiStepDecay', 'NaturalExpDecay', 'NoamDecay', ReduceOnPlateau, LambdaDecay.
+>     * **others** : Please refer to [Paddle official LRScheduler document](https://www.paddlepaddle.org.cn/documentation/docs/zh/api/paddle/optimizer/lr/LRScheduler_cn.html)
 
 ----
-### learning_rate（不推荐使用该配置，将来会被废弃，建议使用`lr_scheduler`代替）
-> 学习率
->  * 参数
->     * value : 初始学习率
->     * decay : 衰减配置
->       * type : 衰减类型，目前只支持poly
->       * power : 衰减率
->       * end_lr : 最终学习率
+### learning_rate（This configuration is not recommended and will be obsolete in the future. It is recommended to use `lr_scheduler` instead）
+* Learning rate
+>  * Args
+>     * value : Initial learning rate.
+>     * decay : Attenuation configuration.
+>       * type : Attenuation type, currently only supports poly.
+>       * power : Attenuation rate.
+>       * end_lr : Final learning rate.
 
 ----
 ### loss
-> 损失函数
->  * 参数
->     * types : 损失函数列表
->       * type : 损失函数类型，所支持值请参考损失函数库
->     * coef : 对应损失函数列表的系数列表
+* Loss function
+>  * Args
+>     * types : List of loss functions.
+>       * type : Loss function type, please refer to the loss function library for the supported values.
+>     * coef : List of coefficients corresponding to the loss function list.
 
 ----
 ### model
-> 待训练模型
->  * 参数
->     * type : 模型类型，所支持值请参考模型库
->     * **others** : 请参考对应模型训练配置文件
+* Model to be trained
+>  * Args
+>     * type : Model type, please refer to [Model Library](../../apis/models/models.md) for the supported values
+>     * **others** : Please refer to [Training Configuration File of Corresponding Model](../../../configs)
 ---
 ### export
-> 模型导出配置
->  * 参数
->    * transforms : 预测时的预处理操作，支持配置的transforms与`train_dataset`、`val_dataset`等相同。如果不填写该项，默认只会对数据进行归一化标准化操作。
+* Model export configuration
+>  * Args
+>    * transforms : The preprocessing operation during prediction, the supported transforms are the same as `train_dataset`, `val_dataset`, etc. If you do not fill in this item, only the data will be normalized by default.
 
-# 示例
+# Example
 
 ```yaml
-batch_size: 4
-iters: 80000
+batch_size: 4 # Set the number of pictures sent to the network at one iteration. Generally speaking, the larger the video memory of the machine you are using, the higher the batch_size value.
+iters: 80000 # Number of iterations
 
-train_dataset:
-  type: Cityscapes
-  dataset_root: data/cityscapes
-  transforms:
-    - type: ResizeStepScaling
-      min_scale_factor: 0.5
+train_dataset: # Training dataset
+  type: Cityscapes # The name of the training dataset class
+  dataset_root: data/cityscapes # The directory where the training dataset is stored
+  transforms: # Data transformation and data augmentation
+    - type: ResizeStepScaling # The image is scaled according to a certain ratio, and this ratio takes scale_step_size as the step size
+      min_scale_factor: 0.5 # Parameters involved in the scaling process
       max_scale_factor: 2.0
       scale_step_size: 0.25
-    - type: RandomPaddingCrop
+    - type: RandomPaddingCrop # Random cropping of images and annotations
       crop_size: [1024, 512]
-    - type: RandomHorizontalFlip
-    - type: Normalize
-  mode: train
+    - type: RandomHorizontalFlip # Flip the image horizontally with a certain probability
+    - type: Normalize # Normalize the image
+  mode: train # Training mode
 
-val_dataset:
-  type: Cityscapes
-  dataset_root: data/cityscapes
+val_dataset: # Validation dataset
+  type: Cityscapes # The name of the validating dataset class
+  dataset_root: data/cityscapes # The directory where the validating dataset is stored
   transforms:
-    - type: Normalize
-  mode: val
+    - type: Normalize # Normalize the image
+  mode: val # Validating mode
 
-optimizer:
-  type: sgd
+optimizer: # Which optimizer to use
+  type: sgd # Stochastic gradient descent
   momentum: 0.9
   weight_decay: 4.0e-5
 
-lr_scheduler:
-  type: PolynomialDecay
+lr_scheduler: # Related settings for learning rate
+  type: PolynomialDecay # A type of learning rate,a total of 12 strategies are supported
   learning_rate: 0.01
   power: 0.9
   end_lr: 0
 
-loss:
+loss: # What loss function to use
   types:
-    - type: CrossEntropyLoss
-  coef: [1]
+    - type: CrossEntropyLoss # Cross entropy loss function
+  coef: [1] # When multiple loss functions are used, the ratio of each loss can be specified in coef
 
-model:
+model: # Which semantic segmentation model to use
   type: FCN
-  backbone:
+  backbone: # What kind of backbone network to use
     type: HRNet_W18
-    pretrained: pretrained_model/hrnet_w18_ssld
-  num_classes: 19
+    pretrained: pretrained_model/hrnet_w18_ssld # Specify the storage path of the pre-trained model
+  num_classes: 19 # Number of pixel categories
   pretrained: Null
   backbone_indices: [-1]
 

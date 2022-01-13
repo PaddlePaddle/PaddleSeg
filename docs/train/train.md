@@ -1,10 +1,14 @@
-# 模型训练
+English|[简体中文](train_cn.md)
+# Model Training
 
-我们可以通过PaddleSeg提供的脚本对模型进行训练，请确保完成了PaddleSeg的安装工作，并且位于PaddleSeg目录下，执行以下脚本：
+## 1、Start Training 
+
+We can train the model through the script provided by PaddleSeg. Here we use `BiseNet` model and `optic_disc` dataset to show the training process. Please make sure that you have already installed PaddleSeg, and it is located in the PaddleSeg directory. Then execute the following script:
+
 
 ```shell
-export CUDA_VISIBLE_DEVICES=0 # 设置1张可用的卡
-# windows下请执行以下命令
+export CUDA_VISIBLE_DEVICES=0 # Set 1 usable card
+# If you are using windows, please excute following script:
 # set CUDA_VISIBLE_DEVICES=0
 python train.py \
        --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml \
@@ -14,26 +18,29 @@ python train.py \
        --save_dir output
 ```
 
-### 训练参数解释
+### Parameters
 
-| 参数名              | 用途                                                         | 是否必选项 | 默认值           |
-| ------------------- | ------------------------------------------------------------ | ---------- | ---------------- |
-| iters               | 训练迭代次数                                                 | 否         | 配置文件中指定值 |
-| batch_size          | 单卡batch size                                               | 否         | 配置文件中指定值 |
-| learning_rate       | 初始学习率                                                   | 否         | 配置文件中指定值 |
-| config              | 配置文件                                                     | 是         | -                |
-| save_dir            | 模型和visualdl日志文件的保存根路径                           | 否         | output           |
-| num_workers         | 用于异步读取数据的进程数量， 大于等于1时开启子进程读取数据   | 否         | 0                |
-| use_vdl             | 是否开启visualdl记录训练数据                                 | 否         | 否               |
-| save_interval_iters | 模型保存的间隔步数                                           | 否         | 1000             |
-| do_eval             | 是否在保存模型时启动评估, 启动时将会根据mIoU保存最佳模型至best_model | 否         | 否               |
-| log_iters           | 打印日志的间隔步数                                           | 否         | 10               |
-| resume_model        | 恢复训练模型路径，如：`output/iter_1000`                     | 否         | None             |
+| Parameter     | Effection                               | Is Required | Default           |
+| :------------------ | :----------------------------------------------------------- | :--------- | :--------------- |
+| iters               | Number of training iterations                                                 | No         | The value specified in the configuration file.| |
+| batch_size          | Batch size on a single card                                            | No         | The value specified in the configuration file.| |
+| learning_rate       | Initial learning rate                                                   | No        | The value specified in the configuration file.| |
+| config              | Configuration files                                                     | Yes         | -                |
+| save_dir            | The root path for saving model and visualdl log files                           | No         | output           |
+| num_workers         | The number of processes used to read data asynchronously, when it is greater than or equal to 1, the child process is started to read dat  | No  | 0 |
+| use_vdl             | Whether to enable visualdl to record training data                                 | No         | No               |
+| save_interval       | Number of steps between model saving                                           | No         | 1000             |
+| do_eval             | Whether to start the evaluation when saving the model, the best model will be saved to best_model according to mIoU at startup | No   | No  |
+| log_iters           | Interval steps for printing log                                           | No         | 10               |
+| resume_model        | Restore the training model path, such as: `output/iter_1000`                    | No        | None             |
+| keep_checkpoint_max | Number of latest models saved                                            | No        | 5                |
 
 
-**注意**：如果想要使用多卡训练的话，需要将环境变量CUDA_VISIBLE_DEVICES指定为多卡（不指定时默认使用所有的gpu)，并使用paddle.distributed.launch启动训练脚本（windows下由于不支持nccl，无法使用多卡训练）:
+## 2、Multi-card training
+If you want to use multi-card training, you need to specify the environment variable `CUDA_VISIBLE_DEVICES` as `multi-card` (if not specified, all GPUs will be used by default), and use `paddle.distributed.launch` to start the training script (Can not use multi-card training under Windows, because it doesn't support nccl):
+
 ```shell
-export CUDA_VISIBLE_DEVICES=0,1,2,3 # 设置4张可用的卡
+export CUDA_VISIBLE_DEVICES=0,1,2,3 # Set 4 usable cards
 python -m paddle.distributed.launch train.py \
        --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml \
        --do_eval \
@@ -42,7 +49,7 @@ python -m paddle.distributed.launch train.py \
        --save_dir output
 ```
 
-恢复训练：
+## 3、Resume Training：
 ```shell
 python train.py \
        --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml \
@@ -53,21 +60,21 @@ python train.py \
        --save_dir output
 ```
 
-## 训练可视化
+## 4、Visualize Training Process
 
-PaddleSeg会将训练过程中的数据写入VisualDL文件，并实时的查看训练过程中的日志，记录的数据包括：
-1. loss变化趋势
-2. 学习率变化趋势
-3. 训练时间
-4. 数据读取时间
-5. mean IoU变化趋势（当打开了`do_eval`开关后生效）
-6. mean pixel Accuracy变化趋势（当打开了`do_eval`开关后生效）
+PaddleSeg will write the data during the training process into the VisualDL file, and view the log during the training process in real time. The recorded data includes:
+1. Loss change trend.
+2. Changes in learning rate.
+3. Training time.
+4. Data reading time.
+5. Mean IoU trend (takes effect when the `do_eval` switch is turned on).
+6. Trend of mean pixel Accuracy (takes effect when the `do_eval` switch is turned on).
 
-使用如下命令启动VisualDL查看日志
+Run the following command to start VisualDL to view the log
 ```shell
-# 下述命令会在127.0.0.1上启动一个服务，支持通过前端web页面查看，可以通过--host这个参数指定实际ip地址
+# The following command will start a service on 127.0.0.1, which supports viewing through the front-end web page. You can specify the actual ip address through the --host parameter
 visualdl --logdir output/
 ```
 
-在浏览器输入提示的网址，效果如下：
+Enter the suggested URL in the browser, the effect is as follows:
 ![](../images/quick_start_vdl.jpg)

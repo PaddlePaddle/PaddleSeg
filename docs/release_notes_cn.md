@@ -58,7 +58,7 @@
 * 2020.05.12
 
   **`v0.5.0`**
-  * 全面升级[HumanSeg人像分割模型](../contrib/HumanSeg)，新增超轻量级人像分割模型HumanSeg-lite支持移动端实时人像分割处理，并提供基于光流的视频分割后处理提升分割流畅性。
+  * 全面升级[HumanSeg人像分割模型](../contrib/PP-HumanSeg)，新增超轻量级人像分割模型HumanSeg-lite支持移动端实时人像分割处理，并提供基于光流的视频分割后处理提升分割流畅性。
   * 新增[气象遥感分割方案](../contrib/RemoteSensing)，支持积雪识别、云检测等气象遥感场景。
   * 新增[Lovasz Loss](lovasz_loss.md)，解决数据类别不均衡问题。
   * 使用VisualDL 2.0作为训练可视化工具

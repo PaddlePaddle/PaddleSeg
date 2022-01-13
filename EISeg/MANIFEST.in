@@ -1,0 +1,3 @@
+include eiseg/config/*
+include eiseg/resource/*
+include eiseg/util/translate/*

@@ -1,0 +1,73 @@
+batch_size: 4
+iters: 300000
+
+train_dataset:
+  type: Tusimple
+  dataset_root: ./data/tusimple
+  cut_height: 160
+  transforms:
+    - type: SubImgCrop
+      offset_top: 160
+    - type: LaneRandomRotation
+      max_rotation: 10
+      im_padding_value: [0, 0, 0]
+      label_padding_value: 0
+      keeping_size: True
+    - type: RandomHorizontalFlip
+    - type: Resize
+      target_size: [640, 368]
+    - type: RandomDistort
+      brightness_range: 0.25
+      brightness_prob: 1
+      contrast_range: 0.25
+      contrast_prob: 1
+      saturation_range: 0.25
+      saturation_prob: 1
+      hue_range: 63
+      hue_prob: 1
+    - type: RandomNoise
+    - type: Normalize
+  mode: train
+
+val_dataset:
+  type: Tusimple
+  dataset_root: ./data/tusimple
+  cut_height: 160
+  transforms:
+    - type: SubImgCrop
+      offset_top: 160
+    - type: Resize
+      target_size: [640, 368]
+    - type: Normalize
+  mode: val
+
+optimizer:
+  type: sgd
+  momentum: 0.9
+  weight_decay: 4.0e-5
+
+lr_scheduler:
+  type: PolynomialDecay
+  learning_rate: 0.001
+  end_lr: 0
+  power: 0.9
+
+loss:
+  types:
+    - type: LaneCrossEntropyLoss
+      weights: [0.4, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+    - type: LaneCrossEntropyLoss
+      weights: [ 0.4, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0 ]
+    - type: LaneCrossEntropyLoss
+      weights: [ 0.4, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0 ]
+    - type: LaneCrossEntropyLoss
+      weights: [ 0.4, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0 ]
+    - type: LaneCrossEntropyLoss
+      weights: [ 0.4, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0 ]
+  coef: [1, 1, 1, 1, 1]
+
+
+model:
+  type: BiSeNetV2
+  num_classes: 7
+  pretrained: https://bj.bcebos.com/paddleseg/dygraph/cityscapes/bisenet_cityscapes_1024x1024_160k/model.pdparams

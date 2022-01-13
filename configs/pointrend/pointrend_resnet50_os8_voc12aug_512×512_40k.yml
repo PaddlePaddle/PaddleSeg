@@ -1,0 +1,23 @@
+_base_: '../_base_/pascal_voc12aug.yml'
+
+
+model:
+  type: PointRend
+  backbone:
+    type: ResNet50_vd
+    output_stride: 8
+    pretrained: https://bj.bcebos.com/paddleseg/dygraph/resnet50_vd_ssld_v2.tar.gz
+  backbone_indices: [0, 1, 2, 3]
+
+
+loss:
+  types:
+    - type: CrossEntropyLoss
+    - type: PointCrossEntropyLoss
+  coef: [1, 1]
+
+
+optimizer:
+  type: sgd
+  momentum: 0.9
+  weight_decay: 0.0005

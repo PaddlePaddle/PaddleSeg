@@ -1,5 +1,0 @@
-python-gflags
-pyyaml
-numpy
-opencv-python
-futures

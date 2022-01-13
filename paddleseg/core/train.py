@@ -20,7 +20,8 @@ import shutil
 import paddle
 import paddle.nn.functional as F
 
-from paddleseg.utils import TimeAverager, calculate_eta, resume, logger, worker_init_fn
+from paddleseg.utils import (TimeAverager, calculate_eta, resume, logger,
+                             worker_init_fn, train_profiler, op_flops_funs)
 from paddleseg.core.val import evaluate
 
 
@@ -39,15 +40,21 @@ def loss_computation(logits_list, labels, losses, edges=None):
     for i in range(len(logits_list)):
         logits = logits_list[i]
         loss_i = losses['types'][i]
-        # Whether to use edges as labels According to loss type.
+        coef_i = losses['coef'][i]
+
         if loss_i.__class__.__name__ in ('BCELoss',
                                          'FocalLoss') and loss_i.edge_label:
-            loss_list.append(losses['coef'][i] * loss_i(logits, edges))
+            # If use edges as labels According to loss type.
+            loss_list.append(coef_i * loss_i(logits, edges))
+        elif loss_i.__class__.__name__ == 'MixedLoss':
+            mixed_loss_list = loss_i(logits, labels)
+            for mixed_loss in mixed_loss_list:
+                loss_list.append(coef_i * mixed_loss)
         elif loss_i.__class__.__name__ in ("KLLoss", ):
-            loss_list.append(losses['coef'][i] * loss_i(
-                logits_list[0], logits_list[1].detach()))
+            loss_list.append(
+                coef_i * loss_i(logits_list[0], logits_list[1].detach()))
         else:
-            loss_list.append(losses['coef'][i] * loss_i(logits, labels))
+            loss_list.append(coef_i * loss_i(logits, labels))
     return loss_list
 
 
@@ -66,7 +73,9 @@ def train(model,
           losses=None,
           keep_checkpoint_max=5,
           test_config=None,
-          fp16=False):
+          fp16=False,
+          profiler_options=None,
+          to_static_training=False):
     """
     Launch training.
 
@@ -88,6 +97,8 @@ def train(model,
         keep_checkpoint_max (int, optional): Maximum number of checkpoints to save. Default: 5.
         test_config(dict, optional): Evaluation config.
         fp16 (bool, optional): Whether to use amp.
+        profiler_options (str, optional): The option of train profiler.
+        to_static_training (bool, optional): Whether to use @to_static for training.
     """
     model.train()
     nranks = paddle.distributed.ParallelEnv().nranks
@@ -128,6 +139,10 @@ def train(model,
         from visualdl import LogWriter
         log_writer = LogWriter(save_dir)
 
+    if to_static_training:
+        model = paddle.jit.to_static(model)
+        logger.info("Successfully to apply @to_static")
+
     avg_loss = 0.0
     avg_loss_list = []
     iters_per_epoch = len(batch_sampler)
@@ -144,7 +159,7 @@ def train(model,
             iter += 1
             if iter > iters:
                 version = paddle.__version__
-                if version == '2.1.2' or version == '0.0.0':
+                if version == '2.1.2':
                     continue
                 else:
                     break
@@ -193,7 +208,11 @@ def train(model,
                     edges=edges)
                 loss = sum(loss_list)
                 loss.backward()
-                optimizer.step()
+                # if the optimizer is ReduceOnPlateau, the loss is the one which has been pass into step.
+                if isinstance(optimizer, paddle.optimizer.lr.ReduceOnPlateau):
+                    optimizer.step(loss)
+                else:
+                    optimizer.step()
 
             lr = optimizer.get_lr()
 
@@ -204,6 +223,8 @@ def train(model,
                 lr_sche = optimizer._learning_rate
             if isinstance(lr_sche, paddle.optimizer.lr.LRScheduler):
                 lr_sche.step()
+
+            train_profiler.add_profiler_step(profiler_options)
 
             model.clear_gradients()
             avg_loss += loss.numpy()[0]
@@ -294,16 +315,10 @@ def train(model,
 
     # Calculate flops.
     if local_rank == 0:
-
-        def count_syncbn(m, x, y):
-            x = x[0]
-            nelements = x.numel()
-            m.total_ops += int(2 * nelements)
-
         _, c, h, w = images.shape
-        flops = paddle.flops(
+        _ = paddle.flops(
             model, [1, c, h, w],
-            custom_ops={paddle.nn.SyncBatchNorm: count_syncbn})
+            custom_ops={paddle.nn.SyncBatchNorm: op_flops_funs.count_syncbn})
 
     # Sleep for half a second to let dataloader release resources.
     time.sleep(0.5)

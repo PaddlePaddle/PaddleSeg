@@ -14,6 +14,7 @@
 
 from .mixed_loss import MixedLoss
 from .cross_entropy_loss import CrossEntropyLoss
+from .cross_entropy_loss import DistillCrossEntropyLoss
 from .binary_cross_entropy_loss import BCELoss
 from .lovasz_loss import LovaszSoftmaxLoss, LovaszHingeLoss
 from .gscnn_dual_task_loss import DualTaskLoss
@@ -28,3 +29,8 @@ from .mean_square_error_loss import MSELoss
 from .focal_loss import FocalLoss
 from .kl_loss import KLLoss
 from .rmi_loss import RMILoss
+from .detail_aggregate_loss import DetailAggregateLoss
+from .point_cross_entropy_loss import PointCrossEntropyLoss
+from .pixel_contrast_cross_entropy_loss import PixelContrastCrossEntropyLoss
+from .semantic_encode_cross_entropy_loss import SECrossEntropyLoss
+from .semantic_connectivity_loss import SemanticConnectivityLoss

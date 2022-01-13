@@ -52,6 +52,18 @@ def get_reverse_list(ori_shape, transforms):
             else:
                 w = long_edge
                 h = short_edge
+        if op.__class__.__name__ in ['ResizeByShort']:
+            reverse_list.append(('resize', (h, w)))
+            long_edge = max(h, w)
+            short_edge = min(h, w)
+            long_edge = int(round(long_edge * op.short_size / short_edge))
+            short_edge = op.short_size
+            if h > w:
+                h = long_edge
+                w = short_edge
+            else:
+                w = long_edge
+                h = short_edge
         if op.__class__.__name__ in ['Padding']:
             reverse_list.append(('padding', (h, w)))
             w, h = op.target_size[0], op.target_size[1]
@@ -87,13 +99,15 @@ def get_reverse_list(ori_shape, transforms):
 def reverse_transform(pred, ori_shape, transforms, mode='nearest'):
     """recover pred to origin shape"""
     reverse_list = get_reverse_list(ori_shape, transforms)
+    intTypeList = [paddle.int8, paddle.int16, paddle.int32, paddle.int64]
+    dtype = pred.dtype
     for item in reverse_list[::-1]:
         if item[0] == 'resize':
             h, w = item[1][0], item[1][1]
-            if paddle.get_device() == 'cpu':
-                pred = paddle.cast(pred, 'uint8')
+            if paddle.get_device() == 'cpu' and dtype in intTypeList:
+                pred = paddle.cast(pred, 'float32')
                 pred = F.interpolate(pred, (h, w), mode=mode)
-                pred = paddle.cast(pred, 'int32')
+                pred = paddle.cast(pred, dtype)
             else:
                 pred = F.interpolate(pred, (h, w), mode=mode)
         elif item[0] == 'padding':
@@ -226,9 +240,9 @@ def inference(model,
     if hasattr(model, 'data_format') and model.data_format == 'NHWC':
         logit = logit.transpose((0, 3, 1, 2))
     if ori_shape is not None:
-        pred = reverse_transform(logit, ori_shape, transforms, mode='bilinear')
-        pred = paddle.argmax(pred, axis=1, keepdim=True, dtype='int32')
-        return pred
+        logit = reverse_transform(logit, ori_shape, transforms, mode='bilinear')
+        pred = paddle.argmax(logit, axis=1, keepdim=True, dtype='int32')
+        return pred, logit
     else:
         return logit
 
@@ -288,7 +302,8 @@ def aug_inference(model,
             logit = F.softmax(logit, axis=1)
             final_logit = final_logit + logit
 
-    pred = reverse_transform(
+    final_logit = reverse_transform(
         final_logit, ori_shape, transforms, mode='bilinear')
-    pred = paddle.argmax(pred, axis=1, keepdim=True, dtype='int32')
-    return pred
+    pred = paddle.argmax(final_logit, axis=1, keepdim=True, dtype='int32')
+
+    return pred, final_logit

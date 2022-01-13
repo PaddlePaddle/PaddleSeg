@@ -18,7 +18,7 @@ from paddleseg.cvlibs import manager
 from paddleseg import utils
 
 
-@manager.MODELS.add_component
+@manager.BACKBONES.add_component
 class MobileNetV2(nn.Layer):
     """
         The MobileNetV2 implementation based on PaddlePaddle.

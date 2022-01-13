@@ -1,0 +1,26 @@
+_base_: '../_base_/cityscapes_1024x1024.yml'
+
+batch_size: 4
+iters: 40000
+
+loss:
+  types:
+    - type: MixedLoss
+      losses:
+        - type: CrossEntropyLoss
+        - type: SemanticConnectivityLoss
+      coef: [1, 0.01]
+    - type: CrossEntropyLoss
+  coef: [1.0, 0.4]
+
+lr_scheduler:
+  type: PolynomialDecay
+  learning_rate: 0.025
+  end_lr: 1.0e-4
+  power: 0.9
+
+model:
+  type: FastSCNN
+  num_classes: 19
+  enable_auxiliary_loss: True
+  pretrained: null

@@ -37,6 +37,9 @@ class ConvBNLayer(nn.Layer):
                  act=None,
                  data_format='NCHW'):
         super(ConvBNLayer, self).__init__()
+        if dilation != 1 and kernel_size != 3:
+            raise RuntimeError("When the dilation isn't 1," \
+                "the kernel_size should be 3.")
 
         self.is_vd_mode = is_vd_mode
         self._pool2d_avg = nn.AvgPool2D(
@@ -50,7 +53,8 @@ class ConvBNLayer(nn.Layer):
             out_channels=out_channels,
             kernel_size=kernel_size,
             stride=stride,
-            padding=(kernel_size - 1) // 2 if dilation == 1 else 0,
+            padding=(kernel_size - 1) // 2 \
+                if dilation == 1 else dilation,
             dilation=dilation,
             groups=groups,
             bias_attr=False,
@@ -116,20 +120,12 @@ class BottleneckBlock(nn.Layer):
                 data_format=data_format)
 
         self.shortcut = shortcut
+        # NOTE: Use the wrap layer for quantization training
+        self.add = layers.Add()
+        self.relu = layers.Activation(act="relu")
 
     def forward(self, inputs):
         y = self.conv0(inputs)
-
-        ####################################################################
-        # If given dilation rate > 1, using corresponding padding.
-        # The performance drops down without the follow padding.
-        if self.dilation > 1:
-            padding = self.dilation
-            y = F.pad(
-                y, [padding, padding, padding, padding],
-                data_format=self.data_format)
-        #####################################################################
-
         conv1 = self.conv1(y)
         conv2 = self.conv2(conv1)
 
@@ -138,8 +134,8 @@ class BottleneckBlock(nn.Layer):
         else:
             short = self.short(inputs)
 
-        y = paddle.add(x=short, y=conv2)
-        y = F.relu(y)
+        y = self.add(short, conv2)
+        y = self.relu(y)
         return y
 
 
@@ -148,22 +144,24 @@ class BasicBlock(nn.Layer):
                  in_channels,
                  out_channels,
                  stride,
+                 dilation=1,
                  shortcut=True,
                  if_first=False,
                  data_format='NCHW'):
         super(BasicBlock, self).__init__()
-        self.stride = stride
         self.conv0 = ConvBNLayer(
             in_channels=in_channels,
             out_channels=out_channels,
             kernel_size=3,
             stride=stride,
+            dilation=dilation,
             act='relu',
             data_format=data_format)
         self.conv1 = ConvBNLayer(
             in_channels=out_channels,
             out_channels=out_channels,
             kernel_size=3,
+            dilation=dilation,
             act=None,
             data_format=data_format)
 
@@ -173,10 +171,14 @@ class BasicBlock(nn.Layer):
                 out_channels=out_channels,
                 kernel_size=1,
                 stride=1,
-                is_vd_mode=False if if_first else True,
+                is_vd_mode=False if if_first or stride == 1 else True,
                 data_format=data_format)
 
         self.shortcut = shortcut
+        self.dilation = dilation
+        self.data_format = data_format
+        self.add = layers.Add()
+        self.relu = layers.Activation(act="relu")
 
     def forward(self, inputs):
         y = self.conv0(inputs)
@@ -186,8 +188,8 @@ class BasicBlock(nn.Layer):
             short = inputs
         else:
             short = self.short(inputs)
-        y = paddle.add(x=short, y=conv1)
-        y = F.relu(y)
+        y = self.add(short, conv1)
+        y = self.relu(y)
 
         return y
 
@@ -319,14 +321,20 @@ class ResNet_vd(nn.Layer):
                 shortcut = False
                 block_list = []
                 for i in range(depth[block]):
-                    conv_name = "res" + str(block + 2) + chr(97 + i)
+                    dilation_rate = dilation_dict[block] \
+                        if dilation_dict and block in dilation_dict else 1
+                    if block == 3:
+                        dilation_rate = dilation_rate * multi_grid[i]
+
                     basic_block = self.add_sublayer(
                         'bb_%d_%d' % (block, i),
                         BasicBlock(
                             in_channels=num_channels[block]
                             if i == 0 else num_filters[block],
                             out_channels=num_filters[block],
-                            stride=2 if i == 0 and block != 0 else 1,
+                            stride=2 if i == 0 and block != 0 \
+                                and dilation_rate == 1 else 1,
+                            dilation=dilation_rate,
                             shortcut=shortcut,
                             if_first=block == i == 0,
                             data_format=data_format))

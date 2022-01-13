@@ -1,55 +1,69 @@
-# 安装文档
+English | [简体中文](install_cn.md)
 
 
+## Environment Requirements
 
-## 环境要求
+- PaddlePaddle 2.2
+- OS: 64-bit
+- Python 3(3.5.1+/3.6/3.7/3.8/3.9)，64-bit version
+- pip/pip3(9.0.1+)，64-bit version 
+- CUDA >= 10.1 
+- cuDNN >= 7.6 
 
-- PaddlePaddle 2.1
-- OS 64位操作系统
-- Python 3(3.5.1+/3.6/3.7/3.8/3.9)，64位版本
-- pip/pip3(9.0.1+)，64位版本
-- CUDA >= 10.1
-- cuDNN >= 7.6
 
-## 安装说明
+### 1. Install PaddlePaddle
 
-### 1. 安装PaddlePaddle
+Highly recommend you install the GPU version of PaddlePaddle, due to the large overhead of segmentation models, otherwise, it could be out of memory while running the models.
 
 ```
 # CUDA10.1
-python -m pip install paddlepaddle-gpu==2.1.0.post101 -i https://paddlepaddle.org.cn/whl/mkl/stable.html
+python -m pip install paddlepaddle-gpu==2.2.1.post101 -f https://www.paddlepaddle.org.cn/whl/linux/mkl/avx/stable.html
 
 # CPU
-python -m pip install paddlepaddle -i https://mirror.baidu.com/pypi/simple
+python -m pip install paddlepaddle==2.2.1 -i https://mirror.baidu.com/pypi/simple
 ```
-- 更多CUDA版本或环境快速安装，请参考[PaddlePaddle快速安装文档](https://www.paddlepaddle.org.cn/install/quick)
-- 更多安装方式例如conda或源码编译安装方法，请参考[PaddlePaddle安装文档](https://www.paddlepaddle.org.cn/documentation/docs/zh/install/index_cn.html)
+- For quick installation of more CUDA versions or environments, please refer to [PaddlePaddle Quick Installation Document](https://www.paddlepaddle.org.cn/install/quick)
+- For more installation methods such as conda or source code compilation and installation methods, please refer to [PaddlePaddle Installation Document](https://www.paddlepaddle.org.cn/documentation/docs/zh/install/index_en.html)
 
-请确保您的PaddlePaddle安装成功并且版本不低于需求版本。使用以下命令进行验证。
+Please make sure that your PaddlePaddle is installed successfully and the version is not lower than the required version. Use the following command to verify.
 
 ```
-# 在您的Python解释器中确认PaddlePaddle安装成功
+# Confirm that PaddlePaddle is installed successfully in your Python interpreter
 >>> import paddle
 >>> paddle.utils.run_check()
 
-# 确认PaddlePaddle版本
+# Confirm PaddlePaddle version
 python -c "import paddle; print(paddle.__version__)"
+
+# If the following prompt appears on the command line, the PaddlePaddle installation is successful.
+# PaddlePaddle is installed successfully! Let's start deep learning with PaddlePaddle now.
 ```
 
 
 
-## 2.下载PaddleSeg代码
+## 2. Install PaddleSeg
+Support API method for flexible development.
+```
+pip install paddleseg
+```
+
+## 3. Download Repo
+Support Configuration Drive for simple and fast development.
+
 ```
 git clone https://github.com/PaddlePaddle/PaddleSeg
 ```
-## 3.安装PaddleSeg依赖
+
+## 4. Install Dependencies
 ```
 cd PaddleSeg
 pip install -r requirements.txt
-```
-## 4.确认环境安装成功
 
-执行下面命令，并在PaddleSeg/output文件夹中出现预测结果，则证明安装成功
+#If a version error occurs during installation, you can try to delete the old version and re-run the script.
+```
+## 5. Verify Installation
+
+Run the following command to verify PaddleSeg installation. The predicted results will be in output/result if successful.
 
 ```python
 python predict.py \

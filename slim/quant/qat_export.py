@@ -25,6 +25,7 @@ sys.path.append(os.path.abspath(os.path.join(__dir__, '../../')))
 from paddleseg.cvlibs import Config
 from paddleseg.utils import logger, utils
 from qat_config import quant_config
+from qat_train import skip_quant
 from export import SavedSegmentationNet
 
 from paddleslim import QAT
@@ -63,11 +64,13 @@ def parse_args():
 
     return parser.parse_args()
 
+
 def main(args):
     os.environ['PADDLESEG_EXPORT_STAGE'] = 'True'
     cfg = Config(args.cfg)
     net = cfg.model
 
+    skip_quant(net)
     quantizer = QAT(config=quant_config)
     quant_net = quantizer.quantize(net)
     logger.info('Quantize the model successfully')
@@ -84,8 +87,9 @@ def main(args):
 
     new_net.eval()
     save_path = os.path.join(args.save_dir, 'model')
-    input_spec=[paddle.static.InputSpec(
-                    shape=[None, 3, None, None], dtype='float32')]
+    input_spec = [
+        paddle.static.InputSpec(shape=[None, 3, None, None], dtype='float32')
+    ]
     quantizer.save_quantized_model(new_net, save_path, input_spec=input_spec)
 
     yml_file = os.path.join(args.save_dir, 'deploy.yaml')

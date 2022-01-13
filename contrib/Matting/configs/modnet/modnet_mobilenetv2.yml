@@ -1,0 +1,47 @@
+batch_size: 16
+iters: 100000
+
+train_dataset:
+  type: MattingDataset
+  dataset_root: data/PPM-100
+  train_file: train.txt
+  transforms:
+    - type: LoadImages
+    - type: RandomCrop
+      crop_size: [512, 512]
+    - type: RandomDistort
+    - type: RandomBlur
+    - type: RandomHorizontalFlip
+    - type: Normalize
+  mode: train
+
+val_dataset:
+  type: MattingDataset
+  dataset_root: data/PPM-100
+  val_file: val.txt
+  transforms:
+    - type: LoadImages
+    - type: ResizeByShort
+      short_size: 512
+    - type: ResizeToIntMult
+      mult_int: 32
+    - type: Normalize
+  mode: val
+  get_trimap: False
+
+model:
+  type: MODNet
+  backbone:
+    type: MobileNetV2
+    pretrained: https://paddleseg.bj.bcebos.com/matting/models/MobileNetV2_pretrained/model.pdparams
+  pretrained: Null
+
+optimizer:
+  type: sgd
+  momentum: 0.9
+  weight_decay: 4.0e-5
+
+lr_scheduler:
+  type: PiecewiseDecay
+  boundaries: [40000, 80000]
+  values: [0.02, 0.002, 0.0002]
