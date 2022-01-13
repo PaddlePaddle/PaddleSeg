@@ -30,7 +30,8 @@ class PPSeg(nn.Layer):
                  backbone_indices,
                  head_type='PPSegHead_1',
                  arm_type='FusionAdd',
-                 fpn_ch=128,
+                 cp_out_ch=128,
+                 arm_out_chs=[128],
                  seg_head_mid_chs=[64],
                  resize_mode='nearest',
                  use_boundary_2=False,
@@ -42,9 +43,10 @@ class PPSeg(nn.Layer):
 
         print("backbone type: " + backbone.__class__.__name__)
         print("backbone_indices: " + str(backbone_indices))
-        print("head type: " + head_type)
-        print("arm type: " + arm_type)
-        print("fpn channel: " + str(fpn_ch))
+        print("head_type: " + head_type)
+        print("arm_type: " + arm_type)
+        print("cp_out_ch: " + str(cp_out_ch))
+        print("arm_out_chs: " + str(arm_out_chs))
         print("seg_head_mid_chs: " + str(seg_head_mid_chs))
         print("resize_mode: " + resize_mode)
 
@@ -61,16 +63,23 @@ class PPSeg(nn.Layer):
         head_class = eval(head_type)
         assert backbone_name in head_class.support_backbone, \
             "Not support backbone ({})".format(backbone_name)
+
+        if len(arm_out_chs) == 1:
+            arm_out_chs = arm_out_chs * len(backbone_indices)
+        assert len(arm_out_chs) == len(backbone_indices), "The length of " \
+            "arm_out_chs and backbone_indices should be equal"
+
         self.ppseg_head = head_class(backbone_indices, backbone_out_chs,
-                                     arm_type, fpn_ch, resize_mode)
+                                     arm_out_chs, cp_out_ch, arm_type,
+                                     resize_mode)
 
         if len(seg_head_mid_chs) == 1:
             seg_head_mid_chs = seg_head_mid_chs * len(backbone_indices)
         assert len(seg_head_mid_chs) == len(backbone_indices), "The length of " \
             "seg_head_mid_chs and backbone_indices should be equal"
         self.seg_heads = nn.LayerList()  # [..., head_16, head32]
-        for mid_ch in seg_head_mid_chs:
-            self.seg_heads.append(SegHead(fpn_ch, mid_ch, num_classes))
+        for in_ch, mid_ch in zip(arm_out_chs, seg_head_mid_chs):
+            self.seg_heads.append(SegHead(in_ch, mid_ch, num_classes))
 
         # detail guidance
         mid_ch = 64
@@ -121,9 +130,9 @@ class PPSeg(nn.Layer):
             if hasattr(self, 'seg_head_sp4'):
                 logit_list.append(self.seg_head_sp4(feats_backbone[1]))
             if hasattr(self, 'seg_head_sp8'):
-                logit_list.append(self.seg_head_sp8(feats_backbone[1]))
+                logit_list.append(self.seg_head_sp8(feats_backbone[2]))
             if hasattr(self, 'seg_head_sp16'):
-                logit_list.append(self.seg_head_sp16(feats_backbone[1]))
+                logit_list.append(self.seg_head_sp16(feats_backbone[3]))
         else:
             feat_out = self.seg_heads[0](feats_head[0])
             feat_out = F.interpolate(
@@ -162,25 +171,34 @@ class PPSegHead_1(nn.Layer):
     '''
     support_backbone = ["STDCNet_pp_1"]
 
-    def __init__(self, backbone_indices, backbone_out_chs, arm_type, fpn_ch,
-                 resize_mode):
+    def __init__(self, backbone_indices, backbone_out_chs, arm_out_chs,
+                 cp_out_ch, arm_type, resize_mode):
         super().__init__()
 
         assert len(backbone_indices) == len(backbone_out_chs), "The length of " \
             "backbone_indices and backbone_out_chs should be equal"
+        assert len(backbone_indices) == len(arm_out_chs), "The length of " \
+            "backbone_indices and arm_out_chs should be equal"
+
         self.cp = nn.Sequential(
             nn.AdaptiveAvgPool2D(1),
             layers.ConvBNReLU(
-                backbone_out_chs[-1], fpn_ch, kernel_size=1, bias_attr=False))
+                backbone_out_chs[-1], cp_out_ch, kernel_size=1,
+                bias_attr=False))
 
-        assert hasattr(layers,
-                       arm_type), "Do not have arm_type ({})".format(arm_type)
+        assert hasattr(layers,arm_type), \
+            "Do not have arm_type ({})".format(arm_type)
         arm_class = eval("layers." + arm_type)
 
-        self.arms = nn.LayerList()  # [..., arm8, arm16, arm32]
-        for out_ch in backbone_out_chs:
-            arm = arm_class(out_ch, fpn_ch, fpn_ch, resize_mode=resize_mode)
-            self.arms.append(arm)
+        self.arm_list = nn.LayerList()  # [..., arm8, arm16, arm32]
+        for i in range(len(backbone_out_chs)):
+            low_ch = backbone_out_chs[i]
+            high_ch = cp_out_ch if i == len(
+                backbone_out_chs) - 1 else arm_out_chs[i + 1]
+            out_ch = arm_out_chs[i]
+            arm = arm_class(
+                low_ch, high_ch, out_ch, ksize=3, resize_mode=resize_mode)
+            self.arm_list.append(arm)
 
         self.resize_mode = resize_mode
 
@@ -198,7 +216,7 @@ class PPSegHead_1(nn.Layer):
 
         for i in reversed(range(len(in_feat_list))):
             low_feat = in_feat_list[i]
-            arm = self.arms[i]
+            arm = self.arm_list[i]
             high_feat = arm(low_feat, high_feat)
             out_feat_list.insert(0, high_feat)
 

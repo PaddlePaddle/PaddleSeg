@@ -31,16 +31,11 @@ class FusionBase(nn.Layer):
 
     def __init__(self, x_ch, y_ch, out_ch, ksize=3, resize_mode='bilinear'):
         super().__init__()
-        assert y_ch == out_ch
 
         self.conv_x = layers.ConvBNReLU(
-            x_ch,
-            out_ch,
-            kernel_size=ksize,
-            padding=ksize // 2,
-            bias_attr=False)
+            x_ch, y_ch, kernel_size=ksize, padding=ksize // 2, bias_attr=False)
         self.conv_out = layers.ConvBNReLU(
-            out_ch, out_ch, kernel_size=3, padding=1, bias_attr=False)
+            y_ch, out_ch, kernel_size=3, padding=1, bias_attr=False)
         self.resize_mode = resize_mode
 
     def forward(self, x, y):
@@ -68,8 +63,8 @@ class FusionCat(FusionBase):
 
     def __init__(self, x_ch, y_ch, out_ch, ksize=3, resize_mode='bilinear'):
         super().__init__(x_ch, y_ch, out_ch, ksize, resize_mode)
-        self.conv_cat = layers.ConvBNReLU(
-            y_ch + out_ch, out_ch, kernel_size=3, padding=1, bias_attr=False)
+        self.conv_out = layers.ConvBNReLU(
+            2 * y_ch, out_ch, kernel_size=3, padding=1, bias_attr=False)
 
     def forward(self, x, y):
         check_shape(x, y)
@@ -77,7 +72,6 @@ class FusionCat(FusionBase):
         x = self.conv_x(x)
         y_up = F.interpolate(y, paddle.shape(x)[2:], mode=self.resize_mode)
         xy = paddle.concat([x, y_up], axis=1)
-        xy = self.conv_cat(xy)
         out = self.conv_out(xy)
         return out
 
@@ -88,7 +82,7 @@ class FusionChAtten(FusionBase):
     def __init__(self, x_ch, y_ch, out_ch, ksize=3, resize_mode='bilinear'):
         super().__init__(x_ch, y_ch, out_ch, ksize, resize_mode)
         self.conv_atten = layers.ConvBN(
-            2 * (out_ch + y_ch), out_ch, kernel_size=1, bias_attr=False)
+            4 * y_ch, y_ch, kernel_size=1, bias_attr=False)
 
     def forward(self, x, y):
         check_shape(x, y)
@@ -142,7 +136,7 @@ class FusionChSpAtten(FusionBase):
         super().__init__(x_ch, y_ch, out_ch, ksize, resize_mode)
 
         self.ch_atten = layers.ConvBN(
-            2 * (out_ch + y_ch), out_ch, kernel_size=1, bias_attr=False)
+            4 * y_ch, y_ch, kernel_size=1, bias_attr=False)
         self.sp_atten = layers.ConvBN(
             2, 1, kernel_size=3, padding=1, bias_attr=False)
 
@@ -186,7 +180,7 @@ class FusionChSpAtten_1(FusionChSpAtten):
     def __init__(self, x_ch, y_ch, out_ch, ksize=3, resize_mode='bilinear'):
         super().__init__(x_ch, y_ch, out_ch, ksize, resize_mode)
         self.conv_atten = layers.ConvBN(
-            out_ch, out_ch, kernel_size=3, padding=1, bias_attr=False)
+            y_ch, y_ch, kernel_size=3, padding=1, bias_attr=False)
 
     def forward(self, x, y):
         check_shape(x, y)
@@ -254,7 +248,7 @@ class FusionChSpAtten_4(FusionChSpAtten):
     def __init__(self, x_ch, y_ch, out_ch, ksize=3, resize_mode='bilinear'):
         super().__init__(x_ch, y_ch, out_ch, ksize, resize_mode)
         self.conv_atten = layers.ConvBN(
-            out_ch, out_ch, kernel_size=3, padding=1, bias_attr=False)
+            y_ch, y_ch, kernel_size=3, padding=1, bias_attr=False)
 
     def forward(self, x, y):
         check_shape(x, y)
@@ -278,14 +272,14 @@ class FusionConvAtten(FusionBase):
         super().__init__(x_ch, y_ch, out_ch, ksize, resize_mode)
         self.conv_atten = nn.Sequential(
             layers.ConvBNAct(
-                out_ch + y_ch,
+                2 * y_ch,
                 out_ch,
                 kernel_size=3,
                 padding=1,
                 act_type='leakyrelu',
                 bias_attr=False),
             layers.ConvBN(
-                out_ch, out_ch, kernel_size=3, padding=1, bias_attr=False))
+                y_ch, y_ch, kernel_size=3, padding=1, bias_attr=False))
 
     def forward(self, x, y):
         check_shape(x, y)
@@ -305,12 +299,11 @@ class FusionSF(FusionBase):
 
     def __init__(self, x_ch, y_ch, out_ch, ksize=3, resize_mode='bilinear'):
         super().__init__(x_ch, y_ch, out_ch, ksize, resize_mode)
-        assert y_ch == out_ch
 
-        self.down_x = nn.Conv2D(out_ch, out_ch // 2, 1, bias_attr=False)
-        self.down_y = nn.Conv2D(out_ch, out_ch // 2, 1, bias_attr=False)
+        self.down_x = nn.Conv2D(y_ch, y_ch // 2, 1, bias_attr=False)
+        self.down_y = nn.Conv2D(y_ch, y_ch // 2, 1, bias_attr=False)
         self.flow_make = nn.Conv2D(
-            out_ch, 2, kernel_size=3, padding=1, bias_attr=False)
+            y_ch, 2, kernel_size=3, padding=1, bias_attr=False)
 
     def flow_warp(self, input, flow, size):
         input_shape = paddle.shape(input)
@@ -350,10 +343,9 @@ class FusionSFChSpAtten(FusionSF):
 
     def __init__(self, x_ch, y_ch, out_ch, ksize=3, resize_mode='bilinear'):
         super().__init__(x_ch, y_ch, out_ch, ksize, resize_mode)
-        assert y_ch == out_ch
 
         self.ch_atten = layers.ConvBN(
-            2 * (out_ch + y_ch), out_ch, kernel_size=1, bias_attr=False)
+            4 * y_ch, y_ch, kernel_size=1, bias_attr=False)
         self.sp_atten = layers.ConvBN(
             2, 1, kernel_size=3, padding=1, bias_attr=False)
 
