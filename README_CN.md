@@ -261,12 +261,12 @@ PaddleSeg是基于飞桨PaddlePaddle开发的端到端图像分割开发套件�
    * [自定义数据集](./docs/data/custom/data_prepare_cn.md)
 
 * [模型训练](/docs/train/train_cn.md)
-* [模型评估](./docs/evaluation/evaluate/evaluate.md)
+* [模型评估](./docs/evaluation/evaluate/evaluate_cn.md)
 * [预测与可视化](./docs/predict/predict_cn.md)
 
 * 模型导出
-    * [导出预测模型](./docs/model_export.md)
-    * [导出ONNX模型](./docs/model_export_onnx.md)
+    * [导出预测模型](./docs/model_export_cn.md)
+    * [导出ONNX模型](./docs/model_export_onnx_cn.md)
 
 * 模型部署
     * [Paddle Inference部署(Python)](./docs/deployment/inference/python_inference_cn.md)
@@ -274,7 +274,7 @@ PaddleSeg是基于飞桨PaddlePaddle开发的端到端图像分割开发套件�
     * [Paddle Lite部署](./docs/deployment/lite/lite_cn.md)
     * [Paddle Serving部署](./docs/deployment/serving/serving.md)
     * [Paddle JS部署](./docs/deployment/web/web_cn.md)
-    * [推理Benchmark](./docs/deployment/inference/infer_benchmark.md)
+    * [推理Benchmark](./docs/deployment/inference/infer_benchmark_cn.md)
 
 * 模型压缩
     * [量化](./docs/slim/quant/quant_cn.md)
@@ -283,15 +283,15 @@ PaddleSeg是基于飞桨PaddlePaddle开发的端到端图像分割开发套件�
 
 *  API使用教程
     * [API文档说明](./docs/apis/README_CN.md)
-    * [API应用案例](./docs/api_example.md)
+    * [API应用案例](./docs/api_example_cn.md)
 *  重要模块说明
-    * [数据增强](./docs/module/data/data.md)
+    * [数据增强](./docs/module/data/data_cn.md)
     * [Loss说明](./docs/module/loss/losses_cn.md)
 *  二次开发教程
     * [配置文件详解](./docs/design/use/use_cn.md)
     * [如何创造自己的模型](./docs/design/create/add_new_model_cn.md)
 *  模型贡献
-    * [提交PR说明](./docs/pr/pr/pr.md)
+    * [提交PR说明](./docs/pr/pr/pr_cn.md)
     * [模型PR规范](./docs/pr/pr/style_cn.md)
 
 * [静态图版本](./docs/static/static_cn.md)
@@ -302,7 +302,7 @@ PaddleSeg是基于飞桨PaddlePaddle开发的端到端图像分割开发套件�
 
 - [交互式分割](./EISeg)
 - [图像抠图](./contrib/Matting)
-- [人像分割](./contrib/PP-HumanSeg/README_cn.md)
+- [人像分割](./contrib/PP-HumanSeg)
 - [Cityscapes打榜模型](./contrib/CityscapesSOTA)
 - [全景分割](./contrib/PanopticDeepLab)
 - [CVPR冠军模型](./contrib/AutoNUE)
