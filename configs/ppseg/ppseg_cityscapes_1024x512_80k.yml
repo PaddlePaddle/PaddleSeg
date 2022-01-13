@@ -19,7 +19,7 @@ model:
   head_type: PPSegHead_1
   arm_type: FusionAdd
   fpn_ch: 128
-  seg_head_mid_chs: [64]
+  seg_head_mid_chs: [64, 64, 64]
   resize_mode: bilinear # base: nearest, support:nearest and bilinear
 
 loss:
