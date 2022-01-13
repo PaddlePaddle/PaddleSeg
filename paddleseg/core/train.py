@@ -314,7 +314,7 @@ def train(model,
             batch_start = time.time()
 
     # Calculate flops.
-    if local_rank == 0:
+    if local_rank == 0 and model.__class__.__name__ != 'ENet':
         _, c, h, w = images.shape
         _ = paddle.flops(
             model, [1, c, h, w],
