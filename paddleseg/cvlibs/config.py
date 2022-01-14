@@ -402,3 +402,15 @@ class Config(object):
 
     def __str__(self) -> str:
         return yaml.dump(self.dic)
+
+    @property
+    def val_transforms(self) -> list:
+        """Get val_transform from val_dataset"""
+        _val_dataset = self.val_dataset_config
+        if not _val_dataset:
+            return []
+        _transforms = _val_dataset.get('transforms', [])
+        transforms = []
+        for i in _transforms:
+            transforms.append(self._load_object(i))
+        return transforms

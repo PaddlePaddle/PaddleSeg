@@ -34,7 +34,7 @@ def check_logits_losses(logits_list, losses):
             .format(len_logits, len_losses))
 
 
-def loss_computation(logits_list, labels, losses, edges=None):
+def loss_computation(logits_list, label_dict, losses):
     check_logits_losses(logits_list, losses)
     loss_list = []
     for i in range(len(logits_list)):
@@ -45,16 +45,16 @@ def loss_computation(logits_list, labels, losses, edges=None):
         if loss_i.__class__.__name__ in ('BCELoss',
                                          'FocalLoss') and loss_i.edge_label:
             # If use edges as labels According to loss type.
-            loss_list.append(coef_i * loss_i(logits, edges))
+            loss_list.append(coef_i * loss_i(logits, label_dict['edge']))
         elif loss_i.__class__.__name__ == 'MixedLoss':
-            mixed_loss_list = loss_i(logits, labels)
+            mixed_loss_list = loss_i(logits, label_dict['label'])
             for mixed_loss in mixed_loss_list:
                 loss_list.append(coef_i * mixed_loss)
         elif loss_i.__class__.__name__ in ("KLLoss", ):
             loss_list.append(
                 coef_i * loss_i(logits_list[0], logits_list[1].detach()))
         else:
-            loss_list.append(coef_i * loss_i(logits, labels))
+            loss_list.append(coef_i * loss_i(logits, label_dict['label']))
     return loss_list
 
 
@@ -164,11 +164,11 @@ def train(model,
                 else:
                     break
             reader_cost_averager.record(time.time() - batch_start)
-            images = data[0]
-            labels = data[1].astype('int64')
+            images = data['img']
+            labels = data['label'].astype('int64')
             edges = None
-            if len(data) == 3:
-                edges = data[2].astype('int64')
+            if 'edge' in data.keys():
+                edges = data['edge'].astype('int64')
             if hasattr(model, 'data_format') and model.data_format == 'NHWC':
                 images = images.transpose((0, 2, 3, 1))
 
@@ -184,10 +184,7 @@ def train(model,
                     else:
                         logits_list = model(images)
                     loss_list = loss_computation(
-                        logits_list=logits_list,
-                        labels=labels,
-                        losses=losses,
-                        edges=edges)
+                        logits_list=logits_list, label_dict=data, losses=losses)
                     loss = sum(loss_list)
 
                 scaled = scaler.scale(loss)  # scale the loss
@@ -202,10 +199,7 @@ def train(model,
                 else:
                     logits_list = model(images)
                 loss_list = loss_computation(
-                    logits_list=logits_list,
-                    labels=labels,
-                    losses=losses,
-                    edges=edges)
+                    logits_list=logits_list, label_dict=data, losses=losses)
                 loss = sum(loss_list)
                 loss.backward()
                 # if the optimizer is ReduceOnPlateau, the loss is the one which has been pass into step.
