@@ -58,6 +58,80 @@ class FusionAdd(FusionBase):
         return out
 
 
+class FusionBaseV1(nn.Layer):
+    """Fuse two tensors. x is bigger tensor, y is smaller tensor."""
+
+    def __init__(self, x_chs, y_ch, out_ch, ksize=3, resize_mode='bilinear'):
+        super().__init__()
+
+        if isinstance(x_chs, int):
+            self.x_num = 1
+            x_ch = x_chs
+        elif len(x_chs) == 1:
+            self.x_num = 1
+            x_ch = x_chs[0]
+        else:
+            self.x_num = len(x_chs)
+            x_num = len(x_chs)
+            x_ch = x_chs[0]
+            assert all([x_ch == ch for ch in x_chs]), \
+                "All value in x_chs should be equal"
+            assert x_ch % x_num == 0, \
+                "x_ch ({}) should be the multiple of x_num ({})".format(x_ch, x_num)
+
+            self.x_reduction = nn.LayerList()
+            for _ in range(len(x_chs)):
+                reduction = layers.ConvBNReLU(
+                    x_ch, x_ch // x_num, kernel_size=1, bias_attr=False)
+                self.x_reduction.append(reduction)
+
+        self.conv_x = layers.ConvBNReLU(
+            x_ch, y_ch, kernel_size=ksize, padding=ksize // 2, bias_attr=False)
+        self.conv_out = layers.ConvBNReLU(
+            y_ch, out_ch, kernel_size=3, padding=1, bias_attr=False)
+        self.resize_mode = resize_mode
+
+    def forward(self, xs, y):
+        # check num
+        x_num = 1 if not isinstance(xs, (list, tuple)) else len(xs)
+        assert x_num == self.x_num, \
+            "The nums of xs ({}) should be equal to {}".format(x_num, self.x_num)
+
+        # check shape
+        x = xs if not isinstance(xs, (list, tuple)) else xs[0]
+
+        assert x.ndim == 4 and y.ndim == 4
+        x_h, x_w = x.shape[2:]
+        y_h, y_w = y.shape[2:]
+        assert x_h >= y_h and x_w >= y_w
+
+        # x reduction
+        if x_num == 1:
+            return x
+        else:
+            x_list = []
+            for i in range(x_num):
+                x_list.append(self.x_reduction[i](xs[i]))
+            x = paddle.concat(x_list, axis=1)
+            return x
+
+
+class FusionAddV1(FusionBaseV1):
+    """Add two tensor"""
+
+    def __init__(self, x_chs, y_ch, out_ch, ksize=3, resize_mode='bilinear'):
+        super().__init__(x_chs, y_ch, out_ch, ksize, resize_mode)
+
+    def forward(self, xs, y):
+        x = super(FusionAddV1, self).forward(xs, y)
+
+        x = self.conv_x(x)
+        y_up = F.interpolate(y, paddle.shape(x)[2:], mode=self.resize_mode)
+        out = x + y_up
+        out = self.conv_out(out)
+        return out
+
+
 class FusionCat(FusionBase):
     """Concat two tensor"""
 
