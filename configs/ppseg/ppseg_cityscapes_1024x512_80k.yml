@@ -18,7 +18,7 @@ model:
   head_type: PPSegHead
   arm_type: FusionAddV1   # different arm type
   cp_out_ch: 128
-  arm_out_chs: [64, 64, 64]   # [..., x8_arm_out_chs, x16_arm_out_chs, x32_arm_out_chs]
+  arm_out_chs: [128, 128, 128]   # [..., x8_arm_out_chs, x16_arm_out_chs, x32_arm_out_chs]
   seg_head_mid_chs: [64, 64, 64]
   resize_mode: bilinear   # The resize mode for the intermediate interpolate
 
