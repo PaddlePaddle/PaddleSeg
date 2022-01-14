@@ -116,19 +116,14 @@ class PPSeg(nn.Layer):
         x_hw = paddle.shape(x)[2:]
 
         feats_backbone = self.backbone(x)  # [x2, x4, x8, x16, x32]
-        assert len(
-            feats_backbone) == 5, "The nums of backbone feats should be 5"
+        assert len(feats_backbone) == 5, \
+            "The nums of backbone feats should be 5"
 
         tmp = []
         for fs in feats_backbone:
             fs = fs if isinstance(fs, (list, tuple)) else [fs]
             tmp.append(fs)
         feats_backbone = tmp
-        '''
-        feats_selected = [feats_backbone[i] for i in self.backbone_indices]
-        for fs, num in zip(feats_selected, self.feat_nums):
-            assert len(fs) == num, "The nums of feats is not equal to input num"
-        '''
 
         feats_selected = []
         for idx, num in zip(self.backbone_indices, self.feat_nums):
