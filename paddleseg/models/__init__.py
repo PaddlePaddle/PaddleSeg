@@ -52,3 +52,5 @@ from .espnet import ESPNetV2
 from .dmnet import DMNet
 from .espnetv1 import ESPNetV1
 from .enet import ENet
+from .fastfcn import FastFCN
+from .pfpnnet import PFPNNet

@@ -26,3 +26,4 @@ from .stare import STARE
 from .drive import DRIVE
 from .hrf import HRF
 from .chase_db1 import CHASEDB1
+from .pp_humanseg14k import PPHumanSeg14K
