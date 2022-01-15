@@ -14,7 +14,7 @@ model:
     #pretrained: pretrained_model/stdc1net_class_pretrained_cat_pp_distill_resnet50_stdc1net_img500w_gpu4_bs64_ep50_lr0.001.pdparams  # distill_2 weights
     #pretrained: pretrained_model/stdc1net_class_pretrained_cat_pp_distill_resnet50_stdc1net_img500w_gpu4_bs64_ep50_lr0.01.pdparams  # distill_3 weights
   backbone_indices: [2, 3, 4]   # [..., x8_id, x16_id, x32_id]
-  feat_nums: [2, 2, 2]   # [..., x8_fn, x16_fn, x32_fn]
+  feat_nums: [1, 1, 1]   # [..., x8_fn, x16_fn, x32_fn]
   head_type: PPSegHead
   arm_type: FusionAddV2   # different arm type
   cp_out_ch: 128
