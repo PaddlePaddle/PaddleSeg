@@ -487,3 +487,66 @@ class FusionSpAttenV1(FusionBaseV1):
         out = x * atten + y_up * (1 - atten)
         out = self.conv_out(out)
         return out
+
+
+class FusionBaseV2(nn.Layer):
+    """Fuse two tensors. x is bigger tensor, y is smaller tensor."""
+
+    def __init__(self, x_chs, y_ch, out_ch, ksize=3, resize_mode='bilinear'):
+        super().__init__()
+
+        if isinstance(x_chs, int):
+            self.x_num = 1
+            x_ch = x_chs
+        elif len(x_chs) == 1:
+            self.x_num = 1
+            x_ch = x_chs[0]
+        else:
+            self.x_num = len(x_chs)
+            x_ch = x_chs[0]
+            assert all([x_ch == ch for ch in x_chs]), \
+                "All value in x_chs should be equal"
+
+        self.conv_x = layers.ConvBNReLU(
+            x_ch, y_ch, kernel_size=ksize, padding=ksize // 2, bias_attr=False)
+        self.conv_out = layers.ConvBNReLU(
+            y_ch, out_ch, kernel_size=3, padding=1, bias_attr=False)
+        self.resize_mode = resize_mode
+
+    def forward(self, xs, y):
+        # check num
+        x_num = 1 if not isinstance(xs, (list, tuple)) else len(xs)
+        assert x_num == self.x_num, \
+            "The nums of xs ({}) should be equal to {}".format(x_num, self.x_num)
+
+        # check shape
+        x = xs if not isinstance(xs, (list, tuple)) else xs[0]
+
+        assert x.ndim == 4 and y.ndim == 4
+        x_h, x_w = x.shape[2:]
+        y_h, y_w = y.shape[2:]
+        assert x_h >= y_h and x_w >= y_w
+
+        # x reduction
+        if x_num > 1:
+            for i in range(1, x_num):
+                x += xs[i]
+
+        x = self.conv_x(x)
+        y_up = F.interpolate(y, paddle.shape(x)[2:], mode=self.resize_mode)
+
+        return x, y_up
+
+
+class FusionAddV2(FusionBaseV2):
+    """Add two tensor"""
+
+    def __init__(self, x_chs, y_ch, out_ch, ksize=3, resize_mode='bilinear'):
+        super().__init__(x_chs, y_ch, out_ch, ksize, resize_mode)
+
+    def forward(self, xs, y):
+        x, y_up = super(FusionAddV2, self).forward(xs, y)
+
+        out = x + y_up
+        out = self.conv_out(out)
+        return out
