@@ -550,3 +550,25 @@ class FusionAddV2(FusionBaseV2):
         out = x + y_up
         out = self.conv_out(out)
         return out
+
+
+class FusionSpAttenV2(FusionBaseV2):
+    """Use spatial attention"""
+
+    def __init__(self, x_chs, y_ch, out_ch, ksize=3, resize_mode='bilinear'):
+        super().__init__(x_chs, y_ch, out_ch, ksize, resize_mode)
+        self.conv_atten = layers.ConvBN(
+            2, 1, kernel_size=3, padding=1, bias_attr=False)
+
+    def forward(self, xs, y):
+        x, y_up = super(FusionSpAttenV2, self).forward(xs, y)
+        xy = paddle.concat([x, y_up], axis=1)
+
+        xy_mean = paddle.mean(xy, axis=1, keepdim=True)
+        xy_max = paddle.max(xy, axis=1, keepdim=True)
+        atten = paddle.concat([xy_mean, xy_max], axis=1)
+        atten = F.sigmoid(self.conv_atten(atten))  # n * 1 * h * w
+
+        out = x * atten + y_up * (1 - atten)
+        out = self.conv_out(out)
+        return out
