@@ -611,3 +611,96 @@ class FusionSpAttenV2(FusionBaseV2):
         out = x * atten + y_up * (1 - atten)
         out = self.conv_out(out)
         return out
+
+
+class ARM_Add_Add(nn.Layer):
+    """
+    Fuse two tensors. xs are several bigger tensors, y is smaller tensor.
+    """
+
+    def __init__(self, x_chs, y_ch, out_ch, ksize=3, resize_mode='bilinear'):
+        super().__init__()
+
+        if isinstance(x_chs, int):
+            self.x_num = 1
+            x_ch = x_chs
+        elif len(x_chs) == 1:
+            self.x_num = 1
+            x_ch = x_chs[0]
+        else:
+            self.x_num = len(x_chs)
+            x_ch = x_chs[0]
+            assert all([x_ch == ch for ch in x_chs]), \
+                "All value in x_chs should be equal"
+
+        self.conv_x = layers.ConvBNReLU(
+            x_ch, y_ch, kernel_size=ksize, padding=ksize // 2, bias_attr=False)
+        self.conv_out = layers.ConvBNReLU(
+            y_ch, out_ch, kernel_size=3, padding=1, bias_attr=False)
+        self.resize_mode = resize_mode
+
+    def check(self, xs, y):
+        # check num
+        x_num = 1 if not isinstance(xs, (list, tuple)) else len(xs)
+        assert x_num == self.x_num, \
+            "The nums of xs ({}) should be equal to {}".format(x_num, self.x_num)
+
+        # check shape
+        x = xs if not isinstance(xs, (list, tuple)) else xs[0]
+
+        assert x.ndim == 4 and y.ndim == 4
+        x_h, x_w = x.shape[2:]
+        y_h, y_w = y.shape[2:]
+        assert x_h >= y_h and x_w >= y_w
+
+    def prepare(self, xs, y):
+        x = self.prepare_x(xs, y)
+        y = self.prepare_y(x, y)
+        return x, y
+
+    def prepare_x(self, xs, y):
+        x = xs if not isinstance(xs, (list, tuple)) else xs[0]
+
+        if self.x_num > 1:
+            for i in range(1, self.x_num):
+                x += xs[i]
+
+        x = self.conv_x(x)
+        return x
+
+    def prepare_y(self, xs, y):
+        x = xs if not isinstance(xs, (list, tuple)) else xs[-1]
+        y_up = F.interpolate(y, paddle.shape(x)[2:], mode=self.resize_mode)
+        return y_up
+
+    def fuse(self, x, y):
+        out = x + y
+        out = self.conv_out(out)
+        return out
+
+    def forward(self, xs, y):
+        self.check(xs, y)
+        x, y = self.prepare(xs, y)
+        out = self.fuse(x, y)
+        return out
+
+
+class ARM_WeightedAdd_Add(ARM_Add_Add):
+    """Add two tensor"""
+
+    def __init__(self, x_chs, y_ch, out_ch, ksize=3, resize_mode='bilinear'):
+        super().__init__(x_chs, y_ch, out_ch, ksize, resize_mode)
+
+        alpha = self.create_parameter([self.x_num])
+        self.add_parameter("alpha", alpha)
+
+    def prepare_x(self, xs, y):
+        x = xs if not isinstance(xs, (list, tuple)) else xs[0]
+        x = self.alpha[0] * x
+
+        if self.x_num > 1:
+            for i in range(1, self.x_num):
+                x = x + self.alpha[i] * xs[i]
+
+        x = self.conv_x(x)
+        return x
