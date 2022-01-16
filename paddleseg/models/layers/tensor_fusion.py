@@ -704,3 +704,29 @@ class ARM_WeightedAdd_Add(ARM_Add_Add):
 
         x = self.conv_x(x)
         return x
+
+
+class ARM_SEAdd1_Add(ARM_Add_Add):
+    """Add two tensor"""
+
+    def __init__(self, x_chs, y_ch, out_ch, ksize=3, resize_mode='bilinear'):
+        super().__init__(x_chs, y_ch, out_ch, ksize, resize_mode)
+
+    def sp_atten(self, input):
+        if self.training:
+            avg_pool = F.adaptive_avg_pool2d(input, 1)
+        else:
+            avg_pool = paddle.mean(input, axis=[2, 3], keepdim=True)
+        atten = F.sigmoid(avg_pool)
+        return atten * input
+
+    def prepare_x(self, xs, y):
+        x = xs if not isinstance(xs, (list, tuple)) else xs[0]
+        x = self.sp_atten(x)
+
+        if self.x_num > 1:
+            for i in range(1, self.x_num):
+                x = x + self.sp_atten(xs[i])
+
+        x = self.conv_x(x)
+        return x
