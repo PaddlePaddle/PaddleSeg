@@ -490,7 +490,9 @@ class FusionSpAttenV1(FusionBaseV1):
 
 
 class FusionBaseV2(nn.Layer):
-    """Fuse two tensors. x is bigger tensor, y is smaller tensor."""
+    """
+    Fuse two tensors. xs are several bigger tensors, y is smaller tensor.
+    """
 
     def __init__(self, x_chs, y_ch, out_ch, ksize=3, resize_mode='bilinear'):
         super().__init__()
@@ -513,7 +515,7 @@ class FusionBaseV2(nn.Layer):
             y_ch, out_ch, kernel_size=3, padding=1, bias_attr=False)
         self.resize_mode = resize_mode
 
-    def forward(self, xs, y):
+    def check_shape(self, xs, y):
         # check num
         x_num = 1 if not isinstance(xs, (list, tuple)) else len(xs)
         assert x_num == self.x_num, \
@@ -527,12 +529,22 @@ class FusionBaseV2(nn.Layer):
         y_h, y_w = y.shape[2:]
         assert x_h >= y_h and x_w >= y_w
 
-        # x reduction
-        if x_num > 1:
-            for i in range(1, x_num):
+    def x_reduction(self, xs):
+        x = xs if not isinstance(xs, (list, tuple)) else xs[0]
+
+        if self.x_num > 1:
+            for i in range(1, self.x_num):
                 x += xs[i]
 
+        return x
+
+    def forward(self, xs, y):
+
+        self.check_shape(xs, y)
+
+        x = self.x_reduction(xs)
         x = self.conv_x(x)
+
         y_up = F.interpolate(y, paddle.shape(x)[2:], mode=self.resize_mode)
 
         return x, y_up
@@ -546,6 +558,33 @@ class FusionAddV2(FusionBaseV2):
 
     def forward(self, xs, y):
         x, y_up = super(FusionAddV2, self).forward(xs, y)
+
+        out = x + y_up
+        out = self.conv_out(out)
+        return out
+
+
+class FusionWeightedAddV2(FusionBaseV2):
+    """Add two tensor"""
+
+    def __init__(self, x_chs, y_ch, out_ch, ksize=3, resize_mode='bilinear'):
+        super().__init__(x_chs, y_ch, out_ch, ksize, resize_mode)
+
+        alpha = self.create_parameter([self.x_num])
+        self.add_parameter("alpha", alpha)
+
+    def x_reduction(self, xs):
+        x = xs if not isinstance(xs, (list, tuple)) else xs[0]
+        x = self.alpha[0] * x
+
+        if self.x_num > 1:
+            for i in range(1, self.x_num):
+                x = x + self.alpha[i] * xs[i]
+
+        return x
+
+    def forward(self, xs, y):
+        x, y_up = super(FusionWeightedAddV2, self).forward(xs, y)
 
         out = x + y_up
         out = self.conv_out(out)
