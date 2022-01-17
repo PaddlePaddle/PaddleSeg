@@ -20,7 +20,7 @@ model:
   cm_out_ch: 128
   arm_out_chs: [64, 64, 64]   # [..., x8_arm_out_chs, x16_arm_out_chs, x32_arm_out_chs]
   seg_head_mid_chs: [64, 64, 64]
-  export_seg_head_id: 0
+  eval_seg_head_id: 0
   resize_mode: bilinear   # The resize mode for the intermediate interpolate
 
 loss:
