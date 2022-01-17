@@ -667,6 +667,15 @@ class ARM_Add_Add(nn.Layer):
 
         x = self.conv_x(x)
         return x
+        '''
+        # (TODO)use sum will add scale op to infer model, check the speed by trt
+        if not isinstance(xs, (list, tuple)):
+            x = xs
+        else:
+            x = sum(xs)
+        x = self.conv_x(x)
+        return x
+        '''
 
     def prepare_y(self, xs, y):
         x = xs if not isinstance(xs, (list, tuple)) else xs[-1]
@@ -728,5 +737,68 @@ class ARM_SEAdd1_Add(ARM_Add_Add):
             for i in range(1, self.x_num):
                 x = x + self.sp_atten(xs[i])
 
+        x = self.conv_x(x)
+        return x
+
+
+class ARM_CombinedChAttenWeightedAdd0_Add(ARM_Add_Add):
+    """
+    The length of x_chs and xs should be 2.
+    """
+
+    def __init__(self, x_chs, y_ch, out_ch, ksize=3, resize_mode='bilinear'):
+        super().__init__(x_chs, y_ch, out_ch, ksize, resize_mode)
+
+        assert isinstance(x_chs, (list, tuple)) and len(x_chs) == 2, \
+            "x_chs should be (list, tuple) and the length should be 2"
+
+        self.conv_atten = layers.ConvBN(
+            sum(x_chs), x_chs[0], kernel_size=1, bias_attr=False)
+
+    def ch_atten(self, xs):
+        xs = paddle.concat(xs, axis=1)
+
+        avg_pool = F.adaptive_avg_pool2d(xs, 1)
+        atten = F.sigmoid(self.conv_atten(avg_pool))
+        return atten
+
+    def prepare_x(self, xs, y):
+        # xs is [x1, x2]
+        atten = self.ch_atten(xs)
+        x = xs[0] * atten + xs[1] * (1 - atten)
+        x = self.conv_x(x)
+        return x
+
+
+class ARM_CombinedChAttenWeightedAdd1_Add(ARM_Add_Add):
+    """
+    The length of x_chs and xs should be 2.
+    """
+
+    def __init__(self, x_chs, y_ch, out_ch, ksize=3, resize_mode='bilinear'):
+        super().__init__(x_chs, y_ch, out_ch, ksize, resize_mode)
+
+        assert isinstance(x_chs, (list, tuple)) and len(x_chs) == 2, \
+            "x_chs should be (list, tuple) and the length should be 2"
+
+        self.conv_atten = layers.ConvBN(
+            2 * sum(x_chs), x_chs[0], kernel_size=1, bias_attr=False)
+
+    def ch_atten(self, xs):
+        xs = paddle.concat(xs, axis=1)
+
+        avg_pool = F.adaptive_avg_pool2d(xs, 1)
+        if self.training:
+            max_pool = F.adaptive_max_pool2d(xs, 1)
+        else:
+            max_pool = paddle.max(xs, axis=[2, 3], keepdim=True)
+        atten = paddle.concat([avg_pool, max_pool], axis=1)
+        atten = F.sigmoid(self.conv_atten(atten))
+        return atten
+
+    def prepare_x(self, xs, y):
+        # xs is [x1, x2]
+        atten = self.ch_atten(xs)
+        x = xs[0] * atten + xs[1] * (1 - atten)
         x = self.conv_x(x)
         return x
