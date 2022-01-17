@@ -129,8 +129,7 @@ class MattingDataset(paddle.io.Dataset):
         if len(fg_bg_file) >= 2:
             bg_file = os.path.join(self.dataset_root, fg_bg_file[1])
             bg = cv2.imread(bg_file)
-            data['img'], data['bg'] = self.composite(fg, alpha, bg)
-            data['fg'] = fg
+            data['img'], data['fg'], data['bg'] = self.composite(fg, alpha, bg)
             if self.mode in ['train', 'trainval']:
                 data['gt_fields'].append('fg')
                 data['gt_fields'].append('bg')
@@ -224,7 +223,7 @@ class MattingDataset(paddle.io.Dataset):
         alpha = np.expand_dims(alpha, axis=2)
         image = alpha * fg + (1 - alpha) * bg
         image = image.astype(np.uint8)
-        return image, bg
+        return image, fg, bg
 
     @staticmethod
     def gen_trimap(alpha, mode='train', eval_kernel=7):
