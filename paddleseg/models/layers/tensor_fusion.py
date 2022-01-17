@@ -741,6 +741,111 @@ class ARM_SEAdd1_Add(ARM_Add_Add):
         return x
 
 
+def get_pure_tensor(x):
+    if not isinstance(x, (list, tuple)):
+        return x
+    elif len(x) == 1:
+        return x[0]
+    else:
+        return paddle.concat(x, axis=1)
+
+
+def avg_reduce_hw(x):
+    # Reduce hw by avg
+    if not isinstance(x, (list, tuple)):
+        return F.adaptive_avg_pool2d(x, 1)
+    elif len(x) == 1:
+        return F.adaptive_avg_pool2d(x[0], 1)
+    else:
+        res = []
+        for xi in x:
+            res.append(F.adaptive_avg_pool2d(xi, 1))
+        return paddle.concat(res, axis=1)
+
+
+def avg_reduce_hw_slow(x):
+    # Reduce hw by avg
+    x = get_pure_tensor(x)
+    avg_pool = F.adaptive_avg_pool2d(x, 1)
+    return avg_pool
+
+
+def avg_max_reduce_hw_for_single(x, is_training):
+    # Reduce hw by avg and max, only support single input
+    assert not isinstance(x, (list, tuple))
+    avg_pool = F.adaptive_avg_pool2d(x, 1)
+    # TODO(pjc): when axis=[2, 3], the paddle.max api has bug for training.
+    if is_training:
+        max_pool = F.adaptive_max_pool2d(x, 1)
+    else:
+        max_pool = paddle.max(x, axis=[2, 3], keepdim=True)
+
+    res = paddle.concat([avg_pool, max_pool], axis=1)
+    return res
+
+
+def avg_max_reduce_hw(x, is_training):
+    # Reduce hw by avg and max
+    if not isinstance(x, (list, tuple)):
+        return avg_max_reduce_hw_for_single(x, is_training)
+    elif len(x) == 1:
+        return avg_max_reduce_hw_for_single(x[0], is_training)
+    else:
+        res = []
+        for xi in x:
+            res.append(avg_max_reduce_hw_for_single(xi, is_training))
+        return paddle.concat(res, axis=1)
+
+
+def avg_max_reduce_hw_slow(x, is_training):
+    # Reduce hw by avg and max
+    x = get_pure_tensor(x)
+
+    avg_pool = F.adaptive_avg_pool2d(x, 1)
+    if is_training:
+        max_pool = F.adaptive_max_pool2d(x, 1)
+    else:
+        max_pool = paddle.max(x, axis=[2, 3], keepdim=True)
+
+    res = paddle.concat([avg_pool, max_pool], axis=1)
+    return res
+
+
+def avg_reduce_channel(x):
+    # Reduce channel by avg
+    if not isinstance(x, (list, tuple)):
+        return paddle.mean(x, axis=1, keepdim=True)
+    elif len(x) == 1:
+        return paddle.mean(x[0], axis=1, keepdim=True)
+    else:
+        res = []
+        for xi in x:
+            res.append(paddle.mean(xi, axis=1, keepdim=True))
+        return paddle.concat(res, axis=1)
+
+
+def avg_max_reduce_channel_for_single(x):
+    # Reduce hw by avg and max, only support single input
+    assert not isinstance(x, (list, tuple))
+    mean_value = paddle.mean(x, axis=1, keepdim=True)
+    max_value = paddle.max(x, axis=1, keepdim=True)
+    res = paddle.concat([mean_value, max_value], axis=1)
+    return res
+
+
+def avg_max_reduce_channel(x):
+    # Reduce hw by avg and max
+    if not isinstance(x, (list, tuple)):
+        return avg_max_reduce_channel_for_single(x)
+    elif len(x) == 1:
+        return avg_max_reduce_channel_for_single(x[0])
+    else:
+        res = []
+        for xi in x:
+            res.append(avg_max_reduce_channel_for_single(xi))
+        return paddle.concat(res, axis=1)
+
+
 class ARM_CombinedChAttenWeightedAdd0_Add(ARM_Add_Add):
     """
     The length of x_chs and xs should be 2.
@@ -755,16 +860,11 @@ class ARM_CombinedChAttenWeightedAdd0_Add(ARM_Add_Add):
         self.conv_atten = layers.ConvBN(
             sum(x_chs), x_chs[0], kernel_size=1, bias_attr=False)
 
-    def ch_atten(self, xs):
-        xs = paddle.concat(xs, axis=1)
-
-        avg_pool = F.adaptive_avg_pool2d(xs, 1)
-        atten = F.sigmoid(self.conv_atten(avg_pool))
-        return atten
-
     def prepare_x(self, xs, y):
         # xs is [x1, x2]
-        atten = self.ch_atten(xs)
+        atten = avg_reduce_hw(xs)
+        atten = F.sigmoid(self.conv_atten(atten))
+
         x = xs[0] * atten + xs[1] * (1 - atten)
         x = self.conv_x(x)
         return x
@@ -784,21 +884,11 @@ class ARM_CombinedChAttenWeightedAdd1_Add(ARM_Add_Add):
         self.conv_atten = layers.ConvBN(
             2 * sum(x_chs), x_chs[0], kernel_size=1, bias_attr=False)
 
-    def ch_atten(self, xs):
-        xs = paddle.concat(xs, axis=1)
-
-        avg_pool = F.adaptive_avg_pool2d(xs, 1)
-        if self.training:
-            max_pool = F.adaptive_max_pool2d(xs, 1)
-        else:
-            max_pool = paddle.max(xs, axis=[2, 3], keepdim=True)
-        atten = paddle.concat([avg_pool, max_pool], axis=1)
-        atten = F.sigmoid(self.conv_atten(atten))
-        return atten
-
     def prepare_x(self, xs, y):
         # xs is [x1, x2]
-        atten = self.ch_atten(xs)
+        atten = avg_max_reduce_hw(xs, self.training)
+        atten = F.sigmoid(self.conv_atten(atten))
+
         x = xs[0] * atten + xs[1] * (1 - atten)
         x = self.conv_x(x)
         return x
