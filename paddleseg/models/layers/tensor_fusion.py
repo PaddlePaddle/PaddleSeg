@@ -946,3 +946,43 @@ class ARM_SpAttenAdd1_Add(ARM_Add_Add):
         x = xs[0] * atten + xs[1] * (1 - atten)
         x = self.conv_x(x)
         return x
+
+
+class ARM_ChAttenAdd0_ChAttenAdd0(ARM_ChAttenAdd0_Add):
+    """
+    The length of x_chs and xs should be 2.
+    """
+
+    def __init__(self, x_chs, y_ch, out_ch, ksize=3, resize_mode='bilinear'):
+        super().__init__(x_chs, y_ch, out_ch, ksize, resize_mode)
+
+        self.conv_xy_atten = layers.ConvBN(
+            2 * y_ch, y_ch, kernel_size=1, bias_attr=False)
+
+    def fuse(self, x, y):
+        atten = avg_reduce_hw([x, y])
+        atten = F.sigmoid(self.conv_xy_atten(atten))
+
+        out = x * atten + y * (1 - atten)
+        out = self.conv_out(out)
+        return out
+
+
+class ARM_ChAttenAdd0_SpAttenAdd0(ARM_ChAttenAdd0_Add):
+    """
+    The length of x_chs and xs should be 2.
+    """
+
+    def __init__(self, x_chs, y_ch, out_ch, ksize=3, resize_mode='bilinear'):
+        super().__init__(x_chs, y_ch, out_ch, ksize, resize_mode)
+
+        self.conv_xy_atten = layers.ConvBN(
+            2, 1, kernel_size=3, padding=1, bias_attr=False)
+
+    def fuse(self, x, y):
+        atten = avg_reduce_channel([x, y])
+        atten = F.sigmoid(self.conv_xy_atten(atten))
+
+        out = x * atten + y * (1 - atten)
+        out = self.conv_out(out)
+        return out
