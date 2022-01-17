@@ -24,16 +24,39 @@ from paddleseg.utils import utils
 
 @manager.MODELS.add_component
 class PPSeg(nn.Layer):
+    """
+    PPSeg.
+
+    Args:
+        num_classes (int): The unique number of target classes.
+        backbone(nn.Layer): Backbone network, such as stdc1net and resnet18. The backbone must
+            has feat_channels, of which the length is 5.
+        backbone_indices (List(int), optional): The values indicate the indices of output of backbone.
+            Default: [2, 3, 4].
+        feat_nums (List(int), optinal):  The values indicate the num of tensor used for each fusion module.
+            Default: [1, 1, 1].
+        head_type (str, optional): The head type of PPSeg. Default: PPSegHead.
+        arm_type (str, optional): The type of attention refinement module (ARM). Default: ARM_Add_Add.
+        cm_out_ch (int, optional): The channel of the last context module, which comes after backbone.
+            Default: 128.
+        arm_out_chs (List(int), optional): The out channels of each arm module. Default: [64, 64, 64].
+
+
+        pretrained (str, optional): The path or url of pretrained model. Default: None.
+
+    """
+
     def __init__(self,
                  num_classes,
                  backbone,
                  backbone_indices=[2, 3, 4],
                  feat_nums=[1, 1, 1],
                  head_type='PPSegHead',
-                 arm_type='FusionAdd',
-                 cp_out_ch=128,
-                 arm_out_chs=[128],
-                 seg_head_mid_chs=[64],
+                 arm_type='ARM_Add_Add',
+                 cm_out_ch=128,
+                 arm_out_chs=[64, 64, 64],
+                 seg_head_mid_chs=[64, 64, 64],
+                 export_seg_head_id=0,
                  resize_mode='nearest',
                  use_boundary_2=False,
                  use_boundary_4=False,
@@ -47,7 +70,7 @@ class PPSeg(nn.Layer):
         print("feat_nums:" + str(feat_nums))
         print("head_type: " + head_type)
         print("arm_type: " + arm_type)
-        print("cp_out_ch: " + str(cp_out_ch))
+        print("cm_out_ch: " + str(cm_out_ch))
         print("arm_out_chs: " + str(arm_out_chs))
         print("seg_head_mid_chs: " + str(seg_head_mid_chs))
         print("resize_mode: " + resize_mode)
@@ -78,7 +101,7 @@ class PPSeg(nn.Layer):
             "arm_out_chs and backbone_indices should be equal"
 
         self.ppseg_head = head_class(backbone_indices, feat_nums,
-                                     backbone_out_chs, arm_out_chs, cp_out_ch,
+                                     backbone_out_chs, arm_out_chs, cm_out_ch,
                                      arm_type, resize_mode)
 
         if len(seg_head_mid_chs) == 1:
@@ -88,6 +111,8 @@ class PPSeg(nn.Layer):
         self.seg_heads = nn.LayerList()  # [..., head_16, head32]
         for in_ch, mid_ch in zip(arm_out_chs, seg_head_mid_chs):
             self.seg_heads.append(SegHead(in_ch, mid_ch, num_classes))
+
+        self.export_seg_head_id = export_seg_head_id
 
         # detail guidance
         mid_ch = 64
@@ -156,7 +181,8 @@ class PPSeg(nn.Layer):
             if hasattr(self, 'seg_head_sp16'):
                 logit_list.append(self.seg_head_sp16(feats_backbone[3][-1]))
         else:
-            feat_out = self.seg_heads[0](feats_head[0])
+            idx = self.export_seg_head_id
+            feat_out = self.seg_heads[idx](feats_head[idx])
             feat_out = F.interpolate(
                 feat_out, x_hw, mode='bilinear', align_corners=False)
             logit_list = [feat_out]
@@ -174,7 +200,7 @@ class PPSegHead(nn.Layer):
     '''
 
     def __init__(self, backbone_indices, feat_nums, backbone_out_chs,
-                 arm_out_chs, cp_out_ch, arm_type, resize_mode):
+                 arm_out_chs, cm_out_ch, arm_type, resize_mode):
         super().__init__()
 
         assert len(backbone_indices) == len(backbone_out_chs), "The length of " \
@@ -189,7 +215,7 @@ class PPSegHead(nn.Layer):
             nn.AdaptiveAvgPool2D(1),
             layers.ConvBNReLU(
                 backbone_out_chs[-1][-1],
-                cp_out_ch,
+                cm_out_ch,
                 kernel_size=1,
                 bias_attr=False))
 
@@ -200,7 +226,7 @@ class PPSegHead(nn.Layer):
         self.arm_list = nn.LayerList()  # [..., arm8, arm16, arm32]
         for i in range(len(backbone_out_chs)):
             low_chs = backbone_out_chs[i]
-            high_ch = cp_out_ch if i == len(
+            high_ch = cm_out_ch if i == len(
                 backbone_out_chs) - 1 else arm_out_chs[i + 1]
             out_ch = arm_out_chs[i]
             arm = arm_class(
