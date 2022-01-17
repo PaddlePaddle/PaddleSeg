@@ -56,7 +56,7 @@ class PPSeg(nn.Layer):
                  cm_out_ch=128,
                  arm_out_chs=[64, 64, 64],
                  seg_head_mid_chs=[64, 64, 64],
-                 export_seg_head_id=0,
+                 eval_seg_head_id=0,
                  resize_mode='nearest',
                  use_boundary_2=False,
                  use_boundary_4=False,
@@ -78,8 +78,12 @@ class PPSeg(nn.Layer):
         # backbone
         assert hasattr(backbone, 'feat_channels'), \
             "The backbone should has feat_channels."
-        assert len(backbone.feat_channels) == 5, \
-            "The length of feat_channels ({}) in backbone should be 5.".format(len(backbone.feat_channels))
+        assert len(backbone.feat_channels) >= len(backbone_indices), \
+            f"The length of input backbone_indices ({len(backbone_indices)}) should not be" \
+            f"greater than the length of feat_channels ({len(backbone.feat_channels)})."
+        assert len(backbone.feat_channels) > max(backbone_indices), \
+            f"The max value ({max(backbone_indices)}) of backbone_indices should be " \
+            f"less than the length of feat_channels ({len(backbone.feat_channels)})."
         self.backbone = backbone
 
         assert len(backbone_indices) > 1, "The lenght of backbone_indices " \
@@ -112,7 +116,7 @@ class PPSeg(nn.Layer):
         for in_ch, mid_ch in zip(arm_out_chs, seg_head_mid_chs):
             self.seg_heads.append(SegHead(in_ch, mid_ch, num_classes))
 
-        self.export_seg_head_id = export_seg_head_id
+        self.eval_seg_head_id = eval_seg_head_id
 
         # detail guidance
         mid_ch = 64
@@ -140,9 +144,10 @@ class PPSeg(nn.Layer):
     def forward(self, x):
         x_hw = paddle.shape(x)[2:]
 
-        feats_backbone = self.backbone(x)  # [x2, x4, x8, x16, x32]
-        assert len(feats_backbone) == 5, \
-            "The nums of backbone feats should be 5"
+        feats_backbone = self.backbone(x)  # [..., x4, x8, x16, x32]
+        assert len(feats_backbone) >= len(self.backbone_indices), \
+            f"The nums of backbone feats ({len(feats_backbone)}) should be greater or " \
+            f"equal than the nums of backbone_indices ({len(self.backbone_indices)})"
 
         tmp = []
         for fs in feats_backbone:
@@ -181,7 +186,7 @@ class PPSeg(nn.Layer):
             if hasattr(self, 'seg_head_sp16'):
                 logit_list.append(self.seg_head_sp16(feats_backbone[3][-1]))
         else:
-            idx = self.export_seg_head_id
+            idx = self.eval_seg_head_id
             feat_out = self.seg_heads[idx](feats_head[idx])
             feat_out = F.interpolate(
                 feat_out, x_hw, mode='bilinear', align_corners=False)

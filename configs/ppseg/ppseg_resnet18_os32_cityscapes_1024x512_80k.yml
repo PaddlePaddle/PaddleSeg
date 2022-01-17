@@ -1,0 +1,52 @@
+_base_: '../_base_/cityscapes.yml'
+
+batch_size: 12  # total: 24
+iters: 80000
+
+model:
+  type: PPSeg
+  backbone:
+    type: ResNet18_vd
+    output_stride: 32
+    output_all_feats: True
+    pretrained: https://bj.bcebos.com/paddleseg/dygraph/resnet18_vd_ssld_v2.tar.gz
+  backbone_indices: [1, 2, 3]   # [..., x8_id, x16_id, x32_id]
+  feat_nums: [1, 1, 1]   # [..., x8_fn, x16_fn, x32_fn]
+  head_type: PPSegHead
+  arm_type: ARM_Add_Add   # different arm type
+  cm_out_ch: 128
+  arm_out_chs: [64, 64, 64]   # [..., x8_arm_out_chs, x16_arm_out_chs, x32_arm_out_chs]
+  seg_head_mid_chs: [64, 64, 64]
+  eval_seg_head_id: 0
+  resize_mode: bilinear   # The resize mode for the intermediate interpolate
+
+loss:
+  types:
+    - type: OhemCrossEntropyLoss
+      min_kept: 300000
+    - type: OhemCrossEntropyLoss
+      min_kept: 300000
+    - type: OhemCrossEntropyLoss
+      min_kept: 300000
+    #- type: DetailAggregateLoss
+  coef: [1, 1, 1]
+
+train_dataset:
+  transforms:
+    - type: ResizeStepScaling
+      min_scale_factor: 0.125
+      max_scale_factor: 1.5
+      scale_step_size: 0.125
+    - type: RandomPaddingCrop
+      crop_size: [1024, 512]
+    - type: RandomHorizontalFlip
+    - type: RandomDistort
+      brightness_range: 0.5
+      contrast_range: 0.5
+      saturation_range: 0.5
+    - type: Normalize
+  mode: train
+
+test_config:
+  aug_eval: True
+  scales: 0.5

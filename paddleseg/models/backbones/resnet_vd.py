@@ -205,6 +205,7 @@ class ResNet_vd(nn.Layer):
     Args:
         layers (int, optional): The layers of ResNet_vd. The supported layers are (18, 34, 50, 101, 152, 200). Default: 50.
         output_stride (int, optional): The stride of output features compared to input images. It is 8 or 16. Default: 8.
+        output_all_feats (bool, optional): Whether to output all features of each block. Default: False.
         multi_grid (tuple|list, optional): The grid of stage4. Defult: (1, 1, 1).
         pretrained (str, optional): The path of pretrained model.
 
@@ -214,6 +215,7 @@ class ResNet_vd(nn.Layer):
                  layers=50,
                  output_stride=8,
                  multi_grid=(1, 1, 1),
+                 output_all_feats=False,
                  pretrained=None,
                  data_format='NCHW'):
         super(ResNet_vd, self).__init__()
@@ -342,6 +344,7 @@ class ResNet_vd(nn.Layer):
                     shortcut = True
                 self.stage_list.append(block_list)
 
+        self.output_all_feats = output_all_feats
         self.pretrained = pretrained
         self.init_weight()
 
@@ -355,9 +358,16 @@ class ResNet_vd(nn.Layer):
         # A feature list saves the output feature map of each stage.
         feat_list = []
         for stage in self.stage_list:
-            for block in stage:
-                y = block(y)
-            feat_list.append(y)
+            if self.output_all_feats:
+                ys = []
+                for block in stage:
+                    y = block(y)
+                    ys.append(y)
+                feat_list.append(ys)
+            else:
+                for block in stage:
+                    y = block(y)
+                feat_list.append(y)
 
         return feat_list
 
