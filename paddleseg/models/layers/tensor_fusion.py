@@ -852,7 +852,7 @@ def avg_max_reduce_channel(x):
         return paddle.concat(res, axis=1)
 
 
-class ARM_CombinedChAttenWeightedAdd0_Add(ARM_Add_Add):
+class ARM_ChAttenAdd0_Add(ARM_Add_Add):
     """
     The length of x_chs and xs should be 2.
     """
@@ -863,20 +863,20 @@ class ARM_CombinedChAttenWeightedAdd0_Add(ARM_Add_Add):
         assert isinstance(x_chs, (list, tuple)) and len(x_chs) == 2, \
             "x_chs should be (list, tuple) and the length should be 2"
 
-        self.conv_atten = layers.ConvBN(
+        self.conv_xs_atten = layers.ConvBN(
             sum(x_chs), x_chs[0], kernel_size=1, bias_attr=False)
 
     def prepare_x(self, xs, y):
         # xs is [x1, x2]
         atten = avg_reduce_hw(xs)
-        atten = F.sigmoid(self.conv_atten(atten))
+        atten = F.sigmoid(self.conv_xs_atten(atten))
 
         x = xs[0] * atten + xs[1] * (1 - atten)
         x = self.conv_x(x)
         return x
 
 
-class ARM_CombinedChAttenWeightedAdd1_Add(ARM_Add_Add):
+class ARM_ChAttenAdd1_Add(ARM_Add_Add):
     """
     The length of x_chs and xs should be 2.
     """
@@ -887,20 +887,20 @@ class ARM_CombinedChAttenWeightedAdd1_Add(ARM_Add_Add):
         assert isinstance(x_chs, (list, tuple)) and len(x_chs) == 2, \
             "x_chs should be (list, tuple) and the length should be 2"
 
-        self.conv_atten = layers.ConvBN(
+        self.conv_xs_atten = layers.ConvBN(
             2 * sum(x_chs), x_chs[0], kernel_size=1, bias_attr=False)
 
     def prepare_x(self, xs, y):
         # xs is [x1, x2]
         atten = avg_max_reduce_hw(xs, self.training)
-        atten = F.sigmoid(self.conv_atten(atten))
+        atten = F.sigmoid(self.conv_xs_atten(atten))
 
         x = xs[0] * atten + xs[1] * (1 - atten)
         x = self.conv_x(x)
         return x
 
 
-class ARM_CombinedSpAttenWeightedAdd0_Add(ARM_Add_Add):
+class ARM_SpAttenAdd0_Add(ARM_Add_Add):
     """
     The length of x_chs and xs should be 2.
     """
@@ -911,20 +911,20 @@ class ARM_CombinedSpAttenWeightedAdd0_Add(ARM_Add_Add):
         assert isinstance(x_chs, (list, tuple)) and len(x_chs) == 2, \
             "x_chs should be (list, tuple) and the length should be 2"
 
-        self.conv_atten = layers.ConvBN(
+        self.conv_xs_atten = layers.ConvBN(
             2, 1, kernel_size=3, padding=1, bias_attr=False)
 
     def prepare_x(self, xs, y):
         # xs is [x1, x2]
         atten = avg_reduce_channel(xs)
-        atten = F.sigmoid(self.conv_atten(atten))
+        atten = F.sigmoid(self.conv_xs_atten(atten))
 
         x = xs[0] * atten + xs[1] * (1 - atten)
         x = self.conv_x(x)
         return x
 
 
-class ARM_CombinedSpAttenWeightedAdd1_Add(ARM_Add_Add):
+class ARM_SpAttenAdd1_Add(ARM_Add_Add):
     """
     The length of x_chs and xs should be 2.
     """
@@ -935,13 +935,13 @@ class ARM_CombinedSpAttenWeightedAdd1_Add(ARM_Add_Add):
         assert isinstance(x_chs, (list, tuple)) and len(x_chs) == 2, \
             "x_chs should be (list, tuple) and the length should be 2"
 
-        self.conv_atten = layers.ConvBN(
+        self.conv_xs_atten = layers.ConvBN(
             4, 1, kernel_size=3, padding=1, bias_attr=False)
 
     def prepare_x(self, xs, y):
         # xs is [x1, x2]
         atten = avg_max_reduce_channel(xs)
-        atten = F.sigmoid(self.conv_atten(atten))
+        atten = F.sigmoid(self.conv_xs_atten(atten))
 
         x = xs[0] * atten + xs[1] * (1 - atten)
         x = self.conv_x(x)
