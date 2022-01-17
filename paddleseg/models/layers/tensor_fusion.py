@@ -770,8 +770,7 @@ def avg_reduce_hw_slow(x):
     return avg_pool
 
 
-def avg_max_reduce_hw_for_single(x, is_training):
-    # Reduce hw by avg and max, only support single input
+def avg_max_reduce_hw_helper(x, is_training, use_concat=True):
     assert not isinstance(x, (list, tuple))
     avg_pool = F.adaptive_avg_pool2d(x, 1)
     # TODO(pjc): when axis=[2, 3], the paddle.max api has bug for training.
@@ -780,20 +779,23 @@ def avg_max_reduce_hw_for_single(x, is_training):
     else:
         max_pool = paddle.max(x, axis=[2, 3], keepdim=True)
 
-    res = paddle.concat([avg_pool, max_pool], axis=1)
+    if use_concat:
+        res = paddle.concat([avg_pool, max_pool], axis=1)
+    else:
+        res = [avg_pool, max_pool]
     return res
 
 
 def avg_max_reduce_hw(x, is_training):
     # Reduce hw by avg and max
     if not isinstance(x, (list, tuple)):
-        return avg_max_reduce_hw_for_single(x, is_training)
+        return avg_max_reduce_hw_helper(x, is_training)
     elif len(x) == 1:
-        return avg_max_reduce_hw_for_single(x[0], is_training)
+        return avg_max_reduce_hw_helper(x[0], is_training)
     else:
         res = []
         for xi in x:
-            res.append(avg_max_reduce_hw_for_single(xi, is_training))
+            res.extend(avg_max_reduce_hw_helper(xi, is_training, False))
         return paddle.concat(res, axis=1)
 
 
@@ -824,25 +826,29 @@ def avg_reduce_channel(x):
         return paddle.concat(res, axis=1)
 
 
-def avg_max_reduce_channel_for_single(x):
+def avg_max_reduce_channel_helper(x, use_concat=True):
     # Reduce hw by avg and max, only support single input
     assert not isinstance(x, (list, tuple))
     mean_value = paddle.mean(x, axis=1, keepdim=True)
     max_value = paddle.max(x, axis=1, keepdim=True)
-    res = paddle.concat([mean_value, max_value], axis=1)
+
+    if use_concat:
+        res = paddle.concat([mean_value, max_value], axis=1)
+    else:
+        res = [mean_value, max_value]
     return res
 
 
 def avg_max_reduce_channel(x):
     # Reduce hw by avg and max
     if not isinstance(x, (list, tuple)):
-        return avg_max_reduce_channel_for_single(x)
+        return avg_max_reduce_channel_helper(x)
     elif len(x) == 1:
-        return avg_max_reduce_channel_for_single(x[0])
+        return avg_max_reduce_channel_helper(x[0])
     else:
         res = []
         for xi in x:
-            res.append(avg_max_reduce_channel_for_single(xi))
+            res.extend(avg_max_reduce_channel_helper(xi, False))
         return paddle.concat(res, axis=1)
 
 
@@ -887,6 +893,54 @@ class ARM_CombinedChAttenWeightedAdd1_Add(ARM_Add_Add):
     def prepare_x(self, xs, y):
         # xs is [x1, x2]
         atten = avg_max_reduce_hw(xs, self.training)
+        atten = F.sigmoid(self.conv_atten(atten))
+
+        x = xs[0] * atten + xs[1] * (1 - atten)
+        x = self.conv_x(x)
+        return x
+
+
+class ARM_CombinedSpAttenWeightedAdd0_Add(ARM_Add_Add):
+    """
+    The length of x_chs and xs should be 2.
+    """
+
+    def __init__(self, x_chs, y_ch, out_ch, ksize=3, resize_mode='bilinear'):
+        super().__init__(x_chs, y_ch, out_ch, ksize, resize_mode)
+
+        assert isinstance(x_chs, (list, tuple)) and len(x_chs) == 2, \
+            "x_chs should be (list, tuple) and the length should be 2"
+
+        self.conv_atten = layers.ConvBN(
+            2, 1, kernel_size=3, padding=1, bias_attr=False)
+
+    def prepare_x(self, xs, y):
+        # xs is [x1, x2]
+        atten = avg_reduce_channel(xs)
+        atten = F.sigmoid(self.conv_atten(atten))
+
+        x = xs[0] * atten + xs[1] * (1 - atten)
+        x = self.conv_x(x)
+        return x
+
+
+class ARM_CombinedSpAttenWeightedAdd1_Add(ARM_Add_Add):
+    """
+    The length of x_chs and xs should be 2.
+    """
+
+    def __init__(self, x_chs, y_ch, out_ch, ksize=3, resize_mode='bilinear'):
+        super().__init__(x_chs, y_ch, out_ch, ksize, resize_mode)
+
+        assert isinstance(x_chs, (list, tuple)) and len(x_chs) == 2, \
+            "x_chs should be (list, tuple) and the length should be 2"
+
+        self.conv_atten = layers.ConvBN(
+            4, 1, kernel_size=3, padding=1, bias_attr=False)
+
+    def prepare_x(self, xs, y):
+        # xs is [x1, x2]
+        atten = avg_max_reduce_channel(xs)
         atten = F.sigmoid(self.conv_atten(atten))
 
         x = xs[0] * atten + xs[1] * (1 - atten)
