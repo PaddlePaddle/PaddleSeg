@@ -22,7 +22,7 @@ from paddleseg.cvlibs import manager
 
 
 @manager.LOSSES.add_component
-class SemanticConnectivityLearning(nn.Layer):
+class SemanticConnectivityLoss(nn.Layer):
     '''
     SCL (Semantic Connectivity-aware Learning) framework, which introduces a SC Loss (Semantic Connectivity-aware Loss)
     to improve the quality of segmentation results from the perspective of connectivity. Support multi-class segmentation.

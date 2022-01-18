@@ -137,7 +137,7 @@ PaddleSeg是基于飞桨PaddlePaddle开发的端到端图像分割开发套件�
           <ul>
             <li>Cross Entropy</li>
             <li>Binary CE</li>
-            <li>Bootstrapped CE</li> 
+            <li>Bootstrapped CE</li>
             <li>Point CE</li>
             <li>OHEM CE</li>
             <li>Pixel Contrast CE</li>
@@ -175,7 +175,8 @@ PaddleSeg是基于飞桨PaddlePaddle开发的端到端图像分割开发套件�
             <li>HRF</li>
             <li>DRIVE</li>
             <li>STARE</li>
-          </ul> 
+            <li>PP-HumanSeg14K</li>
+          </ul>
         <b>数据增强</b><br>
         <ul>
           <li>Flipping</li>  
@@ -190,7 +191,7 @@ PaddleSeg是基于飞桨PaddlePaddle开发的端到端图像分割开发套件�
           <li>PaddingByAspectRatio</li>
           <li>RandomPaddingCrop</li>  
           <li>RandomCenterCrop</li>
-          <li>ScalePadding</li> 
+          <li>ScalePadding</li>
           <li>RandomNoise</li>  
           <li>RandomBlur</li>  
           <li>RandomRotation</li>  
@@ -243,7 +244,7 @@ PaddleSeg是基于飞桨PaddlePaddle开发的端到端图像分割开发套件�
 
 ## 模型库总览  <img src="./docs/images/model.png" width="20"/>
 
-模型结构和骨干网络的代表模型在Cityscapes数据集mIoU和FLOPs对比图。请参见[Model Zoo Overview](./docs/model_zoo_overview.md)了解更多模型信息以及对比图。
+模型结构和骨干网络的代表模型在Cityscapes数据集mIoU和FLOPs对比图。请参见[Model Zoo Overview](./docs/model_zoo_overview_cn.md)了解更多模型信息以及对比图。
 
 <div align="center">
 <img src=https://user-images.githubusercontent.com/30695251/140323107-02ce9de4-c8f4-4f18-88b2-59bd0055a70b.png   />  
@@ -260,20 +261,20 @@ PaddleSeg是基于飞桨PaddlePaddle开发的端到端图像分割开发套件�
    * [自定义数据集](./docs/data/custom/data_prepare_cn.md)
 
 * [模型训练](/docs/train/train_cn.md)
-* [模型评估](./docs/evaluation/evaluate/evaluate.md)
+* [模型评估](./docs/evaluation/evaluate/evaluate_cn.md)
 * [预测与可视化](./docs/predict/predict_cn.md)
 
 * 模型导出
-    * [导出预测模型](./docs/model_export.md)
-    * [导出ONNX模型](./docs/model_export_onnx.md)
+    * [导出预测模型](./docs/model_export_cn.md)
+    * [导出ONNX模型](./docs/model_export_onnx_cn.md)
 
 * 模型部署
-    * [Paddle Inference部署(Python)](./docs/deployment/inference/python_inference.md)
-    * [Paddle Inference部署(C++)](./docs/deployment/inference/cpp_inference.md)
+    * [Paddle Inference部署(Python)](./docs/deployment/inference/python_inference_cn.md)
+    * [Paddle Inference部署(C++)](./docs/deployment/inference/cpp_inference_cn.md)
     * [Paddle Lite部署](./docs/deployment/lite/lite_cn.md)
     * [Paddle Serving部署](./docs/deployment/serving/serving.md)
-    * [Paddle JS部署](./docs/deployment/web/web.md)
-    * [推理Benchmark](./docs/deployment/inference/infer_benchmark.md)
+    * [Paddle JS部署](./docs/deployment/web/web_cn.md)
+    * [推理Benchmark](./docs/deployment/inference/infer_benchmark_cn.md)
 
 * 模型压缩
     * [量化](./docs/slim/quant/quant_cn.md)
@@ -282,15 +283,15 @@ PaddleSeg是基于飞桨PaddlePaddle开发的端到端图像分割开发套件�
 
 *  API使用教程
     * [API文档说明](./docs/apis/README_CN.md)
-    * [API应用案例](./docs/api_example.md)
+    * [API应用案例](./docs/api_example_cn.md)
 *  重要模块说明
-    * [数据增强](./docs/module/data/data.md)
+    * [数据增强](./docs/module/data/data_cn.md)
     * [Loss说明](./docs/module/loss/losses_cn.md)
 *  二次开发教程
     * [配置文件详解](./docs/design/use/use_cn.md)
     * [如何创造自己的模型](./docs/design/create/add_new_model_cn.md)
 *  模型贡献
-    * [提交PR说明](./docs/pr/pr/pr.md)
+    * [提交PR说明](./docs/pr/pr/pr_cn.md)
     * [模型PR规范](./docs/pr/pr/style_cn.md)
 
 * [静态图版本](./docs/static/static_cn.md)

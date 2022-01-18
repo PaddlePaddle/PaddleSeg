@@ -129,7 +129,7 @@ PaddleSeg is an end-to-end high-efficent development toolkit for image segmentat
           <ul>
             <li>Cross Entropy</li>
             <li>Binary CE</li>
-            <li>Bootstrapped CE</li> 
+            <li>Bootstrapped CE</li>
             <li>Point CE</li>
             <li>OHEM CE</li>
             <li>Pixel Contrast CE</li>
@@ -167,7 +167,8 @@ PaddleSeg is an end-to-end high-efficent development toolkit for image segmentat
             <li>HRF</li>
             <li>DRIVE</li>
             <li>STARE</li>
-          </ul> 
+            <li>PP-HumanSeg14K</li>
+          </ul>
         <b>Data Augmentation</b><br>
         <ul>
           <li>Flipping</li>  
@@ -182,7 +183,7 @@ PaddleSeg is an end-to-end high-efficent development toolkit for image segmentat
           <li>PaddingByAspectRatio</li>
           <li>RandomPaddingCrop</li>  
           <li>RandomCenterCrop</li>
-          <li>ScalePadding</li> 
+          <li>ScalePadding</li>
           <li>RandomNoise</li>  
           <li>RandomBlur</li>  
           <li>RandomRotation</li>  
