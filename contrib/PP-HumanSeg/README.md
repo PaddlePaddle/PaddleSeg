@@ -5,7 +5,7 @@ English | [简体中文](README_cn.md)
 Human segmentation is a high-frequency application in the field of image segmentation. PaddleSeg has launched a series of human segmentation models PP-HumanSeg trained on large-scale human data, including an ultra-lightweight model **PP-HumanSeg-Lite**. It can meet the needs of various usage scenarios on server, mobile, and web. We provide full-process application guides from training to deployment, as well as video streaming segmentation and background replacement tutorials. Based on Paddle.js, you can experience the effects of [Portrait Snapshot](https://paddlejs.baidu.com/humanseg), [Video Background Replacement and Barrage Penetration](https://www.paddlepaddle.org.cn/paddlejs).
 
 <p align="center">
-<img src="https://user-images.githubusercontent.com/30695251/149886667-f47cab88-e81a-4fd7-9f32-fbb34a5ed7ce.png"  height="400">        <img src="https://user-images.githubusercontent.com/30695251/149887482-d1fcd5d3-2cce-41b5-819b-bfc7126b7db4.png"  height="400">
+<img src="https://user-images.githubusercontent.com/30695251/149886667-f47cab88-e81a-4fd7-9f32-fbb34a5ed7ce.png"  height="300">        <img src="https://user-images.githubusercontent.com/30695251/149887482-d1fcd5d3-2cce-41b5-819b-bfc7126b7db4.png"  height="300">
 </p>
 
 The COVID-19 epidemic has catalyzed the demand for remote office, and video conferencing products have exploded rapidly. Baidu Video Conference can realize one-second joining on the web side. The virtual background function adopts our PP-HumanSeg-Lite model to realize real-time background replacement and background blur function, protect user privacy, and increase the fun in the meeting.
