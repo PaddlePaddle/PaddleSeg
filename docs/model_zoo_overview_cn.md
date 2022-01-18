@@ -39,6 +39,8 @@
 |[ESPNetV1](../configs/espnetv1)|-|-|-|-|
 |[ENCNet](../configs/encnet)|-|✔|-|-|
 |[PFPNNet](../configs/pfpn)|-|✔|-|-|
+|[FastFCN](../configs/fastfcn)|✔|-|-|-|
+|[BiSeNetV1](../configs/bisenetv1)|-|-|-|-|
 
 ### Transformer系列
 * [SETR](../configs/setr)
