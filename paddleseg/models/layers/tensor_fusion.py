@@ -793,9 +793,13 @@ def avg_max_reduce_hw(x, is_training):
     elif len(x) == 1:
         return avg_max_reduce_hw_helper(x[0], is_training)
     else:
-        res = []
+        res_avg = []
+        res_max = []
         for xi in x:
-            res.extend(avg_max_reduce_hw_helper(xi, is_training, False))
+            avg, max = avg_max_reduce_hw_helper(xi, is_training, False)
+            res_avg.append(avg)
+            res_max.append(max)
+        res = res_avg + res_max
         return paddle.concat(res, axis=1)
 
 
@@ -826,6 +830,19 @@ def avg_reduce_channel(x):
         return paddle.concat(res, axis=1)
 
 
+def max_reduce_channel(x):
+    # Reduce channel by max
+    if not isinstance(x, (list, tuple)):
+        return paddle.max(x, axis=1, keepdim=True)
+    elif len(x) == 1:
+        return paddle.max(x[0], axis=1, keepdim=True)
+    else:
+        res = []
+        for xi in x:
+            res.append(paddle.max(xi, axis=1, keepdim=True))
+        return paddle.concat(res, axis=1)
+
+
 def avg_max_reduce_channel_helper(x, use_concat=True):
     # Reduce hw by avg and max, only support single input
     assert not isinstance(x, (list, tuple))
@@ -850,6 +867,20 @@ def avg_max_reduce_channel(x):
         for xi in x:
             res.extend(avg_max_reduce_channel_helper(xi, False))
         return paddle.concat(res, axis=1)
+
+
+def cat_avg_max_reduce_channel(x):
+    # Reduce hw by cat+avg+max
+    assert isinstance(x, (list, tuple)) and len(x) > 1
+
+    x = paddle.concat(x, axis=1)
+
+    # TODO(pjc): first use mean and max, then use cat
+    mean_value = paddle.mean(x, axis=1, keepdim=True)
+    max_value = paddle.max(x, axis=1, keepdim=True)
+    res = paddle.concat([mean_value, max_value], axis=1)
+
+    return res
 
 
 class ARM_ChAttenAdd0_Add(ARM_Add_Add):
@@ -967,6 +998,25 @@ class ARM_Add_ChAttenAdd0(ARM_Add_Add):
         return out
 
 
+class ARM_Add_ChAttenAdd1(ARM_Add_Add):
+    """
+    """
+
+    def __init__(self, x_chs, y_ch, out_ch, ksize=3, resize_mode='bilinear'):
+        super().__init__(x_chs, y_ch, out_ch, ksize, resize_mode)
+
+        self.conv_xy_atten = layers.ConvBN(
+            4 * y_ch, y_ch, kernel_size=1, bias_attr=False)
+
+    def fuse(self, x, y):
+        atten = avg_max_reduce_hw([x, y], self.training)
+        atten = F.sigmoid(self.conv_xy_atten(atten))
+
+        out = x * atten + y * (1 - atten)
+        out = self.conv_out(out)
+        return out
+
+
 class ARM_Add_SpAttenAdd0(ARM_Add_Add):
     """
     """
@@ -979,6 +1029,46 @@ class ARM_Add_SpAttenAdd0(ARM_Add_Add):
 
     def fuse(self, x, y):
         atten = avg_reduce_channel([x, y])
+        atten = F.sigmoid(self.conv_xy_atten(atten))
+
+        out = x * atten + y * (1 - atten)
+        out = self.conv_out(out)
+        return out
+
+
+class ARM_Add_SpAttenAdd1(ARM_Add_Add):
+    """
+    use avg_max_reduce_channel
+    """
+
+    def __init__(self, x_chs, y_ch, out_ch, ksize=3, resize_mode='bilinear'):
+        super().__init__(x_chs, y_ch, out_ch, ksize, resize_mode)
+
+        self.conv_xy_atten = layers.ConvBN(
+            4, 1, kernel_size=3, padding=1, bias_attr=False)
+
+    def fuse(self, x, y):
+        atten = avg_max_reduce_channel([x, y])
+        atten = F.sigmoid(self.conv_xy_atten(atten))
+
+        out = x * atten + y * (1 - atten)
+        out = self.conv_out(out)
+        return out
+
+
+class ARM_Add_SpAttenAdd2(ARM_Add_Add):
+    """
+    use cat_avg_max_reduce_channel
+    """
+
+    def __init__(self, x_chs, y_ch, out_ch, ksize=3, resize_mode='bilinear'):
+        super().__init__(x_chs, y_ch, out_ch, ksize, resize_mode)
+
+        self.conv_xy_atten = layers.ConvBN(
+            2, 1, kernel_size=3, padding=1, bias_attr=False)
+
+    def fuse(self, x, y):
+        atten = cat_avg_max_reduce_channel([x, y])
         atten = F.sigmoid(self.conv_xy_atten(atten))
 
         out = x * atten + y * (1 - atten)
