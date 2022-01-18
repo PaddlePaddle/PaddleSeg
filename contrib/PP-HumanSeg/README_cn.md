@@ -2,12 +2,16 @@
 
 # 人像分割PP-HumanSeg
 
-人像分割是图像分割领域非常常见的应用，PaddleSeg推出了在大规模人像数据上训练的人像分割PP-HumanSeg模型，满足在服务端、移动端、Web端多种使用场景的需求。本教程提供从训练到部署的全流程应用指南，以及视频流人像分割、背景替换的实际效果体验。发布超轻量级人像分割模型**PP-HumanSeg-Lite**，支持Web端、移动端场景的实时分割。
-
-新冠疫情催化远程办公需求，视频会议产品迅速爆发。百度视频会议可实现Web端一秒入会，其中的虚拟背景功能采用我们的PP-HumanSeg-Lite模型，实现实时背景替换和背景虚化功能，保护用户隐私，增加会议中的趣味性。
+人像分割是图像分割领域的高频应用，PaddleSeg推出在大规模人像数据上训练的人像分割系列模型PP-HumanSeg，包括超轻量级模型**PP-HumanSeg-Lite**，满足在服务端、移动端、Web端多种使用场景的需求。我们提供从训练到部署的全流程应用指南，以及视频流人像分割、背景替换教程。可基于Paddle.js在网页体验[人像扣图](https://paddlejs.baidu.com/humanseg)效果、[视频背景替换及弹幕穿透](https://www.paddlepaddle.org.cn/paddlejs)效果。
 
 <p align="center">
-<img src="https://github.com/LutaoChu/transfer_station/raw/master/conference.gif" width="70%" height="70%">
+<img src="https://user-images.githubusercontent.com/30695251/149886667-f47cab88-e81a-4fd7-9f32-fbb34a5ed7ce.png"  height="400">        <img src="https://user-images.githubusercontent.com/30695251/149887482-d1fcd5d3-2cce-41b5-819b-bfc7126b7db4.png"  height="400">
+</p>
+
+新冠疫情催化远程办公需求，视频会议产品迅速爆发。百度视频会议可实现Web端一秒入会，其中的虚拟背景功能采用我们的PP-HumanSeg-Lite模型，实现实时背景替换和背景虚化功能，保护用户隐私，以及增加会议中的趣味性。
+
+<p align="center">
+<img src="https://github.com/LutaoChu/transfer_station/raw/master/conference.gif" width="60%" height="60%">
 </p>
 
 ## 最新动向
