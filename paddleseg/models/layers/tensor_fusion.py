@@ -752,6 +752,7 @@ def get_pure_tensor(x):
 
 def avg_reduce_hw(x):
     # Reduce hw by avg
+    # Return cat([avg_pool_0, avg_pool_1, ...])
     if not isinstance(x, (list, tuple)):
         return F.adaptive_avg_pool2d(x, 1)
     elif len(x) == 1:
@@ -764,7 +765,7 @@ def avg_reduce_hw(x):
 
 
 def avg_reduce_hw_slow(x):
-    # Reduce hw by avg
+    # Reduce hw by avg, equal to avg_reduce_hw
     x = get_pure_tensor(x)
     avg_pool = F.adaptive_avg_pool2d(x, 1)
     return avg_pool
@@ -788,6 +789,7 @@ def avg_max_reduce_hw_helper(x, is_training, use_concat=True):
 
 def avg_max_reduce_hw(x, is_training):
     # Reduce hw by avg and max
+    # Return cat([avg_pool_0, avg_pool_1, ..., max_pool_0, max_pool_1, ...])
     if not isinstance(x, (list, tuple)):
         return avg_max_reduce_hw_helper(x, is_training)
     elif len(x) == 1:
@@ -804,7 +806,7 @@ def avg_max_reduce_hw(x, is_training):
 
 
 def avg_max_reduce_hw_slow(x, is_training):
-    # Reduce hw by avg and max
+    # Reduce hw by avg and max, equal to avg_max_reduce_hw
     x = get_pure_tensor(x)
 
     avg_pool = F.adaptive_avg_pool2d(x, 1)
@@ -817,8 +819,26 @@ def avg_max_reduce_hw_slow(x, is_training):
     return res
 
 
+def raw_avg_max_reduce_hw(x, is_training):
+    # Reduce hw by avg and max
+    # Return [cat([avg_pool_0, avg_pool_1, ...], cat([max_pool_0, max_pool_1, ...]))]
+    assert isinstance(x, (list, tuple)) and len(x) > 1
+
+    res_avg = []
+    res_max = []
+    for xi in x:
+        avg, max = avg_max_reduce_hw_helper(xi, is_training, False)
+        res_avg.append(avg)
+        res_max.append(max)
+    res_avg = paddle.concat(res_avg, axis=1)
+    res_max = paddle.concat(res_max, axis=1)
+
+    return res_avg, res_max
+
+
 def avg_reduce_channel(x):
     # Reduce channel by avg
+    # Return cat([avg_ch_0, avg_ch_1, ...])
     if not isinstance(x, (list, tuple)):
         return paddle.mean(x, axis=1, keepdim=True)
     elif len(x) == 1:
@@ -832,6 +852,7 @@ def avg_reduce_channel(x):
 
 def max_reduce_channel(x):
     # Reduce channel by max
+    # Return cat([max_ch_0, max_ch_1, ...])
     if not isinstance(x, (list, tuple)):
         return paddle.max(x, axis=1, keepdim=True)
     elif len(x) == 1:
@@ -858,6 +879,7 @@ def avg_max_reduce_channel_helper(x, use_concat=True):
 
 def avg_max_reduce_channel(x):
     # Reduce hw by avg and max
+    # Return cat([avg_ch_0, max_ch_0, avg_ch_1, max_ch_1, ...])
     if not isinstance(x, (list, tuple)):
         return avg_max_reduce_channel_helper(x)
     elif len(x) == 1:
@@ -867,6 +889,43 @@ def avg_max_reduce_channel(x):
         for xi in x:
             res.extend(avg_max_reduce_channel_helper(xi, False))
         return paddle.concat(res, axis=1)
+
+
+def avg_max_reduce_channel_1(x):
+    # Reduce hw by avg and max
+    # Return cat([avg_ch_0, avg_ch_1, ..., max_ch_0, max_ch_1, ...])
+    if not isinstance(x, (list, tuple)):
+        return avg_max_reduce_channel_helper(x)
+    elif len(x) == 1:
+        return avg_max_reduce_channel_helper(x[0])
+    else:
+        res_avg = []
+        res_max = []
+        for xi in x:
+            avg, max = avg_max_reduce_channel_helper(xi, False)
+            res_avg.append(avg)
+            res_max.append(max)
+
+        res = res_avg + res_max
+        return paddle.concat(res, axis=1)
+
+
+def raw_avg_max_reduce_channel(x):
+    # Reduce hw by avg and max
+    # Return cat([avg_ch_0, avg_ch_1, ...]), cat([max_ch_0, max_ch_1, ...])
+    assert isinstance(x, (list, tuple)) and len(x) > 1
+
+    res_avg = []
+    res_max = []
+    for xi in x:
+        avg, max = avg_max_reduce_channel_helper(xi, False)
+        res_avg.append(avg)
+        res_max.append(max)
+
+    res_avg = paddle.concat(res_avg, axis=1)
+    res_max = paddle.concat(res_max, axis=1)
+
+    return res_avg, res_max
 
 
 def cat_avg_max_reduce_channel(x):
@@ -879,6 +938,24 @@ def cat_avg_max_reduce_channel(x):
     mean_value = paddle.mean(x, axis=1, keepdim=True)
     max_value = paddle.max(x, axis=1, keepdim=True)
     res = paddle.concat([mean_value, max_value], axis=1)
+
+    return res
+
+
+def combine_avg_max_reduce_channel(x):
+    # Reduce hw by cat+avg+max, equal to cat_avg_max_reduce_channel
+    assert isinstance(x, (list, tuple)) and len(x) > 1
+
+    res_avg = []
+    res_max = []
+    for xi in x:
+        avg, max = avg_max_reduce_channel_helper(xi, False)
+        res_avg.append(avg)
+        res_max.append(max)
+
+    avg = paddle.mean(paddle.concat(res_avg, axis=1), axis=1, keepdim=True)
+    max = paddle.max(paddle.concat(res_max, axis=1), axis=1, keepdim=True)
+    res = paddle.concat([avg, max], axis=1)
 
     return res
 
