@@ -715,6 +715,27 @@ class ARM_WeightedAdd_Add(ARM_Add_Add):
         return x
 
 
+class ARM_WeightedAdd1_Add(ARM_Add_Add):
+    """Add two tensor"""
+
+    def __init__(self, x_chs, y_ch, out_ch, ksize=3, resize_mode='bilinear'):
+        super().__init__(x_chs, y_ch, out_ch, ksize, resize_mode)
+
+        assert self.x_num == 2, "ARM_WeightedAdd1_Add requires x_num = 2"
+
+        alpha = self.create_parameter([1])
+        self.add_parameter("alpha", alpha)
+
+    def prepare_x(self, xs, y):
+        assert isinstance(xs, (list, tuple)) and len(xs) == 2
+
+        w = F.sigmoid(self.alpha[0])
+        x = xs[0] * w + xs[1] * (1 - w)
+
+        x = self.conv_x(x)
+        return x
+
+
 class ARM_SEAdd1_Add(ARM_Add_Add):
     """Add two tensor"""
 
@@ -1008,6 +1029,68 @@ class ARM_ChAttenAdd1_Add(ARM_Add_Add):
         return x
 
 
+class ARM_ChAttenAdd2_Add(ARM_Add_Add):
+    """
+    The length of x_chs and xs should be 2.
+    """
+
+    def __init__(self, x_chs, y_ch, out_ch, ksize=3, resize_mode='bilinear'):
+        super().__init__(x_chs, y_ch, out_ch, ksize, resize_mode)
+
+        assert isinstance(x_chs, (list, tuple)) and len(x_chs) == 2, \
+            "x_chs should be (list, tuple) and the length should be 2"
+
+        self.conv_xs_atten = nn.Sequential(
+            layers.ConvBNAct(
+                sum(x_chs),
+                x_chs[0] // 2,
+                kernel_size=1,
+                bias_attr=False,
+                act_type="leakyrelu"),
+            layers.ConvBN(
+                x_chs[0] // 2, x_chs[0], kernel_size=1, bias_attr=False))
+
+    def prepare_x(self, xs, y):
+        # xs is [x1, x2]
+        atten = avg_reduce_hw(xs)
+        atten = F.sigmoid(self.conv_xs_atten(atten))
+
+        x = xs[0] * atten + xs[1] * (1 - atten)
+        x = self.conv_x(x)
+        return x
+
+
+class ARM_ChAttenAdd3_Add(ARM_Add_Add):
+    """
+    The length of x_chs and xs should be 2.
+    """
+
+    def __init__(self, x_chs, y_ch, out_ch, ksize=3, resize_mode='bilinear'):
+        super().__init__(x_chs, y_ch, out_ch, ksize, resize_mode)
+
+        assert isinstance(x_chs, (list, tuple)) and len(x_chs) == 2, \
+            "x_chs should be (list, tuple) and the length should be 2"
+
+        self.conv_xs_atten = nn.Sequential(
+            layers.ConvBNAct(
+                2 * sum(x_chs),
+                x_chs[0] // 2,
+                kernel_size=1,
+                bias_attr=False,
+                act_type="leakyrelu"),
+            layers.ConvBN(
+                x_chs[0] // 2, x_chs[0], kernel_size=1, bias_attr=False))
+
+    def prepare_x(self, xs, y):
+        # xs is [x1, x2]
+        atten = avg_max_reduce_hw(xs, self.training)
+        atten = F.sigmoid(self.conv_xs_atten(atten))
+
+        x = xs[0] * atten + xs[1] * (1 - atten)
+        x = self.conv_x(x)
+        return x
+
+
 class ARM_SpAttenAdd0_Add(ARM_Add_Add):
     """
     The length of x_chs and xs should be 2.
@@ -1094,6 +1177,56 @@ class ARM_Add_ChAttenAdd1(ARM_Add_Add):
         return out
 
 
+class ARM_Add_ChAttenAdd2(ARM_Add_Add):
+    """
+    """
+
+    def __init__(self, x_chs, y_ch, out_ch, ksize=3, resize_mode='bilinear'):
+        super().__init__(x_chs, y_ch, out_ch, ksize, resize_mode)
+
+        self.conv_xy_atten = nn.Sequential(
+            layers.ConvBNAct(
+                2 * y_ch,
+                y_ch // 2,
+                kernel_size=1,
+                bias_attr=False,
+                act_type="leakyrelu"),
+            layers.ConvBN(y_ch // 2, y_ch, kernel_size=1, bias_attr=False))
+
+    def fuse(self, x, y):
+        atten = avg_reduce_hw([x, y])
+        atten = F.sigmoid(self.conv_xy_atten(atten))
+
+        out = x * atten + y * (1 - atten)
+        out = self.conv_out(out)
+        return out
+
+
+class ARM_Add_ChAttenAdd3(ARM_Add_Add):
+    """
+    """
+
+    def __init__(self, x_chs, y_ch, out_ch, ksize=3, resize_mode='bilinear'):
+        super().__init__(x_chs, y_ch, out_ch, ksize, resize_mode)
+
+        self.conv_xy_atten = nn.Sequential(
+            layers.ConvBNAct(
+                4 * y_ch,
+                y_ch // 2,
+                kernel_size=1,
+                bias_attr=False,
+                act_type="leakyrelu"),
+            layers.ConvBN(y_ch // 2, y_ch, kernel_size=1, bias_attr=False))
+
+    def fuse(self, x, y):
+        atten = avg_max_reduce_hw([x, y], self.training)
+        atten = F.sigmoid(self.conv_xy_atten(atten))
+
+        out = x * atten + y * (1 - atten)
+        out = self.conv_out(out)
+        return out
+
+
 class ARM_Add_SpAttenAdd0(ARM_Add_Add):
     """
     """
@@ -1135,6 +1268,47 @@ class ARM_Add_SpAttenAdd1(ARM_Add_Add):
 
 class ARM_Add_SpAttenAdd2(ARM_Add_Add):
     """
+    """
+
+    def __init__(self, x_chs, y_ch, out_ch, ksize=3, resize_mode='bilinear'):
+        super().__init__(x_chs, y_ch, out_ch, ksize, resize_mode)
+
+        self.conv_xy_atten = nn.Sequential(
+            layers.ConvBNReLU(2, 2, kernel_size=3, padding=1, bias_attr=False),
+            layers.ConvBN(2, 1, kernel_size=3, padding=1, bias_attr=False))
+
+    def fuse(self, x, y):
+        atten = avg_reduce_channel([x, y])
+        atten = F.sigmoid(self.conv_xy_atten(atten))
+
+        out = x * atten + y * (1 - atten)
+        out = self.conv_out(out)
+        return out
+
+
+class ARM_Add_SpAttenAdd3(ARM_Add_Add):
+    """
+    use avg_max_reduce_channel
+    """
+
+    def __init__(self, x_chs, y_ch, out_ch, ksize=3, resize_mode='bilinear'):
+        super().__init__(x_chs, y_ch, out_ch, ksize, resize_mode)
+
+        self.conv_xy_atten = nn.Sequential(
+            layers.ConvBNReLU(4, 2, kernel_size=3, padding=1, bias_attr=False),
+            layers.ConvBN(2, 1, kernel_size=3, padding=1, bias_attr=False))
+
+    def fuse(self, x, y):
+        atten = avg_max_reduce_channel([x, y])
+        atten = F.sigmoid(self.conv_xy_atten(atten))
+
+        out = x * atten + y * (1 - atten)
+        out = self.conv_out(out)
+        return out
+
+
+class ARM_Add_SpAttenAdd4(ARM_Add_Add):
+    """
     use cat_avg_max_reduce_channel
     """
 
@@ -1143,6 +1317,27 @@ class ARM_Add_SpAttenAdd2(ARM_Add_Add):
 
         self.conv_xy_atten = layers.ConvBN(
             2, 1, kernel_size=3, padding=1, bias_attr=False)
+
+    def fuse(self, x, y):
+        atten = cat_avg_max_reduce_channel([x, y])
+        atten = F.sigmoid(self.conv_xy_atten(atten))
+
+        out = x * atten + y * (1 - atten)
+        out = self.conv_out(out)
+        return out
+
+
+class ARM_Add_SpAttenAdd5(ARM_Add_Add):
+    """
+    use cat_avg_max_reduce_channel
+    """
+
+    def __init__(self, x_chs, y_ch, out_ch, ksize=3, resize_mode='bilinear'):
+        super().__init__(x_chs, y_ch, out_ch, ksize, resize_mode)
+
+        self.conv_xy_atten = nn.Sequential(
+            layers.ConvBNReLU(2, 2, kernel_size=3, padding=1, bias_attr=False),
+            layers.ConvBN(2, 1, kernel_size=3, padding=1, bias_attr=False))
 
     def fuse(self, x, y):
         atten = cat_avg_max_reduce_channel([x, y])
