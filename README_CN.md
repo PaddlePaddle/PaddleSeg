@@ -19,6 +19,12 @@
 
 ## 最新动态 <img src="./docs/images/seg_news_icon.png" width="40"/>
 
+* [2022-01-20] PaddleSeg 2.4版本发布！
+  * 升级智能标注工具EISeg v0.4版，采用静态图预测加速交互，支持遥感和医疗领域智能标注。
+  * 开源发丝级人像抠图Matting算法，PP-HumanMatting，并提供安卓端教程。
+  * 新增9个经典分割模型, 以及Transformer系列模型SegMenter，总模型数达到40个。
+  * 新增医疗分割数据集STARE，DRIVE，CHASE DB1，HRF，并提供UNet预训练模型。
+  * 提供分割模型性能对比图，帮助用户全面了解分割模型性能，方便模型选型。
 * [2022-01-04] PaddleSeg团队发表人像分割论文[PP-HumanSeg](./contrib/PP-HumanSeg/paper.md)，并开源连通性学习（SCL）方法和大规模视频会议数据集。
 * [2021-10-11] PaddleSeg 2.3版本发布交互式分割工具([EISeg v0.3](./EISeg)), 开源两种 [Matting](./contrib/Matting) 算法, 以及分割高阶功能[模型蒸馏](./slim/distill)和[模型量化](./slim/quant)方案。
 * [2021-09-20] PaddleSeg团队发表交互式分割论文[EdgeFlow](https://arxiv.org/abs/2109.09406)，已在多个数据集实现SOTA性能。

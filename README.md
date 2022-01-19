@@ -18,7 +18,7 @@ English | [简体中文](README_CN.md)
 
 
 ## News <img src="./docs/images/seg_news_icon.png" width="40"/>
-
+* [2021-01-20] We released PaddleSeg v2.4 with 
 * [2022-01-04] We published a paper on portrait segmentation named [PP-HumanSeg](./contrib/PP-HumanSeg/paper.md), and released Semantic Connectivity-aware Learning (SCL) framework and a Large-Scale Teleconferencing Video Dataset.
 * [2021-10-11] We released PaddleSeg v2.3 with the improved interactive segmentation tool ([EISeg v0.3](./EISeg)), two [matting]((./contrib/Matting)) algorithms, and segmentation model compression.
 * For more information please refer to [Release Note](https://github.com/PaddlePaddle/PaddleSeg/releases).
