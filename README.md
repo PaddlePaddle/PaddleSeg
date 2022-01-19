@@ -20,7 +20,7 @@ English | [简体中文](README_CN.md)
 
 ## News <img src="./docs/images/seg_news_icon.png" width="40"/>
 * [2021-01-20] PaddleSeg v2.4 is released! More details in [Release Notes](https://github.com/PaddlePaddle/PaddleSeg/releases).
-  * Upgrade the interactive annotation tool [EISeg v0.4](./EISeg) with faster inference speed，supporting new areas in remote sensing and medical segmentation。
+  * Upgrade the interactive annotation tool [EISeg v0.4](./EISeg) with faster inference speed，supporting new areas in remote sensing and medical segmentation.
   * Release [PP-HumanMatting](./contrib/Matting) for extremely fine-grained human segmentation, with an Android application tutorial.
   * Add 9 semantic segmentatioin models, including a new transformer model [SegMenter](configs/segmenter).
 
