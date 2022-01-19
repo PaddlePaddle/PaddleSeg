@@ -1,3 +1,5 @@
+简体中文 | [English](model_zoo_overview.md)
+
 # PaddleSeg模型库总览
 
 ## 模型库
