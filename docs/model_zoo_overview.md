@@ -1,3 +1,5 @@
+English | [简体中文](model_zoo_overview_cn.md)
+
 # PaddleSeg model zoo overview
 
 ## model zoo
