@@ -80,6 +80,8 @@ def parse_args():
     parser.add_argument('--repeats', default=2000, type=int, help='')
     parser.add_argument(
         '--enable_profile', action='store_true', help='enable trt profile')
+    parser.add_argument(
+        '--print_model', action='store_true', help='print model to log')
 
     return parser.parse_args()
 
@@ -159,7 +161,6 @@ class TRTPredictorV2(object):
                 bindings=bindings, stream_handle=stream.handle)
         elapsed_time = time.time() - t_start
         latency = elapsed_time / args.repeats * 1000
-        print("trt avg latency: {:.3f} ms".format(latency))
 
         # Transfer predictions back from the GPU.
         [
@@ -169,7 +170,7 @@ class TRTPredictorV2(object):
         # Synchronize the stream
         stream.synchronize()
         # Return only the host outputs.
-        return [out.host for out in outputs]
+        return [out.host for out in outputs], latency
 
     @staticmethod
     def get_engine(onnx_file_path, input_shape, engine_file_path=""):
@@ -239,14 +240,14 @@ class TRTPredictorV2(object):
             # Do inference
             # Set host input to the image. The common.do_inference function will copy the input to the GPU before executing.
             inputs[0].host = input_data
-            trt_outputs = TRTPredictorV2.do_inference_v2(
+            trt_outputs, latency = TRTPredictorV2.do_inference_v2(
                 args,
                 context,
                 bindings=bindings,
                 inputs=inputs,
                 outputs=outputs,
                 stream=stream)
-            return trt_outputs[0]
+            return trt_outputs[0], latency
 
 
 def run_paddle(paddle_model, input_data):
@@ -271,20 +272,29 @@ def check_and_run_onnx(onnx_model_path, input_data):
     return ort_outs[0]
 
 
-def export_load_infer(args):
-    # Export the ONNX model from PaddlePaddle, infer it by TRT
+def export_load_infer(args, model=None):
+    """
+    Export the ONNX model from PaddlePaddle, infer it by TRT.
+    It checks the accuracy and tests the infer time.
 
-    cfg = Config(args.config)
+    Args:
+        args (dict): The input args.
+        model (nn.Layer, optional): The paddle model to be exported and tested.
+            If model is None, it creates a model with config file in args.
+    """
 
     # 1. prepare
-    model = cfg.model
+    if model is None:
+        cfg = Config(args.config)
+        model = cfg.model
     if args.model_path is not None:
         utils.load_entire_model(model, args.model_path)
         logger.info('Loaded trained params of model successfully')
 
     #model = SavedSegmentationNet(model)  # add argmax to the last layer
     model.eval()
-    print(model)
+    if args.print_model:
+        print(model)
 
     input_shape = [1, 3, args.height, args.width]
     print("input shape:", input_shape)
@@ -311,11 +321,16 @@ def export_load_infer(args):
     print("The paddle and onnx models have the same outputs.\n")
 
     # 5. run and check trt
-    trt_out = TRTPredictorV2().run_trt(args, onnx_model_path, input_data)
+    trt_out, latency = TRTPredictorV2().run_trt(args, onnx_model_path,
+                                                input_data)
+    print("trt avg latency: {:.3f} ms".format(latency))
+
     assert trt_out.size == paddle_out.size
     trt_out = trt_out.reshape(paddle_out.shape)
     np.testing.assert_allclose(trt_out, paddle_out, rtol=0, atol=1e-03)
     print("The paddle and trt models have the same outputs.\n")
+
+    return latency
 
 
 def load_infer(args):
@@ -331,7 +346,10 @@ def load_infer(args):
     print("output shape:", onnx_out.shape, "\n")
 
     # 2. run and check trt
-    trt_out = TRTPredictorV2().run_trt(args, onnx_model_path, input_data)
+    trt_out, latency = TRTPredictorV2().run_trt(args, onnx_model_path,
+                                                input_data)
+    print("trt avg latency: {:.3f} ms".format(latency))
+
     trt_out = trt_out.reshape(onnx_out.shape)
     np.testing.assert_allclose(trt_out, onnx_out, rtol=0, atol=1e-03)
     print("The onnx and trt models have the same outputs.\n")
