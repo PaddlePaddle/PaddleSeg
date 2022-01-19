@@ -1,7 +1,7 @@
 English | [简体中文](README_CN.md)
 
 # Human Matting Android Demo
-Based on [PaddleSeg](https://github.com/paddlepaddle/paddleseg/tree/develop)[MODNet](https://github.com/PaddlePaddle/PaddleSeg/tree/develop/contrib/Matting) algorithm to realise human matting（Android demo).
+Based on [PaddleSeg](https://github.com/paddlepaddle/paddleseg/tree/develop) [MODNet](https://github.com/PaddlePaddle/PaddleSeg/tree/develop/contrib/Matting) algorithm to realise human matting（Android demo).
 
 You can directly download and install the example project [apk](https://paddleseg.bj.bcebos.com/matting/models/deploy/app-debug.apk) to experience。
 

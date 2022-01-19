@@ -208,6 +208,8 @@ python bg_replace.py \
 
 若不提供`--bg_path`, 则采用绿色作为背景。
 
+**注意：** `--image_path`必须是一张图片的具体路径。
+
 你可以直接下载我们提供的模型进行背景替换。
 
 更多参数信息请运行如下命令进行查看:
@@ -235,7 +237,7 @@ python export.py --help
 python deploy/python/infer.py \
     --config output/export/deploy.yaml \
     --image_path data/PPM-100/val/fg/ \
-    --save_dir ouput/results
+    --save_dir output/results
 ```
 如模型需要trimap信息，需要通过`--trimap_path`传入trimap路径。
 
