@@ -200,9 +200,11 @@ python bg_replace.py \
     --bg_path path/to/your/background/image \
     --save_dir ./output/results
 ```
-If the model requires trimap information, pass the trimap path through '--trimap_path'.
+If the model requires trimap information, pass the trimap path through `--trimap_path`.
 
 If `--bg_path` is not provided, green background is used。
+
+**note：** `--image_path` must be a image path。
 
 You can directly download the provided model for background replacement.
 
@@ -231,7 +233,7 @@ python export.py --help
 python deploy/python/infer.py \
     --config output/export/deploy.yaml \
     --image_path data/PPM-100/val/fg/ \
-    --save_dir ouput/results
+    --save_dir output/results
 ```
 If the model requires trimap information, pass the trimap path through '--trimap_path'.
 
