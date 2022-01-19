@@ -8,6 +8,7 @@ English | [简体中文](README_CN.md)
 
 **A High-Efficient Development Toolkit for Image Segmentation based on [PaddlePaddle](https://github.com/paddlepaddle/paddle).**
 
+[![Build Status](https://travis-ci.org/PaddlePaddle/PaddleSeg.svg?branch=release/2.1)](https://travis-ci.org/PaddlePaddle/PaddleSeg)
 [![License](https://img.shields.io/badge/license-Apache%202-blue.svg)](LICENSE)
 [![Version](https://img.shields.io/github/release/PaddlePaddle/PaddleSeg.svg)](https://github.com/PaddlePaddle/PaddleSeg/releases)
 ![python version](https://img.shields.io/badge/python-3.6+-orange.svg)
@@ -18,10 +19,14 @@ English | [简体中文](README_CN.md)
 
 
 ## News <img src="./docs/images/seg_news_icon.png" width="40"/>
-* [2021-01-20] We released PaddleSeg v2.4 with 
+* [2021-01-20] PaddleSeg v2.4 is released! More details in [Release Notes](https://github.com/PaddlePaddle/PaddleSeg/releases).
+  * Upgrade the interactive annotation tool [EISeg v0.4](./EISeg) with faster inference speed，supporting new areas in remote sensing and medical segmentation。
+  * Release [PP-HumanMatting](./contrib/Matting) for extremely fine-grained human segmentation, with an Android application tutorial.
+  * Add 9 semantic segmentatioin models, including a new transformer model [SegMenter](configs/segmenter).
+
+  * Provide a comprehensive [performance table](docs/model_zoo_overview.md) for all segmentation models.
 * [2022-01-04] We published a paper on portrait segmentation named [PP-HumanSeg](./contrib/PP-HumanSeg/paper.md), and released Semantic Connectivity-aware Learning (SCL) framework and a Large-Scale Teleconferencing Video Dataset.
 * [2021-10-11] We released PaddleSeg v2.3 with the improved interactive segmentation tool ([EISeg v0.3](./EISeg)), two [matting]((./contrib/Matting)) algorithms, and segmentation model compression.
-* For more information please refer to [Release Note](https://github.com/PaddlePaddle/PaddleSeg/releases).
 
 ## Introduction
 
