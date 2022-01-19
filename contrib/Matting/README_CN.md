@@ -235,7 +235,7 @@ python export.py --help
 python deploy/python/infer.py \
     --config output/export/deploy.yaml \
     --image_path data/PPM-100/val/fg/ \
-    --save_dir ouput/results
+    --save_dir output/results
 ```
 如模型需要trimap信息，需要通过`--trimap_path`传入trimap路径。
 
