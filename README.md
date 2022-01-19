@@ -24,12 +24,13 @@ English | [简体中文](README_CN.md)
  <li>[2021-01-20] PaddleSeg v2.4 is released! More details in <a href="https://github.com/PaddlePaddle/PaddleSeg/releases">Release Notes</a>.</li>
  <ul>
         <li>Upgrade the interactive annotation tool <a href="./EISeg">EISeg v0.4</a> with faster inference speed, supporting new areas in remote sensing and medical segmentation.</li>
+        <li>Publish the <a href="./contrib/PP-HumanSeg/paper.md">PP-HumanSeg</a> paper, and released Semantic Connectivity-aware Learning framework and a Large-Scale Teleconferencing Video Dataset.</li>
         <li>Release <a href="./contrib/Matting">PP-HumanMatting</a> for extremely fine-grained human segmentation, with an Android tutorial.</li>
         <li>Add 9 semantic segmentatioin models, including a new transformer model <a href="configs/segmenter">SegMenter</a>.</li>
-        <li>Provide a comprehensive <a href="docs/model_zoo_overview.md">performance table</a> for all segmentation models.</li>
+        <li>Provide a comprehensive <a href="docs/model_zoo_overview.md">performance table</a> for all segmentation models, which helps to choose a better model on the accuracy and the speed.</li>
     </ul> 
    
- <li>[2022-01-04] We published a paper on portrait segmentation named <a href="./contrib/PP-HumanSeg/paper.md">PP-HumanSeg</a>, and released Semantic Connectivity-aware Learning (SCL) framework and a Large-Scale Teleconferencing Video Dataset.</li>
+ 
  <li>[2021-10-11] We released PaddleSeg v2.3 with the improved interactive segmentation tool EISeg v0.3, two matting algorithms, and segmentation model compression.</li>
  <li>[2021-09-20] We published an interactive segmentation <a href="https://arxiv.org/abs/2109.09406">paper</a> with SOTA performance on several well-known datasets.</li>
 </ul>
