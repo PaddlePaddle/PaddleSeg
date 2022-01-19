@@ -1348,6 +1348,74 @@ class ARM_Add_SpAttenAdd5(ARM_Add_Add):
         return out
 
 
+class ARM_WeightedAdd0_SpAttenAdd1(ARM_Add_Add):
+    """
+    use avg_max_reduce_channel
+    """
+
+    def __init__(self, x_chs, y_ch, out_ch, ksize=3, resize_mode='bilinear'):
+        super().__init__(x_chs, y_ch, out_ch, ksize, resize_mode)
+
+        alpha = self.create_parameter([self.x_num])
+        self.add_parameter("alpha", alpha)
+
+        self.conv_xy_atten = layers.ConvBN(
+            4, 1, kernel_size=3, padding=1, bias_attr=False)
+
+    def prepare_x(self, xs, y):
+        x = xs if not isinstance(xs, (list, tuple)) else xs[0]
+        x = self.alpha[0] * x
+
+        if self.x_num > 1:
+            for i in range(1, self.x_num):
+                x = x + self.alpha[i] * xs[i]
+
+        x = self.conv_x(x)
+        return x
+
+    def fuse(self, x, y):
+        atten = avg_max_reduce_channel([x, y])
+        atten = F.sigmoid(self.conv_xy_atten(atten))
+
+        out = x * atten + y * (1 - atten)
+        out = self.conv_out(out)
+        return out
+
+
+class ARM_WeightedAdd1_SpAttenAdd1(ARM_Add_Add):
+    """
+    use avg_max_reduce_channel
+    """
+
+    def __init__(self, x_chs, y_ch, out_ch, ksize=3, resize_mode='bilinear'):
+        super().__init__(x_chs, y_ch, out_ch, ksize, resize_mode)
+
+        assert self.x_num == 2, "ARM_WeightedAdd1_Add requires x_num = 2"
+
+        alpha = self.create_parameter([1])
+        self.add_parameter("alpha", alpha)
+
+        self.conv_xy_atten = layers.ConvBN(
+            4, 1, kernel_size=3, padding=1, bias_attr=False)
+
+    def prepare_x(self, xs, y):
+        assert isinstance(xs, (list, tuple)) and len(xs) == 2
+
+        w = F.sigmoid(self.alpha[0])
+        x = xs[0] * w + xs[1] * (1 - w)
+
+        x = self.conv_x(x)
+        return x
+
+    def fuse(self, x, y):
+        atten = avg_max_reduce_channel([x, y])
+        atten = F.sigmoid(self.conv_xy_atten(atten))
+
+        out = x * atten + y * (1 - atten)
+        out = self.conv_out(out)
+        return out
+
+
 class ARM_ChAttenAdd0_ChAttenAdd0(ARM_ChAttenAdd0_Add):
     """
     The length of x_chs and xs should be 2.
