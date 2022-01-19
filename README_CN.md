@@ -24,7 +24,7 @@
   * 开源发丝级人像抠图Matting算法，[PP-HumanMatting](./contrib/Matting)，并提供安卓端教程。
   * 新增9个经典分割模型, 包括Transformer系列模型[SegMenter](configs/segmenter)，总模型数达到40个。
   * 新增医疗分割数据集STARE，DRIVE，CHASE DB1，HRF，并提供[UNet](configs/unet)预训练模型。
-  * 提供分割模型[性能对比图](#模型库总览)，帮助用户全面了解分割模型性能，方便模型选型。
+  * 提供分割模型[性能对比图](docs/model_zoo_overview_cn.md)，帮助用户全面了解分割模型性能，方便模型选型。
 * [2022-01-04] PaddleSeg团队发表人像分割论文[PP-HumanSeg](./contrib/PP-HumanSeg/paper.md)，并开源连通性学习（SCL）方法和大规模视频会议数据集。
 * [2021-10-11] PaddleSeg 2.3版本发布交互式分割工具([EISeg v0.3](./EISeg)), 开源两种 [Matting](./contrib/Matting) 算法, 以及分割高阶功能[模型蒸馏](./slim/distill)和[模型量化](./slim/quant)方案。
 * [2021-09-20] PaddleSeg团队发表交互式分割论文[EdgeFlow](https://arxiv.org/abs/2109.09406)，已在多个数据集实现SOTA性能。
