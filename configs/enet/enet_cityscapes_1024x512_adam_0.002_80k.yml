@@ -1,5 +1,4 @@
 _base_: '../_base_/cityscapes.yml'
-
 batch_size: 8
 
 train_dataset:
