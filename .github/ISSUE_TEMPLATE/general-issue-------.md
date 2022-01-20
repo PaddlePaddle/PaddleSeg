@@ -1,5 +1,5 @@
 ---
-name: General Issue / 一般问题
+name: General issue / 一般问题
 about: Report any issue about PaddleSeg / 提出任何一个与PaddleSeg相关的问题
 title: "[General Issue]"
 labels: question
