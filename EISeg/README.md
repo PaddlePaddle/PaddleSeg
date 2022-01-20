@@ -9,7 +9,7 @@
 
 
 ## 最新动向
-- **EISeg 0.4.0新品尝鲜请移步[develop](https://github.com/PaddlePaddle/PaddleSeg/tree/develop/EISeg)。本文介绍的是0.3.0EISeg的使用。**
+
 - 交互式分割论文[EdgeFlow](https://arxiv.org/abs/2109.09406)被ICCV 2021 Workshop接收。
 - 支持多边形编辑，上线更多功能，最新EISeg 0.3.0推出。
 
