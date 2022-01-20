@@ -10,7 +10,6 @@ English | [简体中文](README.md)
 
 ## Latest Developments
 
-- **This document instructs the usage of 0.3.0 EISeg, see [develop](https://github.com/PaddlePaddle/PaddleSeg/tree/develop/EISeg) for the newly released EISeg 0.4.0.**
 - Our paper on interactive segmentation named [EdgeFlow](https://arxiv.org/abs/2109.09406) is accepted by ICCV 2021 Workshop.
 - We release EISeg 0.3.0 with more functions and support for Polygon editing.
 
