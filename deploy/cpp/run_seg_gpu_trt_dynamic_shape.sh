@@ -10,7 +10,10 @@ DEMO_NAME=test_seg
 work_path=$(dirname $(readlink -f $0))
 LIB_DIR="${work_path}/paddle_inference"
 
+# set TENSORRT_ROOT and dynamic_shape_path
 TENSORRT_ROOT='/work/download/TensorRT-7.1.3.4/'
+DYNAMIC_SHAPE_PATH='./dynamic_shape.pbtxt'
+TRT_PRECISION=fp32
 
 # compile
 mkdir -p build
@@ -36,5 +39,6 @@ cd ..
     --img_path=./cityscapes_demo.png \
     --devices=GPU \
     --use_trt=True \
-    --trt_precision=fp32 \
-    --use_trt_dynamic_shape=True
+    --trt_precision=${TRT_PRECISION} \
+    --use_trt_dynamic_shape=True \
+    --dynamic_shape_path=${DYNAMIC_SHAPE_PATH}
