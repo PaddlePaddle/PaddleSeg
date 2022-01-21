@@ -104,12 +104,7 @@ PaddleSeg/deploy/cpp
 
 ## 4. X86 CPU上部署
 
-执行`sh run_seg_cpu.sh`，会进行编译，然后在X86 CPU上执行预测。
-
-分割结果会保存在当前目录的“out_img.jpg“图片（如下图，该图片是使用了直方图均衡化，便于可视化）。
-
-![out_img](https://user-images.githubusercontent.com/52520497/131456277-260352b5-4047-46d5-a38f-c50bbcfb6fd0.jpg)
-
+执行`sh run_seg_cpu.sh`，会进行编译，然后在X86 CPU上执行预测，分割结果会保存在当前目录的“out_img.jpg“图片。
 ## 5. Nvidia GPU上部署
 
 在Nvidia GPU上部署模型，我们需要提前明确部署场景和要求，主要关注多次预测时输入图像的尺寸是否变化。
@@ -122,9 +117,11 @@ PaddleSeg/deploy/cpp
 
 ### 5.1 Naive方式-部署
 
-如果使用Naive方式部署Seg分割模型（固定Shape模式或者动态Shape模式），可以执行`sh run_seg_gpu.sh`。该脚本会进行编译、加载模型、加载图片、执行预测，结果保存在“out_img.jpg“图片。
+如果使用Naive方式部署Seg分割模型（固定Shape模式或者动态Shape模式），可以执行`sh run_seg_gpu.sh`。
 
-#### 5.2 TRT方式-固定Shape模式-部署
+该脚本会进行编译、加载模型、加载图片、执行预测，结果保存在“out_img.jpg“图片。
+
+### 5.2 TRT方式-固定Shape模式-部署
 
 使用TRT方式、固定Shape模式来部署PaddleSeg分割模型：
 * 打开`run_seg_gpu_trt.sh`脚本，设置`TENSORRT_ROOT`为机器中TensorRT库的路径，比如`TENSORRT_ROOT='/work/TensorRT-7.1.3.4/'`。
@@ -146,7 +143,7 @@ PaddleInference有多种方法使用TRT方式、固定Shape模式来部署Paddle
 
 * 离线收集动态Shape
 
-请参考PaddleSeg[安装文档](../../install.md)安装PaddlePaddle和PaddleSeg的依赖项。
+请参考PaddleSeg[安装文档](../../install_cn.md)安装PaddlePaddle和PaddleSeg的依赖项。
 
 在`PaddleSeg/deploy/cpp`路径下，执行如下命令。
 ```
@@ -165,3 +162,7 @@ python ../python/collect_dynamic_shape.py \
 打开`run_seg_gpu_trt_dynamic_shape.sh`脚本，设置`TENSORRT_ROOT`为机器中TensorRT库的路径，设置`DYNAMIC_SHAPE_PATH`为动态Shape文件。
 
 执行`sh run_seg_gpu_trt_dynamic_shape.sh`，预测结果会保存在“out_img.jpg“图片。
+
+结果如下图，该图片使用了直方图均衡化，便于可视化。
+
+![out_img](https://user-images.githubusercontent.com/52520497/131456277-260352b5-4047-46d5-a38f-c50bbcfb6fd0.jpg)
