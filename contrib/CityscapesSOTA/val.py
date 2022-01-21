@@ -117,6 +117,8 @@ def main(args):
     utils.load_entire_model(model, args.model_path)
 
     logger.info('Loaded trained params of model successfully')
+    logger.info('Aug_eval = {}'.format(args.aug_eval))
+    logger.info('Flip_horizontal = {}'.format(args.flip_horizontal))
 
     evaluate(
         model,

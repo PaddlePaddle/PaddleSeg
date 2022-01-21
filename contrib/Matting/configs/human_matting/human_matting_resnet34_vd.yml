@@ -39,7 +39,7 @@ model:
   type: HumanMatting
   backbone:
     type: ResNet34_vd
-    pretrained: https://bj.bcebos.com/paddleseg/dygraph/ResNet34_vd_pretrained.pdparams
+    pretrained: https://paddleseg.bj.bcebos.com/matting/models/ResNet34_vd_pretrained/model.pdparams
   pretrained: Null
   if_refine: True
 

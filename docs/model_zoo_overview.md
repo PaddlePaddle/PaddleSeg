@@ -1,9 +1,11 @@
-# PaddleSeg模型库总览
+English | [简体中文](model_zoo_overview_cn.md)
 
-## 模型库
-### CNN系列
+# PaddleSeg model zoo overview
 
-|模型\骨干网络|ResNet50|ResNet101|HRNetw18|HRNetw48|
+## Model zoo
+### CNN Series
+
+|Model\Backbone Network|ResNet50|ResNet101|HRNetw18|HRNetw48|
 |-|-|-|-|-|
 |[ANN](../configs/ann)|✔|✔|||
 |[BiSeNetv2](../configs/bisenet)|-|-|-|-|
@@ -35,17 +37,23 @@
 |[SegNet](../configs/segnet)|-|-|-|-|
 |[ESPNetV2](../configs/espnet)|-|-|-|-|
 |[HRNetW48Contrast](../configs/hrnet_w48_contrast)|-|-|-|✔|
+|[DMNet](../configs/dmnet)|-|✔|-|-|
+|[ESPNetV1](../configs/espnetv1)|-|-|-|-|
+|[ENCNet](../configs/encnet)|-|✔|-|-|
+|[PFPNNet](../configs/pfpn)|-|✔|-|-|
+|[FastFCN](../configs/fastfcn)|✔|-|-|-|
+|[BiSeNetV1](../configs/bisenetv1)|-|-|-|-|
 
-### Transformer系列
+### Transformer series
 * [SETR](../configs/setr)
 * [MLATransformer](../contrib/AutoNUE/configs)
 * [SegFormer](../configs/segformer)
 * [SegMenter](../configs/segmenter)
 
-# 模型库Benchmark
-基于Cityscapes数据集，PaddleSeg支持22+系列分割算法以及对应的30+个图像分割预训练模型，性能评估如下。
+# Model zoo benchmark
+Based on the Cityscapes dataset, PaddleSeg supports 22+ series of segmentation algorithms and corresponding 30+ image segmentation pre-training models. The performance is evaluated as follows.
 
-**测试环境：**
+**Test environment:**
 
 - GPU: Tesla V100 16GB
 - CPU: Intel(R) Xeon(R) Gold 6148 CPU @ 2.40GHz
@@ -54,29 +62,29 @@
 - Paddle: 2.1.3
 - PaddleSeg: 2.3
 
-**测试方法:**
+**Test method:**
 
-- 单GPU，Batch size为1，运行耗时为纯模型预测时间，预测图片尺寸为1024x512。
-- 模型导出后使用Paddle Inference的Python API测试。
-- 推理时间是使用CityScapes数据集中的100张图像进行预测取平均值的结果。
-- 部分算法只测试了取得最高分割精度的配置下的模型性能。
+- Single GPU, Batch size is 1, the running time is pure model prediction time, and the predicted image size is 1024x512.
+- Use Paddle Inference's Python API to test the model after export.
+- Inference time is the result of averaging predictions using 100 images in the CityScapes dataset.
+- Some algorithms have only tested performance under the configuration that achieves the highest segmentation accuracy.
 
-## 精度 vs 速度
+## Accuracy vs Speed
 <div align="center">
-<img src=https://user-images.githubusercontent.com/30695251/140323144-c44671ac-8ff8-4c11-a6f7-1ea339c27852.png //>  
+<img src=https://user-images.githubusercontent.com/30695251/140323144-c44671ac-8ff8-4c11-a6f7-1ea339c27852.png //>
 </div>
 
-## 精度 vs FLOPs
+## Accuracy vs FLOPs
 <div align="center">
-<img src=https://user-images.githubusercontent.com/30695251/140323107-02ce9de4-c8f4-4f18-88b2-59bd0055a70b.png //>  
+<img src=https://user-images.githubusercontent.com/30695251/140323107-02ce9de4-c8f4-4f18-88b2-59bd0055a70b.png //>
 </div>
 
-## 精度 vs Params
+## Accuracy vs Params
 <div align="center">
-<img src=https://user-images.githubusercontent.com/30695251/140323131-ed03fbb1-a583-47f5-a7dd-f4ea3582c345.png //>  
+<img src=https://user-images.githubusercontent.com/30695251/140323131-ed03fbb1-a583-47f5-a7dd-f4ea3582c345.png //>
 </div>
 
-## 总表
+## Summary table
 |Model|Backbone|mIoU|Flops(G)|Params(M)|Inference Time(ms)|Preprocess Time(ms)|Postprocess Time(ms)
 |-|-|-|-|-|-|-|-|
 |BiSeNetv2|-|73.19%|16.14|2.33|16.00|167.45|0.013

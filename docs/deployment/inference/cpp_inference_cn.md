@@ -14,7 +14,6 @@
 此外，PaddleX也提供了C++部署的示例和文档，具体参考[链接](https://github.com/PaddlePaddle/PaddleX/tree/develop/deploy/cpp)。
 
 ## 2. 准备环境
-
 ### 2.1 准备基础环境
 
 如果使用PaddleInference在X86 CPU部署模型，可以跳过如下CUDA、cudnn、TensorRT准备工作。

@@ -155,5 +155,6 @@ If you run out of memory, try to lower the crop size.
 Please refer to
 - https://github.com/PINTO0309/PINTO_model_zoo/tree/main/201_CityscapesSOTA/demo
 - https://github.com/iwatake2222/play_with_tensorrt/tree/master/pj_tensorrt_seg_paddleseg_cityscapessota
+- https://github.com/axinc-ai/ailia-models/tree/master/image_segmentation/paddleseg
 
 Thanks for their contributions!

@@ -1,0 +1,28 @@
+_base_: '../_base_/cityscapes.yml'
+
+batch_size: 4
+iters: 160000
+
+model:
+  type: BiseNetV1
+  backbone:
+    type: ResNet18_vd
+    output_stride: 8
+    pretrained: https://bj.bcebos.com/paddleseg/dygraph/resnet18_vd_ssld_v2.tar.gz
+
+optimizer:
+  type: sgd
+  weight_decay: 0.0005
+
+loss:
+  types:
+    - type: OhemCrossEntropyLoss
+    - type: OhemCrossEntropyLoss
+    - type: OhemCrossEntropyLoss
+  coef: [1, 1, 1]
+
+lr_scheduler:
+  type: PolynomialDecay
+  learning_rate: 0.01
+  end_lr: 0.0
+  power: 0.9
