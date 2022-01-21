@@ -29,7 +29,7 @@ make -j
 cd ..
 
 ./build/test_seg \
-    --model_dir=./bisenetv2_demo_model \
+    --model_dir=./stdc1seg_infer_model \
     --img_path=./cityscapes_demo.png \
     --devices=CPU \
     --use_mkldnn=true

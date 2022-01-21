@@ -63,11 +63,11 @@ make install
 
 ## 3. 准备模型和图片
 
-在`PaddleSeg/deploy/cpp/`目录下执行如下命令，下载[测试模型](https://paddleseg.bj.bcebos.com/dygraph/demo/bisenet_demo_model.tar.gz)用于测试。如果需要测试其他模型，请参考[文档](../../model_export.md)导出预测模型。
+在`PaddleSeg/deploy/cpp/`目录下执行如下命令，下载[测试模型](https://paddleseg.bj.bcebos.com/dygraph/demo/stdc1seg_infer_model.tar.gz)用于测试。如果需要测试其他模型，请参考[文档](../../model_export.md)导出预测模型。
 
 ```
-wget https://paddleseg.bj.bcebos.com/dygraph/demo/bisenet_demo_model.tar.gz
-tar xzf bisenet_demo_model.tar.gz
+wget https://paddleseg.bj.bcebos.com/dygraph/demo/stdc1seg_infer_model.tar.gz
+tar xf stdc1seg_infer_model.tar.gz
 ```
 
 下载cityscapes验证集中的一张[图片](https://paddleseg.bj.bcebos.com/dygraph/demo/cityscapes_demo.png)。
@@ -76,21 +76,42 @@ tar xzf bisenet_demo_model.tar.gz
 wget https://paddleseg.bj.bcebos.com/dygraph/demo/cityscapes_demo.png
 ```
 
-## 4. 编译、执行
-
 请检查`PaddleSeg/deploy/cpp/`下存放了预测库、模型、图片，如下。
 
 ```
 PaddleSeg/deploy/cpp
 |-- paddle_inference        # 预测库
-|-- bisenetv2_demo_model    # 模型
+|-- stdc1seg_infer_model    # 模型
 |-- cityscapes_demo.png     # 图片
+...
 ```
+
+## 4. X86 CPU上部署
 
 执行`sh run_seg_cpu.sh`，会进行编译，然后在X86 CPU上执行预测。
 
-执行`sh run_seg_gpu.sh`，会进行编译，然后在Nvidia GPU上执行预测。
-
-分割结果会保存在当前目录的“out_img.jpg“图片，如下图。注意，该图片是使用了直方图均衡化，便于可视化。
+分割结果会保存在当前目录的“out_img.jpg“图片（如下图，该图片是使用了直方图均衡化，便于可视化）。
 
 ![out_img](https://user-images.githubusercontent.com/52520497/131456277-260352b5-4047-46d5-a38f-c50bbcfb6fd0.jpg)
+
+## 5. Nvidia GPU上部署
+
+PaddleInference支持两种方式在Nvidia GPU上部署模型：
+* Naive方式：使用Paddle自实现的Kernel执行预测
+* TRT方式：使用集成的TensorRT执行预测
+
+所以，使用PaddleInference在Nvidia GPU上部署，有如下三种情况：
+* 使用Naive形式对模型进行预测
+* 使用TensorRT对固定shape的模型进行预测
+* 使用TensorRT对动态shape的模型进行预测
+
+
+如果使用“Naive形式对模型进行预测”，可以执行`sh run_seg_gpu.sh`，会进行编译、加载模型、加载图片、执行预测，结果保存在“out_img.jpg“图片。
+
+
+
+Nvidia GPU上开启TensorRT部署
+
+生成动态shape
+
+执行`sh run_seg_gpu_trt_offline_dynamic_shape.sh`，会进行编译，然后在Nvidia GPU上执行预测。

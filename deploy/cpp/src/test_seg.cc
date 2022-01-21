@@ -19,6 +19,8 @@ DEFINE_string(img_path, "", "Path of the test image.");
 DEFINE_string(devices, "GPU", "Use GPU or CPU devices. Default: GPU");
 DEFINE_bool(use_trt, false, "Wether enable TensorRT when use GPU. Defualt: false.");
 DEFINE_string(trt_precision, "fp32", "The precision of TensorRT, support fp32, fp16 and int8. Default: fp32");
+DEFINE_bool(use_trt_dynamic_shape, false, "Wether enable dynamic shape when use GPU and TensorRT. Defualt: false.");
+DEFINE_string(dynamic_shape_path, "", "If set dynamic_shape_path, it read the dynamic shape for TRT.");
 DEFINE_bool(use_mkldnn, false, "Wether enable MKLDNN when use CPU. Defualt: false.");
 DEFINE_string(save_dir, "", "Directory of the output image.");
 
@@ -64,19 +66,22 @@ std::shared_ptr<paddle_infer::Predictor> create_predictor(
   if (FLAGS_devices == "CPU") {
     LOG(INFO) << "Use CPU";
     if (FLAGS_use_mkldnn) {
-      // TODO(jc): fix the bug
-      //infer_config.EnableMKLDNN();
+      LOG(INFO) << "Use MKLDNN";
+      infer_config.EnableMKLDNN();
       infer_config.SetCpuMathLibraryNumThreads(5);
     }
   } else if(FLAGS_devices == "GPU") {
     LOG(INFO) << "Use GPU";
     infer_config.EnableUseGpu(100, 0);
+
+    // TRT config
     if (FLAGS_use_trt) {
-      // TODO(jc): use the dynamic shape that collected offline
       LOG(INFO) << "Use TRT";
       LOG(INFO) << "trt_precision:" << FLAGS_trt_precision;
+
+      // TRT precision
       if (FLAGS_trt_precision == "fp32") {
-        infer_config.EnableTensorRtEngine(1 << 20, 1, 300,
+        infer_config.EnableTensorRtEngine(1 << 20, 1, 3,
           paddle_infer::PrecisionType::kFloat32, false, false);
       } else if (FLAGS_trt_precision == "fp16") {
         infer_config.EnableTensorRtEngine(1 << 20, 1, 3,
@@ -86,6 +91,23 @@ std::shared_ptr<paddle_infer::Predictor> create_predictor(
           paddle_infer::PrecisionType::kInt8, false, false);
       } else {
         LOG(FATAL) << "The trt_precision should be fp32, fp16 or int8.";
+      }
+
+      // TRT dynamic shape
+      if (FLAGS_use_trt_dynamic_shape) {
+        LOG(INFO) << "Enable TRT dynamic shape";
+        if (FLAGS_dynamic_shape_path.empty()) {
+          std::map<std::string, std::vector<int>> min_input_shape = {
+              {"image", {1, 3, 112, 112}}};
+          std::map<std::string, std::vector<int>> max_input_shape = {
+              {"image", {1, 3, 1024, 2048}}};
+          std::map<std::string, std::vector<int>> opt_input_shape = {
+              {"image", {1, 3, 512, 1024}}};
+          infer_config.SetTRTDynamicShapeInfo(min_input_shape, max_input_shape,
+                                        opt_input_shape);
+        } else {
+          infer_config.EnableTunedTensorRtDynamicShape(FLAGS_dynamic_shape_path, true);
+        }
       }
     }
   } else {
@@ -169,5 +191,5 @@ int main(int argc, char *argv[]) {
   cv::equalizeHist(out_gray_img, out_eq_img);
   cv::imwrite("out_img.jpg", out_eq_img);
   
-  LOG(INFO) << "Finish";
+  LOG(INFO) << "Finish, the result is saved in out_img.jpg";
 }
