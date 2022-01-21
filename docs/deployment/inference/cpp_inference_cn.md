@@ -30,11 +30,16 @@ wget https://paddle-inference-dist.bj.bcebos.com/tensorrt_test/cuda10.1-cudnn7.6
 wget https://paddle-inference-dist.bj.bcebos.com/tensorrt_test/cuda10.2-cudnn8.0-trt7.1.tgz
 ```
 
-下载解压后，参考文档安装CUDA和cudnn，TensorRT只需要设置库路径，比如`export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/work/TensorRT-7.1.3.4/lib`。
+下载解压后，参考文档安装CUDA和cudnn，TensorRT只需要设置库路径，比如：
+```
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/work/TensorRT-7.1.3.4/lib
+```
 
 ### 2.2 准备Paddle Inference C++预测库
 
-PaddleInference提供了多种版本的预编译[C++预测库](https://paddleinference.paddlepaddle.org.cn/user_guides/download_lib.html)。不同C++预测库可以根据名字进行区分。请根据机器的操作系统、CUDA版本、cudnn版本、使用MKLDNN或者OpenBlas、是否使用TenorRT等信息，选择准确版本。（建议选择版本>=2.0的预测库）
+PaddleInference提供了多种版本的预编译[C++预测库](https://paddleinference.paddlepaddle.org.cn/user_guides/download_lib.html)。
+
+不同C++预测库可以根据名字进行区分。请根据机器的操作系统、CUDA版本、cudnn版本、使用MKLDNN或者OpenBlas、是否使用TenorRT等信息，选择准确版本。（建议选择版本>=2.0的预测库）
 
 下载`paddle_inference.tgz`压缩文件后进行解压，将解压的paddle_inference文件保存到`PaddleSeg/deploy/cpp/`下。
 
@@ -108,7 +113,7 @@ PaddleSeg/deploy/cpp
 
 在Nvidia GPU上部署模型，我们需要提前明确部署场景和要求，主要关注多次预测时输入图像的尺寸是否变化。
 
-给出定义：固定shape模式是指多次预测时输入图像的尺寸是不变的，动态shape模式是指每次预测时输入图像的尺寸可以变化。
+定义：固定shape模式是指多次预测时输入图像的尺寸是不变的，动态shape模式是指每次预测时输入图像的尺寸可以变化。
 
 飞桨PaddleInference在Nvidia GPU上部署模型，支持两种方式：
 * Naive方式：使用Paddle自实现的Kernel执行预测；它使用相同的配置方法支持固定shape模式和动态shape模式。
@@ -138,7 +143,7 @@ PaddleInference有多种方法使用TRT方式、固定Shape模式来部署Paddle
 
 准备预测模型和样本图像，是用于离线收集动态Shape，所以**准备的样本图像需要包含实际预测时会遇到的最大和最小图像尺寸**。
 
-在前面步骤，我们已经下载预测模型和一张测试图片。
+在前面步骤，我们已经准备好预测模型和一张测试图片。
 
 * 离线收集动态Shape
 
@@ -158,7 +163,7 @@ python ../python/collect_dynamic_shape.py \
 
 * 部署执行
 
-打开`run_seg_gpu_trt_dynamic_shape.sh`脚本，设置`TENSORRT_ROOT`为机器中TensorRT库的路径，设置`DYNAMIC_SHAPE_PATH`为动态Shape文件。
+打开`run_seg_gpu_trt_dynamic_shape.sh`脚本，设置`TENSORRT_ROOT`为机器上TensorRT库的路径，设置`DYNAMIC_SHAPE_PATH`为动态Shape文件。
 
 执行`sh run_seg_gpu_trt_dynamic_shape.sh`，预测结果会保存在“out_img.jpg“图片。
 
