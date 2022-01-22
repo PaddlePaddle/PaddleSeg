@@ -1,17 +1,3 @@
-// Copyright (c) 2020 PaddlePaddle Authors. All Rights Reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
 #include <algorithm>
 #include <chrono>
 #include <iostream>
@@ -28,14 +14,12 @@
 #include "opencv2/highgui.hpp"
 #include "lane_postprocess.hpp"
 
-using namespace std;
-using namespace cv;
-
 DEFINE_string(model_dir, "", "Directory of the inference model. "
                              "It constains deploy.yaml and infer models");
 DEFINE_string(img_path, "", "Path of the test image.");
 DEFINE_bool(use_cpu, false, "Wether use CPU. Default: use GPU.");
-
+DEFINE_bool(use_trt, false, "Wether enable TensorRT when use GPU. Defualt: false.");
+DEFINE_bool(use_mkldnn, false, "Wether enable MKLDNN when use CPU. Defualt: false.");
 DEFINE_string(save_dir, "", "Directory of the output image.");
 
 typedef struct YamlConfig {
@@ -77,6 +61,22 @@ std::shared_ptr<paddle_infer::Predictor> create_predictor(
                   model_dir + "/" + yaml_config.params_file);
   infer_config.EnableMemoryOptim();
 
+  if (FLAGS_use_cpu) {
+    LOG(INFO) << "Use CPU";
+    if (FLAGS_use_mkldnn) {
+      // TODO(jc): fix the bug
+      //infer_config.EnableMKLDNN();
+      infer_config.SetCpuMathLibraryNumThreads(5);
+    }
+  } else {
+    LOG(INFO) << "Use GPU";
+    infer_config.EnableUseGpu(100, 0);
+    if (FLAGS_use_trt) {
+      infer_config.EnableTensorRtEngine(1 << 20, 1, 3,
+        paddle_infer::PrecisionType::kFloat32, false, false);
+    }
+  }
+
   auto predictor = paddle_infer::CreatePredictor(infer_config);
   return predictor;
 }
@@ -90,7 +90,7 @@ void hwc_img_2_chw_data(const cv::Mat& hwc_img, float* data) {
   }
 }
 
-void process_image(const YamlConfig& yaml_config, cv::Mat& img) {
+void read_process_image(const YamlConfig& yaml_config, cv::Mat& img) {
     if (yaml_config.is_resize) {
         cv::resize(img, img, cv::Size(yaml_config.resize_width, yaml_config.resize_height));
     }
@@ -100,12 +100,13 @@ void process_image(const YamlConfig& yaml_config, cv::Mat& img) {
     }
 }
 
+
 int main(int argc, char *argv[]) {
     google::ParseCommandLineFlags(&argc, &argv, true);
     if (FLAGS_model_dir == "") {
-    LOG(FATAL) << "The model_dir should not be empty.";
+      LOG(FATAL) << "The model_dir should not be empty.";
     }
-    
+
     // Load yaml
     std::string yaml_path = FLAGS_model_dir + "/deploy.yaml";
     YamlConfig yaml_config = load_yaml(yaml_path);
@@ -117,9 +118,8 @@ int main(int argc, char *argv[]) {
     int input_width = img.cols;
     int input_height = img.rows;
     cv::Rect roi = {0, cut_height, input_width, input_height-cut_height};
-
     img = img(roi);
-    process_image(yaml_config, img);
+    read_process_image(yaml_config, img);
     int rows = img.rows;
     int cols = img.cols;
     int chs = img.channels();
@@ -144,13 +144,13 @@ int main(int argc, char *argv[]) {
     auto output_t = predictor->GetOutputHandle(output_names[0]);
     std::vector<int> output_shape = output_t->shape();
     int out_num = std::accumulate(output_shape.begin(), output_shape.end(), 1,
-                                std::multiplies<int>());
+                                  std::multiplies<int>());
     std::vector<float> out_data(out_num);
     output_t->CopyToCpu(out_data.data());
-    
+
     cv::Size size = cv::Size(cols, rows);
     int skip_index = size.height * size.width;
-    
+
     const int num_classes = 7;
     LanePostProcess* laneNet = new LanePostProcess(input_height, input_width, rows, cols, num_classes);
     auto lane_coords = laneNet->lane_process(out_data, cut_height);
@@ -170,10 +170,9 @@ int main(int argc, char *argv[]) {
         }
         lane_id++;
     }
-    
-    cv::imshow("image lane", image_ori);
-    cv::waitKey();
-    
+
+    cv::imwrite("out_image_points.jpg", image_ori);
+
     cv::Mat seg_planes[num_classes];
     for(int i = 0; i < num_classes; i++) {
         seg_planes[i].create(size, CV_32FC(1));
@@ -192,7 +191,7 @@ int main(int argc, char *argv[]) {
     for (int y = cut_height; y < image_final.rows + cut_height; y++){
         for (int x = 0; x< image_final.cols; x++) {
             cv::Vec<float, num_classes> elem = image_final.at<cv::Vec<float, num_classes>>(y - cut_height, x);
-            int index = std::distance(&elem[0], max_element(&elem[0], &elem[0] + num_classes));
+            int index = std::distance(&elem[0], std::max_element(&elem[0], &elem[0] + num_classes));
             binary_image.at<uchar>(y,x)= index;
         }
     }
@@ -200,7 +199,7 @@ int main(int argc, char *argv[]) {
     // Get pseudo image
     cv::Mat out_eq_img;
     cv::equalizeHist(binary_image, out_eq_img);
-    cv::imwrite("out_img.jpg", binary_image*255);
+    cv::imwrite("out_img_seg.jpg", binary_image*255);
 
     LOG(INFO) << "Finish";
 }
