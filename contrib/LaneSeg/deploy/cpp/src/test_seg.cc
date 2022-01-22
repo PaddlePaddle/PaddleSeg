@@ -165,10 +165,8 @@ int main(int argc, char *argv[]) {
                                   std::multiplies<int>());
     std::vector<float> out_data(out_num);
     output_t->CopyToCpu(out_data.data());
-
     cv::Size size = cv::Size(cols, rows);
     int skip_index = size.height * size.width;
-
     const int num_classes = 7;
     LanePostProcess* laneNet = new LanePostProcess(input_height, input_width, rows, cols, num_classes);
     auto lane_coords = laneNet->lane_process(out_data, cut_height);
@@ -188,7 +186,7 @@ int main(int argc, char *argv[]) {
         }
         lane_id++;
     }
-
+  
     cv::imwrite("out_image_points.jpg", image_ori);
 
     cv::Mat seg_planes[num_classes];
