@@ -11,7 +11,7 @@ English | [简体中文](README_CN.md)
 
 - Yaml
 
-~~More informations，please refer to [Tutorial](../../docs/deployment/inference/cpp_inference.md)。
+ More install informations，please refer to [Tutorial](../../docs/deployment/inference/cpp_inference.md)。
 
 ### 2、Models and Pictures
  - Downdload model
