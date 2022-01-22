@@ -11,9 +11,10 @@ English | [简体中文](README_CN.md)
 
 - Yaml
 
- More install informations，please refer to [Tutorial](../../docs/deployment/inference/cpp_inference.md)。
+ More install informations，please refer to [Tutorial](../../../../docs/deployment/inference/cpp_inference.md)。
 
 ### 2、Models and Pictures
+
  - Downdload model
 
    Enter to `LaneSeg/` directory, and execute commands as follows:
@@ -22,6 +23,7 @@ English | [简体中文](README_CN.md)
    wget -P output https://paddleseg.bj.bcebos.com/lane_seg/bisenet/model.pdparams
 ```
  - Export Model
+
 ```shell
    python export.py \
     --config configs/bisenetV2_tusimple_640x368_300k.yml \
@@ -32,6 +34,7 @@ English | [简体中文](README_CN.md)
  - Using the image `data/test_images/3.jpg`
 
 ### 3、Compile and execute
+
 Enter to the `LaneSeg/deploy/cpp`
 
 Execute `sh run_seg_cpu.sh`, it will compile and then perform prediction on X86 CPU.

@@ -13,6 +13,7 @@
  更多的安装信息，请参考[教程](../../../../docs/deployment/inference/cpp_inference_cn.md)。
 
 ### 2、模型和图片
+
  - 下载模型
  在`LaneSeg/`目录下执行如下命令:
 ```shell
@@ -30,6 +31,7 @@
  - 图片使用 `data/test_images/3.jpg`
 
 ### 3、编译、执行
+
 进入目录`LaneSeg/deploy/cpp`
 
 执行`sh run_seg_cpu.sh`，会进行编译，然后在X86 CPU上执行预测。
