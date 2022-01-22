@@ -14,6 +14,9 @@
 #include "opencv2/highgui.hpp"
 #include "lane_postprocess.hpp"
 
+using namespace std;
+using namespace cv;
+
 DEFINE_string(model_dir, "", "Directory of the inference model. "
                              "It constains deploy.yaml and infer models");
 DEFINE_string(img_path, "", "Path of the test image.");
@@ -90,7 +93,7 @@ void hwc_img_2_chw_data(const cv::Mat& hwc_img, float* data) {
   }
 }
 
-void read_process_image(const YamlConfig& yaml_config, cv::Mat& img) {
+void process_image(const YamlConfig& yaml_config, cv::Mat& img) {
     if (yaml_config.is_resize) {
         cv::resize(img, img, cv::Size(yaml_config.resize_width, yaml_config.resize_height));
     }
@@ -118,8 +121,9 @@ int main(int argc, char *argv[]) {
     int input_width = img.cols;
     int input_height = img.rows;
     cv::Rect roi = {0, cut_height, input_width, input_height-cut_height};
+
     img = img(roi);
-    read_process_image(yaml_config, img);
+    process_image(yaml_config, img);
     int rows = img.rows;
     int cols = img.cols;
     int chs = img.channels();
@@ -191,7 +195,7 @@ int main(int argc, char *argv[]) {
     for (int y = cut_height; y < image_final.rows + cut_height; y++){
         for (int x = 0; x< image_final.cols; x++) {
             cv::Vec<float, num_classes> elem = image_final.at<cv::Vec<float, num_classes>>(y - cut_height, x);
-            int index = std::distance(&elem[0], std::max_element(&elem[0], &elem[0] + num_classes));
+            int index = std::distance(&elem[0], max_element(&elem[0], &elem[0] + num_classes));
             binary_image.at<uchar>(y,x)= index;
         }
     }
