@@ -1305,6 +1305,26 @@ class ARM_Add_SpAttenAdd2(ARM_Add_Add):
         return out
 
 
+class ARM_Add_SpAttenAdd2_1(ARM_Add_Add):
+    """
+    """
+
+    def __init__(self, x_chs, y_ch, out_ch, ksize=3, resize_mode='bilinear'):
+        super().__init__(x_chs, y_ch, out_ch, ksize, resize_mode)
+
+        self.conv_xy_atten = nn.Sequential(
+            layers.ConvBNReLU(2, 2, kernel_size=3, padding=1, bias_attr=False),
+            layers.ConvBN(2, 1, kernel_size=3, padding=1, bias_attr=False))
+
+    def fuse(self, x, y):
+        atten = avg_reduce_channel([x, y])
+        atten = F.sigmoid(self.conv_xy_atten(atten))
+
+        out = x * (0.5 + atten) + y * (1.5 - atten)
+        out = self.conv_out(out)
+        return out
+
+
 class ARM_Add_SpAttenAdd3(ARM_Add_Add):
     """
     use avg_max_reduce_channel
