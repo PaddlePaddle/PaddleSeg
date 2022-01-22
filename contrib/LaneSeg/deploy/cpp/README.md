@@ -1,10 +1,9 @@
-# PaddleSeg C++ Predictive Deployment Scenario
+English | [简体中文](README_CN.md)
 
 ## Deploy the PaddleSeg model using Paddle Inference C++
 
-To deploy PaddleSeg model using Paddle Inference C++, please refer to [Tutorial](../../../../docs/deployment/inference/cpp_inference.md).
 
-###1、Install
+### 1、Install
 
 - Paddle Inference C++
 
@@ -14,7 +13,7 @@ To deploy PaddleSeg model using Paddle Inference C++, please refer to [Tutorial]
 
 ~~More informations，please refer to [Tutorial](../../docs/deployment/inference/cpp_inference.md)。
 
-###2、Models and Pictures
+### 2、Models and Pictures
  - Downdload model
 
    Enter to `LaneSeg/` directory, and execute commands as follows:
@@ -32,7 +31,7 @@ To deploy PaddleSeg model using Paddle Inference C++, please refer to [Tutorial]
 
  - Using the image `data/test_images/3.jpg`
 
-###3、Compile and execute
+### 3、Compile and execute
 Enter to the `LaneSeg/deploy/cpp`
 
 Execute `sh run_seg_cpu.sh`, it will compile and then perform prediction on X86 CPU.

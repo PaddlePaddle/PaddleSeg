@@ -1,8 +1,8 @@
-# PaddleSeg C++ 预测部署方案
+简体中文 | [English](README.md)
 
 ## 使用Paddle Inference C++部署PaddleSeg模型
 
-###1、安装
+### 1、安装
 
 - Paddle Inference C++
 
@@ -12,7 +12,7 @@
 
 ~~更多的信息，请参考[教程](../../../../docs/deployment/inference/cpp_inference_cn.md)。
 
-###2、模型和图片
+### 2、模型和图片
  - 下载模型
 在LaneSeg/目录下执行如下命令:
 ```shell
@@ -29,7 +29,7 @@
 
  - 图片使用 data/test_images/3.jpg
 
-###3、编译、执行
+### 3、编译、执行
 进入目录LaneSeg/deploy/cpp
 
 执行sh run_seg_cpu.sh，会进行编译，然后在X86 CPU上执行预测。
