@@ -36,7 +36,7 @@ The experimental results on our Teleconferencing Video Dataset are shown in pape
 
 
 ## PP-HumanSeg14K: A Large-Scale Teleconferencing Video Dataset
-A large-scale video portrait dataset that contains 291 videos from 23 conference scenes with 14K frames. This dataset contains various teleconferencing scenes, various actions of the participants, interference of passers-by and illumination change. The data can be obtained by sending an email to paddleseg@baidu.com via an **offical email** (not use qq, gmail, etc.) including your institution/company information and the purpose on the dataset.
+A large-scale video portrait dataset that contains 291 videos from 23 conference scenes with 14K frames. This dataset contains various teleconferencing scenes, various actions of the participants, interference of passers-by and illumination change. The data can be obtained by sending an email to paddleseg@baidu.com via an **official email** (not use qq, gmail, etc.) including your institution/company information and the purpose on the dataset.
 
 <p align="center">
 <img src="https://user-images.githubusercontent.com/30695251/148931684-cc10c994-3bd4-4d0c-9bcc-283f9bbc6ac9.png" width="80%" height="80%">
