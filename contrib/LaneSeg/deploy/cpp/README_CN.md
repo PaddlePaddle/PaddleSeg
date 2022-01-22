@@ -15,7 +15,8 @@
 ### 2、模型和图片
 
  - 下载模型
- 在`LaneSeg/`目录下执行如下命令:
+
+ 进入`LaneSeg/`目录下，执行如下命令:
 ```shell
    mkdir output # if not exists
    wget -P output https://paddleseg.bj.bcebos.com/lane_seg/bisenet/model.pdparams
