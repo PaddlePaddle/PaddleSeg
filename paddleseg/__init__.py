@@ -14,4 +14,4 @@
 
 from . import models, datasets, transforms
 
-__version__ = '2.4.0'
+__version__ = 'develop'
