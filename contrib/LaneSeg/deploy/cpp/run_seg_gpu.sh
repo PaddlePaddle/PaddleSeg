@@ -27,7 +27,7 @@ make -j
 
 # run
 cd ..
-
+# change model_dir and img_path according to your needs
 ./build/test_seg \
     --model_dir=../../output/export/ \
     --img_path=../../data/test_images/3.jpg \
