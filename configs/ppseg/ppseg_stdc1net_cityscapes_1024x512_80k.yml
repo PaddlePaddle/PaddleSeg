@@ -1,7 +1,7 @@
 _base_: '../_base_/cityscapes.yml'
 
 batch_size: 12  # total: 24
-iters: 80000
+iters: 120000
 
 model:
   type: PPSeg
