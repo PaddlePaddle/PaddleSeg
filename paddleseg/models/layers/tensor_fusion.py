@@ -694,7 +694,7 @@ class ARM_Add_Add(nn.Layer):
         return out
 
 
-class ARM_WeightedAdd_Add(ARM_Add_Add):
+class ARM_WeightedAdd0_Add(ARM_Add_Add):
     """Add two tensor"""
 
     def __init__(self, x_chs, y_ch, out_ch, ksize=3, resize_mode='bilinear'):
@@ -731,6 +731,30 @@ class ARM_WeightedAdd1_Add(ARM_Add_Add):
 
         w = F.sigmoid(self.alpha[0])
         x = xs[0] * w + xs[1] * (1 - w)
+
+        x = self.conv_x(x)
+        return x
+
+
+class ARM_WeightedAdd2_Add(ARM_Add_Add):
+    """Add two tensor"""
+
+    def __init__(self, x_chs, y_ch, out_ch, ksize=3, resize_mode='bilinear'):
+        super().__init__(x_chs, y_ch, out_ch, ksize, resize_mode)
+
+        for i, ch in enumerate(x_chs):
+            name = "alpha_" + str(i)
+            self.add_parameter(name, self.create_parameter([ch, 1, 1]))
+
+    def prepare_x(self, xs, y):
+        x = xs if not isinstance(xs, (list, tuple)) else xs[0]
+        x = self.alpha_0 * x
+
+        if self.x_num > 1:
+            for i in range(1, self.x_num):
+                alpha_name = "alpha_" + str(i)
+                alpha = getattr(self, alpha_name)
+                x = x + alpha * xs[i]
 
         x = self.conv_x(x)
         return x
