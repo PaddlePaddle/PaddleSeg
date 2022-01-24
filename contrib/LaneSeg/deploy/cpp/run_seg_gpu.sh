@@ -27,8 +27,8 @@ make -j
 
 # run
 cd ..
-
+# change model_dir and img_path according to your needs
 ./build/test_seg \
-    --model_dir=./stdc1seg_infer_model \
-    --img_path=./cityscapes_demo.png \
-    --devices=GPU
+    --model_dir=../../output/export/ \
+    --img_path=../../data/test_images/3.jpg \
+    --use_cpu=false
