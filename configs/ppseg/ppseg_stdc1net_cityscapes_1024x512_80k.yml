@@ -1,7 +1,7 @@
 _base_: '../_base_/cityscapes.yml'
 
-batch_size: 12  # total: 24
-iters: 80000
+batch_size: 6  # total: 24
+iters: 120000
 
 model:
   type: PPSeg
@@ -27,12 +27,11 @@ model:
 loss:
   types:
     - type: OhemCrossEntropyLoss
-      min_kept: 300000
+      min_kept: 200000   # batch_size * 1024 * 512 // 16
     - type: OhemCrossEntropyLoss
-      min_kept: 300000
+      min_kept: 200000
     - type: OhemCrossEntropyLoss
-      min_kept: 300000
-    #- type: DetailAggregateLoss
+      min_kept: 200000
   coef: [1, 1, 1]
 
 train_dataset:
