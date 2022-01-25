@@ -6,6 +6,10 @@ iters: 120000
 optimizer:
   weight_decay: 4.0e-5  # 4.0e-5 or 5.0e-4
 
+lr_scheduler:
+  warmup_iters: 1000
+  warmup_start_lr: 1.0e-5
+
 model:
   type: PPSeg
   backbone:

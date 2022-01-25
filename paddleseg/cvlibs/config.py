@@ -153,13 +153,28 @@ class Config(object):
                 'No `lr_scheduler` specified in the configuration file.')
         params = self.dic.get('lr_scheduler')
 
+        is_warmup = False
+        if 'warmup_iters' in params:
+            is_warmup = True
+            warmup_iters = params.pop('warmup_iters')
+            warmup_start_lr = params.pop('warmup_start_lr')
+            end_lr = params['learning_rate']
+
         lr_type = params.pop('type')
         if lr_type == 'PolynomialDecay':
             params.setdefault('decay_steps', self.iters)
             params.setdefault('end_lr', 0)
             params.setdefault('power', 0.9)
+        lr_sche = getattr(paddle.optimizer.lr, lr_type)(**params)
 
-        return getattr(paddle.optimizer.lr, lr_type)(**params)
+        if is_warmup:
+            lr_sche = paddle.optimizer.lr.LinearWarmup(
+                learning_rate=lr_sche,
+                warmup_steps=warmup_iters,
+                start_lr=warmup_start_lr,
+                end_lr=end_lr)
+
+        return lr_sche
 
     @property
     def learning_rate(self) -> paddle.optimizer.lr.LRScheduler:
