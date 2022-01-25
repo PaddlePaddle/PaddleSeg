@@ -51,6 +51,7 @@ class PPSeg(nn.Layer):
                  backbone,
                  backbone_indices=[2, 3, 4],
                  feat_nums=[1, 1, 1],
+                 feat_select_mode='last',
                  head_type='PPSegHead',
                  arm_type='ARM_Add_Add',
                  cm_out_ch=128,
@@ -90,8 +91,13 @@ class PPSeg(nn.Layer):
             "should be greater than 1"
         assert len(backbone_indices) == len(feat_nums), "The length of " \
             "backbone_indices and feat_nums should be equal"
+        assert all([x in (1, 2) for x in feat_nums]), "The values in feat_nums " \
+            "should be 1 or 2"
+        assert feat_select_mode in ('last', 'even'), "feat_select_mode " \
+            "should in ('last', 'even')"
         self.backbone_indices = backbone_indices  # [..., x16_id, x32_id]
         self.feat_nums = feat_nums
+        self.feat_select_mode = feat_select_mode
         backbone_out_chs = [[backbone.feat_channels[i]] * n \
             for i, n in zip(backbone_indices, feat_nums)]
         print("backbone_out_chs:" + str(backbone_out_chs))
@@ -160,8 +166,13 @@ class PPSeg(nn.Layer):
             fs = feats_backbone[idx]
             assert len(fs) >= num, "The nums of backbone output feats should be " \
                 "greater than the nums you set"
-            fs = fs[-num:]
-            feats_selected.append(fs)
+            tmp = [fs[-1]]
+            if num == 2:
+                if self.feat_select_mode == 'last':
+                    tmp.insert(0, fs[-2])
+                else:
+                    tmp.insert(0, fs[(len(fs) - 1) // 2])
+            feats_selected.append(tmp)
 
         feats_head = self.ppseg_head(feats_selected)  # [..., x16, x32]
 
