@@ -41,9 +41,11 @@ Export the Paddle model to ONNX, infer the ONNX model by TRT.
 Or, load the ONNX model and infer it by TRT.
 
 Prepare:
+* install gpu driver, cuda toolkit and cudnn
 * install PaddlePaddle
 * install PaddleSeg and the the requirements
-* download TensorRT 7 by tar file, install trt whle, export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:TensorRT-7/lib
+* download TensorRT 5/7 tar file according the version of cuda
+* install the trt whl in tar file, export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:TensorRT-7/lib
 * run `pip install 'pycuda>=2019.1.1'`
 * run `pip install paddle2onnx onnx onnxruntime`
 
@@ -74,6 +76,11 @@ def parse_args():
         help='The directory for saving the predict result.',
         type=str,
         default='./output/tmp')
+    parser.add_argument(
+        '--trt_version',
+        help='The version of TRT that is 5 or 7',
+        type=int,
+        default=7)
     parser.add_argument('--width', help='width', type=int, default=1024)
     parser.add_argument('--height', help='height', type=int, default=512)
     parser.add_argument('--warmup', default=500, type=int, help='')
@@ -126,7 +133,12 @@ class TRTPredictorV2(object):
     # This function is generalized for multiple inputs/outputs.
     # inputs and outputs are expected to be lists of HostDeviceMem objects.
     @staticmethod
-    def do_inference(context, bindings, inputs, outputs, stream, batch_size=1):
+    def trt7_do_inference(context,
+                          bindings,
+                          inputs,
+                          outputs,
+                          stream,
+                          batch_size=1):
         # Transfer input data to the GPU.
         [cuda.memcpy_htod_async(inp.device, inp.host, stream) for inp in inputs]
         # Run inference.
@@ -147,7 +159,7 @@ class TRTPredictorV2(object):
     # This function is generalized for multiple inputs/outputs for full dimension networks.
     # inputs and outputs are expected to be lists of HostDeviceMem objects.
     @staticmethod
-    def do_inference_v2(args, context, bindings, inputs, outputs, stream):
+    def trt7_do_inference_v2(args, context, bindings, inputs, outputs, stream):
         # Transfer input data to the GPU.
         [cuda.memcpy_htod_async(inp.device, inp.host, stream) for inp in inputs]
         # warmup
@@ -173,7 +185,7 @@ class TRTPredictorV2(object):
         return [out.host for out in outputs], latency
 
     @staticmethod
-    def get_engine(onnx_file_path, input_shape, engine_file_path=""):
+    def trt7_get_engine(onnx_file_path, input_shape, engine_file_path=""):
         TRT_LOGGER = trt.Logger()
         EXPLICIT_BATCH = 1 << (int)(
             trt.NetworkDefinitionCreationFlag.EXPLICIT_BATCH)
@@ -227,10 +239,10 @@ class TRTPredictorV2(object):
             return build_engine()
 
     @staticmethod
-    def run_trt(args, onnx_file_path, input_data):
+    def trt7_run(args, onnx_file_path, input_data):
         engine_file_path = onnx_file_path[0:-5] + ".trt"
         input_shape = input_data.shape
-        with TRTPredictorV2.get_engine(onnx_file_path, input_shape) as engine, \
+        with TRTPredictorV2.trt7_get_engine(onnx_file_path, input_shape) as engine, \
             engine.create_execution_context() as context:
             inputs, outputs, bindings, stream = TRTPredictorV2.allocate_buffers(
                 engine)
@@ -240,7 +252,114 @@ class TRTPredictorV2(object):
             # Do inference
             # Set host input to the image. The common.do_inference function will copy the input to the GPU before executing.
             inputs[0].host = input_data
-            trt_outputs, latency = TRTPredictorV2.do_inference_v2(
+            trt_outputs, latency = TRTPredictorV2.trt7_do_inference_v2(
+                args,
+                context,
+                bindings=bindings,
+                inputs=inputs,
+                outputs=outputs,
+                stream=stream)
+            return trt_outputs[0], latency
+
+    @staticmethod
+    def trt5_get_engine(onnx_file_path, engine_file_path=""):
+        """Attempts to load a serialized engine if available, otherwise builds a new TensorRT engine and saves it."""
+        TRT_LOGGER = trt.Logger()
+
+        def build_engine():
+            """Takes an ONNX file and creates a TensorRT engine to run inference with"""
+            with trt.Builder(TRT_LOGGER) as builder, \
+                builder.create_network() as network, \
+                trt.OnnxParser(network, TRT_LOGGER) as parser:
+                builder.max_workspace_size = 1 << 30  # 1GB
+                builder.max_batch_size = 1
+                # Parse model file
+                if not os.path.exists(onnx_file_path):
+                    print('ONNX file {} not found.'.format(onnx_file_path))
+                    exit(0)
+                print(
+                    'Loading ONNX file from path {}...'.format(onnx_file_path))
+                with open(onnx_file_path, 'rb') as model:
+                    print('Beginning ONNX file parsing')
+                    parser.parse(model.read())
+                print('Completed parsing of ONNX file')
+
+                print(
+                    'Building an engine from file {}; this may take a while...'.
+                    format(onnx_file_path))
+                engine = builder.build_cuda_engine(network)
+                print("Completed creating Engine")
+
+                if engine_file_path != "":
+                    with open(engine_file_path, "wb") as f:
+                        f.write(engine.serialize())
+                        print("Save trt model in {}".format(engine_file_path))
+
+                return engine
+
+        if os.path.exists(engine_file_path):
+            # If a serialized engine exists, use it instead of building an engine.
+            print("Reading engine from file {}".format(engine_file_path))
+            with open(engine_file_path,
+                      "rb") as f, trt.Runtime(TRT_LOGGER) as runtime:
+                return runtime.deserialize_cuda_engine(f.read())
+        else:
+            return build_engine()
+
+    # This function is generalized for multiple inputs/outputs.
+    # inputs and outputs are expected to be lists of HostDeviceMem objects.
+    @staticmethod
+    def trt5_do_inference(args,
+                          context,
+                          bindings,
+                          inputs,
+                          outputs,
+                          stream,
+                          batch_size=1):
+        # Transfer input data to the GPU.
+        [cuda.memcpy_htod_async(inp.device, inp.host, stream) for inp in inputs]
+        # warmup
+        for _ in range(args.warmup):
+            context.execute_async(
+                batch_size=batch_size,
+                bindings=bindings,
+                stream_handle=stream.handle)
+        # Run inference.
+        t_start = time.time()
+        for _ in range(args.repeats):
+            context.execute_async(
+                batch_size=batch_size,
+                bindings=bindings,
+                stream_handle=stream.handle)
+        elapsed_time = time.time() - t_start
+        latency = elapsed_time / args.repeats * 1000
+
+        # Transfer predictions back from the GPU.
+        [
+            cuda.memcpy_dtoh_async(out.host, out.device, stream)
+            for out in outputs
+        ]
+        # Synchronize the stream
+        stream.synchronize()
+        # Return only the host outputs.
+        return [out.host for out in outputs], latency
+
+    @staticmethod
+    def trt5_run(args, onnx_file_path, input_data):
+        engine_file_path = onnx_file_path[0:-5] + ".trt"
+        input_shape = input_data.shape
+        with TRTPredictorV2.trt5_get_engine(onnx_file_path) as engine, \
+            engine.create_execution_context() as context:
+            inputs, outputs, bindings, stream = TRTPredictorV2.allocate_buffers(
+                engine)
+            if args.enable_profile:
+                context.profiler = trt.Profiler()
+
+            # Do inference
+            # Set host input to the image. The common.do_inference function will
+            # copy the input to the GPU before executing.
+            inputs[0].host = input_data
+            trt_outputs, latency = TRTPredictorV2.trt5_do_inference(
                 args,
                 context,
                 bindings=bindings,
@@ -321,8 +440,13 @@ def export_load_infer(args, model=None):
     print("The paddle and onnx models have the same outputs.\n")
 
     # 5. run and check trt
-    trt_out, latency = TRTPredictorV2().run_trt(args, onnx_model_path,
-                                                input_data)
+    assert args.trt_version in (5, 7), "trt_version should be 5 or 7"
+    if args.trt_version == 5:
+        trt_out, latency = TRTPredictorV2().trt5_run(args, onnx_model_path,
+                                                     input_data)
+    elif args.trt_version == 7:
+        trt_out, latency = TRTPredictorV2().trt7_run(args, onnx_model_path,
+                                                     input_data)
     print("trt avg latency: {:.3f} ms".format(latency))
 
     assert trt_out.size == paddle_out.size
@@ -346,8 +470,13 @@ def load_infer(args):
     print("output shape:", onnx_out.shape, "\n")
 
     # 2. run and check trt
-    trt_out, latency = TRTPredictorV2().run_trt(args, onnx_model_path,
-                                                input_data)
+    assert args.trt_version in (5, 7), "trt_version should be 5 or 7"
+    if args.trt_version == 5:
+        trt_out, latency = TRTPredictorV2().trt5_run(args, onnx_model_path,
+                                                     input_data)
+    elif args.trt_version == 7:
+        trt_out, latency = TRTPredictorV2().trt7_run(args, onnx_model_path,
+                                                     input_data)
     print("trt avg latency: {:.3f} ms".format(latency))
 
     trt_out = trt_out.reshape(onnx_out.shape)
