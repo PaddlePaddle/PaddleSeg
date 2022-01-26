@@ -1499,6 +1499,45 @@ class ARM_WeightedAdd1_SpAttenAdd1(ARM_Add_Add):
         return out
 
 
+class ARM_WeightedAdd2_SpAttenAdd1(ARM_Add_Add):
+    """
+    use avg_max_reduce_channel
+    """
+
+    def __init__(self, x_chs, y_ch, out_ch, ksize=3, resize_mode='bilinear'):
+        super().__init__(x_chs, y_ch, out_ch, ksize, resize_mode)
+
+        assert self.x_num == 2, "ARM_WeightedAdd1_Add requires x_num = 2"
+
+        self.conv_xy_atten = layers.ConvBN(
+            4, 1, kernel_size=3, padding=1, bias_attr=False)
+
+        for i, ch in enumerate(x_chs):
+            name = "alpha_" + str(i)
+            self.add_parameter(name, self.create_parameter([ch, 1, 1]))
+
+    def prepare_x(self, xs, y):
+        x = xs if not isinstance(xs, (list, tuple)) else xs[0]
+        x = self.alpha_0 * x
+
+        if self.x_num > 1:
+            for i in range(1, self.x_num):
+                alpha_name = "alpha_" + str(i)
+                alpha = getattr(self, alpha_name)
+                x = x + alpha * xs[i]
+
+        x = self.conv_x(x)
+        return x
+
+    def fuse(self, x, y):
+        atten = avg_max_reduce_channel([x, y])
+        atten = F.sigmoid(self.conv_xy_atten(atten))
+
+        out = x * atten + y * (1 - atten)
+        out = self.conv_out(out)
+        return out
+
+
 class ARM_ChAttenAdd0_ChAttenAdd0(ARM_ChAttenAdd0_Add):
     """
     The length of x_chs and xs should be 2.
