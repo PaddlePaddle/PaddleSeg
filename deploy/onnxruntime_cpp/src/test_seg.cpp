@@ -1,38 +1,6 @@
-#include <onnxruntime/core/session/experimental_onnxruntime_cxx_api.h>
-
-// if onnxruntime is built with cuda provider, the following header can be added to use cuda gpu
-// #include <onnxruntime/core/providers/cuda/cuda_provider_factory.h>
-
-#include <numeric>
-#include <opencv2/opencv.hpp>
+#include "ort_session_handler.hpp"
 
 namespace {
-class OrtSessionHandler {
- public:
-  /**
-   *  @param model_path path to onnx model
-   */
-  OrtSessionHandler(const std::string &model_path, std::vector<std::vector<int64_t>> &input_tensor_shapes);
-
-  virtual std::vector<float> preprocess(const cv::Mat &image, int target_height, int target_width,
-                                        const std::vector<float> &mean_val = {0.5, 0.5, 0.5},
-                                        const std::vector<float> &std_val = {0.5, 0.5, 0.5}) const;
-
-  /**
-   *   @file function to get output tensors
-   *   @brief each std::pair<DataType *, std::vector<int64_t>> is a pair of output tensor's data and its dimension
-   *   most semantic segmentation networks will have only one output tensor
-   */
-  template <typename DataType = float>
-  std::vector<std::pair<DataType *, std::vector<int64_t>>> run(const std::vector<std::vector<float>> &input_data) const;
-
- private:
-  std::string _model_path;
-  std::vector<std::vector<int64_t>> _input_tensor_shapes;
-  Ort::Env _env;
-  std::unique_ptr<Ort::Experimental::Session> _session;
-};
-
 constexpr int BISENETV2_CITYSCAPES_IMAGE_HEIGHT = 1024;
 constexpr int BISENETV2_CITYSCAPES_IMAGE_WIDTH = 1024;
 
@@ -59,7 +27,7 @@ int main(int argc, char *argv[]) {
 
   std::vector<std::vector<int64_t>> input_tensor_shapes{
       {1, 3, BISENETV2_CITYSCAPES_IMAGE_HEIGHT, BISENETV2_CITYSCAPES_IMAGE_WIDTH}};
-  OrtSessionHandler ort_session_handler(onnx_model_path, input_tensor_shapes);
+  deploy::OrtSessionHandler ort_session_handler(onnx_model_path, input_tensor_shapes);
   std::vector<float> input_data =
       ort_session_handler.preprocess(image, BISENETV2_CITYSCAPES_IMAGE_WIDTH, BISENETV2_CITYSCAPES_IMAGE_WIDTH);
 
@@ -83,81 +51,3 @@ int main(int argc, char *argv[]) {
 
   return EXIT_SUCCESS;
 }
-
-namespace {
-OrtSessionHandler::OrtSessionHandler(const std::string &model_path,
-                                     std::vector<std::vector<int64_t>> &input_tensor_shapes)
-    : _model_path(model_path),
-      _input_tensor_shapes(input_tensor_shapes),
-      _env(Ort::Env(ORT_LOGGING_LEVEL_WARNING, "ort session handler")),
-      _session(nullptr) {
-  Ort::SessionOptions session_options;
-
-  // if onnxruntime is built with cuda provider, the following function can be added to use cuda gpu
-  // Ort::ThrowOnError(OrtSessionOptionsAppendExecutionProvider_CUDA(session_options, gpu_index));
-
-  std::basic_string<ORTCHAR_T> ort_model_path;
-  std::copy(model_path.begin(), model_path.end(), std::back_inserter(ort_model_path));
-  _session.reset(new Ort::Experimental::Session(_env, ort_model_path, session_options));
-
-  if (_session->GetInputCount() != input_tensor_shapes.size()) {
-    throw std::runtime_error("invalid input size");
-  }
-}
-
-std::vector<float> OrtSessionHandler::preprocess(const cv::Mat &image, int target_height, int target_width,
-                                                 const std::vector<float> &mean_val,
-                                                 const std::vector<float> &std_val) const {
-  if (image.empty() || image.channels() != 3) {
-    throw std::runtime_error("invalid image");
-  }
-
-  if (target_height * target_width == 0) {
-    throw std::runtime_error("invalid target dimension");
-  }
-
-  cv::Mat processed = image.clone();
-
-  if (image.rows != target_height || image.cols != target_width) {
-    cv::resize(processed, processed, cv::Size(target_width, target_height), 0, 0, cv::INTER_CUBIC);
-  }
-  cv::cvtColor(processed, processed, cv::COLOR_BGR2RGB);
-  std::vector<float> data(3 * target_height * target_width);
-
-  for (int i = 0; i < target_height; ++i) {
-    for (int j = 0; j < target_width; ++j) {
-      for (int c = 0; c < 3; ++c) {
-        data[c * target_height * target_width + i * target_width + j] =
-            (processed.data[i * target_width * 3 + j * 3 + c] / 255.0 - mean_val[c]) / std_val[c];
-      }
-    }
-  }
-
-  return data;
-}
-
-template <typename DataType>
-std::vector<std::pair<DataType *, std::vector<int64_t>>> OrtSessionHandler::run(
-    const std::vector<std::vector<float>> &input_data) const {
-  if (_session->GetInputCount() != input_data.size()) {
-    throw std::runtime_error("invalid input size");
-  }
-
-  std::vector<Ort::Value> input_tensors;
-  for (int i = 0; i < _session->GetInputCount(); ++i) {
-    input_tensors.emplace_back(Ort::Experimental::Value::CreateTensor<float>(
-        const_cast<float *>(input_data[i].data()), input_data[i].size(), _input_tensor_shapes[i]));
-  }
-
-  std::vector<Ort::Value> output_tensors =
-      _session->Run(_session->GetInputNames(), input_tensors, _session->GetOutputNames());
-
-  std::vector<std::pair<DataType *, std::vector<int64_t>>> output(_session->GetOutputCount());
-  std::vector<std::vector<int64_t>> output_shapes = _session->GetOutputShapes();
-  for (int i = 0; i < _session->GetOutputCount(); ++i) {
-    output[i] = std::make_pair(std::move(output_tensors[i].GetTensorMutableData<DataType>()), output_shapes[i]);
-  }
-
-  return output;
-}
-}  // namespace

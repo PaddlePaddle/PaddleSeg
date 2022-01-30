@@ -13,6 +13,7 @@ find_package(OpenCV REQUIRED)
 
 add_executable(${PROJECT_NAME}_app
   ${PROJECT_SOURCE_DIR}/src/test_seg.cpp
+  ${PROJECT_SOURCE_DIR}/src/ort_session_handler.cpp
 )
 
 target_link_libraries(${PROJECT_NAME}_app
