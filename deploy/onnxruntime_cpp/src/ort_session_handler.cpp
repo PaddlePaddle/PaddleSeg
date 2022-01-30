@@ -2,7 +2,7 @@
 
 namespace deploy {
 OrtSessionHandler::OrtSessionHandler(const std::string &model_path,
-                                     std::vector<std::vector<int64_t>> &input_tensor_shapes)
+                                     const std::vector<std::vector<int64_t>> &input_tensor_shapes)
     : _model_path(model_path),
       _input_tensor_shapes(input_tensor_shapes),
       _env(Ort::Env(ORT_LOGGING_LEVEL_WARNING, "ort session handler")),

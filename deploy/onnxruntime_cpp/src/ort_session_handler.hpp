@@ -11,7 +11,7 @@ class OrtSessionHandler {
   /**
    *  @param model_path path to onnx model
    */
-  OrtSessionHandler(const std::string &model_path, std::vector<std::vector<int64_t>> &input_tensor_shapes);
+  OrtSessionHandler(const std::string &model_path, const std::vector<std::vector<int64_t>> &input_tensor_shapes);
 
   virtual std::vector<float> preprocess(const cv::Mat &image, int target_height, int target_width,
                                         const std::vector<float> &mean_val = {0.5, 0.5, 0.5},
