@@ -1,5 +1,7 @@
-# sample deploy app using onnxruntime #
+# sample deploy app using [onnxruntime](https://github.com/microsoft/onnxruntime) #
 ***
+
+This sample uses Cpp api of onnxruntime.
 
 ## Dependencies ##
 ***
