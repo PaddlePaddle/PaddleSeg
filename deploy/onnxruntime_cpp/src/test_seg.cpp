@@ -29,7 +29,7 @@ int main(int argc, char *argv[]) {
       {1, 3, BISENETV2_CITYSCAPES_IMAGE_HEIGHT, BISENETV2_CITYSCAPES_IMAGE_WIDTH}};
   deploy::OrtSessionHandler ort_session_handler(onnx_model_path, input_tensor_shapes);
   std::vector<float> input_data =
-      ort_session_handler.preprocess(image, BISENETV2_CITYSCAPES_IMAGE_WIDTH, BISENETV2_CITYSCAPES_IMAGE_WIDTH);
+      ort_session_handler.preprocess(image, BISENETV2_CITYSCAPES_IMAGE_HEIGHT, BISENETV2_CITYSCAPES_IMAGE_WIDTH);
 
   // output data's type might change for each different model
   auto output_data = ort_session_handler.run<int64_t>({input_data});
