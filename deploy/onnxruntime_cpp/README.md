@@ -42,8 +42,15 @@ wget https://paddleseg.bj.bcebos.com/dygraph/demo/cityscapes_demo.png
   * [export PaddleSeg model](https://github.com/PaddlePaddle/PaddleSeg/blob/develop/docs/model_export.md)
   * convert exported model to onnx format with [Paddle2ONNX](https://github.com/PaddlePaddle/Paddle2ONNX)
 
+- You can download the bisenetv2 onnx model for this demo directly from the following url:
+```bash
+wget https://github.com/PaddlePaddle/PaddleSeg/files/7918707/bisenetv2_cityscapes.zip && unzip bisenetv2_cityscapes.zip
+```
+
 - Run app
 
 ```bash
 ./build/onnxruntime_cpp_inference_demo_app /path/to/test/image /path/to/onnx/model
 ```
+
+The result will be saved as *out_img.jpg*
