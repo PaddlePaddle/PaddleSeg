@@ -4,7 +4,7 @@ batch_size: 4  # total: 16
 iters: 80000
 
 optimizer:
-  weight_decay: 4.0e-5  # 4.0e-5 or 5.0e-4
+  weight_decay: 5.0e-4  # 4.0e-5 or 5.0e-4
 
 lr_scheduler:
   warmup_iters: 1000
