@@ -54,6 +54,7 @@ class PPSeg(nn.Layer):
                  feat_select_mode='last',
                  head_type='PPSegHead',
                  arm_type='ARM_Add_Add',
+                 cm_bin_sizes=[1],
                  cm_out_ch=128,
                  arm_out_chs=[64, 64, 64],
                  seg_head_mid_chs=[64, 64, 64],
@@ -69,11 +70,14 @@ class PPSeg(nn.Layer):
         print("backbone type: " + backbone.__class__.__name__)
         print("backbone_indices: " + str(backbone_indices))
         print("feat_nums:" + str(feat_nums))
+        print("feat_select_mode:" + feat_select_mode)
         print("head_type: " + head_type)
         print("arm_type: " + arm_type)
+        print("cm_bin_sizes:" + str(cm_bin_sizes))
         print("cm_out_ch: " + str(cm_out_ch))
         print("arm_out_chs: " + str(arm_out_chs))
         print("seg_head_mid_chs: " + str(seg_head_mid_chs))
+        print("eval_seg_head_id:" + str(eval_seg_head_id))
         print("resize_mode: " + resize_mode)
 
         # backbone
@@ -110,9 +114,9 @@ class PPSeg(nn.Layer):
         assert len(arm_out_chs) == len(backbone_indices), "The length of " \
             "arm_out_chs and backbone_indices should be equal"
 
-        self.ppseg_head = head_class(backbone_indices, feat_nums,
-                                     backbone_out_chs, arm_out_chs, cm_out_ch,
-                                     arm_type, resize_mode)
+        self.ppseg_head = head_class(
+            backbone_indices, feat_nums, backbone_out_chs, arm_out_chs,
+            cm_bin_sizes, cm_out_ch, arm_type, resize_mode)
 
         if len(seg_head_mid_chs) == 1:
             seg_head_mid_chs = seg_head_mid_chs * len(backbone_indices)
@@ -216,7 +220,7 @@ class PPSegHead(nn.Layer):
     '''
 
     def __init__(self, backbone_indices, feat_nums, backbone_out_chs,
-                 arm_out_chs, cm_out_ch, arm_type, resize_mode):
+                 arm_out_chs, cm_bin_sizes, cm_out_ch, arm_type, resize_mode):
         super().__init__()
 
         assert len(backbone_indices) == len(backbone_out_chs), "The length of " \
@@ -226,14 +230,17 @@ class PPSegHead(nn.Layer):
 
         self.feat_nums = feat_nums
         self.resize_mode = resize_mode
-
-        self.cp = nn.Sequential(
+        '''
+        self.cm = nn.Sequential(
             nn.AdaptiveAvgPool2D(1),
             layers.ConvBNReLU(
                 backbone_out_chs[-1][-1],
                 cm_out_ch,
                 kernel_size=1,
                 bias_attr=False))
+        '''
+        self.cm = PPContextModule(backbone_out_chs[-1][-1], cm_out_ch,
+                                  cm_out_ch, cm_bin_sizes)
 
         assert hasattr(layers,arm_type), \
             "Do not have arm_type ({})".format(arm_type)
@@ -258,7 +265,7 @@ class PPSegHead(nn.Layer):
                 The length of in_feat_list and out_feat_list are the same.
         '''
 
-        high_feat = self.cp(in_feat_list[-1][-1])
+        high_feat = self.cm(in_feat_list[-1][-1])
         out_feat_list = []
 
         for i in reversed(range(len(in_feat_list))):
@@ -268,6 +275,66 @@ class PPSegHead(nn.Layer):
             out_feat_list.insert(0, high_feat)
 
         return out_feat_list
+
+
+class PPContextModule(nn.Layer):
+    """
+    Lite Context module.
+
+    Args:
+        in_channels (int): The number of input channels to pyramid pooling module.
+        inter_channels (int): The number of inter channels to pyramid pooling module.
+        out_channels (int): The number of output channels after pyramid pooling module.
+        bin_sizes (tuple, optional): The out size of pooled feature maps. Default: (1, 3).
+        align_corners (bool): An argument of F.interpolate. It should be set to False when the output size of feature
+            is even, e.g. 1024x512, otherwise it is True, e.g. 769x769.
+    """
+
+    def __init__(self,
+                 in_channels,
+                 inter_channels,
+                 out_channels,
+                 bin_sizes,
+                 align_corners=False):
+        super().__init__()
+
+        self.stages = nn.LayerList([
+            self._make_stage(in_channels, inter_channels, size)
+            for size in bin_sizes
+        ])
+
+        self.conv_out = layers.ConvBNReLU(
+            in_channels=inter_channels,
+            out_channels=out_channels,
+            kernel_size=3,
+            padding=1)
+
+        self.align_corners = align_corners
+
+    def _make_stage(self, in_channels, out_channels, size):
+        prior = nn.AdaptiveAvgPool2D(output_size=(4, 4))
+        conv = layers.ConvBNReLU(
+            in_channels=in_channels, out_channels=out_channels, kernel_size=1)
+        return nn.Sequential(prior, conv)
+
+    def forward(self, input):
+        out = None
+        input_shape = paddle.shape(input)[2:]
+
+        for stage in self.stages:
+            x = stage(input)
+            x = F.interpolate(
+                x,
+                input_shape,
+                mode='bilinear',
+                align_corners=self.align_corners)
+            if out is None:
+                out = x
+            else:
+                out += x
+
+        out = self.conv_out(out)
+        return out
 
 
 class SegHead(nn.Layer):
