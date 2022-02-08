@@ -312,7 +312,7 @@ class PPContextModule(nn.Layer):
         self.align_corners = align_corners
 
     def _make_stage(self, in_channels, out_channels, size):
-        prior = nn.AdaptiveAvgPool2D(output_size=(4, 4))
+        prior = nn.AdaptiveAvgPool2D(output_size=size)
         conv = layers.ConvBNReLU(
             in_channels=in_channels, out_channels=out_channels, kernel_size=1)
         return nn.Sequential(prior, conv)
