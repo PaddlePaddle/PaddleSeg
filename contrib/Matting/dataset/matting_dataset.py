@@ -110,6 +110,8 @@ class MattingDataset(paddle.io.Dataset):
                 for line in lines:
                     line = line.strip()
                     self.fg_bg_list.append(line)
+        if mode != 'val':
+            random.shuffle(self.fg_bg_list)
 
     def __getitem__(self, idx):
         data = {}
