@@ -204,7 +204,6 @@ class ENet(nn.Layer):
 
         stage2_input_size = x.shape
         x, max_indices2_0 = self.downsample2_0(x)
-
         x = self.regular2_1(x)
         x = self.dilated2_2(x)
         x = self.asymmetric2_3(x)
@@ -223,14 +222,10 @@ class ENet(nn.Layer):
         x = self.asymmetric3_6(x)
         x = self.dilated3_7(x)
 
-        max_indices2_0 = max_indices2_0.reshape([0, 64, 0, -1])
-        max_indices2_0 = max_indices2_0.reshape([0, 0, -1, 0])
         x = self.upsample4_0(x, max_indices2_0, output_size=stage2_input_size)
         x = self.regular4_1(x)
         x = self.regular4_2(x)
 
-        max_indices1_0 = max_indices1_0.reshape([0, 16, 0, -1])
-        max_indices1_0 = max_indices1_0.reshape([0, 0, -1, 0])
         x = self.upsample5_0(x, max_indices1_0, output_size=stage1_input_size)
         x = self.regular5_1(x)
         x = self.transposed_conv(x, output_size=input_size[2:])
