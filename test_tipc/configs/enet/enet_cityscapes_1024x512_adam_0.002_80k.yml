@@ -17,6 +17,10 @@ model:
   num_classes: 19
   pretrained: Null
 
+export:
+  transforms:
+    - type: Normalize
+
 optimizer:
   _inherited_: False
   type: adam
