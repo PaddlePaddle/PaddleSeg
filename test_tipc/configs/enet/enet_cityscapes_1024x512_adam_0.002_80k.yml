@@ -27,7 +27,8 @@ optimizer:
   weight_decay: 0.0002
 
 lr_scheduler:
+  type: PolynomialDecay
   end_lr: 0
   learning_rate: 0.001
   power: 0.9
-  type: PolynomialDecay
+
