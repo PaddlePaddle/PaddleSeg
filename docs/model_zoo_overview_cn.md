@@ -1,3 +1,5 @@
+简体中文 | [English](model_zoo_overview.md)
+
 # PaddleSeg模型库总览
 
 ## 模型库
@@ -39,6 +41,8 @@
 |[ESPNetV1](../configs/espnetv1)|-|-|-|-|
 |[ENCNet](../configs/encnet)|-|✔|-|-|
 |[PFPNNet](../configs/pfpn)|-|✔|-|-|
+|[FastFCN](../configs/fastfcn)|✔|-|-|-|
+|[BiSeNetV1](../configs/bisenetv1)|-|-|-|-|
 
 ### Transformer系列
 * [SETR](../configs/setr)

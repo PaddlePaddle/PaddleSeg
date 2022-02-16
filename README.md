@@ -8,6 +8,7 @@ English | [简体中文](README_CN.md)
 
 **A High-Efficient Development Toolkit for Image Segmentation based on [PaddlePaddle](https://github.com/paddlepaddle/paddle).**
 
+[![Build Status](https://travis-ci.org/PaddlePaddle/PaddleSeg.svg?branch=release/2.1)](https://travis-ci.org/PaddlePaddle/PaddleSeg)
 [![License](https://img.shields.io/badge/license-Apache%202-blue.svg)](LICENSE)
 [![Version](https://img.shields.io/github/release/PaddlePaddle/PaddleSeg.svg)](https://github.com/PaddlePaddle/PaddleSeg/releases)
 ![python version](https://img.shields.io/badge/python-3.6+-orange.svg)
@@ -19,9 +20,21 @@ English | [简体中文](README_CN.md)
 
 ## News <img src="./docs/images/seg_news_icon.png" width="40"/>
 
-* [2022-01-04] We published a paper on portrait segmentation named [PP-HumanSeg](./contrib/PP-HumanSeg/paper.md), and released Semantic Connectivity-aware Learning (SCL) framework and a Large-Scale Teleconferencing Video Dataset.
-* [2021-10-11] We released PaddleSeg v2.3 with the improved interactive segmentation tool ([EISeg v0.3](./EISeg)), two [matting]((./contrib/Matting)) algorithms, and segmentation model compression.
-* For more information please refer to [Release Note](https://github.com/PaddlePaddle/PaddleSeg/releases).
+<ul class="nobull">
+ <li>[2022-01-20] PaddleSeg v2.4 is released! More details in <a href="https://github.com/PaddlePaddle/PaddleSeg/releases">Release Notes</a>.</li>
+ <ul>
+        <li>Upgrade the interactive annotation tool <a href="./EISeg">EISeg v0.4</a> with faster inference speed, supporting new areas in remote sensing and medical segmentation.</li>
+        <li>Publish the <a href="./contrib/PP-HumanSeg/paper.md">PP-HumanSeg</a> paper, and released Semantic Connectivity-aware Learning framework and a Large-Scale Teleconferencing Video Dataset.</li>
+        <li>Release <a href="./contrib/Matting">PP-HumanMatting</a> for extremely fine-grained human segmentation, with an Android tutorial.</li>
+        <li>Add 9 semantic segmentatioin models, including a new transformer model <a href="configs/segmenter">SegMenter</a>.</li>
+        <li>Provide a comprehensive <a href="docs/model_zoo_overview.md">performance table</a> for all segmentation models, which helps to choose a better model on the accuracy and the speed.</li>
+    </ul> 
+   
+ 
+ <li>[2021-10-11] We released PaddleSeg v2.3 with the improved interactive segmentation tool EISeg v0.3, two matting algorithms, and segmentation model compression.</li>
+ <li>[2021-09-20] We published an interactive segmentation <a href="https://arxiv.org/abs/2109.09406">paper</a> with SOTA performance on several well-known datasets.</li>
+</ul>
+
 
 ## Introduction
 
@@ -107,6 +120,8 @@ PaddleSeg is an end-to-end high-efficent development toolkit for image segmentat
             <li>ESPNetV1</li>
             <li>ENCNet</li>
             <li>PFPNNet</li>
+            <li>FastFCN</li>
+            <li>BiSeNetV1</li>
             <li>SETR</li>
             <li>MLA Transformer</li>
             <li>SegFormer</li>
@@ -321,7 +336,7 @@ PaddleSeg is released under the [Apache 2.0 license](LICENSE).
 * Thanks [yazheng0307](https://github.com/yazheng0307) (LIU Zheng) for contributing quick-start document.
 * Thanks [CuberrChen](https://github.com/CuberrChen) for contributing STDC(rethink BiSeNet), PointRend and DetailAggregateLoss.
 * Thanks [stuartchen1949](https://github.com/stuartchen1949) for contributing SegNet.
-* Thanks [justld](https://github.com/justld) (Lang Du) for contributing ESPNetV2, DMNet, ENCNet, HRNet_W48_Contrast, SECrossEntropyLoss and PixelContrastCrossEntropyLoss.
+* Thanks [justld](https://github.com/justld) (Lang Du) for contributing ESPNetV2, DMNet, ENCNet, HRNet_W48_Contrast, FastFCN, BiSeNetV1, SECrossEntropyLoss and PixelContrastCrossEntropyLoss.
 * Thanks [Herman-Hu-saber](https://github.com/Herman-Hu-saber) (Hu Huiming) for contributing ESPNetV2.
 * Thanks [zhangjin12138](https://github.com/zhangjin12138) for contributing RandomCenterCrop.
 * Thanks [simuler](https://github.com/simuler) for contributing ESPNetV1.

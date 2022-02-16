@@ -162,12 +162,14 @@ class HumanMatting(nn.Layer):
 
     def forward(self, data):
         src = data['img']
-        src_h, src_w = src.shape[2:]
+        src_h, src_w = paddle.shape(src)[2:]
         if self.if_refine:
-            if (src_h % 4 != 0) or (src_w % 4) != 0:
-                raise ValueError(
-                    'The input image must have width and height that are divisible by 4'
-                )
+            # It is not need when exporting.
+            if isinstance(src_h, paddle.Tensor):
+                if (src_h % 4 != 0) or (src_w % 4) != 0:
+                    raise ValueError(
+                        'The input image must have width and height that are divisible by 4'
+                    )
 
         # Downsample src for backbone
         src_sm = F.interpolate(
@@ -366,15 +368,21 @@ class Refiner(nn.Layer):
             hid: (B, 32, Hc, Hc) coarse hidden encoding.
             tri: (B, 1, Hc, Hc) trimap prediction.
         '''
-        h_full, w_full = src.shape[2:]
+        h_full, w_full = paddle.shape(src)[2:]
         h_half, w_half = h_full // 2, w_full // 2
         h_quat, w_quat = h_full // 4, w_full // 4
 
         x = paddle.concat([hid, pha, tri], axis=1)
         x = F.interpolate(
-            x, (h_half, w_half), mode='bilinear', align_corners=False)
+            x,
+            paddle.concat((h_half, w_half)),
+            mode='bilinear',
+            align_corners=False)
         y = F.interpolate(
-            src, (h_half, w_half), mode='bilinear', align_corners=False)
+            src,
+            paddle.concat((h_half, w_half)),
+            mode='bilinear',
+            align_corners=False)
 
         if self.kernel_size == 3:
             x = F.pad(x, [3, 3, 3, 3])
@@ -384,10 +392,11 @@ class Refiner(nn.Layer):
         x = self.conv2(x)
 
         if self.kernel_size == 3:
-            x = F.interpolate(x, (h_full + 4, w_full + 4))
+            x = F.interpolate(x, paddle.concat((h_full + 4, w_full + 4)))
             y = F.pad(src, [2, 2, 2, 2])
         else:
-            x = F.interpolate(x, (h_full, w_full), mode='nearest')
+            x = F.interpolate(
+                x, paddle.concat((h_full, w_full)), mode='nearest')
             y = src
 
         x = self.conv3(paddle.concat([x, y], axis=1))

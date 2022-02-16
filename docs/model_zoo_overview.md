@@ -1,6 +1,8 @@
+English | [简体中文](model_zoo_overview_cn.md)
+
 # PaddleSeg model zoo overview
 
-## model zoo
+## Model zoo
 ### CNN Series
 
 |Model\Backbone Network|ResNet50|ResNet101|HRNetw18|HRNetw48|
@@ -39,6 +41,8 @@
 |[ESPNetV1](../configs/espnetv1)|-|-|-|-|
 |[ENCNet](../configs/encnet)|-|✔|-|-|
 |[PFPNNet](../configs/pfpn)|-|✔|-|-|
+|[FastFCN](../configs/fastfcn)|✔|-|-|-|
+|[BiSeNetV1](../configs/bisenetv1)|-|-|-|-|
 
 ### Transformer series
 * [SETR](../configs/setr)
@@ -75,7 +79,7 @@ Based on the Cityscapes dataset, PaddleSeg supports 22+ series of segmentation a
 <img src=https://user-images.githubusercontent.com/30695251/140323107-02ce9de4-c8f4-4f18-88b2-59bd0055a70b.png //>
 </div>
 
-## Precision vs Params
+## Accuracy vs Params
 <div align="center">
 <img src=https://user-images.githubusercontent.com/30695251/140323131-ed03fbb1-a583-47f5-a7dd-f4ea3582c345.png //>
 </div>
