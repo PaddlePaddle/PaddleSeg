@@ -139,7 +139,7 @@ val/fg/fg3.jpg bg/bg3.jpg val/trimap/trimap3.jpg
 ```shell
 export CUDA_VISIBLE_DEVICES=0
 python train.py \
-       --config configs/modnet/modnet_mobilenetv2.yml \
+       --config configs/modnet/modnet-mobilenetv2.yml \
        --do_eval \
        --use_vdl \
        --save_interval 5000 \
@@ -161,7 +161,7 @@ python train.py --help
 ```shell
 export CUDA_VISIBLE_DEVICES=0
 python val.py \
-       --config configs/modnet/modnet_mobilenetv2.yml \
+       --config configs/modnet/modnet-mobilenetv2.yml \
        --model_path output/best_model/model.pdparams \
        --save_dir ./output/results \
        --save_results
@@ -179,7 +179,7 @@ python val.py --help
 ```shell
 export CUDA_VISIBLE_DEVICES=0
 python predict.py \
-    --config configs/modnet/modnet_mobilenetv2.yml \
+    --config configs/modnet/modnet-mobilenetv2.yml \
     --model_path output/best_model/model.pdparams \
     --image_path data/PPM-100/val/fg/ \
     --save_dir ./output/results
@@ -198,7 +198,7 @@ python predict.py --help
 ```shell
 export CUDA_VISIBLE_DEVICES=0
 python bg_replace.py \
-    --config configs/modnet/modnet_mobilenetv2.yml \
+    --config configs/modnet/modnet-mobilenetv2.yml \
     --model_path output/best_model/model.pdparams \
     --image_path path/to/your/image \
     --bg_path path/to/your/background/image \
@@ -221,7 +221,7 @@ python bg_replace.py --help
 ### 模型导出
 ```shell
 python export.py \
-    --config configs/modnet/modnet_mobilenetv2.yml \
+    --config configs/modnet/modnet-mobilenetv2.yml \
     --model_path output/best_model/model.pdparams \
     --save_dir output/export
 ```
