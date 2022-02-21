@@ -1,4 +1,4 @@
-_base_: modnet_mobilenetv2.yml
+_base_: modnet-mobilenetv2.yml
 model:
   backbone:
     type: HRNet_W18
