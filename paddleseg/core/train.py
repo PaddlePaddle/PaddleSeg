@@ -73,7 +73,7 @@ def train(model,
           losses=None,
           keep_checkpoint_max=5,
           test_config=None,
-          fp16=False,
+          precision='fp32',
           profiler_options=None,
           to_static_training=False):
     """
@@ -96,7 +96,7 @@ def train(model,
             The 'types' item is a list of object of paddleseg.models.losses while the 'coef' item is a list of the relevant coefficient.
         keep_checkpoint_max (int, optional): Maximum number of checkpoints to save. Default: 5.
         test_config(dict, optional): Evaluation config.
-        fp16 (bool, optional): Whether to use amp.
+        precision (str, optional): Use AMP if precision='fp16'. If precision='fp32', the training is normal.
         profiler_options (str, optional): The option of train profiler.
         to_static_training (bool, optional): Whether to use @to_static for training.
     """
@@ -131,7 +131,7 @@ def train(model,
     )
 
     # use amp
-    if fp16:
+    if precision:
         logger.info('use amp to train')
         scaler = paddle.amp.GradScaler(init_loss_scaling=1024)
 
@@ -172,7 +172,7 @@ def train(model,
             if hasattr(model, 'data_format') and model.data_format == 'NHWC':
                 images = images.transpose((0, 2, 3, 1))
 
-            if fp16:
+            if precision == 'fp16':
                 with paddle.amp.auto_cast(
                         enable=True,
                         custom_white_list={
