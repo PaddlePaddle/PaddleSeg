@@ -50,7 +50,7 @@ if [ ${model_name} == "fcn_hrnetw18_small" ] || [ ${model_name} == "pphumanseg_l
     rm -rf ./test_tipc/data/mini_supervisely
     wget -nc -P ./test_tipc/data/ https://paddleseg.bj.bcebos.com/humanseg/data/mini_supervisely.zip
     cd ./test_tipc/data/ && unzip mini_supervisely.zip && cd -
-elif [ ${model_name} == "ocrnet_hrnetw18" ] || [ ${model_name} == "bisenetv2" ] || [ ${model_name} == "segformer_b0" ] || [ ${model_name} == "stdc_stdc1" ] || [ ${model_name} == "pfpnnet" ];then
+elif [ ${model_name} == "ocrnet_hrnetw18" ] || [ ${model_name} == "bisenetv2" ] || [ ${model_name} == "segformer_b0" ] || [ ${model_name} == "stdc_stdc1" ] || [ ${model_name} == "pfpnnet" ] || [ ${model_name} == "enet" ];then
     rm -rf ./test_tipc/data/cityscapes
     wget -nc -P ./test_tipc/data/ https://paddleseg.bj.bcebos.com/dataset/cityscapes.tar
     cd ./test_tipc/data/ && tar -xvf cityscapes.tar && cd -

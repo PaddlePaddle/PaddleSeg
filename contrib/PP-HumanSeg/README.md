@@ -244,6 +244,8 @@ python ../../export.py \
 --without_argmax --with_softmax
 ```
 
+[Note] when exporting a model, you must use `--without_argmax --with_softmax` parameter.
+
 Export the PP-HumanSeg-Lite model:
 
 ```shell
