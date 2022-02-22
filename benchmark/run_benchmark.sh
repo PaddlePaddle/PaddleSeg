@@ -34,7 +34,7 @@ function _train(){
     echo "current CUDA_VISIBLE_DEVICES=$CUDA_VISIBLE_DEVICES, gpus=$num_gpu_devices, batch_size=$batch_size"
 
     if [ $fp_item = "fp16" ]; then
-        use_fp16_cmd="--fp16"
+        use_fp16_cmd="--precision fp16"
     fi
     train_cmd="--config=benchmark/configs/${model_item}.yml \
                --batch_size=${batch_size} \
@@ -69,4 +69,3 @@ source ${BENCHMARK_ROOT}/scripts/run_model.sh   # 在该脚本中会对符合ben
 _set_params $@
 # _train       # 如果只想产出训练log,不解析,可取消注释
 _run     # 该函数在run_model.sh中,执行时会调用_train; 如果不联调只想要产出训练log可以注掉本行,提交时需打开
-

@@ -131,7 +131,7 @@ def train(model,
     )
 
     # use amp
-    if precision:
+    if precision == 'fp16':
         logger.info('use amp to train')
         scaler = paddle.amp.GradScaler(init_loss_scaling=1024)
 
