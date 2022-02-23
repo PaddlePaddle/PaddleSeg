@@ -9,7 +9,7 @@
 
 ## 最新动向
 
-- 交互式分割论文[EdgeFlow](https://arxiv.org/abs/2109.09406)被ICCV 2021 Workshop接收。
+- 交互式分割论文[EdgeFlow](https://arxiv.org/abs/2109.09406)被ICCV 2021 ILDAV接收。
 - 支持静态图预测，全面提升交互速度；新增遥感、医疗标注垂类方向，上线宫格标注，最新EISeg 0.4.0推出。
 
 ## 介绍
