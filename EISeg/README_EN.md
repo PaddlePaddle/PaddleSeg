@@ -8,7 +8,7 @@ English | [简体中文](README.md)
 
 ## Latest Developments
 
-- Our paper on interactive segmentation named [EdgeFlow](https://arxiv.org/abs/2109.09406) is accepted by ICCV 2021 Workshop.
+- Our paper on interactive segmentation named [EdgeFlow](https://arxiv.org/abs/2109.09406) is accepted by ICCV 2021 ILDAV.
 - Support static graph inference with fully enhanced interaction speed; launch the latest EISeg 0.4.0 that newly adds remote sensing, medical labeling, and square division labeling.
 
 ## Introduction
