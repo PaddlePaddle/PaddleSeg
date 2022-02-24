@@ -100,7 +100,7 @@ def parse_args():
         type=int)
     parser.add_argument(
         "--precision",
-        default="precision",
+        default="fp32",
         type=str,
         choices=["fp32", "fp16"],
         help=
