@@ -201,12 +201,12 @@ python bg_replace.py \
     --config configs/modnet/modnet-mobilenetv2.yml \
     --model_path output/best_model/model.pdparams \
     --image_path path/to/your/image \
-    --bg_path path/to/your/background/image \
+    --background path/to/your/background/image \
     --save_dir ./output/results
 ```
 如模型需要trimap信息，需要通过`--trimap_path`传入trimap路径。
 
-若不提供`--bg_path`, 则采用绿色作为背景。
+`--background`可以传入背景图片路劲，或选择（'r','g','b','w')中的一种，代表红，绿，蓝，白背景, 若不提供则采用绿色作为背景。
 
 **注意：** `--image_path`必须是一张图片的具体路径。
 
