@@ -78,9 +78,9 @@ def evaluate(model,
     )
 
     total_iters = len(loader)
-    intersect_area_all = 0
-    pred_area_all = 0
-    label_area_all = 0
+    intersect_area_all = paddle.zeros([1], dtype='int64')
+    pred_area_all = paddle.zeros([1], dtype='int64')
+    label_area_all = paddle.zeros([1], dtype='int64')
     logits_all = None
     label_all = None
 

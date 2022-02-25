@@ -136,7 +136,7 @@ val/fg/fg3.jpg bg/bg3.jpg val/trimap/trimap3.jpg
 ```shell
 export CUDA_VISIBLE_DEVICES=0
 python train.py \
-       --config configs/modnet/modnet_mobilenetv2.yml \
+       --config configs/modnet/modnet-mobilenetv2.yml \
        --do_eval \
        --use_vdl \
        --save_interval 5000 \
@@ -158,7 +158,7 @@ If you want to use multiple GPUs，please use `python -m paddle.distributed.laun
 ```shell
 export CUDA_VISIBLE_DEVICES=0
 python val.py \
-       --config configs/modnet/modnet_mobilenetv2.yml \
+       --config configs/modnet/modnet-mobilenetv2.yml \
        --model_path output/best_model/model.pdparams \
        --save_dir ./output/results \
        --save_results
@@ -176,7 +176,7 @@ python val.py --help
 ```shell
 export CUDA_VISIBLE_DEVICES=0
 python predict.py \
-    --config configs/modnet/modnet_mobilenetv2.yml \
+    --config configs/modnet/modnet-mobilenetv2.yml \
     --model_path output/best_model/model.pdparams \
     --image_path data/PPM-100/val/fg/ \
     --save_dir ./output/results
@@ -194,15 +194,15 @@ python predict.py --help
 ```shell
 export CUDA_VISIBLE_DEVICES=0
 python bg_replace.py \
-    --config configs/modnet/modnet_mobilenetv2.yml \
+    --config configs/modnet/modnet-mobilenetv2.yml \
     --model_path output/best_model/model.pdparams \
     --image_path path/to/your/image \
-    --bg_path path/to/your/background/image \
+    --background path/to/your/background/image \
     --save_dir ./output/results
 ```
 If the model requires trimap information, pass the trimap path through `--trimap_path`.
 
-If `--bg_path` is not provided, green background is used。
+`--background` can pass a path of brackground image or select one of ('r', 'g', 'b', 'w') which represent red, green, blue and white. If it is not specified, a green background is used.
 
 **note：** `--image_path` must be a image path。
 
@@ -217,7 +217,7 @@ python bg_replace.py --help
 ### Model Export
 ```shell
 python export.py \
-    --config configs/modnet/modnet_mobilenetv2.yml \
+    --config configs/modnet/modnet-mobilenetv2.yml \
     --model_path output/best_model/model.pdparams \
     --save_dir output/export
 ```

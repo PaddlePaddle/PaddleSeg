@@ -244,6 +244,8 @@ python ../../export.py \
 --without_argmax --with_softmax
 ```
 
+【注】模型导出时必须携带`--without_argmax --with_softmax`参数。
+
 导出PP-HumanSeg-Lite模型：
 
 ```shell

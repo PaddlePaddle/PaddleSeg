@@ -1,15 +1,11 @@
 cmake_minimum_required(VERSION 3.0)
 project(cpp_inference_demo CXX C)
 
-option(WITH_MKL        "Compile demo with MKL/OpenBlas support, default use MKL."       OFF)
+option(WITH_MKL        "Compile demo with MKL/OpenBlas support, default use MKL."       ON)
 option(WITH_GPU        "Compile demo with GPU/CPU, default use CPU."                    OFF)
 option(WITH_STATIC_LIB "Compile demo with static/shared library, default use static."   ON)
 option(USE_TENSORRT "Compile demo with TensorRT."   OFF)
 option(WITH_ROCM "Compile demo with rocm." OFF)
-
-
-set(PADDLE_LIB ${CMAKE_SOURCE_DIR}/paddle)
-set(DEMO_NAME test_seg)
 
 if(NOT WITH_STATIC_LIB)
   add_definitions("-DPADDLE_WITH_SHARED_LIB")
@@ -150,7 +146,7 @@ else()
 endif()
 
 if (NOT WIN32)
-  set(EXTERNAL_LIB "-ldl -lpthread")
+  set(EXTERNAL_LIB "-lrt -ldl -lpthread")
   set(DEPS ${DEPS}
       ${MATH_LIB} ${MKLDNN_LIB}
       glog gflags protobuf xxhash cryptopp

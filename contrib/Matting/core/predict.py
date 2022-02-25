@@ -24,7 +24,7 @@ from paddleseg import utils
 from paddleseg.core import infer
 from paddleseg.utils import logger, progbar, TimeAverager
 
-from utils import mkdir
+from utils import mkdir, estimate_foreground_ml
 
 
 def partition_list(arr, m):
@@ -33,19 +33,33 @@ def partition_list(arr, m):
     return [arr[i:i + n] for i in range(0, len(arr), n)]
 
 
-def save_alpha_pred(alpha, path, trimap=None):
+def save_result(alpha, path, im_path, trimap=None):
     """
     The value of alpha is range [0, 1], shape should be [h,w]
     """
     dirname = os.path.dirname(path)
     if not os.path.exists(dirname):
         os.makedirs(dirname)
+    basename = os.path.basename(path)
+    name = os.path.splitext(basename)[0]
+    alpha_save_path = os.path.join(dirname, name + '_alpha.png')
+    clip_save_path = os.path.join(dirname, name + '_clip.png')
 
-    trimap = cv2.imread(trimap, 0)
-    alpha[trimap == 0] = 0
-    alpha[trimap == 255] = 255
+    # save alpha matte
+    if trimap is not None:
+        trimap = cv2.imread(trimap, 0)
+        alpha[trimap == 0] = 0
+        alpha[trimap == 255] = 255
     alpha = (alpha).astype('uint8')
-    cv2.imwrite(path, alpha)
+    cv2.imwrite(alpha_save_path, alpha)
+
+    # save clip
+    im = cv2.imread(im_path)
+    fg = estimate_foreground_ml(im / 255.0, alpha / 255.0) * 255
+    fg = fg.astype('uint8')
+    alpha = alpha[:, :, np.newaxis]
+    clip = np.concatenate((fg, alpha), axis=-1)
+    cv2.imwrite(clip_save_path, clip)
 
 
 def reverse_transform(alpha, trans_info):
@@ -143,7 +157,7 @@ def predict(model,
 
             save_path = os.path.join(save_dir, im_file)
             mkdir(save_path)
-            save_alpha_pred(alpha_pred, save_path, trimap=trimap)
+            save_result(alpha_pred, save_path, im_path=im_path, trimap=trimap)
 
             postprocess_cost_averager.record(time.time() - postprocess_start)
 
