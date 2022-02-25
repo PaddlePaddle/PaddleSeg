@@ -1,0 +1,7 @@
+_base_: 'lung_coronavirus.yml'
+
+model:
+  type: UNet3D
+  num_classes: 3
+  use_deconv: False
+  pretrained: Null
