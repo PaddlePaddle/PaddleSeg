@@ -39,7 +39,7 @@ train_dataset:
 
 test_config:
   aug_eval: True
-  scales: 0.5
+  scales: 0.75
 
 model:
   type: PPSeg
