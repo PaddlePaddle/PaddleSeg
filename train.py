@@ -120,6 +120,13 @@ def parse_args():
         help='The option of train profiler. If profiler_options is not None, the train ' \
             'profiler is enabled. Refer to the paddleseg/utils/train_profiler.py for details.'
     )
+    parser.add_argument(
+        '--use_xpu',
+        dest='use_xpu',
+        help='Whether to use xpu.',
+        default=False,
+        type=bool)
+
 
     return parser.parse_args()
 
@@ -139,6 +146,9 @@ def main(args):
 
     place = 'gpu' if env_info['Paddle compiled with cuda'] and env_info[
         'GPUs used'] else 'cpu'
+
+    if args.use_xpu and paddle.is_compiled_with_xpu():
+        place = 'xpu'
 
     paddle.set_device(place)
     if not args.cfg:
