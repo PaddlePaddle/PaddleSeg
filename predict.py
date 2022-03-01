@@ -110,6 +110,7 @@ def parse_args():
 def get_test_config(cfg, args):
 
     test_config = cfg.test_config
+    test_config.pop('aug_eval')
     if args.aug_pred:
         test_config['aug_pred'] = args.aug_pred
         test_config['scales'] = args.scales

@@ -161,6 +161,8 @@ def get_image_list(image_path):
             for f in files:
                 if '.ipynb_checkpoints' in root:
                     continue
+                if f.startswith('.'):
+                    continue
                 if os.path.splitext(f)[-1] in valid_suffix:
                     image_list.append(os.path.join(root, f))
     else:
