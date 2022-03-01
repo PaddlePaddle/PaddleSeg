@@ -30,7 +30,7 @@ from paddle.inference import Config as PredictConfig
 from paddleseg.cvlibs import manager
 from paddleseg.utils import get_sys_env, logger
 
-from utils import get_image_list, mkdir
+from utils import get_image_list, mkdir, estimate_foreground_ml
 import transforms as T
 
 
@@ -455,8 +455,10 @@ class Predictor:
 
         # save clip image
         mkdir(clip_save_path)
+        fg = estimate_foreground_ml(ori_img / 255.0, alpha / 255.0) * 255
+        fg = fg.astype('uint8')
         alpha = alpha[:, :, np.newaxis]
-        clip = np.concatenate([ori_img, alpha], axis=-1)
+        clip = np.concatenate([fg, alpha], axis=-1)
         cv2.imwrite(clip_save_path, clip)
 
 

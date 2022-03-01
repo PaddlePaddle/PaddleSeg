@@ -197,12 +197,12 @@ python bg_replace.py \
     --config configs/modnet/modnet-mobilenetv2.yml \
     --model_path output/best_model/model.pdparams \
     --image_path path/to/your/image \
-    --bg_path path/to/your/background/image \
+    --background path/to/your/background/image \
     --save_dir ./output/results
 ```
 If the model requires trimap information, pass the trimap path through `--trimap_path`.
 
-If `--bg_path` is not provided, green background is used。
+`--background` can pass a path of brackground image or select one of ('r', 'g', 'b', 'w') which represent red, green, blue and white. If it is not specified, a green background is used.
 
 **note：** `--image_path` must be a image path。
 

@@ -26,7 +26,7 @@ from core import predict
 import model
 from dataset import MattingDataset
 from transforms import Compose
-from utils import get_image_list
+from utils import get_image_list, estimate_foreground_ml
 
 
 def parse_args():
@@ -58,10 +58,10 @@ def parse_args():
         type=str,
         default=None)
     parser.add_argument(
-        '--bg_path',
-        dest='bg_path',
+        '--background',
+        dest='background',
         help=
-        'Background image path for replacing. If not specified, a white background is used',
+        'Background for replacing. It is a string which specifies the background color (r,g,b,w) or a path to background image. If not specified, a green background is used.',
         type=str,
         default=None)
     parser.add_argument(
@@ -101,25 +101,33 @@ def main(args):
         save_dir=args.save_dir)
 
     img_ori = cv2.imread(args.image_path)
-    bg = get_bg(args.bg_path, img_ori.shape)
-    alpha = alpha / 255
+    bg = get_bg(args.background, img_ori.shape)
+    alpha = alpha / 255.0
+    fg = estimate_foreground_ml(img_ori / 255.0, alpha) * 255
     alpha = alpha[:, :, np.newaxis]
-    com = alpha * img_ori + (1 - alpha) * bg
+    com = alpha * fg + (1 - alpha) * bg
     com = com.astype('uint8')
     com_save_path = os.path.join(args.save_dir,
                                  os.path.basename(args.image_path))
     cv2.imwrite(com_save_path, com)
 
 
-def get_bg(bg_path, img_shape):
-    if bg_path is None:
-        bg = np.zeros(img_shape)
+def get_bg(background, img_shape):
+    bg = np.zeros(img_shape)
+    if background == 'r':
+        bg[:, :, 2] = 255
+    elif background is None or background == 'g':
         bg[:, :, 1] = 255
+    elif background == 'b':
+        bg[:, :, 0] = 255
+    elif background == 'w':
+        bg[:, :, :] = 255
 
-    elif not os.path.exists(bg_path):
-        raise Exception('The --bg_path is not existed: {}'.format(bg_path))
+    elif not os.path.exists(background):
+        raise Exception(
+            'The --background is not existed: {}'.format(background))
     else:
-        bg = cv2.imread(bg_path)
+        bg = cv2.imread(background)
         bg = cv2.resize(bg, (img_shape[1], img_shape[0]))
     return bg
 
