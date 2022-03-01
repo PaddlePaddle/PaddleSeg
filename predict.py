@@ -18,8 +18,9 @@ import os
 import paddle
 
 from paddleseg.cvlibs import manager, Config
-from paddleseg.utils import get_sys_env, logger, config_check, get_image_list
+from paddleseg.utils import get_sys_env, logger, get_image_list
 from paddleseg.core import predict
+from paddleseg.transforms import Compose
 
 
 def parse_args():
@@ -141,11 +142,6 @@ def main(args):
         raise RuntimeError('No configuration file specified.')
 
     cfg = Config(args.cfg)
-    val_dataset = cfg.val_dataset
-    if not val_dataset:
-        raise RuntimeError(
-            'The verification dataset is not specified in the configuration file.'
-        )
 
     msg = '\n---------------Config Information---------------\n'
     msg += str(cfg)
@@ -153,12 +149,11 @@ def main(args):
     logger.info(msg)
 
     model = cfg.model
-    transforms = val_dataset.transforms
+    transforms = Compose(cfg.val_transforms)
     image_list, image_dir = get_image_list(args.image_path)
     logger.info('Number of predict images = {}'.format(len(image_list)))
 
     test_config = get_test_config(cfg, args)
-    config_check(cfg, val_dataset=val_dataset)
 
     predict(
         model,

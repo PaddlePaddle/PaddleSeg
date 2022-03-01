@@ -300,16 +300,19 @@ class Config(object):
             raise RuntimeError('No model specified in the configuration file.')
         if not 'num_classes' in model_cfg:
             num_classes = None
-            if self.train_dataset_config:
-                if hasattr(self.train_dataset_class, 'NUM_CLASSES'):
-                    num_classes = self.train_dataset_class.NUM_CLASSES
-                elif hasattr(self.train_dataset, 'num_classes'):
-                    num_classes = self.train_dataset.num_classes
-            elif self.val_dataset_config:
-                if hasattr(self.val_dataset_class, 'NUM_CLASSES'):
-                    num_classes = self.val_dataset_class.NUM_CLASSES
-                elif hasattr(self.val_dataset, 'num_classes'):
-                    num_classes = self.val_dataset.num_classes
+            try:
+                if self.train_dataset_config:
+                    if hasattr(self.train_dataset_class, 'NUM_CLASSES'):
+                        num_classes = self.train_dataset_class.NUM_CLASSES
+                    elif hasattr(self.train_dataset, 'num_classes'):
+                        num_classes = self.train_dataset.num_classes
+                elif self.val_dataset_config:
+                    if hasattr(self.val_dataset_class, 'NUM_CLASSES'):
+                        num_classes = self.val_dataset_class.NUM_CLASSES
+                    elif hasattr(self.val_dataset, 'num_classes'):
+                        num_classes = self.val_dataset.num_classes
+            except FileNotFoundError:
+                pass
 
             if num_classes is not None:
                 model_cfg['num_classes'] = num_classes
@@ -402,3 +405,15 @@ class Config(object):
 
     def __str__(self) -> str:
         return yaml.dump(self.dic)
+
+    @property
+    def val_transforms(self) -> list:
+        """Get val_transform from val_dataset"""
+        _val_dataset = self.val_dataset_config
+        if not _val_dataset:
+            return []
+        _transforms = _val_dataset.get('transforms', [])
+        transforms = []
+        for i in _transforms:
+            transforms.append(self._load_object(i))
+        return transforms

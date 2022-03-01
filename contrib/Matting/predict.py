@@ -21,6 +21,7 @@ from paddleseg.utils import get_sys_env, logger
 from core import predict
 from model import *
 from dataset import MattingDataset
+from transforms import Compose
 from utils import get_image_list
 
 
@@ -70,15 +71,6 @@ def main(args):
         raise RuntimeError('No configuration file specified.')
 
     cfg = Config(args.cfg)
-    val_dataset = cfg.val_dataset
-    if val_dataset is None:
-        raise RuntimeError(
-            'The verification dataset is not specified in the configuration file.'
-        )
-    elif len(val_dataset) == 0:
-        raise ValueError(
-            'The length of val_dataset is 0. Please check if your dataset is valid'
-        )
 
     msg = '\n---------------Config Information---------------\n'
     msg += str(cfg)
@@ -86,7 +78,7 @@ def main(args):
     logger.info(msg)
 
     model = cfg.model
-    transforms = val_dataset.transforms
+    transforms = Compose(cfg.val_transforms)
 
     image_list, image_dir = get_image_list(args.image_path)
     if args.trimap_path is None:
