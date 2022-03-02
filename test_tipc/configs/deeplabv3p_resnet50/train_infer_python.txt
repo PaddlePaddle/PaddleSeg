@@ -3,7 +3,7 @@ model_name:deeplabv3p_resnet50
 python:python3.7
 gpu_list:0|0,1
 Global.use_gpu:null|null
-Global.auto_cast:null
+--precision:null
 --iters:lite_train_lite_infer=50|lite_train_whole_infer=50|whole_train_whole_infer=1000
 --save_dir:
 --batch_size:lite_train_lite_infer=2|lite_train_whole_infer=2|whole_train_whole_infer=8

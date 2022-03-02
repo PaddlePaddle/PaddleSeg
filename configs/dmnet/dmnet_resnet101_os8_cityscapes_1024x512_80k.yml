@@ -1,0 +1,27 @@
+_base_: '../_base_/cityscapes.yml'
+
+batch_size: 2
+iters: 80000
+
+model:
+  type: DMNet
+  backbone:
+    type: ResNet101_vd
+    output_stride: 8
+    pretrained: https://bj.bcebos.com/paddleseg/dygraph/resnet101_vd_ssld.tar.gz
+
+optimizer:
+  type: sgd
+  weight_decay: 0.0005
+
+loss:
+  types:
+    - type: CrossEntropyLoss
+    - type: CrossEntropyLoss
+  coef: [1, 0.4]
+
+lr_scheduler:
+  type: PolynomialDecay
+  learning_rate: 0.01
+  end_lr: 0.0
+  power: 0.9

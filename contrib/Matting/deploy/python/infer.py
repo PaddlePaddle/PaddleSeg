@@ -30,7 +30,7 @@ from paddle.inference import Config as PredictConfig
 from paddleseg.cvlibs import manager
 from paddleseg.utils import get_sys_env, logger
 
-from utils import get_image_list, mkdir
+from utils import get_image_list, mkdir, estimate_foreground_ml
 import transforms as T
 
 
@@ -128,9 +128,10 @@ def parse_args():
     )
     parser.add_argument(
         '--print_detail',
-        dest='print_detail',
-        help='Print GLOG information of Paddle Inference.',
-        action='store_true')
+        default=True,
+        type=eval,
+        choices=[True, False],
+        help='Print GLOG information of Paddle Inference.')
 
     return parser.parse_args()
 
@@ -292,13 +293,11 @@ class Predictor:
         precision_mode = precision_map[self.args.precision]
 
         if self.args.use_trt:
-
-            print('++++++++++++++')
             logger.info("Use TRT")
             self.pred_cfg.enable_tensorrt_engine(
                 workspace_size=1 << 30,
                 max_batch_size=1,
-                min_subgraph_size=50,
+                min_subgraph_size=300,
                 precision_mode=precision_mode,
                 use_static=False,
                 use_calib_mode=False)
@@ -310,7 +309,6 @@ class Predictor:
                 self.pred_cfg.enable_tuned_tensorrt_dynamic_shape(
                     self.args.auto_tuned_shape_file, allow_build_at_runtime)
             else:
-                print('===============')
                 logger.info("Use manual set dynamic shape")
                 min_input_shape = {"x": [1, 3, 100, 100]}
                 max_input_shape = {"x": [1, 3, 2000, 3000]}
@@ -457,8 +455,10 @@ class Predictor:
 
         # save clip image
         mkdir(clip_save_path)
+        fg = estimate_foreground_ml(ori_img / 255.0, alpha / 255.0) * 255
+        fg = fg.astype('uint8')
         alpha = alpha[:, :, np.newaxis]
-        clip = np.concatenate([ori_img, alpha], axis=-1)
+        clip = np.concatenate([fg, alpha], axis=-1)
         cv2.imwrite(clip_save_path, clip)
 
 

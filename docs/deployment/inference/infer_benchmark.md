@@ -1,6 +1,7 @@
-# 推理Benchmark
+English|[简体中文](infer_benchmark_cn.md)
+# Inference Benchmark
 
-测试环境：
+Test Environment：
 * GPU: V100 32G
 * CPU: Intel(R) Xeon(R) Gold 6148 CPU @ 2.40GHz
 * CUDA: 10.1
@@ -8,16 +9,15 @@
 * TensorRT: 6.0.1.5
 * Paddle: 2.1.1
 
+The method of test segmentation model on GPU:
+1. Use all of the data in Cityscapes dataset to test(1024 * 2048).
+2. Use single GPU and set batchsize to 1.
+3. The time only includes model inference.
+4. Use the [Python API](./python_inference.md) of Paddle Inference to test. You can choose whether to use TRT wirh use_trt parameter and use precision to set the inference datatype.
 
-GPU上分割模型的测试方法:
-1. 使用cityspcaes的全量验证数据集(1024x2048)进行测试
-2. 单GPU，Batchsize为1
-3. 运行耗时为纯模型预测时间
-4. 使用Paddle Inference的[Python API](./python_inference.md)测试，通过use_trt参数设置是否使用TRT，使用precision参数设置预测类型
+Inference with GPU Benchmark：
 
-GPU上推理Benchmark：
-
-|       模型                |  使用TRT   |   预测类型  |  mIoU  |   耗时(s/img)   |
+|       Model         |  With TRT   |   infer datatype  |  mIoU  |   time(s/img)   |
 |        -                 |   :-:      |   :-:     |   :-:   |   :-:           |
 | ANN_ResNet50_OS8         |   N        |    FP32    |  0.7909  |  0.274  |  
 | ANN_ResNet50_OS8         |   Y        |    FP32    |  0.7909  |  0.281  |

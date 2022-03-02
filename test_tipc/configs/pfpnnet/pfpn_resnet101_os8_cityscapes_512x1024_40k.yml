@@ -1,0 +1,39 @@
+_base_: '../_base_/cityscapes.yml'
+
+batch_size: 4
+iters: 40000
+
+model:
+  type: PFPNNet
+  backbone:
+    type: ResNet101_vd
+    output_stride: 8
+    pretrained: https://bj.bcebos.com/paddleseg/dygraph/resnet101_vd_ssld.tar.gz
+  backbone_indices: [0, 1, 2, 3]
+  channels: 256
+
+train_dataset:
+  transforms:
+    - type: ResizeStepScaling
+      min_scale_factor: 0.5
+      max_scale_factor: 2.0
+      scale_step_size: 0.25
+    - type: RandomPaddingCrop
+      crop_size: [512, 1024]
+    - type: RandomHorizontalFlip
+    - type: RandomDistort
+      brightness_range: 0.4
+      contrast_range: 0.4
+      saturation_range: 0.4
+    - type: Normalize
+
+lr_scheduler:
+  type: PolynomialDecay
+  learning_rate: 0.01
+  end_lr: 0
+  power: 0.9
+
+optimizer:
+  type: sgd
+  momentum: 0.9
+  weight_decay: 0.0005

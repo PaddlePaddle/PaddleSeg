@@ -31,7 +31,8 @@
 | Segformer | Segformer_B0 | 支持 | - | - | - |
 | STDC | STDC_STDC1 | 支持 | - | - | - |
 | MODNet | PP-Matting | 支持 | - | - | - |
-
+| PFPNNet | PFPNNet | 支持 | - | - | - |
+| ENet | ENet | 支持 | - | - | - |
 
 
 ## 3. 测试工具简介

@@ -1,157 +1,166 @@
-# 人像分割PP-HumanSeg
+English | [简体中文](README_cn.md)
 
-人像分割是图像分割领域非常常见的应用，PaddleSeg推出了在大规模人像数据上训练的人像分割PP-HumanSeg模型，满足在服务端、移动端、Web端多种使用场景的需求。本教程提供从训练到部署的全流程应用指南，以及视频流人像分割、背景替换的实际效果体验。最新发布超轻量级人像分割模型**PP-HumanSeg-Lite**，支持Web端、移动端场景的实时分割。
+# PP-HumanSeg
 
-新冠疫情催化远程办公需求，视频会议产品迅速爆发。百度视频会议可实现Web端一秒入会，其中的虚拟背景功能采用我们的PP-HumanSeg-Lite模型，实现实时背景替换和背景虚化功能，保护用户隐私，增加会议中的趣味性。
+Human segmentation is a high-frequency application in the field of image segmentation. PaddleSeg has launched a series of human segmentation models PP-HumanSeg trained on large-scale human data, including an ultra-lightweight model **PP-HumanSeg-Lite**. It can meet the needs of various usage scenarios on server, mobile, and web. We provide full-process application guides from training to deployment, as well as video streaming segmentation and background replacement tutorials. Based on Paddle.js, you can experience the effects of [Portrait Snapshot](https://paddlejs.baidu.com/humanseg), [Video Background Replacement and Barrage Penetration](https://www.paddlepaddle.org.cn/paddlejs).
 
 <p align="center">
-<img src="https://github.com/LutaoChu/transfer_station/raw/master/conference.gif" width="70%" height="70%">
+<img src="https://user-images.githubusercontent.com/30695251/149886667-f47cab88-e81a-4fd7-9f32-fbb34a5ed7ce.png"  height="300">        <img src="https://user-images.githubusercontent.com/30695251/149887482-d1fcd5d3-2cce-41b5-819b-bfc7126b7db4.png"  height="300">
 </p>
 
-## 目录
-- [人像分割模型](#人像分割模型)
-  - [通用人像分割](#通用人像分割)
-  - [肖像分割](#肖像分割)
-- [安装](#安装)
-- [快速体验](#快速体验)
-  - [视频流人像分割](#视频流人像分割)
-  - [视频流背景替换](#视频流背景替换)
-  - [在线运行教程](#在线运行教程)
-- [训练评估预测演示](#训练评估预测演示)
-- [模型导出](#模型导出)
-- [Web端部署](#Web端部署)
-- [移动端部署](#移动端部署)
+The COVID-19 epidemic has catalyzed the demand for remote office, and video conferencing products have exploded rapidly. Baidu Video Conference can realize one-second joining on the web side. The virtual background function adopts our PP-HumanSeg-Lite model to realize real-time background replacement and background blur function, protect user privacy, and increase the fun in the meeting.
 
-## 人像分割模型
-### 通用人像分割
-针对通用人像分割任务，PP-HumanSeg开放了在大规模人像数据上训练的三个人像模型，满足服务端、移动端、Web端多种使用场景的需求。
+<p align="center">
+<img src="https://github.com/LutaoChu/transfer_station/raw/master/conference.gif" width="60%" height="60%">
+</p>
 
-| 模型名 | 模型说明 | Checkpoint | Inference Model |
+## Updates
+- [2022-1-4] Human segmentation paper [PP-HumanSeg](./paper.md) was published in WACV 2022 Workshop, and open-sourced Connectivity Learning (SCL) method and large-scale video conferencing dataset.
+
+## Content
+- [Human segmentation model](#Human-segmentation-model)
+  - [General human segmentation](#General-Human-Segmentation)
+  - [Portrait segmentation](#Portrait-segmentation)
+- [Install](#install)
+- [Quick experience](#Quick-experience)
+  - [Video streaming human segmentation](#Video-streaming-human-segmentation)
+  - [Video stream background replacement](#Video-stream-background-replacement)
+  - [Online running tutorial](#Online-running-tutorial)
+- [Training evaluation prediction demo](#Training-evaluation-prediction-demo)
+- [Model export](#Model-export)
+- [Web deployment](#Web-deployment)
+- [Mobile deployment](#mobile-deployment)
+
+## Human segmentation model
+### General human segmentation
+For general human segmentation tasks, PP-HumanSeg has opened three human models trained on large-scale human data to meet the needs of various usage scenarios on the server, mobile and web.
+
+| Model | Model Description | Checkpoint | Inference Model |
 | --- | --- | --- | ---|
-| PP-HumanSeg-Server | 高精度模型，适用于服务端GPU且背景复杂的人像场景， 模型结构为Deeplabv3+/ResNet50, 输入大小（512， 512） |[server_ckpt](https://paddleseg.bj.bcebos.com/dygraph/humanseg/train/deeplabv3p_resnet50_os8_humanseg_512x512_100k.zip) | [server_inference](https://paddleseg.bj.bcebos.com/dygraph/humanseg/export/deeplabv3p_resnet50_os8_humanseg_512x512_100k_with_softmax.zip) |
-| PP-HumanSeg-Mobile | 轻量级模型，适用于移动端或服务端CPU的前置摄像头场景，模型结构为HRNet_w18_samll_v1，输入大小（192， 192）  | [mobile_ckpt](https://paddleseg.bj.bcebos.com/dygraph/humanseg/train/fcn_hrnetw18_small_v1_humanseg_192x192.zip) | [mobile_inference](https://paddleseg.bj.bcebos.com/dygraph/humanseg/export/fcn_hrnetw18_small_v1_humanseg_192x192_with_softmax.zip) |
-| PP-HumanSeg-Lite | 超轻量级模型，适用于Web端或移动端实时分割场景，例如手机自拍、Web视频会议，模型结构为[Paddle自研模型](../../configs/pp_humanseg_lite/README.md)，输入大小（192， 192） | [lite_ckpt](https://paddleseg.bj.bcebos.com/dygraph/humanseg/train/pphumanseg_lite_generic_192x192.zip) | [lite_inference](https://paddleseg.bj.bcebos.com/dygraph/humanseg/export/pphumanseg_lite_generic_192x192_with_softmax.zip) |
+| PP-HumanSeg-Server | High-precision model, suitable for server-side GPU and complex background scenes, model structure is Deeplabv3+/ResNet50, input size (512, 512) |[server_ckpt](https://paddleseg.bj.bcebos.com/dygraph/humanseg/train/deeplabv3p_resnet50_os8_humanseg_512x512_100k.zip) | [server_inference](https://paddleseg.bj.bcebos.com/dygraph/humanseg/export/deeplabv3p_resnet50_os8_humanseg_512x512_100k_with_softmax.zip) |
+| PP-HumanSeg-Mobile | Lightweight model, suitable for front camera scenarios on mobile or server CPU, model structure is HRNet_w18_samll_v1, input size (192, 192) | [mobile_ckpt](https://paddleseg.bj.bcebos.com/dygraph/humanseg/train/fcn_hrnetw18_small_v1_humanseg_192x192.zip) | [mobile_inference](https://paddleseg.bj.bcebos.com/dygraph/humanseg/export/fcn_hrnetw18_small_v1_humanseg_192x192_with_softmax.zip) |
+| PP-HumanSeg-Lite | Ultra-lightweight model, suitable for real-time segmentation scenarios on the web or mobile, such as mobile phone selfies, web video conferences, the model structure is [Paddle self-developed model](../../configs/pp_humanseg_lite/README.md), input size (192, 192) | [lite_ckpt](https://paddleseg.bj.bcebos.com/dygraph/humanseg/train/pphumanseg_lite_generic_192x192.zip) | [lite_inference](https://paddleseg.bj.bcebos.com/dygraph/humanseg/export/pphumanseg_lite_generic_192x192_with_softmax.zip) |
 
 
 NOTE:
-* 其中Checkpoint为模型权重，用于Fine-tuning场景。
+* Where Checkpoint is the model weight, which is used in the Fine-tuning scene.
 
-* Inference Model为预测部署模型，包含`model.pdmodel`计算图结构、`model.pdiparams`模型参数和`deploy.yaml`基础的模型配置信息。
+* Inference Model is a predictive deployment model, including `model.pdmodel` computational graph structure, `model.pdiparams` model parameters and `deploy.yaml` basic model configuration information.
 
-* 其中Inference Model适用于服务端的CPU和GPU预测部署，适用于通过Paddle Lite进行移动端等端侧设备部署。更多Paddle Lite部署说明查看[Paddle Lite文档](https://paddle-lite.readthedocs.io/zh/latest/)
+* Among them, the Inference Model is suitable for the prediction deployment of CPU and GPU on the server, and is suitable for the deployment of end devices such as mobile terminals through Paddle Lite. For more Paddle Lite deployment instructions, see [Paddle Lite Documentation](https://paddle-lite.readthedocs.io/zh/latest/)
 
-#### 模型性能
+#### Model performance
 
-| 模型名 |Input Size | FLOPS | Parameters | 计算耗时 | 模型大小 |
+| Model | Input Size | FLOPS | Parameters | Latency | Model Size |
 |-|-|-|-|-|-|
 | PP-HumanSeg-Server | 512x512 | 114G | 26.8M | 37.96ms | 103Mb |
 | PP-HumanSeg-Mobile | 192x192 | 584M | 1.54M | 13.17ms | 5.9Mb |
 | PP-HumanSeg-Lite | 192x192 | 121M | 137K | 10.51ms | 543Kb |
 
-测试环境：Nvidia Tesla V100单卡。
+Test environment: Nvidia Tesla V100 single card.
 
-### 肖像分割
-针对肖像分割(Portrait Segmentation)任务，PP-HumanSeg开放了肖像分割模型，该模型已应用于百度视频会议。
+### Portrait segmentation
+For the portrait segmentation task, PP-HumanSeg has opened a portrait segmentation model, which has been applied to Baidu Video Conferencing.
 
-| 模型名 | 模型说明 | Checkpoint | Inference Model |
+| Model | Model Description | Checkpoint | Inference Model |
 | --- | --- | --- | ---|
-| PP-HumanSeg-Lite | 超轻量级模型，适用于Web端或移动端实时分割场景，例如手机自拍、Web视频会议，模型结构为[Paddle自研模型](../../configs/pp_humanseg_lite/README.md)，推荐输入大小（398，224） | [lite_portrait_ckpt](https://paddleseg.bj.bcebos.com/dygraph/ppseg/ppseg_lite_portrait_398x224.tar.gz) | [lite_portrait_inference](https://paddleseg.bj.bcebos.com/dygraph/ppseg/ppseg_lite_portrait_398x224_with_softmax.tar.gz) |
+| PP-HumanSeg-Lite | Ultra-lightweight model, suitable for real-time segmentation scenarios on the web or mobile, such as mobile phone selfies, web video conferences, the model structure is [Paddle self-developed model](../../configs/pp_humanseg_lite/README.md), recommended input size (398, 224) | [lite_portrait_ckpt](https://paddleseg.bj.bcebos.com/dygraph/ppseg/ppseg_lite_portrait_398x224.tar.gz) | [lite_portrait_inference](https://paddleseg.bj.bcebos.com/dygraph/ppseg/ppseg_lite_portrait_398x224_with_softmax.tar.gz) |
 
-#### 模型性能
+#### Model performance
 
-| 模型名 |Input Size | FLOPS | Parameters | 计算耗时 | 模型大小 |
+| Model | Input Size | FLOPS | Parameters | Latency | Model Size |
 |-|-|-|-|-|-|
 | PP-HumanSeg-Lite | 398x224 | 266M | 137K | 23.49ms | 543Kb |
 | PP-HumanSeg-Lite | 288x162 | 138M | 137K | 15.62ms | 543Kb |
 
-测试环境: 使用Paddle.js converter优化图结构，部署于Web端，显卡型号AMD Radeon Pro 5300M 4 GB。
+Test environment: Use Paddle.js converter to optimize the graph structure, deploy on the web side, the GPU is AMD Radeon Pro 5300M 4 GB.
 
 
-## 安装
+## Install
 
-#### 1. 安装PaddlePaddle
+#### 1. Install PaddlePaddle
 
-版本要求
+Version requirements
 
 * PaddlePaddle >= 2.0.2
 
 * Python >= 3.7+
 
-由于图像分割模型计算开销大，推荐在GPU版本的PaddlePaddle下使用PaddleSeg。推荐安装10.0以上的CUDA环境。安装教程请见[PaddlePaddle官网](https://www.paddlepaddle.org.cn/install/quick?docurl=/documentation/docs/zh/install/pip/linux-pip.html)。
+Due to the high computational cost of the image segmentation model, it is recommended to use PaddleSeg under the GPU version of PaddlePaddle. It is recommended to install a CUDA environment above 10.0. Please refer to the [PaddlePaddle official website](https://www.paddlepaddle.org.cn/install/quick?docurl=/documentation/docs/zh/install/pip/linux-pip.html) for the installation tutorial.
 
 
-#### 2. 安装PaddleSeg包
+#### 2. Install PaddleSeg package
 
 ```shell
 pip install paddleseg
 ```
 
-#### 3. 下载PaddleSeg仓库
+#### 3. Download PaddleSeg repository
 
 ```shell
 git clone https://github.com/PaddlePaddle/PaddleSeg
 ```
 
-## 快速体验
-以下所有命令均在`PaddleSeg/contrib/PP-HumanSeg`目录下执行。
+## Quick experience
+All the following commands are executed in the `PaddleSeg/contrib/PP-HumanSeg` directory.
 ```shell
 cd PaddleSeg/contrib/PP-HumanSeg
 ```
 
-### 下载Inference Model
+### Download Inference Model
 
-执行以下脚本快速下载所有Inference Model
+Execute the following script to quickly download all Inference Models
 ```bash
 python export_model/download_export_model.py
 ```
 
-### 下载测试数据
-我们提供了一些测试数据，从人像分割数据集 [Supervise.ly Person](https://app.supervise.ly/ecosystem/projects/persons) 中随机抽取一小部分并转化成PaddleSeg可直接加载数据格式，以下称为mini_supervisely，同时提供了手机前置摄像头的人像测试视频`video_test.mp4`。通过运行以下代码进行快速下载：
+### Download test data
+We provide some test data, randomly select a small part from the human segmentation dataset [Supervise.ly Person](https://app.supervise.ly/ecosystem/projects/persons) and convert it into a PaddleSeg data format that can be directly loaded , hereinafter referred to as mini_supervisely, and also provides the test video `video_test.mp4` of the front camera of the mobile phone. Quick download by running the following code:
 
 ```bash
 python data/download_data.py
 ```
 
-### 视频流人像分割
+### Video streaming human segmentation
 ```bash
-# 通过电脑摄像头进行实时分割处理
+# Real-time segmentation processing through computer camera
 python bg_replace.py \
 --config export_model/ppseg_lite_portrait_398x224_with_softmax/deploy.yaml
 
-# 对人像视频进行分割处理
+# Process the portrait video
 python bg_replace.py \
 --config export_model/deeplabv3p_resnet50_os8_humanseg_512x512_100k_with_softmax/deploy.yaml \
 --video_path data/video_test.mp4
 ```
 
-视频分割结果如下：
+The video segmentation results are as follows:
 
 <img src="https://paddleseg.bj.bcebos.com/humanseg/data/video_test.gif" width="20%" height="20%"><img src="https://paddleseg.bj.bcebos.com/humanseg/data/result.gif" width="20%" height="20%">
 
-我们也支持使用 DIS（Dense Inverse Search-basedmethod）光流后处理算法，通过结合光流结果与分割结果，减少视频预测前后帧闪烁的问题。只要使用`--use_optic_flow`即可开启光流后处理，例如
+We also support the use of DIS (Dense Inverse Search-based method) optical flow post-processing algorithm to reduce the problem of video prediction frame flicker by combining optical flow results and segmentation results. Just use `--use_optic_flow` to enable optical flow post-processing, for example
 ```bash
-# 增加光流后处理
+# Add optical flow post-processing
 python bg_replace.py \
 --config export_model/ppseg_lite_portrait_398x224_with_softmax/deploy.yaml \
 --use_optic_flow
 ```
 
-### 视频流背景替换
-根据所选背景进行背景替换，背景可以是一张图片，也可以是一段视频。
+### Video stream background replacement
+The background is replaced according to the selected background, which can be a picture or a video.
 ```bash
-# 通过电脑摄像头进行实时背景替换处理, 也可通过'--background_video_path'传入背景视频
+# Perform real-time background replacement processing through the computer camera. You can pass in the background video through '--background_video_path'
 python bg_replace.py \
 --config export_model/ppseg_lite_portrait_398x224_with_softmax/deploy.yaml \
 --input_shape 224 398 \
 --bg_img_path data/background.jpg
 
-# 对人像视频进行背景替换处理, 也可通过'--background_video_path'传入背景视频
+# Perform background replacement processing on portrait video. You can pass in the background video through '--background_video_path'
 python bg_replace.py \
 --config export_model/deeplabv3p_resnet50_os8_humanseg_512x512_100k_with_softmax/deploy.yaml \
 --bg_img_path data/background.jpg \
 --video_path data/video_test.mp4
 
-# 对单张图像进行背景替换
+# background replacement for a single image
 python bg_replace.py \
 --config export_model/ppseg_lite_portrait_398x224_with_softmax/deploy.yaml \
 --input_shape 224 398 \
@@ -161,57 +170,57 @@ python bg_replace.py \
 ```
 
 
-背景替换结果如下：
+The result of background replacement is as follows:
 
 <img src="https://paddleseg.bj.bcebos.com/humanseg/data/video_test.gif" width="20%" height="20%"><img src="https://paddleseg.bj.bcebos.com/humanseg/data/bg_replace.gif" width="20%" height="20%">
 
 
 **NOTE**:
 
-视频分割处理时间需要几分钟，请耐心等待。
+The video segmentation processing time will take a few minutes, please be patient.
 
-Portrait模型适用于宽屏拍摄场景，竖屏效果会略差一些。
+The Portrait model is suitable for widescreen shooting scenes, and the vertical screen effect will be slightly worse.
 
-### 在线运行教程
-我们提供了基于AI Studio的[在线运行教程](https://aistudio.baidu.com/aistudio/projectdetail/2189481)，方便您进行实践体验。
+### Online running tutorial
+We provide an AI Studio-based [Online Running Tutorial](https://aistudio.baidu.com/aistudio/projectdetail/2189481) to facilitate your practical experience.
 
-## 训练评估预测演示
-如果上述大规模数据预训练的模型不能满足您的精度需要，可以基于上述模型在您的场景中进行Fine-tuning，以更好地适应您的使用场景。
+## Training evaluation prediction demo
+If the above models pre-trained on large-scale data cannot meet your accuracy requirements, you can perform fine-tuning in your scene based on the above models to better suit your usage scenarios.
 
-### 下载预训练模型
+### Download pretrained model
 
-执行以下脚本快速下载所有Checkpoint作为预训练模型
+Execute the following script to quickly download all checkpoints as pretrained models
 ```bash
 python pretrained_model/download_pretrained_model.py
 ```
 
-### 训练
-演示如何基于上述模型进行Fine-tuning。我们使用抽取的mini_supervisely数据集作为示例数据集，以PP-HumanSeg-Mobile为例，训练命令如下：
+### Train
+Demonstrates how to do fine-tuning based on the above model. We use the extracted mini_supervisely dataset as an example dataset, taking PP-HumanSeg-Mobile as an example, the training command is as follows:
 ```bash
-export CUDA_VISIBLE_DEVICES=0 # 设置1张可用的卡
-# windows下请执行以下命令
+export CUDA_VISIBLE_DEVICES=0 # Set 1 available card
+# Please execute the following command under windows
 # set CUDA_VISIBLE_DEVICES=0
 python train.py \
 --config configs/fcn_hrnetw18_small_v1_humanseg_192x192_mini_supervisely.yml \
 --save_dir saved_model/fcn_hrnetw18_small_v1_humanseg_192x192_mini_supervisely \
 --save_interval 100 --do_eval --use_vdl
-```
+````
 
-更多命令行帮助可运行下述命令进行查看：
+More command line help can be viewed by running the following command:
 ```bash
 python train.py --help
 ```
 
-### 评估
-使用下述命令进行评估
+### Evaluate
+Use the following command to evaluate
 ```bash
 python val.py \
 --config configs/fcn_hrnetw18_small_v1_humanseg_192x192_mini_supervisely.yml \
 --model_path saved_model/fcn_hrnetw18_small_v1_humanseg_192x192_mini_supervisely/best_model/model.pdparams
 ```
 
-### 预测
-使用下述命令进行预测， 预测结果默认保存在`./output/result/`文件夹中。
+### Predict
+Use the following command to make predictions, the prediction results are saved in the `./output/result/` folder by default.
 ```bash
 python predict.py \
 --config configs/fcn_hrnetw18_small_v1_humanseg_192x192_mini_supervisely.yml \
@@ -219,14 +228,14 @@ python predict.py \
 --image_path data/human_image.jpg
 ```
 
-## 模型导出
-### 将模型导出为静态图模型
+## Model export
+### Export the model as a static graph model
 
-请确保位于PaddleSeg目录下，执行以下脚本：
+Make sure you are in the PaddleSeg directory and execute the following script:
 
 ```shell
-export CUDA_VISIBLE_DEVICES=0 # 设置1张可用的卡
-# windows下请执行以下命令
+export CUDA_VISIBLE_DEVICES=0 # Set 1 available card
+# Please execute the following command under windows
 # set CUDA_VISIBLE_DEVICES=0
 python ../../export.py \
 --config configs/fcn_hrnetw18_small_v1_humanseg_192x192_mini_supervisely.yml \
@@ -235,7 +244,9 @@ python ../../export.py \
 --without_argmax --with_softmax
 ```
 
-导出PP-HumanSeg-Lite模型：
+[Note] when exporting a model, you must use `--without_argmax --with_softmax` parameter.
+
+Export the PP-HumanSeg-Lite model:
 
 ```shell
 python ../../export.py \
@@ -245,34 +256,34 @@ python ../../export.py \
 --without_argmax --with_softmax
 ```
 
-### 导出脚本参数解释
+### Export parameter
 
-|参数名|用途|是否必选项|默认值|
+|Parameter name|Purpose|Required option|Default value|
 |-|-|-|-|
-|config|配置文件|是|-|
-|save_dir|模型和visualdl日志文件的保存根路径|否|output|
-|model_path|预训练模型参数的路径|否|配置文件中指定值|
-|with_softmax|在网络末端添加softmax算子。由于PaddleSeg组网默认返回logits，如果想要部署模型获取概率值，可以置为True|否|False|
-|without_argmax|是否不在网络末端添加argmax算子。由于PaddleSeg组网默认返回logits，为部署模型可以直接获取预测结果，我们默认在网络末端添加argmax算子|否|False|
+|config|Configuration File|Yes|-|
+|save_dir|Save root path for model and VisualDL log files|no |output|
+|model_path|path to pretrained model parameter|no|specified value in configuration file|
+|with_softmax|Add a softmax operator at the end of the network. Since the PaddleSeg network returns logits by default, if you want to deploy the model to obtain the probability value, you can set it to True|No|False|
+|without_argmax| Whether or not to add the argmax operator at the end of the network. Since the PaddleSeg network returns logits by default, in order to deploy the model, the prediction results can be obtained directly. By default, we add the argmax operator at the end of the network | No | False |
 
-### 结果文件
+### Result file
 
 ```shell
 output
-  ├── deploy.yaml            # 部署相关的配置文件
-  ├── model.pdiparams        # 静态图模型参数
-  ├── model.pdiparams.info   # 参数额外信息，一般无需关注
-  └── model.pdmodel          # 静态图模型文件
+  ├── deploy.yaml # Deploy related configuration files
+  ├── model.pdiparams # Static graph model parameters
+  ├── model.pdiparams.info # Additional parameter information, generally do not need to pay attention
+  └── model.pdmodel # Static graph model file
 ```
 
-## Web端部署
+## Web deployment
 
 ![image](https://user-images.githubusercontent.com/10822846/118273079-127bf480-b4f6-11eb-84c0-8a0bbc7c7433.png)
 
-参见[Web端部署教程](../../deploy/web)
+See [Web deployment tutorial](../../deploy/web)
 
-## 移动端部署
+## Mobile deployment
 
-<img src="../../deploy/lite/example/human_1.png"  width="20%" >  <img src="../../deploy/lite/example/human_2.png"  width="20%" >  <img src="../../deploy/lite/example/human_3.png"  width="20%" >
+<img src="../../deploy/lite/example/human_1.png" width="20%" > <img src="../../deploy/lite/example/human_2.png" width ="20%" > <img src="../../deploy/lite/example/human_3.png" width="20%" >
 
-参见[移动端部署教程](../../deploy/lite/)
+See [Mobile Deployment Tutorial](../../deploy/lite/)

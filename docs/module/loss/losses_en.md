@@ -24,3 +24,5 @@ English | [简体中文](losses_cn.md)
 * ## [paddleseg.models.losses.ohem_cross_entropy_loss](./OhemCrossEntropyLoss_en.md)
 
 * ## [paddleseg.models.losses.ohem_edge_attention_loss](./OhemEdgeAttentionLoss_en.md)
+
+* ## [paddleseg.models.losses.semantic_connectivity_loss](./SemanticConnectivityLoss_en.md)

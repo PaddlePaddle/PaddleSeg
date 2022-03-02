@@ -9,4 +9,4 @@ python train.py --config benchmark/deeplabv3p.yml \
   --num_workers 8 \
   --log_iters 20 \
   --data_format NHWC \
-  --fp16
+  --precision fp16

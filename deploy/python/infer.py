@@ -125,9 +125,10 @@ def parse_args():
         action='store_true')
     parser.add_argument(
         '--print_detail',
-        dest='print_detail',
-        help='Print GLOG information of Paddle Inference.',
-        action='store_true')
+        default=True,
+        type=eval,
+        choices=[True, False],
+        help='Print GLOG information of Paddle Inference.')
 
     return parser.parse_args()
 
@@ -295,7 +296,7 @@ class Predictor:
             self.pred_cfg.enable_tensorrt_engine(
                 workspace_size=1 << 30,
                 max_batch_size=1,
-                min_subgraph_size=50,
+                min_subgraph_size=300,
                 precision_mode=precision_mode,
                 use_static=False,
                 use_calib_mode=False)

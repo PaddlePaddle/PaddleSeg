@@ -1,0 +1,34 @@
+_base_: '../_base_/cityscapes.yml'
+batch_size: 8
+
+train_dataset:
+  transforms:
+    - type: RandomPaddingCrop
+      crop_size: [1024, 512]
+    - type: RandomDistort
+      brightness_range: 0.4
+      contrast_range: 0.4
+      saturation_range: 0.4
+    - type: Normalize
+  mode: train
+
+model:
+  type: ENet
+  num_classes: 19
+  pretrained: Null
+
+export:
+  transforms:
+    - type: Normalize
+
+optimizer:
+  _inherited_: False
+  type: adam
+  weight_decay: 0.0002
+
+lr_scheduler:
+  type: PolynomialDecay
+  end_lr: 0
+  learning_rate: 0.001
+  power: 0.9
+
