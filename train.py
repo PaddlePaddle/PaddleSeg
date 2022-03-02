@@ -150,8 +150,8 @@ def main(args):
         place = 'xpu'
     else:
         place = 'cpu'
-
     paddle.set_device(place)
+
     if not args.cfg:
         raise RuntimeError('No configuration file specified.')
 
