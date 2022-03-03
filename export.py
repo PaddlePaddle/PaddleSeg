@@ -118,7 +118,7 @@ def main(args):
     new_net = paddle.jit.to_static(
         new_net,
         input_spec=[paddle.static.InputSpec(shape=shape, dtype='float32')])
-    save_path = os.path.join(args.save_dir, 'model')
+    save_path = os.path.join(args.save_dir, 'inference')
     paddle.jit.save(new_net, save_path)
 
     yml_file = os.path.join(args.save_dir, 'deploy.yaml')
@@ -129,8 +129,8 @@ def main(args):
         data = {
             'Deploy': {
                 'transforms': transforms,
-                'model': 'model.pdmodel',
-                'params': 'model.pdiparams'
+                'model': 'inference.pdmodel',
+                'params': 'inference.pdiparams'
             }
         }
         yaml.dump(data, file)
