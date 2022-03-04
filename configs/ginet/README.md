@@ -8,18 +8,18 @@
 ## Performance
 
 ### Cityscapes
-
+ginet_resnet50_os8_cityscapes_1024x512_80k
 | Model | Backbone | Resolution | Training Iters | mIoU | mIoU (flip) | mIoU (ms+flip) | Links |
 |:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
-|GINet|ResNet50_OS8|1024x512|80000|78.66%|79.07%|79.2%|[model](https://bj.bcebos.com/paddleseg/dygraph/cityscapes/ginet_resnet50_os8_cityscapes_1024×512_80k/model.pdparams) \| [log](https://bj.bcebos.com/paddleseg/dygraph/cityscapes/ginet_resnet50_os8_cityscapes_1024×512_80k/train.log) \| [vdl](https://paddlepaddle.org.cn/paddle/visualdl/service/app?id=bb439dc87b311c4105c426eadd5a641e) |
-|GINet|ResNet101_OS8|1024x512|80000|78.4%|78.72%|78.99%|[model](https://bj.bcebos.com/paddleseg/dygraph/cityscapes/ginet_resnet101_os8_cityscapes_1024×512_80k/model.pdparams) \| [log](https://bj.bcebos.com/paddleseg/dygraph/cityscapes/ginet_resnet101_os8_cityscapes_1024×512_80k/train.log) \| [vdl](https://paddlepaddle.org.cn/paddle/visualdl/service/app?id=ffae8d094b755a4313d6e02540de9515) |
+|GINet|ResNet50_OS8|1024x512|80000|78.66%|79.07%|79.2%|[model](https://bj.bcebos.com/paddleseg/dygraph/cityscapes/ginet_resnet50_os8_cityscapes_1024x512_80k/model.pdparams) \| [log](https://bj.bcebos.com/paddleseg/dygraph/cityscapes/ginet_resnet50_os8_cityscapes_1024x512_80k/train.log) \| [vdl](https://paddlepaddle.org.cn/paddle/visualdl/service/app?id=bb439dc87b311c4105c426eadd5a641e) |
+|GINet|ResNet101_OS8|1024x512|80000|78.4%|78.72%|78.99%|[model](https://bj.bcebos.com/paddleseg/dygraph/cityscapes/ginet_resnet101_os8_cityscapes_1024x512_80k/model.pdparams) \| [log](https://bj.bcebos.com/paddleseg/dygraph/cityscapes/ginet_resnet101_os8_cityscapes_1024x512_80k/train.log) \| [vdl](https://paddlepaddle.org.cn/paddle/visualdl/service/app?id=ffae8d094b755a4313d6e02540de9515) |
 
 ### Pascal VOC 2012 + Aug
 
 | Model | Backbone | Resolution | Training Iters | mIoU | mIoU (flip) | mIoU (ms+flip) | Links |
 |:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
-|GINet|ResNet50_OS8|512x512|40000|81.97%|82.02%|81.65%|[model](https://bj.bcebos.com/paddleseg/dygraph/pascal_voc12/ginet_resnet50_os8_voc12aug_512×512_40k/model.pdparams) \| [log](https://bj.bcebos.com/paddleseg/dygraph/pascal_voc12/ginet_resnet50_os8_voc12aug_512×512_40k/train.log) \| [vdl](https://paddlepaddle.org.cn/paddle/visualdl/service/app?id=638ff8bcc88575489ee36da0edad51b6) |
-|GINet|ResNet101_OS8|512x512|40000|79.79%|79.99%|80.6%|[model](https://bj.bcebos.com/paddleseg/dygraph/pascal_voc12/ginet_resnet101_os8_voc12aug_512×512_40k/model.pdparams) \| [log](https://bj.bcebos.com/paddleseg/dygraph/pascal_voc12/ginet_resnet101_os8_voc12aug_512×512_40k/train.log) \| [vdl](https://paddlepaddle.org.cn/paddle/visualdl/service/app?id=a1f7d1040f371585d9aac1610116f594) |
+|GINet|ResNet50_OS8|512x512|40000|81.97%|82.02%|81.65%|[model](https://bj.bcebos.com/paddleseg/dygraph/pascal_voc12/ginet_resnet50_os8_voc12aug_512x512_40k/model.pdparams) \| [log](https://bj.bcebos.com/paddleseg/dygraph/pascal_voc12/ginet_resnet50_os8_voc12aug_512x512_40k/train.log) \| [vdl](https://paddlepaddle.org.cn/paddle/visualdl/service/app?id=638ff8bcc88575489ee36da0edad51b6) |
+|GINet|ResNet101_OS8|512x512|40000|79.79%|79.99%|80.6%|[model](https://bj.bcebos.com/paddleseg/dygraph/pascal_voc12/ginet_resnet101_os8_voc12aug_512x512_40k/model.pdparams) \| [log](https://bj.bcebos.com/paddleseg/dygraph/pascal_voc12/ginet_resnet101_os8_voc12aug_512x512_40k/train.log) \| [vdl](https://paddlepaddle.org.cn/paddle/visualdl/service/app?id=a1f7d1040f371585d9aac1610116f594) |
 
 ### ADE20K
 
