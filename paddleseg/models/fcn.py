@@ -41,7 +41,6 @@ class FCN(nn.Layer):
             is even, e.g. 1024x512, otherwise it is True, e.g. 769x769.  Default: False.
         pretrained (str, optional): The path or url of pretrained model. Default: None
     """
-
     def __init__(self,
                  num_classes,
                  backbone,
@@ -60,12 +59,11 @@ class FCN(nn.Layer):
             backbone.feat_channels[i] for i in backbone_indices
         ]
 
-        self.head = FCNHead(
-            num_classes,
-            backbone_indices,
-            backbone_channels,
-            channels,
-            bias=bias)
+        self.head = FCNHead(num_classes,
+                            backbone_indices,
+                            backbone_channels,
+                            channels,
+                            bias=bias)
 
         self.align_corners = align_corners
         self.pretrained = pretrained
@@ -76,11 +74,11 @@ class FCN(nn.Layer):
         feat_list = self.backbone(x)
         logit_list = self.head(feat_list)
         return [
-            F.interpolate(
-                logit,
-                paddle.shape(x)[2:],
-                mode='bilinear',
-                align_corners=self.align_corners) for logit in logit_list
+            F.interpolate(logit,
+                          paddle.shape(x)[2:],
+                          mode='bilinear',
+                          align_corners=self.align_corners)
+            for logit in logit_list
         ]
 
     def init_weight(self):
@@ -100,7 +98,6 @@ class FCNHead(nn.Layer):
             If None, it will be the number of channels of input features. Default: None.
         pretrained (str, optional): The path of pretrained model. Default: None
     """
-
     def __init__(self,
                  num_classes,
                  backbone_indices=(-1, ),
@@ -114,18 +111,16 @@ class FCNHead(nn.Layer):
         if channels is None:
             channels = backbone_channels[0]
 
-        self.conv_1 = layers.ConvBNReLU(
-            in_channels=backbone_channels[0],
-            out_channels=channels,
-            kernel_size=1,
-            stride=1,
-            bias_attr=bias)
-        self.cls = nn.Conv2D(
-            in_channels=channels,
-            out_channels=self.num_classes,
-            kernel_size=1,
-            stride=1,
-            bias_attr=bias)
+        self.conv_1 = layers.ConvBNReLU(in_channels=backbone_channels[0],
+                                        out_channels=channels,
+                                        kernel_size=1,
+                                        stride=1,
+                                        bias_attr=bias)
+        self.cls = nn.Conv2D(in_channels=channels,
+                             out_channels=self.num_classes,
+                             kernel_size=1,
+                             stride=1,
+                             bias_attr=bias)
         self.init_weight()
 
     def forward(self, feat_list):
@@ -143,407 +138,3 @@ class FCNHead(nn.Layer):
             elif isinstance(layer, (nn.BatchNorm, nn.SyncBatchNorm)):
                 param_init.constant_init(layer.weight, value=1.0)
                 param_init.constant_init(layer.bias, value=0.0)
-
-
-class SegHead(nn.Layer):
-    def __init__(self, in_chan, mid_chan, n_classes):
-        super(SegHead, self).__init__()
-        self.conv = layers.ConvBNReLU(
-            in_chan, mid_chan, kernel_size=3, stride=1, padding=1)
-        self.conv_out = nn.Conv2D(
-            mid_chan, n_classes, kernel_size=1, bias_attr=None)
-
-    def forward(self, x):
-        x = self.conv(x)
-        x = self.conv_out(x)
-        return x
-
-
-@manager.MODELS.add_component
-class FCN_8s(nn.Layer):
-    def __init__(self,
-                 num_classes,
-                 backbone,
-                 backbone_indices=(-1, -2, -3),
-                 arm_type='ARM_0',
-                 fpn_ch=128,
-                 align_corners=False,
-                 pretrained=None):
-        super().__init__()
-
-        self.backbone = backbone
-        bk_chs = [backbone.feat_channels[i] for i in backbone_indices]
-        print(bk_chs)
-
-        self.conv_f32 = layers.ConvBNReLU(
-            bk_chs[0], fpn_ch, kernel_size=1, bias_attr=False)
-
-        print("arm type: " + arm_type)
-        arm_layer = eval(arm_type)
-        self.arm_16 = arm_layer(bk_chs[1], fpn_ch, fpn_ch)
-        self.arm_8 = arm_layer(bk_chs[2], fpn_ch, fpn_ch)
-
-        self.align_corners = align_corners
-        self.pretrained = pretrained
-        self.init_weight()
-
-    def forward(self, x):
-        feat_list = self.backbone(x)
-        x_8, x_16, x_32 = feat_list[-3], feat_list[-2], feat_list[-1]
-
-        x_32_rf = self.conv_f32(x_32)
-        x_16_rf = self.arm_16(x_16, x_32_rf)
-        x_8_rf = self.arm_8(x_8, x_16_rf)
-
-        logit_list = [x_8_rf]
-        return [
-            F.interpolate(
-                logit,
-                paddle.shape(x)[2:],
-                mode='bilinear',
-                align_corners=self.align_corners) for logit in logit_list
-        ]
-
-    def init_weight(self):
-        if self.pretrained is not None:
-            utils.load_entire_model(self, self.pretrained)
-
-
-class ARM_0(nn.Layer):
-    '''add, x is bigger feature map, y is smaller feature map'''
-
-    def __init__(self, x_chan, y_chan, out_chan, first_ksize=3):
-        super().__init__()
-        assert y_chan == out_chan
-        self.conv_x = layers.ConvBNReLU(
-            x_chan,
-            out_chan,
-            kernel_size=first_ksize,
-            padding=first_ksize // 2,
-            bias_attr=False)
-        self.conv_out = layers.ConvBNReLU(
-            out_chan, out_chan, kernel_size=3, padding=1, bias_attr=False)
-
-    def forward(self, x, y):
-        x = self.conv_x(x)
-        y_up = F.interpolate(y, paddle.shape(x)[2:], mode='bilinear')
-        out = x + y_up
-        out = self.conv_out(out)
-        return out
-
-
-class ARM_1(ARM_0):
-    '''cat+conv, x is bigger feature map, y is smaller feature map'''
-
-    def __init__(self, x_chan, y_chan, out_chan, first_ksize=3):
-        super().__init__(x_chan, y_chan, out_chan, first_ksize)
-        self.conv_cat = layers.ConvBNReLU(
-            y_chan + out_chan,
-            out_chan,
-            kernel_size=3,
-            padding=1,
-            bias_attr=False)
-
-    def forward(self, x, y):
-        x = self.conv_x(x)
-        y_up = F.interpolate(y, paddle.shape(x)[2:], mode='bilinear')
-        xy = paddle.concat([x, y_up], axis=1)
-        xy = self.conv_cat(xy)
-        out = self.conv_out(xy)
-        return out
-
-
-class ARM_7_3(ARM_0):
-    '''combined channel attention'''
-
-    def __init__(self, x_chan, y_chan, out_chan, first_ksize=3):
-        super().__init__(x_chan, y_chan, out_chan, first_ksize)
-        self.conv_atten = layers.ConvBN(
-            2 * (out_chan + y_chan), out_chan, kernel_size=1, bias_attr=False)
-
-    def forward(self, x, y):
-        x = self.conv_x(x)
-        y_up = F.interpolate(y, paddle.shape(x)[2:], mode='bilinear')
-        xy = paddle.concat([x, y_up], axis=1)
-
-        xy_avg_pool = F.adaptive_avg_pool2d(xy, 1)
-        if self.training:
-            xy_max_pool = F.adaptive_max_pool2d(xy, 1)
-        else:
-            xy_max_pool = paddle.max(xy, axis=[2, 3], keepdim=True)
-        atten = paddle.concat([xy_avg_pool, xy_max_pool], axis=1)
-        atten = F.sigmoid(self.conv_atten(atten))
-
-        out = x * atten + y_up * (1 - atten)
-        out = self.conv_out(out)
-        return out
-
-
-class ARM_12_4(ARM_0):
-    '''combined spatial attention '''
-
-    def __init__(self, x_chan, y_chan, out_chan, first_ksize=3):
-        super().__init__(x_chan, y_chan, out_chan, first_ksize)
-        self.conv_atten = layers.ConvBN(
-            2, 1, kernel_size=3, padding=1, bias_attr=False)
-
-    def forward(self, x, y):
-        x = self.conv_x(x)
-        y_up = F.interpolate(y, paddle.shape(x)[2:], mode='bilinear')
-        xy = paddle.concat([x, y_up], axis=1)
-
-        xy_mean = paddle.mean(xy, axis=1, keepdim=True)
-        xy_max = paddle.max(xy, axis=1, keepdim=True)
-        atten = paddle.concat([xy_mean, xy_max], axis=1)
-        atten = F.sigmoid(self.conv_atten(atten))  # n * 1 * h * w
-
-        out = x * atten + y_up * (1 - atten)
-        out = self.conv_out(out)
-        return out
-
-
-class ARM_17_1(ARM_0):
-    '''atten = F.sigmoid(sp_atten * ch_atten)'''
-
-    def __init__(self, x_chan, y_chan, out_chan, first_ksize=3):
-        super().__init__(x_chan, y_chan, out_chan, first_ksize)
-
-        self.ch_atten = layers.ConvBN(
-            2 * (out_chan + y_chan), out_chan, kernel_size=1, bias_attr=False)
-        self.sp_atten = layers.ConvBN(
-            2, 1, kernel_size=3, padding=1, bias_attr=False)
-
-    def get_atten(self, xy):
-        if self.training:
-            xy_avg_pool = F.adaptive_avg_pool2d(xy, 1)
-            xy_max_pool = F.adaptive_max_pool2d(xy, 1)
-        else:
-            xy_avg_pool = paddle.mean(xy, axis=[2, 3], keepdim=True)
-            xy_max_pool = paddle.max(xy, axis=[2, 3], keepdim=True)
-        pool_cat = paddle.concat([xy_avg_pool, xy_max_pool],
-                                 axis=1)  # n * 4c * 1 * 1
-        ch_atten = self.ch_atten(pool_cat)  # n * c * 1 * 1
-
-        xy_mean = paddle.mean(xy, axis=1, keepdim=True)
-        xy_max = paddle.max(xy, axis=1, keepdim=True)
-        xy_mean_max_cat = paddle.concat([xy_mean, xy_max],
-                                        axis=1)  # n * 2 * h * w
-        sp_atten = self.sp_atten(xy_mean_max_cat)  # n * 1 * h * w
-
-        return (ch_atten, sp_atten)
-
-    def forward(self, x, y):
-        x = self.conv_x(x)
-        y_up = F.interpolate(y, paddle.shape(x)[2:], mode='bilinear')
-        xy = paddle.concat([x, y_up], axis=1)
-
-        ch_atten, sp_atten = self.get_atten(xy)
-
-        atten = F.sigmoid(sp_atten * ch_atten)
-        out = x * atten + y_up * (1 - atten)
-        out = self.conv_out(out)
-        return out
-
-
-class ARM_17_2(ARM_17_1):
-    '''atten = F.sigmoid(self.conv_atten(sp_atten * ch_atten))'''
-
-    def __init__(self, x_chan, y_chan, out_chan, first_ksize=3):
-        super().__init__(x_chan, y_chan, out_chan, first_ksize)
-        self.conv_atten = layers.ConvBN(
-            out_chan, out_chan, kernel_size=3, padding=1, bias_attr=False)
-
-    def forward(self, x, y):
-        x = self.conv_x(x)
-        y_up = F.interpolate(y, paddle.shape(x)[2:], mode='bilinear')
-        xy = paddle.concat([x, y_up], axis=1)
-
-        ch_atten, sp_atten = self.get_atten(xy)
-
-        atten = F.sigmoid(self.conv_atten(sp_atten * ch_atten))
-        out = x * atten + y_up * (1 - atten)
-        out = self.conv_out(out)
-        return out
-
-
-class ARM_18_1(ARM_17_1):
-    '''out = ch_atten * x + (1 - ch_atten) * y_up + sp_atten * x + (
-            1 - sp_atten) * y_up'''
-
-    def __init__(self, x_chan, y_chan, out_chan, first_ksize=3):
-        super().__init__(x_chan, y_chan, out_chan, first_ksize)
-
-    def forward(self, x, y):
-        x = self.conv_x(x)
-        y_up = F.interpolate(y, paddle.shape(x)[2:], mode='bilinear')
-        xy = paddle.concat([x, y_up], axis=1)
-
-        ch_atten, sp_atten = self.get_atten(xy)
-        ch_atten = F.sigmoid(ch_atten)
-        sp_atten = F.sigmoid(sp_atten)
-
-        out = ch_atten * x + (1 - ch_atten) * y_up + sp_atten * x + (
-            1 - sp_atten) * y_up
-        out = self.conv_out(out)
-        return out
-
-
-class ARM_19_1(ARM_17_1):
-    '''atten = F.sigmoid(sp_atten + ch_atten)'''
-
-    def __init__(self, x_chan, y_chan, out_chan, first_ksize=3):
-        super().__init__(x_chan, y_chan, out_chan, first_ksize)
-
-    def forward(self, x, y):
-        x = self.conv_x(x)
-        y_up = F.interpolate(y, paddle.shape(x)[2:], mode='bilinear')
-        xy = paddle.concat([x, y_up], axis=1)
-
-        ch_atten, sp_atten = self.get_atten(xy)
-
-        atten = F.sigmoid(sp_atten + ch_atten)
-        out = x * atten + y_up * (1 - atten)
-        out = self.conv_out(out)
-        return out
-
-
-class ARM_19_2(ARM_19_1):
-    '''atten = F.sigmoid(self.conv_atten(sp_atten + ch_atten))'''
-
-    def __init__(self, x_chan, y_chan, out_chan, first_ksize=3):
-        super().__init__(x_chan, y_chan, out_chan, first_ksize)
-        self.conv_atten = layers.ConvBN(
-            out_chan, out_chan, kernel_size=3, padding=1, bias_attr=False)
-
-    def forward(self, x, y):
-        x = self.conv_x(x)
-        y_up = F.interpolate(y, paddle.shape(x)[2:], mode='bilinear')
-        xy = paddle.concat([x, y_up], axis=1)
-
-        ch_atten, sp_atten = self.get_atten(xy)
-
-        atten = F.sigmoid(self.conv_atten(sp_atten + ch_atten))
-        out = x * atten + y_up * (1 - atten)
-        out = self.conv_out(out)
-        return out
-
-
-class ARM_20_1(ARM_0):
-    '''atten = F.sigmoid(self.conv_atten(xy))'''
-
-    def __init__(self, x_chan, y_chan, out_chan, first_ksize=3):
-        super().__init__(x_chan, y_chan, out_chan, first_ksize)
-        self.conv_atten = nn.Sequential(
-            layers.ConvBNAct(
-                out_chan + y_chan,
-                out_chan,
-                kernel_size=3,
-                padding=1,
-                act_type='leakyrelu',
-                bias_attr=False),
-            layers.ConvBN(
-                out_chan, out_chan, kernel_size=3, padding=1, bias_attr=False))
-
-    def forward(self, x, y):
-        x = self.conv_x(x)
-        y_up = F.interpolate(y, paddle.shape(x)[2:], mode='bilinear')
-        xy = paddle.concat([x, y_up], axis=1)
-
-        atten = F.sigmoid(self.conv_atten(xy))
-        out = x * atten + y_up * (1 - atten)
-        out = self.conv_out(out)
-        return out
-
-
-class ARM_21_1(ARM_0):
-    '''sfnet fuse, x is bigger feature map, y is smaller feature map'''
-
-    def __init__(self, x_chan, y_chan, out_chan, first_ksize=3):
-        super().__init__(x_chan, y_chan, out_chan, first_ksize)
-        assert y_chan == out_chan
-
-        self.down_x = nn.Conv2D(out_chan, out_chan // 2, 1, bias_attr=False)
-        self.down_y = nn.Conv2D(out_chan, out_chan // 2, 1, bias_attr=False)
-        self.flow_make = nn.Conv2D(
-            out_chan, 2, kernel_size=3, padding=1, bias_attr=False)
-
-    def flow_warp(self, input, flow, size):
-        input_shape = paddle.shape(input)
-        norm = size[::-1].reshape([1, 1, 1, -1])
-        norm.stop_gradient = True
-        h_grid = paddle.linspace(-1.0, 1.0, size[0]).reshape([-1, 1])
-        h_grid = h_grid.tile([size[1]])
-        w_grid = paddle.linspace(-1.0, 1.0, size[1]).reshape([-1, 1])
-        w_grid = w_grid.tile([size[0]]).transpose([1, 0])
-        grid = paddle.concat([w_grid.unsqueeze(2), h_grid.unsqueeze(2)], axis=2)
-        grid.unsqueeze(0).tile([input_shape[0], 1, 1, 1])
-        grid = grid + paddle.transpose(flow, (0, 2, 3, 1)) / norm
-
-        output = F.grid_sample(input, grid)
-        return output
-
-    def forward(self, x, y):
-        x = self.conv_x(x)
-        x_size = paddle.shape(x)[2:]
-
-        x_flow = self.down_x(x)
-        y_flow = self.down_y(y)
-        y_flow = F.interpolate(
-            y_flow, size=x_size, mode='bilinear', align_corners=True)
-        flow = self.flow_make(paddle.concat([x_flow, y_flow], 1))
-        y_refine = self.flow_warp(y, flow, size=x_size)
-
-        out = x + y_refine
-        out = self.conv_out(out)
-        return out
-
-
-class ARM_21_2(ARM_21_1):
-    '''sfnet fuse + ch & sp attention'''
-
-    def __init__(self, x_chan, y_chan, out_chan, first_ksize=3):
-        super().__init__(x_chan, y_chan, out_chan, first_ksize)
-        assert y_chan == out_chan
-
-        self.ch_atten = layers.ConvBN(
-            2 * (out_chan + y_chan), out_chan, kernel_size=1, bias_attr=False)
-        self.sp_atten = layers.ConvBN(
-            2, 1, kernel_size=3, padding=1, bias_attr=False)
-
-    def get_atten(self, xy):
-        if self.training:
-            xy_avg_pool = F.adaptive_avg_pool2d(xy, 1)
-            xy_max_pool = F.adaptive_max_pool2d(xy, 1)
-        else:
-            xy_avg_pool = paddle.mean(xy, axis=[2, 3], keepdim=True)
-            xy_max_pool = paddle.max(xy, axis=[2, 3], keepdim=True)
-        pool_cat = paddle.concat([xy_avg_pool, xy_max_pool],
-                                 axis=1)  # n * 4c * 1 * 1
-        ch_atten = self.ch_atten(pool_cat)  # n * c * 1 * 1
-
-        xy_mean = paddle.mean(xy, axis=1, keepdim=True)
-        xy_max = paddle.max(xy, axis=1, keepdim=True)
-        xy_mean_max_cat = paddle.concat([xy_mean, xy_max],
-                                        axis=1)  # n * 2 * h * w
-        sp_atten = self.sp_atten(xy_mean_max_cat)  # n * 1 * h * w
-
-        return (ch_atten, sp_atten)
-
-    def forward(self, x, y):
-        x = self.conv_x(x)
-        x_size = paddle.shape(x)[2:]
-
-        x_flow = self.down_x(x)
-        y_flow = self.down_y(y)
-        y_flow = F.interpolate(
-            y_flow, size=x_size, mode='bilinear', align_corners=True)
-        flow = self.flow_make(paddle.concat([x_flow, y_flow], 1))
-        y_refine = self.flow_warp(y, flow, size=x_size)
-
-        xy = paddle.concat([x, y_refine], axis=1)
-        ch_atten, sp_atten = self.get_atten(xy)
-
-        atten = F.sigmoid(sp_atten * ch_atten)
-        out = x * atten + y_refine * (1 - atten)
-        out = self.conv_out(out)
-        return out

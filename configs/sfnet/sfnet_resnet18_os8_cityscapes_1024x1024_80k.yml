@@ -1,6 +1,6 @@
 _base_: '../_base_/cityscapes_1024x1024.yml'
 
-batch_size: 8
+batch_size: 4
 iters: 80000
 
 model:
@@ -10,8 +10,6 @@ model:
     output_stride: 8
     pretrained: https://bj.bcebos.com/paddleseg/dygraph/resnet18_vd_ssld_v2.tar.gz
   backbone_indices: [0, 1, 2, 3]
-  align_type: AlignedModule_origin
-  # support: origin, add, cat_conv, sp_atten_1, ch_atten_1, ch_sp_atten_1
 
 train_dataset:
   transforms:
