@@ -1,6 +1,6 @@
 _base_: '../_base_/cityscapes.yml'
 
-batch_size: 4  # total: 16
+batch_size: 4  # total: 4*4
 iters: 160000
 
 optimizer:
@@ -39,15 +39,13 @@ train_dataset:
 
 test_config:
   aug_eval: True
-  scales: 0.5
+  scales: 0.75
 
 model:
   type: PPSeg
   backbone:
     type: STDC2
-    pretrained: https://bj.bcebos.com/paddleseg/dygraph/STDCNet2.tar.gz    # ori cat weights
-    #pretrained: pretrained_model/stdc2net_class_pretrained_cat_pp_distill_resnet50_stdc2net_img500w_gpu8_bs64_ep240_lr0.2.pdparams  # distill_4 weights
-    #pretrained: pretrained_model/stdc2net_class_pretrained_cat_pp_distill_resnet50_stdc2net_img500w_gpu8_bs64_ep240_lr0.2_finetuned.pdparams # distill 5 weights
+    pretrained: https://bj.bcebos.com/paddleseg/dygraph/PP_STDCNet2.tar.gz
   backbone_indices: [2, 3, 4]   # [..., x8_id, x16_id, x32_id]
   feat_nums: [1, 1, 1]   # [..., x8_fn, x16_fn, x32_fn]
   feat_select_mode: last  # support last and even
@@ -58,4 +56,4 @@ model:
   arm_out_chs: [64, 96, 128]   # [..., x8_arm_out_chs, x16_arm_out_chs, x32_arm_out_chs]
   seg_head_mid_chs: [64, 64, 64]
   eval_seg_head_id: 0
-  resize_mode: bilinear   # The resize mode for the intermediate interpolate
+  resize_mode: bilinear
