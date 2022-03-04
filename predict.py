@@ -26,14 +26,16 @@ def parse_args():
     parser = argparse.ArgumentParser(description='Model prediction')
 
     # params of prediction
-    parser.add_argument(
-        "--config", dest="cfg", help="The config file.", default=None, type=str)
-    parser.add_argument(
-        '--model_path',
-        dest='model_path',
-        help='The path of model for prediction',
-        type=str,
-        default=None)
+    parser.add_argument("--config",
+                        dest="cfg",
+                        help="The config file.",
+                        default=None,
+                        type=str)
+    parser.add_argument('--model_path',
+                        dest='model_path',
+                        help='The path of model for prediction',
+                        type=str,
+                        default=None)
     parser.add_argument(
         '--image_path',
         dest='image_path',
@@ -41,12 +43,11 @@ def parse_args():
         'The image to predict, which can be a path of image, or a file list containing image paths, or a directory including images',
         type=str,
         default=None)
-    parser.add_argument(
-        '--save_dir',
-        dest='save_dir',
-        help='The directory for saving the predicted results',
-        type=str,
-        default='./output/result')
+    parser.add_argument('--save_dir',
+                        dest='save_dir',
+                        help='The directory for saving the predicted results',
+                        type=str,
+                        default='./output/result')
 
     # augment for prediction
     parser.add_argument(
@@ -54,30 +55,26 @@ def parse_args():
         dest='aug_pred',
         help='Whether to use mulit-scales and flip augment for prediction',
         action='store_true')
-    parser.add_argument(
-        '--scales',
-        dest='scales',
-        nargs='+',
-        help='Scales for augment',
-        type=float,
-        default=1.0)
-    parser.add_argument(
-        '--flip_horizontal',
-        dest='flip_horizontal',
-        help='Whether to use flip horizontally augment',
-        action='store_true')
-    parser.add_argument(
-        '--flip_vertical',
-        dest='flip_vertical',
-        help='Whether to use flip vertically augment',
-        action='store_true')
+    parser.add_argument('--scales',
+                        dest='scales',
+                        nargs='+',
+                        help='Scales for augment',
+                        type=float,
+                        default=1.0)
+    parser.add_argument('--flip_horizontal',
+                        dest='flip_horizontal',
+                        help='Whether to use flip horizontally augment',
+                        action='store_true')
+    parser.add_argument('--flip_vertical',
+                        dest='flip_vertical',
+                        help='Whether to use flip vertically augment',
+                        action='store_true')
 
     # sliding window prediction
-    parser.add_argument(
-        '--is_slide',
-        dest='is_slide',
-        help='Whether to prediction by sliding window',
-        action='store_true')
+    parser.add_argument('--is_slide',
+                        dest='is_slide',
+                        help='Whether to prediction by sliding window',
+                        action='store_true')
     parser.add_argument(
         '--crop_size',
         dest='crop_size',
@@ -110,7 +107,8 @@ def parse_args():
 def get_test_config(cfg, args):
 
     test_config = cfg.test_config
-    test_config.pop('aug_eval')
+    if 'aug_eval' in test_config:
+        test_config.pop('aug_eval')
     if args.aug_pred:
         test_config['aug_pred'] = args.aug_pred
         test_config['scales'] = args.scales
@@ -161,14 +159,13 @@ def main(args):
     test_config = get_test_config(cfg, args)
     config_check(cfg, val_dataset=val_dataset)
 
-    predict(
-        model,
-        model_path=args.model_path,
-        transforms=transforms,
-        image_list=image_list,
-        image_dir=image_dir,
-        save_dir=args.save_dir,
-        **test_config)
+    predict(model,
+            model_path=args.model_path,
+            transforms=transforms,
+            image_list=image_list,
+            image_dir=image_dir,
+            save_dir=args.save_dir,
+            **test_config)
 
 
 if __name__ == '__main__':
