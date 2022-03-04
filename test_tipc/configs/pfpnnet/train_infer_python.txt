@@ -50,3 +50,5 @@ inference:deploy/python/infer.py --save_dir ./test_tipc/output/pfpnnet/
 --benchmark:True
 --save_dir:
 --model_name:pfpnnet
+===========================infer_benchmark_params==========================
+random_infer_input:[{float32,[3,1024,2048]}]
