@@ -23,7 +23,7 @@ from paddleseg.utils import utils
 
 
 @manager.MODELS.add_component
-class PPSeg(nn.Layer):
+class PPLiteSeg(nn.Layer):
     """
     PPSeg.
 

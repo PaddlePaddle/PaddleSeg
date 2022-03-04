@@ -42,18 +42,13 @@ test_config:
   scales: 0.75
 
 model:
-  type: PPSeg
+  type: PPLiteSeg
   backbone:
     type: STDC1
     pretrained: https://bj.bcebos.com/paddleseg/dygraph/PP_STDCNet1.tar.gz
-  backbone_indices: [2, 3, 4]   # [..., x8_id, x16_id, x32_id]
-  feat_nums: [1, 1, 1]   # [..., x8_fn, x16_fn, x32_fn]
-  feat_select_mode: last  # support last and even
-  head_type: PPSegHead
   arm_type: ARM_Add_SpAttenAdd3   # different arm type
   cm_bin_sizes: [1,2,4]
   cm_out_ch: 128
   arm_out_chs: [32, 64, 128]   # [..., x8_arm_out_chs, x16_arm_out_chs, x32_arm_out_chs]
   seg_head_mid_chs: [32, 64, 64]
-  eval_seg_head_id: 0
   resize_mode: bilinear

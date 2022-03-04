@@ -64,7 +64,6 @@ class Config(object):
         model = cfg.model
         ...
     '''
-
     def __init__(self,
                  path: str,
                  learning_rate: float = None,
@@ -83,8 +82,9 @@ class Config(object):
         else:
             raise RuntimeError('Config file should in yaml format!')
 
-        self.update(
-            learning_rate=learning_rate, batch_size=batch_size, iters=iters)
+        self.update(learning_rate=learning_rate,
+                    batch_size=batch_size,
+                    iters=iters)
 
     def _update_dic(self, dic, base_dic):
         """
@@ -153,9 +153,9 @@ class Config(object):
                 'No `lr_scheduler` specified in the configuration file.')
         params = self.dic.get('lr_scheduler')
 
-        is_warmup = False
+        use_warmup = False
         if 'warmup_iters' in params:
-            is_warmup = True
+            use_warmup = True
             warmup_iters = params.pop('warmup_iters')
             warmup_start_lr = params.pop('warmup_start_lr')
             end_lr = params['learning_rate']
@@ -167,7 +167,7 @@ class Config(object):
             params.setdefault('power', 0.9)
         lr_sche = getattr(paddle.optimizer.lr, lr_type)(**params)
 
-        if is_warmup:
+        if use_warmup:
             lr_sche = paddle.optimizer.lr.LinearWarmup(
                 learning_rate=lr_sche,
                 warmup_steps=warmup_iters,
@@ -218,14 +218,18 @@ class Config(object):
         optimizer_type = args.pop('type')
 
         if optimizer_type == 'sgd':
-            return paddle.optimizer.Momentum(
-                lr, parameters=self.model.parameters(), **args)
+            return paddle.optimizer.Momentum(lr,
+                                             parameters=self.model.parameters(),
+                                             **args)
         elif optimizer_type == 'adam':
-            return paddle.optimizer.Adam(
-                lr, parameters=self.model.parameters(), **args)
+            return paddle.optimizer.Adam(lr,
+                                         parameters=self.model.parameters(),
+                                         **args)
         elif optimizer_type in paddle.optimizer.__all__:
-            return getattr(paddle.optimizer, optimizer_type)(
-                lr, parameters=self.model.parameters(), **args)
+            return getattr(paddle.optimizer,
+                           optimizer_type)(lr,
+                                           parameters=self.model.parameters(),
+                                           **args)
 
         raise RuntimeError('Unknown optimizer type {}.'.format(optimizer_type))
 

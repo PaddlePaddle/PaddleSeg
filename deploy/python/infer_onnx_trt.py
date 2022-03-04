@@ -1,4 +1,4 @@
-# Copyright (c) 2021 PaddlePaddle Authors. All Rights Reserved.
+# Copyright (c) 2022 PaddlePaddle Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -64,31 +64,31 @@ Usage:
 def parse_args():
     parser = argparse.ArgumentParser(description='Test')
     parser.add_argument("--config", help="The config file.", type=str)
-    parser.add_argument(
-        "--model_path", help="The pretrained weights file.", type=str)
-    parser.add_argument(
-        "--onnx_model_path",
-        help="If set onnx_model_path, it loads the onnx "
-        "model and infer it by TRT",
-        type=str)
-    parser.add_argument(
-        '--save_dir',
-        help='The directory for saving the predict result.',
-        type=str,
-        default='./output/tmp')
-    parser.add_argument(
-        '--trt_version',
-        help='The version of TRT that is 5 or 7',
-        type=int,
-        default=7)
+    parser.add_argument("--model_path",
+                        help="The pretrained weights file.",
+                        type=str)
+    parser.add_argument("--onnx_model_path",
+                        help="If set onnx_model_path, it loads the onnx "
+                        "model and infer it by TRT",
+                        type=str)
+    parser.add_argument('--save_dir',
+                        help='The directory for saving the predict result.',
+                        type=str,
+                        default='./output/tmp')
+    parser.add_argument('--trt_version',
+                        help='The version of TRT that is 5 or 7',
+                        type=int,
+                        default=7)
     parser.add_argument('--width', help='width', type=int, default=1024)
     parser.add_argument('--height', help='height', type=int, default=512)
     parser.add_argument('--warmup', default=500, type=int, help='')
     parser.add_argument('--repeats', default=2000, type=int, help='')
-    parser.add_argument(
-        '--enable_profile', action='store_true', help='enable trt profile')
-    parser.add_argument(
-        '--print_model', action='store_true', help='print model to log')
+    parser.add_argument('--enable_profile',
+                        action='store_true',
+                        help='enable trt profile')
+    parser.add_argument('--print_model',
+                        action='store_true',
+                        help='print model to log')
 
     return parser.parse_args()
 
@@ -142,10 +142,9 @@ class TRTPredictorV2(object):
         # Transfer input data to the GPU.
         [cuda.memcpy_htod_async(inp.device, inp.host, stream) for inp in inputs]
         # Run inference.
-        context.execute_async(
-            batch_size=batch_size,
-            bindings=bindings,
-            stream_handle=stream.handle)
+        context.execute_async(batch_size=batch_size,
+                              bindings=bindings,
+                              stream_handle=stream.handle)
         # Transfer predictions back from the GPU.
         [
             cuda.memcpy_dtoh_async(out.host, out.device, stream)
@@ -164,13 +163,13 @@ class TRTPredictorV2(object):
         [cuda.memcpy_htod_async(inp.device, inp.host, stream) for inp in inputs]
         # warmup
         for _ in range(args.warmup):
-            context.execute_async_v2(
-                bindings=bindings, stream_handle=stream.handle)
+            context.execute_async_v2(bindings=bindings,
+                                     stream_handle=stream.handle)
         # Run inference.
         t_start = time.time()
         for _ in range(args.repeats):
-            context.execute_async_v2(
-                bindings=bindings, stream_handle=stream.handle)
+            context.execute_async_v2(bindings=bindings,
+                                     stream_handle=stream.handle)
         elapsed_time = time.time() - t_start
         latency = elapsed_time / args.repeats * 1000
 
@@ -190,7 +189,6 @@ class TRTPredictorV2(object):
         EXPLICIT_BATCH = 1 << (int)(
             trt.NetworkDefinitionCreationFlag.EXPLICIT_BATCH)
         """Attempts to load a serialized engine if available, otherwise builds a new TensorRT engine and saves it."""
-
         def build_engine():
             """Takes an ONNX file and creates a TensorRT engine to run inference with"""
             with trt.Builder(TRT_LOGGER) as builder, \
@@ -320,17 +318,15 @@ class TRTPredictorV2(object):
         [cuda.memcpy_htod_async(inp.device, inp.host, stream) for inp in inputs]
         # warmup
         for _ in range(args.warmup):
-            context.execute_async(
-                batch_size=batch_size,
-                bindings=bindings,
-                stream_handle=stream.handle)
+            context.execute_async(batch_size=batch_size,
+                                  bindings=bindings,
+                                  stream_handle=stream.handle)
         # Run inference.
         t_start = time.time()
         for _ in range(args.repeats):
-            context.execute_async(
-                batch_size=batch_size,
-                bindings=bindings,
-                stream_handle=stream.handle)
+            context.execute_async(batch_size=batch_size,
+                                  bindings=bindings,
+                                  stream_handle=stream.handle)
         elapsed_time = time.time() - t_start
         latency = elapsed_time / args.repeats * 1000
 
@@ -428,8 +424,10 @@ def export_load_infer(args, model=None):
     # 3. export onnx
     input_spec = paddle.static.InputSpec(input_shape, 'float32', 'x')
     onnx_model_path = os.path.join(args.save_dir, model_name + "_model")
-    paddle.onnx.export(
-        model, onnx_model_path, input_spec=[input_spec], opset_version=11)
+    paddle.onnx.export(model,
+                       onnx_model_path,
+                       input_spec=[input_spec],
+                       opset_version=11)
     print("Completed export onnx model.\n")
 
     # 4. run and check onnx
