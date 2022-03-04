@@ -8,7 +8,6 @@
 ## Performance
 
 ### Cityscapes
-ginet_resnet50_os8_cityscapes_1024x512_80k
 | Model | Backbone | Resolution | Training Iters | mIoU | mIoU (flip) | mIoU (ms+flip) | Links |
 |:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
 |GINet|ResNet50_OS8|1024x512|80000|78.66%|79.07%|79.2%|[model](https://bj.bcebos.com/paddleseg/dygraph/cityscapes/ginet_resnet50_os8_cityscapes_1024x512_80k/model.pdparams) \| [log](https://bj.bcebos.com/paddleseg/dygraph/cityscapes/ginet_resnet50_os8_cityscapes_1024x512_80k/train.log) \| [vdl](https://paddlepaddle.org.cn/paddle/visualdl/service/app?id=bb439dc87b311c4105c426eadd5a641e) |
