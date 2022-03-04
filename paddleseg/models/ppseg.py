@@ -40,12 +40,9 @@ class PPSeg(nn.Layer):
         cm_out_ch (int, optional): The channel of the last context module, which comes after backbone.
             Default: 128.
         arm_out_chs (List(int), optional): The out channels of each arm module. Default: [64, 64, 64].
-
-
         pretrained (str, optional): The path or url of pretrained model. Default: None.
 
     """
-
     def __init__(self,
                  num_classes,
                  backbone,
@@ -66,19 +63,6 @@ class PPSeg(nn.Layer):
                  use_boundary_16=False,
                  pretrained=None):
         super().__init__()
-
-        print("backbone type: " + backbone.__class__.__name__)
-        print("backbone_indices: " + str(backbone_indices))
-        print("feat_nums:" + str(feat_nums))
-        print("feat_select_mode:" + feat_select_mode)
-        print("head_type: " + head_type)
-        print("arm_type: " + arm_type)
-        print("cm_bin_sizes:" + str(cm_bin_sizes))
-        print("cm_out_ch: " + str(cm_out_ch))
-        print("arm_out_chs: " + str(arm_out_chs))
-        print("seg_head_mid_chs: " + str(seg_head_mid_chs))
-        print("eval_seg_head_id:" + str(eval_seg_head_id))
-        print("resize_mode: " + resize_mode)
 
         # backbone
         assert hasattr(backbone, 'feat_channels'), \
@@ -114,9 +98,10 @@ class PPSeg(nn.Layer):
         assert len(arm_out_chs) == len(backbone_indices), "The length of " \
             "arm_out_chs and backbone_indices should be equal"
 
-        self.ppseg_head = head_class(
-            backbone_indices, feat_nums, backbone_out_chs, arm_out_chs,
-            cm_bin_sizes, cm_out_ch, arm_type, resize_mode)
+        self.ppseg_head = head_class(backbone_indices, feat_nums,
+                                     backbone_out_chs, arm_out_chs,
+                                     cm_bin_sizes, cm_out_ch, arm_type,
+                                     resize_mode)
 
         if len(seg_head_mid_chs) == 1:
             seg_head_mid_chs = seg_head_mid_chs * len(backbone_indices)
@@ -203,8 +188,10 @@ class PPSeg(nn.Layer):
         else:
             idx = self.eval_seg_head_id
             feat_out = self.seg_heads[idx](feats_head[idx])
-            feat_out = F.interpolate(
-                feat_out, x_hw, mode='bilinear', align_corners=False)
+            feat_out = F.interpolate(feat_out,
+                                     x_hw,
+                                     mode='bilinear',
+                                     align_corners=False)
             logit_list = [feat_out]
 
         return logit_list
@@ -218,7 +205,6 @@ class PPSegHead(nn.Layer):
     '''
     The head of PPSeg.
     '''
-
     def __init__(self, backbone_indices, feat_nums, backbone_out_chs,
                  arm_out_chs, cm_bin_sizes, cm_out_ch, arm_type, resize_mode):
         super().__init__()
@@ -252,8 +238,11 @@ class PPSegHead(nn.Layer):
             high_ch = cm_out_ch if i == len(
                 backbone_out_chs) - 1 else arm_out_chs[i + 1]
             out_ch = arm_out_chs[i]
-            arm = arm_class(
-                low_chs, high_ch, out_ch, ksize=3, resize_mode=resize_mode)
+            arm = arm_class(low_chs,
+                            high_ch,
+                            out_ch,
+                            ksize=3,
+                            resize_mode=resize_mode)
             self.arm_list.append(arm)
 
     def forward(self, in_feat_list):
@@ -289,7 +278,6 @@ class PPContextModule(nn.Layer):
         align_corners (bool): An argument of F.interpolate. It should be set to False when the output size of feature
             is even, e.g. 1024x512, otherwise it is True, e.g. 769x769.
     """
-
     def __init__(self,
                  in_channels,
                  inter_channels,
@@ -303,18 +291,18 @@ class PPContextModule(nn.Layer):
             for size in bin_sizes
         ])
 
-        self.conv_out = layers.ConvBNReLU(
-            in_channels=inter_channels,
-            out_channels=out_channels,
-            kernel_size=3,
-            padding=1)
+        self.conv_out = layers.ConvBNReLU(in_channels=inter_channels,
+                                          out_channels=out_channels,
+                                          kernel_size=3,
+                                          padding=1)
 
         self.align_corners = align_corners
 
     def _make_stage(self, in_channels, out_channels, size):
         prior = nn.AdaptiveAvgPool2D(output_size=size)
-        conv = layers.ConvBNReLU(
-            in_channels=in_channels, out_channels=out_channels, kernel_size=1)
+        conv = layers.ConvBNReLU(in_channels=in_channels,
+                                 out_channels=out_channels,
+                                 kernel_size=1)
         return nn.Sequential(prior, conv)
 
     def forward(self, input):
@@ -323,11 +311,10 @@ class PPContextModule(nn.Layer):
 
         for stage in self.stages:
             x = stage(input)
-            x = F.interpolate(
-                x,
-                input_shape,
-                mode='bilinear',
-                align_corners=self.align_corners)
+            x = F.interpolate(x,
+                              input_shape,
+                              mode='bilinear',
+                              align_corners=self.align_corners)
             if out is None:
                 out = x
             else:
@@ -340,15 +327,16 @@ class PPContextModule(nn.Layer):
 class SegHead(nn.Layer):
     def __init__(self, in_chan, mid_chan, n_classes):
         super().__init__()
-        self.conv = layers.ConvBNReLU(
-            in_chan,
-            mid_chan,
-            kernel_size=3,
-            stride=1,
-            padding=1,
-            bias_attr=False)
-        self.conv_out = nn.Conv2D(
-            mid_chan, n_classes, kernel_size=1, bias_attr=False)
+        self.conv = layers.ConvBNReLU(in_chan,
+                                      mid_chan,
+                                      kernel_size=3,
+                                      stride=1,
+                                      padding=1,
+                                      bias_attr=False)
+        self.conv_out = nn.Conv2D(mid_chan,
+                                  n_classes,
+                                  kernel_size=1,
+                                  bias_attr=False)
 
     def forward(self, x):
         x = self.conv(x)

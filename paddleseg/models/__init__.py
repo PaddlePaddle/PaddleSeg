@@ -16,7 +16,6 @@ from .backbones import *
 from .losses import *
 
 from .ann import *
-from .attanet import *
 from .bisenet import *
 from .danet import *
 from .deeplab import *
@@ -49,5 +48,4 @@ from .segmenter import *
 from .segnet import SegNet
 from .hrnet_contrast import HRNetW48Contrast
 from .espnet import ESPNetV2
-from .stdcseg_slim import STDCSeg_slim
 from .ppseg import PPSeg
