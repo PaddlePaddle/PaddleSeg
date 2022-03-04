@@ -17,9 +17,9 @@ import os
 
 import paddle
 
-from paddleseg3d.cvlibs import Config
-from paddleseg3d.core import evaluate
-from paddleseg3d.utils import get_sys_env, logger, config_check, utils
+from medicalseg.cvlibs import Config
+from medicalseg.core import evaluate
+from medicalseg.utils import get_sys_env, logger, config_check, utils
 
 
 def parse_args():

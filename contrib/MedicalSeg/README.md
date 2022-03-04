@@ -1,7 +1,10 @@
-# Paddleseg3D
-Welcome to PaddleSeg3D! PaddleSeg3D is an easy-to-use 3D medical image segmentation toolkit that includes various datasets including lung, brain, and spine. (Currently contains lung-related dataset only.)
+# MedicalSeg
+Welcome to MedicalSeg! MedicalSeg is an easy-to-use 3D medical image segmentation toolkit that support GPU acceleration from data preprocess to deply. We aims to build our toolkit to support various datasets including lung, brain, and spine. (Currently contains lung-related dataset only.)
 
 ## 0. Model performance
+
+###  1) Accuracy
+
 We successfully validate our framework with [Vnet](https://arxiv.org/abs/1606.04797) on the [COVID-19 CT scans](https://www.kaggle.com/andrewmvd/covid19-ct-scans) dataset. With the lung mask as label, we reached dice coefficient of 97.04%. You can download the log to see the result or load the model and validate it by yourself :).
 
 | Backbone | Resolution | lr | Training Iters | Dice | Links |
@@ -15,18 +18,34 @@ The segmentation result of our vnet model is presented as follows thanks to the 
 <img src="figures/lung_prediction.gif" width=500 height=300/>
 </div>
 
+### 2) Speed
+We add gpu acceleration in data preprocess using [CuPy](https://docs.cupy.dev/en/stable/index.html). Compared with preprocess data on cpu, acceleration enable us to use about 40% less time in data prepeocessing. The following shows the time we spend in process COVID-19 CT scans.
+
+<center>
+
+| Device | Time(s) |
+|:-:|:-:|
+|CPU|50.7|
+|GPU|31.4( &#8595; 38%)|
+
+</center>
+
+
 ## 1. Run our Vnet demo on [COVID-19 CT scans](https://www.kaggle.com/andrewmvd/covid19-ct-scans)
 You can run the demo in our [Aistudio project](https://aistudio.baidu.com/aistudio/projectdetail/3519594) as well or follow the following steps in your computer.
 - Download our repository.
     ```
     git clone  https://github.com/PaddleCV-SIG/PaddleSeg3D.git
-    cd PaddleSeg3D/
+    cd MedicalSeg/
     ```
 - Install requirements:
     ```
     pip install -r requirements.txt
     ```
+- (Optional) Install CuPY if you want to accelerate the preprocess process. [CuPY installation guide](https://docs.cupy.dev/en/latest/install.html)
+
 - Get and preprocess the data:
+    - change the GPU setting [here](tools/preprocess_globals.yml) to True if you installed CuPY and want to use GPU to accelerate.
     ```
     python prepare_lung_coronavirus.py
     ```
@@ -43,7 +62,7 @@ This part shows you the whole picture of our repo and details about the whole tr
 ├── configs         # All configuration stays here. If you use our model, you only need to change this and run-vnet.sh.
 ├── data            # Data stays here.
 ├── deploy          # deploy related doc and script.
-├── paddleseg3d  
+├── medicalseg  
 │   ├── core        # the core training, val and test file.
 │   ├── datasets  
 │   ├── models  
@@ -110,7 +129,7 @@ python3 val.py --config configs/lung_coronavirus/${yml}.yml \
 With a trained model, we support deploying it with paddle inference to boost the inference speed. The instruction to do so is as follows, and you can see a detailed tutorial [here](./deploy/python/README.md).
 
 ```bash
-cd PaddleSeg3D/
+cd MedicalSeg/
 
 # Export the model with trained parameter
 python export.py --config configs/lung_coronavirus/vnet_lung_coronavirus_128_128_128_15k.yml --model_path /path/to/your/trained/model
@@ -125,7 +144,7 @@ python deploy/python/infer.py \
 If you see the "finish" output, you have sucessfully upgrade your model's infer speed.
 
 ## 3. Train on your own dataset
-If you want to train on your dataset, simply add a [dataset file](./paddleseg3d/datasets/lung_coronavirus.py), a [data preprocess file](./tools/prepare_lung_coronavirus.py), and a [configuration directory](./configs/lung_coronavirus), and you are good to go. Details on how to add can refer to the links above.
+If you want to train on your dataset, simply add a [dataset file](./medicalseg/datasets/lung_coronavirus.py), a [data preprocess file](./tools/prepare_lung_coronavirus.py), a [configuration directory](./configs/lung_coronavirus), a [training](run-vnet.sh) script and you are good to go. Details on how to add can refer to the links above.
 
 ### 3.1. Add a configuration directory
 As we mentioned, every dataset has its own configuration directory. If you want to add a new dataset, you can replicate the lung_coronavirus directory and change relevant names and configs.
@@ -155,7 +174,7 @@ Your data need to be convert into numpy array and split into trainset and valset
 ```
 
 ### 3.3. Add a dataset file
-Our dataset file inherit MedicalDataset base class, where data split is based on the train_list.txt and val_list.txt you generated from previous step. Details can infer the [dataset script](./paddleseg3d/datasets/lung_coronavirus.py).
+Our dataset file inherit MedicalDataset base class, where data split is based on the train_list.txt and val_list.txt you generated from previous step. Details can infer the [dataset script](./medicalseg/datasets/lung_coronavirus.py).
 
 ### 3.4. Add a run script
 The run script is used to automate a series of process. To add your config file, just replicate the [run-vnet.sh](run-vnet.sh) and change it based on your thought. Here is the content of what they mean:

@@ -3,7 +3,7 @@ export CUDA_VISIBLE_DEVICES=0
 
 # set the config file name and save directory here
 yml=lung_coronavirus/vnet_lung_coronavirus_128_128_128_15k
-config_name = vnet_lung_coronavirus_128_128_128_15k
+config_name=vnet_lung_coronavirus_128_128_128_15k
 save_dir_all=saved_model
 save_dir=saved_model/${config_name}
 mkdir $save_dir_all

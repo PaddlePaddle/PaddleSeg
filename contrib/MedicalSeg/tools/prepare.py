@@ -24,21 +24,21 @@ support:
 import os
 import sys
 import glob
+import argparse
 import zipfile
 import numpy as np
 import nibabel as nib
 import nrrd
 import SimpleITK as sitk
 
-sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                             ".."))
+sys.path.append(
+    os.path.join(os.path.dirname(os.path.realpath(__file__)), ".."))
 
-from paddleseg3d.utils import get_image_list
-from paddleseg3d.datasets.preprocess_utils import uncompressor
+from medicalseg.utils import get_image_list
+from tools.preprocess_utils import uncompressor, global_var
 
 
 class Prep:
-
     def __init__(self, phase_path=None, dataset_root=None):
         self.raw_data_path = None
         self.image_dir = None
@@ -51,11 +51,11 @@ class Prep:
         self.label_path = os.path.join(self.phase_path, "labels")
         os.makedirs(self.image_path, exist_ok=True)
         os.makedirs(self.label_path, exist_ok=True)
+        self.gpu_tag = "GPU" if global_var.get_value('USE_GPU') else "CPU"
 
     def uncompress_file(self, num_zipfiles):
-        uncompress_tool = uncompressor(download_params=(self.urls,
-                                                        self.dataset_root,
-                                                        True))
+        uncompress_tool = uncompressor(
+            download_params=(self.urls, self.dataset_root, True))
         """unzip all the file in the root directory"""
         zipfiles = glob.glob(os.path.join(self.dataset_root, "*.zip"))
 
@@ -66,10 +66,8 @@ class Prep:
         for f in zipfiles:
             extract_path = os.path.join(self.raw_data_path,
                                         f.split("/")[-1].split('.')[0])
-            uncompress_tool._uncompress_file(f,
-                                             extract_path,
-                                             delete_file=False,
-                                             print_progress=True)
+            uncompress_tool._uncompress_file(
+                f, extract_path, delete_file=False, print_progress=True)
 
     @staticmethod
     def load_medical_data(f):
@@ -80,7 +78,7 @@ class Prep:
 
         """
         filename = f.split("/")[-1]
-        if "nii.gz" in filename:
+        if "nii.gz" or "nii" in filename:
             f_np = nib.load(f).get_fdata(dtype=np.float32)
         elif "nrrd" in filename:
             f_np, _ = nrrd.read(f)
@@ -136,8 +134,6 @@ class Prep:
             np.save(
                 os.path.join(save_path,
                              f.split("/")[-1].split(".", maxsplit=1)[0]), f_np)
-
-        print("Sucessfully convert medical images to numpy array!")
 
     def convert_path(self):
         """convert nii.gz file to numpy array in the right directory"""

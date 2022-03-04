@@ -52,8 +52,7 @@ sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)),
                              ".."))
 
 from prepare import Prep
-from paddleseg3d.datasets.preprocess_utils import uncompressor
-from paddleseg3d.datasets.preprocess_utils import HUNorm, resample, label_remap
+from preprocess_utils import HUNorm, resample, label_remap
 
 urls = {
     "annotation.zip": "",
@@ -79,7 +78,10 @@ class Prep_luna(Prep):
     def convert_path(self):
         """convert nii.gz file to numpy array in the right directory"""
 
-        print("Start convert images to numpy array, please wait patiently")
+        print(
+            "Start convert images to numpy array using {}, please wait patiently"
+            .format(self.gpu_tag))
+        time1 = time.time()
         self.load_save(self.image_dir,
                        save_path=self.image_path,
                        preprocess=[
@@ -88,10 +90,8 @@ class Prep_luna(Prep):
                                              new_shape=[128, 128, 128],
                                              order=1)
                        ],
-                       valid_suffix='mhd',
+                       valid_suffix=('mhd'),
                        filter_key=None)
-
-        print("start convert labels to numpy array, please wait patiently")
 
         self.load_save(self.label_dir,
                        self.label_path,
@@ -115,9 +115,13 @@ class Prep_luna(Prep):
                                                  520: 0
                                              })
                        ],
-                       valid_suffix='nrrd',
+                       valid_suffix=('nrrd'),
                        filter_key=None,
                        tag="label")
+
+        print("The preprocess time on {} is {}".format(
+            "GPU" if self.gpu_tag else "CPU",
+            time.time() - time1))
 
     def generate_txt(self):
         """generate the train_list.txt and val_list.txt"""

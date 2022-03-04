@@ -18,8 +18,8 @@ import os
 import paddle
 import yaml
 
-from paddleseg3d.cvlibs import Config
-from paddleseg3d.utils import logger
+from medicalseg.cvlibs import Config
+from medicalseg.utils import logger
 
 
 def parse_args():
@@ -93,7 +93,7 @@ class PostPorcesser(paddle.nn.Layer):
 
 
 def main(args):
-    os.environ['PADDLESEG3D_EXPORT_STAGE'] = 'True'
+    os.environ['MEDICALSEG_EXPORT_STAGE'] = 'True'
 
     cfg = Config(args.cfg)
     net = cfg.model

@@ -27,12 +27,12 @@ import functools
 from paddle.inference import create_predictor, PrecisionType
 from paddle.inference import Config as PredictConfig
 
-import paddleseg3d.transforms as T
-from paddleseg3d.cvlibs import manager
-from paddleseg3d.utils import get_sys_env, logger, get_image_list
-from paddleseg3d.utils.visualize import get_pseudo_color_map
-from paddleseg3d.datasets import HUNorm, resample
-from tools.prepare import Prep
+import medicalseg.transforms as T
+from medicalseg.cvlibs import manager
+from medicalseg.utils import get_sys_env, logger, get_image_list
+from medicalseg.utils.visualize import get_pseudo_color_map
+from tools import HUNorm, resample
+from tools import Prep
 
 
 def parse_args():

@@ -41,15 +41,16 @@ support:
 """
 import os
 import sys
+import time
 import zipfile
 import functools
 import numpy as np
 
-sys.path.append(
-    os.path.join(os.path.dirname(os.path.realpath(__file__)), ".."))
+sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)),
+                             ".."))
 
-from paddleseg3d.datasets.preprocess_utils import HUNorm, resample
 from prepare import Prep
+from preprocess_utils import HUNorm, resample
 
 urls = {
     "lung_infection.zip":
@@ -64,12 +65,13 @@ urls = {
 
 
 class Prep_lung_coronavirus(Prep):
+
     def __init__(self):
         self.dataset_root = "data/lung_coronavirus_test"
         self.phase_path = os.path.join(self.dataset_root,
                                        "lung_coronavirus_phase0/")
-        super().__init__(
-            phase_path=self.phase_path, dataset_root=self.dataset_root)
+        super().__init__(phase_path=self.phase_path,
+                         dataset_root=self.dataset_root)
 
         self.raw_data_path = os.path.join(self.dataset_root,
                                           "lung_coronavirus_raw/")
@@ -80,29 +82,35 @@ class Prep_lung_coronavirus(Prep):
     def convert_path(self):
         """convert nii.gz file to numpy array in the right directory"""
 
-        print("Start convert images to numpy array, please wait patiently")
-        self.load_save(
-            self.image_dir,
-            save_path=self.image_path,
-            preprocess=[
-                HUNorm,
-                functools.partial(
-                    resample, new_shape=[128, 128, 128], order=1)
-            ],
-            valid_suffix=("nii.gz"),
-            filter_key=None)
-        print("start convert labels to numpy array, please wait patiently")
+        print(
+            "Start convert images to numpy array using {}, please wait patiently"
+            .format(self.gpu_tag))
+        time1 = time.time()
+        self.load_save(self.image_dir,
+                       save_path=self.image_path,
+                       preprocess=[
+                           HUNorm,
+                           functools.partial(resample,
+                                             new_shape=[128, 128, 128],
+                                             order=1)
+                       ],
+                       valid_suffix=("nii.gz"),
+                       filter_key=None)
 
-        self.load_save(
-            self.label_dir,
-            self.label_path,
-            preprocess=[
-                functools.partial(
-                    resample, new_shape=[128, 128, 128], order=0),
-            ],
-            valid_suffix=("nii.gz"),
-            filter_key=None,
-            tag="label")
+        self.load_save(self.label_dir,
+                       self.label_path,
+                       preprocess=[
+                           functools.partial(resample,
+                                             new_shape=[128, 128, 128],
+                                             order=0),
+                       ],
+                       valid_suffix=("nii.gz"),
+                       filter_key=None,
+                       tag="label")
+
+        print("The preprocess time on {} is {}".format(
+            "GPU" if self.gpu_tag else "CPU",
+            time.time() - time1))
 
     def generate_txt(self, train_split=15):
         """generate the train_list.txt and val_list.txt"""
@@ -119,14 +127,19 @@ class Prep_lung_coronavirus(Prep):
             for name in image_files
         ]
 
-        self.split_files_txt(
-            txtname[0], image_files, label_files, train_split=train_split)
-        self.split_files_txt(
-            txtname[1], image_files, label_files, train_split=train_split)
+        self.split_files_txt(txtname[0],
+                             image_files,
+                             label_files,
+                             train_split=train_split)
+        self.split_files_txt(txtname[1],
+                             image_files,
+                             label_files,
+                             train_split=train_split)
 
 
 if __name__ == "__main__":
+
     prep = Prep_lung_coronavirus()
-    prep.uncompress_file(num_zipfiles=4)
+    # prep.uncompress_file(num_zipfiles=4)
     prep.convert_path()
     prep.generate_txt()
