@@ -50,17 +50,13 @@ class PPLiteSeg(nn.Layer):
                  feat_nums=[1, 1, 1],
                  feat_select_mode='last',
                  head_type='PPSegHead',
-                 arm_type='ARM_Add_Add',
-                 cm_bin_sizes=[1],
+                 arm_type='ARM_Add_SpAttenAdd3',
+                 cm_bin_sizes=[1, 2, 4],
                  cm_out_ch=128,
-                 arm_out_chs=[64, 64, 64],
+                 arm_out_chs=[64, 96, 128],
                  seg_head_mid_chs=[64, 64, 64],
                  eval_seg_head_id=0,
                  resize_mode='nearest',
-                 use_boundary_2=False,
-                 use_boundary_4=False,
-                 use_boundary_8=False,
-                 use_boundary_16=False,
                  pretrained=None):
         super().__init__()
 
@@ -112,25 +108,6 @@ class PPLiteSeg(nn.Layer):
             self.seg_heads.append(SegHead(in_ch, mid_ch, num_classes))
 
         self.eval_seg_head_id = eval_seg_head_id
-
-        # detail guidance
-        mid_ch = 64
-        if use_boundary_2 and len(backbone_out_chs) == 5:
-            in_ch = backbone_out_chs[0][0]
-            self.seg_head_sp2 = SegHead(in_ch, mid_ch, 1)
-            print("Use boundary guidance of x2")
-        if use_boundary_4 and len(backbone_out_chs) == 4:
-            in_ch = backbone_out_chs[1][0]
-            self.seg_head_sp4 = SegHead(in_ch, mid_ch, 1)
-            print("Use boundary guidance of x4")
-        if use_boundary_8 and len(backbone_out_chs) == 3:
-            in_ch = backbone_out_chs[2][0]
-            self.seg_head_sp8 = SegHead(in_ch, mid_ch, 1)
-            print("Use boundary guidance of x8")
-        if use_boundary_16 and len(backbone_out_chs) == 2:
-            in_ch = backbone_out_chs[3][0]
-            self.seg_head_sp16 = SegHead(in_ch, mid_ch, 1)
-            print("Use boundary guidance of x16")
 
         # pretrained
         self.pretrained = pretrained
