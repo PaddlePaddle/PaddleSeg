@@ -2,8 +2,6 @@
 
 Linux端基础训练预测功能测试的主程序为`test_train_inference_python.sh`，可以测试基于Python的模型训练、评估、推理等基本功能，包括裁剪、量化、蒸馏。
 
-<!-- - Mac端基础训练预测功能测试参考[链接](./mac_test_train_inference_python.md)
-- Windows端基础训练预测功能测试参考[链接](./win_test_train_inference_python.md) -->
 
 ## 1. 测试结论汇总
 
@@ -14,6 +12,13 @@ Linux端基础训练预测功能测试的主程序为`test_train_inference_pytho
 | DeepLabv3p     |PP-HumanSeg-Server (DeepLabv3p_resnet50)| 正常训练 <br> 混合精度 | 正常训练 <br> 混合精度 |  |  |
 |  HRNet     |PP-HumanSeg-mobile (HRNet_W18_small)  |  正常训练 <br> 混合精度 | 正常训练 <br> 混合精度 |  |  |
 | ConnectNet | PP-HumanSeg-Lite| 正常训练  | 正常训练  |  |  |
+| BiSeNetV2 | BiSeNetV2 | 正常训练  | 正常训练  |  |  |
+| OCRNet | OCRNet_HRNetW18 | 正常训练  | 正常训练  |  |  |
+| Segformer | Segformer_B0 | 正常训练  | 正常训练  |  |  |
+| STDC | STDC_STDC1 | 正常训练  | 正常训练  |  |  |
+| MODNet | PP-Matting | 正常训练  | 正常训练  |  |  |
+| PFPNNet | PFPNNet | 正常训练 | 正常训练 |  |  |
+| ENet | ENet | 正常训练 | 正常训练 |  |  |
 
 
 - 预测相关：基于训练是否使用量化，可以将训练产出的模型可以分为`正常模型`和`量化模型`，这两类模型对应的预测功能汇总如下，
@@ -28,28 +33,8 @@ Linux端基础训练预测功能测试的主程序为`test_train_inference_pytho
 
 ## 2. 测试流程
 
+### 2.1 环境配置
 运行环境配置请参考[文档](./install.md)的内容配置TIPC的运行环境。
-
-### 2.1 安装依赖
-- 安装PaddlePaddle >= 2.2
-- 安装PaddleSeg依赖
-    ```
-    pip3 install  -r ../requirements.txt
-    ```
-- 安装autolog（规范化日志输出工具）
-    ```
-    git clone https://github.com/LDOUBLEV/AutoLog
-    cd AutoLog
-    pip3 install -r requirements.txt
-    python3 setup.py bdist_wheel
-    pip3 install ./dist/auto_log-1.0.0-py3-none-any.whl
-    cd ../
-    ```
-- 安装PaddleSlim (可选)
-   ```
-   # 如果要测试量化、裁剪等功能，需要安装PaddleSlim
-   pip3 install paddleslim
-   ```
 
 
 ### 2.2 功能测试
@@ -105,13 +90,13 @@ test_tipc/output/[model name]/
 
 其中`results_python.log`中包含了每条指令的运行状态，如果运行成功会输出：
 ```
-Run successfully with command - python3.7 train.py --config test_tipc/configs/fcn_hrnetw18_small/fcn_hrnetw18_small_mini_supervisely.yml --do_eval --save_interval 100 --seed 100    --save_dir=./test_tipc/output/fcn_hrnetw18_small/norm_gpus_0_autocast_null --iters=50     --batch_size=2   !
+Run successfully with command - python3.7 train.py --config test_tipc/configs/fcn_hrnetw18_small/fcn_hrnetw18_small_mini_supervisely.yml --do_eval --save_interval 500 --seed 100    --save_dir=./test_tipc/output/fcn_hrnetw18_small/norm_gpus_0_autocast_null --iters=50     --batch_size=2   !
 Run successfully with command - python3.7 export.py --config test_tipc/configs/fcn_hrnetw18_small/fcn_hrnetw18_small_mini_supervisely.yml --model_path=./test_tipc/output/fcn_hrnetw18_small/norm_gpus_0_autocast_null/best_model/model.pdparams --save_dir=./test_tipc/output/fcn_hrnetw18_small/norm_gpus_0_autocast_null!
 ......
 ```
 如果运行失败，会输出：
 ```
-Run failed with command - python3.7 train.py --config test_tipc/configs/fcn_hrnetw18_small/fcn_hrnetw18_small_mini_supervisely.yml --do_eval --save_interval 100 --seed 100    --save_dir=./test_tipc/output/fcn_hrnetw18_small/norm_gpus_0_autocast_null --iters=50     --batch_size=2   !
+Run failed with command - python3.7 train.py --config test_tipc/configs/fcn_hrnetw18_small/fcn_hrnetw18_small_mini_supervisely.yml --do_eval --save_interval 500 --seed 100    --save_dir=./test_tipc/output/fcn_hrnetw18_small/norm_gpus_0_autocast_null --iters=50     --batch_size=2   !
 Run failed with command - python3.7 export.py --config test_tipc/configs/fcn_hrnetw18_small/fcn_hrnetw18_small_mini_supervisely.yml --model_path=./test_tipc/output/fcn_hrnetw18_small/norm_gpus_0_autocast_null/best_model/model.pdparams --save_dir=./test_tipc/output/fcn_hrnetw18_small/norm_gpus_0_autocast_null!
 ......
 ```
@@ -120,31 +105,67 @@ Run failed with command - python3.7 export.py --config test_tipc/configs/fcn_hrn
 
 ### 2.3 精度测试
 
-使用compare_results.py脚本比较模型预测的结果是否符合预期，主要步骤包括：
-- 提取日志中的预测坐标；
-- 从本地文件中提取保存好的结果；
+使用compare_results.py脚本比较模型预测的结果是否符合预期，步骤包括：
+- 计算预测结果图片和label的精度指标；
+- 从本地文件中提取保存好的精度指标结果；
 - 比较上述两个结果是否符合精度预期，误差大于设置阈值时会报错。
 
+【注意】仅需要验证`whole_infer`模式下预测结果是否正确。
+
 #### 使用方式
-运行命令：
+
 ```shell
-python3.7 test_tipc/compare_results.py --gt_file=./test_tipc/results/python_*.txt  --log_file=./test_tipc/output/python_*.log --atol=1e-3 --rtol=1e-3
+python3.7 test_tipc/compare_results.py --metric_file=./test_tipc/results/*.txt  --predict_dir=./test_tipc/output/xxx/python_infer_*_results --gt_dir=./test_tipc/data/xxx --num_classes xxx
 ```
 
 参数介绍：  
-- gt_file： 指向事先保存好的预测结果路径，支持*.txt 结尾，会自动索引*.txt格式的文件，文件默认保存在test_tipc/result/ 文件夹下
-- log_file: 指向运行test_tipc/test_train_inference_python.sh 脚本的infer模式保存的预测日志，预测日志中打印的有预测结果，比如：文本框，预测文本，类别等等，同样支持python_infer_*.log格式传入
-- atol: 设置的绝对误差
-- rtol: 设置的相对误差
+- metric_file： 指向事先保存好的预测结果路径，支持*.txt 结尾，会自动索引*.txt格式的文件，文件默认保存在test_tipc/result/ 文件夹下
+- predict_dir: 指向运行test_tipc/test_train_inference_python.sh 脚本的infer模式保存的预测结果目录，同样支持python_infer_*_results格式传入
+- gt_dir: 指向数据集label图片目录
+- num_classes: 数据集的类别数，不包括ignore_index
+- atol: 设置的绝对误差，默认为1e-3
+- rtol: 设置的相对误差，默认为1e-3
+
+以`fcn_hrnetw18_small`模型为例，运行命令如下：
+```shell
+python3.7 test_tipc/compare_results.py --metric_file=./test_tipc/results/*.txt  --predict_dir=./test_tipc/output/fcn_hrnetw18_small/python_infer_*_results --gt_dir=./test_tipc/data/mini_supervisely/Annotations --num_classes 2
+```
 
 #### 运行结果
 
-正常运行效果如下图：
-<img src="compare_right.png" width="1000">
+正常运行效果如下：
+```
+Assert allclose passed! The results of python_infer_cpu_usemkldnn_False_threads_1_precision_fp32_batchsize_1_results and ./test_tipc/results/python_fcn_hrnetw18_small_results_fp32.txt are consistent!
+Assert allclose passed! The results of python_infer_gpu_usetrt_False_precision_fp32_batchsize_1_results and ./test_tipc/results/python_fcn_hrnetw18_small_results_fp32.txt are consistent!
+Assert allclose passed! The results of python_infer_cpu_usemkldnn_True_threads_1_precision_fp32_batchsize_1_results and ./test_tipc/results/python_fcn_hrnetw18_small_results_fp32.txt are consistent!
+Assert allclose passed! The results of python_infer_gpu_usetrt_True_precision_fp32_batchsize_1_results and ./test_tipc/results/python_fcn_hrnetw18_small_results_fp32.txt are consistent!
+Assert allclose passed! The results of python_infer_cpu_usemkldnn_True_threads_6_precision_fp32_batchsize_1_results and ./test_tipc/results/python_fcn_hrnetw18_small_results_fp32.txt are consistent!
+Assert allclose passed! The results of python_infer_cpu_usemkldnn_False_threads_6_precision_fp32_batchsize_1_results and ./test_tipc/results/python_fcn_hrnetw18_small_results_fp32.txt are consistent!
+Assert allclose passed! The results of python_infer_gpu_usetrt_True_precision_fp16_batchsize_1_results and ./test_tipc/results/python_fcn_hrnetw18_small_results_fp16.txt are consistent!
+```
 
 出现不一致结果时的运行输出：
-<img src="compare_wrong.png" width="1000">
+```
+Not equal to tolerance rtol=0.001, atol=0.001
 
+Mismatched elements: 1 / 1 (100%)
+Max absolute difference: 0.01
+Max relative difference: 0.01146091
+ x: array(0.882531)
+ y: array(0.872531)
+Assert allclose failed! The results of python_infer_cpu_usemkldnn_False_threads_1_precision_fp32_batchsize_1_results and the results of ./test_tipc/results/python_fcn_hrnetw18_small_results_fp32.txt are inconsistent!
+
+Not equal to tolerance rtol=0.001, atol=0.001
+
+Mismatched elements: 1 / 1 (100%)
+Max absolute difference: 0.01
+Max relative difference: 0.01146091
+ x: array(0.882531)
+ y: array(0.872531)
+Assert allclose failed! The results of python_infer_gpu_usetrt_False_precision_fp32_batchsize_1_results and the results of ./test_tipc/results/python_fcn_hrnetw18_small_results_fp32.txt are inconsistent!
+
+......
+```
 
 ## 3. 更多教程
 本文档为功能测试用，更丰富的训练预测使用教程请参考：  

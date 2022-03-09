@@ -56,6 +56,7 @@ class MattingDataset(paddle.io.Dataset):
             It shold be provided if mode equal to 'val'. Default: None.
         get_trimap (bool, optional): Whether to get triamp. Default: True.
         separator (str, optional): The separator of train_file or val_file. If file name contains ' ', '|' may be perfect. Default: ' '.
+        key_del (tuple|list, optional): The key which is not need will be delete to accellect data reader. Default: None.
     """
 
     def __init__(self,
@@ -65,13 +66,15 @@ class MattingDataset(paddle.io.Dataset):
                  train_file=None,
                  val_file=None,
                  get_trimap=True,
-                 separator=' '):
+                 separator=' ',
+                 key_del=None):
         super().__init__()
         self.dataset_root = dataset_root
         self.transforms = T.Compose(transforms)
         self.mode = mode
         self.get_trimap = get_trimap
         self.separator = separator
+        self.key_del = key_del
 
         # check file
         if mode == 'train' or mode == 'trainval':
@@ -157,6 +160,13 @@ class MattingDataset(paddle.io.Dataset):
                 if self.mode == 'val':
                     data['ori_trimap'] = data['trimap'].copy()
 
+        # Delete key which is not need
+        if self.key_del is not None:
+            for key in self.key_del:
+                if key in data.keys():
+                    data.pop(key)
+                if key in data['gt_fields']:
+                    data['gt_fields'].remove(key)
         data = self.transforms(data)
 
         # When evaluation, gt should not be transforms.

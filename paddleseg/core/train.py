@@ -40,15 +40,21 @@ def loss_computation(logits_list, labels, losses, edges=None):
     for i in range(len(logits_list)):
         logits = logits_list[i]
         loss_i = losses['types'][i]
-        # Whether to use edges as labels According to loss type.
+        coef_i = losses['coef'][i]
+
         if loss_i.__class__.__name__ in ('BCELoss',
                                          'FocalLoss') and loss_i.edge_label:
-            loss_list.append(losses['coef'][i] * loss_i(logits, edges))
+            # If use edges as labels According to loss type.
+            loss_list.append(coef_i * loss_i(logits, edges))
+        elif loss_i.__class__.__name__ == 'MixedLoss':
+            mixed_loss_list = loss_i(logits, labels)
+            for mixed_loss in mixed_loss_list:
+                loss_list.append(coef_i * mixed_loss)
         elif loss_i.__class__.__name__ in ("KLLoss", ):
-            loss_list.append(losses['coef'][i] *
+            loss_list.append(coef_i *
                              loss_i(logits_list[0], logits_list[1].detach()))
         else:
-            loss_list.append(losses['coef'][i] * loss_i(logits, labels))
+            loss_list.append(coef_i * loss_i(logits, labels))
     return loss_list
 
 
@@ -67,7 +73,7 @@ def train(model,
           losses=None,
           keep_checkpoint_max=5,
           test_config=None,
-          fp16=False,
+          precision='fp32',
           profiler_options=None,
           to_static_training=False):
     """
@@ -90,7 +96,7 @@ def train(model,
             The 'types' item is a list of object of paddleseg.models.losses while the 'coef' item is a list of the relevant coefficient.
         keep_checkpoint_max (int, optional): Maximum number of checkpoints to save. Default: 5.
         test_config(dict, optional): Evaluation config.
-        fp16 (bool, optional): Whether to use amp.
+        precision (str, optional): Use AMP if precision='fp16'. If precision='fp32', the training is normal.
         profiler_options (str, optional): The option of train profiler.
         to_static_training (bool, optional): Whether to use @to_static for training.
     """
@@ -127,7 +133,7 @@ def train(model,
     )
 
     # use amp
-    if fp16:
+    if precision == 'fp16':
         logger.info('use amp to train')
         scaler = paddle.amp.GradScaler(init_loss_scaling=1024)
 
@@ -168,7 +174,7 @@ def train(model,
             if hasattr(model, 'data_format') and model.data_format == 'NHWC':
                 images = images.transpose((0, 2, 3, 1))
 
-            if fp16:
+            if precision == 'fp16':
                 with paddle.amp.auto_cast(
                         enable=True,
                         custom_white_list={
@@ -202,7 +208,11 @@ def train(model,
                                              edges=edges)
                 loss = sum(loss_list)
                 loss.backward()
-                optimizer.step()
+                # if the optimizer is ReduceOnPlateau, the loss is the one which has been pass into step.
+                if isinstance(optimizer, paddle.optimizer.lr.ReduceOnPlateau):
+                    optimizer.step(loss)
+                else:
+                    optimizer.step()
 
             lr = optimizer.get_lr()
 

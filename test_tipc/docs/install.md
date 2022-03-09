@@ -89,25 +89,31 @@ wget  https://paddle-wheel.bj.bcebos.com/with-trt/2.1.1-gpu-cuda10.2-cudnn8.1-mk
 pip3.7 install -U paddlepaddle_gpu-2.1.1-cp37-cp37m-linux_x86_64.whl
 ```
 
-## 4. 安装PaddleSeg依赖
+## 4. 安装PaddleSeg
+- 安装PaddleSeg依赖
 ```
-# 安装AutoLog
+git clone https://github.com/PaddlePaddle/PaddleSeg
+
+cd PaddleSeg
+pip3.7 install -r test_tipc/requirements.txt
+pip install -e .
+cd ..
+```
+
+- 安装autolog（规范化日志输出工具）
+```
+# 安装AutoLog（规范化日志输出工具）
 git clone https://github.com/LDOUBLEV/AutoLog
 cd AutoLog
 pip3.7 install -r requirements.txt
 python3.7 setup.py bdist_wheel
 pip3.7 install ./dist/auto_log-1.0.0-py3-none-any.whl
-
-# 下载Seg代码
 cd ../
-git clone https://github.com/PaddlePaddle/PaddleSeg
-
 ```
-
-安装PaddleSeg依赖：
+- 安装PaddleSlim (可选)
 ```
-cd PaddleSeg
-pip3.7 install -r requirements.txt
+# 如果要测试量化、裁剪等功能，需要安装PaddleSlim
+pip3 install paddleslim
 ```
 
 ## FAQ :

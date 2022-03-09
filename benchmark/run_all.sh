@@ -22,9 +22,9 @@ tar -zxf data/cityscapes_30imgs.tar.gz -C data/
 
 model_name_list=(fastscnn segformer_b0 ocrnet_hrnetw48)
 fp_item_list=(fp32)     # set fp32 or fp16, segformer_b0 doesn't support fp16 with Paddle2.1.2
-bs_list=(2 4)
+bs_list=(2)
 max_iters=500           # control the test time
-num_workers=5           # num_workers for dataloader
+num_workers=8           # num_workers for dataloader, as for fastscnn and ocrnet_hrnetw48, it is better to set 8
 
 for model_name in ${model_name_list[@]}; do
       for fp_item in ${fp_item_list[@]}; do

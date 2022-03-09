@@ -3,7 +3,7 @@ model_name:fcn_hrnetw18_small
 python:python3.7
 gpu_list:0|0,1
 Global.use_gpu:null|null
-Global.auto_cast:null
+--precision:null
 --iters:lite_train_lite_infer=50|lite_train_whole_infer=50|whole_train_whole_infer=1000
 --save_dir:
 --batch_size:lite_train_lite_infer=2|lite_train_whole_infer=2|whole_train_whole_infer=8
@@ -13,7 +13,7 @@ train_infer_img_dir:test_tipc/data/mini_supervisely/test.txt
 null:null
 ##
 trainer:norm
-norm_train:train.py --config test_tipc/configs/fcn_hrnetw18_small/fcn_hrnetw18_small_v1_humanseg_192x192_mini_supervisely.yml --do_eval --save_interval 100 --seed 100
+norm_train:train.py --config test_tipc/configs/fcn_hrnetw18_small/fcn_hrnetw18_small_v1_humanseg_192x192_mini_supervisely.yml --do_eval --save_interval 500 --seed 100
 pact_train:null
 fpgm_train:null
 distill_train:null
@@ -48,5 +48,7 @@ inference:deploy/python/infer.py
 --image_path:./test_tipc/data/mini_supervisely/test.txt
 --save_log_path:null
 --benchmark:True
-null:null
+--save_dir:
 --model_name:fcn_hrnetw18_small
+===========================infer_benchmark_params==========================
+random_infer_input:[{float32,[3,192,192]}]

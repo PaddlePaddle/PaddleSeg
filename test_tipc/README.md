@@ -24,9 +24,15 @@
 | 算法论文 | 模型名称 | 基础<br>训练预测 | 更多<br>训练方式 | 模型压缩 |  其他预测部署  |
 | :--- | :--- |  :----:  |  :----  |   :----  |   :----  |
 | DeepLabv3p     |PP-HumanSeg-Server (DeepLabv3p_resnet50) | 支持 | 混合精度 | - | - |
-| HRNet     |PP-HumanSeg-mobile (HRNet_W18_small)                | 支持  | 混合精度 | - | - |
+| HRNet     |PP-HumanSeg-Mobile (HRNet_W18_small)    | 支持  | 混合精度 | - | - |
 | ConnectNet | PP-HumanSeg-Lite | 支持 | - | - | - |
-
+| BiSeNetV2 | BiSeNetV2 | 支持 | - | - | - |
+| OCRNet | OCRNet_HRNetW18 | 支持 | - | - | - |
+| Segformer | Segformer_B0 | 支持 | - | - | - |
+| STDC | STDC_STDC1 | 支持 | - | - | - |
+| MODNet | PP-Matting | 支持 | - | - | - |
+| PFPNNet | PFPNNet | 支持 | - | - | - |
+| ENet | ENet | 支持 | - | - | - |
 
 
 ## 3. 测试工具简介
@@ -94,7 +100,7 @@ bash test_tipc/test_train_inference_python.sh ./test_tipc/configs/fcn_hrnetw18_s
 ## 4. 开始测试
 各功能测试中涉及混合精度、裁剪、量化等训练相关，及mkldnn、Tensorrt等多种预测相关参数配置，请点击下方相应链接了解更多细节和使用教程：  
 - [test_train_inference_python 使用](docs/test_train_inference_python.md) ：测试基于Python的模型训练、评估、推理等基本功能，包括裁剪、量化、蒸馏。
-- [test_inference_cpp 使用(开发中)](docs/test_inference_cpp.md)：测试基于C++的模型推理。
-- [test_serving 使用(开发中)](docs/test_serving.md)：测试基于Paddle Serving的服务化部署功能。
-- [test_lite_arm_cpu_cpp 使用(开发中)](docs/test_lite_arm_cpu_cpp.md)：测试基于Paddle-Lite的ARM CPU端c++预测部署功能。
-- [test_paddle2onnx 使用(开发中)](docs/test_paddle2onnx.md)：测试Paddle2ONNX的模型转化功能，并验证正确性。
+- test_inference_cpp 使用(开发中)：测试基于C++的模型推理。
+- test_serving 使用(开发中)：测试基于Paddle Serving的服务化部署功能。
+- test_lite_arm_cpu_cpp 使用(开发中)：测试基于Paddle-Lite的ARM CPU端c++预测部署功能。
+- test_paddle2onnx 使用(开发中)：测试Paddle2ONNX的模型转化功能，并验证正确性。
