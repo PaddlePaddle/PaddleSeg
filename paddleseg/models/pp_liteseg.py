@@ -1,4 +1,4 @@
-# copyright (c) 2021 PaddlePaddle Authors. All Rights Reserve.
+# copyright (c) 2022 PaddlePaddle Authors. All Rights Reserve.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -25,19 +25,24 @@ from paddleseg.utils import utils
 @manager.MODELS.add_component
 class PPLiteSeg(nn.Layer):
     """
-    PPSeg.
+    The PP_LiteSeg implementation based on PaddlePaddle.
+
+    The original article refers to "xxx".
 
     Args:
-        num_classes (int): The unique number of target classes.
+        num_classes (int): The number of target classes.
         backbone(nn.Layer): Backbone network, such as stdc1net and resnet18. The backbone must
             has feat_channels, of which the length is 5.
         backbone_indices (List(int), optional): The values indicate the indices of output of backbone.
             Default: [2, 3, 4].
-        arm_type (str, optional): The type of attention refinement module (ARM). Default: ARM_Add_Add.
-        cm_bin_sizes (List(int), optional): The bin size for context module. Default: [1,2,4].
-        cm_out_ch (int, optional): The channel of the last context module, which comes after backbone.
-            Default: 128.
-        arm_out_chs (List(int), optional): The out channels of each arm module. Default: [64, 64, 64].
+        arm_type (str, optional): The type of attention refinement module. Default: ARM_Add_SpAttenAdd3.
+        cm_bin_sizes (List(int), optional): The bin size of context module. Default: [1,2,4].
+        cm_out_ch (int, optional): The output channel of the last context module. Default: 128.
+        arm_out_chs (List(int), optional): The out channels of each arm module. Default: [64, 96, 128].
+        seg_head_inter_chs (List(int), optional): The intermediate channels of segmentation head.
+            Default: [64, 64, 64].
+        resize_mode (str, optional): The resize mode for the upsampling operation in decoder.
+            Default: nearest.
         pretrained (str, optional): The path or url of pretrained model. Default: None.
 
     """
@@ -49,8 +54,7 @@ class PPLiteSeg(nn.Layer):
                  cm_bin_sizes=[1, 2, 4],
                  cm_out_ch=128,
                  arm_out_chs=[64, 96, 128],
-                 seg_head_mid_chs=[64, 64, 64],
-                 eval_seg_head_id=0,
+                 seg_head_inter_chs=[64, 64, 64],
                  resize_mode='nearest',
                  pretrained=None):
         super().__init__()
@@ -70,7 +74,6 @@ class PPLiteSeg(nn.Layer):
             "should be greater than 1"
         self.backbone_indices = backbone_indices  # [..., x16_id, x32_id]
         backbone_out_chs = [backbone.feat_channels[i] for i in backbone_indices]
-        print("backbone_out_chs:" + str(backbone_out_chs))
 
         # head
         if len(arm_out_chs) == 1:
@@ -78,15 +81,16 @@ class PPLiteSeg(nn.Layer):
         assert len(arm_out_chs) == len(backbone_indices), "The length of " \
             "arm_out_chs and backbone_indices should be equal"
 
-        self.ppseg_head = PPSegHead(backbone_out_chs, arm_out_chs, cm_bin_sizes,
-                                    cm_out_ch, arm_type, resize_mode)
+        self.ppseg_head = PPLiteSegHead(backbone_out_chs, arm_out_chs,
+                                        cm_bin_sizes, cm_out_ch, arm_type,
+                                        resize_mode)
 
-        if len(seg_head_mid_chs) == 1:
-            seg_head_mid_chs = seg_head_mid_chs * len(backbone_indices)
-        assert len(seg_head_mid_chs) == len(backbone_indices), "The length of " \
-            "seg_head_mid_chs and backbone_indices should be equal"
+        if len(seg_head_inter_chs) == 1:
+            seg_head_inter_chs = seg_head_inter_chs * len(backbone_indices)
+        assert len(seg_head_inter_chs) == len(backbone_indices), "The length of " \
+            "seg_head_inter_chs and backbone_indices should be equal"
         self.seg_heads = nn.LayerList()  # [..., head_16, head32]
-        for in_ch, mid_ch in zip(arm_out_chs, seg_head_mid_chs):
+        for in_ch, mid_ch in zip(arm_out_chs, seg_head_inter_chs):
             self.seg_heads.append(SegHead(in_ch, mid_ch, num_classes))
 
         # pretrained
@@ -96,14 +100,14 @@ class PPLiteSeg(nn.Layer):
     def forward(self, x):
         x_hw = paddle.shape(x)[2:]
 
-        feats_backbone = self.backbone(x)  # [..., x4, x8, x16, x32]
+        feats_backbone = self.backbone(x)  # [x2, x4, x8, x16, x32]
         assert len(feats_backbone) >= len(self.backbone_indices), \
             f"The nums of backbone feats ({len(feats_backbone)}) should be greater or " \
             f"equal than the nums of backbone_indices ({len(self.backbone_indices)})"
 
         feats_selected = [feats_backbone[i] for i in self.backbone_indices]
 
-        feats_head = self.ppseg_head(feats_selected)  # [..., x16, x32]
+        feats_head = self.ppseg_head(feats_selected)  # [..., x8, x16, x32]
 
         if self.training:
             logit_list = []
@@ -117,12 +121,9 @@ class PPLiteSeg(nn.Layer):
                 for x in logit_list
             ]
         else:
-            feat_out = self.seg_heads[0](feats_head[0])
-            feat_out = F.interpolate(feat_out,
-                                     x_hw,
-                                     mode='bilinear',
-                                     align_corners=False)
-            logit_list = [feat_out]
+            x = self.seg_heads[0](feats_head[0])
+            x = F.interpolate(x, x_hw, mode='bilinear', align_corners=False)
+            logit_list = [x]
 
         return logit_list
 
@@ -131,10 +132,18 @@ class PPLiteSeg(nn.Layer):
             utils.load_entire_model(self, self.pretrained)
 
 
-class PPSegHead(nn.Layer):
-    '''
-    The head of PPSeg.
-    '''
+class PPLiteSegHead(nn.Layer):
+    """
+    The head of PPLiteSeg.
+
+    Args:
+        backbone_out_chs (List(Tensor)): The channels of output tensors in the backbone.
+        arm_out_chs (List(int)): The out channels of each arm module.
+        cm_bin_sizes (List(int)): The bin size of context module.
+        cm_out_ch (int): The output channel of the last context module.
+        arm_type (str): The type of attention refinement module.
+        resize_mode (str): The resize mode for the upsampling operation in decoder.
+    """
     def __init__(self, backbone_out_chs, arm_out_chs, cm_bin_sizes, cm_out_ch,
                  arm_type, resize_mode):
         super().__init__()
@@ -162,9 +171,11 @@ class PPSegHead(nn.Layer):
     def forward(self, in_feat_list):
         '''
         Args:
-            in_feat_list (List(Tensor)): such as [x2, x4, x8, x16, x32]. x2, x4 and x8 are optional.
+            in_feat_list (List(Tensor)): Such as [x2, x4, x8, x16, x32].
+                x2, x4 and x8 are optional.
         Returns:
-            out_feat_list (List(Tensor)): such as [x2, x4, x8, x16, x32]. x2, x4 and x8 are optional.
+            out_feat_list (List(Tensor)): Such as [x2, x4, x8, x16, x32].
+                x2, x4 and x8 are optional.
                 The length of in_feat_list and out_feat_list are the same.
         '''
 
@@ -182,15 +193,15 @@ class PPSegHead(nn.Layer):
 
 class PPContextModule(nn.Layer):
     """
-    Lite Context module.
+    Simple Context module.
 
     Args:
         in_channels (int): The number of input channels to pyramid pooling module.
         inter_channels (int): The number of inter channels to pyramid pooling module.
         out_channels (int): The number of output channels after pyramid pooling module.
         bin_sizes (tuple, optional): The out size of pooled feature maps. Default: (1, 3).
-        align_corners (bool): An argument of F.interpolate. It should be set to False when the output size of feature
-            is even, e.g. 1024x512, otherwise it is True, e.g. 769x769.
+        align_corners (bool): An argument of F.interpolate. It should be set to False
+            when the output size of feature is even, e.g. 1024x512, otherwise it is True, e.g. 769x769.
     """
     def __init__(self,
                  in_channels,
