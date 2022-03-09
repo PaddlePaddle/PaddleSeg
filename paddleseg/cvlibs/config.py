@@ -15,6 +15,7 @@
 import codecs
 import os
 from typing import Any, Dict, Generic
+import warnings
 
 import paddle
 import yaml
@@ -312,7 +313,7 @@ class Config(object):
                     elif hasattr(self.val_dataset, 'num_classes'):
                         num_classes = self.val_dataset.num_classes
             except FileNotFoundError:
-                pass
+                warnings.warn("num_classes is not found. Is it correct?")
 
             if num_classes is not None:
                 model_cfg['num_classes'] = num_classes
