@@ -42,7 +42,7 @@ class PPLiteSeg(nn.Layer):
         seg_head_inter_chs (List(int), optional): The intermediate channels of segmentation head.
             Default: [64, 64, 64].
         resize_mode (str, optional): The resize mode for the upsampling operation in decoder.
-            Default: nearest.
+            Default: bilinear.
         pretrained (str, optional): The path or url of pretrained model. Default: None.
 
     """
@@ -55,7 +55,7 @@ class PPLiteSeg(nn.Layer):
                  cm_out_ch=128,
                  arm_out_chs=[64, 96, 128],
                  seg_head_inter_chs=[64, 64, 64],
-                 resize_mode='nearest',
+                 resize_mode='bilinear',
                  pretrained=None):
         super().__init__()
 

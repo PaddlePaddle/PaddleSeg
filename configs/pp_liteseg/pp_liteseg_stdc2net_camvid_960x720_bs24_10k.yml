@@ -58,9 +58,3 @@ model:
   backbone:
     type: STDC2
     pretrained: https://bj.bcebos.com/paddleseg/dygraph/PP_STDCNet2.tar.gz
-  arm_type: ARM_Add_SpAttenAdd3
-  cm_bin_sizes: [1,2,4]
-  cm_out_ch: 128
-  arm_out_chs: [64, 96, 128]   # [..., x8_arm_out_chs, x16_arm_out_chs, x32_arm_out_chs]
-  seg_head_mid_chs: [64, 64, 64]
-  resize_mode: bilinear
