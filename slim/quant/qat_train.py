@@ -37,85 +37,77 @@ NOTE: Only conv2d and linear in backbone are quantized.
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Model training')
-    parser.add_argument(
-        "--config", dest="cfg", help="The config file.", default=None, type=str)
-    parser.add_argument(
-        '--iters',
-        dest='iters',
-        help='iters for training',
-        type=int,
-        default=None)
-    parser.add_argument(
-        '--batch_size',
-        dest='batch_size',
-        help='Mini batch size of one gpu or cpu',
-        type=int,
-        default=None)
-    parser.add_argument(
-        '--learning_rate',
-        dest='learning_rate',
-        help='Learning rate',
-        type=float,
-        default=None)
+    parser.add_argument("--config",
+                        dest="cfg",
+                        help="The config file.",
+                        default=None,
+                        type=str)
+    parser.add_argument('--iters',
+                        dest='iters',
+                        help='iters for training',
+                        type=int,
+                        default=None)
+    parser.add_argument('--batch_size',
+                        dest='batch_size',
+                        help='Mini batch size of one gpu or cpu',
+                        type=int,
+                        default=None)
+    parser.add_argument('--learning_rate',
+                        dest='learning_rate',
+                        help='Learning rate',
+                        type=float,
+                        default=None)
     parser.add_argument(
         '--save_interval',
         dest='save_interval',
         help='How many iters to save a model snapshot once during training.',
         type=int,
         default=1000)
-    parser.add_argument(
-        '--resume_model',
-        dest='resume_model',
-        help='The path of resume model',
-        type=str,
-        default=None)
-    parser.add_argument(
-        '--save_dir',
-        dest='save_dir',
-        help='The directory for saving the model snapshot',
-        type=str,
-        default='./output')
-    parser.add_argument(
-        '--keep_checkpoint_max',
-        dest='keep_checkpoint_max',
-        help='Maximum number of checkpoints to save',
-        type=int,
-        default=5)
-    parser.add_argument(
-        '--num_workers',
-        dest='num_workers',
-        help='Num workers for data loader',
-        type=int,
-        default=0)
-    parser.add_argument(
-        '--do_eval',
-        dest='do_eval',
-        help='Eval while training',
-        action='store_true')
-    parser.add_argument(
-        '--log_iters',
-        dest='log_iters',
-        help='Display logging information at every log_iters',
-        default=10,
-        type=int)
+    parser.add_argument('--resume_model',
+                        dest='resume_model',
+                        help='The path of resume model',
+                        type=str,
+                        default=None)
+    parser.add_argument('--save_dir',
+                        dest='save_dir',
+                        help='The directory for saving the model snapshot',
+                        type=str,
+                        default='./output')
+    parser.add_argument('--keep_checkpoint_max',
+                        dest='keep_checkpoint_max',
+                        help='Maximum number of checkpoints to save',
+                        type=int,
+                        default=5)
+    parser.add_argument('--num_workers',
+                        dest='num_workers',
+                        help='Num workers for data loader',
+                        type=int,
+                        default=0)
+    parser.add_argument('--do_eval',
+                        dest='do_eval',
+                        help='Eval while training',
+                        action='store_true')
+    parser.add_argument('--log_iters',
+                        dest='log_iters',
+                        help='Display logging information at every log_iters',
+                        default=10,
+                        type=int)
     parser.add_argument(
         '--use_vdl',
         dest='use_vdl',
         help='Whether to record the data to VisualDL during training',
         action='store_true')
-    parser.add_argument(
-        '--seed',
-        dest='seed',
-        help='Set the random seed during training.',
-        default=None,
-        type=int)
+    parser.add_argument('--seed',
+                        dest='seed',
+                        help='Set the random seed during training.',
+                        default=None,
+                        type=int)
 
-    parser.add_argument(
-        '--model_path',
-        dest='model_path',
-        help='The path of pretrained model',
-        type=str,
-        default=None)
+    parser.add_argument('--model_path',
+                        dest='model_path',
+                        help='The path of pretrained model',
+                        type=str,
+                        default=None)
 
     return parser.parse_args()
 
@@ -156,11 +148,10 @@ def main(args):
     if not args.cfg:
         raise RuntimeError('No configuration file specified.')
 
-    cfg = Config(
-        args.cfg,
-        learning_rate=args.learning_rate,
-        iters=args.iters,
-        batch_size=args.batch_size)
+    cfg = Config(args.cfg,
+                 learning_rate=args.learning_rate,
+                 iters=args.iters,
+                 batch_size=args.batch_size)
 
     train_dataset = cfg.train_dataset
     if train_dataset is None:
@@ -187,24 +178,23 @@ def main(args):
 
     skip_quant(model)
     quantizer = QAT(config=quant_config)
-    quant_model = quantizer.quantize(model)
+    quantizer.quantize(model)
     logger.info('Quantize the model successfully')
 
-    train(
-        quant_model,
-        train_dataset,
-        val_dataset=val_dataset,
-        optimizer=cfg.optimizer,
-        save_dir=args.save_dir,
-        iters=cfg.iters,
-        batch_size=cfg.batch_size,
-        resume_model=None,
-        save_interval=args.save_interval,
-        log_iters=args.log_iters,
-        num_workers=args.num_workers,
-        use_vdl=args.use_vdl,
-        losses=losses,
-        keep_checkpoint_max=args.keep_checkpoint_max)
+    train(model,
+          train_dataset,
+          val_dataset=val_dataset,
+          optimizer=cfg.optimizer,
+          save_dir=args.save_dir,
+          iters=cfg.iters,
+          batch_size=cfg.batch_size,
+          resume_model=None,
+          save_interval=args.save_interval,
+          log_iters=args.log_iters,
+          num_workers=args.num_workers,
+          use_vdl=args.use_vdl,
+          losses=losses,
+          keep_checkpoint_max=args.keep_checkpoint_max)
 
 
 if __name__ == '__main__':
