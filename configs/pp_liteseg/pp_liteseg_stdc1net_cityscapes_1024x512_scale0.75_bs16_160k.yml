@@ -3,11 +3,3 @@ _base_: './pp_liteseg_stdc1net_cityscapes_1024x512_scale0.5_bs16_160k.yml'
 test_config:
   aug_eval: True
   scales: 0.75
-
-model:
-  type: PPLiteSeg
-  backbone:
-    type: STDC1
-    pretrained: https://bj.bcebos.com/paddleseg/dygraph/PP_STDCNet1.tar.gz
-  arm_out_chs: [32, 64, 128]
-  seg_head_inter_chs: [32, 64, 64]
