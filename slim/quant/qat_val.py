@@ -55,20 +55,21 @@ def parse_args():
     parser = argparse.ArgumentParser(description='Model evaluation')
 
     # params of evaluate
-    parser.add_argument(
-        "--config", dest="cfg", help="The config file.", default=None, type=str)
-    parser.add_argument(
-        '--model_path',
-        dest='model_path',
-        help='The path of model for evaluation',
-        type=str,
-        default=None)
-    parser.add_argument(
-        '--num_workers',
-        dest='num_workers',
-        help='Num workers for data loader',
-        type=int,
-        default=0)
+    parser.add_argument("--config",
+                        dest="cfg",
+                        help="The config file.",
+                        default=None,
+                        type=str)
+    parser.add_argument('--model_path',
+                        dest='model_path',
+                        help='The path of model for evaluation',
+                        type=str,
+                        default=None)
+    parser.add_argument('--num_workers',
+                        dest='num_workers',
+                        help='Num workers for data loader',
+                        type=int,
+                        default=0)
 
     # augment for evaluation
     parser.add_argument(
@@ -76,30 +77,26 @@ def parse_args():
         dest='aug_eval',
         help='Whether to use mulit-scales and flip augment for evaluation',
         action='store_true')
-    parser.add_argument(
-        '--scales',
-        dest='scales',
-        nargs='+',
-        help='Scales for augment',
-        type=float,
-        default=1.0)
-    parser.add_argument(
-        '--flip_horizontal',
-        dest='flip_horizontal',
-        help='Whether to use flip horizontally augment',
-        action='store_true')
-    parser.add_argument(
-        '--flip_vertical',
-        dest='flip_vertical',
-        help='Whether to use flip vertically augment',
-        action='store_true')
+    parser.add_argument('--scales',
+                        dest='scales',
+                        nargs='+',
+                        help='Scales for augment',
+                        type=float,
+                        default=1.0)
+    parser.add_argument('--flip_horizontal',
+                        dest='flip_horizontal',
+                        help='Whether to use flip horizontally augment',
+                        action='store_true')
+    parser.add_argument('--flip_vertical',
+                        dest='flip_vertical',
+                        help='Whether to use flip vertically augment',
+                        action='store_true')
 
     # sliding window evaluation
-    parser.add_argument(
-        '--is_slide',
-        dest='is_slide',
-        help='Whether to evaluate by sliding window',
-        action='store_true')
+    parser.add_argument('--is_slide',
+                        dest='is_slide',
+                        help='Whether to evaluate by sliding window',
+                        action='store_true')
     parser.add_argument(
         '--crop_size',
         dest='crop_size',
@@ -167,18 +164,17 @@ def main(args):
 
     skip_quant(model)
     quantizer = QAT(config=quant_config)
-    quant_model = quantizer.quantize(model)
+    quantizer.quantize(model)
     logger.info('Quantize the model successfully')
 
     if args.model_path:
-        utils.load_entire_model(quant_model, args.model_path)
+        utils.load_entire_model(model, args.model_path)
         logger.info('Loaded trained params of model successfully')
 
     test_config = get_test_config(cfg, args)
     config_check(cfg, val_dataset=val_dataset)
 
-    evaluate(
-        quant_model, val_dataset, num_workers=args.num_workers, **test_config)
+    evaluate(model, val_dataset, num_workers=args.num_workers, **test_config)
 
 
 if __name__ == '__main__':
