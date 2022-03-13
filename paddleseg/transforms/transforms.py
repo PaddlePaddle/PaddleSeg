@@ -835,7 +835,7 @@ class ScalePadding:
         if label is not None:
             label = np.uint8(new_label)
             label = functional.resize(
-                label, self.target_size, interp=cv2.INTER_CUBIC)
+                label, self.target_size, interp=cv2.INTER_NEAREST)
         if label is None:
             return (im,)
         else:
