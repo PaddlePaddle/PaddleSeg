@@ -1,0 +1,58 @@
+
+batch_size: 2
+iters: 160000
+
+train_dataset:
+  type: Dataset
+  dataset_root: data/seg_jishui_dataset
+  num_classes: 2
+  mode: train
+  train_path: data/seg_jishui_dataset/train.txt
+  transforms:
+    - type: ResizeStepScaling
+      min_scale_factor: 0.5
+      max_scale_factor: 2.0
+      scale_step_size: 0.25
+    - type: RandomPaddingCrop
+      crop_size: [960, 540]
+    - type: RandomHorizontalFlip
+    - type: RandomDistort
+      brightness_range: 0.4
+      contrast_range: 0.4
+      saturation_range: 0.4
+    - type: Normalize
+
+
+val_dataset:
+  type: Dataset
+  dataset_root: data/seg_jishui_dataset
+  num_classes: 2
+  mode: val
+  val_path: data/seg_jishui_dataset/test.txt
+  transforms:
+    - type: Normalize
+
+
+optimizer:
+  type: sgd
+  momentum: 0.9
+  weight_decay: 5.0e-4
+
+lr_scheduler:
+  type: PolynomialDecay
+  learning_rate: 0.01
+  end_lr: 0
+  power: 0.9
+
+loss:
+  types:
+    - type: CrossEntropyLoss
+  coef: [1, 0.4]
+
+model:
+  type: OCRNet
+  backbone:
+    type: HRNet_W48
+    pretrained: https://bj.bcebos.com/paddleseg/dygraph/hrnet_w48_ssld.tar.gz
+  num_classes: 2
+  backbone_indices: [0]
