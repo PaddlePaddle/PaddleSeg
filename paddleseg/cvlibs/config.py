@@ -313,7 +313,7 @@ class Config(object):
                     elif hasattr(self.val_dataset, 'num_classes'):
                         num_classes = self.val_dataset.num_classes
             except FileNotFoundError:
-                warnings.warn("num_classes is not found. Is it correct?")
+                warnings.warn("`dataset_root` is not found. Is it correct?")
 
             if num_classes is not None:
                 model_cfg['num_classes'] = num_classes
