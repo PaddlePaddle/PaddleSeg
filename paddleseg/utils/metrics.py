@@ -200,9 +200,9 @@ def kappa(intersect_area, pred_area, label_area):
     Returns:
         float: kappa coefficient.
     """
-    intersect_area = intersect_area.numpy()
-    pred_area = pred_area.numpy()
-    label_area = label_area.numpy()
+    intersect_area = intersect_area.numpy().astype(np.float64)
+    pred_area = pred_area.numpy().astype(np.float64)
+    label_area = label_area.numpy().astype(np.float64)
     total_area = np.sum(label_area)
     po = np.sum(intersect_area) / total_area
     pe = np.sum(pred_area * label_area) / (total_area * total_area)
