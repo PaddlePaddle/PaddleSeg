@@ -1,4 +1,4 @@
-batch_size: 2
+batch_size: 1
 iters: 80000
 
 train_dataset:
@@ -6,7 +6,7 @@ train_dataset:
   dataset_root: data/seg_jishui_dataset
   num_classes: 2
   mode: train
-  train_path: data/seg_jishui_dataset/train.txt
+  train_path: data/seg_jishui_dataset/train_merged.txt
   transforms:
     - type: ResizeStepScaling
       min_scale_factor: 0.5
@@ -44,10 +44,15 @@ lr_scheduler:
 
 loss:
   types:
-    - type: CrossEntropyLoss
+    - type: DiceLoss
   coef: [1]
 
 model:
   type: SegFormer_B2
   num_classes: 2
   pretrained: https://bj.bcebos.com/paddleseg/dygraph/mix_vision_transformer_b2.tar.gz
+
+#test_config:
+#  is_slide: True
+#  crop_size: [1024, 1024]
+#  stride: [768, 768]

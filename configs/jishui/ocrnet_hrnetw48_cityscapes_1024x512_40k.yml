@@ -1,20 +1,20 @@
 
 batch_size: 2
-iters: 160000
+iters: 80000
 
 train_dataset:
   type: Dataset
   dataset_root: data/seg_jishui_dataset
   num_classes: 2
   mode: train
-  train_path: data/seg_jishui_dataset/train.txt
+  train_path: data/seg_jishui_dataset/train_merged.txt
   transforms:
     - type: ResizeStepScaling
       min_scale_factor: 0.5
       max_scale_factor: 2.0
       scale_step_size: 0.25
     - type: RandomPaddingCrop
-      crop_size: [960, 540]
+      crop_size: [1024, 1024]
     - type: RandomHorizontalFlip
     - type: RandomDistort
       brightness_range: 0.4
@@ -46,7 +46,7 @@ lr_scheduler:
 
 loss:
   types:
-    - type: CrossEntropyLoss
+    - type: DiceLoss
   coef: [1, 0.4]
 
 model:
