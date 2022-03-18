@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """
-visualize the annoted images:
+visualize the annotated images:
 1. Add the origin image and annotated image to produce the weighted image.
 2. Paste the origin image and weighted image to generate the final image.
 """
