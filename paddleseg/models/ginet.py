@@ -92,7 +92,7 @@ class GINet(nn.Layer):
 
         return [
             F.interpolate(
-                logit, (h, w),
+                logit, [h, w],
                 mode='bilinear',
                 align_corners=self.align_corners) for logit in logit_list
         ]

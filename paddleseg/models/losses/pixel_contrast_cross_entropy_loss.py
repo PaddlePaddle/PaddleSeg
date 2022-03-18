@@ -100,9 +100,12 @@ class PixelContrastCrossEntropyLoss(nn.Layer):
                 elif num_hard >= n_view / 2:
                     num_easy_keep = num_easy
                     num_hard_keep = n_view - num_easy_keep
-                else:
+                elif num_easy >= n_view / 2:
                     num_hard_keep = num_hard
                     num_easy_keep = n_view - num_hard_keep
+                else:
+                    num_hard_keep = num_hard
+                    num_easy_keep = num_easy
 
                 indices = None
                 if num_hard > 0:

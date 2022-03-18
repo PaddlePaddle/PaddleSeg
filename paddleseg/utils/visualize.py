@@ -40,7 +40,7 @@ def visualize(image, result, color_map, save_dir=None, weight=0.6):
     c1 = cv2.LUT(result, color_map[:, 0])
     c2 = cv2.LUT(result, color_map[:, 1])
     c3 = cv2.LUT(result, color_map[:, 2])
-    pseudo_img = np.dstack((c1, c2, c3))
+    pseudo_img = np.dstack((c3, c2, c1))
 
     im = cv2.imread(image)
     vis_result = cv2.addWeighted(im, weight, pseudo_img, 1 - weight, 0)

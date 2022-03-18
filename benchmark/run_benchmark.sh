@@ -44,6 +44,7 @@ function _train(){
     case ${run_mode} in
     sp) train_cmd="python -u train.py ${train_cmd}" ;;
     mp)
+        rm -rf ./mylog
         train_cmd="python -m paddle.distributed.launch --log_dir=./mylog --gpus=$CUDA_VISIBLE_DEVICES \
                   train.py ${train_cmd}" ;;
     *) echo "choose run_mode(sp or mp)"; exit 1;

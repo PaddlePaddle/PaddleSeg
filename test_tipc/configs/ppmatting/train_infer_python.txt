@@ -50,3 +50,5 @@ inference:contrib/Matting/deploy/python/infer.py
 --benchmark:True
 --save_dir:
 --model_name:ppmatting
+===========================infer_benchmark_params==========================
+random_infer_input:[{float32,[3,512,512]}]
