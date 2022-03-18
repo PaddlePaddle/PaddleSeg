@@ -51,7 +51,7 @@ NOTE:
 
 #### 模型性能
 
-| 模型名 |Input Size | FLOPS | Parameters | 计算耗时 | 模型大小 |
+| 模型名 |Input Size | FLOPs | Parameters | 计算耗时 | 模型大小 |
 |-|-|-|-|-|-|
 | PP-HumanSeg-Server | 512x512 | 114G | 26.8M | 37.96ms | 103Mb |
 | PP-HumanSeg-Mobile | 192x192 | 584M | 1.54M | 13.17ms | 5.9Mb |
@@ -68,7 +68,7 @@ NOTE:
 
 #### 模型性能
 
-| 模型名 |Input Size | FLOPS | Parameters | 计算耗时 | 模型大小 |
+| 模型名 |Input Size | FLOPs | Parameters | 计算耗时 | 模型大小 |
 |-|-|-|-|-|-|
 | PP-HumanSeg-Lite | 398x224 | 266M | 137K | 23.49ms | 543Kb |
 | PP-HumanSeg-Lite | 288x162 | 138M | 137K | 15.62ms | 543Kb |
