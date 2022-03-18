@@ -1,5 +1,5 @@
 # MedicalSeg
-Welcome to MedicalSeg! MedicalSeg is an easy-to-use 3D medical image segmentation toolkit that support GPU acceleration from data preprocess to deply. We aims to build our toolkit to support various datasets including lung, brain, and spine. (Currently contains lung-related dataset only.)
+Welcome to MedicalSeg! MedicalSeg is an easy-to-use 3D medical image segmentation toolkit that supports GPU acceleration from data preprocess to deply. We aim to build our toolkit to support various datasets including lung, brain, and spine. (Currently contains [COVID-19 CT scans](https://www.kaggle.com/andrewmvd/covid19-ct-scans) dataset and [MRISpineSeg](https://aistudio.baidu.com/aistudio/datasetdetail/81211).)
 
 ## 0. Model performance
 
@@ -32,10 +32,10 @@ We add gpu acceleration in data preprocess using [CuPy](https://docs.cupy.dev/en
 
 
 ## 1. Run our Vnet demo on [COVID-19 CT scans](https://www.kaggle.com/andrewmvd/covid19-ct-scans)
-You can run the demo in our [Aistudio project](https://aistudio.baidu.com/aistudio/projectdetail/3519594) as well or follow the following steps in your computer.
+You can run the demo in our [Aistudio project](https://aistudio.baidu.com/aistudio/projectdetail/3519594) as well or run locally with the following steps.
 - Download our repository.
     ```
-    git clone  https://github.com/PaddleCV-SIG/PaddleSeg3D.git
+    git clone https://github.com/PaddleCV-SIG/MedicalSeg.git
     cd MedicalSeg/
     ```
 - Install requirements:
@@ -47,7 +47,7 @@ You can run the demo in our [Aistudio project](https://aistudio.baidu.com/aistud
 - Get and preprocess the data:
     - change the GPU setting [here](tools/preprocess_globals.yml) to True if you installed CuPY and want to use GPU to accelerate.
     ```
-    python prepare_lung_coronavirus.py
+    python tools/prepare_lung_coronavirus.py
     ```
 
 - Run the train and validation example. (Refer to the following usage to get the correct result.)
@@ -94,7 +94,7 @@ Change configuration about loss, optimizer, dataset, and so on here. Our configu
 ### 2.2 Prepare the data
 We use the data preparation script to download, preprocess, convert, and split the data automatically. If you want to prepare the data as we did, you can run the data prepare file like the following:
 ```
-python prepare_lung_coronavirus.py # take the CONVID-19 CT scans as example.
+python tools/prepare_lung_coronavirus.py # take the CONVID-19 CT scans as example.
 ```
 
 ### 2.3 Train & Validate
@@ -159,7 +159,7 @@ As we mentioned, every dataset has its own configuration directory. If you want 
 ```
 
 ### 3.2. Add a new data preprocess file
-Your data need to be convert into numpy array and split into trainset and valset as our format. You can refer to the [prepare script](./tools/prepare_lung_coronavirus.py):
+Your data needs to be convert into numpy array and split into trainset and valset as our format. You can refer to the [prepare script](./tools/prepare_lung_coronavirus.py):
 
 ```python
 ├── lung_coronavirus_phase0  # the preprocessed file
@@ -174,7 +174,7 @@ Your data need to be convert into numpy array and split into trainset and valset
 ```
 
 ### 3.3. Add a dataset file
-Our dataset file inherit MedicalDataset base class, where data split is based on the train_list.txt and val_list.txt you generated from previous step. Details can infer the [dataset script](./medicalseg/datasets/lung_coronavirus.py).
+Our dataset file inherits MedicalDataset base class, where data split is based on the train_list.txt and val_list.txt you generated from previous step. For more details, please refer to the [dataset script](./medicalseg/datasets/lung_coronavirus.py).
 
 ### 3.4. Add a run script
 The run script is used to automate a series of process. To add your config file, just replicate the [run-vnet.sh](run-vnet.sh) and change it based on your thought. Here is the content of what they mean:
@@ -190,5 +190,4 @@ save_dir=saved_model/${config_name}                         # savedir of this ex
 ```
 
 ## 4. Acknowledgements
-Many thanks to [PaddleSeg](https://github.com/PaddlePaddle/PaddleSeg) for wonderful framework design that we borrowed.
-Many thanks to [itkwidgets](https://github.com/InsightSoftwareConsortium/itkwidgets) for their powerful visualization toolkit that we used to present our visualizations.
+Many thanks to [Lin Han](https://github.com/linhandev), [Lang Du](https://github.com/justld), [onecatcn](https://github.com/onecatcn) for their contribution in  our repository, and to [itkwidgets](https://github.com/InsightSoftwareConsortium/itkwidgets) for their powerful visualization toolkit that we used to present our visualizations.

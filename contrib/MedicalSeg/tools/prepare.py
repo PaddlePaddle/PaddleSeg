@@ -30,6 +30,7 @@ import numpy as np
 import nibabel as nib
 import nrrd
 import SimpleITK as sitk
+from tqdm import tqdm
 
 sys.path.append(
     os.path.join(os.path.dirname(os.path.realpath(__file__)), ".."))
@@ -118,9 +119,8 @@ class Prep:
             "The data directory you assigned is wrong, there is no file in it."
         )
 
-        for f in files:
+        for f in tqdm(files, total=len(files)):
             f_np = Prep.load_medical_data(f)
-
             if preprocess is not None:
                 for op in preprocess:
                     f_np = op(f_np)
@@ -129,7 +129,7 @@ class Prep:
             if tag == "image":
                 f_np = f_np.astype("float32")
             else:
-                f_np = f_np.astype("int64")
+                f_np = f_np.astype("int32")
 
             np.save(
                 os.path.join(save_path,
@@ -187,24 +187,36 @@ class Prep:
                         label_files=None,
                         train_split=None):
         """
-        split filenames and write the image names and label names on train.txt, val.txt or test.txt
+        Split filenames and write the image names and label names on train.txt, val.txt or test.txt.
+        Set the valset to 20% of images if all files need to be used in training.
 
         Args:
         txt(string): the path to the txt file, for example: "data/train.txt"
         image_files(list|tuple): the list of image names.
         label_files(list|tuple): the list of label names, order is corresponding with the image_files.
-        train_split(float): Number of the training files
+        train_split(float|int): Percentage of the trainset
 
         """
         if train_split is None:
             train_split = int(0.8 * len(image_files))
+        elif train_split <= 1:
+            train_split = int(train_split * len(image_files))
+        elif train_split > 1:
+            raise RuntimeError(
+                "Only have {} images but required {} images in trainset")
 
         if "train" in txt:
             image_names = image_files[:train_split]
             label_names = label_files[:train_split]
         elif "val" in txt:
-            image_names = image_files[train_split:]
-            label_names = label_files[train_split:]
+            # set the valset to 20% of images if all files need to be used in training
+            if train_split == len(image_files):
+                valsplit = int(0.8 * len(image_files))
+                image_names = image_files[valsplit:]
+                label_names = label_files[valsplit:]
+            else:
+                image_names = image_files[train_split:]
+                label_names = label_files[train_split:]
         elif "test" in txt:
             self.write_txt(txt, image_names)
 

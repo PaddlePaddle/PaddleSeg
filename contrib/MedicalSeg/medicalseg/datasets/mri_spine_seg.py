@@ -23,13 +23,13 @@ from medicalseg.cvlibs import manager
 from medicalseg.transforms import Compose
 from medicalseg.datasets import MedicalDataset
 
-URL = ' '  # todo: add luna url
+URL = ' '  # todo: add coronavirus url
 
 
 @manager.DATASETS.add_component
-class Luna16Lobe51(MedicalDataset):
+class MRISpineSeg(MedicalDataset):
     """
-    The Luna16 dataset is ...(todo: add link and description)
+    The MRISpineSeg dataset is come from the MRI Spine Seg competition
 
     Args:
         dataset_root (str): The dataset directory. Default: None
@@ -40,15 +40,15 @@ class Luna16Lobe51(MedicalDataset):
         Examples:
 
             transforms=[]
-            dataset_root = "data/luna16_lobe51/luna16_lobe51_phase0/"
-            dataset = Luna16Lobe51(dataset_root=dataset_root, transforms=[], num_classes=3, mode="train")
+            dataset_root = "data/lung_coronavirus/lung_coronavirus_phase0/"
+            dataset = LungCoronavirus(dataset_root=dataset_root, transforms=[], num_classes=3, mode="train")
+
             for data in dataset:
                 img, label = data
                 print(img.shape, label.shape) # (1, 128, 128, 128) (128, 128, 128)
                 print(np.unique(label))
 
     """
-    num_classes = 3
 
     def __init__(self,
                  dataset_root=None,
@@ -57,11 +57,26 @@ class Luna16Lobe51(MedicalDataset):
                  num_classes=None,
                  mode='train',
                  ignore_index=255):
-        super(Luna16Lobe51, self).__init__(dataset_root,
-                                           result_dir,
-                                           transforms,
-                                           num_classes,
-                                           mode,
-                                           ignore_index,
-                                           data_URL=URL)
+        super(MRISpineSeg, self).__init__(dataset_root,
+                                          result_dir,
+                                          transforms,
+                                          num_classes,
+                                          mode,
+                                          ignore_index,
+                                          data_URL=URL)
         self.num_classes = num_classes
+
+
+if __name__ == "__main__":
+    dataset = MRISpineSeg(
+        dataset_root="data/MRSpineSeg/MRI_spine_seg_phase0_class3",
+        result_dir="data/MRSpineSeg/MRI_spine_seg_phase1",
+        transforms=[],
+        mode="train",
+        num_classes=3)
+    for item in dataset:
+        img, label = item
+        if np.any(np.isnan(img)):
+            print(img.dtype, label.dtype)  # (1, 128, 128, 12) float32, int64
+            import pdb
+            pdb.set_trace()

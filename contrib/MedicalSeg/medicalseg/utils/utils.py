@@ -17,6 +17,8 @@ import filelock
 import os
 import tempfile
 import numpy as np
+import nibabel
+from collections.abc import Iterable
 import random
 from urllib.parse import urlparse, unquote
 
@@ -194,3 +196,38 @@ def get_image_list(image_path, valid_suffix=None, filter_key=None):
             'There are not image file in `--image_path`={}'.format(image_path))
 
     return image_list
+
+
+def save_array(save_path, save_content, form):
+    if not isinstance(save_content, dict):
+        raise TypeError(
+            'The save_content need to be dict which the key is the save name and the value is the numpy array to be saved, but recieved {}'
+            .format(type(save_content)))
+
+    for (key, val) in save_content.items():
+        if not isinstance(val, np.ndarray):
+            raise TypeError('We only save numpy array, but recieved {}'.format(
+                type(val)))
+        if len(val.shape) > 3:
+            save_content[key] = np.squeeze(val)
+
+    if not isinstance(form, Iterable):
+        raise TypeError('The form need be iterable, but recieved {}'.format(
+            type(form)))
+
+    if save_path is not None:
+        for suffix in form:
+            if suffix == 'npy':
+                for (key, val) in save_content.items():
+                    np.save('{}_{}.npy'.format(save_path, key), val)
+            elif suffix == 'nii' or suffix == 'nii.gz':
+                for (key, val) in save_content.items():
+                    nifti_file = nibabel.Nifti1Image(val, np.eye(4))
+                    nibabel.save(nifti_file,
+                                 '{}_{}.{}'.format(save_path, key, suffix))
+            else:
+                raise RuntimeError(
+                    'Save format other than npy or nii/nii.gz is not supported yet.'
+                )
+
+        print("[EVAL] Sucessfully save {}.".format(save_path))

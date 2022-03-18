@@ -65,7 +65,9 @@ class Compose:
             if len(outputs) == 2:
                 label = outputs[1]
         im = np.expand_dims(im, axis=0)
-        im /= im.max()
+        if im.max() > 0:
+            im = im / im.max()
+
         return (im, label)
 
 
@@ -241,7 +243,7 @@ class RandomResizedCrop3D:
     def get_params(self, img, scale, ratio):
         """Get parameters for ``crop`` for a random sized crop.
         Args:
-            img (numpy ndarray): Image to be cropped.
+            img (numpy ndarray): Image to be cropped. d, h, w
             scale (tuple): range of size of the origin size cropped
             ratio (tuple): range of aspect ratio of the origin aspect ratio cropped
         Returns:

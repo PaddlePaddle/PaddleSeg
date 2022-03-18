@@ -87,7 +87,7 @@ def train(model,
     batch_sampler = paddle.io.DistributedBatchSampler(train_dataset,
                                                       batch_size=batch_size,
                                                       shuffle=True,
-                                                      drop_last=True)
+                                                      drop_last=False)
 
     loader = paddle.io.DataLoader(
         train_dataset,
@@ -154,8 +154,9 @@ def train(model,
             train_profiler.add_profiler_step(profiler_options)
 
             model.clear_gradients()
-            avg_loss += loss.numpy()[
-                0]  # TODO use a function to record, print lossetc
+            # TODO use a function to record, print lossetc
+
+            avg_loss += loss.numpy()[0]
             mdice += np.mean(per_channel_dice) * 100
 
             if channel_dice_array.size == 0:

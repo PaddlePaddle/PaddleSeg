@@ -15,3 +15,4 @@
 from .dataset import MedicalDataset
 from .lung_coronavirus import LungCoronavirus
 from .luna16_lobe51 import Luna16Lobe51
+from .mri_spine_seg import MRISpineSeg

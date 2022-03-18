@@ -17,7 +17,6 @@ import numbers
 import random
 
 import numpy as np
-import cv2
 import scipy
 import scipy.ndimage
 import SimpleITK as sitk

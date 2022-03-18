@@ -18,7 +18,6 @@ import platform
 import subprocess
 import sys
 
-import cv2
 import paddle
 
 IS_WINDOWS = sys.platform == 'win32'
@@ -117,6 +116,6 @@ def get_sys_env():
         pass
 
     env_info['PaddlePaddle'] = paddle.__version__
-    env_info['OpenCV'] = cv2.__version__
+    # env_info['OpenCV'] = cv2.__version__
 
     return env_info

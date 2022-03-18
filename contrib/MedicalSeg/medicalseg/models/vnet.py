@@ -30,7 +30,6 @@ from medicalseg.utils import utils
 
 
 class LUConv(nn.Layer):
-
     def __init__(self, nchan, elu):
         super(LUConv, self).__init__()
         self.relu1 = nn.ELU() if elu else nn.PReLU(nchan)
@@ -45,6 +44,10 @@ class LUConv(nn.Layer):
 
 
 def _make_nConv(nchan, depth, elu):
+    """
+    Make depth number of layer(convbnrelu) and don't change the channel
+    Add Nonlinearity into the network
+    """
     layers = []
     for _ in range(depth):
         layers.append(LUConv(nchan, elu))
@@ -52,16 +55,17 @@ def _make_nConv(nchan, depth, elu):
 
 
 class InputTransition(nn.Layer):
+    """
+    Transfer the input into 16 channels + tiled input
+    """
 
     def __init__(self, in_channels, elu):
         super(InputTransition, self).__init__()
         self.num_features = 16
         self.in_channels = in_channels
 
-        self.conv1 = nn.Conv3D(self.in_channels,
-                               self.num_features,
-                               kernel_size=5,
-                               padding=2)
+        self.conv1 = nn.Conv3D(
+            self.in_channels, self.num_features, kernel_size=5, padding=2)
 
         self.bn1 = nn.BatchNorm3D(self.num_features)
 
@@ -76,13 +80,23 @@ class InputTransition(nn.Layer):
 
 
 class DownTransition(nn.Layer):
-
-    def __init__(self, inChans, nConvs, elu, dropout=False):
+    def __init__(self,
+                 inChans,
+                 nConvs,
+                 elu,
+                 dropout=False,
+                 downsample_stride=(2, 2, 2),
+                 kernel=(2, 2, 2)):
+        """
+        1. double the output channel and downsample the input using down_conv(the kernel size can be changed)
+        2. add dropout by option
+        3. add nConvs layer to add linearity and add with original downsample one
+        """
         super(DownTransition, self).__init__()
         outChans = 2 * inChans
         self.if_dropout = dropout
-        # todo: replace with module
-        self.down_conv = nn.Conv3D(inChans, outChans, kernel_size=2, stride=2)
+        self.down_conv = nn.Conv3D(
+            inChans, outChans, kernel_size=kernel, stride=downsample_stride)
         self.bn1 = nn.BatchNorm3D(outChans)
         self.relu1 = nn.ELU() if elu else nn.PReLU(outChans)
         self.relu2 = nn.ELU() if elu else nn.PReLU(outChans)
@@ -100,19 +114,27 @@ class DownTransition(nn.Layer):
 
 
 class UpTransition(nn.Layer):
-
     def __init__(self,
                  inChans,
                  outChans,
                  nConvs,
                  elu,
                  dropout=False,
-                 dropout2=False):
+                 dropout2=False,
+                 upsample_stride_size=(2, 2, 2),
+                 kernel=(2, 2, 2)):
         super(UpTransition, self).__init__()
-        self.up_conv = nn.Conv3DTranspose(inChans,
-                                          outChans // 2,
-                                          kernel_size=2,
-                                          stride=2)
+        """
+        1. Add dropout to input and skip input optionally (generalization)
+        2. Use Conv3DTranspose to upsample (upsample)
+        3. concate the upsampled and skipx (multi-leval feature fusion)
+        4. Add nConvs convs and residually add with result of step(residual + nonlinearity)
+        """
+        self.up_conv = nn.Conv3DTranspose(
+            inChans,
+            outChans // 2,
+            kernel_size=kernel,
+            stride=upsample_stride_size)
 
         self.bn1 = nn.BatchNorm3D(outChans // 2)
         self.relu1 = nn.ELU() if elu else nn.PReLU(outChans // 2)
@@ -135,20 +157,19 @@ class UpTransition(nn.Layer):
 
 
 class OutputTransition(nn.Layer):
-
     def __init__(self, in_channels, num_classes, elu):
+        """
+        conv the output down to channels as the desired classesv
+        """
         super(OutputTransition, self).__init__()
-        self.conv1 = nn.Conv3D(in_channels,
-                               num_classes,
-                               kernel_size=5,
-                               padding=2)
+        self.conv1 = nn.Conv3D(
+            in_channels, num_classes, kernel_size=5, padding=2)
         self.bn1 = nn.BatchNorm3D(num_classes)
 
         self.conv2 = nn.Conv3D(num_classes, num_classes, kernel_size=1)
         self.relu1 = nn.ELU() if elu else nn.PReLU(num_classes)
 
     def forward(self, x):
-        # convolve 32 down to channels as the desired classes
         out = self.relu1(self.bn1(self.conv1(x)))
         out = self.conv2(out)
         return out
@@ -164,31 +185,73 @@ class VNet(nn.Layer):
                  elu=False,
                  in_channels=1,
                  num_classes=4,
-                 pretrained=None):
+                 pretrained=None,
+                 kernel_size=((2, 2, 2), (2, 2, 2), (2, 2, 2), (2, 2, 2)),
+                 stride_size=((2, 2, 2), (2, 2, 2), (2, 2, 2), (2, 2, 2))):
         super().__init__()
         self.best_loss = 1000000
         self.num_classes = num_classes
         self.in_channels = in_channels
 
         self.in_tr = InputTransition(in_channels, elu=elu)
-        self.down_tr32 = DownTransition(16, 1, elu)
-        self.down_tr64 = DownTransition(32, 2, elu)
-        self.down_tr128 = DownTransition(64, 3, elu, dropout=True)
-        self.down_tr256 = DownTransition(128, 2, elu, dropout=True)
-        self.up_tr256 = UpTransition(256,
-                                     256,
-                                     2,
-                                     elu,
-                                     dropout=True,
-                                     dropout2=True)
-        self.up_tr128 = UpTransition(256,
-                                     128,
-                                     2,
-                                     elu,
-                                     dropout=True,
-                                     dropout2=True)
-        self.up_tr64 = UpTransition(128, 64, 1, elu)
-        self.up_tr32 = UpTransition(64, 32, 1, elu)
+        self.down_tr32 = DownTransition(
+            16,
+            1,
+            elu,
+            downsample_stride=stride_size[0],
+            kernel=kernel_size[0])
+        self.down_tr64 = DownTransition(
+            32,
+            2,
+            elu,
+            downsample_stride=stride_size[1],
+            kernel=kernel_size[1])
+        self.down_tr128 = DownTransition(
+            64,
+            3,
+            elu,
+            dropout=True,
+            downsample_stride=stride_size[2],
+            kernel=kernel_size[2])
+        self.down_tr256 = DownTransition(
+            128,
+            2,
+            elu,
+            dropout=True,
+            downsample_stride=stride_size[3],
+            kernel=kernel_size[3])
+        self.up_tr256 = UpTransition(
+            256,
+            256,
+            2,
+            elu,
+            dropout=True,
+            dropout2=True,
+            upsample_stride_size=stride_size[3],
+            kernel=kernel_size[3])
+        self.up_tr128 = UpTransition(
+            256,
+            128,
+            2,
+            elu,
+            dropout=True,
+            dropout2=True,
+            upsample_stride_size=stride_size[2],
+            kernel=kernel_size[2])
+        self.up_tr64 = UpTransition(
+            128,
+            64,
+            1,
+            elu,
+            upsample_stride_size=stride_size[1],
+            kernel=kernel_size[1])
+        self.up_tr32 = UpTransition(
+            64,
+            32,
+            1,
+            elu,
+            upsample_stride_size=stride_size[0],
+            kernel=kernel_size[0])
         self.out_tr = OutputTransition(32, num_classes, elu)
 
         self.pretrained = pretrained
@@ -200,14 +263,14 @@ class VNet(nn.Layer):
 
     def forward(self, x):
         out16 = self.in_tr(x)  # dropout cause a lot align problem
-        out32 = self.down_tr32(out16)
-        out64 = self.down_tr64(out32)
-        out128 = self.down_tr128(out64)
-        out256 = self.down_tr256(out128)
-        out = self.up_tr256(out256, out128)
-        out = self.up_tr128(out, out64)
-        out = self.up_tr64(out, out32)
-        out = self.up_tr32(out, out16)
+        out32 = self.down_tr32(out16)  # [4, 32, 256, 256, 9]
+        out64 = self.down_tr64(out32)  # [4, 64, 128, 128, 8]
+        out128 = self.down_tr128(out64)  # [4, 128, 64, 64, 4]
+        out256 = self.down_tr256(out128)  # [4, 256, 32, 32, 2]
+        out = self.up_tr256(out256, out128)  # [4, 256, 64, 64, 4]
+        out = self.up_tr128(out, out64)  # [4, 128, 128, 128, 8]
+        out = self.up_tr64(out, out32)  # [4, 64, 256, 256, 9]
+        out = self.up_tr32(out, out16)  # [4, 32, 512, 512, 12]
         out = self.out_tr(out)
         return [
             out,

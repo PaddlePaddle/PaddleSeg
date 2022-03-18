@@ -1,13 +1,12 @@
 # set your GPU ID here
-export CUDA_VISIBLE_DEVICES=0
+export CUDA_VISIBLE_DEVICES=3
 
 # set the config file name and save directory here
-yml=lung_coronavirus/vnet_lung_coronavirus_128_128_128_15k
 config_name=vnet_lung_coronavirus_128_128_128_15k
+yml=lung_coronavirus/${config_name}
 save_dir_all=saved_model
 save_dir=saved_model/${config_name}
-mkdir $save_dir_all
-mkdir $save_dir
+mkdir -p $save_dir
 
 # Train the model: see the train.py for detailed explanation on script args
 python3 train.py --config configs/${yml}.yml \

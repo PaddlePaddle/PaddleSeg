@@ -23,7 +23,7 @@ from medicalseg.cvlibs import manager
 from medicalseg.transforms import Compose
 from medicalseg.datasets import MedicalDataset
 
-URL = ' '  # todo: add coronavirus url
+URL = ' '  # todo: add coronavirus url after preprocess
 
 
 @manager.DATASETS.add_component
@@ -57,11 +57,24 @@ class LungCoronavirus(MedicalDataset):
                  num_classes=None,
                  mode='train',
                  ignore_index=255):
-        super(LungCoronavirus, self).__init__(dataset_root,
-                                              result_dir,
-                                              transforms,
-                                              num_classes,
-                                              mode,
-                                              ignore_index,
-                                              data_URL=URL)
+        super(LungCoronavirus, self).__init__(
+            dataset_root,
+            result_dir,
+            transforms,
+            num_classes,
+            mode,
+            ignore_index,
+            data_URL=URL)
         self.num_classes = num_classes
+
+
+if __name__ == "__main__":
+    dataset = LungCoronavirus(
+        dataset_root="data/lung_coronavirus/lung_coronavirus_phase0",
+        result_dir="data/lung_coronavirus/lung_coronavirus_phase1",
+        transforms=[],
+        mode="train",
+        num_classes=23)
+    for item in dataset:
+        img, label = item
+        print(img.dtype, label.dtype)

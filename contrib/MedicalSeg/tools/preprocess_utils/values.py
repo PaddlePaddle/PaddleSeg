@@ -44,11 +44,21 @@ def label_remap(label, map_dict=None):
     return label
 
 
+def Normalize(image, min_val, max_val):
+    "Normalize the image with given min_val and max val "
+    if not isinstance(image, np.ndarray):
+        image = np.array(image)
+    image = (image - min_val) / (max_val - min_val)
+    np.clip(image, 0, 1, out=image)
+
+    return image
+
+
 def HUNorm(image, HU_min=-1000, HU_max=600, HU_nan=-2000):
     """
-    Convert HU unit into uint8 values. First bound HU values by predfined min
+    Convert CT HU unit into uint8 values. First bound HU values by predfined min
     and max, and then normalize. Due to paddle.nn.conv3D doesn't support uint8, we need to convert
-    the returned image as float32
+    the returned image as float32.
 
     image: 3D numpy array of raw HU values from CT series in [z, y, x] order.
     HU_min: float, min HU value.
@@ -60,7 +70,7 @@ def HUNorm(image, HU_min=-1000, HU_max=600, HU_nan=-2000):
         image = np.array(image)
     image = np.nan_to_num(image, copy=False, nan=HU_nan)
 
-    image = (image - HU_min) / ((HU_max - HU_min))
+    image = (image - HU_min) / (HU_max - HU_min)
     np.clip(image, 0, 1, out=image)
 
     return image
