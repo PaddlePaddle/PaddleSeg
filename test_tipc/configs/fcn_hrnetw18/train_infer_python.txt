@@ -13,7 +13,7 @@ train_infer_img_dir:test_tipc/data/cityscapes/test.txt
 null:null
 ##
 trainer:norm
-norm_train:train.py --config test_tipc/configs/fcn_hrnetw18/fcn_hrnetw18_1024x512_cityscapes.yml --do_eval --save_interval 500 --seed 100
+norm_train:train.py --config test_tipc/configs/fcn_hrnetw18/fcn_hrnetw18_1024x512_cityscapes.yml --save_interval 500 --seed 100 --num_workers 8
 pact_train:null
 fpgm_train:null
 distill_train:null
