@@ -13,7 +13,7 @@ train_infer_img_dir:test_tipc/data/cityscapes/val.list
 null:null
 ##
 trainer:norm
-norm_train:train.py --config test_tipc/configs/segformer_b0/segformer_b0_cityscapes_1024x1024_160k.yml --do_eval --save_interval 500 --seed 100
+norm_train:train.py --config test_tipc/configs/segformer_b0/segformer_b0_cityscapes_1024x1024_160k.yml --save_interval 500 --seed 100 --num_workers 8
 pact_train:null
 fpgm_train:null
 distill_train:null

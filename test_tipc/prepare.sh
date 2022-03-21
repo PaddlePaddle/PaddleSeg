@@ -50,10 +50,15 @@ fi
 if [ ${MODE} = "benchmark_train" ];then
     pip install -r requirements.txt
     mkdir -p ./test_tipc/data
-    wget https://paddleseg.bj.bcebos.com/dataset/cityscapes_30imgs.tar.gz \
-        -O ./test_tipc/data/cityscapes_30imgs.tar.gz
-    tar -zxf ./test_tipc/data/cityscapes_30imgs.tar.gz -C ./test_tipc/data/
-    mv ./test_tipc/data/cityscapes_30imgs ./test_tipc/data/cityscapes
+    if [ ${model_name} == "deeplabv3p_resnet50" ] || [ ${model_name} == "fcn_hrnetw18" ] ;then   # 需要使用全量数据集,否则性能下降
+        wget https://paddleseg.bj.bcebos.com/dataset/cityscapes.tar -O ./test_tipc/data/cityscapes.tar
+        tar -xf ./test_tipc/data/cityscapes.tar  -C ./test_tipc/data/
+    else
+        wget https://paddleseg.bj.bcebos.com/dataset/cityscapes_30imgs.tar.gz \
+            -O ./test_tipc/data/cityscapes_30imgs.tar.gz
+        tar -zxf ./test_tipc/data/cityscapes_30imgs.tar.gz -C ./test_tipc/data/
+        mv ./test_tipc/data/cityscapes_30imgs ./test_tipc/data/cityscapes
+    fi
 else
     if [ ${model_name} == "fcn_hrnetw18_small" ] || [ ${model_name} == "pphumanseg_lite" ] || [ ${model_name} == "deeplabv3p_resnet50" ];then
         rm -rf ./test_tipc/data/mini_supervisely
