@@ -18,7 +18,7 @@ English | [简体中文](faq_cn.md)
 
 
 ## Q2: Why PaddleSeg do not setting epoch?
-* **Answer**: 
+* **Answer**:
 
 > The way to set the `epoch` will be affected by the size of the dataset. So we support set `iters`.
 
@@ -36,7 +36,7 @@ English | [简体中文](faq_cn.md)
 
 
 ## Q3: What is the loading sequence of the data augmentation configuration?
-* **Answer**: 
+* **Answer**:
 
 > Since the configuration of data augmentation is specified in the yaml file, it's important to introduce the basic knowledge of the configuration file in PaddleSeg.
 
@@ -58,7 +58,7 @@ _base_: '../_base_/cityscapes_1024x1024.yml'
 
 
 ## Q4: Why does the data augmentation configuration cause a DataLoader reader thread error?
-* **Answer**: 
+* **Answer**:
 
 > If you are using a custom dataset with inconsistent shapes, this may be an error caused by improper data augmentation loading sequence.
 
@@ -80,7 +80,7 @@ _base_: '../_base_/cityscapes_1024x1024.yml'
 ## Q6: Why is best_model not saved during training?
 * **Answer**:
 
-> The `best_model` is obtained by evaluation and comparison during the training process. 
+> The `best_model` is obtained by evaluation and comparison during the training process.
 
 > Therefore, you need to enable the option `--do_eval` before training.
 
@@ -95,5 +95,3 @@ A relatively simple method is: copy the contents of the first generated log and 
 > In addition, if it is similar to the situation of continuing training after interruption, you can specify the log name when calling visualdl, so that you can continue to write directly in the specified log file.
 
 > Please refer: https://github.com/PaddlePaddle/VisualDL/blob/develop/docs/faq_CN.md#%E5%A6%82%E4%BD%95%E4%BF%AE%E6%94%B9%E5%B7%B2%E6%9C%89%E7%9A%84%E6%97%A5%E5%BF%97%E6%96%87%E4%BB%B6
-
-

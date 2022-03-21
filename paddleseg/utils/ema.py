@@ -15,6 +15,7 @@
 import numpy as np
 import paddle
 
+
 class EMA(object):
     """
     The implementation of Exponential Moving Average for the trainable parameters.
@@ -51,6 +52,7 @@ class EMA(object):
             ema.restore()   # Restore the origin data to the model
 
     """
+
     def __init__(self, model, decay=0.99):
         super().__init__()
 

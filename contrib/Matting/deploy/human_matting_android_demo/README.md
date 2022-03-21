@@ -47,11 +47,11 @@ Two methods will be introduced in the following：
 
 * Use a precompiled version of the inference library. Latest precompiled file reference：[release](https://github.com/PaddlePaddle/Paddle-Lite/releases/). This demo uses the [version](https://paddlelite-demo.bj.bcebos.com/libs/android/paddle_lite_libs_v2_8_0.tar.gz)
 
-	Uncompress the above files and the PaddlePredictor.jar is in java/PaddlePredictor.jar;
+    Uncompress the above files and the PaddlePredictor.jar is in java/PaddlePredictor.jar;
 
-	The so file about arm64-v8a is in java/libs/arm64-v8a;
+    The so file about arm64-v8a is in java/libs/arm64-v8a;
 
-	The so file about armeabi-v7a is in java/libs/armeabi-v7a;
+    The so file about armeabi-v7a is in java/libs/armeabi-v7a;
 
 * Manually compile the paddle-Lite inference library
 Development environment preparation and compilation methods refer to [paddle-Lite source code compilation](https://paddle-lite.readthedocs.io/zh/release-v2.8/source_compile/compile_env.html).

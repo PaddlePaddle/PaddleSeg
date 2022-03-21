@@ -232,8 +232,7 @@ class GCN(nn.Layer):
             kernel_size=1,
             padding=0,
             stride=1,
-            groups=1,
-        )
+            groups=1, )
         self.relu = nn.ReLU()
         self.conv2 = nn.Conv1D(
             num_state,

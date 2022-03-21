@@ -25,7 +25,7 @@ Requirements:
 Details:
 * Run the original model and quantized model on Nvidia GPU and enable TensorRT.
 * Use one Nvidia GPU and the batch size is 1.
-* Use the test dataset of Cityscapes with the size of 1024*2048. 
+* Use the test dataset of Cityscapes with the size of 1024*2048.
 * Only count the cost time of running predictor.
 
 
@@ -62,7 +62,7 @@ Run the following instructions to install PaddleSlim.
 ```shell
 git clone https://github.com/PaddlePaddle/PaddleSlim.git
 
-# checkout to special commit 
+# checkout to special commit
 git reset --hard 15ef0c7dcee5a622787b7445f21ad9d1dea0a933
 
 # install
@@ -82,7 +82,7 @@ Specifically, run the following instructions in the root directory of PaddleSeg.
 
 ```shell
 export CUDA_VISIBLE_DEVICES=0  # Set GPU for Linux
-# set CUDA_VISIBLE_DEVICES=0   # Seg GPU for Windows 
+# set CUDA_VISIBLE_DEVICES=0   # Seg GPU for Windows
 
 python train.py \
        --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml \
@@ -104,7 +104,7 @@ The usage of `qat_train.py` and `train.py` is basically the same, and the former
 
 | Input Params        | Usage                                                        | Optional   | Default Value          |
 | ------------------- | ------------------------------------------------------------ | ---------- | ----------------  |
-| config              | The config path of the original model                        | No         |     -             | 
+| config              | The config path of the original model                        | No         |     -             |
 | model_path          | The path of weight of the original model                     | No         |     -             |
 | iters               | Iterations                                                   | Yes        | The iters in config         |
 | batch_size          | Batch size for single GPU                                    | Yes        | The batch_size in config    |
@@ -118,7 +118,7 @@ The usage of `qat_train.py` and `train.py` is basically the same, and the former
 | resume_model        | The resume path, such as：`output/iter_1000`                  | Yes       | None             |
 
 
-Run the following instructions in the root directory of PaddleSeg to start the quantization training. 
+Run the following instructions in the root directory of PaddleSeg to start the quantization training.
 After the quantization training, the quantized model with the highest accuracy will be saved in `output_quant/best_model`.
 
 ```shell
@@ -157,7 +157,7 @@ The input params of the script are as follows.
 |with_softmax   | Whether to add softmax layer to the last of the inference model     | Yes | False                    |
 |without_argmax | Whether not to add argmax layer to the last of the inference mode   | Yes | False                    |
 
-Run the following instructions in the root directory of PaddleSeg. Then, the quantized inference model will be saved in `output_quant_infer`. 
+Run the following instructions in the root directory of PaddleSeg. Then, the quantized inference model will be saved in `output_quant_infer`.
 
 ```
 python slim/quant/qat_export.py \
@@ -169,7 +169,7 @@ python slim/quant/qat_export.py \
 ### 3.3 Deploy the Quantized Model
 
 We deploy the quantized inference model on Nvidia GPU and X86 CPU with Paddle Inference.
-Besides, Paddle Lite support deploying the quantized model on ARM CPU. 
+Besides, Paddle Lite support deploying the quantized model on ARM CPU.
 
 Please refer to the documents for detail information:
 * [Paddle Inference Python Deployment](../../deployment/inference/python_inference.md)
@@ -180,5 +180,3 @@ Please refer to the documents for detail information:
 
 * [PaddleSlim Github](https://github.com/PaddlePaddle/PaddleSlim)
 * [PaddleSlim Documents](https://paddleslim.readthedocs.io/zh_CN/latest/)
-
-

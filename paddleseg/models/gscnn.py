@@ -237,9 +237,13 @@ class GatedSpatailConv2d(nn.Layer):
         super().__init__()
         self._gate_conv = nn.Sequential(
             layers.SyncBatchNorm(in_channels + 1),
-            nn.Conv2D(in_channels + 1, in_channels + 1, kernel_size=1),
-            nn.ReLU(), nn.Conv2D(in_channels + 1, 1, kernel_size=1),
-            layers.SyncBatchNorm(1), nn.Sigmoid())
+            nn.Conv2D(
+                in_channels + 1, in_channels + 1, kernel_size=1),
+            nn.ReLU(),
+            nn.Conv2D(
+                in_channels + 1, 1, kernel_size=1),
+            layers.SyncBatchNorm(1),
+            nn.Sigmoid())
         self.conv = nn.Conv2D(
             in_channels,
             out_channels,

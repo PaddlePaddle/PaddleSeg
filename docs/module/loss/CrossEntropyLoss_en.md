@@ -5,8 +5,8 @@ The cross entropy (CE) method has become one of the most popular loss functions 
 CrossEntropyLoss is often used for multi-pixel segmentation tasks. It describes the difference between two probability distributions. It can be used to describe the gap between the current model and the actual model (during the training process, we temporarily think that the given label set It is the model in the real world). Note: Logistic regression in machine learning algorithms is a special case of this kind of cross-entropy.
 ```python
 class paddleseg.models.losses.CrossEntropyLoss(
-                weight = None, 
-                ignore_index = 255, 
+                weight = None,
+                ignore_index = 255,
                 top_k_percent_pixels = 1.0
 )
 ```

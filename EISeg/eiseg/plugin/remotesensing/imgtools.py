@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 import numpy as np
 import cv2
 import operator
@@ -20,15 +19,16 @@ from functools import reduce
 
 
 # 2%线性拉伸
-def two_percentLinear(image: np.array, max_out: int=255, min_out: int=0) -> np.array:
+def two_percentLinear(image: np.array, max_out: int=255,
+                      min_out: int=0) -> np.array:
     b, g, r = cv2.split(image)
 
     def __gray_process(gray, maxout=max_out, minout=min_out):
         high_value = np.percentile(gray, 98)  # 取得98%直方图处对应灰度
         low_value = np.percentile(gray, 2)
         truncated_gray = np.clip(gray, a_min=low_value, a_max=high_value)
-        processed_gray = ((truncated_gray - low_value) / (high_value - low_value)) * (
-            maxout - minout)
+        processed_gray = ((truncated_gray - low_value) /
+                          (high_value - low_value)) * (maxout - minout)
         return processed_gray
 
     r_p = __gray_process(r)
@@ -45,13 +45,11 @@ def sample_norm(image: np.array, NUMS: int=65536) -> np.array:
     stretched_r = __stretch(image[:, :, 0], NUMS)
     stretched_g = __stretch(image[:, :, 1], NUMS)
     stretched_b = __stretch(image[:, :, 2], NUMS)
-    stretched_img = cv2.merge(
-        [
-            stretched_r / float(NUMS),
-            stretched_g / float(NUMS),
-            stretched_b / float(NUMS),
-        ]
-    )
+    stretched_img = cv2.merge([
+        stretched_r / float(NUMS),
+        stretched_g / float(NUMS),
+        stretched_b / float(NUMS),
+    ])
     return np.uint8(stretched_img * 255)
 
 
@@ -61,7 +59,7 @@ def __stretch(ima: np.array, NUMS: int) -> np.array:
     lut = []
     for bt in range(0, len(hist), NUMS):
         # 步长尺寸
-        step = reduce(operator.add, hist[bt : bt + NUMS]) / (NUMS - 1)
+        step = reduce(operator.add, hist[bt:bt + NUMS]) / (NUMS - 1)
         # 创建均衡的查找表
         n = 0
         for i in range(NUMS):
@@ -82,7 +80,8 @@ def __histogram(ima: np.array, NUMS: int) -> np.array:
 
 
 # 计算缩略图
-def get_thumbnail(image: np.array, range: int=2000, max_size: int=1000) -> np.array:
+def get_thumbnail(image: np.array, range: int=2000,
+                  max_size: int=1000) -> np.array:
     h, w = image.shape[:2]
     if h >= range or w >= range:
         if h >= w:

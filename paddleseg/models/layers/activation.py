@@ -60,8 +60,8 @@ class Activation(nn.Layer):
         if act is not None:
             if act in act_dict.keys():
                 act_name = act_dict[act]
-                self.act_func = eval(
-                    "nn.layer.activation.{}()".format(act_name))
+                self.act_func = eval("nn.layer.activation.{}()".format(
+                    act_name))
             else:
                 raise KeyError("{} does not exist in the current {}".format(
                     act, act_dict.keys()))

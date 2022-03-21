@@ -103,14 +103,12 @@ def parse_args():
         default="fp32",
         type=str,
         choices=["fp32", "fp16"],
-        help=
-        "Use AMP if precision='fp16'. If precision='fp32', the training is normal."
+        help="Use AMP if precision='fp16'. If precision='fp32', the training is normal."
     )
     parser.add_argument(
         '--data_format',
         dest='data_format',
-        help=
-        'Data format that specifies the layout of input. It can be "NCHW" or "NHWC". Default: "NCHW".',
+        help='Data format that specifies the layout of input. It can be "NCHW" or "NHWC". Default: "NCHW".',
         type=str,
         default='NCHW')
     parser.add_argument(

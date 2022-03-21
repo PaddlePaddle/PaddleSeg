@@ -72,4 +72,3 @@ English | [简体中文](README_cn.md)
 >    * transforms: Preprocessing operations during prediction. The transforms are the same as train_dataset, val_datasetetc. If you do not fill in this item, the data will be normalized by default.
 
 For more details, please refer to [detailed configuration file](../docs/design/use/use.md)
-

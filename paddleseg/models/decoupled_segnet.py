@@ -128,14 +128,17 @@ class DecoupledSegNetHead(nn.Layer):
                 in_channels=256,
                 out_channels=48,
                 kernel_size=3,
-                bias_attr=False), nn.Conv2D(48, 1, 1, bias_attr=False))
+                bias_attr=False),
+            nn.Conv2D(
+                48, 1, 1, bias_attr=False))
         self.dsn_seg_body = nn.Sequential(
             layers.ConvBNReLU(
                 in_channels=256,
                 out_channels=256,
                 kernel_size=3,
-                bias_attr=False), nn.Conv2D(
-                    256, num_classes, 1, bias_attr=False))
+                bias_attr=False),
+            nn.Conv2D(
+                256, num_classes, 1, bias_attr=False))
 
         self.final_seg = nn.Sequential(
             layers.ConvBNReLU(
@@ -148,7 +151,8 @@ class DecoupledSegNetHead(nn.Layer):
                 out_channels=256,
                 kernel_size=3,
                 bias_attr=False),
-            nn.Conv2D(256, num_classes, kernel_size=1, bias_attr=False))
+            nn.Conv2D(
+                256, num_classes, kernel_size=1, bias_attr=False))
 
     def forward(self, feat_list):
         fine_fea = feat_list[self.backbone_indices[0]]
