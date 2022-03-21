@@ -1,0 +1,41 @@
+-   repo: local
+    hooks:
+    -   id: yapf
+        name: yapf
+        entry: yapf
+        language: system
+        args: [-i, --style .style.yapf]
+        files: \.py$
+
+-   repo: https://github.com/pre-commit/pre-commit-hooks
+    sha: a11d9314b22d8f8c7556443875b731ef05965464
+    hooks:
+    -   id: check-merge-conflict
+    -   id: check-symlinks
+    -   id: end-of-file-fixer
+    -   id: trailing-whitespace
+    -   id: detect-private-key
+    -   id: check-symlinks
+    -   id: check-added-large-files
+
+-   repo: local
+    hooks:
+    -   id: flake8
+        name: flake8
+        entry: flake8
+        language: system
+        args:
+        -   --count
+        -   --select=E9,F63,F7,F82
+        -   --show-source
+        -   --statistics
+        files: \.py$
+
+-   repo: local
+    hooks:
+    -   id: copyright_checker
+        name: copyright_checker
+        entry: python ./.copyright.hook
+        language: system
+        files: \.(c|cc|cxx|cpp|cu|h|hpp|hxx|proto|py)$
+        exclude: (?!.*third_party)^.*$
