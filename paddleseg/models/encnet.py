@@ -40,6 +40,7 @@ class ENCNet(nn.Layer):
         add_lateral (int): Whether use lateral convolution layers. Default: False.
         pretrained (str, optional): The path or url of pretrained model. Default: None.
     """
+
     def __init__(self,
                  num_classes,
                  backbone,
@@ -62,8 +63,7 @@ class ENCNet(nn.Layer):
             in_channels[-1],
             mid_channels,
             3,
-            padding=1,
-        )
+            padding=1, )
         if self.add_lateral:
             self.lateral_convs = nn.LayerList()
             for in_ch in in_channels[:-1]:
@@ -71,14 +71,12 @@ class ENCNet(nn.Layer):
                     layers.ConvBNReLU(
                         in_ch,
                         mid_channels,
-                        1,
-                    ))
+                        1, ))
             self.fusion = layers.ConvBNReLU(
                 len(in_channels) * mid_channels,
                 mid_channels,
                 3,
-                padding=1,
-            )
+                padding=1, )
 
         self.enc_module = EncModule(mid_channels, num_codes)
         self.head = nn.Conv2D(mid_channels, num_classes, 1)
@@ -109,24 +107,21 @@ class ENCNet(nn.Layer):
             laterals = []
             for j, lateral_conv in enumerate(self.lateral_convs):
                 laterals.append(
-                    F.interpolate(lateral_conv(feats[j]),
-                                  size=paddle.shape(feat)[2:],
-                                  mode='bilinear',
-                                  align_corners=False))
+                    F.interpolate(
+                        lateral_conv(feats[j]),
+                        size=paddle.shape(feat)[2:],
+                        mode='bilinear',
+                        align_corners=False))
             feat = self.fusion(paddle.concat([feat, *laterals], 1))
         encode_feat, feat = self.enc_module(feat)
         out = self.head(feat)
-        out = F.interpolate(out,
-                            size=[H, W],
-                            mode='bilinear',
-                            align_corners=False)
+        out = F.interpolate(
+            out, size=[H, W], mode='bilinear', align_corners=False)
         output = [out]
         if self.training:
             fcn_out = self.fcn_head(fcn_feat)
-            fcn_out = F.interpolate(fcn_out,
-                                    size=[H, W],
-                                    mode='bilinear',
-                                    align_corners=False)
+            fcn_out = F.interpolate(
+                fcn_out, size=[H, W], mode='bilinear', align_corners=False)
             output.append(fcn_out)
             if self.use_se_loss:
                 se_out = self.se_layer(encode_feat)
@@ -143,12 +138,10 @@ class Encoding(nn.Layer):
         std = 1 / ((channels * num_codes)**0.5)
         self.codewords = self.create_parameter(
             shape=(num_codes, channels),
-            default_initializer=nn.initializer.Uniform(-std, std),
-        )
+            default_initializer=nn.initializer.Uniform(-std, std), )
         self.scale = self.create_parameter(
             shape=(num_codes, ),
-            default_initializer=nn.initializer.Uniform(-1, 0),
-        )
+            default_initializer=nn.initializer.Uniform(-1, 0), )
         self.channels = channels
 
     def scaled_l2(self, x, codewords, scale):
@@ -181,13 +174,11 @@ class Encoding(nn.Layer):
         assert paddle.shape(
             x
         )[1] == self.channels, "Encoding channels error, excepted {} but got {}.".format(
-            self.channels,
-            paddle.shape(x)[1])
+            self.channels, paddle.shape(x)[1])
         batch_size = paddle.shape(x)[0]
         x = x.reshape([batch_size, self.channels, -1]).transpose([0, 2, 1])
-        assignment_weights = F.softmax(self.scaled_l2(x, self.codewords,
-                                                      self.scale),
-                                       axis=2)
+        assignment_weights = F.softmax(
+            self.scaled_l2(x, self.codewords, self.scale), axis=2)
         encoded_feat = self.aggregate(assignment_weights, x, self.codewords)
         return encoded_feat
 
@@ -198,17 +189,15 @@ class EncModule(nn.Layer):
         self.encoding_project = layers.ConvBNReLU(
             in_channels,
             in_channels,
-            1,
-        )
+            1, )
         self.encoding = nn.Sequential(
-            Encoding(channels=in_channels, num_codes=num_codes),
+            Encoding(
+                channels=in_channels, num_codes=num_codes),
             nn.BatchNorm1D(num_codes),
-            nn.ReLU(),
-        )
+            nn.ReLU(), )
         self.fc = nn.Sequential(
             nn.Linear(in_channels, in_channels),
-            nn.Sigmoid(),
-        )
+            nn.Sigmoid(), )
         self.in_channels = in_channels
 
     def forward(self, x):

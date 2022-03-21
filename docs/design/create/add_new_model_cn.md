@@ -21,7 +21,7 @@ class NewNet(nn.Layer):
         pass
 ```
 
-* **步骤 1**: 将 newnet.py 文件放置在目录 paddleseg/models/ 下。 
+* **步骤 1**: 将 newnet.py 文件放置在目录 paddleseg/models/ 下。
 
 * **步骤 2**: 在你的自定义模型类的上方添加一个Python装饰器 ``@manager.MODELS.add_component``。manager 是一个组件容器，包括 MODELS、BACKBONES、DATASETS、TRANSFORMS、LOSSES。当你添加了这个装饰器并在训练时合理的指定参数，PaddleSeg就可以自动将你实现的模块添加到训练配置中，体现了低耦合的设计思想。
 
@@ -98,7 +98,7 @@ class NewLoss(nn.Layer):
 
 
 
-* **步骤 1**: 将 new_loss.py 文件放置在目录 paddleseg/models/losses 下。 
+* **步骤 1**: 将 new_loss.py 文件放置在目录 paddleseg/models/losses 下。
 
 * **步骤 2**: 在你的自定义损失函数类的上方添加一个Python装饰器 ``@manager.LOSSES.add_component``。
 
@@ -168,7 +168,7 @@ from . import functional
 # 因此在你的自定义 transform 类写好后，在类对象创建过程中，它会被自动添加进来。
 ```
 
-* **步骤 3**: 在 yaml 文件中将 type 参数指定为你所创建的数据变换（数据增强）的名称: 
+* **步骤 3**: 在 yaml 文件中将 type 参数指定为你所创建的数据变换（数据增强）的名称:
 
 ```yaml
 train_dataset:
@@ -199,7 +199,7 @@ class NewBackbone(nn.Layer):
 
 
 
-* **步骤 1**: 将 new_backbone.py 文件放置在目录 paddleseg/models/backbones 下。 
+* **步骤 1**: 将 new_backbone.py 文件放置在目录 paddleseg/models/backbones 下。
 
 * **步骤 2**: 在你的自定义骨干网络类的上方添加一个Python装饰器 ``@manager.BACKBONES.add_component``。
 
@@ -226,7 +226,7 @@ model:
 ## 创建自定义数据集
 
 
-> 如果你打算设计一个自定义数据集，例如在 new_data.py 中实现 NewData 类: 
+> 如果你打算设计一个自定义数据集，例如在 new_data.py 中实现 NewData 类:
 
 ```python
 from paddleseg..dataset import Dataset
@@ -242,7 +242,7 @@ class NewData(Dataset):
 ```
 
 
-* **步骤 1**: 将 new_data.py  文件放置在目录 paddleseg/datasets 下。 
+* **步骤 1**: 将 new_data.py  文件放置在目录 paddleseg/datasets 下。
 
 * **步骤 2**: 在你的自定义数据集类的上方添加一个Python装饰器 ``@manager.DATASETS.add_component``。
 
@@ -308,7 +308,7 @@ val_dataset:
   mode: val # 对验证集设定验证模式
 
 optimizer: # 优化器设置
-  type: sgd 
+  type: sgd
   momentum: 0.9
   weight_decay: 4.0e-5
 

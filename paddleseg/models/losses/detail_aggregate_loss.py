@@ -37,9 +37,11 @@ class DetailAggregateLoss(nn.Layer):
     def __init__(self, ignore_index=255):
         super(DetailAggregateLoss, self).__init__()
         self.ignore_index = ignore_index
-        self.laplacian_kernel = paddle.to_tensor([-1, -1, -1, -1, 8, -1, -1, -1, -1], dtype='float32').reshape(
-            (1, 1, 3, 3))
-        self.fuse_kernel = paddle.create_parameter([1, 3, 1, 1], dtype='float32')
+        self.laplacian_kernel = paddle.to_tensor(
+            [-1, -1, -1, -1, 8, -1, -1, -1, -1], dtype='float32').reshape(
+                (1, 1, 3, 3))
+        self.fuse_kernel = paddle.create_parameter(
+            [1, 3, 1, 1], dtype='float32')
 
     def forward(self, logits, label):
         """
@@ -52,26 +54,44 @@ class DetailAggregateLoss(nn.Layer):
                 (N, D1, D2,..., Dk), k >= 1.
         Returns: loss
         """
-        boundary_targets = F.conv2d(paddle.unsqueeze(label, axis=1).astype('float32'), self.laplacian_kernel,
-                                    padding=1)
+        boundary_targets = F.conv2d(
+            paddle.unsqueeze(
+                label, axis=1).astype('float32'),
+            self.laplacian_kernel,
+            padding=1)
         boundary_targets = paddle.clip(boundary_targets, min=0)
         boundary_targets = boundary_targets > 0.1
         boundary_targets = boundary_targets.astype('float32')
 
-        boundary_targets_x2 = F.conv2d(paddle.unsqueeze(label, axis=1).astype('float32'), self.laplacian_kernel,
-                                       stride=2, padding=1)
+        boundary_targets_x2 = F.conv2d(
+            paddle.unsqueeze(
+                label, axis=1).astype('float32'),
+            self.laplacian_kernel,
+            stride=2,
+            padding=1)
         boundary_targets_x2 = paddle.clip(boundary_targets_x2, min=0)
-        boundary_targets_x4 = F.conv2d(paddle.unsqueeze(label, axis=1).astype('float32'), self.laplacian_kernel,
-                                       stride=4, padding=1)
+        boundary_targets_x4 = F.conv2d(
+            paddle.unsqueeze(
+                label, axis=1).astype('float32'),
+            self.laplacian_kernel,
+            stride=4,
+            padding=1)
         boundary_targets_x4 = paddle.clip(boundary_targets_x4, min=0)
 
-        boundary_targets_x8 = F.conv2d(paddle.unsqueeze(label, axis=1).astype('float32'), self.laplacian_kernel,
-                                       stride=8, padding=1)
+        boundary_targets_x8 = F.conv2d(
+            paddle.unsqueeze(
+                label, axis=1).astype('float32'),
+            self.laplacian_kernel,
+            stride=8,
+            padding=1)
         boundary_targets_x8 = paddle.clip(boundary_targets_x8, min=0)
 
-        boundary_targets_x8_up = F.interpolate(boundary_targets_x8, boundary_targets.shape[2:], mode='nearest')
-        boundary_targets_x4_up = F.interpolate(boundary_targets_x4, boundary_targets.shape[2:], mode='nearest')
-        boundary_targets_x2_up = F.interpolate(boundary_targets_x2, boundary_targets.shape[2:], mode='nearest')
+        boundary_targets_x8_up = F.interpolate(
+            boundary_targets_x8, boundary_targets.shape[2:], mode='nearest')
+        boundary_targets_x4_up = F.interpolate(
+            boundary_targets_x4, boundary_targets.shape[2:], mode='nearest')
+        boundary_targets_x2_up = F.interpolate(
+            boundary_targets_x2, boundary_targets.shape[2:], mode='nearest')
 
         boundary_targets_x2_up = boundary_targets_x2_up > 0.1
         boundary_targets_x2_up = boundary_targets_x2_up.astype('float32')
@@ -82,21 +102,29 @@ class DetailAggregateLoss(nn.Layer):
         boundary_targets_x8_up = boundary_targets_x8_up > 0.1
         boundary_targets_x8_up = boundary_targets_x8_up.astype('float32')
 
-        boudary_targets_pyramids = paddle.stack((boundary_targets, boundary_targets_x2_up, boundary_targets_x4_up),
-                                                axis=1)
+        boudary_targets_pyramids = paddle.stack(
+            (boundary_targets, boundary_targets_x2_up, boundary_targets_x4_up),
+            axis=1)
 
-        boudary_targets_pyramids = paddle.squeeze(boudary_targets_pyramids, axis=2)
-        boudary_targets_pyramid = F.conv2d(boudary_targets_pyramids, self.fuse_kernel)
+        boudary_targets_pyramids = paddle.squeeze(
+            boudary_targets_pyramids, axis=2)
+        boudary_targets_pyramid = F.conv2d(boudary_targets_pyramids,
+                                           self.fuse_kernel)
 
         boudary_targets_pyramid = boudary_targets_pyramid > 0.1
         boudary_targets_pyramid = boudary_targets_pyramid.astype('float32')
 
         if logits.shape[-1] != boundary_targets.shape[-1]:
             logits = F.interpolate(
-                logits, boundary_targets.shape[2:], mode='bilinear', align_corners=True)
+                logits,
+                boundary_targets.shape[2:],
+                mode='bilinear',
+                align_corners=True)
 
-        bce_loss = F.binary_cross_entropy_with_logits(logits, boudary_targets_pyramid)
-        dice_loss = self.fixed_dice_loss_func(F.sigmoid(logits), boudary_targets_pyramid)
+        bce_loss = F.binary_cross_entropy_with_logits(logits,
+                                                      boudary_targets_pyramid)
+        dice_loss = self.fixed_dice_loss_func(
+            F.sigmoid(logits), boudary_targets_pyramid)
         detail_loss = bce_loss + dice_loss
 
         label.stop_gradient = True
@@ -111,6 +139,7 @@ class DetailAggregateLoss(nn.Layer):
         iflat = paddle.reshape(input, [n, -1])
         tflat = paddle.reshape(target, [n, -1])
         intersection = paddle.sum((iflat * tflat), axis=1)
-        loss = 1 - ((2. * intersection + smooth) /
-                    (paddle.sum(iflat, axis=1) + paddle.sum(tflat, axis=1) + smooth))
+        loss = 1 - (
+            (2. * intersection + smooth) /
+            (paddle.sum(iflat, axis=1) + paddle.sum(tflat, axis=1) + smooth))
         return paddle.mean(loss)

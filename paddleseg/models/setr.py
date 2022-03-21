@@ -127,12 +127,13 @@ class NaiveHead(nn.Layer):
         self.cls_head = nn.Sequential(
             layers.ConvBNReLU(
                 in_channels=in_channels, out_channels=256, kernel_size=1),
-            nn.Conv2D(in_channels=256, out_channels=num_classes, kernel_size=1))
+            nn.Conv2D(
+                in_channels=256, out_channels=num_classes, kernel_size=1))
 
         aux_head_nums = len(backbone_indices) - 1
         self.aux_head_norms = nn.LayerList(
-            [nn.LayerNorm(normalized_shape=in_channels, epsilon=1e-6)
-             ] * aux_head_nums)
+            [nn.LayerNorm(
+                normalized_shape=in_channels, epsilon=1e-6)] * aux_head_nums)
         self.aux_heads = nn.LayerList([
             nn.Sequential(
                 layers.ConvBNReLU(
@@ -207,17 +208,23 @@ class PUPHead(nn.Layer):
                 in_channels=in_channels,
                 out_channels=inter_channels,
                 kernel_size=3,
-                padding=1), nn.Upsample(scale_factor=2, mode='bilinear'),
+                padding=1),
+            nn.Upsample(
+                scale_factor=2, mode='bilinear'),
             layers.ConvBNReLU(
                 in_channels=inter_channels,
                 out_channels=inter_channels,
                 kernel_size=3,
-                padding=1), nn.Upsample(scale_factor=2, mode='bilinear'),
+                padding=1),
+            nn.Upsample(
+                scale_factor=2, mode='bilinear'),
             layers.ConvBNReLU(
                 in_channels=inter_channels,
                 out_channels=inter_channels,
                 kernel_size=3,
-                padding=1), nn.Upsample(scale_factor=2, mode='bilinear'),
+                padding=1),
+            nn.Upsample(
+                scale_factor=2, mode='bilinear'),
             layers.ConvBNReLU(
                 in_channels=inter_channels,
                 out_channels=inter_channels,
@@ -230,15 +237,17 @@ class PUPHead(nn.Layer):
 
         aux_head_nums = len(backbone_indices)
         self.aux_head_norms = nn.LayerList(
-            [nn.LayerNorm(normalized_shape=in_channels, epsilon=1e-6)
-             ] * aux_head_nums)
+            [nn.LayerNorm(
+                normalized_shape=in_channels, epsilon=1e-6)] * aux_head_nums)
         self.aux_heads = nn.LayerList([
             nn.Sequential(
                 layers.ConvBNReLU(
                     in_channels=in_channels,
                     out_channels=inter_channels,
                     kernel_size=3,
-                    padding=1), nn.Upsample(scale_factor=4, mode='bilinear'),
+                    padding=1),
+                nn.Upsample(
+                    scale_factor=4, mode='bilinear'),
                 nn.Conv2D(
                     in_channels=inter_channels,
                     out_channels=num_classes,
@@ -368,8 +377,9 @@ class MLAHead(nn.Layer):
 
         self.mla_feat_nums = len(backbone_indices)
         self.norms = nn.LayerList(
-            [nn.LayerNorm(normalized_shape=in_channels, epsilon=1e-6)
-             ] * self.mla_feat_nums)
+            [nn.LayerNorm(
+                normalized_shape=in_channels,
+                epsilon=1e-6)] * self.mla_feat_nums)
 
         self.mla = ConvMLA(in_channels, mla_channels)
 

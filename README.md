@@ -28,9 +28,9 @@ English | [简体中文](README_CN.md)
         <li>Release <a href="./contrib/Matting">PP-HumanMatting</a> for extremely fine-grained human segmentation, with an Android tutorial.</li>
         <li>Add 9 semantic segmentatioin models, including a new transformer model <a href="configs/segmenter">SegMenter</a>.</li>
         <li>Provide a comprehensive <a href="docs/model_zoo_overview.md">performance table</a> for all segmentation models, which helps to choose a better model on the accuracy and the speed.</li>
-    </ul> 
-   
- 
+    </ul>
+
+
  <li>[2021-10-11] We released PaddleSeg v2.3 with the improved interactive segmentation tool EISeg v0.3, two matting algorithms, and segmentation model compression.</li>
  <li>[2021-09-20] We published an interactive segmentation <a href="https://arxiv.org/abs/2109.09406">paper</a> with SOTA performance on several well-known datasets.</li>
 </ul>

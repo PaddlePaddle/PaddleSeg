@@ -245,8 +245,8 @@ class APNB(nn.Layer):
 
         self.psp_size = psp_size
         self.stages = nn.LayerList([
-            SelfAttentionBlock_APNB(in_channels, out_channels, key_channels,
-                                    value_channels, size)
+            SelfAttentionBlock_APNB(in_channels, out_channels,
+                                    key_channels, value_channels, size)
             for size in repeat_sizes
         ])
         self.conv_bn = layers.ConvBNReLU(

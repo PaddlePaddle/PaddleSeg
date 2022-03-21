@@ -12,13 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 import os.path as osp
 from abc import ABC, abstractmethod
 
-
 import paddle.inference as paddle_infer
-
 
 here = osp.dirname(osp.abspath(__file__))
 

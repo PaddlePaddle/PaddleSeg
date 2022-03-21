@@ -17,5 +17,4 @@ Ths copyright of niecongchong/RS-building-regularization is as follows:
 Apache License [see LICENSE for details]
 """
 
-
 from .rs_regularization import boundary_regularization

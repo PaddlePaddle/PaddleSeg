@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 from qtpy import QtWidgets, QtGui, QtCore
 
 
@@ -102,7 +101,7 @@ class LineItem(QtWidgets.QGraphicsLineItem):
         s, e = self.line().p1(), self.line().p2()
         dir = s - e
         dx, dy = -dir.y(), dir.x()
-        norm = (dx ** 2 + dy ** 2) ** (1 / 2)
+        norm = (dx**2 + dy**2)**(1 / 2)
         if debug:
             print(
                 self.width,
@@ -115,8 +114,7 @@ class LineItem(QtWidgets.QGraphicsLineItem):
                 dir.y(),
                 dx,
                 dy,
-                norm,
-            )
+                norm, )
         dx /= (norm + 1e-16)
         dy /= (norm + 1e-16)
         if debug:

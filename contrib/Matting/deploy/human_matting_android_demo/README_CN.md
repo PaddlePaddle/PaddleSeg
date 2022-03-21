@@ -47,11 +47,11 @@ Paddle-Lite在安卓端的预测库主要包括三个文件：
 
 * 使用预编译版本的预测库，最新的预编译文件参考：[release](https://github.com/PaddlePaddle/Paddle-Lite/releases/)，此demo使用的[版本](https://paddlelite-demo.bj.bcebos.com/libs/android/paddle_lite_libs_v2_8_0.tar.gz)
 
-	解压上面文件，PaddlePredictor.jar位于：java/PaddlePredictor.jar；
+    解压上面文件，PaddlePredictor.jar位于：java/PaddlePredictor.jar；
 
-	arm64-v8a相关so位于：java/libs/arm64-v8a；
+    arm64-v8a相关so位于：java/libs/arm64-v8a；
 
-	armeabi-v7a相关so位于：java/libs/armeabi-v7a；
+    armeabi-v7a相关so位于：java/libs/armeabi-v7a；
 
 * 手动编译Paddle-Lite预测库
 开发环境的准备和编译方法参考：[Paddle-Lite源码编译](https://paddle-lite.readthedocs.io/zh/release-v2.8/source_compile/compile_env.html)。

@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 import os.path as osp
 import numpy as np
 from collections import defaultdict
@@ -51,8 +50,8 @@ def __convert_coord(point: List[float], g: List[float]) -> np.array:
 
 
 # 边界转为wkt格式
-def __bound2wkt(bounds: List[Dict], 
-                tform: List[float], 
+def __bound2wkt(bounds: List[Dict],
+                tform: List[float],
                 ct: osr.CoordinateTransformation) -> List[str]:
     geo_list = []
     for bd in bounds:

@@ -103,16 +103,20 @@ class AttentionBlock(nn.Layer):
     def __init__(self, F_g, F_l, F_out):
         super().__init__()
         self.W_g = nn.Sequential(
-            nn.Conv2D(F_g, F_out, kernel_size=1, stride=1, padding=0),
+            nn.Conv2D(
+                F_g, F_out, kernel_size=1, stride=1, padding=0),
             nn.BatchNorm2D(F_out))
 
         self.W_x = nn.Sequential(
-            nn.Conv2D(F_l, F_out, kernel_size=1, stride=1, padding=0),
+            nn.Conv2D(
+                F_l, F_out, kernel_size=1, stride=1, padding=0),
             nn.BatchNorm2D(F_out))
 
         self.psi = nn.Sequential(
-            nn.Conv2D(F_out, 1, kernel_size=1, stride=1, padding=0),
-            nn.BatchNorm2D(1), nn.Sigmoid())
+            nn.Conv2D(
+                F_out, 1, kernel_size=1, stride=1, padding=0),
+            nn.BatchNorm2D(1),
+            nn.Sigmoid())
 
         self.relu = nn.ReLU()
 
@@ -129,9 +133,12 @@ class UpConv(nn.Layer):
     def __init__(self, ch_in, ch_out):
         super().__init__()
         self.up = nn.Sequential(
-            nn.Upsample(scale_factor=2, mode="bilinear"),
-            nn.Conv2D(ch_in, ch_out, kernel_size=3, stride=1, padding=1),
-            nn.BatchNorm2D(ch_out), nn.ReLU())
+            nn.Upsample(
+                scale_factor=2, mode="bilinear"),
+            nn.Conv2D(
+                ch_in, ch_out, kernel_size=3, stride=1, padding=1),
+            nn.BatchNorm2D(ch_out),
+            nn.ReLU())
 
     def forward(self, x):
         return self.up(x)
@@ -169,10 +176,14 @@ class ConvBlock(nn.Layer):
     def __init__(self, ch_in, ch_out):
         super(ConvBlock, self).__init__()
         self.conv = nn.Sequential(
-            nn.Conv2D(ch_in, ch_out, kernel_size=3, stride=1, padding=1),
-            nn.BatchNorm2D(ch_out), nn.ReLU(),
-            nn.Conv2D(ch_out, ch_out, kernel_size=3, stride=1, padding=1),
-            nn.BatchNorm2D(ch_out), nn.ReLU())
+            nn.Conv2D(
+                ch_in, ch_out, kernel_size=3, stride=1, padding=1),
+            nn.BatchNorm2D(ch_out),
+            nn.ReLU(),
+            nn.Conv2D(
+                ch_out, ch_out, kernel_size=3, stride=1, padding=1),
+            nn.BatchNorm2D(ch_out),
+            nn.ReLU())
 
     def forward(self, x):
         return self.conv(x)

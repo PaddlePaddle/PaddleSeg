@@ -259,8 +259,9 @@ class Normalize:
     def __init__(self, mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5)):
         self.mean = mean
         self.std = std
-        if not (isinstance(self.mean, (list, tuple))
-                and isinstance(self.std, (list, tuple))):
+        if not (isinstance(self.mean,
+                           (list, tuple)) and isinstance(self.std,
+                                                         (list, tuple))):
             raise ValueError(
                 "{}: input type is invalid. It should be list or tuple".format(
                     self))

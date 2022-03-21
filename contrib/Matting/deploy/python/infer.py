@@ -53,8 +53,7 @@ def parse_args():
     parser.add_argument(
         '--trimap_path',
         dest='trimap_path',
-        help=
-        'The directory or path or file list of the triamp to help predicted.',
+        help='The directory or path or file list of the triamp to help predicted.',
         type=str,
         default=None)
     parser.add_argument(
@@ -103,8 +102,7 @@ def parse_args():
         default=False,
         type=eval,
         choices=[True, False],
-        help=
-        'Whether to enable tuned dynamic shape. We uses some images to collect '
+        help='Whether to enable tuned dynamic shape. We uses some images to collect '
         'the dynamic shape for trt sub graph, which avoids setting dynamic shape manually.'
     )
     parser.add_argument(
@@ -117,8 +115,7 @@ def parse_args():
         "--benchmark",
         type=eval,
         default=False,
-        help=
-        "Whether to log some information about environment, model, configuration and performance."
+        help="Whether to log some information about environment, model, configuration and performance."
     )
     parser.add_argument(
         "--model_name",
@@ -146,8 +143,8 @@ class DeployConfig:
     def __init__(self, path):
         with codecs.open(path, 'r', 'utf-8') as file:
             self.dic = yaml.load(file, Loader=yaml.FullLoader)
-        self._transforms = self.load_transforms(
-            self.dic['Deploy']['transforms'])
+        self._transforms = self.load_transforms(self.dic['Deploy'][
+            'transforms'])
         self._dir = os.path.dirname(path)
 
     @property
@@ -343,8 +340,8 @@ class Predictor:
                         data = self._preprocess(img=img, trimap=trimap)
                         img_inputs.append(data['img'])
                         if trimaps is not None:
-                            trimap_inputs.append(
-                                data['trimap'][np.newaxis, :, :])
+                            trimap_inputs.append(data['trimap'][
+                                np.newaxis, :, :])
                         trans_info.append(data['trans_info'])
                     img_inputs = np.array(img_inputs)
                     if trimaps is not None:
@@ -433,8 +430,8 @@ class Predictor:
                 h, w = item[1][0], item[1][1]
                 alpha = alpha[:, :, 0:h, 0:w]
             else:
-                raise Exception("Unexpected info '{}' in im_info".format(
-                    item[0]))
+                raise Exception("Unexpected info '{}' in im_info".format(item[
+                    0]))
         return alpha
 
     def _save_imgs(self, alpha, img_path):

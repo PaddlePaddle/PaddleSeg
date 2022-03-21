@@ -52,9 +52,8 @@ def human_seg_tracking(pre_gray, cur_gray, prev_cfd, dl_weights, disflow):
 
     is_track[cur_y[~not_track], cur_x[~not_track]] = 1
 
-    not_flow = np.all(
-        np.abs(flow_fw) == 0, axis=-1) * np.all(
-            np.abs(flow_bw) == 0, axis=-1)
+    not_flow = np.all(np.abs(flow_fw) == 0,
+                      axis=-1) * np.all(np.abs(flow_bw) == 0, axis=-1)
     dl_weights[cur_y[not_flow], cur_x[not_flow]] = 0.05
     return track_cfd, is_track, dl_weights
 

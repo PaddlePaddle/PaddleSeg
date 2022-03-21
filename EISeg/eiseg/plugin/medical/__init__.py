@@ -12,5 +12,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 from .med import has_sitk, dcm_reader, windowlize

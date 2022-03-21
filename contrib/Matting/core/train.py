@@ -118,8 +118,7 @@ def train(model,
         train_dataset,
         batch_sampler=batch_sampler,
         num_workers=num_workers,
-        return_list=True,
-    )
+        return_list=True, )
 
     if use_vdl:
         from visualdl import LogWriter
@@ -200,12 +199,12 @@ def train(model,
                         vis_dict['ground truth/img'] = data['img'][0]
                         for key in data['gt_fields']:
                             key = key[0]
-                            vis_dict['/'.join(['ground truth',
-                                               key])] = data[key][0]
+                            vis_dict['/'.join(['ground truth', key])] = data[
+                                key][0]
                         # predict
                         for key, value in logit_dict.items():
-                            vis_dict['/'.join(['predict',
-                                               key])] = logit_dict[key][0]
+                            vis_dict['/'.join(['predict', key])] = logit_dict[
+                                key][0]
                         visual_in_traning(
                             log_writer=log_writer, vis_dict=vis_dict, step=iter)
 
@@ -233,8 +232,8 @@ def train(model,
             if eval_begin_iters is None:
                 eval_begin_iters = iters // 2
             if (iter % save_interval == 0 or iter == iters) and (
-                    val_dataset is
-                    not None) and local_rank == 0 and iter >= eval_begin_iters:
+                    val_dataset is not None
+            ) and local_rank == 0 and iter >= eval_begin_iters:
                 num_workers = 1 if num_workers > 0 else 0
                 sad, mse = evaluate(
                     model,
