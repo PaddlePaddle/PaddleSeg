@@ -41,6 +41,11 @@ class FocalLoss(nn.Layer):
         self.edge_label = edge_label
 
     def forward(self, logit, label):
+        logit = paddle.where(paddle.unsqueeze(label, 1) == self.ignore_index,
+                             paddle.zeros_like(logit), logit)
+        label = paddle.where(label == self.ignore_index,
+                             paddle.zeros_like(label), label)
+
         logit = paddle.reshape(
             logit, [logit.shape[0], logit.shape[1], -1])  # N,C,H,W => N,C,H*W
         logit = paddle.transpose(logit, [0, 2, 1])  # N,C,H*W => N,H*W,C
