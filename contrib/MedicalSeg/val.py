@@ -26,19 +26,15 @@ def parse_args():
     parser = argparse.ArgumentParser(description='Model evaluation')
 
     # params of evaluate
-    parser.add_argument("--config",
-                        dest="cfg",
-                        help="The config file.",
-                        default=None,
-                        type=str)
+    parser.add_argument(
+        "--config", dest="cfg", help="The config file.", default=None, type=str)
 
     parser.add_argument(
         '--model_path',
         dest='model_path',
         help='The path of model for evaluation',
         type=str,
-        default=
-        "saved_model/vnet_lung_coronavirus_128_128_128_15k/best_model/model.pdparams"
+        default="saved_model/vnet_lung_coronavirus_128_128_128_15k/best_model/model.pdparams"
     )
 
     parser.add_argument(
@@ -48,11 +44,12 @@ def parse_args():
         type=str,
         default="saved_model/vnet_lung_coronavirus_128_128_128_15k/best_model")
 
-    parser.add_argument('--num_workers',
-                        dest='num_workers',
-                        help='Num workers for data loader',
-                        type=int,
-                        default=0)
+    parser.add_argument(
+        '--num_workers',
+        dest='num_workers',
+        help='Num workers for data loader',
+        type=int,
+        default=0)
 
     parser.add_argument(
         '--print_detail',  # the dest cannot have space in it
@@ -60,15 +57,17 @@ def parse_args():
         type=bool,
         default=True)
 
-    parser.add_argument('--use_vdl',
-                        help='Whether to use visualdl to record result images',
-                        type=bool,
-                        default=True)
+    parser.add_argument(
+        '--use_vdl',
+        help='Whether to use visualdl to record result images',
+        type=bool,
+        default=True)
 
-    parser.add_argument('--auc_roc',
-                        help='Whether to use auc_roc metric',
-                        type=bool,
-                        default=False)
+    parser.add_argument(
+        '--auc_roc',
+        help='Whether to use auc_roc metric',
+        type=bool,
+        default=False)
 
     return parser.parse_args()
 
@@ -111,14 +110,15 @@ def main(args):
 
     config_check(cfg, val_dataset=val_dataset)
 
-    evaluate(model,
-             val_dataset,
-             losses,
-             num_workers=args.num_workers,
-             print_detail=args.print_detail,
-             auc_roc=args.auc_roc,
-             writer=log_writer,
-             save_dir=args.save_dir)
+    evaluate(
+        model,
+        val_dataset,
+        losses,
+        num_workers=args.num_workers,
+        print_detail=args.print_detail,
+        auc_roc=args.auc_roc,
+        writer=log_writer,
+        save_dir=args.save_dir)
 
 
 if __name__ == '__main__':
