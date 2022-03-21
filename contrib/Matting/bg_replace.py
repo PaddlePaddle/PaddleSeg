@@ -20,10 +20,12 @@ import numpy as np
 import paddle
 from paddleseg.cvlibs import manager, Config
 from paddleseg.utils import get_sys_env, logger
+from paddleseg.transforms import Compose
 
 from core import predict
 import model
 from dataset import MattingDataset
+from transforms import Compose
 from utils import get_image_list, estimate_foreground_ml
 
 
@@ -58,8 +60,7 @@ def parse_args():
     parser.add_argument(
         '--background',
         dest='background',
-        help=
-        'Background for replacing. It is a string which specifies the background color (r,g,b,w) or a path to background image. If not specified, a green background is used.',
+        help='Background for replacing. It is a string which specifies the background color (r,g,b,w) or a path to background image. If not specified, a green background is used.',
         type=str,
         default=None)
     parser.add_argument(
@@ -81,15 +82,6 @@ def main(args):
         raise RuntimeError('No configuration file specified.')
 
     cfg = Config(args.cfg)
-    val_dataset = cfg.val_dataset
-    if val_dataset is None:
-        raise RuntimeError(
-            'The verification dataset is not specified in the configuration file.'
-        )
-    elif len(val_dataset) == 0:
-        raise ValueError(
-            'The length of val_dataset is 0. Please check if your dataset is valid'
-        )
 
     msg = '\n---------------Config Information---------------\n'
     msg += str(cfg)
@@ -97,7 +89,7 @@ def main(args):
     logger.info(msg)
 
     model = cfg.model
-    transforms = val_dataset.transforms
+    transforms = Compose(cfg.val_transforms)
 
     alpha = predict(
         model,
@@ -131,8 +123,8 @@ def get_bg(background, img_shape):
         bg[:, :, :] = 255
 
     elif not os.path.exists(background):
-        raise Exception(
-            'The --background is not existed: {}'.format(background))
+        raise Exception('The --background is not existed: {}'.format(
+            background))
     else:
         bg = cv2.imread(background)
         bg = cv2.resize(bg, (img_shape[1], img_shape[0]))
