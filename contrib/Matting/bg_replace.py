@@ -60,8 +60,7 @@ def parse_args():
     parser.add_argument(
         '--background',
         dest='background',
-        help=
-        'Background for replacing. It is a string which specifies the background color (r,g,b,w) or a path to background image. If not specified, a green background is used.',
+        help='Background for replacing. It is a string which specifies the background color (r,g,b,w) or a path to background image. If not specified, a green background is used.',
         type=str,
         default=None)
     parser.add_argument(
@@ -124,8 +123,8 @@ def get_bg(background, img_shape):
         bg[:, :, :] = 255
 
     elif not os.path.exists(background):
-        raise Exception(
-            'The --background is not existed: {}'.format(background))
+        raise Exception('The --background is not existed: {}'.format(
+            background))
     else:
         bg = cv2.imread(background)
         bg = cv2.resize(bg, (img_shape[1], img_shape[0]))

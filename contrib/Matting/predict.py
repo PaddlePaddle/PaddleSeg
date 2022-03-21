@@ -39,15 +39,13 @@ def parse_args():
     parser.add_argument(
         '--image_path',
         dest='image_path',
-        help=
-        'The path of image, it can be a file or a directory including images',
+        help='The path of image, it can be a file or a directory including images',
         type=str,
         default=None)
     parser.add_argument(
         '--trimap_path',
         dest='trimap_path',
-        help=
-        'The path of trimap, it can be a file or a directory including images. '
+        help='The path of trimap, it can be a file or a directory including images. '
         'The image should be the same as image when it is a directory.',
         type=str,
         default=None)
