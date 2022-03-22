@@ -105,9 +105,9 @@ cd ..
 # 安装AutoLog（规范化日志输出工具）
 git clone https://github.com/LDOUBLEV/AutoLog
 cd AutoLog
-pip3.7 install -r requirements.txt
+pip install -r requirements.txt
 python3.7 setup.py bdist_wheel
-pip3.7 install ./dist/auto_log-1.0.0-py3-none-any.whl
+pip install ./dist/auto_log-[xxx]-py3-none-any.whl
 cd ../
 ```
 - 安装PaddleSlim (可选)
