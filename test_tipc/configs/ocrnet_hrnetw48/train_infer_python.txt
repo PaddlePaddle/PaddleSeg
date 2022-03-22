@@ -7,13 +7,13 @@ Global.use_gpu:null|null
 --iters:lite_train_lite_infer=50|lite_train_whole_infer=50|whole_train_whole_infer=1000
 --save_dir:
 --batch_size:lite_train_lite_infer=2|lite_train_whole_infer=2|whole_train_whole_infer=3
-Global.pretrained_model:null
+--model_path:null
 train_model_name:best_model/model.pdparams
 train_infer_img_dir:test_tipc/data/cityscapes/val.list
 null:null
 ##
 trainer:norm
-norm_train:train.py --config test_tipc/configs/ocrnet_hrnetw48/ocrnet_hrnetw48_cityscapes_1024x1024.yml  --save_interval 500 --seed 100 --num_workers 8
+norm_train:train.py --config test_tipc/configs/ocrnet_hrnetw48/ocrnet_hrnetw48_cityscapes_1024x512.yml --save_interval 500 --seed 100  --num_workers 8
 pact_train:null
 fpgm_train:null
 distill_train:null
@@ -21,13 +21,13 @@ null:null
 null:null
 ##
 ===========================eval_params===========================
-eval:null
+eval:val.py --config test_tipc/configs/ocrnet_hrnetw48/ocrnet_hrnetw48_cityscapes_1024x512.yml --num_workers 8
 null:null
 ##
 ===========================export_params===========================
 --save_dir:
 --model_path:
-norm_export:export.py --config test_tipc/configs/ocrnet_hrnetw48/ocrnet_hrnetw48_cityscapes_1024x1024.yml
+norm_export:export.py --config test_tipc/configs/ocrnet_hrnetw48/ocrnet_hrnetw48_cityscapes_1024x512.yml
 quant_export:null
 fpgm_export:null
 distill_export:null
@@ -35,7 +35,7 @@ export1:null
 export2:null
 ===========================infer_params===========================
 infer_model:./test_tipc/output/ocrnet_hrnetw48/model.pdparams
-infer_export:export.py --config test_tipc/configs/ocrnet_hrnetw48/ocrnet_hrnetw48_cityscapes_1024x1024.yml
+infer_export:export.py --config test_tipc/configs/ocrnet_hrnetw48/ocrnet_hrnetw48_cityscapes_1024x512.yml
 infer_quant:False
 inference:deploy/python/infer.py
 --device:cpu|gpu

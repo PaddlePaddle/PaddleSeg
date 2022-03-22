@@ -21,7 +21,7 @@ null:null
 null:null
 ##
 ===========================eval_params===========================
-eval:null
+eval:val.py .py --config test_tipc/configs/deeplabv3p_resnet50_cityscapes/deeplabv3p_resnet50_1024x512_cityscapes.yml --num_workers 8
 null:null
 ##
 ===========================export_params===========================
