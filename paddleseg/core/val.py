@@ -74,8 +74,7 @@ def evaluate(model,
         eval_dataset,
         batch_sampler=batch_sampler,
         num_workers=num_workers,
-        return_list=True,
-    )
+        return_list=True, )
 
     total_iters = len(loader)
     intersect_area_all = paddle.zeros([1], dtype='int64')
@@ -85,9 +84,8 @@ def evaluate(model,
     label_all = None
 
     if print_detail:
-        logger.info(
-            "Start evaluating (total_samples: {}, total_iters: {})...".format(
-                len(eval_dataset), total_iters))
+        logger.info("Start evaluating (total_samples: {}, total_iters: {})...".
+                    format(len(eval_dataset), total_iters))
     #TODO(chenguowei): fix log print error with multi-gpus
     progbar_val = progbar.Progbar(
         target=total_iters, verbose=1 if nranks < 2 else 2)

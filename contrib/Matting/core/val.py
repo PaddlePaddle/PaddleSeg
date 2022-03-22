@@ -72,17 +72,15 @@ def evaluate(model,
         batch_size=1,
         drop_last=False,
         num_workers=num_workers,
-        return_list=True,
-    )
+        return_list=True, )
 
     total_iters = len(loader)
     mse_metric = metric.MSE()
     sad_metric = metric.SAD()
 
     if print_detail:
-        logger.info(
-            "Start evaluating (total_samples: {}, total_iters: {})...".format(
-                len(eval_dataset), total_iters))
+        logger.info("Start evaluating (total_samples: {}, total_iters: {})...".
+                    format(len(eval_dataset), total_iters))
     progbar_val = progbar.Progbar(target=total_iters, verbose=1)
     reader_cost_averager = TimeAverager()
     batch_cost_averager = TimeAverager()

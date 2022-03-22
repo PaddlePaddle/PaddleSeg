@@ -223,8 +223,8 @@ class Conn():
             pred_alpha_thresh = (pred >= thresh_steps[i]).astype(np.int)
             gt_alpha_thresh = (gt >= thresh_steps[i]).astype(np.int)
 
-            omega = self.getLargestCC(
-                pred_alpha_thresh * gt_alpha_thresh).astype(np.int)
+            omega = self.getLargestCC(pred_alpha_thresh *
+                                      gt_alpha_thresh).astype(np.int)
             flag = ((l_map == -1) & (omega == 0)).astype(np.int)
             l_map[flag == 1] = thresh_steps[i - 1]
 

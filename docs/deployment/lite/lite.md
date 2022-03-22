@@ -26,7 +26,7 @@ In this tutorial, we introduce the usage of [Paddle Lite](https://github.com/Pad
 ### 2.3 Run the Android APP
 
 * Open the App, it will load a portrait image and show the segmentation result and time-consuming.
-* The App also support loading other images from gallery or taking photoes, and then outputting the segmentation results. 
+* The App also support loading other images from gallery or taking photoes, and then outputting the segmentation results.
 
 
 ### 2.4 Results
@@ -45,7 +45,7 @@ The inference libray of Paddle Lite contains three files:
 * arm64-v8a/libpaddle_lite_jni.so
 * armeabi-v7a/libpaddle_lite_jni.so
 
-There are two ways to obtain the inference libray of Paddle Lite as follows. 
+There are two ways to obtain the inference libray of Paddle Lite as follows.
 
 Firstly, download the release library from [github](https://github.com/PaddlePaddle/Paddle-Lite/releases/). For instance, the Android App use the [v2.8.0](https://paddlelite-demo.bj.bcebos.com/libs/android/paddle_lite_libs_v2_8_0.tar.gz) inference library in default. Besides, the dirname of PaddlePredictor.jar is `jave/`, the dirname of arm64-v8a and armeabi-v7a is `jave/libs`.
 

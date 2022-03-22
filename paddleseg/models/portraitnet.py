@@ -163,12 +163,14 @@ class ConvDw(nn.Layer):
                 stride, (kernel - 1) // 2,
                 groups=inp,
                 bias_attr=False),
-            nn.BatchNorm2D(num_features=inp, epsilon=1e-05, momentum=0.1),
+            nn.BatchNorm2D(
+                num_features=inp, epsilon=1e-05, momentum=0.1),
             nn.ReLU(),
-            nn.Conv2D(inp, oup, 1, 1, 0, bias_attr=False),
-            nn.BatchNorm2D(num_features=oup, epsilon=1e-05, momentum=0.1),
-            nn.ReLU(),
-        )
+            nn.Conv2D(
+                inp, oup, 1, 1, 0, bias_attr=False),
+            nn.BatchNorm2D(
+                num_features=oup, epsilon=1e-05, momentum=0.1),
+            nn.ReLU(), )
 
     def forward(self, x):
         return self.conv(x)
@@ -179,7 +181,8 @@ class ResidualBlock(nn.Layer):
         super(ResidualBlock, self).__init__()
 
         self.block = nn.Sequential(
-            ConvDw(inp, oup, 3, stride=stride),
+            ConvDw(
+                inp, oup, 3, stride=stride),
             nn.Conv2D(
                 in_channels=oup,
                 out_channels=oup,
@@ -188,7 +191,8 @@ class ResidualBlock(nn.Layer):
                 padding=1,
                 groups=oup,
                 bias_attr=False),
-            nn.BatchNorm2D(num_features=oup, epsilon=1e-05, momentum=0.1),
+            nn.BatchNorm2D(
+                num_features=oup, epsilon=1e-05, momentum=0.1),
             nn.ReLU(),
             nn.Conv2D(
                 in_channels=oup,
@@ -197,8 +201,8 @@ class ResidualBlock(nn.Layer):
                 stride=1,
                 padding=0,
                 bias_attr=False),
-            nn.BatchNorm2D(num_features=oup, epsilon=1e-05, momentum=0.1),
-        )
+            nn.BatchNorm2D(
+                num_features=oup, epsilon=1e-05, momentum=0.1), )
         if inp == oup:
             self.residual = None
         else:
@@ -210,8 +214,8 @@ class ResidualBlock(nn.Layer):
                     stride=1,
                     padding=0,
                     bias_attr=False),
-                nn.BatchNorm2D(num_features=oup, epsilon=1e-05, momentum=0.1),
-            )
+                nn.BatchNorm2D(
+                    num_features=oup, epsilon=1e-05, momentum=0.1), )
         self.relu = nn.ReLU()
 
     def forward(self, x):

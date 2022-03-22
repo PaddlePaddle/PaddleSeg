@@ -103,8 +103,7 @@ def main(args):
         threshold=args.threshold,
         nms_kernel=args.nms_kernel,
         top_k=args.top_k,
-        num_workers=args.num_workers,
-    )
+        num_workers=args.num_workers, )
 
 
 if __name__ == '__main__':

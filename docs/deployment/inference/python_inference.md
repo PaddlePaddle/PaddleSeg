@@ -58,7 +58,7 @@ If you use TensorRT to deploy the model on the Nvidia GPU, please refer to the [
 python -m pip install paddlepaddle-gpu==[version] -f https://www.paddlepaddle.org.cn/whl/stable/tensorrt.html
 ```
 
-To deploy the model using TensorRT on Nvidia GPU, you need to download the TensorRT library. 
+To deploy the model using TensorRT on Nvidia GPU, you need to download the TensorRT library.
 The CUDA10.1+cudnn7 environment requires TensorRT 6.0, and the CUDA10.2+cudnn8.1 environment requires TensorRT 7.1. You can download it on the [TensorRT official website](https://developer.nvidia.com/tensorrt). We only provide the link of TensorRT under Ubuntu system here.
 
 ```
@@ -108,4 +108,3 @@ python deploy/python/infer.py \
 The prediction results of the test sample are as follows:
 
 ![cityscape_predict_demo.png](../../images/cityscapes_predict_demo.png)
-

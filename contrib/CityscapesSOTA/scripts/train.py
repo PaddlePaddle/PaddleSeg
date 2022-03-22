@@ -41,8 +41,8 @@ def loss_computation(logits_list, labels, losses, edges=None):
         loss_i = losses['types'][i]
         coef_i = losses['coef'][i]
 
-        if loss_i.__class__.__name__ in ('BCELoss',
-                                         'FocalLoss') and loss_i.edge_label:
+        if loss_i.__class__.__name__ in ('BCELoss', 'FocalLoss'
+                                         ) and loss_i.edge_label:
             # If use edges as labels According to loss type.
             loss_list.append(coef_i * loss_i(logits, edges))
         elif loss_i.__class__.__name__ == 'MixedLoss':
@@ -50,8 +50,8 @@ def loss_computation(logits_list, labels, losses, edges=None):
             for mixed_loss in mixed_loss_list:
                 loss_list.append(coef_i * mixed_loss)
         elif loss_i.__class__.__name__ in ("KLLoss", ):
-            loss_list.append(
-                coef_i * loss_i(logits_list[0], logits_list[1].detach()))
+            loss_list.append(coef_i *
+                             loss_i(logits_list[0], logits_list[1].detach()))
         else:
             loss_list.append(coef_i * loss_i(logits, labels))
     return loss_list
@@ -119,8 +119,7 @@ def train(model,
         train_dataset,
         batch_sampler=batch_sampler,
         num_workers=num_workers,
-        return_list=True,
-    )
+        return_list=True, )
 
     if use_vdl:
         from visualdl import LogWriter
@@ -189,9 +188,9 @@ def train(model,
                 eta = calculate_eta(remain_iters, avg_train_batch_cost)
                 logger.info(
                     "[TRAIN] epoch={}, iter={}/{}, loss={:.4f}, lr={:.6f}, batch_cost={:.4f}, reader_cost={:.5f}, ips={:.4f} samples/sec | ETA {}"
-                    .format((iter - 1) // iters_per_epoch + 1, iter, iters,
-                            avg_loss, lr, avg_train_batch_cost,
-                            avg_train_reader_cost,
+                    .format((iter - 1
+                             ) // iters_per_epoch + 1, iter, iters, avg_loss,
+                            lr, avg_train_batch_cost, avg_train_reader_cost,
                             batch_cost_averager.get_ips_average(), eta))
                 if use_vdl:
                     log_writer.add_scalar('Train/loss', avg_loss, iter)
@@ -214,8 +213,8 @@ def train(model,
                 reader_cost_averager.reset()
                 batch_cost_averager.reset()
 
-            if (iter % save_interval == 0
-                    or iter == iters) and (val_dataset is not None):
+            if (iter % save_interval == 0 or
+                    iter == iters) and (val_dataset is not None):
                 num_workers = 1 if num_workers > 0 else 0
                 metrics = evaluate(
                     model,

@@ -221,12 +221,16 @@ class ObjectAttentionBlock(nn.Layer):
         self.key_channels = key_channels
 
         self.f_pixel = nn.Sequential(
-            layers.ConvBNReLU(in_channels, key_channels, 1, bias_attr=False),
-            layers.ConvBNReLU(key_channels, key_channels, 1, bias_attr=False))
+            layers.ConvBNReLU(
+                in_channels, key_channels, 1, bias_attr=False),
+            layers.ConvBNReLU(
+                key_channels, key_channels, 1, bias_attr=False))
 
         self.f_object = nn.Sequential(
-            layers.ConvBNReLU(in_channels, key_channels, 1, bias_attr=False),
-            layers.ConvBNReLU(key_channels, key_channels, 1, bias_attr=False))
+            layers.ConvBNReLU(
+                in_channels, key_channels, 1, bias_attr=False),
+            layers.ConvBNReLU(
+                key_channels, key_channels, 1, bias_attr=False))
 
         self.f_down = layers.ConvBNReLU(
             in_channels, key_channels, 1, bias_attr=False)

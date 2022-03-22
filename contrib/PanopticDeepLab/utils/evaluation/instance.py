@@ -87,9 +87,8 @@ class InstanceEvaluator(object):
                     found_match = False
                     for pred_instance in gt_instance['matched_pred']:
                         overlap = float(pred_instance['intersection']) / (
-                            gt_instance['pixel_count'] +
-                            pred_instance['pixel_count'] -
-                            pred_instance['intersection'])
+                            gt_instance['pixel_count'] + pred_instance[
+                                'pixel_count'] - pred_instance['intersection'])
                         if overlap > oth:
                             confidence = pred_instance['confidence']
 
@@ -120,9 +119,8 @@ class InstanceEvaluator(object):
                     found_gt = False
                     for gt_instance in pred_instance['matched_gt']:
                         overlap = float(gt_instance['intersection']) / (
-                            gt_instance['pixel_count'] +
-                            pred_instance['pixel_count'] -
-                            gt_instance['intersection'])
+                            gt_instance['pixel_count'] + pred_instance[
+                                'pixel_count'] - gt_instance['intersection'])
                         if overlap > oth:
                             found_gt = True
                             break

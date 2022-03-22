@@ -13,10 +13,10 @@
 ResNet_vd 骨干网络源于["Bag of Tricks for Image Classification with Convolutional Neural Networks"](https://arxiv.org/pdf/1812.01187.pdf)
 ```python
 class paddleseg.models.backbones.Resnet_vd(
-            layers = 50, 
-            output_stride = None, 
-            multi_grid = (1, 1, 1), 
-            lr_mult_list = (0.1, 0.1, 0.2, 0.2), 
+            layers = 50,
+            output_stride = None,
+            multi_grid = (1, 1, 1),
+            lr_mult_list = (0.1, 0.1, 0.2, 0.2),
             pretrained = None
 )
 ```
@@ -60,20 +60,20 @@ padddelseg.models.backbones.ResNet200_vd(**args)
 HRNet 骨干网络源于 ["HRNet：Deep High-Resolution Representation Learning for Visual Recognition"](https://arxiv.org/pdf/1908.07919.pdf)
 ```python
 class paddleseg.models.backbones.HRNet(
-            pretrained = None, 
-            stage1_num_modules = 1, 
-            stage1_num_blocks = (4,), 
-            stage1_num_channels = (64,), 
-            stage2_num_modules = 1, 
-            stage2_num_blocks = (4, 4), 
-            stage2_num_channels = (18, 36), 
-            stage3_num_modules = 4, 
-            stage3_num_blocks = (4, 4, 4), 
-            stage3_num_channels = (18, 36, 72), 
-            stage4_num_modules = 3, 
-            stage4_num_blocks = (4, 4, 4, 4), 
-            stage4_num_channels = (18, 36, 72, 14), 
-            has_se = False, 
+            pretrained = None,
+            stage1_num_modules = 1,
+            stage1_num_blocks = (4,),
+            stage1_num_channels = (64,),
+            stage2_num_modules = 1,
+            stage2_num_blocks = (4, 4),
+            stage2_num_channels = (18, 36),
+            stage3_num_modules = 4,
+            stage3_num_blocks = (4, 4, 4),
+            stage3_num_channels = (18, 36, 72),
+            stage4_num_modules = 3,
+            stage4_num_blocks = (4, 4, 4, 4),
+            stage4_num_channels = (18, 36, 72, 14),
+            has_se = False,
             align_corners = False
 )
 ```
@@ -151,8 +151,8 @@ paddleseg.models.backbones.HRNet_W64(**kwargs)
 MobileNetV3 骨干网络源于 ["Searching for MobileNetV3"](https://arxiv.org/pdf/1905.02244.pdf).
 ```python
 class paddleseg.models.backbones.MobileNetV3(
-            pretrained = None, 
-            scale = 1.0, 
+            pretrained = None,
+            scale = 1.0,
             model_name = "small",
             output_stride = None
 )
@@ -220,8 +220,8 @@ paddleseg.models.backbones.MobileNetV3_large_x1_25(**args)
 XceptionDeeplab 即 Xception backbone of DeepLabV3+，源于 ["Encoder-Decoder with Atrous Separable Convolution for Semantic Image Segmentation"](https://arxiv.org/abs/1802.02611)
 ```python
 class paddleseg.models.backbones.XceptionDeeplab(
-            backbone, 
-            pretrained = None, 
+            backbone,
+            pretrained = None,
             output_stride = 16
 )
 ```
@@ -244,4 +244,3 @@ paddleseg.models.backbones.Xception65_deeplab(**args)
 paddleseg.models.backbones.Xception71_deeplab(**args)
 ```
 > 返回一个 XceptionDeeplab 类的对象，其层数为71。
-

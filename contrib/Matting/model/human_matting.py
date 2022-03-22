@@ -28,7 +28,8 @@ from model import MRSD
 
 def conv_up_psp(in_channels, out_channels, up_sample):
     return nn.Sequential(
-        layers.ConvBNReLU(in_channels, out_channels, 3, padding=1),
+        layers.ConvBNReLU(
+            in_channels, out_channels, 3, padding=1),
         nn.Upsample(
             scale_factor=up_sample, mode='bilinear', align_corners=False))
 
@@ -77,38 +78,60 @@ class HumanMatting(nn.Layer):
         self.decoder5_g = nn.Sequential(
             layers.ConvBNReLU(
                 512 + self.backbone_channels[-1], 512, 3, padding=1),
-            layers.ConvBNReLU(512, 512, 3, padding=2, dilation=2),
-            layers.ConvBNReLU(512, 256, 3, padding=2, dilation=2),
-            nn.Upsample(scale_factor=2, mode='bilinear', align_corners=False))
+            layers.ConvBNReLU(
+                512, 512, 3, padding=2, dilation=2),
+            layers.ConvBNReLU(
+                512, 256, 3, padding=2, dilation=2),
+            nn.Upsample(
+                scale_factor=2, mode='bilinear', align_corners=False))
         # stage 4g
         self.decoder4_g = nn.Sequential(
-            layers.ConvBNReLU(512, 256, 3, padding=1),
-            layers.ConvBNReLU(256, 256, 3, padding=1),
-            layers.ConvBNReLU(256, 128, 3, padding=1),
-            nn.Upsample(scale_factor=2, mode='bilinear', align_corners=False))
+            layers.ConvBNReLU(
+                512, 256, 3, padding=1),
+            layers.ConvBNReLU(
+                256, 256, 3, padding=1),
+            layers.ConvBNReLU(
+                256, 128, 3, padding=1),
+            nn.Upsample(
+                scale_factor=2, mode='bilinear', align_corners=False))
         # stage 3g
         self.decoder3_g = nn.Sequential(
-            layers.ConvBNReLU(256, 128, 3, padding=1),
-            layers.ConvBNReLU(128, 128, 3, padding=1),
-            layers.ConvBNReLU(128, 64, 3, padding=1),
-            nn.Upsample(scale_factor=2, mode='bilinear', align_corners=False))
+            layers.ConvBNReLU(
+                256, 128, 3, padding=1),
+            layers.ConvBNReLU(
+                128, 128, 3, padding=1),
+            layers.ConvBNReLU(
+                128, 64, 3, padding=1),
+            nn.Upsample(
+                scale_factor=2, mode='bilinear', align_corners=False))
         # stage 2g
         self.decoder2_g = nn.Sequential(
-            layers.ConvBNReLU(128, 128, 3, padding=1),
-            layers.ConvBNReLU(128, 128, 3, padding=1),
-            layers.ConvBNReLU(128, 64, 3, padding=1),
-            nn.Upsample(scale_factor=2, mode='bilinear', align_corners=False))
+            layers.ConvBNReLU(
+                128, 128, 3, padding=1),
+            layers.ConvBNReLU(
+                128, 128, 3, padding=1),
+            layers.ConvBNReLU(
+                128, 64, 3, padding=1),
+            nn.Upsample(
+                scale_factor=2, mode='bilinear', align_corners=False))
         # stage 1g
         self.decoder1_g = nn.Sequential(
-            layers.ConvBNReLU(128, 64, 3, padding=1),
-            layers.ConvBNReLU(64, 64, 3, padding=1),
-            layers.ConvBNReLU(64, 64, 3, padding=1),
-            nn.Upsample(scale_factor=2, mode='bilinear', align_corners=False))
+            layers.ConvBNReLU(
+                128, 64, 3, padding=1),
+            layers.ConvBNReLU(
+                64, 64, 3, padding=1),
+            layers.ConvBNReLU(
+                64, 64, 3, padding=1),
+            nn.Upsample(
+                scale_factor=2, mode='bilinear', align_corners=False))
         # stage 0g
         self.decoder0_g = nn.Sequential(
-            layers.ConvBNReLU(64, 64, 3, padding=1),
-            layers.ConvBNReLU(64, 64, 3, padding=1),
-            nn.Conv2D(64, 3, 3, padding=1))
+            layers.ConvBNReLU(
+                64, 64, 3, padding=1),
+            layers.ConvBNReLU(
+                64, 64, 3, padding=1),
+            nn.Conv2D(
+                64, 3, 3, padding=1))
 
         ##########################
         ### Decoder part - FOCUS
@@ -116,48 +139,68 @@ class HumanMatting(nn.Layer):
         self.bridge_block = nn.Sequential(
             layers.ConvBNReLU(
                 self.backbone_channels[-1], 512, 3, dilation=2, padding=2),
-            layers.ConvBNReLU(512, 512, 3, dilation=2, padding=2),
-            layers.ConvBNReLU(512, 512, 3, dilation=2, padding=2))
+            layers.ConvBNReLU(
+                512, 512, 3, dilation=2, padding=2),
+            layers.ConvBNReLU(
+                512, 512, 3, dilation=2, padding=2))
         # stage 5f
         self.decoder5_f = nn.Sequential(
             layers.ConvBNReLU(
                 512 + self.backbone_channels[-1], 512, 3, padding=1),
-            layers.ConvBNReLU(512, 512, 3, padding=2, dilation=2),
-            layers.ConvBNReLU(512, 256, 3, padding=2, dilation=2),
-            nn.Upsample(scale_factor=2, mode='bilinear', align_corners=False))
+            layers.ConvBNReLU(
+                512, 512, 3, padding=2, dilation=2),
+            layers.ConvBNReLU(
+                512, 256, 3, padding=2, dilation=2),
+            nn.Upsample(
+                scale_factor=2, mode='bilinear', align_corners=False))
         # stage 4f
         self.decoder4_f = nn.Sequential(
             layers.ConvBNReLU(
                 256 + self.backbone_channels[-2], 256, 3, padding=1),
-            layers.ConvBNReLU(256, 256, 3, padding=1),
-            layers.ConvBNReLU(256, 128, 3, padding=1),
-            nn.Upsample(scale_factor=2, mode='bilinear', align_corners=False))
+            layers.ConvBNReLU(
+                256, 256, 3, padding=1),
+            layers.ConvBNReLU(
+                256, 128, 3, padding=1),
+            nn.Upsample(
+                scale_factor=2, mode='bilinear', align_corners=False))
         # stage 3f
         self.decoder3_f = nn.Sequential(
             layers.ConvBNReLU(
                 128 + self.backbone_channels[-3], 128, 3, padding=1),
-            layers.ConvBNReLU(128, 128, 3, padding=1),
-            layers.ConvBNReLU(128, 64, 3, padding=1),
-            nn.Upsample(scale_factor=2, mode='bilinear', align_corners=False))
+            layers.ConvBNReLU(
+                128, 128, 3, padding=1),
+            layers.ConvBNReLU(
+                128, 64, 3, padding=1),
+            nn.Upsample(
+                scale_factor=2, mode='bilinear', align_corners=False))
         # stage 2f
         self.decoder2_f = nn.Sequential(
             layers.ConvBNReLU(
                 64 + self.backbone_channels[-4], 128, 3, padding=1),
-            layers.ConvBNReLU(128, 128, 3, padding=1),
-            layers.ConvBNReLU(128, 64, 3, padding=1),
-            nn.Upsample(scale_factor=2, mode='bilinear', align_corners=False))
+            layers.ConvBNReLU(
+                128, 128, 3, padding=1),
+            layers.ConvBNReLU(
+                128, 64, 3, padding=1),
+            nn.Upsample(
+                scale_factor=2, mode='bilinear', align_corners=False))
         # stage 1f
         self.decoder1_f = nn.Sequential(
             layers.ConvBNReLU(
                 64 + self.backbone_channels[-5], 64, 3, padding=1),
-            layers.ConvBNReLU(64, 64, 3, padding=1),
-            layers.ConvBNReLU(64, 64, 3, padding=1),
-            nn.Upsample(scale_factor=2, mode='bilinear', align_corners=False))
+            layers.ConvBNReLU(
+                64, 64, 3, padding=1),
+            layers.ConvBNReLU(
+                64, 64, 3, padding=1),
+            nn.Upsample(
+                scale_factor=2, mode='bilinear', align_corners=False))
         # stage 0f
         self.decoder0_f = nn.Sequential(
-            layers.ConvBNReLU(64, 64, 3, padding=1),
-            layers.ConvBNReLU(64, 64, 3, padding=1),
-            nn.Conv2D(64, 1 + 1 + 32, 3, padding=1))
+            layers.ConvBNReLU(
+                64, 64, 3, padding=1),
+            layers.ConvBNReLU(
+                64, 64, 3, padding=1),
+            nn.Conv2D(
+                64, 1 + 1 + 32, 3, padding=1))
         self.init_weight()
 
     def forward(self, data):

@@ -95,12 +95,12 @@ class MODNet(nn.Layer):
         matte_boundary = paddle.where(transition_mask, matte, alpha)
         # l1 loss
         loss_fusion_l1 = loss_func_dict['fusion'][0](
-            matte,
-            alpha) + 4 * loss_func_dict['fusion'][0](matte_boundary, alpha)
+            matte, alpha) + 4 * loss_func_dict['fusion'][0](matte_boundary,
+                                                            alpha)
         # composition loss
         loss_fusion_comp = loss_func_dict['fusion'][1](
-            matte * label_dict['img'],
-            alpha * label_dict['img']) + 4 * loss_func_dict['fusion'][1](
+            matte * label_dict['img'], alpha *
+            label_dict['img']) + 4 * loss_func_dict['fusion'][1](
                 matte_boundary * label_dict['img'], alpha * label_dict['img'])
         # consisten loss with semantic
         transition_mask = F.interpolate(
@@ -248,8 +248,10 @@ class HRBranch(nn.Layer):
                 2 * hr_channels, 2 * hr_channels, 3, stride=1, padding=1),
             Conv2dIBNormRelu(
                 2 * hr_channels, hr_channels, 3, stride=1, padding=1),
-            Conv2dIBNormRelu(hr_channels, hr_channels, 3, stride=1, padding=1),
-            Conv2dIBNormRelu(hr_channels, hr_channels, 3, stride=1, padding=1))
+            Conv2dIBNormRelu(
+                hr_channels, hr_channels, 3, stride=1, padding=1),
+            Conv2dIBNormRelu(
+                hr_channels, hr_channels, 3, stride=1, padding=1))
 
         self.conv_hr = nn.Sequential(
             Conv2dIBNormRelu(
@@ -405,12 +407,14 @@ class SEBlock(nn.Layer):
                 num_channels,
                 int(num_channels // reduction),
                 1,
-                bias_attr=False), nn.ReLU(),
+                bias_attr=False),
+            nn.ReLU(),
             nn.Conv2D(
                 int(num_channels // reduction),
                 num_channels,
                 1,
-                bias_attr=False), nn.Sigmoid())
+                bias_attr=False),
+            nn.Sigmoid())
 
     def forward(self, x):
         w = self.pool(x)
@@ -437,7 +441,8 @@ class GaussianBlurLayer(nn.Layer):
         assert self.kernel_size % 2 != 0
 
         self.op = nn.Sequential(
-            nn.Pad2D(int(self.kernel_size / 2), mode='reflect'),
+            nn.Pad2D(
+                int(self.kernel_size / 2), mode='reflect'),
             nn.Conv2D(
                 channels,
                 channels,
@@ -463,8 +468,8 @@ class GaussianBlurLayer(nn.Layer):
             exit()
         elif not x.shape[1] == self.channels:
             print('In \'GaussianBlurLayer\', the required channel ({0}) is'
-                  'not the same as input ({1})\n'.format(
-                      self.channels, x.shape[1]))
+                  'not the same as input ({1})\n'.format(self.channels, x.shape[
+                      1]))
             exit()
 
         return self.op(x)

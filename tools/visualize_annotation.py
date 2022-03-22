@@ -38,10 +38,11 @@ def parse_args():
         '--file_path',
         help='The file contains the path of origin and annotated images',
         type=str)
-    parser.add_argument('--save_dir',
-                        help='The directory for saving the visualized images',
-                        type=str,
-                        default='./output/visualize_annotation')
+    parser.add_argument(
+        '--save_dir',
+        help='The directory for saving the visualized images',
+        type=str,
+        default='./output/visualize_annotation')
     return parser.parse_args()
 
 
@@ -83,10 +84,8 @@ def main(args):
 
         # weighted image
         color_map = visualize.get_color_map_list(256)
-        weighted_img = utils.visualize.visualize(origin_path,
-                                                 annot_img,
-                                                 color_map,
-                                                 weight=0.6)
+        weighted_img = utils.visualize.visualize(
+            origin_path, annot_img, color_map, weight=0.6)
         weighted_img = Image.fromarray(
             cv2.cvtColor(weighted_img, cv2.COLOR_BGR2RGB))
 

@@ -82,8 +82,7 @@ def parse_args():
         default=False,
         type=eval,
         choices=[True, False],
-        help=
-        'Whether to enable tuned dynamic shape. We uses some images to collect '
+        help='Whether to enable tuned dynamic shape. We uses some images to collect '
         'the dynamic shape for trt sub graph, which avoids setting dynamic shape manually.'
     )
     parser.add_argument(
@@ -108,8 +107,7 @@ def parse_args():
         "--benchmark",
         type=eval,
         default=False,
-        help=
-        "Whether to log some information about environment, model, configuration and performance."
+        help="Whether to log some information about environment, model, configuration and performance."
     )
     parser.add_argument(
         "--model_name",
@@ -144,8 +142,8 @@ class DeployConfig:
         with codecs.open(path, 'r', 'utf-8') as file:
             self.dic = yaml.load(file, Loader=yaml.FullLoader)
 
-        self._transforms = self.load_transforms(
-            self.dic['Deploy']['transforms'])
+        self._transforms = self.load_transforms(self.dic['Deploy'][
+            'transforms'])
         self._dir = os.path.dirname(path)
 
     @property
@@ -347,8 +345,9 @@ class Predictor:
             if args.benchmark:
                 self.autolog.times.start()
 
-            data = np.array(
-                [self._preprocess(p) for p in imgs_path[i:i + args.batch_size]])
+            data = np.array([
+                self._preprocess(p) for p in imgs_path[i:i + args.batch_size]
+            ])
             input_handle.reshape(data.shape)
             input_handle.copy_from_cpu(data)
 

@@ -66,8 +66,7 @@ def evaluate(model,
         eval_dataset,
         batch_sampler=batch_sampler,
         num_workers=num_workers,
-        return_list=True,
-    )
+        return_list=True, )
 
     total_iters = len(loader)
     semantic_metric = SemanticEvaluator(
@@ -87,9 +86,8 @@ def evaluate(model,
         label_divisor=eval_dataset.label_divisor)
 
     if print_detail:
-        logger.info(
-            "Start evaluating (total_samples={}, total_iters={})...".format(
-                len(eval_dataset), total_iters))
+        logger.info("Start evaluating (total_samples={}, total_iters={})...".
+                    format(len(eval_dataset), total_iters))
     progbar_val = progbar.Progbar(target=total_iters, verbose=1)
     reader_cost_averager = TimeAverager()
     batch_cost_averager = TimeAverager()
@@ -174,8 +172,7 @@ def evaluate(model,
         miou = semantic_results['sem_seg']['mIoU']
         map = instance_results['ins_seg']['mAP']
         map50 = instance_results['ins_seg']['mAP50']
-        logger.info(
-            "PQ: {:.4f}, mIoU: {:.4f}, mAP: {:.4f}, mAP50: {:.4f}".format(
-                pq, miou, map, map50))
+        logger.info("PQ: {:.4f}, mIoU: {:.4f}, mAP: {:.4f}, mAP50: {:.4f}".
+                    format(pq, miou, map, map50))
 
     return panoptic_results, semantic_results, instance_results

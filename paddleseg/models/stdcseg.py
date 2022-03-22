@@ -80,7 +80,8 @@ class STDCSeg(nn.Layer):
 
             logit_list = [feat_out, feat_out8, feat_out16]
             logit_list = [
-                F.interpolate(x, x_hw, mode='bilinear', align_corners=True)
+                F.interpolate(
+                    x, x_hw, mode='bilinear', align_corners=True)
                 for x in logit_list
             ]
 

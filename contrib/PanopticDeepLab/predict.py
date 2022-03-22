@@ -39,8 +39,7 @@ def parse_args():
     parser.add_argument(
         '--image_path',
         dest='image_path',
-        help=
-        'The path of image, it can be a file or a directory including images',
+        help='The path of image, it can be a file or a directory including images',
         type=str,
         default=None)
     parser.add_argument(

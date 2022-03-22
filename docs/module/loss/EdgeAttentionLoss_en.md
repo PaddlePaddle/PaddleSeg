@@ -4,7 +4,7 @@ It is suitable for multi-task training scenarios where the encoder extracts the 
 
 ```python
 class paddleseg.models.losses.EdgeAttentionLoss(
-                edge_threshold = 0.8, 
+                edge_threshold = 0.8,
                 ignore_index = 255
 )
 ```
