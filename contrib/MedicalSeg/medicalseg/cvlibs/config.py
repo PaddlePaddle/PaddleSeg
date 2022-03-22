@@ -419,8 +419,7 @@ class Config(object):
 
     def data_root_path_warning(self):
         if "data_root" not in self.dic:
-            raise RuntimeError(
-                'The dataroot need to be set in the config file')
+            raise RuntimeError('The dataroot need to be set in the config file')
 
         data_root = self.dic["data_root"]
         absolute_data_dir = os.path.join(os.getcwd(), data_root)

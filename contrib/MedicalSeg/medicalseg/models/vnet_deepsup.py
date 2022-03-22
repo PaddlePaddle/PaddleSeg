@@ -195,17 +195,9 @@ class VNetDeepSup(nn.Layer):
 
         self.in_tr = InputTransition(in_channels, elu=elu)
         self.down_tr32 = DownTransition(
-            16,
-            1,
-            elu,
-            downsample_stride=stride_size[0],
-            kernel=kernel_size[0])
+            16, 1, elu, downsample_stride=stride_size[0], kernel=kernel_size[0])
         self.down_tr64 = DownTransition(
-            32,
-            2,
-            elu,
-            downsample_stride=stride_size[1],
-            kernel=kernel_size[1])
+            32, 2, elu, downsample_stride=stride_size[1], kernel=kernel_size[1])
         self.down_tr128 = DownTransition(
             64,
             3,
@@ -274,24 +266,15 @@ class VNetDeepSup(nn.Layer):
         out = self.up_tr256(out256, out128)  # [4, 256, 64, 64, 4]
         d1 = self.out_tr256(out)
         d1 = F.interpolate(
-            d1,
-            size=paddle.shape(x)[2:],
-            data_format='NCDHW',
-            mode='trilinear')
+            d1, size=paddle.shape(x)[2:], data_format='NCDHW', mode='trilinear')
         out = self.up_tr128(out, out64)  # [4, 128, 128, 128, 8]
         d2 = self.out_tr128(out)
         d2 = F.interpolate(
-            d2,
-            size=paddle.shape(x)[2:],
-            data_format='NCDHW',
-            mode='trilinear')
+            d2, size=paddle.shape(x)[2:], data_format='NCDHW', mode='trilinear')
         out = self.up_tr64(out, out32)  # [4, 64, 256, 256, 9]
         d3 = self.out_tr64(out)
         d3 = F.interpolate(
-            d3,
-            size=paddle.shape(x)[2:],
-            data_format='NCDHW',
-            mode='trilinear')
+            d3, size=paddle.shape(x)[2:], data_format='NCDHW', mode='trilinear')
         out = self.up_tr32(out, out16)  # [4, 32, 512, 512, 12]
         out = self.out_tr32(out)
 

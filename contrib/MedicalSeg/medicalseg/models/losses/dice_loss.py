@@ -42,10 +42,7 @@ class DiceLoss(nn.Layer):
         else:
             self.norm = nn.Softmax(axis=1)
 
-    def compute_per_channel_dice(self,
-                                 input,
-                                 target,
-                                 epsilon=1e-6,
+    def compute_per_channel_dice(self, input, target, epsilon=1e-6,
                                  weight=None):
         """
         Computes DiceCoefficient as defined in https://arxiv.org/abs/1606.04797 given  a multi channel input and target.

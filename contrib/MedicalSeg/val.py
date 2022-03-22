@@ -27,11 +27,7 @@ def parse_args():
 
     # params of evaluate
     parser.add_argument(
-        "--config",
-        dest="cfg",
-        help="The config file.",
-        default=None,
-        type=str)
+        "--config", dest="cfg", help="The config file.", default=None, type=str)
 
     parser.add_argument(
         '--model_path',
