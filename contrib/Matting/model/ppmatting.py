@@ -35,7 +35,7 @@ def conv_up_psp(in_channels, out_channels, up_sample):
 
 
 @manager.MODELS.add_component
-class ZiYanGate(nn.Layer):
+class PPMatting(nn.Layer):
     def __init__(self, backbone, pretrained=None, loss_func_dict=None):
         super().__init__()
         self.backbone = backbone
@@ -198,7 +198,7 @@ class ZiYanGate(nn.Layer):
             return logit_dict
         else:
             return fusion_sigmoid
-    
+
     def get_loss_func_dict(self):
         loss_func_dict = defaultdict(list)
         loss_func_dict['glance'].append(nn.NLLLoss())
@@ -226,13 +226,11 @@ class ZiYanGate(nn.Layer):
 
         # focus loss computation
         transparent = label_dict['trimap'] == 128
-        focus_alpha_loss = loss_func_dict['focus'][0](logit_dict['focus'],
-                                                label_dict['alpha'],
-                                                transparent)
+        focus_alpha_loss = loss_func_dict['focus'][0](
+            logit_dict['focus'], label_dict['alpha'], transparent)
         # gradient loss
-        focus_gradient_loss = loss_func_dict['focus'][1](logit_dict['focus'],
-                                                        label_dict['alpha'],
-                                                        transparent)
+        focus_gradient_loss = loss_func_dict['focus'][1](
+            logit_dict['focus'], label_dict['alpha'], transparent)
         loss_focus = focus_alpha_loss + focus_gradient_loss
         loss['focus'] = loss_focus
         loss['focus_alpha'] = focus_alpha_loss
@@ -241,7 +239,8 @@ class ZiYanGate(nn.Layer):
         # collaborative matting loss
         loss_cm_func = loss_func_dict['cm']
         # fusion_sigmoid loss
-        cm_alpha_loss = loss_cm_func[0](logit_dict['fusion'], label_dict['alpha'])
+        cm_alpha_loss = loss_cm_func[0](logit_dict['fusion'],
+                                        label_dict['alpha'])
         # composion loss
         comp_pred = logit_dict['fusion'] * label_dict['fg'] + (
             1 - logit_dict['fusion']) * label_dict['bg']
@@ -249,14 +248,14 @@ class ZiYanGate(nn.Layer):
             1 - label_dict['alpha']) * label_dict['bg']
         cm_composition_loss = loss_cm_func[1](comp_pred, comp_gt)
         # grandient loss
-        cm_grad_loss = loss_cm_func[2](logit_dict['fusion'], label_dict['alpha'])
+        cm_grad_loss = loss_cm_func[2](logit_dict['fusion'],
+                                       label_dict['alpha'])
         # cm loss
         loss_cm = cm_alpha_loss + cm_composition_loss + cm_grad_loss
         loss['cm'] = loss_cm
         loss['cm_alpha'] = cm_alpha_loss
         loss['cm_composition'] = cm_composition_loss
         loss['cm_gradient'] = cm_grad_loss
-
 
         loss['all'] = 0.25 * loss_glance + 0.25 * loss_focus + 0.25 * loss_cm
 
@@ -322,7 +321,7 @@ if __name__ == '__main__':
     inputs = {}
     inputs['img'] = x
 
-    model = ZiYanGate(backbone=backbone, pretrained=None)
+    model = PPMatting(backbone=backbone, pretrained=None)
 
     results = model(inputs)
     print(results)

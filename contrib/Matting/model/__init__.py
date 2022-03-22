@@ -19,5 +19,4 @@ from .hrnet import *
 from .dim import DIM
 from .loss import MRSD, GradientLoss
 from .modnet import MODNet
-from .ziyan import ZiYanAM
-from .ziyan_gate import ZiYanGate
+from .ppmatting import PPMatting
