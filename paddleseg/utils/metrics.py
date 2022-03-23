@@ -163,7 +163,7 @@ def dice(intersect_area, pred_area, label_area):
     return np.array(class_dice), mdice
 
 
-# This is a deprecated function, please use calss_measure function.
+# This is a deprecated function, please use class_measurement function.
 def accuracy(intersect_area, pred_area):
     """
     Calculate accuracy
