@@ -195,17 +195,9 @@ class VNet(nn.Layer):
 
         self.in_tr = InputTransition(in_channels, elu=elu)
         self.down_tr32 = DownTransition(
-            16,
-            1,
-            elu,
-            downsample_stride=stride_size[0],
-            kernel=kernel_size[0])
+            16, 1, elu, downsample_stride=stride_size[0], kernel=kernel_size[0])
         self.down_tr64 = DownTransition(
-            32,
-            2,
-            elu,
-            downsample_stride=stride_size[1],
-            kernel=kernel_size[1])
+            32, 2, elu, downsample_stride=stride_size[1], kernel=kernel_size[1])
         self.down_tr128 = DownTransition(
             64,
             3,

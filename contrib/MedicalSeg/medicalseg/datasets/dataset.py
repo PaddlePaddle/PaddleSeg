@@ -96,8 +96,8 @@ class MedicalDataset(paddle.io.Dataset):
             file_path = os.path.join(self.dataset_root, 'test_list.txt')
         else:
             raise ValueError(
-                "`mode` should be 'train', 'val' or 'test', but got {}.".
-                format(mode))
+                "`mode` should be 'train', 'val' or 'test', but got {}.".format(
+                    mode))
 
         with open(file_path, 'r') as f:
             for line in f:

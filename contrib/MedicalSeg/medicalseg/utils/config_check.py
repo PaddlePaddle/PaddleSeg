@@ -37,8 +37,7 @@ def num_classes_check(cfg, train_dataset, val_dataset):
         num_classes_set.add(train_dataset.num_classes)
     if val_dataset and hasattr(val_dataset, 'num_classes'):
         num_classes_set.add(val_dataset.num_classes)
-    if cfg.dic.get('model', None) and cfg.dic['model'].get('num_classes',
-                                                           None):
+    if cfg.dic.get('model', None) and cfg.dic['model'].get('num_classes', None):
         num_classes_set.add(cfg.dic['model'].get('num_classes'))
     if (not cfg.train_dataset) and (not cfg.val_dataset):
         raise ValueError(
