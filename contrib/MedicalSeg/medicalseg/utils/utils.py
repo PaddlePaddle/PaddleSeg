@@ -74,8 +74,7 @@ def download_pretrained_model(pretrained_model):
 
 def load_pretrained_model(model, pretrained_model):
     if pretrained_model is not None:
-        logger.info('Loading pretrained model from {}'.format(
-            pretrained_model))
+        logger.info('Loading pretrained model from {}'.format(pretrained_model))
 
         if urlparse(pretrained_model).netloc:
             pretrained_model = download_pretrained_model(pretrained_model)
@@ -93,8 +92,8 @@ def load_pretrained_model(model, pretrained_model):
                                                             .shape):
                     logger.warning(
                         "[SKIP] Shape of pretrained params {} doesn't match.(Pretrained: {}, Actual: {})"
-                        .format(k, para_state_dict[k].shape, model_state_dict[
-                            k].shape))
+                        .format(k, para_state_dict[k].shape, model_state_dict[k]
+                                .shape))
                 else:
                     model_state_dict[k] = para_state_dict[k]
                     num_params_loaded += 1
@@ -159,8 +158,7 @@ def get_image_list(image_path, valid_suffix=None, filter_key=None):
 
     image_list = []
     if os.path.isfile(image_path):
-        if image_path.split("/")[-1].split(
-                '.', maxsplit=1)[-1] in valid_suffix:
+        if image_path.split("/")[-1].split('.', maxsplit=1)[-1] in valid_suffix:
             if filter_key is not None:
                 f_name = image_path.split("/")[
                     -1]  # TODO change to system invariant

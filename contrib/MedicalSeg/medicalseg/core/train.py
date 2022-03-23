@@ -183,8 +183,8 @@ def train(model,
                 logger.info(
                     "[TRAIN] epoch: {}, iter: {}/{}, loss: {:.4f}, DSC: {:.4f}, "
                     "lr: {:.6f}, batch_cost: {:.4f}, reader_cost: {:.5f}, ips: {:.4f} samples/sec | ETA {}"
-                    .format((
-                        iter) // iters_per_epoch, iter, iters, avg_loss, mdice,
+                    .format((iter
+                             ) // iters_per_epoch, iter, iters, avg_loss, mdice,
                             lr, avg_train_batch_cost, avg_train_reader_cost,
                             batch_cost_averager.get_ips_average(), eta))
 
@@ -225,8 +225,7 @@ def train(model,
 
                 model.train()
 
-            if (iter % save_interval == 0 or
-                    iter == iters) and local_rank == 0:
+            if (iter % save_interval == 0 or iter == iters) and local_rank == 0:
                 current_save_dir = os.path.join(save_dir,
                                                 "iter_{}".format(iter))
                 if not os.path.isdir(current_save_dir):
