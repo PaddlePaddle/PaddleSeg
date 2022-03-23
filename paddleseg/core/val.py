@@ -68,8 +68,10 @@ def evaluate(model,
         if not paddle.distributed.parallel.parallel_helper._is_parallel_ctx_initialized(
         ):
             paddle.distributed.init_parallel_env()
-    batch_sampler = paddle.io.DistributedBatchSampler(
-        eval_dataset, batch_size=1, shuffle=False, drop_last=False)
+    batch_sampler = paddle.io.DistributedBatchSampler(eval_dataset,
+                                                      batch_size=1,
+                                                      shuffle=False,
+                                                      drop_last=False)
     loader = paddle.io.DataLoader(
         eval_dataset,
         batch_sampler=batch_sampler,
@@ -89,8 +91,8 @@ def evaluate(model,
             "Start evaluating (total_samples: {}, total_iters: {})...".format(
                 len(eval_dataset), total_iters))
     #TODO(chenguowei): fix log print error with multi-gpus
-    progbar_val = progbar.Progbar(
-        target=total_iters, verbose=1 if nranks < 2 else 2)
+    progbar_val = progbar.Progbar(target=total_iters,
+                                  verbose=1 if nranks < 2 else 2)
     reader_cost_averager = TimeAverager()
     batch_cost_averager = TimeAverager()
     batch_start = time.time()
@@ -165,8 +167,8 @@ def evaluate(model,
                             [logits_all, logits.numpy()])  # (KN, C, H, W)
                         label_all = np.concatenate([label_all, label.numpy()])
 
-            batch_cost_averager.record(
-                time.time() - batch_start, num_samples=len(label))
+            batch_cost_averager.record(time.time() - batch_start,
+                                       num_samples=len(label))
             batch_cost = batch_cost_averager.get_average()
             reader_cost = reader_cost_averager.get_average()
 
@@ -177,16 +179,17 @@ def evaluate(model,
             batch_cost_averager.reset()
             batch_start = time.time()
 
-    class_iou, miou = metrics.mean_iou(intersect_area_all, pred_area_all,
-                                       label_area_all)
-    class_acc, acc = metrics.accuracy(intersect_area_all, pred_area_all)
-    kappa = metrics.kappa(intersect_area_all, pred_area_all, label_area_all)
-    class_dice, mdice = metrics.dice(intersect_area_all, pred_area_all,
-                                     label_area_all)
+    metrics_input = (intersect_area_all, pred_area_all, label_area_all)
+    class_iou, miou = metrics.mean_iou(*metrics_input)
+    acc, class_precision, class_recall = metrics.class_measurement(
+        *metrics_input)
+    kappa = metrics.kappa(*metrics_input)
+    class_dice, mdice = metrics.dice(*metrics_input)
 
     if auc_roc:
-        auc_roc = metrics.auc_roc(
-            logits_all, label_all, num_classes=eval_dataset.num_classes)
+        auc_roc = metrics.auc_roc(logits_all,
+                                  label_all,
+                                  num_classes=eval_dataset.num_classes)
         auc_infor = ' Auc_roc: {:.4f}'.format(auc_roc)
 
     if print_detail:
@@ -195,5 +198,7 @@ def evaluate(model,
         infor = infor + auc_infor if auc_roc else infor
         logger.info(infor)
         logger.info("[EVAL] Class IoU: \n" + str(np.round(class_iou, 4)))
-        logger.info("[EVAL] Class Acc: \n" + str(np.round(class_acc, 4)))
-    return miou, acc, class_iou, class_acc, kappa
+        logger.info("[EVAL] Class Precision: \n" +
+                    str(np.round(class_precision, 4)))
+        logger.info("[EVAL] Class Recall: \n" + str(np.round(class_recall, 4)))
+    return miou, acc, class_iou, class_precision, kappa

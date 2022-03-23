@@ -163,6 +163,7 @@ def dice(intersect_area, pred_area, label_area):
     return np.array(class_dice), mdice
 
 
+# This is a deprecated function, please use calss_measure function.
 def accuracy(intersect_area, pred_area):
     """
     Calculate accuracy
@@ -186,6 +187,38 @@ def accuracy(intersect_area, pred_area):
         class_acc.append(acc)
     macc = np.sum(intersect_area) / np.sum(pred_area)
     return np.array(class_acc), macc
+
+
+def class_measurement(intersect_area, pred_area, label_area):
+    """
+    Calculate accuracy, calss precision and class recall.
+
+    Args:
+        intersect_area (Tensor): The intersection area of prediction and ground truth on all classes.
+        pred_area (Tensor): The prediction area on all classes.
+        label_area (Tensor): The ground truth area on all classes.
+
+    Returns:
+        float: The mean accuracy.
+        np.ndarray: The precision of all classes.
+        np.ndarray: The recall of all classes.
+    """
+    intersect_area = intersect_area.numpy()
+    pred_area = pred_area.numpy()
+    label_area = label_area.numpy()
+
+    mean_acc = np.sum(intersect_area) / np.sum(pred_area)
+    class_precision = []
+    class_recall = []
+    for i in range(len(intersect_area)):
+        precision = 0 if pred_area[i] == 0 \
+            else intersect_area[i] / pred_area[i]
+        recall = 0 if label_area[i] == 0 \
+            else intersect_area[i] / label_area[i]
+        class_precision.append(precision)
+        class_recall.append(recall)
+
+    return mean_acc, np.array(class_precision), np.array(class_recall)
 
 
 def kappa(intersect_area, pred_area, label_area):
