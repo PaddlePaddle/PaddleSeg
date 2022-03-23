@@ -25,7 +25,7 @@ English | [简体中文](README_CN.md)
  <ul>
         <li>Upgrade the interactive annotation tool <a href="./EISeg">EISeg v0.4</a> with faster inference speed, supporting new areas in remote sensing and medical segmentation.</li>
         <li>Publish the <a href="./contrib/PP-HumanSeg/paper.md">PP-HumanSeg</a> paper, and released Semantic Connectivity-aware Learning framework and a Large-Scale Teleconferencing Video Dataset.</li>
-        <li>Release <a href="./contrib/Matting">PP-HumanMatting</a> for extremely fine-grained human segmentation, with an Android tutorial.</li>
+        <li>Release <a href="./Matting">PP-HumanMatting</a> for extremely fine-grained human segmentation, with an Android tutorial.</li>
         <li>Add 9 semantic segmentatioin models, including a new transformer model <a href="configs/segmenter">SegMenter</a>.</li>
         <li>Provide a comprehensive <a href="docs/model_zoo_overview.md">performance table</a> for all segmentation models, which helps to choose a better model on the accuracy and the speed.</li>
     </ul>
@@ -309,7 +309,7 @@ The relationship between mIoU and FLOPs of representative architectures and back
 
 ## Practical Projects
   * [Interactive Segmentation](./EISeg)
-  * [Image Matting](./contrib/Matting)
+  * [Image Matting](./Matting)
   * [PP-HumanSeg](./contrib/PP-HumanSeg)
   * [Cityscapes SOTA](./contrib/CityscapesSOTA)
   * [Panoptic Segmentation](./contrib/PanopticDeepLab)
