@@ -78,6 +78,5 @@ class FocalLoss(nn.Layer):
             reduction='none')
         loss = loss * mask
         avg_loss = paddle.sum(loss) / (
-            paddle.sum(paddle.cast(loss != 0., 'int32')) + self.EPS)
-
+            paddle.sum(paddle.cast(mask != 0., 'int32')) * class_num + self.EPS)
         return avg_loss
