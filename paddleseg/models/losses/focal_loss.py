@@ -40,7 +40,7 @@ class FocalLoss(nn.Layer):
         self.alpha = alpha
         self.gamma = gamma
         self.ignore_index = ignore_index
-        self.EPS = 1e-8
+        self.EPS = 1e-10
 
     def forward(self, logit, label):
         """
@@ -56,7 +56,7 @@ class FocalLoss(nn.Layer):
         """
         assert logit.ndim == 4, "The ndim of logit should be 4."
         assert logit.shape[1] == 2, "The channel of logit should be 2."
-        assert label.ndim == 3, "The ndim of loglabelit should be 3."
+        assert label.ndim == 3, "The ndim of label should be 3."
 
         class_num = logit.shape[1]  # class num is 2
         logit = paddle.transpose(logit, [0, 2, 3, 1])  # N,C,H,W => N,H,W,C
@@ -77,7 +77,7 @@ class FocalLoss(nn.Layer):
             gamma=self.gamma,
             reduction='none')
         loss = loss * mask
-        avg_loss = paddle.sum(loss) / paddle.sum(
-            paddle.cast(loss != 0., 'int32'))
+        avg_loss = paddle.sum(loss) / (
+            paddle.sum(paddle.cast(loss != 0., 'int32')) + self.EPS)
 
         return avg_loss
