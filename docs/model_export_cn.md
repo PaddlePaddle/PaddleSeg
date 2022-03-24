@@ -43,6 +43,8 @@ python export.py \
 |with_softmax|在网络末端添加softmax算子。由于PaddleSeg组网默认返回logits，如果想要部署模型获取概率值，可以置为True|否|False|
 |without_argmax|是否不在网络末端添加argmax算子。由于PaddleSeg组网默认返回logits，为部署模型可以直接获取预测结果，我们默认在网络末端添加argmax算子|否|False|
 
+**如果导出出现和shape相关的问题，请尝试指定input_shape。**
+
 ## 3. 预测模型文件
 
 如下是导出的预测模型文件。
