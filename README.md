@@ -320,9 +320,9 @@ The relationship between mIoU and FLOPs of representative architectures and back
 ## Community <img src="./docs/images/chat.png" width="30"/>
 
 * If you have any problem or suggestion on PaddleSeg, please send us issues through [GitHub Issues](https://github.com/PaddlePaddle/PaddleSeg/issues).
-* Welcome to Join PaddleSeg QQ Group
+* Welcome to Join PaddleSeg wechat Group
 <div align="center">
-<img src="./docs/images/QQ_chat.png"  width = "200" />  
+<img src="https://s1.ax1x.com/2022/03/23/q1R94s.png"  width = "200" />  
 </div>
 
 ## License

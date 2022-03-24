@@ -3,6 +3,12 @@ MedicalSeg is an easy-to-use 3D medical image segmentation toolkit that supports
 
 MedicalSeg is currently under development! If you find any problem using it, please open a github issue.
 
+* Welcome to MedicalSeg，you can scan the QR code with wechat
+
+<p align="center">
+<img src="https://s1.ax1x.com/2022/03/23/q12pSx.png" width="30%" height="30%">
+</p>
+
 ## 0. Model performance
 
 ###  1) Accuracy

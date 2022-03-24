@@ -63,9 +63,9 @@ PaddleSeg是基于飞桨PaddlePaddle开发的端到端图像分割开发套件�
 ## 技术交流 <img src="./docs/images/chat.png" width="30"/>
 
 * 如果你发现任何PaddleSeg存在的问题或者是建议, 欢迎通过[GitHub Issues](https://github.com/PaddlePaddle/PaddleSeg/issues)给我们提issues。
-* 欢迎加入PaddleSeg QQ群
+* 欢迎加入PaddleSeg 微信群
 <div align="center">
-<img src="./docs/images/QQ_chat.png"  width = "200" />  
+<img src="https://s1.ax1x.com/2022/03/23/q1R94s.png"  width = "200" />  
 </div>
 
 ## 产品矩阵 <img src="./docs/images/model.png" width="20"/>
