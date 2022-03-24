@@ -29,6 +29,7 @@ python export.py \
        --config configs/bisenet/bisenet_cityscapes_1024x1024_160k.yml \
        --model_path bisenet/model.pdparams \
        --save_dir output
+       --input_shape 1 3 512 1024
 ```
 
 ### 导出脚本参数解释
@@ -38,7 +39,7 @@ python export.py \
 |config|配置文件|是|-|
 |model_path|预训练权重的路径|否|配置文件中指定的预训练权重路径|
 |save_dir|保存预测模型的路径|否|output|
-|input_shape| 设置导出模型的输入shape，比如传入`--input_shape 1 3 1024 1024`。如果不设置input_shape，默认导出模型的输入shape是[-1, 3, -1, -1] | 否 | None |
+|input_shape| 设置导出模型的输入shape，比如传入`--input_shape 1 3 1024 1024`。如果不设置input_shape，默认导出模型的输入shape是[-1, 3, -1, -1] | 否（最好指定） | None |
 |with_softmax|在网络末端添加softmax算子。由于PaddleSeg组网默认返回logits，如果想要部署模型获取概率值，可以置为True|否|False|
 |without_argmax|是否不在网络末端添加argmax算子。由于PaddleSeg组网默认返回logits，为部署模型可以直接获取预测结果，我们默认在网络末端添加argmax算子|否|False|
 

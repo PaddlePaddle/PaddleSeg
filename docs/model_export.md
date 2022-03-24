@@ -30,6 +30,7 @@ python export.py \
        --config configs/bisenet/bisenet_cityscapes_1024x1024_160k.yml \
        --model_path bisenet/model.pdparams\
        --save_dir output
+       --input_shape 1 3 512 1024
 ```
 
 ### Description of Exported Script Parameters
@@ -41,7 +42,7 @@ python export.py \
 |model_path|Path of pre-training model parameters|no|The value in config file|
 |with_softmax|Add softmax operator at the end of the network. Since PaddleSeg networking returns Logits by default, you can set it to True if you want the deployment model to get the probability value|no|False|
 |without_argmax|Whether or not to add argmax operator at the end of the network. Since PaddleSeg networking returns Logits by default, we add argmax operator at the end of the network by default in order to directly obtain the prediction results for the deployment model|no|False|
-|input_shape| Set the input shape of exported model, such as `--input_shape 1 3 1024 1024`。if input_shape is not provided，the Default input shape of exported model is [-1, 3, -1, -1] | no | None |
+|input_shape| Set the input shape of exported model, such as `--input_shape 1 3 1024 1024`。if input_shape is not provided，the Default input shape of exported model is [-1, 3, -1, -1] | no(it's better to set it) | None |
 
 ## Prediction Model Files
 
