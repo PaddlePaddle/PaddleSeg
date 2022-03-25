@@ -6,7 +6,7 @@ MedicalSeg is currently under development! If you find any problem using it, ple
 * Welcome to MedicalSeg，you can scan the QR code with wechat
 
 <p align="center">
-<img src="https://s1.ax1x.com/2022/03/23/q12pSx.png" width="30%" height="30%">
+<img src="https://user-images.githubusercontent.com/48433081/160038884-03864e4e-9a12-47a8-80f6-80016b1c1513.png" width="30%" height="30%">
 </p>
 
 ## 0. Model performance
