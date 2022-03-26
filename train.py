@@ -146,6 +146,8 @@ def main(args):
         place = 'gpu'
     elif args.device == 'xpu' and paddle.is_compiled_with_xpu():
         place = 'xpu'
+    elif args.device == 'npu' and paddle.is_compiled_with_npu():
+        place = 'npu'
     else:
         place = 'cpu'
 
