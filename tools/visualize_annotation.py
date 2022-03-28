@@ -20,6 +20,7 @@ To visualize the annotation:
 import argparse
 import os
 import sys
+import shutil
 
 import cv2
 import numpy as np
@@ -68,6 +69,15 @@ def get_images_path(file_path):
     return images_path
 
 
+def mkdir(dir, rm_exist=False):
+    if not os.path.exists(dir):
+        os.makedirs(dir)
+    else:
+        if rm_exist:
+            shutil.rmtree(dir)
+            os.makedirs(dir)
+
+
 def visualize_origin_annotated_imgs(args):
     if not os.path.exists(args.save_dir):
         os.makedirs(args.save_dir)
@@ -101,10 +111,14 @@ def visualize_origin_annotated_imgs(args):
         result_img.save(os.path.join(args.save_dir, image_name))
 
 
-def analyze_cls(annot_img, pred_img, threshold=0.1):
+def analyze_annot(annot_img, ratio_thr=0.1):
     """
-    Analyze the result is TP, FP, TN, FN.
+    Analyze the annotated image.
     """
+    if not isinstance(annot_img, np.ndarray):
+        annot_img = np.array(annot_img)
+    assert annot_img.ndim == 2
+
     if len(np.unique(annot_img)) == 1:
         annot_ratio = 0.
     else:
@@ -113,53 +127,89 @@ def analyze_cls(annot_img, pred_img, threshold=0.1):
         annot_ratio = annot_nums / sum(annot_nums)
         annot_ratio = annot_ratio[1]
 
+    res = annot_ratio > ratio_thr
+    return res, annot_ratio
+
+
+def analyze_pred(ori_img,
+                 pred_img,
+                 percent_ratio=3,
+                 ratio_thr=0.1,
+                 max_val_thr=252,
+                 min_val_thr=30):
+    """
+    Analyze the predicted image.
+    """
+    if not isinstance(ori_img, np.ndarray):
+        ori_img = np.array(ori_img)
+    if not isinstance(pred_img, np.ndarray):
+        pred_img = np.array(pred_img)
+    assert ori_img.ndim == 3 and pred_img.ndim == 2
+
+    # analyze ratio
     if len(np.unique(pred_img)) == 1:
         pred_ratio = 0.
     else:
-        pred_nums = np.bincount(pred_img.flatten())
+        pred_nums = np.bincount(pred_img.ravel())
         assert len(pred_nums) == 2
         pred_ratio = pred_nums / sum(pred_nums)
         pred_ratio = pred_ratio[1]
 
-    res = None
-    if annot_ratio > threshold and pred_ratio > threshold:
-        res = 'tp'
-    elif annot_ratio > threshold and pred_ratio < threshold:
-        res = 'fn'
-    elif annot_ratio < threshold and pred_ratio > threshold:
-        res = 'fp'
-    elif annot_ratio < threshold and pred_ratio < threshold:
-        res = 'tn'
-    return res
+    # analyze Value in HSV
+    v_img = np.max(ori_img, 2)  # get Value
+    jishui_pixel = v_img[pred_img == 1]
+    if jishui_pixel.size > 0:
+        min_val = np.percentile(jishui_pixel, percent_ratio)
+        max_val = np.percentile(jishui_pixel, 100 - percent_ratio)
+    else:
+        min_val = max_val = 0
+
+    # analyze
+    hsv_img = cv2.cvtColor(ori_img, cv2.COLOR_RGB2HSV)
+    h_img = hsv_img[:, :, 0]
+    s_img = hsv_img[:, :, 1]
+    v_img = hsv_img[:, :, 2]
+    h_mean_val = np.mean(h_img)
+    s_mean_val = np.mean(s_img)
+    v_mean_val = np.mean(v_img)
+
+    res = pred_ratio > ratio_thr
+    '''
+    if (pred_ratio < ratio_thr) or (max_val > max_val_thr):
+        res = False
+    else:
+        res = True
+    '''
+
+    return res, pred_ratio, min_val, max_val, h_mean_val, s_mean_val, v_mean_val
 
 
 def visualize_origin_annot_pred_imgs(args):
-    threshold = 0.3
-    if not os.path.exists(args.save_dir):
-        os.makedirs(args.save_dir)
-        os.makedirs(
-            os.path.join(args.save_dir, 'threshold_' + str(threshold) + '_tp'))
-        os.makedirs(
-            os.path.join(args.save_dir, 'threshold_' + str(threshold) + '_fp'))
-        os.makedirs(
-            os.path.join(args.save_dir, 'threshold_' + str(threshold) + '_tn'))
-        os.makedirs(
-            os.path.join(args.save_dir, 'threshold_' + str(threshold) + '_fn'))
-
-    images_path = get_images_path(args.file_path)
-    #pred_dir = '/ssd2/pengjuncai/PaddleSeg/output/jishui_result_new_testset_1/pseudo_color_prediction/images/'
+    save_dir = args.save_dir
     pred_dir = args.pred_dir
-    cls_dict = {'tp': 0, 'fp': 0, 'tn': 0, 'fn': 0}
+    file_path = args.file_path
+
+    ratio_thr = 0.1
+    cls_dict = {
+        (True, True): 'tp',
+        (True, False): 'fn',
+        (False, True): 'fp',
+        (False, False): 'tn'
+    }
+    cls_res = {'tp': 0, 'fp': 0, 'tn': 0, 'fn': 0}
+    images_path = get_images_path(file_path)
     bar = progbar.Progbar(target=len(images_path), verbose=1)
+
+    mkdir(save_dir)
+    mkdir(os.path.join(save_dir, 'ratio_thr_' + str(ratio_thr) + '_tp'), True)
+    mkdir(os.path.join(save_dir, 'ratio_thr_' + str(ratio_thr) + '_fp'), True)
+    mkdir(os.path.join(save_dir, 'ratio_thr_' + str(ratio_thr) + '_tn'), True)
+    mkdir(os.path.join(save_dir, 'ratio_thr_' + str(ratio_thr) + '_fn'), True)
 
     for idx, (origin_path, annot_path) in enumerate(images_path):
         origin_img = Image.open(origin_path)
         annot_img = Image.open(annot_path)
         annot_img = np.array(annot_img)
-
-        bar.update(idx + 1)
-        #if len(np.unique(annot_img)) == 1:
-        #    continue
 
         # weighted annotated image
         color_map = visualize.get_color_map_list(256)
@@ -174,7 +224,6 @@ def visualize_origin_annot_pred_imgs(args):
         image_name = os.path.split(origin_path)[-1]
         tmp_name = image_name.replace('jpg', 'png')
         pred_path = os.path.join(pred_dir, tmp_name)
-        #assert os.path.exists(pred_path), '{} is not existed'.format(pred_path)
         if not os.path.exists(pred_path):
             print('{} is not existed'.format(pred_path))
             continue
@@ -186,18 +235,30 @@ def visualize_origin_annot_pred_imgs(args):
         wt_pred_img = Image.fromarray(
             cv2.cvtColor(wt_pred_img, cv2.COLOR_BGR2RGB))
 
+        # analyze
+        annot_res, annot_ratio = analyze_annot(annot_img, ratio_thr)
+        pred_res, pred_ratio, pred_min, pred_max, hm, sm, vm = analyze_pred(
+            origin_img, pred_img, ratio_thr=ratio_thr)
+        cls_name = cls_dict[(annot_res, pred_res)]
+        cls_res[cls_name] += 1
+
         # result image
         result_img = visualize.paste_images(
             [origin_img, wt_annot_img, wt_pred_img])
         result_img = result_img.convert('RGB')
-        cls_name = analyze_cls(annot_img, pred_img, threshold)
-        cls_dict[cls_name] += 1
+        image_name = image_name.split(".")[0]
+        image_name = "{}_{:.3f}_{:.3f}_min{}_max{}_{:.3f}_{:.3f}_{:.3f}.jpg".format(
+            image_name, annot_ratio, pred_ratio, pred_min, pred_max, hm, sm, vm)
         result_img.save(
-            os.path.join(args.save_dir,
-                         'threshold_' + str(threshold) + '_' + cls_name,
+            os.path.join(save_dir,
+                         'ratio_thr_' + str(ratio_thr) + '_' + cls_name,
                          image_name))
+        bar.update(idx + 1)
 
-    print(cls_dict)
+    precision = cls_res['tp'] / (cls_res['tp'] + cls_res['fp'])
+    recall = cls_res['tp'] / (cls_res['tp'] + cls_res['fn'])
+    print(cls_res)
+    print("precision: {:.3f}, recall: {:.3f}".format(precision, recall))
 
 
 if __name__ == '__main__':
