@@ -75,3 +75,7 @@ else
 
     fi
 fi
+
+if [ ${model_name} == "enet" ];then
+    cp ./test_tipc/data/cityscapes_val_5.list ./test_tipc/data/cityscapes
+fi
