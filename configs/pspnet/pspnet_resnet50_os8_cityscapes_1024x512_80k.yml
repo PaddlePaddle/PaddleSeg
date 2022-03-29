@@ -3,9 +3,11 @@ _base_: '../_base_/cityscapes.yml'
 batch_size: 2
 iters: 80000
 
-learning_rate:
-  decay:
-    end_lr: 1.0e-5
+lr_scheduler:
+  type: PolynomialDecay
+  learning_rate: 0.01
+  power: 0.9
+  end_lr: 1.0e-5
 
 loss:
   types:

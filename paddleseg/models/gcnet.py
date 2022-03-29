@@ -70,7 +70,7 @@ class GCNet(nn.Layer):
         return [
             F.interpolate(
                 logit,
-                x.shape[2:],
+                paddle.shape(x)[2:],
                 mode='bilinear',
                 align_corners=self.align_corners) for logit in logit_list
         ]
@@ -112,7 +112,8 @@ class GCNetHead(nn.Layer):
             kernel_size=3,
             padding=1)
 
-        self.gc_block = GlobalContextBlock(in_channels=gc_channels, ratio=ratio)
+        self.gc_block = GlobalContextBlock(
+            gc_channels=gc_channels, in_channels=gc_channels, ratio=ratio)
 
         self.conv_bn_relu2 = layers.ConvBNReLU(
             in_channels=gc_channels,
@@ -172,8 +173,9 @@ class GlobalContextBlock(nn.Layer):
         ratio (float): The channels of attention map.
     """
 
-    def __init__(self, in_channels, ratio):
+    def __init__(self, gc_channels, in_channels, ratio):
         super().__init__()
+        self.gc_channels = gc_channels
 
         self.conv_mask = nn.Conv2D(
             in_channels=in_channels, out_channels=1, kernel_size=1)
@@ -186,31 +188,31 @@ class GlobalContextBlock(nn.Layer):
                 in_channels=in_channels,
                 out_channels=inter_channels,
                 kernel_size=1),
-            nn.LayerNorm(normalized_shape=[inter_channels, 1, 1]), nn.ReLU(),
+            nn.LayerNorm(normalized_shape=[inter_channels, 1, 1]),
+            nn.ReLU(),
             nn.Conv2D(
                 in_channels=inter_channels,
                 out_channels=in_channels,
                 kernel_size=1))
 
     def global_context_block(self, x):
-        batch, channel, height, width = x.shape
+        x_shape = paddle.shape(x)
 
         # [N, C, H * W]
-        input_x = paddle.reshape(x, shape=[batch, channel, height * width])
+        input_x = paddle.reshape(x, shape=[0, self.gc_channels, -1])
         # [N, 1, C, H * W]
         input_x = paddle.unsqueeze(input_x, axis=1)
         # [N, 1, H, W]
         context_mask = self.conv_mask(x)
         # [N, 1, H * W]
-        context_mask = paddle.reshape(
-            context_mask, shape=[batch, 1, height * width])
+        context_mask = paddle.reshape(context_mask, shape=[0, 1, -1])
         context_mask = self.softmax(context_mask)
         # [N, 1, H * W, 1]
         context_mask = paddle.unsqueeze(context_mask, axis=-1)
         # [N, 1, C, 1]
         context = paddle.matmul(input_x, context_mask)
         # [N, C, 1, 1]
-        context = paddle.reshape(context, shape=[batch, channel, 1, 1])
+        context = paddle.reshape(context, shape=[0, self.gc_channels, 1, 1])
 
         return context
 

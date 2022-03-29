@@ -1,0 +1,6 @@
+_base_: 'ginet_resnet50_os8_cityscapes_1024x512_80k.yml'
+
+model:
+  backbone:
+    type: ResNet101_vd
+    pretrained: https://bj.bcebos.com/paddleseg/dygraph/resnet101_vd_ssld.tar.gz

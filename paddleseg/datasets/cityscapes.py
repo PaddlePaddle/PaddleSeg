@@ -46,6 +46,7 @@ class Cityscapes(Dataset):
         mode (str, optional): Which part of dataset to use. it is one of ('train', 'val', 'test'). Default: 'train'.
         edge (bool, optional): Whether to compute edge while training. Default: False
     """
+    NUM_CLASSES = 19
 
     def __init__(self, transforms, dataset_root, mode='train', edge=False):
         self.dataset_root = dataset_root
@@ -53,7 +54,7 @@ class Cityscapes(Dataset):
         self.file_list = list()
         mode = mode.lower()
         self.mode = mode
-        self.num_classes = 19
+        self.num_classes = self.NUM_CLASSES
         self.ignore_index = 255
         self.edge = edge
 
@@ -81,6 +82,7 @@ class Cityscapes(Dataset):
         img_files = sorted(
             glob.glob(os.path.join(img_dir, mode, '*', '*_leftImg8bit.png')))
 
-        self.file_list = [[
-            img_path, label_path
-        ] for img_path, label_path in zip(img_files, label_files)]
+        self.file_list = [
+            [img_path, label_path]
+            for img_path, label_path in zip(img_files, label_files)
+        ]

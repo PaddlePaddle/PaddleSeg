@@ -15,11 +15,10 @@ model:
 optimizer:
   type: sgd
 
-learning_rate:
-  value: 0.01
-  decay:
-    type: poly
-    power: 0.9
+lr_scheduler:
+  type: PolynomialDecay
+  learning_rate: 0.01
+  power: 0.9
 
 loss:
   types:

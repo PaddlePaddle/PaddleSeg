@@ -15,7 +15,7 @@ model:
   concat_input: True
   enable_auxiliary_loss: True
   align_corners: True
-  
+
 optimizer:
   type: sgd
   momentum: 0.9
@@ -27,4 +27,3 @@ loss:
     - type: CrossEntropyLoss
     - type: CrossEntropyLoss
   coef: [1, 0.4]
-  

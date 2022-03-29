@@ -38,6 +38,7 @@ class ADE20K(Dataset):
         mode (str, optional): A subset of the entire dataset. It should be one of ('train', 'val'). Default: 'train'.
         edge (bool, optional): Whether to compute edge while training. Default: False
     """
+    NUM_CLASSES = 150
 
     def __init__(self, transforms, dataset_root=None, mode='train', edge=False):
         self.dataset_root = dataset_root
@@ -45,7 +46,7 @@ class ADE20K(Dataset):
         mode = mode.lower()
         self.mode = mode
         self.file_list = list()
-        self.num_classes = 150
+        self.num_classes = self.NUM_CLASSES
         self.ignore_index = 255
         self.edge = edge
 
@@ -100,6 +101,8 @@ class ADE20K(Dataset):
         else:
             im, label = self.transforms(im=image_path, label=label_path)
             label = label - 1
+            # Recover the ignore pixels adding by transform
+            label[label == 254] = 255
             if self.edge:
                 edge_mask = F.mask_to_binary_edge(
                     label, radius=2, num_classes=self.num_classes)

@@ -151,7 +151,7 @@ class MscaleOCRNet(nn.Layer):
         return [pred]
 
     def single_scale_forward(self, x):
-        x_size = x.shape[2:]
+        x_size = paddle.shape(x)[2:]
         cls_out, aux_out, ocr_mid_feats = self.ocrnet(x)
         attn = self.scale_attn(ocr_mid_feats)
 
@@ -181,9 +181,12 @@ class AttenHead(nn.Layer):
         bot_ch = 256
 
         self.atten_head = nn.Sequential(
-            layers.ConvBNReLU(in_ch, bot_ch, 3, padding=1, bias_attr=False),
-            layers.ConvBNReLU(bot_ch, bot_ch, 3, padding=1, bias_attr=False),
-            nn.Conv2D(bot_ch, out_ch, kernel_size=(1, 1), bias_attr=False),
+            layers.ConvBNReLU(
+                in_ch, bot_ch, 3, padding=1, bias_attr=False),
+            layers.ConvBNReLU(
+                bot_ch, bot_ch, 3, padding=1, bias_attr=False),
+            nn.Conv2D(
+                bot_ch, out_ch, kernel_size=(1, 1), bias_attr=False),
             nn.Sigmoid())
 
     def forward(self, x):
@@ -194,7 +197,7 @@ def scale_as(x, y, align_corners=False):
     '''
     scale x to the same size as y
     '''
-    y_size = y.shape[2], y.shape[3]
+    y_shape = paddle.shape(y)
     x_scaled = nn.functional.interpolate(
-        x, size=y_size, mode='bilinear', align_corners=align_corners)
+        x, size=y_shape[2:], mode='bilinear', align_corners=align_corners)
     return x_scaled

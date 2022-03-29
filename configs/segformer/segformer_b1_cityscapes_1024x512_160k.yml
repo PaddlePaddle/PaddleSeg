@@ -1,0 +1,26 @@
+_base_: '../_base_/cityscapes.yml'
+
+batch_size: 1
+iters: 160000
+
+model:
+  type: SegFormer_B1
+  num_classes: 19
+  pretrained: https://bj.bcebos.com/paddleseg/dygraph/mix_vision_transformer_b1.tar.gz
+
+optimizer:
+  _inherited_: False
+  type: AdamW
+  beta1: 0.9
+  beta2: 0.999
+  weight_decay: 0.01
+
+lr_scheduler:
+  type: PolynomialDecay
+  learning_rate: 0.00006
+  power: 1
+
+loss:
+  types:
+    - type: CrossEntropyLoss
+  coef: [1]

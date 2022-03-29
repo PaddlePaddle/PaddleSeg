@@ -1,11 +1,17 @@
 language: python
 
 python:
-  - '3.5'
   - '3.6'
 
+env:
+  - PYTHONPATH=${PWD}
+
+install:
+  - pip install --upgrade paddlepaddle
+  - pip install -r requirements.txt
+
 script:
-  - /bin/bash ./test/ci/test_download_dataset.sh
+  - /bin/bash legacy/test/ci/check_code_style.sh
 
 notifications:
   email:

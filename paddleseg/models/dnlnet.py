@@ -75,7 +75,7 @@ class DNLNet(nn.Layer):
         logit_list = [
             F.interpolate(
                 logit,
-                x.shape[2:],
+                paddle.shape(x)[2:],
                 mode='bilinear',
                 align_corners=self.align_corners,
                 align_mode=1) for logit in logit_list
@@ -143,7 +143,8 @@ class DNLHead(nn.Layer):
                 in_channels=1024,
                 out_channels=256,
                 kernel_size=3,
-                bias_attr=False), nn.Dropout2D(p=0.1),
+                bias_attr=False),
+            nn.Dropout2D(p=0.1),
             nn.Conv2D(256, num_classes, 1))
         if self.concat_input:
             self.conv_cat = layers.ConvBNReLU(
@@ -188,27 +189,27 @@ class DisentangledNonLocal2D(layers.NonLocal2D):
         return pairwise_weight
 
     def forward(self, x):
-        n, c, h, w = x.shape
-        g_x = self.g(x).reshape([n, self.inter_channels,
+        x_shape = paddle.shape(x)
+        g_x = self.g(x).reshape([0, self.inter_channels,
                                  -1]).transpose([0, 2, 1])
 
         if self.mode == "gaussian":
             theta_x = paddle.transpose(
-                x.reshape([n, self.in_channels, -1]), [0, 2, 1])
+                x.reshape([0, self.in_channels, -1]), [0, 2, 1])
             if self.sub_sample:
-                phi_x = paddle.transpose(self.phi(x), [n, self.in_channels, -1])
+                phi_x = paddle.transpose(self.phi(x), [0, self.in_channels, -1])
             else:
-                phi_x = paddle.transpose(x, [n, self.in_channels, -1])
+                phi_x = paddle.transpose(x, [0, self.in_channels, -1])
 
         elif self.mode == "concatenation":
             theta_x = paddle.reshape(
-                self.theta(x), [n, self.inter_channels, -1, 1])
-            phi_x = paddle.reshape(self.phi(x), [n, self.inter_channels, 1, -1])
+                self.theta(x), [0, self.inter_channels, -1, 1])
+            phi_x = paddle.reshape(self.phi(x), [0, self.inter_channels, 1, -1])
 
         else:
-            theta_x = self.theta(x).reshape([n, self.inter_channels,
+            theta_x = self.theta(x).reshape([0, self.inter_channels,
                                              -1]).transpose([0, 2, 1])
-            phi_x = paddle.reshape(self.phi(x), [n, self.inter_channels, -1])
+            phi_x = paddle.reshape(self.phi(x), [0, self.inter_channels, -1])
 
         theta_x -= paddle.mean(theta_x, axis=-2, keepdim=True)
         phi_x -= paddle.mean(phi_x, axis=-1, keepdim=True)
@@ -217,10 +218,10 @@ class DisentangledNonLocal2D(layers.NonLocal2D):
         pairwise_weight = pairwise_func(theta_x, phi_x)
 
         y = paddle.matmul(pairwise_weight, g_x).transpose([0, 2, 1]).reshape(
-            [n, self.inter_channels, h, w])
+            [0, self.inter_channels, x_shape[2], x_shape[3]])
         unary_mask = F.softmax(
-            paddle.reshape(self.conv_mask(x), [n, 1, -1]), -1)
+            paddle.reshape(self.conv_mask(x), [0, 1, -1]), -1)
         unary_x = paddle.matmul(unary_mask, g_x).transpose([0, 2, 1]).reshape(
-            [n, self.inter_channels, 1, 1])
+            [0, self.inter_channels, 1, 1])
         output = x + self.conv_out(y + unary_x)
         return output

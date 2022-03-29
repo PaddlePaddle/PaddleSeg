@@ -31,16 +31,23 @@ class PascalContext(Dataset):
         dataset_root (str): The dataset directory. Default: None
         mode (str): Which part of dataset to use. it is one of ('train', 'trainval', 'context', 'val').
             If you want to set mode to 'context', please make sure the dataset have been augmented. Default: 'train'.
+        edge (bool, optional): Whether to compute edge while training. Default: False
     """
+    NUM_CLASSES = 60
 
-    def __init__(self, transforms=None, dataset_root=None, mode='train'):
+    def __init__(self,
+                 transforms=None,
+                 dataset_root=None,
+                 mode='train',
+                 edge=False):
         self.dataset_root = dataset_root
         self.transforms = Compose(transforms)
         mode = mode.lower()
         self.mode = mode
         self.file_list = list()
-        self.num_classes = 59
+        self.num_classes = self.NUM_CLASSES
         self.ignore_index = 255
+        self.edge = edge
 
         if mode not in ['train', 'trainval', 'val']:
             raise ValueError(
@@ -51,9 +58,11 @@ class PascalContext(Dataset):
             raise ValueError("`transforms` is necessary, but it is None.")
         if self.dataset_root is None:
             raise ValueError(
-                "The dataset is not Found or the folder structure is nonconfoumance.")
+                "The dataset is not Found or the folder structure is nonconfoumance."
+            )
 
-        image_set_dir = os.path.join(self.dataset_root, 'ImageSets','Segmentation')
+        image_set_dir = os.path.join(self.dataset_root, 'ImageSets',
+                                     'Segmentation')
 
         if mode == 'train':
             file_path = os.path.join(image_set_dir, 'train_context.txt')
@@ -62,12 +71,12 @@ class PascalContext(Dataset):
         elif mode == 'trainval':
             file_path = os.path.join(image_set_dir, 'trainval_context.txt')
         if not os.path.exists(file_path):
-                raise RuntimeError(
-                    "PASCAL-Context annotations are not ready, "
-                    "Please make sure voc_context.py has been properly run.")
-        
-        img_dir = os.path.join(self.dataset_root,  'JPEGImages')
-        label_dir = os.path.join(self.dataset_root,  'Context')
+            raise RuntimeError(
+                "PASCAL-Context annotations are not ready, "
+                "Please make sure voc_context.py has been properly run.")
+
+        img_dir = os.path.join(self.dataset_root, 'JPEGImages')
+        label_dir = os.path.join(self.dataset_root, 'Context')
 
         with open(file_path, 'r') as f:
             for line in f:

@@ -21,7 +21,7 @@ import paddle
 
 from paddleseg import utils
 from paddleseg.core import infer
-from paddleseg.utils import logger, progbar
+from paddleseg.utils import logger, progbar, visualize
 
 
 def mkdir(path):
@@ -48,7 +48,8 @@ def predict(model,
             flip_vertical=False,
             is_slide=False,
             stride=None,
-            crop_size=None):
+            crop_size=None,
+            custom_color=None):
     """
     predict and visualize the image_list.
 
@@ -68,6 +69,7 @@ def predict(model,
             It should be provided when `is_slide` is True.
         crop_size (tuple|list, optional):  The crop size of sliding window, the first is width and the second is height.
             It should be provided when `is_slide` is True.
+        custom_color (list, optional): Save images with a custom color map. Default: None, use paddleseg's default color map.
 
     """
     utils.utils.load_entire_model(model, model_path)
@@ -84,6 +86,7 @@ def predict(model,
 
     logger.info("Start to predict...")
     progbar_pred = progbar.Progbar(target=len(img_lists[0]), verbose=1)
+    color_map = visualize.get_color_map_list(256, custom_color=custom_color)
     with paddle.no_grad():
         for i, im_path in enumerate(img_lists[local_rank]):
             im = cv2.imread(im_path)
@@ -93,7 +96,7 @@ def predict(model,
             im = paddle.to_tensor(im)
 
             if aug_pred:
-                pred = infer.aug_inference(
+                pred, _ = infer.aug_inference(
                     model,
                     im,
                     ori_shape=ori_shape,
@@ -105,7 +108,7 @@ def predict(model,
                     stride=stride,
                     crop_size=crop_size)
             else:
-                pred = infer.inference(
+                pred, _ = infer.inference(
                     model,
                     im,
                     ori_shape=ori_shape,
@@ -121,19 +124,20 @@ def predict(model,
                 im_file = im_path.replace(image_dir, '')
             else:
                 im_file = os.path.basename(im_path)
-            if im_file[0] == '/':
+            if im_file[0] == '/' or im_file[0] == '\\':
                 im_file = im_file[1:]
 
             # save added image
-            added_image = utils.visualize.visualize(im_path, pred, weight=0.6)
+            added_image = utils.visualize.visualize(
+                im_path, pred, color_map, weight=0.6)
             added_image_path = os.path.join(added_saved_dir, im_file)
             mkdir(added_image_path)
             cv2.imwrite(added_image_path, added_image)
 
             # save pseudo color prediction
-            pred_mask = utils.visualize.get_pseudo_color_map(pred)
-            pred_saved_path = os.path.join(pred_saved_dir,
-                                           im_file.rsplit(".")[0] + ".png")
+            pred_mask = utils.visualize.get_pseudo_color_map(pred, color_map)
+            pred_saved_path = os.path.join(
+                pred_saved_dir, os.path.splitext(im_file)[0] + ".png")
             mkdir(pred_saved_path)
             pred_mask.save(pred_saved_path)
 

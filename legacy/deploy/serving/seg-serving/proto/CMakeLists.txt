@@ -1,6 +1,0 @@
-LIST(APPEND protofiles
-        ${CMAKE_CURRENT_LIST_DIR}/image_seg.proto
-)
-
-PROTOBUF_GENERATE_SERVING_CPP(TRUE PROTO_SRCS PROTO_HDRS ${protofiles})
-LIST(APPEND serving_srcs ${PROTO_SRCS})

@@ -1,7 +1,0 @@
-%YAML:1.0
-SIZE: [513, 513] # (width, height) crop size for test eval 
-MEAN: [104.008, 116.669, 122.675]
-STD: [1.0, 1.0, 1.0]
-CHANNELS: 3
-CLASS_NUM: 2
-MODEL_NAME: "human_segmentation"

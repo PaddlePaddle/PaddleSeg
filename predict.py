@@ -18,8 +18,9 @@ import os
 import paddle
 
 from paddleseg.cvlibs import manager, Config
-from paddleseg.utils import get_sys_env, logger, config_check
+from paddleseg.utils import get_sys_env, logger, get_image_list
 from paddleseg.core import predict
+from paddleseg.transforms import Compose
 
 
 def parse_args():
@@ -37,8 +38,7 @@ def parse_args():
     parser.add_argument(
         '--image_path',
         dest='image_path',
-        help=
-        'The path of image, it can be a file or a directory including images',
+        help='The image to predict, which can be a path of image, or a file list containing image paths, or a directory including images',
         type=str,
         default=None)
     parser.add_argument(
@@ -82,49 +82,50 @@ def parse_args():
         '--crop_size',
         dest='crop_size',
         nargs=2,
-        help=
-        'The crop size of sliding window, the first is width and the second is height.',
+        help='The crop size of sliding window, the first is width and the second is height.',
         type=int,
         default=None)
     parser.add_argument(
         '--stride',
         dest='stride',
         nargs=2,
-        help=
-        'The stride of sliding window, the first is width and the second is height.',
+        help='The stride of sliding window, the first is width and the second is height.',
         type=int,
         default=None)
 
+    # custom color map
+    parser.add_argument(
+        '--custom_color',
+        dest='custom_color',
+        nargs='+',
+        help='Save images with a custom color map. Default: None, use paddleseg\'s default color map.',
+        type=int,
+        default=None)
     return parser.parse_args()
 
 
-def get_image_list(image_path):
-    """Get image list"""
-    valid_suffix = [
-        '.JPEG', '.jpeg', '.JPG', '.jpg', '.BMP', '.bmp', '.PNG', '.png'
-    ]
-    image_list = []
-    image_dir = None
-    if os.path.isfile(image_path):
-        if os.path.splitext(image_path)[-1] in valid_suffix:
-            image_list.append(image_path)
-    elif os.path.isdir(image_path):
-        image_dir = image_path
-        for root, dirs, files in os.walk(image_path):
-            for f in files:
-                if '.ipynb_checkpoints' in root:
-                    continue
-                if os.path.splitext(f)[-1] in valid_suffix:
-                    image_list.append(os.path.join(root, f))
-    else:
-        raise FileNotFoundError(
-            '`--image_path` is not found. it should be an image file or a directory including images'
-        )
+def get_test_config(cfg, args):
 
-    if len(image_list) == 0:
-        raise RuntimeError('There are not image file in `--image_path`')
+    test_config = cfg.test_config
+    if args.aug_pred:
+        test_config['aug_pred'] = args.aug_pred
+        test_config['scales'] = args.scales
 
-    return image_list, image_dir
+    if args.flip_horizontal:
+        test_config['flip_horizontal'] = args.flip_horizontal
+
+    if args.flip_vertical:
+        test_config['flip_vertical'] = args.flip_vertical
+
+    if args.is_slide:
+        test_config['is_slide'] = args.is_slide
+        test_config['crop_size'] = args.crop_size
+        test_config['stride'] = args.stride
+
+    if args.custom_color:
+        test_config['custom_color'] = args.custom_color
+
+    return test_config
 
 
 def main(args):
@@ -137,11 +138,6 @@ def main(args):
         raise RuntimeError('No configuration file specified.')
 
     cfg = Config(args.cfg)
-    val_dataset = cfg.val_dataset
-    if not val_dataset:
-        raise RuntimeError(
-            'The verification dataset is not specified in the configuration file.'
-        )
 
     msg = '\n---------------Config Information---------------\n'
     msg += str(cfg)
@@ -149,11 +145,11 @@ def main(args):
     logger.info(msg)
 
     model = cfg.model
-    transforms = val_dataset.transforms
+    transforms = Compose(cfg.val_transforms)
     image_list, image_dir = get_image_list(args.image_path)
     logger.info('Number of predict images = {}'.format(len(image_list)))
 
-    config_check(cfg, val_dataset=val_dataset)
+    test_config = get_test_config(cfg, args)
 
     predict(
         model,
@@ -162,14 +158,7 @@ def main(args):
         image_list=image_list,
         image_dir=image_dir,
         save_dir=args.save_dir,
-        aug_pred=args.aug_pred,
-        scales=args.scales,
-        flip_horizontal=args.flip_horizontal,
-        flip_vertical=args.flip_vertical,
-        is_slide=args.is_slide,
-        crop_size=args.crop_size,
-        stride=args.stride,
-    )
+        **test_config)
 
 
 if __name__ == '__main__':

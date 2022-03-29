@@ -1,0 +1,68 @@
+batch_size: 1
+iters: 85000
+
+model:
+  type: MscaleOCRNet
+  pretrained: pretrain/pretrained.pdparams
+  n_scales: [1.0]
+  backbone:
+    type: HRNet_W48_NV
+  num_classes: 26
+  backbone_indices: [0]
+
+train_dataset:
+  type: AutoNueCrop
+  dataset_root: data/IDD_Segmentation
+  transforms:
+    - type: Resize
+      target_size: [3200, 1800]
+    - type: RandomHorizontalFlip
+    - type: RandomDistort
+      brightness_range: 0.25
+      brightness_prob: 1
+      contrast_range: 0.25
+      contrast_prob: 1
+      saturation_range: 0.25
+      saturation_prob: 1
+      hue_range: 63
+      hue_prob: 1
+    - type: Normalize
+      mean: [0.485, 0.456, 0.406]
+      std: [0.229, 0.224, 0.225]
+  mode: train
+
+
+val_dataset:
+  type: AutoNueCrop
+  dataset_root: data/IDD_Segmentation
+  transforms:
+    - type: Resize
+      target_size: [3200, 1800]
+    - type: Normalize
+      mean: [0.485, 0.456, 0.406]
+      std: [0.229, 0.224, 0.225]
+  mode: val
+
+optimizer:
+  type: sgd
+  momentum: 0.9
+  weight_decay: 0.0001
+
+learning_rate:
+  value: 0.005
+  decay:
+    type: poly
+    power: 2
+    end_lr: 0.0
+
+loss:
+  types:
+    - type: DiceLoss
+    - type: DiceLoss
+    - type: BootstrappedCrossEntropyLoss
+      min_K: 50000
+      loss_th: 0.05
+    - type: BootstrappedCrossEntropyLoss
+      min_K: 50000
+      loss_th: 0.05
+  coef: [0.4, 0.16, 1.0, 0.4]

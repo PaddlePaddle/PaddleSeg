@@ -1,0 +1,26 @@
+_base_: '../_base_/cityscapes.yml'
+
+model:
+  type: FCN
+  backbone:
+    type: HRNet_W18
+    align_corners: False
+    pretrained: https://bj.bcebos.com/paddleseg/dygraph/hrnet_w18_ssld.tar.gz
+  num_classes: 19
+  pretrained: Null
+  backbone_indices: [-1]
+
+optimizer:
+  weight_decay: 0.0005
+
+iters: 80000
+batch_size: 4
+
+loss:
+  types:
+    - type: MixedLoss
+      losses:
+        - type: CrossEntropyLoss
+        - type: SemanticConnectivityLoss
+      coef: [1, 0.05]
+  coef: [1]

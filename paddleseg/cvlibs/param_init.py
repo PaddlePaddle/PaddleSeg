@@ -58,7 +58,7 @@ def normal_init(param, **kwargs):
 
 
 def kaiming_normal_init(param, **kwargs):
-    """
+    r"""
     Initialize the input tensor with Kaiming Normal initialization.
 
     This function implements the `param` initialization from the paper
@@ -88,4 +88,33 @@ def kaiming_normal_init(param, **kwargs):
 
     """
     initializer = nn.initializer.KaimingNormal(**kwargs)
+    initializer(param, param.block)
+
+
+def kaiming_uniform(param, **kwargs):
+    r"""Implements the Kaiming Uniform initializer
+    This class implements the weight initialization from the paper
+    `Delving Deep into Rectifiers: Surpassing Human-Level Performance on
+    ImageNet Classification <https://arxiv.org/abs/1502.01852>`_
+    by Kaiming He, Xiangyu Zhang, Shaoqing Ren and Jian Sun. This is a
+    robust initialization method that particularly considers the rectifier
+    nonlinearities.
+
+    In case of Uniform distribution, the range is [-x, x], where
+    .. math::
+        x = \sqrt{\\frac{6.0}{fan\_in}}
+
+    Args:
+        param (Tensor): Tensor that needs to be initialized.
+
+    Examples:
+
+        from paddleseg.cvlibs import param_init
+        import paddle.nn as nn
+
+        linear = nn.Linear(2, 4)
+        param_init.kaiming_uniform(linear.weight)
+    """
+
+    initializer = nn.initializer.KaimingUniform(**kwargs)
     initializer(param, param.block)

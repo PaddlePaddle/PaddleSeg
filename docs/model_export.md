@@ -1,56 +1,67 @@
-# 模型导出
+English | [简体中文](model_export_cn.md)
 
-本教程提供了一个将训练好的动态图模型转化为静态图模型并进行部署的例子
+# Model Export
 
-*注意：如果已经通过量化或者剪枝优化过模型，则模型已经保存为静态图模型，可以直接查看[部署](#模型部署预测)*
+The trained model needs to be exported as a prediction model before deployment.
 
-## 获取预训练模型
+This tutorial will show how to export a trained model。
 
-*注意：下述例子为Linux或者Mac上执行的例子，windows请自行在浏览器下载[参数](https://paddleseg.bj.bcebos.com/dygraph/cityscapes/bisenet_cityscapes_1024x1024_160k/model.pdparams)并存放到所创建的目录*
+
+## Acquire the Pre-training Model
+
+In this example，BiseNetV2 model will be used. Run the following command or click [link](https://paddleseg.bj.bcebos.com/dygraph/cityscapes/bisenet_cityscapes_1024x1024_160k/model.pdparams) to download the pretrained model.
 ```shell
 mkdir bisenet && cd bisenet
 wget https://paddleseg.bj.bcebos.com/dygraph/cityscapes/bisenet_cityscapes_1024x1024_160k/model.pdparams
 cd ..
 ```
 
-## 将模型导出为静态图模型
+## Export the prediction Model
 
-请确保完成了PaddleSeg的安装工作，并且位于PaddleSeg目录下，执行以下脚本：
+Make sure you have installed PaddleSeg and are in the PaddleSeg directory.
+
+Run the following command, and the prediction model will be saved in `output` directory.
 
 ```shell
-export CUDA_VISIBLE_DEVICES=0 # 设置1张可用的卡
-# windows下请执行以下命令
+export CUDA_VISIBLE_DEVICES=0 # Set a usable GPU.
+# If on windows, Run the following command：
 # set CUDA_VISIBLE_DEVICES=0
 python export.py \
        --config configs/bisenet/bisenet_cityscapes_1024x1024_160k.yml \
-       --model_path bisenet/model.pdparams
+       --model_path bisenet/model.pdparams\
+       --save_dir output
+       --input_shape 1 3 512 1024
 ```
 
-### 导出脚本参数解释
+### Description of Exported Script Parameters
 
-|参数名|用途|是否必选项|默认值|
+|parammeter|purpose|is needed|default|
 |-|-|-|-|
-|config|配置文件|是|-|
-|save_dir|模型和visualdl日志文件的保存根路径|否|output|
-|model_path|预训练模型参数的路径|否|配置文件中指定值|
+|config|Config file|yes|-|
+|save_dir|Save root path for model and VisualDL log files|no|output|
+|model_path|Path of pre-training model parameters|no|The value in config file|
+|with_softmax|Add softmax operator at the end of the network. Since PaddleSeg networking returns Logits by default, you can set it to True if you want the deployment model to get the probability value|no|False|
+|without_argmax|Whether or not to add argmax operator at the end of the network. Since PaddleSeg networking returns Logits by default, we add argmax operator at the end of the network by default in order to directly obtain the prediction results for the deployment model|no|False|
+|input_shape| Set the input shape of exported model, such as `--input_shape 1 3 1024 1024`。if input_shape is not provided，the Default input shape of exported model is [-1, 3, -1, -1] | no (If the image shape in prediction is consistent, you should set the input_shape) | None |
 
-## 结果文件
+**If you encounter shape-relevant issue, please try to set the input_shape.**
+
+## Prediction Model Files
 
 ```shell
 output
-  ├── deploy.yaml            # 部署相关的配置文件
-  ├── model.pdiparams        # 静态图模型参数
-  ├── model.pdiparams.info   # 参数额外信息，一般无需关注
-  └── model.pdmodel          # 静态图模型文件
+  ├── deploy.yaml            # Config file of deployment
+  ├── model.pdiparams        # Paramters of static model
+  ├── model.pdiparams.info   # Additional information witch is not concerned generally
+  └── model.pdmodel          # Static model file
 ```
 
-# 模型部署预测
+After exporting prediction model, it can be deployed by the following methods.
 
-PaddleSeg目前支持以下部署方式：
-
-|端侧|库|教程|
+|Deployment scenarios|Inference library|Tutorial|
 |-|-|-|
-|Python端部署|Paddle预测库|[示例](../deploy/python/)|
-|移动端部署|ONNX|完善中|
-|服务端部署|HubServing|完善中|
-|前端部署|PaddleJS|完善中|
+|Server (Nvidia GPU and X86 CPU) Python deployment|Paddle Inference|[doc](../deploy/python/)|
+|Server (Nvidia GPU and X86 CPU) C++ deployment|Paddle Inference|[doc](../deploy/cpp/)|
+|Mobile deployment|Paddle Lite|[doc](../deploy/lite/)|
+|Service-oriented deployment |Paddle Serving|[doc](../deploy/serving/)|
+|Web deployment|Paddle JS|[doc](../deploy/web/)|

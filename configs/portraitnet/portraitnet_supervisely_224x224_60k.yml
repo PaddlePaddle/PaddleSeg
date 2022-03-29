@@ -1,0 +1,50 @@
+_base_: './portraitnet_eg1800_224x224_46k.yml'
+batch_size: 64
+iters: 60000
+
+train_dataset:
+  type: SUPERVISELY
+  dataset_root: data/Supervisely_face
+  common_transforms:
+    - type: RandomAffine
+      max_rotation: 45
+      min_scale_factor: 0.5
+      max_scale_factor: 1.5
+      size: [ 224, 224 ]
+      translation_offset: 56
+    - type: RandomHorizontalFlip
+  transforms1:
+    - type: Normalize
+      mean: [0.485, 0.458, 0.408]
+      std: [0.23, 0.23, 0.23]
+  transforms2:
+    - type: RandomDistort
+      brightness_range: 0.6
+      contrast_range: 0.4
+      saturation_range: 0.6
+      hue_prob: 0.0
+      sharpness_range: 0.2
+      sharpness_prob: 0.5
+    - type: RandomBlur
+      prob: 0.5
+      blur_type: random
+    - type: RandomNoise
+    - type: Normalize
+      mean: [ 0.485, 0.458, 0.408 ]
+      std: [ 0.23, 0.23, 0.23 ]
+  mode: train
+
+val_dataset:
+  type: SUPERVISELY
+  dataset_root: data/Supervisely_face
+  common_transforms:
+    - type: ScalePadding
+      target_size: [ 224, 224 ]
+      im_padding_value: [127.5, 127.5, 127.5]
+      label_padding_value: 0
+    - type: Normalize
+      mean: [0.485, 0.458, 0.408]
+      std: [0.23, 0.23, 0.23]
+  transforms1: null
+  transforms2: null
+  mode: val

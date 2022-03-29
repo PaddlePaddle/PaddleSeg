@@ -29,11 +29,9 @@ from paddleseg.utils import utils
 class GSCNN(nn.Layer):
     """
     The GSCNN implementation based on PaddlePaddle.
-
     The original article refers to
     Towaki Takikawa, et, al. "Gated-SCNN: Gated Shape CNNs for Semantic Segmentation"
     (https://arxiv.org/pdf/1907.05740.pdf)
-
     Args:
         num_classes (int): The unique number of target classes.
         backbone (paddle.nn.Layer): Backbone network, currently support Resnet50_vd/Resnet101_vd.
@@ -86,7 +84,6 @@ class GSCNN(nn.Layer):
 class GSCNNHead(nn.Layer):
     """
     The GSCNNHead implementation based on PaddlePaddle.
-
     Args:
         num_classes (int): The unique number of target classes.
         backbone_indices (tuple): Two values in the tuple indicate the indices of output of backbone.
@@ -143,10 +140,10 @@ class GSCNNHead(nn.Layer):
             align_corners=self.align_corners)
 
     def forward(self, x, feat_list, s_input):
-        input_size = x.shape[-2:]
+        input_shape = paddle.shape(x)
         m1f = F.interpolate(
             s_input,
-            input_size,
+            input_shape[2:],
             mode='bilinear',
             align_corners=self.align_corners)
 
@@ -156,25 +153,25 @@ class GSCNNHead(nn.Layer):
         ]
         s1 = F.interpolate(
             self.dsn1(l1),
-            input_size,
+            input_shape[2:],
             mode='bilinear',
             align_corners=self.align_corners)
         s2 = F.interpolate(
             self.dsn2(l2),
-            input_size,
+            input_shape[2:],
             mode='bilinear',
             align_corners=self.align_corners)
         s3 = F.interpolate(
             self.dsn3(l3),
-            input_size,
+            input_shape[2:],
             mode='bilinear',
             align_corners=self.align_corners)
 
         # Get image gradient
         im_arr = x.numpy().transpose((0, 2, 3, 1))
         im_arr = ((im_arr * 0.5 + 0.5) * 255).astype(np.uint8)
-        canny = np.zeros((x.shape[0], 1, input_size[0], input_size[1]))
-        for i in range(x.shape[0]):
+        canny = np.zeros((input_shape[0], 1, input_shape[2], input_shape[3]))
+        for i in range(input_shape[0]):
             canny[i] = cv2.Canny(im_arr[i], 10, 100)
         canny = canny / 255
         canny = paddle.to_tensor(canny).astype('float32')
@@ -182,25 +179,37 @@ class GSCNNHead(nn.Layer):
 
         cs = self.res1(m1f)
         cs = F.interpolate(
-            cs, input_size, mode='bilinear', align_corners=self.align_corners)
+            cs,
+            input_shape[2:],
+            mode='bilinear',
+            align_corners=self.align_corners)
         cs = self.d1(cs)
         cs = self.gate1(cs, s1)
 
         cs = self.res2(cs)
         cs = F.interpolate(
-            cs, input_size, mode='bilinear', align_corners=self.align_corners)
+            cs,
+            input_shape[2:],
+            mode='bilinear',
+            align_corners=self.align_corners)
         cs = self.d2(cs)
         cs = self.gate2(cs, s2)
 
         cs = self.res3(cs)
         cs = F.interpolate(
-            cs, input_size, mode='bilinear', align_corners=self.align_corners)
+            cs,
+            input_shape[2:],
+            mode='bilinear',
+            align_corners=self.align_corners)
         cs = self.d3(cs)
         cs = self.gate3(cs, s3)
 
         cs = self.fuse(cs)
         cs = F.interpolate(
-            cs, input_size, mode='bilinear', align_corners=self.align_corners)
+            cs,
+            input_shape[2:],
+            mode='bilinear',
+            align_corners=self.align_corners)
         edge_out = F.sigmoid(cs)  # Ouput of shape stream
 
         cat = paddle.concat([edge_out, canny], axis=1)
@@ -228,9 +237,13 @@ class GatedSpatailConv2d(nn.Layer):
         super().__init__()
         self._gate_conv = nn.Sequential(
             layers.SyncBatchNorm(in_channels + 1),
-            nn.Conv2D(in_channels + 1, in_channels + 1, kernel_size=1),
-            nn.ReLU(), nn.Conv2D(in_channels + 1, 1, kernel_size=1),
-            layers.SyncBatchNorm(1), nn.Sigmoid())
+            nn.Conv2D(
+                in_channels + 1, in_channels + 1, kernel_size=1),
+            nn.ReLU(),
+            nn.Conv2D(
+                in_channels + 1, 1, kernel_size=1),
+            layers.SyncBatchNorm(1),
+            nn.Sigmoid())
         self.conv = nn.Conv2D(
             in_channels,
             out_channels,
@@ -252,7 +265,6 @@ class GatedSpatailConv2d(nn.Layer):
 class ASPPModule(nn.Layer):
     """
     Atrous Spatial Pyramid Pooling.
-
     Args:
         aspp_ratios (tuple): The dilation rate using in ASSP module.
         in_channels (int): The number of input channels.
@@ -312,11 +324,12 @@ class ASPPModule(nn.Layer):
 
     def forward(self, x, edge):
         outputs = []
+        x_shape = paddle.shape(x)
         for block in self.aspp_blocks:
             y = block(x)
             y = F.interpolate(
                 y,
-                x.shape[2:],
+                x_shape[2:],
                 mode='bilinear',
                 align_corners=self.align_corners)
             outputs.append(y)
@@ -325,14 +338,14 @@ class ASPPModule(nn.Layer):
             img_avg = self.global_avg_pool(x)
             img_avg = F.interpolate(
                 img_avg,
-                x.shape[2:],
+                x_shape[2:],
                 mode='bilinear',
                 align_corners=self.align_corners)
             outputs.append(img_avg)
 
         edge_features = F.interpolate(
             edge,
-            size=x.shape[2:],
+            size=x_shape[2:],
             mode='bilinear',
             align_corners=self.align_corners)
         edge_features = self.edge_conv(edge_features)

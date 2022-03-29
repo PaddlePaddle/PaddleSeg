@@ -1,0 +1,78 @@
+batch_size: 64
+iters: 46000
+
+train_dataset:
+  type: EG1800
+  dataset_root: data/EG1800
+  common_transforms:
+    - type: RandomAffine
+      max_rotation: 45
+      min_scale_factor: 0.5
+      max_scale_factor: 1.5
+      size: [ 224, 224 ]
+      translation_offset: 56
+    - type: RandomHorizontalFlip
+  transforms1:
+    - type: Normalize
+      mean: [0.485, 0.458, 0.408]
+      std: [0.23, 0.23, 0.23]
+  transforms2:
+    - type: RandomDistort
+      brightness_range: 0.6
+      contrast_range: 0.4
+      saturation_range: 0.6
+      hue_prob: 0.0
+      sharpness_range: 0.2
+      sharpness_prob: 0.5
+    - type: RandomBlur
+      prob: 0.5
+      blur_type: random
+    - type: RandomNoise
+    - type: Normalize
+      mean: [ 0.485, 0.458, 0.408 ]
+      std: [ 0.23, 0.23, 0.23 ]
+  mode: train
+
+val_dataset:
+  type: EG1800
+  dataset_root: data/EG1800
+  common_transforms:
+    - type: ScalePadding
+      target_size: [ 224, 224 ]
+      im_padding_value: [127.5, 127.5, 127.5]
+      label_padding_value: 0
+    - type: Normalize
+      mean: [0.485, 0.458, 0.408]
+      std: [0.23, 0.23, 0.23]
+  transforms1: null
+  transforms2: null
+  mode: val
+
+optimizer:
+  type: adam
+  weight_decay: 5.0e-4
+
+lr_scheduler:
+  type: StepDecay
+  learning_rate: 0.001
+  step_size: 460
+  gamma: 0.95
+
+loss:
+  types:
+    - type: CrossEntropyLoss
+    - type: CrossEntropyLoss
+    - type: FocalLoss
+      edge_label: True
+    - type: KLLoss
+  coef: [1, 1, 0.3, 2]
+
+model:
+  type: PortraitNet
+  backbone:
+    type: MobileNetV2
+    channel_ratio: 1.0
+    min_channel: 16
+    pretrained: https://bj.bcebos.com/paddleseg/dygraph/mobilenetv2.tar.gz
+  add_edge: True
+  num_classes: 2

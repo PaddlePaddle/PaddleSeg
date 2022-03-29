@@ -16,6 +16,7 @@ import collections.abc
 from itertools import combinations
 
 import numpy as np
+import cv2
 import paddle
 import paddle.nn.functional as F
 
@@ -36,12 +37,45 @@ def get_reverse_list(ori_shape, transforms):
     reverse_list = []
     h, w = ori_shape[0], ori_shape[1]
     for op in transforms:
-        if op.__class__.__name__ in ['Resize', 'ResizeByLong']:
+        if op.__class__.__name__ in ['Resize']:
             reverse_list.append(('resize', (h, w)))
             h, w = op.target_size[0], op.target_size[1]
+        if op.__class__.__name__ in ['ResizeByLong']:
+            reverse_list.append(('resize', (h, w)))
+            long_edge = max(h, w)
+            short_edge = min(h, w)
+            short_edge = int(round(short_edge * op.long_size / long_edge))
+            long_edge = op.long_size
+            if h > w:
+                h = long_edge
+                w = short_edge
+            else:
+                w = long_edge
+                h = short_edge
+        if op.__class__.__name__ in ['ResizeByShort']:
+            reverse_list.append(('resize', (h, w)))
+            long_edge = max(h, w)
+            short_edge = min(h, w)
+            long_edge = int(round(long_edge * op.short_size / short_edge))
+            short_edge = op.short_size
+            if h > w:
+                h = long_edge
+                w = short_edge
+            else:
+                w = long_edge
+                h = short_edge
         if op.__class__.__name__ in ['Padding']:
             reverse_list.append(('padding', (h, w)))
             w, h = op.target_size[0], op.target_size[1]
+        if op.__class__.__name__ in ['PaddingByAspectRatio']:
+            reverse_list.append(('padding', (h, w)))
+            ratio = w / h
+            if ratio == op.aspect_ratio:
+                pass
+            elif ratio > op.aspect_ratio:
+                h = int(w / op.aspect_ratio)
+            else:
+                w = int(h * op.aspect_ratio)
         if op.__class__.__name__ in ['LimitLong']:
             long_edge = max(h, w)
             short_edge = min(h, w)
@@ -62,13 +96,20 @@ def get_reverse_list(ori_shape, transforms):
     return reverse_list
 
 
-def reverse_transform(pred, ori_shape, transforms):
+def reverse_transform(pred, ori_shape, transforms, mode='nearest'):
     """recover pred to origin shape"""
     reverse_list = get_reverse_list(ori_shape, transforms)
+    intTypeList = [paddle.int8, paddle.int16, paddle.int32, paddle.int64]
+    dtype = pred.dtype
     for item in reverse_list[::-1]:
         if item[0] == 'resize':
             h, w = item[1][0], item[1][1]
-            pred = F.interpolate(pred, (h, w), mode='nearest')
+            if paddle.get_device() == 'cpu' and dtype in intTypeList:
+                pred = paddle.cast(pred, 'float32')
+                pred = F.interpolate(pred, (h, w), mode=mode)
+                pred = paddle.cast(pred, dtype)
+            else:
+                pred = F.interpolate(pred, (h, w), mode=mode)
         elif item[0] == 'padding':
             h, w = item[1][0], item[1][1]
             pred = pred[:, :, 0:h, 0:w]
@@ -128,6 +169,9 @@ def slide_inference(model, im, crop_size, stride):
     # calculate the crop nums
     rows = np.int(np.ceil(1.0 * (h_im - h_crop) / h_stride)) + 1
     cols = np.int(np.ceil(1.0 * (w_im - w_crop) / w_stride)) + 1
+    # prevent negative sliding rounds when imgs after scaling << crop_size
+    rows = 1 if h_im <= h_crop else rows
+    cols = 1 if w_im <= w_crop else cols
     # TODO 'Tensor' object does not support item assignment. If support, use tensor to calculation.
     final_logit = None
     count = np.zeros([1, 1, h_im, w_im])
@@ -182,6 +226,8 @@ def inference(model,
         Tensor: If ori_shape is not None, a prediction with shape (1, 1, h, w) is returned.
             If ori_shape is None, a logit with shape (1, num_classes, h, w) is returned.
     """
+    if hasattr(model, 'data_format') and model.data_format == 'NHWC':
+        im = im.transpose((0, 2, 3, 1))
     if not is_slide:
         logits = model(im)
         if not isinstance(logits, collections.abc.Sequence):
@@ -191,10 +237,12 @@ def inference(model,
         logit = logits[0]
     else:
         logit = slide_inference(model, im, crop_size=crop_size, stride=stride)
+    if hasattr(model, 'data_format') and model.data_format == 'NHWC':
+        logit = logit.transpose((0, 3, 1, 2))
     if ori_shape is not None:
+        logit = reverse_transform(logit, ori_shape, transforms, mode='bilinear')
         pred = paddle.argmax(logit, axis=1, keepdim=True, dtype='int32')
-        pred = reverse_transform(pred, ori_shape, transforms)
-        return pred
+        return pred, logit
     else:
         return logit
 
@@ -254,6 +302,8 @@ def aug_inference(model,
             logit = F.softmax(logit, axis=1)
             final_logit = final_logit + logit
 
+    final_logit = reverse_transform(
+        final_logit, ori_shape, transforms, mode='bilinear')
     pred = paddle.argmax(final_logit, axis=1, keepdim=True, dtype='int32')
-    pred = reverse_transform(pred, ori_shape, transforms)
-    return pred
+
+    return pred, final_logit

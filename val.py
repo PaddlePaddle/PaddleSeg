@@ -22,6 +22,23 @@ from paddleseg.core import evaluate
 from paddleseg.utils import get_sys_env, logger, config_check, utils
 
 
+def get_test_config(cfg, args):
+
+    test_config = cfg.test_config
+    if args.aug_eval:
+        test_config['aug_eval'] = args.aug_eval
+        test_config['scales'] = args.scales
+        test_config['flip_horizontal'] = args.flip_horizontal
+        test_config['flip_vertical'] = args.flip_vertical
+
+    if args.is_slide:
+        test_config['is_slide'] = args.is_slide
+        test_config['crop_size'] = args.crop_size
+        test_config['stride'] = args.stride
+
+    return test_config
+
+
 def parse_args():
     parser = argparse.ArgumentParser(description='Model evaluation')
 
@@ -75,18 +92,30 @@ def parse_args():
         '--crop_size',
         dest='crop_size',
         nargs=2,
-        help=
-        'The crop size of sliding window, the first is width and the second is height.',
+        help='The crop size of sliding window, the first is width and the second is height.',
         type=int,
         default=None)
     parser.add_argument(
         '--stride',
         dest='stride',
         nargs=2,
-        help=
-        'The stride of sliding window, the first is width and the second is height.',
+        help='The stride of sliding window, the first is width and the second is height.',
         type=int,
         default=None)
+
+    parser.add_argument(
+        '--data_format',
+        dest='data_format',
+        help='Data format that specifies the layout of input. It can be "NCHW" or "NHWC". Default: "NCHW".',
+        type=str,
+        default='NCHW')
+
+    parser.add_argument(
+        '--auc_roc',
+        dest='add auc_roc metric',
+        help='Whether to use auc_roc metric',
+        type=bool,
+        default=False)
 
     return parser.parse_args()
 
@@ -101,6 +130,17 @@ def main(args):
         raise RuntimeError('No configuration file specified.')
 
     cfg = Config(args.cfg)
+    # Only support for the DeepLabv3+ model
+    if args.data_format == 'NHWC':
+        if cfg.dic['model']['type'] != 'DeepLabV3P':
+            raise ValueError(
+                'The "NHWC" data format only support the DeepLabV3P model!')
+        cfg.dic['model']['data_format'] = args.data_format
+        cfg.dic['model']['backbone']['data_format'] = args.data_format
+        loss_len = len(cfg.dic['loss']['types'])
+        for i in range(loss_len):
+            cfg.dic['loss']['types'][i]['data_format'] = args.data_format
+
     val_dataset = cfg.val_dataset
     if val_dataset is None:
         raise RuntimeError(
@@ -121,20 +161,10 @@ def main(args):
         utils.load_entire_model(model, args.model_path)
         logger.info('Loaded trained params of model successfully')
 
+    test_config = get_test_config(cfg, args)
     config_check(cfg, val_dataset=val_dataset)
 
-    evaluate(
-        model,
-        val_dataset,
-        aug_eval=args.aug_eval,
-        scales=args.scales,
-        flip_horizontal=args.flip_horizontal,
-        flip_vertical=args.flip_vertical,
-        is_slide=args.is_slide,
-        crop_size=args.crop_size,
-        stride=args.stride,
-        num_workers=args.num_workers,
-    )
+    evaluate(model, val_dataset, num_workers=args.num_workers, **test_config)
 
 
 if __name__ == '__main__':

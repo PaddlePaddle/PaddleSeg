@@ -2,6 +2,21 @@ English | [简体中文](release_notes_cn.md)
 
 ## Release Notes
 
+* 2020.02.26
+
+  **`v2.0`**
+  * We newly released version 2.0 which has been fully upgraded to dynamic graphics. It supports more than 20 segmentation models, 4 backbone networks, , 5 datasets and 9 losses:
+    * Segmentation models: ANN, BiSeNetV2, DANet, DeeplabV3, DeeplabV3+, FCN, FastSCNN, Gated-scnn, GCNet, HarDNet, OCRNet, PSPNet, UNet, UNet++, U<sup>2</sup>Net, Attention UNet, Decoupled SegNet, EMANet, DNLNet, ISANet
+    * Backbone networks: ResNet, HRNet, MobileNetV3, and Xception
+    * Datasets: Cityscapes, ADE20K, Pascal VOC, Pascal Context, COCO Stuff
+    * Losses: CrossEntropy Loss, BootstrappedCrossEntropy Loss, Dice Loss, BCE Loss, OhemCrossEntropyLoss, RelaxBoundaryLoss, OhemEdgeAttentionLoss, Lovasz Hinge Loss, Lovasz Softmax Loss
+  * We provide more than 50 high quality pre-trained models based on Cityscapes and Pascal Voc datasets.
+  * The new version support multi-card GPU parallel evaluation for more efficient metrics calculation.  It also support multiple evaluation methods such as multi-scale evaluation/flip evaluation/sliding window evaluation.
+  * XPU model training including DeepLabv3, HRNet, UNet, is available now.
+  * We open source  a semantic segmentation model based on the Hierarchical Multi-Scale Attention structure, and it reached 87% mIoU on the Cityscapes validation set.
+  * The dynamic graph mode supports model compression functions such as online quantification and pruning.
+  * The dynamic graph mode supports model export for high-performance deployment.
+
 * 2020.12.18
 
   **`v2.0.0-rc`**
@@ -44,7 +59,7 @@ English | [简体中文](release_notes_cn.md)
 * 2020.05.12
 
   **`v0.5.0`**
-  * 全面升级[HumanSeg人像分割模型](../contrib/HumanSeg)，新增超轻量级人像分割模型HumanSeg-lite支持移动端实时人像分割处理，并提供基于光流的视频分割后处理提升分割流畅性。
+  * 全面升级[HumanSeg人像分割模型](../contrib/PP-HumanSeg)，新增超轻量级人像分割模型HumanSeg-lite支持移动端实时人像分割处理，并提供基于光流的视频分割后处理提升分割流畅性。
   * 新增[气象遥感分割方案](../contrib/RemoteSensing)，支持积雪识别、云检测等气象遥感场景。
   * 新增[Lovasz Loss](lovasz_loss.md)，解决数据类别不均衡问题。
   * 使用VisualDL 2.0作为训练可视化工具

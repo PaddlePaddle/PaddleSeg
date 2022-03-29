@@ -74,7 +74,7 @@ class ANN(nn.Layer):
         return [
             F.interpolate(
                 logit,
-                x.shape[2:],
+                paddle.shape(x)[2:],
                 mode='bilinear',
                 align_corners=self.align_corners) for logit in logit_list
         ]
@@ -245,8 +245,8 @@ class APNB(nn.Layer):
 
         self.psp_size = psp_size
         self.stages = nn.LayerList([
-            SelfAttentionBlock_APNB(in_channels, out_channels, key_channels,
-                                    value_channels, size)
+            SelfAttentionBlock_APNB(in_channels, out_channels,
+                                    key_channels, value_channels, size)
             for size in repeat_sizes
         ])
         self.conv_bn = layers.ConvBNReLU(
@@ -272,7 +272,7 @@ def _pp_module(x, psp_size):
     priors = []
     for size in psp_size:
         feat = F.adaptive_avg_pool2d(x, size)
-        feat = paddle.reshape(feat, shape=(n, c, -1))
+        feat = paddle.reshape(feat, shape=(0, c, -1))
         priors.append(feat)
     center = paddle.concat(priors, axis=-1)
     return center
@@ -338,7 +338,7 @@ class SelfAttentionBlock_AFNB(nn.Layer):
         value = paddle.transpose(value, (0, 2, 1))
 
         query = self.f_query(high_feats)
-        query = paddle.reshape(query, shape=(batch_size, self.key_channels, -1))
+        query = paddle.reshape(query, shape=(0, self.key_channels, -1))
         query = paddle.transpose(query, perm=(0, 2, 1))
 
         key = self.f_key(low_feats)
@@ -350,9 +350,9 @@ class SelfAttentionBlock_AFNB(nn.Layer):
 
         context = paddle.matmul(sim_map, value)
         context = paddle.transpose(context, perm=(0, 2, 1))
+        hf_shape = paddle.shape(high_feats)
         context = paddle.reshape(
-            context,
-            shape=[batch_size, self.value_channels, *high_feats.shape[2:]])
+            context, shape=[0, self.value_channels, hf_shape[2], hf_shape[3]])
 
         context = self.W(context)
 
@@ -413,7 +413,7 @@ class SelfAttentionBlock_APNB(nn.Layer):
         value = paddle.transpose(value, perm=(0, 2, 1))
 
         query = self.f_query(x)
-        query = paddle.reshape(query, shape=(batch_size, self.key_channels, -1))
+        query = paddle.reshape(query, shape=(0, self.key_channels, -1))
         query = paddle.transpose(query, perm=(0, 2, 1))
 
         key = self.f_key(x)
@@ -425,8 +425,10 @@ class SelfAttentionBlock_APNB(nn.Layer):
 
         context = paddle.matmul(sim_map, value)
         context = paddle.transpose(context, perm=(0, 2, 1))
+
+        x_shape = paddle.shape(x)
         context = paddle.reshape(
-            context, shape=[batch_size, self.value_channels, *x.shape[2:]])
+            context, shape=[0, self.value_channels, x_shape[2], x_shape[3]])
         context = self.W(context)
 
         return context

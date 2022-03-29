@@ -1,0 +1,22 @@
+<resources>
+<string name="app_name">人像抠图（发丝级背景替换）</string>
+<!-- image matting settings -->
+<string name="CHOOSE_PRE_INSTALLED_MODEL_KEY">CHOOSE_PRE_INSTALLED_MODEL_KEY</string>
+<string name="ENABLE_CUSTOM_SETTINGS_KEY">ENABLE_CUSTOM_SETTINGS_KEY</string>
+<string name="MODEL_PATH_KEY">MODEL_PATH_KEY</string>
+<string name="LABEL_PATH_KEY">LABEL_PATH_KEY</string>
+<string name="IMAGE_PATH_KEY">IMAGE_PATH_KEY</string>
+    <string name="BG_PATH_KEY">BG_PATH_KEY</string>
+<string name="CPU_THREAD_NUM_KEY">CPU_THREAD_NUM_KEY</string>
+<string name="CPU_POWER_MODE_KEY">CPU_POWER_MODE_KEY</string>
+<string name="INPUT_COLOR_FORMAT_KEY">INPUT_COLOR_FORMAT_KEY</string>
+<string name="INPUT_SHAPE_KEY">INPUT_SHAPE_KEY</string>
+<string name="MODEL_PATH_DEFAULT">image_matting/models/modnet</string>
+<string name="LABEL_PATH_DEFAULT">image_matting/labels/label_list</string>
+<string name="IMAGE_PATH_DEFAULT">image_matting/images/human.jpg</string>
+    <string name="BG_PATH_DEFAULT">image_matting/images/bg.jpg</string>
+<string name="CPU_THREAD_NUM_DEFAULT">1</string>
+<string name="CPU_POWER_MODE_DEFAULT">LITE_POWER_HIGH</string>
+<string name="INPUT_COLOR_FORMAT_DEFAULT">RGB</string>
+<string name="INPUT_SHAPE_DEFAULT">1,3,256,256</string>
+</resources>

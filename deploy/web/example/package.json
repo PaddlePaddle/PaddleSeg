@@ -1,0 +1,25 @@
+{
+    "name": "@paddlejs-models/humanseg",
+    "version": "0.0.8",
+    "description": "",
+    "main": "lib/index",
+    "scripts": {
+        "dev": "webpack-dev-server"
+    },
+    "author": "",
+    "license": "ISC",
+    "dependencies": {
+        "@paddlejs-mediapipe/opencv": "^1.0.0",
+        "@paddlejs-models/humanseg": "^0.0.8",
+        "@paddlejs/paddlejs-backend-webgl": "^1.0.1",
+        "@paddlejs/paddlejs-core": "^2.0.1"
+    },
+    "devDependencies": {
+        "html-webpack-plugin": "^3.2.0",
+        "ts-loader": "^8.0.12",
+        "typescript": "^3.9.5",
+        "webpack": "^4.29.6",
+        "webpack-cli": "^3.3.0",
+        "webpack-dev-server": "^3.2.1"
+    }
+}

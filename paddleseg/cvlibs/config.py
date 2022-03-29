@@ -14,12 +14,14 @@
 
 import codecs
 import os
-from typing import Any
+from typing import Any, Dict, Generic
+import warnings
 
 import paddle
 import yaml
 
 from paddleseg.cvlibs import manager
+from paddleseg.utils import logger
 
 
 class Config(object):
@@ -66,9 +68,9 @@ class Config(object):
 
     def __init__(self,
                  path: str,
-                 learning_rate: float = None,
-                 batch_size: int = None,
-                 iters: int = None):
+                 learning_rate: float=None,
+                 batch_size: int=None,
+                 iters: int=None):
         if not path:
             raise ValueError('Please specify the configuration file path.')
 
@@ -90,6 +92,12 @@ class Config(object):
         Update config from dic based base_dic
         """
         base_dic = base_dic.copy()
+        dic = dic.copy()
+
+        if dic.get('_inherited_', True) == False:
+            dic.pop('_inherited_')
+            return dic
+
         for key, val in dic.items():
             if isinstance(val, dict) and key in base_dic:
                 base_dic[key] = self._update_dic(val, base_dic[key])
@@ -112,12 +120,15 @@ class Config(object):
         return dic
 
     def update(self,
-               learning_rate: float = None,
-               batch_size: int = None,
-               iters: int = None):
+               learning_rate: float=None,
+               batch_size: int=None,
+               iters: int=None):
         '''Update config'''
         if learning_rate:
-            self.dic['learning_rate']['value'] = learning_rate
+            if 'lr_scheduler' in self.dic:
+                self.dic['lr_scheduler']['learning_rate'] = learning_rate
+            else:
+                self.dic['learning_rate']['value'] = learning_rate
 
         if batch_size:
             self.dic['batch_size'] = batch_size
@@ -137,7 +148,32 @@ class Config(object):
         return iters
 
     @property
+    def lr_scheduler(self) -> paddle.optimizer.lr.LRScheduler:
+        if 'lr_scheduler' not in self.dic:
+            raise RuntimeError(
+                'No `lr_scheduler` specified in the configuration file.')
+        params = self.dic.get('lr_scheduler')
+
+        lr_type = params.pop('type')
+        if lr_type == 'PolynomialDecay':
+            params.setdefault('decay_steps', self.iters)
+            params.setdefault('end_lr', 0)
+            params.setdefault('power', 0.9)
+
+        return getattr(paddle.optimizer.lr, lr_type)(**params)
+
+    @property
     def learning_rate(self) -> paddle.optimizer.lr.LRScheduler:
+        logger.warning(
+            '''`learning_rate` in configuration file will be deprecated, please use `lr_scheduler` instead. E.g
+            lr_scheduler:
+                type: PolynomialDecay
+                learning_rate: 0.01''')
+
+        _learning_rate = self.dic.get('learning_rate', {})
+        if isinstance(_learning_rate, float):
+            return _learning_rate
+
         _learning_rate = self.dic.get('learning_rate', {}).get('value')
         if not _learning_rate:
             raise RuntimeError(
@@ -152,12 +188,18 @@ class Config(object):
         elif decay_type == 'piecewise':
             values = _learning_rate
             return paddle.optimizer.lr.PiecewiseDecay(values=values, **args)
+        elif decay_type == 'stepdecay':
+            lr = _learning_rate
+            return paddle.optimizer.lr.StepDecay(lr, **args)
         else:
             raise RuntimeError('Only poly and piecewise decay support.')
 
     @property
     def optimizer(self) -> paddle.optimizer.Optimizer:
-        lr = self.learning_rate
+        if 'lr_scheduler' in self.dic:
+            lr = self.lr_scheduler
+        else:
+            lr = self.learning_rate
         args = self.optimizer_args
         optimizer_type = args.pop('type')
 
@@ -167,8 +209,11 @@ class Config(object):
         elif optimizer_type == 'adam':
             return paddle.optimizer.Adam(
                 lr, parameters=self.model.parameters(), **args)
-        else:
-            raise RuntimeError('Only sgd and adam optimizer support.')
+        elif optimizer_type in paddle.optimizer.__all__:
+            return getattr(paddle.optimizer, optimizer_type)(
+                lr, parameters=self.model.parameters(), **args)
+
+        raise RuntimeError('Unknown optimizer type {}.'.format(optimizer_type))
 
     @property
     def optimizer_args(self) -> dict:
@@ -180,10 +225,9 @@ class Config(object):
 
     @property
     def decay_args(self) -> dict:
-        args = self.dic.get('learning_rate', {}).get('decay', {
-            'type': 'poly',
-            'power': 0.9
-        }).copy()
+        args = self.dic.get('learning_rate', {}).get(
+            'decay', {'type': 'poly',
+                      'power': 0.9}).copy()
 
         if args['type'] == 'poly':
             args.setdefault('decay_steps', self.iters)
@@ -193,7 +237,26 @@ class Config(object):
 
     @property
     def loss(self) -> dict:
-        args = self.dic.get('loss', {}).copy()
+        if self._losses is None:
+            self._losses = self._prepare_loss('loss')
+        return self._losses
+
+    @property
+    def distill_loss(self) -> dict:
+        if not hasattr(self, '_distill_losses'):
+            self._distill_losses = self._prepare_loss('distill_loss')
+        return self._distill_losses
+
+    def _prepare_loss(self, loss_name):
+        """
+        Parse the loss parameters and load the loss layers.
+
+        Args:
+            loss_name (str): The root name of loss in the yaml file.
+        Returns:
+            dict: A dict including the loss parameters and layers.
+        """
+        args = self.dic.get(loss_name, {}).copy()
         if 'types' in args and 'coef' in args:
             len_types = len(args['types'])
             len_coef = len(args['coef'])
@@ -208,24 +271,27 @@ class Config(object):
             raise ValueError(
                 'Loss config should contain keys of "types" and "coef"')
 
-        if not self._losses:
-            self._losses = dict()
-            for key, val in args.items():
-                if key == 'types':
-                    self._losses['types'] = []
-                    for item in args['types']:
-                        if item['type'] != 'MixedLoss':
-                            item['ignore_index'] = \
-                                self.train_dataset.ignore_index
-                        self._losses['types'].append(self._load_object(item))
-                else:
-                    self._losses[key] = val
-            if len(self._losses['coef']) != len(self._losses['types']):
-                raise RuntimeError(
-                    'The length of coef should equal to types in loss config: {} != {}.'
-                    .format(
-                        len(self._losses['coef']), len(self._losses['types'])))
-        return self._losses
+        losses = dict()
+        for key, val in args.items():
+            if key == 'types':
+                losses['types'] = []
+                for item in args['types']:
+                    if item['type'] != 'MixedLoss':
+                        if 'ignore_index' in item:
+                            assert item['ignore_index'] == self.train_dataset.ignore_index, 'If ignore_index of loss is set, '\
+                            'the ignore_index of loss and train_dataset must be the same. \nCurrently, loss ignore_index = {}, '\
+                            'train_dataset ignore_index = {}. \nIt is recommended not to set loss ignore_index, so it is consistent with '\
+                            'train_dataset by default.'.format(item['ignore_index'], self.train_dataset.ignore_index)
+                        item['ignore_index'] = \
+                            self.train_dataset.ignore_index
+                    losses['types'].append(self._load_object(item))
+            else:
+                losses[key] = val
+        if len(losses['coef']) != len(losses['types']):
+            raise RuntimeError(
+                'The length of coef should equal to types in loss config: {} != {}.'
+                .format(len(losses['coef']), len(losses['types'])))
+        return losses
 
     @property
     def model(self) -> paddle.nn.Layer:
@@ -233,30 +299,56 @@ class Config(object):
         if not model_cfg:
             raise RuntimeError('No model specified in the configuration file.')
         if not 'num_classes' in model_cfg:
-            if self.train_dataset and hasattr(self.train_dataset,
-                                              'num_classes'):
-                model_cfg['num_classes'] = self.train_dataset.num_classes
-            elif self.val_dataset and hasattr(self.val_dataset, 'num_classes'):
-                model_cfg['num_classes'] = self.val_dataset.num_classes
-            else:
-                raise ValueError(
-                    '`num_classes` is not found. Please set it in model, train_dataset or val_dataset'
-                )
+            num_classes = None
+            try:
+                if self.train_dataset_config:
+                    if hasattr(self.train_dataset_class, 'NUM_CLASSES'):
+                        num_classes = self.train_dataset_class.NUM_CLASSES
+                    elif hasattr(self.train_dataset, 'num_classes'):
+                        num_classes = self.train_dataset.num_classes
+                elif self.val_dataset_config:
+                    if hasattr(self.val_dataset_class, 'NUM_CLASSES'):
+                        num_classes = self.val_dataset_class.NUM_CLASSES
+                    elif hasattr(self.val_dataset, 'num_classes'):
+                        num_classes = self.val_dataset.num_classes
+            except FileNotFoundError:
+                warnings.warn("`dataset_root` is not found. Is it correct?")
+
+            if num_classes is not None:
+                model_cfg['num_classes'] = num_classes
 
         if not self._model:
             self._model = self._load_object(model_cfg)
         return self._model
 
     @property
+    def train_dataset_config(self) -> Dict:
+        return self.dic.get('train_dataset', {}).copy()
+
+    @property
+    def val_dataset_config(self) -> Dict:
+        return self.dic.get('val_dataset', {}).copy()
+
+    @property
+    def train_dataset_class(self) -> Generic:
+        dataset_type = self.train_dataset_config['type']
+        return self._load_component(dataset_type)
+
+    @property
+    def val_dataset_class(self) -> Generic:
+        dataset_type = self.val_dataset_config['type']
+        return self._load_component(dataset_type)
+
+    @property
     def train_dataset(self) -> paddle.io.Dataset:
-        _train_dataset = self.dic.get('train_dataset', {}).copy()
+        _train_dataset = self.train_dataset_config
         if not _train_dataset:
             return None
         return self._load_object(_train_dataset)
 
     @property
     def val_dataset(self) -> paddle.io.Dataset:
-        _val_dataset = self.dic.get('val_dataset', {}).copy()
+        _val_dataset = self.val_dataset_config
         if not _val_dataset:
             return None
         return self._load_object(_val_dataset)
@@ -295,8 +387,33 @@ class Config(object):
 
         return component(**params)
 
+    @property
+    def test_config(self) -> Dict:
+        return self.dic.get('test_config', {})
+
+    @property
+    def export_config(self) -> Dict:
+        return self.dic.get('export', {})
+
+    @property
+    def to_static_training(self) -> bool:
+        '''Whether to use @to_static for training'''
+        return self.dic.get('to_static_training', False)
+
     def _is_meta_type(self, item: Any) -> bool:
         return isinstance(item, dict) and 'type' in item
 
     def __str__(self) -> str:
         return yaml.dump(self.dic)
+
+    @property
+    def val_transforms(self) -> list:
+        """Get val_transform from val_dataset"""
+        _val_dataset = self.val_dataset_config
+        if not _val_dataset:
+            return []
+        _transforms = _val_dataset.get('transforms', [])
+        transforms = []
+        for i in _transforms:
+            transforms.append(self._load_object(i))
+        return transforms

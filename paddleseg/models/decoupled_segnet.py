@@ -74,12 +74,14 @@ class DecoupledSegNet(nn.Layer):
         seg_logit, body_logit, edge_logit = [
             F.interpolate(
                 logit,
-                x.shape[2:],
+                paddle.shape(x)[2:],
                 mode='bilinear',
                 align_corners=self.align_corners) for logit in logit_list
         ]
 
-        return [seg_logit, body_logit, edge_logit, (seg_logit, edge_logit)]
+        if self.training:
+            return [seg_logit, body_logit, edge_logit, (seg_logit, edge_logit)]
+        return [seg_logit]
 
     def init_weight(self):
         if self.pretrained is not None:
@@ -126,14 +128,17 @@ class DecoupledSegNetHead(nn.Layer):
                 in_channels=256,
                 out_channels=48,
                 kernel_size=3,
-                bias_attr=False), nn.Conv2D(48, 1, 1, bias_attr=False))
+                bias_attr=False),
+            nn.Conv2D(
+                48, 1, 1, bias_attr=False))
         self.dsn_seg_body = nn.Sequential(
             layers.ConvBNReLU(
                 in_channels=256,
                 out_channels=256,
                 kernel_size=3,
-                bias_attr=False), nn.Conv2D(
-                    256, num_classes, 1, bias_attr=False))
+                bias_attr=False),
+            nn.Conv2D(
+                256, num_classes, 1, bias_attr=False))
 
         self.final_seg = nn.Sequential(
             layers.ConvBNReLU(
@@ -146,11 +151,12 @@ class DecoupledSegNetHead(nn.Layer):
                 out_channels=256,
                 kernel_size=3,
                 bias_attr=False),
-            nn.Conv2D(256, num_classes, kernel_size=1, bias_attr=False))
+            nn.Conv2D(
+                256, num_classes, kernel_size=1, bias_attr=False))
 
     def forward(self, feat_list):
         fine_fea = feat_list[self.backbone_indices[0]]
-        fine_size = fine_fea.shape
+        fine_size = paddle.shape(fine_fea)
         x = feat_list[self.backbone_indices[1]]
         aspp = self.aspp(x)
 
@@ -198,7 +204,7 @@ class SqueezeBodyEdge(nn.Layer):
             inplane * 2, 2, kernel_size=3, padding='same', bias_attr=False)
 
     def forward(self, x):
-        size = x.shape[2:]
+        size = paddle.shape(x)[2:]
         seg_down = self.down(x)
         seg_down = F.interpolate(
             seg_down,
@@ -211,16 +217,15 @@ class SqueezeBodyEdge(nn.Layer):
         return seg_flow_warp, seg_edge
 
     def flow_warp(self, input, flow, size):
-        out_h, out_w = size
-        n, c, h, w = input.shape
-        norm = paddle.to_tensor(np.array([[[[out_w, out_h]]]]), dtype='float32')
-        h_grid = paddle.linspace(-1.0, 1.0, out_h).reshape([-1, 1])
-        h_grid = paddle.concat([h_grid] * out_w, axis=1)
-        w_grid = paddle.linspace(-1.0, 1.0, out_w).reshape([1, -1])
-        w_grid = paddle.concat([w_grid] * out_h, axis=0)
+        input_shape = paddle.shape(input)
+        norm = size[::-1].reshape([1, 1, 1, -1])
+        norm.stop_gradient = True
+        h_grid = paddle.linspace(-1.0, 1.0, size[0]).reshape([-1, 1])
+        h_grid = h_grid.tile([size[1]])
+        w_grid = paddle.linspace(-1.0, 1.0, size[1]).reshape([-1, 1])
+        w_grid = w_grid.tile([size[0]]).transpose([1, 0])
         grid = paddle.concat([w_grid.unsqueeze(2), h_grid.unsqueeze(2)], axis=2)
-
-        grid = paddle.concat([grid.unsqueeze(0)] * n, axis=0)
+        grid.unsqueeze(0).tile([input_shape[0], 1, 1, 1])
         grid = grid + paddle.transpose(flow, (0, 2, 3, 1)) / norm
 
         output = F.grid_sample(input, grid)

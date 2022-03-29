@@ -21,7 +21,7 @@ from paddleseg.cvlibs import manager
 
 @manager.LOSSES.add_component
 class BCELoss(nn.Layer):
-    """
+    r"""
     This operator combines the sigmoid layer and the :ref:`api_nn_loss_BCELoss` layer.
     Also, we can see it as the combine of ``sigmoid_cross_entropy_with_logits``
     layer and some reduce operations.
@@ -99,7 +99,7 @@ class BCELoss(nn.Layer):
                     raise ValueError(
                         "if type of `weight` is str, it should equal to 'dynamic', but it is {}"
                         .format(self.weight))
-            elif isinstance(self.weight, paddle.VarBase):
+            elif isinstance(self.weight, paddle.Tensor):
                 raise TypeError(
                     'The type of `weight` is wrong, it should be Tensor or str, but it is {}'
                     .format(type(self.weight)))

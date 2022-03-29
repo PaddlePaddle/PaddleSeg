@@ -1,4 +1,4 @@
-# Copyright (c) 2020 PaddlePaddle Authors. All Rights Reserved.
+# Copyright (c) 2021 PaddlePaddle Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -47,25 +47,26 @@ class EMANet(nn.Layer):
     """
 
     def __init__(self,
-                num_classes,
-                backbone,
-                backbone_indices=(2, 3),
-                ema_channels=512, 
-                gc_channels=256,
-                num_bases=64, 
-                stage_num=3,
-                momentum=0.1,
-                concat_input=True, 
-                enable_auxiliary_loss=True,
-                align_corners=False, 
-                pretrained=None):
+                 num_classes,
+                 backbone,
+                 backbone_indices=(2, 3),
+                 ema_channels=512,
+                 gc_channels=256,
+                 num_bases=64,
+                 stage_num=3,
+                 momentum=0.1,
+                 concat_input=True,
+                 enable_auxiliary_loss=True,
+                 align_corners=False,
+                 pretrained=None):
         super().__init__()
 
         self.backbone = backbone
         self.backbone_indices = backbone_indices
         in_channels = [self.backbone.feat_channels[i] for i in backbone_indices]
         self.head = EMAHead(num_classes, in_channels, ema_channels, gc_channels,
-                            num_bases, stage_num, momentum, concat_input, enable_auxiliary_loss)
+                            num_bases, stage_num, momentum, concat_input,
+                            enable_auxiliary_loss)
         self.align_corners = align_corners
         self.pretrained = pretrained
         self.init_weight()
@@ -74,14 +75,16 @@ class EMANet(nn.Layer):
         feats = self.backbone(x)
         feats = [feats[i] for i in self.backbone_indices]
         logit_list = self.head(feats)
-        logit_list = [F.interpolate(
-            logit, 
-            x.shape[2:], 
-            mode='bilinear', 
-            align_corners=self.align_corners) for logit in logit_list]
+        logit_list = [
+            F.interpolate(
+                logit,
+                paddle.shape(x)[2:],
+                mode='bilinear',
+                align_corners=self.align_corners) for logit in logit_list
+        ]
 
         return logit_list
-    
+
     def init_weight(self):
         if self.pretrained is not None:
             utils.load_entire_model(self, self.pretrained)
@@ -103,15 +106,15 @@ class EMAHead(nn.Layer):
         enable_auxiliary_loss (bool, optional): A bool value indicates whether adding auxiliary loss. Default: True.
     """
 
-    def __init__(self, 
-                 num_classes, 
-                 in_channels, 
-                 ema_channels, 
+    def __init__(self,
+                 num_classes,
+                 in_channels,
+                 ema_channels,
                  gc_channels,
-                 num_bases, 
+                 num_bases,
                  stage_num,
-                 momentum, 
-                 concat_input=True, 
+                 momentum,
+                 concat_input=True,
                  enable_auxiliary_loss=True):
         super(EMAHead, self).__init__()
 
@@ -120,18 +123,25 @@ class EMAHead(nn.Layer):
         self.enable_auxiliary_loss = enable_auxiliary_loss
 
         self.emau = EMAU(ema_channels, num_bases, stage_num, momentum=momentum)
-        self.ema_in_conv = layers.ConvBNReLU(in_channels=self.in_channels, out_channels=ema_channels, kernel_size=3)
+        self.ema_in_conv = layers.ConvBNReLU(
+            in_channels=self.in_channels,
+            out_channels=ema_channels,
+            kernel_size=3)
         self.ema_mid_conv = nn.Conv2D(ema_channels, ema_channels, kernel_size=1)
-        for param in self.ema_mid_conv.parameters():
-            param.stop_gradient = True
-        self.ema_out_conv = layers.ConvBNReLU(in_channels=ema_channels, out_channels=ema_channels, kernel_size=1)
-        self.bottleneck = layers.ConvBNReLU(in_channels=ema_channels, out_channels=gc_channels, kernel_size=3)
-        self.cls = nn.Sequential(nn.Dropout2D(p=0.1),nn.Conv2D(gc_channels, num_classes, 1))
-        self.aux = nn.Sequential(layers.ConvBNReLU(in_channels=1024, out_channels=256, kernel_size=3),
-                                      nn.Dropout2D(p=0.1),
-                                      nn.Conv2D(256, num_classes, 1))
+        self.ema_out_conv = layers.ConvBNReLU(
+            in_channels=ema_channels, out_channels=ema_channels, kernel_size=1)
+        self.bottleneck = layers.ConvBNReLU(
+            in_channels=ema_channels, out_channels=gc_channels, kernel_size=3)
+        self.cls = nn.Sequential(
+            nn.Dropout2D(p=0.1), nn.Conv2D(gc_channels, num_classes, 1))
+        self.aux = nn.Sequential(
+            layers.ConvBNReLU(
+                in_channels=1024, out_channels=256, kernel_size=3),
+            nn.Dropout2D(p=0.1),
+            nn.Conv2D(256, num_classes, 1))
         if self.concat_input:
-            self.conv_cat = layers.ConvBNReLU(self.in_channels+gc_channels, gc_channels, kernel_size=3)
+            self.conv_cat = layers.ConvBNReLU(
+                self.in_channels + gc_channels, gc_channels, kernel_size=3)
 
     def forward(self, feat_list):
         C3, C4 = feat_list
@@ -162,20 +172,24 @@ class EMAU(nn.Layer):
         stage_num (int): The iteration number for EM.
         momentum (float): The parameter for updating bases.
     '''
+
     def __init__(self, c, k, stage_num=3, momentum=0.1):
         super(EMAU, self).__init__()
         assert stage_num >= 1
         self.stage_num = stage_num
         self.momentum = momentum
-        
-        tmp_mu = self.create_parameter(shape=[1, c, k], default_initializer=paddle.nn.initializer.KaimingNormal(k))
-        self.mu = F.normalize(paddle.to_tensor(tmp_mu), axis=1, p=2)
-        self.register_buffer('bases', self.mu)
+        self.c = c
+
+        tmp_mu = self.create_parameter(
+            shape=[1, c, k],
+            default_initializer=paddle.nn.initializer.KaimingNormal(k))
+        mu = F.normalize(paddle.to_tensor(tmp_mu), axis=1, p=2)
+        self.register_buffer('mu', mu)
 
     def forward(self, x):
-        b, c, h, w = x.shape
-        x = paddle.reshape(x, [b, c, h*w])
-        mu = paddle.tile(self.mu, [b, 1, 1])
+        x_shape = paddle.shape(x)
+        x = x.flatten(2)
+        mu = paddle.tile(self.mu, [x_shape[0], 1, 1])
 
         with paddle.no_grad():
             for i in range(self.stage_num):
@@ -185,15 +199,18 @@ class EMAU(nn.Layer):
                 z_ = F.normalize(z, axis=1, p=1)
                 mu = paddle.bmm(x, z_)
                 mu = F.normalize(mu, axis=1, p=2)
-    
+
         z_t = paddle.transpose(z, [0, 2, 1])
         x = paddle.matmul(mu, z_t)
-        x = paddle.reshape(x, [b, c, h, w])
+        x = paddle.reshape(x, [0, self.c, x_shape[2], x_shape[3]])
 
         if self.training:
             mu = paddle.mean(mu, 0, keepdim=True)
-            if paddle.distributed.get_world_size() >1:
-                paddle.distributed.reduce(mu/paddle.distributed.get_world_size(), 0)
             mu = F.normalize(mu, axis=1, p=2)
-            self.mu = self.mu * (1 - self.momentum) + mu * self.momentum
+            mu = self.mu * (1 - self.momentum) + mu * self.momentum
+            if paddle.distributed.get_world_size() > 1:
+                mu = paddle.distributed.all_reduce(mu)
+                mu /= paddle.distributed.get_world_size()
+            self.mu = mu
+
         return x

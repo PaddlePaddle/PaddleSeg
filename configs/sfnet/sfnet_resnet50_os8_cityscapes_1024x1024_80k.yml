@@ -1,0 +1,12 @@
+_base_: 'sfnet_resnet18_os8_cityscapes_1024x1024_80k.yml'
+
+batch_size: 2
+iters: 80000
+
+model:
+  type: SFNet
+  backbone:
+    type: ResNet50_vd
+    output_stride: 8
+    pretrained: https://bj.bcebos.com/paddleseg/dygraph/resnet50_vd_ssld_v2.tar.gz
+  backbone_indices: [0, 1, 2, 3]
