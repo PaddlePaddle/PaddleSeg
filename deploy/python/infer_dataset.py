@@ -104,8 +104,7 @@ def parse_args():
         default=False,
         type=eval,
         choices=[True, False],
-        help=
-        'Whether to enable tuned dynamic shape. We uses some images to collect '
+        help='Whether to enable tuned dynamic shape. We uses some images to collect '
         'the dynamic shape for trt sub graph, which avoids setting dynamic shape manually.'
     )
     parser.add_argument(
@@ -153,11 +152,10 @@ def get_dataset(args):
         with codecs.open(args.cfg, 'r', 'utf-8') as file:
             dic = yaml.load(file, Loader=yaml.FullLoader)
         transforms_dic = dic['Deploy']['transforms']
-        transforms_dic.insert(
-            0, {
-                "type": "Resize",
-                'target_size': [args.resize_width, args.resize_height]
-            })
+        transforms_dic.insert(0, {
+            "type": "Resize",
+            'target_size': [args.resize_width, args.resize_height]
+        })
         transforms = DeployConfig.load_transforms(transforms_dic).transforms
 
     kwargs = {

@@ -9,18 +9,18 @@ The interface for training, evaluation and prediction.
 ## [train](../../../paddleseg/core/train.py)
 ```python
 paddleseg.core.train(
-        model, 
-        train_dataset, 
-        val_dataset = None, 
-        optimizer = None, 
-        save_dir = 'output', 
-        iters = 10000, 
-        batch_size = 2, 
-        resume_model = None, 
-        save_interval = 1000, 
-        log_iters = 10, 
-        num_workers = 0, 
-        use_vdl = False, 
+        model,
+        train_dataset,
+        val_dataset = None,
+        optimizer = None,
+        save_dir = 'output',
+        iters = 10000,
+        batch_size = 2,
+        resume_model = None,
+        save_interval = 1000,
+        log_iters = 10,
+        num_workers = 0,
+        use_vdl = False,
         losses = None
 )
 ```
@@ -45,15 +45,15 @@ paddleseg.core.train(
 ## [evaluate](../../../paddleseg/core/val.py)
 ```python
 paddleseg.core.evaluate(
-        model, 
-        eval_dataset, 
-        aug_eval = False, 
-        scales = 1.0, 
-        flip_horizontal = True, 
-        flip_vertical = False, 
-        is_slide = False, 
-        stride = None, 
-        crop_size = None, 
+        model,
+        eval_dataset,
+        aug_eval = False,
+        scales = 1.0,
+        flip_horizontal = True,
+        flip_vertical = False,
+        is_slide = False,
+        stride = None,
+        crop_size = None,
         num_workers = 0
 )
 ```
@@ -81,18 +81,18 @@ paddleseg.core.evaluate(
 ## [predict](../../../paddleseg/core/predict.py)
 ```python
 paddleseg.core.predict(
-        model, 
-        model_path, 
-        transforms, 
-        image_list, 
-        image_dir = None, 
-        save_dir = 'output', 
-        aug_pred = False, 
-        scales = 1.0, 
-        flip_horizontal = True, 
-        flip_vertical = False, 
-        is_slide = False, 
-        stride = None, 
+        model,
+        model_path,
+        transforms,
+        image_list,
+        image_dir = None,
+        save_dir = 'output',
+        aug_pred = False,
+        scales = 1.0,
+        flip_horizontal = True,
+        flip_vertical = False,
+        is_slide = False,
+        stride = None,
         crop_size = None
 )
 ```

@@ -37,7 +37,7 @@ On the client side:
     pip3 install paddle-serving-app==0.6.0
     pip3 install paddle-serving-client==0.6.0
     ```
- 
+
 ## Prepare model and data
 
 Download the [sample model](https://paddleseg.bj.bcebos.com/dygraph/demo/bisenet_demo_model.tar.gz) for testing. If you want to use other models, please refer to [model export tool](../../model_export.md).

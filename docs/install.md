@@ -6,9 +6,9 @@ English | [简体中文](install_cn.md)
 - PaddlePaddle 2.2
 - OS: 64-bit
 - Python 3(3.5.1+/3.6/3.7/3.8/3.9)，64-bit version
-- pip/pip3(9.0.1+)，64-bit version 
-- CUDA >= 10.1 
-- cuDNN >= 7.6 
+- pip/pip3(9.0.1+)，64-bit version
+- CUDA >= 10.1
+- cuDNN >= 7.6
 
 
 ### 1. Install PaddlePaddle

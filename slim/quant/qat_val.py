@@ -104,23 +104,20 @@ def parse_args():
         '--crop_size',
         dest='crop_size',
         nargs=2,
-        help=
-        'The crop size of sliding window, the first is width and the second is height.',
+        help='The crop size of sliding window, the first is width and the second is height.',
         type=int,
         default=None)
     parser.add_argument(
         '--stride',
         dest='stride',
         nargs=2,
-        help=
-        'The stride of sliding window, the first is width and the second is height.',
+        help='The stride of sliding window, the first is width and the second is height.',
         type=int,
         default=None)
     parser.add_argument(
         '--data_format',
         dest='data_format',
-        help=
-        'Data format that specifies the layout of input. It can be "NCHW" or "NHWC". Default: "NCHW".',
+        help='Data format that specifies the layout of input. It can be "NCHW" or "NHWC". Default: "NCHW".',
         type=str,
         default='NCHW')
 
@@ -167,18 +164,17 @@ def main(args):
 
     skip_quant(model)
     quantizer = QAT(config=quant_config)
-    quant_model = quantizer.quantize(model)
+    quantizer.quantize(model)
     logger.info('Quantize the model successfully')
 
     if args.model_path:
-        utils.load_entire_model(quant_model, args.model_path)
+        utils.load_entire_model(model, args.model_path)
         logger.info('Loaded trained params of model successfully')
 
     test_config = get_test_config(cfg, args)
     config_check(cfg, val_dataset=val_dataset)
 
-    evaluate(
-        quant_model, val_dataset, num_workers=args.num_workers, **test_config)
+    evaluate(model, val_dataset, num_workers=args.num_workers, **test_config)
 
 
 if __name__ == '__main__':

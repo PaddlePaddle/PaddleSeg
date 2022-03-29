@@ -39,6 +39,7 @@ class SFNet(nn.Layer):
             e.g. 1024x512, otherwise it is True, e.g. 769x769. Default: False.
         pretrained (str, optional): The path or url of pretrained model. Default: None.
     """
+
     def __init__(self,
                  num_classes,
                  backbone,
@@ -64,11 +65,12 @@ class SFNet(nn.Layer):
             inplane_head = 2048
             fpn_inplanes = [256, 512, 1024, 2048]
 
-        self.head = SFNetHead(inplane=inplane_head,
-                              num_class=num_classes,
-                              fpn_inplanes=fpn_inplanes,
-                              fpn_dim=fpn_dim,
-                              enable_auxiliary_loss=self.enable_auxiliary_loss)
+        self.head = SFNetHead(
+            inplane=inplane_head,
+            num_class=num_classes,
+            fpn_inplanes=fpn_inplanes,
+            fpn_dim=fpn_dim,
+            enable_auxiliary_loss=self.enable_auxiliary_loss)
         self.init_weight()
 
     def forward(self, x):
@@ -76,11 +78,11 @@ class SFNet(nn.Layer):
         feats = [feats[i] for i in self.backbone_indices]
         logit_list = self.head(feats)
         logit_list = [
-            F.interpolate(logit,
-                          paddle.shape(x)[2:],
-                          mode='bilinear',
-                          align_corners=self.align_corners)
-            for logit in logit_list
+            F.interpolate(
+                logit,
+                paddle.shape(x)[2:],
+                mode='bilinear',
+                align_corners=self.align_corners) for logit in logit_list
         ]
         return logit_list
 
@@ -100,6 +102,7 @@ class SFNetHead(nn.Layer):
         fpn_dim (int, optional): The input channels of FAM module. Default: 256.
         enable_auxiliary_loss (bool, optional): A bool value indicates whether adding auxiliary loss. Default: False.
     """
+
     def __init__(self,
                  inplane,
                  num_class,
@@ -107,18 +110,20 @@ class SFNetHead(nn.Layer):
                  fpn_dim=256,
                  enable_auxiliary_loss=False):
         super(SFNetHead, self).__init__()
-        self.ppm = layers.PPModule(in_channels=inplane,
-                                   out_channels=fpn_dim,
-                                   bin_sizes=(1, 2, 3, 6),
-                                   dim_reduction=True,
-                                   align_corners=True)
+        self.ppm = layers.PPModule(
+            in_channels=inplane,
+            out_channels=fpn_dim,
+            bin_sizes=(1, 2, 3, 6),
+            dim_reduction=True,
+            align_corners=True)
         self.enable_auxiliary_loss = enable_auxiliary_loss
         self.fpn_in = []
 
         for fpn_inplane in fpn_inplanes[:-1]:
             self.fpn_in.append(
-                nn.Sequential(nn.Conv2D(fpn_inplane, fpn_dim, 1),
-                              layers.SyncBatchNorm(fpn_dim), nn.ReLU()))
+                nn.Sequential(
+                    nn.Conv2D(fpn_inplane, fpn_dim, 1),
+                    layers.SyncBatchNorm(fpn_dim), nn.ReLU()))
 
         self.fpn_in = nn.LayerList(self.fpn_in)
         self.fpn_out = []
@@ -127,12 +132,15 @@ class SFNetHead(nn.Layer):
         for i in range(len(fpn_inplanes) - 1):
             self.fpn_out.append(
                 nn.Sequential(
-                    layers.ConvBNReLU(fpn_dim, fpn_dim, 3, bias_attr=False)))
+                    layers.ConvBNReLU(
+                        fpn_dim, fpn_dim, 3, bias_attr=False)))
             self.fpn_out_align.append(
-                AlignedModule(inplane=fpn_dim, outplane=fpn_dim // 2))
+                AlignedModule(
+                    inplane=fpn_dim, outplane=fpn_dim // 2))
             if self.enable_auxiliary_loss:
                 self.dsn.append(
-                    nn.Sequential(layers.AuxLayer(fpn_dim, fpn_dim, num_class)))
+                    nn.Sequential(
+                        layers.AuxLayer(fpn_dim, fpn_dim, num_class)))
 
         self.fpn_out = nn.LayerList(self.fpn_out)
         self.fpn_out_align = nn.LayerList(self.fpn_out_align)
@@ -141,11 +149,10 @@ class SFNetHead(nn.Layer):
             self.dsn = nn.LayerList(self.dsn)
 
         self.conv_last = nn.Sequential(
-            layers.ConvBNReLU(len(fpn_inplanes) * fpn_dim,
-                              fpn_dim,
-                              3,
-                              bias_attr=False),
-            nn.Conv2D(fpn_dim, num_class, kernel_size=1))
+            layers.ConvBNReLU(
+                len(fpn_inplanes) * fpn_dim, fpn_dim, 3, bias_attr=False),
+            nn.Conv2D(
+                fpn_dim, num_class, kernel_size=1))
 
     def forward(self, conv_out):
         psp_out = self.ppm(conv_out[-1])
@@ -167,10 +174,11 @@ class SFNetHead(nn.Layer):
 
         for i in range(1, len(fpn_feature_list)):
             fusion_list.append(
-                F.interpolate(fpn_feature_list[i],
-                              output_size,
-                              mode='bilinear',
-                              align_corners=True))
+                F.interpolate(
+                    fpn_feature_list[i],
+                    output_size,
+                    mode='bilinear',
+                    align_corners=True))
         fusion_out = paddle.concat(fusion_list, 1)
         x = self.conv_last(fusion_out)
         if self.enable_auxiliary_loss:
@@ -189,15 +197,17 @@ class AlignedModule(nn.Layer):
        outplane (int): Output channels of FAN module.
        kernel_size (int, optional): Kernel size of semantic flow convolution layer. Default: 3.
     """
+
     def __init__(self, inplane, outplane, kernel_size=3):
         super(AlignedModule, self).__init__()
         self.down_h = nn.Conv2D(inplane, outplane, 1, bias_attr=False)
         self.down_l = nn.Conv2D(inplane, outplane, 1, bias_attr=False)
-        self.flow_make = nn.Conv2D(outplane * 2,
-                                   2,
-                                   kernel_size=kernel_size,
-                                   padding=1,
-                                   bias_attr=False)
+        self.flow_make = nn.Conv2D(
+            outplane * 2,
+            2,
+            kernel_size=kernel_size,
+            padding=1,
+            bias_attr=False)
 
     def flow_warp(self, input, flow, size):
         input_shape = paddle.shape(input)
@@ -220,10 +230,8 @@ class AlignedModule(nn.Layer):
         size = paddle.shape(low_feature)[2:]
         low_feature = self.down_l(low_feature)
         h_feature = self.down_h(h_feature)
-        h_feature = F.interpolate(h_feature,
-                                  size=size,
-                                  mode='bilinear',
-                                  align_corners=True)
+        h_feature = F.interpolate(
+            h_feature, size=size, mode='bilinear', align_corners=True)
         flow = self.flow_make(paddle.concat([h_feature, low_feature], 1))
         h_feature = self.flow_warp(h_feature_orign, flow, size=size)
         return h_feature

@@ -70,9 +70,8 @@ class Attention(nn.Layer):
     def forward(self, x):
         x_shape = paddle.shape(x)
         N, C = x_shape[1], x_shape[2]
-        qkv = self.qkv(x).reshape((-1, N, 3, self.num_heads,
-                                   C // self.num_heads)).transpose((2, 0, 3, 1,
-                                                                    4))
+        qkv = self.qkv(x).reshape((-1, N, 3, self.num_heads, C //
+                                   self.num_heads)).transpose((2, 0, 3, 1, 4))
         q, k, v = qkv[0], qkv[1], qkv[2]
 
         attn = (q.matmul(k.transpose((0, 1, 3, 2)))) * self.scale
@@ -111,11 +110,10 @@ class Block(nn.Layer):
         self.drop_path = DropPath(drop_path) if drop_path > 0. else Identity()
         self.norm2 = eval(norm_layer)(dim, epsilon=epsilon)
         mlp_hidden_dim = int(dim * mlp_ratio)
-        self.mlp = Mlp(
-            in_features=dim,
-            hidden_features=mlp_hidden_dim,
-            act_layer=act_layer,
-            drop=drop)
+        self.mlp = Mlp(in_features=dim,
+                       hidden_features=mlp_hidden_dim,
+                       act_layer=act_layer,
+                       drop=drop)
 
     def forward(self, x):
         x = x + self.drop_path(self.attn(self.norm1(x)))
@@ -233,9 +231,8 @@ class VisionTransformer(nn.Layer):
                     load_pos_embed, (pos_size, pos_size),
                     (self.pos_h, self.pos_w))
                 self.set_dict(model_state_dict)
-                logger.info(
-                    "Load pos_embed and resize it from {} to {} .".format(
-                        load_pos_embed.shape, self.pos_embed.shape))
+                logger.info("Load pos_embed and resize it from {} to {} .".
+                            format(load_pos_embed.shape, self.pos_embed.shape))
 
     def resize_pos_embed(self, pos_embed, old_hw, new_hw):
         """

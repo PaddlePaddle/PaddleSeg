@@ -160,8 +160,8 @@ def visualize_panoptic(panoptic,
         weight(float, optional): The image weight when merge panoptic with image. Default: 0.5.
         ignore_index(int, optional): Specifies a target value that is ignored. Default: 255.
     """
-    colored_panoptic = np.zeros((panoptic.shape[0], panoptic.shape[1], 3),
-                                dtype=np.uint8)
+    colored_panoptic = np.zeros(
+        (panoptic.shape[0], panoptic.shape[1], 3), dtype=np.uint8)
     taken_colors = set((0, 0, 0))
 
     def _random_color(base, max_dist=30):

@@ -42,6 +42,7 @@ class STDCNet(nn.Layer):
         use_conv_last(bool,optional): whether to use the last ConvBNReLU layer . Default: False.
         pretrained(str, optional): the path of pretrained model.
     """
+
     def __init__(self,
                  base=64,
                  layers=[4, 5, 3],
@@ -104,12 +105,12 @@ class STDCNet(nn.Layer):
                     features.append(block(base, base * 4, block_num, 2))
                 elif j == 0:
                     features.append(
-                        block(base * int(math.pow(2, i + 1)),
-                              base * int(math.pow(2, i + 2)), block_num, 2))
+                        block(base * int(math.pow(2, i + 1)), base * int(
+                            math.pow(2, i + 2)), block_num, 2))
                 else:
                     features.append(
-                        block(base * int(math.pow(2, i + 2)),
-                              base * int(math.pow(2, i + 2)), block_num, 1))
+                        block(base * int(math.pow(2, i + 2)), base * int(
+                            math.pow(2, i + 2)), block_num, 1))
 
         return nn.Sequential(*features)
 
@@ -127,12 +128,13 @@ class STDCNet(nn.Layer):
 class ConvBNRelu(nn.Layer):
     def __init__(self, in_planes, out_planes, kernel=3, stride=1):
         super(ConvBNRelu, self).__init__()
-        self.conv = nn.Conv2D(in_planes,
-                              out_planes,
-                              kernel_size=kernel,
-                              stride=stride,
-                              padding=kernel // 2,
-                              bias_attr=False)
+        self.conv = nn.Conv2D(
+            in_planes,
+            out_planes,
+            kernel_size=kernel,
+            stride=stride,
+            padding=kernel // 2,
+            bias_attr=False)
         self.bn = SyncBatchNorm(out_planes, data_format='NCHW')
         self.relu = nn.ReLU()
 
@@ -149,48 +151,51 @@ class AddBottleneck(nn.Layer):
         self.stride = stride
         if stride == 2:
             self.avd_layer = nn.Sequential(
-                nn.Conv2D(out_planes // 2,
-                          out_planes // 2,
-                          kernel_size=3,
-                          stride=2,
-                          padding=1,
-                          groups=out_planes // 2,
-                          bias_attr=False),
-                nn.BatchNorm2D(out_planes // 2),
-            )
+                nn.Conv2D(
+                    out_planes // 2,
+                    out_planes // 2,
+                    kernel_size=3,
+                    stride=2,
+                    padding=1,
+                    groups=out_planes // 2,
+                    bias_attr=False),
+                nn.BatchNorm2D(out_planes // 2), )
             self.skip = nn.Sequential(
-                nn.Conv2D(in_planes,
-                          in_planes,
-                          kernel_size=3,
-                          stride=2,
-                          padding=1,
-                          groups=in_planes,
-                          bias_attr=False),
+                nn.Conv2D(
+                    in_planes,
+                    in_planes,
+                    kernel_size=3,
+                    stride=2,
+                    padding=1,
+                    groups=in_planes,
+                    bias_attr=False),
                 nn.BatchNorm2D(in_planes),
-                nn.Conv2D(in_planes, out_planes, kernel_size=1,
-                          bias_attr=False),
-                nn.BatchNorm2D(out_planes),
-            )
+                nn.Conv2D(
+                    in_planes, out_planes, kernel_size=1, bias_attr=False),
+                nn.BatchNorm2D(out_planes), )
             stride = 1
 
         for idx in range(block_num):
             if idx == 0:
                 self.conv_list.append(
-                    ConvBNRelu(in_planes, out_planes // 2, kernel=1))
+                    ConvBNRelu(
+                        in_planes, out_planes // 2, kernel=1))
             elif idx == 1 and block_num == 2:
                 self.conv_list.append(
-                    ConvBNRelu(out_planes // 2, out_planes // 2, stride=stride))
+                    ConvBNRelu(
+                        out_planes // 2, out_planes // 2, stride=stride))
             elif idx == 1 and block_num > 2:
                 self.conv_list.append(
-                    ConvBNRelu(out_planes // 2, out_planes // 4, stride=stride))
+                    ConvBNRelu(
+                        out_planes // 2, out_planes // 4, stride=stride))
             elif idx < block_num - 1:
                 self.conv_list.append(
-                    ConvBNRelu(out_planes // int(math.pow(2, idx)),
-                               out_planes // int(math.pow(2, idx + 1))))
+                    ConvBNRelu(out_planes // int(math.pow(2, idx)), out_planes
+                               // int(math.pow(2, idx + 1))))
             else:
                 self.conv_list.append(
-                    ConvBNRelu(out_planes // int(math.pow(2, idx)),
-                               out_planes // int(math.pow(2, idx))))
+                    ConvBNRelu(out_planes // int(math.pow(2, idx)), out_planes
+                               // int(math.pow(2, idx))))
 
     def forward(self, x):
         out_list = []
@@ -214,36 +219,39 @@ class CatBottleneck(nn.Layer):
         self.stride = stride
         if stride == 2:
             self.avd_layer = nn.Sequential(
-                nn.Conv2D(out_planes // 2,
-                          out_planes // 2,
-                          kernel_size=3,
-                          stride=2,
-                          padding=1,
-                          groups=out_planes // 2,
-                          bias_attr=False),
-                nn.BatchNorm2D(out_planes // 2),
-            )
+                nn.Conv2D(
+                    out_planes // 2,
+                    out_planes // 2,
+                    kernel_size=3,
+                    stride=2,
+                    padding=1,
+                    groups=out_planes // 2,
+                    bias_attr=False),
+                nn.BatchNorm2D(out_planes // 2), )
             self.skip = nn.AvgPool2D(kernel_size=3, stride=2, padding=1)
             stride = 1
 
         for idx in range(block_num):
             if idx == 0:
                 self.conv_list.append(
-                    ConvBNRelu(in_planes, out_planes // 2, kernel=1))
+                    ConvBNRelu(
+                        in_planes, out_planes // 2, kernel=1))
             elif idx == 1 and block_num == 2:
                 self.conv_list.append(
-                    ConvBNRelu(out_planes // 2, out_planes // 2, stride=stride))
+                    ConvBNRelu(
+                        out_planes // 2, out_planes // 2, stride=stride))
             elif idx == 1 and block_num > 2:
                 self.conv_list.append(
-                    ConvBNRelu(out_planes // 2, out_planes // 4, stride=stride))
+                    ConvBNRelu(
+                        out_planes // 2, out_planes // 4, stride=stride))
             elif idx < block_num - 1:
                 self.conv_list.append(
-                    ConvBNRelu(out_planes // int(math.pow(2, idx)),
-                               out_planes // int(math.pow(2, idx + 1))))
+                    ConvBNRelu(out_planes // int(math.pow(2, idx)), out_planes
+                               // int(math.pow(2, idx + 1))))
             else:
                 self.conv_list.append(
-                    ConvBNRelu(out_planes // int(math.pow(2, idx)),
-                               out_planes // int(math.pow(2, idx))))
+                    ConvBNRelu(out_planes // int(math.pow(2, idx)), out_planes
+                               // int(math.pow(2, idx))))
 
     def forward(self, x):
         out_list = []

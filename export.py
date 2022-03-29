@@ -117,7 +117,8 @@ def main(args):
     new_net.eval()
     new_net = paddle.jit.to_static(
         new_net,
-        input_spec=[paddle.static.InputSpec(shape=shape, dtype='float32')])
+        input_spec=[paddle.static.InputSpec(
+            shape=shape, dtype='float32')])
     save_path = os.path.join(args.save_dir, 'model')
     paddle.jit.save(new_net, save_path)
 

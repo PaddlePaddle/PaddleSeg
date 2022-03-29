@@ -157,7 +157,7 @@ eiseg
 
     - 分割遥感图像请安装GDAL，相关安装及介绍具体详见[遥感标注垂类建设](docs/remote_sensing.md)。
     - 分割医学影像请安装SimpleITK，相关安装及介绍具体详见[医疗标注垂类建设](docs/medical.md)。
-    
+
 - **脚本工具使用**
 
     EISeg目前提供包括标注转PaddleX数据集、划分COCO格式以及语义标签转实例标签等脚本工具，相关使用方式详见[脚本工具使用](docs/tools.md)。

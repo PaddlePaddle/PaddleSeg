@@ -39,6 +39,7 @@ class STDCSeg(nn.Layer):
         use_conv_last(bool,optional): Determine ContextPath 's inplanes variable according to whether to use bockbone's last conv. Default: False.
         pretrained (str, optional): The path or url of pretrained model. Default: None.
     """
+
     def __init__(self,
                  num_classes,
                  backbone,
@@ -79,7 +80,8 @@ class STDCSeg(nn.Layer):
 
             logit_list = [feat_out, feat_out8, feat_out16]
             logit_list = [
-                F.interpolate(x, x_hw, mode='bilinear', align_corners=True)
+                F.interpolate(
+                    x, x_hw, mode='bilinear', align_corners=True)
                 for x in logit_list
             ]
 
@@ -95,10 +97,8 @@ class STDCSeg(nn.Layer):
         else:
             feat_fuse = self.ffm(feat_res8, feat_cp8)
             feat_out = self.conv_out(feat_fuse)
-            feat_out = F.interpolate(feat_out,
-                                     x_hw,
-                                     mode='bilinear',
-                                     align_corners=True)
+            feat_out = F.interpolate(
+                feat_out, x_hw, mode='bilinear', align_corners=True)
             logit_list = [feat_out]
 
         return logit_list
@@ -111,15 +111,10 @@ class STDCSeg(nn.Layer):
 class SegHead(nn.Layer):
     def __init__(self, in_chan, mid_chan, n_classes):
         super(SegHead, self).__init__()
-        self.conv = layers.ConvBNReLU(in_chan,
-                                      mid_chan,
-                                      kernel_size=3,
-                                      stride=1,
-                                      padding=1)
-        self.conv_out = nn.Conv2D(mid_chan,
-                                  n_classes,
-                                  kernel_size=1,
-                                  bias_attr=None)
+        self.conv = layers.ConvBNReLU(
+            in_chan, mid_chan, kernel_size=3, stride=1, padding=1)
+        self.conv_out = nn.Conv2D(
+            mid_chan, n_classes, kernel_size=1, bias_attr=None)
 
     def forward(self, x):
         x = self.conv(x)
@@ -130,15 +125,10 @@ class SegHead(nn.Layer):
 class AttentionRefinementModule(nn.Layer):
     def __init__(self, in_chan, out_chan):
         super(AttentionRefinementModule, self).__init__()
-        self.conv = layers.ConvBNReLU(in_chan,
-                                      out_chan,
-                                      kernel_size=3,
-                                      stride=1,
-                                      padding=1)
-        self.conv_atten = nn.Conv2D(out_chan,
-                                    out_chan,
-                                    kernel_size=1,
-                                    bias_attr=None)
+        self.conv = layers.ConvBNReLU(
+            in_chan, out_chan, kernel_size=3, stride=1, padding=1)
+        self.conv_atten = nn.Conv2D(
+            out_chan, out_chan, kernel_size=1, bias_attr=None)
         self.bn_atten = nn.BatchNorm2D(out_chan)
         self.sigmoid_atten = nn.Sigmoid()
 
@@ -161,21 +151,12 @@ class ContextPath(nn.Layer):
         if use_conv_last:
             inplanes = 1024
         self.arm32 = AttentionRefinementModule(inplanes, 128)
-        self.conv_head32 = layers.ConvBNReLU(128,
-                                             128,
-                                             kernel_size=3,
-                                             stride=1,
-                                             padding=1)
-        self.conv_head16 = layers.ConvBNReLU(128,
-                                             128,
-                                             kernel_size=3,
-                                             stride=1,
-                                             padding=1)
-        self.conv_avg = layers.ConvBNReLU(inplanes,
-                                          128,
-                                          kernel_size=1,
-                                          stride=1,
-                                          padding=0)
+        self.conv_head32 = layers.ConvBNReLU(
+            128, 128, kernel_size=3, stride=1, padding=1)
+        self.conv_head16 = layers.ConvBNReLU(
+            128, 128, kernel_size=3, stride=1, padding=1)
+        self.conv_avg = layers.ConvBNReLU(
+            inplanes, 128, kernel_size=1, stride=1, padding=0)
 
     def forward(self, x):
         feat2, feat4, feat8, feat16, feat32 = self.backbone(x)
@@ -204,23 +185,22 @@ class ContextPath(nn.Layer):
 class FeatureFusionModule(nn.Layer):
     def __init__(self, in_chan, out_chan):
         super(FeatureFusionModule, self).__init__()
-        self.convblk = layers.ConvBNReLU(in_chan,
-                                         out_chan,
-                                         kernel_size=1,
-                                         stride=1,
-                                         padding=0)
-        self.conv1 = nn.Conv2D(out_chan,
-                               out_chan // 4,
-                               kernel_size=1,
-                               stride=1,
-                               padding=0,
-                               bias_attr=None)
-        self.conv2 = nn.Conv2D(out_chan // 4,
-                               out_chan,
-                               kernel_size=1,
-                               stride=1,
-                               padding=0,
-                               bias_attr=None)
+        self.convblk = layers.ConvBNReLU(
+            in_chan, out_chan, kernel_size=1, stride=1, padding=0)
+        self.conv1 = nn.Conv2D(
+            out_chan,
+            out_chan // 4,
+            kernel_size=1,
+            stride=1,
+            padding=0,
+            bias_attr=None)
+        self.conv2 = nn.Conv2D(
+            out_chan // 4,
+            out_chan,
+            kernel_size=1,
+            stride=1,
+            padding=0,
+            bias_attr=None)
         self.relu = nn.ReLU()
         self.sigmoid = nn.Sigmoid()
 

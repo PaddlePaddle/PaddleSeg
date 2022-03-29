@@ -4,7 +4,7 @@ The L1-norm loss function is used to calculate the minimum absolute value deviat
 
 ```python
 class paddleseg.models.losses.L1Loss(
-            reduction = 'mean', 
+            reduction = 'mean',
             ignore_index = 255
 )
 ```

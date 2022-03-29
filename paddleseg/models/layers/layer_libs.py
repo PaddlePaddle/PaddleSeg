@@ -249,8 +249,7 @@ class JPU(nn.Layer):
             pointwise_bias=False,
             dilation=1,
             bias_attr=False,
-            stride=1,
-        )
+            stride=1, )
         self.dilation2 = SeparableConvBNReLU(
             3 * width,
             width,
@@ -281,8 +280,7 @@ class JPU(nn.Layer):
 
     def forward(self, *inputs):
         feats = [
-            self.conv5(inputs[-1]),
-            self.conv4(inputs[-2]),
+            self.conv5(inputs[-1]), self.conv4(inputs[-2]),
             self.conv3(inputs[-3])
         ]
         size = paddle.shape(feats[-1])[2:]
@@ -292,13 +290,12 @@ class JPU(nn.Layer):
             feats[-3], size, mode='bilinear', align_corners=True)
 
         feat = paddle.concat(feats, axis=1)
-        feat = paddle.concat([
-            self.dilation1(feat),
-            self.dilation2(feat),
-            self.dilation3(feat),
-            self.dilation4(feat)
-        ],
-                             axis=1)
+        feat = paddle.concat(
+            [
+                self.dilation1(feat), self.dilation2(feat),
+                self.dilation3(feat), self.dilation4(feat)
+            ],
+            axis=1)
 
         return inputs[0], inputs[1], inputs[2], feat
 

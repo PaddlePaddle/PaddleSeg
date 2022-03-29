@@ -42,8 +42,8 @@ def loss_computation(logits_list, labels, losses, edges=None):
         loss_i = losses['types'][i]
         coef_i = losses['coef'][i]
 
-        if loss_i.__class__.__name__ in ('BCELoss',
-                                         'FocalLoss') and loss_i.edge_label:
+        if loss_i.__class__.__name__ in ('BCELoss', 'FocalLoss'
+                                         ) and loss_i.edge_label:
             # If use edges as labels According to loss type.
             loss_list.append(coef_i * loss_i(logits, edges))
         elif loss_i.__class__.__name__ == 'MixedLoss':
@@ -119,18 +119,15 @@ def train(model,
             optimizer)  # The return is Fleet object
         ddp_model = paddle.distributed.fleet.distributed_model(model)
 
-    batch_sampler = paddle.io.DistributedBatchSampler(train_dataset,
-                                                      batch_size=batch_size,
-                                                      shuffle=True,
-                                                      drop_last=True)
+    batch_sampler = paddle.io.DistributedBatchSampler(
+        train_dataset, batch_size=batch_size, shuffle=True, drop_last=True)
 
     loader = paddle.io.DataLoader(
         train_dataset,
         batch_sampler=batch_sampler,
         num_workers=num_workers,
         return_list=True,
-        worker_init_fn=worker_init_fn,
-    )
+        worker_init_fn=worker_init_fn, )
 
     # use amp
     if precision == 'fp16':
@@ -185,10 +182,11 @@ def train(model,
                         logits_list = ddp_model(images)
                     else:
                         logits_list = model(images)
-                    loss_list = loss_computation(logits_list=logits_list,
-                                                 labels=labels,
-                                                 losses=losses,
-                                                 edges=edges)
+                    loss_list = loss_computation(
+                        logits_list=logits_list,
+                        labels=labels,
+                        losses=losses,
+                        edges=edges)
                     loss = sum(loss_list)
 
                 scaled = scaler.scale(loss)  # scale the loss
@@ -202,10 +200,11 @@ def train(model,
                     logits_list = ddp_model(images)
                 else:
                     logits_list = model(images)
-                loss_list = loss_computation(logits_list=logits_list,
-                                             labels=labels,
-                                             losses=losses,
-                                             edges=edges)
+                loss_list = loss_computation(
+                    logits_list=logits_list,
+                    labels=labels,
+                    losses=losses,
+                    edges=edges)
                 loss = sum(loss_list)
                 loss.backward()
                 # if the optimizer is ReduceOnPlateau, the loss is the one which has been pass into step.
@@ -233,8 +232,8 @@ def train(model,
             else:
                 for i in range(len(loss_list)):
                     avg_loss_list[i] += loss_list[i].numpy()
-            batch_cost_averager.record(time.time() - batch_start,
-                                       num_samples=batch_size)
+            batch_cost_averager.record(
+                time.time() - batch_start, num_samples=batch_size)
 
             if (iter) % log_iters == 0 and local_rank == 0:
                 avg_loss /= log_iters
@@ -245,9 +244,9 @@ def train(model,
                 eta = calculate_eta(remain_iters, avg_train_batch_cost)
                 logger.info(
                     "[TRAIN] epoch: {}, iter: {}/{}, loss: {:.4f}, lr: {:.6f}, batch_cost: {:.4f}, reader_cost: {:.5f}, ips: {:.4f} samples/sec | ETA {}"
-                    .format((iter - 1) // iters_per_epoch + 1, iter, iters,
-                            avg_loss, lr, avg_train_batch_cost,
-                            avg_train_reader_cost,
+                    .format((iter - 1
+                             ) // iters_per_epoch + 1, iter, iters, avg_loss,
+                            lr, avg_train_batch_cost, avg_train_reader_cost,
                             batch_cost_averager.get_ips_average(), eta))
                 if use_vdl:
                     log_writer.add_scalar('Train/loss', avg_loss, iter)
@@ -270,17 +269,15 @@ def train(model,
                 reader_cost_averager.reset()
                 batch_cost_averager.reset()
 
-            if (iter % save_interval == 0 or iter == iters) and (val_dataset
-                                                                 is not None):
+            if (iter % save_interval == 0 or
+                    iter == iters) and (val_dataset is not None):
                 num_workers = 1 if num_workers > 0 else 0
 
                 if test_config is None:
                     test_config = {}
 
-                mean_iou, acc, _, _, _ = evaluate(model,
-                                                  val_dataset,
-                                                  num_workers=num_workers,
-                                                  **test_config)
+                mean_iou, acc, _, _, _ = evaluate(
+                    model, val_dataset, num_workers=num_workers, **test_config)
 
                 model.train()
 

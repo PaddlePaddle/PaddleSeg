@@ -25,7 +25,7 @@ Besides, run the following instructions to install PaddleSlim.
 ```shell
 git clone https://github.com/PaddlePaddle/PaddleSlim.git
 
-# checkout to special commit 
+# checkout to special commit
 git reset --hard 15ef0c7dcee5a622787b7445f21ad9d1dea0a933
 
 # install
@@ -44,7 +44,7 @@ Run the following instructions in the root directory of PaddleSeg to train the t
 
 ```shell
 export CUDA_VISIBLE_DEVICES=0  # Set GPU for Linux
-# set CUDA_VISIBLE_DEVICES=0   # Seg GPU for Windows 
+# set CUDA_VISIBLE_DEVICES=0   # Seg GPU for Windows
 
 python train.py \
     --config configs/quick_start/deeplabv3p_resnet50_os8_optic_disc_512x512_1k_teacher.yml \
@@ -68,7 +68,7 @@ Run the following instructions in the root directory of PaddleSeg to train the s
 
 ```shell
 export CUDA_VISIBLE_DEVICES=0  # Set GPU for Linux
-# set CUDA_VISIBLE_DEVICES=0   # Seg GPU for Windows 
+# set CUDA_VISIBLE_DEVICES=0   # Seg GPU for Windows
 
 python train.py \
     --config configs/quick_start/deeplabv3p_resnet18_os8_optic_disc_512x512_1k_student.yml \
@@ -126,7 +126,7 @@ With the config files of the teacher and student models, run the following instr
 
 ```shell
 export CUDA_VISIBLE_DEVICES=0  # Set GPU for Linux
-# set CUDA_VISIBLE_DEVICES=0   # Seg GPU for Windows 
+# set CUDA_VISIBLE_DEVICES=0   # Seg GPU for Windows
 
 python slim/distill/distill_train.py \
        --teather_config ./configs/quick_start/deeplabv3p_resnet50_os8_optic_disc_512x512_1k_teacher.yml \
@@ -139,7 +139,7 @@ python slim/distill/distill_train.py \
        --save_dir output/deeplabv3p_resnet18_distill
 ```
 
-The script of `slim/distill/distill_train.py` creates the teacher model, creates the student model, loads dataset to train the student model while the teacher model is fixed. 
+The script of `slim/distill/distill_train.py` creates the teacher model, creates the student model, loads dataset to train the student model while the teacher model is fixed.
 
 After the training, the mIoU of the student model is 85.79% and the trained weights are saved in `output/deeplabv3p_resnet18_distill/best_model`.
 
@@ -171,9 +171,9 @@ In the config file of the student model, the `coef` means the weight of the acco
 You can adjust the weights of different losses to imporve the accuracy.
 
 
-### 3.3 Use Intermediate Tensors for Distillation 
+### 3.3 Use Intermediate Tensors for Distillation
 
-Model distillation only utilizes the output tensors of the teacher and student models in the above demo for simplicity. 
+Model distillation only utilizes the output tensors of the teacher and student models in the above demo for simplicity.
 In fact, we can also use intermediate tensors for model distillation.
 
 * Chose the intermediate tensors in the teacher and student models

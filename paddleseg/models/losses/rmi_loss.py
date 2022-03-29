@@ -93,8 +93,9 @@ class RMILoss(nn.Layer):
         label_mask_3D = labels_4D != self.ignore_index
         valid_onehot_labels_4D = paddle.cast(
             F.one_hot(
-                paddle.cast(labels_4D, dtype='int64') * paddle.cast(
-                    label_mask_3D, dtype='int64'),
+                paddle.cast(
+                    labels_4D, dtype='int64') * paddle.cast(
+                        label_mask_3D, dtype='int64'),
                 num_classes=self.num_classes),
             dtype='float32')
         # label_mask_flat = paddle.cast(
@@ -177,7 +178,8 @@ class RMILoss(nn.Layer):
         pr_vectors = paddle.cast(pr_vectors, dtype='float64')
 
         diag_matrix = paddle.unsqueeze(
-            paddle.unsqueeze(paddle.eye(self.half_d), axis=0), axis=0)
+            paddle.unsqueeze(
+                paddle.eye(self.half_d), axis=0), axis=0)
         la_vectors = la_vectors - paddle.mean(la_vectors, axis=3, keepdim=True)
 
         la_cov = paddle.matmul(la_vectors,
@@ -186,8 +188,8 @@ class RMILoss(nn.Layer):
         pr_cov = paddle.matmul(pr_vectors,
                                paddle.transpose(pr_vectors, [0, 1, 3, 2]))
 
-        pr_cov_inv = self.inverse(
-            pr_cov + paddle.cast(diag_matrix, dtype='float64') * _POS_ALPHA)
+        pr_cov_inv = self.inverse(pr_cov + paddle.cast(
+            diag_matrix, dtype='float64') * _POS_ALPHA)
 
         la_pr_cov = paddle.matmul(la_vectors,
                                   paddle.transpose(pr_vectors, [0, 1, 3, 2]))
@@ -196,8 +198,8 @@ class RMILoss(nn.Layer):
             paddle.matmul(la_pr_cov, pr_cov_inv),
             paddle.transpose(la_pr_cov, [0, 1, 3, 2]))
 
-        rmi_now = 0.5 * self.log_det_by_cholesky(
-            appro_var + paddle.cast(diag_matrix, dtype='float64') * _POS_ALPHA)
+        rmi_now = 0.5 * self.log_det_by_cholesky(appro_var + paddle.cast(
+            diag_matrix, dtype='float64') * _POS_ALPHA)
 
         rmi_per_class = paddle.cast(
             paddle.mean(

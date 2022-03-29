@@ -106,8 +106,7 @@ def parse_args():
     parser.add_argument(
         '--data_format',
         dest='data_format',
-        help=
-        'Data format that specifies the layout of input. It can be "NCHW" or "NHWC". Default: "NCHW".',
+        help='Data format that specifies the layout of input. It can be "NCHW" or "NHWC". Default: "NCHW".',
         type=str,
         default='NCHW')
 

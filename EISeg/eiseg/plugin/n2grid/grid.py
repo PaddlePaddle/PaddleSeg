@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 import math
 import numpy as np
 
@@ -57,7 +56,10 @@ class Grids:
         #         tmp[:det_tmp.shape[0], :det_tmp.shape[1], :] = det_tmp
         #         self.imagesGrid.append(tmp)
         # self.masksGrid = [[np.zeros(self.gridSize)] * gridCount[1]] * gridCount[0]  # 不能用浅拷贝
-        self.masksGrid = [[np.zeros(self.gridSize) for _ in range(gridCount[1])] for _ in range(gridCount[0])]
+        self.masksGrid = [
+            [np.zeros(self.gridSize) for _ in range(gridCount[1])]
+            for _ in range(gridCount[0])
+        ]
         # print(len(self.masksGrid), len(self.masksGrid[0]))
         self.gridInit = True
         return list(gridCount)
@@ -67,7 +69,7 @@ class Grids:
         ul = gridIdx * (self.gridSize - self.overlap)
         lr = ul + self.gridSize
         # print("ul, lr", ul, lr)
-        img = self.detimg[ul[0]: lr[0], ul[1]: lr[1]]
+        img = self.detimg[ul[0]:lr[0], ul[1]:lr[1]]
         mask = self.masksGrid[row][col]
         self.currIdx = (row, col)
         return img, mask
@@ -108,9 +110,9 @@ class Grids:
                 # print("se: ", start_h, end_h, start_w, end_w)
                 # 单区自己，重叠取或
                 if (i + j) % 2 == 0:
-                    result_1[start_h: end_h, start_w: end_w] = im
+                    result_1[start_h:end_h, start_w:end_w] = im
                 else:
-                    result_2[start_h: end_h, start_w: end_w] = im
+                    result_2[start_h:end_h, start_w:end_w] = im
                 # k += 1
                 # print('r, c, k:', i_r, i_c, k)
         result = np.where(result_2 != 0, result_2, result_1)
@@ -119,7 +121,6 @@ class Grids:
 
 # g = Grids()
 # g.getGrid(0, 1)
-
 
 # def sliceImage(self, row, col):
 #     """
