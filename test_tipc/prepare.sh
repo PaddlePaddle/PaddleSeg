@@ -75,3 +75,7 @@ else
 
     fi
 fi
+
+if [ ${model_name} == "enet" ] || [ ${model_name} == "bisenetv2" ] || [ ${model_name} == "ocrnet_hrnetw18" ];then
+    cp ./test_tipc/data/cityscapes_val_5.list ./test_tipc/data/cityscapes
+fi
