@@ -9,7 +9,7 @@ English | [简体中文](README.md)
 ## Latest Developments
 
 - Added interactive model of ResNet50_DeeplabV3+ for chest Xray in medical scenarios. The pretrained model refers to MoCo comparative learning to match the characteristics of X-ray.
-- Added an MRI spine interactive model, which cooperates with Guangzhou First People's Hospital. It is trained on MRSpineSeg dataset, which can realize one-click identification of intermediate-level lumbar vertebral cones and accessories.
+- Added an MRI spine interactive model, which cooperates with Guangzhou First People's Hospital. It is trained on MRSpineSeg dataset, which can realize one-click identification of intermediate-level lumbar vertebral cones and accessories on transvers plane.
 - Added a defect inspection model for aluminum plate, which is trained based on Baidu's self-built data set. It can annotate common aluminum plate defects such as black spots, small white lines, foreign objects and other defects.
 
 ## Introduction
@@ -188,6 +188,7 @@ Start the annotation when the above are all set up. Here are the commonly used k
 
 - Thanks for [Weibin Liao](https://github.com/MrBlankness) to provide the pretrain model of ResNet50_DeeplabV3.
 
+- Thanks for support of [Junjie Guo](https://github.com/Guojunjie08) and [Jiajun Feng](https://github.com/richarddddd198) on MRSpineSeg model.
 ## Citation
 
 If you find our project useful in your research, please consider citing ：

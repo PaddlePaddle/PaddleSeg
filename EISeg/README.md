@@ -10,7 +10,7 @@
 ## 最新动向
 
 - 新增用于X-Ray胸腔标注模型，该模型基于ResNet50_DeeplabV3+，参考MoCo对比学习的思想，优化其数据增强策略，以匹配X-ray的图像特性，完成多数据源的对比学习预训练，提供可靠的预训练模型参数。
-- 新增MRI椎骨标注模型，该模型与广州第一人民医院合作，基于MRSpineSeg训练，可实现一键识别中间层面腰椎锥体及附件。
+- 新增MRI椎骨标注模型，该模型与广州第一人民医院合作，基于MRSpineSeg训练，可实现一键识别磁共振(MRI)模态和CT模态的矢状位方向的腰椎椎体及其附件。
 - 新增铝板瑕疵标注模型，该模型基于百度自建质检数据集训练，可实现常见的铝板瑕疵如黑点，小白线，异物等瑕疵的智能标注。
 
 
@@ -185,6 +185,7 @@ eiseg
 
 - 感谢[Lin Han](https://github.com/linhandev), [Yizhou Chen](https://github.com/geoyee), [Yiakwy](https://github.com/yiakwy), [GT](https://github.com/GT-ZhangAcer), [Youssef Harby](https://github.com/Youssef-Harby), [Nick Nie](https://github.com/niecongchong) 等开发者及[RITM](https://github.com/saic-vul/ritm_interactive_segmentation) 算法支持。
 - 感谢[Weibin Liao](https://github.com/MrBlankness)提供的ResNet50_DeeplabV3+预训练模型。
+- 感谢[Junjie Guo](https://github.com/Guojunjie08)及[Jiajun Feng](https://github.com/richarddddd198)在椎骨模型上提供的技术支持。
 
 ## 学术引用
 
