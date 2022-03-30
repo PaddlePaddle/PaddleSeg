@@ -9,8 +9,8 @@ import cityscapes_labels as cl
 
 def parse_args():
     parser = argparse.ArgumentParser(
-        description=
-        'Convert autolabelled data according to PaddleSeg data format')
+        description='Convert autolabelled data according to PaddleSeg data format'
+    )
     parser.add_argument(
         "--dataset_root", dest="dataset_root", default=None, type=str)
     return parser.parse_args()

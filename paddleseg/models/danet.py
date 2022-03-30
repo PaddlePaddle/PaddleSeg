@@ -205,8 +205,8 @@ class CAM(nn.Layer):
         # sim: n, c, c
         sim = paddle.bmm(query, key)
         # The danet author claims that this can avoid gradient divergence
-        sim = paddle.max(
-            sim, axis=-1, keepdim=True).tile([1, 1, self.channels]) - sim
+        sim = paddle.max(sim, axis=-1, keepdim=True).tile(
+            [1, 1, self.channels]) - sim
         sim = F.softmax(sim, axis=-1)
 
         # feat: from (n, c, h * w) to (n, c, h, w)

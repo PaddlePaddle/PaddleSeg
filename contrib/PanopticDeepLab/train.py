@@ -169,8 +169,7 @@ def main(args):
         keep_checkpoint_max=args.keep_checkpoint_max,
         threshold=args.threshold,
         nms_kernel=args.nms_kernel,
-        top_k=args.top_k,
-    )
+        top_k=args.top_k, )
 
 
 if __name__ == '__main__':

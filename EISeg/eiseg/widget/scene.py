@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 from qtpy import QtWidgets, QtCore
 from qtpy.QtCore import Qt
 
@@ -40,8 +39,7 @@ class AnnotationScene(QtWidgets.QGraphicsScene):
         if not self.creating and not self.hovering:
             if ev.buttons() in [Qt.LeftButton, Qt.RightButton]:
                 self.clickRequest.emit(
-                    int(pos.x()), int(pos.y()), ev.buttons() == Qt.LeftButton
-                )
+                    int(pos.x()), int(pos.y()), ev.buttons() == Qt.LeftButton)
         elif self.creating:
             self.polygon_item.removeLastPoint()
             self.polygon_item.addPointLast(ev.scenePos())
@@ -54,8 +52,7 @@ class AnnotationScene(QtWidgets.QGraphicsScene):
             self.polygon_item.movePoint(
                 # self.polygon_item.number_of_points() - 1, ev.scenePos()
                 len(self.polygon_item) - 1,
-                ev.scenePos(),
-            )
+                ev.scenePos(), )
         super(AnnotationScene, self).mouseMoveEvent(ev)
 
     @property

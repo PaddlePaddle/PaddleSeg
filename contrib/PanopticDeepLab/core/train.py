@@ -134,8 +134,7 @@ def train(model,
         train_dataset,
         batch_sampler=batch_sampler,
         num_workers=num_workers,
-        return_list=True,
-    )
+        return_list=True, )
 
     if use_vdl:
         from visualdl import LogWriter
@@ -208,9 +207,9 @@ def train(model,
                 eta = calculate_eta(remain_iters, avg_train_batch_cost)
                 logger.info(
                     "[TRAIN] epoch={}, iter={}/{}, loss={:.4f}, lr={:.6f}, batch_cost={:.4f}, reader_cost={:.5f}, ips={:.4f} samples/sec | ETA {}"
-                    .format((iter - 1) // iters_per_epoch + 1, iter, iters,
-                            avg_loss, lr, avg_train_batch_cost,
-                            avg_train_reader_cost,
+                    .format((iter - 1
+                             ) // iters_per_epoch + 1, iter, iters, avg_loss,
+                            lr, avg_train_batch_cost, avg_train_reader_cost,
                             batch_cost_averager.get_ips_average(), eta))
                 logger.info(
                     "[LOSS] loss={:.4f}, semantic_loss={:.4f}, center_loss={:.4f}, offset_loss={:.4f}"
@@ -255,8 +254,8 @@ def train(model,
 
             # eval model
             if (iter % save_interval == 0 or iter == iters) and (
-                    val_dataset is
-                    not None) and local_rank == 0 and iter > iters // 2:
+                    val_dataset is not None
+            ) and local_rank == 0 and iter > iters // 2:
                 num_workers = 1 if num_workers > 0 else 0
                 panoptic_results, semantic_results, instance_results = evaluate(
                     model,

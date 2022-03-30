@@ -6,8 +6,8 @@
 CrossEntropyLoss常用于多像素类别的分割任务，其描述的是两个概率分布之间的不同，可以用来刻画当前模型与实际模型之间的差距（在训练过程中，我们暂时认为给出的标注集就是真实世界中的模型）。注意：机器学习算法中的逻辑回归是这种交叉熵的特例。
 ```python
 class paddleseg.models.losses.CrossEntropyLoss(
-                weight = None, 
-                ignore_index = 255, 
+                weight = None,
+                ignore_index = 255,
                 top_k_percent_pixels = 1.0
 )
 ```

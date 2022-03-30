@@ -8,6 +8,7 @@ English | [简体中文](README_CN.md)
 
 **A High-Efficient Development Toolkit for Image Segmentation based on [PaddlePaddle](https://github.com/paddlepaddle/paddle).**
 
+[![Build Status](https://travis-ci.org/PaddlePaddle/PaddleSeg.svg?branch=release/2.1)](https://travis-ci.org/PaddlePaddle/PaddleSeg)
 [![License](https://img.shields.io/badge/license-Apache%202-blue.svg)](LICENSE)
 [![Version](https://img.shields.io/github/release/PaddlePaddle/PaddleSeg.svg)](https://github.com/PaddlePaddle/PaddleSeg/releases)
 ![python version](https://img.shields.io/badge/python-3.6+-orange.svg)
@@ -19,9 +20,21 @@ English | [简体中文](README_CN.md)
 
 ## News <img src="./docs/images/seg_news_icon.png" width="40"/>
 
-* [2022-01-04] We published a paper on portrait segmentation named [PP-HumanSeg](./contrib/PP-HumanSeg/paper.md), and released Semantic Connectivity-aware Learning (SCL) framework and a Large-Scale Teleconferencing Video Dataset.
-* [2021-10-11] We released PaddleSeg v2.3 with the improved interactive segmentation tool ([EISeg v0.3](./EISeg)), two [matting]((./contrib/Matting)) algorithms, and segmentation model compression.
-* For more information please refer to [Release Note](https://github.com/PaddlePaddle/PaddleSeg/releases).
+<ul class="nobull">
+ <li>[2022-01-20] PaddleSeg v2.4 is released! More details in <a href="https://github.com/PaddlePaddle/PaddleSeg/releases">Release Notes</a>.</li>
+ <ul>
+        <li>Upgrade the interactive annotation tool <a href="./EISeg">EISeg v0.4</a> with faster inference speed, supporting new areas in remote sensing and medical segmentation.</li>
+        <li>Publish the <a href="./contrib/PP-HumanSeg/paper.md">PP-HumanSeg</a> paper, and released Semantic Connectivity-aware Learning framework and a Large-Scale Teleconferencing Video Dataset.</li>
+        <li>Release <a href="./Matting">PP-HumanMatting</a> for extremely fine-grained human segmentation, with an Android tutorial.</li>
+        <li>Add 9 semantic segmentatioin models, including a new transformer model <a href="configs/segmenter">SegMenter</a>.</li>
+        <li>Provide a comprehensive <a href="docs/model_zoo_overview.md">performance table</a> for all segmentation models, which helps to choose a better model on the accuracy and the speed.</li>
+    </ul>
+
+
+ <li>[2021-10-11] We released PaddleSeg v2.3 with the improved interactive segmentation tool EISeg v0.3, two matting algorithms, and segmentation model compression.</li>
+ <li>[2021-09-20] We published an interactive segmentation <a href="https://arxiv.org/abs/2109.09406">paper</a> with SOTA performance on several well-known datasets.</li>
+</ul>
+
 
 ## Introduction
 
@@ -296,7 +309,7 @@ The relationship between mIoU and FLOPs of representative architectures and back
 
 ## Practical Projects
   * [Interactive Segmentation](./EISeg)
-  * [Image Matting](./contrib/Matting)
+  * [Image Matting](./Matting)
   * [PP-HumanSeg](./contrib/PP-HumanSeg)
   * [Cityscapes SOTA](./contrib/CityscapesSOTA)
   * [Panoptic Segmentation](./contrib/PanopticDeepLab)
@@ -307,9 +320,9 @@ The relationship between mIoU and FLOPs of representative architectures and back
 ## Community <img src="./docs/images/chat.png" width="30"/>
 
 * If you have any problem or suggestion on PaddleSeg, please send us issues through [GitHub Issues](https://github.com/PaddlePaddle/PaddleSeg/issues).
-* Welcome to Join PaddleSeg QQ Group
+* Welcome to Join PaddleSeg wechat Group
 <div align="center">
-<img src="./docs/images/QQ_chat.png"  width = "200" />  
+<img src="https://s1.ax1x.com/2022/03/23/q1R94s.png"  width = "200" />  
 </div>
 
 ## License

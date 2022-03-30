@@ -40,8 +40,8 @@ class DeployConfig:
         with codecs.open(path, 'r', 'utf-8') as file:
             self.dic = yaml.load(file, Loader=yaml.FullLoader)
 
-        self._transforms = self._load_transforms(
-            self.dic['Deploy']['transforms'])
+        self._transforms = self._load_transforms(self.dic['Deploy'][
+            'transforms'])
         self._dir = os.path.dirname(path)
 
     @property
@@ -116,7 +116,9 @@ class Predictor:
         cut_height = 160
         num_classes = 7
         postprocessor = tusimple_processor.TusimpleProcessor(
-            num_classes=num_classes, cut_height=cut_height)
+            num_classes=num_classes,
+            cut_height=cut_height,
+            save_dir=args.save_dir)
 
         for i, im_path in enumerate(imgs):
             im = cv2.imread(im_path)

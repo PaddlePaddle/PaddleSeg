@@ -42,17 +42,13 @@ def loss_computation(logits_list, labels, losses, edges=None):
         loss_i = losses['types'][i]
         coef_i = losses['coef'][i]
 
-        if loss_i.__class__.__name__ in ('BCELoss',
-                                         'FocalLoss') and loss_i.edge_label:
-            # If use edges as labels According to loss type.
-            loss_list.append(coef_i * loss_i(logits, edges))
-        elif loss_i.__class__.__name__ == 'MixedLoss':
+        if loss_i.__class__.__name__ == 'MixedLoss':
             mixed_loss_list = loss_i(logits, labels)
             for mixed_loss in mixed_loss_list:
                 loss_list.append(coef_i * mixed_loss)
         elif loss_i.__class__.__name__ in ("KLLoss", ):
-            loss_list.append(
-                coef_i * loss_i(logits_list[0], logits_list[1].detach()))
+            loss_list.append(coef_i *
+                             loss_i(logits_list[0], logits_list[1].detach()))
         else:
             loss_list.append(coef_i * loss_i(logits, labels))
     return loss_list
@@ -73,7 +69,7 @@ def train(model,
           losses=None,
           keep_checkpoint_max=5,
           test_config=None,
-          fp16=False,
+          precision='fp32',
           profiler_options=None,
           to_static_training=False):
     """
@@ -96,7 +92,7 @@ def train(model,
             The 'types' item is a list of object of paddleseg.models.losses while the 'coef' item is a list of the relevant coefficient.
         keep_checkpoint_max (int, optional): Maximum number of checkpoints to save. Default: 5.
         test_config(dict, optional): Evaluation config.
-        fp16 (bool, optional): Whether to use amp.
+        precision (str, optional): Use AMP if precision='fp16'. If precision='fp32', the training is normal.
         profiler_options (str, optional): The option of train profiler.
         to_static_training (bool, optional): Whether to use @to_static for training.
     """
@@ -127,11 +123,10 @@ def train(model,
         batch_sampler=batch_sampler,
         num_workers=num_workers,
         return_list=True,
-        worker_init_fn=worker_init_fn,
-    )
+        worker_init_fn=worker_init_fn, )
 
     # use amp
-    if fp16:
+    if precision == 'fp16':
         logger.info('use amp to train')
         scaler = paddle.amp.GradScaler(init_loss_scaling=1024)
 
@@ -172,7 +167,7 @@ def train(model,
             if hasattr(model, 'data_format') and model.data_format == 'NHWC':
                 images = images.transpose((0, 2, 3, 1))
 
-            if fp16:
+            if precision == 'fp16':
                 with paddle.amp.auto_cast(
                         enable=True,
                         custom_white_list={
@@ -245,9 +240,9 @@ def train(model,
                 eta = calculate_eta(remain_iters, avg_train_batch_cost)
                 logger.info(
                     "[TRAIN] epoch: {}, iter: {}/{}, loss: {:.4f}, lr: {:.6f}, batch_cost: {:.4f}, reader_cost: {:.5f}, ips: {:.4f} samples/sec | ETA {}"
-                    .format((iter - 1) // iters_per_epoch + 1, iter, iters,
-                            avg_loss, lr, avg_train_batch_cost,
-                            avg_train_reader_cost,
+                    .format((iter - 1
+                             ) // iters_per_epoch + 1, iter, iters, avg_loss,
+                            lr, avg_train_batch_cost, avg_train_reader_cost,
                             batch_cost_averager.get_ips_average(), eta))
                 if use_vdl:
                     log_writer.add_scalar('Train/loss', avg_loss, iter)
@@ -270,8 +265,8 @@ def train(model,
                 reader_cost_averager.reset()
                 batch_cost_averager.reset()
 
-            if (iter % save_interval == 0
-                    or iter == iters) and (val_dataset is not None):
+            if (iter % save_interval == 0 or
+                    iter == iters) and (val_dataset is not None):
                 num_workers = 1 if num_workers > 0 else 0
 
                 if test_config is None:

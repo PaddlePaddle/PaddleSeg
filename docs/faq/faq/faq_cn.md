@@ -3,7 +3,7 @@
 
 ## Q1: PaddleSeg 如何从本地加载预训练模型的权重参数？
 
-* **Answer**: 
+* **Answer**:
 
 > PaddleSeg 模型的推荐配置参数统一存放在 PaddleSeg/configs 下各个模型文件夹的 yaml 文件中。比如 ANN 的其中一个配置在 /PaddleSeg/configs/ann/ann_resnet50_os8_cityscapes_1024x512_80k.yml 中给出。如下图所示：
 
@@ -16,7 +16,7 @@
 
 
 ## Q2: 为什么PaddleSeg不采用设置epoch的方式？
-* **Answer**: 
+* **Answer**:
 
 > 设置 `epoch` 的方式会受数据集大小的影响。因此PaddleSeg 按照 `iters` 进行设置。
 
@@ -34,7 +34,7 @@
 
 
 ## Q3: 数据增强配置的加载顺序是怎样的？
-* **Answer**: 
+* **Answer**:
 
 > 由于数据增强的配置要在yaml文件中进行指定，先介绍一下PaddleSeg中配置文件的基本知识。
 
@@ -56,7 +56,7 @@ _base_: '../_base_/cityscapes_1024x1024.yml'
 
 
 ## Q4: 数据增强配置为何会引起 DataLoader reader thread 错误？
-* **Answer**: 
+* **Answer**:
 
 > 如果你使用的是shape各不一致的自定义数据集，这可能是由于不得当的数据增强加载顺序引起的错误。
 
@@ -76,7 +76,7 @@ _base_: '../_base_/cityscapes_1024x1024.yml'
 
 
 ## Q6: 为什么训练过程中不保存best_model？
-* **Answer**: 
+* **Answer**:
 > best_model是在训练过程中验证对比得到的。因此需要在训练前开启选项 `--do_eval`。
 
 
@@ -90,5 +90,3 @@ _base_: '../_base_/cityscapes_1024x1024.yml'
 > 另外，如果是类似这种中断后继续训练的情况，可以在调用visualdl的时候指定日志名，这样就可以直接在指定的日志文件中继续续写了。
 
 > 资料见：https://github.com/PaddlePaddle/VisualDL/blob/develop/docs/faq_CN.md#%E5%A6%82%E4%BD%95%E4%BF%AE%E6%94%B9%E5%B7%B2%E6%9C%89%E7%9A%84%E6%97%A5%E5%BF%97%E6%96%87%E4%BB%B6
-
-

@@ -1,0 +1,51 @@
+batch_size: 2
+iters: 80000
+to_static_training: False
+
+train_dataset:
+  type: Cityscapes
+  dataset_root: test_tipc/data/cityscapes
+  transforms:
+    - type: ResizeStepScaling
+      min_scale_factor: 0.5
+      max_scale_factor: 2.0
+      scale_step_size: 0.25
+    - type: RandomPaddingCrop
+      crop_size: [1024, 512]
+    - type: RandomHorizontalFlip
+    - type: RandomDistort
+    - type: Normalize
+  mode: train
+
+val_dataset:
+  type: Cityscapes
+  dataset_root: test_tipc/data/cityscapes
+  transforms:
+    - type: Normalize
+  mode: val
+
+model:
+  type: FCN
+  backbone:
+    type: HRNet_W18
+    pretrained: https://bj.bcebos.com/paddleseg/dygraph/hrnet_w18_ssld.tar.gz
+    padding_same: False
+  num_classes: 19
+  backbone_indices: [-1]
+  bias: False
+
+optimizer:
+  type: sgd
+  weight_decay: 0.0005
+
+lr_scheduler:
+  type: PolynomialDecay
+  learning_rate: 0.01
+  end_lr: 0
+  power: 0.9
+
+loss:
+  types:
+    - type: CrossEntropyLoss
+      ignore_index: 255
+  coef: [1]

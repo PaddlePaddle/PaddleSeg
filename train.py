@@ -99,12 +99,16 @@ def parse_args():
         default=None,
         type=int)
     parser.add_argument(
-        '--fp16', dest='fp16', help='Whther to use amp', action='store_true')
+        "--precision",
+        default="fp32",
+        type=str,
+        choices=["fp32", "fp16"],
+        help="Use AMP if precision='fp16'. If precision='fp32', the training is normal."
+    )
     parser.add_argument(
         '--data_format',
         dest='data_format',
-        help=
-        'Data format that specifies the layout of input. It can be "NCHW" or "NHWC". Default: "NCHW".',
+        help='Data format that specifies the layout of input. It can be "NCHW" or "NHWC". Default: "NCHW".',
         type=str,
         default='NCHW')
     parser.add_argument(
@@ -114,6 +118,12 @@ def parse_args():
         help='The option of train profiler. If profiler_options is not None, the train ' \
             'profiler is enabled. Refer to the paddleseg/utils/train_profiler.py for details.'
     )
+    parser.add_argument(
+        '--device',
+        dest='device',
+        help='Device place to be set, which can be GPU, XPU, CPU',
+        default='gpu',
+        type=str)
 
     return parser.parse_args()
 
@@ -131,8 +141,13 @@ def main(args):
                      ['-' * 48])
     logger.info(info)
 
-    place = 'gpu' if env_info['Paddle compiled with cuda'] and env_info[
-        'GPUs used'] else 'cpu'
+    if args.device == 'gpu' and env_info[
+            'Paddle compiled with cuda'] and env_info['GPUs used']:
+        place = 'gpu'
+    elif args.device == 'xpu' and paddle.is_compiled_with_xpu():
+        place = 'xpu'
+    else:
+        place = 'cpu'
 
     paddle.set_device(place)
     if not args.cfg:
@@ -189,7 +204,7 @@ def main(args):
         losses=losses,
         keep_checkpoint_max=args.keep_checkpoint_max,
         test_config=cfg.test_config,
-        fp16=args.fp16,
+        precision=args.precision,
         profiler_options=args.profiler_options,
         to_static_training=cfg.to_static_training)
 

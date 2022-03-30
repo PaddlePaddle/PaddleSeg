@@ -69,8 +69,8 @@ paddleseg.core.predict(
 | save_dir        | str               | 结果输出路径                                         | 否         | 'output' |
 | aug_pred        | bool              | 是否使用多尺度和翻转增广进行预测                     | 否         | False    |
 | scales          | list/float        | 设置缩放因子，`aug_pred`为True时生效                   | 否         | 1.0      |
-| flip_horizontal | bool              | 是否使用水平翻转，`aug_eval`为True时生效               | 否         | True     |
-| flip_vertical   | bool              | 是否使用垂直翻转，`aug_eval`为True时生效               | 否         | False    |
+| flip_horizontal | bool              | 是否使用水平翻转，`aug_pred`为True时生效           | 否         | True     |
+| flip_vertical   | bool              | 是否使用垂直翻转，`aug_pred`为True时生效           | 否         | False    |
 | is_slide        | bool              | 是否通过滑动窗口进行评估                             | 否         | False    |
 | stride          | tuple/list        | 设置滑动窗宽的宽度和高度，`is_slide`为True时生效       | 否         | None     |
 | crop_size       | tuple/list        | 设置滑动窗口的裁剪的宽度和高度，`is_slide`为True时生效 | 否         | None     |

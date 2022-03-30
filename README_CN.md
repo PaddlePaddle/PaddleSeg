@@ -19,10 +19,14 @@
 
 ## 最新动态 <img src="./docs/images/seg_news_icon.png" width="40"/>
 
-* [2022-01-04] PaddleSeg团队发表人像分割论文[PP-HumanSeg](./contrib/PP-HumanSeg/paper.md)，并开源连通性学习（SCL）方法和大规模视频会议数据集。
-* [2021-10-11] PaddleSeg 2.3版本发布交互式分割工具([EISeg v0.3](./EISeg)), 开源两种 [Matting](./contrib/Matting) 算法, 以及分割高阶功能[模型蒸馏](./slim/distill)和[模型量化](./slim/quant)方案。
+* [2022-01-20] PaddleSeg 2.4版本发布！详细发版信息请参考[Release Note](https://github.com/PaddlePaddle/PaddleSeg/releases)。
+  * 发布智能标注工具[EISeg v0.4](./EISeg)版，采用静态图预测加速交互过程，并支持遥感和医疗领域智能标注。
+  * 发表人像分割论文[PP-HumanSeg](./contrib/PP-HumanSeg/paper.md)，并开源连通性学习（SCL）方法和大规模视频会议数据集。
+  * 开源发丝级人像抠图Matting算法[PP-HumanMatting](./Matting)，并提供安卓端教程。
+  * 新增9个经典分割模型, 包括Transformer系列模型[SegMenter](configs/segmenter)，总模型数达到40个。
+  * 提供分割模型[性能对比图](docs/model_zoo_overview_cn.md)，全面展示分割模型性能，方便模型选型。
+* [2021-10-11] PaddleSeg 2.3版本发布交互式分割工具EISeg v0.3, 开源两种[Matting](./contrib/Matting)算法, 以及分割高阶功能[模型蒸馏](./slim/distill)和[模型量化](./slim/quant)方案。
 * [2021-09-20] PaddleSeg团队发表交互式分割论文[EdgeFlow](https://arxiv.org/abs/2109.09406)，已在多个数据集实现SOTA性能。
-* 详细发版信息请参考[Release Note](https://github.com/PaddlePaddle/PaddleSeg/releases).
 
 ## 简介
 PaddleSeg是基于飞桨PaddlePaddle开发的端到端图像分割开发套件，涵盖了**高精度**和**轻量级**等不同方向的大量高质量分割模型。通过模块化的设计，提供了**配置化驱动**和**API调用**两种应用方式，帮助开发者更便捷地完成从训练到部署的全流程图像分割应用。
@@ -59,9 +63,9 @@ PaddleSeg是基于飞桨PaddlePaddle开发的端到端图像分割开发套件�
 ## 技术交流 <img src="./docs/images/chat.png" width="30"/>
 
 * 如果你发现任何PaddleSeg存在的问题或者是建议, 欢迎通过[GitHub Issues](https://github.com/PaddlePaddle/PaddleSeg/issues)给我们提issues。
-* 欢迎加入PaddleSeg QQ群
+* 欢迎加入PaddleSeg 微信群
 <div align="center">
-<img src="./docs/images/QQ_chat.png"  width = "200" />  
+<img src="https://s1.ax1x.com/2022/03/23/q1R94s.png"  width = "200" />  
 </div>
 
 ## 产品矩阵 <img src="./docs/images/model.png" width="20"/>
@@ -303,7 +307,7 @@ PaddleSeg是基于飞桨PaddlePaddle开发的端到端图像分割开发套件�
 ## 实践案例 <img src="./docs/images/anli.png" width="20"/>
 
 - [交互式分割](./EISeg)
-- [图像抠图](./contrib/Matting)
+- [图像抠图](./Matting)
 - [人像分割](./contrib/PP-HumanSeg)
 - [Cityscapes打榜模型](./contrib/CityscapesSOTA)
 - [全景分割](./contrib/PanopticDeepLab)

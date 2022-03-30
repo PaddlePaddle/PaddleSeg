@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 import sys
 import os
 import os.path as osp
@@ -25,7 +24,6 @@ import cv2
 __APPNAME__ = "EISeg"
 __VERSION__ = "0.4.1"
 
-
 pjpath = osp.dirname(osp.realpath(__file__))
 sys.path.append(pjpath)
 
@@ -35,8 +33,7 @@ for k, v in os.environ.items():
 
 # log
 settings = QtCore.QSettings(
-    osp.join(pjpath, "config/setting.ini"), QtCore.QSettings.IniFormat
-)
+    osp.join(pjpath, "config/setting.ini"), QtCore.QSettings.IniFormat)
 
 logFolder = settings.value("logFolder")
 logLevel = bool(settings.value("log"))
@@ -59,11 +56,11 @@ else:
 
 t = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 logger = logging.getLogger("EISeg Logger")
-handler = logging.FileHandler(osp.normcase(osp.join(logFolder, f"eiseg-{t}.log")))
+handler = logging.FileHandler(
+    osp.normcase(osp.join(logFolder, f"eiseg-{t}.log")))
 handler.setFormatter(
     logging.Formatter(
         "%(levelname)s - %(asctime)s - %(filename)s - %(funcName)s - %(message)s"
-    )
-)
+    ))
 logger.setLevel(logLevel)
 logger.addHandler(handler)

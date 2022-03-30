@@ -18,6 +18,7 @@ import paddle.nn.functional as F
 
 from paddleseg.cvlibs import manager
 
+
 @manager.LOSSES.add_component
 class PointCrossEntropyLoss(nn.Layer):
     """
@@ -43,7 +44,7 @@ class PointCrossEntropyLoss(nn.Layer):
                  ignore_index=255,
                  top_k_percent_pixels=1.0,
                  data_format='NCHW',
-                 align_corners = False):
+                 align_corners=False):
         super(PointCrossEntropyLoss, self).__init__()
         if weight is not None:
             weight = paddle.to_tensor(weight, dtype='float32')
@@ -67,14 +68,14 @@ class PointCrossEntropyLoss(nn.Layer):
             semantic_weights (Tensor, optional): Weights about loss for each pixels, shape is the same as label. Default: None.
         """
         # for loss
-        logit, points = logits # [N, C, point_num],[N, point_num, 2]
-        label = label.unsqueeze(1) # [N,1,H,W]
+        logit, points = logits  # [N, C, point_num],[N, point_num, 2]
+        label = label.unsqueeze(1)  # [N,1,H,W]
         label = point_sample(
             label.astype('float32'),
             points,
             mode='nearest',
-            align_corners=self.align_corners) # [N, 1, point_num]
-        label = paddle.squeeze(label,axis=1).astype('int64') # [N, xx]
+            align_corners=self.align_corners)  # [N, 1, point_num]
+        label = paddle.squeeze(label, axis=1).astype('int64')  # [N, xx]
 
         channel_axis = 1 if self.data_format == 'NCHW' else -1
         if self.weight is not None and logit.shape[channel_axis] != len(
@@ -123,6 +124,7 @@ class PointCrossEntropyLoss(nn.Layer):
 
         return loss.mean() / (paddle.mean(coef) + self.EPS)
 
+
 def point_sample(input, points, align_corners=False, **kwargs):
     """A wrapper around :func:`grid_sample` to support 3D point_coords tensors
     Unlike :func:`torch.nn.functional.grid_sample` it assumes point_coords to
@@ -150,11 +152,9 @@ def point_sample(input, points, align_corners=False, **kwargs):
     add_dim = False
     if points.dim() == 3:
         add_dim = True
-        points = paddle.unsqueeze(points,axis=2) # [2, 2048, 1, 2]
+        points = paddle.unsqueeze(points, axis=2)  # [2, 2048, 1, 2]
     output = F.grid_sample(
         input, denormalize(points), align_corners=align_corners, **kwargs)
     if add_dim:
-        output = paddle.squeeze(output,axis=3)
+        output = paddle.squeeze(output, axis=3)
     return output
-
-

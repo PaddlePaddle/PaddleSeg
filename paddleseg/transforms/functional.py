@@ -145,11 +145,12 @@ def onehot_to_binary_edge(mask, radius):
 
     edge = np.zeros(mask.shape[1:])
     # pad borders
-    mask = np.pad(
-        mask, ((0, 0), (1, 1), (1, 1)), mode='constant', constant_values=0)
+    mask = np.pad(mask, ((0, 0), (1, 1), (1, 1)),
+                  mode='constant',
+                  constant_values=0)
     for i in range(num_classes):
-        dist = distance_transform_edt(
-            mask[i, :]) + distance_transform_edt(1.0 - mask[i, :])
+        dist = distance_transform_edt(mask[i, :]) + distance_transform_edt(
+            1.0 - mask[i, :])
         dist = dist[1:-1, 1:-1]
         dist[dist > radius] = 0
         edge += dist

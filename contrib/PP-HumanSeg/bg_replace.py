@@ -56,8 +56,7 @@ def parse_args():
     parser.add_argument(
         '--bg_img_path',
         dest='bg_img_path',
-        help=
-        'Background image path for replacing. If not specified, a white background is used',
+        help='Background image path for replacing. If not specified, a white background is used',
         type=str,
         default=None)
     parser.add_argument(
@@ -150,7 +149,8 @@ def background_replace(args):
             save_path = osp.join(args.save_dir, save_name + '.avi')
 
             cap_out = cv2.VideoWriter(
-                save_path, cv2.VideoWriter_fourcc('M', 'J', 'P', 'G'), fps,
+                save_path,
+                cv2.VideoWriter_fourcc('M', 'J', 'P', 'G'), fps,
                 (width, height))
 
             if is_video_bg:
@@ -235,8 +235,8 @@ def get_bg_img(bg_img_path, img_shape):
     if bg_img_path is None:
         bg = 255 * np.ones(img_shape)
     elif not osp.exists(bg_img_path):
-        raise Exception(
-            'The --bg_img_path is not existed: {}'.format(bg_img_path))
+        raise Exception('The --bg_img_path is not existed: {}'.format(
+            bg_img_path))
     else:
         bg = cv2.imread(bg_img_path)
     return bg

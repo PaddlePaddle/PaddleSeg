@@ -398,12 +398,12 @@ With the running of the evaluation script, the final printed evaluation log is a
 
 ```
 ...
-2021-01-13 16:41:29 [INFO]	Start evaluating (total_samples=76, total_iters=76)...
+2021-01-13 16:41:29 [INFO]    Start evaluating (total_samples=76, total_iters=76)...
 76/76 [==============================] - 2s 30ms/step - batch_cost: 0.0268 - reader cost: 1.7656e-
-2021-01-13 16:41:31 [INFO]	[EVAL] #Images=76 mIoU=0.8526 Acc=0.9942 Kappa=0.8283
-2021-01-13 16:41:31 [INFO]	[EVAL] Class IoU:
+2021-01-13 16:41:31 [INFO]    [EVAL] #Images=76 mIoU=0.8526 Acc=0.9942 Kappa=0.8283
+2021-01-13 16:41:31 [INFO]    [EVAL] Class IoU:
 [0.9941 0.7112]
-2021-01-13 16:41:31 [INFO]	[EVAL] Class Acc:
+2021-01-13 16:41:31 [INFO]    [EVAL] Class Acc:
 [0.9959 0.8886]
 ```
 

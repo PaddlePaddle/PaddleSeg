@@ -98,7 +98,7 @@ class NewLoss(nn.Layer):
 
 
 
-* **Step 1**: Put new_loss.py under paddleseg/models/losses. 
+* **Step 1**: Put new_loss.py under paddleseg/models/losses.
 
 * **Step 2**: Add @manager.LOSSES.add_component above your loss class.
 
@@ -226,7 +226,7 @@ model:
 ## A New Dataset
 
 
-> If you intent to add a new dataset, e.g. NewData in new_data.py: 
+> If you intent to add a new dataset, e.g. NewData in new_data.py:
 
 ```python
 from paddleseg..dataset import Dataset
@@ -308,7 +308,7 @@ val_dataset:
   mode: val # Set the verification mode for the verification set.
 
 optimizer: # Optimizer settings.
-  type: sgd 
+  type: sgd
   momentum: 0.9
   weight_decay: 4.0e-5
 

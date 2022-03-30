@@ -74,10 +74,9 @@ class LaneProcessor:
                         if id > gap_start[i] and id < gap_end[i]:
                             gap_width = float(gap_end[i] - gap_start[i])
                             # line interpolation
-                            lane[id] = int((id - gap_start[i]) / gap_width *
-                                           lane[gap_end[i]] +
-                                           (gap_end[i] - id) / gap_width *
-                                           lane[gap_start[i]])
+                            lane[id] = int((id - gap_start[
+                                i]) / gap_width * lane[gap_end[i]] + (gap_end[
+                                    i] - id) / gap_width * lane[gap_start[i]])
                 if not all(x > 0 for x in lane):
                     print("Gaps still exist!")
                 coordinate[start:end + 1] = lane

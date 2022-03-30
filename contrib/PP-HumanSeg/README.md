@@ -51,7 +51,7 @@ NOTE:
 
 #### Model performance
 
-| Model | Input Size | FLOPS | Parameters | Latency | Model Size |
+| Model | Input Size | FLOPs | Parameters | Latency | Model Size |
 |-|-|-|-|-|-|
 | PP-HumanSeg-Server | 512x512 | 114G | 26.8M | 37.96ms | 103Mb |
 | PP-HumanSeg-Mobile | 192x192 | 584M | 1.54M | 13.17ms | 5.9Mb |
@@ -68,7 +68,7 @@ For the portrait segmentation task, PP-HumanSeg has opened a portrait segmentati
 
 #### Model performance
 
-| Model | Input Size | FLOPS | Parameters | Latency | Model Size |
+| Model | Input Size | FLOPs | Parameters | Latency | Model Size |
 |-|-|-|-|-|-|
 | PP-HumanSeg-Lite | 398x224 | 266M | 137K | 23.49ms | 543Kb |
 | PP-HumanSeg-Lite | 288x162 | 138M | 137K | 15.62ms | 543Kb |
@@ -243,6 +243,8 @@ python ../../export.py \
 --save_dir export_model/fcn_hrnetw18_small_v1_humanseg_192x192_mini_supervisely_with_softmax \
 --without_argmax --with_softmax
 ```
+
+[Note] when exporting a model, you must use `--without_argmax --with_softmax` parameter.
 
 Export the PP-HumanSeg-Lite model:
 

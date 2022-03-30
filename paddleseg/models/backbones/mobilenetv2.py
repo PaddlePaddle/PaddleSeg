@@ -46,33 +46,28 @@ class MobileNetV2(nn.Layer):
 
         self.stage2 = nn.Sequential(
             InvertedResidual(self.depth(16), self.depth(24), 2, 6),
-            InvertedResidual(self.depth(24), self.depth(24), 1, 6),
-        )
+            InvertedResidual(self.depth(24), self.depth(24), 1, 6), )
 
         self.stage3 = nn.Sequential(
             InvertedResidual(self.depth(24), self.depth(32), 2, 6),
             InvertedResidual(self.depth(32), self.depth(32), 1, 6),
-            InvertedResidual(self.depth(32), self.depth(32), 1, 6),
-        )
+            InvertedResidual(self.depth(32), self.depth(32), 1, 6), )
 
         self.stage4 = nn.Sequential(
             InvertedResidual(self.depth(32), self.depth(64), 2, 6),
             InvertedResidual(self.depth(64), self.depth(64), 1, 6),
             InvertedResidual(self.depth(64), self.depth(64), 1, 6),
-            InvertedResidual(self.depth(64), self.depth(64), 1, 6),
-        )
+            InvertedResidual(self.depth(64), self.depth(64), 1, 6), )
 
         self.stage5 = nn.Sequential(
             InvertedResidual(self.depth(64), self.depth(96), 1, 6),
             InvertedResidual(self.depth(96), self.depth(96), 1, 6),
-            InvertedResidual(self.depth(96), self.depth(96), 1, 6),
-        )
+            InvertedResidual(self.depth(96), self.depth(96), 1, 6), )
 
         self.stage6 = nn.Sequential(
             InvertedResidual(self.depth(96), self.depth(160), 2, 6),
             InvertedResidual(self.depth(160), self.depth(160), 1, 6),
-            InvertedResidual(self.depth(160), self.depth(160), 1, 6),
-        )
+            InvertedResidual(self.depth(160), self.depth(160), 1, 6), )
 
         self.stage7 = InvertedResidual(self.depth(160), self.depth(320), 1, 6)
 
@@ -113,7 +108,8 @@ def conv_bn(inp, oup, kernel, stride):
             stride=stride,
             padding=(kernel - 1) // 2,
             bias_attr=False),
-        nn.BatchNorm2D(num_features=oup, epsilon=1e-05, momentum=0.1),
+        nn.BatchNorm2D(
+            num_features=oup, epsilon=1e-05, momentum=0.1),
         nn.ReLU())
 
 
@@ -158,8 +154,8 @@ class InvertedResidual(nn.Layer):
                 dilation=1,
                 groups=1,
                 bias_attr=False),
-            nn.BatchNorm2D(num_features=oup, epsilon=1e-05, momentum=0.1),
-        )
+            nn.BatchNorm2D(
+                num_features=oup, epsilon=1e-05, momentum=0.1), )
 
     def forward(self, x):
         if self.use_res_connect:

@@ -7,5 +7,4 @@ from .polygon import PolygonAnnotation
 from .scene import AnnotationScene
 from .view import AnnotationView
 from .table import TableWidget
-from .create import (
-    create_text, create_button, create_slider, creat_dock)
+from .create import (create_text, create_button, create_slider, creat_dock)

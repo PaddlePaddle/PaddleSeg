@@ -16,7 +16,7 @@ Then prepare a test image for the test effect, we provide a [image](https://padd
 
 Enter the following command in the terminal to make predictions:
 ```shell
-python deploy/python/infer.py --config /path/to/deploy.yaml --image_path
+python deploy/python/infer.py --config /path/to/deploy.yaml --image_path # if you set input_shape in export, you need to pass in images with the same shape as input_shape or pass in shape-changing transforms in deploy.yaml.
 ````
 
 The parameter descriptions are as follows:

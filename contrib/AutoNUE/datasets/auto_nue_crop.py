@@ -94,9 +94,10 @@ class AutoNueCrop(paddle.io.Dataset):
         img_files = sorted(
             glob.glob(os.path.join(img_dir, mode, '*', '*_leftImg8bit.*')))
 
-        self.file_list = [[
-            img_path, label_path
-        ] for img_path, label_path in zip(img_files, label_files)]
+        self.file_list = [
+            [img_path, label_path]
+            for img_path, label_path in zip(img_files, label_files)
+        ]
         # for ii in range(len(self.file_list)):
         #     print(self.file_list[ii])
         # print(len(self.file_list))
@@ -113,9 +114,10 @@ class AutoNueCrop(paddle.io.Dataset):
                 img_files = sorted(
                     glob.glob(
                         os.path.join(img_dir, 'val', '*', '*_leftImg8bit.*')))
-                val_file_list = [[
-                    img_path, label_path
-                ] for img_path, label_path in zip(img_files, label_files)]
+                val_file_list = [
+                    [img_path, label_path]
+                    for img_path, label_path in zip(img_files, label_files)
+                ]
                 self.file_list.extend(val_file_list)
                 for ii in range(len(self.file_list)):
                     print(self.file_list[ii])

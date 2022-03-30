@@ -39,6 +39,7 @@ class ESPNetV2(nn.Layer):
         drop_prob (floa, optional): The probability of dropout. Default: 0.1.
         pretrained (str, optional): The path or url of pretrained model. Default: None.
     """
+
     def __init__(self,
                  num_classes,
                  in_channels=3,
@@ -48,39 +49,41 @@ class ESPNetV2(nn.Layer):
         super().__init__()
         self.backbone = EESPNetBackbone(in_channels, drop_prob, scale)
         self.in_channels = self.backbone.out_channels
-        self.proj_l4_c = layers.ConvBNPReLU(self.in_channels[3],
-                                            self.in_channels[2],
-                                            1,
-                                            stride=1,
-                                            bias_attr=False)
+        self.proj_l4_c = layers.ConvBNPReLU(
+            self.in_channels[3],
+            self.in_channels[2],
+            1,
+            stride=1,
+            bias_attr=False)
         psp_size = 2 * self.in_channels[2]
         self.eesp_psp = nn.Sequential(
-            EESP(psp_size,
-                 psp_size // 2,
-                 stride=1,
-                 branches=4,
-                 kernel_size_maximum=7),
-            PSPModule(psp_size // 2, psp_size // 2),
-        )
+            EESP(
+                psp_size,
+                psp_size // 2,
+                stride=1,
+                branches=4,
+                kernel_size_maximum=7),
+            PSPModule(psp_size // 2, psp_size // 2), )
 
         self.project_l3 = nn.Sequential(
             nn.Dropout2D(p=drop_prob),
-            nn.Conv2D(psp_size // 2, num_classes, 1, 1, bias_attr=False),
-        )
+            nn.Conv2D(
+                psp_size // 2, num_classes, 1, 1, bias_attr=False), )
         self.act_l3 = BNPReLU(num_classes)
-        self.project_l2 = layers.ConvBNPReLU(self.in_channels[1] + num_classes,
-                                             num_classes,
-                                             1,
-                                             stride=1,
-                                             bias_attr=False)
+        self.project_l2 = layers.ConvBNPReLU(
+            self.in_channels[1] + num_classes,
+            num_classes,
+            1,
+            stride=1,
+            bias_attr=False)
         self.project_l1 = nn.Sequential(
             nn.Dropout2D(p=drop_prob),
-            nn.Conv2D(self.in_channels[0] + num_classes,
-                      num_classes,
-                      1,
-                      1,
-                      bias_attr=False),
-        )
+            nn.Conv2D(
+                self.in_channels[0] + num_classes,
+                num_classes,
+                1,
+                1,
+                bias_attr=False), )
 
         self.pretrained = pretrained
 
@@ -92,50 +95,44 @@ class ESPNetV2(nn.Layer):
 
     def hierarchical_upsample(self, x, factor=3):
         for i in range(factor):
-            x = F.interpolate(x,
-                              scale_factor=2,
-                              mode='bilinear',
-                              align_corners=True)
+            x = F.interpolate(
+                x, scale_factor=2, mode='bilinear', align_corners=True)
         return x
 
     def forward(self, x):
         out_l1, out_l2, out_l3, out_l4 = self.backbone(x)
 
         out_l4_proj = self.proj_l4_c(out_l4)
-        l4_to_l3 = F.interpolate(out_l4_proj,
-                                 scale_factor=2,
-                                 mode='bilinear',
-                                 align_corners=True)
+        l4_to_l3 = F.interpolate(
+            out_l4_proj, scale_factor=2, mode='bilinear', align_corners=True)
         merged_l3 = self.eesp_psp(paddle.concat([out_l3, l4_to_l3], axis=1))
         proj_merge_l3 = self.project_l3(merged_l3)
         proj_merge_l3 = self.act_l3(proj_merge_l3)
 
-        l3_to_l2 = F.interpolate(proj_merge_l3,
-                                 scale_factor=2,
-                                 mode='bilinear',
-                                 align_corners=True)
+        l3_to_l2 = F.interpolate(
+            proj_merge_l3, scale_factor=2, mode='bilinear', align_corners=True)
         merged_l2 = self.project_l2(paddle.concat([out_l2, l3_to_l2], axis=1))
 
-        l2_to_l1 = F.interpolate(merged_l2,
-                                 scale_factor=2,
-                                 mode='bilinear',
-                                 align_corners=True)
+        l2_to_l1 = F.interpolate(
+            merged_l2, scale_factor=2, mode='bilinear', align_corners=True)
         merged_l1 = self.project_l1(paddle.concat([out_l1, l2_to_l1], axis=1))
 
         if self.training:
             return [
-                F.interpolate(merged_l1,
-                              scale_factor=2,
-                              mode='bilinear',
-                              align_corners=True),
+                F.interpolate(
+                    merged_l1,
+                    scale_factor=2,
+                    mode='bilinear',
+                    align_corners=True),
                 self.hierarchical_upsample(proj_merge_l3),
             ]
         else:
             return [
-                F.interpolate(merged_l1,
-                              scale_factor=2,
-                              mode='bilinear',
-                              align_corners=True)
+                F.interpolate(
+                    merged_l1,
+                    scale_factor=2,
+                    mode='bilinear',
+                    align_corners=True)
             ]
 
 
@@ -146,8 +143,8 @@ class BNPReLU(nn.Layer):
             data_format = kwargs['data_format']
         else:
             data_format = 'NCHW'
-        self._batch_norm = layers.SyncBatchNorm(out_channels,
-                                                data_format=data_format)
+        self._batch_norm = layers.SyncBatchNorm(
+            out_channels, data_format=data_format)
         self._prelu = layers.Activation("prelu")
 
     def forward(self, x):
@@ -168,6 +165,7 @@ class EESP(nn.Layer):
         kernel_size_maximum (int, optional): A maximum value of receptive field allowed for EESP block. Default: 7.
         down_method (str, optional): Down sample or not, only support 'avg' and 'esp'(equivalent to stride is 2 or not). Default: 'esp'.
     """
+
     def __init__(self,
                  in_channels,
                  out_channels,
@@ -188,12 +186,13 @@ class EESP(nn.Layer):
         self.stride = stride
 
         in_branch_channels = int(out_channels / branches)
-        self.group_conv_in = layers.ConvBNPReLU(in_channels,
-                                                in_branch_channels,
-                                                1,
-                                                stride=1,
-                                                groups=branches,
-                                                bias_attr=False)
+        self.group_conv_in = layers.ConvBNPReLU(
+            in_channels,
+            in_branch_channels,
+            1,
+            stride=1,
+            groups=branches,
+            bias_attr=False)
 
         map_ksize_dilation = {
             3: 1,
@@ -216,20 +215,22 @@ class EESP(nn.Layer):
         for i in range(branches):
             dilation = map_ksize_dilation[self.kernel_sizes[i]]
             self.spp_modules.append(
-                nn.Conv2D(in_branch_channels,
-                          in_branch_channels,
-                          kernel_size=3,
-                          padding='same',
-                          stride=stride,
-                          dilation=dilation,
-                          groups=in_branch_channels,
-                          bias_attr=False))
-        self.group_conv_out = layers.ConvBN(out_channels,
-                                            out_channels,
-                                            kernel_size=1,
-                                            stride=1,
-                                            groups=branches,
-                                            bias_attr=False)
+                nn.Conv2D(
+                    in_branch_channels,
+                    in_branch_channels,
+                    kernel_size=3,
+                    padding='same',
+                    stride=stride,
+                    dilation=dilation,
+                    groups=in_branch_channels,
+                    bias_attr=False))
+        self.group_conv_out = layers.ConvBN(
+            out_channels,
+            out_channels,
+            kernel_size=1,
+            stride=1,
+            groups=branches,
+            bias_attr=False)
         self.bn_act = BNPReLU(out_channels)
         self._act = nn.PReLU()
         self.down_method = True if down_method == 'avg' else False
@@ -251,7 +252,8 @@ class EESP(nn.Layer):
             output.append(output_k)
 
         group_merge = self.group_conv_out(
-            self.bn_act(paddle.concat(output, axis=1)))
+            self.bn_act(paddle.concat(
+                output, axis=1)))
 
         if self.stride == 2 and self.down_method:
             return group_merge
@@ -265,29 +267,29 @@ class PSPModule(nn.Layer):
     def __init__(self, in_channels, out_channels, sizes=4):
         super().__init__()
         self.stages = nn.LayerList([
-            nn.Conv2D(in_channels,
-                      in_channels,
-                      kernel_size=3,
-                      stride=1,
-                      groups=in_channels,
-                      padding='same',
-                      bias_attr=False) for _ in range(sizes)
+            nn.Conv2D(
+                in_channels,
+                in_channels,
+                kernel_size=3,
+                stride=1,
+                groups=in_channels,
+                padding='same',
+                bias_attr=False) for _ in range(sizes)
         ])
-        self.project = layers.ConvBNPReLU(in_channels * (sizes + 1),
-                                          out_channels,
-                                          1,
-                                          stride=1,
-                                          bias_attr=False)
+        self.project = layers.ConvBNPReLU(
+            in_channels * (sizes + 1),
+            out_channels,
+            1,
+            stride=1,
+            bias_attr=False)
 
     def forward(self, feats):
         h, w = paddle.shape(feats)[2:4]
         out = [feats]
         for stage in self.stages:
             feats = F.avg_pool2d(feats, kernel_size=3, stride=2, padding='same')
-            upsampled = F.interpolate(stage(feats),
-                                      size=[h, w],
-                                      mode='bilinear',
-                                      align_corners=True)
+            upsampled = F.interpolate(
+                stage(feats), size=[h, w], mode='bilinear', align_corners=True)
             out.append(upsampled)
         return self.project(paddle.concat(out, axis=1))
 
@@ -302,6 +304,7 @@ class DownSampler(nn.Layer):
         kernel_size_maximum (int, optional): A maximum value of kernel_size for EESP block. Default: 9.
         shortcut (bool, optional): Use shortcut or not. Default: True.
     """
+
     def __init__(self,
                  in_channels,
                  out_channels,
@@ -313,18 +316,20 @@ class DownSampler(nn.Layer):
             raise RuntimeError(
                 "The out_channes for DownSampler should be bigger than in_channels, but got in_channles={}, out_channels={}"
                 .format(in_channels, out_channels))
-        self.eesp = EESP(in_channels,
-                         out_channels - in_channels,
-                         stride=2,
-                         branches=branches,
-                         kernel_size_maximum=kernel_size_maximum,
-                         down_method='avg')
+        self.eesp = EESP(
+            in_channels,
+            out_channels - in_channels,
+            stride=2,
+            branches=branches,
+            kernel_size_maximum=kernel_size_maximum,
+            down_method='avg')
         self.avg = nn.AvgPool2D(kernel_size=3, padding=1, stride=2)
         if shortcut:
             self.shortcut_layer = nn.Sequential(
-                layers.ConvBNPReLU(3, 3, 3, stride=1, bias_attr=False),
-                layers.ConvBN(3, out_channels, 1, stride=1, bias_attr=False),
-            )
+                layers.ConvBNPReLU(
+                    3, 3, 3, stride=1, bias_attr=False),
+                layers.ConvBN(
+                    3, out_channels, 1, stride=1, bias_attr=False), )
         self._act = nn.PReLU()
 
     def forward(self, x, inputs=None):
@@ -335,12 +340,10 @@ class DownSampler(nn.Layer):
         if inputs is not None:
             w1 = paddle.shape(avg_out)[2]
             w2 = paddle.shape(inputs)[2]
-            
+
             while w2 != w1:
-                inputs = F.avg_pool2d(inputs,
-                                      kernel_size=3,
-                                      padding=1,
-                                      stride=2)
+                inputs = F.avg_pool2d(
+                    inputs, kernel_size=3, padding=1, stride=2)
                 w2 = paddle.shape(inputs)[2]
             # import pdb
             # pdb.set_trace()
@@ -361,6 +364,7 @@ class EESPNetBackbone(nn.Layer):
         drop_prob (float, optional): The probability of dropout. Default: 3.
         scale (float, optional): The scale of channels, only support scale <= 1.5 and scale == 2. Default: 1.0.
     """
+
     def __init__(self, in_channels=3, drop_prob=0.1, scale=1.0):
         super().__init__()
         reps = [0, 3, 7, 3]
@@ -382,11 +386,8 @@ class EESPNetBackbone(nn.Layer):
             else:
                 channels_config[i] = channels * pow(2, i)
 
-        self.level1 = layers.ConvBNPReLU(in_channels,
-                                         channels_config[0],
-                                         3,
-                                         stride=2,
-                                         bias_attr=False)
+        self.level1 = layers.ConvBNPReLU(
+            in_channels, channels_config[0], 3, stride=2, bias_attr=False)
 
         self.level2 = DownSampler(
             channels_config[0],
@@ -404,11 +405,12 @@ class EESPNetBackbone(nn.Layer):
         self.level3 = nn.LayerList()
         for i in range(reps[1]):
             self.level3.append(
-                EESP(channels_config[2],
-                     channels_config[2],
-                     stride=1,
-                     branches=branch_list[2],
-                     kernel_size_maximum=kernel_size_limitations[2]))
+                EESP(
+                    channels_config[2],
+                    channels_config[2],
+                    stride=1,
+                    branches=branch_list[2],
+                    kernel_size_maximum=kernel_size_limitations[2]))
 
         self.level4_0 = DownSampler(
             channels_config[2],
@@ -419,11 +421,12 @@ class EESPNetBackbone(nn.Layer):
         self.level4 = nn.LayerList()
         for i in range(reps[2]):
             self.level4.append(
-                EESP(channels_config[3],
-                     channels_config[3],
-                     stride=1,
-                     branches=branch_list[3],
-                     kernel_size_maximum=kernel_size_limitations[3]))
+                EESP(
+                    channels_config[3],
+                    channels_config[3],
+                    stride=1,
+                    branches=branch_list[3],
+                    kernel_size_maximum=kernel_size_limitations[3]))
 
         self.out_channels = channels_config
 
@@ -471,7 +474,8 @@ if __name__ == '__main__':
         paddle.static.load_inference_model(path_prefix, exe))
     print('inference_program:', inference_program)
 
-    tensor_img = np.array(np.random.random((1, 3, 1024, 2048)), dtype=np.float32)
+    tensor_img = np.array(
+        np.random.random((1, 3, 1024, 2048)), dtype=np.float32)
     results = exe.run(inference_program,
-                feed={feed_target_names[0]: tensor_img},
-                fetch_list=fetch_targets)
+                      feed={feed_target_names[0]: tensor_img},
+                      fetch_list=fetch_targets)

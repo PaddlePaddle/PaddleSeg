@@ -29,12 +29,12 @@
 ## [DeepLabV3+](../../../paddleseg/models/deeplab.py)
 ```python
 class paddleseg.models.DeepLabV3P(
-        num_classes, 
-        backbone, 
-        backbone_indices = (0, 3), 
-        aspp_ratios = (1, 6, 12, 18), 
-        aspp_out_channels = 256, 
-        align_corners = False, 
+        num_classes,
+        backbone,
+        backbone_indices = (0, 3),
+        aspp_ratios = (1, 6, 12, 18),
+        aspp_out_channels = 256,
+        align_corners = False,
         pretrained = None
 )
 ```
@@ -57,15 +57,15 @@ class paddleseg.models.DeepLabV3P(
                 否则为 True, 例如 769x769。*默认:``False``*
 * **pretrained** (str, optional): 预训练模型的url或path。 *默认:``None``*
 
-## [DeepLabV3](../../../paddleseg/models/deeplab.py)   
+## [DeepLabV3](../../../paddleseg/models/deeplab.py)  
 ```python
 class paddleseg.models.DeepLabV3(
-        num_classes, 
-        backbone, 
-        backbone_indices = (3, ), 
-        aspp_ratios = (1, 6, 12, 18), 
-        aspp_out_channels = 256, 
-        align_corners = False, 
+        num_classes,
+        backbone,
+        backbone_indices = (3, ),
+        aspp_ratios = (1, 6, 12, 18),
+        aspp_out_channels = 256,
+        align_corners = False,
         pretrained = None
 )
 ```
@@ -139,7 +139,7 @@ class paddleseg.models.OCRNet(
 * **num_classes** (int): 相互独立的目标类别的数量。
 * **backbone** (Paddle.nn.Layer): 骨干网络。
 * **backbone_indices** (tuple): 该元组表示骨干网络输出的索引。该元组既可以含一个值，又可以是含个值。
-            如果含两个值，则将第一个索引作为辅助层的深度监督特征；第二个索引将被视为像素表示的输入。如果只含一个值，该值将被应用于以上两种用途。 
+            如果含两个值，则将第一个索引作为辅助层的深度监督特征；第二个索引将被视为像素表示的输入。如果只含一个值，该值将被应用于以上两种用途。
 * **ocr_mid_channels** (int, optional): OCRHead中middle channel的数目。*默认:``512``*
 * **ocr_key_channels** (int, optional): ObjectAttentionBlock中 key channels 的数目。*默认:``256``*
 * **align_corners** (bool): F.interpolate 的一个参数。当特征大小为偶数时应设置为 False，例如 1024x512；
@@ -401,8 +401,8 @@ class paddleseg.models.UNet(
 ## [U<sup>2</sup>Net](../../../paddleseg/models/u2net.py)
 ```python
 class paddleseg.models.U2Net(
-        num_classes, 
-        in_ch = 3, 
+        num_classes,
+        in_ch = 3,
         pretrained = None
 )
 ```
@@ -420,8 +420,8 @@ class paddleseg.models.U2Net(
 ## [U<sup>2</sup>Net+](../../../paddleseg/models/u2net.py)
 ```python
 class paddleseg.models.U2Netp(
-        num_classes, 
-        in_ch = 3, 
+        num_classes,
+        in_ch = 3,
         pretrained = None
 )
 ```
@@ -512,13 +512,13 @@ class DecoupledSegNet(
 ## [ISANet](../../../paddleseg/models/isanet.py)
 ```python
 class paddleseg.models.ISANet(
-        num_classes, 
-        backbone, 
-        backbone_indices = (2, 3), 
-        isa_channels = 256, 
-        down_factor = (8, 8), 
-        enable_auxiliary_loss = True, 
-        align_corners = False, 
+        num_classes,
+        backbone,
+        backbone_indices = (2, 3),
+        isa_channels = 256,
+        down_factor = (8, 8),
+        enable_auxiliary_loss = True,
+        align_corners = False,
         pretrained = None
 )
 ```
@@ -543,17 +543,17 @@ class paddleseg.models.ISANet(
 ## [EMANet](../../../paddleseg/models/emanet.py)
 ```python
 class paddleseg.models.EMANet(
-        num_classes, 
-        backbone, 
-        backbone_indices = (2, 3), 
-        ema_channels = 512, 
-        gc_channels = 256, 
-        num_bases = 64, 
-        stage_num = 3, 
-        momentum = 0.1, 
-        concat_input = True, 
-        enable_auxiliary_loss = True, 
-        align_corners = False, 
+        num_classes,
+        backbone,
+        backbone_indices = (2, 3),
+        ema_channels = 512,
+        gc_channels = 256,
+        num_bases = 64,
+        stage_num = 3,
+        momentum = 0.1,
+        concat_input = True,
+        enable_auxiliary_loss = True,
+        align_corners = False,
         pretrained = None
 )
 ```
@@ -581,15 +581,15 @@ class paddleseg.models.EMANet(
 ## [DNLNet](../../../paddleseg/models/dnlnet.py)
 ```python
 class paddleseg.models.DNLNet(
-    num_classes, backbone, 
-    backbone_indices = (2, 3), 
-    reduction = 2, 
-    use_scale = True, 
-    mode = 'embedded_gaussian', 
-    temperature = 0.05, 
-    concat_input = True, 
-    enable_auxiliary_loss = True, 
-    align_corners = False, 
+    num_classes, backbone,
+    backbone_indices = (2, 3),
+    reduction = 2,
+    use_scale = True,
+    mode = 'embedded_gaussian',
+    temperature = 0.05,
+    concat_input = True,
+    enable_auxiliary_loss = True,
+    align_corners = False,
     pretrained = None
 )
 ```

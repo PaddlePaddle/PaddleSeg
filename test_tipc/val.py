@@ -30,8 +30,7 @@ def evaluate(
         gt_dir,
         num_classes,
         ignore_index=255,
-        print_detail=True,
-):
+        print_detail=True, ):
     """
     Launch evalution.
 

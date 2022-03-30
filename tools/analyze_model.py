@@ -65,8 +65,8 @@ def _dynamic_flops(model, inputs, custom_ops=None, print_detail=False):
         if m_type in custom_ops:
             flops_fn = custom_ops[m_type]
             if m_type not in types_collection:
-                print(
-                    "Customize Function has been applied to {}".format(m_type))
+                print("Customize Function has been applied to {}".format(
+                    m_type))
         elif m_type in register_hooks:
             flops_fn = register_hooks[m_type]
             if m_type not in types_collection:
@@ -118,8 +118,7 @@ def _dynamic_flops(model, inputs, custom_ops=None, print_detail=False):
         if set(['total_ops', 'total_params', 'input_shape',
                 'output_shape']).issubset(set(list(m._buffers.keys()))):
             table.add_row([
-                m.full_name(),
-                list(m.input_shape.numpy()),
+                m.full_name(), list(m.input_shape.numpy()),
                 list(m.output_shape.numpy()),
                 round(float(m.total_params / 1e6), 3),
                 round(float(m.total_ops / 1e9), 3)
