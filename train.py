@@ -121,7 +121,7 @@ def parse_args():
     parser.add_argument(
         '--device',
         dest='device',
-        help='Device place to be set, which can be GPU, XPU, CPU',
+        help='Device place to be set, which can be GPU, XPU, NPU, CPU',
         default='gpu',
         type=str)
 
