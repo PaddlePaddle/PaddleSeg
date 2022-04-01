@@ -92,6 +92,7 @@ class SemanticConnectivityLoss(nn.Layer):
                 label_num_conn, label_conn = cv2.connectedComponents(
                     labels_np_class.astype(np.uint8))
 
+                origin_pred_num_conn = pred_num_conn
                 if pred_num_conn > 2 * label_num_conn:
                     pred_num_conn = min(pred_num_conn, self.max_pred_num_conn)
                 real_pred_num = pred_num_conn - 1
@@ -100,8 +101,9 @@ class SemanticConnectivityLoss(nn.Layer):
                 # Connected Components Matching and SC Loss Calculation
                 if real_label_num > 0 and real_pred_num > 0:
                     img_connectivity = compute_class_connectiveity(
-                        pred_conn, label_conn, pred_num_conn, label_num_conn,
-                        pred_i, real_label_num, real_pred_num, zero)
+                        pred_conn, label_conn, pred_num_conn,
+                        origin_pred_num_conn, label_num_conn, pred_i,
+                        real_label_num, real_pred_num, zero)
                     sc_loss += 1 - img_connectivity
                 elif real_label_num == 0 and real_pred_num == 0:
                     # if no connected component, SC Loss = 0, so pass
@@ -122,12 +124,12 @@ class SemanticConnectivityLoss(nn.Layer):
 
 
 def compute_class_connectiveity(pred_conn, label_conn, pred_num_conn,
-                                label_num_conn, pred, real_label_num,
-                                real_pred_num, zero):
+                                origin_pred_num_conn, label_num_conn, pred,
+                                real_label_num, real_pred_num, zero):
 
     pred_conn = paddle.to_tensor(pred_conn)
     label_conn = paddle.to_tensor(label_conn)
-    pred_conn = F.one_hot(pred_conn, pred_num_conn)
+    pred_conn = F.one_hot(pred_conn, origin_pred_num_conn)
     label_conn = F.one_hot(label_conn, label_num_conn)
 
     ious = paddle.zeros((real_label_num, real_pred_num))

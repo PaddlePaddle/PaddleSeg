@@ -31,9 +31,9 @@ setup(
     description="交互式标注软件",
     long_description=README,
     long_description_content_type="text/markdown",
-    url="https://github.com/PaddleCV-SIG/EISeg",
-    author="PaddleCV-SIG",
-    author_email="linhandev@qq.com",
+    url="https://github.com/PaddlePaddle/PaddleSeg/tree/release/2.4/EISeg",
+    author="PaddleSeg",
+    author_email="haoyuying@baidu.com,linhandev@qq.com",
     license="Apache Software License",
     classifiers=[
         "License :: OSI Approved :: Apache Software License",
