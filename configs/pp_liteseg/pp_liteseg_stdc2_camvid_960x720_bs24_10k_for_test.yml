@@ -4,7 +4,7 @@ val_dataset:
   val_path: data/camvid/test.txt
 
 model:
-  _inherited_: False  # no inherit the model params from the base yaml
+  _inherited_: False
   type: PPLiteSeg
   backbone:
     type: STDC2

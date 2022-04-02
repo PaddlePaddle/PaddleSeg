@@ -1,7 +1,7 @@
 _base_: './pp_liteseg_stdc1net_camvid_960x720_bs24_10k.yml'
 
 model:
-  _inherited_: False  # no inherit the model params from the base yaml
+  _inherited_: False  # not inherit the model params from the base yaml
   type: PPLiteSeg
   backbone:
     type: STDC2

@@ -21,7 +21,7 @@ test_config:
   scales: 1.0
 
 model:
-  _inherited_: False  # no inherit the model params from the base yaml
+  _inherited_: False
   type: PPLiteSeg
   backbone:
     type: STDC2
