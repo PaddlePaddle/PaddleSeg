@@ -55,7 +55,7 @@ def visual_in_traning(log_writer, vis_dict, step):
 
 
 def get_best(best_file, resume_model=None):
-    '''Get best sad, mse, grad, conn adn iter from file'''
+    '''Get best sad, mse, grad, conn and iter from file'''
     if os.path.exists(best_file) and (resume_model is not None):
         with open(best_file, 'rb') as f:
             best_sad, best_sad_mse, best_sad_grad, best_sad_conn, best_iter = pickle.load(
