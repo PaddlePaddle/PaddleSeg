@@ -46,11 +46,12 @@ class PPLiteSeg(nn.Layer):
         pretrained (str, optional): The path or url of pretrained model. Default: None.
 
     """
+
     def __init__(self,
                  num_classes,
                  backbone,
                  backbone_indices=[2, 3, 4],
-                 arm_type='ARM_Add_SpAttenAdd3',
+                 arm_type='UAFM_SpAtten',
                  cm_bin_sizes=[1, 2, 4],
                  cm_out_ch=128,
                  arm_out_chs=[64, 96, 128],
@@ -117,7 +118,8 @@ class PPLiteSeg(nn.Layer):
                 logit_list.append(x)
 
             logit_list = [
-                F.interpolate(x, x_hw, mode='bilinear', align_corners=False)
+                F.interpolate(
+                    x, x_hw, mode='bilinear', align_corners=False)
                 for x in logit_list
             ]
         else:
@@ -144,6 +146,7 @@ class PPLiteSegHead(nn.Layer):
         arm_type (str): The type of attention refinement module.
         resize_mode (str): The resize mode for the upsampling operation in decoder.
     """
+
     def __init__(self, backbone_out_chs, arm_out_chs, cm_bin_sizes, cm_out_ch,
                  arm_type, resize_mode):
         super().__init__()
@@ -161,15 +164,12 @@ class PPLiteSegHead(nn.Layer):
             high_ch = cm_out_ch if i == len(
                 backbone_out_chs) - 1 else arm_out_chs[i + 1]
             out_ch = arm_out_chs[i]
-            arm = arm_class(low_chs,
-                            high_ch,
-                            out_ch,
-                            ksize=3,
-                            resize_mode=resize_mode)
+            arm = arm_class(
+                low_chs, high_ch, out_ch, ksize=3, resize_mode=resize_mode)
             self.arm_list.append(arm)
 
     def forward(self, in_feat_list):
-        '''
+        """
         Args:
             in_feat_list (List(Tensor)): Such as [x2, x4, x8, x16, x32].
                 x2, x4 and x8 are optional.
@@ -177,7 +177,7 @@ class PPLiteSegHead(nn.Layer):
             out_feat_list (List(Tensor)): Such as [x2, x4, x8, x16, x32].
                 x2, x4 and x8 are optional.
                 The length of in_feat_list and out_feat_list are the same.
-        '''
+        """
 
         high_feat = self.cm(in_feat_list[-1])
         out_feat_list = []
@@ -203,6 +203,7 @@ class PPContextModule(nn.Layer):
         align_corners (bool): An argument of F.interpolate. It should be set to False
             when the output size of feature is even, e.g. 1024x512, otherwise it is True, e.g. 769x769.
     """
+
     def __init__(self,
                  in_channels,
                  inter_channels,
@@ -216,18 +217,18 @@ class PPContextModule(nn.Layer):
             for size in bin_sizes
         ])
 
-        self.conv_out = layers.ConvBNReLU(in_channels=inter_channels,
-                                          out_channels=out_channels,
-                                          kernel_size=3,
-                                          padding=1)
+        self.conv_out = layers.ConvBNReLU(
+            in_channels=inter_channels,
+            out_channels=out_channels,
+            kernel_size=3,
+            padding=1)
 
         self.align_corners = align_corners
 
     def _make_stage(self, in_channels, out_channels, size):
         prior = nn.AdaptiveAvgPool2D(output_size=size)
-        conv = layers.ConvBNReLU(in_channels=in_channels,
-                                 out_channels=out_channels,
-                                 kernel_size=1)
+        conv = layers.ConvBNReLU(
+            in_channels=in_channels, out_channels=out_channels, kernel_size=1)
         return nn.Sequential(prior, conv)
 
     def forward(self, input):
@@ -236,10 +237,11 @@ class PPContextModule(nn.Layer):
 
         for stage in self.stages:
             x = stage(input)
-            x = F.interpolate(x,
-                              input_shape,
-                              mode='bilinear',
-                              align_corners=self.align_corners)
+            x = F.interpolate(
+                x,
+                input_shape,
+                mode='bilinear',
+                align_corners=self.align_corners)
             if out is None:
                 out = x
             else:
@@ -252,16 +254,15 @@ class PPContextModule(nn.Layer):
 class SegHead(nn.Layer):
     def __init__(self, in_chan, mid_chan, n_classes):
         super().__init__()
-        self.conv = layers.ConvBNReLU(in_chan,
-                                      mid_chan,
-                                      kernel_size=3,
-                                      stride=1,
-                                      padding=1,
-                                      bias_attr=False)
-        self.conv_out = nn.Conv2D(mid_chan,
-                                  n_classes,
-                                  kernel_size=1,
-                                  bias_attr=False)
+        self.conv = layers.ConvBNReLU(
+            in_chan,
+            mid_chan,
+            kernel_size=3,
+            stride=1,
+            padding=1,
+            bias_attr=False)
+        self.conv_out = nn.Conv2D(
+            mid_chan, n_classes, kernel_size=1, bias_attr=False)
 
     def forward(self, x):
         x = self.conv(x)

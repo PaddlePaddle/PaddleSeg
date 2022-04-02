@@ -18,4 +18,4 @@ from .pyramid_pool import ASPPModule, PPModule
 from .attention import AttentionBlock
 from .nonlocal2d import NonLocal2D
 from .wrap_functions import *
-from .tensor_fusion import *
+from .tensor_fusion import UAFM_SpAtten, UAFM_SpAtten_S, UAFM_ChAtten, UAFM_ChAtten_S
