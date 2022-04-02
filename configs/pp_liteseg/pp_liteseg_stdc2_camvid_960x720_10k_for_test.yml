@@ -1,8 +1,7 @@
-_base_: './pp_liteseg_stdc1_cityscapes_1024x512_scale0.5_bs16_160k.yml'
+_base_: './pp_liteseg_stdc1_camvid_960x720_10k.yml'
 
-test_config:
-  aug_eval: True
-  scales: 0.75
+val_dataset:
+  val_path: data/camvid/test.txt
 
 model:
   _inherited_: False

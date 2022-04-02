@@ -1,4 +1,4 @@
-_base_: './pp_liteseg_stdc1_cityscapes_1024x512_scale0.5_bs16_160k.yml'
+_base_: './pp_liteseg_stdc1_cityscapes_1024x512_scale0.5_160k.yml'
 
 train_dataset:
   transforms:
@@ -19,10 +19,3 @@ train_dataset:
 test_config:
   aug_eval: True
   scales: 1.0
-
-model:
-  _inherited_: False
-  type: PPLiteSeg
-  backbone:
-    type: STDC2
-    pretrained: https://bj.bcebos.com/paddleseg/dygraph/PP_STDCNet2.tar.gz
