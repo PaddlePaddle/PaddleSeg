@@ -14,39 +14,46 @@
 
 import math
 import numpy as np
+from PIL import Image
+
+
+def checkOpenGrid(img, thumbnail_min):
+        H, W = img.shape[:2]
+        if max(H, W) <= thumbnail_min:
+            return False
+        else:
+            return True
 
 
 class Grids:
-    def __init__(self, gridSize=(512, 512), overlap=(24, 24)):
+    def __init__(self, img, gridSize=(512, 512), overlap=(24, 24)):
         # TODO: 这个size如果支持长和宽不同有用吗
         # 可能可以铺满用户屏幕？
+        self.clear()
         # self.sizePair = namedtuple("sizePair", "h w")
+        self.detimg = img
         self.gridSize = np.array(gridSize)
         self.overlap = np.array(overlap)
         # print("_------------", self.gridSize, self.overlap)
-        self.clear()
 
     def clear(self):
         # 图像HWC格式
-        self.rawimg = None  # 保存原始的遥感图像或者医疗图像（多通道）
         self.detimg = None  # 宫格初始图像
-        self.gridInit = False  # 是否初始化了宫格
+        self.grid_init = False  # 是否初始化了宫格
         # self.imagesGrid = []  # 图像宫格
-        self.masksGrid = []  # 标签宫格
-        self.gridCount = None  # (row count, col count)
-        self.currIdx = None  # (current row, current col)
+        self.mask_grids = []  # 标签宫格
+        self.grid_count = None  # (row count, col count)
+        self.curr_idx = None  # (current row, current col)
 
-    def createGrids(self, img):
-        if self.detimg is None:
-            self.detimg = img.copy()
+    def createGrids(self):
         # 计算宫格横纵向格数
-        imgSize = np.array(img.shape[:2])
-        gridCount = np.ceil((imgSize + self.overlap) / self.gridSize)
-        self.gridCount = gridCount = gridCount.astype("uint16")
+        imgSize = np.array(self.detimg.shape[:2])
+        grid_count = np.ceil((imgSize + self.overlap) / self.gridSize)
+        self.grid_count = grid_count = grid_count.astype("uint16")
         # ul = self.overlap - self.gridSize
-        # for row in range(gridCount[0]):
+        # for row in range(grid_count[0]):
         #     ul[0] = ul[0] + self.gridSize[0] - self.overlap[0]
-        #     for col in range(gridCount[1]):
+        #     for col in range(grid_count[1]):
         #         ul[1] = ul[1] + self.gridSize[1] - self.overlap[1]
         #         lr = ul + self.gridSize
         #         # print("ul, lr", ul, lr)
@@ -55,14 +62,14 @@ class Grids:
         #         tmp = np.zeros((self.gridSize[0], self.gridSize[1], self.detimg.shape[-1]))
         #         tmp[:det_tmp.shape[0], :det_tmp.shape[1], :] = det_tmp
         #         self.imagesGrid.append(tmp)
-        # self.masksGrid = [[np.zeros(self.gridSize)] * gridCount[1]] * gridCount[0]  # 不能用浅拷贝
-        self.masksGrid = [
-            [np.zeros(self.gridSize) for _ in range(gridCount[1])]
-            for _ in range(gridCount[0])
+        # self.mask_grids = [[np.zeros(self.gridSize)] * grid_count[1]] * grid_count[0]  # 不能用浅拷贝
+        self.mask_grids = [
+            [np.zeros(self.gridSize) for _ in range(grid_count[1])]
+            for _ in range(grid_count[0])
         ]
-        # print(len(self.masksGrid), len(self.masksGrid[0]))
-        self.gridInit = True
-        return list(gridCount)
+        # print(len(self.mask_grids), len(self.mask_grids[0]))
+        self.grid_init = True
+        return list(grid_count)
 
     def getGrid(self, row, col):
         gridIdx = np.array([row, col])
@@ -70,15 +77,15 @@ class Grids:
         lr = ul + self.gridSize
         # print("ul, lr", ul, lr)
         img = self.detimg[ul[0]:lr[0], ul[1]:lr[1]]
-        mask = self.masksGrid[row][col]
-        self.currIdx = (row, col)
+        mask = self.mask_grids[row][col]
+        self.curr_idx = (row, col)
         return img, mask
 
-    def splicingList(self):
+    def splicingList(self, save_path):
         """
         将slide的out进行拼接，raw_size保证恢复到原状
         """
-        imgs = self.masksGrid
+        imgs = self.mask_grids
         # print(len(imgs), len(imgs[0]))
         raw_size = self.detimg.shape[:2]
         # h, w = None, None
@@ -116,7 +123,9 @@ class Grids:
                 # k += 1
                 # print('r, c, k:', i_r, i_c, k)
         result = np.where(result_2 != 0, result_2, result_1)
-        return result[:raw_size[0], :raw_size[1]]
+        result = result[:raw_size[0], :raw_size[1]]
+        Image.fromarray(result).save(save_path, "PNG")
+        return result
 
 
 # g = Grids()
