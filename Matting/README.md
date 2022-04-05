@@ -47,6 +47,7 @@ git clone https://github.com/PaddlePaddle/PaddleSeg
 cd PaddleSeg
 pip install -e .
 pip install scikit-image
+pip install numba
 cd contrib/Matting
 ```
 
