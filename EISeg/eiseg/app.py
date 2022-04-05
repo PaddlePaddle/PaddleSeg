@@ -1397,9 +1397,8 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
                 self.raster.saveMask(mask_output, tifPath)
                 if self.shpSave.isChecked():
                     shpPath = pathHead + ".shp"
-                    geocode_list = self.mask2poly(mask_output, False)
-                    print(
-                        rs.save_shp(shpPath, geocode_list, self.raster.geoinfo))
+                    # geocode_list = self.mask2poly(mask_output, False)
+                    print(rs.save_shp(shpPath, tifPath))
             else:
                 ext = osp.splitext(savePath)[1]
                 cv2.imencode(ext, mask_output)[1].tofile(savePath)
