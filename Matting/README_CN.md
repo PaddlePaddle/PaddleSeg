@@ -10,10 +10,13 @@ Matting（精细化分割/影像去背/抠图）是指借由计算前景的颜�
 
 ## 更新动态
 2022.04
-【1】新增PPMatting模型，
-【2】PPHumanMatting高分辨人像抠图模型
-【3】新增Grad, Conn评估指标
+【1】新增PPMatting模型。
+【2】新增PPHumanMatting高分辨人像抠图模型。
+【3】新增Grad、Conn评估指标。
 【4】新增前景评估功能，利用[ML](https://arxiv.org/pdf/2006.14970.pdf)算法在预测和背景替换时进行前景评估。
+【5】新增GradientLoss和LaplacianLoss。
+【6】新增RandomSharpen、RandomSharpen、RandomReJpeg、RSSN数据增强策略。
+
 2021.11 Matting项目开源, 实现图像抠图功能。
 【1】支持Matting模型：DIM， MODNet。
 【2】支持模型导出及Python部署。
@@ -64,20 +67,20 @@ cd contrib/Matting
 模型推荐：
 - 追求精度：PP-Matting, 低分辨率使用PP-Matting-512, 高分辨率使用PP-Matting-1024。
 - 追求速度：ModNet-MobileNetV2。
-- 高分辨率（>2048)简单背景人像抠图：PP-HumanMatting。
+- 高分辨率(>2048)简单背景人像抠图：PP-HumanMatting。
 - 提供trimap：DIM-VGG16。
 
-| 模型 | 模型说明 | Params(M) | FLOPs(G) | FPS | Checkpoint | Inference Model |
-| - | - | - | -| - | - | - |
-| PP-Matting-512     | - | - | - | - | - | [model inference]() |
-| PP-Matting-1024    | - | - | - | - | - | [model inference]() |
-| PP-HumanMatting    | - | - | - | - | [model](https://paddleseg.bj.bcebos.com/matting/models/human_matting-resnet34_vd.pdparams) | [model inference]() |
-| ModNet-MobileNetV2 | - | 6.5 | 15.7 | 67.5 | [model](https://paddleseg.bj.bcebos.com/matting/models/modnet-mobilenetv2.pdparams) | [model inference]() |
-| ModNet-ResNet50_vd | - | 92.2 | 151.6 | 28.6 | [model](https://paddleseg.bj.bcebos.com/matting/models/modnet-resnet50_vd.pdparams) | [model inference]() |
-| ModNet-HRNet_W18   | - | 10.2 | 28.5 | 10.9 | [model](https://paddleseg.bj.bcebos.com/matting/models/modnet-hrnet_w18.pdparams) | [model inference]() |
-| DIM-VGG16          | - | - | -| - | [model](https://paddleseg.bj.bcebos.com/matting/models/dim-vgg16.pdparams) | [model inference]() |
+| 模型 | Params(M) | FLOPs(G) | FPS | Checkpoint | Inference Model |
+| - | - | -| - | - | - |
+| PP-Matting-512     | 24.5 | 91.28 | 32.1 | - | [model inference](https://paddleseg.bj.bcebos.com/matting/models/deploy/pp-matting-hrnet_w18-human_512.zip) |
+| PP-Matting-1024    | 24.5 | 91.28 | 18.6(1024X1024) | - | [model inference](https://paddleseg.bj.bcebos.com/matting/models/deploy/pp-matting-hrnet_w18-human_1024.zip) |
+| PP-HumanMatting    | 63.9 | 135.8 (2048X2048)| 35.7(2048X2048)| [model](https://paddleseg.bj.bcebos.com/matting/models/human_matting-resnet34_vd.pdparams) | [model inference](https://paddleseg.bj.bcebos.com/matting/models/deploy/pp-humanmatting-resnet34_vd.zip) |
+| ModNet-MobileNetV2 | 6.5 | 15.7 | 151.6 | [model](https://paddleseg.bj.bcebos.com/matting/models/modnet-mobilenetv2.pdparams) | [model inference](https://paddleseg.bj.bcebos.com/matting/models/deploy/modnet-mobilenetv2.zip) |
+| ModNet-ResNet50_vd | 92.2 | 151.6 | 142.8 | [model](https://paddleseg.bj.bcebos.com/matting/models/modnet-resnet50_vd.pdparams) | [model inference](https://paddleseg.bj.bcebos.com/matting/models/deploy/modnet-resnet50_vd.zip) |
+| ModNet-HRNet_W18   | 10.2 | 28.5 | 39.1 | [model](https://paddleseg.bj.bcebos.com/matting/models/modnet-hrnet_w18.pdparams) | [model inference](https://paddleseg.bj.bcebos.com/matting/models/deploy/modnet-hrnet_w18.zip) |
+| DIM-VGG16          | 28.4 | 175.5| 32.2 | [model](https://paddleseg.bj.bcebos.com/matting/models/dim-vgg16.pdparams) | [model inference](https://paddleseg.bj.bcebos.com/matting/models/deploy/dim-vgg16.zip) |
 
-注意：FLOPs计算时模型输入大小为(512, 512), GPU为Tesla V100 32G。
+注意：FLOPs和FPS计算默认模型输入大小为(512, 512), GPU为Tesla V100 32G。
 
 ## 数据准备
 
@@ -260,7 +263,5 @@ python deploy/python/infer.py --help
 ## 贡献者
 
 感谢
-[wuyefeilin](https://github.com/wuyefeilin)、
-[钱彬(Qianbin)](https://github.com/qianbin1989228)、
-[yzl19940819](https://github.com/yzl19940819)
+[钱彬(Qianbin)](https://github.com/qianbin1989228)
 等开发者的贡献
