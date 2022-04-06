@@ -13,3 +13,4 @@
 # limitations under the License.
 
 from .rs_grid import RSGrids
+from .grid import Grids, checkOpenGrid

@@ -156,7 +156,7 @@ class BasicBlock(nn.Layer):
                 out_channels=out_channels,
                 kernel_size=1,
                 stride=1,
-                is_vd_mode=False if if_first else True)
+                is_vd_mode=False if if_first or stride == 1 else True)
 
         self.shortcut = shortcut
 

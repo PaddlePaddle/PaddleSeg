@@ -17,6 +17,6 @@ from .resnet_vd import *
 from .mobilenet_v2 import *
 from .hrnet import *
 from .dim import DIM
-from .loss import MRSD
+from .loss import MRSD, GradientLoss
 from .modnet import MODNet
 from .human_matting import HumanMatting

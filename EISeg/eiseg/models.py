@@ -43,7 +43,7 @@ class EISegModel:
             config.switch_ir_optim()
             config.enable_memory_optim()
             # use_tensoret = False  # TODO: 目前Linux和windows下使用TensorRT报错
-            # if use_tensoret:
+            # if use_tensorrt:
             #     config.enable_tensorrt_engine(
             #         workspace_size=1 << 30,
             #         precision_mode=paddle_infer.PrecisionType.Float32,
