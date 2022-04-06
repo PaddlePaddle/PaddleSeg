@@ -18,7 +18,7 @@
 |PP-LiteSeg-B|STDC2|160000|1024x512|2048x1024|79.04%|79.52%|79.85%|[config](./pp_liteseg_stdc2_cityscapes_1024x512_scale1.0_160k.yml)\|[model](https://paddleseg.bj.bcebos.com/dygraph/cityscapes/pp_liteseg_stdc2_cityscapes_1024x512_scale1.0_160k/model.pdparams)\|[log](https://paddleseg.bj.bcebos.com/dygraph/cityscapes/pp_liteseg_stdc2_cityscapes_1024x512_scale1.0_160k/train.log)\|[vdl](https://www.paddlepaddle.org.cn/paddle/visualdl/service/app/scalar?id=12fa0144ca6a1541186afd2c53d31bcb)|
 
 Note that:
-* The batch size is 16 in training.
+* The batch size is 16 and the number of used gpu is 4 in training.
 * The flip denotes flip_horizontal, the ms denotes multi scale, i.e (0.75, 1.0, 1.25) * test_resolution.
 * Simliar to other models in PaddleSeg, the mIoU in above table refer to the evaluation of PP-LiteSeg on Cityscapes validation set.
 

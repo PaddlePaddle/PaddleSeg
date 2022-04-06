@@ -68,7 +68,7 @@ class UAFM(nn.Layer):
         """
         Args:
             x (Tensor): The low level feature.
-            x (Tensor): The high level feature.
+            y (Tensor): The high level feature.
         """
         self.check(x, y)
         x, y = self.prepare(x, y)
@@ -104,7 +104,7 @@ class UAFM_ChAtten(UAFM):
         """
         Args:
             x (Tensor): The low level feature.
-            x (Tensor): The high level feature.
+            y (Tensor): The high level feature.
         """
         atten = helper.avg_max_reduce_hw([x, y], self.training)
         atten = F.sigmoid(self.conv_xy_atten(atten))
@@ -142,7 +142,7 @@ class UAFM_ChAtten_S(UAFM):
         """
         Args:
             x (Tensor): The low level feature.
-            x (Tensor): The high level feature.
+            y (Tensor): The high level feature.
         """
         atten = helper.avg_reduce_hw([x, y])
         atten = F.sigmoid(self.conv_xy_atten(atten))
@@ -176,7 +176,7 @@ class UAFM_SpAtten(UAFM):
         """
         Args:
             x (Tensor): The low level feature.
-            x (Tensor): The high level feature.
+            y (Tensor): The high level feature.
         """
         atten = helper.avg_max_reduce_channel([x, y])
         atten = F.sigmoid(self.conv_xy_atten(atten))
@@ -210,7 +210,7 @@ class UAFM_SpAtten_S(UAFM):
         """
         Args:
             x (Tensor): The low level feature.
-            x (Tensor): The high level feature.
+            y (Tensor): The high level feature.
         """
         atten = helper.avg_reduce_channel([x, y])
         atten = F.sigmoid(self.conv_xy_atten(atten))
