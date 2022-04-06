@@ -13,6 +13,8 @@ Image Matting is the technique of extracting foreground from an image by calcula
 [2] Add PPHumanMatting high-resolution human matting model.
 [3] Add Grad, Conn evaluation metrics.
 [4] Add foreground evaluation funciton. use [ML](https://arxiv.org/pdf/2006.14970.pdf) algorithm to evaluate foreground when prediction or background replacement.
+[5] Add GradientLoss and LaplacianLoss.
+[6] Add RandomSharpen, RandomSharpen, RandomReJpeg, RSSN data augmentation strategies.
 
 2021.11 Matting Project is released.
 [1] Support Matting models: DIM, MODNet.

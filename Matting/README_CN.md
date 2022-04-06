@@ -12,8 +12,10 @@ Matting（精细化分割/影像去背/抠图）是指借由计算前景的颜�
 2022.04
 【1】新增PPMatting模型。
 【2】新增PPHumanMatting高分辨人像抠图模型。
-【3】新增Grad, Conn评估指标。
+【3】新增Grad、Conn评估指标。
 【4】新增前景评估功能，利用[ML](https://arxiv.org/pdf/2006.14970.pdf)算法在预测和背景替换时进行前景评估。
+【5】新增GradientLoss和LaplacianLoss。
+【6】新增RandomSharpen、RandomSharpen、RandomReJpeg、RSSN数据增强策略。
 
 2021.11 Matting项目开源, 实现图像抠图功能。
 【1】支持Matting模型：DIM， MODNet。
