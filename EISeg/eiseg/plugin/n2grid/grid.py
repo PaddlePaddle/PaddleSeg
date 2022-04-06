@@ -18,11 +18,11 @@ from PIL import Image
 
 
 def checkOpenGrid(img, thumbnail_min):
-        H, W = img.shape[:2]
-        if max(H, W) <= thumbnail_min:
-            return False
-        else:
-            return True
+    H, W = img.shape[:2]
+    if max(H, W) <= thumbnail_min:
+        return False
+    else:
+        return True
 
 
 class Grids:
@@ -30,11 +30,9 @@ class Grids:
         # TODO: 这个size如果支持长和宽不同有用吗
         # 可能可以铺满用户屏幕？
         self.clear()
-        # self.sizePair = namedtuple("sizePair", "h w")
         self.detimg = img
         self.gridSize = np.array(gridSize)
         self.overlap = np.array(overlap)
-        # print("_------------", self.gridSize, self.overlap)
 
     def clear(self):
         # 图像HWC格式
