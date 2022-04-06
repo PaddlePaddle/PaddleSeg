@@ -82,7 +82,9 @@ class Raster:
         geoinfo.crs_wkt = geoinfo.crs.wkt
         return geoinfo
 
-    def checkOpenGrid(self) -> bool:
+    def checkOpenGrid(self, thumbnail_min: Union[int, None]) -> bool:
+        if isinstance(thumbnail_min, int):
+            self.thumbnail_min = thumbnail_min
         if max(self.geoinfo.xsize, self.geoinfo.ysize) <= self.thumbnail_min:
             self.open_grid = False
         else:
@@ -164,15 +166,16 @@ class Raster:
             "count": count,
             "dtype": geoinfo.dtype,
             "crs": geoinfo.crs,
-            "transform": geoinfo.geotf[:6]
+            "transform": geoinfo.geotf[:6],
+            "nodata": 0
         })
+        img = np.nan_to_num(img).astype("int16")
         with rasterio.open(save_path, "w", **new_meta) as tf:
             if count == 1:
-                tf.write(img.astype(geoinfo.dtype), indexes=1)
+                tf.write(img, indexes=1)
             else:
                 for i in range(count):
-                    tf.write(
-                        img[:, :, i].astype(geoinfo.dtype), indexes=(i + 1))
+                    tf.write(img[:, :, i], indexes=(i + 1))
 
     def saveMaskbyGrids(self,
                         img_list: List[List[np.array]],
