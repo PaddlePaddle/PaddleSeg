@@ -8,6 +8,12 @@ Image Matting is the technique of extracting foreground from an image by calcula
 </p>
 
 ## Update Notes
+2022.04
+[1] Add PPMatting model.
+[2] Add PPHumanMatting high-resolution human matting model.
+[3] Add Grad, Conn evaluation metrics.
+[4] Add foreground evaluation funciton. use [ML](https://arxiv.org/pdf/2006.14970.pdf) algorithm to evaluate foreground when prediction or background replacement.
+
 2021.11 Matting Project is released.
 [1] Support Matting models: DIM, MODNet.
 [2] Support model export and python deployment.
@@ -52,19 +58,25 @@ cd contrib/Matting
 ```
 
 ## Models
-[PP-HumanMatting](https://paddleseg.bj.bcebos.com/matting/models/human_matting-resnet34_vd.pdparams)
+A variety of human matting models are provided for you to select according the actual situation.
 
-[DIM-VGG16](https://paddleseg.bj.bcebos.com/matting/models/dim-vgg16.pdparams)
+Model recommend:
+- for accuracy: PP-Matting, using PP-Matting-512 in low resolution situation, using PP-Matting-1024 in high resolution situation.
+- for speed: ModNet-MobileNetV2.
+- high resolution (>2048) human matting with simple background: PP-HumanMatting.
+- providing trimap：DIM-VGG16.
 
-MODNet performance on [PPM-100](https://github.com/ZHKKKe/PPM).
+| Model | Params(M) | FLOPs(G) | FPS | Checkpoint | Inference Model |
+| - | - | -| - | - | - |
+| PP-Matting-512     | 24.5 | 91.28 | 32.1 | - | [model inference](https://paddleseg.bj.bcebos.com/matting/models/deploy/pp-matting-hrnet_w18-human_512.zip) |
+| PP-Matting-1024    | 24.5 | 91.28 | 18.6(1024X1024) | - | [model inference](https://paddleseg.bj.bcebos.com/matting/models/deploy/pp-matting-hrnet_w18-human_1024.zip) |
+| PP-HumanMatting    | 63.9 | 135.8 (2048X2048)| 35.7(2048X2048)| [model](https://paddleseg.bj.bcebos.com/matting/models/human_matting-resnet34_vd.pdparams) | [model inference](https://paddleseg.bj.bcebos.com/matting/models/deploy/pp-humanmatting-resnet34_vd.zip) |
+| ModNet-MobileNetV2 | 6.5 | 15.7 | 151.6 | [model](https://paddleseg.bj.bcebos.com/matting/models/modnet-mobilenetv2.pdparams) | [model inference](https://paddleseg.bj.bcebos.com/matting/models/deploy/modnet-mobilenetv2.zip) |
+| ModNet-ResNet50_vd | 92.2 | 151.6 | 142.8 | [model](https://paddleseg.bj.bcebos.com/matting/models/modnet-resnet50_vd.pdparams) | [model inference](https://paddleseg.bj.bcebos.com/matting/models/deploy/modnet-resnet50_vd.zip) |
+| ModNet-HRNet_W18   | 10.2 | 28.5 | 39.1 | [model](https://paddleseg.bj.bcebos.com/matting/models/modnet-hrnet_w18.pdparams) | [model inference](https://paddleseg.bj.bcebos.com/matting/models/deploy/modnet-hrnet_w18.zip) |
+| DIM-VGG16          | 28.4 | 175.5| 32.2 | [model](https://paddleseg.bj.bcebos.com/matting/models/dim-vgg16.pdparams) | [model inference](https://paddleseg.bj.bcebos.com/matting/models/deploy/dim-vgg16.zip) |
 
-| Backbone | SAD | MSE | Params(M) | FLOPs(G) | FPS | Link |
-|-|-|-|-|-|-|-|
-|MobileNetV2|112.73|0.0098|6.5|15.7|67.5|[model](https://paddleseg.bj.bcebos.com/matting/models/modnet-mobilenetv2.pdparams)|
-|ResNet50_vd|104.14|0.0090|92.2|151.6|28.6|[model](https://paddleseg.bj.bcebos.com/matting/models/modnet-resnet50_vd.pdparams)|
-|HRNet_W18|77.96|0.0054|10.2|28.5|10.9|[model](https://paddleseg.bj.bcebos.com/matting/models/modnet-hrnet_w18.pdparams)|
-
-Note: The model input size is (512, 512) and the GPU is Tesla V100 32G.
+Note: The model default input size is (512, 512) while calcuting FLOPs and FPS and the GPU is Tesla V100 32G.
 
 ## Dataset preparation
 
@@ -245,7 +257,5 @@ python deploy/python/infer.py --help
 ## Contributors
 
 Thanks
-[wuyefeilin](https://github.com/wuyefeilin),
-[Qian bin](https://github.com/qianbin1989228),
-[yzl19940819](https://github.com/yzl19940819)
+[Qian bin](https://github.com/qianbin1989228)
 for their contributons.
