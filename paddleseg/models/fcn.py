@@ -41,6 +41,7 @@ class FCN(nn.Layer):
             is even, e.g. 1024x512, otherwise it is True, e.g. 769x769.  Default: False.
         pretrained (str, optional): The path or url of pretrained model. Default: None
     """
+
     def __init__(self,
                  num_classes,
                  backbone,
@@ -59,11 +60,12 @@ class FCN(nn.Layer):
             backbone.feat_channels[i] for i in backbone_indices
         ]
 
-        self.head = FCNHead(num_classes,
-                            backbone_indices,
-                            backbone_channels,
-                            channels,
-                            bias=bias)
+        self.head = FCNHead(
+            num_classes,
+            backbone_indices,
+            backbone_channels,
+            channels,
+            bias=bias)
 
         self.align_corners = align_corners
         self.pretrained = pretrained
@@ -74,11 +76,11 @@ class FCN(nn.Layer):
         feat_list = self.backbone(x)
         logit_list = self.head(feat_list)
         return [
-            F.interpolate(logit,
-                          paddle.shape(x)[2:],
-                          mode='bilinear',
-                          align_corners=self.align_corners)
-            for logit in logit_list
+            F.interpolate(
+                logit,
+                paddle.shape(x)[2:],
+                mode='bilinear',
+                align_corners=self.align_corners) for logit in logit_list
         ]
 
     def init_weight(self):
@@ -98,6 +100,7 @@ class FCNHead(nn.Layer):
             If None, it will be the number of channels of input features. Default: None.
         pretrained (str, optional): The path of pretrained model. Default: None
     """
+
     def __init__(self,
                  num_classes,
                  backbone_indices=(-1, ),
@@ -111,16 +114,18 @@ class FCNHead(nn.Layer):
         if channels is None:
             channels = backbone_channels[0]
 
-        self.conv_1 = layers.ConvBNReLU(in_channels=backbone_channels[0],
-                                        out_channels=channels,
-                                        kernel_size=1,
-                                        stride=1,
-                                        bias_attr=bias)
-        self.cls = nn.Conv2D(in_channels=channels,
-                             out_channels=self.num_classes,
-                             kernel_size=1,
-                             stride=1,
-                             bias_attr=bias)
+        self.conv_1 = layers.ConvBNReLU(
+            in_channels=backbone_channels[0],
+            out_channels=channels,
+            kernel_size=1,
+            stride=1,
+            bias_attr=bias)
+        self.cls = nn.Conv2D(
+            in_channels=channels,
+            out_channels=self.num_classes,
+            kernel_size=1,
+            stride=1,
+            bias_attr=bias)
         self.init_weight()
 
     def forward(self, feat_list):
