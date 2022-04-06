@@ -40,6 +40,7 @@ class AttentionBlock(nn.Layer):
             channels
         with_out (bool): Whether use out projection.
     """
+
     def __init__(self, key_in_channels, query_in_channels, channels,
                  out_channels, share_key_query, query_downsample,
                  key_downsample, key_query_num_convs, value_out_num_convs,
@@ -53,10 +54,11 @@ class AttentionBlock(nn.Layer):
         self.out_channels = out_channels
         self.channels = channels
         self.share_key_query = share_key_query
-        self.key_project = self.build_project(key_in_channels,
-                                              channels,
-                                              num_convs=key_query_num_convs,
-                                              use_conv_module=key_query_norm)
+        self.key_project = self.build_project(
+            key_in_channels,
+            channels,
+            num_convs=key_query_num_convs,
+            use_conv_module=key_query_norm)
         if share_key_query:
             self.query_project = self.key_project
         else:
@@ -88,17 +90,19 @@ class AttentionBlock(nn.Layer):
     def build_project(self, in_channels, channels, num_convs, use_conv_module):
         if use_conv_module:
             convs = [
-                layers.ConvBNReLU(in_channels=in_channels,
-                                  out_channels=channels,
-                                  kernel_size=1,
-                                  bias_attr=False)
+                layers.ConvBNReLU(
+                    in_channels=in_channels,
+                    out_channels=channels,
+                    kernel_size=1,
+                    bias_attr=False)
             ]
             for _ in range(num_convs - 1):
                 convs.append(
-                    layers.ConvBNReLU(in_channels=channels,
-                                      out_channels=channels,
-                                      kernel_size=1,
-                                      bias_attr=False))
+                    layers.ConvBNReLU(
+                        in_channels=channels,
+                        out_channels=channels,
+                        kernel_size=1,
+                        bias_attr=False))
         else:
             convs = [nn.Conv2D(in_channels, channels, 1)]
             for _ in range(num_convs - 1):
@@ -144,11 +148,13 @@ class AttentionBlock(nn.Layer):
 
 class DualAttentionModule(nn.Layer):
     """
-    The Dual attention.
+    Dual attention module.
 
     Args:
-        in_channels (tuple): The number of input channels.
+        in_channels (int): The number of input channels.
+        out_channels (int): The number of output channels.
     """
+
     def __init__(self, in_channels, out_channels):
         super().__init__()
         inter_channels = in_channels // 4
@@ -176,7 +182,12 @@ class DualAttentionModule(nn.Layer):
 
 
 class PAM(nn.Layer):
-    """Position attention module."""
+    """
+    Position attention module.
+    Args:
+        in_channels (int): The number of input channels.
+    """
+
     def __init__(self, in_channels):
         super().__init__()
         mid_channels = in_channels // 8
@@ -222,7 +233,12 @@ class PAM(nn.Layer):
 
 
 class CAM(nn.Layer):
-    """Channel attention module."""
+    """
+    Channel attention module.
+    Args:
+        in_channels (int): The number of input channels.
+    """
+
     def __init__(self, channels):
         super().__init__()
 
@@ -243,8 +259,8 @@ class CAM(nn.Layer):
         # sim: n, c, c
         sim = paddle.bmm(query, key)
         # The danet author claims that this can avoid gradient divergence
-        sim = paddle.max(sim, axis=-1, keepdim=True).tile([1, 1, self.channels
-                                                           ]) - sim
+        sim = paddle.max(sim, axis=-1, keepdim=True).tile(
+            [1, 1, self.channels]) - sim
         sim = F.softmax(sim, axis=-1)
 
         # feat: from (n, c, h * w) to (n, c, h, w)
