@@ -97,7 +97,6 @@ PaddleSeg is an end-to-end high-efficent development toolkit for image segmentat
             <li>GSCNN</li>
             <li>HarDNet</li>
             <li>OCRNet</li>
-            <li>PP-LiteSeg</li>
             <li>PSPNet</li>
             <li>U-Net</li>
             <li>U<sup>2</sup>-Net</li>
@@ -127,6 +126,7 @@ PaddleSeg is an end-to-end high-efficent development toolkit for image segmentat
             <li>MLA Transformer</li>
             <li>SegFormer</li>
             <li>SegMenter</li>
+            <li>PP-LiteSeg</li>
       </td>
       <td>
         <b>Backbones</b><br>
