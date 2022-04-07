@@ -27,7 +27,10 @@ class PPLiteSeg(nn.Layer):
     """
     The PP_LiteSeg implementation based on PaddlePaddle.
 
-    The original article refers to "xxx".
+    The original article refers to "Juncai Peng, Yi Liu, Shiyu Tang, Yuying Hao, Lutao Chu,
+    Guowei Chen, Zewu Wu, Zeyu Chen, Zhiliang Yu, Yuning Du, Qingqing Dang,Baohua Lai,
+    Qiwen Liu, Xiaoguang Hu, Dianhai Yu, Yanjun Ma. PP-LiteSeg: A Superior Real-Time Semantic
+    Segmentation Model. https://arxiv.org/abs/2204.02681".
 
     Args:
         num_classes (int): The number of target classes.

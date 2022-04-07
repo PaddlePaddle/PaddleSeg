@@ -126,6 +126,7 @@ PaddleSeg is an end-to-end high-efficent development toolkit for image segmentat
             <li>MLA Transformer</li>
             <li>SegFormer</li>
             <li>SegMenter</li>
+            <li>PP-LiteSeg</li>
       </td>
       <td>
         <b>Backbones</b><br>

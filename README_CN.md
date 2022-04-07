@@ -126,6 +126,7 @@ PaddleSeg是基于飞桨PaddlePaddle开发的端到端图像分割开发套件�
             <li>MLA Transformer</li>
             <li>SegFormer</li>
             <li>SegMenter</li>
+            <li>PP-LiteSeg</li>
       </td>
       <td>
         <b>骨干网络</b><br>
