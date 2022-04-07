@@ -16,21 +16,6 @@ import paddle.nn.functional as F
 from paddleseg.cvlibs import manager
 
 
-def dice_loss_helper(logit, label, mask, smooth, eps):
-    assert logit.shape == label.shape, \
-        "The shape of logit and label should be the same"
-    logit = paddle.reshape(logit, [0, -1])
-    label = paddle.reshape(label, [0, -1])
-    mask = paddle.reshape(mask, [0, -1])
-    logit *= mask
-    label *= mask
-    intersection = paddle.sum(logit * label, axis=1)
-    cardinality = paddle.sum(logit + label, axis=1)
-    dice_loss = 1 - (2 * intersection + smooth) / (cardinality + smooth + eps)
-    dice_loss = dice_loss.mean()
-    return dice_loss
-
-
 @manager.LOSSES.add_component
 class DiceLoss(nn.Layer):
     """
@@ -74,3 +59,18 @@ class DiceLoss(nn.Layer):
         dice_loss = dice_loss / num_class
 
         return dice_loss
+
+
+def dice_loss_helper(logit, label, mask, smooth, eps):
+    assert logit.shape == label.shape, \
+        "The shape of logit and label should be the same"
+    logit = paddle.reshape(logit, [0, -1])
+    label = paddle.reshape(label, [0, -1])
+    mask = paddle.reshape(mask, [0, -1])
+    logit *= mask
+    label *= mask
+    intersection = paddle.sum(logit * label, axis=1)
+    cardinality = paddle.sum(logit + label, axis=1)
+    dice_loss = 1 - (2 * intersection + smooth) / (cardinality + smooth + eps)
+    dice_loss = dice_loss.mean()
+    return dice_loss
