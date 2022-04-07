@@ -1111,7 +1111,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
             image = image[:, :, ::-1]  # BGR转RGB
             if checkOpenGrid(image, self.thumbnail_min):
                 self.loadGrid(image, False)
-            image, _ = self.grid.getGrid(0, 0)
+                image, _ = self.grid.getGrid(0, 0)
 
         # 医学影像
         if path.lower().endswith(tuple(self.formats[1])):
