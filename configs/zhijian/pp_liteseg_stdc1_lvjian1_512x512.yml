@@ -1,0 +1,24 @@
+_base_: 'lvjian1_512x512.yml'
+
+batch_size: 4  # total: 4*4
+iters: 80000   # 8w * 16 / 1.2w = 106 epoch
+
+model:
+  type: PPLiteSeg
+  backbone:
+    type: STDC1
+    pretrained: https://bj.bcebos.com/paddleseg/dygraph/PP_STDCNet1.tar.gz
+  arm_out_chs: [32, 64, 128]
+  seg_head_inter_chs: [32, 64, 64]
+
+lr_scheduler:
+  learning_rate: 0.01
+
+loss:
+  types:
+    - type: CrossEntropyLoss
+      weight: [1, 10]
+    #- type: OhemCrossEntropyLoss
+    #  min_kept: 65000   # batch_size * w * h // 16
+    #- type: FocalLoss
+  coef: [1, 1, 1]

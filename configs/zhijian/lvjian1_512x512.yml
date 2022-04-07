@@ -1,0 +1,46 @@
+optimizer:
+  type: sgd
+  momentum: 0.9
+  weight_decay: 5.0e-4
+
+lr_scheduler:
+  type: PolynomialDecay
+  learning_rate: 0.01
+  end_lr: 0
+  power: 0.9
+  warmup_iters: 500
+  warmup_start_lr: 1.0e-5
+
+train_dataset:
+  type: Dataset
+  dataset_root: data/zhijian/lvjian1_data
+  num_classes: 2
+  mode: train
+  train_path: data/zhijian/lvjian1_data/train_512x512.txt
+  transforms:
+    - type: ResizeStepScaling
+      min_scale_factor: 0.8
+      max_scale_factor: 1.2
+    - type: RandomPaddingCrop
+      crop_size: [512, 512]
+    - type: RandomHorizontalFlip
+    - type: RandomVerticalFlip
+    - type: RandomDistort
+      brightness_range: 0.3
+      brightness_prob: 0.5
+      contrast_range: 0.3
+      contrast_prob: 0.5
+      saturation_range: 0.3
+      saturation_prob: 0.5
+      hue_range: 15
+      hue_prob: 0.5
+    - type: Normalize
+
+val_dataset:
+  type: Dataset
+  dataset_root: data/zhijian/lvjian1_data
+  num_classes: 2
+  mode: val
+  val_path: data/zhijian/lvjian1_data/val_512x512.txt
+  transforms:
+    - type: Normalize
