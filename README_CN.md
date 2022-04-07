@@ -18,7 +18,7 @@
 
 
 ## 最新动态 <img src="./docs/images/seg_news_icon.png" width="40"/>
-
+* [2022-04-07] :fire: PaddleSeg团队发布轻量级分割模型<a href="https://github.com/PaddlePaddle/PaddleSeg/tree/develop/configs/pp_liteseg">PP-LiteSeg</a>, 1080Ti上达到273.6FPS. 
 * [2022-01-20] PaddleSeg 2.4版本发布！详细发版信息请参考[Release Note](https://github.com/PaddlePaddle/PaddleSeg/releases)。
   * 发布智能标注工具[EISeg v0.4](./EISeg)版，采用静态图预测加速交互过程，并支持遥感和医疗领域智能标注。
   * 发表人像分割论文[PP-HumanSeg](./contrib/PP-HumanSeg/paper.md)，并开源连通性学习（SCL）方法和大规模视频会议数据集。
