@@ -78,7 +78,7 @@ python setup.py install
 
 ```shell
 # 设置1张可用的GPU卡
-export CUDA_VISIBLE_DEVICES=0 
+export CUDA_VISIBLE_DEVICES=0
 # windows下请执行以下命令
 # set CUDA_VISIBLE_DEVICES=0
 
@@ -173,5 +173,3 @@ python slim/quant/qat_export.py \
 
 * [PaddleSlim Github](https://github.com/PaddlePaddle/PaddleSlim)
 * [PaddleSlim 文档](https://paddleslim.readthedocs.io/zh_CN/latest/)
-
-

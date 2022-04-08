@@ -40,8 +40,7 @@ class SYNTHIADataset(CityDataset):
             random_mirror=False,
             random_crop=False,
             resize=False,
-            gaussian_blur=False,
-    ):
+            gaussian_blur=False, ):
 
         # Args
         self.data_path = root
@@ -108,8 +107,8 @@ class SYNTHIADataset(CityDataset):
         gt_image = Image.fromarray(np.uint8(gt_image))
 
         # Augmentations
-        if (self.split == "train" or self.split == "trainval"
-                or self.split == "all") and self.training:
+        if (self.split == "train" or self.split == "trainval" or
+                self.split == "all") and self.training:
             image, gt_image = self._train_sync_transform(image, gt_image)
         else:
             image, gt_image = self._val_sync_transform(image, gt_image)

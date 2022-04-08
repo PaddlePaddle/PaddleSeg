@@ -40,5 +40,3 @@ The exported ONNX format model is saved as output.onnx file.
 Reference documents:
 * [Paddle2ONNX](https://github.com/PaddlePaddle/Paddle2ONNX)
 * [ONNX](https://onnx.ai/)
-
-

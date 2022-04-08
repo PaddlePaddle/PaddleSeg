@@ -6,7 +6,7 @@ Dice Loss is a loss function widely used in medical image segmentation tasks. Th
 ```python。
 
 class paddleseg.models.losses.DiceLoss(
-            ignore_index = 255, 
+            ignore_index = 255,
             smooth = 0.
 )
 ```

@@ -216,8 +216,7 @@ def main(args):
         losses=s_cfg.loss,
         distill_losses=s_cfg.distill_loss,
         keep_checkpoint_max=args.keep_checkpoint_max,
-        test_config=s_cfg.test_config,
-    )
+        test_config=s_cfg.test_config, )
 
 
 if __name__ == '__main__':

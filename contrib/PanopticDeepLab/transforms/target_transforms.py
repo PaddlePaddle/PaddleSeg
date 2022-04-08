@@ -136,8 +136,8 @@ class PanopticTargetGenerator(object):
                     semantic_weights[panoptic ==
                                      seg["id"]] = self.small_instance_weight
 
-                center_y, center_x = np.mean(mask_index[0]), np.mean(
-                    mask_index[1])
+                center_y, center_x = np.mean(mask_index[0]), np.mean(mask_index[
+                    1])
                 center_pts.append([center_y, center_x])
 
                 # generate center heatmap

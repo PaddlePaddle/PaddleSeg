@@ -31,4 +31,3 @@ python semantic2instance.py -o label_path -d save_path
 - `save_path`: 实例标签保存路径，必填
 
 ![68747470733a2f2f73332e626d702e6f76682f696d67732f323032312f30392f303038633562373638623765343737612e706e67](https://user-images.githubusercontent.com/71769312/141392781-d99ec177-f445-4336-9ab2-0ba7ae75d664.png)
-

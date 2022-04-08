@@ -4,7 +4,7 @@ L1范数损失函数用于计算最小绝对值偏差。该损失旨在将估计
 
 ```python
 class paddleseg.models.losses.L1Loss(
-            reduction = 'mean', 
+            reduction = 'mean',
             ignore_index = 255
 )
 ```

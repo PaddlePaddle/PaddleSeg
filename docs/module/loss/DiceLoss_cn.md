@@ -4,7 +4,7 @@ Dice Loss 是一种广泛的应用于医学影像分割任务中的损失函数�
 ```python。
 
 class paddleseg.models.losses.DiceLoss(
-            ignore_index = 255, 
+            ignore_index = 255,
             smooth = 0.
 )
 ```

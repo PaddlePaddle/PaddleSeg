@@ -38,8 +38,7 @@ def parse_args():
     parser.add_argument(
         '--image_path',
         dest='image_path',
-        help=
-        'The image to predict, which can be a path of image, or a file list containing image paths, or a directory including images',
+        help='The image to predict, which can be a path of image, or a file list containing image paths, or a directory including images',
         type=str,
         default=None)
     parser.add_argument(
@@ -83,16 +82,14 @@ def parse_args():
         '--crop_size',
         dest='crop_size',
         nargs=2,
-        help=
-        'The crop size of sliding window, the first is width and the second is height.',
+        help='The crop size of sliding window, the first is width and the second is height.',
         type=int,
         default=None)
     parser.add_argument(
         '--stride',
         dest='stride',
         nargs=2,
-        help=
-        'The stride of sliding window, the first is width and the second is height.',
+        help='The stride of sliding window, the first is width and the second is height.',
         type=int,
         default=None)
 
@@ -101,8 +98,7 @@ def parse_args():
         '--custom_color',
         dest='custom_color',
         nargs='+',
-        help=
-        'Save images with a custom color map. Default: None, use paddleseg\'s default color map.',
+        help='Save images with a custom color map. Default: None, use paddleseg\'s default color map.',
         type=int,
         default=None)
     return parser.parse_args()

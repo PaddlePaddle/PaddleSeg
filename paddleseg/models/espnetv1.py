@@ -37,6 +37,7 @@ class ESPNetV1(nn.Layer):
         level3_depth (int, optional): Depth of DilatedResidualBlock. Default: 3.
         pretrained (str, optional): The path or url of pretrained model. Default: None.
     """
+
     def __init__(self,
                  num_classes,
                  in_channels=3,
@@ -47,44 +48,45 @@ class ESPNetV1(nn.Layer):
         self.encoder = ESPNetEncoder(num_classes, in_channels, level2_depth,
                                      level3_depth)
 
-        self.level3_up = nn.Conv2DTranspose(num_classes,
-                                            num_classes,
-                                            2,
-                                            stride=2,
-                                            padding=0,
-                                            output_padding=0,
-                                            bias_attr=False)
+        self.level3_up = nn.Conv2DTranspose(
+            num_classes,
+            num_classes,
+            2,
+            stride=2,
+            padding=0,
+            output_padding=0,
+            bias_attr=False)
         self.br3 = layers.SyncBatchNorm(num_classes)
-        self.level2_proj = nn.Conv2D(in_channels + 128,
-                                     num_classes,
-                                     1,
-                                     bias_attr=False)
+        self.level2_proj = nn.Conv2D(
+            in_channels + 128, num_classes, 1, bias_attr=False)
         self.combine_l2_l3 = nn.Sequential(
             BNPReLU(2 * num_classes),
-            DilatedResidualBlock(2 * num_classes, num_classes, residual=False),
-        )
+            DilatedResidualBlock(
+                2 * num_classes, num_classes, residual=False), )
         self.level2_up = nn.Sequential(
-            nn.Conv2DTranspose(num_classes,
-                               num_classes,
-                               2,
-                               stride=2,
-                               padding=0,
-                               output_padding=0,
-                               bias_attr=False),
-            BNPReLU(num_classes),
-        )
-        self.out_proj = layers.ConvBNPReLU(16 + in_channels + num_classes,
-                                           num_classes,
-                                           3,
-                                           padding='same',
-                                           stride=1)
-        self.out_up = nn.Conv2DTranspose(num_classes,
-                                         num_classes,
-                                         2,
-                                         stride=2,
-                                         padding=0,
-                                         output_padding=0,
-                                         bias_attr=False)
+            nn.Conv2DTranspose(
+                num_classes,
+                num_classes,
+                2,
+                stride=2,
+                padding=0,
+                output_padding=0,
+                bias_attr=False),
+            BNPReLU(num_classes), )
+        self.out_proj = layers.ConvBNPReLU(
+            16 + in_channels + num_classes,
+            num_classes,
+            3,
+            padding='same',
+            stride=1)
+        self.out_up = nn.Conv2DTranspose(
+            num_classes,
+            num_classes,
+            2,
+            stride=2,
+            padding=0,
+            output_padding=0,
+            bias_attr=False)
         self.pretrained = pretrained
 
     def init_weight(self):
@@ -122,45 +124,48 @@ class DownSampler(nn.Layer):
         in_channels (int): Number of input channels.
         out_channels (int): Number of output channels.
     """
+
     def __init__(self, in_channels, out_channels):
         super().__init__()
         branch_channels = out_channels // 5
         remain_channels = out_channels - branch_channels * 4
-        self.conv1 = nn.Conv2D(in_channels,
-                               branch_channels,
-                               3,
-                               stride=2,
-                               padding=1,
-                               bias_attr=False)
-        self.d_conv1 = nn.Conv2D(branch_channels,
-                                 remain_channels,
-                                 3,
-                                 padding=1,
-                                 bias_attr=False)
-        self.d_conv2 = nn.Conv2D(branch_channels,
-                                 branch_channels,
-                                 3,
-                                 padding=2,
-                                 dilation=2,
-                                 bias_attr=False)
-        self.d_conv4 = nn.Conv2D(branch_channels,
-                                 branch_channels,
-                                 3,
-                                 padding=4,
-                                 dilation=4,
-                                 bias_attr=False)
-        self.d_conv8 = nn.Conv2D(branch_channels,
-                                 branch_channels,
-                                 3,
-                                 padding=8,
-                                 dilation=8,
-                                 bias_attr=False)
-        self.d_conv16 = nn.Conv2D(branch_channels,
-                                  branch_channels,
-                                  3,
-                                  padding=16,
-                                  dilation=16,
-                                  bias_attr=False)
+        self.conv1 = nn.Conv2D(
+            in_channels,
+            branch_channels,
+            3,
+            stride=2,
+            padding=1,
+            bias_attr=False)
+        self.d_conv1 = nn.Conv2D(
+            branch_channels, remain_channels, 3, padding=1, bias_attr=False)
+        self.d_conv2 = nn.Conv2D(
+            branch_channels,
+            branch_channels,
+            3,
+            padding=2,
+            dilation=2,
+            bias_attr=False)
+        self.d_conv4 = nn.Conv2D(
+            branch_channels,
+            branch_channels,
+            3,
+            padding=4,
+            dilation=4,
+            bias_attr=False)
+        self.d_conv8 = nn.Conv2D(
+            branch_channels,
+            branch_channels,
+            3,
+            padding=8,
+            dilation=8,
+            bias_attr=False)
+        self.d_conv16 = nn.Conv2D(
+            branch_channels,
+            branch_channels,
+            3,
+            padding=16,
+            dilation=16,
+            bias_attr=False)
         self.bn = layers.SyncBatchNorm(out_channels)
         self.act = nn.PReLU(out_channels)
 
@@ -191,40 +196,42 @@ class DilatedResidualBlock(nn.Layer):
         out_channels (int): Number of output channels.
         residual (bool, optional): Add a residual connection through identity operation. Default: True.
     '''
+
     def __init__(self, in_channels, out_channels, residual=True):
         super().__init__()
         branch_channels = out_channels // 5
         remain_channels = out_channels - branch_channels * 4
         self.conv1 = nn.Conv2D(in_channels, branch_channels, 1, bias_attr=False)
-        self.d_conv1 = nn.Conv2D(branch_channels,
-                                 remain_channels,
-                                 3,
-                                 padding=1,
-                                 bias_attr=False)
-        self.d_conv2 = nn.Conv2D(branch_channels,
-                                 branch_channels,
-                                 3,
-                                 padding=2,
-                                 dilation=2,
-                                 bias_attr=False)
-        self.d_conv4 = nn.Conv2D(branch_channels,
-                                 branch_channels,
-                                 3,
-                                 padding=4,
-                                 dilation=4,
-                                 bias_attr=False)
-        self.d_conv8 = nn.Conv2D(branch_channels,
-                                 branch_channels,
-                                 3,
-                                 padding=8,
-                                 dilation=8,
-                                 bias_attr=False)
-        self.d_conv16 = nn.Conv2D(branch_channels,
-                                  branch_channels,
-                                  3,
-                                  padding=16,
-                                  dilation=16,
-                                  bias_attr=False)
+        self.d_conv1 = nn.Conv2D(
+            branch_channels, remain_channels, 3, padding=1, bias_attr=False)
+        self.d_conv2 = nn.Conv2D(
+            branch_channels,
+            branch_channels,
+            3,
+            padding=2,
+            dilation=2,
+            bias_attr=False)
+        self.d_conv4 = nn.Conv2D(
+            branch_channels,
+            branch_channels,
+            3,
+            padding=4,
+            dilation=4,
+            bias_attr=False)
+        self.d_conv8 = nn.Conv2D(
+            branch_channels,
+            branch_channels,
+            3,
+            padding=8,
+            dilation=8,
+            bias_attr=False)
+        self.d_conv16 = nn.Conv2D(
+            branch_channels,
+            branch_channels,
+            3,
+            padding=16,
+            dilation=16,
+            bias_attr=False)
 
         self.bn = BNPReLU(out_channels)
         self.residual = residual
@@ -259,17 +266,15 @@ class ESPNetEncoder(nn.Layer):
         level2_depth (int, optional): Depth of DilatedResidualBlock. Default: 5.
         level3_depth (int, optional): Depth of DilatedResidualBlock. Default: 3.
     '''
+
     def __init__(self,
                  num_classes,
                  in_channels=3,
                  level2_depth=5,
                  level3_depth=3):
         super().__init__()
-        self.level1 = layers.ConvBNPReLU(in_channels,
-                                         16,
-                                         3,
-                                         padding='same',
-                                         stride=2)
+        self.level1 = layers.ConvBNPReLU(
+            in_channels, 16, 3, padding='same', stride=2)
         self.br1 = BNPReLU(in_channels + 16)
         self.proj1 = layers.ConvBNPReLU(in_channels + 16, num_classes, 1)
 

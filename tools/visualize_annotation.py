@@ -20,6 +20,7 @@ visualize the annotated images:
 import argparse
 import os
 import sys
+import shutil
 
 import cv2
 import numpy as np
@@ -38,10 +39,13 @@ def parse_args():
         '--file_path',
         help='The file contains the path of origin and annotated images',
         type=str)
-    parser.add_argument('--save_dir',
-                        help='The directory for saving the visualized images',
-                        type=str,
-                        default='./output/visualize_annotation')
+    parser.add_argument(
+        '--pred_dir', help='the dir of predicted images', type=str)
+    parser.add_argument(
+        '--save_dir',
+        help='The directory for saving the visualized images',
+        type=str,
+        default='./output/visualize_annotation')
     return parser.parse_args()
 
 
@@ -65,39 +69,63 @@ def get_images_path(file_path):
     return images_path
 
 
-def main(args):
-    if not os.path.exists(args.save_dir):
-        os.makedirs(args.save_dir)
+def mkdir(dir, rm_exist=False):
+    if not os.path.exists(dir):
+        os.makedirs(dir)
+    else:
+        if rm_exist:
+            shutil.rmtree(dir)
+            os.makedirs(dir)
 
-    images_path = get_images_path(args.file_path)
+
+def visualize_imgs(args):
+    file_path = args.file_path
+    pred_dir = args.pred_dir
+    save_dir = args.save_dir
+    weight = 0.1
+
+    images_path = get_images_path(file_path)
     bar = progbar.Progbar(target=len(images_path), verbose=1)
+    mkdir(save_dir, True)
 
     for idx, (origin_path, annot_path) in enumerate(images_path):
         origin_img = Image.open(origin_path)
         annot_img = Image.open(annot_path)
         annot_img = np.array(annot_img)
-
-        bar.update(idx + 1)
-        if len(np.unique(annot_img)) == 1:
-            continue
-
-        # weighted image
+        wt_annot_img = None
+        wt_pred_img = None
         color_map = visualize.get_color_map_list(256)
-        weighted_img = utils.visualize.visualize(origin_path,
-                                                 annot_img,
-                                                 color_map,
-                                                 weight=0.6)
-        weighted_img = Image.fromarray(
-            cv2.cvtColor(weighted_img, cv2.COLOR_BGR2RGB))
+
+        # weighted annoted image
+        wt_annot_img = utils.visualize.visualize(
+            origin_path, annot_img, color_map, weight=weight)
+        wt_annot_img = Image.fromarray(
+            cv2.cvtColor(wt_annot_img, cv2.COLOR_BGR2RGB))
+
+        # weighted predicted image
+        if pred_dir is not None:
+            image_name = os.path.split(origin_path)[-1]
+            tmp_name = image_name.replace('jpg', 'png')
+            pred_path = os.path.join(pred_dir, tmp_name)
+            if os.path.exists(pred_path):
+                pred_img = np.array(Image.open(pred_path))
+                wt_pred_img = utils.visualize.visualize(
+                    origin_path, pred_img, color_map, weight=weight)
+                wt_pred_img = Image.fromarray(
+                    cv2.cvtColor(wt_pred_img, cv2.COLOR_BGR2RGB))
 
         # result image
-        result_img = visualize.paste_images([origin_img, weighted_img])
+        imgs = [origin_img, wt_annot_img]
+        if wt_pred_img is not None:
+            imgs.append(wt_pred_img)
+        result_img = visualize.paste_images(imgs)
 
-        # save
         image_name = os.path.split(origin_path)[-1]
-        result_img.save(os.path.join(args.save_dir, image_name))
+        result_img.save(os.path.join(save_dir, image_name))
+
+        bar.update(idx + 1)
 
 
 if __name__ == '__main__':
     args = parse_args()
-    main(args)
+    visualize_imgs(args)

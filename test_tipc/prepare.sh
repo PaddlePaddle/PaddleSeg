@@ -64,14 +64,18 @@ else
         rm -rf ./test_tipc/data/mini_supervisely
         wget -nc -P ./test_tipc/data/ https://paddleseg.bj.bcebos.com/humanseg/data/mini_supervisely.zip
         cd ./test_tipc/data/ && unzip mini_supervisely.zip && cd -
-    elif [ ${model_name} == "ocrnet_hrnetw18" ] || [ ${model_name} == "bisenetv2" ] || [ ${model_name} == "segformer_b0" ] || [ ${model_name} == "stdc_stdc1" ] || [ ${model_name} == "pfpnnet" ] || [ ${model_name} == "enet" ];then
-        rm -rf ./test_tipc/data/cityscapes
-        wget -nc -P ./test_tipc/data/ https://paddleseg.bj.bcebos.com/dataset/cityscapes.tar
-        cd ./test_tipc/data/ && tar -xvf cityscapes.tar && cd -
     elif [ ${model_name} == "ppmatting" ];then
         rm -rf ./test_tipc/data/PPM-100
         wget -nc -P ./test_tipc/data/ https://paddleseg.bj.bcebos.com/matting/datasets/PPM-100.zip
         cd ./test_tipc/data/ && unzip PPM-100.zip && cd -
-
+    else
+        rm -rf ./test_tipc/data/cityscapes
+        wget -nc -P ./test_tipc/data/ https://paddleseg.bj.bcebos.com/dataset/cityscapes.tar
+        cd ./test_tipc/data/ && tar -xf cityscapes.tar && cd -
     fi
+fi
+
+if [ ${model_name} == "enet" ] || [ ${model_name} == "bisenetv2" ] || [ ${model_name} == "ocrnet_hrnetw18" ] || [ ${model_name} == "ocrnet_hrnetw48" ] \
+    || [ ${model_name} == "deeplabv3p_resnet50_cityscapes" ]|| [ ${model_name} == "fastscnn" ]|| [ ${model_name} == "fcn_hrnetw18" ];then
+    cp ./test_tipc/data/cityscapes_val_5.list ./test_tipc/data/cityscapes
 fi

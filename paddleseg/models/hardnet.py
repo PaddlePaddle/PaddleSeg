@@ -255,7 +255,8 @@ class HarDBlock(nn.Layer):
 
             self.links.append(link)
             layers_.append(
-                layers.ConvBNReLU(inch, outch, kernel_size=3, bias_attr=False))
+                layers.ConvBNReLU(
+                    inch, outch, kernel_size=3, bias_attr=False))
             if (i % 2 == 0) or (i == n_layers - 1):
                 self.out_channels += outch
         self.layers = nn.LayerList(layers_)
