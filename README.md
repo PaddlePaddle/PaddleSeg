@@ -321,7 +321,7 @@ The relationship between mIoU and FLOPs of representative architectures and back
 ## Community <img src="./docs/images/chat.png" width="30"/>
 
 * If you have any problem or suggestion on PaddleSeg, please send us issues through [GitHub Issues](https://github.com/PaddlePaddle/PaddleSeg/issues).
-* Welcome to Join PaddleSeg wechat Group
+* Welcome to Join PaddleSeg WeChat Group
 <div align="center">
 <img src="https://user-images.githubusercontent.com/48433081/162115081-e181c301-9aa9-41fa-85d8-285fe0d9eb37.png"  width = "200" />  
 </div>
