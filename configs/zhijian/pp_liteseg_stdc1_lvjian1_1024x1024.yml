@@ -1,7 +1,7 @@
 _base_: 'lvjian1_1024x1024.yml'
 
-batch_size: 4  # total: 4*4
-iters: 40000   # 4w * 16 / 0.76w = 84 epoch
+batch_size: 2  # total: 4*4
+iters: 40000   # 4w * 8 / 0.76w = 42 epoch
 
 model:
   type: PPLiteSeg
