@@ -143,16 +143,14 @@ class Dataset(paddle.io.Dataset):
         data['trans_info'] = []
         image_path, label_path = self.file_list[idx]
         data['img'] = image_path
-        data['gt_fields'] = [
-        ]  # If key in gt_fields, the data[key] have transforms synchronous.
+        data['label'] = label_path
+        # If key in gt_fields, the data[key] have transforms synchronous.
+        data['gt_fields'] = []
         if self.mode == 'val':
             data = self.transforms(data)
-            label = np.asarray(Image.open(label_path))
-            label = label[np.newaxis, :, :]
-            data['label'] = label
+            data['label'] = data['label'][np.newaxis, :, :]
 
         else:
-            data['label'] = label_path
             data['gt_fields'].append('label')
             data = self.transforms(data)
             if self.edge:

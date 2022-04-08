@@ -41,7 +41,7 @@ def preprocess(im_path, transforms):
     data['img'] = im_path
     data = transforms(data)
     data['img'] = data['img'][np.newaxis, ...]
-    data['img'] = im = paddle.to_tensor(data['img'])
+    data['img'] = paddle.to_tensor(data['img'])
     return data
 
 

@@ -49,25 +49,28 @@ class Compose:
         Args:
             data: A dict to deal with. It may include keys: 'img', 'label', 'trans_info' and 'gt_fields'.
                 'trans_info' reserve the image shape informating. And the 'gt_fields' save the key need to transforms
-                tegother with 'img'
+                together with 'img'
 
         Returns: A dict after process。
         """
+        if 'img' not in data.keys():
+            raise ValueError("`data` must include `img` key.")
         if isinstance(data['img'], str):
             data['img'] = cv2.imread(data['img']).astype('float32')
-        if 'label' in data.keys() and isinstance(data['label'], str):
-            data['label'] = np.asarray(Image.open(data['label']))
         if data['img'] is None:
             raise ValueError('Can\'t read The image file {}!'.format(data[
                 'img']))
         if not isinstance(data['img'], np.ndarray):
-            raise TypeError("Resize: image type is not numpy.")
+            raise TypeError("Image type is not numpy.")
         if len(data['img'].shape) != 3:
-            raise ValueError('Resize: image is not 3-dimensional.')
+            raise ValueError('Image is not 3-dimensional.')
+        if 'label' in data.keys() and isinstance(data['label'], str):
+            data['label'] = np.asarray(Image.open(data['label']))
 
         if self.to_rgb:
             data['img'] = cv2.cvtColor(data['img'], cv2.COLOR_BGR2RGB)
 
+        # the `trans_info` will save the process of image shape, and will be used in evaluation and prediction.
         if 'trans_info' not in data.keys():
             data['trans_info'] = []
 
