@@ -82,14 +82,14 @@ def visualize_imgs(args):
     file_path = args.file_path
     pred_dir = args.pred_dir
     save_dir = args.save_dir
-    weight = 0.1
+    weight = 0.5
 
     images_path = get_images_path(file_path)
     bar = progbar.Progbar(target=len(images_path), verbose=1)
     mkdir(save_dir, True)
 
     for idx, (origin_path, annot_path) in enumerate(images_path):
-        origin_img = Image.open(origin_path)
+        origin_img = Image.open(origin_path).convert('RGB')
         annot_img = Image.open(annot_path)
         annot_img = np.array(annot_img)
         wt_annot_img = None
