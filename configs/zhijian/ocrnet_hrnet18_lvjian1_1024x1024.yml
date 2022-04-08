@@ -4,12 +4,11 @@ batch_size: 4  # total: 4*4
 iters: 40000   # 4w * 16 / 0.76w = 84 epoch
 
 model:
-  type: PPLiteSeg
+  type: OCRNet
   backbone:
-    type: STDC1
-    pretrained: https://bj.bcebos.com/paddleseg/dygraph/PP_STDCNet1.tar.gz
-  arm_out_chs: [32, 64, 128]
-  seg_head_inter_chs: [32, 64, 64]
+    type: HRNet_W18
+    pretrained: https://bj.bcebos.com/paddleseg/dygraph/hrnet_w18_ssld.tar.gz
+  backbone_indices: [0]
 
 lr_scheduler:
   learning_rate: 0.01
@@ -22,4 +21,4 @@ loss:
     #  min_kept: 65000   # batch_size * w * h // 16
     #- type: FocalLoss
     #  alpha: 0.9
-  coef: [1, 1, 1]
+  coef: [1, 0.4]
