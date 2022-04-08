@@ -295,8 +295,7 @@ class VNetDeepSup(nn.Layer):
         out = self.up_tr32(out, out16)  # [4, 32, 512, 512, 12]
         out = self.out_tr32(out)
 
-        d0 = self.out_tr_all(paddle.concat((d1, d2, d3, out), 1))
-        return [d0, out]
+        return [out, d1, d2, d3]
 
     def test(self):
         import numpy as np

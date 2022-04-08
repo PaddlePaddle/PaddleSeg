@@ -12,8 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import sys
 import os
+import sys
+import nibabel as nib
 
 sys.path.append(
     os.path.join(os.path.dirname(os.path.realpath(__file__)), "../.."))
@@ -60,3 +61,10 @@ def load_series(mhd_path):
     numpySpacing = np.array(list(reversed(itkimage.GetSpacing())))
 
     return numpyImage, numpyOrigin, numpySpacing
+
+def add_qform_sform(img_name):
+    img = nib.load(img_name)
+    qform, sform = img.get_qform(), img.get_sform()
+    img.set_qform(qform)
+    img.set_sform(sform)
+    nib.save(img, img_name)

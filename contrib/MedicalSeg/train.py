@@ -113,7 +113,7 @@ def parse_args():
         type=str,
         default=None,
         help='The option of train profiler. If profiler_options is not None, the train ' \
-            'profiler is enabled. Refer to the paddleseg/utils/train_profiler.py for details.'
+            'profiler is enabled. Refer to the medseg/utils/train_profiler.py for details.'
     )
 
     return parser.parse_args()

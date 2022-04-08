@@ -64,7 +64,8 @@ class MedicalDataset(paddle.io.Dataset):
                  num_classes,
                  mode='train',
                  ignore_index=255,
-                 data_URL=""):
+                 data_URL="",
+                 dataset_json_path=""):
         self.dataset_root = dataset_root
         self.result_dir = result_dir
         self.transforms = Compose(transforms)
@@ -72,6 +73,7 @@ class MedicalDataset(paddle.io.Dataset):
         self.mode = mode.lower()
         self.num_classes = num_classes
         self.ignore_index = ignore_index  # todo: if labels only have 1/0/2, ignore_index is not necessary
+        self.dataset_json_path = dataset_json_path
 
         if self.dataset_root is None:
             self.dataset_root = download_file_and_uncompress(
@@ -118,7 +120,7 @@ class MedicalDataset(paddle.io.Dataset):
 
         im, label = self.transforms(im=image_path, label=label_path)
 
-        return im, label, self.file_list[idx][0]
+        return im, label, self.file_list[idx][0] # npy file name
 
     def save_transformed(self):
         """Save the preprocessed images to the result_dir"""

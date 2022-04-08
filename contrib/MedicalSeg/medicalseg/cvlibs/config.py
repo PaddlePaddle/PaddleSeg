@@ -28,16 +28,16 @@ from medicalseg.utils import logger
 
 class Config(object):
     '''
-    Training configuration parsing. Only yaml/yml file is supported.
+    Parse training configuration. Only supports yaml/yml file.
 
     The following hyper-parameters are available in the config file:
         batch_size: The number of samples per gpu.
         iters: The total training steps.
         train_dataset: A training data config including type/data_root/transforms/mode.
-            For data type, please refer to paddleseg.datasets.
-            For specific transforms, please refer to paddleseg.transforms.transforms.
+            For data type, please refer to medseg.datasets.
+            For specific transforms, please refer to medseg.transforms.transforms.
         val_dataset: A validation data config including type/data_root/transforms/mode.
-        optimizer: A optimizer config, but currently PaddleSeg only supports sgd with momentum in config file.
+        optimizer: A optimizer config, currently medseg only supports sgd with momentum in config file.
             In addition, weight_decay could be set as a regularization.
         learning_rate: A learning rate config. If decay is configured, learning _rate value is the starting learning rate,
              where only poly decay is supported using the config file. In addition, decay power and end_lr are tuned experimentally.
@@ -46,15 +46,15 @@ class Config(object):
             model outputs, and there could be only one loss type if using the same loss type among the outputs, otherwise the number of
             loss type must be consistent with coef.
         model: A model config including type/backbone and model-dependent arguments.
-            For model type, please refer to paddleseg.models.
-            For backbone, please refer to paddleseg.models.backbones.
+            For model type, please refer to medseg.models.
+            For backbone, please refer to medseg.models.backbones.
 
     Args:
-        path (str) : The path of config file, supports yaml format only.
+        path (str) : The path of config file, only supports yaml format.
 
     Examples:
 
-        from paddleseg.cvlibs.config import Config
+        from medseg.cvlibs.config import Config
 
         # Create a cfg object with yaml file path.
         cfg = Config(yaml_cfg_path)
@@ -62,8 +62,8 @@ class Config(object):
         # Parsing the argument when its property is used.
         train_dataset = cfg.train_dataset
 
-        # the argument of model should be parsed after dataset,
-        # since the model builder uses some properties in dataset.
+        # model builder uses some properties in dataset
+        # so model argument should be parsed after dataset.
         model = cfg.model
         ...
     '''

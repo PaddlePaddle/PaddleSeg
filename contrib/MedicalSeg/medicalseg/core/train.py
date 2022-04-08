@@ -60,7 +60,7 @@ def train(model,
         num_workers (int, optional): Num workers for data loader. Default: 0.
         use_vdl (bool, optional): Whether to record the data to VisualDL during training. Default: False.
         losses (dict, optional): A dict including 'types' and 'coef'. The length of coef should equal to 1 or len(losses['types']).
-            The 'types' item is a list of object of paddleseg.models.losses while the 'coef' item is a list of the relevant coefficient.
+            The 'types' item is a list of object of medseg.models.losses while the 'coef' item is a list of the relevant coefficient.
         keep_checkpoint_max (int, optional): Maximum number of checkpoints to save. Default: 5.
         profiler_options (str, optional): The option of train profiler.
         to_static_training (bool, optional): Whether to use @to_static for training.
