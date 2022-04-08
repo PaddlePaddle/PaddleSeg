@@ -55,3 +55,4 @@ from .enet import ENet
 from .bisenetv1 import BiseNetV1
 from .fastfcn import FastFCN
 from .pfpnnet import PFPNNet
+from .ddrnet import DDRNet_23, DDRNet_39
