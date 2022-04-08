@@ -114,7 +114,8 @@ class ISAHead(nn.Layer):
                 in_channels=1024,
                 out_channels=256,
                 kernel_size=3,
-                bias_attr=False), nn.Dropout2D(p=0.1),
+                bias_attr=False),
+            nn.Dropout2D(p=0.1),
             nn.Conv2D(256, num_classes, 1))
 
     def forward(self, feat_list):
@@ -127,10 +128,12 @@ class ISAHead(nn.Layer):
         pad_h, pad_w = (Q_h * P_h - x_shape[2]).astype('int32'), (
             Q_w * P_w - x_shape[3]).astype('int32')
         if pad_h > 0 or pad_w > 0:
-            padding = paddle.concat([
-                pad_w // 2, pad_w - pad_w // 2, pad_h // 2, pad_h - pad_h // 2
-            ],
-                                    axis=0)
+            padding = paddle.concat(
+                [
+                    pad_w // 2, pad_w - pad_w // 2, pad_h // 2,
+                    pad_h - pad_h // 2
+                ],
+                axis=0)
             feat = F.pad(x, padding)
         else:
             feat = x

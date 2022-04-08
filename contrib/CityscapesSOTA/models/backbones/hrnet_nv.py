@@ -173,17 +173,11 @@ class HRNetNV(nn.Layer):
 
         x0_hw = paddle.shape(st4[0])[2:]
         x1 = F.interpolate(
-            st4[1], x0_hw,
-            mode='bilinear',
-            align_corners=self.align_corners)
+            st4[1], x0_hw, mode='bilinear', align_corners=self.align_corners)
         x2 = F.interpolate(
-            st4[2], x0_hw,
-            mode='bilinear',
-            align_corners=self.align_corners)
+            st4[2], x0_hw, mode='bilinear', align_corners=self.align_corners)
         x3 = F.interpolate(
-            st4[3], x0_hw,
-            mode='bilinear',
-            align_corners=self.align_corners)
+            st4[3], x0_hw, mode='bilinear', align_corners=self.align_corners)
         x = paddle.concat([st4[0], x1, x2, x3], axis=1)
 
         return [x]

@@ -212,12 +212,16 @@ class ObjectAttentionBlock(nn.Layer):
         self.key_channels = key_channels
 
         self.f_pixel = nn.Sequential(
-            layers.ConvBNReLU(in_channels, key_channels, 1, bias_attr=False),
-            layers.ConvBNReLU(key_channels, key_channels, 1, bias_attr=False))
+            layers.ConvBNReLU(
+                in_channels, key_channels, 1, bias_attr=False),
+            layers.ConvBNReLU(
+                key_channels, key_channels, 1, bias_attr=False))
 
         self.f_object = nn.Sequential(
-            layers.ConvBNReLU(in_channels, key_channels, 1, bias_attr=False),
-            layers.ConvBNReLU(key_channels, key_channels, 1, bias_attr=False))
+            layers.ConvBNReLU(
+                in_channels, key_channels, 1, bias_attr=False),
+            layers.ConvBNReLU(
+                key_channels, key_channels, 1, bias_attr=False))
 
         self.f_down = layers.ConvBNReLU(
             in_channels, key_channels, 1, bias_attr=False)
@@ -264,9 +268,12 @@ class ProjectionHead(nn.Layer):
             self.proj = nn.Conv2d(dim_in, proj_dim, kernel_size=1)
         elif proj == 'convmlp':
             self.proj = nn.Sequential(
-                nn.Conv2d(dim_in, dim_in, kernel_size=1),
-                nn.SyncBatchNorm(dim_in), nn.ReLU(),
-                nn.Conv2d(dim_in, proj_dim, kernel_size=1))
+                nn.Conv2d(
+                    dim_in, dim_in, kernel_size=1),
+                nn.SyncBatchNorm(dim_in),
+                nn.ReLU(),
+                nn.Conv2d(
+                    dim_in, proj_dim, kernel_size=1))
 
     def forward(self, x):
         return F.normalize(self.proj(x), p=2, dim=1)

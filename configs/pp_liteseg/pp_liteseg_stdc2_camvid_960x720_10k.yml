@@ -1,0 +1,8 @@
+_base_: './pp_liteseg_stdc1_camvid_960x720_10k.yml'
+
+model:
+  _inherited_: False  # not inherit the model params from the base yaml
+  type: PPLiteSeg
+  backbone:
+    type: STDC2
+    pretrained: https://bj.bcebos.com/paddleseg/dygraph/PP_STDCNet2.tar.gz

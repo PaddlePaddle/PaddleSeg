@@ -1,7 +1,7 @@
 English|[简体中文](train_cn.md)
 # Model Training
 
-## 1、Start Training 
+## 1、Start Training
 
 We can train the model through the script provided by PaddleSeg. Here we use `BiseNet` model and `optic_disc` dataset to show the training process. Please make sure that you have already installed PaddleSeg, and it is located in the PaddleSeg directory. Then execute the following script:
 

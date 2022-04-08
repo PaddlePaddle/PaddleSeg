@@ -76,16 +76,14 @@ def parse_args():
         '--crop_size',
         dest='crop_size',
         nargs=2,
-        help=
-        'The crop size of sliding window, the first is width and the second is height.',
+        help='The crop size of sliding window, the first is width and the second is height.',
         type=int,
         default=None)
     parser.add_argument(
         '--stride',
         dest='stride',
         nargs=2,
-        help=
-        'The stride of sliding window, the first is width and the second is height.',
+        help='The stride of sliding window, the first is width and the second is height.',
         type=int,
         default=None)
 
@@ -128,8 +126,7 @@ def main(args):
         is_slide=args.is_slide,
         crop_size=args.crop_size,
         stride=args.stride,
-        num_workers=args.num_workers,
-    )
+        num_workers=args.num_workers, )
 
 
 if __name__ == '__main__':

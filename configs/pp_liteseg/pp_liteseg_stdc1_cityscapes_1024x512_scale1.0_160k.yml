@@ -1,0 +1,21 @@
+_base_: './pp_liteseg_stdc1_cityscapes_1024x512_scale0.5_160k.yml'
+
+train_dataset:
+  transforms:
+    - type: ResizeStepScaling
+      min_scale_factor: 0.5
+      max_scale_factor: 2.0
+      scale_step_size: 0.25
+    - type: RandomPaddingCrop
+      crop_size: [1024, 512]
+    - type: RandomHorizontalFlip
+    - type: RandomDistort
+      brightness_range: 0.5
+      contrast_range: 0.5
+      saturation_range: 0.5
+    - type: Normalize
+  mode: train
+
+test_config:
+  aug_eval: True
+  scales: 1.0

@@ -82,6 +82,7 @@ class Cityscapes(Dataset):
         img_files = sorted(
             glob.glob(os.path.join(img_dir, mode, '*', '*_leftImg8bit.png')))
 
-        self.file_list = [[
-            img_path, label_path
-        ] for img_path, label_path in zip(img_files, label_files)]
+        self.file_list = [
+            [img_path, label_path]
+            for img_path, label_path in zip(img_files, label_files)
+        ]

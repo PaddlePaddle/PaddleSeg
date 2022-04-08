@@ -92,27 +92,24 @@ def parse_args():
         '--crop_size',
         dest='crop_size',
         nargs=2,
-        help=
-        'The crop size of sliding window, the first is width and the second is height.',
+        help='The crop size of sliding window, the first is width and the second is height.',
         type=int,
         default=None)
     parser.add_argument(
         '--stride',
         dest='stride',
         nargs=2,
-        help=
-        'The stride of sliding window, the first is width and the second is height.',
+        help='The stride of sliding window, the first is width and the second is height.',
         type=int,
         default=None)
 
     parser.add_argument(
         '--data_format',
         dest='data_format',
-        help=
-        'Data format that specifies the layout of input. It can be "NCHW" or "NHWC". Default: "NCHW".',
+        help='Data format that specifies the layout of input. It can be "NCHW" or "NHWC". Default: "NCHW".',
         type=str,
         default='NCHW')
-    
+
     parser.add_argument(
         '--auc_roc',
         dest='add auc_roc metric',
@@ -120,13 +117,28 @@ def parse_args():
         type=bool,
         default=False)
 
+    parser.add_argument(
+        '--device',
+        dest='device',
+        help='Device place to be set, which can be GPU, XPU, NPU, CPU',
+        default='gpu',
+        type=str)
+
     return parser.parse_args()
 
 
 def main(args):
     env_info = get_sys_env()
-    place = 'gpu' if env_info['Paddle compiled with cuda'] and env_info[
-        'GPUs used'] else 'cpu'
+
+    if args.device == 'gpu' and env_info[
+            'Paddle compiled with cuda'] and env_info['GPUs used']:
+        place = 'gpu'
+    elif args.device == 'xpu' and paddle.is_compiled_with_xpu():
+        place = 'xpu'
+    elif args.device == 'npu' and paddle.is_compiled_with_npu():
+        place = 'npu'
+    else:
+        place = 'cpu'
 
     paddle.set_device(place)
     if not args.cfg:

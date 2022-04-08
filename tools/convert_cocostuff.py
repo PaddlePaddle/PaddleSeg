@@ -37,12 +37,17 @@ from tqdm import tqdm
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(
-        description='Generate COCOStuff dataset')
+    parser = argparse.ArgumentParser(description='Generate COCOStuff dataset')
     parser.add_argument(
-        '--annotation_path', default='annotations', help='COCOStuff anotation path', type=str)
+        '--annotation_path',
+        default='annotations',
+        help='COCOStuff anotation path',
+        type=str)
     parser.add_argument(
-        '--save_path', default='convert_annotations', help='COCOStuff anotation path', type=str)
+        '--save_path',
+        default='convert_annotations',
+        help='COCOStuff anotation path',
+        type=str)
 
     return parser.parse_args()
 
@@ -52,14 +57,27 @@ class COCOStuffGenerator(object):
 
         super(COCOStuffGenerator, self).__init__()
 
-        self.mapping = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 26, 27, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 66, 69, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 83, 84, 85, 86, 87, 88, 89, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147, 148, 149, 150, 151, 152, 153, 154, 155, 156, 157, 158, 159, 160, 161, 162, 163, 164, 165, 166, 167, 168, 169, 170, 171, 172, 173, 174, 175, 176, 177, 178, 179, 180, 181]
+        self.mapping = [
+            0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 13, 14, 15, 16, 17, 18, 19,
+            20, 21, 22, 23, 24, 26, 27, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39,
+            40, 41, 42, 43, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57,
+            58, 59, 60, 61, 62, 63, 64, 66, 69, 71, 72, 73, 74, 75, 76, 77, 78,
+            79, 80, 81, 83, 84, 85, 86, 87, 88, 89, 91, 92, 93, 94, 95, 96, 97,
+            98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111,
+            112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124,
+            125, 126, 127, 128, 129, 130, 131, 132, 133, 134, 135, 136, 137,
+            138, 139, 140, 141, 142, 143, 144, 145, 146, 147, 148, 149, 150,
+            151, 152, 153, 154, 155, 156, 157, 158, 159, 160, 161, 162, 163,
+            164, 165, 166, 167, 168, 169, 170, 171, 172, 173, 174, 175, 176,
+            177, 178, 179, 180, 181
+        ]
         self.annotation_path = annotation_path
         self.save_path = save_path
 
     def encode_label(self, labelmap):
         ret = np.ones_like(labelmap) * 255
         for idx, label in enumerate(self.mapping):
-            
+
             ret[labelmap == label] = idx
         return ret.astype(np.uint8)
 
@@ -76,19 +94,18 @@ class COCOStuffGenerator(object):
 
         for label_id in tqdm(os.listdir(train_path), desc='trainset'):
             label = np.array(
-                Image.open(os.path.join(train_path, label_id)).convert('P')
-            )
+                Image.open(os.path.join(train_path, label_id)).convert('P'))
             label = self.encode_label(label)
             label = Image.fromarray(label)
             label.save(os.path.join(save_train_path, label_id))
 
         for label_id in tqdm(os.listdir(val_path), desc='valset'):
             label = np.array(
-                Image.open(os.path.join(val_path, label_id)).convert('P')
-            )
+                Image.open(os.path.join(val_path, label_id)).convert('P'))
             label = self.encode_label(label)
             label = Image.fromarray(label)
             label.save(os.path.join(save_val_path, label_id))
+
 
 def main():
     args = parse_args()

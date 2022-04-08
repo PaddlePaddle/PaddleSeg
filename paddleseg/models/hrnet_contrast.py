@@ -65,8 +65,7 @@ class HRNetW48Contrast(nn.Layer):
                 num_classes,
                 kernel_size=1,
                 stride=1,
-                bias_attr=False),
-        )
+                bias_attr=False), )
         self.proj_head = ProjectionHead(
             dim_in=in_channels, proj_dim=self.proj_dim)
 
@@ -115,9 +114,10 @@ class ProjectionHead(nn.Layer):
             self.proj = nn.Conv2D(dim_in, proj_dim, kernel_size=1)
         elif proj == 'convmlp':
             self.proj = nn.Sequential(
-                layers.ConvBNReLU(dim_in, dim_in, kernel_size=1),
-                nn.Conv2D(dim_in, proj_dim, kernel_size=1),
-            )
+                layers.ConvBNReLU(
+                    dim_in, dim_in, kernel_size=1),
+                nn.Conv2D(
+                    dim_in, proj_dim, kernel_size=1), )
         else:
             raise ValueError(
                 "The type of project head only support 'linear' and 'convmlp', but got {}."

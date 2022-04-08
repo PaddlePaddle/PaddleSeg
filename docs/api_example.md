@@ -10,7 +10,7 @@ If you are more interested in the configuration call method, you can refer to th
 
 **Note**：For more details of PaddleSeg API，please refer to the [tutorial](https://github.com/PaddlePaddle/PaddleSeg/tree/develop/docs/apis).
 
-## Installation 
+## Installation
 
 ```python
 !pip install paddleseg

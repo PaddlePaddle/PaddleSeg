@@ -143,7 +143,8 @@ class DNLHead(nn.Layer):
                 in_channels=1024,
                 out_channels=256,
                 kernel_size=3,
-                bias_attr=False), nn.Dropout2D(p=0.1),
+                bias_attr=False),
+            nn.Dropout2D(p=0.1),
             nn.Conv2D(256, num_classes, 1))
         if self.concat_input:
             self.conv_cat = layers.ConvBNReLU(

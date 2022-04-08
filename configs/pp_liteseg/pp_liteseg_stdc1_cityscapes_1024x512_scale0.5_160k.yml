@@ -1,0 +1,50 @@
+_base_: '../_base_/cityscapes.yml'
+
+batch_size: 4  # total: 4*4
+iters: 160000
+
+optimizer:
+  weight_decay: 5.0e-4
+
+lr_scheduler:
+  warmup_iters: 1000
+  warmup_start_lr: 1.0e-5
+  learning_rate: 0.005
+
+loss:
+  types:
+    - type: OhemCrossEntropyLoss
+      min_kept: 130000   # batch_size * 1024 * 512 // 16
+    - type: OhemCrossEntropyLoss
+      min_kept: 130000
+    - type: OhemCrossEntropyLoss
+      min_kept: 130000
+  coef: [1, 1, 1]
+
+train_dataset:
+  transforms:
+    - type: ResizeStepScaling
+      min_scale_factor: 0.125
+      max_scale_factor: 1.5
+      scale_step_size: 0.125
+    - type: RandomPaddingCrop
+      crop_size: [1024, 512]
+    - type: RandomHorizontalFlip
+    - type: RandomDistort
+      brightness_range: 0.5
+      contrast_range: 0.5
+      saturation_range: 0.5
+    - type: Normalize
+  mode: train
+
+test_config:
+  aug_eval: True
+  scales: 0.5
+
+model:
+  type: PPLiteSeg
+  backbone:
+    type: STDC1
+    pretrained: https://bj.bcebos.com/paddleseg/dygraph/PP_STDCNet1.tar.gz
+  arm_out_chs: [32, 64, 128]
+  seg_head_inter_chs: [32, 64, 64]

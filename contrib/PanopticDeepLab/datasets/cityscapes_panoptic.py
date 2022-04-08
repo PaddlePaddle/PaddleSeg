@@ -112,13 +112,14 @@ class CityscapesPanoptic(paddle.io.Dataset):
             ann_file_name = ann['file_name']
             label_files.append(
                 os.path.join(self.dataset_root, 'gtFine',
-                             'cityscapes_panoptic_{}_trainId'.format(mode),
-                             ann_file_name))
+                             'cityscapes_panoptic_{}_trainId'.format(
+                                 mode), ann_file_name))
             self.ins_list.append(ann['segments_info'])
 
-        self.file_list = [[
-            img_path, label_path
-        ] for img_path, label_path in zip(img_files, label_files)]
+        self.file_list = [
+            [img_path, label_path]
+            for img_path, label_path in zip(img_files, label_files)
+        ]
 
         self.target_transform = PanopticTargetGenerator(
             self.ignore_index,
@@ -151,8 +152,8 @@ class CityscapesPanoptic(paddle.io.Dataset):
         if isinstance(color, np.ndarray) and len(color.shape) == 3:
             if color.dtype == np.uint8:
                 color = color.astype(np.int32)
-            return color[:, :,
-                         0] + 256 * color[:, :, 1] + 256 * 256 * color[:, :, 2]
+            return color[:, :, 0] + 256 * color[:, :,
+                                                1] + 256 * 256 * color[:, :, 2]
         return int(color[0] + 256 * color[1] + 256 * 256 * color[2])
 
     def __getitem__(self, idx):

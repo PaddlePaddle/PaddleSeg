@@ -18,8 +18,9 @@ import os
 import paddle
 
 from paddleseg.cvlibs import manager, Config
-from paddleseg.utils import get_sys_env, logger, config_check, get_image_list
+from paddleseg.utils import get_sys_env, logger, get_image_list
 from paddleseg.core import predict
+from paddleseg.transforms import Compose
 
 
 def parse_args():
@@ -37,8 +38,7 @@ def parse_args():
     parser.add_argument(
         '--image_path',
         dest='image_path',
-        help=
-        'The image to predict, which can be a path of image, or a file list containing image paths, or a directory including images',
+        help='The image to predict, which can be a path of image, or a file list containing image paths, or a directory including images',
         type=str,
         default=None)
     parser.add_argument(
@@ -82,16 +82,14 @@ def parse_args():
         '--crop_size',
         dest='crop_size',
         nargs=2,
-        help=
-        'The crop size of sliding window, the first is width and the second is height.',
+        help='The crop size of sliding window, the first is width and the second is height.',
         type=int,
         default=None)
     parser.add_argument(
         '--stride',
         dest='stride',
         nargs=2,
-        help=
-        'The stride of sliding window, the first is width and the second is height.',
+        help='The stride of sliding window, the first is width and the second is height.',
         type=int,
         default=None)
 
@@ -100,16 +98,26 @@ def parse_args():
         '--custom_color',
         dest='custom_color',
         nargs='+',
-        help=
-        'Save images with a custom color map. Default: None, use paddleseg\'s default color map.',
+        help='Save images with a custom color map. Default: None, use paddleseg\'s default color map.',
         type=int,
         default=None)
+
+    # set device
+    parser.add_argument(
+        '--device',
+        dest='device',
+        help='Device place to be set, which can be GPU, XPU, NPU, CPU',
+        default='gpu',
+        type=str)
+
     return parser.parse_args()
 
 
 def get_test_config(cfg, args):
 
     test_config = cfg.test_config
+    if 'aug_eval' in test_config:
+        test_config.pop('aug_eval')
     if args.aug_pred:
         test_config['aug_pred'] = args.aug_pred
         test_config['scales'] = args.scales
@@ -133,19 +141,22 @@ def get_test_config(cfg, args):
 
 def main(args):
     env_info = get_sys_env()
-    place = 'gpu' if env_info['Paddle compiled with cuda'] and env_info[
-        'GPUs used'] else 'cpu'
+
+    if args.device == 'gpu' and env_info[
+            'Paddle compiled with cuda'] and env_info['GPUs used']:
+        place = 'gpu'
+    elif args.device == 'xpu' and paddle.is_compiled_with_xpu():
+        place = 'xpu'
+    elif args.device == 'npu' and paddle.is_compiled_with_npu():
+        place = 'npu'
+    else:
+        place = 'cpu'
 
     paddle.set_device(place)
     if not args.cfg:
         raise RuntimeError('No configuration file specified.')
 
     cfg = Config(args.cfg)
-    val_dataset = cfg.val_dataset
-    if not val_dataset:
-        raise RuntimeError(
-            'The verification dataset is not specified in the configuration file.'
-        )
 
     msg = '\n---------------Config Information---------------\n'
     msg += str(cfg)
@@ -153,12 +164,11 @@ def main(args):
     logger.info(msg)
 
     model = cfg.model
-    transforms = val_dataset.transforms
+    transforms = Compose(cfg.val_transforms)
     image_list, image_dir = get_image_list(args.image_path)
     logger.info('Number of predict images = {}'.format(len(image_list)))
 
     test_config = get_test_config(cfg, args)
-    config_check(cfg, val_dataset=val_dataset)
 
     predict(
         model,

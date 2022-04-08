@@ -29,9 +29,9 @@ class paddleseg.models.losses.BCELoss(
 ## [BootstrappedCrossEntropyLoss](../../../paddleseg/models/losses/bootstrapped_cross_entropy.py)
 ```python
 class paddleseg.models.losses.BootstrappedCrossEntropyLoss(
-                        min_K, 
-                        loss_th, 
-                        weight = None, 
+                        min_K,
+                        loss_th,
+                        weight = None,
                         ignore_index = 255
 )
 ```
@@ -49,8 +49,8 @@ class paddleseg.models.losses.BootstrappedCrossEntropyLoss(
 ## [CrossEntropyLoss](../../../paddleseg/models/losses/cross_entropy_loss.py)
 ```python
 class paddleseg.models.losses.CrossEntropyLoss(
-                weight = None, 
-                ignore_index = 255, 
+                weight = None,
+                ignore_index = 255,
                 top_k_percent_pixels = 1.0
 )
 ```
@@ -89,7 +89,7 @@ class paddleseg.models.losses.RelaxBoundaryLoss(
 ## [DiceLoss](../../../paddleseg/models/losses/dice_loss.py)
 ```python
 class paddleseg.models.losses.DiceLoss(
-            ignore_index = 255, 
+            ignore_index = 255,
             smooth = 0.
 )
 ```
@@ -105,7 +105,7 @@ class paddleseg.models.losses.DiceLoss(
 ## [EdgeAttentionLoss](../../../paddleseg/models/losses/edge_attention_loss.py)
 ```python
 class paddleseg.models.losses.EdgeAttentionLoss(
-                edge_threshold = 0.8, 
+                edge_threshold = 0.8,
                 ignore_index = 255
 )
 ```
@@ -121,7 +121,7 @@ class paddleseg.models.losses.EdgeAttentionLoss(
 ## [DualTaskLoss](../../../paddleseg/models/losses/gscnn_dual_task_loss.py)
 ```python
 class paddleseg.models.losses.DualTaskLoss(
-            ignore_index = 255, 
+            ignore_index = 255,
             tau = 0.5
 )
 ```
@@ -136,7 +136,7 @@ class paddleseg.models.losses.DualTaskLoss(
 ## [L1Loss](../../../paddleseg/models/losses/l1_loss.py)
 ```python
 class paddleseg.models.losses.L1Loss(
-            reduction = 'mean', 
+            reduction = 'mean',
             ignore_index = 255
 )
 ```
@@ -158,7 +158,7 @@ class paddleseg.models.losses.L1Loss(
 ## [MSELoss](../../../paddleseg/models/losses/mean_square_error_loss.py)
 ```python
 class paddleseg.models.losses.MSELoss(
-            reduction = 'mean', 
+            reduction = 'mean',
             ignore_index = 255
 )
 ```
@@ -179,8 +179,8 @@ class paddleseg.models.losses.MSELoss(
 ## [OhemCrossEntropyLoss](../../../paddleseg/models/losses/ohem_cross_entropy_loss.py)
 ```python
 class paddleseg.models.losses.OhemCrossEntropyLoss(
-                thresh = 0.7, 
-                min_kept = 10000, 
+                thresh = 0.7,
+                min_kept = 10000,
                 ignore_index = 255
 )
 ```
@@ -216,7 +216,7 @@ class paddleseg.models.losses.OhemEdgeAttentionLoss(
 ## [LovaszSoftmaxLoss](../../../paddleseg/models/losses/lovasz_loss.py)
 ```python
 class paddleseg.models.losses.LovaszSoftmaxLoss(
-            ignore_index = 255, 
+            ignore_index = 255,
             classes = 'present'
 )
 ```

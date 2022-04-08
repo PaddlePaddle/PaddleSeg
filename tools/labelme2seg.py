@@ -83,8 +83,7 @@ def main(args):
             lbl = shape2label(
                 img_size=img.shape,
                 shapes=data['shapes'],
-                class_name_mapping=class_name_to_id,
-            )
+                class_name_mapping=class_name_to_id, )
 
             if osp.splitext(out_png_file)[1] != '.png':
                 out_png_file += '.png'
