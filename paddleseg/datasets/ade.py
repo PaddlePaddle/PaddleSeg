@@ -89,23 +89,31 @@ class ADE20K(Dataset):
             self.file_list.append([img_path, label_path])
 
     def __getitem__(self, idx):
+        data = {}
+        data['trans_info'] = []
         image_path, label_path = self.file_list[idx]
+        data['img'] = image_path
+        data['gt_fields'] = [
+        ]  # If key in gt_fields, the data[key] have transforms synchronous.
+
         if self.mode == 'val':
-            im, _ = self.transforms(im=image_path)
+            data = self.transforms(data)
             label = np.asarray(Image.open(label_path))
             # The class 0 is ignored. And it will equal to 255 after
             # subtracted 1, because the dtype of label is uint8.
             label = label - 1
             label = label[np.newaxis, :, :]
-            return im, label
+            data['label'] = label
+            return data
         else:
-            im, label = self.transforms(im=image_path, label=label_path)
-            label = label - 1
+            data['label'] = label_path
+            data['gt_fields'].append('label')
+            data = self.transforms(data)
+            data['label'] = data['label'] - 1
             # Recover the ignore pixels adding by transform
-            label[label == 254] = 255
+            data['label'][data['label'] == 254] = 255
             if self.edge:
                 edge_mask = F.mask_to_binary_edge(
                     label, radius=2, num_classes=self.num_classes)
-                return im, label, edge_mask
-            else:
-                return im, label
+                data['edge'] = edge_mask
+            return data
