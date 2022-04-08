@@ -225,8 +225,7 @@ def train(model,
 
                 model.train()
 
-            if (iter % save_interval == 0 or
-                    iter == iters) and local_rank == 0:
+            if (iter % save_interval == 0 or iter == iters) and local_rank == 0:
                 current_save_dir = os.path.join(save_dir,
                                                 "iter_{}".format(iter))
                 if not os.path.isdir(current_save_dir):

@@ -58,7 +58,8 @@ def resample(image,
         new_shape = np.array(new_shape)
         if spacing is not None and len(spacing) == 4:
             spacing = spacing[1:]
-        new_spacing = tuple((image.shape/new_shape) * spacing) if spacing is not None else None
+        new_spacing = tuple((image.shape / new_shape) *
+                            spacing) if spacing is not None else None
 
     resize_factor = new_shape / np.array(image.shape)
 

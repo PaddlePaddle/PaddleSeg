@@ -101,8 +101,8 @@ def add_profiler_step(options_str=None):
         _profiler_options = ProfilerOptions(options_str)
 
     if _profiler_step_id == _profiler_options['batch_range'][0]:
-        paddle.utils.profiler.start_profiler(
-            _profiler_options['state'], _profiler_options['tracer_option'])
+        paddle.utils.profiler.start_profiler(_profiler_options['state'],
+                                             _profiler_options['tracer_option'])
     elif _profiler_step_id == _profiler_options['batch_range'][1]:
         paddle.utils.profiler.stop_profiler(_profiler_options['sorted_key'],
                                             _profiler_options['profile_path'])

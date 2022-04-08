@@ -45,8 +45,7 @@ import zipfile
 import functools
 import numpy as np
 
-sys.path.append(
-    os.path.join(os.path.dirname(os.path.realpath(__file__)), ".."))
+sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), ".."))
 
 from prepare import Prep
 from preprocess_utils import HUnorm, resample
@@ -120,7 +119,6 @@ if __name__ == "__main__":
         dataset_name="COVID-19 CT scans",
         dataset_description="This dataset contains 20 CT scans of patients diagnosed with COVID-19 as well as segmentations of lungs and infections made by experts.",
         license_desc="Coronacases (CC BY NC 3.0)\n Radiopedia (CC BY NC SA 3.0) \n Annotations (CC BY 4.0)",
-        dataset_reference="https://www.kaggle.com/andrewmvd/covid19-ct-scans",
-    )
+        dataset_reference="https://www.kaggle.com/andrewmvd/covid19-ct-scans", )
     prep.load_save()
     prep.generate_txt()

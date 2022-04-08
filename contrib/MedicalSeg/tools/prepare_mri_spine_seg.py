@@ -41,8 +41,7 @@ import zipfile
 import functools
 import numpy as np
 
-sys.path.append(
-    os.path.join(os.path.dirname(os.path.realpath(__file__)), ".."))
+sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), ".."))
 
 from prepare import Prep
 from preprocess_utils import resample, normalize, label_remap

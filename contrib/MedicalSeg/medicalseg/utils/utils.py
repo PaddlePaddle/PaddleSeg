@@ -75,8 +75,7 @@ def download_pretrained_model(pretrained_model):
 
 def load_pretrained_model(model, pretrained_model):
     if pretrained_model is not None:
-        logger.info('Loading pretrained model from {}'.format(
-            pretrained_model))
+        logger.info('Loading pretrained model from {}'.format(pretrained_model))
 
         if urlparse(pretrained_model).netloc:
             pretrained_model = download_pretrained_model(pretrained_model)
@@ -94,8 +93,8 @@ def load_pretrained_model(model, pretrained_model):
                                                             .shape):
                     logger.warning(
                         "[SKIP] Shape of pretrained params {} doesn't match.(Pretrained: {}, Actual: {})"
-                        .format(k, para_state_dict[k].shape, model_state_dict[
-                            k].shape))
+                        .format(k, para_state_dict[k].shape, model_state_dict[k]
+                                .shape))
                 else:
                     model_state_dict[k] = para_state_dict[k]
                     num_params_loaded += 1
@@ -160,8 +159,7 @@ def get_image_list(image_path, valid_suffix=None, filter_key=None):
 
     image_list = []
     if os.path.isfile(image_path):
-        if image_path.split("/")[-1].split(
-                '.', maxsplit=1)[-1] in valid_suffix:
+        if image_path.split("/")[-1].split('.', maxsplit=1)[-1] in valid_suffix:
             if filter_key is not None:
                 f_name = image_path.split("/")[
                     -1]  # TODO change to system invariant
@@ -194,8 +192,8 @@ def get_image_list(image_path, valid_suffix=None, filter_key=None):
                         image_list.append(os.path.join(root, f))
     else:
         raise FileNotFoundError(
-            '{} is not found. it should be a path of image, or a directory including images.'.format(image_path)
-        )
+            '{} is not found. it should be a path of image, or a directory including images.'.
+            format(image_path))
 
     if len(image_list) == 0:
         raise RuntimeError(
@@ -239,13 +237,16 @@ def save_array(save_path, save_content, form, image_infor):
                     if image_infor["format"] == "xyz":
                         val = np.transpose(val, [2, 1, 0])
                     elif image_infor["format"] != "zyx":
-                        raise RuntimeError("the image format {} is not supported".format(image_infor["format"]))
-                    
+                        raise RuntimeError(
+                            "the image format {} is not supported".format(
+                                image_infor["format"]))
+
                     img_itk_new = sitk.GetImageFromArray(val)
                     img_itk_new.SetSpacing(tuple(image_infor["spacing"]))
                     img_itk_new.SetOrigin(tuple(image_infor["origin"]))
                     img_itk_new.SetDirection(tuple(image_infor["direction"]))
-                    sitk.WriteImage(img_itk_new,
+                    sitk.WriteImage(
+                        img_itk_new,
                         os.path.join('{}_{}.{}'.format(save_path, key, suffix)))
             else:
                 raise RuntimeError(

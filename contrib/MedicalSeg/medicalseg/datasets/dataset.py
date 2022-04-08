@@ -98,8 +98,8 @@ class MedicalDataset(paddle.io.Dataset):
             file_path = os.path.join(self.dataset_root, 'test_list.txt')
         else:
             raise ValueError(
-                "`mode` should be 'train', 'val' or 'test', but got {}.".
-                format(mode))
+                "`mode` should be 'train', 'val' or 'test', but got {}.".format(
+                    mode))
 
         with open(file_path, 'r') as f:
             for line in f:
@@ -120,7 +120,7 @@ class MedicalDataset(paddle.io.Dataset):
 
         im, label = self.transforms(im=image_path, label=label_path)
 
-        return im, label, self.file_list[idx][0] # npy file name
+        return im, label, self.file_list[idx][0]  # npy file name
 
     def save_transformed(self):
         """Save the preprocessed images to the result_dir"""

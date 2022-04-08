@@ -62,6 +62,7 @@ def load_series(mhd_path):
 
     return numpyImage, numpyOrigin, numpySpacing
 
+
 def add_qform_sform(img_name):
     img = nib.load(img_name)
     qform, sform = img.get_qform(), img.get_sform()

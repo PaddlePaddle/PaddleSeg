@@ -69,10 +69,10 @@ def evaluate(model,
         batch_sampler=batch_sampler,
         num_workers=num_workers,
         return_list=True, )
-    
+
     with open(eval_dataset.dataset_json_path, 'r', encoding='utf-8') as f:
-        dataset_json_dict=json.load(f) 
-                
+        dataset_json_dict = json.load(f)
+
     total_iters = len(loader)
     logits_all = None
     label_all = None
@@ -93,7 +93,8 @@ def evaluate(model,
     with paddle.no_grad():
         for iter, (im, label, idx) in enumerate(loader):
             reader_cost_averager.record(time.time() - batch_start)
-            image_json = dataset_json_dict["training"][idx[0].split("/")[-1].split(".")[0]]
+            image_json = dataset_json_dict["training"][idx[0].split("/")[-1]
+                                                       .split(".")[0]]
 
             label = label.astype('int32')
 
@@ -133,18 +134,24 @@ def evaluate(model,
                 channel_dice_array = per_channel_dice
             else:
                 channel_dice_array += per_channel_dice
-            
+
             if iter < 5:
                 save_array(
-                    save_path=os.path.join(save_dir, str(iter)+ "_"+ str(np.mean(per_channel_dice))),
+                    save_path=os.path.join(
+                        save_dir,
+                        str(iter) + "_" + str(np.mean(per_channel_dice))),
                     save_content={
                         'pred': pred.numpy(),
                         'label': label.numpy(),
                         'img': im.numpy()
                     },
-                    form=('npy', 'nii.gz'), 
-                    image_infor={"spacing": image_json["spacing_resample"], 'direction': image_json["direction"], 
-                         "origin": image_json["origin"], 'format':"xyz"})
+                    form=('npy', 'nii.gz'),
+                    image_infor={
+                        "spacing": image_json["spacing_resample"],
+                        'direction': image_json["direction"],
+                        "origin": image_json["origin"],
+                        'format': "xyz"
+                    })
 
             batch_cost_averager.record(
                 time.time() - batch_start, num_samples=len(label))

@@ -36,8 +36,7 @@ import SimpleITK as sitk
 from tqdm import tqdm
 import json
 
-sys.path.append(
-    os.path.join(os.path.dirname(os.path.realpath(__file__)), ".."))
+sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), ".."))
 
 from medicalseg.utils import get_image_list
 from tools.preprocess_utils import uncompressor, global_var, add_qform_sform
