@@ -18,9 +18,31 @@ We propose PP-LiteSeg, a novel lightweight model for the real-time semantic segm
 **Prepare:**
 * Install gpu driver, cuda toolkit and cudnn
 * Install Paddle and PaddleSeg ([doc](../../docs/install.md))
-* Download [Cityscapes](https://paddleseg.bj.bcebos.com/dataset/cityscapes.tar) dataset and link it to `PaddleSeg/data`
+* Download dataset and link it to `PaddleSeg/data` ([Cityscapes](https://paddleseg.bj.bcebos.com/dataset/cityscapes.tar), [CamVid](https://paddleseg.bj.bcebos.com/dataset/camvid.tar))
+    ```
+    PaddleSeg/data
+    ├── cityscapes
+    │   ├── gtFine
+    │   ├── infer.list
+    │   ├── leftImg8bit
+    │   ├── test.list
+    │   ├── train.list
+    │   ├── trainval.list
+    │   └── val.list
+    ├── camvid
+    │   ├── annot
+    │   ├── images
+    │   ├── README.md
+    │   ├── test.txt
+    │   ├── train.txt
+    │   └── val.txt
+    ```
 
 **Training:**
+
+The config files of PP-LiteSeg are under `PaddleSeg/configs/pp_liteseg/`.
+
+Based on the `train.py` script, we set the config file and start training model.
 
 ```Shell
 export CUDA_VISIBLE_DEVICES=0,1,2,3
@@ -30,6 +52,8 @@ export model=pp_liteseg_stdc1_cityscapes_1024x512_scale0.5_160k
 # export model=pp_liteseg_stdc2_cityscapes_1024x512_scale0.5_160k
 # export model=pp_liteseg_stdc2_cityscapes_1024x512_scale0.75_160k
 # export model=pp_liteseg_stdc2_cityscapes_1024x512_scale1.0_160k
+# export model=pp_liteseg_stdc1_camvid_960x720_10k
+# export model=pp_liteseg_stdc2_camvid_960x720_10k
 python -m paddle.distributed.launch train.py \
     --config configs/pp_liteseg/${model}.yml \
     --save_dir output/${model} \
@@ -38,20 +62,26 @@ python -m paddle.distributed.launch train.py \
     --do_eval \
     --use_vdl
 ```
-The weights is saved in `PaddleSeg/output`. Please Refer to [doc](../../docs/train/train.md) for full usage of training.
+
+The weights are saved in `PaddleSeg/output/xxx/best_model/model.pdparams`.
+
+Refer to [doc](../../docs/train/train.md) for the detailed usage of training.
 
 ## Evaluation
+
+With the config file and weights, we use the `val.py` script to evaluate the model.
+
+Refer to [doc](../../docs/evaluation/evaluate/evaluate.md) for the detailed usage of evalution.
 
 ```shell
 export CUDA_VISIBLE_DEVICES=0
 export model=pp_liteseg_stdc1_cityscapes_1024x512_scale0.5_160k
+# export other model
 python val.py \
     --config configs/pp_liteseg/${model}.yml \
     --model_path output/${model}/best_model/model.pdparams \
     --num_workers 3
 ```
-
-Refer to [doc](../../docs/evaluation/evaluate/evaluate.md) for full usage of evalution.
 
 ## Inference
 
@@ -66,7 +96,7 @@ Refer to [doc](../../docs/evaluation/evaluate/evaluate.md) for full usage of eva
 
 **Inference:**
 
-We measure the inference speed with [infer_onnx_trt.py](../../deploy/python/infer_onnx_trt.py), which first exports the Paddle model to ONNX and then infers the ONNX model by TRT. Please refer to following code for full usage.
+We measure the inference speed with [infer_onnx_trt.py](../../deploy/python/infer_onnx_trt.py), which first exports the Paddle model to ONNX and then infers the ONNX model by TRT.
 
 ```shell
 python deploy/python/infer_onnx_trt.py \
@@ -74,6 +104,8 @@ python deploy/python/infer_onnx_trt.py \
     --width 1024 \
     --height 512
 ```
+
+Please refer to [infer_onnx_trt.py](../../deploy/python/infer_onnx_trt.py) for the detailed usage.
 
 ## Performance
 
@@ -91,6 +123,7 @@ python deploy/python/infer_onnx_trt.py \
 Note that:
 * The flip denotes flip_horizontal, the ms denotes multi scale, i.e (0.75, 1.0, 1.25) * test_resolution.
 * Simliar to other models in PaddleSeg, the mIoU in above table refer to the evaluation of PP-LiteSeg on Cityscapes validation set.
+* You can download the trained model in above table and use it in evaluation.
 
 
 **The comparisons with state-of-the-art real-time methods on Cityscapes as follows.**
@@ -135,4 +168,3 @@ PP-LiteSeg-B2 | STDC2      |  768x1536  | 78.2 | 77.5 | 102.6|
 Note:
 * The flip denotes flip_horizontal, the ms denotes multi scale, i.e (0.75, 1.0, 1.25) * test_resolution.
 * The mIoU in above table refer to the evaluation of PP-LiteSeg on CamVid test set.
-* The CamVid dataset in [url](https://paddleseg.bj.bcebos.com/dataset/camvid.tar).
