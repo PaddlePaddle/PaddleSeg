@@ -18,11 +18,8 @@ import os.path as osp
 from functools import partial
 import json
 from distutils.util import strtobool
-import imghdr
-from datetime import datetime
 import webbrowser
 from easydict import EasyDict as edict
-from eiseg.util.opath import check_cn
 
 from qtpy import QtGui, QtCore, QtWidgets
 from qtpy.QtWidgets import QMainWindow, QMessageBox, QTableWidgetItem
@@ -43,7 +40,7 @@ from util import check_cn, normcase
 import plugin.remotesensing as rs
 from plugin.medical import med
 from plugin.remotesensing import Raster
-from plugin.n2grid import RSGrids
+from plugin.n2grid import RSGrids, Grids, checkOpenGrid
 
 
 # TODO: 研究paddle子线程
@@ -188,6 +185,9 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
 
         # 医疗参数
         self.midx = 0  # 医疗切片索引
+
+        # 大图限制
+        self.thumbnail_min = 2000
 
         # 初始化action
         self.initActions()
@@ -1109,6 +1109,9 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         if path.lower().endswith(tuple(self.formats[0])):
             image = cv2.imdecode(np.fromfile(path, dtype=np.uint8), 1)
             image = image[:, :, ::-1]  # BGR转RGB
+            if checkOpenGrid(image, self.thumbnail_min):
+                self.loadGrid(image, False)
+                image, _ = self.grid.getGrid(0, 0)
 
         # 医学影像
         if path.lower().endswith(tuple(self.formats[1])):
@@ -1144,16 +1147,8 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
                 if not self.dockStatus[4]:
                     return False
             self.raster = Raster(path)
-            if self.raster.checkOpenGrid():
-                self.warn(self.tr("图像过大"), self.tr("图像过大，将启用宫格功能！"))
-                # 打开宫格功能
-                if self.dockWidgets["grid"].isVisible() is False:
-                    # TODO: 改成self.dockStatus
-                    self.menus.showMenu[-1].setChecked(True)
-                    # self.display_dockwidget[-1] = True
-                    self.dockWidgets["grid"].show()
-                self.grid = RSGrids(self.raster)
-                self.initGrid()
+            if self.raster.checkOpenGrid(self.thumbnail_min):
+                self.loadGrid(self.raster)
             self.edtGeoinfo.setText(self.raster.showGeoInfo())
             if max(self.rsRGB) > self.raster.geoinfo.count:
                 self.rsRGB = [1, 1, 1]
@@ -1397,9 +1392,8 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
                 self.raster.saveMask(mask_output, tifPath)
                 if self.shpSave.isChecked():
                     shpPath = pathHead + ".shp"
-                    geocode_list = self.mask2poly(mask_output, False)
-                    print(
-                        rs.save_shp(shpPath, geocode_list, self.raster.geoinfo))
+                    # geocode_list = self.mask2poly(mask_output, False)
+                    print(rs.save_shp(shpPath, tifPath))
             else:
                 ext = osp.splitext(savePath)[1]
                 cv2.imencode(ext, mask_output)[1].tofile(savePath)
@@ -1984,7 +1978,11 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
             pass
         self.delAllPolygon()  # 清理
         mask = self.grid.splicingList(save_path)
-        self.image, is_big = self.raster.getArray()
+        if self.grid.__class__.__name__ == "RSGrids":
+            self.image, is_big = self.raster.getArray()
+        else:
+            self.image = self.grid.detimg
+            is_big = checkOpenGrid(self.image, self.thumbnail_min)
         if is_big is None:
             self.statusbar.showMessage(self.tr("图像过大，已显示缩略图"))
         self.controller.image = self.image
@@ -2056,6 +2054,17 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
             self._anning = True
         else:
             self._anning = False
+
+    def loadGrid(self, img, is_rs=True):
+        self.warn(self.tr("图像过大"), self.tr("图像过大，将启用宫格功能！"))
+        # 打开宫格功能
+        if self.dockWidgets["grid"].isVisible() is False:
+            # TODO: 改成self.dockStatus
+            self.menus.showMenu[-1].setChecked(True)
+            # self.display_dockwidget[-1] = True
+            self.dockWidgets["grid"].show()
+        self.grid = RSGrids(img) if is_rs else Grids(img)
+        self.initGrid()
 
     # 界面布局
     def loadLayout(self):

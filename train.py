@@ -190,6 +190,10 @@ def main(args):
 
     config_check(cfg, train_dataset=train_dataset, val_dataset=val_dataset)
 
+    if place == 'gpu':
+        # convert bn to sync_bn
+        cfg._model = paddle.nn.SyncBatchNorm.convert_sync_batchnorm(cfg.model)
+
     train(
         cfg.model,
         train_dataset,

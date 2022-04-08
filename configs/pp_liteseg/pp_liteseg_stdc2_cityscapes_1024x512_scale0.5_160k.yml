@@ -1,0 +1,12 @@
+_base_: './pp_liteseg_stdc1_cityscapes_1024x512_scale0.5_160k.yml'
+
+test_config:
+  aug_eval: True
+  scales: 0.5
+
+model:
+  _inherited_: False  # not inherit the model params from the base yaml
+  type: PPLiteSeg
+  backbone:
+    type: STDC2
+    pretrained: https://bj.bcebos.com/paddleseg/dygraph/PP_STDCNet2.tar.gz
