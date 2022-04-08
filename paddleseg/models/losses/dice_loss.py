@@ -19,38 +19,58 @@ from paddleseg.cvlibs import manager
 @manager.LOSSES.add_component
 class DiceLoss(nn.Layer):
     """
-    Implements the dice loss function.
+    The implements of the dice loss.
 
     Args:
-        ignore_index (int64): Specifies a target value that is ignored
-            and does not contribute to the input gradient. Default ``255``.
-        smooth (float32): laplace smoothing,
-            to smooth dice loss and accelerate convergence. following:
-            https://github.com/pytorch/pytorch/issues/1249#issuecomment-337999895
+        weight (list[float], optional): The weight for each class. Default: None.
+        ignore_index (int64): ignore_index (int64, optional): Specifies a target value that
+            is ignored and does not contribute to the input gradient. Default ``255``.
+        smooth (float32): Laplace smoothing to smooth dice loss and accelerate convergence.
+            Default: 1.0
     """
 
-    def __init__(self, ignore_index=255, smooth=0.):
-        super(DiceLoss, self).__init__()
+    def __init__(self, weight=None, ignore_index=255, smooth=1.0):
+        super().__init__()
+        self.weight = weight
         self.ignore_index = ignore_index
-        self.eps = 1e-5
         self.smooth = smooth
+        self.eps = 1e-8
 
     def forward(self, logits, labels):
-        labels = paddle.cast(labels, dtype='int32')
-        labels_one_hot = F.one_hot(labels, num_classes=logits.shape[1])
-        labels_one_hot = paddle.transpose(labels_one_hot, [0, 3, 1, 2])
-        labels_one_hot = paddle.cast(labels_one_hot, dtype='float32')
+        num_class = logits.shape[1]
+        if self.weight is not None:
+            assert num_class == len(self.weight), \
+                "The lenght of weight should be euqal to the num class"
 
         logits = F.softmax(logits, axis=1)
+        labels_one_hot = F.one_hot(labels, num_class)
+        labels_one_hot = paddle.transpose(labels_one_hot, [0, 3, 1, 2])
 
-        mask = (paddle.unsqueeze(labels, 1) != self.ignore_index)
-        logits = logits * mask
-        labels_one_hot = labels_one_hot * mask
+        mask = labels != self.ignore_index
+        mask = paddle.cast(paddle.unsqueeze(mask, 1), 'float32')
 
-        dims = (0, ) + tuple(range(2, labels.ndimension() + 1))
+        dice_loss = 0.0
+        for i in range(num_class):
+            dice_loss_i = dice_loss_helper(logits[:, i], labels_one_hot[:, i],
+                                           mask, self.smooth, self.eps)
+            if self.weight is not None:
+                dice_loss_i *= self.weight[i]
+            dice_loss += dice_loss_i
+        dice_loss = dice_loss / num_class
 
-        intersection = paddle.sum(logits * labels_one_hot, dims)
-        cardinality = paddle.sum(logits + labels_one_hot, dims)
-        dice_loss = ((2. * intersection + self.smooth) /
-                     (cardinality + self.eps + self.smooth)).mean()
-        return 1 - dice_loss
+        return dice_loss
+
+
+def dice_loss_helper(logit, label, mask, smooth, eps):
+    assert logit.shape == label.shape, \
+        "The shape of logit and label should be the same"
+    logit = paddle.reshape(logit, [0, -1])
+    label = paddle.reshape(label, [0, -1])
+    mask = paddle.reshape(mask, [0, -1])
+    logit *= mask
+    label *= mask
+    intersection = paddle.sum(logit * label, axis=1)
+    cardinality = paddle.sum(logit + label, axis=1)
+    dice_loss = 1 - (2 * intersection + smooth) / (cardinality + smooth + eps)
+    dice_loss = dice_loss.mean()
+    return dice_loss
