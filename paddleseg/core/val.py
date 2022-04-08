@@ -74,8 +74,7 @@ def evaluate(model,
         eval_dataset,
         batch_sampler=batch_sampler,
         num_workers=num_workers,
-        return_list=True,
-    )
+        return_list=True, )
 
     total_iters = len(loader)
     intersect_area_all = paddle.zeros([1], dtype='int64')
@@ -85,9 +84,8 @@ def evaluate(model,
     label_all = None
 
     if print_detail:
-        logger.info(
-            "Start evaluating (total_samples: {}, total_iters: {})...".format(
-                len(eval_dataset), total_iters))
+        logger.info("Start evaluating (total_samples: {}, total_iters: {})...".
+                    format(len(eval_dataset), total_iters))
     #TODO(chenguowei): fix log print error with multi-gpus
     progbar_val = progbar.Progbar(
         target=total_iters, verbose=1 if nranks < 2 else 2)
@@ -177,12 +175,12 @@ def evaluate(model,
             batch_cost_averager.reset()
             batch_start = time.time()
 
-    class_iou, miou = metrics.mean_iou(intersect_area_all, pred_area_all,
-                                       label_area_all)
-    class_acc, acc = metrics.accuracy(intersect_area_all, pred_area_all)
-    kappa = metrics.kappa(intersect_area_all, pred_area_all, label_area_all)
-    class_dice, mdice = metrics.dice(intersect_area_all, pred_area_all,
-                                     label_area_all)
+    metrics_input = (intersect_area_all, pred_area_all, label_area_all)
+    class_iou, miou = metrics.mean_iou(*metrics_input)
+    acc, class_precision, class_recall = metrics.class_measurement(
+        *metrics_input)
+    kappa = metrics.kappa(*metrics_input)
+    class_dice, mdice = metrics.dice(*metrics_input)
 
     if auc_roc:
         auc_roc = metrics.auc_roc(
@@ -195,5 +193,7 @@ def evaluate(model,
         infor = infor + auc_infor if auc_roc else infor
         logger.info(infor)
         logger.info("[EVAL] Class IoU: \n" + str(np.round(class_iou, 4)))
-        logger.info("[EVAL] Class Acc: \n" + str(np.round(class_acc, 4)))
-    return miou, acc, class_iou, class_acc, kappa
+        logger.info("[EVAL] Class Precision: \n" + str(
+            np.round(class_precision, 4)))
+        logger.info("[EVAL] Class Recall: \n" + str(np.round(class_recall, 4)))
+    return miou, acc, class_iou, class_precision, kappa

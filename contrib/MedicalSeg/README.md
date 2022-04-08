@@ -1,5 +1,13 @@
 # MedicalSeg
-Welcome to MedicalSeg! MedicalSeg is an easy-to-use 3D medical image segmentation toolkit that supports GPU acceleration from data preprocess to deply. We aim to build our toolkit to support various datasets including lung, brain, and spine. (Currently contains [COVID-19 CT scans](https://www.kaggle.com/andrewmvd/covid19-ct-scans) dataset and [MRISpineSeg](https://aistudio.baidu.com/aistudio/datasetdetail/81211).)
+MedicalSeg is an easy-to-use 3D medical image segmentation toolkit that supports GPU acceleration from data preparation to deployment. The toolkit has supported various datasets including lung, brain, and spine. (Currently contains [COVID-19 CT scans](https://www.kaggle.com/andrewmvd/covid19-ct-scans) dataset and [MRISpineSeg](https://aistudio.baidu.com/aistudio/datasetdetail/81211).) 
+
+MedicalSeg is currently under development! If you find any problem using it, please open a github issue.
+
+* Welcome to MedicalSeg，you can scan the QR code with wechat
+
+<p align="center">
+<img src="https://user-images.githubusercontent.com/48433081/162115375-2dba8796-5184-4793-8efa-b142734fe734.png" width="28%" height="20%">
+</p>
 
 ## 0. Model performance
 

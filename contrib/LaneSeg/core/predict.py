@@ -116,8 +116,7 @@ def predict(model,
             # save pseudo color prediction
             pred_mask = utils.visualize.get_pseudo_color_map(pred, color_map)
             pred_saved_path = os.path.join(
-                pred_saved_dir,
-                os.path.splitext(im_file)[0] + ".png")
+                pred_saved_dir, os.path.splitext(im_file)[0] + ".png")
             mkdir(pred_saved_path)
             pred_mask.save(pred_saved_path)
 

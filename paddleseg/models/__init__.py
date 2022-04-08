@@ -49,6 +49,7 @@ from .segnet import SegNet
 from .encnet import ENCNet
 from .hrnet_contrast import HRNetW48Contrast
 from .espnet import ESPNetV2
+from .pp_liteseg import PPLiteSeg
 from .dmnet import DMNet
 from .espnetv1 import ESPNetV1
 from .enet import ENet

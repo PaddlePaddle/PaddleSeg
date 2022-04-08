@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 import argparse
 import glob
 import json
@@ -79,18 +78,22 @@ def save_coco_annotation(dataset, coco_annotation_path):
             if "iscrowd" not in annotation:
                 annotation["iscrowd"] = 0
             if annotation["area"] < epsilon:
-                annotation["area"] = annotation["bbox"][2] * annotation["bbox"][3]
+                annotation["area"] = annotation["bbox"][2] * annotation["bbox"][
+                    3]
             if useQtBottomLeft:
-                annotation["bbox"][1] = annotation["bbox"][1] - annotation["bbox"][3]
+                annotation["bbox"][1] = annotation["bbox"][1] - annotation[
+                    "bbox"][3]
 
-            imgs_info_indexed_by_img_name[img_name]["img_annotation"] = annotation
+            imgs_info_indexed_by_img_name[img_name][
+                "img_annotation"] = annotation
 
     for img_path in dataset:
         img_file = Path(img_path)
         img_name = img_file.name
         img_info_with_annotation = imgs_info_indexed_by_img_name[img_name]
         data_coco["images"].append(img_info_with_annotation["img_info"])
-        data_coco["annotations"].append(img_info_with_annotation["img_annotation"])
+        data_coco["annotations"].append(img_info_with_annotation[
+            "img_annotation"])
 
     return data_coco
 
@@ -99,13 +102,11 @@ def save_coco_annotation(dataset, coco_annotation_path):
 # TODO: bbox貌似计算的不对
 def main():
     parser = argparse.ArgumentParser(
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter
-    )
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument(
         "--dataset_type",
         default="eiseg",
-        help="type type of dataset is supported is EISeg",
-    )
+        help="type type of dataset is supported is EISeg", )
     parser.add_argument("--json_input_dir", help="input annotation directory")
     parser.add_argument("--image_input_dir", help="image directory")
     parser.add_argument("--output_dir", help="output dataset directory")
@@ -122,7 +123,8 @@ def main():
 
     setattr(settings, "DATA_DIR", args.image_input_dir)
     raw_images = list(glob.iglob(os.path.join(settings.DATA_DIR, "*.jpg")))
-    raw_images = sorted(raw_images, key=lambda x: os.path.split(x)[1].split(".")[0])
+    raw_images = sorted(
+        raw_images, key=lambda x: os.path.split(x)[1].split(".")[0])
 
     assert settings.TRAIN_PROPORTION > 0 and settings.TRAIN_PROPORTION < 1
     assert settings.TRAIN_PROPORTION + settings.VALIDATION_PROPORTION == 1
@@ -139,8 +141,7 @@ def main():
 
     # Disk task : move images and annotation files to coco files hierarchy
     train_dataset, val_dataset = train_test_split(
-        raw_images, train_size=settings.TRAIN_PROPORTION
-    )
+        raw_images, train_size=settings.TRAIN_PROPORTION)
 
     for img_path in train_dataset:
         img_name = Path(img_path).name  # similar to boot api
@@ -153,7 +154,8 @@ def main():
     # deal with coco annotation file
     data_coco_train = save_coco_annotation(train_dataset, coco_annotation_file)
     train_json_path = os.path.join(annotation_path, "train.json")
-    json.dump(data_coco_train, open(train_json_path, "w"), indent=4, cls=MyEncoder)
+    json.dump(
+        data_coco_train, open(train_json_path, "w"), indent=4, cls=MyEncoder)
 
     data_coco_val = save_coco_annotation(val_dataset, coco_annotation_file)
     val_json_path = os.path.join(annotation_path, "val.json")

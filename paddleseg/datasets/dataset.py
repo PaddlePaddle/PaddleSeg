@@ -98,8 +98,8 @@ class Dataset(paddle.io.Dataset):
                     'When `mode` is "train", `train_path` is necessary, but it is None.'
                 )
             elif not os.path.exists(train_path):
-                raise FileNotFoundError(
-                    '`train_path` is not found: {}'.format(train_path))
+                raise FileNotFoundError('`train_path` is not found: {}'.format(
+                    train_path))
             else:
                 file_path = train_path
         elif self.mode == 'val':
@@ -108,8 +108,8 @@ class Dataset(paddle.io.Dataset):
                     'When `mode` is "val", `val_path` is necessary, but it is None.'
                 )
             elif not os.path.exists(val_path):
-                raise FileNotFoundError(
-                    '`val_path` is not found: {}'.format(val_path))
+                raise FileNotFoundError('`val_path` is not found: {}'.format(
+                    val_path))
             else:
                 file_path = val_path
         else:
@@ -118,8 +118,8 @@ class Dataset(paddle.io.Dataset):
                     'When `mode` is "test", `test_path` is necessary, but it is None.'
                 )
             elif not os.path.exists(test_path):
-                raise FileNotFoundError(
-                    '`test_path` is not found: {}'.format(test_path))
+                raise FileNotFoundError('`test_path` is not found: {}'.format(
+                    test_path))
             else:
                 file_path = test_path
 

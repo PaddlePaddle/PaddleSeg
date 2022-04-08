@@ -33,22 +33,25 @@ from paddleslim import QAT
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Model export.')
-    parser.add_argument("--config",
-                        dest="cfg",
-                        help="The config file.",
-                        default=None,
-                        type=str,
-                        required=True)
-    parser.add_argument('--save_dir',
-                        dest='save_dir',
-                        help='The directory for saving the exported model',
-                        type=str,
-                        default='./output')
-    parser.add_argument('--model_path',
-                        dest='model_path',
-                        help='The path of model for export',
-                        type=str,
-                        default=None)
+    parser.add_argument(
+        "--config",
+        dest="cfg",
+        help="The config file.",
+        default=None,
+        type=str,
+        required=True)
+    parser.add_argument(
+        '--save_dir',
+        dest='save_dir',
+        help='The directory for saving the exported model',
+        type=str,
+        default='./output')
+    parser.add_argument(
+        '--model_path',
+        dest='model_path',
+        help='The path of model for export',
+        type=str,
+        default=None)
     parser.add_argument(
         '--without_argmax',
         dest='without_argmax',
@@ -86,7 +89,8 @@ def main(args):
     new_net.eval()
     save_path = os.path.join(args.save_dir, 'model')
     input_spec = [
-        paddle.static.InputSpec(shape=[None, 3, None, None], dtype='float32')
+        paddle.static.InputSpec(
+            shape=[None, 3, None, None], dtype='float32')
     ]
     quantizer.save_quantized_model(new_net, save_path, input_spec=input_spec)
 

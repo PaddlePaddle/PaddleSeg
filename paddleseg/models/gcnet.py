@@ -188,7 +188,8 @@ class GlobalContextBlock(nn.Layer):
                 in_channels=in_channels,
                 out_channels=inter_channels,
                 kernel_size=1),
-            nn.LayerNorm(normalized_shape=[inter_channels, 1, 1]), nn.ReLU(),
+            nn.LayerNorm(normalized_shape=[inter_channels, 1, 1]),
+            nn.ReLU(),
             nn.Conv2D(
                 in_channels=inter_channels,
                 out_channels=in_channels,

@@ -7,9 +7,9 @@ Global.use_gpu:null|null
 --iters:lite_train_lite_infer=50|lite_train_whole_infer=50|whole_train_whole_infer=1000
 --save_dir:
 --batch_size:lite_train_lite_infer=2|lite_train_whole_infer=2|whole_train_whole_infer=8
-Global.pretrained_model:null
+--model_path:null
 train_model_name:best_model/model.pdparams
-train_infer_img_dir:test_tipc/data/cityscapes/test.txt
+train_infer_img_dir:test_tipc/data/cityscapes/cityscapes_val_5.list
 null:null
 ##
 trainer:norm
@@ -21,7 +21,7 @@ null:null
 null:null
 ##
 ===========================eval_params===========================
-eval:null
+eval:val.py --config test_tipc/configs/fcn_hrnetw18/fcn_hrnetw18_1024x512_cityscapes.yml --num_workers 8
 null:null
 ##
 ===========================export_params===========================
@@ -45,7 +45,7 @@ inference:deploy/python/infer.py
 --use_trt:False|True
 --precision:fp32|int8|fp16
 --config:
---image_path:./test_tipc/data/cityscapes/test.txt
+--image_path:./test_tipc/data/cityscapes/cityscapes_val_5.list
 --save_log_path:null
 --benchmark:True
 --save_dir:

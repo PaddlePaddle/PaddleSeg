@@ -35,8 +35,7 @@ URL = 'http://www.eecs.berkeley.edu/Research/Projects/CS/vision/grouping/semanti
 
 def parse_args():
     parser = argparse.ArgumentParser(
-        description=
-        'Convert SBD to Pascal Voc annotations to augment the train dataset of Pascal Voc'
+        description='Convert SBD to Pascal Voc annotations to augment the train dataset of Pascal Voc'
     )
     parser.add_argument(
         '--voc_path',

@@ -49,8 +49,8 @@ def analyze(log_path):
         time_value = None
 
         cur_num = end_num
-        while cur_num >= start_num and (miou_value is None
-                                        or time_value is None):
+        while cur_num >= start_num and (miou_value is None or
+                                        time_value is None):
             line = logs[cur_num]
             cur_num -= 1
             if miou_value is None:

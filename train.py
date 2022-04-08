@@ -103,14 +103,12 @@ def parse_args():
         default="fp32",
         type=str,
         choices=["fp32", "fp16"],
-        help=
-        "Use AMP if precision='fp16'. If precision='fp32', the training is normal."
+        help="Use AMP if precision='fp16'. If precision='fp32', the training is normal."
     )
     parser.add_argument(
         '--data_format',
         dest='data_format',
-        help=
-        'Data format that specifies the layout of input. It can be "NCHW" or "NHWC". Default: "NCHW".',
+        help='Data format that specifies the layout of input. It can be "NCHW" or "NHWC". Default: "NCHW".',
         type=str,
         default='NCHW')
     parser.add_argument(
@@ -123,7 +121,7 @@ def parse_args():
     parser.add_argument(
         '--device',
         dest='device',
-        help='Device place to be set, which can be GPU, XPU, CPU',
+        help='Device place to be set, which can be GPU, XPU, NPU, CPU',
         default='gpu',
         type=str)
 
@@ -148,6 +146,8 @@ def main(args):
         place = 'gpu'
     elif args.device == 'xpu' and paddle.is_compiled_with_xpu():
         place = 'xpu'
+    elif args.device == 'npu' and paddle.is_compiled_with_npu():
+        place = 'npu'
     else:
         place = 'cpu'
 
@@ -189,6 +189,10 @@ def main(args):
     logger.info(msg)
 
     config_check(cfg, train_dataset=train_dataset, val_dataset=val_dataset)
+
+    if place == 'gpu':
+        # convert bn to sync_bn
+        cfg._model = paddle.nn.SyncBatchNorm.convert_sync_batchnorm(cfg.model)
 
     train(
         cfg.model,

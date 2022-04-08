@@ -25,6 +25,7 @@ class SECrossEntropyLoss(nn.Layer):
     The Semantic Encoding Loss implementation based on PaddlePaddle.
 
     """
+
     def __init__(self, *args, **kwargs):
         super(SECrossEntropyLoss, self).__init__()
 
@@ -37,10 +38,8 @@ class SECrossEntropyLoss(nn.Layer):
         batch_size, num_classes = paddle.shape(logit)
         se_label = paddle.zeros([batch_size, num_classes])
         for i in range(batch_size):
-            hist = paddle.histogram(label[i],
-                                    bins=num_classes,
-                                    min=0,
-                                    max=num_classes - 1)
+            hist = paddle.histogram(
+                label[i], bins=num_classes, min=0, max=num_classes - 1)
             hist = hist.astype('float32') / hist.sum().astype('float32')
             se_label[i] = (hist > 0).astype('float32')
         loss = F.binary_cross_entropy_with_logits(logit, se_label)
