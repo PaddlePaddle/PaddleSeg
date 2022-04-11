@@ -21,6 +21,7 @@ val_dataset:
   num_classes: 3
   transforms: []
   mode: val
+  dataset_json_path: "data/MRSpineSeg/MRI_spine_seg_raw/dataset.json"
 
 optimizer:
   type: sgd

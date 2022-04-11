@@ -31,7 +31,7 @@ import medicalseg.transforms as T
 from medicalseg.cvlibs import manager
 from medicalseg.utils import get_sys_env, logger, get_image_list
 from medicalseg.utils.visualize import get_pseudo_color_map
-from tools import HUNorm, resample
+from tools import HUnorm, resample
 from tools import Prep
 
 
@@ -382,18 +382,31 @@ class Predictor:
 
         """
         if not "npy" in img:
-            Prep.load_save(
-                file_path=img,
-                save_path=os.path.dirname(img),
-                preprocess=[
-                    HUNorm,
-                    functools.partial(
-                        resample,  # TODO: config preprocess in deply.yaml to set params
-                        new_shape=[128, 128, 128],
-                        order=1)
-                ],
-                valid_suffix=None,
-                filter_key=None)
+            image_files = get_image_list(img, None, None)
+            savepath = os.path.dirname(img)
+            pre = [
+                HUnorm,
+                functools.partial(
+                    resample,  # TODO: config preprocess in deply.yaml to set params
+                    new_shape=[128, 128, 128],
+                    order=1)
+            ]
+
+            for f in tqdm(image_files, total=len(image_files)):
+                f_np = Prep.load_medical_data(f)
+                if pre is not None:
+                    for op in pre:
+                        f_np = op(f_np)
+
+                # Set image to a uniform format before save.             
+                f_np = f_np.astype("float32")
+
+                np.save(
+                    os.path.join(
+                        savepath, f.split("/")[-1].split(
+                            ".", maxsplit=1)[0]),
+                    f_np)
+
             img = img.split(".", maxsplit=1)[0] + ".npy"
 
         return self.cfg.transforms(img)[0]

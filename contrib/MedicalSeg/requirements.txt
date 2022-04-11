@@ -9,3 +9,4 @@ visualdl
 sklearn
 filelock
 nibabel
+pydicom

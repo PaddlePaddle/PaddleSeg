@@ -17,4 +17,4 @@ loss:
           weight: Null
         - type: DiceLoss
       coef: [1, 1]
-  coef: [0.5, 0.5]
+  coef: [0.25, 0.25, 0.25, 0.25]
