@@ -14,50 +14,50 @@ MedicalSeg 是一个简单易使用的 3D 医学图像分割工具包，支持�
     <div style="color:orange;
     display: inline-block;
     color: #999;
-    padding: 2px;">Segmentation result of our VNet model on COVID-19 CT scans (mDice on evalset is 97.04%) &   MRISpineSeg (16 class mDice on evalset is 89.14%)</div>
+    padding: 2px;"> Vnet 在 COVID-19 CT scans (评估集上的 mDice 指标为 97.04%) 和 MRISpineSeg 数据集(评估集上的 16 类 mDice 指标为 89.14%) 上的分割结果</div>
 </center>
 
 
-**MedicalSeg is currently under development! If you find any problem using it or want to share any future develop suggestions, please open a github issue or join us by scanning the following wechat QR code.**
+**MedicalSeg 目前正在开发中！如果您在使用中发现任何问题，或想分享任何开发建议，请提交 github issue 或扫描以下微信二维码加入我们。**
 
 <p align="center">
 <img src="https://user-images.githubusercontent.com/48433081/162115375-2dba8796-5184-4793-8efa-b142734fe734.png" width="28%" height="20%">
 </p>
 
 ## Contents
-1. [Performance](##Performance)
-2. [Demo](##Demo)
-3. [Structure](#Structure)
+1. [模型性能](##模型性能)
+2. [快速开始](##快速开始)
+3. [代码结构](#代码结构)
 4. [TODO](#TODO)
-5. [Acknowledgement](#Acknowledgement)
+5. [致谢](#致谢)
 
-## Performance
+## 模型性能
 
-###  1. Accuracy
+###  1. 精度
 
-We successfully validate our framework with [Vnet](https://arxiv.org/abs/1606.04797) on the [COVID-19 CT scans](https://www.kaggle.com/andrewmvd/covid19-ct-scans) and [MRISpineSeg](https://www.spinesegmentation-challenge.com/) dataset. With the lung mask as label, we reached dice coefficient of 97.04% on COVID-19 CT scans. You can download the log to see the result or load the model and validate it by yourself :).
+我们使用 [Vnet](https://arxiv.org/abs/1606.04797) 在 [COVID-19 CT scans](https://www.kaggle.com/andrewmvd/covid19-ct-scans) 和 [MRISpineSeg](https://www.spinesegmentation-challenge.com/) 数据集上成功验证了我们的框架。以左肺/右肺为标签，我们在 COVID-19 CT scans 中达到了 97.04% 的 mDice 系数。你可以下载日志以查看结果或加载模型并自行验证:)。
 
-#### **Result on Lung coronavirus** 
+#### **COVID-19 CT scans 上的分割结果** 
 
-| Backbone | Resolution | lr | Training Iters | Dice | Links |
+| 主干网络 | 分辨率 | 学习率 | 训练轮数 | mDice | 链接 |
 |:-:|:-:|:-:|:-:|:-:|:-:|
 |-|128x128x128|0.001|15000|97.04%|[model](https://bj.bcebos.com/paddleseg/paddleseg3d/lung_coronavirus/vnet_lung_coronavirus_128_128_128_15k_1e-3/model.pdparams) \| [log](https://bj.bcebos.com/paddleseg/paddleseg3d/lung_coronavirus/vnet_lung_coronavirus_128_128_128_15k_1e-3/train.log) \| [vdl](https://paddlepaddle.org.cn/paddle/visualdl/service/app?id=9db5c1e11ebc82f9a470f01a9114bd3c)|
 |-|128x128x128|0.0003|15000|92.70%|[model](https://bj.bcebos.com/paddleseg/paddleseg3d/lung_coronavirus/vnet_lung_coronavirus_128_128_128_15k_3e-4/model.pdparams) \| [log](https://bj.bcebos.com/paddleseg/paddleseg3d/lung_coronavirus/vnet_lung_coronavirus_128_128_128_15k_3e-4/train.log) \| [vdl](https://www.paddlepaddle.org.cn/paddle/visualdl/service/app/scalar?id=0fb90ee5a6ea8821c0d61a6857ba4614)|
 
-#### **Result on MRISpineSeg**
+#### **MRISpineSeg 上的分割结果**
 
-| Backbone | Resolution | lr | Training Iters | Dice(20 classes) | Dice(16 classes) | Links |
+| 主干网络 | 分辨率 | 学习率 | 训练轮数 | mDice(20 classes) | Dice(16 classes) | 链接 |
 |:-:|:-:|:-:|:-:|:-:|:-:|:-:|
 |-|512x512x12|0.1|15000|74.41%| 88.17% |[model](https://bj.bcebos.com/paddleseg/paddleseg3d/mri_spine_seg/vnet_mri_spine_seg_512_512_12_15k_1e-1/model.pdparams) \| [log](https://bj.bcebos.com/paddleseg/paddleseg3d/mri_spine_seg/vnet_mri_spine_seg_512_512_12_15k_1e-1/train.log) \| [vdl](https://www.paddlepaddle.org.cn/paddle/visualdl/service/app/scalar?id=36504064c740e28506f991815bd21cc7)|
 |-|512x512x12|0.5|15000|74.69%| 89.14% |[model](https://bj.bcebos.com/paddleseg/paddleseg3d/mri_spine_seg/vnet_mri_spine_seg_512_512_12_15k_5e-1/model.pdparams) \| [log](https://bj.bcebos.com/paddleseg/paddleseg3d/mri_spine_seg/vnet_mri_spine_seg_512_512_12_15k_5e-1/train.log) \| [vdl](https://www.paddlepaddle.org.cn/paddle/visualdl/service/app/index?id=08b0f9f62ebb255cdfc93fd6bd8f2c06)|
 
 
-### 2. Speed
-We add gpu acceleration in data preprocess using [CuPy](https://docs.cupy.dev/en/stable/index.html). Compared with preprocess data on cpu, acceleration enable us to use about 40% less time in data prepeocessing. The following shows the time we spend in process COVID-19 CT scans.
+### 2. 速度
+我们使用 [CuPy](https://docs.cupy.dev/en/stable/index.html) 在数据预处理中添加 GPU 加速。与 CPU 上的预处理数据相比，加速使我们在数据预处理中使用的时间减少了大约 40%。下面显示了加速前后，我们花在处理 COVID-19 CT scans 数据集预处理上的时间。
 
 <center>
 
-| Device | Time(s) |
+| 设备 | 时间(s) |
 |:-:|:-:|
 |CPU|50.7|
 |GPU|31.4( &#8595; 38%)|
@@ -65,59 +65,60 @@ We add gpu acceleration in data preprocess using [CuPy](https://docs.cupy.dev/en
 </center>
 
 
-## Demo
-This part introduce a easy to use demo on COVID-19 CT scans dataset. This demo is available on our [Aistudio project](https://aistudio.baidu.com/aistudio/projectdetail/3519594) as well. Detailed steps on training and add your own dataset can refer to this [tutorial](documentation/tutorial.md).
-- Download our repository.
+## 快速开始
+这一部部分我们展示了一个快速在 COVID-19 CT scans 数据集上训练的例子，这个例子同样可以在我们的[Aistudio 项目](https://aistudio.baidu.com/aistudio/projectdetail/3519594)中找到，详细的训练部署，以及在自己数据集上训练的步骤可以参考这个[教程](documentation/tutorial_cn.md)。
+- 下载仓库：
     ```
     git clone https://github.com/PaddlePaddle/PaddleSeg.git
 
     cd contrib/MedicalSeg/
     ```
-- Install requirements:
+- 安装需要的库：
     ```
     pip install -r requirements.txt
     ```
-- (Optional) Install CuPY if you want to accelerate the preprocess process. [CuPY installation guide](https://docs.cupy.dev/en/latest/install.html)
+- (可选) 如果需要GPU加速，则可以参考[教程](https://docs.cupy.dev/en/latest/install.html) 安装 CuPY。
 
-- Get and preprocess the data:
-    - change the GPU setting [here](tools/preprocess_globals.yml) to True if you installed CuPY and want to use GPU to accelerate.
+- 一键数据预处理：
+    - 如果你安装了CuPY并且想要 GPU 加速，修改[这里](tools/preprocess_globals.yml)的 use_gpu 配置为 True。
     ```
     python tools/prepare_lung_coronavirus.py
     ```
 
-- Run the train and validation example. (Refer to the following usage to get the correct result.)
+- 基于脚本进行训练、评估、部署： (参考[教程](documentation/tutorial_cn.md)来了解详细的脚本内容。)
    ```
    sh run-vnet.sh
    ```
 
-## Structure
-This part shows you the whole picture of our repository, which is easy to expand with different model and datasets. Our file tree is as follows:
+## 代码结构
+这部分介绍了我们仓库的整体结构，这个结构决定了我们的不同的功能模块都是十分方便拓展的。我们的文件树如图所示：
 
 ```bash
-├── configs         # All configuration stays here. If you use our model, you only need to change this and run-vnet.sh.
-├── data            # Data stays here.
-├── deploy          # deploy related doc and script.
+├── configs         # 关于训练的配置，每个数据集的配置在一个文件夹中。基于数据和模型的配置都可以在这里修改
+├── data            # 存储预处理前后的数据
+├── deploy          # 部署相关的文档和脚本
 ├── medicalseg  
-│   ├── core        # the core training, val and test file.
+│   ├── core        # 训练和评估的代码
 │   ├── datasets  
 │   ├── models  
-│   ├── transforms  # the online data transforms
-│   └── utils       # all kinds of utility files
+│   ├── transforms  # 在线变换的模块化代码
+│   └── utils       
 ├── export.py
-├── run-unet.sh     # the script to reproduce our project, including training, validate, infer and deploy
-├── tools           # Data preprocess including fetch data, process it and split into training and validation set
+├── run-unet.sh     # 包含从训练到部署的脚本
+├── tools           # 数据预处理文件夹，包含数据获取，预处理，以及数据集切分
 ├── train.py
 ├── val.py
-└── visualize.ipynb # You can try to visualize the result use this file.
+└── visualize.ipynb # 用于进行 3D 可视化
 ```
 
 ## TODO
-We have several thoughts in mind about what should our repo focus on.
-- [ ] Add PP-nnunet with acceleration in preprocess, automatic configuration for all dataset and better performance compared to nnunet.
-- [ ] Add top 1 liver segmentation algorithm on LITS challenge.
-- [ ] Add 3D Vertebral Measurement System.
-- [ ] Add pretrain model on various dataset.
+未来，我们想在这几个方面来发展 MedicalSeg。
+- [ ] 增加带有预训练加速，自动化参数配置的高精度 PP-nnunet 模型。
+- [ ] 增加在 LITs 挑战中的 Top 1 肝脏分割算法。
+- [ ] 增加 3D 椎骨可视化测量系统。
+- [ ] 增加在多个数据上训练的预训练模型。
 
-## Acknowledgement
-- Many thanks to [Lin Han](https://github.com/linhandev), [Lang Du](https://github.com/justld), [onecatcn](https://github.com/onecatcn) for their contribution in  our repository
-- Many thanks to [itkwidgets](https://github.com/InsightSoftwareConsortium/itkwidgets) for their powerful visualization toolkit that we used to present our visualizations.
+
+## 致谢
+- 非常感谢 [Lin Han](https://github.com/linhandev), [Lang Du](https://github.com/justld), [onecatcn](https://github.com/onecatcn) 对我们仓库的贡献。
+- 非常感谢 [itkwidgets](https://github.com/InsightSoftwareConsortium/itkwidgets) 强大的3D可视化功能。

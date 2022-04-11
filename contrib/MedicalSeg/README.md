@@ -26,7 +26,7 @@ MedicalSeg is an easy-to-use 3D medical image segmentation toolkit that supports
 
 ## Contents
 1. [Performance](##Performance)
-2. [Demo](##Demo)
+2. [Quick Start](##QuickStart)
 3. [Structure](#Structure)
 4. [TODO](#TODO)
 5. [Acknowledgement](#Acknowledgement)
@@ -37,7 +37,7 @@ MedicalSeg is an easy-to-use 3D medical image segmentation toolkit that supports
 
 We successfully validate our framework with [Vnet](https://arxiv.org/abs/1606.04797) on the [COVID-19 CT scans](https://www.kaggle.com/andrewmvd/covid19-ct-scans) and [MRISpineSeg](https://www.spinesegmentation-challenge.com/) dataset. With the lung mask as label, we reached dice coefficient of 97.04% on COVID-19 CT scans. You can download the log to see the result or load the model and validate it by yourself :).
 
-#### **Result on Lung coronavirus** 
+#### **Result on COVID-19 CT scans** 
 
 | Backbone | Resolution | lr | Training Iters | Dice | Links |
 |:-:|:-:|:-:|:-:|:-:|:-:|
@@ -53,7 +53,7 @@ We successfully validate our framework with [Vnet](https://arxiv.org/abs/1606.04
 
 
 ### 2. Speed
-We add gpu acceleration in data preprocess using [CuPy](https://docs.cupy.dev/en/stable/index.html). Compared with preprocess data on cpu, acceleration enable us to use about 40% less time in data prepeocessing. The following shows the time we spend in process COVID-19 CT scans.
+We add GPU acceleration in data preprocess using [CuPy](https://docs.cupy.dev/en/stable/index.html). Compared with preprocess data on CPU, acceleration enable us to use about 40% less time in data prepeocessing. The following shows the time we spend in process COVID-19 CT scans.
 
 <center>
 
@@ -65,8 +65,8 @@ We add gpu acceleration in data preprocess using [CuPy](https://docs.cupy.dev/en
 </center>
 
 
-## Demo
-This part introduce a easy to use demo on COVID-19 CT scans dataset. This demo is available on our [Aistudio project](https://aistudio.baidu.com/aistudio/projectdetail/3519594) as well. Detailed steps on training and add your own dataset can refer to this [tutorial](documentation/tutorial.md).
+## QuickStart
+This part introduce a easy to use the demo on COVID-19 CT scans dataset. This demo is available on our [Aistudio project](https://aistudio.baidu.com/aistudio/projectdetail/3519594) as well. Detailed steps on training and add your own dataset can refer to this [tutorial](documentation/tutorial.md).
 - Download our repository.
     ```
     git clone https://github.com/PaddlePaddle/PaddleSeg.git
@@ -85,7 +85,7 @@ This part introduce a easy to use demo on COVID-19 CT scans dataset. This demo i
     python tools/prepare_lung_coronavirus.py
     ```
 
-- Run the train and validation example. (Refer to the following usage to get the correct result.)
+- Run the train and validation example. (Refer to the [tutorial](documentation/tutorial.md) for details.)
    ```
    sh run-vnet.sh
    ```
@@ -104,7 +104,7 @@ This part shows you the whole picture of our repository, which is easy to expand
 │   ├── transforms  # the online data transforms
 │   └── utils       # all kinds of utility files
 ├── export.py
-├── run-unet.sh     # the script to reproduce our project, including training, validate, infer and deploy
+├── run-vnet.sh     # the script to reproduce our project, including training, validate, infer and deploy
 ├── tools           # Data preprocess including fetch data, process it and split into training and validation set
 ├── train.py
 ├── val.py
