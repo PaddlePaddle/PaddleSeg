@@ -62,3 +62,16 @@ function status_check(){
         echo -e "\033[33m Run failed with command - ${run_command}!  \033[0m" | tee -a ${run_log}
     fi
 }
+
+function contains() {
+    local n=$#
+    local value=${!n}
+    for ((i=1;i < $#;i++)) {
+        if [ "${!i}" == "${value}" ]; then
+            echo "y"
+            return 0
+        fi
+    }
+    echo "n"
+    return 1
+}
