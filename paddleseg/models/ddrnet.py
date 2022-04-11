@@ -38,6 +38,7 @@ class DualResNet(nn.Layer):
         augment (bool): Whether use auxiliary head for stage3. Default: False.
         pretrained (str, optional): The path or url of pretrained model. Default: None.
     """
+
     def __init__(self,
                  num_classes,
                  block_layers=[2, 2, 2, 2],
