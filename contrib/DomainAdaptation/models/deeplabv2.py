@@ -26,9 +26,7 @@ from paddleseg.utils import utils, logger
 from .gscnn import GSCNNHead
 from .backbones.resnet import ClassifierModule
 
-__all__ = [
-    'DeepLabV2',
-]
+__all__ = ['DeepLabV2', ]
 
 
 @manager.MODELS.add_component
@@ -116,8 +114,8 @@ class DeepLabV2(nn.Layer):
                     num_params_loaded += 1
             self.backbone.set_dict(model_state_dict)
             logger.info("There are {}/{} variables loaded into {}.".format(
-                num_params_loaded, len(model_state_dict),
-                self.backbone.__class__.__name__))
+                num_params_loaded,
+                len(model_state_dict), self.backbone.__class__.__name__))
 
 
 class edge_branch(nn.Layer):

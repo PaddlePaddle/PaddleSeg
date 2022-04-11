@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 from qtpy import QtWidgets
 from qtpy.QtCore import Qt
 
@@ -61,7 +60,8 @@ class TableWidget(QtWidgets.QTableWidget):
         if not index.isValid():
             return self.rowCount()
 
-        return index.row() + 1 if self.is_below(event.pos(), index) else index.row()
+        return index.row() + 1 if self.is_below(event.pos(),
+                                                index) else index.row()
 
     def is_below(self, pos, index):
         rect = self.visualRect(index)
@@ -71,8 +71,6 @@ class TableWidget(QtWidgets.QTableWidget):
         elif rect.bottom() - pos.y() < margin:
             return True
         # noinspection PyTypeChecker
-        return (
-            rect.contains(pos, True)
-            and not (int(self.model().flags(index)) & Qt.ItemIsDropEnabled)
-            and pos.y() >= rect.center().y()
-        )
+        return (rect.contains(pos, True) and
+                not (int(self.model().flags(index)) & Qt.ItemIsDropEnabled) and
+                pos.y() >= rect.center().y())

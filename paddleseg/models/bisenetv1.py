@@ -35,36 +35,36 @@ class BiseNetV1(nn.Layer):
         backbone (paddle.nn.Layer): Backbone network, currently support Resnet18_vd/Resnet34_vd/Resnet50_vd/Resnet101_vd.
         pretrained (str, optional): The path or url of pretrained model. Default: None.
     """
-    def __init__(self,
-                 num_classes,
-                 backbone,
-                 conv_channel=128,
+
+    def __init__(self, num_classes, backbone, conv_channel=128,
                  pretrained=None):
         super().__init__()
         self.backbone = backbone
         self.spatial_path = SpatialPath(3, 128)
         self.global_context = nn.Sequential(
             nn.AdaptiveAvgPool2D(1),
-            layers.ConvBNReLU(512, conv_channel, 1, bias_attr=False),
-        )
+            layers.ConvBNReLU(
+                512, conv_channel, 1, bias_attr=False), )
 
         self.arms = nn.LayerList([
             AttentionRefinement(512, conv_channel),
             AttentionRefinement(256, conv_channel),
         ])
         self.refines = nn.LayerList([
-            layers.ConvBNReLU(conv_channel,
-                              conv_channel,
-                              3,
-                              stride=1,
-                              padding=1,
-                              bias_attr=False),
-            layers.ConvBNReLU(conv_channel,
-                              conv_channel,
-                              3,
-                              stride=1,
-                              padding=1,
-                              bias_attr=False),
+            layers.ConvBNReLU(
+                conv_channel,
+                conv_channel,
+                3,
+                stride=1,
+                padding=1,
+                bias_attr=False),
+            layers.ConvBNReLU(
+                conv_channel,
+                conv_channel,
+                3,
+                stride=1,
+                padding=1,
+                bias_attr=False),
         ])
 
         self.heads = nn.LayerList([
@@ -87,22 +87,24 @@ class BiseNetV1(nn.Layer):
         context_blocks.reverse()
 
         global_context = self.global_context(context_blocks[0])
-        global_context = F.interpolate(global_context,
-                                       size=paddle.shape(context_blocks[0])[2:],
-                                       mode='bilinear',
-                                       align_corners=True)
+        global_context = F.interpolate(
+            global_context,
+            size=paddle.shape(context_blocks[0])[2:],
+            mode='bilinear',
+            align_corners=True)
         last_fm = global_context
         pred_out = []
 
-        for i, (fm, arm, refine) in enumerate(
-                zip(context_blocks[:2], self.arms, self.refines)):
+        for i, (
+                fm, arm, refine
+        ) in enumerate(zip(context_blocks[:2], self.arms, self.refines)):
             fm = arm(fm)
             fm += last_fm
-            last_fm = F.interpolate(fm,
-                                    size=paddle.shape(context_blocks[i +
-                                                                     1])[2:],
-                                    mode='bilinear',
-                                    align_corners=True)
+            last_fm = F.interpolate(
+                fm,
+                size=paddle.shape(context_blocks[i + 1])[2:],
+                mode='bilinear',
+                align_corners=True)
             last_fm = refine(last_fm)
             pred_out.append(last_fm)
         context_out = last_fm
@@ -129,30 +131,27 @@ class SpatialPath(nn.Layer):
         in_channels (int): The number of input channels in spatial path module.
         out_channels (int): The number of output channels in spatial path module.
     """
+
     def __init__(self, in_channels, out_channels, inner_channel=64):
         super().__init__()
-        self.conv_7x7 = layers.ConvBNReLU(in_channels,
-                                          inner_channel,
-                                          7,
-                                          stride=2,
-                                          padding=3,
-                                          bias_attr=False)
-        self.conv_3x3_1 = layers.ConvBNReLU(inner_channel,
-                                            inner_channel,
-                                            3,
-                                            stride=2,
-                                            padding=1,
-                                            bias_attr=False)
-        self.conv_3x3_2 = layers.ConvBNReLU(inner_channel,
-                                            inner_channel,
-                                            3,
-                                            stride=2,
-                                            padding=1,
-                                            bias_attr=False)
-        self.conv_1x1 = layers.ConvBNReLU(inner_channel,
-                                          out_channels,
-                                          1,
-                                          bias_attr=False)
+        self.conv_7x7 = layers.ConvBNReLU(
+            in_channels, inner_channel, 7, stride=2, padding=3, bias_attr=False)
+        self.conv_3x3_1 = layers.ConvBNReLU(
+            inner_channel,
+            inner_channel,
+            3,
+            stride=2,
+            padding=1,
+            bias_attr=False)
+        self.conv_3x3_2 = layers.ConvBNReLU(
+            inner_channel,
+            inner_channel,
+            3,
+            stride=2,
+            padding=1,
+            bias_attr=False)
+        self.conv_1x1 = layers.ConvBNReLU(
+            inner_channel, out_channels, 1, bias_attr=False)
 
     def forward(self, x):
         x = self.conv_7x7(x)
@@ -171,15 +170,12 @@ class BiSeNetHead(nn.Layer):
         out_channels (int): The number of output channels in spatial path module.
         scale (int, float): The scale factor of interpolation.
     """
+
     def __init__(self, in_channels, out_channels, scale, is_aux=False):
         super().__init__()
         inner_channel = 128 if is_aux else 64
-        self.conv_3x3 = layers.ConvBNReLU(in_channels,
-                                          inner_channel,
-                                          3,
-                                          stride=1,
-                                          padding=1,
-                                          bias_attr=False)
+        self.conv_3x3 = layers.ConvBNReLU(
+            in_channels, inner_channel, 3, stride=1, padding=1, bias_attr=False)
         self.conv_1x1 = nn.Conv2D(inner_channel, out_channels, 1)
         self.scale = scale
 
@@ -187,10 +183,8 @@ class BiSeNetHead(nn.Layer):
         x = self.conv_3x3(x)
         x = self.conv_1x1(x)
         if self.scale > 1:
-            x = F.interpolate(x,
-                              scale_factor=self.scale,
-                              mode='bilinear',
-                              align_corners=True)
+            x = F.interpolate(
+                x, scale_factor=self.scale, mode='bilinear', align_corners=True)
         return x
 
 
@@ -202,19 +196,16 @@ class AttentionRefinement(nn.Layer):
         in_channels (int): The number of input channels in spatial path module.
         out_channels (int): The number of output channels in spatial path module.
     """
+
     def __init__(self, in_channels, out_channels):
         super().__init__()
-        self.conv_3x3 = layers.ConvBNReLU(in_channels,
-                                          out_channels,
-                                          3,
-                                          stride=1,
-                                          padding=1,
-                                          bias_attr=False)
+        self.conv_3x3 = layers.ConvBNReLU(
+            in_channels, out_channels, 3, stride=1, padding=1, bias_attr=False)
         self.channel_attention = nn.Sequential(
             nn.AdaptiveAvgPool2D(1),
-            layers.ConvBNReLU(out_channels, out_channels, 1, bias_attr=False),
-            nn.Sigmoid(),
-        )
+            layers.ConvBNReLU(
+                out_channels, out_channels, 1, bias_attr=False),
+            nn.Sigmoid(), )
 
     def forward(self, x):
         x = self.conv_3x3(x)
@@ -232,24 +223,18 @@ class FeatureFusion(nn.Layer):
         out_channels (int): The number of output channels in spatial path module.
         reduction (int): A factor shrinks convolutional channels. Default: 1.
     """
+
     def __init__(self, in_channels, out_channels, reduction=1):
         super().__init__()
-        self.conv_1x1 = layers.ConvBNReLU(in_channels,
-                                          out_channels,
-                                          1,
-                                          bias_attr=False)
+        self.conv_1x1 = layers.ConvBNReLU(
+            in_channels, out_channels, 1, bias_attr=False)
         self.channel_attention = nn.Sequential(
             nn.AdaptiveAvgPool2D(1),
-            layers.ConvBNReLU(out_channels,
-                              out_channels // reduction,
-                              1,
-                              bias_attr=False),
-            layers.ConvBNReLU(out_channels // reduction,
-                              out_channels,
-                              1,
-                              bias_attr=False),
-            nn.Sigmoid(),
-        )
+            layers.ConvBNReLU(
+                out_channels, out_channels // reduction, 1, bias_attr=False),
+            layers.ConvBNReLU(
+                out_channels // reduction, out_channels, 1, bias_attr=False),
+            nn.Sigmoid(), )
 
     def forward(self, x1, x2):
         fm = paddle.concat([x1, x2], axis=1)

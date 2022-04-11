@@ -38,11 +38,8 @@ def run(args):
     client.connect([args.serving_ip_port])
 
     seq = Sequential([
-        File2Image(),
-        RGB2BGR(),
-        Div(255),
-        Normalize([0.5, 0.5, 0.5], [0.5, 0.5, 0.5], False),
-        Transpose((2, 0, 1))
+        File2Image(), RGB2BGR(), Div(255),
+        Normalize([0.5, 0.5, 0.5], [0.5, 0.5, 0.5], False), Transpose((2, 0, 1))
     ])
 
     img = seq(args.image_path)

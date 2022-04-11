@@ -30,6 +30,7 @@ from export import SavedSegmentationNet
 
 from paddleslim import QAT
 
+
 def parse_args():
     parser = argparse.ArgumentParser(description='Model export.')
     parser.add_argument(
@@ -72,15 +73,15 @@ def main(args):
 
     skip_quant(net)
     quantizer = QAT(config=quant_config)
-    quant_net = quantizer.quantize(net)
+    quantizer.quantize(net)
     logger.info('Quantize the model successfully')
 
     if args.model_path:
-        utils.load_entire_model(quant_net, args.model_path)
+        utils.load_entire_model(net, args.model_path)
         logger.info('Loaded trained params of model successfully')
 
     if not args.without_argmax or args.with_softmax:
-        new_net = SavedSegmentationNet(quant_net, args.without_argmax,
+        new_net = SavedSegmentationNet(net, args.without_argmax,
                                        args.with_softmax)
     else:
         new_net = net
@@ -88,7 +89,8 @@ def main(args):
     new_net.eval()
     save_path = os.path.join(args.save_dir, 'model')
     input_spec = [
-        paddle.static.InputSpec(shape=[None, 3, None, None], dtype='float32')
+        paddle.static.InputSpec(
+            shape=[None, 3, None, None], dtype='float32')
     ]
     quantizer.save_quantized_model(new_net, save_path, input_spec=input_spec)
 

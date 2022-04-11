@@ -25,12 +25,12 @@ English | [简体中文](README_CN.md)
  <ul>
         <li>Upgrade the interactive annotation tool <a href="./EISeg">EISeg v0.4</a> with faster inference speed, supporting new areas in remote sensing and medical segmentation.</li>
         <li>Publish the <a href="./contrib/PP-HumanSeg/paper.md">PP-HumanSeg</a> paper, and released Semantic Connectivity-aware Learning framework and a Large-Scale Teleconferencing Video Dataset.</li>
-        <li>Release <a href="./contrib/Matting">PP-HumanMatting</a> for extremely fine-grained human segmentation, with an Android tutorial.</li>
+        <li>Release <a href="./Matting">PP-HumanMatting</a> for extremely fine-grained human segmentation, with an Android tutorial.</li>
         <li>Add 9 semantic segmentatioin models, including a new transformer model <a href="configs/segmenter">SegMenter</a>.</li>
         <li>Provide a comprehensive <a href="docs/model_zoo_overview.md">performance table</a> for all segmentation models, which helps to choose a better model on the accuracy and the speed.</li>
-    </ul> 
-   
- 
+    </ul>
+
+
  <li>[2021-10-11] We released PaddleSeg v2.3 with the improved interactive segmentation tool EISeg v0.3, two matting algorithms, and segmentation model compression.</li>
  <li>[2021-09-20] We published an interactive segmentation <a href="https://arxiv.org/abs/2109.09406">paper</a> with SOTA performance on several well-known datasets.</li>
 </ul>
@@ -126,6 +126,7 @@ PaddleSeg is an end-to-end high-efficent development toolkit for image segmentat
             <li>MLA Transformer</li>
             <li>SegFormer</li>
             <li>SegMenter</li>
+            <li>PP-LiteSeg</li>
       </td>
       <td>
         <b>Backbones</b><br>
@@ -309,7 +310,7 @@ The relationship between mIoU and FLOPs of representative architectures and back
 
 ## Practical Projects
   * [Interactive Segmentation](./EISeg)
-  * [Image Matting](./contrib/Matting)
+  * [Image Matting](./Matting)
   * [PP-HumanSeg](./contrib/PP-HumanSeg)
   * [Cityscapes SOTA](./contrib/CityscapesSOTA)
   * [Panoptic Segmentation](./contrib/PanopticDeepLab)
@@ -320,9 +321,9 @@ The relationship between mIoU and FLOPs of representative architectures and back
 ## Community <img src="./docs/images/chat.png" width="30"/>
 
 * If you have any problem or suggestion on PaddleSeg, please send us issues through [GitHub Issues](https://github.com/PaddlePaddle/PaddleSeg/issues).
-* Welcome to Join PaddleSeg QQ Group
+* Welcome to Join PaddleSeg WeChat Group
 <div align="center">
-<img src="./docs/images/QQ_chat.png"  width = "200" />  
+<img src="https://user-images.githubusercontent.com/48433081/162115081-e181c301-9aa9-41fa-85d8-285fe0d9eb37.png"  width = "200" />  
 </div>
 
 ## License

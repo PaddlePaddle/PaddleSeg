@@ -74,19 +74,19 @@ def main(args):
     new_net.eval()
     new_net = paddle.jit.to_static(
         new_net,
-        input_spec=[paddle.static.InputSpec(shape=shape, dtype='float32')])
+        input_spec=[paddle.static.InputSpec(
+            shape=shape, dtype='float32')])
     save_path = os.path.join(args.save_dir, 'model')
     paddle.jit.save(new_net, save_path)
 
     yml_file = os.path.join(args.save_dir, 'deploy.yaml')
     with open(yml_file, 'w') as file:
-        transforms = cfg.export_config.get('transforms',
-                                           [{
-                                               'type': 'Resize',
-                                               'target_size': [640, 368]
-                                           }, {
-                                               'type': 'Normalize'
-                                           }])
+        transforms = cfg.export_config.get('transforms', [{
+            'type': 'Resize',
+            'target_size': [640, 368]
+        }, {
+            'type': 'Normalize'
+        }])
         data = {
             'Deploy': {
                 'transforms': transforms,

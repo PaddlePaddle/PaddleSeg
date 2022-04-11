@@ -56,8 +56,8 @@ class LinearSegmenter(nn.Layer):
         logits = self.head(feats[-1], shape[2:])
 
         logit_list = [
-            F.interpolate(logit, x_shape[2:], mode='bilinear')
-            for logit in logits
+            F.interpolate(
+                logit, x_shape[2:], mode='bilinear') for logit in logits
         ]
 
         return logit_list
@@ -117,8 +117,8 @@ class MaskSegmenter(nn.Layer):
         logits = self.head(feats[-1], shape[2:])
 
         logit_list = [
-            F.interpolate(logit, x_shape[2:], mode='bilinear')
-            for logit in logits
+            F.interpolate(
+                logit, x_shape[2:], mode='bilinear') for logit in logits
         ]
 
         return logit_list
@@ -243,7 +243,7 @@ class SegmenterMaskHead(nn.Layer):
         patches = patches / paddle.norm(patches, axis=-1, keepdim=True)
         masks = masks / paddle.norm(masks, axis=-1, keepdim=True)
 
-        masks = patches @ masks.transpose((0, 2, 1))
+        masks = patches @masks.transpose((0, 2, 1))
         masks = masks.reshape((0, 0,
                                self.num_classes))  # For export inference model
         masks = self.mask_norm(masks)

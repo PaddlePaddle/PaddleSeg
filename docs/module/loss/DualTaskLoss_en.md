@@ -4,7 +4,7 @@ Dual-task consistency used for semi-supervised learning to constrain the model. 
 
 ```python
 class paddleseg.models.losses.DualTaskLoss(
-            ignore_index = 255, 
+            ignore_index = 255,
             tau = 0.5
 )
 ```

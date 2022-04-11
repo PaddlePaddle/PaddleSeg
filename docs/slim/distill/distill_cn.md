@@ -86,7 +86,7 @@ python train.py \
     --save_dir output/deeplabv3p_resnet18
 ```
 
-训练结束后，教师模型的mIou为83.93%(实际可能有点差异)，对应的权重保存在`output/deeplabv3p_resnet18/best_model/model.pdparams`。
+训练结束后，模型的mIou为83.93%(实际可能有点差异)，对应的权重保存在`output/deeplabv3p_resnet18/best_model/model.pdparams`。
 
 ### 2.5 蒸馏配置
 

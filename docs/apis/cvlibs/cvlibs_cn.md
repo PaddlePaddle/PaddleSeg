@@ -11,7 +11,7 @@
 class paddleseg.cvlibs.manager.ComponentManager(name)
 ```
 > 实现一个manager类，以正确地向模型添加新组件。
-> 组件以类或函数的类型被添加。 
+> 组件以类或函数的类型被添加。
 
 
 ### 参数
@@ -69,7 +69,7 @@ add_component(components)
 ```python
 constant_init(param, **kwargs):
 ```
-> 用常量初始化 `param` 
+> 用常量初始化 `param`
 
 ### 参数
 * **param** (Tensor): 需要被初始化的张量。
@@ -90,7 +90,7 @@ print(linear.weight.numpy())
 ```python
 normal_init(param, **kwargs)
 ```
-> 用正态分布初始化 `param` 
+> 用正态分布初始化 `param`
 
 ### 参数
 * **param** (Tensor): Tensor that needs to be initialized.
@@ -113,7 +113,7 @@ kaiming_normal_init(param, **kwargs):
 > 用Kaiming Normal initialization对输入张量进行初始化。
 
 > 本函数是对论文`Delving Deep into Rectifiers: Surpassing Human-Level Performance on ImageNet Classification <https://arxiv.org/abs/1502.01852>`中对`param` 的初始化方法的实现。该论文作者为Kaiming He, Xiangyu Zhang, Shaoqing Ren 和Jian Sun。
-    
+
 > 由于其特别考虑到整流器的非线性特征，这是一种具有鲁棒性的初始化方法。
 
 > 在均匀分布的情况下，范围是 [-x, x]，其中
@@ -125,7 +125,7 @@ kaiming_normal_init(param, **kwargs):
 ### 参数
 * **param** (Tensor): 需要被初始化的张量。
 
-### 示例 
+### 示例
 
 ```python
 from paddleseg.cvlibs import param_init
@@ -139,9 +139,9 @@ param_init.kaiming_normal_init(linear.weight)
 ## [Config](../../../paddleseg/cvlibs/config.py)
 ```python
 class Config(
-    path, 
-    learning_rate, 
-    batch_size, 
+    path,
+    learning_rate,
+    batch_size,
     iters
 )
 ```
@@ -156,7 +156,7 @@ class Config(
 > **train_dataset**: 对一个训练数据集的配置包括设置 type/data_root/transforms/mode。对于数据类型，请参考paddleseg.datasets。对于特殊变换，请参考paddleseg.transforms.transforms。
 
 > **val_dataset**: 对一个验证数据集的配置包括设置 type/data_root/transforms/mode。
-        
+
 > **optimizer**: 配置一个优化器。但现在PaddleSeg仅支持在配置文件中设置带momentum的sgd。此外，weight_decay （权重衰减）可以设置为正则化。
 
 > **learning_rate**: 一个学习率配置。如果配置了学习率，learning _rate 值将作为初始学习率，其中使用配置文件仅支持poly衰减。 此外，衰减率和 end_lr 是通过实验调整的。

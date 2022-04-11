@@ -107,8 +107,8 @@ class TusimpleProcessor:
             for line in self.dump_to_json:
                 print(line, end="\n", file=f)
 
-        eval_rst, acc, fp, fn = LaneEval.bench_one_submit(
-            output_file, self.test_gt_json)
+        eval_rst, acc, fp, fn = LaneEval.bench_one_submit(output_file,
+                                                          self.test_gt_json)
         self.dump_to_json = []
         return acc, fp, fn, eval_rst
 

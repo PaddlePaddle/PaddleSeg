@@ -195,7 +195,8 @@ class DoubleConv(nn.Layer):
         super(DoubleConv, self).__init__()
         self.conv = nn.Sequential(
             nn.Conv2D(in_channels, out_channels, filter_size, stride, padding),
-            SyncBatchNorm(out_channels), nn.ReLU(),
+            SyncBatchNorm(out_channels),
+            nn.ReLU(),
             nn.Conv2D(out_channels, out_channels, filter_size, stride, padding),
             SyncBatchNorm(out_channels), nn.ReLU())
 

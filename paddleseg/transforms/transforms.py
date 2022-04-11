@@ -89,7 +89,7 @@ class RandomHorizontalFlip:
             if label is not None:
                 label = functional.horizontal_flip(label)
         if label is None:
-            return (im,)
+            return (im, )
         else:
             return (im, label)
 
@@ -112,7 +112,7 @@ class RandomVerticalFlip:
             if label is not None:
                 label = functional.vertical_flip(label)
         if label is None:
-            return (im,)
+            return (im, )
         else:
             return (im, label)
 
@@ -152,11 +152,11 @@ class Resize:
             if len(target_size) != 2:
                 raise ValueError(
                     '`target_size` should include 2 elements, but it is {}'.
-                        format(target_size))
+                    format(target_size))
         else:
             raise TypeError(
                 "Type of `target_size` is invalid. It should be list or tuple, but it is {}"
-                    .format(type(target_size)))
+                .format(type(target_size)))
 
         self.target_size = target_size
 
@@ -188,7 +188,7 @@ class Resize:
                                       cv2.INTER_NEAREST)
 
         if label is None:
-            return (im,)
+            return (im, )
         else:
             return (im, label)
 
@@ -221,7 +221,7 @@ class ResizeByLong:
                                            cv2.INTER_NEAREST)
 
         if label is None:
-            return (im,)
+            return (im, )
         else:
             return (im, label)
 
@@ -254,7 +254,7 @@ class ResizeByShort:
                                             cv2.INTER_NEAREST)
 
         if label is None:
-            return (im,)
+            return (im, )
         else:
             return (im, label)
 
@@ -282,17 +282,17 @@ class LimitLong:
             if not isinstance(max_long, int):
                 raise TypeError(
                     "Type of `max_long` is invalid. It should be int, but it is {}"
-                        .format(type(max_long)))
+                    .format(type(max_long)))
         if min_long is not None:
             if not isinstance(min_long, int):
                 raise TypeError(
                     "Type of `min_long` is invalid. It should be int, but it is {}"
-                        .format(type(min_long)))
+                    .format(type(min_long)))
         if (max_long is not None) and (min_long is not None):
             if min_long > max_long:
                 raise ValueError(
                     '`max_long should not smaller than min_long, but they are {} and {}'
-                        .format(max_long, min_long))
+                    .format(max_long, min_long))
         self.max_long = max_long
         self.min_long = min_long
 
@@ -319,7 +319,7 @@ class LimitLong:
                 label = functional.resize_long(label, target, cv2.INTER_NEAREST)
 
         if label is None:
-            return (im,)
+            return (im, )
         else:
             return (im, label)
 
@@ -337,8 +337,8 @@ class ResizeRangeScaling:
     def __init__(self, min_value=400, max_value=600):
         if min_value > max_value:
             raise ValueError('min_value must be less than max_value, '
-                             'but they are {} and {}.'.format(
-                min_value, max_value))
+                             'but they are {} and {}.'.format(min_value,
+                                                              max_value))
         self.min_value = min_value
         self.max_value = max_value
 
@@ -363,7 +363,7 @@ class ResizeRangeScaling:
                                            cv2.INTER_NEAREST)
 
         if label is None:
-            return (im,)
+            return (im, )
         else:
             return (im, label)
 
@@ -428,7 +428,7 @@ class ResizeStepScaling:
             label = functional.resize(label, (w, h), cv2.INTER_NEAREST)
 
         if label is None:
-            return (im,)
+            return (im, )
         else:
             return (im, label)
 
@@ -449,8 +449,9 @@ class Normalize:
     def __init__(self, mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5)):
         self.mean = mean
         self.std = std
-        if not (isinstance(self.mean, (list, tuple))
-                and isinstance(self.std, (list, tuple))):
+        if not (isinstance(self.mean,
+                           (list, tuple)) and isinstance(self.std,
+                                                         (list, tuple))):
             raise ValueError(
                 "{}: input type is invalid. It should be list or tuple".format(
                     self))
@@ -473,7 +474,7 @@ class Normalize:
         im = functional.normalize(im, mean, std)
 
         if label is None:
-            return (im,)
+            return (im, )
         else:
             return (im, label)
 
@@ -502,11 +503,11 @@ class Padding:
             if len(target_size) != 2:
                 raise ValueError(
                     '`target_size` should include 2 elements, but it is {}'.
-                        format(target_size))
+                    format(target_size))
         else:
             raise TypeError(
                 "Type of target_size is invalid. It should be list or tuple, now is {}"
-                    .format(type(target_size)))
+                .format(type(target_size)))
         self.target_size = target_size
         self.im_padding_value = im_padding_value
         self.label_padding_value = label_padding_value
@@ -533,7 +534,7 @@ class Padding:
         if pad_height < 0 or pad_width < 0:
             raise ValueError(
                 'The size of image should be less than `target_size`, but the size of image ({}, {}) is larger than `target_size` ({}, {})'
-                    .format(im_width, im_height, target_width, target_height))
+                .format(im_width, im_height, target_width, target_height))
         else:
             im = cv2.copyMakeBorder(
                 im,
@@ -553,7 +554,7 @@ class Padding:
                     cv2.BORDER_CONSTANT,
                     value=self.label_padding_value)
         if label is None:
-            return (im,)
+            return (im, )
         else:
             return (im, label)
 
@@ -589,16 +590,17 @@ class PaddingByAspectRatio:
         ratio = img_width / img_height
         if ratio == self.aspect_ratio:
             if label is None:
-                return (im,)
+                return (im, )
             else:
                 return (im, label)
         elif ratio > self.aspect_ratio:
             img_height = int(img_width / self.aspect_ratio)
         else:
             img_width = int(img_height * self.aspect_ratio)
-        padding = Padding((img_width, img_height),
-                          im_padding_value=self.im_padding_value,
-                          label_padding_value=self.label_padding_value)
+        padding = Padding(
+            (img_width, img_height),
+            im_padding_value=self.im_padding_value,
+            label_padding_value=self.label_padding_value)
         return padding(im, label)
 
 
@@ -627,11 +629,11 @@ class RandomPaddingCrop:
             if len(crop_size) != 2:
                 raise ValueError(
                     'Type of `crop_size` is list or tuple. It should include 2 elements, but it is {}'
-                        .format(crop_size))
+                    .format(crop_size))
         else:
             raise TypeError(
                 "The type of `crop_size` is invalid. It should be list or tuple, but it is {}"
-                    .format(type(crop_size)))
+                .format(type(crop_size)))
         self.crop_size = crop_size
         self.im_padding_value = im_padding_value
         self.label_padding_value = label_padding_value
@@ -658,7 +660,7 @@ class RandomPaddingCrop:
 
         if img_height == crop_height and img_width == crop_width:
             if label is None:
-                return (im,)
+                return (im, )
             else:
                 return (im, label)
         else:
@@ -689,13 +691,13 @@ class RandomPaddingCrop:
                 h_off = np.random.randint(img_height - crop_height + 1)
                 w_off = np.random.randint(img_width - crop_width + 1)
 
-                im = im[h_off:(crop_height + h_off), w_off:(
-                        w_off + crop_width), :]
+                im = im[h_off:(crop_height + h_off), w_off:(w_off + crop_width
+                                                            ), :]
                 if label is not None:
                     label = label[h_off:(crop_height + h_off), w_off:(
-                            w_off + crop_width)]
+                        w_off + crop_width)]
         if label is None:
-            return (im,)
+            return (im, )
         else:
             return (im, label)
 
@@ -713,22 +715,21 @@ class RandomCenterCrop:
         ValueError: When the value of retain_ratio is not in [0-1].
     """
 
-    def __init__(self,
-                 retain_ratio=(0.5, 0.5)):
+    def __init__(self, retain_ratio=(0.5, 0.5)):
         if isinstance(retain_ratio, list) or isinstance(retain_ratio, tuple):
             if len(retain_ratio) != 2:
                 raise ValueError(
-                    'When type of `retain_ratio` is list or tuple, it shoule include 2 elements, but it is {}'.format(
-                        retain_ratio)
-                )
-            if retain_ratio[0] > 1 or retain_ratio[1] > 1 or retain_ratio[0] < 0 or retain_ratio[1] < 0:
+                    'When type of `retain_ratio` is list or tuple, it shoule include 2 elements, but it is {}'.
+                    format(retain_ratio))
+            if retain_ratio[0] > 1 or retain_ratio[1] > 1 or retain_ratio[
+                    0] < 0 or retain_ratio[1] < 0:
                 raise ValueError(
-                    'Value of `retain_ratio` should be in [0, 1], but it is {}'.format(retain_ratio)
-                )
+                    'Value of `retain_ratio` should be in [0, 1], but it is {}'.
+                    format(retain_ratio))
         else:
             raise TypeError(
                 "The type of `retain_ratio` is invalid. It should be list or tuple, but it is {}"
-                    .format(type(retain_ratio)))
+                .format(type(retain_ratio)))
         self.retain_ratio = retain_ratio
 
     def __call__(self, im, label=None):
@@ -747,7 +748,7 @@ class RandomCenterCrop:
 
         if retain_width == 1. and retain_height == 1.:
             if label is None:
-                return (im,)
+                return (im, )
             else:
                 return (im, label)
         else:
@@ -761,7 +762,7 @@ class RandomCenterCrop:
                 label = label[p0:p1, p2:p3, :]
 
         if label is None:
-            return (im,)
+            return (im, )
         else:
             return (im, label)
 
@@ -791,11 +792,11 @@ class ScalePadding:
             if len(target_size) != 2:
                 raise ValueError(
                     '`target_size` should include 2 elements, but it is {}'.
-                        format(target_size))
+                    format(target_size))
         else:
             raise TypeError(
                 "Type of `target_size` is invalid. It should be list or tuple, but it is {}"
-                    .format(type(target_size)))
+                .format(type(target_size)))
 
         self.target_size = target_size
         self.im_padding_value = im_padding_value
@@ -816,8 +817,8 @@ class ScalePadding:
         new_im = np.zeros(
             (max(height, width), max(height, width), 3)) + self.im_padding_value
         if label is not None:
-            new_label = np.zeros((max(height, width), max(
-                height, width))) + self.label_padding_value
+            new_label = np.zeros((max(height, width), max(height, width)
+                                  )) + self.label_padding_value
 
         if height > width:
             padding = int((height - width) / 2)
@@ -835,9 +836,9 @@ class ScalePadding:
         if label is not None:
             label = np.uint8(new_label)
             label = functional.resize(
-                label, self.target_size, interp=cv2.INTER_CUBIC)
+                label, self.target_size, interp=cv2.INTER_NEAREST)
         if label is None:
-            return (im,)
+            return (im, )
         else:
             return (im, label)
 
@@ -875,7 +876,7 @@ class RandomNoise:
             im[im < 0] = 0
 
         if label is None:
-            return (im,)
+            return (im, )
         else:
             return (im, label)
 
@@ -941,7 +942,7 @@ class RandomBlur:
                     im = cv2.GaussianBlur(im, (radius, radius), 0, 0)
         im = np.array(im, dtype='float32')
         if label is None:
-            return (im,)
+            return (im, )
         else:
             return (im, label)
 
@@ -1009,7 +1010,7 @@ class RandomRotation:
                     borderValue=self.label_padding_value)
 
         if label is None:
-            return (im,)
+            return (im, )
         else:
             return (im, label)
 
@@ -1070,7 +1071,7 @@ class RandomScaleAspect:
                             interpolation=cv2.INTER_NEAREST)
                     break
         if label is None:
-            return (im,)
+            return (im, )
         else:
             return (im, label)
 
@@ -1179,7 +1180,7 @@ class RandomDistort:
                 im = ops[id](**params)
         im = np.asarray(im).astype('float32')
         if label is None:
-            return (im,)
+            return (im, )
         else:
             return (im, label)
 
@@ -1238,8 +1239,7 @@ class RandomAffine:
         scale = random.random() * (self.max_scale_factor - self.min_scale_factor
                                    ) + self.min_scale_factor
         scale *= np.mean(
-            [float(w) / (bbox[2] - bbox[0]),
-             float(h) / (bbox[3] - bbox[1])])
+            [float(w) / (bbox[2] - bbox[0]), float(h) / (bbox[3] - bbox[1])])
         alpha = scale * math.cos(angle / 180.0 * math.pi)
         beta = scale * math.sin(angle / 180.0 * math.pi)
 
@@ -1266,6 +1266,6 @@ class RandomAffine:
                 flags=cv2.INTER_NEAREST,
                 borderMode=cv2.BORDER_CONSTANT)
         if label is None:
-            return (im,)
+            return (im, )
         else:
             return (im, label)

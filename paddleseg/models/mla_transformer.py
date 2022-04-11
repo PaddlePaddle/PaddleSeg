@@ -178,8 +178,7 @@ class MLATransformer(nn.Layer):
             nn.Conv2D(
                 in_channels=aux_channels,
                 out_channels=self.num_classes,
-                kernel_size=1,
-            ))
+                kernel_size=1, ))
 
         self.pretrained = pretrained
         self.init_weight()

@@ -168,11 +168,12 @@ def predictEnsembleThree(model,
                 preds[0][:, :, :, 640:1280] + preds[1][:, :, :, 0:640]) / 2
             right_ensem = (
                 preds[1][:, :, :, 640:1280] + preds[2][:, :, :, 0:640]) / 2
-            pred_ensem = paddle.concat([
-                preds[0][:, :, :, 0:640], left_ensem, right_ensem,
-                preds[2][:, :, :, 640:1280]
-            ],
-                                       axis=3)
+            pred_ensem = paddle.concat(
+                [
+                    preds[0][:, :, :, 0:640], left_ensem, right_ensem,
+                    preds[2][:, :, :, 640:1280]
+                ],
+                axis=3)
             logit = F.interpolate(pred_ensem, (432, 768), mode='bilinear')
 
             pred_logit = pred.clone()

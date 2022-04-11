@@ -37,6 +37,7 @@ class DMNet(nn.Layer):
         fusion (bool): Add one conv to fuse DCM output feature. Default: False.
         pretrained (str, optional): The path or url of pretrained model. Default: None.
     """
+
     def __init__(self,
                  num_classes,
                  backbone,
@@ -55,17 +56,13 @@ class DMNet(nn.Layer):
             self.backbone.feat_channels[-1] + len(filter_sizes) * mid_channels,
             mid_channels,
             3,
-            padding=1,
-        )
+            padding=1, )
         self.cls = nn.Conv2D(mid_channels, num_classes, 1)
 
         self.fcn_head = nn.Sequential(
-            layers.ConvBNReLU(self.backbone.feat_channels[2],
-                              mid_channels,
-                              3,
-                              padding=1),
-            nn.Conv2D(mid_channels, num_classes, 1),
-        )
+            layers.ConvBNReLU(
+                self.backbone.feat_channels[2], mid_channels, 3, padding=1),
+            nn.Conv2D(mid_channels, num_classes, 1), )
 
         self.pretrained = pretrained
         self.init_weight()
@@ -83,17 +80,13 @@ class DMNet(nn.Layer):
         dcm_outs = paddle.concat(dcm_outs, axis=1)
         x = self.bottleneck(dcm_outs)
         x = self.cls(x)
-        x = F.interpolate(x,
-                          scale_factor=8,
-                          mode='bilinear',
-                          align_corners=True)
+        x = F.interpolate(
+            x, scale_factor=8, mode='bilinear', align_corners=True)
         output = [x]
         if self.training:
             fcn_out = self.fcn_head(feats[2])
-            fcn_out = F.interpolate(fcn_out,
-                                    scale_factor=8,
-                                    mode='bilinear',
-                                    align_corners=True)
+            fcn_out = F.interpolate(
+                fcn_out, scale_factor=8, mode='bilinear', align_corners=True)
             output.append(fcn_out)
             return output
         return output
@@ -109,6 +102,7 @@ class DCM(nn.Layer):
         in_channels (int): Input channels.
         channels (int): Channels after modules, before conv_seg.
     """
+
     def __init__(self, filter_size, fusion, in_channels, channels):
         super().__init__()
         self.filter_size = filter_size

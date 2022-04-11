@@ -25,7 +25,9 @@ class TransUI(object):
     def __init__(self, is_trans=False):
         super().__init__()
         self.trans_dict = defaultdict(dict)
-        with open(osp.join(pjpath, "config/zh_CN.EN"), "r", encoding="utf-8") as f:
+        with open(
+                osp.join(pjpath, "config/zh_CN.EN"), "r",
+                encoding="utf-8") as f:
             texts = f.readlines()
             for txt in texts:
                 strs = txt.split("@")

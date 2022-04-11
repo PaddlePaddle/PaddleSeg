@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 import os
 import os.path as osp
 import argparse
@@ -26,10 +25,11 @@ def _savePalette(label, save_path):
     bin_colormap = np.random.randint(0, 255, (256, 3))  # 可视化的颜色
     bin_colormap[0, :] = [0, 0, 0]
     bin_colormap = bin_colormap.astype(np.uint8)
-    visualimg  = Image.fromarray(label, "P")
+    visualimg = Image.fromarray(label, "P")
     palette = bin_colormap  # long palette of 768 items
-    visualimg.putpalette(palette) 
+    visualimg.putpalette(palette)
     visualimg.save(save_path, format='PNG')
+
 
 def _segMaskB2I(mask_path, save_path):
     img = np.asarray(Image.open(mask_path))
@@ -41,7 +41,7 @@ def _segMaskB2I(mask_path, save_path):
     areas = {}  # 面积
     for i in range(len(contours)):
         areas[i] = cv2.contourArea(contours[i])
-    sorted(areas.items(), key = lambda kv:(kv[1], kv[0]), reverse=True)  # 面积升序
+    sorted(areas.items(), key=lambda kv: (kv[1], kv[0]), reverse=True)  # 面积升序
     # 开始填充
     color = 1
     for idx in areas.keys():
@@ -61,8 +61,10 @@ def _segMaskB2I(mask_path, save_path):
 
 
 parser = argparse.ArgumentParser(description='Label path and save path')
-parser.add_argument('--label_path', '-o', help='读取语义分割标签文件夹路径，必要参数', required=True)
-parser.add_argument('--save_path', '-d', help='实例分割标签保存文件夹路径，必要参数', required=True)
+parser.add_argument(
+    '--label_path', '-o', help='读取语义分割标签文件夹路径，必要参数', required=True)
+parser.add_argument(
+    '--save_path', '-d', help='实例分割标签保存文件夹路径，必要参数', required=True)
 args = parser.parse_args()
 
 if __name__ == "__main__":

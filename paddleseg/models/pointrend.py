@@ -144,8 +144,7 @@ class PointRend(nn.Layer):
         feats = [feats[i] for i in self.backbone_indices]
         fpn_feats = self.neck(feats)  # [n,256,64,128]*3 & [n,256,128,256]
         pfn_logits = self.fpnhead(
-            fpn_feats
-        )  # segmainoutput decode_head[0] 512*1024->[n, 19, 64, 128]
+            fpn_feats)  # segmainoutput decode_head[0] 512*1024->[n, 19, 64, 128]
         point_logits = self.pointhead(
             fpn_feats, pfn_logits)  # segpointoutput decode_head[1]
 
@@ -238,7 +237,8 @@ class PointHead(nn.Layer):
         self.importance_sample_ratio = importance_sample_ratio
         self.scale_factor = scale_factor
         self.subdivision_steps = subdivision_steps
-        self.subdivision_num_points = paddle.to_tensor(subdivision_num_points, dtype="int32")
+        self.subdivision_num_points = paddle.to_tensor(
+            subdivision_num_points, dtype="int32")
         self.dropout_ratio = dropout_ratio
         self.coarse_pred_each_layer = coarse_pred_each_layer
         self.align_corners = align_corners
@@ -254,8 +254,7 @@ class PointHead(nn.Layer):
                 kernel_size=1,
                 stride=1,
                 padding=0,
-                conv_cfg=conv_cfg,
-            )
+                conv_cfg=conv_cfg, )
             self.fcs.append(fc)
             fc_in_channels = fc_channels
             fc_in_channels += self.num_classes if self.coarse_pred_each_layer else 0
@@ -292,7 +291,8 @@ class PointHead(nn.Layer):
         """
 
         fine_grained_feats_list = [
-            point_sample(_, points, align_corners=self.align_corners) for _ in x
+            point_sample(
+                _, points, align_corners=self.align_corners) for _ in x
         ]
         if len(fine_grained_feats_list) > 1:
             fine_grained_feats = paddle.concat(fine_grained_feats_list, axis=1)
@@ -394,8 +394,8 @@ class PointHead(nn.Layer):
             [batch_size, num_uncertain_points, 2])
         if num_random_points > 0:
             rand_point_coords = paddle.rand([batch_size, num_random_points, 2])
-            point_coords = paddle.concat((point_coords, rand_point_coords),
-                                         axis=1)
+            point_coords = paddle.concat(
+                (point_coords, rand_point_coords), axis=1)
         return point_coords
 
     def get_points_test(self, seg_logits, uncertainty_func):  # finish
@@ -428,12 +428,12 @@ class PointHead(nn.Layer):
         uncertainty_map = uncertainty_map.reshape([batch_size, height * width])
         num_points = paddle.min(paddle.concat([height * width, num_points]))
         point_indices = paddle.topk(uncertainty_map, num_points, axis=1)[1]
-        point_coords = paddle.zeros([batch_size, num_points, 2],
-                                    dtype='float32')
-        point_coords[:, :, 0] = w_step / 2.0 + (
-            point_indices % width).astype('float32') * w_step
-        point_coords[:, :, 1] = h_step / 2.0 + (
-            point_indices // width).astype('float32') * h_step
+        point_coords = paddle.zeros(
+            [batch_size, num_points, 2], dtype='float32')
+        point_coords[:, :, 0] = w_step / 2.0 + (point_indices % width
+                                                ).astype('float32') * w_step
+        point_coords[:, :, 1] = h_step / 2.0 + (point_indices // width
+                                                ).astype('float32') * h_step
         return point_indices, point_coords
 
     def scatter_paddle(self, refined_seg_logits, point_indices, point_logits):
@@ -448,10 +448,12 @@ class PointHead(nn.Layer):
             scattered refined_seg_logits(Tensor).
         """
 
-        original_shape = paddle.shape(refined_seg_logits)  # [batch_size, channels, height * width]
+        original_shape = paddle.shape(
+            refined_seg_logits)  # [batch_size, channels, height * width]
         new_refined_seg_logits = refined_seg_logits.flatten(0, 1)  # [N*C,H*W]
-        offsets = (paddle.arange(paddle.shape(new_refined_seg_logits)[0]) *
-                   paddle.shape(new_refined_seg_logits)[1]).unsqueeze(-1)  # [N*C,1]
+        offsets = (
+            paddle.arange(paddle.shape(new_refined_seg_logits)[0]) *
+            paddle.shape(new_refined_seg_logits)[1]).unsqueeze(-1)  # [N*C,1]
         point_indices = point_indices.flatten(0, 1)  # [N*C,H*W]
         new_point_indices = (point_indices + offsets).flatten()
         point_logits = point_logits.flatten()  # [N*C*H*W]
@@ -511,8 +513,8 @@ class PointHead(nn.Layer):
                     refined_seg_logits, calculate_uncertainty)
                 fine_grained_point_feats = self._get_fine_grained_point_feats(
                     x, points)
-                coarse_point_feats = self._get_coarse_point_feats(
-                    prev_output, points)
+                coarse_point_feats = self._get_coarse_point_feats(prev_output,
+                                                                  points)
                 # forward for inference
                 fusion_point_feats = paddle.concat(
                     [fine_grained_point_feats, coarse_point_feats], axis=1)
@@ -523,7 +525,8 @@ class PointHead(nn.Layer):
                             (fusion_point_feats, coarse_point_feats), axis=1)
                 point_logits = self.cls_seg(fusion_point_feats)
                 point_indices = paddle.unsqueeze(point_indices, axis=1)
-                point_indices = paddle.expand(point_indices, [-1, save_shape[1], -1])
+                point_indices = paddle.expand(point_indices,
+                                              [-1, save_shape[1], -1])
 
                 refined_seg_logits = paddle.flatten(refined_seg_logits, 2)
                 refined_seg_logits = self.scatter_paddle(
@@ -565,8 +568,7 @@ class FPNHead(nn.Layer):
             dropout_ratio=0.1,
             conv_cfg='Conv2D',
             input_transform='multiple_select',
-            align_corners=False,
-    ):
+            align_corners=False, ):
         super(FPNHead, self).__init__()
         assert len(feature_strides) == len(in_channels)
         assert min(feature_strides) == feature_strides[0]
@@ -667,8 +669,7 @@ class FPNNeck(nn.Layer):
     def __init__(
             self,
             fpn_inplanes=[256, 512, 1024, 2048],
-            fpn_outplanes=256,
-    ):
+            fpn_outplanes=256, ):
         super(FPNNeck, self).__init__()
         self.lateral_convs = []
         self.fpn_out = []
@@ -771,9 +772,11 @@ class Upsample(nn.Layer):
 
     def forward(self, x):
         if not self.size:
-            return F.interpolate(x, None, self.scale_factor, self.mode, self.align_corners)
+            return F.interpolate(x, None, self.scale_factor, self.mode,
+                                 self.align_corners)
         else:
-            return F.interpolate(x, self.size, None, self.mode, self.align_corners)
+            return F.interpolate(x, self.size, None, self.mode,
+                                 self.align_corners)
 
 
 def point_sample(input, points, align_corners=False, **kwargs):

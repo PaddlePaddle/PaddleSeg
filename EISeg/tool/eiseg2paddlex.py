@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 import os
 import os.path as osp
 import shutil
@@ -21,15 +20,18 @@ from tqdm import tqdm
 from qtpy import QtGui
 import argparse
 
-
 # 参考paddlex数据准备文档
 # https://github.com/PaddlePaddle/PaddleX/blob/release/2.0.0/docs/data/format/README.md
 
 # 支持的图像格式
-FORMATS = [".{}".format(fmt.data().decode()) 
-            for fmt in QtGui.QImageReader.supportedImageFormats()]
+FORMATS = [
+    ".{}".format(fmt.data().decode())
+    for fmt in QtGui.QImageReader.supportedImageFormats()
+]
 FORMATS.append(".dcm")
+
 # print(FORMATS)
+
 
 def mkdirp(path):
     if not osp.exists(path):
@@ -64,7 +66,8 @@ def Eiseg2Semantic(save_folder, imgs_folder, lab_folder=None, split_rate=0.9):
             if not osp.exists(lab_path):
                 lab_path = osp.join(lab_folder, name)
             save_img_path = osp.join(save_img_folder, name)
-            save_lab_path = osp.join(save_lab_folder, os.path.split(lab_path)[-1])
+            save_lab_path = osp.join(save_lab_folder,
+                                     os.path.split(lab_path)[-1])
             if osp.exists(img_path) and osp.exists(lab_path):
                 shutil.copy(img_path, save_img_path)
                 shutil.copy(lab_path, save_lab_path)
@@ -91,7 +94,8 @@ def Eiseg2Semantic(save_folder, imgs_folder, lab_folder=None, split_rate=0.9):
             for idx, name in tqdm(enumerate(new_imgs_name, start=1)):
                 new_img_path = osp.join("JPEGImages", name)
                 ext = "." + name.split(".")[-1]
-                new_lab_path = osp.join("Annotations", name.replace(ext, ".png"))
+                new_lab_path = osp.join("Annotations",
+                                        name.replace(ext, ".png"))
                 if not osp.exists(osp.join(save_folder, new_lab_path)):
                     new_lab_path = osp.join("Annotations", name)
                 new_img_path = new_img_path.replace("\\", "/")
@@ -104,7 +108,8 @@ def Eiseg2Semantic(save_folder, imgs_folder, lab_folder=None, split_rate=0.9):
     print("===== all done! =====")
 
 
-parser = argparse.ArgumentParser(description='Save path, image path, label path and split rate')
+parser = argparse.ArgumentParser(
+    description='Save path, image path, label path and split rate')
 parser.add_argument('--save_path', '-d', help='保存文件夹路径，必要参数', required=True)
 parser.add_argument('--image_path', '-o', help='图像文件夹路径，必要参数', required=True)
 parser.add_argument('--label_path', '-l', help='标签文件夹路径', default=None)

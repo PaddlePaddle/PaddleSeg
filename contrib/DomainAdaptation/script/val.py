@@ -52,8 +52,8 @@ class Eval():
             print("Attention: pixel_total is zero!!!")
             PA = 0
         else:
-            PA = np.diag(
-                self.confusion_matrix).sum() / self.confusion_matrix.sum()
+            PA = np.diag(self.confusion_matrix).sum(
+            ) / self.confusion_matrix.sum()
 
         return PA
 
@@ -94,28 +94,29 @@ class Eval():
         FWIoU = FWIoU / (np.sum(self.confusion_matrix, axis=1) + np.sum(
             self.confusion_matrix, axis=0) - np.diag(self.confusion_matrix))
         if self.synthia:
-            FWIoU_16 = np.sum(i for i in FWIoU if not np.isnan(i)) / np.sum(
-                self.confusion_matrix)
-            FWIoU_13 = np.sum(i for i in FWIoU[synthia_set_16_to_13]
-                              if not np.isnan(i)) / np.sum(
-                                  self.confusion_matrix)
+            FWIoU_16 = np.sum(
+                i for i in FWIoU
+                if not np.isnan(i)) / np.sum(self.confusion_matrix)
+            FWIoU_13 = np.sum(
+                i for i in FWIoU[synthia_set_16_to_13]
+                if not np.isnan(i)) / np.sum(self.confusion_matrix)
             return FWIoU_16, FWIoU_13
         if out_16_13:
             FWIoU_16 = np.sum(
-                i for i in FWIoU[synthia_set_16] if not np.isnan(i)) / np.sum(
-                    self.confusion_matrix)
+                i for i in FWIoU[synthia_set_16]
+                if not np.isnan(i)) / np.sum(self.confusion_matrix)
             FWIoU_13 = np.sum(
-                i for i in FWIoU[synthia_set_13] if not np.isnan(i)) / np.sum(
-                    self.confusion_matrix)
+                i for i in FWIoU[synthia_set_13]
+                if not np.isnan(i)) / np.sum(self.confusion_matrix)
             return FWIoU_16, FWIoU_13
-        FWIoU = np.sum(i for i in FWIoU if not np.isnan(i)) / np.sum(
-            self.confusion_matrix)
+        FWIoU = np.sum(i for i in FWIoU
+                       if not np.isnan(i)) / np.sum(self.confusion_matrix)
 
         return FWIoU
 
     def mean_precision(self, out_16_13=False):
-        Precision = np.diag(
-            self.confusion_matrix) / self.confusion_matrix.sum(axis=0)
+        Precision = np.diag(self.confusion_matrix) / self.confusion_matrix.sum(
+            axis=0)
         if self.synthia:
             Precision_16 = np.nanmean(Precision[:self.ignore_index])
             Precision_13 = np.nanmean(Precision[synthia_set_16_to_13])
@@ -132,28 +133,27 @@ class Eval():
             np.sum(self.confusion_matrix, axis=1) + np.sum(
                 self.confusion_matrix, axis=0) - np.diag(self.confusion_matrix))
         MPA = np.diag(self.confusion_matrix) / self.confusion_matrix.sum(axis=1)
-        Precision = np.diag(
-            self.confusion_matrix) / self.confusion_matrix.sum(axis=0)
-        Class_ratio = np.sum(
-            self.confusion_matrix, axis=1) / np.sum(self.confusion_matrix)
-        Pred_retio = np.sum(
-            self.confusion_matrix, axis=0) / np.sum(self.confusion_matrix)
+        Precision = np.diag(self.confusion_matrix) / self.confusion_matrix.sum(
+            axis=0)
+        Class_ratio = np.sum(self.confusion_matrix,
+                             axis=1) / np.sum(self.confusion_matrix)
+        Pred_retio = np.sum(self.confusion_matrix,
+                            axis=0) / np.sum(self.confusion_matrix)
         log_fn = print if logger is None else logger.info
         log_fn('===>Everyclass:\t' + 'MPA\t' + 'MIoU\t' + 'PC\t' + 'Ratio\t' +
                'Pred_Retio')
         # if out_16_13: MIoU = MIoU[synthia_set_16]
         for ind_class in range(len(MIoU)):
-            pa = str(round(MPA[ind_class] * 100,
-                           2)) if not np.isnan(MPA[ind_class]) else 'nan'
-            iou = str(round(MIoU[ind_class] * 100,
-                            2)) if not np.isnan(MIoU[ind_class]) else 'nan'
-            pc = str(round(Precision[ind_class] * 100,
-                           2)) if not np.isnan(Precision[ind_class]) else 'nan'
-            cr = str(
-                round(Class_ratio[ind_class] * 100,
-                      2)) if not np.isnan(Class_ratio[ind_class]) else 'nan'
-            pr = str(round(Pred_retio[ind_class] * 100,
-                           2)) if not np.isnan(Pred_retio[ind_class]) else 'nan'
+            pa = str(round(MPA[ind_class] * 100, 2)) if not np.isnan(MPA[
+                ind_class]) else 'nan'
+            iou = str(round(MIoU[ind_class] * 100, 2)) if not np.isnan(MIoU[
+                ind_class]) else 'nan'
+            pc = str(round(Precision[ind_class] * 100, 2)) if not np.isnan(
+                Precision[ind_class]) else 'nan'
+            cr = str(round(Class_ratio[ind_class] * 100, 2)) if not np.isnan(
+                Class_ratio[ind_class]) else 'nan'
+            pr = str(round(Pred_retio[ind_class] * 100, 2)) if not np.isnan(
+                Pred_retio[ind_class]) else 'nan'
             log_fn('===>' + name_classes[ind_class] + ':\t' + pa + '\t' + iou +
                    '\t' + pc + '\t' + cr + '\t' + pr)
 
@@ -213,8 +213,7 @@ def evaluate(model,
         eval_dataset,
         batch_sampler=batch_sampler,
         num_workers=num_workers,
-        return_list=True,
-    )
+        return_list=True, )
 
     progbar_val = progbar.Progbar(
         target=len(loader), verbose=0 if nranks < 2 else 2)

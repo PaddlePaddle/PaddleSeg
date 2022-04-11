@@ -6,9 +6,9 @@ Bootstrapped first uses samples to construct an initial classification, and then
 [paper](https://arxiv.org/pdf/1412.6596.pdf)
 ```python
 class paddleseg.models.losses.BootstrappedCrossEntropyLoss(
-                        min_K, 
-                        loss_th, 
-                        weight = None, 
+                        min_K,
+                        loss_th,
+                        weight = None,
                         ignore_index = 255
 )
 ```
