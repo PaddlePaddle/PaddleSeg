@@ -44,8 +44,8 @@ wget https://paddle-inference-dist.bj.bcebos.com/tensorrt_test/cuda10.2-cudnn8.0
 安装CUDA和cudnn后，还需要将TensorRT库的路径加入到LD_LIBRARY_PATH，比如`export LD_LIBRARY_PATH=/download/TensorRT-7.1.3.4/lib:${LD_LIBRARY_PATH}`。
 
 
-然后，大家参考[文档](https://www.paddlepaddle.org.cn/install/quick?docurl=/documentation/docs/zh/install/pip/linux-pip.html)准备CUDA和cudnn环境安装GPU版本、联编TensorRT的PaddlePaddle（请详细阅读安装文档底部描述，推荐版本>=2.1）。
-比如，2.2版本、支持GPU、联编TensorRT的PaddlePaddle whl包，可以在[链接](https://paddleinference.paddlepaddle.org.cn/user_guides/download_lib.html#python）下载并安装(按照whl包文件命名进行选择)。
+然后，大家参考[文档](https://www.paddlepaddle.org.cn/install/quick?docurl=/documentation/docs/zh/install/pip/linux-pip.html)安装GPU版本、联编TensorRT的PaddlePaddle（请详细阅读安装文档底部描述，推荐版本>=2.1）。
+比如，2.2版本、支持GPU、联编TensorRT的PaddlePaddle whl包，可以在[链接](https://paddleinference.paddlepaddle.org.cn/user_guides/download_lib.html#python)下载并安装(按照whl包文件命名进行选择)。
 
 ## 3. 准备模型和数据
 
