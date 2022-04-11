@@ -1,9 +1,10 @@
 简体中文 | [English](whole_process.md)
 # PaddleSeg全流程跑通
 
-我们将以`BiSeNetV2`和`医学视盘分割数据集`为例介绍PaddleSeg的**配置化驱动**使用方式。如果想了解API调用的使用方法，可点击[PaddleSeg高级教程](https://aistudio.baidu.com/aistudio/projectdetail/1339458?channelType=0&channel=0)。
+本文以`PP-LiteSeg`模型和`医学视盘分割数据集`为例，介绍PaddleSeg的**配置化驱动**使用方式。
+如果想了解PaddleSeg API调用的使用方法，可点击[PaddleSeg高级教程](https://aistudio.baidu.com/aistudio/projectdetail/1339458?channelType=0&channel=0)。
 
-PaddleSeg的使用流程如下：
+本示例的主要流程如下：
 
 1. 准备环境：使用PaddleSeg的软件环境
 2. 准备数据：用户如何准备、整理自定义数据集
@@ -18,7 +19,7 @@ PaddleSeg的使用流程如下：
 
 ### **1.1 环境安装**
 
-在使用PaddleSeg训练图像分割模型之前，用户需要完成如下任务：
+在使用PaddleSeg训练图像分割模型之前，用户需要完成如下环境准备工作：
 
 1. 安装[Python3.6或更高版本](https://www.python.org/downloads/)。
 2. 安装`PaddlePaddle 2.1`版本，具体安装方法请参见[快速安装](https://www.paddlepaddle.org.cn/install/quick)。由于图像分割模型计算开销大，推荐在GPU版本的PaddlePaddle下使用PaddleSeg。
@@ -27,10 +28,12 @@ PaddleSeg的使用流程如下：
 ```
 git clone https://github.com/PaddlePaddle/PaddleSeg.git
 ```
+
 ```
 #如果github下载网络较差，用户可选择gitee进行下载
 git clone https://gitee.com/paddlepaddle/PaddleSeg.git
 ```
+
 安装Paddleseg API库，在安装该库的同时，运行PaddleSeg的其他依赖项也被同时安装
 ```
 pip install paddleseg
@@ -38,48 +41,48 @@ pip install paddleseg
 
 ### **1.2 确认环境安装成功**
 
-下述命令均在PaddleSeg目录下完成
+在PaddleSeg目录下，执行下面命令，如果在PaddleSeg/output文件夹中出现预测结果，则证明安装成功。
 
-执行下面命令，如果在PaddleSeg/output文件夹中出现预测结果，则证明安装成功
+> 注意：PaddleSeg训练、测试、导出等所有命令，都要求在PaddleSeg根目录下执行。本文档后续命令，默认都是如此。
 
 ```
 python predict.py \
-       --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml \
-       --model_path https://bj.bcebos.com/paddleseg/dygraph/optic_disc/bisenet_optic_disc_512x512_1k/model.pdparams\
+       --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \
+       --model_path https://paddleseg.bj.bcebos.com/dygraph/optic_disc/pp_liteseg_optic_disc_512x512_1k/model.pdparams\
        --image_path docs/images/optic_test_image.jpg \
        --save_dir output/result
 ```
 
 ## **2. 数据集下载与说明**
 
-**数据集下载**
+### **2.1 示例数据集下载**
 
-本章节将使用视盘分割（optic disc segmentation）数据集进行训练，视盘分割是一组眼底医疗分割数据集，包含了267张训练图片、76张验证图片、38张测试图片。通过以下命令可以下载该数据集。
+本示例将使用视盘分割（optic disc segmentation）数据集进行训练。
+该数据集是一组眼底医疗分割数据集，包含了267张训练图片、76张验证图片、38张测试图片。
 
-数据集的原图和效果图如下所示，我们的任务将是将眼球图片中的视盘区域分割出来。
-
-![](./images/fig1.png)
-
-​                                                                                            图1：数据集的原图和效果图
-
-
+通过以下命令可以下载数据集，保存到`PaddleSeg/data`目录下。
 
 ```
 #下载并解压数据集
-mkdir dataset
-cd dataset
+mkdir data
+cd data
 wget https://paddleseg.bj.bcebos.com/dataset/optic_disc_seg.zip
 unzip optic_disc_seg.zip
 cd ..
 ```
 
-## **2.1 准备数据集**
+数据集的原图和效果图如下所示，我们的任务将是将眼球图片中的视盘区域分割出来。
 
-如何使用自己的数据集进行训练是开发者最关心的事情，下面我们将着重说明一下如果要自定义数据集，我们该准备成什么样子？以及数据集准备好后，如何在配置文件中作出相应改动。
+![](./images/fig1.png)
+图1：数据集的原图和效果图
 
-### **2.1.1 整理数据集**
 
-- 推荐整理成如下结构
+
+### **2.2 自己准备数据集**
+
+如何使用自己的数据集进行训练是开发者最关心的事情，下面我们将着重说明一下如果要自定义数据集，我们该准备成什么样子，以及数据集准备好后，如何在配置文件中作出相应改动。
+
+- 推荐将自己标注的数据集整理成如下结构
 
         custom_dataset
         |
@@ -99,50 +102,52 @@ cd ..
         |
         |--test.txt
 
-- 文件夹命名为custom_dataset、images、labels不是必须，用户可以自主进行命名。
+- images文件夹存放原图（通道数为3），labels文件夹存放标注图像（通道数为1），train.txt、val.txt、test.txt指定训练集、验证集和测试集。
+
+- 文件夹不要求必须命名为custom_dataset、images、labels，用户可以自主进行命名。
 
 - train.txt val.txt test.txt中文件并非要和custom_dataset文件夹在同一目录下，可以通过配置文件中的选项修改.
 
- 其中train.txt和val.txt的内容如下所示：
+- 举例train.txt和val.txt的内容如下所示：
 
   ```
-
    images/image1.jpg labels/label1.png
    images/image2.jpg labels/label2.png
    ...
   ```
 
-我们刚刚下载的数据集格式也与之类似(label.txt可有可以无)，如果用户要进行数据集标注和数据划分，请参考[数据标注文档](data/marker/marker_cn.md)与[数据集划分文档](data/custom/data_prepare_cn.md)。
+刚刚下载的视盘分割数据集格式也与之类似(label.txt可有可以无)。如果用户要进行数据集标注和数据划分，请参考[数据标注文档](data/marker/marker_cn.md)与[数据集划分文档](data/custom/data_prepare_cn.md)。
 
-我们一般推荐用户将数据集放置在PaddleSeg下的dataset文件夹下。
+推荐用户将数据集放置在PaddleSeg下的data文件夹下。
 
 ## **3. 模型训练**
 
-- 在这里选择BiseNetV2模型，BiseNetV2是一个轻量化模型，在Cityscapes测试集中的平均IoU达到72.6％，在一张NVIDIA GeForce GTX 1080 Ti卡上的速度为156 FPS，这比现有方法要快得多，而且可以实现更好的分割精度。
+### **3.1 PP-LiteSeg模型介绍**
 
-### **3.1 BiseNetV2模型介绍**
+本示例选择PP-LiteSeg模型进行训练。
 
-双边分割网络(BiSeNet V2)，将低层次的网络细节和高层次的语义分类分开处理，以实现高精度和高效率的实时语义分割。它在速度和精度之间进行权衡。该体系结构包括：
+PP-LiteSeg是PaddleSeg团队自研的轻量化模型，在Cityscapes数据集上超越其他模型，实现最优的精度和速度平衡。
+具体而言，PP-LiteSeg模型沿用编解码架构，设计灵活的Decoder模块（FLD）、统一注意力融合模块（UAFM）和简易PPM上下文模块（SPPM），实现高精度和高效率的实时语义分割。
 
-(1)一个细节分支，具有浅层宽通道，用于捕获低层细节并生成高分辨率的特征表示。
+PP-LiteSeg模型的结构如下图。更多详细介绍，请参考[链接](../configs/pp_liteseg)。
 
-(2)一个语义分支，通道窄，层次深，获取高层次语义语境。语义分支是轻量级的，因为它减少了通道容量和快速下采样策略。此外，设计了一个引导聚合层来增强相互连接和融合这两种类型的特征表示。此外，还设计了一种增强型训练策略，在不增加任何推理代价的情况下提高分割性能。
-
-![](./images/fig2.png)
-
-​                                                                                                          图2：数据集的原图和效果图
+<div align="center">
+<img src="https://user-images.githubusercontent.com/52520497/162148786-c8b91fd1-d006-4bad-8599-556daf959a75.png" width = "600" height = "300" alt="arch"  />
+</div>
+图2：PP-LiteSeg模型结构图
 
 ### **3.2 配置文件详细解读**
 
-在了解完BiseNetV2原理后，我们便可准备进行训练了。上文中我们谈到PaddleSeg提供了**配置化驱动**进行模型训练。那么在训练之前，先来了解一下配置文件，在这里我们以`bisenet_optic_disc_512x512_1k.yml`为例子说明，该yaml格式配置文件包括模型类型、骨干网络、训练和测试、预训练数据集和配套工具（如数据增强）等信息。
+PaddleSeg提供**配置化驱动**进行模型训练、测试和预测等，配置文件是其中的关键。
 
-PaddleSeg在配置文件中详细列出了每一个可以优化的选项，用户只要修改这个配置文件就可以对模型进行定制（**所有的配置文件在PaddleSeg/configs文件夹下面**），如自定义模型使用的骨干网络、模型使用的损失函数以及关于网络结构等配置。除了定制模型之外，配置文件中还可以配置数据处理的策略，如改变尺寸、归一化和翻转等数据增强的策略。
+PaddleSeg的配置文件包括超参、训练数据集、验证数据集、优化器、损失函数、模型等信息。**所有的配置文件在PaddleSeg/configs文件夹下面**。大家可以灵活修改配置文件的内容，如自定义模型使用的骨干网络、模型使用的损失函数以及关于网络结构等配置，自定义配置数据处理的策略，如改变尺寸、归一化和翻转等数据增强的策略。
+
+我们以`pp_liteseg_optic_disc_512x512_1k.yml`为例，详细解读配置文件。
 
 **重点参数说明：**
-
-- 1：在PaddleSeg的配置文件给出的学习率中，除了"bisenet_optic_disc_512x512_1k.yml"中为单卡学习率外，其余配置文件中均为4卡的学习率，如果用户是单卡训练，则学习率设置应变成原来的1/4。
+- 1：在PaddleSeg的配置文件给出的学习率中，除了"pp_liteseg_optic_disc_512x512_1k.yml"中为单卡学习率外，其余配置文件中均为4卡的学习率，如果用户是单卡训练，则学习率设置应变成原来的1/4。
 - 2：在PaddleSeg中的配置文件，给出了多种损失函数：CrossEntropy Loss、BootstrappedCrossEntropy Loss、Dice Loss、BCE Loss、OhemCrossEntropyLoss、RelaxBoundaryLoss、OhemEdgeAttentionLoss、Lovasz Hinge Loss、Lovasz Softmax Loss，用户可根据自身需求进行更改。
-
+- 3：配置文件解读如下。
 ```
 batch_size: 4  #设定batch_size的值即为迭代一次送入网络的图片数量，一般显卡显存越大，batch_size的值可以越大
 iters: 1000    #模型迭代的次数
@@ -181,13 +186,15 @@ lr_scheduler: # 学习率的相关设置
 
 loss: #设定损失函数的类型
   types:
-    - type: CrossEntropyLoss #损失函数类型
-  coef: [1, 1, 1, 1, 1]
-  #BiseNetV2有4个辅助loss，加上主loss共五个，1表示权重 all_loss = coef_1 * loss_1 + .... + coef_n * loss_n
+    - type: CrossEntropyLoss  #损失函数类型
+  coef: [1, 1, 1] # PP-LiteSeg有一个主loss和两个辅助loss，coef表示权重： total_loss = coef_1 * loss_1 + .... + coef_n * loss_n
 
-model: #模型说明
-  type: BiSeNetV2  #设定模型类别
-  pretrained: Null #设定模型的预训练模型
+model:  #模型说明
+  type: PPLiteSeg  #设定模型类别
+  backbone:  # 设定模型的backbone，包括名字和预训练权重
+    type: STDC1
+    pretrained: https://bj.bcebos.com/paddleseg/dygraph/PP_STDCNet1.tar.gz
+
 ```
 **FAQ**
 
@@ -197,9 +204,9 @@ A：与模型方案相关的信息均在配置文件中，还包括对原始样�
 
 ### **3.3 修改配置文件中对应的数据配置**
 
-当用户准备好数据集后，可以在配置文件中指定位置修改数据路径来进行进一步的训练
+当用户准备好数据集后，可以在配置文件中指定位置修改数据路径来进行进一步的训练。
 
-在这里，我们还是以上文中谈到的"bisenet_optic_disc_512x512_1k.yml"文件为例，摘选出数据配置部分为大家说明。
+在这里，我们还是以上文中谈到的"pp_liteseg_optic_disc_512x512_1k.yml"文件为例，摘选出数据配置部分为大家说明。
 
 主要关注这几个参数：
 
@@ -236,7 +243,7 @@ val_dataset:
 
 ### **3.4 正式开启训练**
 
-当我们修改好对应的配置参数后，就可以上手体验使用了
+准备好配置文件后，就可以开始训练。
 
 ```
 export CUDA_VISIBLE_DEVICES=0 # 设置1张可用的卡
@@ -244,14 +251,14 @@ export CUDA_VISIBLE_DEVICES=0 # 设置1张可用的卡
 **windows下请执行以下命令**
 **set CUDA_VISIBLE_DEVICES=0**
 python train.py \
-       --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml \
+       --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \
        --do_eval \
        --use_vdl \
        --save_interval 500 \
        --save_dir output
 ```
 
-- 结果文件
+训练结束，模型权重保存在output目录下
 
 ```
 output
@@ -284,14 +291,11 @@ output
 
 ### **3.6 配置文件的深度探索**
 
-- 刚刚我们拿出一个BiSeNetV2的配置文件让大家去体验一下如何数据集配置，在这里例子中，所有的参数都放置在了一个yml文件中，但是实际PaddleSeg的配置文件为了具有更好的复用性和兼容性，采用了更加耦合的设计，即一个模型需要两个以上配置文件来实现，下面我们具体一DeeplabV3p为例子来为大家说明配置文件的耦合设置。
+- 刚刚我们拿出一个PP-LiteSeg的配置文件让大家去体验一下如何数据集配置，在这里例子中，所有的参数都放置在了一个yml文件中，但是实际PaddleSeg的配置文件为了具有更好的复用性和兼容性，采用了更加耦合的设计，即一个模型需要两个以上配置文件来实现，下面我们具体一DeeplabV3p为例子来为大家说明配置文件的耦合设置。
 - 例如我们要更改deeplabv3p_resnet50_os8_cityscapes_1024x512_80k.yml 文件的配置，则会发现该文件还依赖（base）cityscapes.yml文件。此时，我们就需要同步打开 cityscapes.yml 文件进行相应参数的设置。
 
 ![](./images/fig3.png)
-
-
-
-​                                                                                                                图3：配置文件深入探索
+图3：配置文件深入探索
 
 在PaddleSeg2.0模式下，用户可以发现，PaddleSeg采用了更加耦合的配置设计，将数据、优化器、损失函数等共性的配置都放在了一个单独的配置文件下面，当我们尝试换新的网络结构的是时候，只需要关注模型切换即可，避免了切换模型重新调节这些共性参数的繁琐节奏，避免用户出错。
 
@@ -308,7 +312,7 @@ A：如图中序号所示，1号yml文件的参数可以覆盖2号yml文件的�
 ```
 export CUDA_VISIBLE_DEVICES=0,1,2,3 # 设置4张可用的卡
 python -m paddle.distributed.launch train.py \
-       --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml \
+       --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \
        --do_eval \
        --use_vdl \
        --save_interval 500 \
@@ -319,7 +323,7 @@ python -m paddle.distributed.launch train.py \
 
 ```
 python train.py \
-       --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml \
+       --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \
        --resume_model output/iter_500 \
        --do_eval \
        --use_vdl \
@@ -350,8 +354,7 @@ visualdl --logdir output/
 在浏览器输入提示的网址，效果如下：
 
 ![](./images/fig4.png)
-
-​                                                                                    图4：VDL效果演示
+图4：VDL效果演示
 
 ## **5. 模型评估**
 
@@ -359,7 +362,7 @@ visualdl --logdir output/
 
 ```
 python val.py \
-       --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml \
+       --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \
        --model_path output/iter_1000/model.pdparams
 ```
 
@@ -367,7 +370,7 @@ python val.py \
 
 ```
 python val.py \
-       --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml \
+       --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \
        --model_path output/iter_1000/model.pdparams \
        --aug_eval \
        --scales 0.75 1.0 1.25 \
@@ -378,7 +381,7 @@ python val.py \
 
 ```
 python val.py \
-       --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml \
+       --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \
        --model_path output/iter_1000/model.pdparams \
        --is_slide \
        --crop_size 256 256 \
@@ -414,7 +417,7 @@ predict.py脚本是专门用来可视化预测案例的，命令格式如下所�
 
 ```
 python predict.py \
-       --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml \
+       --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \
        --model_path output/iter_1000/model.pdparams \
        --image_path dataset/optic_disc_seg/JPEGImages/H0003.jpg \
        --save_dir output/result
@@ -437,7 +440,7 @@ python predict.py \
 为了方便用户进行工业级的部署，PaddleSeg提供了一键动转静的功能，即将训练出来的动态图模型文件转化成静态图形式。
 ```
 python export.py \
-       --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml \
+       --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \
        --model_path output/iter_1000/model.pdparams
 ```
 
