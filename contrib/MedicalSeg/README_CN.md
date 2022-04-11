@@ -1,7 +1,7 @@
-English | [简体中文](README_CN.md)
+[English](README.md) | 简体中文
 
 # MedicalSeg
-MedicalSeg is an easy-to-use 3D medical image segmentation toolkit that supports GPU acceleration from data preparation to deployment. The toolkit has supported dozens of datasets including [COVID-19 CT scans](https://www.kaggle.com/andrewmvd/covid19-ct-scans) dataset and [MRISpineSeg](https://aistudio.baidu.com/aistudio/datasetdetail/81211) dataset. The following image visualize the segmentation results on these two datasets with [itkwidgets](https://github.com/InsightSoftwareConsortium/itkwidgets), you can try to generate your own visualization using our [visualize.ipynb](visualize.ipynb) 
+MedicalSeg 是一个简单易使用的 3D 医学图像分割工具包，支持从数据准备到部署的全流程 GPU 加速。目前支持上十种各种数据集，包括 [COVID-19 CT scans](https://www.kaggle.com/andrewmvd/covid19-ct-scans) 和 [MRISpineSeg](https://aistudio.baidu.com/aistudio/datasetdetail/81211) 数据集。下图是我们的框架基于 Vnet 训练之后的可视化结果，其中使用了 [itkwidgets](https://github.com/InsightSoftwareConsortium/itkwidgets)，你也可以使用我们的[visualize.ipynb](visualize.ipynb) 来可视化你的 3D 数据。
 
 <center>
     <img style="border-radius: 0.3125em;
