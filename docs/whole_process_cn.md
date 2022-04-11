@@ -22,7 +22,7 @@
 在使用PaddleSeg训练图像分割模型之前，用户需要完成如下环境准备工作：
 
 1. 安装[Python3.6或更高版本](https://www.python.org/downloads/)。
-2. 安装`PaddlePaddle 2.1`版本，具体安装方法请参见[快速安装](https://www.paddlepaddle.org.cn/install/quick)。由于图像分割模型计算开销大，推荐在GPU版本的PaddlePaddle下使用PaddleSeg。
+2. 安装`PaddlePaddle`（版本>=2.1)，具体安装方法请参见[快速安装](https://www.paddlepaddle.org.cn/install/quick)。由于图像分割模型计算开销大，推荐在GPU版本的PaddlePaddle下使用PaddleSeg。
 3. 下载PaddleSeg的代码库。
 
 ```
