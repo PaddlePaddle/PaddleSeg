@@ -1,14 +1,14 @@
 [English](README.md) | 简体中文
 
-# MedicalSeg
-MedicalSeg 是一个简单易使用的 3D 医学图像分割工具包，支持从数据准备到部署的全流程 GPU 加速。目前支持上十种各种数据集，包括 [COVID-19 CT scans](https://www.kaggle.com/andrewmvd/covid19-ct-scans) 和 [MRISpineSeg](https://aistudio.baidu.com/aistudio/datasetdetail/81211) 数据集。下图是我们的框架基于 Vnet 训练之后的可视化结果，其中使用了 [itkwidgets](https://github.com/InsightSoftwareConsortium/itkwidgets)，你也可以使用我们的[visualize.ipynb](visualize.ipynb) 来可视化你的 3D 数据。
+# MedicalSeg 介绍
+MedicalSeg 是一个简单易使用的 3D 医学图像分割工具包，支持从数据准备到部署的全流程 GPU 加速、五个数据集上的一键数据预处理，并提供了在 [COVID-19 CT scans](https://www.kaggle.com/andrewmvd/covid19-ct-scans) 数据集和 [MRISpineSeg](https://aistudio.baidu.com/aistudio/datasetdetail/81211) 数据集上的高精度模型，以及基于 [itkwidgets](https://github.com/InsightSoftwareConsortium/itkwidgets) 的 3D 可视化[Demo]((visualize.ipynb))。如图所示是基于 Vnet 训练之后的可视化结果：
 
 <center>
     <img style="border-radius: 0.3125em;
-    box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);" 
+    box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);"
     src="https://github.com/shiyutang/files/raw/main/ezgif.com-gif-maker%20(1).gif" width="40.5%" height="50%">  
     <img style="border-radius: 0.3125em;
-    box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);" 
+    box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);"
     src="https://github.com/shiyutang/files/raw/main/ezgif.com-gif-maker.gif" width="53.8%" height="90%">
     <br>
     <div style="color:orange;
@@ -37,7 +37,7 @@ MedicalSeg 是一个简单易使用的 3D 医学图像分割工具包，支持�
 
 我们使用 [Vnet](https://arxiv.org/abs/1606.04797) 在 [COVID-19 CT scans](https://www.kaggle.com/andrewmvd/covid19-ct-scans) 和 [MRISpineSeg](https://www.spinesegmentation-challenge.com/) 数据集上成功验证了我们的框架。以左肺/右肺为标签，我们在 COVID-19 CT scans 中达到了 97.04% 的 mDice 系数。你可以下载日志以查看结果或加载模型并自行验证:)。
 
-#### **COVID-19 CT scans 上的分割结果** 
+#### **COVID-19 CT scans 上的分割结果**
 
 | 主干网络 | 分辨率 | 学习率 | 训练轮数 | mDice | 链接 |
 |:-:|:-:|:-:|:-:|:-:|:-:|
@@ -66,7 +66,7 @@ MedicalSeg 是一个简单易使用的 3D 医学图像分割工具包，支持�
 
 
 ## 快速开始
-这一部部分我们展示了一个快速在 COVID-19 CT scans 数据集上训练的例子，这个例子同样可以在我们的[Aistudio 项目](https://aistudio.baidu.com/aistudio/projectdetail/3519594)中找到，详细的训练部署，以及在自己数据集上训练的步骤可以参考这个[教程](documentation/tutorial_cn.md)。
+这一部部分我们展示了一个快速在 COVID-19 CT scans 数据集上训练的例子，这个例子同样可以在我们的[Aistudio 项目](https://aistudio.baidu.com/aistudio/projectdetail/3519594)中找到。详细的训练部署，以及在自己数据集上训练的步骤可以参考这个[教程](documentation/tutorial_cn.md)。
 - 下载仓库：
     ```
     git clone https://github.com/PaddlePaddle/PaddleSeg.git
@@ -102,7 +102,7 @@ MedicalSeg 是一个简单易使用的 3D 医学图像分割工具包，支持�
 │   ├── datasets  
 │   ├── models  
 │   ├── transforms  # 在线变换的模块化代码
-│   └── utils       
+│   └── utils  
 ├── export.py
 ├── run-unet.sh     # 包含从训练到部署的脚本
 ├── tools           # 数据预处理文件夹，包含数据获取，预处理，以及数据集切分

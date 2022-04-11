@@ -1,14 +1,14 @@
 English | [简体中文](README_CN.md)
 
 # MedicalSeg
-MedicalSeg is an easy-to-use 3D medical image segmentation toolkit that supports GPU acceleration from data preparation to deployment. The toolkit has supported dozens of datasets including [COVID-19 CT scans](https://www.kaggle.com/andrewmvd/covid19-ct-scans) dataset and [MRISpineSeg](https://aistudio.baidu.com/aistudio/datasetdetail/81211) dataset. The following image visualize the segmentation results on these two datasets with [itkwidgets](https://github.com/InsightSoftwareConsortium/itkwidgets), you can try to generate your own visualization using our [visualize.ipynb](visualize.ipynb) 
+MedicalSeg is an easy-to-use 3D medical image segmentation toolkit that supports GPU acceleration from data preparation to deployment, one-click data preprocessing on five datasets. We also provided high precision model on [COVID-19 CT scans](https://www.kaggle.com/andrewmvd/covid19-ct-scans) dataset and [MRISpineSeg](https://aistudio.baidu.com/aistudio/datasetdetail/81211) dataset, and a [3D visualization demo]((visualize.ipynb) ) based on [itkwidgets](https://github.com/InsightSoftwareConsortium/itkwidgets). The following image visualize the segmentation results on these two datasets:
 
 <center>
     <img style="border-radius: 0.3125em;
-    box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);" 
+    box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);"
     src="https://github.com/shiyutang/files/raw/main/ezgif.com-gif-maker%20(1).gif" width="40.5%" height="50%">  
     <img style="border-radius: 0.3125em;
-    box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);" 
+    box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);"
     src="https://github.com/shiyutang/files/raw/main/ezgif.com-gif-maker.gif" width="53.8%" height="90%">
     <br>
     <div style="color:orange;
@@ -37,7 +37,7 @@ MedicalSeg is an easy-to-use 3D medical image segmentation toolkit that supports
 
 We successfully validate our framework with [Vnet](https://arxiv.org/abs/1606.04797) on the [COVID-19 CT scans](https://www.kaggle.com/andrewmvd/covid19-ct-scans) and [MRISpineSeg](https://www.spinesegmentation-challenge.com/) dataset. With the lung mask as label, we reached dice coefficient of 97.04% on COVID-19 CT scans. You can download the log to see the result or load the model and validate it by yourself :).
 
-#### **Result on COVID-19 CT scans** 
+#### **Result on COVID-19 CT scans**
 
 | Backbone | Resolution | lr | Training Iters | Dice | Links |
 |:-:|:-:|:-:|:-:|:-:|:-:|

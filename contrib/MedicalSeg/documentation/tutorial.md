@@ -112,5 +112,3 @@ config_name = vnet_lung_coronavirus_128_128_128_15k         # name of the config
 save_dir_all=saved_model                                    # overall save dir
 save_dir=saved_model/${config_name}                         # savedir of this exp
 ```
-
-

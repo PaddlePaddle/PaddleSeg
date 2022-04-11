@@ -21,4 +21,4 @@ There are 172 training data in the preliminary competition, including MR images 
 | Backbone | Resolution | lr | Training Iters | Dice | Links |
 |:-:|:-:|:-:|:-:|:-:|:-:|
 
-To be continue. 
+To be continue.
