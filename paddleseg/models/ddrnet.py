@@ -401,13 +401,3 @@ def DDRNet_23(**kwargs):
         spp_planes=128,
         head_planes=128,
         **kwargs)
-
-
-@manager.MODELS.add_component
-def DDRNet_39(**kwargs):
-    return DualResNet(
-        block_layers=[3, 4, 6, 3],
-        planes=64,
-        spp_planes=128,
-        head_planes=256,
-        **kwargs)
