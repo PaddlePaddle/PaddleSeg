@@ -49,10 +49,8 @@ class MSE():
                 'The shape of `pred`, `gt` and `trimap` should be equal. '
                 'but they are {}, {} and {}'.format(pred.shape, gt.shape,
                                                     trimap.shape))
-        if not ((pred[trimap == 0] == 0).all() and
-                (pred[trimap == 255] == 255).all()):
-            raise ValueError(
-                'pred should be masked by trimap before evaluation')
+        pred[trimap == 0] = 0
+        pred[trimap == 255] = 255
 
         mask = trimap == 128
         pixels = float(mask.sum())
@@ -95,10 +93,8 @@ class SAD():
                 'The shape of `pred`, `gt` and `trimap` should be equal. '
                 'but they are {}, {} and {}'.format(pred.shape, gt.shape,
                                                     trimap.shape))
-        if not ((pred[trimap == 0] == 0).all() and
-                (pred[trimap == 255] == 255).all()):
-            raise ValueError(
-                'pred should be masked by trimap before evaluation')
+        pred[trimap == 0] = 0
+        pred[trimap == 255] = 255
 
         mask = trimap == 128
         pred = pred / 255.
@@ -176,10 +172,8 @@ class Grad():
                 'The shape of `pred`, `gt` and `trimap` should be equal. '
                 'but they are {}, {} and {}'.format(pred.shape, gt.shape,
                                                     trimap.shape))
-        if not ((pred[trimap == 0] == 0).all() and
-                (pred[trimap == 255] == 255).all()):
-            raise ValueError(
-                'pred should be masked by trimap before evaluation')
+        pred[trimap == 0] = 0
+        pred[trimap == 255] = 255
 
         gt = gt.squeeze()
         pred = pred.squeeze()
@@ -233,10 +227,8 @@ class Conn():
                 'The shape of `pred`, `gt` and `trimap` should be equal. '
                 'but they are {}, {} and {}'.format(pred.shape, gt.shape,
                                                     trimap.shape))
-        if not ((pred[trimap == 0] == 0).all() and
-                (pred[trimap == 255] == 255).all()):
-            raise ValueError(
-                'pred should be masked by trimap before evaluation')
+        pred[trimap == 0] = 0
+        pred[trimap == 255] = 255
 
         gt = gt.squeeze()
         pred = pred.squeeze()
