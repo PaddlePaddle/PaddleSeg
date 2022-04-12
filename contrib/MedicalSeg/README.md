@@ -4,11 +4,10 @@ English | [简体中文](README_CN.md)
 MedicalSeg is an easy-to-use 3D medical image segmentation toolkit that supports GPU acceleration from data preparation to deployment, one-click data preprocessing on five datasets. We also provided high precision model on [COVID-19 CT scans](https://www.kaggle.com/andrewmvd/covid19-ct-scans) dataset and [MRISpineSeg](https://aistudio.baidu.com/aistudio/datasetdetail/81211) dataset, and a [3D visualization demo]((visualize.ipynb) ) based on [itkwidgets](https://github.com/InsightSoftwareConsortium/itkwidgets). The following image visualize the segmentation results on these two datasets:
 
 <p align="center">
-<img src="https://github.com/shiyutang/files/raw/main/ezgif.com-gif-maker%20(1).gif" width="30.5%" height="20%"><img src="https://github.com/shiyutang/files/raw/main/ezgif.com-gif-maker.gif" width="40.6%" height="20%">
-    <p align="center">
-    <div style="color:orange; display: inline-block;color: #999;
-    padding: 2px;">VNet segmentation result on COVID-19 CT scans (mDice on evalset is 97.04%) & MRISpineSeg (16 class mDice on evalset is 89.14%)</div>
-    </p>
+<img src="https://github.com/shiyutang/files/raw/main/ezgif.com-gif-maker%20(1).gif" width="30.6%" height="20%"><img src="https://github.com/shiyutang/files/raw/main/ezgif.com-gif-maker.gif" width="40.6%" height="20%">
+<p align="center">
+    VNet segmentation result on COVID-19 CT scans (mDice on evalset is 97.04%) & MRISpineSeg (16 class mDice on evalset is 89.14%)
+</p>
 </p>
 
 
