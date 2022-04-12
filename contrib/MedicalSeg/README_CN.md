@@ -3,25 +3,19 @@
 # MedicalSeg 介绍
 MedicalSeg 是一个简单易使用的 3D 医学图像分割工具包，支持从数据准备到部署的全流程 GPU 加速、五个数据集上的一键数据预处理，并提供了在 [COVID-19 CT scans](https://www.kaggle.com/andrewmvd/covid19-ct-scans) 数据集和 [MRISpineSeg](https://aistudio.baidu.com/aistudio/datasetdetail/81211) 数据集上的高精度模型，以及基于 [itkwidgets](https://github.com/InsightSoftwareConsortium/itkwidgets) 的 3D 可视化[Demo]((visualize.ipynb))。如图所示是基于 Vnet 训练之后的可视化结果：
 
-<center>
-    <img style="border-radius: 0.3125em;
-    box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);"
-    src="https://github.com/shiyutang/files/raw/main/ezgif.com-gif-maker%20(1).gif" width="40.5%" height="50%">  
-    <img style="border-radius: 0.3125em;
-    box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);"
-    src="https://github.com/shiyutang/files/raw/main/ezgif.com-gif-maker.gif" width="53.8%" height="90%">
-    <br>
-    <div style="color:orange;
-    display: inline-block;
-    color: #999;
-    padding: 2px;"> Vnet 在 COVID-19 CT scans (评估集上的 mDice 指标为 97.04%) 和 MRISpineSeg 数据集(评估集上的 16 类 mDice 指标为 89.14%) 上的分割结果</div>
-</center>
+<p align="center">
+<img src="https://github.com/shiyutang/files/raw/main/ezgif.com-gif-maker%20(1).gif" width="30.6%" height="20%"><img src="https://github.com/shiyutang/files/raw/main/ezgif.com-gif-maker.gif" width="40.6%" height="20%">
+<p align="center">
+    Vnet 在 COVID-19 CT scans (评估集上的 mDice 指标为 97.04%) 和 MRISpineSeg 数据集(评估集上的 16 类 mDice 指标为 89.14%) 上的分割结果
+</p>
+</p>
+
 
 
 **MedicalSeg 目前正在开发中！如果您在使用中发现任何问题，或想分享任何开发建议，请提交 github issue 或扫描以下微信二维码加入我们。**
 
 <p align="center">
-<img src="https://user-images.githubusercontent.com/48433081/162115375-2dba8796-5184-4793-8efa-b142734fe734.png" width="28%" height="20%">
+<img src="https://user-images.githubusercontent.com/48433081/162115375-2dba8796-5184-4793-8efa-b142734fe734.png" width="20%" height="20%">
 </p>
 
 ## Contents
