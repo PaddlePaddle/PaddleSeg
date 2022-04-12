@@ -12,7 +12,7 @@ train_dataset:
       size: 128
       scale: [0.8, 1.2]
     - type: RandomRotation3D
-      degrees: 90le
+      degrees: 90
     - type: RandomFlip3D
   mode: train
   num_classes: 3
