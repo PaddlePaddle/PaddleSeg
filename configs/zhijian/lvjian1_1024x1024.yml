@@ -19,18 +19,18 @@ train_dataset:
   train_path: data/zhijian/lvjian1_data/train_1024x1024.txt
   transforms:
     - type: ResizeStepScaling
-      min_scale_factor: 0.8
-      max_scale_factor: 1.2
+      min_scale_factor: 0.5
+      max_scale_factor: 2.0
     - type: RandomPaddingCrop
       crop_size: [1024, 1024]
     - type: RandomHorizontalFlip
     - type: RandomVerticalFlip
     - type: RandomDistort
-      brightness_range: 0.3
+      brightness_range: 0.4
       brightness_prob: 0.5
-      contrast_range: 0.3
+      contrast_range: 0.4
       contrast_prob: 0.5
-      saturation_range: 0.3
+      saturation_range: 0.4
       saturation_prob: 0.5
       hue_range: 15
       hue_prob: 0.5
