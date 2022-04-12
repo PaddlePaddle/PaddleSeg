@@ -24,6 +24,7 @@ val_dataset:
   num_classes: 3
   transforms: []
   mode: val
+  dataset_json_path: "data/lung_coronavirus/lung_coronavirus_raw/dataset.json"
 
 optimizer:
   type: sgd

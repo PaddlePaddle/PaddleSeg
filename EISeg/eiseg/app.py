@@ -1110,8 +1110,8 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
             image = cv2.imdecode(np.fromfile(path, dtype=np.uint8), 1)
             image = image[:, :, ::-1]  # BGR转RGB
             if checkOpenGrid(image, self.thumbnail_min):
-                self.loadGrid(image, False)
-                image, _ = self.grid.getGrid(0, 0)
+                if self.loadGrid(image, False):
+                    image, _ = self.grid.getGrid(0, 0)
 
         # 医学影像
         if path.lower().endswith(tuple(self.formats[1])):
@@ -2056,15 +2056,19 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
             self._anning = False
 
     def loadGrid(self, img, is_rs=True):
-        self.warn(self.tr("图像过大"), self.tr("图像过大，将启用宫格功能！"))
-        # 打开宫格功能
-        if self.dockWidgets["grid"].isVisible() is False:
-            # TODO: 改成self.dockStatus
-            self.menus.showMenu[-1].setChecked(True)
-            # self.display_dockwidget[-1] = True
-            self.dockWidgets["grid"].show()
-        self.grid = RSGrids(img) if is_rs else Grids(img)
-        self.initGrid()
+        res = self.warn(self.tr("图像过大"), self.tr("图像过大，将启用宫格功能！"), \
+                        buttons=QMessageBox.Yes | QMessageBox.No)
+        if res == QMessageBox.Yes and is_rs is False:
+            # 打开宫格功能
+            if self.dockWidgets["grid"].isVisible() is False:
+                # TODO: 改成self.dockStatus
+                self.menus.showMenu[-1].setChecked(True)
+                # self.display_dockwidget[-1] = True
+                self.dockWidgets["grid"].show()
+            self.grid = RSGrids(img) if is_rs else Grids(img)
+            self.initGrid()
+            return True
+        return False
 
     # 界面布局
     def loadLayout(self):

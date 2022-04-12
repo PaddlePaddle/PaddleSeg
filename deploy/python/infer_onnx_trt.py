@@ -41,23 +41,23 @@ Export the Paddle model to ONNX, infer the ONNX model by TRT.
 Or, load the ONNX model and infer it by TRT.
 
 Prepare:
-* install gpu driver, cuda toolkit and cudnn
-* install PaddlePaddle
-* install PaddleSeg and the the requirements
-* download TensorRT 5/7 tar file according the version of cuda
-* install the trt whl in tar file, export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:TensorRT-7/lib
-* run `pip install 'pycuda>=2019.1.1'`
-* run `pip install paddle2onnx onnx onnxruntime`
+* Install gpu driver, cuda toolkit and cudnn
+* Install PaddlePaddle
+* Install the requirements of PaddleSeg
+* Download TensorRT 5/7 tar file according the version of cuda
+* Install the trt whl in tar file, export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:TensorRT-7/lib
+* Run `pip install 'pycuda>=2019.1.1'`
+* Run `pip install paddle2onnx onnx onnxruntime`
+
+Usage:
+    python deploy/python/infer_onnx_trt.py \
+        --config configs/pp_liteseg/pp_liteseg_stdc1_cityscapes_1024x512_scale0.5_160k.yml
+    
+    Please refer to following code for full usage.
 
 Note:
 * Some models are not supported exporting to ONNX.
 * Some ONNX models are not supportd deploying by TRT.
-
-Usage:
- python deploy/python/infer_onnx_trt.py \
-     --config configs/bisenet/bisenet_cityscapes_1024x512_160k.yml \
-     --model_path pretrained_model/bisenet_cityscapes_1024x1024_160k.pdparams
-
 """
 
 

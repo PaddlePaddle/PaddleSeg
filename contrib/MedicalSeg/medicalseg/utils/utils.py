@@ -12,18 +12,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import contextlib
-import filelock
 import os
-import tempfile
-import numpy as np
-import nibabel
-from collections.abc import Iterable
+import json
 import random
+import tempfile
+import filelock
+import contextlib
+import numpy as np
+import SimpleITK as sitk
+from collections.abc import Iterable
 from urllib.parse import urlparse, unquote
+from functools import partial, update_wrapper
 
 import paddle
-
 from medicalseg.utils import logger, seg_env
 from medicalseg.utils.download import download_file_and_uncompress
 
@@ -148,7 +149,7 @@ def get_image_list(image_path, valid_suffix=None, filter_key=None):
     Args:
     image_path(str): the image or image folder where you want to get a image list from.
     valid_suffix(tuple): Contain only the suffix you want to include.
-    filter_key(dict): the key and whether you want to include it. e.g.:{"segmentation": True} will futher filter the imagename with segmentation in it.
+    filter_key(dict): the key(ignore case) and whether you want to include it. e.g.:{"segmentation": True} will futher filter the imagename with segmentation in it.
 
     """
     if valid_suffix is None:
@@ -162,12 +163,11 @@ def get_image_list(image_path, valid_suffix=None, filter_key=None):
             if filter_key is not None:
                 f_name = image_path.split("/")[
                     -1]  # TODO change to system invariant
-                for key, val in filter_key:
-                    if (key in f_name) is not val:
+                for key, val in filter_key.items():
+                    if (key in f_name.lower()) is not val:
                         break
                 else:
                     image_list.append(image_path)
-
             else:
                 image_list.append(image_path)
         else:
@@ -182,11 +182,18 @@ def get_image_list(image_path, valid_suffix=None, filter_key=None):
                 if '.ipynb_checkpoints' in root:
                     continue
                 if f.split(".", maxsplit=1)[-1] in valid_suffix:
-                    image_list.append(os.path.join(root, f))
+                    if filter_key is not None:
+                        for key, val in filter_key.items():
+                            if (key in f.lower()) is not val:
+                                break
+                        else:
+                            image_list.append(os.path.join(root, f))
+                    else:
+                        image_list.append(os.path.join(root, f))
     else:
         raise FileNotFoundError(
-            '`--image_path` is not found. it should be a path of image, or a directory including images.'
-        )
+            '{} is not found. it should be a path of image, or a directory including images.'.
+            format(image_path))
 
     if len(image_list) == 0:
         raise RuntimeError(
@@ -195,7 +202,15 @@ def get_image_list(image_path, valid_suffix=None, filter_key=None):
     return image_list
 
 
-def save_array(save_path, save_content, form):
+def save_array(save_path, save_content, form, image_infor):
+    """
+    save_path: Example: save_dir/iter,
+    save_content: dict of saveing content, where key is the name and value is the content. 
+                 Example: {'pred': pred.numpy(), 'label': label.numpy(), 'img': im.numpy()}
+    form: Iterable that containing the format want to save.('npy', 'nii.gz')
+    image_infor: Dict containing the information needed to save the image.
+                Example: {spacing: xx, direction: xx, origin: xx, format: 'zyx'}
+    """
     if not isinstance(save_content, dict):
         raise TypeError(
             'The save_content need to be dict which the key is the save name and the value is the numpy array to be saved, but recieved {}'
@@ -219,12 +234,29 @@ def save_array(save_path, save_content, form):
                     np.save('{}_{}.npy'.format(save_path, key), val)
             elif suffix == 'nii' or suffix == 'nii.gz':
                 for (key, val) in save_content.items():
-                    nifti_file = nibabel.Nifti1Image(val, np.eye(4))
-                    nibabel.save(nifti_file,
-                                 '{}_{}.{}'.format(save_path, key, suffix))
+                    if image_infor["format"] == "xyz":
+                        val = np.transpose(val, [2, 1, 0])
+                    elif image_infor["format"] != "zyx":
+                        raise RuntimeError(
+                            "the image format {} is not supported".format(
+                                image_infor["format"]))
+
+                    img_itk_new = sitk.GetImageFromArray(val)
+                    img_itk_new.SetSpacing(tuple(image_infor["spacing"]))
+                    img_itk_new.SetOrigin(tuple(image_infor["origin"]))
+                    img_itk_new.SetDirection(tuple(image_infor["direction"]))
+                    sitk.WriteImage(
+                        img_itk_new,
+                        os.path.join('{}_{}.{}'.format(save_path, key, suffix)))
             else:
                 raise RuntimeError(
                     'Save format other than npy or nii/nii.gz is not supported yet.'
                 )
 
-        print("[EVAL] Sucessfully save {}.".format(save_path))
+        print("[EVAL] Sucessfully save to {}".format(save_path))
+
+
+def wrapped_partial(func, *args, **kwargs):
+    partial_func = partial(func, *args, **kwargs)
+    update_wrapper(partial_func, func)
+    return partial_func
