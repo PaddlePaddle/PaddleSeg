@@ -23,6 +23,7 @@ import paddle.nn.functional as F
 from paddleseg.utils import (TimeAverager, calculate_eta, resume, logger,
                              worker_init_fn, train_profiler, op_flops_funs)
 from paddleseg.core.val import evaluate
+import pickle
 
 
 def check_logits_losses(logits_list, losses):
@@ -106,7 +107,14 @@ def train(model,
 
     start_iter = 0
     if resume_model is not None:
-        start_iter = resume(model, optimizer, resume_model)
+        return_info = resume(model, optimizer, resume_model)
+        # here I get the return information and set best_model_iter and best_mean_iou
+        if (len(return_info) == 3):
+            iter, best_model_iter, best_mean_iou = return_info
+        else:
+            iter = return_info
+            best_mean_iou = -1.0
+            best_model_iter = -1
 
     if not os.path.isdir(save_dir):
         if os.path.exists(save_dir):
@@ -146,8 +154,8 @@ def train(model,
     avg_loss = 0.0
     avg_loss_list = []
     iters_per_epoch = len(batch_sampler)
-    best_mean_iou = -1.0
-    best_model_iter = -1
+    # best_mean_iou = -1.0
+    # best_model_iter = -1
     reader_cost_averager = TimeAverager()
     batch_cost_averager = TimeAverager()
     save_models = deque()
@@ -304,6 +312,16 @@ def train(model,
                         paddle.save(
                             model.state_dict(),
                             os.path.join(best_model_dir, 'model.pdparams'))
+                        # I try to save the information of the best model in the current_save_dir,
+                        # so that I can get it when I want to train from a resume dictionary
+                        # for fear that the previous best model will be covered,
+                        # even though the existing best model is not better than the previous best model before resuming.
+                        best_model_info = {"best_mean_iou": best_mean_iou,
+                                           "best_model_iter": best_model_iter}
+                        best_model_info_path = os.path.join(current_save_dir, "best_model_info.pkl")
+                        with open(best_model_info_path, "wb") as best_model_save:
+                            pickle.dump(best_model_info, best_model_save)
+
                     logger.info(
                         '[EVAL] The model with the best validation mIoU ({:.4f}) was saved at iter {}.'
                         .format(best_mean_iou, best_model_iter))

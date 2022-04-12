@@ -24,6 +24,7 @@ import paddle
 
 from paddleseg.utils import logger, seg_env
 from paddleseg.utils.download import download_file_and_uncompress
+import pickle
 
 
 @contextlib.contextmanager
@@ -124,6 +125,15 @@ def resume(model, optimizer, resume_model):
 
             iter = resume_model.split('_')[-1]
             iter = int(iter)
+
+            # I get the information of the previous best model here, if it exists
+            best_model_info_path = os.path.join(resume_model, "best_model_info.pkl")
+            if os.path.exists(best_model_info_path):
+                with open(best_model_info_path, "rb") as best_model_save:
+                    best_model_info = pickle.load(best_model_save)
+                    best_mean_iou = best_model_info["best_mean_iou"]
+                    best_model_iter = best_model_info["best_model_iter"]
+                    return iter, best_model_iter, best_mean_iou
             return iter
         else:
             raise ValueError(
