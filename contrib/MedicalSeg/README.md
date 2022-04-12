@@ -6,10 +6,10 @@ MedicalSeg is an easy-to-use 3D medical image segmentation toolkit that supports
 <center>
     <img style="border-radius: 0.3125em;
     box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);"
-    src="https://github.com/shiyutang/files/raw/main/ezgif.com-gif-maker%20(1).gif" width="40.5%" height="50%">  
+    src="https://github.com/shiyutang/files/raw/main/ezgif.com-gif-maker%20(1).gif" width="30.5%" height="50%">  
     <img style="border-radius: 0.3125em;
     box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);"
-    src="https://github.com/shiyutang/files/raw/main/ezgif.com-gif-maker.gif" width="53.8%" height="90%">
+    src="https://github.com/shiyutang/files/raw/main/ezgif.com-gif-maker.gif" width="40.8%" height="50%">
     <br>
     <div style="color:orange;
     display: inline-block;
@@ -21,7 +21,7 @@ MedicalSeg is an easy-to-use 3D medical image segmentation toolkit that supports
 **MedicalSeg is currently under development! If you find any problem using it or want to share any future develop suggestions, please open a github issue or join us by scanning the following wechat QR code.**
 
 <p align="center">
-<img src="https://user-images.githubusercontent.com/48433081/162115375-2dba8796-5184-4793-8efa-b142734fe734.png" width="28%" height="20%">
+<img src="https://user-images.githubusercontent.com/48433081/162115375-2dba8796-5184-4793-8efa-b142734fe734.png" width="20%" height="20%">
 </p>
 
 ## Contents
