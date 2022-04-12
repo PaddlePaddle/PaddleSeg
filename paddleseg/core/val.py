@@ -182,6 +182,10 @@ def evaluate(model,
     kappa = metrics.kappa(*metrics_input)
     class_dice, mdice = metrics.dice(*metrics_input)
 
+    p = class_precision[1]
+    r = class_recall[1]
+    target_f1 = (2 * p * r) / (p + r)
+
     if auc_roc:
         auc_roc = metrics.auc_roc(
             logits_all, label_all, num_classes=eval_dataset.num_classes)
@@ -196,4 +200,5 @@ def evaluate(model,
         logger.info("[EVAL] Class Precision: \n" + str(
             np.round(class_precision, 4)))
         logger.info("[EVAL] Class Recall: \n" + str(np.round(class_recall, 4)))
-    return miou, acc, class_iou, class_precision, kappa
+        logger.info("[EVAL] Target f1: \n" + str(np.round(target_f1, 4)))
+    return miou, acc, class_iou, class_precision, kappa, target_f1

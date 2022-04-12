@@ -142,6 +142,7 @@ def train(model,
     avg_loss_list = []
     iters_per_epoch = len(batch_sampler)
     best_mean_iou = -1.0
+    best_f1 = -1.0
     best_model_iter = -1
     reader_cost_averager = TimeAverager()
     batch_cost_averager = TimeAverager()
@@ -272,7 +273,7 @@ def train(model,
                 if test_config is None:
                     test_config = {}
 
-                mean_iou, acc, _, _, _ = evaluate(
+                mean_iou, acc, _, _, _, f1 = evaluate(
                     model, val_dataset, num_workers=num_workers, **test_config)
 
                 model.train()
@@ -292,8 +293,10 @@ def train(model,
                     shutil.rmtree(model_to_remove)
 
                 if val_dataset is not None:
-                    if mean_iou > best_mean_iou:
-                        best_mean_iou = mean_iou
+                    #if mean_iou > best_mean_iou:
+                    #   best_mean_iou = mean_iou
+                    if f1 > best_f1:
+                        best_f1 = f1
                         best_model_iter = iter
                         best_model_dir = os.path.join(save_dir, "best_model")
                         paddle.save(
