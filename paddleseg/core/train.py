@@ -32,7 +32,7 @@ def check_logits_losses(logits_list, losses):
     if len_logits != len_losses:
         raise RuntimeError(
             'The length of logits_list should equal to the types of loss config: {} != {}.'
-            .format(len_logits, len_losses))
+                .format(len_logits, len_losses))
 
 
 def loss_computation(logits_list, labels, losses, edges=None):
@@ -51,7 +51,7 @@ def loss_computation(logits_list, labels, losses, edges=None):
             mixed_loss_list = loss_i(logits, labels)
             for mixed_loss in mixed_loss_list:
                 loss_list.append(coef_i * mixed_loss)
-        elif loss_i.__class__.__name__ in ("KLLoss", ):
+        elif loss_i.__class__.__name__ in ("KLLoss",):
             loss_list.append(
                 coef_i * loss_i(logits_list[0], logits_list[1].detach()))
         else:
@@ -81,7 +81,7 @@ def train(model,
     Launch training.
 
     Args:
-        model（nn.Layer): A sementic segmentation model.
+        model(nn.Layer): A sementic segmentation model.
         train_dataset (paddle.io.Dataset): Used to read and process training datasets.
         val_dataset (paddle.io.Dataset, optional): Used to read and process validation datasets.
         optimizer (paddle.optimizer.Optimizer): The optimizer.
@@ -106,15 +106,15 @@ def train(model,
     local_rank = paddle.distributed.ParallelEnv().local_rank
 
     start_iter = 0
+    best_mean_iou = -1.0
+    best_model_iter = -1
     if resume_model is not None:
         return_info = resume(model, optimizer, resume_model)
         # here I get the return information and set best_model_iter and best_mean_iou
         if (len(return_info) == 3):
-            iter, best_model_iter, best_mean_iou = return_info
+            start_iter, best_model_iter, best_mean_iou = return_info
         else:
-            iter = return_info
-            best_mean_iou = -1.0
-            best_model_iter = -1
+            start_iter = return_info
 
     if not os.path.isdir(save_dir):
         if os.path.exists(save_dir):
@@ -253,10 +253,10 @@ def train(model,
                 eta = calculate_eta(remain_iters, avg_train_batch_cost)
                 logger.info(
                     "[TRAIN] epoch: {}, iter: {}/{}, loss: {:.4f}, lr: {:.6f}, batch_cost: {:.4f}, reader_cost: {:.5f}, ips: {:.4f} samples/sec | ETA {}"
-                    .format((iter - 1) // iters_per_epoch + 1, iter, iters,
-                            avg_loss, lr, avg_train_batch_cost,
-                            avg_train_reader_cost,
-                            batch_cost_averager.get_ips_average(), eta))
+                        .format((iter - 1) // iters_per_epoch + 1, iter, iters,
+                                avg_loss, lr, avg_train_batch_cost,
+                                avg_train_reader_cost,
+                                batch_cost_averager.get_ips_average(), eta))
                 if use_vdl:
                     log_writer.add_scalar('Train/loss', avg_loss, iter)
                     # Record all losses if there are more than 2 losses.
@@ -279,7 +279,7 @@ def train(model,
                 batch_cost_averager.reset()
 
             if (iter % save_interval == 0
-                    or iter == iters) and (val_dataset is not None):
+                or iter == iters) and (val_dataset is not None):
                 num_workers = 1 if num_workers > 0 else 0
 
                 if test_config is None:
@@ -324,7 +324,7 @@ def train(model,
 
                     logger.info(
                         '[EVAL] The model with the best validation mIoU ({:.4f}) was saved at iter {}.'
-                        .format(best_mean_iou, best_model_iter))
+                            .format(best_mean_iou, best_model_iter))
 
                     if use_vdl:
                         log_writer.add_scalar('Evaluate/mIoU', mean_iou, iter)
