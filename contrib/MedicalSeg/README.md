@@ -1,7 +1,8 @@
 English | [简体中文](README_CN.md)
 
 # MedicalSeg
-MedicalSeg is an easy-to-use 3D medical image segmentation toolkit that supports GPU acceleration from data preparation to deployment, one-click data preprocessing on five datasets. We also provided high precision model on [COVID-19 CT scans](https://www.kaggle.com/andrewmvd/covid19-ct-scans) dataset and [MRISpineSeg](https://aistudio.baidu.com/aistudio/datasetdetail/81211) dataset, and a [3D visualization demo]((visualize.ipynb) ) based on [itkwidgets](https://github.com/InsightSoftwareConsortium/itkwidgets). The following image visualize the segmentation results on these two datasets:
+MedicalSeg is an easy-to-use 3D medical image segmentation toolkit that supports the whole segmentation process including data preprocessing, model training, and model deployment. Specially, We provide data preprocessing acceleration, high precision model on [COVID-19 CT scans](https://www.kaggle.com/andrewmvd/covid19-ct-scans) lung dataset and [MRISpineSeg](https://aistudio.baidu.com/aistudio/datasetdetail/81211) spine dataset, support for multiple datasets including [MSD](http://medicaldecathlon.com/), [Promise12](https://promise12.grand-challenge.org/), [Prostate_mri](https://liuquande.github.io/SAML/) and etc, and a [3D visualization demo]((visualize.ipynb) ) based on [itkwidgets](https://github.com/InsightSoftwareConsortium/itkwidgets). The following image visualize the segmentation results on these two datasets:
+
 
 <p align="center">
 <img src="https://github.com/shiyutang/files/raw/main/ezgif.com-gif-maker%20(1).gif" width="30.6%" height="20%"><img src="https://github.com/shiyutang/files/raw/main/ezgif.com-gif-maker.gif" width="40.6%" height="20%">
