@@ -94,7 +94,9 @@ def train(model,
         keep_checkpoint_max (int, optional): Maximum number of checkpoints to save. Default: 5.
         test_config(dict, optional): Evaluation config.
         precision (str, optional): Use AMP if precision='fp16'. If precision='fp32', the training is normal.
-        amp_level (str, optional): Auto mixed precision level. Accepted values are “O1” and “O2”: O1 represent mixed precision, the input data type of each operator will be casted by white_list and black_list; O2 represent Pure fp16, all operators parameters and input data will be casted to fp16, except operators in black_list, don’t support fp16 kernel and batchnorm. Default is O1(amp)
+        amp_level (str, optional): Auto mixed precision level. Accepted values are “O1” and “O2”: O1 represent mixed precision, 
+            the input data type of each operator will be casted by white_list and black_list; O2 represent Pure fp16, all operators 
+            parameters and input data will be casted to fp16, except operators in black_list, don’t support fp16 kernel and batchnorm. Default is O1(amp)
         profiler_options (str, optional): The option of train profiler.
         to_static_training (bool, optional): Whether to use @to_static for training.
     """
@@ -126,7 +128,7 @@ def train(model,
         paddle.distributed.fleet.init(is_collective=True)
         optimizer = paddle.distributed.fleet.distributed_optimizer(
             optimizer)  # The return is Fleet object
-        model = paddle.distributed.fleet.distributed_model(model)
+        ddp_model = paddle.distributed.fleet.distributed_model(model)
 
     batch_sampler = paddle.io.DistributedBatchSampler(
         train_dataset, batch_size=batch_size, shuffle=True, drop_last=True)
@@ -183,7 +185,8 @@ def train(model,
                             "elementwise_add", "batch_norm", "sync_batch_norm"
                         },
                         custom_black_list={'bilinear_interp_v2'}):
-                    logits_list = model(images)
+                    logits_list = ddp_model(images) if nranks > 1 else model(
+                        images)
                     loss_list = loss_computation(
                         logits_list=logits_list,
                         labels=labels,
@@ -198,7 +201,7 @@ def train(model,
                 else:
                     scaler.minimize(optimizer, scaled)  # update parameters
             else:
-                logits_list = model(images)
+                logits_list = ddp_model(images) if nranks > 1 else model(images)
                 loss_list = loss_computation(
                     logits_list=logits_list,
                     labels=labels,

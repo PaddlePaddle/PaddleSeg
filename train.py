@@ -110,8 +110,10 @@ def parse_args():
         default="O1",
         type=str,
         choices=["O1", "O2"],
-        help="Auto mixed precision level. Accepted values are “O1” and “O2”: O1 represent mixed precision, the input data type of each operator will be casted by white_list and black_list; O2 represent Pure fp16, all operators parameters and input data will be casted to fp16, except operators in black_list, don’t support fp16 kernel and batchnorm. Default is O1(amp)"
-    )
+        help="Auto mixed precision level. Accepted values are “O1” and “O2”: O1 represent mixed precision, the input \
+                data type of each operator will be casted by white_list and black_list; O2 represent Pure fp16, all operators \
+                parameters and input data will be casted to fp16, except operators in black_list, don’t support fp16 kernel \
+                and batchnorm. Default is O1(amp)")
     parser.add_argument(
         '--data_format',
         dest='data_format',
