@@ -2,7 +2,7 @@ _base_: '../_base_/cityscapes_1024x1024.yml'
 
 model:
   type: DDRNet_23
-  augment: False
+  enable_auxiliary_loss: False
   pretrained: https://bj.bcebos.com/paddleseg/dygraph/cityscapes/ddrnet23_cityscapes_1024x1024_120k/pretrain/model.pdparams
 
 optimizer:
