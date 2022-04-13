@@ -3,18 +3,6 @@ _base_: '../_base_/cityscapes_769x769.yml'
 batch_size: 2
 iters: 60000
 
-lr_scheduler:
-  type: PolynomialDecay
-  learning_rate: 0.01
-  power: 0.9
-  end_lr: 1.0e-4
-
-loss:
-  types:
-    - type: OhemCrossEntropyLoss
-    - type: CrossEntropyLoss
-  coef: [1, 0.4]
-
 model:
   type: CCNet
   backbone:
@@ -25,3 +13,15 @@ model:
   enable_auxiliary_loss: True
   dropout_prob: 0.1
   recurrence: 2
+  
+loss:
+  types:
+    - type: OhemCrossEntropyLoss
+    - type: CrossEntropyLoss
+  coef: [1, 0.4]
+  
+lr_scheduler:
+  type: PolynomialDecay
+  learning_rate: 0.01
+  power: 0.9
+  end_lr: 1.0e-4
