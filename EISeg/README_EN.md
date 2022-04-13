@@ -187,7 +187,7 @@ Start the annotation when the above are all set up. Here are the commonly used k
 
 - Thanks for the labelling deisgn of [LabelMe](https://github.com/wkentaro/labelme) and [LabelImg](https://github.com/tzutalin/labelImg).
 
-- Thanks for [Weibin Liao](https://github.com/MrBlankness) to provide the pretrain model of ResNet50_DeeplabV3 and ResNet18_DeeplabV3.
+- Thanks for [Weibin Liao](https://github.com/MrBlankness) to provide the pretrain model of ResNet50_DeeplabV3+ and ResNet18_DeeplabV3+.
 
 - Thanks for support of [Junjie Guo](https://github.com/Guojunjie08) and [Jiajun Feng](https://github.com/richarddddd198) on MRSpineSeg model.
 ## Citation
