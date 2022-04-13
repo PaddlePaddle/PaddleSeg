@@ -98,7 +98,7 @@ def train(model,
         from visualdl import LogWriter
         log_writer = LogWriter(save_dir)
     else:
-        log_iters = None
+        log_writer = None
 
     if to_static_training:
         model = paddle.jit.to_static(model)

@@ -81,14 +81,8 @@ class MedicalDataset(paddle.io.Dataset):
                 savepath=seg_env.DATA_HOME,
                 extrapath=seg_env.DATA_HOME)
         elif not os.path.exists(self.dataset_root):
-            self.dataset_root = os.path.normpath(self.dataset_root)
-            savepath, extraname = self.dataset_root.rsplit(
-                sep=os.path.sep, maxsplit=1)
-            self.dataset_root = download_file_and_uncompress(
-                url=data_URL,
-                savepath=savepath,
-                extrapath=savepath,
-                extraname=extraname)
+            print()
+            raise ValueError("The `dataset_root` don't exist please specify the correct path to data.")
 
         if mode == 'train':
             file_path = os.path.join(self.dataset_root, 'train_list.txt')
