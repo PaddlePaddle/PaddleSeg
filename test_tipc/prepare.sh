@@ -43,6 +43,8 @@ if [ ${MODE} = "whole_infer" ] || [ ${MODE} = "klquant_whole_infer" ]; then
         wget -nc -P $model_path https://bj.bcebos.com/paddleseg/dygraph/cityscapes/stdc1_seg_cityscapes_1024x512_80k/model.pdparams
     elif [ ${model_name} == "ppmatting" ];then
         wget -nc -P $model_path https://paddleseg.bj.bcebos.com/matting/models/modnet-mobilenetv2.pdparams
+    elif [ ${model_name} == "ddrnet" ];then
+        wget -nc -P $model_path https://bj.bcebos.com/paddleseg/dygraph/cityscapes/ddrnet23_cityscapes_1024x1024_120k/model.pdparams
     fi
 fi
 
@@ -76,6 +78,6 @@ else
 fi
 
 if [ ${model_name} == "enet" ] || [ ${model_name} == "bisenetv2" ] || [ ${model_name} == "ocrnet_hrnetw18" ] || [ ${model_name} == "ocrnet_hrnetw48" ] \
-    || [ ${model_name} == "deeplabv3p_resnet50_cityscapes" ]|| [ ${model_name} == "fastscnn" ]|| [ ${model_name} == "fcn_hrnetw18" ];then
+    || [ ${model_name} == "deeplabv3p_resnet50_cityscapes" ]|| [ ${model_name} == "fastscnn" ]|| [ ${model_name} == "fcn_hrnetw18" ]|| [ ${model_name} == "ddrnet" ];then
     cp ./test_tipc/data/cityscapes_val_5.list ./test_tipc/data/cityscapes
 fi
