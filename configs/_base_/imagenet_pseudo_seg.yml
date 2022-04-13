@@ -5,8 +5,8 @@ iters: 320000
 lr_scheduler:
   type: StepDecay
   learning_rate: 0.01
-  step_size: 80000
-  warmup_iters: 1000
+  step_size: 250000
+  warmup_iters: 5000
   warmup_start_lr: 1.0e-5
 
 optimizer:
