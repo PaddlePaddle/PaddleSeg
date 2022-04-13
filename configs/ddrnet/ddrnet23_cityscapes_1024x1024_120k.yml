@@ -6,7 +6,7 @@ iters: 120000
 model:
   type: DDRNet_23
   enable_auxiliary_loss: False
-  pretrained: https://bj.bcebos.com/paddleseg/dygraph/cityscapes/ddrnet23_cityscapes_1024x1024_120k/imagenet_pretrain.pdparams
+  pretrained: https://bj.bcebos.com/paddleseg/dygraph/cityscapes/ddrnet23_cityscapes_1024x1024_120k/pretrain/model.pdparams
 
 optimizer:
   type: sgd
