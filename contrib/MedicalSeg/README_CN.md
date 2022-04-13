@@ -71,7 +71,7 @@ MedicalSeg 是一个简单易使用的全流程 3D 医学图像分割工具包�
     ```
 - (可选) 如果需要GPU加速，则可以参考[教程](https://docs.cupy.dev/en/latest/install.html) 安装 CuPY。
 
-- 一键数据预处理：
+- 一键数据预处理。如果不是准备肺部数据，可以在这个[目录](./tools)下，替换你需要的其他数据：
     - 如果你安装了CuPY并且想要 GPU 加速，修改[这里](tools/preprocess_globals.yml)的 use_gpu 配置为 True。
     ```
     python tools/prepare_lung_coronavirus.py

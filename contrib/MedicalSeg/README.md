@@ -74,7 +74,7 @@ This part introduce a easy to use the demo on COVID-19 CT scans dataset. This de
     ```
 - (Optional) Install CuPY if you want to accelerate the preprocess process. [CuPY installation guide](https://docs.cupy.dev/en/latest/install.html)
 
-- Get and preprocess the data:
+- Get and preprocess the data. Remember to replace prepare_lung_coronavirus.py with different python script that you need [here](./tools):
     - change the GPU setting [here](tools/preprocess_globals.yml) to True if you installed CuPY and want to use GPU to accelerate.
     ```
     python tools/prepare_lung_coronavirus.py
