@@ -1,0 +1,40 @@
+# img_nums = 100w, bs=64, iters=8w, so epoch = 5  
+batch_size: 8   # gpu=8
+iters: 80000
+
+lr_scheduler:
+  type: StepDecay
+  learning_rate: 0.01
+  step_size: 40000
+  warmup_iters: 1000
+  warmup_start_lr: 1.0e-5
+
+optimizer:
+  type: sgd
+  momentum: 0.9
+  weight_decay: 4.0e-5
+
+loss:
+  types:
+    - type: CrossEntropyLoss
+  coef: [1]
+
+# ImagenetPseudoSeg only has train dataset.
+train_dataset:
+  type: ImagenetPseudoSeg
+  dataset_root: data/pseudo_seg
+  transforms:
+    - type: ResizeByLong
+      long_size: 272
+    - type: ResizeStepScaling
+      min_scale_factor: 0.8
+      max_scale_factor: 1.2
+    - type: RandomPaddingCrop
+      crop_size: [256, 256]
+    - type: RandomHorizontalFlip
+    - type: RandomDistort
+      brightness_range: 0.3
+      contrast_range: 0.3
+      saturation_range: 0.3
+    - type: Normalize
+  mode: train

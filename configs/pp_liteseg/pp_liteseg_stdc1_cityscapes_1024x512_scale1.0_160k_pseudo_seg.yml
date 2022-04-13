@@ -1,0 +1,19 @@
+_base_: '../_base_/imagenet_pseudo_seg.yml'
+
+loss:
+  types:
+    - type: OhemCrossEntropyLoss
+      min_kept: 32000   # 8 * 256 * 256 // 16
+    - type: OhemCrossEntropyLoss
+      min_kept: 32000
+    - type: OhemCrossEntropyLoss
+      min_kept: 32000
+  coef: [1, 1, 1]
+
+model:
+  type: PPLiteSeg
+  backbone:
+    type: STDC1
+    pretrained: https://bj.bcebos.com/paddleseg/dygraph/PP_STDCNet1.tar.gz
+  arm_out_chs: [32, 64, 128]
+  seg_head_inter_chs: [32, 64, 64]
