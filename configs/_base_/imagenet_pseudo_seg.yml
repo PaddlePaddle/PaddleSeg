@@ -1,11 +1,11 @@
-# img_nums = 100w, bs=64, iters=8w, so epoch = 5  
-batch_size: 8   # gpu=8
-iters: 80000
+# img_nums = 100w, bs=4*4, iters=32w, so epoch = 5  
+batch_size: 4
+iters: 320000
 
 lr_scheduler:
   type: StepDecay
   learning_rate: 0.01
-  step_size: 40000
+  step_size: 80000
   warmup_iters: 1000
   warmup_start_lr: 1.0e-5
 
