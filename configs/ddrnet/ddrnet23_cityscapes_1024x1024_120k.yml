@@ -5,8 +5,8 @@ iters: 120000
 
 model:
   type: DDRNet_23
-  augment: False
-  pretrained: DDRNet23_imagenet.pdparams
+  enable_auxiliary_loss: False
+  pretrained: ddrnet23_imagenet.pdparams
 
 optimizer:
   type: sgd

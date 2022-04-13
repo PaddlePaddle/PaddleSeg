@@ -10,4 +10,4 @@
 
 | Model | Backbone | Resolution | Training Iters | mIoU | mIoU (flip) | mIoU (ms+flip) | Links |
 |-|-|-|-|-|-|-|-|
-|DDRNet_23|-|1024x1024|120000|79.79%|80.44%|80.59%|[model]()\|[log]()\|[vdl]|
+|DDRNet_23|-|1024x1024|120000|79.85%|80.11%|80.44%|[model]()\|[log]()\|[vdl]|
