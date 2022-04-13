@@ -10,4 +10,4 @@
 
 | Model | Backbone | Resolution | Training Iters | mIoU | mIoU (flip) | mIoU (ms+flip) | Links |
 |-|-|-|-|-|-|-|-|
-|CCNet|-|769x769|60000|80.95%|81.23%|81.32%|[model]()\|[log]()\|[vdl]()|
+|CCNet|ResNet101_OS8|769x769|60000|80.95%|81.23%|81.32%|[model]()\|[log]()\|[vdl]()|
