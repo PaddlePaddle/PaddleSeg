@@ -87,10 +87,10 @@ python val.py \
 
 **Prepare:**
 * Install gpu driver, cuda toolkit and cudnn
-* Install Paddle and PaddleSeg ([doc](../../docs/install.md))
-* Download TensorRT 5/7 tar file according the version of cuda
+* Download TensorRT 5/7 tar file from [Nvidia](https://developer.nvidia.com/tensorrt). We provide [cuda10.2-cudnn8.0-trt7.1](https://paddle-inference-dist.bj.bcebos.com/tensorrt_test/cuda10.2-cudnn8.0-trt7.1.tgz)
 * Install the TensorRT whl in the tar file, e.g, `pip install TensorRT-7.1.3.4/python/xx.whl`
 * Set Path, e.g, `export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:TensorRT-7.1.3.4/lib`
+* Install Paddle and PaddleSeg ([doc](../../docs/install.md))
 * Run `pip install 'pycuda>=2019.1.1'`
 * Run `pip install paddle2onnx onnx onnxruntime`
 
