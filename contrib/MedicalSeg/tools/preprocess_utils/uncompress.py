@@ -30,10 +30,11 @@ class uncompressor:
         if download_params is not None:
             urls, savepath, print_progress = download_params
             for key, url in urls.items():
-                self._download_file(
-                    url,
-                    savepath=os.path.join(savepath, key),
-                    print_progress=print_progress)
+                if url:
+                    self._download_file(
+                        url,
+                        savepath=os.path.join(savepath, key),
+                        print_progress=print_progress)
 
     def _uncompress_file_zip(self, filepath, extrapath):
         files = zipfile.ZipFile(filepath, 'r')
@@ -74,7 +75,7 @@ class uncompressor:
 
         if filepath.endswith("zip"):
             handler = self._uncompress_file_zip
-        elif filepath.endswith("tgz"):
+        elif filepath.endswith(("tgz", "tar", "tar.gz")):
             handler = functools.partial(self._uncompress_file_tar, mode="r:*")
         else:
             handler = functools.partial(self._uncompress_file_tar, mode="r")

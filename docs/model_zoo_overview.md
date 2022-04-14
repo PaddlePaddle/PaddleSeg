@@ -122,3 +122,14 @@ Based on the Cityscapes dataset, PaddleSeg supports 22+ series of segmentation a
 <!-- |GINet|ResNet50_OS8|78.66%|463.36|55.87|-|-|-
 |GINet|ResNet101_OS8|78.4%|618.95|74.91|-|-|-
 |GSCNN|ResNet50_OS8|80.67%|385.50|39.47|-|-|- -->
+
+## How to add new models to Benchmark
+### Performance statistics
+Set up a test environment according to the above configuration, and test according to the requirements of the test method. Among them, Inference Time(ms), Preprocess Time(ms), Postprocess Time(ms) can be tested through [PaddleSeg Inference Deployment Tutorial](deployment/inference/python_inference.md), and enable the `--benchmark` parameter for inference.
+
+### Chart drawing
+Update the obtained performance data to the table. The performance comparison chart drawing code is located in `PaddleSeg/tools/plot_model_performance.py`, supplement the performance data of the model in set_model_info(), run
+````python
+python plot_model_performance.py
+````
+All performance comparison charts are available

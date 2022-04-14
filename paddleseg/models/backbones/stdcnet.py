@@ -58,6 +58,7 @@ class STDCNet(nn.Layer):
         elif type == "add":
             block = AddBottleneck
         self.use_conv_last = use_conv_last
+        self.feat_channels = [base // 2, base, base * 4, base * 8, base * 16]
         self.features = self._make_layers(base, layers, block_num, block)
         self.conv_last = ConvBNRelu(base * 16, max(1024, base * 16), 1, 1)
 

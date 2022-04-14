@@ -56,7 +56,8 @@ class LungCoronavirus(MedicalDataset):
                  transforms=None,
                  num_classes=None,
                  mode='train',
-                 ignore_index=255):
+                 ignore_index=255,
+                 dataset_json_path=""):
         super(LungCoronavirus, self).__init__(
             dataset_root,
             result_dir,
@@ -64,8 +65,8 @@ class LungCoronavirus(MedicalDataset):
             num_classes,
             mode,
             ignore_index,
-            data_URL=URL)
-        self.num_classes = num_classes
+            data_URL=URL,
+            dataset_json_path=dataset_json_path)
 
 
 if __name__ == "__main__":

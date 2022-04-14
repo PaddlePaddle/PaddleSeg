@@ -37,7 +37,6 @@ support:
 """
 import os
 import sys
-import time
 import zipfile
 import functools
 import numpy as np
@@ -45,7 +44,8 @@ import numpy as np
 sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), ".."))
 
 from prepare import Prep
-from preprocess_utils import resample, Normalize, label_remap
+from preprocess_utils import resample, normalize, label_remap
+from medicalseg.utils import wrapped_partial
 
 urls = {
     "MRI_train.zip":
@@ -53,54 +53,30 @@ urls = {
 }
 
 
-class Prep_lung_coronavirus(Prep):
+class Prep_mri_spine(Prep):
     def __init__(self):
-        self.dataset_root = "data/MRSpineSeg"
-        self.phase_path = os.path.join(self.dataset_root,
-                                       "MRI_spine_seg_phase0_class3_big_12/")
         super().__init__(
-            phase_path=self.phase_path, dataset_root=self.dataset_root)
+            dataset_root="data/MRSpineSeg",
+            raw_dataset_dir="MRI_spine_seg_raw/",
+            images_dir="MRI_train/train/MR",
+            labels_dir="MRI_train/train/Mask",
+            phase_dir="MRI_spine_seg_phase0_class20_big_12/",
+            urls=urls,
+            valid_suffix=("nii.gz", "nii.gz"),
+            filter_key=(None, None),
+            uncompress_params={"format": "zip",
+                               "num_files": 1})
 
-        self.raw_data_path = os.path.join(self.dataset_root,
-                                          "MRI_spine_seg_raw/")
-        self.image_dir = os.path.join(self.raw_data_path, "MRI_train/train/MR")
-        self.label_dir = os.path.join(self.raw_data_path,
-                                      "MRI_train/train/Mask")
-        self.urls = urls
-
-    def convert_path(self):
-        """convert nii.gz file to numpy array in the right directory"""
-
-        print(
-            "Start convert images to numpy array using {}, please wait patiently"
-            .format(self.gpu_tag))
-        time1 = time.time()
-        self.load_save(
-            self.image_dir,
-            save_path=self.image_path,
-            preprocess=[
-                functools.partial(
-                    Normalize, min_val=0, max_val=2650),
-                functools.partial(
-                    resample, new_shape=[512, 512, 12],
-                    order=1)  # original shape is (1008, 1008, 12)
-            ],
-            valid_suffix=("nii.gz"),
-            filter_key=None)
-
-        self.load_save(
-            self.label_dir,
-            self.label_path,
-            preprocess=[
-                functools.partial(
-                    resample, new_shape=[512, 512, 12], order=0)
-            ],
-            valid_suffix=("nii.gz"),
-            filter_key=None,
-            tag="label")
-
-        print("The preprocess time on {} is {}".format(self.gpu_tag,
-                                                       time.time() - time1))
+        self.preprocess = {
+            "images": [
+                wrapped_partial(
+                    normalize, min_val=0, max_val=2650), wrapped_partial(
+                        resample, new_shape=[512, 512, 12], order=1)
+            ],  # original shape is (1008, 1008, 12)
+            "labels":
+            [wrapped_partial(
+                resample, new_shape=[512, 512, 12], order=0)]
+        }
 
     def generate_txt(self, train_split=1.0):
         """generate the train_list.txt and val_list.txt"""
@@ -110,19 +86,47 @@ class Prep_lung_coronavirus(Prep):
             os.path.join(self.phase_path, 'val_list.txt')
         ]
 
-        image_files = os.listdir(self.image_path)
-        label_files = [
-            name.replace("Case", "mask_case") for name in image_files
+        image_files_npy = os.listdir(self.image_path)
+        label_files_npy = [
+            name.replace("Case", "mask_case") for name in image_files_npy
         ]
 
-        self.split_files_txt(
-            txtname[0], image_files, label_files, train_split=train_split)
-        self.split_files_txt(
-            txtname[1], image_files, label_files, train_split=train_split)
+        self.split_files_txt(txtname[0], image_files_npy, label_files_npy,
+                             train_split)
+        self.split_files_txt(txtname[1], image_files_npy, label_files_npy,
+                             train_split)
 
 
 if __name__ == "__main__":
-    prep = Prep_lung_coronavirus()
-    prep.uncompress_file(num_zipfiles=1)
-    prep.convert_path()
+    prep = Prep_mri_spine()
+    if not os.path.isfile(prep.dataset_json_path):
+        prep.generate_dataset_json(
+            modalities=('MRI-T2', ),
+            labels={
+                0: "Background",
+                1: "S",
+                2: "L5",
+                3: "L4",
+                4: "L3",
+                5: "L2",
+                6: "L1",
+                7: "T12",
+                8: "T11",
+                9: "T10",
+                10: "T9",
+                11: "L5/S",
+                12: "L4/L5",
+                13: "L3/L4",
+                14: "L2/L3",
+                15: "L1/L2",
+                16: "T12/L1",
+                17: "T11/T12",
+                18: "T10/T11",
+                19: "T9/T10"
+            },
+            dataset_name="MRISpine Seg",
+            dataset_description="There are 172 training data in the preliminary competition, including MR images and mask labels, 20 test data in the preliminary competition and 23 test data in the  second round competition. The labels of the preliminary competition testset and the second round competition testset are not published, and the results can be evaluated online on this website.",
+            license_desc="https://www.spinesegmentation-challenge.com/wp-content/uploads/2021/12/Term-of-use.pdf",
+            dataset_reference="https://www.spinesegmentation-challenge.com/", )
+    prep.load_save()
     prep.generate_txt()
