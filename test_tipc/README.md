@@ -38,6 +38,7 @@
 | ENet | ENet | 支持 | - | - | - |
 | FastSCNN | FastSCNN | 支持 | - | - | - |
 | DDRNet | DDRNet_23 | 支持 | - | - | - |
+| CCNet | CCNet | 支持 | - | - | - |
 
 
 ## 3. 测试工具简介
