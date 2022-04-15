@@ -156,8 +156,8 @@ class GruModule(nn.Layer):
                  normalize=False):
         super(GruModule, self).__init__()
         self.normalize = normalize
-        self.num_state = num_state  #  node channels
-        self.num_node = num_node  # node number
+        self.num_state = num_state 
+        self.num_node = num_node 
         self.reduction_dim = nn.Conv2D(num_input, num_state, kernel_size=1)
         self.projection_mat = nn.Conv2D(num_input, num_node, kernel_size=1)
         self.gcn = GCN(num_state=self.num_state, num_node=self.num_node)
