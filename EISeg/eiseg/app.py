@@ -2056,7 +2056,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
             self._anning = False
 
     def loadGrid(self, img, is_rs=True):
-        res = self.warn(self.tr("图像过大"), self.tr("图像过大，将启用宫格功能！"), \
+        res = self.warn(self.tr("图像过大"), self.tr("图像过大，是否启用宫格功能？"), \
                         buttons=QMessageBox.Yes | QMessageBox.No)
         if res == QMessageBox.Yes and is_rs is False:
             # 打开宫格功能

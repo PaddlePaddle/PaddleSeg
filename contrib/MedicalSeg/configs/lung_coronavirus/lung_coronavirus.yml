@@ -34,7 +34,7 @@ optimizer:
 lr_scheduler:
   type: PolynomialDecay
   decay_steps: 15000
-  learning_rate: 0.0003
+  learning_rate: 0.001
   end_lr: 0
   power: 0.9
 
