@@ -50,5 +50,3 @@ inference:deploy/python/infer.py
 --benchmark:True
 --save_dir:
 --model_name:ccnet
-===========================infer_benchmark_params==========================
-random_infer_input:[{float32,[3,1024,2048]}]
