@@ -70,6 +70,7 @@ def train(model,
           keep_checkpoint_max=5,
           test_config=None,
           precision='fp32',
+          amp_level='O1',
           profiler_options=None,
           to_static_training=False):
     """
@@ -93,6 +94,9 @@ def train(model,
         keep_checkpoint_max (int, optional): Maximum number of checkpoints to save. Default: 5.
         test_config(dict, optional): Evaluation config.
         precision (str, optional): Use AMP if precision='fp16'. If precision='fp32', the training is normal.
+        amp_level (str, optional): Auto mixed precision level. Accepted values are “O1” and “O2”: O1 represent mixed precision, 
+            the input data type of each operator will be casted by white_list and black_list; O2 represent Pure fp16, all operators 
+            parameters and input data will be casted to fp16, except operators in black_list, don’t support fp16 kernel and batchnorm. Default is O1(amp)
         profiler_options (str, optional): The option of train profiler.
         to_static_training (bool, optional): Whether to use @to_static for training.
     """
@@ -109,6 +113,17 @@ def train(model,
             os.remove(save_dir)
         os.makedirs(save_dir)
 
+    # use amp
+    if precision == 'fp16':
+        logger.info('use AMP to train. AMP level = {}'.format(amp_level))
+        scaler = paddle.amp.GradScaler(init_loss_scaling=1024)
+        if amp_level == 'O2':
+            model, optimizer = paddle.amp.decorate(
+                models=model,
+                optimizers=optimizer,
+                level='O2',
+                save_dtype='float32')
+
     if nranks > 1:
         paddle.distributed.fleet.init(is_collective=True)
         optimizer = paddle.distributed.fleet.distributed_optimizer(
@@ -124,11 +139,6 @@ def train(model,
         num_workers=num_workers,
         return_list=True,
         worker_init_fn=worker_init_fn, )
-
-    # use amp
-    if precision == 'fp16':
-        logger.info('use amp to train')
-        scaler = paddle.amp.GradScaler(init_loss_scaling=1024)
 
     if use_vdl:
         from visualdl import LogWriter
@@ -169,15 +179,14 @@ def train(model,
 
             if precision == 'fp16':
                 with paddle.amp.auto_cast(
+                        level=amp_level,
                         enable=True,
                         custom_white_list={
                             "elementwise_add", "batch_norm", "sync_batch_norm"
                         },
                         custom_black_list={'bilinear_interp_v2'}):
-                    if nranks > 1:
-                        logits_list = ddp_model(images)
-                    else:
-                        logits_list = model(images)
+                    logits_list = ddp_model(images) if nranks > 1 else model(
+                        images)
                     loss_list = loss_computation(
                         logits_list=logits_list,
                         labels=labels,
@@ -192,10 +201,7 @@ def train(model,
                 else:
                     scaler.minimize(optimizer, scaled)  # update parameters
             else:
-                if nranks > 1:
-                    logits_list = ddp_model(images)
-                else:
-                    logits_list = model(images)
+                logits_list = ddp_model(images) if nranks > 1 else model(images)
                 loss_list = loss_computation(
                     logits_list=logits_list,
                     labels=labels,
@@ -273,7 +279,12 @@ def train(model,
                     test_config = {}
 
                 mean_iou, acc, _, _, _ = evaluate(
-                    model, val_dataset, num_workers=num_workers, **test_config)
+                    model,
+                    val_dataset,
+                    num_workers=num_workers,
+                    precision=precision,
+                    amp_level=amp_level,
+                    **test_config)
 
                 model.train()
 
@@ -309,7 +320,7 @@ def train(model,
             batch_start = time.time()
 
     # Calculate flops.
-    if local_rank == 0:
+    if local_rank == 0 and not (precision == 'fp16' and amp_level == 'O2'):
         _, c, h, w = images.shape
         _ = paddle.flops(
             model, [1, c, h, w],

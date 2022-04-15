@@ -87,6 +87,11 @@ def parse_args():
         choices=["fp32", "fp16", "int8"],
         help='The tensorrt precision.')
     parser.add_argument(
+        '--min_subgraph_size',
+        default=3,
+        type=int,
+        help='The min subgraph size in tensorrt prediction.')
+    parser.add_argument(
         '--enable_auto_tune',
         default=False,
         type=eval,
@@ -189,7 +194,12 @@ def main(args):
         os.makedirs(args.save_dir)
 
     if use_auto_tune(args):
-        auto_tune(args, args.image_path, 1)
+        if args.resize_width == 0 and args.resize_height == 0:
+            auto_tune(args, args.image_path, 1)
+        else:
+            img = np.random.rand(1, 3, args.resize_height,
+                                 args.resize_width).astype("float32")
+            auto_tune(args, img, 1)
 
     predictor = PredictorBenchmark(args)
     predictor.run(args.image_path)
