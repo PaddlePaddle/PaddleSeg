@@ -84,10 +84,6 @@ class GloRe(nn.Layer):
 
 
 class GloReHead(nn.Layer):
-    """
-    Reference:
-       Chen, Yunpeng, et al. "Graph-Based Global Reasoning Networks", In CVPR 2019
-    """
 
     def __init__(self,
                  num_classes,
