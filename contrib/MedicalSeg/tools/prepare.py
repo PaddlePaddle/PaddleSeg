@@ -177,8 +177,10 @@ class Prep:
             images = [sitk.DICOMOrient(img, 'LPS') for img in images]
             f_nps = [sitk.GetArrayFromImage(img) for img in images]
 
-            # previous line already swap to xyz
-            # f_nps = [np.transpose(f_np, [1, 2, 0]) for f_np in f_nps] # swap to xyz 
+            # if previous line not swap to xyz
+            if f_nps[0].shape[0] != f_nps[0].shape[1]:
+                f_nps = [np.transpose(f_np, [1, 2, 0]) for f_np in f_nps] # swap to xyz 
+
         elif filename.endswith(
             (".mha", ".mhd", "nrrd"
              )):  # validate mhd on lung and mri with correct spacing_resample
@@ -233,14 +235,13 @@ class Prep:
                         ["images", "labels", "images_test"][i])):
 
                 # load data will transpose the image from "zyx" to "xyz"
+                spacing = dataset_json_dict["training"][
+                            osp.basename(f).split(".")[0]]["spacing"] if i == 0 else None
                 f_nps = Prep.load_medical_data(f)
 
                 for volume_idx, f_np in enumerate(f_nps):
                     for op in pre:
                         if op.__name__ == "resample":
-                            spacing = dataset_json_dict["training"][
-                                osp.basename(f).split(".")[0]][
-                                    "spacing"] if i == 0 else None
                             f_np, new_spacing = op(
                                 f_np,
                                 spacing=spacing)  # (960, 15, 960) if transpose

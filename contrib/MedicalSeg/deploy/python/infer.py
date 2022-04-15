@@ -12,17 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import argparse
-import codecs
 import os
 import sys
+import codecs
+import warnings
+import argparse
 
 LOCAL_PATH = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(LOCAL_PATH, '..', '..'))
 
 import yaml
-import numpy as np
 import functools
+import numpy as np
 
 from paddle.inference import create_predictor, PrecisionType
 from paddle.inference import Config as PredictConfig
@@ -383,29 +384,32 @@ class Predictor:
         """
         if not "npy" in img:
             image_files = get_image_list(img, None, None)
+            warnings.warn("The image path is {}, please make sure this is the images you want to infer".format(image_files))
             savepath = os.path.dirname(img)
             pre = [
                 HUnorm,
                 functools.partial(
-                    resample,  # TODO: config preprocess in deply.yaml to set params
+                    resample,  # TODO: config preprocess in deply.yaml(export) to set params
                     new_shape=[128, 128, 128],
                     order=1)
             ]
 
-            for f in tqdm(image_files, total=len(image_files)):
-                f_np = Prep.load_medical_data(f)
-                if pre is not None:
-                    for op in pre:
-                        f_np = op(f_np)
+            for f in image_files:
+                f_nps = Prep.load_medical_data(f)
+                for f_np in f_nps:
+                    if pre is not None:
+                        for op in pre:
+                            f_np = op(f_np)
 
-                # Set image to a uniform format before save.             
-                f_np = f_np.astype("float32")
+                    # Set image to a uniform format before save. 
+                    if isinstance(f_np, tuple):
+                        f_np = f_np[0]             
+                    f_np = f_np.astype("float32")
 
-                np.save(
-                    os.path.join(
-                        savepath, f.split("/")[-1].split(
-                            ".", maxsplit=1)[0]),
-                    f_np)
+                    np.save(
+                        os.path.join(
+                            savepath, f.split("/")[-1].split(
+                                ".", maxsplit=1)[0]), f_np)
 
             img = img.split(".", maxsplit=1)[0] + ".npy"
 

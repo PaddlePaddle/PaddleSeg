@@ -99,8 +99,7 @@ class Prep_mri_spine(Prep):
 
 if __name__ == "__main__":
     prep = Prep_mri_spine()
-    if not os.path.isfile(prep.dataset_json_path):
-        prep.generate_dataset_json(
+    prep.generate_dataset_json(
             modalities=('MRI-T2', ),
             labels={
                 0: "Background",
