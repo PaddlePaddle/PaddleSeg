@@ -107,7 +107,7 @@ This part shows you the whole picture of our repository, which is easy to expand
 ```
 
 ## TODO
-We have several thoughts in mind about what should our repo focus on.
+We have several thoughts in mind about what should our repo focus on. Your contribution will be very much welcomed.
 - [ ] Add PP-nnunet with acceleration in preprocess, automatic configuration for all dataset and better performance compared to nnunet.
 - [ ] Add top 1 liver segmentation algorithm on LITS challenge.
 - [ ] Add 3D Vertebral Measurement System.
