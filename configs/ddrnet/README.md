@@ -2,7 +2,7 @@
 
 ## Reference
 
-> Hong, Yuanduo, et al. "Deep dual-resolution networks for real-time and accurate semantic segmentation of road scenes." arXiv preprint arXiv:2101.06085 (2021).
+> Yuanduo Hong, Huihui Pan, Weichao Sun, Yisong Jia. "Deep dual-resolution networks for real-time and accurate semantic segmentation of road scenes." arXiv preprint arXiv:2101.06085 (2021).
 
 ## Performance
 
