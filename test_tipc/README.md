@@ -37,6 +37,7 @@
 | PFPNNet | PFPNNet | 支持 | - | - | - |
 | ENet | ENet | 支持 | - | - | - |
 | FastSCNN | FastSCNN | 支持 | - | - | - |
+| DDRNet | DDRNet_23 | 支持 | - | - | - |
 
 
 ## 3. 测试工具简介
