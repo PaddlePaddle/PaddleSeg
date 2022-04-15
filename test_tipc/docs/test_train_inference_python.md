@@ -23,6 +23,7 @@ Linux端基础训练预测功能测试的主程序为`test_train_inference_pytho
 | PFPNNet | PFPNNet | 正常训练 | 正常训练 |  |  |
 | ENet | ENet | 正常训练 | 正常训练 |  |  |
 | FastSCNN | FastSCNN | 正常训练 | 正常训练 |  |  |
+| DDRNet | DDRNet_23 | 正常训练 | 正常训练 |  |  |
 | CCNet | CCNet | 正常训练 | 正常训练 |  |  |
 
 
