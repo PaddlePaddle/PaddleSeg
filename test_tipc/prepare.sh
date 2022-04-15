@@ -82,7 +82,7 @@ else
 fi
 
 models=("enet" "bisenetv2" "ocrnet_hrnetw18" "ocrnet_hrnetw48" "deeplabv3p_resnet50_cityscapes" \
-        "fastscnn" "fcn_hrnetw18" "pp_liteseg_stdc1" "pp_liteseg_stdc2" "ddrnet")
+        "fastscnn" "fcn_hrnetw18" "pp_liteseg_stdc1" "pp_liteseg_stdc2")
 if [ $(contains "${models[@]}" "${model_name}") == "y" ]; then
     cp ./test_tipc/data/cityscapes_val_5.list ./test_tipc/data/cityscapes
 fi
