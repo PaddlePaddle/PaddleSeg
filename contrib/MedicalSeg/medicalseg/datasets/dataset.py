@@ -81,7 +81,6 @@ class MedicalDataset(paddle.io.Dataset):
                 savepath=seg_env.DATA_HOME,
                 extrapath=seg_env.DATA_HOME)
         elif not os.path.exists(self.dataset_root):
-            print()
             raise ValueError(
                 "The `dataset_root` don't exist please specify the correct path to data."
             )
