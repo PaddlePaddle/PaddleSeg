@@ -16,13 +16,9 @@
 ## 2. 准备环境
 ### 2.1 准备基础环境
 
-如果使用PaddleInference在X86 CPU部署模型，可以跳过如下CUDA、cudnn、TensorRT准备工作。
+如果在X86 CPU上部署模型，不需要下面CUDA、cudnn、TensorRT的准备工作。
 
-如果使用PaddleInference在Nvidia GPU上部署模型，需要安装必要的CUDA、cudnn。此外，PaddleInference在Nvidia GPU上支持使用TensorRT进行加速，可以视具体情况下载TRT库文件。
-
-注意按照PaddleInference提供的[C++预测库](https://paddleinference.paddlepaddle.org.cn/user_guides/download_lib.html)，选择支持的CUDA、cudnn、TensorRT版本。
-
-CUDA和cudnn安装方法，可以参考网上文档或者官方文档([Cuda](https://docs.nvidia.com/cuda/cuda-installation-guide-linux/), [cudnn](https://docs.nvidia.com/deeplearning/cudnn/install-guide/))。
+如果在Nvidia GPU上部署模型，必须安装必CUDA、cudnn。此外，PaddleInference在Nvidia GPU上支持使用TensorRT进行加速，可以视需要安装。
 
 此处，我们提供两个版本的CUDA、cudnn、TensorRT文件下载。
 ```
@@ -30,24 +26,27 @@ wget https://paddle-inference-dist.bj.bcebos.com/tensorrt_test/cuda10.1-cudnn7.6
 wget https://paddle-inference-dist.bj.bcebos.com/tensorrt_test/cuda10.2-cudnn8.0-trt7.1.tgz
 ```
 
-下载解压后，参考文档安装CUDA和cudnn，TensorRT只需要设置库路径，比如：
+下载解压后，CUDA和cudnn可以参考网上文档或者官方文档([Cuda Doc](https://docs.nvidia.com/cuda/cuda-installation-guide-linux/), [cudnn Doc](https://docs.nvidia.com/deeplearning/cudnn/install-guide/))进行安装。TensorRT只需要设置库路径，比如：
 ```
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/work/TensorRT-7.1.3.4/lib
 ```
 
 ### 2.2 准备Paddle Inference C++预测库
 
-PaddleInference提供了多种版本的预编译[C++预测库](https://paddleinference.paddlepaddle.org.cn/user_guides/download_lib.html)。
+如果在X86 CPU上部署模型，进入[C++预测库](https://paddleinference.paddlepaddle.org.cn/user_guides/download_lib.html)下载“manylinux_cpu_xxx”命名的PaddleInference库。
 
-不同C++预测库可以根据名字进行区分。请根据机器的操作系统、CUDA版本、cudnn版本、使用MKLDNN或者OpenBlas、是否使用TenorRT等信息，选择准确版本。（建议选择版本>=2.0的预测库）
+如果在Nvidia GPU上部署模型，进入[C++预测库](https://paddleinference.paddlepaddle.org.cn/user_guides/download_lib.html)下载对应CUDA、Cudnn、TRT、GCC版本的PaddleInference库。
+
+
+> 不同C++预测库可以根据名字进行区分。请根据机器的操作系统、CUDA版本、cudnn版本、使用MKLDNN或者OpenBlas、是否使用TenorRT等信息，选择准确版本。（建议选择版本>=2.0的预测库）
 
 下载`paddle_inference.tgz`压缩文件后进行解压，将解压的paddle_inference文件保存到`PaddleSeg/deploy/cpp/`下。
 
 如果大家需要编译Paddle Inference C++预测库，可以参考[文档](https://paddleinference.paddlepaddle.org.cn/user_guides/source_compile.html)，此处不再赘述。
 
-### 2.3 准备OpenCV
+### 2.3 安装其他库
 
-本示例使用OpenCV读取图片，所以需要准备OpenCV。
+本示例使用OpenCV读取图片，所以需要安装OpenCV。在实际部署中，大家视需要安装。
 
 执行如下命令下载、编译、安装OpenCV。
 ```
@@ -65,9 +64,7 @@ make install
 cd ../..
 ```
 
-### 2.4 安装Yaml
-
-本示例使用Yaml读取配置文件信息。
+本示例使用Yaml读取配置文件信息。在实际部署中，大家视需要安装。
 
 执行如下命令下载、编译、安装Yaml。
 
@@ -77,6 +74,26 @@ unzip yaml-cpp-0.7.0.zip
 mkdir -p yaml-cpp-yaml-cpp-0.7.0/build
 cd yaml-cpp-yaml-cpp-0.7.0/build
 cmake -DYAML_BUILD_SHARED_LIBS=ON ..
+make -j
+make install
+```
+
+本示例使用Gflags和Glog，在实际部署中，大家视需要安装。
+
+```
+git clone https://github.com/gflags/gflags.git
+mkdir -p gflags/build
+cd gflags/build
+cmake ..
+make -j
+make install
+```
+
+```
+git clone https://github.com/google/glog
+mkdir -p glog/build
+cd glog/build
+cmake ..
 make -j
 make install
 ```

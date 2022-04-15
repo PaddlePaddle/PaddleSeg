@@ -12,12 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
 import random
+import string
 
 import cv2
 import numpy as np
 from paddleseg.transforms import functional
 from paddleseg.cvlibs import manager
+from paddleseg.utils import seg_env
 from PIL import Image
 
 
@@ -86,7 +89,7 @@ class LoadImages:
 
 @manager.TRANSFORMS.add_component
 class Resize:
-    def __init__(self, target_size=(512, 512)):
+    def __init__(self, target_size=(512, 512), random_interp=False):
         if isinstance(target_size, list) or isinstance(target_size, tuple):
             if len(target_size) != 2:
                 raise ValueError(
@@ -98,16 +101,23 @@ class Resize:
                 .format(type(target_size)))
 
         self.target_size = target_size
+        self.random_interp = random_interp
+        self.interps = [cv2.INTER_NEAREST, cv2.INTER_LINEAR, cv2.INTER_CUBIC]
 
     def __call__(self, data):
+        if self.random_interp:
+            interp = np.random.choice(self.interps)
+        else:
+            interp = cv2.INTER_LINEAR
         data['trans_info'].append(('resize', data['img'].shape[0:2]))
-        data['img'] = functional.resize(data['img'], self.target_size)
+        data['img'] = functional.resize(data['img'], self.target_size, interp)
         for key in data.get('gt_fields', []):
             if key == 'trimap':
                 data[key] = functional.resize(data[key], self.target_size,
                                               cv2.INTER_NEAREST)
             else:
-                data[key] = functional.resize(data[key], self.target_size)
+                data[key] = functional.resize(data[key], self.target_size,
+                                              interp)
         return data
 
 
@@ -704,4 +714,78 @@ class Padding:
                     pad_width,
                     cv2.BORDER_CONSTANT,
                     value=value)
+        return data
+
+
+@manager.TRANSFORMS.add_component
+class RandomSharpen:
+    def __init__(self, prob=0.1):
+        if prob < 0:
+            self.prob = 0
+        elif prob > 1:
+            self.prob = 1
+        else:
+            self.prob = prob
+
+    def __call__(self, data):
+        if np.random.rand() > self.prob:
+            return data
+
+        radius = np.random.choice([0, 3, 5, 7, 9])
+        w = np.random.uniform(0.1, 0.5)
+        blur_img = cv2.GaussianBlur(data['img'], (radius, radius), 5)
+        data['img'] = cv2.addWeighted(data['img'], 1 + w, blur_img, -w, 0)
+        for key in data.get('gt_fields', []):
+            if key == 'trimap' or key == 'alpha':
+                continue
+            blur_img = cv2.GaussianBlur(data[key], (0, 0), 5)
+            data[key] = cv2.addWeighted(data[key], 1.5, blur_img, -0.5, 0)
+
+        return data
+
+
+@manager.TRANSFORMS.add_component
+class RandomNoise:
+    def __init__(self, prob=0.1):
+        if prob < 0:
+            self.prob = 0
+        elif prob > 1:
+            self.prob = 1
+        else:
+            self.prob = prob
+
+    def __call__(self, data):
+        if np.random.rand() > self.prob:
+            return data
+        mean = np.random.uniform(0, 0.04)
+        var = np.random.uniform(0, 0.001)
+        noise = np.random.normal(mean, var**0.5, data['img'].shape) * 255
+        data['img'] = data['img'] + noise
+        data['img'] = np.clip(data['img'], 0, 255)
+
+        return data
+
+
+@manager.TRANSFORMS.add_component
+class RandomReJpeg:
+    def __init__(self, prob=0.1):
+        if prob < 0:
+            self.prob = 0
+        elif prob > 1:
+            self.prob = 1
+        else:
+            self.prob = prob
+
+    def __call__(self, data):
+        if np.random.rand() > self.prob:
+            return data
+        q = np.random.randint(70, 95)
+        img = data['img'].astype('uint8')
+
+        # Ensure no conflicts between processes
+        tmp_name = str(os.getpid()) + '.jpg'
+        tmp_name = os.path.join(seg_env.TMP_HOME, tmp_name)
+        cv2.imwrite(tmp_name, img, [int(cv2.IMWRITE_JPEG_QUALITY), q])
+        data['img'] = cv2.imread(tmp_name)
+
         return data

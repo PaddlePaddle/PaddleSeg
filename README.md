@@ -126,6 +126,7 @@ PaddleSeg is an end-to-end high-efficent development toolkit for image segmentat
             <li>MLA Transformer</li>
             <li>SegFormer</li>
             <li>SegMenter</li>
+            <li>PP-LiteSeg</li>
       </td>
       <td>
         <b>Backbones</b><br>
@@ -320,9 +321,9 @@ The relationship between mIoU and FLOPs of representative architectures and back
 ## Community <img src="./docs/images/chat.png" width="30"/>
 
 * If you have any problem or suggestion on PaddleSeg, please send us issues through [GitHub Issues](https://github.com/PaddlePaddle/PaddleSeg/issues).
-* Welcome to Join PaddleSeg wechat Group
+* Welcome to Join PaddleSeg WeChat Group
 <div align="center">
-<img src="https://s1.ax1x.com/2022/03/23/q1R94s.png"  width = "200" />  
+<img src="https://user-images.githubusercontent.com/48433081/162115081-e181c301-9aa9-41fa-85d8-285fe0d9eb37.png"  width = "200" />  
 </div>
 
 ## License
