@@ -40,7 +40,7 @@ We propose PP-LiteSeg, a novel lightweight model for the real-time semantic segm
 
 **Training:**
 
-The config files of PP-LiteSeg are under `PaddleSeg/configs/pp_liteseg/`.
+The config files of PP-LiteSeg are under `PaddleSeg/configs/pp_liteseg/`. (In develop branch for now)
 
 Based on the `train.py` script, we set the config file and start training model.
 
