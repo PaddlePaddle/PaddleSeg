@@ -129,10 +129,6 @@ Note that:
 **The comparisons with state-of-the-art real-time methods on Cityscapes as follows.**
 
 <div align="center">
-<img src="https://user-images.githubusercontent.com/52520497/162148733-70be896a-eadb-4790-94e5-f48dad356b2d.png" width = "500" height = "430" alt="iou_fps"  />
-</div>
-
-<div align="center">
 
 |Model|Encoder|Resolution|mIoU(Val)|mIoU(Test)|FPS|
 |-|-|-|-|-|-|
@@ -156,6 +152,10 @@ PP-LiteSeg-B1 | STDC2      |  512x1024  | 75.3 | 73.9 | 195.3 |
 PP-LiteSeg-T2 | STDC1      |  768x1536  | 76.0 | 74.9 | 143.6 |
 PP-LiteSeg-B2 | STDC2      |  768x1536  | 78.2 | 77.5 | 102.6|
 
+</div>
+
+<div align="center">
+<img src="https://user-images.githubusercontent.com/52520497/162148733-70be896a-eadb-4790-94e5-f48dad356b2d.png" width = "500" height = "430" alt="iou_fps"  />
 </div>
 
 ### CamVid
