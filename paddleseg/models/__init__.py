@@ -56,3 +56,6 @@ from .enet import ENet
 from .bisenetv1 import BiseNetV1
 from .fastfcn import FastFCN
 from .pfpnnet import PFPNNet
+from .glore import GloRe
+from .ddrnet import DDRNet_23
+from .ccnet import CCNet
