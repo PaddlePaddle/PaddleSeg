@@ -139,9 +139,7 @@ class Prep:
         """unzip all the file in the root directory"""
         files = glob.glob(os.path.join(self.dataset_root, "*.{}".format(form)))
 
-        assert len(files) == num_files, print(
-            "The file directory should include {} compressed files, but there is only {}"
-            .format(num_files, len(files)))
+        assert len(files) == num_files, "The file directory should include {} compressed files, but there is only {}".format(num_files, len(files))
 
         for f in files:
             extract_path = os.path.join(self.raw_data_path,
