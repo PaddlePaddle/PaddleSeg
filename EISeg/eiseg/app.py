@@ -1778,7 +1778,6 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
     #         else:
     #             w.hide()
 
-    # FIXME: 未打开遥感图像
     def rsBandSet(self, idx):
         if self.raster is None:
             return
