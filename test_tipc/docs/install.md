@@ -96,7 +96,7 @@ git clone https://github.com/PaddlePaddle/PaddleSeg
 
 cd PaddleSeg
 pip3.7 install -r test_tipc/requirements.txt
-pip install -e .
+pip3.7 install -e .
 cd ..
 ```
 
@@ -105,15 +105,15 @@ cd ..
 # 安装AutoLog（规范化日志输出工具）
 git clone https://github.com/LDOUBLEV/AutoLog
 cd AutoLog
-pip install -r requirements.txt
+pip3.7 install -r requirements.txt
 python3.7 setup.py bdist_wheel
-pip install ./dist/auto_log-[xxx]-py3-none-any.whl
+pip3.7 install ./dist/auto_log-[xxx]-py3-none-any.whl
 cd ../
 ```
 - 安装PaddleSlim (可选)
 ```
 # 如果要测试量化、裁剪等功能，需要安装PaddleSlim
-pip3 install paddleslim
+pip3.7 install paddleslim
 ```
 
 ## FAQ :

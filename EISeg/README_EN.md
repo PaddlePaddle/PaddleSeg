@@ -8,7 +8,7 @@ English | [简体中文](README.md)
 
 ## Latest Developments
 
-- Added interactive model of ResNet50_DeeplabV3+ for chest Xray in medical scenarios. The pretrained model refers to MoCo comparative learning to match the characteristics of X-ray.
+- Added interactive model of ResNet50_DeeplabV3+ and ResNet18_DeeplabV3+ for chest Xray in medical scenarios. The pretrained model refers to MoCo comparative learning to match the characteristics of X-ray.
 - Added an MRI spine interactive model, which cooperates with Guangzhou First People's Hospital. It is trained on MRSpineSeg dataset, which can realize one-click identification of intermediate-level lumbar vertebral cones and accessories on transvers plane.
 - Added a defect inspection model for aluminum plate, which is trained based on Baidu's self-built data set. It can annotate common aluminum plate defects such as black spots, small white lines, foreign objects and other defects.
 
@@ -30,8 +30,9 @@ Please download the model parameters before using EIseg. EISeg 0.5.0 provides se
 | High Performance Model | Image annotation in generic scenarios    | EdgeFlow           | [static_edgeflow_cocolvis](https://paddleseg.bj.bcebos.com/eiseg/0.4/static_edgeflow_cocolvis.zip) |
 | Lightweight Model      | Annotation in portrait scenarios         | HRNet18s_OCR48     | [static_hrnet18s_ocr48_human](https://paddleseg.bj.bcebos.com/eiseg/0.4/static_hrnet18s_ocr48_human.zip) |
 | Lightweight Model      | Annotation of remote sensing building    | HRNet18s_OCR48     | [static_hrnet18_ocr48_rsbuilding_instance](https://paddleseg.bj.bcebos.com/eiseg/0.4/static_hrnet18_ocr48_rsbuilding_instance.zip) |
-| High Performance Model \*| Annotation of chest Xray in medical scenarios | Resnet50_DeeplabV3+   | [static_resnet50_deeplab_chest_xray \*](https://paddleseg.bj.bcebos.com/eiseg/0.5/static_resnet50_deeplab_chest_xray.zip) |
 | Lightweight Model      | Annotation of liver in medical scenarios | HRNet18s_OCR48     | [static_hrnet18s_ocr48_lits](https://paddleseg.bj.bcebos.com/eiseg/0.4/static_hrnet18s_ocr48_lits.zip) |
+| High Performance Model \*| Annotation of chest Xray in medical scenarios | Resnet50_DeeplabV3+   | [static_resnet50_deeplab_chest_xray \*](https://paddleseg.bj.bcebos.com/eiseg/0.5/static_resnet50_deeplab_chest_xray.zip) |
+| High Performance Model \*| Annotation of chest Xray in medical scenarios | Resnet18_DeeplabV3+   | [static_resnet18_deeplab_chest_xray \*](https://paddleseg.bj.bcebos.com/eiseg/0.5/static_resnet18_deeplab_chest_xray.zip) |
 | Lightweight Model \*     | Annotation of Spinal Structures in medical scenarios | HRNet18s_OCR48     | [static_hrnet18s_ocr48_MRSpineSeg](https://paddleseg.bj.bcebos.com/eiseg/0.5/static_hrnet18s_ocr48_MRSpineSeg.zip) |
 | Lightweight Model \*     | Annotation of Aluminum plate defects in industrial scenarios | HRNet18s_OCR48     | [static_hrnet18s_ocr48_aluminium ](https://paddleseg.bj.bcebos.com/eiseg/0.5/static_hrnet18s_ocr48_aluminium.zip) |
 
@@ -186,7 +187,7 @@ Start the annotation when the above are all set up. Here are the commonly used k
 
 - Thanks for the labelling deisgn of [LabelMe](https://github.com/wkentaro/labelme) and [LabelImg](https://github.com/tzutalin/labelImg).
 
-- Thanks for [Weibin Liao](https://github.com/MrBlankness) to provide the pretrain model of ResNet50_DeeplabV3.
+- Thanks for [Weibin Liao](https://github.com/MrBlankness) to provide the pretrain model of ResNet50_DeeplabV3+ and ResNet18_DeeplabV3+.
 
 - Thanks for support of [Junjie Guo](https://github.com/Guojunjie08) and [Jiajun Feng](https://github.com/richarddddd198) on MRSpineSeg model.
 ## Citation
