@@ -160,24 +160,23 @@ class Prep:
 
         # validate nii.gz on lung and mri with correct spacing_resample
         if filename.endswith((".nii", ".nii.gz", ".dcm")):
-            itkimage = sitk.ReadImage(f)
-            if itkimage.GetDimension() == 4:
-                slicer = sitk.ExtractImageFilter()
-                s = list(itkimage.GetSize())
-                s[-1] = 0
-                slicer.SetSize(s)
-                for slice_idx in range(itkimage.GetSize()[-1]):
-                    slicer.SetIndex([0, 0, 0, slice_idx])
-                    sitk_volume = slicer.Execute(itkimage)
-                    images.append(sitk_volume)
+            if "radiopaedia" in filename or "corona" in filename:
+                 f_nps = [nib.load(f).get_fdata(dtype=np.float32)]
             else:
-                images = [itkimage]
-            images = [sitk.DICOMOrient(img, 'LPS') for img in images]
-            f_nps = [sitk.GetArrayFromImage(img) for img in images]
-
-            # if previous line not swap to xyz
-            if f_nps[0].shape[0] != f_nps[0].shape[1]:
-                f_nps = [np.transpose(f_np, [1, 2, 0]) for f_np in f_nps] # swap to xyz 
+                itkimage = sitk.ReadImage(f)
+                if itkimage.GetDimension() == 4:
+                    slicer = sitk.ExtractImageFilter()
+                    s = list(itkimage.GetSize())
+                    s[-1] = 0
+                    slicer.SetSize(s)
+                    for slice_idx in range(itkimage.GetSize()[-1]):
+                        slicer.SetIndex([0, 0, 0, slice_idx])
+                        sitk_volume = slicer.Execute(itkimage)
+                        images.append(sitk_volume)
+                else:
+                    images = [itkimage]
+                images = [sitk.DICOMOrient(img, 'LPS') for img in images]
+                f_nps = [sitk.GetArrayFromImage(img) for img in images]
 
         elif filename.endswith(
             (".mha", ".mhd", "nrrd"
