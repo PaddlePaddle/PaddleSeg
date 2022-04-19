@@ -19,14 +19,15 @@
 
 ## 最新动态 <img src="./docs/images/seg_news_icon.png" width="40"/>
 
-* [2022-01-20] PaddleSeg 2.4版本发布！详细发版信息请参考[Release Note](https://github.com/PaddlePaddle/PaddleSeg/releases)。
-  * 发布智能标注工具[EISeg v0.4](./EISeg)版，采用静态图预测加速交互过程，并支持遥感和医疗领域智能标注。
-  * 发表人像分割论文[PP-HumanSeg](./contrib/PP-HumanSeg/paper.md)，并开源连通性学习（SCL）方法和大规模视频会议数据集。
-  * 开源发丝级人像抠图Matting算法[PP-HumanMatting](./Matting)，并提供安卓端教程。
-  * 新增9个经典分割模型, 包括Transformer系列模型[SegMenter](configs/segmenter)，总模型数达到40个。
-  * 提供分割模型[性能对比图](docs/model_zoo_overview_cn.md)，全面展示分割模型性能，方便模型选型。
+* [2022-04-20] PaddleSeg 2.5版本发布！详细发版信息请参考[Release Note](https://github.com/PaddlePaddle/PaddleSeg/releases)。
+  * 发布超轻量级语义分割模型[PP-LiteSeg](./configs/pp_liteseg)以及[技术报告](https://arxiv.org/pdf/2204.02681.pdf)，实现精度和速度的最佳平衡。
+  * 发布高精度抠图模型[PP-Matting](./Matting)以及技术报告，在Composition-1K和Distinctions-646上实现SOTA指标。
+  * 发布3D医疗影像开发套件[MedicalSeg](./contrib/MedicalSeg),支持数据预处理、模型训练、模型部署等全流程开发，并提供肺部、椎骨数据上的高精度分割模型。
+  * 升级智能标注工具[EISeg v0.5](./EISeg)版，新增X-Ray胸腔标注，MRI椎骨标注，铝板瑕疵标注。
+  * 新增5个经典分割模型, 包括多个版本的PP-LiteSeg，总模型数达到45个。
+* [2022-01-20] PaddleSeg 2.4版本发布交互式分割工具EISeg v0.4, 超轻量级人像分割方案[PP-HumanSeg](./contrib/PP-HumanSeg), 以及大规模视频会议数据集[PP-HumanSeg14K](./contrib/PP-HumanSeg/paper.md#pp-humanseg14k-a-large-scale-teleconferencing-video-dataset)。
 * [2021-10-11] PaddleSeg 2.3版本发布交互式分割工具EISeg v0.3, 开源两种[Matting](./contrib/Matting)算法, 以及分割高阶功能[模型蒸馏](./slim/distill)和[模型量化](./slim/quant)方案。
-* [2021-09-20] PaddleSeg团队发表交互式分割论文[EdgeFlow](https://arxiv.org/abs/2109.09406)，已在多个数据集实现SOTA性能。
+
 
 ## 简介
 PaddleSeg是基于飞桨PaddlePaddle开发的端到端图像分割开发套件，涵盖了**高精度**和**轻量级**等不同方向的大量高质量分割模型。通过模块化的设计，提供了**配置化驱动**和**API调用**两种应用方式，帮助开发者更便捷地完成从训练到部署的全流程图像分割应用。
@@ -126,7 +127,11 @@ PaddleSeg是基于飞桨PaddlePaddle开发的端到端图像分割开发套件�
             <li>MLA Transformer</li>
             <li>SegFormer</li>
             <li>SegMenter</li>
-            <li>PP-LiteSeg</li>
+            <li>ENet</li>
+            <li>CCNet</li>
+            <li>DDRNet</li>
+            <li>GloRe</li>
+            <li>PP-LiteSeg :star:</li>
       </td>
       <td>
         <b>骨干网络</b><br>
@@ -159,6 +164,7 @@ PaddleSeg是基于飞桨PaddlePaddle开发的端到端图像分割开发套件�
             <li>Edge Attention</li>
             <li>Relax Boundary</li>
             <li>Connectivity</li>
+            <li>MultiClassFocal</li>
           </ul>
         <b>评估指标</b><br>
           <ul>

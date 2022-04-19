@@ -43,6 +43,11 @@
 |[PFPNNet](../configs/pfpn)|-|✔|-|-|
 |[FastFCN](../configs/fastfcn)|✔|-|-|-|
 |[BiSeNetV1](../configs/bisenetv1)|-|-|-|-|
+|[ENet](../configs/enet)|-|-|-|-|
+|[CCNet](../configs/ccnet)|-|✔|-|-|
+|[DDRNet](../configs/ddrnet)|-|-|-|-|
+|[GloRe](../configs/glore)|✔|-|-|-|
+|[PP-LiteSeg](../configs/pp_liteseg)|-|-|-|-|
 
 ### Transformer系列
 * [SETR](../configs/setr)
