@@ -54,9 +54,8 @@ git clone https://github.com/PaddlePaddle/PaddleSeg
 ```shell
 cd PaddleSeg
 pip install -e .
-pip install scikit-image
-pip install numba
-cd contrib/Matting
+cd Matting
+pip install -r requirements.txt
 ```
 
 ## Models
