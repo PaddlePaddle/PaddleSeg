@@ -1,0 +1,3 @@
+scikit-image
+numba
+opencv-python==4.5.4.60

@@ -19,8 +19,8 @@ English | [简体中文](README_CN.md)
 
 
 ## News <img src="./docs/images/seg_news_icon.png" width="40"/>
-
 <ul class="nobull">
+  <li>[2022-04-07] :fire: We add <a href="https://github.com/PaddlePaddle/PaddleSeg/tree/develop/configs/pp_liteseg">PP-LiteSeg</a>, a superior real-time semantic segmentation model, to develop branch. </li>
  <li>[2022-01-20] PaddleSeg v2.4 is released! More details in <a href="https://github.com/PaddlePaddle/PaddleSeg/releases">Release Notes</a>.</li>
  <ul>
         <li>Upgrade the interactive annotation tool <a href="./EISeg">EISeg v0.4</a> with faster inference speed, supporting new areas in remote sensing and medical segmentation.</li>
