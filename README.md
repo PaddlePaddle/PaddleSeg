@@ -344,7 +344,7 @@ PaddleSeg is released under the [Apache 2.0 license](LICENSE).
 * Thanks [Herman-Hu-saber](https://github.com/Herman-Hu-saber) (Hu Huiming) for contributing ESPNetV2.
 * Thanks [zhangjin12138](https://github.com/zhangjin12138) for contributing RandomCenterCrop.
 * Thanks [simuler](https://github.com/simuler) for contributing ESPNetV1.
-* Thanks [ETTR123](https://github.com/ETTR123)(Zhang Kai) for contributing PFPNNet.
+* Thanks [ETTR123](https://github.com/ETTR123)(Zhang Kai) for contributing ENet, PFPNNet.
 
 ## Citation
 If you find our project useful in your research, please consider citing:
