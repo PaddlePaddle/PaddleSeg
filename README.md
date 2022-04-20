@@ -220,6 +220,7 @@ PaddleSeg is an end-to-end high-efficent development toolkit for image segmentat
            </ul>
        <b>Image Matting</b><br>
         <ul>
+            <li>PP-Matting</li>
             <li>DIM</li>
             <li>MODNet</li>
             <li>PP-HumanMatting</li>
