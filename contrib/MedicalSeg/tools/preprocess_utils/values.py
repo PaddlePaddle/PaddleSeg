@@ -64,7 +64,7 @@ def normalize(image, min_val=None, max_val=None):
     return image
 
 
-def HUnorm(image, HU_min=-1000, HU_max=600, HU_nan=-2000):
+def HUnorm(image, HU_min=-1200, HU_max=600, HU_nan=-2000):
     """
     Convert CT HU unit into uint8 values. First bound HU values by predfined min
     and max, and then normalize. Due to paddle.nn.conv3D doesn't support uint8, we need to convert
@@ -76,11 +76,12 @@ def HUnorm(image, HU_min=-1000, HU_max=600, HU_nan=-2000):
     HU_nan: float, value for nan in the raw CT image.
     """
 
-    if not isinstance(image, np.ndarray):
+    if not isinstance(image, np.ndarray): 
         image = np.array(image)
     image = np.nan_to_num(image, copy=False, nan=HU_nan)
 
-    image = (image - HU_min) / (HU_max - HU_min)
-    np.clip(image, 0, 1, out=image)
+    # normalize to [0, 1]
+    image = (image - HU_min) / ((HU_max - HU_min) / 255)
+    np.clip(image, 0, 255, out=image)
 
     return image

@@ -139,7 +139,7 @@ def evaluate(model,
                 save_array(
                     save_path=os.path.join(
                         save_dir,
-                        str(iter) + "_" + str(np.mean(per_channel_dice))),
+                        str(iter)),
                     save_content={
                         'pred': pred.numpy(),
                         'label': label.numpy(),
