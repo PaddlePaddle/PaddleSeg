@@ -47,6 +47,8 @@ if [ ${MODE} = "whole_infer" ] || [ ${MODE} = "klquant_whole_infer" ]; then
         wget -nc -P $model_path https://paddleseg.bj.bcebos.com/dygraph/cityscapes/pp_liteseg_stdc1_cityscapes_1024x512_scale1.0_160k/model.pdparams
     elif [ ${model_name} == "pp_liteseg_stdc2" ];then
         wget -nc -P $model_path https://paddleseg.bj.bcebos.com/dygraph/cityscapes/pp_liteseg_stdc2_cityscapes_1024x512_scale1.0_160k/model.pdparams
+    elif [ ${model_name} == "ddrnet" ];then
+        wget -nc -P $model_path https://bj.bcebos.com/paddleseg/dygraph/cityscapes/ddrnet23_cityscapes_1024x1024_120k/model.pdparams
     fi
 fi
 
@@ -80,7 +82,7 @@ else
 fi
 
 models=("enet" "bisenetv2" "ocrnet_hrnetw18" "ocrnet_hrnetw48" "deeplabv3p_resnet50_cityscapes" \
-        "fastscnn" "fcn_hrnetw18" "pp_liteseg_stdc1" "pp_liteseg_stdc2")
+        "fastscnn" "fcn_hrnetw18" "pp_liteseg_stdc1" "pp_liteseg_stdc2" "ccnet")
 if [ $(contains "${models[@]}" "${model_name}") == "y" ]; then
     cp ./test_tipc/data/cityscapes_val_5.list ./test_tipc/data/cityscapes
 fi
