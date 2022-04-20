@@ -24,7 +24,7 @@ English | [简体中文](README_CN.md)
     <ul>
         <li>Release <a href="./configs/pp_liteseg">PP-LiteSeg</a>, a real-time semantic segmentation model. It achieves SOTA trade-off between segmentation accuracy and inference speed. [<a href="https://arxiv.org/pdf/2204.02681.pdf">techical report</a>]</li>
         <li>Release <a href="./Matting">PP-Matting</a>, a trimap-free image matting model for extremely fine-grained segmentation. It achieves SOTA performance on Composition-1k and Distinctions-646. [<a href=".">techical report</a>]</li>
-        <li>Release <a href="./contrib/MedicalSeg">MedicalSeg</a>, a newly easy-to-use toolkit for 3D medical imaging. It supports the whole process including data preprocessing, model training, and model deployment, and provides the high-accuracy models on lung and spine.
+        <li>Release <a href="./contrib/MedicalSeg">MedicalSeg</a>, a newly easy-to-use toolkit for 3D medical imaging. It supports the whole process including data preprocessing, model training, and model deployment, and provides the high-accuracy models on lung and spine segmentation.
         <li>Upgrade the interactive annotation tool <a href="./EISeg">EISeg v0.5</a> with supporting new areas in chest X-Ray, MRI spine, and defect inspection.</li>
         <li>Add 5 semantic segmentatioin models, including variants of PP-LiteSeg.</li>
     </ul>
