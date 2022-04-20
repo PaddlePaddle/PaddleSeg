@@ -222,6 +222,7 @@ PaddleSeg是基于飞桨PaddlePaddle开发的端到端图像分割开发套件�
            </ul>
        <b>图像抠图</b><br>
         <ul>
+            <li>PP-Matting</li>
             <li>DIM</li>
             <li>MODNet</li>
             <li>PP-HumanMatting</li>
