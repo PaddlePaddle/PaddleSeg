@@ -53,6 +53,7 @@ git clone https://github.com/PaddlePaddle/PaddleSeg
 
 ```shell
 cd PaddleSeg
+pip install -r requirements.txt
 pip install -e .
 cd Matting
 pip install -r requirements.txt
