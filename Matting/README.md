@@ -194,9 +194,12 @@ python predict.py \
     --config configs/modnet/modnet-mobilenetv2.yml \
     --model_path output/best_model/model.pdparams \
     --image_path data/PPM-100/val/fg/ \
-    --save_dir ./output/results
+    --save_dir ./output/results \
+    --fg_estimate True
 ```
 If the model requires trimap information, pass the trimap path through '--trimap_path'.
+
+`--fg_Estimate False` can turn off foreground estimation, which improves prediction speed but reduces image quality.
 
 You can directly download the provided model for evaluation.
 
@@ -213,11 +216,14 @@ python bg_replace.py \
     --model_path output/best_model/model.pdparams \
     --image_path path/to/your/image \
     --background path/to/your/background/image \
-    --save_dir ./output/results
+    --save_dir ./output/results \
+    --fg_estimate True
 ```
 If the model requires trimap information, pass the trimap path through `--trimap_path`.
 
 `--background` can pass a path of brackground image or select one of ('r', 'g', 'b', 'w') which represent red, green, blue and white. If it is not specified, a green background is used.
+
+`--fg_Estimate False` can turn off foreground estimation, which improves prediction speed but reduces image quality.
 
 **note：** `--image_path` must be a image path。
 
@@ -248,9 +254,12 @@ python export.py --help
 python deploy/python/infer.py \
     --config output/export/deploy.yaml \
     --image_path data/PPM-100/val/fg/ \
-    --save_dir output/results
+    --save_dir output/results \
+    --fg_estimate True
 ```
 If the model requires trimap information, pass the trimap path through '--trimap_path'.
+
+`--fg_Estimate False` can turn off foreground estimation, which improves prediction speed but reduces image quality.
 
 Run the following command to view more parameters.
 ```shell
