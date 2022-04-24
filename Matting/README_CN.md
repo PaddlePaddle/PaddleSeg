@@ -195,9 +195,11 @@ python predict.py \
     --config configs/modnet/modnet-mobilenetv2.yml \
     --model_path output/best_model/model.pdparams \
     --image_path data/PPM-100/val/fg/ \
-    --save_dir ./output/results
+    --save_dir ./output/results \
+    --fg_estimate True
 ```
 如模型需要trimap信息，需要通过`--trimap_path`传入trimap路径。
+`--fg_estimate False` 可关闭前景估计功能，可提升预测速度，但图像质量会有所降低
 
 你可以直接下载我们提供的模型进行预测。
 
@@ -215,11 +217,13 @@ python bg_replace.py \
     --model_path output/best_model/model.pdparams \
     --image_path path/to/your/image \
     --background path/to/your/background/image \
-    --save_dir ./output/results
+    --save_dir ./output/results \
+    --fg_estimate True
 ```
 如模型需要trimap信息，需要通过`--trimap_path`传入trimap路径。
 
 `--background`可以传入背景图片路劲，或选择（'r','g','b','w')中的一种，代表红，绿，蓝，白背景, 若不提供则采用绿色作为背景。
+`--fg_estimate False` 可关闭前景估计功能，可提升预测速度，但图像质量会有所降低
 
 **注意：** `--image_path`必须是一张图片的具体路径。
 
@@ -250,9 +254,11 @@ python export.py --help
 python deploy/python/infer.py \
     --config output/export/deploy.yaml \
     --image_path data/PPM-100/val/fg/ \
-    --save_dir output/results
+    --save_dir output/results \
+    --fg_estimate True
 ```
 如模型需要trimap信息，需要通过`--trimap_path`传入trimap路径。
+`--fg_estimate False` 可关闭前景估计功能，可提升预测速度，但图像质量会有所降低
 
 更多参数信息请运行如下命令进行查看:
 ```shell

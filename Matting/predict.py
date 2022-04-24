@@ -55,6 +55,12 @@ def parse_args():
         help='The directory for saving the model snapshot',
         type=str,
         default='./output/results')
+    parser.add_argument(
+        '--fg_estimate',
+        default=True,
+        type=eval,
+        choices=[True, False],
+        help='Whether to estimate foreground when predicting.')
 
     return parser.parse_args()
 
@@ -92,7 +98,8 @@ def main(args):
         image_list=image_list,
         image_dir=image_dir,
         trimap_list=trimap_list,
-        save_dir=args.save_dir)
+        save_dir=args.save_dir,
+        fg_estimate=args.fg_estimate)
 
 
 if __name__ == '__main__':
