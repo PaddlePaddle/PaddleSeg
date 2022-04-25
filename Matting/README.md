@@ -256,10 +256,8 @@ Run the following command to view more parameters.
 ```shell
 python deploy/python/infer.py --help
 ```
-## Contributors
+## Acknowledgement
 
-Thanks
-[Qian bin](https://github.com/qianbin1989228)
-for their contributons.
+* Thanks [Qian bin](https://github.com/qianbin1989228) for their contributons.
 
-Thanks to Jizhizi Li et.al. whose [GFM](https://arxiv.org/abs/2010.16188) matting framework help the algorithm reseach of PP-Matting.
+* Thanks for the algorithm support of [GFM](https://arxiv.org/abs/2010.16188).
