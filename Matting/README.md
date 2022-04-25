@@ -261,3 +261,5 @@ python deploy/python/infer.py --help
 Thanks
 [Qian bin](https://github.com/qianbin1989228)
 for their contributons.
+
+Thanks to Jizhizi Li et.al. whose [GFM](https://arxiv.org/abs/2010.16188) matting framework help the algorithm reseach of PP-Matting.
