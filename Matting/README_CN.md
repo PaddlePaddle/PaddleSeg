@@ -276,8 +276,7 @@ python deploy/python/infer.py \
 python deploy/python/infer.py --help
 ```
 
-## 贡献者
+## 致谢
 
-感谢
-[钱彬(Qianbin)](https://github.com/qianbin1989228)
-等开发者的贡献
+* 感谢[钱彬(Qianbin)](https://github.com/qianbin1989228)等开发者的贡献。
+* 感谢Jizhizi Li等提出的[GFM](https://arxiv.org/abs/2010.16188) Matting框架助力PP-Matting的算法研发。

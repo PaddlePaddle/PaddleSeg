@@ -272,8 +272,8 @@ Run the following command to view more parameters.
 ```shell
 python deploy/python/infer.py --help
 ```
-## Contributors
+## Acknowledgement
 
-Thanks
-[Qian bin](https://github.com/qianbin1989228)
-for their contributons.
+* Thanks [Qian bin](https://github.com/qianbin1989228) for their contributons.
+
+* Thanks for the algorithm support of [GFM](https://arxiv.org/abs/2010.16188).
