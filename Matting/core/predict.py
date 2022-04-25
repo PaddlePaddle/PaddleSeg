@@ -33,7 +33,7 @@ def partition_list(arr, m):
     return [arr[i:i + n] for i in range(0, len(arr), n)]
 
 
-def save_result(alpha, path, im_path, trimap=None):
+def save_result(alpha, path, im_path, trimap=None, fg_estimate=True):
     """
     The value of alpha is range [0, 1], shape should be [h,w]
     """
@@ -55,11 +55,16 @@ def save_result(alpha, path, im_path, trimap=None):
 
     # save clip
     im = cv2.imread(im_path)
-    fg = estimate_foreground_ml(im / 255.0, alpha / 255.0) * 255
+    if fg_estimate:
+        fg = estimate_foreground_ml(im / 255.0, alpha / 255.0) * 255
+    else:
+        fg = im
     fg = fg.astype('uint8')
     alpha = alpha[:, :, np.newaxis]
     clip = np.concatenate((fg, alpha), axis=-1)
     cv2.imwrite(clip_save_path, clip)
+
+    return fg
 
 
 def reverse_transform(alpha, trans_info):
@@ -99,7 +104,8 @@ def predict(model,
             image_list,
             image_dir=None,
             trimap_list=None,
-            save_dir='output'):
+            save_dir='output',
+            fg_estimate=True):
     """
     predict and visualize the image_list.
 
@@ -157,7 +163,12 @@ def predict(model,
 
             save_path = os.path.join(save_dir, im_file)
             mkdir(save_path)
-            save_result(alpha_pred, save_path, im_path=im_path, trimap=trimap)
+            fg = save_result(
+                alpha_pred,
+                save_path,
+                im_path=im_path,
+                trimap=trimap,
+                fg_estimate=fg_estimate)
 
             postprocess_cost_averager.record(time.time() - postprocess_start)
 
@@ -173,4 +184,4 @@ def predict(model,
             preprocess_cost_averager.reset()
             infer_cost_averager.reset()
             postprocess_cost_averager.reset()
-    return alpha_pred
+    return alpha_pred, fg
