@@ -7,6 +7,13 @@ Image Matting is the technique of extracting foreground from an image by calcula
 <img src="https://user-images.githubusercontent.com/30919197/141714637-be8af7b1-ccd0-49df-a4f9-10423705802e.jpg" width="100%" height="100%">
 </p>
 
+# A key experience
+Matting is Widely used in a variety of industries, such as video clip, video synthesis and other fields，Some developers also built a one-click Matting website named "No code Matting" based on PP-Matting，Welcome to use it.
+- [using Link](http://seg.itmanbu.com/)
+
+<p align="center">
+<img src="https://user-images.githubusercontent.com/48433081/165077834-c3191509-aeaf-45c8-b226-656174f4c152.gif" width="100%" height="100%">
+</p>
 ## Update Notes
 2022.04
 [1] Add PPMatting model.
