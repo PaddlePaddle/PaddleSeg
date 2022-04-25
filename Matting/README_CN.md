@@ -8,6 +8,14 @@ Matting（精细化分割/影像去背/抠图）是指借由计算前景的颜�
 <img src="https://user-images.githubusercontent.com/30919197/141714637-be8af7b1-ccd0-49df-a4f9-10423705802e.jpg" width="100%" height="100%">
 </p>
 
+# 快速体验
+Matting精细化抠图被广泛应用在多种行业，如视频剪辑，视频合成等领域，有的开发者基于PP-Matting也搭建了一个名为“懒人抠图”的一键抠图网站，欢迎大家使用。
+- [使用链接](http://seg.itmanbu.com/)
+
+<p align="center">
+<img src="https://user-images.githubusercontent.com/48433081/165077834-c3191509-aeaf-45c8-b226-656174f4c152.gif" width="100%" height="100%">
+</p>
+
 ## 更新动态
 2022.04
 【1】新增PPMatting模型。
