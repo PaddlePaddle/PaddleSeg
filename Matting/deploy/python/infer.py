@@ -73,6 +73,12 @@ def parse_args():
         choices=['cpu', 'gpu'],
         default="gpu",
         help="Select which device to inference, defaults to gpu.")
+    parser.add_argument(
+        '--fg_estimate',
+        default=True,
+        type=eval,
+        choices=[True, False],
+        help='Whether to estimate foreground when predicting.')
 
     parser.add_argument(
         '--cpu_threads',
@@ -452,7 +458,10 @@ class Predictor:
 
         # save clip image
         mkdir(clip_save_path)
-        fg = estimate_foreground_ml(ori_img / 255.0, alpha / 255.0) * 255
+        if args.fg_estimate:
+            fg = estimate_foreground_ml(ori_img / 255.0, alpha / 255.0) * 255
+        else:
+            fg = ori_img
         fg = fg.astype('uint8')
         alpha = alpha[:, :, np.newaxis]
         clip = np.concatenate([fg, alpha], axis=-1)
