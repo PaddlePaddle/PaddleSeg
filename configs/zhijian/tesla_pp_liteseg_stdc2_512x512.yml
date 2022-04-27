@@ -3,6 +3,9 @@ _base_: './tesla.yml'
 batch_size: 4
 iters: 80000
 
+lr_scheduler:
+  learning_rate: 0.01
+
 model:
   type: PPLiteSeg
   backbone:
@@ -11,6 +14,8 @@ model:
 
 loss:
   types:
+    #- type: CrossEntropyLoss
+    #  weight: [1, 10]
     - type: OhemCrossEntropyLoss
-      min_kept: 65000   # batch_size * 1024 * 512 // 16
+      min_kept: 65000   # batch_size * w * h // 16
   coef: [1, 1, 1]
