@@ -1,0 +1,17 @@
+_base_: './tesla.yml'
+
+batch_size: 4
+iters: 80000
+
+model:
+  type: OCRNet
+  backbone:
+    type: HRNet_W18
+    pretrained: https://bj.bcebos.com/paddleseg/dygraph/hrnet_w18_ssld.tar.gz
+  backbone_indices: [0]
+
+loss:
+  types:
+    - type: OhemCrossEntropyLoss
+      min_kept: 65000   # batch_size * 512 * 512 // 16
+  coef: [1, 0.4]

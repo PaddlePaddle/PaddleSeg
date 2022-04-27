@@ -1,0 +1,16 @@
+_base_: './tesla.yml'
+
+batch_size: 4
+iters: 80000
+
+model:
+  type: PPLiteSeg
+  backbone:
+    type: STDC2
+    pretrained: https://bj.bcebos.com/paddleseg/dygraph/PP_STDCNet2.tar.gz
+
+loss:
+  types:
+    - type: OhemCrossEntropyLoss
+      min_kept: 65000   # batch_size * 1024 * 512 // 16
+  coef: [1, 1, 1]
