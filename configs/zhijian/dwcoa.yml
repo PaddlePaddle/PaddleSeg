@@ -1,7 +1,7 @@
 # train set: 2k, val set: 260, test set: 260
 # class nums: 14 (include bg)
 
-batch_size: 4
+batch_size: 8   # total batch size: 16 
 iters: 40000
 
 train_dataset:
