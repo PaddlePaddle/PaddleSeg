@@ -45,13 +45,13 @@ class RSGrids:
                             for _ in range(grid_count[1])] for _ in range(grid_count[0])]
         return list(grid_count)
 
-    def getGrid(self, row: int, col: int) -> Tuple[np.array]:
+    def getGrid(self, row: int, col: int) -> Tuple[np.ndarray]:
         img, _ = self.raster.getGrid(row, col)
         mask = self.mask_grids[row][col]
         self.curr_idx = (row, col)
         return img, mask
 
-    def splicingList(self, save_path: str) -> np.array:
+    def splicingList(self, save_path: str) -> np.ndarray:
         mask = self.raster.saveMaskbyGrids(self.mask_grids, save_path,
                                            self.raster.geoinfo)
         return mask

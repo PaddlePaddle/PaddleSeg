@@ -9,3 +9,4 @@ pyyaml
 wget
 requests
 easydict
+scikit-image

@@ -69,6 +69,12 @@ def parse_args():
         help='The directory for saving the inference results',
         type=str,
         default='./output')
+    parser.add_argument(
+        '--fg_estimate',
+        default=True,
+        type=eval,
+        choices=[True, False],
+        help='Whether to estimate foreground when predicting.')
 
     return parser.parse_args()
 
@@ -91,18 +97,18 @@ def main(args):
     model = cfg.model
     transforms = Compose(cfg.val_transforms)
 
-    alpha = predict(
+    alpha, fg = predict(
         model,
         model_path=args.model_path,
         transforms=transforms,
         image_list=[args.image_path],
         trimap_list=[args.trimap_path],
-        save_dir=args.save_dir)
+        save_dir=args.save_dir,
+        fg_estimate=args.fg_estimate)
 
     img_ori = cv2.imread(args.image_path)
     bg = get_bg(args.background, img_ori.shape)
     alpha = alpha / 255.0
-    fg = estimate_foreground_ml(img_ori / 255.0, alpha) * 255
     alpha = alpha[:, :, np.newaxis]
     com = alpha * fg + (1 - alpha) * bg
     com = com.astype('uint8')
