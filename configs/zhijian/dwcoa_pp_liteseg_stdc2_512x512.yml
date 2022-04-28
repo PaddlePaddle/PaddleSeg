@@ -1,0 +1,21 @@
+_base_: './dwcoa.yml'
+
+batch_size: 4
+iters: 40000
+
+lr_scheduler:
+  learning_rate: 0.01
+
+model:
+  type: PPLiteSeg
+  backbone:
+    type: STDC2
+    pretrained: https://bj.bcebos.com/paddleseg/dygraph/PP_STDCNet2.tar.gz
+
+loss:
+  types:
+    #- type: CrossEntropyLoss
+    - type: OhemCrossEntropyLoss
+      min_kept: 65000
+    #- type: DiceLoss
+  coef: [1, 1, 1]
