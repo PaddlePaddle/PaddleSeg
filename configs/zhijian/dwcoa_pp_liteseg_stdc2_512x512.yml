@@ -12,9 +12,9 @@ model:
 loss:
   types:
     #- type: CrossEntropyLoss
+    #- type: DiceLoss
     - type: OhemCrossEntropyLoss
       min_kept: 65000
-    #- type: DiceLoss
   coef: [1, 1, 1]
 
 # loss:

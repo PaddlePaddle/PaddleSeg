@@ -4,11 +4,7 @@ lr_scheduler:
   learning_rate: 0.01
 
 model:
-  type: OCRNet
-  backbone:
-    type: HRNet_W18
-    pretrained: https://bj.bcebos.com/paddleseg/dygraph/hrnet_w18_ssld.tar.gz
-  backbone_indices: [0]
+  type: BiSeNetV2
 
 loss:
   types:
@@ -16,7 +12,7 @@ loss:
     #- type: DiceLoss
     - type: OhemCrossEntropyLoss
       min_kept: 65000
-  coef: [1, 0.4]
+  coef: [1, 1, 1, 1, 1]
 
 # loss:
 #   types:
@@ -26,4 +22,4 @@ loss:
 #           min_kept: 65000
 #         - type: LovaszSoftmaxLoss
 #       coef: [0.8, 0.2]
-#   coef: [1, 0.4]
+#   coef: [1, 1, 1, 1, 1]

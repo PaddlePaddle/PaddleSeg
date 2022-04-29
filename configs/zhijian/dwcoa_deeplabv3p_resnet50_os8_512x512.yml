@@ -4,11 +4,17 @@ lr_scheduler:
   learning_rate: 0.01
 
 model:
-  type: OCRNet
+  type: DeepLabV3P
   backbone:
-    type: HRNet_W18
-    pretrained: https://bj.bcebos.com/paddleseg/dygraph/hrnet_w18_ssld.tar.gz
-  backbone_indices: [0]
+    type: ResNet50_vd
+    output_stride: 8
+    multi_grid: [1, 2, 4]
+    pretrained: https://bj.bcebos.com/paddleseg/dygraph/resnet50_vd_ssld_v2.tar.gz
+  backbone_indices: [0, 3]
+  aspp_ratios: [1, 12, 24, 36]
+  aspp_out_channels: 256
+  align_corners: False
+  pretrained: null
 
 loss:
   types:
@@ -16,7 +22,7 @@ loss:
     #- type: DiceLoss
     - type: OhemCrossEntropyLoss
       min_kept: 65000
-  coef: [1, 0.4]
+  coef: [1]
 
 # loss:
 #   types:
@@ -26,4 +32,4 @@ loss:
 #           min_kept: 65000
 #         - type: LovaszSoftmaxLoss
 #       coef: [0.8, 0.2]
-#   coef: [1, 0.4]
+#   coef: [1]
