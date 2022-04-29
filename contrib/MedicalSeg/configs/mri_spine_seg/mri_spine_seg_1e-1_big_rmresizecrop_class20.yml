@@ -1,0 +1,46 @@
+_base_: '../_base_/global_configs.yml'
+
+batch_size: 3
+iters: 15000
+
+train_dataset:
+  type: MRISpineSeg
+  dataset_root: MRSpineSeg/MRI_spine_seg_phase0_class20_big_12
+  result_dir: MRSpineSeg/MRI_spine_seg_phase1
+  transforms:
+    - type: RandomRotation3D
+      degrees: 30
+    - type: RandomFlip3D
+  mode: train
+  num_classes: 20
+
+val_dataset:
+  type: MRISpineSeg
+  dataset_root: MRSpineSeg/MRI_spine_seg_phase0_class20_big_12
+  result_dir: MRSpineSeg/MRI_spine_seg_phase1
+  num_classes: 20
+  transforms: []
+  mode: val
+  dataset_json_path: "data/MRSpineSeg/MRI_spine_seg_raw/dataset.json"
+
+optimizer:
+  type: sgd
+  momentum: 0.9
+  weight_decay: 1.0e-4
+
+lr_scheduler:
+  type: PolynomialDecay
+  decay_steps: 15000
+  learning_rate: 0.1
+  end_lr: 0
+  power: 0.9
+
+loss:
+  types:
+    - type: MixedLoss
+      losses:
+        - type: CrossEntropyLoss
+          weight: Null
+        - type: DiceLoss
+      coef: [1, 1]
+  coef: [1]

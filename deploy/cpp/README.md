@@ -1,14 +1,14 @@
-# PaddleSeg C++ 预测部署方案
+# PaddleSeg C++ Predictive Deployment Scenario
 
-## 使用Paddle Inference C++部署PaddleSeg模型
+## Deploy the PaddleSeg model using Paddle Inference C++
 
-使用Paddle Inference C++部署PaddleSeg模型，请参考[教程](../../docs/deployment/inference/cpp_inference.md)。
+To deploy PaddleSeg model using Paddle Inference C++, please refer to [Tutorial](../../docs/deployment/inference/cpp_inference.md).
 
-## 使用PaddleX部署PaddleSeg模型
+## Deploy the PaddleSeg model using PaddleX
 
-目前可基于PaddleX进行PaddleSeg模型C++部署（[部署教程](https://github.com/PaddlePaddle/PaddleX/tree/develop/deploy/cpp)）。
+Currently, PaddleSeg model C++ deployment can be performed based on PaddleX ([Deployment Tutorial](https://github.com/PaddlePaddle/PaddleX/tree/develop/deploy/cpp)).
 
- 硬件支持
+Hardware support:
 * CPU(linux/windows)
 * GPU(linux/windows)
 * Jetson(TX2/Nano/Xavier)

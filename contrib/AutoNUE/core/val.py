@@ -72,8 +72,7 @@ def evaluate(model,
         eval_dataset,
         batch_sampler=batch_sampler,
         num_workers=num_workers,
-        return_list=True,
-    )
+        return_list=True, )
 
     total_iters = len(loader)
     intersect_area_all = 0
@@ -81,9 +80,8 @@ def evaluate(model,
     label_area_all = 0
 
     if print_detail:
-        logger.info(
-            "Start evaluating (total_samples={}, total_iters={})...".format(
-                len(eval_dataset), total_iters))
+        logger.info("Start evaluating (total_samples={}, total_iters={})...".
+                    format(len(eval_dataset), total_iters))
     progbar_val = progbar.Progbar(target=total_iters, verbose=1)
     reader_cost_averager = TimeAverager()
     batch_cost_averager = TimeAverager()
@@ -167,9 +165,8 @@ def evaluate(model,
     kappa = metrics.kappa(intersect_area_all, pred_area_all, label_area_all)
 
     if print_detail:
-        logger.info(
-            "[EVAL] #Images={} mIoU={:.4f} Acc={:.4f} Kappa={:.4f} ".format(
-                len(eval_dataset), miou, acc, kappa))
+        logger.info("[EVAL] #Images={} mIoU={:.4f} Acc={:.4f} Kappa={:.4f} ".
+                    format(len(eval_dataset), miou, acc, kappa))
         logger.info("[EVAL] Class IoU: \n" + str(np.round(class_iou, 4)))
         logger.info("[EVAL] Class Acc: \n" + str(np.round(class_acc, 4)))
     return miou, acc

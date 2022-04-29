@@ -107,12 +107,12 @@ class GTA5Dataset(CityDataset):
         gt_image = Image.open(gt_image_path)
 
         # Augmentation
-        if (self.split == "train" or self.split == "trainval"
-                or self.split == "all") and self.training:
-            image, gt_image, edge_mask = self._train_sync_transform(
-                image, gt_image)
+        if (self.split == "train" or self.split == "trainval" or
+                self.split == "all") and self.training:
+            image, gt_image, edge_mask = self._train_sync_transform(image,
+                                                                    gt_image)
         else:
-            image, gt_image, edge_mask = self._val_sync_transform(
-                image, gt_image)
+            image, gt_image, edge_mask = self._val_sync_transform(image,
+                                                                  gt_image)
 
         return image, gt_image, edge_mask

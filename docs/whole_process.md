@@ -1,7 +1,7 @@
 English | [简体中文](whole_process_cn.md)
 # Whole Process of PaddleSeg
 
-We will use `BiSeNetV2` and `Medical Video Disc Segmentation Dataset` as example to introduce PaddleSeg's **configurable driver**. If you want to know how to use API, you can click [PaddleSeg Advanced Tutorial](https://aistudio.baidu.com/aistudio/projectdetail/1339458?channelType=0&channel=0).
+We will use `PP-LiteSeg model` and `Medical Video Disc Segmentation Dataset` as example to introduce PaddleSeg's **configurable driver**. If you want to know how to use API, you can click [PaddleSeg Advanced Tutorial](https://aistudio.baidu.com/aistudio/projectdetail/1339458?channelType=0&channel=0).
 
 The whole process is as follows:
 
@@ -21,7 +21,7 @@ The whole process is as follows:
 Before using PaddleSeg to train an image segmentation model, users need to complete the following tasks:
 
 1. Install [Python3.6 or higher](https://www.python.org/downloads/).
-2. Install the `PaddlePaddle 2.1` version, please refer to [Quick Installation](https://www.paddlepaddle.org.cn/install/quick) for the specific installation method. Due to the high computational cost of the image segmentation model, it is recommended to use PaddleSeg under the GPU version of PaddlePaddle.
+2. Install the `PaddlePaddle` (version >= 2.1), please refer to [Quick Installation](https://www.paddlepaddle.org.cn/install/quick) for the specific installation method. Due to the high computational cost of the image segmentation model, it is recommended to use PaddleSeg under the GPU version of PaddlePaddle.
 3. Download the code library of PaddleSeg.
 
 ```
@@ -38,46 +38,43 @@ pip install paddleseg
 
 ### **1.2 Confirm Installation**
 
-Run following commands in the PaddleSeg directory.
+Execute the following command in the PaddleSeg directory, if the predicted result appears in the PaddleSeg/output folder, the installation is successful.
 
-Execute the following command, if the predicted result appears in the PaddleSeg/output folder, the installation is successful.
+> Note that: the commands of training, validation and prediction are executed in the root of PaddleSeg by default.
 
 ```
 python predict.py \
-       --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml \
-       --model_path https://bj.bcebos.com/paddleseg/dygraph/optic_disc/bisenet_optic_disc_512x512_1k/model.pdparams\
+       --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \
+       --model_path https://paddleseg.bj.bcebos.com/dygraph/optic_disc/pp_liteseg_optic_disc_512x512_1k/model.pdparams\
        --image_path docs/images/optic_test_image.jpg \
        --save_dir output/result
 ```
 
 ## **2. Dataset Preparation**
 
-**Dataset Download**
+### **2.1 Dataset Download**
 
-This chapter will use the `optic disc segmentation dataset` for training. Optic disc segmentation is a set of fundus medical segmentation datasets, including 267 training images, 76 verification images, and 38 test images. You can download them by the following command.
-
-The original image and segmentation result are shown below. Our task will be to segment the optic disc area in the eyeball picture.
-
-![](./images/fig1.png)
-
-​                                                                     Figure 1: Original image and segmentation result
-
-
+Our demo uses the `optic disc segmentation dataset` for training.
+Optic disc segmentation is a set of fundus medical segmentation datasets, including 267 training images, 76 verification images, and 38 test images. You can download them by the following command.
 
 ```
-# Download and unzip the dataset
-mkdir dataset
-cd dataset
+mkdir data
+cd data
 wget https://paddleseg.bj.bcebos.com/dataset/optic_disc_seg.zip
 unzip optic_disc_seg.zip
 cd ..
 ```
 
-### **2.1 Prepare the Dataset**
+The original image and segmentation result are shown below. Our task will be to segment the optic disc area in the eyeball picture.
 
-How to use your own dataset for training is the most concerned thing for developers. Below we will focus on explaining what we should prepare if we want to customize the dataset.And we will tell you how to make corresponding changes in the configuration file after the dataset is ready.
+![](./images/fig1.png)
+Figure 1: Original image and segmentation result
 
-### **2.1.1 Organize the Dataset**
+
+
+### **2.2 Prepare other Dataset**
+
+How to use your own dataset for training is the most concerned thing for developers. Below we will focus on explaining what we should prepare if we want to customize the dataset. And we will tell you how to make corresponding changes in the configuration file after the dataset is ready.
 
 - It is recommended to organize into the following structure.
 
@@ -99,11 +96,13 @@ How to use your own dataset for training is the most concerned thing for develop
         |
         |--test.txt
 
+- The origin images with 3 channels are saved in `images` directory. The label images with 1 channel are saved in `labels` directory. The train.txt, val.txt and test.txt denotes the train set, validation set and test set, respectively.
+
 - It is not necessary for the folder to be named custom_dataset, images, labels, and the user can name it independently.
 
 - The file in train.txt val.txt test.txt does not have to be in the same directory as the custom_dataset folder, it can be modified through the options in the configuration file.
 
-  The contents of train.txt and val.txt are as follows:
+- The contents of train.txt and val.txt are as follows:
 
   ```
 
@@ -112,36 +111,34 @@ How to use your own dataset for training is the most concerned thing for develop
    ...
   ```
 
-The format of the dataset we just downloaded is similar (label.txt is optional). If users want to label and divide the dataset, please refer to [Data Marking Document](data/marker/marker.md) and [ dataset division document](data/custom/data_prepare.md).
-
-我们一般推荐用户将数据集放置在PaddleSeg下的data文件夹下。
+- The format of the dataset we just downloaded is similar (label.txt is optional). If users want to label and divide the dataset, please refer to [Data Marking Document](data/marker/marker.md) and [ dataset division document](data/custom/data_prepare.md).
 
 ## **3. Model Training**
 
--Choose the BiseNetV2 model here. BiseNetV2 is a lightweight model with an average IoU of 72.6% in the Cityscapes test set and a speed of 156 FPS on an NVIDIA GeForce GTX 1080 Ti card, which is much faster than the existing method , And can achieve better segmentation accuracy.
+### **3.1 PP-LitSeg Model**
 
-### **3.1 BiseNetV2 Model**
+We choose the PP-LiteSeg model for training.
 
-BiSeNetV2 separates low-level network details and high-level semantic classification to achieve high-precision and high-efficiency real-time semantic segmentation. It is a trade-off between speed and accuracy. The architecture includes:
+PP-LiteSeg model is a real-time semantic segmentation model, which is proposed by PaddleSeg team.
+Compared to other models, PP-LiteSeg achieves superior trade-off between accuracy and speed on Cityscapes and CamVid dataset. Specifically, we present a Flexible and Lightweight Decoder (FLD) to reduce computation overhead of previous decoder. To strengthen feature representations, we propose a Unified Attention Fusion Module (UAFM), which takes advantage of spatial and channel attention to produce a weight and then fuses the input features with the weight. Moreover, a Simple Pyramid Pooling Module (SPPM) is proposed to aggregate global context with low computation cost. The architecture of PP-LiteSeg is shown in next figure. For more information of PP-LiteSeg , please refer to [doc](../configs/pp_liteseg).
 
-(1) A detail branch, with shallow wide channels, used to capture low-level details and generate high-resolution feature representations.
 
-(2) A semantic branch with narrow channels and deep levels to obtain high-level semantic context. Semantic branch is lightweight because it reduces channel capacity and fast downsampling strategy. In addition, a guiding aggregation layer is designed to enhance the mutual connection and fusion of the two types of feature representation. In addition, an enhanced training strategy is also designed to improve segmentation performance without increasing any inference cost.
-
-![](./images/fig2.png)
-
-​                                                            Figure 2: Original image and segmentation result
+<div align="center">
+<img src="https://user-images.githubusercontent.com/52520497/162148786-c8b91fd1-d006-4bad-8599-556daf959a75.png" width = "600" height = "300" alt="arch"  />
+</div>
+Figure2：The architecture of PP-LiteSeg
 
 ### **3.2 Detailed Interpretation of Configuration Files**
 
-After understanding the principle of BiseNetV2, we can prepare for training. In the above, we talked about PaddleSeg providing **configurable driver** for model training. So before training, let’s take a look at the configuration file. Here we take `bisenet_optic_disc_512x512_1k.yml` as an example. The yaml format configuration file includes model type, backbone network, training and testing, pre-training dataset and supporting tools (such as Data augmentation) and other information.
+After understanding the principle of PP-LiteSeg, we can prepare for training. In the above, we talked about PaddleSeg providing **configurable driver** for model training. So before training, let’s take a look at the configuration file. Here we take `pp_liteseg_optic_disc_512x512_1k.yml` as an example. The yaml format configuration file includes model type, backbone network, training and testing, pre-training dataset and supporting tools (such as Data augmentation) and other information.
 
 PaddleSeg lists every option that can be optimized in the configuration file. Users can customize the model by modifying this configuration file (**All configuration files are under the PaddleSeg/configs folder**), such as custom models The backbone network used, the loss function used by the model, and the configuration of the network structure. In addition to customizing the model, data processing strategies can be configured in the configuration file, such as data augmentation strategies such as resizing, normalization, and flipping.
 
 **Key Parameter:**
 
--1: In the learning rate given in the PaddleSeg configuration file, except for the single-card learning rate in "bisenet_optic_disc_512x512_1k.yml", the rest of the configuration files are all 4-card learning rates. If the user is training with a single card, then learn The rate setting should become 1/4 of the original.
+-1: In the learning rate given in the PaddleSeg configuration file, except for the single-card learning rate in "pp_liteseg_optic_disc_512x512_1k.yml", the rest of the configuration files are all 4-card learning rates. If the user is training with a single card, then learn The rate setting should become 1/4 of the original.
 -2: The configuration file in PaddleSeg gives a variety of loss functions: CrossEntropy Loss, BootstrappedCrossEntropy Loss, Dice Loss, BCE Loss, OhemCrossEntropyLoss, RelaxBoundaryLoss, OhemEdgeAttentionLoss, Lovasz Hinge Loss, Lovasz Soft Loss, users can perform according to their own needs Change.
+-3: The details of config file are as following.
 
 ```
 batch_size: 4  # Set the number of pictures sent to the network at one iteration. Generally speaking, the larger the video memory of the machine you are using, the higher the batch_size value.
@@ -182,12 +179,15 @@ lr_scheduler: # Related settings for learning rate
 loss: # Set the type of loss function
   types:
     - type: CrossEntropyLoss # The type of loss function
-  coef: [1, 1, 1, 1, 1]
-  # BiseNetV2 has 4 auxiliary losses, plus a total of five main losses, 1 means weight all_loss = coef_1 * loss_1 + .... + coef_n * loss_n
+  coef: [1, 1, 1]
+  # PP-LiteSeg has 2 auxiliary losses and a main losses, coef means weight: total_loss = coef_1 * loss_1 + .... + coef_n * loss_n
 
-model: # Model description
-  type: BiSeNetV2  # Set model category
-  pretrained: Null # Set the pretrained model of the model
+model:  # Model description
+  type: PPLiteSeg  # Set model name
+  backbone:  # Set the backbone，include name and pretrained weights
+    type: STDC1
+    pretrained: https://bj.bcebos.com/paddleseg/dygraph/PP_STDCNet1.tar.gz
+
 ```
 **FAQ**
 
@@ -199,7 +199,7 @@ A: The information related to the model scheme is in the configuration file, and
 
 When the user prepares the dataset, he can specify the location in the configuration file to modify the data path for further training
 
-Here, we take the "bisenet_optic_disc_512x512_1k.yml" file mentioned in the above article as an example, and select the data configuration part for your explanation.
+Here, we take the "pp_liteseg_optic_disc_512x512_1k.yml" file mentioned in the above article as an example, and select the data configuration part for your explanation.
 
 Mainly focus on these parameters:
 
@@ -236,7 +236,7 @@ val_dataset:
 
 ### **3.4 Start Training**
 
-After we modify the corresponding configuration parameters, we can get started and experience the use
+After we modify the corresponding configuration parameters, we can start training.
 
 ```
 export CUDA_VISIBLE_DEVICES=0 # Set 1 usable card
@@ -244,14 +244,14 @@ export CUDA_VISIBLE_DEVICES=0 # Set 1 usable card
 **Please execute the following command under windows**
 **set CUDA_VISIBLE_DEVICES=0**
 python train.py \
-        --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml \
+        --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \
         --do_eval \
         --use_vdl \
         --save_interval 500 \
         --save_dir output
 ```
 
--Result file
+The weights of trained model is saved in `output`.
 
 ```
 output
@@ -284,14 +284,11 @@ output
 
 ### **3.6 In-depth Exploration of Configuration Files**
 
-- We just took out a BiSeNetV2 configuration file for everyone to experience how to configure the dataset. In this example, all the parameters are placed in a yml file, but the actual PaddleSeg configuration file is for better reuse For compatibility and compatibility, a more coupled design is adopted, that is, a model requires more than two configuration files to achieve. Below we will use DeeplabV3p as an example to illustrate the coupling settings of the configuration files.
+- We just took out a PP-LiteSeg configuration file for everyone to experience how to configure the dataset. In this example, all the parameters are placed in a yml file, but the actual PaddleSeg configuration file is for better reuse For compatibility and compatibility, a more coupled design is adopted, that is, a model requires more than two configuration files to achieve. Below we will use DeeplabV3p as an example to illustrate the coupling settings of the configuration files.
 - For example, if we want to change the configuration of the deeplabv3p_resnet50_os8_cityscapes_1024x512_80k.yml file, we will find that the file also depends on the (base) cityscapes.yml file. At this point, we need to open the cityscapes.yml file synchronously to set the corresponding parameters.
 
 ![](./images/fig3.png)
-
-
-
-​                                                                  ​ Figure 3: In-depth exploration of configuration files
+Figure 3: In-depth exploration of configuration files
 
 In PaddleSeg2.0 mode, users can find that PaddleSeg adopts a more coupled configuration design, placing common configurations such as data, optimizer, and loss function under a single configuration file. When we try to change to a new network The structure is time, you only need to pay attention to model switching, which avoids the tedious rhythm of switching models to re-adjust these common parameters and avoid user errors.
 
@@ -308,7 +305,7 @@ A: As shown by the serial number in the figure, the parameters of the No. 1 yml 
 ```
 export CUDA_VISIBLE_DEVICES=0,1,2,3 # Set 4 usable cards
 python -m paddle.distributed.launch train.py \
-       --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml \
+       --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \
        --do_eval \
        --use_vdl \
        --save_interval 500 \
@@ -319,7 +316,7 @@ python -m paddle.distributed.launch train.py \
 
 ```
 python train.py \
-       --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml \
+       --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \
        --resume_model output/iter_500 \
        --do_eval \
        --use_vdl \
@@ -351,8 +348,7 @@ visualdl --logdir output/
 Enter the suggested URL in the browser, the effect is as follows:
 
 ![](./images/fig4.png)
-
-​                                                                          Figure 4: VDL effect demonstration
+Figure 4: VDL effect demonstration
 
 ## **5. Model Evaluation**
 
@@ -360,7 +356,7 @@ After the training is completed, the user can use the evaluation script val.py t
 
 ```
 python val.py \
-        --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml \
+        --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \
         --model_path output/iter_1000/model.pdparams
 ```
 
@@ -368,7 +364,7 @@ If you want to perform multi-scale flip evaluation, you can turn it on by passin
 
 ```
 python val.py \
-       --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml \
+       --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \
        --model_path output/iter_1000/model.pdparams \
        --aug_eval \
        --scales 0.75 1.0 1.25 \
@@ -379,7 +375,7 @@ If you want to perform sliding window evaluation, you can open it by passing in 
 
 ```
 python val.py \
-       --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml \
+       --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \
        --model_path output/iter_1000/model.pdparams \
        --is_slide \
        --crop_size 256 256 \
@@ -398,12 +394,12 @@ With the running of the evaluation script, the final printed evaluation log is a
 
 ```
 ...
-2021-01-13 16:41:29 [INFO]	Start evaluating (total_samples=76, total_iters=76)...
+2021-01-13 16:41:29 [INFO]    Start evaluating (total_samples=76, total_iters=76)...
 76/76 [==============================] - 2s 30ms/step - batch_cost: 0.0268 - reader cost: 1.7656e-
-2021-01-13 16:41:31 [INFO]	[EVAL] #Images=76 mIoU=0.8526 Acc=0.9942 Kappa=0.8283
-2021-01-13 16:41:31 [INFO]	[EVAL] Class IoU:
+2021-01-13 16:41:31 [INFO]    [EVAL] #Images=76 mIoU=0.8526 Acc=0.9942 Kappa=0.8283
+2021-01-13 16:41:31 [INFO]    [EVAL] Class IoU:
 [0.9941 0.7112]
-2021-01-13 16:41:31 [INFO]	[EVAL] Class Acc:
+2021-01-13 16:41:31 [INFO]    [EVAL] Class Acc:
 [0.9959 0.8886]
 ```
 
@@ -415,7 +411,7 @@ The predict.py script is specially used to visualize prediction cases. The comma
 
 ```
 python predict.py \
-        --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml \
+        --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \
         --model_path output/iter_1000/model.pdparams \
         --image_path dataset/optic_disc_seg/JPEGImages/H0003.jpg \
         --save_dir output/result
@@ -428,10 +424,7 @@ Similarly, you can use `--aug_pred` to turn on multi-scale flip prediction, and 
 We select 1 picture to view, the effect is as follows. We can intuitively see the difference between the cutting effect of the model and the original mark, thereby generating some optimization ideas, such as whether the cutting boundary can be processed in a regular manner.
 
 ![](./images/fig5.png)
-
-
-
-​                                                                          ​ Figure 5: Prediction effect display
+Figure 5: Prediction effect display
 
 ## **7 Model Export**
 
@@ -439,7 +432,7 @@ In order to facilitate the user's industrial-level deployment, PaddleSeg provide
 
 ```
 python export.py \
-       --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml \
+       --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \
        --model_path output/iter_1000/model.pdparams
 ```
 

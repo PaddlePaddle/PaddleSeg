@@ -17,7 +17,6 @@ Ths copyright of niecongchong/RS-building-regularization is as follows:
 Apache License [see LICENSE for details]
 """
 
-
 import numpy as np
 
 
@@ -31,7 +30,7 @@ def line(p1, p2):
 
 # 计算两条直线之间的交点
 def intersection(L1, L2):
-    D  = L1[0] * L2[1] - L1[1] * L2[0]
+    D = L1[0] * L2[1] - L1[1] * L2[0]
     Dx = L1[2] * L2[1] - L1[1] * L2[2]
     Dy = L1[0] * L2[2] - L1[2] * L2[0]
     if D != 0:
@@ -58,11 +57,10 @@ def par_line_dist(L1, L2):
 
 # 计算点在直线的投影位置
 def point_in_line(m, n, x1, y1, x2, y2):
-    x = (m * (x2 - x1) * (x2 - x1) + n * (y2 - y1) * (x2 - x1) + 
-        (x1 * y2 - x2 * y1) * (y2 - y1)) / ((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1))
-    y = (m * (x2 - x1) * (y2 - y1) + n * (y2 - y1) * (y2 - y1) + 
-        (x2 * y1 - x1 * y2) * (x2 - x1)) / ((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1))
+    x = (m * (x2 - x1) * (x2 - x1) + n * (y2 - y1) * (x2 - x1) +
+         (x1 * y2 - x2 * y1) * (y2 - y1)) / (
+             (x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1))
+    y = (m * (x2 - x1) * (y2 - y1) + n * (y2 - y1) * (y2 - y1) +
+         (x2 * y1 - x1 * y2) * (x2 - x1)) / (
+             (x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1))
     return (x, y)
-
-
-

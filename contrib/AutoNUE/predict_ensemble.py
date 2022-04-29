@@ -50,8 +50,7 @@ def parse_args():
     parser.add_argument(
         '--image_path',
         dest='image_path',
-        help=
-        'The path of image, it can be a file or a directory including images',
+        help='The path of image, it can be a file or a directory including images',
         type=str,
         default=None)
     parser.add_argument(
@@ -95,16 +94,14 @@ def parse_args():
         '--crop_size',
         dest='crop_size',
         nargs=2,
-        help=
-        'The crop size of sliding window, the first is width and the second is height.',
+        help='The crop size of sliding window, the first is width and the second is height.',
         type=int,
         default=None)
     parser.add_argument(
         '--stride',
         dest='stride',
         nargs=2,
-        help=
-        'The stride of sliding window, the first is width and the second is height.',
+        help='The stride of sliding window, the first is width and the second is height.',
         type=int,
         default=None)
 
@@ -183,8 +180,7 @@ def main(args):
         flip_vertical=args.flip_vertical,
         is_slide=args.is_slide,
         crop_size=args.crop_size,
-        stride=args.stride,
-    )
+        stride=args.stride, )
 
 
 if __name__ == '__main__':

@@ -87,12 +87,16 @@ def parse_args():
         choices=["fp32", "fp16", "int8"],
         help='The tensorrt precision.')
     parser.add_argument(
+        '--min_subgraph_size',
+        default=3,
+        type=int,
+        help='The min subgraph size in tensorrt prediction.')
+    parser.add_argument(
         '--enable_auto_tune',
         default=False,
         type=eval,
         choices=[True, False],
-        help=
-        'Whether to enable tuned dynamic shape. We uses some images to collect '
+        help='Whether to enable tuned dynamic shape. We uses some images to collect '
         'the dynamic shape for trt sub graph, which avoids setting dynamic shape manually.'
     )
     parser.add_argument(
@@ -169,11 +173,10 @@ class PredictorBenchmark(Predictor):
             with codecs.open(args.cfg, 'r', 'utf-8') as file:
                 dic = yaml.load(file, Loader=yaml.FullLoader)
             transforms_dic = dic['Deploy']['transforms']
-            transforms_dic.insert(
-                0, {
-                    "type": "Resize",
-                    'target_size': [args.resize_width, args.resize_height]
-                })
+            transforms_dic.insert(0, {
+                "type": "Resize",
+                'target_size': [args.resize_width, args.resize_height]
+            })
             transforms = DeployConfig.load_transforms(transforms_dic)
             return transforms(img_path)[0]
 
@@ -191,7 +194,12 @@ def main(args):
         os.makedirs(args.save_dir)
 
     if use_auto_tune(args):
-        auto_tune(args, args.image_path, 1)
+        if args.resize_width == 0 and args.resize_height == 0:
+            auto_tune(args, args.image_path, 1)
+        else:
+            img = np.random.rand(1, 3, args.resize_height,
+                                 args.resize_width).astype("float32")
+            auto_tune(args, img, 1)
 
     predictor = PredictorBenchmark(args)
     predictor.run(args.image_path)

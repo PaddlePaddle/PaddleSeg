@@ -9,4 +9,4 @@ def check_cn(path):
 
 # 替换斜杠
 def normcase(path):
-    return eval(repr(path).replace('\\\\', '/'))  
+    return eval(repr(path).replace('\\\\', '/'))

@@ -21,8 +21,7 @@ import warnings
 
 def parse_args():
     parser = argparse.ArgumentParser(
-        description=
-        'PaddleSeg generate file list on cityscapes or your customized dataset.'
+        description='PaddleSeg generate file list on cityscapes or your customized dataset.'
     )
     parser.add_argument('dataset_root', help='dataset root directory', type=str)
     parser.add_argument(
@@ -46,8 +45,7 @@ def parse_args():
         default=['images', 'annotations'])
     parser.add_argument(
         '--second_folder',
-        help=
-        'the second-level folder names of train set, validation set, test set',
+        help='the second-level folder names of train set, validation set, test set',
         type=str,
         nargs='*',
         default=['train', 'val', 'test'])

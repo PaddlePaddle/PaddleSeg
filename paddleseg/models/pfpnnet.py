@@ -41,6 +41,7 @@ class PFPNNet(nn.Layer):
             e.g. 1024x512, otherwise it is True, e.g. 769x769. Default: False.
         pretrained (str, optional): The path or url of pretrained model. Default: None.
     """
+
     def __init__(self,
                  num_classes,
                  backbone,
@@ -61,12 +62,13 @@ class PFPNNet(nn.Layer):
         self.pretrained = pretrained
         self.enable_auxiliary_loss = enable_auxiliary_loss
 
-        self.head = PFPNHead(num_class=num_classes,
-                             fpn_inplanes=fpn_inplanes,
-                             dropout_ratio=dropout_ratio,
-                             channels=channels,
-                             fpn_dim=channels,
-                             enable_auxiliary_loss=self.enable_auxiliary_loss)
+        self.head = PFPNHead(
+            num_class=num_classes,
+            fpn_inplanes=fpn_inplanes,
+            dropout_ratio=dropout_ratio,
+            channels=channels,
+            fpn_dim=channels,
+            enable_auxiliary_loss=self.enable_auxiliary_loss)
         self.init_weight()
 
     def forward(self, x):
@@ -74,11 +76,11 @@ class PFPNNet(nn.Layer):
         feats = [feats[i] for i in self.backbone_indices]
         logit_list = self.head(feats)
         return [
-            F.interpolate(logit,
-                          paddle.shape(x)[2:],
-                          mode='bilinear',
-                          align_corners=self.align_corners)
-            for logit in logit_list
+            F.interpolate(
+                logit,
+                paddle.shape(x)[2:],
+                mode='bilinear',
+                align_corners=self.align_corners) for logit in logit_list
         ]
 
     def init_weight(self):
@@ -97,6 +99,7 @@ class PFPNHead(nn.Layer):
         fpn_dim (int, optional): The input channels of FPN module. Default: 512.
         enable_auxiliary_loss (bool, optional): A bool value indicates whether adding auxiliary loss. Default: False.
     """
+
     def __init__(self,
                  num_class,
                  fpn_inplanes,
@@ -113,16 +116,19 @@ class PFPNHead(nn.Layer):
 
         for fpn_inplane in fpn_inplanes:
             self.lateral_convs.append(
-                nn.Sequential(nn.Conv2D(fpn_inplane, fpn_dim, 1),
-                              layers.SyncBatchNorm(fpn_dim), nn.ReLU()))
+                nn.Sequential(
+                    nn.Conv2D(fpn_inplane, fpn_dim, 1),
+                    layers.SyncBatchNorm(fpn_dim), nn.ReLU()))
             self.fpn_out.append(
                 nn.Sequential(
-                    layers.ConvBNReLU(fpn_dim, fpn_dim, 3, bias_attr=False)))
+                    layers.ConvBNReLU(
+                        fpn_dim, fpn_dim, 3, bias_attr=False)))
 
         self.scale_heads = nn.LayerList()
         for index in range(len(fpn_inplanes)):
             head_length = max(
-                1, int(np.log2(fpn_inplanes[index]) - np.log2(fpn_inplanes[0])))
+                1,
+                int(np.log2(fpn_inplanes[index]) - np.log2(fpn_inplanes[0])))
             scale_head = nn.LayerList()
             for head_index in range(head_length):
                 scale_head.append(
@@ -130,40 +136,38 @@ class PFPNHead(nn.Layer):
                         fpn_dim,
                         channels,
                         3,
-                        padding=1,
-                    ))
+                        padding=1, ))
                 if fpn_inplanes[index] != fpn_inplanes[0]:
                     scale_head.append(
-                        nn.Upsample(scale_factor=2,
-                                    mode='bilinear',
-                                    align_corners=align_corners))
+                        nn.Upsample(
+                            scale_factor=2,
+                            mode='bilinear',
+                            align_corners=align_corners))
             self.scale_heads.append(nn.Sequential(*scale_head))
 
         if dropout_ratio:
             self.dropout = nn.Dropout2D(dropout_ratio)
             if self.enable_auxiliary_loss:
                 self.dsn = nn.Sequential(
-                    layers.ConvBNReLU(fpn_inplanes[2],
-                                      fpn_inplanes[2],
-                                      3,
-                                      padding=1), nn.Dropout2D(dropout_ratio),
-                    nn.Conv2D(fpn_inplanes[2], num_class, kernel_size=1))
+                    layers.ConvBNReLU(
+                        fpn_inplanes[2], fpn_inplanes[2], 3, padding=1),
+                    nn.Dropout2D(dropout_ratio),
+                    nn.Conv2D(
+                        fpn_inplanes[2], num_class, kernel_size=1))
         else:
             self.dropout = None
             if self.enable_auxiliary_loss:
                 self.dsn = nn.Sequential(
-                    layers.ConvBNReLU(fpn_inplanes[2],
-                                      fpn_inplanes[2],
-                                      3,
-                                      padding=1),
-                    nn.Conv2D(fpn_inplanes[2], num_class, kernel_size=1))
+                    layers.ConvBNReLU(
+                        fpn_inplanes[2], fpn_inplanes[2], 3, padding=1),
+                    nn.Conv2D(
+                        fpn_inplanes[2], num_class, kernel_size=1))
 
         self.conv_last = nn.Sequential(
-            layers.ConvBNReLU(len(fpn_inplanes) * fpn_dim,
-                              fpn_dim,
-                              3,
-                              bias_attr=False),
-            nn.Conv2D(fpn_dim, num_class, kernel_size=1))
+            layers.ConvBNReLU(
+                len(fpn_inplanes) * fpn_dim, fpn_dim, 3, bias_attr=False),
+            nn.Conv2D(
+                fpn_dim, num_class, kernel_size=1))
         self.conv_seg = nn.Conv2D(channels, num_class, kernel_size=1)
 
     def cls_seg(self, feat):
@@ -188,11 +192,11 @@ class PFPNHead(nn.Layer):
 
         x = self.scale_heads[0](fpn_feature_list[-1])
         for index in range(len(self.scale_heads) - 2, 0, -1):
-            x = x + F.interpolate(self.scale_heads[index](
-                fpn_feature_list[index]),
-                                  size=output_size,
-                                  mode='bilinear',
-                                  align_corners=self.align_corners)
+            x = x + F.interpolate(
+                self.scale_heads[index](fpn_feature_list[index]),
+                size=output_size,
+                mode='bilinear',
+                align_corners=self.align_corners)
         x = self.cls_seg(x)
         if self.enable_auxiliary_loss:
             dsn = self.dsn(conv_out[2])

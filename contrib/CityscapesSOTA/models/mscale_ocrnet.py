@@ -181,9 +181,12 @@ class AttenHead(nn.Layer):
         bot_ch = 256
 
         self.atten_head = nn.Sequential(
-            layers.ConvBNReLU(in_ch, bot_ch, 3, padding=1, bias_attr=False),
-            layers.ConvBNReLU(bot_ch, bot_ch, 3, padding=1, bias_attr=False),
-            nn.Conv2D(bot_ch, out_ch, kernel_size=(1, 1), bias_attr=False),
+            layers.ConvBNReLU(
+                in_ch, bot_ch, 3, padding=1, bias_attr=False),
+            layers.ConvBNReLU(
+                bot_ch, bot_ch, 3, padding=1, bias_attr=False),
+            nn.Conv2D(
+                bot_ch, out_ch, kernel_size=(1, 1), bias_attr=False),
             nn.Sigmoid())
 
     def forward(self, x):

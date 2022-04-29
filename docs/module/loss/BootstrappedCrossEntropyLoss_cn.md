@@ -4,9 +4,9 @@ Bootstrapped 首先利用样本构造初始的分类起，然后对未标记样�
 [参考文献](https://arxiv.org/pdf/1412.6596.pdf)
 ```python
 class paddleseg.models.losses.BootstrappedCrossEntropyLoss(
-                        min_K, 
-                        loss_th, 
-                        weight = None, 
+                        min_K,
+                        loss_th,
+                        weight = None,
                         ignore_index = 255
 )
 ```
