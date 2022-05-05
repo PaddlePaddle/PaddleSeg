@@ -13,6 +13,8 @@
 #include "opencv2/imgproc.hpp"
 #include "opencv2/highgui.hpp"
 
+#include "common.h"
+
 /*
 Test the inference speed of segmentation models.
 
@@ -38,6 +40,7 @@ typedef struct YamlConfig {
   int resize_width;
   int resize_height;
 }YamlConfig;
+
 
 YamlConfig load_yaml(const std::string& yaml_path) {
   YAML::Node node = YAML::LoadFile(yaml_path);
@@ -133,22 +136,29 @@ void hwc_2_chw_data(const cv::Mat& hwc_img, float* data) {
   }
 }
 
-cv::Mat read_process_image(const YamlConfig& yaml_config) {
+void read_process_image(const YamlConfig& yaml_config, std::vector<float>& img_data, int& rows, int& cols, int& chs) {
   cv::Mat img = cv::imread(FLAGS_img_path, cv::IMREAD_COLOR);
   cv::cvtColor(img, img, cv::COLOR_BGR2RGB);
+
   if (FLAGS_target_width != 0 && FLAGS_target_height != 0
       && (FLAGS_target_height != img.rows || FLAGS_target_width != img.cols)) {
     cv::resize(img, img, cv::Size(FLAGS_target_width, FLAGS_target_height));
   } else if (yaml_config.is_resize && yaml_config.resize_width != img.cols && yaml_config.resize_height != img.rows) {
     cv::resize(img, img, cv::Size(yaml_config.resize_width, yaml_config.resize_height));
   }
+
   if (yaml_config.is_normalize) {
     img.convertTo(img, CV_32F, 1.0 / 255, 0);
     img = (img - 0.5) / 0.5;
   }
-  return img;
-}
 
+  rows = img.rows;
+  cols = img.cols;
+  chs = img.channels();
+
+  img_data.resize(rows * cols * chs);
+  hwc_2_chw_data(img, img_data.data());
+}
 
 int main(int argc, char *argv[]) {
   google::ParseCommandLineFlags(&argc, &argv, true);
@@ -160,28 +170,33 @@ int main(int argc, char *argv[]) {
   std::string yaml_path = FLAGS_model_dir + "/deploy.yaml";
   YamlConfig yaml_config = load_yaml(yaml_path);
 
-  // Prepare data
-  cv::Mat img = read_process_image(yaml_config);
-  int rows = img.rows;
-  int cols = img.cols;
-  int chs = img.channels();
-  LOG(INFO) << "resized image: width is " << cols << " height is " << rows;
-  std::vector<float> input_data(1 * chs * rows * cols, 0.0f);
-  hwc_2_chw_data(img, input_data.data());
-
-
   // Create predictor
   auto predictor = create_predictor(yaml_config);
+
+  // Prepare data
+  int rows, cols, chs;
+  std::vector<float> img_data;
+  read_process_image(yaml_config, img_data, rows, cols, chs);
+  LOG(INFO) << "resized image: width is " << cols << " height is " << rows;
+  LOG(INFO) << rows << " " << cols << " " << chs;
 
   // Set input
   auto input_names = predictor->GetInputNames();
   auto input_t = predictor->GetInputHandle(input_names[0]);
   std::vector<int> input_shape = {1, chs, rows, cols};
   input_t->Reshape(input_shape);
-  input_t->CopyFromCpu(input_data.data());
+  input_t->CopyFromCpu(img_data.data());
 
   // Run
-  predictor->Run();
+  for (int i = 0; i < 50; i++)
+    predictor->Run();
+  
+  Time time;
+  time.start_count();
+  for (int i = 0; i < 100; i++)
+    predictor->Run();
+  time.end_count();
+  LOG(INFO) << "Avg used time " << time.used_time() / 100 << "ms";
 
   // Get output
   auto output_names = predictor->GetOutputNames();

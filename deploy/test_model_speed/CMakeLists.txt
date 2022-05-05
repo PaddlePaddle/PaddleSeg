@@ -197,7 +197,9 @@ find_package(OpenCV REQUIRED)
 include_directories(${OpenCV_INCLUDE_DIRS})
 set(DEPS ${DEPS} ${OpenCV_LIBS})
 
-add_executable(${DEMO_NAME} src/${DEMO_NAME}.cc)
+include_directories(src)
+
+add_executable(${DEMO_NAME} src/${DEMO_NAME}.cc src/common.cc)
 target_link_libraries(${DEMO_NAME} ${DEPS})
 
 if(WIN32)
