@@ -31,4 +31,6 @@ cd ..
 ./build/test_seg \
     --model_dir=./stdc1seg_infer_model \
     --img_path=./cityscapes_demo.png \
-    --devices=GPU
+    --device=GPU \
+    --target_width=512 \
+    --target_height=512
