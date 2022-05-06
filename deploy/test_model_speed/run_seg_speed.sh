@@ -20,12 +20,32 @@ use_trt=True
 trt_precision=fp32
 use_trt_dynamic_shape=True
 use_trt_auto_tune=True
-warmup_iters=10
-run_iters=20
+warmup_iters=20
+run_iters=30
+save_path="res.txt"
 
 if [ ! -f "cityscapes_demo.png" ]; then
   wget https://paddleseg.bj.bcebos.com/dygraph/demo/cityscapes_demo.png
 fi
+
+if [ -f "${save_path}" ]; then
+  rm -rf ${save_path}
+  touch ${save_path}
+fi
+
+echo "---Config Info---" >> ${save_path}
+echo "target_width: ${target_width}" >> ${save_path}
+echo "target_height: ${target_height}" >> ${save_path}
+echo "device: ${device}" >> ${save_path}
+echo "use_trt: ${use_trt}" >> ${save_path}
+echo "trt_precision: ${trt_precision}" >> ${save_path}
+echo "use_trt_dynamic_shape: ${use_trt_dynamic_shape}" >> ${save_path}
+echo "use_trt_auto_tune: ${use_trt_auto_tune}" >> ${save_path}
+echo "warmup_iters: ${warmup_iters}" >> ${save_path}
+echo "run_iters: ${run_iters}" >> ${save_path}
+echo "\n" >> ${save_path}
+
+echo "| model | preprocess time (ms) | run time (ms) |"  >> ${save_path}
 
 # 2. compile
 mkdir -p build
@@ -45,9 +65,10 @@ make -j
 
 # 3. run
 cd ..
+
 for model in ${model_dir}/*
 do
-  echo "-----------------Test ${model}-----------------"
+  echo "\n-----------------Test ${model}-----------------\n"
   ./build/test_seg \
       --model_dir=${model} \
       --img_path=./cityscapes_demo.png \
@@ -59,6 +80,6 @@ do
       --use_trt_dynamic_shape=${use_trt_dynamic_shape} \
       --use_trt_auto_tune=${use_trt_auto_tune} \
       --warmup_iters=${warmup_iters} \
-      --run_iters=${run_iters}
-  echo "\n"
+      --run_iters=${run_iters} \
+      --save_path=${save_path}
 done

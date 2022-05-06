@@ -35,7 +35,7 @@ DEFINE_int32(warmup_iters, 50, "The iters for wamup.");
 DEFINE_int32(run_iters, 100, "The iters for run.");
 
 DEFINE_bool(use_mkldnn, false, "Wether enable MKLDNN when use CPU. Defualt: false.");
-DEFINE_string(save_dir, "", "Directory of the output image.");
+DEFINE_string(save_path, "./model_speed.txt", "Directory of the output image.");
 
 typedef struct Args {
   std::string model_dir;
@@ -54,7 +54,7 @@ typedef struct Args {
   int run_iters;
 
   bool use_mkldnn;
-  std::string save_dir;
+  std::string save_path;
 }Args;
 
 typedef struct YamlConfig {
@@ -287,7 +287,7 @@ int main(int argc, char *argv[]) {
   args.warmup_iters = FLAGS_warmup_iters;
   args.run_iters = FLAGS_run_iters;
   args.use_mkldnn = FLAGS_use_mkldnn;
-  args.save_dir = FLAGS_save_dir;
+  args.save_path = FLAGS_save_path;
 
   // Load yaml
   YamlConfig yaml_cfg = load_yaml(args.model_dir + "/deploy.yaml");
@@ -313,4 +313,12 @@ int main(int argc, char *argv[]) {
 
   LOG(INFO) << "Avg preprocess time: " << pre_time.used_time() / args.run_iters << " ms";
   LOG(INFO) << "Avg run time: " << run_time.used_time() / args.run_iters << " ms";
+
+  std::size_t found = args.model_dir.find_last_of("/\\");
+  std::string model_name = args.model_dir.substr(found + 1);
+  std::ofstream ofs(args.save_path, std::ios::out | std::ios::app);
+  ofs << "| " << model_name << " | " << pre_time.used_time() / args.run_iters
+      << " | " << run_time.used_time() / args.run_iters
+      << " | " << std::endl;
+  ofs.close();
 }
