@@ -100,6 +100,8 @@ infer_models
 * target_width和target_height为输入图像resize后的宽高
 * save_path为结果信息的保存文件
 
+`run_seg_speed.sh`文件，默认参数是使用GPU、开启TRT、使用Auto tune收集shape，然后进行预测。
+
 执行`sh run_seg_speed.sh`。
 
 执行结束后，查看保存结果信息的文件，其中包括测试的配置信息、模型名字、预处理时间、执行时间。

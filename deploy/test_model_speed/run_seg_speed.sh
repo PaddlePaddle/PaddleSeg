@@ -28,12 +28,13 @@ if [ ! -f "cityscapes_demo.png" ]; then
   wget https://paddleseg.bj.bcebos.com/dygraph/demo/cityscapes_demo.png
 fi
 
-if [ -f "${save_path}" ]; then
-  rm -rf ${save_path}
-  touch ${save_path}
-fi
+#if [ -f "${save_path}" ]; then
+  #rm -rf ${save_path}
+  #touch ${save_path}
+#fi
 
-echo "---Config Info---" >> ${save_path}
+
+echo "\n---Config Info---" >> ${save_path}
 echo "target_width: ${target_width}" >> ${save_path}
 echo "target_height: ${target_height}" >> ${save_path}
 echo "device: ${device}" >> ${save_path}
@@ -43,7 +44,6 @@ echo "use_trt_dynamic_shape: ${use_trt_dynamic_shape}" >> ${save_path}
 echo "use_trt_auto_tune: ${use_trt_auto_tune}" >> ${save_path}
 echo "warmup_iters: ${warmup_iters}" >> ${save_path}
 echo "run_iters: ${run_iters}" >> ${save_path}
-echo "\n" >> ${save_path}
 
 echo "| model | preprocess time (ms) | run time (ms) |"  >> ${save_path}
 
@@ -68,7 +68,7 @@ cd ..
 
 for model in ${model_dir}/*
 do
-  echo "\n-----------------Test ${model}-----------------\n"
+  echo "\n-----------------Test ${model}-----------------"
   ./build/test_seg \
       --model_dir=${model} \
       --img_path=./cityscapes_demo.png \
