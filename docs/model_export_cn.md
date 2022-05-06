@@ -6,7 +6,7 @@ PaddleSeg训练好模型后，需要将模型导出为预测模型，才可以�
 
 本教程提供一个示例介绍模型导出的过程。
 
-## 1. 获取预训练莫模型
+## 1. 获取预训练模型
 
 本示例中，我们使用BiseNetV2模型，大家执行如下命令或者点击[链接](https://paddleseg.bj.bcebos.com/dygraph/cityscapes/bisenet_cityscapes_1024x1024_160k/model.pdparams)下载模型预训练权重。
 
