@@ -88,20 +88,6 @@ YamlConfig load_yaml(const std::string& yaml_path) {
   return yaml_cfg;
 }
 
-cv::Mat read_image(const std::string& img_path) {
-  cv::Mat img = cv::imread(img_path, cv::IMREAD_COLOR);
-  cv::cvtColor(img, img, cv::COLOR_BGR2RGB);
-  return img;
-}
-
-void hwc_2_chw_data(const cv::Mat& hwc_img, float* data) {
-  int rows = hwc_img.rows;
-  int cols = hwc_img.cols;
-  int chs = hwc_img.channels();
-  for (int i = 0; i < chs; ++i) {
-    cv::extractChannel(hwc_img, cv::Mat(rows, cols, CV_32FC1, data + i * rows * cols), i);
-  }
-}
 
 void pre_process_image(cv::Mat img, const Args& args, const YamlConfig& yaml_cfg, std::vector<float>& img_data, int& rows, int& cols, int& chs) {
   if (args.target_width != 0 && args.target_height != 0
@@ -238,8 +224,7 @@ void run_infer(std::shared_ptr<paddle_infer::Predictor> predictor, const YamlCon
   // Set input
   auto input_names = predictor->GetInputNames();
   auto input_t = predictor->GetInputHandle(input_names[0]);
-  std::vector<int> input_shape = {1, chs, rows, cols};
-  input_t->Reshape(input_shape);
+  input_t->Reshape(std::vector<int>{{1, chs, rows, cols}});
   input_t->CopyFromCpu(img_data.data());
 
   // Run

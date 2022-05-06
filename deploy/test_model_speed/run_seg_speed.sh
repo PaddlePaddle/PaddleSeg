@@ -12,7 +12,7 @@ work_path=$(dirname $(readlink -f $0))
 paddle_root="${work_path}/paddle_inference"
 tensorrt_root='/work/download/TensorRT-7.1.3.4/'
 
-model_dir='infer_models'
+model_dir='infer_models_seg'
 target_width=512
 target_height=512
 device=GPU
@@ -22,7 +22,7 @@ use_trt_dynamic_shape=True
 use_trt_auto_tune=True
 warmup_iters=20
 run_iters=30
-save_path="res.txt"
+save_path="res_seg.txt"
 
 if [ ! -f "cityscapes_demo.png" ]; then
   wget https://paddleseg.bj.bcebos.com/dygraph/demo/cityscapes_demo.png
@@ -48,8 +48,8 @@ echo "run_iters: ${run_iters}" >> ${save_path}
 echo "| model | preprocess time (ms) | run time (ms) |"  >> ${save_path}
 
 # 2. compile
-mkdir -p build
-cd build
+mkdir -p build_seg
+cd build_seg
 rm -rf *
 
 cmake .. \
@@ -69,7 +69,7 @@ cd ..
 for model in ${model_dir}/*
 do
   echo "\n-----------------Test ${model}-----------------"
-  ./build/test_seg \
+  ./build_seg/test_seg \
       --model_dir=${model} \
       --img_path=./cityscapes_demo.png \
       --target_width=${target_width} \
