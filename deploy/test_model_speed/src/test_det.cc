@@ -79,8 +79,8 @@ YamlConfig load_yaml(const std::string& yaml_path) {
     for (size_t i = 0; i < preprocess.size(); i++) {
       if (preprocess[i]["type"].as<std::string>() == "Resize") {
         const YAML::Node& target_size = preprocess[i]["target_size"];
-        yaml_cfg.target_width = target_size[0].as<int>();
-        yaml_cfg.target_height = target_size[1].as<int>();
+        yaml_cfg.target_height = target_size[0].as<int>();
+        yaml_cfg.target_width = target_size[1].as<int>();
       } else if (preprocess[i]["type"].as<std::string>() == "NormalizeImage") {
        yaml_cfg.mean = preprocess[i]["mean"].as<std::vector<float>>();
        yaml_cfg.std = preprocess[i]["std"].as<std::vector<float>>();
@@ -109,13 +109,13 @@ void pre_process_image(const cv::Mat& in_img, const YamlConfig& yaml_cfg, std::v
   std::vector<float> mean = yaml_cfg.mean;
   std::vector<float> std = yaml_cfg.std;
   img.convertTo(img, CV_32F, 1.0 / 255, 0);
-  for (int h = 0; h < img.rows; h++) {
-    for (int w = 0; w < img.cols; w++) {
-      img.at<cv::Vec3f>(h, w)[0] = (img.at<cv::Vec3f>(h, w)[0] - mean[0]) / std[0];
-      img.at<cv::Vec3f>(h, w)[1] = (img.at<cv::Vec3f>(h, w)[1] - mean[1]) / std[1];
-      img.at<cv::Vec3f>(h, w)[2] = (img.at<cv::Vec3f>(h, w)[2] - mean[2]) / std[2];
-    }
+
+  std::vector<cv::Mat> bgr_imgs(3);
+  cv::split(img, bgr_imgs);
+  for (auto i = 0; i < bgr_imgs.size(); i++) {
+      bgr_imgs[i].convertTo(bgr_imgs[i], CV_32FC1, 1.0 / std[i], (0.0 - mean[i]) / std[i]);
   }
+  cv::merge(bgr_imgs, img);
 
   rows = img.rows;
   cols = img.cols;
@@ -136,19 +136,28 @@ void auto_tune(const Args& args, const YamlConfig& yaml_cfg) {
   infer_config.DisableGlogInfo();
   auto predictor = paddle_infer::CreatePredictor(infer_config);
 
-  // Prepare data
   cv::Mat img = read_image(args.img_path);
+
   int rows, cols, chs;
   std::vector<float> img_data;
   pre_process_image(img, yaml_cfg, img_data, rows, cols, chs);
-  LOG(INFO) << "Resized image: width is " << cols << " height is " << rows;
+  LOG(INFO) << "resized image: width is " << cols << " height is " << rows;
 
   // Set input
   auto input_names = predictor->GetInputNames();
-  auto input_t = predictor->GetInputHandle(input_names[0]);
-  std::vector<int> input_shape = {1, chs, rows, cols};
-  input_t->Reshape(input_shape);
-  input_t->CopyFromCpu(img_data.data());
+  auto input_shape = predictor->GetInputHandle(input_names[0]);
+  input_shape->Reshape(std::vector<int>{1, 2});
+  std::vector<float> input_shape_data = {(float)yaml_cfg.target_height, (float)yaml_cfg.target_width};
+  input_shape->CopyFromCpu(input_shape_data.data());
+
+  auto input_img = predictor->GetInputHandle(input_names[1]);
+  input_img->Reshape(std::vector<int>{1, chs, rows, cols});
+  input_img->CopyFromCpu(img_data.data());
+
+  auto input_scale = predictor->GetInputHandle(input_names[2]);
+  input_scale->Reshape(std::vector<int>{1, 2});
+  std::vector<float> input_scale_data = {float(img.rows) / rows, float(img.cols) / cols};
+  input_scale->CopyFromCpu(input_scale_data.data());
 
   // Run
   predictor->Run();
@@ -243,7 +252,7 @@ void run_infer(std::shared_ptr<paddle_infer::Predictor> predictor,
   auto input_names = predictor->GetInputNames();
   auto input_shape = predictor->GetInputHandle(input_names[0]);
   input_shape->Reshape(std::vector<int>{1, 2});
-  std::vector<float> input_shape_data = {(float)yaml_cfg.target_width, (float)yaml_cfg.target_height};
+  std::vector<float> input_shape_data = {(float)yaml_cfg.target_height, (float)yaml_cfg.target_width};
   input_shape->CopyFromCpu(input_shape_data.data());
 
   auto input_img = predictor->GetInputHandle(input_names[1]);
@@ -252,7 +261,7 @@ void run_infer(std::shared_ptr<paddle_infer::Predictor> predictor,
 
   auto input_scale = predictor->GetInputHandle(input_names[2]);
   input_scale->Reshape(std::vector<int>{1, 2});
-  std::vector<float> input_scale_data = {float(img.cols) / cols, float(img.rows) / rows};
+  std::vector<float> input_scale_data = {float(img.rows) / rows, float(img.cols) / cols};
   input_scale->CopyFromCpu(input_scale_data.data());
 
   // Run
