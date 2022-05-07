@@ -22,9 +22,9 @@ warmup_iters=10
 run_iters=20
 save_path="res_det.txt"
 
-if [ ! -f "cityscapes_demo.png" ]; then
-  wget https://paddleseg.bj.bcebos.com/dygraph/demo/cityscapes_demo.png
-fi
+#if [ ! -f "cityscapes_demo.png" ]; then
+#  wget https://paddleseg.bj.bcebos.com/dygraph/demo/cityscapes_demo.png
+#fi
 
 
 echo "\n---Config Info---" >> ${save_path}
@@ -62,7 +62,7 @@ do
   echo "\n-----------------Test ${model}-----------------"
   ./build_det/test_det \
       --model_dir=${model} \
-      --img_path=./cityscapes_demo.png \
+      --img_path=./000000014439.jpg \
       --device=${device} \
       --use_trt=${use_trt} \
       --trt_precision=${trt_precision} \

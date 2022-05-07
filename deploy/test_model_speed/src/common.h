@@ -3,6 +3,7 @@
 #include <chrono>
 #include <iostream>
 #include <fstream>
+#include <sstream>
 #include <numeric>
 
 #include "opencv2/core.hpp"
@@ -28,3 +29,12 @@ public:
 
 cv::Mat read_image(const std::string& img_path);
 void hwc_2_chw_data(const cv::Mat& hwc_img, float* data);
+
+template<typename T>
+std::string vector_2_str(std::vector<T> input) {
+  std::stringstream ss;
+  for (auto i : input) {
+    ss << i << " ";
+  }
+  return ss.str();
+}
