@@ -6,9 +6,14 @@
 #include <sstream>
 #include <numeric>
 
+#include <stdarg.h>
+#include <sys/stat.h>
+
 #include "opencv2/core.hpp"
 #include "opencv2/imgproc.hpp"
 #include "opencv2/highgui.hpp"
+
+#pragma once
 
 class Time {
 private:
@@ -38,3 +43,5 @@ std::string vector_2_str(std::vector<T> input) {
   }
   return ss.str();
 }
+
+bool file_exists(const std::string& path);

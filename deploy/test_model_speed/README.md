@@ -1,12 +1,12 @@
-# 在Linux上测试分割模型速度
+# 在Linux上测试模型速度
 
-本文档介绍使用Paddle Inference的C++接口在Linux服务器端(NV GPU)测试分割模型速度。
+本文档介绍使用Paddle Inference的C++接口在Linux服务器端(NV GPU)测试分割和检测模型速度。
 
 ## 环境准备
 
 ### 准备基础环境
 
-在Nvidia GPU上测试模型，必须安装必CUDA、cudnn。此外，需要下载TensorRT库文件。
+在Nvidia GPU上测试模型，必须安装必CUDA、cudnn，此外需要下载TensorRT库文件。
 
 此处提供两个版本的CUDA、cudnn、TensorRT文件下载。
 
@@ -18,7 +18,7 @@ wget https://paddle-inference-dist.bj.bcebos.com/tensorrt_test/cuda10.2-cudnn8.0
 下载解压后，CUDA和cudnn可以参考网上文档或者官方文档([Cuda Doc](https://docs.nvidia.com/cuda/cuda-installation-guide-linux/), [cudnn Doc](https://docs.nvidia.com/deeplearning/cudnn/install-guide/))进行安装。TensorRT只需要设置库路径，比如：
 
 ```
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/work/TensorRT-7.1.3.4/lib
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/download/TensorRT-7.1.3.4/lib
 ```
 
 ### 准备Paddle Inference C++预测库
@@ -82,26 +82,51 @@ make install
 
 ## 准备模型
 
-将多个预测模型保存到一个文件夹下，进行批量测试，比如：
+将多个分割预测模型保存到一个文件夹下，后续进行批量测试，比如：
 
 ```
-infer_models
+infer_models_seg
 ├── dwcoa_pp_liteseg_stdc1_512x512
 ├── dwcoa_pp_liteseg_stdc2_512x512
 ├── dwcoa_ocrnet_hrnet18_512x512
 ```
 
+
+将多个检测预测模型保存到一个文件夹下，后续进行批量测试，比如：
+
+```
+infer_models_det
+├── crcnn_renche_1500
+└── yolov3_darknet53_270e_coco
+```
+
 ## 执行测试
+
+### 测试分割模型
 
 打开`run_seg_speed.sh`文件，根据实际情况，设置如下变量，其他变量也可以自行修改。
 * paddle_root为PaddleInference库路径
 * tensorrt_root为TensorRT库路径
-* 设置model_dir为保存预测模型的路径
+* model_dir为分割模型预测模型的保存目录
 * target_width和target_height为输入图像resize后的宽高
 * save_path为结果信息的保存文件
 
 `run_seg_speed.sh`文件，默认参数是使用GPU、开启TRT、使用Auto tune收集shape，然后进行预测。
 
-执行`sh run_seg_speed.sh`。
+执行`sh run_seg_speed.sh`，批量测试分割预测模型的速度。
+
+执行结束后，查看保存结果信息的文件，其中包括测试的配置信息、模型名字、预处理时间、执行时间。
+
+### 测试检测模型
+
+打开`run_det_speed.sh`文件，根据实际情况，设置如下变量，其他变量也可以自行修改。
+* paddle_root为PaddleInference库路径
+* tensorrt_root为TensorRT库路径
+* model_dir为检测模型预测模型的保存目录
+* save_path为结果信息的保存文件
+
+`run_det_speed.sh`文件，默认参数是使用GPU、开启TRT、使用Auto tune收集shape，然后进行预测。
+
+执行`sh run_det_speed.sh`，批量测试检测预测模型的速度。
 
 执行结束后，查看保存结果信息的文件，其中包括测试的配置信息、模型名字、预处理时间、执行时间。

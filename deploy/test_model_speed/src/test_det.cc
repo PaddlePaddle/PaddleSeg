@@ -56,6 +56,7 @@ typedef struct Args {
 
 typedef struct YamlConfig {
   bool use_dynamic_shape;
+  int min_subgraph_size;
 
   bool is_resize;
   bool keep_ratio;
@@ -73,6 +74,7 @@ typedef struct YamlConfig {
 
   void show() {
     LOG(INFO) << "use_dynamic_shape:" << use_dynamic_shape
+              << ", min_subgraph_size:" << min_subgraph_size
               << ", is_resize:" << is_resize
               << ", keep_ratio:" << keep_ratio
               << ", target_width:" << target_width
@@ -107,6 +109,13 @@ YamlConfig load_yaml(const std::string& yaml_path) {
     yaml_cfg.use_dynamic_shape = node["use_dynamic_shape"].as<bool>();
   } else {
     std::cerr << "Please set use_dynamic_shape in yaml." << std::endl;
+  }
+  if (yaml_cfg.use_dynamic_shape) {
+    if (node["min_subgraph_size"].IsDefined()) {
+      yaml_cfg.min_subgraph_size = node["min_subgraph_size"].as<int>();
+    } else {
+      std::cerr << "Please set min_subgraph_size in yaml, when use_dynamic_shape is True." << std::endl;
+    }
   }
 
   if (node["Preprocess"].IsDefined()) {
@@ -234,17 +243,21 @@ void auto_tune(const Args& args, const YamlConfig& yaml_cfg) {
 
   // Set input
   auto input_names = predictor->GetInputNames();
-  auto input_shape = predictor->GetInputHandle(input_names[0]);
-  input_shape->Reshape(std::vector<int>{det_input.batch_size, 2});
-  input_shape->CopyFromCpu(det_input.img_shape.data());
-
-  auto input_img = predictor->GetInputHandle(input_names[1]);
-  input_img->Reshape(std::vector<int>{det_input.batch_size, 3, det_input.in_net_shape[0], det_input.in_net_shape[1]});
-  input_img->CopyFromCpu(det_input.img_data.data());
-
-  auto input_scale = predictor->GetInputHandle(input_names[2]);
-  input_scale->Reshape(std::vector<int>{det_input.batch_size, 2});
-  input_scale->CopyFromCpu(det_input.scale_factor.data());
+  for (auto name : input_names) {
+    if (name == "im_shape") {
+      auto input_shape = predictor->GetInputHandle(name);
+      input_shape->Reshape(std::vector<int>{det_input.batch_size, 2});
+      input_shape->CopyFromCpu(det_input.img_shape.data());
+    } else if (name == "image") {
+      auto input_img = predictor->GetInputHandle(name);
+      input_img->Reshape(std::vector<int>{det_input.batch_size, 3, det_input.in_net_shape[0], det_input.in_net_shape[1]});
+      input_img->CopyFromCpu(det_input.img_data.data());
+    } else if (name == "scale_factor") {
+      auto input_scale = predictor->GetInputHandle(name);
+      input_scale->Reshape(std::vector<int>{det_input.batch_size, 2});
+      input_scale->CopyFromCpu(det_input.scale_factor.data());
+    }
+  }
 
   // Run
   predictor->Run();
@@ -274,14 +287,19 @@ std::shared_ptr<paddle_infer::Predictor> create_predictor(const Args& args, cons
       LOG(INFO) << "Trt_precision: " << args.trt_precision;
 
       // TRT precision
+      int min_subgraph_size = 3;
+      if (yaml_cfg.min_subgraph_size != 0) {
+        min_subgraph_size = yaml_cfg.min_subgraph_size;
+      }
+      LOG(INFO) << "Min_subgraph_size:" << min_subgraph_size;
       if (args.trt_precision == "fp32") {
-        infer_config.EnableTensorRtEngine(1 << 20, 1, 3,
+        infer_config.EnableTensorRtEngine(1 << 20, 1, min_subgraph_size,
           paddle_infer::PrecisionType::kFloat32, false, false);
       } else if (args.trt_precision == "fp16") {
-        infer_config.EnableTensorRtEngine(1 << 20, 1, 3,
+        infer_config.EnableTensorRtEngine(1 << 20, 1, min_subgraph_size,
           paddle_infer::PrecisionType::kHalf, false, false);
       } else if (args.trt_precision == "int8") {
-        infer_config.EnableTensorRtEngine(1 << 20, 1, 3,
+        infer_config.EnableTensorRtEngine(1 << 20, 1, min_subgraph_size,
           paddle_infer::PrecisionType::kInt8, false, false);
       } else {
         LOG(FATAL) << "The trt_precision should be fp32, fp16 or int8.";
@@ -291,14 +309,14 @@ std::shared_ptr<paddle_infer::Predictor> create_predictor(const Args& args, cons
       bool use_dynamic_shape = args.use_trt_dynamic_shape || yaml_cfg.use_dynamic_shape;
       if (use_dynamic_shape) {
         LOG(INFO) << "Enable TRT dynamic shape";
-        if (args.dynamic_shape_path.empty()) {
+        if (args.dynamic_shape_path.empty() || !file_exists(args.dynamic_shape_path)) {
           LOG(INFO) << "Use manual dynamic shape";
           std::map<std::string, std::vector<int>> min_input_shape = {
-              {"image", {1, 3, 112, 112}}};
+              {"image", {1, 3, 128, 128}}};
           std::map<std::string, std::vector<int>> max_input_shape = {
-              {"image", {1, 3, 1024, 2048}}};
+              {"image", {1, 3, 2048, 2048}}};
           std::map<std::string, std::vector<int>> opt_input_shape = {
-              {"image", {1, 3, 512, 1024}}};
+              {"image", {1, 3, 512, 512}}};
           infer_config.SetTRTDynamicShapeInfo(min_input_shape, max_input_shape,
                                         opt_input_shape);
         } else {
@@ -339,17 +357,21 @@ void run_infer(std::shared_ptr<paddle_infer::Predictor> predictor,
   }
   // Set input
   auto input_names = predictor->GetInputNames();
-  auto input_shape = predictor->GetInputHandle(input_names[0]);
-  input_shape->Reshape(std::vector<int>{det_input.batch_size, 2});
-  input_shape->CopyFromCpu(det_input.img_shape.data());
-
-  auto input_img = predictor->GetInputHandle(input_names[1]);
-  input_img->Reshape(std::vector<int>{det_input.batch_size, 3, det_input.in_net_shape[0], det_input.in_net_shape[1]});
-  input_img->CopyFromCpu(det_input.img_data.data());
-
-  auto input_scale = predictor->GetInputHandle(input_names[2]);
-  input_scale->Reshape(std::vector<int>{det_input.batch_size, 2});
-  input_scale->CopyFromCpu(det_input.scale_factor.data());
+  for (auto name : input_names) {
+    if (name == "im_shape") {
+      auto input_shape = predictor->GetInputHandle(name);
+      input_shape->Reshape(std::vector<int>{det_input.batch_size, 2});
+      input_shape->CopyFromCpu(det_input.img_shape.data());
+    } else if (name == "image") {
+      auto input_img = predictor->GetInputHandle(name);
+      input_img->Reshape(std::vector<int>{det_input.batch_size, 3, det_input.in_net_shape[0], det_input.in_net_shape[1]});
+      input_img->CopyFromCpu(det_input.img_data.data());
+    } else if (name == "scale_factor") {
+      auto input_scale = predictor->GetInputHandle(name);
+      input_scale->Reshape(std::vector<int>{det_input.batch_size, 2});
+      input_scale->CopyFromCpu(det_input.scale_factor.data());
+    }
+  }
 
   // Run
   predictor->Run();

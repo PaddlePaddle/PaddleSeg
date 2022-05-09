@@ -42,3 +42,8 @@ void hwc_2_chw_data(const cv::Mat& hwc_img, float* data) {
     cv::extractChannel(hwc_img, cv::Mat(rows, cols, CV_32FC1, data + i * rows * cols), i);
   }
 }
+
+bool file_exists(const std::string& path) {
+  struct stat buffer;
+  return (stat(path.c_str(), &buffer) == 0);
+}

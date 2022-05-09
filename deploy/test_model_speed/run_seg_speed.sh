@@ -9,19 +9,19 @@ WITH_MKL=ON
 DEMO_NAME=test_seg
 
 work_path=$(dirname $(readlink -f $0))
-paddle_root="${work_path}/paddle_inference"
-tensorrt_root='/work/download/TensorRT-7.1.3.4/'
+paddle_root="${work_path}/paddle_inference"       # the root path of Paddle Inference lib
+tensorrt_root='/work/download/TensorRT-7.1.3.4/'  # the root path of TensorRT lib
 
-model_dir='infer_models_seg'
-target_width=512
-target_height=512
-device=GPU
-use_trt=True
-trt_precision=fp32
-use_trt_dynamic_shape=True
-use_trt_auto_tune=True
-warmup_iters=20
-run_iters=30
+model_dir='infer_models_seg'    # the dir of seg inference models
+target_width=512                # the width of resized image, which is the input of inference model
+target_height=512               # the height of resized image
+device=GPU                      # run on GPU or CPU
+use_trt=True                    # when device=GPU, whether to use trt
+trt_precision=fp32              # when device=GPU and use_trt=True, set trt precision as fp32 or fp16
+use_trt_dynamic_shape=True      # when device=GPU and use_trt=True, whether to use dynamic shape mode
+use_trt_auto_tune=True          # when device=GPU, use_trt=True and use_trt_dynamic_shape=True, whether to enable auto tune
+warmup_iters=30
+run_iters=50
 save_path="res_seg.txt"
 
 if [ ! -f "cityscapes_demo.png" ]; then

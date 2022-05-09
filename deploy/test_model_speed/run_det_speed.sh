@@ -9,23 +9,23 @@ WITH_MKL=ON
 DEMO_NAME=test_det
 
 work_path=$(dirname $(readlink -f $0))
-paddle_root="${work_path}/paddle_inference"
-tensorrt_root='/work/download/TensorRT-7.1.3.4/'
+paddle_root="${work_path}/paddle_inference"       # the root path of Paddle Inference lib
+tensorrt_root='/work/download/TensorRT-7.1.3.4/'  # the root path of TensorRT lib
 
-model_dir='infer_models_det'
-device=GPU
-use_trt=True
-trt_precision=fp32
-use_trt_dynamic_shape=False
-use_trt_auto_tune=True
-warmup_iters=10
-run_iters=20
+model_dir='infer_models_det'      # the dir of det inference models
+device=GPU                        # run on GPU or CPU
+use_trt=True                      # when device=GPU, whether to use trt
+trt_precision=fp32                # when device=GPU and use_trt=True, set trt precision as fp32 or fp16
+use_trt_dynamic_shape=False       # when device=GPU and use_trt=True, whether to use dynamic shape mode. If use_trt_dynamic_shape is True or 
+                                  # use_dynamic_shape in infer_cfg.yml is True, this demo will use dynamic shape mode to run inference on TRT.
+use_trt_auto_tune=True            # when device=GPU, use_trt=True and use_trt_dynamic_shape=True, whether to enable auto tune
+warmup_iters=30
+run_iters=50
 save_path="res_det.txt"
 
-#if [ ! -f "cityscapes_demo.png" ]; then
-#  wget https://paddleseg.bj.bcebos.com/dygraph/demo/cityscapes_demo.png
-#fi
-
+if [ ! -f "det_img.jpg" ]; then
+ wget https://paddledet.bj.bcebos.com/data/demo_imgs/det_img.jpg
+fi
 
 echo "\n---Config Info---" >> ${save_path}
 echo "device: ${device}" >> ${save_path}
@@ -62,7 +62,7 @@ do
   echo "\n-----------------Test ${model}-----------------"
   ./build_det/test_det \
       --model_dir=${model} \
-      --img_path=./000000014439.jpg \
+      --img_path=./det_img.jpg \
       --device=${device} \
       --use_trt=${use_trt} \
       --trt_precision=${trt_precision} \
