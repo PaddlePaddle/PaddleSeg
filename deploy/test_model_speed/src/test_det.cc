@@ -293,13 +293,13 @@ std::shared_ptr<paddle_infer::Predictor> create_predictor(const Args& args, cons
       }
       LOG(INFO) << "Min_subgraph_size:" << min_subgraph_size;
       if (args.trt_precision == "fp32") {
-        infer_config.EnableTensorRtEngine(1 << 20, 1, min_subgraph_size,
+        infer_config.EnableTensorRtEngine(1 << 30, 1, min_subgraph_size,
           paddle_infer::PrecisionType::kFloat32, false, false);
       } else if (args.trt_precision == "fp16") {
-        infer_config.EnableTensorRtEngine(1 << 20, 1, min_subgraph_size,
+        infer_config.EnableTensorRtEngine(1 << 30, 1, min_subgraph_size,
           paddle_infer::PrecisionType::kHalf, false, false);
       } else if (args.trt_precision == "int8") {
-        infer_config.EnableTensorRtEngine(1 << 20, 1, min_subgraph_size,
+        infer_config.EnableTensorRtEngine(1 << 30, 1, min_subgraph_size,
           paddle_infer::PrecisionType::kInt8, false, false);
       } else {
         LOG(FATAL) << "The trt_precision should be fp32, fp16 or int8.";
