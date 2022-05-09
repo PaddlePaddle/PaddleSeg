@@ -12,14 +12,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import paddle
+from paddle import ParamAttr
 import paddle.nn as nn
+import paddle.nn.functional as F
+import paddle.nn as nn
+from paddle.nn import Conv2D, BatchNorm, Linear, Dropout
+from paddle.nn import AdaptiveAvgPool2D, MaxPool2D, AvgPool2D
 
 from paddleseg.cvlibs import manager
 from paddleseg import utils
 
 
-@manager.BACKBONES.add_component
-class MobileNetV2(nn.Layer):
+class MobileNet_V2(nn.Layer):
     """
         The MobileNetV2 implementation based on PaddlePaddle.
 
@@ -34,64 +39,90 @@ class MobileNetV2(nn.Layer):
             pretrained (str, optional): The path or url of pretrained model. Default: None
         """
 
-    def __init__(self, channel_ratio=1.0, min_channel=16, pretrained=None):
-        super(MobileNetV2, self).__init__()
-        self.channel_ratio = channel_ratio
-        self.min_channel = min_channel
+    def __init__(self, class_num=1000, scale=1.0, pretrained=None):
+        super().__init__()
+        self.scale = scale
+        self.class_num = class_num
         self.pretrained = pretrained
+        prefix_name = ""
 
-        self.stage0 = conv_bn(3, self.depth(32), 3, 2)
+        bottleneck_params_list = [
+            (1, 16, 1, 1),
+            (6, 24, 2, 2),
+            (6, 32, 3, 2),
+            (6, 64, 4, 2),
+            (6, 96, 3, 1),
+            (6, 160, 3, 2),
+            (6, 320, 1, 1),
+        ]
+        self.out_block_idx = [1, 2, 4, 6]
 
-        self.stage1 = InvertedResidual(self.depth(32), self.depth(16), 1, 1)
+        self.conv1 = ConvBNLayer(
+            num_channels=3,
+            num_filters=int(32 * scale),
+            filter_size=3,
+            stride=2,
+            padding=1,
+            name=prefix_name + "conv1_1")
 
-        self.stage2 = nn.Sequential(
-            InvertedResidual(self.depth(16), self.depth(24), 2, 6),
-            InvertedResidual(self.depth(24), self.depth(24), 1, 6), )
+        self.block_list = []
+        i = 1
+        in_c = int(32 * scale)
+        for layer_setting in bottleneck_params_list:
+            t, c, n, s = layer_setting
+            i += 1
+            block = self.add_sublayer(
+                prefix_name + "conv" + str(i),
+                sublayer=InvresiBlocks(
+                    in_c=in_c,
+                    t=t,
+                    c=int(c * scale),
+                    n=n,
+                    s=s,
+                    name=prefix_name + "conv" + str(i)))
+            self.block_list.append(block)
+            in_c = int(c * scale)
 
-        self.stage3 = nn.Sequential(
-            InvertedResidual(self.depth(24), self.depth(32), 2, 6),
-            InvertedResidual(self.depth(32), self.depth(32), 1, 6),
-            InvertedResidual(self.depth(32), self.depth(32), 1, 6), )
+        self.out_c = int(1280 * scale) if scale > 1.0 else 1280
+        self.conv9 = ConvBNLayer(
+            num_channels=in_c,
+            num_filters=self.out_c,
+            filter_size=1,
+            stride=1,
+            padding=0,
+            name=prefix_name + "conv9")
 
-        self.stage4 = nn.Sequential(
-            InvertedResidual(self.depth(32), self.depth(64), 2, 6),
-            InvertedResidual(self.depth(64), self.depth(64), 1, 6),
-            InvertedResidual(self.depth(64), self.depth(64), 1, 6),
-            InvertedResidual(self.depth(64), self.depth(64), 1, 6), )
+        self.pool2d_avg = AdaptiveAvgPool2D(1)
 
-        self.stage5 = nn.Sequential(
-            InvertedResidual(self.depth(64), self.depth(96), 1, 6),
-            InvertedResidual(self.depth(96), self.depth(96), 1, 6),
-            InvertedResidual(self.depth(96), self.depth(96), 1, 6), )
-
-        self.stage6 = nn.Sequential(
-            InvertedResidual(self.depth(96), self.depth(160), 2, 6),
-            InvertedResidual(self.depth(160), self.depth(160), 1, 6),
-            InvertedResidual(self.depth(160), self.depth(160), 1, 6), )
-
-        self.stage7 = InvertedResidual(self.depth(160), self.depth(320), 1, 6)
+        self.out = Linear(
+            self.out_c,
+            class_num,
+            weight_attr=ParamAttr(name=prefix_name + "fc10_weights"),
+            bias_attr=ParamAttr(name=prefix_name + "fc10_offset"))
 
         self.init_weight()
 
-    def depth(self, channels):
-        min_channel = min(channels, self.min_channel)
-        return max(min_channel, int(channels * self.channel_ratio))
+    '''
+    def forward(self, inputs):
+        y = self.conv1(inputs, if_act=True)
+        for block in self.block_list:
+            y = block(y)
+        y = self.conv9(y, if_act=True)
+        y = self.pool2d_avg(y)
+        y = paddle.flatten(y, start_axis=1, stop_axis=-1)
+        y = self.out(y)
+        return y
+    '''
 
-    def forward(self, x):
+    def forward(self, inputs):
         feat_list = []
 
-        feature_1_2 = self.stage0(x)
-        feature_1_2 = self.stage1(feature_1_2)
-        feature_1_4 = self.stage2(feature_1_2)
-        feature_1_8 = self.stage3(feature_1_4)
-        feature_1_16 = self.stage4(feature_1_8)
-        feature_1_16 = self.stage5(feature_1_16)
-        feature_1_32 = self.stage6(feature_1_16)
-        feature_1_32 = self.stage7(feature_1_32)
-        feat_list.append(feature_1_4)
-        feat_list.append(feature_1_8)
-        feat_list.append(feature_1_16)
-        feat_list.append(feature_1_32)
+        y = self.conv1(inputs, if_act=True)
+        for idx, block in enumerate(self.block_list):
+            y = block(y)
+            if idx in self.out_block_idx:
+                feat_list.append(y)
+
         return feat_list
 
     def init_weight(self):
@@ -99,66 +130,153 @@ class MobileNetV2(nn.Layer):
             utils.load_entire_model(self, self.pretrained)
 
 
-def conv_bn(inp, oup, kernel, stride):
-    return nn.Sequential(
-        nn.Conv2D(
-            in_channels=inp,
-            out_channels=oup,
-            kernel_size=kernel,
+class ConvBNLayer(nn.Layer):
+    def __init__(self,
+                 num_channels,
+                 filter_size,
+                 num_filters,
+                 stride,
+                 padding,
+                 channels=None,
+                 num_groups=1,
+                 name=None,
+                 use_cudnn=True):
+        super(ConvBNLayer, self).__init__()
+
+        self._conv = Conv2D(
+            in_channels=num_channels,
+            out_channels=num_filters,
+            kernel_size=filter_size,
             stride=stride,
-            padding=(kernel - 1) // 2,
-            bias_attr=False),
-        nn.BatchNorm2D(
-            num_features=oup, epsilon=1e-05, momentum=0.1),
-        nn.ReLU())
+            padding=padding,
+            groups=num_groups,
+            weight_attr=ParamAttr(name=name + "_weights"),
+            bias_attr=False)
+
+        self._batch_norm = BatchNorm(
+            num_filters,
+            param_attr=ParamAttr(name=name + "_bn_scale"),
+            bias_attr=ParamAttr(name=name + "_bn_offset"),
+            moving_mean_name=name + "_bn_mean",
+            moving_variance_name=name + "_bn_variance")
+
+    def forward(self, inputs, if_act=True):
+        y = self._conv(inputs)
+        y = self._batch_norm(y)
+        if if_act:
+            y = F.relu6(y)
+        return y
 
 
-class InvertedResidual(nn.Layer):
-    def __init__(self, inp, oup, stride, expand_ratio, dilation=1):
-        super(InvertedResidual, self).__init__()
-        self.stride = stride
-        assert stride in [1, 2]
-        self.use_res_connect = self.stride == 1 and inp == oup
+class InvertedResidualUnit(nn.Layer):
+    def __init__(self, num_channels, num_in_filter, num_filters, stride,
+                 filter_size, padding, expansion_factor, name):
+        super(InvertedResidualUnit, self).__init__()
+        num_expfilter = int(round(num_in_filter * expansion_factor))
+        self._expand_conv = ConvBNLayer(
+            num_channels=num_channels,
+            num_filters=num_expfilter,
+            filter_size=1,
+            stride=1,
+            padding=0,
+            num_groups=1,
+            name=name + "_expand")
 
-        self.conv = nn.Sequential(
-            nn.Conv2D(
-                inp,
-                inp * expand_ratio,
-                kernel_size=1,
-                stride=1,
-                padding=0,
-                dilation=1,
-                groups=1,
-                bias_attr=False),
-            nn.BatchNorm2D(
-                num_features=inp * expand_ratio, epsilon=1e-05, momentum=0.1),
-            nn.ReLU(),
-            nn.Conv2D(
-                inp * expand_ratio,
-                inp * expand_ratio,
-                kernel_size=3,
-                stride=stride,
-                padding=dilation,
-                dilation=dilation,
-                groups=inp * expand_ratio,
-                bias_attr=False),
-            nn.BatchNorm2D(
-                num_features=inp * expand_ratio, epsilon=1e-05, momentum=0.1),
-            nn.ReLU(),
-            nn.Conv2D(
-                inp * expand_ratio,
-                oup,
-                kernel_size=1,
-                stride=1,
-                padding=0,
-                dilation=1,
-                groups=1,
-                bias_attr=False),
-            nn.BatchNorm2D(
-                num_features=oup, epsilon=1e-05, momentum=0.1), )
+        self._bottleneck_conv = ConvBNLayer(
+            num_channels=num_expfilter,
+            num_filters=num_expfilter,
+            filter_size=filter_size,
+            stride=stride,
+            padding=padding,
+            num_groups=num_expfilter,
+            use_cudnn=False,
+            name=name + "_dwise")
 
-    def forward(self, x):
-        if self.use_res_connect:
-            return x + self.conv(x)
-        else:
-            return self.conv(x)
+        self._linear_conv = ConvBNLayer(
+            num_channels=num_expfilter,
+            num_filters=num_filters,
+            filter_size=1,
+            stride=1,
+            padding=0,
+            num_groups=1,
+            name=name + "_linear")
+
+    def forward(self, inputs, ifshortcut):
+        y = self._expand_conv(inputs, if_act=True)
+        y = self._bottleneck_conv(y, if_act=True)
+        y = self._linear_conv(y, if_act=False)
+        if ifshortcut:
+            y = paddle.add(inputs, y)
+        return y
+
+
+class InvresiBlocks(nn.Layer):
+    def __init__(self, in_c, t, c, n, s, name):
+        super(InvresiBlocks, self).__init__()
+
+        self._first_block = InvertedResidualUnit(
+            num_channels=in_c,
+            num_in_filter=in_c,
+            num_filters=c,
+            stride=s,
+            filter_size=3,
+            padding=1,
+            expansion_factor=t,
+            name=name + "_1")
+
+        self._block_list = []
+        for i in range(1, n):
+            block = self.add_sublayer(
+                name + "_" + str(i + 1),
+                sublayer=InvertedResidualUnit(
+                    num_channels=c,
+                    num_in_filter=c,
+                    num_filters=c,
+                    stride=1,
+                    filter_size=3,
+                    padding=1,
+                    expansion_factor=t,
+                    name=name + "_" + str(i + 1)))
+            self._block_list.append(block)
+
+    def forward(self, inputs):
+        y = self._first_block(inputs, ifshortcut=False)
+        for block in self._block_list:
+            y = block(y, ifshortcut=True)
+        return y
+
+
+@manager.BACKBONES.add_component
+def MobileNetV2_x0_25(**kwargs):
+    model = MobileNet_V2(scale=0.25, **kwargs)
+    return model
+
+
+@manager.BACKBONES.add_component
+def MobileNetV2_x0_5(**kwargs):
+    model = MobileNet_V2(scale=0.5, **kwargs)
+    return model
+
+
+@manager.BACKBONES.add_component
+def MobileNetV2_x0_75(**kwargs):
+    model = MobileNet_V2(scale=0.75, **kwargs)
+    return model
+
+
+@manager.BACKBONES.add_component
+def MobileNetV2(**kwargs):
+    model = MobileNet_V2(scale=1.0, **kwargs)
+    return model
+
+
+@manager.BACKBONES.add_component
+def MobileNetV2_x1_5(**kwargs):
+    model = MobileNet_V2(scale=1.5, **kwargs)
+    return model
+
+
+@manager.BACKBONES.add_component
+def MobileNetV2_x2_0(**kwargs):
+    model = MobileNet_V2(scale=2.0, **kwargs)
+    return model
