@@ -22,6 +22,15 @@ from paddle.nn import AdaptiveAvgPool2D, MaxPool2D, AvgPool2D
 from paddleseg.cvlibs import manager
 from paddleseg import utils
 
+__all__ = [
+    "MobileNetV2_x0_25",
+    "MobileNetV2_x0_5",
+    "MobileNetV2_x0_75",
+    "MobileNetV2",
+    "MobileNetV2_x1_5",
+    "MobileNetV2_x2_0",
+]
+
 
 class MobileNet_V2(nn.Layer):
     """
