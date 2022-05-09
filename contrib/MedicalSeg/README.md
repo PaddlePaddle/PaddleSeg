@@ -15,7 +15,7 @@ MedicalSeg is an easy-to-use 3D medical image segmentation toolkit that supports
 **MedicalSeg is currently under development! If you find any problem using it or want to share any future develop suggestions, please open a github issue or join us by scanning the following wechat QR code.**
 
 <p align="center">
-<img src="https://user-images.githubusercontent.com/48433081/163670177-c59d21cd-44a8-4af2-acda-2b62c188cd3b.png" width="20%" height="20%">
+<img src="https://user-images.githubusercontent.com/48433081/167370905-a6300c65-5a27-48ed-8cb9-a24e4b3e8589.png" width="20%" height="20%">
 </p>
 
 
