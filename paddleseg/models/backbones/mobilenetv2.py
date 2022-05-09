@@ -1,4 +1,4 @@
-# copyright (c) 2021 PaddlePaddle Authors. All Rights Reserve.
+# copyright (c) 2022 PaddlePaddle Authors. All Rights Reserve.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@ import paddle
 from paddle import ParamAttr
 import paddle.nn as nn
 import paddle.nn.functional as F
-import paddle.nn as nn
 from paddle.nn import Conv2D, BatchNorm, Linear, Dropout
 from paddle.nn import AdaptiveAvgPool2D, MaxPool2D, AvgPool2D
 
@@ -34,15 +33,13 @@ class MobileNet_V2(nn.Layer):
         (https://arxiv.org/abs/1801.04381).
 
         Args:
-            channel_ratio (float, optional): The ratio of channel. Default: 1.0
-            min_channel (int, optional): The minimum of channel. Default: 16
+            scale (float, optional): The scale of channel. Default: 1.0
             pretrained (str, optional): The path or url of pretrained model. Default: None
         """
 
-    def __init__(self, class_num=1000, scale=1.0, pretrained=None):
+    def __init__(self, scale=1.0, pretrained=None):
         super().__init__()
         self.scale = scale
-        self.class_num = class_num
         self.pretrained = pretrained
         prefix_name = ""
 
@@ -83,36 +80,7 @@ class MobileNet_V2(nn.Layer):
             self.block_list.append(block)
             in_c = int(c * scale)
 
-        self.out_c = int(1280 * scale) if scale > 1.0 else 1280
-        self.conv9 = ConvBNLayer(
-            num_channels=in_c,
-            num_filters=self.out_c,
-            filter_size=1,
-            stride=1,
-            padding=0,
-            name=prefix_name + "conv9")
-
-        self.pool2d_avg = AdaptiveAvgPool2D(1)
-
-        self.out = Linear(
-            self.out_c,
-            class_num,
-            weight_attr=ParamAttr(name=prefix_name + "fc10_weights"),
-            bias_attr=ParamAttr(name=prefix_name + "fc10_offset"))
-
         self.init_weight()
-
-    '''
-    def forward(self, inputs):
-        y = self.conv1(inputs, if_act=True)
-        for block in self.block_list:
-            y = block(y)
-        y = self.conv9(y, if_act=True)
-        y = self.pool2d_avg(y)
-        y = paddle.flatten(y, start_axis=1, stop_axis=-1)
-        y = self.out(y)
-        return y
-    '''
 
     def forward(self, inputs):
         feat_list = []
