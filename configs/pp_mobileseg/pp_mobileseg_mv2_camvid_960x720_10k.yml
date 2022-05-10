@@ -57,6 +57,6 @@ model:
   type: PPMobileSeg
   backbone:
     type: MobileNetV2
-    pretrained: /ssd2/pengjuncai/PaddleSeg/tmp/pretrained/mobilenetv2_ssld/model.pdparams
+    pretrained: https://paddleseg.bj.bcebos.com/dygraph/backbone/mobilenetv2_ssld.tar.gz
   arm_out_chs: [32, 48, 64]
   seg_head_inter_chs: [16, 32, 32]
