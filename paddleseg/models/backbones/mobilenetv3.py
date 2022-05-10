@@ -78,14 +78,8 @@ NET_CONFIG = {
         [5, 576, 96, True, "hardswish", 1],
     ]
 }
-# first conv output channel number in MobileNetV3
-STEM_CONV_NUMBER = 16
-# last second conv output channel for "small"
-LAST_SECOND_CONV_SMALL = 576
-# last second conv output channel for "large"
-LAST_SECOND_CONV_LARGE = 960
-# last conv output channel number for "large" and "small"
-LAST_CONV = 1280
+
+OUT_INDEX = {"large": [2, 5, 11, 14], "small": [0, 2, 7, 10]}
 
 
 def _make_divisible(v, divisor=8, min_value=None):
@@ -115,11 +109,6 @@ class MobileNetV3(nn.Layer):
     Args:
         config: list. MobileNetV3 depthwise blocks config.
         scale: float=1.0. The coefficient that controls the size of network parameters. 
-        class_num: int=1000. The number of classes.
-        inplanes: int=16. The output channel number of first convolution layer.
-        class_squeeze: int=960. The output channel number of penultimate convolution layer. 
-        class_expand: int=1280. The output channel number of last convolution layer. 
-        dropout_prob: float=0.2.  Probability of setting units to zero.
     Returns:
         model: nn.Layer. Specific MobileNetV3 model depends on args.
     """
@@ -127,36 +116,29 @@ class MobileNetV3(nn.Layer):
     def __init__(self,
                  config,
                  stages_pattern,
+                 out_index,
                  scale=1.0,
-                 class_num=1000,
-                 inplanes=STEM_CONV_NUMBER,
-                 class_squeeze=LAST_SECOND_CONV_LARGE,
-                 class_expand=LAST_CONV,
-                 dropout_prob=0.2,
                  pretrained=None):
         super().__init__()
 
         self.cfg = config
+        self.out_index = out_index
         self.scale = scale
-        self.inplanes = inplanes
-        self.class_squeeze = class_squeeze
-        self.class_expand = class_expand
-        self.class_num = class_num
         self.pretrained = pretrained
+        inplanes = 16
 
         self.conv = ConvBNLayer(
             in_c=3,
-            out_c=_make_divisible(self.inplanes * self.scale),
+            out_c=_make_divisible(inplanes * self.scale),
             filter_size=3,
             stride=2,
             padding=1,
             num_groups=1,
             if_act=True,
             act="hardswish")
-
         self.blocks = nn.Sequential(*[
             ResidualUnit(
-                in_c=_make_divisible(self.inplanes * self.scale if i == 0 else
+                in_c=_make_divisible(inplanes * self.scale if i == 0 else
                                      self.cfg[i - 1][2] * self.scale),
                 mid_c=_make_divisible(self.scale * exp),
                 out_c=_make_divisible(self.scale * c),
@@ -166,37 +148,12 @@ class MobileNetV3(nn.Layer):
                 act=act) for i, (k, exp, c, se, act, s) in enumerate(self.cfg)
         ])
 
-        self.last_second_conv = ConvBNLayer(
-            in_c=_make_divisible(self.cfg[-1][2] * self.scale),
-            out_c=_make_divisible(self.scale * self.class_squeeze),
-            filter_size=1,
-            stride=1,
-            padding=0,
-            num_groups=1,
-            if_act=True,
-            act="hardswish")
-
-        self.avg_pool = AdaptiveAvgPool2D(1)
-
-        self.last_conv = Conv2D(
-            in_channels=_make_divisible(self.scale * self.class_squeeze),
-            out_channels=self.class_expand,
-            kernel_size=1,
-            stride=1,
-            padding=0,
-            bias_attr=False)
-
-        self.hardswish = nn.Hardswish()
-        if dropout_prob is not None:
-            self.dropout = Dropout(p=dropout_prob, mode="downscale_in_infer")
-        else:
-            self.dropout = None
-        self.flatten = nn.Flatten(start_axis=1, stop_axis=-1)
-
-        self.fc = Linear(self.class_expand, class_num)
+        out_channels = [config[idx][2] for idx in self.out_index]
+        self.feat_channels = [
+            _make_divisible(self.scale * c) for c in out_channels
+        ]
 
         self.init_res(stages_pattern)
-
         self.init_weight()
 
     def init_weight(self):
@@ -228,17 +185,14 @@ class MobileNetV3(nn.Layer):
 
     def forward(self, x):
         x = self.conv(x)
-        x = self.blocks(x)
-        x = self.last_second_conv(x)
-        x = self.avg_pool(x)
-        x = self.last_conv(x)
-        x = self.hardswish(x)
-        if self.dropout is not None:
-            x = self.dropout(x)
-        x = self.flatten(x)
-        x = self.fc(x)
 
-        return x
+        feat_list = []
+        for idx, block in enumerate(self.blocks):
+            x = block(x)
+            if idx in self.out_indices:
+                feat_list.append(x)
+
+        return feat_list
 
 
 class ConvBNLayer(nn.Layer):
@@ -377,7 +331,7 @@ def MobileNetV3_small_x0_35(**kwargs):
         config=NET_CONFIG["small"],
         scale=0.35,
         stages_pattern=MODEL_STAGES_PATTERN["MobileNetV3_small"],
-        class_squeeze=LAST_SECOND_CONV_SMALL,
+        out_index=OUT_INDEX["small"],
         **kwargs)
     return model
 
@@ -388,7 +342,7 @@ def MobileNetV3_small_x0_5(**kwargs):
         config=NET_CONFIG["small"],
         scale=0.5,
         stages_pattern=MODEL_STAGES_PATTERN["MobileNetV3_small"],
-        class_squeeze=LAST_SECOND_CONV_SMALL,
+        out_index=OUT_INDEX["small"],
         **kwargs)
     return model
 
@@ -399,7 +353,7 @@ def MobileNetV3_small_x0_75(**kwargs):
         config=NET_CONFIG["small"],
         scale=0.75,
         stages_pattern=MODEL_STAGES_PATTERN["MobileNetV3_small"],
-        class_squeeze=LAST_SECOND_CONV_SMALL,
+        out_index=OUT_INDEX["small"],
         **kwargs)
     return model
 
@@ -410,7 +364,7 @@ def MobileNetV3_small_x1_0(**kwargs):
         config=NET_CONFIG["small"],
         scale=1.0,
         stages_pattern=MODEL_STAGES_PATTERN["MobileNetV3_small"],
-        class_squeeze=LAST_SECOND_CONV_SMALL,
+        out_index=OUT_INDEX["small"],
         **kwargs)
     return model
 
@@ -421,7 +375,7 @@ def MobileNetV3_small_x1_25(**kwargs):
         config=NET_CONFIG["small"],
         scale=1.25,
         stages_pattern=MODEL_STAGES_PATTERN["MobileNetV3_small"],
-        class_squeeze=LAST_SECOND_CONV_SMALL,
+        out_index=OUT_INDEX["small"],
         **kwargs)
     return model
 
@@ -432,7 +386,7 @@ def MobileNetV3_large_x0_35(**kwargs):
         config=NET_CONFIG["large"],
         scale=0.35,
         stages_pattern=MODEL_STAGES_PATTERN["MobileNetV3_small"],
-        class_squeeze=LAST_SECOND_CONV_LARGE,
+        out_index=OUT_INDEX["large"],
         **kwargs)
     return model
 
@@ -443,7 +397,7 @@ def MobileNetV3_large_x0_5(**kwargs):
         config=NET_CONFIG["large"],
         scale=0.5,
         stages_pattern=MODEL_STAGES_PATTERN["MobileNetV3_large"],
-        class_squeeze=LAST_SECOND_CONV_LARGE,
+        out_index=OUT_INDEX["large"],
         **kwargs)
     return model
 
@@ -454,7 +408,7 @@ def MobileNetV3_large_x0_75(**kwargs):
         config=NET_CONFIG["large"],
         scale=0.75,
         stages_pattern=MODEL_STAGES_PATTERN["MobileNetV3_large"],
-        class_squeeze=LAST_SECOND_CONV_LARGE,
+        out_index=OUT_INDEX["large"],
         **kwargs)
     return model
 
@@ -465,7 +419,7 @@ def MobileNetV3_large_x1_0(**kwargs):
         config=NET_CONFIG["large"],
         scale=1.0,
         stages_pattern=MODEL_STAGES_PATTERN["MobileNetV3_large"],
-        class_squeeze=LAST_SECOND_CONV_LARGE,
+        out_index=OUT_INDEX["large"],
         **kwargs)
     return model
 
@@ -476,6 +430,6 @@ def MobileNetV3_large_x1_25(**kwargs):
         config=NET_CONFIG["large"],
         scale=1.25,
         stages_pattern=MODEL_STAGES_PATTERN["MobileNetV3_large"],
-        class_squeeze=LAST_SECOND_CONV_LARGE,
+        out_index=OUT_INDEX["large"],
         **kwargs)
     return model

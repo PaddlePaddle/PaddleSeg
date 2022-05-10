@@ -61,7 +61,7 @@ class MobileNet_V2(nn.Layer):
             (6, 160, 3, 2),
             (6, 320, 1, 1),
         ]
-        self.out_block_idx = [1, 2, 4, 6]
+        self.out_index = [1, 2, 4, 6]
 
         self.conv1 = ConvBNLayer(
             num_channels=3,
@@ -89,6 +89,11 @@ class MobileNet_V2(nn.Layer):
             self.block_list.append(block)
             in_c = int(c * scale)
 
+        out_channels = [
+            bottleneck_params_list[idx][1] for idx in self.out_index
+        ]
+        self.feat_channels = [int(c * scale) for c in out_channels]
+
         self.init_weight()
 
     def forward(self, inputs):
@@ -97,7 +102,7 @@ class MobileNet_V2(nn.Layer):
         y = self.conv1(inputs, if_act=True)
         for idx, block in enumerate(self.block_list):
             y = block(y)
-            if idx in self.out_block_idx:
+            if idx in self.out_index:
                 feat_list.append(y)
 
         return feat_list
