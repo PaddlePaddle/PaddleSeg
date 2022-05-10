@@ -1,0 +1,44 @@
+batch_size: 4
+iters: 10000
+
+train_dataset:
+  type: OpticDiscSeg
+  dataset_root: data/optic_disc_seg
+  transforms:
+    - type: Resize
+      target_size: [512, 512]
+    - type: RandomHorizontalFlip
+    - type: Normalize
+  mode: train
+
+val_dataset:
+  type: OpticDiscSeg
+  dataset_root: data/optic_disc_seg
+  transforms:
+    - type: Normalize
+  mode: val
+
+optimizer:
+  type: sgd
+  momentum: 0.9
+  weight_decay: 4.0e-5
+
+lr_scheduler:
+  type: PolynomialDecay
+  learning_rate: 0.01
+  end_lr: 0
+  power: 0.9
+
+loss:
+  types:
+    - type: CrossEntropyLoss
+  coef: [1, 1, 1]
+
+
+model:
+  type: PPMobileSeg
+  backbone:
+    type: MobileNetV3_large_x1_0
+    pretrained: /ssd2/pengjuncai/PaddleSeg/tmp/pretrained/mobilenetv3_large_x1_0_ssld/model.pdparams
+  #arm_out_chs: [32, 64, 128]
+  #seg_head_inter_chs: [32, 64, 64]

@@ -189,7 +189,7 @@ class MobileNetV3(nn.Layer):
         feat_list = []
         for idx, block in enumerate(self.blocks):
             x = block(x)
-            if idx in self.out_indices:
+            if idx in self.out_index:
                 feat_list.append(x)
 
         return feat_list
