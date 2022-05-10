@@ -46,5 +46,7 @@ model:
   backbone:
     type: MobileNetV3_large_x1_0
     pretrained: https://paddleseg.bj.bcebos.com/dygraph/backbone/mobilenetv3_large_x1_0_ssld.tar.gz
-  arm_out_chs: [32, 48, 64]
-  seg_head_inter_chs: [32, 32, 32]
+  cm_bin_sizes: [1, 2, 4]
+  cm_out_ch: 128
+  arm_out_chs: [64, 96, 128]
+  seg_head_inter_chs: [32, 64, 64]
