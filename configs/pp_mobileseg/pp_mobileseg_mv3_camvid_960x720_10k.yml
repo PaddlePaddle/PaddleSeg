@@ -56,7 +56,7 @@ loss:
 model:
   type: PPMobileSeg
   backbone:
-    type: MobileNetV2
-    pretrained: /ssd2/pengjuncai/PaddleSeg/tmp/pretrained/mobilenetv2_ssld/model.pdparams
+    type: MobileNetV3_large_x1_0
+    pretrained: /ssd2/pengjuncai/PaddleSeg/tmp/pretrained/mobilenetv3_large_x1_0_ssld/model.pdparams
   arm_out_chs: [32, 48, 64]
   seg_head_inter_chs: [16, 32, 32]
