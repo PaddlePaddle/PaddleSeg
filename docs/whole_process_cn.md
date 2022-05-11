@@ -152,26 +152,26 @@ PaddleSeg的配置文件包括超参、训练数据集、验证数据集、优�
 batch_size: 4  #设定batch_size的值即为迭代一次送入网络的图片数量，一般显卡显存越大，batch_size的值可以越大
 iters: 1000    #模型迭代的次数
 
-train_dataset: #训练数据设置
-  type: OpticDiscSeg #选择数据集格式
-  dataset_root: data/optic_disc_seg #选择数据集路径
-  num_classes: 2 #指定目标的类别个数（背景也算为一类）
+train_dataset:  #训练数据设置
+  type: Dataset #数据集名字
+  dataset_root: data/optic_disc_seg #数据集路径
+  train_path: data/optic_disc_seg/train_list.txt  #数据集中用于训练的标识文件
+  num_classes: 2  #指定目标的类别个数（背景也算为一类）
+  mode: train #表示用于训练
   transforms: #数据预处理/增强的方式
-    - type: Resize #送入网络之前需要进行resize
+    - type: Resize  #送入网络之前需要进行resize
       target_size: [512, 512] #将原图resize成512*512再送入网络
-    - type: RandomHorizontalFlip #采用水平反转的方式进行数据增强
+    - type: RandomHorizontalFlip  #采用水平反转的方式进行数据增强
     - type: Normalize #图像进行归一化
-  mode: train
 
-val_dataset: #验证数据设置
-  type: OpticDiscSeg #选择数据集格式
-  dataset_root: data/optic_disc_seg #选择数据集路径
-  num_classes: 2 #指定目标的类别个数（背景也算为一类）
+val_dataset:  #验证数据设置
+  type: Dataset #数据集名字
+  dataset_root: data/optic_disc_seg #数据集路径
+  val_path: data/optic_disc_seg/val_list.txt  #数据集中用于验证的标识文件
+  num_classes: 2  #指定目标的类别个数（背景也算为一类）
+  mode: val #表示用于验证
   transforms: #数据预处理/增强的方式
-    - type: Resize  #将原图resize成512*512在送入网络
-      target_size: [512, 512]  #将原图resize成512*512在送入网络
     - type: Normalize #图像进行归一化
-  mode: val
 
 optimizer: #设定优化器的类型
   type: sgd #采用SGD（Stochastic Gradient Descent）随机梯度下降方法为优化器
@@ -192,8 +192,8 @@ loss: #设定损失函数的类型
 model:  #模型说明
   type: PPLiteSeg  #设定模型类别
   backbone:  # 设定模型的backbone，包括名字和预训练权重
-    type: STDC1
-    pretrained: https://bj.bcebos.com/paddleseg/dygraph/PP_STDCNet1.tar.gz
+    type: STDC2
+    pretrained: https://bj.bcebos.com/paddleseg/dygraph/PP_STDCNet2.tar.gz
 
 ```
 **FAQ**
@@ -222,23 +222,21 @@ train_dataset:
   dataset_root: dataset/optic_disc_seg
   train_path: dataset/optic_disc_seg/train_list.txt
   num_classes: 2
+  mode: train
   transforms:
     - type: Resize
       target_size: [512, 512]
     - type: RandomHorizontalFlip
     - type: Normalize
-  mode: train
 
 val_dataset:
   type: Dataset
   dataset_root: dataset/optic_disc_seg
   val_path: dataset/optic_disc_seg/val_list.txt
   num_classes: 2
-  transforms:
-    - type: Resize  
-      target_size: [512, 512]  
-    - type: Normalize
   mode: val
+  transforms:
+    - type: Normalize
 ```
 
 ### **3.4 正式开启训练**
