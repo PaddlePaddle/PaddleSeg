@@ -18,6 +18,7 @@ function func_parser_value_cpp(){
 }
 
 FILENAME=$1
+INFERIMG=$2
 
 dataline=$(cat ${FILENAME})
 lines=(${dataline})
@@ -62,8 +63,7 @@ function func_infer_cpp(){
     fi
     # run infer cpp
     inference_cpp_cmd="./test_tipc/cpp/build/seg_system"
-    inference_cpp_img="./test_tipc/cpp/cityscapes_demo.png" 
-    infer_cpp_full_cmd="${inference_cpp_cmd} ${FILENAME} ${inference_cpp_img} > ${_save_log_path} 2>&1 "   
+    infer_cpp_full_cmd="${inference_cpp_cmd} ${FILENAME} ${INFERIMG} > ${_save_log_path} 2>&1 "   
     eval $infer_cpp_full_cmd
     last_status=${PIPESTATUS[0]}
     status_check $last_status "${infer_cpp_full_cmd}" "${status_log}"
