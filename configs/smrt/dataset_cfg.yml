@@ -1,12 +1,12 @@
 batch_size: 8
-iters: 40000
+iters: 10000
 
 train_dataset:
   type: Dataset
-  dataset_root: demo_dataset
-  num_classes: 14
+  dataset_root: data/defect_data
+  num_classes: 4
   mode: train
-  train_path: demo_dataset/train.txt
+  train_path: data/defect_data/train.txt
   transforms:
     - type: ResizeStepScaling
       min_scale_factor: 0.5
@@ -23,10 +23,10 @@ train_dataset:
 
 val_dataset:
   type: Dataset
-  dataset_root: demo_dataset
-  num_classes: 14
+  dataset_root: data/defect_data
+  num_classes: 4
   mode: val
-  val_path: demo_dataset/val.txt
+  val_path: data/defect_data/val.txt
   transforms:
     - type: Normalize
 
