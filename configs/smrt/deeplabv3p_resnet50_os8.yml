@@ -1,4 +1,4 @@
-_base_: './dataset_cfg.yml'
+_base_: './base_cfg.yml'
 
 model:
   type: DeepLabV3P
