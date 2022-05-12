@@ -63,7 +63,11 @@ pip install -r requirements.txt
 
 ## 4.确认环境安装成功
 
-在PaddleSeg目录下执行如下命令，查看执行输出的log，如果没有报错，则验证可以顺利使用进行训练和导出模型。
+在PaddleSeg目录下执行如下命令，会进行简单的单卡训练和单卡预测。
+
+查看执行输出的log，没有报错，则验证安装成功。
+
+然后，基于PaddleSeg，你可以使用配置文件的方式来训练、验证、测试和导出模型。
 
 ```
 sh tests/run_check_install.sh
@@ -71,10 +75,16 @@ sh tests/run_check_install.sh
 
 ## 5. 安装PaddleSeg包（可选）
 
-PaddleSeg可以使用配置文件来训练、验证、测试和导出模型。
+PaddleSeg也支持API方式灵活开发。 API开发方式要求大家将PaddleSeg安装到Python库中。
 
-此外，PaddleSeg也支持API方式灵活开发。 API开发方式要求大家将PaddleSeg安装到Python库中，请执行如下命令。
 
+执行如下命令，从源码编译安装PaddleSeg包。
+```
+cd PaddleSeg
+python setup.py install
+```
+
+或者直接安装发布的PaddleSeg包。
 ```
 pip install paddleseg
 ```
