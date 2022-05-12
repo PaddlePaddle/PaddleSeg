@@ -231,6 +231,10 @@ PaddleSeg是基于飞桨PaddlePaddle开发的端到端图像分割开发套件�
         <ul>
             <li>PP-HumanSeg</li>
         </ul>
+        <b>3D 医疗分割</b><br>
+        <ul>
+          <li>VNet</li>
+        </ul>
         <b>Cityscapes打榜模型</b><br>
         <ul>
             <li>HMSA</li>
@@ -317,6 +321,7 @@ PaddleSeg是基于飞桨PaddlePaddle开发的端到端图像分割开发套件�
 - [交互式分割](./EISeg)
 - [图像抠图](./Matting)
 - [人像分割](./contrib/PP-HumanSeg)
+- [3D医疗分割](./contrib/MedicalSeg)
 - [Cityscapes打榜模型](./contrib/CityscapesSOTA)
 - [全景分割](./contrib/PanopticDeepLab)
 - [CVPR冠军模型](./contrib/AutoNUE)

@@ -229,6 +229,10 @@ PaddleSeg is an end-to-end high-efficent development toolkit for image segmentat
         <ul>
             <li>PP-HumanSeg</li>
         </ul>
+        <b>3D Medical Segmentation</b><br>
+        <ul>
+          <li>VNet</li>
+        </ul>
         <b>Cityscapes SOTA</b><br>
         <ul>
             <li>HMSA</li>
@@ -316,6 +320,7 @@ The relationship between mIoU and FLOPs of representative architectures and back
   * [Interactive Segmentation](./EISeg)
   * [Image Matting](./Matting)
   * [PP-HumanSeg](./contrib/PP-HumanSeg)
+  * [3D Medical Segmentation](./contrib/MedicalSeg)
   * [Cityscapes SOTA](./contrib/CityscapesSOTA)
   * [Panoptic Segmentation](./contrib/PanopticDeepLab)
   * [CVPR Champion Solution](./contrib/AutoNUE)

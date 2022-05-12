@@ -111,7 +111,7 @@ def train(model,
     if not os.path.isdir(save_dir):
         if os.path.exists(save_dir):
             os.remove(save_dir)
-        os.makedirs(save_dir)
+        os.makedirs(save_dir, exist_ok=True)
 
     # use amp
     if precision == 'fp16':
