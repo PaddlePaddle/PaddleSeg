@@ -8,9 +8,17 @@ train_dataset:
   num_classes: 2
   mode: train
   transforms:
-    - type: Resize
-      target_size: [512, 512]
+    - type: ResizeStepScaling
+      min_scale_factor: 0.5
+      max_scale_factor: 2.0
+      scale_step_size: 0.25
+    - type: RandomPaddingCrop
+      crop_size: [512, 512]
     - type: RandomHorizontalFlip
+    - type: RandomDistort
+      brightness_range: 0.5
+      contrast_range: 0.5
+      saturation_range: 0.5
     - type: Normalize
 
 val_dataset:

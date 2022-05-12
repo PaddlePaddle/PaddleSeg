@@ -151,9 +151,17 @@ train_dataset:  # Training dataset
   num_classes: 2  # Number of pixel categories
   mode: train # Indicate the dataset for training
   transforms: # Data transformation and data augmentation
-    - type: Resize  # Need to resize before sending to the network
-      target_size: [512, 512] # Resize the original image to 512*512 and send it to the network
+    - type: ResizeStepScaling # Random resize the image and label to 0.5x~2.0x
+      min_scale_factor: 0.5
+      max_scale_factor: 2.0
+      scale_step_size: 0.25
+    - type: RandomPaddingCrop # Random crop the resized image and label
+      crop_size: [512, 512]
     - type: RandomHorizontalFlip  # Flip the image horizontally with a certain probability
+    - type: RandomDistort # Change the brightness, contrast and saturation
+      brightness_range: 0.5
+      contrast_range: 0.5
+      saturation_range: 0.5
     - type: Normalize # Normalize the image
 
 val_dataset:  # Validating dataset
@@ -212,14 +220,22 @@ Mainly focus on these parameters:
 ```
 train_dataset:
   type: Dataset
-  dataset_root: dataset/optic_disc_seg
-  train_path: dataset/optic_disc_seg/train_list.txt
+  dataset_root: data/optic_disc_seg
+  train_path: data/optic_disc_seg/train_list.txt
   num_classes: 2
   mode: train
   transforms:
-    - type: Resize
-      target_size: [512, 512]
+    - type: ResizeStepScaling
+      min_scale_factor: 0.5
+      max_scale_factor: 2.0
+      scale_step_size: 0.25
+    - type: RandomPaddingCrop
+      crop_size: [512, 512]
     - type: RandomHorizontalFlip
+    - type: RandomDistort
+      brightness_range: 0.5
+      contrast_range: 0.5
+      saturation_range: 0.5
     - type: Normalize
 
 val_dataset:

@@ -159,10 +159,18 @@ train_dataset:  #训练数据设置
   num_classes: 2  #指定目标的类别个数（背景也算为一类）
   mode: train #表示用于训练
   transforms: #数据预处理/增强的方式
-    - type: Resize  #送入网络之前需要进行resize
-      target_size: [512, 512] #将原图resize成512*512再送入网络
+    - type: ResizeStepScaling #将原始图像和标注图像随机缩放为0.5~2.0倍
+      min_scale_factor: 0.5
+      max_scale_factor: 2.0
+      scale_step_size: 0.25
+    - type: RandomPaddingCrop #从原始图像和标注图像中随机裁剪512x512大小
+      crop_size: [512, 512]
     - type: RandomHorizontalFlip  #采用水平反转的方式进行数据增强
-    - type: Normalize #图像进行归一化
+    - type: RandomDistort #亮度、对比度、饱和度随机变动
+      brightness_range: 0.5
+      contrast_range: 0.5
+      saturation_range: 0.5
+    - type: Normalize #将图像归一化
 
 val_dataset:  #验证数据设置
   type: Dataset #数据集名字
@@ -219,14 +227,22 @@ A：与模型方案相关的信息均在配置文件中，还包括对原始样�
 ```
 train_dataset:
   type: Dataset
-  dataset_root: dataset/optic_disc_seg
-  train_path: dataset/optic_disc_seg/train_list.txt
+  dataset_root: data/optic_disc_seg
+  train_path: data/optic_disc_seg/train_list.txt
   num_classes: 2
   mode: train
   transforms:
-    - type: Resize
-      target_size: [512, 512]
+    - type: ResizeStepScaling
+      min_scale_factor: 0.5
+      max_scale_factor: 2.0
+      scale_step_size: 0.25
+    - type: RandomPaddingCrop
+      crop_size: [512, 512]
     - type: RandomHorizontalFlip
+    - type: RandomDistort
+      brightness_range: 0.5
+      contrast_range: 0.5
+      saturation_range: 0.5
     - type: Normalize
 
 val_dataset:
