@@ -19,14 +19,13 @@ https://github.com/HRNet/Lite-HRNet/blob/hrnet/models/backbones/litehrnet.py
 import paddle
 import paddle.nn as nn
 import paddle.nn.functional as F
-
 from numbers import Integral
 from paddle import ParamAttr
 from paddle.regularizer import L2Decay
 from paddle.nn.initializer import Normal, Constant
 
 from paddleseg.cvlibs import manager
-from paddleseg.utils import utils, logger
+from paddleseg import utils
 
 __all__ = [
     "Lite_HRNet_18", "Lite_HRNet_30", "Lite_HRNet_naive",
@@ -34,12 +33,36 @@ __all__ = [
 ]
 
 
+def Conv2d(in_channels,
+           out_channels,
+           kernel_size,
+           stride=1,
+           padding=0,
+           dilation=1,
+           groups=1,
+           bias=True,
+           weight_init=Normal(std=0.001),
+           bias_init=Constant(0.)):
+    weight_attr = paddle.framework.ParamAttr(initializer=weight_init)
+    if bias:
+        bias_attr = paddle.framework.ParamAttr(initializer=bias_init)
+    else:
+        bias_attr = False
+    conv = nn.Conv2D(
+        in_channels,
+        out_channels,
+        kernel_size,
+        stride,
+        padding,
+        dilation,
+        groups,
+        weight_attr=weight_attr,
+        bias_attr=bias_attr)
+    return conv
+
+
 def channel_shuffle(x, groups):
-    # batch_size, num_channels, height, width = x.shape[0:4]
-    batch_size = paddle.shape(x)[0]
-    num_channels = paddle.shape(x)[1]
-    height = paddle.shape(x)[2]
-    width = paddle.shape(x)[3]
+    batch_size, num_channels, height, width = x.shape[0:4]
     assert num_channels % groups == 0, 'num_channels should be divisible by groups'
     channels_per_group = num_channels // groups
     x = paddle.reshape(
@@ -73,11 +96,11 @@ class ConvNormLayer(nn.Layer):
                 regularizer=L2Decay(norm_decay), )
             bias_attr = ParamAttr(
                 learning_rate=norm_lr, regularizer=L2Decay(norm_decay))
-            global_stats = True if freeze_norm else False
+            global_stats = True if freeze_norm else None
             if norm_type in ['bn', 'sync_bn']:
-                self.norm = nn.BatchNorm(
+                self.norm = nn.BatchNorm2D(
                     ch_out,
-                    param_attr=param_attr,
+                    weight_attr=param_attr,
                     bias_attr=bias_attr,
                     use_global_stats=global_stats, )
             elif norm_type == 'gn':
@@ -290,12 +313,10 @@ class ShuffleUnit(nn.Layer):
                  norm_decay=0.):
         super(ShuffleUnit, self).__init__()
         branch_channel = out_channel // 2
-        #stride = self.stride
         self.stride = stride
         if self.stride == 1:
             assert in_channel == branch_channel * 2, \
-                "when stride=1, in_channel {} should equal to branch_channel*2 {}" \
-                .format(in_channel, branch_channel * 2)
+                "when stride=1, in_channel {} should equal to branch_channel*2 {}".format(in_channel, branch_channel * 2)
         if stride > 1:
             self.branch1 = nn.Sequential(
                 ConvNormLayer(
@@ -515,11 +536,11 @@ class LiteHRNetModule(nn.Layer):
                  freeze_norm=False,
                  norm_decay=0.):
         super(LiteHRNetModule, self).__init__()
-        assert num_branches == len(in_channels), \
-                "num_branches {} should equal to num_in_channels {}" \
-                .format(num_branches, len(in_channels))
-        assert module_type in ['LITE', 'NAIVE'], \
-                "module_type should be one of ['LITE', 'NAIVE']"
+        assert num_branches == len(in_channels),\
+            "num_branches {} should equal to num_in_channels {}".format(num_branches, len(in_channels))
+        assert module_type in [
+            'LITE', 'NAIVE'
+        ], "module_type should be one of ['LITE', 'NAIVE']"
         self.num_branches = num_branches
         self.in_channels = in_channels
         self.multiscale_output = multiscale_output
@@ -563,11 +584,11 @@ class LiteHRNetModule(nn.Layer):
                     norm_decay=norm_decay))
         return nn.Sequential(*layers)
 
-    def _make_naive_branchs(self,
-                            num_branches,
-                            num_blocks,
-                            freeze_norm=False,
-                            norm_decay=0.):
+    def _make_naive_branches(self,
+                             num_branches,
+                             num_blocks,
+                             freeze_norm=False,
+                             norm_decay=0.):
         branches = []
         for branch_idx in range(num_branches):
             layers = []
@@ -594,14 +615,14 @@ class LiteHRNetModule(nn.Layer):
                 if j > i:
                     fuse_layer.append(
                         nn.Sequential(
-                            nn.Conv2D(
+                            Conv2d(
                                 self.in_channels[j],
                                 self.in_channels[i],
                                 kernel_size=1,
                                 stride=1,
                                 padding=0,
-                                bias_attr=False, ),
-                            nn.BatchNorm(self.in_channels[i]),
+                                bias=False, ),
+                            nn.BatchNorm2D(self.in_channels[i]),
                             nn.Upsample(
                                 scale_factor=2**(j - i), mode='nearest')))
                 elif j == i:
@@ -612,43 +633,43 @@ class LiteHRNetModule(nn.Layer):
                         if k == i - j - 1:
                             conv_downsamples.append(
                                 nn.Sequential(
-                                    nn.Conv2D(
+                                    Conv2d(
                                         self.in_channels[j],
                                         self.in_channels[j],
                                         kernel_size=3,
                                         stride=2,
                                         padding=1,
                                         groups=self.in_channels[j],
-                                        bias_attr=False, ),
-                                    nn.BatchNorm(self.in_channels[j]),
-                                    nn.Conv2D(
+                                        bias=False, ),
+                                    nn.BatchNorm2D(self.in_channels[j]),
+                                    Conv2d(
                                         self.in_channels[j],
                                         self.in_channels[i],
                                         kernel_size=1,
                                         stride=1,
                                         padding=0,
-                                        bias_attr=False, ),
-                                    nn.BatchNorm(self.in_channels[i])))
+                                        bias=False, ),
+                                    nn.BatchNorm2D(self.in_channels[i])))
                         else:
                             conv_downsamples.append(
                                 nn.Sequential(
-                                    nn.Conv2D(
+                                    Conv2d(
                                         self.in_channels[j],
                                         self.in_channels[j],
                                         kernel_size=3,
                                         stride=2,
                                         padding=1,
                                         groups=self.in_channels[j],
-                                        bias_attr=False, ),
-                                    nn.BatchNorm(self.in_channels[j]),
-                                    nn.Conv2D(
+                                        bias=False, ),
+                                    nn.BatchNorm2D(self.in_channels[j]),
+                                    Conv2d(
                                         self.in_channels[j],
                                         self.in_channels[j],
                                         kernel_size=1,
                                         stride=1,
                                         padding=0,
-                                        bias_attr=False, ),
-                                    nn.BatchNorm(self.in_channels[j]),
+                                        bias=False, ),
+                                    nn.BatchNorm2D(self.in_channels[j]),
                                     nn.ReLU()))
 
                     fuse_layer.append(nn.Sequential(*conv_downsamples))
@@ -663,14 +684,16 @@ class LiteHRNetModule(nn.Layer):
             out = self.layers(x)
         elif self.module_type == 'NAIVE':
             for i in range(self.num_branches):
-                x[i] = self.layers(x[i])
+                x[i] = self.layers[i](x[i])
             out = x
         if self.with_fuse:
             out_fuse = []
             for i in range(len(self.fuse_layers)):
                 y = out[0] if i == 0 else self.fuse_layers[i][0](out[0])
                 for j in range(self.num_branches):
-                    if i == j:
+                    if j == 0:
+                        y += y
+                    elif i == j:
                         y += out[j]
                     else:
                         y += self.fuse_layers[i][j](out[j])
@@ -683,42 +706,6 @@ class LiteHRNetModule(nn.Layer):
         return out
 
 
-LITE_HRNET_CFG = {
-    "lite_18": {
-        "num_modules": [2, 4, 2],
-        "num_branches": [2, 3, 4],
-        "num_blocks": [2, 2, 2],
-        "module_type": ["LITE", "LITE", "LITE"],
-        "reduce_ratios": [8, 8, 8],
-        "num_channels": [[40, 80], [40, 80, 160], [40, 80, 160, 320]],
-    },
-    "lite_30": {
-        "num_modules": [3, 8, 3],
-        "num_branches": [2, 3, 4],
-        "num_blocks": [2, 2, 2],
-        "module_type": ["LITE", "LITE", "LITE"],
-        "reduce_ratios": [8, 8, 8],
-        "num_channels": [[40, 80], [40, 80, 160], [40, 80, 160, 320]],
-    },
-    "naive": {
-        "num_modules": [2, 4, 2],
-        "num_branches": [2, 3, 4],
-        "num_blocks": [2, 2, 2],
-        "module_type": ["NAIVE", "NAIVE", "NAIVE"],
-        "reduce_ratios": [1, 1, 1],
-        "num_channels": [[30, 60], [30, 60, 120], [30, 60, 120, 240]],
-    },
-    "wider_naive": {
-        "num_modules": [2, 4, 2],
-        "num_branches": [2, 3, 4],
-        "num_blocks": [2, 2, 2],
-        "module_type": ["NAIVE", "NAIVE", "NAIVE"],
-        "reduce_ratios": [1, 1, 1],
-        "num_channels": [[40, 80], [40, 80, 160], [40, 80, 160, 320]],
-    },
-}
-
-
 class LiteHRNet(nn.Layer):
     """
     @inproceedings{Yulitehrnet21,
@@ -726,6 +713,7 @@ class LiteHRNet(nn.Layer):
         author={Yu, Changqian and Xiao, Bin and Gao, Changxin and Yuan, Lu and Zhang, Lei and Sang, Nong and Wang, Jingdong},
         booktitle={CVPR},year={2021}
     }
+
     Args:
         network_type (str): the network_type should be one of ["lite_18", "lite_30", "naive", "wider_naive"],
             "naive": Simply combining the shuffle block in ShuffleNet and the highresolution design pattern in HRNet.
@@ -758,8 +746,43 @@ class LiteHRNet(nn.Layer):
         self.norm_type = 'bn'
         self.pretrained = pretrained
 
-        self.stages_config = LITE_HRNET_CFG[network_type]
-        self.feat_channels = self.stages_config["num_channels"][-1]
+        self.module_configs = {
+            "lite_18": {
+                "num_modules": [2, 4, 2],
+                "num_branches": [2, 3, 4],
+                "num_blocks": [2, 2, 2],
+                "module_type": ["LITE", "LITE", "LITE"],
+                "reduce_ratios": [8, 8, 8],
+                "num_channels": [[40, 80], [40, 80, 160], [40, 80, 160, 320]],
+            },
+            "lite_30": {
+                "num_modules": [3, 8, 3],
+                "num_branches": [2, 3, 4],
+                "num_blocks": [2, 2, 2],
+                "module_type": ["LITE", "LITE", "LITE"],
+                "reduce_ratios": [8, 8, 8],
+                "num_channels": [[40, 80], [40, 80, 160], [40, 80, 160, 320]],
+            },
+            "naive": {
+                "num_modules": [2, 4, 2],
+                "num_branches": [2, 3, 4],
+                "num_blocks": [2, 2, 2],
+                "module_type": ["NAIVE", "NAIVE", "NAIVE"],
+                "reduce_ratios": [1, 1, 1],
+                "num_channels": [[30, 60], [30, 60, 120], [30, 60, 120, 240]],
+            },
+            "wider_naive": {
+                "num_modules": [2, 4, 2],
+                "num_branches": [2, 3, 4],
+                "num_blocks": [2, 2, 2],
+                "module_type": ["NAIVE", "NAIVE", "NAIVE"],
+                "reduce_ratios": [1, 1, 1],
+                "num_channels": [[40, 80], [40, 80, 160], [40, 80, 160, 320]],
+            },
+        }
+
+        self.stages_config = self.module_configs[network_type]
+        self.feat_channels = self.stages_config['num_channels'][-1]
 
         self.stem = Stem(3, 32, 32, 1)
         num_channels_pre_layer = [32]
@@ -795,23 +818,23 @@ class LiteHRNet(nn.Layer):
                 if num_channels_cur_layer[i] != num_channels_pre_layer[i]:
                     transition_layers.append(
                         nn.Sequential(
-                            nn.Conv2D(
+                            Conv2d(
                                 num_channels_pre_layer[i],
                                 num_channels_pre_layer[i],
                                 kernel_size=3,
                                 stride=1,
                                 padding=1,
                                 groups=num_channels_pre_layer[i],
-                                bias_attr=False),
-                            nn.BatchNorm(num_channels_pre_layer[i]),
-                            nn.Conv2D(
+                                bias=False),
+                            nn.BatchNorm2D(num_channels_pre_layer[i]),
+                            Conv2d(
                                 num_channels_pre_layer[i],
                                 num_channels_cur_layer[i],
                                 kernel_size=1,
                                 stride=1,
                                 padding=0,
-                                bias_attr=False, ),
-                            nn.BatchNorm(num_channels_cur_layer[i]),
+                                bias=False, ),
+                            nn.BatchNorm2D(num_channels_cur_layer[i]),
                             nn.ReLU()))
                 else:
                     transition_layers.append(None)
@@ -820,16 +843,16 @@ class LiteHRNet(nn.Layer):
                 for j in range(i + 1 - num_branches_pre):
                     conv_downsamples.append(
                         nn.Sequential(
-                            nn.Conv2D(
+                            Conv2d(
                                 num_channels_pre_layer[-1],
                                 num_channels_pre_layer[-1],
                                 groups=num_channels_pre_layer[-1],
                                 kernel_size=3,
                                 stride=2,
                                 padding=1,
-                                bias_attr=False, ),
-                            nn.BatchNorm(num_channels_pre_layer[-1]),
-                            nn.Conv2D(
+                                bias=False, ),
+                            nn.BatchNorm2D(num_channels_pre_layer[-1]),
+                            Conv2d(
                                 num_channels_pre_layer[-1],
                                 num_channels_cur_layer[i]
                                 if j == i - num_branches_pre else
@@ -837,10 +860,10 @@ class LiteHRNet(nn.Layer):
                                 kernel_size=1,
                                 stride=1,
                                 padding=0,
-                                bias_attr=False, ),
-                            nn.BatchNorm(num_channels_cur_layer[i]
-                                         if j == i - num_branches_pre else
-                                         num_channels_pre_layer[-1]),
+                                bias=False, ),
+                            nn.BatchNorm2D(num_channels_cur_layer[i]
+                                           if j == i - num_branches_pre else
+                                           num_channels_pre_layer[-1]),
                             nn.ReLU()))
                 transition_layers.append(nn.Sequential(*conv_downsamples))
         return nn.LayerList(transition_layers)
@@ -880,7 +903,6 @@ class LiteHRNet(nn.Layer):
 
     def forward(self, x):
         x = self.stem(x)
-
         y_list = [x]
         for stage_idx in range(3):
             x_list = []

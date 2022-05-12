@@ -19,7 +19,6 @@ import paddle.nn.functional as F
 from paddleseg import utils
 from paddleseg.models import layers
 from paddleseg.cvlibs import manager
-from paddleseg.utils import utils
 
 
 @manager.MODELS.add_component
