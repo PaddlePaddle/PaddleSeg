@@ -98,7 +98,7 @@ class PPMobileSeg(nn.Layer):
     def forward(self, x):
         x_hw = paddle.shape(x)[2:]
 
-        feats_backbone = self.backbone(x)  # [x2, x4, x8, x16, x32]
+        feats_backbone = self.backbone(x)  # [x4, x8, x16, x32]
         assert len(feats_backbone) >= len(self.backbone_indices), \
             f"The nums of backbone feats ({len(feats_backbone)}) should be greater or " \
             f"equal than the nums of backbone_indices ({len(self.backbone_indices)})"

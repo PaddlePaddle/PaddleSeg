@@ -35,7 +35,11 @@ __all__ = [
 
 
 def channel_shuffle(x, groups):
-    batch_size, num_channels, height, width = x.shape[0:4]
+    # batch_size, num_channels, height, width = x.shape[0:4]
+    batch_size = paddle.shape(x)[0]
+    num_channels = paddle.shape(x)[1]
+    height = paddle.shape(x)[2]
+    width = paddle.shape(x)[3]
     assert num_channels % groups == 0, 'num_channels should be divisible by groups'
     channels_per_group = num_channels // groups
     x = paddle.reshape(

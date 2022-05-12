@@ -49,19 +49,19 @@ NET_CONFIG = {
         # k, exp, c, se, act, s
         [3, 16, 16, False, "relu", 1],
         [3, 64, 24, False, "relu", 2],
-        [3, 72, 24, False, "relu", 1],
+        [3, 72, 24, False, "relu", 1],  # x4
         [5, 72, 40, True, "relu", 2],
         [5, 120, 40, True, "relu", 1],
-        [5, 120, 40, True, "relu", 1],
+        [5, 120, 40, True, "relu", 1],  # x8
         [3, 240, 80, False, "hardswish", 2],
         [3, 200, 80, False, "hardswish", 1],
         [3, 184, 80, False, "hardswish", 1],
         [3, 184, 80, False, "hardswish", 1],
         [3, 480, 112, True, "hardswish", 1],
-        [3, 672, 112, True, "hardswish", 1],
+        [3, 672, 112, True, "hardswish", 1],  # x16
         [5, 672, 160, True, "hardswish", 2],
         [5, 960, 160, True, "hardswish", 1],
-        [5, 960, 160, True, "hardswish", 1],
+        [5, 960, 160, True, "hardswish", 1],  # x32
     ],
     "small": [
         # k, exp, c, se, act, s
