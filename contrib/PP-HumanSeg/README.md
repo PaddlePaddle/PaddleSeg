@@ -64,7 +64,7 @@ For the portrait segmentation task, PP-HumanSeg has opened a portrait segmentati
 
 | Model | Model Description | Checkpoint | Inference Model |
 | --- | --- | --- | ---|
-| PP-HumanSeg-Lite | Ultra-lightweight model, suitable for real-time segmentation scenarios on the web or mobile, such as mobile phone selfies, web video conferences, the model structure is [Paddle self-developed model](../../configs/pp_humanseg_lite/README.md), recommended input size (398, 224) | [lite_portrait_ckpt](https://paddleseg.bj.bcebos.com/dygraph/ppseg/ppseg_lite_portrait_398x224.tar.gz) | [lite_portrait_inference](https://paddleseg.bj.bcebos.com/dygraph/ppseg/ppseg_lite_portrait_398x224_with_softmax.tar.gz) |
+| PP-HumanSeg-Lite | Ultra-lightweight model, suitable for real-time segmentation scenarios on the web or mobile, such as mobile phone selfies, web video conferences, the model structure is [Paddle self-developed model](../../configs/pp_humanseg_lite/README.md), suitable for landscape size input, recommended input size (398, 224) | [lite_portrait_ckpt](https://paddleseg.bj.bcebos.com/dygraph/ppseg/ppseg_lite_portrait_398x224.tar.gz) | [lite_portrait_inference](https://paddleseg.bj.bcebos.com/dygraph/ppseg/ppseg_lite_portrait_398x224_with_softmax.tar.gz) |
 
 #### Model performance
 
@@ -244,7 +244,7 @@ python ../../export.py \
 --without_argmax --with_softmax
 ```
 
-[Note] when exporting a model, you must use `--without_argmax --with_softmax` parameter.
+[Note] The soft prediction result is used here, which can carry transparency and make the edges smoother. So when exporting a model, you must use `--without_argmax --with_softmax` parameter.
 
 Export the PP-HumanSeg-Lite model:
 
@@ -255,6 +255,8 @@ python ../../export.py \
 --model_path pretrained_model/ppseg_lite_portrait_398x224/model.pdparams \
 --without_argmax --with_softmax
 ```
+
+The corresponding export ymls for other PP-HumanSeg models are located in `../../configs/fcn/pp_humanseg_mobile_export_192x192.yml` and `../../configs/deeplabv3p/pp_humanseg_server_export_512x512.yml`
 
 ### Export parameter
 

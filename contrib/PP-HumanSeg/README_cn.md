@@ -64,7 +64,7 @@ NOTE:
 
 | 模型名 | 模型说明 | Checkpoint | Inference Model |
 | --- | --- | --- | ---|
-| PP-HumanSeg-Lite | 超轻量级模型，适用于Web端或移动端实时分割场景，例如手机自拍、Web视频会议，模型结构为[Paddle自研模型](../../configs/pp_humanseg_lite/README.md)，推荐输入大小（398，224） | [lite_portrait_ckpt](https://paddleseg.bj.bcebos.com/dygraph/ppseg/ppseg_lite_portrait_398x224.tar.gz) | [lite_portrait_inference](https://paddleseg.bj.bcebos.com/dygraph/ppseg/ppseg_lite_portrait_398x224_with_softmax.tar.gz) |
+| PP-HumanSeg-Lite | 超轻量级模型，适用于Web端或移动端实时分割场景，例如手机自拍、Web视频会议，模型结构为[Paddle自研模型](../../configs/pp_humanseg_lite/README.md)，适合横屏尺寸输入，推荐输入大小（398，224） | [lite_portrait_ckpt](https://paddleseg.bj.bcebos.com/dygraph/ppseg/ppseg_lite_portrait_398x224.tar.gz) | [lite_portrait_inference](https://paddleseg.bj.bcebos.com/dygraph/ppseg/ppseg_lite_portrait_398x224_with_softmax.tar.gz) |
 
 #### 模型性能
 
@@ -244,7 +244,7 @@ python ../../export.py \
 --without_argmax --with_softmax
 ```
 
-【注】模型导出时必须携带`--without_argmax --with_softmax`参数。
+【注】这里采用软预测结果，可以携带透明度，使得边缘更为平滑。因此模型导出时必须携带`--without_argmax --with_softmax`参数。
 
 导出PP-HumanSeg-Lite模型：
 
@@ -255,6 +255,8 @@ python ../../export.py \
 --model_path pretrained_model/ppseg_lite_portrait_398x224/model.pdparams \
 --without_argmax --with_softmax
 ```
+
+其他PP-HumanSeg模型对应的导出yml位于`../../configs/fcn/pp_humanseg_mobile_export_192x192.yml`和`../../configs/deeplabv3p/pp_humanseg_server_export_512x512.yml`
 
 ### 导出脚本参数解释
 
