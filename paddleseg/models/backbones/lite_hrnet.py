@@ -25,6 +25,7 @@ from paddle.regularizer import L2Decay
 from paddle.nn.initializer import Normal, Constant
 
 from paddleseg.cvlibs import manager
+from paddleseg.utils import utils, logger
 
 __all__ = [
     "Lite_HRNet_18", "Lite_HRNet_30", "Lite_HRNet_naive",
@@ -730,7 +731,8 @@ class LiteHRNet(nn.Layer):
                  freeze_at=0,
                  freeze_norm=True,
                  norm_decay=0.,
-                 return_idx=[0, 1, 2, 3]):
+                 return_idx=[0, 1, 2, 3],
+                 pretrained=None):
         super(LiteHRNet, self).__init__()
         if isinstance(return_idx, Integral):
             return_idx = [return_idx]
@@ -742,6 +744,7 @@ class LiteHRNet(nn.Layer):
         self.norm_decay = norm_decay
         self.return_idx = return_idx
         self.norm_type = 'bn'
+        self.pretrained = pretrained
 
         self.module_configs = {
             "lite_18": {
@@ -794,6 +797,12 @@ class LiteHRNet(nn.Layer):
             setattr(self, 'stage{}'.format(stage_idx), stage)
         self.head_layer = IterativeHead(num_channels_pre_layer, 'bn',
                                         self.freeze_norm, self.norm_decay)
+
+        self.init_weight()
+
+    def init_weight(self):
+        if self.pretrained is not None:
+            utils.load_entire_model(self, self.pretrained)
 
     def _make_transition_layer(self,
                                num_channels_pre_layer,
@@ -914,16 +923,6 @@ class LiteHRNet(nn.Layer):
             if i in self.return_idx:
                 res.append(layer)
         return res
-
-    '''
-    @property
-    def out_shape(self):
-        return [
-            ShapeSpec(
-                channels=self._out_channels[i], stride=self._out_strides[i])
-            for i in self.return_idx
-        ]
-    '''
 
 
 @manager.BACKBONES.add_component
