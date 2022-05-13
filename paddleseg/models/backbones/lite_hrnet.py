@@ -782,7 +782,6 @@ class LiteHRNet(nn.Layer):
         }
 
         self.stages_config = self.module_configs[network_type]
-        self.feat_channels = self.stages_config['num_channels'][-1]
 
         self.stem = Stem(3, 32, 32, 1)
         num_channels_pre_layer = [32]
@@ -798,6 +797,11 @@ class LiteHRNet(nn.Layer):
             setattr(self, 'stage{}'.format(stage_idx), stage)
         self.head_layer = IterativeHead(num_channels_pre_layer, 'bn',
                                         self.freeze_norm, self.norm_decay)
+
+        num_channels = self.stages_config["num_channels"][-1]
+        self.feat_channels = [num_channels[0]]
+        for i in range(1, len(num_channels)):
+            self.feat_channels.append(num_channels[i] // 2)
 
         self.init_weight()
 
@@ -903,6 +907,7 @@ class LiteHRNet(nn.Layer):
 
     def forward(self, x):
         x = self.stem(x)
+
         y_list = [x]
         for stage_idx in range(3):
             x_list = []
