@@ -53,11 +53,13 @@ loss:
       min_kept: 250000
   coef: [1, 1, 1]
 
+
 model:
   type: PPMobileSeg
   backbone:
-    type: MobileNetV3_large_x1_0  # [24, 40, 112, 160]
-    pretrained: https://paddleseg.bj.bcebos.com/dygraph/backbone/mobilenetv3_large_x1_0_ssld.tar.gz
+    type: Lite_HRNet_18   # [40, 40, 80, 160]
+    pretrained: /ssd2/pengjuncai/PaddleSeg/pretrained_model/LiteHRNet/LiteHRNet18_pretrained.pdparams
+  backbone_indices: [0, 1, 2]
   cm_bin_sizes: [1, 2, 4]
   cm_out_ch: 128
   arm_out_chs: [32, 64, 128]
