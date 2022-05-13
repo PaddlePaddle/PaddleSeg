@@ -732,6 +732,7 @@ class LiteHRNet(nn.Layer):
                  freeze_norm=True,
                  norm_decay=0.,
                  return_idx=[0, 1, 2, 3],
+                 use_head=False,
                  pretrained=None):
         super(LiteHRNet, self).__init__()
         if isinstance(return_idx, Integral):
@@ -744,6 +745,7 @@ class LiteHRNet(nn.Layer):
         self.norm_decay = norm_decay
         self.return_idx = return_idx
         self.norm_type = 'bn'
+        self.use_head = use_head
         self.pretrained = pretrained
 
         self.module_configs = {
@@ -795,15 +797,20 @@ class LiteHRNet(nn.Layer):
                 self.stages_config, stage_idx, num_channels, True,
                 self.freeze_norm, self.norm_decay)
             setattr(self, 'stage{}'.format(stage_idx), stage)
-        self.head_layer = IterativeHead(num_channels_pre_layer, 'bn',
-                                        self.freeze_norm, self.norm_decay)
 
         num_channels = self.stages_config["num_channels"][-1]
-        self.feat_channels = [num_channels[0]]
-        for i in range(1, len(num_channels)):
-            self.feat_channels.append(num_channels[i] // 2)
+        self.feat_channels = num_channels
+
+        if self.use_head:
+            self.head_layer = IterativeHead(num_channels_pre_layer, 'bn',
+                                            self.freeze_norm, self.norm_decay)
+
+            self.feat_channels = [num_channels[0]]
+            for i in range(1, len(num_channels)):
+                self.feat_channels.append(num_channels[i] // 2)
 
         self.init_weight()
+        print(self.feat_channels)
 
     def init_weight(self):
         if self.pretrained is not None:
@@ -922,10 +929,11 @@ class LiteHRNet(nn.Layer):
                     x_list.append(y_list[j])
             y_list = getattr(self, 'stage{}'.format(stage_idx))(x_list)
 
-        x = self.head_layer(y_list)
+        if self.use_head:
+            y_list = self.head_layer(y_list)
 
         res = []
-        for i, layer in enumerate(x):
+        for i, layer in enumerate(y_list):
             if i == self.freeze_at:
                 layer.stop_gradient = True
             if i in self.return_idx:

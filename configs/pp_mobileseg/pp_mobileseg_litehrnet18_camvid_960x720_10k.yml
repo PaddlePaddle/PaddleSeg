@@ -57,7 +57,8 @@ loss:
 model:
   type: PPMobileSeg
   backbone:
-    type: Lite_HRNet_18   # [40, 40, 80, 160]
+    type: Lite_HRNet_18
+    use_head: False   # False: [40, 80, 160, 320] True: [40, 40, 80, 160]
     pretrained: /ssd2/pengjuncai/PaddleSeg/pretrained_model/LiteHRNet/LiteHRNet18_pretrained.pdparams
   backbone_indices: [0, 1, 2]
   cm_bin_sizes: [1, 2, 4]
