@@ -201,8 +201,8 @@ export CUDA_VISIBLE_DEVICES=0 # Set 1 available card
 # Please execute the following command under windows
 # set CUDA_VISIBLE_DEVICES=0
 python train.py \
---config configs/fcn_hrnetw18_small_v1_humanseg_192x192_mini_supervisely.yml \
---save_dir saved_model/fcn_hrnetw18_small_v1_humanseg_192x192_mini_supervisely \
+--config configs/pp_humanseg_mobile_192x192_mini_supervisely.yml \
+--save_dir saved_model/pp_humanseg_mobile_192x192_mini_supervisely \
 --save_interval 100 --do_eval --use_vdl
 ````
 
@@ -215,16 +215,16 @@ python train.py --help
 Use the following command to evaluate
 ```bash
 python val.py \
---config configs/fcn_hrnetw18_small_v1_humanseg_192x192_mini_supervisely.yml \
---model_path saved_model/fcn_hrnetw18_small_v1_humanseg_192x192_mini_supervisely/best_model/model.pdparams
+--config configs/pp_humanseg_mobile_192x192_mini_supervisely.yml \
+--model_path saved_model/pp_humanseg_mobile_192x192_mini_supervisely/best_model/model.pdparams
 ```
 
 ### Predict
 Use the following command to make predictions, the prediction results are saved in the `./output/result/` folder by default.
 ```bash
 python predict.py \
---config configs/fcn_hrnetw18_small_v1_humanseg_192x192_mini_supervisely.yml \
---model_path saved_model/fcn_hrnetw18_small_v1_humanseg_192x192_mini_supervisely/best_model/model.pdparams \
+--config configs/pp_humanseg_mobile_192x192_mini_supervisely.yml \
+--model_path saved_model/pp_humanseg_mobile_192x192_mini_supervisely/best_model/model.pdparams \
 --image_path data/human_image.jpg
 ```
 
@@ -238,9 +238,9 @@ export CUDA_VISIBLE_DEVICES=0 # Set 1 available card
 # Please execute the following command under windows
 # set CUDA_VISIBLE_DEVICES=0
 python ../../export.py \
---config configs/fcn_hrnetw18_small_v1_humanseg_192x192_mini_supervisely.yml \
---model_path saved_model/fcn_hrnetw18_small_v1_humanseg_192x192_mini_supervisely/best_model/model.pdparams \
---save_dir export_model/fcn_hrnetw18_small_v1_humanseg_192x192_mini_supervisely_with_softmax \
+--config configs/pp_humanseg_mobile_192x192_mini_supervisely.yml \
+--model_path saved_model/pp_humanseg_mobile_192x192_mini_supervisely/best_model/model.pdparams \
+--save_dir export_model/pp_humanseg_mobile_192x192_mini_supervisely_with_softmax \
 --without_argmax --with_softmax
 ```
 
@@ -256,7 +256,7 @@ python ../../export.py \
 --without_argmax --with_softmax
 ```
 
-The corresponding export ymls for other PP-HumanSeg models are located in `../../configs/fcn/pp_humanseg_mobile_export_192x192.yml` and `../../configs/deeplabv3p/pp_humanseg_server_export_512x512.yml`
+The exported ymls corresponding to other PP-HumanSeg models are located in the `configs/` and `../../configs/pp_humanseg_lite/` directories.
 
 ### Export parameter
 

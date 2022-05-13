@@ -1,12 +1,8 @@
 
 model:
-  type: FCN
-  backbone:
-    type: HRNet_W18_Small_V1
-    align_corners: False
+  type: PPHumanSegLite
+  align_corners: False
   num_classes: 2
-  pretrained: Null
-  backbone_indices: [-1]
 
 export:
   transforms:

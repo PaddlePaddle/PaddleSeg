@@ -201,8 +201,8 @@ export CUDA_VISIBLE_DEVICES=0 # 设置1张可用的卡
 # windows下请执行以下命令
 # set CUDA_VISIBLE_DEVICES=0
 python train.py \
---config configs/fcn_hrnetw18_small_v1_humanseg_192x192_mini_supervisely.yml \
---save_dir saved_model/fcn_hrnetw18_small_v1_humanseg_192x192_mini_supervisely \
+--config configs/pp_humanseg_mobile_192x192_mini_supervisely.yml \
+--save_dir saved_model/pp_humanseg_mobile_192x192_mini_supervisely \
 --save_interval 100 --do_eval --use_vdl
 ```
 
@@ -215,16 +215,16 @@ python train.py --help
 使用下述命令进行评估
 ```bash
 python val.py \
---config configs/fcn_hrnetw18_small_v1_humanseg_192x192_mini_supervisely.yml \
---model_path saved_model/fcn_hrnetw18_small_v1_humanseg_192x192_mini_supervisely/best_model/model.pdparams
+--config configs/pp_humanseg_mobile_192x192_mini_supervisely.yml \
+--model_path saved_model/pp_humanseg_mobile_192x192_mini_supervisely/best_model/model.pdparams
 ```
 
 ### 预测
 使用下述命令进行预测， 预测结果默认保存在`./output/result/`文件夹中。
 ```bash
 python predict.py \
---config configs/fcn_hrnetw18_small_v1_humanseg_192x192_mini_supervisely.yml \
---model_path saved_model/fcn_hrnetw18_small_v1_humanseg_192x192_mini_supervisely/best_model/model.pdparams \
+--config configs/pp_humanseg_mobile_192x192_mini_supervisely.yml \
+--model_path saved_model/pp_humanseg_mobile_192x192_mini_supervisely/best_model/model.pdparams \
 --image_path data/human_image.jpg
 ```
 
@@ -238,9 +238,9 @@ export CUDA_VISIBLE_DEVICES=0 # 设置1张可用的卡
 # windows下请执行以下命令
 # set CUDA_VISIBLE_DEVICES=0
 python ../../export.py \
---config configs/fcn_hrnetw18_small_v1_humanseg_192x192_mini_supervisely.yml \
---model_path saved_model/fcn_hrnetw18_small_v1_humanseg_192x192_mini_supervisely/best_model/model.pdparams \
---save_dir export_model/fcn_hrnetw18_small_v1_humanseg_192x192_mini_supervisely_with_softmax \
+--config configs/pp_humanseg_mobile_192x192_mini_supervisely.yml \
+--model_path saved_model/pp_humanseg_mobile_192x192_mini_supervisely/best_model/model.pdparams \
+--save_dir export_model/pp_humanseg_mobile_192x192_mini_supervisely_with_softmax \
 --without_argmax --with_softmax
 ```
 
@@ -256,7 +256,7 @@ python ../../export.py \
 --without_argmax --with_softmax
 ```
 
-其他PP-HumanSeg模型对应的导出yml位于`../../configs/fcn/pp_humanseg_mobile_export_192x192.yml`和`../../configs/deeplabv3p/pp_humanseg_server_export_512x512.yml`
+其他PP-HumanSeg模型对应的导出yml位于`configs/`和`../../configs/pp_humanseg_lite/`目录下。
 
 ### 导出脚本参数解释
 
