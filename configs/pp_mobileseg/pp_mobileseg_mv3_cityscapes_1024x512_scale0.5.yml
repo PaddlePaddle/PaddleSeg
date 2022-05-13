@@ -1,7 +1,7 @@
 _base_: '../_base_/cityscapes.yml'
 
-batch_size: 4  # total: 4*4
-iters: 160000
+batch_size: 8  # total: 16
+iters: 80000
 
 optimizer:
   weight_decay: 5.0e-4
@@ -44,10 +44,8 @@ test_config:
 model:
   type: PPMobileSeg
   backbone:
-    type: Lite_HRNet_18
-    use_head: False   # False: [40, 80, 160, 320] True: [40, 40, 80, 160]
-    pretrained: /ssd2/pengjuncai/PaddleSeg/pretrained_model/LiteHRNet/LiteHRNet18_pretrained.pdparams
-  backbone_indices: [0, 1, 2]
+    type: MobileNetV3_large_x1_0  # [24, 40, 112, 160]
+    pretrained: https://paddleseg.bj.bcebos.com/dygraph/backbone/mobilenetv3_large_x1_0_ssld.tar.gz
   cm_bin_sizes: [1, 2, 4]
   cm_out_ch: 128
   arm_out_chs: [32, 64, 128]

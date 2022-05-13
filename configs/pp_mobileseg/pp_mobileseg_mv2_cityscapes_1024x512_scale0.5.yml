@@ -1,7 +1,7 @@
 _base_: '../_base_/cityscapes.yml'
 
-batch_size: 4  # total: 4*4
-iters: 160000
+batch_size: 8  # total: 16
+iters: 80000
 
 optimizer:
   weight_decay: 5.0e-4
@@ -44,8 +44,8 @@ test_config:
 model:
   type: PPMobileSeg
   backbone:
-    type: MobileNetV3_large_x1_0  # [24, 40, 112, 160]
-    pretrained: https://paddleseg.bj.bcebos.com/dygraph/backbone/mobilenetv3_large_x1_0_ssld.tar.gz
+    type: MobileNetV2 # [24, 32, 96, 320]
+    pretrained: https://paddleseg.bj.bcebos.com/dygraph/backbone/mobilenetv2_ssld.tar.gz
   cm_bin_sizes: [1, 2, 4]
   cm_out_ch: 128
   arm_out_chs: [32, 64, 128]

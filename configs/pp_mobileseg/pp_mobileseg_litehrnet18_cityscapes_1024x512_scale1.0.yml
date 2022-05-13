@@ -1,4 +1,4 @@
-_base_: './pp_mobileseg_mv2_cityscapes_1024x512_scale0.5_160k.yml'
+_base_: './pp_mobileseg_litehrnet18_cityscapes_1024x512_scale0.5.yml'
 
 train_dataset:
   transforms:
