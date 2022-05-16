@@ -52,7 +52,9 @@ class RMILoss(nn.Layer):
                  rmi_pool_size=3,
                  rmi_pool_stride=3,
                  loss_weight_lambda=0.5,
-                 ignore_index=255):
+                 ignore_index=255,
+                 do_rmi = False):
+                 
         super(RMILoss, self).__init__()
 
         self.num_classes = num_classes
@@ -69,13 +71,18 @@ class RMILoss(nn.Layer):
         self.kernel_padding = self.rmi_pool_size // 2
         self.ignore_index = ignore_index
 
-    def forward(self, logits_4D, labels_4D, do_rmi=True):
+        self.do_rmi = do_rmi
+
+    #def forward(self, logits_4D, labels_4D, do_rmi=True):
+    def forward(self, logits_4D, labels_4D):
         """
         Forward computation.
         Args:
             logits (Tensor): Shape is [N, C, H, W], logits at each prediction (between -\infty and +\infty).
             labels (Tensor): Shape is [N, H, W], ground truth labels (between 0 and C - 1).
         """
+        do_rmi = self.do_rmi
+
         logits_4D = paddle.cast(logits_4D, dtype='float32')
         labels_4D = paddle.cast(labels_4D, dtype='float32')
 
