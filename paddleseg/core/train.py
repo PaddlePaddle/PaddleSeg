@@ -24,6 +24,24 @@ from paddleseg.utils import (TimeAverager, calculate_eta, resume, logger,
                              worker_init_fn, train_profiler, op_flops_funs)
 from paddleseg.core.val import evaluate
 
+#########自定义##########
+from paddle.autograd import PyLayer
+from paddle.distributed.fleet.utils.hybrid_parallel_util import fused_allreduce_gradients
+
+class cus_tanh(PyLayer):
+    @staticmethod
+    def forward(ctx, x):
+        y = paddle.tanh(x)
+        ctx.save_for_backward(y)
+        return y
+
+    @staticmethod
+    def backward(ctx, dy):
+        y, = ctx.saved_tensor()
+        grad = dy * (1 - paddle.square(y))
+        return grad
+#########################
+
 
 def check_logits_losses(logits_list, losses):
     len_logits = len(logits_list)
@@ -164,7 +182,8 @@ def train(model,
             iter += 1
             if iter > iters:
                 version = paddle.__version__
-                if version == '2.1.2':
+                #if version == '2.1.2':
+                if version == '2.2.2':
                     continue
                 else:
                     break
@@ -201,14 +220,41 @@ def train(model,
                 else:
                     scaler.minimize(optimizer, scaled)  # update parameters
             else:
-                logits_list = ddp_model(images) if nranks > 1 else model(images)
-                loss_list = loss_computation(
-                    logits_list=logits_list,
-                    labels=labels,
-                    losses=losses,
-                    edges=edges)
-                loss = sum(loss_list)
-                loss.backward()
+                #####自定义区#####
+
+                if nranks > 1:
+                    #images.stop_gradient = False
+                    #images = cus_tanh.apply(images)
+                    with ddp_model.no_sync():
+                        logits_list = ddp_model(images)
+                        loss_list = loss_computation(
+                            logits_list=logits_list,
+                            labels=labels,
+                            losses=losses,
+                            edges=edges)
+                        loss = sum(loss_list)
+                        loss.backward()
+                    
+                    fused_allreduce_gradients(list(ddp_model.parameters()), None)
+                else:
+                    logits_list =  model(images)
+                    loss_list = loss_computation(
+                        logits_list=logits_list,
+                        labels=labels,
+                        losses=losses,
+                        edges=edges)
+                    loss = sum(loss_list)
+                    loss.backward()          
+                    
+                ##################
+                #logits_list = ddp_model(images) if nranks > 1 else model(images)
+                #loss_list = loss_computation(
+                    #logits_list=logits_list,
+                    #labels=labels,
+                    #losses=losses,
+                    #edges=edges)
+                #loss = sum(loss_list)
+                #loss.backward()
                 # if the optimizer is ReduceOnPlateau, the loss is the one which has been pass into step.
                 if isinstance(optimizer, paddle.optimizer.lr.ReduceOnPlateau):
                     optimizer.step(loss)
