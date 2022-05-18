@@ -190,10 +190,10 @@ class InvertedResidualDS(Layer):
 
 
 class ShuffleNet(Layer):
-    def __init__(self, class_num=1000, scale=1.0, act="relu"):
+    def __init__(self, scale=1.0, act="relu", pretrained=None):
         super(ShuffleNet, self).__init__()
         self.scale = scale
-        self.class_num = class_num
+        self.pretrained = pretrained
         stage_repeats = [4, 8, 4]
 
         if scale == 0.25:
@@ -211,6 +211,10 @@ class ShuffleNet(Layer):
         else:
             raise NotImplementedError("This scale size:[" + str(scale) +
                                       "] is not implemented!")
+
+        self.out_index = [3, 11, 15]
+        self.feat_channels = stage_out_channels[1:5]
+
         # 1. conv1
         self._conv1 = ConvBNLayer(
             in_channels=3,
@@ -245,74 +249,64 @@ class ShuffleNet(Layer):
                             act=act,
                             name=str(stage_id + 2) + '_' + str(i + 1)))
                 self._block_list.append(block)
-        # 3. last_conv
-        self._last_conv = ConvBNLayer(
-            in_channels=stage_out_channels[-2],
-            out_channels=stage_out_channels[-1],
-            kernel_size=1,
-            stride=1,
-            padding=0,
-            act=act,
-            name='conv5')
-        # 4. pool
-        self._pool2d_avg = AdaptiveAvgPool2D(1)
-        self._out_c = stage_out_channels[-1]
-        # 5. fc
-        self._fc = Linear(
-            stage_out_channels[-1],
-            class_num,
-            weight_attr=ParamAttr(name='fc6_weights'),
-            bias_attr=ParamAttr(name='fc6_offset'))
+
+        self.init_weight()
+
+    def init_weight(self):
+        if self.pretrained is not None:
+            utils.load_entire_model(self, self.pretrained)
 
     def forward(self, inputs):
+        feat_list = []
+
         y = self._conv1(inputs)
         y = self._max_pool(y)
-        for inv in self._block_list:
+        feat_list.append(y)
+
+        for idx, inv in enumerate(self._block_list):
             y = inv(y)
-        y = self._last_conv(y)
-        y = self._pool2d_avg(y)
-        y = paddle.flatten(y, start_axis=1, stop_axis=-1)
-        y = self._fc(y)
-        return y
+            if idx in self.out_index:
+                feat_list.append(y)
+        return feat_list
 
 
 @manager.BACKBONES.add_component
-def ShuffleNetV2_x0_25(pretrained=False, use_ssld=False, **kwargs):
+def ShuffleNetV2_x0_25(**kwargs):
     model = ShuffleNet(scale=0.25, **kwargs)
     return model
 
 
 @manager.BACKBONES.add_component
-def ShuffleNetV2_x0_33(pretrained=False, use_ssld=False, **kwargs):
+def ShuffleNetV2_x0_33(**kwargs):
     model = ShuffleNet(scale=0.33, **kwargs)
     return model
 
 
 @manager.BACKBONES.add_component
-def ShuffleNetV2_x0_5(pretrained=False, use_ssld=False, **kwargs):
+def ShuffleNetV2_x0_5(**kwargs):
     model = ShuffleNet(scale=0.5, **kwargs)
     return model
 
 
 @manager.BACKBONES.add_component
-def ShuffleNetV2_x1_0(pretrained=False, use_ssld=False, **kwargs):
+def ShuffleNetV2_x1_0(**kwargs):
     model = ShuffleNet(scale=1.0, **kwargs)
     return model
 
 
 @manager.BACKBONES.add_component
-def ShuffleNetV2_x1_5(pretrained=False, use_ssld=False, **kwargs):
+def ShuffleNetV2_x1_5(**kwargs):
     model = ShuffleNet(scale=1.5, **kwargs)
     return model
 
 
 @manager.BACKBONES.add_component
-def ShuffleNetV2_x2_0(pretrained=False, use_ssld=False, **kwargs):
+def ShuffleNetV2_x2_0(**kwargs):
     model = ShuffleNet(scale=2.0, **kwargs)
     return model
 
 
 @manager.BACKBONES.add_component
-def ShuffleNetV2_swish(pretrained=False, use_ssld=False, **kwargs):
+def ShuffleNetV2_swish(**kwargs):
     model = ShuffleNet(scale=1.0, act="swish", **kwargs)
     return model
