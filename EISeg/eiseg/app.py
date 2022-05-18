@@ -2039,23 +2039,16 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
     @property
     def status(self):
         # TODO: 图片，模型
-        if not self.controller:
-            return self.IDILE
         c = self.controller
-        if c.model is None or c.image is None:
+        if c is None or c.model is None or c.image is None:
             return self.IDILE
-        if self._anning:
-            return self.ANNING
-        return self.EDITING
+        return self.ANNING if self._anning else self.EDITING
 
     @status.setter
     def status(self, status):
         if status not in [self.ANNING, self.EDITING]:
             return
-        if status == self.ANNING:
-            self._anning = True
-        else:
-            self._anning = False
+        self._anning = (status == self.ANNING)
 
     def loadGrid(self, img, is_rs=True):
         res = self.warn(self.tr("图像过大"), self.tr("图像过大，是否启用宫格功能？"), \
