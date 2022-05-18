@@ -64,7 +64,7 @@ For the portrait segmentation task, PP-HumanSeg has opened a portrait segmentati
 
 | Model | Model Description | Checkpoint | Inference Model |
 | --- | --- | --- | ---|
-| PP-HumanSeg-Lite | Ultra-lightweight model, suitable for real-time segmentation scenarios on the web or mobile, such as mobile phone selfies, web video conferences, the model structure is [Paddle self-developed model](../../configs/pp_humanseg_lite/README.md), recommended input size (398, 224) | [lite_portrait_ckpt](https://paddleseg.bj.bcebos.com/dygraph/ppseg/ppseg_lite_portrait_398x224.tar.gz) | [lite_portrait_inference](https://paddleseg.bj.bcebos.com/dygraph/ppseg/ppseg_lite_portrait_398x224_with_softmax.tar.gz) |
+| PP-HumanSeg-Lite | Ultra-lightweight model, suitable for real-time segmentation scenarios on the web or mobile, such as mobile phone selfies, web video conferences, the model structure is [Paddle self-developed model](../../configs/pp_humanseg_lite/README.md), suitable for landscape size input, recommended input size (398, 224) | [lite_portrait_ckpt](https://paddleseg.bj.bcebos.com/dygraph/ppseg/ppseg_lite_portrait_398x224.tar.gz) | [lite_portrait_inference](https://paddleseg.bj.bcebos.com/dygraph/ppseg/ppseg_lite_portrait_398x224_with_softmax.tar.gz) |
 
 #### Model performance
 
@@ -201,8 +201,8 @@ export CUDA_VISIBLE_DEVICES=0 # Set 1 available card
 # Please execute the following command under windows
 # set CUDA_VISIBLE_DEVICES=0
 python train.py \
---config configs/fcn_hrnetw18_small_v1_humanseg_192x192_mini_supervisely.yml \
---save_dir saved_model/fcn_hrnetw18_small_v1_humanseg_192x192_mini_supervisely \
+--config configs/pp_humanseg_mobile_192x192_mini_supervisely.yml \
+--save_dir saved_model/pp_humanseg_mobile_192x192_mini_supervisely \
 --save_interval 100 --do_eval --use_vdl
 ````
 
@@ -215,16 +215,16 @@ python train.py --help
 Use the following command to evaluate
 ```bash
 python val.py \
---config configs/fcn_hrnetw18_small_v1_humanseg_192x192_mini_supervisely.yml \
---model_path saved_model/fcn_hrnetw18_small_v1_humanseg_192x192_mini_supervisely/best_model/model.pdparams
+--config configs/pp_humanseg_mobile_192x192_mini_supervisely.yml \
+--model_path saved_model/pp_humanseg_mobile_192x192_mini_supervisely/best_model/model.pdparams
 ```
 
 ### Predict
 Use the following command to make predictions, the prediction results are saved in the `./output/result/` folder by default.
 ```bash
 python predict.py \
---config configs/fcn_hrnetw18_small_v1_humanseg_192x192_mini_supervisely.yml \
---model_path saved_model/fcn_hrnetw18_small_v1_humanseg_192x192_mini_supervisely/best_model/model.pdparams \
+--config configs/pp_humanseg_mobile_192x192_mini_supervisely.yml \
+--model_path saved_model/pp_humanseg_mobile_192x192_mini_supervisely/best_model/model.pdparams \
 --image_path data/human_image.jpg
 ```
 
@@ -238,13 +238,13 @@ export CUDA_VISIBLE_DEVICES=0 # Set 1 available card
 # Please execute the following command under windows
 # set CUDA_VISIBLE_DEVICES=0
 python ../../export.py \
---config configs/fcn_hrnetw18_small_v1_humanseg_192x192_mini_supervisely.yml \
---model_path saved_model/fcn_hrnetw18_small_v1_humanseg_192x192_mini_supervisely/best_model/model.pdparams \
---save_dir export_model/fcn_hrnetw18_small_v1_humanseg_192x192_mini_supervisely_with_softmax \
+--config configs/pp_humanseg_mobile_192x192_mini_supervisely.yml \
+--model_path saved_model/pp_humanseg_mobile_192x192_mini_supervisely/best_model/model.pdparams \
+--save_dir export_model/pp_humanseg_mobile_192x192_mini_supervisely_with_softmax \
 --without_argmax --with_softmax
 ```
 
-[Note] when exporting a model, you must use `--without_argmax --with_softmax` parameter.
+[Note] The soft prediction result is used here, which can carry transparency and make the edges smoother. So when exporting a model, you must use `--without_argmax --with_softmax` parameter.
 
 Export the PP-HumanSeg-Lite model:
 
@@ -255,6 +255,8 @@ python ../../export.py \
 --model_path pretrained_model/ppseg_lite_portrait_398x224/model.pdparams \
 --without_argmax --with_softmax
 ```
+
+The exported ymls corresponding to other PP-HumanSeg models are located in the `configs/` and `../../configs/pp_humanseg_lite/` directories.
 
 ### Export parameter
 
