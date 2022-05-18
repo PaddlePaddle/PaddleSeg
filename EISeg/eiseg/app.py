@@ -841,7 +841,6 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
             return False
         self.controller.labelList.clear()
         if self.controller:
-            self.controller.label_list = []
             self.controller.curr_label_number = 0
         self.labelListTable.clear()
         self.labelListTable.setRowCount(0)
@@ -883,8 +882,6 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
             return
         table.item(row, col).setBackground(color)
         self.controller.labelList[row].color = color.getRgb()[:3]
-        if self.controller:
-            self.controller.label_list = self.controller.labelList
         for p in self.scene.polygon_items:
             idlab = self.controller.labelList.getLabelById(p.labelIndex)
             if idlab is not None:
@@ -912,7 +909,6 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
                 table.item(row, 0).setSelected(True)
             if self.controller:
                 self.controller.setCurrLabelIdx(int(table.item(row, 0).text()))
-                self.controller.label_list = self.controller.labelList
 
     def labelListItemChanged(self, row, col):
         self.colorMap.usedColors = self.controller.labelList.colors
