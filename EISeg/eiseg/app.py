@@ -840,8 +840,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         if res == QMessageBox.Cancel:
             return False
         self.controller.labelList.clear()
-        if self.controller:
-            self.controller.curr_label_number = 0
+        self.controller.curr_label_number = 0
         self.labelListTable.clear()
         self.labelListTable.setRowCount(0)
         return True
@@ -907,8 +906,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
                                cl).setBackground(QtGui.QColor(255, 255, 255))
                 table.item(row, cl).setBackground(QtGui.QColor(48, 140, 198))
                 table.item(row, 0).setSelected(True)
-            if self.controller:
-                self.controller.setCurrLabelIdx(int(table.item(row, 0).text()))
+            self.controller.setCurrLabelIdx(int(table.item(row, 0).text()))
 
     def labelListItemChanged(self, row, col):
         self.colorMap.usedColors = self.controller.labelList.colors
@@ -1271,10 +1269,10 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         self.setDirty(False)
 
     def imageListClicked(self):
-        if not self.controller:
+        if self.controller.model is None:
             self.warn(self.tr("模型未加载"), self.tr("尚未加载模型，请先加载模型！"))
             self.changeParam()
-            if not self.controller:
+            if self.controller.model is None:
                 return
         if self.controller.is_incomplete_mask:
             self.exportLabel()
@@ -1283,7 +1281,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         self.turnImg(delta, True)
 
     def finishObject(self):
-        if not self.controller or self.image is None:
+        if self.controller.image is None:
             return
         current_mask, curr_polygon = self.controller.finishObject(
             building=self.boundaryRegular.isChecked())
@@ -1307,7 +1305,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
 
     def completeLastMask(self):
         # 返回最后一个标签是否完成，false就是还有带点的
-        if not self.controller or self.controller.image is None:
+        if self.controller.image is None:
             return True
         if not self.controller.is_incomplete_mask:
             return True
@@ -1323,7 +1321,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         return False
 
     def saveImage(self, close=False):
-        if self.controller and self.controller.image is not None:
+        if self.controller.image is not None:
             # 1. 完成正在交互式标注的标签
             self.completeLastMask()
             # 2. 进行保存
@@ -1351,7 +1349,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
 
     def exportLabel(self, saveAs=False, savePath=None, lab_input=None):
         # 1. 需要处于标注状态
-        if not self.controller or self.controller.image is None:
+        if self.controller.image is None:
             return
         # 2. 完成正在交互式标注的标签
         self.completeLastMask()
@@ -1552,7 +1550,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
 
     def maskOpacityChanged(self):
         self.sldOpacity.textLab.setText(str(self.opacity))
-        if not self.controller or self.controller.image is None:
+        if self.controller.image is None:
             return
         for polygon in self.scene.polygon_items:
             polygon.setOpacity(self.opacity)
@@ -1560,20 +1558,20 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
 
     def clickRadiusChanged(self):
         self.sldClickRadius.textLab.setText(str(self.clickRadius))
-        if not self.controller or self.controller.image is None:
+        if self.controller.image is None:
             return
         self.updateImage()
 
     def threshChanged(self):
         self.sldThresh.textLab.setText(str(self.segThresh))
-        if not self.controller or self.controller.image is None:
+        if self.controller.image is None:
             return
         self.controller.prob_thresh = self.segThresh
         self.updateImage()
 
     # def slideChanged(self):
     #     self.sldMISlide.textLab.setText(str(self.slideMi))
-    #     if not self.controller or self.controller.image is None:
+    #     if self.controller.image is None:
     #         return
     #     self.midx = int(self.slideMi) - 1
     #     self.miSlideSet()
@@ -1590,7 +1588,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
             self.setDirty(False)
 
     def clearAll(self):
-        if not self.controller or self.controller.image is None:
+        if self.controller.image is None:
             return
         self.controller.resetLastObject()
         self.updateImage()
@@ -1667,7 +1665,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
     def keyReleaseEvent(self, event):
         # print(event.key(), Qt.Key_Control)
         # 释放ctrl的时候刷新图像，对应自适应点大小在缩放后刷新
-        if not self.controller or self.controller.image is None:
+        if self.controller.image is None:
             return
         if event.key() == Qt.Key_Control:
             self.updateImage()
@@ -2108,7 +2106,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
 
     # 医疗
     def wwChanged(self):
-        if not self.controller or self.image is None:
+        if self.image is None:
             return
         try:  # 那种jpg什么格式的医疗图像调整窗宽等会造成崩溃
             self.textWw.selectAll()
@@ -2119,7 +2117,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
             pass
 
     def wcChanged(self):
-        if not self.controller or self.image is None:
+        if self.image is None:
             return
         try:
             self.textWc.selectAll()
