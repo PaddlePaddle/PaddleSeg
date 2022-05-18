@@ -810,7 +810,6 @@ class LiteHRNet(nn.Layer):
                 self.feat_channels.append(num_channels[i] // 2)
 
         self.init_weight()
-        print(self.feat_channels)
 
     def init_weight(self):
         if self.pretrained is not None:

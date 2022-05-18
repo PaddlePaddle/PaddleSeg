@@ -67,8 +67,8 @@ class PPMobileSeg(nn.Layer):
             f"less than the length of feat_channels ({len(backbone.feat_channels)})."
         self.backbone = backbone
 
-        assert len(backbone_indices) > 1, "The lenght of backbone_indices " \
-            "should be greater than 1"
+        assert len(backbone_indices) >= 1, "The lenght of backbone_indices " \
+            "should not be lesser than 1"
         self.backbone_indices = backbone_indices  # [..., x16_id, x32_id]
         backbone_out_chs = [backbone.feat_channels[i] for i in backbone_indices]
 
