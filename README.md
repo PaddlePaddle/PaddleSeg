@@ -4,14 +4,15 @@
 >> 预训练模型保存在PaddleSeg/pretrained中
 
 
-数据集格式 
+数据集格式    
 |-cityscapes    
-----|-leftImg8bit     
---------|-train     
---------|-val    
-----|-gtFine    
---------|-train    
---------|-val   
+>|-leftImg8bit     
+>>|-train     
+>>|-val  
+
+>|-gtFine    
+>>|-train    
+>>|-val   
       
   ~~~Python
   #训练模型
