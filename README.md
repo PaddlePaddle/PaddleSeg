@@ -37,6 +37,6 @@ cd PaddleSeg
 
       
    
-      
+## 第四步模型精度检验
 ![image](https://user-images.githubusercontent.com/63546191/169260254-0892fcf1-1408-4bbf-9049-6dd7a3a5a88b.png)   
 精度要求miou达到86.7，我的模型精度为86.87，满足要求
