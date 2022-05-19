@@ -1,7 +1,7 @@
 >> 最好模型地址：链接：https://pan.baidu.com/s/1gPuqmhG6K2vo2eyBchEuqg 提取码：CAVS   
 >> 提取后放到PaddleSeg/output目录下
 
->> 预训练模型地址：链接：https://pan.baidu.com/s/1zDcUb4GxHH1xweRu3l2M9A 提取码：CAVS 
+>> 预训练模型地址：链接：https://pan.baidu.com/s/1zDcUb4GxHH1xweRu3l2M9A 提取码：CAVS    
 >> 预训练模型保存在PaddleSeg/pretrained中    
 
 ## 第一步克隆本项目：  
