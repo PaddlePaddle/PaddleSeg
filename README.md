@@ -27,4 +27,10 @@
   ~~~
 
 ![image](https://user-images.githubusercontent.com/63546191/169228623-87f12422-54a4-449d-b42d-7e4d9baa22b0.png)
-注意：单卡训练使用上面的lr，四卡训练使用下面的lr
+注意：单卡训练使用上面的lr，四卡训练使用下面的lr    
+
+      
+   
+      
+![image](https://user-images.githubusercontent.com/63546191/169260254-0892fcf1-1408-4bbf-9049-6dd7a3a5a88b.png)   
+精度要求miou达到86.7，我的模型精度为86.87，满足要求
