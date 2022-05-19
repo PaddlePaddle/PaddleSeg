@@ -5,7 +5,7 @@
 
 通过模型选型工具，大家选择好目标模型后，接下来需要进行模型训练和部署。
 
-本文档在工业质检场景，针对选型工具推荐的分割模型，用一个示例来简单介绍模型的训练和导出。
+本文档在工业质检场景，针对选型工具推荐的分割模型，用一个示例来简单介绍模型的训练、导出和部署。
 
 # 2 准备
 ## 准备环境
@@ -120,3 +120,29 @@ python export.py \
 ```
 
 上面脚本加载`pp_liteseg_stdc2`模型精度最高的权重，导出预测模型保存在`output/pp_liteseg_stdc2/infer_models`目录。
+
+
+# 5 部署demo
+
+导出模型后，大家可以参考如下文档进行部署。
+
+| 端侧         | 库           | 教程   |
+| :----------- | :----------- | :----- |
+| 服务端端Python部署 | Paddle预测库 | [文档](../../docs/deployment/inference/python_inference_cn.md) |
+| 服务器端端C++部署 | PaddleInference预测库 | [文档](../../docs/deployment/inference/cpp_inference_cn.md) |
+| 移动端部署   | PaddleLite   | [文档](../../docs/deployment/lite/lite_cn.md) |
+| 前端部署     | PaddleJS     | [文档](../../docs/deployment/web/web_cn.md) |
+
+为了更方便大家部署，我们也提供了可视化部署Demo，欢迎尝试使用。
+
+* [Windows Demo下载地址](https://github.com/PaddlePaddle/PaddleX/tree/develop/deploy/cpp/docs/csharp_deploy)
+
+<div align="center">
+  <img src="https://user-images.githubusercontent.com/48433081/169064583-c931f4c0-dfd6-4bfa-85f1-be68eb351e4a.png"  width = "800" />  
+</div>
+
+* [Linux Demo下载地址](https://github.com/cjh3020889729/The-PaddleX-QT-Visualize-GUI)
+
+<div align="center">
+  <img src="https://user-images.githubusercontent.com/48433081/169065951-147f8d51-bf3e-4a28-9197-d717968de73f.png"  width = "800" />  
+</div>
