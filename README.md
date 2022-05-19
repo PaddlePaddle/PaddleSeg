@@ -2,8 +2,13 @@
 >> 提取后放到PaddleSeg/output目录下
 
 >> 预训练模型地址：链接：https://pan.baidu.com/s/1zDcUb4GxHH1xweRu3l2M9A 提取码：CAVS 
->> 预训练模型保存在PaddleSeg/pretrained中
+>> 预训练模型保存在PaddleSeg/pretrained中    
 
+## 第一步克隆本项目：  
+~~~shell
+git clone https://github.com/marshall-dteach/PSA.git
+cd PaddleSeg
+~~~
 
 数据集格式    
 |-cityscapes    
@@ -14,14 +19,15 @@
 >|-gtFine    
 >>|-train    
 >>|-val   
-      
-  ~~~Python
+ 
   #训练模型
+  ~~~shell
   cd PaddleSeg
   python main.py #单卡
   python -m paddle.distributed.launch main.py  #多卡
-  
+  ~~~
   #验证模型
+  ~~~shell
   cd PaddleSeg
   python valide.py
   ~~~
