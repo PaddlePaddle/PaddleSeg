@@ -213,28 +213,30 @@ class GhostBottleneck(nn.Layer):
 
 
 class GhostNet(nn.Layer):
-    def __init__(self, scale, class_num=1000):
+    def __init__(self, scale, pretrained=None):
         super(GhostNet, self).__init__()
         self.cfgs = [
             # k, t, c, SE, s
             [3, 16, 16, 0, 1],
             [3, 48, 24, 0, 2],
-            [3, 72, 24, 0, 1],
+            [3, 72, 24, 0, 1],  # x4
             [5, 72, 40, 1, 2],
-            [5, 120, 40, 1, 1],
+            [5, 120, 40, 1, 1],  # x8
             [3, 240, 80, 0, 2],
             [3, 200, 80, 0, 1],
             [3, 184, 80, 0, 1],
             [3, 184, 80, 0, 1],
             [3, 480, 112, 1, 1],
-            [3, 672, 112, 1, 1],
+            [3, 672, 112, 1, 1],  # x16
             [5, 672, 160, 1, 2],
             [5, 960, 160, 0, 1],
             [5, 960, 160, 1, 1],
             [5, 960, 160, 0, 1],
-            [5, 960, 160, 1, 1]
+            [5, 960, 160, 1, 1]  # x32
         ]
         self.scale = scale
+        self.pretrained = pretrained
+
         output_channels = int(self._make_divisible(16 * self.scale, 4))
         self.conv1 = ConvBNLayer(
             in_channels=3,
@@ -244,10 +246,12 @@ class GhostNet(nn.Layer):
             groups=1,
             act="relu",
             name="conv1")
+
         # build inverted residual blocks
-        idx = 0
+        self.out_index = [2, 4, 10, 15]
+        self.feat_channels = []
         self.ghost_bottleneck_list = []
-        for k, exp_size, c, use_se, s in self.cfgs:
+        for idx, (k, exp_size, c, use_se, s) in enumerate(self.cfgs):
             in_channels = output_channels
             output_channels = int(self._make_divisible(c * self.scale, 4))
             hidden_dim = int(self._make_divisible(exp_size * self.scale, 4))
@@ -262,48 +266,23 @@ class GhostNet(nn.Layer):
                     use_se=use_se,
                     name="_ghostbottleneck_" + str(idx)))
             self.ghost_bottleneck_list.append(ghost_bottleneck)
-            idx += 1
-        # build last several layers
-        in_channels = output_channels
-        output_channels = int(self._make_divisible(exp_size * self.scale, 4))
-        self.conv_last = ConvBNLayer(
-            in_channels=in_channels,
-            out_channels=output_channels,
-            kernel_size=1,
-            stride=1,
-            groups=1,
-            act="relu",
-            name="conv_last")
-        self.pool2d_gap = AdaptiveAvgPool2D(1)
-        in_channels = output_channels
-        self._fc0_output_channels = 1280
-        self.fc_0 = ConvBNLayer(
-            in_channels=in_channels,
-            out_channels=self._fc0_output_channels,
-            kernel_size=1,
-            stride=1,
-            act="relu",
-            name="fc_0")
-        self.dropout = nn.Dropout(p=0.2)
-        stdv = 1.0 / math.sqrt(self._fc0_output_channels * 1.0)
-        self.fc_1 = Linear(
-            self._fc0_output_channels,
-            class_num,
-            weight_attr=ParamAttr(
-                name="fc_1_weights", initializer=Uniform(-stdv, stdv)),
-            bias_attr=ParamAttr(name="fc_1_offset"))
+            if idx in self.out_index:
+                self.feat_channels.append(output_channels)
+
+        self.init_weight()
+
+    def init_weight(self):
+        if self.pretrained is not None:
+            utils.load_entire_model(self, self.pretrained)
 
     def forward(self, inputs):
+        feat_list = []
         x = self.conv1(inputs)
-        for ghost_bottleneck in self.ghost_bottleneck_list:
+        for idx, ghost_bottleneck in enumerate(self.ghost_bottleneck_list):
             x = ghost_bottleneck(x)
-        x = self.conv_last(x)
-        x = self.pool2d_gap(x)
-        x = self.fc_0(x)
-        x = self.dropout(x)
-        x = paddle.reshape(x, shape=[-1, self._fc0_output_channels])
-        x = self.fc_1(x)
-        return x
+            if idx in self.out_index:
+                feat_list.append(x)
+        return feat_list
 
     def _make_divisible(self, v, divisor, min_value=None):
         """

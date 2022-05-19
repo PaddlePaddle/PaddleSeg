@@ -15,8 +15,6 @@ val_dataset:
   type: OpticDiscSeg
   dataset_root: data/optic_disc_seg
   transforms:
-    - type: Resize
-      target_size: [512, 512]
     - type: Normalize
   mode: val
 
@@ -40,10 +38,8 @@ loss:
 model:
   type: PPMobileSeg
   backbone:
-    type: Lite_HRNet_18
-    use_head: False   # False: [40, 80, 160, 320] True: [40, 40, 80, 160]
-    pretrained: https://paddleseg.bj.bcebos.com/dygraph/backbone/lite_hrnet_18.tar.gz
-  backbone_indices: [0, 1, 2]
+    type: GhostNet_x1_0   # [24, 40, 112, 160]
+    pretrained: https://paddleseg.bj.bcebos.com/dygraph/backbone/ghostnet_x1_0.zip
   cm_bin_sizes: [1, 2, 4]
   cm_out_ch: 128
   arm_out_chs: [32, 64, 128]
