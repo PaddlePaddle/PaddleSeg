@@ -9,7 +9,7 @@
 git clone https://github.com/marshall-dteach/PSA.git
 cd PaddleSeg
 ~~~
-
+## 第二步数据集格式
 数据集格式    
 |-cityscapes    
 >|-leftImg8bit     
@@ -19,7 +19,7 @@ cd PaddleSeg
 >|-gtFine    
 >>|-train    
 >>|-val   
- 
+ ## 第三步训练模型和模型预测
   #训练模型
   ~~~shell
   cd PaddleSeg
@@ -31,7 +31,7 @@ cd PaddleSeg
   cd PaddleSeg
   python valide.py
   ~~~
-
+### 注意优化器选取根据单卡和四卡不同而调整
 ![image](https://user-images.githubusercontent.com/63546191/169228623-87f12422-54a4-449d-b42d-7e4d9baa22b0.png)
 注意：单卡训练使用上面的lr，四卡训练使用下面的lr    
 
