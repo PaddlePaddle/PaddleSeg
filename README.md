@@ -6,12 +6,12 @@
 
 数据集格式 
 |-cityscapes    
-    |-leftImg8bit     
-      |-train     
-      |-val    
-    |-gtFine    
-      |-train    
-      |-val   
+ &#x2003|-leftImg8bit     
+ &#x2003&#x2003|-train     
+ &#x2003&#x2003|-val    
+ &#x2003|-gtFine    
+ &#x2003 &#x2003|-train    
+ &#x2003 &#x2003|-val   
       
   ~~~Python
   #训练模型
