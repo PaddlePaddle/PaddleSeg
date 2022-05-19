@@ -26,7 +26,7 @@ def kaiming_init(module,
     if hasattr(module, 'bias') and module.bias is not None:
         constant_(module.bias, bias)
 
-class PSA_p(nn.Layer):
+class PSA_s(nn.Layer):
     def __init__(self, inplanes, planes, kernel_size=1, stride=1):
         super(PSA_p, self).__init__()
 
@@ -151,7 +151,7 @@ class PSA_p(nn.Layer):
         out = context_spatial + context_channel
         return out
 
-class PSA_s(nn.Layer):
+class PSA_p(nn.Layer):
     def __init__(self, inplanes, planes, kernel_size=1, stride=1):
         super(PSA_s, self).__init__()
 
