@@ -24,3 +24,6 @@
   cd PaddleSeg
   python valide.py
   ~~~
+
+![image](https://user-images.githubusercontent.com/63546191/169228623-87f12422-54a4-449d-b42d-7e4d9baa22b0.png)
+注意：单卡训练使用上面的lr，四卡训练使用下面的lr
