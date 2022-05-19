@@ -28,7 +28,7 @@ def kaiming_init(module,
 
 class PSA_s(nn.Layer):
     def __init__(self, inplanes, planes, kernel_size=1, stride=1):
-        super(PSA_p, self).__init__()
+        super(PSA_s, self).__init__()
 
         self.inplanes = inplanes
         
@@ -153,7 +153,7 @@ class PSA_s(nn.Layer):
 
 class PSA_p(nn.Layer):
     def __init__(self, inplanes, planes, kernel_size=1, stride=1):
-        super(PSA_s, self).__init__()
+        super(PSA_p, self).__init__()
 
         self.inplanes = inplanes
         self.inter_planes = planes // 2
