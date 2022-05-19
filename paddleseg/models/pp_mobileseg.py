@@ -32,9 +32,9 @@ class PPMobileSeg(nn.Layer):
             has feat_channels, of which the length is 5.
         backbone_indices (List(int), optional): The values indicate the indices of output of backbone.
             Default: [2, 3, 4].
-        arm_type (str, optional): The type of attention refinement module. Default: ARM_Add_SpAttenAdd3.
         cm_bin_sizes (List(int), optional): The bin size of context module. Default: [1,2,4].
         cm_out_ch (int, optional): The output channel of the last context module. Default: 128.
+        arm_type (str, optional): The type of attention refinement module. Default: ARM_Add_SpAttenAdd3.
         arm_out_chs (List(int), optional): The out channels of each arm module. Default: [64, 96, 128].
         seg_head_inter_chs (List(int), optional): The intermediate channels of segmentation head.
             Default: [64, 64, 64].
@@ -47,9 +47,9 @@ class PPMobileSeg(nn.Layer):
                  num_classes,
                  backbone,
                  backbone_indices=[1, 2, 3],
-                 arm_type='UAFM_Mobile',
                  cm_bin_sizes=[1, 2],
                  cm_out_ch=64,
+                 arm_type='UAFM_Mobile',
                  arm_out_chs=[32, 48, 64],
                  seg_head_inter_chs=[32, 32, 32],
                  resize_mode='bilinear',
