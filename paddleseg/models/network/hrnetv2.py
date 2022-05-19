@@ -42,8 +42,8 @@ class BasicBlock(nn.Layer):
         self.conv1 = conv3x3(inplanes, planes, stride)
         self.bn1 = Norm2d(planes, momentum=BN_MOMENTUM)
         self.relu = nn.ReLU()
-        #self.deattn = PSA_s(planes, planes)
-        self.deattn = PSA_p(planes, planes)
+        self.deattn = PSA_s(planes, planes)
+        #self.deattn = PSA_p(planes, planes)
         self.conv2 = conv3x3(planes, planes)
         self.bn2 = Norm2d(planes, momentum=BN_MOMENTUM)
         self.downsample = downsample
