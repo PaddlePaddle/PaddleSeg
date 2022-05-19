@@ -44,10 +44,8 @@ def main():
 
 
     # 设置学习率
-    #base_lr = 0.01
-    #lr = paddle.optimizer.lr.LambdaDecay(learning_rate= 0.005,lr_lambda= lambda epoch: (1-epoch/175)**2)
-    #lr = paddle.optimizer.lr.LambdaDecay(learning_rate= 0.01,lr_lambda= lambda iter: (1-math.ceil(iter/2975)/175)**2)
-    lr = paddle.optimizer.lr.LambdaDecay(learning_rate= 0.005,lr_lambda= lambda iter: (1-math.ceil(iter/743)/175)**2)
+    lr = paddle.optimizer.lr.LambdaDecay(learning_rate= 0.005,lr_lambda= lambda iter: (1-math.ceil(iter/2975)/175)**2)
+    #lr = paddle.optimizer.lr.LambdaDecay(learning_rate= 0.005,lr_lambda= lambda iter: (1-math.ceil(iter/743)/175)**2)
     optimizer = paddle.optimizer.Momentum(lr, parameters=model.parameters(), momentum=0.9, weight_decay=0.0001)
 
     #设置损失函数
