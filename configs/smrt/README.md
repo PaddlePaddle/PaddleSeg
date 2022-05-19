@@ -1,18 +1,82 @@
 > 本目录下的配置文件用于飞桨模型选型工具（Paddle-SMRT）。
-# 1 简介
+# PP-SMRT
 
-模型选型工具是根据任务的类别、部署环境等信息，给大家推荐合适的模型，可以避免大家训练测试多个模型的麻烦。
+## 一、项目介绍
 
-通过模型选型工具，大家选择好目标模型后，接下来需要进行模型训练和部署。
+PP-SMRT 是飞桨结合产业落地经验推出的产业模型选型工具，在项目落地过程中，用户根据自身的实际情况，输入自己的需求，即可以得到对应在算法模型、部署硬件以及教程文档的信息。
+同时为了更加精准的推荐，增加了数据分析功能，用户上传自己的标注文件，系统可以自动分析数据特点，例如数据分布不均衡、小目标、密集型等，从而提供更加精准的模型以及优化策略，更好的符合场景的需求。
 
-本文档在工业质检场景，针对选型工具推荐的分割模型，用一个示例来简单介绍模型的训练、导出和部署。
 
-# 2 准备
-## 准备环境
+本文档主要介绍PP-SMRT在分割方向上是如何进行模型选型推荐，以及推荐模型的使用方法。
+
+## 二、数据介绍
+
+PP-SMRT结合产业真实场景，通过比较算法效果，向用户推荐最适合的模型。目前PP-SMRT覆盖工业质检、城市安防两大场景，下面介绍PP-SMRT进行算法对比所使用的数据集。
+
+### 1. 新能源电池质检数据集
+
+数据集为新能源电池电池组件质检数据集，包含15021张图片，包含22045个标注框，覆盖45种缺陷类型，例如掉胶，裂纹，划痕等。
+
+新能源电池数据展示图:
+
+<div align="center">
+  <img src="https://user-images.githubusercontent.com/48433081/169200335-c77d58e4-8916-46e4-be4b-eb7fe48a2f80.png"  width = "600" />  
+</div>
+
+数据集特点为：
+
+1. 类别分布均衡
+2. 属于小目标数据
+3. 非密集型数据
+
+### 2. 铝件质检数据集
+
+数据集为铝件生产过程中的质检数据集，包含11293张图片，包含43157个标注框，覆盖5种缺陷类型，例如划伤，压伤，起皮等。
+
+铝件质检数据展示图:
+
+<div align="center">
+  <img src="https://user-images.githubusercontent.com/48433081/169200252-95a69964-0ae1-40bb-b2b9-2ba17f9bef64.png"  width = "600" />  
+</div>
+
+
+数据集特点为：
+
+1. 类别分布不均衡
+2. 属于小目标数据
+3. 非密集型数据
+
+
+**说明：**
+
+数据集特点判断依据如下：
+
+- 数据分布不均衡：采样1000张图片，不同类别样本个数标准差大于400
+- 小目标数据集：相对大小小于0.1或绝对大小小于32像素的样本个数比例大于30%
+- 密集型数据集：
+
+```
+    密集目标定义：周围目标距离小于自身大小两倍的个数大于2；
+
+    密集图片定义：密集目标个数占图片目标总数50%以上；
+
+    密集数据集定义：密集图片个数占总个数30%以上
+
+```
+* 为了更好的帮助用户选择模型，我们也提供了丰富的数据分析功能，用户只需要上传标注文件（不需要原图）即可了解数据特点分布和模型优化建议。
+
+<div align="center">
+  <img src="https://user-images.githubusercontent.com/48433081/169062411-7940d1cb-2742-4d7d-8679-73a00c07247e.png"  width = "800" />  
+</div>
+
+## 三、推荐模型使用全流程
+
+
+### 3.1 准备环境
 
 参考PaddleSeg[安装文档](../../docs/install_cn.md)安装PaddlePaddle、下载PaddleSeg代码、安装PaddleSeg依赖库。
 
-## 准备数据
+### 3.2 准备数据
 
 我们准备了一个缺陷分割的数据集，点击[链接](https://paddle-smrt.bj.bcebos.com/data/seg/defect_data.zip)下载，或者执行如下命令下载。
 ```
@@ -41,10 +105,6 @@ JPEGImages/diaojiao_394.png Annotations/diaojiao_394.png
 
 详细的数据准备方法，请参考[数据标注文档](../../docs/data/marker/marker_cn.md)和[数据配置文档](../../docs/data/custom/data_prepare_cn.md)。
 
-# 3 模型训练
-
-## 配置文件
-
 PaddleSeg可以使用配置文件的方式来训练模型，简单方便。
 
 针对工业质检任务，我们为模型选型工具推荐的6个模型准备好了配置文件，存放在`PaddleSeg/configs/smrt`目录下。
@@ -63,7 +123,7 @@ PaddleSeg/configs/smrt
 
 在实际应用中，大家需要根据模型数据量调整配置文件中的超参，比如训练轮数iters。
 
-## 执行训练
+### 3.3 执行训练
 
 本教程简单演示单卡和多卡训练，详细的模型训练方法请参考[文档](../../docs/train/train_cn.md)。
 
@@ -108,7 +168,7 @@ python -m paddle.distributed.launch train.py \
        --save_dir output/pp_liteseg_stdc2
 ```
 
-# 4 模型导出
+### 3.4 模型导出
 
 训练得到精度符合预期的模型后，可以导出预测模型，进行部署。详细的模型导出方法请参考[文档](../../docs/model_export_cn.md)。
 
@@ -121,8 +181,7 @@ python export.py \
 
 上面脚本加载`pp_liteseg_stdc2`模型精度最高的权重，导出预测模型保存在`output/pp_liteseg_stdc2/infer_models`目录。
 
-
-# 5 部署demo
+### 3.5 部署
 
 导出模型后，大家可以参考如下文档进行部署。
 
@@ -133,7 +192,9 @@ python export.py \
 | 移动端部署   | PaddleLite   | [文档](../../docs/deployment/lite/lite_cn.md) |
 | 前端部署     | PaddleJS     | [文档](../../docs/deployment/web/web_cn.md) |
 
-为了更方便大家部署，我们也提供了可视化部署Demo，欢迎尝试使用。
+## 四、部署demo
+
+为了更方便大家部署，我们也提供了完备的可视化部署Demo，欢迎尝试使用
 
 * [Windows Demo下载地址](https://github.com/PaddlePaddle/PaddleX/tree/develop/deploy/cpp/docs/csharp_deploy)
 
@@ -146,3 +207,12 @@ python export.py \
 <div align="center">
   <img src="https://user-images.githubusercontent.com/48433081/169065951-147f8d51-bf3e-4a28-9197-d717968de73f.png"  width = "800" />  
 </div>
+
+## 五、场景范例
+
+为了更方便大家更好的进行产业落地，PP-SMRT也提供了详细详细的应用范例，欢迎大家使用。
+
+* 工业视觉
+  * [工业缺陷检测](https://aistudio.baidu.com/aistudio/projectdetail/2598319)
+  * [表计读数](https://aistudio.baidu.com/aistudio/projectdetail/2598327)
+  * [钢筋计数](https://aistudio.baidu.com/aistudio/projectdetail/2404188)
