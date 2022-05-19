@@ -6,18 +6,18 @@
 
 数据集格式 
 |-cityscapes    
- &#x2003|-leftImg8bit     
- &#x2003&#x2003|-train     
- &#x2003&#x2003|-val    
- &#x2003|-gtFine    
- &#x2003 &#x2003|-train    
- &#x2003 &#x2003|-val   
+----|-leftImg8bit     
+--------|-train     
+--------|-val    
+----|-gtFine    
+--------|-train    
+--------|-val   
       
   ~~~Python
   #训练模型
   cd PaddleSeg
-  Python main.py #单卡
-  Python -m paddle.distributed.launch main.py  #多卡
+  python main.py #单卡
+  python -m paddle.distributed.launch main.py  #多卡
   
   #验证模型
   cd PaddleSeg
