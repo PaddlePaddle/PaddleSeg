@@ -1,4 +1,4 @@
-简体中文 | [English](README_EN.md)
+English | [简体中文](README_CN.md)
 
 <div align="center">
 
@@ -6,13 +6,14 @@
   <img src="./docs/images/paddleseg_logo.png" align="middle" width = "500" />
 </p>
 
-**飞桨高性能图像分割开发套件，端到端地完成从训练到部署的全流程图像分割应用。**
+**A High-Efficient Development Toolkit for Image Segmentation based on [PaddlePaddle](https://github.com/paddlepaddle/paddle).**
 
 [![Build Status](https://travis-ci.org/PaddlePaddle/PaddleSeg.svg?branch=release/2.1)](https://travis-ci.org/PaddlePaddle/PaddleSeg)
 [![License](https://img.shields.io/badge/license-Apache%202-blue.svg)](LICENSE)
 [![Version](https://img.shields.io/github/release/PaddlePaddle/PaddleSeg.svg)](https://github.com/PaddlePaddle/PaddleSeg/releases)
 ![python version](https://img.shields.io/badge/python-3.6+-orange.svg)
 ![support os](https://img.shields.io/badge/os-linux%2C%20win%2C%20mac-yellow.svg)
+
 </div>
 
 
@@ -30,70 +31,55 @@
  <li>[2022-01-20] We release PaddleSeg v2.4 with EISeg v0.4, and <a href="./contrib/PP-HumanSeg">PP-HumanSeg</a> including open-sourced dataset <a href="./contrib/PP-HumanSeg/paper.md#pp-humanseg14k-a-large-scale-teleconferencing-video-dataset">PP-HumanSeg14K</a>. </li>
  <li>[2021-10-11] We released PaddleSeg v2.3 with the improved interactive segmentation tool EISeg v0.3, two matting algorithms, and segmentation model compression.</li>
 
-
-* [2022-04-20] :fire: PaddleSeg 2.5版本发布！详细发版信息请参考[Release Note](https://github.com/PaddlePaddle/PaddleSeg/releases)。
-  * 发布超轻量级语义分割模型[PP-LiteSeg](./configs/pp_liteseg)以及[技术报告](https://arxiv.org/pdf/2204.02681.pdf)，实现精度和速度的最佳平衡。
-  * 发布高精度trimap-free抠图模型[PP-Matting](./Matting)以及[技术报告](https://arxiv.org/abs/2204.09433)，在Composition-1K和Distinctions-646上实现SOTA指标。
-  * 发布3D医疗影像开发套件[MedicalSeg](./contrib/MedicalSeg)，支持数据预处理、模型训练、模型部署等全流程开发，并提供肺部、椎骨数据上的高精度分割模型。
-  * 升级智能标注工具[EISeg v0.5](./EISeg)版，新增X-Ray胸腔标注、MRI椎骨标注、铝板瑕疵标注。
-  * 新增5个经典分割模型, 包括多个版本的PP-LiteSeg，总模型数达到45个。
-* [2022-01-20] PaddleSeg 2.4版本发布交互式分割工具EISeg v0.4，超轻量级人像分割方案[PP-HumanSeg](./contrib/PP-HumanSeg)，以及大规模视频会议数据集[PP-HumanSeg14K](./contrib/PP-HumanSeg/paper.md#pp-humanseg14k-a-large-scale-teleconferencing-video-dataset)。
-* [2021-10-11] PaddleSeg 2.3版本发布交互式分割工具EISeg v0.3，开源两种[Matting](./contrib/Matting)算法，以及分割高阶功能[模型蒸馏](./slim/distill)和[模型量化](./slim/quant)方案。
+</ul>
 
 
-## 简介
-PaddleSeg是基于飞桨PaddlePaddle开发的端到端图像分割开发套件，涵盖了**高精度**和**轻量级**等不同方向的大量高质量分割模型。通过模块化的设计，提供了**配置化驱动**和**API调用**两种应用方式，帮助开发者更便捷地完成从训练到部署的全流程图像分割应用。
+## Introduction
 
-* #### 提供语义分割、交互式分割、全景分割、Matting四大图像分割能力。
+PaddleSeg is an end-to-end high-efficent development toolkit for image segmentation based on PaddlePaddle, which  helps both developers and researchers in the whole process of designing segmentation models, training models, optimizing performance and inference speed, and deploying models. A lot of well-trained models and various real-world applications in both industry and academia help users conveniently build hands-on experiences in image segmentation.
+
+* #### Four segmentation areas: semantic segmentation, interactive segmentation, panoptic segmentation and image matting.
 
 <div align="center">
-<img src="https://user-images.githubusercontent.com/53808988/130562440-1ea5cbf5-4caf-424c-a9a7-55d56b7d7776.gif"  width = "2000" />  
+<img src="https://user-images.githubusercontent.com/53808988/130562378-64d0c84a-9c3f-4ae4-93f7-bdc0c8e0238e.gif"  width = "2000" />  
 </div>
-
-
 
 
 ---------------
 
- * #### 广泛应用在自动驾驶、医疗、质检、巡检、娱乐等场景。
+ * #### Various applications in autonomous driving, medical segmentation, remote sensing, quality inspection, and other scenarios.
 
 <div align="center">
-<img src="https://user-images.githubusercontent.com/53808988/130562530-ae45c2cd-5dd7-48f0-a080-c0e843eea49d.gif"  width = "2000" />  
+<img src="https://user-images.githubusercontent.com/53808988/130562234-bdf79d76-8566-4e06-a3a9-db7719e63385.gif"  width = "2000" />  
 </div>
 
-----------------
-## 特性 <img src="./docs/images/feature.png" width="30"/>
+
+---------------
 
 
-* <img src="./docs/images/f1.png" width="20"/> **高精度模型**：基于半监督标签知识蒸馏方案([SSLD](https://paddleclas.readthedocs.io/zh_CN/latest/advanced_tutorials/distillation/distillation.html#ssld))训练得到高精度骨干网络，结合前沿的分割技术，提供了80+的高质量预训练模型，效果优于其他开源实现。
+## Features
 
-* <img src="./docs/images/f2.png" width="20"/> **模块化设计**：支持40+主流 *分割网络* ，结合模块化设计的 *数据增强策略* 、*骨干网络*、*损失函数* 等不同组件，开发者可以基于实际应用场景出发，组装多样化的训练配置，满足不同性能和精度的要求。
+* <img src="./docs/images/f1.png" width="20"/> **High-Performance Model**: Based on the high-performance backbone trained by semi-supervised label knowledge distillation scheme ([SSLD]((https://paddleclas.readthedocs.io/zh_CN/latest/advanced_tutorials/distillation/distillation.html#ssld))), combined with the state of the art segmentation technology, we provide 80+ high-quality pre-training models, which are better than other open-source implementations.
 
-* <img src="./docs/images/f3.png" width="20"/> **高性能**：支持多进程异步I/O、多卡并行训练、评估等加速策略，结合飞桨核心框架的显存优化功能，可大幅度减少分割模型的训练开销，让开发者更低成本、更高效地完成图像分割训练。
+* <img src="./docs/images/f2.png" width="20"/> **Modular Design**: PaddleSeg supports 40+ mainstream *segmentation networks*, developers can start based on actual application scenarios and assemble diversified training configurations combined with modular design of *data enhancement strategies*, *backbone networks*, *loss functions* and other different components to meet different performance and accuracy requirements.
 
-----------
+* <img src="./docs/images/f3.png" width="20"/> **High Efficiency**: PaddleSeg provides multi-process asynchronous I/O, multi-card parallel training, evaluation, and other acceleration strategies, combined with the memory optimization function of the PaddlePaddle, which can greatly reduce the training overhead of the segmentation model, all this allowing developers to lower cost and more efficiently train image segmentation model.
 
-## 技术交流 <img src="./docs/images/chat.png" width="30"/>
 
-* 如果你发现任何PaddleSeg存在的问题或者是建议, 欢迎通过[GitHub Issues](https://github.com/PaddlePaddle/PaddleSeg/issues)给我们提issues。
-* 欢迎加入PaddleSeg 微信群
-<div align="center">
-<img src="https://user-images.githubusercontent.com/48433081/163670184-43cfb3ae-2047-4ba3-8dae-6c02090dd177.png"  width = "200" />  
-</div>
 
-## 产品矩阵 <img src="./docs/images/model.png" width="20"/>
+## Overview <img src="./docs/images/model.png" width="20"/>
 
 <table align="center">
   <tbody>
     <tr align="center" valign="bottom">
       <td>
-        <b>分割模型</b>
+        <b>Models</b>
       </td>
       <td colspan="2">
-        <b>分割组件</b>
+        <b>Components</b>
       </td>
       <td>
-        <b>实践案例</b>
+        <b>Projects</b>
       </td>
     </tr>
     <tr valign="top">
@@ -145,7 +131,7 @@ PaddleSeg是基于飞桨PaddlePaddle开发的端到端图像分割开发套件�
             <li>PP-LiteSeg :star:</li>
       </td>
       <td>
-        <b>骨干网络</b><br>
+        <b>Backbones</b><br>
           <ul>
             <li>HRNet</li>
             <li>MobileNetV2</li>
@@ -157,7 +143,7 @@ PaddleSeg是基于飞桨PaddlePaddle开发的端到端图像分割开发套件�
             <li>MixVIT</li>
             <li>Swin Transformer</li>
           </ul>  
-        <b>损失函数</b><br>
+        <b>Losses</b><br>
           <ul>
             <li>Cross Entropy</li>
             <li>Binary CE</li>
@@ -177,7 +163,7 @@ PaddleSeg是基于飞桨PaddlePaddle开发的端到端图像分割开发套件�
             <li>Connectivity</li>
             <li>MultiClassFocal</li>
           </ul>
-        <b>评估指标</b><br>
+        <b>Metrics</b><br>
           <ul>
             <li>mIoU</li>
             <li>Accuracy</li>
@@ -187,7 +173,7 @@ PaddleSeg是基于飞桨PaddlePaddle开发的端到端图像分割开发套件�
           </ul>  
       </td>
       <td>
-        <b>支持数据集</b><br>
+        <b>Datasets</b><br>
           <ul>
             <li>Cityscapes</li>
             <li>Pascal VOC</li>
@@ -202,7 +188,7 @@ PaddleSeg是基于飞桨PaddlePaddle开发的端到端图像分割开发套件�
             <li>STARE</li>
             <li>PP-HumanSeg14K</li>
           </ul>
-        <b>数据增强</b><br>
+        <b>Data Augmentation</b><br>
         <ul>
           <li>Flipping</li>  
           <li>Resize</li>  
@@ -226,20 +212,20 @@ PaddleSeg是基于飞桨PaddlePaddle开发的端到端图像分割开发套件�
         </ul>  
       </td>
       <td>
-        <b>交互式分割</b><br>
+        <b>Interactive Segmentation</b><br>
           <ul>
             <li>EISeg</li>
             <li>RITM</li>
             <li>EdgeFlow</li>
            </ul>
-       <b>图像抠图</b><br>
+       <b>Image Matting</b><br>
         <ul>
             <li>PP-Matting</li>
             <li>DIM</li>
             <li>MODNet</li>
             <li>PP-HumanMatting</li>
         </ul>
-        <b>人像分割</b><br>
+        <b>Human Segmentation</b><br>
         <ul>
             <li>PP-HumanSeg</li>
         </ul>
@@ -251,15 +237,15 @@ PaddleSeg是基于飞桨PaddlePaddle开发的端到端图像分割开发套件�
         <ul>
             <li>HMSA</li>
         </ul>
-        <b>全景分割</b><br>
+        <b>Panoptic Segmentation</b><br>
           <ul>
             <li>Panoptic-DeepLab</li>
           </ul>
-        <b>CVPR冠军模型</b><br>
+        <b>CVPR Champion</b><br>
         <ul>
             <li>MLA Transformer</li>
         </ul>
-        <b>领域自适应</b><br>
+        <b>Domain Adaption</b><br>
         <ul>
             <li>PixMatch</li>
         </ul>
@@ -272,9 +258,9 @@ PaddleSeg是基于飞桨PaddlePaddle开发的端到端图像分割开发套件�
   </tbody>
 </table>
 
-## 模型库总览  <img src="./docs/images/model.png" width="20"/>
+## Model Zoo
 
-模型结构和骨干网络的代表模型在Cityscapes数据集mIoU和FLOPs对比图。请参见[Model Zoo Overview](./docs/model_zoo_overview_cn.md)了解更多模型信息以及对比图。
+The relationship between mIoU and FLOPs of representative architectures and backbones. See [Model Zoo Overview](./docs/model_zoo_overview.md) for more details.
 
 <div align="center">
 <img src=https://user-images.githubusercontent.com/30695251/140323107-02ce9de4-c8f4-4f18-88b2-59bd0055a70b.png   />  
@@ -381,7 +367,7 @@ If you find our project useful in your research, please consider citing:
 
 @misc{paddleseg2019,
     title={PaddleSeg, End-to-end image segmentation kit based on PaddlePaddle},
-    author={PaddlePaddle Authors},
+    author={PaddlePaddle Contributors},
     howpublished = {\url{https://github.com/PaddlePaddle/PaddleSeg}},
     year={2019}
 }
