@@ -16,26 +16,40 @@ import argparse
 import os
 import sys
 
+import paddle
+from paddleseg.cvlibs import manager, Config
+from paddleseg.utils import get_sys_env, logger
+
 LOCAL_PATH = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(LOCAL_PATH, '..'))
 
-import paddle
-import paddleseg
-from paddleseg.cvlibs import manager, Config
-from paddleseg.utils import get_sys_env, logger, utils
-
 import ppmatting
-from ppmatting.core import evaluate, evaluate_ml
+from ppmatting.core import predict
+from ppmatting.utils import get_image_list
 
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Model training')
     parser.add_argument(
         "--config", dest="cfg", help="The config file.", default=None, type=str)
+
     parser.add_argument(
         '--model_path',
         dest='model_path',
-        help='The path of model for evaluation',
+        help='The path of model for prediction',
+        type=str,
+        default=None)
+    parser.add_argument(
+        '--image_path',
+        dest='image_path',
+        help='The path of image, it can be a file or a directory including images',
+        type=str,
+        default=None)
+    parser.add_argument(
+        '--trimap_path',
+        dest='trimap_path',
+        help='The path of trimap, it can be a file or a directory including images. '
+        'The image should be the same as image when it is a directory.',
         type=str,
         default=None)
     parser.add_argument(
@@ -45,16 +59,11 @@ def parse_args():
         type=str,
         default='./output/results')
     parser.add_argument(
-        '--num_workers',
-        dest='num_workers',
-        help='Num workers for data loader',
-        type=int,
-        default=0)
-    parser.add_argument(
-        '--save_results',
-        dest='save_results',
-        help='save prediction alpha while evaluating',
-        action='store_true')
+        '--fg_estimate',
+        default=True,
+        type=eval,
+        choices=[True, False],
+        help='Whether to estimate foreground when predicting.')
 
     return parser.parse_args()
 
@@ -69,15 +78,6 @@ def main(args):
         raise RuntimeError('No configuration file specified.')
 
     cfg = Config(args.cfg)
-    val_dataset = cfg.val_dataset
-    if val_dataset is None:
-        raise RuntimeError(
-            'The verification dataset is not specified in the configuration file.'
-        )
-    elif len(val_dataset) == 0:
-        raise ValueError(
-            'The length of val_dataset is 0. Please check if your dataset is valid'
-        )
 
     msg = '\n---------------Config Information---------------\n'
     msg += str(cfg)
@@ -85,26 +85,24 @@ def main(args):
     logger.info(msg)
 
     model = cfg.model
+    transforms = ppmatting.transforms.Compose(cfg.val_transforms)
 
-    if isinstance(model, paddle.nn.Layer):
-
-        if args.model_path:
-            utils.load_entire_model(model, args.model_path)
-            logger.info('Loaded trained params of model successfully')
-
-        evaluate(
-            model,
-            val_dataset,
-            num_workers=args.num_workers,
-            save_dir=args.save_dir,
-            save_results=args.save_results)
+    image_list, image_dir = get_image_list(args.image_path)
+    if args.trimap_path is None:
+        trimap_list = None
     else:
+        trimap_list, _ = get_image_list(args.trimap_path)
+    logger.info('Number of predict images = {}'.format(len(image_list)))
 
-        evaluate_ml(
-            model,
-            val_dataset,
-            save_dir=args.save_dir,
-            save_results=args.save_results)
+    predict(
+        model,
+        model_path=args.model_path,
+        transforms=transforms,
+        image_list=image_list,
+        image_dir=image_dir,
+        trimap_list=trimap_list,
+        save_dir=args.save_dir,
+        fg_estimate=args.fg_estimate)
 
 
 if __name__ == '__main__':

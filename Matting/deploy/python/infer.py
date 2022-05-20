@@ -30,8 +30,8 @@ from paddle.inference import Config as PredictConfig
 from paddleseg.cvlibs import manager
 from paddleseg.utils import get_sys_env, logger
 
-from utils import get_image_list, mkdir, estimate_foreground_ml
-import transforms as T
+from ppmatting.utils import get_image_list, mkdir, estimate_foreground_ml
+import ppmatting.transforms as T
 
 
 def parse_args():
