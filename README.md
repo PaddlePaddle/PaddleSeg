@@ -17,24 +17,18 @@
 
 
 
-## 最新动态 <img src="./docs/images/seg_news_icon.png" width="40"/>
-- 🔥 **2022.4.26-28 每晚8:30【产业级语义分割应用实践】三日直播课** 🔥
-    - **26日：高精度轻量级图像分割算法的产业实践**
-        - 图像分割产业应用场景剖析
-        - 速度精度完美均衡的SOTA算法PP-LiteSeg分享
-        - 汽车金属垫片缺陷检测实战
-    - **27日：高精度通用抠图算法介绍**
-        - 精度SOTA的通用抠图算法PP-Matting介绍
-        - 产业级部署Demo应用实践（端测、服务端）
-    - **28日：医疗3D图像分割工具介绍**
-        - 端到端3D图像分割工具MedicalSeg产品介绍
-        - 速度提升40%的3D图像高效推理方案
-
-   赶紧扫码报名上车吧！!
-
-    <div align="center">
-  <img src="https://user-images.githubusercontent.com/48433081/164680910-7f434965-1273-42b6-b58b-37b4331fd15a.png" width=200/>
-</div>
+## News <img src="./docs/images/seg_news_icon.png" width="40"/>
+<ul class="nobull">
+  <li>[2022-04-20] :fire: PaddleSeg v2.5 is released! More details in <a href="https://github.com/PaddlePaddle/PaddleSeg/releases">Release Notes</a>.</li>
+    <ul>
+        <li>Release <a href="./configs/pp_liteseg">PP-LiteSeg</a>, a real-time semantic segmentation model. It achieves SOTA trade-off between segmentation accuracy and inference speed. [<a href="https://arxiv.org/pdf/2204.02681.pdf">techical report</a>]</li>
+        <li>Release <a href="./Matting">PP-Matting</a>, a trimap-free image matting model for extremely fine-grained segmentation. It achieves SOTA performance on Composition-1k and Distinctions-646. [<a href="https://arxiv.org/abs/2204.09433">techical report</a>]</li>
+        <li>Release <a href="./contrib/MedicalSeg">MedicalSeg</a>, a newly easy-to-use toolkit for 3D medical image segmentation. It supports the whole process including data preprocessing, model training, and model deployment, and provides the high-accuracy models on lung and spine segmentation.
+        <li>Upgrade the interactive annotation tool <a href="./EISeg">EISeg v0.5</a> with supporting new areas in chest X-Ray, MRI spine, and defect inspection.</li>
+        <li>Add 5 semantic segmentatioin models, including variants of PP-LiteSeg.</li>
+    </ul>
+ <li>[2022-01-20] We release PaddleSeg v2.4 with EISeg v0.4, and <a href="./contrib/PP-HumanSeg">PP-HumanSeg</a> including open-sourced dataset <a href="./contrib/PP-HumanSeg/paper.md#pp-humanseg14k-a-large-scale-teleconferencing-video-dataset">PP-HumanSeg14K</a>. </li>
+ <li>[2021-10-11] We released PaddleSeg v2.3 with the improved interactive segmentation tool EISeg v0.3, two matting algorithms, and segmentation model compression.</li>
 
 
 * [2022-04-20] :fire: PaddleSeg 2.5版本发布！详细发版信息请参考[Release Note](https://github.com/PaddlePaddle/PaddleSeg/releases)。
@@ -249,11 +243,11 @@ PaddleSeg是基于飞桨PaddlePaddle开发的端到端图像分割开发套件�
         <ul>
             <li>PP-HumanSeg</li>
         </ul>
-        <b>3D 医疗分割</b><br>
+        <b>3D Medical Segmentation</b><br>
         <ul>
           <li>VNet</li>
         </ul>
-        <b>Cityscapes打榜模型</b><br>
+        <b>Cityscapes SOTA</b><br>
         <ul>
             <li>HMSA</li>
         </ul>
@@ -287,90 +281,93 @@ PaddleSeg是基于飞桨PaddlePaddle开发的端到端图像分割开发套件�
 </div>
 
 
-## 使用教程 <img src="./docs/images/teach.png" width="30"/>
 
-* [安装](./docs/install_cn.md)
-* [全流程跑通PaddleSeg](./docs/whole_process_cn.md)
-*  准备数据集
-   * [标注数据的准备](./docs/data/marker/marker_cn.md)
-   * [数据标注教程](./docs/data/transform/transform_cn.md)
-   * [自定义数据集](./docs/data/custom/data_prepare_cn.md)
+## Tutorials <img src="./docs/images/teach.png" width="30"/>
 
-* [模型训练](/docs/train/train_cn.md)
-* [模型评估](./docs/evaluation/evaluate/evaluate_cn.md)
-* [预测与可视化](./docs/predict/predict_cn.md)
+* [Installation Guide](./docs/install.md)
+* [Quick Start](./docs/whole_process.md)
 
-* 模型导出
-    * [导出预测模型](./docs/model_export_cn.md)
-    * [导出ONNX模型](./docs/model_export_onnx_cn.md)
+*  Data Preparation
+   * [Annotated Data Preparation](./docs/data/marker/marker.md)
+   * [Annotation Tutorial](./docs/data/transform/transform.md)
+   * [Custom Dataset](./docs/data/custom/data_prepare.md)
 
-* 模型部署
-    * [Paddle Inference部署(Python)](./docs/deployment/inference/python_inference_cn.md)
-    * [Paddle Inference部署(C++)](./docs/deployment/inference/cpp_inference_cn.md)
-    * [Paddle Lite部署](./docs/deployment/lite/lite_cn.md)
-    * [Paddle Serving部署](./docs/deployment/serving/serving.md)
-    * [Paddle JS部署](./docs/deployment/web/web_cn.md)
-    * [推理Benchmark](./docs/deployment/inference/infer_benchmark_cn.md)
+* [Model Training](/docs/train/train.md)
+* [Model Evaluation](./docs/evaluation/evaluate/evaluate.md)
+* [Prediction](./docs/predict/predict.md)
 
-* 模型压缩
-    * [量化](./docs/slim/quant/quant_cn.md)
-    * [蒸馏](./docs/slim/distill/distill_cn.md)
-    * [裁剪](./docs/slim/prune/prune_cn.md)
+* Model Export
+    * [Export Inference Model](./docs/model_export.md)
+    * [Export ONNX Model](./docs/model_export_onnx.md)
 
-*  API使用教程
-    * [API文档说明](./docs/apis/README_CN.md)
-    * [API应用案例](./docs/api_example_cn.md)
-*  重要模块说明
-    * [数据增强](./docs/module/data/data_cn.md)
-    * [Loss说明](./docs/module/loss/losses_cn.md)
-*  二次开发教程
-    * [配置文件详解](./docs/design/use/use_cn.md)
-    * [如何创造自己的模型](./docs/design/create/add_new_model_cn.md)
-*  模型贡献
-    * [提交PR说明](./docs/pr/pr/pr_cn.md)
-    * [模型PR规范](./docs/pr/pr/style_cn.md)
+*  Model Deploy
+    * [Paddle Inference (Python)](./docs/deployment/inference/python_inference.md)
+    * [Paddle Inference (C++)](./docs/deployment/inference/cpp_inference.md)
+    * [Paddle Lite](./docs/deployment/lite/lite.md)
+    * [Paddle Serving](./docs/deployment/serving/serving.md)
+    * [Paddle JS](./docs/deployment/web/web.md)
+    * [Benchmark](./docs/deployment/inference/infer_benchmark.md)
 
-* [静态图版本](./docs/static/static_cn.md)
-* [技术交流](#技术交流)
-* [常见问题汇总](./docs/faq/faq/faq_cn.md)
+*  Model Compression
+    * [Quantization](./docs/slim/quant/quant.md)
+    * [Distillation](./docs/slim/distill/distill.md)
+    * [Prune](./docs/slim/prune/prune.md)
 
-## 实践案例 <img src="./docs/images/anli.png" width="20"/>
+*  Easy API
+    * [API Documention](./docs/apis/README.md)
+    * [API Tutorial](./docs/api_example.md)
+*  Baisc Knowledge
+    * [Data Augmentation](./docs/module/data/data.md)
+    * [Loss Description](./docs/module/loss/losses_en.md)
+*  Advanced Development
+    * [Detailed Configuration File](./docs/design/use/use.md)
+    * [Create Your Own Model](./docs/design/create/add_new_model.md)
+*  Pull Request
+    * [PR Tutorial](./docs/pr/pr/pr.md)
+    * [PR Style](./docs/pr/pr/style_cn.md)
 
-- [交互式分割](./EISeg)
-- [图像抠图](./Matting)
-- [人像分割](./contrib/PP-HumanSeg)
-- [3D医疗分割](./contrib/MedicalSeg)
-- [Cityscapes打榜模型](./contrib/CityscapesSOTA)
-- [全景分割](./contrib/PanopticDeepLab)
-- [CVPR冠军模型](./contrib/AutoNUE)
-- [领域自适应](./contrib/DomainAdaptation)
+* [Static Graph Version](./docs/static/static.md)
+* [Community](#Community)
+* [FAQ](./docs/faq/faq/faq.md)
 
-## 第三方教程推荐
-
-* [图像分割套件PaddleSeg全面解析系列](https://blog.csdn.net/txyugood/article/details/111029854)
-* [PaddleSeg学习笔记: 人像分割 HumanSeg](https://blog.csdn.net/libo1004/article/details/118809026)
-
-## 许可证书
-本项目的发布受Apache 2.0 license许可认证。
-
-## 社区贡献
-
-- 非常感谢[jm12138](https://github.com/jm12138)贡献U<sup>2</sup>-Net模型。
-- 非常感谢[zjhellofss](https://github.com/zjhellofss)（傅莘莘）贡献Attention U-Net模型，和Dice loss损失函数。
-- 非常感谢[liuguoyu666](https://github.com/liguoyu666)贡献U-Net++模型。
-- 非常感谢[yazheng0307](https://github.com/yazheng0307) (刘正)贡献快速开始教程文档。
-- 非常感谢[CuberrChen](https://github.com/CuberrChen)贡献STDC (rethink BiSeNet) PointRend，和 Detail Aggregate损失函数。
-- 非常感谢[stuartchen1949](https://github.com/stuartchen1949)贡献 SegNet。
-- 非常感谢[justld](https://github.com/justld)(郎督)贡献 DDRNet, CCNet, ESPNetV2, DMNet, ENCNet, HRNet_W48_Contrast, BiSeNetV1, FastFCN, SECrossEntropyLoss 和PixelContrastCrossEntropyLoss。
-- 非常感谢[Herman-Hu-saber](https://github.com/Herman-Hu-saber)(胡慧明)参与贡献 ESPNetV2。
-- 非常感谢[zhangjin12138](https://github.com/zhangjin12138)贡献数据增强方法 RandomCenterCrop。
-- 非常感谢[simuler](https://github.com/simuler) 贡献 ESPNetV1。
-- 非常感谢[ETTR123](https://github.com/ETTR123)(张恺) 贡献 ENet，PFPNNet。
+## Practical Projects
+  * [Interactive Segmentation](./EISeg)
+  * [Image Matting](./Matting)
+  * [PP-HumanSeg](./contrib/PP-HumanSeg)
+  * [3D Medical Segmentation](./contrib/MedicalSeg)
+  * [Cityscapes SOTA](./contrib/CityscapesSOTA)
+  * [Panoptic Segmentation](./contrib/PanopticDeepLab)
+  * [CVPR Champion Solution](./contrib/AutoNUE)
+  * [Domain Adaptation](./contrib/DomainAdaptation)
 
 
-## 学术引用 <img src="./docs/images/yinyong.png" width="30"/>
+## Community <img src="./docs/images/chat.png" width="30"/>
 
-如果我们的项目在学术上帮助到你，请考虑以下引用：
+* If you have any problem or suggestion on PaddleSeg, please send us issues through [GitHub Issues](https://github.com/PaddlePaddle/PaddleSeg/issues).
+* Welcome to Join PaddleSeg WeChat Group
+<div align="center">
+<img src="https://user-images.githubusercontent.com/48433081/163670184-43cfb3ae-2047-4ba3-8dae-6c02090dd177.png"  width = "200" />  
+</div>
+
+## License
+
+PaddleSeg is released under the [Apache 2.0 license](LICENSE).
+
+## Acknowledgement
+* Thanks [jm12138](https://github.com/jm12138) for contributing U<sup>2</sup>-Net.
+* Thanks [zjhellofss](https://github.com/zjhellofss) (Fu Shenshen) for contributing Attention U-Net, and Dice Loss.
+* Thanks [liuguoyu666](https://github.com/liguoyu666), [geoyee](https://github.com/geoyee) for contributing U-Net++ and U-Net3+.
+* Thanks [yazheng0307](https://github.com/yazheng0307) (LIU Zheng) for contributing quick-start document.
+* Thanks [CuberrChen](https://github.com/CuberrChen) for contributing STDC(rethink BiSeNet), PointRend and DetailAggregateLoss.
+* Thanks [stuartchen1949](https://github.com/stuartchen1949) for contributing SegNet.
+* Thanks [justld](https://github.com/justld) (Lang Du) for contributing DDRNet, CCNet, ESPNetV2, DMNet, ENCNet, HRNet_W48_Contrast, FastFCN, BiSeNetV1, SECrossEntropyLoss and PixelContrastCrossEntropyLoss.
+* Thanks [Herman-Hu-saber](https://github.com/Herman-Hu-saber) (Hu Huiming) for contributing ESPNetV2.
+* Thanks [zhangjin12138](https://github.com/zhangjin12138) for contributing RandomCenterCrop.
+* Thanks [simuler](https://github.com/simuler) for contributing ESPNetV1.
+* Thanks [ETTR123](https://github.com/ETTR123)(Zhang Kai) for contributing ENet, PFPNNet.
+
+## Citation
+If you find our project useful in your research, please consider citing:
 
 ```latex
 @misc{liu2021paddleseg,

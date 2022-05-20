@@ -144,26 +144,34 @@ PaddleSeg lists every option that can be optimized in the configuration file. Us
 batch_size: 4  # Set the number of pictures sent to the network at one iteration. Generally speaking, the larger the video memory of the machine you are using, the higher the batch_size value.
 iters: 1000  # Number of iterations
 
-train_dataset: # Training dataset
-  type: OpticDiscSeg # The name of the training dataset class
+train_dataset:  # Training dataset
+  type: Dataset # The name of the training dataset class
   dataset_root: data/optic_disc_seg # The directory where the training dataset is stored
-  num_classes: 2 # Number of pixel categories
+  train_path: data/optic_disc_seg/train_list.txt  # The list for training
+  num_classes: 2  # Number of pixel categories
+  mode: train # Indicate the dataset for training
   transforms: # Data transformation and data augmentation
-    - type: Resize Need to resize before sending to the network
-      target_size: [512, 512] # Resize the original image to 512*512 and send it to the network
-    - type: RandomHorizontalFlip # Flip the image horizontally with a certain probability
+    - type: ResizeStepScaling # Random resize the image and label to 0.5x~2.0x
+      min_scale_factor: 0.5
+      max_scale_factor: 2.0
+      scale_step_size: 0.25
+    - type: RandomPaddingCrop # Random crop the resized image and label
+      crop_size: [512, 512]
+    - type: RandomHorizontalFlip  # Flip the image horizontally with a certain probability
+    - type: RandomDistort # Change the brightness, contrast and saturation
+      brightness_range: 0.5
+      contrast_range: 0.5
+      saturation_range: 0.5
     - type: Normalize # Normalize the image
-  mode: train
 
-val_dataset: # Validating dataset
-  type: OpticDiscSeg # The name of the training dataset class
+val_dataset:  # Validating dataset
+  type: Dataset # The name of the training dataset class
   dataset_root: data/optic_disc_seg # The directory where the validating dataset is stored
-  num_classes: 2 # Number of pixel categories
+  val_path: data/optic_disc_seg/val_list.txt  # The list for validation
+  num_classes: 2  # Number of pixel categories
+  mode: val # Indicate the dataset for validating
   transforms: # Data transformation and data augmentation
-    - type: Resize  Need to resize before sending to the network
-      target_size: [512, 512]  # Resize the original image to 512*512 and send it to the network
     - type: Normalize # Normalize the image
-  mode: val
 
 optimizer: # Set the type of optimizer
   type: sgd #Using SGD (Stochastic Gradient Descent) method as the optimizer
@@ -212,26 +220,32 @@ Mainly focus on these parameters:
 ```
 train_dataset:
   type: Dataset
-  dataset_root: dataset/optic_disc_seg
-  train_path: dataset/optic_disc_seg/train_list.txt
+  dataset_root: data/optic_disc_seg
+  train_path: data/optic_disc_seg/train_list.txt
   num_classes: 2
-  transforms:
-    - type: Resize
-      target_size: [512, 512]
-    - type: RandomHorizontalFlip
-    - type: Normalize
   mode: train
+  transforms:
+    - type: ResizeStepScaling
+      min_scale_factor: 0.5
+      max_scale_factor: 2.0
+      scale_step_size: 0.25
+    - type: RandomPaddingCrop
+      crop_size: [512, 512]
+    - type: RandomHorizontalFlip
+    - type: RandomDistort
+      brightness_range: 0.5
+      contrast_range: 0.5
+      saturation_range: 0.5
+    - type: Normalize
 
 val_dataset:
   type: Dataset
   dataset_root: dataset/optic_disc_seg
   val_path: dataset/optic_disc_seg/val_list.txt
   num_classes: 2
-  transforms:
-    - type: Resize  
-      target_size: [512, 512]  
-    - type: Normalize
   mode: val
+  transforms:
+    - type: Normalize
 ```
 
 ### **3.4 Start Training**

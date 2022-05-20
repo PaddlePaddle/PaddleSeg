@@ -246,6 +246,7 @@ class Predictor:
         if hasattr(args, 'benchmark') and args.benchmark:
             import auto_log
             pid = os.getpid()
+            gpu_id = None if args.device == 'cpu' else 0
             self.autolog = auto_log.AutoLogger(
                 model_name=args.model_name,
                 model_precision=args.precision,
@@ -255,7 +256,7 @@ class Predictor:
                 inference_config=self.pred_cfg,
                 pids=pid,
                 process_name=None,
-                gpu_ids=0,
+                gpu_ids=gpu_id,
                 time_keys=[
                     'preprocess_time', 'inference_time', 'postprocess_time'
                 ],

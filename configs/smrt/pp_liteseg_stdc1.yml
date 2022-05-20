@@ -1,0 +1,19 @@
+_base_: './base_cfg.yml'
+
+model:
+  type: PPLiteSeg
+  backbone:
+    type: STDC1
+    pretrained: https://bj.bcebos.com/paddleseg/dygraph/PP_STDCNet1.tar.gz
+  arm_out_chs: [32, 64, 128]
+  seg_head_inter_chs: [32, 64, 64]
+
+loss:
+  types:
+    - type: MixedLoss
+      losses:
+        - type: OhemCrossEntropyLoss
+          min_kept: 65000
+        - type: LovaszSoftmaxLoss
+      coef: [0.8, 0.2]
+  coef: [1, 1, 1]
