@@ -84,8 +84,9 @@ def evaluate_ml(model,
 
     img_name = ''
     i = 0
-
+    ignore_cnt = 0
     for iter, data in enumerate(loader):
+
         reader_cost_averager.record(time.time() - batch_start)
 
         image_rgb_chw = data['img'].numpy()[0]
@@ -93,7 +94,16 @@ def evaluate_ml(model,
         trimap = data['trimap'].numpy().squeeze() / 255.0
         image = image_rgb_hwc * 0.5 + 0.5  # reverse normalize (x/255 - mean) / std
 
+        is_fg = trimap >= 0.9
+        is_bg = trimap <= 0.1
+
+        if is_fg.sum() == 0 or is_bg.sum() == 0:
+            ignore_cnt += 1
+            logger.info(str(iter))
+            continue
+
         alpha_pred = model(image, trimap)
+
         alpha_pred = reverse_transform(alpha_pred, data['trans_info'])
 
         alpha_gt = data['alpha'].numpy().squeeze() * 255
@@ -105,6 +115,9 @@ def evaluate_ml(model,
         sad = sad_metric.update(alpha_pred, alpha_gt, trimap)
         grad = grad_metric.update(alpha_pred, alpha_gt, trimap)
         conn = conn_metric.update(alpha_pred, alpha_gt, trimap)
+
+        if sad > 1000:
+            print(data['img_name'][0])
 
         if save_results:
             alpha_pred_one = alpha_pred
@@ -118,9 +131,8 @@ def evaluate_ml(model,
                 i += 1
             else:
                 img_name = save_name
-                save_name = name + '_' + str(i) + ext
+                save_name = name + '_' + str(0) + ext
                 i = 1
-
             save_alpha_pred(alpha_pred_one, os.path.join(save_dir, save_name))
 
         batch_cost_averager.record(
@@ -145,5 +157,6 @@ def evaluate_ml(model,
 
     logger.info('[EVAL] SAD: {:.4f}, MSE: {:.4f}, Grad: {:.4f}, Conn: {:.4f}'.
                 format(sad, mse, grad, conn))
+    logger.info('{}'.format(ignore_cnt))
 
     return sad, mse, grad, conn

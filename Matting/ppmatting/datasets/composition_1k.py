@@ -1,4 +1,4 @@
-# Copyright (c) 2021 PaddlePaddle Authors. All Rights Reserved.
+# Copyright (c) 2022 PaddlePaddle Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,6 +12,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .matting_dataset import MattingDataset
-from .composition_1k import Composition1K
-from .distinctions_646 import Distinctions646
+import os
+import math
+
+import cv2
+import numpy as np
+import random
+import paddle
+from paddleseg.cvlibs import manager
+
+import ppmatting.transforms as T
+from ppmatting.datasets.matting_dataset import MattingDataset
+
+
+@manager.DATASETS.add_component
+class Composition1K(MattingDataset):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
