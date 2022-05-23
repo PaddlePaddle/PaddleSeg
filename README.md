@@ -320,7 +320,7 @@ The relationship between mIoU and FLOPs of representative architectures and back
   * [Interactive Segmentation](./EISeg)
   * [Image Matting](./Matting)
   * [PP-HumanSeg](./contrib/PP-HumanSeg)
-  * [3D ](./contrib/MedicalSeg)
+  * [3D Medical Segmentation](./contrib/MedicalSeg)
   * [Cityscapes SOTA](./contrib/CityscapesSOTA)
   * [Panoptic Segmentation](./contrib/PanopticDeepLab)
   * [CVPR Champion Solution](./contrib/AutoNUE)
