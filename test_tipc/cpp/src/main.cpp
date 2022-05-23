@@ -25,6 +25,7 @@
 #include <cstring>
 #include <fstream>
 #include <numeric>
+#include <typeinfo>
 
 #include <include/seg.h>
 #include <include/config.h>
@@ -39,12 +40,15 @@ int main(int argc, char **argv) {
     exit(1);
   }
 
+  std::string output_dir = "output/cpp_predict/";
+  system("mkdir -p output/cpp_predict");
+  std::string output_vis_dir = "output/cpp_predict_vis/";
+  system("mkdir -p output/cpp_predict_vis");
+
   SegConfig config(argv[1]);
-
   config.PrintConfigInfo();
-
+  
   std::string path(argv[2]);
-
   std::vector<std::string> img_files_list;
   if (cv::utils::fs::isDirectory(path)) {
     std::vector<cv::String> filenames;
@@ -86,6 +90,12 @@ int main(int argc, char **argv) {
     int out_num = std::accumulate(out_shape.begin(), out_shape.end(), 1,
                                 std::multiplies<int>());
 
+    std::vector<uint8_t> out_data_u8(out_num);
+    for (int i = 0; i < out_num; i++) {
+      out_data_u8[i] = static_cast<uint8_t>(out_data[i]);
+    }
+    cv::Mat out_gray_img(out_shape[1], out_shape[2], CV_8UC1, out_data_u8.data());
+
     if (idx >= warmup_iter) {
       elapsed_time += run_time;
       std::cout << "Current image path: " << img_path << std::endl;
@@ -96,17 +106,33 @@ int main(int argc, char **argv) {
       std::cout << "Current time cost: " << run_time << " s." << std::endl;
     }
 
-    // Get pseudo image
-    std::vector<uint8_t> out_data_u8(out_num);
-    for (int i = 0; i < out_num; i++) {
-      out_data_u8[i] = static_cast<uint8_t>(out_data[i]);
+    // Save image
+
+    // 1.获取不带路径的文件名
+    string::size_type iPos = img_path.find_last_of('/') + 1;
+    string img_name = img_path.substr(iPos, img_path.length() - iPos);
+    // 2.获取不带后缀的文件名
+    string name = img_name.substr(0, img_name.rfind("."));
+
+    std::string output_path = output_dir + name + ".png";
+    bool write_ok = cv::imwrite(output_path, out_gray_img);
+    if (write_ok) {
+      std::cout << "Finish, the result is saved in " << output_path << std::endl;
+    } else {
+      std::cout << "Fail to write the result in " << output_path << std::endl;
     }
-    cv::Mat out_gray_img(out_shape[1], out_shape[2], CV_8UC1, out_data_u8.data());
+
+    // Save visual image
     cv::Mat out_eq_img;
     cv::equalizeHist(out_gray_img, out_eq_img);
-    cv::imwrite(img_path + ".jpg", out_eq_img);
+    std::string output_vis_path = output_vis_dir + name + ".jpg";
+    write_ok = cv::imwrite(output_vis_path, out_eq_img);
+    if (write_ok) {
+      std::cout << "Finish, the visual result is saved in " << output_vis_path << std::endl;
+    } else {
+      std::cout << "Fail to write the visual result in " << output_vis_path << std::endl;
+    }
     
-    std::cout << "Finish, the result is saved in " << img_path << ".jpg" << std::endl;
   }
 
   return 0;

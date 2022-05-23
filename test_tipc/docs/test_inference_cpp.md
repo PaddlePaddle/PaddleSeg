@@ -9,6 +9,14 @@ Linux GPU/CPU C++ 推理功能测试的主程序为`test_inference_cpp.sh`，可
 | 算法名称 | 模型名称 | device_CPU | device_GPU | tensorrt | mkldnn |
 |  :----:   |  :----: |   :----:   |  :----:  |   :----:   |   :----:   |
 |  STDC   |  stdc_stdc1 |  支持 | 支持 | 支持 | 支持 |
+|  PP_LiteSeg   |  pp_liteseg_stdc1 |  支持 | 支持 | 支持 | 支持 |
+|  PP_LiteSeg   |  pp_liteseg_stdc2 |  支持 | 支持 | 支持 | 支持 |
+|  ConnectNet   |  pp_humanseg_lite |  支持 | 支持 | 支持 | 支持 |
+|  HRNet W18 Small   | pp_humanseg_mobile  |  支持 | 支持 | 支持 | 支持 |
+|  DeepLabV3P   |  pp_humanseg_server |  支持 | 支持 | 支持 | 支持 |
+|  HRNet   |  fcn_hrnet_w18 |  支持 | 支持 | 支持 | 支持 |
+|  OCRNet   |  ocrnet_hrnetw18 |  支持 | 支持 | 支持 | 支持 |
+|  OCRNet   |  ocrnet_hrnetw48 |  支持 | 支持 | 支持 | 支持 |
 
 ## 2. 测试流程
 
@@ -25,21 +33,61 @@ wget https://paddleseg.bj.bcebos.com/dygraph/demo/cityscapes_demo.png
 
 #### 2.1.2 准备推理模型
 
-在`PaddleSeg/test_tipc/cpp/`目录下执行如下命令，下载测试模型用于测试。以下以STDC为例，如果需要测试其他模型，请参考[模型导出](../../docs/model_export_cn.md)导出预测模型。
+在`PaddleSeg/test_tipc/cpp/`目录下执行如下命令，下载测试模型用于测试。
+
+本教程以STDC为例，
+```
+mkdir -p inference_models
+wget -P inference_models https://paddleseg.bj.bcebos.com/dygraph/demo/stdc1seg_infer_model.tar.gz
+tar xf inference_models/stdc1seg_infer_model.tar.gz -C inference_models
+```
+已有测试模型下载:
+```
+# PP-LiteSeg(STDC-1)
+wget -P inference_models https://paddleseg.bj.bcebos.com/dygraph/demo/pp_liteseg_infer_model.tar.gz
+tar xf inference_models/pp_liteseg_infer_model.tar.gz  -C inference_models
+
+# PP-LiteSeg(STDC-2)
+wget -P inference_models https://paddleseg.bj.bcebos.com/tipc/infer_models/pp_liteseg_stdc2_cityscapes_1024x512_scale1.0_160k.zip
+unzip inference_models/pp_liteseg_stdc2_cityscapes_1024x512_scale1.0_160k.zip -d inference_models/
+
+# PP-HumanSeg-Lite
+wget -P inference_models https://paddleseg.bj.bcebos.com/tipc/infer_models/pp_humanseg_lite_export_398x224.zip
+unzip inference_models/pp_humanseg_lite_export_398x224 -d inference_models/
+
+# PP-HumanSeg-mobile
+wget -P inference_models https://paddleseg.bj.bcebos.com/tipc/infer_models/pp_humanseg_mobile_export_192x192.zip
+unzip inference_models/pp_humanseg_mobile_export_192x192.zip -d inference_models/
+
+# PP-HumanSeg-Server
+wget -P inference_models https://paddleseg.bj.bcebos.com/tipc/infer_models/pp_humanseg_server_export_512x512.zip
+unzip inference_models/pp_humanseg_server_export_512x512.zip -d inference_models/
+
+# HRNet W18
+wget -P inference_models https://paddleseg.bj.bcebos.com/tipc/infer_models/fcn_hrnetw18_cityscapes_1024x512_80k.zip
+unzip inference_models/fcn_hrnetw18_cityscapes_1024x512_80k.zip -d inference_models/
+
+# OCRNet HRNet W48
+wget -P inference_models https://paddleseg.bj.bcebos.com/tipc/infer_models/ocrnet_hrnetw48_cityscapes_1024x512_160k.zip
+unzip inference_models/ocrnet_hrnetw48_cityscapes_1024x512_160k.zip -d inference_models/
+
+# OCRNet HRNet W18
+wget -P inference_models https://paddleseg.bj.bcebos.com/tipc/infer_models/ocrnet_hrnetw18_cityscapes_1024x512_160k.zip
+unzip inference_models/ocrnet_hrnetw18_cityscapes_1024x512_160k.zip -d inference_models/
 
 ```
-wget https://paddleseg.bj.bcebos.com/dygraph/demo/stdc1seg_infer_model.tar.gz
-tar xf stdc1seg_infer_model.tar.gz
-```
+如果需要测试其他模型，请参考[模型导出](../../docs/model_export_cn.md)导出预测模型。
 
 请检查`PaddleSeg/test_tipc/cpp/`下存放了模型、图片，如下。
 
 ```
-PaddleSeg/test_tipc/cpp
-|-- stdc1seg_infer_model    # 模型
-    |-- model.pdmodel
-    |-- model.pdiparams
+PaddleSeg/test_tipc/cpp/
+|-- inference_models
+    |-- stdc1seg_infer_model    # 模型
+        |-- model.pdmodel
+        |-- model.pdiparams
 |-- cityscapes_demo.png     # 图片
+|-- humanseg_demo.png       # 图片
 ...
 ```
 
@@ -235,14 +283,20 @@ make -j
 测试方法如下所示，希望测试不同的模型文件，只需更换为自己的参数配置文件，即可完成对应模型的测试。
 
 ```bash
-bash test_tipc/test_inference_cpp.sh ${your_params_file}
+bash test_tipc/test_inference_cpp.sh ${your_params_file} ${your_infer_img_path}
 ```
 
-以`stdc_stdc1`的`Linux GPU/CPU C++推理测试`为例，命令如下所示。
+Cityscapes模型以`stdc_stdc1`的为例，人像分割模型以`deeplabv3p_resnet50`为例，命令如下所示。
 
 ```bash
-bash test_tipc/test_inference_cpp.sh test_tipc/configs/stdc_stdc1/inference_cpp.txt
+# 测试Cityscapes模型
+bash test_tipc/test_inference_cpp.sh test_tipc/configs/stdc_stdc1/inference_cpp.txt test_tipc/cpp/cityscapes_demo.png
+
+# 测试人像分割模型
+bash test_tipc/test_inference_cpp.sh test_tipc/configs/deeplabv3p_resnet50/inference_cpp.txt test_tipc/cpp/humanseg_demo.jpg
 ```
+
+
 
 输出结果如下，表示命令运行成功。
 
@@ -259,3 +313,8 @@ Finish, the result is saved in ./test_tipc/cpp/cityscapes_demo.png.jpg
 详细log位于`./test_tipc/output/infer_cpp/infer_cpp_use_cpu_use_mkldnn.log`中。
 
 如果运行失败，也会在终端中输出运行失败的日志信息以及对应的运行命令。可以基于该命令，分析运行失败的原因。
+
+预测图片包括预测标签图、经过直方图均衡化后的可视化效果图，分别保存在`PaddleSeg/output/cpp_predict`和`PaddleSeg/output/cpp_predict_vis`下。
+
+可视化效果图展示：
+![](./cityscapes_demo.jpg)

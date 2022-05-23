@@ -1,0 +1,19 @@
+_base_: './base_cfg.yml'
+
+model:
+  type: SFNet
+  backbone:
+    type: ResNet18_vd
+    output_stride: 8
+    pretrained: https://bj.bcebos.com/paddleseg/dygraph/resnet18_vd_ssld_v2.tar.gz
+  backbone_indices: [0, 1, 2, 3]
+
+loss:
+  types:
+    - type: MixedLoss
+      losses:
+        - type: OhemCrossEntropyLoss
+          min_kept: 65000
+        - type: LovaszSoftmaxLoss
+      coef: [0.8, 0.2]
+  coef: [1]

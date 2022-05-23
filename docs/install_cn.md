@@ -14,55 +14,77 @@
 ## 安装说明
 
 ### 1. 安装PaddlePaddle
-```
-# CUDA10.1
-python -m pip install paddlepaddle-gpu==2.2.1.post101 -f https://www.paddlepaddle.org.cn/whl/linux/mkl/avx/stable.html
 
-# CPU
-python -m pip install paddlepaddle==2.2.1 -i https://mirror.baidu.com/pypi/simple
-```
-- 更多CUDA版本或环境快速安装，请参考[PaddlePaddle快速安装文档](https://www.paddlepaddle.org.cn/install/quick)
-- 更多安装方式例如conda或源码编译安装方法，请参考[PaddlePaddle安装文档](https://www.paddlepaddle.org.cn/documentation/docs/zh/install/index_cn.html)
+请参考[快速安装文档](https://www.paddlepaddle.org.cn/install/quick)或者[详细安装文档](https://www.paddlepaddle.org.cn/documentation/docs/zh/install/index_cn.html)，安装PaddlePaddle （要求不低于2.2版本）。
 
-请确保您的PaddlePaddle安装成功并且版本不低于需求版本。使用以下命令进行验证。
+比如Linux、CUDA 10.1，使用pip安装GPU版本，执行如下命令。
 
 ```
-# 在您的Python解释器中确认PaddlePaddle安装成功
+python -m pip install paddlepaddle-gpu==2.2.2.post101 -f https://www.paddlepaddle.org.cn/whl/linux/mkl/avx/stable.html
+```
+
+使用如下命令验证PaddlePaddle是否安装成功，并且查看版本。
+
+```
+# 在Python解释器中顺利执行如下命令
 >>> import paddle
 >>> paddle.utils.run_check()
 
-# 确认PaddlePaddle版本
-python -c "import paddle; print(paddle.__version__)"
-
 # 如果命令行出现以下提示，说明PaddlePaddle安装成功
 # PaddlePaddle is installed successfully! Let's start deep learning with PaddlePaddle now.
+
+# 查看PaddlePaddle版本
+>>> print(paddle.__version__)
+
 ```
 
-## 2. 安装PaddleSeg
-支持API方式灵活开发。
-```
-pip install paddleseg
-```
+## 2. 下载PaddleSeg代码
 
-## 3. 下载PaddleSeg代码
+从Github下载PaddleSeg代码。
+
 ```
 git clone https://github.com/PaddlePaddle/PaddleSeg
 ```
-## 4. 安装PaddleSeg依赖
+
+如果连不上Github，可以从Gitee下载PaddleSeg代码，但是Gitee上代码可能不是最新。
+
+```
+git clone https://gitee.com/paddlepaddle/PaddleSeg.git
+```
+
+## 3. 安装PaddleSeg依赖
+
 ```
 cd PaddleSeg
 pip install -r requirements.txt
-
-#如果安装时出现版本错误，可以尝试删除旧版本，重新运行该脚本。
 ```
-## 5.确认环境安装成功
 
-在PaddleSeg目录下，执行下面命令，如果PaddleSeg/output文件夹中出现预测结果，则证明安装成功。
+如果安装时出现版本错误，可以尝试删除旧版本，重新运行该脚本。
 
-```python
-python predict.py \
-       --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \
-       --model_path https://paddleseg.bj.bcebos.com/dygraph/optic_disc/pp_liteseg_optic_disc_512x512_1k/model.pdparams\
-       --image_path docs/images/optic_test_image.jpg \
-       --save_dir output/result
+## 4.确认环境安装成功
+
+在PaddleSeg目录下执行如下命令，会进行简单的单卡训练和单卡预测。
+
+查看执行输出的log，没有报错，则验证安装成功。
+
+然后，基于PaddleSeg，你可以使用配置文件的方式来训练、验证、测试和导出模型。
+
+```
+sh tests/run_check_install.sh
+```
+
+## 5. 安装PaddleSeg包（可选）
+
+PaddleSeg也支持API方式灵活开发。 API开发方式要求大家将PaddleSeg安装到Python库中。
+
+
+执行如下命令，从源码编译安装PaddleSeg包。
+```
+cd PaddleSeg
+python setup.py install
+```
+
+或者直接安装发布的PaddleSeg包。
+```
+pip install paddleseg
 ```
