@@ -1,17 +1,12 @@
 batch_size: 128
-iters: 9000 # 2gpu = 22 epoch
+iters: 10000
 save_interval: 400
 
 model:
   type: PPHumanSegLite
-  pretrained: pretrained_model/pphumanseg_lite_portrait_398x224/model.pdparams
+  pretrained: pretrained_model/pphumanseg_lite_humanseg_trained_best.pdparams
   align_corners: False
   num_classes: 2
-
-lr_scheduler:
-  type: PiecewiseDecay
-  boundaries: [4500]
-  values: [0.001, 0.0001]
 
 train_roots:
   - data/portrait14k
@@ -71,12 +66,18 @@ optimizer:
   momentum: 0.9
   weight_decay: 0.0005
 
+lr_scheduler:
+  type: PolynomialDecay
+  learning_rate: 0.1
+  end_lr: 0
+  power: 0.9
 
 loss:
   types:
     - type: MixedLoss
       losses:
         - type: CrossEntropyLoss
+        - type: SemanticConnectivityLearning
         - type: LovaszSoftmaxLoss
-      coef: [0.8, 0.2]
+      coef: [0.8, 0.1, 0.2]
   coef: [1]

@@ -4,7 +4,7 @@ save_interval: 400
 
 model:
   type: PPHumanSegLite
-  pretrained: saved_model/pphumanseg_lite_imagenet_pretrain_humanseg/best_model/model.pdparams
+  pretrained: pretrained_model/pphumanseg_lite_humanseg_trained_best.pdparams
   align_corners: False
   num_classes: 2
 
@@ -77,7 +77,6 @@ loss:
     - type: MixedLoss
       losses:
         - type: CrossEntropyLoss
-        - type: SemanticConnectivityLearning
         - type: LovaszSoftmaxLoss
-      coef: [0.8, 0.2, 0.2]
+      coef: [0.8, 0.2]
   coef: [1]

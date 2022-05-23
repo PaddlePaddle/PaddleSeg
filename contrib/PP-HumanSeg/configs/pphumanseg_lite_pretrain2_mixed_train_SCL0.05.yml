@@ -1,10 +1,10 @@
 batch_size: 128
-iters: 13000
+iters: 10000
 save_interval: 400
 
 model:
   type: PPHumanSegLite
-  # pretrained: saved_model/pphumanseg_lite_imagenet_pretrain_humanseg/best_model/model.pdparams
+  pretrained: pretrained_model/pphumanseg_lite_humanseg_trained_best.pdparams
   align_corners: False
   num_classes: 2
 
@@ -67,16 +67,17 @@ optimizer:
   weight_decay: 0.0005
 
 lr_scheduler:
-  type: PiecewiseDecay
-  boundaries: [6500]
-  values: [0.005, 0.0005]
+  type: PolynomialDecay
+  learning_rate: 0.1
+  end_lr: 0
+  power: 0.9
 
 loss:
   types:
     - type: MixedLoss
       losses:
         - type: CrossEntropyLoss
-        # - type: SemanticConnectivityLearning
+        - type: SemanticConnectivityLearning
         - type: LovaszSoftmaxLoss
-      coef: [0.8, 0.2]
+      coef: [0.8, 0.05, 0.2]
   coef: [1]
