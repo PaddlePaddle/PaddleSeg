@@ -1,0 +1,66 @@
+batch_size: 128
+iters: 10000
+
+train_dataset:
+  type: Dataset
+  dataset_root: data/humanseg
+  train_path: data/humanseg/train.txt
+  num_classes: 2
+  transforms:
+    - type: Resize
+      target_size: [256, 256]
+    - type: ResizeStepScaling
+      scale_step_size: 0
+    - type: RandomRotation
+    - type: RandomPaddingCrop
+      crop_size: [256, 256]
+    - type: RandomHorizontalFlip
+    - type: RandomDistort
+    - type: RandomBlur
+      prob: 0.3
+    - type: Normalize
+  mode: train
+
+val_dataset:
+  type: Dataset
+  dataset_root: data/humanseg
+  val_path: data/humanseg/val.txt
+  num_classes: 2
+  transforms:
+    - type: Resize
+      target_size: [192, 192]
+    - type: Normalize
+  mode: val
+
+export:
+  transforms:
+    - type: Resize
+      target_size: [192, 192]
+    - type: Normalize
+
+
+optimizer:
+  type: sgd
+  momentum: 0.9
+  weight_decay: 0.0005
+
+lr_scheduler:
+  type: PolynomialDecay
+  learning_rate: 0.1
+  end_lr: 0
+  power: 0.9
+
+loss:
+  types:
+    - type: MixedLoss
+      losses:
+        - type: CrossEntropyLoss
+        - type: LovaszSoftmaxLoss
+      coef: [0.8, 0.2]
+  coef: [1]
+
+model:
+  type: PPHumanSegLite
+  pretrained: pretrained_model/PPHumanSegLite_ImageNet360epoch.pdparams
+  align_corners: False
+  num_classes: 2
