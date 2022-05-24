@@ -32,6 +32,7 @@ def get_image_list(image_path):
     image_list = []
     image_dir = None
     if os.path.isfile(image_path):
+        image_dir = None
         if os.path.splitext(image_path)[-1] in valid_suffix:
             image_list.append(image_path)
         else:

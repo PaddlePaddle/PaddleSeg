@@ -212,14 +212,14 @@ python tools/predict.py \
 
 更多参数信息请运行如下命令进行查看:
 ```shell
-python predict.py --help
+python tools/predict.py --help
 ```
 
 
 ## 背景替换
 ```shell
 export CUDA_VISIBLE_DEVICES=0
-python /toolsbg_replace.py \
+python tools/bg_replace.py \
     --config configs/quick_start/modnet-mobilenetv2.yml \
     --model_path output/best_model/model.pdparams \
     --image_path path/to/your/image \
@@ -239,13 +239,13 @@ python /toolsbg_replace.py \
 
 更多参数信息请运行如下命令进行查看:
 ```shell
-python bg_replace.py --help
+python tools/bg_replace.py --help
 ```
 
 ## 导出部署
 ### 模型导出
 ```shell
-python toolsexport.py \
+python tools/export.py \
     --config configs/quick_start/modnet-mobilenetv2.yml \
     --model_path output/best_model/model.pdparams \
     --save_dir output/export

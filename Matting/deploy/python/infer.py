@@ -447,11 +447,14 @@ class Predictor:
 
         if self.imgs_dir is not None:
             img_path = img_path.replace(self.imgs_dir, '')
+        else:
+            img_path = os.path.basename(img_path)
         name, ext = os.path.splitext(img_path)
-        if name[0] == '/':
+        if name[0] == '/' or name[0] == '\\':
             name = name[1:]
-        alpha_save_path = os.path.join(args.save_dir, 'alpha/', name + '.png')
-        clip_save_path = os.path.join(args.save_dir, 'clip/', name + '.png')
+
+        alpha_save_path = os.path.join(args.save_dir, name + '_alpha.png')
+        clip_save_path = os.path.join(args.save_dir, name + '_clip.png')
 
         # save alpha
         mkdir(alpha_save_path)
