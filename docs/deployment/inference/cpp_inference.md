@@ -1,3 +1,5 @@
+English|[简体中文](cpp_inference_cn.md)
+
 # Paddle Inference Deployment (C++)
 
 ## 1. Description
