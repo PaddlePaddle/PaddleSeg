@@ -22,9 +22,9 @@ from paddleseg.cvlibs import manager
 
 
 @manager.MODELS.add_component
-class PPMobileSeg(nn.Layer):
+class MobileSeg(nn.Layer):
     """
-    The PP_MobileSeg implementation based on PaddlePaddle.
+    The semantic segmentation models for mobile devices.
 
     Args:
         num_classes (int): The number of target classes.
@@ -78,9 +78,9 @@ class PPMobileSeg(nn.Layer):
         assert len(arm_out_chs) == len(backbone_indices), "The length of " \
             "arm_out_chs and backbone_indices should be equal"
 
-        self.ppseg_head = PPMobileSegHead(backbone_out_chs, arm_out_chs,
-                                          cm_bin_sizes, cm_out_ch, arm_type,
-                                          resize_mode)
+        self.ppseg_head = MobileSegHead(backbone_out_chs, arm_out_chs,
+                                        cm_bin_sizes, cm_out_ch, arm_type,
+                                        resize_mode)
 
         if len(seg_head_inter_chs) == 1:
             seg_head_inter_chs = seg_head_inter_chs * len(backbone_indices)
@@ -98,22 +98,18 @@ class PPMobileSeg(nn.Layer):
         x_hw = paddle.shape(x)[2:]
 
         feats_backbone = self.backbone(x)  # [x4, x8, x16, x32]
-
         assert len(feats_backbone) >= len(self.backbone_indices), \
             f"The nums of backbone feats ({len(feats_backbone)}) should be greater or " \
             f"equal than the nums of backbone_indices ({len(self.backbone_indices)})"
 
         feats_selected = [feats_backbone[i] for i in self.backbone_indices]
-
         feats_head = self.ppseg_head(feats_selected)  # [..., x8, x16, x32]
 
         if self.training:
             logit_list = []
-
             for x, seg_head in zip(feats_head, self.seg_heads):
                 x = seg_head(x)
                 logit_list.append(x)
-
             logit_list = [
                 F.interpolate(
                     x, x_hw, mode='bilinear', align_corners=False)
@@ -131,9 +127,9 @@ class PPMobileSeg(nn.Layer):
             utils.load_entire_model(self, self.pretrained)
 
 
-class PPMobileSegHead(nn.Layer):
+class MobileSegHead(nn.Layer):
     """
-    The head of PPMobileSeg.
+    The head of MobileSeg.
 
     Args:
         backbone_out_chs (List(Tensor)): The channels of output tensors in the backbone.
@@ -148,8 +144,8 @@ class PPMobileSegHead(nn.Layer):
                  arm_type, resize_mode):
         super().__init__()
 
-        self.cm = PPContextModule(backbone_out_chs[-1], cm_out_ch, cm_out_ch,
-                                  cm_bin_sizes)
+        self.cm = MobileContextModule(backbone_out_chs[-1], cm_out_ch,
+                                      cm_out_ch, cm_bin_sizes)
 
         assert hasattr(layers,arm_type), \
             "Not support arm_type ({})".format(arm_type)
@@ -188,9 +184,9 @@ class PPMobileSegHead(nn.Layer):
         return out_feat_list
 
 
-class PPContextModule(nn.Layer):
+class MobileContextModule(nn.Layer):
     """
-    Simple Context module.
+    Context Module for Mobile Model.
 
     Args:
         in_channels (int): The number of input channels to pyramid pooling module.

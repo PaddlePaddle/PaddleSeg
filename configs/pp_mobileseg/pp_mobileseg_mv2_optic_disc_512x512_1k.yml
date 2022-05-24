@@ -36,7 +36,7 @@ loss:
 
 
 model:
-  type: PPMobileSeg
+  type: MobileSeg
   backbone:
     type: MobileNetV2   # [24, 32, 96, 320]
     pretrained: https://paddleseg.bj.bcebos.com/dygraph/backbone/mobilenetv2_ssld.tar.gz

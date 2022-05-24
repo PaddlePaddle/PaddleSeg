@@ -36,7 +36,7 @@ loss:
 
 
 model:
-  type: PPMobileSeg
+  type: MobileSeg
   backbone:
     type: ShuffleNetV2_x1_0   # [24, 116, 232, 464]
     pretrained: https://paddleseg.bj.bcebos.com/dygraph/backbone/shufflenetv2_x1_0.zip

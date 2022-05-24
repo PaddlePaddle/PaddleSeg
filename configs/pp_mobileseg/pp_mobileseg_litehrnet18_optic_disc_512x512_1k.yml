@@ -38,7 +38,7 @@ loss:
 
 
 model:
-  type: PPMobileSeg
+  type: MobileSeg
   backbone:
     type: Lite_HRNet_18
     use_head: False   # False: [40, 80, 160, 320] True: [40, 40, 80, 160]

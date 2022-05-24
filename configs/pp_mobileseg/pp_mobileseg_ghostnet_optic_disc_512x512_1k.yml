@@ -36,7 +36,7 @@ loss:
 
 
 model:
-  type: PPMobileSeg
+  type: MobileSeg
   backbone:
     type: GhostNet_x1_0   # [24, 40, 112, 160]
     pretrained: https://paddleseg.bj.bcebos.com/dygraph/backbone/ghostnet_x1_0.zip
