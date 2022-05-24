@@ -183,20 +183,20 @@ def train(model,
                 avg_train_batch_cost = batch_cost_averager.get_average()
                 avg_train_reader_cost = reader_cost_averager.get_average()
                 eta = calculate_eta(remain_iters, avg_train_batch_cost)
-                logger.info(
-                    "[TRAIN] epoch={}, iter={}/{}, loss={:.4f}, lr={:.6f}, batch_cost={:.4f}, reader_cost={:.5f}, ips={:.4f} samples/sec | ETA {}"
-                    .format((iter - 1) // iters_per_epoch + 1, iter, iters,
-                            avg_loss['all'], lr, avg_train_batch_cost,
-                            avg_train_reader_cost,
-                            batch_cost_averager.get_ips_average(), eta))
-                # print loss
-                loss_str = '[TRAIN] [LOSS] '
-                loss_str = loss_str + 'all={:.4f}'.format(avg_loss['all'])
+                # loss info
+                loss_str = ' ' * 26 + '\t[LOSSES]'
+                loss_str = loss_str
                 for key, value in avg_loss.items():
                     if key != 'all':
                         loss_str = loss_str + ' ' + key + '={:.4f}'.format(
                             value)
-                logger.info(loss_str)
+                logger.info(
+                    "[TRAIN] epoch={}, iter={}/{}, loss={:.4f}, lr={:.6f}, batch_cost={:.4f}, reader_cost={:.5f}, ips={:.4f} samples/sec | ETA {}\n{}\n"
+                    .format((iter - 1) // iters_per_epoch + 1, iter, iters,
+                            avg_loss['all'], lr, avg_train_batch_cost,
+                            avg_train_reader_cost,
+                            batch_cost_averager.get_ips_average(
+                            ), eta, loss_str))
                 if use_vdl:
                     for key, value in avg_loss.items():
                         log_tag = 'Train/' + key
