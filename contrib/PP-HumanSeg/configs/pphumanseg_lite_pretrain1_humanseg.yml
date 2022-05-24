@@ -1,5 +1,5 @@
-batch_size: 128
-iters: 10000
+batch_size: 12    # total: 24
+iters: 100000
 
 train_dataset:
   type: Dataset
@@ -46,7 +46,7 @@ optimizer:
 
 lr_scheduler:
   type: PolynomialDecay
-  learning_rate: 0.1
+  learning_rate: 0.01
   end_lr: 0
   power: 0.9
 

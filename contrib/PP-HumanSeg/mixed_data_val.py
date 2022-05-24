@@ -24,6 +24,7 @@ from paddleseg.models import *
 from paddleseg.utils import get_sys_env, logger, config_check, utils
 from paddleseg.transforms import *
 from paddleseg.datasets import Dataset
+
 from datasets.humanseg import HumanSeg
 from scripts.config import Config
 
@@ -104,6 +105,7 @@ def main(args):
 
     class_ious = []
     for val_dataset in val_datasets:
+        logger.info("The dataset root: {}".format(val_dataset.dataset_root))
         mean_iou, acc, class_iou, _, _ = evaluate(
             model, val_dataset, num_workers=args.num_workers)
         class_ious.append(class_iou)
@@ -114,14 +116,15 @@ def main(args):
         for num, class_weight in enumerate(class_weights):
             dataset_iou += class_weight * class_iou[num]
         dataset_ious.append(dataset_iou)
+
     total_iou = 0
     for num, dataset_iou in enumerate(dataset_ious):
-        logger.info("[EVAL] Dataset {} Class IoU: {}\n".format(
+        logger.info("[EVAL] Dataset {} Class IoU: {}".format(
             num, str(np.round(class_ious[num], 4))))
-        logger.info("[EVAL] Dataset {} IoU: {}\n".format(
+        logger.info("[EVAL] Dataset {} IoU: {}".format(
             num, str(np.round(dataset_iou, 4))))
         total_iou += dataset_weights[num] * dataset_iou
-    logger.info("[EVAL] Total IoU: \n" + str(np.round(total_iou, 4)))
+    logger.info("[EVAL] Total IoU: " + str(np.round(total_iou, 4)))
 
 
 if __name__ == '__main__':

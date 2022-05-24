@@ -106,42 +106,42 @@ def main(args):
 
     image_path0 = "data/portrait14k/{}".format(args.file_list)
     image_list, image_dir = get_image_list(image_path0)
-    logger.info('Number of predict images = {}'.format(len(image_list)))
-    save_dir = os.path.join(save_dir_, 'portrait14k')
+    logger.info('portrait14k: Number of predict images = {}'.format(
+        len(image_list)))
+    save_dir = os.path.join(save_dir_, 'res_portrait14k')
     predict(
         model,
         model_path=model_path,
         transforms=transforms,
         image_list=image_list,
         image_dir=image_dir,
-        save_dir=save_dir,
-    )
+        save_dir=save_dir, )
 
     image_path1 = "data/matting_human_half/{}".format(args.file_list)
     image_list, image_dir = get_image_list(image_path1)
-    logger.info('Number of predict images = {}'.format(len(image_list)))
-    save_dir = os.path.join(save_dir_, 'matting_human_half')
+    logger.info('matting_human_half: Number of predict images = {}'.format(
+        len(image_list)))
+    save_dir = os.path.join(save_dir_, 'res_matting_human_half')
     predict(
         model,
         model_path=model_path,
         transforms=transforms,
         image_list=image_list,
         image_dir=image_dir,
-        save_dir=save_dir,
-    )
+        save_dir=save_dir, )
 
     image_path2 = "data/humanseg/{}".format(args.file_list)
     image_list, image_dir = get_image_list(image_path2)
-    logger.info('Number of predict images = {}'.format(len(image_list)))
-    save_dir = os.path.join(save_dir_, 'vis')
+    logger.info('humanseg: Number of predict images = {}'.format(
+        len(image_list)))
+    save_dir = os.path.join(save_dir_, 'res_humanseg')
     predict(
         model,
         model_path=model_path,
         transforms=transforms,
         image_list=image_list,
         image_dir=image_dir,
-        save_dir=save_dir,
-    )
+        save_dir=save_dir, )
 
 
 if __name__ == '__main__':

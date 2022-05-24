@@ -25,6 +25,7 @@ from paddleseg.models.losses import *
 from datasets.humanseg import HumanSeg
 from paddleseg.datasets import Dataset
 from datasets.mixed_dataset import MixedDataset
+
 from scripts.mixed_data_train import train
 from scripts.config import Config
 
@@ -176,6 +177,10 @@ def main(args):
         # val_datasets = val_dataset0
     else:
         val_datasets = None
+
+    if place == 'gpu' and paddle.distributed.ParallelEnv().nranks > 1:
+        # convert bn to sync_bn
+        cfg._model = paddle.nn.SyncBatchNorm.convert_sync_batchnorm(cfg.model)
 
     train(
         cfg.model,

@@ -15,11 +15,11 @@
 import argparse
 
 import paddle
+from paddleseg.core import train
 from paddleseg.cvlibs import manager, Config
 from paddleseg.utils import get_sys_env, logger, config_check
 
 from datasets.humanseg import HumanSeg
-from scripts.train import train
 
 
 def parse_args():
@@ -132,6 +132,10 @@ def main(args):
     logger.info(msg)
 
     config_check(cfg, train_dataset=train_dataset, val_dataset=val_dataset)
+
+    if place == 'gpu' and paddle.distributed.ParallelEnv().nranks > 1:
+        # convert bn to sync_bn
+        cfg._model = paddle.nn.SyncBatchNorm.convert_sync_batchnorm(cfg.model)
 
     train(
         cfg.model,

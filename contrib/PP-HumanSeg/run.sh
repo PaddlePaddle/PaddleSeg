@@ -1,7 +1,7 @@
 #export CUDA_VISIBLE_DEVICES=0,1
 
 experiment=pphumanseg_lite_pretrain2_mixed_train_SCL0.5
-save_dir=output/${experiment}
+save_dir=output/${experiment}/test_0
 cfg=configs/${experiment}.yml
 save_interval=`expr 10000 / 25`
 mkdir -p ${save_dir}
