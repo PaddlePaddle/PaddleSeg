@@ -20,7 +20,7 @@ from paddleseg.models import layers
 from paddleseg import utils
 from paddleseg.cvlibs import manager
 
-from .loss import MRSD
+from ppmatting.models.losses import MRSD
 
 
 @manager.MODELS.add_component

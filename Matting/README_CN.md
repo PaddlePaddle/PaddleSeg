@@ -62,10 +62,7 @@ git clone https://github.com/PaddlePaddle/PaddleSeg
 #### 3. 安装
 
 ```shell
-cd PaddleSeg
-pip install -r requirements.txt
-pip install -e .
-cd Matting
+cd PaddleSeg/Matting
 pip install -r requirements.txt
 ```
 
@@ -160,11 +157,11 @@ val/fg/fg3.jpg bg/bg3.jpg val/trimap/trimap3.jpg
 ### 训练
 ```shell
 export CUDA_VISIBLE_DEVICES=0
-python train.py \
-       --config configs/modnet/modnet-mobilenetv2.yml \
+python tools/train.py \
+       --config configs/quick_start/modnet-mobilenetv2.yml \
        --do_eval \
        --use_vdl \
-       --save_interval 5000 \
+       --save_interval 500 \
        --num_workers 5 \
        --save_dir output
 ```
@@ -175,15 +172,15 @@ python train.py \
 
 更多参数信息请运行如下命令进行查看:
 ```shell
-python train.py --help
+python tools/train.py --help
 ```
 如需使用多卡，请用`python -m paddle.distributed.launch`进行启动
 
 ### 评估
 ```shell
 export CUDA_VISIBLE_DEVICES=0
-python val.py \
-       --config configs/modnet/modnet-mobilenetv2.yml \
+python tools/val.py \
+       --config configs/quick_start/modnet-mobilenetv2.yml \
        --model_path output/best_model/model.pdparams \
        --save_dir ./output/results \
        --save_results
@@ -194,14 +191,14 @@ python val.py \
 
 更多参数信息请运行如下命令进行查看:
 ```shell
-python val.py --help
+python tools/val.py --help
 ```
 
 ### 预测
 ```shell
 export CUDA_VISIBLE_DEVICES=0
-python predict.py \
-    --config configs/modnet/modnet-mobilenetv2.yml \
+python tools/predict.py \
+    --config configs/quick_start/modnet-mobilenetv2.yml \
     --model_path output/best_model/model.pdparams \
     --image_path data/PPM-100/val/fg/ \
     --save_dir ./output/results \
@@ -222,8 +219,8 @@ python predict.py --help
 ## 背景替换
 ```shell
 export CUDA_VISIBLE_DEVICES=0
-python bg_replace.py \
-    --config configs/modnet/modnet-mobilenetv2.yml \
+python /toolsbg_replace.py \
+    --config configs/quick_start/modnet-mobilenetv2.yml \
     --model_path output/best_model/model.pdparams \
     --image_path path/to/your/image \
     --background path/to/your/background/image \
@@ -248,8 +245,8 @@ python bg_replace.py --help
 ## 导出部署
 ### 模型导出
 ```shell
-python export.py \
-    --config configs/modnet/modnet-mobilenetv2.yml \
+python toolsexport.py \
+    --config configs/quick_start/modnet-mobilenetv2.yml \
     --model_path output/best_model/model.pdparams \
     --save_dir output/export
 ```
@@ -257,7 +254,7 @@ python export.py \
 
 更多参数信息请运行如下命令进行查看:
 ```shell
-python export.py --help
+python tools/export.py --help
 ```
 
 ### 应用部署

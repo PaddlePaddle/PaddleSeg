@@ -23,7 +23,7 @@ from paddleseg.models import layers
 from paddleseg import utils
 from paddleseg.cvlibs import manager
 
-from model import MRSD
+from ppmatting.models.losses import MRSD
 
 
 def conv_up_psp(in_channels, out_channels, up_sample):
