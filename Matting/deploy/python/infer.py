@@ -454,22 +454,22 @@ class Predictor:
             name = name[1:]
 
         alpha_save_path = os.path.join(args.save_dir, name + '_alpha.png')
-        clip_save_path = os.path.join(args.save_dir, name + '_clip.png')
+        rgba_save_path = os.path.join(args.save_dir, name + '_rgba.png')
 
         # save alpha
         mkdir(alpha_save_path)
         cv2.imwrite(alpha_save_path, alpha)
 
-        # save clip image
-        mkdir(clip_save_path)
+        # save rgba image
+        mkdir(rgba_save_path)
         if args.fg_estimate:
             fg = estimate_foreground_ml(ori_img / 255.0, alpha / 255.0) * 255
         else:
             fg = ori_img
         fg = fg.astype('uint8')
         alpha = alpha[:, :, np.newaxis]
-        clip = np.concatenate([fg, alpha], axis=-1)
-        cv2.imwrite(clip_save_path, clip)
+        rgba = np.concatenate([fg, alpha], axis=-1)
+        cv2.imwrite(rgba_save_path, rgba)
 
 
 def main(args):
