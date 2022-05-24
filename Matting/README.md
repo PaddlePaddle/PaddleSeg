@@ -60,10 +60,7 @@ git clone https://github.com/PaddlePaddle/PaddleSeg
 #### 3. Installation
 
 ```shell
-cd PaddleSeg
-pip install -r requirements.txt
-pip install -e .
-cd Matting
+cd PaddleSeg/Matting
 pip install -r requirements.txt
 ```
 
@@ -158,11 +155,11 @@ val/fg/fg3.jpg bg/bg3.jpg val/trimap/trimap3.jpg
 ### Training
 ```shell
 export CUDA_VISIBLE_DEVICES=0
-python train.py \
-       --config configs/modnet/modnet-mobilenetv2.yml \
+python tools/train.py \
+       --config configs/quick_start/modnet-mobilenetv2.yml \
        --do_eval \
        --use_vdl \
-       --save_interval 5000 \
+       --save_interval 500 \
        --num_workers 5 \
        --save_dir output
 ```
@@ -173,15 +170,15 @@ python train.py \
 
 Run the following command to view more parameters.
 ```shell
-python train.py --help
+python tools/train.py --help
 ```
 If you want to use multiple GPUs，please use `python -m paddle.distributed.launch` to run.
 
 ### Evaluation
 ```shell
 export CUDA_VISIBLE_DEVICES=0
-python val.py \
-       --config configs/modnet/modnet-mobilenetv2.yml \
+python tools/val.py \
+       --config configs/quick_start/modnet-mobilenetv2.yml \
        --model_path output/best_model/model.pdparams \
        --save_dir ./output/results \
        --save_results
@@ -192,14 +189,14 @@ You can directly download the provided model for evaluation.
 
 Run the following command to view more parameters.
 ```shell
-python val.py --help
+python tools/val.py --help
 ```
 
 ### Prediction
 ```shell
 export CUDA_VISIBLE_DEVICES=0
-python predict.py \
-    --config configs/modnet/modnet-mobilenetv2.yml \
+python tools/predict.py \
+    --config configs/quick_start/modnet-mobilenetv2.yml \
     --model_path output/best_model/model.pdparams \
     --image_path data/PPM-100/val/fg/ \
     --save_dir ./output/results \
@@ -213,14 +210,14 @@ You can directly download the provided model for evaluation.
 
 Run the following command to view more parameters.
 ```shell
-python predict.py --help
+python tools/predict.py --help
 ```
 
 ## Background Replacement
 ```shell
 export CUDA_VISIBLE_DEVICES=0
-python bg_replace.py \
-    --config configs/modnet/modnet-mobilenetv2.yml \
+python tools/bg_replace.py \
+    --config configs/quick_start/modnet-mobilenetv2.yml \
     --model_path output/best_model/model.pdparams \
     --image_path path/to/your/image \
     --background path/to/your/background/image \
@@ -239,14 +236,14 @@ You can directly download the provided model for background replacement.
 
 Run the following command to view more parameters.
 ```shell
-python bg_replace.py --help
+python tools/bg_replace.py --help
 ```
 
 ## Export and Deploy
 ### Model Export
 ```shell
-python export.py \
-    --config configs/modnet/modnet-mobilenetv2.yml \
+python tools/export.py \
+    --config configs/quick_start/modnet-mobilenetv2.yml \
     --model_path output/best_model/model.pdparams \
     --save_dir output/export
 ```
@@ -254,7 +251,7 @@ If the model requires trimap information, `--trimap` is need.
 
 Run the following command to view more parameters.
 ```shell
-python export.py --help
+python tools/export.py --help
 ```
 
 ### Deploy
