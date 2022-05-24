@@ -1270,3 +1270,56 @@ class RandomAffine:
             return (im, )
         else:
             return (im, label)
+        
+from paddleseg.transforms.mytransform import RandomCrop
+import numpy as np
+@manager.TRANSFORMS.add_component
+class RandomSizeAndCrop(object):
+    def __init__(self, crop_size, crop_nopad,
+                 scale_min=0.5, scale_max=2.0, full_size=False,
+                 pre_size=None):
+        self.crop = RandomCrop(crop_size, nopad=crop_nopad)
+        self.scale_min = scale_min
+        self.scale_max = scale_max
+        self.full_size = full_size
+        self.pre_size = pre_size
+
+    def __call__(self, img, mask, centroid=None):
+        
+        img, mask = np.uint8(img), np.uint8(mask)
+        img, mask = Image.fromarray(img), Image.fromarray(mask)
+
+        assert img.size == mask.size
+
+        scale_amt = random.uniform(self.scale_min, self.scale_max)
+
+        if self.pre_size is not None:
+            in_w, in_h = img.size
+            # find long edge
+            if in_w > in_h:
+                # long is width
+                pre_scale = self.pre_size / in_w
+            else:
+                pre_scale = self.pre_size / in_h
+            scale_amt *= pre_scale
+
+        if self.full_size:
+            self.crop.size = img.size[1], img.size[0]
+
+        w, h = [int(i * scale_amt) for i in img.size]
+
+        if centroid is not None:
+            centroid = [int(c * scale_amt) for c in centroid]
+
+        resized_img, resized_mask = (img.resize((w, h), Image.BICUBIC),
+                                     mask.resize((w, h), Image.NEAREST))
+
+        img_mask = self.crop(resized_img, resized_mask, centroid)
+        img_mask.append(scale_amt)
+
+
+        im, label = np.array(img_mask[0],dtype='float32'),np.array(img_mask[1],dtype='float32')
+
+     
+        return (im, label)
+
