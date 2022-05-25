@@ -723,7 +723,7 @@ def get_seg_model():
     return model
 
 @manager.BACKBONES.add_component
-def HRNETV2():
+def HRNETV2PSA():
     model = HighResolutionNet()
     model.init_weights()
     
