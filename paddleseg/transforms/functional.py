@@ -176,3 +176,132 @@ def mask_to_binary_edge(mask, radius, num_classes):
     onehot = mask_to_onehot(mask, num_classes)
     edge = onehot_to_binary_edge(onehot, radius)
     return edge
+def add_margin(pil_img, top, right, bottom, left, margin_color):
+    """
+    Add margin around an image
+    top, right, bottom, left are the margin widths, in pixels
+    margin_color is what to use for the margins
+    """
+    width, height = pil_img.size
+    new_width = width + right + left
+    new_height = height + top + bottom
+    result = Image.new(pil_img.mode, (new_width, new_height), margin_color)
+    result.paste(pil_img, (left, top))
+    return result
+
+
+def set_crop_size(crop_size):
+    if isinstance(crop_size, (list, tuple)):
+        size = crop_size
+    elif isinstance(crop_size, numbers.Number):
+        size = (int(crop_size), int(crop_size))
+    else:
+        raise
+    return size
+
+
+class RandomCrop(object):
+    """
+    Take a random crop from the image.
+    First the image or crop size may need to be adjusted if the incoming image
+    is too small...
+    If the image is smaller than the crop, then:
+         the image is padded up to the size of the crop
+         unless 'nopad', in which case the crop size is shrunk to fit the image
+    A random crop is taken such that the crop fits within the image.
+    if cfg.DATASET.TRANSLATION_AUG_FIX is set, we insure that there's always
+    translation randomness of at least that value around the image.
+    if image < crop_size:
+        # slide crop within image, random offset
+    else:
+        # slide image within crop
+    """
+    def __init__(self, crop_size, nopad=True):
+        self.size = set_crop_size(crop_size)
+        #self.ignore_index = cfg.DATASET.IGNORE_LABEL
+        self.ignore_index = 255
+        self.nopad = nopad
+        self.pad_color = (0, 0, 0)
+
+    @staticmethod
+    def crop_in_image(centroid, target_w, target_h, w, h, img, mask):
+        if centroid is not None:
+            # Need to insure that centroid is covered by crop and that crop
+            # sits fully within the image
+            c_x, c_y = centroid
+            max_x = w - target_w
+            max_y = h - target_h
+            x1 = random.randint(c_x - target_w, c_x)
+            x1 = min(max_x, max(0, x1))
+            y1 = random.randint(c_y - target_h, c_y)
+            y1 = min(max_y, max(0, y1))
+        else:
+            if w == target_w:
+                x1 = 0
+            else:
+                x1 = random.randint(0, w - target_w)
+            if h == target_h:
+                y1 = 0
+            else:
+                y1 = random.randint(0, h - target_h)
+
+        return [img.crop((x1, y1, x1 + target_w, y1 + target_h)),
+                mask.crop((x1, y1, x1 + target_w, y1 + target_h))]
+
+    def image_in_crop(self, target_w, target_h, w, h, img, mask):
+        # image smaller than crop, so slide image within crop
+        x_total_margin = target_w - w
+        y_total_margin = target_h - h
+
+        left = random.randint(0, x_total_margin)
+        right = x_total_margin - left
+
+        top = random.randint(0, y_total_margin)
+        bottom = y_total_margin - top
+
+        slid_image = add_margin(img, top, right, bottom, left,
+                                self.pad_color)
+        slid_mask = add_margin(mask, top, right, bottom, left,
+                               self.ignore_index)
+        return [slid_image, slid_mask]
+
+    def __call__(self, img, mask, centroid=None):
+        assert img.size == mask.size
+        w, h = img.size
+        target_h, target_w = self.size  # ASSUME H, W
+
+        if w == target_w and h == target_h:
+            return [img, mask]
+
+        #if cfg.DATASET.TRANSLATE_AUG_FIX: #False
+        if False:
+            if w < target_w and h < target_h:
+                return self.image_in_crop(target_w, target_h, w, h, img, mask)
+            else:
+                return self.crop_in_image(centroid, target_w, target_h, w, h,
+                                          img, mask)
+
+        if self.nopad:
+            # Shrink crop size if image < crop
+            if target_h > h or target_w > w:
+                shorter_side = min(w, h)
+                target_h, target_w = shorter_side, shorter_side
+        else:
+            # Pad image if image < crop
+            if target_h > h:
+                pad_h = (target_h - h) // 2 + 1
+            else:
+                pad_h = 0
+            if target_w > w:
+                pad_w = (target_w - w) // 2 + 1
+            else:
+                pad_w = 0
+            border = (pad_w, pad_h, pad_w, pad_h)
+            if pad_h or pad_w:
+                img = ImageOps.expand(img, border=border, fill=self.pad_color)
+                mask = ImageOps.expand(mask, border=border,
+                                       fill=self.ignore_index)
+                w, h = img.size
+
+        return self.crop_in_image(centroid, target_w, target_h, w, h,
+                                  img, mask)
