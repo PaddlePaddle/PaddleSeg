@@ -1,5 +1,5 @@
 batch_size: 1
-iters: 20
+iters: 520000
 
 model:
     type: MscaleOCR
