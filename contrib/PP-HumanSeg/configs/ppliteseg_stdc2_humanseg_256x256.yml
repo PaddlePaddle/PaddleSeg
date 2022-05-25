@@ -1,5 +1,5 @@
-batch_size: 12  # total: 24
-iters: 100000
+batch_size: 128  # 2 gpus
+iters: 10000
 
 train_dataset:
   type: Dataset
@@ -46,7 +46,7 @@ optimizer:
 
 lr_scheduler:
   type: PolynomialDecay
-  learning_rate: 0.01
+  learning_rate: 0.1
   end_lr: 0
   power: 0.9
 
@@ -64,3 +64,5 @@ model:
   backbone:
     type: STDC2
     pretrained: https://bj.bcebos.com/paddleseg/dygraph/PP_STDCNet2.tar.gz
+  arm_out_chs: [64, 96, 128]
+  seg_head_inter_chs: [64, 64, 64]

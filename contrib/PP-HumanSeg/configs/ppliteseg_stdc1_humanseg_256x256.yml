@@ -1,4 +1,4 @@
-batch_size: 128    # 2 GPUs
+batch_size: 128  # 2 GPUs
 iters: 10000
 
 train_dataset:
@@ -57,10 +57,12 @@ loss:
         - type: CrossEntropyLoss
         - type: LovaszSoftmaxLoss
       coef: [0.8, 0.2]
-  coef: [1]
+  coef: [1, 1, 1]
 
 model:
-  type: PPHumanSegLite
-  pretrained: pretrained_model/PPHumanSegLite_ImageNet360epoch.pdparams
-  align_corners: False
-  num_classes: 2
+  type: PPLiteSeg
+  backbone:
+    type: STDC1
+    pretrained: https://bj.bcebos.com/paddleseg/dygraph/PP_STDCNet1.tar.gz
+  arm_out_chs: [32, 64, 128]
+  seg_head_inter_chs: [32, 64, 64]
