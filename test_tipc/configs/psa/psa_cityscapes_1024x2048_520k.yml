@@ -4,6 +4,7 @@ iters: 520000
 model:
     type: MscaleOCR
     num_classes: 19
+    backbone: HRNETV2PSA
 
 loss:
   types:
