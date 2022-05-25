@@ -49,6 +49,8 @@ if [ ${MODE} = "whole_infer" ] || [ ${MODE} = "klquant_whole_infer" ]; then
         wget -nc -P $model_path https://paddleseg.bj.bcebos.com/dygraph/cityscapes/pp_liteseg_stdc2_cityscapes_1024x512_scale1.0_160k/model.pdparams
     elif [ ${model_name} == "ddrnet" ];then
         wget -nc -P $model_path https://bj.bcebos.com/paddleseg/dygraph/cityscapes/ddrnet23_cityscapes_1024x1024_120k/model.pdparams
+    elif [ ${model_name} == psat" ];then
+        wget -nc -P $model_path https://bj.bcebos.com/paddleseg/dygraph/cityscapes/psa_cityscapes_1024x2048_520k/model.pdparams
     fi
 fi
 
