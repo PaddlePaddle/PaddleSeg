@@ -62,13 +62,16 @@ def Conv2d(in_channels,
 
 
 def channel_shuffle(x, groups):
-    batch_size, num_channels, height, width = x.shape[0:4]
-    assert num_channels % groups == 0, 'num_channels should be divisible by groups'
+    x_shape = paddle.shape(x)
+    batch_size, height, width = x_shape[0], x_shape[2], x_shape[3]
+    num_channels = x.shape[1]
     channels_per_group = num_channels // groups
+
     x = paddle.reshape(
         x=x, shape=[batch_size, groups, channels_per_group, height, width])
     x = paddle.transpose(x=x, perm=[0, 2, 1, 3, 4])
     x = paddle.reshape(x=x, shape=[batch_size, num_channels, height, width])
+
     return x
 
 
@@ -210,15 +213,20 @@ class CrossResolutionWeightingModule(nn.Layer):
             norm_decay=norm_decay)
 
     def forward(self, x):
-        mini_size = x[-1].shape[-2:]
-        out = [F.adaptive_avg_pool2d(s, mini_size) for s in x[:-1]] + [x[-1]]
+        out = []
+        for idx, xi in enumerate(x[:-1]):
+            kernel_size = stride = pow(2, len(x) - idx - 1)
+            xi = F.avg_pool2d(xi, kernel_size=kernel_size, stride=stride)
+            out.append(xi)
+        out.append(x[-1])
+
         out = paddle.concat(out, 1)
         out = self.conv1(out)
         out = self.conv2(out)
         out = paddle.split(out, self.channels, 1)
         out = [
             s * F.interpolate(
-                a, s.shape[-2:], mode='nearest') for s, a in zip(x, out)
+                a, paddle.shape(s)[-2:], mode='nearest') for s, a in zip(x, out)
         ]
         return out
 
@@ -426,7 +434,7 @@ class IterativeHead(nn.Layer):
             if last_x is not None:
                 last_x = F.interpolate(
                     last_x,
-                    size=s.shape[-2:],
+                    size=paddle.shape(s)[-2:],
                     mode='bilinear',
                     align_corners=True)
                 s = s + last_x
