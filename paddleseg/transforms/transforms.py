@@ -1271,7 +1271,7 @@ class RandomAffine:
         else:
             return (im, label)
         
-from paddleseg.transforms.mytransform import RandomCrop
+from paddleseg.transforms.functional import RandomCrop
 import numpy as np
 @manager.TRANSFORMS.add_component
 class RandomSizeAndCrop(object):
