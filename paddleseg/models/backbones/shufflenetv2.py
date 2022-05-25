@@ -29,7 +29,9 @@ __all__ = [
 
 
 def channel_shuffle(x, groups):
-    batch_size, num_channels, height, width = x.shape[0:4]
+    x_shape = paddle.shape(x)
+    batch_size, height, width = x_shape[0], x_shape[2], x_shape[3]
+    num_channels = x.shape[1]
     channels_per_group = num_channels // groups
 
     # reshape
@@ -41,6 +43,7 @@ def channel_shuffle(x, groups):
 
     # flatten
     x = reshape(x=x, shape=[batch_size, num_channels, height, width])
+
     return x
 
 
