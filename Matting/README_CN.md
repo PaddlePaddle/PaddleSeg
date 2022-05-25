@@ -167,6 +167,7 @@ python tools/train.py \
 ```
 
 **note:** 使用--do_eval会影响训练速度及增加显存消耗，根据需求进行开闭。
+打开的时候会根据SAD保存历史最佳模型到`{save_dir}/best_model`下面，同时会在该目录下生成`best_sad.txt`记录下此时各个指标信息及iter.
 
 `--num_workers` 多进程数据读取，加快数据预处理速度
 
