@@ -21,7 +21,6 @@ import paddle.nn.functional as F
 
 #from .mynn import Norm2d
 #from runx.logx import logx
-f  #rom .config import cfg
 #from .para_init import kaiming_normal_,kaiming_uniform_,constant_
 from paddleseg.cvlibs import manager
 from paddleseg.cvlibs.param_init import kaiming_normal_init, kaiming_uniform, constant_init
