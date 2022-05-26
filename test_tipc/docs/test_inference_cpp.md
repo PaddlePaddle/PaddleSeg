@@ -91,7 +91,7 @@ PaddleSeg/test_tipc/cpp/
 ...
 ```
 
-**注意**：model.pdmodel、model.pdiparams的路径需要与[配置文件](../configs/stdc_stdc1/inference_cpp.txt)中的`model_path`和`params_path`参数对应一致。
+**注意**：model.pdmodel、model.pdiparams的路径需要与[配置文件](../configs/pp_liteseg_stdc1/inference_cpp.txt)中的`model_path`和`params_path`参数对应一致。
 
 ### 2.2 准备环境
 
@@ -286,11 +286,12 @@ make -j
 bash test_tipc/test_inference_cpp.sh ${your_params_file} ${your_infer_img_path}
 ```
 
-Cityscapes模型以`stdc_stdc1`的为例，人像分割模型以`deeplabv3p_resnet50`为例，命令如下所示。
+Cityscapes模型以`pp_liteseg_stdc1`的为例，人像分割模型以`deeplabv3p_resnet50`为例，命令如下所示。
 
 ```bash
 # 测试Cityscapes模型
-bash test_tipc/test_inference_cpp.sh test_tipc/configs/stdc_stdc1/inference_cpp.txt test_tipc/cpp/cityscapes_demo.png
+bash test_tipc/prepare.sh test_tipc/configs/pp_liteseg_stdc1/inference_cpp.txt cpp_infer
+bash test_tipc/test_inference_cpp.sh test_tipc/configs/pp_liteseg_stdc1/inference_cpp.txt test_tipc/cpp/cityscapes_demo.png
 
 # 测试人像分割模型
 bash test_tipc/test_inference_cpp.sh test_tipc/configs/deeplabv3p_resnet50/inference_cpp.txt test_tipc/cpp/humanseg_demo.jpg
@@ -301,7 +302,7 @@ bash test_tipc/test_inference_cpp.sh test_tipc/configs/deeplabv3p_resnet50/infer
 输出结果如下，表示命令运行成功。
 
 ```bash
- Run successfully with command - ./test_tipc/cpp/build/seg_system test_tipc/configs/stdc_stdc1/inference_cpp.txt ./test_tipc/cpp/cityscapes_demo.png > ./test_tipc/output/infer_cpp/infer_cpp_use_cpu_use_mkldnn.log 2>&1 !
+ Run successfully with command - ./test_tipc/cpp/build/seg_system test_tipc/configs/pp_liteseg_stdc1/inference_cpp.txt ./test_tipc/cpp/cityscapes_demo.png > ./test_tipc/output/infer_cpp/infer_cpp_use_cpu_use_mkldnn.log 2>&1 !
 ```
 
 最终log中会打印出结果，如下所示
