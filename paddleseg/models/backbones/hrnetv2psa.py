@@ -1,76 +1,39 @@
-# Most of the code below is from the following repo:
-#  https://github.com/HRNet/HRNet-Semantic-Segmentation/tree/HRNet-OCR
+# copyright (c) 2020 PaddlePaddle Authors. All Rights Reserve.
 #
-# ------------------------------------------------------------------------------
-# Copyright (c) Microsoft
-# Licensed under the MIT License.
-# Written by Ke Sun (sunk@mail.ustc.edu.cn), Jingyi Xie (hsfzxjy@gmail.com)
-# ------------------------------------------------------------------------------
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-#from .PSA import PSA_p, PSA_s
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
-import os
 import numpy as np
-#from .recompute import recompute
-import random
+
 import paddle
 import paddle.nn as nn
 import paddle.nn.functional as F
 
-#from .mynn import Norm2d
-#from runx.logx import logx
-f  #rom .config import cfg
-#from .para_init import kaiming_normal_,kaiming_uniform_,constant_
 from paddleseg.cvlibs import manager
-from paddleseg.cvlibs.param_init import kaiming_normal_init, kaiming_uniform, constant_init
+from paddleseg.cvlibs import param_init
+
 BN_MOMENTUM = 0.1
 align_corners = False
-
-#relu_inplace = True
-
-
-def Norm2d(in_channels, **kwargs):
-    """
-    Custom Norm Function to allow flexible switching
-    """
-    #layer = getattr(cfg.MODEL, 'BNFUNC')
-    layer = paddle.nn.BatchNorm2D
-    normalization_layer = layer(in_channels, **kwargs)
-    return normalization_layer
-
-
-def kaiming_init(module,
-                 a=0,
-                 mode='fan_out',
-                 nonlinearity='relu',
-                 bias=0,
-                 distribution='normal'):
-    assert distribution in ['uniform', 'normal']
-    if distribution == 'uniform':
-        kaiming_uniform(
-            module.weight, a=a, mode=mode, nonlinearity=nonlinearity)
-    else:
-        kaiming_normal_init(
-            module.weight, a=a, mode=mode, nonlinearity=nonlinearity)
-    if hasattr(module, 'bias') and module.bias is not None:
-        constant_init(module.bias, bias)
 
 
 class PSA_s(nn.Layer):
     def __init__(self, inplanes, planes, kernel_size=1, stride=1):
-        super(PSA_s, self).__init__()
-
+        super().__init__()
         self.inplanes = inplanes
-
         self.inter_planes = planes // 2
         self.planes = planes
-
         self.kernel_size = kernel_size
         self.stride = stride
         self.padding = (kernel_size - 1) // 2
-
         self.conv_q_right = nn.Conv2D(
             self.inplanes,
             1,
@@ -92,36 +55,43 @@ class PSA_s(nn.Layer):
             stride=1,
             padding=0,
             bias_attr=False)
-        #Softmax 参数 dim 代表需要归一化的维度
         self.softmax_right = nn.Softmax(axis=2)
         self.sigmoid = nn.Sigmoid()
-
         self.conv_q_left = nn.Conv2D(
             self.inplanes,
             self.inter_planes,
             kernel_size=1,
             stride=stride,
             padding=0,
-            bias_attr=False)  #g
+            bias_attr=False)
         self.avg_pool = nn.AdaptiveAvgPool2D(1)
-
         self.conv_v_left = nn.Conv2D(
             self.inplanes,
             self.inter_planes,
             kernel_size=1,
             stride=stride,
             padding=0,
-            bias_attr=False)  #theta
+            bias_attr=False)
         self.softmax_left = nn.Softmax(axis=2)
-
         self.reset_parameters()
 
     def reset_parameters(self):
-        kaiming_init(self.conv_q_right, mode='fan_in')
-        kaiming_init(self.conv_v_right, mode='fan_in')
-        kaiming_init(self.conv_q_left, mode='fan_in')
-        kaiming_init(self.conv_v_left, mode='fan_in')
-
+        param_init.kaiming_normal_init(self.conv_q_right.weight)
+        if hasattr(self.conv_q_right,
+                   'bias') and self.conv_q_right.bias is not None:
+            param_init.constant_init(self.conv_q_right.bias, value=0.0)
+        param_init.kaiming_normal_init(self.conv_v_right.weight)
+        if hasattr(self.conv_v_right,
+                   'bias') and self.conv_v_right.bias is not None:
+            param_init.constant_init(self.conv_v_right.bias, value=0.0)
+        param_init.kaiming_normal_init(self.conv_q_left.weight)
+        if hasattr(self.conv_q_left,
+                   'bias') and self.conv_q_left.bias is not None:
+            param_init.constant_init(self.conv_q_left.bias, value=0.0)
+        param_init.kaiming_normal_init(self.conv_v_left.weight)
+        if hasattr(self.conv_v_left,
+                   'bias') and self.conv_v_left.bias is not None:
+            param_init.constant_init(self.conv_v_left.bias, value=0.0)
         self.conv_q_right.inited = True
         self.conv_v_right.inited = True
         self.conv_q_left.inited = True
@@ -129,164 +99,59 @@ class PSA_s(nn.Layer):
 
     def spatial_pool(self, x):
         input_x = self.conv_v_right(x)
-
-        #batch, channel, height, width = input_x.size()
-        batch, channel, height, width = input_x.shape
-        # [N, IC, H*W]  %reshape
-        #input_x = input_x.view(batch, channel, height * width)
+        batch, channel, height, width = paddle.shape(input_x)
         input_x = input_x.reshape((batch, channel, height * width))
-
-        # [N, 1, H, W]
         context_mask = self.conv_q_right(x)
-
-        # [N, 1, H*W] 
-        #context_mask = context_mask.view(batch, 1, height * width)
         context_mask = context_mask.reshape((batch, 1, height * width))
-
-        # [N, 1, H*W]
         context_mask = self.softmax_right(context_mask)
-
-        # [N, IC, 1]
-        # context = torch.einsum('ndw,new->nde', input_x, context_mask)
-        #context = paddle.matmul(input_x, context_mask.transpose(1,2))
         context = paddle.matmul(input_x, context_mask.transpose((0, 2, 1)))
-
-        # [N, IC, 1, 1] % unsequeeze
         context = context.unsqueeze(-1)
-
-        # [N, OC, 1, 1]
         context = self.conv_up(context)
-
-        # [N, OC, 1, 1]
         mask_ch = self.sigmoid(context)
-        # 圈中带点的符号代表着逐项相乘
         out = x * mask_ch
-
         return out
 
     def channel_pool(self, x):
-        # [N, IC, H, W]
         g_x = self.conv_q_left(x)
-
-        #batch, channel, height, width = g_x.size()
-        batch, channel, height, width = g_x.shape
-
-        # [N, IC, 1, 1]
+        batch, channel, height, width = paddle.shape(g_x)
         avg_x = self.avg_pool(g_x)
-
-        #batch, channel, avg_x_h, avg_x_w = avg_x.size()
-        batch, channel, avg_x_h, avg_x_w = avg_x.shape
-        # [N, 1, IC]
-        #avg_x = avg_x.view(batch, channel, avg_x_h * avg_x_w).permute(0, 2, 1)
-
+        batch, channel, avg_x_h, avg_x_w = paddle.shape(avg_x)
         avg_x = avg_x.reshape((batch, channel, avg_x_h * avg_x_w))
         avg_x = paddle.reshape(avg_x, [batch, avg_x_h * avg_x_w, channel])
-
-        # [N, IC, H*W]
-        #theta_x = self.conv_v_left(x).view(batch, self.inter_planes, height * width)
         theta_x = self.conv_v_left(x).reshape(
             (batch, self.inter_planes, height * width))
-
-        # [N, 1, H*W]
-        # context = torch.einsum('nde,new->ndw', avg_x, theta_x)
         context = paddle.matmul(avg_x, theta_x)
-        # [N, 1, H*W]
         context = self.softmax_left(context)
-
-        # [N, 1, H, W]
-        #context = context.view(batch, 1, height, width)
         context = context.reshape((batch, 1, height, width))
-
-        # [N, 1, H, W]
         mask_sp = self.sigmoid(context)
-
         out = x * mask_sp
-
         return out
 
     def forward(self, x):
-        # [N, C, H, W]
         context_channel = self.spatial_pool(x)
-        # [N, C, H, W]
         context_spatial = self.channel_pool(x)
-        # [N, C, H, W]
         out = context_spatial + context_channel
         return out
-
-
-class AttrDict(dict):
-
-    IMMUTABLE = '__immutable__'
-
-    def __init__(self, *args, **kwargs):
-        super(AttrDict, self).__init__(*args, **kwargs)
-        self.__dict__[AttrDict.IMMUTABLE] = False
-
-    def __getattr__(self, name):
-        if name in self.__dict__:
-            return self.__dict__[name]
-        elif name in self:
-            return self[name]
-        else:
-            raise AttributeError(name)
-
-    def __setattr__(self, name, value):
-        if not self.__dict__[AttrDict.IMMUTABLE]:
-            if name in self.__dict__:
-                self.__dict__[name] = value
-            else:
-                self[name] = value
-        else:
-            raise AttributeError(
-                'Attempted to set "{}" to "{}", but AttrDict is immutable'.
-                format(name, value))
-
-    def immutable(self, is_immutable):
-        """Set immutability to is_immutable and recursively apply the setting
-        to all nested AttrDicts.
-        """
-        self.__dict__[AttrDict.IMMUTABLE] = is_immutable
-        # Recursively set immutable state
-        for v in self.__dict__.values():
-            if isinstance(v, AttrDict):
-                v.immutable(is_immutable)
-        for v in self.values():
-            if isinstance(v, AttrDict):
-                v.immutable(is_immutable)
-
-    def is_immutable(self):
-        return self.__dict__[AttrDict.IMMUTABLE]
-
-
-def conv3x3(in_planes, out_planes, stride=1):
-    """3x3 convolution with padding"""
-    return nn.Conv2D(
-        in_planes,
-        out_planes,
-        kernel_size=3,
-        stride=stride,
-        padding=1,
-        bias_attr=False)
 
 
 class BasicBlock(nn.Layer):
     expansion = 1
 
     def __init__(self, inplanes, planes, stride=1, downsample=None):
-        super(BasicBlock, self).__init__()
-        self.conv1 = conv3x3(inplanes, planes, stride)
-        self.bn1 = Norm2d(planes, momentum=BN_MOMENTUM)
+        super().__init__()
+        self.stride = stride
+        self.conv1 = nn.Conv2D(
+            inplanes, planes, kernel_size=3, padding=1, bias_attr=False)
+        self.bn1 = nn.BatchNorm2D(planes, momentum=BN_MOMENTUM)
         self.relu = nn.ReLU()
         self.deattn = PSA_s(planes, planes)
-        #self.deattn = PSA_p(planes, planes)
-        self.conv2 = conv3x3(planes, planes)
-        self.bn2 = Norm2d(planes, momentum=BN_MOMENTUM)
+        self.conv2 = nn.Conv2D(
+            planes, planes, kernel_size=3, padding=1, bias_attr=False)
+        self.bn2 = nn.BatchNorm2D(planes, momentum=BN_MOMENTUM)
         self.downsample = downsample
-        self.stride = stride
 
     def forward(self, x):
         residual = x
-
         out = self.conv1(x)
         out = self.bn1(out)
         out = self.relu(out)
@@ -307,9 +172,9 @@ class Bottleneck(nn.Layer):
     expansion = 4
 
     def __init__(self, inplanes, planes, stride=1, downsample=None):
-        super(Bottleneck, self).__init__()
+        super().__init__()
         self.conv1 = nn.Conv2D(inplanes, planes, kernel_size=1, bias_attr=False)
-        self.bn1 = Norm2d(planes, momentum=BN_MOMENTUM)
+        self.bn1 = nn.BatchNorm2D(planes, momentum=BN_MOMENTUM)
         self.conv2 = nn.Conv2D(
             planes,
             planes,
@@ -317,34 +182,28 @@ class Bottleneck(nn.Layer):
             stride=stride,
             padding=1,
             bias_attr=False)
-        self.bn2 = Norm2d(planes, momentum=BN_MOMENTUM)
+        self.bn2 = nn.BatchNorm2D(planes, momentum=BN_MOMENTUM)
         self.conv3 = nn.Conv2D(
             planes, planes * self.expansion, kernel_size=1, bias_attr=False)
-        self.bn3 = Norm2d(planes * self.expansion, momentum=BN_MOMENTUM)
+        self.bn3 = nn.BatchNorm2D(planes * self.expansion, momentum=BN_MOMENTUM)
         self.relu = nn.ReLU()
         self.downsample = downsample
         self.stride = stride
 
     def forward(self, x):
         residual = x
-
         out = self.conv1(x)
         out = self.bn1(out)
         out = self.relu(out)
-
         out = self.conv2(out)
         out = self.bn2(out)
         out = self.relu(out)
-
         out = self.conv3(out)
         out = self.bn3(out)
-
         if self.downsample is not None:
             residual = self.downsample(x)
-
         out = out + residual
         out = self.relu(out)
-
         return out
 
 
@@ -357,40 +216,15 @@ class HighResolutionModule(nn.Layer):
                  num_channels,
                  fuse_method,
                  multi_scale_output=True):
-        super(HighResolutionModule, self).__init__()
-        self._check_branches(num_branches, blocks, num_blocks, num_inchannels,
-                             num_channels)
-
+        super().__init__()
         self.num_inchannels = num_inchannels
         self.fuse_method = fuse_method
         self.num_branches = num_branches
-
         self.multi_scale_output = multi_scale_output
-
         self.branches = self._make_branches(num_branches, blocks, num_blocks,
                                             num_channels)
         self.fuse_layers = self._make_fuse_layers()
         self.relu = nn.ReLU()
-
-    def _check_branches(self, num_branches, blocks, num_blocks, num_inchannels,
-                        num_channels):
-        if num_branches != len(num_blocks):
-            error_msg = 'NUM_BRANCHES({}) <> NUM_BLOCKS({})'.format(
-                num_branches, len(num_blocks))
-            #logx.msg(error_msg)
-            raise ValueError(error_msg)
-
-        if num_branches != len(num_channels):
-            error_msg = 'NUM_BRANCHES({}) <> NUM_CHANNELS({})'.format(
-                num_branches, len(num_channels))
-            #logx.msg(error_msg)
-            raise ValueError(error_msg)
-
-        if num_branches != len(num_inchannels):
-            error_msg = 'NUM_BRANCHES({}) <> NUM_INCHANNELS({})'.format(
-                num_branches, len(num_inchannels))
-            #logx.msg(error_msg)
-            raise ValueError(error_msg)
 
     def _make_one_branch(self,
                          branch_index,
@@ -409,10 +243,9 @@ class HighResolutionModule(nn.Layer):
                     kernel_size=1,
                     stride=stride,
                     bias_attr=False),
-                Norm2d(
+                nn.BatchNorm2D(
                     num_channels[branch_index] * block.expansion,
                     momentum=BN_MOMENTUM), )
-
         layers = []
         layers.append(
             block(self.num_inchannels[branch_index], num_channels[branch_index],
@@ -423,22 +256,18 @@ class HighResolutionModule(nn.Layer):
             layers.append(
                 block(self.num_inchannels[branch_index], num_channels[
                     branch_index]))
-
         return nn.Sequential(*layers)
 
     def _make_branches(self, num_branches, block, num_blocks, num_channels):
         branches = []
-
         for i in range(num_branches):
             branches.append(
                 self._make_one_branch(i, block, num_blocks, num_channels))
-
         return nn.LayerList(branches)
 
     def _make_fuse_layers(self):
         if self.num_branches == 1:
             return None
-
         num_branches = self.num_branches
         num_inchannels = self.num_inchannels
         fuse_layers = []
@@ -455,7 +284,7 @@ class HighResolutionModule(nn.Layer):
                                 1,
                                 0,
                                 bias_attr=False),
-                            Norm2d(
+                            nn.BatchNorm2D(
                                 num_inchannels[i], momentum=BN_MOMENTUM)))
                 elif j == i:
                     fuse_layer.append(None)
@@ -473,7 +302,7 @@ class HighResolutionModule(nn.Layer):
                                         2,
                                         1,
                                         bias_attr=False),
-                                    Norm2d(
+                                    nn.BatchNorm2D(
                                         num_outchannels_conv3x3,
                                         momentum=BN_MOMENTUM)))
                         else:
@@ -487,7 +316,7 @@ class HighResolutionModule(nn.Layer):
                                         2,
                                         1,
                                         bias_attr=False),
-                                    Norm2d(
+                                    nn.BatchNorm2D(
                                         num_outchannels_conv3x3,
                                         momentum=BN_MOMENTUM),
                                     nn.ReLU()))
@@ -503,11 +332,9 @@ class HighResolutionModule(nn.Layer):
         if self.num_branches == 1:
             return [self.branches[0](x[0])]
             #return [recompute(self.branches[0],x[0])]
-
         for i in range(self.num_branches):
             x[i] = self.branches[i](x[i])
             #x[i] = recompute(self.branches[i],x[i])
-
         x_fuse = []
         for i in range(len(self.fuse_layers)):
             y = x[0] if i == 0 else self.fuse_layers[i][0](x[0])
@@ -525,7 +352,6 @@ class HighResolutionModule(nn.Layer):
                 else:
                     y = y + self.fuse_layers[i][j](x[j])
             x_fuse.append(self.relu(y))
-
         return x_fuse
 
 
@@ -533,57 +359,25 @@ blocks_dict = {'BASIC': BasicBlock, 'BOTTLENECK': Bottleneck}
 
 
 class HighResolutionNet(nn.Layer):
-    def __init__(self, **kwargs):
-        #extra = cfg.MODEL.OCR_EXTRA
-        extra = AttrDict()
-        extra.FINAL_CONV_KERNEL = 1
-        extra.STAGE1 = AttrDict()
-        extra.STAGE1.NUM_MODULES = 1
-        extra.STAGE1.NUM_RANCHES = 1
-        extra.STAGE1.BLOCK = 'BOTTLENECK'
-        extra.STAGE1.NUM_BLOCKS = [4]
-        extra.STAGE1.NUM_CHANNELS = [64]
-        extra.STAGE1.FUSE_METHOD = 'SUM'
-        extra.STAGE2 = AttrDict()
-        extra.STAGE2.NUM_MODULES = 1
-        extra.STAGE2.NUM_BRANCHES = 2
-        extra.STAGE2.BLOCK = 'BASIC'
-        extra.STAGE2.NUM_BLOCKS = [4, 4]
-        extra.STAGE2.NUM_CHANNELS = [48, 96]
-        extra.STAGE2.FUSE_METHOD = 'SUM'
-        extra.STAGE3 = AttrDict()
-        extra.STAGE3.NUM_MODULES = 4
-        extra.STAGE3.NUM_BRANCHES = 3
-        extra.STAGE3.BLOCK = 'BASIC'
-        extra.STAGE3.NUM_BLOCKS = [4, 4, 4]
-        extra.STAGE3.NUM_CHANNELS = [48, 96, 192]
-        extra.STAGE3.FUSE_METHOD = 'SUM'
-        extra.STAGE4 = AttrDict()
-        extra.STAGE4.NUM_MODULES = 3
-        extra.STAGE4.NUM_BRANCHES = 4
-        extra.STAGE4.BLOCK = 'BASIC'
-        extra.STAGE4.NUM_BLOCKS = [4, 4, 4, 4]
-        extra.STAGE4.NUM_CHANNELS = [48, 96, 192, 384]
-        extra.STAGE4.FUSE_METHOD = 'SUM'
-        super(HighResolutionNet, self).__init__()
-
-        # stem net
+    def __init__(self, cfg_dic):
+        super().__init__()
+        self.cfg_dic = cfg_dic
         self.conv1 = nn.Conv2D(
             3, 64, kernel_size=3, stride=2, padding=1, bias_attr=False)
-        self.bn1 = Norm2d(64, momentum=BN_MOMENTUM)
+        self.bn1 = nn.BatchNorm2D(64, momentum=BN_MOMENTUM)
         self.conv2 = nn.Conv2D(
             64, 64, kernel_size=3, stride=2, padding=1, bias_attr=False)
-        self.bn2 = Norm2d(64, momentum=BN_MOMENTUM)
+        self.bn2 = nn.BatchNorm2D(64, momentum=BN_MOMENTUM)
         self.relu = nn.ReLU()
 
-        self.stage1_cfg = extra['STAGE1']
+        self.stage1_cfg = self.cfg_dic['STAGE1']
         num_channels = self.stage1_cfg['NUM_CHANNELS'][0]
         block = blocks_dict[self.stage1_cfg['BLOCK']]
         num_blocks = self.stage1_cfg['NUM_BLOCKS'][0]
         self.layer1 = self._make_layer(block, 64, num_channels, num_blocks)
         stage1_out_channel = block.expansion * num_channels
 
-        self.stage2_cfg = extra['STAGE2']
+        self.stage2_cfg = self.cfg_dic['STAGE2']
         num_channels = self.stage2_cfg['NUM_CHANNELS']
         block = blocks_dict[self.stage2_cfg['BLOCK']]
         num_channels = [
@@ -595,7 +389,7 @@ class HighResolutionNet(nn.Layer):
         self.stage2, pre_stage_channels = self._make_stage(self.stage2_cfg,
                                                            num_channels)
 
-        self.stage3_cfg = extra['STAGE3']
+        self.stage3_cfg = self.cfg_dic['STAGE3']
         num_channels = self.stage3_cfg['NUM_CHANNELS']
         block = blocks_dict[self.stage3_cfg['BLOCK']]
         num_channels = [
@@ -607,7 +401,7 @@ class HighResolutionNet(nn.Layer):
         self.stage3, pre_stage_channels = self._make_stage(self.stage3_cfg,
                                                            num_channels)
 
-        self.stage4_cfg = extra['STAGE4']
+        self.stage4_cfg = self.cfg_dic['STAGE4']
         num_channels = self.stage4_cfg['NUM_CHANNELS']
         block = blocks_dict[self.stage4_cfg['BLOCK']]
         num_channels = [
@@ -618,8 +412,8 @@ class HighResolutionNet(nn.Layer):
                                                        num_channels)
         self.stage4, pre_stage_channels = self._make_stage(
             self.stage4_cfg, num_channels, multi_scale_output=True)
-
-        self.high_level_ch = np.int(np.sum(pre_stage_channels))
+        self.feat_channels = [np.int(np.sum(pre_stage_channels))]
+        self.init_weight()
 
     def _make_transition_layer(self, num_channels_pre_layer,
                                num_channels_cur_layer):
@@ -639,7 +433,7 @@ class HighResolutionNet(nn.Layer):
                                 1,
                                 1,
                                 bias_attr=False),
-                            Norm2d(
+                            nn.BatchNorm2D(
                                 num_channels_cur_layer[i],
                                 momentum=BN_MOMENTUM),
                             nn.ReLU()))
@@ -660,7 +454,7 @@ class HighResolutionNet(nn.Layer):
                                 2,
                                 1,
                                 bias_attr=False),
-                            Norm2d(
+                            nn.BatchNorm2D(
                                 outchannels, momentum=BN_MOMENTUM),
                             nn.ReLU()))
                 transition_layers.append(nn.Sequential(*conv3x3s))
@@ -677,7 +471,7 @@ class HighResolutionNet(nn.Layer):
                     kernel_size=1,
                     stride=stride,
                     bias_attr=False),
-                Norm2d(
+                nn.BatchNorm2D(
                     planes * block.expansion, momentum=BN_MOMENTUM), )
 
         layers = []
@@ -699,7 +493,6 @@ class HighResolutionNet(nn.Layer):
 
         modules = []
         for i in range(num_modules):
-            # multi_scale_output is only used last module
             if not multi_scale_output and i == num_modules - 1:
                 reset_multi_scale_output = False
             else:
@@ -720,7 +513,6 @@ class HighResolutionNet(nn.Layer):
         x = self.bn2(x)
         x = self.relu(x)
         x = self.layer1(x)
-
         x_list = []
         for i in range(self.stage2_cfg['NUM_BRANCHES']):
             if self.transition1[i] is not None:
@@ -750,11 +542,7 @@ class HighResolutionNet(nn.Layer):
             else:
                 x_list.append(y_list[i])
         x = self.stage4(x_list)
-        #x = recompute(self.stage4,x_list)
-
-        # Upsampling
-        #x0_h, x0_w = x[0].size(2), x[0].size(3)
-        x0_h, x0_w = x[0].shape[2], x[0].shape[3]
+        x0_h, x0_w = paddle.shape(x[0])[2:4]
         x1 = F.interpolate(
             x[1],
             size=(x0_h, x0_w),
@@ -771,29 +559,21 @@ class HighResolutionNet(nn.Layer):
             mode='bilinear',
             align_corners=align_corners)
 
-        feats = paddle.concat([x[0], x1, x2, x3], 1)
+        outs = [paddle.concat([x[0], x1, x2, x3], 1)]
+        return outs
 
-        return None, None, feats
-
-    def init_weights(
-            self,
-            pretrained='pretrained/hrnetv2_w48_imagenet_pretrained.pdparams'):
-        #logx.msg('=> init weights from normal distribution')
+    def init_weight(self, pretrained=None):
         for name, m in self.named_children():
             if any(part in name for part in {'cls', 'aux', 'ocr'}):
-                # print('skipped', name)
                 continue
             if isinstance(m, nn.Conv2D):
-                #修改初始化
-                #nn.init.normal_(m.weight, std=0.001)
-                initializer = paddle.nn.initializer.Normal(std=0.001)
+                initializer = nn.initializer.Normal(std=0.001)
                 initializer(m.weight)
-            elif isinstance(m, paddle.nn.BatchNorm2d):
-                constant_init(m.weight, 1)
-                constant_init(m.bias, 0)
-        if os.path.isfile(pretrained):
+            elif isinstance(m, (nn.BatchNorm, nn.SyncBatchNorm)):
+                param_init.constant_init(m.weight, value=1.0)
+                param_init.constant_init(m.bias, value=0.0)
 
-            #修改后的加载模型
+        if pretrained is not None:
             pretrained_dict = paddle.load(pretrained)
             model_dict = self.state_dict()
             pretrained_dict = {
@@ -807,20 +587,42 @@ class HighResolutionNet(nn.Layer):
             model_dict.update(pretrained_dict)
             self.load_dict(model_dict)
 
-        elif pretrained:
-            raise RuntimeError('No such file {}'.format(pretrained))
-
-
-def get_seg_model():
-    model = HighResolutionNet()
-    model.init_weights()
-
-    return model
-
 
 @manager.BACKBONES.add_component
 def HRNETV2PSA():
-    model = HighResolutionNet()
-    model.init_weights()
-
+    model = HighResolutionNet(cfg_dic={
+        'FINAL_CONV_KERNEL': 1,
+        'STAGE1': {
+            'NUM_MODULES': 1,
+            'NUM_RANCHES': 1,
+            'BLOCK': 'BOTTLENECK',
+            'NUM_BLOCKS': [4],
+            'NUM_CHANNELS': [64],
+            'FUSE_METHOD': 'SUM'
+        },
+        'STAGE2': {
+            'NUM_MODULES': 1,
+            'NUM_BRANCHES': 2,
+            'BLOCK': 'BASIC',
+            'NUM_BLOCKS': [4, 4],
+            'NUM_CHANNELS': [48, 96],
+            'FUSE_METHOD': 'SUM'
+        },
+        'STAGE3': {
+            'NUM_MODULES': 4,
+            'NUM_BRANCHES': 3,
+            'BLOCK': 'BASIC',
+            'NUM_BLOCKS': [4, 4, 4],
+            'NUM_CHANNELS': [48, 96, 192],
+            'FUSE_METHOD': 'SUM'
+        },
+        'STAGE4': {
+            'NUM_MODULES': 3,
+            'NUM_BRANCHES': 4,
+            'BLOCK': 'BASIC',
+            'NUM_BLOCKS': [4, 4, 4, 4],
+            'NUM_CHANNELS': [48, 96, 192, 384],
+            'FUSE_METHOD': 'SUM'
+        }
+    })
     return model
