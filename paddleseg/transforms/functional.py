@@ -15,6 +15,7 @@
 import cv2
 import numpy as np
 from PIL import Image, ImageEnhance
+from scipy.ndimage.morphology import distance_transform_edt
 
 
 def normalize(im, mean, std):
@@ -109,3 +110,69 @@ def rotate(im, rotate_lower, rotate_upper):
     rotate_delta = np.random.uniform(rotate_lower, rotate_upper)
     im = im.rotate(int(rotate_delta))
     return im
+
+
+def mask_to_onehot(mask, num_classes):
+    """
+    Convert a mask (H, W) to onehot (K, H, W).
+
+    Args:
+        mask (np.ndarray): Label mask with shape (H, W)
+        num_classes (int): Number of classes.
+
+    Returns:
+        np.ndarray: Onehot mask with shape(K, H, W).
+    """
+    _mask = [mask == i for i in range(num_classes)]
+    _mask = np.array(_mask).astype(np.uint8)
+    return _mask
+
+
+def onehot_to_binary_edge(mask, radius):
+    """
+    Convert a onehot mask (K, H, W) to a edge mask.
+
+    Args:
+        mask (np.ndarray): Onehot mask with shape (K, H, W)
+        radius (int|float): Radius of edge.
+
+    Returns:
+        np.ndarray: Edge mask with shape(H, W).
+    """
+    if radius < 1:
+        raise ValueError('`radius` should be greater than or equal to 1')
+    num_classes = mask.shape[0]
+
+    edge = np.zeros(mask.shape[1:])
+    # pad borders
+    mask = np.pad(mask, ((0, 0), (1, 1), (1, 1)),
+                  mode='constant',
+                  constant_values=0)
+    for i in range(num_classes):
+        dist = distance_transform_edt(mask[i, :]) + distance_transform_edt(
+            1.0 - mask[i, :])
+        dist = dist[1:-1, 1:-1]
+        dist[dist > radius] = 0
+        edge += dist
+
+    edge = np.expand_dims(edge, axis=0)
+    edge = (edge > 0).astype(np.uint8)
+    return edge
+
+
+def mask_to_binary_edge(mask, radius, num_classes):
+    """
+    Convert a segmentic segmentation mask (H, W) to a binary edge mask(H, W).
+
+    Args:
+        mask (np.ndarray): Label mask with shape (H, W)
+        radius (int|float): Radius of edge.
+        num_classes (int): Number of classes.
+
+    Returns:
+        np.ndarray: Edge mask with shape(H, W).
+    """
+    mask = mask.squeeze()
+    onehot = mask_to_onehot(mask, num_classes)
+    edge = onehot_to_binary_edge(onehot, radius)
+    return edge
