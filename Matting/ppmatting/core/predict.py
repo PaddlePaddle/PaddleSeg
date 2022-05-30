@@ -43,7 +43,7 @@ def save_result(alpha, path, im_path, trimap=None, fg_estimate=True):
     basename = os.path.basename(path)
     name = os.path.splitext(basename)[0]
     alpha_save_path = os.path.join(dirname, name + '_alpha.png')
-    clip_save_path = os.path.join(dirname, name + '_clip.png')
+    rgba_save_path = os.path.join(dirname, name + '_rgba.png')
 
     # save alpha matte
     if trimap is not None:
@@ -53,7 +53,7 @@ def save_result(alpha, path, im_path, trimap=None, fg_estimate=True):
     alpha = (alpha).astype('uint8')
     cv2.imwrite(alpha_save_path, alpha)
 
-    # save clip
+    # save rgba
     im = cv2.imread(im_path)
     if fg_estimate:
         fg = estimate_foreground_ml(im / 255.0, alpha / 255.0) * 255
@@ -61,8 +61,8 @@ def save_result(alpha, path, im_path, trimap=None, fg_estimate=True):
         fg = im
     fg = fg.astype('uint8')
     alpha = alpha[:, :, np.newaxis]
-    clip = np.concatenate((fg, alpha), axis=-1)
-    cv2.imwrite(clip_save_path, clip)
+    rgba = np.concatenate((fg, alpha), axis=-1)
+    cv2.imwrite(rgba_save_path, rgba)
 
     return fg
 
