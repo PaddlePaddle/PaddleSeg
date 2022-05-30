@@ -6,17 +6,17 @@ Linux GPU/CPU C++ 推理功能测试的主程序为`test_inference_cpp.sh`，可
 
 - 推理相关：
 
-| 算法名称 | 模型名称 | device_CPU | device_GPU | tensorrt | mkldnn |
-|  :----:   |  :----: |   :----:   |  :----:  |   :----:   |   :----:   |
-|  STDC   |  stdc_stdc1 |  支持 | 支持 | 支持 | 支持 |
-|  PP_LiteSeg   |  pp_liteseg_stdc1 |  支持 | 支持 | 支持 | 支持 |
-|  PP_LiteSeg   |  pp_liteseg_stdc2 |  支持 | 支持 | 支持 | 支持 |
-|  ConnectNet   |  pp_humanseg_lite |  支持 | 支持 | 支持 | 支持 |
-|  HRNet W18 Small   | pp_humanseg_mobile  |  支持 | 支持 | 支持 | 支持 |
-|  DeepLabV3P   |  pp_humanseg_server |  支持 | 支持 | 支持 | 支持 |
-|  HRNet   |  fcn_hrnet_w18 |  支持 | 支持 | 支持 | 支持 |
-|  OCRNet   |  ocrnet_hrnetw18 |  支持 | 支持 | 支持 | 支持 |
-|  OCRNet   |  ocrnet_hrnetw48 |  支持 | 支持 | 支持 | 支持 |
+| 算法名称 | 模型名称 | device_CPU | device_GPU | 
+|  :----:   |  :----: |   :----:   |  :----:  | 
+|  STDC   |  stdc_stdc1 |  支持 | 支持 |
+|  PP_LiteSeg   |  pp_liteseg_stdc1 |  支持 | 支持 |
+|  PP_LiteSeg   |  pp_liteseg_stdc2 |  支持 | 支持 | 
+|  ConnectNet   |  pp_humanseg_lite |  支持 | 支持 | 
+|  HRNet W18 Small   | pp_humanseg_mobile  |  支持 | 支持 | 
+|  DeepLabV3P   |  pp_humanseg_server |  支持 | 支持 | 
+|  HRNet   |  fcn_hrnet_w18 |  支持 | 支持 |
+|  OCRNet   |  ocrnet_hrnetw18 |  支持 | 支持 | 
+|  OCRNet   |  ocrnet_hrnetw48 |  支持 | 支持 | 
 
 ## 2. 测试流程
 
