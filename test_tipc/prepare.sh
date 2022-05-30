@@ -87,73 +87,73 @@ fi
 if [ ${MODE} = "cpp_infer" ];then
     # wget model
     cd test_tipc/cpp/ && mkdir -p inference_models
-    # if [ ${model_name} == "stdc_stdc1" ];then
-    #     wget -P inference_models https://paddleseg.bj.bcebos.com/dygraph/demo/stdc1seg_infer_model.tar.gz
-    #     tar xf inference_models/stdc1seg_infer_model.tar.gz -C inference_models
-    # elif [ ${model_name} == "pp_liteseg_stdc1" ];then
-    #     wget -P inference_models https://paddleseg.bj.bcebos.com/dygraph/demo/pp_liteseg_infer_model.tar.gz
-    #     tar xf inference_models/pp_liteseg_infer_model.tar.gz  -C inference_models
-    # elif [ ${model_name} == "pp_liteseg_stdc2" ];then
-    #     wget -P inference_models https://paddleseg.bj.bcebos.com/tipc/infer_models/pp_liteseg_stdc2_cityscapes_1024x512_scale1.0_160k.zip
-    #     unzip inference_models/pp_liteseg_stdc2_cityscapes_1024x512_scale1.0_160k.zip -d inference_models/
-    # elif [ ${model_name} == "pp_humanseg_lite" ];then
-    #     wget -P inference_models https://paddleseg.bj.bcebos.com/tipc/infer_models/pp_humanseg_lite_export_398x224.zip
-    #     unzip inference_models/pp_humanseg_lite_export_398x224 -d inference_models/
-    # elif [ ${model_name} == "pp_humanseg_mobile" ];then
-    #     wget -P inference_models https://paddleseg.bj.bcebos.com/tipc/infer_models/pp_humanseg_mobile_export_192x192.zip
-    #     unzip inference_models/pp_humanseg_mobile_export_192x192.zip -d inference_models/
-    # elif [ ${model_name} == "pp_humanseg_server" ];then
-    #     wget -P inference_models https://paddleseg.bj.bcebos.com/tipc/infer_models/pp_humanseg_server_export_512x512.zip
-    #     unzip inference_models/pp_humanseg_server_export_512x512.zip -d inference_models/
-    # elif [ ${model_name} == "fcn_hrnetw18" ];then
-    #     wget -P inference_models https://paddleseg.bj.bcebos.com/tipc/infer_models/fcn_hrnetw18_cityscapes_1024x512_80k.zip
-    #     unzip inference_models/fcn_hrnetw18_cityscapes_1024x512_80k.zip -d inference_models/
-    # elif [ ${model_name} == "ocrnet_hrnetw48" ];then
-    #     wget -P inference_models https://paddleseg.bj.bcebos.com/tipc/infer_models/ocrnet_hrnetw48_cityscapes_1024x512_160k.zip
-    #     unzip inference_models/ocrnet_hrnetw48_cityscapes_1024x512_160k.zip -d inference_models/
-    # elif [ ${model_name} == "ocrnet_hrnetw18" ];then
-    #     wget -P inference_models https://paddleseg.bj.bcebos.com/tipc/infer_models/ocrnet_hrnetw18_cityscapes_1024x512_160k.zip
-    #     unzip inference_models/ocrnet_hrnetw18_cityscapes_1024x512_160k.zip -d inference_models/
-    # fi
+    if [ ${model_name} == "stdc_stdc1" ];then
+        wget -P inference_models https://paddleseg.bj.bcebos.com/dygraph/demo/stdc1seg_infer_model.tar.gz
+        tar xf inference_models/stdc1seg_infer_model.tar.gz -C inference_models
+    elif [ ${model_name} == "pp_liteseg_stdc1" ];then
+        wget -P inference_models https://paddleseg.bj.bcebos.com/dygraph/demo/pp_liteseg_infer_model.tar.gz
+        tar xf inference_models/pp_liteseg_infer_model.tar.gz  -C inference_models
+    elif [ ${model_name} == "pp_liteseg_stdc2" ];then
+        wget -P inference_models https://paddleseg.bj.bcebos.com/tipc/infer_models/pp_liteseg_stdc2_cityscapes_1024x512_scale1.0_160k.zip
+        unzip inference_models/pp_liteseg_stdc2_cityscapes_1024x512_scale1.0_160k.zip -d inference_models/
+    elif [ ${model_name} == "pp_humanseg_lite" ];then
+        wget -P inference_models https://paddleseg.bj.bcebos.com/tipc/infer_models/pp_humanseg_lite_export_398x224.zip
+        unzip inference_models/pp_humanseg_lite_export_398x224 -d inference_models/
+    elif [ ${model_name} == "pp_humanseg_mobile" ];then
+        wget -P inference_models https://paddleseg.bj.bcebos.com/tipc/infer_models/pp_humanseg_mobile_export_192x192.zip
+        unzip inference_models/pp_humanseg_mobile_export_192x192.zip -d inference_models/
+    elif [ ${model_name} == "pp_humanseg_server" ];then
+        wget -P inference_models https://paddleseg.bj.bcebos.com/tipc/infer_models/pp_humanseg_server_export_512x512.zip
+        unzip inference_models/pp_humanseg_server_export_512x512.zip -d inference_models/
+    elif [ ${model_name} == "fcn_hrnetw18" ];then
+        wget -P inference_models https://paddleseg.bj.bcebos.com/tipc/infer_models/fcn_hrnetw18_cityscapes_1024x512_80k.zip
+        unzip inference_models/fcn_hrnetw18_cityscapes_1024x512_80k.zip -d inference_models/
+    elif [ ${model_name} == "ocrnet_hrnetw48" ];then
+        wget -P inference_models https://paddleseg.bj.bcebos.com/tipc/infer_models/ocrnet_hrnetw48_cityscapes_1024x512_160k.zip
+        unzip inference_models/ocrnet_hrnetw48_cityscapes_1024x512_160k.zip -d inference_models/
+    elif [ ${model_name} == "ocrnet_hrnetw18" ];then
+        wget -P inference_models https://paddleseg.bj.bcebos.com/tipc/infer_models/ocrnet_hrnetw18_cityscapes_1024x512_160k.zip
+        unzip inference_models/ocrnet_hrnetw18_cityscapes_1024x512_160k.zip -d inference_models/
+    fi
 
-    # wget -nc https://paddle-inference-lib.bj.bcebos.com/2.2.2/cxx_c/Linux/GPU/x86-64_gcc8.2_avx_mkl_cuda11.1_cudnn8.1.1_trt7.2.3.4/paddle_inference.tgz --no-check-certificate
-    # tar zxf paddle_inference.tgz
-    # if [ ! -d "paddle_inference" ]; then
-    #     ln -s paddle_inference_install_dir paddle_inference
-    # fi
+    wget -nc https://paddle-inference-lib.bj.bcebos.com/2.2.2/cxx_c/Linux/GPU/x86-64_gcc8.2_avx_mkl_cuda11.1_cudnn8.1.1_trt7.2.3.4/paddle_inference.tgz --no-check-certificate
+    tar zxf paddle_inference.tgz
+    if [ ! -d "paddle_inference" ]; then
+        ln -s paddle_inference_install_dir paddle_inference
+    fi
 
-    # # build opencv
-    # wget -nc https://paddleocr.bj.bcebos.com/libs/opencv/opencv-3.4.7.tar.gz --no-check-certificate
-    # tar zxf opencv-3.4.7.tar.gz
-    # cd opencv-3.4.7/
-    # root_path=$PWD
-    # install_path=${root_path}/opencv3
-    # build_dir=${root_path}/build
+    # build opencv
+    wget -nc https://paddleocr.bj.bcebos.com/libs/opencv/opencv-3.4.7.tar.gz --no-check-certificate
+    tar zxf opencv-3.4.7.tar.gz
+    cd opencv-3.4.7/
+    root_path=$PWD
+    install_path=${root_path}/opencv3
+    build_dir=${root_path}/build
 
-    # rm -rf ${build_dir}
-    # mkdir ${build_dir}
-    # cd ${build_dir}
+    rm -rf ${build_dir}
+    mkdir ${build_dir}
+    cd ${build_dir}
 
-    # cmake .. \
-    # -DCMAKE_INSTALL_PREFIX=${install_path} \
-    # -DCMAKE_BUILD_TYPE=Release \
-    # -DBUILD_SHARED_LIBS=OFF \
-    # -DWITH_IPP=OFF \
-    # -DBUILD_IPP_IW=OFF \
-    # -DWITH_LAPACK=OFF \
-    # -DWITH_EIGEN=OFF \
-    # -DCMAKE_INSTALL_LIBDIR=lib64 \
-    # -DWITH_ZLIB=ON \
-    # -DBUILD_ZLIB=ON \
-    # -DWITH_JPEG=ON \
-    # -DBUILD_JPEG=ON \
-    # -DWITH_PNG=ON \
-    # -DBUILD_PNG=ON \
-    # -DWITH_TIFF=ON \
-    # -DBUILD_TIFF=ON
-    # make -j
-    # make install
-    # cd ../../
+    cmake .. \
+    -DCMAKE_INSTALL_PREFIX=${install_path} \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DBUILD_SHARED_LIBS=OFF \
+    -DWITH_IPP=OFF \
+    -DBUILD_IPP_IW=OFF \
+    -DWITH_LAPACK=OFF \
+    -DWITH_EIGEN=OFF \
+    -DCMAKE_INSTALL_LIBDIR=lib64 \
+    -DWITH_ZLIB=ON \
+    -DBUILD_ZLIB=ON \
+    -DWITH_JPEG=ON \
+    -DBUILD_JPEG=ON \
+    -DWITH_PNG=ON \
+    -DBUILD_PNG=ON \
+    -DWITH_TIFF=ON \
+    -DBUILD_TIFF=ON
+    make -j
+    make install
+    cd ../../
 
     # build cpp
     bash build.sh
