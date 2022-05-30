@@ -16,6 +16,14 @@ function func_parser_value(){
     echo ${tmp}
 }
 
+function func_parser_value_lite(){
+    strs=$1
+    IFS=$2
+    array=(${strs})
+    tmp=${array[1]}
+    echo ${tmp}
+}
+
 function func_set_params(){
     key=$1
     value=$2
