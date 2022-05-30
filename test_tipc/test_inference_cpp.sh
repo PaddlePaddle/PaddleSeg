@@ -1,21 +1,6 @@
 #!/bin/bash
 source test_tipc/common_func.sh
 
-function func_parser_key_cpp(){
-    strs=$1
-    IFS=" "
-    array=(${strs})
-    tmp=${array[0]}
-    echo ${tmp}
-}
-
-function func_parser_value_cpp(){
-    strs=$1
-    IFS=" "
-    array=(${strs})
-    tmp=${array[1]}
-    echo ${tmp}
-}
 
 FILENAME=$1
 INFERIMG=$2
@@ -29,14 +14,15 @@ IFS=$'\n'
 lines=(${dataline})
 
 # parser load config
-use_gpu_key=$(func_parser_key_cpp "${lines[1]}")
-use_gpu_value=$(func_parser_value_cpp "${lines[1]}")
-use_mkldnn_key=$(func_parser_key_cpp "${lines[5]}")
-use_mkldnn_value=$(func_parser_value_cpp "${lines[5]}")
-use_tensorrt_key=$(func_parser_key_cpp "${lines[6]}")
-use_tensorrt_value=$(func_parser_value_cpp "${lines[6]}")
-use_fp16_key=$(func_parser_key_cpp "${lines[7]}")
-use_fp16_value=$(func_parser_value_cpp "${lines[7]}")
+model_name=$(func_parser_value_cpp "${lines[1]}")
+use_gpu_key=$(func_parser_key_cpp "${lines[2]}")
+use_gpu_value=$(func_parser_value_cpp "${lines[2]}")
+use_mkldnn_key=$(func_parser_key_cpp "${lines[6]}")
+use_mkldnn_value=$(func_parser_value_cpp "${lines[6]}")
+use_tensorrt_key=$(func_parser_key_cpp "${lines[7]}")
+use_tensorrt_value=$(func_parser_value_cpp "${lines[7]}")
+use_fp16_key=$(func_parser_key_cpp "${lines[8]}")
+use_fp16_value=$(func_parser_value_cpp "${lines[8]}")
 
 LOG_PATH="./test_tipc/output/infer_cpp"
 mkdir -p ${LOG_PATH}
@@ -66,7 +52,7 @@ function func_infer_cpp(){
     infer_cpp_full_cmd="${inference_cpp_cmd} ${FILENAME} ${INFERIMG} > ${_save_log_path} 2>&1 "   
     eval $infer_cpp_full_cmd
     last_status=${PIPESTATUS[0]}
-    status_check $last_status "${infer_cpp_full_cmd}" "${status_log}"
+    status_check $last_status "${infer_cpp_full_cmd}" "${status_log}" "${model_name}"
 }
 
 echo "################### run test cpp inference ###################"
