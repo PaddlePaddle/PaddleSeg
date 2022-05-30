@@ -352,7 +352,7 @@ class ConvBNLeakyReLU(nn.Layer):
         return x
 
 
-class SpatialConvBNReLU(nn.layer):
+class SpatialConvBNReLU(nn.Layer):
     def __init__(self,
                  in_channels,
                  out_channels,
