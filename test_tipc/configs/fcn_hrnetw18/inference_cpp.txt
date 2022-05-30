@@ -1,4 +1,5 @@
 # model load config
+model_name fcn_hrnetw18
 use_gpu  0
 gpu_id  0
 gpu_mem  4000
