@@ -59,9 +59,9 @@ class SpatialGather_Module(nn.Layer):
         self.scale = scale
 
     def forward(self, feats, probs):
-        batch_size, c = paddle.shape(probs)[0:2]
+        batch_size, c = paddle.shape(probs).numpy()[0:2]
         probs = probs.reshape((batch_size, c, -1))
-        feats = feats.reshape((batch_size, paddle.shape(feats)[1], -1))
+        feats = feats.reshape((batch_size, paddle.shape(feats).numpy()[1], -1))
         feats = feats.transpose((0, 2, 1))
         probs = F.softmax(self.scale * probs, axis=2)
         ocr_context = paddle.matmul(probs, feats)
@@ -115,7 +115,7 @@ class ObjectAttentionBlock(nn.Layer):
             bias_attr=False)
 
     def forward(self, x, proxy):
-        batch_size, _, h, w = paddle.shape(x)
+        batch_size, _, h, w = paddle.shape(x).numpy()
         if self.scale > 1:
             x = self.pool(x)
 
@@ -130,7 +130,7 @@ class ObjectAttentionBlock(nn.Layer):
         context = paddle.matmul(sim_map, value)
         context = context.transpose((0, 2, 1))
         context = context.reshape((batch_size, self.key_channels,
-                                   *paddle.shape(x)[2:]))
+                                   *paddle.shape(x).numpy()[2:]))
         context = self.f_up(context)
         if self.scale > 1:
             context = F.interpolate(context, size=(h, w), mode='bilinear')
@@ -224,23 +224,18 @@ class OCRHead(nn.Layer):
 
 
 @manager.MODELS.add_component
-class MscaleOCR(nn.Layer):
+class PSA(nn.Layer):
     """
-    The MSOCRNet implementation based on PaddlePaddle.
+    The PSA implementation based on PaddlePaddle.
 
     The original article refers to
-    Zhao, Hengshuang, et al. "Pyramid scene parsing network"
-    (https://openaccess.thecvf.com/content_cvpr_2017/papers/Zhao_Pyramid_Scene_Parsing_CVPR_2017_paper.pdf).
+    Huajun Liu, Fuqiang Liu et al. "Polarized Self-Attention"
+    (https://arxiv.org/pdf/2107.00782.pdf).
 
     Args:
         num_classes (int): The unique number of target classes.
-        backbone (Paddle.nn.Layer): Backbone network, currently support Resnet50/101.
+        backbone (Paddle.nn.Layer): Backbone network, currently support HRNETV2_PSA.
         backbone_indices (tuple, optional): Two values in the tuple indicate the indices of output of backbone.
-        pp_out_channels (int, optional): The output channels after Pyramid Pooling Module. Default: 1024.
-        bin_sizes (tuple, optional): The out size of pooled feature maps. Default: (1,2,3,6).
-        enable_auxiliary_loss (bool, optional): A bool value indicates whether adding auxiliary loss. Default: True.
-        align_corners (bool, optional): An argument of F.interpolate. It should be set to False when the feature size is even,
-            e.g. 1024x512, otherwise it is True, e.g. 769x769. Default: False.
         pretrained (str, optional): The path or url of pretrained model. Default: None.
     """
 
@@ -249,7 +244,7 @@ class MscaleOCR(nn.Layer):
                  backbone,
                  backbone_indices=[0],
                  preteained=None):
-        super(MscaleOCR, self).__init__()
+        super().__init__()
         self.backbone = backbone
         self.pretrained = preteained
         self.backbone_indices = backbone_indices
@@ -259,7 +254,7 @@ class MscaleOCR(nn.Layer):
         self.init_weight()
 
     def _fwd(self, x):
-        x_size = paddle.shape(x)[2:]
+        x_size = paddle.shape(x).numpy()[2:]
         high_level_features = self.backbone(x)
         cls_out, aux_out, ocr_mid_feats = self.ocr(high_level_features)
         attn = self.scale_attn(ocr_mid_feats)
@@ -292,20 +287,30 @@ class MscaleOCR(nn.Layer):
                 aux = aux_out
             elif s >= 1.0:
                 pred = F.interpolate(
-                    pred, size=paddle.shape(cls_out)[2:4], mode='bilinear')
+                    pred,
+                    size=paddle.shape(cls_out).numpy()[2:4],
+                    mode='bilinear')
                 pred = attn_out * cls_out + (1 - attn_out) * pred
                 aux = F.interpolate(
-                    aux, size=paddle.shape(cls_out)[2:4], mode='bilinear')
+                    aux,
+                    size=paddle.shape(cls_out).numpy()[2:4],
+                    mode='bilinear')
                 aux = attn_out * aux_out + (1 - attn_out) * aux
             else:
                 cls_out = attn_out * cls_out
                 aux_out = attn_out * aux_out
                 cls_out = F.interpolate(
-                    cls_out, size=paddle.shape(pred)[2:4], mode='bilinear')
+                    cls_out,
+                    size=paddle.shape(pred).numpy()[2:4],
+                    mode='bilinear')
                 aux_out = F.interpolate(
-                    aux_out, size=paddle.shape(pred)[2:4], mode='bilinear')
+                    aux_out,
+                    size=paddle.shape(pred).numpy()[2:4],
+                    mode='bilinear')
                 attn_out = F.interpolate(
-                    attn_out, size=paddle.shape(pred)[2:4], mode='bilinear')
+                    attn_out,
+                    size=paddle.shape(pred).numpy()[2:4],
+                    mode='bilinear')
                 pred = cls_out + (1 - attn_out) * pred
                 aux = aux_out + (1 - attn_out) * aux
         logit_list = [aux, pred] if self.training else [pred]
@@ -327,16 +332,16 @@ class MscaleOCR(nn.Layer):
         p_lo = logit_attn * p_lo
         aux_lo = logit_attn * aux_lo
         p_lo = F.interpolate(
-            p_lo, size=paddle.shape(p_1x)[2:4], mode='bilinear')
+            p_lo, size=paddle.shape(p_1x).numpy()[2:4], mode='bilinear')
         aux_lo = F.interpolate(
-            aux_lo, size=paddle.shape(p_1x)[2:4], mode='bilinear')
+            aux_lo, size=paddle.shape(p_1x).numpy()[2:4], mode='bilinear')
         logit_attn = F.interpolate(
-            logit_attn, size=paddle.shape(p_1x)[2:4], mode='bilinear')
+            logit_attn, size=paddle.shape(p_1x).numpy()[2:4], mode='bilinear')
         joint_pred = p_lo + (1 - logit_attn) * p_1x
         joint_aux = aux_lo + (1 - logit_attn) * aux_1x
         if self.training:
             scaled_pred_05x = F.interpolate(
-                pred_05x, size=paddle.shape(p_1x)[2:4], mode='bilinear')
+                pred_05x, size=paddle.shape(p_1x).numpy()[2:4], mode='bilinear')
             logit_list = [joint_aux, joint_pred, scaled_pred_05x, pred_10x]
         else:
             logit_list = [joint_pred]

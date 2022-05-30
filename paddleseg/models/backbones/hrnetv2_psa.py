@@ -1,4 +1,4 @@
-# copyright (c) 2020 PaddlePaddle Authors. All Rights Reserve.
+# copyright (c) 2022 PaddlePaddle Authors. All Rights Reserve.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -99,7 +99,7 @@ class PSA_s(nn.Layer):
 
     def spatial_pool(self, x):
         input_x = self.conv_v_right(x)
-        batch, channel, height, width = paddle.shape(input_x)
+        batch, channel, height, width = paddle.shape(input_x).numpy()
         input_x = input_x.reshape((batch, channel, height * width))
         context_mask = self.conv_q_right(x)
         context_mask = context_mask.reshape((batch, 1, height * width))
@@ -113,9 +113,9 @@ class PSA_s(nn.Layer):
 
     def channel_pool(self, x):
         g_x = self.conv_q_left(x)
-        batch, channel, height, width = paddle.shape(g_x)
+        batch, channel, height, width = paddle.shape(g_x).numpy()
         avg_x = self.avg_pool(g_x)
-        batch, channel, avg_x_h, avg_x_w = paddle.shape(avg_x)
+        batch, channel, avg_x_h, avg_x_w = paddle.shape(avg_x).numpy()
         avg_x = avg_x.reshape((batch, channel, avg_x_h * avg_x_w))
         avg_x = paddle.reshape(avg_x, [batch, avg_x_h * avg_x_w, channel])
         theta_x = self.conv_v_left(x).reshape(
@@ -331,10 +331,8 @@ class HighResolutionModule(nn.Layer):
     def forward(self, x):
         if self.num_branches == 1:
             return [self.branches[0](x[0])]
-            #return [recompute(self.branches[0],x[0])]
         for i in range(self.num_branches):
             x[i] = self.branches[i](x[i])
-            #x[i] = recompute(self.branches[i],x[i])
         x_fuse = []
         for i in range(len(self.fuse_layers)):
             y = x[0] if i == 0 else self.fuse_layers[i][0](x[0])
@@ -542,7 +540,7 @@ class HighResolutionNet(nn.Layer):
             else:
                 x_list.append(y_list[i])
         x = self.stage4(x_list)
-        x0_h, x0_w = paddle.shape(x[0])[2:4]
+        x0_h, x0_w = paddle.shape(x[0]).numpy()[2:4]
         x1 = F.interpolate(
             x[1],
             size=(x0_h, x0_w),
@@ -589,7 +587,7 @@ class HighResolutionNet(nn.Layer):
 
 
 @manager.BACKBONES.add_component
-def HRNETV2PSA():
+def HRNETV2_PSA():
     model = HighResolutionNet(cfg_dic={
         'FINAL_CONV_KERNEL': 1,
         'STAGE1': {

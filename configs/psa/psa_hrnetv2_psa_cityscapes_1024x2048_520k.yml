@@ -1,10 +1,13 @@
+_base_: '../_base_/cityscapes.yml'
+
 batch_size: 1
-iters: 520625
+iters: 520000
 
 model:
-    type: MscaleOCR
+    type: PSA
     num_classes: 19
-    backbone: HRNETV2PSA
+    backbone: 
+      type: HRNETV2_PSA
 
 loss:
   types:
@@ -15,6 +18,7 @@ loss:
   coef: [1, 0.4, 0.05, 0.05]
 
 lr_scheduler:
-  type: LambdalDecay
+  type: PolynomialDecay
   learning_rate: 0.005
-  lr_lambda: 'lambda iter: (1-math.ceil(iter/2975)/175)**2)'
+  end_lr: 0.0
+  power: 0.9

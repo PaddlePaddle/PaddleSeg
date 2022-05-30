@@ -1,4 +1,4 @@
-#!/bin/bash
+﻿#!/bin/bash
 source test_tipc/common_func.sh
 
 set -o errexit
@@ -50,7 +50,7 @@ if [ ${MODE} = "whole_infer" ] || [ ${MODE} = "klquant_whole_infer" ]; then
     elif [ ${model_name} == "ddrnet" ];then
         wget -nc -P $model_path https://bj.bcebos.com/paddleseg/dygraph/cityscapes/ddrnet23_cityscapes_1024x1024_120k/model.pdparams
     elif [ ${model_name} == psa" ];then
-        wget -nc -P $model_path https://bj.bcebos.com/paddleseg/dygraph/cityscapes/psa_cityscapes_1024x2048_520k/model.pdparams
+        wget -nc -P $model_path https://bj.bcebos.com/paddleseg/dygraph/cityscapes/psa_hrnetv2_psa_cityscapes_1024x2048_520k/model.pdparams
     fi
 fi
 
