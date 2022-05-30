@@ -16,7 +16,6 @@ function func_parser_value(){
     echo ${tmp}
 }
 
-
 function func_parser_key_cpp(){
     strs=$1
     IFS=" "
