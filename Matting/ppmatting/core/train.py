@@ -54,12 +54,26 @@ def visual_in_traning(log_writer, vis_dict, step):
         log_writer.add_image(tag=key, img=value, step=step)
 
 
+def save_best(best_model_dir, sad, mse, grad, conn, iter):
+    keys = ['sad', 'mse', 'conn', 'conn', 'iter']
+    values = [sad, mse, grad, conn, iter]
+    with open(os.path.join(best_model_dir, 'best_sad.txt'), 'w') as f:
+        for key, value in zip(keys, values):
+            line = key + ' ' + str(value) + '\n'
+            f.write(line)
+
+
 def get_best(best_file, resume_model=None):
     '''Get best sad, mse, grad, conn and iter from file'''
     if os.path.exists(best_file) and (resume_model is not None):
-        with open(best_file, 'rb') as f:
-            best_sad, best_sad_mse, best_sad_grad, best_sad_conn, best_iter = pickle.load(
-                f)
+        values = []
+        with open(best_file, 'r') as f:
+            lines = f.readlines()
+            for line in lines:
+                line = line.strip()
+                value = line.split(' ')[1]
+                values.append(eval(value))
+            best_sad, best_sad_mse, best_sad_grad, best_sad_conn, best_iter = values
     else:
         best_sad = best_sad_mse = best_sad_grad = best_sad_conn = np.inf
         best_iter = -1
@@ -270,11 +284,7 @@ def train(model,
                         paddle.save(
                             model.state_dict(),
                             os.path.join(best_model_dir, 'model.pdparams'))
-                        with open(
-                                os.path.join(best_model_dir, 'best_sad.txt'),
-                                'wb') as f:
-                            pickle.dump((best_sad, best_sad_mse, best_sad_grad,
-                                         best_sad_conn, best_iter), f)
+                        save_best(best_model_dir, sad, mse, grad, conn, iter)
                     logger.info(
                         '[EVAL] The model with the best validation SAD ({:.4f}) was saved at iter {}. While MSE: {:.4f}, Grad: {:.4f}, Conn: {:.4f}'
                         .format(best_sad, best_iter, best_sad_mse,
