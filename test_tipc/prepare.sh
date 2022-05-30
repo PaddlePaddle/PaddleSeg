@@ -26,6 +26,7 @@ model_path=test_tipc/output/${model_name}/
 if [ ${MODE} = "serving_infer" ]; then
     inference_models=test_tipc/inferences/${model_name}/
     mkdir -p $inference_models
+    cd $inference_models && rm -rf * && cd -
 
     if [ ${model_name} == "stdc_stdc1" ];then
         wget -P $inference_models https://paddleseg.bj.bcebos.com/dygraph/demo/stdc1seg_infer_model.tar.gz
@@ -38,7 +39,7 @@ if [ ${MODE} = "serving_infer" ]; then
         unzip $inference_models/pp_liteseg_stdc2_cityscapes_1024x512_scale1.0_160k.zip -d $inference_models/
     elif [ ${model_name} == "pp_humanseg_lite" ];then
         wget -P $inference_models https://paddleseg.bj.bcebos.com/tipc/infer_models/pp_humanseg_lite_export_398x224.zip
-        unzip $inference_models/pp_humanseg_lite_export_398x224 -d $inference_models/
+        unzip $inference_models/pp_humanseg_lite_export_398x224.zip -d $inference_models/
     elif [ ${model_name} == "pp_humanseg_mobile" ];then
         wget -P $inference_models https://paddleseg.bj.bcebos.com/tipc/infer_models/pp_humanseg_mobile_export_192x192.zip
         unzip $inference_models/pp_humanseg_mobile_export_192x192.zip -d $inference_models/
@@ -54,6 +55,9 @@ if [ ${MODE} = "serving_infer" ]; then
     elif [ ${model_name} == "ocrnet_hrnetw18" ];then
         wget -P $inference_models https://paddleseg.bj.bcebos.com/tipc/infer_models/ocrnet_hrnetw18_cityscapes_1024x512_160k.zip
         unzip $inference_models/ocrnet_hrnetw18_cityscapes_1024x512_160k.zip -d $inference_models/
+    elif [ ${model_name} == "pp_humanseg_matting" ];then
+        wget -P $inference_models https://paddleseg.bj.bcebos.com/tipc/infer_models/pp-humanmatting-resnet34_vd.zip
+        unzip $inference_models/pp-humanmatting-resnet34_vd.zip -d $inference_models/
     fi
 fi
 
