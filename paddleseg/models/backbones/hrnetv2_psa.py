@@ -21,9 +21,6 @@ import paddle.nn.functional as F
 from paddleseg.cvlibs import manager
 from paddleseg.cvlibs import param_init
 
-BN_MOMENTUM = 0.1
-align_corners = False
-
 
 class PSA_s(nn.Layer):
     def __init__(self, inplanes, planes, kernel_size=1, stride=1):
@@ -142,12 +139,12 @@ class BasicBlock(nn.Layer):
         self.stride = stride
         self.conv1 = nn.Conv2D(
             inplanes, planes, kernel_size=3, padding=1, bias_attr=False)
-        self.bn1 = nn.BatchNorm2D(planes, momentum=BN_MOMENTUM)
+        self.bn1 = nn.BatchNorm2D(planes)
         self.relu = nn.ReLU()
         self.deattn = PSA_s(planes, planes)
         self.conv2 = nn.Conv2D(
             planes, planes, kernel_size=3, padding=1, bias_attr=False)
-        self.bn2 = nn.BatchNorm2D(planes, momentum=BN_MOMENTUM)
+        self.bn2 = nn.BatchNorm2D(planes)
         self.downsample = downsample
 
     def forward(self, x):
@@ -174,7 +171,7 @@ class Bottleneck(nn.Layer):
     def __init__(self, inplanes, planes, stride=1, downsample=None):
         super().__init__()
         self.conv1 = nn.Conv2D(inplanes, planes, kernel_size=1, bias_attr=False)
-        self.bn1 = nn.BatchNorm2D(planes, momentum=BN_MOMENTUM)
+        self.bn1 = nn.BatchNorm2D(planes)
         self.conv2 = nn.Conv2D(
             planes,
             planes,
@@ -182,10 +179,10 @@ class Bottleneck(nn.Layer):
             stride=stride,
             padding=1,
             bias_attr=False)
-        self.bn2 = nn.BatchNorm2D(planes, momentum=BN_MOMENTUM)
+        self.bn2 = nn.BatchNorm2D(planes)
         self.conv3 = nn.Conv2D(
             planes, planes * self.expansion, kernel_size=1, bias_attr=False)
-        self.bn3 = nn.BatchNorm2D(planes * self.expansion, momentum=BN_MOMENTUM)
+        self.bn3 = nn.BatchNorm2D(planes * self.expansion)
         self.relu = nn.ReLU()
         self.downsample = downsample
         self.stride = stride
@@ -243,9 +240,7 @@ class HighResolutionModule(nn.Layer):
                     kernel_size=1,
                     stride=stride,
                     bias_attr=False),
-                nn.BatchNorm2D(
-                    num_channels[branch_index] * block.expansion,
-                    momentum=BN_MOMENTUM), )
+                nn.BatchNorm2D(num_channels[branch_index] * block.expansion), )
         layers = []
         layers.append(
             block(self.num_inchannels[branch_index], num_channels[branch_index],
@@ -284,8 +279,7 @@ class HighResolutionModule(nn.Layer):
                                 1,
                                 0,
                                 bias_attr=False),
-                            nn.BatchNorm2D(
-                                num_inchannels[i], momentum=BN_MOMENTUM)))
+                            nn.BatchNorm2D(num_inchannels[i])))
                 elif j == i:
                     fuse_layer.append(None)
                 else:
@@ -302,9 +296,7 @@ class HighResolutionModule(nn.Layer):
                                         2,
                                         1,
                                         bias_attr=False),
-                                    nn.BatchNorm2D(
-                                        num_outchannels_conv3x3,
-                                        momentum=BN_MOMENTUM)))
+                                    nn.BatchNorm2D(num_outchannels_conv3x3)))
                         else:
                             num_outchannels_conv3x3 = num_inchannels[j]
                             conv3x3s.append(
@@ -316,9 +308,7 @@ class HighResolutionModule(nn.Layer):
                                         2,
                                         1,
                                         bias_attr=False),
-                                    nn.BatchNorm2D(
-                                        num_outchannels_conv3x3,
-                                        momentum=BN_MOMENTUM),
+                                    nn.BatchNorm2D(num_outchannels_conv3x3),
                                     nn.ReLU()))
                     fuse_layer.append(nn.Sequential(*conv3x3s))
 
@@ -346,7 +336,7 @@ class HighResolutionModule(nn.Layer):
                         self.fuse_layers[i][j](x[j]),
                         size=[height_output, width_output],
                         mode='bilinear',
-                        align_corners=align_corners)
+                        align_corners=False)
                 else:
                     y = y + self.fuse_layers[i][j](x[j])
             x_fuse.append(self.relu(y))
@@ -362,10 +352,10 @@ class HighResolutionNet(nn.Layer):
         self.cfg_dic = cfg_dic
         self.conv1 = nn.Conv2D(
             3, 64, kernel_size=3, stride=2, padding=1, bias_attr=False)
-        self.bn1 = nn.BatchNorm2D(64, momentum=BN_MOMENTUM)
+        self.bn1 = nn.BatchNorm2D(64)
         self.conv2 = nn.Conv2D(
             64, 64, kernel_size=3, stride=2, padding=1, bias_attr=False)
-        self.bn2 = nn.BatchNorm2D(64, momentum=BN_MOMENTUM)
+        self.bn2 = nn.BatchNorm2D(64)
         self.relu = nn.ReLU()
 
         self.stage1_cfg = self.cfg_dic['STAGE1']
@@ -431,9 +421,7 @@ class HighResolutionNet(nn.Layer):
                                 1,
                                 1,
                                 bias_attr=False),
-                            nn.BatchNorm2D(
-                                num_channels_cur_layer[i],
-                                momentum=BN_MOMENTUM),
+                            nn.BatchNorm2D(num_channels_cur_layer[i]),
                             nn.ReLU()))
                 else:
                     transition_layers.append(None)
@@ -452,8 +440,7 @@ class HighResolutionNet(nn.Layer):
                                 2,
                                 1,
                                 bias_attr=False),
-                            nn.BatchNorm2D(
-                                outchannels, momentum=BN_MOMENTUM),
+                            nn.BatchNorm2D(outchannels),
                             nn.ReLU()))
                 transition_layers.append(nn.Sequential(*conv3x3s))
 
@@ -469,8 +456,7 @@ class HighResolutionNet(nn.Layer):
                     kernel_size=1,
                     stride=stride,
                     bias_attr=False),
-                nn.BatchNorm2D(
-                    planes * block.expansion, momentum=BN_MOMENTUM), )
+                nn.BatchNorm2D(planes * block.expansion), )
 
         layers = []
         layers.append(block(inplanes, planes, stride, downsample))
@@ -542,20 +528,11 @@ class HighResolutionNet(nn.Layer):
         x = self.stage4(x_list)
         x0_h, x0_w = paddle.shape(x[0]).numpy()[2:4]
         x1 = F.interpolate(
-            x[1],
-            size=(x0_h, x0_w),
-            mode='bilinear',
-            align_corners=align_corners)
+            x[1], size=(x0_h, x0_w), mode='bilinear', align_corners=False)
         x2 = F.interpolate(
-            x[2],
-            size=(x0_h, x0_w),
-            mode='bilinear',
-            align_corners=align_corners)
+            x[2], size=(x0_h, x0_w), mode='bilinear', align_corners=False)
         x3 = F.interpolate(
-            x[3],
-            size=(x0_h, x0_w),
-            mode='bilinear',
-            align_corners=align_corners)
+            x[3], size=(x0_h, x0_w), mode='bilinear', align_corners=False)
 
         outs = [paddle.concat([x[0], x1, x2, x3], 1)]
         return outs

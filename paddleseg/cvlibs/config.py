@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import math
 import codecs
 import os
 from typing import Any, Dict, Generic
@@ -166,6 +167,11 @@ class Config(object):
             params.setdefault('decay_steps', self.iters)
             params.setdefault('end_lr', 0)
             params.setdefault('power', 0.9)
+        elif lr_type == 'LambdaDecay':
+            params.pop('end_lr')
+            params.pop('power')
+            #因为yml文件中:为分隔符，因此用逗号替代
+            params['lr_lambda'] = eval(params['lr_lambda'].replace(',', ':'))
         lr_sche = getattr(paddle.optimizer.lr, lr_type)(**params)
 
         if use_warmup:

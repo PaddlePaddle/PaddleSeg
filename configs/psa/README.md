@@ -10,4 +10,4 @@
 
 | Model | Backbone | Resolution | Training Iters | mIoU | mIoU (flip) | mIoU (ms+flip) | Links |
 |-|-|-|-|-|-|-|-|
-|PSA|HRNETV2_PSA|1024x2048|520000|86.87%|84.24%|84.87%|[model]()\|[log]()\|[vdl]()|
+|PSA|HRNETV2_PSA|1024x2048|520000|86.87%|86.94%|86.57%|[model]()\|[log]()\|[vdl]()|

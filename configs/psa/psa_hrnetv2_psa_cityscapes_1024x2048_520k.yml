@@ -17,8 +17,35 @@ loss:
     - type: RMILoss
   coef: [1, 0.4, 0.05, 0.05]
 
+optimizer:
+  type: sgd
+  momentum: 0.9
+  weight_decay: 1.0e-4
+
 lr_scheduler:
-  type: PolynomialDecay
+  type: LambdaDecay
   learning_rate: 0.005
-  end_lr: 0.0
-  power: 0.9
+  lr_lambda: 'lambda iter, (1-math.ceil(iter/2975)/175)**2'
+
+val_dataset:
+  type: Cityscapes
+  dataset_root: data/cityscapes
+  transforms:
+    - type: Normalize
+      mean: [0.485, 0.456, 0.406]
+      std: [0.229, 0.224, 0.225]
+  mode: val
+
+
+train_dataset:
+  type: Cityscapes
+  dataset_root: data/cityscapes
+  transforms:
+    - type: RandomSizeAndCrop
+      crop_size: [1024, 512]
+      crop_nopad: False
+    - type: RandomHorizontalFlip
+    - type: Normalize
+      mean: [0.485, 0.456, 0.406]
+      std: [0.229, 0.224, 0.225]
+  mode: train
