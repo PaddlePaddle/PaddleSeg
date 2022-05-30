@@ -27,6 +27,11 @@ def parse_args():
         "--img_path",
         help="The path of image.",
         type=str, )
+    parser.add_argument(
+        "--input_name",
+        help="The input name of inference model.",
+        type=str,
+        default="x")
     return parser.parse_args()
 
 
@@ -46,6 +51,7 @@ def cv2_to_base64(image):
 if __name__ == "__main__":
     args = parse_args()
     img_path = args.img_path
+    input_name = args.input_name
     url = "http://127.0.0.1:18080/seg/prediction"
     logid = 10000
 
@@ -53,7 +59,7 @@ if __name__ == "__main__":
         image_data = file.read()
     # data should be transformed to the base64 format
     image = cv2_to_base64(image_data)
-    data = {"key": ["x"], "value": [image], "logid": logid}
+    data = {"key": [input_name], "value": [image], "logid": logid}
     # send requests
     r = requests.post(url=url, data=json.dumps(data))
     print(r.json())

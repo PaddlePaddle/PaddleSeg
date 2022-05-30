@@ -27,9 +27,13 @@ serving_dir_value=$(func_parser_value "${lines[9]}")
 web_service_py=$(func_parser_value "${lines[10]}")
 web_use_gpu_key=$(func_parser_key "${lines[11]}")
 web_use_gpu_list=$(func_parser_value "${lines[11]}")
-pipeline_py=$(func_parser_value "${lines[12]}")
-image_dir_key=$(func_parser_key "${lines[13]}")
-image_dir_value=$(func_parser_value "${lines[13]}")
+output_name_key=$(func_parser_key "${lines[12]}")
+output_name_value=$(func_parser_value "${lines[12]}")
+pipeline_py=$(func_parser_value "${lines[13]}")
+image_dir_key=$(func_parser_key "${lines[14]}")
+image_dir_value=$(func_parser_value "${lines[14]}")
+input_name_key=$(func_parser_key "${lines[15]}")
+input_name_value=$(func_parser_value "${lines[15]}")
 
 
 LOG_PATH="./log/${model_name}/${MODE}"
@@ -45,6 +49,8 @@ function func_serving(){
     set_dirname=$(func_set_params "${infer_model_dir_key}" "${infer_model_dir_value}")
     set_model_filename=$(func_set_params "${model_filename_key}" "${model_filename_value}")
     set_params_filename=$(func_set_params "${params_filename_key}" "${params_filename_value}")
+    set_input_name=$(func_set_params "${input_name_key}" "${input_name_value}")
+    set_output_name=$(func_set_params "${output_name_key}" "${output_name_value}")
     set_serving_server=$(func_set_params "${serving_server_key}" "${serving_server_value}")
     set_serving_client=$(func_set_params "${serving_client_key}" "${serving_client_value}")
     python_list=(${python_list})
@@ -59,13 +65,13 @@ function func_serving(){
     for use_gpu in ${web_use_gpu_list[*]}; do
         if [ ${use_gpu} = "null" ]; then
             _save_log_path="../../log/${model_name}/${MODE}/serving_infer_python_cpu_batchsize_1.log"
-            web_service_cmd="${python} ${web_service_py} ${web_use_gpu_key}="" &"
+            web_service_cmd="${python} ${web_service_py} ${set_input_name} ${set_output_name} ${web_use_gpu_key}="" &"
             eval $web_service_cmd
             last_status=${PIPESTATUS[0]}
             status_check $last_status "${web_service_cmd}" "${status_log}" "${model_name}"
             sleep 5s
             set_image_dir=$(func_set_params "${image_dir_key}" "${image_dir_value}")
-            pipeline_cmd="${python} ${pipeline_py} ${set_image_dir} > ${_save_log_path} 2>&1 "
+            pipeline_cmd="${python} ${pipeline_py} ${set_image_dir}  ${set_input_name} > ${_save_log_path} 2>&1 "
             eval $pipeline_cmd
             last_status=${PIPESTATUS[0]}
             status_check $last_status "${pipeline_cmd}" "${status_log}" "${model_name}"
@@ -73,13 +79,13 @@ function func_serving(){
             ps ux | grep -E 'web_service|pipeline' | awk '{print $2}' | xargs kill -s 9
         else
             _save_log_path="../../log/${model_name}/${MODE}/serving_infer_python_gpu_batchsize_1.log"
-            web_service_cmd="${python} ${web_service_py} ${web_use_gpu_key}=${use_gpu} &"
+            web_service_cmd="${python} ${web_service_py} ${set_input_name} ${set_output_name} ${web_use_gpu_key}=${use_gpu} &"
             eval $web_service_cmd
             last_status=${PIPESTATUS[0]}
             status_check $last_status "${web_service_cmd}" "${status_log}" "${model_name}"
             sleep 5s
             set_image_dir=$(func_set_params "${image_dir_key}" "${image_dir_value}")
-            pipeline_cmd="${python} ${pipeline_py} ${set_image_dir} > ${_save_log_path} 2>&1 "
+            pipeline_cmd="${python} ${pipeline_py} ${set_image_dir} ${set_input_name} > ${_save_log_path} 2>&1 "
             eval $pipeline_cmd
             last_status=${PIPESTATUS[0]}
             status_check $last_status "${pipeline_cmd}" "${status_log}" "${model_name}"

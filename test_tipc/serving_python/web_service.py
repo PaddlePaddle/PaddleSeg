@@ -34,8 +34,18 @@ def parse_args():
         type=str, )
     parser.add_argument(
         "--opt",
-        help="The path of config file.",
+        help="Use --opt op.seg.local_service_conf.devices=xx to set devices.",
         type=str, )
+    parser.add_argument(
+        "--input_name",
+        help="The output name of inference model.",
+        type=str,
+        default="x")
+    parser.add_argument(
+        "--output_name",
+        help="The output name of inference model.",
+        type=str,
+        default="argmax_0.tmp_0")
     return parser.parse_args()
 
 
@@ -61,6 +71,10 @@ class SegOp(Op):
                 mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5]), ToCHW()
         ])
 
+    def set_in_out_name(self, input_name, output_name):
+        self.input_name = input_name
+        self.output_name = output_name
+
     def preprocess(self, input_dicts, data_id, log_id):
         (_, input_dict), = input_dicts.items()
         batch_size = len(input_dict.keys())
@@ -73,11 +87,11 @@ class SegOp(Op):
             img = self.seq(img)
             imgs.append(img[np.newaxis, :].copy())
         imgs = np.concatenate(imgs, axis=0)
-        return {"x": imgs}, False, None, ""
+        return {self.input_name: imgs}, False, None, ""
 
     def postprocess(self, input_dicts, fetch_dict, data_id, log_id):
         out = {"res_mean_val": []}
-        results = fetch_dict["argmax_0.tmp_0"]
+        results = fetch_dict[self.output_name]
         for val in results:
             val = val.tolist()
             val = np.array(val)
@@ -87,8 +101,15 @@ class SegOp(Op):
 
 
 class SegService(WebService):
+    def __init__(self, name, input_name, output_name):
+        super().__init__(name)
+        self.input_name = input_name
+        self.output_name = output_name
+
     def get_pipeline_response(self, read_op):
-        return SegOp(name="seg", input_ops=[read_op])
+        seg_op = SegOp(name="seg", input_ops=[read_op])
+        seg_op.set_in_out_name(self.input_name, self.output_name)
+        return seg_op
 
 
 if __name__ == '__main__':
@@ -96,6 +117,6 @@ if __name__ == '__main__':
     config = read_update_cfg(args.config, args.opt)
     print("config:", config)
 
-    uci_service = SegService(name="seg")
+    uci_service = SegService("seg", args.input_name, args.output_name)
     uci_service.prepare_pipeline_config(yml_dict=config)
     uci_service.run_service()
