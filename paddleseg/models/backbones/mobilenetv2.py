@@ -26,7 +26,7 @@ __all__ = [
     "MobileNetV2_x0_25",
     "MobileNetV2_x0_5",
     "MobileNetV2_x0_75",
-    "MobileNetV2",
+    "MobileNetV2_x1_0",
     "MobileNetV2_x1_5",
     "MobileNetV2_x2_0",
 ]
@@ -247,7 +247,7 @@ def MobileNetV2_x0_75(**kwargs):
 
 
 @manager.BACKBONES.add_component
-def MobileNetV2(**kwargs):
+def MobileNetV2_x1_0(**kwargs):
     model = MobileNetV2(scale=1.0, **kwargs)
     return model
 

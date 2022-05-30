@@ -40,8 +40,8 @@ train_dataset:
 model:
   type: MobileSeg
   backbone:
-    type: MobileNetV2 # out channels: [24, 32, 96, 320]
-    pretrained: https://paddleseg.bj.bcebos.com/dygraph/backbone/mobilenetv2_ssld.tar.gz
+    type: MobileNetV2_x1_0 # out channels: [24, 32, 96, 320]
+    pretrained: https://paddleseg.bj.bcebos.com/dygraph/backbone/mobilenetv2_x1_0_ssld.tar.gz
   cm_bin_sizes: [1, 2, 4]
   cm_out_ch: 128
   arm_out_chs: [32, 64, 128]
