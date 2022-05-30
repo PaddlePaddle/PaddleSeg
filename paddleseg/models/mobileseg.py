@@ -49,7 +49,7 @@ class MobileSeg(nn.Layer):
                  backbone_indices=[1, 2, 3],
                  cm_bin_sizes=[1, 2],
                  cm_out_ch=64,
-                 arm_type='UAFM_Mobile',
+                 arm_type='UAFMMobile',
                  arm_out_chs=[32, 48, 64],
                  seg_head_inter_chs=[32, 32, 32],
                  resize_mode='bilinear',

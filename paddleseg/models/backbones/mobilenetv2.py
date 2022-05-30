@@ -32,7 +32,7 @@ __all__ = [
 ]
 
 
-class MobileNet_V2(nn.Layer):
+class MobileNetV2(nn.Layer):
     """
         The MobileNetV2 implementation based on PaddlePaddle.
 
@@ -230,35 +230,35 @@ class InvresiBlocks(nn.Layer):
 
 @manager.BACKBONES.add_component
 def MobileNetV2_x0_25(**kwargs):
-    model = MobileNet_V2(scale=0.25, **kwargs)
+    model = MobileNetV2(scale=0.25, **kwargs)
     return model
 
 
 @manager.BACKBONES.add_component
 def MobileNetV2_x0_5(**kwargs):
-    model = MobileNet_V2(scale=0.5, **kwargs)
+    model = MobileNetV2(scale=0.5, **kwargs)
     return model
 
 
 @manager.BACKBONES.add_component
 def MobileNetV2_x0_75(**kwargs):
-    model = MobileNet_V2(scale=0.75, **kwargs)
+    model = MobileNetV2(scale=0.75, **kwargs)
     return model
 
 
 @manager.BACKBONES.add_component
 def MobileNetV2(**kwargs):
-    model = MobileNet_V2(scale=1.0, **kwargs)
+    model = MobileNetV2(scale=1.0, **kwargs)
     return model
 
 
 @manager.BACKBONES.add_component
 def MobileNetV2_x1_5(**kwargs):
-    model = MobileNet_V2(scale=1.5, **kwargs)
+    model = MobileNetV2(scale=1.5, **kwargs)
     return model
 
 
 @manager.BACKBONES.add_component
 def MobileNetV2_x2_0(**kwargs):
-    model = MobileNet_V2(scale=2.0, **kwargs)
+    model = MobileNetV2(scale=2.0, **kwargs)
     return model

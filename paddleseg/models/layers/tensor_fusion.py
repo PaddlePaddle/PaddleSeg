@@ -220,7 +220,7 @@ class UAFM_SpAtten_S(UAFM):
         return out
 
 
-class UAFM_Mobile(UAFM):
+class UAFMMobile(UAFM):
     """
     Unified Attention Fusion Module for mobile.
     Args:
