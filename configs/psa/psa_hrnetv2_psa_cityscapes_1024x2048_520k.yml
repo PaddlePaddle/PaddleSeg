@@ -42,7 +42,7 @@ train_dataset:
   dataset_root: data/cityscapes
   transforms:
     - type: RandomSizeAndCrop
-      crop_size: [1024, 512]
+      crop_size: [1024, 2048]
       crop_nopad: False
     - type: RandomHorizontalFlip
     - type: Normalize
