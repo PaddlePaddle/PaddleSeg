@@ -58,9 +58,9 @@ if [ ${MODE} = "serving_infer" ]; then
     elif [ ${model_name} == "ocrnet_hrnetw18" ];then
         wget -P $inference_models https://paddleseg.bj.bcebos.com/tipc/infer_models/ocrnet_hrnetw18_cityscapes_1024x512_160k.zip
         unzip $inference_models/ocrnet_hrnetw18_cityscapes_1024x512_160k.zip -d $inference_models/
-    elif [ ${model_name} == "pp_humanseg_matting" ];then
-        wget -P $inference_models https://paddleseg.bj.bcebos.com/tipc/infer_models/pp-humanmatting-resnet34_vd.zip
-        unzip $inference_models/pp-humanmatting-resnet34_vd.zip -d $inference_models/
+    elif [ ${model_name} == "ppmatting" ];then
+        wget -P $inference_models https://paddleseg.bj.bcebos.com/tipc/infer_models/modnet-mobilenetv2.zip
+        unzip $inference_models/modnet-mobilenetv2.zip -d $inference_models/
     fi
 fi
 
