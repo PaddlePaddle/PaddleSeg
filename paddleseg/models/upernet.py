@@ -169,31 +169,3 @@ class UPerNetHead(nn.Layer):
             return logits_list
         else:
             return logits_list
-
-        # psp_out = self.ppm(inputs[-1])
-        # f = psp_out
-        # fpn_feature_list = [psp_out]
-        # for i in reversed(range(len(inputs) - 1)):
-        #     conv_x = self.lateral_convs[i](inputs[i])
-        #     prev_shape = paddle.shape(conv_x)[2:]
-        #     f = conv_x + F.interpolate(f, prev_shape, mode='bilinear', align_corners=True)
-        #     fpn_feature_list.append(self.fpn_out[i](f))
-        # fpn_feature_list.reverse()
-
-        # for index in range(len(inputs) - 1, 0, -1):
-        #     fpn_feature_list[index] = F.interpolate(
-        #         fpn_feature_list[index],
-        #         size=paddle.shape(fpn_feature_list[0])[2:],
-        #         mode='bilinear',
-        #         align_corners=True
-        #     )
-        # fusion_out = paddle.concat(fpn_feature_list, 1)
-        # x = self.fpn_bottleneck(fusion_out)
-        # x = self.conv_seg(x)
-        # logits_list = [x]
-        # if self.enable_auxiliary_loss:
-        #     aux_out = self.aux_head(inputs[2])
-        #     logits_list.append(aux_out)
-        #     return logits_list
-        # else:
-        #     return logits_list
