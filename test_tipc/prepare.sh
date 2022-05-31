@@ -160,7 +160,9 @@ if [ ${MODE} = "cpp_infer" ];then
         unzip inference_models/ocrnet_hrnetw18_cityscapes_1024x512_160k.zip -d inference_models/
     fi
 
-    wget -nc https://paddle-inference-lib.bj.bcebos.com/2.2.2/cxx_c/Linux/GPU/x86-64_gcc8.2_avx_mkl_cuda11.1_cudnn8.1.1_trt7.2.3.4/paddle_inference.tgz --no-check-certificate
+    PADDLEInfer=${3:-https://paddle-inference-lib.bj.bcebos.com/2.2.2/cxx_c/Linux/GPU/x86-64_gcc8.2_avx_mkl_cuda11.1_cudnn8.1.1_trt7.2.3.4/paddle_inference.tgz}
+    wget -nc $PADDLEInfer --no-check-certificate
+
     tar zxf paddle_inference.tgz
     if [ ! -d "paddle_inference" ]; then
         ln -s paddle_inference_install_dir paddle_inference
