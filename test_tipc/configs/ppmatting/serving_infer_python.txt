@@ -1,8 +1,8 @@
 ===========================serving_params===========================
-model_name:pp_humanseg_matting
+model_name:ppmatting
 python:python3
 trans_model:-m paddle_serving_client.convert
---dirname:./test_tipc/inferences/pp_humanseg_matting/pp-humanmatting-resnet34_vd
+--dirname:./test_tipc/inferences/ppmatting/modnet-mobilenetv2
 --model_filename:model.pdmodel
 --params_filename:model.pdiparams
 --serving_server:./test_tipc/serving_python/serving_server/
@@ -10,7 +10,7 @@ trans_model:-m paddle_serving_client.convert
 serving_dir:./test_tipc/serving_python
 web_service:./web_service.py --config=config.yml 
 --opt op.seg.local_service_conf.devices:"0"|null
---output_name:clip_1.tmp_0
+--output_name:sigmoid_2.tmp_0
 pipline:./pipeline_http_client.py
 --img_path:../data/cityscapes_demo.png
 --input_name:img
