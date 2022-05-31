@@ -19,7 +19,6 @@ import paddle.nn.functional as F
 from paddleseg.models import layers
 from paddleseg.cvlibs import manager
 from paddleseg.utils import utils
-from paddle.fluid.framework import in_dygraph_mode, _in_legacy_dygraph
 
 
 @manager.MODELS.add_component
@@ -210,10 +209,9 @@ class EMAU(nn.Layer):
             mu = F.normalize(mu, axis=1, p=2)
             mu = self.mu * (1 - self.momentum) + mu * self.momentum
             if paddle.distributed.get_world_size() > 1:
-                if in_dygraph_mode():
-                    paddle.distributed.all_reduce(mu)
-                elif _in_legacy_dygraph():
-                    mu = paddle.distributed.all_reduce(mu)
+                out = paddle.distributed.all_reduce(mu)
+                if out is not None:
+                    mu = out
                 mu /= paddle.distributed.get_world_size()
             self.mu = mu
 
