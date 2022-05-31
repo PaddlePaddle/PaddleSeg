@@ -6,17 +6,17 @@ Linux GPU/CPU C++ 推理功能测试的主程序为`test_inference_cpp.sh`，可
 
 - 推理相关：
 
-| 算法名称 | 模型名称 | device_CPU | device_GPU | tensorrt | mkldnn |
-|  :----:   |  :----: |   :----:   |  :----:  |   :----:   |   :----:   |
-|  STDC   |  stdc_stdc1 |  支持 | 支持 | 支持 | 支持 |
-|  PP_LiteSeg   |  pp_liteseg_stdc1 |  支持 | 支持 | 支持 | 支持 |
-|  PP_LiteSeg   |  pp_liteseg_stdc2 |  支持 | 支持 | 支持 | 支持 |
-|  ConnectNet   |  pp_humanseg_lite |  支持 | 支持 | 支持 | 支持 |
-|  HRNet W18 Small   | pp_humanseg_mobile  |  支持 | 支持 | 支持 | 支持 |
-|  DeepLabV3P   |  pp_humanseg_server |  支持 | 支持 | 支持 | 支持 |
-|  HRNet   |  fcn_hrnet_w18 |  支持 | 支持 | 支持 | 支持 |
-|  OCRNet   |  ocrnet_hrnetw18 |  支持 | 支持 | 支持 | 支持 |
-|  OCRNet   |  ocrnet_hrnetw48 |  支持 | 支持 | 支持 | 支持 |
+| 算法名称 | 模型名称 | device_CPU | device_GPU | 
+|  :----:   |  :----: |   :----:   |  :----:  | 
+|  STDC   |  stdc_stdc1 |  支持 | 支持 |
+|  PP_LiteSeg   |  pp_liteseg_stdc1 |  支持 | 支持 |
+|  PP_LiteSeg   |  pp_liteseg_stdc2 |  支持 | 支持 | 
+|  ConnectNet   |  pp_humanseg_lite |  支持 | 支持 | 
+|  HRNet W18 Small   | pp_humanseg_mobile  |  支持 | 支持 | 
+|  DeepLabV3P   |  pp_humanseg_server |  支持 | 支持 | 
+|  HRNet   |  fcn_hrnet_w18 |  支持 | 支持 |
+|  OCRNet   |  ocrnet_hrnetw18 |  支持 | 支持 | 
+|  OCRNet   |  ocrnet_hrnetw48 |  支持 | 支持 | 
 
 ## 2. 测试流程
 
@@ -30,52 +30,43 @@ Linux GPU/CPU C++ 推理功能测试的主程序为`test_inference_cpp.sh`，可
 wget https://paddleseg.bj.bcebos.com/dygraph/demo/cityscapes_demo.png
 ```
 
+### 2.1.2 配置文件解析
+完整的`inference_cpp.txt`配置文件共有14行，包含两个方面的内容。
+* 运行环境参数配置：第1~8行
+* 模型参数配置：第10~14行
 
-#### 2.1.2 准备推理模型
+具体内容见[inference_cpp.txt](../configs/pp_liteseg_stdc1/inference_cpp.txt)
 
-在`PaddleSeg/test_tipc/cpp/`目录下执行如下命令，下载测试模型用于测试。
+配置文件中主要有以下2种类型的字段。
+* 一行内容以空格为分隔符：该行可以被解析为`key value`的格式，需要根据实际的含义修改该行内容，下面进行详细说明。
+* 一行内容为`# xxxxx`：该行内容为注释信息，无需修改。
+<details>
+<summary><b>配置参数（点击以展开详细内容或者折叠）
+</b></summary>
 
-本教程以STDC为例，
-```
-mkdir -p inference_models
-wget -P inference_models https://paddleseg.bj.bcebos.com/dygraph/demo/stdc1seg_infer_model.tar.gz
-tar xf inference_models/stdc1seg_infer_model.tar.gz -C inference_models
-```
-已有测试模型下载:
-```
-# PP-LiteSeg(STDC-1)
-wget -P inference_models https://paddleseg.bj.bcebos.com/dygraph/demo/pp_liteseg_infer_model.tar.gz
-tar xf inference_models/pp_liteseg_infer_model.tar.gz  -C inference_models
+| 行号 | 参考内容                                | 含义            | key是否需要修改 | value是否需要修改 | 修改内容                             |
+|----|-------------------------------------|---------------|-----------|-------------|----------------------------------|
+| 2  | use_gpu      | 是否使用GPU    | 否         | 是           | value根据是否使用GPU进行修改               |
+| 3  | gpu_id       | 使用的GPU卡号  | 否         | 是           | value修改为自己的GPU ID              |
+| 4  | gpu_mem      | 显存          | 否         | 是           | value修改为自己的GPU 显存             |
+| 5  | cpu_math_library_num_thread | 底层科学计算库所用线程的数量  | 否      | 是           | value修改为合适的线程数         |
+| 6  | use_mkldnn   | 是否使用MKLDNN加速    | 否        | 是          | value根据是否使用MKLDNN进行修改          |
+| 7  | use_tensorrt | 是否使用tensorRT进行加速          | 否         | 是           | value根据是否使用tensorRT进行修改             |
+| 8  | use_fp16 | 是否使用半精度浮点数进行计算，该选项仅在use_tensorrt为true时有效 | 否         | 是          | value根据在开启tensorRT时是否使用半精度进行修改|
+| 11 | model_path  | 预测模型结构文件路径         | 否         | 是           | value修改为预测模型结构文件路径 |
+| 12 | params_path | 预测模型参数文件路径  | 否         | 是           | vvalue修改为预测模型参数文件路径 |
+| 13 | is_resize  | 预处理时是否缩放图片         | 否         | 是           | value修改为是否缩放图像  
+| 14 | is_normalize          | 预处理时是否做归一化    | 否         | 是           | value修改为是否归一化图像
+| 15 | resize_width          | 预处理时图像裁剪后的宽度      | 否         | 是           | value修改为预处理时图像裁剪后的宽度
+| 16 | resize_height          | 预处理时图像裁剪后的高度      | 否         | 是           | value修改为预处理时图像裁剪后的高度
 
-# PP-LiteSeg(STDC-2)
-wget -P inference_models https://paddleseg.bj.bcebos.com/tipc/infer_models/pp_liteseg_stdc2_cityscapes_1024x512_scale1.0_160k.zip
-unzip inference_models/pp_liteseg_stdc2_cityscapes_1024x512_scale1.0_160k.zip -d inference_models/
 
-# PP-HumanSeg-Lite
-wget -P inference_models https://paddleseg.bj.bcebos.com/tipc/infer_models/pp_humanseg_lite_export_398x224.zip
-unzip inference_models/pp_humanseg_lite_export_398x224 -d inference_models/
+</details>
 
-# PP-HumanSeg-mobile
-wget -P inference_models https://paddleseg.bj.bcebos.com/tipc/infer_models/pp_humanseg_mobile_export_192x192.zip
-unzip inference_models/pp_humanseg_mobile_export_192x192.zip -d inference_models/
+#### 2.1.3 准备推理模型
 
-# PP-HumanSeg-Server
-wget -P inference_models https://paddleseg.bj.bcebos.com/tipc/infer_models/pp_humanseg_server_export_512x512.zip
-unzip inference_models/pp_humanseg_server_export_512x512.zip -d inference_models/
+本文开头列表中的模型均已支持通过prepare.sh自动下载进行测试。
 
-# HRNet W18
-wget -P inference_models https://paddleseg.bj.bcebos.com/tipc/infer_models/fcn_hrnetw18_cityscapes_1024x512_80k.zip
-unzip inference_models/fcn_hrnetw18_cityscapes_1024x512_80k.zip -d inference_models/
-
-# OCRNet HRNet W48
-wget -P inference_models https://paddleseg.bj.bcebos.com/tipc/infer_models/ocrnet_hrnetw48_cityscapes_1024x512_160k.zip
-unzip inference_models/ocrnet_hrnetw48_cityscapes_1024x512_160k.zip -d inference_models/
-
-# OCRNet HRNet W18
-wget -P inference_models https://paddleseg.bj.bcebos.com/tipc/infer_models/ocrnet_hrnetw18_cityscapes_1024x512_160k.zip
-unzip inference_models/ocrnet_hrnetw18_cityscapes_1024x512_160k.zip -d inference_models/
-
-```
 如果需要测试其他模型，请参考[模型导出](../../docs/model_export_cn.md)导出预测模型。
 
 请检查`PaddleSeg/test_tipc/cpp/`下存放了模型、图片，如下。
@@ -91,13 +82,20 @@ PaddleSeg/test_tipc/cpp/
 ...
 ```
 
-**注意**：model.pdmodel、model.pdiparams的路径需要与[配置文件](../configs/stdc_stdc1/inference_cpp.txt)中的`model_path`和`params_path`参数对应一致。
+**注意**：model.pdmodel、model.pdiparams的路径需要与[配置文件](../configs/pp_liteseg_stdc1/inference_cpp.txt)中的`model_path`和`params_path`参数对应一致。
+
+
+
 
 ### 2.2 准备环境
 
 #### 2.2.1 运行准备
 
 配置合适的编译和执行环境，其中包括编译器，cuda等一些基础库，建议安装docker环境，[参考链接](https://www.paddlepaddle.org.cn/install/quick?docurl=/documentation/docs/zh/install/docker/linux-docker.html)。
+
+<details>
+<summary><b>编译opencv、Paddle Inference、C++预测Demo（已写入prepare.sh自动执行，点击以展开详细内容或者折叠）
+</b></summary>
 
 #### 2.2.2 编译opencv库
 
@@ -276,6 +274,7 @@ make -j
 以编译cpu
 在执行上述命令，编译完成之后，会在当前路径下生成`build`文件夹，其中生成一个名为`seg_system`的可执行文件。
 
+</details>
 
 ### 2.3 功能测试
 
@@ -286,13 +285,15 @@ make -j
 bash test_tipc/test_inference_cpp.sh ${your_params_file} ${your_infer_img_path}
 ```
 
-Cityscapes模型以`stdc_stdc1`的为例，人像分割模型以`deeplabv3p_resnet50`为例，命令如下所示。
+Cityscapes模型以`pp_liteseg_stdc1`的为例，人像分割模型以`deeplabv3p_resnet50`为例，命令如下所示。
 
 ```bash
 # 测试Cityscapes模型
-bash test_tipc/test_inference_cpp.sh test_tipc/configs/stdc_stdc1/inference_cpp.txt test_tipc/cpp/cityscapes_demo.png
+bash test_tipc/prepare.sh test_tipc/configs/pp_liteseg_stdc1/inference_cpp.txt cpp_infer
+bash test_tipc/test_inference_cpp.sh test_tipc/configs/pp_liteseg_stdc1/inference_cpp.txt test_tipc/cpp/cityscapes_demo.png
 
 # 测试人像分割模型
+bash test_tipc/prepare.sh test_tipc/configs/deeplabv3p_resnet50/inference_cpp.txt cpp_infer
 bash test_tipc/test_inference_cpp.sh test_tipc/configs/deeplabv3p_resnet50/inference_cpp.txt test_tipc/cpp/humanseg_demo.jpg
 ```
 
@@ -301,7 +302,7 @@ bash test_tipc/test_inference_cpp.sh test_tipc/configs/deeplabv3p_resnet50/infer
 输出结果如下，表示命令运行成功。
 
 ```bash
- Run successfully with command - ./test_tipc/cpp/build/seg_system test_tipc/configs/stdc_stdc1/inference_cpp.txt ./test_tipc/cpp/cityscapes_demo.png > ./test_tipc/output/infer_cpp/infer_cpp_use_cpu_use_mkldnn.log 2>&1 !
+ Run successfully with command - pp_liteseg_stdc1 - ./test_tipc/cpp/build/seg_system test_tipc/configs/pp_liteseg_stdc1/inference_cpp.txt test_tipc/cpp/cityscapes_demo.png > ./test_tipc/output/infer_cpp/infer_cpp_use_cpu.log 2>&1 !
 ```
 
 最终log中会打印出结果，如下所示

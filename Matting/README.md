@@ -31,13 +31,25 @@ Matting is widely used in a variety of industries, such as video clip, video syn
 [4] Support human matting deployment in Android.
 
 ## Contents
-- [Installation](#Installation)
-- [Models](#Models)
-- [Dataset Preparation](#Dataset-Preparation)
-- [Training, Evaluation and Prediction](#Training-Evaluation-and-Prediction)
-- [Background Replacement](#Background-Replacement)
-- [Export and Deploy](#Export-and-Deploy)
-- [Human Matting Deployment in Android](./deploy/human_matting_android_demo/README.md)
+- [Matting](#matting)
+- [One-click experience](#one-click-experience)
+  - [Update Notes](#update-notes)
+  - [Contents](#contents)
+  - [Installation](#installation)
+      - [1. Install PaddlePaddle](#1-install-paddlepaddle)
+      - [2. Download the PaddleSeg repository](#2-download-the-paddleseg-repository)
+      - [3. Installation](#3-installation)
+  - [Models](#models)
+  - [Dataset preparation](#dataset-preparation)
+  - [Training, Evaluation and Prediction](#training-evaluation-and-prediction)
+    - [Training](#training)
+    - [Evaluation](#evaluation)
+    - [Prediction](#prediction)
+  - [Background Replacement](#background-replacement)
+  - [Export and Deploy](#export-and-deploy)
+    - [Model Export](#model-export)
+    - [Deploy](#deploy)
+  - [Acknowledgement](#acknowledgement)
 
 ## Installation
 
@@ -60,10 +72,7 @@ git clone https://github.com/PaddlePaddle/PaddleSeg
 #### 3. Installation
 
 ```shell
-cd PaddleSeg
-pip install -r requirements.txt
-pip install -e .
-cd Matting
+cd PaddleSeg/Matting
 pip install -r requirements.txt
 ```
 
@@ -158,30 +167,31 @@ val/fg/fg3.jpg bg/bg3.jpg val/trimap/trimap3.jpg
 ### Training
 ```shell
 export CUDA_VISIBLE_DEVICES=0
-python train.py \
-       --config configs/modnet/modnet-mobilenetv2.yml \
+python tools/train.py \
+       --config configs/quick_start/modnet-mobilenetv2.yml \
        --do_eval \
        --use_vdl \
-       --save_interval 5000 \
+       --save_interval 500 \
        --num_workers 5 \
        --save_dir output
 ```
 
 **note:** Using `--do_eval` will affect training speed and increase memory consumption, turning on and off according to needs.
+If opening the `--do_eval`, the historical best model will be saved to '{save_dir}/best_model' according to SAD. At the same time, 'best_sad.txt' will be generated in this directory to record the information of metrics and iter at this time.
 
 `--num_workers` Read data in multi-process mode. Speed up data preprocessing.
 
 Run the following command to view more parameters.
 ```shell
-python train.py --help
+python tools/train.py --help
 ```
 If you want to use multiple GPUs，please use `python -m paddle.distributed.launch` to run.
 
 ### Evaluation
 ```shell
 export CUDA_VISIBLE_DEVICES=0
-python val.py \
-       --config configs/modnet/modnet-mobilenetv2.yml \
+python tools/val.py \
+       --config configs/quick_start/modnet-mobilenetv2.yml \
        --model_path output/best_model/model.pdparams \
        --save_dir ./output/results \
        --save_results
@@ -192,14 +202,14 @@ You can directly download the provided model for evaluation.
 
 Run the following command to view more parameters.
 ```shell
-python val.py --help
+python tools/val.py --help
 ```
 
 ### Prediction
 ```shell
 export CUDA_VISIBLE_DEVICES=0
-python predict.py \
-    --config configs/modnet/modnet-mobilenetv2.yml \
+python tools/predict.py \
+    --config configs/quick_start/modnet-mobilenetv2.yml \
     --model_path output/best_model/model.pdparams \
     --image_path data/PPM-100/val/fg/ \
     --save_dir ./output/results \
@@ -213,14 +223,14 @@ You can directly download the provided model for evaluation.
 
 Run the following command to view more parameters.
 ```shell
-python predict.py --help
+python tools/predict.py --help
 ```
 
 ## Background Replacement
 ```shell
 export CUDA_VISIBLE_DEVICES=0
-python bg_replace.py \
-    --config configs/modnet/modnet-mobilenetv2.yml \
+python tools/bg_replace.py \
+    --config configs/quick_start/modnet-mobilenetv2.yml \
     --model_path output/best_model/model.pdparams \
     --image_path path/to/your/image \
     --background path/to/your/background/image \
@@ -239,14 +249,14 @@ You can directly download the provided model for background replacement.
 
 Run the following command to view more parameters.
 ```shell
-python bg_replace.py --help
+python tools/bg_replace.py --help
 ```
 
 ## Export and Deploy
 ### Model Export
 ```shell
-python export.py \
-    --config configs/modnet/modnet-mobilenetv2.yml \
+python tools/export.py \
+    --config configs/quick_start/modnet-mobilenetv2.yml \
     --model_path output/best_model/model.pdparams \
     --save_dir output/export
 ```
@@ -254,7 +264,7 @@ If the model requires trimap information, `--trimap` is need.
 
 Run the following command to view more parameters.
 ```shell
-python export.py --help
+python tools/export.py --help
 ```
 
 ### Deploy
