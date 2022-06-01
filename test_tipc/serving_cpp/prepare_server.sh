@@ -57,3 +57,5 @@ make -j
 
 # 6. install paddle-serving-server
 python3.7 -m pip install python/dist/paddle*
+
+unset http_proxy && unset https_proxy
