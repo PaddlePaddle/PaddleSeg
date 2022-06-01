@@ -28,12 +28,12 @@ Linux GPU/CPU CPP 服务化部署测试的主程序为`test_serving_infer_cpp.sh
 
 * 配置docker
 
-拉取并进入 Paddle Serving的GPU Docker(serving0.8.0-cuda10.2-cudnn7)。
+拉取并进入Paddle Serving的GPU Docker (serving0.8.0-cuda10.2-cudnn7)。
 
 ```
 nvidia-docker pull registry.baidubce.com/paddlepaddle/serving:0.8.0-cuda10.2-cudnn7-devel
 nvidia-docker run -p 9292:9292 --name test_serving_cpp -dit registry.baidubce.com/paddlepaddle/serving:0.8.0-cuda10.2-cudnn7-devel bash
-nvidia-docker exec -it test test_serving_cpp
+nvidia-docker exec -it test_serving_cpp bash
 ```
 
 * 安装 PaddleServing
@@ -58,12 +58,11 @@ pip3.7 install paddlepaddle-gpu==2.2.2 -i https://pypi.tuna.tsinghua.edu.cn/simp
 ```
 git clone https://github.com/PaddlePaddle/PaddleSeg.git
 cd PaddleSeg
-pip3.7 install -r requirements.txt
 ```
 
 ### 2.2 编译安装paddle-serving-server
 
-进入docker内部，在PaddleSeg根目录下，执行如下命令编译安装paddle-serving-server，耗时会较长。
+在PaddleSeg根目录下，执行如下命令编译安装paddle-serving-server，耗时会较长。
 ```
 sh test_tipc/serving_cpp/prepare_server.sh
 ```

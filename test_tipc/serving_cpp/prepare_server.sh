@@ -1,6 +1,6 @@
 # 1. prepare serving source code
 export https_proxy=http://172.19.57.45:3128 && export http_proxy=http://172.19.57.45:3128
-#git clone https://github.com/PaddlePaddle/Serving
+git clone https://github.com/PaddlePaddle/Serving
 cd Serving
 git checkout -- .
 git checkout -b v0.8.3 origin/v0.8.3
