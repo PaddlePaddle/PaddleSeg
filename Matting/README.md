@@ -165,6 +165,7 @@ python tools/train.py \
 ```
 
 **note:** Using `--do_eval` will affect training speed and increase memory consumption, turning on and off according to needs.
+If opening the `--do_eval`, the historical best model will be saved to '{save_dir}/best_model' according to SAD. At the same time, 'best_sad.txt' will be generated in this directory to record the information of metrics and iter at this time.
 
 `--num_workers` Read data in multi-process mode. Speed up data preprocessing.
 

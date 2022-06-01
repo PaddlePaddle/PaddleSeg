@@ -59,4 +59,5 @@ from .pfpnnet import PFPNNet
 from .glore import GloRe
 from .ddrnet import DDRNet_23
 from .ccnet import CCNet
+from .mobileseg import MobileSeg
 from .psanet import PSANet
