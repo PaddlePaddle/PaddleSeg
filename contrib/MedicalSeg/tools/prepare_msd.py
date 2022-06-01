@@ -61,7 +61,7 @@ import numpy as np
 sys.path.append(osp.join(osp.dirname(osp.realpath(__file__)), ".."))
 
 from prepare import Prep
-from preprocess_utils import HUNorm, resample, parse_msd_basic_info
+from preprocess_utils import HUnorm, resample, parse_msd_basic_info
 from medicalseg.utils import wrapped_partial
 
 tasks = {
@@ -126,8 +126,8 @@ class Prep_msd(Prep):
 
         self.preprocess = {
             "images": [
-                HUNorm, wrapped_partial(
-                    resample, new_shape=[128, 128, 128], order=1)
+                HUnorm, wrapped_partial(
+                    resample, new_shape=[4,128, 128, 128], order=1)
             ],
             "labels": [
                 wrapped_partial(
@@ -135,21 +135,52 @@ class Prep_msd(Prep):
             ]
         }
 
-    def generate_txt(self, train_split=0.75):
+    def generate_txt(self, train_split=0.8,test_split=0.95):
         """generate the train_list.txt and val_list.txt"""
 
         txtname = [
             osp.join(self.phase_path, 'train_list.txt'),
-            osp.join(self.phase_path, 'val_list.txt')
+            osp.join(self.phase_path, 'val_list.txt'),
+            osp.join(self.phase_path, 'test_list.txt')
         ]
 
         image_files_npy = os.listdir(self.image_path)
         label_files_npy = os.listdir(self.label_path)
 
         self.split_files_txt(txtname[0], image_files_npy, label_files_npy,
-                             train_split)
+                             train_split,test_split)
         self.split_files_txt(txtname[1], image_files_npy, label_files_npy,
-                             train_split)
+                             train_split,test_split)
+        self.split_files_txt(txtname[2], image_files_npy, label_files_npy,
+                             train_split,test_split)
+
+
+    def split_files_txt(self, txt, image_files, label_files=None, split=None,testsplit=None):
+        print(22222222222222222222222222222222222)
+        print(len(image_files))
+        print(len(label_files))
+        split = int(split * len(image_files))
+        testsplit = int(testsplit * len(image_files))
+
+
+        if "train" in txt:
+            image_names = image_files[:split]
+            label_names = label_files[:split]
+        elif "val" in txt:
+            # set the valset to 20% of images if all files need to be used in training
+
+            image_names = image_files[split:testsplit]
+            label_names = label_files[split:testsplit]
+        elif "test" in txt:
+            image_names = image_files[testsplit:]
+            label_names = label_files[testsplit:]
+        else:
+            raise NotImplementedError(
+                "The txt split except for train.txt, val.txt and test.txt is not implemented yet."
+            )
+
+        self.write_txt(txt, image_names, label_names)
+                         
 
 
 if __name__ == "__main__":
@@ -167,7 +198,7 @@ if __name__ == "__main__":
 
     prep = Prep_msd(task_id)
 
-    json_path = osp.join(osp.dirname(prep.image_dir), "dataset.json")
+    json_path = osp.join(osp.dirname("data/Task01_BrainTumour/Task01_BrainTumour_raw/Task01_BrainTumour/Task01_BrainTumour/"), "dataset.json")
     prep.generate_dataset_json(**parse_msd_basic_info(json_path))
 
     prep.load_save()

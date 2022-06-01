@@ -15,3 +15,4 @@
 from .dataset import MedicalDataset
 from .lung_coronavirus import LungCoronavirus
 from .mri_spine_seg import MRISpineSeg
+from .msd_brain import msd_brain_dataset

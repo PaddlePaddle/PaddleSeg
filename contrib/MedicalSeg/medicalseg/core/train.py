@@ -27,6 +27,10 @@ from medicalseg.utils import (TimeAverager, calculate_eta, resume, logger,
 from medicalseg.core.val import evaluate
 
 
+
+import paddle.distributed.fleet.base.role_maker as role_maker
+
+
 def train(model,
           train_dataset,
           val_dataset=None,
@@ -66,9 +70,14 @@ def train(model,
         to_static_training (bool, optional): Whether to use @to_static for training.
     """
     model.train()
+    paddle.distributed.init_parallel_env()
+
     nranks = paddle.distributed.ParallelEnv().nranks
     local_rank = paddle.distributed.ParallelEnv().local_rank
 
+    print("nranks数为：")
+    print(nranks)
+    print(local_rank)
     start_iter = 0
     if resume_model is not None:
         start_iter = resume(model, optimizer, resume_model)
@@ -76,12 +85,13 @@ def train(model,
     if not os.path.isdir(save_dir):
         if os.path.exists(save_dir):
             os.remove(save_dir)
-        os.makedirs(save_dir)
+        os.makedirs(save_dir, exist_ok = True)
 
     if nranks > 1:
-        paddle.distributed.fleet.init(is_collective=True)
-        optimizer = paddle.distributed.fleet.distributed_optimizer(
-            optimizer)  # The return is Fleet object
+        role = paddle.distributed.fleet.base.role_maker.PaddleCloudRoleMaker(is_collective=True)
+        paddle.distributed.fleet.init(role)
+
+        optimizer = paddle.distributed.fleet.distributed_optimizer(optimizer)  # The return is Fleet object
         ddp_model = paddle.distributed.fleet.distributed_model(model)
 
     batch_sampler = paddle.io.DistributedBatchSampler(
@@ -130,6 +140,7 @@ def train(model,
                 logits_list = ddp_model(images)
             else:
                 logits_list = model(images)
+
 
             # label.shape: (num_class, D, H, W) logit.shape: (N, num_class, D, H, W)
             loss_list, per_channel_dice = loss_computation(

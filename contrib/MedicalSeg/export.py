@@ -109,6 +109,8 @@ def main(args):
     else:
         shape = args.input_shape
 
+    print(args.input_shape)
+
     if not args.without_argmax or args.with_softmax:
         new_net = SavedSegmentationNet(net, args.without_argmax,
                                        args.with_softmax)

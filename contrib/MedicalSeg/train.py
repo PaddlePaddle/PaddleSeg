@@ -116,7 +116,6 @@ def parse_args():
 
 
 def main(args):
-
     if args.seed is not None:
         paddle.seed(args.seed)
         np.random.seed(args.seed)
@@ -187,7 +186,6 @@ def main(args):
         keep_checkpoint_max=args.keep_checkpoint_max,
         profiler_options=args.profiler_options,
         to_static_training=cfg.to_static_training)
-
 
 if __name__ == '__main__':
     args = parse_args()

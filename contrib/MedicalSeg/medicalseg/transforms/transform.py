@@ -20,6 +20,7 @@ import numpy as np
 import numbers
 import collections
 
+
 from medicalseg.cvlibs import manager
 from medicalseg.transforms import functional as F
 
@@ -58,13 +59,13 @@ class Compose:
             label = np.load(label)
         if im is None:
             raise ValueError('Can\'t read The image file {}!'.format(im))
-
+        # print(im.shape)
         for op in self.transforms:
             outputs = op(im, label)
             im = outputs[0]
             if len(outputs) == 2:
                 label = outputs[1]
-        im = np.expand_dims(im, axis=0)
+        # im = np.expand_dims(im, axis=0)
         if im.max() > 0:
             im = im / im.max()
 
@@ -160,9 +161,11 @@ class RandomRotation3D:
             (np.array). Image after transformation.
         """
         angle, r_plane = self.get_params(self.degrees)
+
+
         img = F.rotate_3d(img, r_plane, angle)
         if label is not None:
-            label = F.rotate_3d(label, r_plane, angle)
+            label = F.rotate_3d(label, map(lambda s:s-1,r_plane ), angle)
         return img, label
 
 
@@ -199,7 +202,7 @@ class RandomFlip3D:
         if random.random() < self.prob:
             img = F.flip_3d(img, axis=flip_axis)
             if label is not None:
-                label = F.flip_3d(label, axis=flip_axis)
+                label = F.flip_3d(label, axis=flip_axis-1)
         return img, label
 
 
@@ -340,6 +343,92 @@ class RandomResizedCrop3D:
 
 
 @manager.TRANSFORMS.add_component
+class RandomResizedCrop4D:
+    """
+    先Crop再Resize至预设尺寸
+    scale: 切出cube的体积与原图体积的比值范围
+    ratio: 切出cube的每一边长的抖动范围
+    size:  resize的目标尺寸
+    interpolation: [1-5]， skimage.zoom的order数。注意分割模式下label的order统一为0
+    pre_crop: bool，如果为True，则先切一个目标尺寸左右的cube，再resize，通常用于滑窗模式；
+                    如果为False，则从原图上扣一个与原图接近的cube，再resize至目标尺寸
+    nonzero_mask，如果为True，则只在label mask有效(非0)区域内进行滑窗
+                  如果为False，则在image整个区域内进行滑窗
+    """
+
+    def __init__(self, size, scale=(0.8, 1.2), ratio=(3. / 4., 4. / 3.), \
+        interpolation=1, pre_crop=False, nonzero_mask=False):
+        """
+        init
+        """
+        if isinstance(size, (tuple, list)):
+            assert len(size) == 3, \
+                "Size must contain THREE number when it is a tuple or list, got {}.".format(len(size))
+            self.size = size
+        elif isinstance(size, int):
+            self.size = (size, size, size)
+        else:
+            print("Size must be a list or tuple, got {}.".format(type(size)))
+
+        self.interpolation = interpolation
+        self.scale = scale
+        self.ratio = ratio
+        self.size = size
+        self.pre_crop = pre_crop
+        self.nonzero_mask = nonzero_mask
+
+        super().__init__()
+
+    def get_params(self, img, scale, ratio,size):
+        """Get parameters for ``crop`` for a random sized crop.
+        Args:
+            img (numpy ndarray): Image to be cropped. d, h, w
+            scale (tuple): range of size of the origin size cropped
+            ratio (tuple): range of aspect ratio of the origin aspect ratio cropped
+        Returns:
+            tuple: params (i, j, h, w) to be passed to ``crop`` for a random
+                sized crop.
+        """
+        params_ret = collections.namedtuple('params_ret',
+                                            ['i', 'j', 'k', 'd', 'h', 'w'])
+
+        d = size  
+        h = size
+        w = size
+        i = random.randint(0, img.shape[1] - d)
+        j = random.randint(0, img.shape[2] - h)
+        k = random.randint(0, img.shape[3] - w)
+        return params_ret(i, j, k, d, h, w)
+
+        # # Fallback
+        # w = min(img.shape[1], img.shape[2], img.shape[3])
+        # w =size
+        # i = (img.shape[1] - w) // 2
+        # j = (img.shape[2] - w) // 2
+        # k = (img.shape[3] - w) // 2
+        # return params_ret(i, j, k, w, w, w)
+    def __call__(self, img, label=None):
+        """
+        Args:
+            img (numpy ndarray): Image to be cropped and resized.
+        Returns:
+            numpy ndarray: Randomly cropped and resized image.
+        """
+ 
+        i, j, k, d, h, w = self.get_params(img, self.scale, self.ratio, self.size)
+
+
+        img = F.resized_crop_4d(img, i, j, k, d, h, w, self.size,
+                                self.interpolation)
+        if label is not None:
+            label = F.resized_crop_3d(label, i, j, k, d, h, w, self.size, 0)
+
+
+        return img, label
+
+
+
+@manager.TRANSFORMS.add_component
 class BinaryMaskToConnectComponent:
     """Got the connect compoent from binary mask
     Args:
@@ -394,3 +483,5 @@ class TopkLargestConnectComponent:
         pred = F.extract_connect_compoent(pred)
         pred[pred > self.k] = 0
         return pred, label
+
+

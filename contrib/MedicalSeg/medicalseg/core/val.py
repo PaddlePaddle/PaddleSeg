@@ -33,7 +33,9 @@ def evaluate(model,
              print_detail=True,
              auc_roc=False,
              writer=None,
-             save_dir=None):
+             save_dir=None,
+             sw_num=10
+             ):
     """
     Launch evalution.
 
@@ -70,8 +72,8 @@ def evaluate(model,
         num_workers=num_workers,
         return_list=True, )
 
-    with open(eval_dataset.dataset_json_path, 'r', encoding='utf-8') as f:
-        dataset_json_dict = json.load(f)
+    # with open(eval_dataset.dataset_json_path, 'r', encoding='utf-8') as f:
+    #     dataset_json_dict = json.load(f)
 
     total_iters = len(loader)
     logits_all = None
@@ -93,19 +95,19 @@ def evaluate(model,
     with paddle.no_grad():
         for iter, (im, label, idx) in enumerate(loader):
             reader_cost_averager.record(time.time() - batch_start)
-            image_json = dataset_json_dict["training"][idx[0].split("/")[-1]
-                                                       .split(".")[0]]
+            # image_json = dataset_json_dict["training"][idx[0].split("/")[-1]
+            #                                            .split(".")[0]]
 
             label = label.astype('int32')
-
-            pred, logits = infer.inference(  # reverse transform here
+            pred, logits = infer.inference_windom(  # reverse transform here
                 model,
                 im,
                 ori_shape=label.shape[-3:],
-                transforms=eval_dataset.transforms.transforms)
+                transforms=eval_dataset.transforms.transforms,sw_num=sw_num)
 
             if writer is not None:  # TODO visualdl single channel pseudo label map transfer to
                 pass
+
 
             # Post process
             # if eval_dataset.post_transform is not None:
@@ -118,6 +120,10 @@ def evaluate(model,
             loss, per_channel_dice = loss_computation(logits, label, new_loss)
             loss = sum(loss)
 
+            # print(2222222222222222222222)
+            # print(loss)
+            # print(logits.shape)
+            # print(label.shape)
             if auc_roc:
                 logits = F.softmax(logits, axis=1)
                 if logits_all is None:
@@ -135,23 +141,26 @@ def evaluate(model,
             else:
                 channel_dice_array += per_channel_dice
 
-            if iter < 5:
-                save_array(
-                    save_path=os.path.join(
-                        save_dir,
-                        str(iter)),
-                    save_content={
-                        'pred': pred.numpy(),
-                        'label': label.numpy(),
-                        'img': im.numpy()
-                    },
-                    form=('npy', 'nii.gz'),
-                    image_infor={
-                        "spacing": image_json["spacing_resample"],
-                        'direction': image_json["direction"],
-                        "origin": image_json["origin"],
-                        'format': "xyz"
-                    })
+
+
+
+            # if iter < 5:
+            #     save_array(
+            #         save_path=os.path.join(
+            #             save_dir,
+            #             str(iter)),
+            #         save_content={
+            #             'pred': pred.numpy(),
+            #             'label': label.numpy(),
+            #             'img': im.numpy()
+            #         },
+            #         form=('npy', 'nii.gz'),
+            #         image_infor={
+            #             "spacing": image_json["spacing_resample"],
+            #             'direction': image_json["direction"],
+            #             "origin": image_json["origin"],
+            #             'format': "xyz"
+            #         })
 
             batch_cost_averager.record(
                 time.time() - batch_start, num_samples=len(label))
