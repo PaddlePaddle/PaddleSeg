@@ -61,7 +61,9 @@ class UPerNet(nn.Layer):
         self.pretrained = pretrained
         self.enable_auxiliary_loss = enable_auxiliary_loss
 
-        fpn_inplanes = self.backbone.feat_channels
+        fpn_inplanes = [
+            self.backbone.feat_channels[i] for i in backbone_indices
+        ]
         self.head = UPerNetHead(
             num_classes=num_classes,
             fpn_inplanes=fpn_inplanes,
