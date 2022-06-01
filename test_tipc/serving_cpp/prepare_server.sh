@@ -57,4 +57,3 @@ make -j
 
 # 6. install paddle-serving-server
 python3.7 -m pip install python/dist/paddle*
-export SERVING_BIN=$PWD/core/general-server/serving

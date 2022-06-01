@@ -81,4 +81,4 @@ if __name__ == "__main__":
     feed, fetch = preprocess(img_path, input_name, output_name)
     fetch_map = client.predict(feed=feed, fetch=fetch)
     result = postprocess(fetch_map, output_name)
-    print(result)
+    print("result:", result, "\n")

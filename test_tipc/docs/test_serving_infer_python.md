@@ -69,7 +69,7 @@ pip3.7 install -r requirements.txt
  测试方法如下所示，希望测试不同的模型文件，只需更换为对应的参数配置文件，即可完成对应模型的测试。
 
 ```bash
-bash test_tipc/test_serving_infer_python.sh ${your_params_file} lite_train_lite_infer
+bash test_tipc/test_serving_infer_python.sh ${your_params_file} serving_infer
 ```
 
 以`PP-LiteSeg-Stdc1`的`Linux GPU/CPU PYTHON 服务化部署测试`为例，在PaddleSeg根目录下，执行如下命令。
