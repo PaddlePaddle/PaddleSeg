@@ -1,6 +1,6 @@
 ===========================serving_params===========================
 model_name:pp_humanseg_lite
-python:python3
+python:python3.7
 trans_model:-m paddle_serving_client.convert
 --dirname:./test_tipc/inferences/pp_humanseg_lite/pp_humanseg_lite_export_398x224
 --model_filename:model.pdmodel

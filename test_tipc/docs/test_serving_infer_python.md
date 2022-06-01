@@ -36,22 +36,14 @@ nvidia-docker run -p 9292:9292 --name test -dit registry.baidubce.com/paddlepadd
 nvidia-docker exec -it test bash
 ```
 
-* 安装Python
-
-安装Python，支持Python3.6/3.7/3.8/3.9，推荐python3.7。
-
 * 安装 PaddleServing
 
 安装PaddleServing相关组件，包括serving-server、serving_client、serving-app
 
 ```
-pip3 install paddle-serving-client==0.8.3 -i https://pypi.tuna.tsinghua.edu.cn/simple
-pip3 install paddle-serving-app==0.8.3 -i https://pypi.tuna.tsinghua.edu.cn/simple
-
-# GPU Server，需要确认环境再选择执行哪一条，推荐使用CUDA 10.2的包
-pip3 install paddle-serving-server-gpu==0.8.3.post102 -i https://pypi.tuna.tsinghua.edu.cn/simple
-pip3 install paddle-serving-server-gpu==0.8.3.post101 -i https://pypi.tuna.tsinghua.edu.cn/simple
-pip3 install paddle-serving-server-gpu==0.8.3.post112 -i https://pypi.tuna.tsinghua.edu.cn/simple
+pip3.7 install paddle-serving-client==0.8.3 -i https://pypi.tuna.tsinghua.edu.cn/simple
+pip3.7 install paddle-serving-app==0.8.3 -i https://pypi.tuna.tsinghua.edu.cn/simple
+pip3.7 install paddle-serving-server-gpu==0.8.3.post102 -i https://pypi.tuna.tsinghua.edu.cn/simple
 ```
 
 PaddleServing 0.8版本的安装说明，参考[链接](https://github.com/PaddlePaddle/Serving/blob/v0.8.3/doc/Install_CN.md)
@@ -61,7 +53,7 @@ PaddleServing 0.8版本的安装说明，参考[链接](https://github.com/Paddl
 
 ```
 # GPU CUDA 10.2环境请执行
-pip3 install paddlepaddle-gpu==2.2.2 -i https://pypi.tuna.tsinghua.edu.cn/simple
+pip3.7 install paddlepaddle-gpu==2.2.2 -i https://pypi.tuna.tsinghua.edu.cn/simple
 ```
 
 * 准备PaddleSeg
@@ -69,7 +61,7 @@ pip3 install paddlepaddle-gpu==2.2.2 -i https://pypi.tuna.tsinghua.edu.cn/simple
 ```
 git clone https://github.com/PaddlePaddle/PaddleSeg.git
 cd PaddleSeg
-pip install -r requirements.txt
+pip3.7 install -r requirements.txt
 ```
 
  ### 2.2 功能测试

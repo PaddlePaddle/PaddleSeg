@@ -1,6 +1,6 @@
 ===========================serving_params===========================
 model_name:pp_liteseg_stdc1
-python:python3
+python:python3.7
 trans_model:-m paddle_serving_client.convert
 --dirname:./test_tipc/inferences/pp_liteseg_stdc1/pp_liteseg_infer_model
 --model_filename:model.pdmodel

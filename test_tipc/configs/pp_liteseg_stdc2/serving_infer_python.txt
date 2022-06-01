@@ -1,6 +1,6 @@
 ===========================serving_params===========================
 model_name:pp_liteseg_stdc2
-python:python3
+python:python3.7
 trans_model:-m paddle_serving_client.convert
 --dirname:./test_tipc/inferences/pp_liteseg_stdc2/pp_liteseg_stdc2_cityscapes_1024x512_scale1.0_160k
 --model_filename:model.pdmodel

@@ -1,6 +1,6 @@
 ===========================serving_params===========================
 model_name:stdc_stdc1
-python:python3
+python:python3.7
 trans_model:-m paddle_serving_client.convert
 --dirname:./test_tipc/inferences/stdc_stdc1/stdc1seg_infer_model
 --model_filename:model.pdmodel
