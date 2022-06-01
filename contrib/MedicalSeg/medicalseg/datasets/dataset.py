@@ -74,6 +74,7 @@ class MedicalDataset(paddle.io.Dataset):
         self.num_classes = num_classes
         self.ignore_index = ignore_index  # todo: if labels only have 1/0/2, ignore_index is not necessary
         self.dataset_json_path = dataset_json_path
+
         if self.dataset_root is None:
             self.dataset_root = download_file_and_uncompress(
                 url=data_URL,
@@ -106,18 +107,13 @@ class MedicalDataset(paddle.io.Dataset):
                     grt_path = os.path.join(self.dataset_root, items[1])
                 self.file_list.append([image_path, grt_path])
 
-        # if mode == 'train':
-        #     self.file_list = self.file_list * 10
+        if mode == 'train':
+            self.file_list = self.file_list * 10
 
     def __getitem__(self, idx):
         image_path, label_path = self.file_list[idx]
 
-        # print(image_path)
-        # print(label_path)
         im, label = self.transforms(im=image_path, label=label_path)
-        im=np.squeeze(im)
-        # print(im.shape)
-        # print(label.shape)
 
         return im, label, self.file_list[idx][0]  # npy file name
 

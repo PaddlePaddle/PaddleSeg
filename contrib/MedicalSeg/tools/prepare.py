@@ -85,7 +85,6 @@ class Prep:
             "dataset.json")  # save the dataset.json to raw path
         self.image_path = os.path.join(self.phase_path, "images")
         self.label_path = os.path.join(self.phase_path, "labels")
-
         os.makedirs(self.dataset_root, exist_ok=True)
         os.makedirs(self.phase_path, exist_ok=True)
         os.makedirs(self.image_path, exist_ok=True)
@@ -131,15 +130,8 @@ class Prep:
                 os.path.join(self.raw_data_path, labels_dir), valid_suffix[1],
                 filter_key[1])
 
-
-        print(666666666666666666666)
-        print(len(self.image_files))
-        print(len(self.label_files))
-        # self.image_files.sort()
-        # self.label_files.sort()
-
-
-
+        self.image_files.sort()
+        self.label_files.sort()
 
     def uncompress_file(self, num_files, form):
         uncompress_tool = uncompressor(
@@ -173,22 +165,18 @@ class Prep:
             else:
                 itkimage = sitk.ReadImage(f)
                 if itkimage.GetDimension() == 4:
-                    # slicer = sitk.ExtractImageFilter()
-                    # s = list(itkimage.GetSize())
-                    # s[-1] = 0
-                    # slicer.SetSize(s)
-                    # for slice_idx in range(itkimage.GetSize()[-1]):
-                    #     slicer.SetIndex([0, 0, 0, slice_idx])
-                    #     sitk_volume = slicer.Execute(itkimage)
-                    #     images.append(sitk_volume)
-                    images = [itkimage]
+                    slicer = sitk.ExtractImageFilter()
+                    s = list(itkimage.GetSize())
+                    s[-1] = 0
+                    slicer.SetSize(s)
+                    for slice_idx in range(itkimage.GetSize()[-1]):
+                        slicer.SetIndex([0, 0, 0, slice_idx])
+                        sitk_volume = slicer.Execute(itkimage)
+                        images.append(sitk_volume)
                 else:
                     images = [itkimage]
-                # print(images)
-                # images = [sitk.DICOMOrient(img, 'LPS') for img in images]
+                images = [sitk.DICOMOrient(img, 'LPS') for img in images]
                 f_nps = [sitk.GetArrayFromImage(img) for img in images]
-
-                # print(f_nps)
 
         elif filename.endswith(
             (".mha", ".mhd", "nrrd"
@@ -233,7 +221,7 @@ class Prep:
             process_tuple = ("images", "labels")
             save_tuple = (self.image_path, self.label_path)
 
-        for i, files in enumerate((self.image_files, self.label_files)):
+        for i, files in enumerate(process_files):
             pre = self.preprocess[process_tuple[i]]
             savepath = save_tuple[i]
 
@@ -265,10 +253,9 @@ class Prep:
                             savepath,
                             osp.basename(f).split(".")[0] + volume_idx), f_np)
 
-                # if i == 0:
-                    # dataset_json_dict["training"][osp.basename(f).split(".")[
-                    #     0]]["spacing_resample"] = new_spacing
-
+                if i == 0:
+                    dataset_json_dict["training"][osp.basename(f).split(".")[
+                        0]]["spacing_resample"] = new_spacing
 
         with open(self.dataset_json_path, 'w', encoding='utf-8') as f:
             json.dump(dataset_json_dict, f, ensure_ascii=False, indent=4)
@@ -323,52 +310,51 @@ class Prep:
 
         print("successfully write to {}".format(txt))
 
-    # def split_files_txt(self, txt, image_files, label_files=None, split=None):
-    #     """
-    #     Split filenames and write the image names and label names on train.txt, val.txt or test.txt.
-    #     Set the valset to 20% of images if all files need to be used in training.
+    def split_files_txt(self, txt, image_files, label_files=None, split=None):
+        """
+        Split filenames and write the image names and label names on train.txt, val.txt or test.txt.
+        Set the valset to 20% of images if all files need to be used in training.
 
-    #     Args:
-    #     txt(string): the path to the txt file, for example: "data/train.txt"
-    #     image_files(list|tuple): the list of image names.
-    #     label_files(list|tuple): the list of label names, order is corresponding with the image_files.
-    #     split(float|int): Percentage of the dataset used in training
+        Args:
+        txt(string): the path to the txt file, for example: "data/train.txt"
+        image_files(list|tuple): the list of image names.
+        label_files(list|tuple): the list of label names, order is corresponding with the image_files.
+        split(float|int): Percentage of the dataset used in training
 
-    #     """
-    #     if split is None:
-    #         if label_files is None:  # testset don't have
-    #             split = len(image_files)
-    #         else:
-    #             split = int(0.8 * len(image_files))
-    #     elif split <= 1:
-    #         split = int(split * len(image_files))
-    #         print(f"select{split}")
-    #     elif split > 1:
-    #         raise RuntimeError(
-    #             "Only have {} images but required {} images in trainset")
+        """
+        if split is None:
+            if label_files is None:  # testset don't have
+                split = len(image_files)
+            else:
+                split = int(0.8 * len(image_files))
+        elif split <= 1:
+            split = int(split * len(image_files))
+        elif split > 1:
+            raise RuntimeError(
+                "Only have {} images but required {} images in trainset")
 
-    #     if "train" in txt:
-    #         image_names = image_files[:split]
-    #         label_names = label_files[:split]
-    #     elif "val" in txt:
-    #         # set the valset to 20% of images if all files need to be used in training
-    #         if split == len(image_files):
-    #             valsplit = int(0.8 * len(image_files))
-    #             image_names = image_files[valsplit:]
-    #             label_names = label_files[valsplit:]
-    #         else:
-    #             image_names = image_files[split:]
-    #             label_names = label_files[split:]
-    #     elif "test" in txt:
-    #         self.write_txt(txt, image_files[:split])
+        if "train" in txt:
+            image_names = image_files[:split]
+            label_names = label_files[:split]
+        elif "val" in txt:
+            # set the valset to 20% of images if all files need to be used in training
+            if split == len(image_files):
+                valsplit = int(0.8 * len(image_files))
+                image_names = image_files[valsplit:]
+                label_names = label_files[valsplit:]
+            else:
+                image_names = image_files[split:]
+                label_names = label_files[split:]
+        elif "test" in txt:
+            self.write_txt(txt, image_files[:split])
 
-    #         return
-    #     else:
-    #         raise NotImplementedError(
-    #             "The txt split except for train.txt, val.txt and test.txt is not implemented yet."
-    #         )
+            return
+        else:
+            raise NotImplementedError(
+                "The txt split except for train.txt, val.txt and test.txt is not implemented yet."
+            )
 
-    #     self.write_txt(txt, image_names, label_names)
+        self.write_txt(txt, image_names, label_names)
 
     @staticmethod
     def set_image_infor(image_name, infor_dict):

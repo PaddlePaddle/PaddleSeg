@@ -85,15 +85,14 @@ def main(args):
     losses = cfg.loss
 
     val_dataset = cfg.val_dataset
-    test_dataset = cfg.test_dataset
-    # if val_dataset is None:
-    #     raise RuntimeError(
-    #         'The verification dataset is not specified in the configuration file.'
-    #     )
-    # elif len(val_dataset) == 0:
-    #     raise ValueError(
-    #         'The length of val_dataset is 0. Please check if your dataset is valid'
-    #     )
+    if val_dataset is None:
+        raise RuntimeError(
+            'The verification dataset is not specified in the configuration file.'
+        )
+    elif len(val_dataset) == 0:
+        raise ValueError(
+            'The length of val_dataset is 0. Please check if your dataset is valid'
+        )
 
     msg = '\n---------------Config Information---------------\n'
     msg += str(cfg)
@@ -102,7 +101,6 @@ def main(args):
 
     model = cfg.model
     if args.model_path:
-        
         utils.load_entire_model(model, args.model_path)
         logger.info('Loaded trained params of model successfully')
 
@@ -110,19 +108,17 @@ def main(args):
         from visualdl import LogWriter
         log_writer = LogWriter(args.save_dir)
 
-    # config_check(cfg, val_dataset=val_dataset)
-    sw_num=20
+    config_check(cfg, val_dataset=val_dataset)
+
     evaluate(
         model,
-        test_dataset,
+        val_dataset,
         losses,
         num_workers=args.num_workers,
         print_detail=args.print_detail,
         auc_roc=args.auc_roc,
         writer=log_writer,
-        save_dir=args.save_dir,
-        sw_num=sw_num
-        )
+        save_dir=args.save_dir)
 
 
 if __name__ == '__main__':

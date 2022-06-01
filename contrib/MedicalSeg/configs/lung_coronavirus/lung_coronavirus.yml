@@ -14,14 +14,6 @@ train_dataset:
     - type: RandomRotation3D
       degrees: 90
     - type: RandomFlip3D
-
-    # - type: RandomRotation3D
-    #   degrees: 90
-    #   rotate_planes: [[1, 2], [2, 3]]
-    # - type: RandomFlip3D
-    #   flip_axis: [1,2,3]
-
-
   mode: train
   num_classes: 3
 
@@ -30,9 +22,7 @@ val_dataset:
   dataset_root: lung_coronavirus/lung_coronavirus_phase0
   result_dir: lung_coronavirus/lung_coronavirus_phase1
   num_classes: 3
-  transforms: 
-
-
+  transforms: []
   mode: val
   dataset_json_path: "data/lung_coronavirus/lung_coronavirus_raw/dataset.json"
 
