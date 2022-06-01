@@ -40,7 +40,36 @@ class AttenHead(nn.Layer):
         return x
 
 
-class SpatialGather_Module(nn.Layer):
+class SpatialConvBNReLU(nn.Layer):
+    def __init__(self,
+                 in_channels,
+                 out_channels,
+                 kernel_size=1,
+                 padding='same',
+                 **kwargs):
+        super().__init__()
+
+        self.conv_bn_relu_1 = layers.ConvBNReLU(
+            in_channels,
+            out_channels=out_channels,
+            kernel_size=kernel_size,
+            padding=padding,
+            **kwargs)
+
+        self.conv_bn_relu_2 = layers.ConvBNReLU(
+            out_channels,
+            out_channels=out_channels,
+            kernel_size=1,
+            padding=padding,
+            **kwargs)
+
+    def forward(self, x):
+        x = self.conv_bn_relu_1(x)
+        x = self.conv_bn_relu_2(x)
+        return x
+
+
+class SpatialGatherModule(nn.Layer):
     """
         Aggregate the context features according to the initial
         predicted probability distribution.
@@ -69,33 +98,25 @@ class SpatialGather_Module(nn.Layer):
         return ocr_context
 
 
-class ObjectAttentionBlock(nn.Layer):
-    '''
-    The basic implementation for object context block
-    Input:
-        N X C X H X W
-    Parameters:
-        in_channels       : the dimension of the input feature map
-        key_channels      : the dimension after the key/query transform
-        scale             : choose the scale to downsample the input feature
-                            maps (save memory cost)
-    Return:
-        N X C X H X W
-    '''
-
-    def __init__(self, in_channels, key_channels, scale=1):
+class SpatialOCRModule(nn.Layer):
+    def __init__(self,
+                 in_channels,
+                 key_channels,
+                 out_channels,
+                 scale=1,
+                 dropout=0.1):
         super().__init__()
         self.scale = scale
         self.in_channels = in_channels
         self.key_channels = key_channels
         self.pool = nn.MaxPool2D(kernel_size=(scale, scale))
-        self.f_pixel = layers.SpatialConvBNReLU(
+        self.f_pixel = SpatialConvBNReLU(
             self.in_channels,
             self.key_channels,
             kernel_size=1,
             padding=0,
             bias_attr=False)
-        self.f_object = layers.SpatialConvBNReLU(
+        self.f_object = SpatialConvBNReLU(
             self.in_channels,
             self.key_channels,
             kernel_size=1,
@@ -114,7 +135,17 @@ class ObjectAttentionBlock(nn.Layer):
             padding=0,
             bias_attr=False)
 
-    def forward(self, x, proxy):
+        _in_channels = 2 * in_channels
+        self.conv_bn_dropout = nn.Sequential(
+            layers.ConvBNReLU(
+                _in_channels,
+                out_channels,
+                kernel_size=1,
+                padding=0,
+                bias_attr=False),
+            nn.Dropout2D(dropout))
+
+    def forward(self, feats, proxy):
         batch_size, _, h, w = paddle.shape(x).numpy()
         if self.scale > 1:
             x = self.pool(x)
@@ -134,31 +165,6 @@ class ObjectAttentionBlock(nn.Layer):
         context = self.f_up(context)
         if self.scale > 1:
             context = F.interpolate(context, size=(h, w), mode='bilinear')
-        return context
-
-
-class SpatialOCR_Module(nn.Layer):
-    def __init__(self,
-                 in_channels,
-                 key_channels,
-                 out_channels,
-                 scale=1,
-                 dropout=0.1):
-        super().__init__()
-        self.object_context_block = ObjectAttentionBlock(in_channels,
-                                                         key_channels, scale)
-        _in_channels = 2 * in_channels
-        self.conv_bn_dropout = nn.Sequential(
-            layers.ConvBNReLU(
-                _in_channels,
-                out_channels,
-                kernel_size=1,
-                padding=0,
-                bias_attr=False),
-            nn.Dropout2D(dropout))
-
-    def forward(self, feats, proxy_feats):
-        context = self.object_context_block(feats, proxy_feats)
         output = paddle.concat([context, feats], 1)
         output = self.conv_bn_dropout(output)
         return output
@@ -174,8 +180,8 @@ class OCRHead(nn.Layer):
         high_level_ch = in_channels[self.indices[1]]
         self.conv3x3_ocr = layers.ConvBNReLU(
             high_level_ch, ocr_mid_channels, kernel_size=3, stride=1, padding=1)
-        self.ocr_gather_head = SpatialGather_Module(num_classes)
-        self.ocr_distri_head = SpatialOCR_Module(
+        self.ocr_gather_head = SpatialGatherModule(num_classes)
+        self.ocr_distri_head = SpatialOCRModule(
             in_channels=ocr_mid_channels,
             key_channels=ocr_key_channels,
             out_channels=ocr_mid_channels,
@@ -224,7 +230,7 @@ class OCRHead(nn.Layer):
 
 
 @manager.MODELS.add_component
-class PSA(nn.Layer):
+class PSANet(nn.Layer):
     """
     The PSA implementation based on PaddlePaddle.
 
@@ -333,10 +339,13 @@ class PSA(nn.Layer):
         aux_lo = logit_attn * aux_lo
         p_lo = F.interpolate(
             p_lo, size=paddle.shape(p_1x).numpy()[2:4], mode='bilinear')
+
         aux_lo = F.interpolate(
             aux_lo, size=paddle.shape(p_1x).numpy()[2:4], mode='bilinear')
+
         logit_attn = F.interpolate(
             logit_attn, size=paddle.shape(p_1x).numpy()[2:4], mode='bilinear')
+
         joint_pred = p_lo + (1 - logit_attn) * p_1x
         joint_aux = aux_lo + (1 - logit_attn) * aux_1x
         if self.training:

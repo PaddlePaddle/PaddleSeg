@@ -21,4 +21,4 @@ from .swin_transformer import *
 from .mobilenetv2 import *
 from .mix_transformer import *
 from .stdcnet import *
-from .hrnetv2_psa import *
+from .hrnetv2_psa import HRNETV2_PSA

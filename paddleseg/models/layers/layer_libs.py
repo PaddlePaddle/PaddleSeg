@@ -350,32 +350,3 @@ class ConvBNLeakyReLU(nn.Layer):
         x = self._batch_norm(x)
         x = self._relu(x)
         return x
-
-
-class SpatialConvBNReLU(nn.Layer):
-    def __init__(self,
-                 in_channels,
-                 out_channels,
-                 kernel_size=1,
-                 padding='same',
-                 **kwargs):
-        super().__init__()
-
-        self.conv_bn_relu_1 = ConvBNReLU(
-            in_channels,
-            out_channels=out_channels,
-            kernel_size=kernel_size,
-            padding=padding,
-            **kwargs)
-
-        self.conv_bn_relu_2 = ConvBNReLU(
-            out_channels,
-            out_channels=out_channels,
-            kernel_size=1,
-            padding=padding,
-            **kwargs)
-
-    def forward(self, x):
-        x = self.conv_bn_relu_1(x)
-        x = self.conv_bn_relu_2(x)
-        return x

@@ -22,7 +22,7 @@ from paddleseg.cvlibs import manager
 from paddleseg.cvlibs import param_init
 
 
-class PSA_s(nn.Layer):
+class PolarizedSelfAttentionModule(nn.Layer):
     def __init__(self, inplanes, planes, kernel_size=1, stride=1):
         super().__init__()
         self.inplanes = inplanes
@@ -73,26 +73,18 @@ class PSA_s(nn.Layer):
         self.reset_parameters()
 
     def reset_parameters(self):
-        param_init.kaiming_normal_init(self.conv_q_right.weight)
-        if hasattr(self.conv_q_right,
-                   'bias') and self.conv_q_right.bias is not None:
-            param_init.constant_init(self.conv_q_right.bias, value=0.0)
-        param_init.kaiming_normal_init(self.conv_v_right.weight)
-        if hasattr(self.conv_v_right,
-                   'bias') and self.conv_v_right.bias is not None:
-            param_init.constant_init(self.conv_v_right.bias, value=0.0)
-        param_init.kaiming_normal_init(self.conv_q_left.weight)
-        if hasattr(self.conv_q_left,
-                   'bias') and self.conv_q_left.bias is not None:
-            param_init.constant_init(self.conv_q_left.bias, value=0.0)
-        param_init.kaiming_normal_init(self.conv_v_left.weight)
-        if hasattr(self.conv_v_left,
-                   'bias') and self.conv_v_left.bias is not None:
-            param_init.constant_init(self.conv_v_left.bias, value=0.0)
+        for module in [
+                self.conv_q_right, self.conv_v_right, self.conv_q_left,
+                self.conv_v_left, self.conv_up
+        ]:
+            param_init.kaiming_normal_init(module.weight)
+            if hasattr(module, 'bias') and module.bias is not None:
+                param_init.constant_init(module.bias, value=0.0)
         self.conv_q_right.inited = True
         self.conv_v_right.inited = True
         self.conv_q_left.inited = True
         self.conv_v_left.inited = True
+        self.conv_up.inited = True
 
     def spatial_pool(self, x):
         input_x = self.conv_v_right(x)
@@ -131,7 +123,7 @@ class PSA_s(nn.Layer):
         return out
 
 
-class BasicBlock(nn.Layer):
+class HRNetBasicBlock(nn.Layer):
     expansion = 1
 
     def __init__(self, inplanes, planes, stride=1, downsample=None):
@@ -141,7 +133,7 @@ class BasicBlock(nn.Layer):
             inplanes, planes, kernel_size=3, padding=1, bias_attr=False)
         self.bn1 = nn.BatchNorm2D(planes)
         self.relu = nn.ReLU()
-        self.deattn = PSA_s(planes, planes)
+        self.deattn = PolarizedSelfAttentionModule(planes, planes)
         self.conv2 = nn.Conv2D(
             planes, planes, kernel_size=3, padding=1, bias_attr=False)
         self.bn2 = nn.BatchNorm2D(planes)
@@ -343,11 +335,11 @@ class HighResolutionModule(nn.Layer):
         return x_fuse
 
 
-blocks_dict = {'BASIC': BasicBlock, 'BOTTLENECK': Bottleneck}
+blocks_dict = {'BASIC': HRNetBasicBlock, 'BOTTLENECK': Bottleneck}
 
 
 class HighResolutionNet(nn.Layer):
-    def __init__(self, cfg_dic):
+    def __init__(self, cfg_dic, pretrained=None):
         super().__init__()
         self.cfg_dic = cfg_dic
         self.conv1 = nn.Conv2D(
@@ -357,6 +349,7 @@ class HighResolutionNet(nn.Layer):
             64, 64, kernel_size=3, stride=2, padding=1, bias_attr=False)
         self.bn2 = nn.BatchNorm2D(64)
         self.relu = nn.ReLU()
+        self.pretrained = pretrained
 
         self.stage1_cfg = self.cfg_dic['STAGE1']
         num_channels = self.stage1_cfg['NUM_CHANNELS'][0]
@@ -537,7 +530,7 @@ class HighResolutionNet(nn.Layer):
         outs = [paddle.concat([x[0], x1, x2, x3], 1)]
         return outs
 
-    def init_weight(self, pretrained=None):
+    def init_weight(self):
         for name, m in self.named_children():
             if any(part in name for part in {'cls', 'aux', 'ocr'}):
                 continue
@@ -548,8 +541,8 @@ class HighResolutionNet(nn.Layer):
                 param_init.constant_init(m.weight, value=1.0)
                 param_init.constant_init(m.bias, value=0.0)
 
-        if pretrained is not None:
-            pretrained_dict = paddle.load(pretrained)
+        if self.pretrained is not None:
+            pretrained_dict = paddle.load(self.pretrained)
             model_dict = self.state_dict()
             pretrained_dict = {
                 k.replace('last_layer', 'aux_head').replace('model.', ''): v
@@ -564,8 +557,7 @@ class HighResolutionNet(nn.Layer):
 
 
 @manager.BACKBONES.add_component
-def HRNETV2_PSA():
-    model = HighResolutionNet(cfg_dic={
+def HRNETV2_PSA(cfg_dic={
         'FINAL_CONV_KERNEL': 1,
         'STAGE1': {
             'NUM_MODULES': 1,
@@ -599,5 +591,7 @@ def HRNETV2_PSA():
             'NUM_CHANNELS': [48, 96, 192, 384],
             'FUSE_METHOD': 'SUM'
         }
-    })
+},
+                pretrained=None):
+    model = HighResolutionNet(cfg_dic=cfg_dic, pretrained=pretrained)
     return model

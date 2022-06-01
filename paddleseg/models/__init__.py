@@ -59,4 +59,4 @@ from .pfpnnet import PFPNNet
 from .glore import GloRe
 from .ddrnet import DDRNet_23
 from .ccnet import CCNet
-from .psa import PSA
+from .psa import PSANet

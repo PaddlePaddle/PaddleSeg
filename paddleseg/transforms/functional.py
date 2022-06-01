@@ -115,9 +115,11 @@ def rotate(im, rotate_lower, rotate_upper):
 def mask_to_onehot(mask, num_classes):
     """
     Convert a mask (H, W) to onehot (K, H, W).
+
     Args:
         mask (np.ndarray): Label mask with shape (H, W)
         num_classes (int): Number of classes.
+
     Returns:
         np.ndarray: Onehot mask with shape(K, H, W).
     """
@@ -129,9 +131,11 @@ def mask_to_onehot(mask, num_classes):
 def onehot_to_binary_edge(mask, radius):
     """
     Convert a onehot mask (K, H, W) to a edge mask.
+
     Args:
         mask (np.ndarray): Onehot mask with shape (K, H, W)
         radius (int|float): Radius of edge.
+
     Returns:
         np.ndarray: Edge mask with shape(H, W).
     """
@@ -159,14 +163,16 @@ def onehot_to_binary_edge(mask, radius):
 def mask_to_binary_edge(mask, radius, num_classes):
     """
     Convert a segmentic segmentation mask (H, W) to a binary edge mask(H, W).
+
     Args:
         mask (np.ndarray): Label mask with shape (H, W)
         radius (int|float): Radius of edge.
         num_classes (int): Number of classes.
+
     Returns:
         np.ndarray: Edge mask with shape(H, W).
     """
     mask = mask.squeeze()
     onehot = mask_to_onehot(mask, num_classes)
     edge = onehot_to_binary_edge(onehot, radius)
-    return
+    return edge
