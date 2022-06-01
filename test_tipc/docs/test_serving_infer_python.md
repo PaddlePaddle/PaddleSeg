@@ -28,17 +28,17 @@ Linux GPU/CPU  PYTHON 服务化部署测试的主程序为`test_serving_infer_py
 
 * 配置docker
 
-拉取并进入 Paddle Serving的GPU Docker。
+拉取并进入 Paddle Serving的GPU Docker (serving0.8.0-cuda10.2-cudnn7)。
 
 ```
 nvidia-docker pull registry.baidubce.com/paddlepaddle/serving:0.8.0-cuda10.2-cudnn7-devel
-nvidia-docker run -p 9292:9292 --name test -dit registry.baidubce.com/paddlepaddle/serving:0.8.0-cuda10.2-cudnn7-devel bash
-nvidia-docker exec -it test bash
+nvidia-docker run -p 9292:9292 --name test_serving_python -dit registry.baidubce.com/paddlepaddle/serving:0.8.0-cuda10.2-cudnn7-devel bash
+nvidia-docker exec -it test_serving_python bash
 ```
 
 * 安装 PaddleServing
 
-安装PaddleServing相关组件，包括serving-server、serving_client、serving-app
+安装PaddleServing相关组件，包括serving-server、serving_client、serving-app。PaddleServing 0.8版本的详细安装说明，参考[链接](https://github.com/PaddlePaddle/Serving/blob/v0.8.3/doc/Install_CN.md)
 
 ```
 pip3.7 install paddle-serving-client==0.8.3 -i https://pypi.tuna.tsinghua.edu.cn/simple
@@ -46,13 +46,10 @@ pip3.7 install paddle-serving-app==0.8.3 -i https://pypi.tuna.tsinghua.edu.cn/si
 pip3.7 install paddle-serving-server-gpu==0.8.3.post102 -i https://pypi.tuna.tsinghua.edu.cn/simple
 ```
 
-PaddleServing 0.8版本的安装说明，参考[链接](https://github.com/PaddlePaddle/Serving/blob/v0.8.3/doc/Install_CN.md)
-
-
 * 安装PaddlePaddle
 
 ```
-# GPU CUDA 10.2环境请执行
+# GPU CUDA 10.2环境
 pip3.7 install paddlepaddle-gpu==2.2.2 -i https://pypi.tuna.tsinghua.edu.cn/simple
 ```
 
@@ -61,7 +58,7 @@ pip3.7 install paddlepaddle-gpu==2.2.2 -i https://pypi.tuna.tsinghua.edu.cn/simp
 ```
 git clone https://github.com/PaddlePaddle/PaddleSeg.git
 cd PaddleSeg
-pip3.7 install -r requirements.txt
+git checkout -b develop origin/develop
 ```
 
  ### 2.2 功能测试
@@ -76,9 +73,6 @@ bash test_tipc/test_serving_infer_python.sh ${your_params_file} serving_infer
 
 ```bash
 bash test_tipc/prepare.sh test_tipc/configs/pp_liteseg_stdc1/serving_infer_python.txt serving_infer
-```
-
-```bash
 bash test_tipc/test_serving_infer_python.sh test_tipc/configs/pp_liteseg_stdc1/serving_infer_python.txt serving_infer
 ```
 

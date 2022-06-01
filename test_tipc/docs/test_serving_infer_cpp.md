@@ -58,6 +58,7 @@ pip3.7 install paddlepaddle-gpu==2.2.2 -i https://pypi.tuna.tsinghua.edu.cn/simp
 ```
 git clone https://github.com/PaddlePaddle/PaddleSeg.git
 cd PaddleSeg
+git checkout -b develop origin/develop
 ```
 
 ### 2.2 编译安装paddle-serving-server
