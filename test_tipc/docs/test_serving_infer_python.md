@@ -9,12 +9,12 @@ Linux GPU/CPU  PYTHON 服务化部署测试的主程序为`test_serving_infer_py
 
 | 算法名称 | 模型名称 | device_CPU | device_GPU | batchsize |
 |  :----:   |  :----: |   :----:   |  :----:  |   :----:   |
-|  PP-LiteSeg   |  pp-liteSeg-stdc1 |  支持 | 支持 | 1 |
-|  PP-LiteSeg   |  pp-liteSeg-stdc2 |  支持 | 支持 | 1 |
+|  PP-LiteSeg   |  pp_liteSeg_stdc1 |  支持 | 支持 | 1 |
+|  PP-LiteSeg   |  pp_liteSeg_stdc2 |  支持 | 支持 | 1 |
 |  PP-Humanseg  |  pphumanseg_lite     |  支持 | 支持 | 1 |
-|  PP-Humanseg  |  pphumanseg_mobile   |  支持 | 支持 | 1 |
-|  PP-Humanseg  |  pphumanseg_server   |  支持 | 支持 | 1 |
-|  PP-Matting   |  pp_humanseg_matting |  支持 | 支持 | 1 |
+|  PP-Humanseg  |  fcn_hrnetw18_small   |  支持 | 支持 | 1 |
+|  PP-Humanseg  |  deeplabv3p_resnet50   |  支持 | 支持 | 1 |
+|  PP-Matting   |  ppmatting |  支持 | 支持 | 1 |
 |  FCN          |  fcn_hrnetw18     |  支持 | 支持 | 1 |
 |  OCRNet       |  ocrnet_hrnetw18  |  支持 | 支持 | 1 |
 |  OCRNet       |  ocrnet_hrnetw48  |  支持 | 支持 | 1 |
@@ -38,7 +38,7 @@ nvidia-docker exec -it test bash
 
 * 安装Python
 
-安装Python，支持Python3.6/3.7/3.8/3.9。
+安装Python，支持Python3.6/3.7/3.8/3.9，推荐python3.7。
 
 * 安装 PaddleServing
 
