@@ -1,5 +1,5 @@
 ===========================train_params===========================
-model_name:MscaleOCR
+model_name:PSANet
 python:python3
 gpu_list:0|0,1
 Global.use_gpu:null|null
