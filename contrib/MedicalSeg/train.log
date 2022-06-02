@@ -1,0 +1,1106 @@
+2022-05-30 18:57:44 [INFO]	
+------------Environment Information-------------
+platform: Linux-4.15.0-140-generic-x86_64-with-debian-stretch-sid
+Python: 3.7.4 (default, Aug 13 2019, 20:35:49) [GCC 7.3.0]
+Paddle compiled with cuda: True
+NVCC: Cuda compilation tools, release 10.1, V10.1.243
+cudnn: 7.6
+GPUs used: 1
+CUDA_VISIBLE_DEVICES: None
+GPU: ['GPU 0: Tesla V100-SXM2-32GB']
+GCC: gcc (Ubuntu 7.5.0-3ubuntu1~16.04) 7.5.0
+PaddlePaddle: 2.2.2
+------------------------------------------------
+2022-05-30 18:57:45 [INFO]	
+---------------Config Information---------------
+batch_size: 4
+data_root: PaddleSeg/contrib/MedicalSeg/data/
+iters: 30000
+loss:
+  coef:
+  - 1
+  types:
+  - coef:
+    - 1
+    - 1
+    losses:
+    - type: CrossEntropyLoss
+      weight: null
+    - type: DiceLoss
+    type: MixedLoss
+lr_scheduler:
+  decay_steps: 30000
+  end_lr: 0
+  learning_rate: 0.0001
+  power: 0.9
+  type: PolynomialDecay
+model:
+  dropout: 0.1
+  embed_dim: 768
+  img_shape: (128, 128, 128)
+  input_dim: 4
+  num_heads: 12
+  output_dim: 4
+  patch_size: 16
+  type: UNETR
+optimizer:
+  type: AdamW
+  weight_decay: 0.0001
+test_dataset:
+  dataset_json_path: PaddleSeg/contrib/MedicalSeg/data/Task01_BrainTumour/Task01_BrainTumour_raw/dataset.json
+  dataset_root: Task01_BrainTumour/Task01_BrainTumour_phase0
+  mode: test
+  num_classes: 4
+  result_dir: PaddleSeg/contrib/MedicalSeg/data/Task01_BrainTumour/Task01_BrainTumour_phase1
+  transforms: []
+  type: msd_brain_dataset
+train_dataset:
+  dataset_root: Task01_BrainTumour/Task01_BrainTumour_phase0
+  mode: train
+  num_classes: 4
+  result_dir: PaddleSeg/contrib/MedicalSeg/data/Task01_BrainTumour/Task01_BrainTumour_phase1
+  transforms:
+  - scale:
+    - 0.8
+    - 1.2
+    size: 128
+    type: RandomResizedCrop4D
+  - degrees: 90
+    rotate_planes:
+    - - 1
+      - 2
+    - - 1
+      - 3
+    - - 2
+      - 3
+    type: RandomRotation3D
+  - flip_axis:
+    - 1
+    - 2
+    - 3
+    type: RandomFlip3D
+  type: msd_brain_dataset
+val_dataset:
+  dataset_json_path: PaddleSeg/contrib/MedicalSeg/data/Task01_BrainTumour/Task01_BrainTumour_raw/dataset.json
+  dataset_root: Task01_BrainTumour/Task01_BrainTumour_phase0
+  mode: val
+  num_classes: 4
+  result_dir: PaddleSeg/contrib/MedicalSeg/data/Task01_BrainTumour/Task01_BrainTumour_phase1
+  transforms: []
+  type: msd_brain_dataset
+------------------------------------------------
+nranks数为：
+1
+0
+2022-05-30 19:01:53 [INFO]	[TRAIN] epoch: 0, iter: 60/30000, loss: 2.7774, DSC: 21.2215, lr: 0.000100, batch_cost: 4.0891, reader_cost: 2.82881, ips: 0.9782 samples/sec | ETA 34:00:26
+2022-05-30 19:05:59 [INFO]	[TRAIN] epoch: 1, iter: 120/30000, loss: 1.9712, DSC: 23.2900, lr: 0.000100, batch_cost: 4.0899, reader_cost: 2.83728, ips: 0.9780 samples/sec | ETA 33:56:46
+2022-05-30 19:10:07 [INFO]	[TRAIN] epoch: 1, iter: 180/30000, loss: 1.8218, DSC: 24.6077, lr: 0.000099, batch_cost: 4.1353, reader_cost: 2.87856, ips: 0.9673 samples/sec | ETA 34:15:13
+2022-05-30 19:14:04 [INFO]	[TRAIN] epoch: 2, iter: 240/30000, loss: 1.7327, DSC: 25.4694, lr: 0.000099, batch_cost: 3.9477, reader_cost: 2.69622, ips: 1.0132 samples/sec | ETA 32:38:04
+2022-05-30 19:17:58 [INFO]	[TRAIN] epoch: 3, iter: 300/30000, loss: 1.6734, DSC: 25.9554, lr: 0.000099, batch_cost: 3.9068, reader_cost: 2.65498, ips: 1.0239 samples/sec | ETA 32:13:50
+2022-05-30 19:17:58 [INFO]	Start evaluating (total_samples: 72, total_iters: 72)...
+2022-05-30 19:20:09 [INFO]	[EVAL] #Images: 72, Dice: 0.2255, Loss: 1.853850
+2022-05-30 19:20:09 [INFO]	[EVAL] Class dice: 
+[0.8548 0.0281 0.0101 0.0091]
+2022-05-30 19:20:18 [INFO]	[EVAL] The model with the best validation mDice (0.2255) was saved at iter 300.
+2022-05-30 19:24:01 [INFO]	[TRAIN] epoch: 3, iter: 360/30000, loss: 1.6105, DSC: 26.8175, lr: 0.000099, batch_cost: 3.7071, reader_cost: 2.44994, ips: 1.0790 samples/sec | ETA 30:31:17
+2022-05-30 19:27:47 [INFO]	[TRAIN] epoch: 4, iter: 420/30000, loss: 1.5746, DSC: 26.8629, lr: 0.000099, batch_cost: 3.7718, reader_cost: 2.51995, ips: 1.0605 samples/sec | ETA 30:59:29
+2022-05-30 19:31:44 [INFO]	[TRAIN] epoch: 4, iter: 480/30000, loss: 1.5274, DSC: 27.6113, lr: 0.000099, batch_cost: 3.9514, reader_cost: 2.69437, ips: 1.0123 samples/sec | ETA 32:24:04
+2022-05-30 19:35:36 [INFO]	[TRAIN] epoch: 5, iter: 540/30000, loss: 1.4669, DSC: 28.4067, lr: 0.000098, batch_cost: 3.8710, reader_cost: 2.61793, ips: 1.0333 samples/sec | ETA 31:40:40
+2022-05-30 19:39:30 [INFO]	[TRAIN] epoch: 6, iter: 600/30000, loss: 1.4347, DSC: 28.4214, lr: 0.000098, batch_cost: 3.8984, reader_cost: 2.64570, ips: 1.0261 samples/sec | ETA 31:50:11
+2022-05-30 19:39:30 [INFO]	Start evaluating (total_samples: 72, total_iters: 72)...
+2022-05-30 19:41:47 [INFO]	[EVAL] #Images: 72, Dice: 0.2396, Loss: 1.654862
+2022-05-30 19:41:47 [INFO]	[EVAL] Class dice: 
+[0.8867 0.0426 0.0168 0.0123]
+2022-05-30 19:41:56 [INFO]	[EVAL] The model with the best validation mDice (0.2396) was saved at iter 600.
+2022-05-30 19:45:32 [INFO]	[TRAIN] epoch: 6, iter: 660/30000, loss: 1.3859, DSC: 28.9791, lr: 0.000098, batch_cost: 3.6052, reader_cost: 2.34844, ips: 1.1095 samples/sec | ETA 29:22:58
+2022-05-30 19:49:36 [INFO]	[TRAIN] epoch: 7, iter: 720/30000, loss: 1.3253, DSC: 29.8866, lr: 0.000098, batch_cost: 4.0673, reader_cost: 2.81462, ips: 0.9834 samples/sec | ETA 33:04:51
+2022-05-30 19:53:25 [INFO]	[TRAIN] epoch: 8, iter: 780/30000, loss: 1.2753, DSC: 30.0720, lr: 0.000098, batch_cost: 3.8100, reader_cost: 2.55580, ips: 1.0499 samples/sec | ETA 30:55:29
+2022-05-30 19:57:04 [INFO]	[TRAIN] epoch: 8, iter: 840/30000, loss: 1.2252, DSC: 31.1136, lr: 0.000097, batch_cost: 3.6497, reader_cost: 2.39322, ips: 1.0960 samples/sec | ETA 29:33:44
+2022-05-30 20:00:45 [INFO]	[TRAIN] epoch: 9, iter: 900/30000, loss: 1.1785, DSC: 31.7850, lr: 0.000097, batch_cost: 3.6865, reader_cost: 2.43415, ips: 1.0850 samples/sec | ETA 29:47:57
+2022-05-30 20:00:45 [INFO]	Start evaluating (total_samples: 72, total_iters: 72)...
+2022-05-30 20:02:56 [INFO]	[EVAL] #Images: 72, Dice: 0.2539, Loss: 1.429015
+2022-05-30 20:02:56 [INFO]	[EVAL] Class dice: 
+[0.9222 0.0573 0.0251 0.011 ]
+2022-05-30 20:03:04 [INFO]	[EVAL] The model with the best validation mDice (0.2539) was saved at iter 900.
+2022-05-30 20:06:48 [INFO]	[TRAIN] epoch: 9, iter: 960/30000, loss: 1.1472, DSC: 32.0293, lr: 0.000097, batch_cost: 3.7395, reader_cost: 2.48018, ips: 1.0697 samples/sec | ETA 30:09:55
+2022-05-30 20:10:21 [INFO]	[TRAIN] epoch: 10, iter: 1020/30000, loss: 1.1004, DSC: 32.6803, lr: 0.000097, batch_cost: 3.5401, reader_cost: 2.28707, ips: 1.1299 samples/sec | ETA 28:29:52
+2022-05-30 20:14:07 [INFO]	[TRAIN] epoch: 11, iter: 1080/30000, loss: 1.0449, DSC: 33.8341, lr: 0.000097, batch_cost: 3.7620, reader_cost: 2.50962, ips: 1.0633 samples/sec | ETA 30:13:18
+2022-05-30 20:17:57 [INFO]	[TRAIN] epoch: 11, iter: 1140/30000, loss: 0.9867, DSC: 34.9441, lr: 0.000097, batch_cost: 3.8402, reader_cost: 2.58380, ips: 1.0416 samples/sec | ETA 30:47:07
+2022-05-30 20:21:14 [INFO]	[TRAIN] epoch: 12, iter: 1200/30000, loss: 0.9339, DSC: 36.1192, lr: 0.000096, batch_cost: 3.2810, reader_cost: 2.02812, ips: 1.2191 samples/sec | ETA 26:14:52
+2022-05-30 20:21:14 [INFO]	Start evaluating (total_samples: 72, total_iters: 72)...
+2022-05-30 20:23:33 [INFO]	[EVAL] #Images: 72, Dice: 0.2895, Loss: 1.026072
+2022-05-30 20:23:33 [INFO]	[EVAL] Class dice: 
+[0.95   0.1219 0.0647 0.0214]
+2022-05-30 20:23:41 [INFO]	[EVAL] The model with the best validation mDice (0.2895) was saved at iter 1200.
+2022-05-30 20:27:11 [INFO]	[TRAIN] epoch: 12, iter: 1260/30000, loss: 0.8889, DSC: 36.7690, lr: 0.000096, batch_cost: 3.5058, reader_cost: 2.24788, ips: 1.1410 samples/sec | ETA 27:59:15
+2022-05-30 20:30:51 [INFO]	[TRAIN] epoch: 13, iter: 1320/30000, loss: 0.8546, DSC: 37.8007, lr: 0.000096, batch_cost: 3.6558, reader_cost: 2.40298, ips: 1.0941 samples/sec | ETA 29:07:29
+2022-05-30 20:34:37 [INFO]	[TRAIN] epoch: 14, iter: 1380/30000, loss: 0.8264, DSC: 38.3131, lr: 0.000096, batch_cost: 3.7729, reader_cost: 2.51914, ips: 1.0602 samples/sec | ETA 29:59:41
+2022-05-30 20:38:08 [INFO]	[TRAIN] epoch: 14, iter: 1440/30000, loss: 0.7960, DSC: 39.4511, lr: 0.000096, batch_cost: 3.5101, reader_cost: 2.25340, ips: 1.1396 samples/sec | ETA 27:50:47
+2022-05-30 20:41:54 [INFO]	[TRAIN] epoch: 15, iter: 1500/30000, loss: 0.7696, DSC: 40.3341, lr: 0.000095, batch_cost: 3.7589, reader_cost: 2.50784, ips: 1.0641 samples/sec | ETA 29:45:27
+2022-05-30 20:41:54 [INFO]	Start evaluating (total_samples: 72, total_iters: 72)...
+2022-05-30 20:44:16 [INFO]	[EVAL] #Images: 72, Dice: 0.3166, Loss: 0.859510
+2022-05-30 20:44:16 [INFO]	[EVAL] Class dice: 
+[0.9616 0.1715 0.1026 0.0305]
+2022-05-30 20:44:24 [INFO]	[EVAL] The model with the best validation mDice (0.3166) was saved at iter 1500.
+2022-05-30 20:47:51 [INFO]	[TRAIN] epoch: 16, iter: 1560/30000, loss: 0.7467, DSC: 41.0283, lr: 0.000095, batch_cost: 3.4501, reader_cost: 2.19693, ips: 1.1594 samples/sec | ETA 27:15:20
+2022-05-30 20:51:40 [INFO]	[TRAIN] epoch: 16, iter: 1620/30000, loss: 0.7204, DSC: 42.3625, lr: 0.000095, batch_cost: 3.8129, reader_cost: 2.55574, ips: 1.0491 samples/sec | ETA 30:03:30
+2022-05-30 20:55:11 [INFO]	[TRAIN] epoch: 17, iter: 1680/30000, loss: 0.7074, DSC: 42.6782, lr: 0.000095, batch_cost: 3.5126, reader_cost: 2.25982, ips: 1.1388 samples/sec | ETA 27:37:55
+2022-05-30 20:58:58 [INFO]	[TRAIN] epoch: 17, iter: 1740/30000, loss: 0.6951, DSC: 43.2219, lr: 0.000095, batch_cost: 3.7902, reader_cost: 2.53068, ips: 1.0554 samples/sec | ETA 29:45:10
+2022-05-30 21:02:20 [INFO]	[TRAIN] epoch: 18, iter: 1800/30000, loss: 0.6657, DSC: 45.0321, lr: 0.000095, batch_cost: 3.3588, reader_cost: 2.10220, ips: 1.1909 samples/sec | ETA 26:18:37
+2022-05-30 21:02:20 [INFO]	Start evaluating (total_samples: 72, total_iters: 72)...
+2022-05-30 21:04:38 [INFO]	[EVAL] #Images: 72, Dice: 0.3559, Loss: 0.764009
+2022-05-30 21:04:38 [INFO]	[EVAL] Class dice: 
+[0.9674 0.25   0.1579 0.0481]
+2022-05-30 21:04:47 [INFO]	[EVAL] The model with the best validation mDice (0.3559) was saved at iter 1800.
+2022-05-30 21:08:20 [INFO]	[TRAIN] epoch: 19, iter: 1860/30000, loss: 0.6576, DSC: 45.1904, lr: 0.000094, batch_cost: 3.5370, reader_cost: 2.28045, ips: 1.1309 samples/sec | ETA 27:38:51
+2022-05-30 21:12:00 [INFO]	[TRAIN] epoch: 19, iter: 1920/30000, loss: 0.6402, DSC: 46.1278, lr: 0.000094, batch_cost: 3.6638, reader_cost: 2.40481, ips: 1.0918 samples/sec | ETA 28:34:38
+2022-05-30 21:15:41 [INFO]	[TRAIN] epoch: 20, iter: 1980/30000, loss: 0.6151, DSC: 47.9277, lr: 0.000094, batch_cost: 3.6967, reader_cost: 2.44068, ips: 1.0820 samples/sec | ETA 28:46:21
+2022-05-30 21:19:31 [INFO]	[TRAIN] epoch: 21, iter: 2040/30000, loss: 0.6093, DSC: 48.0338, lr: 0.000094, batch_cost: 3.8349, reader_cost: 2.58037, ips: 1.0431 samples/sec | ETA 29:47:03
+2022-05-30 21:23:09 [INFO]	[TRAIN] epoch: 21, iter: 2100/30000, loss: 0.5943, DSC: 49.0704, lr: 0.000094, batch_cost: 3.6239, reader_cost: 2.36361, ips: 1.1038 samples/sec | ETA 28:05:07
+2022-05-30 21:23:09 [INFO]	Start evaluating (total_samples: 72, total_iters: 72)...
+2022-05-30 21:25:28 [INFO]	[EVAL] #Images: 72, Dice: 0.3836, Loss: 0.702798
+2022-05-30 21:25:28 [INFO]	[EVAL] Class dice: 
+[0.9721 0.304  0.1932 0.0653]
+2022-05-30 21:25:37 [INFO]	[EVAL] The model with the best validation mDice (0.3836) was saved at iter 2100.
+2022-05-30 21:28:59 [INFO]	[TRAIN] epoch: 22, iter: 2160/30000, loss: 0.5575, DSC: 52.2013, lr: 0.000093, batch_cost: 3.3672, reader_cost: 2.11048, ips: 1.1879 samples/sec | ETA 26:02:23
+2022-05-30 21:32:48 [INFO]	[TRAIN] epoch: 22, iter: 2220/30000, loss: 0.5573, DSC: 51.8123, lr: 0.000093, batch_cost: 3.8048, reader_cost: 2.54497, ips: 1.0513 samples/sec | ETA 29:21:38
+2022-05-30 21:36:17 [INFO]	[TRAIN] epoch: 23, iter: 2280/30000, loss: 0.5332, DSC: 53.8186, lr: 0.000093, batch_cost: 3.4839, reader_cost: 2.22973, ips: 1.1481 samples/sec | ETA 26:49:34
+2022-05-30 21:39:39 [INFO]	[TRAIN] epoch: 24, iter: 2340/30000, loss: 0.5262, DSC: 53.9384, lr: 0.000093, batch_cost: 3.3677, reader_cost: 2.11286, ips: 1.1878 samples/sec | ETA 25:52:29
+2022-05-30 21:43:19 [INFO]	[TRAIN] epoch: 24, iter: 2400/30000, loss: 0.5118, DSC: 54.9593, lr: 0.000093, batch_cost: 3.6632, reader_cost: 2.40493, ips: 1.0919 samples/sec | ETA 28:05:05
+2022-05-30 21:43:19 [INFO]	Start evaluating (total_samples: 72, total_iters: 72)...
+2022-05-30 21:45:45 [INFO]	[EVAL] #Images: 72, Dice: 0.4305, Loss: 0.629226
+2022-05-30 21:45:45 [INFO]	[EVAL] Class dice: 
+[0.9769 0.3361 0.2816 0.1273]
+2022-05-30 21:45:53 [INFO]	[EVAL] The model with the best validation mDice (0.4305) was saved at iter 2400.
+2022-05-30 21:48:58 [INFO]	[TRAIN] epoch: 25, iter: 2460/30000, loss: 0.4858, DSC: 57.4362, lr: 0.000093, batch_cost: 3.0848, reader_cost: 1.82759, ips: 1.2967 samples/sec | ETA 23:35:54
+2022-05-30 21:52:45 [INFO]	[TRAIN] epoch: 25, iter: 2520/30000, loss: 0.4691, DSC: 58.6222, lr: 0.000092, batch_cost: 3.7847, reader_cost: 2.52564, ips: 1.0569 samples/sec | ETA 28:53:22
+2022-05-30 21:56:26 [INFO]	[TRAIN] epoch: 26, iter: 2580/30000, loss: 0.4536, DSC: 59.9004, lr: 0.000092, batch_cost: 3.6881, reader_cost: 2.43350, ips: 1.0846 samples/sec | ETA 28:05:28
+2022-05-30 22:00:09 [INFO]	[TRAIN] epoch: 27, iter: 2640/30000, loss: 0.4318, DSC: 61.9675, lr: 0.000092, batch_cost: 3.7067, reader_cost: 2.45298, ips: 1.0791 samples/sec | ETA 28:10:14
+2022-05-30 22:03:54 [INFO]	[TRAIN] epoch: 27, iter: 2700/30000, loss: 0.4308, DSC: 61.9245, lr: 0.000092, batch_cost: 3.7618, reader_cost: 2.50267, ips: 1.0633 samples/sec | ETA 28:31:36
+2022-05-30 22:03:54 [INFO]	Start evaluating (total_samples: 72, total_iters: 72)...
+2022-05-30 22:06:34 [INFO]	[EVAL] #Images: 72, Dice: 0.4931, Loss: 0.552814
+2022-05-30 22:06:34 [INFO]	[EVAL] Class dice: 
+[0.9808 0.4033 0.3269 0.2615]
+2022-05-30 22:06:47 [INFO]	[EVAL] The model with the best validation mDice (0.4931) was saved at iter 2700.
+2022-05-30 22:10:18 [INFO]	[TRAIN] epoch: 28, iter: 2760/30000, loss: 0.3982, DSC: 64.8454, lr: 0.000092, batch_cost: 3.5243, reader_cost: 2.26230, ips: 1.1350 samples/sec | ETA 26:40:03
+2022-05-30 22:13:36 [INFO]	[TRAIN] epoch: 29, iter: 2820/30000, loss: 0.3664, DSC: 67.5455, lr: 0.000092, batch_cost: 3.2978, reader_cost: 2.03907, ips: 1.2129 samples/sec | ETA 24:53:55
+2022-05-30 22:17:17 [INFO]	[TRAIN] epoch: 29, iter: 2880/30000, loss: 0.3652, DSC: 67.3342, lr: 0.000091, batch_cost: 3.6789, reader_cost: 2.41636, ips: 1.0873 samples/sec | ETA 27:42:50
+2022-05-30 22:20:44 [INFO]	[TRAIN] epoch: 30, iter: 2940/30000, loss: 0.3747, DSC: 66.2976, lr: 0.000091, batch_cost: 3.4519, reader_cost: 2.19265, ips: 1.1588 samples/sec | ETA 25:56:48
+2022-05-30 22:24:40 [INFO]	[TRAIN] epoch: 30, iter: 3000/30000, loss: 0.3338, DSC: 70.1074, lr: 0.000091, batch_cost: 3.9308, reader_cost: 2.66957, ips: 1.0176 samples/sec | ETA 29:28:50
+2022-05-30 22:24:40 [INFO]	Start evaluating (total_samples: 72, total_iters: 72)...
+2022-05-30 22:26:53 [INFO]	[EVAL] #Images: 72, Dice: 0.5502, Loss: 0.476639
+2022-05-30 22:26:53 [INFO]	[EVAL] Class dice: 
+[0.9876 0.4514 0.3671 0.3946]
+2022-05-30 22:27:02 [INFO]	[EVAL] The model with the best validation mDice (0.5502) was saved at iter 3000.
+2022-05-30 22:30:24 [INFO]	[TRAIN] epoch: 31, iter: 3060/30000, loss: 0.3275, DSC: 70.5862, lr: 0.000091, batch_cost: 3.3619, reader_cost: 2.10238, ips: 1.1898 samples/sec | ETA 25:09:28
+2022-05-30 22:33:47 [INFO]	[TRAIN] epoch: 32, iter: 3120/30000, loss: 0.3256, DSC: 70.5158, lr: 0.000091, batch_cost: 3.3872, reader_cost: 2.12915, ips: 1.1809 samples/sec | ETA 25:17:28
+2022-05-30 22:37:23 [INFO]	[TRAIN] epoch: 32, iter: 3180/30000, loss: 0.2864, DSC: 74.2311, lr: 0.000090, batch_cost: 3.6068, reader_cost: 2.34208, ips: 1.1090 samples/sec | ETA 26:52:14
+2022-05-30 22:41:07 [INFO]	[TRAIN] epoch: 33, iter: 3240/30000, loss: 0.2824, DSC: 74.5594, lr: 0.000090, batch_cost: 3.7273, reader_cost: 2.47030, ips: 1.0731 samples/sec | ETA 27:42:23
+2022-05-30 22:44:54 [INFO]	[TRAIN] epoch: 34, iter: 3300/30000, loss: 0.2902, DSC: 73.8010, lr: 0.000090, batch_cost: 3.7783, reader_cost: 2.52044, ips: 1.0587 samples/sec | ETA 28:01:20
+2022-05-30 22:44:54 [INFO]	Start evaluating (total_samples: 72, total_iters: 72)...
+2022-05-30 22:47:04 [INFO]	[EVAL] #Images: 72, Dice: 0.6126, Loss: 0.405915
+2022-05-30 22:47:04 [INFO]	[EVAL] Class dice: 
+[0.9898 0.551  0.4274 0.4823]
+2022-05-30 22:47:13 [INFO]	[EVAL] The model with the best validation mDice (0.6126) was saved at iter 3300.
+2022-05-30 22:50:41 [INFO]	[TRAIN] epoch: 34, iter: 3360/30000, loss: 0.2867, DSC: 74.0243, lr: 0.000090, batch_cost: 3.4647, reader_cost: 2.20086, ips: 1.1545 samples/sec | ETA 25:38:18
+2022-05-30 22:54:02 [INFO]	[TRAIN] epoch: 35, iter: 3420/30000, loss: 0.2908, DSC: 73.4943, lr: 0.000090, batch_cost: 3.3522, reader_cost: 2.09310, ips: 1.1933 samples/sec | ETA 24:45:00
+2022-05-30 22:57:57 [INFO]	[TRAIN] epoch: 35, iter: 3480/30000, loss: 0.2720, DSC: 75.2099, lr: 0.000089, batch_cost: 3.9142, reader_cost: 2.65146, ips: 1.0219 samples/sec | ETA 28:50:03
+2022-05-30 23:01:20 [INFO]	[TRAIN] epoch: 36, iter: 3540/30000, loss: 0.2768, DSC: 74.6705, lr: 0.000089, batch_cost: 3.3864, reader_cost: 2.12928, ips: 1.1812 samples/sec | ETA 24:53:23
+2022-05-30 23:05:12 [INFO]	[TRAIN] epoch: 37, iter: 3600/30000, loss: 0.2537, DSC: 76.9994, lr: 0.000089, batch_cost: 3.8543, reader_cost: 2.59752, ips: 1.0378 samples/sec | ETA 28:15:53
+2022-05-30 23:05:12 [INFO]	Start evaluating (total_samples: 72, total_iters: 72)...
+2022-05-30 23:07:27 [INFO]	[EVAL] #Images: 72, Dice: 0.6361, Loss: 0.379156
+2022-05-30 23:07:27 [INFO]	[EVAL] Class dice: 
+[0.9913 0.5847 0.4422 0.5263]
+2022-05-30 23:07:35 [INFO]	[EVAL] The model with the best validation mDice (0.6361) was saved at iter 3600.
+2022-05-30 23:11:01 [INFO]	[TRAIN] epoch: 37, iter: 3660/30000, loss: 0.2578, DSC: 76.4904, lr: 0.000089, batch_cost: 3.4350, reader_cost: 2.17369, ips: 1.1645 samples/sec | ETA 25:07:58
+2022-05-30 23:14:33 [INFO]	[TRAIN] epoch: 38, iter: 3720/30000, loss: 0.2724, DSC: 75.0576, lr: 0.000089, batch_cost: 3.5299, reader_cost: 2.27509, ips: 1.1332 samples/sec | ETA 25:46:05
+2022-05-30 23:18:20 [INFO]	[TRAIN] epoch: 38, iter: 3780/30000, loss: 0.2471, DSC: 77.4402, lr: 0.000089, batch_cost: 3.7754, reader_cost: 2.51716, ips: 1.0595 samples/sec | ETA 27:29:50
+2022-05-30 23:21:58 [INFO]	[TRAIN] epoch: 39, iter: 3840/30000, loss: 0.2516, DSC: 76.9529, lr: 0.000088, batch_cost: 3.6429, reader_cost: 2.38864, ips: 1.0980 samples/sec | ETA 26:28:18
+2022-05-30 23:25:29 [INFO]	[TRAIN] epoch: 40, iter: 3900/30000, loss: 0.2637, DSC: 75.7842, lr: 0.000088, batch_cost: 3.5160, reader_cost: 2.26191, ips: 1.1377 samples/sec | ETA 25:29:27
+2022-05-30 23:25:29 [INFO]	Start evaluating (total_samples: 72, total_iters: 72)...
+2022-05-30 23:27:44 [INFO]	[EVAL] #Images: 72, Dice: 0.6595, Loss: 0.352905
+2022-05-30 23:27:44 [INFO]	[EVAL] Class dice: 
+[0.9926 0.6264 0.4572 0.5619]
+2022-05-30 23:27:53 [INFO]	[EVAL] The model with the best validation mDice (0.6595) was saved at iter 3900.
+2022-05-30 23:31:34 [INFO]	[TRAIN] epoch: 40, iter: 3960/30000, loss: 0.2523, DSC: 76.8045, lr: 0.000088, batch_cost: 3.6782, reader_cost: 2.41834, ips: 1.0875 samples/sec | ETA 26:36:19
+2022-05-30 23:34:57 [INFO]	[TRAIN] epoch: 41, iter: 4020/30000, loss: 0.2458, DSC: 77.1686, lr: 0.000088, batch_cost: 3.3903, reader_cost: 2.13441, ips: 1.1798 samples/sec | ETA 24:28:00
+2022-05-30 23:38:38 [INFO]	[TRAIN] epoch: 42, iter: 4080/30000, loss: 0.2455, DSC: 77.5615, lr: 0.000088, batch_cost: 3.6829, reader_cost: 2.42780, ips: 1.0861 samples/sec | ETA 26:31:00
+2022-05-30 23:42:13 [INFO]	[TRAIN] epoch: 42, iter: 4140/30000, loss: 0.2500, DSC: 76.8956, lr: 0.000087, batch_cost: 3.5858, reader_cost: 2.32734, ips: 1.1155 samples/sec | ETA 25:45:29
+2022-05-30 23:45:39 [INFO]	[TRAIN] epoch: 43, iter: 4200/30000, loss: 0.2387, DSC: 77.9541, lr: 0.000087, batch_cost: 3.4246, reader_cost: 2.16924, ips: 1.1680 samples/sec | ETA 24:32:33
+2022-05-30 23:45:39 [INFO]	Start evaluating (total_samples: 72, total_iters: 72)...
+2022-05-30 23:47:55 [INFO]	[EVAL] #Images: 72, Dice: 0.6877, Loss: 0.322845
+2022-05-30 23:47:55 [INFO]	[EVAL] Class dice: 
+[0.9934 0.6734 0.495  0.5892]
+2022-05-30 23:48:03 [INFO]	[EVAL] The model with the best validation mDice (0.6877) was saved at iter 4200.
+2022-05-30 23:51:52 [INFO]	[TRAIN] epoch: 43, iter: 4260/30000, loss: 0.2357, DSC: 78.2482, lr: 0.000087, batch_cost: 3.8105, reader_cost: 2.55003, ips: 1.0497 samples/sec | ETA 27:14:41
+2022-05-30 23:55:19 [INFO]	[TRAIN] epoch: 44, iter: 4320/30000, loss: 0.2360, DSC: 78.2003, lr: 0.000087, batch_cost: 3.4466, reader_cost: 2.19037, ips: 1.1606 samples/sec | ETA 24:35:09
+2022-05-30 23:59:08 [INFO]	[TRAIN] epoch: 45, iter: 4380/30000, loss: 0.2349, DSC: 78.4132, lr: 0.000087, batch_cost: 3.8151, reader_cost: 2.56141, ips: 1.0485 samples/sec | ETA 27:09:04
+2022-05-31 00:02:40 [INFO]	[TRAIN] epoch: 45, iter: 4440/30000, loss: 0.2366, DSC: 78.0807, lr: 0.000087, batch_cost: 3.5382, reader_cost: 2.27983, ips: 1.1305 samples/sec | ETA 25:07:15
+2022-05-31 00:06:22 [INFO]	[TRAIN] epoch: 46, iter: 4500/30000, loss: 0.2258, DSC: 79.1808, lr: 0.000086, batch_cost: 3.7045, reader_cost: 2.45039, ips: 1.0798 samples/sec | ETA 26:14:23
+2022-05-31 00:06:22 [INFO]	Start evaluating (total_samples: 72, total_iters: 72)...
+2022-05-31 00:08:46 [INFO]	[EVAL] #Images: 72, Dice: 0.6821, Loss: 0.328806
+2022-05-31 00:08:46 [INFO]	[EVAL] Class dice: 
+[0.9937 0.6788 0.4632 0.5927]
+2022-05-31 00:08:50 [INFO]	[EVAL] The model with the best validation mDice (0.6877) was saved at iter 4200.
+2022-05-31 00:12:14 [INFO]	[TRAIN] epoch: 47, iter: 4560/30000, loss: 0.2362, DSC: 78.1814, lr: 0.000086, batch_cost: 3.3987, reader_cost: 2.14233, ips: 1.1769 samples/sec | ETA 24:01:02
+2022-05-31 00:15:30 [INFO]	[TRAIN] epoch: 47, iter: 4620/30000, loss: 0.2319, DSC: 78.6105, lr: 0.000086, batch_cost: 3.2561, reader_cost: 1.99522, ips: 1.2285 samples/sec | ETA 22:57:20
+2022-05-31 00:19:19 [INFO]	[TRAIN] epoch: 48, iter: 4680/30000, loss: 0.2286, DSC: 78.9027, lr: 0.000086, batch_cost: 3.8178, reader_cost: 2.56374, ips: 1.0477 samples/sec | ETA 26:51:07
+2022-05-31 00:22:57 [INFO]	[TRAIN] epoch: 48, iter: 4740/30000, loss: 0.2222, DSC: 79.4034, lr: 0.000086, batch_cost: 3.6333, reader_cost: 2.37468, ips: 1.1009 samples/sec | ETA 25:29:38
+2022-05-31 00:26:40 [INFO]	[TRAIN] epoch: 49, iter: 4800/30000, loss: 0.2402, DSC: 77.7901, lr: 0.000085, batch_cost: 3.7216, reader_cost: 2.46742, ips: 1.0748 samples/sec | ETA 26:03:03
+2022-05-31 00:26:40 [INFO]	Start evaluating (total_samples: 72, total_iters: 72)...
+2022-05-31 00:28:59 [INFO]	[EVAL] #Images: 72, Dice: 0.6926, Loss: 0.316342
+2022-05-31 00:28:59 [INFO]	[EVAL] Class dice: 
+[0.994  0.6642 0.5122 0.6001]
+2022-05-31 00:29:07 [INFO]	[EVAL] The model with the best validation mDice (0.6926) was saved at iter 4800.
+2022-05-31 00:32:27 [INFO]	[TRAIN] epoch: 50, iter: 4860/30000, loss: 0.2348, DSC: 78.1370, lr: 0.000085, batch_cost: 3.3203, reader_cost: 2.06406, ips: 1.2047 samples/sec | ETA 23:11:12
+2022-05-31 00:35:56 [INFO]	[TRAIN] epoch: 50, iter: 4920/30000, loss: 0.2241, DSC: 79.2341, lr: 0.000085, batch_cost: 3.4838, reader_cost: 2.22549, ips: 1.1482 samples/sec | ETA 24:16:14
+2022-05-31 00:39:48 [INFO]	[TRAIN] epoch: 51, iter: 4980/30000, loss: 0.2199, DSC: 79.5833, lr: 0.000085, batch_cost: 3.8639, reader_cost: 2.60877, ips: 1.0352 samples/sec | ETA 26:51:15
+2022-05-31 00:43:21 [INFO]	[TRAIN] epoch: 51, iter: 5040/30000, loss: 0.2289, DSC: 78.7418, lr: 0.000085, batch_cost: 3.5624, reader_cost: 2.30313, ips: 1.1229 samples/sec | ETA 24:41:56
+2022-05-31 00:47:05 [INFO]	[TRAIN] epoch: 52, iter: 5100/30000, loss: 0.2214, DSC: 79.3590, lr: 0.000085, batch_cost: 3.7236, reader_cost: 2.47020, ips: 1.0742 samples/sec | ETA 25:45:18
+2022-05-31 00:47:05 [INFO]	Start evaluating (total_samples: 72, total_iters: 72)...
+2022-05-31 00:49:23 [INFO]	[EVAL] #Images: 72, Dice: 0.7057, Loss: 0.302490
+2022-05-31 00:49:23 [INFO]	[EVAL] Class dice: 
+[0.9944 0.6773 0.516  0.6352]
+2022-05-31 00:49:31 [INFO]	[EVAL] The model with the best validation mDice (0.7057) was saved at iter 5100.
+2022-05-31 00:52:47 [INFO]	[TRAIN] epoch: 53, iter: 5160/30000, loss: 0.2165, DSC: 79.9013, lr: 0.000084, batch_cost: 3.2658, reader_cost: 2.00888, ips: 1.2248 samples/sec | ETA 22:32:03
+2022-05-31 00:56:24 [INFO]	[TRAIN] epoch: 53, iter: 5220/30000, loss: 0.2253, DSC: 78.9758, lr: 0.000084, batch_cost: 3.6077, reader_cost: 2.34913, ips: 1.1087 samples/sec | ETA 24:49:59
+2022-05-31 00:59:56 [INFO]	[TRAIN] epoch: 54, iter: 5280/30000, loss: 0.2229, DSC: 79.4475, lr: 0.000084, batch_cost: 3.5365, reader_cost: 2.28188, ips: 1.1310 samples/sec | ETA 24:17:03
+2022-05-31 01:03:46 [INFO]	[TRAIN] epoch: 55, iter: 5340/30000, loss: 0.2117, DSC: 80.3484, lr: 0.000084, batch_cost: 3.8244, reader_cost: 2.57007, ips: 1.0459 samples/sec | ETA 26:11:49
+2022-05-31 01:07:34 [INFO]	[TRAIN] epoch: 55, iter: 5400/30000, loss: 0.2134, DSC: 80.1514, lr: 0.000084, batch_cost: 3.8123, reader_cost: 2.55445, ips: 1.0492 samples/sec | ETA 26:03:01
+2022-05-31 01:07:34 [INFO]	Start evaluating (total_samples: 72, total_iters: 72)...
+2022-05-31 01:09:47 [INFO]	[EVAL] #Images: 72, Dice: 0.7139, Loss: 0.293613
+2022-05-31 01:09:47 [INFO]	[EVAL] Class dice: 
+[0.9949 0.7087 0.5086 0.6434]
+2022-05-31 01:09:56 [INFO]	[EVAL] The model with the best validation mDice (0.7139) was saved at iter 5400.
+2022-05-31 01:13:24 [INFO]	[TRAIN] epoch: 56, iter: 5460/30000, loss: 0.2109, DSC: 80.4614, lr: 0.000083, batch_cost: 3.4693, reader_cost: 2.21175, ips: 1.1530 samples/sec | ETA 23:38:57
+2022-05-31 01:17:02 [INFO]	[TRAIN] epoch: 56, iter: 5520/30000, loss: 0.2094, DSC: 80.6506, lr: 0.000083, batch_cost: 3.6288, reader_cost: 2.36835, ips: 1.1023 samples/sec | ETA 24:40:33
+2022-05-31 01:20:32 [INFO]	[TRAIN] epoch: 57, iter: 5580/30000, loss: 0.2100, DSC: 80.5293, lr: 0.000083, batch_cost: 3.5071, reader_cost: 2.25221, ips: 1.1405 samples/sec | ETA 23:47:23
+2022-05-31 01:24:20 [INFO]	[TRAIN] epoch: 58, iter: 5640/30000, loss: 0.2052, DSC: 80.8547, lr: 0.000083, batch_cost: 3.7874, reader_cost: 2.53216, ips: 1.0561 samples/sec | ETA 25:37:41
+2022-05-31 01:27:53 [INFO]	[TRAIN] epoch: 58, iter: 5700/30000, loss: 0.2160, DSC: 79.9505, lr: 0.000083, batch_cost: 3.5591, reader_cost: 2.30116, ips: 1.1239 samples/sec | ETA 24:01:26
+2022-05-31 01:27:53 [INFO]	Start evaluating (total_samples: 72, total_iters: 72)...
+2022-05-31 01:30:14 [INFO]	[EVAL] #Images: 72, Dice: 0.6876, Loss: 0.321486
+2022-05-31 01:30:14 [INFO]	[EVAL] Class dice: 
+[0.9947 0.6737 0.4719 0.6099]
+2022-05-31 01:30:19 [INFO]	[EVAL] The model with the best validation mDice (0.7139) was saved at iter 5400.
+2022-05-31 01:33:43 [INFO]	[TRAIN] epoch: 59, iter: 5760/30000, loss: 0.2032, DSC: 81.0471, lr: 0.000083, batch_cost: 3.4095, reader_cost: 2.15252, ips: 1.1732 samples/sec | ETA 22:57:26
+2022-05-31 01:37:04 [INFO]	[TRAIN] epoch: 60, iter: 5820/30000, loss: 0.2070, DSC: 80.8239, lr: 0.000082, batch_cost: 3.3441, reader_cost: 2.08750, ips: 1.1961 samples/sec | ETA 22:27:39
+2022-05-31 01:40:28 [INFO]	[TRAIN] epoch: 60, iter: 5880/30000, loss: 0.2082, DSC: 80.5533, lr: 0.000082, batch_cost: 3.4048, reader_cost: 2.14645, ips: 1.1748 samples/sec | ETA 22:48:42
+2022-05-31 01:44:23 [INFO]	[TRAIN] epoch: 61, iter: 5940/30000, loss: 0.2080, DSC: 80.6642, lr: 0.000082, batch_cost: 3.9093, reader_cost: 2.65453, ips: 1.0232 samples/sec | ETA 26:07:36
+2022-05-31 01:48:08 [INFO]	[TRAIN] epoch: 61, iter: 6000/30000, loss: 0.2085, DSC: 80.4544, lr: 0.000082, batch_cost: 3.7525, reader_cost: 2.49450, ips: 1.0660 samples/sec | ETA 25:01:00
+2022-05-31 01:48:08 [INFO]	Start evaluating (total_samples: 72, total_iters: 72)...
+2022-05-31 01:50:22 [INFO]	[EVAL] #Images: 72, Dice: 0.7253, Loss: 0.282235
+2022-05-31 01:50:22 [INFO]	[EVAL] Class dice: 
+[0.9956 0.7192 0.5357 0.6509]
+2022-05-31 01:50:30 [INFO]	[EVAL] The model with the best validation mDice (0.7253) was saved at iter 6000.
+2022-05-31 01:53:47 [INFO]	[TRAIN] epoch: 62, iter: 6060/30000, loss: 0.2044, DSC: 81.1102, lr: 0.000082, batch_cost: 3.2849, reader_cost: 2.02889, ips: 1.2177 samples/sec | ETA 21:50:39
+2022-05-31 01:57:22 [INFO]	[TRAIN] epoch: 63, iter: 6120/30000, loss: 0.2032, DSC: 81.0975, lr: 0.000081, batch_cost: 3.5768, reader_cost: 2.32028, ips: 1.1183 samples/sec | ETA 23:43:34
+2022-05-31 02:01:01 [INFO]	[TRAIN] epoch: 63, iter: 6180/30000, loss: 0.2064, DSC: 80.8001, lr: 0.000081, batch_cost: 3.6428, reader_cost: 2.38394, ips: 1.0981 samples/sec | ETA 24:06:10
+2022-05-31 02:04:23 [INFO]	[TRAIN] epoch: 64, iter: 6240/30000, loss: 0.2046, DSC: 81.0879, lr: 0.000081, batch_cost: 3.3704, reader_cost: 2.11599, ips: 1.1868 samples/sec | ETA 22:14:41
+2022-05-31 02:08:13 [INFO]	[TRAIN] epoch: 64, iter: 6300/30000, loss: 0.2174, DSC: 79.7962, lr: 0.000081, batch_cost: 3.8363, reader_cost: 2.57749, ips: 1.0427 samples/sec | ETA 25:15:19
+2022-05-31 02:08:13 [INFO]	Start evaluating (total_samples: 72, total_iters: 72)...
+2022-05-31 02:10:23 [INFO]	[EVAL] #Images: 72, Dice: 0.7194, Loss: 0.287683
+2022-05-31 02:10:23 [INFO]	[EVAL] Class dice: 
+[0.9955 0.7224 0.5133 0.6463]
+2022-05-31 02:10:28 [INFO]	[EVAL] The model with the best validation mDice (0.7253) was saved at iter 6000.
+2022-05-31 02:13:50 [INFO]	[TRAIN] epoch: 65, iter: 6360/30000, loss: 0.2139, DSC: 79.9512, lr: 0.000081, batch_cost: 3.3771, reader_cost: 2.12114, ips: 1.1845 samples/sec | ETA 22:10:33
+2022-05-31 02:17:22 [INFO]	[TRAIN] epoch: 66, iter: 6420/30000, loss: 0.1933, DSC: 82.0687, lr: 0.000081, batch_cost: 3.5219, reader_cost: 2.26810, ips: 1.1358 samples/sec | ETA 23:04:06
+2022-05-31 02:21:05 [INFO]	[TRAIN] epoch: 66, iter: 6480/30000, loss: 0.1924, DSC: 82.0659, lr: 0.000080, batch_cost: 3.7178, reader_cost: 2.45889, ips: 1.0759 samples/sec | ETA 24:17:22
+2022-05-31 02:24:40 [INFO]	[TRAIN] epoch: 67, iter: 6540/30000, loss: 0.2224, DSC: 79.2144, lr: 0.000080, batch_cost: 3.5799, reader_cost: 2.32512, ips: 1.1173 samples/sec | ETA 23:19:45
+2022-05-31 02:28:24 [INFO]	[TRAIN] epoch: 68, iter: 6600/30000, loss: 0.1923, DSC: 82.1916, lr: 0.000080, batch_cost: 3.7396, reader_cost: 2.48212, ips: 1.0696 samples/sec | ETA 24:18:26
+2022-05-31 02:28:24 [INFO]	Start evaluating (total_samples: 72, total_iters: 72)...
+2022-05-31 02:30:45 [INFO]	[EVAL] #Images: 72, Dice: 0.7116, Loss: 0.296545
+2022-05-31 02:30:45 [INFO]	[EVAL] Class dice: 
+[0.9962 0.7029 0.4921 0.6552]
+2022-05-31 02:30:50 [INFO]	[EVAL] The model with the best validation mDice (0.7253) was saved at iter 6000.
+2022-05-31 02:34:06 [INFO]	[TRAIN] epoch: 68, iter: 6660/30000, loss: 0.1962, DSC: 81.6668, lr: 0.000080, batch_cost: 3.2671, reader_cost: 2.00521, ips: 1.2243 samples/sec | ETA 21:10:54
+2022-05-31 02:37:30 [INFO]	[TRAIN] epoch: 69, iter: 6720/30000, loss: 0.2075, DSC: 80.5601, lr: 0.000080, batch_cost: 3.4022, reader_cost: 2.14628, ips: 1.1757 samples/sec | ETA 22:00:03
+2022-05-31 02:41:21 [INFO]	[TRAIN] epoch: 69, iter: 6780/30000, loss: 0.1928, DSC: 82.0749, lr: 0.000079, batch_cost: 3.8573, reader_cost: 2.59890, ips: 1.0370 samples/sec | ETA 24:52:47
+2022-05-31 02:45:08 [INFO]	[TRAIN] epoch: 70, iter: 6840/30000, loss: 0.2057, DSC: 80.7921, lr: 0.000079, batch_cost: 3.7788, reader_cost: 2.52494, ips: 1.0585 samples/sec | ETA 24:18:36
+2022-05-31 02:48:37 [INFO]	[TRAIN] epoch: 71, iter: 6900/30000, loss: 0.2031, DSC: 81.0996, lr: 0.000079, batch_cost: 3.4809, reader_cost: 2.22566, ips: 1.1491 samples/sec | ETA 22:20:09
+2022-05-31 02:48:37 [INFO]	Start evaluating (total_samples: 72, total_iters: 72)...
+2022-05-31 02:51:00 [INFO]	[EVAL] #Images: 72, Dice: 0.7184, Loss: 0.288328
+2022-05-31 02:51:00 [INFO]	[EVAL] Class dice: 
+[0.9958 0.7061 0.5194 0.6524]
+2022-05-31 02:51:04 [INFO]	[EVAL] The model with the best validation mDice (0.7253) was saved at iter 6000.
+2022-05-31 02:54:37 [INFO]	[TRAIN] epoch: 71, iter: 6960/30000, loss: 0.1939, DSC: 81.8680, lr: 0.000079, batch_cost: 3.5477, reader_cost: 2.28583, ips: 1.1275 samples/sec | ETA 22:42:18
+2022-05-31 02:58:11 [INFO]	[TRAIN] epoch: 72, iter: 7020/30000, loss: 0.2065, DSC: 80.7678, lr: 0.000079, batch_cost: 3.5660, reader_cost: 2.31012, ips: 1.1217 samples/sec | ETA 22:45:47
+2022-05-31 03:01:55 [INFO]	[TRAIN] epoch: 72, iter: 7080/30000, loss: 0.1828, DSC: 82.9727, lr: 0.000078, batch_cost: 3.7264, reader_cost: 2.46907, ips: 1.0734 samples/sec | ETA 23:43:29
+2022-05-31 03:05:36 [INFO]	[TRAIN] epoch: 73, iter: 7140/30000, loss: 0.2123, DSC: 80.1430, lr: 0.000078, batch_cost: 3.6854, reader_cost: 2.43072, ips: 1.0854 samples/sec | ETA 23:24:08
+2022-05-31 03:09:06 [INFO]	[TRAIN] epoch: 74, iter: 7200/30000, loss: 0.1885, DSC: 82.6539, lr: 0.000078, batch_cost: 3.5032, reader_cost: 2.24961, ips: 1.1418 samples/sec | ETA 22:11:12
+2022-05-31 03:09:06 [INFO]	Start evaluating (total_samples: 72, total_iters: 72)...
+2022-05-31 03:11:23 [INFO]	[EVAL] #Images: 72, Dice: 0.7317, Loss: 0.275208
+2022-05-31 03:11:23 [INFO]	[EVAL] Class dice: 
+[0.9957 0.7288 0.5543 0.6479]
+2022-05-31 03:11:31 [INFO]	[EVAL] The model with the best validation mDice (0.7317) was saved at iter 7200.
+2022-05-31 03:15:00 [INFO]	[TRAIN] epoch: 74, iter: 7260/30000, loss: 0.2020, DSC: 81.1329, lr: 0.000078, batch_cost: 3.4729, reader_cost: 2.21178, ips: 1.1518 samples/sec | ETA 21:56:14
+2022-05-31 03:18:44 [INFO]	[TRAIN] epoch: 75, iter: 7320/30000, loss: 0.2070, DSC: 80.6970, lr: 0.000078, batch_cost: 3.7296, reader_cost: 2.47586, ips: 1.0725 samples/sec | ETA 23:29:47
+2022-05-31 03:22:21 [INFO]	[TRAIN] epoch: 76, iter: 7380/30000, loss: 0.2047, DSC: 80.9434, lr: 0.000078, batch_cost: 3.6297, reader_cost: 2.37443, ips: 1.1020 samples/sec | ETA 22:48:24
+2022-05-31 03:26:12 [INFO]	[TRAIN] epoch: 76, iter: 7440/30000, loss: 0.1991, DSC: 81.4300, lr: 0.000077, batch_cost: 3.8388, reader_cost: 2.57993, ips: 1.0420 samples/sec | ETA 24:03:24
+2022-05-31 03:29:47 [INFO]	[TRAIN] epoch: 77, iter: 7500/30000, loss: 0.1805, DSC: 83.2100, lr: 0.000077, batch_cost: 3.5833, reader_cost: 2.32741, ips: 1.1163 samples/sec | ETA 22:23:44
+2022-05-31 03:29:47 [INFO]	Start evaluating (total_samples: 72, total_iters: 72)...
+2022-05-31 03:32:03 [INFO]	[EVAL] #Images: 72, Dice: 0.7062, Loss: 0.301179
+2022-05-31 03:32:03 [INFO]	[EVAL] Class dice: 
+[0.9959 0.6948 0.5001 0.6342]
+2022-05-31 03:32:08 [INFO]	[EVAL] The model with the best validation mDice (0.7317) was saved at iter 7200.
+2022-05-31 03:35:47 [INFO]	[TRAIN] epoch: 77, iter: 7560/30000, loss: 0.1965, DSC: 81.7258, lr: 0.000077, batch_cost: 3.6419, reader_cost: 2.38147, ips: 1.0983 samples/sec | ETA 22:42:03
+2022-05-31 03:39:12 [INFO]	[TRAIN] epoch: 78, iter: 7620/30000, loss: 0.1978, DSC: 81.5304, lr: 0.000077, batch_cost: 3.4247, reader_cost: 2.17107, ips: 1.1680 samples/sec | ETA 21:17:25
+2022-05-31 03:42:51 [INFO]	[TRAIN] epoch: 79, iter: 7680/30000, loss: 0.1987, DSC: 81.3607, lr: 0.000077, batch_cost: 3.6418, reader_cost: 2.38748, ips: 1.0984 samples/sec | ETA 22:34:45
+2022-05-31 03:46:25 [INFO]	[TRAIN] epoch: 79, iter: 7740/30000, loss: 0.1963, DSC: 81.7303, lr: 0.000076, batch_cost: 3.5790, reader_cost: 2.31884, ips: 1.1176 samples/sec | ETA 22:07:48
+2022-05-31 03:49:58 [INFO]	[TRAIN] epoch: 80, iter: 7800/30000, loss: 0.1901, DSC: 82.2852, lr: 0.000076, batch_cost: 3.5443, reader_cost: 2.28849, ips: 1.1286 samples/sec | ETA 21:51:22
+2022-05-31 03:49:58 [INFO]	Start evaluating (total_samples: 72, total_iters: 72)...
+2022-05-31 03:52:17 [INFO]	[EVAL] #Images: 72, Dice: 0.6988, Loss: 0.309238
+2022-05-31 03:52:17 [INFO]	[EVAL] Class dice: 
+[0.9956 0.6659 0.502  0.6317]
+2022-05-31 03:52:22 [INFO]	[EVAL] The model with the best validation mDice (0.7317) was saved at iter 7200.
+2022-05-31 03:55:58 [INFO]	[TRAIN] epoch: 81, iter: 7860/30000, loss: 0.1986, DSC: 81.5178, lr: 0.000076, batch_cost: 3.6014, reader_cost: 2.34500, ips: 1.1107 samples/sec | ETA 22:08:55
+2022-05-31 03:59:41 [INFO]	[TRAIN] epoch: 81, iter: 7920/30000, loss: 0.1963, DSC: 81.6955, lr: 0.000076, batch_cost: 3.7163, reader_cost: 2.45681, ips: 1.0764 samples/sec | ETA 22:47:35
+2022-05-31 04:03:28 [INFO]	[TRAIN] epoch: 82, iter: 7980/30000, loss: 0.1845, DSC: 82.8695, lr: 0.000076, batch_cost: 3.7828, reader_cost: 2.52856, ips: 1.0574 samples/sec | ETA 23:08:18
+2022-05-31 04:07:07 [INFO]	[TRAIN] epoch: 82, iter: 8040/30000, loss: 0.1910, DSC: 82.1107, lr: 0.000076, batch_cost: 3.6494, reader_cost: 2.39161, ips: 1.0961 samples/sec | ETA 22:15:40
+2022-05-31 04:10:38 [INFO]	[TRAIN] epoch: 83, iter: 8100/30000, loss: 0.1930, DSC: 81.9842, lr: 0.000075, batch_cost: 3.5047, reader_cost: 2.24852, ips: 1.1413 samples/sec | ETA 21:19:13
+2022-05-31 04:10:38 [INFO]	Start evaluating (total_samples: 72, total_iters: 72)...
+2022-05-31 04:12:56 [INFO]	[EVAL] #Images: 72, Dice: 0.7424, Loss: 0.263714
+2022-05-31 04:12:56 [INFO]	[EVAL] Class dice: 
+[0.9964 0.7458 0.5448 0.6824]
+2022-05-31 04:13:04 [INFO]	[EVAL] The model with the best validation mDice (0.7424) was saved at iter 8100.
+2022-05-31 04:16:28 [INFO]	[TRAIN] epoch: 84, iter: 8160/30000, loss: 0.1983, DSC: 81.2866, lr: 0.000075, batch_cost: 3.3898, reader_cost: 2.13244, ips: 1.1800 samples/sec | ETA 20:33:53
+2022-05-31 04:20:16 [INFO]	[TRAIN] epoch: 84, iter: 8220/30000, loss: 0.1889, DSC: 82.4537, lr: 0.000075, batch_cost: 3.8144, reader_cost: 2.55599, ips: 1.0487 samples/sec | ETA 23:04:38
+2022-05-31 04:23:51 [INFO]	[TRAIN] epoch: 85, iter: 8280/30000, loss: 0.1900, DSC: 82.1718, lr: 0.000075, batch_cost: 3.5822, reader_cost: 2.32722, ips: 1.1166 samples/sec | ETA 21:36:44
+2022-05-31 04:27:40 [INFO]	[TRAIN] epoch: 85, iter: 8340/30000, loss: 0.1830, DSC: 82.9592, lr: 0.000075, batch_cost: 3.8096, reader_cost: 2.55146, ips: 1.0500 samples/sec | ETA 22:55:16
+2022-05-31 04:31:23 [INFO]	[TRAIN] epoch: 86, iter: 8400/30000, loss: 0.1892, DSC: 82.3970, lr: 0.000074, batch_cost: 3.7103, reader_cost: 2.45714, ips: 1.0781 samples/sec | ETA 22:15:42
+2022-05-31 04:31:23 [INFO]	Start evaluating (total_samples: 72, total_iters: 72)...
+2022-05-31 04:33:37 [INFO]	[EVAL] #Images: 72, Dice: 0.7428, Loss: 0.263720
+2022-05-31 04:33:37 [INFO]	[EVAL] Class dice: 
+[0.9963 0.751  0.5409 0.6831]
+2022-05-31 04:33:46 [INFO]	[EVAL] The model with the best validation mDice (0.7428) was saved at iter 8400.
+2022-05-31 04:37:12 [INFO]	[TRAIN] epoch: 87, iter: 8460/30000, loss: 0.1928, DSC: 81.9716, lr: 0.000074, batch_cost: 3.4382, reader_cost: 2.18150, ips: 1.1634 samples/sec | ETA 20:34:19
+2022-05-31 04:40:49 [INFO]	[TRAIN] epoch: 87, iter: 8520/30000, loss: 0.1968, DSC: 81.4919, lr: 0.000074, batch_cost: 3.6079, reader_cost: 2.35016, ips: 1.1087 samples/sec | ETA 21:31:37
+2022-05-31 04:44:10 [INFO]	[TRAIN] epoch: 88, iter: 8580/30000, loss: 0.1820, DSC: 83.0121, lr: 0.000074, batch_cost: 3.3550, reader_cost: 2.10047, ips: 1.1922 samples/sec | ETA 19:57:44
+2022-05-31 04:48:01 [INFO]	[TRAIN] epoch: 89, iter: 8640/30000, loss: 0.1991, DSC: 81.4689, lr: 0.000074, batch_cost: 3.8467, reader_cost: 2.59325, ips: 1.0399 samples/sec | ETA 22:49:25
+2022-05-31 04:51:58 [INFO]	[TRAIN] epoch: 89, iter: 8700/30000, loss: 0.1856, DSC: 82.7332, lr: 0.000073, batch_cost: 3.9599, reader_cost: 2.70045, ips: 1.0101 samples/sec | ETA 23:25:45
+2022-05-31 04:51:59 [INFO]	Start evaluating (total_samples: 72, total_iters: 72)...
+2022-05-31 04:54:15 [INFO]	[EVAL] #Images: 72, Dice: 0.7341, Loss: 0.271712
+2022-05-31 04:54:15 [INFO]	[EVAL] Class dice: 
+[0.9965 0.7375 0.5391 0.6635]
+2022-05-31 04:54:20 [INFO]	[EVAL] The model with the best validation mDice (0.7428) was saved at iter 8400.
+2022-05-31 04:57:28 [INFO]	[TRAIN] epoch: 90, iter: 8760/30000, loss: 0.1765, DSC: 83.5455, lr: 0.000073, batch_cost: 3.1345, reader_cost: 1.87715, ips: 1.2761 samples/sec | ETA 18:29:35
+2022-05-31 05:01:03 [INFO]	[TRAIN] epoch: 90, iter: 8820/30000, loss: 0.1911, DSC: 82.0806, lr: 0.000073, batch_cost: 3.5886, reader_cost: 2.33051, ips: 1.1147 samples/sec | ETA 21:06:45
+2022-05-31 05:04:42 [INFO]	[TRAIN] epoch: 91, iter: 8880/30000, loss: 0.1852, DSC: 82.7733, lr: 0.000073, batch_cost: 3.6497, reader_cost: 2.39346, ips: 1.0960 samples/sec | ETA 21:24:40
+2022-05-31 05:08:19 [INFO]	[TRAIN] epoch: 92, iter: 8940/30000, loss: 0.1875, DSC: 82.4251, lr: 0.000073, batch_cost: 3.6108, reader_cost: 2.35697, ips: 1.1078 samples/sec | ETA 21:07:22
+2022-05-31 05:11:54 [INFO]	[TRAIN] epoch: 92, iter: 9000/30000, loss: 0.1841, DSC: 82.8004, lr: 0.000073, batch_cost: 3.5899, reader_cost: 2.33167, ips: 1.1142 samples/sec | ETA 20:56:28
+2022-05-31 05:11:54 [INFO]	Start evaluating (total_samples: 72, total_iters: 72)...
+2022-05-31 05:14:13 [INFO]	[EVAL] #Images: 72, Dice: 0.7456, Loss: 0.261001
+2022-05-31 05:14:13 [INFO]	[EVAL] Class dice: 
+[0.9964 0.7514 0.5546 0.68  ]
+2022-05-31 05:14:21 [INFO]	[EVAL] The model with the best validation mDice (0.7456) was saved at iter 9000.
+2022-05-31 05:17:45 [INFO]	[TRAIN] epoch: 93, iter: 9060/30000, loss: 0.1775, DSC: 83.5315, lr: 0.000072, batch_cost: 3.3912, reader_cost: 2.13488, ips: 1.1795 samples/sec | ETA 19:43:31
+2022-05-31 05:21:05 [INFO]	[TRAIN] epoch: 94, iter: 9120/30000, loss: 0.1769, DSC: 83.4004, lr: 0.000072, batch_cost: 3.3409, reader_cost: 2.08507, ips: 1.1973 samples/sec | ETA 19:22:39
+2022-05-31 05:24:40 [INFO]	[TRAIN] epoch: 94, iter: 9180/30000, loss: 0.1755, DSC: 83.5539, lr: 0.000072, batch_cost: 3.5790, reader_cost: 2.32096, ips: 1.1176 samples/sec | ETA 20:41:54
+2022-05-31 05:28:29 [INFO]	[TRAIN] epoch: 95, iter: 9240/30000, loss: 0.1806, DSC: 83.0879, lr: 0.000072, batch_cost: 3.8078, reader_cost: 2.55360, ips: 1.0505 samples/sec | ETA 21:57:30
+2022-05-31 05:32:14 [INFO]	[TRAIN] epoch: 95, iter: 9300/30000, loss: 0.1871, DSC: 82.5705, lr: 0.000072, batch_cost: 3.7529, reader_cost: 2.49377, ips: 1.0658 samples/sec | ETA 21:34:45
+2022-05-31 05:32:14 [INFO]	Start evaluating (total_samples: 72, total_iters: 72)...
+2022-05-31 05:34:28 [INFO]	[EVAL] #Images: 72, Dice: 0.7282, Loss: 0.277636
+2022-05-31 05:34:28 [INFO]	[EVAL] Class dice: 
+[0.9967 0.7413 0.5251 0.6498]
+2022-05-31 05:34:33 [INFO]	[EVAL] The model with the best validation mDice (0.7456) was saved at iter 9000.
+2022-05-31 05:37:43 [INFO]	[TRAIN] epoch: 96, iter: 9360/30000, loss: 0.1815, DSC: 83.0291, lr: 0.000071, batch_cost: 3.1589, reader_cost: 1.90263, ips: 1.2663 samples/sec | ETA 18:06:40
+2022-05-31 05:41:16 [INFO]	[TRAIN] epoch: 97, iter: 9420/30000, loss: 0.1841, DSC: 82.7915, lr: 0.000071, batch_cost: 3.5593, reader_cost: 2.30422, ips: 1.1238 samples/sec | ETA 20:20:49
+2022-05-31 05:45:02 [INFO]	[TRAIN] epoch: 97, iter: 9480/30000, loss: 0.1823, DSC: 82.9633, lr: 0.000071, batch_cost: 3.7616, reader_cost: 2.50378, ips: 1.0634 samples/sec | ETA 21:26:27
+2022-05-31 05:48:35 [INFO]	[TRAIN] epoch: 98, iter: 9540/30000, loss: 0.1792, DSC: 83.2258, lr: 0.000071, batch_cost: 3.5519, reader_cost: 2.29710, ips: 1.1262 samples/sec | ETA 20:11:12
+2022-05-31 05:52:26 [INFO]	[TRAIN] epoch: 98, iter: 9600/30000, loss: 0.1755, DSC: 83.6156, lr: 0.000071, batch_cost: 3.8536, reader_cost: 2.59439, ips: 1.0380 samples/sec | ETA 21:50:13
+2022-05-31 05:52:26 [INFO]	Start evaluating (total_samples: 72, total_iters: 72)...
+2022-05-31 05:54:29 [INFO]	[EVAL] #Images: 72, Dice: 0.7368, Loss: 0.269228
+2022-05-31 05:54:29 [INFO]	[EVAL] Class dice: 
+[0.9967 0.7324 0.5463 0.6718]
+2022-05-31 05:54:34 [INFO]	[EVAL] The model with the best validation mDice (0.7456) was saved at iter 9000.
+2022-05-31 05:58:12 [INFO]	[TRAIN] epoch: 99, iter: 9660/30000, loss: 0.1800, DSC: 83.2503, lr: 0.000070, batch_cost: 3.6246, reader_cost: 2.36797, ips: 1.1036 samples/sec | ETA 20:28:43
+2022-05-31 06:01:24 [INFO]	[TRAIN] epoch: 100, iter: 9720/30000, loss: 0.1745, DSC: 83.6901, lr: 0.000070, batch_cost: 3.2103, reader_cost: 1.95646, ips: 1.2460 samples/sec | ETA 18:05:04
+2022-05-31 06:05:15 [INFO]	[TRAIN] epoch: 100, iter: 9780/30000, loss: 0.1805, DSC: 83.1352, lr: 0.000070, batch_cost: 3.8416, reader_cost: 2.58249, ips: 1.0412 samples/sec | ETA 21:34:36
+2022-05-31 06:08:50 [INFO]	[TRAIN] epoch: 101, iter: 9840/30000, loss: 0.1843, DSC: 82.7904, lr: 0.000070, batch_cost: 3.5883, reader_cost: 2.33414, ips: 1.1147 samples/sec | ETA 20:05:39
+2022-05-31 06:12:32 [INFO]	[TRAIN] epoch: 102, iter: 9900/30000, loss: 0.1758, DSC: 83.6180, lr: 0.000070, batch_cost: 3.6989, reader_cost: 2.44194, ips: 1.0814 samples/sec | ETA 20:39:08
+2022-05-31 06:12:32 [INFO]	Start evaluating (total_samples: 72, total_iters: 72)...
+2022-05-31 06:14:47 [INFO]	[EVAL] #Images: 72, Dice: 0.7409, Loss: 0.265137
+2022-05-31 06:14:47 [INFO]	[EVAL] Class dice: 
+[0.997  0.7485 0.5372 0.681 ]
+2022-05-31 06:14:52 [INFO]	[EVAL] The model with the best validation mDice (0.7456) was saved at iter 9000.
+2022-05-31 06:18:28 [INFO]	[TRAIN] epoch: 102, iter: 9960/30000, loss: 0.1824, DSC: 82.8814, lr: 0.000070, batch_cost: 3.5912, reader_cost: 2.33070, ips: 1.1138 samples/sec | ETA 19:59:28
+2022-05-31 06:21:54 [INFO]	[TRAIN] epoch: 103, iter: 10020/30000, loss: 0.1718, DSC: 83.9697, lr: 0.000069, batch_cost: 3.4402, reader_cost: 2.18608, ips: 1.1627 samples/sec | ETA 19:05:35
+2022-05-31 06:25:44 [INFO]	[TRAIN] epoch: 103, iter: 10080/30000, loss: 0.1835, DSC: 82.8505, lr: 0.000069, batch_cost: 3.8342, reader_cost: 2.57609, ips: 1.0432 samples/sec | ETA 21:12:56
+2022-05-31 06:29:23 [INFO]	[TRAIN] epoch: 104, iter: 10140/30000, loss: 0.1887, DSC: 82.2346, lr: 0.000069, batch_cost: 3.6362, reader_cost: 2.37924, ips: 1.1001 samples/sec | ETA 20:03:34
+2022-05-31 06:33:03 [INFO]	[TRAIN] epoch: 105, iter: 10200/30000, loss: 0.1798, DSC: 83.1989, lr: 0.000069, batch_cost: 3.6790, reader_cost: 2.42554, ips: 1.0873 samples/sec | ETA 20:14:03
+2022-05-31 06:33:03 [INFO]	Start evaluating (total_samples: 72, total_iters: 72)...
+2022-05-31 06:35:25 [INFO]	[EVAL] #Images: 72, Dice: 0.7502, Loss: 0.255917
+2022-05-31 06:35:25 [INFO]	[EVAL] Class dice: 
+[0.997  0.7575 0.5549 0.6913]
+2022-05-31 06:35:33 [INFO]	[EVAL] The model with the best validation mDice (0.7502) was saved at iter 10200.
+2022-05-31 06:39:01 [INFO]	[TRAIN] epoch: 105, iter: 10260/30000, loss: 0.1883, DSC: 82.4392, lr: 0.000069, batch_cost: 3.4546, reader_cost: 2.19451, ips: 1.1579 samples/sec | ETA 18:56:33
+2022-05-31 06:42:31 [INFO]	[TRAIN] epoch: 106, iter: 10320/30000, loss: 0.1663, DSC: 84.4569, lr: 0.000068, batch_cost: 3.5092, reader_cost: 2.25523, ips: 1.1398 samples/sec | ETA 19:11:01
+2022-05-31 06:46:29 [INFO]	[TRAIN] epoch: 107, iter: 10380/30000, loss: 0.1834, DSC: 82.9261, lr: 0.000068, batch_cost: 3.9541, reader_cost: 2.70041, ips: 1.0116 samples/sec | ETA 21:32:59
+2022-05-31 06:50:04 [INFO]	[TRAIN] epoch: 107, iter: 10440/30000, loss: 0.1779, DSC: 83.3007, lr: 0.000068, batch_cost: 3.5884, reader_cost: 2.32704, ips: 1.1147 samples/sec | ETA 19:29:48
+2022-05-31 06:53:46 [INFO]	[TRAIN] epoch: 108, iter: 10500/30000, loss: 0.1848, DSC: 82.7877, lr: 0.000068, batch_cost: 3.7050, reader_cost: 2.44954, ips: 1.0796 samples/sec | ETA 20:04:06
+2022-05-31 06:53:46 [INFO]	Start evaluating (total_samples: 72, total_iters: 72)...
+2022-05-31 06:56:02 [INFO]	[EVAL] #Images: 72, Dice: 0.7459, Loss: 0.260418
+2022-05-31 06:56:02 [INFO]	[EVAL] Class dice: 
+[0.997  0.757  0.5337 0.696 ]
+2022-05-31 06:56:07 [INFO]	[EVAL] The model with the best validation mDice (0.7502) was saved at iter 10200.
+2022-05-31 06:59:32 [INFO]	[TRAIN] epoch: 108, iter: 10560/30000, loss: 0.1750, DSC: 83.7651, lr: 0.000068, batch_cost: 3.4192, reader_cost: 2.15920, ips: 1.1699 samples/sec | ETA 18:27:49
+2022-05-31 07:03:11 [INFO]	[TRAIN] epoch: 109, iter: 10620/30000, loss: 0.1760, DSC: 83.5955, lr: 0.000067, batch_cost: 3.6484, reader_cost: 2.39288, ips: 1.0964 samples/sec | ETA 19:38:26
+2022-05-31 07:07:11 [INFO]	[TRAIN] epoch: 110, iter: 10680/30000, loss: 0.1679, DSC: 84.3102, lr: 0.000067, batch_cost: 3.9986, reader_cost: 2.74513, ips: 1.0004 samples/sec | ETA 21:27:32
+2022-05-31 07:10:56 [INFO]	[TRAIN] epoch: 110, iter: 10740/30000, loss: 0.1807, DSC: 82.9745, lr: 0.000067, batch_cost: 3.7571, reader_cost: 2.49864, ips: 1.0646 samples/sec | ETA 20:06:02
+2022-05-31 07:14:33 [INFO]	[TRAIN] epoch: 111, iter: 10800/30000, loss: 0.1755, DSC: 83.6917, lr: 0.000067, batch_cost: 3.6077, reader_cost: 2.35380, ips: 1.1087 samples/sec | ETA 19:14:27
+2022-05-31 07:14:33 [INFO]	Start evaluating (total_samples: 72, total_iters: 72)...
+2022-05-31 07:16:56 [INFO]	[EVAL] #Images: 72, Dice: 0.7429, Loss: 0.262876
+2022-05-31 07:16:56 [INFO]	[EVAL] Class dice: 
+[0.9972 0.7571 0.5356 0.6818]
+2022-05-31 07:17:01 [INFO]	[EVAL] The model with the best validation mDice (0.7502) was saved at iter 10200.
+2022-05-31 07:20:25 [INFO]	[TRAIN] epoch: 111, iter: 10860/30000, loss: 0.1803, DSC: 83.0877, lr: 0.000067, batch_cost: 3.4106, reader_cost: 2.15004, ips: 1.1728 samples/sec | ETA 18:07:58
+2022-05-31 07:23:59 [INFO]	[TRAIN] epoch: 112, iter: 10920/30000, loss: 0.1730, DSC: 83.7675, lr: 0.000067, batch_cost: 3.5648, reader_cost: 2.30969, ips: 1.1221 samples/sec | ETA 18:53:36
+2022-05-31 07:27:45 [INFO]	[TRAIN] epoch: 113, iter: 10980/30000, loss: 0.1794, DSC: 83.3126, lr: 0.000066, batch_cost: 3.7602, reader_cost: 2.50608, ips: 1.0638 samples/sec | ETA 19:51:59
+2022-05-31 07:31:22 [INFO]	[TRAIN] epoch: 113, iter: 11040/30000, loss: 0.1692, DSC: 84.2169, lr: 0.000066, batch_cost: 3.6111, reader_cost: 2.35093, ips: 1.1077 samples/sec | ETA 19:01:05
+2022-05-31 07:35:04 [INFO]	[TRAIN] epoch: 114, iter: 11100/30000, loss: 0.1798, DSC: 83.2329, lr: 0.000066, batch_cost: 3.7030, reader_cost: 2.44750, ips: 1.0802 samples/sec | ETA 19:26:26
+2022-05-31 07:35:04 [INFO]	Start evaluating (total_samples: 72, total_iters: 72)...
+2022-05-31 07:37:19 [INFO]	[EVAL] #Images: 72, Dice: 0.7461, Loss: 0.260283
+2022-05-31 07:37:19 [INFO]	[EVAL] Class dice: 
+[0.997  0.752  0.546  0.6896]
+2022-05-31 07:37:24 [INFO]	[EVAL] The model with the best validation mDice (0.7502) was saved at iter 10200.
+2022-05-31 07:41:00 [INFO]	[TRAIN] epoch: 115, iter: 11160/30000, loss: 0.1821, DSC: 82.9470, lr: 0.000066, batch_cost: 3.6040, reader_cost: 2.34571, ips: 1.1099 samples/sec | ETA 18:51:38
+2022-05-31 07:44:30 [INFO]	[TRAIN] epoch: 115, iter: 11220/30000, loss: 0.1771, DSC: 83.4819, lr: 0.000066, batch_cost: 3.4939, reader_cost: 2.23473, ips: 1.1448 samples/sec | ETA 18:13:36
+2022-05-31 07:48:00 [INFO]	[TRAIN] epoch: 116, iter: 11280/30000, loss: 0.1803, DSC: 83.0080, lr: 0.000065, batch_cost: 3.5135, reader_cost: 2.25635, ips: 1.1385 samples/sec | ETA 18:16:12
+2022-05-31 07:51:45 [INFO]	[TRAIN] epoch: 116, iter: 11340/30000, loss: 0.1775, DSC: 83.3801, lr: 0.000065, batch_cost: 3.7329, reader_cost: 2.47496, ips: 1.0715 samples/sec | ETA 19:20:56
+2022-05-31 07:55:30 [INFO]	[TRAIN] epoch: 117, iter: 11400/30000, loss: 0.1817, DSC: 83.0529, lr: 0.000065, batch_cost: 3.7602, reader_cost: 2.50646, ips: 1.0638 samples/sec | ETA 19:25:40
+2022-05-31 07:55:30 [INFO]	Start evaluating (total_samples: 72, total_iters: 72)...
+2022-05-31 07:57:47 [INFO]	[EVAL] #Images: 72, Dice: 0.7441, Loss: 0.261469
+2022-05-31 07:57:47 [INFO]	[EVAL] Class dice: 
+[0.997  0.7374 0.5548 0.6873]
+2022-05-31 07:57:52 [INFO]	[EVAL] The model with the best validation mDice (0.7502) was saved at iter 10200.
+2022-05-31 08:01:20 [INFO]	[TRAIN] epoch: 118, iter: 11460/30000, loss: 0.1714, DSC: 83.9412, lr: 0.000065, batch_cost: 3.4746, reader_cost: 2.21924, ips: 1.1512 samples/sec | ETA 17:53:38
+2022-05-31 08:05:16 [INFO]	[TRAIN] epoch: 118, iter: 11520/30000, loss: 0.1702, DSC: 84.0553, lr: 0.000065, batch_cost: 3.9272, reader_cost: 2.66700, ips: 1.0185 samples/sec | ETA 20:09:34
+2022-05-31 08:08:44 [INFO]	[TRAIN] epoch: 119, iter: 11580/30000, loss: 0.1682, DSC: 84.2976, lr: 0.000064, batch_cost: 3.4660, reader_cost: 2.21152, ips: 1.1541 samples/sec | ETA 17:44:02
+2022-05-31 08:12:19 [INFO]	[TRAIN] epoch: 120, iter: 11640/30000, loss: 0.1752, DSC: 83.6369, lr: 0.000064, batch_cost: 3.5732, reader_cost: 2.31881, ips: 1.1194 samples/sec | ETA 18:13:24
+2022-05-31 08:16:00 [INFO]	[TRAIN] epoch: 120, iter: 11700/30000, loss: 0.1699, DSC: 84.0855, lr: 0.000064, batch_cost: 3.6871, reader_cost: 2.42721, ips: 1.0849 samples/sec | ETA 18:44:34
+2022-05-31 08:16:00 [INFO]	Start evaluating (total_samples: 72, total_iters: 72)...
+2022-05-31 08:18:21 [INFO]	[EVAL] #Images: 72, Dice: 0.7542, Loss: 0.251278
+2022-05-31 08:18:21 [INFO]	[EVAL] Class dice: 
+[0.9973 0.7625 0.5544 0.7028]
+2022-05-31 08:18:30 [INFO]	[EVAL] The model with the best validation mDice (0.7542) was saved at iter 11700.
+2022-05-31 08:21:41 [INFO]	[TRAIN] epoch: 121, iter: 11760/30000, loss: 0.1749, DSC: 83.6328, lr: 0.000064, batch_cost: 3.1872, reader_cost: 1.92956, ips: 1.2550 samples/sec | ETA 16:08:55
+2022-05-31 08:25:33 [INFO]	[TRAIN] epoch: 121, iter: 11820/30000, loss: 0.1788, DSC: 83.2690, lr: 0.000064, batch_cost: 3.8767, reader_cost: 2.61860, ips: 1.0318 samples/sec | ETA 19:34:37
+2022-05-31 08:29:13 [INFO]	[TRAIN] epoch: 122, iter: 11880/30000, loss: 0.1754, DSC: 83.5125, lr: 0.000064, batch_cost: 3.6531, reader_cost: 2.39994, ips: 1.0950 samples/sec | ETA 18:23:13
+2022-05-31 08:32:59 [INFO]	[TRAIN] epoch: 123, iter: 11940/30000, loss: 0.1630, DSC: 84.8624, lr: 0.000063, batch_cost: 3.7665, reader_cost: 2.51314, ips: 1.0620 samples/sec | ETA 18:53:42
+2022-05-31 08:36:35 [INFO]	[TRAIN] epoch: 123, iter: 12000/30000, loss: 0.1649, DSC: 84.5570, lr: 0.000063, batch_cost: 3.6064, reader_cost: 2.34869, ips: 1.1091 samples/sec | ETA 18:01:55
+2022-05-31 08:36:35 [INFO]	Start evaluating (total_samples: 72, total_iters: 72)...
+2022-05-31 08:38:45 [INFO]	[EVAL] #Images: 72, Dice: 0.7491, Loss: 0.257171
+2022-05-31 08:38:45 [INFO]	[EVAL] Class dice: 
+[0.9974 0.7575 0.5431 0.6984]
+2022-05-31 08:38:50 [INFO]	[EVAL] The model with the best validation mDice (0.7542) was saved at iter 11700.
+2022-05-31 08:42:12 [INFO]	[TRAIN] epoch: 124, iter: 12060/30000, loss: 0.1766, DSC: 83.4176, lr: 0.000063, batch_cost: 3.3555, reader_cost: 2.09990, ips: 1.1921 samples/sec | ETA 16:43:17
+2022-05-31 08:45:48 [INFO]	[TRAIN] epoch: 124, iter: 12120/30000, loss: 0.1810, DSC: 83.1213, lr: 0.000063, batch_cost: 3.5967, reader_cost: 2.33896, ips: 1.1121 samples/sec | ETA 17:51:48
+2022-05-31 08:49:24 [INFO]	[TRAIN] epoch: 125, iter: 12180/30000, loss: 0.1615, DSC: 84.9545, lr: 0.000063, batch_cost: 3.5995, reader_cost: 2.34410, ips: 1.1113 samples/sec | ETA 17:49:02
+2022-05-31 08:53:12 [INFO]	[TRAIN] epoch: 126, iter: 12240/30000, loss: 0.1769, DSC: 83.4872, lr: 0.000062, batch_cost: 3.8018, reader_cost: 2.54708, ips: 1.0521 samples/sec | ETA 18:45:20
+2022-05-31 08:56:51 [INFO]	[TRAIN] epoch: 126, iter: 12300/30000, loss: 0.1617, DSC: 84.9122, lr: 0.000062, batch_cost: 3.6444, reader_cost: 2.38594, ips: 1.0976 samples/sec | ETA 17:55:06
+2022-05-31 08:56:51 [INFO]	Start evaluating (total_samples: 72, total_iters: 72)...
+2022-05-31 08:59:08 [INFO]	[EVAL] #Images: 72, Dice: 0.7517, Loss: 0.254706
+2022-05-31 08:59:08 [INFO]	[EVAL] Class dice: 
+[0.997  0.7496 0.5629 0.6975]
+2022-05-31 08:59:13 [INFO]	[EVAL] The model with the best validation mDice (0.7542) was saved at iter 11700.
+2022-05-31 09:02:35 [INFO]	[TRAIN] epoch: 127, iter: 12360/30000, loss: 0.1746, DSC: 83.6319, lr: 0.000062, batch_cost: 3.3715, reader_cost: 2.11529, ips: 1.1864 samples/sec | ETA 16:31:12
+2022-05-31 09:06:00 [INFO]	[TRAIN] epoch: 128, iter: 12420/30000, loss: 0.1668, DSC: 84.4026, lr: 0.000062, batch_cost: 3.4112, reader_cost: 2.15693, ips: 1.1726 samples/sec | ETA 16:39:28
+2022-05-31 09:09:45 [INFO]	[TRAIN] epoch: 128, iter: 12480/30000, loss: 0.1660, DSC: 84.5493, lr: 0.000062, batch_cost: 3.7478, reader_cost: 2.48802, ips: 1.0673 samples/sec | ETA 18:14:20
+2022-05-31 09:13:17 [INFO]	[TRAIN] epoch: 129, iter: 12540/30000, loss: 0.1779, DSC: 83.3337, lr: 0.000061, batch_cost: 3.5407, reader_cost: 2.28669, ips: 1.1297 samples/sec | ETA 17:10:21
+2022-05-31 09:17:16 [INFO]	[TRAIN] epoch: 129, iter: 12600/30000, loss: 0.1705, DSC: 84.0010, lr: 0.000061, batch_cost: 3.9696, reader_cost: 2.70970, ips: 1.0077 samples/sec | ETA 19:11:10
+2022-05-31 09:17:16 [INFO]	Start evaluating (total_samples: 72, total_iters: 72)...
+2022-05-31 09:19:33 [INFO]	[EVAL] #Images: 72, Dice: 0.7591, Loss: 0.247006
+2022-05-31 09:19:33 [INFO]	[EVAL] Class dice: 
+[0.9971 0.7646 0.5654 0.7091]
+2022-05-31 09:19:42 [INFO]	[EVAL] The model with the best validation mDice (0.7591) was saved at iter 12600.
+2022-05-31 09:22:54 [INFO]	[TRAIN] epoch: 130, iter: 12660/30000, loss: 0.1658, DSC: 84.5509, lr: 0.000061, batch_cost: 3.2043, reader_cost: 1.94678, ips: 1.2483 samples/sec | ETA 15:26:02
+2022-05-31 09:26:29 [INFO]	[TRAIN] epoch: 131, iter: 12720/30000, loss: 0.1623, DSC: 84.8224, lr: 0.000061, batch_cost: 3.5772, reader_cost: 2.31990, ips: 1.1182 samples/sec | ETA 17:10:13
+2022-05-31 09:30:18 [INFO]	[TRAIN] epoch: 131, iter: 12780/30000, loss: 0.1546, DSC: 85.6192, lr: 0.000061, batch_cost: 3.8249, reader_cost: 2.56747, ips: 1.0458 samples/sec | ETA 18:17:45
+2022-05-31 09:34:00 [INFO]	[TRAIN] epoch: 132, iter: 12840/30000, loss: 0.1795, DSC: 83.1743, lr: 0.000060, batch_cost: 3.6927, reader_cost: 2.43898, ips: 1.0832 samples/sec | ETA 17:36:06
+2022-05-31 09:37:49 [INFO]	[TRAIN] epoch: 132, iter: 12900/30000, loss: 0.1632, DSC: 84.8025, lr: 0.000060, batch_cost: 3.8153, reader_cost: 2.55755, ips: 1.0484 samples/sec | ETA 18:07:22
+2022-05-31 09:37:49 [INFO]	Start evaluating (total_samples: 72, total_iters: 72)...
+2022-05-31 09:39:52 [INFO]	[EVAL] #Images: 72, Dice: 0.7551, Loss: 0.250904
+2022-05-31 09:39:52 [INFO]	[EVAL] Class dice: 
+[0.9973 0.7587 0.5632 0.7013]
+2022-05-31 09:39:57 [INFO]	[EVAL] The model with the best validation mDice (0.7591) was saved at iter 12600.
+2022-05-31 09:43:29 [INFO]	[TRAIN] epoch: 133, iter: 12960/30000, loss: 0.1617, DSC: 84.9015, lr: 0.000060, batch_cost: 3.5299, reader_cost: 2.27345, ips: 1.1332 samples/sec | ETA 16:42:28
+2022-05-31 09:46:50 [INFO]	[TRAIN] epoch: 134, iter: 13020/30000, loss: 0.1578, DSC: 85.3402, lr: 0.000060, batch_cost: 3.3524, reader_cost: 2.09666, ips: 1.1932 samples/sec | ETA 15:48:44
+2022-05-31 09:50:27 [INFO]	[TRAIN] epoch: 134, iter: 13080/30000, loss: 0.1676, DSC: 84.2883, lr: 0.000060, batch_cost: 3.6097, reader_cost: 2.35092, ips: 1.1081 samples/sec | ETA 16:57:55
+2022-05-31 09:54:07 [INFO]	[TRAIN] epoch: 135, iter: 13140/30000, loss: 0.1707, DSC: 83.9669, lr: 0.000060, batch_cost: 3.6797, reader_cost: 2.42482, ips: 1.0870 samples/sec | ETA 17:14:00
+2022-05-31 09:57:44 [INFO]	[TRAIN] epoch: 136, iter: 13200/30000, loss: 0.1703, DSC: 84.1170, lr: 0.000059, batch_cost: 3.6076, reader_cost: 2.35327, ips: 1.1088 samples/sec | ETA 16:50:08
+2022-05-31 09:57:44 [INFO]	Start evaluating (total_samples: 72, total_iters: 72)...
+2022-05-31 10:00:07 [INFO]	[EVAL] #Images: 72, Dice: 0.7506, Loss: 0.255211
+2022-05-31 10:00:07 [INFO]	[EVAL] Class dice: 
+[0.9974 0.7542 0.5575 0.6932]
+2022-05-31 10:00:12 [INFO]	[EVAL] The model with the best validation mDice (0.7591) was saved at iter 12600.
+2022-05-31 10:03:27 [INFO]	[TRAIN] epoch: 136, iter: 13260/30000, loss: 0.1584, DSC: 85.2005, lr: 0.000059, batch_cost: 3.2441, reader_cost: 1.97866, ips: 1.2330 samples/sec | ETA 15:05:05
+2022-05-31 10:06:57 [INFO]	[TRAIN] epoch: 137, iter: 13320/30000, loss: 0.1649, DSC: 84.4820, lr: 0.000059, batch_cost: 3.5113, reader_cost: 2.25552, ips: 1.1392 samples/sec | ETA 16:16:09
+2022-05-31 10:10:46 [INFO]	[TRAIN] epoch: 137, iter: 13380/30000, loss: 0.1610, DSC: 85.0057, lr: 0.000059, batch_cost: 3.8198, reader_cost: 2.56139, ips: 1.0472 samples/sec | ETA 17:38:04
+2022-05-31 10:14:22 [INFO]	[TRAIN] epoch: 138, iter: 13440/30000, loss: 0.1653, DSC: 84.5119, lr: 0.000059, batch_cost: 3.5996, reader_cost: 2.34595, ips: 1.1112 samples/sec | ETA 16:33:30
+2022-05-31 10:17:48 [INFO]	[TRAIN] epoch: 139, iter: 13500/30000, loss: 0.1699, DSC: 84.1655, lr: 0.000058, batch_cost: 3.4277, reader_cost: 2.17295, ips: 1.1670 samples/sec | ETA 15:42:36
+2022-05-31 10:17:48 [INFO]	Start evaluating (total_samples: 72, total_iters: 72)...
+2022-05-31 10:20:03 [INFO]	[EVAL] #Images: 72, Dice: 0.7340, Loss: 0.272672
+2022-05-31 10:20:03 [INFO]	[EVAL] Class dice: 
+[0.997  0.7351 0.542  0.6619]
+2022-05-31 10:20:08 [INFO]	[EVAL] The model with the best validation mDice (0.7591) was saved at iter 12600.
+2022-05-31 10:23:50 [INFO]	[TRAIN] epoch: 139, iter: 13560/30000, loss: 0.1638, DSC: 84.6568, lr: 0.000058, batch_cost: 3.7040, reader_cost: 2.44302, ips: 1.0799 samples/sec | ETA 16:54:53
+2022-05-31 10:27:20 [INFO]	[TRAIN] epoch: 140, iter: 13620/30000, loss: 0.1641, DSC: 84.8091, lr: 0.000058, batch_cost: 3.5010, reader_cost: 2.24608, ips: 1.1425 samples/sec | ETA 15:55:46
+2022-05-31 10:30:57 [INFO]	[TRAIN] epoch: 141, iter: 13680/30000, loss: 0.1590, DSC: 85.0865, lr: 0.000058, batch_cost: 3.6072, reader_cost: 2.35295, ips: 1.1089 samples/sec | ETA 16:21:09
+2022-05-31 10:34:34 [INFO]	[TRAIN] epoch: 141, iter: 13740/30000, loss: 0.1633, DSC: 84.7414, lr: 0.000058, batch_cost: 3.6283, reader_cost: 2.37038, ips: 1.1024 samples/sec | ETA 16:23:16
+2022-05-31 10:38:20 [INFO]	[TRAIN] epoch: 142, iter: 13800/30000, loss: 0.1632, DSC: 84.7594, lr: 0.000057, batch_cost: 3.7562, reader_cost: 2.50157, ips: 1.0649 samples/sec | ETA 16:54:10
+2022-05-31 10:38:20 [INFO]	Start evaluating (total_samples: 72, total_iters: 72)...
+2022-05-31 10:40:33 [INFO]	[EVAL] #Images: 72, Dice: 0.7455, Loss: 0.260953
+2022-05-31 10:40:33 [INFO]	[EVAL] Class dice: 
+[0.9971 0.7588 0.5551 0.671 ]
+2022-05-31 10:40:38 [INFO]	[EVAL] The model with the best validation mDice (0.7591) was saved at iter 12600.
+2022-05-31 10:44:02 [INFO]	[TRAIN] epoch: 142, iter: 13860/30000, loss: 0.1640, DSC: 84.6733, lr: 0.000057, batch_cost: 3.3943, reader_cost: 2.13356, ips: 1.1784 samples/sec | ETA 15:13:04
+2022-05-31 10:47:48 [INFO]	[TRAIN] epoch: 143, iter: 13920/30000, loss: 0.1645, DSC: 84.5184, lr: 0.000057, batch_cost: 3.7618, reader_cost: 2.50774, ips: 1.0633 samples/sec | ETA 16:48:09
+2022-05-31 10:51:26 [INFO]	[TRAIN] epoch: 144, iter: 13980/30000, loss: 0.1625, DSC: 84.8732, lr: 0.000057, batch_cost: 3.6443, reader_cost: 2.38871, ips: 1.0976 samples/sec | ETA 16:13:00
+2022-05-31 10:55:04 [INFO]	[TRAIN] epoch: 144, iter: 14040/30000, loss: 0.1652, DSC: 84.5646, lr: 0.000057, batch_cost: 3.6319, reader_cost: 2.37327, ips: 1.1014 samples/sec | ETA 16:06:04
+2022-05-31 10:58:35 [INFO]	[TRAIN] epoch: 145, iter: 14100/30000, loss: 0.1649, DSC: 84.6056, lr: 0.000056, batch_cost: 3.5135, reader_cost: 2.26090, ips: 1.1385 samples/sec | ETA 15:31:04
+2022-05-31 10:58:35 [INFO]	Start evaluating (total_samples: 72, total_iters: 72)...
+2022-05-31 11:00:51 [INFO]	[EVAL] #Images: 72, Dice: 0.7583, Loss: 0.248200
+2022-05-31 11:00:51 [INFO]	[EVAL] Class dice: 
+[0.9974 0.7707 0.5691 0.696 ]
+2022-05-31 11:00:56 [INFO]	[EVAL] The model with the best validation mDice (0.7591) was saved at iter 12600.
+2022-05-31 11:04:29 [INFO]	[TRAIN] epoch: 145, iter: 14160/30000, loss: 0.1637, DSC: 84.5287, lr: 0.000056, batch_cost: 3.5510, reader_cost: 2.29264, ips: 1.1264 samples/sec | ETA 15:37:28
+2022-05-31 11:08:15 [INFO]	[TRAIN] epoch: 146, iter: 14220/30000, loss: 0.1673, DSC: 84.4429, lr: 0.000056, batch_cost: 3.7678, reader_cost: 2.51477, ips: 1.0616 samples/sec | ETA 16:30:56
+2022-05-31 11:11:49 [INFO]	[TRAIN] epoch: 147, iter: 14280/30000, loss: 0.1550, DSC: 85.5867, lr: 0.000056, batch_cost: 3.5595, reader_cost: 2.30276, ips: 1.1238 samples/sec | ETA 15:32:34
+2022-05-31 11:15:37 [INFO]	[TRAIN] epoch: 147, iter: 14340/30000, loss: 0.1606, DSC: 84.8979, lr: 0.000056, batch_cost: 3.8042, reader_cost: 2.54564, ips: 1.0515 samples/sec | ETA 16:32:53
+2022-05-31 11:18:55 [INFO]	[TRAIN] epoch: 148, iter: 14400/30000, loss: 0.1785, DSC: 83.3026, lr: 0.000056, batch_cost: 3.2965, reader_cost: 2.04251, ips: 1.2134 samples/sec | ETA 14:17:04
+2022-05-31 11:18:55 [INFO]	Start evaluating (total_samples: 72, total_iters: 72)...
+2022-05-31 11:21:14 [INFO]	[EVAL] #Images: 72, Dice: 0.7364, Loss: 0.270346
+2022-05-31 11:21:14 [INFO]	[EVAL] Class dice: 
+[0.9969 0.745  0.5455 0.6583]
+2022-05-31 11:21:19 [INFO]	[EVAL] The model with the best validation mDice (0.7591) was saved at iter 12600.
+2022-05-31 11:24:54 [INFO]	[TRAIN] epoch: 149, iter: 14460/30000, loss: 0.1649, DSC: 84.6487, lr: 0.000055, batch_cost: 3.5893, reader_cost: 2.33325, ips: 1.1144 samples/sec | ETA 15:29:37
+2022-05-31 11:28:42 [INFO]	[TRAIN] epoch: 149, iter: 14520/30000, loss: 0.1644, DSC: 84.6075, lr: 0.000055, batch_cost: 3.7921, reader_cost: 2.53520, ips: 1.0548 samples/sec | ETA 16:18:22
+2022-05-31 11:32:05 [INFO]	[TRAIN] epoch: 150, iter: 14580/30000, loss: 0.1711, DSC: 83.9614, lr: 0.000055, batch_cost: 3.3903, reader_cost: 2.13522, ips: 1.1798 samples/sec | ETA 14:31:18
+2022-05-31 11:35:48 [INFO]	[TRAIN] epoch: 150, iter: 14640/30000, loss: 0.1581, DSC: 85.1958, lr: 0.000055, batch_cost: 3.7111, reader_cost: 2.45300, ips: 1.0779 samples/sec | ETA 15:50:02
+2022-05-31 11:39:20 [INFO]	[TRAIN] epoch: 151, iter: 14700/30000, loss: 0.1683, DSC: 84.2326, lr: 0.000055, batch_cost: 3.5448, reader_cost: 2.28919, ips: 1.1284 samples/sec | ETA 15:03:54
+2022-05-31 11:39:20 [INFO]	Start evaluating (total_samples: 72, total_iters: 72)...
+2022-05-31 11:41:41 [INFO]	[EVAL] #Images: 72, Dice: 0.7532, Loss: 0.252534
+2022-05-31 11:41:41 [INFO]	[EVAL] Class dice: 
+[0.9974 0.7516 0.5654 0.6984]
+2022-05-31 11:41:46 [INFO]	[EVAL] The model with the best validation mDice (0.7591) was saved at iter 12600.
+2022-05-31 11:45:18 [INFO]	[TRAIN] epoch: 152, iter: 14760/30000, loss: 0.1560, DSC: 85.4130, lr: 0.000054, batch_cost: 3.5349, reader_cost: 2.27964, ips: 1.1316 samples/sec | ETA 14:57:51
+2022-05-31 11:49:07 [INFO]	[TRAIN] epoch: 152, iter: 14820/30000, loss: 0.1537, DSC: 85.6652, lr: 0.000054, batch_cost: 3.8201, reader_cost: 2.56053, ips: 1.0471 samples/sec | ETA 16:06:28
+2022-05-31 11:52:26 [INFO]	[TRAIN] epoch: 153, iter: 14880/30000, loss: 0.1577, DSC: 85.2592, lr: 0.000054, batch_cost: 3.3221, reader_cost: 2.06871, ips: 1.2041 samples/sec | ETA 13:57:10
+2022-05-31 11:56:17 [INFO]	[TRAIN] epoch: 154, iter: 14940/30000, loss: 0.1672, DSC: 84.3212, lr: 0.000054, batch_cost: 3.8492, reader_cost: 2.59547, ips: 1.0392 samples/sec | ETA 16:06:09
+2022-05-31 11:59:55 [INFO]	[TRAIN] epoch: 154, iter: 15000/30000, loss: 0.1634, DSC: 84.7245, lr: 0.000054, batch_cost: 3.6287, reader_cost: 2.37084, ips: 1.1023 samples/sec | ETA 15:07:10
+2022-05-31 11:59:55 [INFO]	Start evaluating (total_samples: 72, total_iters: 72)...
+2022-05-31 12:02:12 [INFO]	[EVAL] #Images: 72, Dice: 0.7657, Loss: 0.239810
+2022-05-31 12:02:12 [INFO]	[EVAL] Class dice: 
+[0.9977 0.7853 0.5668 0.7131]
+2022-05-31 12:02:21 [INFO]	[EVAL] The model with the best validation mDice (0.7657) was saved at iter 15000.
+2022-05-31 12:05:56 [INFO]	[TRAIN] epoch: 155, iter: 15060/30000, loss: 0.1536, DSC: 85.6402, lr: 0.000053, batch_cost: 3.5925, reader_cost: 2.33740, ips: 1.1134 samples/sec | ETA 14:54:32
+2022-05-31 12:09:17 [INFO]	[TRAIN] epoch: 155, iter: 15120/30000, loss: 0.1576, DSC: 85.3196, lr: 0.000053, batch_cost: 3.3528, reader_cost: 2.09140, ips: 1.1930 samples/sec | ETA 13:51:29
+2022-05-31 12:12:57 [INFO]	[TRAIN] epoch: 156, iter: 15180/30000, loss: 0.1610, DSC: 84.8110, lr: 0.000053, batch_cost: 3.6584, reader_cost: 2.40412, ips: 1.0934 samples/sec | ETA 15:03:37
+2022-05-31 12:16:50 [INFO]	[TRAIN] epoch: 157, iter: 15240/30000, loss: 0.1535, DSC: 85.7329, lr: 0.000053, batch_cost: 3.8846, reader_cost: 2.62965, ips: 1.0297 samples/sec | ETA 15:55:36
+2022-05-31 12:20:26 [INFO]	[TRAIN] epoch: 157, iter: 15300/30000, loss: 0.1596, DSC: 85.0520, lr: 0.000053, batch_cost: 3.5987, reader_cost: 2.34073, ips: 1.1115 samples/sec | ETA 14:41:40
+2022-05-31 12:20:26 [INFO]	Start evaluating (total_samples: 72, total_iters: 72)...
+2022-05-31 12:22:50 [INFO]	[EVAL] #Images: 72, Dice: 0.7658, Loss: 0.239142
+2022-05-31 12:22:50 [INFO]	[EVAL] Class dice: 
+[0.9979 0.7693 0.5856 0.7102]
+2022-05-31 12:22:58 [INFO]	[EVAL] The model with the best validation mDice (0.7658) was saved at iter 15300.
+2022-05-31 12:26:20 [INFO]	[TRAIN] epoch: 158, iter: 15360/30000, loss: 0.1598, DSC: 85.1082, lr: 0.000052, batch_cost: 3.3594, reader_cost: 2.10193, ips: 1.1907 samples/sec | ETA 13:39:42
+2022-05-31 12:29:48 [INFO]	[TRAIN] epoch: 158, iter: 15420/30000, loss: 0.1551, DSC: 85.4840, lr: 0.000052, batch_cost: 3.4580, reader_cost: 2.20042, ips: 1.1567 samples/sec | ETA 14:00:17
+2022-05-31 12:33:20 [INFO]	[TRAIN] epoch: 159, iter: 15480/30000, loss: 0.1535, DSC: 85.6424, lr: 0.000052, batch_cost: 3.5403, reader_cost: 2.28671, ips: 1.1298 samples/sec | ETA 14:16:45
+2022-05-31 12:37:00 [INFO]	[TRAIN] epoch: 160, iter: 15540/30000, loss: 0.1619, DSC: 84.7798, lr: 0.000052, batch_cost: 3.6721, reader_cost: 2.41589, ips: 1.0893 samples/sec | ETA 14:44:57
+2022-05-31 12:40:39 [INFO]	[TRAIN] epoch: 160, iter: 15600/30000, loss: 0.1571, DSC: 85.2583, lr: 0.000052, batch_cost: 3.6352, reader_cost: 2.37710, ips: 1.1003 samples/sec | ETA 14:32:27
+2022-05-31 12:40:39 [INFO]	Start evaluating (total_samples: 72, total_iters: 72)...
+2022-05-31 12:42:59 [INFO]	[EVAL] #Images: 72, Dice: 0.7647, Loss: 0.240866
+2022-05-31 12:42:59 [INFO]	[EVAL] Class dice: 
+[0.9976 0.7675 0.5822 0.7115]
+2022-05-31 12:43:03 [INFO]	[EVAL] The model with the best validation mDice (0.7658) was saved at iter 15300.
+2022-05-31 12:46:13 [INFO]	[TRAIN] epoch: 161, iter: 15660/30000, loss: 0.1590, DSC: 85.0447, lr: 0.000051, batch_cost: 3.1681, reader_cost: 1.91145, ips: 1.2626 samples/sec | ETA 12:37:10
+2022-05-31 12:49:37 [INFO]	[TRAIN] epoch: 162, iter: 15720/30000, loss: 0.1544, DSC: 85.5851, lr: 0.000051, batch_cost: 3.3942, reader_cost: 2.14138, ips: 1.1785 samples/sec | ETA 13:27:48
+2022-05-31 12:53:16 [INFO]	[TRAIN] epoch: 162, iter: 15780/30000, loss: 0.1620, DSC: 84.8595, lr: 0.000051, batch_cost: 3.6530, reader_cost: 2.39524, ips: 1.0950 samples/sec | ETA 14:25:46
+2022-05-31 12:57:10 [INFO]	[TRAIN] epoch: 163, iter: 15840/30000, loss: 0.1659, DSC: 84.4552, lr: 0.000051, batch_cost: 3.8913, reader_cost: 2.63819, ips: 1.0279 samples/sec | ETA 15:18:20
+2022-05-31 13:00:49 [INFO]	[TRAIN] epoch: 163, iter: 15900/30000, loss: 0.1507, DSC: 85.8899, lr: 0.000051, batch_cost: 3.6576, reader_cost: 2.39990, ips: 1.0936 samples/sec | ETA 14:19:31
+2022-05-31 13:00:49 [INFO]	Start evaluating (total_samples: 72, total_iters: 72)...
+2022-05-31 13:02:59 [INFO]	[EVAL] #Images: 72, Dice: 0.7544, Loss: 0.251541
+2022-05-31 13:02:59 [INFO]	[EVAL] Class dice: 
+[0.9975 0.7642 0.5547 0.7013]
+2022-05-31 13:03:04 [INFO]	[EVAL] The model with the best validation mDice (0.7658) was saved at iter 15300.
+2022-05-31 13:06:31 [INFO]	[TRAIN] epoch: 164, iter: 15960/30000, loss: 0.1566, DSC: 85.2848, lr: 0.000050, batch_cost: 3.4402, reader_cost: 2.18367, ips: 1.1627 samples/sec | ETA 13:24:59
+2022-05-31 13:09:59 [INFO]	[TRAIN] epoch: 165, iter: 16020/30000, loss: 0.1548, DSC: 85.5292, lr: 0.000050, batch_cost: 3.4678, reader_cost: 2.21394, ips: 1.1535 samples/sec | ETA 13:27:59
+2022-05-31 13:13:41 [INFO]	[TRAIN] epoch: 165, iter: 16080/30000, loss: 0.1567, DSC: 85.2964, lr: 0.000050, batch_cost: 3.7031, reader_cost: 2.44561, ips: 1.0802 samples/sec | ETA 14:19:07
+2022-05-31 13:17:13 [INFO]	[TRAIN] epoch: 166, iter: 16140/30000, loss: 0.1616, DSC: 84.8192, lr: 0.000050, batch_cost: 3.5343, reader_cost: 2.28042, ips: 1.1318 samples/sec | ETA 13:36:25
+2022-05-31 13:21:02 [INFO]	[TRAIN] epoch: 167, iter: 16200/30000, loss: 0.1603, DSC: 84.9498, lr: 0.000050, batch_cost: 3.8191, reader_cost: 2.56550, ips: 1.0474 samples/sec | ETA 14:38:23
+2022-05-31 13:21:02 [INFO]	Start evaluating (total_samples: 72, total_iters: 72)...
+2022-05-31 13:23:17 [INFO]	[EVAL] #Images: 72, Dice: 0.7502, Loss: 0.255920
+2022-05-31 13:23:17 [INFO]	[EVAL] Class dice: 
+[0.9975 0.777  0.5466 0.6798]
+2022-05-31 13:23:22 [INFO]	[EVAL] The model with the best validation mDice (0.7658) was saved at iter 15300.
+2022-05-31 13:26:43 [INFO]	[TRAIN] epoch: 167, iter: 16260/30000, loss: 0.1546, DSC: 85.5257, lr: 0.000050, batch_cost: 3.3545, reader_cost: 2.09337, ips: 1.1924 samples/sec | ETA 12:48:11
+2022-05-31 13:30:36 [INFO]	[TRAIN] epoch: 168, iter: 16320/30000, loss: 0.1551, DSC: 85.5299, lr: 0.000049, batch_cost: 3.8744, reader_cost: 2.62053, ips: 1.0324 samples/sec | ETA 14:43:22
+2022-05-31 13:34:10 [INFO]	[TRAIN] epoch: 168, iter: 16380/30000, loss: 0.1555, DSC: 85.4039, lr: 0.000049, batch_cost: 3.5754, reader_cost: 2.31725, ips: 1.1187 samples/sec | ETA 13:31:37
+2022-05-31 13:37:54 [INFO]	[TRAIN] epoch: 169, iter: 16440/30000, loss: 0.1612, DSC: 84.9127, lr: 0.000049, batch_cost: 3.7302, reader_cost: 2.47554, ips: 1.0723 samples/sec | ETA 14:03:00
+2022-05-31 13:41:46 [INFO]	[TRAIN] epoch: 170, iter: 16500/30000, loss: 0.1554, DSC: 85.4465, lr: 0.000049, batch_cost: 3.8717, reader_cost: 2.61659, ips: 1.0331 samples/sec | ETA 14:31:07
+2022-05-31 13:41:46 [INFO]	Start evaluating (total_samples: 72, total_iters: 72)...
+2022-05-31 13:43:58 [INFO]	[EVAL] #Images: 72, Dice: 0.7447, Loss: 0.261321
+2022-05-31 13:43:58 [INFO]	[EVAL] Class dice: 
+[0.9974 0.7532 0.5591 0.669 ]
+2022-05-31 13:44:03 [INFO]	[EVAL] The model with the best validation mDice (0.7658) was saved at iter 15300.
+2022-05-31 13:47:38 [INFO]	[TRAIN] epoch: 170, iter: 16560/30000, loss: 0.1603, DSC: 84.9332, lr: 0.000049, batch_cost: 3.5800, reader_cost: 2.31968, ips: 1.1173 samples/sec | ETA 13:21:54
+2022-05-31 13:51:01 [INFO]	[TRAIN] epoch: 171, iter: 16620/30000, loss: 0.1530, DSC: 85.6675, lr: 0.000048, batch_cost: 3.3934, reader_cost: 2.13735, ips: 1.1788 samples/sec | ETA 12:36:43
+2022-05-31 13:54:48 [INFO]	[TRAIN] epoch: 171, iter: 16680/30000, loss: 0.1589, DSC: 85.1445, lr: 0.000048, batch_cost: 3.7718, reader_cost: 2.51279, ips: 1.0605 samples/sec | ETA 13:57:20
+2022-05-31 13:58:30 [INFO]	[TRAIN] epoch: 172, iter: 16740/30000, loss: 0.1595, DSC: 85.0782, lr: 0.000048, batch_cost: 3.6994, reader_cost: 2.44485, ips: 1.0812 samples/sec | ETA 13:37:34
+2022-05-31 14:02:15 [INFO]	[TRAIN] epoch: 173, iter: 16800/30000, loss: 0.1564, DSC: 85.3593, lr: 0.000048, batch_cost: 3.7641, reader_cost: 2.51030, ips: 1.0627 samples/sec | ETA 13:48:06
+2022-05-31 14:02:15 [INFO]	Start evaluating (total_samples: 72, total_iters: 72)...
+2022-05-31 14:04:29 [INFO]	[EVAL] #Images: 72, Dice: 0.7516, Loss: 0.254141
+2022-05-31 14:04:29 [INFO]	[EVAL] Class dice: 
+[0.9978 0.7673 0.5485 0.6928]
+2022-05-31 14:04:34 [INFO]	[EVAL] The model with the best validation mDice (0.7658) was saved at iter 15300.
+2022-05-31 14:08:13 [INFO]	[TRAIN] epoch: 173, iter: 16860/30000, loss: 0.1482, DSC: 86.0910, lr: 0.000048, batch_cost: 3.6471, reader_cost: 2.38738, ips: 1.0968 samples/sec | ETA 13:18:42
+2022-05-31 14:11:45 [INFO]	[TRAIN] epoch: 174, iter: 16920/30000, loss: 0.1496, DSC: 86.0809, lr: 0.000047, batch_cost: 3.5231, reader_cost: 2.26966, ips: 1.1354 samples/sec | ETA 12:48:02
+2022-05-31 14:15:26 [INFO]	[TRAIN] epoch: 175, iter: 16980/30000, loss: 0.1598, DSC: 84.9672, lr: 0.000047, batch_cost: 3.6889, reader_cost: 2.43621, ips: 1.0843 samples/sec | ETA 13:20:29
+2022-05-31 14:18:54 [INFO]	[TRAIN] epoch: 175, iter: 17040/30000, loss: 0.1636, DSC: 84.6557, lr: 0.000047, batch_cost: 3.4609, reader_cost: 2.20389, ips: 1.1558 samples/sec | ETA 12:27:33
+2022-05-31 14:23:29 [INFO]	[TRAIN] epoch: 176, iter: 17100/30000, loss: 0.1462, DSC: 86.3287, lr: 0.000047, batch_cost: 4.5827, reader_cost: 3.32820, ips: 0.8728 samples/sec | ETA 16:25:17
+2022-05-31 14:23:29 [INFO]	Start evaluating (total_samples: 72, total_iters: 72)...
+2022-05-31 14:26:24 [INFO]	[EVAL] #Images: 72, Dice: 0.7495, Loss: 0.256649
+2022-05-31 14:26:24 [INFO]	[EVAL] Class dice: 
+[0.9976 0.7627 0.545  0.6927]
+2022-05-31 14:26:29 [INFO]	[EVAL] The model with the best validation mDice (0.7658) was saved at iter 15300.
+2022-05-31 14:31:01 [INFO]	[TRAIN] epoch: 176, iter: 17160/30000, loss: 0.1541, DSC: 85.5891, lr: 0.000047, batch_cost: 4.5251, reader_cost: 3.26574, ips: 0.8840 samples/sec | ETA 16:08:22
+2022-05-31 14:35:26 [INFO]	[TRAIN] epoch: 177, iter: 17220/30000, loss: 0.1518, DSC: 85.7694, lr: 0.000046, batch_cost: 4.4220, reader_cost: 3.16970, ips: 0.9046 samples/sec | ETA 15:41:52
+2022-05-31 14:40:00 [INFO]	[TRAIN] epoch: 178, iter: 17280/30000, loss: 0.1501, DSC: 85.9670, lr: 0.000046, batch_cost: 4.5594, reader_cost: 3.30501, ips: 0.8773 samples/sec | ETA 16:06:35
+2022-05-31 14:43:59 [INFO]	[TRAIN] epoch: 178, iter: 17340/30000, loss: 0.1575, DSC: 85.2426, lr: 0.000046, batch_cost: 3.9871, reader_cost: 2.72929, ips: 1.0032 samples/sec | ETA 14:01:16
+2022-05-31 14:48:01 [INFO]	[TRAIN] epoch: 179, iter: 17400/30000, loss: 0.1475, DSC: 86.2942, lr: 0.000046, batch_cost: 4.0365, reader_cost: 2.78314, ips: 0.9910 samples/sec | ETA 14:07:40
+2022-05-31 14:48:01 [INFO]	Start evaluating (total_samples: 72, total_iters: 72)...
+2022-05-31 14:50:22 [INFO]	[EVAL] #Images: 72, Dice: 0.7665, Loss: 0.238931
+2022-05-31 14:50:22 [INFO]	[EVAL] Class dice: 
+[0.9976 0.7824 0.5824 0.7035]
+2022-05-31 14:50:31 [INFO]	[EVAL] The model with the best validation mDice (0.7665) was saved at iter 17400.
+2022-05-31 14:54:10 [INFO]	[TRAIN] epoch: 180, iter: 17460/30000, loss: 0.1588, DSC: 84.9819, lr: 0.000046, batch_cost: 3.6486, reader_cost: 2.39304, ips: 1.0963 samples/sec | ETA 12:42:33
+2022-05-31 14:57:58 [INFO]	[TRAIN] epoch: 180, iter: 17520/30000, loss: 0.1444, DSC: 86.5555, lr: 0.000045, batch_cost: 3.7976, reader_cost: 2.53718, ips: 1.0533 samples/sec | ETA 13:09:54
+2022-05-31 15:01:50 [INFO]	[TRAIN] epoch: 181, iter: 17580/30000, loss: 0.1569, DSC: 85.1850, lr: 0.000045, batch_cost: 3.8776, reader_cost: 2.62434, ips: 1.0316 samples/sec | ETA 13:22:39
+2022-05-31 15:05:35 [INFO]	[TRAIN] epoch: 181, iter: 17640/30000, loss: 0.1478, DSC: 86.2166, lr: 0.000045, batch_cost: 3.7353, reader_cost: 2.47814, ips: 1.0709 samples/sec | ETA 12:49:27
+2022-05-31 15:09:15 [INFO]	[TRAIN] epoch: 182, iter: 17700/30000, loss: 0.1472, DSC: 86.2189, lr: 0.000045, batch_cost: 3.6705, reader_cost: 2.41592, ips: 1.0898 samples/sec | ETA 12:32:27
+2022-05-31 15:09:15 [INFO]	Start evaluating (total_samples: 72, total_iters: 72)...
+2022-05-31 15:11:32 [INFO]	[EVAL] #Images: 72, Dice: 0.7597, Loss: 0.245951
+2022-05-31 15:11:32 [INFO]	[EVAL] Class dice: 
+[0.9977 0.7827 0.5637 0.6946]
+2022-05-31 15:11:37 [INFO]	[EVAL] The model with the best validation mDice (0.7665) was saved at iter 17400.
+2022-05-31 15:15:08 [INFO]	[TRAIN] epoch: 183, iter: 17760/30000, loss: 0.1581, DSC: 85.1899, lr: 0.000045, batch_cost: 3.5148, reader_cost: 2.25850, ips: 1.1380 samples/sec | ETA 11:57:01
+2022-05-31 15:18:45 [INFO]	[TRAIN] epoch: 183, iter: 17820/30000, loss: 0.1434, DSC: 86.6498, lr: 0.000044, batch_cost: 3.6142, reader_cost: 2.35605, ips: 1.1068 samples/sec | ETA 12:13:40
+2022-05-31 15:22:35 [INFO]	[TRAIN] epoch: 184, iter: 17880/30000, loss: 0.1473, DSC: 86.2229, lr: 0.000044, batch_cost: 3.8308, reader_cost: 2.57659, ips: 1.0442 samples/sec | ETA 12:53:49
+2022-05-31 15:26:28 [INFO]	[TRAIN] epoch: 184, iter: 17940/30000, loss: 0.1567, DSC: 85.3139, lr: 0.000044, batch_cost: 3.8874, reader_cost: 2.62803, ips: 1.0290 samples/sec | ETA 13:01:21
+2022-05-31 15:30:01 [INFO]	[TRAIN] epoch: 185, iter: 18000/30000, loss: 0.1577, DSC: 85.2632, lr: 0.000044, batch_cost: 3.5383, reader_cost: 2.28384, ips: 1.1305 samples/sec | ETA 11:47:40
+2022-05-31 15:30:01 [INFO]	Start evaluating (total_samples: 72, total_iters: 72)...
+2022-05-31 15:32:15 [INFO]	[EVAL] #Images: 72, Dice: 0.7674, Loss: 0.238555
+2022-05-31 15:32:15 [INFO]	[EVAL] Class dice: 
+[0.9978 0.7805 0.5858 0.7057]
+2022-05-31 15:32:24 [INFO]	[EVAL] The model with the best validation mDice (0.7674) was saved at iter 18000.
+2022-05-31 15:35:55 [INFO]	[TRAIN] epoch: 186, iter: 18060/30000, loss: 0.1449, DSC: 86.4505, lr: 0.000044, batch_cost: 3.5068, reader_cost: 2.24703, ips: 1.1407 samples/sec | ETA 11:37:50
+2022-05-31 15:39:35 [INFO]	[TRAIN] epoch: 186, iter: 18120/30000, loss: 0.1572, DSC: 85.2419, lr: 0.000043, batch_cost: 3.6721, reader_cost: 2.40769, ips: 1.0893 samples/sec | ETA 12:07:04
+2022-05-31 15:43:19 [INFO]	[TRAIN] epoch: 187, iter: 18180/30000, loss: 0.1566, DSC: 85.3969, lr: 0.000043, batch_cost: 3.7338, reader_cost: 2.47852, ips: 1.0713 samples/sec | ETA 12:15:33
+2022-05-31 15:47:13 [INFO]	[TRAIN] epoch: 188, iter: 18240/30000, loss: 0.1549, DSC: 85.4493, lr: 0.000043, batch_cost: 3.9000, reader_cost: 2.64456, ips: 1.0257 samples/sec | ETA 12:44:23
+2022-05-31 15:50:51 [INFO]	[TRAIN] epoch: 188, iter: 18300/30000, loss: 0.1495, DSC: 86.0955, lr: 0.000043, batch_cost: 3.6326, reader_cost: 2.37109, ips: 1.1011 samples/sec | ETA 11:48:21
+2022-05-31 15:50:51 [INFO]	Start evaluating (total_samples: 72, total_iters: 72)...
+2022-05-31 15:53:12 [INFO]	[EVAL] #Images: 72, Dice: 0.7700, Loss: 0.235117
+2022-05-31 15:53:12 [INFO]	[EVAL] Class dice: 
+[0.998  0.7869 0.5805 0.7146]
+2022-05-31 15:53:21 [INFO]	[EVAL] The model with the best validation mDice (0.7700) was saved at iter 18300.
+2022-05-31 15:57:00 [INFO]	[TRAIN] epoch: 189, iter: 18360/30000, loss: 0.1586, DSC: 85.1357, lr: 0.000043, batch_cost: 3.6392, reader_cost: 2.38210, ips: 1.0991 samples/sec | ETA 11:46:00
+2022-05-31 16:00:36 [INFO]	[TRAIN] epoch: 189, iter: 18420/30000, loss: 0.1433, DSC: 86.6209, lr: 0.000042, batch_cost: 3.6060, reader_cost: 2.34644, ips: 1.1093 samples/sec | ETA 11:35:57
+2022-05-31 16:04:15 [INFO]	[TRAIN] epoch: 190, iter: 18480/30000, loss: 0.1495, DSC: 85.9967, lr: 0.000042, batch_cost: 3.6525, reader_cost: 2.39747, ips: 1.0951 samples/sec | ETA 11:41:16
+2022-05-31 16:07:53 [INFO]	[TRAIN] epoch: 191, iter: 18540/30000, loss: 0.1492, DSC: 85.9806, lr: 0.000042, batch_cost: 3.6303, reader_cost: 2.37511, ips: 1.1018 samples/sec | ETA 11:33:23
+2022-05-31 16:11:36 [INFO]	[TRAIN] epoch: 191, iter: 18600/30000, loss: 0.1538, DSC: 85.5646, lr: 0.000042, batch_cost: 3.7186, reader_cost: 2.46069, ips: 1.0757 samples/sec | ETA 11:46:32
+2022-05-31 16:11:36 [INFO]	Start evaluating (total_samples: 72, total_iters: 72)...
+2022-05-31 16:13:51 [INFO]	[EVAL] #Images: 72, Dice: 0.7708, Loss: 0.234678
+2022-05-31 16:13:51 [INFO]	[EVAL] Class dice: 
+[0.9982 0.7894 0.5849 0.7108]
+2022-05-31 16:14:00 [INFO]	[EVAL] The model with the best validation mDice (0.7708) was saved at iter 18600.
+2022-05-31 16:17:21 [INFO]	[TRAIN] epoch: 192, iter: 18660/30000, loss: 0.1492, DSC: 86.0250, lr: 0.000042, batch_cost: 3.3490, reader_cost: 2.09427, ips: 1.1944 samples/sec | ETA 10:32:57
+2022-05-31 16:20:51 [INFO]	[TRAIN] epoch: 192, iter: 18720/30000, loss: 0.1556, DSC: 85.4494, lr: 0.000041, batch_cost: 3.4943, reader_cost: 2.23658, ips: 1.1447 samples/sec | ETA 10:56:56
+2022-05-31 16:24:41 [INFO]	[TRAIN] epoch: 193, iter: 18780/30000, loss: 0.1544, DSC: 85.5487, lr: 0.000041, batch_cost: 3.8446, reader_cost: 2.58825, ips: 1.0404 samples/sec | ETA 11:58:56
+2022-05-31 16:28:20 [INFO]	[TRAIN] epoch: 194, iter: 18840/30000, loss: 0.1564, DSC: 85.2558, lr: 0.000041, batch_cost: 3.6370, reader_cost: 2.38143, ips: 1.0998 samples/sec | ETA 11:16:28
+2022-05-31 16:31:57 [INFO]	[TRAIN] epoch: 194, iter: 18900/30000, loss: 0.1472, DSC: 86.2229, lr: 0.000041, batch_cost: 3.6210, reader_cost: 2.35987, ips: 1.1047 samples/sec | ETA 11:09:52
+2022-05-31 16:31:57 [INFO]	Start evaluating (total_samples: 72, total_iters: 72)...
+2022-05-31 16:34:17 [INFO]	[EVAL] #Images: 72, Dice: 0.7605, Loss: 0.245324
+2022-05-31 16:34:17 [INFO]	[EVAL] Class dice: 
+[0.9979 0.7754 0.5643 0.7043]
+2022-05-31 16:34:22 [INFO]	[EVAL] The model with the best validation mDice (0.7708) was saved at iter 18600.
+2022-05-31 16:37:40 [INFO]	[TRAIN] epoch: 195, iter: 18960/30000, loss: 0.1468, DSC: 86.2719, lr: 0.000041, batch_cost: 3.3023, reader_cost: 2.04378, ips: 1.2113 samples/sec | ETA 10:07:36
+2022-05-31 16:41:02 [INFO]	[TRAIN] epoch: 196, iter: 19020/30000, loss: 0.1497, DSC: 86.0149, lr: 0.000040, batch_cost: 3.3671, reader_cost: 2.11145, ips: 1.1880 samples/sec | ETA 10:16:10
+2022-05-31 16:44:32 [INFO]	[TRAIN] epoch: 196, iter: 19080/30000, loss: 0.1455, DSC: 86.4574, lr: 0.000040, batch_cost: 3.4932, reader_cost: 2.23339, ips: 1.1451 samples/sec | ETA 10:35:45
+2022-05-31 16:48:27 [INFO]	[TRAIN] epoch: 197, iter: 19140/30000, loss: 0.1443, DSC: 86.5020, lr: 0.000040, batch_cost: 3.9054, reader_cost: 2.64825, ips: 1.0242 samples/sec | ETA 11:46:52
+2022-05-31 16:52:13 [INFO]	[TRAIN] epoch: 197, iter: 19200/30000, loss: 0.1586, DSC: 85.0392, lr: 0.000040, batch_cost: 3.7814, reader_cost: 2.52253, ips: 1.0578 samples/sec | ETA 11:20:39
+2022-05-31 16:52:14 [INFO]	Start evaluating (total_samples: 72, total_iters: 72)...
+2022-05-31 16:54:26 [INFO]	[EVAL] #Images: 72, Dice: 0.7600, Loss: 0.245313
+2022-05-31 16:54:26 [INFO]	[EVAL] Class dice: 
+[0.9976 0.7647 0.5745 0.7032]
+2022-05-31 16:54:31 [INFO]	[EVAL] The model with the best validation mDice (0.7708) was saved at iter 18600.
+2022-05-31 16:57:59 [INFO]	[TRAIN] epoch: 198, iter: 19260/30000, loss: 0.1495, DSC: 85.9431, lr: 0.000040, batch_cost: 3.4618, reader_cost: 2.20436, ips: 1.1555 samples/sec | ETA 10:19:39
+2022-05-31 17:01:08 [INFO]	[TRAIN] epoch: 199, iter: 19320/30000, loss: 0.1517, DSC: 85.7272, lr: 0.000039, batch_cost: 3.1576, reader_cost: 1.90196, ips: 1.2668 samples/sec | ETA 09:22:02
+2022-05-31 17:04:53 [INFO]	[TRAIN] epoch: 199, iter: 19380/30000, loss: 0.1529, DSC: 85.6434, lr: 0.000039, batch_cost: 3.7360, reader_cost: 2.47699, ips: 1.0707 samples/sec | ETA 11:01:15
+2022-05-31 17:08:28 [INFO]	[TRAIN] epoch: 200, iter: 19440/30000, loss: 0.1530, DSC: 85.6113, lr: 0.000039, batch_cost: 3.5948, reader_cost: 2.33678, ips: 1.1127 samples/sec | ETA 10:32:41
+2022-05-31 17:12:25 [INFO]	[TRAIN] epoch: 201, iter: 19500/30000, loss: 0.1429, DSC: 86.6577, lr: 0.000039, batch_cost: 3.9370, reader_cost: 2.68090, ips: 1.0160 samples/sec | ETA 11:28:58
+2022-05-31 17:12:25 [INFO]	Start evaluating (total_samples: 72, total_iters: 72)...
+2022-05-31 17:14:40 [INFO]	[EVAL] #Images: 72, Dice: 0.7685, Loss: 0.236609
+2022-05-31 17:14:40 [INFO]	[EVAL] Class dice: 
+[0.9978 0.7839 0.5846 0.7075]
+2022-05-31 17:14:45 [INFO]	[EVAL] The model with the best validation mDice (0.7708) was saved at iter 18600.
+2022-05-31 17:18:06 [INFO]	[TRAIN] epoch: 201, iter: 19560/30000, loss: 0.1530, DSC: 85.6359, lr: 0.000039, batch_cost: 3.3426, reader_cost: 2.07986, ips: 1.1967 samples/sec | ETA 09:41:37
+2022-05-31 17:21:28 [INFO]	[TRAIN] epoch: 202, iter: 19620/30000, loss: 0.1405, DSC: 86.8899, lr: 0.000038, batch_cost: 3.3755, reader_cost: 2.11710, ips: 1.1850 samples/sec | ETA 09:43:58
+2022-05-31 17:25:28 [INFO]	[TRAIN] epoch: 202, iter: 19680/30000, loss: 0.1529, DSC: 85.6570, lr: 0.000038, batch_cost: 4.0039, reader_cost: 2.74565, ips: 0.9990 samples/sec | ETA 11:28:40
+2022-05-31 17:29:02 [INFO]	[TRAIN] epoch: 203, iter: 19740/30000, loss: 0.1463, DSC: 86.3032, lr: 0.000038, batch_cost: 3.5669, reader_cost: 2.31245, ips: 1.1214 samples/sec | ETA 10:09:56
+2022-05-31 17:32:48 [INFO]	[TRAIN] epoch: 204, iter: 19800/30000, loss: 0.1508, DSC: 85.7882, lr: 0.000038, batch_cost: 3.7549, reader_cost: 2.49927, ips: 1.0653 samples/sec | ETA 10:38:20
+2022-05-31 17:32:48 [INFO]	Start evaluating (total_samples: 72, total_iters: 72)...
+2022-05-31 17:35:03 [INFO]	[EVAL] #Images: 72, Dice: 0.7627, Loss: 0.243031
+2022-05-31 17:35:03 [INFO]	[EVAL] Class dice: 
+[0.9977 0.7788 0.5742 0.7002]
+2022-05-31 17:35:08 [INFO]	[EVAL] The model with the best validation mDice (0.7708) was saved at iter 18600.
+2022-05-31 17:38:22 [INFO]	[TRAIN] epoch: 204, iter: 19860/30000, loss: 0.1471, DSC: 86.2593, lr: 0.000038, batch_cost: 3.2421, reader_cost: 1.97928, ips: 1.2338 samples/sec | ETA 09:07:55
+2022-05-31 17:42:08 [INFO]	[TRAIN] epoch: 205, iter: 19920/30000, loss: 0.1564, DSC: 85.2596, lr: 0.000037, batch_cost: 3.7666, reader_cost: 2.51101, ips: 1.0620 samples/sec | ETA 10:32:47
+2022-05-31 17:46:00 [INFO]	[TRAIN] epoch: 205, iter: 19980/30000, loss: 0.1465, DSC: 86.3210, lr: 0.000037, batch_cost: 3.8542, reader_cost: 2.59441, ips: 1.0378 samples/sec | ETA 10:43:39
+2022-05-31 17:49:37 [INFO]	[TRAIN] epoch: 206, iter: 20040/30000, loss: 0.1489, DSC: 86.0179, lr: 0.000037, batch_cost: 3.6224, reader_cost: 2.36733, ips: 1.1042 samples/sec | ETA 10:01:19
+2022-05-31 17:53:18 [INFO]	[TRAIN] epoch: 207, iter: 20100/30000, loss: 0.1474, DSC: 86.2128, lr: 0.000037, batch_cost: 3.6813, reader_cost: 2.42665, ips: 1.0866 samples/sec | ETA 10:07:24
+2022-05-31 17:53:18 [INFO]	Start evaluating (total_samples: 72, total_iters: 72)...
+2022-05-31 17:55:35 [INFO]	[EVAL] #Images: 72, Dice: 0.7612, Loss: 0.244678
+2022-05-31 17:55:35 [INFO]	[EVAL] Class dice: 
+[0.9978 0.7774 0.5719 0.6979]
+2022-05-31 17:55:41 [INFO]	[EVAL] The model with the best validation mDice (0.7708) was saved at iter 18600.
+2022-05-31 17:59:13 [INFO]	[TRAIN] epoch: 207, iter: 20160/30000, loss: 0.1451, DSC: 86.4837, lr: 0.000037, batch_cost: 3.5384, reader_cost: 2.27748, ips: 1.1305 samples/sec | ETA 09:40:17
+2022-05-31 18:02:45 [INFO]	[TRAIN] epoch: 208, iter: 20220/30000, loss: 0.1434, DSC: 86.4936, lr: 0.000036, batch_cost: 3.5319, reader_cost: 2.27655, ips: 1.1325 samples/sec | ETA 09:35:41
+2022-05-31 18:06:29 [INFO]	[TRAIN] epoch: 209, iter: 20280/30000, loss: 0.1409, DSC: 86.7760, lr: 0.000036, batch_cost: 3.7384, reader_cost: 2.48372, ips: 1.0700 samples/sec | ETA 10:05:37
+2022-05-31 18:10:12 [INFO]	[TRAIN] epoch: 209, iter: 20340/30000, loss: 0.1548, DSC: 85.4294, lr: 0.000036, batch_cost: 3.7161, reader_cost: 2.45688, ips: 1.0764 samples/sec | ETA 09:58:18
+2022-05-31 18:13:45 [INFO]	[TRAIN] epoch: 210, iter: 20400/30000, loss: 0.1439, DSC: 86.5232, lr: 0.000036, batch_cost: 3.5494, reader_cost: 2.29300, ips: 1.1269 samples/sec | ETA 09:27:54
+2022-05-31 18:13:45 [INFO]	Start evaluating (total_samples: 72, total_iters: 72)...
+2022-05-31 18:16:06 [INFO]	[EVAL] #Images: 72, Dice: 0.7569, Loss: 0.248825
+2022-05-31 18:16:06 [INFO]	[EVAL] Class dice: 
+[0.9978 0.7719 0.5617 0.696 ]
+2022-05-31 18:16:12 [INFO]	[EVAL] The model with the best validation mDice (0.7708) was saved at iter 18600.
+2022-05-31 18:19:46 [INFO]	[TRAIN] epoch: 210, iter: 20460/30000, loss: 0.1405, DSC: 86.8169, lr: 0.000036, batch_cost: 3.5701, reader_cost: 2.30992, ips: 1.1204 samples/sec | ETA 09:27:39
+2022-05-31 18:23:29 [INFO]	[TRAIN] epoch: 211, iter: 20520/30000, loss: 0.1446, DSC: 86.4101, lr: 0.000035, batch_cost: 3.7154, reader_cost: 2.46074, ips: 1.0766 samples/sec | ETA 09:47:02
+2022-05-31 18:27:10 [INFO]	[TRAIN] epoch: 212, iter: 20580/30000, loss: 0.1410, DSC: 86.7984, lr: 0.000035, batch_cost: 3.6782, reader_cost: 2.42284, ips: 1.0875 samples/sec | ETA 09:37:29
+2022-05-31 18:30:47 [INFO]	[TRAIN] epoch: 212, iter: 20640/30000, loss: 0.1491, DSC: 85.9992, lr: 0.000035, batch_cost: 3.6163, reader_cost: 2.35672, ips: 1.1061 samples/sec | ETA 09:24:08
+2022-05-31 18:34:31 [INFO]	[TRAIN] epoch: 213, iter: 20700/30000, loss: 0.1549, DSC: 85.4772, lr: 0.000035, batch_cost: 3.7368, reader_cost: 2.48187, ips: 1.0704 samples/sec | ETA 09:39:12
+2022-05-31 18:34:31 [INFO]	Start evaluating (total_samples: 72, total_iters: 72)...
+2022-05-31 18:36:44 [INFO]	[EVAL] #Images: 72, Dice: 0.7707, Loss: 0.234665
+2022-05-31 18:36:44 [INFO]	[EVAL] Class dice: 
+[0.9979 0.7809 0.5861 0.718 ]
+2022-05-31 18:36:50 [INFO]	[EVAL] The model with the best validation mDice (0.7708) was saved at iter 18600.
+2022-05-31 18:40:32 [INFO]	[TRAIN] epoch: 214, iter: 20760/30000, loss: 0.1444, DSC: 86.4553, lr: 0.000035, batch_cost: 3.7102, reader_cost: 2.45378, ips: 1.0781 samples/sec | ETA 09:31:22
+2022-05-31 18:44:19 [INFO]	[TRAIN] epoch: 214, iter: 20820/30000, loss: 0.1439, DSC: 86.5010, lr: 0.000034, batch_cost: 3.7870, reader_cost: 2.52832, ips: 1.0563 samples/sec | ETA 09:39:24
+2022-05-31 18:48:11 [INFO]	[TRAIN] epoch: 215, iter: 20880/30000, loss: 0.1495, DSC: 86.0216, lr: 0.000034, batch_cost: 3.8543, reader_cost: 2.60015, ips: 1.0378 samples/sec | ETA 09:45:50
+2022-05-31 18:51:37 [INFO]	[TRAIN] epoch: 215, iter: 20940/30000, loss: 0.1415, DSC: 86.7822, lr: 0.000034, batch_cost: 3.4338, reader_cost: 2.17463, ips: 1.1649 samples/sec | ETA 08:38:30
+2022-05-31 18:55:07 [INFO]	[TRAIN] epoch: 216, iter: 21000/30000, loss: 0.1545, DSC: 85.4637, lr: 0.000034, batch_cost: 3.5035, reader_cost: 2.24881, ips: 1.1417 samples/sec | ETA 08:45:31
+2022-05-31 18:55:07 [INFO]	Start evaluating (total_samples: 72, total_iters: 72)...
+2022-05-31 18:57:35 [INFO]	[EVAL] #Images: 72, Dice: 0.7627, Loss: 0.243107
+2022-05-31 18:57:35 [INFO]	[EVAL] Class dice: 
+[0.9978 0.7799 0.5716 0.7015]
+2022-05-31 18:57:41 [INFO]	[EVAL] The model with the best validation mDice (0.7708) was saved at iter 18600.
+2022-05-31 19:01:00 [INFO]	[TRAIN] epoch: 217, iter: 21060/30000, loss: 0.1399, DSC: 86.8693, lr: 0.000034, batch_cost: 3.3284, reader_cost: 2.07203, ips: 1.2018 samples/sec | ETA 08:15:55
+2022-05-31 19:04:51 [INFO]	[TRAIN] epoch: 217, iter: 21120/30000, loss: 0.1461, DSC: 86.4259, lr: 0.000033, batch_cost: 3.8437, reader_cost: 2.58548, ips: 1.0407 samples/sec | ETA 09:28:52
+2022-05-31 19:08:27 [INFO]	[TRAIN] epoch: 218, iter: 21180/30000, loss: 0.1402, DSC: 86.9244, lr: 0.000033, batch_cost: 3.5999, reader_cost: 2.34477, ips: 1.1111 samples/sec | ETA 08:49:11
+2022-05-31 19:12:24 [INFO]	[TRAIN] epoch: 218, iter: 21240/30000, loss: 0.1499, DSC: 85.8757, lr: 0.000033, batch_cost: 3.9527, reader_cost: 2.69436, ips: 1.0120 samples/sec | ETA 09:37:05
+2022-05-31 19:16:15 [INFO]	[TRAIN] epoch: 219, iter: 21300/30000, loss: 0.1422, DSC: 86.7782, lr: 0.000033, batch_cost: 3.8461, reader_cost: 2.59121, ips: 1.0400 samples/sec | ETA 09:17:40
+2022-05-31 19:16:15 [INFO]	Start evaluating (total_samples: 72, total_iters: 72)...
+2022-05-31 19:18:36 [INFO]	[EVAL] #Images: 72, Dice: 0.7694, Loss: 0.236003
+2022-05-31 19:18:36 [INFO]	[EVAL] Class dice: 
+[0.9979 0.7846 0.5823 0.713 ]
+2022-05-31 19:18:41 [INFO]	[EVAL] The model with the best validation mDice (0.7708) was saved at iter 18600.
+2022-05-31 19:22:08 [INFO]	[TRAIN] epoch: 220, iter: 21360/30000, loss: 0.1487, DSC: 86.0006, lr: 0.000033, batch_cost: 3.4348, reader_cost: 2.17981, ips: 1.1646 samples/sec | ETA 08:14:36
+2022-05-31 19:25:58 [INFO]	[TRAIN] epoch: 220, iter: 21420/30000, loss: 0.1457, DSC: 86.2618, lr: 0.000032, batch_cost: 3.8372, reader_cost: 2.57788, ips: 1.0424 samples/sec | ETA 09:08:43
+2022-05-31 19:29:24 [INFO]	[TRAIN] epoch: 221, iter: 21480/30000, loss: 0.1442, DSC: 86.5749, lr: 0.000032, batch_cost: 3.4371, reader_cost: 2.18104, ips: 1.1638 samples/sec | ETA 08:08:03
+2022-05-31 19:33:06 [INFO]	[TRAIN] epoch: 222, iter: 21540/30000, loss: 0.1416, DSC: 86.7593, lr: 0.000032, batch_cost: 3.6923, reader_cost: 2.43930, ips: 1.0833 samples/sec | ETA 08:40:37
+2022-05-31 19:36:32 [INFO]	[TRAIN] epoch: 222, iter: 21600/30000, loss: 0.1387, DSC: 87.0388, lr: 0.000032, batch_cost: 3.4323, reader_cost: 2.17407, ips: 1.1654 samples/sec | ETA 08:00:31
+2022-05-31 19:36:32 [INFO]	Start evaluating (total_samples: 72, total_iters: 72)...
+2022-05-31 19:38:51 [INFO]	[EVAL] #Images: 72, Dice: 0.7538, Loss: 0.252799
+2022-05-31 19:38:51 [INFO]	[EVAL] Class dice: 
+[0.9976 0.7733 0.5563 0.6878]
+2022-05-31 19:38:56 [INFO]	[EVAL] The model with the best validation mDice (0.7708) was saved at iter 18600.
+2022-05-31 19:42:15 [INFO]	[TRAIN] epoch: 223, iter: 21660/30000, loss: 0.1421, DSC: 86.6474, lr: 0.000032, batch_cost: 3.3113, reader_cost: 2.05581, ips: 1.2080 samples/sec | ETA 07:40:16
+2022-05-31 19:45:50 [INFO]	[TRAIN] epoch: 223, iter: 21720/30000, loss: 0.1438, DSC: 86.4602, lr: 0.000031, batch_cost: 3.5839, reader_cost: 2.32670, ips: 1.1161 samples/sec | ETA 08:14:34
+2022-05-31 19:49:24 [INFO]	[TRAIN] epoch: 224, iter: 21780/30000, loss: 0.1455, DSC: 86.3772, lr: 0.000031, batch_cost: 3.5777, reader_cost: 2.32397, ips: 1.1180 samples/sec | ETA 08:10:08
+2022-05-31 19:53:01 [INFO]	[TRAIN] epoch: 225, iter: 21840/30000, loss: 0.1496, DSC: 85.9569, lr: 0.000031, batch_cost: 3.6143, reader_cost: 2.36094, ips: 1.1067 samples/sec | ETA 08:11:32
+2022-05-31 19:56:34 [INFO]	[TRAIN] epoch: 225, iter: 21900/30000, loss: 0.1364, DSC: 87.2831, lr: 0.000031, batch_cost: 3.5447, reader_cost: 2.28731, ips: 1.1285 samples/sec | ETA 07:58:31
+2022-05-31 19:56:34 [INFO]	Start evaluating (total_samples: 72, total_iters: 72)...
+2022-05-31 19:58:52 [INFO]	[EVAL] #Images: 72, Dice: 0.7652, Loss: 0.240770
+2022-05-31 19:58:52 [INFO]	[EVAL] Class dice: 
+[0.9978 0.7819 0.5803 0.701 ]
+2022-05-31 19:58:58 [INFO]	[EVAL] The model with the best validation mDice (0.7708) was saved at iter 18600.
+2022-05-31 20:02:02 [INFO]	[TRAIN] epoch: 226, iter: 21960/30000, loss: 0.1397, DSC: 86.9347, lr: 0.000031, batch_cost: 3.0639, reader_cost: 1.80996, ips: 1.3055 samples/sec | ETA 06:50:33
+2022-05-31 20:05:44 [INFO]	[TRAIN] epoch: 227, iter: 22020/30000, loss: 0.1452, DSC: 86.3284, lr: 0.000030, batch_cost: 3.7077, reader_cost: 2.45207, ips: 1.0788 samples/sec | ETA 08:13:07
+2022-05-31 20:09:10 [INFO]	[TRAIN] epoch: 227, iter: 22080/30000, loss: 0.1447, DSC: 86.3940, lr: 0.000030, batch_cost: 3.4336, reader_cost: 2.17578, ips: 1.1650 samples/sec | ETA 07:33:14
+2022-05-31 20:12:41 [INFO]	[TRAIN] epoch: 228, iter: 22140/30000, loss: 0.1486, DSC: 86.0746, lr: 0.000030, batch_cost: 3.5070, reader_cost: 2.25228, ips: 1.1406 samples/sec | ETA 07:39:24
+2022-05-31 20:16:38 [INFO]	[TRAIN] epoch: 228, iter: 22200/30000, loss: 0.1333, DSC: 87.5990, lr: 0.000030, batch_cost: 3.9458, reader_cost: 2.68845, ips: 1.0137 samples/sec | ETA 08:32:57
+2022-05-31 20:16:38 [INFO]	Start evaluating (total_samples: 72, total_iters: 72)...
+2022-05-31 20:18:59 [INFO]	[EVAL] #Images: 72, Dice: 0.7686, Loss: 0.236830
+2022-05-31 20:18:59 [INFO]	[EVAL] Class dice: 
+[0.998  0.7829 0.5903 0.7031]
+2022-05-31 20:19:04 [INFO]	[EVAL] The model with the best validation mDice (0.7708) was saved at iter 18600.
+2022-05-31 20:22:24 [INFO]	[TRAIN] epoch: 229, iter: 22260/30000, loss: 0.1457, DSC: 86.4080, lr: 0.000030, batch_cost: 3.3286, reader_cost: 2.07452, ips: 1.2017 samples/sec | ETA 07:09:23
+2022-05-31 20:25:41 [INFO]	[TRAIN] epoch: 230, iter: 22320/30000, loss: 0.1406, DSC: 86.8362, lr: 0.000029, batch_cost: 3.2915, reader_cost: 2.03831, ips: 1.2152 samples/sec | ETA 07:01:19
+2022-05-31 20:29:22 [INFO]	[TRAIN] epoch: 230, iter: 22380/30000, loss: 0.1433, DSC: 86.5429, lr: 0.000029, batch_cost: 3.6792, reader_cost: 2.42211, ips: 1.0872 samples/sec | ETA 07:47:15
+2022-05-31 20:33:07 [INFO]	[TRAIN] epoch: 231, iter: 22440/30000, loss: 0.1394, DSC: 86.9556, lr: 0.000029, batch_cost: 3.7481, reader_cost: 2.49461, ips: 1.0672 samples/sec | ETA 07:52:16
+2022-05-31 20:36:47 [INFO]	[TRAIN] epoch: 231, iter: 22500/30000, loss: 0.1446, DSC: 86.4491, lr: 0.000029, batch_cost: 3.6607, reader_cost: 2.40339, ips: 1.0927 samples/sec | ETA 07:37:35
+2022-05-31 20:36:47 [INFO]	Start evaluating (total_samples: 72, total_iters: 72)...
+2022-05-31 20:38:53 [INFO]	[EVAL] #Images: 72, Dice: 0.7560, Loss: 0.250198
+2022-05-31 20:38:53 [INFO]	[EVAL] Class dice: 
+[0.9976 0.7651 0.5668 0.6947]
+2022-05-31 20:38:58 [INFO]	[EVAL] The model with the best validation mDice (0.7708) was saved at iter 18600.
+2022-05-31 20:42:19 [INFO]	[TRAIN] epoch: 232, iter: 22560/30000, loss: 0.1371, DSC: 87.1714, lr: 0.000029, batch_cost: 3.3572, reader_cost: 2.10167, ips: 1.1915 samples/sec | ETA 06:56:17
+2022-05-31 20:45:58 [INFO]	[TRAIN] epoch: 233, iter: 22620/30000, loss: 0.1408, DSC: 86.7978, lr: 0.000028, batch_cost: 3.6447, reader_cost: 2.39157, ips: 1.0975 samples/sec | ETA 07:28:17
+2022-05-31 20:49:32 [INFO]	[TRAIN] epoch: 233, iter: 22680/30000, loss: 0.1426, DSC: 86.6814, lr: 0.000028, batch_cost: 3.5608, reader_cost: 2.30296, ips: 1.1233 samples/sec | ETA 07:14:24
+2022-05-31 20:53:15 [INFO]	[TRAIN] epoch: 234, iter: 22740/30000, loss: 0.1341, DSC: 87.5277, lr: 0.000028, batch_cost: 3.7120, reader_cost: 2.45906, ips: 1.0776 samples/sec | ETA 07:29:09
+2022-05-31 20:57:04 [INFO]	[TRAIN] epoch: 235, iter: 22800/30000, loss: 0.1398, DSC: 86.8850, lr: 0.000028, batch_cost: 3.8275, reader_cost: 2.57425, ips: 1.0451 samples/sec | ETA 07:39:18
+2022-05-31 20:57:04 [INFO]	Start evaluating (total_samples: 72, total_iters: 72)...
+2022-05-31 20:59:22 [INFO]	[EVAL] #Images: 72, Dice: 0.7678, Loss: 0.238176
+2022-05-31 20:59:22 [INFO]	[EVAL] Class dice: 
+[0.9978 0.7772 0.5842 0.7118]
+2022-05-31 20:59:27 [INFO]	[EVAL] The model with the best validation mDice (0.7708) was saved at iter 18600.
+2022-05-31 21:02:40 [INFO]	[TRAIN] epoch: 235, iter: 22860/30000, loss: 0.1367, DSC: 87.2203, lr: 0.000027, batch_cost: 3.2255, reader_cost: 1.96615, ips: 1.2401 samples/sec | ETA 06:23:49
+2022-05-31 21:06:12 [INFO]	[TRAIN] epoch: 236, iter: 22920/30000, loss: 0.1511, DSC: 85.7037, lr: 0.000027, batch_cost: 3.5276, reader_cost: 2.27500, ips: 1.1339 samples/sec | ETA 06:56:15
+2022-05-31 21:10:06 [INFO]	[TRAIN] epoch: 236, iter: 22980/30000, loss: 0.1408, DSC: 86.8667, lr: 0.000027, batch_cost: 3.8957, reader_cost: 2.63854, ips: 1.0268 samples/sec | ETA 07:35:47
+2022-05-31 21:13:37 [INFO]	[TRAIN] epoch: 237, iter: 23040/30000, loss: 0.1385, DSC: 87.0332, lr: 0.000027, batch_cost: 3.5184, reader_cost: 2.26371, ips: 1.1369 samples/sec | ETA 06:48:07
+2022-05-31 21:17:26 [INFO]	[TRAIN] epoch: 238, iter: 23100/30000, loss: 0.1472, DSC: 86.1524, lr: 0.000027, batch_cost: 3.8176, reader_cost: 2.56424, ips: 1.0478 samples/sec | ETA 07:19:01
+2022-05-31 21:17:26 [INFO]	Start evaluating (total_samples: 72, total_iters: 72)...
+2022-05-31 21:19:47 [INFO]	[EVAL] #Images: 72, Dice: 0.7691, Loss: 0.236529
+2022-05-31 21:19:47 [INFO]	[EVAL] Class dice: 
+[0.9979 0.7855 0.5875 0.7053]
+2022-05-31 21:19:52 [INFO]	[EVAL] The model with the best validation mDice (0.7708) was saved at iter 18600.
+2022-05-31 21:23:18 [INFO]	[TRAIN] epoch: 238, iter: 23160/30000, loss: 0.1447, DSC: 86.4136, lr: 0.000026, batch_cost: 3.4292, reader_cost: 2.16868, ips: 1.1665 samples/sec | ETA 06:30:55
+2022-05-31 21:26:49 [INFO]	[TRAIN] epoch: 239, iter: 23220/30000, loss: 0.1373, DSC: 87.1036, lr: 0.000026, batch_cost: 3.5221, reader_cost: 2.26937, ips: 1.1357 samples/sec | ETA 06:37:59
+2022-05-31 21:30:26 [INFO]	[TRAIN] epoch: 240, iter: 23280/30000, loss: 0.1422, DSC: 86.7190, lr: 0.000026, batch_cost: 3.6011, reader_cost: 2.34802, ips: 1.1108 samples/sec | ETA 06:43:19
+2022-05-31 21:34:05 [INFO]	[TRAIN] epoch: 240, iter: 23340/30000, loss: 0.1437, DSC: 86.4939, lr: 0.000026, batch_cost: 3.6601, reader_cost: 2.40307, ips: 1.0929 samples/sec | ETA 06:46:16
+2022-05-31 21:37:52 [INFO]	[TRAIN] epoch: 241, iter: 23400/30000, loss: 0.1405, DSC: 86.8517, lr: 0.000026, batch_cost: 3.7860, reader_cost: 2.53342, ips: 1.0565 samples/sec | ETA 06:56:27
+2022-05-31 21:37:53 [INFO]	Start evaluating (total_samples: 72, total_iters: 72)...
+2022-05-31 21:40:09 [INFO]	[EVAL] #Images: 72, Dice: 0.7700, Loss: 0.235427
+2022-05-31 21:40:09 [INFO]	[EVAL] Class dice: 
+[0.998  0.7861 0.5862 0.71  ]
+2022-05-31 21:40:14 [INFO]	[EVAL] The model with the best validation mDice (0.7708) was saved at iter 18600.
+2022-05-31 21:43:50 [INFO]	[TRAIN] epoch: 241, iter: 23460/30000, loss: 0.1439, DSC: 86.5075, lr: 0.000025, batch_cost: 3.5891, reader_cost: 2.33202, ips: 1.1145 samples/sec | ETA 06:31:13
+2022-05-31 21:47:13 [INFO]	[TRAIN] epoch: 242, iter: 23520/30000, loss: 0.1345, DSC: 87.3381, lr: 0.000025, batch_cost: 3.3902, reader_cost: 2.13828, ips: 1.1799 samples/sec | ETA 06:06:08
+2022-05-31 21:50:55 [INFO]	[TRAIN] epoch: 243, iter: 23580/30000, loss: 0.1391, DSC: 86.9253, lr: 0.000025, batch_cost: 3.6976, reader_cost: 2.44571, ips: 1.0818 samples/sec | ETA 06:35:38
+2022-05-31 21:54:29 [INFO]	[TRAIN] epoch: 243, iter: 23640/30000, loss: 0.1401, DSC: 86.8823, lr: 0.000025, batch_cost: 3.5746, reader_cost: 2.31543, ips: 1.1190 samples/sec | ETA 06:18:54
+2022-05-31 21:58:07 [INFO]	[TRAIN] epoch: 244, iter: 23700/30000, loss: 0.1352, DSC: 87.3247, lr: 0.000025, batch_cost: 3.6162, reader_cost: 2.36449, ips: 1.1061 samples/sec | ETA 06:19:41
+2022-05-31 21:58:07 [INFO]	Start evaluating (total_samples: 72, total_iters: 72)...
+2022-05-31 22:00:28 [INFO]	[EVAL] #Images: 72, Dice: 0.7591, Loss: 0.247065
+2022-05-31 22:00:28 [INFO]	[EVAL] Class dice: 
+[0.9977 0.7722 0.5693 0.6974]
+2022-05-31 22:00:33 [INFO]	[EVAL] The model with the best validation mDice (0.7708) was saved at iter 18600.
+2022-05-31 22:03:57 [INFO]	[TRAIN] epoch: 244, iter: 23760/30000, loss: 0.1344, DSC: 87.3979, lr: 0.000024, batch_cost: 3.4080, reader_cost: 2.15106, ips: 1.1737 samples/sec | ETA 05:54:26
+2022-05-31 22:07:31 [INFO]	[TRAIN] epoch: 245, iter: 23820/30000, loss: 0.1388, DSC: 87.0055, lr: 0.000024, batch_cost: 3.5547, reader_cost: 2.30269, ips: 1.1253 samples/sec | ETA 06:06:07
+2022-05-31 22:11:07 [INFO]	[TRAIN] epoch: 246, iter: 23880/30000, loss: 0.1363, DSC: 87.2235, lr: 0.000024, batch_cost: 3.6107, reader_cost: 2.35865, ips: 1.1078 samples/sec | ETA 06:08:17
+2022-05-31 22:15:02 [INFO]	[TRAIN] epoch: 246, iter: 23940/30000, loss: 0.1427, DSC: 86.6179, lr: 0.000024, batch_cost: 3.9021, reader_cost: 2.64560, ips: 1.0251 samples/sec | ETA 06:34:06
+2022-05-31 22:18:29 [INFO]	[TRAIN] epoch: 247, iter: 24000/30000, loss: 0.1460, DSC: 86.2813, lr: 0.000023, batch_cost: 3.4637, reader_cost: 2.21103, ips: 1.1548 samples/sec | ETA 05:46:22
+2022-05-31 22:18:29 [INFO]	Start evaluating (total_samples: 72, total_iters: 72)...
+2022-05-31 22:20:42 [INFO]	[EVAL] #Images: 72, Dice: 0.7672, Loss: 0.238557
+2022-05-31 22:20:42 [INFO]	[EVAL] Class dice: 
+[0.9979 0.7822 0.5808 0.7081]
+2022-05-31 22:20:47 [INFO]	[EVAL] The model with the best validation mDice (0.7708) was saved at iter 18600.
+2022-05-31 22:24:26 [INFO]	[TRAIN] epoch: 248, iter: 24060/30000, loss: 0.1370, DSC: 87.1205, lr: 0.000023, batch_cost: 3.6492, reader_cost: 2.39633, ips: 1.0961 samples/sec | ETA 06:01:16
+2022-05-31 22:28:04 [INFO]	[TRAIN] epoch: 248, iter: 24120/30000, loss: 0.1369, DSC: 87.1787, lr: 0.000023, batch_cost: 3.6365, reader_cost: 2.37970, ips: 1.1000 samples/sec | ETA 05:56:22
+2022-05-31 22:31:49 [INFO]	[TRAIN] epoch: 249, iter: 24180/30000, loss: 0.1324, DSC: 87.6704, lr: 0.000023, batch_cost: 3.7515, reader_cost: 2.49978, ips: 1.0662 samples/sec | ETA 06:03:53
+2022-05-31 22:35:31 [INFO]	[TRAIN] epoch: 249, iter: 24240/30000, loss: 0.1425, DSC: 86.6643, lr: 0.000023, batch_cost: 3.6902, reader_cost: 2.43258, ips: 1.0839 samples/sec | ETA 05:54:15
+2022-05-31 22:38:55 [INFO]	[TRAIN] epoch: 250, iter: 24300/30000, loss: 0.1368, DSC: 87.1727, lr: 0.000022, batch_cost: 3.4076, reader_cost: 2.15430, ips: 1.1738 samples/sec | ETA 05:23:43
+2022-05-31 22:38:55 [INFO]	Start evaluating (total_samples: 72, total_iters: 72)...
+2022-05-31 22:41:15 [INFO]	[EVAL] #Images: 72, Dice: 0.7572, Loss: 0.248901
+2022-05-31 22:41:15 [INFO]	[EVAL] Class dice: 
+[0.9979 0.7725 0.5696 0.6888]
+2022-05-31 22:41:20 [INFO]	[EVAL] The model with the best validation mDice (0.7708) was saved at iter 18600.
+2022-05-31 22:44:52 [INFO]	[TRAIN] epoch: 251, iter: 24360/30000, loss: 0.1325, DSC: 87.6792, lr: 0.000022, batch_cost: 3.5357, reader_cost: 2.28255, ips: 1.1313 samples/sec | ETA 05:32:21
+2022-05-31 22:48:23 [INFO]	[TRAIN] epoch: 251, iter: 24420/30000, loss: 0.1398, DSC: 86.9460, lr: 0.000022, batch_cost: 3.5095, reader_cost: 2.25330, ips: 1.1398 samples/sec | ETA 05:26:22
+2022-05-31 22:51:55 [INFO]	[TRAIN] epoch: 252, iter: 24480/30000, loss: 0.1399, DSC: 86.8592, lr: 0.000022, batch_cost: 3.5457, reader_cost: 2.29251, ips: 1.1281 samples/sec | ETA 05:26:12
+2022-05-31 22:55:45 [INFO]	[TRAIN] epoch: 252, iter: 24540/30000, loss: 0.1444, DSC: 86.4660, lr: 0.000022, batch_cost: 3.8192, reader_cost: 2.56338, ips: 1.0473 samples/sec | ETA 05:47:33
+2022-05-31 22:59:35 [INFO]	[TRAIN] epoch: 253, iter: 24600/30000, loss: 0.1513, DSC: 85.6992, lr: 0.000021, batch_cost: 3.8443, reader_cost: 2.59199, ips: 1.0405 samples/sec | ETA 05:45:59
+2022-05-31 22:59:35 [INFO]	Start evaluating (total_samples: 72, total_iters: 72)...
+2022-05-31 23:01:50 [INFO]	[EVAL] #Images: 72, Dice: 0.7679, Loss: 0.237974
+2022-05-31 23:01:50 [INFO]	[EVAL] Class dice: 
+[0.9978 0.7778 0.5863 0.7095]
+2022-05-31 23:01:55 [INFO]	[EVAL] The model with the best validation mDice (0.7708) was saved at iter 18600.
+2022-05-31 23:05:25 [INFO]	[TRAIN] epoch: 254, iter: 24660/30000, loss: 0.1355, DSC: 87.3356, lr: 0.000021, batch_cost: 3.4951, reader_cost: 2.24014, ips: 1.1445 samples/sec | ETA 05:11:03
+2022-05-31 23:09:08 [INFO]	[TRAIN] epoch: 254, iter: 24720/30000, loss: 0.1418, DSC: 86.6536, lr: 0.000021, batch_cost: 3.7181, reader_cost: 2.46150, ips: 1.0758 samples/sec | ETA 05:27:11
+2022-05-31 23:12:46 [INFO]	[TRAIN] epoch: 255, iter: 24780/30000, loss: 0.1386, DSC: 87.0632, lr: 0.000021, batch_cost: 3.6385, reader_cost: 2.38636, ips: 1.0993 samples/sec | ETA 05:16:33
+2022-05-31 23:16:26 [INFO]	[TRAIN] epoch: 256, iter: 24840/30000, loss: 0.1307, DSC: 87.7646, lr: 0.000021, batch_cost: 3.6635, reader_cost: 2.40921, ips: 1.0919 samples/sec | ETA 05:15:03
+2022-05-31 23:20:20 [INFO]	[TRAIN] epoch: 256, iter: 24900/30000, loss: 0.1341, DSC: 87.4492, lr: 0.000020, batch_cost: 3.8970, reader_cost: 2.64101, ips: 1.0264 samples/sec | ETA 05:31:14
+2022-05-31 23:20:20 [INFO]	Start evaluating (total_samples: 72, total_iters: 72)...
+2022-05-31 23:22:32 [INFO]	[EVAL] #Images: 72, Dice: 0.7546, Loss: 0.251895
+2022-05-31 23:22:32 [INFO]	[EVAL] Class dice: 
+[0.9977 0.7661 0.5707 0.6838]
+2022-05-31 23:22:37 [INFO]	[EVAL] The model with the best validation mDice (0.7708) was saved at iter 18600.
+2022-05-31 23:25:59 [INFO]	[TRAIN] epoch: 257, iter: 24960/30000, loss: 0.1426, DSC: 86.6087, lr: 0.000020, batch_cost: 3.3614, reader_cost: 2.10822, ips: 1.1900 samples/sec | ETA 04:42:21
+2022-05-31 23:29:31 [INFO]	[TRAIN] epoch: 257, iter: 25020/30000, loss: 0.1412, DSC: 86.6994, lr: 0.000020, batch_cost: 3.5240, reader_cost: 2.26784, ips: 1.1351 samples/sec | ETA 04:52:29
+2022-05-31 23:33:16 [INFO]	[TRAIN] epoch: 258, iter: 25080/30000, loss: 0.1394, DSC: 86.9400, lr: 0.000020, batch_cost: 3.7516, reader_cost: 2.49841, ips: 1.0662 samples/sec | ETA 05:07:37
+2022-05-31 23:36:57 [INFO]	[TRAIN] epoch: 259, iter: 25140/30000, loss: 0.1369, DSC: 87.1138, lr: 0.000019, batch_cost: 3.6950, reader_cost: 2.44327, ips: 1.0825 samples/sec | ETA 04:59:17
+2022-05-31 23:40:38 [INFO]	[TRAIN] epoch: 259, iter: 25200/30000, loss: 0.1347, DSC: 87.3962, lr: 0.000019, batch_cost: 3.6803, reader_cost: 2.42278, ips: 1.0869 samples/sec | ETA 04:54:25
+2022-05-31 23:40:38 [INFO]	Start evaluating (total_samples: 72, total_iters: 72)...
+2022-05-31 23:42:48 [INFO]	[EVAL] #Images: 72, Dice: 0.7637, Loss: 0.242191
+2022-05-31 23:42:48 [INFO]	[EVAL] Class dice: 
+[0.9979 0.778  0.579  0.6999]
+2022-05-31 23:42:53 [INFO]	[EVAL] The model with the best validation mDice (0.7708) was saved at iter 18600.
+2022-05-31 23:46:06 [INFO]	[TRAIN] epoch: 260, iter: 25260/30000, loss: 0.1374, DSC: 87.0488, lr: 0.000019, batch_cost: 3.2256, reader_cost: 1.97097, ips: 1.2401 samples/sec | ETA 04:14:49
+2022-05-31 23:49:42 [INFO]	[TRAIN] epoch: 261, iter: 25320/30000, loss: 0.1407, DSC: 86.7236, lr: 0.000019, batch_cost: 3.5977, reader_cost: 2.34532, ips: 1.1118 samples/sec | ETA 04:40:37
+2022-05-31 23:53:22 [INFO]	[TRAIN] epoch: 261, iter: 25380/30000, loss: 0.1383, DSC: 87.0316, lr: 0.000019, batch_cost: 3.6643, reader_cost: 2.40868, ips: 1.0916 samples/sec | ETA 04:42:09
+2022-05-31 23:56:47 [INFO]	[TRAIN] epoch: 262, iter: 25440/30000, loss: 0.1381, DSC: 87.0828, lr: 0.000018, batch_cost: 3.4109, reader_cost: 2.15885, ips: 1.1727 samples/sec | ETA 04:19:13
+2022-06-01 00:00:45 [INFO]	[TRAIN] epoch: 262, iter: 25500/30000, loss: 0.1416, DSC: 86.6943, lr: 0.000018, batch_cost: 3.9701, reader_cost: 2.71382, ips: 1.0075 samples/sec | ETA 04:57:45
+2022-06-01 00:00:45 [INFO]	Start evaluating (total_samples: 72, total_iters: 72)...
+2022-06-01 00:03:00 [INFO]	[EVAL] #Images: 72, Dice: 0.7710, Loss: 0.234193
+2022-06-01 00:03:00 [INFO]	[EVAL] Class dice: 
+[0.9982 0.7876 0.5908 0.7073]
+2022-06-01 00:03:08 [INFO]	[EVAL] The model with the best validation mDice (0.7710) was saved at iter 25500.
+2022-06-01 00:06:31 [INFO]	[TRAIN] epoch: 263, iter: 25560/30000, loss: 0.1338, DSC: 87.4431, lr: 0.000018, batch_cost: 3.3764, reader_cost: 2.12355, ips: 1.1847 samples/sec | ETA 04:09:51
+2022-06-01 00:09:53 [INFO]	[TRAIN] epoch: 264, iter: 25620/30000, loss: 0.1399, DSC: 86.8555, lr: 0.000018, batch_cost: 3.3679, reader_cost: 2.11608, ips: 1.1877 samples/sec | ETA 04:05:51
+2022-06-01 00:13:28 [INFO]	[TRAIN] epoch: 264, iter: 25680/30000, loss: 0.1381, DSC: 87.0225, lr: 0.000017, batch_cost: 3.5859, reader_cost: 2.33038, ips: 1.1155 samples/sec | ETA 04:18:10
+2022-06-01 00:16:43 [INFO]	[TRAIN] epoch: 265, iter: 25740/30000, loss: 0.1394, DSC: 86.9439, lr: 0.000017, batch_cost: 3.2470, reader_cost: 1.99321, ips: 1.2319 samples/sec | ETA 03:50:32
+2022-06-01 00:20:38 [INFO]	[TRAIN] epoch: 265, iter: 25800/30000, loss: 0.1341, DSC: 87.4291, lr: 0.000017, batch_cost: 3.9113, reader_cost: 2.65412, ips: 1.0227 samples/sec | ETA 04:33:47
+2022-06-01 00:20:38 [INFO]	Start evaluating (total_samples: 72, total_iters: 72)...
+2022-06-01 00:22:41 [INFO]	[EVAL] #Images: 72, Dice: 0.7684, Loss: 0.237189
+2022-06-01 00:22:41 [INFO]	[EVAL] Class dice: 
+[0.998  0.7892 0.587  0.6995]
+2022-06-01 00:22:46 [INFO]	[EVAL] The model with the best validation mDice (0.7710) was saved at iter 25500.
+2022-06-01 00:26:13 [INFO]	[TRAIN] epoch: 266, iter: 25860/30000, loss: 0.1394, DSC: 86.9235, lr: 0.000017, batch_cost: 3.4493, reader_cost: 2.19532, ips: 1.1597 samples/sec | ETA 03:57:59
+2022-06-01 00:29:47 [INFO]	[TRAIN] epoch: 267, iter: 25920/30000, loss: 0.1357, DSC: 87.2676, lr: 0.000017, batch_cost: 3.5609, reader_cost: 2.30543, ips: 1.1233 samples/sec | ETA 04:02:08
+2022-06-01 00:33:24 [INFO]	[TRAIN] epoch: 267, iter: 25980/30000, loss: 0.1421, DSC: 86.6471, lr: 0.000016, batch_cost: 3.6183, reader_cost: 2.36040, ips: 1.1055 samples/sec | ETA 04:02:25
+2022-06-01 00:36:51 [INFO]	[TRAIN] epoch: 268, iter: 26040/30000, loss: 0.1277, DSC: 88.0108, lr: 0.000016, batch_cost: 3.4486, reader_cost: 2.19450, ips: 1.1599 samples/sec | ETA 03:47:36
+2022-06-01 00:40:39 [INFO]	[TRAIN] epoch: 269, iter: 26100/30000, loss: 0.1369, DSC: 87.1755, lr: 0.000016, batch_cost: 3.8057, reader_cost: 2.55347, ips: 1.0511 samples/sec | ETA 04:07:22
+2022-06-01 00:40:39 [INFO]	Start evaluating (total_samples: 72, total_iters: 72)...
+2022-06-01 00:42:59 [INFO]	[EVAL] #Images: 72, Dice: 0.7699, Loss: 0.235494
+2022-06-01 00:42:59 [INFO]	[EVAL] Class dice: 
+[0.9979 0.7845 0.5897 0.7075]
+2022-06-01 00:43:04 [INFO]	[EVAL] The model with the best validation mDice (0.7710) was saved at iter 25500.
+2022-06-01 00:46:36 [INFO]	[TRAIN] epoch: 269, iter: 26160/30000, loss: 0.1359, DSC: 87.2489, lr: 0.000016, batch_cost: 3.5369, reader_cost: 2.27984, ips: 1.1309 samples/sec | ETA 03:46:21
+2022-06-01 00:50:21 [INFO]	[TRAIN] epoch: 270, iter: 26220/30000, loss: 0.1314, DSC: 87.6897, lr: 0.000016, batch_cost: 3.7449, reader_cost: 2.49148, ips: 1.0681 samples/sec | ETA 03:55:55
+2022-06-01 00:54:14 [INFO]	[TRAIN] epoch: 270, iter: 26280/30000, loss: 0.1312, DSC: 87.7079, lr: 0.000015, batch_cost: 3.8822, reader_cost: 2.62528, ips: 1.0303 samples/sec | ETA 04:00:41
+2022-06-01 00:57:52 [INFO]	[TRAIN] epoch: 271, iter: 26340/30000, loss: 0.1419, DSC: 86.5988, lr: 0.000015, batch_cost: 3.6377, reader_cost: 2.38591, ips: 1.0996 samples/sec | ETA 03:41:54
+2022-06-01 01:01:33 [INFO]	[TRAIN] epoch: 272, iter: 26400/30000, loss: 0.1321, DSC: 87.6660, lr: 0.000015, batch_cost: 3.6824, reader_cost: 2.43078, ips: 1.0862 samples/sec | ETA 03:40:56
+2022-06-01 01:01:33 [INFO]	Start evaluating (total_samples: 72, total_iters: 72)...
+2022-06-01 01:03:56 [INFO]	[EVAL] #Images: 72, Dice: 0.7605, Loss: 0.245588
+2022-06-01 01:03:56 [INFO]	[EVAL] Class dice: 
+[0.9978 0.775  0.5739 0.6954]
+2022-06-01 01:04:01 [INFO]	[EVAL] The model with the best validation mDice (0.7710) was saved at iter 25500.
+2022-06-01 01:07:31 [INFO]	[TRAIN] epoch: 272, iter: 26460/30000, loss: 0.1330, DSC: 87.4930, lr: 0.000015, batch_cost: 3.4985, reader_cost: 2.24147, ips: 1.1434 samples/sec | ETA 03:26:24
+2022-06-01 01:10:53 [INFO]	[TRAIN] epoch: 273, iter: 26520/30000, loss: 0.1298, DSC: 87.8127, lr: 0.000014, batch_cost: 3.3656, reader_cost: 2.11220, ips: 1.1885 samples/sec | ETA 03:15:12
+2022-06-01 01:14:51 [INFO]	[TRAIN] epoch: 274, iter: 26580/30000, loss: 0.1407, DSC: 86.7981, lr: 0.000014, batch_cost: 3.9643, reader_cost: 2.71215, ips: 1.0090 samples/sec | ETA 03:45:57
+2022-06-01 01:18:22 [INFO]	[TRAIN] epoch: 274, iter: 26640/30000, loss: 0.1291, DSC: 87.9246, lr: 0.000014, batch_cost: 3.5216, reader_cost: 2.26619, ips: 1.1359 samples/sec | ETA 03:17:12
+2022-06-01 01:21:55 [INFO]	[TRAIN] epoch: 275, iter: 26700/30000, loss: 0.1304, DSC: 87.7779, lr: 0.000014, batch_cost: 3.5460, reader_cost: 2.29313, ips: 1.1280 samples/sec | ETA 03:15:01
+2022-06-01 01:21:55 [INFO]	Start evaluating (total_samples: 72, total_iters: 72)...
+2022-06-01 01:24:10 [INFO]	[EVAL] #Images: 72, Dice: 0.7642, Loss: 0.241267
+2022-06-01 01:24:10 [INFO]	[EVAL] Class dice: 
+[0.998  0.7807 0.5789 0.6992]
+2022-06-01 01:24:15 [INFO]	[EVAL] The model with the best validation mDice (0.7710) was saved at iter 25500.
+2022-06-01 01:27:37 [INFO]	[TRAIN] epoch: 275, iter: 26760/30000, loss: 0.1411, DSC: 86.7090, lr: 0.000013, batch_cost: 3.3727, reader_cost: 2.11454, ips: 1.1860 samples/sec | ETA 03:02:07
+2022-06-01 01:31:06 [INFO]	[TRAIN] epoch: 276, iter: 26820/30000, loss: 0.1326, DSC: 87.5863, lr: 0.000013, batch_cost: 3.4822, reader_cost: 2.23051, ips: 1.1487 samples/sec | ETA 03:04:33
+2022-06-01 01:34:54 [INFO]	[TRAIN] epoch: 277, iter: 26880/30000, loss: 0.1309, DSC: 87.7085, lr: 0.000013, batch_cost: 3.7981, reader_cost: 2.54421, ips: 1.0532 samples/sec | ETA 03:17:30
+2022-06-01 01:38:28 [INFO]	[TRAIN] epoch: 277, iter: 26940/30000, loss: 0.1329, DSC: 87.4952, lr: 0.000013, batch_cost: 3.5599, reader_cost: 2.30162, ips: 1.1236 samples/sec | ETA 03:01:33
+2022-06-01 01:42:15 [INFO]	[TRAIN] epoch: 278, iter: 27000/30000, loss: 0.1324, DSC: 87.6063, lr: 0.000013, batch_cost: 3.7833, reader_cost: 2.53062, ips: 1.0573 samples/sec | ETA 03:09:09
+2022-06-01 01:42:15 [INFO]	Start evaluating (total_samples: 72, total_iters: 72)...
+2022-06-01 01:44:25 [INFO]	[EVAL] #Images: 72, Dice: 0.7613, Loss: 0.244872
+2022-06-01 01:44:25 [INFO]	[EVAL] Class dice: 
+[0.9979 0.7797 0.5708 0.6969]
+2022-06-01 01:44:30 [INFO]	[EVAL] The model with the best validation mDice (0.7710) was saved at iter 25500.
+2022-06-01 01:48:06 [INFO]	[TRAIN] epoch: 278, iter: 27060/30000, loss: 0.1351, DSC: 87.3281, lr: 0.000012, batch_cost: 3.5902, reader_cost: 2.33218, ips: 1.1141 samples/sec | ETA 02:55:55
+2022-06-01 01:51:35 [INFO]	[TRAIN] epoch: 279, iter: 27120/30000, loss: 0.1324, DSC: 87.6119, lr: 0.000012, batch_cost: 3.4910, reader_cost: 2.23780, ips: 1.1458 samples/sec | ETA 02:47:34
+2022-06-01 01:55:31 [INFO]	[TRAIN] epoch: 280, iter: 27180/30000, loss: 0.1337, DSC: 87.4925, lr: 0.000012, batch_cost: 3.9250, reader_cost: 2.67216, ips: 1.0191 samples/sec | ETA 03:04:28
+2022-06-01 01:59:01 [INFO]	[TRAIN] epoch: 280, iter: 27240/30000, loss: 0.1326, DSC: 87.6096, lr: 0.000012, batch_cost: 3.5073, reader_cost: 2.25096, ips: 1.1405 samples/sec | ETA 02:41:20
+2022-06-01 02:02:40 [INFO]	[TRAIN] epoch: 281, iter: 27300/30000, loss: 0.1309, DSC: 87.7095, lr: 0.000011, batch_cost: 3.6500, reader_cost: 2.39659, ips: 1.0959 samples/sec | ETA 02:44:15
+2022-06-01 02:02:40 [INFO]	Start evaluating (total_samples: 72, total_iters: 72)...
+2022-06-01 02:04:55 [INFO]	[EVAL] #Images: 72, Dice: 0.7609, Loss: 0.245052
+2022-06-01 02:04:55 [INFO]	[EVAL] Class dice: 
+[0.9978 0.78   0.5717 0.6941]
+2022-06-01 02:05:00 [INFO]	[EVAL] The model with the best validation mDice (0.7710) was saved at iter 25500.
+2022-06-01 02:08:27 [INFO]	[TRAIN] epoch: 282, iter: 27360/30000, loss: 0.1408, DSC: 86.8004, lr: 0.000011, batch_cost: 3.4596, reader_cost: 2.20628, ips: 1.1562 samples/sec | ETA 02:32:13
+2022-06-01 02:12:08 [INFO]	[TRAIN] epoch: 282, iter: 27420/30000, loss: 0.1307, DSC: 87.7370, lr: 0.000011, batch_cost: 3.6726, reader_cost: 2.41632, ips: 1.0891 samples/sec | ETA 02:37:55
+2022-06-01 02:15:47 [INFO]	[TRAIN] epoch: 283, iter: 27480/30000, loss: 0.1356, DSC: 87.2499, lr: 0.000011, batch_cost: 3.6586, reader_cost: 2.40672, ips: 1.0933 samples/sec | ETA 02:33:39
+2022-06-01 02:19:49 [INFO]	[TRAIN] epoch: 283, iter: 27540/30000, loss: 0.1335, DSC: 87.4711, lr: 0.000011, batch_cost: 4.0283, reader_cost: 2.77087, ips: 0.9930 samples/sec | ETA 02:45:09
+2022-06-01 02:23:19 [INFO]	[TRAIN] epoch: 284, iter: 27600/30000, loss: 0.1385, DSC: 87.0107, lr: 0.000010, batch_cost: 3.4968, reader_cost: 2.24290, ips: 1.1439 samples/sec | ETA 02:19:52
+2022-06-01 02:23:19 [INFO]	Start evaluating (total_samples: 72, total_iters: 72)...
+2022-06-01 02:25:33 [INFO]	[EVAL] #Images: 72, Dice: 0.7683, Loss: 0.237400
+2022-06-01 02:25:33 [INFO]	[EVAL] Class dice: 
+[0.998  0.7856 0.5829 0.7068]
+2022-06-01 02:25:38 [INFO]	[EVAL] The model with the best validation mDice (0.7710) was saved at iter 25500.
+2022-06-01 02:29:07 [INFO]	[TRAIN] epoch: 285, iter: 27660/30000, loss: 0.1345, DSC: 87.3507, lr: 0.000010, batch_cost: 3.4862, reader_cost: 2.23295, ips: 1.1474 samples/sec | ETA 02:15:57
+2022-06-01 02:32:39 [INFO]	[TRAIN] epoch: 285, iter: 27720/30000, loss: 0.1325, DSC: 87.5917, lr: 0.000010, batch_cost: 3.5357, reader_cost: 2.28026, ips: 1.1313 samples/sec | ETA 02:14:21
+2022-06-01 02:36:27 [INFO]	[TRAIN] epoch: 286, iter: 27780/30000, loss: 0.1303, DSC: 87.7516, lr: 0.000010, batch_cost: 3.7896, reader_cost: 2.53724, ips: 1.0555 samples/sec | ETA 02:20:12
+2022-06-01 02:39:58 [INFO]	[TRAIN] epoch: 287, iter: 27840/30000, loss: 0.1298, DSC: 87.9055, lr: 0.000009, batch_cost: 3.5226, reader_cost: 2.27064, ips: 1.1355 samples/sec | ETA 02:06:48
+2022-06-01 02:43:21 [INFO]	[TRAIN] epoch: 287, iter: 27900/30000, loss: 0.1315, DSC: 87.7062, lr: 0.000009, batch_cost: 3.3717, reader_cost: 2.11632, ips: 1.1864 samples/sec | ETA 01:58:00
+2022-06-01 02:43:21 [INFO]	Start evaluating (total_samples: 72, total_iters: 72)...
+2022-06-01 02:45:44 [INFO]	[EVAL] #Images: 72, Dice: 0.7675, Loss: 0.238565
+2022-06-01 02:45:44 [INFO]	[EVAL] Class dice: 
+[0.998  0.7853 0.58   0.7067]
+2022-06-01 02:45:49 [INFO]	[EVAL] The model with the best validation mDice (0.7710) was saved at iter 25500.
+2022-06-01 02:49:12 [INFO]	[TRAIN] epoch: 288, iter: 27960/30000, loss: 0.1285, DSC: 87.9842, lr: 0.000009, batch_cost: 3.3962, reader_cost: 2.14320, ips: 1.1778 samples/sec | ETA 01:55:28
+2022-06-01 02:52:54 [INFO]	[TRAIN] epoch: 288, iter: 28020/30000, loss: 0.1394, DSC: 86.8371, lr: 0.000009, batch_cost: 3.6864, reader_cost: 2.42949, ips: 1.0851 samples/sec | ETA 02:01:39
+2022-06-01 02:56:38 [INFO]	[TRAIN] epoch: 289, iter: 28080/30000, loss: 0.1346, DSC: 87.3740, lr: 0.000008, batch_cost: 3.7423, reader_cost: 2.49091, ips: 1.0689 samples/sec | ETA 01:59:45
+2022-06-01 03:00:23 [INFO]	[TRAIN] epoch: 290, iter: 28140/30000, loss: 0.1317, DSC: 87.6425, lr: 0.000008, batch_cost: 3.7501, reader_cost: 2.49816, ips: 1.0667 samples/sec | ETA 01:56:15
+2022-06-01 03:04:09 [INFO]	[TRAIN] epoch: 290, iter: 28200/30000, loss: 0.1352, DSC: 87.2783, lr: 0.000008, batch_cost: 3.7602, reader_cost: 2.50346, ips: 1.0638 samples/sec | ETA 01:52:48
+2022-06-01 03:04:09 [INFO]	Start evaluating (total_samples: 72, total_iters: 72)...
+2022-06-01 03:06:18 [INFO]	[EVAL] #Images: 72, Dice: 0.7651, Loss: 0.240950
+2022-06-01 03:06:18 [INFO]	[EVAL] Class dice: 
+[0.9979 0.7843 0.5764 0.7018]
+2022-06-01 03:06:24 [INFO]	[EVAL] The model with the best validation mDice (0.7710) was saved at iter 25500.
+2022-06-01 03:09:51 [INFO]	[TRAIN] epoch: 291, iter: 28260/30000, loss: 0.1368, DSC: 87.1763, lr: 0.000008, batch_cost: 3.4493, reader_cost: 2.19641, ips: 1.1597 samples/sec | ETA 01:40:01
+2022-06-01 03:13:23 [INFO]	[TRAIN] epoch: 291, iter: 28320/30000, loss: 0.1280, DSC: 88.0667, lr: 0.000007, batch_cost: 3.5404, reader_cost: 2.28414, ips: 1.1298 samples/sec | ETA 01:39:07
+2022-06-01 03:16:42 [INFO]	[TRAIN] epoch: 292, iter: 28380/30000, loss: 0.1346, DSC: 87.4214, lr: 0.000007, batch_cost: 3.3109, reader_cost: 2.05704, ips: 1.2081 samples/sec | ETA 01:29:23
+2022-06-01 03:20:41 [INFO]	[TRAIN] epoch: 293, iter: 28440/30000, loss: 0.1323, DSC: 87.4903, lr: 0.000007, batch_cost: 3.9896, reader_cost: 2.73702, ips: 1.0026 samples/sec | ETA 01:43:43
+2022-06-01 03:24:12 [INFO]	[TRAIN] epoch: 293, iter: 28500/30000, loss: 0.1266, DSC: 88.1712, lr: 0.000007, batch_cost: 3.5191, reader_cost: 2.26121, ips: 1.1367 samples/sec | ETA 01:27:58
+2022-06-01 03:24:12 [INFO]	Start evaluating (total_samples: 72, total_iters: 72)...
+2022-06-01 03:26:34 [INFO]	[EVAL] #Images: 72, Dice: 0.7671, Loss: 0.238796
+2022-06-01 03:26:34 [INFO]	[EVAL] Class dice: 
+[0.9979 0.7813 0.5828 0.7063]
+2022-06-01 03:26:39 [INFO]	[EVAL] The model with the best validation mDice (0.7710) was saved at iter 25500.
+2022-06-01 03:29:48 [INFO]	[TRAIN] epoch: 294, iter: 28560/30000, loss: 0.1378, DSC: 87.0224, lr: 0.000007, batch_cost: 3.1560, reader_cost: 1.90206, ips: 1.2674 samples/sec | ETA 01:15:44
+2022-06-01 03:33:19 [INFO]	[TRAIN] epoch: 295, iter: 28620/30000, loss: 0.1359, DSC: 87.2292, lr: 0.000006, batch_cost: 3.5237, reader_cost: 2.27184, ips: 1.1352 samples/sec | ETA 01:21:02
+2022-06-01 03:36:47 [INFO]	[TRAIN] epoch: 295, iter: 28680/30000, loss: 0.1331, DSC: 87.5479, lr: 0.000006, batch_cost: 3.4632, reader_cost: 2.20636, ips: 1.1550 samples/sec | ETA 01:16:11
+2022-06-01 03:40:10 [INFO]	[TRAIN] epoch: 296, iter: 28740/30000, loss: 0.1253, DSC: 88.2856, lr: 0.000006, batch_cost: 3.3780, reader_cost: 2.12556, ips: 1.1841 samples/sec | ETA 01:10:56
+2022-06-01 03:43:51 [INFO]	[TRAIN] epoch: 296, iter: 28800/30000, loss: 0.1380, DSC: 87.1062, lr: 0.000006, batch_cost: 3.6809, reader_cost: 2.42388, ips: 1.0867 samples/sec | ETA 01:13:37
+2022-06-01 03:43:51 [INFO]	Start evaluating (total_samples: 72, total_iters: 72)...
+2022-06-01 03:46:16 [INFO]	[EVAL] #Images: 72, Dice: 0.7671, Loss: 0.238763
+2022-06-01 03:46:16 [INFO]	[EVAL] Class dice: 
+[0.9979 0.7818 0.5828 0.7057]
+2022-06-01 03:46:21 [INFO]	[EVAL] The model with the best validation mDice (0.7710) was saved at iter 25500.
+2022-06-01 03:49:42 [INFO]	[TRAIN] epoch: 297, iter: 28860/30000, loss: 0.1326, DSC: 87.5186, lr: 0.000005, batch_cost: 3.3567, reader_cost: 2.10393, ips: 1.1916 samples/sec | ETA 01:03:46
+2022-06-01 03:53:12 [INFO]	[TRAIN] epoch: 298, iter: 28920/30000, loss: 0.1385, DSC: 87.0457, lr: 0.000005, batch_cost: 3.4981, reader_cost: 2.24608, ips: 1.1435 samples/sec | ETA 01:02:57
+2022-06-01 03:57:07 [INFO]	[TRAIN] epoch: 298, iter: 28980/30000, loss: 0.1366, DSC: 87.1896, lr: 0.000005, batch_cost: 3.9158, reader_cost: 2.65913, ips: 1.0215 samples/sec | ETA 01:06:34
+2022-06-01 04:00:50 [INFO]	[TRAIN] epoch: 299, iter: 29040/30000, loss: 0.1294, DSC: 87.9723, lr: 0.000005, batch_cost: 3.7041, reader_cost: 2.45018, ips: 1.0799 samples/sec | ETA 00:59:15
+2022-06-01 04:04:15 [INFO]	[TRAIN] epoch: 300, iter: 29100/30000, loss: 0.1287, DSC: 87.9177, lr: 0.000004, batch_cost: 3.4238, reader_cost: 2.17178, ips: 1.1683 samples/sec | ETA 00:51:21
+2022-06-01 04:04:15 [INFO]	Start evaluating (total_samples: 72, total_iters: 72)...
+2022-06-01 04:06:19 [INFO]	[EVAL] #Images: 72, Dice: 0.7685, Loss: 0.237304
+2022-06-01 04:06:19 [INFO]	[EVAL] Class dice: 
+[0.998  0.783  0.5865 0.7066]
+2022-06-01 04:06:24 [INFO]	[EVAL] The model with the best validation mDice (0.7710) was saved at iter 25500.
+2022-06-01 04:09:58 [INFO]	[TRAIN] epoch: 300, iter: 29160/30000, loss: 0.1278, DSC: 88.1138, lr: 0.000004, batch_cost: 3.5612, reader_cost: 2.30276, ips: 1.1232 samples/sec | ETA 00:49:51
+2022-06-01 04:13:34 [INFO]	[TRAIN] epoch: 301, iter: 29220/30000, loss: 0.1300, DSC: 87.7710, lr: 0.000004, batch_cost: 3.6034, reader_cost: 2.35117, ips: 1.1100 samples/sec | ETA 00:46:50
+2022-06-01 04:17:18 [INFO]	[TRAIN] epoch: 301, iter: 29280/30000, loss: 0.1283, DSC: 88.0194, lr: 0.000003, batch_cost: 3.7296, reader_cost: 2.47222, ips: 1.0725 samples/sec | ETA 00:44:45
+2022-06-01 04:20:47 [INFO]	[TRAIN] epoch: 302, iter: 29340/30000, loss: 0.1316, DSC: 87.6338, lr: 0.000003, batch_cost: 3.4939, reader_cost: 2.24216, ips: 1.1449 samples/sec | ETA 00:38:25
+2022-06-01 04:24:27 [INFO]	[TRAIN] epoch: 303, iter: 29400/30000, loss: 0.1349, DSC: 87.3778, lr: 0.000003, batch_cost: 3.6554, reader_cost: 2.40357, ips: 1.0943 samples/sec | ETA 00:36:33
+2022-06-01 04:24:27 [INFO]	Start evaluating (total_samples: 72, total_iters: 72)...
+2022-06-01 04:26:56 [INFO]	[EVAL] #Images: 72, Dice: 0.7656, Loss: 0.240351
+2022-06-01 04:26:56 [INFO]	[EVAL] Class dice: 
+[0.9979 0.7812 0.5827 0.7005]
+2022-06-01 04:27:01 [INFO]	[EVAL] The model with the best validation mDice (0.7710) was saved at iter 25500.
+2022-06-01 04:30:28 [INFO]	[TRAIN] epoch: 303, iter: 29460/30000, loss: 0.1320, DSC: 87.5789, lr: 0.000003, batch_cost: 3.4591, reader_cost: 2.20177, ips: 1.1564 samples/sec | ETA 00:31:07
+2022-06-01 04:33:58 [INFO]	[TRAIN] epoch: 304, iter: 29520/30000, loss: 0.1324, DSC: 87.5916, lr: 0.000002, batch_cost: 3.4920, reader_cost: 2.23871, ips: 1.1455 samples/sec | ETA 00:27:56
+2022-06-01 04:37:50 [INFO]	[TRAIN] epoch: 304, iter: 29580/30000, loss: 0.1347, DSC: 87.3389, lr: 0.000002, batch_cost: 3.8649, reader_cost: 2.60926, ips: 1.0349 samples/sec | ETA 00:27:03
+2022-06-01 04:41:19 [INFO]	[TRAIN] epoch: 305, iter: 29640/30000, loss: 0.1293, DSC: 87.9317, lr: 0.000002, batch_cost: 3.4876, reader_cost: 2.23526, ips: 1.1469 samples/sec | ETA 00:20:55
+2022-06-01 04:45:03 [INFO]	[TRAIN] epoch: 306, iter: 29700/30000, loss: 0.1328, DSC: 87.5170, lr: 0.000002, batch_cost: 3.7331, reader_cost: 2.48128, ips: 1.0715 samples/sec | ETA 00:18:39
+2022-06-01 04:45:03 [INFO]	Start evaluating (total_samples: 72, total_iters: 72)...
+2022-06-01 04:47:19 [INFO]	[EVAL] #Images: 72, Dice: 0.7671, Loss: 0.238742
+2022-06-01 04:47:19 [INFO]	[EVAL] Class dice: 
+[0.9979 0.7818 0.5841 0.7045]
+2022-06-01 04:47:25 [INFO]	[EVAL] The model with the best validation mDice (0.7710) was saved at iter 25500.
+2022-06-01 04:50:45 [INFO]	[TRAIN] epoch: 306, iter: 29760/30000, loss: 0.1314, DSC: 87.7013, lr: 0.000001, batch_cost: 3.3354, reader_cost: 2.07910, ips: 1.1993 samples/sec | ETA 00:13:20
+2022-06-01 04:54:24 [INFO]	[TRAIN] epoch: 307, iter: 29820/30000, loss: 0.1304, DSC: 87.7258, lr: 0.000001, batch_cost: 3.6477, reader_cost: 2.39640, ips: 1.0966 samples/sec | ETA 00:10:56
+2022-06-01 04:58:04 [INFO]	[TRAIN] epoch: 308, iter: 29880/30000, loss: 0.1257, DSC: 88.1999, lr: 0.000001, batch_cost: 3.6719, reader_cost: 2.41986, ips: 1.0894 samples/sec | ETA 00:07:20
+2022-06-01 05:01:45 [INFO]	[TRAIN] epoch: 308, iter: 29940/30000, loss: 0.1307, DSC: 87.7372, lr: 0.000000, batch_cost: 3.6879, reader_cost: 2.43275, ips: 1.0846 samples/sec | ETA 00:03:41
+2022-06-01 05:05:12 [INFO]	[TRAIN] epoch: 309, iter: 30000/30000, loss: 0.1318, DSC: 87.6151, lr: 0.000000, batch_cost: 3.4501, reader_cost: 2.19639, ips: 1.1594 samples/sec | ETA 00:00:00
+2022-06-01 05:05:12 [INFO]	Start evaluating (total_samples: 72, total_iters: 72)...
+2022-06-01 05:07:25 [INFO]	[EVAL] #Images: 72, Dice: 0.7694, Loss: 0.236285
+2022-06-01 05:07:25 [INFO]	[EVAL] Class dice: 
+[0.998  0.7849 0.5882 0.7066]
+2022-06-01 05:07:30 [INFO]	[EVAL] The model with the best validation mDice (0.7710) was saved at iter 25500.
+2022-06-01 05:11:10 [INFO]	[TRAIN] epoch: 309, iter: 30060/30000, loss: 0.1299, DSC: 87.8121, lr: 0.000000, batch_cost: 3.6653, reader_cost: 2.40824, ips: 1.0913 samples/sec | ETA 00:00:00
+<class 'paddle.nn.layer.conv.Conv3D'>'s flops has been counted
+Cannot find suitable count function for <class 'medicalseg.models.unetr_volume_embedding.AbsPositionalEncoding1D'>. Treat it as zero FLOPs.
+<class 'paddle.nn.layer.common.Dropout'>'s flops has been counted
+Cannot find suitable count function for <class 'paddle.fluid.dygraph.container.LayerList'>. Treat it as zero FLOPs.
+<class 'paddle.nn.layer.common.Linear'>'s flops has been counted
+Cannot find suitable count function for <class 'paddle.nn.layer.norm.LayerNorm'>. Treat it as zero FLOPs.
+Cannot find suitable count function for <class 'paddle.nn.layer.activation.GELU'>. Treat it as zero FLOPs.
+<class 'paddle.nn.layer.activation.LeakyReLU'>'s flops has been counted
+Cannot find suitable count function for <class 'paddle.nn.layer.norm.InstanceNorm3D'>. Treat it as zero FLOPs.
+<class 'paddle.nn.layer.conv.Conv3DTranspose'>'s flops has been counted
+Total Flops: 179646758912     Total Params: 102108740
