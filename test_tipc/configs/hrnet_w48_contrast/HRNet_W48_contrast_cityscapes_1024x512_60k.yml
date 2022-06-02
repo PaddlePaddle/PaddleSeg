@@ -1,0 +1,29 @@
+_base_: '../_base_/cityscapes.yml'
+
+batch_size: 2
+iters: 60000
+
+
+optimizer:
+  type: sgd
+  weight_decay: 0.0002
+
+loss:
+  types:
+    - type: CrossEntropyLoss
+    - type: PixelContrastCrossEntropyLoss
+      temperature: 0.1
+      base_temperature: 0.07
+      ignore_index: 255
+      max_samples: 1024
+      max_views: 100
+  coef: [1, 0.1]
+
+model:
+  type: HRNetW48Contrast
+  backbone:
+    type: HRNet_W48
+    pretrained: https://bj.bcebos.com/paddleseg/dygraph/hrnet_w48_ssld.tar.gz
+  in_channels: 720
+  drop_prob: 0.1
+  proj_dim: 720
