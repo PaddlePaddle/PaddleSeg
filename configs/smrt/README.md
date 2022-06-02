@@ -3,7 +3,8 @@
 
 ## 一、项目介绍
 
-PaddleSMRT 是飞桨结合产业落地经验推出的产业模型选型工具，在项目落地过程中，用户根据自身的实际情况，输入自己的需求，即可以得到对应在算法模型、部署硬件以及教程文档的信息。
+[PaddleSMRT](https://www.paddlepaddle.org.cn/smrt) 是飞桨结合产业落地经验推出的产业模型选型工具，在项目落地过程中，用户根据自身的实际情况，输入自己的需求，即可以得到对应在算法模型、部署硬件以及教程文档的信息。
+
 同时为了更加精准的推荐，增加了数据分析功能，用户上传自己的标注文件，系统可以自动分析数据特点，例如数据分布不均衡、小目标、密集型等，从而提供更加精准的模型以及优化策略，更好的符合场景的需求。
 
 
@@ -49,6 +50,7 @@ PaddleSMRT结合产业真实场景，通过比较算法效果，向用户推荐�
 
 ## 三、推荐模型使用全流程
 
+通过飞桨官网的[模型选型工具](https://www.paddlepaddle.org.cn/smrt)明确需要使用的模型后，大家需要进行数据准备、模型训练、模型导出、模型部署，下面我们以一个例子进行简要说明。
 
 ### 3.1 准备环境
 
@@ -56,7 +58,10 @@ PaddleSMRT结合产业真实场景，通过比较算法效果，向用户推荐�
 
 ### 3.2 准备数据
 
-我们准备了一个缺陷分割的数据集，点击[链接](https://paddle-smrt.bj.bcebos.com/data/seg/defect_data.zip)下载，或者执行如下命令下载。
+详细的数据准备方法，请参考[数据标注文档](../../docs/data/marker/marker_cn.md)和[数据配置文档](../../docs/data/custom/data_prepare_cn.md)。
+
+此处，我们准备了一个缺陷分割的数据集，点击[链接](https://paddle-smrt.bj.bcebos.com/data/seg/defect_data.zip)下载，或者执行如下命令下载。
+
 ```
 wget https://paddle-smrt.bj.bcebos.com/data/seg/defect_data.zip
 ```
@@ -81,11 +86,12 @@ JPEGImages/diaojiao_394.png Annotations/diaojiao_394.png
 
 标注图像包含背景和3类缺陷目标，总共4类，分别标注的数值使0，1，2，3。
 
-详细的数据准备方法，请参考[数据标注文档](../../docs/data/marker/marker_cn.md)和[数据配置文档](../../docs/data/custom/data_prepare_cn.md)。
+### 3.3 准备配置文件
 
-PaddleSeg可以使用配置文件的方式来训练模型，简单方便。
+PaddleSeg推荐使用配置文件的方式来训练、导出模型，简单方便。
 
 针对工业质检任务，我们为模型选型工具推荐的6个模型准备好了配置文件，存放在`PaddleSeg/configs/smrt`目录下。
+
 ```
 PaddleSeg/configs/smrt
 ├── base_cfg.yml  
@@ -99,9 +105,10 @@ PaddleSeg/configs/smrt
 
 其中，`base_cfg.yml`是公共配置，包括数据集、优化器、学习率，其他文件包含`base_cfg.yml`，额外定义了模型、损失函数。
 
-在实际应用中，大家需要根据模型数据量调整配置文件中的超参，比如训练轮数iters。
+在其他应用中，大家可以根据实际情况修改上述配置文件中的字段，而且需要根据模型数据量调整配置文件中的超参，比如训练轮数iters、batch_size、学习率等。
 
-### 3.3 执行训练
+### 3.4 执行训练
+
 
 本教程简单演示单卡和多卡训练，详细的模型训练方法请参考[文档](../../docs/train/train_cn.md)。
 
@@ -146,7 +153,7 @@ python -m paddle.distributed.launch train.py \
        --save_dir output/pp_liteseg_stdc2
 ```
 
-### 3.4 模型导出
+### 3.5 模型导出
 
 训练得到精度符合预期的模型后，可以导出预测模型，进行部署。详细的模型导出方法请参考[文档](../../docs/model_export_cn.md)。
 
