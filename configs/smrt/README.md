@@ -4,6 +4,7 @@
 ## 一、项目介绍
 
 [PaddleSMRT](https://www.paddlepaddle.org.cn/smrt) 是飞桨结合产业落地经验推出的产业模型选型工具，在项目落地过程中，用户根据自身的实际情况，输入自己的需求，即可以得到对应在算法模型、部署硬件以及教程文档的信息。
+
 同时为了更加精准的推荐，增加了数据分析功能，用户上传自己的标注文件，系统可以自动分析数据特点，例如数据分布不均衡、小目标、密集型等，从而提供更加精准的模型以及优化策略，更好的符合场景的需求。
 
 
@@ -60,6 +61,7 @@ PaddleSMRT结合产业真实场景，通过比较算法效果，向用户推荐�
 详细的数据准备方法，请参考[数据标注文档](../../docs/data/marker/marker_cn.md)和[数据配置文档](../../docs/data/custom/data_prepare_cn.md)。
 
 此处，我们准备了一个缺陷分割的数据集，点击[链接](https://paddle-smrt.bj.bcebos.com/data/seg/defect_data.zip)下载，或者执行如下命令下载。
+
 ```
 wget https://paddle-smrt.bj.bcebos.com/data/seg/defect_data.zip
 ```
@@ -106,6 +108,7 @@ PaddleSeg/configs/smrt
 在其他应用中，大家可以根据实际情况修改上述配置文件中的字段，而且需要根据模型数据量调整配置文件中的超参，比如训练轮数iters、batch_size、学习率等。
 
 ### 3.4 执行训练
+
 
 本教程简单演示单卡和多卡训练，详细的模型训练方法请参考[文档](../../docs/train/train_cn.md)。
 
