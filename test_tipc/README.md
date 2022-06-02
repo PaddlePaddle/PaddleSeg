@@ -41,6 +41,7 @@
 | CCNet | CCNet | 支持 | - | - | - |
 | PP-LiteSeg | PP-LiteSeg(STDC-1) | 支持 | - | - | - |
 | PP-LiteSeg | PP-LiteSeg(STDC-2) | 支持 | - | - | - |
+| UPerNet | UPerNet | 支持 | - | - | - |
 
 ## 3. 测试工具简介
 ### 目录介绍

@@ -1,0 +1,44 @@
+batch_size: 8
+iters: 10000
+
+train_dataset:
+  type: Dataset
+  dataset_root: data/defect_data
+  num_classes: 4
+  mode: train
+  train_path: data/defect_data/train.txt
+  transforms:
+    - type: ResizeStepScaling
+      min_scale_factor: 0.5
+      max_scale_factor: 2.0
+      scale_step_size: 0.25
+    - type: RandomPaddingCrop
+      crop_size: [512, 512]
+    - type: RandomHorizontalFlip
+    - type: RandomDistort
+      brightness_range: 0.4
+      contrast_range: 0.4
+      saturation_range: 0.4
+    - type: Normalize
+
+val_dataset:
+  type: Dataset
+  dataset_root: data/defect_data
+  num_classes: 4
+  mode: val
+  val_path: data/defect_data/val.txt
+  transforms:
+    - type: Normalize
+
+optimizer:
+  type: sgd
+  momentum: 0.9
+  weight_decay: 5.0e-4
+
+lr_scheduler:
+  type: PolynomialDecay
+  learning_rate: 0.01
+  end_lr: 0
+  power: 0.9
+  warmup_iters: 500
+  warmup_start_lr: 1.0e-5
