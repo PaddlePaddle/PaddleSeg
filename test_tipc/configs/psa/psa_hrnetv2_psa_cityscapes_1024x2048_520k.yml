@@ -5,9 +5,8 @@ train_dataset:
   type: Cityscapes
   dataset_root: data/cityscapes
   transforms:
-    - type: RandomSizeAndCrop
+    - type: RandomPaddingCrop
       crop_size: [1024, 2048]
-      crop_nopad: False
     - type: RandomHorizontalFlip
     - type: Normalize
       mean: [0.485, 0.456, 0.406]
@@ -24,7 +23,7 @@ val_dataset:
   mode: val
 
 model:
-    type: PSA
+    type: PSANet
     num_classes: 19
     backbone: 
       type: HRNETV2_PSA
@@ -37,7 +36,10 @@ optimizer:
 lr_scheduler:
   type: LambdaDecay
   learning_rate: 0.005
-  lr_lambda: 'lambda iter, (1-math.ceil(iter/2975)/175)**2'
+  lr_lambda_params:
+    max_epoch: 175
+    power: 2.0
+    len_train_dataset: 2975
 
 loss:
   types:
