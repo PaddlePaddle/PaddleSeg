@@ -85,6 +85,8 @@ python val.py \
 
 ## Deployment
 
+We have two methods to deploy the trained model: 1) use ONNX+TRT, 2) use PaddleInference.
+
 **Using ONNX+TRT**
 
 Prepare:
