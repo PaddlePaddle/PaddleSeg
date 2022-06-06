@@ -78,8 +78,8 @@ bash test_tipc/test_serving_infer_python.sh ${your_params_file} serving_infer
 以`PP-LiteSeg-Stdc1`的`Linux GPU/CPU PYTHON 服务化部署测试`为例，在PaddleSeg根目录下，执行如下命令。
 
 ```bash
-bash test_tipc/prepare.sh test_tipc/configs/pp_liteseg_stdc1/serving_infer_python.txt serving_infer
-bash test_tipc/test_serving_infer_python.sh test_tipc/configs/pp_liteseg_stdc1/serving_infer_python.txt serving_infer
+bash test_tipc/prepare.sh test_tipc/configs/pp_liteseg_stdc1/model_linux_gpu_normal_normal_serving_python_linux_gpu_cpu.txt serving_infer
+bash test_tipc/test_serving_infer_python.sh test_tipc/configs/pp_liteseg_stdc1/model_linux_gpu_normal_normal_serving_python_linux_gpu_cpu.txt serving_infer
 ```
 
 输出结果如下，表示命令运行成功。
