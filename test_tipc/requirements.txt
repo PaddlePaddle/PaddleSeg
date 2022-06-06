@@ -11,3 +11,4 @@ prettytable
 paddleseg
 scikit-image
 numba
+pymatting

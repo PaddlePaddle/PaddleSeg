@@ -121,9 +121,15 @@ elif [ ${MODE} = "lite_train_lite_infer" ] || [ ${MODE} = "lite_train_whole_infe
         wget -nc -P ./test_tipc/data/ https://paddleseg.bj.bcebos.com/matting/datasets/PPM-100.zip
         cd ./test_tipc/data/ && unzip PPM-100.zip && cd -
     else
-        rm -rf ./test_tipc/data/cityscapes
-        wget -nc -P ./test_tipc/data/ https://paddleseg.bj.bcebos.com/dataset/cityscapes.tar
-        cd ./test_tipc/data/ && tar -xf cityscapes.tar && cd -
+        if [ ${MODE} = "whole_train_whole_infer" ] || [ ${MODE} = "whole_infer" ];then
+            rm -rf ./test_tipc/data/cityscapes
+            wget -nc -P ./test_tipc/data/ https://paddleseg.bj.bcebos.com/dataset/cityscapes.tar
+            cd ./test_tipc/data/ && tar -xf cityscapes.tar && cd -
+        else
+            rm -rf ./test_tipc/data/cityscapes
+            wget -nc -P ./test_tipc/data/ https://paddleseg.bj.bcebos.com/tipc/data/cityscapes_20imgs.tar
+            cd ./test_tipc/data/ && tar -xf cityscapes_20imgs.tar && mv cityscapes_20imgs cityscapes && cd -
+        fi
     fi
 fi
 
@@ -204,9 +210,5 @@ if [ ${MODE} = "cpp_infer" ];then
     # build cpp
     bash build.sh
 else
-    models=("enet" "bisenetv2" "ocrnet_hrnetw18" "ocrnet_hrnetw48" "deeplabv3p_resnet50_cityscapes" \
-            "fastscnn" "fcn_hrnetw18" "pp_liteseg_stdc1" "pp_liteseg_stdc2" "ccnet" "upernet")
-    if [ $(contains "${models[@]}" "${model_name}") == "y" ]; then
-        cp ./test_tipc/data/cityscapes_val_5.list ./test_tipc/data/cityscapes
-    fi
+    cp ./test_tipc/data/cityscapes_val_5.list ./test_tipc/data/cityscapes
 fi

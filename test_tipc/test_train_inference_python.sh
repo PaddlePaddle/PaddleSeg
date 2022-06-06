@@ -170,6 +170,7 @@ function func_inference(){
                             set_infer_params1=$(func_set_params "${infer_key1}" "${infer_value1}")  ##
                             set_infer_params2=$(func_set_params "${infer_key2}" "${infer_value2}")  ##
                             command="${_python} ${_script} ${use_gpu_key}=${use_gpu} ${use_mkldnn_key}=${use_mkldnn} ${set_cpu_threads} ${set_model_dir} ${set_batchsize} ${set_infer_data} ${set_benchmark} ${set_precision} ${set_infer_params1} ${set_infer_params2} > ${_save_log_path} 2>&1 " ##
+                            echo $command
                             eval $command
                             last_status=${PIPESTATUS[0]}
                             eval "cat ${_save_log_path}"
@@ -202,6 +203,7 @@ function func_inference(){
                         set_infer_params1=$(func_set_params "${infer_key1}" "${infer_value1}")  ##
                         set_infer_params2=$(func_set_params "${infer_key2}" "${infer_value2}")  ##
                         command="${_python} ${_script} ${use_gpu_key}=${use_gpu} ${set_tensorrt} ${set_precision} ${set_model_dir} ${set_batchsize} ${set_infer_data} ${set_benchmark} ${set_infer_params2} > ${_save_log_path} 2>&1 " ##
+                        echo $command
                         eval $command
                         last_status=${PIPESTATUS[0]}
                         eval "cat ${_save_log_path}"
