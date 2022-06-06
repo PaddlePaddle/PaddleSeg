@@ -15,7 +15,7 @@ Linux GPU/CPU  PYTHON 服务化部署测试的主程序为`test_serving_infer_py
 |  PP-Humanseg  |  fcn_hrnetw18_small   |  支持 | 支持 | 1 |
 |  PP-Humanseg  |  deeplabv3p_resnet50   |  支持 | 支持 | 1 |
 |  PP-Matting   |  ppmatting |  支持 | 支持 | 1 |
-|  FCN          |  fcn_hrnetw18     |  支持 | 支持 | 1 |
+|  HRNet        |  fcn_hrnetw18     |  支持 | 支持 | 1 |
 |  OCRNet       |  ocrnet_hrnetw18  |  支持 | 支持 | 1 |
 |  OCRNet       |  ocrnet_hrnetw48  |  支持 | 支持 | 1 |
 |  STDCSeg      |  stdc_stdc1       |  支持 | 支持 | 1 |
@@ -28,7 +28,7 @@ Linux GPU/CPU  PYTHON 服务化部署测试的主程序为`test_serving_infer_py
 
 * 配置docker
 
-拉取并进入 Paddle Serving的GPU Docker (serving0.8.0-cuda10.2-cudnn7)。
+拉取并进入 Paddle Serving的GPU Docker，以serving0.8.0-cuda10.2-cudnn7版本的docker为例。
 
 ```
 nvidia-docker pull registry.baidubce.com/paddlepaddle/serving:0.8.0-cuda10.2-cudnn7-devel
@@ -38,7 +38,10 @@ nvidia-docker exec -it test_serving_python bash
 
 * 安装 PaddleServing
 
-安装PaddleServing相关组件，包括serving-server、serving_client、serving-app。PaddleServing 0.8版本的详细安装说明，参考[链接](https://github.com/PaddlePaddle/Serving/blob/v0.8.3/doc/Install_CN.md)
+安装PaddleServing最新版本的相关组件，包括serving-server、serving_client、serving-app。
+PaddleServing 的详细安装说明，参考[链接](https://github.com/PaddlePaddle/Serving/blob/v0.9.0/doc/Install_CN.md)
+
+比如执行下面命令，在GPU CUDA 10.2环境下，安装0.8.3版本的PaddleServing组件。
 
 ```
 pip3.7 install paddle-serving-client==0.8.3 -i https://pypi.tuna.tsinghua.edu.cn/simple
@@ -48,9 +51,12 @@ pip3.7 install paddle-serving-server-gpu==0.8.3.post102 -i https://pypi.tuna.tsi
 
 * 安装PaddlePaddle
 
+安装最新版本的PaddlePaddle，具体参考[文档](https://www.paddlepaddle.org.cn/install/quick?docurl=/documentation/docs/zh/install/pip/linux-pip.html)。
+
+比如执行下面个命令，在GPU CUDA 10.2环境下，安装2.3.0版本PaddlePaddle。
+
 ```
-# GPU CUDA 10.2环境
-pip3.7 install paddlepaddle-gpu==2.2.2 -i https://pypi.tuna.tsinghua.edu.cn/simple
+pip3.7 install paddlepaddle-gpu==2.3.0 -i https://mirror.baidu.com/pypi/simple
 ```
 
 * 准备PaddleSeg

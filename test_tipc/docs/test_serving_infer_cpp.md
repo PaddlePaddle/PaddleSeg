@@ -15,7 +15,7 @@ Linux GPU/CPU CPP 服务化部署测试的主程序为`test_serving_infer_cpp.sh
 |  PP-Humanseg  |  pphumanseg_mobile   |  支持 | 支持 | 1 |
 |  PP-Humanseg  |  pphumanseg_server   |  支持 | 支持 | 1 |
 |  PP-Matting   |  pp_humanseg_matting |  支持 | 支持 | 1 |
-|  FCN          |  fcn_hrnetw18     |  支持 | 支持 | 1 |
+|  HRNet        |  fcn_hrnetw18     |  支持 | 支持 | 1 |
 |  OCRNet       |  ocrnet_hrnetw18  |  支持 | 支持 | 1 |
 |  OCRNet       |  ocrnet_hrnetw48  |  支持 | 支持 | 1 |
 |  STDCSeg      |  stdc_stdc1       |  支持 | 支持 | 1 |
@@ -38,8 +38,10 @@ nvidia-docker exec -it test_serving_cpp bash
 
 * 安装 PaddleServing
 
-安装PaddleServing相关组件，包括serving_client、serving-app。serving-server后续编译再安装。PaddleServing 0.8版本的详细安装说明，参考[链接](https://github.com/PaddlePaddle/Serving/blob/v0.8.3/doc/Install_CN.md)
+安装PaddleServing最新版本的相关组件，包括serving_client、serving-app。
+PaddleServing的详细安装说明，参考[链接](https://github.com/PaddlePaddle/Serving/blob/v0.9.0/doc/Install_CN.md)。
 
+比如执行下面命令，在GPU CUDA 10.2环境下，安装0.8.3版本的PaddleServing组件。
 
 ```
 pip3.7 install paddle-serving-client==0.8.3 -i https://pypi.tuna.tsinghua.edu.cn/simple
@@ -48,9 +50,12 @@ pip3.7 install paddle-serving-app==0.8.3 -i https://pypi.tuna.tsinghua.edu.cn/si
 
 * 安装PaddlePaddle
 
+安装最新版本的PaddlePaddle，具体参考[文档](https://www.paddlepaddle.org.cn/install/quick?docurl=/documentation/docs/zh/install/pip/linux-pip.html)。
+
+比如执行下面命令，在GPU CUDA 10.2环境下，安装2.3.0版本PaddlePaddle。
+
 ```
-# GPU CUDA 10.2环境
-pip3.7 install paddlepaddle-gpu==2.2.2 -i https://pypi.tuna.tsinghua.edu.cn/simple
+pip3.7 install paddlepaddle-gpu==2.3.0 -i https://mirror.baidu.com/pypi/simple
 ```
 
 * 准备PaddleSeg
