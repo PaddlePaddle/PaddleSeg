@@ -13,7 +13,7 @@ train_infer_img_dir:test_tipc/data/PPM-100/val.txt
 null:null
 ##
 trainer:norm
-norm_train:Matting/train.py --config test_tipc/configs/ppmatting/modnet_mobilenetv2.yml --do_eval --save_interval 500 --seed 100
+norm_train:Matting/tools/train.py --config test_tipc/configs/ppmatting/modnet_mobilenetv2.yml --do_eval --save_interval 500 --seed 100
 pact_train:null
 fpgm_train:null
 distill_train:null
@@ -27,7 +27,7 @@ null:null
 ===========================export_params===========================
 --save_dir:
 --model_path:
-norm_export:Matting/export.py --config test_tipc/configs/ppmatting/modnet_mobilenetv2.yml
+norm_export:Matting/tools/export.py --config test_tipc/configs/ppmatting/modnet_mobilenetv2.yml
 quant_export:null
 fpgm_export:null
 distill_export:null
@@ -35,7 +35,7 @@ export1:null
 export2:null
 ===========================infer_params===========================
 infer_model:./test_tipc/output/ppmatting/modnet-mobilenetv2.pdparams
-infer_export:Matting/export.py --config test_tipc/configs/ppmatting/modnet_mobilenetv2.yml
+infer_export:Matting/tools/export.py --config test_tipc/configs/ppmatting/modnet_mobilenetv2.yml
 infer_quant:False
 inference:Matting/deploy/python/infer.py
 --device:cpu|gpu
