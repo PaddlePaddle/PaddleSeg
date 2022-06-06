@@ -292,14 +292,14 @@ class ESPNetEncoder(nn.Layer):
 
     def forward(self, x):
         f1 = self.level1(x)
-        down2 = F.adaptive_avg_pool2d(x, output_size=paddle.shape(f1)[2:])
+        down2 = F.adaptive_avg_pool2d(x, output_size=f1.shape[2:])
         feat1 = paddle.concat([f1, down2], axis=1)
         feat1 = self.br1(feat1)
         p1 = self.proj1(feat1)
 
         f2_res = self.level2_0(feat1)
         f2 = self.level2(f2_res)
-        down4 = F.adaptive_avg_pool2d(x, output_size=paddle.shape(f2)[2:])
+        down4 = F.adaptive_avg_pool2d(x, output_size=f2.shape[2:])
         feat2 = paddle.concat([f2, f2_res, down4], axis=1)
         feat2 = self.br2(feat2)
         p2 = self.proj2(feat2)
