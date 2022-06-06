@@ -146,11 +146,11 @@ class SpatialOCRModule(nn.Layer):
             nn.Dropout2D(dropout))
 
     def forward(self, feats, proxy):
-        batch_size, _, h, w = paddle.shape(x).numpy()
+        batch_size, _, h, w = paddle.shape(feats).numpy()
         if self.scale > 1:
-            x = self.pool(x)
+            feats = self.pool(feats)
 
-        query = self.f_pixel(x).reshape((batch_size, self.key_channels, -1))
+        query = self.f_pixel(feats).reshape((batch_size, self.key_channels, -1))
         query = query.transpose((0, 2, 1))
         key = self.f_object(proxy).reshape((batch_size, self.key_channels, -1))
         value = self.f_down(proxy).reshape((batch_size, self.key_channels, -1))
@@ -161,7 +161,7 @@ class SpatialOCRModule(nn.Layer):
         context = paddle.matmul(sim_map, value)
         context = context.transpose((0, 2, 1))
         context = context.reshape((batch_size, self.key_channels,
-                                   *paddle.shape(x).numpy()[2:]))
+                                   *paddle.shape(feats).numpy()[2:]))
         context = self.f_up(context)
         if self.scale > 1:
             context = F.interpolate(context, size=(h, w), mode='bilinear')
@@ -260,11 +260,11 @@ class PSANet(nn.Layer):
         self.init_weight()
 
     def _fwd(self, x):
-        x_size = paddle.shape(x).numpy()[2:]
+        x_size = list(paddle.shape(x).numpy()[2:])
         high_level_features = self.backbone(x)
         cls_out, aux_out, ocr_mid_feats = self.ocr(high_level_features)
         attn = self.scale_attn(ocr_mid_feats)
-
+        #print(x_size)
         aux_out = F.interpolate(aux_out, size=x_size, mode='bilinear')
         cls_out = F.interpolate(cls_out, size=x_size, mode='bilinear')
         attn = F.interpolate(attn, size=x_size, mode='bilinear')
@@ -294,12 +294,12 @@ class PSANet(nn.Layer):
             elif s >= 1.0:
                 pred = F.interpolate(
                     pred,
-                    size=paddle.shape(cls_out).numpy()[2:4],
+                    size=list(paddle.shape(cls_out).numpy()[2:4]),
                     mode='bilinear')
                 pred = attn_out * cls_out + (1 - attn_out) * pred
                 aux = F.interpolate(
                     aux,
-                    size=paddle.shape(cls_out).numpy()[2:4],
+                    size=list(paddle.shape(cls_out).numpy()[2:4]),
                     mode='bilinear')
                 aux = attn_out * aux_out + (1 - attn_out) * aux
             else:
@@ -307,15 +307,15 @@ class PSANet(nn.Layer):
                 aux_out = attn_out * aux_out
                 cls_out = F.interpolate(
                     cls_out,
-                    size=paddle.shape(pred).numpy()[2:4],
+                    size=list(paddle.shape(pred).numpy()[2:4]),
                     mode='bilinear')
                 aux_out = F.interpolate(
                     aux_out,
-                    size=paddle.shape(pred).numpy()[2:4],
+                    size=list(paddle.shape(pred).numpy()[2:4]),
                     mode='bilinear')
                 attn_out = F.interpolate(
                     attn_out,
-                    size=paddle.shape(pred).numpy()[2:4],
+                    size=list(paddle.shape(pred).numpy()[2:4]),
                     mode='bilinear')
                 pred = cls_out + (1 - attn_out) * pred
                 aux = aux_out + (1 - attn_out) * aux
@@ -338,19 +338,23 @@ class PSANet(nn.Layer):
         p_lo = logit_attn * p_lo
         aux_lo = logit_attn * aux_lo
         p_lo = F.interpolate(
-            p_lo, size=paddle.shape(p_1x).numpy()[2:4], mode='bilinear')
+            p_lo, size=list(paddle.shape(p_1x).numpy()[2:4]), mode='bilinear')
 
         aux_lo = F.interpolate(
-            aux_lo, size=paddle.shape(p_1x).numpy()[2:4], mode='bilinear')
+            aux_lo, size=list(paddle.shape(p_1x).numpy()[2:4]), mode='bilinear')
 
         logit_attn = F.interpolate(
-            logit_attn, size=paddle.shape(p_1x).numpy()[2:4], mode='bilinear')
+            logit_attn,
+            size=list(paddle.shape(p_1x).numpy()[2:4]),
+            mode='bilinear')
 
         joint_pred = p_lo + (1 - logit_attn) * p_1x
         joint_aux = aux_lo + (1 - logit_attn) * aux_1x
         if self.training:
             scaled_pred_05x = F.interpolate(
-                pred_05x, size=paddle.shape(p_1x).numpy()[2:4], mode='bilinear')
+                pred_05x,
+                size=list(paddle.shape(p_1x).numpy()[2:4]),
+                mode='bilinear')
             logit_list = [joint_aux, joint_pred, scaled_pred_05x, pred_10x]
         else:
             logit_list = [joint_pred]
