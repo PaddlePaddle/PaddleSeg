@@ -58,9 +58,9 @@ if [ ${MODE} = "serving_infer" ]; then
     elif [ ${model_name} == "ocrnet_hrnetw18" ];then
         wget -P $inference_models https://paddleseg.bj.bcebos.com/tipc/infer_models/ocrnet_hrnetw18_cityscapes_1024x512_160k.zip
         unzip $inference_models/ocrnet_hrnetw18_cityscapes_1024x512_160k.zip -d $inference_models/
-    elif [ ${model_name} == "pp_humanseg_matting" ];then
-        wget -P $inference_models https://paddleseg.bj.bcebos.com/tipc/infer_models/pp-humanmatting-resnet34_vd.zip
-        unzip $inference_models/pp-humanmatting-resnet34_vd.zip -d $inference_models/
+    elif [ ${model_name} == "ppmatting" ];then
+        wget -P $inference_models https://paddleseg.bj.bcebos.com/tipc/infer_models/modnet-mobilenetv2.zip
+        unzip $inference_models/modnet-mobilenetv2.zip -d $inference_models/
     fi
 fi
 
@@ -160,6 +160,47 @@ if [ ${MODE} = "cpp_infer" ];then
     fi
 
     wget -nc https://paddle-inference-lib.bj.bcebos.com/2.2.2/cxx_c/Linux/GPU/x86-64_gcc8.2_avx_mkl_cuda11.1_cudnn8.1.1_trt7.2.3.4/paddle_inference.tgz --no-check-certificate
+    tar zxf paddle_inference.tgz
+    if [ ! -d "paddle_inference" ]; then
+        ln -s paddle_inference_install_dir paddle_inference
+    fi
+
+# prepare env
+if [ ${MODE} = "cpp_infer" ];then
+    # wget model
+    cd test_tipc/cpp/ && mkdir -p inference_models
+    if [ ${model_name} == "stdc_stdc1" ];then
+        wget -P inference_models https://paddleseg.bj.bcebos.com/dygraph/demo/stdc1seg_infer_model.tar.gz
+        tar xf inference_models/stdc1seg_infer_model.tar.gz -C inference_models
+    elif [ ${model_name} == "pp_liteseg_stdc1" ];then
+        wget -P inference_models https://paddleseg.bj.bcebos.com/dygraph/demo/pp_liteseg_infer_model.tar.gz
+        tar xf inference_models/pp_liteseg_infer_model.tar.gz  -C inference_models
+    elif [ ${model_name} == "pp_liteseg_stdc2" ];then
+        wget -P inference_models https://paddleseg.bj.bcebos.com/tipc/infer_models/pp_liteseg_stdc2_cityscapes_1024x512_scale1.0_160k.zip
+        unzip inference_models/pp_liteseg_stdc2_cityscapes_1024x512_scale1.0_160k.zip -d inference_models/
+    elif [ ${model_name} == "pp_humanseg_lite" ];then
+        wget -P inference_models https://paddleseg.bj.bcebos.com/tipc/infer_models/pp_humanseg_lite_export_398x224.zip
+        unzip inference_models/pp_humanseg_lite_export_398x224 -d inference_models/
+    elif [ ${model_name} == "pp_humanseg_mobile" ];then
+        wget -P inference_models https://paddleseg.bj.bcebos.com/tipc/infer_models/pp_humanseg_mobile_export_192x192.zip
+        unzip inference_models/pp_humanseg_mobile_export_192x192.zip -d inference_models/
+    elif [ ${model_name} == "pp_humanseg_server" ];then
+        wget -P inference_models https://paddleseg.bj.bcebos.com/tipc/infer_models/pp_humanseg_server_export_512x512.zip
+        unzip inference_models/pp_humanseg_server_export_512x512.zip -d inference_models/
+    elif [ ${model_name} == "fcn_hrnetw18" ];then
+        wget -P inference_models https://paddleseg.bj.bcebos.com/tipc/infer_models/fcn_hrnetw18_cityscapes_1024x512_80k.zip
+        unzip inference_models/fcn_hrnetw18_cityscapes_1024x512_80k.zip -d inference_models/
+    elif [ ${model_name} == "ocrnet_hrnetw48" ];then
+        wget -P inference_models https://paddleseg.bj.bcebos.com/tipc/infer_models/ocrnet_hrnetw48_cityscapes_1024x512_160k.zip
+        unzip inference_models/ocrnet_hrnetw48_cityscapes_1024x512_160k.zip -d inference_models/
+    elif [ ${model_name} == "ocrnet_hrnetw18" ];then
+        wget -P inference_models https://paddleseg.bj.bcebos.com/tipc/infer_models/ocrnet_hrnetw18_cityscapes_1024x512_160k.zip
+        unzip inference_models/ocrnet_hrnetw18_cityscapes_1024x512_160k.zip -d inference_models/
+    fi
+
+    PADDLEInfer=${3:-https://paddle-inference-lib.bj.bcebos.com/2.2.2/cxx_c/Linux/GPU/x86-64_gcc8.2_avx_mkl_cuda11.1_cudnn8.1.1_trt7.2.3.4/paddle_inference.tgz}
+    wget -nc $PADDLEInfer --no-check-certificate
+
     tar zxf paddle_inference.tgz
     if [ ! -d "paddle_inference" ]; then
         ln -s paddle_inference_install_dir paddle_inference
