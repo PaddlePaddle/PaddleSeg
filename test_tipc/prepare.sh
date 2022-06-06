@@ -121,9 +121,15 @@ elif [ ${MODE} = "lite_train_lite_infer" ] || [ ${MODE} = "lite_train_whole_infe
         wget -nc -P ./test_tipc/data/ https://paddleseg.bj.bcebos.com/matting/datasets/PPM-100.zip
         cd ./test_tipc/data/ && unzip PPM-100.zip && cd -
     else
-        rm -rf ./test_tipc/data/cityscapes
-        wget -nc -P ./test_tipc/data/ https://paddleseg.bj.bcebos.com/dataset/cityscapes.tar
-        cd ./test_tipc/data/ && tar -xf cityscapes.tar && cd -
+        if [ ${MODE} = "whole_train_whole_infer" ] || [ ${MODE} = "whole_infer" ];then
+            rm -rf ./test_tipc/data/cityscapes
+            wget -nc -P ./test_tipc/data/ https://paddleseg.bj.bcebos.com/dataset/cityscapes.tar
+            cd ./test_tipc/data/ && tar -xf cityscapes.tar && cd -
+        else
+            rm -rf ./test_tipc/data/cityscapes
+            wget -nc -P ./test_tipc/data/ https://paddleseg.bj.bcebos.com/tipc/data/cityscapes_20imgs.tar
+            cd ./test_tipc/data/ && tar -xf cityscapes_20imgs.tar && mv cityscapes_20imgs cityscapes && cd -
+        fi
     fi
 fi
 # prepare env
@@ -247,4 +253,6 @@ else
     if [ $(contains "${models[@]}" "${model_name}") == "y" ]; then
         cp ./test_tipc/data/cityscapes_val_5.list ./test_tipc/data/cityscapes
     fi
+fi
+    cp ./test_tipc/data/cityscapes_val_5.list ./test_tipc/data/cityscapes
 fi
