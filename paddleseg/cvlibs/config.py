@@ -168,8 +168,13 @@ class Config(object):
             params.setdefault('end_lr', 0)
             params.setdefault('power', 0.9)
         elif lr_type == 'LambdaDecay':
-            #因为yml文件中:为分隔符，因此用逗号替代
-            params['lr_lambda'] = eval(params['lr_lambda'].replace(',', ':'))
+            #将所需函数参数化
+            lr_lambda_params = params.pop('lr_lambda_params')
+            power = lr_lambda_params['power']
+            max_epoch = lr_lambda_params['max_epoch']
+            len_train_dataset = lr_lambda_params['len_train_dataset']
+            params[
+                'lr_lambda'] = lambda iter: (1 - iter / len_train_dataset / max_epoch)**power
         lr_sche = getattr(paddle.optimizer.lr, lr_type)(**params)
 
         if use_warmup:
