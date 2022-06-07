@@ -2,7 +2,7 @@
 
 ## Reference
 
-> Huajun Liu12, Fuqiang Liu2, Xinyi Fan1 and Dong Huang. "BiSeNet: Polarized Self-Attention: Towards High-quality Pixel-wise Regression." arXiv preprint arXiv:2107.00782v2 (2021).
+> Huajun Liu12, Fuqiang Liu2, Xinyi Fan1 and Dong Huang. "Polarized Self-Attention: Towards High-quality Pixel-wise Regression." arXiv preprint arXiv:2107.00782v2 (2021).
 
 ## Performance
 
