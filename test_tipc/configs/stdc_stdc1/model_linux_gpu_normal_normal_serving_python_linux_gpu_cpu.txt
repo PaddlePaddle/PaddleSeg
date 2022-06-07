@@ -1,8 +1,8 @@
 ===========================serving_params===========================
-model_name:ppmatting
-python:python3
+model_name:stdc_stdc1
+python:python3.7
 trans_model:-m paddle_serving_client.convert
---dirname:./test_tipc/inferences/ppmatting/modnet-mobilenetv2
+--dirname:./test_tipc/inferences/stdc_stdc1/stdc1seg_infer_model
 --model_filename:model.pdmodel
 --params_filename:model.pdiparams
 --serving_server:./test_tipc/serving_python/serving_server/
@@ -10,7 +10,7 @@ trans_model:-m paddle_serving_client.convert
 serving_dir:./test_tipc/serving_python
 web_service:./web_service.py --config=config.yml 
 --opt op.seg.local_service_conf.devices:"0"|null
---output_name:sigmoid_2.tmp_0
+--output_name:save_infer_model/scale_0.tmp_1
 pipline:./pipeline_http_client.py
 --img_path:../data/cityscapes_demo.png
---input_name:img
+--input_name:x

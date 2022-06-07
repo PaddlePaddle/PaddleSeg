@@ -1,6 +1,6 @@
 ===========================serving_params===========================
 model_name:ocrnet_hrnetw18
-python:python3
+python:python3.7
 trans_model:-m paddle_serving_client.convert
 --dirname:./test_tipc/inferences/ocrnet_hrnetw18/ocrnet_hrnetw18_cityscapes_1024x512_160k
 --model_filename:model.pdmodel

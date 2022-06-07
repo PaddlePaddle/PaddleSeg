@@ -1,8 +1,8 @@
 ===========================serving_params===========================
-model_name:ocrnet_hrnetw48
-python:python3
+model_name:pp_liteseg_stdc2
+python:python3.7
 trans_model:-m paddle_serving_client.convert
---dirname:./test_tipc/inferences/ocrnet_hrnetw48/ocrnet_hrnetw48_cityscapes_1024x512_160k
+--dirname:./test_tipc/inferences/pp_liteseg_stdc2/pp_liteseg_stdc2_cityscapes_1024x512_scale1.0_160k
 --model_filename:model.pdmodel
 --params_filename:model.pdiparams
 --serving_server:./test_tipc/serving_python/serving_server/
