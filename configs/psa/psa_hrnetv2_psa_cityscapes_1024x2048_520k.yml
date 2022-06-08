@@ -27,6 +27,7 @@ model:
     num_classes: 19
     backbone: 
       type: HRNETV2_PSA
+      pretrained: pretrained/hrnetv2_w48_imagenet_pretrained.pdparams
 
 optimizer:
   type: sgd
