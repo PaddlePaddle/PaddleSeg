@@ -18,6 +18,7 @@ import paddle
 import paddle.nn as nn
 import paddle.nn.functional as F
 
+from paddleseg.utils import utils
 from paddleseg.cvlibs import manager
 from paddleseg.cvlibs import param_init
 from paddle.distributed.fleet.utils import recompute
@@ -533,29 +534,8 @@ class HighResolutionNet(nn.Layer):
         return outs
 
     def init_weight(self):
-        for name, m in self.named_children():
-            if any(part in name for part in {'cls', 'aux', 'ocr'}):
-                continue
-            if isinstance(m, nn.Conv2D):
-                initializer = nn.initializer.Normal(std=0.001)
-                initializer(m.weight)
-            elif isinstance(m, (nn.BatchNorm, nn.SyncBatchNorm)):
-                param_init.constant_init(m.weight, value=1.0)
-                param_init.constant_init(m.bias, value=0.0)
-
         if self.pretrained is not None:
-            pretrained_dict = paddle.load(self.pretrained)
-            model_dict = self.state_dict()
-            pretrained_dict = {
-                k.replace('last_layer', 'aux_head').replace('model.', ''): v
-                for k, v in pretrained_dict.items()
-            }
-            pretrained_dict = {
-                k: v
-                for k, v in pretrained_dict.items() if k in model_dict.keys()
-            }
-            model_dict.update(pretrained_dict)
-            self.load_dict(model_dict)
+            utils.load_entire_model(self,self.pretrained)
 
 
 @manager.BACKBONES.add_component
