@@ -106,7 +106,8 @@ Total Flops: 179646758912     Total Params: 102108740
 
 ### 模型验证
 
-除了可以再训练过程中验证模型精度，可以使用val.py脚本进行测试，权重文件可在 链接下载：https://pan.baidu.com/s/1VWB7CWftE0oagVSINGSY5w，提取码：kj6l
+除了可以再训练过程中验证模型精度，可以使用val.py脚本进行测试，权重文件可在 链接下载：链接：https://pan.baidu.com/s/1CQF0lI_JZ5sgWuNtzMmU8Q 
+提取码：ce7x
 
 
 ```shell
