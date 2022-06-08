@@ -20,6 +20,7 @@ import paddle.nn.functional as F
 
 from paddleseg.cvlibs import manager
 from paddleseg.cvlibs import param_init
+from paddle.distributed.fleet.utils import recompute
 
 
 class PolarizedSelfAttentionModule(nn.Layer):
@@ -518,7 +519,8 @@ class HighResolutionNet(nn.Layer):
                     x_list.append(self.transition3[i](y_list[-1]))
             else:
                 x_list.append(y_list[i])
-        x = self.stage4(x_list)
+        #x = self.stage4(x_list)
+        x = recompute(self.stage4,x_list)
         x0_h, x0_w = paddle.shape(x[0]).numpy()[2:4]
         x1 = F.interpolate(
             x[1], size=(x0_h, x0_w), mode='bilinear', align_corners=False)
