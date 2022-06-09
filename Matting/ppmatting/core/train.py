@@ -266,7 +266,7 @@ def train(model,
                 sad, mse, grad, conn = evaluate(
                     model,
                     val_dataset,
-                    num_workers=0,
+                    num_workers=1,
                     print_detail=True,
                     save_results=False)
                 model.train()
