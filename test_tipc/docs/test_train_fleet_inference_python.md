@@ -74,34 +74,33 @@ p32_batchsize_1.log 2>&1 !  ^[[0m
 在开启benchmark参数时，可以得到测试的详细数据，包含运行环境信息（系统版本、CUDA版本、CUDNN版本、驱动版本），Paddle版本信息，参数设置信息（运行设备、线程数、是否开启内存优化等），模型信息（模型名称、精度），数据信息（batchsize、是否为动态shape等），性能信息（CPU,GPU的占用、运行耗时、预处理耗时、推理耗时、后处理耗时），内容如下所示：
 
 ```
-[2022/06/02 22:53:35] ppocr INFO:
-[2022/06/02 22:53:35] ppocr INFO: ---------------------- Env info ----------------------
-[2022/06/02 22:53:35] ppocr INFO:  OS_version: Ubuntu 16.04
-[2022/06/02 22:53:35] ppocr INFO:  CUDA_version: 10.1.243
-[2022/06/02 22:53:35] ppocr INFO:  CUDNN_version: 7.6.5
-[2022/06/02 22:53:35] ppocr INFO:  drivier_version: 460.32.03
-[2022/06/02 22:53:35] ppocr INFO: ---------------------- Paddle info ----------------------
-[2022/06/02 22:53:35] ppocr INFO:  paddle_version: 2.3.0-rc0
-[2022/06/02 22:53:35] ppocr INFO:  paddle_commit: 5d4980c052583fec022812d9c29460aff7cdc18b
-[2022/06/02 22:53:35] ppocr INFO:  log_api_version: 1.0
-[2022/06/02 22:53:35] ppocr INFO: ----------------------- Conf info -----------------------
-[2022/06/02 22:53:35] ppocr INFO:  runtime_device: cpu
-[2022/06/02 22:53:35] ppocr INFO:  ir_optim: True
-[2022/06/02 22:53:35] ppocr INFO:  enable_memory_optim: True
-[2022/06/02 22:53:35] ppocr INFO:  enable_tensorrt: False
-[2022/06/02 22:53:35] ppocr INFO:  enable_mkldnn: False
-[2022/06/02 22:53:35] ppocr INFO:  cpu_math_library_num_threads: 6
-[2022/06/02 22:53:35] ppocr INFO: ----------------------- Model info ----------------------
-[2022/06/02 22:53:35] ppocr INFO:  model_name:
-[2022/06/02 22:53:35] ppocr INFO:  precision: fp32
-[2022/06/02 22:53:35] ppocr INFO: ----------------------- Data info -----------------------
-[2022/06/02 22:53:35] ppocr INFO:  batch_size: 1
-[2022/06/02 22:53:35] ppocr INFO:  input_shape: dynamic
-[2022/06/02 22:53:35] ppocr INFO:  data_num: 6
-[2022/06/02 22:53:35] ppocr INFO: ----------------------- Perf info -----------------------
-[2022/06/02 22:53:35] ppocr INFO:  cpu_rss(MB): 288.957, gpu_rss(MB): None, gpu_util: None%
-[2022/06/02 22:53:35] ppocr INFO:  total time spent(s): 0.4824
-[2022/06/02 22:53:35] ppocr INFO:  preprocess_time(ms): 0.1136, inference_time(ms): 79.5877, postprocess_time(ms): 0.6945
+2022-06-09 21:14:56 [INFO]      ---------------------- Env info ----------------------  
+2022-06-09 21:14:56 [INFO]       OS_version: CentOS 6.10  
+2022-06-09 21:14:56 [INFO]       CUDA_version: 10.1.243  
+2022-06-09 21:14:56 [INFO]       CUDNN_version: None.None.None  
+2022-06-09 21:14:56 [INFO]       drivier_version: 460.32.03  
+2022-06-09 21:14:56 [INFO]      ---------------------- Paddle info ----------------------  
+2022-06-09 21:14:56 [INFO]       paddle_version: 2.3.0-rc0  
+2022-06-09 21:14:56 [INFO]       paddle_commit: 5d4980c052583fec022812d9c29460aff7cdc18b  
+2022-06-09 21:14:56 [INFO]       log_api_version: 1.0  
+2022-06-09 21:14:56 [INFO]      ----------------------- Conf info -----------------------  
+2022-06-09 21:14:56 [INFO]       runtime_device: gpu  
+2022-06-09 21:14:56 [INFO]       ir_optim: True  
+2022-06-09 21:14:56 [INFO]       enable_memory_optim: True  
+2022-06-09 21:14:56 [INFO]       enable_tensorrt: False  
+2022-06-09 21:14:56 [INFO]       enable_mkldnn: False  
+2022-06-09 21:14:56 [INFO]       cpu_math_library_num_threads: 1  
+2022-06-09 21:14:56 [INFO]      ----------------------- Model info ----------------------  
+2022-06-09 21:14:56 [INFO]       model_name:  
+2022-06-09 21:14:56 [INFO]       precision: fp32  
+2022-06-09 21:14:56 [INFO]      ----------------------- Data info -----------------------  
+2022-06-09 21:14:56 [INFO]       batch_size: 1  
+2022-06-09 21:14:56 [INFO]       input_shape: dynamic  
+2022-06-09 21:14:56 [INFO]       data_num: 5  
+2022-06-09 21:14:56 [INFO]      ----------------------- Perf info -----------------------  
+2022-06-09 21:14:56 [INFO]       cpu_rss(MB): 2934.3672, gpu_rss(MB): 1162.0, gpu_util: 3.0%  
+2022-06-09 21:14:56 [INFO]       total time spent(s): 0.4089  
+2022-06-09 21:14:56 [INFO]       preprocess_time(ms): 75.9658, inference_time(ms): 4.854, postprocess_time(ms): 0.9655
 ```
 
 该信息可以在运行log中查看，以上面的`pp_liteseg_stdc1`为例，log位置在`./test_tipc/output/pp_liteseg_stdc1/results_python.log`。
