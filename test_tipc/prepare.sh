@@ -109,7 +109,7 @@ if [ ${MODE} = "benchmark_train" ];then
     fi
 elif [ ${MODE} == "serving_infer" ];then
     mkdir -p ./test_tipc/data
-    wget -nc -P ./test_tipc/data https://paddleseg.bj.bcebos.com/dygraph/demo/cityscapes_demo.png
+    wget -nc -P ./test_tipc/data https://paddleseg.bj.bcebos.com/dygraph/demo/cityscapes_small.png
 elif [ ${MODE} = "lite_train_lite_infer" ] || [ ${MODE} = "lite_train_whole_infer" ] || [ ${MODE} = "whole_train_whole_infer" ] || [ ${MODE} = "whole_infer" ];then
 
     if [ ${model_name} == "fcn_hrnetw18_small" ] || [ ${model_name} == "pphumanseg_lite" ] || [ ${model_name} == "deeplabv3p_resnet50" ];then

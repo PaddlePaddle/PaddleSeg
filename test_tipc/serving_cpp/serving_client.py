@@ -28,7 +28,7 @@ def parse_args():
         "--img_path",
         help="The path of image.",
         type=str,
-        default="../data/cityscapes_demo.png")
+        default="../data/cityscapes_small.png")
     parser.add_argument(
         "--input_name",
         help="The input name of inference model.",
