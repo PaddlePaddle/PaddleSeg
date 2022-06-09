@@ -85,7 +85,7 @@ bash test_tipc/test_serving_infer_python.sh test_tipc/configs/pp_liteseg_stdc1/m
 输出结果如下，表示命令运行成功。
 
 ```
-Run successfully with command - python3 ./pipeline_http_client.py --img_path=../data/cityscapes_demo.png > ../../log/pp_liteseg_stdc1/serving_infer/serving_infer_python_gpu_batchsize_1.log 2>&1 !
+Run successfully with command - python3 ./pipeline_http_client.py --img_path=../data/cityscapes_small.png > ../../log/pp_liteseg_stdc1/serving_infer/serving_infer_python_gpu_batchsize_1.log 2>&1 !
 ```
 
 预测结果会自动保存在 `./log/pp_liteseg_stdc1/serving_infer/serving_infer_python_gpu_batchsize_1.log` ，可以看到 PaddleServing 的运行结果（如下），其中不同模型的value数值不同。
