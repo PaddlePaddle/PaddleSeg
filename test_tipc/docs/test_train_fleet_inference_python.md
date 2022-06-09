@@ -8,14 +8,14 @@ Linux GPU/CPU 多机多卡训练推理测试的主程序为`test_train_inference
 
 | 算法名称 | 模型名称 | 多机多卡 |
 |  :----: |   :----:  |    :----:  |
-|  PP-OCRv3      | ch_PP-OCRv3_rec     | 分布式训练 |
+|  pp_liteseg    | pp_liteseg_stdc1     | 分布式训练 |
 
 
 - 推理相关：
 
 | 算法名称 | 模型名称 | device_CPU | device_GPU | batchsize |
 |  :----:   |  :----: |   :----:   |  :----:  |   :----:   |
-|  PP-OCRv3   |  ch_PP-OCRv3_rec |  支持 | 支持 | 1 |
+|  pp_liteseg  |  pp_liteseg_stdc1 |  支持 | 支持 | 1 |
 
 
 ## 2. 测试流程
@@ -31,10 +31,10 @@ Linux GPU/CPU 多机多卡训练推理测试的主程序为`test_train_inference
 
 #### 2.1.2 准备数据
 
-运行`prepare.sh`准备数据和模型，以配置文件`test_tipc/configs/ch_PP-OCRv3_rec/train_fleet_infer_python.txt`为例，数据准备命令如下所示。
+运行`prepare.sh`准备数据和模型，以配置文件`test_tipc/configs/pp_liteseg_stdc1/train_fleet_infer_python.txt`为例，数据准备命令如下所示。
 
 ```shell
-bash test_tipc/prepare.sh test_tipc/configs/ch_PP-OCRv3_rec/train_fleet_infer_python.txt lite_train_lite_infer
+bash test_tipc/prepare.sh test_tipc/configs/pp_liteseg_stdc1/train_fleet_infer_python.txt lite_train_lite_infer
 ```
 
 **注意：** 由于是多机训练，这里需要在所有的节点上均运行启动上述命令，准备数据。
@@ -47,10 +47,10 @@ bash test_tipc/prepare.sh test_tipc/configs/ch_PP-OCRv3_rec/train_fleet_infer_py
 export FLAGS_START_PORT=17000
 ```
 
-以配置文件`test_tipc/configs/ch_PP-OCRv3_rec/train_fleet_infer_python.txt`为例，测试方法如下所示。
+以配置文件`test_tipc/configs/pp_liteseg_stdc1/train_fleet_infer_python.txt`为例，测试方法如下所示。
 
 ```shell
-bash test_tipc/test_train_inference_python.sh  test_tipc/configs/ch_PP-OCRv3_rec/train_fleet_infer_python.txt lite_train_lite_infer
+bash test_tipc/test_train_inference_python.sh  test_tipc/configs/pp_liteseg_stdc1/train_fleet_infer_python.txt lite_train_lite_infer
 ```
 
 **注意：** 由于是多机训练，这里需要在所有的节点上均运行启动上述命令进行测试。
@@ -61,9 +61,14 @@ bash test_tipc/test_train_inference_python.sh  test_tipc/configs/ch_PP-OCRv3_rec
 输出结果如下，表示命令运行成功。
 
 ```bash
- Run successfully with command - ch_PP-OCRv3_rec - python3.7 -m paddle.distributed.launch --ips=192.168.0.1,192.168.0.2 --gpus=0,1 tools/train.py -c test_tipc/configs/ch_PP-OCRv3_rec/ch_PP-OCRv3_rec_distillation.yml -o  Global.use_gpu=True Global.save_model_dir=./test_tipc/output/ch_PP-OCRv3_rec/lite_train_lite_infer/norm_train_gpus_0,1_autocast_fp32_nodes_2   Global.epoch_num=3 Global.auto_cast=fp32 Train.loader.batch_size_per_card=16    !  
+[33m Run successfully with command - pp_liteseg_stdc1 - python3.7 -m paddle.distributed.launch --ips=10.255.125.25,10.255.128.22 --gpus=0,1 train.py
+--config test_tipc/configs/pp_liteseg_stdc1/pp_liteseg_stdc1_cityscapes_1024x512_160k.yml --do_eval --save_interval 500 --seed 100   --save_dir=./test_
+tipc/output/pp_liteseg_stdc1/norm_gpus_0,1_autocast_null_nodes_2   --iters=20   --batch_size=2    !  
  ......
-  Run successfully with command - ch_PP-OCRv3_rec - python3.7 tools/infer/predict_rec.py --rec_image_shape="3,48,320" --use_gpu=False --enable_mkldnn=False --cpu_threads=6 --rec_model_dir=./test_tipc/output/ch_PP-OCRv3_rec/lite_train_lite_infer/norm_train_gpus_0,1_autocast_fp32_nodes_2/Student --rec_batch_num=1   --image_dir=./inference/rec_inference --benchmark=True --precision=fp32   > ./test_tipc/output/ch_PP-OCRv3_rec/lite_train_lite_infer/python_infer_cpu_usemkldnn_False_threads_6_precision_fp32_batchsize_1.log 2>&1 !  
+[33m Run successfully with command - pp_liteseg_stdc1 - python3.7 deploy/python/infer.py --save_dir ./test_tipc/output/pp_liteseg_stdc1/ --device=gpu
+ --use_trt=False --precision=fp32 --config=./test_tipc/output/pp_liteseg_stdc1/norm_gpus_0,1_autocast_null_nodes_2//deploy.yaml --batch_size=1 --image_
+path=test_tipc/data/cityscapes/cityscapes_val_5.list --benchmark=True   > ./test_tipc/output/pp_liteseg_stdc1/python_infer_gpu_usetrt_False_precision_f
+p32_batchsize_1.log 2>&1 !  ^[[0m
 ```
 
 在开启benchmark参数时，可以得到测试的详细数据，包含运行环境信息（系统版本、CUDA版本、CUDNN版本、驱动版本），Paddle版本信息，参数设置信息（运行设备、线程数、是否开启内存优化等），模型信息（模型名称、精度），数据信息（batchsize、是否为动态shape等），性能信息（CPU,GPU的占用、运行耗时、预处理耗时、推理耗时、后处理耗时），内容如下所示：
@@ -87,7 +92,7 @@ bash test_tipc/test_train_inference_python.sh  test_tipc/configs/ch_PP-OCRv3_rec
 [2022/06/02 22:53:35] ppocr INFO:  enable_mkldnn: False
 [2022/06/02 22:53:35] ppocr INFO:  cpu_math_library_num_threads: 6
 [2022/06/02 22:53:35] ppocr INFO: ----------------------- Model info ----------------------
-[2022/06/02 22:53:35] ppocr INFO:  model_name: rec
+[2022/06/02 22:53:35] ppocr INFO:  model_name:
 [2022/06/02 22:53:35] ppocr INFO:  precision: fp32
 [2022/06/02 22:53:35] ppocr INFO: ----------------------- Data info -----------------------
 [2022/06/02 22:53:35] ppocr INFO:  batch_size: 1
@@ -99,7 +104,7 @@ bash test_tipc/test_train_inference_python.sh  test_tipc/configs/ch_PP-OCRv3_rec
 [2022/06/02 22:53:35] ppocr INFO:  preprocess_time(ms): 0.1136, inference_time(ms): 79.5877, postprocess_time(ms): 0.6945
 ```
 
-该信息可以在运行log中查看，以上面的`ch_PP-OCRv3_rec`为例，log位置在`./test_tipc/output/ch_PP-OCRv3_rec/lite_train_lite_infer/results_python.log`。
+该信息可以在运行log中查看，以上面的`pp_liteseg_stdc1`为例，log位置在`./test_tipc/output/pp_liteseg_stdc1/results_python.log`。
 
 如果运行失败，也会在终端中输出运行失败的日志信息以及对应的运行命令。可以基于该命令，分析运行失败的原因。
 
