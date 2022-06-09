@@ -61,7 +61,7 @@ bash test_tipc/test_train_inference_python.sh  test_tipc/configs/pp_liteseg_stdc
 输出结果如下，表示命令运行成功。
 
 ```bash
-[33m Run successfully with command - pp_liteseg_stdc1 - python3.7 -m paddle.distributed.launch --ips=10.255.125.25,10.255.128.22 --gpus=0,1 train.py
+[33m Run successfully with command - pp_liteseg_stdc1 - python3.7 -m paddle.distributed.launch --ips=192.168.0.1,192.168.0.2 --gpus=0,1 train.py
 --config test_tipc/configs/pp_liteseg_stdc1/pp_liteseg_stdc1_cityscapes_1024x512_160k.yml --do_eval --save_interval 500 --seed 100   --save_dir=./test_
 tipc/output/pp_liteseg_stdc1/norm_gpus_0,1_autocast_null_nodes_2   --iters=20   --batch_size=2    !  
  ......
