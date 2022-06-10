@@ -63,7 +63,7 @@ def save_best(best_model_dir, metrics_data, iter):
 
 
 def get_best(best_file, metrics, resume_model=None):
-    '''Get best sad, mse, grad, conn and iter from file'''
+    '''Get best metrics and iter from file'''
     best_metrics_data = {}
     if os.path.exists(best_file) and (resume_model is not None):
         values = []
