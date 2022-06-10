@@ -315,17 +315,22 @@ class Config(object):
         model_cfg = self.dic.get('model').copy()
         if not model_cfg:
             raise RuntimeError('No model specified in the configuration file.')
+
         if not 'num_classes' in model_cfg:
             num_classes = None
             try:
                 if self.train_dataset_config:
                     if hasattr(self.train_dataset_class, 'NUM_CLASSES'):
                         num_classes = self.train_dataset_class.NUM_CLASSES
+                    elif 'num_classes' in self.train_dataset_config:
+                        num_classes = self.train_dataset_config['num_classes']
                     elif hasattr(self.train_dataset, 'num_classes'):
                         num_classes = self.train_dataset.num_classes
                 elif self.val_dataset_config:
                     if hasattr(self.val_dataset_class, 'NUM_CLASSES'):
                         num_classes = self.val_dataset_class.NUM_CLASSES
+                    elif 'num_classes' in self.val_dataset_config:
+                        num_classes = self.val_dataset_config['num_classes']
                     elif hasattr(self.val_dataset, 'num_classes'):
                         num_classes = self.val_dataset.num_classes
             except FileNotFoundError:
