@@ -24,6 +24,9 @@ import paddleseg
 from paddleseg.cvlibs import manager, Config
 from paddleseg.utils import get_sys_env, logger, utils
 
+manager.BACKBONES._components_dict.clear()
+manager.TRANSFORMS._components_dict.clear()
+
 import ppmatting
 from ppmatting.core import evaluate, evaluate_ml
 

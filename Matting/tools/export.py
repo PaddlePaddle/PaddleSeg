@@ -18,11 +18,14 @@ import sys
 
 import paddle
 import yaml
-from paddleseg.cvlibs import Config
+from paddleseg.cvlibs import Config, manager
 from paddleseg.utils import logger
 
 LOCAL_PATH = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(LOCAL_PATH, '..'))
+
+manager.BACKBONES._components_dict.clear()
+manager.TRANSFORMS._components_dict.clear()
 
 import ppmatting
 

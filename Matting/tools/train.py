@@ -27,6 +27,9 @@ from paddleseg.utils import get_sys_env, logger
 LOCAL_PATH = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(LOCAL_PATH, '..'))
 
+manager.BACKBONES._components_dict.clear()
+manager.TRANSFORMS._components_dict.clear()
+
 import ppmatting
 from ppmatting.core import train
 
