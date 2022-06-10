@@ -54,30 +54,32 @@ def visual_in_traning(log_writer, vis_dict, step):
         log_writer.add_image(tag=key, img=value, step=step)
 
 
-def save_best(best_model_dir, sad, mse, grad, conn, iter):
-    keys = ['sad', 'mse', 'conn', 'conn', 'iter']
-    values = [sad, mse, grad, conn, iter]
-    with open(os.path.join(best_model_dir, 'best_sad.txt'), 'w') as f:
-        for key, value in zip(keys, values):
+def save_best(best_model_dir, metrics_data, iter):
+    with open(os.path.join(best_model_dir, 'best_metrics.txt'), 'w') as f:
+        for key, value in metrics_data.items():
             line = key + ' ' + str(value) + '\n'
             f.write(line)
+        f.write('iter' + ' ' + str(iter) + '\n')
 
 
-def get_best(best_file, resume_model=None):
+def get_best(best_file, metrics, resume_model=None):
     '''Get best sad, mse, grad, conn and iter from file'''
+    best_metrics_data = {}
     if os.path.exists(best_file) and (resume_model is not None):
         values = []
         with open(best_file, 'r') as f:
             lines = f.readlines()
             for line in lines:
                 line = line.strip()
-                value = line.split(' ')[1]
-                values.append(eval(value))
-            best_sad, best_sad_mse, best_sad_grad, best_sad_conn, best_iter = values
+                key, value = line.split(' ')
+                best_metrics_data[key] = eval(value)
+                if key == 'iter':
+                    best_iter = eval(value)
     else:
-        best_sad = best_sad_mse = best_sad_grad = best_sad_conn = np.inf
+        for key in metrics:
+            best_metrics_data[key] = np.inf
         best_iter = -1
-    return best_sad, best_sad_mse, best_sad_grad, best_sad_conn, best_iter
+    return best_metrics_data, best_iter
 
 
 def train(model,
@@ -95,7 +97,8 @@ def train(model,
           use_vdl=False,
           losses=None,
           keep_checkpoint_max=5,
-          eval_begin_iters=None):
+          eval_begin_iters=None,
+          metrics='sad'):
     """
     Launch training.
     Args:
@@ -115,6 +118,7 @@ def train(model,
         losses (dict, optional): A dict of loss, refer to the loss function of the model for details. Default: None.
         keep_checkpoint_max (int, optional): Maximum number of checkpoints to save. Default: 5.
         eval_begin_iters (int): The iters begin evaluation. It will evaluate at iters/2 if it is None. Defalust: None.
+        metrics(str|list, optional): The metrics to evaluate, it may be the combination of ("sad", "mse", "grad", "conn"). 
     """
     model.train()
     nranks = paddle.distributed.ParallelEnv().nranks
@@ -151,8 +155,13 @@ def train(model,
         from visualdl import LogWriter
         log_writer = LogWriter(save_dir)
 
-    best_sad, best_sad_mse, best_sad_grad, best_sad_conn, best_iter = get_best(
-        os.path.join(save_dir, 'best_model', 'best_sad.txt'),
+    if isinstance(metrics, str):
+        metrics = [metrics]
+    elif not isinstance(metrics, list):
+        metrics = ['sad']
+    best_metrics_data, best_iter = get_best(
+        os.path.join(save_dir, 'best_model', 'best_metrics.txt'),
+        metrics,
         resume_model=resume_model)
     avg_loss = defaultdict(float)
     iters_per_epoch = len(batch_sampler)
@@ -263,38 +272,42 @@ def train(model,
                     val_dataset is not None
             ) and local_rank == 0 and iter >= eval_begin_iters:
                 num_workers = 1 if num_workers > 0 else 0
-                sad, mse, grad, conn = evaluate(
+                metrics_data = evaluate(
                     model,
                     val_dataset,
                     num_workers=1,
                     print_detail=True,
-                    save_results=False)
+                    save_results=False,
+                    metrics=metrics)
                 model.train()
 
             # save best model and add evaluation results to vdl
             if (iter % save_interval == 0 or iter == iters) and local_rank == 0:
                 if val_dataset is not None and iter >= eval_begin_iters:
-                    if sad < best_sad:
-                        best_sad = sad
+                    if metrics_data[metrics[0]] < best_metrics_data[metrics[0]]:
                         best_iter = iter
-                        best_sad_mse = mse
-                        best_sad_grad = grad
-                        best_sad_conn = conn
+                        best_metrics_data = metrics_data.copy()
                         best_model_dir = os.path.join(save_dir, "best_model")
                         paddle.save(
                             model.state_dict(),
                             os.path.join(best_model_dir, 'model.pdparams'))
-                        save_best(best_model_dir, sad, mse, grad, conn, iter)
-                    logger.info(
-                        '[EVAL] The model with the best validation SAD ({:.4f}) was saved at iter {}. While MSE: {:.4f}, Grad: {:.4f}, Conn: {:.4f}'
-                        .format(best_sad, best_iter, best_sad_mse,
-                                best_sad_grad, best_sad_conn))
+                        save_best(best_model_dir, best_metrics_data, iter)
+
+                    show_list = []
+                    for key, value in best_metrics_data.items():
+                        show_list.append((key, value))
+                    log_str = '[EVAL] The model with the best validation {} ({:.4f}) was saved at iter {}. while'.format(
+                        show_list[0][0], show_list[0][1], best_iter)
+                    for i in range(1, len(show_list)):
+                        log_str = log_str + ' {}: {:.4f},'.format(
+                            show_list[i][0], show_list[i][1])
+                    log_str = log_str[:-1]
+                    logger.info(log_str)
 
                     if use_vdl:
-                        log_writer.add_scalar('Evaluate/SAD', sad, iter)
-                        log_writer.add_scalar('Evaluate/MSE', mse, iter)
-                        log_writer.add_scalar('Evaluate/Grad', grad, iter)
-                        log_writer.add_scalar('Evaluate/Conn', conn, iter)
+                        for key, value in metrics_data.items():
+                            log_writer.add_scalar('Evaluate/' + key, value,
+                                                  iter)
 
             batch_start = time.time()
 
