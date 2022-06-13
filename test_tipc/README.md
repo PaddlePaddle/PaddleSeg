@@ -118,5 +118,5 @@ bash test_tipc/test_train_inference_python.sh ./test_tipc/configs/fcn_hrnetw18_s
 - [test_serving_infer_cpp 使用](docs/test_serving_infer_cpp.md)：测试基于CPP的模型服务化部署功能。
 - [test_serving_infer_python 使用](docs/test_serving_infer_python.md)：测试基于Python的模型服务化部署功能。
 - test_lite_arm_cpu_cpp 使用(开发中)：测试基于Paddle-Lite的ARM CPU端c++预测部署功能。
-- test_paddle2onnx 使用(开发中)：测试Paddle2ONNX的模型转化功能，并验证正确性。
+- [test_paddle2onnx](docs/test_paddle2onnx.md)：测试Paddle2ONNX的模型转化功能。
 - [test_train_fleet_inference_python 使用](./docs/test_train_fleet_inference_python.md)：测试基于Python的多机多卡训练与推理等基本功能。

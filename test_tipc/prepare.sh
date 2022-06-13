@@ -209,6 +209,45 @@ if [ ${MODE} = "cpp_infer" ];then
 
     # build cpp
     bash build.sh
+
+elif [ ${MODE} = "paddle2onnx_infer" ];then
+    # install paddle2onnx
+    python_name_list=$(func_parser_value "${lines[2]}")
+    IFS='|'
+    array=(${python_name_list})
+    python_name=${array[0]}
+    ${python_name} -m pip install paddle2onnx
+    ${python_name} -m pip install onnxruntime==1.9.0
+    # get model
+    rm -rf ./test_tipc/infer_models
+    if [[ ${model_name} == "pp_liteseg_stdc1" ]];then
+        wget -nc -P  ./test_tipc/infer_models https://paddleseg.bj.bcebos.com/tipc/infer_models/pp_liteseg_stdc1_fix_shape.zip  --no-check-certificate
+        cd ./test_tipc/infer_models && unzip pp_liteseg_stdc1_fix_shape.zip && cd -
+    elif [[ ${model_name} == "pp_liteseg_stdc2" ]];then
+        wget -nc -P  ./test_tipc/infer_models https://paddleseg.bj.bcebos.com/tipc/infer_models/pp_liteseg_stdc2_fix_shape.zip --no-check-certificate
+        cd ./test_tipc/infer_models && unzip pp_liteseg_stdc2_fix_shape.zip && cd -
+    elif [ ${model_name} == "pp_humanseg_lite" ];then
+        wget -P ./test_tipc/infer_models https://paddleseg.bj.bcebos.com/tipc/infer_models/pp_humanseg_lite_export_398x224.zip --no-check-certificate
+        cd ./test_tipc/infer_models && unzip pp_humanseg_lite_export_398x224.zip && cd -
+    elif [ ${model_name} == "fcn_hrnetw18_small" ];then
+        wget -P ./test_tipc/infer_models https://paddleseg.bj.bcebos.com/tipc/infer_models/pp_humanseg_mobile_export_192x192.zip --no-check-certificate
+        cd ./test_tipc/infer_models && unzip pp_humanseg_mobile_export_192x192.zip && cd -
+    elif [ ${model_name} == "deeplabv3p_resnet50" ];then
+        wget -P ./test_tipc/infer_models https://paddleseg.bj.bcebos.com/tipc/infer_models/pp_humanseg_server_export_512x512.zip --no-check-certificate
+        cd ./test_tipc/infer_models && unzip pp_humanseg_server_export_512x512.zip && cd -
+    elif [ ${model_name} == "ppmatting" ];then
+        wget -P ./test_tipc/infer_models https://paddleseg.bj.bcebos.com/tipc/infer_models/modnet-mobilenetv2.zip --no-check-certificate
+        cd ./test_tipc/infer_models && unzip modnet-mobilenetv2.zip && cd -
+    elif [ ${model_name} == "fcn_hrnetw18" ];then
+        wget -P ./test_tipc/infer_models https://paddleseg.bj.bcebos.com/tipc/infer_models/fcn_hrnetw18_cityscapes_1024x512_80k.zip --no-check-certificate
+        cd ./test_tipc/infer_models && unzip fcn_hrnetw18_cityscapes_1024x512_80k.zip && cd -
+    elif [ ${model_name} == "ocrnet_hrnetw48" ];then
+        wget -P ./test_tipc/infer_models https://paddleseg.bj.bcebos.com/tipc/infer_models/ocrnet_hrnetw48_cityscapes_1024x512_160k.zip --no-check-certificate
+        cd ./test_tipc/infer_models && unzip ocrnet_hrnetw48_cityscapes_1024x512_160k.zip && cd -
+    elif [ ${model_name} == "ocrnet_hrnetw18" ];then
+        wget -P ./test_tipc/infer_models https://paddleseg.bj.bcebos.com/tipc/infer_models/ocrnet_hrnetw18_cityscapes_1024x512_160k.zip --no-check-certificate
+        cd ./test_tipc/infer_models && unzip ocrnet_hrnetw18_cityscapes_1024x512_160k.zip && cd -
+    fi
 else
     cp ./test_tipc/data/cityscapes_val_5.list ./test_tipc/data/cityscapes
 fi
