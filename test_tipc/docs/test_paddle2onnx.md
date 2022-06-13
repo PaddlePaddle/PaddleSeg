@@ -36,7 +36,7 @@ Paddle2ONNX 测试的主程序为`test_paddle2onnx.sh`，可以测试基于Paddl
 
 - 安装依赖
     ```
-    pip3 install  -r requirements.txt
+    pip install  -r requirements.txt
     ```
 
 - 安装 Paddle2ONNX（自动安装）
