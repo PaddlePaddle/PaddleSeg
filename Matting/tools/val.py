@@ -58,6 +58,13 @@ def parse_args():
         dest='save_results',
         help='save prediction alpha while evaluating',
         action='store_true')
+    parser.add_argument(
+        '--metrics',
+        dest='metrics',
+        nargs='+',
+        help='The metrics to evaluate, it may be the combination of ("sad", "mse", "grad", "conn")',
+        type=str,
+        default='sad')
 
     return parser.parse_args()
 
@@ -100,7 +107,8 @@ def main(args):
             val_dataset,
             num_workers=args.num_workers,
             save_dir=args.save_dir,
-            save_results=args.save_results)
+            save_results=args.save_results,
+            metrics=args.metrics)
     else:
 
         evaluate_ml(

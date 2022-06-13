@@ -92,6 +92,13 @@ def parse_args():
         help='Eval while training',
         action='store_true')
     parser.add_argument(
+        '--metrics',
+        dest='metrics',
+        nargs='+',
+        help='The metrics to evaluate, it may be the combination of ("sad", "mse", "grad", "conn")',
+        type=str,
+        default='sad')
+    parser.add_argument(
         '--log_iters',
         dest='log_iters',
         help='Display logging information at every log_iters',
@@ -172,7 +179,8 @@ def main(args):
         log_iters=args.log_iters,
         resume_model=args.resume_model,
         save_dir=args.save_dir,
-        eval_begin_iters=args.eval_begin_iters)
+        eval_begin_iters=args.eval_begin_iters,
+        metrics=args.metrics)
 
 
 if __name__ == '__main__':
