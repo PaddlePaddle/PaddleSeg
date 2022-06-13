@@ -1,5 +1,5 @@
 # 1. prepare serving source code
-export https_proxy=http://172.19.57.45:3128 && export http_proxy=http://172.19.57.45:3128
+export https_proxy=${HTTP_PROXY} && export http_proxy=${HTTPS_PROXY}
 git clone https://github.com/PaddlePaddle/Serving
 cd Serving
 git checkout -- .
@@ -19,7 +19,7 @@ OPENCV_DIR=/usr/local/opencv3
 # 3. prepare go
 export GOPATH=$HOME/go
 export PATH=$PATH:$GOPATH/bin
-export https_proxy=http://172.19.57.45:3128 && export http_proxy=http://172.19.57.45:3128
+export https_proxy=${HTTP_PROXY} && export http_proxy=${HTTPS_PROXY}
 
 go env -w GO111MODULE=on
 go env -w GOPROXY=https://goproxy.cn,direct

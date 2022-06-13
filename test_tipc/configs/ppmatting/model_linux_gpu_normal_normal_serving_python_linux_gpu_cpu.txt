@@ -12,5 +12,5 @@ web_service:./web_service.py --config=config.yml
 --opt op.seg.local_service_conf.devices:"0"|null
 --output_name:sigmoid_2.tmp_0
 pipline:./pipeline_http_client.py
---img_path:../data/cityscapes_demo.png
+--img_path:../data/cityscapes_small.png
 --input_name:img

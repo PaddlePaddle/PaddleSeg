@@ -69,7 +69,9 @@ git checkout -b develop origin/develop
 ### 2.2 编译安装paddle-serving-server
 
 在PaddleSeg根目录下，执行如下命令编译安装paddle-serving-server，耗时会较长。
+
 ```
+# export HTTP_PROXY=xxx && export HTTPS_PROXY=xxx
 sh test_tipc/serving_cpp/prepare_server.sh
 ```
 
