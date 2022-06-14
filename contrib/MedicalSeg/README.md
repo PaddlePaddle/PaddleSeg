@@ -179,12 +179,12 @@ W0602 00:54:52.900665 28393 device_context.cc:465] device: 0, cuDNN Version: 7.6
 - image_path ：用于推理的图片路径
 - batch_size 批次
 
-002数据在（0，：，：，100）的原图
-<img src=./documentation/img/unetr_raw.png></img>
-002数据在（：，：，100）的标签
-<img src=./documentation/img/unetr_label.png></img>
-002数据在（：，：，100）的预测图
-<img src=./documentation/img/unetr_pred.png></img>
+002数据 带标签的原图
+<img src=./documentation/img/label.png></img>
+002数据  动态推理图
+<img src=./documentation/img/dyn.png></img>
+002数据  静态推理图
+<img src=./documentation/img/static.png></img>
 
 
 
