@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import math
 import codecs
 import os
 from typing import Any, Dict, Generic
@@ -172,9 +171,9 @@ class Config(object):
             lr_lambda_params = params.pop('lr_lambda_params')
             power = lr_lambda_params['power']
             max_epoch = lr_lambda_params['max_epoch']
-            len_train_dataset = lr_lambda_params['len_train_dataset']
+            length = lr_lambda_params['len_train_dataset']
             params[
-                'lr_lambda'] = lambda iter: (1 - iter / len_train_dataset / max_epoch)**power
+                'lr_lambda'] = lambda iters: (1 - iters / length / max_epoch)**power
         lr_sche = getattr(paddle.optimizer.lr, lr_type)(**params)
 
         if use_warmup:

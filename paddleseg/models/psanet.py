@@ -249,11 +249,13 @@ class PSANet(nn.Layer):
                  num_classes,
                  backbone,
                  backbone_indices=[0],
+                 mscale=[0.5, 1.0, 2.0],
                  preteained=None):
         super().__init__()
         self.backbone = backbone
         self.pretrained = preteained
         self.backbone_indices = backbone_indices
+        self.mscale = mscale
         in_channels = [self.backbone.feat_channels[i] for i in backbone_indices]
         self.ocr = OCRHead(num_classes, in_channels)
         self.scale_attn = AttenHead(in_ch=512, out_ch=1)
@@ -264,7 +266,6 @@ class PSANet(nn.Layer):
         high_level_features = self.backbone(x)
         cls_out, aux_out, ocr_mid_feats = self.ocr(high_level_features)
         attn = self.scale_attn(ocr_mid_feats)
-        #print(x_size)
         aux_out = F.interpolate(aux_out, size=x_size, mode='bilinear')
         cls_out = F.interpolate(cls_out, size=x_size, mode='bilinear')
         attn = F.interpolate(attn, size=x_size, mode='bilinear')
@@ -365,6 +366,6 @@ class PSANet(nn.Layer):
             utils.load_entire_model(self, self.pretrained)
 
     def forward(self, inputs):
-        if [0.5, 1.0, 2.0] and not self.training:
-            return self.nscale_forward(inputs, [0.5, 1.0, 2.0])
+        if self.mscale and not self.training:
+            return self.nscale_forward(inputs, self.mscale)
         return self.two_scale_forward(inputs)

@@ -36,7 +36,10 @@ optimizer:
 lr_scheduler:
   type: LambdaDecay
   learning_rate: 0.005
-  lr_lambda: 'lambda iter, (1-math.ceil(iter/2975)/175)**2'
+  lr_lambda_params:
+    max_epoch: 175
+    power: 2.0
+    len_train_dataset: 2975
 
 loss:
   types:

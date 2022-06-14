@@ -14,11 +14,10 @@
 
 import random
 import math
-import numbers
 
 import cv2
 import numpy as np
-from PIL import Image, ImageOps
+from PIL import Image
 
 from paddleseg.cvlibs import manager
 from paddleseg.transforms import functional
