@@ -15,16 +15,15 @@ import collections.abc
 
 import paddle
 import paddle.nn.functional as F
+from medicalseg.core import infer_window
 
 
 def get_reverse_list(ori_shape, transforms):
     """
     get reverse list of transform.
-
     Args:
         ori_shape (list): Origin shape of image.
         transforms (list): List of transform.
-
     Returns:
         list: List of tuple, there are two format:
             ('resize', (h, w)) The image shape before resize,
@@ -62,13 +61,11 @@ def reverse_transform(pred, ori_shape, transforms, mode='trilinear'):
 def inference(model, im, ori_shape=None, transforms=None):
     """
     Inference for image.
-
     Args:
         model (paddle.nn.Layer): model to get logits of image.
         im (Tensor): the input image.
         ori_shape (list): Origin shape of image.
         transforms (list): Transforms for image.
-
     Returns:
         Tensor: If ori_shape is not None, a prediction with shape (1, 1, d, h, w) is returned.
             If ori_shape is None, a logit with shape (1, num_classes, d, h, w) is returned.
@@ -84,6 +81,40 @@ def inference(model, im, ori_shape=None, transforms=None):
     logit = logits[0]
 
     if hasattr(model, 'data_format') and model.data_format == 'NDHWC':
+        logit = logit.transpose((0, 4, 1, 2, 3))
+
+    if ori_shape is not None and ori_shape != logit.shape[2:]:
+        logit = reverse_transform(logit, ori_shape, transforms, mode='bilinear')
+
+    pred = paddle.argmax(logit, axis=1, keepdim=True, dtype='int32')
+
+    return pred, logit
+
+
+def inference_window(model, im, ori_shape=None, transforms=None,sw_num=10):
+    """
+    Inference for image.
+    Args:
+        model (paddle.nn.Layer): model to get logits of image.
+        im (Tensor): the input image.
+        ori_shape (list): Origin shape of image.
+        transforms (list): Transforms for image.
+    Returns:
+        Tensor: If ori_shape is not None, a prediction with shape (1, 1, d, h, w) is returned.
+            If ori_shape is None, a logit with shape (1, num_classes, d, h, w) is returned.
+    """
+    if hasattr(model, 'data_format') and model.data_format == 'NDHWC':
+        im = im.transpose((0, 2, 3, 4, 1))
+
+    logits = infer_window.sliding_window_inference(im,(128,128,128),sw_num,model)
+
+    if not isinstance(logits, collections.abc.Sequence):
+        raise TypeError(
+            "The type of logits must be one of collections.abc.Sequence, e.g. list, tuple. But received {}"
+            .format(type(logits)))
+    logit = logits[0]
+
+    if hasattr(model, 'data_format') and model.data_format == 'NCDHW':
         logit = logit.transpose((0, 4, 1, 2, 3))
 
     if ori_shape is not None and ori_shape != logit.shape[2:]:
