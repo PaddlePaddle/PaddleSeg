@@ -2,7 +2,7 @@ batch_size: 1
 iters: 520000
 
 train_dataset:
-  type: CityscapesAutolabeling
+  type: Cityscapes
   dataset_root: data/cityscapes/
   transforms:
     - type: ResizeStepScaling
@@ -27,7 +27,7 @@ train_dataset:
   mode: train
 
 val_dataset:
-  type: CityscapesAutolabeling
+  type: Cityscapes
   dataset_root: data/cityscapes
   transforms:
     - type: Normalize
@@ -53,8 +53,7 @@ lr_scheduler:
   lr_lambda_params:
     max_epoch: 175
     power: 2.0
-    len_train_dataset: 5950
-    nranks: 4
+    len_train_dataset: 2975
 
 loss:
   types:
