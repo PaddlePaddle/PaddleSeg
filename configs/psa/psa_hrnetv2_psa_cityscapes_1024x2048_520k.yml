@@ -3,11 +3,24 @@ iters: 520000
 
 train_dataset:
   type: Cityscapes
-  dataset_root: data/cityscapes
+  dataset_root: data/cityscapes/
   transforms:
+    - type: ResizeStepScaling
+      min_scale_factor: 0.5
+      max_scale_factor: 2.0
+      scale_step_size: 0
     - type: RandomPaddingCrop
-      crop_size: [1024, 2048]
+      crop_size: [2048, 1024]
     - type: RandomHorizontalFlip
+    - type: RandomDistort
+      brightness_range: 0.25
+      brightness_prob: 1
+      contrast_range: 0.25
+      contrast_prob: 1
+      saturation_range: 0.25
+      saturation_prob: 1
+      hue_range: 63
+      hue_prob: 1
     - type: Normalize
       mean: [0.485, 0.456, 0.406]
       std: [0.229, 0.224, 0.225]
@@ -27,6 +40,7 @@ model:
     num_classes: 19
     backbone: 
       type: HRNETV2_PSA
+    pretrained: pretrained/pretrained.pdparams
 
 optimizer:
   type: sgd
@@ -40,11 +54,16 @@ lr_scheduler:
     max_epoch: 175
     power: 2.0
     len_train_dataset: 2975
+    nranks: 4
 
 loss:
   types:
     - type: RMILoss
+      do_rmi: False
     - type: RMILoss
+      do_rmi: True
     - type: RMILoss
+      do_rmi: False
     - type: RMILoss
+      do_rmi: False
   coef: [1, 0.4, 0.05, 0.05]

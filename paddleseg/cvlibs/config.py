@@ -172,8 +172,9 @@ class Config(object):
             power = lr_lambda_params['power']
             max_epoch = lr_lambda_params['max_epoch']
             length = lr_lambda_params['len_train_dataset']
-            params[
-                'lr_lambda'] = lambda iters: (1 - iters / length / max_epoch)**power
+            nranks = lr_lambda_params['nranks']
+            func = lambda iters: (1 - iters / length / nranks / max_epoch)**power
+            params['lr_lambda'] = func
         lr_sche = getattr(paddle.optimizer.lr, lr_type)(**params)
 
         if use_warmup:

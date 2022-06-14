@@ -250,10 +250,10 @@ class PSANet(nn.Layer):
                  backbone,
                  backbone_indices=[0],
                  mscale=[0.5, 1.0, 2.0],
-                 preteained=None):
+                 pretrained=None):
         super().__init__()
         self.backbone = backbone
-        self.pretrained = preteained
+        self.pretrained = pretrained
         self.backbone_indices = backbone_indices
         self.mscale = mscale
         in_channels = [self.backbone.feat_channels[i] for i in backbone_indices]

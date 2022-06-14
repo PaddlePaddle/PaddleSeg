@@ -18,8 +18,29 @@ import paddle
 import paddle.nn as nn
 import paddle.nn.functional as F
 
+from paddleseg.utils import utils
 from paddleseg.cvlibs import manager
 from paddleseg.cvlibs import param_init
+from paddleseg.models import layers
+from paddle.distributed.fleet.utils import recompute
+from paddleseg.cvlibs import para_init
+
+
+def kaiming_init(module,
+                 a=0,
+                 mode='fan_out',
+                 nonlinearity='relu',
+                 bias=0,
+                 distribution='normal'):
+    assert distribution in ['uniform', 'normal']
+    if distribution == 'uniform':
+        para_init.kaiming_uniform_(
+            module.weight, a=a, mode=mode, nonlinearity=nonlinearity)
+    else:
+        para_init.kaiming_normal_(
+            module.weight, a=a, mode=mode, nonlinearity=nonlinearity)
+    if hasattr(module, 'bias') and module.bias is not None:
+        para_init.constant_(module.bias, bias)
 
 
 class PolarizedSelfAttentionModule(nn.Layer):
@@ -73,13 +94,18 @@ class PolarizedSelfAttentionModule(nn.Layer):
         self.reset_parameters()
 
     def reset_parameters(self):
-        for module in [
-                self.conv_q_right, self.conv_v_right, self.conv_q_left,
-                self.conv_v_left, self.conv_up
-        ]:
-            param_init.kaiming_normal_init(module.weight)
-            if hasattr(module, 'bias') and module.bias is not None:
-                param_init.constant_init(module.bias, value=0.0)
+        #for module in [
+        #self.conv_q_right, self.conv_v_right, self.conv_q_left,
+        #self.conv_v_left, self.conv_up
+        #]:
+        #param_init.kaiming_normal_init(module.weight)
+        #if hasattr(module, 'bias') and module.bias is not None:
+        #param_init.constant_init(module.bias, value=0.0)
+        kaiming_init(self.conv_q_right, mode='fan_in')
+        kaiming_init(self.conv_v_right, mode='fan_in')
+        kaiming_init(self.conv_q_left, mode='fan_in')
+        kaiming_init(self.conv_v_left, mode='fan_in')
+        kaiming_init(self.conv_up, mode='fan_in')
         self.conv_q_right.inited = True
         self.conv_v_right.inited = True
         self.conv_q_left.inited = True
@@ -131,12 +157,12 @@ class HRNetBasicBlock(nn.Layer):
         self.stride = stride
         self.conv1 = nn.Conv2D(
             inplanes, planes, kernel_size=3, padding=1, bias_attr=False)
-        self.bn1 = nn.BatchNorm2D(planes)
+        self.bn1 = layers.SyncBatchNorm(planes)
         self.relu = nn.ReLU()
         self.deattn = PolarizedSelfAttentionModule(planes, planes)
         self.conv2 = nn.Conv2D(
             planes, planes, kernel_size=3, padding=1, bias_attr=False)
-        self.bn2 = nn.BatchNorm2D(planes)
+        self.bn2 = layers.SyncBatchNorm(planes)
         self.downsample = downsample
 
     def forward(self, x):
@@ -163,7 +189,7 @@ class Bottleneck(nn.Layer):
     def __init__(self, inplanes, planes, stride=1, downsample=None):
         super().__init__()
         self.conv1 = nn.Conv2D(inplanes, planes, kernel_size=1, bias_attr=False)
-        self.bn1 = nn.BatchNorm2D(planes)
+        self.bn1 = layers.SyncBatchNorm(planes)
         self.conv2 = nn.Conv2D(
             planes,
             planes,
@@ -171,10 +197,10 @@ class Bottleneck(nn.Layer):
             stride=stride,
             padding=1,
             bias_attr=False)
-        self.bn2 = nn.BatchNorm2D(planes)
+        self.bn2 = layers.SyncBatchNorm(planes)
         self.conv3 = nn.Conv2D(
             planes, planes * self.expansion, kernel_size=1, bias_attr=False)
-        self.bn3 = nn.BatchNorm2D(planes * self.expansion)
+        self.bn3 = layers.SyncBatchNorm(planes * self.expansion)
         self.relu = nn.ReLU()
         self.downsample = downsample
         self.stride = stride
@@ -232,18 +258,19 @@ class HighResolutionModule(nn.Layer):
                     kernel_size=1,
                     stride=stride,
                     bias_attr=False),
-                nn.BatchNorm2D(num_channels[branch_index] * block.expansion), )
-        layers = []
-        layers.append(
+                layers.SyncBatchNorm(num_channels[branch_index] *
+                                     block.expansion), )
+        layer = []
+        layer.append(
             block(self.num_inchannels[branch_index], num_channels[branch_index],
                   stride, downsample))
         self.num_inchannels[branch_index] = \
             num_channels[branch_index] * block.expansion
         for i in range(1, num_blocks[branch_index]):
-            layers.append(
+            layer.append(
                 block(self.num_inchannels[branch_index], num_channels[
                     branch_index]))
-        return nn.Sequential(*layers)
+        return nn.Sequential(*layer)
 
     def _make_branches(self, num_branches, block, num_blocks, num_channels):
         branches = []
@@ -271,7 +298,7 @@ class HighResolutionModule(nn.Layer):
                                 1,
                                 0,
                                 bias_attr=False),
-                            nn.BatchNorm2D(num_inchannels[i])))
+                            layers.SyncBatchNorm(num_inchannels[i])))
                 elif j == i:
                     fuse_layer.append(None)
                 else:
@@ -288,7 +315,8 @@ class HighResolutionModule(nn.Layer):
                                         2,
                                         1,
                                         bias_attr=False),
-                                    nn.BatchNorm2D(num_outchannels_conv3x3)))
+                                    layers.SyncBatchNorm(
+                                        num_outchannels_conv3x3)))
                         else:
                             num_outchannels_conv3x3 = num_inchannels[j]
                             conv3x3s.append(
@@ -300,7 +328,8 @@ class HighResolutionModule(nn.Layer):
                                         2,
                                         1,
                                         bias_attr=False),
-                                    nn.BatchNorm2D(num_outchannels_conv3x3),
+                                    layers.SyncBatchNorm(
+                                        num_outchannels_conv3x3),
                                     nn.ReLU()))
                     fuse_layer.append(nn.Sequential(*conv3x3s))
 
@@ -344,10 +373,10 @@ class HighResolutionNet(nn.Layer):
         self.cfg_dic = cfg_dic
         self.conv1 = nn.Conv2D(
             3, 64, kernel_size=3, stride=2, padding=1, bias_attr=False)
-        self.bn1 = nn.BatchNorm2D(64)
+        self.bn1 = layers.SyncBatchNorm(64)
         self.conv2 = nn.Conv2D(
             64, 64, kernel_size=3, stride=2, padding=1, bias_attr=False)
-        self.bn2 = nn.BatchNorm2D(64)
+        self.bn2 = layers.SyncBatchNorm(64)
         self.relu = nn.ReLU()
         self.pretrained = pretrained
 
@@ -414,7 +443,7 @@ class HighResolutionNet(nn.Layer):
                                 1,
                                 1,
                                 bias_attr=False),
-                            nn.BatchNorm2D(num_channels_cur_layer[i]),
+                            layers.SyncBatchNorm(num_channels_cur_layer[i]),
                             nn.ReLU()))
                 else:
                     transition_layers.append(None)
@@ -433,7 +462,7 @@ class HighResolutionNet(nn.Layer):
                                 2,
                                 1,
                                 bias_attr=False),
-                            nn.BatchNorm2D(outchannels),
+                            layers.SyncBatchNorm(outchannels),
                             nn.ReLU()))
                 transition_layers.append(nn.Sequential(*conv3x3s))
 
@@ -449,15 +478,15 @@ class HighResolutionNet(nn.Layer):
                     kernel_size=1,
                     stride=stride,
                     bias_attr=False),
-                nn.BatchNorm2D(planes * block.expansion), )
+                layers.SyncBatchNorm(planes * block.expansion), )
 
-        layers = []
-        layers.append(block(inplanes, planes, stride, downsample))
+        layer = []
+        layer.append(block(inplanes, planes, stride, downsample))
         inplanes = planes * block.expansion
         for i in range(1, blocks):
-            layers.append(block(inplanes, planes))
+            layer.append(block(inplanes, planes))
 
-        return nn.Sequential(*layers)
+        return nn.Sequential(*layer)
 
     def _make_stage(self, layer_config, num_inchannels,
                     multi_scale_output=True):
@@ -518,7 +547,8 @@ class HighResolutionNet(nn.Layer):
                     x_list.append(self.transition3[i](y_list[-1]))
             else:
                 x_list.append(y_list[i])
-        x = self.stage4(x_list)
+        #x = self.stage4(x_list)
+        x = recompute(self.stage4, x_list)
         x0_h, x0_w = paddle.shape(x[0]).numpy()[2:4]
         x1 = F.interpolate(
             x[1], size=(x0_h, x0_w), mode='bilinear', align_corners=False)
@@ -540,20 +570,8 @@ class HighResolutionNet(nn.Layer):
             elif isinstance(m, (nn.BatchNorm, nn.SyncBatchNorm)):
                 param_init.constant_init(m.weight, value=1.0)
                 param_init.constant_init(m.bias, value=0.0)
-
         if self.pretrained is not None:
-            pretrained_dict = paddle.load(self.pretrained)
-            model_dict = self.state_dict()
-            pretrained_dict = {
-                k.replace('last_layer', 'aux_head').replace('model.', ''): v
-                for k, v in pretrained_dict.items()
-            }
-            pretrained_dict = {
-                k: v
-                for k, v in pretrained_dict.items() if k in model_dict.keys()
-            }
-            model_dict.update(pretrained_dict)
-            self.load_dict(model_dict)
+            utils.load_entire_model(self, self.pretrained)
 
 
 @manager.BACKBONES.add_component
