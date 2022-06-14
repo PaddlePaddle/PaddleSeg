@@ -54,7 +54,6 @@ lr_scheduler:
     max_epoch: 175
     power: 2.0
     len_train_dataset: 5950
-    nranks: 4
 
 loss:
   types:
