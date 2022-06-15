@@ -38,7 +38,7 @@ class TranspConv3DBlock(nn.Layer):
         return y
 
 
-class BlueBlock(nn.Layer):
+class TranspConv3DConv3D(nn.Layer):
     def __init__(self, in_planes, out_planes, layers=1, conv_block=False):
         """
         blue box in Fig.1
@@ -48,7 +48,7 @@ class BlueBlock(nn.Layer):
             layers: number of blue blocks, transpose convs
             conv_block: whether to include a conv block after each transpose conv. deafaults to False
         """
-        super(BlueBlock, self).__init__()
+        super(TranspConv3DConv3D, self).__init__()
         self.blocks = nn.LayerList([TranspConv3DBlock(in_planes, out_planes),
                                     ])
         if conv_block:
@@ -106,11 +106,6 @@ class Conv3DBlock(nn.Layer):
             return self.final_activation(y)
 
 
-def expand_to_batch(tensor, desired_size):
-    tile = desired_size // tensor.shape[0]
-    return paddle.tile(tensor, repeat_times=(tile, 1, 1))
-
-
 class AbsPositionalEncoding1D(nn.Layer):
     def __init__(self, tokens, dim):
         super(AbsPositionalEncoding1D, self).__init__()
@@ -120,8 +115,12 @@ class AbsPositionalEncoding1D(nn.Layer):
                                                    default_initializer=paddle.nn.initializer.Assign(params))
 
     def forward(self, x):
+
         batch = x.shape[0]
-        expb = expand_to_batch(self.abs_pos_enc, desired_size=batch)
+
+        tile = batch // self.abs_pos_enc.shape[0]
+        expb = paddle.tile(self.abs_pos_enc, repeat_times=(tile, 1, 1))
+
         return x + expb
 
 
@@ -202,27 +201,9 @@ class MultiHeadSelfAttention(nn.Layer):
 
         # re-compose: merge heads with dim_head
 
-        d = paddle.transpose(out, perm=[0, 2, 1, 3])
-        shape = d.shape
-        d = paddle.reshape(d, [shape[0], shape[1], -1])
-        out = d
+        out = paddle.flatten(paddle.transpose(out, perm=[0, 2, 1, 3]), start_axis=2, stop_axis=3)
 
         return self.W_0(out)
-
-
-# from https://huggingface.co/transformers/_modules/transformers/modeling_utils.html
-def get_module_device(parameter: nn.layer):
-    try:
-        return next(parameter.parameters()).device
-    except StopIteration:
-
-        def find_tensor_attributes(module: nn.Layer) -> List[Tuple[str, Tensor]]:
-            tuples = [(k, v) for k, v in module.__dict__.items() if paddle.is_tensor(v)]
-            return tuples
-
-        gen = parameter._named_members(get_members_fn=find_tensor_attributes)
-        first_tuple = next(gen)
-        return first_tuple[1].device
 
 
 class TransformerBlock(nn.Layer):
@@ -345,11 +326,11 @@ class UNETR(nn.Layer):
         self.init_conv = Conv3DBlock(in_channels, base_filters, double=True, norm=self.norm)
 
         # blue blocks in Fig.1
-        self.z3_blue_conv = BlueBlock(in_planes=embed_dim, out_planes=base_filters * 2, layers=3)
+        self.z3_blue_conv = TranspConv3DConv3D(in_planes=embed_dim, out_planes=base_filters * 2, layers=3)
 
-        self.z6_blue_conv = BlueBlock(in_planes=embed_dim, out_planes=base_filters * 4, layers=2)
+        self.z6_blue_conv = TranspConv3DConv3D(in_planes=embed_dim, out_planes=base_filters * 4, layers=2)
 
-        self.z9_blue_conv = BlueBlock(in_planes=embed_dim, out_planes=base_filters * 8, layers=1)
+        self.z9_blue_conv = TranspConv3DConv3D(in_planes=embed_dim, out_planes=base_filters * 8, layers=1)
 
         # Green blocks in Fig.1
         self.z12_deconv = TranspConv3DBlock(embed_dim, base_filters * 8)
@@ -372,9 +353,8 @@ class UNETR(nn.Layer):
     def forward(self, x):
         transf_input = self.embed(x)
 
-        v_x, v_y, v_z = self.patch_dim
-
         def rearr(t):
+            v_x, v_y, v_z = self.patch_dim
             shape = t.shape
             d = paddle.reshape(t, [shape[0], v_x, v_y, v_z, shape[-1]])
             d = paddle.transpose(d, perm=[0, 4, 1, 2, 3])
