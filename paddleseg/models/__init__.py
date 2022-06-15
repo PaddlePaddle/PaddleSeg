@@ -61,3 +61,4 @@ from .ddrnet import DDRNet_23
 from .ccnet import CCNet
 from .mobileseg import MobileSeg
 from .psanet import PSANet
+from .upernet import UPerNet

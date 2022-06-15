@@ -27,6 +27,9 @@ from paddleseg.utils import get_sys_env, logger
 LOCAL_PATH = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(LOCAL_PATH, '..'))
 
+manager.BACKBONES._components_dict.clear()
+manager.TRANSFORMS._components_dict.clear()
+
 import ppmatting
 from ppmatting.core import train
 
@@ -88,6 +91,13 @@ def parse_args():
         dest='do_eval',
         help='Eval while training',
         action='store_true')
+    parser.add_argument(
+        '--metrics',
+        dest='metrics',
+        nargs='+',
+        help='The metrics to evaluate, it may be the combination of ("sad", "mse", "grad", "conn")',
+        type=str,
+        default='sad')
     parser.add_argument(
         '--log_iters',
         dest='log_iters',
@@ -169,7 +179,8 @@ def main(args):
         log_iters=args.log_iters,
         resume_model=args.resume_model,
         save_dir=args.save_dir,
-        eval_begin_iters=args.eval_begin_iters)
+        eval_begin_iters=args.eval_begin_iters,
+        metrics=args.metrics)
 
 
 if __name__ == '__main__':

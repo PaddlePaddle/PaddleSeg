@@ -49,6 +49,7 @@ class DIM(nn.Layer):
         self.backbone = backbone
         self.pretrained = pretrained
         self.stage = stage
+        self.loss_func_dict = None
 
         decoder_output_channels = [64, 128, 256, 512]
         self.decoder = Decoder(
@@ -98,17 +99,20 @@ class DIM(nn.Layer):
 
     def loss(self, logit_dict, label_dict, loss_func_dict=None):
         if loss_func_dict is None:
-            loss_func_dict = defaultdict(list)
-            loss_func_dict['alpha_raw'].append(MRSD())
-            loss_func_dict['comp'].append(MRSD())
-            loss_func_dict['alpha_pred'].append(MRSD())
+            if self.loss_func_dict is None:
+                self.loss_func_dict = defaultdict(list)
+                self.loss_func_dict['alpha_raw'].append(MRSD())
+                self.loss_func_dict['comp'].append(MRSD())
+                self.loss_func_dict['alpha_pred'].append(MRSD())
+        else:
+            self.loss_func_dict = loss_func_dict
 
         loss = {}
         mask = label_dict['trimap'] == 128
         loss['all'] = 0
 
         if self.stage != 2:
-            loss['alpha_raw'] = loss_func_dict['alpha_raw'][0](
+            loss['alpha_raw'] = self.loss_func_dict['alpha_raw'][0](
                 logit_dict['alpha_raw'], label_dict['alpha'], mask)
             loss['alpha_raw'] = 0.5 * loss['alpha_raw']
             loss['all'] = loss['all'] + loss['alpha_raw']
@@ -116,13 +120,13 @@ class DIM(nn.Layer):
         if self.stage == 1 or self.stage == 3:
             comp_pred = logit_dict['alpha_raw'] * label_dict['fg'] + \
                 (1 - logit_dict['alpha_raw']) * label_dict['bg']
-            loss['comp'] = loss_func_dict['comp'][0](comp_pred,
-                                                     label_dict['img'], mask)
+            loss['comp'] = self.loss_func_dict['comp'][0](
+                comp_pred, label_dict['img'], mask)
             loss['comp'] = 0.5 * loss['comp']
             loss['all'] = loss['all'] + loss['comp']
 
         if self.stage == 2 or self.stage == 3:
-            loss['alpha_pred'] = loss_func_dict['alpha_pred'][0](
+            loss['alpha_pred'] = self.loss_func_dict['alpha_pred'][0](
                 logit_dict['alpha_pred'], label_dict['alpha'], mask)
             loss['all'] = loss['all'] + loss['alpha_pred']
 
