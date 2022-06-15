@@ -33,8 +33,9 @@ import medicalseg.transforms as T
 from medicalseg.cvlibs import manager
 from medicalseg.utils import get_sys_env, logger, get_image_list
 from medicalseg.utils.visualize import get_pseudo_color_map
-from medicalseg.core.infer_window import sliding_window_inference
-
+from medicalseg.core.infer import sliding_window_inference
+from tools import HUnorm, resample
+from tools import Prep
 
 
 def parse_args():
@@ -133,6 +134,30 @@ def parse_args():
         type=eval,
         choices=[True, False],
         help='Print GLOG information of Paddle Inference.')
+
+    parser.add_argument(
+        '--use_swl',
+        default=False,
+        type=eval,
+        help='use sliding_window_inference')
+
+    parser.add_argument(
+        '--use_warmup',
+        default=True,
+        type=eval,
+        help='warmup')
+
+    parser.add_argument(
+        '--img_shape',
+        default=128,
+        type=int,
+        help='img_shape')
+
+    parser.add_argument(
+        '--is_nhwd',
+        default=True,
+        type=eval,
+        help='is_nhwd')
 
     return parser.parse_args()
 
@@ -354,6 +379,20 @@ class Predictor:
 
         for i in range(0, len(imgs_path), args.batch_size):
 
+            if args.use_warmup:
+                # warm up
+                if i == 0 and args.benchmark:
+                    for j in range(5):
+                        data = np.array([
+                            self._preprocess(img)  # load from original
+                            for img in imgs_path[0:args.batch_size]
+                        ])
+                        input_handle.reshape(data.shape)
+                        input_handle.copy_from_cpu(data)
+                        self.predictor.run()
+                        results = output_handle.copy_to_cpu()
+                        results = self._postprocess(results)
+
             # inference
             if args.benchmark:
                 self.autolog.times.start()
@@ -361,13 +400,24 @@ class Predictor:
                 self._preprocess(p) for p in imgs_path[i:i + args.batch_size]
             ])
 
-            data = paddle.to_tensor(data)
-
             if args.benchmark:
                 self.autolog.times.stamp()
 
-            results = sliding_window_inference(data, (128, 128, 128), 1, infer_like_model.infer_model)
-            results = paddle.to_tensor(results)
+            if args.use_swl:
+
+                data = paddle.to_tensor(data)
+                if args.is_nhwd:
+                    data = paddle.squeeze(data, axis=1)
+                results = sliding_window_inference(data, (args.img_shape, args.img_shape, args.img_shape), 1, infer_like_model.infer_model)
+                results = paddle.to_tensor(results)
+
+            else:
+                input_handle.reshape(data.shape)
+                input_handle.copy_from_cpu(data)
+
+                self.predictor.run()
+
+                results = output_handle.copy_to_cpu()
 
             if args.benchmark:
                 self.autolog.times.stamp()
@@ -386,7 +436,36 @@ class Predictor:
         Img(str): A batch of image path
         """
         if not "npy" in img:
-            pass
+            image_files = get_image_list(img, None, None)
+            warnings.warn(
+                "The image path is {}, please make sure this is the images you want to infer".format(image_files))
+            savepath = os.path.dirname(img)
+            pre = [
+                HUnorm,
+                functools.partial(
+                    resample,  # TODO: config preprocess in deply.yaml(export) to set params
+                    new_shape=[128, 128, 128],
+                    order=1)
+            ]
+
+            for f in image_files:
+                f_nps = Prep.load_medical_data(f)
+                for f_np in f_nps:
+                    if pre is not None:
+                        for op in pre:
+                            f_np = op(f_np)
+
+                    # Set image to a uniform format before save.
+                    if isinstance(f_np, tuple):
+                        f_np = f_np[0]
+                    f_np = f_np.astype("float32")
+
+                    np.save(
+                        os.path.join(
+                            savepath, f.split("/")[-1].split(
+                                ".", maxsplit=1)[0]), f_np)
+
+            img = img.split(".", maxsplit=1)[0] + ".npy"
 
         return self.cfg.transforms(img)[0]
 

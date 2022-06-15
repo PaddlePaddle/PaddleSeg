@@ -34,7 +34,9 @@ def evaluate(model,
              auc_roc=False,
              writer=None,
              save_dir=None,
-             sw_num=10
+             sw_num=None,
+             is_save_data=True,
+             has_dataset_json=True,
              ):
     """
     Launch evalution.
@@ -47,6 +49,9 @@ def evaluate(model,
         auc_roc(bool, optional): whether add auc_roc metric.
         writer: visualdl log writer.
         save_dir(str, optional): the path to save predicted result.
+        sw_num:sw batch size.
+        is_save_data:use savedata function
+        has_dataset_json:has dataset_json
     Returns:
         float: The mIoU of validation datasets.
         float: The accuracy of validation datasets.
@@ -70,6 +75,11 @@ def evaluate(model,
         num_workers=num_workers,
         return_list=True, )
 
+    if has_dataset_json:
+
+        with open(eval_dataset.dataset_json_path, 'r', encoding='utf-8') as f:
+            dataset_json_dict = json.load(f)
+
     total_iters = len(loader)
     logits_all = None
     label_all = None
@@ -91,12 +101,25 @@ def evaluate(model,
         for iter, (im, label, idx) in enumerate(loader):
             reader_cost_averager.record(time.time() - batch_start)
 
+            if has_dataset_json:
+                image_json = dataset_json_dict["training"][idx[0].split("/")[-1]
+                                                       .split(".")[0]]
+
             label = label.astype('int32')
-            pred, logits = infer.inference_window(  # reverse transform here
-                model,
-                im,
-                ori_shape=label.shape[-3:],
-                transforms=eval_dataset.transforms.transforms,sw_num=sw_num)
+
+            if sw_num:
+                pred, logits = infer.inference(  # reverse transform here
+                    model,
+                    im,
+                    ori_shape=label.shape[-3:],
+                    transforms=eval_dataset.transforms.transforms,sw_num=sw_num)
+
+            else:
+                pred, logits = infer.inference(  # reverse transform here
+                    model,
+                    im,
+                    ori_shape=label.shape[-3:],
+                    transforms=eval_dataset.transforms.transforms)
 
             if writer is not None:  # TODO visualdl single channel pseudo label map transfer to
                 pass
@@ -121,6 +144,24 @@ def evaluate(model,
                 channel_dice_array = per_channel_dice
             else:
                 channel_dice_array += per_channel_dice
+            if is_save_data:
+                if iter < 5:
+                    save_array(
+                        save_path=os.path.join(
+                            save_dir,
+                            str(iter)),
+                        save_content={
+                            'pred': pred.numpy(),
+                            'label': label.numpy(),
+                            'img': im.numpy()
+                        },
+                        form=('npy', 'nii.gz'),
+                        image_infor={
+                            "spacing": image_json["spacing_resample"],
+                            'direction': image_json["direction"],
+                            "origin": image_json["origin"],
+                            'format': "xyz"
+                        })
 
             batch_cost_averager.record(
                 time.time() - batch_start, num_samples=len(label))

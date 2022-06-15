@@ -38,16 +38,18 @@ class Compose:
         ValueError: when the length of 'transforms' is less than 1.
     """
 
-    def __init__(self, transforms):
+    def __init__(self, transforms, isnhwd=True):
         if not isinstance(transforms, list):
             raise TypeError('The transforms must be a list!')
         self.transforms = transforms
+        self.isnhwd = isnhwd
 
-    def __call__(self, im, label=None):
+    def __call__(self, im, label=None, isnhwd=True):
         """
         Args:
             im (str|np.ndarray): It is either image path or image object.
             label (str|np.ndarray): It is either label path or label ndarray.
+            isnhwd:data format。
 
         Returns:
             (tuple). A tuple including image, image info, and label after transformation.
@@ -64,6 +66,8 @@ class Compose:
             im = outputs[0]
             if len(outputs) == 2:
                 label = outputs[1]
+        if self.isnhwd:
+            im = np.expand_dims(im, axis=0)
 
         if im.max() > 0:
             im = im / im.max()

@@ -21,6 +21,7 @@ sys.path.append(
 
 from medicalseg.cvlibs import manager
 from medicalseg.datasets import MedicalDataset
+from medicalseg.transforms import Compose
 
 URL = ' '
 
@@ -61,6 +62,8 @@ class msd_brain_dataset(MedicalDataset):
             ignore_index,
             data_URL=URL,
             dataset_json_path=dataset_json_path)
+
+        self.transforms = Compose(transforms, isnhwd=False)
 
 
 if __name__ == "__main__":
