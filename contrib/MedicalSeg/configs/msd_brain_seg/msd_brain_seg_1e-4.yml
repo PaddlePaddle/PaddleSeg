@@ -1,4 +1,4 @@
-data_root: PaddleSeg/contrib/MedicalSeg/data/
+data_root: data/
 
 batch_size: 4
 iters: 30000
@@ -7,7 +7,7 @@ iters: 30000
 train_dataset:
   type: msd_brain_dataset
   dataset_root: Task01_BrainTumour/Task01_BrainTumour_phase0
-  result_dir: PaddleSeg/contrib/MedicalSeg/data/Task01_BrainTumour/Task01_BrainTumour_phase1
+  result_dir: data/Task01_BrainTumour/Task01_BrainTumour_phase1
   num_classes: 4
   transforms:
     - type: RandomCrop4D
@@ -24,21 +24,21 @@ train_dataset:
 val_dataset:
   type: msd_brain_dataset
   dataset_root: Task01_BrainTumour/Task01_BrainTumour_phase0
-  result_dir: PaddleSeg/contrib/MedicalSeg/data/Task01_BrainTumour/Task01_BrainTumour_phase1
+  result_dir: data/Task01_BrainTumour/Task01_BrainTumour_phase1
   num_classes: 4
   transforms: []
   mode: val
-  dataset_json_path: "PaddleSeg/contrib/MedicalSeg/data/Task01_BrainTumour/Task01_BrainTumour_raw/dataset.json"
+  dataset_json_path: "data/Task01_BrainTumour/Task01_BrainTumour_raw/dataset.json"
 
 
 test_dataset:
   type: msd_brain_dataset
   dataset_root: Task01_BrainTumour/Task01_BrainTumour_phase0
-  result_dir: PaddleSeg/contrib/MedicalSeg/data/Task01_BrainTumour/Task01_BrainTumour_phase1
+  result_dir: data/Task01_BrainTumour/Task01_BrainTumour_phase1
   num_classes: 4
   transforms: []
   mode: test
-  dataset_json_path: "PaddleSeg/contrib/MedicalSeg/data/Task01_BrainTumour/Task01_BrainTumour_raw/dataset.json"
+  dataset_json_path: "data/Task01_BrainTumour/Task01_BrainTumour_raw/dataset.json"
 
 optimizer:
   type: AdamW

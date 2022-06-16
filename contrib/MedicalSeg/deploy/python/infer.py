@@ -158,7 +158,6 @@ def parse_args():
         default=True,
         type=eval,
         help='is_nhwd')
-
     return parser.parse_args()
 
 
@@ -375,8 +374,6 @@ class Predictor:
         if not os.path.exists(args.save_dir):
             os.makedirs(args.save_dir)
 
-        infer_like_model = ModelLikeInfer(input_handle, output_handle, self.predictor)
-
         for i in range(0, len(imgs_path), args.batch_size):
 
             if args.use_warmup:
@@ -405,11 +402,15 @@ class Predictor:
 
             if args.use_swl:
 
+                infer_like_model = ModelLikeInfer(input_handle, output_handle, self.predictor)
                 data = paddle.to_tensor(data)
                 if args.is_nhwd:
                     data = paddle.squeeze(data, axis=1)
-                results = sliding_window_inference(data, (args.img_shape, args.img_shape, args.img_shape), 1, infer_like_model.infer_model)
-                results = paddle.to_tensor(results)
+
+                results = sliding_window_inference(data, (args.img_shape, args.img_shape, args.img_shape), 1,
+                                                   infer_like_model.infer_model)
+
+                results = results[0]
 
             else:
                 input_handle.reshape(data.shape)
