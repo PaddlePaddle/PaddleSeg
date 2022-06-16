@@ -13,7 +13,7 @@ Paddle2ONNX 测试的主程序为`test_paddle2onnx.sh`，可以测试基于Paddl
 |  PP_LiteSeg   |  pp_liteseg_stdc2 |  支持 | 支持 | 1 |
 |  ConnectNet   |  pp_humanseg_lite |  支持 | 支持 | 1 |
 |  HRNet W18 Small   | pp_humanseg_mobile  |  支持 | 支持 | 1 |
-|  DeepLabV3P   |  pp_humanseg_server |  支持 | 支持 | 1 |
+|  DeepLabV3P ResNet50    |  pp_humanseg_server |  支持 | 支持 | 1 |
 |  HRNet   |  fcn_hrnet_w18 |  支持 | 支持 | 1 |
 |  OCRNet   |  ocrnet_hrnetw18 |  支持 | 支持 | 1 |
 |  OCRNet   |  ocrnet_hrnetw48 |  支持 | 支持 | 1 |
