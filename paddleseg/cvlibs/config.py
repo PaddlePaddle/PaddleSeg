@@ -155,9 +155,10 @@ class Config(object):
         params = self.dic.get('lr_scheduler')
 
         use_warmup = False
-        if 'warmup_iters' in params and 'warmup_start_lr' in params:
+        if 'warmup_iters' in params:
             use_warmup = True
             warmup_iters = params.pop('warmup_iters')
+            assert 'warmup_start_lr' in params, "Please set warmup_start_lr in lr_scheduler"
             warmup_start_lr = params.pop('warmup_start_lr')
             end_lr = params['learning_rate']
 
