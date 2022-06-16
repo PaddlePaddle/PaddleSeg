@@ -1,0 +1,52 @@
+===========================train_params===========================
+model_name:ocrnet_hrnetw18
+python:python3.7
+gpu_list:0|0,1
+Global.use_gpu:null|null
+Global.auto_cast:null
+--iters:lite_train_lite_infer=50|lite_train_whole_infer=50|whole_train_whole_infer=1000
+--save_dir:
+--batch_size:lite_train_lite_infer=2|lite_train_whole_infer=2|whole_train_whole_infer=8
+--model_path:null
+train_model_name:best_model/model.pdparams
+train_infer_img_dir:test_tipc/data/cityscapes/cityscapes_val_5.list
+null:null
+##
+trainer:amp_train
+amp_train:train.py --config test_tipc/configs/ocrnet_hrnetw18/ocrnet_hrnetw18_cityscapes_1024x512_160k.yml --precision fp16 --amp_level O1 --do_eval --save_interval 500 --seed 100
+pact_train:null
+fpgm_train:null
+distill_train:null
+null:null
+null:null
+##
+===========================eval_params===========================
+eval:null
+null:null
+##
+===========================export_params===========================
+--save_dir:
+--model_path:
+norm_export:export.py --config test_tipc/configs/ocrnet_hrnetw18/ocrnet_hrnetw18_cityscapes_1024x512_160k.yml
+quant_export:null
+fpgm_export:null
+distill_export:null
+export1:null
+export2:null
+===========================infer_params===========================
+infer_model:./test_tipc/output/ocrnet_hrnetw18/model.pdparams
+infer_export:export.py --config test_tipc/configs/ocrnet_hrnetw18/ocrnet_hrnetw18_cityscapes_1024x512_160k.yml
+infer_quant:False
+inference:deploy/python/infer.py --save_dir ./test_tipc/output/ocrnet_hrnetw18/
+--device:cpu|gpu
+--enable_mkldnn:True
+--cpu_threads:6
+--batch_size:1
+--use_trt:False
+--precision:fp32
+--config:
+--image_path:./test_tipc/data/cityscapes/cityscapes_val_5.list
+--save_log_path:null
+--benchmark:True
+--save_dir:
+--model_name:ocrnet_hrnetw18
