@@ -67,11 +67,11 @@ bash test_tipc/test_train_inference_python.sh ${your_params_file} lite_train_lit
 以`pphumanseg_lite`的`Linux GPU/CPU 混合精度训练推理测试`为例，命令如下所示。
 
 ```bash
-bash test_tipc/prepare.sh test_tipc/configs/pphumanseg_lite/train_amp_infer_python.txt lite_train_lite_infer
+bash test_tipc/prepare.sh test_tipc/configs/pphumanseg_lite/train_linux_gpu_normal_amp_infer_python_linux_gpu_cpu.txt lite_train_lite_infer
 ```
 
 ```bash
-bash test_tipc/test_train_inference_python.sh test_tipc/configs/pphumanseg_lite/train_amp_infer_python.txt lite_train_lite_infer
+bash test_tipc/test_train_inference_python.sh test_tipc/configs/pphumanseg_lite/train_linux_gpu_normal_amp_infer_python_linux_gpu_cpu.txt lite_train_lite_infer
 ```
 
 输出结果如下，表示命令运行成功。
