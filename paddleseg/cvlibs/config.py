@@ -155,7 +155,7 @@ class Config(object):
         params = self.dic.get('lr_scheduler')
 
         use_warmup = False
-        if 'warmup_iters' in params:
+        if 'warmup_iters' in params and 'warmup_start_lr' in params:
             use_warmup = True
             warmup_iters = params.pop('warmup_iters')
             warmup_start_lr = params.pop('warmup_start_lr')
@@ -163,7 +163,8 @@ class Config(object):
 
         lr_type = params.pop('type')
         if lr_type == 'PolynomialDecay':
-            params.setdefault('decay_steps', self.iters)
+            iters = self.iters - warmup_iters if use_warmup else self.iters
+            params.setdefault('decay_steps', iters)
             params.setdefault('end_lr', 0)
             params.setdefault('power', 0.9)
         lr_sche = getattr(paddle.optimizer.lr, lr_type)(**params)
