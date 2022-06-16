@@ -117,6 +117,12 @@ Export the trained model as inference model ([doc](../../docs/model_export.md)).
 
 Use PaddleInference to deploy the inference model on Nvidia GPU and X86 CPU([python api doc](../../docs/deployment/inference/python_inference.md), [cpp api doc](../../docs/deployment/inference/cpp_inference.md)).
 
+## Demo
+
+Using PP-LiteSeg to segment defects in industrial qQuality inspection ([AI Studio Link](https://aistudio.baidu.com/aistudio/projectdetail/3877107)).
+
+Using PP-LiteSeg to find road in remote sensing image([AI Studio Link](https://aistudio.baidu.com/aistudio/projectdetail/3873145)).
+
 ## Performance
 
 ### Cityscapes
