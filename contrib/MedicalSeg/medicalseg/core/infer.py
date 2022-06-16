@@ -115,8 +115,6 @@ def dense_patch_slices(image_size, patch_size, scan_interval):
     num_spatial_dims = len(image_size)
     if num_spatial_dims not in (2, 3):
         raise ValueError('image_size should has 2 or 3 elements')
-    patch_size =  patch_size
-    scan_interval = scan_interval
 
     scan_num = [int(math.ceil(float(image_size[i]) / scan_interval[i])) if scan_interval[i] != 0 else 1
                 for i in range(num_spatial_dims)]
