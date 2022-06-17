@@ -22,7 +22,6 @@ import nibabel as nib
 import SimpleITK as sitk
 from tqdm import tqdm
 
-sys.path.append("PaddleSeg/contrib/MedicalSeg/")
 sys.path.append(osp.join(osp.dirname(osp.realpath(__file__)), ""))
 
 from prepare import Prep
@@ -41,7 +40,7 @@ class PrepMSDBrain(Prep):
         task_name = list(tasks[task_id].keys())[0].split('.')[0]
         print(f"Preparing task {task_id} {task_name}")
         super().__init__(
-            dataset_root=f"PaddleSeg/contrib/MedicalSeg/data/{task_name}",
+            dataset_root=f"data/{task_name}",
             raw_dataset_dir=f"{task_name}_raw/",
             images_dir=f"{task_name}/{task_name}/imagesTr",
             labels_dir=f"{task_name}/{task_name}/labelsTr",
