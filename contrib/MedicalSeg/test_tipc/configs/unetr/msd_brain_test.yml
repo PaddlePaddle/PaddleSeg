@@ -1,10 +1,10 @@
-data_root: PaddleSeg/contrib/MedicalSeg/test_tipc/data
-batch_size: 2
+data_root: test_tipc/data
+batch_size: 1
 iters: 20
 train_dataset:
   type: msd_brain_dataset
   dataset_root: mini_brainT_dataset
-  result_dir: PaddleSeg/contrib/MedicalSeg/test_tipc/data/mini_brainT_dataset
+  result_dir: test_tipc/data/mini_brainT_dataset
   num_classes: 4
   transforms:
     - type: RandomCrop4D
@@ -22,21 +22,21 @@ train_dataset:
 val_dataset:
   type: msd_brain_dataset
   dataset_root: mini_brainT_dataset
-  result_dir: PaddleSeg/contrib/MedicalSeg/test_tipc/data/mini_brainT_dataset
+  result_dir: test_tipc/data/mini_brainT_dataset
   num_classes: 4
   transforms: []
   mode: val
-  dataset_json_path: "PaddleSeg/contrib/MedicalSeg/data/Task01_BrainTumour/Task01_BrainTumour_raw/dataset.json"
+  dataset_json_path: "data/Task01_BrainTumour/Task01_BrainTumour_raw/dataset.json"
 
 
 test_dataset:
   type: msd_brain_dataset
   dataset_root: mini_brainT_dataset
-  result_dir: PaddleSeg/contrib/MedicalSeg/test_tipc/data/mini_brainT_dataset
+  result_dir: test_tipc/data/mini_brainT_dataset
   num_classes: 4
   transforms: []
   mode: test
-  dataset_json_path: "PaddleSeg/contrib/MedicalSeg/data/Task01_BrainTumour/Task01_BrainTumour_raw/dataset.json"
+  dataset_json_path: "data/Task01_BrainTumour/Task01_BrainTumour_raw/dataset.json"
 
 optimizer:
   type: AdamW
