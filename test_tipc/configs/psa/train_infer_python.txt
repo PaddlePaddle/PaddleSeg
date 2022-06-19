@@ -41,11 +41,11 @@ infer_export:export.py
 infer_quant:False
 inference:deploy/python/infer.py
 --device:cpu|gpu
---enable_mkldnn:True|False
---cpu_threads:1|6
+--enable_mkldnn:True
+--cpu_threads:6
 --batch_size:1
 --use_trt:False
---precision:fp32|int8|fp16
+--precision:fp32
 --config:
 --image_path:./test_tipc/data/cityscapes/cityscapes_val_5.list
 --save_log_path:null
