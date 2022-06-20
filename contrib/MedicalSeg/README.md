@@ -182,9 +182,9 @@ W0602 00:54:52.900665 28393 device_context.cc:465] device: 0, cuDNN Version: 7.6
 002数据 带标签的原图
 <img src=./documentation/img/label.png></img>
 002数据  动态推理图
-<img src=./documentation/img/dyn.png></img>
+<img src=./documentation/img/ddddd.png></img>
 002数据  静态推理图
-<img src=./documentation/img/static.png></img>
+<img src=./documentation/img/sssssssss.png></img>
 
 
 
