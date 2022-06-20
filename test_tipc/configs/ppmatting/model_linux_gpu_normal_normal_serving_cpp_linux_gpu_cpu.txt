@@ -1,0 +1,17 @@
+===========================serving_params===========================
+model_name:ppmatting
+python:python3.7
+trans_model:-m paddle_serving_client.convert
+--dirname:./test_tipc/inferences/ppmatting/modnet-mobilenetv2
+--model_filename:model.pdmodel
+--params_filename:model.pdiparams
+--serving_server:./test_tipc/serving_cpp/serving_server/
+--serving_client:./test_tipc/serving_cpp/serving_client/
+serving_dir:./test_tipc/serving_cpp
+--model:serving_server
+--op:GeneralSegOp
+--port:9997
+--gpu_id:"0"|null
+cpp_client:serving_client.py
+--input_name:img
+--output_name:sigmoid_2.tmp_0

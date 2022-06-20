@@ -46,6 +46,7 @@ class MODNet(nn.Layer):
             hr_channels=hr_channels, backbone_channels=backbone.feat_channels)
         self.init_weight()
         self.blurer = GaussianBlurLayer(1, 3)
+        self.loss_func_dict = None
 
     def forward(self, inputs):
         """
@@ -60,11 +61,15 @@ class MODNet(nn.Layer):
 
     def loss(self, logit_dict, label_dict, loss_func_dict=None):
         if loss_func_dict is None:
-            loss_func_dict = defaultdict(list)
-            loss_func_dict['semantic'].append(paddleseg.models.MSELoss())
-            loss_func_dict['detail'].append(paddleseg.models.L1Loss())
-            loss_func_dict['fusion'].append(paddleseg.models.L1Loss())
-            loss_func_dict['fusion'].append(paddleseg.models.L1Loss())
+            if self.loss_func_dict is None:
+                self.loss_func_dict = defaultdict(list)
+                self.loss_func_dict['semantic'].append(paddleseg.models.MSELoss(
+                ))
+                self.loss_func_dict['detail'].append(paddleseg.models.L1Loss())
+                self.loss_func_dict['fusion'].append(paddleseg.models.L1Loss())
+                self.loss_func_dict['fusion'].append(paddleseg.models.L1Loss())
+        else:
+            self.loss_func_dict = loss_func_dict
 
         loss = {}
         # semantic loss
@@ -75,15 +80,16 @@ class MODNet(nn.Layer):
             align_corners=False)
         semantic_gt = self.blurer(semantic_gt)
         #         semantic_gt.stop_gradient=True
-        loss['semantic'] = loss_func_dict['semantic'][0](logit_dict['semantic'],
-                                                         semantic_gt)
+        loss['semantic'] = self.loss_func_dict['semantic'][0](
+            logit_dict['semantic'], semantic_gt)
 
         # detail loss
         trimap = label_dict['trimap']
         mask = (trimap == 128).astype('float32')
         logit_detail = logit_dict['detail'] * mask
         label_detail = label_dict['alpha'] * mask
-        loss_detail = loss_func_dict['detail'][0](logit_detail, label_detail)
+        loss_detail = self.loss_func_dict['detail'][0](logit_detail,
+                                                       label_detail)
         loss_detail = loss_detail / (mask.mean() + 1e-6)
         loss['detail'] = 10 * loss_detail
 
@@ -93,13 +99,13 @@ class MODNet(nn.Layer):
         transition_mask = label_dict['trimap'] == 128
         matte_boundary = paddle.where(transition_mask, matte, alpha)
         # l1 loss
-        loss_fusion_l1 = loss_func_dict['fusion'][0](
-            matte, alpha) + 4 * loss_func_dict['fusion'][0](matte_boundary,
-                                                            alpha)
+        loss_fusion_l1 = self.loss_func_dict['fusion'][0](
+            matte, alpha) + 4 * self.loss_func_dict['fusion'][0](matte_boundary,
+                                                                 alpha)
         # composition loss
-        loss_fusion_comp = loss_func_dict['fusion'][1](
+        loss_fusion_comp = self.loss_func_dict['fusion'][1](
             matte * label_dict['img'], alpha *
-            label_dict['img']) + 4 * loss_func_dict['fusion'][1](
+            label_dict['img']) + 4 * self.loss_func_dict['fusion'][1](
                 matte_boundary * label_dict['img'], alpha * label_dict['img'])
         # consisten loss with semantic
         transition_mask = F.interpolate(

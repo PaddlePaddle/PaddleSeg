@@ -4,7 +4,7 @@ python:python3.7
 gpu_list:0|0,1
 Global.use_gpu:null|null
 --precision:null
---iters:lite_train_lite_infer=50|lite_train_whole_infer=50|whole_train_whole_infer=1000
+--iters:lite_train_lite_infer=20|lite_train_whole_infer=20|whole_train_whole_infer=1000
 --save_dir:
 --batch_size:lite_train_lite_infer=2|lite_train_whole_infer=2|whole_train_whole_infer=8
 --model_path:null
@@ -39,11 +39,11 @@ infer_export:export.py --config test_tipc/configs/deeplabv3p_resnet50/deeplabv3p
 infer_quant:False
 inference:deploy/python/infer.py
 --device:cpu|gpu
---enable_mkldnn:True|False
---cpu_threads:1|6
+--enable_mkldnn:True
+--cpu_threads:6
 --batch_size:1
---use_trt:False|True
---precision:fp32|int8|fp16
+--use_trt:False
+--precision:fp32
 --config:
 --image_path:./test_tipc/data/mini_supervisely/test.txt
 --save_log_path:null
