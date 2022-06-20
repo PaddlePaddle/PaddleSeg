@@ -23,7 +23,7 @@ from paddle import ParamAttr
 from paddleseg.cvlibs import manager
 from paddleseg.utils import utils
 
-__all__ = ["PPHGNet_tiny", "PPHGNet_small", "PPHGNet_small"]
+__all__ = ["PPHGNet_tiny", "PPHGNet_small", "PPHGNet_base"]
 
 kaiming_normal_ = KaimingNormal()
 zeros_ = Constant(value=0.)
@@ -298,6 +298,5 @@ def PPHGNet_base(**kwargs):
         stem_channels=[96, 96, 160],
         stage_config=stage_config,
         layer_num=7,
-        dropout_prob=0.2,
         **kwargs)
     return model
