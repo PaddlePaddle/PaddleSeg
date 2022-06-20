@@ -13,9 +13,9 @@ if [ $# != 1 ] ; then
     exit 1;
 fi
 
-dataset_path=$1 # Dataset path for infer_benchmark.py
+dataset_path=$1 # Dataset path for infer_dataset.py
 echo "dataset_path: ${dataset_path}"
-dataset_type="Cityscapes"   # Dataset type for infer_benchmark.py
+dataset_type="Cityscapes"   # Dataset type for infer_dataset.py
 
 pretrained_root_path="./pretrained_model"   # the root path for saving pretrained model
 download_root_path="https://bj.bcebos.com/paddleseg/dygraph/cityscapes"
@@ -30,6 +30,7 @@ mkdir -p ${pretrained_root_path}
 mkdir -p ${save_root_path}
 
 # collect model configs_path that have pretrained weights of cityscapes dataset
+unset https_proxy && unset http_proxy
 echo -e "Collect model configs"
 configs_path=()
 all_files=`find  $config_root_path -name "*.yml"`
@@ -60,9 +61,11 @@ do
         wget ${download_path} -O ${pretrained_path}
     fi
 
+    : '
     echo -e "\n Analyze model"
     python tools/analyze_model.py \
         --config ${config_path}
+    '
 
     echo -e "\n Export inference model"
     export_path=${save_root_path}/${model_name}/${save_basename}
@@ -75,59 +78,62 @@ do
         --save_dir ${export_path}
 
     echo -e "\n Test ${model_name} GPU Naive fp32"
-    python deploy/python/infer_benchmark.py \
+    python deploy/python/infer_dataset.py \
+        --config ${export_path}/deploy.yaml \
         --dataset_type ${dataset_type} \
         --dataset_path ${dataset_path} \
-        --device cpu \
-        --use_trt False \
-        --precision fp32 \
         --resize_width ${resize_width} \
         --resize_height ${resize_height} \
-        --config ${export_path}/deploy.yaml
+        --device gpu \
+        --use_trt False \
+        --precision fp32
 
+    
     echo -e "\n Test ${model_name} GPU TRT fp32"
-    python deploy/python/infer_benchmark.py \
+    python deploy/python/infer_dataset.py \
+        --config ${export_path}/deploy.yaml \
         --dataset_type ${dataset_type} \
         --dataset_path ${dataset_path} \
+        --resize_width ${resize_width} \
+        --resize_height ${resize_height} \
         --device gpu \
         --use_trt True \
         --precision fp32 \
-        --enable_auto_tune ${enable_auto_tune} \
-        --resize_width ${resize_width} \
-        --resize_height ${resize_height} \
-        --config ${export_path}/deploy.yaml
+        --enable_auto_tune True
 
+    : '
     echo -e "\n Test ${model_name} GPU TRT fp16"
-    python deploy/python/infer_benchmark.py \
+    python deploy/python/infer_dataset.py \
+        --config ${export_path}/deploy.yaml \
         --dataset_type ${dataset_type} \
         --dataset_path ${dataset_path} \
+        --resize_width ${resize_width} \
+        --resize_height ${resize_height} \
         --device gpu \
         --use_trt True \
         --precision fp16 \
-        --enable_auto_tune ${enable_auto_tune} \
-        --resize_width ${resize_width} \
-        --resize_height ${resize_height} \
-        --config ${export_path}/deploy.yaml
+        --enable_auto_tune True
 
-    echo -e "\n Test ${model_name} CPU Naive"
-    python deploy/python/infer_benchmark.py \
+    echo -e "\n Test ${model_name} CPU Naive"    
+    python deploy/python/infer_dataset.py \
+        --config ${export_path}/deploy.yaml \
         --dataset_type ${dataset_type} \
         --dataset_path ${dataset_path} \
-        --device cpu \
-        --enable_mkldnn False \
         --resize_width ${resize_width} \
         --resize_height ${resize_height} \
-        --config ${export_path}/deploy.yaml
+        --device cpu \
+        --enable_mkldnn False
 
     echo -e "\n Test ${model_name} CPU MKLDNN"
-    python deploy/python/infer_benchmark.py \
+    python deploy/python/infer_dataset.py \
+        --config ${export_path}/deploy.yaml \
         --dataset_type ${dataset_type} \
         --dataset_path ${dataset_path} \
-        --device cpu \
-        --enable_mkldnn True \
         --resize_width ${resize_width} \
         --resize_height ${resize_height} \
-        --config ${export_path}/deploy.yaml
+        --device cpu \
+        --enable_mkldnn True
+    '
 
     echo -e "\n\n"
 done

@@ -24,9 +24,9 @@ def analyze(log_path):
     results = {}
     logs = open(log_path).readlines()
 
-    model_pattern = re.compile(r"Test (.*) (.*) (fp\d+)")
+    model_pattern = re.compile(r"Test (.*) (.*) (.*) (fp\d+)")
     miou_pattern = re.compile(r"mIoU: (0.\d+)")
-    time_pattern = re.compile(r"Average time: (0.\d+)")
+    time_pattern = re.compile(r"Average time: (.*) ms/img")
 
     # collect the start num for each test
     model_line_num = []
@@ -44,7 +44,7 @@ def analyze(log_path):
         match_obj = re.search(model_pattern, logs[start_num])
         assert match_obj is not None
         model_name = match_obj.group(1)
-        info_name = match_obj.group(2) + "_" + match_obj.group(3)
+        info_name = match_obj.group(3) + "_" + match_obj.group(4)
         miou_value = None
         time_value = None
 
@@ -81,9 +81,9 @@ def save_info(results, save_path):
 
     def write_helper(model_name, use_trt, dtype, info):
         miou = "-" if info["miou"] is None else round(100 * info["miou"], 2)
-        time = "-" if info["time"] is None else 1000 * info["time"]
-        fps = "-" if info["time"] is None else round(1.0 / info["time"], 2)
-        of.write("| {:<60} | {} | {} | {:<6} | {:<6} | {:<6} | \n".format(
+        time = "-" if info["time"] is None else info["time"]
+        fps = "-" if info["time"] is None else round(1000.0 / info["time"], 2)
+        of.write("| {:<60} | {} | {} | {:<6} | {:<8} | {:<6} | \n".format(
             model_name, use_trt, dtype, miou, time, fps))
 
     for model_name in model_names:
