@@ -1,0 +1,16 @@
+===========================serving_params===========================
+model_name:ocrnet_hrnetw18
+python:python3.7
+trans_model:-m paddle_serving_client.convert
+--dirname:./test_tipc/inferences/ocrnet_hrnetw18/ocrnet_hrnetw18_cityscapes_1024x512_160k
+--model_filename:model.pdmodel
+--params_filename:model.pdiparams
+--serving_server:./test_tipc/serving_python/serving_server/
+--serving_client:./test_tipc/serving_python/serving_client/
+serving_dir:./test_tipc/serving_python
+web_service:./web_service.py --config=config.yml 
+--opt op.seg.local_service_conf.devices:"0"|null
+--output_name:argmax_0.tmp_0
+pipline:./pipeline_http_client.py
+--img_path:../data/cityscapes_small.png
+--input_name:x

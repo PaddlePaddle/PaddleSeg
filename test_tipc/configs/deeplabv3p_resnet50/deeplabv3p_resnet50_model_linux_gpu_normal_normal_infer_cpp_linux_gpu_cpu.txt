@@ -1,0 +1,18 @@
+# model load config
+model_name deeplabv3p_resnet50
+use_gpu  0
+gpu_id  0
+gpu_mem  4000
+cpu_math_library_num_threads  10
+use_mkldnn 1
+use_tensorrt 0
+use_fp16 0
+
+# config
+model_path  ./test_tipc/cpp/inference_models/pp_humanseg_server_export_512x512/model.pdmodel
+params_path ./test_tipc/cpp/inference_models/pp_humanseg_server_export_512x512/model.pdiparams
+is_normalize 1
+is_resize 1
+resize_width 512
+resize_height 512
+

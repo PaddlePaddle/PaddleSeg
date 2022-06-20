@@ -23,7 +23,7 @@ from paddleseg.models import layers
 from paddleseg import utils
 from paddleseg.cvlibs import manager
 
-from model import MRSD
+from ppmatting.models.losses import MRSD
 
 
 def conv_up_psp(in_channels, out_channels, up_sample):
@@ -59,6 +59,7 @@ class HumanMatting(nn.Layer):
         self.if_refine = if_refine
         if if_refine:
             self.refiner = Refiner(kernel_size=refine_kernel_size)
+        self.loss_func_dict = None
 
         self.backbone_channels = backbone.feat_channels
         ######################
@@ -289,12 +290,15 @@ class HumanMatting(nn.Layer):
 
     def loss(self, logit_dict, label_dict, loss_func_dict=None):
         if loss_func_dict is None:
-            loss_func_dict = defaultdict(list)
-            loss_func_dict['glance'].append(nn.NLLLoss())
-            loss_func_dict['focus'].append(MRSD())
-            loss_func_dict['cm'].append(MRSD())
-            loss_func_dict['err'].append(paddleseg.models.MSELoss())
-            loss_func_dict['refine'].append(paddleseg.models.L1Loss())
+            if self.loss_func_dict is None:
+                self.loss_func_dict = defaultdict(list)
+                self.loss_func_dict['glance'].append(nn.NLLLoss())
+                self.loss_func_dict['focus'].append(MRSD())
+                self.loss_func_dict['cm'].append(MRSD())
+                self.loss_func_dict['err'].append(paddleseg.models.MSELoss())
+                self.loss_func_dict['refine'].append(paddleseg.models.L1Loss())
+        else:
+            self.loss_func_dict = loss_func_dict
 
         loss = {}
 
@@ -308,7 +312,7 @@ class HumanMatting(nn.Layer):
         glance_label_trans = (glance_label == 128).astype('int64')
         glance_label_bg = (glance_label == 0).astype('int64')
         glance_label = glance_label_trans + glance_label_bg * 2
-        loss_glance = loss_func_dict['glance'][0](
+        loss_glance = self.loss_func_dict['glance'][0](
             paddle.log(logit_dict['glance'] + 1e-6), glance_label.squeeze(1))
         loss['glance'] = loss_glance
 
@@ -318,12 +322,12 @@ class HumanMatting(nn.Layer):
             logit_dict['focus'].shape[2:],
             mode='bilinear',
             align_corners=False)
-        loss_focus = loss_func_dict['focus'][0](logit_dict['focus'],
-                                                focus_label, glance_label_trans)
+        loss_focus = self.loss_func_dict['focus'][0](
+            logit_dict['focus'], focus_label, glance_label_trans)
         loss['focus'] = loss_focus
 
         # collaborative matting loss
-        loss_cm_func = loss_func_dict['cm']
+        loss_cm_func = self.loss_func_dict['cm']
         # fusion_sigmoid loss
         loss_cm = loss_cm_func[0](logit_dict['fusion'], focus_label)
         loss['cm'] = loss_cm
@@ -339,15 +343,15 @@ class HumanMatting(nn.Layer):
             label_dict['alpha'].shape[2:],
             mode='bilinear',
             align_corners=False) - label_dict['alpha']).abs()
-        loss_err = loss_func_dict['err'][0](err, err_label)
+        loss_err = self.loss_func_dict['err'][0](err, err_label)
         loss['err'] = loss_err
 
         loss_all = 0.25 * loss_glance + 0.25 * loss_focus + 0.25 * loss_cm + loss_err
 
         # refine loss
         if self.if_refine:
-            loss_refine = loss_func_dict['refine'][0](logit_dict['refine'],
-                                                      label_dict['alpha'])
+            loss_refine = self.loss_func_dict['refine'][0](logit_dict['refine'],
+                                                           label_dict['alpha'])
             loss['refine'] = loss_refine
             loss_all = loss_all + loss_refine
 
