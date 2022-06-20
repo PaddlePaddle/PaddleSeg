@@ -1,4 +1,4 @@
-data_root: data/
+_base_: '../_base_/global_configs.yml'
 
 batch_size: 4
 iters: 30000
