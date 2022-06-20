@@ -2,9 +2,9 @@ import argparse
 import re
 import sys
 """
-Read the log of `test_infer_models.sh`, collect the accuracy and speed for inference models.
+Read the log of `test_infer_benchmark.sh` and `test_infer_dataset.sh`, collect the accuracy and speed for inference models.
 
-Usage: python analyze_infer_models_log.py --log_path /path/to/load/log --save_path /path/to/save/info
+Usage: python analyze_infer_log.py --log_path /path/to/load/log --save_path /path/to/save/info
 """
 
 

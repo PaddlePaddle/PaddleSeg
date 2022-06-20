@@ -5,8 +5,8 @@
 #   1. Install PaddlePaddle that supports TenorRT
 #   2. `export CUDA_VISIBLE_DEVICES=id`
 #   3. `cd ./PaddleSeg`
-#   4. `nohup bash ./tests/test_infer_models.sh /path/to/cityscapes 2>&1 >logs.txt &`
-#   5. `python tests/analyze_infer_models_log.py --log_path ./logs.txt --save_path ./info.txt`
+#   4. `nohup bash ./tests/test_infer_dataset.sh /path/to/cityscapes 2>&1 >logs.txt &`
+#   5. `python tests/analyze_infer_log.py --log_path ./logs.txt --save_path ./info.txt`
 
 if [ $# != 1 ] ; then
     echo "USAGE: $0 cityscapes_dataset_path"
@@ -78,7 +78,7 @@ do
         --save_dir ${export_path}
 
     echo -e "\n Test ${model_name} GPU Naive fp32"
-    python deploy/python/infer_dataset.py \
+    python deploy/python/infer_benchmark.py \
         --config ${export_path}/deploy.yaml \
         --dataset_type ${dataset_type} \
         --dataset_path ${dataset_path} \
@@ -114,25 +114,6 @@ do
         --precision fp16 \
         --enable_auto_tune True
 
-    echo -e "\n Test ${model_name} CPU Naive"    
-    python deploy/python/infer_dataset.py \
-        --config ${export_path}/deploy.yaml \
-        --dataset_type ${dataset_type} \
-        --dataset_path ${dataset_path} \
-        --resize_width ${resize_width} \
-        --resize_height ${resize_height} \
-        --device cpu \
-        --enable_mkldnn False
-
-    echo -e "\n Test ${model_name} CPU MKLDNN"
-    python deploy/python/infer_dataset.py \
-        --config ${export_path}/deploy.yaml \
-        --dataset_type ${dataset_type} \
-        --dataset_path ${dataset_path} \
-        --resize_width ${resize_width} \
-        --resize_height ${resize_height} \
-        --device cpu \
-        --enable_mkldnn True
     '
 
     echo -e "\n\n"
