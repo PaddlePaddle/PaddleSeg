@@ -1,0 +1,42 @@
+===========================train_params===========================
+model_name:UNETR
+python:python3
+gpu_list:0
+Global.use_gpu:True|True
+Global.auto_cast:fp32
+Global.epoch_num:lite_train_lite_infer=1|whole_train_whole_infer=500
+Global.save_model_dir:./test_tipc//result/unetr/
+Train.loader.batch_size_per_card:lite_train_lite_infer=2|whole_train_whole_infer=4
+Global.pretrained_model:null
+train_model_name:latest
+train_infer_img_dir:./test_tipc/data/mini_brainT_dataset
+null:null
+##
+trainer:norm_train
+norm_train:./train.py --config test_tipc/configs/unetr/msd_brain_test.yml --save_dir saved_model1/ --save_interval 20 --log_iters 5 --num_workers 2 --do_eval --use_vdl --keep_checkpoint_max 1 --seed 0 --sw_num 20 --is_save_data False --has_dataset_json False
+pact_train:null
+fpgm_train:null
+distill_train:null
+null:null
+null:null
+##
+===========================eval_params===========================
+eval:./test.py --config test_tipc/configs/unetr/msd_brain_test.yml --model_path  saved_model1/best_model/model.pdparams --save_dir   saved_model/msd_brain/best_model/ --num_workers 1 --sw_num 20 --is_save_data False --has_dataset_json False
+null:null
+##
+===========================infer_params===========================
+Global.save_inference_dir:./test_tipc/result/inference_model/
+Global.pretrained_model:
+norm_export:./export.py --config test_tipc/configs/unetr/msd_brain_test.yml --save_dir  staticmodel1/  --model_path  saved_model1/best_model/model.pdparams --without_argmax  --input_shape 1 4 128 128 128
+quant_export:null
+fpgm_export:null
+distill_export:null
+export1:null
+export2:null
+inference_dir:./test_tipc/result/inference_model/
+infer_model:null
+infer_export:null
+infer_quant:False
+inference:./deploy/python/infer.py --config staticmodel1/deploy.yaml --image_path test_tipc/data/mini_brainT_dataset/images --benchmark True --batch_size 1 --use_swl True --use_warmup False
+null:null
+--enable_benchmark:True
