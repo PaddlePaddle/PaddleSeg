@@ -112,23 +112,13 @@ def parse_args():
             'profiler is enabled. Refer to the medseg/utils/train_profiler.py for details.'
     )
 
-    parser.add_argument(
-        '--sw_num',
-        default=None,
-        type=int,
-        help='sw_num')
+    parser.add_argument('--sw_num', default=None, type=int, help='sw_num')
 
     parser.add_argument(
-        '--is_save_data',
-        default=True,
-        type=eval,
-        help='warmup')
+        '--is_save_data', default=True, type=eval, help='warmup')
 
     parser.add_argument(
-        '--has_dataset_json',
-        default=True,
-        type=eval,
-        help='has_dataset_json')
+        '--has_dataset_json', default=True, type=eval, help='has_dataset_json')
     return parser.parse_args()
 
 

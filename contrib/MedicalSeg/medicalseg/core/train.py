@@ -45,8 +45,7 @@ def train(model,
           to_static_training=False,
           sw_num=None,
           is_save_data=True,
-          has_dataset_json=True
-          ):
+          has_dataset_json=True):
     """
     Launch training.
 

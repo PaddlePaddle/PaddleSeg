@@ -454,7 +454,7 @@ class RandomRotation4D:
 
         img = F.rotate_4d(img, r_plane, angle)
         if label is not None:
-            label = F.rotate_4d(label, map(lambda s: s-1, r_plane), angle)
+            label = F.rotate_4d(label, map(lambda s: s - 1, r_plane), angle)
         return img, label
 
 
@@ -491,7 +491,7 @@ class RandomFlip4D:
         if random.random() < self.prob:
             img = F.flip_3d(img, axis=flip_axis)
             if label is not None:
-                label = F.flip_3d(label, axis=flip_axis-1)
+                label = F.flip_3d(label, axis=flip_axis - 1)
         return img, label
 
 
@@ -509,8 +509,13 @@ class RandomCrop4D:
                   如果为False，则在image整个区域内进行滑窗
     """
 
-    def __init__(self, size, scale=(0.8, 1.2), ratio=(3. / 4., 4. / 3.),
-                 interpolation=1, pre_crop=False, nonzero_mask=False):
+    def __init__(self,
+                 size,
+                 scale=(0.8, 1.2),
+                 ratio=(3. / 4., 4. / 3.),
+                 interpolation=1,
+                 pre_crop=False,
+                 nonzero_mask=False):
         """
         init
         """
@@ -561,7 +566,8 @@ class RandomCrop4D:
             numpy ndarray: Randomly cropped and resized image.
         """
 
-        i, j, k, d, h, w = self.get_params(img, self.scale, self.ratio, self.size)
+        i, j, k, d, h, w = self.get_params(img, self.scale, self.ratio,
+                                           self.size)
 
         img = F.crop_4d(img, i, j, k, d, h, w)
         if label is not None:

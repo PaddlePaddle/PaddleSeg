@@ -30,8 +30,14 @@ from medicalseg.cvlibs import manager
 class TranspConv3DBlock(nn.Layer):
     def __init__(self, in_planes, out_planes):
         super(TranspConv3DBlock, self).__init__()
-        self.block = nn.Conv3DTranspose(in_planes, out_planes, kernel_size=2, stride=2,
-                                        padding=0, output_padding=0, bias_attr=False)
+        self.block = nn.Conv3DTranspose(
+            in_planes,
+            out_planes,
+            kernel_size=2,
+            stride=2,
+            padding=0,
+            output_padding=0,
+            bias_attr=False)
 
     def forward(self, x):
         y = self.block(x)
@@ -49,16 +55,19 @@ class TranspConv3DConv3D(nn.Layer):
             conv_block: whether to include a conv block after each transpose conv. deafaults to False
         """
         super(TranspConv3DConv3D, self).__init__()
-        self.blocks = nn.LayerList([TranspConv3DBlock(in_planes, out_planes),
-                                    ])
+        self.blocks = nn.LayerList([TranspConv3DBlock(in_planes, out_planes), ])
         if conv_block:
-            self.blocks.append(Conv3DBlock(out_planes, out_planes, double=False))
+            self.blocks.append(
+                Conv3DBlock(
+                    out_planes, out_planes, double=False))
 
         if int(layers) >= 2:
             for _ in range(int(layers) - 1):
                 self.blocks.append(TranspConv3DBlock(out_planes, out_planes))
                 if conv_block:
-                    self.blocks.append(Conv3DBlock(out_planes, out_planes, double=False))
+                    self.blocks.append(
+                        Conv3DBlock(
+                            out_planes, out_planes, double=False))
 
     def forward(self, x):
         for blk in self.blocks:
@@ -68,51 +77,70 @@ class TranspConv3DConv3D(nn.Layer):
 
 # yellow block in Fig.1
 class Conv3DBlock(nn.Layer):
-        def __init__(self, in_planes, out_planes, kernel_size=3, double=True, norm=nn.BatchNorm3D, skip=True):
-            super(Conv3DBlock, self).__init__()
+    def __init__(self,
+                 in_planes,
+                 out_planes,
+                 kernel_size=3,
+                 double=True,
+                 norm=nn.BatchNorm3D,
+                 skip=True):
+        super(Conv3DBlock, self).__init__()
 
-            self.skip = skip
-            self.downsample = in_planes != out_planes
-            self.final_activation = nn.LeakyReLU(negative_slope=0.01)
-            padding = (kernel_size - 1) // 2
-            if double:
-                self.conv_block = nn.Sequential(
-                    nn.Conv3D(in_planes, out_planes, kernel_size=kernel_size, stride=1,
-                              padding=padding),
-                    norm(out_planes),
-                    nn.LeakyReLU(negative_slope=0.01),
-                    nn.Conv3D(out_planes, out_planes, kernel_size=kernel_size, stride=1,
-                              padding=padding),
-                    norm(out_planes))
-            else:
-                self.conv_block = nn.Sequential(
-                    nn.Conv3D(in_planes, out_planes, kernel_size=kernel_size, stride=1,
-                              padding=padding),
-                    norm(out_planes))
+        self.skip = skip
+        self.downsample = in_planes != out_planes
+        self.final_activation = nn.LeakyReLU(negative_slope=0.01)
+        padding = (kernel_size - 1) // 2
+        if double:
+            self.conv_block = nn.Sequential(
+                nn.Conv3D(
+                    in_planes,
+                    out_planes,
+                    kernel_size=kernel_size,
+                    stride=1,
+                    padding=padding),
+                norm(out_planes),
+                nn.LeakyReLU(negative_slope=0.01),
+                nn.Conv3D(
+                    out_planes,
+                    out_planes,
+                    kernel_size=kernel_size,
+                    stride=1,
+                    padding=padding),
+                norm(out_planes))
+        else:
+            self.conv_block = nn.Sequential(
+                nn.Conv3D(
+                    in_planes,
+                    out_planes,
+                    kernel_size=kernel_size,
+                    stride=1,
+                    padding=padding),
+                norm(out_planes))
 
-            if self.skip and self.downsample:
-                self.conv_down = nn.Sequential(
-                    nn.Conv3D(in_planes, out_planes, kernel_size=1, stride=1,
-                              padding=0),
-                    norm(out_planes))
+        if self.skip and self.downsample:
+            self.conv_down = nn.Sequential(
+                nn.Conv3D(
+                    in_planes, out_planes, kernel_size=1, stride=1, padding=0),
+                norm(out_planes))
 
-        def forward(self, x):
-            y = self.conv_block(x)
-            if self.skip:
-                res = x
-                if self.downsample:
-                    res = self.conv_down(res)
-                y = y + res
-            return self.final_activation(y)
+    def forward(self, x):
+        y = self.conv_block(x)
+        if self.skip:
+            res = x
+            if self.downsample:
+                res = self.conv_down(res)
+            y = y + res
+        return self.final_activation(y)
 
 
 class AbsPositionalEncoding1D(nn.Layer):
     def __init__(self, tokens, dim):
         super(AbsPositionalEncoding1D, self).__init__()
         params = paddle.randn(shape=[1, tokens, dim])
-        self.abs_pos_enc = paddle.create_parameter(shape=params.shape,
-                                                   dtype=str(params.numpy().dtype),
-                                                   default_initializer=paddle.nn.initializer.Assign(params))
+        self.abs_pos_enc = paddle.create_parameter(
+            shape=params.shape,
+            dtype=str(params.numpy().dtype),
+            default_initializer=paddle.nn.initializer.Assign(params))
 
     def forward(self, x):
 
@@ -125,14 +153,25 @@ class AbsPositionalEncoding1D(nn.Layer):
 
 
 class Embeddings3D(nn.Layer):
-    def __init__(self, input_dim, embed_dim, cube_size, patch_size=16, dropout=0.1):
+    def __init__(self,
+                 input_dim,
+                 embed_dim,
+                 cube_size,
+                 patch_size=16,
+                 dropout=0.1):
         super().__init__()
-        self.n_patches = int((cube_size[0] * cube_size[1] * cube_size[2]) / (patch_size * patch_size * patch_size))
+        self.n_patches = int((cube_size[0] * cube_size[1] * cube_size[2]) /
+                             (patch_size * patch_size * patch_size))
         self.patch_size = patch_size
         self.embed_dim = embed_dim
-        self.patch_embeddings = nn.Conv3D(in_channels=input_dim, out_channels=embed_dim,
-                                          kernel_size=patch_size, stride=patch_size, bias_attr=False)
-        self.position_embeddings = AbsPositionalEncoding1D(self.n_patches, embed_dim)
+        self.patch_embeddings = nn.Conv3D(
+            in_channels=input_dim,
+            out_channels=embed_dim,
+            kernel_size=patch_size,
+            stride=patch_size,
+            bias_attr=False)
+        self.position_embeddings = AbsPositionalEncoding1D(self.n_patches,
+                                                           embed_dim)
         self.dropout = nn.Dropout(dropout)
 
     def forward(self, x):
@@ -180,7 +219,7 @@ class MultiHeadSelfAttention(nn.Layer):
         self.heads = heads
         self.to_qvk = nn.Linear(dim, _dim * 3, bias_attr=False)
         self.W_0 = nn.Linear(_dim, dim, bias_attr=False)
-        self.scale_factor = self.dim_head ** -0.5
+        self.scale_factor = self.dim_head**-0.5
 
     def forward(self, x, mask=None):
         assert x.dim() == 3
@@ -201,7 +240,9 @@ class MultiHeadSelfAttention(nn.Layer):
 
         # re-compose: merge heads with dim_head
 
-        out = paddle.flatten(paddle.transpose(out, perm=[0, 2, 1, 3]), start_axis=2, stop_axis=3)
+        out = paddle.flatten(
+            paddle.transpose(
+                out, perm=[0, 2, 1, 3]), start_axis=2, stop_axis=3)
 
         return self.W_0(out)
 
@@ -212,9 +253,15 @@ class TransformerBlock(nn.Layer):
     Detailed analysis: https://theaisummer.com/transformer/
     """
 
-    def __init__(self, dim, heads=8, dim_head=None,
-                 dim_linear_block=1024, dropout=0.1, activation=nn.GELU,
-                 mhsa=None, prenorm=False):
+    def __init__(self,
+                 dim,
+                 heads=8,
+                 dim_head=None,
+                 dim_linear_block=1024,
+                 dropout=0.1,
+                 activation=nn.GELU,
+                 mhsa=None,
+                 prenorm=False):
         """
         Args:
             dim: token's vector length
@@ -226,7 +273,8 @@ class TransformerBlock(nn.Layer):
             prenorm: if the layer norm will be applied before the mhsa or after
         """
         super().__init__()
-        self.mhsa = mhsa if mhsa is not None else MultiHeadSelfAttention(dim=dim, heads=heads, dim_head=dim_head)
+        self.mhsa = mhsa if mhsa is not None else MultiHeadSelfAttention(
+            dim=dim, heads=heads, dim_head=dim_head)
         self.prenorm = prenorm
         self.drop = nn.Dropout(dropout)
         self.norm_1 = nn.LayerNorm(dim)
@@ -237,8 +285,7 @@ class TransformerBlock(nn.Layer):
             activation(),  # nn.ReLU or nn.GELU
             nn.Dropout(dropout),
             nn.Linear(dim_linear_block, dim),
-            nn.Dropout(dropout)
-        )
+            nn.Dropout(dropout))
 
     def forward(self, x, mask=None):
         if self.prenorm:
@@ -251,7 +298,8 @@ class TransformerBlock(nn.Layer):
 
 
 class TransformerEncoder(nn.Layer):
-    def __init__(self, embed_dim, num_heads, num_layers, dropout, extract_layers, dim_linear_block):
+    def __init__(self, embed_dim, num_heads, num_layers, dropout,
+                 extract_layers, dim_linear_block):
         super().__init__()
         self.layer = nn.LayerList()
         self.extract_layers = extract_layers
@@ -259,8 +307,13 @@ class TransformerEncoder(nn.Layer):
         # makes TransformerBlock device aware
         self.block_list = nn.LayerList()
         for _ in range(num_layers):
-            self.block_list.append(TransformerBlock(dim=embed_dim, heads=num_heads,
-                                                    dim_linear_block=dim_linear_block, dropout=dropout, prenorm=True))
+            self.block_list.append(
+                TransformerBlock(
+                    dim=embed_dim,
+                    heads=num_heads,
+                    dim_linear_block=dim_linear_block,
+                    dropout=dropout,
+                    prenorm=True))
 
     def forward(self, x):
         extract_layers = []
@@ -275,11 +328,18 @@ class TransformerEncoder(nn.Layer):
 # based on https://arxiv.org/abs/2103.10504
 @manager.MODELS.add_component
 class UNETR(nn.Layer):
-    def __init__(self, img_shape=(128, 128, 128), in_channels=4,
-                 embed_dim=768, patch_size=16, num_heads=12, dropout=0.0,
-                 ext_layers=[3, 6, 9, 12], norm='instance',
+    def __init__(self,
+                 img_shape=(128, 128, 128),
+                 in_channels=4,
+                 embed_dim=768,
+                 patch_size=16,
+                 num_heads=12,
+                 dropout=0.0,
+                 ext_layers=[3, 6, 9, 12],
+                 norm='instance',
                  base_filters=16,
-                 dim_linear_block=3072, num_classes=4):
+                 dim_linear_block=3072,
+                 num_classes=4):
         """
         The UNETR implementation based on PaddlePaddle.
         The original article refers to
@@ -306,7 +366,8 @@ class UNETR(nn.Layer):
         self.in_channels = in_channels
         self.num_classes = num_classes
         self.embed_dim = embed_dim
-        self.img_shape = img_shape if type(img_shape) == 'tuple' else eval(img_shape)
+        self.img_shape = img_shape if type(img_shape) == 'tuple' else eval(
+            img_shape)
         img_shape = self.img_shape
         self.patch_size = patch_size
         self.num_heads = num_heads
@@ -316,21 +377,33 @@ class UNETR(nn.Layer):
 
         self.norm = nn.BatchNorm3d if norm == 'batch' else nn.InstanceNorm3D
 
-        self.embed = Embeddings3D(input_dim=in_channels, embed_dim=embed_dim,
-                                  cube_size=img_shape, patch_size=patch_size, dropout=dropout)
+        self.embed = Embeddings3D(
+            input_dim=in_channels,
+            embed_dim=embed_dim,
+            cube_size=img_shape,
+            patch_size=patch_size,
+            dropout=dropout)
 
-        self.transformer = TransformerEncoder(embed_dim, num_heads,
-                                              self.num_layers, dropout, ext_layers,
-                                              dim_linear_block=dim_linear_block)
+        self.transformer = TransformerEncoder(
+            embed_dim,
+            num_heads,
+            self.num_layers,
+            dropout,
+            ext_layers,
+            dim_linear_block=dim_linear_block)
 
-        self.init_conv = Conv3DBlock(in_channels, base_filters, double=True, norm=self.norm)
+        self.init_conv = Conv3DBlock(
+            in_channels, base_filters, double=True, norm=self.norm)
 
         # blue blocks in Fig.1
-        self.z3_blue_conv = TranspConv3DConv3D(in_planes=embed_dim, out_planes=base_filters * 2, layers=3)
+        self.z3_blue_conv = TranspConv3DConv3D(
+            in_planes=embed_dim, out_planes=base_filters * 2, layers=3)
 
-        self.z6_blue_conv = TranspConv3DConv3D(in_planes=embed_dim, out_planes=base_filters * 4, layers=2)
+        self.z6_blue_conv = TranspConv3DConv3D(
+            in_planes=embed_dim, out_planes=base_filters * 4, layers=2)
 
-        self.z9_blue_conv = TranspConv3DConv3D(in_planes=embed_dim, out_planes=base_filters * 8, layers=1)
+        self.z9_blue_conv = TranspConv3DConv3D(
+            in_planes=embed_dim, out_planes=base_filters * 8, layers=1)
 
         # Green blocks in Fig.1
         self.z12_deconv = TranspConv3DBlock(embed_dim, base_filters * 8)
@@ -340,15 +413,20 @@ class UNETR(nn.Layer):
         self.z3_deconv = TranspConv3DBlock(base_filters * 2, base_filters)
 
         # Yellow blocks in Fig.1
-        self.z9_conv = Conv3DBlock(base_filters * 8 * 2, base_filters * 8, double=True, norm=self.norm)
-        self.z6_conv = Conv3DBlock(base_filters * 4 * 2, base_filters * 4, double=True, norm=self.norm)
-        self.z3_conv = Conv3DBlock(base_filters * 2 * 2, base_filters * 2, double=True, norm=self.norm)
+        self.z9_conv = Conv3DBlock(
+            base_filters * 8 * 2, base_filters * 8, double=True, norm=self.norm)
+        self.z6_conv = Conv3DBlock(
+            base_filters * 4 * 2, base_filters * 4, double=True, norm=self.norm)
+        self.z3_conv = Conv3DBlock(
+            base_filters * 2 * 2, base_filters * 2, double=True, norm=self.norm)
         # out convolutions
         self.out_conv = nn.Sequential(
             # last yellow conv block
-            Conv3DBlock(base_filters * 2, base_filters, double=True, norm=self.norm),
+            Conv3DBlock(
+                base_filters * 2, base_filters, double=True, norm=self.norm),
             # grey block, final classification layer
-            nn.Conv3D(base_filters, num_classes, kernel_size=1, stride=1))
+            nn.Conv3D(
+                base_filters, num_classes, kernel_size=1, stride=1))
 
     def forward(self, x):
         transf_input = self.embed(x)
@@ -388,4 +466,4 @@ class UNETR(nn.Layer):
 
         y = self.z3_deconv(y)
         y = paddle.concat([y, z0], axis=1)
-        return (self.out_conv(y),)
+        return (self.out_conv(y), )

@@ -138,7 +138,12 @@ def rotate_4d(img, r_plane, angle, order=1, cval=0):
     angle (int): rotate degrees
     """
     img = scipy.ndimage.rotate(
-        img, angle=angle, axes=tuple(r_plane), order=order, cval=cval, reshape=False)
+        img,
+        angle=angle,
+        axes=tuple(r_plane),
+        order=order,
+        cval=cval,
+        reshape=False)
     return img
 
 
@@ -157,4 +162,4 @@ def crop_4d(img, i, j, k, d, h, w):
     """
     if not _is_numpy_image(img):
         raise TypeError('img should be numpy image. Got {}'.format(type(img)))
-    return img[:,i:i + d, j:j + h, k:k + w]
+    return img[:, i:i + d, j:j + h, k:k + w]

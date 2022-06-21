@@ -26,11 +26,10 @@ sys.path.append(osp.join(osp.dirname(osp.realpath(__file__)), ""))
 
 from prepare import Prep
 
-
 tasks = {
     1: {
         "Task01_BrainTumour.tar":
-            "https://bj.bcebos.com/v1/ai-studio-online/netdisk/975fea1d4c8549b883b2b4bb7e6a82de84392a6edd054948b46ced0f117fd701?responseContentDisposition=attachment%3B%20filename%3DTask01_BrainTumour.tar&authorization=bce-auth-v1%2F0ef6765c1e494918bc0d4c3ca3e5c6d1%2F2022-01-21T18%3A50%3A30Z%2F-1%2F%2F283ea6f8700c129903e3278ea38a54eac2cf087e7f65197268739371898aa1b3"
+        "https://bj.bcebos.com/v1/ai-studio-online/netdisk/975fea1d4c8549b883b2b4bb7e6a82de84392a6edd054948b46ced0f117fd701?responseContentDisposition=attachment%3B%20filename%3DTask01_BrainTumour.tar&authorization=bce-auth-v1%2F0ef6765c1e494918bc0d4c3ca3e5c6d1%2F2022-01-21T18%3A50%3A30Z%2F-1%2F%2F283ea6f8700c129903e3278ea38a54eac2cf087e7f65197268739371898aa1b3"
     }
 }
 
@@ -50,12 +49,7 @@ class PrepMSDBrain(Prep):
             filter_key=(None, None),
             uncompress_params={"format": "tar",
                                "num_files": 1})
-        self.preprocess = {
-            "images": [
-            ],
-            "labels": [
-            ]
-        }
+        self.preprocess = {"images": [], "labels": []}
 
     def generate_txt(self, train_split=0.8, test_split=0.95):
         """generate the train_list.txt and val_list.txt"""
@@ -73,7 +67,12 @@ class PrepMSDBrain(Prep):
         self.split_files_txt(txtname[2], image_files_npy, label_files_npy,
                              train_split, test_split)
 
-    def split_files_txt(self, txt, image_files, label_files=None, split=None, testsplit=None):
+    def split_files_txt(self,
+                        txt,
+                        image_files,
+                        label_files=None,
+                        split=None,
+                        testsplit=None):
         split = int(split * len(image_files))
         testsplit = int(testsplit * len(image_files))
         if "train" in txt:
@@ -119,7 +118,7 @@ class PrepMSDBrain(Prep):
         """
         print(
             "Start convert images to numpy array using {}, please wait patiently"
-                .format(self.gpu_tag))
+            .format(self.gpu_tag))
         tic = time.time()
         process_files = (self.image_files, self.label_files)
         process_tuple = ("images", "labels")

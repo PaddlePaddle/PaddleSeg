@@ -26,18 +26,18 @@ from medicalseg.utils import metric, TimeAverager, calculate_eta, logger, progba
 np.set_printoptions(suppress=True)
 
 
-def evaluate(model,
-             eval_dataset,
-             losses,
-             num_workers=0,
-             print_detail=True,
-             auc_roc=False,
-             writer=None,
-             save_dir=None,
-             sw_num=None,
-             is_save_data=True,
-             has_dataset_json=True,
-             ):
+def evaluate(
+        model,
+        eval_dataset,
+        losses,
+        num_workers=0,
+        print_detail=True,
+        auc_roc=False,
+        writer=None,
+        save_dir=None,
+        sw_num=None,
+        is_save_data=True,
+        has_dataset_json=True, ):
     """
     Launch evalution.
     Args:
@@ -103,7 +103,7 @@ def evaluate(model,
 
             if has_dataset_json:
                 image_json = dataset_json_dict["training"][idx[0].split("/")[-1]
-                                                       .split(".")[0]]
+                                                           .split(".")[0]]
 
             label = label.astype('int32')
 
@@ -112,7 +112,8 @@ def evaluate(model,
                     model,
                     im,
                     ori_shape=label.shape[-3:],
-                    transforms=eval_dataset.transforms.transforms,sw_num=sw_num)
+                    transforms=eval_dataset.transforms.transforms,
+                    sw_num=sw_num)
 
             else:
                 pred, logits = infer.inference(  # reverse transform here
@@ -147,9 +148,7 @@ def evaluate(model,
             if is_save_data:
                 if iter < 5:
                     save_array(
-                        save_path=os.path.join(
-                            save_dir,
-                            str(iter)),
+                        save_path=os.path.join(save_dir, str(iter)),
                         save_content={
                             'pred': pred.numpy(),
                             'label': label.numpy(),

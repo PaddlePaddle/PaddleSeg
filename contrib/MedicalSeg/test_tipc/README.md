@@ -16,7 +16,7 @@
 ```shell
 test_tipc/
 ├── configs/  # 配置文件目录
-    ├── N2N   # N2N模型的测试配置文件目录 
+    ├── N2N   # N2N模型的测试配置文件目录
         ├── train_infer_python.txt      # 测试Linux上python训练预测（基础训练预测）的配置文件
         ├── train_infer_python.md      # 测试Linux上python训练预测（基础训练预测）的使用文档
 ├── results/   # 预测结果

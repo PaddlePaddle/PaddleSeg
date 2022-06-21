@@ -90,7 +90,7 @@ def parse_args():
         type=eval,
         choices=[True, False],
         help='Whether to enable tuned dynamic shape. We uses some images to collect '
-             'the dynamic shape for trt sub graph, which avoids setting dynamic shape manually.'
+        'the dynamic shape for trt sub graph, which avoids setting dynamic shape manually.'
     )
     parser.add_argument(
         '--auto_tuned_shape_file',
@@ -141,23 +141,11 @@ def parse_args():
         type=eval,
         help='use sliding_window_inference')
 
-    parser.add_argument(
-        '--use_warmup',
-        default=True,
-        type=eval,
-        help='warmup')
+    parser.add_argument('--use_warmup', default=True, type=eval, help='warmup')
 
-    parser.add_argument(
-        '--img_shape',
-        default=128,
-        type=int,
-        help='img_shape')
+    parser.add_argument('--img_shape', default=128, type=int, help='img_shape')
 
-    parser.add_argument(
-        '--is_nhwd',
-        default=True,
-        type=eval,
-        help='is_nhwd')
+    parser.add_argument('--is_nhwd', default=True, type=eval, help='is_nhwd')
     return parser.parse_args()
 
 
@@ -173,7 +161,7 @@ class DeployConfig:
             self.dic = yaml.load(file, Loader=yaml.FullLoader)
 
         self._transforms = self.load_transforms(self.dic['Deploy'][
-                                                    'transforms'])
+            'transforms'])
         self._dir = os.path.dirname(path)
 
     @property
@@ -261,7 +249,8 @@ class ModelLikeInfer:
         return paddle.to_tensor(output_handle.copy_to_cpu())
 
     def infer_model(self, data):
-        return (self.infer_likemodel(self.input_handle, self.output_handle, self.predictor, data),)
+        return (self.infer_likemodel(self.input_handle, self.output_handle,
+                                     self.predictor, data), )
 
 
 class Predictor:
@@ -402,13 +391,15 @@ class Predictor:
 
             if args.use_swl:
 
-                infer_like_model = ModelLikeInfer(input_handle, output_handle, self.predictor)
+                infer_like_model = ModelLikeInfer(input_handle, output_handle,
+                                                  self.predictor)
                 data = paddle.to_tensor(data)
                 if args.is_nhwd:
                     data = paddle.squeeze(data, axis=1)
 
-                results = sliding_window_inference(data, (args.img_shape, args.img_shape, args.img_shape), 1,
-                                                   infer_like_model.infer_model)
+                results = sliding_window_inference(
+                    data, (args.img_shape, args.img_shape, args.img_shape), 1,
+                    infer_like_model.infer_model)
 
                 results = results[0]
 
@@ -439,7 +430,8 @@ class Predictor:
         if not "npy" in img:
             image_files = get_image_list(img, None, None)
             warnings.warn(
-                "The image path is {}, please make sure this is the images you want to infer".format(image_files))
+                "The image path is {}, please make sure this is the images you want to infer".
+                format(image_files))
             savepath = os.path.dirname(img)
             pre = [
                 HUnorm,
@@ -463,8 +455,10 @@ class Predictor:
 
                     np.save(
                         os.path.join(
-                            savepath, f.split("/")[-1].split(
-                                ".", maxsplit=1)[0]), f_np)
+                            savepath,
+                            f.split("/")[-1].split(
+                                ".", maxsplit=1)[0]),
+                        f_np)
 
             img = img.split(".", maxsplit=1)[0] + ".npy"
 
