@@ -18,38 +18,7 @@ The whole process is as follows:
 
 ### **1.1 Environment Installation**
 
-Before using PaddleSeg to train an image segmentation model, users need to complete the following tasks:
-
-1. Install [Python3.6 or higher](https://www.python.org/downloads/).
-2. Install the `PaddlePaddle` (version >= 2.1), please refer to [Quick Installation](https://www.paddlepaddle.org.cn/install/quick) for the specific installation method. Due to the high computational cost of the image segmentation model, it is recommended to use PaddleSeg under the GPU version of PaddlePaddle.
-3. Download the code library of PaddleSeg.
-
-```
-git clone https://github.com/PaddlePaddle/PaddleSeg.git
-```
-```
-#If the github download network is poor, users can choose gitee to download
-git clone https://gitee.com/paddlepaddle/PaddleSeg.git
-```
-Install the PaddleSeg API library, while installing the library, other dependencies for running PaddleSeg are also installed at the same time
-```
-pip install paddleseg
-```
-
-### **1.2 Confirm Installation**
-
-Execute the following command in the PaddleSeg directory, if the predicted result appears in the PaddleSeg/output folder, the installation is successful.
-
-> Note that: the commands of training, validation and prediction are executed in the root of PaddleSeg by default.
-
-```
-python predict.py \
-       --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \
-       --model_path https://paddleseg.bj.bcebos.com/dygraph/optic_disc/pp_liteseg_optic_disc_512x512_1k/model.pdparams\
-       --image_path docs/images/optic_test_image.jpg \
-       --save_dir output/result
-```
-
+Refer to the [Installation Guide](./install.md) to prepare the environment.
 ## **2. Dataset Preparation**
 
 ### **2.1 Dataset Download**
@@ -68,7 +37,6 @@ cd ..
 The original image and segmentation result are shown below. Our task will be to segment the optic disc area in the eyeball picture.
 
 ![](./images/fig1.png)
-Figure 1: Original image and segmentation result
 
 
 
@@ -126,7 +94,6 @@ Compared to other models, PP-LiteSeg achieves superior trade-off between accurac
 <div align="center">
 <img src="https://user-images.githubusercontent.com/52520497/162148786-c8b91fd1-d006-4bad-8599-556daf959a75.png" width = "600" height = "300" alt="arch"  />
 </div>
-Figure2：The architecture of PP-LiteSeg
 
 ### **3.2 Detailed Interpretation of Configuration Files**
 
@@ -302,7 +269,6 @@ output
 - For example, if we want to change the configuration of the deeplabv3p_resnet50_os8_cityscapes_1024x512_80k.yml file, we will find that the file also depends on the (base) cityscapes.yml file. At this point, we need to open the cityscapes.yml file synchronously to set the corresponding parameters.
 
 ![](./images/fig3.png)
-Figure 3: In-depth exploration of configuration files
 
 In PaddleSeg2.0 mode, users can find that PaddleSeg adopts a more coupled configuration design, placing common configurations such as data, optimizer, and loss function under a single configuration file. When we try to change to a new network The structure is time, you only need to pay attention to model switching, which avoids the tedious rhythm of switching models to re-adjust these common parameters and avoid user errors.
 
@@ -362,7 +328,6 @@ visualdl --logdir output/
 Enter the suggested URL in the browser, the effect is as follows:
 
 ![](./images/fig4.png)
-Figure 4: VDL effect demonstration
 
 ## **5. Model Evaluation**
 
@@ -438,7 +403,6 @@ Similarly, you can use `--aug_pred` to turn on multi-scale flip prediction, and 
 We select 1 picture to view, the effect is as follows. We can intuitively see the difference between the cutting effect of the model and the original mark, thereby generating some optimization ideas, such as whether the cutting boundary can be processed in a regular manner.
 
 ![](./images/fig5.png)
-Figure 5: Prediction effect display
 
 ## **7 Model Export**
 
