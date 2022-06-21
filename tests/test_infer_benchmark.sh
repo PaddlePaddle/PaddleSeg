@@ -96,7 +96,6 @@ do
         --precision fp32 \
         --enable_auto_tune True
 
-    : '
     echo -e "\n Test ${model_name} GPU TRT fp16"
     python deploy/python/infer_benchmark.py \
         --config ${export_path}/deploy.yaml \
@@ -107,7 +106,6 @@ do
         --use_trt True \
         --precision fp16 \
         --enable_auto_tune True
-    '
 
     echo -e "\n\n"
 done
