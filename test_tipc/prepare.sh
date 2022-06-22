@@ -95,9 +95,9 @@ if [ ${MODE} = "whole_infer" ] || [ ${MODE} = "klquant_whole_infer" ]; then
 fi
 
 # download data
+mkdir -p ./test_tipc/data
 if [ ${MODE} = "benchmark_train" ];then
     pip install -r requirements.txt
-    mkdir -p ./test_tipc/data
     if [ ${model_name} == "deeplabv3p_resnet50" ] || [ ${model_name} == "fcn_hrnetw18" ] ;then   # 需要使用全量数据集,否则性能下降
         wget https://paddleseg.bj.bcebos.com/dataset/cityscapes.tar -O ./test_tipc/data/cityscapes.tar --no-check-certificate
         tar -xf ./test_tipc/data/cityscapes.tar  -C ./test_tipc/data/
@@ -108,7 +108,6 @@ if [ ${MODE} = "benchmark_train" ];then
         mv ./test_tipc/data/cityscapes_30imgs ./test_tipc/data/cityscapes
     fi
 elif [ ${MODE} == "serving_infer" ];then
-    mkdir -p ./test_tipc/data
     wget -nc -P ./test_tipc/data https://paddleseg.bj.bcebos.com/dygraph/demo/cityscapes_small.png --no-check-certificate
 elif [ ${MODE} = "lite_train_lite_infer" ] || [ ${MODE} = "lite_train_whole_infer" ] || [ ${MODE} = "whole_train_whole_infer" ] || [ ${MODE} = "whole_infer" ];then
 
@@ -249,5 +248,5 @@ elif [ ${MODE} = "paddle2onnx_infer" ];then
         cd ./test_tipc/infer_models && unzip ocrnet_hrnetw18_cityscapes_1024x512_160k.zip && cd -
     fi
 else
-    cp ./test_tipc/data/cityscapes_val_5.list ./test_tipc/data/cityscapes
+    cp ./test_tipc/docs/cityscapes_val_5.list ./test_tipc/data/cityscapes
 fi

@@ -76,6 +76,7 @@ def parse_args():
 
     parser.add_argument(
         '--has_dataset_json', default=True, type=eval, help='has_dataset_json')
+
     return parser.parse_args()
 
 
@@ -90,16 +91,7 @@ def main(args):
 
     cfg = Config(args.cfg)
     losses = cfg.loss
-
-    val_dataset = cfg.val_dataset
-    if val_dataset is None:
-        raise RuntimeError(
-            'The verification dataset is not specified in the configuration file.'
-        )
-    elif len(val_dataset) == 0:
-        raise ValueError(
-            'The length of val_dataset is 0. Please check if your dataset is valid'
-        )
+    test_dataset = cfg.test_dataset
 
     msg = '\n---------------Config Information---------------\n'
     msg += str(cfg)
@@ -115,11 +107,9 @@ def main(args):
         from visualdl import LogWriter
         log_writer = LogWriter(args.save_dir)
 
-    config_check(cfg, val_dataset=val_dataset)
-
     evaluate(
         model,
-        val_dataset,
+        test_dataset,
         losses,
         num_workers=args.num_workers,
         print_detail=args.print_detail,

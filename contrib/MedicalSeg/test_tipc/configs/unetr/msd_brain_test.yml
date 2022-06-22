@@ -1,0 +1,71 @@
+data_root: test_tipc/data
+batch_size: 1
+iters: 20
+train_dataset:
+  type: msd_brain_dataset
+  dataset_root: mini_brainT_dataset
+  result_dir: test_tipc/data/mini_brainT_dataset
+  num_classes: 4
+  transforms:
+    - type: RandomCrop4D
+      size: 128
+      scale: [0.8, 1.2]
+    - type: RandomRotation4D
+      degrees: 90
+      rotate_planes: [[1, 2], [1, 3],[2, 3]]
+    - type: RandomFlip4D
+      flip_axis: [1,2,3]
+
+  mode: train
+
+
+val_dataset:
+  type: msd_brain_dataset
+  dataset_root: mini_brainT_dataset
+  result_dir: test_tipc/data/mini_brainT_dataset
+  num_classes: 4
+  transforms: []
+  mode: val
+  dataset_json_path: "data/Task01_BrainTumour/Task01_BrainTumour_raw/dataset.json"
+
+
+test_dataset:
+  type: msd_brain_dataset
+  dataset_root: mini_brainT_dataset
+  result_dir: test_tipc/data/mini_brainT_dataset
+  num_classes: 4
+  transforms: []
+  mode: test
+  dataset_json_path: "data/Task01_BrainTumour/Task01_BrainTumour_raw/dataset.json"
+
+optimizer:
+  type: AdamW
+  weight_decay: 1.0e-4
+
+lr_scheduler:
+  type: PolynomialDecay
+  decay_steps: 20
+  learning_rate: 0.0001
+  end_lr: 0
+  power: 0.9
+
+loss:
+  types:
+    - type: MixedLoss
+      losses:
+        - type: CrossEntropyLoss
+          weight: Null
+        - type: DiceLoss
+      coef: [1, 1]
+  coef: [1]
+
+
+model:
+  type: UNETR
+  img_shape: (128, 128, 128)
+  in_channels: 4
+  num_classes: 4
+  embed_dim: 768
+  patch_size: 16
+  num_heads: 12
+  dropout: 0.1
