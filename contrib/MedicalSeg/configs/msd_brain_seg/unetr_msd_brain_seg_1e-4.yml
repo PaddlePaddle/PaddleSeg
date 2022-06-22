@@ -1,0 +1,11 @@
+_base_: 'msd_brain_seg_1e-4.yml'
+
+model:
+  type: UNETR
+  img_shape: (128, 128, 128)
+  in_channels: 4
+  num_classes: 4
+  embed_dim: 768
+  patch_size: 16
+  num_heads: 12
+  dropout: 0.1
