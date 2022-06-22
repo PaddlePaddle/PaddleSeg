@@ -59,15 +59,97 @@ PaddleSeg是基于飞桨PaddlePaddle开发的端到端图像分割开发套件�
 
 * <img src="./docs/images/f3.png" width="20"/> **高性能**：支持多进程异步I/O、多卡并行训练、评估等加速策略，结合飞桨核心框架的显存优化功能，可大幅度减少分割模型的训练开销，让开发者更低成本、更高效地完成图像分割训练。
 
+<div align="center">
+<img src=docs/images/features.png   />  
+</div>
+
 ----------
 
-## 技术交流 <img src="./docs/images/chat.png" width="30"/>
 
-* 如果你发现任何PaddleSeg存在的问题或者是建议, 欢迎通过[GitHub Issues](https://github.com/PaddlePaddle/PaddleSeg/issues)给我们提issues。
-* 欢迎加入PaddleSeg 微信群
-<div align="center">
-<img src="https://user-images.githubusercontent.com/48433081/163670184-43cfb3ae-2047-4ba3-8dae-6c02090dd177.png"  width = "200" />  
-</div>
+
+## 文档教程 <img src="./docs/images/teach.png" width="30"/>
+
+* [运行环境准备](./docs/install_cn.md)
+* [PP-HumanSeg人像分割](./contrib/PP-HumanSeg/README_cn.md)
+  * [人像分割模型](./contrib/PP-HumanSeg/README_cn.md#人像分割模型)
+  * [安装](./contrib/PP-HumanSeg/README_cn.md#安装)
+  * [快速体验](./contrib/PP-HumanSeg/README_cn.md#快速体验)
+  * [训练评估预测演示](./contrib/PP-HumanSeg/README_cn.md#训练评估预测演示)
+  * [模型导出](./contrib/PP-HumanSeg/README_cn.md#模型导出)
+  * [Web端部署](./contrib/PP-HumanSeg/README_cn.md#Web端部署)
+  * [移动端部署](./contrib/PP-HumanSeg/README_cn.md#移动端部署)
+* [PP-LiteSeg实时语义分割](configs/pp_liteseg)
+  * [概述](configs/pp_liteseg#overview)
+  * [训练](configs/pp_liteseg#Training)
+  * [评估](configs/pp_liteseg#Evaluation)
+  * [部署](configs/pp_liteseg#Deployment)
+  * [性能](configs/pp_liteseg#Performance)
+* [PP-Matting高精度抠图](Matting/README_CN.md)
+  * [快速体验](Matting/README_CN.md#快速体验)
+  * [环境配置](Matting/README_CN.md#环境配置)
+  * [模型](Matting/README_CN.md#模型)
+  * [数据准备](Matting/README_CN.md#数据准备)
+  * [训练评估预测](Matting/README_CN.md#训练评估预测)
+  * [背景替换](Matting/README_CN.md#背景替换)
+  * [导出部署](Matting/README_CN.md#导出部署)
+
+* 前沿算法和模型
+  * [产品矩阵](#产品矩阵)
+  * [模型库总览](#模型库总览)
+  * [模型训练](/docs/train/train_cn.md)
+  * [模型评估](./docs/evaluation/evaluate/evaluate_cn.md)
+  * [预测与可视化](./docs/predict/predict_cn.md)
+
+  * 模型导出
+      * [导出预测模型](./docs/model_export_cn.md)
+      * [导出ONNX模型](./docs/model_export_onnx_cn.md)
+
+  * 模型部署
+      * [Paddle Inference部署(Python)](./docs/deployment/inference/python_inference_cn.md)
+      * [Paddle Inference部署(C++)](./docs/deployment/inference/cpp_inference_cn.md)
+      * [Paddle Lite部署](./docs/deployment/lite/lite_cn.md)
+      * [Paddle Serving部署](./docs/deployment/serving/serving.md)
+      * [Paddle JS部署](./docs/deployment/web/web_cn.md)
+      * [推理Benchmark](./docs/deployment/inference/infer_benchmark_cn.md)
+
+  * 模型压缩
+      * [量化](./docs/slim/quant/quant_cn.md)
+      * [蒸馏](./docs/slim/distill/distill_cn.md)
+      * [裁剪](./docs/slim/prune/prune_cn.md)
+
+  *  API使用教程
+      * [API文档说明](./docs/apis/README_CN.md)
+      * [API应用案例](./docs/api_example_cn.md)
+  *  重要模块说明
+      * [数据增强](./docs/module/data/data_cn.md)
+      * [Loss说明](./docs/module/loss/losses_cn.md)
+  *  二次开发教程
+      * [配置文件详解](./docs/design/use/use_cn.md)
+      * [如何创造自己的模型](./docs/design/create/add_new_model_cn.md)
+*  数据标注
+   * [标注数据的准备](./docs/data/marker/marker_cn.md)
+   * [数据标注教程](./docs/data/transform/transform_cn.md)
+   * [自定义数据集](./docs/data/custom/data_prepare_cn.md)
+*  产业实用范例库
+   * [交互式分割](./EISeg)
+   * [图像抠图](./Matting)
+   * [人像分割](./contrib/PP-HumanSeg)
+   * [3D医疗分割](./contrib/MedicalSeg)
+   * [Cityscapes打榜模型](./contrib/CityscapesSOTA)
+   * [全景分割](./contrib/PanopticDeepLab)
+   * [CVPR冠军模型](./contrib/AutoNUE)
+   * [领域自适应](./contrib/DomainAdaptation)
+* [全流程跑通PaddleSeg](./docs/whole_process_cn.md)
+* [FAQ](./docs/faq/faq/faq_cn.md)
+*  社区贡献指南
+    * [提交PR说明](./docs/pr/pr/pr_cn.md)
+    * [模型PR规范](./docs/pr/pr/style_cn.md)
+* [技术交流](#技术交流)
+* 第三方教程推荐
+  * [图像分割套件PaddleSeg全面解析系列](https://blog.csdn.net/txyugood/article/details/111029854)
+  * [PaddleSeg学习笔记: 人像分割 HumanSeg](https://blog.csdn.net/libo1004/article/details/118809026)
+* [静态图版本](./docs/static/static_cn.md)
+
 
 ## 产品矩阵 <img src="./docs/images/model.png" width="20"/>
 
@@ -268,69 +350,13 @@ PaddleSeg是基于飞桨PaddlePaddle开发的端到端图像分割开发套件�
 <img src=https://user-images.githubusercontent.com/30695251/140323107-02ce9de4-c8f4-4f18-88b2-59bd0055a70b.png   />  
 </div>
 
+## 技术交流 <img src="./docs/images/chat.png" width="30"/>
 
-## 使用教程 <img src="./docs/images/teach.png" width="30"/>
-
-* [安装](./docs/install_cn.md)
-* [全流程跑通PaddleSeg](./docs/whole_process_cn.md)
-*  准备数据集
-   * [标注数据的准备](./docs/data/marker/marker_cn.md)
-   * [数据标注教程](./docs/data/transform/transform_cn.md)
-   * [自定义数据集](./docs/data/custom/data_prepare_cn.md)
-
-* [模型训练](/docs/train/train_cn.md)
-* [模型评估](./docs/evaluation/evaluate/evaluate_cn.md)
-* [预测与可视化](./docs/predict/predict_cn.md)
-
-* 模型导出
-    * [导出预测模型](./docs/model_export_cn.md)
-    * [导出ONNX模型](./docs/model_export_onnx_cn.md)
-
-* 模型部署
-    * [Paddle Inference部署(Python)](./docs/deployment/inference/python_inference_cn.md)
-    * [Paddle Inference部署(C++)](./docs/deployment/inference/cpp_inference_cn.md)
-    * [Paddle Lite部署](./docs/deployment/lite/lite_cn.md)
-    * [Paddle Serving部署](./docs/deployment/serving/serving.md)
-    * [Paddle JS部署](./docs/deployment/web/web_cn.md)
-    * [推理Benchmark](./docs/deployment/inference/infer_benchmark_cn.md)
-
-* 模型压缩
-    * [量化](./docs/slim/quant/quant_cn.md)
-    * [蒸馏](./docs/slim/distill/distill_cn.md)
-    * [裁剪](./docs/slim/prune/prune_cn.md)
-
-*  API使用教程
-    * [API文档说明](./docs/apis/README_CN.md)
-    * [API应用案例](./docs/api_example_cn.md)
-*  重要模块说明
-    * [数据增强](./docs/module/data/data_cn.md)
-    * [Loss说明](./docs/module/loss/losses_cn.md)
-*  二次开发教程
-    * [配置文件详解](./docs/design/use/use_cn.md)
-    * [如何创造自己的模型](./docs/design/create/add_new_model_cn.md)
-*  模型贡献
-    * [提交PR说明](./docs/pr/pr/pr_cn.md)
-    * [模型PR规范](./docs/pr/pr/style_cn.md)
-
-* [静态图版本](./docs/static/static_cn.md)
-* [技术交流](#技术交流)
-* [常见问题汇总](./docs/faq/faq/faq_cn.md)
-
-## 实践案例 <img src="./docs/images/anli.png" width="20"/>
-
-- [交互式分割](./EISeg)
-- [图像抠图](./Matting)
-- [人像分割](./contrib/PP-HumanSeg)
-- [3D医疗分割](./contrib/MedicalSeg)
-- [Cityscapes打榜模型](./contrib/CityscapesSOTA)
-- [全景分割](./contrib/PanopticDeepLab)
-- [CVPR冠军模型](./contrib/AutoNUE)
-- [领域自适应](./contrib/DomainAdaptation)
-
-## 第三方教程推荐
-
-* [图像分割套件PaddleSeg全面解析系列](https://blog.csdn.net/txyugood/article/details/111029854)
-* [PaddleSeg学习笔记: 人像分割 HumanSeg](https://blog.csdn.net/libo1004/article/details/118809026)
+* 如果你发现任何PaddleSeg存在的问题或者是建议, 欢迎通过[GitHub Issues](https://github.com/PaddlePaddle/PaddleSeg/issues)给我们提issues。
+* 欢迎加入PaddleSeg 微信群
+<div align="center">
+<img src="https://user-images.githubusercontent.com/48433081/163670184-43cfb3ae-2047-4ba3-8dae-6c02090dd177.png"  width = "200" />  
+</div>
 
 ## 许可证书
 本项目的发布受Apache 2.0 license许可认证。
