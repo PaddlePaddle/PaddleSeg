@@ -21,6 +21,7 @@ import shutil
 import numpy as np
 import paddle
 import paddle.nn.functional as F
+# from paddle import profiler
 from paddleseg.utils import TimeAverager, calculate_eta, resume, logger
 
 from .val import evaluate
@@ -161,6 +162,15 @@ def train(model,
     save_models = deque()
     batch_start = time.time()
 
+    #     # 创建性能分析器相关的代码
+    # def my_on_trace_ready(prof): # 定义回调函数，性能分析器结束采集数据时会被调用
+    #     callback = profiler.export_chrome_tracing('./profiler_demo') # 创建导出性能数据到profiler_demo文件夹的回调函数
+    #     callback(prof)  # 执行该导出函数
+    #     prof.summary(sorted_by=profiler.SortedKeys.GPUTotal) # 打印表单，按GPUTotal排序表单项
+    # p = profiler.Profiler(scheduler = [3,14], on_trace_ready=my_on_trace_ready, timer_only=False) # 初始化Profiler对象
+
+    # p.start() # 性能分析器进入第0个step
+
     iter = start_iter
     while iter < iters:
         for data in loader:
@@ -170,11 +180,11 @@ def train(model,
             reader_cost_averager.record(time.time() - batch_start)
 
             # model input
-            if nranks > 1:
-                logit_dict = ddp_model(data)
-            else:
-                logit_dict = model(data)
-            loss_dict = model.loss(logit_dict, data, losses)
+
+            logit_dict, loss_dict = ddp_model(data) if nranks > 1 else model(
+                data)
+
+            #loss_dict = model.loss(logit_dict, data, losses)
 
             loss_dict['all'].backward()
 
@@ -184,6 +194,11 @@ def train(model,
                           paddle.optimizer.lr.LRScheduler):
                 optimizer._learning_rate.step()
             model.clear_gradients()
+
+            # p.step() # 指示性能分析器进入下一个step
+            # if iter == 20:
+            #     p.stop() # 关闭性能分析器
+            #     exit() # 做性能分析时，可以将程序提前退出
 
             for key, value in loss_dict.items():
                 avg_loss[key] += value.numpy()[0]

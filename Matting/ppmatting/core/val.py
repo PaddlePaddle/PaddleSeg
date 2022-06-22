@@ -83,7 +83,8 @@ def evaluate(model,
     if print_detail:
         logger.info("Start evaluating (total_samples: {}, total_iters: {})...".
                     format(len(eval_dataset), total_iters))
-    progbar_val = progbar.Progbar(target=total_iters, verbose=1)
+    progbar_val = progbar.Progbar(
+        target=total_iters, verbose=1 if nranks < 2 else 2)
     reader_cost_averager = TimeAverager()
     batch_cost_averager = TimeAverager()
     batch_start = time.time()
@@ -105,8 +106,8 @@ def evaluate(model,
             alpha_pred = np.round(alpha_pred * 255)
             mse = mse_metric.update(alpha_pred, alpha_gt, trimap)
             sad = sad_metric.update(alpha_pred, alpha_gt, trimap)
-            grad = grad_metric.update(alpha_pred, alpha_gt, trimap)
-            conn = conn_metric.update(alpha_pred, alpha_gt, trimap)
+            grad = 0  #grad_metric.update(alpha_pred, alpha_gt, trimap)
+            conn = 0  #conn_metric.update(alpha_pred, alpha_gt, trimap)
 
             if save_results:
                 alpha_pred_one = alpha_pred[0].squeeze()
