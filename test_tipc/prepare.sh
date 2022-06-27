@@ -145,13 +145,13 @@ if [ ${MODE} = "cpp_infer" ];then
     elif [ ${model_name} == "pp_liteseg_stdc2" ];then
         wget -P inference_models https://paddleseg.bj.bcebos.com/tipc/infer_models/pp_liteseg_stdc2_cityscapes_1024x512_scale1.0_160k.zip --no-check-certificate
         unzip inference_models/pp_liteseg_stdc2_cityscapes_1024x512_scale1.0_160k.zip -d inference_models/
-    elif [ ${model_name} == "pp_humanseg_lite" ];then
+    elif [ ${model_name} == "pphumanseg_lite" ];then
         wget -P inference_models https://paddleseg.bj.bcebos.com/tipc/infer_models/pp_humanseg_lite_export_398x224.zip --no-check-certificate
         unzip inference_models/pp_humanseg_lite_export_398x224 -d inference_models/
-    elif [ ${model_name} == "pp_humanseg_mobile" ];then
+    elif [ ${model_name} == "fcn_hrnetw18_small" ];then
         wget -P inference_models https://paddleseg.bj.bcebos.com/tipc/infer_models/pp_humanseg_mobile_export_192x192.zip --no-check-certificate
         unzip inference_models/pp_humanseg_mobile_export_192x192.zip -d inference_models/
-    elif [ ${model_name} == "pp_humanseg_server" ];then
+    elif [ ${model_name} == "deeplabv3p_resnet50" ];then
         wget -P inference_models https://paddleseg.bj.bcebos.com/tipc/infer_models/pp_humanseg_server_export_512x512.zip --no-check-certificate
         unzip inference_models/pp_humanseg_server_export_512x512.zip -d inference_models/
     elif [ ${model_name} == "fcn_hrnetw18" ];then
