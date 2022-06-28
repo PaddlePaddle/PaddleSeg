@@ -64,7 +64,8 @@ class MedicalDataset(paddle.io.Dataset):
                  num_classes,
                  mode='train',
                  ignore_index=255,
-                 data_URL=""):
+                 data_URL="",
+                 dataset_json_path=""):
         self.dataset_root = dataset_root
         self.result_dir = result_dir
         self.transforms = Compose(transforms)
@@ -72,6 +73,7 @@ class MedicalDataset(paddle.io.Dataset):
         self.mode = mode.lower()
         self.num_classes = num_classes
         self.ignore_index = ignore_index  # todo: if labels only have 1/0/2, ignore_index is not necessary
+        self.dataset_json_path = dataset_json_path
 
         if self.dataset_root is None:
             self.dataset_root = download_file_and_uncompress(
@@ -79,14 +81,9 @@ class MedicalDataset(paddle.io.Dataset):
                 savepath=seg_env.DATA_HOME,
                 extrapath=seg_env.DATA_HOME)
         elif not os.path.exists(self.dataset_root):
-            self.dataset_root = os.path.normpath(self.dataset_root)
-            savepath, extraname = self.dataset_root.rsplit(
-                sep=os.path.sep, maxsplit=1)
-            self.dataset_root = download_file_and_uncompress(
-                url=data_URL,
-                savepath=savepath,
-                extrapath=savepath,
-                extraname=extraname)
+            raise ValueError(
+                "The `dataset_root` don't exist please specify the correct path to data."
+            )
 
         if mode == 'train':
             file_path = os.path.join(self.dataset_root, 'train_list.txt')
@@ -118,7 +115,7 @@ class MedicalDataset(paddle.io.Dataset):
 
         im, label = self.transforms(im=image_path, label=label_path)
 
-        return im, label, self.file_list[idx][0]
+        return im, label, self.file_list[idx][0]  # npy file name
 
     def save_transformed(self):
         """Save the preprocessed images to the result_dir"""

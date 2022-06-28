@@ -1,0 +1,19 @@
+
+
+val_dataset:
+  type: MattingDataset
+  dataset_root: data/PPM-100
+  val_file: val.txt
+  transforms:
+    - type: LoadImages
+    - type: ResizeByShort
+      short_size: 512
+    - type: ResizeToIntMult
+      mult_int: 32
+    - type: Normalize
+  mode: val
+  get_trimap: True
+
+model:
+  type: CloseFormMatting
+

@@ -8,6 +8,14 @@ Matting（精细化分割/影像去背/抠图）是指借由计算前景的颜�
 <img src="https://user-images.githubusercontent.com/30919197/141714637-be8af7b1-ccd0-49df-a4f9-10423705802e.jpg" width="100%" height="100%">
 </p>
 
+# 快速体验
+Matting精细化抠图被广泛应用在多种行业，如视频剪辑，视频合成等领域，有的开发者基于PP-Matting也搭建了一个名为“懒人抠图”的一键抠图网站，欢迎大家使用。
+- [使用链接](http://seg.itmanbu.com/)
+
+<p align="center">
+<img src="https://user-images.githubusercontent.com/48433081/165077834-c3191509-aeaf-45c8-b226-656174f4c152.gif" width="100%" height="100%">
+</p>
+
 ## 更新动态
 2022.04
 【1】新增PPMatting模型。
@@ -54,11 +62,8 @@ git clone https://github.com/PaddlePaddle/PaddleSeg
 #### 3. 安装
 
 ```shell
-cd PaddleSeg
-pip install -e .
-pip install scikit-image
-pip install numba
-cd contrib/Matting
+cd PaddleSeg/Matting
+pip install -r requirements.txt
 ```
 
 ## 模型
@@ -72,13 +77,13 @@ cd contrib/Matting
 
 | 模型 | Params(M) | FLOPs(G) | FPS | Checkpoint | Inference Model |
 | - | - | -| - | - | - |
-| PP-Matting-512     | 24.5 | 91.28 | 32.1 | - | [model inference](https://paddleseg.bj.bcebos.com/matting/models/deploy/pp-matting-hrnet_w18-human_512.zip) |
-| PP-Matting-1024    | 24.5 | 91.28 | 18.6(1024X1024) | - | [model inference](https://paddleseg.bj.bcebos.com/matting/models/deploy/pp-matting-hrnet_w18-human_1024.zip) |
-| PP-HumanMatting    | 63.9 | 135.8 (2048X2048)| 35.7(2048X2048)| [model](https://paddleseg.bj.bcebos.com/matting/models/human_matting-resnet34_vd.pdparams) | [model inference](https://paddleseg.bj.bcebos.com/matting/models/deploy/pp-humanmatting-resnet34_vd.zip) |
-| ModNet-MobileNetV2 | 6.5 | 15.7 | 151.6 | [model](https://paddleseg.bj.bcebos.com/matting/models/modnet-mobilenetv2.pdparams) | [model inference](https://paddleseg.bj.bcebos.com/matting/models/deploy/modnet-mobilenetv2.zip) |
-| ModNet-ResNet50_vd | 92.2 | 151.6 | 142.8 | [model](https://paddleseg.bj.bcebos.com/matting/models/modnet-resnet50_vd.pdparams) | [model inference](https://paddleseg.bj.bcebos.com/matting/models/deploy/modnet-resnet50_vd.zip) |
-| ModNet-HRNet_W18   | 10.2 | 28.5 | 39.1 | [model](https://paddleseg.bj.bcebos.com/matting/models/modnet-hrnet_w18.pdparams) | [model inference](https://paddleseg.bj.bcebos.com/matting/models/deploy/modnet-hrnet_w18.zip) |
-| DIM-VGG16          | 28.4 | 175.5| 32.2 | [model](https://paddleseg.bj.bcebos.com/matting/models/dim-vgg16.pdparams) | [model inference](https://paddleseg.bj.bcebos.com/matting/models/deploy/dim-vgg16.zip) |
+| PP-Matting-512     | 24.5 | 91.28 | 28.9 | - | [model inference](https://paddleseg.bj.bcebos.com/matting/models/deploy/pp-matting-hrnet_w18-human_512.zip) |
+| PP-Matting-1024    | 24.5 | 91.28 | 13.4(1024X1024) | - | [model inference](https://paddleseg.bj.bcebos.com/matting/models/deploy/pp-matting-hrnet_w18-human_1024.zip) |
+| PP-HumanMatting    | 63.9 | 135.8 (2048X2048)| 32.8(2048X2048)| [model](https://paddleseg.bj.bcebos.com/matting/models/human_matting-resnet34_vd.pdparams) | [model inference](https://paddleseg.bj.bcebos.com/matting/models/deploy/pp-humanmatting-resnet34_vd.zip) |
+| ModNet-MobileNetV2 | 6.5 | 15.7 | 68.4 | [model](https://paddleseg.bj.bcebos.com/matting/models/modnet-mobilenetv2.pdparams) | [model inference](https://paddleseg.bj.bcebos.com/matting/models/deploy/modnet-mobilenetv2.zip) |
+| ModNet-ResNet50_vd | 92.2 | 151.6 | 29.0 | [model](https://paddleseg.bj.bcebos.com/matting/models/modnet-resnet50_vd.pdparams) | [model inference](https://paddleseg.bj.bcebos.com/matting/models/deploy/modnet-resnet50_vd.zip) |
+| ModNet-HRNet_W18   | 10.2 | 28.5 | 62.6 | [model](https://paddleseg.bj.bcebos.com/matting/models/modnet-hrnet_w18.pdparams) | [model inference](https://paddleseg.bj.bcebos.com/matting/models/deploy/modnet-hrnet_w18.zip) |
+| DIM-VGG16          | 28.4 | 175.5| 30.4 | [model](https://paddleseg.bj.bcebos.com/matting/models/dim-vgg16.pdparams) | [model inference](https://paddleseg.bj.bcebos.com/matting/models/deploy/dim-vgg16.zip) |
 
 注意：FLOPs和FPS计算默认模型输入大小为(512, 512), GPU为Tesla V100 32G。
 
@@ -152,30 +157,31 @@ val/fg/fg3.jpg bg/bg3.jpg val/trimap/trimap3.jpg
 ### 训练
 ```shell
 export CUDA_VISIBLE_DEVICES=0
-python train.py \
-       --config configs/modnet/modnet-mobilenetv2.yml \
+python tools/train.py \
+       --config configs/quick_start/modnet-mobilenetv2.yml \
        --do_eval \
        --use_vdl \
-       --save_interval 5000 \
+       --save_interval 500 \
        --num_workers 5 \
        --save_dir output
 ```
 
 **note:** 使用--do_eval会影响训练速度及增加显存消耗，根据需求进行开闭。
+打开的时候会根据SAD保存历史最佳模型到`{save_dir}/best_model`下面，同时会在该目录下生成`best_sad.txt`记录下此时各个指标信息及iter.
 
 `--num_workers` 多进程数据读取，加快数据预处理速度
 
 更多参数信息请运行如下命令进行查看:
 ```shell
-python train.py --help
+python tools/train.py --help
 ```
 如需使用多卡，请用`python -m paddle.distributed.launch`进行启动
 
 ### 评估
 ```shell
 export CUDA_VISIBLE_DEVICES=0
-python val.py \
-       --config configs/modnet/modnet-mobilenetv2.yml \
+python tools/val.py \
+       --config configs/quick_start/modnet-mobilenetv2.yml \
        --model_path output/best_model/model.pdparams \
        --save_dir ./output/results \
        --save_results
@@ -186,41 +192,47 @@ python val.py \
 
 更多参数信息请运行如下命令进行查看:
 ```shell
-python val.py --help
+python tools/val.py --help
 ```
 
 ### 预测
 ```shell
 export CUDA_VISIBLE_DEVICES=0
-python predict.py \
-    --config configs/modnet/modnet-mobilenetv2.yml \
+python tools/predict.py \
+    --config configs/quick_start/modnet-mobilenetv2.yml \
     --model_path output/best_model/model.pdparams \
     --image_path data/PPM-100/val/fg/ \
-    --save_dir ./output/results
+    --save_dir ./output/results \
+    --fg_estimate True
 ```
 如模型需要trimap信息，需要通过`--trimap_path`传入trimap路径。
+
+`--fg_estimate False` 可关闭前景估计功能，可提升预测速度，但图像质量会有所降低
 
 你可以直接下载我们提供的模型进行预测。
 
 更多参数信息请运行如下命令进行查看:
 ```shell
-python predict.py --help
+python tools/predict.py --help
 ```
 
 
 ## 背景替换
 ```shell
 export CUDA_VISIBLE_DEVICES=0
-python bg_replace.py \
-    --config configs/modnet/modnet-mobilenetv2.yml \
+python tools/bg_replace.py \
+    --config configs/quick_start/modnet-mobilenetv2.yml \
     --model_path output/best_model/model.pdparams \
     --image_path path/to/your/image \
     --background path/to/your/background/image \
-    --save_dir ./output/results
+    --save_dir ./output/results \
+    --fg_estimate True
 ```
 如模型需要trimap信息，需要通过`--trimap_path`传入trimap路径。
 
 `--background`可以传入背景图片路劲，或选择（'r','g','b','w')中的一种，代表红，绿，蓝，白背景, 若不提供则采用绿色作为背景。
+
+`--fg_estimate False` 可关闭前景估计功能，可提升预测速度，但图像质量会有所降低
 
 **注意：** `--image_path`必须是一张图片的具体路径。
 
@@ -228,14 +240,14 @@ python bg_replace.py \
 
 更多参数信息请运行如下命令进行查看:
 ```shell
-python bg_replace.py --help
+python tools/bg_replace.py --help
 ```
 
 ## 导出部署
 ### 模型导出
 ```shell
-python export.py \
-    --config configs/modnet/modnet-mobilenetv2.yml \
+python tools/export.py \
+    --config configs/quick_start/modnet-mobilenetv2.yml \
     --model_path output/best_model/model.pdparams \
     --save_dir output/export
 ```
@@ -243,7 +255,7 @@ python export.py \
 
 更多参数信息请运行如下命令进行查看:
 ```shell
-python export.py --help
+python tools/export.py --help
 ```
 
 ### 应用部署
@@ -251,17 +263,19 @@ python export.py --help
 python deploy/python/infer.py \
     --config output/export/deploy.yaml \
     --image_path data/PPM-100/val/fg/ \
-    --save_dir output/results
+    --save_dir output/results \
+    --fg_estimate True
 ```
 如模型需要trimap信息，需要通过`--trimap_path`传入trimap路径。
+
+`--fg_estimate False` 可关闭前景估计功能，可提升预测速度，但图像质量会有所降低
 
 更多参数信息请运行如下命令进行查看:
 ```shell
 python deploy/python/infer.py --help
 ```
 
-## 贡献者
+## 致谢
 
-感谢
-[钱彬(Qianbin)](https://github.com/qianbin1989228)
-等开发者的贡献
+* 感谢[钱彬(Qianbin)](https://github.com/qianbin1989228)等开发者的贡献。
+* 感谢Jizhizi Li等提出的[GFM](https://arxiv.org/abs/2010.16188) Matting框架助力PP-Matting的算法研发。

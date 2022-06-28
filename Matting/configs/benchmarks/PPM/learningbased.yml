@@ -1,0 +1,6 @@
+
+_base_: closeform.yml
+
+model:
+  type: LearningBasedMatting
+

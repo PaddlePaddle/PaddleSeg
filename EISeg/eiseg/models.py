@@ -30,9 +30,6 @@ class EISegModel:
             ValueError(" 模型和参数不匹配，请检查模型和参数是否加载错误")
         if not use_gpu:
             config.enable_mkldnn()
-            # TODO: fluid要废弃了，研究判断方式
-            # if paddle.fluid.core.supports_bfloat16():
-            #     config.enable_mkldnn_bfloat16()
             config.switch_ir_optim(True)
             config.set_cpu_math_library_num_threads(10)
         else:

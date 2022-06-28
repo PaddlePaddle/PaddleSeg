@@ -23,6 +23,16 @@ Linux端基础训练预测功能测试的主程序为`test_train_inference_pytho
 | PFPNNet | PFPNNet | 正常训练 | 正常训练 |  |  |
 | ENet | ENet | 正常训练 | 正常训练 |  |  |
 | FastSCNN | FastSCNN | 正常训练 | 正常训练 |  |  |
+| DDRNet | DDRNet_23 | 正常训练 | 正常训练 |  |  |
+| CCNet | CCNet | 正常训练 | 正常训练 |  |  |
+| PP-LiteSeg | PP-LiteSeg(STDC-1) | 正常训练 | 正常训练 |  |  |
+| PP-LiteSeg | PP-LiteSeg(STDC-2) | 正常训练 | 正常训练 |  |  |
+| GloRe | GloRe | 正常训练 | 正常训练 |  |  |
+| BiSeNetV1 | BiSeNetV1 | 正常训练 | 正常训练 |  |  |
+| UPERNet | UPERNet | 正常训练 | 正常训练 |  |  |
+| HRNetW48Contrast | HRNetW48Contrast | 正常训练 | 正常训练 |  |  |
+| ENCNet | ENCNet | 正常训练 | 正常训练 |  |  |
+| ESPNetV2 | ESPNetV2 | 正常训练 | 正常训练 |  |  |
 
 
 - 预测相关：基于训练是否使用量化，可以将训练产出的模型可以分为`正常模型`和`量化模型`，这两类模型对应的预测功能汇总如下，

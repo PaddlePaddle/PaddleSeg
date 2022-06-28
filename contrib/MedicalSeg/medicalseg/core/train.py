@@ -42,7 +42,10 @@ def train(model,
           losses=None,
           keep_checkpoint_max=5,
           profiler_options=None,
-          to_static_training=False):
+          to_static_training=False,
+          sw_num=None,
+          is_save_data=True,
+          has_dataset_json=True):
     """
     Launch training.
 
@@ -60,10 +63,13 @@ def train(model,
         num_workers (int, optional): Num workers for data loader. Default: 0.
         use_vdl (bool, optional): Whether to record the data to VisualDL during training. Default: False.
         losses (dict, optional): A dict including 'types' and 'coef'. The length of coef should equal to 1 or len(losses['types']).
-            The 'types' item is a list of object of paddleseg.models.losses while the 'coef' item is a list of the relevant coefficient.
+            The 'types' item is a list of object of medseg.models.losses while the 'coef' item is a list of the relevant coefficient.
         keep_checkpoint_max (int, optional): Maximum number of checkpoints to save. Default: 5.
         profiler_options (str, optional): The option of train profiler.
         to_static_training (bool, optional): Whether to use @to_static for training.
+        sw_num:sw batch size.
+        is_save_data:use savedata function
+        has_dataset_json:has dataset_json
     """
     model.train()
     nranks = paddle.distributed.ParallelEnv().nranks
@@ -97,6 +103,8 @@ def train(model,
     if use_vdl:
         from visualdl import LogWriter
         log_writer = LogWriter(save_dir)
+    else:
+        log_writer = None
 
     if to_static_training:
         model = paddle.jit.to_static(model)
@@ -221,7 +229,10 @@ def train(model,
                     writer=log_writer,
                     print_detail=True,
                     auc_roc=False,
-                    save_dir=save_dir)
+                    save_dir=save_dir,
+                    sw_num=sw_num,
+                    is_save_data=is_save_data,
+                    has_dataset_json=has_dataset_json)
 
                 model.train()
 
