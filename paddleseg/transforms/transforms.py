@@ -1068,5 +1068,6 @@ class RandomAffine:
                 matrix,
                 tuple(self.size),
                 flags=cv2.INTER_NEAREST,
-                borderMode=cv2.BORDER_CONSTANT)
+                borderMode=cv2.BORDER_CONSTANT,
+                borderValue=self.label_padding_value)
         return data
