@@ -435,7 +435,6 @@ class Padding:
         self.label_padding_value = label_padding_value
 
     def __call__(self, data):
-
         data['trans_info'].append(('padding', data['img'].shape[0:2]))
         im_height, im_width = data['img'].shape[0], data['img'].shape[1]
         if isinstance(self.target_size, int):
