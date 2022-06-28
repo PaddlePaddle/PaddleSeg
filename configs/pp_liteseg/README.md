@@ -46,9 +46,9 @@ Based on the `train.py` script, we set the config file and start training model.
 
 ```Shell
 export CUDA_VISIBLE_DEVICES=0,1,2,3
-export model=pp_liteseg_stdc1_cityscapes_1024x512_scale0.5_160k
-# export model=pp_liteseg_stdc1_cityscapes_1024x512_scale0.75_160k
-# export model=pp_liteseg_stdc1_cityscapes_1024x512_scale1.0_160k
+export model=pp_liteseg_stdc1_cityscapes_1024x512_scale0.5_160k     # test resolution is 1024*512
+# export model=pp_liteseg_stdc1_cityscapes_1024x512_scale0.75_160k  # test resolution is 1536x768
+# export model=pp_liteseg_stdc1_cityscapes_1024x512_scale1.0_160k   # test resolution is 2048x1024
 # export model=pp_liteseg_stdc2_cityscapes_1024x512_scale0.5_160k
 # export model=pp_liteseg_stdc2_cityscapes_1024x512_scale0.75_160k
 # export model=pp_liteseg_stdc2_cityscapes_1024x512_scale1.0_160k
@@ -63,13 +63,13 @@ python -m paddle.distributed.launch train.py \
     --use_vdl
 ```
 
-The weights are saved in `PaddleSeg/output/xxx/best_model/model.pdparams`.
+After the training, the weights are saved in `PaddleSeg/output/xxx/best_model/model.pdparams`.
 
 Refer to [doc](../../docs/train/train.md) for the detailed usage of training.
 
 ## Evaluation
 
-With the config file and weights, we use the `val.py` script to evaluate the model.
+With the config file and trained weights, we use the `val.py` script to evaluate the model.
 
 Refer to [doc](../../docs/evaluation/evaluate/evaluate.md) for the detailed usage of evalution.
 
@@ -83,20 +83,22 @@ python val.py \
     --num_workers 3
 ```
 
-## Inference
+## Deployment
 
-**Prepare:**
+**Using ONNX+TRT**
+
+Prepare:
 * Install gpu driver, cuda toolkit and cudnn
+* Download TensorRT 7 tar file from [Nvidia](https://developer.nvidia.com/tensorrt). We provide [cuda10.2-cudnn8.0-trt7.1](https://paddle-inference-dist.bj.bcebos.com/tensorrt_test/cuda10.2-cudnn8.0-trt7.1.tgz)
+* Install the TensorRT whl in the tar file, i.e., `pip install TensorRT-7.1.3.4/python/xx.whl`
+* Set Path, i.e., `export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:TensorRT-7.1.3.4/lib`
 * Install Paddle and PaddleSeg ([doc](../../docs/install.md))
-* Download TensorRT 5/7 tar file according the version of cuda
-* Install the TensorRT whl in the tar file, e.g, `pip install TensorRT-7.1.3.4/python/xx.whl`
-* Set Path, e.g, `export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:TensorRT-7.1.3.4/lib`
 * Run `pip install 'pycuda>=2019.1.1'`
 * Run `pip install paddle2onnx onnx onnxruntime`
 
-**Inference:**
 
-We measure the inference speed with [infer_onnx_trt.py](../../deploy/python/infer_onnx_trt.py), which first exports the Paddle model to ONNX and then infers the ONNX model by TRT.
+We measure the inference speed with [infer_onnx_trt.py](../../deploy/python/infer_onnx_trt.py), which first exports the Paddle model as ONNX and then infers the ONNX model by TRT.
+Sometimes, the adaptive average pooling op can not be converted to ONNX. To solve the problem, you can adjust the input shape of the model as a multiple of 128.
 
 ```shell
 python deploy/python/infer_onnx_trt.py \
@@ -106,6 +108,12 @@ python deploy/python/infer_onnx_trt.py \
 ```
 
 Please refer to [infer_onnx_trt.py](../../deploy/python/infer_onnx_trt.py) for the detailed usage.
+
+**Using PaddleInference**
+
+Export the trained model as inference model ([doc](../../docs/model_export.md)).
+
+Use PaddleInference to deploy the inference model on Nvidia GPU and X86 CPU([python api doc](../../docs/deployment/inference/python_inference.md), [cpp api doc](../../docs/deployment/inference/cpp_inference.md)).
 
 ## Performance
 
@@ -121,16 +129,13 @@ Please refer to [infer_onnx_trt.py](../../deploy/python/infer_onnx_trt.py) for t
 |PP-LiteSeg-B|STDC2|160000|1024x512|2048x1024|79.04%|79.52%|79.85%|[config](./pp_liteseg_stdc2_cityscapes_1024x512_scale1.0_160k.yml)\|[model](https://paddleseg.bj.bcebos.com/dygraph/cityscapes/pp_liteseg_stdc2_cityscapes_1024x512_scale1.0_160k/model.pdparams)\|[log](https://paddleseg.bj.bcebos.com/dygraph/cityscapes/pp_liteseg_stdc2_cityscapes_1024x512_scale1.0_160k/train.log)\|[vdl](https://www.paddlepaddle.org.cn/paddle/visualdl/service/app/scalar?id=12fa0144ca6a1541186afd2c53d31bcb)|
 
 Note that:
+* Use [infer_onnx_trt.py](../../deploy/python/infer_onnx_trt.py) to measure the inference speed.
 * The flip denotes flip_horizontal, the ms denotes multi scale, i.e (0.75, 1.0, 1.25) * test_resolution.
 * Simliar to other models in PaddleSeg, the mIoU in above table refer to the evaluation of PP-LiteSeg on Cityscapes validation set.
 * You can download the trained model in above table and use it in evaluation.
 
 
 **The comparisons with state-of-the-art real-time methods on Cityscapes as follows.**
-
-<div align="center">
-<img src="https://user-images.githubusercontent.com/52520497/162148733-70be896a-eadb-4790-94e5-f48dad356b2d.png" width = "500" height = "430" alt="iou_fps"  />
-</div>
 
 <div align="center">
 
@@ -156,6 +161,10 @@ PP-LiteSeg-B1 | STDC2      |  512x1024  | 75.3 | 73.9 | 195.3 |
 PP-LiteSeg-T2 | STDC1      |  768x1536  | 76.0 | 74.9 | 143.6 |
 PP-LiteSeg-B2 | STDC2      |  768x1536  | 78.2 | 77.5 | 102.6|
 
+</div>
+
+<div align="center">
+<img src="https://user-images.githubusercontent.com/52520497/162148733-70be896a-eadb-4790-94e5-f48dad356b2d.png" width = "500" height = "430" alt="iou_fps"  />
 </div>
 
 ### CamVid

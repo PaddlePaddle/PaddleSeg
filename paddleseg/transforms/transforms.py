@@ -1019,7 +1019,7 @@ class RandomAffine:
                  min_scale_factor=0.75,
                  max_scale_factor=1.25,
                  im_padding_value=(128, 128, 128),
-                 label_padding_value=(255, 255, 255)):
+                 label_padding_value=255):
         self.size = size
         self.translation_offset = translation_offset
         self.max_rotation = max_rotation
@@ -1068,5 +1068,6 @@ class RandomAffine:
                 matrix,
                 tuple(self.size),
                 flags=cv2.INTER_NEAREST,
-                borderMode=cv2.BORDER_CONSTANT)
+                borderMode=cv2.BORDER_CONSTANT,
+                borderValue=self.label_padding_value)
         return data

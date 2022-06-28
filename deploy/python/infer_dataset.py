@@ -23,12 +23,13 @@ import numpy as np
 import paddle
 import paddle.nn.functional as F
 
-LOCAL_PATH = os.path.dirname(os.path.abspath(__file__))
-sys.path.append(os.path.join(LOCAL_PATH, '..', '..'))
-
 from paddle.inference import create_predictor, PrecisionType
 from paddle.inference import Config as PredictConfig
 
+LOCAL_PATH = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(os.path.join(LOCAL_PATH, '..', '..'))
+
+import paddleseg
 from paddleseg.cvlibs import manager
 from paddleseg.utils import logger, metrics, progbar
 
@@ -112,6 +113,11 @@ def parse_args():
         type=str,
         default="auto_tune_tmp.pbtxt",
         help='The temp file to save tuned dynamic shape.')
+    parser.add_argument(
+        '--min_subgraph_size',
+        default=3,
+        type=int,
+        help='The min subgraph size in tensorrt prediction.')
 
     parser.add_argument(
         '--cpu_threads',
@@ -167,6 +173,11 @@ def get_dataset(args):
     return dataset
 
 
+def check_shape(shape, args):
+    assert args.resize_height == 0 or shape[2] == args.resize_height
+    assert args.resize_width == 0 or shape[3] == args.resize_width
+
+
 def auto_tune(args, dataset, img_nums):
     """
     Use images to auto tune the dynamic shape for trt sub graph.
@@ -198,6 +209,7 @@ def auto_tune(args, dataset, img_nums):
 
     for idx, (img, _) in enumerate(dataset):
         data = np.array([img])
+        check_shape(data.shape, args)
         input_handle.reshape(data.shape)
         input_handle.copy_from_cpu(data)
         try:
@@ -240,15 +252,16 @@ class DatasetPredictor(Predictor):
 
         for idx, (img, label) in enumerate(dataset):
             data = np.array([img])
+            check_shape(data.shape, args)
             input_handle.reshape(data.shape)
             input_handle.copy_from_cpu(data)
 
             start_time = time.time()
             self.predictor.run()
+            pred = output_handle.copy_to_cpu()
             end_time = time.time()
             total_time += (end_time - start_time)
 
-            pred = output_handle.copy_to_cpu()
             pred = self._postprocess(pred)
             pred = paddle.to_tensor(pred, dtype='int64')
             label = paddle.to_tensor(label, dtype="int32")
@@ -274,13 +287,15 @@ class DatasetPredictor(Predictor):
         class_acc, acc = metrics.accuracy(intersect_area_all, pred_area_all)
         kappa = metrics.kappa(intersect_area_all, pred_area_all, label_area_all)
 
+        logger.info("input width: {}, input height: {}".format(
+            args.resize_width, args.resize_height))
         logger.info(
             "[EVAL] #Images: {} mIoU: {:.4f} Acc: {:.4f} Kappa: {:.4f} ".format(
                 len(dataset), miou, acc, kappa))
         logger.info("[EVAL] Class IoU: \n" + str(np.round(class_iou, 4)))
         logger.info("[EVAL] Class Acc: \n" + str(np.round(class_acc, 4)))
         logger.info("[EVAL] Average time: %.3f ms/img" %
-                    (total_time / len(dataset)) * 1000)
+                    (total_time * 1000.0 / len(dataset)))
 
 
 def main(args):

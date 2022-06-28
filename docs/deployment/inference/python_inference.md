@@ -9,27 +9,7 @@ Paddle provides multiple prediction engine deployment models for different scena
 
 ![inference_ecosystem](https://user-images.githubusercontent.com/52520497/130720374-26947102-93ec-41e2-8207-38081dcc27aa.png)
 
-## 2. Prepare the model and data
-
-Download [sample model](https://paddleseg.bj.bcebos.com/dygraph/demo/bisenet_demo_model.tar.gz) for testing.
-
-If you want to use other models, please refer to [document](../../model_export.md) to export the model, and then test it.
-
-```shell
-wget https://paddleseg.bj.bcebos.com/dygraph/demo/bisenet_demo_model.tar.gz
-tar zxvf bisenet_demo_model.tar.gz
-```
-
-Download a [picture](https://paddleseg.bj.bcebos.com/dygraph/demo/cityscapes_demo.png) of cityscapes to test.
-
-If the model is trained using other dataset, please prepare test images by yourself.
-
-```
-wget https://paddleseg.bj.bcebos.com/dygraph/demo/cityscapes_demo.png
-```
-
-## 3. Prepare the deployment environment
-
+## 2. Prepare the deployment environment
 
 Paddle Inference is the native inference library of Paddle, which provides server-side deployment model. Using the Python interface to deploy Paddle Inference model, you need to install PaddlePaddle according to the deployment situation. That is, the Python interface of Paddle Inference is integrated in PaddlePaddle.
 
@@ -68,15 +48,34 @@ wget https://paddle-inference-dist.bj.bcebos.com/tensorrt_test/cuda10.2-cudnn8.0
 
 Download and decompress the TensorRT library, and add the path of the TensorRT library to LD_LIBRARY_PATH, `export LD_LIBRARY_PATH=/path/to/tensorrt/:${LD_LIBRARY_PATH}`
 
+## 3. Prepare the model and data
+
+Download [sample model](https://paddleseg.bj.bcebos.com/dygraph/demo/pp_liteseg_infer_model.tar.gz) for testing.
+If you want to use other models, please refer to [document](../../model_export.md) to export the model, and then test it.
+
+```shell
+# In the root of PaddleSeg
+cd PaddleSeg
+wget https://paddleseg.bj.bcebos.com/dygraph/demo/pp_liteseg_infer_model.tar.gz
+tar zxvf pp_liteseg_infer_model.tar.gz
+```
+
+Download a [picture](https://paddleseg.bj.bcebos.com/dygraph/demo/cityscapes_demo.png) of cityscapes to test.
+If the model is trained using other dataset, please prepare test images by yourself.
+
+```
+wget https://paddleseg.bj.bcebos.com/dygraph/demo/cityscapes_demo.png
+```
+
 
 ## 4. Inference
 
-In the root directory of PaddleSeg, execute the following command to predict:
+In the root directory of PaddleSeg, execute the following command to predict. Then, the result is saved in `output/cityscapes_demo.png`.
 
 ```shell
 python deploy/python/infer.py \
-    --config /path/to/model/deploy.yaml \
-    --image_path /path/to/image/path/or/dir
+    --config ./pp_liteseg_infer_model/deploy.yaml \
+    --image_path ./cityscapes_demo.png
 ```
 
 **The parameter description is as follows:**
@@ -88,7 +87,8 @@ python deploy/python/infer.py \
 |save_dir|Path to save result|No|output|
 |device|Inference device, options are'cpu','gpu'|No|'gpu'|
 |use_trt|Whether to enable TensorRT to accelerate prediction \(when device=gpu, this parameter takes effect\)|No|False|
-|precision|The precision when enable TensorRT, the options are'fp32','fp16','int8' \(when device=gpu, this parameter takes effect\)|No|'fp32'|
+|precision|The precision when enable TensorRT, the options are'fp32','fp16','int8' \(when device=gpu, use_trt=True this parameter takes effect\)|No|'fp32'|
+|min_subgraph_size|Set the min size of trt subgraph \(when device=gpu, use_trt=True this parameter takes effect\)|No|3|
 |enable_auto_tune|When Auto Tune is turned on, part of the test data will be collected dynamic shapes offline for TRT deployment \(this parameter take effect when device=gpu, use_trt=True, and paddle version>=2.2\)|No| False |
 |cpu_threads|The number of cpu threads \(when device=cpu, this parameter takes effect\)|No|10|
 |enable_mkldnn|whether to use MKL-DNN to accelerate cpu prediction \(when device=cpu, this parameter takes effect\)|No|False|

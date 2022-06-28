@@ -2,6 +2,9 @@
 
 # Benchmark说明
 
+`PaddleSeg/benchmark`用于监控模型训练的速度。
+
+
 目录结构如下：
 ```
 ├── README.md  

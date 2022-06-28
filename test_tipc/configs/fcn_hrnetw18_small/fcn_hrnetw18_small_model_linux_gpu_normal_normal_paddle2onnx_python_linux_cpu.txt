@@ -1,0 +1,13 @@
+===========================paddle2onnx_params===========================
+model_name:fcn_hrnetw18_small
+python:python3.7
+2onnx: paddle2onnx
+--model_dir:./test_tipc/infer_models/pp_humanseg_mobile_export_192x192/
+--model_filename:model.pdmodel
+--params_filename:model.pdiparams
+--save_file:./test_tipc/infer_models/pp_humanseg_mobile_export_192x192/model.onnx
+--opset_version:11
+--enable_onnx_checker:True
+inference:deploy/python/infer_onnx.py
+--onnx_file:./test_tipc/infer_models/pp_humanseg_mobile_export_192x192/model.onnx
+--img_path:test_tipc/cpp/humanseg_demo.jpg

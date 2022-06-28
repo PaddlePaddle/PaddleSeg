@@ -1110,8 +1110,8 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
             image = cv2.imdecode(np.fromfile(path, dtype=np.uint8), 1)
             image = image[:, :, ::-1]  # BGR转RGB
             if checkOpenGrid(image, self.thumbnail_min):
-                self.loadGrid(image, False)
-                image, _ = self.grid.getGrid(0, 0)
+                if self.loadGrid(image, False):
+                    image, _ = self.grid.getGrid(0, 0)
 
         # 医学影像
         if path.lower().endswith(tuple(self.formats[1])):
@@ -1147,13 +1147,17 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
                 if not self.dockStatus[4]:
                     return False
             self.raster = Raster(path)
-            if self.raster.checkOpenGrid(self.thumbnail_min):
-                self.loadGrid(self.raster)
-            self.edtGeoinfo.setText(self.raster.showGeoInfo())
             if max(self.rsRGB) > self.raster.geoinfo.count:
                 self.rsRGB = [1, 1, 1]
             self.raster.setBand(self.rsRGB)
-            image, _ = self.raster.getGrid(0, 0)
+            self.edtGeoinfo.setText(self.raster.showGeoInfo())
+            if self.raster.checkOpenGrid(self.thumbnail_min):
+                if self.loadGrid(self.raster):
+                    image, _ = self.raster.getGrid(0, 0)
+                else:
+                    image, _ = self.raster.getArray()
+            else:
+                image, _ = self.raster.getArray()
             self.updateBandList()
             # self.updateSlideSld(True)
         else:
@@ -1775,6 +1779,8 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
     #             w.hide()
 
     def rsBandSet(self, idx):
+        if self.raster is None:
+            return
         for i in range(len(self.bandCombos)):
             self.rsRGB[i] = self.bandCombos[i].currentIndex() + 1  # 从1开始
         self.raster.setBand(self.rsRGB)
@@ -2056,15 +2062,19 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
             self._anning = False
 
     def loadGrid(self, img, is_rs=True):
-        self.warn(self.tr("图像过大"), self.tr("图像过大，将启用宫格功能！"))
-        # 打开宫格功能
-        if self.dockWidgets["grid"].isVisible() is False:
-            # TODO: 改成self.dockStatus
-            self.menus.showMenu[-1].setChecked(True)
-            # self.display_dockwidget[-1] = True
-            self.dockWidgets["grid"].show()
-        self.grid = RSGrids(img) if is_rs else Grids(img)
-        self.initGrid()
+        res = self.warn(self.tr("图像过大"), self.tr("图像过大，是否启用宫格功能？"), \
+                        buttons=QMessageBox.Yes | QMessageBox.No)
+        if res == QMessageBox.Yes:
+            # 打开宫格功能
+            if self.dockWidgets["grid"].isVisible() is False:
+                # TODO: 改成self.dockStatus
+                self.menus.showMenu[-1].setChecked(True)
+                # self.display_dockwidget[-1] = True
+                self.dockWidgets["grid"].show()
+            self.grid = RSGrids(img) if is_rs else Grids(img)
+            self.initGrid()
+            return True
+        return False
 
     # 界面布局
     def loadLayout(self):

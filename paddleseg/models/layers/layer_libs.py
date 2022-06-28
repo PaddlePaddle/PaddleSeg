@@ -324,3 +324,29 @@ class ConvBNPReLU(nn.Layer):
         x = self._batch_norm(x)
         x = self._prelu(x)
         return x
+
+
+class ConvBNLeakyReLU(nn.Layer):
+    def __init__(self,
+                 in_channels,
+                 out_channels,
+                 kernel_size,
+                 padding='same',
+                 **kwargs):
+        super().__init__()
+
+        self._conv = nn.Conv2D(
+            in_channels, out_channels, kernel_size, padding=padding, **kwargs)
+
+        if 'data_format' in kwargs:
+            data_format = kwargs['data_format']
+        else:
+            data_format = 'NCHW'
+        self._batch_norm = SyncBatchNorm(out_channels, data_format=data_format)
+        self._relu = layers.Activation("leakyrelu")
+
+    def forward(self, x):
+        x = self._conv(x)
+        x = self._batch_norm(x)
+        x = self._relu(x)
+        return x
