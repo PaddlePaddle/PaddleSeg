@@ -65,6 +65,11 @@ PaddleSeg is an end-to-end high-efficent development toolkit for image segmentat
 
 * <img src="./docs/images/f3.png" width="20"/> **High Efficiency**: PaddleSeg provides multi-process asynchronous I/O, multi-card parallel training, evaluation, and other acceleration strategies, combined with the memory optimization function of the PaddlePaddle, which can greatly reduce the training overhead of the segmentation model, all this allowing developers to lower cost and more efficiently train image segmentation model.
 
+<div align="center">
+<img src="https://user-images.githubusercontent.com/14087480/176402154-390e5815-1a87-41be-9374-9139c632eb66.png" width = "2000" />  
+</div>
+
+---
 
 
 ## Overview <img src="./docs/images/model.png" width="20"/>
@@ -258,6 +263,7 @@ PaddleSeg is an end-to-end high-efficent development toolkit for image segmentat
   </tbody>
 </table>
 
+---
 ## Model Zoo
 
 The relationship between mIoU and FLOPs of representative architectures and backbones. See [Model Zoo Overview](./docs/model_zoo_overview.md) for more details.
