@@ -29,6 +29,7 @@
 * [2021-10-11] PaddleSeg 2.3版本发布交互式分割工具EISeg v0.3，开源两种[Matting](./contrib/Matting)算法，以及分割高阶功能[模型蒸馏](./slim/distill)和[模型量化](./slim/quant)方案。
 
 
+
 ## 简介
 PaddleSeg是基于飞桨PaddlePaddle开发的端到端图像分割开发套件，涵盖了**高精度**和**轻量级**等不同方向的大量高质量分割模型。通过模块化的设计，提供了**配置化驱动**和**API调用**两种应用方式，帮助开发者更便捷地完成从训练到部署的全流程图像分割应用。
 
@@ -55,9 +56,13 @@ PaddleSeg是基于飞桨PaddlePaddle开发的端到端图像分割开发套件�
 
 * <img src="./docs/images/f1.png" width="20"/> **高精度模型**：基于半监督标签知识蒸馏方案([SSLD](https://paddleclas.readthedocs.io/zh_CN/latest/advanced_tutorials/distillation/distillation.html#ssld))训练得到高精度骨干网络，结合前沿的分割技术，提供了80+的高质量预训练模型，效果优于其他开源实现。
 
-* <img src="./docs/images/f2.png" width="20"/> **模块化设计**：支持40+主流 *分割网络* ，结合模块化设计的 *数据增强策略* 、*骨干网络*、*损失函数* 等不同组件，开发者可以基于实际应用场景出发，组装多样化的训练配置，满足不同性能和精度的要求。
+* <img src="./docs/images/f2.png" width="20"/> **模块化设计**：支持40+主流分割网络 ，结合模块化设计的数据增强策略 、骨干网络、损失函数等不同组件，开发者可以基于实际应用场景出发，组装多样化的训练配置，满足不同性能和精度的要求。
 
 * <img src="./docs/images/f3.png" width="20"/> **高性能**：支持多进程异步I/O、多卡并行训练、评估等加速策略，结合飞桨核心框架的显存优化功能，可大幅度减少分割模型的训练开销，让开发者更低成本、更高效地完成图像分割训练。
+
+<div align="center">
+<img src="https://user-images.githubusercontent.com/14087480/176379006-7f330e00-b6b0-480e-9df8-8fd1090da4cf.png" width = "2000" />  
+</div>
 
 ----------
 
