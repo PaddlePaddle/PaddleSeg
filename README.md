@@ -18,7 +18,7 @@ English | [简体中文](README_CN.md)
 
 
 
-## News <img src="./docs/images/seg_news_icon.png" width="40"/>
+## <img src="./docs/images/seg_news_icon.png" width="20"/> News
 <ul class="nobull">
   <li>[2022-04-20] :fire: PaddleSeg v2.5 is released! More details in <a href="https://github.com/PaddlePaddle/PaddleSeg/releases">Release Notes</a>.</li>
     <ul>
@@ -34,45 +34,46 @@ English | [简体中文](README_CN.md)
 </ul>
 
 
-## Introduction
+## <img src="https://user-images.githubusercontent.com/48054808/157795569-9fc77c85-732f-4870-9be0-99a7fe2cff27.png" width="20"/> Introduction
 
 PaddleSeg is an end-to-end high-efficent development toolkit for image segmentation based on PaddlePaddle, which  helps both developers and researchers in the whole process of designing segmentation models, training models, optimizing performance and inference speed, and deploying models. A lot of well-trained models and various real-world applications in both industry and academia help users conveniently build hands-on experiences in image segmentation.
 
-* #### Four segmentation areas: semantic segmentation, interactive segmentation, panoptic segmentation and image matting.
-
 <div align="center">
-<img src="https://user-images.githubusercontent.com/53808988/130562378-64d0c84a-9c3f-4ae4-93f7-bdc0c8e0238e.gif"  width = "2000" />  
+<img src="https://user-images.githubusercontent.com/53808988/130562378-64d0c84a-9c3f-4ae4-93f7-bdc0c8e0238e.gif"  width = "800" />  
 </div>
 
 
----------------
-
- * #### Various applications in autonomous driving, medical segmentation, remote sensing, quality inspection, and other scenarios.
-
 <div align="center">
-<img src="https://user-images.githubusercontent.com/53808988/130562234-bdf79d76-8566-4e06-a3a9-db7719e63385.gif"  width = "2000" />  
+<img src="https://user-images.githubusercontent.com/53808988/130562234-bdf79d76-8566-4e06-a3a9-db7719e63385.gif"  width = "800" />  
 </div>
 
 
----------------
 
+## <img src="./docs/images/feature.png" width="20"/> Features
 
-## Features
+* **High-Performance Model**: Following the state of the art segmentation methods and use the high-performance backbone trained by semi-supervised label knowledge distillation scheme ([SSLD]((https://paddleclas.readthedocs.io/zh_CN/latest/advanced_tutorials/distillation/distillation.html#ssld))), we provide 40+ models and 140+ high-quality pre-training models, which are better than other open-source implementations.
 
-* <img src="./docs/images/f1.png" width="20"/> **High-Performance Model**: Based on the high-performance backbone trained by semi-supervised label knowledge distillation scheme ([SSLD]((https://paddleclas.readthedocs.io/zh_CN/latest/advanced_tutorials/distillation/distillation.html#ssld))), combined with the state of the art segmentation technology, we provide 80+ high-quality pre-training models, which are better than other open-source implementations.
+* **High Efficiency**: PaddleSeg provides multi-process asynchronous I/O, multi-card parallel training, evaluation, and other acceleration strategies, combined with the memory optimization function of the PaddlePaddle, which can greatly reduce the training overhead of the segmentation model, all this allowing developers to lower cost and more efficiently train image segmentation model.
 
-* <img src="./docs/images/f2.png" width="20"/> **Modular Design**: PaddleSeg supports 40+ mainstream *segmentation networks*, developers can start based on actual application scenarios and assemble diversified training configurations combined with modular design of *data enhancement strategies*, *backbone networks*, *loss functions* and other different components to meet different performance and accuracy requirements.
+* **Modular Design**: We desigin PaddleSeg with the modular design philosophy. Therefore, based on actual application scenarios, developers can assemble diversified training configurations with *data enhancement strategies*, *segmentation models*, *backbone networks*, *loss functions* and other different components to meet different performance and accuracy requirements.
 
-* <img src="./docs/images/f3.png" width="20"/> **High Efficiency**: PaddleSeg provides multi-process asynchronous I/O, multi-card parallel training, evaluation, and other acceleration strategies, combined with the memory optimization function of the PaddlePaddle, which can greatly reduce the training overhead of the segmentation model, all this allowing developers to lower cost and more efficiently train image segmentation model.
+* **Complete Flow**: PaddleSeg support image labeling, model designing, model training, model compression and model deployment. With the help of PaddleSeg, developers can easily finish all taskes.
 
 <div align="center">
-<img src="https://user-images.githubusercontent.com/14087480/176402154-390e5815-1a87-41be-9374-9139c632eb66.png" width = "2000" />  
+<img src="https://user-images.githubusercontent.com/14087480/176402154-390e5815-1a87-41be-9374-9139c632eb66.png" width = "800" />  
 </div>
 
----
+## <img src="./docs/images/chat.png" width="20"/> Community
+
+* If you have any questions, suggestions and feature requests, please create an issues in [GitHub Issues](https://github.com/PaddlePaddle/PaddleSeg/issues).
+* Welcome to scan the following QR code and join paddleseg wechat group to communicate with us.
+
+<div align="center">
+<img src="https://user-images.githubusercontent.com/48433081/163670184-43cfb3ae-2047-4ba3-8dae-6c02090dd177.png"  width = "200" />  
+</div>
 
 
-## Overview <img src="./docs/images/model.png" width="20"/>
+## <img src="./docs/images/model.png" width="20"/> Overview
 
 <table align="center">
   <tbody>
@@ -84,71 +85,101 @@ PaddleSeg is an end-to-end high-efficent development toolkit for image segmentat
         <b>Components</b>
       </td>
       <td>
-        <b>Projects</b>
+        <b>Special Case</b>
       </td>
     </tr>
     <tr valign="top">
       <td>
+        <ul>
+        <details><summary><b>Semantic Segmentation</b></summary>
+          <ul>
+            <li>PP-LiteSeg :star:</li>
+            <li>DeepLabV3P :star: </li>
+            <li>OCRNet :star: </li>
+            <li>MobileSeg :star: </li>
             <li>ANN</li>
+            <li>Att U-Net</li>
+            <li>BiSeNetV1</li>
             <li>BiSeNetV2</li>
+            <li>CCNet</li>
             <li>DANet</li>
+            <li>DDRNet</li>
+            <li>DecoupledSeg</li>
             <li>DeepLabV3</li>
-            <li>DeepLabV3P</li>
+            <li>DMNet</li>
+            <li>DNLNet</li>
+            <li>ESPNetV1</li>
+            <li>ESPNetV2</li>
+            <li>EMANet</li>
+            <li>ENet</li>
+            <li>ENCNet</li>
+            <li>FastFCN</li>
             <li>Fast-SCNN</li>
-            <li>HRNet-FCN</li>
             <li>GCNet</li>
             <li>GSCNN</li>
+            <li>GINet</li>
+            <li>GloRe</li>
             <li>HarDNet</li>
-            <li>OCRNet</li>
-            <li>PSPNet</li>
-            <li>U-Net</li>
-            <li>U<sup>2</sup>-Net</li>
-            <li>Att U-Net</li>
-            <li>U-Net++</li>
-            <li>U-Net3+</li>
-            <li>DecoupledSeg</li>
-            <li>EMANet</li>
+            <li>HRNet-FCN</li>
+            <li>HRNet-Contrast</li>
             <li>ISANet</li>
-            <li>DNLNet</li>
-            <li>SFNet</li>
+            <li>MLA Transformer</li>
+            <li>PSPNet</li>
             <li>PP-HumanSeg</li>
             <li>PortraitNet</li>
-            <li>STDC</li>
-            <li>GINet</li>
             <li>PointRend</li>
-            <li>SegNet</li>
-            <li>ESPNetV2</li>
-            <li>HRNet-Contrast</li>
-            <li>DMNet</li>
-            <li>ESPNetV1</li>
-            <li>ENCNet</li>
             <li>PFPNNet</li>
-            <li>FastFCN</li>
-            <li>BiSeNetV1</li>
+            <li>SegNet</li>
+            <li>STDCSeg</li>
+            <li>SFNet</li>
             <li>SETR</li>
-            <li>MLA Transformer</li>
             <li>SegFormer</li>
             <li>SegMenter</li>
-            <li>ENet</li>
-            <li>CCNet</li>
-            <li>DDRNet</li>
-            <li>GloRe</li>
-            <li>PP-LiteSeg :star:</li>
+            <li>U-Net</li>
+            <li>U<sup>2</sup>-Net</li>
+            <li>U-Net++</li>
+            <li>U-Net3+</li>
+          </ul>
+        </details>
+        <details><summary><b>Interactive Segmentation</b></summary>
+          <ul>
+            <li>EISeg</li>
+            <li>RITM</li>
+            <li>EdgeFlow</li>
+          </ul>
+        </details>
+        <details><summary><b>Image Matting</b></summary>
+          <ul>
+              <li>PP-Matting</li>
+              <li>DIM</li>
+              <li>MODNet</li>
+              <li>PP-HumanMatting</li>
+          </ul>
+        </details>
+        <details><summary><b>Panoptic Segmentation</b></summary>
+          <ul>
+            <li>Panoptic-DeepLab</li>
+          </ul>
+        </details>
       </td>
       <td>
-        <b>Backbones</b><br>
+        <details><summary><b>Backbone</b></summary>
           <ul>
             <li>HRNet</li>
-            <li>MobileNetV2</li>
-            <li>MobileNetV3</li>
             <li>ResNet</li>
             <li>STDCNet</li>
+            <li>MobileNetV2</li>
+            <li>MobileNetV3</li>
+            <li>ShuffleNetV2</li>
+            <li>GhostNet</li>
+            <li>LiteHRNet</li>
             <li>XCeption</li>
             <li>VIT</li>
             <li>MixVIT</li>
             <li>Swin Transformer</li>
-          </ul>  
-        <b>Losses</b><br>
+          </ul>
+        </details>
+        <details><summary><b>Loss</b></summary>
           <ul>
             <li>Cross Entropy</li>
             <li>Binary CE</li>
@@ -168,7 +199,8 @@ PaddleSeg is an end-to-end high-efficent development toolkit for image segmentat
             <li>Connectivity</li>
             <li>MultiClassFocal</li>
           </ul>
-        <b>Metrics</b><br>
+        </details>
+        <details><summary><b>Metrics</b></summary>
           <ul>
             <li>mIoU</li>
             <li>Accuracy</li>
@@ -176,9 +208,10 @@ PaddleSeg is an end-to-end high-efficent development toolkit for image segmentat
             <li>Dice</li>
             <li>AUC_ROC</li>
           </ul>  
+        </details>
       </td>
       <td>
-        <b>Datasets</b><br>
+        <details><summary><b>Dataset</b></summary>
           <ul>
             <li>Cityscapes</li>
             <li>Pascal VOC</li>
@@ -193,96 +226,146 @@ PaddleSeg is an end-to-end high-efficent development toolkit for image segmentat
             <li>STARE</li>
             <li>PP-HumanSeg14K</li>
           </ul>
-        <b>Data Augmentation</b><br>
-        <ul>
-          <li>Flipping</li>  
-          <li>Resize</li>  
-          <li>ResizeByLong</li>
-          <li>ResizeByShort</li>
-          <li>LimitLong</li>  
-          <li>ResizeRangeScaling</li>  
-          <li>ResizeStepScaling</li>
-          <li>Normalize</li>
-          <li>Padding</li>
-          <li>PaddingByAspectRatio</li>
-          <li>RandomPaddingCrop</li>  
-          <li>RandomCenterCrop</li>
-          <li>ScalePadding</li>
-          <li>RandomNoise</li>  
-          <li>RandomBlur</li>  
-          <li>RandomRotation</li>  
-          <li>RandomScaleAspect</li>  
-          <li>RandomDistort</li>  
-          <li>RandomAffine</li>  
-        </ul>  
+        </details>
+        <details><summary><b>Data Augmentation</b></summary>
+          <ul>
+            <li>Flipping</li>  
+            <li>Resize</li>  
+            <li>ResizeByLong</li>
+            <li>ResizeByShort</li>
+            <li>LimitLong</li>  
+            <li>ResizeRangeScaling</li>  
+            <li>ResizeStepScaling</li>
+            <li>Normalize</li>
+            <li>Padding</li>
+            <li>PaddingByAspectRatio</li>
+            <li>RandomPaddingCrop</li>  
+            <li>RandomCenterCrop</li>
+            <li>ScalePadding</li>
+            <li>RandomNoise</li>  
+            <li>RandomBlur</li>  
+            <li>RandomRotation</li>  
+            <li>RandomScaleAspect</li>  
+            <li>RandomDistort</li>  
+            <li>RandomAffine</li>  
+          </ul>
+        </details>
       </td>
       <td>
-        <b>Interactive Segmentation</b><br>
+        <details><summary><b>Human Segmentation</b></summary>
           <ul>
-            <li>EISeg</li>
-            <li>RITM</li>
-            <li>EdgeFlow</li>
-           </ul>
-       <b>Image Matting</b><br>
-        <ul>
-            <li>PP-Matting</li>
-            <li>DIM</li>
-            <li>MODNet</li>
-            <li>PP-HumanMatting</li>
-        </ul>
-        <b>Human Segmentation</b><br>
-        <ul>
-            <li>PP-HumanSeg</li>
-        </ul>
-        <b>3D Medical Segmentation</b><br>
-        <ul>
-          <li>VNet</li>
-        </ul>
-        <b>Cityscapes SOTA</b><br>
-        <ul>
-            <li>HMSA</li>
-        </ul>
-        <b>Panoptic Segmentation</b><br>
-          <ul>
-            <li>Panoptic-DeepLab</li>
+              <li>PP-HumanSeg</li>
           </ul>
-        <b>CVPR Champion</b><br>
-        <ul>
-            <li>MLA Transformer</li>
-        </ul>
-        <b>Domain Adaption</b><br>
-        <ul>
-            <li>PixMatch</li>
-        </ul>
+        </details>
+        <details><summary><b>3D Medical Segmentation</b></summary>
+          <ul>
+            <li>VNet</li>
+          </ul>
+        </details>
+        <details><summary><b>Cityscapes SOTA Model</b></summary>
+          <ul>
+              <li>HMSA</li>
+          </ul>
+        </details>
+        <details><summary><b>CVPR Champion Model</b></summary>
+          <ul>
+              <li>MLA Transformer</li>
+          </ul>
+        </details>
+        <details><summary><b>Domain Adaptation</b></summary>
+          <ul>
+              <li>PixMatch</li>
+          </ul>
+        </details>
       </td>  
     </tr>
-
-
 </td>
     </tr>
   </tbody>
 </table>
 
----
-## Model Zoo
 
-The relationship between mIoU and FLOPs of representative architectures and backbones. See [Model Zoo Overview](./docs/model_zoo_overview.md) for more details.
+## <img src="https://user-images.githubusercontent.com/48054808/157801371-9a9a8c65-1690-4123-985a-e0559a7f9494.png" width="20"/> Industrial Segmentation Models
 
-<div align="center">
-<img src=https://user-images.githubusercontent.com/30695251/140323107-02ce9de4-c8f4-4f18-88b2-59bd0055a70b.png   />  
-</div>
+<details>
+<summary><b>High Accuracy Semantic Segmentation Models</b></summary>
+
+#### These models have good performance and costly inference time, so they are designed for GPU and Jetson devices.
+
+| Model    | Backbone | Cityscapes mIoU(%)    |  V100 TRT Inference Speed(FPS)  |  Config File |
+|:-------- |:--------:|:---------------------:|:-------------------------------:|:------------:|
+| FCN            | HRNet_W18        | 78.97                 | 24.43     | [yml](./configs/fcn/)         |
+| FCN            | HRNet_W48        | 80.70                 | 10.16     | [yml](./configs/fcn/)         |
+| DeepLabV3      | ResNet50_OS8     | 79.90                 | 4.56      | [yml](./configs/deeplabv3/)   |
+| DeepLabV3      | ResNet101_OS8    | 80.85                 | 3.2       | [yml](./configs/deeplabv3/)   |
+| DeepLabV3      | ResNet50_OS8     | 80.36                 | 6.58      | [yml](./configs/deeplabv3p/)  |
+| DeepLabV3      | ResNet101_OS8    | 81.10                 | *3.94*    | [yml](./configs/deeplabv3p/)  |
+| **OCRNet**     | HRNet_w18        | 80.67                 | 13.26     | [yml](./configs/ocrnet/)      |
+| OCRNet         | HRNet_w48        | 82.15                 | 6.17      | [yml](./configs/ocrnet/)      |
+| CCNet          | ResNet101_OS8    | 80.95                 | 3.24      | [yml](./configs/ccnet/)       |
+
+Note that:
+* Test the inference speed on Nvidia GPU V100: use PaddleInference Python API, enable TensorRT, the data type is FP32, the dimension of input is 1x3x1024x2048.
+
+</details>
 
 
+<details>
+<summary><b>Lightweight Semantic Segmentation Models</b></summary>
 
-## Tutorials <img src="./docs/images/teach.png" width="30"/>
+#### The segmentation accuracy and inference speed of these models are medium. They can be deployed on GPU, X86 CPU and ARM CPU.
 
-* [Installation Guide](./docs/install.md)
-* [Quick Start](./docs/whole_process.md)
+| Model    | Backbone | Cityscapes mIoU(%)    |  V100 TRT Inference Speed(FPS)  | Snapdragon 855 Inference Speed(FPS) | Config File |
+|:-------- |:--------:|:---------------------:|:-------------------------------:|:-----------------:|:--------:|
+| **PP-LiteSeg**      | STDC1         | 77.04               | 69.82           | 17.22       | [yml](./configs/pp_liteseg/)  |
+| **PP-LiteSeg**      | STDC2         | 79.04               | 54.53           | 11.75       | [yml](./configs/pp_liteseg/)  |
+| BiSeNetV1           | -             | 75.19               | 14.67           | 1.53      |[yml](./configs/bisenetv1/)  |
+| BiSeNetV2           | -             | 73.19               | 61.83           | 13.67       |[yml](./configs/bisenet/)  |
+| STDCSeg             | STDC1         | 74.74               | 62.24           | 14.51       |[yml](./configs/stdcseg/)  |
+| STDCSeg             | STDC2         | 77.60               | 51.15           | 10.95       |[yml](./configs/stdcseg/)  |
+| DDRNet_23           | -             | 79.85               | 42.64           | 7.68      |[yml](./configs/ddrnet/)  |
+| HarDNet             | -             | 79.03               | 30.3            | 5.44      |[yml](./configs/hardnet/)  |
+| SFNet               | ResNet18_OS8  |  78.72              | *10.72*         |   -         | [yml](./configs/sfnet/)  |
+
+Note that:
+* Test the inference speed on Nvidia GPU V100: use PaddleInference Python API, enable TensorRT, the data type is FP32, the dimension of input is 1x3x1024x2048.
+* Test the inference speed on Snapdragon 855: use PaddleLite CPP API, 1 thread, the dimension of input is 1x3x256x256.
+
+</details>
+
+
+<details>
+<summary><b>Super Lightweight Semantic Segmentation Models</b></summary>
+
+#### These super lightweight semantic segmentation models are designed for X86 CPU and ARM CPU.
+
+| Model    | Backbone | Cityscapes mIoU(%)    |  V100 TRT Inference Speed(FPS)  | Snapdragon 855 Inference Speed(FPS) | Config File |
+|:-------- |:--------:|:---------------------:|:-------------------------------:|:-----------------------------------:|:-----------:|
+| MobileSeg      | MobileNetV2              | 73.94                 | 67.57          | 27.01   | [yml](./configs/mobileseg/)  |
+| **MobileSeg**  | MobileNetV3              | 73.47                 | 67.39          | 32.90   | [yml](./configs/mobileseg/)  |
+| MobileSeg      | Lite_HRNet_18            | 70.75                 | *10.5*         | 13.05   | [yml](./configs/mobileseg/)  |
+| MobileSeg      | ShuffleNetV2_x1_0        | 69.46                 | *37.09*        | 39.61  | [yml](./configs/mobileseg/)  |
+| MobileSeg      | GhostNet_x1_0            | 71.88                 | *35.58*        | 38.74  | [yml](./configs/mobileseg/)  |
+
+Note that:
+* Test the inference speed on Nvidia GPU V100: use PaddleInference Python API, enable TensorRT, the data type is FP32, the dimension of input is 1x3x1024x2048.
+* Test the inference speed on Snapdragon 855: use PaddleLite CPP API, 1 thread, the dimension of input is 1x3x256x256.
+
+</details>
+
+
+## <img src="./docs/images/teach.png" width="20"/> Tutorials
+
+### Basic Tutorials
+
+* [Installation](./docs/install.md)
+* [Quick Start](./docs/quick_start.md)
 
 *  Data Preparation
    * [Annotated Data Preparation](./docs/data/marker/marker.md)
    * [Annotation Tutorial](./docs/data/transform/transform.md)
    * [Custom Dataset](./docs/data/custom/data_prepare.md)
+* [Config Preparation](./docs/prepare_cfg.md)
 
 * [Model Training](/docs/train/train.md)
 * [Model Evaluation](./docs/evaluation/evaluate/evaluate.md)
@@ -299,6 +382,8 @@ The relationship between mIoU and FLOPs of representative architectures and back
     * [Paddle Serving](./docs/deployment/serving/serving.md)
     * [Paddle JS](./docs/deployment/web/web.md)
     * [Benchmark](./docs/deployment/inference/infer_benchmark.md)
+
+### Advanced Tutorials
 
 *  Model Compression
     * [Quantization](./docs/slim/quant/quant.md)
@@ -331,15 +416,6 @@ The relationship between mIoU and FLOPs of representative architectures and back
   * [Panoptic Segmentation](./contrib/PanopticDeepLab)
   * [CVPR Champion Solution](./contrib/AutoNUE)
   * [Domain Adaptation](./contrib/DomainAdaptation)
-
-
-## Community <img src="./docs/images/chat.png" width="30"/>
-
-* If you have any problem or suggestion on PaddleSeg, please send us issues through [GitHub Issues](https://github.com/PaddlePaddle/PaddleSeg/issues).
-* Welcome to Join PaddleSeg WeChat Group
-<div align="center">
-<img src="https://user-images.githubusercontent.com/48433081/163670184-43cfb3ae-2047-4ba3-8dae-6c02090dd177.png"  width = "200" />  
-</div>
 
 ## License
 
