@@ -1,0 +1,10 @@
+_base_: 'mri_spine_seg_1e-2_big_rmresizecrop_class20.yml'
+
+model:
+  type: VNet
+  elu: False
+  in_channels: 1
+  num_classes: 20
+  pretrained: null
+  kernel_size: [[2,2,4], [2,2,2], [2,2,2], [2,2,2]]
+  stride_size: [[2,2,1], [2,2,1], [2,2,2], [2,2,2]]

@@ -187,11 +187,11 @@ def main(args):
 
     skip_quant(model)
     quantizer = QAT(config=quant_config)
-    quant_model = quantizer.quantize(model)
+    quantizer.quantize(model)
     logger.info('Quantize the model successfully')
 
     train(
-        quant_model,
+        model,
         train_dataset,
         val_dataset=val_dataset,
         optimizer=cfg.optimizer,

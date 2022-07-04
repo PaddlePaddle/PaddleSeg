@@ -1,65 +1,91 @@
-English|[简体中文](install_cn.md)
-# Instruction of Installation
+English | [简体中文](install_cn.md)
 
 
 ## Environment Requirements
 
-- PaddlePaddle 2.1 (Get API support)
-- OS: 64-bit（Going to run 64-bit programs）
+- PaddlePaddle (the version >= 2.2)
+- OS: 64-bit
 - Python 3(3.5.1+/3.6/3.7/3.8/3.9)，64-bit version
-- pip/pip3(9.0.1+)，64-bit version （Get environment support）
-- CUDA >= 10.1 （NVIDIA GPU Parallel Computing Framework）
-- cuDNN >= 7.6 （NVIDIA GPU acceleration library）
+- pip/pip3(9.0.1+)，64-bit version
+- CUDA >= 10.1
+- cuDNN >= 7.6
 
-## Instruction of Installation
+## Installation
 
 ### 1. Install PaddlePaddle
 
-```
-# CUDA10.1
-python -m pip install paddlepaddle-gpu==2.1.0.post101 -i https://paddlepaddle.org.cn/whl/mkl/stable.html
+Please refer to the [installation doc](https://www.paddlepaddle.org.cn/documentation/docs/en/install/index_en.html) to install PaddlePaddle (the version >= 2.2).
 
-# CPU
-python -m pip install paddlepaddle -i https://mirror.baidu.com/pypi/simple
-```
--For quick installation of more CUDA versions or environments, please refer to [PaddlePaddle Quick Installation Document](https://www.paddlepaddle.org.cn/install/quick)
--For more installation methods such as conda or source code compilation and installation methods, please refer to [PaddlePaddle Installation Document](https://www.paddlepaddle.org.cn/documentation/docs/zh/install/index_cn.html)
+Highly recommend you install the GPU version of PaddlePaddle, due to the large overhead of segmentation models, otherwise, it could be out of memory while running the models.
 
-Please make sure that your PaddlePaddle is installed successfully and the version is not lower than the required version. Use the following command to verify.
+For example, run the following command to install Paddle with pip for Linux, CUDA 10.1.
 
 ```
-# Confirm that PaddlePaddle is installed successfully in your Python interpreter
+python -m pip install paddlepaddle-gpu==2.2.2.post101 -f https://www.paddlepaddle.org.cn/whl/linux/mkl/avx/stable.html
+```
+
+
+In Python interpreter, run the following command to confirm whether PaddlePaddle is installed successfully
+
+```
 >>> import paddle
 >>> paddle.utils.run_check()
 
-# Confirm PaddlePaddle version
-python -c "import paddle; print(paddle.__version__)"
-
 # If the following prompt appears on the command line, the PaddlePaddle installation is successful.
 # PaddlePaddle is installed successfully! Let's start deep learning with PaddlePaddle now.
+
+# Confirm PaddlePaddle version
+>>> print(paddle.__version__)
+
 ```
 
+### 2. Download Repo
 
+Clone the PaddleSeg repo from Github.
 
-## 2.Install PaddlePaddle Code
 ```
 git clone https://github.com/PaddlePaddle/PaddleSeg
 ```
-## 3.Install PaddleSeg Requirements
+
+### 3. Install Dependencies
+
 ```
 cd PaddleSeg
 pip install -r requirements.txt
-
-#If a version error occurs during installation, you can try to delete the old version and re-run the script.
 ```
-## 4.Confirm Installation
 
-Execute the following command, and the predicted result appears in the PaddleSeg/output folder, it proves that the installation is successful.
+If a version error occurs during installation, you can try to delete the old version and re-run the script.
+### 4. Verify Installation
 
-```python
-python predict.py \
-       --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml \
-       --model_path https://bj.bcebos.com/paddleseg/dygraph/optic_disc/bisenet_optic_disc_512x512_1k/model.pdparams\
-       --image_path docs/images/optic_test_image.jpg \
-       --save_dir output/result
+In the root of PaddleSeg, run the following command. If there are no error in terminal log, you can use PaddleSeg to train, validate, test and export models with config method.
+
 ```
+cd PaddleSeg
+sh tests/run_check_install.sh
+```
+
+### 5. Install PaddleSeg (Optional)
+
+Besides, PaddleSeg also supports api method for flexible development, which requires the PaddleSeg is installed in python libs.
+
+Run the following command to compile and install PaddleSeg from source code.
+
+```
+cd PaddleSeg
+python setup.py install
+```
+
+Or, you can install the release PaddleSeg.
+```
+pip install paddleseg
+```
+
+## Use PaddleSeg with Docker
+
+Docker is an open-source tool to build, ship, and run distributed applications in an isolated environment. If you  do not have a Docker environment, please refer to [Docker](https://www.docker.com/). If you will use GPU version, you also need to install [nvidia-docker](https://github.com/NVIDIA/nvidia-docker).
+
+We provide docker images containing the latest PaddleSeg code, and all environment and package dependencies are pre-installed. All you have to do is to **pull and run the docker image**. Then you can enjoy PaddleSeg without any extra steps.
+
+Get these images and guidance in [docker hub](https://hub.docker.com/repository/docker/paddlecloud/paddleseg), including CPU, GPU, ROCm environment versions.
+
+If you have some customized requirements about automatic building docker images, you can get it in github repo [PaddlePaddle/PaddleCloud](https://github.com/PaddlePaddle/PaddleCloud/tree/main/tekton).

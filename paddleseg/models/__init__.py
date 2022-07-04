@@ -49,6 +49,15 @@ from .segnet import SegNet
 from .encnet import ENCNet
 from .hrnet_contrast import HRNetW48Contrast
 from .espnet import ESPNetV2
+from .pp_liteseg import PPLiteSeg
 from .dmnet import DMNet
 from .espnetv1 import ESPNetV1
+from .enet import ENet
+from .bisenetv1 import BiseNetV1
+from .fastfcn import FastFCN
 from .pfpnnet import PFPNNet
+from .glore import GloRe
+from .ddrnet import DDRNet_23
+from .ccnet import CCNet
+from .mobileseg import MobileSeg
+from .upernet import UPerNet

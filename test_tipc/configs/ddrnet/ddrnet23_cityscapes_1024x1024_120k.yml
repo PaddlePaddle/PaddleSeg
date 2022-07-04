@@ -1,0 +1,24 @@
+_base_: '../_base_/cityscapes_1024x1024.yml'
+
+model:
+  type: DDRNet_23
+  enable_auxiliary_loss: False
+  pretrained: https://bj.bcebos.com/paddleseg/dygraph/cityscapes/ddrnet23_cityscapes_1024x1024_120k/pretrain/model.pdparams
+
+optimizer:
+  type: sgd
+  weight_decay: 0.0005
+
+loss:
+  types:
+    - type: OhemCrossEntropyLoss
+  coef: [1]
+
+batch_size: 3
+iters: 120000
+
+lr_scheduler:
+  type: PolynomialDecay
+  learning_rate: 0.01
+  end_lr: 0.0
+  power: 0.9

@@ -246,8 +246,9 @@ def merge_semantic_and_instance(semantic, instance, label_divisor, thing_list,
             continue
         # get class id for instance of ins_id
         sem_ins_id = paddle.gather(
-            semantic.reshape((-1, )), paddle.nonzero(
-                thing_mask.reshape((-1, ))))  # equal to semantic[thing_mask]
+            semantic.reshape((-1, )),
+            paddle.nonzero(thing_mask.reshape((
+                -1, ))))  # equal to semantic[thing_mask]
         v, c = paddle.unique(sem_ins_id, return_counts=True)
         class_id = paddle.gather(v, c.argmax())
         class_id = class_id.numpy()[0]
@@ -291,8 +292,7 @@ def inference(
         threshold=0.1,
         nms_kernel=3,
         top_k=None,
-        ori_shape=None,
-):
+        ori_shape=None, ):
     """
     Inference for image.
 
@@ -344,8 +344,8 @@ def inference(
     if ori_shape is not None:
         results = [i.unsqueeze(0) for i in results]
         results = [
-            reverse_transform(i, ori_shape=ori_shape, transforms=transforms)
-            for i in results
+            reverse_transform(
+                i, ori_shape=ori_shape, transforms=transforms) for i in results
         ]
 
     return results

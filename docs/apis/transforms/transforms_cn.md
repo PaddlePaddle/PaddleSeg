@@ -92,7 +92,7 @@ class paddleseg.transforms.ResizeStepScaling(min_scale_factor = 0.75,
 class paddleseg.transforms.Normalize(mean = (0.5, 0.5, 0.5), std = (0.5, 0.5, 0.5))
 ```
     对图像进行标准化。具体操作如下：
-    1.像素值减去min_val。 
+    1.像素值减去min_val。
     2.像素值除以(max_val-min_val), 归一化到区间 [0.0, 1.0]。
     3.对图像进行减均值除以标准差操作。
 
@@ -138,7 +138,7 @@ class paddleseg.transforms.RandomPaddingCrop(crop_size = (512, 512),
 
 ### Raises
 * **TypeError**: 当 crop_size 的类型既非list，亦非tuple时引起。
-* **ValueError**: 当 crop_size 的长度不是2时引起。 
+* **ValueError**: 当 crop_size 的长度不是2时引起。
 
 ## [RandomBlur](../../../paddleseg/transforms/transforms.py)
 ```python

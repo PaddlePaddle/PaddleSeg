@@ -16,7 +16,7 @@
 [AI Studio](https://aistudio.baidu.com/aistudio/projectdetail/1754799)
 
 ## Dataset
-The training process will automatically download the dataset. 
+The training process will automatically download the dataset.
 
 You can also download and view it manually.
 

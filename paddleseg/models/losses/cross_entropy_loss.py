@@ -78,8 +78,6 @@ class CrossEntropyLoss(nn.Layer):
             logit = paddle.transpose(logit, [0, 2, 3, 1])
         label = label.astype('int64')
 
-        # In F.cross_entropy, the ignore_index is invalid, which needs to be fixed.
-        # When there is 255 in the label and paddle version <= 2.1.3, the cross_entropy OP will report an error, which is fixed in paddle develop version.
         loss = F.cross_entropy(
             logit,
             label,
@@ -121,7 +119,7 @@ class CrossEntropyLoss(nn.Layer):
             loss = loss * semantic_weights
 
         if self.weight is not None:
-            _one_hot = F.one_hot(label, logit.shape[-1])
+            _one_hot = F.one_hot(label * mask, logit.shape[-1])
             coef = paddle.sum(_one_hot * self.weight, axis=-1)
         else:
             coef = paddle.ones_like(label)

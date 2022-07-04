@@ -1,0 +1,8 @@
+_base_: 'lung_coronavirus.yml'
+
+model:
+  type: VNet
+  elu: False
+  in_channels: 1
+  num_classes: 3
+  pretrained: https://bj.bcebos.com/paddleseg/dygraph/lung_coronavirus/vnet_lung_coronavirus_128_128_128_15k/pretrain/model.pdparams

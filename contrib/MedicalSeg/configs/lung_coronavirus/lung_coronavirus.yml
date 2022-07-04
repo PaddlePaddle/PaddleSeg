@@ -1,0 +1,49 @@
+_base_: '../_base_/global_configs.yml'
+
+batch_size: 6
+iters: 15000
+
+train_dataset:
+  type: LungCoronavirus
+  dataset_root: lung_coronavirus/lung_coronavirus_phase0
+  result_dir: lung_coronavirus/lung_coronavirus_phase1
+  transforms:
+    - type: RandomResizedCrop3D
+      size: 128
+      scale: [0.8, 1.2]
+    - type: RandomRotation3D
+      degrees: 90
+    - type: RandomFlip3D
+  mode: train
+  num_classes: 3
+
+val_dataset:
+  type: LungCoronavirus
+  dataset_root: lung_coronavirus/lung_coronavirus_phase0
+  result_dir: lung_coronavirus/lung_coronavirus_phase1
+  num_classes: 3
+  transforms: []
+  mode: val
+  dataset_json_path: "data/lung_coronavirus/lung_coronavirus_raw/dataset.json"
+
+optimizer:
+  type: sgd
+  momentum: 0.9
+  weight_decay: 1.0e-4
+
+lr_scheduler:
+  type: PolynomialDecay
+  decay_steps: 15000
+  learning_rate: 0.001
+  end_lr: 0
+  power: 0.9
+
+loss:
+  types:
+    - type: MixedLoss
+      losses:
+        - type: CrossEntropyLoss
+          weight: Null
+        - type: DiceLoss
+      coef: [1, 1]
+  coef: [1]

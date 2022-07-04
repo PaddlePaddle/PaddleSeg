@@ -1,0 +1,4 @@
+_base_: './pp_liteseg_stdc1_camvid_960x720_10k.yml'
+
+val_dataset:
+  val_path: data/camvid/test.txt

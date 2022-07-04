@@ -19,7 +19,7 @@ class paddleseg.models.losses.BCELoss(
 
 ### Args
 * **weight**  (Tensor | str, optional): A manual rescaling weight given to the loss of each
-            batch element. If given, it has to be a 1D Tensor whose size is `[N, ]`,the data type is float32, float64. 
+            batch element. If given, it has to be a 1D Tensor whose size is `[N, ]`,the data type is float32, float64.
             If type is str, it should equal to 'dynamic'.
             It will compute weight dynamically in every step.
             *Default:``'None'``*

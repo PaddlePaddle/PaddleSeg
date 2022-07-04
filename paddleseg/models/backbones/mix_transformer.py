@@ -135,11 +135,11 @@ class Attention(nn.Layer):
                  C // self.num_heads]).transpose([2, 0, 3, 1, 4])
         k, v = kv[0], kv[1]
 
-        attn = (q @ k.transpose([0, 1, 3, 2])) * self.scale
+        attn = (q @k.transpose([0, 1, 3, 2])) * self.scale
         attn = F.softmax(attn, axis=-1)
         attn = self.attn_drop(attn)
 
-        x = (attn @ v).transpose([0, 2, 1, 3]).reshape([B, N, C])
+        x = (attn @v).transpose([0, 2, 1, 3]).reshape([B, N, C])
         x = self.proj(x)
         x = self.proj_drop(x)
 
@@ -173,11 +173,10 @@ class Block(nn.Layer):
         self.drop_path = DropPath(drop_path) if drop_path > 0. else Identity()
         self.norm2 = norm_layer(dim)
         mlp_hidden_dim = int(dim * mlp_ratio)
-        self.mlp = Mlp(
-            in_features=dim,
-            hidden_features=mlp_hidden_dim,
-            act_layer=act_layer,
-            drop=drop)
+        self.mlp = Mlp(in_features=dim,
+                       hidden_features=mlp_hidden_dim,
+                       act_layer=act_layer,
+                       drop=drop)
 
         self.apply(self._init_weights)
 
@@ -427,8 +426,8 @@ class MixVisionTransformer(nn.Layer):
 
     def reset_classifier(self, num_classes, global_pool=''):
         self.num_classes = num_classes
-        self.head = nn.Linear(
-            self.embed_dim, num_classes) if num_classes > 0 else nn.Identity()
+        self.head = nn.Linear(self.embed_dim,
+                              num_classes) if num_classes > 0 else nn.Identity()
 
     def forward_features(self, x):
         B = paddle.shape(x)[0]
@@ -500,7 +499,8 @@ def MixVisionTransformer_B0(**kwargs):
         num_heads=[1, 2, 5, 8],
         mlp_ratios=[4, 4, 4, 4],
         qkv_bias=True,
-        norm_layer=partial(nn.LayerNorm, epsilon=1e-6),
+        norm_layer=partial(
+            nn.LayerNorm, epsilon=1e-6),
         depths=[2, 2, 2, 2],
         sr_ratios=[8, 4, 2, 1],
         drop_rate=0.0,
@@ -516,7 +516,8 @@ def MixVisionTransformer_B1(**kwargs):
         num_heads=[1, 2, 5, 8],
         mlp_ratios=[4, 4, 4, 4],
         qkv_bias=True,
-        norm_layer=partial(nn.LayerNorm, epsilon=1e-6),
+        norm_layer=partial(
+            nn.LayerNorm, epsilon=1e-6),
         depths=[2, 2, 2, 2],
         sr_ratios=[8, 4, 2, 1],
         drop_rate=0.0,
@@ -532,7 +533,8 @@ def MixVisionTransformer_B2(**kwargs):
         num_heads=[1, 2, 5, 8],
         mlp_ratios=[4, 4, 4, 4],
         qkv_bias=True,
-        norm_layer=partial(nn.LayerNorm, epsilon=1e-6),
+        norm_layer=partial(
+            nn.LayerNorm, epsilon=1e-6),
         depths=[3, 4, 6, 3],
         sr_ratios=[8, 4, 2, 1],
         drop_rate=0.0,
@@ -548,7 +550,8 @@ def MixVisionTransformer_B3(**kwargs):
         num_heads=[1, 2, 5, 8],
         mlp_ratios=[4, 4, 4, 4],
         qkv_bias=True,
-        norm_layer=partial(nn.LayerNorm, epsilon=1e-6),
+        norm_layer=partial(
+            nn.LayerNorm, epsilon=1e-6),
         depths=[3, 4, 18, 3],
         sr_ratios=[8, 4, 2, 1],
         drop_rate=0.0,
@@ -564,7 +567,8 @@ def MixVisionTransformer_B4(**kwargs):
         num_heads=[1, 2, 5, 8],
         mlp_ratios=[4, 4, 4, 4],
         qkv_bias=True,
-        norm_layer=partial(nn.LayerNorm, epsilon=1e-6),
+        norm_layer=partial(
+            nn.LayerNorm, epsilon=1e-6),
         depths=[3, 8, 27, 3],
         sr_ratios=[8, 4, 2, 1],
         drop_rate=0.0,
@@ -580,7 +584,8 @@ def MixVisionTransformer_B5(**kwargs):
         num_heads=[1, 2, 5, 8],
         mlp_ratios=[4, 4, 4, 4],
         qkv_bias=True,
-        norm_layer=partial(nn.LayerNorm, epsilon=1e-6),
+        norm_layer=partial(
+            nn.LayerNorm, epsilon=1e-6),
         depths=[3, 6, 40, 3],
         sr_ratios=[8, 4, 2, 1],
         drop_rate=0.0,

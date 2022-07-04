@@ -1,0 +1,54 @@
+batch_size: 4
+iters: 1000
+
+train_dataset:
+  type: Dataset
+  dataset_root: data/optic_disc_seg
+  train_path: data/optic_disc_seg/train_list.txt
+  num_classes: 2
+  mode: train
+  transforms:
+    - type: ResizeStepScaling
+      min_scale_factor: 0.5
+      max_scale_factor: 2.0
+      scale_step_size: 0.25
+    - type: RandomPaddingCrop
+      crop_size: [512, 512]
+    - type: RandomHorizontalFlip
+    - type: RandomDistort
+      brightness_range: 0.5
+      contrast_range: 0.5
+      saturation_range: 0.5
+    - type: Normalize
+
+val_dataset:
+  type: Dataset
+  dataset_root: data/optic_disc_seg
+  val_path: data/optic_disc_seg/val_list.txt
+  num_classes: 2
+  mode: val
+  transforms:
+    - type: Normalize
+
+optimizer:
+  type: sgd
+  momentum: 0.9
+  weight_decay: 4.0e-5
+
+lr_scheduler:
+  type: PolynomialDecay
+  learning_rate: 0.01
+  end_lr: 0
+  power: 0.9
+
+loss:
+  types:
+    - type: CrossEntropyLoss
+  coef: [1, 1, 1]
+
+
+model:
+  type: PPLiteSeg
+  backbone:
+    type: STDC2
+    pretrained: https://bj.bcebos.com/paddleseg/dygraph/PP_STDCNet2.tar.gz

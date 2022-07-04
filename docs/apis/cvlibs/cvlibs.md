@@ -118,10 +118,10 @@ kaiming_normal_init(param, **kwargs):
     ImageNet Classification <https://arxiv.org/abs/1502.01852>`
     by Kaiming He, Xiangyu Zhang, Shaoqing Ren and Jian Sun. This is a
     robust initialization method that particularly considers the rectifier
-    nonlinearities. 
+    nonlinearities.
 > In case of Uniform distribution, the range is [-x, x], where
     <a href="https://www.codecogs.com/eqnedit.php?latex=x&space;=&space;\sqrt{\frac{6.0}{fan_in}}" target="_blank"><img src="https://latex.codecogs.com/gif.latex?x&space;=&space;\sqrt{\frac{6.0}{fan_in}}" title="x = \sqrt{\frac{6.0}{fan_in}}" /></a>
-    
+
 > In case of Normal distribution, the mean is 0 and the standard deviation
     is
     <a href="https://www.codecogs.com/eqnedit.php?latex=\sqrt{\frac{2.0}{fan_in}}" target="_blank"><img src="https://latex.codecogs.com/gif.latex?\sqrt{\frac{2.0}{fan_in}}" title="\sqrt{\frac{2.0}{fan_in}}" /></a>
@@ -143,9 +143,9 @@ param_init.kaiming_normal_init(linear.weight)
 ## [Config](../../../paddleseg/cvlibs/config.py)
 ```python
 class Config(
-    path, 
-    learning_rate, 
-    batch_size, 
+    path,
+    learning_rate,
+    batch_size,
     iters
 )
 ```

@@ -28,12 +28,12 @@ The models subpackage contains the following 21 models for image sementic segmen
 ## [DeepLabV3+](../../../paddleseg/models/deeplab.py)
 ```python
 class paddleseg.models.DeepLabV3P(
-        num_classes, 
-        backbone, 
-        backbone_indices = (0, 3), 
-        aspp_ratios = (1, 6, 12, 18), 
-        aspp_out_channels = 256, 
-        align_corners = False, 
+        num_classes,
+        backbone,
+        backbone_indices = (0, 3),
+        aspp_ratios = (1, 6, 12, 18),
+        aspp_out_channels = 256,
+        align_corners = False,
         pretrained = None
 )
 ```
@@ -60,12 +60,12 @@ class paddleseg.models.DeepLabV3P(
 ## [DeepLabV3](../../../paddleseg/models/deeplab.py)
 ```python
 class paddleseg.models.DeepLabV3(
-        num_classes, 
-        backbone, 
-        backbone_indices = (3, ), 
-        aspp_ratios = (1, 6, 12, 18), 
-        aspp_out_channels = 256, 
-        align_corners = False, 
+        num_classes,
+        backbone,
+        backbone_indices = (3, ),
+        aspp_ratios = (1, 6, 12, 18),
+        aspp_out_channels = 256,
+        align_corners = False,
         pretrained = None
 )
 ```
@@ -264,7 +264,7 @@ class paddleseg.models.FastSCNN(
 ```
 
 > The FastSCNN implementation based on PaddlePaddle.As mentioned in the original paper, FastSCNN is a real-time segmentation algorithm (123.5fps) even for high resolution images (1024x2048).
-    
+
 > The original article refers to
 [Poudel, Rudra PK, et al. "Fast-scnn: Fast semantic segmentation network"](https://arxiv.org/pdf/1902.04502.pdf).
 
@@ -395,8 +395,8 @@ class paddleseg.models.UNet(
 ## [U<sup>2</sup>Net](../../../paddleseg/models/u2net.py)
 ```python
 class paddleseg.models.U2Net(
-        num_classes, 
-        in_ch = 3, 
+        num_classes,
+        in_ch = 3,
         pretrained = None
 )
 ```
@@ -414,8 +414,8 @@ class paddleseg.models.U2Net(
 ## [U<sup>2</sup>Net+](../../../paddleseg/models/u2net.py)
 ```python
 class paddleseg.models.U2Netp(
-        num_classes, 
-        in_ch = 3, 
+        num_classes,
+        in_ch = 3,
         pretrained = None
 )
 ```
@@ -506,20 +506,20 @@ class DecoupledSegNet(
 ## [ISANet](../../../paddleseg/models/isanet.py)
 ```python
 class paddleseg.models.ISANet(
-        num_classes, 
-        backbone, 
-        backbone_indices = (2, 3), 
-        isa_channels = 256, 
-        down_factor = (8, 8), 
-        enable_auxiliary_loss = True, 
-        align_corners = False, 
+        num_classes,
+        backbone,
+        backbone_indices = (2, 3),
+        isa_channels = 256,
+        down_factor = (8, 8),
+        enable_auxiliary_loss = True,
+        align_corners = False,
         pretrained = None
 )
 ```
 
 > The ISANet implementation based on PaddlePaddle.
 
-> The original article refers to 
+> The original article refers to
 [Lang Huang, et al. "Interlaced Sparse Self-Attention for Semantic Segmentation"](https://arxiv.org/abs/1907.12273).
 
 ### Args
@@ -536,17 +536,17 @@ class paddleseg.models.ISANet(
 ## [EMANet](../../../paddleseg/models/emanet.py)
 ```python
 class paddleseg.models.EMANet(
-        num_classes, 
-        backbone, 
-        backbone_indices = (2, 3), 
-        ema_channels = 512, 
-        gc_channels = 256, 
-        num_bases = 64, 
-        stage_num = 3, 
-        momentum = 0.1, 
-        concat_input = True, 
-        enable_auxiliary_loss = True, 
-        align_corners = False, 
+        num_classes,
+        backbone,
+        backbone_indices = (2, 3),
+        ema_channels = 512,
+        gc_channels = 256,
+        num_bases = 64,
+        stage_num = 3,
+        momentum = 0.1,
+        concat_input = True,
+        enable_auxiliary_loss = True,
+        align_corners = False,
         pretrained = None
 )
 ```
@@ -574,15 +574,15 @@ class paddleseg.models.EMANet(
 ## [DNLNet](../../../paddleseg/models/dnlnet.py)
 ```python
 class paddleseg.models.DNLNet(
-    num_classes, backbone, 
-    backbone_indices = (2, 3), 
-    reduction = 2, 
-    use_scale = True, 
-    mode = 'embedded_gaussian', 
-    temperature = 0.05, 
-    concat_input = True, 
-    enable_auxiliary_loss = True, 
-    align_corners = False, 
+    num_classes, backbone,
+    backbone_indices = (2, 3),
+    reduction = 2,
+    use_scale = True,
+    mode = 'embedded_gaussian',
+    temperature = 0.05,
+    concat_input = True,
+    enable_auxiliary_loss = True,
+    align_corners = False,
     pretrained = None
 )
 ```

@@ -24,3 +24,5 @@
 * ## [paddleseg.models.losses.ohem_cross_entropy_loss](./OhemCrossEntropyLoss_cn.md)
 
 * ## [paddleseg.models.losses.ohem_edge_attention_loss](./OhemEdgeAttentionLoss_cn.md)
+
+* ## [paddleseg.models.losses.semantic_connectivity_loss](./SemanticConnectivityLoss_cn.md)

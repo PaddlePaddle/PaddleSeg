@@ -1,0 +1,20 @@
+
+
+val_dataset:
+  type: Composition1K
+  dataset_root: data/Composition-1k
+  val_file: val.txt
+  separator: '|'
+  transforms:
+    - type: LoadImages
+    - type: ResizeByShort
+      short_size: 512
+    - type: ResizeToIntMult
+      mult_int: 32
+    - type: Normalize
+  mode: val
+  get_trimap: True
+
+model:
+  type: CloseFormMatting
+

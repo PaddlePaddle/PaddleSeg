@@ -137,7 +137,8 @@ class EMAHead(nn.Layer):
         self.aux = nn.Sequential(
             layers.ConvBNReLU(
                 in_channels=1024, out_channels=256, kernel_size=3),
-            nn.Dropout2D(p=0.1), nn.Conv2D(256, num_classes, 1))
+            nn.Dropout2D(p=0.1),
+            nn.Conv2D(256, num_classes, 1))
         if self.concat_input:
             self.conv_cat = layers.ConvBNReLU(
                 self.in_channels + gc_channels, gc_channels, kernel_size=3)
@@ -208,7 +209,9 @@ class EMAU(nn.Layer):
             mu = F.normalize(mu, axis=1, p=2)
             mu = self.mu * (1 - self.momentum) + mu * self.momentum
             if paddle.distributed.get_world_size() > 1:
-                mu = paddle.distributed.all_reduce(mu)
+                out = paddle.distributed.all_reduce(mu)
+                if out is not None:
+                    mu = out
                 mu /= paddle.distributed.get_world_size()
             self.mu = mu
 
