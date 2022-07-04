@@ -1,0 +1,11 @@
+_base_: 'pp_liteseg_stdc1_pssl.yml'
+
+model:
+  _inherited_: False  # not inherit the model params from the base yaml
+  type: PPLiteSeg
+  backbone:
+    type: STDC2
+    relative_lr: 0.1
+    pretrained: https://bj.bcebos.com/paddleseg/dygraph/PP_STDCNet2.tar.gz
+  pretrained: null
+  num_classes: 1001
