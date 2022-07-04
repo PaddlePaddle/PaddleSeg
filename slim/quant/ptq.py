@@ -25,13 +25,13 @@ def parse_args():
         '--batch_nums',
         dest='batch_nums',
         help='number of iterations. If set to None , it will run until the end of the sample_generator iteration, otherwise, the number of iterations is batch_nums, that is, the number of samples involved in Scale correction is batch_nums * batch_size .',
-        type=str,
+        type=int,
         default=10)
     parser.add_argument(
         '--batch_size',
         dest='batch_size',
         help='Number of pictures per batch',
-        type=str,
+        type=int,
         default=1)
 
     return parser.parse_args()
