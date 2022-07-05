@@ -178,12 +178,8 @@ def train(model,
                 break
             reader_cost_averager.record(time.time() - batch_start)
 
-            # model input
-            if nranks > 1:
-                logit_dict = ddp_model(data)
-            else:
-                logit_dict = model(data)
-            loss_dict = model.loss(logit_dict, data, losses)
+            logit_dict, loss_dict = ddp_model(data) if nranks > 1 else model(
+                data)
 
             loss_dict['all'].backward()
 
