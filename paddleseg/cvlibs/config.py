@@ -228,6 +228,25 @@ class Config(object):
         elif optimizer_type == 'adam':
             return paddle.optimizer.Adam(
                 lr, parameters=self.model.parameters(), **args)
+        elif optimizer_type == 'adamwdl':
+            skip_list = self.model.backbone.no_weight_decay()
+
+            decay_dict = {
+                param.name: not (len(param.shape) == 1 or name.endswith(".bias")
+                                 or name in skip_list)
+                for name, param in self.model.named_parameters()
+            }
+            args['n_layers'] = self.model.backbone.get_num_layers()
+            args['apply_decay_param_fun'] = lambda n: decay_dict[n]
+            name_dict = dict()
+            for n, p in self.model.named_parameters():
+                name_dict[p.name] = n
+            args['name_dict'] = name_dict
+
+            optimizer = AdamWDL(lr, parameters=self.model.parameters(), **args)
+
+            return optimizer
+
         elif optimizer_type in paddle.optimizer.__all__:
             return getattr(paddle.optimizer,
                            optimizer_type)(lr,
@@ -241,6 +260,8 @@ class Config(object):
         args = self.dic.get('optimizer', {}).copy()
         if args['type'] == 'sgd':
             args.setdefault('momentum', 0.9)
+        elif args['type'] == 'adamwdl':
+            args.pop('momentum', None)
 
         return args
 

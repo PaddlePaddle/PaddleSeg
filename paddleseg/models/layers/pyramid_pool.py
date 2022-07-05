@@ -147,7 +147,8 @@ class PPModule(nn.Layer):
             in_channels=in_channels + inter_channels * len(bin_sizes),
             out_channels=out_channels,
             kernel_size=3,
-            padding=1)
+            padding=1,
+            bias_attr=False)  # todo
 
         self.align_corners = align_corners
 
@@ -171,7 +172,10 @@ class PPModule(nn.Layer):
 
         prior = nn.AdaptiveAvgPool2D(output_size=(size, size))
         conv = layers.ConvBNReLU(
-            in_channels=in_channels, out_channels=out_channels, kernel_size=1)
+            in_channels=in_channels,
+            out_channels=out_channels,
+            kernel_size=1,
+            bias_attr=False)  # todo
 
         return nn.Sequential(prior, conv)
 

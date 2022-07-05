@@ -14,3 +14,4 @@
 
 from .transforms import *
 from . import functional
+from . import geometric
