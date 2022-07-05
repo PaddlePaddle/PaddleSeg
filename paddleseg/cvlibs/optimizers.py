@@ -1,17 +1,27 @@
-from functools import partial
+# Copyright (c) 2022 PaddlePaddle Authors. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 import math
 import numpy as np
+from functools import partial
 
 import paddle
-import paddle.fluid as fluid
-from paddle.fluid import core
 from paddle.optimizer import AdamW
 
 __all__ = ['AdamWDL', ]
 
 
-# Layerwise decay
 def layerwise_lr_decay(decay_rate, name_dict, n_layers, param):
     """
     Args:
@@ -138,9 +148,6 @@ class AdamWDL(AdamW):
                  set_param_lr_fun=layerwise_lr_decay,
                  name_dict=None,
                  name=None):
-        if not isinstance(layerwise_decay, float) and \
-                not isinstance(layerwise_decay, fluid.framework.Variable):
-            raise TypeError("coeff should be float or Tensor.")
         self.layerwise_decay = layerwise_decay
         self.n_layers = n_layers
         self.set_param_lr_fun = partial(set_param_lr_fun, layerwise_decay,

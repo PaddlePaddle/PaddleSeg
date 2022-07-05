@@ -20,7 +20,7 @@ import warnings
 import paddle
 import yaml
 
-from paddleseg.cvlibs import manager
+from paddleseg.cvlibs import manager, AdamWDL
 from paddleseg.utils import logger
 
 
