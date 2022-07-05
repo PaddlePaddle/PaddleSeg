@@ -37,6 +37,8 @@ class STDCNet(nn.Layer):
         layers(list, optional): layers numbers list. It determines STDC block numbers of STDCNet's stage3\4\5. Defualt: [4, 5, 3].
         block_num(int,optional): block_num of features block. Default: 4.
         type(str,optional): feature fusion method "cat"/"add". Default: "cat".
+        relative_lr(float,optional): parameters here receive a different learning rate when updating. The effective 
+            learning rate is the prodcut of relative_lr and the global learning rate. Default: 1.0. 
         pretrained(str, optional): the path of pretrained model.
     """
 

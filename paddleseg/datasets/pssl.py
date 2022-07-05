@@ -21,25 +21,63 @@ from paddleseg.transforms import Compose
 
 
 @manager.DATASETS.add_component
-class PSSL(Dataset):
+class PSSLDataset(Dataset):
     """
-    The PSSL dataset for segmentation.
+    The PSSL dataset for segmentation. PSSL is short for Pseudo Semantic Segmentation Labels, where the pseudo label
+    is computed by the Consensus explanation algorithm.
+
+    The PSSL refers to "Distilling Ensemble of Explanations for Weakly-Supervised Pre-Training of Image Segmentation 
+    Models" (TODO). 
+    
+    The Consensus explanation refers to "Cross-Model Consensus of Explanations and Beyond for Image Classification 
+    Models: An Empirical Study" (https://arxiv.org/abs/2109.00707).
+
+    To use this dataset, we need to additionally prepare the orignal ImageNet dataset, which has the folder structure
+    as follows:
+
+        imagenet_root
+        |
+        |--train
+        |  |--n01440764
+        |  |  |--n01440764_10026.JPEG
+        |  |  |--...
+        |  |--nxxxxxxxx
+        |  |--...
+
+    where only the "train" set is needed.
+
+    The PSSL dataset has the folder structure as follows:
+
+        pssl_root
+        |
+        |--train
+        |  |--n01440764
+        |  |  |--n01440764_10026.JPEG_eiseg.npz
+        |  |  |--...
+        |  |--nxxxxxxxx
+        |  |--...
+        |
+        |--imagenet_lsvrc_2015_synsets.txt
+        |--train.txt
+
+    where "train.txt" and "imagenet_lsvrc_2015_synsets.txt" are included in the PSSL dataset.
 
     Args:
-        dataset_root (str): Cityscapes dataset directory.
         transforms (list): Transforms for image.
+        imagenet_root (str): The path to the original ImageNet dataset.
+        pssl_root (str): The path to the PSSL dataset.
         mode (str, optional): Which part of dataset to use. it is one of ('train', 'val', 'test'). Default: 'train'.
-        edge (bool, optional): Whether to compute edge while training. Default: False
+        edge (bool, optional): Whether to compute edge while training. Default: False.
     """
     ignore_index = 1001  # 0~999 is target class, 1000 is bg
     NUM_CLASSES = 1001  # consider target class and bg
 
     def __init__(self,
                  transforms,
+                 imagenet_root,
+                 pssl_root,
                  mode='train',
-                 edge=False,
-                 imagenet_root="ILSVRC2012",
-                 pssl_root="imagenet_pseudo_sg_v2"):
+                 edge=False):
         mode = mode.lower()
         if mode not in ['train']:
             raise ValueError("mode should be 'train', but got {}.".format(mode))
@@ -71,15 +109,13 @@ class PSSL(Dataset):
             img_path = os.path.join(imagenet_root, img_path)
             self.file_list.append([img_path, label_path])
 
+        # mapping class name to class id.
         class_id_file = os.path.join(pssl_root, "imagenet_lsvrc_2015_synsets.txt")
         if not os.path.exists(class_id_file):
             raise ValueError("Class id file isn't exists.")
         for idx, line in enumerate(open(class_id_file)):
             class_name = line.strip()
             self.class_id_dict[class_name] = idx
-
-        print('number of images:', len(self.file_list))
-        print('number of classes:', len(self.class_id_dict))
 
     def __getitem__(self, idx):
         image_path, label_path = self.file_list[idx]
