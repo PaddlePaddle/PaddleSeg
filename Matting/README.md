@@ -30,25 +30,13 @@ Try the online demo "[Non-Code Matting](https://easyseg.cn/)".
 [4] Support human matting deployment in Android.
 
 ## Contents
-- [Natural Image Matting](#natural-image-matting)
-- [One-click experience](#one-click-experience)
-  - [Update Notes](#update-notes)
-  - [Contents](#contents)
-  - [Installation](#installation)
-      - [1. Install PaddlePaddle](#1-install-paddlepaddle)
-      - [2. Download the PaddleSeg repository](#2-download-the-paddleseg-repository)
-      - [3. Installation](#3-installation)
-  - [Models](#models)
-  - [Dataset preparation](#dataset-preparation)
-  - [Training, Evaluation and Prediction](#training-evaluation-and-prediction)
-    - [Training](#training)
-    - [Evaluation](#evaluation)
-    - [Prediction](#prediction)
-  - [Background Replacement](#background-replacement)
-  - [Export and Deploy](#export-and-deploy)
-    - [Model Export](#model-export)
-    - [Deploy](#deploy)
-  - [Acknowledgement](#acknowledgement)
+- [Installation](#Installation)
+- [Models](#Models)
+- [Dataset Preparation](#Dataset-Preparation)
+- [Training, Evaluation and Prediction](#Training-Evaluation-and-Prediction)
+- [Background Replacement](#Background-Replacement)
+- [Export and Deploy](#Export-and-Deploy)
+- [Human Matting Deployment in Android](./deploy/human_matting_android_demo/README.md)
 
 ## Installation
 
