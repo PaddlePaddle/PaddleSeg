@@ -158,12 +158,16 @@ class Config(object):
         if 'warmup_iters' in params:
             use_warmup = True
             warmup_iters = params.pop('warmup_iters')
+            assert 'warmup_start_lr' in params, \
+                "When use warmup, please set warmup_start_lr and warmup_iters in lr_scheduler"
             warmup_start_lr = params.pop('warmup_start_lr')
             end_lr = params['learning_rate']
 
         lr_type = params.pop('type')
         if lr_type == 'PolynomialDecay':
-            params.setdefault('decay_steps', self.iters)
+            iters = self.iters - warmup_iters if use_warmup else self.iters
+            iters = max(iters, 1)
+            params.setdefault('decay_steps', iters)
             params.setdefault('end_lr', 0)
             params.setdefault('power', 0.9)
         lr_sche = getattr(paddle.optimizer.lr, lr_type)(**params)
@@ -315,17 +319,22 @@ class Config(object):
         model_cfg = self.dic.get('model').copy()
         if not model_cfg:
             raise RuntimeError('No model specified in the configuration file.')
+
         if not 'num_classes' in model_cfg:
             num_classes = None
             try:
                 if self.train_dataset_config:
                     if hasattr(self.train_dataset_class, 'NUM_CLASSES'):
                         num_classes = self.train_dataset_class.NUM_CLASSES
+                    elif 'num_classes' in self.train_dataset_config:
+                        num_classes = self.train_dataset_config['num_classes']
                     elif hasattr(self.train_dataset, 'num_classes'):
                         num_classes = self.train_dataset.num_classes
                 elif self.val_dataset_config:
                     if hasattr(self.val_dataset_class, 'NUM_CLASSES'):
                         num_classes = self.val_dataset_class.NUM_CLASSES
+                    elif 'num_classes' in self.val_dataset_config:
+                        num_classes = self.val_dataset_config['num_classes']
                     elif hasattr(self.val_dataset, 'num_classes'):
                         num_classes = self.val_dataset.num_classes
             except FileNotFoundError:

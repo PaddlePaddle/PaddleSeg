@@ -42,12 +42,13 @@ class DiceLoss(nn.Layer):
             assert num_class == len(self.weight), \
                 "The lenght of weight should be euqal to the num class"
 
-        logits = F.softmax(logits, axis=1)
-        labels_one_hot = F.one_hot(labels, num_class)
-        labels_one_hot = paddle.transpose(labels_one_hot, [0, 3, 1, 2])
-
         mask = labels != self.ignore_index
         mask = paddle.cast(paddle.unsqueeze(mask, 1), 'float32')
+
+        labels[labels == self.ignore_index] = 0
+        labels_one_hot = F.one_hot(labels, num_class)
+        labels_one_hot = paddle.transpose(labels_one_hot, [0, 3, 1, 2])
+        logits = F.softmax(logits, axis=1)
 
         dice_loss = 0.0
         for i in range(num_class):

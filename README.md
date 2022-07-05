@@ -65,6 +65,11 @@ PaddleSeg is an end-to-end high-efficent development toolkit for image segmentat
 
 * <img src="./docs/images/f3.png" width="20"/> **High Efficiency**: PaddleSeg provides multi-process asynchronous I/O, multi-card parallel training, evaluation, and other acceleration strategies, combined with the memory optimization function of the PaddlePaddle, which can greatly reduce the training overhead of the segmentation model, all this allowing developers to lower cost and more efficiently train image segmentation model.
 
+<div align="center">
+<img src="https://user-images.githubusercontent.com/14087480/176402154-390e5815-1a87-41be-9374-9139c632eb66.png" width = "2000" />  
+</div>
+
+---
 
 
 ## Overview <img src="./docs/images/model.png" width="20"/>
@@ -258,6 +263,7 @@ PaddleSeg is an end-to-end high-efficent development toolkit for image segmentat
   </tbody>
 </table>
 
+---
 ## Model Zoo
 
 The relationship between mIoU and FLOPs of representative architectures and backbones. See [Model Zoo Overview](./docs/model_zoo_overview.md) for more details.
@@ -346,7 +352,7 @@ PaddleSeg is released under the [Apache 2.0 license](LICENSE).
 * Thanks [yazheng0307](https://github.com/yazheng0307) (LIU Zheng) for contributing quick-start document.
 * Thanks [CuberrChen](https://github.com/CuberrChen) for contributing STDC(rethink BiSeNet), PointRend and DetailAggregateLoss.
 * Thanks [stuartchen1949](https://github.com/stuartchen1949) for contributing SegNet.
-* Thanks [justld](https://github.com/justld) (Lang Du) for contributing DDRNet, CCNet, ESPNetV2, DMNet, ENCNet, HRNet_W48_Contrast, FastFCN, BiSeNetV1, SECrossEntropyLoss and PixelContrastCrossEntropyLoss.
+* Thanks [justld](https://github.com/justld) (Lang Du) for contributing UPerNet, DDRNet, CCNet, ESPNetV2, DMNet, ENCNet, HRNet_W48_Contrast, FastFCN, BiSeNetV1, SECrossEntropyLoss and PixelContrastCrossEntropyLoss.
 * Thanks [Herman-Hu-saber](https://github.com/Herman-Hu-saber) (Hu Huiming) for contributing ESPNetV2.
 * Thanks [zhangjin12138](https://github.com/zhangjin12138) for contributing RandomCenterCrop.
 * Thanks [simuler](https://github.com/simuler) for contributing ESPNetV1.

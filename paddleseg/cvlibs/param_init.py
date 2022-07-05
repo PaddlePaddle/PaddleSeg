@@ -118,3 +118,29 @@ def kaiming_uniform(param, **kwargs):
 
     initializer = nn.initializer.KaimingUniform(**kwargs)
     initializer(param, param.block)
+
+
+def xavier_uniform(param, **kwargs):
+    r"""
+    This implements the Xavier weight initializer from the paper
+    `Understanding the difficulty of training deep feedforward neural
+    networks <http://proceedings.mlr.press/v9/glorot10a/glorot10a.pdf>`_
+    by Xavier Glorot and Yoshua Bengio.
+    This initializer is designed to keep the scale of the gradients
+    approximately same in all the layers. In case of Uniform distribution,
+    the range is [-x, x], where
+    .. math::
+        x = \sqrt{\frac{6.0}{fan\_in + fan\_out}}
+    Args:
+        param (Tensor): Tensor that needs to be initialized.
+
+    Examples:
+
+        from paddleseg.cvlibs import param_init
+        import paddle.nn as nn
+
+        linear = nn.Linear(2, 4)
+        param_init.xavier_uniform(linear.weight)
+    """
+    initializer = nn.initializer.XavierUniform(**kwargs)
+    initializer(param, param.block)
