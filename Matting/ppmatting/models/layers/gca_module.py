@@ -209,4 +209,3 @@ class GuidedCxtAtten(nn.Layer):
         x = x**2
         x = x.sum(axis=[1, 2, 3], keepdim=True)
         return paddle.sqrt(x)
-

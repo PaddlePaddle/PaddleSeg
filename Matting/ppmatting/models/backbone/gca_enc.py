@@ -123,7 +123,7 @@ class ResNet_D(nn.Layer):
 
         for layer in self.sublayers():
             if isinstance(layer, nn.Conv2D):
-                
+
                 if hasattr(layer, "weight_orig"):
                     param = layer.weight_orig
                 else:
