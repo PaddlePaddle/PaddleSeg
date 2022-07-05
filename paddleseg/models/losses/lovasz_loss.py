@@ -124,8 +124,8 @@ def lovasz_hinge_flat(logits, labels):
     signs = 2. * labels - 1.
     signs.stop_gradient = True
     errors = 1. - logits * signs
-    errors_sorted, perm = paddle._C_ops.argsort(errors, 'axis', 0, 'descending',
-                                                True)
+    errors_sorted, perm = paddle.fluid.core.ops.argsort(errors, 'axis', 0,
+                                                        'descending', True)
     errors_sorted.stop_gradient = False
     gt_sorted = paddle.gather(labels, perm)
     grad = lovasz_grad(gt_sorted)
@@ -181,8 +181,8 @@ def lovasz_softmax_flat(probas, labels, classes='present'):
         else:
             class_pred = probas[:, c]
         errors = paddle.abs(fg - class_pred)
-        errors_sorted, perm = paddle._C_ops.argsort(errors, 'axis', 0,
-                                                    'descending', True)
+        errors_sorted, perm = paddle.fluid.core.ops.argsort(errors, 'axis', 0,
+                                                            'descending', True)
         errors_sorted.stop_gradient = False
 
         fg_sorted = paddle.gather(fg, perm)

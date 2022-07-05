@@ -2,22 +2,20 @@
 
 # 人像分割PP-HumanSeg
 
-人像分割是图像分割领域的高频应用，PaddleSeg推出在大规模人像数据上训练的人像分割系列模型PP-HumanSeg，包括自研超轻量级模型**PP-HumanSeg-Lite**、轻量级模型PP-HumanSeg-Mobile、高精度模型PP-HumanSeg-Server，满足在Web端、移动端、服务端多种使用场景的需求。其中PP-HumanSeg-Lite采用轻量级网络设计、连通性学习策略、数据合成等策略，实现体积、速度和精度的SOTA平衡（参数量137K，速度达95FPS，mIoU达93%）。
-
-另外提供视频流人像分割、背景替换使用教程，以及移动端和Web端部署教程。也可基于Paddle.js在网页体验[人像扣图](https://paddlejs.baidu.com/humanseg)效果、[视频背景替换及弹幕穿透](https://www.paddlepaddle.org.cn/paddlejs)效果。
+人像分割是图像分割领域的高频应用，PaddleSeg推出在大规模人像数据上训练的人像分割系列模型PP-HumanSeg，包括超轻量级模型**PP-HumanSeg-Lite**，满足在服务端、移动端、Web端多种使用场景的需求。我们提供从训练到部署的全流程应用指南，以及视频流人像分割、背景替换教程。可基于Paddle.js在网页体验[人像扣图](https://paddlejs.baidu.com/humanseg)效果、[视频背景替换及弹幕穿透](https://www.paddlepaddle.org.cn/paddlejs)效果。
 
 <p align="center">
 <img src="https://user-images.githubusercontent.com/30695251/149886667-f47cab88-e81a-4fd7-9f32-fbb34a5ed7ce.png"  height="300">        <img src="https://user-images.githubusercontent.com/30695251/149887482-d1fcd5d3-2cce-41b5-819b-bfc7126b7db4.png"  height="300">
 </p>
 
-
-## 最新动向
-- [2022-1] 人像分割论文[PP-HumanSeg](./paper.md)发表于WACV 2022 Workshop，并开源连通性学习（SCL）方法和大规模视频会议数据集。
-- [2021-7] 新冠疫情催化远程办公需求，视频会议产品迅速爆发。百度视频会议可实现Web端一秒入会，其中的虚拟背景功能采用我们的PP-HumanSeg-Lite模型，实现实时背景替换和背景虚化功能，保护用户隐私，并增加视频会议的趣味性。
+新冠疫情催化远程办公需求，视频会议产品迅速爆发。百度视频会议可实现Web端一秒入会，其中的虚拟背景功能采用我们的PP-HumanSeg-Lite模型，实现实时背景替换和背景虚化功能，保护用户隐私，以及增加会议中的趣味性。
 
 <p align="center">
 <img src="https://github.com/LutaoChu/transfer_station/raw/master/conference.gif" width="60%" height="60%">
 </p>
+
+## 最新动向
+- [2022-1-4] 人像分割论文[PP-HumanSeg](./paper.md)发表于WACV 2022 Workshop，并开源连通性学习（SCL）方法和大规模视频会议数据集。
 
 ## 目录
 - [人像分割模型](#人像分割模型)
@@ -66,7 +64,7 @@ NOTE:
 
 | 模型名 | 模型说明 | Checkpoint | Inference Model |
 | --- | --- | --- | ---|
-| PP-HumanSeg-Lite | 超轻量级模型，适用于Web端或移动端实时分割场景，例如手机自拍、Web视频会议，模型结构为[Paddle自研模型](../../configs/pp_humanseg_lite/README.md)，适合横屏尺寸输入，推荐输入大小（398，224） | [lite_portrait_ckpt](https://paddleseg.bj.bcebos.com/dygraph/ppseg/ppseg_lite_portrait_398x224.tar.gz) | [lite_portrait_inference](https://paddleseg.bj.bcebos.com/dygraph/ppseg/ppseg_lite_portrait_398x224_with_softmax.tar.gz) |
+| PP-HumanSeg-Lite | 超轻量级模型，适用于Web端或移动端实时分割场景，例如手机自拍、Web视频会议，模型结构为[Paddle自研模型](../../configs/pp_humanseg_lite/README.md)，推荐输入大小（398，224） | [lite_portrait_ckpt](https://paddleseg.bj.bcebos.com/dygraph/ppseg/ppseg_lite_portrait_398x224.tar.gz) | [lite_portrait_inference](https://paddleseg.bj.bcebos.com/dygraph/ppseg/ppseg_lite_portrait_398x224_with_softmax.tar.gz) |
 
 #### 模型性能
 
@@ -203,8 +201,8 @@ export CUDA_VISIBLE_DEVICES=0 # 设置1张可用的卡
 # windows下请执行以下命令
 # set CUDA_VISIBLE_DEVICES=0
 python train.py \
---config configs/pp_humanseg_mobile_192x192_mini_supervisely.yml \
---save_dir saved_model/pp_humanseg_mobile_192x192_mini_supervisely \
+--config configs/fcn_hrnetw18_small_v1_humanseg_192x192_mini_supervisely.yml \
+--save_dir saved_model/fcn_hrnetw18_small_v1_humanseg_192x192_mini_supervisely \
 --save_interval 100 --do_eval --use_vdl
 ```
 
@@ -217,16 +215,16 @@ python train.py --help
 使用下述命令进行评估
 ```bash
 python val.py \
---config configs/pp_humanseg_mobile_192x192_mini_supervisely.yml \
---model_path saved_model/pp_humanseg_mobile_192x192_mini_supervisely/best_model/model.pdparams
+--config configs/fcn_hrnetw18_small_v1_humanseg_192x192_mini_supervisely.yml \
+--model_path saved_model/fcn_hrnetw18_small_v1_humanseg_192x192_mini_supervisely/best_model/model.pdparams
 ```
 
 ### 预测
 使用下述命令进行预测， 预测结果默认保存在`./output/result/`文件夹中。
 ```bash
 python predict.py \
---config configs/pp_humanseg_mobile_192x192_mini_supervisely.yml \
---model_path saved_model/pp_humanseg_mobile_192x192_mini_supervisely/best_model/model.pdparams \
+--config configs/fcn_hrnetw18_small_v1_humanseg_192x192_mini_supervisely.yml \
+--model_path saved_model/fcn_hrnetw18_small_v1_humanseg_192x192_mini_supervisely/best_model/model.pdparams \
 --image_path data/human_image.jpg
 ```
 
@@ -240,13 +238,13 @@ export CUDA_VISIBLE_DEVICES=0 # 设置1张可用的卡
 # windows下请执行以下命令
 # set CUDA_VISIBLE_DEVICES=0
 python ../../export.py \
---config configs/pp_humanseg_mobile_192x192_mini_supervisely.yml \
---model_path saved_model/pp_humanseg_mobile_192x192_mini_supervisely/best_model/model.pdparams \
---save_dir export_model/pp_humanseg_mobile_192x192_mini_supervisely_with_softmax \
+--config configs/fcn_hrnetw18_small_v1_humanseg_192x192_mini_supervisely.yml \
+--model_path saved_model/fcn_hrnetw18_small_v1_humanseg_192x192_mini_supervisely/best_model/model.pdparams \
+--save_dir export_model/fcn_hrnetw18_small_v1_humanseg_192x192_mini_supervisely_with_softmax \
 --without_argmax --with_softmax
 ```
 
-【注】这里采用软预测结果，可以携带透明度，使得边缘更为平滑。因此模型导出时必须携带`--without_argmax --with_softmax`参数。
+【注】模型导出时必须携带`--without_argmax --with_softmax`参数。
 
 导出PP-HumanSeg-Lite模型：
 
@@ -257,8 +255,6 @@ python ../../export.py \
 --model_path pretrained_model/ppseg_lite_portrait_398x224/model.pdparams \
 --without_argmax --with_softmax
 ```
-
-其他PP-HumanSeg模型对应的导出yml位于`configs/`和`../../configs/pp_humanseg_lite/`目录下。
 
 ### 导出脚本参数解释
 

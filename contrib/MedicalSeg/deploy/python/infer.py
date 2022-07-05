@@ -12,29 +12,26 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import argparse
+import codecs
 import os
 import sys
-import codecs
-import warnings
-import argparse
 
 LOCAL_PATH = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(LOCAL_PATH, '..', '..'))
 
 import yaml
-import functools
 import numpy as np
+import functools
 
 from paddle.inference import create_predictor, PrecisionType
 from paddle.inference import Config as PredictConfig
-import paddle
 
 import medicalseg.transforms as T
 from medicalseg.cvlibs import manager
 from medicalseg.utils import get_sys_env, logger, get_image_list
 from medicalseg.utils.visualize import get_pseudo_color_map
-from medicalseg.core.infer import sliding_window_inference
-from tools import HUnorm, resample
+from tools import HUNorm, resample
 from tools import Prep
 
 
@@ -135,24 +132,13 @@ def parse_args():
         choices=[True, False],
         help='Print GLOG information of Paddle Inference.')
 
-    parser.add_argument(
-        '--use_swl',
-        default=False,
-        type=eval,
-        help='use sliding_window_inference')
-
-    parser.add_argument('--use_warmup', default=True, type=eval, help='warmup')
-
-    parser.add_argument('--img_shape', default=128, type=int, help='img_shape')
-
-    parser.add_argument('--is_nhwd', default=True, type=eval, help='is_nhwd')
     return parser.parse_args()
 
 
 def use_auto_tune(args):
     return hasattr(PredictConfig, "collect_shape_range_info") \
-           and hasattr(PredictConfig, "enable_tuned_tensorrt_dynamic_shape") \
-           and args.device == "gpu" and args.use_trt and args.enable_auto_tune
+        and hasattr(PredictConfig, "enable_tuned_tensorrt_dynamic_shape") \
+        and args.device == "gpu" and args.use_trt and args.enable_auto_tune
 
 
 class DeployConfig:
@@ -192,6 +178,7 @@ def auto_tune(args, imgs, img_nums):
     """
     Use images to auto tune the dynamic shape for trt sub graph.
     The tuned shape saved in args.auto_tuned_shape_file.
+
     Args:
         args(dict): input args.
         imgs(str, list[str]): the path for images.
@@ -234,23 +221,6 @@ def auto_tune(args, imgs, img_nums):
             return
 
     logger.info("Auto tune success.\n")
-
-
-class ModelLikeInfer:
-    def __init__(self, input_handle, output_handle, predictor):
-        self.input_handle = input_handle
-        self.output_handle = output_handle
-        self.predictor = predictor
-
-    def infer_likemodel(self, input_handle, output_handle, predictor, data):
-        input_handle.reshape(data.shape)
-        input_handle.copy_from_cpu(data.numpy())
-        predictor.run()
-        return paddle.to_tensor(output_handle.copy_to_cpu())
-
-    def infer_model(self, data):
-        return (self.infer_likemodel(self.input_handle, self.output_handle,
-                                     self.predictor, data), )
 
 
 class Predictor:
@@ -336,7 +306,7 @@ class Predictor:
                 use_calib_mode=False)
 
             if use_auto_tune(self.args) and \
-                    os.path.exists(self.args.auto_tuned_shape_file):
+                os.path.exists(self.args.auto_tuned_shape_file):
                 logger.info("Use auto tuned dynamic shape")
                 allow_build_at_runtime = True
                 self.pred_cfg.enable_tuned_tensorrt_dynamic_shape(
@@ -364,56 +334,38 @@ class Predictor:
             os.makedirs(args.save_dir)
 
         for i in range(0, len(imgs_path), args.batch_size):
-
-            if args.use_warmup:
-                # warm up
-                if i == 0 and args.benchmark:
-                    for j in range(5):
-                        data = np.array([
-                            self._preprocess(img)  # load from original
-                            for img in imgs_path[0:args.batch_size]
-                        ])
-                        input_handle.reshape(data.shape)
-                        input_handle.copy_from_cpu(data)
-                        self.predictor.run()
-                        results = output_handle.copy_to_cpu()
-                        results = self._postprocess(results)
+            # warm up
+            if i == 0 and args.benchmark:
+                for j in range(5):
+                    data = np.array([
+                        self._preprocess(img)  # load from original
+                        for img in imgs_path[0:args.batch_size]
+                    ])
+                    input_handle.reshape(data.shape)
+                    input_handle.copy_from_cpu(data)
+                    self.predictor.run()
+                    results = output_handle.copy_to_cpu()
+                    results = self._postprocess(results)
 
             # inference
             if args.benchmark:
                 self.autolog.times.start()
+
             data = np.array([
                 self._preprocess(p) for p in imgs_path[i:i + args.batch_size]
             ])
+            input_handle.reshape(data.shape)
+            input_handle.copy_from_cpu(data)
 
             if args.benchmark:
                 self.autolog.times.stamp()
 
-            if args.use_swl:
-
-                infer_like_model = ModelLikeInfer(input_handle, output_handle,
-                                                  self.predictor)
-                data = paddle.to_tensor(data)
-                if args.is_nhwd:
-                    data = paddle.squeeze(data, axis=1)
-
-                results = sliding_window_inference(
-                    data, (args.img_shape, args.img_shape, args.img_shape), 1,
-                    infer_like_model.infer_model)
-
-                results = results[0]
-
-            else:
-                input_handle.reshape(data.shape)
-                input_handle.copy_from_cpu(data)
-
-                self.predictor.run()
-
-                results = output_handle.copy_to_cpu()
+            self.predictor.run()
 
             if args.benchmark:
                 self.autolog.times.stamp()
 
+            results = output_handle.copy_to_cpu()
             results = self._postprocess(results)
 
             if args.benchmark:
@@ -424,42 +376,24 @@ class Predictor:
 
     def _preprocess(self, img):
         """load img and transform it
+
         Args:
         Img(str): A batch of image path
+
         """
         if not "npy" in img:
-            image_files = get_image_list(img, None, None)
-            warnings.warn(
-                "The image path is {}, please make sure this is the images you want to infer".
-                format(image_files))
-            savepath = os.path.dirname(img)
-            pre = [
-                HUnorm,
-                functools.partial(
-                    resample,  # TODO: config preprocess in deply.yaml(export) to set params
-                    new_shape=[128, 128, 128],
-                    order=1)
-            ]
-
-            for f in image_files:
-                f_nps = Prep.load_medical_data(f)
-                for f_np in f_nps:
-                    if pre is not None:
-                        for op in pre:
-                            f_np = op(f_np)
-
-                    # Set image to a uniform format before save.
-                    if isinstance(f_np, tuple):
-                        f_np = f_np[0]
-                    f_np = f_np.astype("float32")
-
-                    np.save(
-                        os.path.join(
-                            savepath,
-                            f.split("/")[-1].split(
-                                ".", maxsplit=1)[0]),
-                        f_np)
-
+            Prep.load_save(
+                file_path=img,
+                save_path=os.path.dirname(img),
+                preprocess=[
+                    HUNorm,
+                    functools.partial(
+                        resample,  # TODO: config preprocess in deply.yaml to set params
+                        new_shape=[128, 128, 128],
+                        order=1)
+                ],
+                valid_suffix=None,
+                filter_key=None)
             img = img.split(".", maxsplit=1)[0] + ".npy"
 
         return self.cfg.transforms(img)[0]
@@ -492,7 +426,7 @@ def main(args):
     predictor.run(imgs_list)
 
     if use_auto_tune(args) and \
-            os.path.exists(args.auto_tuned_shape_file):
+        os.path.exists(args.auto_tuned_shape_file):
         os.remove(args.auto_tuned_shape_file)
 
     # test the speed.

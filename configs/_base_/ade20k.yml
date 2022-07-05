@@ -3,7 +3,7 @@ iters: 80000
 
 train_dataset:
   type: ADE20K
-  dataset_root: data/ADEChallengeData2016/
+  dataset_root: /root/paddlejob/workspace/env_run/output/xinying/Semantic-Seg/PaddlePytorchSeg-4.18/cae-seg-for-submit/dataset/ade/ADEChallengeData2016/
   transforms:
     - type: ResizeStepScaling
       min_scale_factor: 0.5
@@ -21,7 +21,7 @@ train_dataset:
 
 val_dataset:
   type: ADE20K
-  dataset_root: data/ADEChallengeData2016/
+  dataset_root: /root/paddlejob/workspace/env_run/output/xinying/Semantic-Seg/PaddlePytorchSeg-4.18/cae-seg-for-submit/dataset/ade/ADEChallengeData2016/
   transforms:
     - type: Normalize
   mode: val

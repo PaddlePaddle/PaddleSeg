@@ -34,8 +34,6 @@ def evaluate(model,
              is_slide=False,
              stride=None,
              crop_size=None,
-             precision='fp32',
-             amp_level='O1',
              num_workers=0,
              print_detail=True,
              auc_roc=False):
@@ -54,8 +52,6 @@ def evaluate(model,
             It should be provided when `is_slide` is True.
         crop_size (tuple|list, optional):  The crop size of sliding window, the first is width and the second is height.
             It should be provided when `is_slide` is True.
-        precision (str, optional): Use AMP if precision='fp16'. If precision='fp32', the evaluation is normal.
-        amp_level (str, optional): Auto mixed precision level. Accepted values are “O1” and “O2”: O1 represent mixed precision, the input data type of each operator will be casted by white_list and black_list; O2 represent Pure fp16, all operators parameters and input data will be casted to fp16, except operators in black_list, don’t support fp16 kernel and batchnorm. Default is O1(amp)
         num_workers (int, optional): Num workers for data loader. Default: 0.
         print_detail (bool, optional): Whether to print detailed information about the evaluation process. Default: True.
         auc_roc(bool, optional): whether add auc_roc metric
@@ -103,65 +99,26 @@ def evaluate(model,
 
             ori_shape = label.shape[-2:]
             if aug_eval:
-                if precision == 'fp16':
-                    with paddle.amp.auto_cast(
-                            level=amp_level,
-                            enable=True,
-                            custom_white_list={
-                                "elementwise_add", "batch_norm",
-                                "sync_batch_norm"
-                            },
-                            custom_black_list={'bilinear_interp_v2'}):
-                        pred, logits = infer.aug_inference(
-                            model,
-                            im,
-                            ori_shape=ori_shape,
-                            transforms=eval_dataset.transforms.transforms,
-                            scales=scales,
-                            flip_horizontal=flip_horizontal,
-                            flip_vertical=flip_vertical,
-                            is_slide=is_slide,
-                            stride=stride,
-                            crop_size=crop_size)
-                else:
-                    pred, logits = infer.aug_inference(
-                        model,
-                        im,
-                        ori_shape=ori_shape,
-                        transforms=eval_dataset.transforms.transforms,
-                        scales=scales,
-                        flip_horizontal=flip_horizontal,
-                        flip_vertical=flip_vertical,
-                        is_slide=is_slide,
-                        stride=stride,
-                        crop_size=crop_size)
+                pred, logits = infer.aug_inference(
+                    model,
+                    im,
+                    ori_shape=ori_shape,
+                    transforms=eval_dataset.transforms.transforms,
+                    scales=scales,
+                    flip_horizontal=flip_horizontal,
+                    flip_vertical=flip_vertical,
+                    is_slide=is_slide,
+                    stride=stride,
+                    crop_size=crop_size)
             else:
-                if precision == 'fp16':
-                    with paddle.amp.auto_cast(
-                            level=amp_level,
-                            enable=True,
-                            custom_white_list={
-                                "elementwise_add", "batch_norm",
-                                "sync_batch_norm"
-                            },
-                            custom_black_list={'bilinear_interp_v2'}):
-                        pred, logits = infer.inference(
-                            model,
-                            im,
-                            ori_shape=ori_shape,
-                            transforms=eval_dataset.transforms.transforms,
-                            is_slide=is_slide,
-                            stride=stride,
-                            crop_size=crop_size)
-                else:
-                    pred, logits = infer.inference(
-                        model,
-                        im,
-                        ori_shape=ori_shape,
-                        transforms=eval_dataset.transforms.transforms,
-                        is_slide=is_slide,
-                        stride=stride,
-                        crop_size=crop_size)
+                pred, logits = infer.inference(
+                    model,
+                    im,
+                    ori_shape=ori_shape,
+                    transforms=eval_dataset.transforms.transforms,
+                    is_slide=is_slide,
+                    stride=stride,
+                    crop_size=crop_size)
 
             intersect_area, pred_area, label_area = metrics.calculate_area(
                 pred,

@@ -3,7 +3,6 @@
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-#
 #    http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
@@ -142,12 +141,13 @@ class PPModule(nn.Layer):
             self._make_stage(in_channels, inter_channels, size)
             for size in bin_sizes
         ])
-
-        self.conv_bn_relu2 = layers.ConvBNReLU(
+         
+        self.bottleneck = layers.ConvBNReLU(
             in_channels=in_channels + inter_channels * len(bin_sizes),
             out_channels=out_channels,
             kernel_size=3,
-            padding=1)
+            padding=1,
+            bias_attr=False)
 
         self.align_corners = align_corners
 
@@ -168,25 +168,25 @@ class PPModule(nn.Layer):
         Returns:
             conv (Tensor): A tensor after Pyramid Pooling Module.
         """
-
         prior = nn.AdaptiveAvgPool2D(output_size=(size, size))
         conv = layers.ConvBNReLU(
-            in_channels=in_channels, out_channels=out_channels, kernel_size=1)
+            in_channels=in_channels, out_channels=out_channels, kernel_size=1,  bias_attr=False)
 
         return nn.Sequential(prior, conv)
 
-    def forward(self, input):
+    def forward(self, input_tensor):
         cat_layers = []
         for stage in self.stages:
-            x = stage(input)
+            x = stage(input_tensor)
             x = F.interpolate(
                 x,
-                paddle.shape(input)[2:],
+                paddle.shape(input_tensor)[2:],
                 mode='bilinear',
                 align_corners=self.align_corners)
             cat_layers.append(x)
-        cat_layers = [input] + cat_layers[::-1]
+        # cat_layers = [input_tensor] + cat_layers[::-1]
+        cat_layers = [input_tensor] + cat_layers
         cat = paddle.concat(cat_layers, axis=1)
-        out = self.conv_bn_relu2(cat)
+        out = self.bottleneck(cat)
 
         return out

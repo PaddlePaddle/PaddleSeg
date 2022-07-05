@@ -24,7 +24,6 @@ val_dataset:
   num_classes: 3
   transforms: []
   mode: val
-  dataset_json_path: "data/lung_coronavirus/lung_coronavirus_raw/dataset.json"
 
 optimizer:
   type: sgd
@@ -34,7 +33,7 @@ optimizer:
 lr_scheduler:
   type: PolynomialDecay
   decay_steps: 15000
-  learning_rate: 0.001
+  learning_rate: 0.0003
   end_lr: 0
   power: 0.9
 

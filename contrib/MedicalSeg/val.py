@@ -69,13 +69,6 @@ def parse_args():
         type=bool,
         default=False)
 
-    parser.add_argument('--sw_num', default=None, type=int, help='sw_num')
-
-    parser.add_argument(
-        '--is_save_data', default=True, type=eval, help='warmup')
-
-    parser.add_argument(
-        '--has_dataset_json', default=True, type=eval, help='has_dataset_json')
     return parser.parse_args()
 
 
@@ -125,10 +118,7 @@ def main(args):
         print_detail=args.print_detail,
         auc_roc=args.auc_roc,
         writer=log_writer,
-        save_dir=args.save_dir,
-        sw_num=args.sw_num,
-        is_save_data=args.is_save_data,
-        has_dataset_json=args.has_dataset_json)
+        save_dir=args.save_dir)
 
 
 if __name__ == '__main__':

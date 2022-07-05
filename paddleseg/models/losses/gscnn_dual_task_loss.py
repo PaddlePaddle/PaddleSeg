@@ -99,7 +99,6 @@ class DualTaskLoss(nn.Layer):
         return output
 
     def forward(self, logit, labels):
-        # import pdb; pdb.set_trace()
         n, c, h, w = logit.shape
         th = 1e-8
         eps = 1e-10

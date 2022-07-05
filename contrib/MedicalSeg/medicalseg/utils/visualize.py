@@ -25,6 +25,8 @@ def add_image_vdl(writer, im, pred, label, epoch, channel, with_overlay=True):
     pred_clone = pred.clone().detach().squeeze().numpy()  # [D, H, W]
     label_clone = label.clone().detach().squeeze().numpy()
 
+    import pdb
+    pdb.set_trace()
     step = pred_clone.shape[0] // 5
     for i in range(5):
         index = i * step

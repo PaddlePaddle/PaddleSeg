@@ -1,7 +1,3 @@
-# Project Specific
-data/
-saved_model/
-
 # Mac system
 .DS_Store
 

@@ -1,4 +1,3 @@
-大量模型的配置文件保存在`PaddleSeg/configs`目录下。 PaddleSeg使用这些配置文件进行模型训练、测试和导出。
 
 # 配置项
 

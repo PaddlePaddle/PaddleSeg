@@ -78,7 +78,7 @@ def get_files(path, format, postfix):
 def generate_list(args):
     separator = args.separator
     dataset_root = args.dataset_root
-    if abs(sum(args.split) - 1.0) > 1e-8:
+    if sum(args.split) != 1.0:
         raise ValueError("划分比例之和必须为1")
 
     file_list = os.path.join(dataset_root, 'labels.txt')

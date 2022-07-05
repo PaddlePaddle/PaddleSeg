@@ -118,7 +118,7 @@ def download_file_and_uncompress(url,
                                  extrapath=None,
                                  extraname=None,
                                  print_progress=True,
-                                 cover=True,
+                                 cover=False,
                                  delete_file=True):
     if savepath is None:
         savepath = "."

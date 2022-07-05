@@ -1,4 +1,4 @@
-简体中文|[English](python_inference.md)
+简体中文|[English]((python_inference.md)
 # Paddle Inference部署（Python）
 
 ## 1. 说明
@@ -9,12 +9,28 @@
 
 ![inference_ecosystem](https://user-images.githubusercontent.com/52520497/130720374-26947102-93ec-41e2-8207-38081dcc27aa.png)
 
-## 2. 准备部署环境
+## 2. 准备模型和数据
 
-Paddle Inference是飞桨的原生推理库，提供服务端部署模型的功能。
-Paddle Inference的Python接口集成在PaddlePaddle中，所以只需要安装PaddlePaddle即可。
+下载[样例模型](https://paddleseg.bj.bcebos.com/dygraph/demo/bisenet_demo_model.tar.gz)用于测试。
 
-下面我们介绍不同部署方式下，安装PaddlePaddle的方法。PaddleSeg的其他依赖库，请参考[文档](../../install_cn.md)自行安装。
+如果要使用其他模型，大家可以参考[文档](../../model_export.md)导出预测模型，再进行测试。
+
+```shell
+wget https://paddleseg.bj.bcebos.com/dygraph/demo/bisenet_demo_model.tar.gz
+tar zxvf bisenet_demo_model.tar.gz
+```
+
+下载cityscapes验证集中的一张[图片](https://paddleseg.bj.bcebos.com/dygraph/demo/cityscapes_demo.png)用于演示效果。
+
+如果模型是使用其他数据集训练的，请自行准备测试图片。
+
+```
+wget https://paddleseg.bj.bcebos.com/dygraph/demo/cityscapes_demo.png
+```
+
+## 3. 准备部署环境
+
+Paddle Inference是飞桨的原生推理库，提供服务端部署模型的功能。使用Paddle Inference的Python接口部署模型，只需要根据部署情况，安装PaddlePaddle。即是，Paddle Inference的Python接口集成在PaddlePaddle中。
 
 在服务器端，Paddle Inference可以在Nvidia GPU或者X86 CPU上部署模型。Nvidia GPU部署模型计算速度快，X86 CPU部署模型应用范围广。
 
@@ -26,55 +42,38 @@ Paddle Inference的Python接口集成在PaddlePaddle中，所以只需要安装P
 
 Paddle Inference在Nvidia GPU端部署模型，支持两种计算方式：Naive方式和TensorRT方式。TensorRT方式有多种计算精度，通常比Naive方式的计算速度更快。
 
-如果在Nvidia GPU使用Naive方式部署模型，参考[文档](https://www.paddlepaddle.org.cn/install/quick?docurl=/documentation/docs/zh/install/pip/linux-pip.html)准备CUDA环境、安装GPU版本的PaddlePaddle（请详细阅读安装文档底部描述，推荐版本>=2.1）。比如：
+如果在Nvidia GPU使用Naive方式部署模型，同样参考[文档](https://www.paddlepaddle.org.cn/install/quick?docurl=/documentation/docs/zh/install/pip/linux-pip.html)准备CUDA环境、安装GPU版本的PaddlePaddle（请详细阅读安装文档底部描述，推荐版本>=2.1）。比如：
 
 ```
 # CUDA10.1的PaddlePaddle
 python -m pip install paddlepaddle-gpu==2.1.2.post101 -f https://www.paddlepaddle.org.cn/whl/linux/mkl/avx/stable.html
 ```
 
-如果在Nvidia GPU上使用TensorRT方式部署模型，首先需要准备CUDA和cudnn环境（CUDA10.1+cudnn7+trt6, CUDA10.2+cudnn8.1+trt7, CUDA11.1+cudnn8.1+trt7, ）。
-此处我们提供两个版本环境的cuda+cudnn+trt下载链接，大家也可以在[TensorRT官网](https://developer.nvidia.com/tensorrt)下载安装。
+如果在Nvidia GPU上使用TensorRT方式部署模型，同样参考[文档](https://www.paddlepaddle.org.cn/install/quick?docurl=/documentation/docs/zh/install/pip/linux-pip.html)准备CUDA环境（只支持CUDA10.1+cudnn7或者CUDA10.2+cudnn8.1）、安装对应GPU版本（支持TensorRT）的PaddlePaddle（请详细阅读安装文档底部描述，推荐版本>=2.1）。比如：
+
+```
+python -m pip install paddlepaddle-gpu==[版本号] -f https://www.paddlepaddle.org.cn/whl/stable/tensorrt.html
+```
+
+在Nvidia GPU上使用TensorRT方式部署模型，大家还需要下载TensorRT库。
+CUDA10.1+cudnn7环境要求TensorRT 6.0，CUDA10.2+cudnn8.1环境要求TensorRT 7.1。
+大家可以在[TensorRT官网](https://developer.nvidia.com/tensorrt)下载。这里只提供Ubuntu系统下TensorRT的下载链接。
 
 ```
 wget https://paddle-inference-dist.bj.bcebos.com/tensorrt_test/cuda10.1-cudnn7.6-trt6.0.tar
 wget https://paddle-inference-dist.bj.bcebos.com/tensorrt_test/cuda10.2-cudnn8.0-trt7.1.tgz
 ```
 
-安装CUDA和cudnn后，还需要将TensorRT库的路径加入到LD_LIBRARY_PATH，比如`export LD_LIBRARY_PATH=/download/TensorRT-7.1.3.4/lib:${LD_LIBRARY_PATH}`。
-
-
-然后，大家参考[文档](https://www.paddlepaddle.org.cn/install/quick?docurl=/documentation/docs/zh/install/pip/linux-pip.html)安装GPU版本、联编TensorRT的PaddlePaddle（请详细阅读安装文档底部描述，推荐版本>=2.1）。
-比如，2.2版本、支持GPU、联编TensorRT的PaddlePaddle whl包，可以在[链接](https://paddleinference.paddlepaddle.org.cn/user_guides/download_lib.html#python)下载并安装(按照whl包文件命名进行选择)。
-
-## 3. 准备模型和数据
-
-下载[样例模型](https://paddleseg.bj.bcebos.com/dygraph/demo/pp_liteseg_infer_model.tar.gz)用于测试。
-如果要使用其他模型，大家可以参考[文档](../../model_export.md)导出预测模型，再进行测试。
-
-```shell
-# 在PaddleSeg根目录下
-cd PaddleSeg
-wget https://paddleseg.bj.bcebos.com/dygraph/demo/pp_liteseg_infer_model.tar.gz
-tar zxvf pp_liteseg_infer_model.tar.gz
-```
-
-下载cityscapes验证集中的一张[图片](https://paddleseg.bj.bcebos.com/dygraph/demo/cityscapes_demo.png)用于演示效果。
-如果模型是使用其他数据集训练的，请自行准备测试图片。
-
-```
-wget https://paddleseg.bj.bcebos.com/dygraph/demo/cityscapes_demo.png
-```
-
+下载、解压TensorRT库，将TensorRT库的路径加入到LD_LIBRARY_PATH，`export LD_LIBRARY_PATH=/path/to/tensorrt/:${LD_LIBRARY_PATH}`
 
 ## 4. 预测
 
-在PaddleSeg根目录，执行以下命令进行预测，预测结果保存在`output/cityscapes_demo.png`。
+在PaddleSeg根目录，执行以下命令进行预测:
 
 ```shell
 python deploy/python/infer.py \
-    --config ./pp_liteseg_infer_model/deploy.yaml \
-    --image_path ./cityscapes_demo.png
+    --config /path/to/model/deploy.yaml \
+    --image_path /path/to/image/path/or/dir
 ```
 
 **参数说明如下:**
@@ -86,8 +85,7 @@ python deploy/python/infer.py \
 |save_dir|保存预测结果的目录|否|output|
 |device|预测执行设备，可选项有'cpu','gpu'|否|'gpu'|
 |use_trt|是否开启TensorRT来加速预测（当device=gpu，该参数才生效）|否|False|
-|precision|启动TensorRT预测时的数值精度，可选项有'fp32','fp16','int8'（当device=gpu、use_trt=True，该参数才生效）|否|'fp32'|
-|min_subgraph_size|设置TensorRT子图最小的节点个数（当device=gpu、use_trt=True，该参数才生效）|否|3|
+|precision|启动TensorRT预测时的数值精度，可选项有'fp32','fp16','int8'（当device=gpu，该参数才生效）|否|'fp32'|
 |enable_auto_tune|开启Auto Tune，会使用部分测试数据离线收集动态shape，用于TRT部署（当device=gpu、use_trt=True、paddle版本>=2.2，该参数才生效）| 否 | False |
 |cpu_threads|使用cpu预测的线程数（当device=cpu，该参数才生效）|否|10|
 |enable_mkldnn|是否使用MKL-DNN加速cpu预测（当device=cpu，该参数才生效）|否|False|
@@ -96,8 +94,8 @@ python deploy/python/infer.py \
 
 **使用说明如下：**
 * 如果在X86 CPU上部署模型，必须设置device为cpu，此外CPU部署的特有参数还有cpu_threads和enable_mkldnn。
-* 如果在Nvidia GPU上使用Naive方式部署模型，需要设置device为gpu。
-* 如果在Nvidia GPU上使用TensorRT方式部署模型，需要设置device为gpu、use_trt为True。这种方式支持三种数值精度：
+* 如果在Nvidia GPU上使用Naive方式部署模型，必须设置device为gpu。
+* 如果在Nvidia GPU上使用TensorRT方式部署模型，必须设置device为gpu、use_trt为True。这种方式支持三种数值精度：
     * 加载常规预测模型，设置precision为fp32，此时执行fp32数值精度
     * 加载常规预测模型，设置precision为fp16，此时执行fp16数值精度，可以加快推理速度
     * 加载量化预测模型，设置precision为int8，此时执行int8数值精度，可以加快推理速度

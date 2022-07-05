@@ -7,14 +7,6 @@ Image Matting is the technique of extracting foreground from an image by calcula
 <img src="https://user-images.githubusercontent.com/30919197/141714637-be8af7b1-ccd0-49df-a4f9-10423705802e.jpg" width="100%" height="100%">
 </p>
 
-# One-click experience
-Matting is widely used in a variety of industries, such as video clip, video synthesis and other fields，Some developers also built a one-click Matting website named "No code Matting" based on PP-Matting，Welcome to use it.
-- [using Link](http://seg.itmanbu.com/)
-
-<p align="center">
-<img src="https://user-images.githubusercontent.com/48433081/165077834-c3191509-aeaf-45c8-b226-656174f4c152.gif" width="100%" height="100%">
-</p>
-
 ## Update Notes
 2022.04
 [1] Add PPMatting model.
@@ -60,8 +52,11 @@ git clone https://github.com/PaddlePaddle/PaddleSeg
 #### 3. Installation
 
 ```shell
-cd PaddleSeg/Matting
-pip install -r requirements.txt
+cd PaddleSeg
+pip install -e .
+pip install scikit-image
+pip install numba
+cd contrib/Matting
 ```
 
 ## Models
@@ -75,13 +70,13 @@ Model recommend:
 
 | Model | Params(M) | FLOPs(G) | FPS | Checkpoint | Inference Model |
 | - | - | -| - | - | - |
-| PP-Matting-512     | 24.5 | 91.28 | 28.9 | - | [model inference](https://paddleseg.bj.bcebos.com/matting/models/deploy/pp-matting-hrnet_w18-human_512.zip) |
-| PP-Matting-1024    | 24.5 | 91.28 | 13.4(1024X1024) | - | [model inference](https://paddleseg.bj.bcebos.com/matting/models/deploy/pp-matting-hrnet_w18-human_1024.zip) |
-| PP-HumanMatting    | 63.9 | 135.8 (2048X2048)| 32.8(2048X2048)| [model](https://paddleseg.bj.bcebos.com/matting/models/human_matting-resnet34_vd.pdparams) | [model inference](https://paddleseg.bj.bcebos.com/matting/models/deploy/pp-humanmatting-resnet34_vd.zip) |
-| ModNet-MobileNetV2 | 6.5 | 15.7 | 68.4 | [model](https://paddleseg.bj.bcebos.com/matting/models/modnet-mobilenetv2.pdparams) | [model inference](https://paddleseg.bj.bcebos.com/matting/models/deploy/modnet-mobilenetv2.zip) |
-| ModNet-ResNet50_vd | 92.2 | 151.6 | 29.0 | [model](https://paddleseg.bj.bcebos.com/matting/models/modnet-resnet50_vd.pdparams) | [model inference](https://paddleseg.bj.bcebos.com/matting/models/deploy/modnet-resnet50_vd.zip) |
-| ModNet-HRNet_W18   | 10.2 | 28.5 | 32.6 | [model](https://paddleseg.bj.bcebos.com/matting/models/modnet-hrnet_w18.pdparams) | [model inference](https://paddleseg.bj.bcebos.com/matting/models/deploy/modnet-hrnet_w18.zip) |
-| DIM-VGG16          | 28.4 | 175.5| 30.4 | [model](https://paddleseg.bj.bcebos.com/matting/models/dim-vgg16.pdparams) | [model inference](https://paddleseg.bj.bcebos.com/matting/models/deploy/dim-vgg16.zip) |
+| PP-Matting-512     | 24.5 | 91.28 | 32.1 | - | [model inference](https://paddleseg.bj.bcebos.com/matting/models/deploy/pp-matting-hrnet_w18-human_512.zip) |
+| PP-Matting-1024    | 24.5 | 91.28 | 18.6(1024X1024) | - | [model inference](https://paddleseg.bj.bcebos.com/matting/models/deploy/pp-matting-hrnet_w18-human_1024.zip) |
+| PP-HumanMatting    | 63.9 | 135.8 (2048X2048)| 35.7(2048X2048)| [model](https://paddleseg.bj.bcebos.com/matting/models/human_matting-resnet34_vd.pdparams) | [model inference](https://paddleseg.bj.bcebos.com/matting/models/deploy/pp-humanmatting-resnet34_vd.zip) |
+| ModNet-MobileNetV2 | 6.5 | 15.7 | 151.6 | [model](https://paddleseg.bj.bcebos.com/matting/models/modnet-mobilenetv2.pdparams) | [model inference](https://paddleseg.bj.bcebos.com/matting/models/deploy/modnet-mobilenetv2.zip) |
+| ModNet-ResNet50_vd | 92.2 | 151.6 | 142.8 | [model](https://paddleseg.bj.bcebos.com/matting/models/modnet-resnet50_vd.pdparams) | [model inference](https://paddleseg.bj.bcebos.com/matting/models/deploy/modnet-resnet50_vd.zip) |
+| ModNet-HRNet_W18   | 10.2 | 28.5 | 39.1 | [model](https://paddleseg.bj.bcebos.com/matting/models/modnet-hrnet_w18.pdparams) | [model inference](https://paddleseg.bj.bcebos.com/matting/models/deploy/modnet-hrnet_w18.zip) |
+| DIM-VGG16          | 28.4 | 175.5| 32.2 | [model](https://paddleseg.bj.bcebos.com/matting/models/dim-vgg16.pdparams) | [model inference](https://paddleseg.bj.bcebos.com/matting/models/deploy/dim-vgg16.zip) |
 
 Note: The model default input size is (512, 512) while calcuting FLOPs and FPS and the GPU is Tesla V100 32G.
 
@@ -155,31 +150,30 @@ val/fg/fg3.jpg bg/bg3.jpg val/trimap/trimap3.jpg
 ### Training
 ```shell
 export CUDA_VISIBLE_DEVICES=0
-python tools/train.py \
-       --config configs/quick_start/modnet-mobilenetv2.yml \
+python train.py \
+       --config configs/modnet/modnet-mobilenetv2.yml \
        --do_eval \
        --use_vdl \
-       --save_interval 500 \
+       --save_interval 5000 \
        --num_workers 5 \
        --save_dir output
 ```
 
 **note:** Using `--do_eval` will affect training speed and increase memory consumption, turning on and off according to needs.
-If opening the `--do_eval`, the historical best model will be saved to '{save_dir}/best_model' according to SAD. At the same time, 'best_sad.txt' will be generated in this directory to record the information of metrics and iter at this time.
 
 `--num_workers` Read data in multi-process mode. Speed up data preprocessing.
 
 Run the following command to view more parameters.
 ```shell
-python tools/train.py --help
+python train.py --help
 ```
 If you want to use multiple GPUs，please use `python -m paddle.distributed.launch` to run.
 
 ### Evaluation
 ```shell
 export CUDA_VISIBLE_DEVICES=0
-python tools/val.py \
-       --config configs/quick_start/modnet-mobilenetv2.yml \
+python val.py \
+       --config configs/modnet/modnet-mobilenetv2.yml \
        --model_path output/best_model/model.pdparams \
        --save_dir ./output/results \
        --save_results
@@ -190,46 +184,40 @@ You can directly download the provided model for evaluation.
 
 Run the following command to view more parameters.
 ```shell
-python tools/val.py --help
+python val.py --help
 ```
 
 ### Prediction
 ```shell
 export CUDA_VISIBLE_DEVICES=0
-python tools/predict.py \
-    --config configs/quick_start/modnet-mobilenetv2.yml \
+python predict.py \
+    --config configs/modnet/modnet-mobilenetv2.yml \
     --model_path output/best_model/model.pdparams \
     --image_path data/PPM-100/val/fg/ \
-    --save_dir ./output/results \
-    --fg_estimate True
+    --save_dir ./output/results
 ```
 If the model requires trimap information, pass the trimap path through '--trimap_path'.
-
-`--fg_Estimate False` can turn off foreground estimation, which improves prediction speed but reduces image quality.
 
 You can directly download the provided model for evaluation.
 
 Run the following command to view more parameters.
 ```shell
-python tools/predict.py --help
+python predict.py --help
 ```
 
 ## Background Replacement
 ```shell
 export CUDA_VISIBLE_DEVICES=0
-python tools/bg_replace.py \
-    --config configs/quick_start/modnet-mobilenetv2.yml \
+python bg_replace.py \
+    --config configs/modnet/modnet-mobilenetv2.yml \
     --model_path output/best_model/model.pdparams \
     --image_path path/to/your/image \
     --background path/to/your/background/image \
-    --save_dir ./output/results \
-    --fg_estimate True
+    --save_dir ./output/results
 ```
 If the model requires trimap information, pass the trimap path through `--trimap_path`.
 
 `--background` can pass a path of brackground image or select one of ('r', 'g', 'b', 'w') which represent red, green, blue and white. If it is not specified, a green background is used.
-
-`--fg_Estimate False` can turn off foreground estimation, which improves prediction speed but reduces image quality.
 
 **note：** `--image_path` must be a image path。
 
@@ -237,14 +225,14 @@ You can directly download the provided model for background replacement.
 
 Run the following command to view more parameters.
 ```shell
-python tools/bg_replace.py --help
+python bg_replace.py --help
 ```
 
 ## Export and Deploy
 ### Model Export
 ```shell
-python tools/export.py \
-    --config configs/quick_start/modnet-mobilenetv2.yml \
+python export.py \
+    --config configs/modnet/modnet-mobilenetv2.yml \
     --model_path output/best_model/model.pdparams \
     --save_dir output/export
 ```
@@ -252,7 +240,7 @@ If the model requires trimap information, `--trimap` is need.
 
 Run the following command to view more parameters.
 ```shell
-python tools/export.py --help
+python export.py --help
 ```
 
 ### Deploy
@@ -260,19 +248,16 @@ python tools/export.py --help
 python deploy/python/infer.py \
     --config output/export/deploy.yaml \
     --image_path data/PPM-100/val/fg/ \
-    --save_dir output/results \
-    --fg_estimate True
+    --save_dir output/results
 ```
 If the model requires trimap information, pass the trimap path through '--trimap_path'.
-
-`--fg_Estimate False` can turn off foreground estimation, which improves prediction speed but reduces image quality.
 
 Run the following command to view more parameters.
 ```shell
 python deploy/python/infer.py --help
 ```
-## Acknowledgement
+## Contributors
 
-* Thanks [Qian bin](https://github.com/qianbin1989228) for their contributons.
-
-* Thanks for the algorithm support of [GFM](https://arxiv.org/abs/2010.16188).
+Thanks
+[Qian bin](https://github.com/qianbin1989228)
+for their contributons.

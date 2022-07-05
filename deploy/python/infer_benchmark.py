@@ -44,19 +44,23 @@ def parse_args():
         type=str,
         required=True)
     parser.add_argument(
-        '--save_dir',
-        dest='save_dir',
-        help='The directory for saving the predict result.',
-        type=str,
-        default='./output')
-
-    parser.add_argument(
         '--image_path',
         dest='image_path',
         help='The directory or path or file list of the images to be predicted.',
         type=str,
         default=None,
         required=True)
+    parser.add_argument(
+        '--save_dir',
+        dest='save_dir',
+        help='The directory for saving the predict result.',
+        type=str,
+        default='./output')
+    parser.add_argument(
+        '--device',
+        choices=['cpu', 'gpu'],
+        default="gpu",
+        help="Select which device to inference, defaults to gpu.")
     parser.add_argument(
         '--resize_width',
         help='Set the resize width to acclerate the test. In default, it is 0, '
@@ -71,12 +75,6 @@ def parse_args():
         default=0)
 
     parser.add_argument(
-        '--device',
-        choices=['cpu', 'gpu'],
-        default="gpu",
-        help="Select which device to inference, defaults to gpu.")
-
-    parser.add_argument(
         '--use_trt',
         default=False,
         type=eval,
@@ -88,11 +86,6 @@ def parse_args():
         type=str,
         choices=["fp32", "fp16", "int8"],
         help='The tensorrt precision.')
-    parser.add_argument(
-        '--min_subgraph_size',
-        default=3,
-        type=int,
-        help='The min subgraph size in tensorrt prediction.')
     parser.add_argument(
         '--enable_auto_tune',
         default=False,
@@ -145,7 +138,7 @@ class PredictorBenchmark(Predictor):
         output_handle = self.predictor.get_output_handle(output_names[0])
 
         img_data = np.array([self._preprocess(img_path)])
-        logger.info("input shape:" + str(img_data.shape))
+        print(img_data.shape)
         input_handle.reshape(img_data.shape)
         input_handle.copy_from_cpu(img_data)
 
@@ -157,15 +150,15 @@ class PredictorBenchmark(Predictor):
         start_time = time.time()
         for _ in range(args.repeats):
             self.predictor.run()
-            results = output_handle.copy_to_cpu()
         end_time = time.time()
 
+        results = output_handle.copy_to_cpu()
         results = self._postprocess(results)
 
         self._save_imgs(results)
 
         avg_time = (end_time - start_time) * 1000 / args.repeats
-        logger.info("Average time: %.3f ms/img" % avg_time)
+        logger.info("Avg Time: {:.3}ms".format(avg_time))
 
     def _preprocess(self, img_path):
         if self.args.resize_width == 0 and self.args.resize_height == 0:
@@ -196,12 +189,7 @@ def main(args):
         os.makedirs(args.save_dir)
 
     if use_auto_tune(args):
-        if args.resize_width == 0 and args.resize_height == 0:
-            auto_tune(args, args.image_path, 1)
-        else:
-            img = np.random.rand(1, 3, args.resize_height,
-                                 args.resize_width).astype("float32")
-            auto_tune(args, img, 1)
+        auto_tune(args, args.image_path, 1)
 
     predictor = PredictorBenchmark(args)
     predictor.run(args.image_path)

@@ -14,9 +14,8 @@
 
 import os
 
-import time
-import json
 import numpy as np
+import time
 import paddle
 import paddle.nn.functional as F
 
@@ -26,20 +25,17 @@ from medicalseg.utils import metric, TimeAverager, calculate_eta, logger, progba
 np.set_printoptions(suppress=True)
 
 
-def evaluate(
-        model,
-        eval_dataset,
-        losses,
-        num_workers=0,
-        print_detail=True,
-        auc_roc=False,
-        writer=None,
-        save_dir=None,
-        sw_num=None,
-        is_save_data=True,
-        has_dataset_json=True, ):
+def evaluate(model,
+             eval_dataset,
+             losses,
+             num_workers=0,
+             print_detail=True,
+             auc_roc=False,
+             writer=None,
+             save_dir=None):
     """
     Launch evalution.
+
     Args:
         model（nn.Layer): A sementic segmentation model.
         eval_dataset (paddle.io.Dataset): Used to read and process validation datasets.
@@ -49,9 +45,7 @@ def evaluate(
         auc_roc(bool, optional): whether add auc_roc metric.
         writer: visualdl log writer.
         save_dir(str, optional): the path to save predicted result.
-        sw_num:sw batch size.
-        is_save_data:use savedata function
-        has_dataset_json:has dataset_json
+
     Returns:
         float: The mIoU of validation datasets.
         float: The accuracy of validation datasets.
@@ -75,11 +69,6 @@ def evaluate(
         num_workers=num_workers,
         return_list=True, )
 
-    if has_dataset_json:
-
-        with open(eval_dataset.dataset_json_path, 'r', encoding='utf-8') as f:
-            dataset_json_dict = json.load(f)
-
     total_iters = len(loader)
     logits_all = None
     label_all = None
@@ -100,30 +89,33 @@ def evaluate(
     with paddle.no_grad():
         for iter, (im, label, idx) in enumerate(loader):
             reader_cost_averager.record(time.time() - batch_start)
-
-            if has_dataset_json:
-                image_json = dataset_json_dict["training"][idx[0].split("/")[-1]
-                                                           .split(".")[0]]
-
             label = label.astype('int32')
 
-            if sw_num:
-                pred, logits = infer.inference(  # reverse transform here
-                    model,
-                    im,
-                    ori_shape=label.shape[-3:],
-                    transforms=eval_dataset.transforms.transforms,
-                    sw_num=sw_num)
-
-            else:
-                pred, logits = infer.inference(  # reverse transform here
-                    model,
-                    im,
-                    ori_shape=label.shape[-3:],
-                    transforms=eval_dataset.transforms.transforms)
+            pred, logits = infer.inference(  # reverse transform here
+                model,
+                im,
+                ori_shape=label.shape[-3:],
+                transforms=eval_dataset.transforms.transforms)
 
             if writer is not None:  # TODO visualdl single channel pseudo label map transfer to
                 pass
+
+            if iter < 5:
+                save_array(
+                    save_path="{}/{}".format(save_dir, iter),
+                    save_content={
+                        'pred': pred.numpy(),
+                        'label': label.numpy(),
+                        'img': im.numpy()
+                    },
+                    form=('npy', 'nii.gz'))
+
+            # Post process
+            # if eval_dataset.post_transform is not None:
+            #     pred, label = eval_dataset.post_transform(
+            #         pred.numpy(), label.numpy())
+            #     pred = paddle.to_tensor(pred)
+            #     label = paddle.to_tensor(label)
 
             # logits [N, num_classes, D, H, W] Compute loss to get dice
             loss, per_channel_dice = loss_computation(logits, label, new_loss)
@@ -145,22 +137,6 @@ def evaluate(
                 channel_dice_array = per_channel_dice
             else:
                 channel_dice_array += per_channel_dice
-            if is_save_data:
-                if iter < 5:
-                    save_array(
-                        save_path=os.path.join(save_dir, str(iter)),
-                        save_content={
-                            'pred': pred.numpy(),
-                            'label': label.numpy(),
-                            'img': im.numpy()
-                        },
-                        form=('npy', 'nii.gz'),
-                        image_infor={
-                            "spacing": image_json["spacing_resample"],
-                            'direction': image_json["direction"],
-                            "origin": image_json["origin"],
-                            'format': "xyz"
-                        })
 
             batch_cost_averager.record(
                 time.time() - batch_start, num_samples=len(label))

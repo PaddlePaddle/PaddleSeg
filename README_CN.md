@@ -19,16 +19,14 @@
 
 ## 最新动态 <img src="./docs/images/seg_news_icon.png" width="40"/>
 
-* [2022-04-20] :fire: PaddleSeg 2.5版本发布！详细发版信息请参考[Release Note](https://github.com/PaddlePaddle/PaddleSeg/releases)。
-  * 发布超轻量级语义分割模型[PP-LiteSeg](./configs/pp_liteseg)以及[技术报告](https://arxiv.org/pdf/2204.02681.pdf)，实现精度和速度的最佳平衡。
-  * 发布高精度trimap-free抠图模型[PP-Matting](./Matting)以及[技术报告](https://arxiv.org/abs/2204.09433)，在Composition-1K和Distinctions-646上实现SOTA指标。
-  * 发布3D医疗影像开发套件[MedicalSeg](./contrib/MedicalSeg)，支持数据预处理、模型训练、模型部署等全流程开发，并提供肺部、椎骨数据上的高精度分割模型。
-  * 升级智能标注工具[EISeg v0.5](./EISeg)版，新增X-Ray胸腔标注、MRI椎骨标注、铝板瑕疵标注。
-  * 新增5个经典分割模型, 包括多个版本的PP-LiteSeg，总模型数达到45个。
-* [2022-01-20] PaddleSeg 2.4版本发布交互式分割工具EISeg v0.4，超轻量级人像分割方案[PP-HumanSeg](./contrib/PP-HumanSeg)，以及大规模视频会议数据集[PP-HumanSeg14K](./contrib/PP-HumanSeg/paper.md#pp-humanseg14k-a-large-scale-teleconferencing-video-dataset)。
-* [2021-10-11] PaddleSeg 2.3版本发布交互式分割工具EISeg v0.3，开源两种[Matting](./contrib/Matting)算法，以及分割高阶功能[模型蒸馏](./slim/distill)和[模型量化](./slim/quant)方案。
-
-
+* [2022-01-20] PaddleSeg 2.4版本发布！详细发版信息请参考[Release Note](https://github.com/PaddlePaddle/PaddleSeg/releases)。
+  * 发布智能标注工具[EISeg v0.4](./EISeg)版，采用静态图预测加速交互过程，并支持遥感和医疗领域智能标注。
+  * 发表人像分割论文[PP-HumanSeg](./contrib/PP-HumanSeg/paper.md)，并开源连通性学习（SCL）方法和大规模视频会议数据集。
+  * 开源发丝级人像抠图Matting算法[PP-HumanMatting](./Matting)，并提供安卓端教程。
+  * 新增9个经典分割模型, 包括Transformer系列模型[SegMenter](configs/segmenter)，总模型数达到40个。
+  * 提供分割模型[性能对比图](docs/model_zoo_overview_cn.md)，全面展示分割模型性能，方便模型选型。
+* [2021-10-11] PaddleSeg 2.3版本发布交互式分割工具EISeg v0.3, 开源两种[Matting](./contrib/Matting)算法, 以及分割高阶功能[模型蒸馏](./slim/distill)和[模型量化](./slim/quant)方案。
+* [2021-09-20] PaddleSeg团队发表交互式分割论文[EdgeFlow](https://arxiv.org/abs/2109.09406)，已在多个数据集实现SOTA性能。
 
 ## 简介
 PaddleSeg是基于飞桨PaddlePaddle开发的端到端图像分割开发套件，涵盖了**高精度**和**轻量级**等不同方向的大量高质量分割模型。通过模块化的设计，提供了**配置化驱动**和**API调用**两种应用方式，帮助开发者更便捷地完成从训练到部署的全流程图像分割应用。
@@ -56,13 +54,9 @@ PaddleSeg是基于飞桨PaddlePaddle开发的端到端图像分割开发套件�
 
 * <img src="./docs/images/f1.png" width="20"/> **高精度模型**：基于半监督标签知识蒸馏方案([SSLD](https://paddleclas.readthedocs.io/zh_CN/latest/advanced_tutorials/distillation/distillation.html#ssld))训练得到高精度骨干网络，结合前沿的分割技术，提供了80+的高质量预训练模型，效果优于其他开源实现。
 
-* <img src="./docs/images/f2.png" width="20"/> **模块化设计**：支持40+主流分割网络 ，结合模块化设计的数据增强策略 、骨干网络、损失函数等不同组件，开发者可以基于实际应用场景出发，组装多样化的训练配置，满足不同性能和精度的要求。
+* <img src="./docs/images/f2.png" width="20"/> **模块化设计**：支持40+主流 *分割网络* ，结合模块化设计的 *数据增强策略* 、*骨干网络*、*损失函数* 等不同组件，开发者可以基于实际应用场景出发，组装多样化的训练配置，满足不同性能和精度的要求。
 
 * <img src="./docs/images/f3.png" width="20"/> **高性能**：支持多进程异步I/O、多卡并行训练、评估等加速策略，结合飞桨核心框架的显存优化功能，可大幅度减少分割模型的训练开销，让开发者更低成本、更高效地完成图像分割训练。
-
-<div align="center">
-<img src="https://user-images.githubusercontent.com/14087480/176379006-7f330e00-b6b0-480e-9df8-8fd1090da4cf.png" width = "2000" />  
-</div>
 
 ----------
 
@@ -71,7 +65,7 @@ PaddleSeg是基于飞桨PaddlePaddle开发的端到端图像分割开发套件�
 * 如果你发现任何PaddleSeg存在的问题或者是建议, 欢迎通过[GitHub Issues](https://github.com/PaddlePaddle/PaddleSeg/issues)给我们提issues。
 * 欢迎加入PaddleSeg 微信群
 <div align="center">
-<img src="https://user-images.githubusercontent.com/48433081/163670184-43cfb3ae-2047-4ba3-8dae-6c02090dd177.png"  width = "200" />  
+<img src="https://s1.ax1x.com/2022/03/23/q1R94s.png"  width = "200" />  
 </div>
 
 ## 产品矩阵 <img src="./docs/images/model.png" width="20"/>
@@ -131,11 +125,6 @@ PaddleSeg是基于飞桨PaddlePaddle开发的端到端图像分割开发套件�
             <li>MLA Transformer</li>
             <li>SegFormer</li>
             <li>SegMenter</li>
-            <li>ENet</li>
-            <li>CCNet</li>
-            <li>DDRNet</li>
-            <li>GloRe</li>
-            <li>PP-LiteSeg :star:</li>
       </td>
       <td>
         <b>骨干网络</b><br>
@@ -168,7 +157,6 @@ PaddleSeg是基于飞桨PaddlePaddle开发的端到端图像分割开发套件�
             <li>Edge Attention</li>
             <li>Relax Boundary</li>
             <li>Connectivity</li>
-            <li>MultiClassFocal</li>
           </ul>
         <b>评估指标</b><br>
           <ul>
@@ -227,7 +215,6 @@ PaddleSeg是基于飞桨PaddlePaddle开发的端到端图像分割开发套件�
            </ul>
        <b>图像抠图</b><br>
         <ul>
-            <li>PP-Matting</li>
             <li>DIM</li>
             <li>MODNet</li>
             <li>PP-HumanMatting</li>
@@ -235,10 +222,6 @@ PaddleSeg是基于飞桨PaddlePaddle开发的端到端图像分割开发套件�
         <b>人像分割</b><br>
         <ul>
             <li>PP-HumanSeg</li>
-        </ul>
-        <b>3D 医疗分割</b><br>
-        <ul>
-          <li>VNet</li>
         </ul>
         <b>Cityscapes打榜模型</b><br>
         <ul>
@@ -326,7 +309,6 @@ PaddleSeg是基于飞桨PaddlePaddle开发的端到端图像分割开发套件�
 - [交互式分割](./EISeg)
 - [图像抠图](./Matting)
 - [人像分割](./contrib/PP-HumanSeg)
-- [3D医疗分割](./contrib/MedicalSeg)
 - [Cityscapes打榜模型](./contrib/CityscapesSOTA)
 - [全景分割](./contrib/PanopticDeepLab)
 - [CVPR冠军模型](./contrib/AutoNUE)
@@ -348,11 +330,11 @@ PaddleSeg是基于飞桨PaddlePaddle开发的端到端图像分割开发套件�
 - 非常感谢[yazheng0307](https://github.com/yazheng0307) (刘正)贡献快速开始教程文档。
 - 非常感谢[CuberrChen](https://github.com/CuberrChen)贡献STDC (rethink BiSeNet) PointRend，和 Detail Aggregate损失函数。
 - 非常感谢[stuartchen1949](https://github.com/stuartchen1949)贡献 SegNet。
-- 非常感谢[justld](https://github.com/justld)(郎督)贡献 UPerNet, DDRNet, CCNet, ESPNetV2, DMNet, ENCNet, HRNet_W48_Contrast, BiSeNetV1, FastFCN, SECrossEntropyLoss 和PixelContrastCrossEntropyLoss。
+- 非常感谢[justld](https://github.com/justld)(郎督)贡献 ESPNetV2, DMNet, ENCNet, HRNet_W48_Contrast, BiSeNetV1, FastFCN, SECrossEntropyLoss 和PixelContrastCrossEntropyLoss。
 - 非常感谢[Herman-Hu-saber](https://github.com/Herman-Hu-saber)(胡慧明)参与贡献 ESPNetV2。
 - 非常感谢[zhangjin12138](https://github.com/zhangjin12138)贡献数据增强方法 RandomCenterCrop。
 - 非常感谢[simuler](https://github.com/simuler) 贡献 ESPNetV1。
-- 非常感谢[ETTR123](https://github.com/ETTR123)(张恺) 贡献 ENet，PFPNNet。
+- 非常感谢[ETTR123](https://github.com/ETTR123)(张恺) 贡献 PFPNNet。
 
 
 ## 学术引用 <img src="./docs/images/yinyong.png" width="30"/>

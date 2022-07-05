@@ -23,9 +23,9 @@ from paddleseg.models import layers
 def SyncBatchNorm(*args, **kwargs):
     """In cpu environment nn.SyncBatchNorm does not have kernel so use nn.BatchNorm2D instead"""
     if paddle.get_device() == 'cpu' or os.environ.get('PADDLESEG_EXPORT_STAGE'):
-        return nn.BatchNorm2D(*args, **kwargs)
+        return nn.BatchNorm2D(use_global_stats=True, *args, **kwargs)
     elif paddle.distributed.ParallelEnv().nranks == 1:
-        return nn.BatchNorm2D(*args, **kwargs)
+        return nn.BatchNorm2D(use_global_stats=True, *args, **kwargs)
     else:
         return nn.SyncBatchNorm(*args, **kwargs)
 
@@ -46,44 +46,13 @@ class ConvBNReLU(nn.Layer):
             data_format = kwargs['data_format']
         else:
             data_format = 'NCHW'
-        self._batch_norm = SyncBatchNorm(out_channels, data_format=data_format)
+        self.bn = SyncBatchNorm(out_channels, data_format=data_format)
         self._relu = layers.Activation("relu")
 
     def forward(self, x):
         x = self._conv(x)
-        x = self._batch_norm(x)
+        x = self.bn(x)
         x = self._relu(x)
-        return x
-
-
-class ConvBNAct(nn.Layer):
-    def __init__(self,
-                 in_channels,
-                 out_channels,
-                 kernel_size,
-                 padding='same',
-                 act_type=None,
-                 **kwargs):
-        super().__init__()
-
-        self._conv = nn.Conv2D(
-            in_channels, out_channels, kernel_size, padding=padding, **kwargs)
-
-        if 'data_format' in kwargs:
-            data_format = kwargs['data_format']
-        else:
-            data_format = 'NCHW'
-        self._batch_norm = SyncBatchNorm(out_channels, data_format=data_format)
-
-        self._act_type = act_type
-        if act_type is not None:
-            self._act = layers.Activation(act_type)
-
-    def forward(self, x):
-        x = self._conv(x)
-        x = self._batch_norm(x)
-        if self._act_type is not None:
-            x = self._act(x)
         return x
 
 
@@ -101,11 +70,11 @@ class ConvBN(nn.Layer):
             data_format = kwargs['data_format']
         else:
             data_format = 'NCHW'
-        self._batch_norm = SyncBatchNorm(out_channels, data_format=data_format)
+        self.bn = SyncBatchNorm(out_channels, data_format=data_format)
 
     def forward(self, x):
         x = self._conv(x)
-        x = self._batch_norm(x)
+        x = self.bn(x)
         return x
 
 
@@ -316,37 +285,11 @@ class ConvBNPReLU(nn.Layer):
             data_format = kwargs['data_format']
         else:
             data_format = 'NCHW'
-        self._batch_norm = SyncBatchNorm(out_channels, data_format=data_format)
+        self.bn = SyncBatchNorm(out_channels, data_format=data_format)
         self._prelu = layers.Activation("prelu")
 
     def forward(self, x):
         x = self._conv(x)
-        x = self._batch_norm(x)
+        x = self.bn(x)
         x = self._prelu(x)
-        return x
-
-
-class ConvBNLeakyReLU(nn.Layer):
-    def __init__(self,
-                 in_channels,
-                 out_channels,
-                 kernel_size,
-                 padding='same',
-                 **kwargs):
-        super().__init__()
-
-        self._conv = nn.Conv2D(
-            in_channels, out_channels, kernel_size, padding=padding, **kwargs)
-
-        if 'data_format' in kwargs:
-            data_format = kwargs['data_format']
-        else:
-            data_format = 'NCHW'
-        self._batch_norm = SyncBatchNorm(out_channels, data_format=data_format)
-        self._relu = layers.Activation("leakyrelu")
-
-    def forward(self, x):
-        x = self._conv(x)
-        x = self._batch_norm(x)
-        x = self._relu(x)
         return x

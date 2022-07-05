@@ -1,7 +1,4 @@
 English | [简体中文](README_cn.md)
-
-The config files of different models are saved in `PaddleSeg/configs`.
-PaddleSeg use the config files to train, validate and export models.
 # Configuration items
 
 ----

@@ -65,6 +65,7 @@ class Compose:
         for op in self.transforms:
             outputs = op(im, label)
             im = outputs[0]
+            #print("img.shape", im.shape)
             if len(outputs) == 2:
                 label = outputs[1]
         im = np.transpose(im, (2, 0, 1))
@@ -1207,7 +1208,7 @@ class RandomAffine:
                  min_scale_factor=0.75,
                  max_scale_factor=1.25,
                  im_padding_value=(128, 128, 128),
-                 label_padding_value=255):
+                 label_padding_value=(255, 255, 255)):
         self.size = size
         self.translation_offset = translation_offset
         self.max_rotation = max_rotation
@@ -1264,8 +1265,7 @@ class RandomAffine:
                 matrix,
                 tuple(self.size),
                 flags=cv2.INTER_NEAREST,
-                borderMode=cv2.BORDER_CONSTANT,
-                borderValue=self.label_padding_value)
+                borderMode=cv2.BORDER_CONSTANT)
         if label is None:
             return (im, )
         else:

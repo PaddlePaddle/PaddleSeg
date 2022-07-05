@@ -22,6 +22,7 @@ import yaml
 
 from paddleseg.cvlibs import manager
 from paddleseg.utils import logger
+from paddleseg.core import AdamWDL
 
 
 class Config(object):
@@ -158,16 +159,12 @@ class Config(object):
         if 'warmup_iters' in params:
             use_warmup = True
             warmup_iters = params.pop('warmup_iters')
-            assert 'warmup_start_lr' in params, \
-                "When use warmup, please set warmup_start_lr and warmup_iters in lr_scheduler"
             warmup_start_lr = params.pop('warmup_start_lr')
             end_lr = params['learning_rate']
 
         lr_type = params.pop('type')
         if lr_type == 'PolynomialDecay':
-            iters = self.iters - warmup_iters if use_warmup else self.iters
-            iters = max(iters, 1)
-            params.setdefault('decay_steps', iters)
+            params.setdefault('decay_steps', self.iters)
             params.setdefault('end_lr', 0)
             params.setdefault('power', 0.9)
         lr_sche = getattr(paddle.optimizer.lr, lr_type)(**params)
@@ -228,6 +225,25 @@ class Config(object):
         elif optimizer_type == 'adam':
             return paddle.optimizer.Adam(
                 lr, parameters=self.model.parameters(), **args)
+        elif optimizer_type == 'adamwdl':
+            skip_list = self.model.backbone.no_weight_decay()
+
+            decay_dict = {
+                param.name: not (len(param.shape) == 1 or name.endswith(".bias")
+                                or name in skip_list)
+                for name, param in self.model.named_parameters()
+            } 
+            args['n_layers'] = self.model.backbone.get_num_layers() 
+            args['apply_decay_param_fun'] = lambda n: decay_dict[n]
+            name_dict = dict()
+            for n, p in self.model.named_parameters():
+                name_dict[p.name] = n
+            args['name_dict'] = name_dict 
+
+            optimizer = AdamWDL(lr, parameters=self.model.parameters(), **args) 
+
+            return optimizer
+
         elif optimizer_type in paddle.optimizer.__all__:
             return getattr(paddle.optimizer,
                            optimizer_type)(lr,
@@ -241,6 +257,8 @@ class Config(object):
         args = self.dic.get('optimizer', {}).copy()
         if args['type'] == 'sgd':
             args.setdefault('momentum', 0.9)
+        elif args['type'] == 'adamwdl':
+            args.pop('momentum', None)
 
         return args
 
@@ -319,22 +337,17 @@ class Config(object):
         model_cfg = self.dic.get('model').copy()
         if not model_cfg:
             raise RuntimeError('No model specified in the configuration file.')
-
         if not 'num_classes' in model_cfg:
             num_classes = None
             try:
                 if self.train_dataset_config:
                     if hasattr(self.train_dataset_class, 'NUM_CLASSES'):
                         num_classes = self.train_dataset_class.NUM_CLASSES
-                    elif 'num_classes' in self.train_dataset_config:
-                        num_classes = self.train_dataset_config['num_classes']
                     elif hasattr(self.train_dataset, 'num_classes'):
                         num_classes = self.train_dataset.num_classes
                 elif self.val_dataset_config:
                     if hasattr(self.val_dataset_class, 'NUM_CLASSES'):
                         num_classes = self.val_dataset_class.NUM_CLASSES
-                    elif 'num_classes' in self.val_dataset_config:
-                        num_classes = self.val_dataset_config['num_classes']
                     elif hasattr(self.val_dataset, 'num_classes'):
                         num_classes = self.val_dataset.num_classes
             except FileNotFoundError:

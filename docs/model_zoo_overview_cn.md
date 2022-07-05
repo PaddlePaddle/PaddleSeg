@@ -43,11 +43,6 @@
 |[PFPNNet](../configs/pfpn)|-|✔|-|-|
 |[FastFCN](../configs/fastfcn)|✔|-|-|-|
 |[BiSeNetV1](../configs/bisenetv1)|-|-|-|-|
-|[ENet](../configs/enet)|-|-|-|-|
-|[CCNet](../configs/ccnet)|-|✔|-|-|
-|[DDRNet](../configs/ddrnet)|-|-|-|-|
-|[GloRe](../configs/glore)|✔|-|-|-|
-|[PP-LiteSeg](../configs/pp_liteseg)|-|-|-|-|
 
 ### Transformer系列
 * [SETR](../configs/setr)
@@ -127,14 +122,3 @@
 <!-- |GINet|ResNet50_OS8|78.66%|463.36|55.87|-|-|-
 |GINet|ResNet101_OS8|78.4%|618.95|74.91|-|-|-
 |GSCNN|ResNet50_OS8|80.67%|385.50|39.47|-|-|- -->
-
-## 如何添加新模型到Benchmark
-### 性能数据统计
-按照上述配置搭建测试环境，并按测试方法要求进行测试。其中Inference Time(ms)，Preprocess Time(ms)，Postprocess Time(ms)耗时可通过 [PaddleSeg推理部署教程](deployment/inference/python_inference_cn.md)进行测试，开启`--benchmark`参数进行推理即可。
-
-### 图表绘制
-将所获得的性能数据更新至表格中。性能对比图绘制代码位于`PaddleSeg/tools/plot_model_performance.py`，在set_model_info()中补充模型的性能数据，运行
-```python
-python plot_model_performance.py
-```
-即可得到所有的性能对比图

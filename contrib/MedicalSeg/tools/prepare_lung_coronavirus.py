@@ -41,6 +41,7 @@ support:
 """
 import os
 import sys
+import time
 import zipfile
 import functools
 import numpy as np
@@ -48,8 +49,7 @@ import numpy as np
 sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), ".."))
 
 from prepare import Prep
-from preprocess_utils import HUnorm, resample
-from medicalseg.utils import wrapped_partial
+from preprocess_utils import HUNorm, resample
 
 urls = {
     "lung_infection.zip":
@@ -65,28 +65,48 @@ urls = {
 
 class Prep_lung_coronavirus(Prep):
     def __init__(self):
+        self.dataset_root = "data/lung_coronavirus_test"
+        self.phase_path = os.path.join(self.dataset_root,
+                                       "lung_coronavirus_phase0/")
         super().__init__(
-            dataset_root="data/lung_coronavirus",
-            raw_dataset_dir="lung_coronavirus_raw/",
-            images_dir="20_ncov_scan",
-            labels_dir="lung_mask",
-            phase_dir="lung_coronavirus_phase0/",
-            urls=urls,
-            valid_suffix=("nii.gz", "nii.gz"),
-            filter_key=(None, None),
-            uncompress_params={"format": "zip",
-                               "num_files": 4})
+            phase_path=self.phase_path, dataset_root=self.dataset_root)
 
-        self.preprocess = {
-            "images": [
-                HUnorm, wrapped_partial(
+        self.raw_data_path = os.path.join(self.dataset_root,
+                                          "lung_coronavirus_raw/")
+        self.image_dir = os.path.join(self.raw_data_path, "20_ncov_scan")
+        self.label_dir = os.path.join(self.raw_data_path, "lung_mask")
+        self.urls = urls
+
+    def convert_path(self):
+        """convert nii.gz file to numpy array in the right directory"""
+
+        print(
+            "Start convert images to numpy array using {}, please wait patiently"
+            .format(self.gpu_tag))
+        time1 = time.time()
+        self.load_save(
+            self.image_dir,
+            save_path=self.image_path,
+            preprocess=[
+                HUNorm, functools.partial(
                     resample, new_shape=[128, 128, 128], order=1)
             ],
-            "labels": [
-                wrapped_partial(
+            valid_suffix=("nii.gz"),
+            filter_key=None)
+
+        self.load_save(
+            self.label_dir,
+            self.label_path,
+            preprocess=[
+                functools.partial(
                     resample, new_shape=[128, 128, 128], order=0),
-            ]
-        }
+            ],
+            valid_suffix=("nii.gz"),
+            filter_key=None,
+            tag="label")
+
+        print("The preprocess time on {} is {}".format(self.gpu_tag,
+                                                       time.time() - time1))
 
     def generate_txt(self, train_split=0.75):
         """generate the train_list.txt and val_list.txt"""
@@ -96,29 +116,22 @@ class Prep_lung_coronavirus(Prep):
             os.path.join(self.phase_path, 'val_list.txt')
         ]
 
-        image_files_npy = os.listdir(self.image_path)
-        label_files_npy = [
+        image_files = os.listdir(self.image_path)
+        label_files = [
             name.replace("_org_covid-19-pneumonia-",
                          "_").replace("-dcm", "").replace("_org_", "_")
-            for name in image_files_npy
+            for name in image_files
         ]
 
-        self.split_files_txt(txtname[0], image_files_npy, label_files_npy,
-                             train_split)
-        self.split_files_txt(txtname[1], image_files_npy, label_files_npy,
-                             train_split)
+        self.split_files_txt(
+            txtname[0], image_files, label_files, train_split=train_split)
+        self.split_files_txt(
+            txtname[1], image_files, label_files, train_split=train_split)
 
 
 if __name__ == "__main__":
+
     prep = Prep_lung_coronavirus()
-    prep.generate_dataset_json(
-        modalities=('CT', ),
-        labels={0: 'background',
-                1: 'left lung',
-                2: 'right lung'},
-        dataset_name="COVID-19 CT scans",
-        dataset_description="This dataset contains 20 CT scans of patients diagnosed with COVID-19 as well as segmentations of lungs and infections made by experts.",
-        license_desc="Coronacases (CC BY NC 3.0)\n Radiopedia (CC BY NC SA 3.0) \n Annotations (CC BY 4.0)",
-        dataset_reference="https://www.kaggle.com/andrewmvd/covid19-ct-scans", )
-    prep.load_save()
+    # prep.uncompress_file(num_zipfiles=4)
+    prep.convert_path()
     prep.generate_txt()

@@ -85,7 +85,7 @@ def parse_args():
         '--log_iters',
         dest='log_iters',
         help='Display logging information at every log_iters',
-        default=10,
+        default=50,
         type=int)
     parser.add_argument(
         '--use_vdl',
@@ -103,17 +103,8 @@ def parse_args():
         default="fp32",
         type=str,
         choices=["fp32", "fp16"],
-        help="Use AMP (Auto mixed precision) if precision='fp16'. If precision='fp32', the training is normal."
+        help="Use AMP if precision='fp16'. If precision='fp32', the training is normal."
     )
-    parser.add_argument(
-        "--amp_level",
-        default="O1",
-        type=str,
-        choices=["O1", "O2"],
-        help="Auto mixed precision level. Accepted values are “O1” and “O2”: O1 represent mixed precision, the input \
-                data type of each operator will be casted by white_list and black_list; O2 represent Pure fp16, all operators \
-                parameters and input data will be casted to fp16, except operators in black_list, don’t support fp16 kernel \
-                and batchnorm. Default is O1(amp)")
     parser.add_argument(
         '--data_format',
         dest='data_format',
@@ -199,10 +190,6 @@ def main(args):
 
     config_check(cfg, train_dataset=train_dataset, val_dataset=val_dataset)
 
-    if place == 'gpu' and paddle.distributed.ParallelEnv().nranks > 1:
-        # convert bn to sync_bn
-        cfg._model = paddle.nn.SyncBatchNorm.convert_sync_batchnorm(cfg.model)
-
     train(
         cfg.model,
         train_dataset,
@@ -220,7 +207,6 @@ def main(args):
         keep_checkpoint_max=args.keep_checkpoint_max,
         test_config=cfg.test_config,
         precision=args.precision,
-        amp_level=args.amp_level,
         profiler_options=args.profiler_options,
         to_static_training=cfg.to_static_training)
 

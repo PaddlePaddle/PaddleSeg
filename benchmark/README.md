@@ -2,8 +2,6 @@ English | [简体中文](README_CN.md)
 
 # Benchmark Introduction
 
-`PaddleSeg/benchmark` is used for monitoring the speed of model training.
-
 The content is as follow:
 
 ```

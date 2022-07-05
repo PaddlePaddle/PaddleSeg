@@ -17,5 +17,3 @@
 
 | Backbone | Resolution | lr | Training Iters | Dice | Links |
 |:-:|:-:|:-:|:-:|:-:|:-:|
-
-To be continue.

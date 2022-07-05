@@ -56,14 +56,10 @@ def resample(image,
         new_shape = np.round(image.shape * spacing / new_spacing)
     else:
         new_shape = np.array(new_shape)
-        if spacing is not None and len(spacing) == 4:
-            spacing = spacing[1:]
-        new_spacing = tuple((image.shape / new_shape) *
-                            spacing) if spacing is not None else None
 
     resize_factor = new_shape / np.array(image.shape)
 
     image_new = scipy.ndimage.zoom(
         image, resize_factor, mode='nearest', order=order)
 
-    return image_new, new_spacing
+    return image_new
