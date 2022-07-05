@@ -59,7 +59,7 @@ function _train(){
                --use_gpu \
                --use_mpio \
                BATCH_SIZE ${batch_size} \
-               DATALOADER.NUM_WORKERS 2 \
+               DATALOADER.NUM_WORKERS 8 \
                SOLVER.NUM_EPOCHS 2 "
 
 #   以下为通用执行命令，无特殊可不用修改
