@@ -33,17 +33,25 @@ def check_logits_losses(logits_list, losses):
             .format(len_logits, len_losses))
 
 
-def loss_computation(logits_list, labels, losses, edges=None):
+def loss_computation(logits_list, label_dict, losses):
     check_logits_losses(logits_list, losses)
     loss_list = []
     for i in range(len(logits_list)):
         logits = logits_list[i]
         loss_i = losses['types'][i]
-        # Whether to use edges as labels According to loss type.
+        coef_i = losses['coef'][i]
         if loss_i.__class__.__name__ in ('BCELoss', ) and loss_i.edge_label:
-            loss_list.append(losses['coef'][i] * loss_i(logits, edges))
+            # Use edges as labels According to loss type.
+            loss_list.append(coef_i * loss_i(logits, label_dict['edge']))
+        elif loss_i.__class__.__name__ == 'MixedLoss':
+            mixed_loss_list = loss_i(logits, label_dict['label'])
+            for mixed_loss in mixed_loss_list:
+                loss_list.append(coef_i * mixed_loss)
+        elif loss_i.__class__.__name__ in ("KLLoss", ):
+            loss_list.append(coef_i *
+                             loss_i(logits_list[0], logits_list[1].detach()))
         else:
-            loss_list.append(losses['coef'][i] * loss_i(logits, labels))
+            loss_list.append(coef_i * loss_i(logits, label_dict['label']))
     return loss_list
 
 
@@ -132,21 +140,18 @@ def train(model,
             if iter > iters:
                 break
             reader_cost_averager.record(time.time() - batch_start)
-            images = data[0]
-            labels = data[1].astype('int64')
+            images = data['img']
+            labels = data['label'].astype('int64')
             edges = None
-            if len(data) == 3:
-                edges = data[2].astype('int64')
+            if 'edge' in data.keys():
+                edges = data['edge'].astype('int64')
 
             if nranks > 1:
                 logits_list = ddp_model(images)
             else:
                 logits_list = model(images)
             loss_list = loss_computation(
-                logits_list=logits_list,
-                labels=labels,
-                losses=losses,
-                edges=edges)
+                logits_list=logits_list, label_dict=data, losses=losses)
             loss = sum(loss_list)
             loss.backward()
 
