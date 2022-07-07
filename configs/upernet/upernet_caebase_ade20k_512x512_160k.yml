@@ -20,7 +20,6 @@ model:
     pretrained: # a BOS link
   backbone_indices: [3, 5, 7, 11]
   channels: 768
-  fpn_dim: 768
   inplane_head: 768
   fpn_inplanes: [768, 768, 768, 768]
   
