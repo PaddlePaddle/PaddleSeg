@@ -44,6 +44,7 @@ MODEL_STAGES_PATTERN = {
 # se: whether to use SE block
 # act: which activation to use
 # s: stride in depthwise block
+# d: dilation rate in depthwise block
 NET_CONFIG = {
     "large": [
         # k, exp, c, se, act, s
@@ -76,6 +77,38 @@ NET_CONFIG = {
         [5, 288, 96, True, "hardswish", 2],
         [5, 576, 96, True, "hardswish", 1],
         [5, 576, 96, True, "hardswish", 1],
+    ],
+    "large4seg": [
+        # k, exp, c, se, act, s, {d}
+        [3, 16, 16, False, "relu", 1],
+        [3, 64, 24, False, "relu", 2],
+        [3, 72, 24, False, "relu", 1],  # x4
+        [5, 72, 40, True, "relu", 2],
+        [5, 120, 40, True, "relu", 1],
+        [5, 120, 40, True, "relu", 1],  # x8
+        [3, 240, 80, False, "hardswish", 1],
+        [3, 200, 80, False, "hardswish", 1, 2],
+        [3, 184, 80, False, "hardswish", 1, 2],
+        [3, 184, 80, False, "hardswish", 1, 2],
+        [3, 480, 112, True, "hardswish", 1, 2],
+        [3, 672, 112, True, "hardswish", 1, 2],
+        [5, 672, 160, True, "hardswish", 1, 2],
+        [5, 960, 160, True, "hardswish", 1, 4],
+        [5, 960, 160, True, "hardswish", 1, 4],
+    ],
+    "small4seg": [
+        # k, exp, c, se, act, s, {d}
+        [3, 16, 16, True, "relu", 2],
+        [3, 72, 24, False, "relu", 2],
+        [3, 88, 24, False, "relu", 1],
+        [5, 96, 40, True, "hardswish", 1],
+        [5, 240, 40, True, "hardswish", 1, 2],
+        [5, 240, 40, True, "hardswish", 1, 2],
+        [5, 120, 48, True, "hardswish", 1, 2],
+        [5, 144, 48, True, "hardswish", 1, 2],
+        [5, 288, 96, True, "hardswish", 1, 2],
+        [5, 576, 96, True, "hardswish", 1, 4],
+        [5, 576, 96, True, "hardswish", 1, 4],
     ]
 }
 
@@ -145,7 +178,9 @@ class MobileNetV3(nn.Layer):
                 filter_size=k,
                 stride=s,
                 use_se=se,
-                act=act) for i, (k, exp, c, se, act, s) in enumerate(self.cfg)
+                act=act,
+                dilation=td[0] if td else 1)
+            for i, (k, exp, c, se, act, s, *td) in enumerate(self.cfg)
         ])
 
         out_channels = [config[idx][2] for idx in self.out_index]
@@ -204,7 +239,8 @@ class ConvBNLayer(nn.Layer):
                  padding,
                  num_groups=1,
                  if_act=True,
-                 act=None):
+                 act=None,
+                 dilation=1):
         super().__init__()
 
         self.conv = Conv2D(
@@ -214,7 +250,8 @@ class ConvBNLayer(nn.Layer):
             stride=stride,
             padding=padding,
             groups=num_groups,
-            bias_attr=False)
+            bias_attr=False,
+            dilation=dilation)
         self.bn = BatchNorm(
             num_channels=out_c,
             act=None,
@@ -239,7 +276,8 @@ class ResidualUnit(nn.Layer):
                  filter_size,
                  stride,
                  use_se,
-                 act=None):
+                 act=None,
+                 dilation=1):
         super().__init__()
         self.if_shortcut = stride == 1 and in_c == out_c
         self.if_se = use_se
@@ -257,10 +295,11 @@ class ResidualUnit(nn.Layer):
             out_c=mid_c,
             filter_size=filter_size,
             stride=stride,
-            padding=int((filter_size - 1) // 2),
+            padding=int((filter_size - 1) // 2) * dilation,
             num_groups=mid_c,
             if_act=True,
-            act=act)
+            act=act,
+            dilation=dilation)
         if self.if_se:
             self.mid_se = SEModule(mid_c)
         self.linear_conv = ConvBNLayer(
@@ -431,5 +470,27 @@ def MobileNetV3_large_x1_25(**kwargs):
         scale=1.25,
         stages_pattern=MODEL_STAGES_PATTERN["MobileNetV3_large"],
         out_index=OUT_INDEX["large"],
+        **kwargs)
+    return model
+
+
+@manager.BACKBONES.add_component
+def MobileNetV3_large4seg_x1_0(**kwargs):
+    model = MobileNetV3(
+        config=NET_CONFIG["large4seg"],
+        scale=1.0,
+        stages_pattern=MODEL_STAGES_PATTERN["MobileNetV3_large"],
+        out_index=OUT_INDEX["large"],
+        **kwargs)
+    return model
+
+
+@manager.BACKBONES.add_component
+def MobileNetV3_small4seg_x1_0(**kwargs):
+    model = MobileNetV3(
+        config=NET_CONFIG["small4seg"],
+        scale=1.0,
+        stages_pattern=MODEL_STAGES_PATTERN["MobileNetV3_small"],
+        out_index=OUT_INDEX["small"],
         **kwargs)
     return model
