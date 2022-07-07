@@ -43,7 +43,7 @@ def evaluate(model,
     Launch evalution.
 
     Args:
-        model（nn.Layer): A sementic segmentation model.
+        model（nn.Layer): A semantic segmentation model.
         eval_dataset (paddle.io.Dataset): Used to read and process validation datasets.
         aug_eval (bool, optional): Whether to use mulit-scales and flip augment for evaluation. Default: False.
         scales (list|float, optional): Scales for augment. It is valid when `aug_eval` is True. Default: 1.0.
