@@ -38,7 +38,7 @@ class LRASPP(nn.Layer):
             has feat_channels, of which the length is 5.
         backbone_indices (List(int), optional): The values indicate the indices of backbone output 
             used as the input of the LR-ASPP head.
-            Default: [0, 1].
+            Default: [0, 1, 3].
         lraspp_head_inter_chs (List(int), optional): The intermediate channels of LR-ASPP head.
             Default: [32, 64].
         lraspp_head_out_ch (int, optional): The output channels of each ASPP branch in the LR-ASPP head.
@@ -54,8 +54,8 @@ class LRASPP(nn.Layer):
     def __init__(self,
                  num_classes,
                  backbone,
-                 backbone_indices=[1, 2, 3],
-                 lraspp_head_inter_chs=[32, 32, 32],
+                 backbone_indices=[0, 1, 3],
+                 lraspp_head_inter_chs=[32, 64],
                  lraspp_head_out_ch=128,
                  resize_mode='bilinear',
                  use_gap=True,
@@ -79,7 +79,7 @@ class LRASPP(nn.Layer):
         # head
         assert len(backbone_indices) == len(
             lraspp_head_inter_chs
-        ), "The length of backbone_indices and lraspp_head_inter_chs should be equal."
+        )+1, "The length of backbone_indices should be 1 greater than lraspp_head_inter_chs."
         self.backbone_indices = backbone_indices
 
         self.lraspp_head = LRASPPHead(backbone_indices, backbone.feat_channels,
@@ -121,12 +121,12 @@ class LRASPPHead(nn.Layer):
                  align_corners=False):
         super().__init__()
 
-        self.indices = indices[::-1]
-        self.in_chs = [in_chs[i] for i in self.indices] + [in_chs[-1]]
+        self.indices = indices[-2::-1]
+        self.in_chs = [in_chs[i] for i in indices[::-1]]
         self.mid_chs = mid_chs[::-1]
         self.convs = nn.LayerList()
         self.conv_ups = nn.LayerList()
-        for in_ch, mid_ch in zip(self.in_chs[:-1], self.mid_chs):
+        for in_ch, mid_ch in zip(self.in_chs[1:], self.mid_chs):
             self.convs.append(
                 nn.Conv2D(
                     in_ch, mid_ch, kernel_size=1, bias_attr=False))
@@ -136,9 +136,9 @@ class LRASPPHead(nn.Layer):
                 kernel_size=(49, 49), stride=(16, 20))
             if not use_gap else nn.AdaptiveAvgPool2D(1),
             nn.Conv2D(
-                self.in_chs[-1], out_ch, 1, bias_attr=False),
+                self.in_chs[0], out_ch, 1, bias_attr=False),
             nn.Sigmoid())
-        self.conv_v = layers.ConvBNReLU(self.in_chs[-1], out_ch, 1)
+        self.conv_v = layers.ConvBNReLU(self.in_chs[0], out_ch, 1)
         self.conv_t = nn.Conv2D(out_ch, out_ch, kernel_size=1, bias_attr=False)
         self.conv_out = nn.Conv2D(
             out_ch, n_classes, kernel_size=1, bias_attr=False)

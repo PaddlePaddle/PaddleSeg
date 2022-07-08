@@ -78,7 +78,7 @@ NET_CONFIG = {
         [5, 576, 96, True, "hardswish", 1],
         [5, 576, 96, True, "hardswish", 1],
     ],
-    "large4seg": [
+    "large_os8": [
         # k, exp, c, se, act, s, {d}
         [3, 16, 16, False, "relu", 1],
         [3, 64, 24, False, "relu", 2],
@@ -96,7 +96,7 @@ NET_CONFIG = {
         [5, 960, 160, True, "hardswish", 1, 4],
         [5, 960, 160, True, "hardswish", 1, 4],
     ],
-    "small4seg": [
+    "small_os8": [
         # k, exp, c, se, act, s, {d}
         [3, 16, 16, True, "relu", 2],
         [3, 72, 24, False, "relu", 2],
@@ -475,9 +475,9 @@ def MobileNetV3_large_x1_25(**kwargs):
 
 
 @manager.BACKBONES.add_component
-def MobileNetV3_large4seg_x1_0(**kwargs):
+def MobileNetV3_large_x1_0_os8(**kwargs):
     model = MobileNetV3(
-        config=NET_CONFIG["large4seg"],
+        config=NET_CONFIG["large_os8"],
         scale=1.0,
         stages_pattern=MODEL_STAGES_PATTERN["MobileNetV3_large"],
         out_index=OUT_INDEX["large"],
@@ -486,9 +486,9 @@ def MobileNetV3_large4seg_x1_0(**kwargs):
 
 
 @manager.BACKBONES.add_component
-def MobileNetV3_small4seg_x1_0(**kwargs):
+def MobileNetV3_small_x1_0_os8(**kwargs):
     model = MobileNetV3(
-        config=NET_CONFIG["small4seg"],
+        config=NET_CONFIG["small_os8"],
         scale=1.0,
         stages_pattern=MODEL_STAGES_PATTERN["MobileNetV3_small"],
         out_index=OUT_INDEX["small"],
