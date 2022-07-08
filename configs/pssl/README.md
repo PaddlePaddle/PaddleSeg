@@ -15,7 +15,7 @@ In our work, we propose a method that leverages Pseudo Semantic Segmentation Lab
 
 ## Training
 
-Our method improves the pre-training step of segmentation models. We provide the details of the pre-training here, but note that **the pre-training step can be skipped because we have provided the pre-trained models**. The donwload link for PSSL dataset will be provided upon request.
+Our method improves the pre-training step of segmentation models. We provide the details of the pre-training here, but note that **the pre-training step can be skipped because we have provided the pre-trained models**. The PSSL dataset can be obtained by sending an email to paddleseg@baidu.com via an **official email** (not use qq, gmail, etc.) including your institution/company information and the purpose on the dataset.
 
 Here we show the configuration files of two lightweight models, [STDC2](https://paddleseg.bj.bcebos.com/dygraph/pssl/stdc2_pssl_pretrained/model.pdparams) and [PPLite-Seg-B](https://paddleseg.bj.bcebos.com/dygraph/pssl/pp_liteseg_stdc2_pssl_pretrained/model.pdparams), where the download links are also provided.
 
