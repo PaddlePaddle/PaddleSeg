@@ -2,8 +2,7 @@
 
 ## Reference
 
-> Xuhong Li, Haoyi Xiong, Yi Liu, Dingfu Zhou, Zeyu Chen, Yaqing Wang, and Dejing Dou. "Distilling ensemble of explanations for weakly-supervised pre-training of image segmentation models." Machine Learning (2022): 1-17. [link](todo).
-
+> Xuhong Li, Haoyi Xiong, Yi Liu, Dingfu Zhou, Zeyu Chen, Yaqing Wang, and Dejing Dou. "Distilling ensemble of explanations for weakly-supervised pre-training of image segmentation models." Machine Learning (2022): 1-17. [link](https://arxiv.org/abs/2207.03335).
 
 ## Overview
 
@@ -16,9 +15,9 @@ In our work, we propose a method that leverages Pseudo Semantic Segmentation Lab
 
 ## Training
 
-Our method improves the pre-training step of segmentation models. We provide the details of the pre-training here, but note that **the pre-training step can be skipped because we have provided the pre-trained models**. We will also release the PSSL dataset in the near future.
+Our method improves the pre-training step of segmentation models. We provide the details of the pre-training here, but note that **the pre-training step can be skipped because we have provided the pre-trained models**. The donwload link for PSSL dataset will be provided upon request.
 
-Here we show the configuration files of two lightweight models, [STDC2](todo) and [PPLite-Seg-B](todo), where the download links are also provided.
+Here we show the configuration files of two lightweight models, [STDC2](https://paddleseg.bj.bcebos.com/dygraph/pssl/stdc2_pssl_pretrained/model.pdparams) and [PPLite-Seg-B](https://paddleseg.bj.bcebos.com/dygraph/pssl/pp_liteseg_stdc2_pssl_pretrained/model.pdparams), where the download links are also provided.
 
 **(Optional) Pretraining**
 ---
@@ -77,11 +76,11 @@ model:
 | Model | Backbone | Resolution | Training Iters | mIoU | mIoU (flip) | mIoU (ms+flip) | Links |
 |:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
 |STDC2-Seg50|STDC2|512x512|40000|68.98%|70.07%|69.99%|[model](https://bj.bcebos.com/paddleseg/dygraph/pascal_voc12/stdc2_seg_voc12aug_512x512_40k/model.pdparams) \| [log](https://bj.bcebos.com/paddleseg/dygraph/pascal_voc12/stdc2_seg_voc12aug_512x512_40k/train.log) \| [vdl](https://paddlepaddle.org.cn/paddle/visualdl/service/app?id=46d5d3cead36ee9d16df1d06b121b3bc) |
-|STDC2-Seg50 + PSSL|STDC2|512x512|40000|74.49%|74.96%|75.79%|[model](todo) \| [log](todo) \| [vdl](todo) |
+|STDC2-Seg50 + PSSL|STDC2|512x512|40000|74.49%|74.96%|75.79%|[model](https://paddleseg.bj.bcebos.com/dygraph/pssl/stdc2_voca_pssl/model.pdparams) \| [log](https://paddleseg.bj.bcebos.com/dygraph/pssl/stdc2_voca_pssl/train.log) |
 
 ### Cityscapes
 
 | Model | Backbone | Training Iters | Train Crops | Test Resolution | mIoU | mIoU (flip) | mIoU (ms+flip) | Links |
 |-|-|-|-|-|-|-|-|-|
 |PP-LiteSeg-B|STDC2|160000|1024x512|2048x1024|79.04%|79.52%|79.85%|[config](./pp_liteseg_stdc2_cityscapes_1024x512_scale1.0_160k.yml)\|[model](https://paddleseg.bj.bcebos.com/dygraph/cityscapes/pp_liteseg_stdc2_cityscapes_1024x512_scale1.0_160k/model.pdparams)\|[log](https://paddleseg.bj.bcebos.com/dygraph/cityscapes/pp_liteseg_stdc2_cityscapes_1024x512_scale1.0_160k/train.log)\|[vdl](https://www.paddlepaddle.org.cn/paddle/visualdl/service/app/scalar?id=12fa0144ca6a1541186afd2c53d31bcb)|
-|PP-LiteSeg-B+PSSL|STDC2|160000|1024x512|2048x1024|79.06%|79.61%|79.97%|[config](./pp_liteseg_stdc2_cityscapes_1024x512_scale1.0_160k_pssl.yml)\|[model](todo)\|[log](todo)\|[vdl](todo)|
+|PP-LiteSeg-B + PSSL|STDC2|160000|1024x512|2048x1024|79.06%|79.61%|79.97%|[config](./pp_liteseg_stdc2_cityscapes_1024x512_scale1.0_160k_pssl.yml)\|[model](https://paddleseg.bj.bcebos.com/dygraph/pssl/pplite_stdc2_cityscapes_pssl/model.pdparams)\|[log](https://paddleseg.bj.bcebos.com/dygraph/pssl/pplite_stdc2_cityscapes_pssl/train.log) |
