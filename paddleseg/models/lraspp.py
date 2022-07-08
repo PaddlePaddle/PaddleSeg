@@ -79,7 +79,7 @@ class LRASPP(nn.Layer):
         # head
         assert len(backbone_indices) == len(
             lraspp_head_inter_chs
-        )+1, "The length of backbone_indices should be 1 greater than lraspp_head_inter_chs."
+        ) + 1, "The length of backbone_indices should be 1 greater than lraspp_head_inter_chs."
         self.backbone_indices = backbone_indices
 
         self.lraspp_head = LRASPPHead(backbone_indices, backbone.feat_channels,
