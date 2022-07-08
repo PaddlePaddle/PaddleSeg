@@ -32,13 +32,14 @@
 
 ## <img src="https://user-images.githubusercontent.com/48054808/157795569-9fc77c85-732f-4870-9be0-99a7fe2cff27.png" width="20"/> 简介
 
-**PaddleSeg**是基于飞桨PaddlePaddle的端到端图像分割套件，内置**40+模型算法**及**140+预训练模型**，支持**配置化驱动**和**API调用**开发方式，打通数据标注、模型开发、训练、压缩、部署的**全流程**，提供**语义分割、交互式分割、Matting、全景分割**四大分割能力，助力算法在工业、自动驾驶、医疗、娱乐等场景落地应用。
+**PaddleSeg**是基于飞桨PaddlePaddle的端到端图像分割套件，内置**40+模型算法**及**140+预训练模型**，支持**配置化驱动**和**API调用**开发方式，打通数据标注、模型开发、训练、压缩、部署的**全流程**，提供**语义分割、交互式分割、Matting、全景分割**四大分割能力，助力算法在医疗、工业、遥感、娱乐等场景落地应用。
 
 <div align="center">
-<img src="https://user-images.githubusercontent.com/53808988/130562440-1ea5cbf5-4caf-424c-a9a7-55d56b7d7776.gif"  width = "800" />  
+<img src="https://github.com/shiyutang/files/raw/2bb2aebaaec36f54953c7e4a96cb84c90336e4c1/ezgif.com-gif-maker%20(3).gif"  width = "800" />  
 </div>
+
 <div align="center">
-<img src="https://user-images.githubusercontent.com/53808988/130562530-ae45c2cd-5dd7-48f0-a080-c0e843eea49d.gif"  width = "800" />  
+<img src="https://github.com/shiyutang/files/raw/main/ezgif.com-gif-maker%20(3).gif"  width = "800" />  
 </div>
 
 ## <img src="./docs/images/feature.png" width="20"/> 特性
@@ -84,10 +85,10 @@
         <ul>
         <details><summary><b>语义分割模型</b></summary>
           <ul>
-            <li>PP-LiteSeg :star:</li>
-            <li>DeepLabV3P :star: </li>
-            <li>OCRNet :star: </li>
-            <li>MobileSeg :star: </li>
+            <li><a href="./configs/pp_liteseg/README.md">PP-LiteSeg</a> </li>
+            <li>DeepLabV3P  </li>
+            <li>OCRNet  </li>
+            <li>MobileSeg  </li>
             <li>ANN</li>
             <li>Att U-Net</li>
             <li>BiSeNetV1</li>
@@ -290,7 +291,7 @@
 | DeepLabV3      | ResNet101_OS8    | 80.85                 | 3.2       | [yml](./configs/deeplabv3/)   |
 | DeepLabV3      | ResNet50_OS8     | 80.36                 | 6.58      | [yml](./configs/deeplabv3p/)  |
 | DeepLabV3      | ResNet101_OS8    | 81.10                 | *3.94*    | [yml](./configs/deeplabv3p/)  |
-| **OCRNet**     | HRNet_w18        | 80.67                 | 13.26     | [yml](./configs/ocrnet/)      |
+| :star2: OCRNet :star2:    | HRNet_w18        | 80.67                 | 13.26     | [yml](./configs/ocrnet/)      |
 | OCRNet         | HRNet_w48        | 82.15                 | 6.17      | [yml](./configs/ocrnet/)      |
 | CCNet          | ResNet101_OS8    | 80.95                 | 3.24      | [yml](./configs/ccnet/)       |
 
@@ -308,8 +309,8 @@
 
 | 模型名称  | 骨干网络   | Cityscapes精度mIoU(%) |  V100 TRT推理速度(FPS) | 骁龙855推理速度(FPS) |  配置文件 |
 |:-------- |:--------:|:---------------------:|:---------------------:|:-----------------:|:--------:|
-| **PP-LiteSeg**      | STDC1         | 77.04               | 69.82           | 17.22       | [yml](./configs/pp_liteseg/)  |
-| **PP-LiteSeg**      | STDC2         | 79.04               | 54.53           | 11.75       | [yml](./configs/pp_liteseg/)  |
+| :star2: PP-LiteSeg :star2:    | STDC1         | 77.04               | 69.82           | 17.22      | [yml](./configs/pp_liteseg/)  |
+| :star2: PP-LiteSeg :star2:      | STDC2         | 79.04               | 54.53           | 11.75       | [yml](./configs/pp_liteseg/)  |
 | BiSeNetV1           | -             | 75.19               | 14.67           | 1.53      |[yml](./configs/bisenetv1/)  |
 | BiSeNetV2           | -             | 73.19               | 61.83           | 13.67       |[yml](./configs/bisenet/)  |
 | STDCSeg             | STDC1         | 74.74               | 62.24           | 14.51       |[yml](./configs/stdcseg/)  |
@@ -333,7 +334,7 @@
 | 模型名称  | 骨干网络   | Cityscapes精度mIoU(%) |  V100 TRT推理速度(FPS)  | 骁龙855推理速度(FPS)|  配置文件 |
 |:-------- |:--------:|:---------------------:|:---------------------:|:-----------------:|:--------:|
 | MobileSeg      | MobileNetV2              | 73.94                 | 67.57          | 27.01   | [yml](./configs/mobileseg/)  |
-| **MobileSeg**  | MobileNetV3              | 73.47                 | 67.39          | 32.90   | [yml](./configs/mobileseg/)  |
+| :star2: MobileSeg :star2:  | MobileNetV3              | 73.47                 | 67.39          | 32.90   | [yml](./configs/mobileseg/)  |
 | MobileSeg      | Lite_HRNet_18            | 70.75                 | *10.5*         | 13.05   | [yml](./configs/mobileseg/)  |
 | MobileSeg      | ShuffleNetV2_x1_0        | 69.46                 | *37.09*        | 39.61  | [yml](./configs/mobileseg/)  |
 | MobileSeg      | GhostNet_x1_0            | 71.88                 | *35.58*        | 38.74  | [yml](./configs/mobileseg/)  |

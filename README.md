@@ -39,12 +39,11 @@ English | [简体中文](README_CN.md)
 PaddleSeg is an end-to-end high-efficent development toolkit for image segmentation based on PaddlePaddle, which  helps both developers and researchers in the whole process of designing segmentation models, training models, optimizing performance and inference speed, and deploying models. A lot of well-trained models and various real-world applications in both industry and academia help users conveniently build hands-on experiences in image segmentation.
 
 <div align="center">
-<img src="https://user-images.githubusercontent.com/53808988/130562378-64d0c84a-9c3f-4ae4-93f7-bdc0c8e0238e.gif"  width = "800" />  
+<img src="https://github.com/shiyutang/files/raw/2bb2aebaaec36f54953c7e4a96cb84c90336e4c1/ezgif.com-gif-maker%20(3).gif"  width = "800" />  
 </div>
 
-
 <div align="center">
-<img src="https://user-images.githubusercontent.com/53808988/130562234-bdf79d76-8566-4e06-a3a9-db7719e63385.gif"  width = "800" />  
+<img src="https://github.com/shiyutang/files/raw/main/ezgif.com-gif-maker%20(3).gif"  width = "800" />  
 </div>
 
 
@@ -93,10 +92,10 @@ PaddleSeg is an end-to-end high-efficent development toolkit for image segmentat
         <ul>
         <details><summary><b>Semantic Segmentation</b></summary>
           <ul>
-            <li>PP-LiteSeg :star:</li>
-            <li>DeepLabV3P :star: </li>
-            <li>OCRNet :star: </li>
-            <li>MobileSeg :star: </li>
+            <li>PP-LiteSeg </li>
+            <li>DeepLabV3P  </li>
+            <li>OCRNet  </li>
+            <li>MobileSeg  </li>
             <li>ANN</li>
             <li>Att U-Net</li>
             <li>BiSeNetV1</li>
@@ -300,7 +299,7 @@ PaddleSeg is an end-to-end high-efficent development toolkit for image segmentat
 | DeepLabV3      | ResNet101_OS8    | 80.85                 | 3.2       | [yml](./configs/deeplabv3/)   |
 | DeepLabV3      | ResNet50_OS8     | 80.36                 | 6.58      | [yml](./configs/deeplabv3p/)  |
 | DeepLabV3      | ResNet101_OS8    | 81.10                 | *3.94*    | [yml](./configs/deeplabv3p/)  |
-| **OCRNet**     | HRNet_w18        | 80.67                 | 13.26     | [yml](./configs/ocrnet/)      |
+| :star2: OCRNet :star2:      | HRNet_w18        | 80.67                 | 13.26     | [yml](./configs/ocrnet/)      |
 | OCRNet         | HRNet_w48        | 82.15                 | 6.17      | [yml](./configs/ocrnet/)      |
 | CCNet          | ResNet101_OS8    | 80.95                 | 3.24      | [yml](./configs/ccnet/)       |
 
@@ -317,8 +316,8 @@ Note that:
 
 | Model    | Backbone | Cityscapes mIoU(%)    |  V100 TRT Inference Speed(FPS)  | Snapdragon 855 Inference Speed(FPS) | Config File |
 |:-------- |:--------:|:---------------------:|:-------------------------------:|:-----------------:|:--------:|
-| **PP-LiteSeg**      | STDC1         | 77.04               | 69.82           | 17.22       | [yml](./configs/pp_liteseg/)  |
-| **PP-LiteSeg**      | STDC2         | 79.04               | 54.53           | 11.75       | [yml](./configs/pp_liteseg/)  |
+| :star2: PP-LiteSeg :star2:      | STDC1         | 77.04               | 69.82           | 17.22       | [yml](./configs/pp_liteseg/)  |
+| :star2: PP-LiteSeg :star2:      | STDC2         | 79.04               | 54.53           | 11.75       | [yml](./configs/pp_liteseg/)  |
 | BiSeNetV1           | -             | 75.19               | 14.67           | 1.53      |[yml](./configs/bisenetv1/)  |
 | BiSeNetV2           | -             | 73.19               | 61.83           | 13.67       |[yml](./configs/bisenet/)  |
 | STDCSeg             | STDC1         | 74.74               | 62.24           | 14.51       |[yml](./configs/stdcseg/)  |
@@ -342,7 +341,7 @@ Note that:
 | Model    | Backbone | Cityscapes mIoU(%)    |  V100 TRT Inference Speed(FPS)  | Snapdragon 855 Inference Speed(FPS) | Config File |
 |:-------- |:--------:|:---------------------:|:-------------------------------:|:-----------------------------------:|:-----------:|
 | MobileSeg      | MobileNetV2              | 73.94                 | 67.57          | 27.01   | [yml](./configs/mobileseg/)  |
-| **MobileSeg**  | MobileNetV3              | 73.47                 | 67.39          | 32.90   | [yml](./configs/mobileseg/)  |
+| :star2: MobileSeg :star2:  | MobileNetV3              | 73.47                 | 67.39          | 32.90   | [yml](./configs/mobileseg/)  |
 | MobileSeg      | Lite_HRNet_18            | 70.75                 | *10.5*         | 13.05   | [yml](./configs/mobileseg/)  |
 | MobileSeg      | ShuffleNetV2_x1_0        | 69.46                 | *37.09*        | 39.61  | [yml](./configs/mobileseg/)  |
 | MobileSeg      | GhostNet_x1_0            | 71.88                 | *35.58*        | 38.74  | [yml](./configs/mobileseg/)  |
