@@ -110,7 +110,8 @@ class PSSLDataset(Dataset):
             self.file_list.append([img_path, label_path])
 
         # mapping class name to class id.
-        class_id_file = os.path.join(pssl_root, "imagenet_lsvrc_2015_synsets.txt")
+        class_id_file = os.path.join(pssl_root,
+                                     "imagenet_lsvrc_2015_synsets.txt")
         if not os.path.exists(class_id_file):
             raise ValueError("Class id file isn't exists.")
         for idx, line in enumerate(open(class_id_file)):
