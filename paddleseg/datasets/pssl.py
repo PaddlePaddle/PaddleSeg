@@ -27,7 +27,7 @@ class PSSLDataset(Dataset):
     is computed by the Consensus explanation algorithm.
 
     The PSSL refers to "Distilling Ensemble of Explanations for Weakly-Supervised Pre-Training of Image Segmentation 
-    Models" (TODO). 
+    Models" (https://arxiv.org/abs/2207.03335). 
     
     The Consensus explanation refers to "Cross-Model Consensus of Explanations and Beyond for Image Classification 
     Models: An Empirical Study" (https://arxiv.org/abs/2109.00707).
