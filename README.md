@@ -16,7 +16,9 @@ English | [简体中文](README_CN.md)
 
 </div>
 
-
+<div align="center">
+<img src="https://github.com/shiyutang/files/raw/2bb2aebaaec36f54953c7e4a96cb84c90336e4c1/ezgif.com-gif-maker%20(3).gif"  width = "800" />  
+</div>
 
 ## <img src="./docs/images/seg_news_icon.png" width="20"/> News
 <ul class="nobull">
@@ -37,10 +39,6 @@ English | [简体中文](README_CN.md)
 ## <img src="https://user-images.githubusercontent.com/48054808/157795569-9fc77c85-732f-4870-9be0-99a7fe2cff27.png" width="20"/> Introduction
 
 PaddleSeg is an end-to-end high-efficent development toolkit for image segmentation based on PaddlePaddle, which  helps both developers and researchers in the whole process of designing segmentation models, training models, optimizing performance and inference speed, and deploying models. A lot of well-trained models and various real-world applications in both industry and academia help users conveniently build hands-on experiences in image segmentation.
-
-<div align="center">
-<img src="https://github.com/shiyutang/files/raw/2bb2aebaaec36f54953c7e4a96cb84c90336e4c1/ezgif.com-gif-maker%20(3).gif"  width = "800" />  
-</div>
 
 <div align="center">
 <img src="https://github.com/shiyutang/files/raw/main/ezgif.com-gif-maker%20(3).gif"  width = "800" />  
@@ -92,111 +90,114 @@ PaddleSeg is an end-to-end high-efficent development toolkit for image segmentat
         <ul>
         <details><summary><b>Semantic Segmentation</b></summary>
           <ul>
-            <li>PP-LiteSeg </li>
-            <li>DeepLabV3P  </li>
-            <li>OCRNet  </li>
-            <li>MobileSeg  </li>
-            <li>ANN</li>
-            <li>Att U-Net</li>
-            <li>BiSeNetV1</li>
-            <li>BiSeNetV2</li>
-            <li>CCNet</li>
-            <li>DANet</li>
-            <li>DDRNet</li>
-            <li>DecoupledSeg</li>
-            <li>DeepLabV3</li>
-            <li>DMNet</li>
-            <li>DNLNet</li>
-            <li>ESPNetV1</li>
-            <li>ESPNetV2</li>
-            <li>EMANet</li>
-            <li>ENet</li>
-            <li>ENCNet</li>
-            <li>FastFCN</li>
-            <li>Fast-SCNN</li>
-            <li>GCNet</li>
-            <li>GSCNN</li>
-            <li>GINet</li>
-            <li>GloRe</li>
-            <li>HarDNet</li>
-            <li>HRNet-FCN</li>
-            <li>HRNet-Contrast</li>
-            <li>ISANet</li>
-            <li>MLA Transformer</li>
-            <li>PSPNet</li>
-            <li>PP-HumanSeg</li>
-            <li>PortraitNet</li>
-            <li>PointRend</li>
-            <li>PFPNNet</li>
-            <li>SegNet</li>
-            <li>STDCSeg</li>
-            <li>SFNet</li>
-            <li>SETR</li>
-            <li>SegFormer</li>
-            <li>SegMenter</li>
-            <li>U-Net</li>
-            <li>U<sup>2</sup>-Net</li>
-            <li>U-Net++</li>
-            <li>U-Net3+</li>
+ <li><a href="./configs/pp_liteseg/README.md">PP-LiteSeg</a> </li>
+            <li><a href="./configs/deeplabv3p/README.md">DeepLabV3P</a> </li>
+            <li><a href="./configs/ocrnet/README.md">OCRNet</a> </li>
+            <li><a href="./configs/mobileseg/README.md">MobileSeg</a> </li>
+            <li><a href="./configs/ann/README.md">ANN</a></li>
+            <li><a href="./configs/attention_unet/README.md">Att U-Net</a></li>
+            <li><a href="./configs/bisenetv1/README.md">BiSeNetV1</a></li>
+            <li><a href="./configs/bisenet/README.md">BiSeNetV2</a></li>
+            <li><a href="./configs/ccnet/README.md">CCNet</a></li>
+            <li><a href="./configs/danet/README.md">DANet</a></li>
+            <li><a href="./configs/ddrnet/README.md">DDRNet</a></li>
+            <li><a href="./configs/decoupled_segnet/README.md">DecoupledSeg</a></li>
+            <li><a href="./configs/deeplabv3/README.md">DeepLabV3</a></li>
+            <li><a href="./configs/dmnet/README.md">DMNet</a></li>
+            <li><a href="./configs/dnlnet/README.md">DNLNet</a></li>
+            <li><a href="./configs/emanet/README.md">EMANet</a></li>
+            <li><a href="./configs/encnet/README.md">ENCNet</a></li>
+            <li><a href="./configs/enet/README.md">ENet</a></li>
+            <li><a href="./configs/espnetv1/README.md">ESPNetV1</a></li>
+            <li><a href="./configs/espnet/README.md">ESPNetV2</a></li>
+            <li><a href="./configs/fastfcn/README.md">FastFCN</a></li>
+            <li><a href="./configs/fastscnn/README.md">Fast-SCNN</a></li>
+            <li><a href="./configs/gcnet/README.md">GCNet</a></li>
+            <li><a href="./configs/ginet/README.md">GINet</a></li>
+            <li><a href="./configs/glore/README.md">GloRe</a></li>
+            <li><a href="./configs/gscnn/README.md">GSCNN</a></li>
+            <li><a href="./configs/hardnet/README.md">HarDNet</a></li>
+            <li><a href="./configs/fcn/README.md">HRNet-FCN</a></li>
+            <li><a href="./configs/hrnet_w48_contrast/README.md">HRNet-Contrast</a></li>
+            <li><a href="./configs/isanet/README.md">ISANet</a></li>
+            <li><a href="./configs/pfpn/README.md">PFPNNet</a></li>
+            <li><a href="./configs/pointrend/README.md">PointRend</a></li>
+            <li><a href="./configs/portraitnet/README.md">PotraitNet</a></li>
+            <li><a href="./configs/pp_humanseg_lite/README.md">PP-HumanSeg-Lite</a></li>
+            <li><a href="./configs/pspnet/README.md">PSPNet</a></li>
+            <li><a href="./configs/pssl/README.md">PSSL</a></li>
+            <li><a href="./configs/segformer/README.md">SegFormer</a></li>
+            <li><a href="./configs/segmenter/README.md">SegMenter</a></li>
+            <li><a href="./configs/segmne/README.md">SegNet</a></li>
+            <li><a href="./configs/setr/README.md">SETR</a></li>
+            <li><a href="./configs/sfnet/README.md">SFNet</a></li>
+            <li><a href="./configs/stdcseg/README.md">STDCSeg</a></li>
+            <li><a href="./configs/u2net/README.md">U<sup>2</sup>Net</a></li>
+            <li><a href="./configs/unet/README.md">UNet</a></li>
+            <li><a href="./configs/unet_plusplus/README.md">UNet++</a></li>
+            <li><a href="./configs/unet_3plus/README.md">UNet3+</a></li>
+            <li><a href="./configs/upernet/README.md">UperNet</a></li>
           </ul>
         </details>
         <details><summary><b>Interactive Segmentation</b></summary>
           <ul>
-            <li>EISeg</li>
+            <li><a href="./EISeg/README.md">EISeg</a></li>
             <li>RITM</li>
             <li>EdgeFlow</li>
           </ul>
         </details>
         <details><summary><b>Image Matting</b></summary>
           <ul>
-              <li>PP-Matting</li>
-              <li>DIM</li>
-              <li>MODNet</li>
-              <li>PP-HumanMatting</li>
+              <li><a href="./Matting/ppmatting/README.md">PP-Matting</a></li>
+              <li><a href="./Matting/configs/dim/dim-vgg16.yml">DIM</a></li>
+              <li><a href="./Matting/configs/modnet/modnet-hrnet_w18.yml">MODNet</a></li>
+              <li><a href="./Matting/configs/human_matting/human_matting-resnet34_vd.yml">PP-HumanMatting</a></li>
           </ul>
         </details>
         <details><summary><b>Panoptic Segmentation</b></summary>
           <ul>
-            <li>Panoptic-DeepLab</li>
+            <li>Panoptic-DeepLab<a href="./contrib/PanopticDeepLab/README_CN.md">Panoptic-DeepLab</a></li>
           </ul>
         </details>
       </td>
       <td>
-        <details><summary><b>Backbone</b></summary>
+        <details><summary><a href="./docs/apis/backbones/backbones.md"><b>骨干网络</b></a></summary>
           <ul>
-            <li>HRNet</li>
-            <li>ResNet</li>
-            <li>STDCNet</li>
-            <li>MobileNetV2</li>
-            <li>MobileNetV3</li>
-            <li>ShuffleNetV2</li>
-            <li>GhostNet</li>
-            <li>LiteHRNet</li>
-            <li>XCeption</li>
-            <li>VIT</li>
-            <li>MixVIT</li>
-            <li>Swin Transformer</li>
+            <li><a href="./paddleseg/models/backbones/hrnet.py">HRNet</a></li>
+            <li><a href="./paddleseg/models/backbones/resnet_cd.py">ResNet</a></li>
+            <li><a href="./paddleseg/models/backbones/stdcnet.py">STDCNet</a></li>
+            <li><a href="./paddleseg/models/backbones/mobilenetv2.py">MobileNetV2</a></li>
+            <li><a href="./paddleseg/models/backbones/mobilenetv3.py">MobileNetV3</a></li>
+            <li><a href="./paddleseg/models/backbones/shufflenetv2.py">ShuffleNetV2</a></li>
+            <li><a href="./paddleseg/models/backbones/ghostnet.py">GhostNet</a></li>
+            <li><a href="./paddleseg/models/backbones/lite_hrnet.py">LiteHRNet</a></li>
+            <li><a href="./paddleseg/models/backbones/xception_deeplab.py">XCeption</a></li>
+            <li><a href="./paddleseg/models/backbones/vision_transformer.py">VIT</a></li>
+            <li><a href="./paddleseg/models/backbones/mix_transformer.py">MixVIT</a></li>
+            <li><a href="./paddleseg/models/backbones/swin_transformer.py">Swin Transformer</a></li>
           </ul>
         </details>
-        <details><summary><b>Loss</b></summary>
+        <details><summary><a href="./doc/module/loss/losses_en.md"><b>Loss</b></a></summary>
           <ul>
-            <li>Cross Entropy</li>
-            <li>Binary CE</li>
-            <li>Bootstrapped CE</li>
-            <li>Point CE</li>
-            <li>OHEM CE</li>
-            <li>Pixel Contrast CE</li>
-            <li>Focal</li>
-            <li>Dice</li>
-            <li>RMI</li>
-            <li>KL</li>
-            <li>L1</li>
-            <li>Lovasz</li>
-            <li>MSE</li>
-            <li>Edge Attention</li>
-            <li>Relax Boundary</li>
-            <li>Connectivity</li>
-            <li>MultiClassFocal</li>
+            <li><a href="./paddleseg/models/losses/binary_cross_entropy_loss.py">Binary CE Loss</a></li>
+            <li><a href="./paddleseg/models/losses/bootstrapped_cross_entropy_loss.py">Bootstrapped CE Loss</a></li>
+            <li><a href="./paddleseg/models/losses/cross_entropy_loss.py">Cross Entropy Loss</a></li>
+            <li><a href="./paddleseg/models/losses/decoupledsegnet_relax_boundary_loss.py">Relax Boundary Loss</a></li>
+            <li><a href="./paddleseg/models/losses/detail_aggregate_loss.py">Detail Aggregate Loss</a></li>
+            <li><a href="./paddleseg/models/losses/dice_loss.py">Dice Loss</a></li>
+            <li><a href="./paddleseg/models/losses/edge_attention_loss.py">Edge Attention Loss</a></li>
+            <li><a href="./paddleseg/models/losses/focal_loss.py">Focal Loss</a></li>
+            <li><a href="./paddleseg/models/losses/binary_cross_entropy_loss.py">MultiClassFocal Loss</a></li>
+            <li><a href="./paddleseg/models/losses/gscnn_dual_task_loss.py">GSCNN Dual Task Loss</a></li>
+            <li><a href="./paddleseg/models/losses/kl_loss.py">KL Loss</a></li>
+            <li><a href="./paddleseg/models/losses/l1_loss.py">L1 Loss</a></li>
+            <li><a href="./paddleseg/models/losses/lovasz_loss.py">Lovasz Loss</a></li>
+            <li><a href="./paddleseg/models/losses/mean_square_error_loss.py">MSE Loss</a></li>
+            <li><a href="./paddleseg/models/losses/ohem_cross_entropy_loss.py">OHEM CE Loss</a></li>
+            <li><a href="./paddleseg/models/losses/pixel_contrast_cross_entropy_loss.py">Pixel Contrast CE Loss</a></li>
+            <li><a href="./paddleseg/models/losses/point_cross_entropy_loss.py">Point CE Loss</a></li>
+            <li><a href="./paddleseg/models/losses/rmi_loss.py">RMI Loss</a></li>
+            <li><a href="./paddleseg/models/losses/semantic_connectivity_loss.py">Connectivity Loss</a></li>
           </ul>
         </details>
         <details><summary><b>Metrics</b></summary>
@@ -210,23 +211,25 @@ PaddleSeg is an end-to-end high-efficent development toolkit for image segmentat
         </details>
       </td>
       <td>
-        <details><summary><b>Dataset</b></summary>
+        <details><summary><a href="./docs/data_prepare_cn.md"><b>Dataset</b></a></summary>
           <ul>
-            <li>Cityscapes</li>
-            <li>Pascal VOC</li>
-            <li>ADE20K</li>  
-            <li>Pascal Context</li>  
-            <li>COCO Stuff</li>
-            <li>SUPERVISELY</li>
-            <li>EG1800</li>
-            <li>CHASE_DB1</li>
-            <li>HRF</li>
-            <li>DRIVE</li>
-            <li>STARE</li>
-            <li>PP-HumanSeg14K</li>
+            <li><a href="./paddleseg/datasets/ade.py">ADE20K</a></li>  
+            <li><a href="./paddleseg/datasets/cityscapes.py">Cityscapes</a></li>
+            <li><a href="./paddleseg/datasets/cocostuff.py">COCO Stuff</a></li>
+            <li><a href="./paddleseg/datasets/voc.py">Pascal VOC</a></li>
+            <li><a href="./paddleseg/datasets/eg1800.py">EG1800</a></li>
+            <li><a href="./paddleseg/datasets/pascal_context.py">Pascal Context</a></li>  
+            <li><a href="./paddleseg/datasets/supervisely.py">SUPERVISELY</a></li>
+            <li><a href="./paddleseg/datasets/optic_disc_seg.py">OPTIC DISC SEG</a></li>
+            <li><a href="./paddleseg/datasets/chase_db1.py">CHASE_DB1</a></li>
+            <li><a href="./paddleseg/datasets/hrf.py">HRF</a></li>
+            <li><a href="./paddleseg/datasets/drive.py">DRIVE</a></li>
+            <li><a href="./paddleseg/datasets/stare.py">STARE</a></li>
+            <li><a href="./paddleseg/datasets/pp_humanseg14k.py">PP-HumanSeg14K</a></li>
+            <li><a href="./paddleseg/datasets/pssl.py">PSSL</a></li>
           </ul>
         </details>
-        <details><summary><b>Data Augmentation</b></summary>
+        <details><summary><a href="./docs/apis/transforms/transforms.md"><b>Data Augmentation</b></a></summary>
           <ul>
             <li>Flipping</li>  
             <li>Resize</li>  
@@ -251,29 +254,35 @@ PaddleSeg is an end-to-end high-efficent development toolkit for image segmentat
         </details>
       </td>
       <td>
-        <details><summary><b>Human Segmentation</b></summary>
+        <details><summary><b>PPSMRT</b></summary>
           <ul>
-              <li>PP-HumanSeg</li>
+              <li><a href="./configs/smrt/README.md">PaddleSMRT</a></li>
           </ul>
         </details>
-        <details><summary><b>3D Medical Segmentation</b></summary>
+        <details><summary><b>Human Segmentation</b></summary>
           <ul>
-            <li>VNet</li>
+              <li><a href="./contrib/PP-HumanSeg/README_cn.md">PP-HumanSeg</a></li>
+          </ul>
+        </details>
+        <details><summary><b>MedicalSeg</b></summary>
+          <ul>
+            <li><a href="./contrib/MedicalSeg/configs/lung_coronavirus/README.md">VNet</a></li>
+            <li><a href="./contrib/MedicalSeg/configs/msd_brain_seg/README.md">UNETR</a></li>
           </ul>
         </details>
         <details><summary><b>Cityscapes SOTA Model</b></summary>
           <ul>
-              <li>HMSA</li>
+              <li><a href="./contrib/CityscapesSOTA/README.md">HMSA</a></li>
           </ul>
         </details>
         <details><summary><b>CVPR Champion Model</b></summary>
           <ul>
-              <li>MLA Transformer</li>
+              <li><a href="./contrib/AutoNUE/README.md">MLA Transformer</a></li>
           </ul>
         </details>
         <details><summary><b>Domain Adaptation</b></summary>
           <ul>
-              <li>PixMatch</li>
+              <li><a href="./contrib/DomainAdaptation/README.md">PixMatch</a></li>
           </ul>
         </details>
       </td>  
@@ -355,15 +364,20 @@ Note that:
 
 ## <img src="./docs/images/teach.png" width="20"/> Tutorials
 
-### Basic Tutorials
+### Tutorials & Docs
 
+#### Tutorials
+* [A 20 minutes Blitz to learn PaddleSeg](./docs/whole_process.md)
+
+#### Docs
 * [Installation](./docs/install.md)
-* [Quick Start](./docs/quick_start.md)
 
 *  Data Preparation
+   * [Label Data with EISeg](./EISeg/README_EN.md)
    * [Annotated Data Preparation](./docs/data/marker/marker.md)
    * [Annotation Tutorial](./docs/data/transform/transform.md)
    * [Custom Dataset](./docs/data/custom/data_prepare.md)
+
 * [Config Preparation](./docs/prepare_cfg.md)
 
 * [Model Training](/docs/train/train.md)
@@ -382,29 +396,22 @@ Note that:
     * [Paddle JS](./docs/deployment/web/web.md)
     * [Benchmark](./docs/deployment/inference/infer_benchmark.md)
 
-### Advanced Tutorials
-
 *  Model Compression
     * [Quantization](./docs/slim/quant/quant.md)
     * [Distillation](./docs/slim/distill/distill.md)
     * [Prune](./docs/slim/prune/prune.md)
 
-*  Easy API
-    * [API Documention](./docs/apis/README.md)
-    * [API Tutorial](./docs/api_example.md)
-*  Baisc Knowledge
-    * [Data Augmentation](./docs/module/data/data.md)
-    * [Loss Description](./docs/module/loss/losses_en.md)
+* [FAQ](./docs/faq/faq/faq.md)
+
+### Welcome to Contribute
+* [API Documention](./docs/apis/README.md)
+
 *  Advanced Development
     * [Detailed Configuration File](./docs/design/use/use.md)
     * [Create Your Own Model](./docs/design/create/add_new_model.md)
 *  Pull Request
     * [PR Tutorial](./docs/pr/pr/pr.md)
     * [PR Style](./docs/pr/pr/style_cn.md)
-
-* [Static Graph Version](./docs/static/static.md)
-* [Community](#Community)
-* [FAQ](./docs/faq/faq/faq.md)
 
 ## Practical Projects
   * [Interactive Segmentation](./EISeg)
@@ -415,6 +422,13 @@ Note that:
   * [Panoptic Segmentation](./contrib/PanopticDeepLab)
   * [CVPR Champion Solution](./contrib/AutoNUE)
   * [Domain Adaptation](./contrib/DomainAdaptation)
+
+# Aistudio tutorials
+* [Learn Paddleseg in 10 Mins](https://aistudio.baidu.com/aistudio/projectdetail/1672610?channelType=0&channel=0)
+* [Use PaddleSeg in Human Segmentation](https://aistudio.baidu.com/aistudio/projectdetail/2189481?channelType=0&channel=0)
+* [Use PaddleSeg in Mini-dataset Spine Segmentation](https://aistudio.baidu.com/aistudio/projectdetail/3878920)
+* [Use PaddleSeg in Lane Segmentation](https://aistudio.baidu.com/aistudio/projectdetail/1752986?channelType=0&channel=0)
+* [PaddleSeg in APIs](https://aistudio.baidu.com/aistudio/projectdetail/1339458?channelType=0&channel=0)
 
 ## License
 
