@@ -51,4 +51,4 @@ inference:deploy/python/infer.py --save_dir ./test_tipc/output/enet/
 --save_dir:
 --model_name:enet
 ===========================infer_benchmark_params==========================
-random_infer_input:[{float32,[3,512,1024]}]
+random_infer_input:[{float32,[3,1024,2048]}]
