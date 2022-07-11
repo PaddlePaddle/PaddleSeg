@@ -41,7 +41,7 @@ English | [简体中文](README_CN.md)
 PaddleSeg is an end-to-end high-efficent development toolkit for image segmentation based on PaddlePaddle, which  helps both developers and researchers in the whole process of designing segmentation models, training models, optimizing performance and inference speed, and deploying models. A lot of well-trained models and various real-world applications in both industry and academia help users conveniently build hands-on experiences in image segmentation.
 
 <div align="center">
-<img src="https://github.com/shiyutang/files/raw/main/ezgif.com-gif-maker%20(3).gif"  width = "800" />  
+<img src="https://user-images.githubusercontent.com/34859558/178235222-7120071d-830f-4fbf-8541-cd78a4e408d7.gif"  width = "800" />  
 </div>
 
 
@@ -161,7 +161,7 @@ PaddleSeg is an end-to-end high-efficent development toolkit for image segmentat
         </details>
       </td>
       <td>
-        <details><summary><a href="./docs/apis/backbones/backbones.md"><b>骨干网络</b></a></summary>
+        <details><summary><b>骨干网络</b></summary>
           <ul>
             <li><a href="./paddleseg/models/backbones/hrnet.py">HRNet</a></li>
             <li><a href="./paddleseg/models/backbones/resnet_cd.py">ResNet</a></li>
@@ -177,7 +177,7 @@ PaddleSeg is an end-to-end high-efficent development toolkit for image segmentat
             <li><a href="./paddleseg/models/backbones/swin_transformer.py">Swin Transformer</a></li>
           </ul>
         </details>
-        <details><summary><a href="./docs/module/loss/losses_en.md"><b>Loss</b></a></summary>
+        <details><summary><b>Loss</b></summary>
           <ul>
             <li><a href="./paddleseg/models/losses/binary_cross_entropy_loss.py">Binary CE Loss</a></li>
             <li><a href="./paddleseg/models/losses/bootstrapped_cross_entropy_loss.py">Bootstrapped CE Loss</a></li>
@@ -211,7 +211,7 @@ PaddleSeg is an end-to-end high-efficent development toolkit for image segmentat
         </details>
       </td>
       <td>
-        <details><summary><a href="./docs/data_prepare_cn.md"><b>Dataset</b></a></summary>
+        <details><summary><b>Dataset</b></summary>
           <ul>
             <li><a href="./paddleseg/datasets/ade.py">ADE20K</a></li>  
             <li><a href="./paddleseg/datasets/cityscapes.py">Cityscapes</a></li>
@@ -229,7 +229,7 @@ PaddleSeg is an end-to-end high-efficent development toolkit for image segmentat
             <li><a href="./paddleseg/datasets/pssl.py">PSSL</a></li>
           </ul>
         </details>
-        <details><summary><a href="./docs/apis/transforms/transforms.md"><b>Data Augmentation</b></a></summary>
+        <details><summary><b>Data Augmentation</b></summary>
           <ul>
             <li>Flipping</li>  
             <li>Resize</li>  
@@ -375,7 +375,6 @@ Note that:
 *  Data Preparation
    * [Label Data with EISeg](./EISeg/README_EN.md)
    * [Annotated Data Preparation](./docs/data/marker/marker.md)
-   * [Annotation Tutorial](./docs/data/transform/transform.md)
    * [Custom Dataset](./docs/data/custom/data_prepare.md)
 
 * [Config Preparation](./docs/prepare_cfg.md)
