@@ -177,7 +177,7 @@ PaddleSeg is an end-to-end high-efficent development toolkit for image segmentat
             <li><a href="./paddleseg/models/backbones/swin_transformer.py">Swin Transformer</a></li>
           </ul>
         </details>
-        <details><summary><a href="./doc/module/loss/losses_en.md"><b>Loss</b></a></summary>
+        <details><summary><a href="./docs/module/loss/losses_en.md"><b>Loss</b></a></summary>
           <ul>
             <li><a href="./paddleseg/models/losses/binary_cross_entropy_loss.py">Binary CE Loss</a></li>
             <li><a href="./paddleseg/models/losses/bootstrapped_cross_entropy_loss.py">Bootstrapped CE Loss</a></li>

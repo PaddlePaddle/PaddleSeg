@@ -155,7 +155,7 @@
         </details>
       </td>
       <td>
-        <details><summary><a href="./docs/apis/backbones/backbones.md"><b>骨干网络</b></a></summary>
+        <details><summary><a href="./docs/apis/backbones/backbones_cn.md"><b>骨干网络</b></a></summary>
           <ul>
             <li><a href="./paddleseg/models/backbones/hrnet.py">HRNet</a></li>
             <li><a href="./paddleseg/models/backbones/resnet_cd.py">ResNet</a></li>
@@ -171,7 +171,7 @@
             <li><a href="./paddleseg/models/backbones/swin_transformer.py">Swin Transformer</a></li>
           </ul>
         </details>
-        <details><summary><a href="./doc/module/loss/losses_en.md"><b>损失函数</b></a></summary>
+        <details><summary><a href="./docs/module/loss/losses_cn.md"><b>损失函数</b></a></summary>
           <ul>
             <li><a href="./paddleseg/models/losses/binary_cross_entropy_loss.py">Binary CE Loss</a></li>
             <li><a href="./paddleseg/models/losses/bootstrapped_cross_entropy_loss.py">Bootstrapped CE Loss</a></li>
