@@ -156,7 +156,7 @@ PaddleSeg is an end-to-end high-efficent development toolkit for image segmentat
         </details>
         <details><summary><b>Panoptic Segmentation</b></summary>
           <ul>
-            <li>Panoptic-DeepLab<a href="./contrib/PanopticDeepLab/README_CN.md">Panoptic-DeepLab</a></li>
+            <li><a href="./contrib/PanopticDeepLab/README_CN.md">Panoptic-DeepLab</a></li>
           </ul>
         </details>
       </td>

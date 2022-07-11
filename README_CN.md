@@ -150,7 +150,7 @@
         </details>
         <details><summary><b>全景分割</b></summary>
           <ul>
-            <li>Panoptic-DeepLab<a href="./contrib/PanopticDeepLab/README_CN.md">Panoptic-DeepLab</a></li>
+            <li><a href="./contrib/PanopticDeepLab/README_CN.md">Panoptic-DeepLab</a></li>
           </ul>
         </details>
       </td>
