@@ -1,12 +1,10 @@
-English | [简体中文](./README_cn.md)
+简体中文 | [English](./README.md)
 
 # MobileSeg
 
-These semantic segmentation models are designed for mobile and edge devices.
+MobileSeg系列模型采用编解码架构，使用轻量级的模型作为骨干网络，适合部署在X86 CPU、ARM CPU等算量低的硬件。
 
-MobileSeg models adopt encoder-decoder architecture and use lightweight models as encoder.
-
-## Reference
+## 参考论文
 
 > Sandler, Mark, Andrew Howard, Menglong Zhu, Andrey Zhmoginov, and Liang-Chieh Chen. "Mobilenetv2: Inverted residuals and linear bottlenecks." In Proceedings of the IEEE conference on computer vision and pattern recognition, pp. 4510-4520. 2018.
 
@@ -18,9 +16,9 @@ MobileSeg models adopt encoder-decoder architecture and use lightweight models a
 
 > Han, Kai, Yunhe Wang, Qi Tian, Jianyuan Guo, Chunjing Xu, and Chang Xu. "Ghostnet: More features from cheap operations." In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition, pp. 1580-1589. 2020.
 
-## Performance
+## 分割精度
 
-### Cityscapes
+### Cityscapes数据集
 
 | Model | Backbone | Resolution | Training Iters | mIoU | mIoU (flip) | mIoU (ms+flip) | Links |
 |:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
@@ -31,7 +29,7 @@ MobileSeg models adopt encoder-decoder architecture and use lightweight models a
 |MobileSeg|GhostNet_x1_0|1024x512|80000|71.88%|72.22%|73.11%|[model](https://paddleseg.bj.bcebos.com/dygraph/cityscapes/mobileseg_ghostnet_cityscapes_1024x512_80k/model.pdparams) \| [log](https://paddleseg.bj.bcebos.com/dygraph/cityscapes/mobileseg_ghostnet_cityscapes_1024x512_80k/train.log) \| [vdl](https://paddlepaddle.org.cn/paddle/visualdl/service/app?id=73a6b325c0ae941a40746d53911c03bc)|
 
 
-## Inference Speed
+## 预测速度
 
 | Model    | Backbone |  V100 TRT Inference Speed(FPS)  | Snapdragon 855 Inference Speed(FPS) |
 |:-------- |:--------:|:-------------------------------:|:-----------------------------------:|
@@ -41,6 +39,6 @@ MobileSeg models adopt encoder-decoder architecture and use lightweight models a
 | MobileSeg      | ShuffleNetV2_x1_0        | *37.09*        | 39.61   |
 | MobileSeg      | GhostNet_x1_0            | *35.58*        | 38.74   |
 
-Note that:
-* Test the inference speed on Nvidia GPU V100: use PaddleInference Python API, enable TensorRT, the data type is FP32, the dimension of input is 1x3x1024x2048.
-* Test the inference speed on Snapdragon 855: use PaddleLite CPP API, 1 thread, the dimension of input is 1x3x256x256.
+测试条件：
+* 在Nvidia GPU V100上测试模型速度：使用PaddleInference Python接口，开启TensorRT，推理数据类型是FP32，输入图像的维度是1x3x1024x2048。
+* 在小米9（骁龙855 CPU）上测试模型速度：使用PaddleLite C++接口，单线程，输入图像的维度是1x3x256x256。

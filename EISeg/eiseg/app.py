@@ -1968,48 +1968,51 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         self.gridTable.clearContents()
 
     def saveGridLabel(self):
-        if self.outputDir is not None:
-            name, ext = osp.splitext(osp.basename(self.imagePath))
-            if not self.origExt:
-                ext = ".png"
-            save_path = osp.join(self.outputDir, name + ext)
+        if self.grid is None:
+            self.saveImage(False)
         else:
-            save_path = self.chooseSavePath()
-            if save_path == "":
+            if self.outputDir is not None:
+                name, ext = osp.splitext(osp.basename(self.imagePath))
+                if not self.origExt:
+                    ext = ".png"
+                save_path = osp.join(self.outputDir, name + ext)
+            else:
+                save_path = self.chooseSavePath()
+                if save_path == "":
+                    return
+            try:
+                self.finishObject()
+                self.saveGrid()  # 先保存当前
+            except:
                 return
-        try:
-            self.finishObject()
-            self.saveGrid()  # 先保存当前
-        except:
-            pass
-        self.delAllPolygon()  # 清理
-        mask = self.grid.splicingList(save_path)
-        if self.grid.__class__.__name__ == "RSGrids":
-            self.image, is_big = self.raster.getArray()
-        else:
-            self.image = self.grid.detimg
-            is_big = checkOpenGrid(self.image, self.thumbnail_min)
-        if is_big is None:
-            self.statusbar.showMessage(self.tr("图像过大，已显示缩略图"))
-        self.controller.image = self.image
-        self.controller._result_mask = mask
-        self.exportLabel(savePath=save_path, lab_input=mask)
-        # 刷新
-        grid_row_count = self.gridTable.rowCount()
-        grid_col_count = self.gridTable.colorCount()
-        for r in range(grid_row_count):
-            for c in range(grid_col_count):
-                try:
-                    self.gridTable.item(
-                        r, c).setBackground(self.GRID_COLOR["idle"])
-                except:
-                    pass
-        self.raster = None
-        self.closeGrid()
-        self.updateBandList(True)
-        self.controller.setImage(self.image)
-        self.updateImage(True)
-        self.setDirty(False)
+            self.delAllPolygon()  # 清理
+            mask = self.grid.splicingList(save_path)
+            if self.grid.__class__.__name__ == "RSGrids":
+                self.image, is_big = self.raster.getArray()
+            else:
+                self.image = self.grid.detimg
+                is_big = checkOpenGrid(self.image, self.thumbnail_min)
+            if is_big is None:
+                self.statusbar.showMessage(self.tr("图像过大，已显示缩略图"))
+            self.controller.image = self.image
+            self.controller._result_mask = mask
+            self.exportLabel(savePath=save_path, lab_input=mask)
+            # 刷新
+            grid_row_count = self.gridTable.rowCount()
+            grid_col_count = self.gridTable.colorCount()
+            for r in range(grid_row_count):
+                for c in range(grid_col_count):
+                    try:
+                        self.gridTable.item(
+                            r, c).setBackground(self.GRID_COLOR["idle"])
+                    except:
+                        pass
+            self.raster = None
+            self.closeGrid()
+            self.updateBandList(True)
+            self.controller.setImage(self.image)
+            self.updateImage(True)
+            self.setDirty(False)
 
     @property
     def opacity(self):

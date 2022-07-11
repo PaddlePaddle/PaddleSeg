@@ -374,10 +374,10 @@ class Predictor:
 
             self.predictor.run()
 
+            results = output_handle.copy_to_cpu()
             if args.benchmark:
                 self.autolog.times.stamp()
 
-            results = output_handle.copy_to_cpu()
             results = self._postprocess(results)
 
             if args.benchmark:

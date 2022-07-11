@@ -6,7 +6,7 @@
   <img src="./docs/images/paddleseg_logo.png" align="middle" width = "500" />
 </p>
 
-**飞桨高性能图像分割开发套件，端到端地完成从训练到部署的全流程图像分割应用。**
+**强大易用的飞桨图像分割开发套件，端到端完成从训练到部署的全流程图像分割应用。**
 
 [![Build Status](https://travis-ci.org/PaddlePaddle/PaddleSeg.svg?branch=release/2.1)](https://travis-ci.org/PaddlePaddle/PaddleSeg)
 [![License](https://img.shields.io/badge/license-Apache%202-blue.svg)](LICENSE)
@@ -17,7 +17,7 @@
 
 
 
-## 最新动态 <img src="./docs/images/seg_news_icon.png" width="40"/>
+## <img src="./docs/images/seg_news_icon.png" width="20"/> 最新动态
 
 * [2022-04-20] :fire: PaddleSeg 2.5版本发布！详细发版信息请参考[Release Note](https://github.com/PaddlePaddle/PaddleSeg/releases)。
   * 发布超轻量级语义分割模型[PP-LiteSeg](./configs/pp_liteseg)以及[技术报告](https://arxiv.org/pdf/2204.02681.pdf)，实现精度和速度的最佳平衡。
@@ -29,123 +29,148 @@
 * [2021-10-11] PaddleSeg 2.3版本发布交互式分割工具EISeg v0.3，开源两种[Matting](./contrib/Matting)算法，以及分割高阶功能[模型蒸馏](./slim/distill)和[模型量化](./slim/quant)方案。
 
 
-## 简介
-PaddleSeg是基于飞桨PaddlePaddle开发的端到端图像分割开发套件，涵盖了**高精度**和**轻量级**等不同方向的大量高质量分割模型。通过模块化的设计，提供了**配置化驱动**和**API调用**两种应用方式，帮助开发者更便捷地完成从训练到部署的全流程图像分割应用。
 
-* #### 提供语义分割、交互式分割、全景分割、Matting四大图像分割能力。
+## <img src="https://user-images.githubusercontent.com/48054808/157795569-9fc77c85-732f-4870-9be0-99a7fe2cff27.png" width="20"/> 简介
 
-<div align="center">
-<img src="https://user-images.githubusercontent.com/53808988/130562440-1ea5cbf5-4caf-424c-a9a7-55d56b7d7776.gif"  width = "2000" />  
-</div>
-
-
-
-
----------------
-
- * #### 广泛应用在自动驾驶、医疗、质检、巡检、娱乐等场景。
+**PaddleSeg**是基于飞桨PaddlePaddle的端到端图像分割套件，内置**40+模型算法**及**140+预训练模型**，支持**配置化驱动**和**API调用**开发方式，打通数据标注、模型开发、训练、压缩、部署的**全流程**，提供**语义分割、交互式分割、Matting、全景分割**四大分割能力，助力算法在工业、自动驾驶、医疗、娱乐等场景落地应用。
 
 <div align="center">
-<img src="https://user-images.githubusercontent.com/53808988/130562530-ae45c2cd-5dd7-48f0-a080-c0e843eea49d.gif"  width = "2000" />  
+<img src="https://user-images.githubusercontent.com/53808988/130562440-1ea5cbf5-4caf-424c-a9a7-55d56b7d7776.gif"  width = "800" />  
+</div>
+<div align="center">
+<img src="https://user-images.githubusercontent.com/53808988/130562530-ae45c2cd-5dd7-48f0-a080-c0e843eea49d.gif"  width = "800" />  
 </div>
 
-----------------
-## 特性 <img src="./docs/images/feature.png" width="30"/>
+## <img src="./docs/images/feature.png" width="20"/> 特性
 
+* **高精度**：跟踪学术界的前沿分割技术，结合半监督标签知识蒸馏方案([SSLD](https://paddleclas.readthedocs.io/zh_CN/latest/advanced_tutorials/distillation/distillation.html#ssld))训练的骨干网络，提供40+主流分割网络、140+的高质量预训练模型，效果优于其他开源实现。
 
-* <img src="./docs/images/f1.png" width="20"/> **高精度模型**：基于半监督标签知识蒸馏方案([SSLD](https://paddleclas.readthedocs.io/zh_CN/latest/advanced_tutorials/distillation/distillation.html#ssld))训练得到高精度骨干网络，结合前沿的分割技术，提供了80+的高质量预训练模型，效果优于其他开源实现。
+* **高性能**：使用多进程异步I/O、多卡并行训练、评估等加速策略，结合飞桨核心框架的显存优化功能，大幅度减少分割模型的训练开销，让开发者更低成本、更高效地完成图像分割训练。
 
-* <img src="./docs/images/f2.png" width="20"/> **模块化设计**：支持40+主流 *分割网络* ，结合模块化设计的 *数据增强策略* 、*骨干网络*、*损失函数* 等不同组件，开发者可以基于实际应用场景出发，组装多样化的训练配置，满足不同性能和精度的要求。
+* **模块化**：源于模块化设计思想，解耦数据准备、分割模型、骨干网络、损失函数等不同组件，开发者可以基于实际应用场景出发，组装多样化的配置，满足不同性能和精度的要求。
 
-* <img src="./docs/images/f3.png" width="20"/> **高性能**：支持多进程异步I/O、多卡并行训练、评估等加速策略，结合飞桨核心框架的显存优化功能，可大幅度减少分割模型的训练开销，让开发者更低成本、更高效地完成图像分割训练。
+* **全流程**：打通数据标注、模型开发、模型训练、模型压缩、模型部署全流程，经过业务落地的验证，让开发者完成一站式开发工作。
 
-----------
+<div align="center">
+<img src="https://user-images.githubusercontent.com/14087480/176379006-7f330e00-b6b0-480e-9df8-8fd1090da4cf.png" width = "800" />  
+</div>
 
-## 技术交流 <img src="./docs/images/chat.png" width="30"/>
+## <img src="./docs/images/chat.png" width="20"/> 技术交流
 
-* 如果你发现任何PaddleSeg存在的问题或者是建议, 欢迎通过[GitHub Issues](https://github.com/PaddlePaddle/PaddleSeg/issues)给我们提issues。
-* 欢迎加入PaddleSeg 微信群
+* 如果大家有使用问题、产品建议、功能需求, 可以通过[GitHub Issues](https://github.com/PaddlePaddle/PaddleSeg/issues)提issues。
+* 欢迎大家扫码加入PaddleSeg微信群，和小伙伴们一起交流学习。
+
 <div align="center">
 <img src="https://user-images.githubusercontent.com/48433081/163670184-43cfb3ae-2047-4ba3-8dae-6c02090dd177.png"  width = "200" />  
 </div>
 
-## 产品矩阵 <img src="./docs/images/model.png" width="20"/>
+## <img src="./docs/images/model.png" width="20"/> 产品矩阵
 
 <table align="center">
   <tbody>
     <tr align="center" valign="bottom">
       <td>
-        <b>分割模型</b>
+        <b>模型</b>
       </td>
       <td colspan="2">
-        <b>分割组件</b>
+        <b>组件</b>
       </td>
       <td>
-        <b>实践案例</b>
+        <b>特色案例</b>
       </td>
     </tr>
     <tr valign="top">
       <td>
+        <ul>
+        <details><summary><b>语义分割模型</b></summary>
+          <ul>
+            <li>PP-LiteSeg :star:</li>
+            <li>DeepLabV3P :star: </li>
+            <li>OCRNet :star: </li>
+            <li>MobileSeg :star: </li>
             <li>ANN</li>
+            <li>Att U-Net</li>
+            <li>BiSeNetV1</li>
             <li>BiSeNetV2</li>
+            <li>CCNet</li>
             <li>DANet</li>
+            <li>DDRNet</li>
+            <li>DecoupledSeg</li>
             <li>DeepLabV3</li>
-            <li>DeepLabV3P</li>
+            <li>DMNet</li>
+            <li>DNLNet</li>
+            <li>ESPNetV1</li>
+            <li>ESPNetV2</li>
+            <li>EMANet</li>
+            <li>ENet</li>
+            <li>ENCNet</li>
+            <li>FastFCN</li>
             <li>Fast-SCNN</li>
-            <li>HRNet-FCN</li>
             <li>GCNet</li>
             <li>GSCNN</li>
+            <li>GINet</li>
+            <li>GloRe</li>
             <li>HarDNet</li>
-            <li>OCRNet</li>
-            <li>PSPNet</li>
-            <li>U-Net</li>
-            <li>U<sup>2</sup>-Net</li>
-            <li>Att U-Net</li>
-            <li>U-Net++</li>
-            <li>U-Net3+</li>
-            <li>DecoupledSeg</li>
-            <li>EMANet</li>
+            <li>HRNet-FCN</li>
+            <li>HRNet-Contrast</li>
             <li>ISANet</li>
-            <li>DNLNet</li>
-            <li>SFNet</li>
+            <li>MLA Transformer</li>
+            <li>PSPNet</li>
             <li>PP-HumanSeg</li>
             <li>PortraitNet</li>
-            <li>STDC</li>
-            <li>GINet</li>
             <li>PointRend</li>
-            <li>SegNet</li>
-            <li>ESPNetV2</li>
-            <li>HRNet-Contrast</li>
-            <li>DMNet</li>
-            <li>ESPNetV1</li>
-            <li>ENCNet</li>
             <li>PFPNNet</li>
-            <li>FastFCN</li>
-            <li>BiSeNetV1</li>
+            <li>SegNet</li>
+            <li>STDCSeg</li>
+            <li>SFNet</li>
             <li>SETR</li>
-            <li>MLA Transformer</li>
             <li>SegFormer</li>
             <li>SegMenter</li>
-            <li>ENet</li>
-            <li>CCNet</li>
-            <li>DDRNet</li>
-            <li>GloRe</li>
-            <li>PP-LiteSeg :star:</li>
+            <li>U-Net</li>
+            <li>U<sup>2</sup>-Net</li>
+            <li>U-Net++</li>
+            <li>U-Net3+</li>
+          </ul>
+        </details>
+        <details><summary><b>交互式分割模型</b></summary>
+          <ul>
+            <li>EISeg</li>
+            <li>RITM</li>
+            <li>EdgeFlow</li>
+          </ul>
+        </details>
+        <details><summary><b>图像抠图模型</b></summary>
+          <ul>
+              <li>PP-Matting</li>
+              <li>DIM</li>
+              <li>MODNet</li>
+              <li>PP-HumanMatting</li>
+          </ul>
+        </details>
+        <details><summary><b>全景分割</b></summary>
+          <ul>
+            <li>Panoptic-DeepLab</li>
+          </ul>
+        </details>
       </td>
       <td>
-        <b>骨干网络</b><br>
+        <details><summary><b>骨干网络</b></summary>
           <ul>
             <li>HRNet</li>
-            <li>MobileNetV2</li>
-            <li>MobileNetV3</li>
             <li>ResNet</li>
             <li>STDCNet</li>
+            <li>MobileNetV2</li>
+            <li>MobileNetV3</li>
+            <li>ShuffleNetV2</li>
+            <li>GhostNet</li>
+            <li>LiteHRNet</li>
             <li>XCeption</li>
             <li>VIT</li>
             <li>MixVIT</li>
             <li>Swin Transformer</li>
-          </ul>  
-        <b>损失函数</b><br>
+          </ul>
+        </details>
+        <details><summary><b>损失函数</b></summary>
           <ul>
             <li>Cross Entropy</li>
             <li>Binary CE</li>
@@ -165,7 +190,8 @@ PaddleSeg是基于飞桨PaddlePaddle开发的端到端图像分割开发套件�
             <li>Connectivity</li>
             <li>MultiClassFocal</li>
           </ul>
-        <b>评估指标</b><br>
+        </details>
+        <details><summary><b>评估指标</b></summary>
           <ul>
             <li>mIoU</li>
             <li>Accuracy</li>
@@ -173,9 +199,10 @@ PaddleSeg是基于飞桨PaddlePaddle开发的端到端图像分割开发套件�
             <li>Dice</li>
             <li>AUC_ROC</li>
           </ul>  
+        </details>
       </td>
       <td>
-        <b>支持数据集</b><br>
+        <details><summary><b>支持数据集</b></summary>
           <ul>
             <li>Cityscapes</li>
             <li>Pascal VOC</li>
@@ -190,97 +217,148 @@ PaddleSeg是基于飞桨PaddlePaddle开发的端到端图像分割开发套件�
             <li>STARE</li>
             <li>PP-HumanSeg14K</li>
           </ul>
-        <b>数据增强</b><br>
-        <ul>
-          <li>Flipping</li>  
-          <li>Resize</li>  
-          <li>ResizeByLong</li>
-          <li>ResizeByShort</li>
-          <li>LimitLong</li>  
-          <li>ResizeRangeScaling</li>  
-          <li>ResizeStepScaling</li>
-          <li>Normalize</li>
-          <li>Padding</li>
-          <li>PaddingByAspectRatio</li>
-          <li>RandomPaddingCrop</li>  
-          <li>RandomCenterCrop</li>
-          <li>ScalePadding</li>
-          <li>RandomNoise</li>  
-          <li>RandomBlur</li>  
-          <li>RandomRotation</li>  
-          <li>RandomScaleAspect</li>  
-          <li>RandomDistort</li>  
-          <li>RandomAffine</li>  
-        </ul>  
+        </details>
+        <details><summary><b>数据增强</b></summary>
+          <ul>
+            <li>Flipping</li>  
+            <li>Resize</li>  
+            <li>ResizeByLong</li>
+            <li>ResizeByShort</li>
+            <li>LimitLong</li>  
+            <li>ResizeRangeScaling</li>  
+            <li>ResizeStepScaling</li>
+            <li>Normalize</li>
+            <li>Padding</li>
+            <li>PaddingByAspectRatio</li>
+            <li>RandomPaddingCrop</li>  
+            <li>RandomCenterCrop</li>
+            <li>ScalePadding</li>
+            <li>RandomNoise</li>  
+            <li>RandomBlur</li>  
+            <li>RandomRotation</li>  
+            <li>RandomScaleAspect</li>  
+            <li>RandomDistort</li>  
+            <li>RandomAffine</li>  
+          </ul>
+        </details>
       </td>
       <td>
-        <b>交互式分割</b><br>
+        <details><summary><b>人像分割模型</b></summary>
           <ul>
-            <li>EISeg</li>
-            <li>RITM</li>
-            <li>EdgeFlow</li>
-           </ul>
-       <b>图像抠图</b><br>
-        <ul>
-            <li>PP-Matting</li>
-            <li>DIM</li>
-            <li>MODNet</li>
-            <li>PP-HumanMatting</li>
-        </ul>
-        <b>人像分割</b><br>
-        <ul>
-            <li>PP-HumanSeg</li>
-        </ul>
-        <b>3D 医疗分割</b><br>
-        <ul>
-          <li>VNet</li>
-        </ul>
-        <b>Cityscapes打榜模型</b><br>
-        <ul>
-            <li>HMSA</li>
-        </ul>
-        <b>全景分割</b><br>
-          <ul>
-            <li>Panoptic-DeepLab</li>
+              <li>PP-HumanSeg</li>
           </ul>
-        <b>CVPR冠军模型</b><br>
-        <ul>
-            <li>MLA Transformer</li>
-        </ul>
-        <b>领域自适应</b><br>
-        <ul>
-            <li>PixMatch</li>
-        </ul>
+        </details>
+        <details><summary><b>3D医疗分割模型</b></summary>
+          <ul>
+            <li>VNet</li>
+          </ul>
+        </details>
+        <details><summary><b>Cityscapes打榜模型</b></summary>
+          <ul>
+              <li>HMSA</li>
+          </ul>
+        </details>
+        <details><summary><b>CVPR冠军模型</b></summary>
+          <ul>
+              <li>MLA Transformer</li>
+          </ul>
+        </details>
+        <details><summary><b>领域自适应</b></summary>
+          <ul>
+              <li>PixMatch</li>
+          </ul>
+        </details>
       </td>  
     </tr>
-
-
 </td>
     </tr>
   </tbody>
 </table>
 
-## 模型库总览  <img src="./docs/images/model.png" width="20"/>
+## <img src="https://user-images.githubusercontent.com/48054808/157801371-9a9a8c65-1690-4123-985a-e0559a7f9494.png" width="20"/> 产业级分割模型库
 
-模型结构和骨干网络的代表模型在Cityscapes数据集mIoU和FLOPs对比图。请参见[Model Zoo Overview](./docs/model_zoo_overview_cn.md)了解更多模型信息以及对比图。
+<details>
+<summary><b>高精度语义分割模型</b></summary>
 
-<div align="center">
-<img src=https://user-images.githubusercontent.com/30695251/140323107-02ce9de4-c8f4-4f18-88b2-59bd0055a70b.png   />  
-</div>
+#### 高精度模型，分割mIoU高、推理算量大，适合部署在服务器端GPU和Jetson等设备。
+
+| 模型名称  | 骨干网络   | Cityscapes精度mIoU(%) |  V100 TRT推理速度(FPS)  |  配置文件 |
+|:-------- |:--------:|:---------------------:|:---------------------:|:--------:|
+| FCN            | HRNet_W18        | 78.97                 | 24.43     | [yml](./configs/fcn/)         |
+| FCN            | HRNet_W48        | 80.70                 | 10.16     | [yml](./configs/fcn/)         |
+| DeepLabV3      | ResNet50_OS8     | 79.90                 | 4.56      | [yml](./configs/deeplabv3/)   |
+| DeepLabV3      | ResNet101_OS8    | 80.85                 | 3.2       | [yml](./configs/deeplabv3/)   |
+| DeepLabV3      | ResNet50_OS8     | 80.36                 | 6.58      | [yml](./configs/deeplabv3p/)  |
+| DeepLabV3      | ResNet101_OS8    | 81.10                 | *3.94*    | [yml](./configs/deeplabv3p/)  |
+| **OCRNet**     | HRNet_w18        | 80.67                 | 13.26     | [yml](./configs/ocrnet/)      |
+| OCRNet         | HRNet_w48        | 82.15                 | 6.17      | [yml](./configs/ocrnet/)      |
+| CCNet          | ResNet101_OS8    | 80.95                 | 3.24      | [yml](./configs/ccnet/)       |
 
 
-## 使用教程 <img src="./docs/images/teach.png" width="30"/>
+测试条件：
+* V100上测速条件：针对Nvidia GPU V100，使用PaddleInference预测库的Python API，开启TensorRT加速，数据类型是FP32，输入图像维度是1x3x1024x2048。
 
-* [安装](./docs/install_cn.md)
-* [全流程跑通PaddleSeg](./docs/whole_process_cn.md)
-*  准备数据集
+</details>
+
+
+<details>
+<summary><b>轻量级语义分割模型</b></summary>
+
+#### 轻量级模型，分割mIoU中等、推理算量中等，可以部署在服务器端GPU、服务器端X86 CPU和移动端ARM CPU。
+
+| 模型名称  | 骨干网络   | Cityscapes精度mIoU(%) |  V100 TRT推理速度(FPS) | 骁龙855推理速度(FPS) |  配置文件 |
+|:-------- |:--------:|:---------------------:|:---------------------:|:-----------------:|:--------:|
+| **PP-LiteSeg**      | STDC1         | 77.04               | 69.82           | 17.22       | [yml](./configs/pp_liteseg/)  |
+| **PP-LiteSeg**      | STDC2         | 79.04               | 54.53           | 11.75       | [yml](./configs/pp_liteseg/)  |
+| BiSeNetV1           | -             | 75.19               | 14.67           | 1.53      |[yml](./configs/bisenetv1/)  |
+| BiSeNetV2           | -             | 73.19               | 61.83           | 13.67       |[yml](./configs/bisenet/)  |
+| STDCSeg             | STDC1         | 74.74               | 62.24           | 14.51       |[yml](./configs/stdcseg/)  |
+| STDCSeg             | STDC2         | 77.60               | 51.15           | 10.95       |[yml](./configs/stdcseg/)  |
+| DDRNet_23           | -             | 79.85               | 42.64           | 7.68      |[yml](./configs/ddrnet/)  |
+| HarDNet             | -             | 79.03               | 30.3            | 5.44      |[yml](./configs/hardnet/)  |
+| SFNet               | ResNet18_OS8  |  78.72              | *10.72*         |   -         | [yml](./configs/sfnet/)  |
+
+测试条件：
+* V100上测速条件：针对Nvidia GPU V100，使用PaddleInference预测库的Python API，开启TensorRT加速，数据类型是FP32，输入图像维度是1x3x1024x2048。
+* 骁龙855上测速条件：针对小米9手机，使用PaddleLite预测库的CPP API，ARMV8编译，单线程，输入图像维度是1x3x256x256。
+
+</details>
+
+
+<details>
+<summary><b>超轻量级语义分割模型</b></summary>
+
+#### 超轻量级模型，分割mIoU一般、推理算量低，适合部署在服务器端X86 CPU和移动端ARM CPU。
+
+| 模型名称  | 骨干网络   | Cityscapes精度mIoU(%) |  V100 TRT推理速度(FPS)  | 骁龙855推理速度(FPS)|  配置文件 |
+|:-------- |:--------:|:---------------------:|:---------------------:|:-----------------:|:--------:|
+| MobileSeg      | MobileNetV2              | 73.94                 | 67.57          | 27.01   | [yml](./configs/mobileseg/)  |
+| **MobileSeg**  | MobileNetV3              | 73.47                 | 67.39          | 32.90   | [yml](./configs/mobileseg/)  |
+| MobileSeg      | Lite_HRNet_18            | 70.75                 | *10.5*         | 13.05   | [yml](./configs/mobileseg/)  |
+| MobileSeg      | ShuffleNetV2_x1_0        | 69.46                 | *37.09*        | 39.61  | [yml](./configs/mobileseg/)  |
+| MobileSeg      | GhostNet_x1_0            | 71.88                 | *35.58*        | 38.74  | [yml](./configs/mobileseg/)  |
+
+测试条件：
+* V100上测速条件：针对Nvidia GPU V100，使用PaddleInference预测库的Python API，开启TensorRT加速，数据类型是FP32，输入图像维度是1x3x1024x2048。
+* 骁龙855上测速条件：针对小米9手机，使用PaddleLite预测库的CPP API，ARMV8编译，单线程，输入图像维度是1x3x256x256。
+
+</details>
+
+## <img src="./docs/images/teach.png" width="20"/> 使用教程
+
+### 基础教程
+
+* [安装说明](./docs/install_cn.md)
+* [快速体验](./docs/quick_start_cn.md)
+* 准备数据
    * [标注数据的准备](./docs/data/marker/marker_cn.md)
    * [数据标注教程](./docs/data/transform/transform_cn.md)
    * [自定义数据集](./docs/data/custom/data_prepare_cn.md)
+* [准备配置文件](./docs/prepare_cfg_cn.md)
 
 * [模型训练](/docs/train/train_cn.md)
 * [模型评估](./docs/evaluation/evaluate/evaluate_cn.md)
-* [预测与可视化](./docs/predict/predict_cn.md)
+* [模型预测](./docs/predict/predict_cn.md)
 
 * 模型导出
     * [导出预测模型](./docs/model_export_cn.md)
@@ -293,6 +371,7 @@ PaddleSeg是基于飞桨PaddlePaddle开发的端到端图像分割开发套件�
     * [Paddle Serving部署](./docs/deployment/serving/serving.md)
     * [Paddle JS部署](./docs/deployment/web/web_cn.md)
     * [推理Benchmark](./docs/deployment/inference/infer_benchmark_cn.md)
+### 高阶教程
 
 * 模型压缩
     * [量化](./docs/slim/quant/quant_cn.md)
@@ -316,7 +395,7 @@ PaddleSeg是基于飞桨PaddlePaddle开发的端到端图像分割开发套件�
 * [技术交流](#技术交流)
 * [常见问题汇总](./docs/faq/faq/faq_cn.md)
 
-## 实践案例 <img src="./docs/images/anli.png" width="20"/>
+## <img src="./docs/images/anli.png" width="20"/> 实践案例
 
 - [交互式分割](./EISeg)
 - [图像抠图](./Matting)
@@ -350,7 +429,7 @@ PaddleSeg是基于飞桨PaddlePaddle开发的端到端图像分割开发套件�
 - 非常感谢[ETTR123](https://github.com/ETTR123)(张恺) 贡献 ENet，PFPNNet。
 
 
-## 学术引用 <img src="./docs/images/yinyong.png" width="30"/>
+## <img src="./docs/images/yinyong.png" width="20"/> 学术引用
 
 如果我们的项目在学术上帮助到你，请考虑以下引用：
 

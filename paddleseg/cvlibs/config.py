@@ -158,13 +158,15 @@ class Config(object):
         if 'warmup_iters' in params:
             use_warmup = True
             warmup_iters = params.pop('warmup_iters')
-            assert 'warmup_start_lr' in params, "Please set warmup_start_lr in lr_scheduler"
+            assert 'warmup_start_lr' in params, \
+                "When use warmup, please set warmup_start_lr and warmup_iters in lr_scheduler"
             warmup_start_lr = params.pop('warmup_start_lr')
             end_lr = params['learning_rate']
 
         lr_type = params.pop('type')
         if lr_type == 'PolynomialDecay':
             iters = self.iters - warmup_iters if use_warmup else self.iters
+            iters = max(iters, 1)
             params.setdefault('decay_steps', iters)
             params.setdefault('end_lr', 0)
             params.setdefault('power', 0.9)
