@@ -33,7 +33,7 @@ Paddle Inference在Nvidia GPU端部署模型，支持两种计算方式：Naive�
 python -m pip install paddlepaddle-gpu==2.1.2.post101 -f https://www.paddlepaddle.org.cn/whl/linux/mkl/avx/stable.html
 ```
 
-如果在Nvidia GPU上使用TensorRT方式部署模型，首先需要准备CUDA和cudnn环境（CUDA10.1+cudnn7+trt6, CUDA10.2+cudnn8.1+trt7, CUDA11.1+cudnn8.1+trt7, ）。
+如果在Nvidia GPU上使用TensorRT方式部署模型，首先需要准备CUDA和cudnn环境（CUDA10.1+cudnn7+trt6, CUDA10.2+cudnn8.1+trt7, CUDA11.1+cudnn8.1+trt7, CUDA11.2+cudnn8.2+trt8）。
 此处我们提供两个版本环境的cuda+cudnn+trt下载链接，大家也可以在[TensorRT官网](https://developer.nvidia.com/tensorrt)下载安装。
 
 ```
@@ -44,8 +44,8 @@ wget https://paddle-inference-dist.bj.bcebos.com/tensorrt_test/cuda10.2-cudnn8.0
 安装CUDA和cudnn后，还需要将TensorRT库的路径加入到LD_LIBRARY_PATH，比如`export LD_LIBRARY_PATH=/download/TensorRT-7.1.3.4/lib:${LD_LIBRARY_PATH}`。
 
 
-然后，大家参考[文档](https://www.paddlepaddle.org.cn/install/quick?docurl=/documentation/docs/zh/install/pip/linux-pip.html)安装GPU版本、联编TensorRT的PaddlePaddle（请详细阅读安装文档底部描述，推荐版本>=2.1）。
-比如，2.2版本、支持GPU、联编TensorRT的PaddlePaddle whl包，可以在[链接](https://paddleinference.paddlepaddle.org.cn/user_guides/download_lib.html#python)下载并安装(按照whl包文件命名进行选择)。
+然后，大家参考[文档1](https://www.paddlepaddle.org.cn/install/quick?docurl=/documentation/docs/zh/install/pip/linux-pip.html)、[文档2](https://www.paddlepaddle.org.cn/inference/user_guides/download_lib.html#python)安装GPU版本、联编TensorRT的PaddlePaddle。
+比如，2.3版本、支持GPU、联编TensorRT的PaddlePaddle whl包，可以在[链接](https://www.paddlepaddle.org.cn/inference/user_guides/download_lib.html#python)下载并安装(按照whl包文件命名进行选择)。
 
 ## 3. 准备模型和数据
 
