@@ -79,7 +79,7 @@ def train(model,
     Launch training.
 
     Args:
-        model（nn.Layer): A sementic segmentation model.
+        model（nn.Layer): A semantic segmentation model.
         train_dataset (paddle.io.Dataset): Used to read and process training datasets.
         val_dataset (paddle.io.Dataset, optional): Used to read and process validation datasets.
         optimizer (paddle.optimizer.Optimizer): The optimizer.
@@ -148,7 +148,7 @@ def train(model,
 
     if to_static_training:
         model = paddle.jit.to_static(model)
-        logger.info("Successfully to apply @to_static")
+        logger.info("Successfully applied @to_static")
 
     avg_loss = 0.0
     avg_loss_list = []
