@@ -161,7 +161,7 @@ PaddleSeg is an end-to-end high-efficent development toolkit for image segmentat
         </details>
       </td>
       <td>
-        <details><summary><b>Backbone</b></summary>
+        <details><summary><b>Backbones</b></summary>
           <ul>
             <li><a href="./paddleseg/models/backbones/hrnet.py">HRNet</a></li>
             <li><a href="./paddleseg/models/backbones/resnet_cd.py">ResNet</a></li>
@@ -177,7 +177,7 @@ PaddleSeg is an end-to-end high-efficent development toolkit for image segmentat
             <li><a href="./paddleseg/models/backbones/swin_transformer.py">Swin Transformer</a></li>
           </ul>
         </details>
-        <details><summary><b>Loss</b></summary>
+        <details><summary><b>Losses</b></summary>
           <ul>
             <li><a href="./paddleseg/models/losses/binary_cross_entropy_loss.py">Binary CE Loss</a></li>
             <li><a href="./paddleseg/models/losses/bootstrapped_cross_entropy_loss.py">Bootstrapped CE Loss</a></li>
@@ -211,7 +211,7 @@ PaddleSeg is an end-to-end high-efficent development toolkit for image segmentat
         </details>
       </td>
       <td>
-        <details><summary><b>Dataset</b></summary>
+        <details><summary><b>Datasets</b></summary>
           <ul>
             <li><a href="./paddleseg/datasets/ade.py">ADE20K</a></li>  
             <li><a href="./paddleseg/datasets/cityscapes.py">Cityscapes</a></li>
@@ -254,7 +254,7 @@ PaddleSeg is an end-to-end high-efficent development toolkit for image segmentat
         </details>
       </td>
       <td>
-        <details><summary><b>Model Selection-PPSMRT</b></summary>
+        <details><summary><b>Model Selection Tool-PPSMRT</b></summary>
           <ul>
               <li><a href="./configs/smrt/README.md">PaddleSMRT</a></li>
           </ul>
