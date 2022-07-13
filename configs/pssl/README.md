@@ -2,7 +2,7 @@
 
 ## Reference
 
-> Xuhong Li, Haoyi Xiong, Yi Liu, Dingfu Zhou, Zeyu Chen, Yaqing Wang, and Dejing Dou. "Distilling ensemble of explanations for weakly-supervised pre-training of image segmentation models." Machine Learning (2022): 1-17. [link](https://arxiv.org/abs/2207.03335).
+> Xuhong Li, Haoyi Xiong, Yi Liu, Dingfu Zhou, Zeyu Chen, Yaqing Wang, and Dejing Dou. "Distilling ensemble of explanations for weakly-supervised pre-training of image segmentation models." Machine Learning (2022): 1-17. https://arxiv.org/abs/2207.03335
 
 ## Overview
 
@@ -15,11 +15,7 @@ In our work, we propose a method that leverages Pseudo Semantic Segmentation Lab
 
 ## Training
 
-<<<<<<< HEAD
 Our method improves the pre-training step of segmentation models. We provide the details of the pre-training here, but note that **the pre-training step can be skipped because we have provided the pre-trained models**. The PSSL dataset can be obtained by sending an email to paddleseg@baidu.com via an **official email** (not use qq, gmail, etc.) including your institution/company information and the purpose on the dataset.
-=======
-Our method improves the pre-training step of segmentation models. We provide the details of the pre-training here, but note that **the pre-training step can be skipped because we have provided the pre-trained models**. The donwload link for PSSL dataset will be provided upon request.
->>>>>>> 39e48882 ([Doc] Add links for pssl (#2305))
 
 Here we show the configuration files of two lightweight models, [STDC2](https://paddleseg.bj.bcebos.com/dygraph/pssl/stdc2_pssl_pretrained/model.pdparams) and [PPLite-Seg-B](https://paddleseg.bj.bcebos.com/dygraph/pssl/pp_liteseg_stdc2_pssl_pretrained/model.pdparams), where the download links are also provided.
 
