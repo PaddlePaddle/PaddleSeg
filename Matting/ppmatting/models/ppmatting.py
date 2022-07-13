@@ -56,7 +56,7 @@ class PPMatting(nn.Layer):
         fea_list = self.backbone(x)
 
         scb_logits = self.scb(fea_list[-1])
-        semantic_map = F.softmax(scb_logits[-1])
+        semantic_map = F.softmax(scb_logits[-1], axis=1)
 
         fea0 = F.interpolate(
             fea_list[0], input_shape[2:], mode='bilinear', align_corners=False)
@@ -162,7 +162,6 @@ class PPMatting(nn.Layer):
 class SCB(nn.Layer):
     def __init__(self, in_channels):
         super().__init__()
-        print('scb inchannels: ', in_channels)
         self.in_channels = [512 + in_channels, 512, 256, 128, 128, 64]
         self.mid_channels = [512, 256, 128, 128, 64, 64]
         self.out_channels = [256, 128, 64, 64, 64, 3]
@@ -181,8 +180,12 @@ class SCB(nn.Layer):
         ])
 
         scb_list = [
-            self._make_stage(self.in_channels[i], self.mid_channels[i],
-                             self.out_channels[i])
+            self._make_stage(
+                self.in_channels[i],
+                self.mid_channels[i],
+                self.out_channels[i],
+                padding=int(i == 0) + 1,
+                dilation=int(i == 0) + 1)
             for i in range(len(self.in_channels) - 1)
         ]
         scb_list += [
@@ -198,7 +201,6 @@ class SCB(nn.Layer):
 
     def forward(self, x):
         psp_x = self.psp_module(x)
-        print(psp_x.shape)
         psps = [psp(psp_x) for psp in self.psps]
 
         scb_logits = []
@@ -219,14 +221,28 @@ class SCB(nn.Layer):
             nn.Upsample(
                 scale_factor=up_sample, mode='bilinear', align_corners=False))
 
-    def _make_stage(self, in_channels, mid_channels, out_channels):
+    def _make_stage(self,
+                    in_channels,
+                    mid_channels,
+                    out_channels,
+                    padding=1,
+                    dilation=1):
         layer_list = [
             layers.ConvBNReLU(
                 in_channels, mid_channels, 3, padding=1), layers.ConvBNReLU(
-                    mid_channels, mid_channels, 3, padding=1),
-            layers.ConvBNReLU(
-                mid_channels, out_channels, 3, padding=1), nn.Upsample(
-                    scale_factor=2, mode='bilinear', align_corners=False)
+                    mid_channels,
+                    mid_channels,
+                    3,
+                    padding=padding,
+                    dilation=dilation), layers.ConvBNReLU(
+                        mid_channels,
+                        out_channels,
+                        3,
+                        padding=padding,
+                        dilation=dilation), nn.Upsample(
+                            scale_factor=2,
+                            mode='bilinear',
+                            align_corners=False)
         ]
         return nn.Sequential(*layer_list)
 
@@ -339,12 +355,13 @@ if __name__ == '__main__':
 
     model = PPMatting(
         backbone=backbone,
-        pretrained='/ssd1/home/chenguowei01/github/PaddleSeg/Matting/save_models/pp-matting/pp-matting_hrnet_w18_human_512/model.pdparams'
+        pretrained='/ssd1/home/chenguowei01/github/PaddleSeg/Matting/save_models/pp-matting/release_version/pp-matting_hrnet_w18_human_512/model.pdparams'
     )
     model.eval()
-    params = model.named_parameters()
-    for name, tensor in params:
-        print(name, tensor.shape)
+    # print(model)
+    # params = model.named_parameters()
+    # for name, tensor in params:
+    #     print(name, tensor.shape)
     print('number parameters: ', len(model.parameters()))
 
     results = model(inputs)
