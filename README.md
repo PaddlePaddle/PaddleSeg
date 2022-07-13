@@ -82,7 +82,7 @@ PaddleSeg is an end-to-end high-efficent development toolkit for image segmentat
         <b>Components</b>
       </td>
       <td>
-        <b>Special Case</b>
+        <b>Special Cases</b>
       </td>
     </tr>
     <tr valign="top">
@@ -161,7 +161,7 @@ PaddleSeg is an end-to-end high-efficent development toolkit for image segmentat
         </details>
       </td>
       <td>
-        <details><summary><b>骨干网络</b></summary>
+        <details><summary><b>Backbone</b></summary>
           <ul>
             <li><a href="./paddleseg/models/backbones/hrnet.py">HRNet</a></li>
             <li><a href="./paddleseg/models/backbones/resnet_cd.py">ResNet</a></li>
@@ -254,7 +254,7 @@ PaddleSeg is an end-to-end high-efficent development toolkit for image segmentat
         </details>
       </td>
       <td>
-        <details><summary><b>PPSMRT</b></summary>
+        <details><summary><b>Model Selection-PPSMRT</b></summary>
           <ul>
               <li><a href="./configs/smrt/README.md">PaddleSMRT</a></li>
           </ul>
@@ -422,7 +422,7 @@ Note that:
   * [CVPR Champion Solution](./contrib/AutoNUE)
   * [Domain Adaptation](./contrib/DomainAdaptation)
 
-# Aistudio tutorials
+# AI Studio tutorials
 * [Learn Paddleseg in 10 Mins](https://aistudio.baidu.com/aistudio/projectdetail/1672610?channelType=0&channel=0)
 * [Use PaddleSeg in Human Segmentation](https://aistudio.baidu.com/aistudio/projectdetail/2189481?channelType=0&channel=0)
 * [Use PaddleSeg in Mini-dataset Spine Segmentation](https://aistudio.baidu.com/aistudio/projectdetail/3878920)
