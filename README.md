@@ -364,12 +364,13 @@ Note that:
 
 ## <img src="./docs/images/teach.png" width="20"/> Tutorials
 
-### Tutorials & Docs
+**Tutorials**
 
-#### Tutorials
+* [Quick Start](./docs/quick_start.md)
 * [A 20 minutes Blitz to learn PaddleSeg](./docs/whole_process.md)
 
-#### Docs
+**Docs**
+
 * [Installation](./docs/install.md)
 
 *  Data Preparation
@@ -402,7 +403,8 @@ Note that:
 
 * [FAQ](./docs/faq/faq/faq.md)
 
-### Welcome to Contribute
+**Welcome to Contribute**
+
 * [API Documention](./docs/apis/README.md)
 
 *  Advanced Development

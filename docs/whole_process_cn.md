@@ -33,7 +33,10 @@ cd ..
 
 数据集的原始图像和分割效果图如下所示，本示例的任务将是将眼球图片中的视盘区域分割出来。
 
-![](./images/fig1.png)
+
+<div align="center">
+<img src="./images/fig1.png"  width = "400" />  
+</div>
 
 
 ## 3. 准备配置文件
@@ -331,7 +334,10 @@ python predict.py \
 
 我们选择1张图片进行查看，如下图。
 
-![](./images/fig5.png)
+<div align="center">
+<img src="./images/fig5.png"  width = "600" />  
+</div>
+
 ## 7 模型导出
 
 上述模型训练、评估和预测，都是使用飞桨的动态图模式。动态图模式具有灵活、方便的优点，但是不适合工业级部署的速度要求。

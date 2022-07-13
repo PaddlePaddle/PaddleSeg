@@ -357,15 +357,14 @@
 
 ## <img src="./docs/images/teach.png" width="20"/> 使用教程
 
-### 教程和文档
+**教程**
 
-#### 教程
-
+* [快速体验](./docs/quick_start_cn.md)
 * [20分钟快速上手PaddleSeg](./docs/whole_process_cn.md)
 
-#### 文档
-* [安装说明](./docs/install_cn.md)
+**文档**
 
+* [安装说明](./docs/install_cn.md)
 * 准备数据
    * [EISeg 数据标注](./EISeg/README.md)
    * [标注数据的准备](./docs/data/marker/marker_cn.md)
@@ -396,7 +395,8 @@
 
 * [常见问题汇总](./docs/faq/faq/faq_cn.md)
 
-### 欢迎贡献
+**欢迎贡献**
+
 * [API文档](./docs/apis/README_CN.md)
 *  二次开发教程
     * [配置文件详解](./docs/design/use/use_cn.md)
