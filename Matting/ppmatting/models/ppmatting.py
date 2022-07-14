@@ -25,8 +25,6 @@ from paddleseg.cvlibs import manager
 
 from ppmatting.models.losses import MRSD, GradientLoss
 from ppmatting.models.backbone import resnet_vd
-# from losses import MRSD, GradientLoss
-# from backbone import resnet_vd
 
 
 @manager.MODELS.add_component
@@ -90,7 +88,7 @@ class PPMatting(nn.Layer):
     def loss(self, logit_dict, label_dict, loss_func_dict=None):
         if loss_func_dict is None:
             if self.loss_func_dict is None:
-                self.loss_func_dict = self.get_loss_func_dict
+                self.loss_func_dict = self.get_loss_func_dict()
         else:
             self.loss_func_dict = loss_func_dict
         loss = {}
@@ -101,17 +99,17 @@ class PPMatting(nn.Layer):
         semantic_label_trans = (semantic_label == 128).astype('int64')
         semantic_label_bg = (semantic_label == 0).astype('int64')
         semantic_label = semantic_label_trans + semantic_label_bg * 2
-        loss_semantic = loss_func_dict['semantic'][0](
+        loss_semantic = self.loss_func_dict['semantic'][0](
             paddle.log(logit_dict['semantic'] + 1e-6),
             semantic_label.squeeze(1))
         loss['semantic'] = loss_semantic
 
         # detail loss computation
         transparent = label_dict['trimap'] == 128
-        detail_alpha_loss = loss_func_dict['detail'][0](
+        detail_alpha_loss = self.loss_func_dict['detail'][0](
             logit_dict['detail'], label_dict['alpha'], transparent)
         # gradient loss
-        detail_gradient_loss = loss_func_dict['detail'][1](
+        detail_gradient_loss = self.loss_func_dict['detail'][1](
             logit_dict['detail'], label_dict['alpha'], transparent)
         loss_detail = detail_alpha_loss + detail_gradient_loss
         loss['detail'] = loss_detail
@@ -119,7 +117,7 @@ class PPMatting(nn.Layer):
         loss['detail_gradient'] = detail_gradient_loss
 
         # fusion loss
-        loss_fusion_func = loss_func_dict['fusion']
+        loss_fusion_func = self.loss_func_dict['fusion']
         # fusion_sigmoid loss
         fusion_alpha_loss = loss_fusion_func[0](logit_dict['fusion'],
                                                 label_dict['alpha'])
@@ -252,7 +250,7 @@ class HRDB(nn.Layer):
     The High-Resolution Detail Branch
 
     Args:
-        in_channels(ing):
+        in_channels(int): The number of input channels.
         scb_channels(list|tuple): The channels of scb logits
         gf_index(list|tuple, optional): Which logit is selected as guidance flow from scb logits. Default: (0, 2, 4)
     """
@@ -285,7 +283,6 @@ class HRDB(nn.Layer):
         self.detail_conv = nn.Conv2D(channels[-1], 1, 1, bias_attr=False)
 
     def forward(self, x, scb_logits):
-
         for i in range(len(self.res_list)):
             x = self.res_list[i](x)
             x = self.convs[i](x)
@@ -332,42 +329,3 @@ class GatedSpatailConv2d(nn.Layer):
         x = input_features * (alphas + 1)
         x = self.conv(x)
         return x
-
-
-if __name__ == '__main__':
-    #     paddle.set_device('cpu')
-    import time
-    import cv2
-    import numpy as np
-    from backbone import HRNet_W18
-
-    backbone = HRNet_W18()
-    img = cv2.imread(
-        '/ssd1/home/chenguowei01/github/PaddleSeg/Matting/test/test_real_photos/pm/10.jpeg'
-    )
-    img = cv2.resize(img, (1440, 1024))
-    img = np.transpose(img, [2, 0, 1])
-    img = img[np.newaxis, ...] / 255.
-    print(img.shape)
-
-    inputs = {}
-    inputs['img'] = paddle.to_tensor(img).astype('float32')
-
-    model = PPMatting(
-        backbone=backbone,
-        pretrained='/ssd1/home/chenguowei01/github/PaddleSeg/Matting/save_models/pp-matting/release_version/pp-matting_hrnet_w18_human_512/model.pdparams'
-    )
-    model.eval()
-    # print(model)
-    # params = model.named_parameters()
-    # for name, tensor in params:
-    #     print(name, tensor.shape)
-    print('number parameters: ', len(model.parameters()))
-
-    results = model(inputs)
-    results = results.numpy()
-    print(results.shape)
-    print('mean', results.mean())
-    print('sum', results.sum())
-    cv2.imwrite('new.png', (results.squeeze() * 255).astype('uint8'))
-    print('one pixel', results[0, 0, 800, 500])
