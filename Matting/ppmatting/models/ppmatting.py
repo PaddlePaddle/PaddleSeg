@@ -49,8 +49,6 @@ class PPMatting(nn.Layer):
     def forward(self, inputs):
         x = inputs['img']
         input_shape = paddle.shape(x)
-        # input fea_list shape [N, 64, H/2, W/2] [N, 64, H/4, W/4]
-        # [N, 128, H/8, W/8] [N, 256, H/16, W/16] [N, 512, H/32, W/32]
         fea_list = self.backbone(x)
 
         scb_logits = self.scb(fea_list[-1])
