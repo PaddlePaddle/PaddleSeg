@@ -33,7 +33,7 @@ class PPMatting(nn.Layer):
         super().__init__()
         self.backbone = backbone
         self.pretrained = pretrained
-        self.loss_func_dict = None
+        self.loss_func_dict = self.get_loss_func_dict()
 
         self.backbone_channels = backbone.feat_channels
 
@@ -69,7 +69,8 @@ class PPMatting(nn.Layer):
                 'detail': detail_map,
                 'fusion': fusion
             }
-            return logit_dict
+            loss_dict = self.loss(logit_dict, inputs)
+            return logit_dict, loss_dict
         else:
             return fusion
 
@@ -83,12 +84,7 @@ class PPMatting(nn.Layer):
         loss_func_dict['fusion'].append(GradientLoss())
         return loss_func_dict
 
-    def loss(self, logit_dict, label_dict, loss_func_dict=None):
-        if loss_func_dict is None:
-            if self.loss_func_dict is None:
-                self.loss_func_dict = self.get_loss_func_dict()
-        else:
-            self.loss_func_dict = loss_func_dict
+    def loss(self, logit_dict, label_dict):
         loss = {}
 
         # semantic loss computation

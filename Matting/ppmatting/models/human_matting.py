@@ -284,7 +284,8 @@ class HumanMatting(nn.Layer):
             }
             if self.if_refine:
                 logit_dict['refine'] = pha
-            return logit_dict
+            loss_dict = self.loss(logit_dict, data)
+            return logit_dict, loss_dict
         else:
             return pha if self.if_refine else pha_sm
 
