@@ -166,8 +166,13 @@ def main(args):
     msg += '------------------------------------------------'
     logger.info(msg)
 
+    model = cfg.model
+    if place == 'gpu' and paddle.distributed.ParallelEnv().nranks > 1:
+        # convert bn to sync_bn
+        model = paddle.nn.SyncBatchNorm.convert_sync_batchnorm(model)
+
     train(
-        model=cfg.model,
+        model,
         train_dataset=train_dataset,
         val_dataset=val_dataset,
         optimizer=cfg.optimizer,
