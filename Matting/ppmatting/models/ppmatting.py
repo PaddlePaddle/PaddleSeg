@@ -29,6 +29,19 @@ from ppmatting.models.backbone import resnet_vd
 
 @manager.MODELS.add_component
 class PPMatting(nn.Layer):
+    """
+    The PPMattinh implementation based on PaddlePaddle.
+
+    The original article refers to
+    Guowei Chen, et, al. "PP-Matting: High-Accuracy Natural Image Matting"
+    (https://arxiv.org/pdf/2204.09433.pdf).
+
+    Args:
+        backbone: backbone model.
+        pretrained(str, optional): The path of pretrianed model. Defautl: None.
+
+    """
+
     def __init__(self, backbone, pretrained=None):
         super().__init__()
         self.backbone = backbone
