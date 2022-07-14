@@ -14,20 +14,25 @@
 
 import argparse
 import os
+import sys
+__dir__ = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(os.path.abspath(os.path.join(__dir__, '../../../')))
+sys.path.append(os.path.abspath(os.path.join(__dir__, '../')))
 
 import paddle
 
 from paddleseg.cvlibs import manager
-from paddleseg.utils import get_sys_env, logger, config_check
+from paddleseg.utils import get_sys_env, logger, config_check, utils
 from paddleseg.transforms import *
 from paddleseg.models import *
 from paddleseg.models.losses import *
-from datasets.humanseg import HumanSeg
 from paddleseg.datasets import Dataset
 from datasets.mixed_dataset import MixedDataset
 
-from scripts.mixed_data_train import train
-from scripts.config import Config
+from paddleslim import QAT
+
+from mixed_data_train_helper import train
+from config import Config
 
 
 def parse_args():
@@ -100,7 +105,53 @@ def parse_args():
         help='Whether to record the data to VisualDL during training',
         action='store_true')
 
+    parser.add_argument(
+        '--model_path',
+        help='The path of pretrained model',
+        type=str,
+        default=None)
+
     return parser.parse_args()
+
+
+quant_config = {
+    # weight preprocess type, default is None and no preprocessing is performed.
+    'weight_preprocess_type': None,
+    # activation preprocess type, default is None and no preprocessing is performed.
+    'activation_preprocess_type': None,
+    # weight quantize type, default is 'channel_wise_abs_max'
+    'weight_quantize_type': 'channel_wise_abs_max',
+    # activation quantize type, default is 'moving_average_abs_max'
+    'activation_quantize_type': 'moving_average_abs_max',
+    # weight quantize bit num, default is 8
+    'weight_bits': 8,
+    # activation quantize bit num, default is 8
+    'activation_bits': 8,
+    # data type after quantization, such as 'uint8', 'int8', etc. default is 'int8'
+    'dtype': 'int8',
+    # window size for 'range_abs_max' quantization. default is 10000
+    'window_size': 10000,
+    # The decay coefficient of moving average, default is 0.9
+    'moving_rate': 0.9,
+    # for dygraph quantization, layers of type in quantizable_layer_type will be quantized
+    'quantizable_layer_type': ['Conv2D', 'Linear'],
+}
+
+
+def skip_quant(model):
+    """
+    If the model has backbone and head, we skip quantizing the conv2d and linear ops
+    that belongs the head.
+    """
+    if not hasattr(model, 'backbone'):
+        logger.info("Quantize all target ops")
+        return
+
+    logger.info("Quantize all target ops in backbone")
+    for name, cur_layer in model.named_sublayers():
+        if isinstance(cur_layer, (paddle.nn.Conv2D, paddle.nn.Linear)) \
+            and "backbone" not in name:
+            cur_layer.skip_quant = True
 
 
 def main(args):
@@ -126,7 +177,6 @@ def main(args):
     val_roots = cfg.val_roots
     dataset_weights = cfg.dataset_weights
     class_weights = cfg.class_weights
-    train_file_lists = cfg.train_file_lists
     train_transforms = cfg.train_transforms
     val_transforms = cfg.val_transforms
     losses = cfg.loss
@@ -137,13 +187,13 @@ def main(args):
     logger.info(msg)
 
     train_datasets = []
-    for i, train_root in enumerate(cfg.train_roots):
+    for _, train_root in enumerate(cfg.train_roots):
         train_datasets.append(
             Dataset(
                 train_transforms,
                 train_root,
                 2,
-                train_path=os.path.join(train_root, train_file_lists[i])))
+                train_path=os.path.join(train_root, "train.txt")))
     if len(train_datasets) == 0:
         raise ValueError(
             'The length of train_datasets is 0. Please check if your dataset is valid'
@@ -155,32 +205,31 @@ def main(args):
         num_classes=2)
 
     if args.do_eval:
-        val_dataset0 = Dataset(
-            val_transforms,
-            val_roots[0],
-            2,
-            mode='val',
-            val_path=os.path.join(val_roots[0], 'val.txt'))
-        val_dataset1 = Dataset(
-            val_transforms,
-            val_roots[1],
-            2,
-            mode='val',
-            val_path=os.path.join(val_roots[1], 'val.txt'))
-        val_dataset2 = Dataset(
-            val_transforms,
-            val_roots[2],
-            2,
-            mode='val',
-            val_path=os.path.join(val_roots[2], 'val.txt'))
-        val_datasets = [val_dataset0, val_dataset1, val_dataset2]
-        # val_datasets = val_dataset0
+        val_datasets = []
+        for root in val_roots:
+            dataset = Dataset(
+                val_transforms,
+                root,
+                2,
+                mode='val',
+                val_path=os.path.join(root, 'val.txt'))
+            val_datasets.append(dataset)
     else:
         val_datasets = None
 
     if place == 'gpu' and paddle.distributed.ParallelEnv().nranks > 1:
         # convert bn to sync_bn
         cfg._model = paddle.nn.SyncBatchNorm.convert_sync_batchnorm(cfg.model)
+
+    model = cfg.model
+    assert args.model_path is not None, "Please set model_path"
+    utils.load_entire_model(model, args.model_path)
+    logger.info('Loaded trained params of model successfully')
+
+    skip_quant(model)
+    quantizer = QAT(config=quant_config)
+    quantizer.quantize(model)
+    logger.info('Quantize the model successfully')
 
     train(
         cfg.model,

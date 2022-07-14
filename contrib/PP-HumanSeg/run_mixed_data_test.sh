@@ -14,6 +14,6 @@ echo "output log: ${output_log}"
 python ./scripts/mixed_data_val.py \
     --config=${config} \
     --model_path=${model_path} \
-    --file_list=val.txt \
+    --file_list=test.txt \
     --num_workers 4 \
     2>&1 | tee  ${output_log}

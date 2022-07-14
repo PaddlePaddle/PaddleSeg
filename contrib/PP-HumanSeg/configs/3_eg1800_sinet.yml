@@ -1,19 +1,19 @@
-batch_size: 128  # 2 GPU
-iters: 10000
+batch_size: 32    # 2 GPUs
+iters: 46000
 
 train_dataset:
   type: Dataset
-  dataset_root: data/humanseg
-  train_path: data/humanseg/train.txt
+  dataset_root: data/EG1800
+  train_path: data/EG1800/train.txt
   num_classes: 2
   transforms:
     - type: Resize
-      target_size: [512, 512]
+      target_size: [224, 224]
     - type: ResizeStepScaling
       scale_step_size: 0
     - type: RandomRotation
     - type: RandomPaddingCrop
-      crop_size: [512, 512]
+      crop_size: [224, 224]
     - type: RandomHorizontalFlip
     - type: RandomDistort
     - type: RandomBlur
@@ -23,21 +23,20 @@ train_dataset:
 
 val_dataset:
   type: Dataset
-  dataset_root: data/humanseg
-  val_path: data/humanseg/val.txt
+  dataset_root: data/EG1800
+  val_path: data/EG1800/val.txt
   num_classes: 2
   transforms:
     - type: Resize
-      target_size: [512, 512]
+      target_size: [224, 224]
     - type: Normalize
   mode: val
 
 export:
   transforms:
     - type: Resize
-      target_size: [512, 512]
+      target_size: [224, 224]
     - type: Normalize
-
 
 optimizer:
   type: sgd
@@ -46,7 +45,7 @@ optimizer:
 
 lr_scheduler:
   type: PolynomialDecay
-  learning_rate: 0.1
+  learning_rate: 0.01
   end_lr: 0
   power: 0.9
 
@@ -57,12 +56,8 @@ loss:
         - type: CrossEntropyLoss
         - type: LovaszSoftmaxLoss
       coef: [0.8, 0.2]
-  coef: [1, 1, 1]
+  coef: [1]
 
 model:
-  type: PPLiteSeg
-  backbone:
-    type: STDC2
-    pretrained: https://bj.bcebos.com/paddleseg/dygraph/PP_STDCNet2.tar.gz
-  arm_out_chs: [64, 96, 128]
-  seg_head_inter_chs: [64, 64, 64]
+  type: SINet
+  num_classes: 2

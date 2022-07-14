@@ -67,12 +67,13 @@ class Predictor:
         self.args = args
         self.compose = T.Compose(self.cfg.transforms)
         resize_h, resize_w = args.input_shape
-
+        '''
         self.disflow = cv2.DISOpticalFlow_create(
             cv2.DISOPTICAL_FLOW_PRESET_ULTRAFAST)
         self.prev_gray = np.zeros((resize_h, resize_w), np.uint8)
         self.prev_cfd = np.zeros((resize_h, resize_w), np.float32)
         self.is_init = True
+        '''
 
         pred_cfg = PredictConfig(self.cfg.model, self.cfg.params)
         pred_cfg.disable_glog_info()

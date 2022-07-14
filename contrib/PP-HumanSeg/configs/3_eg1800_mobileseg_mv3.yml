@@ -1,19 +1,19 @@
-batch_size: 128    # 2 GPUs
-iters: 10000
+batch_size: 32    # 2 GPUs
+iters: 46000
 
 train_dataset:
   type: Dataset
-  dataset_root: data/humanseg
-  train_path: data/humanseg/train.txt
+  dataset_root: data/EG1800
+  train_path: data/EG1800/train.txt
   num_classes: 2
   transforms:
     - type: Resize
-      target_size: [256, 256]
+      target_size: [224, 224]
     - type: ResizeStepScaling
       scale_step_size: 0
     - type: RandomRotation
     - type: RandomPaddingCrop
-      crop_size: [256, 256]
+      crop_size: [224, 224]
     - type: RandomHorizontalFlip
     - type: RandomDistort
     - type: RandomBlur
@@ -23,19 +23,19 @@ train_dataset:
 
 val_dataset:
   type: Dataset
-  dataset_root: data/humanseg
-  val_path: data/humanseg/val.txt
+  dataset_root: data/EG1800
+  val_path: data/EG1800/val.txt
   num_classes: 2
   transforms:
     - type: Resize
-      target_size: [192, 192]
+      target_size: [224, 224]
     - type: Normalize
   mode: val
 
 export:
   transforms:
     - type: Resize
-      target_size: [192, 192]
+      target_size: [224, 224]
     - type: Normalize
 
 
@@ -46,7 +46,7 @@ optimizer:
 
 lr_scheduler:
   type: PolynomialDecay
-  learning_rate: 0.1
+  learning_rate: 0.01
   end_lr: 0
   power: 0.9
 
@@ -57,10 +57,17 @@ loss:
         - type: CrossEntropyLoss
         - type: LovaszSoftmaxLoss
       coef: [0.8, 0.2]
-  coef: [1]
+  coef: [1, 1, 1, 1]
 
 model:
-  type: PPHumanSegLite
-  pretrained: pretrained_model/PPHumanSegLite_ImageNet360epoch.pdparams
-  align_corners: False
+  type: MobileSeg
   num_classes: 2
+  backbone:
+    type: MobileNetV3_large_x1_0  # out channels: [16, 24, 40, 112, 160]
+    pretrained: https://paddleseg.bj.bcebos.com/dygraph/backbone/mobilenetv3_large_x1_0_ssld.tar.gz
+  cm_bin_sizes: [1, 2, 4]
+  backbone_indices: [1, 2, 3, 4]
+  cm_out_ch: 128
+  arm_out_chs: [32, 64, 96, 128]
+  seg_head_inter_chs: [16, 32, 32, 32]
+  use_last_fuse: True
