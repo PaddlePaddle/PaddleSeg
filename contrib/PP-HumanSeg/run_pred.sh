@@ -9,7 +9,7 @@ echo "config: ${config}"
 echo "save_dir: ${save_dir}"
 echo "model_path: ${model_path}"
 
-python predict.py \
+python ../../predict.py \
     --config ${config} \
     --model_path=${model_path} \
     --file_list=small_test.txt \
