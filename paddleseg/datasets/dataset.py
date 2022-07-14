@@ -155,7 +155,7 @@ class Dataset(paddle.io.Dataset):
             data = self.transforms(data)
             if self.edge:
                 edge_mask = F.mask_to_binary_edge(
-                    label, radius=2, num_classes=self.num_classes)
+                    data['label'], radius=2, num_classes=self.num_classes)
                 data['edge'] = edge_mask
         return data
 

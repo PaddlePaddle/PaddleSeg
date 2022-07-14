@@ -34,7 +34,7 @@ def check_logits_losses(logits_list, losses):
             .format(len_logits, len_losses))
 
 
-def loss_computation(logits_list, label_dict, losses):
+def loss_computation(logits_list, labels, edges, losses):
     check_logits_losses(logits_list, losses)
     loss_list = []
     for i in range(len(logits_list)):
@@ -43,16 +43,16 @@ def loss_computation(logits_list, label_dict, losses):
         coef_i = losses['coef'][i]
         if loss_i.__class__.__name__ in ('BCELoss', ) and loss_i.edge_label:
             # Use edges as labels According to loss type.
-            loss_list.append(coef_i * loss_i(logits, label_dict['edge']))
+            loss_list.append(coef_i * loss_i(logits, edges))
         elif loss_i.__class__.__name__ == 'MixedLoss':
-            mixed_loss_list = loss_i(logits, label_dict['label'])
+            mixed_loss_list = loss_i(logits, labels)
             for mixed_loss in mixed_loss_list:
                 loss_list.append(coef_i * mixed_loss)
         elif loss_i.__class__.__name__ in ("KLLoss", ):
             loss_list.append(coef_i *
                              loss_i(logits_list[0], logits_list[1].detach()))
         else:
-            loss_list.append(coef_i * loss_i(logits, label_dict['label']))
+            loss_list.append(coef_i * loss_i(logits, labels))
     return loss_list
 
 
@@ -190,7 +190,10 @@ def train(model,
                     logits_list = ddp_model(images) if nranks > 1 else model(
                         images)
                     loss_list = loss_computation(
-                        logits_list=logits_list, label_dict=data, losses=losses)
+                        logits_list=logits_list,
+                        labels=labels,
+                        edges=edges,
+                        losses=losses)
                     loss = sum(loss_list)
 
                 scaled = scaler.scale(loss)  # scale the loss
@@ -202,7 +205,10 @@ def train(model,
             else:
                 logits_list = ddp_model(images) if nranks > 1 else model(images)
                 loss_list = loss_computation(
-                    logits_list=logits_list, label_dict=data, losses=losses)
+                    logits_list=logits_list,
+                    labels=labels,
+                    edges=edges,
+                    losses=losses)
                 loss = sum(loss_list)
                 loss.backward()
                 # if the optimizer is ReduceOnPlateau, the loss is the one which has been pass into step.
