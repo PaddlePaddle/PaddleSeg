@@ -1,6 +1,6 @@
 English | [简体中文](README_CN.md)
 
-# Matting
+# Natural Image Matting
 Image Matting is the technique of extracting foreground from an image by calculating its color and transparency. It is widely used in the film industry to replace background, image composition, and visual effects. Each pixel in the image will have a value that represents its foreground transparency, called Alpha. The set of all Alpha values in an image is called Alpha Matte. The part of the image covered by the mask can be extracted to complete foreground separation.
 
 <p align="center">
@@ -8,8 +8,7 @@ Image Matting is the technique of extracting foreground from an image by calcula
 </p>
 
 # One-click experience
-Matting is widely used in a variety of industries, such as video clip, video synthesis and other fields，Some developers also built a one-click Matting website named "No code Matting" based on PP-Matting，Welcome to use it.
-- [using Link](http://seg.itmanbu.com/)
+Try the online demo "[Non-Code Matting](https://easyseg.cn/)".
 
 <p align="center">
 <img src="https://user-images.githubusercontent.com/48433081/165077834-c3191509-aeaf-45c8-b226-656174f4c152.gif" width="100%" height="100%">
