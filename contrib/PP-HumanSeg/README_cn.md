@@ -2,27 +2,32 @@
 
 # 人像分割PP-HumanSeg
 
-人像分割是图像分割领域的高频应用，PaddleSeg推出在大规模人像数据上训练的人像分割系列模型PP-HumanSeg，包括自研超轻量级模型**PP-HumanSeg-Lite**、轻量级模型PP-HumanSeg-Mobile、高精度模型PP-HumanSeg-Server，满足在Web端、移动端、服务端多种使用场景的需求。其中PP-HumanSeg-Lite采用轻量级网络设计、连通性学习策略、数据合成等策略，实现体积、速度和精度的SOTA平衡（参数量137K，速度达95FPS，mIoU达93%）。
+将任务和背景在像素级别进行区分，是一个图像分割的经典任务，具有广泛的应用。一般而言，该任务可以分为两类：1）针对半身人像的分割，简称肖像分割；2）针对全身和半身人像的分割，简称通用人像分割。
 
-另外提供视频流人像分割、背景替换使用教程，以及移动端和Web端部署教程。也可基于Paddle.js在网页体验[人像扣图](https://paddlejs.baidu.com/humanseg)效果、[视频背景替换及弹幕穿透](https://www.paddlepaddle.org.cn/paddlejs)效果。
+对于肖像分割和通用人像分割，PaddleSeg发布了PP-HumanSeg系列模型，具有分割精度高、推理速度快的优点。PP-HumanSeg系列模型可以开箱即用，直接部署到大家的产品中。同时，我们提供视频流人像分割，背景替换使用教程，移动端和Web端部署教程，让大家快速上手。
+
+大家可以在Paddle.js的网页体验[人像扣图](https://paddlejs.baidu.com/humanseg)效果、[视频背景替换及弹幕穿透](https://www.paddlepaddle.org.cn/paddlejs)效果。
 
 <p align="center">
 <img src="https://user-images.githubusercontent.com/30695251/149886667-f47cab88-e81a-4fd7-9f32-fbb34a5ed7ce.png"  height="300">        <img src="https://user-images.githubusercontent.com/30695251/149887482-d1fcd5d3-2cce-41b5-819b-bfc7126b7db4.png"  height="300">
 </p>
 
-
-## 最新动向
-- [2022-1] 人像分割论文[PP-HumanSeg](./paper.md)发表于WACV 2022 Workshop，并开源连通性学习（SCL）方法和大规模视频会议数据集。
-- [2021-7] 新冠疫情催化远程办公需求，视频会议产品迅速爆发。百度视频会议可实现Web端一秒入会，其中的虚拟背景功能采用我们的PP-HumanSeg-Lite模型，实现实时背景替换和背景虚化功能，保护用户隐私，并增加视频会议的趣味性。
+新冠疫情催化远程办公需求，视频会议产品迅速爆发。百度视频会议可实现Web端一秒入会，其中的虚拟背景功能采用我们的PP-HumanSeg V1肖像模型，实现实时背景替换和背景虚化功能，保护用户隐私，并增加视频会议的趣味性。
 
 <p align="center">
 <img src="https://github.com/LutaoChu/transfer_station/raw/master/conference.gif" width="60%" height="60%">
 </p>
 
+
+## 最新消息
+- [2022-7] 发布PP-HumanSeg V2版本模型，重磅升级，肖像分割模型的mIoU提升0.7%，推理速度提升xx，通用人像分割模型的mIoU提升xx，推理速度提升xx。
+- [2022-1] 人像分割论文[PP-HumanSeg](./paper.md)发表于WACV 2022 Workshop，并开源连通性学习（SCL）方法和大规模视频会议数据集。
+- [2021-7] 发布PP-HumanSeg V1版本模型，包括一个肖像分割模型和两个通用人像分割模型。
+
 ## 目录
-- [人像分割模型](#人像分割模型)
-  - [通用人像分割](#通用人像分割)
-  - [肖像分割](#肖像分割)
+- [PP-HumanSeg模型](#PP-HumanSeg模型)
+  - [肖像分割模型](#肖像分割模型)
+  - [通用人像分割模型](#通用人像分割模型)
 - [安装](#安装)
 - [快速体验](#快速体验)
   - [视频流人像分割](#视频流人像分割)
@@ -33,8 +38,26 @@
 - [Web端部署](#Web端部署)
 - [移动端部署](#移动端部署)
 
-## 人像分割模型
-### 通用人像分割
+## PP-HumanSeg模型
+
+### 肖像分割模型
+
+针对肖像分割任务，PP-HumanSeg开放了肖像分割模型，该模型已应用于百度视频会议。
+
+| 模型名 | 模型说明 | Checkpoint | Inference Model |
+| --- | --- | --- | ---|
+| PP-HumanSeg-Lite | 超轻量级模型，适用于Web端或移动端实时分割场景，例如手机自拍、Web视频会议，模型结构为[Paddle自研模型](../../configs/pp_humanseg_lite/README.md)，适合横屏尺寸输入，推荐输入大小（398，224） | [lite_portrait_ckpt](https://paddleseg.bj.bcebos.com/dygraph/ppseg/ppseg_lite_portrait_398x224.tar.gz) | [lite_portrait_inference](https://paddleseg.bj.bcebos.com/dygraph/ppseg/ppseg_lite_portrait_398x224_with_softmax.tar.gz) |
+
+模型性能：
+
+| 模型名 |Input Size | FLOPs | Parameters | 计算耗时 | 模型大小 |
+|-|-|-|-|-|-|
+| PP-HumanSeg-Lite | 398x224 | 266M | 137K | 23.49ms | 543Kb |
+| PP-HumanSeg-Lite | 288x162 | 138M | 137K | 15.62ms | 543Kb |
+
+测试环境: 使用Paddle.js converter优化图结构，部署于Web端，显卡型号AMD Radeon Pro 5300M 4 GB。
+
+### 通用人像分割模型
 针对通用人像分割任务，PP-HumanSeg开放了在大规模人像数据上训练的三个人像模型，满足服务端、移动端、Web端多种使用场景的需求。
 
 | 模型名 | 模型说明 | Checkpoint | Inference Model |
@@ -51,7 +74,7 @@ NOTE:
 
 * 其中Inference Model适用于服务端的CPU和GPU预测部署，适用于通过Paddle Lite进行移动端等端侧设备部署。更多Paddle Lite部署说明查看[Paddle Lite文档](https://paddle-lite.readthedocs.io/zh/latest/)
 
-#### 模型性能
+模型性能：
 
 | 模型名 |Input Size | FLOPs | Parameters | 计算耗时 | 模型大小 |
 |-|-|-|-|-|-|
@@ -60,22 +83,6 @@ NOTE:
 | PP-HumanSeg-Lite | 192x192 | 121M | 137K | 10.51ms | 543Kb |
 
 测试环境：Nvidia Tesla V100单卡。
-
-### 肖像分割
-针对肖像分割(Portrait Segmentation)任务，PP-HumanSeg开放了肖像分割模型，该模型已应用于百度视频会议。
-
-| 模型名 | 模型说明 | Checkpoint | Inference Model |
-| --- | --- | --- | ---|
-| PP-HumanSeg-Lite | 超轻量级模型，适用于Web端或移动端实时分割场景，例如手机自拍、Web视频会议，模型结构为[Paddle自研模型](../../configs/pp_humanseg_lite/README.md)，适合横屏尺寸输入，推荐输入大小（398，224） | [lite_portrait_ckpt](https://paddleseg.bj.bcebos.com/dygraph/ppseg/ppseg_lite_portrait_398x224.tar.gz) | [lite_portrait_inference](https://paddleseg.bj.bcebos.com/dygraph/ppseg/ppseg_lite_portrait_398x224_with_softmax.tar.gz) |
-
-#### 模型性能
-
-| 模型名 |Input Size | FLOPs | Parameters | 计算耗时 | 模型大小 |
-|-|-|-|-|-|-|
-| PP-HumanSeg-Lite | 398x224 | 266M | 137K | 23.49ms | 543Kb |
-| PP-HumanSeg-Lite | 288x162 | 138M | 137K | 15.62ms | 543Kb |
-
-测试环境: 使用Paddle.js converter优化图结构，部署于Web端，显卡型号AMD Radeon Pro 5300M 4 GB。
 
 
 ## 安装
