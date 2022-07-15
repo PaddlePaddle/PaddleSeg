@@ -19,7 +19,7 @@ PaddleSeg 通过模块组建，并通过配置化启动的方式，实现了从�
 参考[安装文档](./install_cn.md)进行环境配置。
 
 ## 2. 准备数据集
-本示例将使用视盘分割（optic disc segmentation）数据集，它是我们目前支持的数十种数据集之一。实际使用过程中，大家可以参考[准备公开数据集](./pre_data_cn.md)来使用我们支持的数据集，也可以参考[准备自定义数据集](./data/marker/marker_cn.md)。
+本示例将使用视盘分割（optic disc segmentation）数据集，它是我们目前支持的数十种数据集之一。实际使用过程中，大家可以参考[文档](./data/pre_data_cn.md)使用常见公开数据集，也可以参考[文档](./data/marker/marker_cn.md)准备自定义数据集。
 
 该数据集是一组眼底医疗分割数据集，包含了267张训练图片、76张验证图片、38张测试图片。通过以下命令可以下载[视盘分割数据集](https://paddleseg.bj.bcebos.com/dataset/optic_disc_seg.zip)，解压保存到`PaddleSeg/data`目录下。
 

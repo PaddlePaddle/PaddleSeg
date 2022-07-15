@@ -24,7 +24,7 @@ Please refer to the [Installation Guide](./install.md) to prepare the environmen
 
 ### **2.1 Dataset Download**
 
-Our demo uses the `optic disc segmentation dataset` for training. It is one of dozens datasets that we support. You can refer to [Datasets prepare](./data/pre_data.md) to use other datasets we support or [Prepare your own data](./data/marker/marker_cn.md) to prepare your own data.
+Our demo uses the `optic disc segmentation dataset` for training. It is one of dozens datasets that we support. You can refer to [Datasets prepare](./data/pre_data.md) to use other datasets we support or [Prepare your own data](./data/marker/marker.md) to prepare your own data.
 
 Optic disc segmentation is a set of fundus medical segmentation datasets, including 267 training images, 76 verification images, and 38 test images. You can download and unzip them using the following command.
 
