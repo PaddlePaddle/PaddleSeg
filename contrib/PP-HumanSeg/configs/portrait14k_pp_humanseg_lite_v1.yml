@@ -61,6 +61,5 @@ loss:
 
 model:
   type: PPHumanSegLite
-  pretrained: pretrained_model/pphumanseg_lite_humanseg_trained_best.pdparams
   align_corners: False
   num_classes: 2

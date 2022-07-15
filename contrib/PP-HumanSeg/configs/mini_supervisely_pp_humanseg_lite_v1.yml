@@ -61,6 +61,5 @@ loss:
 
 model:
   type: PPHumanSegLite
-  pretrained: pretrained_model/PPHumanSegLite_ImageNet360epoch.pdparams
   align_corners: False
   num_classes: 2

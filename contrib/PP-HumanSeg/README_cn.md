@@ -2,29 +2,9 @@
 
 # 人像分割PP-HumanSeg
 
-将任务和背景在像素级别进行区分，是一个图像分割的经典任务，具有广泛的应用。一般而言，该任务可以分为两类：1）针对半身人像的分割，简称肖像分割；2）针对全身和半身人像的分割，简称通用人像分割。
-
-对于肖像分割和通用人像分割，PaddleSeg发布了PP-HumanSeg系列模型，具有分割精度高、推理速度快的优点。PP-HumanSeg系列模型可以开箱即用，直接部署到大家的产品中。同时，我们提供视频流人像分割，背景替换使用教程，移动端和Web端部署教程，让大家快速上手。
-
-大家可以在Paddle.js的网页体验[人像扣图](https://paddlejs.baidu.com/humanseg)效果、[视频背景替换及弹幕穿透](https://www.paddlepaddle.org.cn/paddlejs)效果。
-
-<p align="center">
-<img src="https://user-images.githubusercontent.com/30695251/149886667-f47cab88-e81a-4fd7-9f32-fbb34a5ed7ce.png"  height="300">        <img src="https://user-images.githubusercontent.com/30695251/149887482-d1fcd5d3-2cce-41b5-819b-bfc7126b7db4.png"  height="300">
-</p>
-
-新冠疫情催化远程办公需求，视频会议产品迅速爆发。百度视频会议可实现Web端一秒入会，其中的虚拟背景功能采用我们的PP-HumanSeg V1肖像模型，实现实时背景替换和背景虚化功能，保护用户隐私，并增加视频会议的趣味性。
-
-<p align="center">
-<img src="https://github.com/LutaoChu/transfer_station/raw/master/conference.gif" width="60%" height="60%">
-</p>
-
-
-## 最新消息
-- [2022-7] 发布PP-HumanSeg V2版本模型，重磅升级，肖像分割模型的mIoU提升0.7%，推理速度提升xx，通用人像分割模型的mIoU提升xx，推理速度提升xx。
-- [2022-1] 人像分割论文[PP-HumanSeg](./paper.md)发表于WACV 2022 Workshop，并开源连通性学习（SCL）方法和大规模视频会议数据集。
-- [2021-7] 发布PP-HumanSeg V1版本模型，包括一个肖像分割模型和两个通用人像分割模型。
-
 ## 目录
+- [简介](#简介)
+- [最新消息](#最新消息)
 - [PP-HumanSeg模型](#PP-HumanSeg模型)
   - [肖像分割模型](#肖像分割模型)
   - [通用人像分割模型](#通用人像分割模型)
@@ -38,26 +18,58 @@
 - [Web端部署](#Web端部署)
 - [移动端部署](#移动端部署)
 
+## 简介
+
+将人物和背景在像素级别进行区分，是一个图像分割的经典任务，具有广泛的应用。
+一般而言，该任务可以分为两类：1）针对半身人像的分割，简称肖像分割；2）针对全身和半身人像的分割，简称通用人像分割。
+
+对于肖像分割和通用人像分割，PaddleSeg发布了PP-HumanSeg系列模型:
+* 分割精度高、推理速度快、通用型强
+* 可以开箱即用，零成本部署到产品中，也可以针对特定场景数据进行微调，实现更佳分割效果
+
+大家可以在Paddle.js的网页体验[人像扣图](https://paddlejs.baidu.com/humanseg)效果、[视频背景替换及弹幕穿透](https://www.paddlepaddle.org.cn/paddlejs)效果。
+
+<p align="center">
+<img src="https://user-images.githubusercontent.com/30695251/149886667-f47cab88-e81a-4fd7-9f32-fbb34a5ed7ce.png"  height="200">        <img src="https://user-images.githubusercontent.com/30695251/149887482-d1fcd5d3-2cce-41b5-819b-bfc7126b7db4.png"  height="200">
+</p>
+
+## 最新消息
+- [2022-7] 发布PP-HumanSeg V2版本模型，肖像分割模型的推理速度提升45.5%、mIoU提升0.63%、可视化效果更佳，通用人像分割模型的推理速度提升xx，mIoU提升xx。
+- [2022-1] 人像分割论文[PP-HumanSeg](./paper.md)发表于WACV 2022 Workshop，并开源连通性学习（SCL）方法和大规模视频会议数据集。
+- [2021-7] 百度视频会议可实现Web端一秒入会，其中的虚拟背景功能采用我们的PP-HumanSeg肖像模型，实现实时背景替换和背景虚化功能，保护用户隐私，并增加视频会议的趣味性。
+- [2021-7] 发布PP-HumanSeg V1版本模型，包括一个肖像分割模型和两个通用人像分割模型。
+
+<p align="center">
+<img src="https://github.com/LutaoChu/transfer_station/raw/master/conference.gif" width="40%" height="40%">
+</p>
+
 ## PP-HumanSeg模型
 
 ### 肖像分割模型
 
-针对肖像分割任务，PP-HumanSeg开放了肖像分割模型，该模型已应用于百度视频会议。
+PP-HumanSeg肖像分割模型，适用于手机视频通话、Web视频会议等实时分割场景，可以开箱即用，免去大家标注数据、训练模型的成本。
 
-| 模型名 | 模型说明 | Checkpoint | Inference Model |
-| --- | --- | --- | ---|
-| PP-HumanSeg-Lite | 超轻量级模型，适用于Web端或移动端实时分割场景，例如手机自拍、Web视频会议，模型结构为[Paddle自研模型](../../configs/pp_humanseg_lite/README.md)，适合横屏尺寸输入，推荐输入大小（398，224） | [lite_portrait_ckpt](https://paddleseg.bj.bcebos.com/dygraph/ppseg/ppseg_lite_portrait_398x224.tar.gz) | [lite_portrait_inference](https://paddleseg.bj.bcebos.com/dygraph/ppseg/ppseg_lite_portrait_398x224_with_softmax.tar.gz) |
+PP-HumanSeg-Lite-V1肖像分割模型使用[自研模型结构](../../configs/pp_humanseg_lite/README.md)，分割效果较好，模型体积非常小。
 
-模型性能：
+PP-HumanSeg-Lite-V2肖像分割模型，对比V1模型，推理速度提升45.5%、mIoU提升0.63%、可视化效果更佳，核心在于：
+* 更高的分割精度：使用PaddleSeg推出的[超轻量级分割模型](../../configs/mobileseg/README.md)，具体选择MobileNetV3作为骨干网络，设计多尺度特征融合模块(Multi-Scale Feature Aggregation Module)。
+* 更快的推理速度：减小模型最佳输入尺寸，既减少了推理耗时，又增大模型感受野。
+* 更好的通用性：使用迁移学习的思想，首先在大型通用人像分割数据集上预训练，然后在小型肖像分割数据集上微调。
 
-| 模型名 |Input Size | FLOPs | Parameters | 计算耗时 | 模型大小 |
-|-|-|-|-|-|-|
-| PP-HumanSeg-Lite | 398x224 | 266M | 137K | 23.49ms | 543Kb |
-| PP-HumanSeg-Lite | 288x162 | 138M | 137K | 15.62ms | 543Kb |
+V1和V2肖像分割模型的具体信息如下表格。
 
-测试环境: 使用Paddle.js converter优化图结构，部署于Web端，显卡型号AMD Radeon Pro 5300M 4 GB。
+| 模型名 | 最佳输入尺寸 | mIou(%) | 推理耗时(ms) | 模型体积(MB) | 配置文件 | Checkpoint | Inference Model |
+| --- | --- | --- | ---| --- | --- | --- | ---|
+| PP-HumanSeg-Lite-V1 | 398x224 | 96.00 | 29.68 | 2.2 | [cfg](./configs/portrait14k_pp_humanseg_lite_v1.yml) | [url](https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/portrait_pp_humanseg_lite_v1_398x224_pretrained.zip) | [url](https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/portrait_pp_humanseg_lite_v1_398x224_inference_model.zip) |
+| PP-HumanSeg-Lite-V2 | 256x144 | 96.63 | 15.86 | 13.5 | [cfg](./configs/portrait14k_pp_humanseg_lite_v2.yml) | [url](https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/portrait_pp_humanseg_lite_v2_256x144_pretrained.zip) | [url](https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/portrait_pp_humanseg_lite_v2_256x144_inference_model.zip) |
+
+说明：
+* 测试肖像模型的精度mIoU：针对PP-HumanSeg-14k数据集，使用模型最佳输入尺寸进行测试，没有应用多尺度和flip等操作。
+* 测试肖像模型的推理耗时：基于PaddleLite预测库，小米9手机（骁龙855 CPU）、单线程、大核，使用模型最佳输入尺寸进行测试。
+* 在手机端部署肖像分割模型，可能存在横屏和竖屏等情况。大家可以根据实际情况对图像进行旋转，保持人像是竖直情况，然后将图像（尺寸为256x144或144x256）输入模型，可以得到最佳的分割效果。
 
 ### 通用人像分割模型
+
 针对通用人像分割任务，PP-HumanSeg开放了在大规模人像数据上训练的三个人像模型，满足服务端、移动端、Web端多种使用场景的需求。
 
 | 模型名 | 模型说明 | Checkpoint | Inference Model |
@@ -65,6 +77,16 @@
 | PP-HumanSeg-Server | 高精度模型，适用于服务端GPU且背景复杂的场景， 模型结构为Deeplabv3+/ResNet50, 输入大小（512， 512） |[server_ckpt](https://paddleseg.bj.bcebos.com/dygraph/humanseg/train/deeplabv3p_resnet50_os8_humanseg_512x512_100k.zip) | [server_inference](https://paddleseg.bj.bcebos.com/dygraph/humanseg/export/deeplabv3p_resnet50_os8_humanseg_512x512_100k_with_softmax.zip) |
 | PP-HumanSeg-Mobile | 轻量级模型，适用于移动端或服务端CPU的前置摄像头场景，模型结构为HRNet_w18_samll_v1，输入大小（192， 192）  | [mobile_ckpt](https://paddleseg.bj.bcebos.com/dygraph/humanseg/train/fcn_hrnetw18_small_v1_humanseg_192x192.zip) | [mobile_inference](https://paddleseg.bj.bcebos.com/dygraph/humanseg/export/fcn_hrnetw18_small_v1_humanseg_192x192_with_softmax.zip) |
 | PP-HumanSeg-Lite | 超轻量级模型，适用于Web端或移动端实时分割场景，例如手机自拍、Web视频会议，模型结构为[Paddle自研模型](../../configs/pp_humanseg_lite/README.md)，输入大小（192， 192） | [lite_ckpt](https://paddleseg.bj.bcebos.com/dygraph/humanseg/train/pphumanseg_lite_generic_192x192.zip) | [lite_inference](https://paddleseg.bj.bcebos.com/dygraph/humanseg/export/pphumanseg_lite_generic_192x192_with_softmax.zip) |
+
+
+| 模型名 | 最佳输入尺寸 | mIou(%) | 推理耗时(ms) | 模型体积(MB) | 配置文件 | Checkpoint | Inference Model |
+| --- | --- | --- | ---| --- | --- | --- | ---|
+| PP-HumanSeg-Lite-V1   | 192x192 | 91.61
+| PP-HumanSeg-Lite-V2   | 192x192 | 93.75
+| PP-HumanSeg-Mobile-V1 | 192x192 | 94.06
+| PP-HumanSeg-Mobile-V2 | 192x192 | 94.67
+| PP-HumanSeg-Server-V1 | 192x192 | -
+
 
 
 NOTE:
