@@ -308,7 +308,7 @@ PaddleSeg is an end-to-end high-efficent development toolkit for image segmentat
 | DeepLabV3      | ResNet101_OS8    | 80.85                 | 3.2       | [yml](./configs/deeplabv3/)   |
 | DeepLabV3      | ResNet50_OS8     | 80.36                 | 6.58      | [yml](./configs/deeplabv3p/)  |
 | DeepLabV3      | ResNet101_OS8    | 81.10                 | *3.94*    | [yml](./configs/deeplabv3p/)  |
-| :star2: OCRNet :star2:      | HRNet_w18        | 80.67                 | 13.26     | [yml](./configs/ocrnet/)      |
+| OCRNet :star2:      | HRNet_w18        | 80.67                 | 13.26     | [yml](./configs/ocrnet/)      |
 | OCRNet         | HRNet_w48        | 82.15                 | 6.17      | [yml](./configs/ocrnet/)      |
 | CCNet          | ResNet101_OS8    | 80.95                 | 3.24      | [yml](./configs/ccnet/)       |
 
@@ -325,8 +325,8 @@ Note that:
 
 | Model    | Backbone | Cityscapes mIoU(%)    |  V100 TRT Inference Speed(FPS)  | Snapdragon 855 Inference Speed(FPS) | Config File |
 |:-------- |:--------:|:---------------------:|:-------------------------------:|:-----------------:|:--------:|
-| :star2: PP-LiteSeg :star2:      | STDC1         | 77.04               | 69.82           | 17.22       | [yml](./configs/pp_liteseg/)  |
-| :star2: PP-LiteSeg :star2:      | STDC2         | 79.04               | 54.53           | 11.75       | [yml](./configs/pp_liteseg/)  |
+| PP-LiteSeg :star2:      | STDC1         | 77.04               | 69.82           | 17.22       | [yml](./configs/pp_liteseg/)  |
+| PP-LiteSeg :star2:      | STDC2         | 79.04               | 54.53           | 11.75       | [yml](./configs/pp_liteseg/)  |
 | BiSeNetV1           | -             | 75.19               | 14.67           | 1.53      |[yml](./configs/bisenetv1/)  |
 | BiSeNetV2           | -             | 73.19               | 61.83           | 13.67       |[yml](./configs/bisenet/)  |
 | STDCSeg             | STDC1         | 74.74               | 62.24           | 14.51       |[yml](./configs/stdcseg/)  |
@@ -350,7 +350,7 @@ Note that:
 | Model    | Backbone | Cityscapes mIoU(%)    |  V100 TRT Inference Speed(FPS)  | Snapdragon 855 Inference Speed(FPS) | Config File |
 |:-------- |:--------:|:---------------------:|:-------------------------------:|:-----------------------------------:|:-----------:|
 | MobileSeg      | MobileNetV2              | 73.94                 | 67.57          | 27.01   | [yml](./configs/mobileseg/)  |
-| :star2: MobileSeg :star2:  | MobileNetV3              | 73.47                 | 67.39          | 32.90   | [yml](./configs/mobileseg/)  |
+| MobileSeg :star2:  | MobileNetV3              | 73.47                 | 67.39          | 32.90   | [yml](./configs/mobileseg/)  |
 | MobileSeg      | Lite_HRNet_18            | 70.75                 | *10.5*         | 13.05   | [yml](./configs/mobileseg/)  |
 | MobileSeg      | ShuffleNetV2_x1_0        | 69.46                 | *37.09*        | 39.61  | [yml](./configs/mobileseg/)  |
 | MobileSeg      | GhostNet_x1_0            | 71.88                 | *35.58*        | 38.74  | [yml](./configs/mobileseg/)  |
@@ -364,20 +364,19 @@ Note that:
 
 ## <img src="./docs/images/teach.png" width="20"/> Tutorials
 
-### Tutorials & Docs
+**Tutorials**
 
-#### Tutorials
+* [Quick Start](./docs/quick_start.md)
 * [A 20 minutes Blitz to learn PaddleSeg](./docs/whole_process.md)
 
-#### Docs
+**Docs**
+
 * [Installation](./docs/install.md)
 
 *  Data Preparation
-   * [Label Data with EISeg](./EISeg/README_EN.md)
-   * [Annotated Data Preparation](./docs/data/marker/marker.md)
-   * [Custom Dataset](./docs/data/custom/data_prepare.md)
-
-* [Config Preparation](./docs/prepare_cfg.md)
+    * [Prepare Public Dataset](./docs/data/pre_data.md)
+    * [Prepare Customized Dataset](./docs/data/marker/marker.md)
+    * [Label Data with EISeg](./EISeg/README_EN.md)
 
 * [Model Training](/docs/train/train.md)
 * [Model Evaluation](./docs/evaluation/evaluate/evaluate.md)
@@ -402,7 +401,8 @@ Note that:
 
 * [FAQ](./docs/faq/faq/faq.md)
 
-### Welcome to Contribute
+**Welcome to Contribute**
+
 * [API Documention](./docs/apis/README.md)
 
 *  Advanced Development

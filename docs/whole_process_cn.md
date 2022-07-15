@@ -19,7 +19,7 @@ PaddleSeg 通过模块组建，并通过配置化启动的方式，实现了从�
 参考[安装文档](./install_cn.md)进行环境配置。
 
 ## 2. 准备数据集
-本示例将使用视盘分割（optic disc segmentation）数据集，它是我们目前支持的数十种数据集之一。实际使用过程中，大家可以参考[数据集准备](./data_prepare_cn.md)来使用我们支持的数据集，也可以参考[准备自定义数据集](./data/custom/data_prepare_cn.md)。
+本示例将使用视盘分割（optic disc segmentation）数据集，它是我们目前支持的数十种数据集之一。实际使用过程中，大家可以参考[文档](./data/pre_data_cn.md)使用常见公开数据集，也可以参考[文档](./data/marker/marker_cn.md)准备自定义数据集。
 
 该数据集是一组眼底医疗分割数据集，包含了267张训练图片、76张验证图片、38张测试图片。通过以下命令可以下载[视盘分割数据集](https://paddleseg.bj.bcebos.com/dataset/optic_disc_seg.zip)，解压保存到`PaddleSeg/data`目录下。
 
@@ -33,7 +33,10 @@ cd ..
 
 数据集的原始图像和分割效果图如下所示，本示例的任务将是将眼球图片中的视盘区域分割出来。
 
-![](./images/fig1.png)
+
+<div align="center">
+<img src="./images/fig1.png"  width = "400" />  
+</div>
 
 
 ## 3. 准备配置文件
@@ -331,7 +334,10 @@ python predict.py \
 
 我们选择1张图片进行查看，如下图。
 
-![](./images/fig5.png)
+<div align="center">
+<img src="./images/fig5.png"  width = "600" />  
+</div>
+
 ## 7 模型导出
 
 上述模型训练、评估和预测，都是使用飞桨的动态图模式。动态图模式具有灵活、方便的优点，但是不适合工业级部署的速度要求。
