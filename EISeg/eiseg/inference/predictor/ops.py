@@ -17,17 +17,14 @@ Ths copyright of saic-vul/ritm_interactive_segmentation is as follows:
 MIT License [see LICENSE for details]
 """
 
+
 import paddle
 import paddle.nn as nn
 import numpy as np
 
 
 class DistMaps(nn.Layer):
-    def __init__(self,
-                 norm_radius,
-                 spatial_scale=1.0,
-                 cpu_mode=True,
-                 use_disks=False):
+    def __init__(self, norm_radius, spatial_scale=1.0, cpu_mode=True, use_disks=False):
         super(DistMaps, self).__init__()
         self.spatial_scale = spatial_scale
         self.norm_radius = norm_radius
@@ -43,31 +40,31 @@ class DistMaps(nn.Layer):
         if self.cpu_mode:
             coords = []
             for i in range(batchsize):
-                norm_delimeter = (1.0 if self.use_disks else
-                                  self.spatial_scale * self.norm_radius)
+                norm_delimeter = (
+                    1.0 if self.use_disks else self.spatial_scale * self.norm_radius
+                )
                 coords.append(
-                    self._get_dist_maps(points[i].numpy().astype("float32"),
-                                        rows, cols, norm_delimeter))
-            coords = paddle.to_tensor(np.stack(
-                coords, axis=0)).astype("float32")
+                    self._get_dist_maps(
+                        points[i].numpy().astype("float32"), rows, cols, norm_delimeter
+                    )
+                )
+            coords = paddle.to_tensor(np.stack(coords, axis=0)).astype("float32")
         else:
             num_points = points.shape[1] // 2
             points = points.reshape([-1, points.shape[2]])
             points, points_order = paddle.split(points, [2, 1], axis=1)
             invalid_points = paddle.max(points, axis=1, keepdim=False) < 0
-            row_array = paddle.arange(
-                start=0, end=rows, step=1, dtype="float32")
-            col_array = paddle.arange(
-                start=0, end=cols, step=1, dtype="float32")
+            row_array = paddle.arange(start=0, end=rows, step=1, dtype="float32")
+            col_array = paddle.arange(start=0, end=cols, step=1, dtype="float32")
 
             coord_rows, coord_cols = paddle.meshgrid(row_array, col_array)
             coords = paddle.unsqueeze(
-                paddle.stack(
-                    [coord_rows, coord_cols], axis=0),
-                axis=0).tile([points.shape[0], 1, 1, 1])
+                paddle.stack([coord_rows, coord_cols], axis=0), axis=0
+            ).tile([points.shape[0], 1, 1, 1])
 
             add_xy = (points * self.spatial_scale).reshape(
-                [points.shape[0], points.shape[1], 1, 1])
+                [points.shape[0], points.shape[1], 1, 1]
+            )
             coords = coords - add_xy
             if not self.use_disks:
                 coords = coords / (self.norm_radius * self.spatial_scale)
@@ -83,16 +80,15 @@ class DistMaps(nn.Layer):
             coords = coords.reshape([-1, 2, rows, cols])
 
         if self.use_disks:
-            coords = (
-                coords <=
-                (self.norm_radius * self.spatial_scale)**2).astype("float32")
+            coords = (coords <= (self.norm_radius * self.spatial_scale) ** 2).astype(
+                "float32"
+            )
         else:
             coords = paddle.tanh(paddle.sqrt(coords) * 2)
         return coords
 
     def forward(self, x, coords):
-        return self.get_coord_features(coords, x.shape[0], x.shape[2],
-                                       x.shape[3])
+        return self.get_coord_features(coords, x.shape[0], x.shape[2], x.shape[3])
 
 
 class ScaleLayer(nn.Layer):
@@ -102,7 +98,8 @@ class ScaleLayer(nn.Layer):
         self.scale = self.create_parameter(
             shape=[1],
             dtype="float32",
-            default_initializer=nn.initializer.Constant(init_value / lr_mult), )
+            default_initializer=nn.initializer.Constant(init_value / lr_mult),
+        )
 
     def forward(self, x):
         scale = paddle.abs(self.scale * self.lr_mult)
@@ -112,11 +109,11 @@ class ScaleLayer(nn.Layer):
 class BatchImageNormalize:
     def __init__(self, mean, std):
         self.mean = paddle.to_tensor(
-            np.array(mean)[np.newaxis, :, np.newaxis, np.newaxis]).astype(
-                "float32")
+            np.array(mean)[np.newaxis, :, np.newaxis, np.newaxis]
+        ).astype("float32")
         self.std = paddle.to_tensor(
-            np.array(std)[np.newaxis, :, np.newaxis, np.newaxis]).astype(
-                "float32")
+            np.array(std)[np.newaxis, :, np.newaxis, np.newaxis]
+        ).astype("float32")
 
     def __call__(self, tensor):
         tensor = (tensor - self.mean) / self.std

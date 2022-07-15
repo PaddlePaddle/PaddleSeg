@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+
 from PyQt5.QtCore import QPointF
 from qtpy import QtWidgets, QtGui, QtCore
 
@@ -95,8 +96,7 @@ class GripItem(QtWidgets.QGraphicsPathItem):
 
     def itemChange(self, change, value):
         tmp_val = value
-        if change == QtWidgets.QGraphicsItem.ItemPositionChange and self.isEnabled(
-        ):
+        if change == QtWidgets.QGraphicsItem.ItemPositionChange and self.isEnabled():
             if value.x() > self.img_size[1]:
                 x = self.img_size[1]
             elif value.x() < 0:

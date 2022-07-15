@@ -39,7 +39,7 @@ class BaiduTranslate:
             dst = html["trans_result"][0]["dst"]
             return True, dst
         except Exception as e:
-            return False, e
+            return False , e
 
 
 # 获取所有可能带有ui的py文件
@@ -78,11 +78,9 @@ with open(save_path, "r", encoding="utf-8") as f:
         words = data.strip().split("@")
         now_words[words[0]] = words[1]
 
-
 # 翻译
 def firstCharUpper(s):
     return s[:1].upper() + s[1:]
-
 
 translate = []
 baidu_trans = BaiduTranslate("zh", "en")

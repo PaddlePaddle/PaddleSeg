@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+
 import numpy as np
 import cv2
 
@@ -67,6 +68,7 @@ def windowlize(scan, ww, wc):
 #         return _nii2arr(sitk_image)
 #     else:
 #         raise ImportError("can't import SimpleITK!")
+
 
 #
 # def _nii2arr(sitk_image):

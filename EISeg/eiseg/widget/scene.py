@@ -12,8 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+
+from PyQt5.QtCore import QPointF
 from qtpy import QtWidgets, QtCore
 from qtpy.QtCore import Qt
+from qtpy.QtGui import QPen, QColor
 
 
 class AnnotationScene(QtWidgets.QGraphicsScene):
@@ -23,6 +26,15 @@ class AnnotationScene(QtWidgets.QGraphicsScene):
         super(AnnotationScene, self).__init__(parent)
         self.creating = False
         self.polygon_items = []
+        # draw cross
+        self.coords = None
+        self.pen = QPen()
+        self.pen.setWidth(1)
+        self.pen.setColor(QColor(0, 0, 0, 127))
+
+    def setPenColor(self, color_list):
+        R, G, B, A = color_list
+        self.pen.setColor(QColor(R, G, B, A))
 
     def updatePolygonSize(self):
         for poly in self.polygon_items:
@@ -39,7 +51,8 @@ class AnnotationScene(QtWidgets.QGraphicsScene):
         if not self.creating and not self.hovering:
             if ev.buttons() in [Qt.LeftButton, Qt.RightButton]:
                 self.clickRequest.emit(
-                    int(pos.x()), int(pos.y()), ev.buttons() == Qt.LeftButton)
+                    int(pos.x()), int(pos.y()), ev.buttons() == Qt.LeftButton
+                )
         elif self.creating:
             self.polygon_item.removeLastPoint()
             self.polygon_item.addPointLast(ev.scenePos())
@@ -52,8 +65,22 @@ class AnnotationScene(QtWidgets.QGraphicsScene):
             self.polygon_item.movePoint(
                 # self.polygon_item.number_of_points() - 1, ev.scenePos()
                 len(self.polygon_item) - 1,
-                ev.scenePos(), )
+                ev.scenePos(),
+            )
         super(AnnotationScene, self).mouseMoveEvent(ev)
+
+    def drawForeground(self, painter, rect):
+        if self.coords is not None and self.coords != QPointF(-1, -1):
+            painter.setClipRect(rect)
+            painter.setPen(self.pen)
+            # painter.drawLine(int(self.coords.x()), int(rect.top()),
+            #                  int(self.coords.x()), int(rect.bottom()))
+            # painter.drawLine(int(rect.left()), int(self.coords.y()),
+            #                  int(rect.right()), int(self.coords.y()))
+
+    def onMouseChanged(self, pointf):
+        self.coords = pointf
+        self.invalidate()
 
     @property
     def item_hovering(self):

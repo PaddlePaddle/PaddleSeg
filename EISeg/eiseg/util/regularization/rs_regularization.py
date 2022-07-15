@@ -17,6 +17,7 @@ Ths copyright of niecongchong/RS-building-regularization is as follows:
 Apache License [see LICENSE for details]
 """
 
+
 import cv2
 import matplotlib.pyplot as plt
 import numpy as np
@@ -56,11 +57,9 @@ def boundary_regularization(contours, img_shape, epsilon=6):
     # 方向纠正，绕中心点旋转到与主方向垂直或者平行
     correct_points = []
     para_vetr_idxs = []  # 0平行 1垂直
-    for i, (azi, (point_0_index,
-                  point_1_index)) in enumerate(zip(azis, azis_index)):
+    for i, (azi, (point_0_index, point_1_index)) in enumerate(zip(azis, azis_index)):
         if i == longest_edge_idex:
-            correct_points.append(
-                [contours[point_0_index], contours[point_1_index]])
+            correct_points.append([contours[point_0_index], contours[point_1_index]])
             para_vetr_idxs.append(0)
         else:
             # 确定旋转角度
@@ -115,28 +114,25 @@ def boundary_regularization(contours, img_shape, epsilon=6):
             marg = par_line_dist(L1, L2)
             if marg < 3:
                 # 平移
-                point_move = point_in_line(
-                    next_edge_point_0[0], next_edge_point_0[1],
-                    cur_edge_point_0[0], cur_edge_point_0[1],
-                    cur_edge_point_1[0], cur_edge_point_1[1])
+                point_move = point_in_line(next_edge_point_0[0], next_edge_point_0[1], 
+                                           cur_edge_point_0[0], cur_edge_point_0[1], 
+                                           cur_edge_point_1[0], cur_edge_point_1[1])
                 final_points.append(point_move)
                 # 更新平移之后的下一条边
                 correct_points[next_index][0] = point_move
                 correct_points[next_index][1] = point_in_line(
-                    next_edge_point_1[0], next_edge_point_1[1],
-                    cur_edge_point_0[0], cur_edge_point_0[1],
+                    next_edge_point_1[0], next_edge_point_1[1], 
+                    cur_edge_point_0[0], cur_edge_point_0[1], 
                     cur_edge_point_1[0], cur_edge_point_1[1])
             else:
                 # 加线
                 add_mid_point = (cur_edge_point_1 + next_edge_point_0) / 2
-                add_point_1 = point_in_line(
-                    add_mid_point[0], add_mid_point[1], cur_edge_point_0[0],
-                    cur_edge_point_0[1], cur_edge_point_1[0],
-                    cur_edge_point_1[1])
-                add_point_2 = point_in_line(
-                    add_mid_point[0], add_mid_point[1], next_edge_point_0[0],
-                    next_edge_point_0[1], next_edge_point_1[0],
-                    next_edge_point_1[1])
+                add_point_1 = point_in_line(add_mid_point[0], add_mid_point[1], 
+                                            cur_edge_point_0[0], cur_edge_point_0[1], 
+                                            cur_edge_point_1[0], cur_edge_point_1[1])
+                add_point_2 = point_in_line(add_mid_point[0], add_mid_point[1], 
+                                            next_edge_point_0[0], next_edge_point_0[1], 
+                                            next_edge_point_1[0], next_edge_point_1[1])
                 final_points.append(add_point_1)
                 final_points.append(add_point_2)
     final_points.append(final_points[0])

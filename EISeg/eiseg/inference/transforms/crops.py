@@ -17,6 +17,7 @@ Ths copyright of saic-vul/ritm_interactive_segmentation is as follows:
 MIT License [see LICENSE for details]
 """
 
+
 import math
 
 import paddle
@@ -44,19 +45,17 @@ class Crops(BaseTransform):
         if image_height < self.crop_height or image_width < self.crop_width:
             return image_nd, clicks_lists
 
-        self.x_offsets = get_offsets(image_width, self.crop_width,
-                                     self.min_overlap)
-        self.y_offsets = get_offsets(image_height, self.crop_height,
-                                     self.min_overlap)
+        self.x_offsets = get_offsets(image_width, self.crop_width, self.min_overlap)
+        self.y_offsets = get_offsets(image_height, self.crop_height, self.min_overlap)
         self._counts = np.zeros((image_height, image_width))
 
         image_crops = []
         for dy in self.y_offsets:
             for dx in self.x_offsets:
-                self._counts[dy:dy + self.crop_height, dx:dx +
-                             self.crop_width] += 1
-                image_crop = image_nd[:, :, dy:dy + self.crop_height, dx:dx +
-                                      self.crop_width]
+                self._counts[dy : dy + self.crop_height, dx : dx + self.crop_width] += 1
+                image_crop = image_nd[
+                    :, :, dy : dy + self.crop_height, dx : dx + self.crop_width
+                ]
                 image_crops.append(image_crop)
         image_crops = paddle.concat(image_crops, axis=0)
         self._counts = paddle.to_tensor(self._counts, dtype="float32")
@@ -77,14 +76,14 @@ class Crops(BaseTransform):
         if self._counts is None:
             return prob_map
 
-        new_prob_map = paddle.zeros(
-            (1, 1, *self._counts.shape), dtype=prob_map.dtype)
+        new_prob_map = paddle.zeros((1, 1, *self._counts.shape), dtype=prob_map.dtype)
 
         crop_indx = 0
         for dy in self.y_offsets:
             for dx in self.x_offsets:
-                new_prob_map[0, 0, dy:dy + self.crop_height, dx:dx +
-                             self.crop_width] += prob_map[crop_indx, 0]
+                new_prob_map[
+                    0, 0, dy : dy + self.crop_height, dx : dx + self.crop_width
+                ] += prob_map[crop_indx, 0]
                 crop_indx += 1
         new_prob_map = paddle.divide(new_prob_map, self._counts)
 

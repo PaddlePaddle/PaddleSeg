@@ -34,8 +34,7 @@ class LimitLongestSide(ZoomIn):
         self._input_image = image_nd
 
         self._object_roi = (0, image_nd.shape[2] - 1, 0, image_nd.shape[3] - 1)
-        self._roi_image = get_roi_image_nd(image_nd, self._object_roi,
-                                           self.target_size)
+        self._roi_image = get_roi_image_nd(image_nd, self._object_roi, self.target_size)
         self.image_changed = True
 
         tclicks_lists = [self._transform_clicks(clicks_lists[0])]

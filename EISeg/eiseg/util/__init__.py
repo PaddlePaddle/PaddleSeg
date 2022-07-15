@@ -7,3 +7,4 @@ from .language import TransUI
 from .coco.coco import COCO
 from .label import LabelList
 from .opath import check_cn, normcase
+from .palette import pal_color_map, color_map

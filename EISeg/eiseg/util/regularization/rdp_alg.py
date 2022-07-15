@@ -16,6 +16,8 @@ This code is based on https://github.com/niecongchong/RS-building-regularization
 Ths copyright of niecongchong/RS-building-regularization is as follows:
 Apache License [see LICENSE for details]
 """
+
+
 """
 rdp
 ~~~
@@ -23,6 +25,7 @@ Pure Python implementation of the Ramer-Douglas-Peucker algorithm.
 :copyright: (c) 2014 Fabian Hirschmann <fabian@hirschmann.email>
 :license: MIT, see LICENSE.txt for more details.
 """
+
 
 import numpy as np
 
@@ -41,9 +44,8 @@ def pldist(x0, x1, x2):
     x0, x1, x2 = x0[:2], x1[:2], x2[:2]  # discard timestamp
     if x1[0] == x2[0]:
         return np.abs(x0[0] - x1[0])
-    return np.divide(
-        np.linalg.norm(np.linalg.det([x2 - x1, x1 - x0])),
-        np.linalg.norm(x2 - x1))
+    return np.divide(np.linalg.norm(np.linalg.det([x2 - x1, x1 - x0])),
+                     np.linalg.norm(x2 - x1))
 
 
 def _rdp(M, epsilon, dist):

@@ -27,13 +27,13 @@ from .ops import DistMaps, ScaleLayer, BatchImageNormalize
 
 class BasePredictor(object):
     def __init__(self,
-                 model,
-                 net_clicks_limit=None,
-                 with_flip=False,
-                 zoom_in=None,
-                 max_size=None,
-                 with_mask=True,
-                 **kwargs):
+                model,
+                net_clicks_limit=None,
+                with_flip=False,
+                zoom_in=None,
+                max_size=None,
+                with_mask=True,
+                **kwargs):
 
         self.with_flip = with_flip
         self.net_clicks_limit = net_clicks_limit
@@ -45,9 +45,11 @@ class BasePredictor(object):
         self.net_state_dict = None
         self.with_prev_mask = with_mask
         self.net = model
-
-        self.normalization = BatchImageNormalize([0.485, 0.456, 0.406],
-                                                 [0.229, 0.224, 0.225])
+        if not paddle.in_dynamic_mode():
+            paddle.disable_static()
+        self.normalization = BatchImageNormalize(
+            [0.485, 0.456, 0.406], [0.229, 0.224, 0.225]
+        )
 
         self.transforms = [zoom_in] if zoom_in is not None else []
         if max_size is not None:
@@ -56,7 +58,8 @@ class BasePredictor(object):
         if with_flip:
             self.transforms.append(AddHorizontalFlip())
         self.dist_maps = DistMaps(
-            norm_radius=5, spatial_scale=1.0, cpu_mode=False, use_disks=True)
+            norm_radius=5, spatial_scale=1.0, cpu_mode=False, use_disks=True
+        )
 
     def to_tensor(self, x):
         if isinstance(x, np.ndarray):
@@ -73,8 +76,7 @@ class BasePredictor(object):
         self.original_image = image_nd
         if len(self.original_image.shape) == 3:
             self.original_image = self.original_image.unsqueeze(0)
-        self.prev_prediction = paddle.zeros_like(self.original_image[:, :
-                                                                     1, :, :])
+        self.prev_prediction = paddle.zeros_like(self.original_image[:, :1, :, :])
         if not self.with_prev_mask:
             self.prev_edge = paddle.zeros_like(self.original_image[:, :1, :, :])
 
@@ -92,24 +94,22 @@ class BasePredictor(object):
         input_image = paddle.concat([input_image, prev_mask], axis=1)
 
         image_nd, clicks_lists, is_image_changed = self.apply_transforms(
-            input_image, [clicks_list])
-        pred_logits, pred_edges = self._get_prediction(image_nd, clicks_lists,
-                                                       is_image_changed)
+            input_image, [clicks_list]
+        )
+        pred_logits, pred_edges = self._get_prediction(
+            image_nd, clicks_lists, is_image_changed
+        )
 
         pred_logits = paddle.to_tensor(pred_logits)
 
         prediction = F.interpolate(
-            pred_logits,
-            mode="bilinear",
-            align_corners=True,
-            size=image_nd.shape[2:])
+            pred_logits, mode="bilinear", align_corners=True, size=image_nd.shape[2:]
+        )
         if pred_edges is not None:
             pred_edge = paddle.to_tensor(pred_edges)
             edge_prediction = F.interpolate(
-                pred_edge,
-                mode="bilinear",
-                align_corners=True,
-                size=image_nd.shape[2:])
+                pred_edge, mode="bilinear", align_corners=True, size=image_nd.shape[2:]
+            )
 
         for t in reversed(self.transforms):
             if pred_edges is not None:
@@ -117,8 +117,7 @@ class BasePredictor(object):
                 self.prev_edge = edge_prediction
             prediction = t.inv_transform(prediction)
 
-        if self.zoom_in is not None and self.zoom_in.check_possible_recalculation(
-        ):
+        if self.zoom_in is not None and self.zoom_in.check_possible_recalculation():
             return self.get_prediction(clicker)
 
         self.prev_prediction = prediction
@@ -186,8 +185,7 @@ class BasePredictor(object):
     def get_points_nd(self, clicks_lists):
         total_clicks = []
         num_pos_clicks = [
-            sum(x.is_positive for x in clicks_list)
-            for clicks_list in clicks_lists
+            sum(x.is_positive for x in clicks_list) for clicks_list in clicks_lists
         ]
         num_neg_clicks = [
             len(clicks_list) - num_pos
@@ -199,18 +197,16 @@ class BasePredictor(object):
         num_max_points = max(1, num_max_points)
 
         for clicks_list in clicks_lists:
-            clicks_list = clicks_list[:self.net_clicks_limit]
+            clicks_list = clicks_list[: self.net_clicks_limit]
             pos_clicks = [
-                click.coords_and_indx for click in clicks_list
-                if click.is_positive
+                click.coords_and_indx for click in clicks_list if click.is_positive
             ]
             pos_clicks = pos_clicks + (num_max_points - len(pos_clicks)) * [
                 (-1, -1, -1)
             ]
 
             neg_clicks = [
-                click.coords_and_indx for click in clicks_list
-                if not click.is_positive
+                click.coords_and_indx for click in clicks_list if not click.is_positive
             ]
             neg_clicks = neg_clicks + (num_max_points - len(neg_clicks)) * [
                 (-1, -1, -1)
@@ -237,10 +233,7 @@ def split_points_by_order(tpoints, groups):
     num_points = points.shape[1] // 2
 
     groups = [x if x > 0 else num_points for x in groups]
-    group_points = [
-        np.full(
-            (bs, 2 * x, 3), -1, dtype=np.float32) for x in groups
-    ]
+    group_points = [np.full((bs, 2 * x, 3), -1, dtype=np.float32) for x in groups]
 
     last_point_indx_group = np.zeros((bs, num_groups, 2), dtype=np.int)
     for group_indx, group_size in enumerate(groups):
@@ -255,8 +248,8 @@ def split_points_by_order(tpoints, groups):
 
             is_negative = int(pindx >= num_points)
             if group_id >= num_groups or (
-                    group_id == 0 and
-                    is_negative):  # disable negative first click
+                group_id == 0 and is_negative
+            ):  # disable negative first click
                 group_id = num_groups - 1
 
             new_point_indx = last_point_indx_group[bindx, group_id, is_negative]
@@ -264,9 +257,6 @@ def split_points_by_order(tpoints, groups):
 
             group_points[group_id][bindx, new_point_indx, :] = point
 
-    group_points = [
-        paddle.to_tensor(
-            x, dtype=tpoints.dtype) for x in group_points
-    ]
+    group_points = [paddle.to_tensor(x, dtype=tpoints.dtype) for x in group_points]
 
     return group_points

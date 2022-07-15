@@ -26,13 +26,14 @@ from .base import BaseTransform
 
 class ZoomIn(BaseTransform):
     def __init__(
-            self,
-            target_size=700,
-            skip_clicks=1,
-            expansion_ratio=1.4,
-            min_crop_size=480,
-            recompute_thresh_iou=0.5,
-            prob_thresh=0.50, ):
+        self,
+        target_size=700,
+        skip_clicks=1,
+        expansion_ratio=1.4,
+        min_crop_size=480,
+        recompute_thresh_iou=0.5,
+        prob_thresh=0.50,
+    ):
         super().__init__()
         self.target_size = target_size
         self.min_crop_size = min_crop_size
@@ -64,29 +65,30 @@ class ZoomIn(BaseTransform):
                     current_pred_mask,
                     clicks_list,
                     self.expansion_ratio,
-                    self.min_crop_size, )
+                    self.min_crop_size,
+                )
 
         if current_object_roi is None:
             if self.skip_clicks >= 0:
                 return image_nd, clicks_lists
             else:
-                current_object_roi = 0, image_nd.shape[
-                    2] - 1, 0, image_nd.shape[3] - 1
+                current_object_roi = 0, image_nd.shape[2] - 1, 0, image_nd.shape[3] - 1
 
         update_object_roi = False
         if self._object_roi is None:
             update_object_roi = True
         elif not check_object_roi(self._object_roi, clicks_list):
             update_object_roi = True
-        elif (get_bbox_iou(current_object_roi, self._object_roi) <
-              self.recompute_thresh_iou):
+        elif (
+            get_bbox_iou(current_object_roi, self._object_roi)
+            < self.recompute_thresh_iou
+        ):
             update_object_roi = True
 
         if update_object_roi:
             self._object_roi = current_object_roi
             self.image_changed = True
-        self._roi_image = get_roi_image_nd(image_nd, self._object_roi,
-                                           self.target_size)
+        self._roi_image = get_roi_image_nd(image_nd, self._object_roi, self.target_size)
 
         tclicks_lists = [self._transform_clicks(clicks_list)]
         return self._roi_image, tclicks_lists
@@ -102,12 +104,14 @@ class ZoomIn(BaseTransform):
             prob_map,
             size=(rmax - rmin + 1, cmax - cmin + 1),
             mode="bilinear",
-            align_corners=True, )
+            align_corners=True,
+        )
 
         if self._prev_probs is not None:
             new_prob_map = paddle.zeros(
-                shape=self._prev_probs.shape, dtype=prob_map.dtype)
-            new_prob_map[:, :, rmin:rmax + 1, cmin:cmax + 1] = prob_map
+                shape=self._prev_probs.shape, dtype=prob_map.dtype
+            )
+            new_prob_map[:, :, rmin : rmax + 1, cmin : cmax + 1] = prob_map
         else:
             new_prob_map = prob_map
 
@@ -116,19 +120,24 @@ class ZoomIn(BaseTransform):
         return new_prob_map
 
     def check_possible_recalculation(self):
-        if (self._prev_probs is None or self._object_roi is not None or
-                self.skip_clicks > 0):
+        if (
+            self._prev_probs is None
+            or self._object_roi is not None
+            or self.skip_clicks > 0
+        ):
             return False
 
         pred_mask = (self._prev_probs > self.prob_thresh)[0, 0]
         if pred_mask.sum() > 0:
             possible_object_roi = get_object_roi(
-                pred_mask, [], self.expansion_ratio, self.min_crop_size)
+                pred_mask, [], self.expansion_ratio, self.min_crop_size
+            )
             image_roi = (
                 0,
                 self._input_image_shape[2] - 1,
                 0,
-                self._input_image_shape[3] - 1, )
+                self._input_image_shape[3] - 1,
+            )
             if get_bbox_iou(possible_object_roi, image_roi) < 0.50:
                 return True
         return False
@@ -140,7 +149,8 @@ class ZoomIn(BaseTransform):
             self._object_roi,
             self._prev_probs,
             roi_image,
-            self.image_changed, )
+            self.image_changed,
+        )
 
     def set_state(self, state):
         (
@@ -148,7 +158,8 @@ class ZoomIn(BaseTransform):
             self._object_roi,
             self._prev_probs,
             self._roi_image,
-            self.image_changed, ) = state
+            self.image_changed,
+        ) = state
 
     def reset(self):
         self._input_image_shape = None
@@ -201,12 +212,13 @@ def get_roi_image_nd(image_nd, object_roi, target_size):
         new_width = int(round(width * scale))
 
     with paddle.no_grad():
-        roi_image_nd = image_nd[:, :, rmin:rmax + 1, cmin:cmax + 1]
+        roi_image_nd = image_nd[:, :, rmin : rmax + 1, cmin : cmax + 1]
         roi_image_nd = paddle.nn.functional.interpolate(
             roi_image_nd,
             size=(new_height, new_width),
             mode="bilinear",
-            align_corners=True, )
+            align_corners=True,
+        )
 
     return roi_image_nd
 
@@ -214,11 +226,9 @@ def get_roi_image_nd(image_nd, object_roi, target_size):
 def check_object_roi(object_roi, clicks_list):
     for click in clicks_list:
         if click.is_positive:
-            if click.coords[0] < object_roi[0] or click.coords[0] >= object_roi[
-                    1]:
+            if click.coords[0] < object_roi[0] or click.coords[0] >= object_roi[1]:
                 return False
-            if click.coords[1] < object_roi[2] or click.coords[1] >= object_roi[
-                    3]:
+            if click.coords[1] < object_roi[2] or click.coords[1] >= object_roi[3]:
                 return False
 
     return True

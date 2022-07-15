@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+
 import json
 import random
 import hashlib
@@ -37,9 +38,21 @@ class BaiduTranslate:
         md = hashlib.md5()
         md.update(sign.encode(encoding="utf-8"))
         sign = md.hexdigest()
-        myurl = (self.url + "?appid=" + self.appid + "&q=" + parse.quote(text) +
-                 "&from=" + self.fromLang + "&to=" + self.toLang + "&salt=" +
-                 str(self.salt) + "&sign=" + sign)
+        myurl = (
+            self.url
+            + "?appid="
+            + self.appid
+            + "&q="
+            + parse.quote(text)
+            + "&from="
+            + self.fromLang
+            + "&to="
+            + self.toLang
+            + "&salt="
+            + str(self.salt)
+            + "&sign="
+            + sign
+        )
         try:
             httpClient = http.client.HTTPConnection("api.fanyi.baidu.com")
             httpClient.request("GET", myurl)
@@ -50,7 +63,6 @@ class BaiduTranslate:
             return True, dst
         except Exception as e:
             return False, e
-
 
 def read_ts(ts_path):
     xml = open(ts_path, "r", encoding="utf-8").read()
@@ -64,7 +76,7 @@ pre_xml = read_ts(pre_ts_path)
 xml = read_ts(ts_path)
 pre_messages = pre_xml.find_all("message")
 messages = xml.find_all("message")
-bd_trans = BaiduTranslate("zh", "en")  # ru
+bd_trans = BaiduTranslate("auto", "en")  # ru
 trans = bd_trans.trans
 
 translated = 0
@@ -102,4 +114,4 @@ for name in xml.find_all("name"):
     name.string = "APP_EISeg"
 
 print(f"Totally {len(messages)} , translated {translated}, failed {failed}")
-open(ts_path, "w").write(str(xml))
+open(ts_path, "w", encoding="utf-8").write(str(xml))

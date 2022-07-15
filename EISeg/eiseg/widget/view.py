@@ -12,23 +12,28 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+
 from qtpy import QtWidgets, QtCore, QtGui
-from qtpy.QtCore import Qt
+from qtpy.QtCore import Qt, QPointF
 
 
 class AnnotationView(QtWidgets.QGraphicsView):
     zoomRequest = QtCore.Signal(float)
+    mousePosChanged = QtCore.Signal(QPointF)
 
     def __init__(self, *args):
         super(AnnotationView, self).__init__(*args)
-        self.setRenderHints(QtGui.QPainter.Antialiasing |
-                            QtGui.QPainter.SmoothPixmapTransform)
+        self.setRenderHints(
+            QtGui.QPainter.Antialiasing | QtGui.QPainter.SmoothPixmapTransform
+        )
         self.setMouseTracking(True)
         self.setTransformationAnchor(QtWidgets.QGraphicsView.NoAnchor)
         self.setResizeAnchor(QtWidgets.QGraphicsView.NoAnchor)
         self.point = QtCore.QPoint(0, 0)
         self.middle_click = False
         self.zoom_all = 1
+        # hint mouse
+        # self.setCursor(Qt.BlankCursor)
 
     def wheelEvent(self, ev):
         if ev.modifiers() & QtCore.Qt.ControlModifier:
@@ -46,11 +51,14 @@ class AnnotationView(QtWidgets.QGraphicsView):
             super(AnnotationView, self).wheelEvent(ev)
 
     def mouseMoveEvent(self, ev):
-        if self.middle_click and (self.horizontalScrollBar().isVisible() or
-                                  self.verticalScrollBar().isVisible()):
+        mouse_pos = QPointF(self.mapToScene(ev.pos()))
+        self.mousePosChanged.emit(mouse_pos.toPoint())
+        if self.middle_click and (
+            self.horizontalScrollBar().isVisible()
+            or self.verticalScrollBar().isVisible()
+        ):
             # 放大到出现滚动条才允许拖动，避免出现抖动
-            self._endPos = ev.pos(
-            ) / self.zoom_all - self._startPos / self.zoom_all
+            self._endPos = ev.pos() / self.zoom_all - self._startPos / self.zoom_all
             # 这儿不写为先减后除，这样会造成速度不一致
             self.point = self.point + self._endPos
             self._startPos = ev.pos()
@@ -67,3 +75,7 @@ class AnnotationView(QtWidgets.QGraphicsView):
         if ev.button() == Qt.MiddleButton:
             self.middle_click = False
         super(AnnotationView, self).mouseReleaseEvent(ev)
+
+    def leaveEvent(self, ev):
+        self.mousePosChanged.emit(QPointF(-1, -1))
+        return super(AnnotationView, self).leaveEvent(ev)

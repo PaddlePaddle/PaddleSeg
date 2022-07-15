@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+
 import os.path as osp
 import numpy as np
 import cv2
@@ -38,9 +39,9 @@ if check_rasterio():
 
 
 class Raster:
-    def __init__(self,
+    def __init__(self, 
                  tif_path: str,
-                 show_band: Union[List[int], Tuple[int]]=[1, 1, 1],
+                 show_band: Union[List[int], Tuple[int]]=[1, 1, 1], 
                  open_grid: bool=False,
                  grid_size: Union[List[int], Tuple[int]]=[512, 512],
                  overlap: Union[List[int], Tuple[int]]=[24, 24]) -> None:
@@ -55,7 +56,7 @@ class Raster:
         """
         super(Raster, self).__init__()
         if IMPORT_STATE is False:
-            raise ("Can't import rasterio!")
+            raise("Can't import rasterio!")
         if osp.exists(tif_path):
             self.src_data = rasterio.open(tif_path)
             self.geoinfo = self.__getRasterInfo()
@@ -64,7 +65,7 @@ class Raster:
             self.overlap = np.array(overlap)
             self.open_grid = open_grid
         else:
-            raise ("{0} not exists!".format(tif_path))
+            raise("{0} not exists!".format(tif_path))
         self.thumbnail_min = 2000
 
     def __del__(self) -> None:
@@ -79,7 +80,10 @@ class Raster:
         geoinfo.ysize = meta["height"]
         geoinfo.geotf = meta["transform"]
         geoinfo.crs = meta["crs"]
-        geoinfo.crs_wkt = geoinfo.crs.wkt
+        if geoinfo.crs is not None:
+            geoinfo.crs_wkt = geoinfo.crs.wkt
+        else:
+            geoinfo.crs_wkt = None
         return geoinfo
 
     def checkOpenGrid(self, thumbnail_min: Union[int, None]) -> bool:
@@ -112,10 +116,12 @@ class Raster:
         #     self.geoinfo.count, self.geoinfo.dtype, self.geoinfo.xsize,
         #     self.geoinfo.ysize, self.__analysis_proj4())
         # )
-        return str("● 波段数：{0}\n● 数据类型：{1}\n● 行数：{2}\n● 列数：{3}\n● EPSG：{4}".
-                   format(self.geoinfo.count, self.geoinfo.dtype,
-                          self.geoinfo.xsize, self.geoinfo.ysize,
-                          self.geoinfo.crs.to_string().split(":")[-1]))
+        if self.geoinfo.crs is not None:
+            crs = str(self.geoinfo.crs.to_string().split(":")[-1])
+        else:
+            crs = "None"
+        return (str(self.geoinfo.count), str(self.geoinfo.dtype), str(self.geoinfo.xsize),
+                str(self.geoinfo.ysize), crs)
 
     def getArray(self) -> Tuple[np.ndarray]:
         rgb = []
@@ -125,8 +131,7 @@ class Raster:
             geotf = self.geoinfo.geotf
         else:
             for b in self.show_band:
-                rgb.append(
-                    get_thumbnail(self.src_data.read(b), self.thumbnail_min))
+                rgb.append(get_thumbnail(self.src_data.read(b), self.thumbnail_min))
             geotf = None
         ima = np.stack(rgb, axis=2)  # cv2.merge(rgb)
         if self.geoinfo["dtype"] != "uint8":
@@ -139,7 +144,6 @@ class Raster:
         grid_idx = np.array([row, col])
         ul = grid_idx * (self.grid_size - self.overlap)
         lr = ul + self.grid_size
-        # print("ul, lr", ul, lr)
         window = Window(ul[1], ul[0], (lr[1] - ul[1]), (lr[0] - ul[0]))
         rgb = []
         for b in self.show_band:
@@ -150,11 +154,8 @@ class Raster:
             ima = sample_norm(ima)
         return two_percentLinear(ima), win_tf
 
-    def saveMask(self,
-                 img: np.ndarray,
-                 save_path: str,
-                 geoinfo: Union[Dict, None]=None,
-                 count: int=1) -> None:
+    def saveMask(self, img: np.array, save_path: str, 
+                 geoinfo: Union[Dict, None]=None, count: int=1) -> None:
         if geoinfo is None:
             geoinfo = self.geoinfo
         new_meta = self.src_data.meta.copy()
@@ -167,7 +168,7 @@ class Raster:
             "crs": geoinfo.crs,
             "transform": geoinfo.geotf[:6],
             "nodata": 0
-        })
+            })
         img = np.nan_to_num(img).astype("int16")
         with rasterio.open(save_path, "w", **new_meta) as tf:
             if count == 1:
@@ -176,8 +177,8 @@ class Raster:
                 for i in range(count):
                     tf.write(img[:, :, i], indexes=(i + 1))
 
-    def saveMaskbyGrids(self,
-                        img_list: List[List[np.ndarray]],
+    def saveMaskbyGrids(self, 
+                        img_list: List[List[np.ndarray]], 
                         save_path: Union[str, None]=None,
                         geoinfo: Union[Dict, None]=None) -> np.ndarray:
         if geoinfo is None:
@@ -186,12 +187,10 @@ class Raster:
         h, w = self.grid_size
         row = math.ceil(raw_size[0] / h)
         col = math.ceil(raw_size[1] / w)
-        # print("row, col:", row, col)
         result_1 = np.zeros((h * row, w * col), dtype=np.uint8)
         result_2 = result_1.copy()
         for i in range(row):
             for j in range(col):
-                # print("h, w:", h, w)
                 ih, iw = img_list[i][j].shape[:2]
                 im = np.zeros(self.grid_size)
                 im[:ih, :iw] = img_list[i][j]
@@ -199,13 +198,11 @@ class Raster:
                 end_h = start_h + h
                 start_w = (j * w) if j == 0 else (j * (w - self.overlap[1]))
                 end_w = start_w + w
-                # print("se: ", start_h, end_h, start_w, end_w)
                 # 单区自己，重叠取或
                 if (i + j) % 2 == 0:
-                    result_1[start_h:end_h, start_w:end_w] = im
+                    result_1[start_h: end_h, start_w: end_w] = im
                 else:
-                    result_2[start_h:end_h, start_w:end_w] = im
-                # print("r, c, k:", i_r, i_c, k)
+                    result_2[start_h: end_h, start_w: end_w] = im
         result = np.where(result_2 != 0, result_2, result_1)
         result = result[:raw_size[0], :raw_size[1]]
         if save_path is not None:

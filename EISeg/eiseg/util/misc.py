@@ -11,12 +11,9 @@ def get_dims_with_exclusion(dim, exclude=None):
     return dims
 
 
-def save_checkpoint(net,
-                    checkpoints_path,
-                    epoch=None,
-                    prefix="",
-                    verbose=True,
-                    multi_gpu=False):
+def save_checkpoint(
+    net, checkpoints_path, epoch=None, prefix="", verbose=True, multi_gpu=False
+):
     if epoch is None:
         checkpoint_name = "last_checkpoint.pdparams"
     else:
@@ -68,7 +65,8 @@ def clamp_bbox(bbox, rmin, rmax, cmin, cmax):
         max(rmin, bbox[0]),
         min(rmax, bbox[1]),
         max(cmin, bbox[2]),
-        min(cmax, bbox[3]), )
+        min(cmax, bbox[3]),
+    )
 
 
 def get_bbox_iou(b1, b2):

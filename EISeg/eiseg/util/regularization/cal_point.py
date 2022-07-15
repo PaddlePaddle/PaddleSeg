@@ -17,21 +17,23 @@ Ths copyright of niecongchong/RS-building-regularization is as follows:
 Apache License [see LICENSE for details]
 """
 
+
 import numpy as np
 import math
 
 
 # 计算两点距离
 def cal_dist(point_1, point_2):
-    dist = np.sqrt(np.sum(np.power((point_1 - point_2), 2)))
+    dist = np.sqrt(np.sum(np.power((point_1-point_2), 2)))
     return dist
 
 
 # 计算两条线的夹角
 def cal_ang(point_1, point_2, point_3):
+
     def _cal_pp(p_1, p_2):
-        return math.sqrt((p_1[0] - p_2[0]) * (p_1[0] - p_2[0]) + (p_1[1] - p_2[
-            1]) * (p_1[1] - p_2[1]))
+        return math.sqrt((p_1[0] - p_2[0]) * (p_1[0] - p_2[0]) + 
+                         (p_1[1] - p_2[1]) * (p_1[1] - p_2[1]))
 
     a = _cal_pp(point_2, point_3)
     b = _cal_pp(point_1, point_3)
@@ -53,18 +55,18 @@ def cal_azimuth(point_0, point_1):
             ang = math.atan((y1 - y2) / (x2 - x1))
             ang = ang * 180 / math.pi
             return 90 + (90 - ang)
-        elif y1 == y2:
+        elif y1==y2:
             return 0
     elif x1 > x2:
         if y1 < y2:
-            ang = math.atan((y2 - y1) / (x1 - x2))
-            ang = ang * 180 / math.pi
-            return 90 + (90 - ang)
+            ang = math.atan((y2-y1)/(x1-x2))
+            ang = ang*180/math.pi
+            return 90+(90-ang)
         elif y1 > y2:
-            ang = math.atan((y1 - y2) / (x1 - x2))
+            ang = math.atan((y1-y2)/(x1-x2))
             ang = ang * 180 / math.pi
             return ang
-        elif y1 == y2:
+        elif y1==y2:
             return 0
-    elif x1 == x2:
+    elif x1==x2:
         return 90

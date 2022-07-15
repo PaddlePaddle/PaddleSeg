@@ -5,6 +5,7 @@ import numpy as np
 
 from eiseg import __APPNAME__, __VERSION__
 
+
 # from Cython.Build import cythonize
 
 HERE = pathlib.Path(__file__).parent
@@ -22,26 +23,33 @@ ext_modules = [
             "./eiseg/util/coco/pycocotools/_mask.pyx",
         ],
         include_dirs=[np.get_include(), "./eiseg/util/coco/common"],
-        extra_compile_args=["-Wno-cpp", "-Wno-unused-function", "-std=c99"], )
+        extra_compile_args=["-Wno-cpp", "-Wno-unused-function", "-std=c99"],
+    )
 ]
-
+packages=find_packages(exclude=("test",))
 setup(
     name=__APPNAME__,
     version=__VERSION__,
     description="交互式标注软件",
     long_description=README,
     long_description_content_type="text/markdown",
-    url="https://github.com/PaddlePaddle/PaddleSeg/tree/release/2.4/EISeg",
-    author="PaddleSeg",
-    author_email="haoyuying@baidu.com,linhandev@qq.com",
+    url="https://github.com/PaddlePaddle/PaddleSeg",
+    author="PaddleSeg & PaddleCV-SIG",
+    author_email="haoyuying@baidu.com",
     license="Apache Software License",
     classifiers=[
         "License :: OSI Approved :: Apache Software License",
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.8",
     ],
-    packages=find_packages(exclude=("test", )),
+    packages=find_packages(exclude=("test",)),
+
     # packages=["EISeg"],
     include_package_data=True,
     install_requires=REQUIRED_PACKAGES,
-    entry_points={"console_scripts": ["eiseg=eiseg.run:main", ]}, )
+    entry_points={
+        "console_scripts": [
+            "eiseg=eiseg.run:main",
+        ]
+    },
+)

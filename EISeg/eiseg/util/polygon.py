@@ -25,10 +25,10 @@ class Instructions(Enum):
     Polygon_Instruction = 1
 
 
-def get_polygon(label, sample="Dynamic", building=False):
+def get_polygon(label, sample="Dynamic", img_size=None, building=False):
     results = cv2.findContours(
-        image=label, mode=cv2.RETR_TREE,
-        method=cv2.CHAIN_APPROX_TC89_KCOS)  # 获取内外边界，用RETR_TREE更好表示
+        image=label, mode=cv2.RETR_TREE, method=cv2.CHAIN_APPROX_TC89_KCOS
+    )  # 获取内外边界，用RETR_TREE更好表示
     cv2_v = cv2.__version__.split(".")[0]
     contours = results[1] if cv2_v == "3" else results[0]  # 边界
     hierarchys = results[2] if cv2_v == "3" else results[1]  # 隶属信息
@@ -36,12 +36,12 @@ def get_polygon(label, sample="Dynamic", building=False):
         polygons = []
         relas = []
         img_shape = label.shape
-        for idx, (contour,
-                  hierarchy) in enumerate(zip(contours, hierarchys[0])):
+        for idx, (contour, hierarchy) in enumerate(zip(contours, hierarchys[0])):
             # print(hierarchy)
             # opencv实现边界简化
-            epsilon = (0.005 * cv2.arcLength(contour, True)
-                       if sample == "Dynamic" else sample)
+            epsilon = (
+                0.005 * cv2.arcLength(contour, True) if sample == "Dynamic" else sample
+            )
             if not isinstance(epsilon, float) and not isinstance(epsilon, int):
                 epsilon = 0
             # print("epsilon:", epsilon)
@@ -56,7 +56,8 @@ def get_polygon(label, sample="Dynamic", building=False):
             # 给出关系
             rela = (
                 idx,  # own
-                hierarchy[-1] if hierarchy[-1] != -1 else None, )  # parent
+                hierarchy[-1] if hierarchy[-1] != -1 else None,
+            )  # parent
             polygon = []
             for p in out:
                 polygon.append(p[0])
@@ -67,8 +68,7 @@ def get_polygon(label, sample="Dynamic", building=False):
                 for j in range(len(relas)):
                     if relas[j][0] == relas[i][1]:  # i的父圈就是j（i是j的子圈）
                         if polygons[i] is not None and polygons[j] is not None:
-                            min_i, min_o = __find_min_point(polygons[i],
-                                                            polygons[j])
+                            min_i, min_o = __find_min_point(polygons[i], polygons[j])
                             # 改变顺序
                             polygons[i] = __change_list(polygons[i], min_i)
                             polygons[j] = __change_list(polygons[j], min_o)
@@ -77,6 +77,8 @@ def get_polygon(label, sample="Dynamic", building=False):
                                 polygons[j].extend(polygons[i])  # 连接内圈
                             polygons[i] = None
         polygons = list(filter(None, polygons))  # 清除加到外圈的内圈多边形
+        if img_size is not None:
+            polygons = check_size_minmax(polygons, img_size)
         return polygons
     else:
         print("没有标签范围，无法生成边界")
@@ -99,8 +101,9 @@ def __find_min_point(i_list, o_list):
     idx_o = -1
     for i in range(len(i_list)):
         for o in range(len(o_list)):
-            dis = math.sqrt((i_list[i][0] - o_list[o][0])**2 + (i_list[i][
-                1] - o_list[o][1])**2)
+            dis = math.sqrt(
+                (i_list[i][0] - o_list[o][0]) ** 2 + (i_list[i][1] - o_list[o][1]) ** 2
+            )
             if dis <= min_dis:
                 min_dis = dis
                 idx_i = i
@@ -111,20 +114,18 @@ def __find_min_point(i_list, o_list):
 # 根据三点坐标计算夹角
 def __cal_ang(p1, p2, p3):
     eps = 1e-12
-    a = math.sqrt((p2[0] - p3[0]) * (p2[0] - p3[0]) + (p2[1] - p3[1]) * (p2[1] -
-                                                                         p3[1]))
-    b = math.sqrt((p1[0] - p3[0]) * (p1[0] - p3[0]) + (p1[1] - p3[1]) * (p1[1] -
-                                                                         p3[1]))
-    c = math.sqrt((p1[0] - p2[0]) * (p1[0] - p2[0]) + (p1[1] - p2[1]) * (p1[1] -
-                                                                         p2[1]))
-    ang = math.degrees(math.acos(
-        (b**2 - a**2 - c**2) / (-2 * a * c + eps)))  # p2对应
+    a = math.sqrt((p2[0] - p3[0]) * (p2[0] - p3[0]) + (p2[1] - p3[1]) * (p2[1] - p3[1]))
+    b = math.sqrt((p1[0] - p3[0]) * (p1[0] - p3[0]) + (p1[1] - p3[1]) * (p1[1] - p3[1]))
+    c = math.sqrt((p1[0] - p2[0]) * (p1[0] - p2[0]) + (p1[1] - p2[1]) * (p1[1] - p2[1]))
+    ang = math.degrees(
+        math.acos((b ** 2 - a ** 2 - c ** 2) / (-2 * a * c + eps))
+    )  # p2对应
     return ang
 
 
 # 计算两点距离
 def __cal_dist(p1, p2):
-    return math.sqrt((p1[0] - p2[0])**2 + (p1[1] - p2[1])**2)
+    return math.sqrt((p1[0] - p2[0]) ** 2 + (p1[1] - p2[1]) ** 2)
 
 
 # 边界点简化
@@ -144,10 +145,8 @@ def approx_poly_DIY(contour, min_dist=10, ang_err=5):
                 # print(ang_i, ang_j)  # 角度值为-180到+180
                 if abs(ang_i - ang_j) < ang_err:
                     # 删除距离两点小的
-                    dist_i = __cal_dist(cs[last], cs[i]) + __cal_dist(cs[i],
-                                                                      cs[next])
-                    dist_j = __cal_dist(cs[last], cs[j]) + __cal_dist(cs[j],
-                                                                      cs[next])
+                    dist_i = __cal_dist(cs[last], cs[i]) + __cal_dist(cs[i], cs[next])
+                    dist_j = __cal_dist(cs[last], cs[j]) + __cal_dist(cs[j], cs[next])
                     if dist_j < dist_i:
                         del cs[j]
                     else:
@@ -174,3 +173,20 @@ def approx_poly_DIY(contour, min_dist=10, ang_err=5):
             del cs[i]
     res = np.array(cs).reshape([-1, 1, 2])
     return res
+
+
+def check_size_minmax(polygons, img_size):
+    h_max, w_max = img_size
+    for ps in polygons:
+        for j in range(len(ps)):
+            x, y = ps[j]
+            if x < 0:
+                x = 0
+            elif x > w_max:
+                x = w_max
+            if y < 0:
+                y = 0
+            elif y > h_max:
+                y = h_max
+            ps[j] = np.array([x, y])
+    return polygons
