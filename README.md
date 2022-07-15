@@ -254,7 +254,7 @@ PaddleSeg is an end-to-end high-efficent development toolkit for image segmentat
         </details>
       </td>
       <td>
-        <details><summary><b>Model Selection Tool-PPSMRT</b></summary>
+        <details><summary><b>Model Selection Tool</b></summary>
           <ul>
               <li><a href="./configs/smrt/README.md">PaddleSMRT</a></li>
           </ul>
