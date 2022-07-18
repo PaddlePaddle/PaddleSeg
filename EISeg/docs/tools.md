@@ -22,6 +22,7 @@ python semantic2instance.py -o label_path -d save_path
 由于视频数据计算量巨大，为了防止显存不足，推荐将视频切分成100帧以内再标注，脚本位置为`EISeg/tool/cut_video.py`
 
 ## 医疗切片图转换成视频脚本
+
 3D医疗标注是基于视频标注算法来实现的，因此在医疗图像标注前，需要将医疗图像转换成`mp4`格式后再进行标注，脚本位置为`EISeg/tool/medical2video.py`
 
 

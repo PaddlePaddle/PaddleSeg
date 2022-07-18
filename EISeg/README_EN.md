@@ -1,8 +1,42 @@
-# EISeg
+[Chinese (Simplified)](README.md) | English
 
-[![Python 3.6](https://camo.githubusercontent.com/75b8738e1bdfe8a832711925abbc3bd449c1e7e9260c870153ec761cad8dde40/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f707974686f6e2d332e362b2d626c75652e737667)](https://www.python.org/downloads/release/python-360/) [![PaddlePaddle 2.2](https://camo.githubusercontent.com/f792707056617d58db17dca769c9a62832156e183b6eb29dde812b34123c2b18/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f706164646c65706164646c652d322e322d626c75652e737667)](https://www.python.org/downloads/release/python-360/) [![License](https://camo.githubusercontent.com/9330efc6e55b251db7966bffaec1bd48e3aae79348121f596d541991cfec8858/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f6c6963656e73652d417061636865253230322d626c75652e737667)](https://github.com/PaddlePaddle/PaddleSeg/blob/develop/EISeg/LICENSE) [![Downloads](https://camo.githubusercontent.com/d3d7e08bac205f34cee998959f85ffcbe6a9aca4129c20d7a5ec449848826d48/68747470733a2f2f706570792e746563682f62616467652f6569736567)](https://pepy.tech/project/eiseg)
+<div align="center">
 
-[Chinese (Simplified)](README.md) | English | [عربي](README_AR.md)
+<p align="center">
+  <img src="https://user-images.githubusercontent.com/71769312/179221617-9616d2ef-f87d-4d87-a44c-21d7a03dd658.png" align="middle" alt="LOGO" style="zoom: 67%;" />
+</p>
+
+**An Efficient Interactive Segmentation Tool based on [PaddlePaddle](https://github.com/paddlepaddle/paddle).**
+
+
+[![Python 3.6](https://img.shields.io/badge/python-3.6+-blue.svg)](https://www.python.org/downloads/release/python-360/) [![PaddlePaddle 2.2](https://img.shields.io/badge/paddlepaddle-2.2-blue.svg)](https://www.python.org/downloads/release/python-360/) [![License](https://img.shields.io/badge/license-Apache%202-blue.svg)](LICENSE) [![Downloads](https://pepy.tech/badge/eiseg)](https://pepy.tech/project/eiseg)
+
+</div>
+
+<table>
+    <tr>
+        <td><img src="https://user-images.githubusercontent.com/71769312/179209324-eb074e65-4a32-4568-a1d3-7680331dbf22.gif"></td>
+        <td><img src="https://user-images.githubusercontent.com/71769312/179209332-e3bcb1f0-d4d9-44e1-8b2a-8d7fac8996d4.gif"></td>
+        <td><img src="https://user-images.githubusercontent.com/71769312/179209312-0febfe78-810d-49b2-9169-eb15f0523af7.gif"></td>
+        <td><img src="https://user-images.githubusercontent.com/71769312/179209340-d04a0cec-d9a7-4962-93f1-b4953c6c9f39.gif"></td>
+    <tr>
+    <tr>
+        <td align="center">Generic segmentation</td>
+        <td align="center">Human segmentation</td>
+        <td align="center">RS building segmentation</td>
+        <td align="center">Medical segmentation</td>
+    <tr>
+    <tr>
+        <td><img src="https://user-images.githubusercontent.com/71769312/179209338-45b06ded-8142-4385-9486-33c328d591cb.gif"></td>
+        <td><img src="https://user-images.githubusercontent.com/71769312/179209328-87174780-6c6f-4b53-b2a2-90d289ac1c8a.gif"></td>
+        <td colspan="2"><img src="https://user-images.githubusercontent.com/71769312/179209342-5b75e61e-d9cf-4702-ba3e-971f47a10f5f.gif"></td>
+    <tr>
+    <tr>
+        <td align="center">Industrial quality inspection</td>
+        <td align="center">Generic video segmentation</td>
+        <td align="center" colspan="2">Medical Slice segmentation</td>
+    <tr>
+</table>
 
 ## <img src="../docs/images/seg_news_icon.png" width="20"/> Latest Developments
 * [2022-07-20] :fire: EISeg 1.0 is released!
@@ -11,8 +45,7 @@
 
 ## <img src="https://user-images.githubusercontent.com/48054808/157795569-9fc77c85-732f-4870-9be0-99a7fe2cff27.png" width="20"/> Introduction
 
-EISeg (Efficient Interactive Segmentation), built on [RITM](https://github.com/saic-vul/ritm_interactive_segmentation) and [EdgeFlow](https://arxiv.org/abs/2109.09406), is an efficient and intelligent interactive segmentation annotation software developed based on PaddlePaddle. It covers a large number of high-quality segmentation models in different directions such as general scenarios, portrait, remote sensing, medical treatment, etc., providing convenience to the rapid annotation of semantic and instance labels with reduced cost. In addition, by applying the annotations obtained by EISeg to other segmentation models provided by PaddleSeg for training, high-performance models with customized scenarios can be created, integrating the whole process of segmentation tasks from data annotation to model training and inference.
-EISeg 1.0 further expands the exploration of interactive segmentation capabilities in the field of video and 3D image annotation. Based on the EISeg interactive segmentation model and the [MiVOS](https://github.com/hkchengrex/MiVOS) algorithm, we provide labeling capabilities of videos and 3D medical images. EISeg 1.0 is convenient for developers to quickly annotate and reduce labeling costs.
+EISeg (Efficient Interactive Segmentation) is an efficient and intelligent interactive segmentation annotation software developed based on PaddlePaddle. It covers a large number of high-quality segmentation models in different directions such as generic scenarios, portrait, remote sensing, medical treatment, video, etc., providing convenience to the rapid annotation of semantic and instance labels with reduced cost. In addition, by applying the annotations obtained by EISeg to other segmentation models provided by PaddleSeg for training, high-performance models with customized scenarios can be created, integrating the whole process of segmentation tasks from data annotation to model training and inference.
 
 [![4a9ed-a91y1](https://user-images.githubusercontent.com/71769312/141130688-e1529c27-aba8-4bf7-aad8-dda49808c5c7.gif)](https://user-images.githubusercontent.com/71769312/141130688-e1529c27-aba8-4bf7-aad8-dda49808c5c7.gif)
 

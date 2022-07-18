@@ -1,9 +1,43 @@
-# EISeg
+
+<!-- [![GitHub release](https://img.shields.io/github/release/Naereen/StrapDown.js.svg)](https://github.com/PaddleCV-SIG/iseg/releases) -->
+简体中文 | [English](README_EN.md)
+<div align="center">
+
+<p align="center">
+  <img src="https://user-images.githubusercontent.com/71769312/179221617-9616d2ef-f87d-4d87-a44c-21d7a03dd658.png" align="middle" alt="LOGO" style="zoom: 67%;" />
+</p>
+
+**An Efficient Interactive Segmentation Tool based on [PaddlePaddle](https://github.com/paddlepaddle/paddle).**
+
 
 [![Python 3.6](https://img.shields.io/badge/python-3.6+-blue.svg)](https://www.python.org/downloads/release/python-360/) [![PaddlePaddle 2.2](https://img.shields.io/badge/paddlepaddle-2.2-blue.svg)](https://www.python.org/downloads/release/python-360/) [![License](https://img.shields.io/badge/license-Apache%202-blue.svg)](LICENSE) [![Downloads](https://pepy.tech/badge/eiseg)](https://pepy.tech/project/eiseg)
-<!-- [![GitHub release](https://img.shields.io/github/release/Naereen/StrapDown.js.svg)](https://github.com/PaddleCV-SIG/iseg/releases) -->
 
-简体中文 | [English](README_EN.md)
+</div>
+
+<table>
+    <tr>
+        <td><img src="https://user-images.githubusercontent.com/71769312/179209324-eb074e65-4a32-4568-a1d3-7680331dbf22.gif"></td>
+        <td><img src="https://user-images.githubusercontent.com/71769312/179209332-e3bcb1f0-d4d9-44e1-8b2a-8d7fac8996d4.gif"></td>
+        <td><img src="https://user-images.githubusercontent.com/71769312/179209312-0febfe78-810d-49b2-9169-eb15f0523af7.gif"></td>
+        <td><img src="https://user-images.githubusercontent.com/71769312/179209340-d04a0cec-d9a7-4962-93f1-b4953c6c9f39.gif"></td>
+    <tr>
+    <tr>
+        <td align="center">Generic segmentation</td>
+        <td align="center">Human segmentation</td>
+        <td align="center">RS building segmentation</td>
+        <td align="center">Medical segmentation</td>
+    <tr>
+    <tr>
+        <td><img src="https://user-images.githubusercontent.com/71769312/179209338-45b06ded-8142-4385-9486-33c328d591cb.gif"></td>
+        <td><img src="https://user-images.githubusercontent.com/71769312/179209328-87174780-6c6f-4b53-b2a2-90d289ac1c8a.gif"></td>
+        <td colspan="2"><img src="https://user-images.githubusercontent.com/71769312/179209342-5b75e61e-d9cf-4702-ba3e-971f47a10f5f.gif"></td>
+    <tr>
+    <tr>
+        <td align="center">Industrial quality inspection</td>
+        <td align="center">Generic video segmentation</td>
+        <td align="center" colspan="2">Medical Slice segmentation</td>
+    <tr>
+</table>
 
 ## <img src="../docs/images/seg_news_icon.png" width="20"/> 最新动态
 * [2022-07-20] :fire: EISeg 1.0版本发布！
@@ -12,8 +46,7 @@
 
 ## <img src="https://user-images.githubusercontent.com/48054808/157795569-9fc77c85-732f-4870-9be0-99a7fe2cff27.png" width="20"/> 简介
 
-EISeg(Efficient Interactive Segmentation)是以[RITM](https://github.com/saic-vul/ritm_interactive_segmentation)及[EdgeFlow](https://arxiv.org/abs/2109.09406)算法为基础，基于飞桨开发的一个高效智能的交互式分割标注软件。涵盖了通用、人像、遥感、医疗等不同方向的高质量交互式分割模型。 另外，将EISeg获取到的标注应用到PaddleSeg提供的其他分割模型进行训练，便可得到定制化场景的高精度模型，打通分割任务从数据标注到模型训练及预测的全流程。 
-EISeg 1.0版本进一步拓展交互式分割能力在视频及3D标注领域的探索，以EISeg交互式分割模型及[MiVOS](https://github.com/hkchengrex/MiVOS)算法为基础，增加了通用场景视频标注及腹腔多器官，CT椎骨数据等3D标注能力，方便开发者快速实现标注任务，降低标注成本。
+EISeg(Efficient Interactive Segmentation)基于飞桨开发的一个高效智能的交互式分割标注软件。它涵盖了通用、人像、遥感、医疗、视频等不同方向的高质量交互式分割模型。 另外，将EISeg获取到的标注应用到PaddleSeg提供的其他分割模型进行训练，便可得到定制化场景的高精度模型，打通分割任务从数据标注到模型训练及预测的全流程。 
 
 ![4a9ed-a91y1](https://user-images.githubusercontent.com/71769312/141130688-e1529c27-aba8-4bf7-aad8-dda49808c5c7.gif)
 
@@ -26,8 +59,8 @@ EISeg 1.0版本进一步拓展交互式分割能力在视频及3D标注领域的
 * [安装说明](docs/install.md)
 * [图像标注](docs/image.md)
 * [视频及3D医疗标注](docs/video.md)
-* [遥感图像标注](docs/remote_sensing.md)
-* [医疗图像标注](docs/medical.md)
+* [遥感特色功能](docs/remote_sensing.md)
+* [医疗特色功能](docs/medical.md)
 * [数据处理脚本文档](docs/tools.md)
 
 
