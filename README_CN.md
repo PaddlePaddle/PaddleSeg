@@ -15,7 +15,6 @@
 ![support os](https://img.shields.io/badge/os-linux%2C%20win%2C%20mac-yellow.svg)
 </div>
 
-
 <div align="center">
 <img src="https://github.com/shiyutang/files/raw/2bb2aebaaec36f54953c7e4a96cb84c90336e4c1/ezgif.com-gif-maker%20(3).gif"  width = "800" />  
 </div>
@@ -301,7 +300,7 @@
 | DeepLabV3      | ResNet101_OS8    | 80.85                 | 3.2       | [yml](./configs/deeplabv3/)   |
 | DeepLabV3      | ResNet50_OS8     | 80.36                 | 6.58      | [yml](./configs/deeplabv3p/)  |
 | DeepLabV3      | ResNet101_OS8    | 81.10                 | *3.94*    | [yml](./configs/deeplabv3p/)  |
-| :star2: OCRNet :star2:    | HRNet_w18        | 80.67                 | 13.26     | [yml](./configs/ocrnet/)      |
+| OCRNet :star2:    | HRNet_w18        | 80.67                 | 13.26     | [yml](./configs/ocrnet/)      |
 | OCRNet         | HRNet_w48        | 82.15                 | 6.17      | [yml](./configs/ocrnet/)      |
 | CCNet          | ResNet101_OS8    | 80.95                 | 3.24      | [yml](./configs/ccnet/)       |
 
@@ -319,8 +318,8 @@
 
 | 模型名称  | 骨干网络   | Cityscapes精度mIoU(%) |  V100 TRT推理速度(FPS) | 骁龙855推理速度(FPS) |  配置文件 |
 |:-------- |:--------:|:---------------------:|:---------------------:|:-----------------:|:--------:|
-| :star2: PP-LiteSeg :star2:    | STDC1         | 77.04               | 69.82           | 17.22      | [yml](./configs/pp_liteseg/)  |
-| :star2: PP-LiteSeg :star2:      | STDC2         | 79.04               | 54.53           | 11.75       | [yml](./configs/pp_liteseg/)  |
+| PP-LiteSeg :star2:    | STDC1         | 77.04               | 69.82           | 17.22      | [yml](./configs/pp_liteseg/)  |
+| PP-LiteSeg :star2:      | STDC2         | 79.04               | 54.53           | 11.75       | [yml](./configs/pp_liteseg/)  |
 | BiSeNetV1           | -             | 75.19               | 14.67           | 1.53      |[yml](./configs/bisenetv1/)  |
 | BiSeNetV2           | -             | 73.19               | 61.83           | 13.67       |[yml](./configs/bisenet/)  |
 | STDCSeg             | STDC1         | 74.74               | 62.24           | 14.51       |[yml](./configs/stdcseg/)  |
@@ -344,7 +343,7 @@
 | 模型名称  | 骨干网络   | Cityscapes精度mIoU(%) |  V100 TRT推理速度(FPS)  | 骁龙855推理速度(FPS)|  配置文件 |
 |:-------- |:--------:|:---------------------:|:---------------------:|:-----------------:|:--------:|
 | MobileSeg      | MobileNetV2              | 73.94                 | 67.57          | 27.01   | [yml](./configs/mobileseg/)  |
-| :star2: MobileSeg :star2:  | MobileNetV3              | 73.47                 | 67.39          | 32.90   | [yml](./configs/mobileseg/)  |
+| MobileSeg :star2:  | MobileNetV3              | 73.47                 | 67.39          | 32.90   | [yml](./configs/mobileseg/)  |
 | MobileSeg      | Lite_HRNet_18            | 70.75                 | *10.5*         | 13.05   | [yml](./configs/mobileseg/)  |
 | MobileSeg      | ShuffleNetV2_x1_0        | 69.46                 | *37.09*        | 39.61  | [yml](./configs/mobileseg/)  |
 | MobileSeg      | GhostNet_x1_0            | 71.88                 | *35.58*        | 38.74  | [yml](./configs/mobileseg/)  |
@@ -357,21 +356,18 @@
 
 ## <img src="./docs/images/teach.png" width="20"/> 使用教程
 
-### 教程和文档
+**教程**
 
-#### 教程
-
+* [快速体验](./docs/quick_start_cn.md)
 * [20分钟快速上手PaddleSeg](./docs/whole_process_cn.md)
 
-#### 文档
+**文档**
+
 * [安装说明](./docs/install_cn.md)
-
 * 准备数据
+   * [准备公开数据集](./docs/data/pre_data_cn.md)
+   * [准备自定义数据集](./docs/data/marker/marker_cn.md)
    * [EISeg 数据标注](./EISeg/README.md)
-   * [标注数据的准备](./docs/data/marker/marker_cn.md)
-   * [自定义数据集](./docs/data/custom/data_prepare_cn.md)
-
-* [准备配置文件](./docs/prepare_cfg_cn.md)
 
 * [模型训练](/docs/train/train_cn.md)
 * [模型评估](./docs/evaluation/evaluate/evaluate_cn.md)
@@ -396,7 +392,8 @@
 
 * [常见问题汇总](./docs/faq/faq/faq_cn.md)
 
-### 欢迎贡献
+**欢迎贡献**
+
 * [API文档](./docs/apis/README_CN.md)
 *  二次开发教程
     * [配置文件详解](./docs/design/use/use_cn.md)
@@ -416,7 +413,7 @@
 - [CVPR冠军模型](./contrib/AutoNUE)
 - [领域自适应](./contrib/DomainAdaptation)
 
-## 第三方教程推荐
+## AI Studio第三方教程推荐
 * [10分钟上手PaddleSeg](https://aistudio.baidu.com/aistudio/projectdetail/1672610?channelType=0&channel=0)
 * [PaddleSeg实战之人像分割](https://aistudio.baidu.com/aistudio/projectdetail/2189481?channelType=0&channel=0)
 * [PaddleSeg实战之小数据集3D椎骨分割](https://aistudio.baidu.com/aistudio/projectdetail/3878920)

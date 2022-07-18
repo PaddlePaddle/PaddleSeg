@@ -32,12 +32,6 @@ def parse_args():
     parser.add_argument(
         '--split', help='', nargs=3, type=float, default=[0.7, 0.3, 0])
     parser.add_argument(
-        '--label_class',
-        help='label class names',
-        type=str,
-        nargs='*',
-        default=['__background__', '__foreground__'])
-    parser.add_argument(
         '--separator',
         dest='separator',
         help='file list separator',
@@ -79,31 +73,25 @@ def generate_list(args):
     separator = args.separator
     dataset_root = args.dataset_root
     if abs(sum(args.split) - 1.0) > 1e-8:
-        raise ValueError("划分比例之和必须为1")
-
-    file_list = os.path.join(dataset_root, 'labels.txt')
-    with open(file_list, "w") as f:
-        for label_class in args.label_class:
-            f.write(label_class + '\n')
+        raise ValueError("The sum of input params `--split` should be 1")
 
     image_dir = os.path.join(dataset_root, args.images_dir_name)
     label_dir = os.path.join(dataset_root, args.labels_dir_name)
     image_files = get_files(image_dir, args.format[0], args.postfix[0])
     label_files = get_files(label_dir, args.format[1], args.postfix[1])
+
     if not image_files:
         warnings.warn("No files in {}".format(image_dir))
-    num_images = len(image_files)
-
     if not label_files:
         warnings.warn("No files in {}".format(label_dir))
-    num_label = len(label_files)
 
-    if num_images != num_label and num_label > 0:
-        raise Exception("Number of images = {}    number of labels = {} \n"
-                        "Either number of images is equal to number of labels, "
-                        "or number of labels is equal to 0.\n"
-                        "Please check your dataset!".format(num_images,
-                                                            num_label))
+    num_images = len(image_files)
+    num_label = len(label_files)
+    if num_images != num_label:
+        raise Exception(
+            "Number of images = {}, number of labels = {}."
+            "The number of images is not equal to number of labels, "
+            "Please check your dataset!".format(num_images, num_label))
 
     image_files = np.array(image_files)
     label_files = np.array(label_files)

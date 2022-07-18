@@ -1,11 +1,45 @@
-English | [简体中文](data_prepare_cn.md)
+[简体中文](./pre_data_cn.md) | English
 
-# Dataset Preparation
+# Prepare Public Dataset
 
-PaddleSeg currently supports the dataset of CityScapes, ADE20K, Pascal VOC and so on.
-When loading a dataset, the system automatically triggers the download (except for Cityscapes dataset) if the data does not exist locally.
+For public dataset, you only need to download and save it in specific directory, and then use PaddleSeg to train model.
 
-## CityScapes Dataset
+## Save Directory
+
+PaddleSeg defines the dataset path in config files according the following directory.
+
+It is recommended to download and save public dataset in `PaddleSeg/data`.
+
+```
+PaddleSeg
+├── data
+│   ├── cityscapes
+│   │   ├── leftImg8bit
+│   │   │   ├── train
+│   │   │   ├── val
+│   │   ├── gtFine
+│   │   │   ├── train
+│   │   │   ├── val
+│   ├── ADEChallengeData2016
+│   │   │── annotations
+│   │   │   ├── training
+│   │   │   ├── validation
+│   │   │── images
+│   │   │   ├── training
+│   │   │   ├── validation
+│   ├── VOCdevkit
+│   │   ├── VOC2012
+│   │   │   ├── JPEGImages
+│   │   │   ├── SegmentationClass
+│   │   │   ├── SegmentationClassAug
+│   │   │   ├── ImageSets
+│   │   │   │   ├── Segmentation
+```
+
+## Download Public Dataset
+
+### CityScapes Dataset
+
 Cityscapes is a dataset of semantically understood images of urban street scenes. It mainly contains street scenes from 50 different cities, with 5000 (2048 x 1024) high quality pixel-level annotated images of urban driving scenes. It contains 19 categories. There are 2975 training sets, 500 validation sets and 1525 test sets.
 
 Due to restrictions, please visit [CityScapes website](https://www.cityscapes-dataset.com/)to download dataset.
@@ -32,27 +66,26 @@ python tools/convert_cityscapes.py --cityscapes_path data/cityscapes --num_worke
 ```
 where `cityscapes_path` should be adjusted according to the actual dataset path. `num_workers` determines the number of processes to be started. The value can be adjusted as required.
 
-## Pascal VOC 2012 dataset
+### Pascal VOC 2012 dataset
+
 [Pascal VOC 2012](http://host.robots.ox.ac.uk/pascal/VOC/) is mainly object segmentation, including 20 categories and background classes, including 1464 training sets and 1449 validation sets.
 Generally, we will use [SBD(Semantic Boundaries Dataset)](http://home.bharathh.info/pubs/codes/SBD/download.html) to expand the dataset. Theer are 10582 training sets after expanding.
+
 Run the following commands to download the SBD dataset and use it to expand:
 ```shell
+cd PaddleSeg
 python tools/voc_augment.py --voc_path data/VOCdevkit --num_workers 8
 ```
 where `voc_path`should be adjusted according to the actual dataset path.
 
-**Note** Before running, make sure you have executed the following commands in the PaddleSeg directory:
-```shell
-export PYTHONPATH=`pwd`
-# In Windows, run the following command
-# set PYTHONPATH=%cd%
-```
 
-## ADE20K Dataset
+### ADE20K Dataset
+
 [ADE20K](http://sceneparsing.csail.mit.edu/) published by MIT that can be used for a variety of tasks such as scene perception, segmentation, and multi-object recognition.
 It covers 150 semantic categories, including 20210 training sets and 2000 validation sets.
 
-## Coco Stuff Dataset
+### Coco Stuff Dataset
+
 Coco Stuff is a pixel-level semantically segmented dataset based on Coco datasets. It covers 172 catefories, including 80 'thing' classes, 91 'stuff' classes amd one 'unlabeled' classes. 'unlabeled' is ignored and the index is set to 255 which has not contribution to loss. The training version is therefore provided in 171 categories. There are 118k training sets, 5k validation sets.
 
 Before using Coco Stuff dataset， please go to [COCO-Stuff website](https://github.com/nightrome/cocostuff) to download dataset or download [coco2017 training sets with origin images](http://images.cocodataset.org/zips/train2017.zip), [coco2017 validation sets with origin images](http://images.cocodataset.org/zips/val2017.zip) and [annotations images](http://calvin.inf.ed.ac.uk/wp-content/uploads/data/cocostuffdataset/stuffthingmaps_trainval2017.zip)
@@ -79,7 +112,8 @@ where `annotation_path` should be filled according to the `cocostuff/annotations
 
 Where, the labels of the labeled images are taken in sequence from 0, 1, ... and cannot be separated. If there are pixels that need to be ignored, they should be labeled to 255.
 
-## Pascal Context Dataset
+### Pascal Context Dataset
+
 Pascal Context is a pixel-level semantically segmented dataset based on the Pascal VOC 2010 dataset with additional annotations. The conversion script we provide supports 60 categories, with index 0 being the background category. There are 4996 training sets and 5104 verification sets in this dataset.
 
 
@@ -108,6 +142,5 @@ Run the following command to convert labels:
 python tools/convert_voc2010.py --voc_path /PATH/TO/VOC ----annotation_path /PATH/TO/JSON
 ```
 where `voc_path` should be filled according to the voc2010 actual path. `annotation_path` is the trainval_merged.json saved path.
-
 
 Where, the labels of the labeled images are taken in sequence from 0, 1, 2, ... and cannot be separated. If there are pixels that need to be ignored, they should be labeled to 255 (default ignored value). When using Pascal Context dataset, [Detail](https://github.com/zhanghang1989/detail-api) need to be installed.
