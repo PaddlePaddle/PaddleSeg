@@ -29,11 +29,11 @@ EISeg (Efficient Interactive Segmentation) is an efficient and intelligent inter
 [![4a9ed-a91y1](https://user-images.githubusercontent.com/71769312/141130688-e1529c27-aba8-4bf7-aad8-dda49808c5c7.gif)](https://user-images.githubusercontent.com/71769312/141130688-e1529c27-aba8-4bf7-aad8-dda49808c5c7.gif)
 
 ## <img src="../docs/images/teach.png" width="20"/> Tutorials
-* [Installation](docs/install.md)
-* [Image Annotation](docs/image.md)
-* [Video Annotation](docs/video.md)
-* [Remote Sensing](docs/remote_sensing.md)
-* [Medical Treatment](docs/medical.md)
+* [Installation](docs/install_en.md)
+* [Image Annotation](docs/image_en.md)
+* [Video Annotation](docs/video_en.md)
+* [Remote Sensing](docs/remote_sensing_en.md)
+* [Medical Treatment](docs/medical_en.md)
 
 ## <img src="../docs/images/anli.png" width="20"/> Version Updates
 
