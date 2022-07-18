@@ -1,4 +1,4 @@
-# Copyright (c) 2019  PaddlePaddle Authors. All Rights Reserved.
+# Copyright (c) 2022  PaddlePaddle Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License"
 # you may not use this file except in compliance with the License.
@@ -12,28 +12,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import sys
 import os
+import sys
 __dir__ = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.abspath(os.path.join(__dir__, '../../../')))
 
 from paddleseg.utils.download import download_file_and_uncompress
 
-
-def download_data(savepath, extrapath):
-    url = "https://paddleseg.bj.bcebos.com/humanseg/data/mini_supervisely.zip"
-    download_file_and_uncompress(
-        url=url, savepath=savepath, extrapath=extrapath)
-
-    url = "https://paddleseg.bj.bcebos.com/humanseg/data/video_test.zip"
-    download_file_and_uncompress(
-        url=url,
-        savepath=savepath,
-        extrapath=extrapath,
-        extraname='video_test.mp4')
-
-
 if __name__ == "__main__":
     data_path = os.path.abspath("./data")
-    download_data(data_path, data_path)
-    print("Data download finish!")
+    urls = [
+        "https://paddleseg.bj.bcebos.com/humanseg/data/mini_supervisely.zip",
+        "https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/videos.zip",
+        "https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/background_imgs.zip"
+    ]
+
+    for url in urls:
+        download_file_and_uncompress(
+            url=url, savepath=data_path, extrapath=data_path)
+
+    print("Data download finished!")

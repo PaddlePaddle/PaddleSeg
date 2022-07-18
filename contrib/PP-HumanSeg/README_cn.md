@@ -3,22 +3,23 @@
 # 人像分割PP-HumanSeg
 
 ## 目录
-- [简介](#简介)
-- [最新消息](#最新消息)
-- [PP-HumanSeg模型](#PP-HumanSeg模型)
+- [1.简介](#1.简介)
+- [2.最新消息](#2.最新消息)
+- [3.PP-HumanSeg模型](#3.PP-HumanSeg模型)
   - [肖像分割模型](#肖像分割模型)
   - [通用人像分割模型](#通用人像分割模型)
-- [安装](#安装)
-- [快速体验](#快速体验)
+- [4.快速体验](#4.快速体验)
+  - [准备环境](#准备环境)
+  - [准备模型和数据](#准备模型和数据)
   - [视频流人像分割](#视频流人像分割)
   - [视频流背景替换](#视频流背景替换)
   - [在线运行教程](#在线运行教程)
-- [训练评估预测演示](#训练评估预测演示)
+- [5.训练评估预测演示](#5.训练评估预测演示)
 - [模型导出](#模型导出)
 - [Web端部署](#Web端部署)
 - [移动端部署](#移动端部署)
 
-## 简介
+## 1.简介
 
 将人物和背景在像素级别进行区分，是一个图像分割的经典任务，具有广泛的应用。
 一般而言，该任务可以分为两类：针对半身人像的分割，简称肖像分割；针对全身和半身人像的分割，简称通用人像分割。
@@ -31,7 +32,7 @@
 <img src="https://user-images.githubusercontent.com/30695251/149886667-f47cab88-e81a-4fd7-9f32-fbb34a5ed7ce.png"  height="200">        <img src="https://user-images.githubusercontent.com/30695251/149887482-d1fcd5d3-2cce-41b5-819b-bfc7126b7db4.png"  height="200">
 </p>
 
-## 最新消息
+## 2.最新消息
 - [2022-7] 发布PP-HumanSeg V2版本模型，肖像分割模型的推理速度提升45.5%、mIoU提升0.63%、可视化效果更佳，通用人像分割模型的推理速度提升xx，mIoU提升xx。
 - [2022-1] 人像分割论文[PP-HumanSeg](./paper.md)发表于WACV 2022 Workshop，并开源连通性学习（SCL）方法和大规模视频会议数据集。
 - [2021-7] 百度视频会议可实现Web端一秒入会，其中的虚拟背景功能采用我们的PP-HumanSeg肖像模型，实现实时背景替换和背景虚化功能，保护用户隐私，并增加视频会议的趣味性。
@@ -41,7 +42,7 @@
 <img src="https://github.com/LutaoChu/transfer_station/raw/master/conference.gif" width="60%" height="60%">
 </p>
 
-## PP-HumanSeg模型
+## 3.P-HumanSeg模型
 
 ### 肖像分割模型
 
@@ -78,13 +79,13 @@
 * PP-HumanSeg-Lite-V2通用人像分割模型，使用PaddleSeg推出的[超轻量级分割模型](../../configs/mobileseg/)，相比V1模型精度mIoU提升6.5%，手机端推理耗时增加3ms。
 * PP-HumanSeg-Mobile-V2通用分割模型，使用PaddleSeg自研的[PP-LiteSeg](../../configs/pp_liteseg/)模型，相比V1模型精度mIoU提升1.49%，服务器端推理耗时减少5.7%。
 
-| 模型名 | 最佳输入尺寸 | 精度mIou(%) | 手机端推理耗时(ms) | 服务器端推理耗时(ms) | 配置文件 | Checkpoint | Inference Model (Argmax) | Inference Model (Softmax) |
-| ----- | ---------- | ------- | -----------------| ----------------- | ------- | ---------- | --------------- |--------------- |
-| PP-HumanSeg-Lite-V1   | 192x192 | 86.02 | 12.3  | -    | [cfg](./configs/human_pp_humanseg_lite_v1.yml)   | [url](https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/human_pp_humanseg_lite_v1_192x192_pretrained.zip) | [url](https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/human_pp_humanseg_lite_v1_192x192_inference_model.zip) | [url](https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/human_pp_humanseg_lite_v1_192x192_inference_model_with_softmax.zip) |
-| PP-HumanSeg-Lite-V2   | 192x192 | 92.52 | 15.3  | -    | [cfg](./configs/human_pp_humanseg_lite_v2.yml)   | [url](https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/human_pp_humanseg_lite_v2_192x192_pretrained.zip) | [url](https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/human_pp_humanseg_lite_v2_192x192_inference_model.zip) | [url](https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/human_pp_humanseg_lite_v2_192x192_inference_model_with_softmax.zip) |
-| PP-HumanSeg-Mobile-V1 | 192x192 | 91.64 |  -    | 2.83 | [cfg](./configs/human_pp_humanseg_mobile_v1.yml) | [url](https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/human_pp_humanseg_mobile_v1_192x192_pretrained.zip) | [url](https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/human_pp_humanseg_mobile_v1_192x192_inference_model.zip) | [url](https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/human_pp_humanseg_mobile_v1_192x192_inference_model_with_softmax.zip) |
-| PP-HumanSeg-Mobile-V2 | 192x192 | 93.13 |  -    | 2.67 | [cfg](./configs/human_pp_humanseg_mobile_v2.yml) | [url](https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/human_pp_humanseg_mobile_v2_192x192_pretrained.zip) | [url](https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/human_pp_humanseg_mobile_v2_192x192_inference_model.zip) | [url](https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/human_pp_humanseg_mobile_v2_192x192_inference_model_with_softmax.zip) |
-| PP-HumanSeg-Server    | 512x512 | 96.47 |  -    | 24.9 | [cfg](./configs/human_pp_humanseg_server_v1.yml) | [url](https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/human_pp_humanseg_server_v1_512x512_pretrained.zip) | [url](https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/human_pp_humanseg_server_v1_512x512_inference_model.zip) | [url](https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/human_pp_humanseg_server_v1_512x512_inference_model_with_softmax.zip) |
+| 模型名 | 最佳输入尺寸 | 精度mIou(%) | 手机端推理耗时(ms) | 服务器端推理耗时(ms) | 配置文件 | 下载链接 |
+| ----- | ---------- | ---------- | -----------------| ----------------- | ------- | ------- |
+| PP-HumanSeg-Lite-V1   | 192x192 | 86.02 | 12.3  | -    | [cfg](./configs/human_pp_humanseg_lite_v1.yml)   | [Checkpoint](https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/human_pp_humanseg_lite_v1_192x192_pretrained.zip) \| [Inference Model (Argmax)](https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/human_pp_humanseg_lite_v1_192x192_inference_model.zip) \| [Inference Model (Softmax)](https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/human_pp_humanseg_lite_v1_192x192_inference_model_with_softmax.zip) |
+| PP-HumanSeg-Lite-V2   | 192x192 | 92.52 | 15.3  | -    | [cfg](./configs/human_pp_humanseg_lite_v2.yml)   | [Checkpoint](https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/human_pp_humanseg_lite_v2_192x192_pretrained.zip) \| [Inference Model (Argmax)](https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/human_pp_humanseg_lite_v2_192x192_inference_model.zip) \| [Inference Model (Softmax)](https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/human_pp_humanseg_lite_v2_192x192_inference_model_with_softmax.zip) |
+| PP-HumanSeg-Mobile-V1 | 192x192 | 91.64 |  -    | 2.83 | [cfg](./configs/human_pp_humanseg_mobile_v1.yml) | [Checkpoint](https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/human_pp_humanseg_mobile_v1_192x192_pretrained.zip) \| [Inference Model (Argmax)](https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/human_pp_humanseg_mobile_v1_192x192_inference_model.zip) \| [Inference Model (Softmax)](https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/human_pp_humanseg_mobile_v1_192x192_inference_model_with_softmax.zip) |
+| PP-HumanSeg-Mobile-V2 | 192x192 | 93.13 |  -    | 2.67 | [cfg](./configs/human_pp_humanseg_mobile_v2.yml) | [Checkpoint](https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/human_pp_humanseg_mobile_v2_192x192_pretrained.zip) \| [Inference Model (Argmax)](https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/human_pp_humanseg_mobile_v2_192x192_inference_model.zip) \| [Inference Model (Softmax)](https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/human_pp_humanseg_mobile_v2_192x192_inference_model_with_softmax.zip) |
+| PP-HumanSeg-Server    | 512x512 | 96.47 |  -    | 24.9 | [cfg](./configs/human_pp_humanseg_server_v1.yml) | [Checkpoint](https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/human_pp_humanseg_server_v1_512x512_pretrained.zip) \| [Inference Model (Argmax)](https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/human_pp_humanseg_server_v1_512x512_inference_model.zip) \| [Inference Model (Softmax)](https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/human_pp_humanseg_server_v1_512x512_inference_model_with_softmax.zip) |
 
 
 表格说明：
@@ -100,77 +101,109 @@
 * 由于通用人像分割任务的场景变化很大，大家需要根据实际场景评估PP-HumanSeg通用人像分割模型的精度。如果满足业务要求，可以直接应用到产品中。如果不满足业务要求，大家可以收集、标注数据，基于开源通用人像分割模型进行Finetune。
 
 
-## 安装
+## 4.快速体验
 
-#### 1. 安装PaddlePaddle
+### 准备环境
 
-版本要求
-
-* PaddlePaddle >= 2.0.2
-
+安装PaddlePaddle，要求：
+* PaddlePaddle >= 2.2.0
 * Python >= 3.7+
 
-由于图像分割模型计算开销大，推荐在GPU版本的PaddlePaddle下使用PaddleSeg。推荐安装10.0以上的CUDA环境。安装教程请见[PaddlePaddle官网](https://www.paddlepaddle.org.cn/install/quick?docurl=/documentation/docs/zh/install/pip/linux-pip.html)。
+由于图像分割模型计算开销大，推荐在GPU版本的PaddlePaddle下使用PaddleSeg，详细安装教程请见[PaddlePaddle官网](https://www.paddlepaddle.org.cn/install/quick?docurl=/documentation/docs/zh/install/pip/linux-pip.html)。
 
 
-#### 2. 安装PaddleSeg包
-
-```shell
-pip install paddleseg
-```
-
-#### 3. 下载PaddleSeg仓库
+执行如下命令，下载PaddleSeg，安装必要库。
 
 ```shell
 git clone https://github.com/PaddlePaddle/PaddleSeg
+cd PaddleSeg
+pip install -r requirements.txt
 ```
 
-## 快速体验
+### 准备模型和数据
+
 以下所有命令均在`PaddleSeg/contrib/PP-HumanSeg`目录下执行。
+
 ```shell
 cd PaddleSeg/contrib/PP-HumanSeg
 ```
 
-### 下载Inference Model
+执行以下命令下载Inference Model，保存在当前`inference_models`目录。
 
-执行以下脚本快速下载所有Inference Model
 ```bash
-python export_model/download_export_model.py
+python export_model/download_inference_models.py
 ```
 
-### 下载测试数据
-我们提供了一些测试数据，从人像分割数据集 [Supervise.ly Person](https://app.supervise.ly/ecosystem/projects/persons) 中随机抽取一小部分并转化成PaddleSeg可直接加载数据格式，以下称为mini_supervisely，同时提供了手机前置摄像头的人像测试视频`video_test.mp4`。通过运行以下代码进行快速下载：
+执行以下命令下载测试数据保存在`data`目录，包括`video_heng.mp4`、`video_shu.mp4`和`mini_supervisely`数据集。
+`video_heng.mp4`和`video_shu.mp4`分别是手机前置摄像头在横屏和竖屏下，拍摄的人像测试视频。
+`mini_supervisely`数据集从人像分割数据集 [Supervise.ly Person](https://app.supervise.ly/ecosystem/projects/persons) 中随机抽取一小部分并转化成PaddleSeg可直接加载数据格式。
 
 ```bash
 python data/download_data.py
 ```
 
-### 视频流人像分割
-```bash
-# 通过电脑摄像头进行实时分割处理
-python bg_replace.py \
---config export_model/pphumanseg_lite_portrait_398x224_with_softmax/deploy.yaml
+### 肖像分割
 
-# 对人像视频进行分割处理
-python bg_replace.py \
---config export_model/deeplabv3p_resnet50_os8_humanseg_512x512_100k_with_softmax/deploy.yaml \
---video_path data/video_test.mp4
+加载`data/videos/video_heng.mp4`横屏视频，使用PP-Humanseg肖像分割模型进行预测，结果保存在`data/videos_result/`目录。
+
+```bash
+# Use PP-Humanseg-Lite-V2
+python scripts/bg_replace.py \
+  --config inference_models/portrait_pp_humanseg_lite_v2_256x144_inference_model_with_softmax/deploy.yaml \
+  --video_path data/videos/video_heng.mp4 \
+  --save_dir data/videos_result/video_heng_v2.avi
+
+# Use PP-Humanseg-Lite-V1
+python scripts/bg_replace.py \
+  --config inference_models/portrait_pp_humanseg_lite_v1_398x224_inference_model_with_softmax/deploy.yaml \
+  --video_path data/videos/video_heng.mp4 \
+  --save_dir data/videos_result/video_heng_v1.avi
+```
+
+加载`data/videos/video_shu.mp4`竖屏视频，使用PP-Humanseg肖像分割模型进行预测，结果保存在`data/videos_result/`目录。
+
+```bash
+# Use PP-Humanseg-Lite-V2
+python scripts/bg_replace.py \
+  --config inference_models/portrait_pp_humanseg_lite_v2_256x144_inference_model_with_softmax/deploy.yaml \
+  --video_path data/videos/video_shu.mp4 \
+  --save_dir data/videos_result/video_shu_v2.avi \
+  --vertical_screen
+
+# Use PP-Humanseg-Lite-V1
+python scripts/bg_replace.py \
+  --config inference_models/portrait_pp_humanseg_lite_v1_398x224_inference_model_with_softmax/deploy.yaml \
+  --video_path data/videos/video_shu.mp4 \
+  --save_dir data/videos_result/video_shu_v1.avi \
+  --vertical_screen
+```
+
+开启电脑摄像头（假定是横屏），进行实时肖像分割。
+
+```bash
+python scripts/bg_replace.py \
+  --config inference_models/portrait_pp_humanseg_lite_v2_256x144_inference_model_with_softmax/deploy.yaml
+```
+
+此外，可以使用 DIS（Dense Inverse Search-basedmethod）光流后处理算法，减少视频预测前后帧闪烁的问题。
+`scripts/bg_replace.py`脚本只要设置`--use_optic_flow`输入参数，即可开启光流后处理。
+
+```bash
+python scripts/bg_replace.py \
+  --config inference_models/portrait_pp_humanseg_lite_v2_256x144_inference_model_with_softmax/deploy.yaml \
+  --video_path data/videos/video_heng.mp4 \
+  --save_dir data/videos_result/video_heng_v2_use_optic_flow.avi
+  --use_optic_flow
 ```
 
 视频分割结果如下：
-
 <img src="https://paddleseg.bj.bcebos.com/humanseg/data/video_test.gif" width="20%" height="20%"><img src="https://paddleseg.bj.bcebos.com/humanseg/data/result.gif" width="20%" height="20%">
 
-我们也支持使用 DIS（Dense Inverse Search-basedmethod）光流后处理算法，通过结合光流结果与分割结果，减少视频预测前后帧闪烁的问题。只要使用`--use_optic_flow`即可开启光流后处理，例如
-```bash
-# 增加光流后处理
-python bg_replace.py \
---config export_model/pphumanseg_lite_portrait_398x224_with_softmax/deploy.yaml \
---use_optic_flow
-```
 
-### 视频流背景替换
+### 背景替换
+
 根据所选背景进行背景替换，背景可以是一张图片，也可以是一段视频。
+
 ```bash
 # 通过电脑摄像头进行实时背景替换处理。可通过'--background_video_path'传入背景视频
 python bg_replace.py \
@@ -184,6 +217,13 @@ python bg_replace.py \
 --bg_img_path data/background.jpg \
 --video_path data/video_test.mp4
 
+# Use PP-Humanseg-Lite-V2
+python scripts/bg_replace.py \
+  --config inference_models/portrait_pp_humanseg_lite_v2_256x144_inference_model_with_softmax/deploy.yaml \
+  --video_path data/videos/video_shu.mp4 \
+  --save_dir data/videos_result/video_shu_v2.avi \
+  --vertical_screen
+
 # 对单张图像进行背景替换
 python bg_replace.py \
 --config export_model/pphumanseg_lite_portrait_398x224_with_softmax/deploy.yaml \
@@ -195,20 +235,14 @@ python bg_replace.py \
 
 
 背景替换结果如下：
-
 <img src="https://paddleseg.bj.bcebos.com/humanseg/data/video_test.gif" width="20%" height="20%"><img src="https://paddleseg.bj.bcebos.com/humanseg/data/bg_replace.gif" width="20%" height="20%">
 
 
-**NOTE**:
-
-视频分割处理时间需要几分钟，请耐心等待。
-
-Portrait模型适用于宽屏拍摄场景，竖屏效果会略差一些。
-
 ### 在线运行教程
-我们提供了基于AI Studio的[在线运行教程](https://aistudio.baidu.com/aistudio/projectdetail/2189481)，方便您进行实践体验。
 
-## 训练评估预测演示
+PP-HumanSeg V1版本提供了基于AI Studio的[在线运行教程](https://aistudio.baidu.com/aistudio/projectdetail/2189481)，大家可以实践体验。
+
+## 5.训练评估预测演示
 如果上述大规模数据预训练的模型不能满足您的精度需要，可以基于上述模型在您的场景中进行Fine-tuning，以更好地适应您的使用场景。
 
 ### 下载预训练模型

@@ -14,6 +14,7 @@
 
 import codecs
 import os
+import sys
 import time
 
 import yaml
@@ -35,9 +36,14 @@ from optic_flow_process import optic_flow_process
 
 
 class DeployConfig:
-    def __init__(self, path):
+    def __init__(self, path, vertical_screen):
         with codecs.open(path, 'r', 'utf-8') as file:
             self.dic = yaml.load(file, Loader=yaml.FullLoader)
+
+            [width, height] = self.dic['Deploy']['transforms'][0]['target_size']
+            if vertical_screen and width > height:
+                self.dic['Deploy']['transforms'][0][
+                    'target_size'] = [height, width]
 
         self._transforms = self._load_transforms(self.dic['Deploy'][
             'transforms'])
@@ -67,8 +73,8 @@ class DeployConfig:
 
 class Predictor:
     def __init__(self, args):
-        self.cfg = DeployConfig(args.cfg)
         self.args = args
+        self.cfg = DeployConfig(args.config, args.vertical_screen)
         self.compose = T.Compose(self.cfg.transforms)
         resize_h, resize_w = args.input_shape
         '''
@@ -88,23 +94,15 @@ class Predictor:
         if self.args.test_speed:
             self.cost_averager = TimeAverager()
 
-    def preprocess(self, img):
-        ori_shapes = []
-        processed_imgs = []
-        processed_img = self.compose(img)[0]
-        processed_imgs.append(processed_img)
-        ori_shapes.append(img.shape)
-        return processed_imgs, ori_shapes
-
     def run(self, img, bg):
         input_names = self.predictor.get_input_names()
         input_handle = self.predictor.get_input_handle(input_names[0])
 
-        processed_imgs, ori_shapes = self.preprocess(img)
+        data = self.compose({'img': img})
+        input_data = np.array([data['img']])
 
-        data = np.array(processed_imgs)
-        input_handle.reshape(data.shape)
-        input_handle.copy_from_cpu(data)
+        input_handle.reshape(input_data.shape)
+        input_handle.copy_from_cpu(input_data)
         if self.args.test_speed:
             start = time.time()
 
@@ -115,16 +113,19 @@ class Predictor:
         output_names = self.predictor.get_output_names()
         output_handle = self.predictor.get_output_handle(output_names[0])
         output = output_handle.copy_to_cpu()
-        return self.postprocess(output, img, ori_shapes[0], bg)
 
-    def postprocess(self, pred, img, ori_shape, bg):
+        return self.postprocess(output, img, data, bg)
+
+    def postprocess(self, pred_img, origin_img, data, bg):
+        img = data['img']
+        trans_info = data['trans_info']
         if not os.path.exists(self.args.save_dir):
             os.makedirs(self.args.save_dir)
-        resize_w = pred.shape[-1]
-        resize_h = pred.shape[-2]
+        resize_w = pred_img.shape[-1]
+        resize_h = pred_img.shape[-2]
         if self.args.soft_predict:
             if self.args.use_optic_flow:
-                score_map = pred[:, 1, :, :].squeeze(0)
+                score_map = pred_img[:, 1, :, :].squeeze(0)
                 score_map = 255 * score_map
                 cur_gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
                 cur_gray = cv2.resize(cur_gray, (resize_w, resize_h))
@@ -137,30 +138,23 @@ class Predictor:
                 score_map = np.repeat(optflow_map[:, :, np.newaxis], 3, axis=2)
                 score_map = np.transpose(score_map, [2, 0, 1])[np.newaxis, ...]
                 score_map = reverse_transform(
-                    paddle.to_tensor(score_map),
-                    ori_shape,
-                    self.cfg.transforms,
-                    mode='bilinear')
+                    paddle.to_tensor(score_map), trans_info, mode='bilinear')
                 alpha = np.transpose(score_map.numpy().squeeze(0),
                                      [1, 2, 0]) / 255
             else:
-                score_map = pred[:, 1, :, :]
+                score_map = pred_img[:, 1, :, :]
                 score_map = score_map[np.newaxis, ...]
                 score_map = reverse_transform(
-                    paddle.to_tensor(score_map),
-                    ori_shape,
-                    self.cfg.transforms,
-                    mode='bilinear')
+                    paddle.to_tensor(score_map), trans_info, mode='bilinear')
                 alpha = np.transpose(score_map.numpy().squeeze(0), [1, 2, 0])
 
         else:
-            if pred.ndim == 3:
-                pred = pred[:, np.newaxis, ...]
+            if pred_img.ndim == 3:
+                pred_img = pred_img[:, np.newaxis, ...]
             result = reverse_transform(
                 paddle.to_tensor(
-                    pred, dtype='float32'),
-                ori_shape,
-                self.cfg.transforms,
+                    pred_img, dtype='float32'),
+                trans_info,
                 mode='bilinear')
 
             result = np.array(result)
@@ -171,10 +165,10 @@ class Predictor:
             alpha = np.transpose(result, [1, 2, 0])
 
         # background replace
-        h, w, _ = img.shape
+        h, w, _ = origin_img.shape
         bg = cv2.resize(bg, (w, h))
         if bg.ndim == 2:
             bg = bg[..., np.newaxis]
 
-        comb = (alpha * img + (1 - alpha) * bg).astype(np.uint8)
+        comb = (alpha * origin_img + (1 - alpha) * bg).astype(np.uint8)
         return comb
