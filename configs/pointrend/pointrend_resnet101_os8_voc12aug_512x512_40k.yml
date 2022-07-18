@@ -1,4 +1,4 @@
-_base_: 'pointrend_resnet50_os8_voc12aug_512×512_40k.yml'
+_base_: 'pointrend_resnet50_os8_voc12aug_512x512_40k.yml'
 
 
 model:
