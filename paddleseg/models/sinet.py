@@ -1,4 +1,4 @@
-# Copyright (c) 2021 PaddlePaddle Authors. All Rights Reserved.
+# Copyright (c) 2022 PaddlePaddle Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# Refer to the origin implementation: https://github.com/clovaai/c3_sinet/blob/master/models/SINet.py
+
 import paddle
 import paddle.nn as nn
 import paddle.nn.functional as F
@@ -20,44 +22,47 @@ from paddleseg.models import layers
 from paddleseg.cvlibs import manager
 from paddleseg.utils import utils
 
-config = [[[3, 1], [5, 1]], [[3, 1], [3, 1]], [[3, 1], [5, 1]],
-          [[3, 1], [3, 1]], [[5, 1], [3, 2]], [[5, 2], [3, 4]],
-          [[3, 1], [3, 1]], [[5, 1], [5, 1]], [[3, 2], [3, 4]],
-          [[3, 1], [5, 2]]]
+CFG = [[[3, 1], [5, 1]], [[3, 1], [3, 1]], [[3, 1], [5, 1]], [[3, 1], [3, 1]],
+       [[5, 1], [3, 2]], [[5, 2], [3, 4]], [[3, 1], [3, 1]], [[5, 1], [5, 1]],
+       [[3, 2], [3, 4]], [[3, 1], [5, 2]]]
 
 
 @manager.MODELS.add_component
 class SINet(nn.Layer):
+    """
+    The SINet implementation based on PaddlePaddle.
+
+    The original article refers to
+    Hyojin Park, Lars Lowe Sjösund, YoungJoon Yoo, Nicolas Monet, Jihwan Bang, Nojun Kwak
+    "SINet: Extreme Lightweight Portrait Segmentation Networks with Spatial Squeeze Modules
+    and Information Blocking Decoder", (https://arxiv.org/abs/1911.09099).
+
+    Args:
+        num_classes (int): The unique number of target classes.
+        config (List, optional): The config for SINet. Defualt use the CFG.
+        stage2_blocks (int, optional): The num of blocks in stage2. Default: 2.
+        stage3_blocks (int, optional): The num of blocks in stage3. Default: 8.
+        pretrained (str, optional): The path or url of pretrained model. Default: None.
+    """
+
     def __init__(self,
-                 config=config,
                  num_classes=2,
-                 p=2,
-                 q=8,
-                 chnn=1,
-                 encoderFile=None,
+                 config=CFG,
+                 stage2_blocks=2,
+                 stage3_blocks=8,
                  pretrained=None):
-        '''
-        :param num_classes: number of classes in the dataset. Default is 20 for the cityscapes
-        :param p: block num of stage2
-        :param q: block num of stage3
-        :param encoderFile: pretrained encoder weights. Recall that we first trained the ESPNet-C and then attached the
-                            RUM-based light weight decoder. See paper for more details.
-        '''
         super().__init__()
-        print("SB Net Enc bracnch num :  " + str(len(config[0])))
-        print("SB Net Enc chnn num:  " + str(chnn))
         dim1 = 16
-        dim2 = 48 + 4 * (chnn - 1)
-        dim3 = 96 + 4 * (chnn - 1)
+        dim2 = 48
+        dim3 = 96
 
-        self.encoder = SINet_Encoder(config, num_classes, p, q, chnn)
+        self.encoder = SINetEncoder(config, num_classes, stage2_blocks,
+                                    stage3_blocks)
 
-        self.up = nn.UpsamplingBilinear2D(
-            scale_factor=2)  # (scale_factor=2, mode='bilinear')
+        self.up = nn.UpsamplingBilinear2D(scale_factor=2)
         self.bn_3 = nn.BatchNorm(num_classes)
 
         self.level2_C = CBR(dim2, num_classes, 1, 1)
-
         self.bn_2 = nn.BatchNorm(num_classes)
 
         self.classifier = nn.Sequential(
@@ -73,10 +78,6 @@ class SINet(nn.Layer):
             utils.load_entire_model(self, self.pretrained)
 
     def forward(self, input):
-        '''
-        :param input: RGB image
-        :return: transformed feature map
-        '''
         output1 = self.encoder.level1(input)  # x2
 
         output2_0 = self.encoder.level2_0(output1)  # x4
@@ -84,7 +85,7 @@ class SINet(nn.Layer):
             if i == 0:
                 output2 = layer(output2_0)
             else:
-                output2 = layer(output2)  # 2h 2w
+                output2 = layer(output2)
         output2_cat = self.encoder.BR2(paddle.concat([output2_0, output2], 1))
 
         output3_0 = self.encoder.level3_0(output2_cat)  # x8
@@ -134,12 +135,6 @@ class CBR(nn.Layer):
     '''
 
     def __init__(self, nIn, nOut, kSize, stride=1):
-        '''
-        :param nIn: number of input channels
-        :param nOut: number of output channels
-        :param kSize: kernel size
-        :param stride: stride rate for down-sampling. Default is 1
-        '''
         super().__init__()
         padding = int((kSize - 1) / 2)
 
@@ -153,28 +148,18 @@ class CBR(nn.Layer):
         self.act = nn.PReLU(nOut)
 
     def forward(self, input):
-        '''
-        :param input: input feature map
-        :return: transformed feature map
-        '''
         output = self.conv(input)
         output = self.bn(output)
         output = self.act(output)
         return output
 
 
-class separableCBR(nn.Layer):
+class SeparableCBR(nn.Layer):
     '''
     This class defines the convolution layer with batch normalization and PReLU activation
     '''
 
     def __init__(self, nIn, nOut, kSize, stride=1):
-        '''
-        :param nIn: number of input channels
-        :param nOut: number of output channels
-        :param kSize: kernel size
-        :param stride: stride rate for down-sampling. Default is 1
-        '''
         super().__init__()
         padding = int((kSize - 1) / 2)
 
@@ -192,10 +177,6 @@ class separableCBR(nn.Layer):
         self.act = nn.PReLU(nOut)
 
     def forward(self, input):
-        '''
-        :param input: input feature map
-        :return: transformed feature map
-        '''
         output = self.conv(input)
         output = self.bn(output)
         output = self.act(output)
@@ -225,18 +206,12 @@ class SqueezeBlock(nn.Layer):
         return out
 
 
-class SEseparableCBR(nn.Layer):
+class SESeparableCBR(nn.Layer):
     '''
     This class defines the convolution layer with batch normalization and PReLU activation
     '''
 
     def __init__(self, nIn, nOut, kSize, stride=1, divide=2.0):
-        '''
-        :param nIn: number of input channels
-        :param nOut: number of output channels
-        :param kSize: kernel size
-        :param stride: stride rate for down-sampling. Default is 1
-        '''
         super().__init__()
         padding = int((kSize - 1) / 2)
 
@@ -257,10 +232,6 @@ class SEseparableCBR(nn.Layer):
         self.act = nn.PReLU(nOut)
 
     def forward(self, input):
-        '''
-        :param input: input feature map
-        :return: transformed feature map
-        '''
         output = self.conv(input)
         output = self.bn(output)
         output = self.act(output)
@@ -269,22 +240,15 @@ class SEseparableCBR(nn.Layer):
 
 class BR(nn.Layer):
     '''
-        This class groups the batch normalization and PReLU activation
+    This class groups the batch normalization and PReLU activation
     '''
 
     def __init__(self, nOut):
-        '''
-        :param nOut: output feature maps
-        '''
         super().__init__()
         self.bn = nn.BatchNorm(nOut)
         self.act = nn.PReLU(nOut)
 
     def forward(self, input):
-        '''
-        :param input: input feature map
-        :return: normalized and thresholded feature map
-        '''
         output = self.bn(input)
         output = self.act(output)
         return output
@@ -292,16 +256,10 @@ class BR(nn.Layer):
 
 class CB(nn.Layer):
     '''
-       This class groups the convolution and batch normalization
+    This class groups the convolution and batch normalization
     '''
 
     def __init__(self, nIn, nOut, kSize, stride=1):
-        '''
-        :param nIn: number of input channels
-        :param nOut: number of output channels
-        :param kSize: kernel size
-        :param stride: optinal stide for down-sampling
-        '''
         super().__init__()
         padding = int((kSize - 1) / 2)
         self.conv = nn.Conv2D(
@@ -313,10 +271,6 @@ class CB(nn.Layer):
         self.bn = nn.BatchNorm(nOut)
 
     def forward(self, input):
-        '''
-        :param input: input feature map
-        :return: transformed feature map
-        '''
         output = self.conv(input)
         output = self.bn(output)
         return output
@@ -328,12 +282,6 @@ class C(nn.Layer):
     '''
 
     def __init__(self, nIn, nOut, kSize, stride=1, group=1):
-        '''
-        :param nIn: number of input channels
-        :param nOut: number of output channels
-        :param kSize: kernel size
-        :param stride: optional stride rate for down-sampling
-        '''
         super().__init__()
         padding = int((kSize - 1) / 2)
         self.conv = nn.Conv2D(
@@ -345,10 +293,6 @@ class C(nn.Layer):
             groups=group)
 
     def forward(self, input):
-        '''
-        :param input: input feature map
-        :return: transformed feature map
-        '''
         output = self.conv(input)
         return output
 
@@ -359,16 +303,7 @@ class S2block(nn.Layer):
     '''
 
     def __init__(self, nIn, nOut, kSize, avgsize):
-        '''
-        :param nIn: number of input channels
-        :param nOut: number of output channels
-        :param kSize: kernel size
-        :param stride: optional stride rate for down-sampling
-        :param d: optional dilation rate
-        '''
         super().__init__()
-        #kSize = config[0]
-        #avgsize = config[1]
 
         self.resolution_down = False
         if avgsize > 1:
@@ -397,10 +332,6 @@ class S2block(nn.Layer):
         self.bn = nn.BatchNorm(nOut)
 
     def forward(self, input):
-        '''
-        :param input: input feature map
-        :return: transformed feature map
-        '''
         if self.resolution_down:
             input = self.down_res(input)
         output = self.conv(input)
@@ -418,15 +349,7 @@ class S2module(nn.Layer):
     '''
 
     def __init__(self, nIn, nOut, add=True, config=[[3, 1], [5, 1]]):
-        '''
-        :param nIn: number of input channels
-        :param nOut: number of output channels
-        :param add: if true, add a residual connection through identity operation. You can use projection too as
-                in ResNet paper, but we avoid to use it if the dimensions are not the same because we do not want to
-                increase the module complexity
-        '''
         super().__init__()
-        print("This module has " + str(config))
 
         group_n = len(config)
         assert group_n == 2
@@ -449,54 +372,32 @@ class S2module(nn.Layer):
         self.group_n = group_n
 
     def forward(self, input):
-        '''
-        :param input: input feature map
-        :return: transformed feature map
-        '''
-        # reduce
         output1 = self.c1(input)
         output1 = channel_shuffle(output1, self.group_n)
-        '''
-        for i in range(self.group_n):
-            var_name = 'd{}'.format(i + 1)
-            result_d = self.__dict__["_modules"][var_name](output1)
-            if i == 0:
-                combine = result_d
-            else:
-                combine = paddle.concat([combine, result_d], 1)
-        '''
         res_0 = self.layer_0(output1)
         res_1 = self.layer_1(output1)
         combine = paddle.concat([res_0, res_1], 1)
 
-        # if residual version
         if self.add:
             combine = input + combine
         output = self.BR(combine)
         return output
 
 
-class SINet_Encoder(nn.Layer):
-    def __init__(self, config, classes=2, p=2, q=3, chnn=1.0):
-        '''
-        :param classes: number of classes in the dataset. Default is 20 for the cityscapes
-        :param p: depth multiplier
-        :param q: depth multiplier
-        '''
+class SINetEncoder(nn.Layer):
+    def __init__(self, config, num_classes=2, stage2_blocks=2, stage3_blocks=8):
         super().__init__()
-        assert p == 2
-        print("SINet Enc bracnch num :  " + str(len(config[0])))
-        print("SINet Enc chnn num:  " + str(chnn))
+        assert stage2_blocks == 2
         dim1 = 16
-        dim2 = 48 + 4 * (chnn - 1)
-        dim3 = 96 + 4 * (chnn - 1)
+        dim2 = 48
+        dim3 = 96
 
         self.level1 = CBR(3, 12, 3, 2)
 
-        self.level2_0 = SEseparableCBR(12, dim1, 3, 2, divide=1)
+        self.level2_0 = SESeparableCBR(12, dim1, 3, 2, divide=1)
 
         self.level2 = nn.LayerList()
-        for i in range(0, p):
+        for i in range(0, stage2_blocks):
             if i == 0:
                 self.level2.append(
                     S2module(
@@ -505,9 +406,9 @@ class SINet_Encoder(nn.Layer):
                 self.level2.append(S2module(dim2, dim2, config=config[i]))
         self.BR2 = BR(dim2 + dim1)
 
-        self.level3_0 = SEseparableCBR(dim2 + dim1, dim2, 3, 2, divide=2)
+        self.level3_0 = SESeparableCBR(dim2 + dim1, dim2, 3, 2, divide=2)
         self.level3 = nn.LayerList()
-        for i in range(0, q):
+        for i in range(0, stage3_blocks):
             if i == 0:
                 self.level3.append(
                     S2module(
@@ -516,18 +417,12 @@ class SINet_Encoder(nn.Layer):
                 self.level3.append(S2module(dim3, dim3, config=config[2 + i]))
         self.BR3 = BR(dim3 + dim2)
 
-        self.classifier = C(dim3 + dim2, classes, 1, 1)
+        self.classifier = C(dim3 + dim2, num_classes, 1, 1)
 
     def forward(self, input):
-        '''
-        :param input: Receives the input RGB image
-        :return: the transformed feature map with spatial dimensions 1/8th of the input image
-        '''
         output1 = self.level1(input)  # x2
 
         output2_0 = self.level2_0(output1)  # x4
-
-        # print(str(output1_0.size()))
         for i, layer in enumerate(self.level2):
             if i == 0:
                 output2 = layer(output2_0)
@@ -536,8 +431,6 @@ class SINet_Encoder(nn.Layer):
 
         output3_0 = self.level3_0(
             self.BR2(paddle.concat([output2_0, output2], 1)))  # x8
-        # print(str(output2_0.size()))
-
         for i, layer in enumerate(self.level3):
             if i == 0:
                 output3 = layer(output3_0)
@@ -545,7 +438,5 @@ class SINet_Encoder(nn.Layer):
                 output3 = layer(output3)
 
         output3_cat = self.BR3(paddle.concat([output3_0, output3], 1))
-
         classifier = self.classifier(output3_cat)
-
         return classifier

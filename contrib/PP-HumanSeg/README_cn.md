@@ -23,9 +23,7 @@
 将人物和背景在像素级别进行区分，是一个图像分割的经典任务，具有广泛的应用。
 一般而言，该任务可以分为两类：1）针对半身人像的分割，简称肖像分割；2）针对全身和半身人像的分割，简称通用人像分割。
 
-对于肖像分割和通用人像分割，PaddleSeg发布了PP-HumanSeg系列模型:
-* 分割精度高、推理速度快、通用型强
-* 可以开箱即用，零成本部署到产品中，也支持针对特定场景数据进行微调，实现更佳分割效果
+对于肖像分割和通用人像分割，PaddleSeg发布了PP-HumanSeg系列模型，具有分割精度高、推理速度快、通用型强的优点。而且PP-HumanSeg系列模型可以开箱即用，零成本部署到产品中，也支持针对特定场景数据进行微调，实现更佳分割效果。
 
 大家可以在Paddle.js的网页体验[人像扣图](https://paddlejs.baidu.com/humanseg)效果、[视频背景替换及弹幕穿透](https://www.paddlepaddle.org.cn/paddlejs)效果。
 
@@ -40,7 +38,7 @@
 - [2021-7] 发布PP-HumanSeg V1版本模型，包括一个肖像分割模型和两个通用人像分割模型。
 
 <p align="center">
-<img src="https://github.com/LutaoChu/transfer_station/raw/master/conference.gif" width="40%" height="40%">
+<img src="https://github.com/LutaoChu/transfer_station/raw/master/conference.gif" width="60%" height="60%">
 </p>
 
 ## PP-HumanSeg模型
@@ -49,12 +47,11 @@
 
 针对手机视频通话、Web视频会议等实时半身人像的分割场景，PP-HumanSeg发布了自研的肖像分割模型。该系列模型可以开箱即用，零成本直接集成到产品中。
 
-PP-HumanSeg-Lite-V1肖像分割模型，分割效果较好，模型体积非常小，模型结构见[链接](../../configs/pp_humanseg_lite/)。
-
-PP-HumanSeg-Lite-V2肖像分割模型，对比V1模型，**推理速度提升45.5%、mIoU提升0.63%、可视化效果更佳**，核心在于：
-* 更高的分割精度：使用PaddleSeg推出的[超轻量级分割模型](../../configs/mobileseg/)，具体选择MobileNetV3作为骨干网络，设计多尺度特征融合模块(Multi-Scale Feature Aggregation Module)。
-* 更快的推理速度：减小模型最佳输入尺寸，既减少了推理耗时，又增大模型感受野。
-* 更好的通用性：使用迁移学习的思想，首先在大型通用人像分割数据集上预训练，然后在小型肖像分割数据集上微调。
+* PP-HumanSeg-Lite-V1肖像分割模型，分割效果较好，模型体积非常小，模型结构见[链接](../../configs/pp_humanseg_lite/)。
+* PP-HumanSeg-Lite-V2肖像分割模型，对比V1模型，**推理速度提升45.5%、mIoU提升0.63%、可视化效果更佳**，核心在于：
+  * 更高的分割精度：使用PaddleSeg推出的[超轻量级分割模型](../../configs/mobileseg/)，具体选择MobileNetV3作为骨干网络，设计多尺度特征融合模块(Multi-Scale Feature Aggregation Module)。
+  * 更快的推理速度：减小模型最佳输入尺寸，既减少了推理耗时，又增大模型感受野。
+  * 更好的通用性：使用迁移学习的思想，首先在大型通用人像分割数据集上预训练，然后在小型肖像分割数据集上微调。
 
 V1和V2肖像分割模型的具体信息如下表格，大家可以根据实际情况进行选用。
 
@@ -69,7 +66,8 @@ V1和V2肖像分割模型的具体信息如下表格，大家可以根据实际�
 * 最佳输入尺寸的宽高比例是16:9，和手机、电脑的摄像头拍摄尺寸比例相同。
 * Checkpoint是模型权重，结合模型配置文件，可以用于Finetuning场景。
 * Inference Model为预测模型，可以直接用于部署。
-* Inference Model (Argmax) 指模型最后使用Argmax算子，输出单通道预测结果(int64类型)，人像区域为1，背景区域为0。Inference Model (Softmax) 指模型最后使用Softmax算子，输出单通道预测结果（float32类型），每个像素数值表示是人像的概率。
+* Inference Model (Argmax) 指模型最后使用Argmax算子，输出单通道预测结果(int64类型)，人像区域为1，背景区域为0。
+* Inference Model (Softmax) 指模型最后使用Softmax算子，输出单通道预测结果（float32类型），每个像素数值表示是人像的概率。
 
 使用说明：
 * 肖像分割模型专用性较强，可以开箱即用，建议使用最佳输入尺寸。
@@ -79,9 +77,8 @@ V1和V2肖像分割模型的具体信息如下表格，大家可以根据实际�
 
 针对通用人像分割任务，我们首先构建的大规模人像数据集，然后使用PaddleSeg的SOTA模型，最终发布了多个PP-HumanSeg通用人像分割模型。
 
-PP-HumanSeg-Lite-V2通用人像分割模型，使用PaddleSeg推出的[超轻量级分割模型](../../configs/mobileseg/)，相比V1模型精度mIoU提升6.5%，手机端推理耗时增加3ms。
-
-PP-HumanSeg-Mobile-V2通用分割模型，使用PaddleSeg自研的[PP-LiteSeg](../../config/pp_liteseg/)模型，相比V1模型精度mIoU提升1.49%，服务器端推理耗时减少0.16ms。
+* PP-HumanSeg-Lite-V2通用人像分割模型，使用PaddleSeg推出的[超轻量级分割模型](../../configs/mobileseg/)，相比V1模型精度mIoU提升6.5%，手机端推理耗时增加3ms。
+* PP-HumanSeg-Mobile-V2通用分割模型，使用PaddleSeg自研的[PP-LiteSeg](../../configs/pp_liteseg/)模型，相比V1模型精度mIoU提升1.49%，服务器端推理耗时减少5.7%。
 
 | 模型名 | 最佳输入尺寸 | 精度mIou(%) | 手机端推理耗时(ms) | 服务器端推理耗时(ms) | 配置文件 | Checkpoint | Inference Model (Argmax) | Inference Model (Softmax) |
 | ----- | ---------- | ------- | -----------------| ----------------- | ------- | ---------- | --------------- |--------------- |
@@ -98,7 +95,8 @@ PP-HumanSeg-Mobile-V2通用分割模型，使用PaddleSeg自研的[PP-LiteSeg](.
 * 测试服务器端推理耗时：基于[PaddleInference](https://www.paddlepaddle.org.cn/inference/product_introduction/inference_intro.html)预测裤，V100 GPU、开启TRT，使用模型最佳输入尺寸进行测试。
 * Checkpoint是模型权重，结合模型配置文件，可以用于Finetune场景。
 * Inference Model为预测模型，可以直接用于部署。
-* Inference Model (Argmax) 指模型最后使用Argmax算子，输出单通道预测结果(int64类型)，人像区域为1，背景区域为0。Inference Model (Softmax) 指模型最后使用Softmax算子，输出单通道预测结果（float32类型），每个像素数值表示是人像的概率。
+* Inference Model (Argmax) 指模型最后使用Argmax算子，输出单通道预测结果(int64类型)，人像区域为1，背景区域为0。
+* Inference Model (Softmax) 指模型最后使用Softmax算子，输出单通道预测结果（float32类型），每个像素数值表示是人像的概率。
 
 使用说明：
 * 由于通用人像分割任务的场景变化很大，大家需要根据实际场景评估PP-HumanSeg通用人像分割模型的精度。如果满足业务要求，可以直接应用到产品中。如果不满足业务要求，大家可以收集、标注数据，基于开源通用人像分割模型进行Finetune。
