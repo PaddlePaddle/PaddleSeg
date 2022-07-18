@@ -20,14 +20,18 @@ import yaml
 import numpy as np
 import cv2
 import paddle
-import paddleseg.transforms as T
 from paddle.inference import create_predictor, PrecisionType
 from paddle.inference import Config as PredictConfig
+
+__dir__ = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(os.path.abspath(os.path.join(__dir__, '../../../')))
+
+import paddleseg.transforms as T
 from paddleseg.core.infer import reverse_transform
 from paddleseg.cvlibs import manager
 from paddleseg.utils import TimeAverager
 
-from scripts.optic_flow_process import optic_flow_process
+from optic_flow_process import optic_flow_process
 
 
 class DeployConfig:

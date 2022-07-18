@@ -14,10 +14,8 @@
 
 import sys
 import os
-
-LOCAL_PATH = os.path.dirname(os.path.abspath(__file__))
-TEST_PATH = os.path.join(LOCAL_PATH, "../../../", "test")
-sys.path.append(TEST_PATH)
+__dir__ = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(os.path.abspath(os.path.join(__dir__, '../../../')))
 
 from paddleseg.utils.download import download_file_and_uncompress
 
@@ -36,5 +34,6 @@ def download_data(savepath, extrapath):
 
 
 if __name__ == "__main__":
-    download_data(LOCAL_PATH, LOCAL_PATH)
+    data_path = os.path.abspath("./data")
+    download_data(data_path, data_path)
     print("Data download finish!")
