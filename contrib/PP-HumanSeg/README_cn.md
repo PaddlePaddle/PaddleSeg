@@ -25,7 +25,7 @@
 
 对于肖像分割和通用人像分割，PaddleSeg发布了PP-HumanSeg系列模型:
 * 分割精度高、推理速度快、通用型强
-* 可以开箱即用，零成本部署到产品中，也可以针对特定场景数据进行微调，实现更佳分割效果
+* 可以开箱即用，零成本部署到产品中，也支持针对特定场景数据进行微调，实现更佳分割效果
 
 大家可以在Paddle.js的网页体验[人像扣图](https://paddlejs.baidu.com/humanseg)效果、[视频背景替换及弹幕穿透](https://www.paddlepaddle.org.cn/paddlejs)效果。
 
@@ -51,14 +51,14 @@ PP-HumanSeg肖像分割模型，适用于手机视频通话、Web视频会议等
 
 PP-HumanSeg-Lite-V1肖像分割模型使用[自研模型结构](../../configs/pp_humanseg_lite/README.md)，分割效果较好，模型体积非常小。
 
-PP-HumanSeg-Lite-V2肖像分割模型，对比V1模型，推理速度提升45.5%、mIoU提升0.63%、可视化效果更佳，核心在于：
+PP-HumanSeg-Lite-V2肖像分割模型，对比V1模型，**推理速度提升45.5%、mIoU提升0.63%、可视化效果更佳**，核心在于：
 * 更高的分割精度：使用PaddleSeg推出的[超轻量级分割模型](../../configs/mobileseg/README.md)，具体选择MobileNetV3作为骨干网络，设计多尺度特征融合模块(Multi-Scale Feature Aggregation Module)。
 * 更快的推理速度：减小模型最佳输入尺寸，既减少了推理耗时，又增大模型感受野。
 * 更好的通用性：使用迁移学习的思想，首先在大型通用人像分割数据集上预训练，然后在小型肖像分割数据集上微调。
 
-V1和V2肖像分割模型的具体信息如下表格。
+V1和V2肖像分割模型的具体信息如下表格，大家可以根据实际情况进行选用。
 
-| 模型名 | 最佳输入尺寸 | mIou(%) | 推理耗时(ms) | 模型体积(MB) | 配置文件 | Checkpoint | Inference Model |
+| 模型名 | 最佳输入尺寸 | mIou(%) | 手机端推理耗时(ms) | 模型体积(MB) | 配置文件 | Checkpoint | Inference Model (Softmax) | Inference Model (Argmax) |
 | --- | --- | --- | ---| --- | --- | --- | ---|
 | PP-HumanSeg-Lite-V1 | 398x224 | 96.00 | 29.68 | 2.2 | [cfg](./configs/portrait14k_pp_humanseg_lite_v1.yml) | [url](https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/portrait_pp_humanseg_lite_v1_398x224_pretrained.zip) | [url](https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/portrait_pp_humanseg_lite_v1_398x224_inference_model.zip) |
 | PP-HumanSeg-Lite-V2 | 256x144 | 96.63 | 15.86 | 13.5 | [cfg](./configs/portrait14k_pp_humanseg_lite_v2.yml) | [url](https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/portrait_pp_humanseg_lite_v2_256x144_pretrained.zip) | [url](https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/portrait_pp_humanseg_lite_v2_256x144_inference_model.zip) |
@@ -72,21 +72,13 @@ V1和V2肖像分割模型的具体信息如下表格。
 
 针对通用人像分割任务，PP-HumanSeg开放了在大规模人像数据上训练的三个人像模型，满足服务端、移动端、Web端多种使用场景的需求。
 
-| 模型名 | 模型说明 | Checkpoint | Inference Model |
-| --- | --- | --- | ---|
-| PP-HumanSeg-Server | 高精度模型，适用于服务端GPU且背景复杂的场景， 模型结构为Deeplabv3+/ResNet50, 输入大小（512， 512） |[server_ckpt](https://paddleseg.bj.bcebos.com/dygraph/humanseg/train/deeplabv3p_resnet50_os8_humanseg_512x512_100k.zip) | [server_inference](https://paddleseg.bj.bcebos.com/dygraph/humanseg/export/deeplabv3p_resnet50_os8_humanseg_512x512_100k_with_softmax.zip) |
-| PP-HumanSeg-Mobile | 轻量级模型，适用于移动端或服务端CPU的前置摄像头场景，模型结构为HRNet_w18_samll_v1，输入大小（192， 192）  | [mobile_ckpt](https://paddleseg.bj.bcebos.com/dygraph/humanseg/train/fcn_hrnetw18_small_v1_humanseg_192x192.zip) | [mobile_inference](https://paddleseg.bj.bcebos.com/dygraph/humanseg/export/fcn_hrnetw18_small_v1_humanseg_192x192_with_softmax.zip) |
-| PP-HumanSeg-Lite | 超轻量级模型，适用于Web端或移动端实时分割场景，例如手机自拍、Web视频会议，模型结构为[Paddle自研模型](../../configs/pp_humanseg_lite/README.md)，输入大小（192， 192） | [lite_ckpt](https://paddleseg.bj.bcebos.com/dygraph/humanseg/train/pphumanseg_lite_generic_192x192.zip) | [lite_inference](https://paddleseg.bj.bcebos.com/dygraph/humanseg/export/pphumanseg_lite_generic_192x192_with_softmax.zip) |
-
-
-| 模型名 | 最佳输入尺寸 | mIou(%) | 推理耗时(ms) | 模型体积(MB) | 配置文件 | Checkpoint | Inference Model |
-| --- | --- | --- | ---| --- | --- | --- | ---|
-| PP-HumanSeg-Lite-V1   | 192x192 | 91.61
-| PP-HumanSeg-Lite-V2   | 192x192 | 93.75
-| PP-HumanSeg-Mobile-V1 | 192x192 | 94.06
-| PP-HumanSeg-Mobile-V2 | 192x192 | 94.67
-| PP-HumanSeg-Server-V1 | 192x192 | -
-
+| 模型名 | 最佳输入尺寸 | mIou(%) | 手机端推理耗时(ms) | 服务器端推理耗时(ms) | 配置文件 | Checkpoint | | Inference Model (Softmax) | Inference Model (Argmax) |
+| ----- | ---------- | ------- | -----------------| ----------------- | ------- | ---------- | --------------- |
+| PP-HumanSeg-Lite-V1   | 192x192 | 86.02 | 12.3  | -    | [cfg](./configs/human_pp_humanseg_lite_v1.yml)   | [url]() | [url]() | [url]() |
+| PP-HumanSeg-Lite-V2   | 192x192 | 92.52 | 15.3  | -    | [cfg](./configs/human_pp_humanseg_lite_v2.yml)   | [url]() | [url]() | [url]() |
+| PP-HumanSeg-Mobile-V1 | 192x192 | 91.64 |  -    | 2.83 | [cfg](./configs/human_pp_humanseg_mobile_v1.yml) | [url]() | [url]() | [url]() |
+| PP-HumanSeg-Mobile-V2 | 192x192 | 93.13 |  -    | 2.67 | [cfg](./configs/human_pp_humanseg_mobile_v2.yml) | [url]() | [url]() | [url]() |
+| PP-HumanSeg-Server    | 512x512 | 96.47 |  -    | 24.9 | [cfg](./configs/human_pp_humanseg_server_v1.yml) | [url]() | [url]() | [url]() |
 
 
 NOTE:

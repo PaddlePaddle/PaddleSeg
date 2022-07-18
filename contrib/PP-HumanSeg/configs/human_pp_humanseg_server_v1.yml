@@ -8,12 +8,12 @@ train_dataset:
   num_classes: 2
   transforms:
     - type: Resize
-      target_size: [192, 192]
+      target_size: [512, 512]
     - type: ResizeStepScaling
       scale_step_size: 0
     - type: RandomRotation
     - type: RandomPaddingCrop
-      crop_size: [192, 192]
+      crop_size: [512, 512]
     - type: RandomHorizontalFlip
     - type: RandomDistort
     - type: RandomBlur
@@ -28,14 +28,14 @@ val_dataset:
   num_classes: 2
   transforms:
     - type: Resize
-      target_size: [192, 192]
+      target_size: [512, 512]
     - type: Normalize
   mode: val
 
 export:
   transforms:
     - type: Resize
-      target_size: [192, 192]
+      target_size: [512, 512]
     - type: Normalize
 
 
@@ -60,20 +60,15 @@ loss:
   coef: [1, 1, 1]
 
 model:
-  type: PPLiteSeg
+  type: DeepLabV3P
   backbone:
-    type: STDC1  # [x2 x4 x8 x16 x32]
-    pretrained: https://bj.bcebos.com/paddleseg/dygraph/PP_STDCNet1.tar.gz
-  cm_out_ch: 128
-  #backbone_indices: [2, 3, 4]
-  #arm_out_chs: [32, 64, 128]
-  #seg_head_inter_chs: [32, 64, 64]
-  #use_last_fuse: False
-  #backbone_indices: [1, 2, 3, 4]
-  #arm_out_chs: [4, 32, 64, 128]
-  #seg_head_inter_chs: [4, 32, 64, 64]
-  #use_last_fuse: False
-  backbone_indices: [1, 2, 3, 4]
-  arm_out_chs: [4, 16, 32, 64]
-  seg_head_inter_chs: [4, 16, 32, 64]
-  use_last_fuse: False
+    type: ResNet50_vd
+    output_stride: 8
+    multi_grid: [1, 2, 4]
+    pretrained: https://bj.bcebos.com/paddleseg/dygraph/resnet50_vd_ssld_v2.tar.gz
+  num_classes: 2
+  backbone_indices: [0, 3]
+  aspp_ratios: [1, 12, 24, 36]
+  aspp_out_channels: 256
+  align_corners: False
+  pretrained: null
