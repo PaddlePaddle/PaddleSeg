@@ -374,10 +374,10 @@ class Predictor:
 
             self.predictor.run()
 
+            results = output_handle.copy_to_cpu()
             if args.benchmark:
                 self.autolog.times.stamp()
 
-            results = output_handle.copy_to_cpu()
             results = self._postprocess(results)
 
             if args.benchmark:
@@ -387,7 +387,9 @@ class Predictor:
         logger.info("Finish")
 
     def _preprocess(self, img):
-        return self.cfg.transforms(img)[0]
+        data = {}
+        data['img'] = img
+        return self.cfg.transforms(data)['img']
 
     def _postprocess(self, results):
         if self.args.with_argmax:

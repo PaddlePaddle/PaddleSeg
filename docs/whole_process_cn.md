@@ -1,69 +1,29 @@
 简体中文 | [English](whole_process.md)
-# PaddleSeg全流程跑通
-
-本文以`PP-LiteSeg`模型和`医学视盘分割数据集`为例，介绍PaddleSeg的**配置化驱动**使用方式。
-如果想了解PaddleSeg API调用的使用方法，可点击[PaddleSeg高级教程](https://aistudio.baidu.com/aistudio/projectdetail/1339458?channelType=0&channel=0)。
+# 20分钟快速上手PaddleSeg
+PaddleSeg 通过模块组建，并通过配置化启动的方式，实现了从数据到模型部署的全部流程。本教程将以视盘分割为例，帮助大家轻松上手PaddleSeg。
 
 本示例的主要流程如下：
+1. 环境安装
+2. 准备数据
+3. 准备配置文件
+4. 模型训练
+5. 模型评估
+6. 模型预测
+7. 模型导出
+8. 模型部署
 
-1. 准备环境：使用PaddleSeg的软件环境
-2. 准备数据：用户如何准备、整理自定义数据集
-3. 模型训练：训练配置和启动训练命令
-4. 可视化训练过程：使用VDL展示训练过程
-5. 模型评估：评估模型效果
-6. 模型预测与可视化：使用训练好的模型进行预测，同时对结果进行可视化
-7. 模型导出：如何导出可进行部署的模型
-8. 模型部署：快速使用Python实现高效部署
+如果大家想了解PaddleSeg API调用的使用方法，可以参考[教程](https://aistudio.baidu.com/aistudio/projectdetail/1339458?channelType=0&channel=0)。
 
-## **1. 环境安装与验证**
+## 1. 环境安装
 
-### **1.1 环境安装**
+参考[安装文档](./install_cn.md)进行环境配置。
 
-在使用PaddleSeg训练图像分割模型之前，用户需要完成如下环境准备工作：
+## 2. 准备数据集
+本示例将使用视盘分割（optic disc segmentation）数据集，它是我们目前支持的数十种数据集之一。实际使用过程中，大家可以参考[文档](./data/pre_data_cn.md)使用常见公开数据集，也可以参考[文档](./data/marker/marker_cn.md)准备自定义数据集。
 
-1. 安装[Python3.6或更高版本](https://www.python.org/downloads/)。
-2. 安装`PaddlePaddle`（版本>=2.1)，具体安装方法请参见[快速安装](https://www.paddlepaddle.org.cn/install/quick)。由于图像分割模型计算开销大，推荐在GPU版本的PaddlePaddle下使用PaddleSeg。
-3. 下载PaddleSeg的代码库。
-
-```
-git clone https://github.com/PaddlePaddle/PaddleSeg.git
-```
+该数据集是一组眼底医疗分割数据集，包含了267张训练图片、76张验证图片、38张测试图片。通过以下命令可以下载[视盘分割数据集](https://paddleseg.bj.bcebos.com/dataset/optic_disc_seg.zip)，解压保存到`PaddleSeg/data`目录下。
 
 ```
-#如果github下载网络较差，用户可选择gitee进行下载
-git clone https://gitee.com/paddlepaddle/PaddleSeg.git
-```
-
-安装Paddleseg API库，在安装该库的同时，运行PaddleSeg的其他依赖项也被同时安装
-```
-pip install paddleseg
-```
-
-### **1.2 确认环境安装成功**
-
-在PaddleSeg目录下，执行下面命令，如果在PaddleSeg/output文件夹中出现预测结果，则证明安装成功。
-
-> 注意：PaddleSeg训练、测试、导出等所有命令，都要求在PaddleSeg根目录下执行。本文档后续命令，默认都是如此。
-
-```
-python predict.py \
-       --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \
-       --model_path https://paddleseg.bj.bcebos.com/dygraph/optic_disc/pp_liteseg_optic_disc_512x512_1k/model.pdparams\
-       --image_path docs/images/optic_test_image.jpg \
-       --save_dir output/result
-```
-
-## **2. 数据集下载与说明**
-
-### **2.1 示例数据集下载**
-
-本示例将使用视盘分割（optic disc segmentation）数据集进行训练。
-该数据集是一组眼底医疗分割数据集，包含了267张训练图片、76张验证图片、38张测试图片。
-
-通过以下命令可以下载数据集，保存到`PaddleSeg/data`目录下。
-
-```
-#下载并解压数据集
 mkdir data
 cd data
 wget https://paddleseg.bj.bcebos.com/dataset/optic_disc_seg.zip
@@ -71,60 +31,22 @@ unzip optic_disc_seg.zip
 cd ..
 ```
 
-数据集的原图和效果图如下所示，我们的任务将是将眼球图片中的视盘区域分割出来。
-
-![](./images/fig1.png)
-图1：数据集的原图和效果图
+数据集的原始图像和分割效果图如下所示，本示例的任务将是将眼球图片中的视盘区域分割出来。
 
 
+<div align="center">
+<img src="./images/fig1.png"  width = "400" />  
+</div>
 
-### **2.2 自己准备数据集**
 
-如何使用自己的数据集进行训练是开发者最关心的事情，下面我们将着重说明一下如果要自定义数据集，我们该准备成什么样子，以及数据集准备好后，如何在配置文件中作出相应改动。
+## 3. 准备配置文件
 
-- 推荐将自己标注的数据集整理成如下结构
+PaddleSeg提供**配置化驱动方式**进行模型训练、测试和预测等，配置文件是其中的关键。
 
-        custom_dataset
-        |
-        |--images
-        |  |--image1.jpg
-        |  |--image2.jpg
-        |  |--...
-        |
-        |--labels
-        |  |--label1.png
-        |  |--label2.png
-        |  |--...
-        |
-        |--train.txt
-        |
-        |--val.txt
-        |
-        |--test.txt
+我们先介绍本示例选用的模型，然后详细解读模型的配置文件。
+### 3.1 PP-LiteSeg模型
 
-- images文件夹存放原图（通道数为3），labels文件夹存放标注图像（通道数为1），train.txt、val.txt、test.txt指定训练集、验证集和测试集。
-
-- 文件夹不要求必须命名为custom_dataset、images、labels，用户可以自主进行命名。
-
-- train.txt val.txt test.txt中文件并非要和custom_dataset文件夹在同一目录下，可以通过配置文件中的选项修改.
-
-- 举例train.txt和val.txt的内容如下所示：
-
-  ```
-   images/image1.jpg labels/label1.png
-   images/image2.jpg labels/label2.png
-   ...
-  ```
-
-刚刚下载的视盘分割数据集格式也与之类似(label.txt可有可以无)。如果用户要进行数据集标注和数据划分，请参考[数据标注文档](data/marker/marker_cn.md)与[数据集划分文档](data/custom/data_prepare_cn.md)。
-
-推荐用户将数据集放置在PaddleSeg下的data文件夹下。
-
-## **3. 模型训练**
-
-### **3.1 PP-LiteSeg模型介绍**
-
-本示例选择PP-LiteSeg模型进行训练。
+本示例中，我们选择PP-LiteSeg模型进行训练。
 
 PP-LiteSeg是PaddleSeg团队自研的轻量化模型，在Cityscapes数据集上超越其他模型，实现最优的精度和速度平衡。
 具体而言，PP-LiteSeg模型沿用编解码架构，设计灵活的Decoder模块（FLD）、统一注意力融合模块（UAFM）和简易PPM上下文模块（SPPM），实现高精度和高效率的实时语义分割。
@@ -134,68 +56,63 @@ PP-LiteSeg模型的结构如下图。更多详细介绍，请参考[链接](../c
 <div align="center">
 <img src="https://user-images.githubusercontent.com/52520497/162148786-c8b91fd1-d006-4bad-8599-556daf959a75.png" width = "600" height = "300" alt="arch"  />
 </div>
-图2：PP-LiteSeg模型结构图
 
-### **3.2 配置文件详细解读**
+### 3.2 配置文件详细解读
 
-PaddleSeg提供**配置化驱动**进行模型训练、测试和预测等，配置文件是其中的关键。
+PaddleSeg中，配置文件包括超参、训练数据集、验证数据集、优化器、损失函数、模型等信息。**所有的配置文件在PaddleSeg/configs文件夹下面**。
 
-PaddleSeg的配置文件包括超参、训练数据集、验证数据集、优化器、损失函数、模型等信息。**所有的配置文件在PaddleSeg/configs文件夹下面**。大家可以灵活修改配置文件的内容，如自定义模型使用的骨干网络、模型使用的损失函数以及关于网络结构等配置，自定义配置数据处理的策略，如改变尺寸、归一化和翻转等数据增强的策略。
+大家可以灵活修改配置文件的内容，如自定义模型使用的骨干网络、模型使用的损失函数以及关于网络结构等配置，自定义配置数据处理的策略，如改变尺寸、归一化和翻转等数据增强的策略，这些修改可以参考对应模块的代码，传入相应参数即可。
 
-我们以`pp_liteseg_optic_disc_512x512_1k.yml`为例，详细解读配置文件。
+以`PaddleSeg/configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml`为例，详细解读配置文件如下。
 
-**重点参数说明：**
-- 1：在PaddleSeg的配置文件给出的学习率中，除了"pp_liteseg_optic_disc_512x512_1k.yml"中为单卡学习率外，其余配置文件中均为4卡的学习率，如果用户是单卡训练，则学习率设置应变成原来的1/4。
-- 2：在PaddleSeg中的配置文件，给出了多种损失函数：CrossEntropy Loss、BootstrappedCrossEntropy Loss、Dice Loss、BCE Loss、OhemCrossEntropyLoss、RelaxBoundaryLoss、OhemEdgeAttentionLoss、Lovasz Hinge Loss、Lovasz Softmax Loss，用户可根据自身需求进行更改。
-- 3：配置文件解读如下。
 ```
-batch_size: 4  #设定batch_size的值即为迭代一次送入网络的图片数量，一般显卡显存越大，batch_size的值可以越大
-iters: 1000    #模型迭代的次数
+batch_size: 4  #设定batch_size的值即为迭代一次送入网络的图片数量，一般显卡显存越大，batch_size的值可以越大。如果使用多卡训练，总得batch size等于该batch size乘以卡数。
+iters: 1000    #模型训练迭代的轮数
 
 train_dataset:  #训练数据设置
-  type: Dataset #数据集名字
+  type: Dataset #指定加载数据集的类
   dataset_root: data/optic_disc_seg #数据集路径
   train_path: data/optic_disc_seg/train_list.txt  #数据集中用于训练的标识文件
-  num_classes: 2  #指定目标的类别个数（背景也算为一类）
+  num_classes: 2  #指定类别个数（背景也算为一类）
   mode: train #表示用于训练
-  transforms: #数据预处理/增强的方式
+  transforms: #模型训练的数据预处理方式。
     - type: ResizeStepScaling #将原始图像和标注图像随机缩放为0.5~2.0倍
       min_scale_factor: 0.5
       max_scale_factor: 2.0
       scale_step_size: 0.25
     - type: RandomPaddingCrop #从原始图像和标注图像中随机裁剪512x512大小
       crop_size: [512, 512]
-    - type: RandomHorizontalFlip  #采用水平反转的方式进行数据增强
-    - type: RandomDistort #亮度、对比度、饱和度随机变动
+    - type: RandomHorizontalFlip  #对原始图像和标注图像随机进行水平反转
+    - type: RandomDistort #对原始图像进行亮度、对比度、饱和度随机变动，标注图像不变
       brightness_range: 0.5
       contrast_range: 0.5
       saturation_range: 0.5
-    - type: Normalize #将图像归一化
+    - type: Normalize #对原始图像进行归一化，标注图像保持不变
 
 val_dataset:  #验证数据设置
-  type: Dataset #数据集名字
+  type: Dataset #指定加载数据集的类
   dataset_root: data/optic_disc_seg #数据集路径
   val_path: data/optic_disc_seg/val_list.txt  #数据集中用于验证的标识文件
-  num_classes: 2  #指定目标的类别个数（背景也算为一类）
+  num_classes: 2  #指定类别个数（背景也算为一类）
   mode: val #表示用于验证
-  transforms: #数据预处理/增强的方式
-    - type: Normalize #图像进行归一化
+  transforms: #模型验证的数据预处理的方式
+    - type: Normalize #对原始图像进行归一化，标注图像保持不变
 
 optimizer: #设定优化器的类型
   type: sgd #采用SGD（Stochastic Gradient Descent）随机梯度下降方法为优化器
-  momentum: 0.9 #动量
+  momentum: 0.9 #设置SGD的动量
   weight_decay: 4.0e-5 #权值衰减，使用的目的是防止过拟合
 
 lr_scheduler: # 学习率的相关设置
   type: PolynomialDecay # 一种学习率类型。共支持12种策略
-  learning_rate: 0.01
+  learning_rate: 0.01 # 初始学习率
   power: 0.9
   end_lr: 0
 
 loss: #设定损失函数的类型
   types:
-    - type: CrossEntropyLoss  #损失函数类型
-  coef: [1, 1, 1] # PP-LiteSeg有一个主loss和两个辅助loss，coef表示权重： total_loss = coef_1 * loss_1 + .... + coef_n * loss_n
+    - type: CrossEntropyLoss  #CE损失
+  coef: [1, 1, 1] # PP-LiteSeg有一个主loss和两个辅助loss，coef表示权重，所以 total_loss = coef_1 * loss_1 + .... + coef_n * loss_n
 
 model:  #模型说明
   type: PPLiteSeg  #设定模型类别
@@ -204,60 +121,28 @@ model:  #模型说明
     pretrained: https://bj.bcebos.com/paddleseg/dygraph/PP_STDCNet2.tar.gz
 
 ```
-**FAQ**
 
-Q：有的读者可能会有疑问，什么样的配置项是设计在配置文件中，什么样的配置项在脚本的命令行参数呢？
+注意：
+- 对于训练和测试数据集的预处理，PaddleSeg默认会添加读取图像操作、HWC转CHW的操作，所以这两个操作不用添加到transform配置字段中。
+- 只有"PaddleSeg/configs/quick_start"下面配置文件中的学习率为单卡学习率，其他配置文件中均为4卡的学习率。如果大家单卡训练来复现公开数据集上的指标，学习率设置应变成原来的1/4。
 
-A：与模型方案相关的信息均在配置文件中，还包括对原始样本的数据增强策略等。除了iters、batch_size、learning_rate3种常见参数外，命令行参数仅涉及对训练过程的配置。也就是说，配置文件最终决定了使用什么模型。
 
-### **3.3 修改配置文件中对应的数据配置**
+上面我们介绍的PP-LiteSeg配置文件，所有的配置信息都放置在同一个yml文件中。为了具有更好的复用性，PaddleSeg的配置文件采用了更加耦合的设计，配置文件支持包含复用。
 
-当用户准备好数据集后，可以在配置文件中指定位置修改数据路径来进行进一步的训练。
+如下图，右侧`deeplabv3p_resnet50_os8_cityscapes_1024x512_80k.yml`配置文件通过`_base_: '../_base_/cityscapes.yml'`来包含左侧`cityscapes.yml`配置文件，其中`_base_: `设置的是被包含配置文件相对于该配置文件的路径。
 
-在这里，我们还是以上文中谈到的"pp_liteseg_optic_disc_512x512_1k.yml"文件为例，摘选出数据配置部分为大家说明。
+如果两个配置文件具有相同的字段信息，被包含的配置文件中的字段信息会被覆盖。如下图，1号配置文件可以覆盖2号配置文件的字段信息。
 
-主要关注这几个参数：
+![](./images/fig3.png)
 
-- type的参数是Dataset，代表的是建议的数据格式；
-- dataset_root路径为包含label和image所在的路径；在示例中为：dataset_root: dataset/optic_disc_seg
-- train_path为txt的路径；在示例中为：train_path: dataset/optic_disc_seg/train_list.txt
-- num_classes为类别（背景也算为一类）；
-- transform是对数据的预处理的策略，用户可根据自己的实际需要改动
 
-```
-train_dataset:
-  type: Dataset
-  dataset_root: data/optic_disc_seg
-  train_path: data/optic_disc_seg/train_list.txt
-  num_classes: 2
-  mode: train
-  transforms:
-    - type: ResizeStepScaling
-      min_scale_factor: 0.5
-      max_scale_factor: 2.0
-      scale_step_size: 0.25
-    - type: RandomPaddingCrop
-      crop_size: [512, 512]
-    - type: RandomHorizontalFlip
-    - type: RandomDistort
-      brightness_range: 0.5
-      contrast_range: 0.5
-      saturation_range: 0.5
-    - type: Normalize
+## 4. 模型训练
 
-val_dataset:
-  type: Dataset
-  dataset_root: dataset/optic_disc_seg
-  val_path: dataset/optic_disc_seg/val_list.txt
-  num_classes: 2
-  mode: val
-  transforms:
-    - type: Normalize
-```
+### 4.1 单卡训练
 
-### **3.4 正式开启训练**
+准备好配置文件后，在PaddleSeg根目录下执行如下命令，使用`train.py`脚本进行单卡模型训练。
 
-准备好配置文件后，就可以开始训练。
+> 注意：PaddleSeg中模型训练、评估、预测、导出等命令，都要求在PaddleSeg根目录下执行。
 
 ```
 export CUDA_VISIBLE_DEVICES=0 # 设置1张可用的卡
@@ -266,27 +151,34 @@ export CUDA_VISIBLE_DEVICES=0 # 设置1张可用的卡
 **set CUDA_VISIBLE_DEVICES=0**
 python train.py \
        --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \
+       --save_interval 500 \
        --do_eval \
        --use_vdl \
-       --save_interval 500 \
        --save_dir output
 ```
 
-训练结束，模型权重保存在output目录下
+上述训练命令解释：
+* `--config`指定配置文件。
+* `--save_interval`指定每训练特定轮数后，就进行一次模型保存或者评估（如果开启模型评估）。
+* `--do_eval`开启模型评估。具体而言，在训练save_interval指定的轮数后，会进行模型评估。
+* `--use_vdl`开启写入VisualDL日志信息，用于VisualDL可视化训练过程。
+* `--save_dir`指定模型和visualdl日志文件的保存根路径。
+
+在PP-LiteSeg示例中，训练的模型权重保存在output目录下，如下所示。总共训练1000轮，每500轮评估一次并保存模型信息，所以有`iter_500`和`iter_1000`文件夹。评估精度最高的模型权重，保存在`best_model`文件夹。后续模型的评估、测试和导出，都是使用保存在`best_model`文件夹下精度最高的模型权重。
 
 ```
 output
-  ├── iter_500 #表示在500步保存一次模型
+  ├── iter_500          #表示在500步保存一次模型
     ├── model.pdparams  #模型参数
-    └── model.pdopt  #训练阶段的优化器参数
-  ├── iter_1000
-    ├── model.pdparams
-    └── model.pdopt
-  └── best_model #在训练的时候，训练时候增加--do_eval后，每保存一次模型，都会eval一次，miou最高的模型会被另存为best_model
+    └── model.pdopt     #训练阶段的优化器参数
+  ├── iter_1000         #表示在1000步保存一次模型
+    ├── model.pdparams  #模型参数
+    └── model.pdopt     #训练阶段的优化器参数
+  └── best_model        #精度最高的模型权重
     └── model.pdparams  
 ```
 
-### **3.5 训练参数解释**
+`train.py`脚本输入参数的详细说明如下。
 
 | 参数名              | 用途                                                         | 是否必选项 | 默认值           |
 | :------------------ | :----------------------------------------------------------- | :--------- | :--------------- |
@@ -303,25 +195,15 @@ output
 | resume_model        | 恢复训练模型路径，如：`output/iter_1000`                     | 否         | None             |
 | keep_checkpoint_max | 最新模型保存个数                                             | 否         | 5                |
 
-### **3.6 配置文件的深度探索**
+### 4.2 多卡训练
 
-- 刚刚我们拿出一个PP-LiteSeg的配置文件让大家去体验一下如何数据集配置，在这里例子中，所有的参数都放置在了一个yml文件中，但是实际PaddleSeg的配置文件为了具有更好的复用性和兼容性，采用了更加耦合的设计，即一个模型需要两个以上配置文件来实现，下面我们具体一DeeplabV3p为例子来为大家说明配置文件的耦合设置。
-- 例如我们要更改deeplabv3p_resnet50_os8_cityscapes_1024x512_80k.yml 文件的配置，则会发现该文件还依赖（base）cityscapes.yml文件。此时，我们就需要同步打开 cityscapes.yml 文件进行相应参数的设置。
+使用多卡训练：首先通过环境变量`CUDA_VISIBLE_DEVICES`指定使用的多张显卡，如果不设置`CUDA_VISIBLE_DEVICES`，默认使用所有显卡进行训练；然后使用`paddle.distributed.launch`启动`train.py`脚本进行训练。
 
-![](./images/fig3.png)
-图3：配置文件深入探索
+多卡训练的`train.py`支持的输入参数和单卡训练相同。
 
-在PaddleSeg2.0模式下，用户可以发现，PaddleSeg采用了更加耦合的配置设计，将数据、优化器、损失函数等共性的配置都放在了一个单独的配置文件下面，当我们尝试换新的网络结构的是时候，只需要关注模型切换即可，避免了切换模型重新调节这些共性参数的繁琐节奏，避免用户出错。
+由于Windows环境下不支持nccl，所以无法使用多卡训练。
 
-**FAQ**
-
-Q：有些共同的参数，多个配置文件下都有，那么我以哪一个为准呢？
-
-A：如图中序号所示，1号yml文件的参数可以覆盖2号yml文件的参数，即1号的配置文件优于2号文件。另外，如果在命令行中指定了yaml文件中出现的参数，则命令行的配置优于yaml文件。（如：根据你的机器配置在命令行中调整batch_size，无需修改configs中预设的yaml文件）
-
-### **3.7 多卡训练**
-
-**注意**：如果想要使用多卡训练的话，需要将环境变量`CUDA_VISIBLE_DEVICES`指定为多卡（不指定时默认使用所有的gpu)，并使用`paddle.distributed.launch`启动训练脚本（由于windows下不支持nccl，无法使用多卡训练）:
+举例如下，在PaddleSeg根目录下执行如下命令，进行多卡训练。
 
 ```
 export CUDA_VISIBLE_DEVICES=0,1,2,3 # 设置4张可用的卡
@@ -333,7 +215,15 @@ python -m paddle.distributed.launch train.py \
        --save_dir output
 ```
 
-### **3.8 恢复训练**
+### 4.3 恢复训练
+
+如果训练中断，我们可以恢复训练，避免从头开始训练。
+
+具体而言，通过给`train.py`脚本设置`resume_model`输入参数，加载中断前最近一次保存的模型信息，恢复训练。
+
+在PP-LiteSeg示例中，总共需要训练1000轮。假如训练到750轮中断了，我们在`output`目录下，可以看到在`iter_500`文件夹中保存了第500轮的训练信息。执行如下命令，加载第500轮的训练信息恢复训练。
+
+单卡和多卡训练，都采用相同的方法设置`resume_model`输入参数，即可恢复训练。
 
 ```
 python train.py \
@@ -345,58 +235,57 @@ python train.py \
        --save_dir output
 ```
 
-## **4. 训练过程可视化**
+### 4.4 训练过程可视化
 
-- 为了更直观我们的网络训练过程，对网络进行分析从而更快速的得到更好的网络，飞桨提供了可视化分析工具：VisualDL
+为了直观显示模型的训练过程，对训练过程进行分析从而快速的得到更好的模型，飞桨提供了可视化分析工具：VisualDL。
 
-当打开`use_vdl`开关后，PaddleSeg会将训练过程中的数据写入VisualDL文件，可实时查看训练过程中的日志。记录的数据包括：
+当`train.py`脚本设置`use_vdl`输入参数后，PaddleSeg会将训练过程中的日志信息写入VisualDL文件，写入的日志信息包括：
+* loss
+* 学习率lr
+* 训练时间
+* 数据读取时间
+* 验证集上mIoU（当打开了`do_eval`开关后生效）
+* 验证集上mean Accuracy（当打开了`do_eval`开关后生效）
 
-1. loss变化趋势
-2. 学习率变化趋势
-3. 训练时间
-4. 数据读取时间
-5. mean IoU变化趋势（当打开了`do_eval`开关后生效）
-6. mean pixel Accuracy变化趋势（当打开了`do_eval`开关后生效）
+在PP-LiteSeg示例中，在训练过程中或者训练结束后，我们都可以通过VisualDL来查看日志信息。
 
-使用如下命令启动VisualDL查看日志
+首先执行如下命令，启动VisualDL；然后在浏览器输入提示的网址，效果如下图。
 
 ```
-**下述命令会在127.0.0.1上启动一个服务，支持通过前端web页面查看，可以通过--host这个参数指定实际ip地址**
 visualdl --logdir output/
 ```
 
-在浏览器输入提示的网址，效果如下：
-
 ![](./images/fig4.png)
-图4：VDL效果演示
 
-## **5. 模型评估**
+## 5. 模型评估
 
-训练完成后，用户可以使用评估脚本val.py来评估模型效果。假设训练过程中迭代次数（iters）为1000，保存模型的间隔为500，即每迭代1000次数据集保存2次训练模型。因此一共会产生2个定期保存的模型，加上保存的最佳模型best_model，一共有3个模型，可以通过model_path指定期望评估的模型文件。
+训练完成后，大家可以使用评估脚本`val.py`来评估模型的精度，即对配置文件中的验证数据集进行测试。
 
-```
-python val.py \
-       --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \
-       --model_path output/iter_1000/model.pdparams
-```
-
-如果想进行多尺度翻转评估可通过传入`--aug_eval`进行开启，然后通过`--scales`传入尺度信息， `--flip_horizontal`开启水平翻转， `flip_vertical`开启垂直翻转。使用示例如下：
+在PP-LiteSeg示例中，执行如下命令进行模型评估。其中，通过`--model_path`输入参数来指定评估的模型权重。
 
 ```
 python val.py \
        --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \
-       --model_path output/iter_1000/model.pdparams \
+       --model_path output/best_model/model.pdparams
+```
+
+如果想进行多尺度翻转评估，可以通过传入`--aug_eval`进行开启，然后通过`--scales`传入尺度信息， `--flip_horizontal`开启水平翻转，`--flip_vertical`开启垂直翻转。使用示例如下：
+
+```
+python val.py \
+       --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \
+       --model_path output/best_model/model.pdparams \
        --aug_eval \
        --scales 0.75 1.0 1.25 \
        --flip_horizontal
 ```
 
-如果想进行滑窗评估可通过传入`--is_slide`进行开启， 通过`--crop_size`传入窗口大小， `--stride`传入步长。使用示例如下：
+如果想进行滑窗评估，可以传入`--is_slide`进行开启， 通过`--crop_size`传入窗口大小， `--stride`传入步长。使用示例如下：
 
 ```
 python val.py \
        --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \
-       --model_path output/iter_1000/model.pdparams \
+       --model_path output/best_model/model.pdparams \
        --is_slide \
        --crop_size 256 256 \
        --stride 128 128
@@ -405,7 +294,7 @@ python val.py \
 在图像分割领域中，评估模型质量主要是通过三个指标进行判断，`准确率`（acc）、`平均交并比`（Mean Intersection over Union，简称mIoU）、`Kappa系数`。
 
 - **准确率**：指类别预测正确的像素占总像素的比例，准确率越高模型质量越好。
-- **平均交并比**：对每个类别数据集单独进行推理计算，计算出的预测区域和实际区域交集除以预测区域和实际区域的并集，然后将所有类别得到的结果取平均。在本例中，正常情况下模型在验证集上的mIoU指标值会达到0.80以上，显示信息示例如下所示，第3行的**mIoU=0.8526**即为mIoU。
+- **平均交并比**：对每个类别数据集单独进行推理计算，计算出的预测区域和实际区域交集除以预测区域和实际区域的并集，然后将所有类别得到的结果取平均。在本例中，正常情况下模型在验证集上的mIoU指标值会达到0.80以上，显示信息示例如下所示，第3行的**mIoU=0.9232**即为mIoU。
 - **Kappa系数**：一个用于一致性检验的指标，可以用于衡量分类的效果。kappa系数的计算是基于混淆矩阵的，取值为-1到1之间，通常大于0。其公式如下所示，P0P_0*P*0为分类器的准确率，PeP_e*P**e*为随机分类器的准确率。Kappa系数越高模型质量越好。
 
 <a href="https://www.codecogs.com/eqnedit.php?latex=Kappa=&space;\frac{P_0-P_e}{1-P_e}" target="_blank"><img src="https://latex.codecogs.com/gif.latex?Kappa=&space;\frac{P_0-P_e}{1-P_e}" title="Kappa= \frac{P_0-P_e}{1-P_e}" /></a>
@@ -414,72 +303,74 @@ python val.py \
 
 ```
 ...
-2021-01-13 16:41:29 [INFO]    Start evaluating (total_samples=76, total_iters=76)...
-76/76 [==============================] - 2s 30ms/step - batch_cost: 0.0268 - reader cost: 1.7656e-
-2021-01-13 16:41:31 [INFO]    [EVAL] #Images=76 mIoU=0.8526 Acc=0.9942 Kappa=0.8283
-2021-01-13 16:41:31 [INFO]    [EVAL] Class IoU:
-[0.9941 0.7112]
-2021-01-13 16:41:31 [INFO]    [EVAL] Class Acc:
-[0.9959 0.8886]
+2022-06-22 11:05:51 [INFO]      Start evaluating (total_samples: 76, total_iters: 76)...
+76/76 [==============================] - 3s 45ms/step - batch_cost: 0.0444 - reader cost: 5.4260e-04
+2022-06-22 11:05:55 [INFO]      [EVAL] #Images: 76 mIoU: 0.9232 Acc: 0.9970 Kappa: 0.9171 Dice: 0.9585
+2022-06-22 11:05:55 [INFO]      [EVAL] Class IoU:
+[0.997  0.8494]
+2022-06-22 11:05:55 [INFO]      [EVAL] Class Precision:
+[0.9984 0.9237]
+2022-06-22 11:05:55 [INFO]      [EVAL] Class Recall:
+[0.9986 0.9135]
 ```
 
-## **6. 预测与效果可视化**
+## 6. 模型预测
 
-除了分析模型的IOU、ACC和Kappa指标之外，我们还可以查阅一些具体样本的切割样本效果，从Bad Case启发进一步优化的思路。
+除了分析模型的IOU、ACC和Kappa指标之外，我们还可以可视化一些具体样本的分割效果，从Bad Case启发进一步优化的思路。
 
-predict.py脚本是专门用来可视化预测案例的，命令格式如下所示
+`predict.py`脚本是专门用来可视化预测的，命令格式如下所示。
 
 ```
 python predict.py \
        --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \
-       --model_path output/iter_1000/model.pdparams \
-       --image_path dataset/optic_disc_seg/JPEGImages/H0003.jpg \
+       --model_path output/best_model/model.pdparams \
+       --image_path data/optic_disc_seg/JPEGImages/H0002.jpg \
        --save_dir output/result
 ```
 
-其中`image_path`也可以是一个目录，这时候将对目录内的所有图片进行预测并保存可视化结果图。
+其中`image_path`可以是一个图片路径，也可以是一个目录。如果是一个目录，将对目录内的所有图片进行预测并保存可视化结果图。
 
 同样的，可以通过`--aug_pred`开启多尺度翻转预测， `--is_slide`开启滑窗预测。
 
-我们选择1张图片进行查看，效果如下。我们可以直观的看到模型的切割效果和原始标记之间的差别，从而产生一些优化的思路，比如是否切割的边界可以做规则化的处理等。
+我们选择1张图片进行查看，如下图。
 
-![](./images/fig5.png)
+<div align="center">
+<img src="./images/fig5.png"  width = "600" />  
+</div>
 
+## 7 模型导出
 
+上述模型训练、评估和预测，都是使用飞桨的动态图模式。动态图模式具有灵活、方便的优点，但是不适合工业级部署的速度要求。
 
-​                                                                                                  图5：预测效果展示
+为了满足工业级部署的需求，飞桨提供了动转静的功能，即将训练出来的动态图模型转化成静态图预测模型。预测引擎加载、执行预测模型，实现更快的预测速度。
 
-## **7 模型导出**
-
-为了方便用户进行工业级的部署，PaddleSeg提供了一键动转静的功能，即将训练出来的动态图模型文件转化成静态图形式。
+执行如下命令，加载精度最高的模型权重，导出预测模型。
 ```
 python export.py \
        --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \
-       --model_path output/iter_1000/model.pdparams
+       --model_path output/best_model/model.pdparams \
+       --save_dir output/infer_model
 ```
 
-- 参数说明如下
-
+参数说明如下：
 | 参数名     | 用途                               | 是否必选项 | 默认值           |
 | :--------- | :--------------------------------- | :--------- | :--------------- |
 | config     | 配置文件                           | 是         | -                |
-| save_dir   | 模型和visualdl日志文件的保存根路径 | 否         | output           |
-| model_path | 预训练模型参数的路径               | 否         | 配置文件中指定值 |
+| model_path | 预训练模型权重的路径，使用精度最高的模型权重  | 否         | 配置文件中指定值 |
+| save_dir   | 保存预测模型的路径 | 否         | output           |
+
 
 ```
-- 结果文件
-
-output
+output/infer_model
   ├── deploy.yaml            # 部署相关的配置文件
   ├── model.pdiparams        # 静态图模型参数
   ├── model.pdiparams.info   # 参数额外信息，一般无需关注
-  └── model.pdmodel          # 静态图模型文件
+  └── model.pdmodel          # 静态图模型文件，可以使用netron软件进行可视化查看
 ```
 
-## **8 应用部署**
+## 8 模型部署
 
-- PaddleSeg目前支持以下部署方式：
-
+PaddleSeg目前支持以下部署方式：
 | 端侧         | 库           | 教程   |
 | :----------- | :----------- | :----- |
 | Python端部署 | Paddle预测库 | [示例](../deploy/python/) |
@@ -488,29 +379,18 @@ output
 | 服务端部署   | HubServing   | 完善中 |
 | 前端部署     | PaddleJS     | [示例](../deploy/web/) |
 
+比如使用Python端部署方式，运行如下命令，会在output文件下面生成一张H0003.png的分割图像。
+
 ```
-#运行如下命令，会在output文件下面生成一张H0003.png的图像
 python deploy/python/infer.py \
---config output/deploy.yaml\
---image_path dataset/optic_disc_seg/JPEGImages/H0003.jpg\
---save_dir output
+  --config output/infer_model/deploy.yaml \
+  --image_path data/optic_disc_seg/JPEGImages/H0002.jpg \
+  --save_dir output/result
 ```
 
-- 参数说明如下:
+## 9 二次开发
 
-| 参数名     | 用途                                                      | 是否必选项 | 默认值           |
-| :--------- | :-------------------------------------------------------- | :--------- | :--------------- |
-| config     | **导出模型时生成的配置文件**, 而非configs目录下的配置文件 | 是         | -                |
-| image_path | 预测图片的路径或者目录                                    | 是         | -                |
-| use_trt    | 是否开启TensorRT来加速预测                                | 否         | 否               |
-| use_int8   | 启动TensorRT预测时，是否以int8模式运行                    | 否         | 否               |
-| batch_size | 单卡batch size                                            | 否         | 配置文件中指定值 |
-| save_dir   | 保存预测结果的目录                                        | 否         | output           |
-| with_argmax| 对预测结果进行argmax操作                                  | 否         | 否           |
-
-## **9 二次开发**
-
-- 在尝试完成使用配置文件进行训练之后，肯定有小伙伴想基于PaddleSeg进行更深入的开发，在这里，我们大概介绍一下PaddleSeg代码结构，
+在尝试完成使用配置文件进行训练之后，肯定有小伙伴想基于PaddleSeg进行更深入的开发，在这里，我们大概介绍一下PaddleSeg代码结构，
 
 ```
 PaddleSeg
@@ -553,6 +433,6 @@ PaddleSeg
      └── ...
 ```
 
-- 同学们还可以尝试使用PaddleSeg的API来自己开发，开发人员在使用pip install命令安装PaddleSeg后，仅需通过几行代码即可轻松实现图像分割模型的训练、评估和推理。 感兴趣的小伙伴们可以访问[PaddleSeg动态图API使用教程](https://aistudio.baidu.com/aistudio/projectdetail/1339458?channelType=0&channel=0)
+同学们还可以尝试使用PaddleSeg的API来自己开发，开发人员在使用pip install命令安装PaddleSeg后，仅需通过几行代码即可轻松实现图像分割模型的训练、评估和推理。 感兴趣的小伙伴们可以访问[PaddleSeg动态图API使用教程](https://aistudio.baidu.com/aistudio/projectdetail/1339458?channelType=0&channel=0)
 
 PaddleSeg等各领域的开发套件已经为真正的工业实践提供了顶级方案，有国内的团队使用PaddleSeg的开发套件取得国际比赛的好成绩，可见开发套件提供的效果是State Of The Art的。

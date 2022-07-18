@@ -1,9 +1,9 @@
 English | [简体中文](whole_process_cn.md)
-# Whole Process of PaddleSeg
+# Learn PaddleSeg in 20 mins
 
-We will use `PP-LiteSeg model` and `Medical Video Disc Segmentation Dataset` as example to introduce PaddleSeg's **configurable driver**. If you want to know how to use API, you can click [PaddleSeg Advanced Tutorial](https://aistudio.baidu.com/aistudio/projectdetail/1339458?channelType=0&channel=0).
+Paddleseg is composed of code modules and controls the setting use configs, in this way, it realize the full-process from data label to model deployment. In this tutorial, we will use `PP-LiteSeg model` and `Medical Video Disc Segmentation Dataset` as example to help you learn Paddleseg easily and quickily.
 
-The whole process is as follows:
+This tutorial contains the following steps:
 
 1. **Prepare the environment**: PaddleSeg's software environment.
 2. **Data preparation**: How to prepare and organize custom datasets.
@@ -14,48 +14,19 @@ The whole process is as follows:
 7. **Model export**: How to export a model that can be deployed.
 8. **Model deployment**: Quickly use Python to achieve efficient deployment.
 
-## **1. Environmental Installation and Verification**
+## **1. Environmental Installation**
 
 ### **1.1 Environment Installation**
 
-Before using PaddleSeg to train an image segmentation model, users need to complete the following tasks:
-
-1. Install [Python3.6 or higher](https://www.python.org/downloads/).
-2. Install the `PaddlePaddle` (version >= 2.1), please refer to [Quick Installation](https://www.paddlepaddle.org.cn/install/quick) for the specific installation method. Due to the high computational cost of the image segmentation model, it is recommended to use PaddleSeg under the GPU version of PaddlePaddle.
-3. Download the code library of PaddleSeg.
-
-```
-git clone https://github.com/PaddlePaddle/PaddleSeg.git
-```
-```
-#If the github download network is poor, users can choose gitee to download
-git clone https://gitee.com/paddlepaddle/PaddleSeg.git
-```
-Install the PaddleSeg API library, while installing the library, other dependencies for running PaddleSeg are also installed at the same time
-```
-pip install paddleseg
-```
-
-### **1.2 Confirm Installation**
-
-Execute the following command in the PaddleSeg directory, if the predicted result appears in the PaddleSeg/output folder, the installation is successful.
-
-> Note that: the commands of training, validation and prediction are executed in the root of PaddleSeg by default.
-
-```
-python predict.py \
-       --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \
-       --model_path https://paddleseg.bj.bcebos.com/dygraph/optic_disc/pp_liteseg_optic_disc_512x512_1k/model.pdparams\
-       --image_path docs/images/optic_test_image.jpg \
-       --save_dir output/result
-```
+Please refer to the [Installation Guide](./install.md) to prepare the environment.
 
 ## **2. Dataset Preparation**
 
 ### **2.1 Dataset Download**
 
-Our demo uses the `optic disc segmentation dataset` for training.
-Optic disc segmentation is a set of fundus medical segmentation datasets, including 267 training images, 76 verification images, and 38 test images. You can download them by the following command.
+Our demo uses the `optic disc segmentation dataset` for training. It is one of dozens datasets that we support. You can refer to [Datasets prepare](./data/pre_data.md) to use other datasets we support or [Prepare your own data](./data/marker/marker.md) to prepare your own data.
+
+Optic disc segmentation is a set of fundus medical segmentation datasets, including 267 training images, 76 verification images, and 38 test images. You can download and unzip them using the following command.
 
 ```
 mkdir data
@@ -68,50 +39,7 @@ cd ..
 The original image and segmentation result are shown below. Our task will be to segment the optic disc area in the eyeball picture.
 
 ![](./images/fig1.png)
-Figure 1: Original image and segmentation result
 
-
-
-### **2.2 Prepare other Dataset**
-
-How to use your own dataset for training is the most concerned thing for developers. Below we will focus on explaining what we should prepare if we want to customize the dataset. And we will tell you how to make corresponding changes in the configuration file after the dataset is ready.
-
-- It is recommended to organize into the following structure.
-
-        custom_dataset
-        |
-        |--images
-        |  |--image1.jpg
-        |  |--image2.jpg
-        |  |--...
-        |
-        |--labels
-        |  |--label1.png
-        |  |--label2.png
-        |  |--...
-        |
-        |--train.txt
-        |
-        |--val.txt
-        |
-        |--test.txt
-
-- The origin images with 3 channels are saved in `images` directory. The label images with 1 channel are saved in `labels` directory. The train.txt, val.txt and test.txt denotes the train set, validation set and test set, respectively.
-
-- It is not necessary for the folder to be named custom_dataset, images, labels, and the user can name it independently.
-
-- The file in train.txt val.txt test.txt does not have to be in the same directory as the custom_dataset folder, it can be modified through the options in the configuration file.
-
-- The contents of train.txt and val.txt are as follows:
-
-  ```
-
-   images/image1.jpg labels/label1.png
-   images/image2.jpg labels/label2.png
-   ...
-  ```
-
-- The format of the dataset we just downloaded is similar (label.txt is optional). If users want to label and divide the dataset, please refer to [Data Marking Document](data/marker/marker.md) and [ dataset division document](data/custom/data_prepare.md).
 
 ## **3. Model Training**
 
@@ -126,7 +54,6 @@ Compared to other models, PP-LiteSeg achieves superior trade-off between accurac
 <div align="center">
 <img src="https://user-images.githubusercontent.com/52520497/162148786-c8b91fd1-d006-4bad-8599-556daf959a75.png" width = "600" height = "300" alt="arch"  />
 </div>
-Figure2：The architecture of PP-LiteSeg
 
 ### **3.2 Detailed Interpretation of Configuration Files**
 
@@ -302,7 +229,6 @@ output
 - For example, if we want to change the configuration of the deeplabv3p_resnet50_os8_cityscapes_1024x512_80k.yml file, we will find that the file also depends on the (base) cityscapes.yml file. At this point, we need to open the cityscapes.yml file synchronously to set the corresponding parameters.
 
 ![](./images/fig3.png)
-Figure 3: In-depth exploration of configuration files
 
 In PaddleSeg2.0 mode, users can find that PaddleSeg adopts a more coupled configuration design, placing common configurations such as data, optimizer, and loss function under a single configuration file. When we try to change to a new network The structure is time, you only need to pay attention to model switching, which avoids the tedious rhythm of switching models to re-adjust these common parameters and avoid user errors.
 
@@ -362,7 +288,6 @@ visualdl --logdir output/
 Enter the suggested URL in the browser, the effect is as follows:
 
 ![](./images/fig4.png)
-Figure 4: VDL effect demonstration
 
 ## **5. Model Evaluation**
 
@@ -438,7 +363,6 @@ Similarly, you can use `--aug_pred` to turn on multi-scale flip prediction, and 
 We select 1 picture to view, the effect is as follows. We can intuitively see the difference between the cutting effect of the model and the original mark, thereby generating some optimization ideas, such as whether the cutting boundary can be processed in a regular manner.
 
 ![](./images/fig5.png)
-Figure 5: Prediction effect display
 
 ## **7 Model Export**
 

@@ -1,0 +1,29 @@
+_base_: 'ppmatting-hrnet_w18-human_512.yml'
+
+
+train_dataset:
+  transforms:
+    - type: LoadImages
+    - type: LimitShort
+      max_short: 1024
+    - type: RandomCrop
+      crop_size: [1024, 1024]
+    - type: RandomDistort
+    - type: RandomBlur
+      prob: 0.1
+    - type: RandomNoise
+      prob: 0.5
+    - type: RandomReJpeg
+      prob: 0.2
+    - type: RandomHorizontalFlip
+    - type: Normalize
+
+val_dataset:
+  transforms:
+    - type: LoadImages
+    - type: LimitShort
+      max_short: 1024
+    - type: ResizeToIntMult
+      mult_int: 32
+    - type: Normalize
+

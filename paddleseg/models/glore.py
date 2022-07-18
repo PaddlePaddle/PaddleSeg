@@ -84,7 +84,6 @@ class GloRe(nn.Layer):
 
 
 class GloReHead(nn.Layer):
-
     def __init__(self,
                  num_classes,
                  backbone_indices,
@@ -156,14 +155,14 @@ class GruModule(nn.Layer):
                  normalize=False):
         super(GruModule, self).__init__()
         self.normalize = normalize
-        self.num_state = num_state 
-        self.num_node = num_node 
+        self.num_state = num_state
+        self.num_node = num_node
         self.reduction_dim = nn.Conv2D(num_input, num_state, kernel_size=1)
         self.projection_mat = nn.Conv2D(num_input, num_node, kernel_size=1)
         self.gcn = GCN(num_state=self.num_state, num_node=self.num_node)
         self.extend_dim = nn.Conv2D(
             self.num_state, num_input, kernel_size=1, bias_attr=False)
-        self.extend_bn = nn.SyncBatchNorm(num_input, epsilon=1e-4)
+        self.extend_bn = layers.SyncBatchNorm(num_input, epsilon=1e-4)
 
     def forward(self, input):
         n, c, h, w = input.shape

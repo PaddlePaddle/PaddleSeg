@@ -368,6 +368,28 @@ class Config(object):
             return None
         return self._load_object(_val_dataset)
 
+    @property
+    def test_dataset_config(self) -> Dict:
+        testset_config = self.dic.get('test_dataset', {}).copy()
+
+        testset_config['dataset_root'] = os.path.join(
+            self.dic['data_root'], testset_config.get('dataset_root'))
+        testset_config['result_dir'] = os.path.join(
+            self.dic['data_root'], testset_config.get('result_dir'))
+        return testset_config
+
+    @property
+    def test_dataset_class(self) -> Generic:
+        dataset_type = self.test_dataset_config['type']
+        return self._load_component(dataset_type)
+
+    @property
+    def test_dataset(self) -> paddle.io.Dataset:
+        _test_dataset = self.test_dataset_config
+        if not _test_dataset:
+            return None
+        return self._load_object(_test_dataset)
+
     def _load_component(self, com_name: str) -> Any:
         com_list = [
             manager.MODELS, manager.BACKBONES, manager.DATASETS,

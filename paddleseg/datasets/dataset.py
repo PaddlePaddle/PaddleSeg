@@ -139,24 +139,25 @@ class Dataset(paddle.io.Dataset):
                 self.file_list.append([image_path, label_path])
 
     def __getitem__(self, idx):
+        data = {}
+        data['trans_info'] = []
         image_path, label_path = self.file_list[idx]
-        if self.mode == 'test':
-            im, _ = self.transforms(im=image_path)
-            im = im[np.newaxis, ...]
-            return im, image_path
-        elif self.mode == 'val':
-            im, _ = self.transforms(im=image_path)
-            label = np.asarray(Image.open(label_path))
-            label = label[np.newaxis, :, :]
-            return im, label
+        data['img'] = image_path
+        data['label'] = label_path
+        # If key in gt_fields, the data[key] have transforms synchronous.
+        data['gt_fields'] = []
+        if self.mode == 'val':
+            data = self.transforms(data)
+            data['label'] = data['label'][np.newaxis, :, :]
+
         else:
-            im, label = self.transforms(im=image_path, label=label_path)
+            data['gt_fields'].append('label')
+            data = self.transforms(data)
             if self.edge:
                 edge_mask = F.mask_to_binary_edge(
-                    label, radius=2, num_classes=self.num_classes)
-                return im, label, edge_mask
-            else:
-                return im, label
+                    data['label'], radius=2, num_classes=self.num_classes)
+                data['edge'] = edge_mask
+        return data
 
     def __len__(self):
         return len(self.file_list)

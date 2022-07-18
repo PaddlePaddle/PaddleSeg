@@ -31,11 +31,11 @@ wget https://paddleseg.bj.bcebos.com/dygraph/demo/cityscapes_demo.png
 ```
 
 ### 2.1.2 配置文件解析
-完整的`inference_cpp.txt`配置文件共有14行，包含两个方面的内容。
+完整的`{model_name}_model_linux_gpu_normal_normal_infer_cpp_linux_gpu_cpu.txt`配置文件共有14行，包含两个方面的内容。
 * 运行环境参数配置：第1~8行
 * 模型参数配置：第10~14行
 
-具体内容见[inference_cpp.txt](../configs/pp_liteseg_stdc1/inference_cpp.txt)
+具体内容见[pp_liteseg_stdc1_model_linux_gpu_normal_normal_infer_cpp_linux_gpu_cpu.txt](../configs/pp_liteseg_stdc1/pp_liteseg_stdc1_model_linux_gpu_normal_normal_infer_cpp_linux_gpu_cpu.txt)
 
 配置文件中主要有以下2种类型的字段。
 * 一行内容以空格为分隔符：该行可以被解析为`key value`的格式，需要根据实际的含义修改该行内容，下面进行详细说明。
@@ -82,7 +82,7 @@ PaddleSeg/test_tipc/cpp/
 ...
 ```
 
-**注意**：model.pdmodel、model.pdiparams的路径需要与[配置文件](../configs/pp_liteseg_stdc1/inference_cpp.txt)中的`model_path`和`params_path`参数对应一致。
+**注意**：model.pdmodel、model.pdiparams的路径需要与[配置文件](../configs/pp_liteseg_stdc1/pp_liteseg_stdc1_model_linux_gpu_normal_normal_infer_cpp_linux_gpu_cpu.txt)中的`model_path`和`params_path`参数对应一致。
 
 
 
@@ -288,8 +288,8 @@ bash test_tipc/test_inference_cpp.sh ${your_params_file} ${your_infer_img_path}
 以`pp_liteseg_stdc1`的为例命令如下所示。
 
 ```bash
-bash test_tipc/prepare.sh test_tipc/configs/pp_liteseg_stdc1/inference_cpp.txt cpp_infer
-bash test_tipc/test_inference_cpp.sh test_tipc/configs/pp_liteseg_stdc1/inference_cpp.txt
+bash test_tipc/prepare.sh test_tipc/configs/pp_liteseg_stdc1/pp_liteseg_stdc1_model_linux_gpu_normal_normal_infer_cpp_linux_gpu_cpu.txt cpp_infer
+bash test_tipc/test_inference_cpp.sh test_tipc/configs/pp_liteseg_stdc1/pp_liteseg_stdc1_model_linux_gpu_normal_normal_infer_cpp_linux_gpu_cpu.txt
 ```
 
 
@@ -297,7 +297,7 @@ bash test_tipc/test_inference_cpp.sh test_tipc/configs/pp_liteseg_stdc1/inferenc
 输出结果如下，表示命令运行成功。
 
 ```bash
- Run successfully with command - pp_liteseg_stdc1 - ./test_tipc/cpp/build/seg_system test_tipc/configs/pp_liteseg_stdc1/inference_cpp.txt test_tipc/cpp/cityscapes_demo.png > ./test_tipc/output/infer_cpp/infer_cpp_use_cpu.log 2>&1 !
+ Run successfully with command - pp_liteseg_stdc1 - ./test_tipc/cpp/build/seg_system test_tipc/configs/pp_liteseg_stdc1/pp_liteseg_stdc1_model_linux_gpu_normal_normal_infer_cpp_linux_gpu_cpu.txt test_tipc/cpp/cityscapes_demo.png > ./test_tipc/output/infer_cpp/infer_cpp_use_cpu.log 2>&1 !
 ```
 
 最终log中会打印出结果，如下所示

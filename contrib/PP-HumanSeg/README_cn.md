@@ -153,7 +153,7 @@ python data/download_data.py
 ```bash
 # 通过电脑摄像头进行实时分割处理
 python bg_replace.py \
---config export_model/ppseg_lite_portrait_398x224_with_softmax/deploy.yaml
+--config export_model/pphumanseg_lite_portrait_398x224_with_softmax/deploy.yaml
 
 # 对人像视频进行分割处理
 python bg_replace.py \
@@ -169,7 +169,7 @@ python bg_replace.py \
 ```bash
 # 增加光流后处理
 python bg_replace.py \
---config export_model/ppseg_lite_portrait_398x224_with_softmax/deploy.yaml \
+--config export_model/pphumanseg_lite_portrait_398x224_with_softmax/deploy.yaml \
 --use_optic_flow
 ```
 
@@ -178,7 +178,7 @@ python bg_replace.py \
 ```bash
 # 通过电脑摄像头进行实时背景替换处理。可通过'--background_video_path'传入背景视频
 python bg_replace.py \
---config export_model/ppseg_lite_portrait_398x224_with_softmax/deploy.yaml \
+--config export_model/pphumanseg_lite_portrait_398x224_with_softmax/deploy.yaml \
 --input_shape 224 398 \
 --bg_img_path data/background.jpg
 
@@ -190,7 +190,7 @@ python bg_replace.py \
 
 # 对单张图像进行背景替换
 python bg_replace.py \
---config export_model/ppseg_lite_portrait_398x224_with_softmax/deploy.yaml \
+--config export_model/pphumanseg_lite_portrait_398x224_with_softmax/deploy.yaml \
 --input_shape 224 398 \
 --img_path data/human_image.jpg \
 --bg_img_path data/background.jpg

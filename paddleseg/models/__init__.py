@@ -62,3 +62,4 @@ from .ccnet import CCNet
 from .mobileseg import MobileSeg
 from .upernet import UPerNet
 from .sinet import SINet
+from .lraspp import LRASPP

@@ -1,0 +1,7 @@
+_base_: 'stdc1_seg_pssl.yml'
+
+model:
+  backbone:
+    type: STDC2
+    relative_lr: 0.1
+    pretrained: https://bj.bcebos.com/paddleseg/dygraph/STDCNet2.tar.gz

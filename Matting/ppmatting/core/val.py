@@ -21,7 +21,7 @@ import paddle
 import paddle.nn.functional as F
 from paddleseg.utils import TimeAverager, calculate_eta, logger, progbar
 
-from ppmatting.metrics import metric
+from ppmatting.metrics import metrics_class_dict
 
 np.set_printoptions(suppress=True)
 
@@ -57,7 +57,8 @@ def evaluate(model,
              num_workers=0,
              print_detail=True,
              save_dir='output/results',
-             save_results=True):
+             save_results=True,
+             metrics='sad'):
     model.eval()
     nranks = paddle.distributed.ParallelEnv().nranks
     local_rank = paddle.distributed.ParallelEnv().local_rank
@@ -75,15 +76,23 @@ def evaluate(model,
         return_list=True, )
 
     total_iters = len(loader)
-    mse_metric = metric.MSE()
-    sad_metric = metric.SAD()
-    grad_metric = metric.Grad()
-    conn_metric = metric.Conn()
+    # Get metric instances and data saving
+    metrics_ins = {}
+    metrics_data = {}
+    if isinstance(metrics, str):
+        metrics = [metrics]
+    elif not isinstance(metrics, list):
+        metrics = ['sad']
+    for key in metrics:
+        key = key.lower()
+        metrics_ins[key] = metrics_class_dict[key]()
+        metrics_data[key] = None
 
     if print_detail:
         logger.info("Start evaluating (total_samples: {}, total_iters: {})...".
                     format(len(eval_dataset), total_iters))
-    progbar_val = progbar.Progbar(target=total_iters, verbose=1)
+    progbar_val = progbar.Progbar(
+        target=total_iters, verbose=1 if nranks < 2 else 2)
     reader_cost_averager = TimeAverager()
     batch_cost_averager = TimeAverager()
     batch_start = time.time()
@@ -103,10 +112,9 @@ def evaluate(model,
             if trimap is not None:
                 trimap = trimap.numpy().astype('uint8')
             alpha_pred = np.round(alpha_pred * 255)
-            mse = mse_metric.update(alpha_pred, alpha_gt, trimap)
-            sad = sad_metric.update(alpha_pred, alpha_gt, trimap)
-            grad = grad_metric.update(alpha_pred, alpha_gt, trimap)
-            conn = conn_metric.update(alpha_pred, alpha_gt, trimap)
+            for key in metrics_ins.keys():
+                metrics_data[key] = metrics_ins[key].update(alpha_pred,
+                                                            alpha_gt, trimap)
 
             if save_results:
                 alpha_pred_one = alpha_pred[0].squeeze()
@@ -134,20 +142,21 @@ def evaluate(model,
             reader_cost = reader_cost_averager.get_average()
 
             if local_rank == 0 and print_detail:
-                progbar_val.update(iter + 1,
-                                   [('SAD', sad), ('MSE', mse), ('Grad', grad),
-                                    ('Conn', conn), ('batch_cost', batch_cost),
-                                    ('reader cost', reader_cost)])
+                show_list = [(k, v) for k, v in metrics_data.items()]
+                show_list = show_list + [('batch_cost', batch_cost),
+                                         ('reader cost', reader_cost)]
+                progbar_val.update(iter + 1, show_list)
 
             reader_cost_averager.reset()
             batch_cost_averager.reset()
             batch_start = time.time()
 
-    mse = mse_metric.evaluate()
-    sad = sad_metric.evaluate()
-    grad = grad_metric.evaluate()
-    conn = conn_metric.evaluate()
+    for key in metrics_ins.keys():
+        metrics_data[key] = metrics_ins[key].evaluate()
+    log_str = '[EVAL] '
+    for key, value in metrics_data.items():
+        log_str = log_str + key + ': {:.4f}, '.format(value)
+    log_str = log_str[:-2]
 
-    logger.info('[EVAL] SAD: {:.4f}, MSE: {:.4f}, Grad: {:.4f}, Conn: {:.4f}'.
-                format(sad, mse, grad, conn))
-    return sad, mse, grad, conn
+    logger.info(log_str)
+    return metrics_data
