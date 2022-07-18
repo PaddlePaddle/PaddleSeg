@@ -4,7 +4,7 @@
 <div align="center">
 
 <p align="center">
-  <img src="https://user-images.githubusercontent.com/71769312/179221617-9616d2ef-f87d-4d87-a44c-21d7a03dd658.png" align="middle" alt="LOGO" style="zoom: 67%;" />
+  <img src="https://user-images.githubusercontent.com/71769312/179221617-9616d2ef-f87d-4d87-a44c-21d7a03dd658.png" align="middle" alt="LOGO" width = "500" />
 </p>
 
 **An Efficient Interactive Segmentation Tool based on [PaddlePaddle](https://github.com/paddlepaddle/paddle).**
