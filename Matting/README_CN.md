@@ -17,9 +17,11 @@ Image Matting（精细化分割/影像去背/抠图）是指借由计算前景�
 
 ## 更新动态
 2022.07
-【1】开源PPMatting代码
-【2】完善目录结构
-【3】支持指定指标进行评估
+【1】开源PPMatting代码。
+【2】新增ClosedFormMatting、KNNMatting、FastMatting、LearningBaseMatting和RandomWalksMatting传统机器学习算法。
+【3】新增GCA模型。
+【4】完善目录结构。
+【5】支持指定指标进行评估。
 
 2022.04
 【1】新增PPMatting模型。

@@ -17,8 +17,10 @@ Try the online demo "[Non-Code Matting](https://easyseg.cn/)".
 ## Update Notes
 2022.07
 [1] Release PPMatting code.
-[2] Improving the directory structure.
-[3] Support to specify metrics for evaluation.
+[2] Add ClosedFormMatting, KNNMatting, FastMatting, LearningBaseMatting and RandomWalksMatting traditional machine learning algorithms.
+[3] Add GCA model.
+[4] Improving the directory structure.
+[5] Support to specify metrics for evaluation.
 
 2022.04
 [1] Add PPMatting model.
