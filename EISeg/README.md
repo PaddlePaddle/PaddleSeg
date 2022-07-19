@@ -15,7 +15,7 @@
 </div>
 
 <div align="center">
-<img src="https://user-images.githubusercontent.com/35907364/179468849-c21927cf-d209-423f-879f-335e4ad644aa.gif"  width = "800" />  
+<img src="https://user-images.githubusercontent.com/35907364/179468849-c21927cf-d209-423f-879f-335e4ad644aa.gif" />  
 </div>
 
 ## <img src="../docs/images/seg_news_icon.png" width="20"/> 最新动态
