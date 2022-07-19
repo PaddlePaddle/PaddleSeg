@@ -13,7 +13,31 @@
 </div>
 
 <div align="center">
-<img src="https://user-images.githubusercontent.com/35907364/179468849-c21927cf-d209-423f-879f-335e4ad644aa.gif"/>  
+
+<table>
+    <tr>
+        <td><img src="https://user-images.githubusercontent.com/71769312/179209324-eb074e65-4a32-4568-a1d3-7680331dbf22.gif"></td>
+        <td><img src="https://user-images.githubusercontent.com/71769312/179209332-e3bcb1f0-d4d9-44e1-8b2a-8d7fac8996d4.gif"></td>
+        <td><img src="https://user-images.githubusercontent.com/71769312/179209312-0febfe78-810d-49b2-9169-eb15f0523af7.gif"></td>
+        <td><img src="https://user-images.githubusercontent.com/71769312/179209340-d04a0cec-d9a7-4962-93f1-b4953c6c9f39.gif"></td>
+    <tr>
+    <tr>
+        <td align="center">Generic segmentation</td>
+        <td align="center">Human segmentation</td>
+        <td align="center">RS building segmentation</td>
+        <td align="center">Medical segmentation</td>
+    <tr>
+    <tr>
+        <td><img src="https://user-images.githubusercontent.com/71769312/179209338-45b06ded-8142-4385-9486-33c328d591cb.gif"></td>
+        <td><img src="https://user-images.githubusercontent.com/71769312/179209328-87174780-6c6f-4b53-b2a2-90d289ac1c8a.gif"></td>
+        <td colspan="2"><img src="https://user-images.githubusercontent.com/71769312/179209342-5b75e61e-d9cf-4702-ba3e-971f47a10f5f.gif"></td>
+    <tr>
+    <tr>
+        <td align="center">Industrial quality inspection</td>
+        <td align="center">Generic video segmentation</td>
+        <td align="center" colspan="2"> 3D medical segmentation</td>
+    <tr>
+</table>
 </div>
 
 ## <img src="../docs/images/seg_news_icon.png" width="20"/> Latest Developments
@@ -68,5 +92,5 @@ If you find our project useful in your research, please consider citing ：
 * If you have any problem or suggestion on EISeg, please send us issues through [GitHub Issues](https://github.com/PaddlePaddle/PaddleSeg/issues).
 * Welcome to Join EISeg WeChat Group
 <div align="center">
-<img src="./docs/images/chat_eiseg.png"  width = "200" />  
+<img src="https://user-images.githubusercontent.com/35907364/179692813-cd8e6e16-549b-4dba-b6ec-b001162fabf7.png"  width = "200" />  
 </div>
