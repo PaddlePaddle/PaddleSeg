@@ -17,4 +17,4 @@
 
 | Model | Backbone | Resolution | Training Iters | SAD $\downarrow$ | MSE $\downarrow$ | Grad $\downarrow$ | Conn $\downarrow$ | Links |
 |:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
-|PP-Matting|HRNet_W48|512x512|300000|40.69|0.009|43.91|40.56|[model](ppmatting-hrnet_w48-distinctions.pdparams)|
+|PP-Matting|HRNet_W48|512x512|300000|40.69|0.009|43.91|40.56|[model](https://paddleseg.bj.bcebos.com/matting/models/ppmatting-hrnet_w48-distinctions.pdparams)|
