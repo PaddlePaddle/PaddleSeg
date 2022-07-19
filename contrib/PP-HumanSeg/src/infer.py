@@ -76,8 +76,8 @@ class Predictor:
         self.args = args
         self.cfg = DeployConfig(args.config, args.vertical_screen)
         self.compose = T.Compose(self.cfg.transforms)
-        resize_h, resize_w = args.input_shape
         '''
+        resize_h, resize_w = args.input_shape
         self.disflow = cv2.DISOpticalFlow_create(
             cv2.DISOPTICAL_FLOW_PRESET_ULTRAFAST)
         self.prev_gray = np.zeros((resize_h, resize_w), np.uint8)
@@ -119,8 +119,6 @@ class Predictor:
     def postprocess(self, pred_img, origin_img, data, bg):
         img = data['img']
         trans_info = data['trans_info']
-        if not os.path.exists(self.args.save_dir):
-            os.makedirs(self.args.save_dir)
         resize_w = pred_img.shape[-1]
         resize_h = pred_img.shape[-2]
         if self.args.soft_predict:
@@ -147,7 +145,6 @@ class Predictor:
                 score_map = reverse_transform(
                     paddle.to_tensor(score_map), trans_info, mode='bilinear')
                 alpha = np.transpose(score_map.numpy().squeeze(0), [1, 2, 0])
-
         else:
             if pred_img.ndim == 3:
                 pred_img = pred_img[:, np.newaxis, ...]
@@ -164,11 +161,10 @@ class Predictor:
                 result = result.squeeze(1)
             alpha = np.transpose(result, [1, 2, 0])
 
-        # background replace
         h, w, _ = origin_img.shape
         bg = cv2.resize(bg, (w, h))
         if bg.ndim == 2:
             bg = bg[..., np.newaxis]
 
-        comb = (alpha * origin_img + (1 - alpha) * bg).astype(np.uint8)
-        return comb
+        out = (alpha * origin_img + (1 - alpha) * bg).astype(np.uint8)
+        return out

@@ -19,6 +19,7 @@ import sys
 
 import cv2
 import numpy as np
+from tqdm import tqdm
 
 __dir__ = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.abspath(os.path.join(__dir__, '../../../')))
@@ -35,12 +36,6 @@ def parse_args():
         help="The config file of the inference model.",
         type=str,
         required=True)
-    parser.add_argument(
-        "--input_shape",
-        help="Optional: The image shape [h, w] for net inputs.",
-        nargs=2,
-        default=[192, 192],
-        type=int)
     parser.add_argument(
         '--img_path', help='The image that to be predicted.', type=str)
     parser.add_argument(
@@ -87,38 +82,158 @@ def parse_args():
     return parser.parse_args()
 
 
-def background_replace(args):
-    env_info = get_sys_env()
-    args.use_gpu = True if env_info['Paddle compiled with cuda'] \
-        and env_info['GPUs used'] else False
+def get_bg_img(bg_img_path, img_shape):
+    if bg_img_path is None:
+        bg = 255 * np.ones(img_shape)
+    elif not os.path.exists(bg_img_path):
+        raise Exception('The --bg_img_path is not existed: {}'.format(
+            bg_img_path))
+    else:
+        bg = cv2.imread(bg_img_path)
+    return bg
+
+
+def makedirs(save_dir):
+    dirname = save_dir if os.path.isdir(save_dir) else \
+        os.path.dirname(save_dir)
+    if not os.path.exists(dirname):
+        os.makedirs(dirname)
+
+
+def seg_image(args):
+    assert os.path.exists(args.img_path), \
+        "The --img_path is not existed: {}.".format(args.img_path)
+
+    logger.info("Input: image")
+    logger.info("Create predictor...")
     predictor = Predictor(args)
 
-    # 图像背景替换
+    logger.info("Start predicting...")
+    img = cv2.imread(args.img_path)
+    bg_img = get_bg_img(args.bg_img_path, img.shape)
+    out_img = predictor.run(img, bg_img)
+    cv2.imwrite(args.save_dir, out_img)
+
+
+def seg_video(args):
+    assert os.path.exists(args.video_path), \
+        'The --video_path is not existed: {}'.format(args.video_path)
+    assert args.save_dir.endswith(".avi"), 'The --save_dir should be xxx.avi'
+
+    cap_img = cv2.VideoCapture(args.video_path)
+    assert cap_img.isOpened(), "Fail to open video:{}".format(args.video_path)
+    fps = cap_img.get(cv2.CAP_PROP_FPS)
+    total_frames = int(cap_img.get(cv2.CAP_PROP_FRAME_COUNT))
+    width = int(cap_img.get(cv2.CAP_PROP_FRAME_WIDTH))
+    height = int(cap_img.get(cv2.CAP_PROP_FRAME_HEIGHT))
+    cap_out = cv2.VideoWriter(args.save_dir,
+                              cv2.VideoWriter_fourcc('M', 'J', 'P', 'G'), fps,
+                              (width, height))
+
+    if args.bg_video_path is not None:
+        assert os.path.exists(args.bg_video_path), \
+            'The --bg_video_path is not existed: {}'.format(args.bg_video_path)
+        is_video_bg = True
+        cap_bg = cv2.VideoCapture(args.bg_video_path)
+        assert cap_bg.isOpened(), "Fail to open video:{}".format(
+            args.bg_video_path)
+        bg_frame_nums = cap_bg.get(cv2.CAP_PROP_FRAME_COUNT)
+        bg_frame_idx = 1
+    else:
+        is_video_bg = False
+        bg = get_bg_img(args.bg_img_path, [height, width, 3])
+
+    logger.info("Input: video")
+    logger.info("Create predictor...")
+    predictor = Predictor(args)
+
+    logger.info("Start predicting...")
+    with tqdm(total=total_frames) as pbar:
+        img_frame_idx = 0
+        while cap_img.isOpened():
+            ret_img, img = cap_img.read()
+            if not ret_img:
+                break
+
+            if is_video_bg:
+                ret_bg, bg = cap_bg.read()
+                if not ret_bg:
+                    break
+                bg_frame_idx += 1
+                if bg_frame_idx == bg_frame_nums:
+                    bg_frame_idx = 1
+                    cap_bg.set(cv2.CAP_PROP_POS_FRAMES, 0)
+
+            out = predictor.run(img, bg)
+            cap_out.write(out)
+            img_frame_idx += 1
+            pbar.update(1)
+
+    cap_img.release()
+    cap_out.release()
+    if is_video_bg:
+        cap_bg.release()
+
+
+def seg_camera(args):
+    cap_camera = cv2.VideoCapture(0)
+    assert cap_camera.isOpened(), "Fail to open camera"
+    width = int(cap_camera.get(cv2.CAP_PROP_FRAME_WIDTH))
+    height = int(cap_camera.get(cv2.CAP_PROP_FRAME_HEIGHT))
+
+    if args.bg_video_path is not None:
+        assert os.path.exists(args.bg_video_path), \
+            'The --bg_video_path is not existed: {}'.format(args.bg_video_path)
+        is_video_bg = True
+        cap_bg = cv2.VideoCapture(args.bg_video_path)
+        bg_frame_nums = cap_bg.get(cv2.CAP_PROP_FRAME_COUNT)
+        bg_frame_idx = 1
+    else:
+        is_video_bg = False
+        bg_img = get_bg_img(args.bg_img_path, [height, width, 3])
+
+    logger.info("Input: camera")
+    logger.info("Create predictor...")
+    predictor = Predictor(args)
+
+    logger.info("Start predicting...")
+    while cap_camera.isOpened():
+        ret_img, img = cap_camera.read()
+        if not ret_img:
+            break
+
+        if is_video_bg:
+            ret_bg, bg = cap_bg.read()
+            if not ret_bg:
+                break
+            if bg_frame_idx == bg_frame_nums:
+                bg_frame_idx = 1
+                cap_bg.set(cv2.CAP_PROP_POS_FRAMES, 0)
+            bg_frame_idx += 1
+
+        comb = predictor.run(img, bg)
+
+        cv2.imshow('HumanSegmentation', comb)
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
+    if is_video_bg:
+        cap_bg.release()
+    cap_camera.release()
+
+
+def segmentation(args):
+    print("Create predictor...")
+    predictor = Predictor(args)
+
+    print("Start predicting...")
+
     if args.img_path is not None:
-        if os.path.isfile(args.img_path):
-            img_list = [args.img_path]
-        elif os.path.isdir(args.img_path):
-            img_list, _ = get_image_list(args.img_path)
-        else:
-            raise Exception("The --img_path is wrong")
-
-        for idx, img_path in enumerate(img_list):
-            if not os.path.exists(img_path):
-                raise Exception('The --img_path is not existed: {}'.format(
-                    img_path))
-            img = cv2.imread(img_path)
-            bg = get_bg_img(args.bg_img_path, img.shape)
-
-            comb = predictor.run(img, bg)
-
-            save_name = os.path.basename(img_path)
-            save_path = os.path.join(args.save_dir, save_name)
-            cv2.imwrite(save_path, comb)
-
-            if idx % 10 == 0:
-                print("{} / {}".format(idx, len(img_list)))
-
-    # 视频背景替换
+        assert os.path.exists(args.img_path), "{} is not existed.".format(
+            args.img_path)
+        img = cv2.imread(args.img_path)
+        bg_img = get_bg_img(args.bg_img_path, img.shape)
+        out_img = predictor.run(img, bg_img)
+        cv2.imwrite(args.save_dir, out_img)
     else:
         # 获取背景：如果提供背景视频则以背景视频作为背景，否则采用提供的背景图片
         if args.bg_video_path is not None:
@@ -171,8 +286,6 @@ def background_replace(args):
                             break
                         current_bg += 1
 
-                    cv2.imwrite("./data/images/portrait_shu.jpg", frame)
-                    exit()
                     comb = predictor.run(frame, bg)
 
                     cap_out.write(comb)
@@ -232,24 +345,17 @@ def background_replace(args):
             format(timer.get_average(), 1 / timer.get_average(), timer._cnt))
 
 
-def get_bg_img(bg_img_path, img_shape):
-    if bg_img_path is None:
-        bg = 255 * np.ones(img_shape)
-    elif not os.path.exists(bg_img_path):
-        raise Exception('The --bg_img_path is not existed: {}'.format(
-            bg_img_path))
-    else:
-        bg = cv2.imread(bg_img_path)
-    return bg
-
-
 if __name__ == "__main__":
     args = parse_args()
+    env_info = get_sys_env()
+    args.use_gpu = True if env_info['Paddle compiled with cuda'] \
+        and env_info['GPUs used'] else False
 
-    #args.save_dir = os.path.abspath(args.save_dir)
-    dirname = args.save_dir if os.path.isdir(args.save_dir) else \
-        os.path.dirname(args.save_dir)
-    if not os.path.exists(dirname):
-        os.makedirs(dirname)
+    makedirs(args.save_dir)
 
-    background_replace(args)
+    if args.img_path is not None:
+        seg_image(args)
+    elif args.video_path is not None:
+        seg_video(args)
+    else:
+        seg_camera(args)
