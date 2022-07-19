@@ -52,16 +52,16 @@
 
 针对手机视频通话、Web视频会议等实时半身人像的分割场景，PP-HumanSeg发布了自研的肖像分割模型。该系列模型可以开箱即用，零成本直接集成到产品中。
 
-* PP-HumanSeg-Lite-V1肖像分割模型，分割效果较好，模型体积非常小，模型结构见[链接](../../configs/pp_humanseg_lite/)。
-* **PP-HumanSeg-Lite-V2肖像分割模型，对比V1模型，推理速度提升45.5%、mIoU提升0.63%、可视化效果更佳**，核心在于：
+* PP-HumanSegV1-Lite肖像分割模型，分割效果较好，模型体积非常小，模型结构见[链接](../../configs/pp_humanseg_lite/)。
+* **PP-HumanSegV2-Lite肖像分割模型，对比V1模型，推理速度提升45.5%、mIoU提升0.63%、可视化效果更佳**，核心在于：
   * 更高的分割精度：使用PaddleSeg推出的超轻量级分割模型([链接](../../configs/mobileseg/))，具体选择MobileNetV3作为骨干网络，设计多尺度特征融合模块(Multi-Scale Feature Aggregation Module)。
   * 更快的推理速度：减小模型最佳输入尺寸，既减少了推理耗时，又增大模型感受野。
   * 更好的通用性：使用迁移学习的思想，首先在大型通用人像分割数据集上预训练，然后在小型肖像分割数据集上微调。
 
 | 模型名 | 最佳输入尺寸 | 精度mIou(%) | 手机端推理耗时(ms) | 模型体积(MB) | 配置文件 | 下载连接 |
 | --- | --- | --- | ---| --- | --- | --- |
-| PP-HumanSeg-Lite-V1 | 398x224 | 96.00 | 29.68 | 2.2 | [cfg](./configs/portrait_pp_humanseg_lite_v1.yml) | [Checkpoint](https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/portrait_pp_humanseg_lite_v1_398x224_pretrained.zip) \| [Inference Model (Argmax)](https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/portrait_pp_humanseg_lite_v1_398x224_inference_model.zip) \| [Inference Model (Softmax)](https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/portrait_pp_humanseg_lite_v1_398x224_inference_model_with_softmax.zip) |
-| PP-HumanSeg-Lite-V2 | 256x144 | 96.63 | 15.86 | 13.5 | [cfg](./configs/portrait_pp_humanseg_lite_v2.yml) | [Checkpoint](https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/portrait_pp_humanseg_lite_v2_256x144_pretrained.zip) \| [Inference Model (Argmax)](https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/portrait_pp_humanseg_lite_v2_256x144_inference_model.zip) \| [Inference Model (Softmax)](https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/portrait_pp_humanseg_lite_v2_256x144_inference_model_with_softmax.zip) |
+| PP-HumanSegV1-Lite | 398x224 | 96.00 | 29.68 | 2.2 | [cfg](./configs/portrait_pp_humansegv1_lite.yml) | [Checkpoint](https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/portrait_pp_humansegv1_lite_398x224_pretrained.zip) \| [Inference Model (Argmax)](https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/portrait_pp_humansegv1_lite_398x224_inference_model.zip) \| [Inference Model (Softmax)](https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/portrait_pp_humansegv1_lite_398x224_inference_model_with_softmax.zip) |
+| PP-HumanSegV2-Lite | 256x144 | 96.63 | 15.86 | 13.5 | [cfg](./configs/portrait_pp_humansegv2_lite.yml) | [Checkpoint](https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/portrait_pp_humansegv2_lite_256x144_pretrained.zip) \| [Inference Model (Argmax)](https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/portrait_pp_humansegv2_lite_256x144_inference_model.zip) \| [Inference Model (Softmax)](https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/portrait_pp_humansegv2_lite_256x144_inference_model_with_softmax.zip) |
 
 <details><summary>表格说明：</summary>
 
@@ -84,16 +84,16 @@
 
 针对通用人像分割任务，我们首先构建的大规模人像数据集，然后使用PaddleSeg的SOTA模型，最终发布了多个PP-HumanSeg通用人像分割模型。
 
-* PP-HumanSeg-Lite-V2通用人像分割模型，使用PaddleSeg推出的[超轻量级分割模型](../../configs/mobileseg/)，相比V1模型精度mIoU提升6.5%，手机端推理耗时增加3ms。
-* PP-HumanSeg-Mobile-V2通用分割模型，使用PaddleSeg自研的[PP-LiteSeg](../../configs/pp_liteseg/)模型，相比V1模型精度mIoU提升1.49%，服务器端推理耗时减少5.7%。
+* PP-HumanSegV2-Lite通用人像分割模型，使用PaddleSeg推出的[超轻量级分割模型](../../configs/mobileseg/)，相比V1模型精度mIoU提升6.5%，手机端推理耗时增加3ms。
+* PP-HumanSegV2-Mobile通用分割模型，使用PaddleSeg自研的[PP-LiteSeg](../../configs/pp_liteseg/)模型，相比V1模型精度mIoU提升1.49%，服务器端推理耗时减少5.7%。
 
 | 模型名 | 最佳输入尺寸 | 精度mIou(%) | 手机端推理耗时(ms) | 服务器端推理耗时(ms) | 配置文件 | 下载链接 |
 | ----- | ---------- | ---------- | -----------------| ----------------- | ------- | ------- |
-| PP-HumanSeg-Lite-V1   | 192x192 | 86.02 | 12.3  | -    | [cfg](./configs/human_pp_humanseg_lite_v1.yml)   | [Checkpoint](https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/human_pp_humanseg_lite_v1_192x192_pretrained.zip) \| [Inference Model (Argmax)](https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/human_pp_humanseg_lite_v1_192x192_inference_model.zip) \| [Inference Model (Softmax)](https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/human_pp_humanseg_lite_v1_192x192_inference_model_with_softmax.zip) |
-| PP-HumanSeg-Lite-V2   | 192x192 | 92.52 | 15.3  | -    | [cfg](./configs/human_pp_humanseg_lite_v2.yml)   | [Checkpoint](https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/human_pp_humanseg_lite_v2_192x192_pretrained.zip) \| [Inference Model (Argmax)](https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/human_pp_humanseg_lite_v2_192x192_inference_model.zip) \| [Inference Model (Softmax)](https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/human_pp_humanseg_lite_v2_192x192_inference_model_with_softmax.zip) |
-| PP-HumanSeg-Mobile-V1 | 192x192 | 91.64 |  -    | 2.83 | [cfg](./configs/human_pp_humanseg_mobile_v1.yml) | [Checkpoint](https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/human_pp_humanseg_mobile_v1_192x192_pretrained.zip) \| [Inference Model (Argmax)](https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/human_pp_humanseg_mobile_v1_192x192_inference_model.zip) \| [Inference Model (Softmax)](https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/human_pp_humanseg_mobile_v1_192x192_inference_model_with_softmax.zip) |
-| PP-HumanSeg-Mobile-V2 | 192x192 | 93.13 |  -    | 2.67 | [cfg](./configs/human_pp_humanseg_mobile_v2.yml) | [Checkpoint](https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/human_pp_humanseg_mobile_v2_192x192_pretrained.zip) \| [Inference Model (Argmax)](https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/human_pp_humanseg_mobile_v2_192x192_inference_model.zip) \| [Inference Model (Softmax)](https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/human_pp_humanseg_mobile_v2_192x192_inference_model_with_softmax.zip) |
-| PP-HumanSeg-Server    | 512x512 | 96.47 |  -    | 24.9 | [cfg](./configs/human_pp_humanseg_server_v1.yml) | [Checkpoint](https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/human_pp_humanseg_server_v1_512x512_pretrained.zip) \| [Inference Model (Argmax)](https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/human_pp_humanseg_server_v1_512x512_inference_model.zip) \| [Inference Model (Softmax)](https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/human_pp_humanseg_server_v1_512x512_inference_model_with_softmax.zip) |
+| PP-HumanSegV1-Lite   | 192x192 | 86.02 | 12.3  | -    | [cfg](./configs/human_pp_humansegv1_lite.yml)   | [Checkpoint](https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/human_pp_humansegv1_lite_192x192_pretrained.zip) \| [Inference Model (Argmax)](https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/human_pp_humansegv1_lite_192x192_inference_model.zip) \| [Inference Model (Softmax)](https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/human_pp_humansegv1_lite_192x192_inference_model_with_softmax.zip) |
+| PP-HumanSegV2-Lite   | 192x192 | 92.52 | 15.3  | -    | [cfg](./configs/human_pp_humansegv2_lite.yml)   | [Checkpoint](https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/human_pp_humansegv2_lite_192x192_pretrained.zip) \| [Inference Model (Argmax)](https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/human_pp_humansegv2_lite_192x192_inference_model.zip) \| [Inference Model (Softmax)](https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/human_pp_humansegv2_lite_192x192_inference_model_with_softmax.zip) |
+| PP-HumanSegV1-Mobile | 192x192 | 91.64 |  -    | 2.83 | [cfg](./configs/human_pp_humansegv1_mobile.yml) | [Checkpoint](https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/human_pp_humansegv1_mobile_192x192_pretrained.zip) \| [Inference Model (Argmax)](https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/human_pp_humansegv1_mobile_192x192_inference_model.zip) \| [Inference Model (Softmax)](https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/human_pp_humansegv1_mobile_192x192_inference_model_with_softmax.zip) |
+| PP-HumanSegV2-Mobile | 192x192 | 93.13 |  -    | 2.67 | [cfg](./configs/human_pp_humansegv2_mobile.yml) | [Checkpoint](https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/human_pp_humansegv2_mobile_192x192_pretrained.zip) \| [Inference Model (Argmax)](https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/human_pp_humansegv2_mobile_192x192_inference_model.zip) \| [Inference Model (Softmax)](https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/human_pp_humansegv2_mobile_192x192_inference_model_with_softmax.zip) |
+| PP-HumanSegV1-Server | 512x512 | 96.47 |  -    | 24.9 | [cfg](./configs/human_pp_humansegv1_server.yml) | [Checkpoint](https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/human_pp_humansegv1_server_512x512_pretrained.zip) \| [Inference Model (Argmax)](https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/human_pp_humansegv1_server_512x512_inference_model.zip) \| [Inference Model (Softmax)](https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/human_pp_humansegv1_server_512x512_inference_model_with_softmax.zip) |
 
 
 <details><summary>表格说明：</summary>
@@ -187,15 +187,15 @@ python src/download_data.py
 加载`data/images/portrait_heng.jpg`横屏图像，使用PP-Humanseg肖像分割模型进行预测，结果保存在`data/images_result/`目录。
 
 ```bash
-# Use PP-Humanseg-Lite-V2
+# Use PP-HumansegV2-Lite
 python src/seg_demo.py \
-  --config inference_models/portrait_pp_humanseg_lite_v2_256x144_inference_model_with_softmax/deploy.yaml \
+  --config inference_models/portrait_pp_humansegv2_lite_256x144_inference_model_with_softmax/deploy.yaml \
   --img_path data/images/portrait_heng.jpg \
   --save_dir data/images_result/portrait_heng_v2.jpg
 
-# Use PP-Humanseg-Lite-V1
+# Use PP-HumansegV1-Lite
 python src/seg_demo.py \
-  --config inference_models/portrait_pp_humanseg_lite_v1_398x224_inference_model_with_softmax/deploy.yaml \
+  --config inference_models/portrait_pp_humansegv1_lite_398x224_inference_model_with_softmax/deploy.yaml \
   --img_path data/images/portrait_heng.jpg \
   --save_dir data/images_result/portrait_heng_v1.jpg
 ```
@@ -204,7 +204,7 @@ python src/seg_demo.py \
 
 ```bash
 python src/seg_demo.py \
-  --config inference_models/portrait_pp_humanseg_lite_v2_256x144_inference_model_with_softmax/deploy.yaml \
+  --config inference_models/portrait_pp_humansegv2_lite_256x144_inference_model_with_softmax/deploy.yaml \
   --img_path data/images/portrait_shu.jpg \
   --save_dir data/images_result/portrait_shu_v2.jpg \
   --vertical_screen
@@ -214,13 +214,13 @@ python src/seg_demo.py \
 
 ```bash
 python src/seg_demo.py \
-  --config inference_models/portrait_pp_humanseg_lite_v2_256x144_inference_model_with_softmax/deploy.yaml \
+  --config inference_models/portrait_pp_humansegv2_lite_256x144_inference_model_with_softmax/deploy.yaml \
   --img_path data/images/portrait_heng.jpg \
   --bg_img_path data/images/bg_2.jpg \
   --save_dir data/images_result/portrait_heng_v2_withbg.jpg
 
 python src/seg_demo.py \
-  --config inference_models/portrait_pp_humanseg_lite_v2_256x144_inference_model_with_softmax/deploy.yaml \
+  --config inference_models/portrait_pp_humansegv2_lite_256x144_inference_model_with_softmax/deploy.yaml \
   --img_path data/images/portrait_shu.jpg \
   --bg_img_path data/images/bg_1.jpg \
   --save_dir data/images_result/portrait_shu_v2_withbg.jpg \
@@ -232,15 +232,15 @@ python src/seg_demo.py \
 加载`data/videos/video_heng.mp4`横屏视频，使用PP-Humanseg肖像分割模型进行预测，结果保存在`data/videos_result/`目录。
 
 ```bash
-# Use PP-Humanseg-Lite-V2
+# Use PP-HumansegV2-Lite
 python src/seg_demo.py \
-  --config inference_models/portrait_pp_humanseg_lite_v2_256x144_inference_model_with_softmax/deploy.yaml \
+  --config inference_models/portrait_pp_humansegv2_lite_256x144_inference_model_with_softmax/deploy.yaml \
   --video_path data/videos/video_heng.mp4 \
   --save_dir data/videos_result/video_heng_v2.avi
 
-# Use PP-Humanseg-Lite-V1
+# Use PP-HumansegV1-Lite
 python src/seg_demo.py \
-  --config inference_models/portrait_pp_humanseg_lite_v1_398x224_inference_model_with_softmax/deploy.yaml \
+  --config inference_models/portrait_pp_humansegv1_lite_398x224_inference_model_with_softmax/deploy.yaml \
   --video_path data/videos/video_heng.mp4 \
   --save_dir data/videos_result/video_heng_v1.avi
 ```
@@ -249,7 +249,7 @@ python src/seg_demo.py \
 
 ```bash
 python src/seg_demo.py \
-  --config inference_models/portrait_pp_humanseg_lite_v2_256x144_inference_model_with_softmax/deploy.yaml \
+  --config inference_models/portrait_pp_humansegv2_lite_256x144_inference_model_with_softmax/deploy.yaml \
   --video_path data/videos/video_shu.mp4 \
   --save_dir data/videos_result/video_shu_v2.avi \
   --vertical_screen
@@ -259,18 +259,17 @@ python src/seg_demo.py \
 
 ```bash
 python src/seg_demo.py \
-  --config inference_models/portrait_pp_humanseg_lite_v2_256x144_inference_model_with_softmax/deploy.yaml \
+  --config inference_models/portrait_pp_humansegv2_lite_256x144_inference_model_with_softmax/deploy.yaml \
   --video_path data/videos/video_heng.mp4 \
   --bg_img_path data/images/bg_2.jpg \
-  --save_dir data/videos_result/video_heng_v2_withbg.avi \
-
+  --save_dir data/videos_result/video_heng_v2_withbg.avi
 ```
 
 此外可以使用 DIS（Dense Inverse Search-basedmethod）光流后处理算法 (要求opencv-python版本大于4.0)，减少视频预测前后帧闪烁的问题。
 
 ```bash
 python src/seg_demo.py \
-  --config inference_models/portrait_pp_humanseg_lite_v2_256x144_inference_model_with_softmax/deploy.yaml \
+  --config inference_models/portrait_pp_humansegv2_lite_256x144_inference_model_with_softmax/deploy.yaml \
   --video_path data/videos/video_shu.mp4 \
   --save_dir data/videos_result/video_shu_v2_use_optic_flow.avi \
   --vertical_screen \
@@ -283,14 +282,14 @@ python src/seg_demo.py \
 
 ```bash
 python src/seg_demo.py \
-  --config inference_models/portrait_pp_humanseg_lite_v2_256x144_inference_model_with_softmax/deploy.yaml
+  --config inference_models/portrait_pp_humansegv2_lite_256x144_inference_model_with_softmax/deploy.yaml
 ```
 
 开启电脑摄像头（横屏），添加背景图像，进行实时肖像分割。
 
 ```bash
 python src/seg_demo.py \
-  --config inference_models/portrait_pp_humanseg_lite_v2_256x144_inference_model_with_softmax/deploy.yaml \
+  --config inference_models/portrait_pp_humansegv2_lite_256x144_inference_model_with_softmax/deploy.yaml \
   --bg_img_path data/images/bg_2.jpg
 ```
 
@@ -338,11 +337,11 @@ python src/download_pretrained_models.py
 
 ```
 configs
-├── human_pp_humanseg_lite_v1.yml
-├── human_pp_humanseg_lite_v2.yml
-├── human_pp_humanseg_mobile_v1.yml
-├── human_pp_humanseg_mobile_v2.yml
-├── human_pp_humanseg_server_v1.yml
+├── human_pp_humansegv1_lite.yml
+├── human_pp_humansegv2_lite.yml
+├── human_pp_humansegv1_mobile.yml
+├── human_pp_humansegv2_mobile.yml
+├── human_pp_humansegv1_server.yml
 ```
 
 执行如下命令，进行模型微调。模型训练的详细文档，请参考[链接](../../docs/train/train_cn.md)。
@@ -351,8 +350,8 @@ configs
 export CUDA_VISIBLE_DEVICES=0 # Linux下设置1张可用的卡
 # set CUDA_VISIBLE_DEVICES=0  # Windows下设置1张可用的卡
 python ../../train.py \
-  --config configs/human_pp_humanseg_lite_v2.yml \
-  --save_dir output/human_pp_humanseg_lite_v2 \
+  --config configs/human_pp_humansegv2_lite.yml \
+  --save_dir output/human_pp_humansegv2_lite \
   --save_interval 100 --do_eval --use_vdl
 ```
 
@@ -362,8 +361,8 @@ python ../../train.py \
 
 ```bash
 python ../../val.py \
-  --config configs/human_pp_humanseg_lite_v2.yml \
-  --model_path pretrained_models/human_pp_humanseg_lite_v2_192x192_pretrained/model.pdparams
+  --config configs/human_pp_humansegv2_lite.yml \
+  --model_path pretrained_models/human_pp_humansegv2_lite_192x192_pretrained/model.pdparams
 ```
 
 ### 5.4 预测
@@ -372,8 +371,8 @@ python ../../val.py \
 
 ```bash
 python ../../predict.py \
-  --config configs/human_pp_humanseg_lite_v2.yml \
-  --model_path pretrained_models/human_pp_humanseg_lite_v2_192x192_pretrained/model.pdparams \
+  --config configs/human_pp_humansegv2_lite.yml \
+  --model_path pretrained_models/human_pp_humansegv2_lite_192x192_pretrained/model.pdparams \
   --image_path data/images/human.jpg \
   --save_dir ./data/images_result
 ```
@@ -384,9 +383,9 @@ python ../../predict.py \
 
 ```shell
 python ../../export.py \
-  --config configs/human_pp_humanseg_lite_v2.yml \
-  --model_path pretrained_models/human_pp_humanseg_lite_v2_192x192_pretrained/model.pdparams \
-  --save_dir output/human_pp_humanseg_lite_v2 \
+  --config configs/human_pp_humansegv2_lite.yml \
+  --model_path pretrained_models/human_pp_humansegv2_lite_192x192_pretrained/model.pdparams \
+  --save_dir output/human_pp_humansegv2_lite \
   --without_argmax \
   --with_softmax
 ```

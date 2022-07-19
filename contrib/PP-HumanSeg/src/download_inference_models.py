@@ -22,18 +22,18 @@ sys.path.append(os.path.abspath(os.path.join(__dir__, '../../../')))
 from paddleseg.utils.download import download_file_and_uncompress
 
 model_urls = {
-    "portrait_pp_humanseg_lite_v1_398x224_inference_model_with_softmax":
-    "https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/portrait_pp_humanseg_lite_v1_398x224_inference_model_with_softmax.zip",
-    "portrait_pp_humanseg_lite_v2_256x144_inference_model_with_softmax":
-    "https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/portrait_pp_humanseg_lite_v2_256x144_inference_model_with_softmax.zip",
-    "human_pp_humanseg_lite_v1_192x192_inference_model_with_softmax":
-    "https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/human_pp_humanseg_lite_v1_192x192_inference_model_with_softmax.zip",
-    "human_pp_humanseg_lite_v2_192x192_inference_model_with_softmax":
-    "https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/human_pp_humanseg_lite_v2_192x192_inference_model_with_softmax.zip",
-    "human_pp_humanseg_mobile_v1_192x192_inference_model_with_softmax":
-    "https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/human_pp_humanseg_mobile_v1_192x192_inference_model_with_softmax.zip",
-    "human_pp_humanseg_mobile_v2_192x192_inference_model_with_softmax":
-    "https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/human_pp_humanseg_mobile_v2_192x192_inference_model_with_softmax.zip",
+    "portrait_pp_humansegv1_lite_398x224_inference_model_with_softmax":
+    "https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/portrait_pp_humansegv1_lite_398x224_inference_model_with_softmax.zip",
+    "portrait_pp_humansegv2_lite_256x144_inference_model_with_softmax":
+    "https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/portrait_pp_humansegv2_lite_256x144_inference_model_with_softmax.zip",
+    "human_pp_humansegv1_lite_192x192_inference_model_with_softmax":
+    "https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/human_pp_humansegv1_lite_192x192_inference_model_with_softmax.zip",
+    "human_pp_humansegv2_lite_192x192_inference_model_with_softmax":
+    "https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/human_pp_humansegv2_lite_192x192_inference_model_with_softmax.zip",
+    "human_pp_humansegv1_mobile_192x192_inference_model_with_softmax":
+    "https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/human_pp_humansegv1_mobile_192x192_inference_model_with_softmax.zip",
+    "human_pp_humansegv2_mobile_192x192_inference_model_with_softmax":
+    "https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/human_pp_humansegv2_mobile_192x192_inference_model_with_softmax.zip",
 }
 
 if __name__ == "__main__":
