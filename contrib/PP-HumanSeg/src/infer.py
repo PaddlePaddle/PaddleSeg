@@ -61,6 +61,10 @@ class DeployConfig:
     def params(self):
         return os.path.join(self._dir, self.dic['Deploy']['params'])
 
+    def target_size(self):
+        [width, height] = self.dic['Deploy']['transforms'][0]['target_size']
+        return [width, height]
+
     def _load_transforms(self, t_list):
         com = manager.TRANSFORMS
         transforms = []
@@ -76,14 +80,6 @@ class Predictor:
         self.args = args
         self.cfg = DeployConfig(args.config, args.vertical_screen)
         self.compose = T.Compose(self.cfg.transforms)
-        '''
-        resize_h, resize_w = args.input_shape
-        self.disflow = cv2.DISOpticalFlow_create(
-            cv2.DISOPTICAL_FLOW_PRESET_ULTRAFAST)
-        self.prev_gray = np.zeros((resize_h, resize_w), np.uint8)
-        self.prev_cfd = np.zeros((resize_h, resize_w), np.float32)
-        self.is_init = True
-        '''
 
         pred_cfg = PredictConfig(self.cfg.model, self.cfg.params)
         pred_cfg.disable_glog_info()
@@ -93,6 +89,16 @@ class Predictor:
         self.predictor = create_predictor(pred_cfg)
         if self.args.test_speed:
             self.cost_averager = TimeAverager()
+
+        if args.use_optic_flow:
+
+            self.disflow = cv2.DISOpticalFlow_create(
+                cv2.DISOPTICAL_FLOW_PRESET_ULTRAFAST)
+            #self.disflow = cv2.optflow.createOptFlow_DIS(cv2.optflow.DISOPTICAL_FLOW_PRESET_MEDIUM)
+            width, height = self.cfg.target_size()
+            self.prev_gray = np.zeros((height, width), np.uint8)
+            self.prev_cfd = np.zeros((height, width), np.float32)
+            self.is_first_frame = True
 
     def run(self, img, bg):
         input_names = self.predictor.get_input_names()
@@ -128,10 +134,10 @@ class Predictor:
                 cur_gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
                 cur_gray = cv2.resize(cur_gray, (resize_w, resize_h))
                 optflow_map = optic_flow_process(cur_gray, score_map, self.prev_gray, self.prev_cfd, \
-                        self.disflow, self.is_init)
+                        self.disflow, self.is_first_frame)
                 self.prev_gray = cur_gray.copy()
                 self.prev_cfd = optflow_map.copy()
-                self.is_init = False
+                self.is_first_frame = False
 
                 score_map = np.repeat(optflow_map[:, :, np.newaxis], 3, axis=2)
                 score_map = np.transpose(score_map, [2, 0, 1])[np.newaxis, ...]

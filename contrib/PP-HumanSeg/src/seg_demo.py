@@ -1,4 +1,3 @@
-# coding: utf8
 # Copyright (c) 2020 PaddlePaddle Authors. All Rights Reserve.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -190,7 +189,7 @@ def seg_camera(args):
         bg_frame_idx = 1
     else:
         is_video_bg = False
-        bg_img = get_bg_img(args.bg_img_path, [height, width, 3])
+        bg = get_bg_img(args.bg_img_path, [height, width, 3])
 
     logger.info("Input: camera")
     logger.info("Create predictor...")
@@ -211,138 +210,15 @@ def seg_camera(args):
                 cap_bg.set(cv2.CAP_PROP_POS_FRAMES, 0)
             bg_frame_idx += 1
 
-        comb = predictor.run(img, bg)
+        out = predictor.run(img, bg)
+        cv2.imshow('PP-HumanSeg', out)
 
-        cv2.imshow('HumanSegmentation', comb)
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
+
     if is_video_bg:
         cap_bg.release()
     cap_camera.release()
-
-
-def segmentation(args):
-    print("Create predictor...")
-    predictor = Predictor(args)
-
-    print("Start predicting...")
-
-    if args.img_path is not None:
-        assert os.path.exists(args.img_path), "{} is not existed.".format(
-            args.img_path)
-        img = cv2.imread(args.img_path)
-        bg_img = get_bg_img(args.bg_img_path, img.shape)
-        out_img = predictor.run(img, bg_img)
-        cv2.imwrite(args.save_dir, out_img)
-    else:
-        # 获取背景：如果提供背景视频则以背景视频作为背景，否则采用提供的背景图片
-        if args.bg_video_path is not None:
-            if not os.path.exists(args.bg_video_path):
-                raise Exception('The --bg_video_path is not existed: {}'.format(
-                    args.bg_video_path))
-            is_video_bg = True
-        else:
-            bg = get_bg_img(args.bg_img_path, args.input_shape)
-            is_video_bg = False
-
-        # 视频预测
-        if args.video_path is not None:
-            logger.info('Please wait. It is computing......')
-            if not os.path.exists(args.video_path):
-                raise Exception('The --video_path is not existed: {}'.format(
-                    args.video_path))
-
-            cap_video = cv2.VideoCapture(args.video_path)
-            fps = cap_video.get(cv2.CAP_PROP_FPS)
-            width = int(cap_video.get(cv2.CAP_PROP_FRAME_WIDTH))
-            height = int(cap_video.get(cv2.CAP_PROP_FRAME_HEIGHT))
-            save_name = os.path.basename(args.video_path)
-            save_name = save_name.split('.')[0]
-            #save_path = os.path.join(args.save_dir, save_name + '.avi')
-            save_path = args.save_dir
-            assert save_path.endswith(".avi")
-
-            cap_out = cv2.VideoWriter(
-                save_path,
-                cv2.VideoWriter_fourcc('M', 'J', 'P', 'G'), fps,
-                (width, height))
-
-            if is_video_bg:
-                cap_bg = cv2.VideoCapture(args.bg_video_path)
-                frames_bg = cap_bg.get(cv2.CAP_PROP_FRAME_COUNT)
-                current_bg = 1
-            frame_num = 0
-            while cap_video.isOpened():
-                ret, frame = cap_video.read()
-                if ret:
-                    #读取背景帧
-                    if is_video_bg:
-                        ret_bg, bg = cap_bg.read()
-                        if ret_bg:
-                            if current_bg == frames_bg:
-                                current_bg = 1
-                                cap_bg.set(cv2.CAP_PROP_POS_FRAMES, 0)
-                        else:
-                            break
-                        current_bg += 1
-
-                    comb = predictor.run(frame, bg)
-
-                    cap_out.write(comb)
-                    frame_num += 1
-                    logger.info('Processing frame {}'.format(frame_num))
-                else:
-                    break
-
-            if is_video_bg:
-                cap_bg.release()
-            cap_video.release()
-            cap_out.release()
-
-        # 当没有输入预测图像和视频的时候，则打开摄像头
-        else:
-            cap_video = cv2.VideoCapture(0)
-            if not cap_video.isOpened():
-                raise IOError("Error opening video stream or file, "
-                              "--video_path whether existing: {}"
-                              " or camera whether working".format(
-                                  args.video_path))
-                return
-
-            if is_video_bg:
-                cap_bg = cv2.VideoCapture(args.bg_video_path)
-                frames_bg = cap_bg.get(cv2.CAP_PROP_FRAME_COUNT)
-                current_bg = 1
-
-            while cap_video.isOpened():
-                ret, frame = cap_video.read()
-                if ret:
-                    #读取背景帧
-                    if is_video_bg:
-                        ret_bg, bg = cap_bg.read()
-                        if ret_bg:
-                            if current_bg == frames_bg:
-                                current_bg = 1
-                                cap_bg.set(cv2.CAP_PROP_POS_FRAMES, 0)
-                        else:
-                            break
-                        current_bg += 1
-
-                    comb = predictor.run(frame, bg)
-
-                    cv2.imshow('HumanSegmentation', comb)
-                    if cv2.waitKey(1) & 0xFF == ord('q'):
-                        break
-                else:
-                    break
-            if is_video_bg:
-                cap_bg.release()
-            cap_video.release()
-    if args.test_speed:
-        timer = predictor.cost_averager
-        logger.info(
-            'Model inference time per image: {}\nFPS: {}\nNum of images: {}'.
-            format(timer.get_average(), 1 / timer.get_average(), timer._cnt))
 
 
 if __name__ == "__main__":

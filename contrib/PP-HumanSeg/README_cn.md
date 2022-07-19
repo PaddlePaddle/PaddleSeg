@@ -14,9 +14,9 @@
   - 4.3 肖像分割
   - 4.4 在线运行教程
 - 5 训练评估预测演示
-- 模型导出
-- Web端部署
-- 移动端部署
+- 6 模型导出
+- 7 Web端部署
+- 8 移动端部署
 
 ## 1 简介
 
@@ -48,7 +48,7 @@
 针对手机视频通话、Web视频会议等实时半身人像的分割场景，PP-HumanSeg发布了自研的肖像分割模型。该系列模型可以开箱即用，零成本直接集成到产品中。
 
 * PP-HumanSeg-Lite-V1肖像分割模型，分割效果较好，模型体积非常小，模型结构见[链接](../../configs/pp_humanseg_lite/)。
-* PP-HumanSeg-Lite-V2肖像分割模型，对比V1模型，**推理速度提升45.5%、mIoU提升0.63%、可视化效果更佳**，核心在于：
+* PP-HumanSeg-Lite-V2肖像分割模型，对比V1模型，**推理速度提升45.5%、mIoU提升0.63%、视觉效果更佳**，核心在于：
   * 更高的分割精度：使用PaddleSeg推出的[超轻量级分割模型](../../configs/mobileseg/)，具体选择MobileNetV3作为骨干网络，设计多尺度特征融合模块(Multi-Scale Feature Aggregation Module)。
   * 更快的推理速度：减小模型最佳输入尺寸，既减少了推理耗时，又增大模型感受野。
   * 更好的通用性：使用迁移学习的思想，首先在大型通用人像分割数据集上预训练，然后在小型肖像分割数据集上微调。
@@ -144,22 +144,26 @@ python src/download_data.py
 
 ### 4.3 肖像分割
 
-我们使用`src/seg_demo.py`脚本实现肖像分割、背景替换等功能的演示。
-该脚本的输入数据可以是图片、视频或者摄像头，主要参数说明如下。
+使用`src/seg_demo.py`脚本实现肖像分割、背景替换等功能的演示。
 
-| 参数  | 说明 | 是否必选项 | 默认值 |
-| -    | -    | -        | -     |
-| config          | 预测模型中`deploy.yaml`文件的路径 | 是 | - |
-| img_path        | 待分割图片的路径                 | 否  | - |
-| video_path      | 待分割视频的路径                 | 否  | - |
-| bg_img_path     | 背景图片的路径，用于替换图片或视频的背景                   | 否  | - |
-| bg_video_path   | 背景视频的路径，用于替换视频的背景                   | 否  | - |
-| save_dir        | 保存输出图片或者视频的路径         | 否  | - |
-| vertical_screen | 输入图片和视频是否是路径   | 否  | - |
+`src/seg_demo.py`脚本的输入数据可以是图片、视频或者摄像头，主要参数说明如下。
 
+| 参数  | 说明 | 类型 | 是否必选项 | 默认值 |
+| -    | -    | -   |  -       | -     |
+| config          | 预测模型中`deploy.yaml`文件的路径      | str | 是 | - |
+| img_path        | 待分割图片的路径                      | str | 否  | - |
+| video_path      | 待分割视频的路径                      | str | 否  | - |
+| bg_img_path     | 背景图片的路径，用于替换图片或视频的背景  | str | 否  | - |
+| bg_video_path   | 背景视频的路径，用于替换视频的背景       | str | 否  | - |
+| save_dir        | 保存输出图片或者视频的路径              | str | 否  | `./output` |
+| vertical_screen | 输入图片和视频是竖屏                   | store_true | 否  | False |
 
+参数说明：
+* 如果设置了img_path，则对图像进行分割；如果设置了video_path，则对视频进行分割。
+* 如果img_path和video_path都没有设置，则使用摄像头拍摄视频，进行分割。
+* 默认输入图像和视频是横屏模式，即是宽大于高，如果输入图像和视频是竖屏模式，需要设置`--vertical_screen`参数。
 
-1）输入图片
+**1）输入图片**
 
 加载`data/images/portrait_heng.jpg`横屏图像，使用PP-Humanseg肖像分割模型进行预测，结果保存在`data/images_result/`目录。
 
@@ -177,7 +181,7 @@ python src/seg_demo.py \
   --save_dir data/images_result/portrait_heng_v1.jpg
 ```
 
-加载`data/images/portrait_shu.jpg`竖屏图像，使用PP-Humanseg肖像分割模型进行预测，结果保存在`data/images_result/`目录。
+加载`data/images/portrait_shu.jpg`竖屏图像，使用PP-Humanseg肖像分割模型进行预测。
 
 ```bash
 python src/seg_demo.py \
@@ -204,8 +208,7 @@ python src/seg_demo.py \
   --vertical_screen
 ```
 
-
-2）输入视频
+**2）输入视频**
 
 加载`data/videos/video_heng.mp4`横屏视频，使用PP-Humanseg肖像分割模型进行预测，结果保存在`data/videos_result/`目录。
 
@@ -223,7 +226,7 @@ python src/seg_demo.py \
   --save_dir data/videos_result/video_heng_v1.avi
 ```
 
-加载`data/videos/video_shu.mp4`竖屏视频，使用PP-Humanseg肖像分割模型进行预测，结果保存在`data/videos_result/`目录。
+加载`data/videos/video_shu.mp4`竖屏视频，使用PP-Humanseg肖像分割模型进行预测。
 
 ```bash
 python src/seg_demo.py \
@@ -233,13 +236,32 @@ python src/seg_demo.py \
   --vertical_screen
 ```
 
-3）摄像头输入
+使用背景图片，得到替换背景的视频。
 
-开启电脑摄像头（假定是横屏），进行实时肖像分割。
+```bash
+python src/seg_demo.py \
+  --config inference_models/portrait_pp_humanseg_lite_v2_256x144_inference_model_with_softmax/deploy.yaml \
+  --video_path data/videos/video_shu.mp4 \
+  --bg_img_path data/images/bg_2.jpg \
+  --save_dir data/videos_result/video_shu_v2_withbg.avi \
+  --vertical_screen
+```
+
+**3）摄像头输入**
+
+开启电脑摄像头（横屏），进行实时肖像分割。
 
 ```bash
 python src/seg_demo.py \
   --config inference_models/portrait_pp_humanseg_lite_v2_256x144_inference_model_with_softmax/deploy.yaml
+```
+
+开启电脑摄像头（横屏），添加背景图像，进行实时肖像分割。
+
+```bash
+python src/seg_demo.py \
+  --config inference_models/portrait_pp_humanseg_lite_v2_256x144_inference_model_with_softmax/deploy.yaml \
+  --bg_img_path data/images/bg_2.jpg
 ```
 
 此外，可以使用 DIS（Dense Inverse Search-basedmethod）光流后处理算法，减少视频预测前后帧闪烁的问题。
@@ -249,44 +271,12 @@ python src/seg_demo.py \
 python src/seg_demo.py \
   --config inference_models/portrait_pp_humanseg_lite_v2_256x144_inference_model_with_softmax/deploy.yaml \
   --video_path data/videos/video_heng.mp4 \
-  --save_dir data/videos_result/video_heng_v2_use_optic_flow.avi
+  --save_dir data/videos_result/video_heng_v2_use_optic_flow.avi \
   --use_optic_flow
 ```
 
 视频分割结果如下：
 <img src="https://paddleseg.bj.bcebos.com/humanseg/data/video_test.gif" width="20%" height="20%"><img src="https://paddleseg.bj.bcebos.com/humanseg/data/result.gif" width="20%" height="20%">
-
-
-根据所选背景进行背景替换，背景可以是一张图片，也可以是一段视频。
-
-```bash
-# 通过电脑摄像头进行实时背景替换处理。可通过'--background_video_path'传入背景视频
-python seg_demo.py \
---config export_model/pphumanseg_lite_portrait_398x224_with_softmax/deploy.yaml \
---input_shape 224 398 \
---bg_img_path data/background.jpg
-
-# 对人像视频进行背景替换处理。可通过'--background_video_path'传入背景视频
-python seg_demo.py \
---config export_model/deeplabv3p_resnet50_os8_humanseg_512x512_100k_with_softmax/deploy.yaml \
---bg_img_path data/background.jpg \
---video_path data/video_test.mp4
-
-# Use PP-Humanseg-Lite-V2
-python src/seg_demo.py \
-  --config inference_models/portrait_pp_humanseg_lite_v2_256x144_inference_model_with_softmax/deploy.yaml \
-  --video_path data/videos/video_shu.mp4 \
-  --save_dir data/videos_result/video_shu_v2.avi \
-  --vertical_screen
-
-# 对单张图像进行背景替换
-python seg_demo.py \
---config export_model/pphumanseg_lite_portrait_398x224_with_softmax/deploy.yaml \
---input_shape 224 398 \
---img_path data/human_image.jpg \
---bg_img_path data/background.jpg
-
-```
 
 
 背景替换结果如下：
