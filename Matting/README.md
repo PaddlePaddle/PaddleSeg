@@ -8,13 +8,20 @@ Image Matting is the technique of extracting foreground from an image by calcula
 </p>
 
 # One-click experience
-Try the online demo "[Non-Code Matting](https://easyseg.cn/)".
+Try the online demo "[Non-Code Matting](http://seg.itmanbu.com/)".
 
 <p align="center">
 <img src="https://user-images.githubusercontent.com/48433081/165077834-c3191509-aeaf-45c8-b226-656174f4c152.gif" width="100%" height="100%">
 </p>
 
 ## Update Notes
+2022.07
+[1] Release PPMatting code.
+[2] Add ClosedFormMatting, KNNMatting, FastMatting, LearningBaseMatting and RandomWalksMatting traditional machine learning algorithms.
+[3] Add GCA model.
+[4] Improving the directory structure.
+[5] Support to specify metrics for evaluation.
+
 2022.04
 [1] Add PPMatting model.
 [2] Add PPHumanMatting high-resolution human matting model.
