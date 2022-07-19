@@ -37,7 +37,7 @@
 </p>
 
 ## 2 最新消息
-- [2022-7] 发布**PP-HumanSeg V2版本模型，肖像分割模型的推理速度提升45.5%、mIoU提升0.63%、可视化效果更佳**，通用人像分割模型的推理速度提升和精度也有明显提升。
+- [2022-7] 发布**PP-HumanSeg V2版本模型，肖像分割模型的推理速度提升45.5%、mIoU提升0.63%、可视化效果更佳**，通用人像分割模型的推理速度和精度也有明显提升。
 - [2022-1] 人像分割论文[PP-HumanSeg](./paper.md)发表于WACV 2022 Workshop，并开源连通性学习（SCL）方法和大规模视频会议数据集。
 - [2021-7] 百度视频会议可实现Web端一秒入会，其中的虚拟背景功能采用我们的PP-HumanSeg肖像模型，实现实时背景替换和背景虚化功能，保护用户隐私，并增加视频会议的趣味性。
 - [2021-7] 发布PP-HumanSeg V1版本模型，包括一个肖像分割模型和两个通用人像分割模型。
@@ -46,7 +46,7 @@
 <img src="https://github.com/LutaoChu/transfer_station/raw/master/conference.gif" width="60%" height="60%">
 </p>
 
-## 3 P-HumanSeg模型
+## 3 PP-HumanSeg模型
 
 ### 3.1 肖像分割模型
 
@@ -248,10 +248,9 @@ python src/seg_demo.py \
 ```bash
 python src/seg_demo.py \
   --config inference_models/portrait_pp_humanseg_lite_v2_256x144_inference_model_with_softmax/deploy.yaml \
-  --video_path data/videos/video_shu.mp4 \
+  --video_path data/videos/video_heng.mp4 \
   --bg_img_path data/images/bg_2.jpg \
-  --save_dir data/videos_result/video_shu_v2_withbg.avi \
-  --vertical_screen
+  --save_dir data/videos_result/video_heng_v2_withbg.avi
 ```
 
 此外可以使用 DIS（Dense Inverse Search-basedmethod）光流后处理算法 (要求opencv-python版本大于4.0)，减少视频预测前后帧闪烁的问题。
