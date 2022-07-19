@@ -40,6 +40,7 @@
 </table>
 </div>
 
+
 ## <img src="../docs/images/seg_news_icon.png" width="20"/> Latest Developments
 * [2022-07-20] :fire: EISeg 1.0 is released!
   - Added  interactive video object segmentation for general scenes, this work is based on EISeg interactive segmentation model and [MiVOS](https://github.com/hkchengrex/MiVOS).
