@@ -24,7 +24,7 @@ if __name__ == "__main__":
     urls = [
         "https://paddleseg.bj.bcebos.com/humanseg/data/mini_supervisely.zip",
         "https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/videos.zip",
-        "https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/background_imgs.zip"
+        "https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/images.zip"
     ]
 
     for url in urls:

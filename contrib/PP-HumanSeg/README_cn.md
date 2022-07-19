@@ -5,7 +5,7 @@
 ## 目录
 - [1.简介](#1.简介)
 - [2.最新消息](#2.最新消息)
-- [3.PP-HumanSeg模型](#3.PP-HumanSeg模型)
+- [3.PP-HumanSeg模型](#3.P-HumanSeg模型)
   - [肖像分割模型](#肖像分割模型)
   - [通用人像分割模型](#通用人像分割模型)
 - [4.快速体验](#4.快速体验)
@@ -134,15 +134,25 @@ cd PaddleSeg/contrib/PP-HumanSeg
 python export_model/download_inference_models.py
 ```
 
-执行以下命令下载测试数据保存在`data`目录，包括`video_heng.mp4`、`video_shu.mp4`和`mini_supervisely`数据集。
-`video_heng.mp4`和`video_shu.mp4`分别是手机前置摄像头在横屏和竖屏下，拍摄的人像测试视频。
-`mini_supervisely`数据集从人像分割数据集 [Supervise.ly Person](https://app.supervise.ly/ecosystem/projects/persons) 中随机抽取一小部分并转化成PaddleSeg可直接加载数据格式。
+执行以下命令下载测试数据保存在`data`目录，下载数据包括：
+* `portrait_heng.jpg`和`portrait_shu.jpg`分别是手机摄像头在横屏和竖屏下，拍摄的肖像测试图片。
+* `video_heng.mp4`和`video_shu.mp4`分别是手机摄像头在横屏和竖屏下，拍摄的肖像测试视频。
+* `mini_supervisely`数据集从人像分割数据集 [Supervise.ly Person](https://app.supervise.ly/ecosystem/projects/persons) 中随机抽取一小部分并转化成PaddleSeg可直接加载数据格式。
 
 ```bash
 python data/download_data.py
 ```
 
-### 肖像分割
+### 肖像分割和背景替换
+
+我们使用`scripts/bg_replace.py`脚本实现肖像分割、背景替换等功能的演示，其输入数据可以是图片、视频或者摄像头。
+
+1）输入图片
+
+加载`data/`
+
+
+2）输入视频
 
 加载`data/videos/video_heng.mp4`横屏视频，使用PP-Humanseg肖像分割模型进行预测，结果保存在`data/videos_result/`目录。
 
@@ -178,6 +188,8 @@ python scripts/bg_replace.py \
   --vertical_screen
 ```
 
+3）摄像头输入
+
 开启电脑摄像头（假定是横屏），进行实时肖像分割。
 
 ```bash
@@ -199,8 +211,6 @@ python scripts/bg_replace.py \
 视频分割结果如下：
 <img src="https://paddleseg.bj.bcebos.com/humanseg/data/video_test.gif" width="20%" height="20%"><img src="https://paddleseg.bj.bcebos.com/humanseg/data/result.gif" width="20%" height="20%">
 
-
-### 背景替换
 
 根据所选背景进行背景替换，背景可以是一张图片，也可以是一段视频。
 

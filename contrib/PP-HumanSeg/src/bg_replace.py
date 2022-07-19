@@ -15,7 +15,6 @@
 
 import argparse
 import os
-import os.path as osp
 import sys
 
 import cv2
@@ -104,7 +103,7 @@ def background_replace(args):
             raise Exception("The --img_path is wrong")
 
         for idx, img_path in enumerate(img_list):
-            if not osp.exists(img_path):
+            if not os.path.exists(img_path):
                 raise Exception('The --img_path is not existed: {}'.format(
                     img_path))
             img = cv2.imread(img_path)
@@ -112,8 +111,8 @@ def background_replace(args):
 
             comb = predictor.run(img, bg)
 
-            save_name = osp.basename(img_path)
-            save_path = osp.join(args.save_dir, save_name)
+            save_name = os.path.basename(img_path)
+            save_path = os.path.join(args.save_dir, save_name)
             cv2.imwrite(save_path, comb)
 
             if idx % 10 == 0:
@@ -123,7 +122,7 @@ def background_replace(args):
     else:
         # 获取背景：如果提供背景视频则以背景视频作为背景，否则采用提供的背景图片
         if args.bg_video_path is not None:
-            if not osp.exists(args.bg_video_path):
+            if not os.path.exists(args.bg_video_path):
                 raise Exception('The --bg_video_path is not existed: {}'.format(
                     args.bg_video_path))
             is_video_bg = True
@@ -134,7 +133,7 @@ def background_replace(args):
         # 视频预测
         if args.video_path is not None:
             logger.info('Please wait. It is computing......')
-            if not osp.exists(args.video_path):
+            if not os.path.exists(args.video_path):
                 raise Exception('The --video_path is not existed: {}'.format(
                     args.video_path))
 
@@ -142,9 +141,9 @@ def background_replace(args):
             fps = cap_video.get(cv2.CAP_PROP_FPS)
             width = int(cap_video.get(cv2.CAP_PROP_FRAME_WIDTH))
             height = int(cap_video.get(cv2.CAP_PROP_FRAME_HEIGHT))
-            save_name = osp.basename(args.video_path)
+            save_name = os.path.basename(args.video_path)
             save_name = save_name.split('.')[0]
-            #save_path = osp.join(args.save_dir, save_name + '.avi')
+            #save_path = os.path.join(args.save_dir, save_name + '.avi')
             save_path = args.save_dir
             assert save_path.endswith(".avi")
 
@@ -172,6 +171,8 @@ def background_replace(args):
                             break
                         current_bg += 1
 
+                    cv2.imwrite("./data/images/portrait_shu.jpg", frame)
+                    exit()
                     comb = predictor.run(frame, bg)
 
                     cap_out.write(comb)
@@ -234,7 +235,7 @@ def background_replace(args):
 def get_bg_img(bg_img_path, img_shape):
     if bg_img_path is None:
         bg = 255 * np.ones(img_shape)
-    elif not osp.exists(bg_img_path):
+    elif not os.path.exists(bg_img_path):
         raise Exception('The --bg_img_path is not existed: {}'.format(
             bg_img_path))
     else:
@@ -245,9 +246,10 @@ def get_bg_img(bg_img_path, img_shape):
 if __name__ == "__main__":
     args = parse_args()
 
-    args.save_dir = os.path.abspath(args.save_dir)
-    if osp.isdir(args.save_dir) and not args.save_dir.endswith(".avi") \
-        and not osp.exists(args.save_dir):
-        os.makedirs(args.save_dir)
+    #args.save_dir = os.path.abspath(args.save_dir)
+    dirname = args.save_dir if os.path.isdir(args.save_dir) else \
+        os.path.dirname(args.save_dir)
+    if not os.path.exists(dirname):
+        os.makedirs(dirname)
 
     background_replace(args)
