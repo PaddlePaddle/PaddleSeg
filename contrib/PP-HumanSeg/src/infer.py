@@ -94,7 +94,6 @@ class Predictor:
 
             self.disflow = cv2.DISOpticalFlow_create(
                 cv2.DISOPTICAL_FLOW_PRESET_ULTRAFAST)
-            #self.disflow = cv2.optflow.createOptFlow_DIS(cv2.optflow.DISOPTICAL_FLOW_PRESET_MEDIUM)
             width, height = self.cfg.target_size()
             self.prev_gray = np.zeros((height, width), np.uint8)
             self.prev_cfd = np.zeros((height, width), np.float32)
@@ -131,7 +130,7 @@ class Predictor:
             if self.args.use_optic_flow:
                 score_map = pred_img[:, 1, :, :].squeeze(0)
                 score_map = 255 * score_map
-                cur_gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+                cur_gray = cv2.cvtColor(origin_img, cv2.COLOR_BGR2GRAY)
                 cur_gray = cv2.resize(cur_gray, (resize_w, resize_h))
                 optflow_map = optic_flow_process(cur_gray, score_map, self.prev_gray, self.prev_cfd, \
                         self.disflow, self.is_first_frame)

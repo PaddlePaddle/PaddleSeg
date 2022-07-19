@@ -1,5 +1,5 @@
-batch_size: 16    # 2 GPUs
-iters: 100000
+batch_size: 8
+iters: 1000
 
 train_dataset:
   type: Dataset
@@ -38,7 +38,6 @@ export:
       target_size: [192, 192]
     - type: Normalize
 
-
 optimizer:
   type: sgd
   momentum: 0.9
@@ -46,7 +45,7 @@ optimizer:
 
 lr_scheduler:
   type: PolynomialDecay
-  learning_rate: 0.01
+  learning_rate: 0.0001
   end_lr: 0
   power: 0.9
 
@@ -71,3 +70,4 @@ model:
   arm_out_chs: [32, 64, 96, 128]
   seg_head_inter_chs: [16, 32, 32, 32]
   use_last_fuse: True
+  pretrained: pretrained_models/human_pp_humanseg_lite_v2_192x192_pretrained/model.pdparams

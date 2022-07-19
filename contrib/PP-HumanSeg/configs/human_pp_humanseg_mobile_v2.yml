@@ -1,5 +1,5 @@
-batch_size: 16    # 2 GPUs
-iters: 100000
+batch_size: 8
+iters: 1000
 
 train_dataset:
   type: Dataset
@@ -46,7 +46,7 @@ optimizer:
 
 lr_scheduler:
   type: PolynomialDecay
-  learning_rate: 0.01
+  learning_rate: 0.001
   end_lr: 0
   power: 0.9
 
@@ -68,3 +68,4 @@ model:
   backbone_indices: [1, 2, 3, 4]
   arm_out_chs: [4, 16, 32, 64]
   seg_head_inter_chs: [4, 16, 32, 64]
+  pretrained: pretrained_models/human_pp_humanseg_mobile_v2_192x192_pretrained/model.pdparams

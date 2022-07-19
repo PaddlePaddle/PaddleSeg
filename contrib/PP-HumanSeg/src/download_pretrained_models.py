@@ -32,6 +32,10 @@ model_urls = {
     "https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/human_pp_humanseg_mobile_v2_192x192_pretrained.zip",
     "human_pp_humanseg_server_v1_512x512_pretrained":
     "https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/human_pp_humanseg_server_v1_512x512_pretrained.zip",
+    "portrait_pp_humanseg_lite_v1_398x224_pretrained":
+    "https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/portrait_pp_humanseg_lite_v1_398x224_pretrained.zip",
+    "portrait_pp_humanseg_lite_v2_256x144_pretrained":
+    "https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/portrait_pp_humanseg_lite_v2_256x144_pretrained.zip"
 }
 
 if __name__ == "__main__":

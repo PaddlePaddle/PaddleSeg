@@ -1,5 +1,5 @@
-batch_size: 16    # 2 GPUs
-iters: 100000
+batch_size: 8
+iters: 1000
 
 train_dataset:
   type: Dataset
@@ -46,7 +46,7 @@ optimizer:
 
 lr_scheduler:
   type: PolynomialDecay
-  learning_rate: 0.01
+  learning_rate: 0.001
   end_lr: 0
   power: 0.9
 
@@ -71,4 +71,4 @@ model:
   aspp_ratios: [1, 12, 24, 36]
   aspp_out_channels: 256
   align_corners: False
-  pretrained: null
+  pretrained: pretrained: pretrained_models/human_pp_humanseg_server_v1_512x512_pretrained/model.pdparams

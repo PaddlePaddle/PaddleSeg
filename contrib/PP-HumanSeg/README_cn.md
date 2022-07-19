@@ -156,12 +156,14 @@ python src/download_data.py
 | bg_img_path     | 背景图片的路径，用于替换图片或视频的背景  | str | 否  | - |
 | bg_video_path   | 背景视频的路径，用于替换视频的背景       | str | 否  | - |
 | save_dir        | 保存输出图片或者视频的路径              | str | 否  | `./output` |
-| vertical_screen | 输入图片和视频是竖屏                   | store_true | 否  | False |
+| vertical_screen | 表明输入图片和视频是竖屏                | store_true | 否  | False |
+| use_optic_flow  | 设置使用光流处理                      | store_true | 否  | False |
 
 参数说明：
 * 如果设置了img_path，则对图像进行分割；如果设置了video_path，则对视频进行分割。
 * 如果img_path和video_path都没有设置，则使用摄像头拍摄视频，进行分割。
 * 默认输入图像和视频是横屏模式，即是宽大于高，如果输入图像和视频是竖屏模式，需要设置`--vertical_screen`参数。
+* 使用光流处理可以缓解视频分割的抖动，要求opencv-python版本大于4.0。
 
 **1）输入图片**
 
@@ -247,6 +249,17 @@ python src/seg_demo.py \
   --vertical_screen
 ```
 
+此外可以使用 DIS（Dense Inverse Search-basedmethod）光流后处理算法 (要求opencv-python版本大于4.0)，减少视频预测前后帧闪烁的问题。
+
+```bash
+python src/seg_demo.py \
+  --config inference_models/portrait_pp_humanseg_lite_v2_256x144_inference_model_with_softmax/deploy.yaml \
+  --video_path data/videos/video_shu.mp4 \
+  --save_dir data/videos_result/video_shu_v2_use_optic_flow.avi \
+  --vertical_screen \
+  --use_optic_flow
+```
+
 **3）摄像头输入**
 
 开启电脑摄像头（横屏），进行实时肖像分割。
@@ -264,131 +277,121 @@ python src/seg_demo.py \
   --bg_img_path data/images/bg_2.jpg
 ```
 
-此外，可以使用 DIS（Dense Inverse Search-basedmethod）光流后处理算法，减少视频预测前后帧闪烁的问题。
-`src/seg_demo.py`脚本只要设置`--use_optic_flow`输入参数，即可开启光流后处理。
-
-```bash
-python src/seg_demo.py \
-  --config inference_models/portrait_pp_humanseg_lite_v2_256x144_inference_model_with_softmax/deploy.yaml \
-  --video_path data/videos/video_heng.mp4 \
-  --save_dir data/videos_result/video_heng_v2_use_optic_flow.avi \
-  --use_optic_flow
-```
-
 视频分割结果如下：
-<img src="https://paddleseg.bj.bcebos.com/humanseg/data/video_test.gif" width="20%" height="20%"><img src="https://paddleseg.bj.bcebos.com/humanseg/data/result.gif" width="20%" height="20%">
+<p align="center">
+<img src="https://paddleseg.bj.bcebos.com/humanseg/data/video_test.gif"  height="200">  
+<img src="https://paddleseg.bj.bcebos.com/humanseg/data/result.gif"  height="200">
+</p>
 
 
 背景替换结果如下：
-<img src="https://paddleseg.bj.bcebos.com/humanseg/data/video_test.gif" width="20%" height="20%"><img src="https://paddleseg.bj.bcebos.com/humanseg/data/seg_demo.gif" width="20%" height="20%">
-
+<p align="center">
+<img src="https://paddleseg.bj.bcebos.com/humanseg/data/video_test.gif"  height="200">  
+<img src="https://paddleseg.bj.bcebos.com/humanseg/data/bg_replace.gif"  height="200">
+</p>
 
 ### 4.4 在线运行教程
 
 PP-HumanSeg V1版本提供了基于AI Studio的[在线运行教程](https://aistudio.baidu.com/aistudio/projectdetail/2189481)，大家可以实践体验。
 
-## 5 训练评估预测演示
-如果上述大规模数据预训练的模型不能满足您的精度需要，可以基于上述模型在您的场景中进行Fine-tuning，以更好地适应您的使用场景。
+## 5 训练微调
 
-### 下载预训练模型
+由于分割任务的场景变化很大，大家需要根据实际场景评估PP-HumanSeg系列模型的精度。
+如果开源模型满足业务要求，可以直接应用到产品中。如果不满足业务要求，大家可以收集、标注数据，基于开源模型进行Finetune。
 
-执行以下脚本快速下载所有Checkpoint作为预训练模型
+我们以PP-HumanSeg通用人像分割模型为例，介绍训练、评估、导出的方法。
+
+### 准备
+
+参考前文"快速体验 - 准备环境"，安装Paddle和PaddleSeg。
+
+执行如下命令，下载`mini_supervisely`数据集，具体说明请参考参考前文"快速体验 - 准备模型和数据"。
 ```bash
-python pretrained_model/download_pretrained_model.py
+python src/download_data.py
+```
+
+执行如下命令，下载Checkpoint作为预训练模型。
+```bash
+python src/download_pretrained_models.py
 ```
 
 ### 训练
-演示如何基于上述模型进行Fine-tuning。我们使用抽取的mini_supervisely数据集作为示例数据集，以PP-HumanSeg-Mobile为例，训练命令如下：
-```bash
-export CUDA_VISIBLE_DEVICES=0 # 设置1张可用的卡
-# windows下请执行以下命令
-# set CUDA_VISIBLE_DEVICES=0
-python train.py \
---config configs/pp_humanseg_mobile_192x192_mini_supervisely.yml \
---save_dir saved_model/pp_humanseg_mobile_192x192_mini_supervisely \
---save_interval 100 --do_eval --use_vdl
+
+配置文件保存在`./configs`目录下，如下。配置文件中，已经通过`pretrained`设置好预训练权重的路径。
+
+```
+configs
+├── human_pp_humanseg_lite_v1.yml
+├── human_pp_humanseg_lite_v2.yml
+├── human_pp_humanseg_mobile_v1.yml
+├── human_pp_humanseg_mobile_v2.yml
+├── human_pp_humanseg_server_v1.yml
 ```
 
-更多命令行帮助可运行下述命令进行查看：
+执行如下命令，进行模型微调。模型训练的详细文档，请参考[链接](../../docs/train/train_cn.md)。
+
 ```bash
-python train.py --help
+export CUDA_VISIBLE_DEVICES=0 # Linux下设置1张可用的卡
+# set CUDA_VISIBLE_DEVICES=0  # Windows下设置1张可用的卡
+python ../../train.py \
+  --config configs/human_pp_humanseg_lite_v2.yml \
+  --save_dir output/human_pp_humanseg_lite_v2 \
+  --save_interval 100 --do_eval --use_vdl
 ```
 
 ### 评估
-使用下述命令进行评估
+
+执行如下命令，加载模型和训练好的权重，进行模型评估，输出验证集上的评估精度。模型评估的详细文档，请参考[链接](../../docs/evaluation/evaluate/evaluate_cn.md)。
+
 ```bash
-python val.py \
---config configs/pp_humanseg_mobile_192x192_mini_supervisely.yml \
---model_path saved_model/pp_humanseg_mobile_192x192_mini_supervisely/best_model/model.pdparams
+python ../../val.py \
+  --config configs/human_pp_humanseg_lite_v2.yml \
+  --model_path pretrained_models/human_pp_humanseg_lite_v2_192x192_pretrained/model.pdparams
 ```
 
 ### 预测
-使用下述命令进行预测， 预测结果默认保存在`./output/result/`文件夹中。
+
+执行如下命令，加载模型和训练好的权重，对单张图像进行预测，预测结果保存在`./data/images_result`目录下的`added_prediction`和`pseudo_color_prediction`文件夹中。
+
 ```bash
-python predict.py \
---config configs/pp_humanseg_mobile_192x192_mini_supervisely.yml \
---model_path saved_model/pp_humanseg_mobile_192x192_mini_supervisely/best_model/model.pdparams \
---image_path data/human_image.jpg
+python ../../predict.py \
+  --config configs/human_pp_humanseg_lite_v2.yml \
+  --model_path pretrained_models/human_pp_humanseg_lite_v2_192x192_pretrained/model.pdparams \
+  --image_path data/images/human.jpg \
+  --save_dir ./data/images_result
 ```
 
-## 模型导出
-### 将模型导出为静态图模型
+### 导出
 
-请确保位于PaddleSeg目录下，执行以下脚本：
-
-```shell
-export CUDA_VISIBLE_DEVICES=0 # 设置1张可用的卡
-# windows下请执行以下命令
-# set CUDA_VISIBLE_DEVICES=0
-python ../../export.py \
---config configs/pp_humanseg_mobile_192x192_mini_supervisely.yml \
---model_path saved_model/pp_humanseg_mobile_192x192_mini_supervisely/best_model/model.pdparams \
---save_dir export_model/pp_humanseg_mobile_192x192_mini_supervisely_with_softmax \
---without_argmax --with_softmax
-```
-
-【注】这里采用软预测结果，可以携带透明度，使得边缘更为平滑。因此模型导出时必须携带`--without_argmax --with_softmax`参数。
-
-导出PP-HumanSeg-Lite模型：
+执行如下命令，加载模型和训练好的权重，导出预测模型。模型导出的详细文档，请参考[链接](../../docs/model_export_cn.md)。
 
 ```shell
 python ../../export.py \
---config ../../configs/pp_humanseg_lite/pp_humanseg_lite_export_398x224.yml \
---save_dir export_model/pp_humanseg_lite_portrait_398x224_with_softmax \
---model_path pretrained_model/ppseg_lite_portrait_398x224/model.pdparams \
---without_argmax --with_softmax
+  --config configs/human_pp_humanseg_lite_v2.yml \
+  --model_path pretrained_models/human_pp_humanseg_lite_v2_192x192_pretrained/model.pdparams \
+  --save_dir output/human_pp_humanseg_lite_v2 \
+  --without_argmax \
+  --with_softmax
 ```
 
-其他PP-HumanSeg模型对应的导出yml位于`configs/`和`../../configs/pp_humanseg_lite/`目录下。
+注意，使用`--without_argmax --with_softmax`参数，则模型导出的时候，模型最后面不会添加Argmax算子，而是添加Softmax算子。
+所以，输出是浮点数类型，表示前景的概率，使得图像融合的边缘更为平滑。
 
-### 导出脚本参数解释
+## 6 部署
+### Web端部署
 
-|参数名|用途|是否必选项|默认值|
-|-|-|-|-|
-|config|配置文件|是|-|
-|save_dir|模型和visualdl日志文件的保存根路径|否|output|
-|model_path|预训练模型参数的路径|否|配置文件中指定值|
-|with_softmax|在网络末端添加softmax算子。由于PaddleSeg组网默认返回logits，如果想要部署模型获取概率值，可以置为True|否|False|
-|without_argmax|是否不在网络末端添加argmax算子。由于PaddleSeg组网默认返回logits，为部署模型可以直接获取预测结果，我们默认在网络末端添加argmax算子|否|False|
-
-### 结果文件
-
-```shell
-output
-  ├── deploy.yaml            # 部署相关的配置文件
-  ├── model.pdiparams        # 静态图模型参数
-  ├── model.pdiparams.info   # 参数额外信息，一般无需关注
-  └── model.pdmodel          # 静态图模型文件
-```
-
-## Web端部署
-
-![image](https://user-images.githubusercontent.com/10822846/118273079-127bf480-b4f6-11eb-84c0-8a0bbc7c7433.png)
+<p align="center">
+<img src="https://user-images.githubusercontent.com/10822846/118273079-127bf480-b4f6-11eb-84c0-8a0bbc7c7433.png"  height="200">
+</p>
 
 参见[Web端部署教程](../../deploy/web)
 
-## 移动端部署
+### 移动端部署
 
-<img src="../../deploy/lite/example/human_1.png"  width="20%" >  <img src="../../deploy/lite/example/human_2.png"  width="20%" >  <img src="../../deploy/lite/example/human_3.png"  width="20%" >
+<p align="center">
+<img src="../../deploy/lite/example/human_1.png"  height="200">  
+<img src="../../deploy/lite/example/human_2.png"  height="200">
+<img src="../../deploy/lite/example/human_3.png"  height="200">
+</p>
 
 参见[移动端部署教程](../../deploy/lite/)
