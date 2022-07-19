@@ -8,7 +8,6 @@
 
 **An Efficient Interactive Segmentation Tool based on [PaddlePaddle](https://github.com/paddlepaddle/paddle).**
 
-
 [![Python 3.6](https://img.shields.io/badge/python-3.6+-blue.svg)](https://www.python.org/downloads/release/python-360/) [![PaddlePaddle 2.2](https://img.shields.io/badge/paddlepaddle-2.2-blue.svg)](https://www.python.org/downloads/release/python-360/) [![License](https://img.shields.io/badge/license-Apache%202-blue.svg)](LICENSE) [![Downloads](https://pepy.tech/badge/eiseg)](https://pepy.tech/project/eiseg)
 
 </div>
@@ -39,7 +38,7 @@ EISeg (Efficient Interactive Segmentation) is an efficient and intelligent inter
 
 - 2022.07.20  **1.0.0**：【1】Add the ability of interactive video object segmentation. 【2】Add 3D annotation model for abdominal multi-organ【3】Added 3D annotation model for  CT vertebra.
 - 2022.04.10  **0.5.0**: 【1】Add chest_xray interactive model;【2】Add MRSpineSeg interactive model;【3】Add industrial quality inspection model;【4】Fix geo-transform / CRS error when shapefile saved.
-- 2021.12.14 **0.4.1**: 【1】Fix the bug of crashing; 【2】Newly add the post-labeling operation of remote sensing building images. 
+- 2021.12.14 **0.4.1**: 【1】Fix the bug of crashing; 【2】Newly add the post-labeling operation of remote sensing building images.
 - 2021.11.16 **0.4.0**: 【1】 Convert dynamic graph inference into static graph inference with ten times' increase in the speed of single click; 【2】 Add the function of remote sensing image labeling, support the selection of multi-spectral data channels; 【3】 Support the processing of slicing (multi squre division) of large size data; 【4】 Add medical image labeling function, support the reading dicom format and the selection of window width and position.
 - 2021.09.16  **0.3.0**：【1】Complete the function of polygon editing with support for editing the results of interactive annotation；【2】Support CH/EN interface；【3】Support saving as grayscale/pseudo-color labels and COCO format；【4】More flexible interface dragging；【5】Achieve the dragging of label bar, and the generated mask is overwritten from top to bottom.
 - 2021.07.07  **0.2.0**: Newly added contrib：EISeg，which enables rapid interactive annotation of portrait and generic images.
@@ -64,7 +63,7 @@ If you find our project useful in your research, please consider citing ：
 }
 ```
 
-## <img src="../docs/images/chat.png" width="20"/> Community 
+## <img src="../docs/images/chat.png" width="20"/> Community
 
 * If you have any problem or suggestion on EISeg, please send us issues through [GitHub Issues](https://github.com/PaddlePaddle/PaddleSeg/issues).
 * Welcome to Join EISeg WeChat Group
