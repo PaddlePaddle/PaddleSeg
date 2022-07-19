@@ -13,11 +13,12 @@
 # limitations under the License.
 
 from qtpy import QtWidgets, QtCore, QtGui
-from qtpy.QtCore import Qt
+from qtpy.QtCore import Qt, QPointF
 
 
 class AnnotationView(QtWidgets.QGraphicsView):
     zoomRequest = QtCore.Signal(float)
+    mousePosChanged = QtCore.Signal(QPointF)
 
     def __init__(self, *args):
         super(AnnotationView, self).__init__(*args)
@@ -29,6 +30,8 @@ class AnnotationView(QtWidgets.QGraphicsView):
         self.point = QtCore.QPoint(0, 0)
         self.middle_click = False
         self.zoom_all = 1
+        # hint mouse
+        # self.setCursor(Qt.BlankCursor)
 
     def wheelEvent(self, ev):
         if ev.modifiers() & QtCore.Qt.ControlModifier:
@@ -46,6 +49,8 @@ class AnnotationView(QtWidgets.QGraphicsView):
             super(AnnotationView, self).wheelEvent(ev)
 
     def mouseMoveEvent(self, ev):
+        mouse_pos = QPointF(self.mapToScene(ev.pos()))
+        self.mousePosChanged.emit(mouse_pos.toPoint())
         if self.middle_click and (self.horizontalScrollBar().isVisible() or
                                   self.verticalScrollBar().isVisible()):
             # 放大到出现滚动条才允许拖动，避免出现抖动
@@ -67,3 +72,7 @@ class AnnotationView(QtWidgets.QGraphicsView):
         if ev.button() == Qt.MiddleButton:
             self.middle_click = False
         super(AnnotationView, self).mouseReleaseEvent(ev)
+
+    def leaveEvent(self, ev):
+        self.mousePosChanged.emit(QPointF(-1, -1))
+        return super(AnnotationView, self).leaveEvent(ev)

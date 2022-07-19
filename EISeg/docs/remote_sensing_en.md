@@ -1,4 +1,7 @@
+English | [简体中文](remote_sensing.md)
+
 # Remote Sensing
+
 
 This part presents documents related to remote sensing in EISeg, including its environment configuration and functions.
 
