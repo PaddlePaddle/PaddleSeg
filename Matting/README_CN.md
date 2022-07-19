@@ -5,9 +5,7 @@ Image Matting（精细化分割/影像去背/抠图）是指借由计算前景�
 
 
 <p align="center">
-<img src="https://user-images.githubusercontent.com/30919197/179747985-d24d5891-55c4-404b-beae-383f4bf42922.gif" width="25%" height="25%">,
-<img src="https://user-images.githubusercontent.com/30919197/179748234-e7545f1d-5411-428f-ab8b-9cbf1ea5c9f6.gif" width="25%" height="25%">,
-<img src="https://user-images.githubusercontent.com/30919197/179748242-71291e3a-f328-4834-a5d0-dedbcb277b6e.gif" width="37.4%" height="37.4%">
+<img src="https://user-images.githubusercontent.com/30919197/179751613-d26f2261-7bcf-4066-a0a4-4c818e7065f0.gif" width="100%" height="100%">
 </p>
 
 # 快速体验

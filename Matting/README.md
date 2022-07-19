@@ -4,9 +4,7 @@ English | [简体中文](README_CN.md)
 Image Matting is the technique of extracting foreground from an image by calculating its color and transparency. It is widely used in the film industry to replace background, image composition, and visual effects. Each pixel in the image will have a value that represents its foreground transparency, called Alpha. The set of all Alpha values in an image is called Alpha Matte. The part of the image covered by the mask can be extracted to complete foreground separation.
 
 <p align="center">
-<img src="https://user-images.githubusercontent.com/30919197/179747985-d24d5891-55c4-404b-beae-383f4bf42922.gif" width="25%" height="25%">,
-<img src="https://user-images.githubusercontent.com/30919197/179748234-e7545f1d-5411-428f-ab8b-9cbf1ea5c9f6.gif" width="25%" height="25%">,
-<img src="https://user-images.githubusercontent.com/30919197/179748242-71291e3a-f328-4834-a5d0-dedbcb277b6e.gif" width="37.4%" height="37.4%">
+<img src="https://user-images.githubusercontent.com/30919197/179751613-d26f2261-7bcf-4066-a0a4-4c818e7065f0.gif" width="100%" height="100%">
 </p>
 
 # One-click experience
