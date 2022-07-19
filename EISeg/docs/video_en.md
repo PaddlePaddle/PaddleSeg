@@ -1,3 +1,5 @@
+English | [简体中文](video.md)
+
 # Interactive Video Object Segmentation and 3D Medical Imaging Annotation
 
 The following contents are related to interactive video annotation in EISeg, mainly including model selection, data preparation and instructions.
@@ -16,7 +18,7 @@ pip install vtk
 
 ## Model Selection
 Interactive video object segmentation is based on EISeg interactive segmentation algorithms and [MIVOS](https://github.com/hkchengrex/MiVOS) algorithm. It is an efficient image and video annotation software based on PaddlePaddle.
-EISeg 1.0 covers high-quality interactive video object segmentation models in different directions such as general, liver, CT spinal structures, etc., which is convenient for developers to quickly annotate videos and reduce the cost of annotation. For 3D Medical Imaging Annotation, we regard medical slice data as the video frames, and realize the labeling of 3D medical images by using video annotation method. 
+EISeg 1.0 covers high-quality interactive video object segmentation models in different directions such as general, liver, CT spinal structures, etc., which is convenient for developers to quickly annotate videos and reduce the cost of annotation. For 3D Medical Imaging Annotation, we regard medical slice data as the video frames, and realize the labeling of 3D medical images by using video annotation method.
 Before using EISeg, please download the propagation model parameters. If you want to use the 3D display function, you can check the 3D display function in the `Display` menu.
 
 ![lits](https://user-images.githubusercontent.com/35907364/178422205-40327d43-c7d4-4a5d-87fb-63c08308fb9f.gif)
@@ -65,6 +67,3 @@ adjust the polygon vertexes to further improve segmentation accuracy.
 6. **Autosave**
 
    You can choose the right folder and have the `autosave` set up, so that the annotated image will be saved automatically when switching images.
-
-
-    

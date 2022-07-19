@@ -1,3 +1,5 @@
+English | [简体中文](medical.md)
+
 # Medical Treatment
 
 This part presents documents related to medical treatment in EISeg, including its environment configuration and functions.
@@ -26,5 +28,4 @@ Click Yes and there appears the setting panel of the image window width and posi
 
 The window width and position serve to limit the intensity range for easy observation of the CT scanning. The value stored at each pixel point in the CT scan represents the density of the human body at that location, so the higher the density the larger the value. The data range of the image is usually -1024 to 1024. However, the human eye cannot distinguish 2048 shades of gray when viewing the scan, so a smaller intensity range is usually adopted to increase the grayscale differences of the images within, thus facilitating the observation. This is done by selecting the section ranging from Window - Window Width/2 to Window + Window Width/2, and presenting the data in a 256-grayscale image.
 
-For inference, EISeg provides the [pre-trained model for liver segmentation](https://paddleseg.bj.bcebos.com/eiseg/0.4/static_hrnet18s_ocr48_lits.zip) for medical scenarios, with recommended window widths of 400, 0. This model performs best for liver segmentation and can also be used for other tissues or organs. 
-
+For inference, EISeg provides the [pre-trained model for liver segmentation](https://paddleseg.bj.bcebos.com/eiseg/0.4/static_hrnet18s_ocr48_lits.zip) for medical scenarios, with recommended window widths of 400, 0. This model performs best for liver segmentation and can also be used for other tissues or organs.

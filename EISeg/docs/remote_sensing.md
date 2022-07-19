@@ -1,3 +1,5 @@
+简体中文 | [English](remote_sensing_en.md)
+
 # 遥感相关
 
 以下内容为EISeg中遥感垂类相关的文档，主要包括环境配置和功能介绍两大方面。

@@ -1,4 +1,4 @@
-
+English | [简体中文](install.md)
 
 ## Installation
 

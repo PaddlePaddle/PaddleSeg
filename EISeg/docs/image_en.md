@@ -1,3 +1,4 @@
+English | [简体中文](image.md)
 # 2D Image Anotation
 
 The following content is about how to use EISeg to annotate 2D images. Model preparation and how to use can be seen as follow:

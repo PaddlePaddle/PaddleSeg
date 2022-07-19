@@ -1,5 +1,3 @@
-
-<!-- [![GitHub release](https://img.shields.io/github/release/Naereen/StrapDown.js.svg)](https://github.com/PaddleCV-SIG/iseg/releases) -->
 简体中文 | [English](README_EN.md)
 <div align="center">
 
