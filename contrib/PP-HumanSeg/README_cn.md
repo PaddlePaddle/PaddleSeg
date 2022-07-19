@@ -63,7 +63,8 @@
 | PP-HumanSeg-Lite-V1 | 398x224 | 96.00 | 29.68 | 2.2 | [cfg](./configs/portrait_pp_humanseg_lite_v1.yml) | [Checkpoint](https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/portrait_pp_humanseg_lite_v1_398x224_pretrained.zip) \| [Inference Model (Argmax)](https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/portrait_pp_humanseg_lite_v1_398x224_inference_model.zip) \| [Inference Model (Softmax)](https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/portrait_pp_humanseg_lite_v1_398x224_inference_model_with_softmax.zip) |
 | PP-HumanSeg-Lite-V2 | 256x144 | 96.63 | 15.86 | 13.5 | [cfg](./configs/portrait_pp_humanseg_lite_v2.yml) | [Checkpoint](https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/portrait_pp_humanseg_lite_v2_256x144_pretrained.zip) \| [Inference Model (Argmax)](https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/portrait_pp_humanseg_lite_v2_256x144_inference_model.zip) \| [Inference Model (Softmax)](https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/portrait_pp_humanseg_lite_v2_256x144_inference_model_with_softmax.zip) |
 
-表格说明：
+<details><summary>表格说明：</summary>
+
 * 测试肖像模型的精度mIoU：针对PP-HumanSeg-14k数据集，使用模型最佳输入尺寸进行测试，没有应用多尺度和flip等操作。
 * 测试肖像模型的推理耗时：基于[PaddleLite](https://www.paddlepaddle.org.cn/lite)预测库，小米9手机（骁龙855 CPU）、单线程、大核，使用模型最佳输入尺寸进行测试。
 * 最佳输入尺寸的宽高比例是16:9，和手机、电脑的摄像头拍摄尺寸比例相同。
@@ -71,10 +72,13 @@
 * Inference Model为预测模型，可以直接用于部署。
 * Inference Model (Argmax) 指模型最后使用Argmax算子，输出单通道预测结果(int64类型)，人像区域为1，背景区域为0。
 * Inference Model (Softmax) 指模型最后使用Softmax算子，输出单通道预测结果（float32类型），每个像素数值表示是人像的概率。
+</details>
 
-使用说明：
+<details><summary>使用说明：</summary>
+
 * 肖像分割模型专用性较强，可以开箱即用，建议使用最佳输入尺寸。
 * 在手机端部署肖像分割模型，存在横屏和竖屏两种情况。大家可以根据实际情况对图像进行旋转，保持人像始终是竖直，然后将图像（尺寸比如是256x144或144x256）输入模型，得到最佳分割效果。
+</details>
 
 ### 3.2 通用人像分割模型
 
@@ -92,7 +96,8 @@
 | PP-HumanSeg-Server    | 512x512 | 96.47 |  -    | 24.9 | [cfg](./configs/human_pp_humanseg_server_v1.yml) | [Checkpoint](https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/human_pp_humanseg_server_v1_512x512_pretrained.zip) \| [Inference Model (Argmax)](https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/human_pp_humanseg_server_v1_512x512_inference_model.zip) \| [Inference Model (Softmax)](https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/human_pp_humanseg_server_v1_512x512_inference_model_with_softmax.zip) |
 
 
-表格说明：
+<details><summary>表格说明：</summary>
+
 * 测试通用人像模型的精度mIoU：通用分割模型在大规模人像数据集上训练完后，在小规模Supervisely Person 数据集([下载链接](https://paddleseg.bj.bcebos.com/humanseg/data/mini_supervisely.zip))上进行测试。
 * 测试手机端推理耗时：基于[PaddleLite](https://www.paddlepaddle.org.cn/lite)预测库，小米9手机（骁龙855 CPU）、单线程、大核，使用模型最佳输入尺寸进行测试。
 * 测试服务器端推理耗时：基于[PaddleInference](https://www.paddlepaddle.org.cn/inference/product_introduction/inference_intro.html)预测裤，V100 GPU、开启TRT，使用模型最佳输入尺寸进行测试。
@@ -100,9 +105,14 @@
 * Inference Model为预测模型，可以直接用于部署。
 * Inference Model (Argmax) 指模型最后使用Argmax算子，输出单通道预测结果(int64类型)，人像区域为1，背景区域为0。
 * Inference Model (Softmax) 指模型最后使用Softmax算子，输出单通道预测结果（float32类型），每个像素数值表示是人像的概率。
+</details>
 
-使用说明：
-* 由于通用人像分割任务的场景变化很大，大家需要根据实际场景评估PP-HumanSeg通用人像分割模型的精度。如果满足业务要求，可以直接应用到产品中。如果不满足业务要求，大家可以收集、标注数据，基于开源通用人像分割模型进行Finetune。
+<details><summary>使用说明：</summary>
+
+* 由于通用人像分割任务的场景变化很大，大家需要根据实际场景评估PP-HumanSeg通用人像分割模型的精度。
+* 如果满足业务要求，可以直接应用到产品中。
+* 如果不满足业务要求，大家可以收集、标注数据，基于开源通用人像分割模型进行Finetune。
+</details>
 
 
 ## 4 快速体验
@@ -164,13 +174,15 @@ python src/download_data.py
 | vertical_screen | 表明输入图片和视频是竖屏                | store_true | 否  | False |
 | use_optic_flow  | 设置使用光流处理                      | store_true | 否  | False |
 
-参数说明：
+<details><summary>参数说明：</summary>
+
 * 如果设置了img_path，则对图像进行分割；如果设置了video_path，则对视频进行分割。
 * 如果img_path和video_path都没有设置，则使用摄像头拍摄视频，进行分割。
 * 默认输入图像和视频是横屏模式，即是宽大于高，如果输入图像和视频是竖屏模式，需要设置`--vertical_screen`参数。
 * 使用光流处理可以缓解视频分割的抖动，要求opencv-python版本大于4.0。
+</details>
 
-**1）输入图片**
+**1）输入图片进行测试**
 
 加载`data/images/portrait_heng.jpg`横屏图像，使用PP-Humanseg肖像分割模型进行预测，结果保存在`data/images_result/`目录。
 
@@ -215,7 +227,7 @@ python src/seg_demo.py \
   --vertical_screen
 ```
 
-**2）输入视频**
+**2）输入视频进行分割**
 
 加载`data/videos/video_heng.mp4`横屏视频，使用PP-Humanseg肖像分割模型进行预测，结果保存在`data/videos_result/`目录。
 
@@ -250,7 +262,8 @@ python src/seg_demo.py \
   --config inference_models/portrait_pp_humanseg_lite_v2_256x144_inference_model_with_softmax/deploy.yaml \
   --video_path data/videos/video_heng.mp4 \
   --bg_img_path data/images/bg_2.jpg \
-  --save_dir data/videos_result/video_heng_v2_withbg.avi
+  --save_dir data/videos_result/video_heng_v2_withbg.avi \
+
 ```
 
 此外可以使用 DIS（Dense Inverse Search-basedmethod）光流后处理算法 (要求opencv-python版本大于4.0)，减少视频预测前后帧闪烁的问题。
@@ -264,7 +277,7 @@ python src/seg_demo.py \
   --use_optic_flow
 ```
 
-**3）摄像头输入**
+**3）摄像头输入进行分割**
 
 开启电脑摄像头（横屏），进行实时肖像分割。
 
