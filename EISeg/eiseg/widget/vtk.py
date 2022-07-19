@@ -3,7 +3,6 @@ import typing
 import numpy as np
 from qtpy.QtWidgets import QWidget, QVBoxLayout
 
-
 # 只有调用convert_vtk才会加载vtk相关的并把这个控件转换为真正的vtk控件
 vtk = None
 QVTKRenderWindowInteractor = None
@@ -20,7 +19,7 @@ class VTKWidget(QWidget):
         self.pass_band = 0.005
         self.feature_angle = 120
         self.import_vtk = False
-        
+
     def convert_vtk(self) -> bool:
         try:
             import vtk
@@ -37,7 +36,7 @@ class VTKWidget(QWidget):
         finally:
             return self.import_vtk
 
-    def init(self, clear: bool = True) -> None:
+    def init(self, clear: bool=True) -> None:
         if self.import_vtk is False:
             return
         # remove
@@ -52,10 +51,14 @@ class VTKWidget(QWidget):
         self.vlayer.addWidget(self.interactor)
         if clear:
             # set background
-            self.renderer.SetBackground(vtk.vtkNamedColors().GetColor3d("black"))
+            self.renderer.SetBackground(vtk.vtkNamedColors().GetColor3d(
+                "black"))
             self.interactor.Start()
 
-    def show_array(self, data: np.ndarray, spacing: typing.Tuple, color_map: typing.List) -> None:
+    def show_array(self,
+                   data: np.ndarray,
+                   spacing: typing.Tuple,
+                   color_map: typing.List) -> None:
         if self.import_vtk is False:
             return
         print("color_map:", color_map)
@@ -68,12 +71,9 @@ class VTKWidget(QWidget):
         mbds.SetNumberOfBlocks(self.num_block - 1)
         for iter in range(1, self.num_block + 1):
             contour = self._get_mc_contour(iter)
-            smoother = self._smoothing(
-                self.smoothing_iterations, 
-                self.pass_band, 
-                self.feature_angle, 
-                contour
-            )
+            smoother = self._smoothing(self.smoothing_iterations,
+                                       self.pass_band, self.feature_angle,
+                                       contour)
             mbds.SetBlock(iter, smoother.GetOutput())
         self._multidisplay(mbds, color_map)
 
@@ -84,10 +84,10 @@ class VTKWidget(QWidget):
         contour.SetValue(0, setvalue)
         return contour
 
-    def _smoothing(self, 
-                   smoothing_iterations: int, 
-                   pass_band: float, 
-                   feature_angle: int, 
+    def _smoothing(self,
+                   smoothing_iterations: int,
+                   pass_band: float,
+                   feature_angle: int,
                    contour: typing.Any) -> typing.Any:
         smoother = vtk.vtkWindowedSincPolyDataFilter()
         smoother.SetInputConnection(contour.GetOutputPort())

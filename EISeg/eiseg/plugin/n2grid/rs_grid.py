@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 import numpy as np
 from typing import List, Tuple
 from eiseg.plugin.remotesensing.raster import Raster
@@ -39,7 +38,8 @@ class RSGrids:
 
     def createGrids(self) -> List[int]:
         img_size = (self.raster.geoinfo.ysize, self.raster.geoinfo.xsize)
-        grid_count = np.ceil((img_size + self.raster.overlap) / self.raster.grid_size)
+        grid_count = np.ceil(
+            (img_size + self.raster.overlap) / self.raster.grid_size)
         self.grid_count = grid_count = grid_count.astype("uint16")
         self.mask_grids = [[np.zeros(self.raster.grid_size) \
                             for _ in range(grid_count[1])] for _ in range(grid_count[0])]
@@ -52,7 +52,6 @@ class RSGrids:
         return img, mask
 
     def splicingList(self, save_path: str) -> np.ndarray:
-        mask = self.raster.saveMaskbyGrids(self.mask_grids, 
-                                           save_path,
+        mask = self.raster.saveMaskbyGrids(self.mask_grids, save_path,
                                            self.raster.geoinfo)
         return mask

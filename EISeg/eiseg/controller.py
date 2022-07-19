@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 import os.path as osp
 import time
 import json
@@ -34,10 +33,9 @@ from util import LabelList
 
 class InteractiveController:
     def __init__(
-        self,
-        predictor_params: dict = None,
-        prob_thresh: float = 0.5,
-    ):
+            self,
+            predictor_params: dict=None,
+            prob_thresh: float=0.5, ):
         """初始化控制器.
 
         Parameters
@@ -105,7 +103,8 @@ class InteractiveController:
             if not osp.exists(model_path):
                 raise Exception(f"未在 {model_path} 找到模型文件")
             if use_gpu is None:
-                if paddle.device.is_compiled_with_cuda():  # TODO: 可以使用GPU却返回False
+                if paddle.device.is_compiled_with_cuda(
+                ):  # TODO: 可以使用GPU却返回False
                     use_gpu = True
                 else:
                     use_gpu = False
@@ -205,12 +204,10 @@ class InteractiveController:
             return False, "图像未设置"
 
         if len(self.states) == 0:  # 保存一个空状态
-            self.states.append(
-                {
-                    "clicker": self.clicker.get_state(),
-                    "predictor": self.predictor.get_states(),
-                }
-            )
+            self.states.append({
+                "clicker": self.clicker.get_state(),
+                "predictor": self.predictor.get_states(),
+            })
 
         # 2. 添加点击，跑推理
         click = clicker.Click(is_positive=is_positive, coords=(y, x))
@@ -218,12 +215,10 @@ class InteractiveController:
         pred = self.predictor.get_prediction(self.clicker)
 
         # 3. 保存状态
-        self.states.append(
-            {
-                "clicker": self.clicker.get_state(),
-                "predictor": self.predictor.get_states(),
-            }
-        )
+        self.states.append({
+            "clicker": self.clicker.get_state(),
+            "predictor": self.predictor.get_states(),
+        })
         if self.probs_history:
             self.probs_history.append((self.probs_history[-1][1], pred))
         else:
@@ -270,9 +265,10 @@ class InteractiveController:
         object_mask = object_prob > self.prob_thresh
         if self.lccFilter:
             object_mask = self.getLargestCC(object_mask)
-        polygon = util.get_polygon((object_mask.astype(np.uint8) * 255), 
-                                    img_size=object_mask.shape,
-                                    building=building)
+        polygon = util.get_polygon(
+            (object_mask.astype(np.uint8) * 255),
+            img_size=object_mask.shape,
+            building=building)
         if polygon is not None:
             self._result_mask[object_mask] = self.curr_label_number
             self.resetLastObject()
@@ -324,7 +320,8 @@ class InteractiveController:
         if predictor_params is not None:
             self.predictor_params = predictor_params
         if self.model.model:
-            self.predictor = get_predictor(self.model.model, **self.predictor_params)
+            self.predictor = get_predictor(self.model.model,
+                                           **self.predictor_params)
             if self.image is not None:
                 self.predictor.set_input_image(self.image)
 
@@ -346,21 +343,18 @@ class InteractiveController:
         results_mask_for_vis = np.zeros_like(self.result_mask)
         results_mask_for_vis *= self.curr_label_number
         if self.probs_history:
-            results_mask_for_vis[
-                self.current_object_prob > self.prob_thresh
-            ] = self.curr_label_number
+            results_mask_for_vis[self.current_object_prob >
+                                 self.prob_thresh] = self.curr_label_number
         if self.lccFilter:
-            results_mask_for_vis = (
-                self.getLargestCC(results_mask_for_vis) * self.curr_label_number
-            )
+            results_mask_for_vis = (self.getLargestCC(results_mask_for_vis) *
+                                    self.curr_label_number)
         vis = draw_with_blend_and_clicks(
             self.image,
             mask=results_mask_for_vis,
             alpha=alpha_blend,
             clicks_list=self.clicker.clicks_list,
             radius=click_radius,
-            palette=self.palette,
-        )
+            palette=self.palette, )
         return vis
 
     def inImage(self, x: int, y: int):

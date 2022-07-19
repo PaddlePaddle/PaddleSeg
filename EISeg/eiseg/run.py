@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 import sys
 import os
 import os.path as osp
@@ -29,8 +28,7 @@ from app import APP_EISeg  # 导入带槽的界面
 def main():
     ## -- log --
     settings = QtCore.QSettings(
-        osp.join(pjpath, "config/setting.txt"), QtCore.QSettings.IniFormat
-    )
+        osp.join(pjpath, "config/setting.txt"), QtCore.QSettings.IniFormat)
     #
     # logFolder = settings.value("logFolder")
     # logLevel = settings.value("logLevel")

@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 import json
 import random
 import hashlib
@@ -38,21 +37,9 @@ class BaiduTranslate:
         md = hashlib.md5()
         md.update(sign.encode(encoding="utf-8"))
         sign = md.hexdigest()
-        myurl = (
-            self.url
-            + "?appid="
-            + self.appid
-            + "&q="
-            + parse.quote(text)
-            + "&from="
-            + self.fromLang
-            + "&to="
-            + self.toLang
-            + "&salt="
-            + str(self.salt)
-            + "&sign="
-            + sign
-        )
+        myurl = (self.url + "?appid=" + self.appid + "&q=" + parse.quote(text) +
+                 "&from=" + self.fromLang + "&to=" + self.toLang + "&salt=" +
+                 str(self.salt) + "&sign=" + sign)
         try:
             httpClient = http.client.HTTPConnection("api.fanyi.baidu.com")
             httpClient.request("GET", myurl)
@@ -63,6 +50,7 @@ class BaiduTranslate:
             return True, dst
         except Exception as e:
             return False, e
+
 
 def read_ts(ts_path):
     xml = open(ts_path, "r", encoding="utf-8").read()

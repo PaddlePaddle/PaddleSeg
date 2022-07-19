@@ -41,7 +41,9 @@ def load_medical_data(f):
         else:
             f_nps = [f_np]
     elif filename.endswith(".raw"):
-        raise RuntimeError(f"Received {f}. Please only provide path to .mhd file, not to .raw file")
+        raise RuntimeError(
+            f"Received {f}. Please only provide path to .mhd file, not to .raw file"
+        )
     else:
         raise NotImplementedError
 

@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 from qtpy import QtWidgets, QtCore, QtGui
 from qtpy.QtCore import Qt, QPointF
 
@@ -23,9 +22,8 @@ class AnnotationView(QtWidgets.QGraphicsView):
 
     def __init__(self, *args):
         super(AnnotationView, self).__init__(*args)
-        self.setRenderHints(
-            QtGui.QPainter.Antialiasing | QtGui.QPainter.SmoothPixmapTransform
-        )
+        self.setRenderHints(QtGui.QPainter.Antialiasing |
+                            QtGui.QPainter.SmoothPixmapTransform)
         self.setMouseTracking(True)
         self.setTransformationAnchor(QtWidgets.QGraphicsView.NoAnchor)
         self.setResizeAnchor(QtWidgets.QGraphicsView.NoAnchor)
@@ -53,12 +51,11 @@ class AnnotationView(QtWidgets.QGraphicsView):
     def mouseMoveEvent(self, ev):
         mouse_pos = QPointF(self.mapToScene(ev.pos()))
         self.mousePosChanged.emit(mouse_pos.toPoint())
-        if self.middle_click and (
-            self.horizontalScrollBar().isVisible()
-            or self.verticalScrollBar().isVisible()
-        ):
+        if self.middle_click and (self.horizontalScrollBar().isVisible() or
+                                  self.verticalScrollBar().isVisible()):
             # 放大到出现滚动条才允许拖动，避免出现抖动
-            self._endPos = ev.pos() / self.zoom_all - self._startPos / self.zoom_all
+            self._endPos = ev.pos(
+            ) / self.zoom_all - self._startPos / self.zoom_all
             # 这儿不写为先减后除，这样会造成速度不一致
             self.point = self.point + self._endPos
             self._startPos = ev.pos()

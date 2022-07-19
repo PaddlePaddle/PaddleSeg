@@ -104,14 +104,13 @@ class COCO:
         self.cats = cats
 
     def setInfo(
-        self,
-        year: int = "",
-        version: str = "",
-        description: str = "",
-        contributor: str = "",
-        url: str = "",
-        date_created: datetime = "",
-    ):
+            self,
+            year: int="",
+            version: str="",
+            description: str="",
+            contributor: str="",
+            url: str="",
+            date_created: datetime="", ):
         self.dataset["info"] = {
             "year": year,
             "version": version,
@@ -122,12 +121,11 @@ class COCO:
         }
 
     def addCategory(
-        self,
-        id: int,
-        name: str,
-        color: list,
-        supercategory: str = "",
-    ):
+            self,
+            id: int,
+            name: str,
+            color: list,
+            supercategory: str="", ):
         cat = {
             "id": id,
             "name": name,
@@ -138,12 +136,11 @@ class COCO:
         self.dataset["categories"].append(cat)
 
     def updateCategory(
-        self,
-        id: int,
-        name: str,
-        color: list,
-        supercategory: str = "",
-    ):
+            self,
+            id: int,
+            name: str,
+            color: list,
+            supercategory: str="", ):
         cat = {
             "id": id,
             "name": name,
@@ -156,16 +153,15 @@ class COCO:
                 self.dataset["categories"][idx] = cat
 
     def addImage(
-        self,
-        file_name: str,
-        width: int,
-        height: int,
-        id: int = None,
-        license: int = "",
-        flickr_url: str = "",
-        coco_url: str = "",
-        date_captured: datetime = "",
-    ):
+            self,
+            file_name: str,
+            width: int,
+            height: int,
+            id: int=None,
+            license: int="",
+            flickr_url: str="",
+            coco_url: str="",
+            date_captured: datetime="", ):
         if self.hasImage(file_name):
             print(f"{file_name}图片已存在")
             return
@@ -200,13 +196,12 @@ class COCO:
         return 0.5 * np.abs(np.dot(x, np.roll(y, 1)) - np.dot(y, np.roll(x, 1)))
 
     def addAnnotation(
-        self,
-        image_id: int,
-        category_id: int,
-        segmentation: list,
-        area: float = None,
-        id: int = None,
-    ):
+            self,
+            image_id: int,
+            category_id: int,
+            segmentation: list,
+            area: float=None,
+            id: int=None, ):
         if id is not None and self.anns.get(id, None) is not None:
             print("标签已经存在")
             return
@@ -257,8 +252,7 @@ class COCO:
                 print(
                     "record point : ",
                     rec["segmentation"][0][0],
-                    rec["segmentation"][0][1],
-                )
+                    rec["segmentation"][0][1], )
                 break
 
         for rec in self.imgToAnns[imgId]:
@@ -291,25 +285,18 @@ class COCO:
         else:
             if not len(imgIds) == 0:
                 lists = [
-                    self.imgToAnns[imgId] for imgId in imgIds if imgId in self.imgToAnns
+                    self.imgToAnns[imgId] for imgId in imgIds
+                    if imgId in self.imgToAnns
                 ]
                 anns = list(itertools.chain.from_iterable(lists))
             else:
                 anns = self.dataset["annotations"]
-            anns = (
-                anns
-                if len(catIds) == 0
-                else [ann for ann in anns if ann["category_id"] in catIds]
-            )
-            anns = (
-                anns
-                if len(areaRng) == 0
-                else [
-                    ann
-                    for ann in anns
-                    if ann["area"] > areaRng[0] and ann["area"] < areaRng[1]
-                ]
-            )
+            anns = (anns if len(catIds) == 0 else
+                    [ann for ann in anns if ann["category_id"] in catIds])
+            anns = (anns if len(areaRng) == 0 else [
+                ann for ann in anns
+                if ann["area"] > areaRng[0] and ann["area"] < areaRng[1]
+            ])
         if not iscrowd == None:
             ids = [ann["id"] for ann in anns if ann["iscrowd"] == iscrowd]
         else:
@@ -332,21 +319,12 @@ class COCO:
             cats = self.dataset["categories"]
         else:
             cats = self.dataset["categories"]
-            cats = (
-                cats
-                if len(catNms) == 0
-                else [cat for cat in cats if cat["name"] in catNms]
-            )
-            cats = (
-                cats
-                if len(supNms) == 0
-                else [cat for cat in cats if cat["supercategory"] in supNms]
-            )
-            cats = (
-                cats
-                if len(catIds) == 0
-                else [cat for cat in cats if cat["id"] in catIds]
-            )
+            cats = (cats if len(catNms) == 0 else
+                    [cat for cat in cats if cat["name"] in catNms])
+            cats = (cats if len(supNms) == 0 else
+                    [cat for cat in cats if cat["supercategory"] in supNms])
+            cats = (cats if len(catIds) == 0 else
+                    [cat for cat in cats if cat["id"] in catIds])
         ids = [cat["id"] for cat in cats]
         return ids
 
@@ -589,9 +567,8 @@ class COCO:
             fname = os.path.join(tarDir, img["file_name"])
             if not os.path.exists(fname):
                 urlretrieve(img["coco_url"], fname)
-            print(
-                "downloaded {}/{} images (t={:0.1f}s)".format(i, N, time.time() - tic)
-            )
+            print("downloaded {}/{} images (t={:0.1f}s)".format(
+                i, N, time.time() - tic))
 
     def loadNumpyAnnotations(self, data):
         """
@@ -608,14 +585,12 @@ class COCO:
         for i in range(N):
             if i % 1000000 == 0:
                 print("{}/{}".format(i, N))
-            ann += [
-                {
-                    "image_id": int(data[i, 0]),
-                    "bbox": [data[i, 1], data[i, 2], data[i, 3], data[i, 4]],
-                    "score": data[i, 5],
-                    "category_id": int(data[i, 6]),
-                }
-            ]
+            ann += [{
+                "image_id": int(data[i, 0]),
+                "bbox": [data[i, 1], data[i, 2], data[i, 3], data[i, 4]],
+                "score": data[i, 5],
+                "category_id": int(data[i, 6]),
+            }]
         return ann
 
     # def annToRLE(self, ann):

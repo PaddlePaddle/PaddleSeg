@@ -2,7 +2,6 @@
 # Users should be careful about adopting these functions in any commercial matters.
 # https://github.com/hkchengrex/MiVOS/blob/main/LICENSE
 
-
 import glob
 import os
 
@@ -27,7 +26,8 @@ def load_video(path, min_side=480):
             h, w = frame.shape[:2]
             new_w = (w * min_side // min(w, h))
             new_h = (h * min_side // min(w, h))
-            frame = cv2.resize(frame, (new_w, new_h), interpolation=cv2.INTER_CUBIC)
+            frame = cv2.resize(
+                frame, (new_w, new_h), interpolation=cv2.INTER_CUBIC)
         frame_list.append(frame)
     frames = np.stack(frame_list, axis=0)
     return frames
@@ -46,7 +46,10 @@ def load_masks(path, min_side=None):
             w, h = image.size
             new_w = (w * min_side // min(w, h))
             new_h = (h * min_side // min(w, h))
-            frame_list.append(np.array(image.resize((new_w, new_h), Image.NEAREST), dtype=np.uint8))
+            frame_list.append(
+                np.array(
+                    image.resize((new_w, new_h), Image.NEAREST),
+                    dtype=np.uint8))
         else:
             frame_list.append(np.array(Image.open(fname), dtype=np.uint8))
 
@@ -65,21 +68,17 @@ def overlay_davis(image, mask, alpha=0.5, palette=None):
         palette = np.array(palette)
         rgb_mask = palette[mask.astype(np.uint8)]
         mask_region = (mask > 0).astype(np.uint8)
-        result = (
-                result * (1 - mask_region[:, :, np.newaxis])
-                + (1 - alpha) * mask_region[:, :, np.newaxis] * result
-                + alpha * rgb_mask
-        )
+        result = (result * (1 - mask_region[:, :, np.newaxis]) + (1 - alpha) *
+                  mask_region[:, :, np.newaxis] * result + alpha * rgb_mask)
         result = result.astype(np.uint8)
     return result
 
 
 def aggregate_wbg(prob, keep_bg=False, hard=False):
     k, _, h, w = prob.shape
-    new_prob = paddle.concat([
-        paddle.prod(1 - prob, axis=0, keepdim=True),
-        prob
-    ], 0).clip(1e-7, 1 - 1e-7)
+    new_prob = paddle.concat(
+        [paddle.prod(
+            1 - prob, axis=0, keepdim=True), prob], 0).clip(1e-7, 1 - 1e-7)
     logits = paddle.log((new_prob / (1 - new_prob)))
 
     if hard:

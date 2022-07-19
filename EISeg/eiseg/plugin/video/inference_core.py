@@ -2,7 +2,6 @@
 # Users should be careful about adopting these functions in any commercial matters.
 # https://github.com/hkchengrex/MiVOS/blob/main/LICENSE
 
-
 import os
 
 import paddle.nn.functional as F
@@ -102,15 +101,20 @@ class InferenceCore:
         # param path
         param_path = os.path.abspath(os.path.dirname(param_path))
         # **************memorize**********************
-        memory_model_path = os.path.join(param_path, 'static_propagation_memorize.pdmodel')
-        memory_param_path = os.path.join(param_path, 'static_propagation_memorize.pdiparams')
+        memory_model_path = os.path.join(param_path,
+                                         'static_propagation_memorize.pdmodel')
+        memory_param_path = os.path.join(
+            param_path, 'static_propagation_memorize.pdiparams')
         self.prop_net_memory = load_model(memory_model_path, memory_param_path)
         # **************segmentation**********************
-        segment_model_path = os.path.join(param_path, "static_propagation_segment.pdmodel")
-        segment_param_path = os.path.join(param_path, "static_propagation_segment.pdiparams")
+        segment_model_path = os.path.join(param_path,
+                                          "static_propagation_segment.pdmodel")
+        segment_param_path = os.path.join(
+            param_path, "static_propagation_segment.pdiparams")
         self.prop_net_segm = load_model(segment_model_path, segment_param_path)
         # **************attention**********************
-        attn_model_path = os.path.join(param_path, 'static_propagation_attention')
+        attn_model_path = os.path.join(param_path,
+                                       'static_propagation_attention')
         self.prop_net_attn = jit_load(attn_model_path)
         # **************fusion**********************
         fusion_model_path = os.path.join(param_path, 'static_fusion.pdmodel')
@@ -135,7 +139,8 @@ class InferenceCore:
         self.masks = paddle.zeros((t, 1, nh, nw), dtype='int64')
         self.np_masks = np.zeros((t, h, w), dtype=np.int64)
         if self.prob is None:
-            self.prob = paddle.zeros((self.k + 1, t, 1, nh, nw), dtype='float32')
+            self.prob = paddle.zeros(
+                (self.k + 1, t, 1, nh, nw), dtype='float32')
             self.prob[0] = 1e-7
         else:
             k, t, c, nh, nw = self.prob.shape
@@ -168,9 +173,10 @@ class InferenceCore:
             # Flush buffer
             if len(self.query_buf) > self.q_buf_size:
                 self.query_buf = {}
-            result = calculate_segmentation(self.prop_net_segm, self.get_image_buffered(idx).numpy(),
-                                                     this_k.numpy(),
-                                                     this_v.numpy())
+            result = calculate_segmentation(
+                self.prop_net_segm,
+                self.get_image_buffered(idx).numpy(),
+                this_k.numpy(), this_v.numpy())
         mask = result[0]
         quary = result[1]
 
@@ -191,11 +197,14 @@ class InferenceCore:
 
         # Determine the required size of the memory bank
         if forward:
-            closest_ti = min([ti for ti in self.interacted if ti > idx] + [self.t])
-            total_m = (closest_ti - idx - 1) // self.mem_freq + 1 + num_certain_keys
+            closest_ti = min([ti for ti in self.interacted
+                              if ti > idx] + [self.t])
+            total_m = (closest_ti - idx - 1
+                       ) // self.mem_freq + 1 + num_certain_keys
         else:
             closest_ti = max([ti for ti in self.interacted if ti < idx] + [-1])
-            total_m = (idx - closest_ti - 1) // self.mem_freq + 1 + num_certain_keys
+            total_m = (idx - closest_ti - 1
+                       ) // self.mem_freq + 1 + num_certain_keys
         K, CK, _, H, W = key_k.shape
         _, CV, _, _, _ = key_v.shape
 
@@ -231,9 +240,11 @@ class InferenceCore:
             out_mask = aggregate_wbg(paddle.to_tensor(out_mask), keep_bg=True)
 
             if ti != end:
-                keys[:, :, m_front:m_front + 1], values[:, :, m_front:m_front + 1] = calculate_memorize(
-                    self.prop_net_memory,
-                    self.get_image_buffered(ti).numpy(), out_mask[1:].numpy())
+                keys[:, :, m_front:m_front +
+                     1], values[:, :, m_front:m_front + 1] = calculate_memorize(
+                         self.prop_net_memory,
+                         self.get_image_buffered(ti).numpy(),
+                         out_mask[1:].numpy())
                 if abs(ti - last_ti) >= self.mem_freq:
                     # Memorize the frame
                     m_front += 1
@@ -245,8 +256,9 @@ class InferenceCore:
             # In-place fusion, maximizes the use of queried buffer
             # esp. for long sequence where the buffer will be flushed
             if (closest_ti != self.t) and (closest_ti != -1):
-                self.prob[:, ti] = self.fuse_one_frame(closest_ti, idx, ti, self.prob[:, ti], out_mask,
-                                                       key_k, quary_key)
+                self.prob[:, ti] = self.fuse_one_frame(
+                    closest_ti, idx, ti, self.prob[:, ti], out_mask, key_k,
+                    quary_key)
             else:
                 self.prob[:, ti] = out_mask
 
@@ -266,10 +278,14 @@ class InferenceCore:
         nr = abs(tr - ti) / abs(tc - tr)
         dist = paddle.to_tensor([nc, nr], dtype='float32').unsqueeze(0)
         for k in range(1, self.k + 1):
-            attn_map = self.prop_net_attn(mk16[k - 1:k], qk16, self.pos_mask_diff[k:k + 1],
+            attn_map = self.prop_net_attn(mk16[k - 1:k], qk16,
+                                          self.pos_mask_diff[k:k + 1],
                                           self.neg_mask_diff[k:k + 1])
-            w = calculate_fusion(self.fuse_net, self.get_image_buffered(ti).numpy(),
-                                 prev_mask[k:k + 1].numpy(), curr_mask[k:k + 1].numpy(), attn_map.numpy(), dist.numpy())
+            w = calculate_fusion(self.fuse_net,
+                                 self.get_image_buffered(ti).numpy(),
+                                 prev_mask[k:k + 1].numpy(),
+                                 curr_mask[k:k + 1].numpy(),
+                                 attn_map.numpy(), dist.numpy())
             w = paddle.to_tensor(w)
             w = F.sigmoid(w)
             prob[k - 1:k] = w
@@ -294,7 +310,9 @@ class InferenceCore:
 
         self.prob[:, idx] = mask
 
-        key_k, key_v = calculate_memorize(self.prop_net_memory, self.get_image_buffered(idx).numpy(), mask[1:].numpy())
+        key_k, key_v = calculate_memorize(self.prop_net_memory,
+                                          self.get_image_buffered(idx).numpy(),
+                                          mask[1:].numpy())
         key_k = paddle.to_tensor(key_k).astype("float32")
         key_v = paddle.to_tensor(key_v).astype('float32')
         if self.certain_mem_k is None:
@@ -303,8 +321,12 @@ class InferenceCore:
         else:
             K, CK, _, H, W = self.certain_mem_k.shape
             CV = self.certain_mem_v.shape[1]
-            self.certain_mem_k = paddle.concat([self.certain_mem_k, paddle.zeros((self.k - K, CK, _, H, W))], 0)
-            self.certain_mem_v = paddle.concat([self.certain_mem_v, paddle.zeros((self.k - K, CV, _, H, W))], 0)
+            self.certain_mem_k = paddle.concat(
+                [self.certain_mem_k, paddle.zeros((self.k - K, CK, _, H, W))],
+                0)
+            self.certain_mem_v = paddle.concat(
+                [self.certain_mem_v, paddle.zeros((self.k - K, CV, _, H, W))],
+                0)
             self.certain_mem_k = paddle.concat([self.certain_mem_k, key_k], 2)
             self.certain_mem_v = paddle.concat([self.certain_mem_v, key_v], 2)
         # self.certain_mem_k = key_k
@@ -312,7 +334,8 @@ class InferenceCore:
 
         if total_cb is not None:
             # Finds the total num. frames to process
-            front_limit = min([ti for ti in self.interacted if ti > idx] + [self.t])
+            front_limit = min([ti for ti in self.interacted
+                               if ti > idx] + [self.t])
             back_limit = max([ti for ti in self.interacted if ti < idx] + [-1])
             total_num = front_limit - back_limit - 2  # -1 for shift, -1 for center frame
 

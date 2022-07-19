@@ -8,8 +8,7 @@ import paddle.nn.functional as F
 from paddle.vision import transforms
 
 im_normalization = transforms.Normalize(
-    mean=[0.485, 0.456, 0.406],
-    std=[0.229, 0.224, 0.225])
+    mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
 
 inv_im_trans = transforms.Normalize(
     mean=[-0.485 / 0.229, -0.456 / 0.224, -0.406 / 0.225],
@@ -17,7 +16,8 @@ inv_im_trans = transforms.Normalize(
 
 
 def images_to_paddle(frames):
-    frames = paddle.to_tensor(frames.transpose([0, 3, 1, 2])).astype('float32').unsqueeze(0) / 255
+    frames = paddle.to_tensor(frames.transpose([0, 3, 1, 2])).astype(
+        'float32').unsqueeze(0) / 255
     b, t, c, h, w = frames.shape
     for ti in range(t):
         frames[0, ti] = im_normalization(frames[0, ti])

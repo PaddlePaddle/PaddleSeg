@@ -12,15 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 import numpy as np
 import cv2
 from skimage import exposure
 
 
 # 2%线性拉伸
-def two_percentLinear(image: np.ndarray, 
-                      max_out: int=255, 
+def two_percentLinear(image: np.ndarray, max_out: int=255,
                       min_out: int=0) -> np.ndarray:
     b, g, r = cv2.split(image)
 
@@ -28,8 +26,8 @@ def two_percentLinear(image: np.ndarray,
         high_value = np.percentile(gray, 98)  # 取得98%直方图处对应灰度
         low_value = np.percentile(gray, 2)
         truncated_gray = np.clip(gray, a_min=low_value, a_max=high_value)
-        processed_gray = ((truncated_gray - low_value) / (high_value - low_value)) * (
-            maxout - minout)
+        processed_gray = ((truncated_gray - low_value) /
+                          (high_value - low_value)) * (maxout - minout)
         return processed_gray
 
     r_p = __gray_process(r)
@@ -54,8 +52,7 @@ def sample_norm(image: np.ndarray) -> np.ndarray:
 
 
 # 计算缩略图
-def get_thumbnail(image: np.ndarray, 
-                  range: int=2000, 
+def get_thumbnail(image: np.ndarray, range: int=2000,
                   max_size: int=1000) -> np.ndarray:
     h, w = image.shape[:2]
     if h >= range or w >= range:

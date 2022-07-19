@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 import os.path as osp
 from functools import partial
 
@@ -35,7 +34,7 @@ class Ui_EISeg(object):
     def __init__(self):
         super(Ui_EISeg, self).__init__()
         self.tr = partial(QtCore.QCoreApplication.translate, "APP_EISeg")
-    
+
     def addVideoslider(self, MainWindow, frames):
         ## 时间轴设置
         widget = QtWidgets.QWidget()
@@ -47,13 +46,12 @@ class Ui_EISeg(object):
             "videoPlay",
             self.tr("播放"),
             osp.join(pjpath, "resource/Play.png"),
-            "",
-        )
+            "", )
         VideoRegion.addWidget(self.videoPlay)
         self.sldTime, self.textTime, _ = self.p_create_slider(
-            "sldTime", "textTime", "", 0, frames, 0, 1, True
-        )
-        VideoRegion.addWidget(create_text(self.CentralWidget, None, self.tr("帧数：")))
+            "sldTime", "textTime", "", 0, frames, 0, 1, True)
+        VideoRegion.addWidget(
+            create_text(self.CentralWidget, None, self.tr("帧数：")))
         VideoRegion.addWidget(self.textTime)
         VideoRegion.addWidget(self.sldTime)
         verticalLayout.addLayout(VideoRegion)
@@ -63,7 +61,7 @@ class Ui_EISeg(object):
         # timer
         self.timer = QTimer()
         self.timer.setSingleShot(False)
-       
+
     def setupUi(self, MainWindow):
         ## -- 主窗体设置 --
         MainWindow.setObjectName("MainWindow")
@@ -76,16 +74,16 @@ class Ui_EISeg(object):
         ## -----
         ## -- 工具栏 --
         toolBar = QtWidgets.QToolBar(self)
-        sizePolicy = QtWidgets.QSizePolicy(
-            QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Minimum
-        )
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred,
+                                           QtWidgets.QSizePolicy.Minimum)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(toolBar.sizePolicy().hasHeightForWidth())
         toolBar.setSizePolicy(sizePolicy)
         toolBar.setMinimumSize(QtCore.QSize(0, 33))
         toolBar.setMovable(True)
-        toolBar.setAllowedAreas(QtCore.Qt.BottomToolBarArea | QtCore.Qt.TopToolBarArea)
+        toolBar.setAllowedAreas(QtCore.Qt.BottomToolBarArea |
+                                QtCore.Qt.TopToolBarArea)
         toolBar.setObjectName("toolBar")
         self.toolBar = toolBar
         MainWindow.addToolBar(QtCore.Qt.TopToolBarArea, self.toolBar)
@@ -96,8 +94,7 @@ class Ui_EISeg(object):
         self.statusbar.setStyleSheet("QStatusBar::item {border: none;}")
         MainWindow.setStatusBar(self.statusbar)
         self.statusbar.addPermanentWidget(
-            self.show_logo(osp.join(pjpath, "resource/Paddle.png"))
-        )
+            self.show_logo(osp.join(pjpath, "resource/Paddle.png")))
         ## -----
         ## -- 图形区域 --
         ImageRegion = QtWidgets.QHBoxLayout(self.CentralWidget)
@@ -111,9 +108,8 @@ class Ui_EISeg(object):
         self.scene = AnnotationScene()
         self.scene.addPixmap(QtGui.QPixmap())
         self.canvas = AnnotationView(self.scene, self)
-        sizePolicy = QtWidgets.QSizePolicy(
-            QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding
-        )
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding,
+                                           QtWidgets.QSizePolicy.Expanding)
         self.canvas.setSizePolicy(sizePolicy)
         self.canvas.setAlignment(QtCore.Qt.AlignCenter)
         self.canvas.setAutoFillBackground(False)
@@ -127,7 +123,8 @@ class Ui_EISeg(object):
         # 模型加载
         widget = QtWidgets.QWidget()
         horizontalLayout = QtWidgets.QHBoxLayout(widget)
-        self.ModelDock = self.p_create_dock("ModelDock", self.tr("模型选择"), widget)
+        self.ModelDock = self.p_create_dock("ModelDock",
+                                            self.tr("模型选择"), widget)
         ModelRegion = QtWidgets.QVBoxLayout()
         ModelRegion.setObjectName("ModelRegion")
         # labShowSet = self.create_text(CentralWidget, "labShowSet", "模型选择")
@@ -142,8 +139,7 @@ class Ui_EISeg(object):
             "btnParamsLoad",
             self.tr("加载网络参数"),
             osp.join(pjpath, "resource/Model.png"),
-            "Ctrl+D",
-        )
+            "Ctrl+D", )
         ModelRegion.addWidget(self.btnParamsSelect)  # 模型选择
         self.cheWithMask = QtWidgets.QCheckBox(self)
         self.cheWithMask.setText(self.tr("使用掩膜"))
@@ -173,13 +169,11 @@ class Ui_EISeg(object):
         LabelRegion = QtWidgets.QVBoxLayout()
         LabelRegion.setObjectName("LabelRegion")
         self.labelListTable = TableWidget(
-            self.CentralWidget
-        )  # QtWidgets.QTableWidget(CentralWidget)
+            self.CentralWidget)  # QtWidgets.QTableWidget(CentralWidget)
         self.labelListTable.horizontalHeader().hide()
         # 铺满
         self.labelListTable.horizontalHeader().setSectionResizeMode(
-            QtWidgets.QHeaderView.Stretch
-        )
+            QtWidgets.QHeaderView.Stretch)
         self.labelListTable.verticalHeader().hide()
         self.labelListTable.setColumnWidth(0, 10)
         # self.labelListTable.setMinimumWidth()
@@ -190,11 +184,12 @@ class Ui_EISeg(object):
 
         LabelRegion.addWidget(self.labelListTable)
         self.btnAddClass = self.p_create_button(
-            "btnAddClass", self.tr("添加标签"), osp.join(pjpath, "resource/Label.png")
-        )
+            "btnAddClass",
+            self.tr("添加标签"), osp.join(pjpath, "resource/Label.png"))
         LabelRegion.addWidget(self.btnAddClass)
         horizontalLayout.addLayout(LabelRegion)
-        self.LabelDock = self.p_create_dock("LabelDock", self.tr("标签列表"), widget)
+        self.LabelDock = self.p_create_dock("LabelDock",
+                                            self.tr("标签列表"), widget)
         MainWindow.addDockWidget(QtCore.Qt.RightDockWidgetArea, self.LabelDock)
         ## 滑块设置
         # 分割阈值
@@ -204,20 +199,18 @@ class Ui_EISeg(object):
         ShowSetRegion = QtWidgets.QVBoxLayout()
         ShowSetRegion.setObjectName("ShowSetRegion")
         self.sldThresh, _, SegShowRegion = self.p_create_slider(
-            "sldThresh", "labThresh", self.tr("分割阈值：")
-        )
+            "sldThresh", "labThresh", self.tr("分割阈值："))
         ShowSetRegion.addLayout(SegShowRegion)
         ShowSetRegion.addWidget(self.sldThresh)
         # 透明度
         self.sldOpacity, _, MaskShowRegion = self.p_create_slider(
-            "sldOpacity", "labOpacity", self.tr("标签透明度："), 75
-        )
+            "sldOpacity", "labOpacity", self.tr("标签透明度："), 75)
         ShowSetRegion.addLayout(MaskShowRegion)
         ShowSetRegion.addWidget(self.sldOpacity)
         # 点大小
         self.sldClickRadius, _, PointShowRegion = self.p_create_slider(
-            "sldClickRadius", "labClickRadius", self.tr("点击可视化半径："), 3, 10, 0, 1
-        )
+            "sldClickRadius", "labClickRadius",
+            self.tr("点击可视化半径："), 3, 10, 0, 1)
         ShowSetRegion.addLayout(PointShowRegion)
         ShowSetRegion.addWidget(self.sldClickRadius)
         # 保存
@@ -225,12 +218,13 @@ class Ui_EISeg(object):
             "btnSave",
             self.tr("保存"),
             osp.join(pjpath, "resource/Save.png"),
-            "Ctrl+S",
-        )
+            "Ctrl+S", )
         ShowSetRegion.addWidget(self.btnSave)
         horizontalLayout.addLayout(ShowSetRegion)
-        self.SegSettingDock = self.p_create_dock("SegSettingDock", self.tr("分割设置"), widget)
-        MainWindow.addDockWidget(QtCore.Qt.RightDockWidgetArea, self.SegSettingDock)
+        self.SegSettingDock = self.p_create_dock("SegSettingDock",
+                                                 self.tr("分割设置"), widget)
+        MainWindow.addDockWidget(QtCore.Qt.RightDockWidgetArea,
+                                 self.SegSettingDock)
         ## 专业功能区工作区
         ## 遥感影像设置
         widget = QtWidgets.QWidget()
@@ -238,7 +232,8 @@ class Ui_EISeg(object):
         self.RSDock = self.p_create_dock("RSDock", self.tr("遥感设置"), widget)
         bandRegion = QtWidgets.QVBoxLayout()
         bandRegion.setObjectName("bandRegion")
-        bandRegion.addWidget(create_text(self.CentralWidget, "bandSelection", self.tr("波段设置")))
+        bandRegion.addWidget(
+            create_text(self.CentralWidget, "bandSelection", self.tr("波段设置")))
         text_list = ["R", "G", "B"]
         self.bandCombos = []
         for txt in text_list:
@@ -247,11 +242,13 @@ class Ui_EISeg(object):
             self.bandCombos.append(combo)
             hbandLayout = QtWidgets.QHBoxLayout()
             hbandLayout.setObjectName("hbandLayout")
-            hbandLayout.addWidget(create_text(self.CentralWidget, "band" + txt, txt))
+            hbandLayout.addWidget(
+                create_text(self.CentralWidget, "band" + txt, txt))
             hbandLayout.addWidget(combo)
             hbandLayout.setStretch(1, 4)
             bandRegion.addLayout(hbandLayout)
-        bandRegion.addWidget(create_text(self.CentralWidget, "resultSave", self.tr("保存设置")))
+        bandRegion.addWidget(
+            create_text(self.CentralWidget, "resultSave", self.tr("保存设置")))
         self.boundaryRegular = QtWidgets.QCheckBox(self.tr("建筑边界规范化"))
         self.boundaryRegular.setObjectName("boundaryRegular")
         bandRegion.addWidget(self.boundaryRegular)
@@ -259,7 +256,8 @@ class Ui_EISeg(object):
         self.shpSave.setObjectName("shpSave")
         bandRegion.addWidget(self.shpSave)
         horizontalLayout.addLayout(bandRegion)
-        bandRegion.addWidget(create_text(self.CentralWidget, "showGeoInfo", self.tr("地理信息")))
+        bandRegion.addWidget(
+            create_text(self.CentralWidget, "showGeoInfo", self.tr("地理信息")))
         self.edtGeoinfo = QtWidgets.QTextEdit(self.tr("无"))
         self.edtGeoinfo.setObjectName("edtGeoinfo")
         self.edtGeoinfo.setReadOnly(True)
@@ -279,13 +277,11 @@ class Ui_EISeg(object):
         # MIRegion.addLayout(slideRegion)
         # MIRegion.addWidget(self.sldMISlide)
         self.sldWw, self.textWw, WwRegion = self.p_create_slider(
-            "sldWw", "textWw", self.tr("窗宽："), 200, 2048, -2048, 1, True
-        )
+            "sldWw", "textWw", self.tr("窗宽："), 200, 2048, -2048, 1, True)
         MIRegion.addLayout(WwRegion)
         MIRegion.addWidget(self.sldWw)
         self.sldWc, self.textWc, WcRegion = self.p_create_slider(
-            "sldWc", "textWc", self.tr("窗位："), 0, 2048, -2048, 1, True
-        )
+            "sldWc", "textWc", self.tr("窗位："), 0, 2048, -2048, 1, True)
         MIRegion.addLayout(WcRegion)
         MIRegion.addWidget(self.sldWc)
         horizontalLayout.addLayout(MIRegion)
@@ -307,8 +303,7 @@ class Ui_EISeg(object):
             "btnFinishedGrid",
             self.tr("完成宫格"),
             osp.join(pjpath, "resource/Save.png"),
-            "",
-        )
+            "", )
         hbandLayout = QtWidgets.QHBoxLayout()
         hbandLayout.setObjectName("hbandLayout")
         # hbandLayout.addWidget(self.btnInitGrid)
@@ -323,11 +318,9 @@ class Ui_EISeg(object):
         self.gridTable.verticalHeader().hide()
         # 铺满
         self.gridTable.horizontalHeader().setSectionResizeMode(
-            QtWidgets.QHeaderView.Stretch
-        )
+            QtWidgets.QHeaderView.Stretch)
         self.gridTable.verticalHeader().setSectionResizeMode(
-            QtWidgets.QHeaderView.Stretch
-        )
+            QtWidgets.QHeaderView.Stretch)
         self.gridTable.setObjectName("gridTable")
         self.gridTable.clearContents()
         self.gridTable.setColumnCount(1)
@@ -345,21 +338,20 @@ class Ui_EISeg(object):
             "btn3DParamsLoad",
             self.tr("加载传播网络参数"),
             osp.join(pjpath, "resource/Model.png"),
-            "",
-        )
+            "", )
         VSTDock.addWidget(self.btn3DParamsSelect)
         self.btnPropagate = self.p_create_button(
             "btnPropagate",
             self.tr("传播"),
             osp.join(pjpath, "resource/Propagate.png"),
-            "",
-        )
+            "", )
         self.proPropagete = QtWidgets.QProgressBar(self.CentralWidget)
         self.proPropagete.setAlignment(QtCore.Qt.AlignVCenter)
         self.proPropagete.setValue(0)
         VSTDock.addWidget(self.btnPropagate)
         proLayer = QtWidgets.QHBoxLayout()
-        proLayer.addWidget(create_text(self.CentralWidget, None, self.tr("进度：")))
+        proLayer.addWidget(
+            create_text(self.CentralWidget, None, self.tr("进度：")))
         proLayer.addWidget(self.proPropagete)
         VSTDock.addLayout(proLayer)
         horizontalLayout.addLayout(VSTDock)
@@ -384,28 +376,25 @@ class Ui_EISeg(object):
             "videoPlay",
             self.tr("播放"),
             osp.join(pjpath, "resource/Play.png"),
-            "",
-        )
+            "", )
         height = self.videoPlay.height()
         min_size = QtCore.QSize(0, height)
         VideoRegion.addWidget(self.videoPlay)
         self.sldTime, self.textTime, _ = self.p_create_slider(
-            "sldTime", "textTime", "", 0, 100, 0, 1, True
-        )
+            "sldTime", "textTime", "", 0, 100, 0, 1, True)
         self.textTime.setMinimumSize(min_size)
         self.sldTime.setTickInterval(1)
         self.sldTime.setTickPosition(QtWidgets.QSlider.TicksBelow)
         VideoRegion.addWidget(self.sldTime)
-        VideoRegion.addWidget(create_text(self.CentralWidget, None, self.tr("帧数：")))
+        VideoRegion.addWidget(
+            create_text(self.CentralWidget, None, self.tr("帧数：")))
         VideoRegion.addWidget(self.textTime)
         self.preFrameButton = self.p_create_button(
             "preFrameButton",
-            self.tr("上一帧"),
-        )
+            self.tr("上一帧"), )
         self.nextFrameButton = self.p_create_button(
             "nextFrameButton",
-            self.tr("下一帧"),
-        )
+            self.tr("下一帧"), )
         # self.preFrameButton = QtWidgets.QPushButton("上一帧")
         # self.nextFrameButton = QtWidgets.QPushButton("下一帧")
         VideoRegion.addWidget(self.preFrameButton)
@@ -437,11 +426,18 @@ class Ui_EISeg(object):
         # log.debug("Set up UI finished")
 
     ## 创建文本
+
     def create_text(self, parent, text_name=None, text_text=None):
         return create_text(parent, text_name, text_text)
 
     ## 创建按钮
-    def create_button(self, parent, btn_name, btn_text, ico_path=None, curt=None):
+
+    def create_button(self,
+                      parent,
+                      btn_name,
+                      btn_text,
+                      ico_path=None,
+                      curt=None):
         return create_button(parent, btn_name, btn_text, ico_path, curt)
 
     ## 创建dock
@@ -451,9 +447,8 @@ class Ui_EISeg(object):
     ## 显示Logo
     def show_logo(self, logo_path):
         labLogo = QtWidgets.QLabel()
-        sizePolicy = QtWidgets.QSizePolicy(
-            QtWidgets.QSizePolicy.Maximum, QtWidgets.QSizePolicy.Maximum
-        )
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Maximum,
+                                           QtWidgets.QSizePolicy.Maximum)
         labLogo.setSizePolicy(sizePolicy)
         labLogo.setMaximumSize(QtCore.QSize(100, 33))
         labLogo.setPixmap(QtGui.QPixmap(logo_path))
@@ -462,26 +457,15 @@ class Ui_EISeg(object):
         return labLogo
 
     ## 创建滑块区域
-    def create_slider(
-        self,
-        parent,
-        sld_name,
-        text_name,
-        text,
-        default_value=50,
-        max_value=100,
-        min_value=0,
-        text_rate=0.01,
-        edit=False
-    ):
-        return create_slider(
-            parent,
-            sld_name,
-            text_name,
-            text,
-            default_value,
-            max_value,
-            min_value,
-            text_rate,
-            edit
-        )
+    def create_slider(self,
+                      parent,
+                      sld_name,
+                      text_name,
+                      text,
+                      default_value=50,
+                      max_value=100,
+                      min_value=0,
+                      text_rate=0.01,
+                      edit=False):
+        return create_slider(parent, sld_name, text_name, text, default_value,
+                             max_value, min_value, text_rate, edit)

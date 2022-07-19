@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 import os
 import os.path as osp
 
@@ -40,7 +39,7 @@ if check_gdal():
 
 
 # 保存shp文件
-def save_shp(shp_path: str, tif_path: str, ignore_index :int=0) -> str:
+def save_shp(shp_path: str, tif_path: str, ignore_index: int=0) -> str:
     if IMPORT_STATE == True:
         ds = gdal.Open(tif_path)
         srcband = ds.GetRasterBand(1)
