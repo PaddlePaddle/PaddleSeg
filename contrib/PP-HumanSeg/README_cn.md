@@ -40,7 +40,7 @@
 - [2022-7] 发布**PP-HumanSeg V2版本模型，肖像分割模型的推理速度提升45.5%、mIoU提升0.63%、可视化效果更佳**，通用人像分割模型的推理速度和精度也有明显提升。
 - [2022-1] 人像分割论文[PP-HumanSeg](./paper.md)发表于WACV 2022 Workshop，并开源连通性学习（SCL）方法和大规模视频会议数据集。
 - [2021-7] 百度视频会议可实现Web端一秒入会，其中的虚拟背景功能采用我们的PP-HumanSeg肖像模型，实现实时背景替换和背景虚化功能，保护用户隐私，并增加视频会议的趣味性。
-- [2021-7] 发布PP-HumanSeg V1版本模型，包括一个肖像分割模型和两个通用人像分割模型。
+- [2021-7] 发布PP-HumanSeg V1版本模型，包括一个肖像分割模型和三个通用人像分割模型。
 
 <p align="center">
 <img src="https://github.com/LutaoChu/transfer_station/raw/master/conference.gif" width="60%" height="60%">
@@ -184,23 +184,23 @@ python src/download_data.py
 
 **1）输入图片进行测试**
 
-加载`data/images/portrait_heng.jpg`横屏图像，使用PP-Humanseg肖像分割模型进行预测，结果保存在`data/images_result/`目录。
+加载`data/images/portrait_heng.jpg`横屏图像，使用PP-HumanSeg肖像分割模型进行预测，结果保存在`data/images_result/`目录。
 
 ```bash
-# Use PP-HumansegV2-Lite
+# Use PP-HumanSegV2-Lite
 python src/seg_demo.py \
   --config inference_models/portrait_pp_humansegv2_lite_256x144_inference_model_with_softmax/deploy.yaml \
   --img_path data/images/portrait_heng.jpg \
   --save_dir data/images_result/portrait_heng_v2.jpg
 
-# Use PP-HumansegV1-Lite
+# Use PP-HumanSegV1-Lite
 python src/seg_demo.py \
   --config inference_models/portrait_pp_humansegv1_lite_398x224_inference_model_with_softmax/deploy.yaml \
   --img_path data/images/portrait_heng.jpg \
   --save_dir data/images_result/portrait_heng_v1.jpg
 ```
 
-加载`data/images/portrait_shu.jpg`竖屏图像，使用PP-Humanseg肖像分割模型进行预测。
+加载`data/images/portrait_shu.jpg`竖屏图像，使用PP-HumanSeg肖像分割模型进行预测。
 
 ```bash
 python src/seg_demo.py \
@@ -229,23 +229,23 @@ python src/seg_demo.py \
 
 **2）输入视频进行分割**
 
-加载`data/videos/video_heng.mp4`横屏视频，使用PP-Humanseg肖像分割模型进行预测，结果保存在`data/videos_result/`目录。
+加载`data/videos/video_heng.mp4`横屏视频，使用PP-HumanSeg肖像分割模型进行预测，结果保存在`data/videos_result/`目录。
 
 ```bash
-# Use PP-HumansegV2-Lite
+# Use PP-HumanSegV2-Lite
 python src/seg_demo.py \
   --config inference_models/portrait_pp_humansegv2_lite_256x144_inference_model_with_softmax/deploy.yaml \
   --video_path data/videos/video_heng.mp4 \
   --save_dir data/videos_result/video_heng_v2.avi
 
-# Use PP-HumansegV1-Lite
+# Use PP-HumanSegV1-Lite
 python src/seg_demo.py \
   --config inference_models/portrait_pp_humansegv1_lite_398x224_inference_model_with_softmax/deploy.yaml \
   --video_path data/videos/video_heng.mp4 \
   --save_dir data/videos_result/video_heng_v1.avi
 ```
 
-加载`data/videos/video_shu.mp4`竖屏视频，使用PP-Humanseg肖像分割模型进行预测。
+加载`data/videos/video_shu.mp4`竖屏视频，使用PP-HumanSeg肖像分割模型进行预测。
 
 ```bash
 python src/seg_demo.py \
