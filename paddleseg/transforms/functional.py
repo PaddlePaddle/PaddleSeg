@@ -15,7 +15,7 @@
 import cv2
 import numpy as np
 from PIL import Image, ImageEnhance
-from scipy.ndimage.morphology import distance_transform_edt
+from scipy.ndimage import distance_transform_edt
 
 
 def normalize(im, mean, std):
