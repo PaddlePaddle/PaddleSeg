@@ -22,9 +22,9 @@
 ## <img src="./docs/images/seg_news_icon.png" width="20"/> 最新动态
 
 * [2022-07-20] :fire: PaddleSeg 2.6版本发布！详细发版信息请参考[Release Note](https://github.com/PaddlePaddle/PaddleSeg/releases)。
-  * 发布实时人像分割模型[PP-HumanSegV2](./contrib/PP-HumanSeg)，相比V1，分割精度更高、推理速度更快、通用型更强。
-  * 发布高性能智能标注工具[EISeg v1.0](./EISeg)正式版，全面提升图像、视频、3D医疗影像等领域的标注效率。
-  * 发布120多万张分割伪标签数据集及预训练方法[PSSL](./configs/pssl)，全面提升分割模型在下游任务上的性能。
+  * 发布实时人像分割模型[PP-HumanSegV2](./contrib/PP-HumanSeg)，推理速度提升45.5%，分割精度更高、通用型更强、零成本开箱即用。。
+  * 发布高性能智能标注工具[EISeg v1.0](./EISeg)正式版，实现一次训练万物可标，加速提升图像、视频、3D医疗影像等分割标注效率。
+  * 发布120多万张ImageNet分割伪标签数据集，以及预训练方法[PSSL](./configs/pssl)，全面提升分割模型在下游任务上的性能。
   * 开源[PP-Matting](./Matting)代码和预训练模型，并新增5种传统机器学习抠图方法，无需训练可直接使用。
 * [2022-04-20] PaddleSeg 2.5版本发布超轻量级语义分割模型[PP-LiteSeg](./configs/pp_liteseg)，高精度抠图模型PP-Matting，3D医疗影像开发套件[MedicalSeg](./contrib/MedicalSeg)，交互式分割工具EISeg v0.5。
 * [2022-01-20] PaddleSeg 2.4版本发布交互式分割工具EISeg v0.4，超轻量级人像分割方案PP-HumanSeg，以及大规模视频会议数据集[PP-HumanSeg14K](./contrib/PP-HumanSeg/paper.md#pp-humanseg14k-a-large-scale-teleconferencing-video-dataset)。
