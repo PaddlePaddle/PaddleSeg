@@ -30,11 +30,13 @@ function func_sed_params(){
     array=(${params})
     key=${array[0]}
     value=${array[1]}
-    if [[ $value =~ 'benchmark_train' ]];then
-        IFS='='
-        _val=(${value})
-        param_value="${_val[0]}=${param_value}"
-    fi
+    # [Bobholamovic] This if block results in --batch_size=benchmark in the second 
+    # test_train_inference_python.sh call, so I comment it out.
+    # if [[ $value =~ 'benchmark_train' ]];then
+    #     IFS='='
+    #     _val=(${value})
+    #     param_value="${_val[0]}=${param_value}"
+    # fi
     new_params="${key}:${param_value}"
     IFS=";"
     cmd="sed -i '${line}s/.*/${new_params}/' '${filename}'"
@@ -230,7 +232,7 @@ for batch_size in ${batch_size_list[*]}; do
                 eval "cat ${log_path}/${log_name}"
                 # parser log
                 _model_name="${model_name}_bs${batch_size}_${precision}_${run_mode}"
-
+                
                 cmd="${python} ${BENCHMARK_ROOT}/scripts/analysis.py --filename ${log_path}/${log_name} \
                         --speed_log_file '${speed_log_path}/${speed_log_name}' \
                         --model_name ${_model_name} \
@@ -245,7 +247,7 @@ for batch_size in ${batch_size_list[*]}; do
                 echo $cmd
                 eval $cmd
                 last_status=${PIPESTATUS[0]}
-                status_check $last_status "${cmd}" "${status_log}"
+                status_check $last_status "${cmd}" "${status_log}" "${model_name}"
             fi
         done
     done
