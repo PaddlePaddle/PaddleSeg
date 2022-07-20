@@ -137,6 +137,13 @@ if [ "${extra_key}" = "log_iters" ];then
     log_iters="${extra_value}"
 fi
 
+if [ "${MODE}" = "benchmark_train" ];then
+    if [ "${autocast_key}" == "Global.auto_cast" ];then
+        echo 'Replcace ${autocast_key}'"('${autocast_key}') with '--precision'"
+        autocast_key="--precision"
+    fi
+fi
+
 
 function func_inference(){
     IFS='|'
