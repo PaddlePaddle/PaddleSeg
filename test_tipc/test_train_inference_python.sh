@@ -5,7 +5,7 @@ FILENAME=$1
 # MODE be one of ['lite_train_lite_infer' 'lite_train_whole_infer' 'whole_train_whole_infer', 'whole_infer', 'klquant_whole_infer']
 MODE=$2
 
-dataline=$(awk 'NR==1, NR==51{print}'  $FILENAME)
+dataline=$(awk 'NR>=1{print}'  $FILENAME)
 
 # parser params
 IFS=$'\n'
@@ -128,6 +128,14 @@ LOG_PATH="./test_tipc/output/${model_name}"  ##
 mkdir -p ${LOG_PATH}
 status_log="${LOG_PATH}/results_python.log"
 echo "------------------------ ${MODE} ------------------------" >> $status_log
+
+
+last_idx=$((${#lines[@]}-1))
+extra_key=$(func_parser_key "${lines[last_idx]}")
+extra_value=$(func_parser_value "${lines[last_idx]}")
+if [ "${extra_key}" = "log_iters" ];then
+    log_iters="${extra_value}"
+fi
 
 
 function func_inference(){
@@ -337,12 +345,17 @@ else
 
                 set_save_model=$(func_set_params "${save_model_key}" "${save_log}")
                 if [ ${#gpu} -le 2 ];then  # train with cpu or single gpu
-                    cmd="${python} ${run_train} ${set_use_gpu}  ${set_save_model} ${set_epoch} ${set_pretrain} ${set_autocast} ${set_batchsize} ${set_train_params1} ${set_amp_config} "
+                    cmd="${python} ${run_train} ${set_use_gpu}  ${set_save_model} ${set_epoch} ${set_pretrain} ${set_autocast} ${set_batchsize} ${set_train_params1} ${set_amp_config}"
                 elif [ ${#ips} -le 15 ];then  # train with multi-gpu
                     cmd="${python} -m paddle.distributed.launch --gpus=${gpu} ${run_train} ${set_use_gpu} ${set_save_model} ${set_epoch} ${set_pretrain} ${set_autocast} ${set_batchsize} ${set_train_params1} ${set_amp_config}"
                 else     # train with multi-machine
                     cmd="${python} -m paddle.distributed.launch --ips=${ips} --gpus=${gpu} ${run_train} ${set_use_gpu} ${set_save_model} ${set_pretrain} ${set_epoch} ${set_autocast} ${set_batchsize} ${set_train_params1} ${set_amp_config}"
                 fi
+                
+                if [ -n "${log_iters}" ];then
+                    cmd="${cmd} --log_iters ${log_iters}"
+                fi
+
                 # run train
                 eval $cmd
                 status_check $? "${cmd}" "${status_log}" "${model_name}"
