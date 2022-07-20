@@ -8,11 +8,12 @@
 
 **飞桨高性能图像分割开发套件，端到端完成从训练到部署的全流程图像分割应用。**
 
-[![Build Status](https://travis-ci.org/PaddlePaddle/PaddleSeg.svg?branch=release/2.1)](https://travis-ci.org/PaddlePaddle/PaddleSeg)
+
 [![License](https://img.shields.io/badge/license-Apache%202-blue.svg)](LICENSE)
 [![Version](https://img.shields.io/github/release/PaddlePaddle/PaddleSeg.svg)](https://github.com/PaddlePaddle/PaddleSeg/releases)
 ![python version](https://img.shields.io/badge/python-3.6+-orange.svg)
 ![support os](https://img.shields.io/badge/os-linux%2C%20win%2C%20mac-yellow.svg)
+![stars](https://img.shields.io/github/stars/PaddlePaddle/PaddleSeg?color=ccf)
 </div>
 
 <div align="center">
