@@ -69,10 +69,10 @@ function func_parser_params(){
 }
 
 function status_check(){
-    last_status=$1   # the exit code
-    run_command=$2
-    run_log=$3
-    model_name=$4
+    local last_status=$1   # the exit code
+    local run_command=$2
+    local run_log=$3
+    local model_name=$4
     if [ $last_status -eq 0 ]; then
         echo -e "\033[33m Run successfully with command - ${model_name} - ${run_command}!  \033[0m" | tee -a ${run_log}
     else
