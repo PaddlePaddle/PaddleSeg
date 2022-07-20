@@ -26,8 +26,8 @@ English | [简体中文](README_CN.md)
   <li>[2022-07-20] :fire: PaddleSeg v2.6 is released! More details in <a href="https://github.com/PaddlePaddle/PaddleSeg/releases">Release Notes</a>.</li>
     <ul>
         <li>Release <a href="./contrib/PP-HumanSeg">PP-HumanSeg v2</a>, an off-the-shelf human segmentation model. It achieves 64.26 FPS on the mobile device, which is 45.5% faster than before. </li>
-        <li>Release <a href="./EISeg">EISeg v1.0</a>, a high-accuracy semi-automatic tool for image, video and 3D slice data annotation. It achieves "Once for All" (training once, and labelling all) performance. </li>
-        <li>Release <a href="./contrib/MedicalSeg">MedicalSeg</a>, a newly easy-to-use toolkit for 3D medical image segmentation. It supports the whole process including data preprocessing, model training, and model deployment, and provides the high-accuracy models on lung and spine segmentation.
+        <li>Release <a href="./EISeg">EISeg v1.0</a>, the stable-version semi-automatic tool for image, video and 3D slice data annotation. It achieves "Once for All" (training once, and labelling all) performance. </li>
+        <li>Release <a href="./configs/pssl">PSSL</a>, a novel pre-training method, including a large dataset that consists of 1.2M+ pseudo semantic segmentation labels corresponding to the whole ImageNet training set. It boosts the performances of various models on all downstream tasks.
         <li>Release <a href="./Matting">PP-Matting</a> source code and the pre-trained models. Also, add five more matting methods in machine learning that allow direct usage without training.</li>
         <li>Release the industrial model series: high-accuracy models, light-weight models, and super light-weight models, to help developers pick up the most suitable one.</li>
     </ul>
