@@ -363,9 +363,26 @@ else
                     cmd="${cmd} --log_iters ${log_iters}"
                 fi
 
+                # [Bobholamovic] FIXME: Remove model-specific code from test_train_inference_python.sh.
+                # Currently, ocrnet_hrnetw48 will not run with the N1C8 config, due to a thread error raised by OpenCV.
+                # One solution is to call cv2.setNumThreads(1) in the training script (see https://blog.csdn.net/zsytony/article/details/116712444).
+                # However, it is impossible to do this without hacking the training script.
+                # This is why this if-block is added here.
+                if [ ${model_name} = 'ocrnet_hrnetw48' ];then
+                    train_script=$(echo "${run_train}" | cut -d ' ' -f1)
+                    # Save a backup file
+                    cp ${train_script} ${train_script}_bak
+                    sed -i '1s/^/import cv2; cv2.setNumThreads(1)\n/' ${train_script}
+                fi
+
                 # run train
                 eval $cmd
                 status_check $? "${cmd}" "${status_log}" "${model_name}"
+
+                # [Bobholamovic] Recover the hacked training script
+                if [ ${model_name} = 'ocrnet_hrnetw48' ];then
+                    mv ${train_script}_bak ${train_script}
+                fi
 
                 # modify model dir if no eval
                 if [ ! -f "${save_log}/${train_model_name}" ]; then
