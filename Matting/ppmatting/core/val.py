@@ -58,7 +58,9 @@ def evaluate(model,
              print_detail=True,
              save_dir='output/results',
              save_results=True,
-             metrics='sad'):
+             metrics='sad',
+             precision='fp32',
+             amp_level='O1'):
     model.eval()
     nranks = paddle.distributed.ParallelEnv().nranks
     local_rank = paddle.distributed.ParallelEnv().local_rank
@@ -102,9 +104,21 @@ def evaluate(model,
     with paddle.no_grad():
         for iter, data in enumerate(loader):
             reader_cost_averager.record(time.time() - batch_start)
-            alpha_pred = model(data)
+            if precision == 'fp16':
+                with paddle.amp.auto_cast(
+                        level=amp_level,
+                        enable=True,
+                        custom_white_list={
+                            "elementwise_add", "batch_norm", "sync_batch_norm"
+                        },
+                        custom_black_list={'bilinear_interp_v2', 'pad3d'}):
+                    alpha_pred = model(data)
+                    alpha_pred = reverse_transform(alpha_pred,
+                                                   data['trans_info'])
+            else:
+                alpha_pred = model(data)
+                alpha_pred = reverse_transform(alpha_pred, data['trans_info'])
 
-            alpha_pred = reverse_transform(alpha_pred, data['trans_info'])
             alpha_pred = alpha_pred.numpy()
 
             alpha_gt = data['alpha'].numpy() * 255
