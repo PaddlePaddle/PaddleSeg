@@ -28,7 +28,7 @@ from app import APP_EISeg  # 导入带槽的界面
 def main():
     ## -- log --
     settings = QtCore.QSettings(
-        osp.join(pjpath, "config/setting.ini"), QtCore.QSettings.IniFormat)
+        osp.join(pjpath, "config/setting.txt"), QtCore.QSettings.IniFormat)
     #
     # logFolder = settings.value("logFolder")
     # logLevel = settings.value("logLevel")
@@ -79,4 +79,5 @@ def main():
     # 加载近期模型
     QApplication.processEvents()
     window.loadRecentModelParam()
+    window.loadVideoRecentModelParam()
     sys.exit(app.exec())

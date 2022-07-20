@@ -1,10 +1,12 @@
+简体中文 | [English](remote_sensing_en.md)
+
 # 遥感相关
 
 以下内容为EISeg中遥感垂类相关的文档，主要包括环境配置和功能介绍两大方面。
 
 ## 1 环境配置
 
-EISeg中对遥感数据的支持来自GDAL/OGR，GDAL是一个在X/MIT许可协议下的开源栅格空间数据转换库，OGR与其功能类似但主要提供对矢量数据的支持。同时需要安装rasterio。
+EISeg中对遥感数据的支持来自GDAL/OGR，GDAL是一个在X/MIT许可协议下的开源栅格空间数据转换库，OGR与其功能类似但主要提供对矢量数据的支持。
 
 ### 1.1 依赖安装
 
@@ -31,13 +33,7 @@ Mac用户建议利用conda安装，如下：
 ```shell script
 conda install gdal
 ```
-#### 1.1.3 rasterio 安装
 
-建议用户利用conda安装，如下
-
-```shell script
-conda install rasterio
-```
 
 ## 2 功能介绍
 

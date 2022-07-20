@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import os.path as osp
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 
 import paddle.inference as paddle_infer
 
@@ -30,6 +30,9 @@ class EISegModel:
             ValueError(" 模型和参数不匹配，请检查模型和参数是否加载错误")
         if not use_gpu:
             config.enable_mkldnn()
+            # TODO: fluid要废弃了，研究判断方式
+            # if paddle.fluid.core.supports_bfloat16():
+            #     config.enable_mkldnn_bfloat16()
             config.switch_ir_optim(True)
             config.set_cpu_math_library_num_threads(10)
         else:
@@ -40,7 +43,7 @@ class EISegModel:
             config.switch_ir_optim()
             config.enable_memory_optim()
             # use_tensoret = False  # TODO: 目前Linux和windows下使用TensorRT报错
-            # if use_tensorrt:
+            # if use_tensoret:
             #     config.enable_tensorrt_engine(
             #         workspace_size=1 << 30,
             #         precision_mode=paddle_infer.PrecisionType.Float32,

@@ -16,7 +16,7 @@
 </div>
 
 <div align="center">
-<img src="https://github.com/shiyutang/files/raw/2bb2aebaaec36f54953c7e4a96cb84c90336e4c1/ezgif.com-gif-maker%20(3).gif"  width = "800" />  
+<img src="https://github.com/shiyutang/files/blob/9590ea6bfc36139982ce75b00d3b9f26713934dd/teasor.gif"  width = "800" />  
 </div>
 
 ## <img src="./docs/images/seg_news_icon.png" width="20"/> 最新动态

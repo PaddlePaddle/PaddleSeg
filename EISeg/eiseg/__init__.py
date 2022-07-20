@@ -22,7 +22,7 @@ from qtpy import QtCore
 import cv2
 
 __APPNAME__ = "EISeg"
-__VERSION__ = "0.5.0"
+__VERSION__ = "1.0.0"
 
 pjpath = osp.dirname(osp.realpath(__file__))
 sys.path.append(pjpath)
@@ -33,7 +33,7 @@ for k, v in os.environ.items():
 
 # log
 settings = QtCore.QSettings(
-    osp.join(pjpath, "config/setting.ini"), QtCore.QSettings.IniFormat)
+    osp.join(pjpath, "config/setting.txt"), QtCore.QSettings.IniFormat)
 
 logFolder = settings.value("logFolder")
 logLevel = bool(settings.value("log"))
