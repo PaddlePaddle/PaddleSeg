@@ -262,7 +262,8 @@ PaddleSeg is an end-to-end high-efficent development toolkit for image segmentat
         </details>
         <details><summary><b>Human Segmentation</b></summary>
           <ul>
-              <li><a href="./contrib/PP-HumanSeg/README_cn.md">PP-HumanSeg</a></li>
+              <li><a href="./contrib/PP-HumanSeg/README_cn.md">PP-HumanSegV1</a></li>
+              <li><a href="./contrib/PP-HumanSeg/README_cn.md">PP-HumanSegV2</a></li>
           </ul>
         </details>
         <details><summary><b>MedicalSeg</b></summary>
