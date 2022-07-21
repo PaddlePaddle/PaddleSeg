@@ -256,7 +256,8 @@
         </details>
         <details><summary><b>人像分割模型</b></summary>
           <ul>
-              <li><a href="./contrib/PP-HumanSeg/README_cn.md">PP-HumanSeg</a></li>
+              <li><a href="./contrib/PP-HumanSeg/README_cn.md">PP-HumanSegV1</a></li>
+              <li><a href="./contrib/PP-HumanSeg/README_cn.md">PP-HumanSegV2</a></li>
           </ul>
         </details>
         <details><summary><b>3D医疗分割模型</b></summary>

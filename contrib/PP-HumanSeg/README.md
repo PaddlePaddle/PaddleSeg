@@ -19,12 +19,12 @@ Generally, human segentation can be classified as portrait segmentation and gene
 For portrait segmentation and general human segmentation, PaddleSeg releases the PP-HumanSeg models, which has **good performance in accuracy, inference speed and robustness**. Besides, we can deploy PP-HumanSeg models to products without training
 Besides, PP-HumanSeg models can be deployed to products at zero cost, and it also support fine-tuning to achieve better performance.
 
-We provide full-process application guides from training to deployment, as well as video streaming segmentation and background replacement tutorials. Based on Paddle.js, you can experience the effects of [Portrait Snapshot](https://paddlejs.baidu.com/humanseg), [Video Background Replacement and Barrage Penetration](https://www.paddlepaddle.org.cn/paddlejs).
+The following is demonstration videos (due to the video is large, the loading will be slightly slow) .We provide full-process application guides from training to deployment, as well as video streaming segmentation and background replacement tutorials. Based on Paddle.js, you can experience the effects of [Portrait Snapshot](https://paddlejs.baidu.com/humanseg), [Video Background Replacement and Barrage Penetration](https://www.paddlepaddle.org.cn/paddlejs).
 
 <p align="center">
-<img src="https://user-images.githubusercontent.com/30695251/149886667-f47cab88-e81a-4fd7-9f32-fbb34a5ed7ce.png"  height="200">        <img src="https://user-images.githubusercontent.com/30695251/149887482-d1fcd5d3-2cce-41b5-819b-bfc7126b7db4.png"  height="200">
+<img src="https://github.com/juncaipeng/raw_data/blob/master/images/portrait_bg_replace.gif" width="45%" height="45%">
+<img src="https://github.com/LutaoChu/transfer_station/raw/master/conference.gif" width="45%" height="45%">
 </p>
-
 
 ## 2 News
 - [2022-7] Release PP-HumanSeg V2 models. **The inference speed of portrait segmentation model is increased by 45.5%, mIoU is increased by 0.63%, and the visualization result is better**. The general human segmentation models also have improvement in accuracy and inference speed.
@@ -33,7 +33,7 @@ We provide full-process application guides from training to deployment, as well 
 - [2021-7] Release PP-HumanSeg V1 models, which has a portrait segmentation model and three general human segmentation models
 
 <p align="center">
-<img src="https://github.com/LutaoChu/transfer_station/raw/master/conference.gif" width="60%" height="60%">
+<img src="https://user-images.githubusercontent.com/30695251/149886667-f47cab88-e81a-4fd7-9f32-fbb34a5ed7ce.png"  height="200">        <img src="https://user-images.githubusercontent.com/30695251/149887482-d1fcd5d3-2cce-41b5-819b-bfc7126b7db4.png"  height="200">
 </p>
 
 
