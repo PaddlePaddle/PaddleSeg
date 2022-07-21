@@ -20,8 +20,8 @@
 如下是演示视频（由于视频较大，加载会稍慢），此外大家可以在Paddle.js的网页体验人像扣图效果([链接](https://paddlejs.baidu.com/humanseg))、视频背景替换及弹幕穿透效果([链接](https://www.paddlepaddle.org.cn/paddlejs))。
 
 <p align="center">
-<img src="https://github.com/juncaipeng/raw_data/blob/master/images/portrait_bg_replace.gif" width="45%" height="45%">
-<img src="https://github.com/LutaoChu/transfer_station/raw/master/conference.gif" width="45%" height="45%">
+<img src="https://github.com/juncaipeng/raw_data/blob/master/images/portrait_bg_replace.gif" height="200">
+<img src="https://github.com/LutaoChu/transfer_station/raw/master/conference.gif" height="200">
 </p>
 
 ## 2 最新消息

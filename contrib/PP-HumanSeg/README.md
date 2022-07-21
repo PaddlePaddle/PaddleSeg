@@ -22,8 +22,8 @@ Besides, PP-HumanSeg models can be deployed to products at zero cost, and it als
 The following is demonstration videos (due to the video is large, the loading will be slightly slow) .We provide full-process application guides from training to deployment, as well as video streaming segmentation and background replacement tutorials. Based on Paddle.js, you can experience the effects of [Portrait Snapshot](https://paddlejs.baidu.com/humanseg), [Video Background Replacement and Barrage Penetration](https://www.paddlepaddle.org.cn/paddlejs).
 
 <p align="center">
-<img src="https://github.com/juncaipeng/raw_data/blob/master/images/portrait_bg_replace.gif" width="45%" height="45%">
-<img src="https://github.com/LutaoChu/transfer_station/raw/master/conference.gif" width="45%" height="45%">
+<img src="https://github.com/juncaipeng/raw_data/blob/master/images/portrait_bg_replace.gif" height="200">
+<img src="https://github.com/LutaoChu/transfer_station/raw/master/conference.gif" height="200">
 </p>
 
 ## 2 News
