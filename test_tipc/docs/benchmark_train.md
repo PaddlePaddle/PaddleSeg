@@ -60,7 +60,7 @@ train_log/
 |PP-HumanSeg-Lite|[config](./configs/pphumanseg_lite/pphumanseg_lite_mini_supervisely.yml)|18.557|18.308|18.610|0.016|
 |PP-Matting|[config](./configs/ppmatting/modnet_mobilenetv2.yml)|||||
 |PP-HumanSeg-Mobile|[config](./configs/fcn_hrnetw18_small/fcn_hrnetw18_small_v1_humanseg_192x192_mini_supervisely.yml)|19.931|19.790|19.573|0.018|
-|HRNet_W18|[config](./configs/fcn_hrnetw18/fcn_hrnetw18_1024x512_cityscapes.yml)|||||
+|HRNet_W18|[config](./configs/fcn_hrnetw18/fcn_hrnetw18_1024x512_cityscapes.yml)|7.123|7.174|7.233|0.015|
 |Fast-SCNN|[config](./configs/fastscnn/fastscnn_cityscapes.yml)|||||
 |OCRNet_HRNetW48|[config](./configs/ocrnet_hrnetw48/ocrnet_hrnetw48_cityscapes_1024x512.yml)|4.192|4.204|4.205|0.003|
 |OCRNet_HRNetW18|[config](./configs/ocrnet_hrnetw18/ocrnet_hrnetw18_cityscapes_1024x512_160k.yml)|||||
