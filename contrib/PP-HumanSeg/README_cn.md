@@ -33,6 +33,7 @@
 <p align="center">
 <img src="https://user-images.githubusercontent.com/30695251/149886667-f47cab88-e81a-4fd7-9f32-fbb34a5ed7ce.png"  height="200">        <img src="https://user-images.githubusercontent.com/30695251/149887482-d1fcd5d3-2cce-41b5-819b-bfc7126b7db4.png"  height="200">
 </p>
+
 ## 3 PP-HumanSeg模型
 
 ### 3.1 肖像分割模型
