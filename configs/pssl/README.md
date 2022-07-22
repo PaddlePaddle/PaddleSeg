@@ -42,27 +42,26 @@ PaddleSeg
 └───data
 │   │
 │   └───ImageNet_org
-│   │   │   
+│   │   │  
 │   │   └───train
-│   │       │       
+│   │       │  
 │   │       └───n01440764
 │   │       │   │   n01440764_10026.JPEG
 │   │       │   │   ...
-│   │       │       
+│   │       │  
 │   │       └───nxxxxxxxx
-│   │       
-│   └───pssl2.1_consensus       
+│   │  
+│   └───pssl2.1_consensus  
 │   │   │   imagenet_lsvrc_2015_synsets.txt
 │   │   │   train.txt
 │   │   └───train
-│   │       │       
+│   │       │  
 │   │       └───n01440764
 │   │       │   │   n01440764_10026.JPEG_eiseg.npz
 │   │       │   │   ...
-│   │       │       
+│   │       │  
 │   │       └───nxxxxxxxx
 │   │       │   ...
-
 ```
 
 Having installed PaddlePaddle and PaddleSeg and prepared datasets (ImageNet and PSSL), we can run the pre-training script:
