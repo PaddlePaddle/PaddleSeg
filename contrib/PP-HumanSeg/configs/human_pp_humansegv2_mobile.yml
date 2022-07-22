@@ -68,4 +68,4 @@ model:
   backbone_indices: [1, 2, 3, 4]
   arm_out_chs: [4, 16, 32, 64]
   seg_head_inter_chs: [4, 16, 32, 64]
-  pretrained: pretrained_models/human_pp_humanseg_mobile_v2_192x192_pretrained/model.pdparams
+  pretrained: pretrained_models/human_pp_humansegv2_mobile_192x192_pretrained/model.pdparams
