@@ -21,7 +21,7 @@ import shutil
 import numpy as np
 import paddle
 import paddle.nn.functional as F
-from paddleseg.utils import TimeAverager, calculate_eta, resume, logger
+from paddleseg.utils import TimeAverager, calculate_eta, resume, logger, train_profiler
 
 from .val import evaluate
 
@@ -221,6 +221,9 @@ def train(model,
             if isinstance(optimizer._learning_rate,
                           paddle.optimizer.lr.LRScheduler):
                 optimizer._learning_rate.step()
+
+            train_profiler.add_profiler_step(profiler_options)
+
             model.clear_gradients()
 
             for key, value in loss_dict.items():
