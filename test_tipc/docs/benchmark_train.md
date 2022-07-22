@@ -65,7 +65,7 @@ train_log/
 |OCRNet_HRNetW48|[config](./configs/ocrnet_hrnetw48/ocrnet_hrnetw48_cityscapes_1024x512.yml)|4.192|4.204|4.205|0.003|
 |OCRNet_HRNetW18|[config](./configs/ocrnet_hrnetw18/train_infer_python.txt)|4.221|4.197|4.203|0.006|
 |SegFormer_B0|[config](./configs/segformer_b0/train_infer_python.txt)|||||
-|PP-LiteSeg-T|[config](./configs/pp_liteseg_stdc1/train_infer_python.txt)|||||
-|PP-LiteSeg-B|[config](./configs/pp_liteseg_stdc2/train_infer_python.txt)|||||
+|PP-LiteSeg-T|[config](./configs/pp_liteseg_stdc1/train_infer_python.txt)|3.934|3.945|3.980|0.012|
+|PP-LiteSeg-B|[config](./configs/pp_liteseg_stdc2/train_infer_python.txt)|3.956|3.989|4.001|0.011|
 
 *注：以上速度指标均在单卡（1块Nvidia V100 GPU）、不使用混合精度的情况下测得，测试时使用的batch size为对应配置中batch size候选项中的最小值。*
