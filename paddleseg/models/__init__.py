@@ -59,6 +59,7 @@ from .pfpnnet import PFPNNet
 from .glore import GloRe
 from .ddrnet import DDRNet_23
 from .ccnet import CCNet
+from .unet_cathy import UnetCathy
 from .mobileseg import MobileSeg
 from .upernet import UPerNet
 from .sinet import SINet

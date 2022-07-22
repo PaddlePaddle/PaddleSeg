@@ -22,6 +22,33 @@ from PIL import Image
 from paddleseg.cvlibs import manager
 from paddleseg.transforms import functional
 
+@manager.TRANSFORMS.add_component
+class MedicalCompose:
+    def __init__(self, transforms):
+        if not isinstance(transforms, list):
+            raise TypeError('The transforms must be a list!')
+        self.transforms = transforms
+
+    def __call__(self, im, label=None):
+        """
+        Args:
+            im (str|np.ndarray): It is either image path or image object.
+            label (str|np.ndarray): It is either label path or label ndarray.
+
+        Returns:
+            (tuple). A tuple including image, image info, and label after transformation.
+        """
+
+        if im is None:
+            raise ValueError('Can\'t read The image file {}!'.format(im))
+
+        for op in self.transforms:
+            outputs = op(im, label)
+            im = outputs[0]
+            if len(outputs) == 2:
+                label = outputs[1]
+
+        return (im, label)
 
 @manager.TRANSFORMS.add_component
 class Compose:
@@ -1070,3 +1097,17 @@ class RandomAffine:
                 borderMode=cv2.BORDER_CONSTANT,
                 borderValue=self.label_padding_value)
         return data
+
+@manager.TRANSFORMS.add_component
+class Rotate90:
+    def __init__(self,prob=0.5):
+        self.prob = prob
+    def __call__(self, im, label=None):
+        if random.random() < self.prob:
+            im=functional.rot90(im)
+            if label is not None:
+                label=functional.rot90(label)
+        if label is None:
+            return (im,)
+        else:
+            return (im, label)

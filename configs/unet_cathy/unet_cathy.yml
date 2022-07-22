@@ -1,0 +1,14 @@
+_base_: '../_base_/calcification.yml'
+
+batch_size: 2
+iters: 80000
+
+lr_scheduler:
+  type: PolynomialDecay
+  learning_rate: 0.05
+  end_lr: 0.0
+  power: 0.9
+
+model:
+  type: UnetCathy
+  pretrained: Null

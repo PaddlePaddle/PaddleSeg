@@ -1,0 +1,36 @@
+batch_size: 2
+iters: 80000
+
+train_dataset:
+  type: CalDataset
+  dataset_root: data/cityscapes
+  transforms:
+    - type: RandomHorizontalFlip
+    - type: RandomVerticalFlip
+      prob: 0.5
+    - type: Rotate90
+  mode: train
+
+val_dataset:
+  type: CalDataset
+  dataset_root: data/cityscapes
+  transforms:
+  mode: val
+
+
+optimizer:
+  type: sgd
+  momentum: 0.9
+  weight_decay: 4.0e-5
+
+lr_scheduler:
+  type: PolynomialDecay
+  learning_rate: 0.01
+  end_lr: 0
+  power: 0.9
+
+loss:
+  types:
+    - type: CrossEntropyLoss
+      weight:[5.000e-04, 9.995e-01]
+  coef: [1]

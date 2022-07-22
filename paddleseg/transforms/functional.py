@@ -57,7 +57,9 @@ def resize_short(im, short_size=224, interpolation=cv2.INTER_LINEAR):
         im, (resized_width, resized_height), interpolation=interpolation)
     return im
 
-
+def rot90(im):
+    im=np.rot90(im,1,[-2,-1])
+    return im
 def horizontal_flip(im):
     if len(im.shape) == 3:
         im = im[:, ::-1, :]
