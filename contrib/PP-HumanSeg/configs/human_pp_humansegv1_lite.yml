@@ -63,4 +63,4 @@ model:
   type: PPHumanSegLite
   align_corners: False
   num_classes: 2
-  pretrained: pretrained_models/human_pp_humanseg_lite_v1_192x192_pretrained/model.pdparams
+  pretrained: pretrained_models/human_pp_humansegv1_lite_192x192_pretrained/model.pdparams

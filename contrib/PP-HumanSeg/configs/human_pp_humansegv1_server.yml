@@ -71,4 +71,4 @@ model:
   aspp_ratios: [1, 12, 24, 36]
   aspp_out_channels: 256
   align_corners: False
-  pretrained: pretrained: pretrained_models/human_pp_humanseg_server_v1_512x512_pretrained/model.pdparams
+  pretrained: pretrained: pretrained_models/human_pp_humansegv1_server_512x512_pretrained/model.pdparams
