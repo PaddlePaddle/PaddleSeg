@@ -66,4 +66,4 @@ model:
     align_corners: False
   num_classes: 2
   backbone_indices: [-1]
-  pretrained: pretrained_models/human_pp_humanseg_mobile_v1_192x192_pretrained/model.pdparams
+  pretrained: pretrained_models/human_pp_humansegv1_mobile_192x192_pretrained/model.pdparams
