@@ -144,6 +144,21 @@ if [ "${MODE}" = "benchmark_train" ];then
     fi
 fi
 
+# [Bobholamovic] FIXME: Remove model-specific code from test_train_inference_python.sh.
+# Currently, some models (e.g. fcn_hrnetw18) can not run with the N1C8 config, due to a thread error raised by OpenCV.
+# One solution to this problem is to call cv2.setNumThreads(1) in the training script 
+# (see https://blog.csdn.net/zsytony/article/details/116712444).
+# However, it is impossible to do this without hacking the training script.
+# This is why this if-block is added here.
+if [ ${model_name} = 'fcn_hrnetw18' ] \
+    || [ ${model_name} = 'ocrnet_hrnetw48' ] \
+    || [ ${model_name} = 'ocrnet_hrnetw18' ] \
+    || [ ${model_name} = 'fastscnn' ] \
+    || [ ${model_name} = 'pp_liteseg_stdc1' ] \
+    || [ ${model_name} = 'pp_liteseg_stdc2' ] \
+    || [ ${model_name} = 'segformer_b0' ];then
+    modify_train_script='True'
+fi
 
 function func_inference(){
     IFS='|'
@@ -363,16 +378,16 @@ else
                     cmd="${cmd} --log_iters ${log_iters}"
                 fi
 
-                # [Bobholamovic] FIXME: Remove model-specific code from test_train_inference_python.sh.
-                # Currently, ocrnet_hrnetw48 will not run with the N1C8 config, due to a thread error raised by OpenCV.
-                # One solution is to call cv2.setNumThreads(1) in the training script (see https://blog.csdn.net/zsytony/article/details/116712444).
-                # However, it is impossible to do this without hacking the training script.
-                # This is why this if-block is added here.
-                if [ ${model_name} = 'ocrnet_hrnetw48' ];then
+                if [ -n "${modify_train_script}" ];then
+                    # Take the first word as the training script, which means there should be no blanks in the path of script.
                     train_script=$(echo "${run_train}" | cut -d ' ' -f1)
-                    # Save a backup file
-                    cp ${train_script} ${train_script}_bak
-                    sed -i '1s/^/import cv2; cv2.setNumThreads(1)\n/' ${train_script}
+                    # Make a copy
+                    _ext=${train_script##*.}
+                    train_script_copy="${train_script%.*}_copy.${_ext}"
+                    cp ${train_script} ${train_script_copy}
+                    sed -i '1s/^/import cv2; cv2.setNumThreads(1)\n/' ${train_script_copy}
+                    # Use a global replace!
+                    cmd="${cmd/${train_script}/${train_script_copy}}"
                 fi
 
                 # run train
@@ -380,8 +395,8 @@ else
                 status_check $? "${cmd}" "${status_log}" "${model_name}"
 
                 # [Bobholamovic] Recover the hacked training script
-                if [ ${model_name} = 'ocrnet_hrnetw48' ];then
-                    mv ${train_script}_bak ${train_script}
+                if [ -n "${modify_train_script}" ];then
+                    rm ${train_script_copy}
                 fi
 
                 # modify model dir if no eval
