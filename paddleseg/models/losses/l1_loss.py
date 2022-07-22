@@ -41,7 +41,6 @@ class L1Loss(nn.L1Loss):
             If `reduction` is ``'mean'``, the reduced mean loss is returned.
             If `reduction` is ``'sum'``, the reduced sum loss is returned.
             Default is ``'mean'``.
-        ignore_index (int, optional): Specifies a target value that is ignored and does not contribute to the input gradient. Default: 255.
     Shape:
         input (Tensor): The input tensor. The shapes is [N, *], where N is batch size and `*` means any number of additional dimensions. It's data type should be float32, float64, int32, int64.
         label (Tensor): label. The shapes is [N, *], same shape as ``input`` . It's data type should be float32, float64, int32, int64.
@@ -72,5 +71,5 @@ class L1Loss(nn.L1Loss):
             # [0.2        0.79999995]]
     """
 
-    def __init__(self, reduction='mean', ignore_index=255):
+    def __init__(self, reduction='mean'):
         super().__init__(reduction=reduction)
