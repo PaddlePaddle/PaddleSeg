@@ -56,16 +56,16 @@ train_log/
 
 |模型名称|配置文件|第1次测试FPS`fps_1`|第2次测试FPS`fps_2`|第3次测试FPS`fps_3`|`(max(fps_n)-min(fps_n))/max(fps_n)`|
 |:-:|:-:|:-:|:-:|:-:|:-:|
-|PP-HumanSeg-Server|[config](./configs/deeplabv3p_resnet50/deeplabv3p_resnet50_humanseg_512x512_mini_supervisely.yml)|7.206|7.163|7.194|0.006|
-|PP-HumanSeg-Lite|[config](./configs/pphumanseg_lite/pphumanseg_lite_mini_supervisely.yml)|18.557|18.308|18.610|0.016|
-|PP-Matting|[config](./configs/ppmatting/modnet_mobilenetv2.yml)|||||
-|PP-HumanSeg-Mobile|[config](./configs/fcn_hrnetw18_small/fcn_hrnetw18_small_v1_humanseg_192x192_mini_supervisely.yml)|19.931|19.790|19.573|0.018|
-|HRNet_W18|[config](./configs/fcn_hrnetw18/fcn_hrnetw18_1024x512_cityscapes.yml)|7.123|7.174|7.233|0.015|
-|Fast-SCNN|[config](./configs/fastscnn/fastscnn_cityscapes.yml)|||||
+|PP-HumanSeg-Server|[config](./configs/deeplabv3p_resnet50/train_infer_python.txt)|7.206|7.163|7.194|0.006|
+|PP-HumanSeg-Lite|[config](./configs/pphumanseg_lite/train_infer_python.txt)|18.557|18.308|18.610|0.016|
+|PP-Matting|[config](./configs/ppmatting/train_infer_python.txt)|||||
+|PP-HumanSeg-Mobile|[config](./configs/fcn_hrnetw18_small/train_infer_python.txt)|19.931|19.790|19.573|0.018|
+|HRNet_W18|[config](./configs/fcn_hrnetw18/train_infer_python.txt)|7.306|7.267|7.248|0.008|
+|Fast-SCNN|[config](./configs/fastscnn/train_infer_python.txt)|||||
 |OCRNet_HRNetW48|[config](./configs/ocrnet_hrnetw48/ocrnet_hrnetw48_cityscapes_1024x512.yml)|4.192|4.204|4.205|0.003|
-|OCRNet_HRNetW18|[config](./configs/ocrnet_hrnetw18/ocrnet_hrnetw18_cityscapes_1024x512_160k.yml)|||||
-|SegFormer_B0|[config](./configs/segformer_b0/segformer_b0_cityscapes_1024x1024_160k.yml)|||||
-|PP-LiteSeg-T|[config](./configs/pp_liteseg_stdc1/pp_liteseg_stdc1_cityscapes_1024x512_160k.yml)|||||
-|PP-LiteSeg-B|[config](./configs/pp_liteseg_stdc2/pp_liteseg_stdc2_cityscapes_1024x512_160k.yml)|||||
+|OCRNet_HRNetW18|[config](./configs/ocrnet_hrnetw18/train_infer_python.txt)|4.221|4.197|4.203|0.006|
+|SegFormer_B0|[config](./configs/segformer_b0/train_infer_python.txt)|||||
+|PP-LiteSeg-T|[config](./configs/pp_liteseg_stdc1/train_infer_python.txt)|||||
+|PP-LiteSeg-B|[config](./configs/pp_liteseg_stdc2/train_infer_python.txt)|||||
 
-*注：以上速度指标均在单卡（1块Nvidia V100 GPU）、不使用混合精度的情况下测得。*
+*注：以上速度指标均在单卡（1块Nvidia V100 GPU）、不使用混合精度的情况下测得，测试时使用的batch size为对应配置中batch size候选项中的最小值。*
