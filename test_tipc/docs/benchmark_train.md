@@ -61,7 +61,7 @@ train_log/
 |PP-Matting|[config](./configs/ppmatting/train_infer_python.txt)|||||
 |PP-HumanSeg-Mobile|[config](./configs/fcn_hrnetw18_small/train_infer_python.txt)|19.931|19.790|19.573|0.018|
 |HRNet_W18|[config](./configs/fcn_hrnetw18/train_infer_python.txt)|7.306|7.267|7.248|0.008|
-|Fast-SCNN|[config](./configs/fastscnn/train_infer_python.txt)|||||
+|Fast-SCNN|[config](./configs/fastscnn/train_infer_python.txt)|19.256|18.676|18.867|0.03|
 |OCRNet_HRNetW48|[config](./configs/ocrnet_hrnetw48/ocrnet_hrnetw48_cityscapes_1024x512.yml)|4.192|4.204|4.205|0.003|
 |OCRNet_HRNetW18|[config](./configs/ocrnet_hrnetw18/train_infer_python.txt)|4.221|4.197|4.203|0.006|
 |SegFormer_B0|[config](./configs/segformer_b0/train_infer_python.txt)|||||
