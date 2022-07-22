@@ -121,6 +121,29 @@ def parse_args():
         help='Set the random seed during training.',
         default=None,
         type=int)
+    parser.add_argument(
+        "--precision",
+        default="fp32",
+        type=str,
+        choices=["fp32", "fp16"],
+        help="Use AMP (Auto mixed precision) if precision='fp16'. If precision='fp32', the training is normal."
+    )
+    parser.add_argument(
+        "--amp_level",
+        default="O1",
+        type=str,
+        choices=["O1", "O2"],
+        help="Auto mixed precision level. Accepted values are “O1” and “O2”: O1 represent mixed precision, the input \
+                data type of each operator will be casted by white_list and black_list; O2 represent Pure fp16, all operators \
+                parameters and input data will be casted to fp16, except operators in black_list, don’t support fp16 kernel \
+                and batchnorm. Default is O1(amp)")
+    parser.add_argument(
+        '--profiler_options',
+        type=str,
+        default=None,
+        help='The option of train profiler. If profiler_options is not None, the train ' \
+            'profiler is enabled. Refer to the paddleseg/utils/train_profiler.py for details.'
+    )
 
     return parser.parse_args()
 
@@ -185,7 +208,10 @@ def main(args):
         resume_model=args.resume_model,
         save_dir=args.save_dir,
         eval_begin_iters=args.eval_begin_iters,
-        metrics=args.metrics)
+        metrics=args.metrics,
+        precision=args.precision,
+        amp_level=args.amp_level,
+        profiler_options=args.profiler_options)
 
 
 if __name__ == '__main__':
