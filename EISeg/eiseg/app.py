@@ -1372,6 +1372,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
                 if checkOpenGrid(image, self.thumbnail_min):
                     if self.loadGrid(image, False):
                         image, _ = self.grid.getGrid(0, 0)
+                # 自然图像不进行缩小
             else:
                 if self.dockWidgets["grid"][0].isVisible() is True:
                     self.grid = Grids(image)
@@ -2442,12 +2443,11 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
             return
         mask = self.grid.splicingList(save_path)
         if self.grid.__class__.__name__ == "RSGrids":
-            self.image, is_big = self.raster.getArray()
+            self.image, geo_tf = self.raster.getArray()
+            if geo_tf is None:
+                self.statusbar.showMessage(self.tr("图像过大，已显示缩略图"))
         else:
             self.image = self.grid.detimg
-            is_big = checkOpenGrid(self.image, self.thumbnail_min)
-        if is_big is None:
-            self.statusbar.showMessage(self.tr("图像过大，已显示缩略图"))
         self.controller.image = self.image
         self.controller._result_mask = mask
         self.exportLabel(savePath=save_path, lab_input=mask)
