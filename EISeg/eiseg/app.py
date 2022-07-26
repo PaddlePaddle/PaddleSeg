@@ -1819,29 +1819,27 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
                 cv2.imencode(ext, mask_output)[1].tofile(savePath)
                 # self.labelPaths.append(savePath)
 
-            # 4.2 保存伪彩色
+        # 4.2 保存伪彩色
         if self.save_status["pseudo_color"]:
-            if self.raster is None:
-                pseudoPath, ext = osp.splitext(savePath)
-                pseudoPath = pseudoPath + "_pseudo" + ext
-                pseudo = np.zeros([s[0], s[1], 3])
-                # mask = self.controller.result_mask
-                mask = mask_output
-                # print(pseudo.shape, mask.shape)
-                for lab in self.controller.labelList:
-                    pseudo[mask == lab.idx, :] = lab.color[::-1]
-                cv2.imencode(ext, pseudo)[1].tofile(pseudoPath)
+            pseudoPath, ext = osp.splitext(savePath)
+            pseudoPath = pseudoPath + "_pseudo" + ext
+            pseudo = np.zeros([s[0], s[1], 3])
+            # mask = self.controller.result_mask
+            mask = mask_output
+            # print(pseudo.shape, mask.shape)
+            for lab in self.controller.labelList:
+                pseudo[mask == lab.idx, :] = lab.color[::-1]
+            cv2.imencode(ext, pseudo)[1].tofile(pseudoPath)
 
         # 4.3 保存前景抠图
         if self.save_status["cutout"]:
-            if self.raster is None:
-                mattingPath, ext = osp.splitext(savePath)
-                mattingPath = mattingPath + "_cutout" + ext
-                img = np.ones([s[0], s[1], 4], dtype="uint8") * 255
-                img[:, :, :3] = self.controller.image.copy()
-                img[mask_output == 0] = self.cutoutBackground
-                img = cv2.cvtColor(img, cv2.COLOR_RGBA2BGRA)
-                cv2.imencode(ext, img)[1].tofile(mattingPath)
+            mattingPath, ext = osp.splitext(savePath)
+            mattingPath = mattingPath + "_cutout" + ext
+            img = np.ones([s[0], s[1], 4], dtype="uint8") * 255
+            img[:, :, :3] = self.controller.image.copy()
+            img[mask_output == 0] = self.cutoutBackground
+            img = cv2.cvtColor(img, cv2.COLOR_RGBA2BGRA)
+            cv2.imencode(ext, img)[1].tofile(mattingPath)
 
         # 4.4 保存json
         if self.save_status["json"]:
