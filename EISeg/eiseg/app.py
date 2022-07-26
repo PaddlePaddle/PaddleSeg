@@ -2573,13 +2573,13 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
 
     def reportBug(self):
         webbrowser.open(
-            "https://github.com/PaddleCV-SIG/EISeg/issues/new/choose")
+            "https://github.com/PaddlePaddle/PaddleSeg/issues")
 
     def quickStart(self):
         # self.saveImage(True)
         # self.canvas.setStyleSheet(self.note_style)
         webbrowser.open(
-            "https://github.com/PaddleCV-SIG/EISeg/tree/release/0.4.0")
+            "https://github.com/PaddlePaddle/PaddleSeg/tree/release/2.6/EISeg")
 
     def toggleLogging(self, s):
         if s:
