@@ -2381,7 +2381,9 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         self.grid.mask_grids[row][col] = np.array(self.getMask())
         if self.cheSaveEvery.isChecked():
             if self.outputDir is None:
-                self.changeOutputDir()
+                if self.changeOutputDir() is False:
+                    self.cheSaveEvery.setChecked(False)
+                    return
             _, fullflname = osp.split(self.listFiles.currentItem().text())
             fname, _ = os.path.splitext(fullflname)
             path = osp.join(
