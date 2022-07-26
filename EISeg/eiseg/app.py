@@ -1836,7 +1836,8 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
             mattingPath, ext = osp.splitext(savePath)
             mattingPath = mattingPath + "_cutout" + ext
             img = np.ones([s[0], s[1], 4], dtype="uint8") * 255
-            img[:, :, :3] = self.controller.image.copy()
+            cim = cv2.resize(self.controller.image.copy(), (s[1], s[0]))
+            img[:, :, :3] = cim
             img[mask_output == 0] = self.cutoutBackground
             img = cv2.cvtColor(img, cv2.COLOR_RGBA2BGRA)
             cv2.imencode(ext, img)[1].tofile(mattingPath)
