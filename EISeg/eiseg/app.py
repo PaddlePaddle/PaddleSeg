@@ -2384,6 +2384,8 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
                 if self.changeOutputDir() is False:
                     self.cheSaveEvery.setChecked(False)
                     return
+            if not osp.exists(self.outputDir):
+                os.makedirs(self.outputDir)
             _, fullflname = osp.split(self.listFiles.currentItem().text())
             fname, _ = os.path.splitext(fullflname)
             path = osp.join(
@@ -2424,6 +2426,8 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         self.gridTable.clearContents()
 
     def saveGridLabel(self):
+        if self.grid is None: 
+            return
         if self.outputDir is not None:
             name, ext = osp.splitext(osp.basename(self.imagePath))
             if not self.origExt:
@@ -2439,8 +2443,6 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         except:
             pass
         self.delAllPolygon()  # 清理
-        if self.grid is None: 
-            return
         mask = self.grid.splicingList(save_path)
         if self.grid.__class__.__name__ == "RSGrids":
             self.image, geo_tf = self.raster.getArray()
