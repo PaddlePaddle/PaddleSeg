@@ -2438,6 +2438,8 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         except:
             pass
         self.delAllPolygon()  # 清理
+        if self.grid is None: 
+            return
         mask = self.grid.splicingList(save_path)
         if self.grid.__class__.__name__ == "RSGrids":
             self.image, is_big = self.raster.getArray()
