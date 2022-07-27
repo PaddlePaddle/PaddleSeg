@@ -50,19 +50,9 @@ class PortraitNet(nn.Layer):
         self.init_weight()
 
     def forward(self, x):
-        img = x[:, :3, :, :]
-        img_ori = x[:, 3:, :, :]
-
-        feat_list = self.backbone(img)
+        feat_list = self.backbone(x)
         logits_list = self.head(feat_list)
-
-        feat_list = self.backbone(img_ori)
-        logits_ori_list = self.head(feat_list)
-
-        return [
-            logits_list[0], logits_ori_list[0], logits_list[1],
-            logits_ori_list[1]
-        ]
+        return [logits_list]
 
     def init_weight(self):
         if self.pretrained is not None:

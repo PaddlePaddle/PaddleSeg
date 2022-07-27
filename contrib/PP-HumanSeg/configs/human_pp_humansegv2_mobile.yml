@@ -1,5 +1,5 @@
-batch_size: 64
-iters: 2000
+batch_size: 8
+iters: 1000
 
 train_dataset:
   type: Dataset
@@ -9,11 +9,15 @@ train_dataset:
   transforms:
     - type: Resize
       target_size: [192, 192]
+    - type: ResizeStepScaling
+      scale_step_size: 0
+    - type: RandomRotation
+    - type: RandomPaddingCrop
+      crop_size: [192, 192]
     - type: RandomHorizontalFlip
     - type: RandomDistort
-      brightness_range: 0.4
-      contrast_range: 0.4
-      saturation_range: 0.4
+    - type: RandomBlur
+      prob: 0.3
     - type: Normalize
   mode: train
 
@@ -42,20 +46,26 @@ optimizer:
 
 lr_scheduler:
   type: PolynomialDecay
-  learning_rate: 0.05
+  learning_rate: 0.001
   end_lr: 0
   power: 0.9
 
 loss:
   types:
-    - type: CrossEntropyLoss
-  coef: [1]
+    - type: MixedLoss
+      losses:
+        - type: CrossEntropyLoss
+        - type: LovaszSoftmaxLoss
+      coef: [0.8, 0.2]
+  coef: [1, 1, 1]
 
 model:
-  type: FCN
+  type: PPLiteSeg
   backbone:
-    type: HRNet_W18_Small_V1
-    align_corners: False
-  num_classes: 2
-  pretrained: pretrained_model/fcn_hrnetw18_small_v1_humanseg_192x192/model.pdparams
-  backbone_indices: [-1]
+    type: STDC1  # [x2 x4 x8 x16 x32]
+    pretrained: https://bj.bcebos.com/paddleseg/dygraph/PP_STDCNet1.tar.gz
+  cm_out_ch: 128
+  backbone_indices: [1, 2, 3, 4]
+  arm_out_chs: [4, 16, 32, 64]
+  seg_head_inter_chs: [4, 16, 32, 64]
+  pretrained: pretrained_models/human_pp_humansegv2_mobile_192x192_pretrained/model.pdparams
