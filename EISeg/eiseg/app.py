@@ -2388,9 +2388,12 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
                 os.makedirs(self.outputDir)
             _, fullflname = osp.split(self.listFiles.currentItem().text())
             fname, _ = os.path.splitext(fullflname)
-            path = osp.join(
+            save_ima_path = osp.join(
                 self.outputDir,
                 (fname + "_data_" + str(row) + "_" + str(col) + ".tif"))
+            save_lab_path = osp.join(
+                self.outputDir,
+                (fname + "_mask_" + str(row) + "_" + str(col) + ".tif"))
             im, tf = self.raster.getGrid(row, col)
             h, w = im.shape[:2]
             geoinfo = edict()
@@ -2400,9 +2403,9 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
             geoinfo.crs = self.raster.geoinfo.crs
             geoinfo.geotf = tf
             self.raster.saveMask(self.grid.mask_grids[row][col],
-                                 path.replace("data", "mask"),
+                                 save_lab_path,
                                  geoinfo)  # 保存mask
-            self.raster.saveMask(im, path, geoinfo, 3)  # 保存图像
+            self.raster.saveMask(im, save_ima_path, geoinfo, 3)  # 保存图像
 
     def turnGrid(self, delta):
         # 切换下一个宫格
