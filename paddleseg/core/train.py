@@ -196,15 +196,17 @@ def train(model,
     save_models = deque()
     batch_start = time.time()
     train_batch_size = batch_size
-    prof = profiler.Profiler(timer_only=True)#targets=[profiler.ProfilerTarget.CPU, profiler.ProfilerTarget.GPU],
-                            # scheduler=[100, 110],
-                            # timer_only=True)
+    prof = profiler.Profiler(targets=[profiler.ProfilerTarget.CPU, profiler.ProfilerTarget.GPU],
+                             scheduler=[100, 110],
+                             timer_only=True)
     prof.start()   
     iter = start_iter
     benchmark_num_iters = 0 
     benchmark_start = 0
     while iter < iters:
         for data in loader:
+            #profiler.add_profiler_step(profiler_options)
+            #switch_profile(100, 110, iter,"(iter is ={})".format(iter))
             if iter == 10:
                 benchmark_start = time.time()
                 benchmark_num_iters = 0
@@ -289,9 +291,6 @@ def train(model,
                     avg_loss_list[i] += loss_list[i].numpy()
             prof.step(num_samples=batch_size)
             add_nvtx_event("other", is_first=False, is_last=True)
-            benchmark_time = time.time() - benchmark_start
-            avg_batch_cost = benchmark_time / benchmark_num_iters
-            print("[BENCHMARK] batch_size={}, avg_batch_cost={:.4f}, avg_ips={:.4f} images/s".format(batch_size, avg_batch_cost, batch_size / avg_batch_cost))
 
             batch_cost_averager.record(
                 time.time() - batch_start, num_samples=batch_size)
@@ -375,7 +374,10 @@ def train(model,
                     if use_vdl:
                         log_writer.add_scalar('Evaluate/mIoU', mean_iou, iter)
                         log_writer.add_scalar('Evaluate/Acc', acc, iter)
-            batch_start = time.time()
+        benchmark_time = time.time() - benchmark_start
+        avg_batch_cost = benchmark_time / benchmark_num_iters
+        print("[BENCHMARK] batch_size={}, avg_batch_cost={:.4f}, avg_ips={:.4f} images/s".format(batch_size, avg_batch_cost, batch_size / avg_batch_cost))
+        batch_start = time.time()
     prof.stop()
     prof.summary(op_detail=False)
 
