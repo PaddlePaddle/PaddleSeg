@@ -144,6 +144,10 @@ if [ ${MODE} = "benchmark_train" ];then
         rm -rf ./test_tipc/data/mini_supervisely
         wget -nc -P ./test_tipc/data/ https://paddleseg.bj.bcebos.com/humanseg/data/mini_supervisely.zip --no-check-certificate
         cd ./test_tipc/data/ && unzip mini_supervisely.zip && cd -
+    elif [ ${model_name} = 'ppmatting' ];then
+        rm -rf ./test_tipc/data/PPM-100
+        wget -nc -P ./test_tipc/data/ https://paddleseg.bj.bcebos.com/matting/datasets/PPM-100.zip --no-check-certificate
+        cd ./test_tipc/data/ && unzip PPM-100.zip && cd -
     else
         rm -rf ./test_tipc/data/cityscapes
         wget https://paddleseg.bj.bcebos.com/dataset/cityscapes_30imgs.tar.gz \

@@ -195,6 +195,11 @@ for batch_size in ${batch_size_list[*]}; do
                 export model_run_time=$((${job_et}-${job_bt}))
                 eval "cat ${log_path}/${log_name}"
 
+                # [Bobholamovic] For matting tasks, modify the training log to fit the input of analysis.py.
+                if [ "${model_name}" = 'ppmatting' ]; then
+                    sed -i 's/=/: /g' ${log_path}/${log_name}
+                fi
+
                 # parser log
                 _model_name="${model_name}_bs${batch_size}_${precision}_${run_mode}"
                 cmd="${python} ${BENCHMARK_ROOT}/scripts/analysis.py --filename ${log_path}/${log_name} \
@@ -230,6 +235,12 @@ for batch_size in ${batch_size_list[*]}; do
                 job_et=`date '+%Y%m%d%H%M%S'`
                 export model_run_time=$((${job_et}-${job_bt}))
                 eval "cat ${log_path}/${log_name}"
+
+                # [Bobholamovic] For matting tasks, modify the training log to fit the input of analysis.py.
+                if [ "${model_name}" = 'ppmatting' ]; then
+                    sed -i 's/=/: /g' ${log_path}/${log_name}
+                fi
+
                 # parser log
                 _model_name="${model_name}_bs${batch_size}_${precision}_${run_mode}"
                 
