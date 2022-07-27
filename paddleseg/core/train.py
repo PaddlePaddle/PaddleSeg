@@ -16,13 +16,49 @@ import os
 import time
 from collections import deque
 import shutil
-
+import paddle.profiler as profiler
 import paddle
 import paddle.nn.functional as F
 
 from paddleseg.utils import (TimeAverager, calculate_eta, resume, logger,
                              worker_init_fn, train_profiler, op_flops_funs)
 from paddleseg.core.val import evaluate
+
+GLOBAL_PROFILE_STATE = True
+def add_nvtx_event(event_name, is_first=False, is_last=False):
+    global GLOBAL_PROFILE_STATE
+    if not GLOBAL_PROFILE_STATE:
+        return
+
+    if not is_first:
+        paddle.fluid.core.nvprof_nvtx_pop()
+    if not is_last:
+        paddle.fluid.core.nvprof_nvtx_push(event_name)
+
+def switch_profile(start, end, step_idx, event_name=None):
+    global GLOBAL_PROFILE_STATE
+    if step_idx > start and step_idx < end:
+        GLOBAL_PROFILE_STATE = True
+    else:
+        GLOBAL_PROFILE_STATE = False
+
+    #if step_idx == start:
+    #    paddle.utils.profiler.start_profiler("All", "Default")
+    #elif step_idx == end:
+    #    paddle.utils.profiler.stop_profiler("total", "tmp.profile")
+
+    if event_name is None:
+        event_name = str(step_idx)
+    if step_idx == start:
+        paddle.fluid.core.nvprof_start()
+        paddle.fluid.core.nvprof_enable_record_event()
+        paddle.fluid.core.nvprof_nvtx_push(event_name)
+    elif step_idx == end:
+        paddle.fluid.core.nvprof_nvtx_pop()
+        paddle.fluid.core.nvprof_stop()
+    elif step_idx > start and step_idx < end:
+        paddle.fluid.core.nvprof_nvtx_pop()
+        paddle.fluid.core.nvprof_nvtx_push(event_name)
 
 
 def check_logits_losses(logits_list, losses):
@@ -159,10 +195,20 @@ def train(model,
     batch_cost_averager = TimeAverager()
     save_models = deque()
     batch_start = time.time()
-
+    train_batch_size = batch_size
+    prof = profiler.Profiler(timer_only=True)#targets=[profiler.ProfilerTarget.CPU, profiler.ProfilerTarget.GPU],
+                            # scheduler=[100, 110],
+                            # timer_only=True)
+    prof.start()   
     iter = start_iter
+    benchmark_num_iters = 0 
+    benchmark_start = 0
     while iter < iters:
         for data in loader:
+            if iter == 10:
+                benchmark_start = time.time()
+                benchmark_num_iters = 0
+            benchmark_num_iters += 1
             iter += 1
             if iter > iters:
                 version = paddle.__version__
@@ -170,6 +216,7 @@ def train(model,
                     continue
                 else:
                     break
+            
             reader_cost_averager.record(time.time() - batch_start)
             images = data['img']
             labels = data['label'].astype('int64')
@@ -187,32 +234,41 @@ def train(model,
                             "elementwise_add", "batch_norm", "sync_batch_norm"
                         },
                         custom_black_list={'bilinear_interp_v2'}):
+                    add_nvtx_event("forward", is_first=True, is_last=False)
                     logits_list = ddp_model(images) if nranks > 1 else model(
                         images)
+                    add_nvtx_event("loss", is_first=False, is_last=False)
                     loss_list = loss_computation(
                         logits_list=logits_list, label_dict=data, losses=losses)
                     loss = sum(loss_list)
 
                 scaled = scaler.scale(loss)  # scale the loss
+                add_nvtx_event("backward", is_first=False, is_last=False)
                 scaled.backward()  # do backward
+                add_nvtx_event("optimizer", is_first=False, is_last=False)
                 if isinstance(optimizer, paddle.distributed.fleet.Fleet):
                     scaler.minimize(optimizer.user_defined_optimizer, scaled)
                 else:
                     scaler.minimize(optimizer, scaled)  # update parameters
-            else:
+            else: 
+                add_nvtx_event("forward", is_first=True, is_last=False)
                 logits_list = ddp_model(images) if nranks > 1 else model(images)
+                add_nvtx_event("loss", is_first=False, is_last=False)
                 loss_list = loss_computation(
                     logits_list=logits_list, label_dict=data, losses=losses)
                 loss = sum(loss_list)
+                add_nvtx_event("backward", is_first=False, is_last=False)
                 loss.backward()
                 # if the optimizer is ReduceOnPlateau, the loss is the one which has been pass into step.
+                add_nvtx_event("optimizer", is_first=False, is_last=False)
                 if isinstance(optimizer, paddle.optimizer.lr.ReduceOnPlateau):
                     optimizer.step(loss)
                 else:
                     optimizer.step()
-
+            add_nvtx_event("curr_lr", is_first=False, is_last=False)
             lr = optimizer.get_lr()
 
+            add_nvtx_event("update_lr", is_first=False, is_last=False)
             # update lr
             if isinstance(optimizer, paddle.distributed.fleet.Fleet):
                 lr_sche = optimizer.user_defined_optimizer._learning_rate
@@ -222,17 +278,23 @@ def train(model,
                 lr_sche.step()
 
             train_profiler.add_profiler_step(profiler_options)
-
+            add_nvtx_event("clear_grad", is_first=False, is_last=False)
             model.clear_gradients()
+
             avg_loss += loss.numpy()[0]
             if not avg_loss_list:
                 avg_loss_list = [l.numpy() for l in loss_list]
             else:
                 for i in range(len(loss_list)):
                     avg_loss_list[i] += loss_list[i].numpy()
+            prof.step(num_samples=batch_size)
+            add_nvtx_event("other", is_first=False, is_last=True)
+            benchmark_time = time.time() - benchmark_start
+            avg_batch_cost = benchmark_time / benchmark_num_iters
+            print("[BENCHMARK] batch_size={}, avg_batch_cost={:.4f}, avg_ips={:.4f} images/s".format(batch_size, avg_batch_cost, batch_size / avg_batch_cost))
+
             batch_cost_averager.record(
                 time.time() - batch_start, num_samples=batch_size)
-
             if (iter) % log_iters == 0 and local_rank == 0:
                 avg_loss /= log_iters
                 avg_loss_list = [l[0] / log_iters for l in avg_loss_list]
@@ -314,6 +376,8 @@ def train(model,
                         log_writer.add_scalar('Evaluate/mIoU', mean_iou, iter)
                         log_writer.add_scalar('Evaluate/Acc', acc, iter)
             batch_start = time.time()
+    prof.stop()
+    prof.summary(op_detail=False)
 
     # Calculate flops.
     if local_rank == 0 and not (precision == 'fp16' and amp_level == 'O2'):
