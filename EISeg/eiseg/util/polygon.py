@@ -50,7 +50,8 @@ def get_polygon(label, sample="Dynamic", img_size=None, building=False):
                 contour = cv2.approxPolyDP(contour, epsilon / 10, True)
             else:
                 # -- 建筑边界简化（https://github.com/niecongchong/RS-building-regularization）
-                contour = boundary_regularization(contour, img_shape, epsilon)
+                if contour.shape[0] >= 2:
+                    contour = boundary_regularization(contour, img_shape, epsilon)
             # -- 自定义（角度和距离）边界简化
             out = approx_poly_DIY(contour)
             # 给出关系
