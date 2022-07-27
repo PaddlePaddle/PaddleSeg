@@ -133,12 +133,12 @@ echo "------------------------ ${MODE} ------------------------" >> $status_log
 last_idx=$((${#lines[@]}-1))
 extra_key=$(func_parser_key "${lines[last_idx]}")
 extra_value=$(func_parser_value "${lines[last_idx]}")
-if [ "${extra_key}" = "log_iters" ];then
+if [ "${extra_key}" = 'log_iters' ];then
     log_iters="${extra_value}"
 fi
 
-if [ "${MODE}" = "benchmark_train" ];then
-    if [ "${autocast_key}" == "Global.auto_cast" ];then
+if [ "${MODE}" = 'benchmark_train' ];then
+    if [ "${autocast_key}" = 'Global.auto_cast' ];then
         echo 'Replcace ${autocast_key}'"('${autocast_key}') with '--precision'"
         autocast_key="--precision"
     fi
@@ -312,6 +312,8 @@ else
         for autocast in ${autocast_list[*]}; do
             if [ ${autocast} = "amp" ]; then
                 set_amp_config="Global.use_amp=True Global.scale_loss=1024.0 Global.use_dynamic_loss_scaling=True"
+            elif [ "${autocast}" = 'fp16' ] && [ "${MODE}" = 'benchmark_train' ];then
+                set_amp_config="--amp_level=O2"
             else
                 set_amp_config=" "
             fi
@@ -378,6 +380,10 @@ else
                     cmd="${cmd} --log_iters ${log_iters}"
                 fi
 
+                if [ -n "${amp_level}" ];then
+                    cmd="${cmd} --amp_level ${amp_level}"
+                fi
+
                 if [ -n "${modify_train_script}" ];then
                     # Take the first word as the training script, which means there should be no blanks in the path of script.
                     train_script=$(echo "${run_train}" | cut -d ' ' -f1)
@@ -390,6 +396,7 @@ else
                     cmd="${cmd/${train_script}/${train_script_copy}}"
                 fi
 
+                echo "$cmd"
                 # run train
                 eval $cmd
                 status_check $? "${cmd}" "${status_log}" "${model_name}"

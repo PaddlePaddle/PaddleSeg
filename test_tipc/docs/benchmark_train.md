@@ -3,8 +3,8 @@
 
 该文档为Benchmark测试说明，Benchmark预测功能测试的主程序为`benchmark_train.sh`，用于验证监控模型训练的性能。
 
-# 1. 测试流程
-## 1.1 准备数据和环境安装
+## 1. 测试流程
+### 1.1 准备数据和环境安装
 运行`test_tipc/prepare.sh`，完成训练数据准备和安装环境流程。
 
 ```shell
@@ -12,7 +12,7 @@
 bash test_tipc/prepare.sh test_tipc/configs/segformer_b0/train_infer_python.txt benchmark_train
 ```
 
-## 1.2 功能测试
+### 1.2 功能测试
 执行`test_tipc/benchmark_train.sh`，完成模型训练和日志解析
 
 ```shell
@@ -54,18 +54,68 @@ train_log/
 
 ## 3. 各模型单卡性能数据一览
 
+*注：本节中的速度指标均使用单卡（1块Nvidia V100 GPU）测得。通常情况下，测试时使用的batch_size为对应配置中batch_size候选项中的最小值；对于HRNet_W18，由于测试机器的显存限制，选取batch_size=4。*
+
+### 3.1 大数据集+fp32精度
+
 |模型名称|配置文件|第1次测试FPS`fps_1`|第2次测试FPS`fps_2`|第3次测试FPS`fps_3`|`(max(fps_n)-min(fps_n))/max(fps_n)`|
 |:-:|:-:|:-:|:-:|:-:|:-:|
-|PP-HumanSeg-Server|[config](./configs/deeplabv3p_resnet50/train_infer_python.txt)|7.206|7.163|7.194|0.006|
-|PP-HumanSeg-Lite|[config](./configs/pphumanseg_lite/train_infer_python.txt)|18.557|18.308|18.610|0.016|
+|PP-HumanSeg-Server|[config](./configs/deeplabv3p_resnet50/train_infer_python.txt)|||||
+|PP-HumanSeg-Lite|[config](./configs/pphumanseg_lite/train_infer_python.txt)|||||
 |PP-Matting|[config](./configs/ppmatting/train_infer_python.txt)|||||
-|PP-HumanSeg-Mobile|[config](./configs/fcn_hrnetw18_small/train_infer_python.txt)|19.931|19.790|19.573|0.018|
-|HRNet_W18|[config](./configs/fcn_hrnetw18/train_infer_python.txt)|7.306|7.267|7.248|0.008|
-|Fast-SCNN|[config](./configs/fastscnn/train_infer_python.txt)|19.256|18.676|18.867|0.03|
+|PP-HumanSeg-Mobile|[config](./configs/fcn_hrnetw18_small/train_infer_python.txt)|||||
+|HRNet_W18|[config](./configs/fcn_hrnetw18/train_infer_python.txt)|11.362|11.246|11.205|0.014|
+|Fast-SCNN|[config](./configs/fastscnn/train_infer_python.txt)|23.897|23.885|23.655|0.010|
 |OCRNet_HRNetW48|[config](./configs/ocrnet_hrnetw48/ocrnet_hrnetw48_cityscapes_1024x512.yml)|4.192|4.204|4.205|0.003|
-|OCRNet_HRNetW18|[config](./configs/ocrnet_hrnetw18/train_infer_python.txt)|4.221|4.197|4.203|0.006|
+|OCRNet_HRNetW18|[config](./configs/ocrnet_hrnetw18/train_infer_python.txt)|3.997|3.987|3.998|0.003|
 |SegFormer_B0|[config](./configs/segformer_b0/train_infer_python.txt)|||||
 |PP-LiteSeg-T|[config](./configs/pp_liteseg_stdc1/train_infer_python.txt)|3.934|3.945|3.980|0.012|
 |PP-LiteSeg-B|[config](./configs/pp_liteseg_stdc2/train_infer_python.txt)|3.956|3.989|4.001|0.011|
 
-*注：以上速度指标均在单卡（1块Nvidia V100 GPU）、不使用混合精度的情况下测得，测试时使用的batch size为对应配置中batch size候选项中的最小值。*
+### 3.2 大数据集+fp16精度
+
+|模型名称|配置文件|第1次测试FPS`fps_1`|第2次测试FPS`fps_2`|第3次测试FPS`fps_3`|`(max(fps_n)-min(fps_n))/max(fps_n)`|
+|:-:|:-:|:-:|:-:|:-:|:-:|
+|PP-HumanSeg-Server|[config](./configs/deeplabv3p_resnet50/train_infer_python.txt)|||||
+|PP-HumanSeg-Lite|[config](./configs/pphumanseg_lite/train_infer_python.txt)|||||
+|PP-Matting|[config](./configs/ppmatting/train_infer_python.txt)|||||
+|PP-HumanSeg-Mobile|[config](./configs/fcn_hrnetw18_small/train_infer_python.txt)|||||
+|HRNet_W18|[config](./configs/fcn_hrnetw18/train_infer_python.txt)|9.725|9.891|9.646|0.025|
+|Fast-SCNN|[config](./configs/fastscnn/train_infer_python.txt)|22.582|22.643|22.531|0.005|
+|OCRNet_HRNetW48|[config](./configs/ocrnet_hrnetw48/ocrnet_hrnetw48_cityscapes_1024x512.yml)|4.203|4.189|4.180|0.005|
+|OCRNet_HRNetW18|[config](./configs/ocrnet_hrnetw18/train_infer_python.txt)|4.019|4.019|4.012|0.002|
+|SegFormer_B0|[config](./configs/segformer_b0/train_infer_python.txt)|||||
+|PP-LiteSeg-T|[config](./configs/pp_liteseg_stdc1/train_infer_python.txt)|3.814|3.826|3.826|0.003|
+|PP-LiteSeg-B|[config](./configs/pp_liteseg_stdc2/train_infer_python.txt)|3.971|3.953|3.985|0.008|
+
+### 3.3 小数据集+fp32精度
+
+|模型名称|配置文件|第1次测试FPS`fps_1`|第2次测试FPS`fps_2`|第3次测试FPS`fps_3`|`(max(fps_n)-min(fps_n))/max(fps_n)`|
+|:-:|:-:|:-:|:-:|:-:|:-:|
+|PP-HumanSeg-Server|[config](./configs/deeplabv3p_resnet50/train_infer_python.txt)|7.206|7.163|7.194|0.006|
+|PP-HumanSeg-Lite|[config](./configs/pphumanseg_lite/train_infer_python.txt)|18.557|18.308|18.610|0.016|
+|PP-Matting|[config](./configs/ppmatting/train_infer_python.txt)|1.603|1.602|1.592|0.007|
+|PP-HumanSeg-Mobile|[config](./configs/fcn_hrnetw18_small/train_infer_python.txt)|19.931|19.790|19.573|0.018|
+|HRNet_W18|[config](./configs/fcn_hrnetw18/train_infer_python.txt)|6.453|6.502|6.496|0.008|
+|Fast-SCNN|[config](./configs/fastscnn/train_infer_python.txt)|10.980|10.904|10.924|0.007|
+|OCRNet_HRNetW48|[config](./configs/ocrnet_hrnetw48/ocrnet_hrnetw48_cityscapes_1024x512.yml)|3.669|3.626|3.695|0.019|
+|OCRNet_HRNetW18|[config](./configs/ocrnet_hrnetw18/train_infer_python.txt)|4.221|4.197|4.203|0.006|
+|SegFormer_B0|[config](./configs/segformer_b0/train_infer_python.txt)|||||
+|PP-LiteSeg-T|[config](./configs/pp_liteseg_stdc1/train_infer_python.txt)|3.871|3.818|3.834|0.010|
+|PP-LiteSeg-B|[config](./configs/pp_liteseg_stdc2/train_infer_python.txt)|3.859|3.856|3.863|0.002|
+
+### 3.4 小数据集+fp16精度
+
+|模型名称|配置文件|第1次测试FPS`fps_1`|第2次测试FPS`fps_2`|第3次测试FPS`fps_3`|`(max(fps_n)-min(fps_n))/max(fps_n)`|
+|:-:|:-:|:-:|:-:|:-:|:-:|
+|PP-HumanSeg-Server|[config](./configs/deeplabv3p_resnet50/train_infer_python.txt)|9.629|9.582|9.553|0.008|
+|PP-HumanSeg-Lite|[config](./configs/pphumanseg_lite/train_infer_python.txt)|18.432|18.597|18.712|0.015|
+|PP-Matting|[config](./configs/ppmatting/train_infer_python.txt)|1.612|1.609|1.588|0.015|
+|PP-HumanSeg-Mobile|[config](./configs/fcn_hrnetw18_small/train_infer_python.txt)|20.029|19.911|20.048|0.007|
+|HRNet_W18|[config](./configs/fcn_hrnetw18/train_infer_python.txt)|6.207|6.232|6.223|0.004|
+|Fast-SCNN|[config](./configs/fastscnn/train_infer_python.txt)|10.578|10.699|10.542|0.015|
+|OCRNet_HRNetW48|[config](./configs/ocrnet_hrnetw48/ocrnet_hrnetw48_cityscapes_1024x512.yml)|4.225|4.157|4.239|0.020|
+|OCRNet_HRNetW18|[config](./configs/ocrnet_hrnetw18/train_infer_python.txt)|3.828|3.849|3.817|0.008|
+|SegFormer_B0|[config](./configs/segformer_b0/train_infer_python.txt)|||||
+|PP-LiteSeg-T|[config](./configs/pp_liteseg_stdc1/train_infer_python.txt)|3.833|3.819|3.855|0.010|
+|PP-LiteSeg-B|[config](./configs/pp_liteseg_stdc2/train_infer_python.txt)|3.980|3.934|3.976|0.012|
