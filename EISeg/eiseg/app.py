@@ -1859,7 +1859,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
                     label["points"].append(p)
                 labels.append(label)
             if self.origExt:
-                jsonPath = savePath + ".json"
+                jsonPath = savePath + "_grid_saved.json"
             else:
                 jsonPath = osp.splitext(savePath)[0] + ".json"
             open(jsonPath, "w", encoding="utf-8").write(json.dumps(labels))
@@ -2504,7 +2504,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
             pass
         self.delAllPolygon()  # 清理
         mask = self.grid.splicingList(save_path)
-        json_path = save_path.replace(".png", ".json")
+        json_path = save_path.replace(".png", "_grid_saved.json")
         open(json_path, "w", encoding="utf-8").write(json.dumps(self.grid.json_labels))
         if self.grid.__class__.__name__ == "RSGrids":
             self.image, geo_tf = self.raster.getArray()
