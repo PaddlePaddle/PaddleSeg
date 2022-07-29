@@ -143,7 +143,7 @@
         </details>
         <details><summary><b>图像抠图模型</b></summary>
           <ul>
-              <li><a href="./Matting/ppmatting/README.md">PP-Matting</a></li>
+              <li><a href="./Matting/configs/ppmatting/README.md">PP-Matting</a></li>
               <li><a href="./Matting/configs/dim/dim-vgg16.yml">DIM</a></li>
               <li><a href="./Matting/configs/modnet/modnet-hrnet_w18.yml">MODNet</a></li>
               <li><a href="./Matting/configs/human_matting/human_matting-resnet34_vd.yml">PP-HumanMatting</a></li>
