@@ -150,10 +150,10 @@ if [ ${MODE} = "benchmark_train" ];then
         cd ./test_tipc/data/ && unzip PPM-100.zip && cd -
     else
         rm -rf ./test_tipc/data/cityscapes
-        wget https://paddleseg.bj.bcebos.com/dataset/cityscapes_30imgs.tar.gz \
-            -O ./test_tipc/data/cityscapes_30imgs.tar.gz --no-check-certificate
-        tar -zxf ./test_tipc/data/cityscapes_30imgs.tar.gz -C ./test_tipc/data/
-        mv ./test_tipc/data/cityscapes_30imgs ./test_tipc/data/cityscapes
+        wget https://paddleseg.bj.bcebos.com/tipc/data/cityscapes_300imgs.tar.gz \
+            -O ./test_tipc/data/cityscapes_300imgs.tar.gz --no-check-certificate
+        tar -zxf ./test_tipc/data/cityscapes_300imgs.tar.gz -C ./test_tipc/data/
+        mv ./test_tipc/data/cityscapes_300imgs ./test_tipc/data/cityscapes
     fi
 elif [ ${MODE} == "serving_infer" ];then
     wget -nc -P ./test_tipc/data https://paddleseg.bj.bcebos.com/dygraph/demo/cityscapes_small.png --no-check-certificate

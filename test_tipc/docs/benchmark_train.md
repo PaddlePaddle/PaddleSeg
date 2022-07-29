@@ -64,7 +64,7 @@ train_log/
 |PP-HumanSeg-Lite|[config](./configs/pphumanseg_lite/train_infer_python.txt)|||||
 |PP-Matting|[config](./configs/ppmatting/train_infer_python.txt)|||||
 |PP-HumanSeg-Mobile|[config](./configs/fcn_hrnetw18_small/train_infer_python.txt)|||||
-|HRNet_W18|[config](./configs/fcn_hrnetw18/train_infer_python.txt)|11.362|11.246|11.205|0.014|
+|HRNet_W18|[config](./configs/fcn_hrnetw18/train_infer_python.txt)|11.680|11.346|11.427|0.029|
 |Fast-SCNN|[config](./configs/fastscnn/train_infer_python.txt)|23.897|23.885|23.655|0.010|
 |OCRNet_HRNetW48|[config](./configs/ocrnet_hrnetw48/ocrnet_hrnetw48_cityscapes_1024x512.yml)|4.192|4.204|4.205|0.003|
 |OCRNet_HRNetW18|[config](./configs/ocrnet_hrnetw18/train_infer_python.txt)|3.997|3.987|3.998|0.003|
@@ -80,7 +80,7 @@ train_log/
 |PP-HumanSeg-Lite|[config](./configs/pphumanseg_lite/train_infer_python.txt)|||||
 |PP-Matting|[config](./configs/ppmatting/train_infer_python.txt)|||||
 |PP-HumanSeg-Mobile|[config](./configs/fcn_hrnetw18_small/train_infer_python.txt)|||||
-|HRNet_W18|[config](./configs/fcn_hrnetw18/train_infer_python.txt)|9.725|9.891|9.646|0.025|
+|HRNet_W18|[config](./configs/fcn_hrnetw18/train_infer_python.txt)|10.488|10.680|10.423|0.024|
 |Fast-SCNN|[config](./configs/fastscnn/train_infer_python.txt)|22.582|22.643|22.531|0.005|
 |OCRNet_HRNetW48|[config](./configs/ocrnet_hrnetw48/ocrnet_hrnetw48_cityscapes_1024x512.yml)|4.203|4.189|4.180|0.005|
 |OCRNet_HRNetW18|[config](./configs/ocrnet_hrnetw18/train_infer_python.txt)|4.019|4.019|4.012|0.002|
@@ -96,13 +96,13 @@ train_log/
 |PP-HumanSeg-Lite|[config](./configs/pphumanseg_lite/train_infer_python.txt)|18.557|18.308|18.610|0.016|
 |PP-Matting|[config](./configs/ppmatting/train_infer_python.txt)|1.603|1.602|1.592|0.007|
 |PP-HumanSeg-Mobile|[config](./configs/fcn_hrnetw18_small/train_infer_python.txt)|19.931|19.790|19.573|0.018|
-|HRNet_W18|[config](./configs/fcn_hrnetw18/train_infer_python.txt)|6.453|6.502|6.496|0.008|
-|Fast-SCNN|[config](./configs/fastscnn/train_infer_python.txt)|10.980|10.904|10.924|0.007|
-|OCRNet_HRNetW48|[config](./configs/ocrnet_hrnetw48/ocrnet_hrnetw48_cityscapes_1024x512.yml)|3.669|3.626|3.695|0.019|
-|OCRNet_HRNetW18|[config](./configs/ocrnet_hrnetw18/train_infer_python.txt)|4.221|4.197|4.203|0.006|
+|HRNet_W18|[config](./configs/fcn_hrnetw18/train_infer_python.txt)|11.919|11.600|11.935|0.027|
+|Fast-SCNN|[config](./configs/fastscnn/train_infer_python.txt)|25.260|25.133|25.263|0.005|
+|OCRNet_HRNetW48|[config](./configs/ocrnet_hrnetw48/ocrnet_hrnetw48_cityscapes_1024x512.yml)|4.221|4.208|4.221|0.003|
+|OCRNet_HRNetW18|[config](./configs/ocrnet_hrnetw18/train_infer_python.txt)|3.959|4.052|4.013|0.023|
 |SegFormer_B0|[config](./configs/segformer_b0/train_infer_python.txt)|||||
-|PP-LiteSeg-T|[config](./configs/pp_liteseg_stdc1/train_infer_python.txt)|3.871|3.818|3.834|0.010|
-|PP-LiteSeg-B|[config](./configs/pp_liteseg_stdc2/train_infer_python.txt)|3.859|3.856|3.863|0.002|
+|PP-LiteSeg-T|[config](./configs/pp_liteseg_stdc1/train_infer_python.txt)|3.948|3.924|3.987|0.016|
+|PP-LiteSeg-B|[config](./configs/pp_liteseg_stdc2/train_infer_python.txt)|3.942|3.972|3.921|0.013|
 
 ### 3.4 小数据集+fp16精度
 
@@ -112,10 +112,10 @@ train_log/
 |PP-HumanSeg-Lite|[config](./configs/pphumanseg_lite/train_infer_python.txt)|18.432|18.597|18.712|0.015|
 |PP-Matting|[config](./configs/ppmatting/train_infer_python.txt)|1.612|1.609|1.588|0.015|
 |PP-HumanSeg-Mobile|[config](./configs/fcn_hrnetw18_small/train_infer_python.txt)|20.029|19.911|20.048|0.007|
-|HRNet_W18|[config](./configs/fcn_hrnetw18/train_infer_python.txt)|6.207|6.232|6.223|0.004|
-|Fast-SCNN|[config](./configs/fastscnn/train_infer_python.txt)|10.578|10.699|10.542|0.015|
-|OCRNet_HRNetW48|[config](./configs/ocrnet_hrnetw48/ocrnet_hrnetw48_cityscapes_1024x512.yml)|4.225|4.157|4.239|0.020|
-|OCRNet_HRNetW18|[config](./configs/ocrnet_hrnetw18/train_infer_python.txt)|3.828|3.849|3.817|0.008|
+|HRNet_W18|[config](./configs/fcn_hrnetw18/train_infer_python.txt)|10.970|10.834|11.008|0.016|
+|Fast-SCNN|[config](./configs/fastscnn/train_infer_python.txt)|21.834|21.487|21.767|0.016|
+|OCRNet_HRNetW48|[config](./configs/ocrnet_hrnetw48/ocrnet_hrnetw48_cityscapes_1024x512.yml)|4.817|4.827|4.790|0.008|
+|OCRNet_HRNetW18|[config](./configs/ocrnet_hrnetw18/train_infer_python.txt)|4.030|4.019|3.990|0.010|
 |SegFormer_B0|[config](./configs/segformer_b0/train_infer_python.txt)|||||
-|PP-LiteSeg-T|[config](./configs/pp_liteseg_stdc1/train_infer_python.txt)|3.833|3.819|3.855|0.010|
-|PP-LiteSeg-B|[config](./configs/pp_liteseg_stdc2/train_infer_python.txt)|3.980|3.934|3.976|0.012|
+|PP-LiteSeg-T|[config](./configs/pp_liteseg_stdc1/train_infer_python.txt)|3.969|3.938|3.953|0.008|
+|PP-LiteSeg-B|[config](./configs/pp_liteseg_stdc2/train_infer_python.txt)|4.098|4.085|4.105|0.005|

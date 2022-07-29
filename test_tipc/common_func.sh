@@ -92,3 +92,17 @@ function contains() {
     echo "n"
     return 1
 }
+
+function parse_extra_args() {
+    local lines=("$@")
+    local last_idx=$((${#lines[@]}-1))
+    IFS=";"
+    extra_args=(${lines[last_idx]})
+}
+
+function add_suffix() {
+    local ori_path="$1"
+    local suffix=$2
+    local _ext="${ori_path##*.}"
+    echo "${ori_path%.*}${suffix}.${_ext}"
+}

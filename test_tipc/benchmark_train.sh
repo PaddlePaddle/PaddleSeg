@@ -125,6 +125,18 @@ func_sed_params "$FILENAME" "${line_eval_py}" "null"
 func_sed_params "$FILENAME" "${line_export_py}" "null"
 func_sed_params "$FILENAME" "${line_python}"  "$python"
 
+# Parse extra args
+parse_extra_args "${lines[@]}"
+for params in ${extra_args[*]}; do
+    IFS=":"
+    arr=(${params})
+    key=${arr[0]}
+    value=${arr[1]}
+    if [ "${key}" = 'skip_iters' ]; then
+        skip_iters="${value}"
+    fi
+done
+
 # if params
 if  [ ! -n "$PARAMS" ] ;then
     # PARAMS input is not a word.
@@ -198,6 +210,17 @@ for batch_size in ${batch_size_list[*]}; do
                 # [Bobholamovic] For matting tasks, modify the training log to fit the input of analysis.py.
                 if [ "${model_name}" = 'ppmatting' ]; then
                     sed -i 's/=/: /g' ${log_path}/${log_name}
+                fi
+
+                if [ -n ${skip_iters} ]; then
+                    filtered_log_name=${log_name}_filtered
+                    cmd="${python} test_tipc/filter_log.py \
+                            --in_log_path '${log_path}/${log_name}' \
+                            --out_log_path '${log_path}/${filtered_log_name}' \
+                            --skip_iters ${skip_iters}"
+                    echo $cmd
+                    eval $cmd
+                    log_name=${filtered_log_name}
                 fi
 
                 # parser log
