@@ -149,7 +149,7 @@ PaddleSeg is an end-to-end high-efficent development toolkit for image segmentat
         </details>
         <details><summary><b>Image Matting</b></summary>
           <ul>
-              <li><a href="./Matting/ppmatting/README.md">PP-Matting</a></li>
+              <li><a href="./Matting/configs/ppmatting/README.md">PP-Matting</a></li>
               <li><a href="./Matting/configs/dim/dim-vgg16.yml">DIM</a></li>
               <li><a href="./Matting/configs/modnet/modnet-hrnet_w18.yml">MODNet</a></li>
               <li><a href="./Matting/configs/human_matting/human_matting-resnet34_vd.yml">PP-HumanMatting</a></li>
