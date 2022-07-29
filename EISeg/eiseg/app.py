@@ -1032,12 +1032,12 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
                 options=options, )
         self.controller.exportLabel(savePath)
 
-    def addLabel(self):
+    def addLabel(self, idx=None, txt="", c=None):
         c = self.colorMap.get_color()
         table = self.labelListTable
         idx = table.rowCount()
         table.insertRow(table.rowCount())
-        self.controller.addLabel(idx + 1, "", c)
+        self.controller.addLabel(idx + 1, txt, c)
         numberItem = QTableWidgetItem(str(idx + 1))
         numberItem.setFlags(QtCore.Qt.ItemIsEnabled)
         table.setItem(idx, 0, numberItem)
@@ -1356,6 +1356,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         path = normcase(path)
         if not osp.exists(path):
             return
+        self.imagePath = path
         self.saveImage(True)  # 关闭当前图像
         self.eximgsInit()  # TODO: 将grid的部分整合到saveImage里
 
@@ -1495,7 +1496,6 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         # 2. 加载标签
         self.loadLabel(path)
         self.addRecentFile(path)
-        self.imagePath = path
         return True
 
     def loadLabel(self, imgPath):
@@ -2312,9 +2312,30 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         self.gridTable.item(0, 0).setBackground(self.GRID_COLOR["overlying"])
         # 事件注册
         self.gridTable.cellClicked.connect(self.changeGrid)
+        # load polygon
+        json_path = "".join(self.imagePath.split(".")[:-1]) + ".json"
+        if osp.exists(json_path):
+            self.grid.json_labels = json.loads(open(json_path, "r").read())
+        # load label
+        for jlab in self.grid.json_labels:
+            is_add = True
+            for label in self.controller.labelList.labelList:
+                if jlab["labelIdx"] == label.idx and jlab["name"] == label.name:
+                    is_add = False
+                    break
+            if is_add is True:
+                self.addLabel(jlab["labelIdx"], jlab["name"], jlab["color"])
+        self.changeGrid(0, 0)
 
     def changeGrid(self, row, col):
+        def find_in_json(r, c, json_labels):
+            for idx, json_label in enumerate(json_labels):
+                if json_label["row"] == r and json_label["col"] == c:
+                    return idx
+            return -1
+
         # 清除未保存的切换
+        self.finishObject()
         # TODO: 这块应该通过dirty判断?
         if self.grid.curr_idx is not None:
             self.saveGrid()  # 切换时自动保存上一块
@@ -2329,13 +2350,35 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         image, mask = self.grid.getGrid(row, col)
         self.controller.setImage(image)
         self.grid.curr_idx = (row, col)
-        if mask is None:
-            self.gridTable.item(row,
-                                col).setBackground(self.GRID_COLOR["current"])
-        else:
+        idx = find_in_json(row, col, self.grid.json_labels)
+        if (mask != None).all() and np.max(mask) != 0:
             self.gridTable.item(row,
                                 col).setBackground(self.GRID_COLOR["overlying"])
             self.mask2poly(mask)
+        else:
+            if idx != -1:
+                # 加载之前的标注
+                self.gridTable.item(row,
+                                    col).setBackground(self.GRID_COLOR["overlying"])
+                label = self.grid.json_labels.pop(idx)
+                color = label["color"]
+                labelIdx = label["labelIdx"]
+                points = label["points"]
+                poly = PolygonAnnotation(
+                    labelIdx,
+                    self.controller.image.shape,
+                    self.delPolygon,
+                    self.setDirty,
+                    color,
+                    color,
+                    self.opacity, )
+                self.scene.addItem(poly)
+                self.scene.polygon_items.append(poly)
+                for p in points:
+                    poly.addPointLast(QtCore.QPointF(p[0], p[1]))
+            else:
+                self.gridTable.item(row,
+                                    col).setBackground(self.GRID_COLOR["current"])
         # 刷新
         self.updateImage(True)
 
@@ -2379,15 +2422,29 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
                             col).setBackground(self.GRID_COLOR["overlying"])
         # if len(np.unique(self.grid.mask_grids[row][col])) == 1:
         self.grid.mask_grids[row][col] = np.array(self.getMask())
+        # save grid label to load
+        polygons = self.scene.polygon_items
+        for polygon in polygons:
+            l = self.controller.labelList[polygon.labelIndex - 1]
+            label = {
+                "row": row,
+                "col": col,
+                "name": l.name,
+                "labelIdx": l.idx,
+                "color": l.color,
+                "points": [],
+            }
+            for p in polygon.scnenePoints:
+                label["points"].append(p)
+            self.grid.json_labels.append(label)
+        # save every blocks or not
         if self.cheSaveEvery.isChecked():
+            _, fullflname = osp.split(self.listFiles.currentItem().text())
+            fname, _ = os.path.splitext(fullflname)
             if self.outputDir is None:
                 if self.changeOutputDir() is False:
                     self.cheSaveEvery.setChecked(False)
                     return
-            if not osp.exists(self.outputDir):
-                os.makedirs(self.outputDir)
-            _, fullflname = osp.split(self.listFiles.currentItem().text())
-            fname, _ = os.path.splitext(fullflname)
             save_ima_path = osp.join(
                 self.outputDir,
                 (fname + "_data_" + str(row) + "_" + str(col) + ".tif"))
@@ -2447,6 +2504,8 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
             pass
         self.delAllPolygon()  # 清理
         mask = self.grid.splicingList(save_path)
+        json_path = save_path.replace(".png", ".json")
+        open(json_path, "w", encoding="utf-8").write(json.dumps(self.grid.json_labels))
         if self.grid.__class__.__name__ == "RSGrids":
             self.image, geo_tf = self.raster.getArray()
             if geo_tf is None:
