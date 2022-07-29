@@ -38,7 +38,7 @@ input_name_value=$(func_parser_value "${lines[15]}")
 output_name_key=$(func_parser_key "${lines[16]}")
 output_name_value=$(func_parser_value "${lines[16]}")
 
-LOG_PATH="./log/${model_name}/${MODE}"
+LOG_PATH="./test_tipc/output/${model_name}/${MODE}"
 mkdir -p ${LOG_PATH}
 
 status_log="../../log/${model_name}/${MODE}/results_serving_infer_cpp.log"
@@ -50,6 +50,7 @@ function func_serving(){
     _model_dir=$3
 
     # phrase 1: save model
+    _save_log_path="${LOG_PATH}/cpp_trans_model_model.log"
     set_dirname=$(func_set_params "${infer_model_dir_key}" "${infer_model_dir_value}")
     set_model_filename=$(func_set_params "${model_filename_key}" "${model_filename_value}")
     set_params_filename=$(func_set_params "${params_filename_key}" "${params_filename_value}")
@@ -60,7 +61,7 @@ function func_serving(){
     python_list=(${python_list})
     python=${python_list[0]}
     trans_model_cmd="${python} ${trans_model_py} ${set_dirname} ${set_model_filename} ${set_params_filename} ${set_serving_server} ${set_serving_client}"
-    eval $trans_model_cmd
+    eval $trans_model_cmd | tee "${_save_log_path}"
     last_status=${PIPESTATUS[0]}
     status_check $last_status "${trans_model_cmd}" "${status_log}" "${model_name}"
     cd ${serving_dir_value}
@@ -72,12 +73,13 @@ function func_serving(){
     # phrase 2: run server
     for gpu_id in ${gpu_value[*]}; do
         if [ ${gpu_id} = "null" ]; then
-            _save_log_path="../../log/${model_name}/${MODE}/servering_infer_cpp_cpu_batchsize_1.log"
-            cpp_server_cmd="${python} -m paddle_serving_server.serve ${run_model_path_key} ${run_model_path_value} ${op_key} ${op_value} ${port_key} ${port_value} > serving_log.log & "
+            _save_log_path="${LOG_PATH}/cpp_server_cpu.log"
+            cpp_server_cmd="${python} -m paddle_serving_server.serve ${run_model_path_key} ${run_model_path_value} ${op_key} ${op_value} ${port_key} ${port_value} > ${_save_log_path} 2>&1 & "
             eval $cpp_server_cmd
             last_status=${PIPESTATUS[0]}
             status_check $last_status "${cpp_server_cmd}" "${status_log}" "${model_name}"
             sleep 5s
+            _save_log_path="${LOG_PATH}/cpp_client_cpu.log"
             clinet_cmd="${python} ${cpp_client_value} ${set_input_name} ${set_output_name} > ${_save_log_path} 2>&1 "
             eval $clinet_cmd
             last_status=${PIPESTATUS[0]}
@@ -86,12 +88,13 @@ function func_serving(){
             ps ux | grep -i ${port_value} | awk '{print $2}' | xargs kill -s 9
             sleep 5s
         else
-            _save_log_path="../../log/${model_name}/${MODE}/servering_infer_cpp_gpu_batchsize_1.log"
-            cpp_server_cmd="${python} -m paddle_serving_server.serve ${run_model_path_key} ${run_model_path_value} ${op_key} ${op_value} ${port_key} ${port_value} ${gpu_key} ${gpu_id} > serving_log.log & "
+            _save_log_path="${LOG_PATH}/cpp_server_gpu.log"
+            cpp_server_cmd="${python} -m paddle_serving_server.serve ${run_model_path_key} ${run_model_path_value} ${op_key} ${op_value} ${port_key} ${port_value} ${gpu_key} ${gpu_id} > ${_save_log_path} 2>&1 & "
             eval $cpp_server_cmd
             last_status=${PIPESTATUS[0]}
             status_check $last_status "${cpp_server_cmd}" "${status_log}" "${model_name}"
             sleep 5s
+            _save_log_path="${LOG_PATH}/cpp_client_gpu.log"
             clinet_cmd="${python} ${cpp_client_value} ${set_input_name} ${set_output_name} > ${_save_log_path} 2>&1 "
             eval $clinet_cmd
             last_status=${PIPESTATUS[0]}
