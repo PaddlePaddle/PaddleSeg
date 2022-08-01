@@ -2312,18 +2312,20 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         # 事件注册
         self.gridTable.cellClicked.connect(self.changeGrid)
         # load polygon
-        json_path = "".join(self.imagePath.split(".")[:-1]) + "_grid_saved.json"
-        if osp.exists(json_path):
-            self.grid.json_labels = json.loads(open(json_path, "r").read())
-        # load label
-        for jlab in self.grid.json_labels:
-            is_add = True
-            for label in self.controller.labelList.labelList:
-                if jlab["labelIdx"] == label.idx and jlab["name"] == label.name:
-                    is_add = False
-                    break
-            if is_add is True:
-                self.addLabel(jlab["labelIdx"], jlab["name"], jlab["color"])
+        if self.outputDir is not None:
+            name = osp.splitext(osp.basename(self.imagePath))[0]
+            json_path = osp.join(self.outputDir, name + "_grid_saved.json")
+            if osp.exists(json_path):
+                self.grid.json_labels = json.loads(open(json_path, "r").read())
+            # load label
+            for jlab in self.grid.json_labels:
+                is_add = True
+                for label in self.controller.labelList.labelList:
+                    if jlab["labelIdx"] == label.idx and jlab["name"] == label.name:
+                        is_add = False
+                        break
+                if is_add is True:
+                    self.addLabel(jlab["labelIdx"], jlab["name"], jlab["color"])
         self.changeGrid(0, 0)
 
     def changeGrid(self, row, col):
