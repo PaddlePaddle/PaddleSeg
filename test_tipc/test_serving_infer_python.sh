@@ -45,7 +45,7 @@ function func_serving(){
     _python=$1
     _script=$2
     _model_dir=$3
-    _save_log_path="${LOG_PATH}/python_trans_model_model.log"
+    _save_log_path="${LOG_PATH}/python_trans_model.log"
     # pdserving
     set_dirname=$(func_set_params "${infer_model_dir_key}" "${infer_model_dir_value}")
     set_model_filename=$(func_set_params "${model_filename_key}" "${model_filename_value}")

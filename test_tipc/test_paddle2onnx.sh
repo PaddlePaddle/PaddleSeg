@@ -48,7 +48,7 @@ function func_paddle2onnx(){
     _script=$1
 
     # paddle2onnx
-    _save_log_path="${LOG_PATH}/trans_model_model.log"
+    _save_log_path="${LOG_PATH}/trans_model.log"
     set_dirname=$(func_set_params "${infer_model_dir_key}" "${infer_model_dir_value}")
     set_model_filename=$(func_set_params "${model_filename_key}" "${model_filename_value}")
     set_params_filename=$(func_set_params "${params_filename_key}" "${params_filename_value}")
