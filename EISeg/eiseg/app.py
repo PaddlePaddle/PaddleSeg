@@ -1859,7 +1859,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
                     label["points"].append(p)
                 labels.append(label)
             if self.origExt:
-                jsonPath = savePath + "_grid_saved.json"
+                jsonPath = savePath + ".json"
             else:
                 jsonPath = osp.splitext(savePath)[0] + ".json"
             open(jsonPath, "w", encoding="utf-8").write(json.dumps(labels))
@@ -2313,7 +2313,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         # 事件注册
         self.gridTable.cellClicked.connect(self.changeGrid)
         # load polygon
-        json_path = "".join(self.imagePath.split(".")[:-1]) + ".json"
+        json_path = "".join(self.imagePath.split(".")[:-1]) + "_grid_saved.json"
         if osp.exists(json_path):
             self.grid.json_labels = json.loads(open(json_path, "r").read())
         # load label
