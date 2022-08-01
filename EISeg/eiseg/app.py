@@ -1813,7 +1813,6 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
                 self.raster.saveMask(mask_output, tifPath)
                 if self.shpSave.isChecked():
                     shpPath = pathHead + ".shp"
-                    # geocode_list = self.mask2poly(mask_output, False)
                     print(rs.save_shp(shpPath, tifPath))
             else:
                 ext = osp.splitext(savePath)[1]
@@ -2329,10 +2328,11 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
 
     def changeGrid(self, row, col):
         def find_in_json(r, c, json_labels):
+            idxs = []
             for idx, json_label in enumerate(json_labels):
                 if json_label["row"] == r and json_label["col"] == c:
-                    return idx
-            return -1
+                    idxs.append(idx)
+            return idxs
 
         # 清除未保存的切换
         self.finishObject()
@@ -2347,20 +2347,16 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
                 self.gridTable.item(
                     last_r, last_c).setBackground(self.GRID_COLOR["finised"])
         self.delAllPolygon()
-        image, mask = self.grid.getGrid(row, col)
+        image, _ = self.grid.getGrid(row, col)
         self.controller.setImage(image)
         self.grid.curr_idx = (row, col)
-        idx = find_in_json(row, col, self.grid.json_labels)
-        if (mask != None).all() and np.max(mask) != 0:
+        idxs = find_in_json(row, col, self.grid.json_labels)
+        if len(idxs) != 0:
+            # 加载之前的标注
             self.gridTable.item(row,
                                 col).setBackground(self.GRID_COLOR["overlying"])
-            self.mask2poly(mask)
-        else:
-            if idx != -1:
-                # 加载之前的标注
-                self.gridTable.item(row,
-                                    col).setBackground(self.GRID_COLOR["overlying"])
-                label = self.grid.json_labels.pop(idx)
+            for idx in idxs:
+                label = self.grid.json_labels[idx]
                 color = label["color"]
                 labelIdx = label["labelIdx"]
                 points = label["points"]
@@ -2376,43 +2372,13 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
                 self.scene.polygon_items.append(poly)
                 for p in points:
                     poly.addPointLast(QtCore.QPointF(p[0], p[1]))
-            else:
-                self.gridTable.item(row,
-                                    col).setBackground(self.GRID_COLOR["current"])
+            [self.grid.json_labels.remove(celement) for \
+                celement in [self.grid.json_labels[i] for i in idxs]]
+        else:
+            self.gridTable.item(row,
+                                col).setBackground(self.GRID_COLOR["current"])
         # 刷新
         self.updateImage(True)
-
-    def mask2poly(self, mask, show=True):
-        labs = np.unique(mask)[1:]
-        colors = []
-        for i in range(len(labs)):
-            idx = int(labs[i]) - 1
-            if idx < len(self.controller.labelList):
-                c = self.controller.labelList[idx].color
-            else:
-                if self.currLabelIdx != -1:
-                    c = self.controller.labelList[self.currLabelIdx].color
-                else:
-                    c = None
-            colors.append(c)
-        geocode_list = []
-        for idx, (l, c) in enumerate(zip(labs, colors)):
-            if c is not None:
-                curr_polygon = util.get_polygon(
-                    ((mask == l).astype(np.uint8) * 255),
-                    building=self.boundaryRegular.isChecked(), )
-                if show == True:
-                    self.createPoly(curr_polygon, c)
-                    for p in self.scene.polygon_items:
-                        p.setAnning(isAnning=False)
-                else:
-                    for g in curr_polygon:
-                        points = [gi.tolist() for gi in g]
-                        geocode_list.append({
-                            "name": self.controller.labelList[idx].name,
-                            "points": points,
-                        })
-        return geocode_list
 
     def saveGrid(self):
         row, col = self.grid.curr_idx
