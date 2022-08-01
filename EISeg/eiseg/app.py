@@ -1823,7 +1823,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         if self.save_status["pseudo_color"]:
             pseudoPath, ext = osp.splitext(savePath)
             pseudoPath = pseudoPath + "_pseudo" + ext
-            pseudo = np.zeros([s[0], s[1], 3])
+            pseudo = np.zeros([s[0], s[1], 3], dtype="uint8")
             # mask = self.controller.result_mask
             mask = mask_output
             # print(pseudo.shape, mask.shape)
