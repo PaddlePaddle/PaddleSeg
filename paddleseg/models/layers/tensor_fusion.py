@@ -15,7 +15,8 @@
 import paddle
 import paddle.nn as nn
 import paddle.nn.functional as F
-
+from paddle import ParamAttr
+from paddle.nn.initializer import Constant
 from paddleseg.models import layers
 from paddleseg.models.layers import tensor_fusion_helper as helper
 
@@ -171,6 +172,10 @@ class UAFM_SpAtten(UAFM):
                 4, 2, kernel_size=3, padding=1, bias_attr=False),
             layers.ConvBN(
                 2, 1, kernel_size=3, padding=1, bias_attr=False))
+        self._scale = self.create_parameter(
+            shape=[1],
+            attr=ParamAttr(initializer=Constant(value=1.)),
+            dtype="float32")
 
     def fuse(self, x, y):
         """
@@ -181,7 +186,7 @@ class UAFM_SpAtten(UAFM):
         atten = helper.avg_max_reduce_channel([x, y])
         atten = F.sigmoid(self.conv_xy_atten(atten))
 
-        out = x * atten + y * (1 - atten)
+        out = x * atten + y * (self._scale - atten)
         out = self.conv_out(out)
         return out
 
