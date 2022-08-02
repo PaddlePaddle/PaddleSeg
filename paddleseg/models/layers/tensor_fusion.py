@@ -176,6 +176,7 @@ class UAFM_SpAtten(UAFM):
             shape=[1],
             attr=ParamAttr(initializer=Constant(value=1.)),
             dtype="float32")
+        self._scale.stop_gradient = True
 
     def fuse(self, x, y):
         """
