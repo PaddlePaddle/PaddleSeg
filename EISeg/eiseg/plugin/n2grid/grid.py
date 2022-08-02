@@ -38,6 +38,7 @@ class Grids:
         self.grid_init = False  # 是否初始化了宫格
         # self.imagesGrid = []  # 图像宫格
         self.mask_grids = []  # 标签宫格
+        self.json_labels = []  # 保存标签
         self.grid_count = None  # (row count, col count)
         self.curr_idx = None  # (current row, current col)
 
