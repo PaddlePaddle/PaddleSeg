@@ -2327,6 +2327,13 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
                 if is_add is True:
                     self.addLabel(jlab["labelIdx"], jlab["name"], jlab["color"])
         self.changeGrid(0, 0)
+        # load mask
+        for jlab in self.grid.json_labels:
+            pts = np.int32([np.array(jlab["points"])])
+            cv2.fillPoly(
+                self.grid.mask_grids[jlab["row"]][jlab["col"]], 
+                pts=pts, 
+                color=jlab["labelIdx"])
 
     def changeGrid(self, row, col):
         def find_in_json(r, c, json_labels):
