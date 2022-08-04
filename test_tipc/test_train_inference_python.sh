@@ -124,19 +124,31 @@ if [ ${MODE} = "klquant_whole_infer" ]; then
     infer_value1=$(func_parser_value "${lines[17]}")
 fi
 
-LOG_PATH="./test_tipc/output/${model_name}"  ##
+LOG_PATH="./test_tipc/output/${model_name}/${MODE}"  ##
 mkdir -p ${LOG_PATH}
 status_log="${LOG_PATH}/results_python.log"
 echo "------------------------ ${MODE} ------------------------" >> $status_log
 
+# Parse extra args
+parse_extra_args "${lines[@]}"
+for params in ${extra_args[*]}; do
+    IFS=":"
+    arr=(${params})
+    key=${arr[0]}
+    value=${arr[1]}
+    if [ "${key}" = 'log_iters' ]; then
+        log_iters="${value}"
+    elif [ "${key}" = "set_cv_threads" ]; then
+        set_cv_threads="${value}"
+    fi
+done
 
-last_idx=$((${#lines[@]}-1))
-extra_key=$(func_parser_key "${lines[last_idx]}")
-extra_value=$(func_parser_value "${lines[last_idx]}")
-if [ "${extra_key}" = "log_iters" ];then
-    log_iters="${extra_value}"
+if [ "${MODE}" = 'benchmark_train' ];then
+    if [ "${autocast_key}" = 'Global.auto_cast' ];then
+        echo 'Replcace ${autocast_key}'"('${autocast_key}') with '--precision'"
+        autocast_key="--precision"
+    fi
 fi
-
 
 function func_inference(){
     IFS='|'
@@ -290,6 +302,8 @@ else
         for autocast in ${autocast_list[*]}; do
             if [ ${autocast} = "amp" ]; then
                 set_amp_config="Global.use_amp=True Global.scale_loss=1024.0 Global.use_dynamic_loss_scaling=True"
+            elif [ "${autocast}" = 'fp16' ] && [ "${MODE}" = 'benchmark_train' ];then
+                set_amp_config="--amp_level=O2"
             else
                 set_amp_config=" "
             fi
@@ -337,6 +351,7 @@ else
                     nodes=${#ips_array[@]}
                     save_log="${LOG_PATH}/${trainer}_gpus_${gpu}_autocast_${autocast}_nodes_${nodes}"
                 fi
+                log_path="${LOG_PATH}/${trainer}_gpus_${gpu}_autocast_${autocast}_nodes_${nodes}.log"
 
                 # load pretrain from norm training if current trainer is pact or fpgm trainer
                 if ([ ${trainer} = ${pact_key} ] || [ ${trainer} = ${fpgm_key} ]) && [ ${nodes} -le 1 ]; then
@@ -356,9 +371,33 @@ else
                     cmd="${cmd} --log_iters ${log_iters}"
                 fi
 
+                if [ -n "${amp_level}" ];then
+                    cmd="${cmd} --amp_level ${amp_level}"
+                fi
+
+                if [ -n "${set_cv_threads}" ] && [ "${set_cv_threads}" = "true" ];then
+                    # Take the first word as the training script, which means there should be no blanks in the path of script.
+                    train_script=$(echo "${run_train}" | cut -d ' ' -f1)
+                    # Make a copy
+                    train_script_copy="$(add_suffix ${train_script} '_copy')" 
+                    cp ${train_script} ${train_script_copy}
+                    sed -i '1s/^/import cv2; cv2.setNumThreads(1)\n/' ${train_script_copy}
+                    # Use a global replace!
+                    cmd="${cmd/${train_script}/${train_script_copy}}"
+                fi
+
+                echo "$cmd"
                 # run train
-                eval $cmd
+                eval $cmd | tee "${log_path}"
                 status_check $? "${cmd}" "${status_log}" "${model_name}"
+
+                if [[ "$cmd" == *'paddle.distributed.launch'* ]]; then
+                    cat log/workerlog.0 >> ${log_path} 
+                fi
+
+                if [ -n "${set_cv_threads}" ] && [ "${set_cv_threads}" = "true" ];then
+                    rm ${train_script_copy}
+                fi
 
                 # modify model dir if no eval
                 if [ ! -f "${save_log}/${train_model_name}" ]; then
@@ -366,24 +405,26 @@ else
                 fi
                 set_eval_pretrain=$(func_set_params "${pretrain_model_key}" "${save_log}/${train_model_name}")
                 # save norm trained models to set pretrain for pact training and fpgm training
-                if [ ${trainer} = ${trainer_norm} ] && [ ${nodes} -le 1]; then
+                if [ ${trainer} = ${trainer_norm} ] && [ ${nodes} -le 1 ]; then
                     load_norm_train_model=${set_eval_pretrain}
                 fi
                 # run eval
                 if [ ${eval_py} != "null" ]; then
+                    log_path="${LOG_PATH}/${trainer}_gpus_${gpu}_autocast_${autocast}_nodes_${nodes}_eval.log"
                     set_eval_params1=$(func_set_params "${eval_key1}" "${eval_value1}")
                     eval_cmd="${python} ${eval_py} ${set_eval_pretrain} ${set_use_gpu} ${set_eval_params1}"
-                    eval $eval_cmd
+                    eval $eval_cmd | tee "${log_path}"
                     status_check $? "${eval_cmd}" "${status_log}" "${model_name}"
                 fi
                 # run export model
                 if [ ${run_export} != "null" ]; then
                     # run export model
+                    log_path="${LOG_PATH}/${trainer}_gpus_${gpu}_autocast_${autocast}_nodes_${nodes}_export.log"
                     save_infer_path="${save_log}"
                     set_export_weight=$(func_set_params "${export_weight}" "${save_log}/${train_model_name}")
                     set_save_infer_key=$(func_set_params "${save_infer_key}" "${save_infer_path}")
                     export_cmd="${python} ${run_export} ${set_export_weight} ${set_save_infer_key}"
-                    eval $export_cmd
+                    eval $export_cmd | tee "${log_path}"
                     status_check $? "${export_cmd}" "${status_log}" "${model_name}"
 
                     #run inference

@@ -1819,7 +1819,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
                 cv2.imencode(ext, mask_output)[1].tofile(savePath)
                 # self.labelPaths.append(savePath)
 
-        # 4.2 保存伪彩色
+            # 4.2 保存伪彩色
         if self.save_status["pseudo_color"]:
             pseudoPath, ext = osp.splitext(savePath)
             pseudoPath = pseudoPath + "_pseudo" + ext
@@ -2434,8 +2434,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
             geoinfo.dtype = self.raster.geoinfo.dtype
             geoinfo.crs = self.raster.geoinfo.crs
             geoinfo.geotf = tf
-            self.raster.saveMask(self.grid.mask_grids[row][col],
-                                 save_lab_path,
+            self.raster.saveMask(self.grid.mask_grids[row][col], save_lab_path,
                                  geoinfo)  # 保存mask
             self.raster.saveMask(im, save_ima_path, geoinfo, 3)  # 保存图像
 
@@ -2461,7 +2460,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         self.gridTable.clearContents()
 
     def saveGridLabel(self):
-        if self.grid is None: 
+        if self.grid is None:
             return
         if self.outputDir is not None:
             name, ext = osp.splitext(osp.basename(self.imagePath))
@@ -2609,8 +2608,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         # sys.exit(0)
 
     def reportBug(self):
-        webbrowser.open(
-            "https://github.com/PaddlePaddle/PaddleSeg/issues")
+        webbrowser.open("https://github.com/PaddlePaddle/PaddleSeg/issues")
 
     def quickStart(self):
         # self.saveImage(True)
