@@ -1,0 +1,94 @@
+_base_: '../_base_/global_configs.yml'
+
+batch_size: 4
+iters: 250000
+
+model:
+  type: nnFormer
+  crop_size: [14,160,160]
+  embedding_dim: 96
+  input_channels: 1
+  num_classes: 4
+  depths: [2, 2, 2, 2]
+  num_heads: [3, 6, 12, 24]
+  patch_size: [1, 4, 4]
+  window_size: [[3, 5, 5], [3, 5, 5], [7, 10, 10], [3, 5, 5]]
+  down_stride: [[1, 4, 4], [1, 8, 8], [2, 16, 16], [4, 32, 32]]
+  deep_supervision: True
+
+
+train_dataset:
+  type: ACDCDataset
+  dataset_root: /home/aistudio/ACDCDataset/preprocessed
+  result_dir: /home/aistudio/ACDCDataset/preprocessed
+  transforms:
+    - type: RandomRotation3D
+      degrees: 15
+    - type: ResizeRangeScaling
+      min_scale_factor: 0.85
+      max_scale_factor: 1.25
+      interpolation: 3
+      p_per_sample: 0.25
+    - type: GaussianNoiseTransform
+      p_per_sample: 0.1      
+    - type: GaussianBlurTransform
+      blur_sigma: [0.5,1.] 
+      different_sigma_per_channel: True
+      p_per_sample: 0.2
+      p_per_channel: 0.5
+    - type: BrightnessMultiplicativeTransform
+      multiplier_range: [0.75, 1.25] 
+      p_per_sample: 0.15
+    - type: ContrastAugmentationTransform
+      p_per_sample: 0.15
+    - type: SimulateLowResolutionTransform
+      zoom_range: [0.5, 1]
+      per_channel: True
+      p_per_channel: 0.5
+      order_downsample: 0
+      order_upsample: 3
+      p_per_sample: 0.25
+    - type: GammaTransform
+      gamma_range: [0.5, 2]
+    - type: MirrorTransform
+      p_per_sample: 0.2
+    - type: RandomPaddingCrop
+      crop_size: [14,160,160]
+  
+
+  num_classes: 4
+  anno_path: train_list_0.txt
+  mode: train
+
+
+val_dataset:
+  type: ACDCDataset
+  dataset_root: /home/aistudio/ACDCDataset/preprocessed
+  result_dir: /home/aistudio/ACDCDataset/preprocessed
+  anno_path: val_list_0.txt
+  num_classes: 4
+  transforms: []
+  mode: val
+#  dataset_json_path: /home/aistudio/ACDCDataset/clean_data/dataset.json
+
+optimizer:
+  type: sgd
+  momentum: 0.99
+  weight_decay: 0.00005
+
+lr_scheduler:
+  type: PolynomialDecay
+  learning_rate: 0.0004
+  decay_steps: 250000
+  end_lr: 0
+  power: 0.9
+
+loss:
+  types:
+    - type: MixedLoss
+      losses:
+        - type: CrossEntropyLoss
+          weight: Null
+        - type: DiceLoss
+      coef: [1, 1]
+  coef: [0.5714, 0.2857,0.1428]
