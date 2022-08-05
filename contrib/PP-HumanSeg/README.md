@@ -228,6 +228,12 @@ python src/seg_demo.py \
   --video_path data/videos/video_heng.mp4 \
   --save_dir data/videos_result/video_heng_v2.avi
 
+python src/seg_demo.py \
+  --config inference_models/portrait_pp_humansegv2_lite_256x144_inference_model_with_softmax/deploy.yaml \
+  --video_path data/videos/video_heng.mp4 \
+  --use_post_process \
+  --save_dir data/videos_result/video_heng_v2_use_post_process.avi
+
 # Use PP-HumanSegV1-Lite
 python src/seg_demo.py \
   --config inference_models/portrait_pp_humansegv1_lite_398x224_inference_model_with_softmax/deploy.yaml \
@@ -253,7 +259,8 @@ python src/seg_demo.py \
   --config inference_models/portrait_pp_humansegv2_lite_256x144_inference_model_with_softmax/deploy.yaml \
   --video_path data/videos/video_heng.mp4 \
   --bg_img_path data/images/bg_2.jpg \
-  --save_dir data/videos_result/video_heng_v2_withbg.avi
+  --use_post_process \
+  --save_dir data/videos_result/video_heng_v2_withbg_usepostprocess.avi
 ```
 
 Besides, we can use  DIS（Dense Inverse Search-basedmethod) algorithm to mitigate the flicker of video.

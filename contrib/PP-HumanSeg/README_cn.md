@@ -224,8 +224,13 @@ python src/seg_demo.py \
 python src/seg_demo.py \
   --config inference_models/portrait_pp_humansegv2_lite_256x144_inference_model_with_softmax/deploy.yaml \
   --video_path data/videos/video_heng.mp4 \
-  --save_dir data/videos_result/video_heng_v2.avi \
-  --use_post_process
+  --save_dir data/videos_result/video_heng_v2.avi
+
+python src/seg_demo.py \
+  --config inference_models/portrait_pp_humansegv2_lite_256x144_inference_model_with_softmax/deploy.yaml \
+  --video_path data/videos/video_heng.mp4 \
+  --use_post_process \
+  --save_dir data/videos_result/video_heng_v2_use_post_process.avi
 
 # Use PP-HumanSegV1-Lite
 python src/seg_demo.py \
@@ -251,8 +256,8 @@ python src/seg_demo.py \
   --config inference_models/portrait_pp_humansegv2_lite_256x144_inference_model_with_softmax/deploy.yaml \
   --video_path data/videos/video_heng.mp4 \
   --bg_img_path data/images/bg_2.jpg \
-  --save_dir data/videos_result/video_heng_v2_withbg.avi \
-  --use_post_process
+  --use_post_process \
+  --save_dir data/videos_result/video_heng_v2_withbg_usepostprocess.avi
 ```
 
 此外可以使用 DIS（Dense Inverse Search-basedmethod）光流后处理算法 (要求opencv-python版本大于4.0)，减少视频预测前后帧闪烁的问题。
