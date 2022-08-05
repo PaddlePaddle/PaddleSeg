@@ -43,8 +43,9 @@ The following is demonstration videos (due to the video is large, the loading wi
 
 We release self-developed portrait segmentation models for real-time applications such as mobile video and web conferences. These models can be directly integrated into products at zero cost.
 
-* PP-HumanSegV1-Lite protrait segmentation model: It has good performance in accuracy and model size and the model architecture in [url](../../configs/pp_humanseg_lite/).
-* PP-HumanSegV2-Lite protrait segmentation model: **The inference speed is increased by 45.5%, mIoU is increased by 3.03%, and the visualization result is better** compared to v1 model. These improvements are relayed on the following innovations.
+PP-HumanSegV1-Lite protrait segmentation model: It has good performance in accuracy and model size and the model architecture in [url](../../configs/pp_humanseg_lite/).
+
+PP-HumanSegV2-Lite protrait segmentation model: **The inference speed is increased by 45.5%, mIoU is increased by 3.03%, and the visualization result is better** compared to v1 model. These improvements are relayed on the following innovations.
   * Higher segmentation accuracy: We use the super lightweight models ([url](../../configs/mobileseg/)) released in PaddleSeg recently. We choose MobileNetV3 as backbone and design the multi-scale feature aggregation model.
   * Faster inference speed: We reduce the input resolution, which reduces the inference time and increases the receptive field.
   * Better robustness: Based on the idea of transfer learning, we first pretrain the model on a large general human segmentation dataset, and then finetune it on a small portrait segmentation dataset.
@@ -76,8 +77,9 @@ We release self-developed portrait segmentation models for real-time application
 
 For general human segmentation task, we first build a big human segmentation dataset, then use the SOTA model in PaddleSeg for training, finally release several general human segmentation models.
 
-* PP-HumanSegV2-Lite general human segmentation model: It uses the super lightweight models ([url](../../configs/mobileseg/)) released in PaddleSeg recently. Compared to V1 model, the mIoU is improved by 6.5%.
-* PP-HumanSegV2-Mobile general human segmentation model: It uses the self-develop [PP-LiteSeg](../../configs/pp_liteseg/) model. Compared to V1 model, the mIoU is improved by 1.49% and the inference time is reduced by 5.7%.
+PP-HumanSegV2-Lite general human segmentation model: It uses the super lightweight models ([url](../../configs/mobileseg/)) released in PaddleSeg recently. Compared to V1 model, the mIoU is improved by 6.5%.
+
+PP-HumanSegV2-Mobile general human segmentation model: It uses the self-develop [PP-LiteSeg](../../configs/pp_liteseg/) model. Compared to V1 model, the mIoU is improved by 1.49% and the inference time is reduced by 5.7%.
 
 | Model Name | Best Input Shape | mIou(%) | Inference Time on ARM CPU(ms) | Inference Time on Nvidia GPU(ms) | Config File | Links |
 | ----- | ---------- | ---------- | -----------------| ----------------- | ------- | ------- |
