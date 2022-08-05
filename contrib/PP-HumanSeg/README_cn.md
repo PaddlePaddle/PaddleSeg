@@ -20,12 +20,12 @@
 如下是演示视频（由于视频较大，加载会稍慢），此外大家可以在Paddle.js的网页体验人像扣图效果([链接](https://paddlejs.baidu.com/humanseg))、视频背景替换及弹幕穿透效果([链接](https://www.paddlepaddle.org.cn/paddlejs))。
 
 <p align="center">
-<img src="https://github.com/juncaipeng/raw_data/blob/master/images/portrait_bg_replace.gif" height="200">
+<img src="https://github.com/juncaipeng/raw_data/blob/master/images/portrait_bg_replace_1.gif" height="200">
 <img src="https://github.com/LutaoChu/transfer_station/raw/master/conference.gif" height="200">
 </p>
 
 ## 2 最新消息
-- [2022-7] 发布**PP-HumanSeg V2版本模型，肖像分割模型的推理速度提升45.5%、mIoU提升0.63%、可视化效果更佳**，通用人像分割模型的推理速度和精度也有明显提升。
+- [2022-7] 发布**PP-HumanSeg V2版本模型，肖像分割模型的推理速度提升45.5%、mIoU提升3.03%、可视化效果更佳**，通用人像分割模型的推理速度和精度也有明显提升。
 - [2022-1] 人像分割论文[PP-HumanSeg](./paper.md)发表于WACV 2022 Workshop，并开源连通性学习（SCL）方法和大规模视频会议数据集。
 - [2021-7] 百度视频会议可实现Web端一秒入会，其中的虚拟背景功能采用我们的PP-HumanSeg肖像模型，实现实时背景替换和背景虚化功能，保护用户隐私，并增加视频会议的趣味性。
 - [2021-7] 发布PP-HumanSeg V1版本模型，包括一个肖像分割模型和三个通用人像分割模型。
@@ -40,14 +40,14 @@
 针对手机视频通话、Web视频会议等实时半身人像的分割场景，PP-HumanSeg发布了自研的肖像分割模型。该系列模型可以开箱即用，零成本直接集成到产品中。
 
 * PP-HumanSegV1-Lite肖像分割模型，分割效果较好，模型体积非常小，模型结构见[链接](../../configs/pp_humanseg_lite/)。
-* **PP-HumanSegV2-Lite肖像分割模型，对比V1模型，推理速度提升45.5%、mIoU提升0.63%、可视化效果更佳**，核心在于：
+* **PP-HumanSegV2-Lite肖像分割模型，对比V1模型，推理速度提升45.5%、mIoU提升3.03%、可视化效果更佳**，核心在于：
   * 更高的分割精度：使用PaddleSeg推出的超轻量级分割模型([链接](../../configs/mobileseg/))，具体选择MobileNetV3作为骨干网络，设计多尺度特征融合模块(Multi-Scale Feature Aggregation Module)。
   * 更快的推理速度：减小模型最佳输入尺寸，既减少了推理耗时，又增大模型感受野。
   * 更好的通用性：使用迁移学习的思想，首先在大型通用人像分割数据集上预训练，然后在小型肖像分割数据集上微调。
 
 | 模型名 | 最佳输入尺寸 | 精度mIou(%) | 手机端推理耗时(ms) | 模型体积(MB) | 配置文件 | 下载连接 |
 | --- | --- | --- | ---| --- | --- | --- |
-| PP-HumanSegV1-Lite | 398x224 | 96.00 | 29.68 | 2.2 | [cfg](./configs/portrait_pp_humansegv1_lite.yml) | [Checkpoint](https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/portrait_pp_humansegv1_lite_398x224_pretrained.zip) \| [Inference Model (Argmax)](https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/portrait_pp_humansegv1_lite_398x224_inference_model.zip) \| [Inference Model (Softmax)](https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/portrait_pp_humansegv1_lite_398x224_inference_model_with_softmax.zip) |
+| PP-HumanSegV1-Lite | 398x224 | 93.60 | 29.68 | 2.2 | [cfg](./configs/portrait_pp_humansegv1_lite.yml) | [Checkpoint](https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/portrait_pp_humansegv1_lite_398x224_pretrained.zip) \| [Inference Model (Argmax)](https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/portrait_pp_humansegv1_lite_398x224_inference_model.zip) \| [Inference Model (Softmax)](https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/portrait_pp_humansegv1_lite_398x224_inference_model_with_softmax.zip) |
 | PP-HumanSegV2-Lite | 256x144 | 96.63 | 15.86 | 13.5 | [cfg](./configs/portrait_pp_humansegv2_lite.yml) | [Checkpoint](https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/portrait_pp_humansegv2_lite_256x144_pretrained.zip) \| [Inference Model (Argmax)](https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/portrait_pp_humansegv2_lite_256x144_inference_model.zip) \| [Inference Model (Softmax)](https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/portrait_pp_humansegv2_lite_256x144_inference_model_with_softmax.zip) |
 
 <details><summary>表格说明：</summary>
@@ -159,6 +159,7 @@ python src/download_data.py
 | bg_video_path   | 背景视频的路径，用于替换视频的背景       | str | 否  | - |
 | save_dir        | 保存输出图片或者视频的路径              | str | 否  | `./output` |
 | vertical_screen | 表明输入图片和视频是竖屏                | store_true | 否  | False |
+| use_post_process| 设置对输出logit进行后处理，滤除背景干扰  | store_true | 否  | False |
 | use_optic_flow  | 设置使用光流处理                      | store_true | 否  | False |
 
 <details><summary>参数说明：</summary>

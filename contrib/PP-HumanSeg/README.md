@@ -22,12 +22,12 @@ Besides, PP-HumanSeg models can be deployed to products at zero cost, and it als
 The following is demonstration videos (due to the video is large, the loading will be slightly slow) .We provide full-process application guides from training to deployment, as well as video streaming segmentation and background replacement tutorials. Based on Paddle.js, you can experience the effects of [Portrait Snapshot](https://paddlejs.baidu.com/humanseg), [Video Background Replacement and Barrage Penetration](https://www.paddlepaddle.org.cn/paddlejs).
 
 <p align="center">
-<img src="https://github.com/juncaipeng/raw_data/blob/master/images/portrait_bg_replace.gif" height="200">
+<img src="https://github.com/juncaipeng/raw_data/blob/master/images/portrait_bg_replace_1.gif" height="200">
 <img src="https://github.com/LutaoChu/transfer_station/raw/master/conference.gif" height="200">
 </p>
 
 ## 2 News
-- [2022-7] Release PP-HumanSeg V2 models. **The inference speed of portrait segmentation model is increased by 45.5%, mIoU is increased by 0.63%, and the visualization result is better**. The general human segmentation models also have improvement in accuracy and inference speed.
+- [2022-7] Release PP-HumanSeg V2 models. **The inference speed of portrait segmentation model is increased by 45.5%, mIoU is increased by 3.03%, and the visualization result is better**. The general human segmentation models also have improvement in accuracy and inference speed.
 - [2022-1] Human segmentation paper [PP-HumanSeg](./paper.md) was published in WACV 2022 Workshop, and open-sourced Connectivity Learning (SCL) method and large-scale video conferencing dataset.
 - [2021-7] Baidu Video Conference can realize one-second joining on the web side. The virtual background function adopts our portrait segmentation model to realize real-time background replacement and background blur function, which protects user privacy and increases the fun in the meeting.
 - [2021-7] Release PP-HumanSeg V1 models, which has a portrait segmentation model and three general human segmentation models
@@ -44,14 +44,14 @@ The following is demonstration videos (due to the video is large, the loading wi
 We release self-developed portrait segmentation models for real-time applications such as mobile video and web conferences. These models can be directly integrated into products at zero cost.
 
 * PP-HumanSegV1-Lite protrait segmentation model: It has good performance in accuracy and model size and the model architecture in [url](../../configs/pp_humanseg_lite/).
-* PP-HumanSegV2-Lite protrait segmentation model: **The inference speed is increased by 45.5%, mIoU is increased by 0.63%, and the visualization result is better** compared to v1 model. These improvements are relayed on the following innovations.
+* PP-HumanSegV2-Lite protrait segmentation model: **The inference speed is increased by 45.5%, mIoU is increased by 3.03%, and the visualization result is better** compared to v1 model. These improvements are relayed on the following innovations.
   * Higher segmentation accuracy: We use the super lightweight models ([url](../../configs/mobileseg/)) released in PaddleSeg recently. We choose MobileNetV3 as backbone and design the multi-scale feature aggregation model.
   * Faster inference speed: We reduce the input resolution, which reduces the inference time and increases the receptive field.
   * Better robustness: Based on the idea of transfer learning, we first pretrain the model on a large general human segmentation dataset, and then finetune it on a small portrait segmentation dataset.
 
 | Model Name | Best Input Shape | mIou(%) | Inference Time on Arm CPU(ms) | Modle Size(MB) | Config File | Links |
 | --- | --- | --- | ---| --- | --- | --- |
-| PP-HumanSegV1-Lite | 398x224 | 96.00 | 29.68 | 2.2 | [cfg](./configs/portrait_pp_humansegv1_lite.yml) | [Checkpoint](https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/portrait_pp_humansegv1_lite_398x224_pretrained.zip) \| [Inference Model (Argmax)](https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/portrait_pp_humansegv1_lite_398x224_inference_model.zip) \| [Inference Model (Softmax)](https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/portrait_pp_humansegv1_lite_398x224_inference_model_with_softmax.zip) |
+| PP-HumanSegV1-Lite | 398x224 | 93.60 | 29.68 | 2.2 | [cfg](./configs/portrait_pp_humansegv1_lite.yml) | [Checkpoint](https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/portrait_pp_humansegv1_lite_398x224_pretrained.zip) \| [Inference Model (Argmax)](https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/portrait_pp_humansegv1_lite_398x224_inference_model.zip) \| [Inference Model (Softmax)](https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/portrait_pp_humansegv1_lite_398x224_inference_model_with_softmax.zip) |
 | PP-HumanSegV2-Lite | 256x144 | 96.63 | 15.86 | 13.5 | [cfg](./configs/portrait_pp_humansegv2_lite.yml) | [Checkpoint](https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/portrait_pp_humansegv2_lite_256x144_pretrained.zip) \| [Inference Model (Argmax)](https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/portrait_pp_humansegv2_lite_256x144_inference_model.zip) \| [Inference Model (Softmax)](https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/portrait_pp_humansegv2_lite_256x144_inference_model_with_softmax.zip) |
 
 <details><summary>Note:</summary>
@@ -161,7 +161,8 @@ The input of `src/seg_demo.py` can be image, video and camera. The input params 
 | bg_video_path   | The path of background video                      | str | False  | - |
 | save_dir        | The directory for saveing output image and video  | str | False  | `./output` |
 | vertical_screen | Indicate the input image and video is vertical screen | store_true | False | False |
-| use_optic_flow  | Enable the optic_flow function                      | store_true | False  | False |
+| use_post_process| Enable the post process for predicted logit           | store_true | False  | False |
+| use_optic_flow  | Enable the optic_flow function                        | store_true | False  | False |
 
 <details><summary>Note:</summary>
 
