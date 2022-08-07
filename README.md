@@ -67,7 +67,7 @@ PaddleSeg is an end-to-end high-efficent development toolkit for image segmentat
 * Welcome to scan the following QR code and join paddleseg wechat group to communicate with us.
 
 <div align="center">
-<img src="https://user-images.githubusercontent.com/48433081/163670184-43cfb3ae-2047-4ba3-8dae-6c02090dd177.png"  width = "200" />  
+<img src="https://user-images.githubusercontent.com/48433081/174770518-e6b5319b-336f-45d9-9817-da12b1961fb1.jpg"  width = "200" />  
 </div>
 
 
