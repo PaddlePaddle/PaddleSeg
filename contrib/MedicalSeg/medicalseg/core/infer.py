@@ -190,18 +190,25 @@ def sliding_window_inference(inputs, roi_size, sw_batch_size, predictor):
         for k in range(len(inputs.shape) - 1, 1, -1)
         for i in (0, max(roi_size[k - 2] - inputs.shape[k], 0))
     ]
+    # print("pad_size:{},inputs.shape:{}".format(pad_size,inputs.shape))
+    # inputs = F.pad(inputs,
+    #                pad=pad_size,
+    #                mode='constant',
+    #                value=0,
+    #                data_format="NDHWC")
     inputs = F.pad(inputs,
-                   pad=pad_size,
-                   mode='constant',
-                   value=0,
-                   data_format="NDHWC")
-
+                pad=pad_size,
+                mode='constant',
+                value=0,
+                data_format="NCDHW")
+    # print("after pad inputs.shape:{}".format(inputs.shape))
     # TODO: interval from user's specification
     scan_interval = _get_scan_interval(image_size, roi_size, num_spatial_dims)
 
     # Store all slices in list
     slices = dense_patch_slices(image_size, roi_size, scan_interval)
-
+    # import pdb
+    # pdb.set_trace()
     slice_batches = []
     for slice_index in range(0, len(slices), sw_batch_size):
         slice_index_range = range(slice_index,
