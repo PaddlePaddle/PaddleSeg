@@ -746,7 +746,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         self.ratio = int(20 * float(text[4:-1]))
         if self.timer.isActive():
             self.timer.stop()
-            self.timer.start(1000 / self.ratio)
+            self.timer.start(int(1000 / self.ratio))
 
     def setCutoutBackground(self):
         self.cutoutBackground = self.__setColor(self.cutoutBackground,
@@ -2704,7 +2704,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
                 QtGui.QIcon(osp.join(pjpath, "resource/Play.png")))
         else:
             # self.delAllPolygon()
-            self.timer.start(1000 / self.ratio)
+            self.timer.start(int(1000 / self.ratio))
             self.videoPlay.setText(self.tr("暂停"))
             self.videoPlay.setIcon(
                 QtGui.QIcon(osp.join(pjpath, "resource/Stop.png")))

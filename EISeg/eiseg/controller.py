@@ -319,7 +319,7 @@ class InteractiveController:
         """
         if predictor_params is not None:
             self.predictor_params = predictor_params
-        if self.model.model:
+        if self.model and self.model.model:
             self.predictor = get_predictor(self.model.model,
                                            **self.predictor_params)
             if self.image is not None:
