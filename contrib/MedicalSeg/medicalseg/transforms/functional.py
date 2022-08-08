@@ -23,6 +23,7 @@ import SimpleITK as sitk
 from scipy.ndimage.filters import gaussian_filter, gaussian_gradient_magnitude
 from skimage.transform import resize
 
+
 def resize_3d(img, size, order=1):
     r"""Resize the input numpy ndarray to the given size.
     Args:
@@ -165,8 +166,11 @@ def crop_4d(img, i, j, k, d, h, w):
         raise TypeError('img should be numpy image. Got {}'.format(type(img)))
     return img[:, i:i + d, j:j + h, k:k + w]
 
-def augment_gaussian_noise(data_sample: np.ndarray, noise_variance: Tuple[float, float] = (0, 0.1),
-                           p_per_channel: float = 1, per_channel: bool = False) -> np.ndarray:
+
+def augment_gaussian_noise(data_sample: np.ndarray,
+                           noise_variance: Tuple[float, float]=(0, 0.1),
+                           p_per_channel: float=1,
+                           per_channel: bool=False) -> np.ndarray:
     if not per_channel:
         variance = noise_variance[0] if noise_variance[0] == noise_variance[1] else \
             random.uniform(noise_variance[0], noise_variance[1])
@@ -179,8 +183,10 @@ def augment_gaussian_noise(data_sample: np.ndarray, noise_variance: Tuple[float,
                 noise_variance[0] if noise_variance[0] == noise_variance[1] else \
                     random.uniform(noise_variance[0], noise_variance[1])
             # bug fixed: https://github.com/MIC-DKFZ/batchgenerators/issues/86
-            data_sample[c] = data_sample[c] + np.random.normal(0.0, variance_here, size=data_sample[c].shape)
+            data_sample[c] = data_sample[c] + np.random.normal(
+                0.0, variance_here, size=data_sample[c].shape)
     return data_sample
+
 
 def uniform(low, high, size=None):
     if low == high:
@@ -190,6 +196,8 @@ def uniform(low, high, size=None):
             return np.ones(size) * low
     else:
         return np.random.uniform(low, high, size)
+
+
 def get_range_val(value, rnd_type="uniform"):
     if isinstance(value, (list, tuple, np.ndarray)):
         if len(value) == 2:
@@ -205,14 +213,19 @@ def get_range_val(value, rnd_type="uniform"):
         elif len(value) == 1:
             n_val = value[0]
         else:
-            raise RuntimeError("value must be either a single value or a list/tuple of len 2")
+            raise RuntimeError(
+                "value must be either a single value or a list/tuple of len 2")
         return n_val
     else:
         return value
 
-def augment_gaussian_blur(data_sample: np.ndarray, sigma_range: Tuple[float, float], per_channel: bool = True,
-                          p_per_channel: float = 1, different_sigma_per_axis: bool = False,
-                          p_isotropic: float = 0) -> np.ndarray:
+
+def augment_gaussian_blur(data_sample: np.ndarray,
+                          sigma_range: Tuple[float, float],
+                          per_channel: bool=True,
+                          p_per_channel: float=1,
+                          different_sigma_per_axis: bool=False,
+                          p_isotropic: float=0) -> np.ndarray:
     if not per_channel:
         # Godzilla Had a Stroke Trying to Read This and F***ing Died
         # https://i.kym-cdn.com/entries/icons/original/000/034/623/Untitled-3.png
@@ -232,21 +245,28 @@ def augment_gaussian_blur(data_sample: np.ndarray, sigma_range: Tuple[float, flo
             data_sample[c] = gaussian_filter(data_sample[c], sigma, order=0)
     return data_sample
 
-def augment_brightness_multiplicative(data_sample, multiplier_range=(0.5, 2), per_channel=True):
+
+def augment_brightness_multiplicative(data_sample,
+                                      multiplier_range=(0.5, 2),
+                                      per_channel=True):
     multiplier = np.random.uniform(multiplier_range[0], multiplier_range[1])
     if not per_channel:
         data_sample *= multiplier
     else:
         for c in range(data_sample.shape[0]):
-            multiplier = np.random.uniform(multiplier_range[0], multiplier_range[1])
+            multiplier = np.random.uniform(multiplier_range[0],
+                                           multiplier_range[1])
             data_sample[c] *= multiplier
     return data_sample
 
-def augment_contrast(data_sample: np.ndarray,
-                     contrast_range: Union[Tuple[float, float], Callable[[], float]] = (0.75, 1.25),
-                     preserve_range: bool = True,
-                     per_channel: bool = True,
-                     p_per_channel: float = 1) -> np.ndarray:
+
+def augment_contrast(
+        data_sample: np.ndarray,
+        contrast_range: Union[Tuple[float, float], Callable[[], float]]=(0.75,
+                                                                         1.25),
+        preserve_range: bool=True,
+        per_channel: bool=True,
+        p_per_channel: float=1) -> np.ndarray:
     if not per_channel:
         if callable(contrast_range):
             factor = contrast_range()
@@ -254,7 +274,8 @@ def augment_contrast(data_sample: np.ndarray,
             if np.random.random() < 0.5 and contrast_range[0] < 1:
                 factor = np.random.uniform(contrast_range[0], 1)
             else:
-                factor = np.random.uniform(max(contrast_range[0], 1), contrast_range[1])
+                factor = np.random.uniform(
+                    max(contrast_range[0], 1), contrast_range[1])
 
         for c in range(data_sample.shape[0]):
             if np.random.uniform() < p_per_channel:
@@ -277,7 +298,8 @@ def augment_contrast(data_sample: np.ndarray,
                     if np.random.random() < 0.5 and contrast_range[0] < 1:
                         factor = np.random.uniform(contrast_range[0], 1)
                     else:
-                        factor = np.random.uniform(max(contrast_range[0], 1), contrast_range[1])
+                        factor = np.random.uniform(
+                            max(contrast_range[0], 1), contrast_range[1])
 
                 mn = data_sample[c].mean()
                 if preserve_range:
@@ -291,8 +313,15 @@ def augment_contrast(data_sample: np.ndarray,
                     data_sample[c][data_sample[c] > maxm] = maxm
     return data_sample
 
-def augment_linear_downsampling_scipy(data_sample, zoom_range=(0.5, 1), per_channel=True, p_per_channel=1,
-                                      channels=None, order_downsample=1, order_upsample=0, ignore_axes=None):
+
+def augment_linear_downsampling_scipy(data_sample,
+                                      zoom_range=(0.5, 1),
+                                      per_channel=True,
+                                      p_per_channel=1,
+                                      channels=None,
+                                      order_downsample=1,
+                                      order_upsample=0,
+                                      ignore_axes=None):
     if not isinstance(zoom_range, (list, tuple, np.ndarray)):
         zoom_range = [zoom_range]
 
@@ -329,20 +358,34 @@ def augment_linear_downsampling_scipy(data_sample, zoom_range=(0.5, 1), per_chan
                     for i in ignore_axes:
                         target_shape[i] = shp[i]
 
-            downsampled = resize(data_sample[c].astype(float), target_shape, order=order_downsample, mode='edge',
-                                 anti_aliasing=False)
-            data_sample[c] = resize(downsampled, shp, order=order_upsample, mode='edge',
-                                    anti_aliasing=False)
+            downsampled = resize(
+                data_sample[c].astype(float),
+                target_shape,
+                order=order_downsample,
+                mode='edge',
+                anti_aliasing=False)
+            data_sample[c] = resize(
+                downsampled,
+                shp,
+                order=order_upsample,
+                mode='edge',
+                anti_aliasing=False)
 
     return data_sample
 
-def augment_gamma(data_sample, gamma_range=(0.5, 2), invert_image=False, epsilon=1e-7, per_channel=False,
-                  retain_stats: Union[bool, Callable[[], bool]] = False):
+
+def augment_gamma(data_sample,
+                  gamma_range=(0.5, 2),
+                  invert_image=False,
+                  epsilon=1e-7,
+                  per_channel=False,
+                  retain_stats: Union[bool, Callable[[], bool]]=False):
     if invert_image:
-        data_sample = - data_sample
+        data_sample = -data_sample
 
     if not per_channel:
-        retain_stats_here = retain_stats() if callable(retain_stats) else retain_stats
+        retain_stats_here = retain_stats() if callable(
+            retain_stats) else retain_stats
         if retain_stats_here:
             mn = data_sample.mean()
             sd = data_sample.std()
@@ -352,31 +395,38 @@ def augment_gamma(data_sample, gamma_range=(0.5, 2), invert_image=False, epsilon
             gamma = np.random.uniform(max(gamma_range[0], 1), gamma_range[1])
         minm = data_sample.min()
         rnge = data_sample.max() - minm
-        data_sample = np.power(((data_sample - minm) / float(rnge + epsilon)), gamma) * rnge + minm
+        data_sample = np.power((
+            (data_sample - minm) / float(rnge + epsilon)), gamma) * rnge + minm
         if retain_stats_here:
             data_sample = data_sample - data_sample.mean()
             data_sample = data_sample / (data_sample.std() + 1e-8) * sd
             data_sample = data_sample + mn
     else:
         for c in range(data_sample.shape[0]):
-            retain_stats_here = retain_stats() if callable(retain_stats) else retain_stats
+            retain_stats_here = retain_stats() if callable(
+                retain_stats) else retain_stats
             if retain_stats_here:
                 mn = data_sample[c].mean()
                 sd = data_sample[c].std()
             if np.random.random() < 0.5 and gamma_range[0] < 1:
                 gamma = np.random.uniform(gamma_range[0], 1)
             else:
-                gamma = np.random.uniform(max(gamma_range[0], 1), gamma_range[1])
+                gamma = np.random.uniform(
+                    max(gamma_range[0], 1), gamma_range[1])
             minm = data_sample[c].min()
             rnge = data_sample[c].max() - minm
-            data_sample[c] = np.power(((data_sample[c] - minm) / float(rnge + epsilon)), gamma) * float(rnge + epsilon) + minm
+            data_sample[c] = np.power((
+                (data_sample[c] - minm) / float(rnge + epsilon)),
+                                      gamma) * float(rnge + epsilon) + minm
             if retain_stats_here:
                 data_sample[c] = data_sample[c] - data_sample[c].mean()
-                data_sample[c] = data_sample[c] / (data_sample[c].std() + 1e-8) * sd
+                data_sample[c] = data_sample[c] / (
+                    data_sample[c].std() + 1e-8) * sd
                 data_sample[c] = data_sample[c] + mn
     if invert_image:
-        data_sample = - data_sample
+        data_sample = -data_sample
     return data_sample
+
 
 def augment_mirroring(sample_data, sample_seg=None, axes=(0, 1, 2)):
     if (len(sample_data.shape) != 3) and (len(sample_data.shape) != 4):

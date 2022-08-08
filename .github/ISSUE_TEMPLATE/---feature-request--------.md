@@ -9,7 +9,7 @@ assignees: ''
 
 Welcome to propose a new feature! To help us understand your great feature, please provide following information:
 1. A clear and concise description of the proposed feature.
-2. Tell us why the feature is useful. 
+2. Tell us why the feature is useful.
 3. If possible, please show related codes .
 
 ---

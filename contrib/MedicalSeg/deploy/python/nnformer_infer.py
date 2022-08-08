@@ -38,9 +38,11 @@ from medicalseg.core.infer import sliding_window_inference
 # from tools import Prep
 from skimage.transform import resize
 
-def resize_image(image,new_shape,order=3,cval=0):
+
+def resize_image(image, new_shape, order=3, cval=0):
     kwargs = {'mode': 'edge', 'anti_aliasing': False}
-    return resize(image,new_shape,order,cval=cval,**kwargs)
+    return resize(image, new_shape, order, cval=cval, **kwargs)
+
 
 def resize_segmentation(segmentation, new_shape, order=3):
     '''
@@ -54,17 +56,31 @@ def resize_segmentation(segmentation, new_shape, order=3):
     '''
     tpe = segmentation.dtype
     unique_labels = np.unique(segmentation)
-    assert len(segmentation.shape) == len(new_shape), "new shape must have same dimensionality as segmentation"
+    assert len(segmentation.shape) == len(
+        new_shape), "new shape must have same dimensionality as segmentation"
     if order == 0:
-        return resize(segmentation.astype(float), new_shape, order, mode="edge", clip=True, anti_aliasing=False).astype(tpe)
+        return resize(
+            segmentation.astype(float),
+            new_shape,
+            order,
+            mode="edge",
+            clip=True,
+            anti_aliasing=False).astype(tpe)
     else:
         reshaped = np.zeros(new_shape, dtype=segmentation.dtype)
 
         for i, c in enumerate(unique_labels):
             mask = segmentation == c
-            reshaped_multihot = resize(mask.astype(float), new_shape, order, mode="edge", clip=True, anti_aliasing=False)
+            reshaped_multihot = resize(
+                mask.astype(float),
+                new_shape,
+                order,
+                mode="edge",
+                clip=True,
+                anti_aliasing=False)
             reshaped[reshaped_multihot >= 0.5] = c
         return reshaped
+
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Test')
@@ -404,10 +420,9 @@ class Predictor:
             data = paddle.to_tensor(data)
             # if args.is_nhwd:
             #     data = paddle.squeeze(data, axis=1)
-            data=data.unsqueeze(0).unsqueeze(0)
-            results = sliding_window_inference(
-                data, (14, 160, 160), 1,
-                infer_like_model.infer_model)
+            data = data.unsqueeze(0).unsqueeze(0)
+            results = sliding_window_inference(data, (14, 160, 160), 1,
+                                               infer_like_model.infer_model)
 
             results = results[0]
 
@@ -428,17 +443,17 @@ class Predictor:
             self.autolog.times.end(stamp=True)
 
         # self._save_npy(results, imgs_path[i:i + args.batch_size])
-        self.save_medical_label(results,img_path)
-    logger.info("Finish")
+        self.save_medical_label(results, img_path)
 
+    logger.info("Finish")
 
     def _preprocess(self, img):
 
-        data_array,original_spacing = self.load_medical_data(img)
+        data_array, original_spacing = self.load_medical_data(img)
         self.shape = data_array.shape
-        new_shape = np.round(
-            ((np.array(original_spacing) / np.array(self.target_spacing)).astype(float) * np.array(self.shape))).astype(
-            int)
+        new_shape = np.round(((np.array(original_spacing) /
+                               np.array(self.target_spacing)).astype(float) *
+                              np.array(self.shape))).astype(int)
         data_array = resize_image(data_array, new_shape)
         # 将数据从hwd转化为dhw
         # import pdb
@@ -451,13 +466,12 @@ class Predictor:
         else:
             data_array = (data_array - mean) / (std + 1e-8)
 
-
         return data_array.astype("float32")
 
     def _postprocess(self, result):
         "results is numpy array, optionally postprocess with argmax"
         if self.args.with_argmax:
-            result= np.argmax(result, axis=1)
+            result = np.argmax(result, axis=1)
 
         result = np.transpose(result[0], [1, 2, 0])
         result = resize_segmentation(result, self.shape)
@@ -469,16 +483,19 @@ class Predictor:
             basename, _ = os.path.splitext(basename)
             basename = f'{basename}.npy'
             np.save(os.path.join(self.args.save_dir, basename), results)
-    def save_medical_label(self,result,img_path):
+
+    def save_medical_label(self, result, img_path):
         basename = os.path.basename(img_path)
-        nlabel = nib.Nifti1Image(result, self.nimg.affine, header=self.nimg.header)
+        nlabel = nib.Nifti1Image(
+            result, self.nimg.affine, header=self.nimg.header)
         nib.save(nlabel, os.path.join(self.args.save_dir, basename))
 
-    def load_medical_data(self,filename):
+    def load_medical_data(self, filename):
         self.nimg = nib.load(filename)
         data_array = self.nimg.get_data()
         original_spacing = self.nimg.header["pixdim"][1:4]
-        return data_array,original_spacing
+        return data_array, original_spacing
+
 
 def main(args):
     imgs_list = get_image_list(

@@ -64,9 +64,9 @@ class ACDCDataset(paddle.io.Dataset):
         self.file_list = list()
         self.mode = mode.lower()
         self.num_classes = num_classes
-        self.epoch_batches=epoch_batches
+        self.epoch_batches = epoch_batches
         self.dataset_json_path = dataset_json_path
-        with open(os.path.join(self.dataset_dir,self.anno_path), 'r') as f:
+        with open(os.path.join(self.dataset_dir, self.anno_path), 'r') as f:
             for line in f:
                 items = line.strip().split()
                 image_path = os.path.join(self.dataset_dir, items[0])
@@ -75,16 +75,17 @@ class ACDCDataset(paddle.io.Dataset):
 
     def __getitem__(self, idx):
         # print("indx:{}".format(idx))
-        if self.mode=="train":
-            idx=idx%len(self.file_list)
+        if self.mode == "train":
+            idx = idx % len(self.file_list)
         # print("indx:{}".format(idx))
         image_path, label_path = self.file_list[idx]
         im, label = self.transforms(im=image_path, label=label_path)
 
-        return im.astype("float32"), label, self.file_list[idx][0]  # npy file name
+        return im.astype("float32"), label, self.file_list[idx][
+            0]  # npy file name
 
     def __len__(self):
-        if self.mode=="train":
+        if self.mode == "train":
             return self.epoch_batches
         return len(self.file_list)
 
@@ -98,7 +99,7 @@ if __name__ == "__main__":
         mode='train')
     for item in dataset:
         # print(item)
-        img, label,filename = item
+        img, label, filename = item
         print("img.shape:{}".format(img.shape))
         print("label.shape:{}".format(label.shape))
 

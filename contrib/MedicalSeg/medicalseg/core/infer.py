@@ -197,10 +197,10 @@ def sliding_window_inference(inputs, roi_size, sw_batch_size, predictor):
     #                value=0,
     #                data_format="NDHWC")
     inputs = F.pad(inputs,
-                pad=pad_size,
-                mode='constant',
-                value=0,
-                data_format="NCDHW")
+                   pad=pad_size,
+                   mode='constant',
+                   value=0,
+                   data_format="NCDHW")
     # print("after pad inputs.shape:{}".format(inputs.shape))
     # TODO: interval from user's specification
     scan_interval = _get_scan_interval(image_size, roi_size, num_spatial_dims)
