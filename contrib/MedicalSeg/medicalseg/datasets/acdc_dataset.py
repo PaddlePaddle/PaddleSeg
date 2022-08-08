@@ -24,7 +24,6 @@ import paddle
 
 URL = ' '  # todo: add coronavirus url
 
-
 @manager.DATASETS.add_component
 class ACDCDataset(paddle.io.Dataset):
     """
