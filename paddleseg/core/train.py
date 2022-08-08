@@ -16,15 +16,16 @@ import os
 import time
 from collections import deque
 import shutil
-import paddle.profiler as profiler
+
 import paddle
+import paddle.profiler as profiler
 import paddle.nn.functional as F
 
 from paddleseg.utils import (TimeAverager, calculate_eta, resume, logger,
                              worker_init_fn, train_profiler, op_flops_funs)
 from paddleseg.core.val import evaluate
 
-GLOBAL_PROFILE_STATE = True
+GLOBAL_PROFILE_STATE = False
 def add_nvtx_event(event_name, is_first=False, is_last=False):
     global GLOBAL_PROFILE_STATE
     if not GLOBAL_PROFILE_STATE:
@@ -195,22 +196,15 @@ def train(model,
     batch_cost_averager = TimeAverager()
     save_models = deque()
     batch_start = time.time()
-    train_batch_size = batch_size
-    prof = profiler.Profiler(targets=[profiler.ProfilerTarget.CPU, profiler.ProfilerTarget.GPU],
-                             scheduler=[100, 110],
-                             timer_only=True)
-    prof.start()   
+    prof = paddle.profiler.Profiler(targets=[profiler.ProfilerTarget.CPU, profiler.ProfilerTarget.GPU],
+                                  scheduler=[100, 110],
+                                  timer_only=True)
+
+    prof.start()
     iter = start_iter
-    benchmark_num_iters = 0 
-    benchmark_start = 0
     while iter < iters:
         for data in loader:
-            #profiler.add_profiler_step(profiler_options)
             #switch_profile(100, 110, iter,"(iter is ={})".format(iter))
-            if iter == 10:
-                benchmark_start = time.time()
-                benchmark_num_iters = 0
-            benchmark_num_iters += 1
             iter += 1
             if iter > iters:
                 version = paddle.__version__
@@ -218,7 +212,6 @@ def train(model,
                     continue
                 else:
                     break
-            
             reader_cost_averager.record(time.time() - batch_start)
             images = data['img']
             labels = data['label'].astype('int64')
@@ -252,7 +245,7 @@ def train(model,
                     scaler.minimize(optimizer.user_defined_optimizer, scaled)
                 else:
                     scaler.minimize(optimizer, scaled)  # update parameters
-            else: 
+            else:
                 add_nvtx_event("forward", is_first=True, is_last=False)
                 logits_list = ddp_model(images) if nranks > 1 else model(images)
                 add_nvtx_event("loss", is_first=False, is_last=False)
@@ -281,8 +274,8 @@ def train(model,
 
             train_profiler.add_profiler_step(profiler_options)
             add_nvtx_event("clear_grad", is_first=False, is_last=False)
-            model.clear_gradients()
 
+            model.clear_gradients()
             avg_loss += loss.numpy()[0]
             if not avg_loss_list:
                 avg_loss_list = [l.numpy() for l in loss_list]
@@ -291,9 +284,9 @@ def train(model,
                     avg_loss_list[i] += loss_list[i].numpy()
             prof.step(num_samples=batch_size)
             add_nvtx_event("other", is_first=False, is_last=True)
-
             batch_cost_averager.record(
                 time.time() - batch_start, num_samples=batch_size)
+
             if (iter) % log_iters == 0 and local_rank == 0:
                 avg_loss /= log_iters
                 avg_loss_list = [l[0] / log_iters for l in avg_loss_list]
@@ -374,13 +367,9 @@ def train(model,
                     if use_vdl:
                         log_writer.add_scalar('Evaluate/mIoU', mean_iou, iter)
                         log_writer.add_scalar('Evaluate/Acc', acc, iter)
-        benchmark_time = time.time() - benchmark_start
-        avg_batch_cost = benchmark_time / benchmark_num_iters
-        print("[BENCHMARK] batch_size={}, avg_batch_cost={:.4f}, avg_ips={:.4f} images/s".format(batch_size, avg_batch_cost, batch_size / avg_batch_cost))
-        batch_start = time.time()
+            batch_start = time.time()
     prof.stop()
     prof.summary(op_detail=False)
-
     # Calculate flops.
     if local_rank == 0 and not (precision == 'fp16' and amp_level == 'O2'):
         _, c, h, w = images.shape
