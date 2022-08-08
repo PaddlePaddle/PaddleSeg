@@ -139,7 +139,10 @@ class Prep:
         """unzip all the file in the root directory"""
         files = glob.glob(os.path.join(self.dataset_root, "*.{}".format(form)))
 
-        assert len(files) == num_files, "The file directory should include {} compressed files, but there is only {}".format(num_files, len(files))
+        assert len(
+            files
+        ) == num_files, "The file directory should include {} compressed files, but there is only {}".format(
+            num_files, len(files))
 
         for f in files:
             extract_path = os.path.join(self.raw_data_path,
@@ -161,7 +164,7 @@ class Prep:
         # validate nii.gz on lung and mri with correct spacing_resample
         if filename.endswith((".nii", ".nii.gz", ".dcm")):
             if "radiopaedia" in filename or "corona" in filename:
-                 f_nps = [nib.load(f).get_fdata(dtype=np.float32)]
+                f_nps = [nib.load(f).get_fdata(dtype=np.float32)]
             else:
                 itkimage = sitk.ReadImage(f)
                 if itkimage.GetDimension() == 4:
@@ -232,8 +235,8 @@ class Prep:
                         ["images", "labels", "images_test"][i])):
 
                 # load data will transpose the image from "zyx" to "xyz"
-                spacing = dataset_json_dict["training"][
-                            osp.basename(f).split(".")[0]]["spacing"] if i == 0 else None
+                spacing = dataset_json_dict["training"][osp.basename(f).split(
+                    ".")[0]]["spacing"] if i == 0 else None
                 f_nps = Prep.load_medical_data(f)
 
                 for volume_idx, f_np in enumerate(f_nps):

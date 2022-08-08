@@ -18,35 +18,41 @@ import numpy as np
 
 sys.path.append(
     os.path.join(os.path.dirname(os.path.realpath(__file__)), "../.."))
+
 from medicalseg.cvlibs import manager
 from medicalseg.transforms import Compose
 import paddle
 
 URL = ' '  # todo: add coronavirus url
 
+
 @manager.DATASETS.add_component
 class ACDCDataset(paddle.io.Dataset):
     """
-    The MRISpineSeg dataset is come from the MRI Spine Seg competition
+        The acdc dataset is ...(todo: add link and description)
 
-    Args:
-        dataset_root (str): The dataset directory. Default: None
-        result_root(str): The directory to save the result file. Default: None
-        transforms (list): Transforms for image.
-        mode (str, optional): Which part of dataset to use. it is one of ('train', 'val'). Default: 'train'.
+        Args:
+            dataset_root (str): The dataset directory. Default: None
+            result_root(str): The directory to save the result file. Default: None
+            transforms (list): Transforms for image.
+            num_classes(int): The number of classes the dataset.
+            anno_path(str): The file name of txt file which contains annotaion and image information.
+            epoch_batches(int): This is the number of batches in one epoch.
+            mode (str, optional): Which part of dataset to use. it is one of ('train', 'val'). Default: 'train'.
 
-        Examples:
+            Examples:
 
-            transforms=[]
-            dataset_root = "data/lung_coronavirus/lung_coronavirus_phase0/"
-            dataset = LungCoronavirus(dataset_root=dataset_root, transforms=[], num_classes=3, mode="train")
+                transforms=[]
+                dataset_root = "ACDCDataset/preprocessed/"
+                dataset = ACDCDataset(dataset_root=dataset_root, transforms=[], num_classes=4,anno_path="train_list_0.txt",
+                 mode="train")
 
-            for data in dataset:
-                img, label = data
-                print(img.shape, label.shape) # (1, 128, 128, 128) (128, 128, 128)
-                print(np.unique(label))
+                for data in dataset:
+                    img, label = data
+                    print(img.shape, label.shape) # (1, 1 , 14, 160, 160) (14, 160, 160)
+                    print(np.unique(label))
 
-    """
+        """
 
     def __init__(self,
                  dataset_root=None,
@@ -64,9 +70,9 @@ class ACDCDataset(paddle.io.Dataset):
         self.file_list = list()
         self.mode = mode.lower()
         self.num_classes = num_classes
-        self.epoch_batches=epoch_batches
+        self.epoch_batches = epoch_batches
         self.dataset_json_path = dataset_json_path
-        with open(os.path.join(self.dataset_dir,self.anno_path), 'r') as f:
+        with open(os.path.join(self.dataset_dir, self.anno_path), 'r') as f:
             for line in f:
                 items = line.strip().split()
                 image_path = os.path.join(self.dataset_dir, items[0])
@@ -74,33 +80,15 @@ class ACDCDataset(paddle.io.Dataset):
                 self.file_list.append([image_path, grt_path])
 
     def __getitem__(self, idx):
-        # print("indx:{}".format(idx))
-        if self.mode=="train":
-            idx=idx%len(self.file_list)
-        # print("indx:{}".format(idx))
+        if self.mode == "train":
+            idx = idx % len(self.file_list)
         image_path, label_path = self.file_list[idx]
         im, label = self.transforms(im=image_path, label=label_path)
 
-        return im.astype("float32"), label, self.file_list[idx][0]  # npy file name
+        return im.astype("float32"), label, self.file_list[idx][
+            0]  # npy file name
 
     def __len__(self):
-        if self.mode=="train":
+        if self.mode == "train":
             return self.epoch_batches
         return len(self.file_list)
-
-
-if __name__ == "__main__":
-    dataset = ACDCDataset(
-        dataset_dir=r"F:\task01",
-        transforms=[],
-        num_classes=4,
-        anno_path="val_fold0.txt",
-        mode='train')
-    for item in dataset:
-        # print(item)
-        img, label,filename = item
-        print("img.shape:{}".format(img.shape))
-        print("label.shape:{}".format(label.shape))
-
-        if np.any(np.isnan(img)):
-            print(img.dtype, label.dtype)  # (1, 128, 128, 12) float32, int64

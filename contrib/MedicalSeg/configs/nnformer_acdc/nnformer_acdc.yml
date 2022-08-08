@@ -54,7 +54,6 @@ train_dataset:
       p_per_sample: 0.2
     - type: RandomPaddingCrop
       crop_size: [14,160,160]
-  
 
   num_classes: 4
   anno_path: train_list_0.txt
