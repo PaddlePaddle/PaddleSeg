@@ -81,7 +81,7 @@ def inference(model, im, ori_shape=None, transforms=None, sw_num=None):
         if hasattr(model, 'data_format') and model.data_format == 'NCDHW':
             data_format = model.data_format
         logits = sliding_window_inference(
-            im, model.img_shape, sw_num, model, data_format=data_format)
+            im, model.img_shape, sw_num, model, data_format)
     else:
         logits = model(im)
     if not isinstance(logits, collections.abc.Sequence):
@@ -207,8 +207,6 @@ def sliding_window_inference(inputs,
 
     # Store all slices in list
     slices = dense_patch_slices(image_size, roi_size, scan_interval)
-    # import pdb
-    # pdb.set_trace()
     slice_batches = []
     for slice_index in range(0, len(slices), sw_batch_size):
         slice_index_range = range(slice_index,
