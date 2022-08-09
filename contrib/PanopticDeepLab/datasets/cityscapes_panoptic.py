@@ -159,11 +159,11 @@ class CityscapesPanoptic(paddle.io.Dataset):
     def __getitem__(self, idx):
         image_path, label_path = self.file_list[idx]
         dataset_dict = {}
-        im, label = self.transforms(im=image_path, label=label_path)
+        img, label = [self.transforms(dict(img=image_path, label=label_path)).get(key) for key in ['img', 'label']]
         label_dict = self.target_transform(label, self.ins_list[idx])
         for key in label_dict.keys():
             dataset_dict[key] = label_dict[key]
-        dataset_dict['image'] = im
+        dataset_dict['image'] = img
         if self.mode == 'val':
             raw_label = np.asarray(Image.open(label_path))
             dataset_dict['raw_semantic_label'] = self.raw_semantic_generator(
