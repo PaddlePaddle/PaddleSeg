@@ -159,7 +159,11 @@ class CityscapesPanoptic(paddle.io.Dataset):
     def __getitem__(self, idx):
         image_path, label_path = self.file_list[idx]
         dataset_dict = {}
-        img, label = [self.transforms(dict(img=image_path, label=label_path)).get(key) for key in ['img', 'label']]
+        img, label = [
+            self.transforms(dict(
+                img=image_path, label=label_path)).get(key)
+            for key in ['img', 'label']
+        ]
         label_dict = self.target_transform(label, self.ins_list[idx])
         for key in label_dict.keys():
             dataset_dict[key] = label_dict[key]
