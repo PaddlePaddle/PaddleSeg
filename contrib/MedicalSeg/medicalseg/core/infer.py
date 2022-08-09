@@ -79,7 +79,7 @@ def inference(model, im, ori_shape=None, transforms=None, sw_num=None):
 
     if sw_num:
         if hasattr(model, 'data_format') and model.data_format == 'NCDHW':
-            data_format = model.data_format
+            data_format = 'NCDHW'
         logits = sliding_window_inference(
             im, model.img_shape, sw_num, model, data_format)
     else:
