@@ -76,7 +76,7 @@ def HUnorm(image, HU_min=-1200, HU_max=600, HU_nan=-2000):
     HU_nan: float, value for nan in the raw CT image.
     """
 
-    if not isinstance(image, np.ndarray): 
+    if not isinstance(image, np.ndarray):
         image = np.array(image)
     image = np.nan_to_num(image, copy=False, nan=HU_nan)
 
