@@ -21,7 +21,7 @@ import shutil
 import numpy as np
 import paddle
 import paddle.nn.functional as F
-from paddleseg.utils import TimeAverager, calculate_eta, resume, logger
+from paddleseg.utils import TimeAverager, calculate_eta, resume, logger, train_profiler
 
 from .val import evaluate
 
@@ -98,7 +98,10 @@ def train(model,
           losses=None,
           keep_checkpoint_max=5,
           eval_begin_iters=None,
-          metrics='sad'):
+          metrics='sad',
+          precision='fp32',
+          amp_level='O1',
+          profiler_options=None):
     """
     Launch training.
     Args:
@@ -119,6 +122,11 @@ def train(model,
         keep_checkpoint_max (int, optional): Maximum number of checkpoints to save. Default: 5.
         eval_begin_iters (int): The iters begin evaluation. It will evaluate at iters/2 if it is None. Defalust: None.
         metrics(str|list, optional): The metrics to evaluate, it may be the combination of ("sad", "mse", "grad", "conn"). 
+        precision (str, optional): Use AMP if precision='fp16'. If precision='fp32', the training is normal.
+        amp_level (str, optional): Auto mixed precision level. Accepted values are “O1” and “O2”: O1 represent mixed precision, 
+            the input data type of each operator will be casted by white_list and black_list; O2 represent Pure fp16, all operators 
+            parameters and input data will be casted to fp16, except operators in black_list, don’t support fp16 kernel and batchnorm. Default is O1(amp)
+        profiler_options (str, optional): The option of train profiler.
     """
     model.train()
     nranks = paddle.distributed.ParallelEnv().nranks
@@ -132,6 +140,17 @@ def train(model,
         if os.path.exists(save_dir):
             os.remove(save_dir)
         os.makedirs(save_dir)
+
+    # Use amp
+    if precision == 'fp16':
+        logger.info('use AMP to train. AMP level = {}'.format(amp_level))
+        scaler = paddle.amp.GradScaler(init_loss_scaling=1024)
+        if amp_level == 'O2':
+            model, optimizer = paddle.amp.decorate(
+                models=model,
+                optimizers=optimizer,
+                level='O2',
+                save_dtype='float32')
 
     if nranks > 1:
         # Initialize parallel environment if not done.
@@ -178,16 +197,33 @@ def train(model,
                 break
             reader_cost_averager.record(time.time() - batch_start)
 
-            logit_dict, loss_dict = ddp_model(data) if nranks > 1 else model(
-                data)
+            if precision == 'fp16':
+                with paddle.amp.auto_cast(
+                        level=amp_level,
+                        enable=True,
+                        custom_white_list={
+                            "elementwise_add", "batch_norm", "sync_batch_norm"
+                        },
+                        custom_black_list={'bilinear_interp_v2', 'pad3d'}):
+                    logit_dict, loss_dict = ddp_model(
+                        data) if nranks > 1 else model(data)
 
-            loss_dict['all'].backward()
+                scaled = scaler.scale(loss_dict['all'])  # scale the loss
+                scaled.backward()  # do backward
+                scaler.minimize(optimizer, scaled)  # update parameters
+            else:
+                logit_dict, loss_dict = ddp_model(
+                    data) if nranks > 1 else model(data)
+                loss_dict['all'].backward()
+                optimizer.step()
 
-            optimizer.step()
             lr = optimizer.get_lr()
             if isinstance(optimizer._learning_rate,
                           paddle.optimizer.lr.LRScheduler):
                 optimizer._learning_rate.step()
+
+            train_profiler.add_profiler_step(profiler_options)
+
             model.clear_gradients()
 
             for key, value in loss_dict.items():
@@ -274,7 +310,9 @@ def train(model,
                     num_workers=1,
                     print_detail=True,
                     save_results=False,
-                    metrics=metrics)
+                    metrics=metrics,
+                    precision=precision,
+                    amp_level=amp_level)
                 model.train()
 
             # save best model and add evaluation results to vdl
