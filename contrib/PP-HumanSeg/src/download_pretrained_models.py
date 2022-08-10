@@ -35,7 +35,7 @@ model_urls = {
     "portrait_pp_humansegv1_lite_398x224_pretrained":
     "https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/portrait_pp_humansegv1_lite_398x224_pretrained.zip",
     "portrait_pp_humansegv2_lite_256x144_pretrained":
-    "https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/portrait_pp_humansegv2_lite_256x144_pretrained.zip"
+    "https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/portrait_pp_humansegv2_lite_256x144_smaller/portrait_pp_humansegv2_lite_256x144_pretrained.zip"
 }
 
 if __name__ == "__main__":

@@ -122,49 +122,38 @@ class Predictor:
         return self.postprocess(output, img, data, bg)
 
     def postprocess(self, pred_img, origin_img, data, bg):
-        img = data['img']
         trans_info = data['trans_info']
-        resize_w = pred_img.shape[-1]
-        resize_h = pred_img.shape[-2]
-        if self.args.soft_predict:
-            if self.args.use_optic_flow:
-                score_map = pred_img[:, 1, :, :].squeeze(0)
-                score_map = 255 * score_map
-                cur_gray = cv2.cvtColor(origin_img, cv2.COLOR_BGR2GRAY)
-                cur_gray = cv2.resize(cur_gray, (resize_w, resize_h))
-                optflow_map = optic_flow_process(cur_gray, score_map, self.prev_gray, self.prev_cfd, \
-                        self.disflow, self.is_first_frame)
-                self.prev_gray = cur_gray.copy()
-                self.prev_cfd = optflow_map.copy()
-                self.is_first_frame = False
+        score_map = pred_img[0, 1, :, :]
 
-                score_map = np.repeat(optflow_map[:, :, np.newaxis], 3, axis=2)
-                score_map = np.transpose(score_map, [2, 0, 1])[np.newaxis, ...]
-                score_map = reverse_transform(
-                    paddle.to_tensor(score_map), trans_info, mode='bilinear')
-                alpha = np.transpose(score_map.numpy().squeeze(0),
-                                     [1, 2, 0]) / 255
-            else:
-                score_map = pred_img[:, 1, :, :]
-                score_map = score_map[np.newaxis, ...]
-                score_map = reverse_transform(
-                    paddle.to_tensor(score_map), trans_info, mode='bilinear')
-                alpha = np.transpose(score_map.numpy().squeeze(0), [1, 2, 0])
-        else:
-            if pred_img.ndim == 3:
-                pred_img = pred_img[:, np.newaxis, ...]
-            result = reverse_transform(
-                paddle.to_tensor(
-                    pred_img, dtype='float32'),
-                trans_info,
-                mode='bilinear')
+        # post process
+        if self.args.use_post_process:
+            mask_original = score_map.copy()
+            mask_original = (mask_original * 255).astype("uint8")
+            _, mask_thr = cv2.threshold(mask_original, 240, 1,
+                                        cv2.THRESH_BINARY)
+            kernel_erode = cv2.getStructuringElement(cv2.MORPH_CROSS, (5, 5))
+            kernel_dilate = cv2.getStructuringElement(cv2.MORPH_CROSS, (25, 25))
+            mask_erode = cv2.erode(mask_thr, kernel_erode)
+            mask_dilate = cv2.dilate(mask_erode, kernel_dilate)
+            score_map *= mask_dilate
 
-            result = np.array(result)
-            if self.args.add_argmax:
-                result = np.argmax(result, axis=1)
-            else:
-                result = result.squeeze(1)
-            alpha = np.transpose(result, [1, 2, 0])
+        # optical flow
+        if self.args.use_optic_flow:
+            score_map = 255 * score_map
+            cur_gray = cv2.cvtColor(origin_img, cv2.COLOR_BGR2GRAY)
+            cur_gray = cv2.resize(cur_gray,
+                                  (pred_img.shape[-1], pred_img.shape[-2]))
+            optflow_map = optic_flow_process(cur_gray, score_map, self.prev_gray, self.prev_cfd, \
+                    self.disflow, self.is_first_frame)
+            self.prev_gray = cur_gray.copy()
+            self.prev_cfd = optflow_map.copy()
+            self.is_first_frame = False
+            score_map = optflow_map / 255.
+
+        score_map = score_map[np.newaxis, np.newaxis, ...]
+        score_map = reverse_transform(
+            paddle.to_tensor(score_map), trans_info, mode='bilinear')
+        alpha = np.transpose(score_map.numpy().squeeze(1), [1, 2, 0])
 
         h, w, _ = origin_img.shape
         bg = cv2.resize(bg, (w, h))
