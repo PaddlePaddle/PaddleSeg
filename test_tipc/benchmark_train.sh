@@ -30,11 +30,13 @@ function func_sed_params(){
     array=(${params})
     key=${array[0]}
     value=${array[1]}
-    if [[ $value =~ 'benchmark_train' ]];then
-        IFS='='
-        _val=(${value})
-        param_value="${_val[0]}=${param_value}"
-    fi
+    # [Bobholamovic] This if block results in --batch_size=benchmark in the second 
+    # test_train_inference_python.sh call, so I comment it out.
+    # if [[ $value =~ 'benchmark_train' ]];then
+    #     IFS='='
+    #     _val=(${value})
+    #     param_value="${_val[0]}=${param_value}"
+    # fi
     new_params="${key}:${param_value}"
     IFS=";"
     cmd="sed -i '${line}s/.*/${new_params}/' '${filename}'"
@@ -123,13 +125,25 @@ func_sed_params "$FILENAME" "${line_eval_py}" "null"
 func_sed_params "$FILENAME" "${line_export_py}" "null"
 func_sed_params "$FILENAME" "${line_python}"  "$python"
 
+# Parse extra args
+parse_extra_args "${lines[@]}"
+for params in ${extra_args[*]}; do
+    IFS=":"
+    arr=(${params})
+    key=${arr[0]}
+    value=${arr[1]}
+    if [ "${key}" = 'skip_iters' ]; then
+        skip_iters="${value}"
+    fi
+done
+
 # if params
 if  [ ! -n "$PARAMS" ] ;then
     # PARAMS input is not a word.
     IFS="|"
     batch_size_list=(${batch_size})
     fp_items_list=(${fp_items})
-    device_num_list=(N1C4)
+    device_num_list=(N1C1 N1C8)
     run_mode="DP"
 else
     # parser params from input: modeltype_bs{fp_item}_{device_num}
@@ -193,6 +207,22 @@ for batch_size in ${batch_size_list[*]}; do
                 export model_run_time=$((${job_et}-${job_bt}))
                 eval "cat ${log_path}/${log_name}"
 
+                # [Bobholamovic] For matting tasks, modify the training log to fit the input of analysis.py.
+                if [ "${model_name}" = 'ppmatting' ]; then
+                    sed -i 's/=/: /g' ${log_path}/${log_name}
+                fi
+
+                if [ -n ${skip_iters} ]; then
+                    filtered_log_name=${log_name}_filtered
+                    cmd="${python} test_tipc/filter_log.py \
+                            --in_log_path '${log_path}/${log_name}' \
+                            --out_log_path '${log_path}/${filtered_log_name}' \
+                            --skip_iters ${skip_iters}"
+                    echo $cmd
+                    eval $cmd
+                    log_name=${filtered_log_name}
+                fi
+
                 # parser log
                 _model_name="${model_name}_bs${batch_size}_${precision}_${run_mode}"
                 cmd="${python} ${BENCHMARK_ROOT}/scripts/analysis.py --filename ${log_path}/${log_name} \
@@ -228,9 +258,15 @@ for batch_size in ${batch_size_list[*]}; do
                 job_et=`date '+%Y%m%d%H%M%S'`
                 export model_run_time=$((${job_et}-${job_bt}))
                 eval "cat ${log_path}/${log_name}"
+
+                # [Bobholamovic] For matting tasks, modify the training log to fit the input of analysis.py.
+                if [ "${model_name}" = 'ppmatting' ]; then
+                    sed -i 's/=/: /g' ${log_path}/${log_name}
+                fi
+
                 # parser log
                 _model_name="${model_name}_bs${batch_size}_${precision}_${run_mode}"
-
+                
                 cmd="${python} ${BENCHMARK_ROOT}/scripts/analysis.py --filename ${log_path}/${log_name} \
                         --speed_log_file '${speed_log_path}/${speed_log_name}' \
                         --model_name ${_model_name} \
@@ -245,7 +281,7 @@ for batch_size in ${batch_size_list[*]}; do
                 echo $cmd
                 eval $cmd
                 last_status=${PIPESTATUS[0]}
-                status_check $last_status "${cmd}" "${status_log}"
+                status_check $last_status "${cmd}" "${status_log}" "${model_name}"
             fi
         done
     done

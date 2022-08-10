@@ -40,6 +40,7 @@ class MobileSeg(nn.Layer):
             Default: [64, 64, 64].
         resize_mode (str, optional): The resize mode for the upsampling operation in decoder.
             Default: bilinear.
+        use_last_fuse (bool, optional): Whether use fusion in the last. Default: False.
         pretrained (str, optional): The path or url of pretrained model. Default: None.
     """
 
@@ -53,6 +54,7 @@ class MobileSeg(nn.Layer):
                  arm_out_chs=[32, 48, 64],
                  seg_head_inter_chs=[32, 32, 32],
                  resize_mode='bilinear',
+                 use_last_fuse=False,
                  pretrained=None):
         super().__init__()
 
@@ -80,7 +82,7 @@ class MobileSeg(nn.Layer):
 
         self.ppseg_head = MobileSegHead(backbone_out_chs, arm_out_chs,
                                         cm_bin_sizes, cm_out_ch, arm_type,
-                                        resize_mode)
+                                        resize_mode, use_last_fuse)
 
         if len(seg_head_inter_chs) == 1:
             seg_head_inter_chs = seg_head_inter_chs * len(backbone_indices)
@@ -141,7 +143,7 @@ class MobileSegHead(nn.Layer):
     """
 
     def __init__(self, backbone_out_chs, arm_out_chs, cm_bin_sizes, cm_out_ch,
-                 arm_type, resize_mode):
+                 arm_type, resize_mode, use_last_fuse):
         super().__init__()
 
         self.cm = MobileContextModule(backbone_out_chs[-1], cm_out_ch,
@@ -160,6 +162,22 @@ class MobileSegHead(nn.Layer):
             arm = arm_class(
                 low_chs, high_ch, out_ch, ksize=3, resize_mode=resize_mode)
             self.arm_list.append(arm)
+
+        self.use_last_fuse = use_last_fuse
+        if self.use_last_fuse:
+            self.fuse_convs = nn.LayerList()
+            for i in range(1, len(arm_out_chs)):
+                conv = layers.SeparableConvBNReLU(
+                    arm_out_chs[i],
+                    arm_out_chs[0],
+                    kernel_size=3,
+                    bias_attr=False)
+                self.fuse_convs.append(conv)
+            self.last_conv = layers.SeparableConvBNReLU(
+                len(arm_out_chs) * arm_out_chs[0],
+                arm_out_chs[0],
+                kernel_size=3,
+                bias_attr=False)
 
     def forward(self, in_feat_list):
         """
@@ -180,6 +198,19 @@ class MobileSegHead(nn.Layer):
             arm = self.arm_list[i]
             high_feat = arm(low_feat, high_feat)
             out_feat_list.insert(0, high_feat)
+
+        if self.use_last_fuse:
+            x_list = [out_feat_list[0]]
+            size = paddle.shape(out_feat_list[0])[2:]
+            for i, (x, conv
+                    ) in enumerate(zip(out_feat_list[1:], self.fuse_convs)):
+                x = conv(x)
+                x = F.interpolate(
+                    x, size=size, mode='bilinear', align_corners=False)
+                x_list.append(x)
+            x = paddle.concat(x_list, axis=1)
+            x = self.last_conv(x)
+            out_feat_list[0] = x
 
         return out_feat_list
 

@@ -123,14 +123,37 @@ fi
 mkdir -p ./test_tipc/data
 if [ ${MODE} = "benchmark_train" ];then
     pip install -r requirements.txt
-    if [ ${model_name} == "deeplabv3p_resnet50_cityscapes" ] || [ ${model_name} == "fcn_hrnetw18" ] ;then   # 需要使用全量数据集,否则性能下降
+    pip install -r test_tipc/requirements.txt
+    if [ ${model_name} = 'deeplabv3p_resnet50_cityscapes' ] \
+        || [ ${model_name} = 'fcn_hrnetw18' ] \
+        || [ ${model_name} = 'ocrnet_hrnetw48' ] \
+        || [ ${model_name} = 'ocrnet_hrnetw18' ] \
+        || [ ${model_name} = 'fastscnn' ] \
+        || [ ${model_name} = 'pp_liteseg_stdc1' ] \
+        || [ ${model_name} = 'pp_liteseg_stdc2' ] \
+        || [ ${model_name} = 'segformer_b0' ];then   # 需要使用全量数据集,否则性能下降
+        rm -rf ./test_tipc/data/cityscapes
         wget https://paddleseg.bj.bcebos.com/dataset/cityscapes.tar -O ./test_tipc/data/cityscapes.tar --no-check-certificate
         tar -xf ./test_tipc/data/cityscapes.tar  -C ./test_tipc/data/
+    elif [ ${model_name} = 'fcn_hrnetw18_small' ] \
+        || [ ${model_name} = 'pphumanseg_lite' ] \
+        || [ ${model_name} = 'deeplabv3p_resnet50' ] \
+        || [ ${model_name} = 'pp_humanseg_lite_KL' ] \
+        || [ ${model_name} = 'fcn_hrnetw18_small_KL' ] \
+        || [ ${model_name} = 'deeplabv3p_resnet50_KL' ];then
+        rm -rf ./test_tipc/data/mini_supervisely
+        wget -nc -P ./test_tipc/data/ https://paddleseg.bj.bcebos.com/humanseg/data/mini_supervisely.zip --no-check-certificate
+        cd ./test_tipc/data/ && unzip mini_supervisely.zip && cd -
+    elif [ ${model_name} = 'ppmatting' ];then
+        rm -rf ./test_tipc/data/PPM-100
+        wget -nc -P ./test_tipc/data/ https://paddleseg.bj.bcebos.com/matting/datasets/PPM-100.zip --no-check-certificate
+        cd ./test_tipc/data/ && unzip PPM-100.zip && cd -
     else
-        wget https://paddleseg.bj.bcebos.com/dataset/cityscapes_30imgs.tar.gz \
-            -O ./test_tipc/data/cityscapes_30imgs.tar.gz --no-check-certificate
-        tar -zxf ./test_tipc/data/cityscapes_30imgs.tar.gz -C ./test_tipc/data/
-        mv ./test_tipc/data/cityscapes_30imgs ./test_tipc/data/cityscapes
+        rm -rf ./test_tipc/data/cityscapes
+        wget https://paddleseg.bj.bcebos.com/tipc/data/cityscapes_300imgs.tar.gz \
+            -O ./test_tipc/data/cityscapes_300imgs.tar.gz --no-check-certificate
+        tar -zxf ./test_tipc/data/cityscapes_300imgs.tar.gz -C ./test_tipc/data/
+        mv ./test_tipc/data/cityscapes_300imgs ./test_tipc/data/cityscapes
     fi
 elif [ ${MODE} == "serving_infer" ];then
     wget -nc -P ./test_tipc/data https://paddleseg.bj.bcebos.com/dygraph/demo/cityscapes_small.png --no-check-certificate

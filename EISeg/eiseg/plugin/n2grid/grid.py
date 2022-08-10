@@ -27,8 +27,6 @@ def checkOpenGrid(img, thumbnail_min):
 
 class Grids:
     def __init__(self, img, gridSize=(512, 512), overlap=(24, 24)):
-        # TODO: 这个size如果支持长和宽不同有用吗
-        # 可能可以铺满用户屏幕？
         self.clear()
         self.detimg = img
         self.gridSize = np.array(gridSize)
@@ -40,6 +38,7 @@ class Grids:
         self.grid_init = False  # 是否初始化了宫格
         # self.imagesGrid = []  # 图像宫格
         self.mask_grids = []  # 标签宫格
+        self.json_labels = []  # 保存标签
         self.grid_count = None  # (row count, col count)
         self.curr_idx = None  # (current row, current col)
 
@@ -73,7 +72,6 @@ class Grids:
         gridIdx = np.array([row, col])
         ul = gridIdx * (self.gridSize - self.overlap)
         lr = ul + self.gridSize
-        # print("ul, lr", ul, lr)
         img = self.detimg[ul[0]:lr[0], ul[1]:lr[1]]
         mask = self.mask_grids[row][col]
         self.curr_idx = (row, col)
@@ -84,7 +82,6 @@ class Grids:
         将slide的out进行拼接，raw_size保证恢复到原状
         """
         imgs = self.mask_grids
-        # print(len(imgs), len(imgs[0]))
         raw_size = self.detimg.shape[:2]
         # h, w = None, None
         # for i in range(len(imgs)):
@@ -98,13 +95,11 @@ class Grids:
         h, w = self.gridSize
         row = math.ceil(raw_size[0] / h)
         col = math.ceil(raw_size[1] / w)
-        # print('row, col:', row, col)
         result_1 = np.zeros((h * row, w * col), dtype=np.uint8)
         result_2 = result_1.copy()
         # k = 0
         for i in range(row):
             for j in range(col):
-                # print('h, w:', h, w)
                 ih, iw = imgs[i][j].shape[:2]
                 im = np.zeros(self.gridSize)
                 im[:ih, :iw] = imgs[i][j]
@@ -112,49 +107,13 @@ class Grids:
                 end_h = start_h + h
                 start_w = (j * w) if j == 0 else (j * (w - self.overlap[1]))
                 end_w = start_w + w
-                # print("se: ", start_h, end_h, start_w, end_w)
                 # 单区自己，重叠取或
                 if (i + j) % 2 == 0:
                     result_1[start_h:end_h, start_w:end_w] = im
                 else:
                     result_2[start_h:end_h, start_w:end_w] = im
-                # k += 1
-                # print('r, c, k:', i_r, i_c, k)
+
         result = np.where(result_2 != 0, result_2, result_1)
         result = result[:raw_size[0], :raw_size[1]]
         Image.fromarray(result).save(save_path, "PNG")
         return result
-
-
-# g = Grids()
-# g.getGrid(0, 1)
-
-# def sliceImage(self, row, col):
-#     """
-#     根据输入的图像[h, w, C]和行列数以及索引输出对应图像块
-#     index (list)
-#     """
-#     bimg = self.detimg
-#     h, w = bimg.shape[:2]
-#     c_size = [math.ceil(h / row), math.ceil(w / col)]
-#     # 扩展不够的以及重叠部分
-#     h_new = row * c_size[0] + self.overlap
-#     w_new = col * c_size[1] + self.overlap
-#     # 新图
-#     tmp = np.zeros((h_new, w_new, bimg.shape[-1]))
-#     tmp[: bimg.shape[0], : bimg.shape[1], :] = bimg
-#     h, w = tmp.shape[:2]
-#     cell_h = c_size[0]
-#     cell_w = c_size[1]
-#     # 开始分块
-#     result = []
-#     for i in range(row):
-#         for j in range(col):
-#             start_h = i * cell_h
-#             end_h = start_h + cell_h + self.overlap
-#             start_w = j * cell_w
-#             end_w = start_w + cell_w + self.overlap
-#             result.append(tmp[start_h:end_h, start_w:end_w, :])
-#     # for r in result:
-#     #     print(r.shape)
-#     return result

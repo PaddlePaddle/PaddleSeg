@@ -45,7 +45,8 @@ class BasePredictor(object):
         self.net_state_dict = None
         self.with_prev_mask = with_mask
         self.net = model
-
+        if not paddle.in_dynamic_mode():
+            paddle.disable_static()
         self.normalization = BatchImageNormalize([0.485, 0.456, 0.406],
                                                  [0.229, 0.224, 0.225])
 

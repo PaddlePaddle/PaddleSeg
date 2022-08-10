@@ -6,29 +6,31 @@
   <img src="./docs/images/paddleseg_logo.png" align="middle" width = "500" />
 </p>
 
-**强大易用的飞桨图像分割开发套件，端到端完成从训练到部署的全流程图像分割应用。**
+**飞桨高性能图像分割开发套件，端到端完成从训练到部署的全流程图像分割应用。**
 
-[![Build Status](https://travis-ci.org/PaddlePaddle/PaddleSeg.svg?branch=release/2.1)](https://travis-ci.org/PaddlePaddle/PaddleSeg)
+
 [![License](https://img.shields.io/badge/license-Apache%202-blue.svg)](LICENSE)
 [![Version](https://img.shields.io/github/release/PaddlePaddle/PaddleSeg.svg)](https://github.com/PaddlePaddle/PaddleSeg/releases)
 ![python version](https://img.shields.io/badge/python-3.6+-orange.svg)
 ![support os](https://img.shields.io/badge/os-linux%2C%20win%2C%20mac-yellow.svg)
+![stars](https://img.shields.io/github/stars/PaddlePaddle/PaddleSeg?color=ccf)
 </div>
 
 <div align="center">
-<img src="https://github.com/shiyutang/files/raw/2bb2aebaaec36f54953c7e4a96cb84c90336e4c1/ezgif.com-gif-maker%20(3).gif"  width = "800" />  
+<img src="https://github.com/shiyutang/files/blob/9590ea6bfc36139982ce75b00d3b9f26713934dd/teasor.gif"  width = "800" />  
 </div>
 
 ## <img src="./docs/images/seg_news_icon.png" width="20"/> 最新动态
 
-* [2022-04-20] :fire: PaddleSeg 2.5版本发布！详细发版信息请参考[Release Note](https://github.com/PaddlePaddle/PaddleSeg/releases)。
-  * 发布超轻量级语义分割模型[PP-LiteSeg](./configs/pp_liteseg)以及[技术报告](https://arxiv.org/pdf/2204.02681.pdf)，实现精度和速度的最佳平衡。
-  * 发布高精度trimap-free抠图模型[PP-Matting](./Matting)以及[技术报告](https://arxiv.org/abs/2204.09433)，在Composition-1K和Distinctions-646上实现SOTA指标。
-  * 发布3D医疗影像开发套件[MedicalSeg](./contrib/MedicalSeg)，支持数据预处理、模型训练、模型部署等全流程开发，并提供肺部、椎骨数据上的高精度分割模型。
-  * 升级智能标注工具[EISeg v0.5](./EISeg)版，新增X-Ray胸腔标注、MRI椎骨标注、铝板瑕疵标注。
-  * 新增5个经典分割模型, 包括多个版本的PP-LiteSeg，总模型数达到45个。
-* [2022-01-20] PaddleSeg 2.4版本发布交互式分割工具EISeg v0.4，超轻量级人像分割方案[PP-HumanSeg](./contrib/PP-HumanSeg)，以及大规模视频会议数据集[PP-HumanSeg14K](./contrib/PP-HumanSeg/paper.md#pp-humanseg14k-a-large-scale-teleconferencing-video-dataset)。
-* [2021-10-11] PaddleSeg 2.3版本发布交互式分割工具EISeg v0.3，开源两种[Matting](./contrib/Matting)算法，以及分割高阶功能[模型蒸馏](./slim/distill)和[模型量化](./slim/quant)方案。
+* [2022-07-20] :fire: PaddleSeg 2.6版本发布！详细发版信息请参考[Release Note](https://github.com/PaddlePaddle/PaddleSeg/releases)。
+  * 发布实时人像分割模型[PP-HumanSeg v2](./contrib/PP-HumanSeg)，推理速度提升45.5%，移动端达到64.26 FPS，分割精度更高、通用型更强、零成本开箱即用。
+  * 发布高性能智能标注工具[EISeg v1.0](./EISeg)正式版，实现一次训练万物可标，加速提升图像、视频、3D医疗影像等领域的分割标注效率。
+  * 发布120多万张ImageNet分割伪标签数据集，以及预训练方法[PSSL](./configs/pssl)，全面提升分割模型在下游任务上的性能。
+  * 开源[PP-Matting](./Matting)代码和预训练模型，并新增5种传统机器学习抠图方法，无需训练可直接使用。
+  * 发布产业级语义分割模型，包括高精度、轻量级和超轻量级系列。
+* [2022-04-20] PaddleSeg 2.5版本发布超轻量级语义分割模型[PP-LiteSeg](./configs/pp_liteseg)，高精度抠图模型PP-Matting，3D医疗影像开发套件[MedicalSeg](./contrib/MedicalSeg)，交互式分割工具EISeg v0.5。
+* [2022-01-20] PaddleSeg 2.4版本发布交互式分割工具EISeg v0.4，超轻量级人像分割方案PP-HumanSeg，以及大规模视频会议数据集[PP-HumanSeg14K](./contrib/PP-HumanSeg/paper.md#pp-humanseg14k-a-large-scale-teleconferencing-video-dataset)。
+
 
 
 
@@ -83,65 +85,65 @@
         <ul>
         <details><summary><b>语义分割模型</b></summary>
           <ul>
-            <li><a href="./configs/pp_liteseg/README.md">PP-LiteSeg</a> </li>
-            <li><a href="./configs/deeplabv3p/README.md">DeepLabV3P</a> </li>
-            <li><a href="./configs/ocrnet/README.md">OCRNet</a> </li>
-            <li><a href="./configs/mobileseg/README.md">MobileSeg</a> </li>
-            <li><a href="./configs/ann/README.md">ANN</a></li>
-            <li><a href="./configs/attention_unet/README.md">Att U-Net</a></li>
-            <li><a href="./configs/bisenetv1/README.md">BiSeNetV1</a></li>
-            <li><a href="./configs/bisenet/README.md">BiSeNetV2</a></li>
-            <li><a href="./configs/ccnet/README.md">CCNet</a></li>
-            <li><a href="./configs/danet/README.md">DANet</a></li>
-            <li><a href="./configs/ddrnet/README.md">DDRNet</a></li>
-            <li><a href="./configs/decoupled_segnet/README.md">DecoupledSeg</a></li>
-            <li><a href="./configs/deeplabv3/README.md">DeepLabV3</a></li>
-            <li><a href="./configs/dmnet/README.md">DMNet</a></li>
-            <li><a href="./configs/dnlnet/README.md">DNLNet</a></li>
-            <li><a href="./configs/emanet/README.md">EMANet</a></li>
-            <li><a href="./configs/encnet/README.md">ENCNet</a></li>
-            <li><a href="./configs/enet/README.md">ENet</a></li>
-            <li><a href="./configs/espnetv1/README.md">ESPNetV1</a></li>
-            <li><a href="./configs/espnet/README.md">ESPNetV2</a></li>
-            <li><a href="./configs/fastfcn/README.md">FastFCN</a></li>
-            <li><a href="./configs/fastscnn/README.md">Fast-SCNN</a></li>
-            <li><a href="./configs/gcnet/README.md">GCNet</a></li>
-            <li><a href="./configs/ginet/README.md">GINet</a></li>
-            <li><a href="./configs/glore/README.md">GloRe</a></li>
-            <li><a href="./configs/gscnn/README.md">GSCNN</a></li>
-            <li><a href="./configs/hardnet/README.md">HarDNet</a></li>
-            <li><a href="./configs/fcn/README.md">HRNet-FCN</a></li>
-            <li><a href="./configs/hrnet_w48_contrast/README.md">HRNet-Contrast</a></li>
-            <li><a href="./configs/isanet/README.md">ISANet</a></li>
-            <li><a href="./configs/pfpn/README.md">PFPNNet</a></li>
-            <li><a href="./configs/pointrend/README.md">PointRend</a></li>
-            <li><a href="./configs/portraitnet/README.md">PotraitNet</a></li>
-            <li><a href="./configs/pp_humanseg_lite/README.md">PP-HumanSeg-Lite</a></li>
-            <li><a href="./configs/pspnet/README.md">PSPNet</a></li>
-            <li><a href="./configs/pssl/README.md">PSSL</a></li>
-            <li><a href="./configs/segformer/README.md">SegFormer</a></li>
-            <li><a href="./configs/segmenter/README.md">SegMenter</a></li>
-            <li><a href="./configs/segmne/README.md">SegNet</a></li>
-            <li><a href="./configs/setr/README.md">SETR</a></li>
-            <li><a href="./configs/sfnet/README.md">SFNet</a></li>
-            <li><a href="./configs/stdcseg/README.md">STDCSeg</a></li>
-            <li><a href="./configs/u2net/README.md">U<sup>2</sup>Net</a></li>
-            <li><a href="./configs/unet/README.md">UNet</a></li>
-            <li><a href="./configs/unet_plusplus/README.md">UNet++</a></li>
-            <li><a href="./configs/unet_3plus/README.md">UNet3+</a></li>
-            <li><a href="./configs/upernet/README.md">UperNet</a></li>
+            <li><a href="./configs/pp_liteseg">PP-LiteSeg</a> </li>
+            <li><a href="./configs/deeplabv3p">DeepLabV3P</a> </li>
+            <li><a href="./configs/ocrnet">OCRNet</a> </li>
+            <li><a href="./configs/mobileseg">MobileSeg</a> </li>
+            <li><a href="./configs/ann">ANN</a></li>
+            <li><a href="./configs/attention_unet">Att U-Net</a></li>
+            <li><a href="./configs/bisenetv1">BiSeNetV1</a></li>
+            <li><a href="./configs/bisenet">BiSeNetV2</a></li>
+            <li><a href="./configs/ccnet">CCNet</a></li>
+            <li><a href="./configs/danet">DANet</a></li>
+            <li><a href="./configs/ddrnet">DDRNet</a></li>
+            <li><a href="./configs/decoupled_segnet">DecoupledSeg</a></li>
+            <li><a href="./configs/deeplabv3">DeepLabV3</a></li>
+            <li><a href="./configs/dmnet">DMNet</a></li>
+            <li><a href="./configs/dnlnet">DNLNet</a></li>
+            <li><a href="./configs/emanet">EMANet</a></li>
+            <li><a href="./configs/encnet">ENCNet</a></li>
+            <li><a href="./configs/enet">ENet</a></li>
+            <li><a href="./configs/espnetv1">ESPNetV1</a></li>
+            <li><a href="./configs/espnet">ESPNetV2</a></li>
+            <li><a href="./configs/fastfcn">FastFCN</a></li>
+            <li><a href="./configs/fastscnn">Fast-SCNN</a></li>
+            <li><a href="./configs/gcnet">GCNet</a></li>
+            <li><a href="./configs/ginet">GINet</a></li>
+            <li><a href="./configs/glore">GloRe</a></li>
+            <li><a href="./configs/gscnn">GSCNN</a></li>
+            <li><a href="./configs/hardnet">HarDNet</a></li>
+            <li><a href="./configs/fcn">HRNet-FCN</a></li>
+            <li><a href="./configs/hrnet_w48_contrast">HRNet-Contrast</a></li>
+            <li><a href="./configs/isanet">ISANet</a></li>
+            <li><a href="./configs/pfpn">PFPNNet</a></li>
+            <li><a href="./configs/pointrend">PointRend</a></li>
+            <li><a href="./configs/portraitnet">PotraitNet</a></li>
+            <li><a href="./configs/pp_humanseg_lite">PP-HumanSeg-Lite</a></li>
+            <li><a href="./configs/pspnet">PSPNet</a></li>
+            <li><a href="./configs/pssl">PSSL</a></li>
+            <li><a href="./configs/segformer">SegFormer</a></li>
+            <li><a href="./configs/segmenter">SegMenter</a></li>
+            <li><a href="./configs/segmne">SegNet</a></li>
+            <li><a href="./configs/setr">SETR</a></li>
+            <li><a href="./configs/sfnet">SFNet</a></li>
+            <li><a href="./configs/stdcseg">STDCSeg</a></li>
+            <li><a href="./configs/u2net">U<sup>2</sup>Net</a></li>
+            <li><a href="./configs/unet">UNet</a></li>
+            <li><a href="./configs/unet_plusplus">UNet++</a></li>
+            <li><a href="./configs/unet_3plus">UNet3+</a></li>
+            <li><a href="./configs/upernet">UperNet</a></li>
           </ul>
         </details>
         <details><summary><b>交互式分割模型</b></summary>
           <ul>
-            <li><a href="./EISeg/README.md">EISeg</a></li>
+            <li><a href="./EISeg">EISeg</a></li>
             <li>RITM</li>
             <li>EdgeFlow</li>
           </ul>
         </details>
         <details><summary><b>图像抠图模型</b></summary>
           <ul>
-              <li><a href="./Matting/ppmatting/README.md">PP-Matting</a></li>
+              <li><a href="./Matting/configs/ppmatting">PP-Matting</a></li>
               <li><a href="./Matting/configs/dim/dim-vgg16.yml">DIM</a></li>
               <li><a href="./Matting/configs/modnet/modnet-hrnet_w18.yml">MODNet</a></li>
               <li><a href="./Matting/configs/human_matting/human_matting-resnet34_vd.yml">PP-HumanMatting</a></li>
@@ -249,33 +251,34 @@
       <td>
         <details><summary><b>模型选型工具</b></summary>
           <ul>
-              <li><a href="./configs/smrt/README.md">PaddleSMRT</a></li>
+              <li><a href="./configs/smrt">PaddleSMRT</a></li>
           </ul>
         </details>
         <details><summary><b>人像分割模型</b></summary>
           <ul>
-              <li><a href="./contrib/PP-HumanSeg/README_cn.md">PP-HumanSeg</a></li>
+              <li><a href="./contrib/PP-HumanSeg/README_cn.md">PP-HumanSegV1</a></li>
+              <li><a href="./contrib/PP-HumanSeg/README_cn.md">PP-HumanSegV2</a></li>
           </ul>
         </details>
         <details><summary><b>3D医疗分割模型</b></summary>
           <ul>
-            <li><a href="./contrib/MedicalSeg/configs/lung_coronavirus/README.md">VNet</a></li>
-            <li><a href="./contrib/MedicalSeg/configs/msd_brain_seg/README.md">UNETR</a></li>
+            <li><a href="./contrib/MedicalSeg/configs/lung_coronavirus">VNet</a></li>
+            <li><a href="./contrib/MedicalSeg/configs/msd_brain_seg">UNETR</a></li>
           </ul>
         </details>
         <details><summary><b>Cityscapes打榜模型</b></summary>
           <ul>
-              <li><a href="./contrib/CityscapesSOTA/README.md">HMSA</a></li>
+              <li><a href="./contrib/CityscapesSOTA">HMSA</a></li>
           </ul>
         </details>
         <details><summary><b>CVPR冠军模型</b></summary>
           <ul>
-              <li><a href="./contrib/AutoNUE/README.md">MLA Transformer</a></li>
+              <li><a href="./contrib/AutoNUE">MLA Transformer</a></li>
           </ul>
         </details>
         <details><summary><b>领域自适应</b></summary>
           <ul>
-              <li><a href="./contrib/DomainAdaptation/README.md">PixMatch</a></li>
+              <li><a href="./contrib/DomainAdaptation">PixMatch</a></li>
           </ul>
         </details>
       </td>  
@@ -367,7 +370,7 @@
 * 准备数据
    * [准备公开数据集](./docs/data/pre_data_cn.md)
    * [准备自定义数据集](./docs/data/marker/marker_cn.md)
-   * [EISeg 数据标注](./EISeg/README.md)
+   * [EISeg 数据标注](./EISeg)
 
 * [模型训练](/docs/train/train_cn.md)
 * [模型评估](./docs/evaluation/evaluate/evaluate_cn.md)
