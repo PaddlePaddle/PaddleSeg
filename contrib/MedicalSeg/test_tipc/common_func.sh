@@ -16,22 +16,6 @@ function func_parser_value(){
     echo ${tmp}
 }
 
-function func_parser_key_cpp(){
-    strs=$1
-    IFS=" "
-    array=(${strs})
-    tmp=${array[0]}
-    echo ${tmp}
-}
-
-function func_parser_value_cpp(){
-    strs=$1
-    IFS=" "
-    array=(${strs})
-    tmp=${array[1]}
-    echo ${tmp}
-}
-
 function func_set_params(){
     key=$1
     value=$2
@@ -78,19 +62,6 @@ function status_check(){
     else
         echo -e "\033[33m Run failed with command - ${model_name} - ${run_command}!  \033[0m" | tee -a ${run_log}
     fi
-}
-
-function contains() {
-    local n=$#
-    local value=${!n}
-    for ((i=1;i < $#;i++)) {
-        if [ "${!i}" == "${value}" ]; then
-            echo "y"
-            return 0
-        fi
-    }
-    echo "n"
-    return 1
 }
 
 function run_command() {
