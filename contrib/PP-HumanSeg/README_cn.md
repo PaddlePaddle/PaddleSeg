@@ -17,7 +17,7 @@
 
 对于肖像分割和通用人像分割，PaddleSeg发布了**PP-HumanSeg系列模型**，具有**分割精度高、推理速度快、通用型强**的优点。而且PP-HumanSeg系列模型可以**开箱即用**，零成本部署到产品中，也支持针对特定场景数据进行微调，实现更佳分割效果。
 
-大家可以在Paddle.js的网页体验人像扣图效果([链接](https://paddlejs.baidu.com/humanseg))、视频背景替换及弹幕穿透效果([链接](https://www.paddlepaddle.org.cn/paddlejs))。
+如下是演示视频（由于视频较大，加载会稍慢），此外大家可以在Paddle.js的网页体验人像扣图效果([链接](https://paddlejs.baidu.com/humanseg))、视频背景替换及弹幕穿透效果([链接](https://www.paddlepaddle.org.cn/paddlejs))。
 
 <p align="center">
 <img src="https://github.com/juncaipeng/raw_data/blob/master/images/portrait_bg_replace_1.gif" height="200">

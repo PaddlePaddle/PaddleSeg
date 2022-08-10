@@ -85,65 +85,65 @@
         <ul>
         <details><summary><b>语义分割模型</b></summary>
           <ul>
-            <li><a href="./configs/pp_liteseg/README.md">PP-LiteSeg</a> </li>
-            <li><a href="./configs/deeplabv3p/README.md">DeepLabV3P</a> </li>
-            <li><a href="./configs/ocrnet/README.md">OCRNet</a> </li>
-            <li><a href="./configs/mobileseg/README.md">MobileSeg</a> </li>
-            <li><a href="./configs/ann/README.md">ANN</a></li>
-            <li><a href="./configs/attention_unet/README.md">Att U-Net</a></li>
-            <li><a href="./configs/bisenetv1/README.md">BiSeNetV1</a></li>
-            <li><a href="./configs/bisenet/README.md">BiSeNetV2</a></li>
-            <li><a href="./configs/ccnet/README.md">CCNet</a></li>
-            <li><a href="./configs/danet/README.md">DANet</a></li>
-            <li><a href="./configs/ddrnet/README.md">DDRNet</a></li>
-            <li><a href="./configs/decoupled_segnet/README.md">DecoupledSeg</a></li>
-            <li><a href="./configs/deeplabv3/README.md">DeepLabV3</a></li>
-            <li><a href="./configs/dmnet/README.md">DMNet</a></li>
-            <li><a href="./configs/dnlnet/README.md">DNLNet</a></li>
-            <li><a href="./configs/emanet/README.md">EMANet</a></li>
-            <li><a href="./configs/encnet/README.md">ENCNet</a></li>
-            <li><a href="./configs/enet/README.md">ENet</a></li>
-            <li><a href="./configs/espnetv1/README.md">ESPNetV1</a></li>
-            <li><a href="./configs/espnet/README.md">ESPNetV2</a></li>
-            <li><a href="./configs/fastfcn/README.md">FastFCN</a></li>
-            <li><a href="./configs/fastscnn/README.md">Fast-SCNN</a></li>
-            <li><a href="./configs/gcnet/README.md">GCNet</a></li>
-            <li><a href="./configs/ginet/README.md">GINet</a></li>
-            <li><a href="./configs/glore/README.md">GloRe</a></li>
-            <li><a href="./configs/gscnn/README.md">GSCNN</a></li>
-            <li><a href="./configs/hardnet/README.md">HarDNet</a></li>
-            <li><a href="./configs/fcn/README.md">HRNet-FCN</a></li>
-            <li><a href="./configs/hrnet_w48_contrast/README.md">HRNet-Contrast</a></li>
-            <li><a href="./configs/isanet/README.md">ISANet</a></li>
-            <li><a href="./configs/pfpn/README.md">PFPNNet</a></li>
-            <li><a href="./configs/pointrend/README.md">PointRend</a></li>
-            <li><a href="./configs/portraitnet/README.md">PotraitNet</a></li>
-            <li><a href="./configs/pp_humanseg_lite/README.md">PP-HumanSeg-Lite</a></li>
-            <li><a href="./configs/pspnet/README.md">PSPNet</a></li>
-            <li><a href="./configs/pssl/README.md">PSSL</a></li>
-            <li><a href="./configs/segformer/README.md">SegFormer</a></li>
-            <li><a href="./configs/segmenter/README.md">SegMenter</a></li>
-            <li><a href="./configs/segmne/README.md">SegNet</a></li>
-            <li><a href="./configs/setr/README.md">SETR</a></li>
-            <li><a href="./configs/sfnet/README.md">SFNet</a></li>
-            <li><a href="./configs/stdcseg/README.md">STDCSeg</a></li>
-            <li><a href="./configs/u2net/README.md">U<sup>2</sup>Net</a></li>
-            <li><a href="./configs/unet/README.md">UNet</a></li>
-            <li><a href="./configs/unet_plusplus/README.md">UNet++</a></li>
-            <li><a href="./configs/unet_3plus/README.md">UNet3+</a></li>
-            <li><a href="./configs/upernet/README.md">UperNet</a></li>
+            <li><a href="./configs/pp_liteseg">PP-LiteSeg</a> </li>
+            <li><a href="./configs/deeplabv3p">DeepLabV3P</a> </li>
+            <li><a href="./configs/ocrnet">OCRNet</a> </li>
+            <li><a href="./configs/mobileseg">MobileSeg</a> </li>
+            <li><a href="./configs/ann">ANN</a></li>
+            <li><a href="./configs/attention_unet">Att U-Net</a></li>
+            <li><a href="./configs/bisenetv1">BiSeNetV1</a></li>
+            <li><a href="./configs/bisenet">BiSeNetV2</a></li>
+            <li><a href="./configs/ccnet">CCNet</a></li>
+            <li><a href="./configs/danet">DANet</a></li>
+            <li><a href="./configs/ddrnet">DDRNet</a></li>
+            <li><a href="./configs/decoupled_segnet">DecoupledSeg</a></li>
+            <li><a href="./configs/deeplabv3">DeepLabV3</a></li>
+            <li><a href="./configs/dmnet">DMNet</a></li>
+            <li><a href="./configs/dnlnet">DNLNet</a></li>
+            <li><a href="./configs/emanet">EMANet</a></li>
+            <li><a href="./configs/encnet">ENCNet</a></li>
+            <li><a href="./configs/enet">ENet</a></li>
+            <li><a href="./configs/espnetv1">ESPNetV1</a></li>
+            <li><a href="./configs/espnet">ESPNetV2</a></li>
+            <li><a href="./configs/fastfcn">FastFCN</a></li>
+            <li><a href="./configs/fastscnn">Fast-SCNN</a></li>
+            <li><a href="./configs/gcnet">GCNet</a></li>
+            <li><a href="./configs/ginet">GINet</a></li>
+            <li><a href="./configs/glore">GloRe</a></li>
+            <li><a href="./configs/gscnn">GSCNN</a></li>
+            <li><a href="./configs/hardnet">HarDNet</a></li>
+            <li><a href="./configs/fcn">HRNet-FCN</a></li>
+            <li><a href="./configs/hrnet_w48_contrast">HRNet-Contrast</a></li>
+            <li><a href="./configs/isanet">ISANet</a></li>
+            <li><a href="./configs/pfpn">PFPNNet</a></li>
+            <li><a href="./configs/pointrend">PointRend</a></li>
+            <li><a href="./configs/portraitnet">PotraitNet</a></li>
+            <li><a href="./configs/pp_humanseg_lite">PP-HumanSeg-Lite</a></li>
+            <li><a href="./configs/pspnet">PSPNet</a></li>
+            <li><a href="./configs/pssl">PSSL</a></li>
+            <li><a href="./configs/segformer">SegFormer</a></li>
+            <li><a href="./configs/segmenter">SegMenter</a></li>
+            <li><a href="./configs/segmne">SegNet</a></li>
+            <li><a href="./configs/setr">SETR</a></li>
+            <li><a href="./configs/sfnet">SFNet</a></li>
+            <li><a href="./configs/stdcseg">STDCSeg</a></li>
+            <li><a href="./configs/u2net">U<sup>2</sup>Net</a></li>
+            <li><a href="./configs/unet">UNet</a></li>
+            <li><a href="./configs/unet_plusplus">UNet++</a></li>
+            <li><a href="./configs/unet_3plus">UNet3+</a></li>
+            <li><a href="./configs/upernet">UperNet</a></li>
           </ul>
         </details>
         <details><summary><b>交互式分割模型</b></summary>
           <ul>
-            <li><a href="./EISeg/README.md">EISeg</a></li>
+            <li><a href="./EISeg">EISeg</a></li>
             <li>RITM</li>
             <li>EdgeFlow</li>
           </ul>
         </details>
         <details><summary><b>图像抠图模型</b></summary>
           <ul>
-              <li><a href="./Matting/ppmatting/README.md">PP-Matting</a></li>
+              <li><a href="./Matting/configs/ppmatting">PP-Matting</a></li>
               <li><a href="./Matting/configs/dim/dim-vgg16.yml">DIM</a></li>
               <li><a href="./Matting/configs/modnet/modnet-hrnet_w18.yml">MODNet</a></li>
               <li><a href="./Matting/configs/human_matting/human_matting-resnet34_vd.yml">PP-HumanMatting</a></li>
@@ -251,33 +251,34 @@
       <td>
         <details><summary><b>模型选型工具</b></summary>
           <ul>
-              <li><a href="./configs/smrt/README.md">PaddleSMRT</a></li>
+              <li><a href="./configs/smrt">PaddleSMRT</a></li>
           </ul>
         </details>
         <details><summary><b>人像分割模型</b></summary>
           <ul>
-              <li><a href="./contrib/PP-HumanSeg/README_cn.md">PP-HumanSeg</a></li>
+              <li><a href="./contrib/PP-HumanSeg/README_cn.md">PP-HumanSegV1</a></li>
+              <li><a href="./contrib/PP-HumanSeg/README_cn.md">PP-HumanSegV2</a></li>
           </ul>
         </details>
         <details><summary><b>3D医疗分割模型</b></summary>
           <ul>
-            <li><a href="./contrib/MedicalSeg/configs/lung_coronavirus/README.md">VNet</a></li>
-            <li><a href="./contrib/MedicalSeg/configs/msd_brain_seg/README.md">UNETR</a></li>
+            <li><a href="./contrib/MedicalSeg/configs/lung_coronavirus">VNet</a></li>
+            <li><a href="./contrib/MedicalSeg/configs/msd_brain_seg">UNETR</a></li>
           </ul>
         </details>
         <details><summary><b>Cityscapes打榜模型</b></summary>
           <ul>
-              <li><a href="./contrib/CityscapesSOTA/README.md">HMSA</a></li>
+              <li><a href="./contrib/CityscapesSOTA">HMSA</a></li>
           </ul>
         </details>
         <details><summary><b>CVPR冠军模型</b></summary>
           <ul>
-              <li><a href="./contrib/AutoNUE/README.md">MLA Transformer</a></li>
+              <li><a href="./contrib/AutoNUE">MLA Transformer</a></li>
           </ul>
         </details>
         <details><summary><b>领域自适应</b></summary>
           <ul>
-              <li><a href="./contrib/DomainAdaptation/README.md">PixMatch</a></li>
+              <li><a href="./contrib/DomainAdaptation">PixMatch</a></li>
           </ul>
         </details>
       </td>  
@@ -369,7 +370,7 @@
 * 准备数据
    * [准备公开数据集](./docs/data/pre_data_cn.md)
    * [准备自定义数据集](./docs/data/marker/marker_cn.md)
-   * [EISeg 数据标注](./EISeg/README.md)
+   * [EISeg 数据标注](./EISeg)
 
 * [模型训练](/docs/train/train_cn.md)
 * [模型评估](./docs/evaluation/evaluate/evaluate_cn.md)
