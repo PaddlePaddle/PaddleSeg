@@ -29,16 +29,29 @@ URL = ' '  # todo: add coronavirus url
 @manager.DATASETS.add_component
 class ACDCDataset(paddle.io.Dataset):
     """
-        The acdc dataset is ...(todo: add link and description)
+        ACDC dataset `https://acdc.creatis.insa-lyon.fr/#phase/5846c3ab6a3c7735e84b67f2 `.
+        The folder structure is as follow:
 
+            training
+            |
+            |--patient001
+            |  |--patient001_4d.nii.gz
+            |  |--patient001_frameXX.nii.gz
+            |  |--patient001_frameXX_gt.nii.gz
+            |..............................
+            |--patient100
+            |  |--patient100_4d.nii.gz
+            |  |--patient100_frameXX.nii.gz
+            |  |--patient100_frameXX_gt.nii.gz
         Args:
             dataset_root (str): The dataset directory. Default: None
             result_root(str): The directory to save the result file. Default: None
             transforms (list): Transforms for image.
-            num_classes(int): The number of classes the dataset.
-            anno_path(str): The file name of txt file which contains annotaion and image information.
-            epoch_batches(int): This is the number of batches in one epoch.
-            mode (str, optional): Which part of dataset to use. it is one of ('train', 'val'). Default: 'train'.
+            num_classes(int): The number of classes of the dataset.
+            anno_path(str): The file name of txt file which contains annotation and image information.
+            epoch_batches(int): The number of batches in one epoch.
+            mode (str, optional): Which part of dataset to use. It is one of ('train', 'val'). Default: 'train'.
+            dataset_json_path (str, optional): It is useless right now.
 
             Examples:
 

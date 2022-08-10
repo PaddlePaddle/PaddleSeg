@@ -95,12 +95,12 @@ def pardir(path: str):
 
 def split_path(path: str) -> List[str]:
     """
-    splits at each separator. This is different from os.path.split which only splits at last separator
+    Splits at each separator. This is different from os.path.split which only splits at last separator
     """
     return path.split(os.sep)
 
 
-# I'm tired of typing these out
+
 join = os.path.join
 isdir = os.path.isdir
 isfile = os.path.isfile
@@ -108,7 +108,7 @@ listdir = os.listdir
 makedirs = maybe_mkdir_p
 os_split_path = os.path.split
 
-# I am tired of confusing those
+
 subfolders = subdirs
 save_pickle = write_pickle
 write_json = save_json

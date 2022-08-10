@@ -16,11 +16,6 @@ from itertools import repeat
 
 class PatchMerging(nn.Layer):
     def __init__(self, dim, norm_layer=nn.LayerNorm, tag=None):
-        """ Patch Merging Layer
-        Args:
-            dim (int): Number of input channels.
-            norm_layer (nn.Module, optional): Normalization layer.  Default: nn.LayerNorm
-        """
         super().__init__()
         self.dim = dim
         if tag == 0:
@@ -64,6 +59,7 @@ class PatchExpanding(nn.Layer):
         super().__init__()
         self.dim = dim
         self.norm = norm_layer(dim)
+        assert tag in [0,1,2],"the tag is wrong"
         if tag == 0:
             self.up = nn.Conv3DTranspose(dim, dim // 2, [1, 2, 2], [1, 2, 2])
         elif tag == 1:
@@ -87,8 +83,6 @@ class PatchExpanding(nn.Layer):
 
 
 class MLP(nn.Layer):
-    """ Multilayer perceptron."""
-
     def __init__(self,
                  in_features,
                  hidden_features=None,
@@ -113,22 +107,11 @@ class MLP(nn.Layer):
 
 
 class DropPath(nn.Layer):
-    """DropPath class"""
-
     def __init__(self, drop_prob=None):
         super(DropPath, self).__init__()
         self.drop_prob = drop_prob
 
     def drop_path(self, inputs):
-        """drop path op
-        Args:
-            input: tensor with arbitrary shape
-            drop_prob: float number of drop path probability, default: 0.0
-            training: bool, if current mode is training, default: False
-        Returns:
-            output: output tensor after drop path
-        """
-        # If prob is 0 or module is in eval mode, return original input.
         if self.drop_prob == 0. or not self.training:
             return inputs
         keep_prob = 1 - self.drop_prob
@@ -411,7 +394,7 @@ class SwinTransformerBlock_kv(nn.Layer):
         skip = skip.reshape((B, S, H, W, C))
         x_up = x_up.reshape((B, S, H, W, C))
 
-        #  Pad feature maps to multiples of window size
+        # Pad feature maps to multiples of window size
         pad_r = (
             self.window_size[2] - W % self.window_size[2]) % self.window_size[2]
         pad_b = (
@@ -504,13 +487,6 @@ class SwinTransformerBlock(nn.Layer):
                        drop=drop)
 
     def forward(self, x, mask_matrix):
-        """ Forward function.
-
-        Args:
-            x: Input feature, tensor size (B, H*W, C).
-            H, W: Spatial resolution of the input feature.
-            mask_matrix: Attention mask for cyclic shift.
-        """
         B, L, C = x.shape
         S, H, W = self.input_resolution
         assert L == S * H * W, "input feature has wrong size"
@@ -883,8 +859,6 @@ class Encoder(nn.Layer):
             self.add_sublayer(layer_name, layer)
 
     def forward(self, x):
-        """Forward function."""
-
         x = self.patch_embed(x)
         down = []
 
@@ -991,6 +965,26 @@ class final_patch_expanding(nn.Layer):
 
 @manager.MODELS.add_component
 class nnFormer(nn.Layer):
+    """
+    The nnformer implementation based on PaddlePaddle.
+
+    The original article refers to
+    Hong-Yu Zhou, et al. "nnFormer: Volumetric Medical Image Segmentation via a 3D Transformer"
+    (https://arxiv.org/pdf/2109.03201.pdf).
+
+    Args:
+        crop_size (list): The input size of image.
+        embedding_dim (int): The number of embedding dimensions.
+        input_channels (int): The channel of input image.
+        num_classes (int): The segmentation classes.
+        conv_op (nn.Layer): The conv operation to do.
+        depths (list): The number of self-attention blocks each time.
+        num_heads (list): The number of heads when do multi-head attention.
+        patch_size (list): The path or url of pretrained model. Default: None.
+        window_size (list): The size of windows when do Self-attention (LV-MSA).
+        down_stride (list): The stride of each dimension of each downsampling.
+        deep_supervision (bool) :Whether we use deep_supervision. Default: True.
+    """
     def __init__(self,
                  crop_size=[14, 160, 160],
                  embedding_dim=96,

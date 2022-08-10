@@ -11,15 +11,16 @@
 #    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #    See the License for the specific language governing permissions and
 #    limitations under the License.
-from file_and_folder_operations import *
-from collections import OrderedDict
+
+import nibabel as nib
+import argparse
 import shutil
 import numpy as np
+from file_and_folder_operations import *
+from collections import OrderedDict
 from sklearn.model_selection import KFold
 from skimage.transform import resize
 from tqdm import tqdm
-import nibabel as nib
-
 
 def convert_to_submission(source_dir, target_dir):
     niftis = subfiles(source_dir, join=False, suffix=".nii.gz")
@@ -41,8 +42,8 @@ def convert_to_submission(source_dir, target_dir):
 
 def resize_segmentation(segmentation, new_shape, order=3):
     '''
-    Resizes a segmentation map. Supports all orders (see skimage documentation). Will transform segmentation map to one
-    hot encoding which is resized and transformed back to a segmentation map.
+    Resizes a segmentation map. Supports all orders (see skimage documentation). Will transform segmentation map to
+    one_hot encoding which is resized and transformed back to a segmentation map.
     This prevents interpolation artifacts ([0, 0, 2] -> [0, 1, 2])
     :param segmentation:
     :param new_shape:
@@ -194,21 +195,38 @@ def clean_raw_data(folder, folder_test, out_folder):
         splits[-1]['val'] = [
             i[:-7] for i in all_train_files if i[:10] in val_patients
         ]
-    save_pickle(splits, os.path.join(out_folder, "splits_final.pkl"))
     return splits
 
+def parse_args():
+    parser = argparse.ArgumentParser(description='Data preprocessing')
+    # params of training
+    parser.add_argument(
+        "--folder", dest="folder", help="The training data path.", default="/home/aistudio/training", type=str)
+    parser.add_argument(
+        "--folder_test", dest="folder_test", help="The test data path.", default="/home/aistudio/testing", type=str)
+    parser.add_argument(
+        "--clean_folder", dest="clean_folder", help="The output path of cleaned data path.",
+        default="data/ACDCDataset/clean_data", type=str)
+    parser.add_argument(
+        "--preprocessed_folder", dest="preprocessed_folder", help="The output path of preprocessed data path.",
+        default="data/ACDCDataset/preprocessed", type=str)
+    parser.add_argument(
+        '--use_k5',
+        dest='use_k5',
+        help='Whether to generate 5-fold cross validation txt file ',
+        action='store_true')
+    return parser.parse_args()
 
-if __name__ == "__main__":
-    folder = r"/home/aistudio/training"
-    folder_test = r"/home/aistudio/testing"
-    clean_folder = r"data/ACDCDataset/clean_data"
-    preprocessed_folder = r"data/ACDCDataset/preprocessed"
+def main(args):
+    folder =args.folder
+    folder_test =args.folder_test
+    clean_folder = args.clean_folder
+    preprocessed_folder = args.preprocessed_folder
     new_spacing = [1.52, 1.52, 6.35]
     print("start cleaning data....")
     splits = clean_raw_data(folder, folder_test, clean_folder)
     print("start preprocessing.....")
     preprocess_data(clean_folder, preprocessed_folder, new_spacing)
-    print("kfold5........")
     for i in range(len(splits)):
         txtname = [
             os.path.join(preprocessed_folder, 'train_list_{}.txt'.format(i)),
@@ -224,4 +242,10 @@ if __name__ == "__main__":
 
                 f.write("images/{}.npy labels/{}.npy\n".format(filename,
                                                                filename))
-        print("fold{} finish writing".format(i))
+        if not args.use_k5:
+            break
+
+if __name__ == '__main__':
+    args = parse_args()
+    main(args)
+

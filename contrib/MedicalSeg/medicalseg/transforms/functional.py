@@ -178,11 +178,9 @@ def augment_gaussian_noise(data_sample: np.ndarray,
         variance = None
     for c in range(data_sample.shape[0]):
         if np.random.uniform() < p_per_channel:
-            # lol good luck reading this
             variance_here = variance if variance is not None else \
                 noise_variance[0] if noise_variance[0] == noise_variance[1] else \
                     random.uniform(noise_variance[0], noise_variance[1])
-            # bug fixed: https://github.com/MIC-DKFZ/batchgenerators/issues/86
             data_sample[c] = data_sample[c] + np.random.normal(
                 0.0, variance_here, size=data_sample[c].shape)
     return data_sample
@@ -207,14 +205,14 @@ def get_range_val(value, rnd_type="uniform"):
                 orig_type = type(value[0])
                 if rnd_type == "uniform":
                     n_val = random.uniform(value[0], value[1])
-                elif rnd_type == "normal":
+                else:
                     n_val = random.normalvariate(value[0], value[1])
                 n_val = orig_type(n_val)
         elif len(value) == 1:
             n_val = value[0]
         else:
             raise RuntimeError(
-                "value must be either a single value or a list/tuple of len 2")
+                "'value' must be either a single value or a list/tuple of len 2")
         return n_val
     else:
         return value
@@ -227,8 +225,6 @@ def augment_gaussian_blur(data_sample: np.ndarray,
                           different_sigma_per_axis: bool=False,
                           p_isotropic: float=0) -> np.ndarray:
     if not per_channel:
-        # Godzilla Had a Stroke Trying to Read This and F***ing Died
-        # https://i.kym-cdn.com/entries/icons/original/000/034/623/Untitled-3.png
         sigma = get_range_val(sigma_range) if ((not different_sigma_per_axis) or
                                                ((np.random.uniform() < p_isotropic) and
                                                 different_sigma_per_axis)) \
@@ -430,7 +426,7 @@ def augment_gamma(data_sample,
 
 def augment_mirroring(sample_data, sample_seg=None, axes=(0, 1, 2)):
     if (len(sample_data.shape) != 3) and (len(sample_data.shape) != 4):
-        raise Exception(
+        raise ValueError(
             "Invalid dimension for sample_data and sample_seg. sample_data and sample_seg should be either "
             "[channels, x, y] or [channels, x, y, z]")
     if 0 in axes and np.random.uniform() < 0.5:

@@ -32,10 +32,7 @@ import paddle
 import medicalseg.transforms as T
 from medicalseg.cvlibs import manager
 from medicalseg.utils import get_sys_env, logger, get_image_list
-# from medicalseg.utils.visualize import get_pseudo_color_map
 from medicalseg.core.infer import sliding_window_inference
-# from tools import HUnorm, resample
-# from tools import Prep
 from skimage.transform import resize
 
 
@@ -336,7 +333,6 @@ class Predictor:
                 logger=logger)
 
     def _init_base_config(self):
-        "初始化基础配置"
         self.pred_cfg = PredictConfig(self.cfg.model, self.cfg.params)
         if not self.args.print_detail:
             self.pred_cfg.disable_glog_info()
@@ -351,7 +347,7 @@ class Predictor:
         self.pred_cfg.disable_gpu()
         if self.args.enable_mkldnn:
             logger.info("Use MKLDNN")
-            # cache 10 different shapes for mkldnn
+            # Cache 10 different shapes for mkldnn
             self.pred_cfg.set_mkldnn_cache_capacity(10)
             self.pred_cfg.enable_mkldnn()
         self.pred_cfg.set_cpu_math_library_num_threads(self.args.cpu_threads)
@@ -405,7 +401,6 @@ class Predictor:
         if not os.path.exists(args.save_dir):
             os.makedirs(args.save_dir)
 
-            # inference
         if args.benchmark:
             self.autolog.times.start()
         data = self._preprocess(img_path)
@@ -418,8 +413,6 @@ class Predictor:
             infer_like_model = ModelLikeInfer(input_handle, output_handle,
                                               self.predictor)
             data = paddle.to_tensor(data)
-            # if args.is_nhwd:
-            #     data = paddle.squeeze(data, axis=1)
             data = data.unsqueeze(0).unsqueeze(0)
             results = sliding_window_inference(
                 data, (14, 160, 160), 1, infer_like_model.infer_model, "NCDHW")
@@ -442,7 +435,6 @@ class Predictor:
         if args.benchmark:
             self.autolog.times.end(stamp=True)
 
-        # self._save_npy(results, imgs_path[i:i + args.batch_size])
         self.save_medical_label(results, img_path)
 
     logger.info("Finish")
@@ -455,9 +447,6 @@ class Predictor:
                                np.array(self.target_spacing)).astype(float) *
                               np.array(self.shape))).astype(int)
         data_array = resize_image(data_array, new_shape)
-        # 将数据从hwd转化为dhw
-        # import pdb
-        # pdb.set_trace()
         data_array = np.transpose(data_array, [2, 0, 1])
         mean = np.mean(data_array)
         std = np.std(data_array)
@@ -499,14 +488,14 @@ class Predictor:
 
 def main(args):
     imgs_list = get_image_list(
-        args.image_path)  # get image list from image path
+        args.image_path)  # Get image list from image path
 
-    # support autotune to collect dynamic shape, works only with trt on.
+    # Support autotune to collect dynamic shape, works only with trt on.
     if use_auto_tune(args):
         tune_img_nums = 10
         auto_tune(args, imgs_list, tune_img_nums)
 
-    # infer with paddle inference.
+    # Infer with paddle inference.
     predictor = Predictor(args)
     for filename in imgs_list:
         predictor.run(filename)
@@ -515,7 +504,7 @@ def main(args):
             os.path.exists(args.auto_tuned_shape_file):
         os.remove(args.auto_tuned_shape_file)
 
-    # test the speed.
+    # Test the speed.
     if args.benchmark:
         predictor.autolog.report()
 

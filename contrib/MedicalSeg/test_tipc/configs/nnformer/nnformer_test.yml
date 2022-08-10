@@ -19,8 +19,8 @@ model:
 
 train_dataset:
   type: ACDCDataset
-  dataset_root: /home/aistudio/PaddleSeg/contrib/MedicalSeg/test_tipc/data/mini_acdc/preprocessed
-  result_dir:  /home/aistudio/PaddleSeg/contrib/MedicalSeg/test_tipc/data/mini_acdc/preprocessed
+  dataset_root: test_tipc/data/mini_acdc/preprocessed
+  result_dir: test_tipc/data/mini_acdc/preprocessed
   transforms:
     - type: RandomRotation3D
       degrees: 15
@@ -64,13 +64,12 @@ train_dataset:
 
 val_dataset:
   type: ACDCDataset
-  dataset_root: /home/aistudio/PaddleSeg/contrib/MedicalSeg/test_tipc/data/mini_acdc/preprocessed
-  result_dir:  /home/aistudio/PaddleSeg/contrib/MedicalSeg/test_tipc/data/mini_acdc/preprocessed
+  dataset_root: test_tipc/data/mini_acdc/preprocessed
+  result_dir:  test_tipc/data/mini_acdc/preprocessed
   anno_path: val_list_0.txt
   num_classes: 4
   transforms: []
   mode: val
-  # dataset_json_path: /home/aistudio/ACDCDataset/clean_data/dataset.json
 
 optimizer:
   type: sgd
