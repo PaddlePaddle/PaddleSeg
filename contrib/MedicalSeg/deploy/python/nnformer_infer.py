@@ -504,7 +504,6 @@ def main(args):
             os.path.exists(args.auto_tuned_shape_file):
         os.remove(args.auto_tuned_shape_file)
 
-    # Test the speed.
     if args.benchmark:
         predictor.autolog.report()
 

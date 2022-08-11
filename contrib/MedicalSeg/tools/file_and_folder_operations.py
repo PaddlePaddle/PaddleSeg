@@ -99,7 +99,6 @@ def split_path(path: str) -> List[str]:
     """
     return path.split(os.sep)
 
-
 join = os.path.join
 isdir = os.path.isdir
 isfile = os.path.isfile

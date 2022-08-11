@@ -180,7 +180,6 @@ def clean_raw_data(folder, folder_test, out_folder):
 
     save_json(json_dict, os.path.join(out_folder, "dataset.json"))
 
-    # create a dummy split (patients need to be separated)
     splits = []
     patients = np.unique([i[:10] for i in all_train_files])
     patientids = [i[:-12] for i in all_train_files]
