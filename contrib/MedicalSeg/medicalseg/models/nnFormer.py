@@ -59,7 +59,7 @@ class PatchExpanding(nn.Layer):
         super().__init__()
         self.dim = dim
         self.norm = norm_layer(dim)
-        assert tag in [0,1,2],"the tag is wrong"
+        assert tag in [0, 1, 2], "Invalid `tag` value! `tag` must be 0, 1, or 2."
         if tag == 0:
             self.up = nn.Conv3DTranspose(dim, dim // 2, [1, 2, 2], [1, 2, 2])
         elif tag == 1:
@@ -975,16 +975,17 @@ class nnFormer(nn.Layer):
     Args:
         crop_size (list): The input size of image.
         embedding_dim (int): The number of embedding dimensions.
-        input_channels (int): The channel of input image.
-        num_classes (int): The segmentation classes.
-        conv_op (nn.Layer): The conv operation to do.
-        depths (list): The number of self-attention blocks each time.
-        num_heads (list): The number of heads when do multi-head attention.
-        patch_size (list): The path or url of pretrained model. Default: None.
-        window_size (list): The size of windows when do Self-attention (LV-MSA).
-        down_stride (list): The stride of each dimension of each downsampling.
-        deep_supervision (bool) :Whether we use deep_supervision. Default: True.
+        input_channels (int): The channels of input image.
+        num_classes (int): The number of classes.
+        conv_op (nn.Layer): The convolution operator to use.
+        depths (list): The number of self-attention blocks in each stage.
+        num_heads (list): The number of heads to use in multi-head attention.
+        patch_size (list): The patch_size of each patch embedding.
+        window_size (list): The size of windows when performing self-attention (LV-MSA).
+        down_stride (list): The stride in each dimension when performing downsampling.
+        deep_supervision (bool) : Whether to adopt deep supervision.
     """
+
     def __init__(self,
                  crop_size=[14, 160, 160],
                  embedding_dim=96,

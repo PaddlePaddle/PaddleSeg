@@ -212,7 +212,7 @@ def get_range_val(value, rnd_type="uniform"):
             n_val = value[0]
         else:
             raise RuntimeError(
-                "'value' must be either a single value or a list/tuple of len 2")
+                "`value` must be a list/tuple with one or two elements.")
         return n_val
     else:
         return value

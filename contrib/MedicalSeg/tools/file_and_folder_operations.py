@@ -100,14 +100,12 @@ def split_path(path: str) -> List[str]:
     return path.split(os.sep)
 
 
-
 join = os.path.join
 isdir = os.path.isdir
 isfile = os.path.isfile
 listdir = os.listdir
 makedirs = maybe_mkdir_p
 os_split_path = os.path.split
-
 
 subfolders = subdirs
 save_pickle = write_pickle

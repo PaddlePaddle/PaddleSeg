@@ -22,6 +22,7 @@ from sklearn.model_selection import KFold
 from skimage.transform import resize
 from tqdm import tqdm
 
+
 def convert_to_submission(source_dir, target_dir):
     niftis = subfiles(source_dir, join=False, suffix=".nii.gz")
     patientids = np.unique([i[:10] for i in niftis])
@@ -197,19 +198,34 @@ def clean_raw_data(folder, folder_test, out_folder):
         ]
     return splits
 
+
 def parse_args():
     parser = argparse.ArgumentParser(description='Data preprocessing')
     # params of training
     parser.add_argument(
-        "--folder", dest="folder", help="The training data path.", default="/home/aistudio/training", type=str)
+        "--folder",
+        dest="folder",
+        help="The training data path.",
+        default="/home/aistudio/training",
+        type=str)
     parser.add_argument(
-        "--folder_test", dest="folder_test", help="The test data path.", default="/home/aistudio/testing", type=str)
+        "--folder_test",
+        dest="folder_test",
+        help="The test data path.",
+        default="/home/aistudio/testing",
+        type=str)
     parser.add_argument(
-        "--clean_folder", dest="clean_folder", help="The output path of cleaned data path.",
-        default="data/ACDCDataset/clean_data", type=str)
+        "--clean_folder",
+        dest="clean_folder",
+        help="The output path of cleaned data path.",
+        default="data/ACDCDataset/clean_data",
+        type=str)
     parser.add_argument(
-        "--preprocessed_folder", dest="preprocessed_folder", help="The output path of preprocessed data path.",
-        default="data/ACDCDataset/preprocessed", type=str)
+        "--preprocessed_folder",
+        dest="preprocessed_folder",
+        help="The output path of preprocessed data path.",
+        default="data/ACDCDataset/preprocessed",
+        type=str)
     parser.add_argument(
         '--use_k5',
         dest='use_k5',
@@ -217,9 +233,10 @@ def parse_args():
         action='store_true')
     return parser.parse_args()
 
+
 def main(args):
-    folder =args.folder
-    folder_test =args.folder_test
+    folder = args.folder
+    folder_test = args.folder_test
     clean_folder = args.clean_folder
     preprocessed_folder = args.preprocessed_folder
     new_spacing = [1.52, 1.52, 6.35]
@@ -245,7 +262,7 @@ def main(args):
         if not args.use_k5:
             break
 
+
 if __name__ == '__main__':
     args = parse_args()
     main(args)
-

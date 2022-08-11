@@ -51,7 +51,7 @@ class ACDCDataset(paddle.io.Dataset):
             anno_path(str): The file name of txt file which contains annotation and image information.
             epoch_batches(int): The number of batches in one epoch.
             mode (str, optional): Which part of dataset to use. It is one of ('train', 'val'). Default: 'train'.
-            dataset_json_path (str, optional): It is useless right now.
+            dataset_json_path (str, optional): Currently, this argument is not used.
 
             Examples:
 
