@@ -57,22 +57,9 @@ def parse_args():
         'For the input image, we assume the width is bigger than the height by default.',
         action='store_true')
     parser.add_argument(
-        '--use_optic_flow',
-        dest='use_optic_flow',
-        help='Use optical flow for post-processing.',
-        action='store_true')
+        '--use_post_process', help='Use post process.', action='store_true')
     parser.add_argument(
-        '--soft_predict',
-        dest='soft_predict',
-        default=True,
-        type=eval,
-        choices=[True, False],
-        help='Whether to use predict results with transparency')
-    parser.add_argument(
-        '--add_argmax',
-        help='Perform argmax operation on the predict result.',
-        action='store_true')
-
+        '--use_optic_flow', help='Use optical flow.', action='store_true')
     parser.add_argument(
         '--test_speed',
         help='Whether to test inference speed',
