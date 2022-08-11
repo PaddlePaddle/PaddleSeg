@@ -52,7 +52,9 @@ class RMILoss(nn.Layer):
                  rmi_pool_size=3,
                  rmi_pool_stride=3,
                  loss_weight_lambda=0.5,
-                 ignore_index=255):
+                 lambda_way=1,
+                 ignore_index=255,
+                 do_rmi=True):
         super(RMILoss, self).__init__()
 
         self.num_classes = num_classes
@@ -64,12 +66,15 @@ class RMILoss(nn.Layer):
         self.rmi_pool_size = rmi_pool_size
         self.rmi_pool_stride = rmi_pool_stride
         self.weight_lambda = loss_weight_lambda
+        self.lambda_way = lambda_way
+
         self.half_d = self.rmi_radius * self.rmi_radius
         self.d = 2 * self.half_d
         self.kernel_padding = self.rmi_pool_size // 2
         self.ignore_index = ignore_index
+        self.do_rmi = do_rmi
 
-    def forward(self, logits_4D, labels_4D, do_rmi=True):
+    def forward(self, logits_4D, labels_4D):
         """
         Forward computation.
         Args:
@@ -79,7 +84,7 @@ class RMILoss(nn.Layer):
         logits_4D = paddle.cast(logits_4D, dtype='float32')
         labels_4D = paddle.cast(labels_4D, dtype='float32')
 
-        loss = self.forward_sigmoid(logits_4D, labels_4D, do_rmi=do_rmi)
+        loss = self.forward_sigmoid(logits_4D, labels_4D, do_rmi=self.do_rmi)
         return loss
 
     def forward_sigmoid(self, logits_4D, labels_4D, do_rmi=False):
@@ -98,12 +103,31 @@ class RMILoss(nn.Layer):
                         label_mask_3D, dtype='int64'),
                 num_classes=self.num_classes),
             dtype='float32')
-        # label_mask_flat = paddle.cast(
-        #     paddle.reshape(label_mask_3D, [-1]), dtype='float32')
+        label_mask_flat = paddle.cast(
+            paddle.reshape(label_mask_3D, [-1]), dtype='float32')
 
         valid_onehot_labels_4D = valid_onehot_labels_4D * paddle.unsqueeze(
             label_mask_3D, axis=3)
         valid_onehot_labels_4D.stop_gradient = True
+
+        #part one
+        valid_onehot_label_flat = \
+            paddle.reshape(valid_onehot_labels_4D,[-1,self.num_classes])
+        valid_onehot_label_flat.stop_gradient = True
+        logits_flat = paddle.reshape(
+            paddle.transpose(logits_4D, [0, 2, 3, 1]), [-1, self.num_classes])
+        valid_pixels = paddle.sum(label_mask_flat)
+        binary_loss = F.binary_cross_entropy_with_logits(
+            logits_flat,
+            label=valid_onehot_label_flat,
+            weight=paddle.unsqueeze(
+                label_mask_flat, axis=1),
+            reduction='sum')
+        bce_loss = paddle.divide(binary_loss, valid_pixels + 1.0)
+        if not do_rmi:
+            return bce_loss
+
+        #part two
         probs_4D = F.sigmoid(logits_4D) * paddle.unsqueeze(
             label_mask_3D, axis=1) + _CLIP_MIN
 
@@ -111,8 +135,13 @@ class RMILoss(nn.Layer):
                                                   [0, 3, 1, 2])
         valid_onehot_labels_4D.stop_gradient = True
         rmi_loss = self.rmi_lower_bound(valid_onehot_labels_4D, probs_4D)
+        if self.lambda_way:
+            final_loss = self.weight_lambda * bce_loss + rmi_loss * (
+                1 - self.weight_lambda)
+        else:
+            final_loss = bce_loss + rmi_loss * self.weight_lambda
 
-        return rmi_loss
+        return final_loss
 
     def inverse(self, x):
         return paddle.inverse(x)
