@@ -59,7 +59,8 @@ class PatchExpanding(nn.Layer):
         super().__init__()
         self.dim = dim
         self.norm = norm_layer(dim)
-        assert tag in [0, 1, 2], "Invalid `tag` value! `tag` must be 0, 1, or 2."
+        assert tag in [0, 1, 2
+                       ], "Invalid `tag` value! `tag` must be 0, 1, or 2."
         if tag == 0:
             self.up = nn.Conv3DTranspose(dim, dim // 2, [1, 2, 2], [1, 2, 2])
         elif tag == 1:
