@@ -95,7 +95,7 @@ def pardir(path: str):
 
 def split_path(path: str) -> List[str]:
     """
-    Splits at each separator. This is different from os.path.split which only splits at last separator
+    Splits at each separator. This is different from os.path.split which only splits at last separator.
     """
     return path.split(os.sep)
 

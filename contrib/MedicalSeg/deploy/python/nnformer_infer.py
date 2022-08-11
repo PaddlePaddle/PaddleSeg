@@ -111,7 +111,7 @@ def parse_args():
         '--device',
         choices=['cpu', 'gpu'],
         default="gpu",
-        help="Select which device to inference, defaults to gpu.")
+        help="Select which device to perform inference, defaults to gpu.")
 
     parser.add_argument(
         '--use_trt',
@@ -180,7 +180,7 @@ def parse_args():
         '--use_swl',
         default=False,
         type=eval,
-        help='use sliding_window_inference')
+        help='Use sliding window inference.')
 
     parser.add_argument('--use_warmup', default=True, type=eval, help='warmup')
 
@@ -232,11 +232,11 @@ class DeployConfig:
 def auto_tune(args, imgs, img_nums):
     """
     Use images to auto tune the dynamic shape for trt sub graph.
-    The tuned shape saved in args.auto_tuned_shape_file.
+    The tuned shape will be saved in args.auto_tuned_shape_file.
     Args:
         args(dict): input args.
         imgs(str, list[str]): the path for images.
-        img_nums(int): the nums of images used for auto tune.
+        img_nums(int): the number of images used for auto tune.
     Returns:
         None
     """
@@ -267,14 +267,13 @@ def auto_tune(args, imgs, img_nums):
             predictor.run()
         except:
             logger.info(
-                "Auto tune fail. Usually, the error is out of GPU memory, "
-                "because the model and image is too large. \n")
+                "Auto tune failed. Usually this is caused by an OOM error on GPUs. Please check if the model or image is too large.. \n")
             del predictor
             if os.path.exists(args.auto_tuned_shape_file):
                 os.remove(args.auto_tuned_shape_file)
             return
 
-    logger.info("Auto tune success.\n")
+    logger.info("Auto tune succeeded.\n")
 
 
 class ModelLikeInfer:
@@ -298,7 +297,7 @@ class Predictor:
     def __init__(self, args):
         """
         Prepare for prediction.
-        The usage and docs of paddle inference, please refer to
+        For usage and docs of paddle inference, please refer to
         https://paddleinference.paddlepaddle.org.cn/product_introduction/summary.html
         """
         self.args = args

@@ -185,7 +185,7 @@ def clean_raw_data(folder, folder_test, out_folder):
     patients = np.unique([i[:10] for i in all_train_files])
     patientids = [i[:-12] for i in all_train_files]
 
-    kf = KFold(5, True, 12345)
+    kf = KFold(5, shuffle=True, random_state=12345)
     for tr, val in kf.split(patients):
         splits.append(OrderedDict())
         tr_patients = patients[tr]
