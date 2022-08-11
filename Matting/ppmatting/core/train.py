@@ -330,12 +330,14 @@ def train(model,
                     show_list = []
                     for key, value in best_metrics_data.items():
                         show_list.append((key, value))
-                    log_str = '[EVAL] The model with the best validation {} ({:.4f}) was saved at iter {}. while'.format(
+                    log_str = '[EVAL] The model with the best validation {} ({:.4f}) was saved at iter {}.'.format(
                         show_list[0][0], show_list[0][1], best_iter)
-                    for i in range(1, len(show_list)):
-                        log_str = log_str + ' {}: {:.4f},'.format(
-                            show_list[i][0], show_list[i][1])
-                    log_str = log_str[:-1]
+                    if len(show_list) > 1:
+                        log_str += " While"
+                        for i in range(1, len(show_list)):
+                            log_str = log_str + ' {}: {:.4f},'.format(
+                                show_list[i][0], show_list[i][1])
+                        log_str = log_str[:-1]
                     logger.info(log_str)
 
                     if use_vdl:
