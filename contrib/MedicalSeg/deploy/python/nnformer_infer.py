@@ -267,7 +267,7 @@ def auto_tune(args, imgs, img_nums):
             predictor.run()
         except:
             logger.info(
-                "Auto tune failed. Usually this is caused by an OOM error on GPUs. Please check if the model or image is too large.. \n"
+                "Auto tune failed. Usually this is caused by an OOM error on GPUs. Please check if the model or image is too large. \n"
             )
             del predictor
             if os.path.exists(args.auto_tuned_shape_file):
