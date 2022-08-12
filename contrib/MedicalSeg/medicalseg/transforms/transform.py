@@ -50,7 +50,7 @@ class Compose:
         Args:
             im (str|np.ndarray): It is either image path or image object.
             label (str|np.ndarray): It is either label path or label ndarray.
-            isnhwd:data format。
+            isnhwd: Data format。
 
         Returns:
             (tuple). A tuple including image, image info, and label after transformation.
@@ -62,7 +62,7 @@ class Compose:
         if isinstance(label, str):
             label = np.load(label)
         if im is None:
-            raise ValueError('Can\'t read The image file {}!'.format(im))
+            raise ValueError('Cannot read the image file {}!'.format(im))
 
         for op in self.transforms:
             outputs = op(im, label)
@@ -72,7 +72,7 @@ class Compose:
         if self.isnhwd:
             im = np.expand_dims(im, axis=0)
 
-        if (not self.use_std) and (self.im.max() > 0):
+        if (not self.use_std) and im.max() > 0:
             im = im / im.max()
         else:
             if std > 0:
