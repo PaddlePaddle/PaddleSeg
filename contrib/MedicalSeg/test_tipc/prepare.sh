@@ -21,7 +21,7 @@ trainer_list=$(func_parser_value "${lines[14]}")
 # MODE be one of ['lite_train_lite_infer']
 if [ ${MODE} == "lite_train_lite_infer" ]
 then
-  if [ "${model_name:0:${#model_name}-1}" == "nnFormer" ]
+  if [ "${model_name}" == "nnFormer" ]
   then
     echo "nnFormer"
     mkdir -p ./test_tipc/data
