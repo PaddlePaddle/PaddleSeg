@@ -1762,7 +1762,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
                 progress.setWindowModality(Qt.WindowModal)
                 progress.setRange(0, self.video.num_frames)
 
-                videoname = savePath + ".mp4"
+                videoname = savePath + "_overlay.mp4"
                 fourcc = cv2.VideoWriter_fourcc(*'mp4v')
                 h, w = self.video_masks[0].shape
                 videoWrite = cv2.VideoWriter(videoname, fourcc, self.fps, (w, h))
