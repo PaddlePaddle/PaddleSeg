@@ -13,7 +13,7 @@
 # limitations under the License.
 
 # Todo: Add transform components here
-
+from typing import List, Tuple, Union, Callable
 import math
 import random
 import numpy as np
@@ -38,11 +38,12 @@ class Compose:
         ValueError: when the length of 'transforms' is less than 1.
     """
 
-    def __init__(self, transforms, isnhwd=True):
+    def __init__(self, transforms, isnhwd=True, use_std=False):
         if not isinstance(transforms, list):
             raise TypeError('The transforms must be a list!')
         self.transforms = transforms
         self.isnhwd = isnhwd
+        self.use_std = use_std
 
     def __call__(self, im, label=None, isnhwd=True):
         """
@@ -56,6 +57,8 @@ class Compose:
         """
         if isinstance(im, str):
             im = np.load(im)
+            mean = np.mean(im)
+            std = np.std(im)
         if isinstance(label, str):
             label = np.load(label)
         if im is None:
@@ -69,8 +72,13 @@ class Compose:
         if self.isnhwd:
             im = np.expand_dims(im, axis=0)
 
-        if im.max() > 0:
+        if (not self.use_std) and (self.im.max() > 0):
             im = im / im.max()
+        else:
+            if std > 0:
+                im = (im - mean) / std
+            else:
+                im = (im - mean) / (std + 1e-8)
 
         return (im, label)
 
@@ -573,4 +581,314 @@ class RandomCrop4D:
         if label is not None:
             label = F.crop_3d(label, i, j, k, d, h, w)
 
+        return img, label
+
+
+@manager.TRANSFORMS.add_component
+class GaussianNoiseTransform:
+    def __init__(self,
+                 noise_variance=(0, 0.1),
+                 p_per_sample=1,
+                 p_per_channel: float=1,
+                 per_channel: bool=False,
+                 data_key="data"):
+        self.p_per_sample = p_per_sample
+        self.data_key = data_key
+        self.noise_variance = noise_variance
+        self.p_per_channel = p_per_channel
+        self.per_channel = per_channel
+
+    def __call__(self, img, label=None):
+        if np.random.uniform() < self.p_per_sample:
+            img = F.augment_gaussian_noise(img, self.noise_variance,
+                                           self.p_per_channel, self.per_channel)
+        return img, label
+
+
+@manager.TRANSFORMS.add_component
+class GaussianBlurTransform:
+    def __init__(self,
+                 blur_sigma: Tuple[float, float]=(1, 5),
+                 different_sigma_per_channel: bool=True,
+                 different_sigma_per_axis: bool=False,
+                 p_isotropic: float=0,
+                 p_per_channel: float=1,
+                 p_per_sample: float=1,
+                 data_key: str="data"):
+        self.p_per_sample = p_per_sample
+        self.different_sigma_per_channel = different_sigma_per_channel
+        self.p_per_channel = p_per_channel
+        self.data_key = data_key
+        self.blur_sigma = blur_sigma
+        self.different_sigma_per_axis = different_sigma_per_axis
+        self.p_isotropic = p_isotropic
+
+    def __call__(self, img, label=None):
+
+        if np.random.uniform() < self.p_per_sample:
+            img = F.augment_gaussian_blur(
+                img,
+                self.blur_sigma,
+                self.different_sigma_per_channel,
+                self.p_per_channel,
+                different_sigma_per_axis=self.different_sigma_per_axis,
+                p_isotropic=self.p_isotropic)
+        return img, label
+
+
+@manager.TRANSFORMS.add_component
+class BrightnessMultiplicativeTransform:
+    def __init__(self,
+                 multiplier_range=(0.5, 2),
+                 per_channel=True,
+                 data_key="data",
+                 p_per_sample=1):
+        self.p_per_sample = p_per_sample
+        self.data_key = data_key
+        self.multiplier_range = multiplier_range
+        self.per_channel = per_channel
+
+    def __call__(self, img, label=None):
+
+        if np.random.uniform() < self.p_per_sample:
+            img = F.augment_brightness_multiplicative(
+                img, self.multiplier_range, self.per_channel)
+        return img, label
+
+
+@manager.TRANSFORMS.add_component
+class ContrastAugmentationTransform:
+    def __init__(
+            self,
+            contrast_range: Union[Tuple[float, float], Callable[[], float]]=(
+                0.75, 1.25),
+            preserve_range: bool=True,
+            per_channel: bool=True,
+            data_key: str="data",
+            p_per_sample: float=1,
+            p_per_channel: float=1):
+        self.p_per_sample = p_per_sample
+        self.data_key = data_key
+        self.contrast_range = contrast_range
+        self.preserve_range = preserve_range
+        self.per_channel = per_channel
+        self.p_per_channel = p_per_channel
+
+    def __call__(self, img, label=None):
+
+        if np.random.uniform() < self.p_per_sample:
+            img = F.augment_contrast(
+                img,
+                contrast_range=self.contrast_range,
+                preserve_range=self.preserve_range,
+                per_channel=self.per_channel,
+                p_per_channel=self.p_per_channel)
+        return img, label
+
+
+@manager.TRANSFORMS.add_component
+class SimulateLowResolutionTransform:
+    def __init__(self,
+                 zoom_range=(0.5, 1),
+                 per_channel=False,
+                 p_per_channel=1,
+                 channels=None,
+                 order_downsample=1,
+                 order_upsample=0,
+                 data_key="data",
+                 p_per_sample=1,
+                 ignore_axes=None):
+        self.order_upsample = order_upsample
+        self.order_downsample = order_downsample
+        self.channels = channels
+        self.per_channel = per_channel
+        self.p_per_channel = p_per_channel
+        self.p_per_sample = p_per_sample
+        self.data_key = data_key
+        self.zoom_range = zoom_range
+        self.ignore_axes = ignore_axes
+
+    def __call__(self, img, label=None):
+        if np.random.uniform() < self.p_per_sample:
+            img = F.augment_linear_downsampling_scipy(
+                img,
+                zoom_range=self.zoom_range,
+                per_channel=self.per_channel,
+                p_per_channel=self.p_per_channel,
+                channels=self.channels,
+                order_downsample=self.order_downsample,
+                order_upsample=self.order_upsample,
+                ignore_axes=self.ignore_axes)
+        return img, label
+
+
+@manager.TRANSFORMS.add_component
+class GammaTransform:
+    def __init__(self,
+                 gamma_range=(0.5, 2),
+                 invert_image=False,
+                 per_channel=False,
+                 data_key="data",
+                 retain_stats: Union[bool, Callable[[], bool]]=False,
+                 p_per_sample=1):
+        self.p_per_sample = p_per_sample
+        self.retain_stats = retain_stats
+        self.per_channel = per_channel
+        self.data_key = data_key
+        self.gamma_range = gamma_range
+        self.invert_image = invert_image
+
+    def __call__(self, img, label=None):
+
+        if np.random.uniform() < self.p_per_sample:
+            img = F.augment_gamma(
+                img,
+                self.gamma_range,
+                self.invert_image,
+                per_channel=self.per_channel,
+                retain_stats=self.retain_stats)
+        return img, label
+
+
+@manager.TRANSFORMS.add_component
+class MirrorTransform:
+    def __init__(self,
+                 axes=(0, 1, 2),
+                 data_key="data",
+                 label_key="seg",
+                 p_per_sample=1):
+        self.p_per_sample = p_per_sample
+        self.data_key = data_key
+        self.label_key = label_key
+        self.axes = axes
+        if max(axes) > 2:
+            raise ValueError(
+                "MirrorTransform now takes the axes as the spatial dimensions. What previously was "
+                "axes=(2, 3, 4) to mirror along all spatial dimensions of a 5d tensor (b, c, x, y, z) "
+                "is now axes=(0, 1, 2). Please adapt your scripts accordingly.")
+
+    def __call__(self, img, label=None):
+        if np.random.uniform() < self.p_per_sample:
+            sample_seg = None
+            if label is not None:
+                sample_seg = label
+            ret_val = F.augment_mirroring(img, label, axes=self.axes)
+            img = ret_val[0]
+            if label is not None:
+                label = ret_val[1]
+
+        return img, label
+
+
+@manager.TRANSFORMS.add_component
+class ResizeRangeScaling:
+    """
+    Resize the long side of an image into a range, and then scale the other side proportionally.
+
+    Args:
+        min_value (int, optional): The minimum value of long side after resize. Default: 400.
+        max_value (int, optional): The maximum value of long side after resize. Default: 600.
+    """
+
+    def __init__(self,
+                 min_scale_factor=0.85,
+                 max_scale_factor=1.25,
+                 interpolation=3,
+                 p_per_sample=1):
+        self.min_scale_factor = min_scale_factor
+        self.max_scale_factor = max_scale_factor
+        self.p_per_sample = p_per_sample
+        self.interpolation = interpolation
+
+    def __call__(self, img, label=None):
+        scale_factor = 1
+        if np.random.uniform() < self.p_per_sample:
+            scale_factor = np.random.uniform(self.min_scale_factor,
+                                             self.max_scale_factor)
+        d, w, h = img.shape
+        new_d = d * scale_factor
+        new_w = w * scale_factor
+        new_h = h * scale_factor
+        img = F.resize_3d(img, [new_d, new_w, new_h], self.interpolation)
+        if label is not None:
+            label = F.resize_3d(label, [new_d, new_w, new_h], 0)
+
+        return img, label
+
+
+@manager.TRANSFORMS.add_component
+class RandomPaddingCrop:
+    """
+    Crop a sub-image from a raw image and annotation image randomly. If the target cropping size
+    is larger than original image, then the bottom-right padding will be added.
+
+    Args:
+        crop_size (tuple, optional): The target cropping size. Default: (512, 512).
+        im_padding_value (list, optional): The padding value of raw image.
+            Default: [127.5, 127.5, 127.5].
+        label_padding_value (int, optional): The padding value of annotation image. Default: 255.
+
+    Raises:
+        TypeError: When crop_size is neither list nor tuple.
+        ValueError: When the length of crop_size is not 2.
+    """
+
+    def __init__(self,
+                 crop_size=(512, 512, 512),
+                 im_padding_value=0,
+                 label_padding_value=0):
+        if isinstance(crop_size, list) or isinstance(crop_size, tuple):
+            if len(crop_size) != 3:
+                raise ValueError(
+                    'Type of `crop_size` is list or tuple. It should include 3 elements, but it is {}'
+                    .format(crop_size))
+        else:
+            raise TypeError(
+                "The type of `crop_size` is invalid. It should be list or tuple, but it is {}"
+                .format(type(crop_size)))
+        self.crop_size = crop_size
+        self.im_padding_value = im_padding_value
+        self.label_padding_value = label_padding_value
+
+    def __call__(self, img, label=None):
+
+        if isinstance(self.crop_size, int):
+            crop_depth = self.crop_size
+            crop_width = self.crop_size
+            crop_height = self.crop_size
+        else:
+            crop_depth = self.crop_size[0]
+            crop_width = self.crop_size[1]
+            crop_height = self.crop_size[2]
+
+        img_depth = img.shape[0]
+        img_height = img.shape[1]
+        img_width = img.shape[2]
+
+        if img_height == crop_height and img_width == crop_width and img_depth == crop_depth:
+            return img, label
+        else:
+            pad_depth = max(crop_depth - img_depth, 0)
+            pad_height = max(crop_height - img_height, 0)
+            pad_width = max(crop_width - img_width, 0)
+            if (pad_height > 0 or pad_width > 0 or pad_depth > 0):
+                img = np.pad(img, ((0, pad_depth), (0, pad_height),
+                                   (0, pad_width)))
+                if label is not None:
+                    label = np.pad(label, ((0, pad_depth), (0, pad_height),
+                                           (0, pad_width)))
+
+                img_depth = img.shape[0]
+                img_height = img.shape[1]
+                img_width = img.shape[2]
+
+            if crop_depth > 0 and crop_height > 0 and crop_width > 0:
+                d_off = np.random.randint(img_depth - crop_depth + 1)
+                h_off = np.random.randint(img_height - crop_height + 1)
+                w_off = np.random.randint(img_width - crop_width + 1)
+                img = img[d_off:(d_off + crop_depth), h_off:(
+                    crop_height + h_off), w_off:(w_off + crop_width)]
+                if label is not None:
+                    label = label[d_off:(d_off + crop_depth), h_off:(
+                        crop_height + h_off), w_off:(w_off + crop_width)]
         return img, label
