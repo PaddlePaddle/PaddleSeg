@@ -37,8 +37,10 @@ val_dataset:
   mode: val
 
 model:
-    type: PSANet
+    type: mscale_OCRNet
     num_classes: 19
+    backbone: 
+      type: HRNETV2_PSA
     pretrained: pretrained/pretrained.pdparams
 
 optimizer:
