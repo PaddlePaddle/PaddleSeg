@@ -144,6 +144,12 @@ def parse_args():
         help='The option of train profiler. If profiler_options is not None, the train ' \
             'profiler is enabled. Refer to the paddleseg/utils/train_profiler.py for details.'
     )
+    parser.add_argument(
+        '--repeats',
+        type=int,
+        default=1,
+        help="Repeat the samples in the dataset for `repeats` times in each epoch."
+    )
 
     return parser.parse_args()
 
@@ -181,6 +187,9 @@ def main(args):
         raise ValueError(
             'The length of train_dataset is 0. Please check if your dataset is valid'
         )
+
+    if args.repeats > 1:
+        train_dataset.fg_bg_list *= args.repeats
 
     val_dataset = cfg.val_dataset if args.do_eval else None
 
