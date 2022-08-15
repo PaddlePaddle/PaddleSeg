@@ -140,6 +140,8 @@ for params in ${extra_args[*]}; do
         log_iters="${value}"
     elif [ "${key}" = "set_cv_threads" ]; then
         set_cv_threads="${value}"
+    elif [ "${key}" = "repeats" ]; then
+        repeats="${value}"
     fi
 done
 
@@ -371,8 +373,8 @@ else
                     cmd="${cmd} --log_iters ${log_iters}"
                 fi
 
-                if [ -n "${amp_level}" ];then
-                    cmd="${cmd} --amp_level ${amp_level}"
+                if [ "${MODE}" = 'benchmark_train' ] && [ -n "${repeats}" ];then
+                    cmd="${cmd} --repeats ${repeats}"
                 fi
 
                 if [ -n "${set_cv_threads}" ] && [ "${set_cv_threads}" = "true" ];then
@@ -384,6 +386,10 @@ else
                     sed -i '1s/^/import cv2; cv2.setNumThreads(1)\n/' ${train_script_copy}
                     # Use a global replace!
                     cmd="${cmd/${train_script}/${train_script_copy}}"
+                fi
+
+                if [ -n "${amp_level}" ];then
+                    cmd="${cmd} --amp_level ${amp_level}"
                 fi
 
                 echo "$cmd"
@@ -398,7 +404,7 @@ else
                 if [ -n "${set_cv_threads}" ] && [ "${set_cv_threads}" = "true" ];then
                     rm ${train_script_copy}
                 fi
-
+                
                 # modify model dir if no eval
                 if [ ! -f "${save_log}/${train_model_name}" ]; then
                     train_model_name="iter_${epoch_num}/model.pdparams"

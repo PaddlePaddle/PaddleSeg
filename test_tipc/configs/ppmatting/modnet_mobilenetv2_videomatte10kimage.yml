@@ -3,31 +3,27 @@ iters: 100000
 
 train_dataset:
   type: MattingDataset
-  dataset_root: test_tipc/data/PPM-100
-  train_file: train.txt
+  dataset_root: test_tipc/data/videomatte10kimage
+  train_file: VideoMatte10KImage_train.txt
   transforms:
     - type: LoadImages
-    - type: RandomCrop
-      crop_size: [512, 512]
     - type: RandomDistort
     - type: RandomBlur
     - type: RandomHorizontalFlip
     - type: Normalize
   mode: train
+  separator: '|'
 
 val_dataset:
   type: MattingDataset
-  dataset_root: test_tipc/data/PPM-100
-  val_file: val.txt
+  dataset_root: test_tipc/data/videomatte10kimage
+  val_file: VideoMatte10KImage_val.txt
   transforms:
     - type: LoadImages
-    - type: ResizeByShort
-      short_size: 512
-    - type: ResizeToIntMult
-      mult_int: 32
     - type: Normalize
   mode: val
   get_trimap: False
+  separator: '|'
 
 model:
   type: MODNet
