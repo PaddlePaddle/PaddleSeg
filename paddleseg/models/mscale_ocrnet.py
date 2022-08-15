@@ -230,9 +230,9 @@ class OCRHead(nn.Layer):
 
 
 @manager.MODELS.add_component
-class mscale_OCRNet(nn.Layer):
+class MscaleOCRNet(nn.Layer):
     """
-    The mscale_OCRNet implementation based on PaddlePaddle.
+    The MscaleOCRNet implementation based on PaddlePaddle.
 
     The original article refers to
     Huajun Liu, Fuqiang Liu et al. "Polarized Self-Attention"
