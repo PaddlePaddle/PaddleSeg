@@ -25,7 +25,7 @@ model_urls = {
     "portrait_pp_humansegv1_lite_398x224_inference_model_with_softmax":
     "https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/portrait_pp_humansegv1_lite_398x224_inference_model_with_softmax.zip",
     "portrait_pp_humansegv2_lite_256x144_inference_model_with_softmax":
-    "https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/portrait_pp_humansegv2_lite_256x144_inference_model_with_softmax.zip",
+    "https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/portrait_pp_humansegv2_lite_256x144_smaller/portrait_pp_humansegv2_lite_256x144_inference_model_with_softmax.zip",
     "human_pp_humansegv1_lite_192x192_inference_model_with_softmax":
     "https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/human_pp_humansegv1_lite_192x192_inference_model_with_softmax.zip",
     "human_pp_humansegv2_lite_192x192_inference_model_with_softmax":
