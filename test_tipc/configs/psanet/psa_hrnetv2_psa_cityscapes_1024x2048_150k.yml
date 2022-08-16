@@ -37,7 +37,7 @@ val_dataset:
   mode: val
 
 model:
-    type: mscale_OCRNet
+    type: MscaleOCRNet
     num_classes: 19
     backbone: 
       type: HRNETV2_PSA
