@@ -93,5 +93,5 @@ If you find our project useful in your research, please consider citing ：
 * If you have any problem or suggestion on EISeg, please send us issues through [GitHub Issues](https://github.com/PaddlePaddle/PaddleSeg/issues).
 * Welcome to Join EISeg WeChat Group
 <div align="center">
-<img src="https://user-images.githubusercontent.com/35907364/179692813-cd8e6e16-549b-4dba-b6ec-b001162fabf7.png"  width = "200" />  
+<img src="https://user-images.githubusercontent.com/35907364/184841582-84a3c12d-0b50-48cc-9762-11fdd56b59eb.jpg"  width = "200" />  
 </div>
