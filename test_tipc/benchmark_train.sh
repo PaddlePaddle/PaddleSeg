@@ -134,6 +134,8 @@ for params in ${extra_args[*]}; do
     value=${arr[1]}
     if [ "${key}" = 'skip_iters' ]; then
         skip_iters="${value}"
+    elif [ "${key}" = 'task' ]; then
+        task="${value}"
     fi
 done
 
@@ -208,11 +210,11 @@ for batch_size in ${batch_size_list[*]}; do
                 eval "cat ${log_path}/${log_name}"
 
                 # [Bobholamovic] For matting tasks, modify the training log to fit the input of analysis.py.
-                if [ "${model_name}" = 'ppmatting' ]; then
+                if [ "${task}" = 'mat' ]; then
                     sed -i 's/=/: /g' ${log_path}/${log_name}
                 fi
 
-                if [ -n ${skip_iters} ]; then
+                if [ -n "${skip_iters}" ]; then
                     filtered_log_name=${log_name}_filtered
                     cmd="${python} test_tipc/filter_log.py \
                             --in_log_path '${log_path}/${log_name}' \
