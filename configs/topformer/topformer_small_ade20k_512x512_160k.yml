@@ -1,0 +1,23 @@
+_base_: '../_base_/ade20k.yml'
+
+batch_size: 4  # total is 16
+iters: 160000
+
+optimizer:
+  weight_decay: 5.0e-4
+
+lr_scheduler:
+  warmup_iters: 1000
+  warmup_start_lr: 1.0e-5
+  learning_rate: 0.01
+
+loss:
+  types:
+    - type: CrossEntropyLoss
+  coef: [1]
+
+model:
+  type: TopFormer
+  backbone:
+    type: TopTransformer_Small
+    pretrained: pretrained_model/topformer_small.pdparams

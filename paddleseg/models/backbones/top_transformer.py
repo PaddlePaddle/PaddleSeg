@@ -403,7 +403,7 @@ class FuseBlockMulti(nn.Layer):
 
 class TopTransformer(nn.Layer):
     """
-    The Token Pyramid Transformer(TopFormer) implementation based on PaddlePaddle.
+    The TopFormer backbone implementation based on PaddlePaddle.
 
     The original article refers to
     Zhang, Wenqiang, Zilong Huang, Guozhong Luo, Tao Chen, Xinggang Wang, Wenyu Liu, Gang Yu,
@@ -413,19 +413,17 @@ class TopTransformer(nn.Layer):
 
     Args:
         cfgs (List): The config of backbone.
-        input_channels (List): The input channels.
         out_channels (List): The output channels.
-        embed_out_indice (List): xxxxxx 
+        out_indices (List): xxxxxx 
         .... (todo)
         pretrained (str, optional): The path or url of pretrained model. Default: None
     """
 
     def __init__(self,
                  cfgs,
-                 input_channels,
-                 out_channels,
-                 embed_out_indice,
-                 decode_out_indices=[1, 2, 3],
+                 encoder_out_indices,
+                 injection_out_channels,
+                 trans_out_indices=[1, 2, 3],
                  depth=4,
                  key_dim=16,
                  num_heads=8,
@@ -440,16 +438,19 @@ class TopTransformer(nn.Layer):
                  pretrained=None):
         super().__init__()
 
-        self.input_channels = input_channels
+        self.feat_channels = [
+            c[2] for i, c in enumerate(cfgs) if i in encoder_out_indices
+        ]
+        self.injection_out_channels = injection_out_channels
+        self.trans_out_indices = trans_out_indices
         self.injection = injection
-        self.embed_dim = sum(self.input_channels)
-        self.decode_out_indices = decode_out_indices
 
-        self.tpm = TokenPyramidModule(cfgs=cfgs, out_indices=embed_out_indice)
+        self.tpm = TokenPyramidModule(
+            cfgs=cfgs, out_indices=encoder_out_indices)
         self.ppa = PyramidPoolAgg(stride=c2t_stride)
 
         self.trans = Transformer(
-            embed_dim=self.embed_dim,
+            embed_dim=sum(self.feat_channels),
             key_dim=key_dim,
             num_heads=num_heads,
             depth=depth,
@@ -468,9 +469,10 @@ class TopTransformer(nn.Layer):
         }
         sim_block = sim_block_dict[injection_type]
         if self.injection:
-            for idx, (channel, out_channel
-                      ) in enumerate(zip(self.input_channels, out_channels)):
-                if idx in self.decode_out_indices:
+            for idx, (
+                    channel, out_channel
+            ) in enumerate(zip(self.feat_channels, injection_out_channels)):
+                if idx in self.trans_out_indices:
                     self.sim.append(sim_block(channel, out_channel))
                 else:
                     self.sim.append(Identity())
@@ -489,10 +491,10 @@ class TopTransformer(nn.Layer):
 
         if self.injection:
             xx = out.split(
-                self.input_channels, axis=1)  # self.input_channels is a list
+                self.feat_channels, axis=1)  # self.feat_channels is a list
             results = []
-            for i in range(len(self.input_channels)):
-                if i in self.decode_out_indices:
+            for i in range(len(self.feat_channels)):
+                if i in self.trans_out_indices:
                     local_tokens = outputs[i]
                     global_semantics = xx[i]
                     out_ = self.sim[i](local_tokens, global_semantics)
@@ -521,10 +523,9 @@ def TopTransformer_Base(**kwargs):
 
     model = TopTransformer(
         cfgs=cfgs,
-        input_channels=[32, 64, 128, 160],
-        out_channels=[None, 256, 256, 256],
-        embed_out_indice=[2, 4, 6, 9],
-        decode_out_indices=[1, 2, 3],
+        injection_out_channels=[None, 256, 256, 256],
+        encoder_out_indices=[2, 4, 6, 9],
+        trans_out_indices=[1, 2, 3],
         depth=4,
         key_dim=16,
         num_heads=8,
@@ -558,10 +559,9 @@ def TopTransformer_Small(**kwargs):
 
     model = TopTransformer(
         cfgs=cfgs,
-        input_channels=[24, 48, 96, 128],
-        out_channels=[None, 192, 192, 192],
-        embed_out_indice=[2, 4, 6, 9],
-        decode_out_indices=[1, 2, 3],
+        injection_out_channels=[None, 192, 192, 192],
+        encoder_out_indices=[2, 4, 6, 9],
+        trans_out_indices=[1, 2, 3],
         depth=4,
         key_dim=16,
         num_heads=6,
@@ -594,10 +594,9 @@ def TopTransformer_Tiny(**kwargs):
 
     model = TopTransformer(
         cfgs=cfgs,
-        input_channels=[16, 32, 64, 96],
-        out_channels=[None, 128, 128, 128],
-        embed_out_indice=[2, 4, 6, 8],
-        decode_out_indices=[1, 2, 3],
+        injection_out_channels=[None, 128, 128, 128],
+        encoder_out_indices=[2, 4, 6, 8],
+        trans_out_indices=[1, 2, 3],
         depth=4,
         key_dim=16,
         num_heads=4,
