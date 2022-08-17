@@ -140,6 +140,8 @@ for params in ${extra_args[*]}; do
         log_iters="${value}"
     elif [ "${key}" = "set_cv_threads" ]; then
         set_cv_threads="${value}"
+    elif [ "${key}" = "repeats" ]; then
+        repeats="${value}"
     fi
 done
 
@@ -373,8 +375,8 @@ else
                     cmd="${cmd} --log_iters ${log_iters}"
                 fi
 
-                if [ -n "${amp_level}" ];then
-                    cmd="${cmd} --amp_level ${amp_level}"
+                if [ "${MODE}" = 'benchmark_train' ] && [ -n "${repeats}" ];then
+                    cmd="${cmd} --repeats ${repeats}"
                 fi
 
                 if [ -n "${set_cv_threads}" ] && [ "${set_cv_threads}" = "true" ];then
@@ -388,10 +390,19 @@ else
                     cmd="${cmd/${train_script}/${train_script_copy}}"
                 fi
 
+                if [ -n "${amp_level}" ];then
+                    cmd="${cmd} --amp_level ${amp_level}"
+                fi
+
                 echo "$cmd"
                 # run train
+<<<<<<< HEAD
                 eval $cmd | tee "${log_path}"
                 status_check $? "${cmd}" "${status_log}" "${model_name}" "${log_path}"
+=======
+                run_command "${cmd}" "${log_path}"
+                status_check $? "${cmd}" "${status_log}" "${model_name}"
+>>>>>>> develop
 
                 if [[ "$cmd" == *'paddle.distributed.launch'* ]]; then
                     cat log/workerlog.0 >> ${log_path} 
@@ -400,7 +411,7 @@ else
                 if [ -n "${set_cv_threads}" ] && [ "${set_cv_threads}" = "true" ];then
                     rm ${train_script_copy}
                 fi
-
+                
                 # modify model dir if no eval
                 if [ ! -f "${save_log}/${train_model_name}" ]; then
                     train_model_name="iter_${epoch_num}/model.pdparams"
@@ -415,8 +426,13 @@ else
                     log_path="${LOG_PATH}/${trainer}_gpus_${gpu}_autocast_${autocast}_nodes_${nodes}_eval.log"
                     set_eval_params1=$(func_set_params "${eval_key1}" "${eval_value1}")
                     eval_cmd="${python} ${eval_py} ${set_eval_pretrain} ${set_use_gpu} ${set_eval_params1}"
+<<<<<<< HEAD
                     eval $eval_cmd | tee "${log_path}"
                     status_check $? "${eval_cmd}" "${status_log}" "${model_name}" "${log_path}"
+=======
+                    run_command "${eval_cmd}" "${log_path}"
+                    status_check $? "${eval_cmd}" "${status_log}" "${model_name}"
+>>>>>>> develop
                 fi
                 # run export model
                 if [ ${run_export} != "null" ]; then
@@ -426,8 +442,13 @@ else
                     set_export_weight=$(func_set_params "${export_weight}" "${save_log}/${train_model_name}")
                     set_save_infer_key=$(func_set_params "${save_infer_key}" "${save_infer_path}")
                     export_cmd="${python} ${run_export} ${set_export_weight} ${set_save_infer_key}"
+<<<<<<< HEAD
                     eval $export_cmd | tee "${log_path}"
                     status_check $? "${export_cmd}" "${status_log}" "${model_name}" "${log_path}"
+=======
+                    run_command "${export_cmd}" "${log_path}"
+                    status_check $? "${export_cmd}" "${status_log}" "${model_name}"
+>>>>>>> develop
 
                     #run inference
                     eval $env

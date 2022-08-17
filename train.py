@@ -133,6 +133,12 @@ def parse_args():
         help='Device place to be set, which can be GPU, XPU, NPU, CPU',
         default='gpu',
         type=str)
+    parser.add_argument(
+        '--repeats',
+        type=int,
+        default=1,
+        help="Repeat the samples in the dataset for `repeats` times in each epoch."
+    )
 
     return parser.parse_args()
 
@@ -189,6 +195,10 @@ def main(args):
         raise ValueError(
             'The length of train_dataset is 0. Please check if your dataset is valid'
         )
+
+    if args.repeats > 1:
+        train_dataset.file_list *= args.repeats
+
     val_dataset = cfg.val_dataset if args.do_eval else None
     losses = cfg.loss
 
