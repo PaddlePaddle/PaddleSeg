@@ -150,7 +150,12 @@ def parse_args():
         default=1,
         help="Repeat the samples in the dataset for `repeats` times in each epoch."
     )
-
+    parser.add_argument(
+        '--device',
+        dest='device',
+        help='Set the device type, which may be GPU, CPU or XPU.',
+        default='gpu',
+        type=str)
     return parser.parse_args()
 
 
@@ -166,10 +171,14 @@ def main(args):
                      ['-' * 48])
     logger.info(info)
 
-    place = 'gpu' if env_info['Paddle compiled with cuda'] and env_info[
-        'GPUs used'] else 'cpu'
-
-    paddle.set_device(place)
+    place = args.device
+    if place == 'gpu' and env_info['Paddle compiled with cuda'] and env_info[
+            'GPUs used']:
+        paddle.set_device('gpu')
+    elif place == 'xpu' and paddle.is_compiled_with_xpu():
+        paddle.set_device('xpu')
+    else:
+        paddle.set_device('cpu')
     if not args.cfg:
         raise RuntimeError('No configuration file specified.')
 
