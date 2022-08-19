@@ -25,4 +25,29 @@ model:
   type: TopFormer
   backbone:
     type: TopTransformer_Small
-    pretrained: pretrained_model/topformer_small.pdparams
+    pretrained: pretrained_model/topformer_small_classification_from_torch.pdparams
+
+train_dataset:
+  transforms:
+    - type: ResizeStepScaling
+      min_scale_factor: 0.5
+      max_scale_factor: 2.0
+      scale_step_size: 0.25
+    - type: RandomPaddingCrop
+      crop_size: [512, 512]
+    - type: RandomHorizontalFlip
+    - type: RandomDistort
+      brightness_range: 0.4
+      contrast_range: 0.4
+      saturation_range: 0.4
+    - type: Normalize
+      mean: [0.485, 0.456, 0.406]
+      std: [0.229, 0.224, 0.225]
+  mode: train
+
+val_dataset:
+  transforms:
+    - type: Normalize
+      mean: [0.485, 0.456, 0.406]
+      std: [0.229, 0.224, 0.225]
+  mode: val
