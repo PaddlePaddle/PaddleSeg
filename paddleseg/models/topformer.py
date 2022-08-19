@@ -38,6 +38,7 @@ class TopFormer(nn.Layer):
         num_classes(int,optional): The unique number of target classes.
         backbone(nn.Layer): Backbone network.
         pretrained (str, optional): The path or url of pretrained model. Default: None.
+        xxx (todo)
     """
 
     def __init__(self,
@@ -52,7 +53,7 @@ class TopFormer(nn.Layer):
         head_in_channels = [
             i for i in backbone.injection_out_channels if i is not None
         ]
-        self.head = TopFormerHead(
+        self.decode_head = TopFormerHead(
             num_classes=num_classes,
             in_channels=head_in_channels,
             use_dw=head_use_dw,
@@ -67,11 +68,21 @@ class TopFormer(nn.Layer):
             utils.load_entire_model(self, self.pretrained)
 
     def forward(self, x):
+        '''
+        import numpy as np
+        np.random.seed(0)
+        x = np.random.rand(1,3,512,512).astype("float")
+        x = paddle.to_tensor(x, dtype='float32')
+        print(x.shape)
+        print(paddle.mean(x))
+        '''
+
         x_hw = paddle.shape(x)[2:]
         x = self.backbone(x)  # len=3, 1/8,1/16,1/32
-        x = self.head(x)
+        x = self.decode_head(x)
         x = F.interpolate(
             x, x_hw, mode='bilinear', align_corners=self.align_corners)
+
         return [x]
 
 
@@ -115,8 +126,8 @@ class ConvModule(nn.Layer):
                  stride=1,
                  padding=0,
                  groups=1,
-                 norm=nn.SyncBatchNorm,
-                 act=nn.ReLU,
+                 norm=nn.BatchNorm2D,
+                 act=None,
                  bias_attr=False):
         super(ConvModule, self).__init__()
 
@@ -129,11 +140,11 @@ class ConvModule(nn.Layer):
             groups=groups,
             bias_attr=bias_attr)
         self.act = act() if act is not None else Identity()
-        self.norm = norm(out_channels) if norm is not None else Identity()
+        self.bn = norm(out_channels) if norm is not None else Identity()
 
     def forward(self, x):
         x = self.conv(x)
-        x = self.norm(x)
+        x = self.bn(x)
         x = self.act(x)
         return x
 
@@ -159,7 +170,8 @@ class TopFormerHead(nn.Layer):
             out_channels=self.last_channels,
             kernel_size=1,
             stride=1,
-            groups=self.last_channels if use_dw else 1, )
+            groups=self.last_channels if use_dw else 1,
+            act=nn.ReLU)
         self.dropout = nn.Dropout2D(dropout_ratio)
         self.conv_seg = nn.Conv2D(
             self.last_channels, num_classes, kernel_size=1)
