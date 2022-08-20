@@ -13,7 +13,6 @@
 </div>
 
 <div align="center">
-
 <table>
     <tr>
         <td><img src="https://user-images.githubusercontent.com/71769312/179209324-eb074e65-4a32-4568-a1d3-7680331dbf22.gif"></td>
@@ -28,7 +27,7 @@
         <td align="center">Medical segmentation</td>
     <tr>
     <tr>
-        <td><img src="https://user-images.githubusercontent.com/71769312/179209338-45b06ded-8142-4385-9486-33c328d591cb.gif"></td>
+        <td><img src="https://user-images.githubusercontent.com/71769312/185751161-f23d0c1b-62c5-4cd2-903f-502037e353a8.gif"></td>
         <td><img src="https://user-images.githubusercontent.com/71769312/179209328-87174780-6c6f-4b53-b2a2-90d289ac1c8a.gif"></td>
         <td colspan="2"><img src="https://user-images.githubusercontent.com/71769312/179209342-5b75e61e-d9cf-4702-ba3e-971f47a10f5f.gif"></td>
     <tr>
@@ -38,10 +37,11 @@
         <td align="center" colspan="2"> 3D medical segmentation</td>
     <tr>
 </table>
+
 </div>
 
-
 ## <img src="../docs/images/seg_news_icon.png" width="20"/> Latest Developments
+
 * [2022-07-20] :fire: EISeg 1.0 is released!
   - Added  interactive video object segmentation for general scenes, this work is based on EISeg interactive segmentation model and [MiVOS](https://github.com/hkchengrex/MiVOS).
   - Added 3D segmentation capabilities for abdominal multi-organ and CT vertebral data, and provides 3D visualization tools. For details, please refer to [3D Anotations](docs/video.md).
