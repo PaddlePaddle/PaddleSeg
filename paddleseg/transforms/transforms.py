@@ -126,7 +126,11 @@ class Resize:
     Resize an image.
 
     Args:
-        target_size (list|tuple, optional): The target size of image. Default: (512, 512).
+        target_size (list|tuple, optional): The target size (w, h) of image. Default: (512, 512).
+        keep_ratio (bool, optional): Whether to keep the same ratio for width and height in resizing.
+            Default: False.
+        size_divisor (int, optional): If size_divisor is not None, make the width and height be the times
+            of size_divisor. Default: None.
         interp (str, optional): The interpolation mode of resize is consistent with opencv.
             ['NEAREST', 'LINEAR', 'CUBIC', 'AREA', 'LANCZOS4', 'RANDOM']. Note that when it is
             'RANDOM', a random interpolation mode would be specified. Default: "LINEAR".
@@ -146,11 +150,11 @@ class Resize:
         'LANCZOS4': cv2.INTER_LANCZOS4
     }
 
-    def __init__(self, target_size=(512, 512), interp='LINEAR'):
-        self.interp = interp
-        if not (interp == "RANDOM" or interp in self.interp_dict):
-            raise ValueError("`interp` should be one of {}".format(
-                self.interp_dict.keys()))
+    def __init__(self,
+                 target_size=(512, 512),
+                 keep_ratio=False,
+                 size_divisor=None,
+                 interp='LINEAR'):
         if isinstance(target_size, list) or isinstance(target_size, tuple):
             if len(target_size) != 2:
                 raise ValueError(
@@ -160,8 +164,17 @@ class Resize:
             raise TypeError(
                 "Type of `target_size` is invalid. It should be list or tuple, but it is {}"
                 .format(type(target_size)))
+        if not (interp == "RANDOM" or interp in self.interp_dict):
+            raise ValueError("`interp` should be one of {}".format(
+                self.interp_dict.keys()))
+        if size_divisor is not None:
+            assert isinstance(size_divisor,
+                              int), "size_divisor should be None or int"
 
         self.target_size = target_size
+        self.keep_ratio = keep_ratio
+        self.size_divisor = size_divisor
+        self.interp = interp
 
     def __call__(self, data):
         data['trans_info'].append(('resize', data['img'].shape[0:2]))
@@ -169,10 +182,21 @@ class Resize:
             interp = random.choice(list(self.interp_dict.keys()))
         else:
             interp = self.interp
-        data['img'] = functional.resize(data['img'], self.target_size,
+
+        target_size = self.target_size
+        if self.keep_ratio:
+            h, w = data['img'].shape[0:2]
+            target_size, _ = functional.rescale_size((w, h), self.target_size)
+        if self.size_divisor:
+            target_size = [
+                math.ceil(i / self.size_divisor) * self.size_divisor
+                for i in target_size
+            ]
+
+        data['img'] = functional.resize(data['img'], target_size,
                                         self.interp_dict[interp])
         for key in data.get('gt_fields', []):
-            data[key] = functional.resize(data[key], self.target_size,
+            data[key] = functional.resize(data[key], target_size,
                                           cv2.INTER_NEAREST)
 
         return data
