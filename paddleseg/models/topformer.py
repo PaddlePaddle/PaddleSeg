@@ -1,4 +1,4 @@
-# Copyright (c) 2020 PaddlePaddle Authors. All Rights Reserved.
+# Copyright (c) 2022 PaddlePaddle Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import paddle.nn.functional as F
 from paddleseg.cvlibs import manager
 from paddleseg.models import layers
 from paddleseg.utils import utils
+from paddleseg.models.backbones.top_transformer import ConvBNAct
 
 
 @manager.MODELS.add_component
@@ -34,11 +35,14 @@ class TopFormer(nn.Layer):
     In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition,
     pp. 12083-12093. 2022.
 
+    This model refers to https://github.com/hustvl/TopFormer.
+
     Args:
         num_classes(int,optional): The unique number of target classes.
         backbone(nn.Layer): Backbone network.
+        head_use_dw (bool, optional): Whether the head use depthwise convolutions. Default: False.
+        align_corners (bool, optional): Set the align_corners in resizing. Default: False.
         pretrained (str, optional): The path or url of pretrained model. Default: None.
-        xxx (todo)
     """
 
     def __init__(self,
@@ -68,15 +72,6 @@ class TopFormer(nn.Layer):
             utils.load_entire_model(self, self.pretrained)
 
     def forward(self, x):
-        '''
-        import numpy as np
-        np.random.seed(0)
-        x = np.random.rand(1,3,512,512).astype("float")
-        x = paddle.to_tensor(x, dtype='float32')
-        print(x.shape)
-        print(paddle.mean(x))
-        '''
-
         x_hw = paddle.shape(x)[2:]
         x = self.backbone(x)  # len=3, 1/8,1/16,1/32
         x = self.decode_head(x)
@@ -108,47 +103,6 @@ def resize(input_data,
     return F.interpolate(input_data, size, scale_factor, mode, align_corners)
 
 
-class Identity(nn.Layer):
-    """ Identity layer
-    The output of this layer is the input without any change.
-    Use this layer to avoid if condition in some forward methods
-    """
-
-    def forward(self, inputs):
-        return inputs
-
-
-class ConvModule(nn.Layer):
-    def __init__(self,
-                 in_channels,
-                 out_channels,
-                 kernel_size=1,
-                 stride=1,
-                 padding=0,
-                 groups=1,
-                 norm=nn.BatchNorm2D,
-                 act=None,
-                 bias_attr=False):
-        super(ConvModule, self).__init__()
-
-        self.conv = nn.Conv2D(
-            in_channels=in_channels,
-            out_channels=out_channels,
-            kernel_size=kernel_size,
-            stride=stride,
-            padding=padding,
-            groups=groups,
-            bias_attr=bias_attr)
-        self.act = act() if act is not None else Identity()
-        self.bn = norm(out_channels) if norm is not None else Identity()
-
-    def forward(self, x):
-        x = self.conv(x)
-        x = self.bn(x)
-        x = self.act(x)
-        return x
-
-
 class TopFormerHead(nn.Layer):
     def __init__(self,
                  num_classes,
@@ -165,7 +119,7 @@ class TopFormerHead(nn.Layer):
         self.align_corners = align_corners
 
         self._init_inputs(in_channels, in_index, in_transform)
-        self.linear_fuse = ConvModule(
+        self.linear_fuse = ConvBNAct(
             in_channels=self.last_channels,
             out_channels=self.last_channels,
             kernel_size=1,

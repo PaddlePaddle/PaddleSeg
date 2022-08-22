@@ -1,4 +1,4 @@
-# Copyright (c) 2021 PaddlePaddle Authors. All Rights Reserve.
+# Copyright (c) 2022 PaddlePaddle Authors. All Rights Reserve.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -26,36 +26,32 @@ from paddleseg.models.backbones.transformer_utils import Identity, DropPath
 __all__ = ["TopTransformer_Base", "TopTransformer_Small", "TopTransformer_Tiny"]
 
 
-def _make_divisible(v, divisor, min_value=None):
+def make_divisible(val, divisor, min_value=None):
     """
     This function is taken from the original tf repo.
     It ensures that all layers have a channel number that is divisible by 8
     It can be seen here:
     https://github.com/tensorflow/models/blob/master/research/slim/nets/mobilenet/mobilenet.py
-    :param v:
-    :param divisor:
-    :param min_value:
-    :return:
     """
     if min_value is None:
         min_value = divisor
-    new_v = max(min_value, int(v + divisor / 2) // divisor * divisor)
+    new_v = max(min_value, int(val + divisor / 2) // divisor * divisor)
     # Make sure that round down does not go down by more than 10%.
-    if new_v < 0.9 * v:
+    if new_v < 0.9 * val:
         new_v += divisor
     return new_v
 
 
-class h_sigmoid(nn.Layer):
+class HSigmoid(nn.Layer):
     def __init__(self, inplace=True):
-        super(h_sigmoid, self).__init__()
+        super().__init__()
         self.relu = nn.ReLU6()
 
     def forward(self, x):
         return self.relu(x + 3) / 6
 
 
-class Conv2d_BN(nn.Layer):
+class Conv2DBN(nn.Layer):
     def __init__(self,
                  in_channels,
                  out_channels,
@@ -92,7 +88,7 @@ class Conv2d_BN(nn.Layer):
         return out
 
 
-class ConvModule(nn.Layer):
+class ConvBNAct(nn.Layer):
     def __init__(self,
                  in_channels,
                  out_channels,
@@ -104,7 +100,7 @@ class ConvModule(nn.Layer):
                  act=None,
                  bias_attr=False,
                  lr_mult=1.0):
-        super(ConvModule, self).__init__()
+        super(ConvBNAct, self).__init__()
         param_attr = paddle.ParamAttr(learning_rate=lr_mult)
         self.conv = nn.Conv2D(
             in_channels=in_channels,
@@ -126,7 +122,7 @@ class ConvModule(nn.Layer):
         return x
 
 
-class Mlp(nn.Layer):
+class MLP(nn.Layer):
     def __init__(self,
                  in_features,
                  hidden_features=None,
@@ -137,7 +133,7 @@ class Mlp(nn.Layer):
         super().__init__()
         out_features = out_features or in_features
         hidden_features = hidden_features or in_features
-        self.fc1 = Conv2d_BN(in_features, hidden_features, lr_mult=lr_mult)
+        self.fc1 = Conv2DBN(in_features, hidden_features, lr_mult=lr_mult)
         param_attr = paddle.ParamAttr(learning_rate=lr_mult)
         self.dwconv = nn.Conv2D(
             hidden_features,
@@ -149,7 +145,7 @@ class Mlp(nn.Layer):
             weight_attr=param_attr,
             bias_attr=param_attr)
         self.act = act_layer()
-        self.fc2 = Conv2d_BN(hidden_features, out_features, lr_mult=lr_mult)
+        self.fc2 = Conv2DBN(hidden_features, out_features, lr_mult=lr_mult)
         self.drop = nn.Dropout(drop)
 
     def forward(self, x):
@@ -164,13 +160,13 @@ class Mlp(nn.Layer):
 
 class InvertedResidual(nn.Layer):
     def __init__(self,
-                 inp: int,
-                 oup: int,
-                 ks: int,
-                 stride: int,
-                 expand_ratio: int,
+                 inp,
+                 oup,
+                 ks,
+                 stride,
+                 expand_ratio,
                  activations=None,
-                 lr_mult=1.0) -> None:
+                 lr_mult=1.0):
         super(InvertedResidual, self).__init__()
         self.stride = stride
         self.expand_ratio = expand_ratio
@@ -185,11 +181,11 @@ class InvertedResidual(nn.Layer):
         layers = []
         if expand_ratio != 1:
             # pw
-            layers.append(Conv2d_BN(inp, hidden_dim, ks=1, lr_mult=lr_mult))
+            layers.append(Conv2DBN(inp, hidden_dim, ks=1, lr_mult=lr_mult))
             layers.append(activations())
         layers.extend([
             # dw
-            Conv2d_BN(
+            Conv2DBN(
                 hidden_dim,
                 hidden_dim,
                 ks=ks,
@@ -199,7 +195,7 @@ class InvertedResidual(nn.Layer):
                 lr_mult=lr_mult),
             activations(),
             # pw-linear
-            Conv2d_BN(
+            Conv2DBN(
                 hidden_dim, oup, ks=1, lr_mult=lr_mult)
         ])
         self.conv = nn.Sequential(*layers)
@@ -225,15 +221,14 @@ class TokenPyramidModule(nn.Layer):
         self.out_indices = out_indices
 
         self.stem = nn.Sequential(
-            Conv2d_BN(
+            Conv2DBN(
                 3, inp_channel, 3, 2, 1, lr_mult=lr_mult), activation())
-        self.cfgs = cfgs
 
         self.layers = []
         for i, (k, t, c, s) in enumerate(cfgs):
-            output_channel = _make_divisible(c * width_mult, 8)
+            output_channel = make_divisible(c * width_mult, 8)
             exp_size = t * inp_channel
-            exp_size = _make_divisible(exp_size * width_mult, 8)
+            exp_size = make_divisible(exp_size * width_mult, 8)
             layer_name = 'layer{}'.format(i + 1)
             layer = InvertedResidual(
                 inp_channel,
@@ -275,13 +270,13 @@ class Attention(nn.Layer):
         self.dh = int(attn_ratio * key_dim) * num_heads
         self.attn_ratio = attn_ratio
 
-        self.to_q = Conv2d_BN(dim, nh_kd, 1, lr_mult=lr_mult)
-        self.to_k = Conv2d_BN(dim, nh_kd, 1, lr_mult=lr_mult)
-        self.to_v = Conv2d_BN(dim, self.dh, 1, lr_mult=lr_mult)
+        self.to_q = Conv2DBN(dim, nh_kd, 1, lr_mult=lr_mult)
+        self.to_k = Conv2DBN(dim, nh_kd, 1, lr_mult=lr_mult)
+        self.to_v = Conv2DBN(dim, self.dh, 1, lr_mult=lr_mult)
 
         self.proj = nn.Sequential(
             activation(),
-            Conv2d_BN(
+            Conv2DBN(
                 self.dh, dim, bn_weight_init=0, lr_mult=lr_mult))
 
     def forward(self, x):  # x (B,N,C)
@@ -308,7 +303,7 @@ class Block(nn.Layer):
                  dim,
                  key_dim,
                  num_heads,
-                 mlp_ratio=4.,
+                 mlp_ratios=4.,
                  attn_ratio=2.,
                  drop=0.,
                  drop_path=0.,
@@ -317,7 +312,7 @@ class Block(nn.Layer):
         super().__init__()
         self.dim = dim
         self.num_heads = num_heads
-        self.mlp_ratio = mlp_ratio
+        self.mlp_ratios = mlp_ratios
 
         self.attn = Attention(
             dim,
@@ -329,8 +324,8 @@ class Block(nn.Layer):
 
         # NOTE: drop path for stochastic depth, we shall see if this is better than dropout here
         self.drop_path = DropPath(drop_path) if drop_path > 0. else Identity()
-        mlp_hidden_dim = int(dim * mlp_ratio)
-        self.mlp = Mlp(in_features=dim,
+        mlp_hidden_dim = int(dim * mlp_ratios)
+        self.mlp = MLP(in_features=dim,
                        hidden_features=mlp_hidden_dim,
                        act_layer=act_layer,
                        drop=drop,
@@ -338,13 +333,11 @@ class Block(nn.Layer):
 
     def forward(self, x):
         h = x
-        #x = self.attn_norm(x)
         x = self.attn(x)
         x = self.drop_path(x)
         x = h + x
 
         h = x
-        #x = self.mlp_norm(x)
         x = self.mlp(x)
         x = self.drop_path(x)
         x = x + h
@@ -357,7 +350,7 @@ class BasicLayer(nn.Layer):
                  embedding_dim,
                  key_dim,
                  num_heads,
-                 mlp_ratio=4.,
+                 mlp_ratios=4.,
                  attn_ratio=2.,
                  drop=0.,
                  attn_drop=0.,
@@ -374,7 +367,7 @@ class BasicLayer(nn.Layer):
                     embedding_dim,
                     key_dim=key_dim,
                     num_heads=num_heads,
-                    mlp_ratio=mlp_ratio,
+                    mlp_ratios=mlp_ratios,
                     attn_ratio=attn_ratio,
                     drop=drop,
                     drop_path=drop_path[i]
@@ -395,7 +388,7 @@ class PyramidPoolAgg(nn.Layer):
         self.stride = stride
 
     def forward(self, inputs):
-        B, C, H, W = inputs[-1].shape
+        _, _, H, W = inputs[-1].shape
         H = (H - 1) // self.stride + 1
         W = (W - 1) // self.stride + 1
         return paddle.concat(
@@ -407,18 +400,14 @@ class InjectionMultiSum(nn.Layer):
                  lr_mult=1.0) -> None:
         super(InjectionMultiSum, self).__init__()
 
-        self.local_embedding = ConvModule(
+        self.local_embedding = ConvBNAct(
             inp, oup, kernel_size=1, lr_mult=lr_mult)
-        self.global_embedding = ConvModule(
+        self.global_embedding = ConvBNAct(
             inp, oup, kernel_size=1, lr_mult=lr_mult)
-        self.global_act = ConvModule(inp, oup, kernel_size=1, lr_mult=lr_mult)
-        self.act = h_sigmoid()
+        self.global_act = ConvBNAct(inp, oup, kernel_size=1, lr_mult=lr_mult)
+        self.act = HSigmoid()
 
     def forward(self, x_l, x_g):
-        '''
-        x_g: global features
-        x_l: local features
-        '''
         B, C, H, W = x_l.shape
         local_feat = self.local_embedding(x_l)
 
@@ -437,92 +426,82 @@ class InjectionMultiSum(nn.Layer):
         return out
 
 
-"""
 class InjectionMultiSumCBR(nn.Layer):
-    def __init__(
-        self,
-        inp: int,
-        oup: int,
-        norm_cfg=dict(type='BN', requires_grad=True),
-        activations = None,
-    ) -> None:
+    def __init__(self, inp, oup, activations=None):
         '''
         local_embedding: conv-bn-relu
         global_embedding: conv-bn-relu
         global_act: conv
         '''
         super(InjectionMultiSumCBR, self).__init__()
-        self.norm_cfg = norm_cfg
 
-        self.local_embedding = Conv2d_BN(inp, oup, kernel_size=1, norm_cfg=self.norm_cfg)
-        self.global_embedding = Conv2d_BN(inp, oup, kernel_size=1, norm_cfg=self.norm_cfg)
-        self.global_act = Conv2d_BN(inp, oup, kernel_size=1, norm_cfg=None, act_cfg=None)
-        self.act = h_sigmoid()
-
-        self.out_channels = oup
+        self.local_embedding = ConvBNAct(inp, oup, kernel_size=1)
+        self.global_embedding = ConvBNAct(inp, oup, kernel_size=1)
+        self.global_act = ConvBNAct(
+            inp, oup, kernel_size=1, norm=None, act=None)
+        self.act = HSigmoid()
 
     def forward(self, x_l, x_g):
         B, C, H, W = x_l.shape
         local_feat = self.local_embedding(x_l)
         # kernel
         global_act = self.global_act(x_g)
-        global_act = F.interpolate(self.act(global_act), size=(H, W), mode='bilinear', align_corners=False)
+        global_act = F.interpolate(
+            self.act(global_act),
+            size=(H, W),
+            mode='bilinear',
+            align_corners=False)
         # feat_h
         global_feat = self.global_embedding(x_g)
-        global_feat = F.interpolate(global_feat, size=(H, W), mode='bilinear', align_corners=False)
+        global_feat = F.interpolate(
+            global_feat, size=(H, W), mode='bilinear', align_corners=False)
         out = local_feat * global_act + global_feat
         return out
 
 
-class InjectionMultiSumCBR(InjectionMultiSum):
-    def __init__(self, in_channels, out_channels):
-        super().__init__(in_channels, out_channels)
-        self.local_embedding = ConvNormAct(
-            in_channels, out_channels, kernel_size=1)
-        self.global_embedding = ConvNormAct(
-            in_channels, out_channels, kernel_size=1)
-        self.global_act = ConvNormAct(
-            in_channels, out_channels, kernel_size=1, act=None, norm=None)
-
-
 class FuseBlockSum(nn.Layer):
-    def __init__(self, in_channels, out_channels, act=nn.ReLU6()):
-        super().__init__()
-        self.local_embedding = ConvNormAct(
-            in_channels, out_channels, kernel_size=1, act=None)
-        self.global_embedding = ConvNormAct(
-            in_channels, out_channels, kernel_size=1, act=None)
-        self.act = Identity() if act is None else act
+    def __init__(self, inp, oup, activations=None):
+        super(FuseBlockSum, self).__init__()
 
-    def forward_features(self, x_local, x_global):
-        N, C, H, W = x_local.shape
+        self.fuse1 = ConvBNAct(inp, oup, kernel_size=1, act=None)
+        self.fuse2 = ConvBNAct(inp, oup, kernel_size=1, act=None)
 
-        local_feature = self.local_embedding(x_local)
-
-        global_feature = self.global_embedding(x_global)
-        global_feature = self.act(global_feature)
-        global_feature = nn.functional.interpolate(
-            global_feature, size=(H, W), mode='bilinear', align_corners=False)
-
-        return local_feature, global_feature
-
-    def forward(self, x_local, x_global):
-        local_features, global_features = self.forward_features(x_local,
-                                                                x_global)
-        out = local_features + global_features
+    def forward(self, x_l, x_h):
+        B, C, H, W = x_l.shape
+        inp = self.fuse1(x_l)
+        kernel = self.fuse2(x_h)
+        feat_h = F.interpolate(
+            kernel, size=(H, W), mode='bilinear', align_corners=False)
+        out = inp + feat_h
         return out
 
 
 class FuseBlockMulti(nn.Layer):
-    def __init__(self, in_channels, out_channels, act=nn.Hardsigmoid()):
-        super().__init__(in_channels, out_channels, act)
+    def __init__(
+            self,
+            inp,
+            oup,
+            stride=1,
+            activations=None, ):
+        super(FuseBlockMulti, self).__init__()
+        self.stride = stride
+        assert stride in [1, 2]
 
-    def forward(self, x_local, x_global):
-        local_features, global_features = self.forward_features(x_local,
-                                                                x_global)
-        out = local_features * global_features
+        self.fuse1 = ConvBNAct(inp, oup, kernel_size=1, act=None)
+        self.fuse2 = ConvBNAct(inp, oup, kernel_size=1, act=None)
+        self.act = HSigmoid()
+
+    def forward(self, x_l, x_h):
+        B, C, H, W = x_l.shape
+        inp = self.fuse1(x_l)
+        sig_act = self.fuse2(x_h)
+        sig_act = F.interpolate(
+            self.act(sig_act),
+            size=(H, W),
+            mode='bilinear',
+            align_corners=False)
+        out = inp * sig_act
         return out
-"""
 
 
 class TopTransformer(nn.Layer):
@@ -556,14 +535,14 @@ class TopTransformer(nn.Layer):
             cfgs=cfgs, out_indices=encoder_out_indices, lr_mult=lr_mult)
         self.ppa = PyramidPoolAgg(stride=c2t_stride)
 
-        dpr = [x.item() for x in paddle.linspace(0, drop_path_rate, depths)
-               ]  # stochastic depth decay rule
+        dpr = [x.item() for x in \
+               paddle.linspace(0, drop_path_rate, depths)]  # stochastic depth decay rule
         self.trans = BasicLayer(
             block_num=depths,
             embedding_dim=self.embed_dim,
             key_dim=key_dim,
             num_heads=num_heads,
-            mlp_ratio=mlp_ratios,
+            mlp_ratios=mlp_ratios,
             attn_ratio=attn_ratios,
             drop=0,
             attn_drop=0,
@@ -571,7 +550,6 @@ class TopTransformer(nn.Layer):
             act_layer=act_layer,
             lr_mult=lr_mult)
 
-        # SemanticInjectionModule
         self.SIM = nn.LayerList()
         inj_module = InjectionMultiSum
         if self.injection:

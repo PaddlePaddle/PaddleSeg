@@ -26,7 +26,7 @@ model:
   backbone:
     type: TopTransformer_Small
     lr_mult: 0.1
-    pretrained: pretrained_model/topformer_small_classification_from_torch.pdparams
+    pretrained: https://paddleseg.bj.bcebos.com/dygraph/backbone/topformer_small_imagenet_pretrained.zip
 
 train_dataset:
   transforms:
