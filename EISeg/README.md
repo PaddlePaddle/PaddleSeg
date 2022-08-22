@@ -5,7 +5,7 @@
   <img src="https://user-images.githubusercontent.com/35907364/179460858-7dfb19b1-cabf-4f8a-9e81-eb15b6cc7d5f.png" align="middle" alt="LOGO" width = "500" />
 </p>
 
-**An Efficient Interactive Segmentation Tool based on [PaddlePaddle](https://github.com/paddlepaddle/paddle).**
+**飞桨高效交互式分割标注工具。**
 
 [![Python 3.6](https://img.shields.io/badge/python-3.6+-blue.svg)](https://www.python.org/downloads/release/python-360/) [![PaddlePaddle 2.2](https://img.shields.io/badge/paddlepaddle-2.2-blue.svg)](https://www.python.org/downloads/release/python-360/) [![License](https://img.shields.io/badge/license-Apache%202-blue.svg)](LICENSE) [![Downloads](https://pepy.tech/badge/eiseg)](https://pepy.tech/project/eiseg)
 
@@ -20,23 +20,24 @@
         <td><img src="https://user-images.githubusercontent.com/71769312/179209340-d04a0cec-d9a7-4962-93f1-b4953c6c9f39.gif"></td>
     <tr>
     <tr>
-        <td align="center">Generic segmentation</td>
-        <td align="center">Human segmentation</td>
-        <td align="center">RS building segmentation</td>
-        <td align="center">Medical segmentation</td>
+        <td align="center">通用分割</td>
+        <td align="center">人像分割</td>
+        <td align="center">遥感建筑分割</td>
+        <td align="center">医疗分割</td>
     <tr>
     <tr>
-        <td><img src="https://user-images.githubusercontent.com/71769312/179209338-45b06ded-8142-4385-9486-33c328d591cb.gif"></td>
+        <td><img src="https://user-images.githubusercontent.com/71769312/185751161-f23d0c1b-62c5-4cd2-903f-502037e353a8.gif"></td>
         <td><img src="https://user-images.githubusercontent.com/71769312/179209328-87174780-6c6f-4b53-b2a2-90d289ac1c8a.gif"></td>
         <td colspan="2"><img src="https://user-images.githubusercontent.com/71769312/179209342-5b75e61e-d9cf-4702-ba3e-971f47a10f5f.gif"></td>
     <tr>
     <tr>
-        <td align="center">Industrial quality inspection</td>
-        <td align="center">Generic video segmentation</td>
-        <td align="center" colspan="2"> 3D medical segmentation</td>
+        <td align="center">工业质检</td>
+        <td align="center">通用视频分割</td>
+        <td align="center" colspan="2">3D医疗分割</td>
     <tr>
 </table>
 </div>
+
 
 ## <img src="../docs/images/seg_news_icon.png" width="20"/> 最新动态
 * [2022-07-20] :fire: EISeg 1.0版本发布！
