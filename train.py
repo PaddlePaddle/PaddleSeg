@@ -19,7 +19,7 @@ import paddle
 import numpy as np
 
 from paddleseg.cvlibs import manager, Config
-from paddleseg.utils import get_sys_env, logger, config_check
+from paddleseg.utils import get_sys_env, logger
 from paddleseg.core import train
 
 
@@ -175,6 +175,7 @@ def main(args):
         learning_rate=args.learning_rate,
         iters=args.iters,
         batch_size=args.batch_size)
+    cfg.check_sync_info()
 
     # Only support for the DeepLabv3+ model
     if args.data_format == 'NHWC':
@@ -207,14 +208,14 @@ def main(args):
     msg += '------------------------------------------------'
     logger.info(msg)
 
-    config_check(cfg, train_dataset=train_dataset, val_dataset=val_dataset)
-
+    # convert bn to sync_bn if necessary
     if place == 'gpu' and paddle.distributed.ParallelEnv().nranks > 1:
-        # convert bn to sync_bn
-        cfg._model = paddle.nn.SyncBatchNorm.convert_sync_batchnorm(cfg.model)
+        model = paddle.nn.SyncBatchNorm.convert_sync_batchnorm(cfg.model)
+    else:
+        model = cfg.model
 
     train(
-        cfg.model,
+        model,
         train_dataset,
         val_dataset=val_dataset,
         optimizer=cfg.optimizer,

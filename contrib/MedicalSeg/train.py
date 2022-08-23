@@ -19,7 +19,7 @@ import paddle
 import numpy as np
 
 from medicalseg.cvlibs import manager, Config
-from medicalseg.utils import get_sys_env, logger, config_check
+from medicalseg.utils import get_sys_env, logger
 from medicalseg.core import train
 
 
@@ -147,6 +147,7 @@ def main(args):
         learning_rate=args.learning_rate,
         iters=args.iters,
         batch_size=args.batch_size)
+    cfg.check_sync_info()
 
     # Only support for the DeepLabv3+ model
     if args.data_format == 'NHWC':
@@ -174,8 +175,6 @@ def main(args):
     msg += str(cfg)
     msg += '------------------------------------------------'
     logger.info(msg)
-
-    config_check(cfg, train_dataset=train_dataset, val_dataset=val_dataset)
 
     train(
         cfg.model,

@@ -19,7 +19,7 @@ import paddle
 
 from paddleseg.cvlibs import manager, Config
 from paddleseg.core import evaluate
-from paddleseg.utils import get_sys_env, logger, config_check, utils
+from paddleseg.utils import get_sys_env, logger, utils
 
 
 def get_test_config(cfg, args):
@@ -145,6 +145,8 @@ def main(args):
         raise RuntimeError('No configuration file specified.')
 
     cfg = Config(args.cfg)
+    cfg.check_sync_info()
+
     # Only support for the DeepLabv3+ model
     if args.data_format == 'NHWC':
         if cfg.dic['model']['type'] != 'DeepLabV3P':
@@ -177,7 +179,6 @@ def main(args):
         logger.info('Loaded trained params of model successfully')
 
     test_config = get_test_config(cfg, args)
-    config_check(cfg, val_dataset=val_dataset)
 
     evaluate(model, val_dataset, num_workers=args.num_workers, **test_config)
 

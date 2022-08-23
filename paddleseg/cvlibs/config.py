@@ -87,6 +87,10 @@ class Config(object):
         self.update(
             learning_rate=learning_rate, batch_size=batch_size, iters=iters)
 
+        model_cfg = self.dic.get('model', None)
+        if model_cfg is None:
+            raise RuntimeError('No model specified in the configuration file.')
+
     def _update_dic(self, dic, base_dic):
         """
         Update config from dic based base_dic
@@ -317,8 +321,6 @@ class Config(object):
     @property
     def model(self) -> paddle.nn.Layer:
         model_cfg = self.dic.get('model').copy()
-        if not model_cfg:
-            raise RuntimeError('No model specified in the configuration file.')
 
         if not 'num_classes' in model_cfg:
             num_classes = None
@@ -443,3 +445,49 @@ class Config(object):
         for i in _transforms:
             transforms.append(self._load_object(i))
         return transforms
+
+    def check_sync_info(self) -> None:
+        """
+        Check and sync the info, such as num_classes and img_channels, 
+        between model and dataset config,
+        """
+        self._check_sync_num_classes()
+
+    def _check_sync_num_classes(self):
+        num_classes_set = set()
+
+        if self.dic['model'].get('num_classes', None) is not None:
+            num_classes_set.add(self.dic['model'].get('num_classes'))
+        if (not self.train_dataset_config) and (not self.val_dataset_config):
+            raise ValueError(
+                'One of `train_dataset` or `val_dataset should be given, but there are none.'
+            )
+        if self.train_dataset_config:
+            if hasattr(self.train_dataset_class, 'NUM_CLASSES'):
+                num_classes_set.add(self.train_dataset_class.NUM_CLASSES)
+            elif 'num_classes' in self.train_dataset_config:
+                num_classes_set.add(self.train_dataset_config['num_classes'])
+        if self.val_dataset_config:
+            if hasattr(self.val_dataset_class, 'NUM_CLASSES'):
+                num_classes_set.add(self.val_dataset_class.NUM_CLASSES)
+            elif 'num_classes' in self.val_dataset_config:
+                num_classes_set.add(self.val_dataset_config['num_classes'])
+
+        if len(num_classes_set) == 0:
+            raise ValueError(
+                '`num_classes` is not found. Please set it in model, train_dataset or val_dataset'
+            )
+        elif len(num_classes_set) > 1:
+            raise ValueError(
+                '`num_classes` is not consistent: {}. Please set it consistently in model or train_dataset or val_dataset'
+                .format(num_classes_set))
+
+        num_classes = num_classes_set.pop()
+        if not hasattr(self.dic.get('model'), 'num_classes'):
+            self.dic['model']['num_classes'] = num_classes
+        if self.train_dataset_config and not hasattr(
+                self.dic.get('train_dataset'), 'num_classes'):
+            self.dic['train_dataset']['num_classes'] = num_classes
+        if self.val_dataset_config and not hasattr(
+                self.dic.get('val_dataset'), 'num_classes'):
+            self.dic['val_dataset']['num_classes'] = num_classes
