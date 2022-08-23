@@ -149,7 +149,7 @@ class TopFormerHead(nn.Layer):
             inputs = [
                 resize(
                     input_data=x,
-                    size=inputs[0].shape[2:],
+                    size=paddle.shape(inputs[0])[2:],
                     mode='bilinear',
                     align_corners=self.align_corners) for x in inputs
             ]
@@ -160,7 +160,7 @@ class TopFormerHead(nn.Layer):
             for x in inputs_tmp[1:]:
                 x = resize(
                     x,
-                    size=inputs.shape[2:],
+                    size=paddle.shape(inputs)[2:],
                     mode='bilinear',
                     align_corners=self.align_corners)
                 inputs += x

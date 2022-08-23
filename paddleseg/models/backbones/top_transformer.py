@@ -280,12 +280,13 @@ class Attention(nn.Layer):
                 self.dh, dim, bn_weight_init=0, lr_mult=lr_mult))
 
     def forward(self, x):  # x (B,N,C)
-        B, C, H, W = x.shape
+        x_shape = paddle.shape(x)
+        H, W = x_shape[2], x_shape[3]
 
         qq = self.to_q(x).reshape(
-            [B, self.num_heads, self.key_dim, H * W]).transpose([0, 1, 3, 2])
-        kk = self.to_k(x).reshape([B, self.num_heads, self.key_dim, H * W])
-        vv = self.to_v(x).reshape([B, self.num_heads, self.d, H * W]).transpose(
+            [0, self.num_heads, self.key_dim, -1]).transpose([0, 1, 3, 2])
+        kk = self.to_k(x).reshape([0, self.num_heads, self.key_dim, -1])
+        vv = self.to_v(x).reshape([0, self.num_heads, self.d, -1]).transpose(
             [0, 1, 3, 2])
 
         attn = paddle.matmul(qq, kk)
@@ -293,7 +294,7 @@ class Attention(nn.Layer):
 
         xx = paddle.matmul(attn, vv)
 
-        xx = xx.transpose([0, 1, 3, 2]).reshape([B, self.dh, H, W])
+        xx = xx.transpose([0, 1, 3, 2]).reshape([0, self.dh, H, W])
         xx = self.proj(xx)
         return xx
 
@@ -408,19 +409,16 @@ class InjectionMultiSum(nn.Layer):
         self.act = HSigmoid()
 
     def forward(self, x_l, x_g):
-        B, C, H, W = x_l.shape
+        xl_hw = paddle.shape(x_l)[2:]
         local_feat = self.local_embedding(x_l)
 
         global_act = self.global_act(x_g)
         sig_act = F.interpolate(
-            self.act(global_act),
-            size=(H, W),
-            mode='bilinear',
-            align_corners=False)
+            self.act(global_act), xl_hw, mode='bilinear', align_corners=False)
 
         global_feat = self.global_embedding(x_g)
         global_feat = F.interpolate(
-            global_feat, size=(H, W), mode='bilinear', align_corners=False)
+            global_feat, xl_hw, mode='bilinear', align_corners=False)
 
         out = local_feat * sig_act + global_feat
         return out
@@ -442,19 +440,16 @@ class InjectionMultiSumCBR(nn.Layer):
         self.act = HSigmoid()
 
     def forward(self, x_l, x_g):
-        B, C, H, W = x_l.shape
+        xl_hw = paddle.shape(x)[2:]
         local_feat = self.local_embedding(x_l)
         # kernel
         global_act = self.global_act(x_g)
         global_act = F.interpolate(
-            self.act(global_act),
-            size=(H, W),
-            mode='bilinear',
-            align_corners=False)
+            self.act(global_act), xl_hw, mode='bilinear', align_corners=False)
         # feat_h
         global_feat = self.global_embedding(x_g)
         global_feat = F.interpolate(
-            global_feat, size=(H, W), mode='bilinear', align_corners=False)
+            global_feat, xl_hw, mode='bilinear', align_corners=False)
         out = local_feat * global_act + global_feat
         return out
 
@@ -467,11 +462,11 @@ class FuseBlockSum(nn.Layer):
         self.fuse2 = ConvBNAct(inp, oup, kernel_size=1, act=None)
 
     def forward(self, x_l, x_h):
-        B, C, H, W = x_l.shape
+        xl_hw = paddle.shape(x)[2:]
         inp = self.fuse1(x_l)
         kernel = self.fuse2(x_h)
         feat_h = F.interpolate(
-            kernel, size=(H, W), mode='bilinear', align_corners=False)
+            kernel, xl_hw, mode='bilinear', align_corners=False)
         out = inp + feat_h
         return out
 
@@ -492,14 +487,11 @@ class FuseBlockMulti(nn.Layer):
         self.act = HSigmoid()
 
     def forward(self, x_l, x_h):
-        B, C, H, W = x_l.shape
+        xl_hw = paddle.shape(x)[2:]
         inp = self.fuse1(x_l)
         sig_act = self.fuse2(x_h)
         sig_act = F.interpolate(
-            self.act(sig_act),
-            size=(H, W),
-            mode='bilinear',
-            align_corners=False)
+            self.act(sig_act), xl_hw, mode='bilinear', align_corners=False)
         out = inp * sig_act
         return out
 
