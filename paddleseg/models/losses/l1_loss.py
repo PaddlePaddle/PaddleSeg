@@ -71,5 +71,15 @@ class L1Loss(nn.L1Loss):
             # [0.2        0.79999995]]
     """
 
-    def __init__(self, reduction='mean'):
+    def __init__(self, reduction='mean', ignore_index=255):
         super().__init__(reduction=reduction)
+        self.ignore_index = ignore_index
+    
+    def forward(self, input, label):
+        mask = label==self.ignore_index
+        label[mask] = 0
+        input[mask] = 0
+        
+        return paddle.nn.functional.l1_loss(
+            input, label, self.reduction, name=self.name)
+ 
