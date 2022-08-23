@@ -77,10 +77,28 @@ class L1Loss(nn.L1Loss):
     
     def forward(self, input, label):
         mask = label==self.ignore_index
+        valid_mask = label!=self.ignore_index
+        invalid_label_cnt = paddle.sum(paddle.cast(mask, 'float32'))
+        valid_label_cnt = paddle.sum(paddle.cast(valid_mask, 'float32'))
+        
         mask.stop_gradient = True
         label[mask] = 0
         input[mask] = 0
+
+        if invalid_label_cnt == 0:
+            return paddle.nn.functional.l1_loss(
+                    input, label, self.reduction, name=self.name)
+        else:
+            output = paddle.nn.functional.l1_loss(
+                input, label, "none", name=self.name)
         
-        return paddle.nn.functional.l1_loss(
-            input, label, self.reduction, name=self.name)
- 
+            if self.reduction == "mean":
+                return paddle.sum(output)/valid_label_cnt
+            elif self.reduction == "none":
+                return output
+            elif self.reduction == "sum":
+                return paddle.sum(output)
+            else:
+                raise ValueError(
+                    "The value of 'reduction' in L1Loss should be 'sum', 'mean' or 'none', but "
+                    "received %s, which is not allowed." % self.reduction)
