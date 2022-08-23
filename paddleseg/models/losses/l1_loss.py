@@ -41,7 +41,6 @@ class L1Loss(nn.L1Loss):
             If `reduction` is ``'mean'``, the reduced mean loss is returned.
             If `reduction` is ``'sum'``, the reduced sum loss is returned.
             Default is ``'mean'``.
-        ignore_index (int, optional): Specifies a target value that is ignored and does not contribute to the input gradient. Default: 255.
     Shape:
         input (Tensor): The input tensor. The shapes is [N, *], where N is batch size and `*` means any number of additional dimensions. It's data type should be float32, float64, int32, int64.
         label (Tensor): label. The shapes is [N, *], same shape as ``input`` . It's data type should be float32, float64, int32, int64.
@@ -75,34 +74,24 @@ class L1Loss(nn.L1Loss):
     def __init__(self, reduction='mean', ignore_index=255):
         super().__init__(reduction=reduction)
         self.ignore_index = ignore_index
+        self.EPS = 1e-10
     
     def forward(self, input, label):
-        mask = label==self.ignore_index
-        valid_mask = label!=self.ignore_index
+        mask = label != self.ignore_index
+        mask = paddle.cast(mask, "float32")
+        label.stop_gradient = True
         mask.stop_gradient = True
-        label[mask] = 0
-        input[mask] = 0
-        
-        invalid_label_cnt = paddle.sum(paddle.cast(mask, 'float32'))
-        valid_label_cnt = paddle.sum(paddle.cast(valid_mask, 'float32'))
 
-        if invalid_label_cnt == 0:
-            return paddle.nn.functional.l1_loss(
-                    input, label, self.reduction, name=self.name)
+        output = paddle.nn.functional.l1_loss(
+            input, label, "none", name=self.name)*mask
+    
+        if self.reduction == "mean":
+            return paddle.mean(output)/(paddle.mean(mask) + self.EPS)
+        elif self.reduction == "none":
+            return output
+        elif self.reduction == "sum":
+            return paddle.sum(output)
         else:
-            output = paddle.nn.functional.l1_loss(
-                input, label, "none", name=self.name)
-        
-            if self.reduction == "mean":
-                if valid_label_cnt == 0:
-                    return paddle.sum(output)
-                else:
-                    return paddle.sum(output)/valid_label_cnt
-            elif self.reduction == "none":
-                return output
-            elif self.reduction == "sum":
-                return paddle.sum(output)
-            else:
-                raise ValueError(
-                    "The value of 'reduction' in L1Loss should be 'sum', 'mean' or 'none', but "
-                    "received %s, which is not allowed." % self.reduction)
+            raise ValueError(
+                "The value of 'reduction' in L1Loss should be 'sum', 'mean' or 'none', but "
+                "received %s, which is not allowed." % self.reduction)
