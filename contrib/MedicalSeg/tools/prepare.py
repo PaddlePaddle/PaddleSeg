@@ -404,6 +404,8 @@ class Prep:
             print(
                 f"Dataset json exists, skipping. Delete file {self.dataset_json_path} to regenerate."
             )
+            with open(self.dataset_json_path, 'r') as f:
+                self.dataset_json_dict = json.loads(f.read())
             return
 
         if not self.dataset_json_path.endswith("dataset.json"):
