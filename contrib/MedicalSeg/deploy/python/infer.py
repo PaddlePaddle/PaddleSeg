@@ -143,9 +143,10 @@ def parse_args():
 
     parser.add_argument('--use_warmup', default=True, type=eval, help='warmup')
 
-    parser.add_argument('--img_shape', default=128, type=int, help='img_shape')
+    parser.add_argument('--img_shape', default=128,nargs='+',help='img_shape')
 
     parser.add_argument('--is_nhwd', default=True, type=eval, help='is_nhwd')
+    parser.add_argument('--igmax', default=False, type=eval, help='if_igmax')
     return parser.parse_args()
 
 
@@ -156,12 +157,12 @@ def use_auto_tune(args):
 
 
 class DeployConfig:
-    def __init__(self, path):
+    def __init__(self, path,igmax=False):
         with codecs.open(path, 'r', 'utf-8') as file:
             self.dic = yaml.load(file, Loader=yaml.FullLoader)
 
         self._transforms = self.load_transforms(self.dic['Deploy'][
-            'transforms'])
+            'transforms'],igmax)
         self._dir = os.path.dirname(path)
 
     @property
@@ -177,7 +178,7 @@ class DeployConfig:
         return os.path.join(self._dir, self.dic['Deploy']['params'])
 
     @staticmethod
-    def load_transforms(t_list):
+    def load_transforms(t_list,igmax=False):
         com = manager.TRANSFORMS
         transforms = []
         for t in t_list:
@@ -185,7 +186,7 @@ class DeployConfig:
             if ctype is not None:
                 transforms.append(com[ctype](**t))
 
-        return T.Compose(transforms)
+        return T.Compose(transforms,igmax=igmax)
 
 
 def auto_tune(args, imgs, img_nums):
@@ -261,7 +262,8 @@ class Predictor:
         https://paddleinference.paddlepaddle.org.cn/product_introduction/summary.html
         """
         self.args = args
-        self.cfg = DeployConfig(args.cfg)
+        self.cfg = DeployConfig(args.cfg,args.igmax)
+
 
         self._init_base_config()
 
@@ -388,7 +390,7 @@ class Predictor:
 
             if args.benchmark:
                 self.autolog.times.stamp()
-
+            data=data.astype("float32")
             if args.use_swl:
 
                 infer_like_model = ModelLikeInfer(input_handle, output_handle,
@@ -396,10 +398,14 @@ class Predictor:
                 data = paddle.to_tensor(data)
                 if args.is_nhwd:
                     data = paddle.squeeze(data, axis=1)
-
-                results = sliding_window_inference(
-                    data, (args.img_shape, args.img_shape, args.img_shape), 1,
-                    infer_like_model.infer_model)
+                if isinstance(args.img_shape,int):
+                    results = sliding_window_inference(
+                        data, (args.img_shape, args.img_shape, args.img_shape), 1,
+                        infer_like_model.infer_model)
+                else:
+                    results = sliding_window_inference(
+                        data, (int(args.img_shape[0]), int(args.img_shape[1]), int(args.img_shape[2])), 1,
+                        infer_like_model.infer_model)
 
                 results = results[0]
 

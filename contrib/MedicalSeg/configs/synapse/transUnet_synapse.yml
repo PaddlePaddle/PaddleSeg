@@ -1,0 +1,69 @@
+_base_: '../_base_/global_configs.yml'
+
+batch_size: 24
+iters: 14000
+
+model:
+  type: TransUnet
+  num_classes: 9
+
+train_dataset:
+  type: Synapse
+  dataset_root: /home/aistudio/SynaDataset/preprocessed
+  result_dir: /home/aistudio/SynaDataset/preprocessed
+  transforms:
+    - type: RandomFlip3D
+      flip_axis: [1,2]
+    - type: RandomRotation90
+      rotate_planes: [[1, 2]]
+    - type: RandomRotation3D
+      degrees: 20
+      rotate_planes: [[1, 2]]           
+    - type: Resize3D
+      size: [1,224,224] 
+      keep_z: True
+
+  num_classes: 9
+  mode: train
+
+
+val_dataset:
+  type: Synapse
+  dataset_root: /home/aistudio/SynaDataset/preprocessed
+  result_dir: /home/aistudio/SynaDataset/preprocessed
+  num_classes: 9
+  transforms:
+    - type: Resize3D
+      size: [1,224,224] 
+      keep_z: True
+
+  mode: val
+
+export:
+  transforms:
+    - type: Resize3D
+      size: [1,224,224] 
+      keep_z: True
+
+
+optimizer:
+  type: sgd
+  momentum: 0.9
+  weight_decay: 0.0001
+
+lr_scheduler:
+  type: PolynomialDecay
+  learning_rate: 0.01
+  decay_steps: 14000
+  end_lr: 0
+  power: 0.9
+
+loss:
+  types:
+    - type: MixedLoss
+      losses:
+        - type: CrossEntropyLoss
+          weight: Null
+        - type: DiceLoss
+      coef: [1, 1]
+  coef: [1]

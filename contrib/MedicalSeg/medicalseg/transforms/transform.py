@@ -38,11 +38,12 @@ class Compose:
         ValueError: when the length of 'transforms' is less than 1.
     """
 
-    def __init__(self, transforms, isnhwd=True):
+    def __init__(self, transforms, isnhwd=True,igmax=False):
         if not isinstance(transforms, list):
             raise TypeError('The transforms must be a list!')
         self.transforms = transforms
         self.isnhwd = isnhwd
+        self.igmax=igmax
 
     def __call__(self, im, label=None, isnhwd=True):
         """
@@ -69,7 +70,7 @@ class Compose:
         if self.isnhwd:
             im = np.expand_dims(im, axis=0)
 
-        if im.max() > 0:
+        if im.max() > 0 and not self.igmax:
             im = im / im.max()
 
         return (im, label)
@@ -83,7 +84,7 @@ class Resize3D:
         order (int, optional): Desired order
     """
 
-    def __init__(self, size, order=1):
+    def __init__(self, size, order=1,keep_z=False):
         """
         resize
         """
@@ -96,6 +97,7 @@ class Resize3D:
         else:
             raise ValueError('Unknown inputs for size: {}'.format(size))
         self.order = order
+        self.keep_z=keep_z
         super().__init__()
 
     def __call__(self, img, label=None):
@@ -107,9 +109,9 @@ class Resize3D:
             numpy ndarray: Rescaled image.
             numpy ndarray: Rescaled label.
         """
-        img = F.resize_3d(img, self.size, self.order)
+        img = F.resize_3d(img, self.size, self.order,self.keep_z)
         if label is not None:
-            label = F.resize_3d(label, self.size, 0)
+            label = F.resize_3d(label, self.size, 0,self.keep_z)
         return img, label
 
 
@@ -573,4 +575,40 @@ class RandomCrop4D:
         if label is not None:
             label = F.crop_3d(label, i, j, k, d, h, w)
 
+        return img, label
+
+@manager.TRANSFORMS.add_component
+class RandomRotation90:
+    """
+    """
+
+    def __init__(self,rotate_planes=[[0, 1], [0, 2], [1, 2]]):
+        """
+        init
+        """
+
+        self.rotate_planes = rotate_planes
+
+        super().__init__()
+
+    def get_params(self):
+        k = np.random.randint(0, 4)
+        angle = 90*k
+        r_plane = self.rotate_planes[random.randint(
+            0, len(self.rotate_planes) - 1)]
+
+        return angle, r_plane
+
+    def __call__(self, img, label=None):
+        """
+        Args:
+            img (numpy ndarray): 3D Image to be flipped.
+            label (numpy ndarray): 3D Label to be flipped.
+        Returns:
+            (np.array). Image after transformation.
+        """
+        angle, r_plane = self.get_params()
+        img = F.rotate_3d(img, r_plane, angle)
+        if label is not None:
+            label = F.rotate_3d(label, r_plane, angle)
         return img, label
