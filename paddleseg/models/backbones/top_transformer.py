@@ -389,11 +389,16 @@ class PyramidPoolAgg(nn.Layer):
         self.stride = stride
 
     def forward(self, inputs):
-        _, _, H, W = inputs[-1].shape
-        H = (H - 1) // self.stride + 1
-        W = (W - 1) // self.stride + 1
-        return paddle.concat(
-            [F.adaptive_avg_pool2d(inp, (H, W)) for inp in inputs], axis=1)
+        out = []
+        ks = 2**len(inputs)
+        stride = self.stride**len(inputs)
+        for x in inputs:
+            x = F.avg_pool2d(x, int(ks), int(stride))
+            ks /= 2
+            stride /= 2
+            out.append(x)
+        out = paddle.concat(out, axis=1)
+        return out
 
 
 class InjectionMultiSum(nn.Layer):
