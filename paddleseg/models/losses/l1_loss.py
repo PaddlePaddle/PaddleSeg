@@ -77,6 +77,7 @@ class L1Loss(nn.L1Loss):
     
     def forward(self, input, label):
         mask = label==self.ignore_index
+        mask.stop_gradient = True
         label[mask] = 0
         input[mask] = 0
         
