@@ -89,7 +89,6 @@ def main(args):
         raise RuntimeError('No configuration file specified.')
 
     cfg = Config(args.cfg)
-    cfg.check_sync_info()
     losses = cfg.loss
 
     val_dataset = cfg.val_dataset
