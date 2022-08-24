@@ -72,7 +72,7 @@ python setup.py install
 
 在产出量化模型之前，我们需要提前准备训练或者fintune好的FP32模型。
 
-此处，我们选用视盘分割数据集和BiseNetV2模型，使用train.py从头开始训练模型。train.py输入参数的介绍，请参考[文档](../../train/train.md)。
+此处，我们选用视盘分割数据集和PP-LiteSeg模型，使用train.py从头开始训练模型。train.py输入参数的介绍，请参考[文档](../../train/train.md)。
 
 在PaddleSeg目录下，执行如下脚本，会自动下载数据集进行训练。
 
@@ -83,7 +83,7 @@ export CUDA_VISIBLE_DEVICES=0
 # set CUDA_VISIBLE_DEVICES=0
 
 python train.py \
-       --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml \
+       --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \
        --do_eval \
        --use_vdl \
        --save_interval 250 \
@@ -120,7 +120,7 @@ qat_train.py和train.py的输入参数基本相似（如下）。注意，量化
 
 ```shell
 python slim/quant/qat_train.py \
-       --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml \
+       --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \
        --model_path output_fp32/best_model/model.pdparams \
        --learning_rate 0.001 \
        --do_eval \
@@ -135,7 +135,7 @@ python slim/quant/qat_train.py \
 
 ```
 python slim/quant/qat_val.py \
-       --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml \
+       --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \
        --model_path output_quant/best_model/model.pdparams
 ```
 
@@ -155,7 +155,7 @@ python slim/quant/qat_val.py \
 
 ```
 python slim/quant/qat_export.py \
-       --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml \
+       --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \
        --model_path output_quant/best_model/model.pdparams \
        --save_dir output_quant_infer
 ```

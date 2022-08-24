@@ -321,30 +321,6 @@ class Config(object):
     @property
     def model(self) -> paddle.nn.Layer:
         model_cfg = self.dic.get('model').copy()
-
-        if not 'num_classes' in model_cfg:
-            num_classes = None
-            try:
-                if self.train_dataset_config:
-                    if hasattr(self.train_dataset_class, 'NUM_CLASSES'):
-                        num_classes = self.train_dataset_class.NUM_CLASSES
-                    elif 'num_classes' in self.train_dataset_config:
-                        num_classes = self.train_dataset_config['num_classes']
-                    elif hasattr(self.train_dataset, 'num_classes'):
-                        num_classes = self.train_dataset.num_classes
-                elif self.val_dataset_config:
-                    if hasattr(self.val_dataset_class, 'NUM_CLASSES'):
-                        num_classes = self.val_dataset_class.NUM_CLASSES
-                    elif 'num_classes' in self.val_dataset_config:
-                        num_classes = self.val_dataset_config['num_classes']
-                    elif hasattr(self.val_dataset, 'num_classes'):
-                        num_classes = self.val_dataset.num_classes
-            except FileNotFoundError:
-                warnings.warn("`dataset_root` is not found. Is it correct?")
-
-            if num_classes is not None:
-                model_cfg['num_classes'] = num_classes
-
         if not self._model:
             self._model = self._load_object(model_cfg)
         return self._model
@@ -485,9 +461,11 @@ class Config(object):
         num_classes = num_classes_set.pop()
         if not hasattr(self.dic.get('model'), 'num_classes'):
             self.dic['model']['num_classes'] = num_classes
-        if self.train_dataset_config and not hasattr(
-                self.dic.get('train_dataset'), 'num_classes'):
+        if self.train_dataset_config and \
+            (not hasattr(self.dic.get('train_dataset'), 'num_classes')) and \
+            (not hasattr(self.train_dataset_class, 'NUM_CLASSES')):
             self.dic['train_dataset']['num_classes'] = num_classes
-        if self.val_dataset_config and not hasattr(
-                self.dic.get('val_dataset'), 'num_classes'):
+        if self.val_dataset_config and \
+            (not hasattr(self.dic.get('val_dataset'), 'num_classes')) and \
+            (not hasattr(self.val_dataset_class, 'NUM_CLASSES')):
             self.dic['val_dataset']['num_classes'] = num_classes
