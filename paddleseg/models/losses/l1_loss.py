@@ -76,7 +76,7 @@ class L1Loss(nn.L1Loss):
         super().__init__(reduction=reduction)
         self.ignore_index = ignore_index
         self.EPS = 1e-10
-    
+
     def forward(self, input, label):
         mask = label != self.ignore_index
         mask = paddle.cast(mask, "float32")
@@ -84,10 +84,10 @@ class L1Loss(nn.L1Loss):
         mask.stop_gradient = True
 
         output = paddle.nn.functional.l1_loss(
-            input, label, "none", name=self.name)*mask
-    
+            input, label, "none", name=self.name) * mask
+
         if self.reduction == "mean":
-            return paddle.mean(output)/(paddle.mean(mask) + self.EPS)
+            return paddle.mean(output) / (paddle.mean(mask) + self.EPS)
         elif self.reduction == "none":
             return output
         elif self.reduction == "sum":
