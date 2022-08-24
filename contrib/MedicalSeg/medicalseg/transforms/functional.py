@@ -22,7 +22,7 @@ import scipy.ndimage
 import SimpleITK as sitk
 
 
-def resize_3d(img, size, order=1,keep_z=False):
+def resize_3d(img, size, order=1, keep_z=False):
     r"""Resize the input numpy ndarray to the given size.
     Args:
         img (numpy ndarray): Image to be resized.
@@ -48,7 +48,7 @@ def resize_3d(img, size, order=1,keep_z=False):
         ow, oh, od = size[2], size[1], size[0]
 
     if keep_z:
-        od=d
+        od = d
     if img.ndim == 3:
         resize_factor = np.array([od, oh, ow]) / img.shape
         output = scipy.ndimage.zoom(

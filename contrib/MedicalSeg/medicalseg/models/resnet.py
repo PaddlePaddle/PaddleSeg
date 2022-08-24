@@ -15,8 +15,8 @@
 # reference: https://arxiv.org/pdf/1512.03385
 
 from __future__ import absolute_import, division, print_function
-import os,sys
-sys.path.insert(0,os.getcwd()+'//..//..')
+import os, sys
+sys.path.insert(0, os.getcwd() + '//..//..')
 import numpy as np
 import paddle
 from paddle import ParamAttr
@@ -28,9 +28,6 @@ from paddle.regularizer import L2Decay
 import math
 from medicalseg.cvlibs import manager
 from medicalseg.utils import utils
-
-
-
 
 MODEL_URLS = {
     "ResNet18":
@@ -315,9 +312,9 @@ class ResNet(nn.Layer):
             self.lr_mult_list = [1.0, 1.0, 1.0, 1.0, 1.0]
 
         assert isinstance(self.stride_list, (
-            list, tuple
-        )), "stride_list should be in (list, tuple) but got {}".format(
-            type(self.stride_list))
+            list,
+            tuple)), "stride_list should be in (list, tuple) but got {}".format(
+                type(self.stride_list))
         assert len(self.stride_list
                    ) == 5, "stride_list length should be 5 but got {}".format(
                        len(self.stride_list))
@@ -385,12 +382,10 @@ class ResNet(nn.Layer):
             weight_attr=ParamAttr(initializer=Uniform(-stdv, stdv)))
 
         self.data_format = data_format
-        self.features=[]
-
-
+        self.features = []
 
     def forward(self, x):
-        features=[]
+        features = []
         with paddle.static.amp.fp16_guard():
             if self.data_format == "NHWC":
                 x = paddle.transpose(x, [0, 2, 3, 1])
@@ -398,15 +393,14 @@ class ResNet(nn.Layer):
             x = self.stem(x)
             features.append(x)
             x = self.max_pool(x)
-            tag_list=[]
-            count=0
+            tag_list = []
+            count = 0
             for depth in self.block_depth:
-                count=count+depth
-                tag_list.append(count-1)
+                count = count + depth
+                tag_list.append(count - 1)
 
-
-            for index,block in enumerate(self.blocks):
-                x=block(x)
+            for index, block in enumerate(self.blocks):
+                x = block(x)
                 if index in tag_list:
                     features.append(x)
 
@@ -414,12 +408,12 @@ class ResNet(nn.Layer):
             # x = self.avg_pool(x)
             # x = self.flatten(x)
             # x = self.fc(x)
-        return features[3],features[2::-1]
+        return features[3], features[2::-1]
 
-
-    def init_weight(self,pretrained,url):
+    def init_weight(self, pretrained, url):
         if pretrained:
             utils.load_entire_model(self, url)
+
 
 def ResNet50(pretrained=False, use_ssld=False, **kwargs):
     """
@@ -436,16 +430,14 @@ def ResNet50(pretrained=False, use_ssld=False, **kwargs):
         stages_pattern=MODEL_STAGES_PATTERN["ResNet50"],
         version="vb",
         **kwargs)
-    model.init_weight(pretrained,MODEL_URLS["ResNet50"])
+    model.init_weight(pretrained, MODEL_URLS["ResNet50"])
     return model
 
 
-
-if __name__=="__main__":
-    model=ResNet50()
-    test_x=paddle.rand([1,3,224,224])
-    x,feature_list=model(test_x)
+if __name__ == "__main__":
+    model = ResNet50()
+    test_x = paddle.rand([1, 3, 224, 224])
+    x, feature_list = model(test_x)
     print(x.shape)
     for feature in feature_list:
         print(feature.shape)
-

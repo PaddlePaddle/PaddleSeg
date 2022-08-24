@@ -38,12 +38,12 @@ class Compose:
         ValueError: when the length of 'transforms' is less than 1.
     """
 
-    def __init__(self, transforms, isnhwd=True,igmax=False):
+    def __init__(self, transforms, isnhwd=True, igmax=False):
         if not isinstance(transforms, list):
             raise TypeError('The transforms must be a list!')
         self.transforms = transforms
         self.isnhwd = isnhwd
-        self.igmax=igmax
+        self.igmax = igmax
 
     def __call__(self, im, label=None, isnhwd=True):
         """
@@ -84,7 +84,7 @@ class Resize3D:
         order (int, optional): Desired order
     """
 
-    def __init__(self, size, order=1,keep_z=False):
+    def __init__(self, size, order=1, keep_z=False):
         """
         resize
         """
@@ -97,7 +97,7 @@ class Resize3D:
         else:
             raise ValueError('Unknown inputs for size: {}'.format(size))
         self.order = order
-        self.keep_z=keep_z
+        self.keep_z = keep_z
         super().__init__()
 
     def __call__(self, img, label=None):
@@ -109,9 +109,9 @@ class Resize3D:
             numpy ndarray: Rescaled image.
             numpy ndarray: Rescaled label.
         """
-        img = F.resize_3d(img, self.size, self.order,self.keep_z)
+        img = F.resize_3d(img, self.size, self.order, self.keep_z)
         if label is not None:
-            label = F.resize_3d(label, self.size, 0,self.keep_z)
+            label = F.resize_3d(label, self.size, 0, self.keep_z)
         return img, label
 
 
@@ -577,12 +577,13 @@ class RandomCrop4D:
 
         return img, label
 
+
 @manager.TRANSFORMS.add_component
 class RandomRotation90:
     """
     """
 
-    def __init__(self,rotate_planes=[[0, 1], [0, 2], [1, 2]]):
+    def __init__(self, rotate_planes=[[0, 1], [0, 2], [1, 2]]):
         """
         init
         """
@@ -593,7 +594,7 @@ class RandomRotation90:
 
     def get_params(self):
         k = np.random.randint(0, 4)
-        angle = 90*k
+        angle = 90 * k
         r_plane = self.rotate_planes[random.randint(
             0, len(self.rotate_planes) - 1)]
 

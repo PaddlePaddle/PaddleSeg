@@ -37,33 +37,37 @@ class Synapse(paddle.io.Dataset):
                  dataset_json_path=""):
         super(Synapse, self).__init__()
         self.dataset_root = dataset_root
-        self.transforms = Compose(transforms,igmax=True)
+        self.transforms = Compose(transforms, igmax=True)
         self.mode = mode.lower()
         self.num_classes = num_classes
         self.dataset_json_path = dataset_json_path
         if self.mode == 'train':
-            self.filenames=os.listdir(os.path.join(dataset_root,"train",'img'))
+            self.filenames = os.listdir(
+                os.path.join(dataset_root, "train", 'img'))
         elif self.mode == 'val':
-            self.filenames=os.listdir(os.path.join(dataset_root,"val",'img'))
+            self.filenames = os.listdir(
+                os.path.join(dataset_root, "val", 'img'))
         else:
             raise ValueError(
-                "`mode` should be 'train' or 'val', but got {}.".format(
-                    mode))
-
-
+                "`mode` should be 'train' or 'val', but got {}.".format(mode))
 
     def __getitem__(self, idx):
-        if self.mode=="train":
-            image_path= os.path.join(self.dataset_root,'train','img',self.filenames[idx])
-            label_path= os.path.join(self.dataset_root,'train','label',self.filenames[idx].replace("img",'label'))
+        if self.mode == "train":
+            image_path = os.path.join(self.dataset_root, 'train', 'img',
+                                      self.filenames[idx])
+            label_path = os.path.join(self.dataset_root, 'train', 'label',
+                                      self.filenames[idx].replace("img",
+                                                                  'label'))
         else:
-            image_path = os.path.join(self.dataset_root, 'val', 'img', self.filenames[idx])
-            label_path = os.path.join(self.dataset_root, 'val', 'label', self.filenames[idx].replace("img",'label'))
+            image_path = os.path.join(self.dataset_root, 'val', 'img',
+                                      self.filenames[idx])
+            label_path = os.path.join(self.dataset_root, 'val', 'label',
+                                      self.filenames[idx].replace("img",
+                                                                  'label'))
 
         im, label = self.transforms(im=image_path, label=label_path)
 
         return im.astype('float32'), label, self.filenames[idx]  # npy file name
-
 
     def __len__(self):
         return len(self.filenames)

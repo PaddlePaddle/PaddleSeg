@@ -275,7 +275,8 @@ def _get_scan_interval(image_size, roi_size, num_spatial_dims):
             scan_interval[i] = int(roi_size[i])
         else:
             # this means that it's r-16 (if r>=64) and r*0.75 (if r<=64)
-            scan_interval[i] = int(max(max(roi_size[i] - 16, roi_size[i] * 0.75),1))
+            scan_interval[i] = int(
+                max(max(roi_size[i] - 16, roi_size[i] * 0.75), 1))
     return tuple(scan_interval)
 
 

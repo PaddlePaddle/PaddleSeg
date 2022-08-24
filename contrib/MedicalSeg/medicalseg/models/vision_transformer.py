@@ -16,14 +16,13 @@
 # reference: https://arxiv.org/abs/2010.11929
 
 from collections.abc import Callable
-import os,sys
-sys.path.insert(0,os.getcwd()+'//..//..')
+import os, sys
+sys.path.insert(0, os.getcwd() + '//..//..')
 import numpy as np
 import paddle
 import paddle.nn as nn
 from paddle.nn.initializer import TruncatedNormal, Constant, Normal
 # print("sys path:{}".format(sys.path))
-
 
 from medicalseg.cvlibs import manager
 from medicalseg.utils import utils
@@ -71,9 +70,11 @@ def drop_path(x, drop_prob=0., training=False):
     output = x.divide(keep_prob) * random_tensor
     return output
 
+
 class Identity(nn.Layer):
-    def forward(self,x):
+    def forward(self, x):
         return x
+
 
 class DropPath(nn.Layer):
     """Drop paths (Stochastic Depth) per sample  (when applied in main path of residual blocks).
@@ -202,14 +203,16 @@ class Block(nn.Layer):
         x = x + self.drop_path(self.mlp(self.norm2(x)))
         return x
 
+
 class PatchEmbedReplace(nn.Layer):
-    def __init__(self,in_chans=3, embed_dim=768):
+    def __init__(self, in_chans=3, embed_dim=768):
         super().__init__()
-        self.proj = nn.Conv2D(
-            in_chans, embed_dim, kernel_size=1, stride=1)
+        self.proj = nn.Conv2D(in_chans, embed_dim, kernel_size=1, stride=1)
+
     def forward(self, x):
         x = self.proj(x).flatten(2).transpose((0, 2, 1))
         return x
+
 
 class PatchEmbed(nn.Layer):
     """ Image to Patch Embedding
@@ -331,10 +334,9 @@ class VisionTransformer(nn.Layer):
         x = self.head(x)
         return x
 
-    def init_weight(self,pretrained,url):
+    def init_weight(self, pretrained, url):
         if pretrained:
             utils.load_entire_model(self, url)
-
 
 
 def ViT_base_patch16_224(pretrained=False, use_ssld=False, **kwargs):
@@ -347,15 +349,14 @@ def ViT_base_patch16_224(pretrained=False, use_ssld=False, **kwargs):
         qkv_bias=True,
         epsilon=1e-6,
         **kwargs)
-    model.init_weight(pretrained,MODEL_URLS["ViT_base_patch16_224"])
-    model.patch_embed=PatchEmbedReplace(in_chans=1024)
-    model.head=Identity()
+    model.init_weight(pretrained, MODEL_URLS["ViT_base_patch16_224"])
+    model.patch_embed = PatchEmbedReplace(in_chans=1024)
+    model.head = Identity()
     return model
 
-if __name__=="__main__":
-    model=ViT_base_patch16_224(pretrained=True)
-    test_x=paddle.rand([1,1024,14,14])
-    output=model(test_x)
+
+if __name__ == "__main__":
+    model = ViT_base_patch16_224(pretrained=True)
+    test_x = paddle.rand([1, 1024, 14, 14])
+    output = model(test_x)
     print(output.shape)
-
-

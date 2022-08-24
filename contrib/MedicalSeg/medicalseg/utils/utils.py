@@ -54,7 +54,7 @@ def download_pretrained_model(pretrained_model):
         str: the path of pretrained weight
     """
     assert urlparse(pretrained_model).netloc, "The url is not valid."
-    temp=pretrained_model
+    temp = pretrained_model
     pretrained_model = unquote(pretrained_model)
     savename = pretrained_model.split('/')[-1]
     if not savename.endswith(('tgz', 'tar.gz', 'tar', 'zip')):
@@ -71,9 +71,12 @@ def download_pretrained_model(pretrained_model):
                 extraname=savename)
             pretrained_model = os.path.join(pretrained_model, 'model.pdparams')
             if temp.endswith("ResNet50_pretrained.pdparams"):
-                pretrained_model=pretrained_model.replace("model.pdparams","ResNet50_pretrained.pdparams")
+                pretrained_model = pretrained_model.replace(
+                    "model.pdparams", "ResNet50_pretrained.pdparams")
             elif temp.endswith("ViT_base_patch16_224_pretrained.pdparams"):
-                pretrained_model = pretrained_model.replace("model.pdparams", "ViT_base_patch16_224_pretrained.pdparams")
+                pretrained_model = pretrained_model.replace(
+                    "model.pdparams",
+                    "ViT_base_patch16_224_pretrained.pdparams")
 
     return pretrained_model
 
