@@ -186,7 +186,7 @@ def evaluate(
         result_dict['auc_roc'] = auc_roc
 
     if print_detail:
-        infor = "[EVAL] #Images: {}, Dice: {:.4f}, Loss: {:6f}".format(
+        infor = "[EVAL] #Cases: {}, Dice: {:.4f}, Loss: {:6f}".format(
             len(eval_dataset), mdice, loss_all[0])
         infor = infor + auc_infor if auc_roc else infor
         logger.info(infor)
