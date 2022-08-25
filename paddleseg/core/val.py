@@ -226,7 +226,7 @@ def evaluate(model,
         auc_infor = ' Auc_roc: {:.4f}'.format(auc_roc)
 
     if print_detail:
-        infor = "[EVAL] #Images: {} mIoU: {:.4f} Acc: {:.4f} Kappa: {:.4f} Dice: {:.4f}".format(
+        infor = "[EVAL] #Cases: {} mIoU: {:.4f} Acc: {:.4f} Kappa: {:.4f} Dice: {:.4f}".format(
             len(eval_dataset), miou, acc, kappa, mdice)
         infor = infor + auc_infor if auc_roc else infor
         logger.info(infor)
