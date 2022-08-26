@@ -46,6 +46,11 @@ def parse_args():
     parser.add_argument(
         "--config", dest="cfg", help="The config file.", default=None, type=str)
     parser.add_argument(
+        '--opts',
+        help='update the key value for all options',
+        default=None,
+        nargs='+')
+    parser.add_argument(
         '--model_path',
         dest='model_path',
         help='The path of model for evaluation',
@@ -144,7 +149,7 @@ def main(args):
     if not args.cfg:
         raise RuntimeError('No configuration file specified.')
 
-    cfg = Config(args.cfg)
+    cfg = Config(args.cfg, opts=args.opts)
     cfg.check_sync_info()
 
     # Only support for the DeepLabv3+ model
