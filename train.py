@@ -47,6 +47,11 @@ def parse_args():
         type=float,
         default=None)
     parser.add_argument(
+        '--opts',
+        help='update the key value for all options',
+        default=None,
+        nargs='+')
+    parser.add_argument(
         '--save_interval',
         dest='save_interval',
         help='How many iters to save a model snapshot once during training.',
@@ -174,7 +179,8 @@ def main(args):
         args.cfg,
         learning_rate=args.learning_rate,
         iters=args.iters,
-        batch_size=args.batch_size)
+        batch_size=args.batch_size,
+        opts=args.opts)
 
     # Only support for the DeepLabv3+ model
     if args.data_format == 'NHWC':

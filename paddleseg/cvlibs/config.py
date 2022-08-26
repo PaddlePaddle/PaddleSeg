@@ -16,9 +16,11 @@ import codecs
 import os
 from typing import Any, Dict, Generic
 import warnings
+from ast import literal_eval
 
 import paddle
 import yaml
+import six
 
 from paddleseg.cvlibs import manager
 from paddleseg.utils import logger
@@ -70,7 +72,8 @@ class Config(object):
                  path: str,
                  learning_rate: float=None,
                  batch_size: int=None,
-                 iters: int=None):
+                 iters: int=None,
+                 opts: list=None):
         if not path:
             raise ValueError('Please specify the configuration file path.')
 
@@ -85,7 +88,10 @@ class Config(object):
             raise RuntimeError('Config file should in yaml format!')
 
         self.update(
-            learning_rate=learning_rate, batch_size=batch_size, iters=iters)
+            learning_rate=learning_rate,
+            batch_size=batch_size,
+            iters=iters,
+            opts=opts)
 
     def _update_dic(self, dic, base_dic):
         """
@@ -122,7 +128,8 @@ class Config(object):
     def update(self,
                learning_rate: float=None,
                batch_size: int=None,
-               iters: int=None):
+               iters: int=None,
+               opts: list=None):
         '''Update config'''
         if learning_rate:
             if 'lr_scheduler' in self.dic:
@@ -135,6 +142,27 @@ class Config(object):
 
         if iters:
             self.dic['iters'] = iters
+
+        # fix parameters by --opts of command
+        if opts is not None:
+            if len(opts) % 2 != 0 or len(opts) == 0:
+                raise ValueError(
+                    "Command line options config `--opts` format error! It should be even length like: k1 v1 k2 v2 ... Please check it: {}".
+                    format(opts))
+            for key, value in zip(opts[0::2], opts[1::2]):
+                if isinstance(value, six.string_types):
+                    try:
+                        value = literal_eval(value)
+                    except ValueError:
+                        pass
+                    except SyntaxError:
+                        pass
+                key_list = key.split('.')
+                dic = self.dic
+                for subkey in key_list[:-1]:
+                    dic.setdefault(subkey, dict())
+                    dic = dic[subkey]
+                dic[key_list[-1]] = value
 
     @property
     def batch_size(self) -> int:
