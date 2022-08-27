@@ -387,8 +387,18 @@ class PyramidPoolAgg(nn.Layer):
     def __init__(self, stride):
         super().__init__()
         self.stride = stride
+        self.tmp = Identity()  # avoid the error of paddle.flops
 
     def forward(self, inputs):
+        '''
+        # The F.adaptive_avg_pool2d does not support the (H, W) be Tensor,
+        # so exporting the inference model will raise error.
+        _, _, H, W = inputs[-1].shape
+        H = (H - 1) // self.stride + 1
+        W = (W - 1) // self.stride + 1
+        return paddle.concat(
+            [F.adaptive_avg_pool2d(inp, (H, W)) for inp in inputs], axis=1)
+        '''
         out = []
         ks = 2**len(inputs)
         stride = self.stride**len(inputs)
