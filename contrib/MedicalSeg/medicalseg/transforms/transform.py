@@ -125,7 +125,10 @@ class RandomRotation3D:
             Default is the center of the image.
     """
 
-    def __init__(self, degrees, rotate_planes=[[0, 1], [0, 2], [1, 2]]):
+    def __init__(self,
+                 degrees,
+                 prob=1.0,
+                 rotate_planes=[[0, 1], [0, 2], [1, 2]]):
         """
         init
         """
@@ -141,6 +144,7 @@ class RandomRotation3D:
             self.degrees = degrees
 
         self.rotate_planes = rotate_planes
+        self.prob = prob
 
         super().__init__()
 
@@ -163,10 +167,60 @@ class RandomRotation3D:
         Returns:
             (np.array). Image after transformation.
         """
-        angle, r_plane = self.get_params(self.degrees)
-        img = F.rotate_3d(img, r_plane, angle)
-        if label is not None:
-            label = F.rotate_3d(label, r_plane, angle)
+        if random.random() < self.prob:
+            angle, r_plane = self.get_params(self.degrees)
+            img = F.rotate_3d(img, r_plane, angle)
+            if label is not None:
+                label = F.rotate_3d(label, r_plane, angle)
+        return img, label
+
+
+@manager.TRANSFORMS.add_component
+class RandomFlipRotation3D:
+    """Rotate the image by angle.
+    Args:
+        degrees (sequence or float or int): Range of degrees to select from.
+            If degrees is a number instead of sequence like (min, max), the range of degrees
+            will be (-degrees, +degrees).
+        center (2-tuple, optional): Optional center of rotation.
+            Origin is the upper left corner.
+            Default is the center of the image.
+    """
+
+    def __init__(self,
+                 prob=0.5,
+                 rotate_planes=[[0, 1], [0, 2], [1, 2]],
+                 flip_axis=[0, 1, 2]):
+        """
+        init
+        """
+        self.rotate_planes = rotate_planes
+        self.prob = prob
+        self.flip = RandomFlip3D(prob=1.0, flip_axis=flip_axis)
+        super().__init__()
+
+    def get_params(self):
+        """Get parameters for ``rotate`` for a random rotation.
+        Returns:
+            sequence: params to be passed to ``rotate`` for random rotation.
+        """
+        k = np.random.randint(0, 4)
+
+        return 90, k
+
+    def __call__(self, img, label=None):
+        """
+        Args:
+            img (numpy ndarray): 3D Image to be flipped.
+            label (numpy ndarray): 3D Label to be flipped.
+        Returns:
+            (np.array). Image after transformation.
+        """
+        if random.random() < self.prob:
+            img = F.rotate_3d(img, [1, 2], 90)
+            if label is not None:
+                label = F.rotate_3d(label, [1, 2], 90)
+            img, label = self.flip(img, label)
         return img, label
 
 

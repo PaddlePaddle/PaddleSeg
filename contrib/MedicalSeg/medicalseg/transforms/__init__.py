@@ -12,5 +12,5 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .transform import Compose, RandomFlip3D, RandomResizedCrop3D, RandomRotation3D, Resize3D
+from .transform import Compose, RandomFlip3D, RandomResizedCrop3D, RandomRotation3D, Resize3D, RandomFlipRotation3D
 from . import functional

@@ -385,7 +385,8 @@ class Predictor:
             data = np.array([
                 self._preprocess(p) for p in imgs_path[i:i + args.batch_size]
             ])
-
+            if args.model_name == "TransUNet":
+                data = np.squeeze(data, axis=0)
             if args.benchmark:
                 self.autolog.times.stamp()
 
@@ -418,7 +419,8 @@ class Predictor:
 
             if args.benchmark:
                 self.autolog.times.end(stamp=True)
-
+            if args.model_name == "TransUNet":
+                results = results[np.newaxis, :, :, :, :]
             self._save_npy(results, imgs_path[i:i + args.batch_size])
         logger.info("Finish")
 
@@ -461,7 +463,16 @@ class Predictor:
                         f_np)
 
             img = img.split(".", maxsplit=1)[0] + ".npy"
-
+        if self.args.model_name == "TransUNet":
+            im_list = []
+            imgs = np.load(img)
+            imgs = imgs[:, np.newaxis, :, :]
+            for i in range(imgs.shape[0]):
+                im = imgs[i]
+                im = self.cfg.transforms(im)[0]
+                im_list.append(im)
+            img = np.concatenate(im_list)
+            return img
         return self.cfg.transforms(img)[0]
 
     def _postprocess(self, results):
