@@ -1,9 +1,9 @@
+_base_: '../_base_/cityscapes.yml'
+
 batch_size: 1
 iters: 150000
 
 train_dataset:
-  type: Cityscapes
-  dataset_root: data/cityscapes/
   transforms:
     - type: ResizeStepScaling
       min_scale_factor: 0.5
@@ -28,8 +28,6 @@ train_dataset:
   mode: train
 
 val_dataset:
-  type: Cityscapes
-  dataset_root: data/cityscapes
   transforms:
     - type: Normalize
       mean: [0.485, 0.456, 0.406]
