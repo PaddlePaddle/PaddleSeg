@@ -29,24 +29,6 @@ import paddle.nn.functional as F
 from medicalseg.cvlibs import manager
 from medicalseg.utils import load_pretrained_model
 
-logger = logging.getLogger(__name__)
-
-ATTENTION_Q = "MultiHeadDotProductAttention_1/query"
-ATTENTION_K = "MultiHeadDotProductAttention_1/key"
-ATTENTION_V = "MultiHeadDotProductAttention_1/value"
-ATTENTION_OUT = "MultiHeadDotProductAttention_1/out"
-FC_0 = "MlpBlock_3/Dense_0"
-FC_1 = "MlpBlock_3/Dense_1"
-ATTENTION_NORM = "LayerNorm_0"
-MLP_NORM = "LayerNorm_2"
-
-
-def np2th(weights, conv=False):
-    """Possibly convert HWIO to OIHW."""
-    if conv:
-        weights = weights.transpose([3, 2, 0, 1])
-    return paddle.to_tensor(weights)
-
 
 def swish(x):
     return x * F.sigmoid(x)
@@ -197,59 +179,6 @@ class Block(nn.Layer):
         x = self.ffn(x)
         x = x + h
         return x, weights
-
-    def load_from(self, weights, n_block):
-        ROOT = f"Transformer/encoderblock_{n_block}"
-        with paddle.no_grad():
-            query_weight = np2th(weights[pjoin(
-                ROOT, ATTENTION_Q, "kernel")]).reshape(
-                    [self.hidden_size, self.hidden_size])
-            key_weight = np2th(weights[pjoin(
-                ROOT, ATTENTION_K, "kernel")]).reshape(
-                    [self.hidden_size, self.hidden_size])
-            value_weight = np2th(weights[pjoin(
-                ROOT, ATTENTION_V, "kernel")]).reshape(
-                    [self.hidden_size, self.hidden_size])
-            out_weight = np2th(weights[pjoin(
-                ROOT, ATTENTION_OUT, "kernel")]).reshape(
-                    [self.hidden_size, self.hidden_size])
-
-            query_bias = np2th(weights[pjoin(ROOT, ATTENTION_Q,
-                                             "bias")]).reshape([-1])
-            key_bias = np2th(weights[pjoin(ROOT, ATTENTION_K, "bias")]).reshape(
-                [-1])
-            value_bias = np2th(weights[pjoin(ROOT, ATTENTION_V,
-                                             "bias")]).reshape([-1])
-            out_bias = np2th(weights[pjoin(ROOT, ATTENTION_OUT,
-                                           "bias")]).reshape([-1])
-
-            self.attn.query.weight.set_value(query_weight)
-            self.attn.key.weight.set_value(key_weight)
-            self.attn.value.weight.set_value(value_weight)
-            self.attn.out.weight.set_value(out_weight)
-            self.attn.query.bias.set_value(query_bias)
-            self.attn.key.bias.set_value(key_bias)
-            self.attn.value.bias.set_value(value_bias)
-            self.attn.out.bias.set_value(out_bias)
-
-            mlp_weight_0 = np2th(weights[pjoin(ROOT, FC_0, "kernel")])
-            mlp_weight_1 = np2th(weights[pjoin(ROOT, FC_1, "kernel")])
-            mlp_bias_0 = np2th(weights[pjoin(ROOT, FC_0, "bias")]).T
-            mlp_bias_1 = np2th(weights[pjoin(ROOT, FC_1, "bias")]).T
-
-            self.ffn.fc1.weight.set_value(mlp_weight_0)
-            self.ffn.fc2.weight.set_value(mlp_weight_1)
-            self.ffn.fc1.bias.set_value(mlp_bias_0)
-            self.ffn.fc2.bias.set_value(mlp_bias_1)
-
-            self.attention_norm.weight.set_value(
-                np2th(weights[pjoin(ROOT, ATTENTION_NORM, "scale")]))
-            self.attention_norm.bias.set_value(
-                np2th(weights[pjoin(ROOT, ATTENTION_NORM, "bias")]))
-            self.ffn_norm.weight.set_value(
-                np2th(weights[pjoin(ROOT, MLP_NORM, "scale")]))
-            self.ffn_norm.bias.set_value(
-                np2th(weights[pjoin(ROOT, MLP_NORM, "bias")]))
 
 
 class Encoder(nn.Layer):
@@ -449,10 +378,3 @@ class TransUNet(nn.Layer):
         logits = self.segmentation_head(x)
         logits = paddle.unsqueeze(logits, axis=2)
         return [logits]
-
-
-def export_weight_names(net):
-    print(net.state_dict().keys())
-    with open('paddle.txt', 'w') as f:
-        for key in net.state_dict().keys():
-            f.write(key + '\n')

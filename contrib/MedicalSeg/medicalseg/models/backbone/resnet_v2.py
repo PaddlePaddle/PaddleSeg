@@ -25,13 +25,6 @@ import paddle.nn.functional as F
 from medicalseg.cvlibs import manager
 
 
-def np2th(weights, conv=False):
-    """Possibly convert HWIO to OIHW."""
-    if conv:
-        weights = weights.transpose([3, 2, 0, 1])
-    return paddle.to_tensor(weights)
-
-
 class StdConv2d(nn.Conv2D):
     def forward(self, x):
         if self._padding_mode != 'zeros':
@@ -116,48 +109,6 @@ class PreActBottleneck(nn.Layer):
         y = self.relu(residual + y)
         return y
 
-    def load_from(self, weights, n_block, n_unit):
-        conv1_weight = np2th(
-            weights[pjoin(n_block, n_unit, "conv1/kernel")], conv=True)
-        conv2_weight = np2th(
-            weights[pjoin(n_block, n_unit, "conv2/kernel")], conv=True)
-        conv3_weight = np2th(
-            weights[pjoin(n_block, n_unit, "conv3/kernel")], conv=True)
-
-        gn1_weight = np2th(weights[pjoin(n_block, n_unit, "gn1/scale")])
-        gn1_bias = np2th(weights[pjoin(n_block, n_unit, "gn1/bias")])
-
-        gn2_weight = np2th(weights[pjoin(n_block, n_unit, "gn2/scale")])
-        gn2_bias = np2th(weights[pjoin(n_block, n_unit, "gn2/bias")])
-
-        gn3_weight = np2th(weights[pjoin(n_block, n_unit, "gn3/scale")])
-        gn3_bias = np2th(weights[pjoin(n_block, n_unit, "gn3/bias")])
-
-        self.conv1.weight.set_value(conv1_weight)
-        self.conv2.weight.set_value(conv2_weight)
-        self.conv3.weight.set_value(conv3_weight)
-
-        self.gn1.weight.set_value(gn1_weight.reshape([-1]))
-        self.gn1.bias.set_value(gn1_bias.reshape([-1]))
-
-        self.gn2.weight.set_value(gn2_weight.reshape([-1]))
-        self.gn2.bias.set_value(gn2_bias.reshape([-1]))
-
-        self.gn3.weight.set_value(gn3_weight.reshape([-1]))
-        self.gn3.bias.set_value(gn3_bias.reshape([-1]))
-
-        if hasattr(self, 'downsample'):
-            proj_conv_weight = np2th(
-                weights[pjoin(n_block, n_unit, "conv_proj/kernel")], conv=True)
-            proj_gn_weight = np2th(weights[pjoin(n_block, n_unit,
-                                                 "gn_proj/scale")])
-            proj_gn_bias = np2th(weights[pjoin(n_block, n_unit,
-                                               "gn_proj/bias")])
-
-            self.downsample.weight.set_value(proj_conv_weight)
-            self.gn_proj.weight.set_value(proj_gn_weight.reshape([-1]))
-            self.gn_proj.bias.set_value(proj_gn_bias.reshape([-1]))
-
 
 @manager.BACKBONES.add_component
 class ResNetV2(nn.Layer):
@@ -206,8 +157,6 @@ class ResNetV2(nn.Layer):
             if x.shape[2] == right_size:
                 feat = x
             else:
-                # pad = right_size - x.shape[2]
-                # assert pad < 3 and pad > 0, "x {} should {}".format(x.shape, right_size)
                 feat = paddle.zeros((b, x.shape[1], right_size, right_size))
                 feat[:, :, 0:x.shape[2], 0:x.shape[3]] = x[:]
             features.append(feat)
