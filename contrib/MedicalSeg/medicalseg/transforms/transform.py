@@ -177,14 +177,11 @@ class RandomRotation3D:
 
 @manager.TRANSFORMS.add_component
 class RandomFlipRotation3D:
-    """Rotate the image by angle.
+    """ Flip and rotate an 3D image 90 degrees with a certain probability.
     Args:
-        degrees (sequence or float or int): Range of degrees to select from.
-            If degrees is a number instead of sequence like (min, max), the range of degrees
-            will be (-degrees, +degrees).
-        center (2-tuple, optional): Optional center of rotation.
-            Origin is the upper left corner.
-            Default is the center of the image.
+        prob (float, optional): A probability of vertical flipping. Default: 0.5.
+        rotate_planes (list, optional): Randomly select rotate planes from this list.
+        flip_axis (list, optional): Randomly select flip axis from this list.
     """
 
     def __init__(self,

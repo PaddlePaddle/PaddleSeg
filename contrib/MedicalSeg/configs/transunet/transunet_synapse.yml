@@ -61,8 +61,6 @@ test_dataset:
       size: [1 ,224, 224]
   mode: test
 
-
-
 optimizer:
   type: sgd
   momentum: 0.9
@@ -89,3 +87,5 @@ export:
   transforms:
     - type: Resize3D
       size: [ 1 ,224, 224 ]
+  inference_helper:
+    type: TransUNetInferenceHelper

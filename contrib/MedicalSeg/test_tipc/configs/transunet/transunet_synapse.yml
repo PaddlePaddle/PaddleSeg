@@ -88,3 +88,5 @@ export:
   transforms:
     - type: Resize3D
       size: [ 1 ,224, 224 ]
+  inference_helper:
+    type: TransUNetInferenceHelper

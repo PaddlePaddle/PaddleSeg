@@ -17,9 +17,7 @@
 # limitations under the License.
 
 import copy
-import logging
 import math
-from os.path import join as pjoin
 
 import numpy as np
 import paddle
@@ -50,7 +48,7 @@ class Attention(nn.Layer):
         self.value = nn.Linear(hidden_size, self.all_head_size)
 
         self.out = nn.Linear(hidden_size, hidden_size)
-        self.attn_dropout = nn.Dropout(attention_dropout_rate)
+        self.attention_dropout = nn.Dropout(attention_dropout_rate)
         self.proj_dropout = nn.Dropout(attention_dropout_rate)
 
         self.softmax = nn.Softmax(axis=-1)
@@ -77,7 +75,7 @@ class Attention(nn.Layer):
             self.attention_head_size)
         attention_probs = self.softmax(attention_scores)
         weights = attention_probs if self.vis else None
-        attention_probs = self.attn_dropout(attention_probs)
+        attention_probs = self.attention_dropout(attention_probs)
 
         context_layer = paddle.matmul(attention_probs, value_layer)
         context_layer = context_layer.transpose([0, 2, 1, 3])
@@ -165,13 +163,13 @@ class Block(nn.Layer):
         self.attention_norm = nn.LayerNorm(hidden_size, epsilon=1e-6)
         self.ffn_norm = nn.LayerNorm(hidden_size, epsilon=1e-6)
         self.ffn = Mlp(hidden_size, mlp_dim, dropout_rate)
-        self.attn = Attention(hidden_size, num_heads, attention_dropout_rate,
-                              vis)
+        self.attention = Attention(hidden_size, num_heads,
+                                   attention_dropout_rate, vis)
 
     def forward(self, x):
         h = x
         x = self.attention_norm(x)
-        x, weights = self.attn(x)
+        x, weights = self.attention(x)
         x = x + h
 
         h = x
@@ -194,13 +192,13 @@ class Encoder(nn.Layer):
             self.layer.append(copy.deepcopy(layer))
 
     def forward(self, hidden_states):
-        attn_weights = []
+        attention_weights = []
         for layer_block in self.layer:
             hidden_states, weights = layer_block(hidden_states)
             if self.vis:
-                attn_weights.append(weights)
+                attention_weights.append(weights)
         encoded = self.encoder_norm(hidden_states)
-        return encoded, attn_weights
+        return encoded, attention_weights
 
 
 class Transformer(nn.Layer):
@@ -215,12 +213,12 @@ class Transformer(nn.Layer):
 
     def forward(self, input_ids):
         embedding_output, features = self.embeddings(input_ids)
-        encoded, attn_weights = self.encoder(
+        encoded, attention_weights = self.encoder(
             embedding_output)  # (B, n_patch, hidden)
-        return encoded, attn_weights, features
+        return encoded, attention_weights, features
 
 
-class Conv2dReLU(nn.Sequential):
+class Conv2DReLU(nn.Sequential):
     def __init__(
             self,
             in_channels,
@@ -240,7 +238,7 @@ class Conv2dReLU(nn.Sequential):
 
         bn = nn.BatchNorm2D(out_channels)
 
-        super(Conv2dReLU, self).__init__(conv, bn, relu)
+        super(Conv2DReLU, self).__init__(conv, bn, relu)
 
 
 class DecoderBlock(nn.Layer):
@@ -251,13 +249,13 @@ class DecoderBlock(nn.Layer):
             skip_channels=0,
             use_batchnorm=True, ):
         super().__init__()
-        self.conv1 = Conv2dReLU(
+        self.conv1 = Conv2DReLU(
             in_channels + skip_channels,
             out_channels,
             kernel_size=3,
             padding=1,
             use_batchnorm=use_batchnorm, )
-        self.conv2 = Conv2dReLU(
+        self.conv2 = Conv2DReLU(
             out_channels,
             out_channels,
             kernel_size=3,
@@ -290,12 +288,12 @@ class DecoderCup(nn.Layer):
     def __init__(self, hidden_size, decoder_channels, n_skip, skip_channels):
         super().__init__()
         head_channels = 512
-        self.conv_more = Conv2dReLU(
+        self.conv_more = Conv2DReLU(
             hidden_size,
             head_channels,
             kernel_size=3,
             padding=1,
-            use_batchnorm=True, )
+            use_batchnorm=True)
         decoder_channels = decoder_channels
         in_channels = [head_channels] + list(decoder_channels[:-1])
         out_channels = decoder_channels
@@ -373,7 +371,8 @@ class TransUNet(nn.Layer):
         else:
             x = paddle.squeeze(x, axis=0)
         x = x.tile([1, 3, 1, 1])
-        x, attn_weights, features = self.transformer(x)  # (B, n_patch, hidden)
+        x, attention_weights, features = self.transformer(
+            x)  # (B, n_patch, hidden)
         x = self.decoder(x, features)
         logits = self.segmentation_head(x)
         logits = paddle.unsqueeze(logits, axis=2)
