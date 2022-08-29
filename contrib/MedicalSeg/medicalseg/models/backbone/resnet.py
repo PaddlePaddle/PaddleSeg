@@ -71,7 +71,7 @@ def conv1x1(cin, cout, stride=1, bias=False):
 
 
 class Bottleneck(nn.Layer):
-    """Bottleneck ResNet v2 with GroupNorm and Weight Standardization."""
+    """ResNet with GroupNorm and Weight Standardization."""
 
     def __init__(self, cin, cout=None, cmid=None, stride=1):
         super().__init__()
@@ -110,9 +110,7 @@ class Bottleneck(nn.Layer):
 
 
 @manager.BACKBONES.add_component
-class ResNetV2(nn.Layer):
-    """Implementation of Pre-activation (v2) ResNet mode."""
-
+class ResNet(nn.Layer):
     def __init__(self, block_units, width_factor):
         super().__init__()
         width = int(64 * width_factor)
