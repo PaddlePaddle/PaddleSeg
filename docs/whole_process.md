@@ -461,7 +461,6 @@ PaddleSeg
             ├── functional.py
             └── transforms.py
         └── utils
-            ├── config_check.py
             ├── visualize.py
             └── ...
      ├── train.py # The training entry file, which describes the analysis of parameters, the starting method of training, and the resources prepared for training.

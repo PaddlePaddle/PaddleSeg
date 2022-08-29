@@ -28,7 +28,7 @@ export CUDA_VISIBLE_DEVICES=0 # 设置1张可用的卡
 # windows下请执行以下命令
 # set CUDA_VISIBLE_DEVICES=0
 python train.py \
-       --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml \
+       --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \
        --do_eval \
        --use_vdl \
        --save_interval 500 \
@@ -59,7 +59,7 @@ export PYTHONPATH=`pwd`
 # set PYTHONPATH=%cd%
 
 python slim/prune/prune.py \
-       --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml \
+       --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \
        --pruning_ratio 0.2 \
        --model_path output/best_model/model.pdparams \
        --retraining_iters 100 \

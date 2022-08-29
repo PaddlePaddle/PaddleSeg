@@ -75,7 +75,7 @@ python setup.py install
 
 Before generating the quantized model, we have to prepare the original model with the data type of FP32.
 
-In this demo, we choose the BiseNetV2 model and the optic disc segmentation dataset, and use `train.py` for training from scratch.
+In this demo, we choose the PP-LiteSeg model and the optic disc segmentation dataset, and use `train.py` for training from scratch.
 The usage of `train.py` can be found in this [document](../../train/train.md).
 
 Specifically, run the following instructions in the root directory of PaddleSeg.
@@ -85,7 +85,7 @@ export CUDA_VISIBLE_DEVICES=0  # Set GPU for Linux
 # set CUDA_VISIBLE_DEVICES=0   # Seg GPU for Windows
 
 python train.py \
-       --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml \
+       --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \
        --do_eval \
        --use_vdl \
        --save_interval 250 \
@@ -123,7 +123,7 @@ After the quantization training, the quantized model with the highest accuracy w
 
 ```shell
 python slim/quant/qat_train.py \
-       --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml \
+       --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \
        --model_path output_fp32/best_model/model.pdparams \
        --learning_rate 0.001 \
        --do_eval \
@@ -138,7 +138,7 @@ We use `slim/quant/qat_val.py` to load the weights of the quantized model and te
 
 ```
 python slim/quant/qat_val.py \
-       --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml \
+       --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \
        --model_path output_quant/best_model/model.pdparams
 ```
 
@@ -161,7 +161,7 @@ Run the following instructions in the root directory of PaddleSeg. Then, the qua
 
 ```
 python slim/quant/qat_export.py \
-       --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml \
+       --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \
        --model_path output_quant/best_model/model.pdparams \
        --save_dir output_quant_infer
 ```

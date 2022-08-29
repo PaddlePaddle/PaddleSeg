@@ -425,7 +425,6 @@ PaddleSeg
             ├── functional.py
             └── transforms.py
         └── utils
-            ├── config_check.py
             ├── visualize.py
             └── ...
      ├──  train.py  # 训练入口文件，该文件里描述了参数的解析，训练的启动方法，以及为训练准备的资源等。
