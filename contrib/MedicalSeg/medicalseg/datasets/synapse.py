@@ -32,15 +32,20 @@ class Synapse(MedicalDataset):
             transforms,
             num_classes,
             mode, ):
-        super(Synapse, self).__init__(dataset_root, result_dir, transforms,
-                                      num_classes, mode)
+        super(Synapse, self).__init__(
+            dataset_root,
+            result_dir,
+            transforms,
+            num_classes,
+            mode,
+            repeat_time=1)
 
     def __getitem__(self, idx):
 
         image_path, label_path = self.file_list[idx]
 
-        image = np.load(os.path.join(self.dataset_root, image_path))
-        label = np.load(os.path.join(self.dataset_root, label_path))
+        image = np.load(image_path)
+        label = np.load(label_path)
         if self.mode == "train":
             image = image[np.newaxis, :, :]
             label = label[np.newaxis, :, :]
@@ -67,7 +72,12 @@ class Synapse(MedicalDataset):
         return image.astype('float32'), label.astype('int64'), idx
 
     @property
-    def metric(self, logits, labels, new_loss):
+    def metric(self):
+        return SynapseMetric()
+
+
+class SynapseMetric:
+    def __call__(self, logits, labels, new_loss):
         logits = [logits]
         label = paddle.squeeze(labels, axis=0)
         loss, per_channel_dice = loss_computation(logits, label, new_loss)

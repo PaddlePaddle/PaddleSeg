@@ -65,7 +65,8 @@ class MedicalDataset(paddle.io.Dataset):
                  mode='train',
                  ignore_index=255,
                  data_URL="",
-                 dataset_json_path=""):
+                 dataset_json_path="",
+                 repeat_time=10):
         self.dataset_root = dataset_root
         self.result_dir = result_dir
         self.transforms = Compose(transforms)
@@ -108,7 +109,7 @@ class MedicalDataset(paddle.io.Dataset):
                 self.file_list.append([image_path, grt_path])
 
         if mode == 'train':
-            self.file_list = self.file_list * 10
+            self.file_list = self.file_list * repeat_time
 
     def __getitem__(self, idx):
         image_path, label_path = self.file_list[idx]
