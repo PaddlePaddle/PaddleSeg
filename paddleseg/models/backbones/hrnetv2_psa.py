@@ -26,7 +26,7 @@ from paddleseg.cvlibs import param_init
 from paddleseg.models import layers
 
 
-class PolarizedSelfAttentionModule(nn.Layer):
+class PolarizedSelfAttentionModule_p(nn.Layer):
     def __init__(self, inplanes, planes, kernel_size=1, stride=1):
         super().__init__()
         self.inplanes = inplanes
@@ -163,8 +163,6 @@ class PolarizedSelfAttentionModule(nn.Layer):
         num_output_fmaps = tensor.shape[0]
         receptive_field_size = 1
         if tensor.dim() > 2:
-            # math.prod is not always available, accumulate the product manually
-            # we could use functools.reduce but that is not supported by TorchScript
             for s in tensor.shape[2:]:
                 receptive_field_size *= s
         fan_in = num_input_fmaps * receptive_field_size
@@ -188,7 +186,7 @@ class PolarizedSelfAttentionModule(nn.Layer):
                         mode='fan_in',
                         nonlinearity='leaky_relu'):
         if 0 in tensor.shape:
-            warnings.warn("Initializing zero-element tensors is a no-op")
+            warnings.warn("Initializing zero-element tensors is a no-op.")
             return tensor
         fan = self._calculate_correct_fan(tensor, mode)
         gain = self.calculate_gain(nonlinearity, a)
@@ -247,7 +245,7 @@ class HRNetBasicBlock(nn.Layer):
             inplanes, planes, kernel_size=3, padding=1, bias_attr=False)
         self.bn1 = layers.SyncBatchNorm(planes)
         self.relu = nn.ReLU()
-        self.deattn = PolarizedSelfAttentionModule(planes, planes)
+        self.deattn = PolarizedSelfAttentionModule_p(planes, planes)
         self.conv2 = nn.Conv2D(
             planes, planes, kernel_size=3, padding=1, bias_attr=False)
         self.bn2 = layers.SyncBatchNorm(planes)

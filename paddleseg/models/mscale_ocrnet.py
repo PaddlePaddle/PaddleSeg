@@ -78,8 +78,6 @@ class SpatialGatherModule(nn.Layer):
         Output:
           The correlation of every class map with every feature map
           shape = [n, num_feats, num_classes, 1]
-
-
     """
 
     def __init__(self, cls_num=0, scale=1):
@@ -171,15 +169,20 @@ class SpatialOCRModule(nn.Layer):
 
 
 class OCRHead(nn.Layer):
-    def __init__(self, num_classes, in_channels):
+    def __init__(self,
+                 num_classes,
+                 in_channels,
+                 ocr_mid_channels=512,
+                 ocr_key_channels=256):
         super().__init__()
 
-        ocr_mid_channels = 512
-        ocr_key_channels = 256
         self.indices = [-2, -1] if len(in_channels) > 1 else [-1, -1]
-        high_level_ch = in_channels[self.indices[1]]
         self.conv3x3_ocr = layers.ConvBNReLU(
-            high_level_ch, ocr_mid_channels, kernel_size=3, stride=1, padding=1)
+            in_channels[self.indices[1]],
+            ocr_mid_channels,
+            kernel_size=3,
+            stride=1,
+            padding=1)
         self.ocr_gather_head = SpatialGatherModule(num_classes)
         self.ocr_distri_head = SpatialOCRModule(
             in_channels=ocr_mid_channels,
@@ -196,13 +199,13 @@ class OCRHead(nn.Layer):
             bias_attr=True)
         self.aux_head = nn.Sequential(
             layers.ConvBNReLU(
-                high_level_ch,
-                high_level_ch,
+                in_channels[self.indices[0]],
+                in_channels[self.indices[0]],
                 kernel_size=1,
                 stride=1,
                 padding=0),
             nn.Conv2D(
-                high_level_ch,
+                in_channels[self.indices[0]],
                 num_classes,
                 kernel_size=1,
                 stride=1,
@@ -233,16 +236,19 @@ class OCRHead(nn.Layer):
 class MscaleOCRNet(nn.Layer):
     """
     The MscaleOCRNet implementation based on PaddlePaddle.
-
     The original article refers to
-    Huajun Liu, Fuqiang Liu et al. "Polarized Self-Attention"
-    (https://arxiv.org/pdf/2107.00782.pdf).
+    Tao et al. "HIERARCHICAL MULTI-SCALE ATTENTION FOR SEMANTIC SEGMENTATION"
+    (https://arxiv.org/pdf/2005.10821.pdf).
 
     Args:
         num_classes (int): The unique number of target classes.
-        backbone (Paddle.nn.Layer): Backbone network, currently support HRNETV2_PSA.
+        backbone (Paddle.nn.Layer): Backbone network.
         backbone_indices (tuple, optional): Two values in the tuple indicate the indices of output of backbone.
-        pretrained (str, optional): The path or url of pretrained model. Default: None.
+            Default: [0].
+        mscale (list): The multiple scale for fusion.
+            Default: [0.5, 1.0, 2.0].
+        pretrained (str, optional): The path or url of pretrained model. 
+            Default: None.
     """
 
     def __init__(self,
