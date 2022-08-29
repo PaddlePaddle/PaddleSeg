@@ -82,7 +82,7 @@ class Resize3D:
     Args:
         size
         order (int, optional): Desired order
-        keep_z: It means whether we keep the size of z when do resize
+        keep_z: Whether to keep the size in z axis when resizing the image.
     """
 
     def __init__(self, size, order=1, keep_z=False):
@@ -581,7 +581,7 @@ class RandomCrop4D:
 
 @manager.TRANSFORMS.add_component
 class RandomRotation90:
-    """Rotate the image times by angle90.
+    """Random rotate the image by angle:90,180,270.
     Args:
         rotate_planes (list of list): random select one rotate planes.
     """

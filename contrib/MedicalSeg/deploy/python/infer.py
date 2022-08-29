@@ -147,7 +147,8 @@ def parse_args():
         '--img_shape',
         default=[128],
         nargs='+',
-        help='it can be 1 or 3 value as the size of each dim')
+        help='"A single value or three values to specify the size in each dimension."'
+    )
 
     parser.add_argument('--is_nhwd', default=True, type=eval, help='is_nhwd')
     parser.add_argument('--ig_max', default=False, type=eval, help='ig_max')

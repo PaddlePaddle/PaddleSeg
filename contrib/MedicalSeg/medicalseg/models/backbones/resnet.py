@@ -17,6 +17,8 @@
 from __future__ import absolute_import, division, print_function
 import os, sys
 import numpy as np
+import math
+
 import paddle
 from paddle import ParamAttr
 import paddle.nn as nn
@@ -24,7 +26,7 @@ from paddle.nn import Conv2D, BatchNorm, Linear, BatchNorm2D
 from paddle.nn import AdaptiveAvgPool2D, MaxPool2D, AvgPool2D
 from paddle.nn.initializer import Uniform
 from paddle.regularizer import L2Decay
-import math
+
 from medicalseg.cvlibs import manager
 from medicalseg.utils import utils
 

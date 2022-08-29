@@ -12,7 +12,5 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .resnet import ResNet
-from .vision_transformer import VisionTransformer
-from .resnet import ResNet50
-from .vision_transformer import ViT_base_patch16_224
+from .resnet import ResNet, ResNet50
+from .vision_transformer import VisionTransformer, ViT_base_patch16_224

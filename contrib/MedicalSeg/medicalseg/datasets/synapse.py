@@ -41,6 +41,7 @@ class Synapse(paddle.io.Dataset):
             |  |--label0001.nii.gz
             |  |--label0002.nii.gz
             |  |--label0003.nii.gz
+
         Args:
             dataset_root (str): The dataset directory. Default: None
             result_root(str): The directory to save the result file. Default: None

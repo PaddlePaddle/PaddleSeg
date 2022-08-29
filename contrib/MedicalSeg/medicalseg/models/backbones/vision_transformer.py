@@ -18,6 +18,7 @@
 from collections.abc import Callable
 import os, sys
 import numpy as np
+
 import paddle
 import paddle.nn as nn
 from paddle.nn.initializer import TruncatedNormal, Constant, Normal
@@ -137,7 +138,6 @@ class Attention(nn.Layer):
         self.proj_drop = nn.Dropout(proj_drop)
 
     def forward(self, x):
-        # B= paddle.shape(x)[0]
         N, C = x.shape[1:]
         qkv = self.qkv(x).reshape((-1, N, 3, self.num_heads, C //
                                    self.num_heads)).transpose((2, 0, 3, 1, 4))
@@ -179,13 +179,7 @@ class Block(nn.Layer):
             proj_drop=drop)
         # NOTE: drop path for stochastic depth, we shall see if this is better than dropout here
         self.drop_path = DropPath(drop_path) if drop_path > 0. else Identity()
-        if isinstance(norm_layer, str):
-            self.norm2 = eval(norm_layer)(dim, epsilon=epsilon)
-        elif isinstance(norm_layer, Callable):
-            self.norm2 = norm_layer(dim)
-        else:
-            raise TypeError(
-                "The norm_layer must be str or paddle.nn.layer.Layer class")
+        self.norm2 = norm_layer(dim)
         mlp_hidden_dim = int(dim * mlp_ratio)
         self.mlp = Mlp(in_features=dim,
                        hidden_features=mlp_hidden_dim,

@@ -131,6 +131,8 @@ def main(args):
     os.makedirs(os.path.join(save_path, "val", 'label'), exist_ok=True)
 
     filename_list = os.listdir(os.path.join(raw_folder, "img"))
+    filename_list.sort()
+
     nums_val = int(split_val * len(filename_list))
 
     for filename_train in filename_list[:-nums_val]:
