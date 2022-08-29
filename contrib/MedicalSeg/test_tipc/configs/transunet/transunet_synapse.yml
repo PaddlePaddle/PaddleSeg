@@ -6,7 +6,7 @@ iters: 10
 model:
   type: TransUNet
   backbone:
-    type: ResNetV2
+    type: ResNet
     block_units: [3, 4, 9]
     width_factor: 1
   classifier: seg
