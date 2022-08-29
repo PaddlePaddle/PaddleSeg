@@ -1,4 +1,4 @@
-# Copyright (c) 2020 PaddlePaddle Authors. All Rights Reserved.
+# Copyright (c) 2022 PaddlePaddle Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .losses import *
-from .vnet import VNet
-from .vnet_deepsup import VNetDeepSup
-from .unetr import UNETR
-from .transunet import TransUnet
-from .backbones import *
+from .resnet import ResNet
+from .vision_transformer import VisionTransformer
+from .resnet import ResNet50
+from .vision_transformer import ViT_base_patch16_224

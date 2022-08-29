@@ -153,7 +153,7 @@ def download_file_and_uncompress(url,
                     not zipfile.is_zipfile(savepath)):
                 if not os.path.exists(extraname):
                     os.makedirs(extraname)
-                shutil.move(savepath, extraname)
+                shutil.move(savepath, os.path.join(extraname, "model.pdparams"))
                 return extraname
 
             savename = _uncompress_file(savepath, extrapath, delete_file,

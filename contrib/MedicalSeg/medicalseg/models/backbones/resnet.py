@@ -16,7 +16,6 @@
 
 from __future__ import absolute_import, division, print_function
 import os, sys
-sys.path.insert(0, os.getcwd() + '//..//..')
 import numpy as np
 import paddle
 from paddle import ParamAttr
@@ -264,6 +263,7 @@ class BasicBlock(nn.Layer):
         return x
 
 
+@manager.BACKBONES.add_component
 class ResNet(nn.Layer):
     """
     ResNet
@@ -345,19 +345,8 @@ class ResNet(nn.Layer):
             data_format=data_format)
         block_list = []
         for block_idx in range(len(self.block_depth)):
-            # small_block_list=[]
             shortcut = False
             for i in range(self.block_depth[block_idx]):
-                # small_block_list.append(globals()[self.block_type](
-                #     num_channels=self.num_channels[block_idx] if i == 0 else
-                #     self.num_filters[block_idx] * self.channels_mult,
-                #     num_filters=self.num_filters[block_idx],
-                #     stride=self.stride_list[block_idx + 1]
-                #     if i == 0 and block_idx != 0 else 1,
-                #     shortcut=shortcut,
-                #     if_first=block_idx == i == 0 if version == "vd" else True,
-                #     lr_mult=self.lr_mult_list[block_idx + 1],
-                #     data_format=data_format))
                 block_list.append(globals()[self.block_type](
                     num_channels=self.num_channels[block_idx] if i == 0 else
                     self.num_filters[block_idx] * self.channels_mult,
@@ -369,7 +358,6 @@ class ResNet(nn.Layer):
                     lr_mult=self.lr_mult_list[block_idx + 1],
                     data_format=data_format))
                 shortcut = True
-            # block_list.append(nn.Sequential(*small_block_list))
         self.blocks = nn.LayerList(block_list)
 
         self.avg_pool = AdaptiveAvgPool2D(1, data_format=data_format)
@@ -404,10 +392,6 @@ class ResNet(nn.Layer):
                 if index in tag_list:
                     features.append(x)
 
-            # x = self.blocks(x)
-            # x = self.avg_pool(x)
-            # x = self.flatten(x)
-            # x = self.fc(x)
         return features[3], features[2::-1]
 
     def init_weight(self, pretrained, url):

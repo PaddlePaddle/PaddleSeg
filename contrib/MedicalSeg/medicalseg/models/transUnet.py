@@ -16,17 +16,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import List, Tuple
-import os, sys
-sys.path.insert(0, os.getcwd() + '//..//..')
 import numpy as np
 import paddle
 import paddle.nn as nn
-from paddle import Tensor
 
 from medicalseg.cvlibs import manager
-from medicalseg.models.resnet import ResNet50
-from medicalseg.models.vision_transformer import ViT_base_patch16_224
+from medicalseg.models.backbones import ResNet50
+from medicalseg.models.backbones import ViT_base_patch16_224
 
 
 class SegmentationHead(nn.Sequential):
@@ -41,7 +37,7 @@ class SegmentationHead(nn.Sequential):
         super().__init__(conv2d, upsampling)
 
 
-class Conv2dReLU(nn.Sequential):
+class Conv2DReLU(nn.Sequential):
     def __init__(
             self,
             in_channels,
@@ -61,7 +57,7 @@ class Conv2dReLU(nn.Sequential):
 
         bn = nn.BatchNorm2D(out_channels)
 
-        super(Conv2dReLU, self).__init__(conv, bn, relu)
+        super(Conv2DReLU, self).__init__(conv, bn, relu)
 
 
 class DecoderBlock(nn.Layer):
@@ -72,13 +68,13 @@ class DecoderBlock(nn.Layer):
             skip_channels=0,
             use_batchnorm=True, ):
         super().__init__()
-        self.conv1 = Conv2dReLU(
+        self.conv1 = Conv2DReLU(
             in_channels + skip_channels,
             out_channels,
             kernel_size=3,
             padding=1,
             use_batchnorm=use_batchnorm, )
-        self.conv2 = Conv2dReLU(
+        self.conv2 = Conv2DReLU(
             out_channels,
             out_channels,
             kernel_size=3,
@@ -97,18 +93,21 @@ class DecoderBlock(nn.Layer):
 
 
 class DecoderCup(nn.Layer):
-    def __init__(self, n_skip=3, hidden_size=768):
+    def __init__(self,
+                 skip_channels=[512, 256, 64, 16],
+                 decoder_channels=[256, 128, 64, 16],
+                 n_skip=3,
+                 hidden_size=768):
         super().__init__()
-        self.skip_channels = [512, 256, 64, 16]
+        self.skip_channels = skip_channels
         self.n_skip = n_skip
         head_channels = 512
-        self.conv_more = Conv2dReLU(
+        self.conv_more = Conv2DReLU(
             hidden_size,
             head_channels,
             kernel_size=3,
             padding=1,
             use_batchnorm=True, )
-        decoder_channels = [256, 128, 64, 16]
         in_channels = [head_channels] + list(decoder_channels[:-1])
         out_channels = decoder_channels
 
@@ -148,8 +147,8 @@ class DecoderCup(nn.Layer):
 class TransUnet(nn.Layer):
     def __init__(self, num_classes=4):
         super().__init__()
-        self.hybrid = ResNet50()
-        self.transfomer = ViT_base_patch16_224()
+        self.hybrid = ResNet50(pretrained=True)
+        self.transfomer = ViT_base_patch16_224(pretrained=True)
         self.decoder = DecoderCup()
         self.segmentation_head = SegmentationHead(
             in_channels=16,
@@ -170,6 +169,6 @@ class TransUnet(nn.Layer):
 
 if __name__ == "__main__":
     model = TransUnet()
-    test_x = paddle.rand([1, 1, 224, 224])
+    test_x = paddle.rand([1, 1, 1, 224, 224])
     output = model(test_x)
     print(output.shape)

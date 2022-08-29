@@ -17,12 +17,10 @@
 
 from collections.abc import Callable
 import os, sys
-sys.path.insert(0, os.getcwd() + '//..//..')
 import numpy as np
 import paddle
 import paddle.nn as nn
 from paddle.nn.initializer import TruncatedNormal, Constant, Normal
-# print("sys path:{}".format(sys.path))
 
 from medicalseg.cvlibs import manager
 from medicalseg.utils import utils
@@ -166,16 +164,12 @@ class Block(nn.Layer):
                  attn_drop=0.,
                  drop_path=0.,
                  act_layer=nn.GELU,
-                 norm_layer='nn.LayerNorm',
+                 norm_layer=nn.LayerNorm,
                  epsilon=1e-5):
         super().__init__()
-        if isinstance(norm_layer, str):
-            self.norm1 = eval(norm_layer)(dim, epsilon=epsilon)
-        elif isinstance(norm_layer, Callable):
-            self.norm1 = norm_layer(dim)
-        else:
-            raise TypeError(
-                "The norm_layer must be str or paddle.nn.layer.Layer class")
+
+        self.norm1 = norm_layer(dim)
+
         self.attn = Attention(
             dim,
             num_heads=num_heads,
@@ -240,6 +234,7 @@ class PatchEmbed(nn.Layer):
         return x
 
 
+@manager.BACKBONES.add_component
 class VisionTransformer(nn.Layer):
     """ Vision Transformer with support for patch input
     """
@@ -258,7 +253,7 @@ class VisionTransformer(nn.Layer):
                  drop_rate=0.,
                  attn_drop_rate=0.,
                  drop_path_rate=0.,
-                 norm_layer='nn.LayerNorm',
+                 norm_layer=nn.LayerNorm,
                  epsilon=1e-5,
                  **kwargs):
         super().__init__()
@@ -297,7 +292,7 @@ class VisionTransformer(nn.Layer):
                 epsilon=epsilon) for i in range(depth)
         ])
 
-        self.norm = eval(norm_layer)(embed_dim, epsilon=epsilon)
+        self.norm = norm_layer(embed_dim, epsilon=epsilon)
 
         # Classifier head
         self.head = nn.Linear(embed_dim,

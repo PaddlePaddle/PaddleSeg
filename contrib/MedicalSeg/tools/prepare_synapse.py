@@ -11,24 +11,24 @@ def parse_args():
         "--raw_folder",
         dest="raw_folder",
         help="The raw data path.",
-        default=r"F:\Synapse\RawData\RawData\Training",
+        default=r"Synapse\RawData\RawData\Training",
         type=str)
     parser.add_argument(
         "--save_path",
         dest="save_path",
         help="The save path.",
-        default=r"F:\Synapse\preprocessed",
+        default=r"Synapse\preprocessed",
         type=str)
     parser.add_argument(
         "--top_val",
         dest="top_val",
-        help="The maxmum val for clip.",
+        help="The maximum value for clip.",
         default=275,
         type=float)
     parser.add_argument(
         "--bottom_val",
         dest="bottom_val",
-        help="The minmum val for clip.",
+        help="The minimum value for clip.",
         default=-125,
         type=float)
     parser.add_argument(
@@ -40,7 +40,7 @@ def parse_args():
     parser.add_argument(
         "--ignore_label",
         dest="ignore_label",
-        help="Some labels are not exist in paper",
+        help="Indices of labels to ignore. Because some labels are not exist in this paper",
         default=[5, 9, 10, 12, 13],
         type=list)
     parser.add_argument(
@@ -53,7 +53,7 @@ def parse_args():
     return parser.parse_args()
 
 
-def build_transefer_label(ori_classes, ignore_label):
+def build_transfer_label(ori_classes, ignore_label):
     transefer_dict = {}
     count = 1
     for label in range(ori_classes):
@@ -72,7 +72,7 @@ def normalize(data_array):
     return new_data
 
 
-def readdata(filename):
+def read_data(filename):
     data = sitk.ReadImage(filename)
     array = sitk.GetArrayFromImage(data)
     return array
@@ -81,7 +81,7 @@ def readdata(filename):
 def preprocess_data(filename, save_path, top, bottom, mode="train"):
     basename = os.path.basename(filename)
     basename = basename.split(".")[0]
-    data = readdata(filename)
+    data = read_data(filename)
     data = np.clip(data, bottom, top)
     data = normalize(data)
     if mode == "train":
@@ -99,7 +99,7 @@ def preprocess_data(filename, save_path, top, bottom, mode="train"):
 def preprocess_label(transefer_dict, filename, save_path, mode="train"):
     basename = os.path.basename(filename)
     basename = basename.split(".")[0]
-    data = readdata(filename)
+    data = read_data(filename)
     for key, value in transefer_dict.items():
         data[data == key] = value
     if mode == "train":
@@ -123,7 +123,7 @@ def main(args):
     top = args.top_val
     ignore_label = args.ignore_label
     ori_classes = args.ori_classes
-    transefer_dict = build_transefer_label(ori_classes, ignore_label)
+    transefer_dict = build_transfer_label(ori_classes, ignore_label)
 
     os.makedirs(os.path.join(save_path, "train", 'img'), exist_ok=True)
     os.makedirs(os.path.join(save_path, "train", 'label'), exist_ok=True)

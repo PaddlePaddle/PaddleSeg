@@ -23,11 +23,46 @@ from medicalseg.cvlibs import manager
 from medicalseg.transforms import Compose
 import paddle
 
-URL = ' '  # todo: add coronavirus url
-
 
 @manager.DATASETS.add_component
 class Synapse(paddle.io.Dataset):
+    """
+        Synapse dataset `https://www.synapse.org/#!Synapse:syn3193805/wiki/217789`.
+        The folder structure is as follow:
+
+            Training
+            |
+            |--img
+            |  |--img0001.nii.gz
+            |  |--img0002.nii.gz
+            |  |--img0003.nii.gz
+            |..............................
+            |--label
+            |  |--label0001.nii.gz
+            |  |--label0002.nii.gz
+            |  |--label0003.nii.gz
+        Args:
+            dataset_root (str): The dataset directory. Default: None
+            result_root(str): The directory to save the result file. Default: None
+            transforms (list): Transforms for image.
+            num_classes(int): The number of classes of the dataset.
+            mode (str, optional): Which part of dataset to use. It is one of ('train', 'val'). Default: 'train'.
+            dataset_json_path (str, optional): Currently, this argument is not used.
+
+            Examples:
+
+                transforms=[]
+                dataset_root = "SynaDataset/preprocessed"
+                dataset = SynaDataset(dataset_root=dataset_root, transforms=[], num_classes=9",
+                 mode="train")
+
+                for data in dataset:
+                    img, label = data
+                    print(img.shape, label.shape) # (1, 1 , 1, 224, 224) (1,9,1,224,224)
+                    print(np.unique(label))
+
+        """
+
     def __init__(self,
                  dataset_root=None,
                  result_dir=None,
