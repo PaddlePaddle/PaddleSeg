@@ -511,6 +511,14 @@ class FuseBlockMulti(nn.Layer):
         return out
 
 
+SIM_BLOCK = {
+    "fuse_sum": FuseBlockSum,
+    "fuse_multi": FuseBlockMulti,
+    "multi_sum": InjectionMultiSum,
+    "multi_sum_cbr": InjectionMultiSumCBR,
+}
+
+
 class TopTransformer(nn.Layer):
     def __init__(self,
                  cfgs,
@@ -558,7 +566,7 @@ class TopTransformer(nn.Layer):
             lr_mult=lr_mult)
 
         self.SIM = nn.LayerList()
-        inj_module = InjectionMultiSum
+        inj_module = SIM_BLOCK[injection_type]
         if self.injection:
             for i in range(len(self.feat_channels)):
                 if i in trans_out_indices:
