@@ -2,6 +2,7 @@ import SimpleITK as sitk
 import numpy as np
 import os
 import argparse
+import random
 
 
 def parse_args():
@@ -132,6 +133,8 @@ def main(args):
 
     filename_list = os.listdir(os.path.join(raw_folder, "img"))
     filename_list.sort()
+    random.seed(12345)
+    random.shuffle(filename_list)
 
     nums_val = int(split_val * len(filename_list))
 

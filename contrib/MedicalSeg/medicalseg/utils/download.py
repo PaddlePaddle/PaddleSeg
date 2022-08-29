@@ -153,7 +153,7 @@ def download_file_and_uncompress(url,
                     not zipfile.is_zipfile(savepath)):
                 if not os.path.exists(extraname):
                     os.makedirs(extraname)
-                #Because some pdparams may be have other name,we fix all the name as "model.pdparams"
+                #Because some downloaded files have names other than 'model.pdparams', a rename operation is done here.
                 shutil.move(savepath, os.path.join(extraname, "model.pdparams"))
                 return extraname
 

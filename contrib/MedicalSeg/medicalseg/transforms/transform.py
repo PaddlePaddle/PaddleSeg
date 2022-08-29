@@ -581,7 +581,7 @@ class RandomCrop4D:
 
 @manager.TRANSFORMS.add_component
 class RandomRotation90:
-    """Random rotate the image by angle:90,180,270.
+    """Apply random rotation to the image by multiples of 90°.
     Args:
         rotate_planes (list of list): random select one rotate planes.
     """
