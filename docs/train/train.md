@@ -3,7 +3,7 @@ English|[简体中文](train_cn.md)
 
 ## 1、Start Training
 
-We can train the model through the script provided by PaddleSeg. Here we use `BiseNet` model and `optic_disc` dataset to show the training process. Please make sure that you have already installed PaddleSeg, and it is located in the PaddleSeg directory. Then execute the following script:
+We can train the model through the script provided by PaddleSeg. Here we use `PP-LiteSeg` model and `optic_disc` dataset to show the training process. Please make sure that you have already installed PaddleSeg, and it is located in the PaddleSeg directory. Then execute the following script:
 
 
 ```shell
@@ -11,7 +11,7 @@ export CUDA_VISIBLE_DEVICES=0 # Set 1 usable card
 # If you are using windows, please excute following script:
 # set CUDA_VISIBLE_DEVICES=0
 python train.py \
-       --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml \
+       --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \
        --do_eval \
        --use_vdl \
        --save_interval 500 \
@@ -42,7 +42,7 @@ If you want to use multi-card training, you need to specify the environment vari
 ```shell
 export CUDA_VISIBLE_DEVICES=0,1,2,3 # Set 4 usable cards
 python -m paddle.distributed.launch train.py \
-       --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml \
+       --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \
        --do_eval \
        --use_vdl \
        --save_interval 500 \
@@ -52,7 +52,7 @@ python -m paddle.distributed.launch train.py \
 ## 3、Resume Training：
 ```shell
 python train.py \
-       --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml \
+       --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \
        --resume_model output/iter_500 \
        --do_eval \
        --use_vdl \

@@ -16,9 +16,11 @@ import codecs
 import os
 from typing import Any, Dict, Generic
 import warnings
+from ast import literal_eval
 
 import paddle
 import yaml
+import six
 
 from paddleseg.cvlibs import manager
 from paddleseg.utils import logger
@@ -70,7 +72,8 @@ class Config(object):
                  path: str,
                  learning_rate: float=None,
                  batch_size: int=None,
-                 iters: int=None):
+                 iters: int=None,
+                 opts: list=None):
         if not path:
             raise ValueError('Please specify the configuration file path.')
 
@@ -85,7 +88,14 @@ class Config(object):
             raise RuntimeError('Config file should in yaml format!')
 
         self.update(
-            learning_rate=learning_rate, batch_size=batch_size, iters=iters)
+            learning_rate=learning_rate,
+            batch_size=batch_size,
+            iters=iters,
+            opts=opts)
+
+        model_cfg = self.dic.get('model', None)
+        if model_cfg is None:
+            raise RuntimeError('No model specified in the configuration file.')
 
     def _update_dic(self, dic, base_dic):
         """
@@ -122,7 +132,8 @@ class Config(object):
     def update(self,
                learning_rate: float=None,
                batch_size: int=None,
-               iters: int=None):
+               iters: int=None,
+               opts: list=None):
         '''Update config'''
         if learning_rate:
             if 'lr_scheduler' in self.dic:
@@ -135,6 +146,27 @@ class Config(object):
 
         if iters:
             self.dic['iters'] = iters
+
+        # fix parameters by --opts of command
+        if opts is not None:
+            if len(opts) % 2 != 0 or len(opts) == 0:
+                raise ValueError(
+                    "Command line options config `--opts` format error! It should be even length like: k1 v1 k2 v2 ... Please check it: {}".
+                    format(opts))
+            for key, value in zip(opts[0::2], opts[1::2]):
+                if isinstance(value, six.string_types):
+                    try:
+                        value = literal_eval(value)
+                    except ValueError:
+                        pass
+                    except SyntaxError:
+                        pass
+                key_list = key.split('.')
+                dic = self.dic
+                for subkey in key_list[:-1]:
+                    dic.setdefault(subkey, dict())
+                    dic = dic[subkey]
+                dic[key_list[-1]] = value
 
     @property
     def batch_size(self) -> int:
@@ -317,32 +349,6 @@ class Config(object):
     @property
     def model(self) -> paddle.nn.Layer:
         model_cfg = self.dic.get('model').copy()
-        if not model_cfg:
-            raise RuntimeError('No model specified in the configuration file.')
-
-        if not 'num_classes' in model_cfg:
-            num_classes = None
-            try:
-                if self.train_dataset_config:
-                    if hasattr(self.train_dataset_class, 'NUM_CLASSES'):
-                        num_classes = self.train_dataset_class.NUM_CLASSES
-                    elif 'num_classes' in self.train_dataset_config:
-                        num_classes = self.train_dataset_config['num_classes']
-                    elif hasattr(self.train_dataset, 'num_classes'):
-                        num_classes = self.train_dataset.num_classes
-                elif self.val_dataset_config:
-                    if hasattr(self.val_dataset_class, 'NUM_CLASSES'):
-                        num_classes = self.val_dataset_class.NUM_CLASSES
-                    elif 'num_classes' in self.val_dataset_config:
-                        num_classes = self.val_dataset_config['num_classes']
-                    elif hasattr(self.val_dataset, 'num_classes'):
-                        num_classes = self.val_dataset.num_classes
-            except FileNotFoundError:
-                warnings.warn("`dataset_root` is not found. Is it correct?")
-
-            if num_classes is not None:
-                model_cfg['num_classes'] = num_classes
-
         if not self._model:
             self._model = self._load_object(model_cfg)
         return self._model
@@ -443,3 +449,51 @@ class Config(object):
         for i in _transforms:
             transforms.append(self._load_object(i))
         return transforms
+
+    def check_sync_info(self) -> None:
+        """
+        Check and sync the info, such as num_classes and img_channels, 
+        between model and dataset config,
+        """
+        self._check_sync_num_classes()
+
+    def _check_sync_num_classes(self):
+        num_classes_set = set()
+
+        if self.dic['model'].get('num_classes', None) is not None:
+            num_classes_set.add(self.dic['model'].get('num_classes'))
+        if (not self.train_dataset_config) and (not self.val_dataset_config):
+            raise ValueError(
+                'One of `train_dataset` or `val_dataset should be given, but there are none.'
+            )
+        if self.train_dataset_config:
+            if hasattr(self.train_dataset_class, 'NUM_CLASSES'):
+                num_classes_set.add(self.train_dataset_class.NUM_CLASSES)
+            elif 'num_classes' in self.train_dataset_config:
+                num_classes_set.add(self.train_dataset_config['num_classes'])
+        if self.val_dataset_config:
+            if hasattr(self.val_dataset_class, 'NUM_CLASSES'):
+                num_classes_set.add(self.val_dataset_class.NUM_CLASSES)
+            elif 'num_classes' in self.val_dataset_config:
+                num_classes_set.add(self.val_dataset_config['num_classes'])
+
+        if len(num_classes_set) == 0:
+            raise ValueError(
+                '`num_classes` is not found. Please set it in model, train_dataset or val_dataset'
+            )
+        elif len(num_classes_set) > 1:
+            raise ValueError(
+                '`num_classes` is not consistent: {}. Please set it consistently in model or train_dataset or val_dataset'
+                .format(num_classes_set))
+
+        num_classes = num_classes_set.pop()
+        if not hasattr(self.dic.get('model'), 'num_classes'):
+            self.dic['model']['num_classes'] = num_classes
+        if self.train_dataset_config and \
+            (not hasattr(self.dic.get('train_dataset'), 'num_classes')) and \
+            (not hasattr(self.train_dataset_class, 'NUM_CLASSES')):
+            self.dic['train_dataset']['num_classes'] = num_classes
+        if self.val_dataset_config and \
+            (not hasattr(self.dic.get('val_dataset'), 'num_classes')) and \
+            (not hasattr(self.val_dataset_class, 'NUM_CLASSES')):
+            self.dic['val_dataset']['num_classes'] = num_classes

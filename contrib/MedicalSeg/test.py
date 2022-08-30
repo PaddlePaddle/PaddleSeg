@@ -19,7 +19,7 @@ import paddle
 
 from medicalseg.cvlibs import Config
 from medicalseg.core import evaluate
-from medicalseg.utils import get_sys_env, logger, config_check, utils
+from medicalseg.utils import get_sys_env, logger, utils
 
 
 def parse_args():

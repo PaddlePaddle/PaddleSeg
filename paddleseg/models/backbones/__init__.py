@@ -25,3 +25,4 @@ from .lite_hrnet import *
 from .shufflenetv2 import *
 from .ghostnet import *
 from .hrnetv2_psa import *
+from .top_transformer import *
