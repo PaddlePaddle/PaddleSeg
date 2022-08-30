@@ -54,7 +54,7 @@ class BiSeNetV2(nn.Layer):
         mid_channels = 128
 
         self.db = DetailBranch(in_channels, db_channels)
-        self.sb = SemanticBranch(sb_channels)
+        self.sb = SemanticBranch(in_channels, sb_channels)
 
         self.bga = BGA(mid_channels, align_corners)
         self.aux_head1 = SegHead(C1, C1, num_classes)
