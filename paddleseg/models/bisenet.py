@@ -35,6 +35,7 @@ class BiSeNetV2(nn.Layer):
     Args:
         num_classes (int): The unique number of target classes.
         lambd (float, optional): A factor for controlling the size of semantic branch channels. Default: 0.25.
+        in_channels (int, optional): The channels of input image. Default: 3.
         pretrained (str, optional): The path or url of pretrained model. Default: None.
     """
 
@@ -42,6 +43,7 @@ class BiSeNetV2(nn.Layer):
                  num_classes,
                  lambd=0.25,
                  align_corners=False,
+                 in_channels=3,
                  pretrained=None):
         super().__init__()
 
@@ -51,7 +53,7 @@ class BiSeNetV2(nn.Layer):
         sb_channels = (C1, C3, C4, C5)
         mid_channels = 128
 
-        self.db = DetailBranch(db_channels)
+        self.db = DetailBranch(in_channels, db_channels)
         self.sb = SemanticBranch(sb_channels)
 
         self.bga = BGA(mid_channels, align_corners)
@@ -189,15 +191,15 @@ class GatherAndExpansionLayer2(nn.Layer):
 class DetailBranch(nn.Layer):
     """The detail branch of BiSeNet, which has wide channels but shallow layers."""
 
-    def __init__(self, in_channels):
+    def __init__(self, in_channels, feature_channels):
         super().__init__()
 
-        C1, C2, C3 = in_channels
+        C1, C2, C3 = feature_channels
 
         self.convs = nn.Sequential(
             # stage 1
             layers.ConvBNReLU(
-                3, C1, 3, stride=2),
+                in_channels, C1, 3, stride=2),
             layers.ConvBNReLU(C1, C1, 3),
             # stage 2
             layers.ConvBNReLU(
@@ -217,11 +219,11 @@ class DetailBranch(nn.Layer):
 class SemanticBranch(nn.Layer):
     """The semantic branch of BiSeNet, which has narrow channels but deep layers."""
 
-    def __init__(self, in_channels):
+    def __init__(self, in_channels, feature_channels):
         super().__init__()
-        C1, C3, C4, C5 = in_channels
+        C1, C3, C4, C5 = feature_channels
 
-        self.stem = StemBlock(3, C1)
+        self.stem = StemBlock(in_channels, C1)
 
         self.stage3 = nn.Sequential(
             GatherAndExpansionLayer2(C1, C3, 6),
