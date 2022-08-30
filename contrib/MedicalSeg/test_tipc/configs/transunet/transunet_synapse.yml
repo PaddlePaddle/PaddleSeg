@@ -60,8 +60,6 @@ test_dataset:
       size: [1 ,224, 224]
   mode: test
 
-
-
 optimizer:
   type: sgd
   momentum: 0.9

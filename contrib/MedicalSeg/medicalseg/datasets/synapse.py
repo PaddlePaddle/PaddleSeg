@@ -38,7 +38,7 @@ class Synapse(MedicalDataset):
             transforms,
             num_classes,
             mode,
-            repeat_time=1)
+            repeat_times=1)
 
     def __getitem__(self, idx):
 
