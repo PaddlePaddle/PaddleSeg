@@ -3,7 +3,7 @@ Multi-atlas labeling has proven to be an effective paradigm for creating segment
 ## Performance
 
 ### TransUnet
-> Milletari, Fausto, Nassir Navab, and Seyed-Ahmad Ahmadi. "V-net: Fully convolutional neural networks for volumetric medical image segmentation." In 2016 fourth international conference on 3D vision (3DV), pp. 565-571. IEEE, 2016.
+> Chen, Jieneng and Lu, Yongyi and Yu, Qihang and Luo, Xiangde and Adeli, Ehsan and Wang, Yan and Lu, Le and Yuille, Alan L., and Zhou, Yuyin. "TransUNet: Transformers Make Strong Encoders for Medical Image Segmentation." arXiv preprint arXiv:2102.04306, 2021.
 
 | Backbone | Resolution | lr | Training Iters | Dice   | Links             |
 | --- | --- | --- | --- |--------|-------------------|
