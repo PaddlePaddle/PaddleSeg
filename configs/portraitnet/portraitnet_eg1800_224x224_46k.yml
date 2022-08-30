@@ -63,16 +63,15 @@ loss:
     - type: CrossEntropyLoss
     - type: CrossEntropyLoss
     - type: FocalLoss
-      edge_label: True
     - type: KLLoss
   coef: [1, 1, 0.3, 2]
 
 model:
   type: PortraitNet
   backbone:
-    type: MobileNetV2
+    type: MobileNetV2_x1_0
     channel_ratio: 1.0
     min_channel: 16
-    pretrained: https://bj.bcebos.com/paddleseg/dygraph/mobilenetv2.tar.gz
+    pretrained: https://paddleseg.bj.bcebos.com/dygraph/backbone/mobilenetv2_x1_0_ssld.tar.gz
   add_edge: True
   num_classes: 2
