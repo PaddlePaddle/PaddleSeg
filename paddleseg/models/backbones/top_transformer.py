@@ -174,7 +174,7 @@ class InvertedResidual(nn.Layer):
             activations = nn.ReLU
 
         hidden_dim = int(round(in_channels * expand_ratio))
-        self.use_res_connect = self.stride == 1 and in_channels == out_channels
+        self.use_res_connect = stride == 1 and in_channels == out_channels
 
         layers = []
         if expand_ratio != 1:
@@ -227,7 +227,7 @@ class TokenPyramidModule(nn.Layer):
             layer = InvertedResidual(
                 inp_channel,
                 output_channel,
-                ks=k,
+                kernel_size=k,
                 stride=s,
                 expand_ratio=t,
                 activations=activation,
