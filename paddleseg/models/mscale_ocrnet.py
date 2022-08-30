@@ -245,7 +245,7 @@ class MscaleOCRNet(nn.Layer):
         backbone (Paddle.nn.Layer): Backbone network.
         backbone_indices (tuple, optional): Two values in the tuple indicate the indices of output of backbone.
             Default: [0].
-        mscale (list): The multiple scale for fusion.
+        mscale (list): The multiple scales for fusion.
             Default: [0.5, 1.0, 2.0].
         pretrained (str, optional): The path or url of pretrained model. 
             Default: None.

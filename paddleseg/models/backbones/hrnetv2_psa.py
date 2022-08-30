@@ -656,7 +656,7 @@ class HighResolutionNet(nn.Layer):
 
 
 @manager.BACKBONES.add_component
-def HRNETV2_PSA(cfg_dic={
+def HRNetV2_PSA(cfg_dic={
         'FINAL_CONV_KERNEL': 1,
         'STAGE1': {
             'NUM_MODULES': 1,
@@ -691,6 +691,6 @@ def HRNETV2_PSA(cfg_dic={
             'FUSE_METHOD': 'SUM'
         }
 },
-                pretrained=None):
-    model = HighResolutionNet(cfg_dic=cfg_dic, pretrained=pretrained)
+                **kwargs):
+    model = HighResolutionNet(cfg_dic=cfg_dic, **kwargs)
     return model

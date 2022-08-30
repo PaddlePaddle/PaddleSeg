@@ -38,7 +38,7 @@ model:
     type: MscaleOCRNet
     num_classes: 19
     backbone: 
-      type: HRNETV2_PSA
+      type: HRNetV2_PSA
 
 optimizer:
   type: sgd
@@ -56,10 +56,11 @@ lr_scheduler:
 loss:
   types:
     - type: CrossEntropyLoss
-    - type: RMILoss
-      do_rmi: True
-    - type: RMILoss
-      do_rmi: False
-    - type: RMILoss
-      do_rmi: False
+    - type: MixedLoss
+      losses:
+        - type: RMILoss
+        - type: CrossEntropyLoss
+      coef: [1.0, 1.0]
+    - type: CrossEntropyLoss
+    - type: CrossEntropyLoss
   coef: [0.4, 1.0, 0.05, 0.05]

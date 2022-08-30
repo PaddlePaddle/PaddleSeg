@@ -14,4 +14,4 @@
 
 ### Notes
 
-Because the authors use **train + val set for training** and val set for evaluating, we only use the train set for training, the final accuracy is lower than that in paper.
+Since we cannot reproduce the training results from [the authors' official repo](https://github.com/DeLightCMU/PSA), we follow the settings in the original paper to train and evaluate our models, and the final accuracy is lower than that reported in the paper.
