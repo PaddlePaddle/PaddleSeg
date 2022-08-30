@@ -14,7 +14,7 @@ model:
   hidden_size: 768
   n_skip: 3
   patches_grid: [14, 14]
-  pretrained_path: ./trans_unet.pdparams
+  pretrained_path: https://paddleseg.bj.bcebos.com/paddleseg3d/synapse/transunet_synapse_1_224_224_14k_1e-2/pretrain_model.pdparams
   skip_channels: [512, 256, 64, 16]
   attention_dropout_rate: 0.0
   dropout_rate: 0.1
