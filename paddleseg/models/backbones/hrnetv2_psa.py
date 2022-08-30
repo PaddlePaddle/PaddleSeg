@@ -454,9 +454,39 @@ blocks_dict = {'BASIC': HRNetBasicBlock, 'BOTTLENECK': Bottleneck}
 
 
 class HighResolutionNet(nn.Layer):
-    def __init__(self, cfg_dic, pretrained=None):
+    def __init__(self,
+                 stage1_num_channels=[64],
+                 stage1_num_blocks=[4],
+                 stage2_num_channels=[48, 96],
+                 stage2_num_modules=1,
+                 stage2_num_branches=2,
+                 stage2_num_blocks=[4, 4],
+                 stage3_num_channels=[48, 96, 192],
+                 stage3_num_modules=4,
+                 stage3_num_branches=3,
+                 stage3_num_blocks=[4, 4, 4],
+                 stage4_num_channels=[48, 96, 192, 384],
+                 stage4_num_modules=3,
+                 stage4_num_branches=4,
+                 stage4_num_blocks=[4, 4, 4, 4],
+                 pretrained=None):
         super().__init__()
-        self.cfg_dic = cfg_dic
+
+        self.stage1_num_channels = stage1_num_channels
+        self.stage1_num_blocks = stage1_num_blocks
+        self.stage2_num_channels = stage2_num_channels
+        self.stage2_num_modules = stage2_num_modules
+        self.stage2_num_branches = stage2_num_branches
+        self.stage2_num_blocks = stage2_num_blocks
+        self.stage3_num_channels = stage3_num_channels
+        self.stage3_num_modules = stage3_num_modules
+        self.stage3_num_branches = stage3_num_branches
+        self.stage3_num_blocks = stage3_num_blocks
+        self.stage4_num_channels = stage4_num_channels
+        self.stage4_num_modules = stage4_num_modules
+        self.stage4_num_branches = stage4_num_branches
+        self.stage4_num_blocks = stage4_num_blocks
+        self.pretrained = pretrained
         self.conv1 = nn.Conv2D(
             3, 64, kernel_size=3, stride=2, padding=1, bias_attr=False)
         self.bn1 = layers.SyncBatchNorm(64)
@@ -464,42 +494,41 @@ class HighResolutionNet(nn.Layer):
             64, 64, kernel_size=3, stride=2, padding=1, bias_attr=False)
         self.bn2 = layers.SyncBatchNorm(64)
         self.relu = nn.ReLU()
-        self.pretrained = pretrained
 
-        self.stage1_cfg = self.cfg_dic['STAGE1']
-        num_channels = self.stage1_cfg['NUM_CHANNELS'][0]
-        block = blocks_dict[self.stage1_cfg['BLOCK']]
-        num_blocks = self.stage1_cfg['NUM_BLOCKS'][0]
+        num_channels = self.stage1_num_channels[0]
+        block = Bottleneck
+        num_blocks = stage1_num_blocks[0]
         self.layer1 = self._make_layer(block, 64, num_channels, num_blocks)
         stage1_out_channel = block.expansion * num_channels
 
-        self.stage2_cfg = self.cfg_dic['STAGE2']
-        num_channels = self.stage2_cfg['NUM_CHANNELS']
-        block = blocks_dict[self.stage2_cfg['BLOCK']]
+        num_channels = self.stage2_num_channels
+        block = HRNetBasicBlock
         num_channels = [
             num_channels[i] * block.expansion
             for i in range(len(num_channels))
         ]
         self.transition1 = self._make_transition_layer([stage1_out_channel],
                                                        num_channels)
-        self.stage2, pre_stage_channels = self._make_stage(self.stage2_cfg,
-                                                           num_channels)
+        self.stage2, pre_stage_channels = self._make_stage(
+            self.stage2_num_modules, self.stage2_num_branches,
+            self.stage2_num_blocks, self.stage2_num_channels, num_channels,
+            block)
 
-        self.stage3_cfg = self.cfg_dic['STAGE3']
-        num_channels = self.stage3_cfg['NUM_CHANNELS']
-        block = blocks_dict[self.stage3_cfg['BLOCK']]
+        num_channels = self.stage3_num_channels
+        block = HRNetBasicBlock
         num_channels = [
             num_channels[i] * block.expansion
             for i in range(len(num_channels))
         ]
         self.transition2 = self._make_transition_layer(pre_stage_channels,
                                                        num_channels)
-        self.stage3, pre_stage_channels = self._make_stage(self.stage3_cfg,
-                                                           num_channels)
+        self.stage3, pre_stage_channels = self._make_stage(
+            self.stage3_num_modules, self.stage3_num_branches,
+            self.stage3_num_blocks, self.stage3_num_channels, num_channels,
+            block)
 
-        self.stage4_cfg = self.cfg_dic['STAGE4']
-        num_channels = self.stage4_cfg['NUM_CHANNELS']
-        block = blocks_dict[self.stage4_cfg['BLOCK']]
+        num_channels = self.stage4_num_channels
+        block = HRNetBasicBlock
         num_channels = [
             num_channels[i] * block.expansion
             for i in range(len(num_channels))
@@ -507,7 +536,13 @@ class HighResolutionNet(nn.Layer):
         self.transition3 = self._make_transition_layer(pre_stage_channels,
                                                        num_channels)
         self.stage4, pre_stage_channels = self._make_stage(
-            self.stage4_cfg, num_channels, multi_scale_output=True)
+            self.stage4_num_modules,
+            self.stage4_num_branches,
+            self.stage4_num_blocks,
+            self.stage4_num_channels,
+            num_channels,
+            block,
+            multi_scale_output=True)
         self.feat_channels = [np.int(np.sum(pre_stage_channels))]
 
     def _make_transition_layer(self, num_channels_pre_layer,
@@ -573,15 +608,15 @@ class HighResolutionNet(nn.Layer):
 
         return nn.Sequential(*layer)
 
-    def _make_stage(self, layer_config, num_inchannels,
+    def _make_stage(self,
+                    num_modules,
+                    num_branches,
+                    num_blocks,
+                    num_channels,
+                    num_inchannels,
+                    block,
+                    fuse_method='sum',
                     multi_scale_output=True):
-        num_modules = layer_config['NUM_MODULES']
-        num_branches = layer_config['NUM_BRANCHES']
-        num_blocks = layer_config['NUM_BLOCKS']
-        num_channels = layer_config['NUM_CHANNELS']
-        block = blocks_dict[layer_config['BLOCK']]
-        fuse_method = layer_config['FUSE_METHOD']
-
         modules = []
         for i in range(num_modules):
             if not multi_scale_output and i == num_modules - 1:
@@ -605,7 +640,7 @@ class HighResolutionNet(nn.Layer):
         x = self.relu(x)
         x = self.layer1(x)
         x_list = []
-        for i in range(self.stage2_cfg['NUM_BRANCHES']):
+        for i in range(self.stage2_num_branches):
             if self.transition1[i] is not None:
                 x_list.append(self.transition1[i](x))
             else:
@@ -613,9 +648,9 @@ class HighResolutionNet(nn.Layer):
         y_list = self.stage2(x_list)
 
         x_list = []
-        for i in range(self.stage3_cfg['NUM_BRANCHES']):
+        for i in range(self.stage3_num_branches):
             if self.transition2[i] is not None:
-                if i < self.stage2_cfg['NUM_BRANCHES']:
+                if i < self.stage2_num_branches:
                     x_list.append(self.transition2[i](y_list[i]))
                 else:
                     x_list.append(self.transition2[i](y_list[-1]))
@@ -624,9 +659,9 @@ class HighResolutionNet(nn.Layer):
         y_list = self.stage3(x_list)
 
         x_list = []
-        for i in range(self.stage4_cfg['NUM_BRANCHES']):
+        for i in range(self.stage4_num_branches):
             if self.transition3[i] is not None:
-                if i < self.stage3_cfg['NUM_BRANCHES']:
+                if i < self.stage3_num_branches:
                     x_list.append(self.transition3[i](y_list[i]))
                 else:
                     x_list.append(self.transition3[i](y_list[-1]))
@@ -656,41 +691,21 @@ class HighResolutionNet(nn.Layer):
 
 
 @manager.BACKBONES.add_component
-def HRNetV2_PSA(cfg_dic={
-        'FINAL_CONV_KERNEL': 1,
-        'STAGE1': {
-            'NUM_MODULES': 1,
-            'NUM_RANCHES': 1,
-            'BLOCK': 'BOTTLENECK',
-            'NUM_BLOCKS': [4],
-            'NUM_CHANNELS': [64],
-            'FUSE_METHOD': 'SUM'
-        },
-        'STAGE2': {
-            'NUM_MODULES': 1,
-            'NUM_BRANCHES': 2,
-            'BLOCK': 'BASIC',
-            'NUM_BLOCKS': [4, 4],
-            'NUM_CHANNELS': [48, 96],
-            'FUSE_METHOD': 'SUM'
-        },
-        'STAGE3': {
-            'NUM_MODULES': 4,
-            'NUM_BRANCHES': 3,
-            'BLOCK': 'BASIC',
-            'NUM_BLOCKS': [4, 4, 4],
-            'NUM_CHANNELS': [48, 96, 192],
-            'FUSE_METHOD': 'SUM'
-        },
-        'STAGE4': {
-            'NUM_MODULES': 3,
-            'NUM_BRANCHES': 4,
-            'BLOCK': 'BASIC',
-            'NUM_BLOCKS': [4, 4, 4, 4],
-            'NUM_CHANNELS': [48, 96, 192, 384],
-            'FUSE_METHOD': 'SUM'
-        }
-},
-                **kwargs):
-    model = HighResolutionNet(cfg_dic=cfg_dic, **kwargs)
+def HRNetV2_PSA(**kwargs):
+    model = HighResolutionNet(
+        stage1_num_channels=[64],
+        stage1_num_blocks=[4],
+        stage2_num_channels=[48, 96],
+        stage2_num_modules=1,
+        stage2_num_branches=2,
+        stage2_num_blocks=[4, 4],
+        stage3_num_channels=[48, 96, 192],
+        stage3_num_modules=4,
+        stage3_num_branches=3,
+        stage3_num_blocks=[4, 4, 4],
+        stage4_num_channels=[48, 96, 192, 384],
+        stage4_num_modules=3,
+        stage4_num_branches=4,
+        stage4_num_blocks=[4, 4, 4, 4],
+        **kwargs)
     return model
