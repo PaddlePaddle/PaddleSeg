@@ -81,14 +81,6 @@ class TopFormer(nn.Layer):
         return [x]
 
 
-def resize(input_data,
-           size=None,
-           scale_factor=None,
-           mode='nearest',
-           align_corners=None):
-    return F.interpolate(input_data, size, scale_factor, mode, align_corners)
-
-
 class TopFormerHead(nn.Layer):
     def __init__(self,
                  num_classes,
@@ -133,7 +125,7 @@ class TopFormerHead(nn.Layer):
         if self.in_transform == 'resize_concat':
             inputs = [inputs[i] for i in self.in_index]
             inputs = [
-                resize(
+                F.interpolate(
                     input_data=x,
                     size=paddle.shape(inputs[0])[2:],
                     mode='bilinear',
@@ -144,7 +136,7 @@ class TopFormerHead(nn.Layer):
             inputs_tmp = [inputs[i] for i in self.in_index]
             inputs = inputs_tmp[0]
             for x in inputs_tmp[1:]:
-                x = resize(
+                x = F.interpolate(
                     x,
                     size=paddle.shape(inputs)[2:],
                     mode='bilinear',
