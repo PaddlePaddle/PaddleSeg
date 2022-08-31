@@ -699,7 +699,6 @@ class HighResolutionNet(nn.Layer):
 @manager.BACKBONES.add_component
 def HRNetV2_PSA(**kwargs):
     model = HighResolutionNet(
-        in_channels=3,
         stage1_num_channels=[64],
         stage1_num_blocks=[4],
         stage2_num_channels=[48, 96],
