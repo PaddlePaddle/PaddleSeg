@@ -46,6 +46,7 @@ class Compose:
         self.transforms = transforms
         self.to_rgb = to_rgb
         self.img_channels = img_channels
+        self.read_flag = cv2.IMREAD_GRAYSCALE if img_channels == 1 else cv2.IMREAD_COLOR
 
     def __call__(self, data):
         """
@@ -60,7 +61,7 @@ class Compose:
             raise ValueError("`data` must include `img` key.")
         if isinstance(data['img'], str):
             data['img'] = cv2.imread(data['img'],
-                                     cv2.IMREAD_UNCHANGED).astype('float32')
+                                     self.read_flag).astype('float32')
         if data['img'] is None:
             raise ValueError('Can\'t read The image file {}!'.format(data[
                 'img']))

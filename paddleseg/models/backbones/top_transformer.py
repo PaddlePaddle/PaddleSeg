@@ -207,6 +207,7 @@ class TokenPyramidModule(nn.Layer):
     def __init__(self,
                  cfgs,
                  out_indices,
+                 in_channels=3,
                  inp_channel=16,
                  activation=nn.ReLU,
                  width_mult=1.,
@@ -216,7 +217,8 @@ class TokenPyramidModule(nn.Layer):
 
         self.stem = nn.Sequential(
             Conv2DBN(
-                3, inp_channel, 3, 2, 1, lr_mult=lr_mult), activation())
+                in_channels, inp_channel, 3, 2, 1, lr_mult=lr_mult),
+            activation())
 
         self.layers = []
         for i, (k, t, c, s) in enumerate(cfgs):
@@ -536,6 +538,7 @@ class TopTransformer(nn.Layer):
                  injection_type="muli_sum",
                  injection=True,
                  lr_mult=1.0,
+                 in_channels=3,
                  pretrained=None):
         super().__init__()
         self.feat_channels = [
