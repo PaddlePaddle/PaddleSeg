@@ -32,14 +32,14 @@ class SegNet(nn.Layer):
         num_classes (int): The unique number of target classes.
     """
 
-    def __init__(self, num_classes, pretrained=None):
+    def __init__(self, num_classes, in_channels=3, pretrained=None):
         super().__init__()
 
         # Encoder Module
 
         self.enco1 = nn.Sequential(
             layers.ConvBNReLU(
-                3, 64, 3, padding=1),
+                in_channels, 64, 3, padding=1),
             layers.ConvBNReLU(
                 64, 64, 3, padding=1))
 
