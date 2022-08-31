@@ -154,7 +154,7 @@ class VisionTransformer(nn.Layer):
     def __init__(self,
                  img_size=224,
                  patch_size=16,
-                 in_chans=3,
+                 in_channels=3,
                  embed_dim=768,
                  depth=12,
                  num_heads=12,
@@ -176,7 +176,7 @@ class VisionTransformer(nn.Layer):
         self.patch_embed = PatchEmbed(
             img_size=img_size,
             patch_size=patch_size,
-            in_chans=in_chans,
+            in_chans=in_channels,
             embed_dim=embed_dim)
         self.pos_w = self.patch_embed.num_patches_in_w
         self.pos_h = self.patch_embed.num_patches_in_h

@@ -86,7 +86,8 @@ def collect_dynamic_shape(args):
     # collect
     progbar_val = progbar.Progbar(target=len(img_path_list))
     for idx, img_path in enumerate(img_path_list):
-        data = np.array([cfg.transforms(img_path)[0]])
+        data = {'img': img_path}
+        data = np.array([cfg.transforms(data)['img']])
         input_handle.reshape(data.shape)
         input_handle.copy_from_cpu(data)
 

@@ -24,7 +24,7 @@ __dir__ = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.abspath(os.path.join(__dir__, '../../')))
 
 from paddleseg.cvlibs import manager, Config
-from paddleseg.utils import get_sys_env, logger, config_check, utils
+from paddleseg.utils import get_sys_env, logger, utils
 
 from distill_utils import distill_train
 from distill_config import prepare_distill_adaptor, prepare_distill_config
@@ -155,6 +155,8 @@ def prepare_config(args):
         learning_rate=args.learning_rate,
         iters=args.iters,
         batch_size=args.batch_size)
+    t_cfg.check_sync_info()
+    s_cfg.check_sync_info()
 
     train_dataset = s_cfg.train_dataset
     val_dataset = s_cfg.val_dataset if args.do_eval else None
@@ -175,9 +177,6 @@ def prepare_config(args):
     msg += str(s_cfg)
     msg += '------------------------------------------------'
     logger.info(msg)
-
-    config_check(t_cfg, train_dataset=train_dataset, val_dataset=val_dataset)
-    config_check(s_cfg, train_dataset=train_dataset, val_dataset=val_dataset)
 
     return t_cfg, s_cfg, train_dataset, val_dataset
 

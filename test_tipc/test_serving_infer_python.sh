@@ -36,9 +36,9 @@ input_name_key=$(func_parser_key "${lines[15]}")
 input_name_value=$(func_parser_value "${lines[15]}")
 
 
-LOG_PATH="./log/${model_name}/${MODE}"
+LOG_PATH="./test_tipc/output/${model_name}/${MODE}"  ##
 mkdir -p ${LOG_PATH}
-status_log="../../log/${model_name}/${MODE}/serving_infer_python_gpu_batchsize_1.log"
+status_log="${LOG_PATH}/results_python.log"
 
 function func_serving(){
     IFS='|'
@@ -55,41 +55,44 @@ function func_serving(){
     set_serving_client=$(func_set_params "${serving_client_key}" "${serving_client_value}")
     python_list=(${python_list})
     python=${python_list[0]}
-    trans_model_cmd="${python} ${trans_model_py} ${set_dirname} ${set_model_filename} ${set_params_filename} ${set_serving_server} ${set_serving_client}"
+    trans_model_log_path="${LOG_PATH}/python_trans_model.log"
+    trans_model_cmd="${python} ${trans_model_py} ${set_dirname} ${set_model_filename} ${set_params_filename} ${set_serving_server} ${set_serving_client} >${trans_model_log_path} 2>&1"
     eval ${trans_model_cmd}
     last_status=${PIPESTATUS[0]}
     cd ${serving_dir_value}
-    status_check $last_status "${trans_model_cmd}" "${status_log}" "${model_name}"
+    status_check $last_status "${trans_model_cmd}" "${status_log}" "${model_name}" "${trans_model_log_path}"
     echo $PWD
 
     for use_gpu in ${web_use_gpu_list[*]}; do
         if [ ${use_gpu} = "null" ]; then
-            _save_log_path="../../log/${model_name}/${MODE}/serving_infer_python_cpu_batchsize_1.log"
-            web_service_cmd="${python} ${web_service_py} ${set_input_name} ${set_output_name} ${web_use_gpu_key}="" &"
+            web_service_log_path="${LOG_PATH}/python_server_cpu.log"
+            web_service_cmd="${python} ${web_service_py} ${set_input_name} ${set_output_name} ${web_use_gpu_key}="" >${web_service_log_path} 2>&1 &"
             eval $web_service_cmd
             last_status=${PIPESTATUS[0]}
-            status_check $last_status "${web_service_cmd}" "${status_log}" "${model_name}"
+            status_check $last_status "${web_service_cmd}" "${status_log}" "${model_name}" "${web_service_log_path}"
             sleep 5s
+            client_log_path="${LOG_PATH}/python_client_cpu_batchsize_1.log"
             set_image_dir=$(func_set_params "${image_dir_key}" "${image_dir_value}")
-            pipeline_cmd="${python} ${pipeline_py} ${set_image_dir}  ${set_input_name} > ${_save_log_path} 2>&1 "
+            pipeline_cmd="${python} ${pipeline_py} ${set_image_dir}  ${set_input_name} > ${client_log_path} 2>&1 "
             eval $pipeline_cmd
             last_status=${PIPESTATUS[0]}
-            status_check $last_status "${pipeline_cmd}" "${status_log}" "${model_name}"
-            eval "cat ${_save_log_path}"
+            status_check $last_status "${pipeline_cmd}" "${status_log}" "${model_name}" "{client_log_path}"
+            eval "cat ${client_log_path}"
             ps ux | grep -E 'web_service' | awk '{print $2}' | xargs kill -s 9
         else
-            _save_log_path="../../log/${model_name}/${MODE}/serving_infer_python_gpu_batchsize_1.log"
-            web_service_cmd="${python} ${web_service_py} ${set_input_name} ${set_output_name} ${web_use_gpu_key}=${use_gpu} &"
+            web_service_log_path="${LOG_PATH}/python_server_gpu.log"
+            web_service_cmd="${python} ${web_service_py} ${set_input_name} ${set_output_name} ${web_use_gpu_key}=${use_gpu} >${web_service_log_path} 2>&1 &"
             eval $web_service_cmd
             last_status=${PIPESTATUS[0]}
-            status_check $last_status "${web_service_cmd}" "${status_log}" "${model_name}"
+            status_check $last_status "${web_service_cmd}" "${status_log}" "${model_name}" "${web_service_log_path}"
             sleep 5s
+            client_log_path="${LOG_PATH}/python_client_gpu_batchsize_1.log"
             set_image_dir=$(func_set_params "${image_dir_key}" "${image_dir_value}")
-            pipeline_cmd="${python} ${pipeline_py} ${set_image_dir} ${set_input_name} > ${_save_log_path} 2>&1 "
+            pipeline_cmd="${python} ${pipeline_py} ${set_image_dir} ${set_input_name} > ${client_log_path} 2>&1 "
             eval $pipeline_cmd
             last_status=${PIPESTATUS[0]}
-            status_check $last_status "${pipeline_cmd}" "${status_log}" "${model_name}"
-            eval "cat ${_save_log_path}"
+            status_check $last_status "${pipeline_cmd}" "${status_log}" "${model_name}" "${client_log_path}"
+            eval "cat ${client_log_path}"
             ps ux | grep -E 'web_service' | awk '{print $2}' | xargs kill -s 9
         fi
     done

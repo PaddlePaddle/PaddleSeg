@@ -176,7 +176,8 @@ def auto_tune(args, imgs, img_nums):
 
     for i in range(0, num):
         if isinstance(imgs[i], str):
-            data = np.array([cfg.transforms(imgs[i])[0]])
+            data = {'img': imgs[i]}
+            data = np.array([cfg.transforms(data)['img']])
         else:
             data = imgs[i]
         input_handle.reshape(data.shape)

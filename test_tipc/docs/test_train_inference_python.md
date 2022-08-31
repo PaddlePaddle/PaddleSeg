@@ -97,7 +97,7 @@ test_tipc/output/[model name]/
 |- norm_train_gpus_0_autocast_null/  # GPU 0号卡上正常训练的训练日志和模型保存文件夹
 |- pact_train_gpus_0_autocast_null/  # GPU 0号卡上量化训练的训练日志和模型保存文件夹
 ......
-|- python_infer_cpu_usemkldnn_True_threads_1_batchsize_1.log  # CPU上开启Mkldnn线程数设置为1，测试batch_size=1条件下的预测运行日志
+|- python_infer_cpu_usemkldnn_True_threads_1_precision_fp32_batchsize_1.log  # CPU上开启Mkldnn线程数设置为1，测试batch_size=1条件下的fp32精度预测日志
 |- python_infer_gpu_usetrt_True_precision_fp16_batchsize_1.log # GPU上开启TensorRT，测试batch_size=1的半精度预测日志
 ......
 ```

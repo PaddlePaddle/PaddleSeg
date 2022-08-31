@@ -34,6 +34,7 @@ class ENet(nn.Layer):
 
     Args:
         num_classes (int): The unique number of target classes.
+        in_channels (int, optional): The channels of input image. Default: 3.
         pretrained (str, optional): The path or url of pretrained model. Default: None.
         encoder_relu (bool, optional): When ``True`` ReLU is used as the activation
             function; otherwise, PReLU is used. Default: False.
@@ -43,13 +44,14 @@ class ENet(nn.Layer):
 
     def __init__(self,
                  num_classes,
+                 in_channels=3,
                  pretrained=None,
                  encoder_relu=False,
                  decoder_relu=True):
         super(ENet, self).__init__()
 
         self.numclasses = num_classes
-        self.initial_block = InitialBlock(3, 16, relu=encoder_relu)
+        self.initial_block = InitialBlock(in_channels, 16, relu=encoder_relu)
 
         self.downsample1_0 = DownsamplingBottleneck(
             16, 64, return_indices=True, dropout_prob=0.01, relu=encoder_relu)

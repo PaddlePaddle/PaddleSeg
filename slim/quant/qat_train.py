@@ -24,7 +24,7 @@ __dir__ = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.abspath(os.path.join(__dir__, '../../')))
 
 from paddleseg.cvlibs import manager, Config
-from paddleseg.utils import get_sys_env, logger, config_check, utils
+from paddleseg.utils import get_sys_env, logger, utils
 from paddleseg.core import train
 from qat_config import quant_config
 
@@ -161,6 +161,7 @@ def main(args):
         learning_rate=args.learning_rate,
         iters=args.iters,
         batch_size=args.batch_size)
+    cfg.check_sync_info()
 
     train_dataset = cfg.train_dataset
     if train_dataset is None:
@@ -177,8 +178,6 @@ def main(args):
     msg += str(cfg)
     msg += '------------------------------------------------'
     logger.info(msg)
-
-    config_check(cfg, train_dataset=train_dataset, val_dataset=val_dataset)
 
     model = cfg.model
     if args.model_path:
