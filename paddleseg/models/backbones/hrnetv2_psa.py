@@ -91,8 +91,8 @@ class PolarizedSelfAttentionModule_p(nn.Layer):
 
     def spatial_pool(self, x):
         input_x = self.conv_v_right(x)
-        batch, channel, height, width = input_x.shape
-        input_x = input_x.reshape((batch, channel, height * width))
+        batch, _, height, width = paddle.shape(input_x)
+        input_x = input_x.reshape((batch, self.inter_planes, height * width))
         context_mask = self.conv_q_right(x)
         context_mask = context_mask.reshape((batch, 1, height * width))
         context_mask = self.softmax_right(context_mask)
@@ -105,9 +105,9 @@ class PolarizedSelfAttentionModule_p(nn.Layer):
 
     def channel_pool(self, x):
         g_x = self.conv_q_left(x)
-        batch, channel, height, width = g_x.shape
+        batch, channel, height, width = paddle.shape(g_x)
         avg_x = self.avg_pool(g_x)
-        batch, channel, avg_x_h, avg_x_w = avg_x.shape
+        batch, channel, avg_x_h, avg_x_w = paddle.shape(avg_x)
         avg_x = avg_x.reshape((batch, channel, avg_x_h * avg_x_w))
         avg_x = paddle.reshape(avg_x, [batch, avg_x_h * avg_x_w, channel])
         theta_x = self.conv_v_left(x).reshape(
@@ -159,11 +159,11 @@ class PolarizedSelfAttentionModule_p(nn.Layer):
                 "Fan in and fan out can not be computed for tensor with fewer than 2 dimensions"
             )
 
-        num_input_fmaps = tensor.shape[1]
-        num_output_fmaps = tensor.shape[0]
+        num_input_fmaps = paddle.shape(tensor)[1]
+        num_output_fmaps = paddle.shape(tensor)[0]
         receptive_field_size = 1
         if tensor.dim() > 2:
-            for s in tensor.shape[2:]:
+            for s in paddle.shape(tensor)[2:]:
                 receptive_field_size *= s
         fan_in = num_input_fmaps * receptive_field_size
         fan_out = num_output_fmaps * receptive_field_size
@@ -185,7 +185,7 @@ class PolarizedSelfAttentionModule_p(nn.Layer):
                         a=0,
                         mode='fan_in',
                         nonlinearity='leaky_relu'):
-        if 0 in tensor.shape:
+        if 0 in paddle.shape(tensor):
             warnings.warn("Initializing zero-element tensors is a no-op.")
             return tensor
         fan = self._calculate_correct_fan(tensor, mode)
@@ -200,7 +200,7 @@ class PolarizedSelfAttentionModule_p(nn.Layer):
                          a=0,
                          mode='fan_in',
                          nonlinearity='leaky_relu'):
-        if 0 in tensor.shape:
+        if 0 in paddle.shape(tensor):
             warnings.warn("Initializing zero-element tensors is a no-op")
             return tensor
         fan = self._calculate_correct_fan(tensor, mode)
@@ -437,8 +437,8 @@ class HighResolutionModule(nn.Layer):
                 if i == j:
                     y = y + x[j]
                 elif j > i:
-                    width_output = x[i].shape[-1]
-                    height_output = x[i].shape[-2]
+                    width_output = paddle.shape(x[i])[-1]
+                    height_output = paddle.shape(x[i])[-2]
                     y = y + F.interpolate(
                         self.fuse_layers[i][j](x[j]),
                         size=[height_output, width_output],
@@ -674,7 +674,7 @@ class HighResolutionNet(nn.Layer):
             else:
                 x_list.append(y_list[i])
         x = self.stage4(x_list)
-        x0_h, x0_w = x[0].shape[2:4]
+        x0_h, x0_w = paddle.shape(x[0])[2:4]
         x1 = F.interpolate(
             x[1], size=(x0_h, x0_w), mode='bilinear', align_corners=False)
         x2 = F.interpolate(
