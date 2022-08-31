@@ -34,6 +34,7 @@ class FastSCNN(nn.Layer):
     (https://arxiv.org/pdf/1902.04502.pdf).
     Args:
         num_classes (int): The unique number of target classes.
+        in_channels (int, optional): The channels of input image. Default: 3.
         enable_auxiliary_loss (bool, optional): A bool value indicates whether adding auxiliary loss.
             If true, auxiliary loss will be added after LearningToDownsample module. Default: False.
         align_corners (bool): An argument of F.interpolate. It should be set to False when the output size of feature
@@ -43,13 +44,15 @@ class FastSCNN(nn.Layer):
 
     def __init__(self,
                  num_classes,
+                 in_channels=3,
                  enable_auxiliary_loss=True,
                  align_corners=False,
                  pretrained=None):
 
         super().__init__()
 
-        self.learning_to_downsample = LearningToDownsample(32, 48, 64)
+        self.learning_to_downsample = LearningToDownsample(in_channels, 32, 48,
+                                                           64)
         self.global_feature_extractor = GlobalFeatureExtractor(
             in_channels=64,
             block_channels=[64, 96, 128],
@@ -108,11 +111,18 @@ class LearningToDownsample(nn.Layer):
         out_channels (int, optional): The output channels of LearningToDownsample module. Default: 64.
     """
 
-    def __init__(self, dw_channels1=32, dw_channels2=48, out_channels=64):
+    def __init__(self,
+                 in_channels=3,
+                 dw_channels1=32,
+                 dw_channels2=48,
+                 out_channels=64):
         super(LearningToDownsample, self).__init__()
 
         self.conv_bn_relu = layers.ConvBNReLU(
-            in_channels=3, out_channels=dw_channels1, kernel_size=3, stride=2)
+            in_channels=in_channels,
+            out_channels=dw_channels1,
+            kernel_size=3,
+            stride=2)
         self.dsconv_bn_relu1 = layers.SeparableConvBNReLU(
             in_channels=dw_channels1,
             out_channels=dw_channels2,
