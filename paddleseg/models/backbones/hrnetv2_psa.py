@@ -455,6 +455,7 @@ blocks_dict = {'BASIC': HRNetBasicBlock, 'BOTTLENECK': Bottleneck}
 
 class HighResolutionNet(nn.Layer):
     def __init__(self,
+                 in_channels=3,
                  stage1_num_channels=[64],
                  stage1_num_blocks=[4],
                  stage2_num_channels=[48, 96],
@@ -488,7 +489,12 @@ class HighResolutionNet(nn.Layer):
         self.stage4_num_blocks = stage4_num_blocks
         self.pretrained = pretrained
         self.conv1 = nn.Conv2D(
-            3, 64, kernel_size=3, stride=2, padding=1, bias_attr=False)
+            in_channels,
+            64,
+            kernel_size=3,
+            stride=2,
+            padding=1,
+            bias_attr=False)
         self.bn1 = layers.SyncBatchNorm(64)
         self.conv2 = nn.Conv2D(
             64, 64, kernel_size=3, stride=2, padding=1, bias_attr=False)
@@ -693,6 +699,7 @@ class HighResolutionNet(nn.Layer):
 @manager.BACKBONES.add_component
 def HRNetV2_PSA(**kwargs):
     model = HighResolutionNet(
+        in_channels=3,
         stage1_num_channels=[64],
         stage1_num_blocks=[4],
         stage2_num_channels=[48, 96],
