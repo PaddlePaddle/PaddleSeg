@@ -1472,7 +1472,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
                 if not self.dockStatus[8]:
                     return False
             # self.video_masks = None
-            self.video_images = self.video.set_video(path)
+            self.video_images, self.fps = self.video.set_video(path)
             self.video_masks = np.zeros(
                 (self.video.num_frames, self.video.height, self.video.width),
                 dtype=np.uint8)
@@ -1738,7 +1738,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         if savePath not in self.labelPaths:
             self.labelPaths.append(savePath)
 
-        # 视频帧保存
+        # 视频帧保存&视频保存
         if self.video_masks is not None:
             if osp.exists(savePath):
                 res = self.warn(
@@ -1762,9 +1762,14 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
                 progress.setWindowModality(Qt.WindowModal)
                 progress.setRange(0, self.video.num_frames)
 
+                videoname = savePath + "_overlay.mp4"
+                fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+                h, w = self.video_masks[0].shape
+                videoWrite = cv2.VideoWriter(videoname, fourcc, self.fps,
+                                             (w, h))
+
                 for i in range(0, self.video.num_frames):
                     # Save mask
-                    h, w = self.video_masks[i].shape
                     mask = self.video_masks[i].astype('uint8')
                     pseudo = np.zeros([h, w, 3])
                     # mask = self.controller.result_mask
@@ -1773,11 +1778,11 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
                         pseudo[mask == lab.idx, :] = lab.color[::-1]
                     cv2.imwrite(
                         os.path.join(mask_dir, '{:05d}.png'.format(i)), pseudo)
-
                     # Save overlay
                     overlay = overlay_davis(self.video_images[i],
                                             self.video_masks[i], self.opacity,
                                             self.controller.palette)
+                    videoWrite.write(overlay[:, :, ::-1])  # write video
                     overlay = Image.fromarray(overlay)
                     overlay.save(
                         os.path.join(overlay_dir, '{:05d}.png'.format(i)))
@@ -1785,10 +1790,9 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
                     if progress.wasCanceled():
                         # QMessageBox.warning(self, "提示", "保存失败")
                         break
-                else:
-                    progress.setValue(self.video.num_frames)
-                    # QMessageBox.information(self, "提示", "保存成功")
 
+                progress.setValue(self.video.num_frames)
+                videoWrite.release()
                 self.setDirty(False)
                 self.statusbar.showMessage(
                     self.tr("视频帧成功保存至") + " " + savePath, 5000)
@@ -2321,7 +2325,8 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
             for jlab in self.grid.json_labels:
                 is_add = True
                 for label in self.controller.labelList.labelList:
-                    if jlab["labelIdx"] == label.idx and jlab["name"] == label.name:
+                    if jlab["labelIdx"] == label.idx and jlab[
+                            "name"] == label.name:
                         is_add = False
                         break
                 if is_add is True:
@@ -2331,8 +2336,8 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         for jlab in self.grid.json_labels:
             pts = np.int32([np.array(jlab["points"])])
             cv2.fillPoly(
-                self.grid.mask_grids[jlab["row"]][jlab["col"]], 
-                pts=pts, 
+                self.grid.mask_grids[jlab["row"]][jlab["col"]],
+                pts=pts,
                 color=jlab["labelIdx"])
 
     def changeGrid(self, row, col):
@@ -2479,7 +2484,9 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         self.delAllPolygon()  # 清理
         mask = self.grid.splicingList(save_path)
         json_path = save_path.replace(".png", "_grid_saved.json")
-        open(json_path, "w", encoding="utf-8").write(json.dumps(self.grid.json_labels))
+        open(
+            json_path, "w",
+            encoding="utf-8").write(json.dumps(self.grid.json_labels))
         if self.grid.__class__.__name__ == "RSGrids":
             self.image, geo_tf = self.raster.getArray()
             if geo_tf is None:

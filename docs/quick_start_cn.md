@@ -19,8 +19,7 @@
 
 ```
 cd PaddleSeg
-mkdir data
-cd data
+mkdir data && cd data
 wget https://paddleseg.bj.bcebos.com/dataset/optic_disc_seg.zip
 unzip optic_disc_seg.zip
 cd ..
@@ -50,11 +49,11 @@ python train.py \
        --save_dir output
 ```
 
-训练完成后，模型在验证集上的mIoU达到90.65%(数据可能变动)，模型权重保存在`PaddleSeg/output/`。
+训练完成后，模型在验证集上的mIoU达到90.65%(数据可能变动)，精度最高的模型权重保存在`PaddleSeg/output/best_model`目录。
 
 ## 4 模型评估
 
-在PaddleSeg根目录下，执行如下命令使用`val.py`脚本来评估模型的精度，即计算验证数据集的精度。
+在PaddleSeg根目录下，执行如下命令，使用`val.py`脚本来评估模型的精度，即计算验证数据集的精度。
 
 ```
 python val.py \
@@ -64,7 +63,7 @@ python val.py \
 
 ## 5 模型预测
 
-在PaddleSeg根目录下，执行如下命令使用`predict.py`脚本加载模型，对图像进行预测，并且保存预测结果。
+在PaddleSeg根目录下，执行如下命令，使用`predict.py`脚本加载模型，对图像进行预测，并且保存预测结果。
 
 ```
 python predict.py \
@@ -82,4 +81,4 @@ python predict.py \
 
 ## 6 后续
 
-上述模型训练、评估、训练完后，就可以导出并部署预测模型了，具体请参考PaddleSeg的详细文档。
+得到训练好的模型后，上述预测步骤可以得到预测结果。此外，我们还可以导出预测模型并部署，实现更快的推理速度，具体请参考PaddleSeg的详细文档。

@@ -206,6 +206,7 @@ class ResNet_vd(nn.Layer):
         layers (int, optional): The layers of ResNet_vd. The supported layers are (18, 34, 50, 101, 152, 200). Default: 50.
         output_stride (int, optional): The stride of output features compared to input images. It is 8 or 16. Default: 8.
         multi_grid (tuple|list, optional): The grid of stage4. Defult: (1, 1, 1).
+        in_channels (int, optional): The channels of input image. Default: 3.
         pretrained (str, optional): The path of pretrained model.
 
     """
@@ -214,6 +215,7 @@ class ResNet_vd(nn.Layer):
                  layers=50,
                  output_stride=8,
                  multi_grid=(1, 1, 1),
+                 in_channels=3,
                  pretrained=None,
                  data_format='NCHW'):
         super(ResNet_vd, self).__init__()
@@ -251,7 +253,7 @@ class ResNet_vd(nn.Layer):
             dilation_dict = {3: 2}
 
         self.conv1_1 = ConvBNLayer(
-            in_channels=3,
+            in_channels=in_channels,
             out_channels=32,
             kernel_size=3,
             stride=2,

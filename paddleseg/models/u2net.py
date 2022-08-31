@@ -34,15 +34,15 @@ class U2Net(nn.Layer):
 
     Args:
         num_classes (int): The unique number of target classes.
-        in_ch (int, optional): Input channels. Default: 3.
+        in_channels (int, optional): Input channels. Default: 3.
         pretrained (str, optional): The path or url of pretrained model for fine tuning. Default: None.
 
     """
 
-    def __init__(self, num_classes, in_ch=3, pretrained=None):
+    def __init__(self, num_classes, in_channels=3, pretrained=None):
         super(U2Net, self).__init__()
 
-        self.stage1 = RSU7(in_ch, 32, 64)
+        self.stage1 = RSU7(in_channels, 32, 64)
         self.pool12 = nn.MaxPool2D(2, stride=2, ceil_mode=True)
 
         self.stage2 = RSU6(64, 32, 128)
@@ -153,10 +153,10 @@ class U2Net(nn.Layer):
 class U2Netp(nn.Layer):
     """Please Refer to U2Net above."""
 
-    def __init__(self, num_classes, in_ch=3, pretrained=None):
+    def __init__(self, num_classes, in_channels=3, pretrained=None):
         super(U2Netp, self).__init__()
 
-        self.stage1 = RSU7(in_ch, 16, 64)
+        self.stage1 = RSU7(in_channels, 16, 64)
         self.pool12 = nn.MaxPool2D(2, stride=2, ceil_mode=True)
 
         self.stage2 = RSU6(64, 16, 64)

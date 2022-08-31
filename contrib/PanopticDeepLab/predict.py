@@ -17,7 +17,7 @@ import os
 
 import paddle
 from paddleseg.cvlibs import manager, Config
-from paddleseg.utils import get_sys_env, logger, config_check
+from paddleseg.utils import get_sys_env, logger
 
 from core import predict
 from datasets import CityscapesPanoptic
@@ -109,6 +109,7 @@ def main(args):
         raise RuntimeError('No configuration file specified.')
 
     cfg = Config(args.cfg)
+    cfg.check_sync_info()
     val_dataset = cfg.val_dataset
     if not val_dataset:
         raise RuntimeError(
@@ -124,8 +125,6 @@ def main(args):
     transforms = val_dataset.transforms
     image_list, image_dir = get_image_list(args.image_path)
     logger.info('Number of predict images = {}'.format(len(image_list)))
-
-    config_check(cfg, val_dataset=val_dataset)
 
     predict(
         model,
