@@ -254,17 +254,33 @@ class Config(object):
         args = self.optimizer_args
         optimizer_type = args.pop('type')
 
+        params = self.model.parameters()
+        if 'backbone_lr_mult' in args:
+            if not hasattr(self.model, 'backbone'):
+                logger.warning('The backbone_lr_mult is not effective because'
+                               ' the model does not have backbone')
+            else:
+                backbone_lr_mult = args.pop('backbone_lr_mult')
+                backbone_params = self.model.backbone.parameters()
+                backbone_params_id = [id(x) for x in backbone_params]
+                other_params = [
+                    x for x in params if id(x) not in backbone_params_id
+                ]
+                params = [{
+                    'params': backbone_params,
+                    'learning_rate': backbone_lr_mult
+                }, {
+                    'params': other_params
+                }],
+
         if optimizer_type == 'sgd':
-            return paddle.optimizer.Momentum(
-                lr, parameters=self.model.parameters(), **args)
+            return paddle.optimizer.Momentum(lr, parameters=params, **args)
         elif optimizer_type == 'adam':
-            return paddle.optimizer.Adam(
-                lr, parameters=self.model.parameters(), **args)
+            return paddle.optimizer.Adam(lr, parameters=params, **args)
         elif optimizer_type in paddle.optimizer.__all__:
-            return getattr(paddle.optimizer,
-                           optimizer_type)(lr,
-                                           parameters=self.model.parameters(),
-                                           **args)
+            return getattr(paddle.optimizer, optimizer_type)(lr,
+                                                             parameters=params,
+                                                             **args)
 
         raise RuntimeError('Unknown optimizer type {}.'.format(optimizer_type))
 
