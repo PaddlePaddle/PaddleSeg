@@ -255,11 +255,11 @@ Loss declaration specification:
 
 
 
-### 4. Dataset development specification
+### 3. Dataset development specification
 
 This part we takes `paddleseg/dataset/cityscapes.py` as an example. In thi dataset file, only one class with the same name as the dataset is declared. And you should create `datasetname.py` in `paddleseg/dataset`.
 
-#### 4.1 Dataset declaration specification
+#### 3.1 Dataset declaration specification
 
 1. Add a decorator to the head of the class;
 
@@ -299,7 +299,7 @@ This part we takes `paddleseg/dataset/cityscapes.py` as an example. In thi datas
         """
     ```
 
-#### 4.2 __init__ specification
+#### 3.2 __init__ specification
 
 1. All the parameters in ```__init__``` are written out explicitly, you **cannot** include variable length parameters such as: ```*args, **kwargs```;
 2. ```super().__init__()``` should not have parameters;
