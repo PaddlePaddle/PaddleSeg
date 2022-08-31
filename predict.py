@@ -157,6 +157,7 @@ def main(args):
         raise RuntimeError('No configuration file specified.')
 
     cfg = Config(args.cfg)
+    cfg.check_sync_info()
 
     msg = '\n---------------Config Information---------------\n'
     msg += str(cfg)

@@ -31,6 +31,7 @@ class HarDNet(nn.Layer):
 
     Args:
         num_classes (int): The unique number of target classes.
+        in_channels (int, optional): The channels of input image. Default: 3.
         stem_channels (tuple|list, optional): The number of channels before the encoder. Default: (16, 24, 32, 48).
         ch_list (tuple|list, optional): The number of channels at each block in the encoder. Default: (64, 96, 160, 224, 320).
         grmul (float, optional): The channel multiplying factor in HarDBlock, which is m in the paper. Default: 1.7.
@@ -43,6 +44,7 @@ class HarDNet(nn.Layer):
 
     def __init__(self,
                  num_classes,
+                 in_channels=3,
                  stem_channels=(16, 24, 32, 48),
                  ch_list=(64, 96, 160, 224, 320),
                  grmul=1.7,
@@ -60,7 +62,7 @@ class HarDNet(nn.Layer):
 
         self.stem = nn.Sequential(
             layers.ConvBNReLU(
-                3, stem_channels[0], kernel_size=3, bias_attr=False),
+                in_channels, stem_channels[0], kernel_size=3, bias_attr=False),
             layers.ConvBNReLU(
                 stem_channels[0],
                 stem_channels[1],

@@ -78,9 +78,9 @@ class InferenceCore:
         self.np_masks = None
 
     def set_video(self, video_path):
-        self.images = load_video(video_path)
+        self.images, fps = load_video(video_path)
         self.num_frames, self.height, self.width = self.images.shape[:3]
-        return self.images
+        return self.images, fps
 
     def get_one_frames(self, idx):
         return self.images[idx]

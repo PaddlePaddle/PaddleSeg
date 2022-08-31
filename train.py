@@ -19,7 +19,7 @@ import paddle
 import numpy as np
 
 from paddleseg.cvlibs import manager, Config
-from paddleseg.utils import get_sys_env, logger, config_check
+from paddleseg.utils import get_sys_env, logger
 from paddleseg.core import train
 
 
@@ -46,6 +46,11 @@ def parse_args():
         help='Learning rate',
         type=float,
         default=None)
+    parser.add_argument(
+        '--opts',
+        help='update the key value for all options',
+        default=None,
+        nargs='+')
     parser.add_argument(
         '--save_interval',
         dest='save_interval',
@@ -133,6 +138,12 @@ def parse_args():
         help='Device place to be set, which can be GPU, XPU, NPU, CPU',
         default='gpu',
         type=str)
+    parser.add_argument(
+        '--repeats',
+        type=int,
+        default=1,
+        help="Repeat the samples in the dataset for `repeats` times in each epoch."
+    )
 
     return parser.parse_args()
 
@@ -168,7 +179,9 @@ def main(args):
         args.cfg,
         learning_rate=args.learning_rate,
         iters=args.iters,
-        batch_size=args.batch_size)
+        batch_size=args.batch_size,
+        opts=args.opts)
+    cfg.check_sync_info()
 
     # Only support for the DeepLabv3+ model
     if args.data_format == 'NHWC':
@@ -189,6 +202,10 @@ def main(args):
         raise ValueError(
             'The length of train_dataset is 0. Please check if your dataset is valid'
         )
+
+    if args.repeats > 1:
+        train_dataset.file_list *= args.repeats
+
     val_dataset = cfg.val_dataset if args.do_eval else None
     losses = cfg.loss
 
@@ -197,14 +214,14 @@ def main(args):
     msg += '------------------------------------------------'
     logger.info(msg)
 
-    config_check(cfg, train_dataset=train_dataset, val_dataset=val_dataset)
-
+    # convert bn to sync_bn if necessary
     if place == 'gpu' and paddle.distributed.ParallelEnv().nranks > 1:
-        # convert bn to sync_bn
-        cfg._model = paddle.nn.SyncBatchNorm.convert_sync_batchnorm(cfg.model)
+        model = paddle.nn.SyncBatchNorm.convert_sync_batchnorm(cfg.model)
+    else:
+        model = cfg.model
 
     train(
-        cfg.model,
+        model,
         train_dataset,
         val_dataset=val_dataset,
         optimizer=cfg.optimizer,
