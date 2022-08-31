@@ -550,7 +550,10 @@ class TopTransformer(nn.Layer):
         self.trans_out_indices = trans_out_indices
 
         self.tpm = TokenPyramidModule(
-            cfgs=cfgs, out_indices=encoder_out_indices, lr_mult=lr_mult)
+            cfgs=cfgs,
+            out_indices=encoder_out_indices,
+            in_channels=in_channels,
+            lr_mult=lr_mult)
         self.ppa = PyramidPoolAgg(stride=c2t_stride)
 
         dpr = [x.item() for x in \
