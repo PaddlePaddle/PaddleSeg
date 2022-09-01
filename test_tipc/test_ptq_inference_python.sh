@@ -66,7 +66,7 @@ function func_inference(){
                 eval $command
                 last_status=${PIPESTATUS[0]}
                 eval "cat ${_save_log_path}"
-                status_check $last_status "${command}" "${status_log}" "${model_name}"
+                status_check $last_status "${command}" "${status_log}" "${model_name}" "${_save_log_path}"
             done
         # gpu        
         elif [ ${use_gpu} = "True" ] || [ ${use_gpu} = "gpu" ]; then
@@ -81,7 +81,7 @@ function func_inference(){
                 eval $command
                 last_status=${PIPESTATUS[0]}
                 eval "cat ${_save_log_path}"
-                status_check $last_status "${command}" "${status_log}"  "${model_name}" 
+                status_check $last_status "${command}" "${status_log}" "${model_name}" "{_save_log_path}" 
             done      
         else
             echo "Does not support hardware other than CPU and GPU Currently!"
@@ -90,7 +90,7 @@ function func_inference(){
 }
 
 # log
-LOG_PATH="./log/${model_name}/${MODE}"
+LOG_PATH="./test_tipc/output/${model_name}/${MODE}"
 mkdir -p ${LOG_PATH}
 status_log="${LOG_PATH}/results_python.log"
 
@@ -103,12 +103,13 @@ if [ ${MODE} = "whole_infer" ]; then
     set_batch_num=$(func_set_params "${batch_num_key}" "${batch_num_value}")
     set_model_path=$(func_set_params "${model_path_key}" "${model_path_value}")
     set_use_gpu=$(func_set_params "${use_gpu_key}" "${use_gpu_value}")
+    _log_path="${LOG_PATH}/export.log"
     
-    export_cmd="${python} ${train_py} ${set_use_gpu} ${set_model_path} ${set_batch_num} ${set_batch_size} ${set_data_dir} ${set_output_dir}"
+    export_cmd="${python} ${train_py} ${set_use_gpu} ${set_model_path} ${set_batch_num} ${set_batch_size} ${set_data_dir} ${set_output_dir} >${_log_path} 2>&1"
     echo $export_cmd
     eval $export_cmd
     status_export=$?
-    status_check $status_export "${export_cmd}" "${status_log}" "${model_name}"
+    status_check $status_export "${export_cmd}" "${status_log}" "${model_name}" "${_log_path}"
     
     save_infer_dir=${output_dir_value}
     #run inference
