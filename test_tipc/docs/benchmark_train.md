@@ -93,6 +93,8 @@ ${BENCHMARK_LOG_DIR}/
 |SegFormer_B0|[config](./configs/segformer_b0/train_infer_python.txt)|4|||||
 |PP-LiteSeg-T|[config](./configs/pp_liteseg_stdc1/train_infer_python.txt)|2|3.814|3.826|3.826|0.003|
 |PP-LiteSeg-B|[config](./configs/pp_liteseg_stdc2/train_infer_python.txt)|2|3.971|3.953|3.985|0.008|
+|SFNet|[config](./configs/sfnet/train_infer_python.txt)|4|||||
+|MobileSeg-MV3|[config](./configs/mobileseg_mv3/train_infer_python.txt)|4|||||
 
 ### 3.3 小数据集+fp32精度
 
@@ -112,6 +114,8 @@ ${BENCHMARK_LOG_DIR}/
 |SegFormer_B0|[config](./configs/segformer_b0/train_infer_python.txt)|4|||||
 |PP-LiteSeg-T|[config](./configs/pp_liteseg_stdc1/train_infer_python.txt)|2|3.948|3.924|3.987|0.016|
 |PP-LiteSeg-B|[config](./configs/pp_liteseg_stdc2/train_infer_python.txt)|2|3.942|3.972|3.921|0.013|
+|SFNet|[config](./configs/sfnet/train_infer_python.txt)|4|6.350|6.340|6.308|0.007|
+|MobileSeg-MV3|[config](./configs/mobileseg_mv3/train_infer_python.txt)|4|17.014|17.466|17.453|0.026|
 
 ### 3.4 小数据集+fp16精度
 
@@ -131,6 +135,8 @@ ${BENCHMARK_LOG_DIR}/
 |SegFormer_B0|[config](./configs/segformer_b0/train_infer_python.txt)|4|||||
 |PP-LiteSeg-T|[config](./configs/pp_liteseg_stdc1/train_infer_python.txt)|2|3.969|3.938|3.953|0.008|
 |PP-LiteSeg-B|[config](./configs/pp_liteseg_stdc2/train_infer_python.txt)|2|4.098|4.085|4.105|0.005|
+|SFNet|[config](./configs/sfnet/train_infer_python.txt)|4|10.732|10.690|10.642|0.008|
+|MobileSeg-MV3|[config](./configs/mobileseg_mv3/train_infer_python.txt)|4|16.350|16.347|16.336|0.001|
 
 ## 4. 各模型多卡性能数据一览
 
@@ -152,6 +158,8 @@ ${BENCHMARK_LOG_DIR}/
 |SegFormer_B0|[config](./configs/segformer_b0/train_infer_python.txt)|4|||||
 |PP-LiteSeg-T|[config](./configs/pp_liteseg_stdc1/train_infer_python.txt)|2|||||
 |PP-LiteSeg-B|[config](./configs/pp_liteseg_stdc2/train_infer_python.txt)|2|||||
+|SFNet|[config](./configs/sfnet/train_infer_python.txt)|4|43.261|43.254|43.447|0.004|
+|MobileSeg-MV3|[config](./configs/mobileseg_mv3/train_infer_python.txt)|4|88.654|87.520|87.055|0.018|
 
 ### 4.2 8卡+小数据集+fp16精度
 
@@ -171,3 +179,5 @@ ${BENCHMARK_LOG_DIR}/
 |SegFormer_B0|[config](./configs/segformer_b0/train_infer_python.txt)|4|||||
 |PP-LiteSeg-T|[config](./configs/pp_liteseg_stdc1/train_infer_python.txt)|2|||||
 |PP-LiteSeg-B|[config](./configs/pp_liteseg_stdc2/train_infer_python.txt)|2|||||
+|SFNet|[config](./configs/sfnet/train_infer_python.txt)|4|58.499|58.387|58.219|0.005|
+|MobileSeg-MV3|[config](./configs/mobileseg_mv3/train_infer_python.txt)|4|82.415|81.367|82.672|0.016|
