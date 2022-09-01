@@ -23,6 +23,7 @@ English | [简体中文](README_CN.md)
 
 ## <img src="./docs/images/seg_news_icon.png" width="20"/> News
 <ul class="nobull">
+  <li>[2022-08-18] :fire: PaddleLabel, an intelligent annotation tool has been released in beta. It can annotate data for computer vision tasks such as classification, detection, and segmentation. For more details, please refer to <a href="./contrib/PaddleLabel/README.md">PaddleLabel</a>. </li>
   <li>[2022-07-20] :fire: PaddleSeg v2.6 is released! More details in <a href="https://github.com/PaddlePaddle/PaddleSeg/releases">Release Notes</a>.</li>
     <ul>
         <li>Release <a href="./contrib/PP-HumanSeg">PP-HumanSeg v2</a>, an off-the-shelf human segmentation model. It achieves 64.26 FPS on the mobile device, which is 45.5% faster than before. </li>
@@ -42,9 +43,8 @@ English | [简体中文](README_CN.md)
 PaddleSeg is an end-to-end high-efficent development toolkit for image segmentation based on PaddlePaddle, which  helps both developers and researchers in the whole process of designing segmentation models, training models, optimizing performance and inference speed, and deploying models. A lot of well-trained models and various real-world applications in both industry and academia help users conveniently build hands-on experiences in image segmentation.
 
 <div align="center">
-<img src="https://user-images.githubusercontent.com/34859558/178235222-7120071d-830f-4fbf-8541-cd78a4e408d7.gif"  width = "800" />  
+<img src="https://github.com/shiyutang/files/raw/main/teasor_new.gif"  width = "800" />  
 </div>
-
 
 
 ## <img src="./docs/images/feature.png" width="20"/> Features
@@ -63,8 +63,8 @@ PaddleSeg is an end-to-end high-efficent development toolkit for image segmentat
 
 ## <img src="./docs/images/chat.png" width="20"/> Community
 
-* If you have any questions, suggestions and feature requests, please create an issues in [GitHub Issues](https://github.com/PaddlePaddle/PaddleSeg/issues).
 * Welcome to scan the following QR code and join paddleseg wechat group to communicate with us.
+* If you have any questions, suggestions and feature requests, please create an issues in [GitHub Issues](https://github.com/PaddlePaddle/PaddleSeg/issues).
 
 <div align="center">
 <img src="https://user-images.githubusercontent.com/48433081/163670184-43cfb3ae-2047-4ba3-8dae-6c02090dd177.png"  width = "200" />  

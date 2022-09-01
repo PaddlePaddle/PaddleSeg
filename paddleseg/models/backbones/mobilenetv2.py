@@ -43,10 +43,11 @@ class MobileNetV2(nn.Layer):
 
         Args:
             scale (float, optional): The scale of channel. Default: 1.0
+            in_channels (int, optional): The channels of input image. Default: 3.
             pretrained (str, optional): The path or url of pretrained model. Default: None
         """
 
-    def __init__(self, scale=1.0, pretrained=None):
+    def __init__(self, scale=1.0, in_channels=3, pretrained=None):
         super().__init__()
         self.scale = scale
         self.pretrained = pretrained
@@ -64,7 +65,7 @@ class MobileNetV2(nn.Layer):
         self.out_index = [1, 2, 4, 6]
 
         self.conv1 = ConvBNLayer(
-            num_channels=3,
+            num_channels=in_channels,
             num_filters=int(32 * scale),
             filter_size=3,
             stride=2,

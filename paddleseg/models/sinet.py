@@ -42,6 +42,7 @@ class SINet(nn.Layer):
         config (List, optional): The config for SINet. Defualt use the CFG.
         stage2_blocks (int, optional): The num of blocks in stage2. Default: 2.
         stage3_blocks (int, optional): The num of blocks in stage3. Default: 8.
+        in_channels (int, optional): The channels of input image. Default: 3.
         pretrained (str, optional): The path or url of pretrained model. Default: None.
     """
 
@@ -50,14 +51,15 @@ class SINet(nn.Layer):
                  config=CFG,
                  stage2_blocks=2,
                  stage3_blocks=8,
+                 in_channels=3,
                  pretrained=None):
         super().__init__()
         dim1 = 16
         dim2 = 48
         dim3 = 96
 
-        self.encoder = SINetEncoder(config, num_classes, stage2_blocks,
-                                    stage3_blocks)
+        self.encoder = SINetEncoder(config, in_channels, num_classes,
+                                    stage2_blocks, stage3_blocks)
 
         self.up = nn.UpsamplingBilinear2D(scale_factor=2)
         self.bn_3 = nn.BatchNorm(num_classes)
@@ -385,14 +387,19 @@ class S2module(nn.Layer):
 
 
 class SINetEncoder(nn.Layer):
-    def __init__(self, config, num_classes=2, stage2_blocks=2, stage3_blocks=8):
+    def __init__(self,
+                 config,
+                 in_channels=3,
+                 num_classes=2,
+                 stage2_blocks=2,
+                 stage3_blocks=8):
         super().__init__()
         assert stage2_blocks == 2
         dim1 = 16
         dim2 = 48
         dim3 = 96
 
-        self.level1 = CBR(3, 12, 3, 2)
+        self.level1 = CBR(in_channels, 12, 3, 2)
 
         self.level2_0 = SESeparableCBR(12, dim1, 3, 2, divide=1)
 
