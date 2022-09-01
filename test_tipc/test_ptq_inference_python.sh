@@ -81,7 +81,7 @@ function func_inference(){
                 eval $command
                 last_status=${PIPESTATUS[0]}
                 eval "cat ${_save_log_path}"
-                status_check $last_status "${command}" "${status_log}" "${model_name}" "{_save_log_path}" 
+                status_check $last_status "${command}" "${status_log}" "${model_name}" "${_save_log_path}" 
             done      
         else
             echo "Does not support hardware other than CPU and GPU Currently!"
