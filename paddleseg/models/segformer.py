@@ -130,48 +130,54 @@ class SegFormer(nn.Layer):
 
 
 @manager.MODELS.add_component
-def SegFormer_B0(**kwargs):
+def SegFormer_B0(in_channels, **kwargs):
     return SegFormer(
-        backbone=manager.BACKBONES['MixVisionTransformer_B0'](),
+        backbone=manager.BACKBONES['MixVisionTransformer_B0'](
+            in_channels=in_channels),
         embedding_dim=256,
         **kwargs)
 
 
 @manager.MODELS.add_component
-def SegFormer_B1(**kwargs):
+def SegFormer_B1(in_channels, **kwargs):
     return SegFormer(
-        backbone=manager.BACKBONES['MixVisionTransformer_B1'](),
+        backbone=manager.BACKBONES['MixVisionTransformer_B1'](
+            in_channels=in_channels),
         embedding_dim=256,
         **kwargs)
 
 
 @manager.MODELS.add_component
-def SegFormer_B2(**kwargs):
+def SegFormer_B2(in_channels, **kwargs):
     return SegFormer(
-        backbone=manager.BACKBONES['MixVisionTransformer_B2'](),
+        backbone=manager.BACKBONES['MixVisionTransformer_B2'](
+            in_channels=in_channels),
         embedding_dim=768,
         **kwargs)
 
 
 @manager.MODELS.add_component
-def SegFormer_B3(**kwargs):
+def SegFormer_B3(in_channels, **kwargs):
     return SegFormer(
-        backbone=manager.BACKBONES['MixVisionTransformer_B3'](),
+        backbone=manager.BACKBONES['MixVisionTransformer_B3'](
+            in_channels=in_channels),
         embedding_dim=768,
         **kwargs)
 
 
 @manager.MODELS.add_component
-def SegFormer_B4(**kwargs):
+def SegFormer_B4(in_channels, **kwargs):
     return SegFormer(
-        backbone=manager.BACKBONES['MixVisionTransformer_B4'](),
+        backbone=manager.BACKBONES['MixVisionTransformer_B4'](
+            in_channels=in_channels),
         embedding_dim=768,
         **kwargs)
 
 
 @manager.MODELS.add_component
-def SegFormer_B5(**kwargs):
+def SegFormer_B5(in_channels, **kwargs):
     return SegFormer(
-        backbone=manager.BACKBONES['MixVisionTransformer_B5'](),
+        backbone=manager.BACKBONES['MixVisionTransformer_B5'](
+            in_channels=in_channels),
         embedding_dim=768,
         **kwargs)
