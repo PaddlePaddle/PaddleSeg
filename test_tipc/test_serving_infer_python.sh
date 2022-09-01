@@ -76,7 +76,7 @@ function func_serving(){
             pipeline_cmd="${python} ${pipeline_py} ${set_image_dir}  ${set_input_name} > ${client_log_path} 2>&1 "
             eval $pipeline_cmd
             last_status=${PIPESTATUS[0]}
-            status_check $last_status "${pipeline_cmd}" "${status_log}" "${model_name}" "{client_log_path}"
+            status_check $last_status "${pipeline_cmd}" "${status_log}" "${model_name}" "${client_log_path}"
             eval "cat ${client_log_path}"
             ps ux | grep -E 'web_service' | awk '{print $2}' | xargs kill -s 9
         else
