@@ -4,9 +4,12 @@ batch_size: 2
 iters: 160000
 
 model:
-  type: SegFormer_B4
+  type: SegFormer
+  backbone:
+    type: MixVisionTransformer_B4
+    pretrained: https://bj.bcebos.com/paddleseg/dygraph/backbone/mix_vision_transformer_b4.tar.gz
+  embedding_dim: 768
   num_classes: 19
-  pretrained: https://bj.bcebos.com/paddleseg/dygraph/mix_vision_transformer_b4.tar.gz
 
 optimizer:
   _inherited_: False
