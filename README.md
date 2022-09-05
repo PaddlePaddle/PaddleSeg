@@ -366,14 +366,13 @@ Note that:
 
 ## <img src="./docs/images/teach.png" width="20"/> Tutorials
 
-**Tutorials**
+**Introductory Tutorials**
 
+* [Installation](./docs/install.md)
 * [Quick Start](./docs/quick_start.md)
 * [A 20 minutes Blitz to learn PaddleSeg](./docs/whole_process.md)
 
-**Docs**
-
-* [Installation](./docs/install.md)
+**Basic Tutorials**
 
 *  Data Preparation
     * [Prepare Public Dataset](./docs/data/pre_data.md)
@@ -395,6 +394,10 @@ Note that:
     * [Paddle Serving](./docs/deployment/serving/serving.md)
     * [Paddle JS](./docs/deployment/web/web.md)
     * [Benchmark](./docs/deployment/inference/infer_benchmark.md)
+
+**Advanced Tutorials**
+
+* [Training Tricks](./docs/train/train_tricks.md)
 
 *  Model Compression
     * [Quantization](./docs/slim/quant/quant.md)

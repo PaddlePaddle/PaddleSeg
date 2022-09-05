@@ -2,7 +2,7 @@ English|[简体中文](train_tricks_cn.md)
 
 # Training Tricks
 
-* Weights for different classes in loss
+## Weights for different classes in loss
 
 Using weights for different classes in loss is an effective method to solve class imbalance problem.
 
@@ -18,7 +18,7 @@ loss:
   coef: [1]
 ```
 
-* Different learning rate for backbone and head
+## Different learning rate for backbone and head
 
 Since many segmentation models load the pretrained weights for backbone, the learning rate of the backbone can be lower than that of other modules.
 
@@ -39,7 +39,7 @@ lr_scheduler:
   power: 0.9
 ```
 
-* Linear warmup learning scheduler
+## Linear warmup learning scheduler
 
 The linear warmup learning scheduler gradually increases the lerning rate for from a small value to the initial value before adjusting the learning rate normally.
 

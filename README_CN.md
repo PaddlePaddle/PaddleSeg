@@ -359,14 +359,14 @@
 
 ## <img src="./docs/images/teach.png" width="20"/> 使用教程
 
-**教程**
+**入门教程**
 
+* [安装说明](./docs/install_cn.md)
 * [快速体验](./docs/quick_start_cn.md)
 * [20分钟快速上手PaddleSeg](./docs/whole_process_cn.md)
 
-**文档**
+**基础教程**
 
-* [安装说明](./docs/install_cn.md)
 * 准备数据
    * [准备公开数据集](./docs/data/pre_data_cn.md)
    * [准备自定义数据集](./docs/data/marker/marker_cn.md)
@@ -387,6 +387,10 @@
     * [Paddle Serving部署](./docs/deployment/serving/serving.md)
     * [Paddle JS部署](./docs/deployment/web/web_cn.md)
     * [推理Benchmark](./docs/deployment/inference/infer_benchmark_cn.md)
+
+**进阶教程**
+
+* [训练技巧](./docs/train/train_tricks_cn.md)
 
 * 模型压缩
     * [量化](./docs/slim/quant/quant_cn.md)
