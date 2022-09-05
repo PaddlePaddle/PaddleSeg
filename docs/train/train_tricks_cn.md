@@ -18,11 +18,13 @@ loss:
   coef: [1]
 ```
 
-* 模型Backbone和Head使用不同学习率
+* 模型Backbone和Head使用不同的学习率
+
+很多分割模型Backbone是加载大规模数据集上预训练的权重，所以Backbone模块的学习率可以比Head模块的学习率更小一些。
 
 在`optimizer`配置字段中设置`backbone_lr_mult`，可以设置模型Backbone和Head使用不同学习率。
 
-举例如下，则`backbone`模块的学习率是`learning_rate*backbone_lr_mult`，其他模块的学习率是`learning_rate`。
+举例如下，`backbone`模块的学习率是`learning_rate * backbone_lr_mult`，其他模块的学习率是`learning_rate`。
 
 ```
 optimizer:
@@ -40,7 +42,7 @@ lr_scheduler:
 
 * 线性学习率热身Warmup
 
-线性学习率热身(Warmup)是对学习率进行初步调整，在正常调整学习率之前，先逐步增大学习率。
+线性学习率热身(Warmup)是对学习率进行初步调整，在正常调整学习率之前，先从小逐步增大学习率。
 
 在`lr_scheduler`配置字段中设置`warmup_iters`和`warmup_start_lr`，开启线性学习率热身Warmup。
 
