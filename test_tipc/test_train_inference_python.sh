@@ -197,7 +197,7 @@ function func_inference(){
                             eval $command
                             last_status=${PIPESTATUS[0]}
                             eval "cat ${_save_log_path}"
-                            status_check $last_status "${command}" "${status_log}" "${model_name}" "{_save_log_path}"
+                            status_check $last_status "${command}" "${status_log}" "${model_name}" "${_save_log_path}"
                         done
                     done
                 done
@@ -371,7 +371,7 @@ else
                     cmd="${python} -m paddle.distributed.launch --ips=${ips} --gpus=${gpu} ${run_train} ${set_use_gpu} ${set_save_model} ${set_pretrain} ${set_epoch} ${set_autocast} ${set_batchsize} ${set_train_params1} ${set_amp_config}"
                 fi
                 
-                if [ -n "${log_iters}" ];then
+                if [ "${MODE}" = 'benchmark_train' ] && [ -n "${log_iters}" ];then
                     cmd="${cmd} --log_iters ${log_iters}"
                 fi
 

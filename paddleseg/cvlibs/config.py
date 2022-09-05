@@ -96,6 +96,10 @@ class Config(object):
         model_cfg = self.dic.get('model', None)
         if model_cfg is None:
             raise RuntimeError('No model specified in the configuration file.')
+        if (not self.train_dataset_config) and (not self.val_dataset_config):
+            raise ValueError(
+                'One of `train_dataset` or `val_dataset should be given, but there are none.'
+            )
 
     def _update_dic(self, dic, base_dic):
         """
@@ -469,19 +473,16 @@ class Config(object):
     def check_sync_info(self) -> None:
         """
         Check and sync the info, such as num_classes and img_channels, 
-        between model and dataset config,
+        between the config of model, train_dataset and val_dataset.
         """
         self._check_sync_num_classes()
+        self._check_sync_img_channels()
 
     def _check_sync_num_classes(self):
         num_classes_set = set()
 
         if self.dic['model'].get('num_classes', None) is not None:
             num_classes_set.add(self.dic['model'].get('num_classes'))
-        if (not self.train_dataset_config) and (not self.val_dataset_config):
-            raise ValueError(
-                'One of `train_dataset` or `val_dataset should be given, but there are none.'
-            )
         if self.train_dataset_config:
             if hasattr(self.train_dataset_class, 'NUM_CLASSES'):
                 num_classes_set.add(self.train_dataset_class.NUM_CLASSES)
@@ -503,13 +504,47 @@ class Config(object):
                 .format(num_classes_set))
 
         num_classes = num_classes_set.pop()
-        if not hasattr(self.dic.get('model'), 'num_classes'):
-            self.dic['model']['num_classes'] = num_classes
+        self.dic['model']['num_classes'] = num_classes
         if self.train_dataset_config and \
-            (not hasattr(self.dic.get('train_dataset'), 'num_classes')) and \
             (not hasattr(self.train_dataset_class, 'NUM_CLASSES')):
             self.dic['train_dataset']['num_classes'] = num_classes
         if self.val_dataset_config and \
-            (not hasattr(self.dic.get('val_dataset'), 'num_classes')) and \
             (not hasattr(self.val_dataset_class, 'NUM_CLASSES')):
             self.dic['val_dataset']['num_classes'] = num_classes
+
+    def _check_sync_img_channels(self):
+        img_channels_set = set()
+        model_cfg = self.dic['model']
+
+        # If the model has backbone, in_channels is the input params of backbone.
+        # Otherwise, in_channels is the input params of the model.
+        if 'backbone' in model_cfg:
+            x = model_cfg['backbone'].get('in_channels', None)
+            if x is not None:
+                img_channels_set.add(x)
+        elif model_cfg.get('in_channels', None) is not None:
+            img_channels_set.add(model_cfg.get('in_channels'))
+        if self.train_dataset_config and \
+            ('img_channels' in self.train_dataset_config):
+            img_channels_set.add(self.train_dataset_config['img_channels'])
+        if self.val_dataset_config and \
+            ('img_channels' in self.val_dataset_config):
+            img_channels_set.add(self.val_dataset_config['img_channels'])
+
+        if len(img_channels_set) > 1:
+            raise ValueError(
+                '`img_channels` is not consistent: {}. Please set it consistently in model or train_dataset or val_dataset'
+                .format(img_channels_set))
+
+        img_channels = 3 if len(img_channels_set) == 0 \
+            else img_channels_set.pop()
+        if 'backbone' in model_cfg:
+            self.dic['model']['backbone']['in_channels'] = img_channels
+        else:
+            self.dic['model']['in_channels'] = img_channels
+        if self.train_dataset_config and \
+            self.train_dataset_config['type'] == "Dataset":
+            self.dic['train_dataset']['img_channels'] = img_channels
+        if self.val_dataset_config and \
+            self.val_dataset_config['type'] == "Dataset":
+            self.dic['val_dataset']['img_channels'] = img_channels
