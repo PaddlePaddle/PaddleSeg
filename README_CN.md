@@ -58,7 +58,7 @@
 
 ## <img src="./docs/images/chat.png" width="20"/> 技术交流
 
-* 欢迎大家扫码加入PaddleSeg的微信交流群，可以和小伙伴们一起交流学习，而且有专门同学给大家解答疑问。
+* 欢迎大家加入PaddleSeg的微信群（扫码填写问卷即可入群），和小伙伴们一起交流学习，而且有专门同学给大家解答疑问。
 * 如果大家有使用问题、产品建议、功能需求, 可以通过[GitHub Issues](https://github.com/PaddlePaddle/PaddleSeg/issues)提issues，我们会及时跟进。
 
 <div align="center">
