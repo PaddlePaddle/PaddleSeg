@@ -47,6 +47,8 @@
 | HRNetW48Contrast | HRNetW48Contrast | 支持 | - | - | - |
 | ENCNet | ENCNet | 支持 | - | - | - |
 | ESPNetV2 | ESPNetV2 | 支持 | - | - | - |
+| SFNet | SFNet | 支持 | - | - | - |
+| MobileSeg | MobileSeg-MV3 | 支持 | - | - | - |
 
 ## 3. 测试工具简介
 ### 目录介绍
