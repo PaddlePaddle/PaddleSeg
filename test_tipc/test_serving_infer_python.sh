@@ -36,7 +36,7 @@ input_name_key=$(func_parser_key "${lines[15]}")
 input_name_value=$(func_parser_value "${lines[15]}")
 
 
-LOG_PATH="./test_tipc/output/${model_name}/${MODE}"  ##
+LOG_PATH="$(pwd)/test_tipc/output/${model_name}/${MODE}"  ##
 mkdir -p ${LOG_PATH}
 status_log="${LOG_PATH}/results_python.log"
 
