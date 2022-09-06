@@ -137,6 +137,11 @@ if [ ${MODE} = "benchmark_train" ];then
         rm -rf ./test_tipc/data/PPM-100
         wget -nc -P ./test_tipc/data/ https://paddleseg.bj.bcebos.com/matting/datasets/PPM-100.zip --no-check-certificate
         cd ./test_tipc/data/ && unzip PPM-100.zip && cd -
+    elif [ ${model_name} = 'deeplabv3p_resnet50_cityscapes' ]; then
+        rm -rf ./test_tipc/data/cityscapes
+        wget https://paddleseg.bj.bcebos.com/dataset/cityscapes.tar \
+            -O ./test_tipc/data/cityscapesimgs.tar --no-check-certificate
+        tar -xf ./test_tipc/data/cityscapes.tar -C ./test_tipc/data/
     else
         rm -rf ./test_tipc/data/cityscapes
         wget https://paddleseg.bj.bcebos.com/tipc/data/cityscapes_300imgs.tar.gz \
