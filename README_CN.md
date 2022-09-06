@@ -79,7 +79,7 @@
 
 扫码报名码住直播链接，与行业精英深度交流！
 <div  align="center">
-  <img src="" width="200"/>
+  <img src="https://user-images.githubusercontent.com/21275753/188600848-3a0ea123-7783-4271-ad59-93c502ddb322.jpg" width="200"/>
 </div>
 
 ## <img src="./docs/images/model.png" width="20"/> 产品矩阵
