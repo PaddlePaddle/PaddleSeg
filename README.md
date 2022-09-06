@@ -379,7 +379,7 @@ Note that:
     * [Label Data with EISeg](./EISeg)
 
 * [Model Training](/docs/train/train.md)
-* [Model Evaluation](./docs/evaluation/evaluate/evaluate.md)
+* [Model Evaluation](./docs/evaluation/evaluate.md)
 * [Prediction](./docs/predict/predict.md)
 
 * Model Export
