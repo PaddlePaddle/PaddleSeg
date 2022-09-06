@@ -65,8 +65,6 @@
 <img src="https://user-images.githubusercontent.com/48433081/174770518-e6b5319b-336f-45d9-9817-da12b1961fb1.jpg"  width = "200" />  
 </div>
 
----
-
 ❗️重磅❗️飞桨智慧金融行业系列直播课
 
 ✅ 覆盖智能风控、智能运维、智能营销、智能客服四大金融主流场景
