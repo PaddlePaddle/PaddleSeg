@@ -417,7 +417,7 @@ Note that:
     * [PR Tutorial](./docs/pr/pr/pr.md)
     * [PR Style](./docs/pr/pr/style_cn.md)
 
-## Practical Projects
+## <img src="./docs/images/anli.png" width="20"/> Special Features
   * [Interactive Segmentation](./EISeg)
   * [Image Matting](./Matting)
   * [PP-HumanSeg](./contrib/PP-HumanSeg)
