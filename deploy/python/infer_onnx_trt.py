@@ -405,6 +405,7 @@ def export_load_infer(args, model=None):
     # 1. prepare
     if model is None:
         cfg = Config(args.config)
+        cfg.check_sync_info()
         model = cfg.model
     if args.model_path is not None:
         utils.load_entire_model(model, args.model_path)
