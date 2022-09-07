@@ -427,12 +427,15 @@ Note that:
   * [CVPR Champion Solution](./contrib/AutoNUE)
   * [Domain Adaptation](./contrib/DomainAdaptation)
 
-# AI Studio tutorials
-* [Learn Paddleseg in 10 Mins](https://aistudio.baidu.com/aistudio/projectdetail/1672610?channelType=0&channel=0)
-* [Use PaddleSeg in Human Segmentation](https://aistudio.baidu.com/aistudio/projectdetail/2189481?channelType=0&channel=0)
-* [Use PaddleSeg in Mini-dataset Spine Segmentation](https://aistudio.baidu.com/aistudio/projectdetail/3878920)
-* [Use PaddleSeg in Lane Segmentation](https://aistudio.baidu.com/aistudio/projectdetail/1752986?channelType=0&channel=0)
+## <img src="https://user-images.githubusercontent.com/48054808/157801371-9a9a8c65-1690-4123-985a-e0559a7f9494.png" width="20"/> Industrial Tutorial Examples
+
+* [Road Segmentation Using PP-LiteSeg](https://aistudio.baidu.com/aistudio/projectdetail/3873145?contributionType=1)
+* [Human Segmentation Using PP-HumanSegV2](https://aistudio.baidu.com/aistudio/projectdetail/4504982?contributionType=1)
+* [Human Segmentation Using PP-HumanSegV1](https://aistudio.baidu.com/aistudio/projectdetail/2189481?channelType=0&channel=0)
+* [Mini-dataset Spine Segmentation Based on PaddleSeg](https://aistudio.baidu.com/aistudio/projectdetail/3878920)
+* [Lane Segmentation Based on PaddleSeg](https://aistudio.baidu.com/aistudio/projectdetail/1752986?channelType=0&channel=0)
 * [PaddleSeg in APIs](https://aistudio.baidu.com/aistudio/projectdetail/1339458?channelType=0&channel=0)
+* [Learn Paddleseg in 10 Mins](https://aistudio.baidu.com/aistudio/projectdetail/1672610?channelType=0&channel=0)
 
 ## License
 
