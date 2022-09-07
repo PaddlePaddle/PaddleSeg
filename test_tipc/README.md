@@ -31,7 +31,7 @@
 | BiSeNetV2 | bisenetv2 | 支持 | - | - | - |
 | OCRNet | ocrnet_hrnetw18 | 支持 | 混合精度 | - | - |
 | OCRNet | ocrnet_hrnetw48 | 支持 | 混合精度 | - | - |
-| Segformer | segformer_b0 | 支持 | 混合精度 | - | - |
+| SegFormer | segformer_b0 | 支持 | 混合精度 | - | - |
 | STDC | stdc_stdc1 | 支持 | - | - | C++预测 |
 | MODNet | ppmatting | 支持 | - | - | - |
 | PFPNNet | pfpnnet | 支持 | - | - | - |

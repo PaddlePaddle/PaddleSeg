@@ -116,6 +116,9 @@ if [ ${MODE} = "whole_infer" ] || [ ${MODE} = "klquant_whole_infer" ]; then
     elif [ ${model_name} == "ocrnet_hrnetw18_KL" ];then
         wget -P ${model_path} https://paddleseg.bj.bcebos.com/tipc/infer_models/ocrnet_hrnetw18_cityscapes_1024x512_160k.zip --no-check-certificate
         unzip -o ${model_path}/ocrnet_hrnetw18_cityscapes_1024x512_160k.zip -d ${model_path}/
+    elif [ ${model_name} == "segformer_b0_KL" ];then
+        wget -nc -P $model_path https://paddleseg.bj.bcebos.com/tipc/infer_models/segformer_b0_cityscapes_1024x1024_160k.zip --no-check-certificate
+        unzip -o ${model_path}/segformer_b0_cityscapes_1024x1024_160k.zip -d ${model_path}/
     fi
 fi
 
