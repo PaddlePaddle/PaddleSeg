@@ -54,7 +54,7 @@ def parse_args():
 def sample_generator(loader):
     def __reader__():
         for indx, data in enumerate(loader):
-            images = np.array(data[0])
+            images = np.array(data['img'])
             yield images
 
     return __reader__
