@@ -12,6 +12,5 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from . import manager
-from .config import Config
-from . import param_init
+from .multiple_losses import MultipleLoss
+from .dice_and_ce_loss import DC_and_CE_loss
