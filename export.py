@@ -132,8 +132,8 @@ def main(args):
                 'transforms': transforms,
                 'model': 'model.pdmodel',
                 'params': 'model.pdiparams',
-                'with_softmax' : args.with_softmax,
-                'without_argmax' : args.without_argmax
+                'with_softmax': args.with_softmax,
+                'with_argmax': not args.without_argmax
             }
         }
         yaml.dump(data, file)
