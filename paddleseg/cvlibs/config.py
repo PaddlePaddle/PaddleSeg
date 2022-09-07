@@ -275,7 +275,7 @@ class Config(object):
                     'learning_rate': backbone_lr_mult
                 }, {
                     'params': other_params
-                }],
+                }]
 
         if optimizer_type == 'sgd':
             return paddle.optimizer.Momentum(lr, parameters=params, **args)
