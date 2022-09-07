@@ -9,32 +9,32 @@ Linux端基础训练预测功能测试的主程序为`test_train_inference_pytho
 
 | 算法名称 | 模型名称 | 单机单卡 | 单机多卡 | 多机多卡 | 模型压缩（单机多卡） |
 |  :----  |   :----  |    :----  |  :----   |  :----   |  :----   |
-|  HRNet     |PP-HumanSeg-mobile (HRNet_W18_small)  |  正常训练 <br> 混合精度 | 正常训练 <br> 混合精度 |  |  |
-| HRNet     |HRNet_W18| 正常训练 | 正常训练 |  |  |
-| DeepLabv3p     |PP-HumanSeg-Server (DeepLabv3p_resnet50)| 正常训练 <br> 混合精度 | 正常训练 <br> 混合精度 |  |  |
-| DeepLabv3p     |DeepLabv3p_resnet50_cityscapes| 正常训练 | 正常训练 |  |  |
-| ConnectNet | PP-HumanSeg-Lite| 正常训练  | 正常训练  |  |  |
-| BiSeNetV2 | BiSeNetV2 | 正常训练  | 正常训练  |  |  |
-| OCRNet | OCRNet_HRNetW18 | 正常训练  | 正常训练  |  |  |
-| OCRNet | OCRNet_HRNetW48 | 正常训练  | 正常训练  |  |  |
-| Segformer | Segformer_B0 | 正常训练  | 正常训练  |  |  |
-| STDC | STDC_STDC1 | 正常训练  | 正常训练  |  |  |
-| MODNet | PP-Matting | 正常训练  | 正常训练  |  |  |
-| PFPNNet | PFPNNet | 正常训练 | 正常训练 |  |  |
-| ENet | ENet | 正常训练 | 正常训练 |  |  |
-| FastSCNN | FastSCNN | 正常训练 | 正常训练 |  |  |
-| DDRNet | DDRNet_23 | 正常训练 | 正常训练 |  |  |
-| CCNet | CCNet | 正常训练 | 正常训练 |  |  |
-| PP-LiteSeg | PP-LiteSeg(STDC-1) | 正常训练 | 正常训练 |  |  |
-| PP-LiteSeg | PP-LiteSeg(STDC-2) | 正常训练 | 正常训练 |  |  |
-| GloRe | GloRe | 正常训练 | 正常训练 |  |  |
-| BiSeNetV1 | BiSeNetV1 | 正常训练 | 正常训练 |  |  |
-| UPERNet | UPERNet | 正常训练 | 正常训练 |  |  |
-| HRNetW48Contrast | HRNetW48Contrast | 正常训练 | 正常训练 |  |  |
-| ENCNet | ENCNet | 正常训练 | 正常训练 |  |  |
-| ESPNetV2 | ESPNetV2 | 正常训练 | 正常训练 |  |  |
-| SFNet | SFNet | 正常训练 | 正常训练 |  |  |
-| MobileSeg | MobileSeg-MV3 | 正常训练 | 正常训练 |  |  |
+| HRNet     | pphumanseg_mobile (fcn_hrnetw18_small)  |  正常训练 <br> 混合精度 | 正常训练 <br> 混合精度 |  |  |
+| HRNet     | fcn_hrnet_w18 | 正常训练 <br> 混合精度 | 正常训练 <br> 混合精度 |  |  |
+| DeepLabV3P     | pphumanseg_server (deeplabv3p_resnet50) | 正常训练 <br> 混合精度 | 正常训练 <br> 混合精度 |  |  |
+| DeepLabV3P     | deeplabv3p_resnet50_cityscapes | 正常训练 | 正常训练 |  |  |
+| ConnectNet | pphumanseg_lite | 正常训练 <br> 混合精度  | 正常训练 <br> 混合精度  |  |  |
+| BiSeNetV2 | bisenetv2 | 正常训练  | 正常训练  |  |  |
+| OCRNet | ocrnet_hrnetw18 | 正常训练 <br> 混合精度  | 正常训练 <br> 混合精度  |  |  |
+| OCRNet | ocrnet_hrnetw48 | 正常训练 <br> 混合精度  | 正常训练 <br> 混合精度  |  |  |
+| Segformer | segformer_b0 | 正常训练 <br> 混合精度  | 正常训练 <br> 混合精度  |  |  |
+| STDC | stdc_stdc1 | 正常训练  | 正常训练  |  |  |
+| MODNet | ppmatting | 正常训练  | 正常训练  |  |  |
+| PFPNNet | pfpnnet | 正常训练 | 正常训练 |  |  |
+| ENet | enet | 正常训练 | 正常训练 |  |  |
+| FastSCNN | fastscnn | 正常训练 | 正常训练 |  |  |
+| DDRNet | ddrnet | 正常训练 | 正常训练 |  |  |
+| CCNet | ccnet | 正常训练 | 正常训练 |  |  |
+| PP-LiteSeg | pp_liteseg_stdc1 | 正常训练 | 正常训练 |  |  |
+| PP-LiteSeg | pp_liteseg_stdc2 | 正常训练 | 正常训练 |  |  |
+| GloRe | glore | 正常训练 | 正常训练 |  |  |
+| BiSeNetV1 | bisenetv1 | 正常训练 | 正常训练 |  |  |
+| UPERNet | upernet | 正常训练 | 正常训练 |  |  |
+| HRNet | hrnet_w48_contrast | 正常训练 | 正常训练 |  |  |
+| ENCNet | encnet | 正常训练 | 正常训练 |  |  |
+| ESPNetV2 | espnetv2 | 正常训练 | 正常训练 |  |  |
+| SFNet | sfnet | 正常训练 | 正常训练 |  |  |
+| MobileSeg | mobileseg_mv3 | 正常训练 | 正常训练 |  |  |
 
 
 - 预测相关：基于训练是否使用量化，可以将训练产出的模型可以分为`正常模型`和`量化模型`，这两类模型对应的预测功能汇总如下，
