@@ -14,8 +14,7 @@
 </div>
 
 ##  <img src="https://user-images.githubusercontent.com/34859558/188422593-4bc47c72-866a-4374-b9ed-1308c3453165.png" width="30"/> Brief Introduciton
-3D medical data annotation is widely used in medical image segmentation and promotes disease diagnosis and treatment prediction. However, medical data annotation relies on professionals, and traditional manual annotation is time-consuming and laborious. The lack of annotation data greatly hinders the development downstream applications. Therefore, it is urgent to solve the problem of labeling efficiency. To this end, we present EISeg-Med3D, an intelligent annotation platform for 3D medical images based on interactive segmentation.
-
+3D medical data annotation is an important part of training 3D image segmentation models and promotes disease diagnosis and treatment prediction, but 3D medical data annotation relies on time-consuming and laborious manual annotation by professionals. The low labeling efficiency leads to the lack of large-scale labeling data, which seriously hinders the development of medical AI. To solve this problem, we launched EISeg-Med3D, an intelligent annotation platform for 3D medical images based on interactive segmentation.
 
 EISeg-Med3D is a 3D slicer extension for performing **E**fficient **I**nteractive **Seg**mentation on **Med**ical image in **3D** medical images. Users will guide a deep learning model to perform segmentation by providing positive and negative points. It is simple to install, easy to use and accurate, which can achieve ten times efficiency lift compares to manual labelling. At present, our medical annotation provides the try-on experience on the specified [MRI vertebral data](https://aistudio.baidu.com/aistudio/datasetdetail/81211). If there is a need for 3D annotation on other data, you can make a [contact](https://github.com/PaddlePaddle/PaddleSeg/issues/new/choose).
 
