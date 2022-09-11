@@ -234,6 +234,9 @@ def save_array(save_path, save_content, form, image_infor):
                     np.save('{}_{}.npy'.format(save_path, key), val)
             elif suffix == 'nii' or suffix == 'nii.gz':
                 for (key, val) in save_content.items():
+                    import pdb
+                    pdb.set_trace()
+                    print(val.shape, image_infor['spacing'])
                     if image_infor["format"] == "xyz":
                         val = np.transpose(val, [2, 1, 0])
                     elif image_infor["format"] != "zyx":
