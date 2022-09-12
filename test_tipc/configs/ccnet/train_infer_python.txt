@@ -13,7 +13,7 @@ train_infer_img_dir:test_tipc/data/cityscapes/cityscapes_val_5.list
 null:null
 ##
 trainer:norm
-norm_train:train.py --config test_tipc/configs/ccnet/ccnet_resnet101_os8_cityscapes_769x769_60k.yml --save_interval 500 --seed 100 
+norm_train:train.py --config test_tipc/configs/ccnet/ccnet_resnet101_os8_cityscapes_769x769_60k.yml --device gpu --save_interval 500 --seed 100
 pact_train:null
 fpgm_train:null
 distill_train:null
@@ -21,7 +21,7 @@ null:null
 null:null
 ##
 ===========================eval_params===========================
-eval:val.py --config test_tipc/configs/ccnet/ccnet_resnet101_os8_cityscapes_769x769_60k.yml
+eval:val.py --config test_tipc/configs/ccnet/ccnet_resnet101_os8_cityscapes_769x769_60k.yml --device gpu
 null:null
 ##
 ===========================export_params===========================
