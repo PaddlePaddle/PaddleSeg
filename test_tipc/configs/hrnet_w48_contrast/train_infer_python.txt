@@ -13,7 +13,7 @@ train_infer_img_dir:test_tipc/data/cityscapes/cityscapes_val_5.list
 null:null
 ##
 trainer:norm
-norm_train:train.py --config test_tipc/configs/hrnet_w48_contrast/HRNet_W48_contrast_cityscapes_1024x512_60k.yml --do_eval --save_interval 500 --seed 100
+norm_train:train.py --config test_tipc/configs/hrnet_w48_contrast/HRNet_W48_contrast_cityscapes_1024x512_60k.yml --device gpu --do_eval --save_interval 500 --seed 100
 pact_train:null
 fpgm_train:null
 distill_train:null
