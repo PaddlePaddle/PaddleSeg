@@ -9,7 +9,7 @@ Image Matting（精细化分割/影像去背/抠图）是指借由计算前景�
 </p>
 
 # 快速体验
-欢迎使用基于PP-Matting模型开发的在线抠图应用，“[懒人抠图](http://seg.itmanbu.com/)"。
+欢迎使用基于PP-Matting模型开发的在线抠图应用，“[懒人抠图](https://easyseg.cn/)"。
 
 <p align="center">
 <img src="https://user-images.githubusercontent.com/48433081/165077834-c3191509-aeaf-45c8-b226-656174f4c152.gif" width="100%" height="100%">
