@@ -132,7 +132,9 @@ def main(args):
             'Deploy': {
                 'transforms': transforms,
                 'model': 'model.pdmodel',
-                'params': 'model.pdiparams'
+                'params': 'model.pdiparams',
+                'with_softmax': args.with_softmax,
+                'with_argmax': not args.without_argmax
             }
         }
         yaml.dump(data, file)
