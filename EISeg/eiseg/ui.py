@@ -35,33 +35,6 @@ class Ui_EISeg(object):
         super(Ui_EISeg, self).__init__()
         self.tr = partial(QtCore.QCoreApplication.translate, "APP_EISeg")
 
-    def addVideoslider(self, MainWindow, frames):
-        ## 时间轴设置
-        widget = QtWidgets.QWidget()
-        verticalLayout = QtWidgets.QVBoxLayout(widget)
-        self.VideoDock = self.p_create_dock("VideoDock", self.tr("时间轴"), widget)
-        VideoRegion = QtWidgets.QHBoxLayout()
-        VideoRegion.setObjectName("VideoRegion")
-        self.videoPlay = self.p_create_button(
-            "videoPlay",
-            self.tr("播放"),
-            osp.join(pjpath, "resource/Play.png"),
-            "", )
-        VideoRegion.addWidget(self.videoPlay)
-        self.sldTime, self.textTime, _ = self.p_create_slider(
-            "sldTime", "textTime", "", 0, frames, 0, 1, True)
-        VideoRegion.addWidget(
-            create_text(self.CentralWidget, None, self.tr("帧数：")))
-        VideoRegion.addWidget(self.textTime)
-        VideoRegion.addWidget(self.sldTime)
-        verticalLayout.addLayout(VideoRegion)
-        self.VideoDock.setAllowedAreas(QtCore.Qt.BottomDockWidgetArea)
-        MainWindow.addDockWidget(QtCore.Qt.BottomDockWidgetArea, self.VideoDock)
-
-        # timer
-        self.timer = QTimer()
-        self.timer.setSingleShot(False)
-
     def setupUi(self, MainWindow):
         ## -- 主窗体设置 --
         MainWindow.setObjectName("MainWindow")
