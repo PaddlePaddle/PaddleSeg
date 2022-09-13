@@ -134,7 +134,8 @@ def main(args):
                 'model': 'model.pdmodel',
                 'params': 'model.pdiparams',
                 'with_softmax': args.with_softmax,
-                'with_argmax': not args.without_argmax
+                'with_argmax': not args.without_argmax,
+                'input_shape': shape
             }
         }
         yaml.dump(data, file)
