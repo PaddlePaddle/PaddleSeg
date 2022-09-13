@@ -417,7 +417,7 @@ Note that:
     * [PR Tutorial](./docs/pr/pr/pr.md)
     * [PR Style](./docs/pr/pr/style_cn.md)
 
-## Practical Projects
+## <img src="./docs/images/anli.png" width="20"/> Special Features
   * [Interactive Segmentation](./EISeg)
   * [Image Matting](./Matting)
   * [PP-HumanSeg](./contrib/PP-HumanSeg)
@@ -427,12 +427,15 @@ Note that:
   * [CVPR Champion Solution](./contrib/AutoNUE)
   * [Domain Adaptation](./contrib/DomainAdaptation)
 
-# AI Studio tutorials
-* [Learn Paddleseg in 10 Mins](https://aistudio.baidu.com/aistudio/projectdetail/1672610?channelType=0&channel=0)
-* [Use PaddleSeg in Human Segmentation](https://aistudio.baidu.com/aistudio/projectdetail/2189481?channelType=0&channel=0)
-* [Use PaddleSeg in Mini-dataset Spine Segmentation](https://aistudio.baidu.com/aistudio/projectdetail/3878920)
-* [Use PaddleSeg in Lane Segmentation](https://aistudio.baidu.com/aistudio/projectdetail/1752986?channelType=0&channel=0)
+## <img src="https://user-images.githubusercontent.com/48054808/157801371-9a9a8c65-1690-4123-985a-e0559a7f9494.png" width="20"/> Industrial Tutorial Examples
+
+* [Using PP-HumanSegV2 for Human Segmentation](https://aistudio.baidu.com/aistudio/projectdetail/4504982?contributionType=1)
+* [Using PP-HumanSegV1 for Human Segmentation](https://aistudio.baidu.com/aistudio/projectdetail/2189481?channelType=0&channel=0)
+* [Using PP-LiteSeg for Road Segmentation](https://aistudio.baidu.com/aistudio/projectdetail/3873145?contributionType=1)
+* [Using PaddleSeg for Mini-dataset Spine Segmentation](https://aistudio.baidu.com/aistudio/projectdetail/3878920)
+* [Using PaddleSeg for Lane Segmentation](https://aistudio.baidu.com/aistudio/projectdetail/1752986?channelType=0&channel=0)
 * [PaddleSeg in APIs](https://aistudio.baidu.com/aistudio/projectdetail/1339458?channelType=0&channel=0)
+* [Learn Paddleseg in 10 Mins](https://aistudio.baidu.com/aistudio/projectdetail/1672610?channelType=0&channel=0)
 
 ## License
 

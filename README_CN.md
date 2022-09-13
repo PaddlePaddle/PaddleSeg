@@ -409,7 +409,7 @@
     * [提交PR说明](./docs/pr/pr/pr_cn.md)
     * [模型PR规范](./docs/pr/pr/style_cn.md)
 
-## <img src="./docs/images/anli.png" width="20"/> 实践案例
+## <img src="./docs/images/anli.png" width="20"/> 特色能力
 
 - [交互式分割](./EISeg)
 - [图像抠图](./Matting)
@@ -420,12 +420,15 @@
 - [CVPR冠军模型](./contrib/AutoNUE)
 - [领域自适应](./contrib/DomainAdaptation)
 
-## AI Studio第三方教程推荐
-* [10分钟上手PaddleSeg](https://aistudio.baidu.com/aistudio/projectdetail/1672610?channelType=0&channel=0)
-* [PaddleSeg实战之人像分割](https://aistudio.baidu.com/aistudio/projectdetail/2189481?channelType=0&channel=0)
+## <img src="https://user-images.githubusercontent.com/48054808/157801371-9a9a8c65-1690-4123-985a-e0559a7f9494.png" width="20"/> 产业实践范例
+
+* [使用PP-HumanSegV2进行人像分割](https://aistudio.baidu.com/aistudio/projectdetail/4504982?contributionType=1)
+* [使用PP-HumanSegV1进行人像分割](https://aistudio.baidu.com/aistudio/projectdetail/2189481?channelType=0&channel=0)
+* [使用PP-LiteSeg进行遥感道路分割](https://aistudio.baidu.com/aistudio/projectdetail/3873145?contributionType=1)
 * [PaddleSeg实战之小数据集3D椎骨分割](https://aistudio.baidu.com/aistudio/projectdetail/3878920)
 * [PaddleSeg实战之车道线图像分割](https://aistudio.baidu.com/aistudio/projectdetail/1752986?channelType=0&channel=0)
 * [PaddleSeg动态图API使用教程](https://aistudio.baidu.com/aistudio/projectdetail/1339458?channelType=0&channel=0)
+* [10分钟上手PaddleSeg](https://aistudio.baidu.com/aistudio/projectdetail/1672610?channelType=0&channel=0)
 
 ## 许可证书
 本项目的发布受Apache 2.0 license许可认证。
