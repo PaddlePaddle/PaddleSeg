@@ -25,9 +25,9 @@ model:
   img_size: 224
 
 train_dataset:
-  type: Synapse
-  dataset_root: ./Synapse_npy
-  result_dir: ./output
+  type: Abdomen
+  dataset_root: abdomen/abdomen_phase0
+  result_dir: abdomen/abdomen_phase1
   transforms:
     - type: RandomFlipRotation3D
       flip_axis: [1, 2]
@@ -42,24 +42,24 @@ train_dataset:
   num_classes: 9
 
 val_dataset:
-  type: Synapse
-  dataset_root: ./Synapse_npy
-  result_dir: ./output
+  type: Abdomen
+  dataset_root: abdomen/abdomen_phase0
+  result_dir: abdomen/abdomen_phase1
   num_classes: 9
   transforms:
     - type: Resize3D
       size: [1 ,224, 224]
-  mode: test
+  mode: val
 
 test_dataset:
-  type: Synapse
-  dataset_root: ./Synapse_npy
-  result_dir: ./output
+  type: Abdomen
+  dataset_root:  abdomen/abdomen_phase0
+  result_dir:  abdomen/abdomen_phase0
   num_classes: 9
   transforms:
     - type: Resize3D
       size: [1 ,224, 224]
-  mode: test
+  mode: val
 
 optimizer:
   type: sgd

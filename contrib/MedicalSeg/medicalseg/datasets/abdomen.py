@@ -24,7 +24,7 @@ from medicalseg.utils import loss_computation
 
 
 @manager.DATASETS.add_component
-class Synapse(MedicalDataset):
+class Abdomen(MedicalDataset):
     def __init__(
             self,
             dataset_root,
@@ -32,7 +32,7 @@ class Synapse(MedicalDataset):
             transforms,
             num_classes,
             mode, ):
-        super(Synapse, self).__init__(
+        super(Abdomen, self).__init__(
             dataset_root,
             result_dir,
             transforms,
