@@ -12,7 +12,7 @@ train_model_name:best_model/model.pdparams
 train_infer_img_dir:test_tipc/data/cityscapes/cityscapes_val_5.list
 null:null
 ##
-trainer:norm
+trainer:norm_train
 norm_train:train.py --config test_tipc/configs/deeplabv3p_resnet50_cityscapes/deeplabv3p_resnet50_1024x512_cityscapes.yml --device gpu --save_interval 500 --seed 100 --num_workers 8 --log_iters 5
 pact_train:null
 fpgm_train:null

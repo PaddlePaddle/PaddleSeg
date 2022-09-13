@@ -12,7 +12,7 @@ train_model_name:best_model/model.pdparams
 train_infer_img_dir:test_tipc/data/mini_supervisely/test.txt
 --profiler_options:null
 ##
-trainer:norm
+trainer:norm_train
 norm_train:train.py --config test_tipc/configs/pphumanseg_lite/pphumanseg_lite_mini_supervisely.yml --device gpu --do_eval --save_interval 500 --seed 100
 pact_train:null
 fpgm_train:null

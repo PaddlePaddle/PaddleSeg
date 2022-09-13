@@ -12,7 +12,7 @@ train_model_name:best_model/model.pdparams
 train_infer_img_dir:test_tipc/data/cityscapes/cityscapes_val_5.list
 null:null
 ##
-trainer:norm
+trainer:norm_train
 norm_train:train.py --config test_tipc/configs/stdc_stdc1/stdc1_seg_cityscapes_1024x512_80k.yml --device gpu --do_eval --save_interval 500 --seed 100
 pact_train:null
 fpgm_train:null
