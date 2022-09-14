@@ -262,27 +262,3 @@ def wrapped_partial(func, *args, **kwargs):
     return partial_func
 
 
-def generate_sliding_windows(ndarray_data, window_size):
-    shape = ndarray_data.shape
-    if len(shape) == 4:
-        z, y, x = shape[1], shape[2], shape[3]
-    elif len(shape) == 3:
-        z, y, x = shape
-    assert len(window_size) == 3, "window_size should be a 3d box"
-    w_z, w_y, w_x = window_size
-    assert (w_z <= z) and (w_y <= y) and (
-        w_x <= x), "window_size should smaller than the size of image"
-    sliding_windows = []
-    for z_index in range(0, z, w_z):
-        if z_index + w_z > z:
-            z_index = max(z - w_z, 0)
-        for y_index in range(0, y, w_y):
-            if y_index + w_y > y:
-                y_index = max(y - w_y, 0)
-            for x_index in range(0, x, w_x):
-                if x_index + w_x > x:
-                    x_index = max(x - w_x, 0)
-                sliding_windows.append([[z_index, z_index + w_z],
-                                        [y_index, y_index + w_y],
-                                        [x_index, x_index + w_x]])
-    return sliding_windows

@@ -1,4 +1,4 @@
-# Copyright 2021 Division of Medical Image Computing, German Cancer Research Center (DKFZ)
+# Copyright 2022 Division of Medical Image Computing, German Cancer Research Center (DKFZ)
 # and Applied Computer Vision Lab, Helmholtz Imaging Platform
 #
 # Licensed under the Apache License, Version 2.0 (the "License");

@@ -1,4 +1,4 @@
-#    Copyright 2020 Division of Medical Image Computing, German Cancer Research Center (DKFZ), Heidelberg, Germany
+#    Copyright 2022 Division of Medical Image Computing, German Cancer Research Center (DKFZ), Heidelberg, Germany
 #
 #    Licensed under the Apache License, Version 2.0 (the "License");
 #    you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@ import nibabel as nib
 import argparse
 import shutil
 import numpy as np
-from file_and_folder_operations import *
+from preprocess_utils.file_and_folder_operations import *
 from collections import OrderedDict
 from sklearn.model_selection import KFold
 from skimage.transform import resize

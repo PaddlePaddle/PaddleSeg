@@ -57,8 +57,8 @@ class Compose:
         """
         if isinstance(im, str):
             im = np.load(im)
-            mean = np.mean(im)
-            std = np.std(im)
+        mean = np.mean(im)
+        std = np.std(im)
         if isinstance(label, str):
             label = np.load(label)
         if im is None:
