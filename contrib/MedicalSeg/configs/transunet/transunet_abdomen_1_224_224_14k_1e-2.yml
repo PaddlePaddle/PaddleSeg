@@ -78,7 +78,6 @@ loss:
     - type: MixedLoss
       losses:
         - type: CrossEntropyLoss
-          weight: Null
         - type: DiceLoss
       coef: [1, 1]
   coef: [1]

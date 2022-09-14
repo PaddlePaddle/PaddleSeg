@@ -67,7 +67,7 @@ class Abdomen(MedicalDataset):
                     label_list.append(label[np.newaxis, :, :, :])
                 image = np.concatenate(image_list)
                 label = np.concatenate(label_list)
-                pass
+
         idx = image_path.split('/')[-1].split('_')[0]
         return image.astype('float32'), label.astype('int64'), idx
 
