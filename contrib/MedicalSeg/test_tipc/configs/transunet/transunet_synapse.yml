@@ -25,13 +25,14 @@ model:
   img_size: 224
 
 train_dataset:
-  type: Synapse
+  type: Abdomen
   dataset_root: ./mini_synapse_dataset
   result_dir: ./output
   transforms:
-    - type: RandomFlipRotation3D
+    - type: RandomFlip3D
       flip_axis: [1, 2]
-      rotate_planes: [[1, 2]]
+    - type: RandomQuarterTurn3D
+      rotate_planes: [[ 1, 2 ]]
     - type: RandomRotation3D
       degrees: 20
       rotate_planes: [[1, 2]]
@@ -41,7 +42,7 @@ train_dataset:
   num_classes: 9
 
 val_dataset:
-  type: Synapse
+  type: Abdomen
   dataset_root: ./mini_synapse_dataset
   result_dir: ./output
   num_classes: 9
@@ -51,7 +52,7 @@ val_dataset:
   mode: test
 
 test_dataset:
-  type: Synapse
+  type: Abdomen
   dataset_root: ./mini_synapse_dataset
   result_dir: ./output
   num_classes: 9
