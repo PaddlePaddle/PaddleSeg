@@ -22,7 +22,7 @@ from qtpy import QtCore
 import cv2
 
 __APPNAME__ = "EISeg"
-__VERSION__ = "1.0.0"
+__VERSION__ = "1.0.3"
 
 pjpath = osp.dirname(osp.realpath(__file__))
 sys.path.append(pjpath)

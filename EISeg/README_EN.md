@@ -41,6 +41,7 @@
 
 
 ## <img src="../docs/images/seg_news_icon.png" width="20"/> Latest Developments
+* [2022-09-14] :fire: The annotation model MUSCLE has been accepted by MICCAI 2022. For details, please refer to [MUSCLE](docs/MUSCLE_en.md), the model can be downloaded at [static_resnet50_deeplab_chest_xray](https://paddleseg.bj.bcebos.com/eiseg/0.5/static_resnet50_deeplab_chest_xray.zip).
 * [2022-07-20] :fire: EISeg 1.0 is released!
   - Added  interactive video object segmentation for general scenes, this work is based on EISeg interactive segmentation model and [MiVOS](https://github.com/hkchengrex/MiVOS).
   - Added 3D segmentation capabilities for abdominal multi-organ and CT vertebral data, and provides 3D visualization tools. For details, please refer to [3D Anotations](docs/video.md).
