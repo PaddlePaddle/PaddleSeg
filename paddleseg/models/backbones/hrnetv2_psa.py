@@ -269,7 +269,7 @@ class HighResolutionNet(nn.Layer):
             utils.load_entire_model(self, self.pretrained)
 
 
-class PolarizedSelfAttentionModule_p(nn.Layer):
+class PolarizedSelfAttentionModule(nn.Layer):
     def __init__(self, inplanes, planes, kernel_size=1, stride=1):
         super().__init__()
         self.inplanes = inplanes
@@ -488,7 +488,7 @@ class HRNetBasicBlock(nn.Layer):
             inplanes, planes, kernel_size=3, padding=1, bias_attr=False)
         self.bn1 = layers.SyncBatchNorm(planes)
         self.relu = nn.ReLU()
-        self.deattn = PolarizedSelfAttentionModule_p(planes, planes)
+        self.deattn = PolarizedSelfAttentionModule(planes, planes)
         self.conv2 = nn.Conv2D(
             planes, planes, kernel_size=3, padding=1, bias_attr=False)
         self.bn2 = layers.SyncBatchNorm(planes)
