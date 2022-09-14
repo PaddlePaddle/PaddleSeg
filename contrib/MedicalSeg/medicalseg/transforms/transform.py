@@ -586,14 +586,20 @@ class RandomCrop4D:
 
 @manager.TRANSFORMS.add_component
 class GaussianNoiseTransform:
+    """
+    对原image增加高斯噪声，返回增加噪声后的image
+    noise_variance: 高斯噪声的variance参数设置
+    p_per_sample: 对原image增加噪声的概率
+    p_per_channel:  对image的每个channel产生噪声的概率
+    per_channel: 是否对不同channel进行噪声增强
+    """
+
     def __init__(self,
                  noise_variance=(0, 0.1),
                  p_per_sample=1,
                  p_per_channel: float=1,
-                 per_channel: bool=False,
-                 data_key="data"):
+                 per_channel: bool=False):
         self.p_per_sample = p_per_sample
-        self.data_key = data_key
         self.noise_variance = noise_variance
         self.p_per_channel = p_per_channel
         self.per_channel = per_channel
@@ -607,18 +613,26 @@ class GaussianNoiseTransform:
 
 @manager.TRANSFORMS.add_component
 class GaussianBlurTransform:
+    """
+    对原image增加高斯模糊增强
+    blur_sigma: 高斯模糊的sigma参数设置
+    different_sigma_per_channel: 不同channel进行不同sigma的设置
+    different_sigma_per_axis:  不同axis进行不同sigma的设置
+    p_isotropic: isotropic的概率
+    p_per_channel：每次对channel上进行高斯模糊增强概率
+    p_per_sample: 对原image进行该项数据增强的概率
+    """
+
     def __init__(self,
                  blur_sigma: Tuple[float, float]=(1, 5),
                  different_sigma_per_channel: bool=True,
                  different_sigma_per_axis: bool=False,
                  p_isotropic: float=0,
                  p_per_channel: float=1,
-                 p_per_sample: float=1,
-                 data_key: str="data"):
+                 p_per_sample: float=1):
         self.p_per_sample = p_per_sample
         self.different_sigma_per_channel = different_sigma_per_channel
         self.p_per_channel = p_per_channel
-        self.data_key = data_key
         self.blur_sigma = blur_sigma
         self.different_sigma_per_axis = different_sigma_per_axis
         self.p_isotropic = p_isotropic
@@ -638,13 +652,18 @@ class GaussianBlurTransform:
 
 @manager.TRANSFORMS.add_component
 class BrightnessMultiplicativeTransform:
+    """
+    对原image明亮度进行变化
+    multiplier_range: 变化范围参数
+    per_channel: 是否对每个channel进行变化
+    p_per_sample: 对原image进行该项数据增强的概率
+    """
+
     def __init__(self,
                  multiplier_range=(0.5, 2),
                  per_channel=True,
-                 data_key="data",
                  p_per_sample=1):
         self.p_per_sample = p_per_sample
-        self.data_key = data_key
         self.multiplier_range = multiplier_range
         self.per_channel = per_channel
 
@@ -658,17 +677,24 @@ class BrightnessMultiplicativeTransform:
 
 @manager.TRANSFORMS.add_component
 class ContrastAugmentationTransform:
+    """
+    对原image对比度进行变化实现对比度上的图像增强
+    contrast_range: 对比度变化范围参数
+    preserve_range: 保护参数
+    per_channel: 对原image每个channel进行该项变化
+    p_per_sample: 对原image进行该项数据增强的概率
+    p_per_channel: 对原image每个channel上进行该项数据增强的概率
+    """
+
     def __init__(
             self,
             contrast_range: Union[Tuple[float, float], Callable[[], float]]=(
                 0.75, 1.25),
             preserve_range: bool=True,
             per_channel: bool=True,
-            data_key: str="data",
             p_per_sample: float=1,
             p_per_channel: float=1):
         self.p_per_sample = p_per_sample
-        self.data_key = data_key
         self.contrast_range = contrast_range
         self.preserve_range = preserve_range
         self.per_channel = per_channel
@@ -688,6 +714,18 @@ class ContrastAugmentationTransform:
 
 @manager.TRANSFORMS.add_component
 class SimulateLowResolutionTransform:
+    """
+    对原image进行随机的分辨率压缩的数据增强方法
+    zoom_range: 分辨率缩放范围
+    per_channel: 对原image每个channel进行该项变化
+    p_per_channel: 对原image每个channel上进行该项数据增强的概率
+    channels: 指定进行该项变化的channels
+    order_downsample：底层进行zoom时候的order参数
+    order_upsample：底层进行zoom时候的order参数
+    p_per_sample: 对原image进行该项数据增强的概率
+    ignore_axes： 是否忽略axes
+    """
+
     def __init__(self,
                  zoom_range=(0.5, 1),
                  per_channel=False,
@@ -695,7 +733,6 @@ class SimulateLowResolutionTransform:
                  channels=None,
                  order_downsample=1,
                  order_upsample=0,
-                 data_key="data",
                  p_per_sample=1,
                  ignore_axes=None):
         self.order_upsample = order_upsample
@@ -704,7 +741,6 @@ class SimulateLowResolutionTransform:
         self.per_channel = per_channel
         self.p_per_channel = p_per_channel
         self.p_per_sample = p_per_sample
-        self.data_key = data_key
         self.zoom_range = zoom_range
         self.ignore_axes = ignore_axes
 
@@ -724,17 +760,24 @@ class SimulateLowResolutionTransform:
 
 @manager.TRANSFORMS.add_component
 class GammaTransform:
+    """
+    对原image进行gamma数据增强方法
+    gamma_range: gamma范围
+    invert_image: 是否进行灰度值反转
+    per_channel: 是否对每个channel进行该项增强
+    retain_stats: 是否保留状态
+    p_per_sample: 对原image进行该项数据增强的概率
+    """
+
     def __init__(self,
                  gamma_range=(0.5, 2),
                  invert_image=False,
                  per_channel=False,
-                 data_key="data",
                  retain_stats: Union[bool, Callable[[], bool]]=False,
                  p_per_sample=1):
         self.p_per_sample = p_per_sample
         self.retain_stats = retain_stats
         self.per_channel = per_channel
-        self.data_key = data_key
         self.gamma_range = gamma_range
         self.invert_image = invert_image
 
@@ -752,14 +795,14 @@ class GammaTransform:
 
 @manager.TRANSFORMS.add_component
 class MirrorTransform:
-    def __init__(self,
-                 axes=(0, 1, 2),
-                 data_key="data",
-                 label_key="seg",
-                 p_per_sample=1):
+    """
+    对原image进行空间上进行镜像翻转操作
+    axes: 进行翻转的axes
+    p_per_sample: 对原image进行该项数据增强的概率
+    """
+
+    def __init__(self, axes=(0, 1, 2), p_per_sample=1):
         self.p_per_sample = p_per_sample
-        self.data_key = data_key
-        self.label_key = label_key
         self.axes = axes
         if max(axes) > 2:
             raise ValueError(
