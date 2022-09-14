@@ -21,6 +21,142 @@ from paddleseg.utils import utils
 from paddleseg.cvlibs import manager, param_init
 
 
+@manager.MODELS.add_component
+class MscaleOCRNet(nn.Layer):
+    """
+    The MscaleOCRNet implementation based on PaddlePaddle.
+    The original article refers to
+    Tao et al. "HIERARCHICAL MULTI-SCALE ATTENTION FOR SEMANTIC SEGMENTATION"
+    (https://arxiv.org/pdf/2005.10821.pdf).
+
+    Args:
+        num_classes (int): The unique number of target classes.
+        backbone (Paddle.nn.Layer): Backbone network.
+        backbone_indices (tuple, optional): Two values in the tuple indicate the indices of output of backbone.
+            Default: [0].
+        mscale (list): The multiple scales for fusion.
+            Default: [0.5, 1.0, 2.0].
+        pretrained (str, optional): The path or url of pretrained model. 
+            Default: None.
+    """
+
+    def __init__(self,
+                 num_classes,
+                 backbone,
+                 backbone_indices=[0],
+                 mscale=[0.5, 1.0, 2.0],
+                 pretrained=None):
+        super().__init__()
+        self.backbone = backbone
+        self.pretrained = pretrained
+        self.backbone_indices = backbone_indices
+        self.mscale = mscale
+        in_channels = [self.backbone.feat_channels[i] for i in backbone_indices]
+        self.ocr = OCRHead(num_classes, in_channels)
+        self.scale_attn = AttenHead(in_ch=512, out_ch=1)
+        self.init_weight()
+
+    def _fwd(self, x):
+        x_size = paddle.shape(x)[2:]
+        high_level_features = self.backbone(x)
+        cls_out, aux_out, ocr_mid_feats = self.ocr(high_level_features)
+        attn = self.scale_attn(ocr_mid_feats)
+        aux_out = F.interpolate(aux_out, size=x_size, mode='bilinear')
+        cls_out = F.interpolate(cls_out, size=x_size, mode='bilinear')
+        attn = F.interpolate(attn, size=x_size, mode='bilinear')
+
+        return {'cls_out': cls_out, 'aux_out': aux_out, 'logit_attn': attn}
+
+    def nscale_forward(self, inputs, scales):
+        x_1x = inputs
+        scales = sorted(scales, reverse=True)
+        pred = paddle.empty([1, 1, 1, 1])
+        aux = paddle.empty([1, 1, 1, 1])
+
+        is_init = False
+
+        if len(scales) < 1:
+            raise ValueError("`len(scales)` must be larger than 0.")
+
+        scales_tensor = paddle.to_tensor([scales, scales]).transpose((1, 0))
+
+        for s in scales_tensor:
+            x = F.interpolate(x_1x, scale_factor=s, mode='bilinear')
+            outs = self._fwd(x)
+            cls_out = outs['cls_out']
+            attn_out = outs['logit_attn']
+            aux_out = outs['aux_out']
+
+            if is_init is False:
+                is_init = True
+                pred = cls_out
+                aux = aux_out
+            elif s[0] >= 1.0:
+                pred = F.interpolate(
+                    pred, size=paddle.shape(cls_out)[2:4], mode='bilinear')
+                pred = attn_out * cls_out + (1 - attn_out) * pred
+                aux = F.interpolate(
+                    aux, size=paddle.shape(cls_out)[2:4], mode='bilinear')
+                aux = attn_out * aux_out + (1 - attn_out) * aux
+            else:
+                cls_out = attn_out * cls_out
+                aux_out = attn_out * aux_out
+                cls_out = F.interpolate(
+                    cls_out, size=paddle.shape(pred)[2:4], mode='bilinear')
+                aux_out = F.interpolate(
+                    aux_out, size=paddle.shape(pred)[2:4], mode='bilinear')
+                attn_out = F.interpolate(
+                    attn_out, size=paddle.shape(pred)[2:4], mode='bilinear')
+                pred = cls_out + (1 - attn_out) * pred
+                aux = aux_out + (1 - attn_out) * aux
+        logit_list = [aux, pred] if self.training else [pred]
+        return logit_list
+
+    def two_scale_forward(self, inputs):
+        x_lo = F.interpolate(inputs, scale_factor=0.5, mode='bilinear')
+        lo_outs = self._fwd(x_lo)
+        pred_05x = lo_outs['cls_out']
+        p_lo = pred_05x
+        aux_lo = lo_outs['aux_out']
+        logit_attn = lo_outs['logit_attn']
+
+        hi_outs = self._fwd(inputs)
+        pred_10x = hi_outs['cls_out']
+        p_1x = pred_10x
+        aux_1x = hi_outs['aux_out']
+
+        p_lo = logit_attn * p_lo
+        aux_lo = logit_attn * aux_lo
+        p_lo = F.interpolate(
+            p_lo, size=paddle.shape(p_1x)[2:4], mode='bilinear')
+
+        aux_lo = F.interpolate(
+            aux_lo, size=paddle.shape(p_1x)[2:4], mode='bilinear')
+
+        logit_attn = F.interpolate(
+            logit_attn, size=paddle.shape(p_1x)[2:4], mode='bilinear')
+
+        joint_pred = p_lo + (1 - logit_attn) * p_1x
+        joint_aux = aux_lo + (1 - logit_attn) * aux_1x
+        if self.training:
+            scaled_pred_05x = F.interpolate(
+                pred_05x, size=paddle.shape(p_1x)[2:4], mode='bilinear')
+            logit_list = [joint_aux, joint_pred, scaled_pred_05x, pred_10x]
+        else:
+            logit_list = [joint_pred]
+        return logit_list
+
+    def init_weight(self):
+        if self.pretrained is not None:
+            utils.load_entire_model(self, self.pretrained)
+
+    def forward(self, inputs):
+        if self.mscale and not self.training:
+            return self.nscale_forward(inputs, self.mscale)
+        else:
+            return self.two_scale_forward(inputs)
+
+
 class AttenHead(nn.Layer):
     def __init__(self, in_ch, out_ch):
         super().__init__()
@@ -229,138 +365,3 @@ class OCRHead(nn.Layer):
             elif isinstance(sublayer, (nn.BatchNorm, nn.SyncBatchNorm)):
                 param_init.constant_init(sublayer.weight, value=1.0)
                 param_init.constant_init(sublayer.bias, value=0.0)
-
-
-@manager.MODELS.add_component
-class MscaleOCRNet(nn.Layer):
-    """
-    The MscaleOCRNet implementation based on PaddlePaddle.
-    The original article refers to
-    Tao et al. "HIERARCHICAL MULTI-SCALE ATTENTION FOR SEMANTIC SEGMENTATION"
-    (https://arxiv.org/pdf/2005.10821.pdf).
-
-    Args:
-        num_classes (int): The unique number of target classes.
-        backbone (Paddle.nn.Layer): Backbone network.
-        backbone_indices (tuple, optional): Two values in the tuple indicate the indices of output of backbone.
-            Default: [0].
-        mscale (list): The multiple scales for fusion.
-            Default: [0.5, 1.0, 2.0].
-        pretrained (str, optional): The path or url of pretrained model. 
-            Default: None.
-    """
-
-    def __init__(self,
-                 num_classes,
-                 backbone,
-                 backbone_indices=[0],
-                 mscale=[0.5, 1.0, 2.0],
-                 pretrained=None):
-        super().__init__()
-        self.backbone = backbone
-        self.pretrained = pretrained
-        self.backbone_indices = backbone_indices
-        self.mscale = mscale
-        in_channels = [self.backbone.feat_channels[i] for i in backbone_indices]
-        self.ocr = OCRHead(num_classes, in_channels)
-        self.scale_attn = AttenHead(in_ch=512, out_ch=1)
-        self.init_weight()
-
-    def _fwd(self, x):
-        x_size = paddle.shape(x)[2:]
-        high_level_features = self.backbone(x)
-        cls_out, aux_out, ocr_mid_feats = self.ocr(high_level_features)
-        attn = self.scale_attn(ocr_mid_feats)
-        aux_out = F.interpolate(aux_out, size=x_size, mode='bilinear')
-        cls_out = F.interpolate(cls_out, size=x_size, mode='bilinear')
-        attn = F.interpolate(attn, size=x_size, mode='bilinear')
-
-        return {'cls_out': cls_out, 'aux_out': aux_out, 'logit_attn': attn}
-
-    def nscale_forward(self, inputs, scales):
-        x_1x = inputs
-        scales = sorted(scales, reverse=True)
-        pred = paddle.empty([1, 1, 1, 1])
-        aux = paddle.empty([1, 1, 1, 1])
-
-        is_init = False
-
-        if len(scales) < 1:
-            raise ValueError("`len(scales)` must be larger than 0.")
-
-        scales_tensor = paddle.to_tensor([scales, scales]).transpose((1, 0))
-
-        for s in scales_tensor:
-            x = F.interpolate(x_1x, scale_factor=s, mode='bilinear')
-            outs = self._fwd(x)
-            cls_out = outs['cls_out']
-            attn_out = outs['logit_attn']
-            aux_out = outs['aux_out']
-
-            if is_init is False:
-                is_init = True
-                pred = cls_out
-                aux = aux_out
-            elif s[0] >= 1.0:
-                pred = F.interpolate(
-                    pred, size=paddle.shape(cls_out)[2:4], mode='bilinear')
-                pred = attn_out * cls_out + (1 - attn_out) * pred
-                aux = F.interpolate(
-                    aux, size=paddle.shape(cls_out)[2:4], mode='bilinear')
-                aux = attn_out * aux_out + (1 - attn_out) * aux
-            else:
-                cls_out = attn_out * cls_out
-                aux_out = attn_out * aux_out
-                cls_out = F.interpolate(
-                    cls_out, size=paddle.shape(pred)[2:4], mode='bilinear')
-                aux_out = F.interpolate(
-                    aux_out, size=paddle.shape(pred)[2:4], mode='bilinear')
-                attn_out = F.interpolate(
-                    attn_out, size=paddle.shape(pred)[2:4], mode='bilinear')
-                pred = cls_out + (1 - attn_out) * pred
-                aux = aux_out + (1 - attn_out) * aux
-        logit_list = [aux, pred] if self.training else [pred]
-        return logit_list
-
-    def two_scale_forward(self, inputs):
-        x_lo = F.interpolate(inputs, scale_factor=0.5, mode='bilinear')
-        lo_outs = self._fwd(x_lo)
-        pred_05x = lo_outs['cls_out']
-        p_lo = pred_05x
-        aux_lo = lo_outs['aux_out']
-        logit_attn = lo_outs['logit_attn']
-
-        hi_outs = self._fwd(inputs)
-        pred_10x = hi_outs['cls_out']
-        p_1x = pred_10x
-        aux_1x = hi_outs['aux_out']
-
-        p_lo = logit_attn * p_lo
-        aux_lo = logit_attn * aux_lo
-        p_lo = F.interpolate(
-            p_lo, size=paddle.shape(p_1x)[2:4], mode='bilinear')
-
-        aux_lo = F.interpolate(
-            aux_lo, size=paddle.shape(p_1x)[2:4], mode='bilinear')
-
-        logit_attn = F.interpolate(
-            logit_attn, size=paddle.shape(p_1x)[2:4], mode='bilinear')
-
-        joint_pred = p_lo + (1 - logit_attn) * p_1x
-        joint_aux = aux_lo + (1 - logit_attn) * aux_1x
-        if self.training:
-            scaled_pred_05x = F.interpolate(
-                pred_05x, size=paddle.shape(p_1x)[2:4], mode='bilinear')
-            logit_list = [joint_aux, joint_pred, scaled_pred_05x, pred_10x]
-        else:
-            logit_list = [joint_pred]
-        return logit_list
-
-    def init_weight(self):
-        if self.pretrained is not None:
-            utils.load_entire_model(self, self.pretrained)
-
-    def forward(self, inputs):
-        if self.mscale and not self.training:
-            return self.nscale_forward(inputs, self.mscale)
-        return self.two_scale_forward(inputs)
