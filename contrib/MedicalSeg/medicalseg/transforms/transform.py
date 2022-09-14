@@ -125,10 +125,7 @@ class RandomRotation3D:
             Default is the center of the image.
     """
 
-    def __init__(self,
-                 degrees,
-                 prob=1.0,
-                 rotate_planes=[[0, 1], [0, 2], [1, 2]]):
+    def __init__(self, degrees, rotate_planes=[[0, 1], [0, 2], [1, 2]]):
         """
         init
         """
@@ -144,7 +141,6 @@ class RandomRotation3D:
             self.degrees = degrees
 
         self.rotate_planes = rotate_planes
-        self.prob = prob
 
         super().__init__()
 
@@ -167,33 +163,27 @@ class RandomRotation3D:
         Returns:
             (np.array). Image after transformation.
         """
-        if random.random() < self.prob:
-            angle, r_plane = self.get_params(self.degrees)
-            img = F.rotate_3d(img, r_plane, angle)
-            if label is not None:
-                label = F.rotate_3d(label, r_plane, angle)
+        angle, r_plane = self.get_params(self.degrees)
+        img = F.rotate_3d(img, r_plane, angle)
+        if label is not None:
+            label = F.rotate_3d(label, r_plane, angle)
         return img, label
 
 
 @manager.TRANSFORMS.add_component
-class RandomFlipRotation3D:
-    """ Flip and rotate an 3D image 90 degrees with a certain probability.
+class RandomQuarterTurn3D:
+    """ Rotate an 3D image 90 degrees with a certain probability.
     Args:
         prob (float, optional): A probability of vertical flipping. Default: 0.5.
         rotate_planes (list, optional): Randomly select rotate planes from this list.
-        flip_axis (list, optional): Randomly select flip axis from this list.
     """
 
-    def __init__(self,
-                 prob=0.5,
-                 rotate_planes=[[0, 1], [0, 2], [1, 2]],
-                 flip_axis=[0, 1, 2]):
+    def __init__(self, prob=0.5, rotate_planes=[[0, 1], [0, 2], [1, 2]]):
         """
         init
         """
         self.rotate_planes = rotate_planes
         self.prob = prob
-        self.flip = RandomFlip3D(prob=1.0, flip_axis=flip_axis)
         super().__init__()
 
     def get_params(self):
@@ -201,9 +191,9 @@ class RandomFlipRotation3D:
         Returns:
             sequence: params to be passed to ``rotate`` for random rotation.
         """
-        k = np.random.randint(0, 4)
-
-        return 90, k
+        r_plane = self.rotate_planes[random.randint(
+            0, len(self.rotate_planes) - 1)]
+        return r_plane
 
     def __call__(self, img, label=None):
         """
@@ -214,10 +204,10 @@ class RandomFlipRotation3D:
             (np.array). Image after transformation.
         """
         if random.random() < self.prob:
-            img = F.rotate_3d(img, [1, 2], 90)
+            r_plane = self.get_params()
+            img = F.rotate_3d(img, r_plane, 90)
             if label is not None:
-                label = F.rotate_3d(label, [1, 2], 90)
-            img, label = self.flip(img, label)
+                label = F.rotate_3d(label, r_plane, 90)
         return img, label
 
 

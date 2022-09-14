@@ -29,13 +29,13 @@ train_dataset:
   dataset_root: abdomen/abdomen_phase0
   result_dir: abdomen/abdomen_phase1
   transforms:
-    - type: RandomFlipRotation3D
+    - type: RandomFlip3D
       flip_axis: [1, 2]
-      rotate_planes: [[1, 2]]
+    - type: RandomQuarterTurn3D
+      rotate_planes: [[ 1, 2 ]]
     - type: RandomRotation3D
       degrees: 20
       rotate_planes: [[1, 2]]
-      prob: 0.5
     - type: Resize3D
       size: [1 ,224, 224]
   mode: train
