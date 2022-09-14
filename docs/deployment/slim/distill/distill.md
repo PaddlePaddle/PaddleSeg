@@ -18,7 +18,7 @@ In this tutorial, we demonstrate a demo of model distillation, and then present 
 
 ### 2.1 Requirements
 
-Please follow [installation document](../../install.md) to install the requirements of PaddleSeg.
+Please follow [installation document](../../../install.md) to install the requirements of PaddleSeg.
 
 Besides, run the following instructions to install PaddleSlim.
 
@@ -128,7 +128,7 @@ With the config files of the teacher and student models, run the following instr
 export CUDA_VISIBLE_DEVICES=0  # Set GPU for Linux
 # set CUDA_VISIBLE_DEVICES=0   # Seg GPU for Windows
 
-python slim/distill/distill_train.py \
+python deploy/slim/distill/distill_train.py \
        --teather_config ./configs/quick_start/deeplabv3p_resnet50_os8_optic_disc_512x512_1k_teacher.yml \
        --student_config ./configs/quick_start/deeplabv3p_resnet18_os8_optic_disc_512x512_1k_student.yml \
        --do_eval \
@@ -139,7 +139,7 @@ python slim/distill/distill_train.py \
        --save_dir output/deeplabv3p_resnet18_distill
 ```
 
-The script of `slim/distill/distill_train.py` creates the teacher model, creates the student model, loads dataset to train the student model while the teacher model is fixed.
+The script of `deploy/slim/distill/distill_train.py` creates the teacher model, creates the student model, loads dataset to train the student model while the teacher model is fixed.
 
 After the training, the mIoU of the student model is 85.79% and the trained weights are saved in `output/deeplabv3p_resnet18_distill/best_model`.
 
@@ -154,7 +154,7 @@ In order to accelerate the training of model distillation with single machine mu
 ```shell
 export CUDA_VISIBLE_DEVICES=0,1,2,3 # use four GPUs
 
-python -m paddle.distributed.launch slim/distill/distill_train.py \
+python -m paddle.distributed.launch deploy/slim/distill/distill_train.py \
        --teather_config ./configs/quick_start/deeplabv3p_resnet50_os8_optic_disc_512x512_1k_teacher.yml \
        --student_config ./configs/quick_start/deeplabv3p_resnet18_os8_optic_disc_512x512_1k_student.yml \
        --do_eval \
@@ -182,7 +182,7 @@ It requires the intermediate tensors in the teacher and student models have the 
 
 * Set the intermediate tensors for distillation
 
-In Paddeseg, the `slim/distill/distill_config.py` file has a "prepare_distill_adaptor" function. We utilize the StudentAdaptor and TeatherAdaptor class to set the intermediate tensors for model distillation.
+In Paddeseg, the `deploy/slim/distill/distill_config.py` file has a "prepare_distill_adaptor" function. We utilize the StudentAdaptor and TeatherAdaptor class to set the intermediate tensors for model distillation.
 
 Generally speaking, PaddlePaddle has two types of api. The first type is layer api, of which the base class is "paddle.nn.Layer", such as "paddle.nn.Conv2D". The second type is function api, such as paddle.reshape.
 
@@ -249,7 +249,7 @@ class StudentAdaptor(AdaptorBase):
 
 * Set the config of Distillation
 
-Follow the above example, we define the "prepare_distill_config" function in `slim/distill/distill_config.py` to set the config of distillation.
+Follow the above example, we define the "prepare_distill_config" function in `deploy/slim/distill/distill_config.py` to set the config of distillation.
 In detail, the feature_type and s_feature_idx determine the tensor name in student model. The feature_type and t_feature_idx determine the tensor name in teacher model. The loss_function determine the type of distillation loss.
 
 ```python
@@ -278,4 +278,4 @@ def prepare_distill_config():
 
 * Training for Distillation
 
-Use the same method as above to run the `slim/distill/distill_train.py`.
+Use the same method as above to run the `deploy/slim/distill/distill_train.py`.

@@ -26,7 +26,7 @@ PaddleSeg基于PaddleSlim，集成了量化训练（QAT）方法，特点如下�
 2. 使用cityspcaes的全量验证数据集(1024x2048)进行测试
 3. 单GPU，Batchsize为1
 4. 运行耗时为纯模型预测时间
-5. 使用Paddle Inference的[Python API](../../deployment/inference/python_inference.md)测试，通过use_trt参数设置是否使用TRT，使用precision参数设置预测类型。
+5. 使用Paddle Inference的[Python API](../../inference/python_inference.md)测试，通过use_trt参数设置是否使用TRT，使用precision参数设置预测类型。
 
 模型量化前后的精度和性能：
 
@@ -52,7 +52,7 @@ PaddleSeg基于PaddleSlim，集成了量化训练（QAT）方法，特点如下�
 我们以一个示例来介绍如何产出和部署量化模型。
 ### 3.1 环境准备
 
-请参考[安装文档](../../install.md)准备好PaddleSeg的基础环境。注意，量化功能要求PaddlePaddle版本>=2.2。
+请参考[安装文档](../../../install.md)准备好PaddleSeg的基础环境。注意，量化功能要求PaddlePaddle版本>=2.2。
 
 安装PaddleSlim。
 
@@ -72,7 +72,7 @@ python setup.py install
 
 在产出量化模型之前，我们需要提前准备训练或者fintune好的FP32模型。
 
-此处，我们选用视盘分割数据集和PP-LiteSeg模型，使用train.py从头开始训练模型。train.py输入参数的介绍，请参考[文档](../../train/train.md)。
+此处，我们选用视盘分割数据集和PP-LiteSeg模型，使用train.py从头开始训练模型。train.py输入参数的介绍，请参考[文档](../../../train/train.md)。
 
 在PaddleSeg目录下，执行如下脚本，会自动下载数据集进行训练。
 
@@ -96,7 +96,7 @@ python train.py \
 
 **1）产出量化模型**
 
-基于训练好的FP32模型权重，使用`slim/quant/qat_train.py`进行量化训练。
+基于训练好的FP32模型权重，使用`deploy/slim/quant/qat_train.py`进行量化训练。
 
 qat_train.py和train.py的输入参数基本相似（如下）。注意，量化训练的学习率需要调小，使用`model_path`参数指定FP32模型的权重。
 
@@ -119,7 +119,7 @@ qat_train.py和train.py的输入参数基本相似（如下）。注意，量化
 执行如下命令，进行量化训练。量化训练结束后，精度最高的量化模型权重保存在`output_quant/best_model`目录下。
 
 ```shell
-python slim/quant/qat_train.py \
+python deploy/slim/quant/qat_train.py \
        --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \
        --model_path output_fp32/best_model/model.pdparams \
        --learning_rate 0.001 \
@@ -131,17 +131,17 @@ python slim/quant/qat_train.py \
 
 **2）测试量化模型**
 
-如果需要，可以执行如下命令，使用`slim/quant/qat_val.py`脚本加载量化模型的权重，测试模型量化的精度。
+如果需要，可以执行如下命令，使用`deploy/slim/quant/qat_val.py`脚本加载量化模型的权重，测试模型量化的精度。
 
 ```
-python slim/quant/qat_val.py \
+python deploy/slim/quant/qat_val.py \
        --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \
        --model_path output_quant/best_model/model.pdparams
 ```
 
 **3）导出量化预测模型**
 
-基于训练好的量化模型权重，使用`slim/quant/qat_export.py`导出预测量化模型，脚本输入参数如下。
+基于训练好的量化模型权重，使用`deploy/slim/quant/qat_export.py`导出预测量化模型，脚本输入参数如下。
 
 |参数名|用途|是否必选项|默认值|
 |-|-|-|-|
@@ -154,7 +154,7 @@ python slim/quant/qat_val.py \
 执行如下命令，导出预测量化模型保存在`output_quant_infer`目录。
 
 ```
-python slim/quant/qat_export.py \
+python deploy/slim/quant/qat_export.py \
        --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \
        --model_path output_quant/best_model/model.pdparams \
        --save_dir output_quant_infer
@@ -165,9 +165,9 @@ python slim/quant/qat_export.py \
 得到量化预测模型后，我们可以进行部署应用，请参考如下教程。
 
 
-* [Paddle Inference Python部署](../../deployment/inference/python_inference.md)
-* [Paddle Inference C++部署](../../deployment/inference/cpp_inference.md)
-* [PaddleLite部署](../../deployment/lite/lite.md)
+* [Paddle Inference Python部署](../../inference/python_inference.md)
+* [Paddle Inference C++部署](../../inference/cpp_inference.md)
+* [PaddleLite部署](../../lite/lite.md)
 
 ## 4 参考资料
 

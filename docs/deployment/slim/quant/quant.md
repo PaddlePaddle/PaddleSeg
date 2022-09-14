@@ -54,7 +54,7 @@ We use a demo to explain how to generate and deploy a quantized model.
 
 ### 3.1 Preparation
 
-Please refer to the [installation document](../../install.md) and prepare the requirements of PaddleSeg.
+Please refer to the [installation document](../../../install.md) and prepare the requirements of PaddleSeg.
 Note that, the quantization module requires the version of PaddlePaddle is at least 2.2.
 
 Run the following instructions to install PaddleSlim.
@@ -76,7 +76,7 @@ python setup.py install
 Before generating the quantized model, we have to prepare the original model with the data type of FP32.
 
 In this demo, we choose the PP-LiteSeg model and the optic disc segmentation dataset, and use `train.py` for training from scratch.
-The usage of `train.py` can be found in this [document](../../train/train.md).
+The usage of `train.py` can be found in this [document](../../../train/train.md).
 
 Specifically, run the following instructions in the root directory of PaddleSeg.
 
@@ -98,7 +98,7 @@ After the training, the original model with the highest accuracy will be saved i
 
 **1) Generate the Quantized Model**
 
-Based on the original model, we use `slim/quant/qat_train.py` to generate the quantized model.
+Based on the original model, we use `deploy/slim/quant/qat_train.py` to generate the quantized model.
 
 The usage of `qat_train.py` and `train.py` is basically the same, and the former uses `model_path` to set the weight path of the original model (as follows). Besides, the learning rate of the quantization training is usually smaller than the normal training.
 
@@ -122,7 +122,7 @@ Run the following instructions in the root directory of PaddleSeg to start the q
 After the quantization training, the quantized model with the highest accuracy will be saved in `output_quant/best_model`.
 
 ```shell
-python slim/quant/qat_train.py \
+python deploy/slim/quant/qat_train.py \
        --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \
        --model_path output_fp32/best_model/model.pdparams \
        --learning_rate 0.001 \
@@ -134,10 +134,10 @@ python slim/quant/qat_train.py \
 
 **2）Test the Quantized Model (Optional)**
 
-We use `slim/quant/qat_val.py` to load the weights of the quantized model and test the accuracy.
+We use `deploy/slim/quant/qat_val.py` to load the weights of the quantized model and test the accuracy.
 
 ```
-python slim/quant/qat_val.py \
+python deploy/slim/quant/qat_val.py \
        --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \
        --model_path output_quant/best_model/model.pdparams
 ```
@@ -146,7 +146,7 @@ python slim/quant/qat_val.py \
 
 Before deploying the quantized model, we have to convert the dygraph model to the inference model.
 
-With the weights of the quantized model, we utilize `slim/quant/qat_export.py` to export the inference model.
+With the weights of the quantized model, we utilize `deploy/slim/quant/qat_export.py` to export the inference model.
 The input params of the script are as follows.
 
 |Input params| Usage | Optional | Default Value|
@@ -160,7 +160,7 @@ The input params of the script are as follows.
 Run the following instructions in the root directory of PaddleSeg. Then, the quantized inference model will be saved in `output_quant_infer`.
 
 ```
-python slim/quant/qat_export.py \
+python deploy/slim/quant/qat_export.py \
        --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \
        --model_path output_quant/best_model/model.pdparams \
        --save_dir output_quant_infer
@@ -172,9 +172,9 @@ We deploy the quantized inference model on Nvidia GPU and X86 CPU with Paddle In
 Besides, Paddle Lite support deploying the quantized model on ARM CPU.
 
 Please refer to the documents for detail information:
-* [Paddle Inference Python Deployment](../../deployment/inference/python_inference.md)
-* [Paddle Inference C++ Deployment](../../deployment/inference/cpp_inference.md)
-* [PaddleLite Deployment](../../deployment/lite/lite.md)
+* [Paddle Inference Python Deployment](../../inference/python_inference.md)
+* [Paddle Inference C++ Deployment](../../inference/cpp_inference.md)
+* [PaddleLite Deployment](../../lite/lite.md)
 
 ## 4. Reference
 
