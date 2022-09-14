@@ -12,7 +12,7 @@ train_model_name:best_model/model.pdparams
 train_infer_img_dir:test_tipc/data/cityscapes/cityscapes_val_5.list
 --profiler_options:null
 ##
-trainer:norm
+trainer:norm_train
 norm_train:train.py --config test_tipc/configs/fcn_hrnetw18/fcn_hrnetw18_1024x512_cityscapes.yml --device gpu --save_interval 500 --seed 100 --num_workers 8
 pact_train:null
 fpgm_train:null

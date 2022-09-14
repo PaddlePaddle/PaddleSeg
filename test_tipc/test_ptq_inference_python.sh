@@ -105,7 +105,7 @@ if [ ${MODE} = "whole_infer" ]; then
     set_use_gpu=$(func_set_params "${use_gpu_key}" "${use_gpu_value}")
     _log_path="${LOG_PATH}/export.log"
     
-    export_cmd="${python} ${train_py} ${set_use_gpu} ${set_model_path} ${set_batch_num} ${set_batch_size} ${set_data_dir} ${set_output_dir} >${_log_path} 2>&1"
+    export_cmd="${python} ${train_py} ${set_use_gpu} ${set_model_path} ${set_batch_num} ${set_batch_size} ${set_data_dir} ${set_output_dir} > ${_log_path} 2>&1"
     echo $export_cmd
     eval $export_cmd
     status_export=$?

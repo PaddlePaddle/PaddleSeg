@@ -8,28 +8,30 @@ Linux GPU/CPU 混合精度训练推理测试的主程序为`test_train_inference
 
 | 算法名称 | 模型名称 | 单机单卡 | 单机多卡 |
 |  :----: |   :----:  |    :----:  |  :----:   |
-|  PP_LiteSeg   |  pp_liteseg_stdc1 |  混合精度训练 | 混合精度训练 |
-|  PP_LiteSeg   |  pp_liteseg_stdc2 |  混合精度训练 | 混合精度训练 |
-|  ConnectNet   |  pp_humanseg_lite | 混合精度训练 | 混合精度训练 |
-|  HRNet W18 Small   | pp_humanseg_mobile  |  混合精度训练 | 混合精度训练 |
-|  DeepLabV3P ResNet50   |  pp_humanseg_server |  混合精度训练 | 混合精度训练 |
+|  PP-LiteSeg   |  pp_liteseg_stdc1 |  混合精度训练 | 混合精度训练 |
+|  PP-LiteSeg   |  pp_liteseg_stdc2 |  混合精度训练 | 混合精度训练 |
+|  ConnectNet   |  pphumanseg_lite | 混合精度训练 | 混合精度训练 |
+|  HRNet   | pphumanseg_mobile (fcn_hrnetw18_small)  |  混合精度训练 | 混合精度训练 |
+|  DeepLabV3P   |  pphumanseg_server (deeplabv3p_resnet50) |  混合精度训练 | 混合精度训练 |
 |  HRNet   |  fcn_hrnet_w18 |  混合精度训练 | 混合精度训练 |
 |  OCRNet   |  ocrnet_hrnetw18 |  混合精度训练 | 混合精度训练 |
 |  OCRNet   |  ocrnet_hrnetw48 |  混合精度训练 | 混合精度训练 |
+| SegFormer | segformer_b0 | 混合精度训练 | 混合精度训练 |
 
 
 - 推理相关：
 
 | 算法名称 | 模型名称 | device_CPU | device_GPU | batchsize |
 |  :----:   |  :----: |   :----:   |  :----:  |   :----:   |
-|  PP_LiteSeg   |  pp_liteseg_stdc1 |  支持 | 支持 | 1 |
-|  PP_LiteSeg   |  pp_liteseg_stdc2 |  支持 | 支持 | 1 |
+|  PP-LiteSeg   |  pp_liteseg_stdc1 |  支持 | 支持 | 1 |
+|  PP-LiteSeg   |  pp_liteseg_stdc2 |  支持 | 支持 | 1 |
 |  ConnectNet   |  pp_humanseg_lite |  支持 | 支持 | 1 |
-|  HRNet W18 Small   | pp_humanseg_mobile  |  支持 | 支持 | 1 |
-|  DeepLabV3P ResNet50    |  pp_humanseg_server |  支持 | 支持 | 1 |
+|  HRNet   | pphumanseg_mobile (fcn_hrnetw18_small)  |  支持 | 支持 | 1 |
+|  DeepLabV3P    |  pphumanseg_server (deeplabv3p_resnet50) |  支持 | 支持 | 1 |
 |  HRNet   |  fcn_hrnet_w18 |  支持 | 支持 | 1 |
 |  OCRNet   |  ocrnet_hrnetw18 |  支持 | 支持 | 1 |
 |  OCRNet   |  ocrnet_hrnetw48 |  支持 | 支持 | 1 |
+| SegFormer | segformer_b0 | 支持 | 支持 | 1 |
 
 
 ## 2. 测试流程

@@ -109,13 +109,19 @@ def parse_args():
         help='Set the random seed during training.',
         default=None,
         type=int)
-
     parser.add_argument(
         '--model_path',
         dest='model_path',
         help='The path of pretrained model',
         type=str,
         default=None)
+    parser.add_argument(
+        '--device',
+        dest='device',
+        help='Device place to be set, which can be gpu or cpu.',
+        default='gpu',
+        choices=['cpu', 'gpu'],
+        type=str)
 
     return parser.parse_args()
 
@@ -149,8 +155,11 @@ def main(args):
                      ['-' * 48])
     logger.info(info)
 
-    place = 'gpu' if env_info['Paddle compiled with cuda'] and env_info[
-        'GPUs used'] else 'cpu'
+    if args.device == 'gpu' and env_info[
+            'Paddle compiled with cuda'] and env_info['GPUs used']:
+        place = 'gpu'
+    else:
+        place = 'cpu'
 
     paddle.set_device(place)
     if not args.cfg:
