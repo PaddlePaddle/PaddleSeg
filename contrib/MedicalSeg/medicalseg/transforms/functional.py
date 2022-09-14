@@ -185,17 +185,6 @@ def augment_gaussian_noise(data_sample: np.ndarray,
                 0.0, variance_here, size=data_sample[c].shape)
     return data_sample
 
-
-def uniform(low, high, size=None):
-    if low == high:
-        if size is None:
-            return low
-        else:
-            return np.ones(size) * low
-    else:
-        return np.random.uniform(low, high, size)
-
-
 def get_range_val(value, rnd_type="uniform"):
     if isinstance(value, (list, tuple, np.ndarray)):
         if len(value) == 2:
@@ -327,9 +316,9 @@ def augment_linear_downsampling_scipy(data_sample,
     if not per_channel:
         if isinstance(zoom_range[0], (tuple, list, np.ndarray)):
             assert len(zoom_range) == dim
-            zoom = np.array([uniform(i[0], i[1]) for i in zoom_range])
+            zoom = np.array([np.random.uniform(i[0], i[1]) for i in zoom_range])
         else:
-            zoom = uniform(zoom_range[0], zoom_range[1])
+            zoom = np.random.uniform(zoom_range[0], zoom_range[1])
 
         target_shape = np.round(shp * zoom).astype(int)
 
@@ -345,9 +334,9 @@ def augment_linear_downsampling_scipy(data_sample,
             if per_channel:
                 if isinstance(zoom_range[0], (tuple, list, np.ndarray)):
                     assert len(zoom_range) == dim
-                    zoom = np.array([uniform(i[0], i[1]) for i in zoom_range])
+                    zoom = np.array([np.random.uniform(i[0], i[1]) for i in zoom_range])
                 else:
-                    zoom = uniform(zoom_range[0], zoom_range[1])
+                    zoom = np.random.uniform(zoom_range[0], zoom_range[1])
 
                 target_shape = np.round(shp * zoom).astype(int)
                 if ignore_axes is not None:
