@@ -104,8 +104,6 @@ for params in ${extra_args[*]}; do
     value=${arr[1]}
     if [ "${key}" = 'log_iters' ]; then
         log_iters="${value}"
-    elif [ "${key}" = "max_num_workers_dist" ]; then
-        max_num_workers_dist="${value}"
     elif [ "${key}" = "repeats" ]; then
         repeats="${value}"
     fi
@@ -343,14 +341,6 @@ else
 
                 if [ "${MODE}" = 'benchmark_train' ] && [ -n "${repeats}" ];then
                     cmd="${cmd} --repeats ${repeats}"
-                fi
-
-                if [ ${#gpu} -gt 2 ] && [ -n "${max_num_workers_dist}" ];then
-                    # Only works when using multiple GPUs
-                    let num_gpus=(${#gpu}+1)/2
-                    let num_workers_per_gpu=${max_num_workers_dist}/${num_gpus}
-                    echo "Use ${num_workers_per_gpu} workers on each GPU."
-                    cmd=`echo ${cmd} | sed "s/--num_workers [0-9]\+/--num_workers ${num_workers_per_gpu}/g"`
                 fi
 
                 if [ -n "${amp_level}" ];then
