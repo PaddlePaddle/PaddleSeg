@@ -2,20 +2,17 @@
 	<img src="https://user-images.githubusercontent.com/50255927/189930324-0f3992cd-47f8-487c-b20e-5a59f28f978f.png" align="middle" alt="LOGO" height="60"/><img src="https://user-images.githubusercontent.com/35907364/179460858-7dfb19b1-cabf-4f8a-9e81-eb15b6cc7d5f.png" align="middle" alt="LOGO" height="60"/><img src="https://user-images.githubusercontent.com/50255927/189930342-d32b90e5-ef80-44fb-9eab-c9df25ca0d12.png" align="middle" alt="LOGO" height="60" />
 </div>
 
-***
 
 # MUSCLE - MICCAI 2022
 这是一篇论文 "MUSCLE: Multi-task Self-supervised Continual Learning to Pre-train Deep Models for X-ray Images of Multiple Body Parts" 的相关介绍。
 该论文发布于MICCAI 2022。
 
 ## 简介
-***
 MUSCLE的主标是通过预训练一个主干网络，来提高深度学习在医学影像分析任务中的性能。
 
 该论文的所有代码均使用PaddlePaddle框架实现。
 
 ## 框架
-***
 ![image](https://user-images.githubusercontent.com/50255927/189317770-c8c9e866-beb2-4eb5-8116-21ab00850ef0.png)
 
 MUSCLE聚合了从不同人体部位收集的多个Xray图像数据集，并作用于各种Xray影像的分析任务。
@@ -24,7 +21,6 @@ MUSCLE聚合了从不同人体部位收集的多个Xray图像数据集，并作�
 预训练的模型可以使用特定任务的head对目标任务进行微调，并取得极佳的性能。
 
 ## 数据集
-***
 <table class="tg">
 <thead>
   <tr>
@@ -138,7 +134,6 @@ MUSCLE聚合了从不同人体部位收集的多个Xray图像数据集，并作�
 </table>
 
 ## 实验
-***
 ### 实验设置
 - 主干网络
     - ResNet-18、 ResNet-50
@@ -433,7 +428,7 @@ MUSCLE聚合了从不同人体部位收集的多个Xray图像数据集，并作�
 ![image](https://user-images.githubusercontent.com/50255927/189317479-14ecb3de-da80-4df3-b9a0-f1fece7b953f.png)
 
 ## Citation
-***
+
 如果我们的项目在学术上帮助到你，请考虑以下引用：
 ```
 @inproceedings{liao2022muscle,  
