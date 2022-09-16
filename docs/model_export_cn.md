@@ -40,14 +40,14 @@ python export.py \
 |without_argmax| 即将废弃的输入参数，建议使用`--output_op`。由于PaddleSeg组网默认返回logits，为部署模型可以直接获取预测结果，我们默认在网络末端添加argmax算子。如果设置`--without_argmax`，则不会在网络末端添加argmax算子。 | 否 | False |
 
 注意：
-* 如果导出出现和shape相关的问题，请尝试指定input_shape。
+* 如果部署模型时，出现和shape相关的问题，请尝试指定input_shape。
 
 ## 3. 预测模型文件
 
 如下是导出的预测模型文件。
 
 ```shell
-output
+output/inference_model
   ├── deploy.yaml            # 部署相关的配置文件，主要说明数据预处理方式等信息
   ├── model.pdmodel          # 预测模型的拓扑结构文件
   ├── model.pdiparams        # 预测模型的权重文件

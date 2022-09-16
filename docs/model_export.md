@@ -48,7 +48,7 @@ Note that:
 ## Prediction Model Files
 
 ```shell
-output
+output/inference_model
   ├── deploy.yaml            # Config file of deployment
   ├── model.pdiparams        # Paramters of static model
   ├── model.pdiparams.info   # Additional information witch is not concerned generally
