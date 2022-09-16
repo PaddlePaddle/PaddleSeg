@@ -76,7 +76,7 @@ pip install paddleseg
 在PaddleSeg目录下执行如下命令，会进行简单的单卡预测。查看执行输出的log，没有报错，则验证安装成功。
 
 ```
-sh tests/run_check_install.sh
+sh tests/install/check_predict.sh
 ```
 
 ## 3 使用Docker快速体验PaddleSeg

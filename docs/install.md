@@ -74,7 +74,7 @@ If there are no error in terminal log, you can use PaddleSeg to train, validate,
 
 ```
 cd PaddleSeg
-sh tests/run_check_install.sh
+sh tests/install/check_predict.sh
 ```
 
 ## 3 Use PaddleSeg with Docker
