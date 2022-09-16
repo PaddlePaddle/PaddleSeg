@@ -20,7 +20,7 @@ import paddle
 import yaml
 
 __dir__ = os.path.dirname(os.path.abspath(__file__))
-sys.path.append(os.path.abspath(os.path.join(__dir__, '../../')))
+sys.path.append(os.path.abspath(os.path.join(__dir__, '../../../')))
 
 from paddleseg.cvlibs import Config
 from paddleseg.utils import logger, utils
