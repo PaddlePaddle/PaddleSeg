@@ -377,3 +377,8 @@ class TransUNet(nn.Layer):
         logits = self.segmentation_head(x)
         logits = paddle.unsqueeze(logits, axis=2)
         return [logits]
+
+    def postprocess(self, logits, labels):
+        logits = [logits]
+        labels = paddle.squeeze(labels, axis=0)
+        return logits, labels

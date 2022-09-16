@@ -70,15 +70,3 @@ class Abdomen(MedicalDataset):
 
         idx = image_path.split('/')[-1].split('_')[0]
         return image.astype('float32'), label.astype('int64'), idx
-
-    @property
-    def metric(self):
-        return SynapseMetric()
-
-
-class SynapseMetric:
-    def __call__(self, logits, labels, new_loss):
-        logits = [logits]
-        label = paddle.squeeze(labels, axis=0)
-        loss, per_channel_dice = loss_computation(logits, label, new_loss)
-        return loss, per_channel_dice
