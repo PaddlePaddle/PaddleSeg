@@ -2,21 +2,20 @@
 	<img src="https://user-images.githubusercontent.com/50255927/189930324-0f3992cd-47f8-487c-b20e-5a59f28f978f.png" align="middle" alt="LOGO" height="60"/><img src="https://user-images.githubusercontent.com/35907364/179460858-7dfb19b1-cabf-4f8a-9e81-eb15b6cc7d5f.png" align="middle" alt="LOGO" height="60"/><img src="https://user-images.githubusercontent.com/50255927/189930342-d32b90e5-ef80-44fb-9eab-c9df25ca0d12.png" align="middle" alt="LOGO" height="60" />
 </div>
 
-***
 
 # MUSCLE - MICCAI 2022
 This is a repository for paper "MUSCLE: Multi-task Self-supervised Continual Learning to 
 Pre-train Deep Models for X-ray Images of Multiple Body Parts" accepted by MICCAI 2022.
 
 ## Introduction
-***
+
 The goal of MUSCLE (*<u>MU</u>lti-task <u>S</u>elf-supervised <u>C</u>ontinual <u>LE</u>arning*) is to pre-train the deep neural network (DNN) models and 
 deliver decent performance on medical image analysis tasks.
 
 All codes are implemented using PaddlePaddle.
 
 ## Framework
-***
+
 ![image](https://user-images.githubusercontent.com/50255927/189317770-c8c9e866-beb2-4eb5-8116-21ab00850ef0.png)
 
 MUSCLE aggregated multiple X-ray image datasets collected from different human body
@@ -27,7 +26,7 @@ The pre-trained models could be fine-tuned to target tasks using task-specific h
 and achieve superb performance.
 
 ## Datasets
-***
+
 <table class="tg">
 <thead>
   <tr>
@@ -141,7 +140,7 @@ and achieve superb performance.
 </table>
 
 ## Experiments
-***
+
 ### Experiment setups
 - Backbone
     - ResNet-18 and ResNet-50
@@ -439,7 +438,7 @@ and achieve superb performance.
 ![image](https://user-images.githubusercontent.com/50255927/189317479-14ecb3de-da80-4df3-b9a0-f1fece7b953f.png)
 
 ## Citation
-***
+
 If our work is helpful to you, please kindly cite our paper as:
 ```
 @inproceedings{liao2022muscle,  
