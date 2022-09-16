@@ -21,7 +21,7 @@ import paddle
 import numpy as np
 
 __dir__ = os.path.dirname(os.path.abspath(__file__))
-sys.path.append(os.path.abspath(os.path.join(__dir__, '../../')))
+sys.path.append(os.path.abspath(os.path.join(__dir__, '../../../')))
 
 from paddleseg.cvlibs import manager, Config
 from paddleseg.utils import get_sys_env, logger, utils
