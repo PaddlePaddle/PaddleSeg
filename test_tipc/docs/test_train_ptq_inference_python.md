@@ -63,7 +63,7 @@ bash test_tipc/test_ptq_inference_python.sh test_tipc/configs/fcn_hrnetw18/train
 输出结果如下，表示命令运行成功。
 
 ```
- Run successfully with command - fcn_hrnetw18_KL - python3.7 slim/quant/ptq.py   --model_dir=test_tipc/output/fcn_hrnetw18_KL/fcn_hrnetw18_cityscapes_1024x512_80k --batch_num=1 --batch_size=1 --config=test_tipc/configs/fcn_hrnetw18/fcn_hrnetw18_1024x512_cityscapes.yml   >./test_tipc/output/fcn_hrnetw18_KL/whole_infer/export.log 2>&1 - ./test_tipc/output/fcn_hrnetw18_KL/whole_infer/export.log
+ Run successfully with command - fcn_hrnetw18_KL - python3.7 deploy/slim/quant/ptq.py   --model_dir=test_tipc/output/fcn_hrnetw18_KL/fcn_hrnetw18_cityscapes_1024x512_80k --batch_num=1 --batch_size=1 --config=test_tipc/configs/fcn_hrnetw18/fcn_hrnetw18_1024x512_cityscapes.yml   >./test_tipc/output/fcn_hrnetw18_KL/whole_infer/export.log 2>&1 - ./test_tipc/output/fcn_hrnetw18_KL/whole_infer/export.log
  ......
  Run successfully with command - fcn_hrnetw18_KL - python3.7 deploy/python/infer.py --device=cpu --config=quant_model/deploy.yaml --batch_size=1 --image_path=test_tipc/cpp/cityscapes_demo.png --benchmark=True > ./test_tipc/output/fcn_hrnetw18_KL/whole_infer/python_infer_cpu_batchsize_1.log 2>&1  - ./test_tipc/output/fcn_hrnetw18_KL/whole_infer/python_infer_cpu_batchsize_1.log
  ......

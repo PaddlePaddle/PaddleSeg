@@ -19,7 +19,7 @@ import sys
 import paddle
 
 __dir__ = os.path.dirname(os.path.abspath(__file__))
-sys.path.append(os.path.abspath(os.path.join(__dir__, '../../')))
+sys.path.append(os.path.abspath(os.path.join(__dir__, '../../../')))
 
 from paddleseg.cvlibs import manager, Config
 from paddleseg.core import evaluate

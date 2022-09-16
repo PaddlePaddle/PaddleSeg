@@ -58,7 +58,7 @@ export PYTHONPATH=`pwd`
 # if windows, run the following command:
 # set PYTHONPATH=%cd%
 
-python slim/prune/prune.py \
+python deploy/slim/prune/prune.py \
        --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \
        --pruning_ratio 0.2 \
        --model_path output/best_model/model.pdparams \
@@ -68,7 +68,7 @@ python slim/prune/prune.py \
 
 ## Deployment
 
-The pruned model can be deployed directly. Please refer to the [tutorial](../../model_export.md) for model deployment.
+The pruned model can be deployed directly. Please refer to the [tutorial](../../../model_export.md) for model deployment.
 
 
 ## Pruning Speedup

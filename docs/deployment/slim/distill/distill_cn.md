@@ -20,7 +20,7 @@ PaddleSeg基于PaddleSlim，集成了模型蒸馏的功能，主要使用步骤�
 
 ### 2.1 环境准备
 
-请参考[安装文档](../../install.md)准备好PaddleSeg的基础环境，测试是否安装成功。
+请参考[安装文档](../../../install.md)准备好PaddleSeg的基础环境，测试是否安装成功。
 
 安装PaddleSlim。
 
@@ -126,10 +126,10 @@ distill_loss:
 
 ### 2.6 蒸馏训练
 
-基于学生和教师模型的配置文件，在PaddleSeg根目录下执行如下命令，调用蒸馏的接口`slim/distill/distill_train.py`，进行蒸馏训练。
+基于学生和教师模型的配置文件，在PaddleSeg根目录下执行如下命令，调用蒸馏的接口`deploy/slim/distill/distill_train.py`，进行蒸馏训练。
 
 ```
-python slim/distill/distill_train.py \
+python deploy/slim/distill/distill_train.py \
        --teather_config ./configs/quick_start/deeplabv3p_resnet50_os8_optic_disc_512x512_1k_teacher.yml \
        --student_config ./configs/quick_start/deeplabv3p_resnet18_os8_optic_disc_512x512_1k_student.yml \
        --do_eval \
@@ -157,7 +157,7 @@ python slim/distill/distill_train.py \
 ```
 export CUDA_VISIBLE_DEVICES=0,1,2,3 # 设置4张可用的卡
 
-python -m paddle.distributed.launch slim/distill/distill_train.py \
+python -m paddle.distributed.launch deploy/slim/distill/distill_train.py \
        --teather_config ./configs/quick_start/deeplabv3p_resnet50_os8_optic_disc_512x512_1k_teacher.yml \
        --student_config ./configs/quick_start/deeplabv3p_resnet18_os8_optic_disc_512x512_1k_student.yml \
        --do_eval \
@@ -183,7 +183,7 @@ python -m paddle.distributed.launch slim/distill/distill_train.py \
 
 2）设置模型内部Tensor
 
-在`slim/distill/distill_config.py`文件的prepare_distill_adaptor函数中，可以通过StudentAdaptor类和TeatherAdaptor类分别设置学生和教师模型的内部Tensor，用于后面的蒸馏。我们以设置StudentAdaptor类为例进行说明，TeatherAdaptor类设置方法相同。
+在`deploy/slim/distill/distill_config.py`文件的prepare_distill_adaptor函数中，可以通过StudentAdaptor类和TeatherAdaptor类分别设置学生和教师模型的内部Tensor，用于后面的蒸馏。我们以设置StudentAdaptor类为例进行说明，TeatherAdaptor类设置方法相同。
 
 有必要提前说明，Paddle的API有两类：第一类是Layer API（继承paddle.nn.Layer，比如paddle.nn.Conv2D）；第二类是Function API（不继承paddle.nn.Layer，比如paddle.reshape）。分辨特定API类别的方法是，首先在Paddle官网搜该API，然后点击源码查看内部实现是类还是函数，分别是Layer API和Function API。
 
@@ -232,7 +232,7 @@ class StudentAdaptor(AdaptorBase):
 
 第二步设置学生和教师模型的内部Tensor后，接下来配置蒸馏的参数。
 
-在`slim/distill/distill_config.py`文件的prepare_distill_config函数中，我们修改distill_config来配置蒸馏的参数。
+在`deploy/slim/distill/distill_config.py`文件的prepare_distill_config函数中，我们修改distill_config来配置蒸馏的参数。
 
 复用第二步的示例，我们可以定义如下的蒸馏参数。
 * config_1中feature_type表示使用内部tensor的类别
@@ -267,6 +267,6 @@ def prepare_distill_config():
 
 4）蒸馏训练
 
-在`slim/distill/distill_config.py`文件中设置模型内部Tensor和配置蒸馏参数后，可以进行蒸馏训练。
+在`deploy/slim/distill/distill_config.py`文件中设置模型内部Tensor和配置蒸馏参数后，可以进行蒸馏训练。
 
 内部Tensor和输出Tensor可以同时用于模型蒸馏，只需要同时在配置文件中设置相应参数。

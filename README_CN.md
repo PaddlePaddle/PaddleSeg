@@ -393,9 +393,9 @@
 * [训练技巧](./docs/train/train_tricks_cn.md)
 
 * 模型压缩
-    * [量化](./docs/slim/quant/quant_cn.md)
-    * [蒸馏](./docs/slim/distill/distill_cn.md)
-    * [裁剪](./docs/slim/prune/prune_cn.md)
+    * [量化](./docs/deployment/slim/quant/quant_cn.md)
+    * [蒸馏](./docs/deployment/slim/distill/distill_cn.md)
+    * [裁剪](./docs/deployment/slim/prune/prune_cn.md)
 
 * [常见问题汇总](./docs/faq/faq/faq_cn.md)
 
