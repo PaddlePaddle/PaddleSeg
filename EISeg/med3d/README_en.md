@@ -57,7 +57,7 @@ The overall model includes two parts: click generation module, click feature gen
 * Segmentation model: The segmentation model is the 3D segmentation model Vnet, generates the prediction results shown in the figure, and approximates the real results under the constraints of Dice loss and CE loss. Thus, in the prediction stage, input images and specified clicks generate the desired annotation results.
 
 <p align="center">
-<img src="https://user-images.githubusercontent.com/34859558/190858306-594f49cd-ac07-447c-8a59-0f1bd01edcfe.png" width="80.6%" height="20%">
+<img src="https://user-images.githubusercontent.com/34859558/190861789-793bd9f3-17a8-49d6-a2a7-bce82696d28e.png" width="80.6%" height="20%">
 <p align="center">
  EISeg-Med3D Model
 </p>

@@ -57,7 +57,7 @@ EISeg-Med3D模型结构如下图所示，我们创新性地将3D模型引入医�
 * 分割模型：分割模型沿用 3D 分割模型Vnet，在图像和点击信息综合下生成如图所示的预测结果，并在Dice损失和CE损失的约束下逼近真实结果。从而在预测阶段，输入图像和指定点击后基于点击目标生成期望的标注结果。
 
 <p align="center">
-<img src="https://user-images.githubusercontent.com/34859558/190858306-594f49cd-ac07-447c-8a59-0f1bd01edcfe.png" width="80.6%" height="20%">
+<img src="https://user-images.githubusercontent.com/34859558/190861789-793bd9f3-17a8-49d6-a2a7-bce82696d28e.png" width="80.6%" height="20%">
 <p align="center">
  EISeg-Med3D模型
 </p>
