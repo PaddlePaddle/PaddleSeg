@@ -35,7 +35,36 @@ EISeg-Med3D is a 3D slicer extension for performing **E**fficient **I**nteractiv
 
 *************
 
-##  <img src="https://user-images.githubusercontent.com/34859558/188439970-18e51958-61bf-4b43-a73c-a9de3eb4fc79.png" width="30"/> 使用指南
+## Contents
+0. [News](##News)
+1. [EISeg-Med3D Model Introduction](##EISeg-Med3DModelIntroduction)
+2. [User Guide](##UserGuide)
+3. [TODO](##TODO)
+4. [License](##License)
+5. [Thanks](##Thanks)
+
+
+## <img src="https://user-images.githubusercontent.com/34859558/190043516-eed25535-10e8-4853-8601-6bcf7ff58197.png" width="30"/> 最新消息
+- [2022-09] EISeg-Med3D is officially released, **a user-friendly, efficient and intelligent 3D medical image annotation platform** including high-precision models on specified vertebral data.
+
+## <img src="https://user-images.githubusercontent.com/34859558/190049708-7a1cee3c-322b-4263-9ed0-23051825b1a6.png" width="30"/> EISeg-Med3D Model
+The EISeg-Med 3D model structure is shown in the figure below. We innovatively introduce the 3D model into the medical interactive segmentation, and modify the point sampler module and the click feature  extrator of RITM to be compatible with 3D data, so as to directly label 3D medical images. Compared with 2D interactive annotation on 3D images, our method is more acurate and more efficient.
+
+The overall model includes two parts: click generation module, click feature generation module, click feature and input image fusion and segmentation model:
+* Click generation module 3D click sampler: generate the positive and negative click through sampling on the 3D labelled data directly, where the positive point is a random point at the center of the 3D target segment, and the negative point is a random point at the edge of the 3D target segment.
+* Click feature generation module 3D feature extractor: After the click is generated, a sphere with radius R is generated on the basis of the original click in the form of disk to expand the feature coverage.
+* Fusion of click feature and input image: The input image and the generated click feature are remapped and fused through the convolution block, so that the network obtains information from both the image and the clicks, and performs 3D segmentation on a the assigned area to obtain the annotation result.
+* Segmentation model: The segmentation model is the 3D segmentation model Vnet, generates the prediction results shown in the figure, and approximates the real results under the constraints of Dice loss and CE loss. Thus, in the prediction stage, input images and specified clicks generate the desired annotation results.
+
+<p align="center">
+<img src="https://user-images.githubusercontent.com/34859558/190858306-594f49cd-ac07-447c-8a59-0f1bd01edcfe.png" width="80.6%" height="20%">
+<p align="center">
+ EISeg-Med3D Model
+</p>
+</p>
+
+
+##  <img src="https://user-images.githubusercontent.com/34859558/188439970-18e51958-61bf-4b43-a73c-a9de3eb4fc79.png" width="30"/> User Guide
 The overall process of using EISeg-Med3D is shown in the figure below. We will introduce in the following three steps including environment installation, model and data download and user guide. The steps to use our platform can also be found in the video in the introduction.
 
 
@@ -162,6 +191,11 @@ click on the  ```...``` button of ```Model Path```, choose local file of ```.pdo
 </p>
 
 <!-- </details> -->
+
+## <img src="https://user-images.githubusercontent.com/34859558/190046674-53e22678-7345-4bf1-ac0c-0cc99718b3dd.png" width="30"/> TODO
+In the future, we want to continue to develop EISeg-Med3D in these aspects, welcome to join our developer team.
+- [ ] Work on larger vertebrae datasets and improve generality of our spine model.
+- [ ] Develop models trained on multiple organs to obtain models that generalize to multiple organs.
 
 ## <img src="https://user-images.githubusercontent.com/34859558/188446853-6e32659e-8939-4e65-9282-68909a38edd7.png" width="30"/> License
 

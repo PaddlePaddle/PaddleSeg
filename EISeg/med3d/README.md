@@ -16,25 +16,52 @@
 ##  <img src="https://user-images.githubusercontent.com/34859558/188422593-4bc47c72-866a-4374-b9ed-1308c3453165.png" width="30"/> 简介
 3D 医疗数据标注是训练 3D 图像分割模型的重要一环，但 3D 医疗数据标注依赖专业人士进行费时费力的手工标注。 标注效率的低下导致了大规模标注数据的缺乏，从而严重阻碍了医疗AI的发展。为了解决这个问题，我们推出了基于交互式分割的3D医疗图像智能标注平台 EISeg-Med3D。
 
-EISeg-Med3D 是一个用于智能医学图像分割的 3D Slicer 插件，通过使用训练的交互式分割 AI 模型来进行交互式医学图像标注。它安装简单、使用方便，结合高精度的预测模型，可以获取比手工标注数十倍的效率提升。目前我们的医疗标注提供了在指定的 [MRI 椎骨数据](https://aistudio.baidu.com/aistudio/datasetdetail/81211)上的使用体验，如果有其他数据上的3D标注需求，可以[联系我们](https://github.com/PaddlePaddle/PaddleSeg/issues/new/choose)。
+EISeg-Med3D 是一个用于智能医学图像分割的 3D Slicer 插件，通过使用训练的交互式分割 AI 模型来进行交互式医学图像标注。它安装简单、使用方便，结合高精度的预测模型，可以获取比手工标注**数十倍**的效率提升。目前我们的医疗标注提供了在指定的 [MRI 椎骨数据](https://aistudio.baidu.com/aistudio/datasetdetail/81211)上的使用体验，如果有其他数据上的3D标注需求，可以[联系我们](https://github.com/PaddlePaddle/PaddleSeg/issues/new/choose)。
 
 
 <div align="center">
 <p align="center">
   <img src="https://user-images.githubusercontent.com/34859558/188415269-10526530-0415-4632-8223-0e5d755db29c.gif"  align="middle" width = 900"/>
 </p>
-
 </div>
 
 
 ## <img src="https://user-images.githubusercontent.com/34859558/188419267-bd117697-7456-4c72-8cbe-1272264d4fe4.png" width="30"/> 特性
-* **高效**：每个类别只需数次点击直接生成3d分割结果，从此告别费时费力的手工标注。
+* **高效**：每个类别只需**数次点击**直接生成3d分割结果，从此告别费时费力的手工标注。
 
-* **准确**：点击 3 点 mIOU 即可达到0.85，配合搭载机器学习算法和手动标注的标注编辑器，精度 100% 不是梦。
+* **准确**：点击 3 点单物体 mIOU 即可达到 **0.85**，配合搭载机器学习算法和手动标注的标注编辑器，精度 100% 不是梦。
 
 * **便捷**：三步轻松安装；标注结果、进度自动保存；标注结果透明度调整提升标注准确度；用户友好的界面交互，让你标注省心不麻烦。
 
 *************
+
+## 目录结构
+0. [最新消息](##最新消息)
+1. [EISeg-Med3D 模型介绍](##EISeg-Med3D模型介绍)
+2. [使用指南](##使用指南)
+3. [TODO](##TODO)
+4. [License](##License)
+5. [致谢](##致谢)
+
+
+## <img src="https://user-images.githubusercontent.com/34859558/190043516-eed25535-10e8-4853-8601-6bcf7ff58197.png" width="30"/> 最新消息
+- [2022-09] EISeg-Med3D 正式发布，包含在指定椎骨数据上的高精度模型的**用户友好、高效、智能的3D医疗图像标注平台**。
+
+## <img src="https://user-images.githubusercontent.com/34859558/190049708-7a1cee3c-322b-4263-9ed0-23051825b1a6.png" width="30"/> EISeg-Med3D 模型介绍
+EISeg-Med3D模型结构如下图所示，我们创新性地将3D模型引入医疗交互式分割中，并修改 RITM 的采点模块和生成点击特征模块和3D数据兼容，从而直接进行3D医学图像的标注，从模型层面在2D标注的基础上实现标注的**更精准，更高效**。
+
+整体模型包含点击生成模块、点击特征生成模块、点击特征和输入图像融合和分割模个部分：
+* 点击生成模块 3D click sampler：直接基于 3D 标签数据进行正负点采样，其中正点为3D目标体中心位置随机点，负点为3D目标体边缘随机采点。
+* 点击特征生成模块 3D feature extractor：在生成点击之后，为了扩大点击的影响范围，通过disk的形式在原有点击的基础上生成半径R的圆球，扩大特征覆盖范围。
+* 点击特征和输入图像融合：将输入图像和生产的点击特征经过卷积块进行重新映射和进行相加融合，从而网络同时获取图像和点击信息，并对特定区域进行3D分割获得标注结果。
+* 分割模型：分割模型沿用 3D 分割模型Vnet，在图像和点击信息综合下生成如图所示的预测结果，并在Dice损失和CE损失的约束下逼近真实结果。从而在预测阶段，输入图像和指定点击后基于点击目标生成期望的标注结果。
+
+<p align="center">
+<img src="https://user-images.githubusercontent.com/34859558/190858306-594f49cd-ac07-447c-8a59-0f1bd01edcfe.png" width="80.6%" height="20%">
+<p align="center">
+ EISeg-Med3D模型
+</p>
+</p>
 
 ##  <img src="https://user-images.githubusercontent.com/34859558/188439970-18e51958-61bf-4b43-a73c-a9de3eb4fc79.png" width="30"/> 使用指南
 EISeg-Med3D 的使用整体流程如下图所示，我们将按照环境安装、模型下载和使用步骤三部分说明，其中使用步骤也可以参见简介中的视频。
@@ -99,20 +126,26 @@ os.system(f"'{sys.executable}' -m pip install paddlepaddle-gpu==2.3.1.post111 -f
 </p>
 
 ### 3. 使用步骤
+#### 0. 双击打开 3D Slicer
+
+<p align="center">
+<img src="https://user-images.githubusercontent.com/34859558/190042214-391fbdc4-a007-42d2-9019-f1ff3d97b6eb.png" width="20.6%" height="20%">
+</p>
+
 #### 1. 加载插件
 * 找到 Extension wizard 插件：
 <p align="center">
-<img src="https://user-images.githubusercontent.com/34859558/188458289-b59dc5e3-34eb-4d40-b18b-ce0b35c066c6.png" width="70.6%" height="20%">
+<img src="https://user-images.githubusercontent.com/34859558/188458289-b59dc5e3-34eb-4d40-b18b-ce0b35c066c6.png" width="60.6%" height="20%">
 </p>
 
 * 点击 Select Extension，并选择到contrib/MedicalSeg/Med3DAnnotation目录，并点击加载对应模块，等待 Slicer 进行加载。
 <p align="center">
-<img src="https://user-images.githubusercontent.com/34859558/188458463-066ff0b6-ff80-4d0d-aca0-3b3b12f710ef.png" width="70.6%" height="20%">
+<img src="https://user-images.githubusercontent.com/34859558/188458463-066ff0b6-ff80-4d0d-aca0-3b3b12f710ef.png" width="60.6%" height="20%">
 </p>
 
 * 加载完后，切换到 EISegMed3D模块。
 <p align="center">
-<img src="https://user-images.githubusercontent.com/34859558/188458684-46465fed-fdde-43dd-a97c-5da7678f3f99.png" width="70.6%" height="20%">
+<img src="https://user-images.githubusercontent.com/34859558/188458684-46465fed-fdde-43dd-a97c-5da7678f3f99.png" width="60.6%" height="20%">
 </p>
 
 
@@ -155,8 +188,12 @@ os.system(f"'{sys.executable}' -m pip install paddlepaddle-gpu==2.3.1.post111 -f
 </p>
 <!-- </details> -->
 
-## <img src="https://user-images.githubusercontent.com/34859558/188446853-6e32659e-8939-4e65-9282-68909a38edd7.png" width="30"/> License
+## <img src="https://user-images.githubusercontent.com/34859558/190046674-53e22678-7345-4bf1-ac0c-0cc99718b3dd.png" width="30"/> TODO
+未来，我们想在这几个方面来继续发展EISeg-Med3D，欢迎加入我们的开发者小组。
+- [ ] 在更大的椎骨数据集上进行训练，获取泛化性能更好的标注模型。
+- [ ] 开发在多个器官上训练的模型，从而获取能泛化到多器官的标注模型。
 
+## <img src="https://user-images.githubusercontent.com/34859558/188446853-6e32659e-8939-4e65-9282-68909a38edd7.png" width="30"/> License
 EISeg-Med3D 的 License 为 [Apache 2.0 license](LICENSE).
 
 

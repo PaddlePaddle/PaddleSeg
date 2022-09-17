@@ -547,8 +547,6 @@ class EISegMed3DWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
             self._scanPaths[idx] for idx in toKeepIdxs if idx is not None
         ]
 
-        # print("tokeep", toKeepIdxs, toKeepPaths)
-
         allVolumes = slicer.util.getNodesByClass("vtkMRMLScalarVolumeNode")
         for volume in allVolumes:
             if volume.GetName() not in map(osp.basename, toKeepPaths):
@@ -951,7 +949,7 @@ class EISegMed3DWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
             p_Ijk = [round(i) for i in p_Ijk]
             point_set.append(p_Ijk[0:3])
 
-        # logging.info(f"{name} => Current control points: {point_set}")
+        logging.info(f"{name} => Current control points: {point_set}")
         return point_set
 
     def getControlPointXYZ(self, pointListNode, index):
@@ -1129,17 +1127,17 @@ class EISegMed3DWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     def prepImage(self):
         self.origin = sitk.ReadImage(self._scanPaths[self._currScanIdx])
         itk_img_res = inference.crop_wwwc(
-            self.origin, max_v=self.image_ww[1],
-            min_v=self.image_ww[0])  # 和预处理文件一致 (512, 512, 12) WHD
+            self.origin, max_v=self.image_ww[1], min_v=self.image_ww[0]
+        )  # same as the preprocess when you train the model (512, 512, 12) WHD
         itk_img_res, self.new_spacing = inference.resampleImage(
-            itk_img_res,
-            out_size=self.train_shape)  # 得到重新采样后的图像 origin: (880, 880, 12)
+            itk_img_res, out_size=self.train_shape)  #  origin: (880, 880, 12)
 
         npy_img = sitk.GetArrayFromImage(itk_img_res).astype(
             "float32")  # 12, 512, 512 DHW
 
+        # Exchange dim and normalize
         input_data = np.expand_dims(np.transpose(npy_img, [2, 1, 0]), axis=0)
-        if input_data.max() > 0:  # 归一化
+        if input_data.max() > 0:
             input_data = input_data / input_data.max()
         self.input_data = input_data
 
@@ -1180,7 +1178,7 @@ class EISegMed3DWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
         output_data = (pred_probs > pred_thr) * pred_probs  # (12, 512, 512) DHW
         output_data[output_data > 0] = 1
 
-        # 加载3d模型预测的mask，由 numpy 转换成SimpleITK格式
+        # Load mask from model infer result, and change from numpy to simpleitk
         output_data = np.transpose(output_data, [2, 1, 0])
         mask_itk_new = sitk.GetImageFromArray(output_data)  # (512, 512, 12) WHD
         mask_itk_new.SetSpacing(self.new_spacing)
@@ -1188,7 +1186,7 @@ class EISegMed3DWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
         mask_itk_new.SetDirection(self.origin.GetDirection())
         mask_itk_new = sitk.Cast(mask_itk_new, sitk.sitkUInt8)
 
-        # 暂时没有杂散目标，不需要最大联通域提取
+        # if need max connect opponet filter, add it before here.
         Mask, _ = inference.resampleImage(mask_itk_new,
                                           self.origin.GetSize(),
                                           self.origin.GetSpacing(),
@@ -1337,8 +1335,6 @@ class EISegMed3DWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
         """
         Called each time the user opens this module. Not when reload/switch back.
         """
-        # if TEST:
-        #     self.clearScene(clearAllVolumes=True)
 
     def exit(self):
         """
@@ -1404,27 +1400,11 @@ class EISegMed3DWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
             self.ui.opacitySlider.setValue(segNode.GetDisplayNode().GetOpacity(
             ))
 
-        # print("initializeParameterNode")
-        # self.setParameterNode(self.logic.getParameterNode())
-        # if not self._parameterNode.GetNodeReference("InputVolume"):
-        #     firstVolumeNode = slicer.mrmlScene.GetFirstNodeByClass("vtkMRMLScalarVolumeNode")
-        #     if firstVolumeNode:
-        #         self._parameterNode.SetNodeReferenceID("InputVolume", firstVolumeNode.GetID())
-
-        # Select default input nodes if nothing is selected yet to save a few clicks for the user
-        # if not self._parameterNode.GetNodeReference("InputVolume"):
-        #     firstVolumeNode = slicer.mrmlScene.GetFirstNodeByClass("vtkMRMLScalarVolumeNode")
-        #     if firstVolumeNode:
-        #         self._parameterNode.SetNodeReferenceID("InputVolume", firstVolumeNode.GetID())
-
     def setParameterNode(self, inputParameterNode):
         """
         Set and observe parameter node.
         Observation is needed because when the parameter node is changed then the GUI must be updated immediately.
         """
-
-        # if inputParameterNode:
-        #     self.logic.setDefaultParameters(inputParameterNode)
 
         # Unobserve previously selected parameter node and add an observer to the newly selected.
         # Changes of parameter node are observed so that whenever parameters are changed by a script or any other module
@@ -1453,13 +1433,8 @@ class EISegMed3DWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
         if self._parameterNode is None or self._updatingGUIFromParameterNode:
             return
 
-        # for v in self._allVolumeNodes:
-        #     self.ui.volumeSelector.addItem(v.GetName())
-        # self.ui.volumeSelector.setToolTip(self.current_sample.get("name", "") if self.current_sample else "")
-
         # Make sure GUI changes do not call updateParameterNodeFromGUI (it could cause infinite loop)
         self._updatingGUIFromParameterNode = True
-        # print("_+_+", self.dgPositivePointListNode)
         if not self.dgPositivePointListNode:
             (
                 self.dgPositivePointListNode,
@@ -1483,9 +1458,6 @@ class EISegMed3DWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
             self.ui.dgNegativeControlPointPlacementWidget.setPlaceModeEnabled(
                 False)
 
-        # self.ui.dgPositiveControlPointPlacementWidget.setEnabled(self.ui.deepgrowModelSelector.currentText)
-        # self.ui.dgPositiveControlPointPlacementWidget.setEnabled("deepedit")
-
         # All the GUI updates are done
         self._updatingGUIFromParameterNode = False
 
@@ -1500,12 +1472,6 @@ class EISegMed3DWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
 
         wasModified = self._parameterNode.StartModify(
         )  # Modify all properties in a single batch
-
-        # self._parameterNode.SetNodeReferenceID("InputVolume", self.ui.inputSelector.currentNodeID)
-        # self._parameterNode.SetNodeReferenceID("OutputVolume", self.ui.outputSelector.currentNodeID)
-        # self._parameterNode.SetParameter("Threshold", str(self.ui.imageThresholdSliderWidget.value))
-        # self._parameterNode.SetParameter("Invert", "true" if self.ui.invertOutputCheckBox.checked else "false")
-        # self._parameterNode.SetNodeReferenceID("OutputVolumeInverse", self.ui.invertedOutputSelector.currentNodeID)
 
         self._parameterNode.EndModify(wasModified)
 
