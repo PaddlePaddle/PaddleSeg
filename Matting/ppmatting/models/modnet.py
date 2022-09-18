@@ -56,8 +56,11 @@ class MODNet(nn.Layer):
         x = inputs['img']
         feat_list = self.backbone(x)
         y = self.head(inputs=inputs, feat_list=feat_list)
-
-        return y
+        if self.training:
+            loss = self.loss(y, inputs)
+            return y, loss
+        else:
+            return y
 
     def loss(self, logit_dict, label_dict, loss_func_dict=None):
         if loss_func_dict is None:

@@ -193,7 +193,7 @@ class InvertedResidualDS(Layer):
 
 
 class ShuffleNet(Layer):
-    def __init__(self, scale=1.0, act="relu", pretrained=None):
+    def __init__(self, scale=1.0, act="relu", in_channels=3, pretrained=None):
         super(ShuffleNet, self).__init__()
         self.scale = scale
         self.pretrained = pretrained
@@ -220,7 +220,7 @@ class ShuffleNet(Layer):
 
         # 1. conv1
         self._conv1 = ConvBNLayer(
-            in_channels=3,
+            in_channels=in_channels,
             out_channels=stage_out_channels[1],
             kernel_size=3,
             stride=2,

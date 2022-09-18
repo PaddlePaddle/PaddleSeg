@@ -12,8 +12,8 @@ train_model_name:best_model/model.pdparams
 train_infer_img_dir:test_tipc/data/cityscapes/cityscapes_val_5.list
 null:null
 ##
-trainer:norm
-norm_train:train.py --config test_tipc/configs/enet/enet_cityscapes_1024x512_adam_0.002_80k.yml --do_eval --save_interval 500 --seed 100
+trainer:norm_train
+norm_train:train.py --config test_tipc/configs/enet/enet_cityscapes_1024x512_adam_0.002_80k.yml --device gpu --do_eval --save_interval 500 --seed 100
 pact_train:null
 fpgm_train:null
 distill_train:null
@@ -51,4 +51,4 @@ inference:deploy/python/infer.py --save_dir ./test_tipc/output/enet/
 --save_dir:
 --model_name:enet
 ===========================infer_benchmark_params==========================
-random_infer_input:[{float32,[3,512,1024]}]
+random_infer_input:[{float32,[3,1024,2048]}]

@@ -15,7 +15,14 @@
 import cv2
 import numpy as np
 from PIL import Image, ImageEnhance
-from scipy.ndimage.morphology import distance_transform_edt
+from scipy.ndimage import distance_transform_edt
+
+
+def rescale_size(img_size, target_size):
+    scale = min(
+        max(target_size) / max(img_size), min(target_size) / min(img_size))
+    rescaled_size = [round(i * scale) for i in img_size]
+    return rescaled_size, scale
 
 
 def normalize(im, mean, std):

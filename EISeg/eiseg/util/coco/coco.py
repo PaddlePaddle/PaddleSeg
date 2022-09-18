@@ -7,6 +7,7 @@ import numpy as np
 import copy
 import itertools
 import os
+import os.path as osp
 from collections import defaultdict
 import sys
 from datetime import datetime
@@ -40,7 +41,7 @@ class COCO:
         self.imgNameToId = defaultdict(list)  # imgNameToId[name] = imgId
         self.maxAnnId = 0
         self.maxImgId = 0
-        if annotation_file is not None and os.path.exists(annotation_file):
+        if annotation_file is not None and osp.exists(annotation_file):
             print("loading annotations into memory...")
             tic = time.time()
             dataset = json.load(open(annotation_file, "r"))

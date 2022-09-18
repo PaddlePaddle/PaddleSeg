@@ -25,7 +25,7 @@ class Instructions(Enum):
     Polygon_Instruction = 1
 
 
-def get_polygon(label, sample="Dynamic", building=False):
+def get_polygon(label, sample="Dynamic", img_size=None, building=False):
     results = cv2.findContours(
         image=label, mode=cv2.RETR_TREE,
         method=cv2.CHAIN_APPROX_TC89_KCOS)  # 获取内外边界，用RETR_TREE更好表示
@@ -50,7 +50,8 @@ def get_polygon(label, sample="Dynamic", building=False):
                 contour = cv2.approxPolyDP(contour, epsilon / 10, True)
             else:
                 # -- 建筑边界简化（https://github.com/niecongchong/RS-building-regularization）
-                contour = boundary_regularization(contour, img_shape, epsilon)
+                if contour.shape[0] >= 2:
+                    contour = boundary_regularization(contour, img_shape, epsilon)
             # -- 自定义（角度和距离）边界简化
             out = approx_poly_DIY(contour)
             # 给出关系
@@ -77,6 +78,8 @@ def get_polygon(label, sample="Dynamic", building=False):
                                 polygons[j].extend(polygons[i])  # 连接内圈
                             polygons[i] = None
         polygons = list(filter(None, polygons))  # 清除加到外圈的内圈多边形
+        if img_size is not None:
+            polygons = check_size_minmax(polygons, img_size)
         return polygons
     else:
         print("没有标签范围，无法生成边界")
@@ -174,3 +177,20 @@ def approx_poly_DIY(contour, min_dist=10, ang_err=5):
             del cs[i]
     res = np.array(cs).reshape([-1, 1, 2])
     return res
+
+
+def check_size_minmax(polygons, img_size):
+    h_max, w_max = img_size
+    for ps in polygons:
+        for j in range(len(ps)):
+            x, y = ps[j]
+            if x < 0:
+                x = 0
+            elif x > w_max:
+                x = w_max
+            if y < 0:
+                y = 0
+            elif y > h_max:
+                y = h_max
+            ps[j] = np.array([x, y])
+    return polygons

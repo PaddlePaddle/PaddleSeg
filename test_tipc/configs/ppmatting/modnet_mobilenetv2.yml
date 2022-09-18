@@ -1,4 +1,4 @@
-batch_size: 16
+batch_size: 8
 iters: 100000
 
 train_dataset:
@@ -44,4 +44,4 @@ optimizer:
 lr_scheduler:
   type: PiecewiseDecay
   boundaries: [40000, 80000]
-  values: [0.02, 0.002, 0.0002]
+  values: [0.01, 0.001, 0.0001]

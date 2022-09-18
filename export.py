@@ -96,6 +96,7 @@ class PostPorcesser(paddle.nn.Layer):
 def main(args):
     os.environ['PADDLESEG_EXPORT_STAGE'] = 'True'
     cfg = Config(args.cfg)
+    cfg.check_sync_info()
     net = cfg.model
 
     if args.model_path:
@@ -133,7 +134,8 @@ def main(args):
                 'model': 'model.pdmodel',
                 'params': 'model.pdiparams',
                 'with_softmax': args.with_softmax,
-                'with_argmax': not args.without_argmax
+                'with_argmax': not args.without_argmax,
+                'input_shape': shape
             }
         }
         yaml.dump(data, file)

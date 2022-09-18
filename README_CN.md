@@ -1,4 +1,4 @@
-简体中文 | [English](README.md)
+简体中文 | [English](README_EN.md)
 
 <div align="center">
 
@@ -6,39 +6,40 @@
   <img src="./docs/images/paddleseg_logo.png" align="middle" width = "500" />
 </p>
 
-**强大易用的飞桨图像分割开发套件，端到端完成从训练到部署的全流程图像分割应用。**
+**飞桨高性能图像分割开发套件，端到端完成从训练到部署的全流程图像分割应用。**
 
-[![Build Status](https://travis-ci.org/PaddlePaddle/PaddleSeg.svg?branch=release/2.1)](https://travis-ci.org/PaddlePaddle/PaddleSeg)
+
 [![License](https://img.shields.io/badge/license-Apache%202-blue.svg)](LICENSE)
 [![Version](https://img.shields.io/github/release/PaddlePaddle/PaddleSeg.svg)](https://github.com/PaddlePaddle/PaddleSeg/releases)
 ![python version](https://img.shields.io/badge/python-3.6+-orange.svg)
 ![support os](https://img.shields.io/badge/os-linux%2C%20win%2C%20mac-yellow.svg)
+![stars](https://img.shields.io/github/stars/PaddlePaddle/PaddleSeg?color=ccf)
 </div>
 
-
+<div align="center">
+<img src="https://github.com/shiyutang/files/blob/9590ea6bfc36139982ce75b00d3b9f26713934dd/teasor.gif"  width = "800" />  
+</div>
 
 ## <img src="./docs/images/seg_news_icon.png" width="20"/> 最新动态
+* [2022-08-18] :fire: '飞标'--PaddleLabel智能标注工具内测版发布，具有分类、检测、分割等任务的标注功能，详细信息请参考[PaddleLabel](contrib/PaddleLabel/README.md)。
+* [2022-07-20] :fire: PaddleSeg 2.6版本发布！详细发版信息请参考[Release Note](https://github.com/PaddlePaddle/PaddleSeg/releases)。
+  * 发布实时人像分割模型[PP-HumanSeg v2](./contrib/PP-HumanSeg)，推理速度提升45.5%，移动端达到64.26 FPS，分割精度更高、通用型更强、零成本开箱即用。
+  * 发布高性能智能标注工具[EISeg v1.0](./EISeg)正式版，实现一次训练万物可标，加速提升图像、视频、3D医疗影像等领域的分割标注效率。
+  * 发布120多万张ImageNet分割伪标签数据集，以及预训练方法[PSSL](./configs/pssl)，全面提升分割模型在下游任务上的性能。
+  * 开源[PP-Matting](./Matting)代码和预训练模型，并新增5种传统机器学习抠图方法，无需训练可直接使用。
+  * 发布产业级语义分割模型，包括高精度、轻量级和超轻量级系列。
+* [2022-04-20] PaddleSeg 2.5版本发布超轻量级语义分割模型[PP-LiteSeg](./configs/pp_liteseg)，高精度抠图模型PP-Matting，3D医疗影像开发套件[MedicalSeg](./contrib/MedicalSeg)，交互式分割工具EISeg v0.5。
+* [2022-01-20] PaddleSeg 2.4版本发布交互式分割工具EISeg v0.4，超轻量级人像分割方案PP-HumanSeg，以及大规模视频会议数据集[PP-HumanSeg14K](./contrib/PP-HumanSeg/paper.md#pp-humanseg14k-a-large-scale-teleconferencing-video-dataset)。
 
-* [2022-04-20] :fire: PaddleSeg 2.5版本发布！详细发版信息请参考[Release Note](https://github.com/PaddlePaddle/PaddleSeg/releases)。
-  * 发布超轻量级语义分割模型[PP-LiteSeg](./configs/pp_liteseg)以及[技术报告](https://arxiv.org/pdf/2204.02681.pdf)，实现精度和速度的最佳平衡。
-  * 发布高精度trimap-free抠图模型[PP-Matting](./Matting)以及[技术报告](https://arxiv.org/abs/2204.09433)，在Composition-1K和Distinctions-646上实现SOTA指标。
-  * 发布3D医疗影像开发套件[MedicalSeg](./contrib/MedicalSeg)，支持数据预处理、模型训练、模型部署等全流程开发，并提供肺部、椎骨数据上的高精度分割模型。
-  * 升级智能标注工具[EISeg v0.5](./EISeg)版，新增X-Ray胸腔标注、MRI椎骨标注、铝板瑕疵标注。
-  * 新增5个经典分割模型, 包括多个版本的PP-LiteSeg，总模型数达到45个。
-* [2022-01-20] PaddleSeg 2.4版本发布交互式分割工具EISeg v0.4，超轻量级人像分割方案[PP-HumanSeg](./contrib/PP-HumanSeg)，以及大规模视频会议数据集[PP-HumanSeg14K](./contrib/PP-HumanSeg/paper.md#pp-humanseg14k-a-large-scale-teleconferencing-video-dataset)。
-* [2021-10-11] PaddleSeg 2.3版本发布交互式分割工具EISeg v0.3，开源两种[Matting](./contrib/Matting)算法，以及分割高阶功能[模型蒸馏](./slim/distill)和[模型量化](./slim/quant)方案。
 
 
 
 ## <img src="https://user-images.githubusercontent.com/48054808/157795569-9fc77c85-732f-4870-9be0-99a7fe2cff27.png" width="20"/> 简介
 
-**PaddleSeg**是基于飞桨PaddlePaddle的端到端图像分割套件，内置**40+模型算法**及**140+预训练模型**，支持**配置化驱动**和**API调用**开发方式，打通数据标注、模型开发、训练、压缩、部署的**全流程**，提供**语义分割、交互式分割、Matting、全景分割**四大分割能力，助力算法在工业、自动驾驶、医疗、娱乐等场景落地应用。
+**PaddleSeg**是基于飞桨PaddlePaddle的端到端图像分割套件，内置**40+模型算法**及**140+预训练模型**，支持**配置化驱动**和**API调用**开发方式，打通数据标注、模型开发、训练、压缩、部署的**全流程**，提供**语义分割、交互式分割、Matting、全景分割**四大分割能力，助力算法在医疗、工业、遥感、娱乐等场景落地应用。
 
 <div align="center">
-<img src="https://user-images.githubusercontent.com/53808988/130562440-1ea5cbf5-4caf-424c-a9a7-55d56b7d7776.gif"  width = "800" />  
-</div>
-<div align="center">
-<img src="https://user-images.githubusercontent.com/53808988/130562530-ae45c2cd-5dd7-48f0-a080-c0e843eea49d.gif"  width = "800" />  
+<img src="https://github.com/shiyutang/files/raw/main/teasor_new.gif"  width = "800" />  
 </div>
 
 ## <img src="./docs/images/feature.png" width="20"/> 特性
@@ -57,8 +58,8 @@
 
 ## <img src="./docs/images/chat.png" width="20"/> 技术交流
 
-* 如果大家有使用问题、产品建议、功能需求, 可以通过[GitHub Issues](https://github.com/PaddlePaddle/PaddleSeg/issues)提issues。
-* 欢迎大家扫码加入PaddleSeg微信群，和小伙伴们一起交流学习。
+* 欢迎大家加入PaddleSeg的微信群（扫码填写问卷即可入群），和小伙伴们一起交流学习，而且有专门同学给大家解答疑问。
+* 如果大家有使用问题、产品建议、功能需求, 可以通过[GitHub Issues](https://github.com/PaddlePaddle/PaddleSeg/issues)提issues，我们会及时跟进。
 
 <div align="center">
 <img src="https://user-images.githubusercontent.com/48433081/163670184-43cfb3ae-2047-4ba3-8dae-6c02090dd177.png"  width = "200" />  
@@ -84,111 +85,114 @@
         <ul>
         <details><summary><b>语义分割模型</b></summary>
           <ul>
-            <li>PP-LiteSeg :star:</li>
-            <li>DeepLabV3P :star: </li>
-            <li>OCRNet :star: </li>
-            <li>MobileSeg :star: </li>
-            <li>ANN</li>
-            <li>Att U-Net</li>
-            <li>BiSeNetV1</li>
-            <li>BiSeNetV2</li>
-            <li>CCNet</li>
-            <li>DANet</li>
-            <li>DDRNet</li>
-            <li>DecoupledSeg</li>
-            <li>DeepLabV3</li>
-            <li>DMNet</li>
-            <li>DNLNet</li>
-            <li>ESPNetV1</li>
-            <li>ESPNetV2</li>
-            <li>EMANet</li>
-            <li>ENet</li>
-            <li>ENCNet</li>
-            <li>FastFCN</li>
-            <li>Fast-SCNN</li>
-            <li>GCNet</li>
-            <li>GSCNN</li>
-            <li>GINet</li>
-            <li>GloRe</li>
-            <li>HarDNet</li>
-            <li>HRNet-FCN</li>
-            <li>HRNet-Contrast</li>
-            <li>ISANet</li>
-            <li>MLA Transformer</li>
-            <li>PSPNet</li>
-            <li>PP-HumanSeg</li>
-            <li>PortraitNet</li>
-            <li>PointRend</li>
-            <li>PFPNNet</li>
-            <li>SegNet</li>
-            <li>STDCSeg</li>
-            <li>SFNet</li>
-            <li>SETR</li>
-            <li>SegFormer</li>
-            <li>SegMenter</li>
-            <li>U-Net</li>
-            <li>U<sup>2</sup>-Net</li>
-            <li>U-Net++</li>
-            <li>U-Net3+</li>
+            <li><a href="./configs/pp_liteseg">PP-LiteSeg</a> </li>
+            <li><a href="./configs/deeplabv3p">DeepLabV3P</a> </li>
+            <li><a href="./configs/ocrnet">OCRNet</a> </li>
+            <li><a href="./configs/mobileseg">MobileSeg</a> </li>
+            <li><a href="./configs/ann">ANN</a></li>
+            <li><a href="./configs/attention_unet">Att U-Net</a></li>
+            <li><a href="./configs/bisenetv1">BiSeNetV1</a></li>
+            <li><a href="./configs/bisenet">BiSeNetV2</a></li>
+            <li><a href="./configs/ccnet">CCNet</a></li>
+            <li><a href="./configs/danet">DANet</a></li>
+            <li><a href="./configs/ddrnet">DDRNet</a></li>
+            <li><a href="./configs/decoupled_segnet">DecoupledSeg</a></li>
+            <li><a href="./configs/deeplabv3">DeepLabV3</a></li>
+            <li><a href="./configs/dmnet">DMNet</a></li>
+            <li><a href="./configs/dnlnet">DNLNet</a></li>
+            <li><a href="./configs/emanet">EMANet</a></li>
+            <li><a href="./configs/encnet">ENCNet</a></li>
+            <li><a href="./configs/enet">ENet</a></li>
+            <li><a href="./configs/espnetv1">ESPNetV1</a></li>
+            <li><a href="./configs/espnet">ESPNetV2</a></li>
+            <li><a href="./configs/fastfcn">FastFCN</a></li>
+            <li><a href="./configs/fastscnn">Fast-SCNN</a></li>
+            <li><a href="./configs/gcnet">GCNet</a></li>
+            <li><a href="./configs/ginet">GINet</a></li>
+            <li><a href="./configs/glore">GloRe</a></li>
+            <li><a href="./configs/gscnn">GSCNN</a></li>
+            <li><a href="./configs/hardnet">HarDNet</a></li>
+            <li><a href="./configs/fcn">HRNet-FCN</a></li>
+            <li><a href="./configs/hrnet_w48_contrast">HRNet-Contrast</a></li>
+            <li><a href="./configs/isanet">ISANet</a></li>
+            <li><a href="./configs/pfpn">PFPNNet</a></li>
+            <li><a href="./configs/pointrend">PointRend</a></li>
+            <li><a href="./configs/portraitnet">PotraitNet</a></li>
+            <li><a href="./configs/pp_humanseg_lite">PP-HumanSeg-Lite</a></li>
+            <li><a href="./configs/pspnet">PSPNet</a></li>
+            <li><a href="./configs/pssl">PSSL</a></li>
+            <li><a href="./configs/segformer">SegFormer</a></li>
+            <li><a href="./configs/segmenter">SegMenter</a></li>
+            <li><a href="./configs/segmne">SegNet</a></li>
+            <li><a href="./configs/setr">SETR</a></li>
+            <li><a href="./configs/sfnet">SFNet</a></li>
+            <li><a href="./configs/stdcseg">STDCSeg</a></li>
+            <li><a href="./configs/u2net">U<sup>2</sup>Net</a></li>
+            <li><a href="./configs/unet">UNet</a></li>
+            <li><a href="./configs/unet_plusplus">UNet++</a></li>
+            <li><a href="./configs/unet_3plus">UNet3+</a></li>
+            <li><a href="./configs/upernet">UperNet</a></li>
           </ul>
         </details>
         <details><summary><b>交互式分割模型</b></summary>
           <ul>
-            <li>EISeg</li>
+            <li><a href="./EISeg">EISeg</a></li>
             <li>RITM</li>
             <li>EdgeFlow</li>
           </ul>
         </details>
         <details><summary><b>图像抠图模型</b></summary>
           <ul>
-              <li>PP-Matting</li>
-              <li>DIM</li>
-              <li>MODNet</li>
-              <li>PP-HumanMatting</li>
+              <li><a href="./Matting/configs/ppmatting">PP-Matting</a></li>
+              <li><a href="./Matting/configs/dim/dim-vgg16.yml">DIM</a></li>
+              <li><a href="./Matting/configs/modnet/modnet-hrnet_w18.yml">MODNet</a></li>
+              <li><a href="./Matting/configs/human_matting/human_matting-resnet34_vd.yml">PP-HumanMatting</a></li>
           </ul>
         </details>
         <details><summary><b>全景分割</b></summary>
           <ul>
-            <li>Panoptic-DeepLab</li>
+            <li><a href="./contrib/PanopticDeepLab/README_CN.md">Panoptic-DeepLab</a></li>
           </ul>
         </details>
       </td>
       <td>
         <details><summary><b>骨干网络</b></summary>
           <ul>
-            <li>HRNet</li>
-            <li>ResNet</li>
-            <li>STDCNet</li>
-            <li>MobileNetV2</li>
-            <li>MobileNetV3</li>
-            <li>ShuffleNetV2</li>
-            <li>GhostNet</li>
-            <li>LiteHRNet</li>
-            <li>XCeption</li>
-            <li>VIT</li>
-            <li>MixVIT</li>
-            <li>Swin Transformer</li>
+            <li><a href="./paddleseg/models/backbones/hrnet.py">HRNet</a></li>
+            <li><a href="./paddleseg/models/backbones/resnet_cd.py">ResNet</a></li>
+            <li><a href="./paddleseg/models/backbones/stdcnet.py">STDCNet</a></li>
+            <li><a href="./paddleseg/models/backbones/mobilenetv2.py">MobileNetV2</a></li>
+            <li><a href="./paddleseg/models/backbones/mobilenetv3.py">MobileNetV3</a></li>
+            <li><a href="./paddleseg/models/backbones/shufflenetv2.py">ShuffleNetV2</a></li>
+            <li><a href="./paddleseg/models/backbones/ghostnet.py">GhostNet</a></li>
+            <li><a href="./paddleseg/models/backbones/lite_hrnet.py">LiteHRNet</a></li>
+            <li><a href="./paddleseg/models/backbones/xception_deeplab.py">XCeption</a></li>
+            <li><a href="./paddleseg/models/backbones/vision_transformer.py">VIT</a></li>
+            <li><a href="./paddleseg/models/backbones/mix_transformer.py">MixVIT</a></li>
+            <li><a href="./paddleseg/models/backbones/swin_transformer.py">Swin Transformer</a></li>
           </ul>
         </details>
         <details><summary><b>损失函数</b></summary>
           <ul>
-            <li>Cross Entropy</li>
-            <li>Binary CE</li>
-            <li>Bootstrapped CE</li>
-            <li>Point CE</li>
-            <li>OHEM CE</li>
-            <li>Pixel Contrast CE</li>
-            <li>Focal</li>
-            <li>Dice</li>
-            <li>RMI</li>
-            <li>KL</li>
-            <li>L1</li>
-            <li>Lovasz</li>
-            <li>MSE</li>
-            <li>Edge Attention</li>
-            <li>Relax Boundary</li>
-            <li>Connectivity</li>
-            <li>MultiClassFocal</li>
+            <li><a href="./paddleseg/models/losses/binary_cross_entropy_loss.py">Binary CE Loss</a></li>
+            <li><a href="./paddleseg/models/losses/bootstrapped_cross_entropy_loss.py">Bootstrapped CE Loss</a></li>
+            <li><a href="./paddleseg/models/losses/cross_entropy_loss.py">Cross Entropy Loss</a></li>
+            <li><a href="./paddleseg/models/losses/decoupledsegnet_relax_boundary_loss.py">Relax Boundary Loss</a></li>
+            <li><a href="./paddleseg/models/losses/detail_aggregate_loss.py">Detail Aggregate Loss</a></li>
+            <li><a href="./paddleseg/models/losses/dice_loss.py">Dice Loss</a></li>
+            <li><a href="./paddleseg/models/losses/edge_attention_loss.py">Edge Attention Loss</a></li>
+            <li><a href="./paddleseg/models/losses/focal_loss.py">Focal Loss</a></li>
+            <li><a href="./paddleseg/models/losses/binary_cross_entropy_loss.py">MultiClassFocal Loss</a></li>
+            <li><a href="./paddleseg/models/losses/gscnn_dual_task_loss.py">GSCNN Dual Task Loss</a></li>
+            <li><a href="./paddleseg/models/losses/kl_loss.py">KL Loss</a></li>
+            <li><a href="./paddleseg/models/losses/l1_loss.py">L1 Loss</a></li>
+            <li><a href="./paddleseg/models/losses/lovasz_loss.py">Lovasz Loss</a></li>
+            <li><a href="./paddleseg/models/losses/mean_square_error_loss.py">MSE Loss</a></li>
+            <li><a href="./paddleseg/models/losses/ohem_cross_entropy_loss.py">OHEM CE Loss</a></li>
+            <li><a href="./paddleseg/models/losses/pixel_contrast_cross_entropy_loss.py">Pixel Contrast CE Loss</a></li>
+            <li><a href="./paddleseg/models/losses/point_cross_entropy_loss.py">Point CE Loss</a></li>
+            <li><a href="./paddleseg/models/losses/rmi_loss.py">RMI Loss</a></li>
+            <li><a href="./paddleseg/models/losses/semantic_connectivity_loss.py">Connectivity Loss</a></li>
           </ul>
         </details>
         <details><summary><b>评估指标</b></summary>
@@ -204,18 +208,20 @@
       <td>
         <details><summary><b>支持数据集</b></summary>
           <ul>
-            <li>Cityscapes</li>
-            <li>Pascal VOC</li>
-            <li>ADE20K</li>  
-            <li>Pascal Context</li>  
-            <li>COCO Stuff</li>
-            <li>SUPERVISELY</li>
-            <li>EG1800</li>
-            <li>CHASE_DB1</li>
-            <li>HRF</li>
-            <li>DRIVE</li>
-            <li>STARE</li>
-            <li>PP-HumanSeg14K</li>
+            <li><a href="./paddleseg/datasets/ade.py">ADE20K</a></li>  
+            <li><a href="./paddleseg/datasets/cityscapes.py">Cityscapes</a></li>
+            <li><a href="./paddleseg/datasets/cocostuff.py">COCO Stuff</a></li>
+            <li><a href="./paddleseg/datasets/voc.py">Pascal VOC</a></li>
+            <li><a href="./paddleseg/datasets/eg1800.py">EG1800</a></li>
+            <li><a href="./paddleseg/datasets/pascal_context.py">Pascal Context</a></li>  
+            <li><a href="./paddleseg/datasets/supervisely.py">SUPERVISELY</a></li>
+            <li><a href="./paddleseg/datasets/optic_disc_seg.py">OPTIC DISC SEG</a></li>
+            <li><a href="./paddleseg/datasets/chase_db1.py">CHASE_DB1</a></li>
+            <li><a href="./paddleseg/datasets/hrf.py">HRF</a></li>
+            <li><a href="./paddleseg/datasets/drive.py">DRIVE</a></li>
+            <li><a href="./paddleseg/datasets/stare.py">STARE</a></li>
+            <li><a href="./paddleseg/datasets/pp_humanseg14k.py">PP-HumanSeg14K</a></li>
+            <li><a href="./paddleseg/datasets/pssl.py">PSSL</a></li>
           </ul>
         </details>
         <details><summary><b>数据增强</b></summary>
@@ -243,29 +249,36 @@
         </details>
       </td>
       <td>
+        <details><summary><b>模型选型工具</b></summary>
+          <ul>
+              <li><a href="./configs/smrt">PaddleSMRT</a></li>
+          </ul>
+        </details>
         <details><summary><b>人像分割模型</b></summary>
           <ul>
-              <li>PP-HumanSeg</li>
+              <li><a href="./contrib/PP-HumanSeg/README_cn.md">PP-HumanSegV1</a></li>
+              <li><a href="./contrib/PP-HumanSeg/README_cn.md">PP-HumanSegV2</a></li>
           </ul>
         </details>
         <details><summary><b>3D医疗分割模型</b></summary>
           <ul>
-            <li>VNet</li>
+            <li><a href="./contrib/MedicalSeg/configs/lung_coronavirus">VNet</a></li>
+            <li><a href="./contrib/MedicalSeg/configs/msd_brain_seg">UNETR</a></li>
           </ul>
         </details>
         <details><summary><b>Cityscapes打榜模型</b></summary>
           <ul>
-              <li>HMSA</li>
+              <li><a href="./contrib/CityscapesSOTA">HMSA</a></li>
           </ul>
         </details>
         <details><summary><b>CVPR冠军模型</b></summary>
           <ul>
-              <li>MLA Transformer</li>
+              <li><a href="./contrib/AutoNUE">MLA Transformer</a></li>
           </ul>
         </details>
         <details><summary><b>领域自适应</b></summary>
           <ul>
-              <li>PixMatch</li>
+              <li><a href="./contrib/DomainAdaptation">PixMatch</a></li>
           </ul>
         </details>
       </td>  
@@ -290,7 +303,7 @@
 | DeepLabV3      | ResNet101_OS8    | 80.85                 | 3.2       | [yml](./configs/deeplabv3/)   |
 | DeepLabV3      | ResNet50_OS8     | 80.36                 | 6.58      | [yml](./configs/deeplabv3p/)  |
 | DeepLabV3      | ResNet101_OS8    | 81.10                 | *3.94*    | [yml](./configs/deeplabv3p/)  |
-| **OCRNet**     | HRNet_w18        | 80.67                 | 13.26     | [yml](./configs/ocrnet/)      |
+| OCRNet :star2:    | HRNet_w18        | 80.67                 | 13.26     | [yml](./configs/ocrnet/)      |
 | OCRNet         | HRNet_w48        | 82.15                 | 6.17      | [yml](./configs/ocrnet/)      |
 | CCNet          | ResNet101_OS8    | 80.95                 | 3.24      | [yml](./configs/ccnet/)       |
 
@@ -308,8 +321,8 @@
 
 | 模型名称  | 骨干网络   | Cityscapes精度mIoU(%) |  V100 TRT推理速度(FPS) | 骁龙855推理速度(FPS) |  配置文件 |
 |:-------- |:--------:|:---------------------:|:---------------------:|:-----------------:|:--------:|
-| **PP-LiteSeg**      | STDC1         | 77.04               | 69.82           | 17.22       | [yml](./configs/pp_liteseg/)  |
-| **PP-LiteSeg**      | STDC2         | 79.04               | 54.53           | 11.75       | [yml](./configs/pp_liteseg/)  |
+| PP-LiteSeg :star2:    | STDC1         | 77.04               | 69.82           | 17.22      | [yml](./configs/pp_liteseg/)  |
+| PP-LiteSeg :star2:      | STDC2         | 79.04               | 54.53           | 11.75       | [yml](./configs/pp_liteseg/)  |
 | BiSeNetV1           | -             | 75.19               | 14.67           | 1.53      |[yml](./configs/bisenetv1/)  |
 | BiSeNetV2           | -             | 73.19               | 61.83           | 13.67       |[yml](./configs/bisenet/)  |
 | STDCSeg             | STDC1         | 74.74               | 62.24           | 14.51       |[yml](./configs/stdcseg/)  |
@@ -333,7 +346,7 @@
 | 模型名称  | 骨干网络   | Cityscapes精度mIoU(%) |  V100 TRT推理速度(FPS)  | 骁龙855推理速度(FPS)|  配置文件 |
 |:-------- |:--------:|:---------------------:|:---------------------:|:-----------------:|:--------:|
 | MobileSeg      | MobileNetV2              | 73.94                 | 67.57          | 27.01   | [yml](./configs/mobileseg/)  |
-| **MobileSeg**  | MobileNetV3              | 73.47                 | 67.39          | 32.90   | [yml](./configs/mobileseg/)  |
+| MobileSeg :star2:  | MobileNetV3              | 73.47                 | 67.39          | 32.90   | [yml](./configs/mobileseg/)  |
 | MobileSeg      | Lite_HRNet_18            | 70.75                 | *10.5*         | 13.05   | [yml](./configs/mobileseg/)  |
 | MobileSeg      | ShuffleNetV2_x1_0        | 69.46                 | *37.09*        | 39.61  | [yml](./configs/mobileseg/)  |
 | MobileSeg      | GhostNet_x1_0            | 71.88                 | *35.58*        | 38.74  | [yml](./configs/mobileseg/)  |
@@ -346,15 +359,18 @@
 
 ## <img src="./docs/images/teach.png" width="20"/> 使用教程
 
-### 基础教程
+**入门教程**
 
 * [安装说明](./docs/install_cn.md)
 * [快速体验](./docs/quick_start_cn.md)
+* [20分钟快速上手PaddleSeg](./docs/whole_process_cn.md)
+
+**基础教程**
+
 * 准备数据
-   * [标注数据的准备](./docs/data/marker/marker_cn.md)
-   * [数据标注教程](./docs/data/transform/transform_cn.md)
-   * [自定义数据集](./docs/data/custom/data_prepare_cn.md)
-* [准备配置文件](./docs/prepare_cfg_cn.md)
+   * [准备公开数据集](./docs/data/pre_data_cn.md)
+   * [准备自定义数据集](./docs/data/marker/marker_cn.md)
+   * [EISeg 数据标注](./EISeg)
 
 * [模型训练](/docs/train/train_cn.md)
 * [模型评估](./docs/evaluation/evaluate/evaluate_cn.md)
@@ -371,19 +387,21 @@
     * [Paddle Serving部署](./docs/deployment/serving/serving.md)
     * [Paddle JS部署](./docs/deployment/web/web_cn.md)
     * [推理Benchmark](./docs/deployment/inference/infer_benchmark_cn.md)
-### 高阶教程
+
+**进阶教程**
+
+* [训练技巧](./docs/train/train_tricks_cn.md)
 
 * 模型压缩
-    * [量化](./docs/slim/quant/quant_cn.md)
-    * [蒸馏](./docs/slim/distill/distill_cn.md)
-    * [裁剪](./docs/slim/prune/prune_cn.md)
+    * [量化](./docs/deployment/slim/quant/quant_cn.md)
+    * [蒸馏](./docs/deployment/slim/distill/distill_cn.md)
+    * [裁剪](./docs/deployment/slim/prune/prune_cn.md)
 
-*  API使用教程
-    * [API文档说明](./docs/apis/README_CN.md)
-    * [API应用案例](./docs/api_example_cn.md)
-*  重要模块说明
-    * [数据增强](./docs/module/data/data_cn.md)
-    * [Loss说明](./docs/module/loss/losses_cn.md)
+* [常见问题汇总](./docs/faq/faq/faq_cn.md)
+
+**欢迎贡献**
+
+* [API文档](./docs/apis/README_CN.md)
 *  二次开发教程
     * [配置文件详解](./docs/design/use/use_cn.md)
     * [如何创造自己的模型](./docs/design/create/add_new_model_cn.md)
@@ -391,11 +409,7 @@
     * [提交PR说明](./docs/pr/pr/pr_cn.md)
     * [模型PR规范](./docs/pr/pr/style_cn.md)
 
-* [静态图版本](./docs/static/static_cn.md)
-* [技术交流](#技术交流)
-* [常见问题汇总](./docs/faq/faq/faq_cn.md)
-
-## <img src="./docs/images/anli.png" width="20"/> 实践案例
+## <img src="./docs/images/anli.png" width="20"/> 特色能力
 
 - [交互式分割](./EISeg)
 - [图像抠图](./Matting)
@@ -406,10 +420,15 @@
 - [CVPR冠军模型](./contrib/AutoNUE)
 - [领域自适应](./contrib/DomainAdaptation)
 
-## 第三方教程推荐
+## <img src="https://user-images.githubusercontent.com/48054808/157801371-9a9a8c65-1690-4123-985a-e0559a7f9494.png" width="20"/> 产业实践范例
 
-* [图像分割套件PaddleSeg全面解析系列](https://blog.csdn.net/txyugood/article/details/111029854)
-* [PaddleSeg学习笔记: 人像分割 HumanSeg](https://blog.csdn.net/libo1004/article/details/118809026)
+* [使用PP-HumanSegV2进行人像分割](https://aistudio.baidu.com/aistudio/projectdetail/4504982?contributionType=1)
+* [使用PP-HumanSegV1进行人像分割](https://aistudio.baidu.com/aistudio/projectdetail/2189481?channelType=0&channel=0)
+* [使用PP-LiteSeg进行遥感道路分割](https://aistudio.baidu.com/aistudio/projectdetail/3873145?contributionType=1)
+* [PaddleSeg实战之小数据集3D椎骨分割](https://aistudio.baidu.com/aistudio/projectdetail/3878920)
+* [PaddleSeg实战之车道线图像分割](https://aistudio.baidu.com/aistudio/projectdetail/1752986?channelType=0&channel=0)
+* [PaddleSeg动态图API使用教程](https://aistudio.baidu.com/aistudio/projectdetail/1339458?channelType=0&channel=0)
+* [10分钟上手PaddleSeg](https://aistudio.baidu.com/aistudio/projectdetail/1672610?channelType=0&channel=0)
 
 ## 许可证书
 本项目的发布受Apache 2.0 license许可认证。

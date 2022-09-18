@@ -1,0 +1,55 @@
+batch_size: 4
+iters: 300000
+
+train_dataset:
+  type: MattingDataset
+  dataset_root: data/matting/Distinctions-646
+  train_file: train.txt
+  transforms:
+    - type: LoadImages
+    - type: Padding
+      target_size: [512, 512]
+    - type: RandomCrop
+      crop_size: [[512, 512],[640, 640], [800, 800]]
+    - type: Resize
+      target_size: [512, 512]
+    - type: RandomDistort
+    - type: RandomBlur
+      prob: 0.1
+    - type: RandomHorizontalFlip
+    - type: Normalize
+  mode: train
+  separator: '|'
+
+val_dataset:
+  type: MattingDataset
+  dataset_root: data/matting/Distinctions-646
+  val_file: val.txt
+  transforms:
+    - type: LoadImages
+    - type: LimitShort
+      max_short: 1536
+    - type: ResizeToIntMult
+      mult_int: 32
+    - type: Normalize
+  mode: val
+  get_trimap: False
+  separator: '|'
+
+model:
+  type: PPMatting
+  backbone:
+    type: HRNet_W48
+    pretrained: https://bj.bcebos.com/paddleseg/dygraph/hrnet_w48_ssld.tar.gz
+  pretrained: Null
+
+optimizer:
+  type: sgd
+  momentum: 0.9
+  weight_decay: 4.0e-5
+
+lr_scheduler:
+  type: PolynomialDecay
+  learning_rate: 0.01
+  end_lr: 0
+  power: 0.9

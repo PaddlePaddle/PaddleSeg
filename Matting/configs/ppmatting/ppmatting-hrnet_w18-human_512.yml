@@ -1,0 +1,44 @@
+_base_: 'ppmatting-hrnet_w48-distinctions.yml'
+
+batch_size: 4
+iters: 200000
+
+train_dataset:
+  type: MattingDataset
+  dataset_root: data/PPM-100
+  train_file: train.txt
+  transforms:
+    - type: LoadImages
+    - type: LimitShort
+      max_short: 512
+    - type: RandomCrop
+      crop_size: [512, 512]
+    - type: RandomDistort
+    - type: RandomBlur
+      prob: 0.1
+    - type: RandomNoise
+      prob: 0.5
+    - type: RandomReJpeg
+      prob: 0.2
+    - type: RandomHorizontalFlip
+    - type: Normalize
+  mode: train
+
+val_dataset:
+  type: MattingDataset
+  dataset_root: data/PPM-100
+  val_file: val.txt
+  transforms:
+    - type: LoadImages
+    - type: LimitShort
+      max_short: 512
+    - type: ResizeToIntMult
+      mult_int: 32
+    - type: Normalize
+  mode: val
+  get_trimap: False
+
+model:
+  backbone:
+    type: HRNet_W18
+    pretrained: https://bj.bcebos.com/paddleseg/dygraph/hrnet_w18_ssld.tar.gz

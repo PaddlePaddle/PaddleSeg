@@ -2,292 +2,414 @@ English | [简体中文](README_cn.md)
 
 # PP-HumanSeg
 
-Human segmentation is a high-frequency application in the field of image segmentation. PaddleSeg has launched a series of human segmentation models PP-HumanSeg trained on large-scale human data, including self-developed ultra lightweight model PP-HumanSeg-Lite, lightweight model PP-HumanSeg-Mobile and high-precision model PP-HumanSeg-Server, which meet the needs of multiple use scenarios on the web, mobile and server. Among them, PP-HumanSeg-Lite adopts lightweight network design, connectivity learning strategy, data composition and other strategies to realize the SOTA balance of volume, speed and accuracy (parameter amount 137k, speed up to 95fps, mIoU up to 93%).
+**Content**
+- 1 Introduction
+- 2 News
+- 3 PP-HumanSeg Models
+- 4 Quick Start
+- 5 Training and Finetuning
+- 6 Deployment
 
-We provide full-process application guides from training to deployment, as well as video streaming segmentation and background replacement tutorials. Based on Paddle.js, you can experience the effects of [Portrait Snapshot](https://paddlejs.baidu.com/humanseg), [Video Background Replacement and Barrage Penetration](https://www.paddlepaddle.org.cn/paddlejs).
+
+## 1 Introduction
+
+Human segmentation is a high-frequency application in the field of image segmentation.
+Generally, human segentation can be classified as portrait segmentation and general human segmentation.
+
+For portrait segmentation and general human segmentation, PaddleSeg releases the PP-HumanSeg models, which has **good performance in accuracy, inference speed and robustness**. Besides, we can deploy PP-HumanSeg models to products without training
+Besides, PP-HumanSeg models can be deployed to products at zero cost, and it also support fine-tuning to achieve better performance.
+
+The following is demonstration videos (due to the video is large, the loading will be slightly slow) .We provide full-process application guides from training to deployment, as well as video streaming segmentation and background replacement tutorials. Based on Paddle.js, you can experience the effects of [Portrait Snapshot](https://paddlejs.baidu.com/humanseg), [Video Background Replacement and Barrage Penetration](https://www.paddlepaddle.org.cn/paddlejs).
 
 <p align="center">
-<img src="https://user-images.githubusercontent.com/30695251/149886667-f47cab88-e81a-4fd7-9f32-fbb34a5ed7ce.png"  height="300">        <img src="https://user-images.githubusercontent.com/30695251/149887482-d1fcd5d3-2cce-41b5-819b-bfc7126b7db4.png"  height="300">
+<img src="https://github.com/juncaipeng/raw_data/blob/master/images/portrait_bg_replace_1.gif" height="200">
+<img src="https://github.com/LutaoChu/transfer_station/raw/master/conference.gif" height="200">
 </p>
 
-
-## Updates
+## 2 News
+- [2022-7] Release PP-HumanSeg V2 models. **The inference speed of portrait segmentation model is increased by 45.5%, mIoU is increased by 3.03%, and the visualization result is better**. The general human segmentation models also have improvement in accuracy and inference speed.
 - [2022-1] Human segmentation paper [PP-HumanSeg](./paper.md) was published in WACV 2022 Workshop, and open-sourced Connectivity Learning (SCL) method and large-scale video conferencing dataset.
-- [2021-7] The COVID-19 epidemic has catalyzed the demand for remote office, and video conferencing products have exploded rapidly. Baidu Video Conference can realize one-second joining on the web side. The virtual background function adopts our PP-HumanSeg-Lite model to realize real-time background replacement and background blur function, protect user privacy, and increase the fun in the meeting.
+- [2021-7] Baidu Video Conference can realize one-second joining on the web side. The virtual background function adopts our portrait segmentation model to realize real-time background replacement and background blur function, which protects user privacy and increases the fun in the meeting.
+- [2021-7] Release PP-HumanSeg V1 models, which has a portrait segmentation model and three general human segmentation models
 
 <p align="center">
-<img src="https://github.com/LutaoChu/transfer_station/raw/master/conference.gif" width="60%" height="60%">
+<img src="https://user-images.githubusercontent.com/30695251/149886667-f47cab88-e81a-4fd7-9f32-fbb34a5ed7ce.png"  height="200">        <img src="https://user-images.githubusercontent.com/30695251/149887482-d1fcd5d3-2cce-41b5-819b-bfc7126b7db4.png"  height="200">
 </p>
 
-## Content
-- [Human segmentation model](#Human-segmentation-model)
-  - [General human segmentation](#General-Human-Segmentation)
-  - [Portrait segmentation](#Portrait-segmentation)
-- [Install](#install)
-- [Quick experience](#Quick-experience)
-  - [Video streaming human segmentation](#Video-streaming-human-segmentation)
-  - [Video stream background replacement](#Video-stream-background-replacement)
-  - [Online running tutorial](#Online-running-tutorial)
-- [Training evaluation prediction demo](#Training-evaluation-prediction-demo)
-- [Model export](#Model-export)
-- [Web deployment](#Web-deployment)
-- [Mobile deployment](#mobile-deployment)
 
-## Human segmentation model
-### General human segmentation
-For general human segmentation tasks, PP-HumanSeg has opened three human models trained on large-scale human data to meet the needs of various usage scenarios on the server, mobile and web.
+## 3 PP-HumanSeg Models
 
-| Model | Model Description | Checkpoint | Inference Model |
-| --- | --- | --- | ---|
-| PP-HumanSeg-Server | High-precision model, suitable for server-side GPU and complex background scenes, model structure is Deeplabv3+/ResNet50, input size (512, 512) |[server_ckpt](https://paddleseg.bj.bcebos.com/dygraph/humanseg/train/deeplabv3p_resnet50_os8_humanseg_512x512_100k.zip) | [server_inference](https://paddleseg.bj.bcebos.com/dygraph/humanseg/export/deeplabv3p_resnet50_os8_humanseg_512x512_100k_with_softmax.zip) |
-| PP-HumanSeg-Mobile | Lightweight model, suitable for front camera scenarios on mobile or server CPU, model structure is HRNet_w18_samll_v1, input size (192, 192) | [mobile_ckpt](https://paddleseg.bj.bcebos.com/dygraph/humanseg/train/fcn_hrnetw18_small_v1_humanseg_192x192.zip) | [mobile_inference](https://paddleseg.bj.bcebos.com/dygraph/humanseg/export/fcn_hrnetw18_small_v1_humanseg_192x192_with_softmax.zip) |
-| PP-HumanSeg-Lite | Ultra-lightweight model, suitable for real-time segmentation scenarios on the web or mobile, such as mobile phone selfies, web video conferences, the model structure is [Paddle self-developed model](../../configs/pp_humanseg_lite/README.md), input size (192, 192) | [lite_ckpt](https://paddleseg.bj.bcebos.com/dygraph/humanseg/train/pphumanseg_lite_generic_192x192.zip) | [lite_inference](https://paddleseg.bj.bcebos.com/dygraph/humanseg/export/pphumanseg_lite_generic_192x192_with_softmax.zip) |
+### 3.1 Portrait Segmentation Models
 
+We release self-developed portrait segmentation models for real-time applications such as mobile video and web conferences. These models can be directly integrated into products at zero cost.
 
-NOTE:
-* Where Checkpoint is the model weight, which is used in the Fine-tuning scene.
+PP-HumanSegV1-Lite protrait segmentation model: It has good performance in accuracy and model size and the model architecture in [url](../../configs/pp_humanseg_lite/).
 
-* Inference Model is a predictive deployment model, including `model.pdmodel` computational graph structure, `model.pdiparams` model parameters and `deploy.yaml` basic model configuration information.
+PP-HumanSegV2-Lite protrait segmentation model: **The inference speed is increased by 45.5%, mIoU is increased by 3.03%, and the visualization result is better** compared to v1 model. These improvements are relayed on the following innovations.
+  * Higher segmentation accuracy: We use the super lightweight models ([url](../../configs/mobileseg/)) released in PaddleSeg recently. We choose MobileNetV3 as backbone and design the multi-scale feature aggregation model.
+  * Faster inference speed: We reduce the input resolution, which reduces the inference time and increases the receptive field.
+  * Better robustness: Based on the idea of transfer learning, we first pretrain the model on a large general human segmentation dataset, and then finetune it on a small portrait segmentation dataset.
 
-* Among them, the Inference Model is suitable for the prediction deployment of CPU and GPU on the server, and is suitable for the deployment of end devices such as mobile terminals through Paddle Lite. For more Paddle Lite deployment instructions, see [Paddle Lite Documentation](https://paddle-lite.readthedocs.io/zh/latest/)
+| Model Name | Best Input Shape | mIou(%) | Inference Time on Arm CPU(ms) | Modle Size(MB) | Config File | Links |
+| --- | --- | --- | ---| --- | --- | --- |
+| PP-HumanSegV1-Lite | 398x224 | 93.60 | 29.68 | 2.3 | [cfg](./configs/portrait_pp_humansegv1_lite.yml) | [Checkpoint](https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/portrait_pp_humansegv1_lite_398x224_pretrained.zip) \| [Inference Model (Argmax)](https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/portrait_pp_humansegv1_lite_398x224_inference_model.zip) \| [Inference Model (Softmax)](https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/portrait_pp_humansegv1_lite_398x224_inference_model_with_softmax.zip) |
+| PP-HumanSegV2-Lite | 256x144 | 96.63 | 15.86 | 5.4 | [cfg](./configs/portrait_pp_humansegv2_lite.yml) | [Checkpoint](https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/portrait_pp_humansegv2_lite_256x144_smaller/portrait_pp_humansegv2_lite_256x144_pretrained.zip) \| [Inference Model (Argmax)](https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/portrait_pp_humansegv2_lite_256x144_smaller/portrait_pp_humansegv2_lite_256x144_inference_model.zip) \| [Inference Model (Softmax)](https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/portrait_pp_humansegv2_lite_256x144_smaller/portrait_pp_humansegv2_lite_256x144_inference_model_with_softmax.zip) |
 
-#### Model performance
+<details><summary>Note:</summary>
 
-| Model | Input Size | FLOPs | Parameters | Latency | Model Size |
-|-|-|-|-|-|-|
-| PP-HumanSeg-Server | 512x512 | 114G | 26.8M | 37.96ms | 103Mb |
-| PP-HumanSeg-Mobile | 192x192 | 584M | 1.54M | 13.17ms | 5.9Mb |
-| PP-HumanSeg-Lite | 192x192 | 121M | 137K | 10.51ms | 543Kb |
+* Test the segmentation accuracy (mIoU): We test the above models on PP-HumanSeg-14K dataset with the best input shape.
+* Test the inference time: Use [PaddleLite](https://www.paddlepaddle.org.cn/lite), xiaomi9 (Snapdragon 855 CPU), single thread, the best input shape.
+* For the best input shape, the ratio of height and width is 16:9, which is the same as the camera of mobile phone and laptop.
+* The checkpoint is the pretrained weight, which is used for finetune.
+* Inference model is used for deployment.
+* Inference Model (Argmax): The last operation of inference model is argmax, so the output has single channel.
+* Inference Model (Softmax): The last operation of inerence model is softmax, so the output has two channels.
+</details>
 
-Test environment: Nvidia Tesla V100 single card.
+<details><summary>Usage:</summary>
 
-### Portrait segmentation
-For the portrait segmentation task, PP-HumanSeg has opened a portrait segmentation model, which has been applied to Baidu Video Conferencing.
-
-| Model | Model Description | Checkpoint | Inference Model |
-| --- | --- | --- | ---|
-| PP-HumanSeg-Lite | Ultra-lightweight model, suitable for real-time segmentation scenarios on the web or mobile, such as mobile phone selfies, web video conferences, the model structure is [Paddle self-developed model](../../configs/pp_humanseg_lite/README.md), suitable for landscape size input, recommended input size (398, 224) | [lite_portrait_ckpt](https://paddleseg.bj.bcebos.com/dygraph/ppseg/ppseg_lite_portrait_398x224.tar.gz) | [lite_portrait_inference](https://paddleseg.bj.bcebos.com/dygraph/ppseg/ppseg_lite_portrait_398x224_with_softmax.tar.gz) |
-
-#### Model performance
-
-| Model | Input Size | FLOPs | Parameters | Latency | Model Size |
-|-|-|-|-|-|-|
-| PP-HumanSeg-Lite | 398x224 | 266M | 137K | 23.49ms | 543Kb |
-| PP-HumanSeg-Lite | 288x162 | 138M | 137K | 15.62ms | 543Kb |
-
-Test environment: Use Paddle.js converter to optimize the graph structure, deploy on the web side, the GPU is AMD Radeon Pro 5300M 4 GB.
+* Portrait segmentation model can be directly integrated into products at zero cost.
+* For mobile phone, there are horizontal and vertical screen. We need to rotate the image to keep the human direction always be vertical.
+</details>
 
 
-## Install
+### 3.2 General Human Segmentation Models
 
-#### 1. Install PaddlePaddle
+For general human segmentation task, we first build a big human segmentation dataset, then use the SOTA model in PaddleSeg for training, finally release several general human segmentation models.
 
-Version requirements
+PP-HumanSegV2-Lite general human segmentation model: It uses the super lightweight models ([url](../../configs/mobileseg/)) released in PaddleSeg recently. Compared to V1 model, the mIoU is improved by 6.5%.
 
-* PaddlePaddle >= 2.0.2
+PP-HumanSegV2-Mobile general human segmentation model: It uses the self-develop [PP-LiteSeg](../../configs/pp_liteseg/) model. Compared to V1 model, the mIoU is improved by 1.49% and the inference time is reduced by 5.7%.
 
+| Model Name | Best Input Shape | mIou(%) | Inference Time on ARM CPU(ms) | Inference Time on Nvidia GPU(ms) | Config File | Links |
+| ----- | ---------- | ---------- | -----------------| ----------------- | ------- | ------- |
+| PP-HumanSegV1-Lite   | 192x192 | 86.02 | 12.3  | -    | [cfg](./configs/human_pp_humansegv1_lite.yml)   | [Checkpoint](https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/human_pp_humansegv1_lite_192x192_pretrained.zip) \| [Inference Model (Argmax)](https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/human_pp_humansegv1_lite_192x192_inference_model.zip) \| [Inference Model (Softmax)](https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/human_pp_humansegv1_lite_192x192_inference_model_with_softmax.zip) |
+| PP-HumanSegV2-Lite   | 192x192 | 92.52 | 15.3  | -    | [cfg](./configs/human_pp_humansegv2_lite.yml)   | [Checkpoint](https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/human_pp_humansegv2_lite_192x192_pretrained.zip) \| [Inference Model (Argmax)](https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/human_pp_humansegv2_lite_192x192_inference_model.zip) \| [Inference Model (Softmax)](https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/human_pp_humansegv2_lite_192x192_inference_model_with_softmax.zip) |
+| PP-HumanSegV1-Mobile | 192x192 | 91.64 |  -    | 2.83 | [cfg](./configs/human_pp_humansegv1_mobile.yml) | [Checkpoint](https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/human_pp_humansegv1_mobile_192x192_pretrained.zip) \| [Inference Model (Argmax)](https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/human_pp_humansegv1_mobile_192x192_inference_model.zip) \| [Inference Model (Softmax)](https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/human_pp_humansegv1_mobile_192x192_inference_model_with_softmax.zip) |
+| PP-HumanSegV2-Mobile | 192x192 | 93.13 |  -    | 2.67 | [cfg](./configs/human_pp_humansegv2_mobile.yml) | [Checkpoint](https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/human_pp_humansegv2_mobile_192x192_pretrained.zip) \| [Inference Model (Argmax)](https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/human_pp_humansegv2_mobile_192x192_inference_model.zip) \| [Inference Model (Softmax)](https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/human_pp_humansegv2_mobile_192x192_inference_model_with_softmax.zip) |
+| PP-HumanSegV1-Server | 512x512 | 96.47 |  -    | 24.9 | [cfg](./configs/human_pp_humansegv1_server.yml) | [Checkpoint](https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/human_pp_humansegv1_server_512x512_pretrained.zip) \| [Inference Model (Argmax)](https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/human_pp_humansegv1_server_512x512_inference_model.zip) \| [Inference Model (Softmax)](https://paddleseg.bj.bcebos.com/dygraph/pp_humanseg_v2/human_pp_humansegv1_server_512x512_inference_model_with_softmax.zip) |
+
+
+<details><summary>Note:</summary>
+
+* Test the segmentation accuracy (mIoU): After training the models on big human segmentation dataset, we test these models on small Supervisely Person dataset ([url](https://paddleseg.bj.bcebos.com/humanseg/data/mini_supervisely.zip)).
+* Test the inference time: Use [PaddleLite](https://www.paddlepaddle.org.cn/lite), xiaomi9 (Snapdragon 855 CPU), single thread, the best input shape.
+* The checkpoint is the pretrained weight, which is used for finetune.
+* Inference model is used for deployment.
+* Inference Model (Argmax): The last operation of inference model is argmax, so the output has single channel.
+* Inference Model (Softmax): The last operation of inerence model is softmax, so the output has two channels.
+</details>
+
+<details><summary>Usage:</summary>
+
+* Since the image of general human segmentation is various, you should evaluate the release model according to the actual scene.
+* If the segmentation accuracy is not satisfied, you should annotate images and finetune the model with pretrained weights.
+</details>
+
+
+## 4 Quick Start
+
+### 4.1 Prepare Environment
+
+Install PaddlePaddle:
+* PaddlePaddle >= 2.2.0
 * Python >= 3.7+
 
-Due to the high computational cost of the image segmentation model, it is recommended to use PaddleSeg under the GPU version of PaddlePaddle. It is recommended to install a CUDA environment above 10.0. Please refer to the [PaddlePaddle official website](https://www.paddlepaddle.org.cn/install/quick?docurl=/documentation/docs/zh/install/pip/linux-pip.html) for the installation tutorial.
+Due to the high computational cost of the image segmentation model, it is recommended to use PaddleSeg under the GPU version of PaddlePaddle. Please refer to the [PaddlePaddle official website](https://www.paddlepaddle.org.cn/install/quick?docurl=/documentation/docs/zh/install/pip/linux-pip.html) for the installation tutorial.
 
 
-#### 2. Install PaddleSeg package
-
-```shell
-pip install paddleseg
-```
-
-#### 3. Download PaddleSeg repository
+Run the following command to download PaddleSegn and install the required libs.
 
 ```shell
 git clone https://github.com/PaddlePaddle/PaddleSeg
+cd PaddleSeg
+pip install -r requirements.txt
 ```
 
-## Quick experience
-All the following commands are executed in the `PaddleSeg/contrib/PP-HumanSeg` directory.
+
+
+### 4.2 Prepare Models and Data
+
+We run following commands under `PaddleSeg/contrib/PP-HumanSeg`.
+
 ```shell
 cd PaddleSeg/contrib/PP-HumanSeg
 ```
 
-### Download Inference Model
+Download the inference models and save them in `inference_models`.
 
-Execute the following script to quickly download all Inference Models
 ```bash
-python export_model/download_export_model.py
+python src/download_inference_models.py
 ```
 
-### Download test data
-We provide some test data, randomly select a small part from the human segmentation dataset [Supervise.ly Person](https://app.supervise.ly/ecosystem/projects/persons) and convert it into a PaddleSeg data format that can be directly loaded , hereinafter referred to as mini_supervisely, and also provides the test video `video_test.mp4` of the front camera of the mobile phone. Quick download by running the following code:
+Download and save test data in `data`.
 
 ```bash
-python data/download_data.py
+python src/download_data.py
 ```
 
-### Video streaming human segmentation
-```bash
-# Real-time segmentation processing through computer camera
-python bg_replace.py \
---config export_model/ppseg_lite_portrait_398x224_with_softmax/deploy.yaml
+### 4.3 Portrait Segmentation
 
-# Process the portrait video
-python bg_replace.py \
---config export_model/deeplabv3p_resnet50_os8_humanseg_512x512_100k_with_softmax/deploy.yaml \
---video_path data/video_test.mp4
+We use `src/seg_demo.py` to show the portrait segmentation and background replacement.
+
+The input of `src/seg_demo.py` can be image, video and camera. The input params are as following.
+
+| Params  | Detail | Type | Required | Default Value |
+| -    | -    | -   |  -       | -     |
+| config          | The path of `deploy.yaml` in infernece model      | str | True | - |
+| img_path        | The path of input image                           | str | False  | - |
+| video_path      | The path of input video                           | str | False  | - |
+| bg_img_path     | The path of background image                      | str | False  | - |
+| bg_video_path   | The path of background video                      | str | False  | - |
+| save_dir        | The directory for saveing output image and video  | str | False  | `./output` |
+| vertical_screen | Indicate the input image and video is vertical screen | store_true | False | False |
+| use_post_process| Enable the post process for predicted logit           | store_true | False  | False |
+| use_optic_flow  | Enable the optic_flow function                        | store_true | False  | False |
+
+<details><summary>Note:</summary>
+
+* If set img_path, it reads image to predict. If set video_path, it load video to predict.
+* If not set img_path and video_path, it uses camera to shoot video for predicting.
+* It assumes the input image and video are horizontal screen, i.e. the width is bigger than height. If the image and video are vertical screen, please add `--vertical_screen`.
+* We can use optical flow algorithm to mitigate the video jitter (Require opencv-python > 4.0).
+</details>
+
+**1）Use Image to Test**
+
+Read horizontal screen image `data/images/portrait_heng.jpg` and use PP-HumanSeg to predict. The results are saved in `data/images_result/`.
+
+```bash
+# Use PP-HumanSegV2-Lite
+python src/seg_demo.py \
+  --config inference_models/portrait_pp_humansegv2_lite_256x144_inference_model_with_softmax/deploy.yaml \
+  --img_path data/images/portrait_heng.jpg \
+  --save_dir data/images_result/portrait_heng_v2.jpg
+
+# Use PP-HumanSegV1-Lite
+python src/seg_demo.py \
+  --config inference_models/portrait_pp_humansegv1_lite_398x224_inference_model_with_softmax/deploy.yaml \
+  --img_path data/images/portrait_heng.jpg \
+  --save_dir data/images_result/portrait_heng_v1.jpg
 ```
 
-The video segmentation results are as follows:
+Read vertical screen image `data/images/portrait_shu.jpg` and use PP-HumanSeg to predict.
 
-<img src="https://paddleseg.bj.bcebos.com/humanseg/data/video_test.gif" width="20%" height="20%"><img src="https://paddleseg.bj.bcebos.com/humanseg/data/result.gif" width="20%" height="20%">
-
-We also support the use of DIS (Dense Inverse Search-based method) optical flow post-processing algorithm to reduce the problem of video prediction frame flicker by combining optical flow results and segmentation results. Just use `--use_optic_flow` to enable optical flow post-processing, for example
 ```bash
-# Add optical flow post-processing
-python bg_replace.py \
---config export_model/ppseg_lite_portrait_398x224_with_softmax/deploy.yaml \
---use_optic_flow
+python src/seg_demo.py \
+  --config inference_models/portrait_pp_humansegv2_lite_256x144_inference_model_with_softmax/deploy.yaml \
+  --img_path data/images/portrait_shu.jpg \
+  --save_dir data/images_result/portrait_shu_v2.jpg \
+  --vertical_screen
 ```
 
-### Video stream background replacement
-The background is replaced according to the selected background, which can be a picture or a video.
+Use background image to replace the background of input image.
+
 ```bash
-# Perform real-time background replacement processing through the computer camera. You can pass in the background video through '--background_video_path'
-python bg_replace.py \
---config export_model/ppseg_lite_portrait_398x224_with_softmax/deploy.yaml \
---input_shape 224 398 \
---bg_img_path data/background.jpg
+python src/seg_demo.py \
+  --config inference_models/portrait_pp_humansegv2_lite_256x144_inference_model_with_softmax/deploy.yaml \
+  --img_path data/images/portrait_heng.jpg \
+  --bg_img_path data/images/bg_2.jpg \
+  --save_dir data/images_result/portrait_heng_v2_withbg.jpg
 
-# Perform background replacement processing on portrait video. You can pass in the background video through '--background_video_path'
-python bg_replace.py \
---config export_model/deeplabv3p_resnet50_os8_humanseg_512x512_100k_with_softmax/deploy.yaml \
---bg_img_path data/background.jpg \
---video_path data/video_test.mp4
-
-# background replacement for a single image
-python bg_replace.py \
---config export_model/ppseg_lite_portrait_398x224_with_softmax/deploy.yaml \
---input_shape 224 398 \
---img_path data/human_image.jpg \
---bg_img_path data/background.jpg
-
+python src/seg_demo.py \
+  --config inference_models/portrait_pp_humansegv2_lite_256x144_inference_model_with_softmax/deploy.yaml \
+  --img_path data/images/portrait_shu.jpg \
+  --bg_img_path data/images/bg_1.jpg \
+  --save_dir data/images_result/portrait_shu_v2_withbg.jpg \
+  --vertical_screen
 ```
 
+**2）Use Video to Test**
 
-The result of background replacement is as follows:
+Load horizontal screen video `data/videos/video_heng.mp4` and use PP-HumanSeg to predict. The results are saved in `data/videos_result/`.
 
-<img src="https://paddleseg.bj.bcebos.com/humanseg/data/video_test.gif" width="20%" height="20%"><img src="https://paddleseg.bj.bcebos.com/humanseg/data/bg_replace.gif" width="20%" height="20%">
-
-
-**NOTE**:
-
-The video segmentation processing time will take a few minutes, please be patient.
-
-The Portrait model is suitable for widescreen shooting scenes, and the vertical screen effect will be slightly worse.
-
-### Online running tutorial
-We provide an AI Studio-based [Online Running Tutorial](https://aistudio.baidu.com/aistudio/projectdetail/2189481) to facilitate your practical experience.
-
-## Training evaluation prediction demo
-If the above models pre-trained on large-scale data cannot meet your accuracy requirements, you can perform fine-tuning in your scene based on the above models to better suit your usage scenarios.
-
-### Download pretrained model
-
-Execute the following script to quickly download all checkpoints as pretrained models
 ```bash
-python pretrained_model/download_pretrained_model.py
+# Use PP-HumanSegV2-Lite
+python src/seg_demo.py \
+  --config inference_models/portrait_pp_humansegv2_lite_256x144_inference_model_with_softmax/deploy.yaml \
+  --video_path data/videos/video_heng.mp4 \
+  --save_dir data/videos_result/video_heng_v2.avi
+
+python src/seg_demo.py \
+  --config inference_models/portrait_pp_humansegv2_lite_256x144_inference_model_with_softmax/deploy.yaml \
+  --video_path data/videos/video_heng.mp4 \
+  --use_post_process \
+  --save_dir data/videos_result/video_heng_v2_use_post_process.avi
+
+# Use PP-HumanSegV1-Lite
+python src/seg_demo.py \
+  --config inference_models/portrait_pp_humansegv1_lite_398x224_inference_model_with_softmax/deploy.yaml \
+  --video_path data/videos/video_heng.mp4 \
+  --save_dir data/videos_result/video_heng_v1.avi
 ```
 
-### Train
-Demonstrates how to do fine-tuning based on the above model. We use the extracted mini_supervisely dataset as an example dataset, taking PP-HumanSeg-Mobile as an example, the training command is as follows:
-```bash
-export CUDA_VISIBLE_DEVICES=0 # Set 1 available card
-# Please execute the following command under windows
-# set CUDA_VISIBLE_DEVICES=0
-python train.py \
---config configs/pp_humanseg_mobile_192x192_mini_supervisely.yml \
---save_dir saved_model/pp_humanseg_mobile_192x192_mini_supervisely \
---save_interval 100 --do_eval --use_vdl
-````
+Load vertical screen video `data/videos/video_shu.mp4` and use PP-HumanSeg to predict.
 
-More command line help can be viewed by running the following command:
+
 ```bash
-python train.py --help
+python src/seg_demo.py \
+  --config inference_models/portrait_pp_humansegv2_lite_256x144_inference_model_with_softmax/deploy.yaml \
+  --video_path data/videos/video_shu.mp4 \
+  --save_dir data/videos_result/video_shu_v2.avi \
+  --vertical_screen
 ```
 
-### Evaluate
-Use the following command to evaluate
+Use background image to replace the background of input video.
+
 ```bash
-python val.py \
---config configs/pp_humanseg_mobile_192x192_mini_supervisely.yml \
---model_path saved_model/pp_humanseg_mobile_192x192_mini_supervisely/best_model/model.pdparams
+python src/seg_demo.py \
+  --config inference_models/portrait_pp_humansegv2_lite_256x144_inference_model_with_softmax/deploy.yaml \
+  --video_path data/videos/video_heng.mp4 \
+  --bg_img_path data/images/bg_2.jpg \
+  --use_post_process \
+  --save_dir data/videos_result/video_heng_v2_withbg_usepostprocess.avi
 ```
 
-### Predict
-Use the following command to make predictions, the prediction results are saved in the `./output/result/` folder by default.
+Besides, we can use  DIS（Dense Inverse Search-basedmethod) algorithm to mitigate the flicker of video.
+
 ```bash
-python predict.py \
---config configs/pp_humanseg_mobile_192x192_mini_supervisely.yml \
---model_path saved_model/pp_humanseg_mobile_192x192_mini_supervisely/best_model/model.pdparams \
---image_path data/human_image.jpg
+python src/seg_demo.py \
+  --config inference_models/portrait_pp_humansegv2_lite_256x144_inference_model_with_softmax/deploy.yaml \
+  --video_path data/videos/video_shu.mp4 \
+  --save_dir data/videos_result/video_shu_v2_use_optic_flow.avi \
+  --vertical_screen \
+  --use_optic_flow
 ```
 
-## Model export
-### Export the model as a static graph model
+**3）Use Camera to Test**
 
-Make sure you are in the PaddleSeg directory and execute the following script:
+Open camera to capture video (horizontal screen) and use PP-HumanSeg to predict.
+
+```bash
+python src/seg_demo.py \
+  --config inference_models/portrait_pp_humansegv2_lite_256x144_inference_model_with_softmax/deploy.yaml
+```
+
+Open camera to capture video (horizontal screen) and use PP-HumanSeg to predict with background image.
+
+
+```bash
+python src/seg_demo.py \
+  --config inference_models/portrait_pp_humansegv2_lite_256x144_inference_model_with_softmax/deploy.yaml \
+  --bg_img_path data/images/bg_2.jpg
+```
+
+The result of video portrait segmentation as follows.
+
+<p align="center">
+<img src="https://paddleseg.bj.bcebos.com/humanseg/data/video_test.gif"  height="200">  
+<img src="https://paddleseg.bj.bcebos.com/humanseg/data/result.gif"  height="200">
+</p>
+
+
+The result of background replacement as follows.
+
+<p align="center">
+<img src="https://paddleseg.bj.bcebos.com/humanseg/data/video_test.gif"  height="200">  
+<img src="https://paddleseg.bj.bcebos.com/humanseg/data/bg_replace.gif"  height="200">
+</p>
+
+### 4.4 Online Tutorial
+
+PP-HumanSeg V1 provides an online tutorial ([url](https://aistudio.baidu.com/aistudio/projectdetail/2189481)) in AI Studio.
+
+## 5 Training and Finetuning
+
+Since the image for segmentation is various, you should evaluate the release model according to the actual scene.
+If the segmentation accuracy is not satisfied, you should annotate images and finetune the model with pretrained weights.
+
+We use the general human segmentation of PP-HumanSeg to show the training, evaluating and exporting.
+
+### 5.1 Prepare
+
+Refer to the "Quick Start  -  Prepare Environment", install Paddle and PaddleSeg.
+
+Run the following command to download `mini_supervisely` dataset. Refer to the "Quick Start  -  Prepare Models and Data" for detailed information.
+```bash
+python src/download_data.py
+```
+
+Run the following command to download pretrained models.
+```bash
+python src/download_pretrained_models.py
+```
+
+### 5.2 Training
+
+The config files are saved in `./configs` as follows. We have set the path of pretrained weight in all config files.
+
+```
+configs
+├── human_pp_humansegv1_lite.yml
+├── human_pp_humansegv2_lite.yml
+├── human_pp_humansegv1_mobile.yml
+├── human_pp_humansegv2_mobile.yml
+├── human_pp_humansegv1_server.yml
+```
+
+Run the following command to start finetuning. The full usage of model training in [url](../../docs/train/train.md).
+
+```bash
+export CUDA_VISIBLE_DEVICES=0 # Set GPU on Linux
+# set CUDA_VISIBLE_DEVICES=0  # Set GPU on Windows
+python ../../train.py \
+  --config configs/human_pp_humansegv2_lite.yml \
+  --save_dir output/human_pp_humansegv2_lite \
+  --save_interval 100 --do_eval --use_vdl
+```
+
+### 5.3 Evaluation
+
+Load model and trained weights and start model evaluation. The full usage of model evaluation in [url](../../docs/evaluation/evaluate/evaluate.md).
+
+```bash
+python ../../val.py \
+  --config configs/human_pp_humansegv2_lite.yml \
+  --model_path pretrained_models/human_pp_humansegv2_lite_192x192_pretrained/model.pdparams
+```
+
+### 5.4 Prediction
+
+Load model and trained weights and start model prediction. The result are saved in `./data/images_result/added_prediction` and `./data/images_result/pseudo_color_prediction`
+
+```bash
+python ../../predict.py \
+  --config configs/human_pp_humansegv2_lite.yml \
+  --model_path pretrained_models/human_pp_humansegv2_lite_192x192_pretrained/model.pdparams \
+  --image_path data/images/human.jpg \
+  --save_dir ./data/images_result
+```
+
+### 5.5 Exporting
+
+Load model and trained weights and export inference model. The full usage of model exporting in [url](../../docs/model_export.md).
 
 ```shell
-export CUDA_VISIBLE_DEVICES=0 # Set 1 available card
-# Please execute the following command under windows
-# set CUDA_VISIBLE_DEVICES=0
 python ../../export.py \
---config configs/pp_humanseg_mobile_192x192_mini_supervisely.yml \
---model_path saved_model/pp_humanseg_mobile_192x192_mini_supervisely/best_model/model.pdparams \
---save_dir export_model/pp_humanseg_mobile_192x192_mini_supervisely_with_softmax \
---without_argmax --with_softmax
+  --config configs/human_pp_humansegv2_lite.yml \
+  --model_path pretrained_models/human_pp_humansegv2_lite_192x192_pretrained/model.pdparams \
+  --save_dir output/human_pp_humansegv2_lite \
+  --without_argmax \
+  --with_softmax
 ```
 
-[Note] The soft prediction result is used here, which can carry transparency and make the edges smoother. So when exporting a model, you must use `--without_argmax --with_softmax` parameter.
+When set `--without_argmax --with_softmax`, the last operation of inference model is softmax.
 
-Export the PP-HumanSeg-Lite model:
+## 6 Deployment
+### 6.1 Deployment on Mobile Devices
 
-```shell
-python ../../export.py \
---config ../../configs/pp_humanseg_lite/pp_humanseg_lite_export_398x224.yml \
---save_dir export_model/pp_humanseg_lite_portrait_398x224_with_softmax \
---model_path pretrained_model/ppseg_lite_portrait_398x224/model.pdparams \
---without_argmax --with_softmax
-```
+Refer to [deployment on edge dvices](../../docs/deployment/lite/lite.md)
 
-The exported ymls corresponding to other PP-HumanSeg models are located in the `configs/` and `../../configs/pp_humanseg_lite/` directories.
+<p align="center">
+<img src="../../deploy/lite/example/human_1.png"  height="200">  
+<img src="../../deploy/lite/example/human_2.png"  height="200">
+<img src="../../deploy/lite/example/human_3.png"  height="200">
+</p>
 
-### Export parameter
+### 6.2 Deployment on Web
 
-|Parameter name|Purpose|Required option|Default value|
-|-|-|-|-|
-|config|Configuration File|Yes|-|
-|save_dir|Save root path for model and VisualDL log files|no |output|
-|model_path|path to pretrained model parameter|no|specified value in configuration file|
-|with_softmax|Add a softmax operator at the end of the network. Since the PaddleSeg network returns logits by default, if you want to deploy the model to obtain the probability value, you can set it to True|No|False|
-|without_argmax| Whether or not to add the argmax operator at the end of the network. Since the PaddleSeg network returns logits by default, in order to deploy the model, the prediction results can be obtained directly. By default, we add the argmax operator at the end of the network | No | False |
+Refer to [deployment on web](../../docs/deployment/web/web.md)
 
-### Result file
-
-```shell
-output
-  ├── deploy.yaml # Deploy related configuration files
-  ├── model.pdiparams # Static graph model parameters
-  ├── model.pdiparams.info # Additional parameter information, generally do not need to pay attention
-  └── model.pdmodel # Static graph model file
-```
-
-## Web deployment
-
-![image](https://user-images.githubusercontent.com/10822846/118273079-127bf480-b4f6-11eb-84c0-8a0bbc7c7433.png)
-
-See [Web deployment tutorial](../../deploy/web)
-
-## Mobile deployment
-
-<img src="../../deploy/lite/example/human_1.png" width="20%" > <img src="../../deploy/lite/example/human_2.png" width ="20%" > <img src="../../deploy/lite/example/human_3.png" width="20%" >
-
-See [Mobile Deployment Tutorial](../../deploy/lite/)
+<p align="center">
+<img src="https://user-images.githubusercontent.com/10822846/118273079-127bf480-b4f6-11eb-84c0-8a0bbc7c7433.png"  height="200">
+</p>
