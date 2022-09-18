@@ -1,6 +1,5 @@
 # Copyright (c) 2021 PaddlePaddle Authors. All Rights Reserved.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
+# # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
@@ -86,6 +85,7 @@ class PostPorcesser(paddle.nn.Layer):
         new_outs = []
         for out in outs:
             if self.with_softmax:
+                self.without_argmax = True
                 out = paddle.nn.functional.softmax(out, axis=1)
             if not self.without_argmax:
                 out = paddle.argmax(out, axis=1)
