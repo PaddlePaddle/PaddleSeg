@@ -74,9 +74,9 @@ from paddleseg.utils import utils
 
 模型实现的结构按顺序分为三个部分，主模型，分割头，辅助模块。若模型没有backbone则只有主模型和辅助模块，这里以三部分为例。
 
-### I、 主模型
+#### 1）主模型
 
-#### 1）模型声明规范
+**模型声明规范**
 
 该部分在import部分之后，为模型实现的第一部分。
 
@@ -120,11 +120,12 @@ class PSPNet(nn.Layer):
     """
 ```
 
-#### 2）__init__规范
+**__init__规范**
 
 1. ```__init__```中参数全部显式写出，**不能**包括变长参数比如:`*args, **kwargs`；
 2. ```super().__init__()```保持空参数；
-3. 结尾调用```self.init_weight()```。
+3. 结尾调用```self.init_weight()```；
+4. 如果模型没有使用backbone，则必须有`in_channels`输入参数，表示输入图片的通道数，设置`in_channels`默认值为3。
 ```python
 def __init__(self,
              num_classes,
@@ -140,7 +141,7 @@ def __init__(self,
     self.init_weight()
 ```
 
-#### 3）forward 规范
+**forward 规范**
 
 1. 逻辑尽量简洁，以组件式的调用呈现。
 2. `resize`到原图大小按列表形式返回，第一个元素为主输出，其他为辅助输出。
@@ -161,7 +162,7 @@ def forward(self, x):
     ]
 ```
 
-#### 4）init_weight规范
+##### init_weight规范
 
 1. 调用```load_entire_model```即可
 2. 不含 backbone 的模型可能涉及模型参数初始化，可调用```paddleseg.cvlib 中的 param_init```实现。
@@ -182,7 +183,15 @@ def init_weight(self):
           param_init.constant_init(sublayer.bias, value=0.0)
 ```
 
-### II、分割头
+#### 2）骨干网络
+
+骨干网络Backbone的实现和主模型大体类似，具体可以参考`paddleseg/models/backbones/mobilenetv2.py`的实现。
+
+骨干网络要求`__init__`函数输入参数必须有`in_channels=3`，表示输入图片的通道数。
+
+骨干网络通常输出4个特征图，分别是4、8、16和32倍下采样的特征图。骨干网络类有`self.feat_channels`属性，表示输出特征图的通道数。
+
+#### 3）分割头
 
 目前`PaddleSeg`里面的模型只有单分割头模型，所以分割头模块直接以主模型名+Head来命名。注释规范与主模型保持一致。
 
@@ -192,7 +201,7 @@ class PSPNetHead(nn.Layer):
 
 如果是轻量级分割模型，没有`backbone`，可以看做是只有分割头的模型，那么为了简洁可以不用写Head，而把逻辑直接写在主模型部分中。
 
-### III、辅助模块
+#### 4）辅助模块
 
 除了主模型，和分割头之外的代码段都称为辅助模块。目前`PaddleSeg`已经提供了常见的辅助模块，例如`SyncBN, ConvBNReLU, FCN (AuxLayer), PPModule, ASPP, AttentionBlock`等等，详细查看```paddleseg/models/layers```。
 1. **必须**优先使用`PaddleSeg`内置辅助模块；
@@ -210,8 +219,7 @@ from .pspnet import *
 
 损失开发的规范以`paddleseg/models/losses/cross_entropy_loss.py`为例:
 
-### 1) 损失声明规范
-
+损失声明规范：
 1. 在损失头使用`manager`装饰器；
 2. 继承`nn.Layer`；
 3. 添加英文注释：

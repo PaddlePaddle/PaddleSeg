@@ -531,7 +531,7 @@ class SwinTransformer(nn.Layer):
     Args:
         pretrain_img_size (int): Input image size for training the pretrained model, used in absolute postion embedding. Default: 224.
         patch_size (int | tuple(int)): Patch size. Default: 4.
-        in_chans (int): Number of input image channels. Default: 3.
+        in_channels (int): Number of input image channels. Default: 3.
         embed_dim (int): Number of linear projection output channels. Default: 96.
         depths (tuple[int]): Depths of each Swin Transformer stage.
         num_heads (tuple[int]): Number of attention head of each stage.
@@ -553,7 +553,7 @@ class SwinTransformer(nn.Layer):
     def __init__(self,
                  pretrain_img_size=224,
                  patch_size=4,
-                 in_chans=3,
+                 in_channels=3,
                  embed_dim=96,
                  depths=[2, 2, 6, 2],
                  num_heads=[3, 6, 12, 24],
@@ -583,7 +583,7 @@ class SwinTransformer(nn.Layer):
         # split image into non-overlapping patches
         self.patch_embed = PatchEmbed(
             patch_size=patch_size,
-            in_chans=in_chans,
+            in_chans=in_channels,
             embed_dim=embed_dim,
             norm_layer=norm_layer if self.patch_norm else None)
 

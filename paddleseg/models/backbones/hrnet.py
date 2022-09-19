@@ -37,6 +37,7 @@ class HRNet(nn.Layer):
     (https://arxiv.org/pdf/1908.07919.pdf).
 
     Args:
+        in_channels (int, optional): The channels of input image. Default: 3.
         pretrained (str, optional): The path of pretrained model.
         stage1_num_modules (int, optional): Number of modules for stage1. Default 1.
         stage1_num_blocks (list, optional): Number of blocks per module for stage1. Default (4).
@@ -56,6 +57,7 @@ class HRNet(nn.Layer):
     """
 
     def __init__(self,
+                 in_channels=3,
                  pretrained=None,
                  stage1_num_modules=1,
                  stage1_num_blocks=(4, ),
@@ -91,7 +93,7 @@ class HRNet(nn.Layer):
         self.feat_channels = [sum(stage4_num_channels)]
 
         self.conv_layer1_1 = layers.ConvBNReLU(
-            in_channels=3,
+            in_channels=in_channels,
             out_channels=64,
             kernel_size=3,
             stride=2,

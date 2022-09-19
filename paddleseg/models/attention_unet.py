@@ -35,13 +35,13 @@ class AttentionUNet(nn.Layer):
 
     Args:
         num_classes (int): The unique number of target classes.
+        in_channels (int, optional): The channels of input image. Default: 3.
         pretrained (str, optional): The path or url of pretrained model. Default: None.
     """
 
-    def __init__(self, num_classes, pretrained=None):
+    def __init__(self, num_classes, in_channels=3, pretrained=None):
         super().__init__()
-        n_channels = 3
-        self.encoder = Encoder(n_channels, [64, 128, 256, 512])
+        self.encoder = Encoder(in_channels, [64, 128, 256, 512])
         filters = np.array([64, 128, 256, 512, 1024])
         self.up5 = UpConv(ch_in=filters[4], ch_out=filters[3])
         self.att5 = AttentionBlock(

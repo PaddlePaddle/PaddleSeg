@@ -9,7 +9,7 @@ python:python3.7
 --batch_size:1
 ##
 trainer:PTQ
-PTQ:slim/quant/ptq.py
+PTQ:deploy/slim/quant/ptq.py
 ##
 ===========================infer_params===========================
 inference:deploy/python/infer.py

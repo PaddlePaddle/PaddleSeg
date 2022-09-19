@@ -8,14 +8,14 @@ Linux GPU/CPU 多机多卡训练推理测试的主程序为`test_train_inference
 
 | 算法名称 | 模型名称 | 多机多卡 |
 |  :----: |   :----:  |    :----:  |
-|  pp_liteseg    | pp_liteseg_stdc1     | 分布式训练 |
+|  PP-LiteSeg    | pp_liteseg_stdc1     | 分布式训练 |
 
 
 - 推理相关：
 
 | 算法名称 | 模型名称 | device_CPU | device_GPU | batchsize |
 |  :----:   |  :----: |   :----:   |  :----:  |   :----:   |
-|  pp_liteseg  |  pp_liteseg_stdc1 |  支持 | 支持 | 1 |
+|  PP-LiteSeg  |  pp_liteseg_stdc1 |  支持 | 支持 | 1 |
 
 
 ## 2. 测试流程

@@ -8,7 +8,7 @@ Image Matting is the technique of extracting foreground from an image by calcula
 </p>
 
 # One-click experience
-Try the online demo "[Non-Code Matting](http://seg.itmanbu.com/)".
+Try the online demo "[Non-Code Matting](https://easyseg.cn/)".
 
 <p align="center">
 <img src="https://user-images.githubusercontent.com/48433081/165077834-c3191509-aeaf-45c8-b226-656174f4c152.gif" width="100%" height="100%">

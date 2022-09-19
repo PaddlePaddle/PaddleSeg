@@ -19,7 +19,7 @@ import paddle
 
 from paddleseg.cvlibs import manager, Config
 from paddleseg.core import evaluate
-from paddleseg.utils import get_sys_env, logger, config_check, utils
+from paddleseg.utils import get_sys_env, logger, utils
 
 
 def get_test_config(cfg, args):
@@ -47,19 +47,19 @@ def parse_args():
         "--config", dest="cfg", help="The config file.", default=None, type=str)
     parser.add_argument(
         '--opts',
-        help='update the key value for all options',
+        help='Update the key-value pairs of all options.',
         default=None,
         nargs='+')
     parser.add_argument(
         '--model_path',
         dest='model_path',
-        help='The path of model for evaluation',
+        help='The path of model for evaluation.',
         type=str,
         default=None)
     parser.add_argument(
         '--num_workers',
         dest='num_workers',
-        help='Num workers for data loader',
+        help='Number of workers for data loader.',
         type=int,
         default=0)
 
@@ -67,31 +67,31 @@ def parse_args():
     parser.add_argument(
         '--aug_eval',
         dest='aug_eval',
-        help='Whether to use mulit-scales and flip augment for evaluation',
+        help='Whether to use mulit-scales and flip augment for evaluation.',
         action='store_true')
     parser.add_argument(
         '--scales',
         dest='scales',
         nargs='+',
-        help='Scales for augment',
+        help='Scales for augment.',
         type=float,
         default=1.0)
     parser.add_argument(
         '--flip_horizontal',
         dest='flip_horizontal',
-        help='Whether to use flip horizontally augment',
+        help='Whether to use flip horizontally augment.',
         action='store_true')
     parser.add_argument(
         '--flip_vertical',
         dest='flip_vertical',
-        help='Whether to use flip vertically augment',
+        help='Whether to use flip vertically augment.',
         action='store_true')
 
     # sliding window evaluation
     parser.add_argument(
         '--is_slide',
         dest='is_slide',
-        help='Whether to evaluate by sliding window',
+        help='Whether to evaluate by sliding window.',
         action='store_true')
     parser.add_argument(
         '--crop_size',
@@ -118,15 +118,16 @@ def parse_args():
     parser.add_argument(
         '--auc_roc',
         dest='add auc_roc metric',
-        help='Whether to use auc_roc metric',
+        help='Whether to use auc_roc metric.',
         type=bool,
         default=False)
 
     parser.add_argument(
         '--device',
         dest='device',
-        help='Device place to be set, which can be GPU, XPU, NPU, CPU',
+        help='Device place to be set, which can be gpu, xpu, npu, or cpu.',
         default='gpu',
+        choices=['cpu', 'gpu', 'xpu', 'npu'],
         type=str)
 
     return parser.parse_args()
@@ -150,6 +151,8 @@ def main(args):
         raise RuntimeError('No configuration file specified.')
 
     cfg = Config(args.cfg, opts=args.opts)
+    cfg.check_sync_info()
+
     # Only support for the DeepLabv3+ model
     if args.data_format == 'NHWC':
         if cfg.dic['model']['type'] != 'DeepLabV3P':
@@ -182,7 +185,6 @@ def main(args):
         logger.info('Loaded trained params of model successfully')
 
     test_config = get_test_config(cfg, args)
-    config_check(cfg, val_dataset=val_dataset)
 
     evaluate(model, val_dataset, num_workers=args.num_workers, **test_config)
 

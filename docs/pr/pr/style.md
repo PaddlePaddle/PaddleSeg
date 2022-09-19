@@ -132,7 +132,8 @@ class PSPNet(nn.Layer):
 
 1. All the parameters in ```__init__``` should be written out explicitly, you should not include variable length parameters such as: `*args, **kwargs`;
 2. ```super().__init__()``` should not have parameters;
-3. At the end, call ```self.init_weight()```.
+3. At the end, call ```self.init_weight()```;
+4. If the model does not have backbone, it must have the input params of `in_channels`, which denotes the channels of input image. The `in_channels` is set as 3 in default.
     ```python
     def __init__(self,
                 num_classes,
@@ -190,8 +191,15 @@ class PSPNet(nn.Layer):
             param_init.constant_init(sublayer.weight, value=1.0)
             param_init.constant_init(sublayer.bias, value=0.0)
     ```
+#### 1.2 backbone
 
-#### 1.2 segmentation head
+The implementation of backbone is the same as the model, and please refer to `paddleseg/models/backbones/mobilenetv2.py` for more details.
+
+The `__init__` function of backbone must have the params of `in_channels=3`, which denotes the channels of input image.
+
+Generally, the backbone outputs four feature maps, of which the size are 1/4, 1/8, 1/16 and 1/32 of the input image. The class of backbone has `self.feat_channels` attribute, and it denotes the channels of output feature maps.
+
+#### 1.3 segmentation head
 
 At present, the model in PaddleSeg only has a single segmentation head, so the segmentation head module is named as model name + Head. And the annotation specification is consistent with the main model.
 
@@ -201,7 +209,7 @@ class PSPNetHead(nn.Layer):
 
 If your model is a lightweight one without backbone, it can be treated as model with single segmentation head. For simplicity, you can write the code in the main model instead of the head.
 
-#### 1.3 auxiliary module
+#### 1.4 auxiliary module
 
 Other segments except for the main model and the segmentation header are called as auxiliary modules. Currently, PaddleSeg has provided common auxiliary modules, such as `SyncBN, ConvBNReLU, FCN (AuxLayer), PPModule, ASPP, AttentionBlock` and etc. You can refer to  `paddleseg/models/layers` for details.
 1. **Must** use the built-in auxiliary module of PaddleSeg if you can;
@@ -220,8 +228,7 @@ from .pspnet import *
 
 The loss specification takes `paddleseg/models/losses/cross_entropy_loss.py` as an example:
 
-#### 2.1 Loss declaration specification
-
+Loss declaration specification:
 1. Use the `manager` decorator on the loss head;
 2. Inherit `nn.Layer`;
 3. Add English notes:
