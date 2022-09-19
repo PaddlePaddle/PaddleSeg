@@ -12,6 +12,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from . import manager
-from .config import Config
-from . import param_init
+from .layer_libs import Identity, ConvDropoutNormNonlin
