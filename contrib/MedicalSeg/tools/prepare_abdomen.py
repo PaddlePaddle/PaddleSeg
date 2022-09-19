@@ -110,6 +110,7 @@ class Prep_abdomen(Prep):
         self.val_image_files_npy = []
         self.train_label_files_npy = []
         self.val_label_files_npy = []
+        self.train_val_split()
 
     def load_save(self, mode='train'):
         """
@@ -209,7 +210,6 @@ if __name__ == "__main__":
         license_desc="https://creativecommons.org/licenses/by/4.0/legalcode",
         dataset_reference="https://www.synapse.org/#!Synapse:syn3193805/wiki/89480",
     )
-    prep.train_val_split()
     prep.load_save(mode='train')
     prep.load_save(mode='val')
     prep.generate_txt()
