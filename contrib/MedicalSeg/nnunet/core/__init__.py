@@ -12,6 +12,5 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from . import manager
-from .config import Config
-from . import param_init
+from .train import train
+from .val import evaluate
