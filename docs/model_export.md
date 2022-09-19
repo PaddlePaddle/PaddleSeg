@@ -35,7 +35,7 @@ python export.py \
 |-|-|-|-|
 |config|The path of config file|yes|-|
 |model_path|The path of trained weight|no|-|
-|save_dir| The save dir for the inference model|no|output/inference_model|
+|save_dir| The save dir for the inference model|no|`output/inference_model`|
 |input_shape| Set the input shape (`N*C*H*W`) of the inference model, such as `--input_shape 1 3 1024 1024`。if input_shape is not provided，the input shape of the inference model is [-1, 3, -1, -1]. If the image shape in prediction is fixed, you should set the input_shape. | no  | None |
 |output_op | Set the op that is appended to the inference model, should in [`argmax`, `softmax`, `none`]. PaddleSeg models outputs logits (`N*C*H*W`) by default. Adding `argmax` operation, we get the label for every pixel, the dimension of output is `N*H*W`. Adding `softmax` operation, we get the probability of different classes for every pixel. | no | argmax |
 |with_softmax| Deprecated params, please use --output_op. Add softmax operator at the end of the network. Since PaddleSeg networking returns Logits by default, you can set it to True if you want the deployment model to get the probability value|no|False|

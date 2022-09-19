@@ -146,10 +146,11 @@ python deploy/slim/quant/qat_val.py \
 |参数名|用途|是否必选项|默认值|
 |-|-|-|-|
 |config|模型配置文件|是|-|
-|save_dir|预测量化模型保存的文件夹|否|output|
-|model_path|量化模型的权重|否|配置文件中指定值|
-|with_softmax|在网络末端添加softmax算子。由于PaddleSeg组网默认返回logits，如果想要部署模型获取概率值，可以置为True|否|False|
-|without_argmax|是否不在网络末端添加argmax算子。由于PaddleSeg组网默认返回logits，为部署模型可以直接获取预测结果，我们默认在网络末端添加argmax算子|否|False|
+|model_path|量化模型的权重|否|-|
+|save_dir|预测量化模型保存的文件夹|否|`./output/inference_model`|
+|output_op     | 设置在模型末端添加的输出算子，支持[`argmax`, `softmax`, `none`]。PaddleSeg模型默认返回logits (`N*C*H*W`)；添加`argmax`算子，可以得到每个像素的分割类别，结果的维度是`N*H*W`、数据类型是`int32`；添加`softmax`算子，可以得到每个像素每类的概率，结果的维度是`N*C*H*W`、数据类型是`float32` | 否 | argmax |
+|with_softmax  | 即将废弃的输入参数，建议使用`--output_op`。在网络末端添加softmax算子。由于PaddleSeg组网默认返回logits，如果想要部署模型获取概率值，可以置为True | 否 | False |
+|without_argmax| 即将废弃的输入参数，建议使用`--output_op`。由于PaddleSeg组网默认返回logits，为部署模型可以直接获取预测结果，我们默认在网络末端添加argmax算子。如果设置`--without_argmax`，则不会在网络末端添加argmax算子。 | 否 | False |
 
 执行如下命令，导出预测量化模型保存在`output_quant_infer`目录。
 
