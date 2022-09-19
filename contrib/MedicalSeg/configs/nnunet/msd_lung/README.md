@@ -1,4 +1,18 @@
-nnUNet使用教程
+# [Medical Segmentation Decathlon](http://medicaldecathlon.com/)
+There are 96 3D volumes (64 Training + 32 Testing) in the Lung and tumor data.
+
+## Performance
+
+### NNUnet
+> Isensee, F., Jaeger, P. F., Kohl, S. A., Petersen, J., & Maier-Hein, K. H. (2020). nnU-Net: a self-configuring method for deep learning-based biomedical image segmentation. Nature Methods, 1-9.
+
+| Backbone | Resolution | lr | Training Iters | Dice(20 classes) |  Links |
+|:-:|:-:|:-:|:-:|:-:|:-:|
+|2D|512x512|0.01|30000|53.549%|[model_fold0](https://bj.bcebos.com/paddleseg/paddleseg3d/msd_lung/2d_fold0/model.pdparams) \| [model_fold1](https://bj.bcebos.com/paddleseg/paddleseg3d/msd_lung/2d_fold1/model.pdparams) \| [model_fold2](https://bj.bcebos.com/paddleseg/paddleseg3d/msd_lung/2d_fold2/model.pdparams) \| [model_fold3](https://bj.bcebos.com/paddleseg/paddleseg3d/msd_lung/2d_fold3/model.pdparams) \| [model_fold4](https://bj.bcebos.com/paddleseg/paddleseg3d/msd_lung/2d_fold4/model.pdparams) \|  [log](https://aistudio.baidu.com/aistudio/datasetdetail/150774)|
+|3D lowres|80x192x160|0.01|30000|68.281%|[model_fold0](https://bj.bcebos.com/paddleseg/paddleseg3d/msd_lung/3dlowres_fold0/model.pdparams) \| [model_fold1](https://bj.bcebos.com/paddleseg/paddleseg3d/msd_lung/3dlowres_fold1/model.pdparams) \| [model_fold2](https://bj.bcebos.com/paddleseg/paddleseg3d/msd_lung/3dlowres_fold2/model.pdparams) \| [model_fold3](https://bj.bcebos.com/paddleseg/paddleseg3d/msd_lung/3dlowres_fold3/model.pdparams) \| [model_fold4](https://bj.bcebos.com/paddleseg/paddleseg3d/msd_lung/3dlowres_fold4/model.pdparams)   \| [log](https://aistudio.baidu.com/aistudio/datasetdetail/150774)|
+|3D fullres|80x192x160|0.01|30000|66.281% |[model](https://aistudio.baidu.com/aistudio/datasetdetail/162872)  \| [log](https://aistudio.baidu.com/aistudio/datasetdetail/150774)|
+|3D cascade|80x192x160|0.01|40000|67.996%|[model](https://aistudio.baidu.com/aistudio/datasetdetail/163284) \| [log](https://aistudio.baidu.com/aistudio/datasetdetail/150774)|
+
 
 # 简介
 nnUNet包含2D-UNet，3d-UNet，Cascade UNet共3个模型，每个模型使用五折交叉验证的方式训练，故共有15个模型，对应15个配置文件。
