@@ -1,12 +1,12 @@
 # [Medical Segmentation Decathlon](http://medicaldecathlon.com/)
-There are 96 3D volumes (64 Training + 32 Testing) in the Lung and tumor data.
+针对96个3D肺部肿瘤数据进行训练 (包含 64 例训练 + 32 例测试) 
 
-## Performance
+## 性能
 
 ### NNUnet
 > Isensee, F., Jaeger, P. F., Kohl, S. A., Petersen, J., & Maier-Hein, K. H. (2020). nnU-Net: a self-configuring method for deep learning-based biomedical image segmentation. Nature Methods, 1-9.
 
-| Backbone | Resolution | lr | Training Iters | Dice(20 classes) |  Links |
+| 主干网络 | 分辨率 | 学习率 | 训练轮数 | Dice |  链接 |
 |:-:|:-:|:-:|:-:|:-:|:-:|
 |2D|512x512|0.01|30000|53.549%|[model_fold0](https://bj.bcebos.com/paddleseg/paddleseg3d/msd_lung/2d_fold0/model.pdparams) \| [model_fold1](https://bj.bcebos.com/paddleseg/paddleseg3d/msd_lung/2d_fold1/model.pdparams) \| [model_fold2](https://bj.bcebos.com/paddleseg/paddleseg3d/msd_lung/2d_fold2/model.pdparams) \| [model_fold3](https://bj.bcebos.com/paddleseg/paddleseg3d/msd_lung/2d_fold3/model.pdparams) \| [model_fold4](https://bj.bcebos.com/paddleseg/paddleseg3d/msd_lung/2d_fold4/model.pdparams) \|  [log](https://aistudio.baidu.com/aistudio/datasetdetail/150774)|
 |3D lowres|80x192x160|0.01|30000|68.281%|[model_fold0](https://bj.bcebos.com/paddleseg/paddleseg3d/msd_lung/3dlowres_fold0/model.pdparams) \| [model_fold1](https://bj.bcebos.com/paddleseg/paddleseg3d/msd_lung/3dlowres_fold1/model.pdparams) \| [model_fold2](https://bj.bcebos.com/paddleseg/paddleseg3d/msd_lung/3dlowres_fold2/model.pdparams) \| [model_fold3](https://bj.bcebos.com/paddleseg/paddleseg3d/msd_lung/3dlowres_fold3/model.pdparams) \| [model_fold4](https://bj.bcebos.com/paddleseg/paddleseg3d/msd_lung/3dlowres_fold4/model.pdparams)   \| [log](https://aistudio.baidu.com/aistudio/datasetdetail/150774)|
