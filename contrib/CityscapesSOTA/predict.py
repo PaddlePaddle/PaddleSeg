@@ -18,7 +18,7 @@ import os
 import paddle
 
 from paddleseg.cvlibs import manager, Config
-from paddleseg.utils import get_sys_env, logger, config_check, get_image_list
+from paddleseg.utils import get_sys_env, logger, get_image_list
 from paddleseg.core import predict
 import datasets, models
 
@@ -138,6 +138,7 @@ def main(args):
         raise RuntimeError('No configuration file specified.')
 
     cfg = Config(args.cfg)
+    cfg.check_sync_info()
     val_dataset = cfg.val_dataset
     if not val_dataset:
         raise RuntimeError(
@@ -155,7 +156,6 @@ def main(args):
     logger.info('Number of predict images = {}'.format(len(image_list)))
 
     test_config = get_test_config(cfg, args)
-    config_check(cfg, val_dataset=val_dataset)
 
     predict(
         model,

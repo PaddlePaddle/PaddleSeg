@@ -141,6 +141,7 @@ class MobileNetV3(nn.Layer):
     MobileNetV3
     Args:
         config: list. MobileNetV3 depthwise blocks config.
+        in_channels (int, optional): The channels of input image. Default: 3.
         scale: float=1.0. The coefficient that controls the size of network parameters. 
     Returns:
         model: nn.Layer. Specific MobileNetV3 model depends on args.
@@ -150,6 +151,7 @@ class MobileNetV3(nn.Layer):
                  config,
                  stages_pattern,
                  out_index,
+                 in_channels=3,
                  scale=1.0,
                  pretrained=None):
         super().__init__()
@@ -161,7 +163,7 @@ class MobileNetV3(nn.Layer):
         inplanes = 16
 
         self.conv = ConvBNLayer(
-            in_c=3,
+            in_c=in_channels,
             out_c=_make_divisible(inplanes * self.scale),
             filter_size=3,
             stride=2,

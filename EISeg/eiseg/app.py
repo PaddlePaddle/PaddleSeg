@@ -47,24 +47,6 @@ from plugin.n2grid import RSGrids, Grids, checkOpenGrid
 from plugin.video import InferenceCore, overlay_davis
 
 
-# TODO: 研究paddle子线程
-class ModelThread(QThread):
-    _signal = Signal(dict)
-
-    def __init__(self, controller, param_path):
-        super().__init__()
-        self.controller = controller
-        self.param_path = param_path
-
-    def run(self):
-        success, res = self.controller.setModel(self.param_path, False)
-        self._signal.emit({
-            "success": success,
-            "res": res,
-            "param_path": self.param_path
-        })
-
-
 class APP_EISeg(QMainWindow, Ui_EISeg):
     IDILE, ANNING, EDITING = 0, 1, 2
     # IDILE：网络，权重，图像三者任一没有加载
@@ -746,7 +728,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         self.ratio = int(20 * float(text[4:-1]))
         if self.timer.isActive():
             self.timer.stop()
-            self.timer.start(1000 / self.ratio)
+            self.timer.start(1000 // self.ratio)
 
     def setCutoutBackground(self):
         self.cutoutBackground = self.__setColor(self.cutoutBackground,
@@ -889,10 +871,24 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
             self.warn(self.tr("参数路径存在中文"), self.tr("请修改参数路径为非中文路径！"))
             return False
 
-        # success, res = self.controller.setModel(param_path)
-        self.load_thread = ModelThread(self.controller, param_path)
-        self.load_thread._signal.connect(self.__change_model_callback)
-        self.load_thread.start()
+        success, res = self.controller.setModel(param_path)
+
+        if success:
+            model_dict = {"param_path": param_path}
+            if model_dict not in self.recentModels:
+                self.recentModels.insert(0, model_dict)
+                if len(self.recentModels) > 10:
+                    del self.recentModels[-1]
+            else:  # 如果存在移动位置，确保加载最近模型的正确
+                self.recentModels.remove(model_dict)
+                self.recentModels.insert(0, model_dict)
+            self.settings.setValue("recent_models", self.recentModels)
+            self.statusbar.showMessage(
+                osp.basename(param_path) + self.tr(" 模型加载成功"), 10000)
+            return True
+        else:
+            self.warnException(res)
+            return False
 
     def changePropgationParam(self, param_path: str=None):
         if not param_path:
@@ -934,27 +930,6 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
                                    self.video_recentModels)
             self.statusbar.showMessage(
                 osp.basename(param_path) + self.tr("视频传播模型加载成功"), 10000)
-            return True
-        else:
-            self.warnException(res)
-            return False
-
-    def __change_model_callback(self, signal_dict: dict):
-        success = signal_dict["success"]
-        res = signal_dict["res"]
-        param_path = signal_dict["param_path"]
-        if success:
-            model_dict = {"param_path": param_path}
-            if model_dict not in self.recentModels:
-                self.recentModels.insert(0, model_dict)
-                if len(self.recentModels) > 10:
-                    del self.recentModels[-1]
-            else:  # 如果存在移动位置，确保加载最近模型的正确
-                self.recentModels.remove(model_dict)
-                self.recentModels.insert(0, model_dict)
-            self.settings.setValue("recent_models", self.recentModels)
-            self.statusbar.showMessage(
-                osp.basename(param_path) + self.tr(" 模型加载成功"), 10000)
             return True
         else:
             self.warnException(res)
@@ -1472,7 +1447,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
                 if not self.dockStatus[8]:
                     return False
             # self.video_masks = None
-            self.video_images = self.video.set_video(path)
+            self.video_images, self.fps = self.video.set_video(path)
             self.video_masks = np.zeros(
                 (self.video.num_frames, self.video.height, self.video.width),
                 dtype=np.uint8)
@@ -1738,7 +1713,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         if savePath not in self.labelPaths:
             self.labelPaths.append(savePath)
 
-        # 视频帧保存
+        # 视频帧保存&视频保存
         if self.video_masks is not None:
             if osp.exists(savePath):
                 res = self.warn(
@@ -1762,9 +1737,14 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
                 progress.setWindowModality(Qt.WindowModal)
                 progress.setRange(0, self.video.num_frames)
 
+                videoname = savePath + "_overlay.mp4"
+                fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+                h, w = self.video_masks[0].shape
+                videoWrite = cv2.VideoWriter(videoname, fourcc, self.fps,
+                                             (w, h))
+
                 for i in range(0, self.video.num_frames):
                     # Save mask
-                    h, w = self.video_masks[i].shape
                     mask = self.video_masks[i].astype('uint8')
                     pseudo = np.zeros([h, w, 3])
                     # mask = self.controller.result_mask
@@ -1773,11 +1753,11 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
                         pseudo[mask == lab.idx, :] = lab.color[::-1]
                     cv2.imwrite(
                         os.path.join(mask_dir, '{:05d}.png'.format(i)), pseudo)
-
                     # Save overlay
                     overlay = overlay_davis(self.video_images[i],
                                             self.video_masks[i], self.opacity,
                                             self.controller.palette)
+                    videoWrite.write(overlay[:, :, ::-1])  # write video
                     overlay = Image.fromarray(overlay)
                     overlay.save(
                         os.path.join(overlay_dir, '{:05d}.png'.format(i)))
@@ -1785,10 +1765,9 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
                     if progress.wasCanceled():
                         # QMessageBox.warning(self, "提示", "保存失败")
                         break
-                else:
-                    progress.setValue(self.video.num_frames)
-                    # QMessageBox.information(self, "提示", "保存成功")
 
+                progress.setValue(self.video.num_frames)
+                videoWrite.release()
                 self.setDirty(False)
                 self.statusbar.showMessage(
                     self.tr("视频帧成功保存至") + " " + savePath, 5000)
@@ -2321,7 +2300,8 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
             for jlab in self.grid.json_labels:
                 is_add = True
                 for label in self.controller.labelList.labelList:
-                    if jlab["labelIdx"] == label.idx and jlab["name"] == label.name:
+                    if jlab["labelIdx"] == label.idx and jlab[
+                            "name"] == label.name:
                         is_add = False
                         break
                 if is_add is True:
@@ -2331,8 +2311,8 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         for jlab in self.grid.json_labels:
             pts = np.int32([np.array(jlab["points"])])
             cv2.fillPoly(
-                self.grid.mask_grids[jlab["row"]][jlab["col"]], 
-                pts=pts, 
+                self.grid.mask_grids[jlab["row"]][jlab["col"]],
+                pts=pts,
                 color=jlab["labelIdx"])
 
     def changeGrid(self, row, col):
@@ -2479,7 +2459,9 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
         self.delAllPolygon()  # 清理
         mask = self.grid.splicingList(save_path)
         json_path = save_path.replace(".png", "_grid_saved.json")
-        open(json_path, "w", encoding="utf-8").write(json.dumps(self.grid.json_labels))
+        open(
+            json_path, "w",
+            encoding="utf-8").write(json.dumps(self.grid.json_labels))
         if self.grid.__class__.__name__ == "RSGrids":
             self.image, geo_tf = self.raster.getArray()
             if geo_tf is None:
@@ -2744,7 +2726,7 @@ class APP_EISeg(QMainWindow, Ui_EISeg):
                 QtGui.QIcon(osp.join(pjpath, "resource/Play.png")))
         else:
             # self.delAllPolygon()
-            self.timer.start(1000 / self.ratio)
+            self.timer.start(1000 // self.ratio)
             self.videoPlay.setText(self.tr("暂停"))
             self.videoPlay.setIcon(
                 QtGui.QIcon(osp.join(pjpath, "resource/Stop.png")))

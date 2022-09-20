@@ -144,7 +144,18 @@ def parse_args():
         help='The option of train profiler. If profiler_options is not None, the train ' \
             'profiler is enabled. Refer to the paddleseg/utils/train_profiler.py for details.'
     )
-
+    parser.add_argument(
+        '--repeats',
+        type=int,
+        default=1,
+        help="Repeat the samples in the dataset for `repeats` times in each epoch."
+    )
+    parser.add_argument(
+        '--device',
+        dest='device',
+        help='Set the device type, which may be GPU, CPU or XPU.',
+        default='gpu',
+        type=str)
     return parser.parse_args()
 
 
@@ -160,10 +171,14 @@ def main(args):
                      ['-' * 48])
     logger.info(info)
 
-    place = 'gpu' if env_info['Paddle compiled with cuda'] and env_info[
-        'GPUs used'] else 'cpu'
-
-    paddle.set_device(place)
+    place = args.device
+    if place == 'gpu' and env_info['Paddle compiled with cuda'] and env_info[
+            'GPUs used']:
+        paddle.set_device('gpu')
+    elif place == 'xpu' and paddle.is_compiled_with_xpu():
+        paddle.set_device('xpu')
+    else:
+        paddle.set_device('cpu')
     if not args.cfg:
         raise RuntimeError('No configuration file specified.')
 
@@ -181,6 +196,9 @@ def main(args):
         raise ValueError(
             'The length of train_dataset is 0. Please check if your dataset is valid'
         )
+
+    if args.repeats > 1:
+        train_dataset.fg_bg_list *= args.repeats
 
     val_dataset = cfg.val_dataset if args.do_eval else None
 

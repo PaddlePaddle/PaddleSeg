@@ -8,7 +8,7 @@ The `predict.py` script is specially used to visualize prediction cases. The com
 
 ```
 python predict.py \
-       --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml \
+       --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \
        --model_path output/iter_1000/model.pdparams \
        --image_path dataset/optic_disc_seg/JPEGImages/H0003.jpg \
        --save_dir output/result
@@ -115,7 +115,7 @@ After prediction, what we get is the predicted segmentation result depend on def
 In the segmentation result, the foreground is marked in red, and the background is marked in black. If you want to use other colors, you can refer to the following command:
 ```python
 python predict.py \
-       --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml \
+       --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \
        --model_path output/iter_1000/model.pdparams \
        --image_path data/optic_disc_seg/JPEGImages/H0003.jpg \
        --save_dir output/result \
@@ -131,7 +131,7 @@ The segmentation results are as follows:
 - If you use a custom color map, the number of input `color values` should be equal to `3 * pixel classes` (depending on the dataset you are using). For example, if your data set has 3 types of pixels, you can consider run:
 ```pythons
 python predict.py \
-       --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml \
+       --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \
        --model_path output/iter_1000/model.pdparams \
        --image_path data/optic_disc_seg/JPEGImages/H0003.jpg \
        --save_dir output/result \

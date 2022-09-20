@@ -116,6 +116,9 @@ if [ ${MODE} = "whole_infer" ] || [ ${MODE} = "klquant_whole_infer" ]; then
     elif [ ${model_name} == "ocrnet_hrnetw18_KL" ];then
         wget -P ${model_path} https://paddleseg.bj.bcebos.com/tipc/infer_models/ocrnet_hrnetw18_cityscapes_1024x512_160k.zip --no-check-certificate
         unzip -o ${model_path}/ocrnet_hrnetw18_cityscapes_1024x512_160k.zip -d ${model_path}/
+    elif [ ${model_name} == "segformer_b0_KL" ];then
+        wget -nc -P $model_path https://paddleseg.bj.bcebos.com/tipc/infer_models/segformer_b0_cityscapes_1024x1024_160k.zip --no-check-certificate
+        unzip -o ${model_path}/segformer_b0_cityscapes_1024x1024_160k.zip -d ${model_path}/
     fi
 fi
 
@@ -124,18 +127,7 @@ mkdir -p ./test_tipc/data
 if [ ${MODE} = "benchmark_train" ];then
     pip install -r requirements.txt
     pip install -r test_tipc/requirements.txt
-    if [ ${model_name} = 'deeplabv3p_resnet50_cityscapes' ] \
-        || [ ${model_name} = 'fcn_hrnetw18' ] \
-        || [ ${model_name} = 'ocrnet_hrnetw48' ] \
-        || [ ${model_name} = 'ocrnet_hrnetw18' ] \
-        || [ ${model_name} = 'fastscnn' ] \
-        || [ ${model_name} = 'pp_liteseg_stdc1' ] \
-        || [ ${model_name} = 'pp_liteseg_stdc2' ] \
-        || [ ${model_name} = 'segformer_b0' ];then   # 需要使用全量数据集,否则性能下降
-        rm -rf ./test_tipc/data/cityscapes
-        wget https://paddleseg.bj.bcebos.com/dataset/cityscapes.tar -O ./test_tipc/data/cityscapes.tar --no-check-certificate
-        tar -xf ./test_tipc/data/cityscapes.tar  -C ./test_tipc/data/
-    elif [ ${model_name} = 'fcn_hrnetw18_small' ] \
+    if [ ${model_name} = 'fcn_hrnetw18_small' ] \
         || [ ${model_name} = 'pphumanseg_lite' ] \
         || [ ${model_name} = 'deeplabv3p_resnet50' ] \
         || [ ${model_name} = 'pp_humanseg_lite_KL' ] \
@@ -148,6 +140,10 @@ if [ ${MODE} = "benchmark_train" ];then
         rm -rf ./test_tipc/data/PPM-100
         wget -nc -P ./test_tipc/data/ https://paddleseg.bj.bcebos.com/matting/datasets/PPM-100.zip --no-check-certificate
         cd ./test_tipc/data/ && unzip PPM-100.zip && cd -
+    elif [ ${model_name} = 'deeplabv3p_resnet50_cityscapes' ]; then
+        rm -rf ./test_tipc/data/cityscapes
+        wget https://paddleseg.bj.bcebos.com/dataset/cityscapes.tar -O ./test_tipc/data/cityscapes.tar --no-check-certificate
+        tar -xf ./test_tipc/data/cityscapes.tar -C ./test_tipc/data/
     else
         rm -rf ./test_tipc/data/cityscapes
         wget https://paddleseg.bj.bcebos.com/tipc/data/cityscapes_300imgs.tar.gz \

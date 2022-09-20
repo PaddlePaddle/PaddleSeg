@@ -2,14 +2,14 @@
 # 模型训练
 
 ## 1、开启训练
-我们可以通过PaddleSeg提供的脚本对模型进行训练，在本文档中我们使用`BiseNet`模型与`optic_disc`数据集展示训练过程。 请确保已经完成了PaddleSeg的安装工作，并且位于PaddleSeg目录下，执行以下脚本：
+我们可以通过PaddleSeg提供的脚本对模型进行训练，在本文档中我们使用`PP-LiteSeg`模型与`optic_disc`数据集展示训练过程。 请确保已经完成了PaddleSeg的安装工作，并且位于PaddleSeg目录下，执行以下脚本：
 
 ```shell
 export CUDA_VISIBLE_DEVICES=0 # 设置1张可用的卡
 # windows下请执行以下命令
 # set CUDA_VISIBLE_DEVICES=0
 python train.py \
-       --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml \
+       --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \
        --do_eval \
        --use_vdl \
        --save_interval 500 \
@@ -39,7 +39,7 @@ python train.py \
 ```shell
 export CUDA_VISIBLE_DEVICES=0,1,2,3 # 设置4张可用的卡
 python -m paddle.distributed.launch train.py \
-       --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml \
+       --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \
        --do_eval \
        --use_vdl \
        --save_interval 500 \
@@ -49,7 +49,7 @@ python -m paddle.distributed.launch train.py \
 ## 3、恢复训练：
 ```shell
 python train.py \
-       --config configs/quick_start/bisenet_optic_disc_512x512_1k.yml \
+       --config configs/quick_start/pp_liteseg_optic_disc_512x512_1k.yml \
        --resume_model output/iter_500 \
        --do_eval \
        --use_vdl \

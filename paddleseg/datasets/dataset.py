@@ -62,10 +62,11 @@ class Dataset(paddle.io.Dataset):
     """
 
     def __init__(self,
-                 transforms,
+                 mode,
                  dataset_root,
+                 transforms,
                  num_classes,
-                 mode='train',
+                 img_channels=3,
                  train_path=None,
                  val_path=None,
                  test_path=None,
@@ -73,10 +74,11 @@ class Dataset(paddle.io.Dataset):
                  ignore_index=255,
                  edge=False):
         self.dataset_root = dataset_root
-        self.transforms = Compose(transforms)
+        self.transforms = Compose(transforms, img_channels=img_channels)
         self.file_list = list()
         self.mode = mode.lower()
         self.num_classes = num_classes
+        self.img_channels = img_channels
         self.ignore_index = ignore_index
         self.edge = edge
 
@@ -84,13 +86,18 @@ class Dataset(paddle.io.Dataset):
             raise ValueError(
                 "mode should be 'train', 'val' or 'test', but got {}.".format(
                     self.mode))
-
-        if self.transforms is None:
-            raise ValueError("`transforms` is necessary, but it is None.")
-
         if not os.path.exists(self.dataset_root):
             raise FileNotFoundError('there is not `dataset_root`: {}.'.format(
                 self.dataset_root))
+        if self.transforms is None:
+            raise ValueError("`transforms` is necessary, but it is None.")
+        if num_classes < 1:
+            raise ValueError(
+                "`num_classes` should be greater than 1, but got {}".format(
+                    num_classes))
+        if img_channels not in [1, 3]:
+            raise ValueError("`img_channels` should in [1, 3], but got {}".
+                             format(img_channels))
 
         if self.mode == 'train':
             if train_path is None:
