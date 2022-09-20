@@ -162,11 +162,20 @@ class DeployConfig:
 
         self._transforms = self.load_transforms(self.dic['Deploy'][
             'transforms'])
+        if self.dic['Deploy']['inference_helper'] is not None:
+            self._inference_helper = self.load_inference_helper(self.dic[
+                'Deploy']['inference_helper'])
+        else:
+            self._inference_helper = None
         self._dir = os.path.dirname(path)
 
     @property
     def transforms(self):
         return self._transforms
+
+    @property
+    def inference_helper(self):
+        return self._inference_helper
 
     @property
     def model(self):
@@ -186,6 +195,16 @@ class DeployConfig:
                 transforms.append(com[ctype](**t))
 
         return T.Compose(transforms)
+
+    @staticmethod
+    def load_inference_helper(t):
+        com = manager.INFERENCE_HELPERS
+        inference_helper = None
+        ctype = t.pop('type', None)
+        if ctype is not None:
+            inference_helper = com[ctype](**t)
+
+        return inference_helper
 
 
 def auto_tune(args, imgs, img_nums):
@@ -369,10 +388,14 @@ class Predictor:
                 # warm up
                 if i == 0 and args.benchmark:
                     for j in range(5):
-                        data = np.array([
-                            self._preprocess(img)  # load from original
-                            for img in imgs_path[0:args.batch_size]
-                        ])
+                        if self.cfg.inference_helper is not None:
+                            data = self.cfg.inference_helper.preprocess(
+                                self.cfg, imgs_path, args.batch_size, 0)
+                        else:
+                            data = np.array([
+                                self._preprocess(img)  # load from original
+                                for img in imgs_path[0:args.batch_size]
+                            ])
                         input_handle.reshape(data.shape)
                         input_handle.copy_from_cpu(data)
                         self.predictor.run()
@@ -382,9 +405,14 @@ class Predictor:
             # inference
             if args.benchmark:
                 self.autolog.times.start()
-            data = np.array([
-                self._preprocess(p) for p in imgs_path[i:i + args.batch_size]
-            ])
+            if self.cfg.inference_helper is not None:
+                data = self.cfg.inference_helper.preprocess(self.cfg, imgs_path,
+                                                            args.batch_size, i)
+            else:
+                data = np.array([
+                    self._preprocess(p)
+                    for p in imgs_path[i:i + args.batch_size]
+                ])
 
             if args.benchmark:
                 self.autolog.times.stamp()
@@ -413,12 +441,13 @@ class Predictor:
 
             if args.benchmark:
                 self.autolog.times.stamp()
-
-            results = self._postprocess(results)
+            if self.cfg.inference_helper is not None:
+                results = self.cfg.inference_helper.postprocess(results)
+            else:
+                results = self._postprocess(results)
 
             if args.benchmark:
                 self.autolog.times.end(stamp=True)
-
             self._save_npy(results, imgs_path[i:i + args.batch_size])
         logger.info("Finish")
 
@@ -461,7 +490,6 @@ class Predictor:
                         f_np)
 
             img = img.split(".", maxsplit=1)[0] + ".npy"
-
         return self.cfg.transforms(img)[0]
 
     def _postprocess(self, results):

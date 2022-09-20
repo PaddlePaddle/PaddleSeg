@@ -125,6 +125,9 @@ def evaluate(
             if writer is not None:  # TODO visualdl single channel pseudo label map transfer to
                 pass
 
+            if hasattr(model, "postprocess"):
+                logits, label = model.postprocess(logits, label)
+
             # logits [N, num_classes, D, H, W] Compute loss to get dice
             loss, per_channel_dice = loss_computation(logits, label, new_loss)
             loss = sum(loss)
