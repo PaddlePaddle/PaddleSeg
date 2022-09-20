@@ -116,12 +116,12 @@ os.system(f"'{sys.executable}' -m pip install paddlepaddle-gpu==2.3.1.post111 -f
 <!-- <details>
 <summary><b>使用步骤</b></summary> -->
 ### 2. 模型、数据下载
-目前我们提供在下列模型和数据上的试用体验：
+目前我们提供在下列模型和数据上的试用体验，可以下载表格中模型和数据到指定目录，并将模型和数据进行解压缩操作用于后续加载：
 <p align="center">
 
 | 数据 | 模型 | 下载链接 |
 |:-:|:-:|:-:|
-| MRI椎骨数据 | 交互式 Vnet |[pdiparams](https://pan.baidu.com/s/1Dk-PqogeJOiaEGBse3kFOA)-pw: 6ok7 \| [pdmodel](https://pan.baidu.com/s/1daFrC1C2cwCmovvLj5n3QA)-pw: sg80 \| [椎骨数据](https://aistudio.baidu.com/aistudio/datasetdetail/81211)|
+| MRI椎骨数据 | 交互式 Vnet |[模型](链接: https://pan.baidu.com/s/1vu0ZIbGumlFvRlMGbMvWAg)-pw: dt8q \|  [椎骨数据](https://aistudio.baidu.com/aistudio/datasetdetail/81211)|
 
 </p>
 
@@ -138,7 +138,7 @@ os.system(f"'{sys.executable}' -m pip install paddlepaddle-gpu==2.3.1.post111 -f
 <img src="https://user-images.githubusercontent.com/34859558/188458289-b59dc5e3-34eb-4d40-b18b-ce0b35c066c6.png" width="60.6%" height="20%">
 </p>
 
-* 点击 Select Extension，并选择到contrib/MedicalSeg/Med3DAnnotation目录，并点击加载对应模块，等待 Slicer 进行加载。
+* 点击 Select Extension，并选择到 EISeg/med3d 目录，并点击加载对应模块，等待 Slicer 进行加载。
 <p align="center">
 <img src="https://user-images.githubusercontent.com/34859558/188458463-066ff0b6-ff80-4d0d-aca0-3b3b12f710ef.png" width="60.6%" height="20%">
 </p>
