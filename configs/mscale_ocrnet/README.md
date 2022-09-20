@@ -10,8 +10,9 @@
 
 | Model            | Backbone    | Resolution | Training Iters | mIoU   | mIoU (flip) | mIoU (ms+flip) | Links           |
 | ---------------- | ----------- | ---------- | -------------- | ------ | ----------- | -------------- | --------------- |
-| OCRNet-HRNet+psa | HRNETV2_W48 | 1024x2048  | 80000          | 84.55% | 84.73%      | 84.92%         | model\|log\|vdl |
+| OCRNet-HRNet+psa | HRNETV2_W48 | 1024x2048  | 150000         | 84.55% | 84.73%      | 84.92%         | model\|log\|vdl |
 
 ### Notes
 
-Since we cannot reproduce the training results from [the authors' official repo](https://github.com/DeLightCMU/PSA), we follow the settings in the original paper to train and evaluate our models, and the final accuracy is lower than that reported in the paper.
+* This is the Mscale OCRNet that supports PSA.
+* Since we cannot reproduce the training results from [the authors' official repo](https://github.com/DeLightCMU/PSA), we follow the settings in the original paper to train and evaluate our models, and the final accuracy is lower than that reported in the paper.
