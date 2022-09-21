@@ -1,2 +1,3 @@
 from .inference_helper import InferenceHelper
 from .transunet_inference_helper import TransUNetInferenceHelper
+from .swinunet_inference_helper import SwinUNetInferenceHelper

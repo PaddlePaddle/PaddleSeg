@@ -31,6 +31,12 @@ if [ ${MODE} = "lite_train_lite_infer" ];then
         cd ./test_tipc/data/
         wget https://paddleseg.bj.bcebos.com/dataset/mini_synapse_dataset.zip
         unzip mini_synapse_dataset.zip  && cd ../../
+    elif [ ${model_name} = "SwinUNet" ]; then
+        mkdir -p ./test_tipc/data
+        rm -rf ./test_tipc/data/mini_synapse_dataset
+        cd ./test_tipc/data/
+        wget https://paddleseg.bj.bcebos.com/dataset/mini_synapse_dataset.zip
+        unzip mini_synapse_dataset.zip  && cd ../../
     else
         echo "Not added into TIPC yet."
     fi
