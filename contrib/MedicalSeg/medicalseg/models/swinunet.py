@@ -1,4 +1,4 @@
-# copyright (c) 2021 PaddlePaddle Authors. All Rights Reserve.
+# copyright (c) 2022 PaddlePaddle Authors. All Rights Reserve.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
 # reference: https://arxiv.org/abs/2103.14030
 
 import numpy as np
-
 import paddle
 import paddle.nn as nn
 
@@ -28,30 +27,29 @@ from medicalseg.models.backbones.transformer_utils import *
 
 @manager.MODELS.add_component
 class SwinUNet(nn.Layer):
-    r""" Swin Transformer Block.
+    r""" SwinUNet.
     Args:
         backbone: Backbone of SwinUnet
-        image_size (int): Image size of input
-        path_size (int): Patch size of Patch Embed
-        input_resolution (tuple[int]): Input resulotion
-        num_classes (int): Number of class
-        embed_dim (int): The embed dim
-        depths: Block number of every encoder layer
-        depths_decoder: Block number of every decoder layer
-        num_heads (int): Number of attention heads
-        window_size (int): Window size
-        mlp_ratio (float): Ratio of mlp hidden dim to embedding dim
+        image_size (int, optional): Image size of input. Default: 224
+        path_size (int): Patch size of Patch Embed. Default: 4
+        in_chans (int): The inchannel of input. Default: 3
+        num_classes (int): Number of class. Default: 1000
+        embed_dim (int): The embed dim. Default: 96
+        depths: Block number of every encoder layer. Default: [2, 2, 2, 2]
+        depths_decoder: Block number of every decoder layer. Default: [1, 2, 2, 2]
+        num_heads (int): Number of attention heads. Default: [3, 6, 12, 24]
+        window_size (int): Window size. Default: 7
+        mlp_ratio (float): Ratio of mlp hidden dim to embedding dim. Default: 4
         qkv_bias (bool, optional): If True, add a learnable bias to query, key, value. Default: True
-        qk_scale (float | None, optional): Override default qk scale of head_dim ** -0.5 if set
+        qk_scale (float | None, optional): Override default qk scale of head_dim ** -0.5 if set. Default: None
         drop_rate (float, optional): Dropout rate. Default: 0.0
         attn_drop_rate (float, optional): Attention dropout rate. Default: 0.0
         drop_path_rate (float, optional): Stochastic depth rate. Default: 0.0
         norm_layer (nn.Layer, optional): Normalization layer.  Default: nn.LayerNorm
         ape (bool): If True, add absolute position embedding to the patch embedding. Default: False
         patch_norm (bool): If True, add normalization after patch embedding. Default: True
-        use_checkpoint (bool): Whether to use checkpointing to save memory. Default: False
-        pretrained: The path of pre-train model
-        final_unsample (str): The fibal sample class
+        pretrained: The path of pre-trained model. Default: None
+        final_unsample (bool): The fibal sample class. Default: True
     """
 
     def __init__(self,
@@ -74,9 +72,8 @@ class SwinUNet(nn.Layer):
                  norm_layer=nn.LayerNorm,
                  ape=False,
                  patch_norm=True,
-                 use_checkpoint=False,
                  pretrained=None,
-                 final_upsample="expand_first",
+                 final_upsample=True,
                  **kwargs):
         super().__init__()
 
@@ -90,7 +87,6 @@ class SwinUNet(nn.Layer):
         self.num_features = int(embed_dim * 2**(self.num_layers - 1))
         self.final_upsample = final_upsample
 
-        #patches_resolution = self.backbone.patch_embed.patches_resolution
         patches_resolution = [img_size // patch_size] * 2
         self.patches_resolution = patches_resolution
 
@@ -99,6 +95,7 @@ class SwinUNet(nn.Layer):
                           sum(depths)).tolist()  # stochastic depth decay rule
         self.layers_up = nn.LayerList()
         self.concat_back_dim = nn.LayerList()
+
         for i_layer in range(self.num_layers):
             concat_linear = nn.Linear(
                 2 * int(embed_dim * 2**(self.num_layers - 1 - i_layer)),
@@ -114,7 +111,7 @@ class SwinUNet(nn.Layer):
                     dim_scale=2,
                     norm_layer=norm_layer)
             else:
-                layer_up = BasicLayer_up(
+                layer_up = BasicLayerUp(
                     dim=int(embed_dim * 2**(self.num_layers - 1 - i_layer)),
                     input_resolution=(patches_resolution[0] //
                                       (2**(self.num_layers - 1 - i_layer)),
@@ -133,17 +130,15 @@ class SwinUNet(nn.Layer):
                                              1])],
                     norm_layer=norm_layer,
                     upsample=PatchExpand
-                    if (i_layer < self.num_layers - 1) else None,
-                    use_checkpoint=use_checkpoint)
+                    if (i_layer < self.num_layers - 1) else None)
             self.layers_up.append(layer_up)
             self.concat_back_dim.append(concat_linear)
 
         self.norm = norm_layer(self.num_features)
         self.norm_up = norm_layer(self.embed_dim)
 
-        if self.final_upsample == "expand_first":
-            print("---final upsample expand_first---")
-            self.up = FinalPatchExpand_X4(
+        if self.final_upsample:
+            self.up = FinalPatchExpandX4(
                 input_resolution=(img_size // patch_size,
                                   img_size // patch_size),
                 dim_scale=4,
@@ -184,9 +179,10 @@ class SwinUNet(nn.Layer):
     def up_x4(self, x):
         H, W = self.patches_resolution
         B, L, C = paddle.shape(x)[0:3]
-        assert L == H * W, "input features has wrong size"
+        if L != H * W:
+            raise ValueError("input features has wrong size")
 
-        if self.final_upsample == "expand_first":
+        if self.final_upsample:
             x = self.up(x)
             x = x.reshape((B, 4 * H, 4 * W, self.embed_dim))
             x = x.transpose((0, 3, 1, 2))  #B,C,H,W
@@ -229,7 +225,8 @@ class PatchExpand(nn.Layer):
         H, W = self.input_resolution
         x = self.expand(x)
         B, L, C = x.shape
-        assert L == H * W, "input feature has wrong size"
+        if L != H * W:
+            raise ValueError("input features has wrong size")
 
         x = x.reshape((B, H, W, C))
         x = x.reshape((B, H, W, 2, 2, C // 4))
@@ -241,7 +238,7 @@ class PatchExpand(nn.Layer):
         return x
 
 
-class FinalPatchExpand_X4(nn.Layer):
+class FinalPatchExpandX4(nn.Layer):
     def __init__(self,
                  input_resolution,
                  dim,
@@ -262,7 +259,8 @@ class FinalPatchExpand_X4(nn.Layer):
         H, W = self.input_resolution
         x = self.expand(x)
         B, L, C = paddle.shape(x)[0:3]
-        assert L == H * W, "input feature has wrong size"
+        if L != H * W:
+            raise ValueError("input features has wrong size")
 
         x = x.reshape((B, H, W, C))
         x = x.reshape((B, H, W, self.dim_scale, self.dim_scale,
@@ -276,7 +274,7 @@ class FinalPatchExpand_X4(nn.Layer):
         return x
 
 
-class BasicLayer_up(nn.Layer):
+class BasicLayerUp(nn.Layer):
     """ A basic Swin Transformer layer for one stage
 
     Args:
@@ -292,8 +290,7 @@ class BasicLayer_up(nn.Layer):
         attn_drop (float, optional): Attention dropout rate. Default: 0.0
         drop_path (float | tuple[float], optional): Stochastic depth rate. Default: 0.0
         norm_layer (nn.Module, optional): Normalization layer. Default: nn.LayerNorm
-        downsample (nn.Module | None, optional): Downsample layer at the end of the layer. Default: None
-        use_checkpoint (bool): Whether to use checkpointing to save memory. Default: False
+        upsample (nn.Module | None, optional): Upsample layer at the end of the layer. Default: None
     """
 
     def __init__(self,
@@ -309,8 +306,7 @@ class BasicLayer_up(nn.Layer):
                  attn_drop=0.,
                  drop_path=0.,
                  norm_layer=nn.LayerNorm,
-                 upsample=None,
-                 use_checkpoint=False):
+                 upsample=None):
 
         super().__init__()
         self.window_size = window_size
@@ -318,7 +314,6 @@ class BasicLayer_up(nn.Layer):
         self.dim = dim
         self.input_resolution = input_resolution
         self.depth = depth
-        self.use_checkpoint = use_checkpoint
 
         # build blocks
         self.blocks = nn.LayerList([
@@ -369,7 +364,7 @@ class BasicLayer_up(nn.Layer):
             [-1, self.window_size * self.window_size])
         attn_mask = mask_windows.unsqueeze(1) - mask_windows.unsqueeze(2)
 
-        huns = -100.0 * paddle.ones_like(attn_mask)
+        huns = paddle.full_like(attn_mask, -100)
         attn_mask = huns * (attn_mask != 0).astype("float32")
         for blk in self.blocks:
             x = blk(x)

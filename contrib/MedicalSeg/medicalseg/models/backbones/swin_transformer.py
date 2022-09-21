@@ -1,4 +1,4 @@
-# copyright (c) 2021 PaddlePaddle Authors. All Rights Reserve.
+# copyright (c) 2022 PaddlePaddle Authors. All Rights Reserve.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,15 +18,9 @@
 import numpy as np
 import paddle
 import paddle.nn as nn
-import paddle.nn.functional as F
-from paddle.nn.initializer import TruncatedNormal, Constant
 
 from medicalseg.cvlibs import manager
-from medicalseg.utils import utils
 from medicalseg.models.backbones.transformer_utils import *
-#from ..model_zoo.vision_transformer import trunc_normal_, zeros_, ones_, to_2tuple, DropPath, Identity
-#from ..base.theseus_layer import TheseusLayer
-#from ....utils.save_load import load_dygraph_pretrain, load_dygraph_pretrain_from_url
 
 MODEL_URLS = {
     "SwinTransformer_tiny_patch4_window7_224":
@@ -105,6 +99,7 @@ def window_reverse(windows, window_size, H, W, C):
 class WindowAttention(nn.Layer):
     r""" Window based multi-head self attention (W-MSA) module with relative position bias.
     It supports both of shifted and non-shifted window.
+    
     Args:
         dim (int): Number of input channels.
         window_size (tuple[int]): The height and width of the window.
@@ -128,7 +123,7 @@ class WindowAttention(nn.Layer):
         self.window_size = window_size  # Wh, Ww
         self.num_heads = num_heads
         head_dim = dim // num_heads
-        self.scale = qk_scale or head_dim**-0.5
+        self.scale = qk_scale if qk_scale is not None else head_dim**-0.5
 
         # define a parameter table of relative position bias
         # 2*Wh-1 * 2*Ww-1, nH
@@ -226,28 +221,10 @@ class WindowAttention(nn.Layer):
 
         attn = self.attn_drop(attn)
 
-        # x = (attn @ v).transpose(1, 2).reshape([B_, N, C])
         x = paddle.mm(attn, v).transpose([0, 2, 1, 3]).reshape([B_, N, C])
         x = self.proj(x)
         x = self.proj_drop(x)
         return x
-
-    def extra_repr(self):
-        return "dim={}, window_size={}, num_heads={}".format(
-            self.dim, self.window_size, self.num_heads)
-
-    def flops(self, N):
-        # calculate flops for 1 window with token length of N
-        flops = 0
-        # qkv = self.qkv(x)
-        flops += N * self.dim * 3 * self.dim
-        # attn = (q @ k.transpose(-2, -1))
-        flops += self.num_heads * N * (self.dim // self.num_heads) * N
-        #  x = (attn @ v)
-        flops += self.num_heads * N * N * (self.dim // self.num_heads)
-        # x = self.proj(x)
-        flops += N * self.dim * self.dim
-        return flops
 
 
 class SwinTransformerBlock(nn.Layer):
@@ -256,7 +233,7 @@ class SwinTransformerBlock(nn.Layer):
         dim (int): Number of input channels.
         input_resolution (tuple[int]): Input resulotion.
         num_heads (int): Number of attention heads.
-        window_size (int): Window size.
+        window_size (int): Window size. Default: 7
         shift_size (int): Shift size for SW-MSA.
         mlp_ratio (float): Ratio of mlp hidden dim to embedding dim.
         qkv_bias (bool, optional): If True, add a learnable bias to query, key, value. Default: True
@@ -293,7 +270,7 @@ class SwinTransformerBlock(nn.Layer):
             # if window size is larger than input resolution, we don't partition windows
             self.shift_size = 0
             self.window_size = min(self.input_resolution)
-        assert 0 <= self.shift_size < self.window_size, "shift_size must in 0-window_size"
+        assert 0 <= self.shift_size < self.window_size, "shift_size must be in 0-window_size"
 
         self.norm1 = norm_layer(dim)
         self.attn = WindowAttention(
@@ -586,8 +563,6 @@ class PatchEmbed(nn.Layer):
 
     def forward(self, x):
         B, C, H, W = x.shape
-        # TODO (littletomatodonkey), uncomment the line will cause failure of jit.save
-        # assert [H, W] == self.img_size[:2], "Input image size ({H}*{W}) doesn't match model ({}*{}).".format(H, W, self.img_size[0], self.img_size[1])
         x = self.proj(x)
 
         x = x.flatten(2).transpose([0, 2, 1])  # B Ph*Pw C
@@ -609,6 +584,7 @@ class SwinTransformer(nn.Layer):
     """ Swin Transformer
         A PaddlePaddle impl of : `Swin Transformer: Hierarchical Vision Transformer using Shifted Windows`  -
           https://arxiv.org/pdf/2103.14030
+
     Args:
         img_size (int | tuple(int)): Input image size. Default 224
         patch_size (int | tuple(int)): Patch size. Default: 4

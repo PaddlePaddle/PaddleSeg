@@ -1,8 +1,5 @@
 _base_: '../_base_/global_configs.yml'
 
-batch_size: 24
-iters: 13950
-
 train_dataset:
   type: Abdomen
   dataset_root: abdomen/abdomen_phase0
@@ -16,7 +13,7 @@ train_dataset:
       degrees: 20
       rotate_planes: [[1, 2]]
     - type: Resize3D
-      size: [1 ,224, 224]
+      size: [1, 224, 224]
   mode: train
   num_classes: 9
 
@@ -27,7 +24,7 @@ val_dataset:
   num_classes: 9
   transforms:
     - type: Resize3D
-      size: [1 ,224, 224]
+      size: [1, 224, 224]
   mode: val
 
 test_dataset:
@@ -37,33 +34,5 @@ test_dataset:
   num_classes: 9
   transforms:
     - type: Resize3D
-      size: [1 ,224, 224]
+      size: [1, 224, 224]
   mode: val
-
-optimizer:
-  type: sgd
-  momentum: 0.9
-  weight_decay: 1.0e-4
-
-lr_scheduler:
-  type: PolynomialDecay
-  decay_steps: 13950
-  learning_rate: 0.01
-  end_lr: 0
-  power: 0.9
-
-loss:
-  types:
-    - type: MixedLoss
-      losses:
-        - type: CrossEntropyLoss
-        - type: DiceLoss
-      coef: [1, 1]
-  coef: [1]
-
-export:
-  transforms:
-    - type: Resize3D
-      size: [ 1 ,224, 224 ]
-  inference_helper:
-    type: TransUNetInferenceHelper
