@@ -178,7 +178,7 @@ python3 val.py --config configs/lung_coronavirus/${yml}.yml \
 
 ## 4. deploy the model
 
-With a trained model, we support deploying it with paddle inference to boost the inference speed. The instruction to do so is as follows, and you can see a detailed tutorial [here](../deploy/python/README.md).
+With a trained model, we support deploying it with paddle inference to boost the inference speed. The instruction to do so is as follows, and you can see a detailed python deployment tutorial [here](../../docs/deployment/inference/python_inference.md) and a cpp deployment tutorial [here](../../docs/deployment/inference/cpp_inference.md).
 
 ```bash
 cd MedicalSeg/
