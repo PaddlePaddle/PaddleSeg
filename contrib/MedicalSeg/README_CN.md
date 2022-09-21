@@ -173,7 +173,7 @@ python3 val.py --config configs/lung_coronavirus/${yml}.yml \
 
 
 ### 4. 模型部署
-得到训练好的模型之后，我们可以将它导出为静态图来进行推理加速，下面的步骤就可以进行导出和部署，详细的教程则可以参考[这里](../deploy/python/README.md)：
+得到训练好的模型之后，我们可以将它导出为静态图来进行推理加速，下面的步骤就可以进行导出和部署，详细的python教程则可以参部署考[这里](../../docs/deployment/inference/python_inference_cn.md)， c++部署教程可以参考[这里](../../docs/deployment/inference/cpp_inference_cn.md)：
 
 ```bash
 cd MedicalSeg/

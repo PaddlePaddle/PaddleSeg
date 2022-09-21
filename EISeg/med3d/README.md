@@ -138,7 +138,7 @@ os.system(f"'{sys.executable}' -m pip install paddlepaddle-gpu==2.3.1.post111 -f
 <img src="https://user-images.githubusercontent.com/34859558/188458289-b59dc5e3-34eb-4d40-b18b-ce0b35c066c6.png" width="60.6%" height="20%">
 </p>
 
-* 点击 Select Extension，并选择到 EISeg/med3d 目录，并点击加载对应模块，等待 Slicer 进行加载。
+* 点击 Select Extension，并选择到 PaddleSeg/EISeg/med3d 目录，并点击加载对应模块，等待 Slicer 进行加载。
 <p align="center">
 <img src="https://user-images.githubusercontent.com/34859558/188458463-066ff0b6-ff80-4d0d-aca0-3b3b12f710ef.png" width="60.6%" height="20%">
 </p>
