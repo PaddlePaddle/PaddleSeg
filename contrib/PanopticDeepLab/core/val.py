@@ -55,12 +55,7 @@ def evaluate(model,
     model.eval()
     nranks = paddle.distributed.ParallelEnv().nranks
     local_rank = paddle.distributed.ParallelEnv().local_rank
-    if nranks > 1:
-        # Initialize parallel environment if not done.
-        if not paddle.distributed.parallel.parallel_helper._is_parallel_ctx_initialized(
-        ):
-            paddle.distributed.init_parallel_env()
-    batch_sampler = paddle.io.DistributedBatchSampler(
+    batch_sampler = paddle.io.BatchSampler(
         eval_dataset, batch_size=1, shuffle=False, drop_last=False)
     loader = paddle.io.DataLoader(
         eval_dataset,
