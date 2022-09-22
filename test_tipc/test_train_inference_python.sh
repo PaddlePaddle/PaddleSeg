@@ -2,7 +2,7 @@
 source test_tipc/common_func.sh
 
 FILENAME=$1
-# MODE be one of ['lite_train_lite_infer' 'lite_train_whole_infer' 'whole_train_whole_infer', 'whole_infer', 'klquant_whole_infer']
+# MODE be one of ['lite_train_lite_infer' 'lite_train_whole_infer' 'whole_train_whole_infer', 'whole_infer']
 MODE=$2
 
 dataline=$(awk 'NR>=1{print}'  $FILENAME)
@@ -90,40 +90,6 @@ infer_value1=$(func_parser_value "${lines[50]}")
 infer_key2=$(func_parser_key "${lines[51]}")	##
 infer_value2=$(func_parser_value "${lines[51]}") ##
 
-# parser klquant_infer
-if [ ${MODE} = "klquant_whole_infer" ]; then
-    dataline=$(awk 'NR==1 NR==17{print}'  $FILENAME)
-    lines=(${dataline})
-    model_name=$(func_parser_value "${lines[1]}")
-    python=$(func_parser_value "${lines[2]}")
-    # parser inference model
-    infer_model_dir_list=$(func_parser_value "${lines[3]}")
-    infer_export_list=$(func_parser_value "${lines[4]}")
-    infer_is_quant=$(func_parser_value "${lines[5]}")
-    # parser inference
-    inference_py=$(func_parser_value "${lines[6]}")
-    use_gpu_key=$(func_parser_key "${lines[7]}")
-    use_gpu_list=$(func_parser_value "${lines[7]}")
-    use_mkldnn_key=$(func_parser_key "${lines[8]}")
-    use_mkldnn_list=$(func_parser_value "${lines[8]}")
-    cpu_threads_key=$(func_parser_key "${lines[9]}")
-    cpu_threads_list=$(func_parser_value "${lines[9]}")
-    batch_size_key=$(func_parser_key "${lines[10]}")
-    batch_size_list=$(func_parser_value "${lines[10]}")
-    use_trt_key=$(func_parser_key "${lines[11]}")
-    use_trt_list=$(func_parser_value "${lines[11]}")
-    precision_key=$(func_parser_key "${lines[12]}")
-    precision_list=$(func_parser_value "${lines[12]}")
-    infer_model_key=$(func_parser_key "${lines[13]}")
-    image_dir_key=$(func_parser_key "${lines[14]}")
-    infer_img_dir=$(func_parser_value "${lines[14]}")
-    save_log_key=$(func_parser_key "${lines[15]}")
-    benchmark_key=$(func_parser_key "${lines[16]}")
-    benchmark_value=$(func_parser_value "${lines[16]}")
-    infer_key1=$(func_parser_key "${lines[17]}")
-    infer_value1=$(func_parser_value "${lines[17]}")
-fi
-
 LOG_PATH="./test_tipc/output/${model_name}/${MODE}"  ##
 mkdir -p ${LOG_PATH}
 status_log="${LOG_PATH}/results_python.log"
@@ -138,8 +104,6 @@ for params in ${extra_args[*]}; do
     value=${arr[1]}
     if [ "${key}" = 'log_iters' ]; then
         log_iters="${value}"
-    elif [ "${key}" = "set_cv_threads" ]; then
-        set_cv_threads="${value}"
     elif [ "${key}" = "repeats" ]; then
         repeats="${value}"
     fi
@@ -379,17 +343,6 @@ else
                     cmd="${cmd} --repeats ${repeats}"
                 fi
 
-                if [ -n "${set_cv_threads}" ] && [ "${set_cv_threads}" = "true" ];then
-                    # Take the first word as the training script, which means there should be no blanks in the path of script.
-                    train_script=$(echo "${run_train}" | cut -d ' ' -f1)
-                    # Make a copy
-                    train_script_copy="$(add_suffix ${train_script} '_copy')" 
-                    cp ${train_script} ${train_script_copy}
-                    sed -i '1s/^/import cv2; cv2.setNumThreads(1)\n/' ${train_script_copy}
-                    # Use a global replace!
-                    cmd="${cmd/${train_script}/${train_script_copy}}"
-                fi
-
                 if [ -n "${amp_level}" ];then
                     cmd="${cmd} --amp_level ${amp_level}"
                 fi
@@ -401,10 +354,6 @@ else
 
                 if [[ "$cmd" == *'paddle.distributed.launch'* ]]; then
                     cat log/workerlog.0 >> ${log_path} 
-                fi
-
-                if [ -n "${set_cv_threads}" ] && [ "${set_cv_threads}" = "true" ];then
-                    rm ${train_script_copy}
                 fi
                 
                 # modify model dir if no eval

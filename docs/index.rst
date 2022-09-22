@@ -75,8 +75,8 @@ PaddleSeg是基于飞桨核心框架的深度学习全流程开发工具。具�
    :maxdepth: 1
    :caption: 9. 模型压缩
    
-   slim/quant/index.rst
-   slim/prune/index.rst
+   deployment/slim/quant/index.rst
+   deployment/slim/prune/index.rst
    
 .. toctree::
    :maxdepth: 1

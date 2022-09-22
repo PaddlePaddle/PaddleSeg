@@ -12,7 +12,7 @@ train_model_name:best_model/model.pdparams
 train_infer_img_dir:test_tipc/data/cityscapes/cityscapes_val_5.list
 --profiler_options:null
 ##
-trainer:norm
+trainer:norm_train
 norm_train:train.py --config test_tipc/configs/ocrnet_hrnetw18/ocrnet_hrnetw18_cityscapes_1024x512_160k.yml --device gpu --do_eval --save_interval 500 --seed 100
 pact_train:null
 fpgm_train:null
@@ -55,7 +55,7 @@ random_infer_input:[{float32,[3,512,1024]}]
 ===========================train_benchmark_params==========================
 batch_size:2
 fp_items:fp32|fp16
-epoch:600
+epoch:800
 --profiler_options:'batch_range=[10,20];state=GPU;tracer_option=Default;profile_path=model.profile'
 flags:FLAGS_eager_delete_tensor_gb=0.0;FLAGS_fraction_of_gpu_memory_to_use=0.98;FLAGS_conv_workspace_size_limit=4096;FLAGS_cudnn_deterministic=False
-log_iters:15;set_cv_threads:true;skip_iters:3;repeats:500
+log_iters:5;skip_iters:3;repeats:500

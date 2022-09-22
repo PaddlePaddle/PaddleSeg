@@ -9,16 +9,16 @@ Linux GPU/CPU CPP 服务化部署测试的主程序为`test_serving_infer_cpp.sh
 
 | 算法名称 | 模型名称 | device_CPU | device_GPU | batchsize |
 |  :----:   |  :----: |   :----:   |  :----:  |   :----:   |
-|  PP-LiteSeg   |  pp-liteSeg-stdc1 |  支持 | 支持 | 1 |
-|  PP-LiteSeg   |  pp-liteSeg-stdc2 |  支持 | 支持 | 1 |
-|  PP-Humanseg  |  pphumanseg_lite     |  支持 | 支持 | 1 |
-|  PP-Humanseg  |  pphumanseg_mobile   |  支持 | 支持 | 1 |
-|  PP-Humanseg  |  pphumanseg_server   |  支持 | 支持 | 1 |
-|  PP-Matting   |  pp_humanseg_matting |  支持 | 支持 | 1 |
+|  PP-LiteSeg   |  pp_liteseg_stdc1 |  支持 | 支持 | 1 |
+|  PP-LiteSeg   |  pp_liteseg_stdc2 |  支持 | 支持 | 1 |
+|  ConnectNet  |  pphumanseg_lite     |  支持 | 支持 | 1 |
+|  HRNet  |  pphumanseg_mobile (fcn_hrnetw18_small)   |  支持 | 支持 | 1 |
+|  DeepLabV3P  |  pphumanseg_server (deeplabv3p_resnet50)   |  支持 | 支持 | 1 |
+|  PP-Matting   |  ppmatting |  支持 | 支持 | 1 |
 |  HRNet        |  fcn_hrnetw18     |  支持 | 支持 | 1 |
 |  OCRNet       |  ocrnet_hrnetw18  |  支持 | 支持 | 1 |
 |  OCRNet       |  ocrnet_hrnetw48  |  支持 | 支持 | 1 |
-|  STDCSeg      |  stdc_stdc1       |  支持 | 支持 | 1 |
+|  STDC      |  stdc_stdc1       |  支持 | 支持 | 1 |
 
 
 
